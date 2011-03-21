@@ -1,4 +1,4 @@
-/* TMMHParameterSpec.java -- 
+/* TMMHParameterSpec.java --
    Copyright (C) 2002, 2006  Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -62,7 +62,7 @@ public class TMMHParameterSpec
 
   /**
    * Create a new parameter specification.
-   * 
+   *
    * @param keystream The (PRNG) key stream.
    * @param tagLength The tag length.
    * @param prefix The prefix.
@@ -76,7 +76,7 @@ public class TMMHParameterSpec
 
   /**
    * Create a new parameter specification with no prefix.
-   * 
+   *
    * @param keystream The (PRNG) key stream.
    * @param tagLength The tag length.
    */
@@ -87,7 +87,7 @@ public class TMMHParameterSpec
 
   /**
    * Return the key stream this specification was initialized with.
-   * 
+   *
    * @return The key stream.
    */
   public IRandom getKeystream()
@@ -97,7 +97,7 @@ public class TMMHParameterSpec
 
   /**
    * Return the tag length this specification was initialized with.
-   * 
+   *
    * @return The tag length.
    */
   public Integer getTagLength()
@@ -107,7 +107,7 @@ public class TMMHParameterSpec
 
   /**
    * Return the prefix, or <code>null</code> if no prefix was specified.
-   * 
+   *
    * @return The prefix.
    */
   public byte[] getPrefix()

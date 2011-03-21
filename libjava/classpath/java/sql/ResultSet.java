@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -59,7 +59,7 @@ import java.util.Map;
  *
  * @author Aaron M. Renn (arenn@urbanophile.com)
  */
-public interface ResultSet 
+public interface ResultSet
 {
   /**
    * The rows will be processed in order from first to last.
@@ -119,7 +119,7 @@ public interface ResultSet
 
   /**
    * This method closes the result set and frees any associated resources.
-   * 
+   *
    * @exception SQLException If an error occurs.
    */
   void close() throws SQLException;
@@ -268,9 +268,9 @@ public interface ResultSet
   Timestamp getTimestamp(int columnIndex) throws SQLException;
 
   /**
-   * This method returns the value of the specified column as an ASCII 
+   * This method returns the value of the specified column as an ASCII
    * stream.  Note that all the data from this stream must be read before
-   * fetching the value of any other column.  Please also be aware that 
+   * fetching the value of any other column.  Please also be aware that
    * calling <code>next()</code> or <code>close()</code> on this result set
    * will close this stream as well.
    *
@@ -283,7 +283,7 @@ public interface ResultSet
   /**
    * This method returns the value of the specified column as a Unicode UTF-8
    * stream.  Note that all the data from this stream must be read before
-   * fetching the value of any other column.  Please also be aware that 
+   * fetching the value of any other column.  Please also be aware that
    * calling <code>next()</code> or <code>close()</code> on this result set
    * will close this stream as well.
    *
@@ -297,7 +297,7 @@ public interface ResultSet
   /**
    * This method returns the value of the specified column as a raw byte
    * stream.  Note that all the data from this stream must be read before
-   * fetching the value of any other column.  Please also be aware that 
+   * fetching the value of any other column.  Please also be aware that
    * calling <code>next()</code> or <code>close()</code> on this result set
    * will close this stream as well.
    *
@@ -440,9 +440,9 @@ public interface ResultSet
   Timestamp getTimestamp(String columnName) throws SQLException;
 
   /**
-   * This method returns the value of the specified column as an ASCII 
+   * This method returns the value of the specified column as an ASCII
    * stream.  Note that all the data from this stream must be read before
-   * fetching the value of any other column.  Please also be aware that 
+   * fetching the value of any other column.  Please also be aware that
    * calling <code>next()</code> or <code>close()</code> on this result set
    * will close this stream as well.
    *
@@ -455,7 +455,7 @@ public interface ResultSet
   /**
    * This method returns the value of the specified column as a Unicode UTF-8
    * stream.  Note that all the data from this stream must be read before
-   * fetching the value of any other column.  Please also be aware that 
+   * fetching the value of any other column.  Please also be aware that
    * calling <code>next()</code> or <code>close()</code> on this result set
    * will close this stream as well.
    *
@@ -469,7 +469,7 @@ public interface ResultSet
   /**
    * This method returns the value of the specified column as a raw byte
    * stream.  Note that all the data from this stream must be read before
-   * fetching the value of any other column.  Please also be aware that 
+   * fetching the value of any other column.  Please also be aware that
    * calling <code>next()</code> or <code>close()</code> on this result set
    * will close this stream as well.
    *
@@ -546,7 +546,7 @@ public interface ResultSet
   /**
    * This method returns the value of the specified column as a character
    * stream.  Note that all the data from this stream must be read before
-   * fetching the value of any other column.  Please also be aware that 
+   * fetching the value of any other column.  Please also be aware that
    * calling <code>next()</code> or <code>close()</code> on this result set
    * will close this stream as well.
    *
@@ -559,7 +559,7 @@ public interface ResultSet
   /**
    * This method returns the value of the specified column as a character
    * stream.  Note that all the data from this stream must be read before
-   * fetching the value of any other column.  Please also be aware that 
+   * fetching the value of any other column.  Please also be aware that
    * calling <code>next()</code> or <code>close()</code> on this result set
    * will close this stream as well.
    *
@@ -632,7 +632,7 @@ public interface ResultSet
   /**
    * This method repositions the cursor to before the first row in the
    * result set.
-   * 
+   *
    * @exception SQLException If an error occurs.
    */
   void beforeFirst() throws SQLException;
@@ -640,7 +640,7 @@ public interface ResultSet
   /**
    * This method repositions the cursor to after the last row in the result
    * set.
-   * 
+   *
    * @exception SQLException If an error occurs.
    */
   void afterLast() throws SQLException;
@@ -658,7 +658,7 @@ public interface ResultSet
   /**
    * This method repositions the cursor on the last row in the result
    * set.
-   * 
+   *
    * @return <code>true</code> if the cursor is on a valid row;
    *         <code>false</code> if there are no rows in the result set.
    * @exception SQLException If an error occurs.
@@ -711,7 +711,7 @@ public interface ResultSet
 
   /**
    * This method provides a hint to the driver about which direction the
-   * result set will be processed in. 
+   * result set will be processed in.
    *
    * @param direction The direction in which rows will be processed. The
    *                  allowed values are the <code>FETCH_*</code> constants
@@ -738,7 +738,7 @@ public interface ResultSet
   void setFetchSize(int rows) throws SQLException;
 
   /**
-   * This method returns the current number of rows that will be fetched 
+   * This method returns the current number of rows that will be fetched
    * from the database at a time.
    *
    * @return The current fetch size for this result set.
@@ -941,7 +941,7 @@ public interface ResultSet
   void updateTime(int columnIndex, Time value) throws SQLException;
 
   /**
-   * This method updates the specified column to have a java.sql.Timestamp value.  
+   * This method updates the specified column to have a java.sql.Timestamp value.
    * This does not update the actual database.  <code>updateRow</code> must be
    * called in order to do that.
    *
@@ -992,7 +992,7 @@ public interface ResultSet
     throws SQLException;
 
   /**
-   * This method updates the specified column to have an Object value.  
+   * This method updates the specified column to have an Object value.
    * This does not update the actual database.  <code>updateRow</code> must be
    * called in order to do that.
    *
@@ -1006,7 +1006,7 @@ public interface ResultSet
     throws SQLException;
 
   /**
-   * This method updates the specified column to have an Object value.  
+   * This method updates the specified column to have an Object value.
    * This does not update the actual database.  <code>updateRow</code> must be
    * called in order to do that.
    *
@@ -1160,7 +1160,7 @@ public interface ResultSet
   void updateTime(String columnName, Time value) throws SQLException;
 
   /**
-   * This method updates the specified column to have a java.sql.Timestamp value.  
+   * This method updates the specified column to have a java.sql.Timestamp value.
    * This does not update the actual database.  <code>updateRow</code> must be
    * called in order to do that.
    *
@@ -1211,7 +1211,7 @@ public interface ResultSet
     throws SQLException;
 
   /**
-   * This method updates the specified column to have an Object value.  
+   * This method updates the specified column to have an Object value.
    * This does not update the actual database.  <code>updateRow</code> must be
    * called in order to do that.
    *
@@ -1225,7 +1225,7 @@ public interface ResultSet
     throws SQLException;
 
   /**
-   * This method updates the specified column to have an Object value.  
+   * This method updates the specified column to have an Object value.
    * This does not update the actual database.  <code>updateRow</code> must be
    * called in order to do that.
    *
@@ -1266,7 +1266,7 @@ public interface ResultSet
   void refreshRow() throws SQLException;
 
   /**
-   * This method cancels any changes that have been made to a row.  If 
+   * This method cancels any changes that have been made to a row.  If
    * the <code>rowUpdate</code> method has been called, then the changes
    * cannot be undone.
    *
@@ -1358,7 +1358,7 @@ public interface ResultSet
    * @return The value of the column as an <code>Object</code>.
    * @exception SQLException If an error occurs.
    */
-  Object getObject(String columnName, Map<String, Class<?>> map) 
+  Object getObject(String columnName, Map<String, Class<?>> map)
     throws SQLException;
 
   /**
@@ -1399,7 +1399,7 @@ public interface ResultSet
   Array getArray(String columnName) throws SQLException;
 
   /**
-   * This method returns the specified column value as a 
+   * This method returns the specified column value as a
    * <code>java.sql.Date</code>.  The specified <code>Calendar</code> is used
    * to generate a value for the date if the database does not support
    * timezones.
@@ -1412,7 +1412,7 @@ public interface ResultSet
   Date getDate(int columnIndex, Calendar cal) throws SQLException;
 
   /**
-   * This method returns the specified column value as a 
+   * This method returns the specified column value as a
    * <code>java.sql.Date</code>.  The specified <code>Calendar</code> is used
    * to generate a value for the date if the database does not support
    * timezones.
@@ -1425,7 +1425,7 @@ public interface ResultSet
   Date getDate(String columnName, Calendar cal) throws SQLException;
 
   /**
-   * This method returns the specified column value as a 
+   * This method returns the specified column value as a
    * <code>java.sql.Time</code>.  The specified <code>Calendar</code> is used
    * to generate a value for the time if the database does not support
    * timezones.
@@ -1438,7 +1438,7 @@ public interface ResultSet
   Time getTime(int columnIndex, Calendar cal) throws SQLException;
 
   /**
-   * This method returns the specified column value as a 
+   * This method returns the specified column value as a
    * <code>java.sql.Time</code>.  The specified <code>Calendar</code> is used
    * to generate a value for the time if the database does not support
    * timezones.
@@ -1451,7 +1451,7 @@ public interface ResultSet
   Time getTime(String columnName, Calendar cal) throws SQLException;
 
   /**
-   * This method returns the specified column value as a 
+   * This method returns the specified column value as a
    * <code>java.sql.Timestamp</code>.  The specified <code>Calendar</code> is used
    * to generate a value for the timestamp if the database does not support
    * timezones.
@@ -1465,7 +1465,7 @@ public interface ResultSet
     throws SQLException;
 
   /**
-   * This method returns the specified column value as a 
+   * This method returns the specified column value as a
    * <code>java.sql.Timestamp</code>.  The specified <code>Calendar</code> is used
    * to generate a value for the timestamp if the database does not support
    * timezones.
@@ -1481,9 +1481,9 @@ public interface ResultSet
     throws SQLException;
 
   /**
-   * This method returns the specified column value as a 
+   * This method returns the specified column value as a
    * <code>java.net.URL</code>.
-   * 
+   *
    * @param columnIndex The index of the column value to return.
    * @exception SQLException If an error occurs.
    * @since 1.4
@@ -1493,7 +1493,7 @@ public interface ResultSet
   /**
    * This method returns the specified column value as a
    * <code>java.net.URL</code>.
-   * 
+   *
    * @param columnName The name of the column value to return.
    * @exception SQLException If an error occurs.
    * @since 1.4
@@ -1501,13 +1501,13 @@ public interface ResultSet
   URL getURL(String columnName) throws SQLException;
 
   /**
-   * This method updates the specified column to have a 
-   * <code>java.sql.Ref</code> value. 
+   * This method updates the specified column to have a
+   * <code>java.sql.Ref</code> value.
    * This does not update the actual database. <code>updateRow</code> must be
    * called in order to do that.
-   * 
+   *
    * @parm columnIndex The index of the column value to update.
-   * @parm value The <code>java.sql.Ref</code> used to set the new value 
+   * @parm value The <code>java.sql.Ref</code> used to set the new value
    *             of the column.
    * @exception SQLException If an error occurs.
    * @since 1.4
@@ -1515,13 +1515,13 @@ public interface ResultSet
   void updateRef(int columnIndex, Ref value) throws SQLException;
 
   /**
-   * This method updates the specified column to have a 
-   * <code>java.sql.Ref</code> value. 
+   * This method updates the specified column to have a
+   * <code>java.sql.Ref</code> value.
    * This does not update the actual database. <code>updateRow</code> must be
    * called in order to do that.
-   * 
+   *
    * @parm columnName The name of the column value to update.
-   * @parm value The <code>java.sql.Ref</code> used to set the new value 
+   * @parm value The <code>java.sql.Ref</code> used to set the new value
    *             of the column.
    * @exception SQLException If an error occurs.
    * @since 1.4
@@ -1529,13 +1529,13 @@ public interface ResultSet
   void updateRef(String columnName, Ref value) throws SQLException;
 
   /**
-   * This method updates the specified column to have a 
-   * <code>java.sql.Blob</code> value. 
+   * This method updates the specified column to have a
+   * <code>java.sql.Blob</code> value.
    * This does not update the actual database. <code>updateRow</code> must be
    * called in order to do that.
-   * 
+   *
    * @parm columnIndex The index of the column value to update.
-   * @parm value The <code>java.sql.Blob</code> used to set the new value 
+   * @parm value The <code>java.sql.Blob</code> used to set the new value
    *             of the column.
    * @exception SQLException If an error occurs.
    * @since 1.4
@@ -1543,13 +1543,13 @@ public interface ResultSet
   void updateBlob(int columnIndex, Blob value) throws SQLException;
 
   /**
-   * This method updates the specified column to have a 
-   * <code>java.sql.Blob</code> value. 
+   * This method updates the specified column to have a
+   * <code>java.sql.Blob</code> value.
    * This does not update the actual database. <code>updateRow</code> must be
    * called in order to do that.
-   * 
+   *
    * @parm columnName The name of the column value to update.
-   * @parm value The <code>java.sql.Blob</code> used to set the new value 
+   * @parm value The <code>java.sql.Blob</code> used to set the new value
    *             of the column.
    * @exception SQLException If an error occurs.
    * @since 1.4
@@ -1557,13 +1557,13 @@ public interface ResultSet
   void updateBlob(String columnName, Blob value) throws SQLException;
 
   /**
-   * This method updates the specified column to have a 
-   * <code>java.sql.Clob</code> value. 
+   * This method updates the specified column to have a
+   * <code>java.sql.Clob</code> value.
    * This does not update the actual database. <code>updateRow</code> must be
    * called in order to do that.
-   * 
+   *
    * @parm columnIndex The index of the column value to update.
-   * @parm value The <code>java.sql.Clob</code> used to set the new value 
+   * @parm value The <code>java.sql.Clob</code> used to set the new value
    *             of the column.
    * @exception SQLException If an error occurs.
    * @since 1.4
@@ -1571,13 +1571,13 @@ public interface ResultSet
   void updateClob(int columnIndex, Clob value) throws SQLException;
 
   /**
-   * This method updates the specified column to have a 
-   * <code>java.sql.Clob</code> value. 
+   * This method updates the specified column to have a
+   * <code>java.sql.Clob</code> value.
    * This does not update the actual database. <code>updateRow</code> must be
    * called in order to do that.
-   * 
+   *
    * @parm columnName The name of the column value to update.
-   * @parm value The <code>java.sql.Clob</code> used to set the new value 
+   * @parm value The <code>java.sql.Clob</code> used to set the new value
    *             of the column.
    * @exception SQLException If an error occurs.
    * @since 1.4
@@ -1585,11 +1585,11 @@ public interface ResultSet
   void updateClob(String columnName, Clob value) throws SQLException;
 
   /**
-   * This method updates the specified column to have a 
-   * <code>java.sqlArray</code> value. 
+   * This method updates the specified column to have a
+   * <code>java.sqlArray</code> value.
    * This does not update the actual database. <code>updateRow</code> must be
    * called in order to do that.
-   * 
+   *
    * @parm columnIndex The index of the column value to update.
    * @parm value The new value of the column.
    * @exception SQLException If an error occurs.
@@ -1598,11 +1598,11 @@ public interface ResultSet
   void updateArray(int columnIndex, Array value) throws SQLException;
 
   /**
-   * This method updates the specified column to have a 
-   * <code>java.sqlArray</code> value. 
+   * This method updates the specified column to have a
+   * <code>java.sqlArray</code> value.
    * This does not update the actual database. <code>updateRow</code> must be
    * called in order to do that.
-   * 
+   *
    * @parm columnName The name of the column value to update.
    * @parm value The new value of the column.
    * @exception SQLException If an error occurs.

@@ -11,7 +11,6 @@ import (
 
 func libc_dup(fd int) int __asm__ ("dup")
 func libc_opendir(*byte) *syscall.DIR __asm__ ("opendir")
-func libc_readdir_r(*syscall.DIR, *syscall.Dirent, **syscall.Dirent) int __asm__ ("readdir_r")
 func libc_closedir(*syscall.DIR) int __asm__ ("closedir")
 
 // FIXME: pathconf returns long, not int.

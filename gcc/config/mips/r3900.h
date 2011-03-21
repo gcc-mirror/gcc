@@ -2,7 +2,7 @@
    Toshiba r3900.  You should include mips.h after this.
 
    Copyright (C) 1989, 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 2004,
-   2007 Free Software Foundation, Inc.
+   2007, 2010 Free Software Foundation, Inc.
    Contributed by Gavin Koch (gavin@cygnus.com).
 
 This file is part of GCC.
@@ -21,15 +21,19 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#undef MIPS_CPU_STRING_DEFAULT
 #define MIPS_CPU_STRING_DEFAULT "r3900"
 #define MIPS_ISA_DEFAULT 1
 
+#undef MULTILIB_DEFAULTS
 #define MULTILIB_DEFAULTS { MULTILIB_ENDIAN_DEFAULT, "msoft-float" }
 
 /* We use the MIPS EABI by default.  */
+#undef MIPS_ABI_DEFAULT
 #define MIPS_ABI_DEFAULT ABI_EABI
 
 /* By default (if not mips-something-else) produce code for the r3900 */
+#undef SUBTARGET_CC1_SPEC
 #define SUBTARGET_CC1_SPEC "\
 %{mhard-float:%e-mhard-float not supported} \
 %{msingle-float:%{msoft-float: \

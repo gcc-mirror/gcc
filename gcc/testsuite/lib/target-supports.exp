@@ -1,5 +1,5 @@
-#   Copyright (C) 1999, 2001, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
-#    Free Software Foundation, Inc.
+#   Copyright (C) 1999, 2001, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+#   2011 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -922,6 +922,17 @@ proc check_iconv_available { test_what } {
     }] $libiconv]
 }
 
+# Return 1 if an ASCII locale is supported on this host, 0 otherwise.
+
+proc check_ascii_locale_available { } {
+    if { ([ishost alpha*-dec-osf*] || [ishost mips-sgi-irix*]) } {
+	# Neither Tru64 UNIX nor IRIX support an ASCII locale.
+	return 0
+    } else {
+	return 1
+    }
+}
+
 # Return true if named sections are supported on this target.
 
 proc check_named_sections_available { } {
@@ -940,6 +951,22 @@ proc check_effective_target_fortran_large_real { } {
 	! Fortran
 	integer,parameter :: k = selected_real_kind (precision (0.0_8) + 1)
 	real(kind=k) :: x
+	x = cos (x)
+	end
+    }]
+}
+
+# Return 1 if the target supports Fortran real kind real(16),
+# 0 otherwise. Contrary to check_effective_target_fortran_large_real
+# this checks for Real(16) only; the other returned real(10) if
+# both real(10) and real(16) are available.
+#
+# When the target name changes, replace the cached result.
+
+proc check_effective_target_fortran_real_16 { } {
+    return [check_no_compiler_messages fortran_real_16 executable {
+	! Fortran
+	real(kind=16) :: x
 	x = cos (x)
 	end
     }]
@@ -3510,6 +3537,9 @@ proc check_effective_target_fd_truncate { } {
 
 proc add_options_for_c99_runtime { flags } {
     if { [istarget *-*-solaris2*] } {
+	return "$flags -std=c99"
+    }
+    if { [istarget mips-sgi-irix6.5*] } {
 	return "$flags -std=c99"
     }
     if { [istarget powerpc-*-darwin*] } {

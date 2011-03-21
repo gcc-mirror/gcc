@@ -46,7 +46,7 @@ import java.io.IOException;
 
 /**
  * Wrapper for an String value.
- * 
+ *
  * @author Kyle Galloway <kgallowa@redhat.com>
  */
 public final class StringValue
@@ -57,7 +57,7 @@ public final class StringValue
 
   /**
    * Create a new StringValue from an String
-   * 
+   *
    * @param value the String to wrap
    */
   public StringValue(String value)
@@ -65,20 +65,20 @@ public final class StringValue
     super(JdwpConstants.Tag.STRING);
     _value = value;
   }
-  
+
   /**
    * Get the value held in this Value
-   * 
+   *
    * @return the value represented by this Value object
    */
   public String getValue()
   {
     return _value;
   }
-  
+
   /**
    * Return an object representing this type
-   * 
+   *
    * @return an Object represntation of this value
    */
   @Override
@@ -89,7 +89,7 @@ public final class StringValue
 
   /**
    * Write the wrapped object to the given DataOutputStream.
-   * 
+   *
    * @param os the output stream to write to
    */
   @Override

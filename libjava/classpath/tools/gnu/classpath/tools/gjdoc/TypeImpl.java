@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -16,7 +16,7 @@ General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with GNU Classpath; see the file COPYING.  If not, write to the
 Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-02111-1307 USA. 
+02111-1307 USA.
 
 Linking this library statically or dynamically with other modules is
 making a combined work based on this library.  Thus, the terms and
@@ -61,13 +61,13 @@ public class TypeImpl implements Type, WritableType {
    public ClassDoc asClassDoc() {
 
       if (this instanceof ClassDoc)
-	 return ((ClassDocImpl)(ClassDoc)this).getBaseClassDoc();
+         return ((ClassDocImpl)(ClassDoc)this).getBaseClassDoc();
       else
-	 return null;
+         return null;
    }
 
    public String typeName() { return typeName; }
-   
+
    public String qualifiedTypeName() { return (packageName!=null)?(packageName+"."+typeName):(typeName); }
 
    public String dimension() { return dimension; }
@@ -98,7 +98,7 @@ public class TypeImpl implements Type, WritableType {
       primitiveNames = Collections.unmodifiableSet(_primitiveNames);
    }
 
-  public TypeVariable asTypeVariable() 
+  public TypeVariable asTypeVariable()
   {
     if (this instanceof TypeVariable)
       return (TypeVariable) this;

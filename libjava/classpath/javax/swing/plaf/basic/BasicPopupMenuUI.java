@@ -255,7 +255,7 @@ public class BasicPopupMenuUI extends PopupMenuUI
 
     /**
      * Finds the next child element that is enabled and visible.
-     * 
+     *
      * @param children the children to search through
      * @param start the start index
      * @param end the end index
@@ -282,7 +282,7 @@ public class BasicPopupMenuUI extends PopupMenuUI
 
     /**
      * Finds the previous child element that is enabled and visible.
-     * 
+     *
      * @param children the children to search through
      * @param start the start index
      * @param end the end index
@@ -349,7 +349,7 @@ public class BasicPopupMenuUI extends PopupMenuUI
       else
         {
           int popupIndex = len-1;
-          if (len > 2 
+          if (len > 2
               && (path[popupIndex] instanceof JPopupMenu
                   || path[--popupIndex] instanceof JPopupMenu)
                   && ! ((JMenu) path[popupIndex - 1]).isTopLevelMenu())
@@ -773,7 +773,7 @@ public class BasicPopupMenuUI extends PopupMenuUI
     am.put(action.getValue(Action.NAME), action);
     action = new NavigateAction("cancel");
     am.put(action.getValue(Action.NAME), action);
-    
+
     return am;
   }
 
@@ -916,7 +916,7 @@ public class BasicPopupMenuUI extends PopupMenuUI
      */
     public void popupMenuWillBecomeInvisible(PopupMenuEvent event)
     {
-      // remove listener that listens to component events fired 
+      // remove listener that listens to component events fired
       // by the top - level window that this popup belongs to.
       Component invoker = popupMenu.getInvoker();
       Component rootContainer = SwingUtilities.getRoot(invoker);
@@ -931,30 +931,30 @@ public class BasicPopupMenuUI extends PopupMenuUI
      */
     public void popupMenuWillBecomeVisible(PopupMenuEvent event)
     {
-      // Adds topWindowListener to top-level window to listener to 
+      // Adds topWindowListener to top-level window to listener to
       // ComponentEvents fired by it. We need to cancel this popup menu
       // if topWindow to which this popup belongs was resized or moved.
-      Component invoker = popupMenu.getInvoker();            
+      Component invoker = popupMenu.getInvoker();
       Component rootContainer = SwingUtilities.getRoot(invoker);
       if (rootContainer != null)
         rootContainer.addComponentListener(topWindowListener);
 
       // if this popup menu is a free floating popup menu,
       // then by default its first element should be always selected when
-      // this popup menu becomes visible. 
+      // this popup menu becomes visible.
       MenuSelectionManager manager = MenuSelectionManager.defaultManager();
 
       if (manager.getSelectedPath().length == 0)
         {
-	  // Set selected path to point to the first item in the popup menu
-	  MenuElement[] path = new MenuElement[2];
-	  path[0] = popupMenu;
-	  Component[] comps = popupMenu.getComponents();
-	  if (comps.length != 0 && comps[0] instanceof MenuElement)
-	    {
-	      path[1] = (MenuElement) comps[0];
-	      manager.setSelectedPath(path);
-	    }
+          // Set selected path to point to the first item in the popup menu
+          MenuElement[] path = new MenuElement[2];
+          path[0] = popupMenu;
+          Component[] comps = popupMenu.getComponents();
+          if (comps.length != 0 && comps[0] instanceof MenuElement)
+            {
+              path[1] = (MenuElement) comps[0];
+              manager.setSelectedPath(path);
+            }
         }
     }
   }

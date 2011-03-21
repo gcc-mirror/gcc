@@ -56,7 +56,7 @@ public interface RuntimeMXBean
    * Returns the boot classpath used by the virtual machine.  This
    * value follows the standard path syntax used by the underlying
    * operating system (e.g. directories separated by ':' on UNIX
-   * or ';' on Windows). 
+   * or ';' on Windows).
    * </p>
    * <p>
    * Supplying this value is optional.  Users should check the
@@ -81,7 +81,7 @@ public interface RuntimeMXBean
    * property via {@link System#getProperty(String)}.  This value
    * follows the standard path syntax used by the underlying operating
    * system (e.g. directories separated by ':' on UNIX or ';' on
-   * Windows). 
+   * Windows).
    *
    * @return the classpath used by the system class loader.
    * @throws SecurityException if a security manager exists which
@@ -114,7 +114,7 @@ public interface RuntimeMXBean
    * {@link System#getProperty(String)}.  This value follows the
    * standard path syntax used by the underlying operating
    * system (e.g. directories separated by ':' on UNIX or ';' on
-   * Windows). 
+   * Windows).
    *
    * @return the library path.
    * @throws SecurityException if a security manager exists which
@@ -142,7 +142,7 @@ public interface RuntimeMXBean
    * same virtual machine (for example, it might include
    * the process identifier or the host name of the machine
    * on which it is running).  The intention is that this
-   * name refers to the precise entity that the other data 
+   * name refers to the precise entity that the other data
    * supplied by this bean refers to, rather than the VM
    * in general.
    *
@@ -154,7 +154,7 @@ public interface RuntimeMXBean
    * Returns the specification name of the virtual machine.
    * This is equivalent to obtaining the
    * <code>java.vm.specification.name</code> property via
-   * {@link System#getProperty(String)}.  
+   * {@link System#getProperty(String)}.
    *
    * @return the specification name of the VM.
    * @throws SecurityException if a security manager exists which
@@ -169,7 +169,7 @@ public interface RuntimeMXBean
    * Returns the specification vendor of the virtual machine.
    * This is equivalent to obtaining the
    * <code>java.vm.specification.vendor</code> property via
-   * {@link System#getProperty(String)}.  
+   * {@link System#getProperty(String)}.
    *
    * @return the specification vendor of the VM.
    * @throws SecurityException if a security manager exists which
@@ -184,7 +184,7 @@ public interface RuntimeMXBean
    * Returns the specification version of the virtual machine.
    * This is equivalent to obtaining the
    * <code>java.vm.specification.version</code> property via
-   * {@link System#getProperty(String)}.  
+   * {@link System#getProperty(String)}.
    *
    * @return the specification version of the VM.
    * @throws SecurityException if a security manager exists which
@@ -198,7 +198,7 @@ public interface RuntimeMXBean
   /**
    * Returns the approximate start time of the virtual machine
    * in milliseconds.
-   * 
+   *
    * @return the start time of the virtual machine.
    */
   long getStartTime();
@@ -216,7 +216,7 @@ public interface RuntimeMXBean
 
   /**
    * Returns the uptime of the virtual machine in milliseconds.
-   * 
+   *
    * @return the uptime of the virtual machine.
    */
   long getUptime();
@@ -225,7 +225,7 @@ public interface RuntimeMXBean
    * Returns the implementation name of the virtual machine.
    * This is equivalent to obtaining the
    * <code>java.vm.name</code> property via
-   * {@link System#getProperty(String)}.  
+   * {@link System#getProperty(String)}.
    *
    * @return the implementation name of the VM.
    * @throws SecurityException if a security manager exists which
@@ -240,7 +240,7 @@ public interface RuntimeMXBean
    * Returns the implementation vendor of the virtual machine.
    * This is equivalent to obtaining the
    * <code>java.vm.vendor</code> property via
-   * {@link System#getProperty(String)}.  
+   * {@link System#getProperty(String)}.
    *
    * @return the implementation vendor of the VM.
    * @throws SecurityException if a security manager exists which
@@ -255,7 +255,7 @@ public interface RuntimeMXBean
    * Returns the implementation version of the virtual machine.
    * This is equivalent to obtaining the
    * <code>java.vm.version</code> property via
-   * {@link System#getProperty(String)}.  
+   * {@link System#getProperty(String)}.
    *
    * @return the implementation version of the VM.
    * @throws SecurityException if a security manager exists which

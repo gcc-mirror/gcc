@@ -1,8 +1,8 @@
 /* Implementation of the CTIME and FDATE g77 intrinsics.
-   Copyright (C) 2005, 2007, 2009 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2007, 2009, 2011 Free Software Foundation, Inc.
    Contributed by François-Xavier Coudert <coudert@clipper.ens.fr>
 
-This file is part of the GNU Fortran 95 runtime library (libgfortran).
+This file is part of the GNU Fortran runtime library (libgfortran).
 
 Libgfortran is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public
@@ -25,21 +25,40 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #include "libgfortran.h"
 
-#ifdef TIME_WITH_SYS_TIME
-#  include <sys/time.h>
-#  include <time.h>
-#else
-#  if HAVE_SYS_TIME_H
-#    include <sys/time.h>
-#  else
-#    ifdef HAVE_TIME_H
-#      include <time.h>
-#    endif
-#  endif
-#endif
+#include "time_1.h"
 
 #include <string.h>
 
+
+/* strftime-like function that fills a C string with %c format which
+   is identical to ctime in the default locale. As ctime and ctime_r
+   are poorly specified and their usage not recommended, the
+   implementation instead uses strftime.  */
+
+static size_t
+strctime (char *s, size_t max, const time_t *timep)
+{
+#ifdef HAVE_STRFTIME
+  struct tm ltm;
+  int failed;
+  /* Some targets provide a localtime_r based on a draft of the POSIX
+     standard where the return type is int rather than the
+     standardized struct tm*.  */
+  __builtin_choose_expr (__builtin_classify_type (localtime_r (timep, &ltm)) 
+			 == 5,
+			 failed = localtime_r (timep, &ltm) == NULL,
+			 failed = localtime_r (timep, &ltm) != 0);
+  if (failed)
+    return 0;
+  return strftime (s, max, "%c", &ltm);
+#else
+  return 0;
+#endif
+}
+
+/* In the default locale, the date and time representation fits in 26
+   bytes. However, other locales might need more space.  */
+#define CSZ 100
 
 extern void fdate (char **, gfc_charlen_type *);
 export_proto(fdate);
@@ -47,28 +66,15 @@ export_proto(fdate);
 void
 fdate (char ** date, gfc_charlen_type * date_len)
 {
-#if defined(HAVE_TIME) && defined(HAVE_CTIME)
-  int i;
+#if defined(HAVE_TIME)
   time_t now = time(NULL);
-  *date = ctime (&now);
-  if (*date != NULL)
-    {
-      *date = strdup (*date);
-      *date_len = strlen (*date);
-
-      i = 0;
-      while ((*date)[i])
-       {
-         if ((*date)[i] == '\n')
-           (*date)[i] = ' ';
-         i++;
-       }
-      return;
-    }
-#endif
+  *date = get_mem (CSZ);
+  *date_len = strctime (*date, CSZ, &now);
+#else
 
   *date = NULL;
   *date_len = 0;
+#endif
 }
 
 
@@ -78,21 +84,14 @@ export_proto(fdate_sub);
 void
 fdate_sub (char * date, gfc_charlen_type date_len)
 {
-#if defined(HAVE_TIME) && defined(HAVE_CTIME)
-  int i;
-  char *d;
+#if defined(HAVE_TIME)
   time_t now = time(NULL);
-#endif
-  
+  char *s = get_mem (date_len + 1);
+  size_t n = strctime (s, date_len + 1, &now);
+  fstrcpy (date, date_len, s, n);
+  free (s);
+#else
   memset (date, ' ', date_len);
-#if defined(HAVE_TIME) && defined(HAVE_CTIME)
-  d = ctime (&now);
-  if (d != NULL)
-    {
-      i = 0;
-      while (*d && *d != '\n' && i < date_len)
-       date[i++] = *(d++);
-    }
 #endif
 }
 
@@ -104,28 +103,15 @@ export_proto_np(PREFIX(ctime));
 void
 PREFIX(ctime) (char ** date, gfc_charlen_type * date_len, GFC_INTEGER_8 t)
 {
-#if defined(HAVE_CTIME)
+#if defined(HAVE_TIME)
   time_t now = t;
-  int i;
-  *date = ctime (&now);
-  if (*date != NULL)
-    {
-      *date = strdup (*date);
-      *date_len = strlen (*date);
-
-      i = 0;
-      while ((*date)[i])
-       {
-         if ((*date)[i] == '\n')
-           (*date)[i] = ' ';
-         i++;
-       }
-      return;
-    }
-#endif
+  *date = get_mem (CSZ);
+  *date_len = strctime (*date, CSZ, &now);
+#else
 
   *date = NULL;
   *date_len = 0;
+#endif
 }
 
 
@@ -135,20 +121,9 @@ export_proto(ctime_sub);
 void
 ctime_sub (GFC_INTEGER_8 * t, char * date, gfc_charlen_type date_len)
 {
-#if defined(HAVE_CTIME)
-  int i;
-  char *d;
   time_t now = *t;
-#endif
-  
-  memset (date, ' ', date_len);
-#if defined(HAVE_CTIME)
-  d = ctime (&now);
-  if (d != NULL)
-    {
-      i = 0;
-      while (*d && *d != '\n' && i < date_len)
-       date[i++] = *(d++);
-    }
-#endif
+  char *s = get_mem (date_len + 1);
+  size_t n = strctime (s, date_len + 1, &now);
+  fstrcpy (date, date_len, s, n);
+  free (s);
 }

@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O2" } */
+/* { dg-require-effective-target nonpic } */
 /* { dg-final { scan-assembler-not "12345" } } */
 
 static inline unsigned int myrnd (void)

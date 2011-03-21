@@ -68,7 +68,7 @@ public abstract class SynthPainter
    *        painting
    * @param g the graphics context to use for painting
    * @param x the X coordinate of the area to paint
-   * @param y the Y coordinate of the area to paint 
+   * @param y the Y coordinate of the area to paint
    * @param w the width of the area to paint
    * @param h the height of the area to paint
    * @param dir the orientation of the arrow
@@ -86,7 +86,7 @@ public abstract class SynthPainter
    *        painting
    * @param g the graphics context to use for painting
    * @param x the X coordinate of the area to paint
-   * @param y the Y coordinate of the area to paint 
+   * @param y the Y coordinate of the area to paint
    * @param w the width of the area to paint
    * @param h the height of the area to paint
    * @param dir the orientation of the progress bar
@@ -105,7 +105,7 @@ public abstract class SynthPainter
    *        painting
    * @param g the graphics context to use for painting
    * @param x the X coordinate of the area to paint
-   * @param y the Y coordinate of the area to paint 
+   * @param y the Y coordinate of the area to paint
    * @param w the width of the area to paint
    * @param h the height of the area to paint
    * @param dir the orientation of the separator
@@ -124,7 +124,7 @@ public abstract class SynthPainter
    *        painting
    * @param g the graphics context to use for painting
    * @param x the X coordinate of the area to paint
-   * @param y the Y coordinate of the area to paint 
+   * @param y the Y coordinate of the area to paint
    * @param w the width of the area to paint
    * @param h the height of the area to paint
    * @param dir the orientation of the divider
@@ -143,7 +143,7 @@ public abstract class SynthPainter
    *        painting
    * @param g the graphics context to use for painting
    * @param x the X coordinate of the area to paint
-   * @param y the Y coordinate of the area to paint 
+   * @param y the Y coordinate of the area to paint
    * @param w the width of the area to paint
    * @param h the height of the area to paint
    * @param dir the orientation of the divider
@@ -162,7 +162,7 @@ public abstract class SynthPainter
    *        painting
    * @param g the graphics context to use for painting
    * @param x the X coordinate of the area to paint
-   * @param y the Y coordinate of the area to paint 
+   * @param y the Y coordinate of the area to paint
    * @param w the width of the area to paint
    * @param h the height of the area to paint
    */
@@ -179,7 +179,7 @@ public abstract class SynthPainter
    *        painting
    * @param g the graphics context to use for painting
    * @param x the X coordinate of the area to paint
-   * @param y the Y coordinate of the area to paint 
+   * @param y the Y coordinate of the area to paint
    * @param w the width of the area to paint
    * @param h the height of the area to paint
    */
@@ -196,7 +196,7 @@ public abstract class SynthPainter
    *        painting
    * @param g the graphics context to use for painting
    * @param x the X coordinate of the area to paint
-   * @param y the Y coordinate of the area to paint 
+   * @param y the Y coordinate of the area to paint
    * @param w the width of the area to paint
    * @param h the height of the area to paint
    */
@@ -213,7 +213,7 @@ public abstract class SynthPainter
    *        painting
    * @param g the graphics context to use for painting
    * @param x the X coordinate of the area to paint
-   * @param y the Y coordinate of the area to paint 
+   * @param y the Y coordinate of the area to paint
    * @param w the width of the area to paint
    * @param h the height of the area to paint
    */
@@ -230,7 +230,7 @@ public abstract class SynthPainter
    *        painting
    * @param g the graphics context to use for painting
    * @param x the X coordinate of the area to paint
-   * @param y the Y coordinate of the area to paint 
+   * @param y the Y coordinate of the area to paint
    * @param w the width of the area to paint
    * @param h the height of the area to paint
    */
@@ -247,7 +247,7 @@ public abstract class SynthPainter
    *        painting
    * @param g the graphics context to use for painting
    * @param x the X coordinate of the area to paint
-   * @param y the Y coordinate of the area to paint 
+   * @param y the Y coordinate of the area to paint
    * @param w the width of the area to paint
    * @param h the height of the area to paint
    */
@@ -264,7 +264,7 @@ public abstract class SynthPainter
    *        painting
    * @param g the graphics context to use for painting
    * @param x the X coordinate of the area to paint
-   * @param y the Y coordinate of the area to paint 
+   * @param y the Y coordinate of the area to paint
    * @param w the width of the area to paint
    * @param h the height of the area to paint
    */
@@ -281,7 +281,7 @@ public abstract class SynthPainter
    *        painting
    * @param g the graphics context to use for painting
    * @param x the X coordinate of the area to paint
-   * @param y the Y coordinate of the area to paint 
+   * @param y the Y coordinate of the area to paint
    * @param w the width of the area to paint
    * @param h the height of the area to paint
    */
@@ -298,7 +298,7 @@ public abstract class SynthPainter
    *        painting
    * @param g the graphics context to use for painting
    * @param x the X coordinate of the area to paint
-   * @param y the Y coordinate of the area to paint 
+   * @param y the Y coordinate of the area to paint
    * @param w the width of the area to paint
    * @param h the height of the area to paint
    */
@@ -315,7 +315,7 @@ public abstract class SynthPainter
    *        painting
    * @param g the graphics context to use for painting
    * @param x the X coordinate of the area to paint
-   * @param y the Y coordinate of the area to paint 
+   * @param y the Y coordinate of the area to paint
    * @param w the width of the area to paint
    * @param h the height of the area to paint
    */
@@ -332,7 +332,7 @@ public abstract class SynthPainter
    *        painting
    * @param g the graphics context to use for painting
    * @param x the X coordinate of the area to paint
-   * @param y the Y coordinate of the area to paint 
+   * @param y the Y coordinate of the area to paint
    * @param w the width of the area to paint
    * @param h the height of the area to paint
    */
@@ -349,7 +349,7 @@ public abstract class SynthPainter
    *        painting
    * @param g the graphics context to use for painting
    * @param x the X coordinate of the area to paint
-   * @param y the Y coordinate of the area to paint 
+   * @param y the Y coordinate of the area to paint
    * @param w the width of the area to paint
    * @param h the height of the area to paint
    */
@@ -366,7 +366,7 @@ public abstract class SynthPainter
    *        painting
    * @param g the graphics context to use for painting
    * @param x the X coordinate of the area to paint
-   * @param y the Y coordinate of the area to paint 
+   * @param y the Y coordinate of the area to paint
    * @param w the width of the area to paint
    * @param h the height of the area to paint
    */
@@ -383,7 +383,7 @@ public abstract class SynthPainter
    *        painting
    * @param g the graphics context to use for painting
    * @param x the X coordinate of the area to paint
-   * @param y the Y coordinate of the area to paint 
+   * @param y the Y coordinate of the area to paint
    * @param w the width of the area to paint
    * @param h the height of the area to paint
    */
@@ -400,7 +400,7 @@ public abstract class SynthPainter
    *        painting
    * @param g the graphics context to use for painting
    * @param x the X coordinate of the area to paint
-   * @param y the Y coordinate of the area to paint 
+   * @param y the Y coordinate of the area to paint
    * @param w the width of the area to paint
    * @param h the height of the area to paint
    */
@@ -417,7 +417,7 @@ public abstract class SynthPainter
    *        painting
    * @param g the graphics context to use for painting
    * @param x the X coordinate of the area to paint
-   * @param y the Y coordinate of the area to paint 
+   * @param y the Y coordinate of the area to paint
    * @param w the width of the area to paint
    * @param h the height of the area to paint
    */
@@ -434,7 +434,7 @@ public abstract class SynthPainter
    *        painting
    * @param g the graphics context to use for painting
    * @param x the X coordinate of the area to paint
-   * @param y the Y coordinate of the area to paint 
+   * @param y the Y coordinate of the area to paint
    * @param w the width of the area to paint
    * @param h the height of the area to paint
    */
@@ -451,7 +451,7 @@ public abstract class SynthPainter
    *        painting
    * @param g the graphics context to use for painting
    * @param x the X coordinate of the area to paint
-   * @param y the Y coordinate of the area to paint 
+   * @param y the Y coordinate of the area to paint
    * @param w the width of the area to paint
    * @param h the height of the area to paint
    */
@@ -468,7 +468,7 @@ public abstract class SynthPainter
    *        painting
    * @param g the graphics context to use for painting
    * @param x the X coordinate of the area to paint
-   * @param y the Y coordinate of the area to paint 
+   * @param y the Y coordinate of the area to paint
    * @param w the width of the area to paint
    * @param h the height of the area to paint
    */
@@ -485,7 +485,7 @@ public abstract class SynthPainter
    *        painting
    * @param g the graphics context to use for painting
    * @param x the X coordinate of the area to paint
-   * @param y the Y coordinate of the area to paint 
+   * @param y the Y coordinate of the area to paint
    * @param w the width of the area to paint
    * @param h the height of the area to paint
    */
@@ -502,7 +502,7 @@ public abstract class SynthPainter
    *        painting
    * @param g the graphics context to use for painting
    * @param x the X coordinate of the area to paint
-   * @param y the Y coordinate of the area to paint 
+   * @param y the Y coordinate of the area to paint
    * @param w the width of the area to paint
    * @param h the height of the area to paint
    */
@@ -519,7 +519,7 @@ public abstract class SynthPainter
    *        painting
    * @param g the graphics context to use for painting
    * @param x the X coordinate of the area to paint
-   * @param y the Y coordinate of the area to paint 
+   * @param y the Y coordinate of the area to paint
    * @param w the width of the area to paint
    * @param h the height of the area to paint
    */
@@ -536,7 +536,7 @@ public abstract class SynthPainter
    *        painting
    * @param g the graphics context to use for painting
    * @param x the X coordinate of the area to paint
-   * @param y the Y coordinate of the area to paint 
+   * @param y the Y coordinate of the area to paint
    * @param w the width of the area to paint
    * @param h the height of the area to paint
    */
@@ -553,7 +553,7 @@ public abstract class SynthPainter
    *        painting
    * @param g the graphics context to use for painting
    * @param x the X coordinate of the area to paint
-   * @param y the Y coordinate of the area to paint 
+   * @param y the Y coordinate of the area to paint
    * @param w the width of the area to paint
    * @param h the height of the area to paint
    */
@@ -570,7 +570,7 @@ public abstract class SynthPainter
    *        painting
    * @param g the graphics context to use for painting
    * @param x the X coordinate of the area to paint
-   * @param y the Y coordinate of the area to paint 
+   * @param y the Y coordinate of the area to paint
    * @param w the width of the area to paint
    * @param h the height of the area to paint
    */
@@ -587,7 +587,7 @@ public abstract class SynthPainter
    *        painting
    * @param g the graphics context to use for painting
    * @param x the X coordinate of the area to paint
-   * @param y the Y coordinate of the area to paint 
+   * @param y the Y coordinate of the area to paint
    * @param w the width of the area to paint
    * @param h the height of the area to paint
    */
@@ -604,7 +604,7 @@ public abstract class SynthPainter
    *        painting
    * @param g the graphics context to use for painting
    * @param x the X coordinate of the area to paint
-   * @param y the Y coordinate of the area to paint 
+   * @param y the Y coordinate of the area to paint
    * @param w the width of the area to paint
    * @param h the height of the area to paint
    */
@@ -621,7 +621,7 @@ public abstract class SynthPainter
    *        painting
    * @param g the graphics context to use for painting
    * @param x the X coordinate of the area to paint
-   * @param y the Y coordinate of the area to paint 
+   * @param y the Y coordinate of the area to paint
    * @param w the width of the area to paint
    * @param h the height of the area to paint
    */
@@ -638,7 +638,7 @@ public abstract class SynthPainter
    *        painting
    * @param g the graphics context to use for painting
    * @param x the X coordinate of the area to paint
-   * @param y the Y coordinate of the area to paint 
+   * @param y the Y coordinate of the area to paint
    * @param w the width of the area to paint
    * @param h the height of the area to paint
    */
@@ -655,7 +655,7 @@ public abstract class SynthPainter
    *        painting
    * @param g the graphics context to use for painting
    * @param x the X coordinate of the area to paint
-   * @param y the Y coordinate of the area to paint 
+   * @param y the Y coordinate of the area to paint
    * @param w the width of the area to paint
    * @param h the height of the area to paint
    */
@@ -672,7 +672,7 @@ public abstract class SynthPainter
    *        painting
    * @param g the graphics context to use for painting
    * @param x the X coordinate of the area to paint
-   * @param y the Y coordinate of the area to paint 
+   * @param y the Y coordinate of the area to paint
    * @param w the width of the area to paint
    * @param h the height of the area to paint
    */
@@ -689,7 +689,7 @@ public abstract class SynthPainter
    *        painting
    * @param g the graphics context to use for painting
    * @param x the X coordinate of the area to paint
-   * @param y the Y coordinate of the area to paint 
+   * @param y the Y coordinate of the area to paint
    * @param w the width of the area to paint
    * @param h the height of the area to paint
    */
@@ -706,7 +706,7 @@ public abstract class SynthPainter
    *        painting
    * @param g the graphics context to use for painting
    * @param x the X coordinate of the area to paint
-   * @param y the Y coordinate of the area to paint 
+   * @param y the Y coordinate of the area to paint
    * @param w the width of the area to paint
    * @param h the height of the area to paint
    */
@@ -723,7 +723,7 @@ public abstract class SynthPainter
    *        painting
    * @param g the graphics context to use for painting
    * @param x the X coordinate of the area to paint
-   * @param y the Y coordinate of the area to paint 
+   * @param y the Y coordinate of the area to paint
    * @param w the width of the area to paint
    * @param h the height of the area to paint
    */
@@ -740,7 +740,7 @@ public abstract class SynthPainter
    *        painting
    * @param g the graphics context to use for painting
    * @param x the X coordinate of the area to paint
-   * @param y the Y coordinate of the area to paint 
+   * @param y the Y coordinate of the area to paint
    * @param w the width of the area to paint
    * @param h the height of the area to paint
    */
@@ -757,7 +757,7 @@ public abstract class SynthPainter
    *        painting
    * @param g the graphics context to use for painting
    * @param x the X coordinate of the area to paint
-   * @param y the Y coordinate of the area to paint 
+   * @param y the Y coordinate of the area to paint
    * @param w the width of the area to paint
    * @param h the height of the area to paint
    */
@@ -774,7 +774,7 @@ public abstract class SynthPainter
    *        painting
    * @param g the graphics context to use for painting
    * @param x the X coordinate of the area to paint
-   * @param y the Y coordinate of the area to paint 
+   * @param y the Y coordinate of the area to paint
    * @param w the width of the area to paint
    * @param h the height of the area to paint
    */
@@ -791,7 +791,7 @@ public abstract class SynthPainter
    *        painting
    * @param g the graphics context to use for painting
    * @param x the X coordinate of the area to paint
-   * @param y the Y coordinate of the area to paint 
+   * @param y the Y coordinate of the area to paint
    * @param w the width of the area to paint
    * @param h the height of the area to paint
    */
@@ -808,7 +808,7 @@ public abstract class SynthPainter
    *        painting
    * @param g the graphics context to use for painting
    * @param x the X coordinate of the area to paint
-   * @param y the Y coordinate of the area to paint 
+   * @param y the Y coordinate of the area to paint
    * @param w the width of the area to paint
    * @param h the height of the area to paint
    */
@@ -825,7 +825,7 @@ public abstract class SynthPainter
    *        painting
    * @param g the graphics context to use for painting
    * @param x the X coordinate of the area to paint
-   * @param y the Y coordinate of the area to paint 
+   * @param y the Y coordinate of the area to paint
    * @param w the width of the area to paint
    * @param h the height of the area to paint
    */
@@ -842,7 +842,7 @@ public abstract class SynthPainter
    *        painting
    * @param g the graphics context to use for painting
    * @param x the X coordinate of the area to paint
-   * @param y the Y coordinate of the area to paint 
+   * @param y the Y coordinate of the area to paint
    * @param w the width of the area to paint
    * @param h the height of the area to paint
    */
@@ -859,7 +859,7 @@ public abstract class SynthPainter
    *        painting
    * @param g the graphics context to use for painting
    * @param x the X coordinate of the area to paint
-   * @param y the Y coordinate of the area to paint 
+   * @param y the Y coordinate of the area to paint
    * @param w the width of the area to paint
    * @param h the height of the area to paint
    */
@@ -876,7 +876,7 @@ public abstract class SynthPainter
    *        painting
    * @param g the graphics context to use for painting
    * @param x the X coordinate of the area to paint
-   * @param y the Y coordinate of the area to paint 
+   * @param y the Y coordinate of the area to paint
    * @param w the width of the area to paint
    * @param h the height of the area to paint
    */
@@ -893,7 +893,7 @@ public abstract class SynthPainter
    *        painting
    * @param g the graphics context to use for painting
    * @param x the X coordinate of the area to paint
-   * @param y the Y coordinate of the area to paint 
+   * @param y the Y coordinate of the area to paint
    * @param w the width of the area to paint
    * @param h the height of the area to paint
    */
@@ -910,7 +910,7 @@ public abstract class SynthPainter
    *        painting
    * @param g the graphics context to use for painting
    * @param x the X coordinate of the area to paint
-   * @param y the Y coordinate of the area to paint 
+   * @param y the Y coordinate of the area to paint
    * @param w the width of the area to paint
    * @param h the height of the area to paint
    */
@@ -927,7 +927,7 @@ public abstract class SynthPainter
    *        painting
    * @param g the graphics context to use for painting
    * @param x the X coordinate of the area to paint
-   * @param y the Y coordinate of the area to paint 
+   * @param y the Y coordinate of the area to paint
    * @param w the width of the area to paint
    * @param h the height of the area to paint
    */
@@ -944,7 +944,7 @@ public abstract class SynthPainter
    *        painting
    * @param g the graphics context to use for painting
    * @param x the X coordinate of the area to paint
-   * @param y the Y coordinate of the area to paint 
+   * @param y the Y coordinate of the area to paint
    * @param w the width of the area to paint
    * @param h the height of the area to paint
    */
@@ -961,7 +961,7 @@ public abstract class SynthPainter
    *        painting
    * @param g the graphics context to use for painting
    * @param x the X coordinate of the area to paint
-   * @param y the Y coordinate of the area to paint 
+   * @param y the Y coordinate of the area to paint
    * @param w the width of the area to paint
    * @param h the height of the area to paint
    */
@@ -978,7 +978,7 @@ public abstract class SynthPainter
    *        painting
    * @param g the graphics context to use for painting
    * @param x the X coordinate of the area to paint
-   * @param y the Y coordinate of the area to paint 
+   * @param y the Y coordinate of the area to paint
    * @param w the width of the area to paint
    * @param h the height of the area to paint
    */
@@ -995,7 +995,7 @@ public abstract class SynthPainter
    *        painting
    * @param g the graphics context to use for painting
    * @param x the X coordinate of the area to paint
-   * @param y the Y coordinate of the area to paint 
+   * @param y the Y coordinate of the area to paint
    * @param w the width of the area to paint
    * @param h the height of the area to paint
    */
@@ -1012,7 +1012,7 @@ public abstract class SynthPainter
    *        painting
    * @param g the graphics context to use for painting
    * @param x the X coordinate of the area to paint
-   * @param y the Y coordinate of the area to paint 
+   * @param y the Y coordinate of the area to paint
    * @param w the width of the area to paint
    * @param h the height of the area to paint
    */
@@ -1029,7 +1029,7 @@ public abstract class SynthPainter
    *        painting
    * @param g the graphics context to use for painting
    * @param x the X coordinate of the area to paint
-   * @param y the Y coordinate of the area to paint 
+   * @param y the Y coordinate of the area to paint
    * @param w the width of the area to paint
    * @param h the height of the area to paint
    */
@@ -1046,7 +1046,7 @@ public abstract class SynthPainter
    *        painting
    * @param g the graphics context to use for painting
    * @param x the X coordinate of the area to paint
-   * @param y the Y coordinate of the area to paint 
+   * @param y the Y coordinate of the area to paint
    * @param w the width of the area to paint
    * @param h the height of the area to paint
    */
@@ -1063,7 +1063,7 @@ public abstract class SynthPainter
    *        painting
    * @param g the graphics context to use for painting
    * @param x the X coordinate of the area to paint
-   * @param y the Y coordinate of the area to paint 
+   * @param y the Y coordinate of the area to paint
    * @param w the width of the area to paint
    * @param h the height of the area to paint
    */
@@ -1080,7 +1080,7 @@ public abstract class SynthPainter
    *        painting
    * @param g the graphics context to use for painting
    * @param x the X coordinate of the area to paint
-   * @param y the Y coordinate of the area to paint 
+   * @param y the Y coordinate of the area to paint
    * @param w the width of the area to paint
    * @param h the height of the area to paint
    */
@@ -1097,7 +1097,7 @@ public abstract class SynthPainter
    *        painting
    * @param g the graphics context to use for painting
    * @param x the X coordinate of the area to paint
-   * @param y the Y coordinate of the area to paint 
+   * @param y the Y coordinate of the area to paint
    * @param w the width of the area to paint
    * @param h the height of the area to paint
    * @param orientation orientation of the scrollbar
@@ -1115,7 +1115,7 @@ public abstract class SynthPainter
    *        painting
    * @param g the graphics context to use for painting
    * @param x the X coordinate of the area to paint
-   * @param y the Y coordinate of the area to paint 
+   * @param y the Y coordinate of the area to paint
    * @param w the width of the area to paint
    * @param h the height of the area to paint
    * @param orientation orientation of the scrollbar
@@ -1133,7 +1133,7 @@ public abstract class SynthPainter
    *        painting
    * @param g the graphics context to use for painting
    * @param x the X coordinate of the area to paint
-   * @param y the Y coordinate of the area to paint 
+   * @param y the Y coordinate of the area to paint
    * @param w the width of the area to paint
    * @param h the height of the area to paint
    */
@@ -1150,7 +1150,7 @@ public abstract class SynthPainter
    *        painting
    * @param g the graphics context to use for painting
    * @param x the X coordinate of the area to paint
-   * @param y the Y coordinate of the area to paint 
+   * @param y the Y coordinate of the area to paint
    * @param w the width of the area to paint
    * @param h the height of the area to paint
    */
@@ -1167,7 +1167,7 @@ public abstract class SynthPainter
    *        painting
    * @param g the graphics context to use for painting
    * @param x the X coordinate of the area to paint
-   * @param y the Y coordinate of the area to paint 
+   * @param y the Y coordinate of the area to paint
    * @param w the width of the area to paint
    * @param h the height of the area to paint
    */
@@ -1184,7 +1184,7 @@ public abstract class SynthPainter
    *        painting
    * @param g the graphics context to use for painting
    * @param x the X coordinate of the area to paint
-   * @param y the Y coordinate of the area to paint 
+   * @param y the Y coordinate of the area to paint
    * @param w the width of the area to paint
    * @param h the height of the area to paint
    */
@@ -1201,7 +1201,7 @@ public abstract class SynthPainter
    *        painting
    * @param g the graphics context to use for painting
    * @param x the X coordinate of the area to paint
-   * @param y the Y coordinate of the area to paint 
+   * @param y the Y coordinate of the area to paint
    * @param w the width of the area to paint
    * @param h the height of the area to paint
    */
@@ -1218,7 +1218,7 @@ public abstract class SynthPainter
    *        painting
    * @param g the graphics context to use for painting
    * @param x the X coordinate of the area to paint
-   * @param y the Y coordinate of the area to paint 
+   * @param y the Y coordinate of the area to paint
    * @param w the width of the area to paint
    * @param h the height of the area to paint
    */
@@ -1235,7 +1235,7 @@ public abstract class SynthPainter
    *        painting
    * @param g the graphics context to use for painting
    * @param x the X coordinate of the area to paint
-   * @param y the Y coordinate of the area to paint 
+   * @param y the Y coordinate of the area to paint
    * @param w the width of the area to paint
    * @param h the height of the area to paint
    */
@@ -1252,7 +1252,7 @@ public abstract class SynthPainter
    *        painting
    * @param g the graphics context to use for painting
    * @param x the X coordinate of the area to paint
-   * @param y the Y coordinate of the area to paint 
+   * @param y the Y coordinate of the area to paint
    * @param w the width of the area to paint
    * @param h the height of the area to paint
    */
@@ -1269,7 +1269,7 @@ public abstract class SynthPainter
    *        painting
    * @param g the graphics context to use for painting
    * @param x the X coordinate of the area to paint
-   * @param y the Y coordinate of the area to paint 
+   * @param y the Y coordinate of the area to paint
    * @param w the width of the area to paint
    * @param h the height of the area to paint
    * @param orientation orientation of the slider
@@ -1287,7 +1287,7 @@ public abstract class SynthPainter
    *        painting
    * @param g the graphics context to use for painting
    * @param x the X coordinate of the area to paint
-   * @param y the Y coordinate of the area to paint 
+   * @param y the Y coordinate of the area to paint
    * @param w the width of the area to paint
    * @param h the height of the area to paint
    * @param orientation orientation of the slider
@@ -1305,7 +1305,7 @@ public abstract class SynthPainter
    *        painting
    * @param g the graphics context to use for painting
    * @param x the X coordinate of the area to paint
-   * @param y the Y coordinate of the area to paint 
+   * @param y the Y coordinate of the area to paint
    * @param w the width of the area to paint
    * @param h the height of the area to paint
    */
@@ -1322,7 +1322,7 @@ public abstract class SynthPainter
    *        painting
    * @param g the graphics context to use for painting
    * @param x the X coordinate of the area to paint
-   * @param y the Y coordinate of the area to paint 
+   * @param y the Y coordinate of the area to paint
    * @param w the width of the area to paint
    * @param h the height of the area to paint
    */
@@ -1339,7 +1339,7 @@ public abstract class SynthPainter
    *        painting
    * @param g the graphics context to use for painting
    * @param x the X coordinate of the area to paint
-   * @param y the Y coordinate of the area to paint 
+   * @param y the Y coordinate of the area to paint
    * @param w the width of the area to paint
    * @param h the height of the area to paint
    */
@@ -1356,7 +1356,7 @@ public abstract class SynthPainter
    *        painting
    * @param g the graphics context to use for painting
    * @param x the X coordinate of the area to paint
-   * @param y the Y coordinate of the area to paint 
+   * @param y the Y coordinate of the area to paint
    * @param w the width of the area to paint
    * @param h the height of the area to paint
    */
@@ -1373,7 +1373,7 @@ public abstract class SynthPainter
    *        painting
    * @param g the graphics context to use for painting
    * @param x the X coordinate of the area to paint
-   * @param y the Y coordinate of the area to paint 
+   * @param y the Y coordinate of the area to paint
    * @param w the width of the area to paint
    * @param h the height of the area to paint
    */
@@ -1390,7 +1390,7 @@ public abstract class SynthPainter
    *        painting
    * @param g the graphics context to use for painting
    * @param x the X coordinate of the area to paint
-   * @param y the Y coordinate of the area to paint 
+   * @param y the Y coordinate of the area to paint
    * @param w the width of the area to paint
    * @param h the height of the area to paint
    */
@@ -1407,7 +1407,7 @@ public abstract class SynthPainter
    *        painting
    * @param g the graphics context to use for painting
    * @param x the X coordinate of the area to paint
-   * @param y the Y coordinate of the area to paint 
+   * @param y the Y coordinate of the area to paint
    * @param w the width of the area to paint
    * @param h the height of the area to paint
    */
@@ -1424,7 +1424,7 @@ public abstract class SynthPainter
    *        painting
    * @param g the graphics context to use for painting
    * @param x the X coordinate of the area to paint
-   * @param y the Y coordinate of the area to paint 
+   * @param y the Y coordinate of the area to paint
    * @param w the width of the area to paint
    * @param h the height of the area to paint
    */
@@ -1441,7 +1441,7 @@ public abstract class SynthPainter
    *        painting
    * @param g the graphics context to use for painting
    * @param x the X coordinate of the area to paint
-   * @param y the Y coordinate of the area to paint 
+   * @param y the Y coordinate of the area to paint
    * @param w the width of the area to paint
    * @param h the height of the area to paint
    */
@@ -1458,7 +1458,7 @@ public abstract class SynthPainter
    *        painting
    * @param g the graphics context to use for painting
    * @param x the X coordinate of the area to paint
-   * @param y the Y coordinate of the area to paint 
+   * @param y the Y coordinate of the area to paint
    * @param w the width of the area to paint
    * @param h the height of the area to paint
    */
@@ -1475,7 +1475,7 @@ public abstract class SynthPainter
    *        painting
    * @param g the graphics context to use for painting
    * @param x the X coordinate of the area to paint
-   * @param y the Y coordinate of the area to paint 
+   * @param y the Y coordinate of the area to paint
    * @param w the width of the area to paint
    * @param h the height of the area to paint
    */
@@ -1492,7 +1492,7 @@ public abstract class SynthPainter
    *        painting
    * @param g the graphics context to use for painting
    * @param x the X coordinate of the area to paint
-   * @param y the Y coordinate of the area to paint 
+   * @param y the Y coordinate of the area to paint
    * @param w the width of the area to paint
    * @param h the height of the area to paint
    */
@@ -1509,7 +1509,7 @@ public abstract class SynthPainter
    *        painting
    * @param g the graphics context to use for painting
    * @param x the X coordinate of the area to paint
-   * @param y the Y coordinate of the area to paint 
+   * @param y the Y coordinate of the area to paint
    * @param w the width of the area to paint
    * @param h the height of the area to paint
    */
@@ -1526,7 +1526,7 @@ public abstract class SynthPainter
    *        painting
    * @param g the graphics context to use for painting
    * @param x the X coordinate of the area to paint
-   * @param y the Y coordinate of the area to paint 
+   * @param y the Y coordinate of the area to paint
    * @param w the width of the area to paint
    * @param h the height of the area to paint
    * @param index the index of the tab to paint
@@ -1544,7 +1544,7 @@ public abstract class SynthPainter
    *        painting
    * @param g the graphics context to use for painting
    * @param x the X coordinate of the area to paint
-   * @param y the Y coordinate of the area to paint 
+   * @param y the Y coordinate of the area to paint
    * @param w the width of the area to paint
    * @param h the height of the area to paint
    * @param index the index of the tab to paint
@@ -1562,7 +1562,7 @@ public abstract class SynthPainter
    *        painting
    * @param g the graphics context to use for painting
    * @param x the X coordinate of the area to paint
-   * @param y the Y coordinate of the area to paint 
+   * @param y the Y coordinate of the area to paint
    * @param w the width of the area to paint
    * @param h the height of the area to paint
    */
@@ -1579,7 +1579,7 @@ public abstract class SynthPainter
    *        painting
    * @param g the graphics context to use for painting
    * @param x the X coordinate of the area to paint
-   * @param y the Y coordinate of the area to paint 
+   * @param y the Y coordinate of the area to paint
    * @param w the width of the area to paint
    * @param h the height of the area to paint
    */
@@ -1596,7 +1596,7 @@ public abstract class SynthPainter
    *        painting
    * @param g the graphics context to use for painting
    * @param x the X coordinate of the area to paint
-   * @param y the Y coordinate of the area to paint 
+   * @param y the Y coordinate of the area to paint
    * @param w the width of the area to paint
    * @param h the height of the area to paint
    */
@@ -1613,7 +1613,7 @@ public abstract class SynthPainter
    *        painting
    * @param g the graphics context to use for painting
    * @param x the X coordinate of the area to paint
-   * @param y the Y coordinate of the area to paint 
+   * @param y the Y coordinate of the area to paint
    * @param w the width of the area to paint
    * @param h the height of the area to paint
    */
@@ -1630,7 +1630,7 @@ public abstract class SynthPainter
    *        painting
    * @param g the graphics context to use for painting
    * @param x the X coordinate of the area to paint
-   * @param y the Y coordinate of the area to paint 
+   * @param y the Y coordinate of the area to paint
    * @param w the width of the area to paint
    * @param h the height of the area to paint
    */
@@ -1647,7 +1647,7 @@ public abstract class SynthPainter
    *        painting
    * @param g the graphics context to use for painting
    * @param x the X coordinate of the area to paint
-   * @param y the Y coordinate of the area to paint 
+   * @param y the Y coordinate of the area to paint
    * @param w the width of the area to paint
    * @param h the height of the area to paint
    */
@@ -1664,7 +1664,7 @@ public abstract class SynthPainter
    *        painting
    * @param g the graphics context to use for painting
    * @param x the X coordinate of the area to paint
-   * @param y the Y coordinate of the area to paint 
+   * @param y the Y coordinate of the area to paint
    * @param w the width of the area to paint
    * @param h the height of the area to paint
    */
@@ -1681,7 +1681,7 @@ public abstract class SynthPainter
    *        painting
    * @param g the graphics context to use for painting
    * @param x the X coordinate of the area to paint
-   * @param y the Y coordinate of the area to paint 
+   * @param y the Y coordinate of the area to paint
    * @param w the width of the area to paint
    * @param h the height of the area to paint
    */
@@ -1698,7 +1698,7 @@ public abstract class SynthPainter
    *        painting
    * @param g the graphics context to use for painting
    * @param x the X coordinate of the area to paint
-   * @param y the Y coordinate of the area to paint 
+   * @param y the Y coordinate of the area to paint
    * @param w the width of the area to paint
    * @param h the height of the area to paint
    */
@@ -1715,7 +1715,7 @@ public abstract class SynthPainter
    *        painting
    * @param g the graphics context to use for painting
    * @param x the X coordinate of the area to paint
-   * @param y the Y coordinate of the area to paint 
+   * @param y the Y coordinate of the area to paint
    * @param w the width of the area to paint
    * @param h the height of the area to paint
    */
@@ -1732,7 +1732,7 @@ public abstract class SynthPainter
    *        painting
    * @param g the graphics context to use for painting
    * @param x the X coordinate of the area to paint
-   * @param y the Y coordinate of the area to paint 
+   * @param y the Y coordinate of the area to paint
    * @param w the width of the area to paint
    * @param h the height of the area to paint
    */
@@ -1749,7 +1749,7 @@ public abstract class SynthPainter
    *        painting
    * @param g the graphics context to use for painting
    * @param x the X coordinate of the area to paint
-   * @param y the Y coordinate of the area to paint 
+   * @param y the Y coordinate of the area to paint
    * @param w the width of the area to paint
    * @param h the height of the area to paint
    */
@@ -1766,7 +1766,7 @@ public abstract class SynthPainter
    *        painting
    * @param g the graphics context to use for painting
    * @param x the X coordinate of the area to paint
-   * @param y the Y coordinate of the area to paint 
+   * @param y the Y coordinate of the area to paint
    * @param w the width of the area to paint
    * @param h the height of the area to paint
    */
@@ -1783,7 +1783,7 @@ public abstract class SynthPainter
    *        painting
    * @param g the graphics context to use for painting
    * @param x the X coordinate of the area to paint
-   * @param y the Y coordinate of the area to paint 
+   * @param y the Y coordinate of the area to paint
    * @param w the width of the area to paint
    * @param h the height of the area to paint
    */
@@ -1800,7 +1800,7 @@ public abstract class SynthPainter
    *        painting
    * @param g the graphics context to use for painting
    * @param x the X coordinate of the area to paint
-   * @param y the Y coordinate of the area to paint 
+   * @param y the Y coordinate of the area to paint
    * @param w the width of the area to paint
    * @param h the height of the area to paint
    */
@@ -1817,7 +1817,7 @@ public abstract class SynthPainter
    *        painting
    * @param g the graphics context to use for painting
    * @param x the X coordinate of the area to paint
-   * @param y the Y coordinate of the area to paint 
+   * @param y the Y coordinate of the area to paint
    * @param w the width of the area to paint
    * @param h the height of the area to paint
    */
@@ -1834,7 +1834,7 @@ public abstract class SynthPainter
    *        painting
    * @param g the graphics context to use for painting
    * @param x the X coordinate of the area to paint
-   * @param y the Y coordinate of the area to paint 
+   * @param y the Y coordinate of the area to paint
    * @param w the width of the area to paint
    * @param h the height of the area to paint
    */
@@ -1851,7 +1851,7 @@ public abstract class SynthPainter
    *        painting
    * @param g the graphics context to use for painting
    * @param x the X coordinate of the area to paint
-   * @param y the Y coordinate of the area to paint 
+   * @param y the Y coordinate of the area to paint
    * @param w the width of the area to paint
    * @param h the height of the area to paint
    */
@@ -1868,7 +1868,7 @@ public abstract class SynthPainter
    *        painting
    * @param g the graphics context to use for painting
    * @param x the X coordinate of the area to paint
-   * @param y the Y coordinate of the area to paint 
+   * @param y the Y coordinate of the area to paint
    * @param w the width of the area to paint
    * @param h the height of the area to paint
    */
@@ -1885,7 +1885,7 @@ public abstract class SynthPainter
    *        painting
    * @param g the graphics context to use for painting
    * @param x the X coordinate of the area to paint
-   * @param y the Y coordinate of the area to paint 
+   * @param y the Y coordinate of the area to paint
    * @param w the width of the area to paint
    * @param h the height of the area to paint
    */
@@ -1902,7 +1902,7 @@ public abstract class SynthPainter
    *        painting
    * @param g the graphics context to use for painting
    * @param x the X coordinate of the area to paint
-   * @param y the Y coordinate of the area to paint 
+   * @param y the Y coordinate of the area to paint
    * @param w the width of the area to paint
    * @param h the height of the area to paint
    */
@@ -1919,7 +1919,7 @@ public abstract class SynthPainter
    *        painting
    * @param g the graphics context to use for painting
    * @param x the X coordinate of the area to paint
-   * @param y the Y coordinate of the area to paint 
+   * @param y the Y coordinate of the area to paint
    * @param w the width of the area to paint
    * @param h the height of the area to paint
    */
@@ -1936,7 +1936,7 @@ public abstract class SynthPainter
    *        painting
    * @param g the graphics context to use for painting
    * @param x the X coordinate of the area to paint
-   * @param y the Y coordinate of the area to paint 
+   * @param y the Y coordinate of the area to paint
    * @param w the width of the area to paint
    * @param h the height of the area to paint
    */
@@ -1953,7 +1953,7 @@ public abstract class SynthPainter
    *        painting
    * @param g the graphics context to use for painting
    * @param x the X coordinate of the area to paint
-   * @param y the Y coordinate of the area to paint 
+   * @param y the Y coordinate of the area to paint
    * @param w the width of the area to paint
    * @param h the height of the area to paint
    */
@@ -1970,7 +1970,7 @@ public abstract class SynthPainter
    *        painting
    * @param g the graphics context to use for painting
    * @param x the X coordinate of the area to paint
-   * @param y the Y coordinate of the area to paint 
+   * @param y the Y coordinate of the area to paint
    * @param w the width of the area to paint
    * @param h the height of the area to paint
    */
@@ -1987,7 +1987,7 @@ public abstract class SynthPainter
    *        painting
    * @param g the graphics context to use for painting
    * @param x the X coordinate of the area to paint
-   * @param y the Y coordinate of the area to paint 
+   * @param y the Y coordinate of the area to paint
    * @param w the width of the area to paint
    * @param h the height of the area to paint
    */

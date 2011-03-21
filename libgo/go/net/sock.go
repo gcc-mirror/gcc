@@ -47,15 +47,18 @@ func socket(net string, f, p, t int, la, ra syscall.Sockaddr, toAddr func(syscal
 	if la != nil {
 		e = syscall.Bind(s, la)
 		if e != 0 {
-			syscall.Close(s)
+			closesocket(s)
 			return nil, os.Errno(e)
 		}
 	}
 
 	if ra != nil {
 		e = syscall.Connect(s, ra)
+		for e == syscall.EINTR {
+			e = syscall.Connect(s, ra)
+		}
 		if e != 0 {
-			syscall.Close(s)
+			closesocket(s)
 			return nil, os.Errno(e)
 		}
 	}
@@ -67,7 +70,7 @@ func socket(net string, f, p, t int, la, ra syscall.Sockaddr, toAddr func(syscal
 
 	fd, err = newFD(s, f, p, net, laddr, raddr)
 	if err != nil {
-		syscall.Close(s)
+		closesocket(s)
 		return nil, err
 	}
 

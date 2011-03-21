@@ -130,8 +130,8 @@ public class GtkFramePeer extends GtkWindowPeer
       setMenuBarWidth (menuBar, menuBarWidth);
 
     super.setBounds(x, y, width, height + menuBarHeight);
-  }  
-  
+  }
+
   public void setResizable (boolean resizable)
   {
     // Call setSize; otherwise when resizable is changed from true to
@@ -144,7 +144,7 @@ public class GtkFramePeer extends GtkWindowPeer
   }
 
   protected void postInsetsChangedEvent (int top, int left,
-					 int bottom, int right)
+                                         int bottom, int right)
   {
     insets.top = top + menuBarHeight;
     insets.left = left;
@@ -174,15 +174,15 @@ public class GtkFramePeer extends GtkWindowPeer
 
   native void nativeSetIconImage (GtkImage image);
 
-  public void setIconImage (Image image) 
+  public void setIconImage (Image image)
   {
     if (image != null)
       {
         GtkImage gtkImage;
         if (image instanceof GtkImage)
           gtkImage = (GtkImage) image;
-	else
-	  gtkImage = new GtkImage(image.getSource());
+        else
+          gtkImage = new GtkImage(image.getSource());
 
         if (gtkImage.isLoaded && ! gtkImage.errorLoading)
           nativeSetIconImage(gtkImage);
@@ -236,7 +236,7 @@ public class GtkFramePeer extends GtkWindowPeer
   public void setBoundsPrivate(int x, int y, int width, int height)
   {
     // TODO Auto-generated method stub
-    
+
   }
 
   public boolean requestWindowFocus()
@@ -252,5 +252,3 @@ public class GtkFramePeer extends GtkWindowPeer
   }
 
 }
-
-

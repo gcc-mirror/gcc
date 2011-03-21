@@ -1,4 +1,4 @@
-/* DomDocumentBuilder.java -- 
+/* DomDocumentBuilder.java --
    Copyright (C) 2004,2006,2007 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -68,7 +68,7 @@ class DomDocumentBuilder
   final DOMImplementation impl;
   final DOMImplementationLS ls;
   final LSParser parser;
-  
+
   DomDocumentBuilder(DOMImplementation impl,
                      DOMImplementationLS ls,
                      LSParser parser)
@@ -83,7 +83,7 @@ class DomDocumentBuilder
     DOMConfiguration config = parser.getDomConfig();
     return ((Boolean) config.getParameter("namespaces")).booleanValue();
   }
-  
+
   public boolean isValidating()
   {
     DOMConfiguration config = parser.getDomConfig();
@@ -112,7 +112,7 @@ class DomDocumentBuilder
   {
     return impl;
   }
-  
+
   public Document newDocument()
   {
     return impl.createDocument(null, null, null);
@@ -225,4 +225,3 @@ class DomDocumentBuilder
   }
 
 }
-

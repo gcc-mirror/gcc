@@ -252,9 +252,6 @@ static /* GTY(()) */ frv_ifcvt_t frv_ifcvt;
 /* Map register number to smallest register class.  */
 enum reg_class regno_reg_class[FIRST_PSEUDO_REGISTER];
 
-/* Map class letter into register class.  */
-enum reg_class reg_class_from_letter[256];
-
 /* Cached value of frv_stack_info.  */
 static frv_stack_t *frv_stack_cache = (frv_stack_t *)0;
 
@@ -808,48 +805,6 @@ frv_option_override (void)
   /* Check for small data option */
   if (!global_options_set.x_g_switch_value && !TARGET_LIBPIC)
     g_switch_value = SDATA_DEFAULT_SIZE;
-
-  /* A C expression which defines the machine-dependent operand
-     constraint letters for register classes.  If CHAR is such a
-     letter, the value should be the register class corresponding to
-     it.  Otherwise, the value should be `NO_REGS'.  The register
-     letter `r', corresponding to class `GENERAL_REGS', will not be
-     passed to this macro; you do not need to handle it.
-
-     The following letters are unavailable, due to being used as
-     constraints:
-	'0'..'9'
-	'<', '>'
-	'E', 'F', 'G', 'H'
-	'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P'
-	'Q', 'R', 'S', 'T', 'U'
-	'V', 'X'
-	'g', 'i', 'm', 'n', 'o', 'p', 'r', 's' */
-
-  for (i = 0; i < 256; i++)
-    reg_class_from_letter[i] = NO_REGS;
-
-  reg_class_from_letter['a'] = ACC_REGS;
-  reg_class_from_letter['b'] = EVEN_ACC_REGS;
-  reg_class_from_letter['c'] = CC_REGS;
-  reg_class_from_letter['d'] = GPR_REGS;
-  reg_class_from_letter['e'] = EVEN_REGS;
-  reg_class_from_letter['f'] = FPR_REGS;
-  reg_class_from_letter['h'] = FEVEN_REGS;
-  reg_class_from_letter['l'] = LR_REG;
-  reg_class_from_letter['q'] = QUAD_REGS;
-  reg_class_from_letter['t'] = ICC_REGS;
-  reg_class_from_letter['u'] = FCC_REGS;
-  reg_class_from_letter['v'] = ICR_REGS;
-  reg_class_from_letter['w'] = FCR_REGS;
-  reg_class_from_letter['x'] = QUAD_FPR_REGS;
-  reg_class_from_letter['y'] = LCR_REG;
-  reg_class_from_letter['z'] = SPR_REGS;
-  reg_class_from_letter['A'] = QUAD_ACC_REGS;
-  reg_class_from_letter['B'] = ACCG_REGS;
-  reg_class_from_letter['C'] = CR_REGS;
-  reg_class_from_letter['W'] = FDPIC_CALL_REGS; /* gp14+15 */
-  reg_class_from_letter['Z'] = FDPIC_REGS; /* gp15 */
 
   /* There is no single unaligned SI op for PIC code.  Sometimes we
      need to use ".4byte" and sometimes we need to use ".picptr".

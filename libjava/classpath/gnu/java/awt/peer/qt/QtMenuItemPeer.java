@@ -43,7 +43,7 @@ import java.awt.event.ActionEvent;
 import java.awt.peer.MenuItemPeer;
 import java.awt.peer.CheckboxMenuItemPeer;
 
-public class QtMenuItemPeer extends QtMenuComponentPeer 
+public class QtMenuItemPeer extends QtMenuComponentPeer
   implements MenuItemPeer, CheckboxMenuItemPeer
 {
   public QtMenuItemPeer( QtToolkit toolkit, MenuItem owner )
@@ -73,15 +73,15 @@ public class QtMenuItemPeer extends QtMenuComponentPeer
   private void fireClick(int modifiers)
   {
     ActionEvent e = new ActionEvent(owner,
-				    ActionEvent.ACTION_PERFORMED,
-				    ((MenuItem)owner).getActionCommand(),
-				    System.currentTimeMillis(),
-				    (modifiers & 0x2FF));
+                                    ActionEvent.ACTION_PERFORMED,
+                                    ((MenuItem)owner).getActionCommand(),
+                                    System.currentTimeMillis(),
+                                    (modifiers & 0x2FF));
     QtToolkit.eventQueue.postEvent(e);
   }
 
   // ************ Public methods *********************
-  
+
   public void disable()
   {
     setEnabled(false);
@@ -98,10 +98,3 @@ public class QtMenuItemPeer extends QtMenuComponentPeer
 
   public native void setState(boolean state);
 }
-
-
-
-
-
-
-

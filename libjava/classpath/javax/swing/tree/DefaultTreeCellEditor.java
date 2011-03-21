@@ -68,7 +68,7 @@ import javax.swing.event.TreeSelectionListener;
 
 /**
  * Participates in the tree cell editing.
- * 
+ *
  * @author Andrew Selkirk
  * @author Audrius Meskauskas
  */
@@ -77,8 +77,8 @@ public class DefaultTreeCellEditor
 {
   /**
    * This container that appears on the tree during editing session.
-   * It contains the editing component displays various other editor - 
-   * specific parts like editing icon. 
+   * It contains the editing component displays various other editor -
+   * specific parts like editing icon.
    */
   public class EditorContainer extends Container
   {
@@ -86,7 +86,7 @@ public class DefaultTreeCellEditor
     * Use v 1.5 serial version UID for interoperability.
     */
     static final long serialVersionUID = 6470339600449699810L;
-    
+
     /**
      * Creates an <code>EditorContainer</code> object.
      */
@@ -103,11 +103,11 @@ public class DefaultTreeCellEditor
     {
       // Do nothing here.
     }
-   
+
     /**
      * Overrides Container.paint to paint the node's icon and use the selection
      * color for the background.
-     * 
+     *
      * @param g -
      *          the specified Graphics window
      */
@@ -175,8 +175,8 @@ public class DefaultTreeCellEditor
    /**
     * Use v 1.5 serial version UID for interoperability.
     */
-    static final long serialVersionUID = -6629304544265300143L; 
-    
+    static final long serialVersionUID = -6629304544265300143L;
+
     /**
      * The border of the text field.
      */
@@ -194,9 +194,9 @@ public class DefaultTreeCellEditor
 
     /**
      * Gets the font of this component.
-     * @return this component's font; if a font has not been set for 
+     * @return this component's font; if a font has not been set for
      * this component, the font of its parent is returned (if the parent
-     * is not null, otherwise null is returned). 
+     * is not null, otherwise null is returned).
      */
     public Font getFont()
     {
@@ -222,9 +222,9 @@ public class DefaultTreeCellEditor
     }
 
     /**
-     * Overrides JTextField.getPreferredSize to return the preferred size 
+     * Overrides JTextField.getPreferredSize to return the preferred size
      * based on current font, if set, or else use renderer's font.
-     * 
+     *
      * @return the Dimension of this textfield.
      */
     public Dimension getPreferredSize()
@@ -237,9 +237,9 @@ public class DefaultTreeCellEditor
       return renderer.getPreferredSize();
     }
   }
-  
+
   private EventListenerList listenerList = new EventListenerList();
-  
+
   /**
    * Editor handling the editing.
    */
@@ -261,8 +261,8 @@ public class DefaultTreeCellEditor
   protected transient Component editingComponent;
 
   /**
-   * As of Java 2 platform v1.4 this field should no longer be used. 
-   * If you wish to provide similar behavior you should directly 
+   * As of Java 2 platform v1.4 this field should no longer be used.
+   * If you wish to provide similar behavior you should directly
    * override isCellEditable.
    */
   protected boolean canEdit;
@@ -306,12 +306,12 @@ public class DefaultTreeCellEditor
    * Font to paint with, null indicates font of renderer is to be used.
    */
   protected Font font;
-      
+
   /**
-   * Constructs a DefaultTreeCellEditor object for a JTree using the 
-   * specified renderer and a default editor. (Use this constructor 
+   * Constructs a DefaultTreeCellEditor object for a JTree using the
+   * specified renderer and a default editor. (Use this constructor
    * for normal editing.)
-   * 
+   *
    * @param tree - a JTree object
    * @param renderer - a DefaultTreeCellRenderer object
    */
@@ -321,10 +321,10 @@ public class DefaultTreeCellEditor
   }
 
   /**
-   * Constructs a DefaultTreeCellEditor  object for a JTree using the specified 
-   * renderer and the specified editor. (Use this constructor 
+   * Constructs a DefaultTreeCellEditor  object for a JTree using the specified
+   * renderer and the specified editor. (Use this constructor
    * for specialized editing.)
-   * 
+   *
    * @param tree - a JTree object
    * @param renderer - a DefaultTreeCellRenderer object
    * @param editor - a TreeCellEditor object
@@ -341,10 +341,10 @@ public class DefaultTreeCellEditor
     Color c = UIManager.getColor("Tree.editorBorderSelectionColor");
     setBorderSelectionColor(c);
   }
-  
+
   /**
    * writeObject
-   * 
+   *
    * @param value0
    *          TODO
    * @exception IOException
@@ -386,12 +386,12 @@ public class DefaultTreeCellEditor
   }
 
   /**
-   * Sets the font to edit with. null indicates the renderers 
-   * font should be used. This will NOT override any font you have 
-   * set in the editor the receiver was instantied with. If null for 
-   * an editor was passed in, a default editor will be created that 
+   * Sets the font to edit with. null indicates the renderers
+   * font should be used. This will NOT override any font you have
+   * set in the editor the receiver was instantied with. If null for
+   * an editor was passed in, a default editor will be created that
    * will pick up this font.
-   * 
+   *
    * @param font - the editing Font
    */
   public void setFont(Font font)
@@ -404,7 +404,7 @@ public class DefaultTreeCellEditor
 
   /**
    * Gets the font used for editing.
-   * 
+   *
    * @return the editing font
    */
   public Font getFont()
@@ -414,20 +414,20 @@ public class DefaultTreeCellEditor
 
   /**
    * Configures the editor. Passed onto the realEditor.
-   * Sets an initial value for the editor. This will cause 
-   * the editor to stopEditing and lose any partially edited value 
-   * if the editor is editing when this method is called. 
-   * Returns the component that should be added to the client's Component 
-   * hierarchy. Once installed in the client's hierarchy this component will 
-   * then be able to draw and receive user input. 
-   * 
+   * Sets an initial value for the editor. This will cause
+   * the editor to stopEditing and lose any partially edited value
+   * if the editor is editing when this method is called.
+   * Returns the component that should be added to the client's Component
+   * hierarchy. Once installed in the client's hierarchy this component will
+   * then be able to draw and receive user input.
+   *
    * @param tree - the JTree that is asking the editor to edit; this parameter can be null
    * @param value - the value of the cell to be edited
    * @param isSelected - true is the cell is to be rendered with selection highlighting
    * @param expanded - true if the node is expanded
    * @param leaf - true if the node is a leaf node
    * @param row - the row index of the node being edited
-   * 
+   *
    * @return the component for editing
    */
   public Component getTreeCellEditorComponent(JTree tree, Object value,
@@ -461,19 +461,19 @@ public class DefaultTreeCellEditor
   /**
    * Returns the value currently being edited (requests it from the
    * {@link #realEditor}.
-   * 
+   *
    * @return the value currently being edited
    */
   public Object getCellEditorValue()
   {
     return realEditor.getCellEditorValue();
   }
-  
+
   /**
-   * If the realEditor returns true to this message, prepareForEditing  
+   * If the realEditor returns true to this message, prepareForEditing
    * is messaged and true is returned.
-   * 
-   * @param event - the event the editor should use to consider whether to 
+   *
+   * @param event - the event the editor should use to consider whether to
    * begin editing or not
    * @return true if editing can be started
    */
@@ -507,7 +507,7 @@ public class DefaultTreeCellEditor
       }
     if (! realEditor.isCellEditable(event))
       ret = false;
-    else 
+    else
       {
         if (canEditImmediately(event))
           ret = true;
@@ -519,12 +519,12 @@ public class DefaultTreeCellEditor
     if (ret)
       prepareForEditing();
     return ret;
-        
+
   }
 
   /**
    * Messages the realEditor for the return value.
-   * 
+   *
    * @param event -
    *          the event the editor should use to start editing
    * @return true if the editor would like the editing cell to be selected;
@@ -570,7 +570,7 @@ public class DefaultTreeCellEditor
 
   /**
    * Adds a <code>CellEditorListener</code> object to this editor.
-   * 
+   *
    * @param listener
    *          the listener to add
    */
@@ -603,7 +603,7 @@ public class DefaultTreeCellEditor
 
   /**
    * Resets lastPath.
-   * 
+   *
    * @param e - the event that characterizes the change.
    */
   public void valueChanged(TreeSelectionEvent e)
@@ -621,10 +621,10 @@ public class DefaultTreeCellEditor
 //    if (timer != null)
 //      timer.stop();
   }
-  
+
   /**
    * Messaged when the timer fires.
-   * 
+   *
    * @param e the event that characterizes the action.
    */
   public void actionPerformed(ActionEvent e)
@@ -636,7 +636,7 @@ public class DefaultTreeCellEditor
   /**
    * Sets the tree currently editing for. This is needed to add a selection
    * listener.
-   * 
+   *
    * @param newTree -
    *          the new tree to be edited
    */
@@ -657,7 +657,7 @@ public class DefaultTreeCellEditor
 
   /**
    * Returns true if event is a MouseEvent and the click count is 1.
-   * 
+   *
    * @param event - the event being studied
    * @return true if editing should start
    */
@@ -674,7 +674,7 @@ public class DefaultTreeCellEditor
   }
 
   /**
-   * Starts the editing timer (if one installed). 
+   * Starts the editing timer (if one installed).
    */
   protected void startEditingTimer()
   {
@@ -687,33 +687,33 @@ public class DefaultTreeCellEditor
   }
 
   /**
-   * Returns true if event is null, or it is a MouseEvent with 
+   * Returns true if event is null, or it is a MouseEvent with
    * a click count > 2 and inHitRegion returns true.
-   * 
+   *
    * @param event - the event being studied
-   * @return true if event is null, or it is a MouseEvent with 
-   * a click count > 2 and inHitRegion returns true 
+   * @return true if event is null, or it is a MouseEvent with
+   * a click count > 2 and inHitRegion returns true
    */
   protected boolean canEditImmediately(EventObject event)
   {
     if (event == null || !(event instanceof MouseEvent) || (((MouseEvent) event).
-        getClickCount() > 2 && inHitRegion(((MouseEvent) event).getX(), 
+        getClickCount() > 2 && inHitRegion(((MouseEvent) event).getX(),
                                          ((MouseEvent) event).getY())))
       return true;
     return false;
   }
 
   /**
-   * Returns true if the passed in location is a valid mouse location 
+   * Returns true if the passed in location is a valid mouse location
    * to start editing from. This is implemented to return false if x is
-   * less than or equal to the width of the icon and icon 
-   * gap displayed by the renderer. In other words this returns true if 
-   * the user clicks over the text part displayed by the renderer, and 
+   * less than or equal to the width of the icon and icon
+   * gap displayed by the renderer. In other words this returns true if
+   * the user clicks over the text part displayed by the renderer, and
    * false otherwise.
-   * 
+   *
    * @param x - the x-coordinate of the point
    * @param y - the y-coordinate of the point
-   * 
+   *
    * @return true if the passed in location is a valid mouse location
    */
   protected boolean inHitRegion(int x, int y)
@@ -725,11 +725,11 @@ public class DefaultTreeCellEditor
   /**
    * determineOffset
    * @param tree -
-   * @param value - 
-   * @param isSelected - 
-   * @param expanded - 
-   * @param leaf - 
-   * @param row - 
+   * @param value -
+   * @param isSelected -
+   * @param expanded -
+   * @param leaf -
+   * @param row -
    */
   protected void determineOffset(JTree tree, Object value, boolean isSelected,
                                  boolean expanded, boolean leaf, int row)
@@ -755,7 +755,7 @@ public class DefaultTreeCellEditor
   }
 
   /**
-   * Invoked just before editing is to start. Will add the 
+   * Invoked just before editing is to start. Will add the
    * editingComponent to the editingContainer.
    */
   protected void prepareForEditing()
@@ -766,7 +766,7 @@ public class DefaultTreeCellEditor
 
   /**
    * Creates the container to manage placement of editingComponent.
-   * 
+   *
    * @return the container to manage the placement of the editingComponent.
    */
   protected Container createContainer()
@@ -775,9 +775,9 @@ public class DefaultTreeCellEditor
   }
 
   /**
-   * This is invoked if a TreeCellEditor is not supplied in the constructor. 
+   * This is invoked if a TreeCellEditor is not supplied in the constructor.
    * It returns a TextField editor.
-   * 
+   *
    * @return a new TextField editor
    */
   protected TreeCellEditor createTreeCellEditor()

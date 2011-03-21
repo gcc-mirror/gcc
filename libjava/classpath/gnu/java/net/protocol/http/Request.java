@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -280,14 +280,14 @@ public class Request
             setHeader("Content-Length", Integer.toString(contentLength));
           }
       }
-    
+
     try
       {
         // Loop while authentication fails or continue
         do
           {
             retry = false;
-            
+
             // Get socket output and input streams
             OutputStream out = connection.getOutputStream();
 
@@ -314,7 +314,7 @@ public class Request
                 byte[] buffer = new byte[4096];
                 int len;
                 int count = 0;
-                
+
                 requestBodyWriter.reset();
                 do
                   {
@@ -372,13 +372,13 @@ public class Request
       }
     return response;
   }
-    
+
   Response readResponse(InputStream in)
     throws IOException
   {
     String line;
     int len;
-    
+
     // Read response status line
     LineInputStream lis = new LineInputStream(in);
 
@@ -414,7 +414,7 @@ public class Request
     responseHeaders.parse(lis);
     notifyHeaderHandlers(responseHeaders);
     InputStream body = null;
-    
+
     switch (code)
       {
       case 100:
@@ -459,7 +459,7 @@ public class Request
     throws IOException
   {
     long contentLength = -1;
-    
+
     // Persistent connections are the default in HTTP/1.1
     boolean doClose = "close".equalsIgnoreCase(getHeader("Connection")) ||
       "close".equalsIgnoreCase(responseHeaders.getValue("Connection")) ||
@@ -475,9 +475,9 @@ public class Request
     else if ("chunked".equalsIgnoreCase(transferCoding))
       {
         in = new LimitedLengthInputStream(in, -1, false, connection, doClose);
-          
+
         in = new ChunkedInputStream(in, responseHeaders);
-      } 
+      }
     else
       {
         contentLength = responseHeaders.getLongValue("Content-Length");
@@ -505,9 +505,9 @@ public class Request
             throw new ProtocolException("Unsupported Content-Encoding: " +
                                         contentCoding);
           }
-	// Remove the Content-Encoding header because the content is
-	// no longer compressed.
-	responseHeaders.remove("Content-Encoding");
+        // Remove the Content-Encoding header because the content is
+        // no longer compressed.
+        responseHeaders.remove("Content-Encoding");
       }
     return in;
   }
@@ -551,7 +551,7 @@ public class Request
           {
             MessageDigest md5 = MessageDigest.getInstance("MD5");
             final byte[] COLON = { 0x3a };
-            
+
             // Calculate H(A1)
             md5.reset();
             md5.update(username.getBytes("US-ASCII"));
@@ -572,7 +572,7 @@ public class Request
                 ha1 = md5.digest();
               }
             String ha1Hex = toHexString(ha1);
-            
+
             // Calculate H(A2)
             md5.reset();
             md5.update(method.getBytes("US-ASCII"));
@@ -586,7 +586,7 @@ public class Request
               }
             byte[] ha2 = md5.digest();
             String ha2Hex = toHexString(ha2);
-            
+
             // Calculate response
             md5.reset();
             md5.update(ha1Hex.getBytes("US-ASCII"));
@@ -606,8 +606,8 @@ public class Request
             md5.update(COLON);
             md5.update(ha2Hex.getBytes("US-ASCII"));
             String digestResponse = toHexString(md5.digest());
-            
-            String authorization = scheme + 
+
+            String authorization = scheme +
               " username=\"" + username + "\"" +
               " realm=\"" + realm + "\"" +
               " nonce=\"" + nonce + "\"" +
@@ -652,7 +652,7 @@ public class Request
             buf.setLength(0);
           }
         else if (c != ',' || (i <(len - 1) && text.charAt(i + 1) != ' '))
-          {   
+          {
             buf.append(c);
           }
       }
@@ -855,4 +855,3 @@ public class Request
   }
 
 }
-

@@ -238,7 +238,7 @@ public class Main
     {
       public void parsed(String argument) throws OptionException
       {
-	readNamesFromStdin = true;
+        readNamesFromStdin = true;
       }
     });
     p.add(grp);
@@ -251,14 +251,14 @@ public class Main
     String line;
     try
       {
-	BufferedReader br
-	  = new BufferedReader(new InputStreamReader(System.in));
-	while ((line = br.readLine()) != null)
-	  entries.add(new Entry(new File(line)));
+        BufferedReader br
+          = new BufferedReader(new InputStreamReader(System.in));
+        while ((line = br.readLine()) != null)
+          entries.add(new Entry(new File(line)));
       }
     catch (IOException _)
       {
-	// Ignore.
+        // Ignore.
       }
   }
 

@@ -648,42 +648,16 @@ extern struct rtx_def *cc0_reg_rtx;
 /* This says how to output an assembler line
    to define a global common symbol.  */
 
-#define ASM_OUTPUT_COMMON(FILE, NAME, SIZE, ROUNDED)  \
-( fprintf ((FILE), ".globl "),			\
-  assemble_name ((FILE), (NAME)),		\
-  fprintf ((FILE), "\n"),			\
-  assemble_name ((FILE), (NAME)),		\
-  fprintf ((FILE), ": .=.+ %#ho\n", (unsigned short)(ROUNDED))		\
-)
+#define ASM_OUTPUT_ALIGNED_COMMON(FILE, NAME, SIZE, ALIGN)  \
+    pdp11_asm_output_var (FILE, NAME, SIZE, ALIGN, true)
+
 
 /* This says how to output an assembler line
    to define a local common symbol.  */
 
-#define ASM_OUTPUT_LOCAL(FILE, NAME, SIZE, ROUNDED)  \
-( assemble_name ((FILE), (NAME)),				\
-  fprintf ((FILE), ":\t.=.+ %#ho\n", (unsigned short)(ROUNDED)))
+#define ASM_OUTPUT_ALIGNED_LOCAL(FILE, NAME, SIZE, ALIGN) \
+    pdp11_asm_output_var (FILE, NAME, SIZE, ALIGN, false)
 
-/* Print operand X (an rtx) in assembler syntax to file FILE.
-   CODE is a letter or dot (`z' in `%z0') or 0 if no letter was specified.
-   For `%' followed by punctuation, CODE is the punctuation and X is null.
-
-*/
-
-
-#define PRINT_OPERAND(FILE, X, CODE)  \
-{ if (CODE == '#') fprintf (FILE, "#");					\
-  else if (GET_CODE (X) == REG)						\
-    fprintf (FILE, "%s", reg_names[REGNO (X)]);				\
-  else if (GET_CODE (X) == MEM)						\
-    output_address (XEXP (X, 0));					\
-  else if (GET_CODE (X) == CONST_DOUBLE && GET_MODE (X) != SImode)	\
-    { REAL_VALUE_TYPE r;						\
-      long sval[2];							\
-      REAL_VALUE_FROM_CONST_DOUBLE (r, X);				\
-      REAL_VALUE_TO_TARGET_DOUBLE (r, sval);				\
-      fprintf (FILE, "$%#lo", sval[0] >> 16); }				\
-  else { putc ('$', FILE); output_addr_const_pdp11 (FILE, X); }}
-
 /* Print a memory address as an operand to reference that memory location.  */
 
 #define PRINT_OPERAND_ADDRESS(FILE, ADDR)  \

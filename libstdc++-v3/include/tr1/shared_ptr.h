@@ -1,6 +1,6 @@
 // <tr1/shared_ptr.h> -*- C++ -*-
 
-// Copyright (C) 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -49,10 +49,12 @@
 #ifndef _TR1_SHARED_PTR_H
 #define _TR1_SHARED_PTR_H 1
 
-namespace std
+namespace std _GLIBCXX_VISIBILITY(default)
 {
 namespace tr1
 {
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
  /**
    *  @brief  Exception possibly thrown by @c shared_ptr.
    *  @ingroup exceptions
@@ -589,7 +591,7 @@ namespace tr1
 	  _M_ptr = __r._M_ptr;
 	}
 
-#if !defined(__GXX_EXPERIMENTAL_CXX0X__) || _GLIBCXX_DEPRECATED
+#if !defined(__GXX_EXPERIMENTAL_CXX0X__) || _GLIBCXX_USE_DEPRECATED
       // Postcondition: use_count() == 1 and __r.get() == 0
       template<typename _Tp1>
         explicit
@@ -635,7 +637,7 @@ namespace tr1
 	  return *this;
 	}
 
-#if !defined(__GXX_EXPERIMENTAL_CXX0X__) || _GLIBCXX_DEPRECATED
+#if !defined(__GXX_EXPERIMENTAL_CXX0X__) || _GLIBCXX_USE_DEPRECATED
       template<typename _Tp1>
         __shared_ptr&
         operator=(std::auto_ptr<_Tp1>& __r)
@@ -1012,7 +1014,7 @@ namespace tr1
         shared_ptr(const weak_ptr<_Tp1>& __r)
 	: __shared_ptr<_Tp>(__r) { }
 
-#if !defined(__GXX_EXPERIMENTAL_CXX0X__) || _GLIBCXX_DEPRECATED
+#if !defined(__GXX_EXPERIMENTAL_CXX0X__) || _GLIBCXX_USE_DEPRECATED
       template<typename _Tp1>
         explicit
         shared_ptr(std::auto_ptr<_Tp1>& __r)
@@ -1039,7 +1041,7 @@ namespace tr1
 	  return *this;
 	}
 
-#if !defined(__GXX_EXPERIMENTAL_CXX0X__) || _GLIBCXX_DEPRECATED
+#if !defined(__GXX_EXPERIMENTAL_CXX0X__) || _GLIBCXX_USE_DEPRECATED
       template<typename _Tp1>
         shared_ptr&
         operator=(std::auto_ptr<_Tp1>& __r)
@@ -1169,6 +1171,8 @@ namespace tr1
 
       mutable weak_ptr<_Tp>  _M_weak_this;
     };
+
+_GLIBCXX_END_NAMESPACE_VERSION
 }
 }
 

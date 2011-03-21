@@ -37,23 +37,23 @@ import javax.swing.SwingUtilities;
 /**
  * A simple scroll bar demo showing various scroll bars in different states.
  */
-public class ScrollBarDemo 
+public class ScrollBarDemo
   extends JPanel
-  implements ActionListener 
+  implements ActionListener
 {
 
   /**
    * Creates a new demo instance.
    */
-  public ScrollBarDemo() 
+  public ScrollBarDemo()
   {
     super();
     createContent();
   }
-  
+
   /**
    * When the demo is run independently, the frame is displayed, so we should
-   * initialise the content panel (including the demo content and a close 
+   * initialise the content panel (including the demo content and a close
    * button).  But when the demo is run as part of the Swing activity board,
    * only the demo content panel is used, the frame itself is never displayed,
    * so we can avoid this step.
@@ -67,27 +67,27 @@ public class ScrollBarDemo
     closePanel.add(closeButton);
     add(closePanel, BorderLayout.SOUTH);
   }
-       
+
   /**
    * Returns a panel with the demo content.  The panel
    * uses a BorderLayout(), and the BorderLayout.SOUTH area
-   * is empty, to allow callers to add controls to the 
+   * is empty, to allow callers to add controls to the
    * bottom of the panel if they want to (a close button is
    * added if this demo is being run as a standalone demo).
-   */       
-  private void createContent() 
+   */
+  private void createContent()
   {
     setLayout(new BorderLayout());
     JPanel panel = createScrollBarPanel();
     add(panel);
   }
-    
-  private JPanel createScrollBarPanel() 
+
+  private JPanel createScrollBarPanel()
   {
     JPanel panel = new JPanel(new BorderLayout());
-    
+
     JPanel horizontalPanel = new JPanel();
-        
+
     JScrollBar scroll1a = new JScrollBar(JScrollBar.HORIZONTAL);
     JScrollBar scroll1b = new JScrollBar(JScrollBar.HORIZONTAL);
     scroll1b.setEnabled(false);
@@ -100,12 +100,12 @@ public class ScrollBarDemo
     horizontalPanel.add(scroll1b);
     horizontalPanel.add(scroll1c);
     horizontalPanel.add(scroll1d);
-        
+
     panel.add(horizontalPanel, BorderLayout.NORTH);
-     
+
     JPanel verticalPanel = new JPanel();
     verticalPanel.setLayout(new GridLayout(1, 7));
-        
+
     JScrollBar scroll2a = new JScrollBar(JScrollBar.VERTICAL);
     JScrollBar scroll2b = new JScrollBar(JScrollBar.VERTICAL);
     scroll2b.setEnabled(false);
@@ -114,7 +114,7 @@ public class ScrollBarDemo
     JScrollBar scroll2d = new JScrollBar(JScrollBar.VERTICAL);
     scroll2d.setEnabled(false);
     scroll2d.putClientProperty("JScrollBar.isFreeStanding", Boolean.FALSE);
-      
+
     verticalPanel.add(scroll2a);
     verticalPanel.add(new JPanel());
     verticalPanel.add(scroll2b);
@@ -122,17 +122,17 @@ public class ScrollBarDemo
     verticalPanel.add(scroll2c);
     verticalPanel.add(new JPanel());
     verticalPanel.add(scroll2d);
-        
+
     panel.add(verticalPanel, BorderLayout.EAST);
-        
+
     JPanel centerPanel = new JPanel(new GridLayout(1, 2));
     centerPanel.add(new JScrollBar(JScrollBar.HORIZONTAL));
     centerPanel.add(new JScrollBar(JScrollBar.VERTICAL));
     panel.add(centerPanel);
-    return panel;        
+    return panel;
   }
-    
-  public void actionPerformed(ActionEvent e) 
+
+  public void actionPerformed(ActionEvent e)
   {
     if (e.getActionCommand().equals("CLOSE"))
     {
@@ -140,7 +140,7 @@ public class ScrollBarDemo
     }
   }
 
-  public static void main(String[] args) 
+  public static void main(String[] args)
   {
     SwingUtilities.invokeLater
     (new Runnable()

@@ -1,6 +1,6 @@
 /* Definitions for GCC.  Part of the machine description for CRIS.
    Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008,
-   2009, 2010 Free Software Foundation, Inc.
+   2009, 2010, 2011 Free Software Foundation, Inc.
    Contributed by Axis Communications.  Written by Hans-Peter Nilsson.
 
 This file is part of GCC.
@@ -193,12 +193,12 @@ extern int cris_cpu_version;
 #define ASM_SPEC \
  MAYBE_AS_NO_MUL_BUG_ABORT \
  "%(asm_subtarget)\
- %{march=*:%{cpu=*:%edo not specify both -march=... and -mcpu=...}}\
+ %{march=*:%{mcpu=*:%edo not specify both -march=... and -mcpu=...}}\
  %{march=v32:--march=v32} %{mcpu=v32:--march=v32}"
 
 /* For the cris-*-elf subtarget.  */
 #define CRIS_ASM_SUBTARGET_SPEC \
- "--em=criself %{!march=*:%{!cpu=*:" CRIS_DEFAULT_ASM_ARCH_OPTION "}}"
+ "--em=criself %{!march=*:%{!mcpu=*:" CRIS_DEFAULT_ASM_ARCH_OPTION "}}"
 
 /* FIXME: We should propagate the -melf option to make the criself
    "emulation" unless a linker script is provided (-T*), but I don't know
@@ -207,10 +207,8 @@ extern int cris_cpu_version;
    time being.
 
    Note that -melf overrides -maout except that a.out-compiled libraries
-   are linked in (multilibbing).  The somewhat cryptic -rpath-link pair is
-   to avoid *only* picking up the linux multilib subdir from the "-B./"
-   option during build, while still giving it preference.  We'd need some
-   %s-variant that checked for existence of some specific file.  */
+   are linked in (multilibbing).  We'd need some %s-variant that
+   checked for existence of some specific file.  */
 #undef LINK_SPEC
 #define LINK_SPEC \
  "%{v:--verbose}\

@@ -48,7 +48,7 @@ import org.omg.CORBA.portable.IDLEntity;
 
 /**
  * Contains the ORB service data being passed.
- * 
+ *
  * @author Audrius Meskauskas (AudriusA@Bioinformatics.org)
  */
 public class ServiceContext
@@ -134,7 +134,7 @@ public class ServiceContext
 
   /**
    * Read the context values from the stream.
-   * 
+   *
    * @param istream a stream to read from.
    */
   public static ServiceContext read(AbstractCdrInput istream)
@@ -172,7 +172,7 @@ public class ServiceContext
 
   /**
    * Write the context values into the stream.
-   * 
+   *
    * @param ostream a stream to write the data to.
    */
   public void write(AbstractCdrOutput ostream)

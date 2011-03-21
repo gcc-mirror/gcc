@@ -65,7 +65,7 @@ public class List extends Component
   /**
    * The number used to generate the name returned by getName.
    */
-  private static transient long next_list_number;  
+  private static transient long next_list_number;
 
   // Serialization constant
   private static final long serialVersionUID = -3304312411574666869L;
@@ -147,20 +147,20 @@ public class List extends Component
       this.rows = 4;
     else
       this.rows = rows;
-  
+
     this.multipleMode = multipleMode;
     selected = new int[0];
 
     if (GraphicsEnvironment.isHeadless())
       throw new HeadlessException();
-  
+
   }
 
   /**
    * Returns the number of items in this list.
    *
    * @return The number of items in this list.
-   * 
+   *
    * @since 1.1
    */
   public int getItemCount()
@@ -185,13 +185,13 @@ public class List extends Component
    * Returns the complete list of items.
    *
    * @return The complete list of items in the list.
-   * 
+   *
    * @since 1.1
    */
   public synchronized String[] getItems()
   {
     String[] l_items = new String[getItemCount()];
- 
+
     items.copyInto(l_items);
     return(l_items);
   }
@@ -223,7 +223,7 @@ public class List extends Component
    *
    * @return <code>true</code> if multi-select mode is enabled,
    * <code>false</code> otherwise.
-   * 
+   *
    * @since 1.1
    */
   public boolean isMultipleMode()
@@ -237,7 +237,7 @@ public class List extends Component
    * @return <code>true</code> if multi-select mode is enabled,
    * <code>false</code> otherwise.
    *
-   * @deprecated This method is deprecated in favor of 
+   * @deprecated This method is deprecated in favor of
    * <code>isMultipleMode()</code>.
    */
   public boolean allowsMultipleSelections()
@@ -251,7 +251,7 @@ public class List extends Component
    *
    * @param multipleMode <code>true</code> to enable multiple mode,
    * <code>false</code> otherwise.
-   * 
+   *
    * @since 1.1
    */
   public void setMultipleMode(boolean multipleMode)
@@ -269,20 +269,20 @@ public class List extends Component
    * @deprecated
    */
   public void setMultipleSelections(boolean multipleMode)
-  {  
+  {
     this.multipleMode = multipleMode;
 
     ListPeer peer = (ListPeer) getPeer();
     if (peer != null)
       peer.setMultipleMode(multipleMode);
-      
+
   }
 
   /**
    * Returns the minimum size of this component.
    *
    * @return The minimum size of this component.
-   * 
+   *
    * @since 1.1
    */
   public Dimension getMinimumSize()
@@ -310,7 +310,7 @@ public class List extends Component
    * @param rows The number of rows to size for.
    *
    * @return The minimum size of this component.
-   * 
+   *
    * @since 1.1
    */
   public Dimension getMinimumSize(int rows)
@@ -326,7 +326,7 @@ public class List extends Component
    *
    * @return The minimum size of this component.
    *
-   * @deprecated This method is deprecated in favor of 
+   * @deprecated This method is deprecated in favor of
    * <code>getMinimumSize(int)</code>>
    */
   public Dimension minimumSize(int rows)
@@ -342,7 +342,7 @@ public class List extends Component
    * Returns the preferred size of this component.
    *
    * @return The preferred size of this component.
-   * 
+   *
    * @since 1.1
    */
   public Dimension getPreferredSize()
@@ -358,7 +358,7 @@ public class List extends Component
    * @deprecated This method is deprecated in favor of
    * <code>getPreferredSize</code>.
    */
-  public Dimension preferredSize() 
+  public Dimension preferredSize()
   {
     return preferredSize(getRows());
   }
@@ -370,7 +370,7 @@ public class List extends Component
    * @param rows The number of rows to size for.
    *
    * @return The preferred size of this component.
-   * 
+   *
    * @since 1.1
    */
   public Dimension getPreferredSize(int rows)
@@ -386,7 +386,7 @@ public class List extends Component
    *
    * @return The preferred size of this component.
    *
-   * @deprecated This method is deprecated in favor of 
+   * @deprecated This method is deprecated in favor of
    * <code>getPreferredSize(int)</code>>
    */
   public Dimension preferredSize(int rows)
@@ -402,7 +402,7 @@ public class List extends Component
    * This method adds the specified item to the end of the list.
    *
    * @param item The item to add to the list.
-   * 
+   *
    * @since 1.1
    */
   public void add(String item)
@@ -430,7 +430,7 @@ public class List extends Component
    * @param item The item to add to the list.
    * @param index The location in the list to add the item, or -1 to add
    * to the end.
-   * 
+   *
    * @since 1.1
    */
   public void add(String item, int index)
@@ -452,11 +452,11 @@ public class List extends Component
   public void addItem(String item, int index)
   {
     if (item == null)
-      item = ""; 
-  
+      item = "";
+
     if (index < -1)
       index = -1;
-  
+
     if ((index == -1) || (index >= items.size ()))
       items.addElement (item);
     else
@@ -482,11 +482,11 @@ public class List extends Component
     if (isSelected(index))
       {
         selected = true;
-        deselect(index);   
+        deselect(index);
       }
-  
+
     items.removeElementAt (index);
-  
+
     if (selected)
       select(index);
 
@@ -501,7 +501,7 @@ public class List extends Component
    * @param index The index of the item to delete.
    *
    * @exception IllegalArgumentException If the index is not valid
-   * 
+   *
    * @since 1.1
    */
   public void remove(int index) throws IllegalArgumentException
@@ -519,7 +519,7 @@ public class List extends Component
    *
    * @deprecated This method is deprecated for some unknown reason.
    */
-  public synchronized void delItems(int start, int end) 
+  public synchronized void delItems(int start, int end)
     throws IllegalArgumentException
   {
     // We must run the loop in reverse direction.
@@ -538,7 +538,7 @@ public class List extends Component
    * @param item The item to delete.
    *
    * @exception IllegalArgumentException If the specified item does not exist.
-   * 
+   *
    * @since 1.1
    */
   public synchronized void remove(String item) throws IllegalArgumentException
@@ -552,7 +552,7 @@ public class List extends Component
 
   /**
    * Deletes all of the items from the list.
-   * 
+   *
    * @since 1.1
    */
   public synchronized void removeAll()
@@ -562,7 +562,7 @@ public class List extends Component
 
   /**
    * Deletes all of the items from the list.
-   * 
+   *
    * @deprecated This method is deprecated in favor of <code>removeAll()</code>.
    */
   public void clear()
@@ -572,7 +572,7 @@ public class List extends Component
     ListPeer peer = (ListPeer) getPeer();
     if (peer != null)
       peer.removeAll();
-  
+
     selected = new int[0];
   }
 
@@ -584,7 +584,7 @@ public class List extends Component
    *
    * @exception ArrayIndexOutOfBoundsException If the index is not valid.
    */
-  public synchronized void replaceItem(String item, int index) 
+  public synchronized void replaceItem(String item, int index)
     throws ArrayIndexOutOfBoundsException
   {
     if ((index < 0) || (index >= items.size()))
@@ -598,7 +598,7 @@ public class List extends Component
         ListPeer l = (ListPeer) peer;
 
         /* We add first and then remove so that the selected
-	   item remains the same */
+           item remains the same */
         l.add (item, index + 1);
         l.delItems (index, index);
       }
@@ -620,12 +620,12 @@ public class List extends Component
 
     if (selected == null || selected.length != 1)
       return -1;
-  
+
     return selected[0];
   }
 
   /**
-   * Returns an array containing the indexes of the rows that are 
+   * Returns an array containing the indexes of the rows that are
    * currently selected.
    *
    * @return A list of indexes of selected rows.
@@ -636,13 +636,13 @@ public class List extends Component
       {
         ListPeer l = (ListPeer) peer;
         selected = l.getSelectedIndexes();
-      }   
-   
+      }
+
     return selected;
   }
 
   /**
-   * Returns the item that is currently selected, or <code>null</code> if there 
+   * Returns the item that is currently selected, or <code>null</code> if there
    * is no item selected.  FIXME: What happens if multiple items selected?
    *
    * @return The selected item, or <code>null</code> if there is no
@@ -703,7 +703,7 @@ public class List extends Component
    *
    * @return <code>true</code> if the index is selected, <code>false</code>
    * otherwise.
-   * 
+   *
    * @since 1.1
    */
   public boolean isIndexSelected(int index)
@@ -738,7 +738,7 @@ public class List extends Component
    *
    * @param index The index of the item to be made visible.
    */
-  public synchronized void makeVisible(int index) 
+  public synchronized void makeVisible(int index)
     throws IllegalArgumentException
   {
     visibleIndex = index;
@@ -753,7 +753,7 @@ public class List extends Component
    * Returns the index of the last item that was made visible via the
    * <code>makeVisible()</code> method.
    *
-   * @return The index of the last item made visible via the 
+   * @return The index of the last item made visible via the
    * <code>makeVisible()</code> method.
    */
   public int getVisibleIndex()
@@ -771,7 +771,7 @@ public class List extends Component
     ListPeer lp = (ListPeer) getPeer();
     if (lp != null)
       lp.select(index);
-    
+
    if (selected != null)
      {
        boolean found = false;
@@ -786,14 +786,14 @@ public class List extends Component
              {
                selected = new int[] { index };
                return;
-             }       
+             }
            int[] temp = new int[selected.length + 1];
            System.arraycopy(selected, 0, temp, 0, selected.length);
            temp[selected.length] = index;
            selected = temp;
          }
-     } 
-   else 
+     }
+   else
      {
        selected = new int[1];
        selected[0] = index;
@@ -820,7 +820,7 @@ public class List extends Component
               temp[i] = selected[i];
             else
               {
-                System.arraycopy(selected, i + 1, temp, i, 
+                System.arraycopy(selected, i + 1, temp, i,
                                  selected.length - i - 1);
                 break;
               }
@@ -852,7 +852,7 @@ public class List extends Component
    * registered listeners for this object.
    *
    * @param listener The listener to add.
-   * 
+   *
    * @since 1.1
    */
   public synchronized void addActionListener(ActionListener listener)
@@ -865,7 +865,7 @@ public class List extends Component
    * registers listeners for this object.
    *
    * @param listener The listener to remove.
-   * 
+   *
    * @since 1.1
    */
   public synchronized void removeActionListener(ActionListener listener)
@@ -878,7 +878,7 @@ public class List extends Component
    * registered listeners for this object.
    *
    * @param listener The listener to add.
-   * 
+   *
    * @since 1.1
    */
   public synchronized void addItemListener(ItemListener listener)
@@ -891,7 +891,7 @@ public class List extends Component
    * registers listeners for this object.
    *
    * @param listener The listener to remove.
-   * 
+   *
    * @since 1.1
    */
   public synchronized void removeItemListener(ItemListener listener)
@@ -908,7 +908,7 @@ public class List extends Component
    * superclass method is called to process this event.
    *
    * @param event The event to process.
-   * 
+   *
    * @since 1.1
    */
   protected void processEvent(AWTEvent event)
@@ -929,7 +929,7 @@ public class List extends Component
    * the <code>enableEvents()</code> method.
    *
    * @param event The event to process.
-   * 
+   *
    * @since 1.1
    */
   protected void processActionEvent(ActionEvent event)
@@ -946,7 +946,7 @@ public class List extends Component
    * the <code>enableEvents()</code> method.
    *
    * @param event The event to process.
-   * 
+   *
    * @since 1.1
    */
   protected void processItemEvent(ItemEvent event)
@@ -959,12 +959,12 @@ public class List extends Component
   {
     if (e.id <= ItemEvent.ITEM_LAST
         && e.id >= ItemEvent.ITEM_FIRST
-        && (item_listeners != null 
+        && (item_listeners != null
         || (eventMask & AWTEvent.ITEM_EVENT_MASK) != 0))
       processEvent(e);
-    else if (e.id <= ActionEvent.ACTION_LAST 
-	   && e.id >= ActionEvent.ACTION_FIRST
-	   && (action_listeners != null 
+    else if (e.id <= ActionEvent.ACTION_LAST
+           && e.id >= ActionEvent.ACTION_FIRST
+           && (action_listeners != null
            || (eventMask & AWTEvent.ACTION_EVENT_MASK) != 0))
       processEvent(e);
     else
@@ -983,12 +983,12 @@ public class List extends Component
 
   /**
    * Returns an array of all the objects currently registered as FooListeners
-   * upon this <code>List</code>. FooListeners are registered using the 
+   * upon this <code>List</code>. FooListeners are registered using the
    * addFooListener method.
    *
    * @exception ClassCastException If listenerType doesn't specify a class or
    * interface that implements java.util.EventListener.
-   * 
+   *
    * @since 1.3
    */
   public <T extends EventListener> T[] getListeners (Class<T> listenerType)
@@ -1004,25 +1004,25 @@ public class List extends Component
 
   /**
    * Returns all action listeners registered to this object.
-   * 
+   *
    * @since 1.4
    */
   public ActionListener[] getActionListeners ()
   {
     return (ActionListener[]) getListeners (ActionListener.class);
   }
-  
+
   /**
    * Returns all action listeners registered to this object.
-   * 
+   *
    * @since 1.4
    */
   public ItemListener[] getItemListeners ()
   {
     return (ItemListener[]) getListeners (ItemListener.class);
   }
-  
-  // Accessibility internal class 
+
+  // Accessibility internal class
   protected class AccessibleAWTList extends AccessibleAWTComponent
     implements AccessibleSelection, ItemListener, ActionListener
   {
@@ -1032,11 +1032,11 @@ public class List extends Component
       implements Accessible
     {
       private static final long serialVersionUID = 4412022926028300317L;
-      
+
       // Field names are fixed by serialization spec.
       private List parent;
       private int indexInParent;
-      
+
       public AccessibleAWTListChild(List parent, int indexInParent)
       {
         this.parent = parent;
@@ -1044,7 +1044,7 @@ public class List extends Component
         if (parent == null)
           this.indexInParent = -1;
       }
-      
+
       /* (non-Javadoc)
        * @see javax.accessibility.Accessible#getAccessibleContext()
        */
@@ -1052,12 +1052,12 @@ public class List extends Component
       {
         return this;
       }
-      
+
       public AccessibleRole getAccessibleRole()
       {
         return AccessibleRole.LIST_ITEM;
       }
-      
+
       public AccessibleStateSet getAccessibleStateSet()
       {
         AccessibleStateSet states = super.getAccessibleStateSet();
@@ -1065,25 +1065,25 @@ public class List extends Component
           states.add(AccessibleState.SELECTED);
         return states;
       }
-      
+
       public int getAccessibleIndexInParent()
       {
         return indexInParent;
       }
 
     }
-    
+
     public AccessibleAWTList()
     {
       addItemListener(this);
       addActionListener(this);
     }
-    
+
     public AccessibleRole getAccessibleRole()
     {
       return AccessibleRole.LIST;
     }
-    
+
     public AccessibleStateSet getAccessibleStateSet()
     {
       AccessibleStateSet states = super.getAccessibleStateSet();
@@ -1104,7 +1104,7 @@ public class List extends Component
         return null;
       return new AccessibleAWTListChild(List.this, i);
     }
-    
+
     /* (non-Javadoc)
      * @see javax.accessibility.AccessibleSelection#getAccessibleSelectionCount()
      */
@@ -1188,7 +1188,7 @@ public class List extends Component
     public void actionPerformed(ActionEvent event)
     {
     }
-    
+
   }
 
   /**
@@ -1204,7 +1204,7 @@ public class List extends Component
       accessibleContext = new AccessibleAWTList();
     return accessibleContext;
   }
-  
+
   /**
    * Generate a unique name for this <code>List</code>.
    *

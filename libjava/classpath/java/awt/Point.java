@@ -178,7 +178,7 @@ public class Point extends Point2D implements Serializable
 
   /**
    * Sets this object's coordinates to the specified values.  This method
-   * rounds to the nearest integer coordinates by adding 0.5 and calling 
+   * rounds to the nearest integer coordinates by adding 0.5 and calling
    * {@link Math#floor(double)}.
    *
    * @param x the new X coordinate

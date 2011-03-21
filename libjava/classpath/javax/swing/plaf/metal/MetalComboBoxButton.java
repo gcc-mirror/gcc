@@ -63,22 +63,22 @@ public class MetalComboBoxButton
 
   /** A reference to the JList. */
   protected JList listBox;
-  
+
   /**
    * Used for rendering the selected item.
    */
   protected CellRendererPane rendererPane;
-  
+
   /** The button icon. */
   protected Icon comboIcon;
-  
+
   /** Display just the icon, or the icon plus the label. */
   protected boolean iconOnly;
-  
+
   /**
    * Creates a new button.
-   * 
-   * @param cb  the combo that the button is used for (<code>null</code> not 
+   *
+   * @param cb  the combo that the button is used for (<code>null</code> not
    *            permitted).
    * @param i  the icon displayed on the button.
    * @param pane  the rendering pane.
@@ -87,13 +87,13 @@ public class MetalComboBoxButton
   public MetalComboBoxButton(JComboBox cb, Icon i, CellRendererPane pane,
       JList list)
   {
-    this(cb, i, cb.isEditable(), pane, list);  
+    this(cb, i, cb.isEditable(), pane, list);
   }
-  
+
   /**
    * Creates a new button.
-   * 
-   * @param cb  the combo that the button is used for (<code>null</code> not 
+   *
+   * @param cb  the combo that the button is used for (<code>null</code> not
    *            permitted).
    * @param i  the icon displayed on the button.
    * @param onlyIcon  a flag that specifies whether the button displays only an
@@ -116,84 +116,84 @@ public class MetalComboBoxButton
     setEnabled(comboBox.isEnabled());
     setFocusable(comboBox.isEnabled());
   }
-  
+
   /**
    * Returns the combo box that the button is used with.
-   * 
+   *
    * @return The combo box.
    */
   public final JComboBox getComboBox()
   {
     return comboBox;
   }
-  
+
   /**
    * Sets the combo box that the button is used with.
-   * 
+   *
    * @param cb  the combo box.
    */
   public final void setComboBox(JComboBox cb)
   {
     comboBox = cb;
   }
-  
+
   /**
    * Returns the icon displayed by the button.  By default, this will be an
    * instance of {@link MetalComboBoxIcon}.
-   * 
+   *
    * @return The icon displayed by the button.
    */
   public final Icon getComboIcon()
   {
     return comboIcon;
   }
-  
+
   /**
    * Sets the icon displayed by the button.
-   * 
+   *
    * @param i  the icon.
    */
   public final void setComboIcon(Icon i)
   {
     comboIcon = i;
   }
-  
+
   /**
    * Returns a flag that controls whether the button displays an icon only,
    * or text as well.
-   * 
+   *
    * @return A boolean.
    */
   public final boolean isIconOnly()
   {
     return iconOnly;
   }
-  
+
   /**
    * Sets the flag that controls whether the button displays an icon only,
    * or text as well.
-   * 
+   *
    * @param isIconOnly  the flag.
    */
   public final void setIconOnly(boolean isIconOnly)
   {
     iconOnly = isIconOnly;
   }
-  
+
   /**
    * Returns <code>false</code>, to indicate that this component is not part
    * of the focus traversal group.
-   * 
+   *
    * @return <code>false</code>
    */
   public boolean isFocusTraversable()
   {
     return false;
   }
-  
+
   /**
    * Enables or disables the button.
-   * 
+   *
    * @param enabled  the new status.
    */
   public void setEnabled(boolean enabled)
@@ -210,10 +210,10 @@ public class MetalComboBoxButton
         setForeground(UIManager.getColor("ComboBox.disabledForeground"));
       }
   }
-  
+
   /**
    * Paints the component.
-   * 
+   *
    * @param g  the graphics device.
    */
   public void paintComponent(Graphics g)
@@ -259,7 +259,7 @@ public class MetalComboBoxButton
             Component comp = renderer.getListCellRendererComponent(listBox,
                 comboBox.getSelectedItem(), -1, false, false);
             comp.setFont(rendererPane.getFont());
-            
+
             if ((model.isArmed() && model.isPressed())
                 || (comboBox.isFocusOwner() && !comboBox.isPopupVisible()))
               {

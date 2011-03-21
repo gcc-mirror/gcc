@@ -54,7 +54,7 @@ import java.nio.ByteBuffer;
 
 /**
  * A class representing the Method Command Set.
- * 
+ *
  * @author Aaron Luchko <aluchko@redhat.com>
  */
 public class MethodCommandSet
@@ -124,8 +124,8 @@ public class MethodCommandSet
   {
     if (!VMVirtualMachine.canGetBytecodes)
       {
-	String msg = "getting bytecodes is unsupported";
-	throw new NotImplementedException(msg);
+        String msg = "getting bytecodes is unsupported";
+        throw new NotImplementedException(msg);
       }
 
     ReferenceTypeId id = idMan.readReferenceTypeId(bb);

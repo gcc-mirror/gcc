@@ -37,7 +37,9 @@ namespace
 }
 #endif
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #ifdef _GLIBCXX_HAVE_TLS
   __thread void* __once_callable;
@@ -89,7 +91,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     }
   }
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
 
 // XXX GLIBCXX_ABI Deprecated
 // gcc-4.6.0
@@ -98,7 +101,7 @@ _GLIBCXX_END_NAMESPACE
     && defined(_GLIBCXX_HAVE_AS_SYMVER_DIRECTIVE) \
     && defined(_GLIBCXX_HAVE_SYMVER_SYMBOL_RENAMING_RUNTIME_SUPPORT)
 
-namespace __gnu_cxx
+namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
 {
   std::defer_lock_t defer_lock;
   std::try_to_lock_t try_to_lock;

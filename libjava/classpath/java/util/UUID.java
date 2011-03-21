@@ -44,29 +44,29 @@ import java.security.NoSuchAlgorithmException;
 
 /**
  * This class represents a 128-bit UUID value.
- * 
+ *
  * There are several types of UUID, and while this class can be used to store
- * them, only the Leach-Salz (variant 2) UUID specified in RFC-4122 will 
+ * them, only the Leach-Salz (variant 2) UUID specified in RFC-4122 will
  * give meaningful results from the method calls.
  * See: http://tools.ietf.org/html/4122 for the details
  *
- * The format of a Leach-Salz (variant 2) time-based (version 1) UUID 
+ * The format of a Leach-Salz (variant 2) time-based (version 1) UUID
  * is as follows:
  * time_low - upper 32 bits of the most significant 64 bits,
  *            this is the least-significant part of the timestamp.
  *
  * time_mid - bits 16-31 of the most significant 64 bits,
- *            this is the middle portion of the timestamp. 
+ *            this is the middle portion of the timestamp.
  *
- * version  - bits 8-15 of the most significant 64 bits. 
+ * version  - bits 8-15 of the most significant 64 bits.
  *
  * time_hi  - bits 0-7 of the most significant 64 bits,
  *            the most significant portion of the timestamp.
  *
  * clock_and_reserved  - bits 48-63 of the least significant 64 bits.
- *                       a variable number of bits hold the variant 
+ *                       a variable number of bits hold the variant
  *                       (see the spec)
- * 
+ *
  * node identifier     - bits 0-47 of the least signficant 64 bits.
  *
  * These fields are valid only for version 1, in the remaining versions,
@@ -75,8 +75,8 @@ import java.security.NoSuchAlgorithmException;
  * @since 1.5
  * @author Sven de Marothy
  */
-public final class UUID 
-  extends Object 
+public final class UUID
+  extends Object
   implements Serializable, Comparable<UUID>
 {
   private static final long serialVersionUID = -4856846361193249489L;
@@ -106,7 +106,7 @@ public final class UUID
     this.mostSigBits = mostSigBits;
     this.leastSigBits = leastSigBits;
   }
- 
+
   /**
    * Returns the clock-sequence value of this UUID.
    * This field only exists in a time-based (version 1) UUID.
@@ -147,8 +147,8 @@ public final class UUID
   {
     if( !(obj instanceof UUID ) )
       return false;
-    return ( ((UUID)obj).mostSigBits == mostSigBits && 
-	     ((UUID)obj).leastSigBits == leastSigBits );
+    return ( ((UUID)obj).mostSigBits == mostSigBits &&
+             ((UUID)obj).leastSigBits == leastSigBits );
   }
 
   /**
@@ -164,7 +164,7 @@ public final class UUID
     StringTokenizer st = new StringTokenizer( name.trim(), "-" );
     if( st.countTokens() < 5 )
       throw new IllegalArgumentException( "Incorrect UUID string"+
-					  " representation:"+name );
+                                          " representation:"+name );
 
     long msb = (Long.parseLong(st.nextToken(), 16) << 32); // time low
     msb |= (Long.parseLong(st.nextToken(), 16) << 16); // time mid
@@ -195,18 +195,18 @@ public final class UUID
     return // time-low first
       padHex( (( mostSigBits & 0xFFFFFFFF00000000L) >> 32) & 0xFFFFFFFFL, 8)
       + "-" + // then time-mid
-      padHex( (( mostSigBits & 0xFFFF0000L ) >> 16), 4 ) 
+      padHex( (( mostSigBits & 0xFFFF0000L ) >> 16), 4 )
       + "-" + // time-high
-      padHex( ( mostSigBits & 0x0000000000000000FFFFL ), 4 ) 
+      padHex( ( mostSigBits & 0x0000000000000000FFFFL ), 4 )
       + "-" + // clock (note - no reason to separate high and low here)
-      padHex( (((leastSigBits & 0xFFFF000000000000L) >> 48) & 0xFFFF), 4 ) 
+      padHex( (((leastSigBits & 0xFFFF000000000000L) >> 48) & 0xFFFF), 4 )
       + "-" + // finally the node value.
-      padHex(leastSigBits & 0xFFFFFFFFFFFFL, 12); 
+      padHex(leastSigBits & 0xFFFFFFFFFFFFL, 12);
   }
 
   /**
    * Returns the least significant 64 bits of the UUID as a <code>long</code>.
-   */ 
+   */
   public long getLeastSignificantBits()
   {
     return leastSigBits;
@@ -214,7 +214,7 @@ public final class UUID
 
   /**
    * Returns the most significant 64 bits of the UUID as a <code>long</code>.
-   */ 
+   */
   public long getMostSignificantBits()
   {
     return mostSigBits;
@@ -238,20 +238,20 @@ public final class UUID
    * from a series of bytes representing a name.
    */
   public static UUID nameUUIDFromBytes(byte[] name)
-  {    
+  {
     long msb, lsb;
     byte[] hash;
 
     try
       {
-	MessageDigest md5 = MessageDigest.getInstance("MD5");
-	hash = md5.digest( name );
-      } 
-    catch (NoSuchAlgorithmException e) 
-      {
-	throw new UnsupportedOperationException("No MD5 algorithm available.");
+        MessageDigest md5 = MessageDigest.getInstance("MD5");
+        hash = md5.digest( name );
       }
-	
+    catch (NoSuchAlgorithmException e)
+      {
+        throw new UnsupportedOperationException("No MD5 algorithm available.");
+      }
+
     msb = ((hash[0] & 0xFFL) << 56) | ((hash[1] & 0xFFL) << 48) |
       ((hash[2] & 0xFFL) << 40) | ((hash[3] & 0xFFL) << 32) |
       ((hash[4] & 0xFFL) << 24) | ((hash[5] & 0xFFL) << 16) |
@@ -262,23 +262,23 @@ public final class UUID
       ((hash[12] & 0xFFL) << 24) | ((hash[13] & 0xFFL) << 16) |
       ((hash[14] & 0xFFL) << 8) | (hash[15] & 0xFFL);
 
-    lsb &= 0x3FFFFFFFFFFFFFFFL; 
+    lsb &= 0x3FFFFFFFFFFFFFFFL;
     lsb |= 0x8000000000000000L; // set top two bits to variant 2
 
-    msb &= 0xFFFFFFFFFFFF0FFFL; 
-    msb |= 0x3000; // Version 3; 
+    msb &= 0xFFFFFFFFFFFF0FFFL;
+    msb |= 0x3000; // Version 3;
 
     return new UUID(msb, lsb);
   }
 
   /**
-   * Returns the 48-bit node value in a long. 
+   * Returns the 48-bit node value in a long.
    * This field only exists in a time-based (version 1) UUID.
    *
    * @throws UnsupportedOperationException if the UUID type is not 1.
    * @returns a long with the node value in the lower 48 bits.
    */
-  public long node() 
+  public long node()
   {
     if( version() != 1 )
       throw new UnsupportedOperationException("Not a type 1 UUID");
@@ -286,7 +286,7 @@ public final class UUID
   }
 
   /**
-   * Returns the 60-bit timestamp value of the UUID in a long. 
+   * Returns the 60-bit timestamp value of the UUID in a long.
    * This field only exists in a time-based (version 1) UUID.
    *
    * @throws UnsupportedOperationException if the UUID type is not 1.
@@ -309,15 +309,15 @@ public final class UUID
    *
    */
   public static UUID randomUUID()
-  {  
-    long lsb = r.nextLong(); 
+  {
+    long lsb = r.nextLong();
     long msb = r.nextLong();
 
-    lsb &= 0x3FFFFFFFFFFFFFFFL; 
+    lsb &= 0x3FFFFFFFFFFFFFFFL;
     lsb |= 0x8000000000000000L; // set top two bits to variant 2
 
-    msb &= 0xFFFFFFFFFFFF0FFFL; 
-    msb |= 0x4000; // Version 4; 
+    msb &= 0xFFFFFFFFFFFF0FFFL;
+    msb |= 0x4000; // Version 4;
 
     return new UUID( msb, lsb );
   }
@@ -350,7 +350,7 @@ public final class UUID
       return 0;
     if( (v & 0x02) == 0 ) // variant is 0 1 (Leach-Salz)
       return 2;
-    return v; // 6 or 7 
+    return v; // 6 or 7
   }
 
   /**

@@ -1,4 +1,4 @@
-/* DomCDATASection.java -- 
+/* DomCDATASection.java --
    Copyright (C) 1999,2000,2001,2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -58,7 +58,7 @@ public class DomCDATASection
   extends DomText
   implements CDATASection
 {
-  
+
   /**
    * Constructs a CDATA section node associated with the specified
    * document and holding the specified data.
@@ -86,6 +86,5 @@ public class DomCDATASection
   {
     return "#cdata-section";
   }
-  
-}
 
+}

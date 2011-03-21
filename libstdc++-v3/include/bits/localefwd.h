@@ -43,7 +43,9 @@
 #include <iosfwd>            // For ostreambuf_iterator, istreambuf_iterator
 #include <cctype>
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /** 
    *  @defgroup locales Locales
@@ -138,12 +140,12 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     class codecvt_byname;
 
   // 22.2.2 and 22.2.3 numeric
-_GLIBCXX_BEGIN_LDBL_NAMESPACE
+_GLIBCXX_BEGIN_NAMESPACE_LDBL
   template<typename _CharT, typename _InIter = istreambuf_iterator<_CharT> >
     class num_get;
   template<typename _CharT, typename _OutIter = ostreambuf_iterator<_CharT> >
     class num_put;
-_GLIBCXX_END_LDBL_NAMESPACE
+_GLIBCXX_END_NAMESPACE_LDBL
   template<typename _CharT> class numpunct;
   template<typename _CharT> class numpunct_byname;
 
@@ -166,12 +168,12 @@ _GLIBCXX_END_LDBL_NAMESPACE
 
   // 22.2.6 money
   class money_base;
-_GLIBCXX_BEGIN_LDBL_NAMESPACE
+_GLIBCXX_BEGIN_NAMESPACE_LDBL
   template<typename _CharT, typename _InIter =  istreambuf_iterator<_CharT> >
     class money_get;
   template<typename _CharT, typename _OutIter = ostreambuf_iterator<_CharT> >
     class money_put;
-_GLIBCXX_END_LDBL_NAMESPACE
+_GLIBCXX_END_NAMESPACE_LDBL
   template<typename _CharT, bool _Intl = false>
     class moneypunct;
   template<typename _CharT, bool _Intl = false>
@@ -184,6 +186,7 @@ _GLIBCXX_END_LDBL_NAMESPACE
   template<typename _CharT>
     class messages_byname;
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
 
 #endif

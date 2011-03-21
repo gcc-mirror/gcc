@@ -44,7 +44,7 @@ import java.io.IOException;
 
 /**
  * Wrapper for an short value.
- * 
+ *
  * @author Kyle Galloway <kgallowa@redhat.com>
  */
 public final class ShortValue
@@ -55,7 +55,7 @@ public final class ShortValue
 
   /**
    * Create a new ShortValue from a short
-   * 
+   *
    * @param value the short to wrap
    */
   public ShortValue(short value)
@@ -63,20 +63,20 @@ public final class ShortValue
     super(JdwpConstants.Tag.SHORT);
     _value = value;
   }
-  
+
   /**
    * Get the value held in this Value
-   * 
+   *
    * @return the value represented by this Value object
    */
   public short getValue()
   {
     return _value;
   }
-  
+
   /**
    * Return an object representing this type
-   * 
+   *
    * @return an Object represntation of this value
    */
   @Override
@@ -87,7 +87,7 @@ public final class ShortValue
 
   /**
    * Write the wrapped short to the given DataOutputStream.
-   * 
+   *
    * @param os the output stream to write to
    */
   @Override
@@ -97,4 +97,3 @@ public final class ShortValue
     os.writeShort(_value);
   }
 }
-

@@ -38,54 +38,54 @@ public class TestMemoryPool
     Iterator beans = ManagementFactory.getMemoryPoolMXBeans().iterator();
     while (beans.hasNext())
       {
-	MemoryPoolMXBean bean = (MemoryPoolMXBean) beans.next();
-	System.out.println("Bean: " + bean);
-	System.out.println("Name: " + bean.getName());
-	System.out.println("Collection usage: " + bean.getCollectionUsage());
-	boolean collectionUsage = bean.isCollectionUsageThresholdSupported();
-	System.out.println("Collection usage threshold supported: " 
-			   + collectionUsage);
-	if (collectionUsage)
-	  {
-	    System.out.println("Collection usage threshold: " 
-			       + bean.getCollectionUsageThreshold());
-	    System.out.println("Setting collection usage threshold to 1MB (" 
-			       + MB + " bytes)");
-	    bean.setCollectionUsageThreshold(MB);
-	    System.out.println("Collection usage threshold: " 
-			       + bean.getCollectionUsageThreshold());
-	    System.out.println("Collection usage threshold count: " 
-			       + bean.getCollectionUsageThresholdCount());
-	    System.out.println("Collection usage threshold exceeded: " 
-			       + (bean.isCollectionUsageThresholdExceeded()
-				  ? "yes" : "no"));
-	  }
-	System.out.println("Memory manager names: " 
-			   + Arrays.toString(bean.getMemoryManagerNames()));
-	System.out.println("Peak usage: " + bean.getPeakUsage());
-	System.out.println("Current usage: " + bean.getUsage());
-	System.out.println("Resetting peak usage...");
-	bean.resetPeakUsage();
-	System.out.println("Peak usage: " + bean.getPeakUsage());
-	System.out.println("Current usage: " + bean.getUsage());
-	boolean usage = bean.isUsageThresholdSupported();
-	System.out.println("Usage threshold supported: " + usage);
-	if (usage)
-	  {
-	    System.out.println("Usage threshold: " 
-			       + bean.getUsageThreshold());
-	    System.out.println("Setting usage threshold to 1MB (" 
-			       + MB + " bytes)");
-	    bean.setUsageThreshold(MB);
-	    System.out.println("Usage threshold: " 
-			       + bean.getUsageThreshold());
-	    System.out.println("Usage threshold count: " 
-			       + bean.getUsageThresholdCount());
-	    System.out.println("Usage threshold exceeded: " 
-			       + (bean.isUsageThresholdExceeded()
-				  ? "yes" : "no"));
-	  }
-	System.out.println("Valid: " + (bean.isValid() ? "yes" : "no"));
+        MemoryPoolMXBean bean = (MemoryPoolMXBean) beans.next();
+        System.out.println("Bean: " + bean);
+        System.out.println("Name: " + bean.getName());
+        System.out.println("Collection usage: " + bean.getCollectionUsage());
+        boolean collectionUsage = bean.isCollectionUsageThresholdSupported();
+        System.out.println("Collection usage threshold supported: "
+                           + collectionUsage);
+        if (collectionUsage)
+          {
+            System.out.println("Collection usage threshold: "
+                               + bean.getCollectionUsageThreshold());
+            System.out.println("Setting collection usage threshold to 1MB ("
+                               + MB + " bytes)");
+            bean.setCollectionUsageThreshold(MB);
+            System.out.println("Collection usage threshold: "
+                               + bean.getCollectionUsageThreshold());
+            System.out.println("Collection usage threshold count: "
+                               + bean.getCollectionUsageThresholdCount());
+            System.out.println("Collection usage threshold exceeded: "
+                               + (bean.isCollectionUsageThresholdExceeded()
+                                  ? "yes" : "no"));
+          }
+        System.out.println("Memory manager names: "
+                           + Arrays.toString(bean.getMemoryManagerNames()));
+        System.out.println("Peak usage: " + bean.getPeakUsage());
+        System.out.println("Current usage: " + bean.getUsage());
+        System.out.println("Resetting peak usage...");
+        bean.resetPeakUsage();
+        System.out.println("Peak usage: " + bean.getPeakUsage());
+        System.out.println("Current usage: " + bean.getUsage());
+        boolean usage = bean.isUsageThresholdSupported();
+        System.out.println("Usage threshold supported: " + usage);
+        if (usage)
+          {
+            System.out.println("Usage threshold: "
+                               + bean.getUsageThreshold());
+            System.out.println("Setting usage threshold to 1MB ("
+                               + MB + " bytes)");
+            bean.setUsageThreshold(MB);
+            System.out.println("Usage threshold: "
+                               + bean.getUsageThreshold());
+            System.out.println("Usage threshold count: "
+                               + bean.getUsageThresholdCount());
+            System.out.println("Usage threshold exceeded: "
+                               + (bean.isUsageThresholdExceeded()
+                                  ? "yes" : "no"));
+          }
+        System.out.println("Valid: " + (bean.isValid() ? "yes" : "no"));
       }
   }
 }

@@ -80,7 +80,7 @@ public abstract class DateFormatProvider
    * @see java.text.DateFormat#getDateInstance(int,java.util.Locale)
    */
   public abstract DateFormat getDateInstance(int style,
-					     Locale locale);
+                                             Locale locale);
 
   /**
    * Returns a {@link java.text.DateFormat} instance
@@ -103,8 +103,8 @@ public abstract class DateFormatProvider
    * @see java.text.DateFormat#getDateInstance(java.util.Locale)
    */
   public abstract DateFormat getDateTimeInstance(int dateStyle,
-						 int timeStyle,
-						 Locale locale);
+                                                 int timeStyle,
+                                                 Locale locale);
 
   /**
    * Returns a {@link java.text.DateFormat} instance
@@ -124,6 +124,6 @@ public abstract class DateFormatProvider
    * @see java.text.DateFormat#getTimeInstance(int,java.util.Locale)
    */
   public abstract DateFormat getTimeInstance(int style,
-					     Locale locale);
+                                             Locale locale);
 
 }

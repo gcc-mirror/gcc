@@ -165,7 +165,7 @@ public class IIOMetadataNode
   private class IIONodeList implements NodeList
   {
     List children = new ArrayList();
-  
+
     /* (non-Javadoc)
      * @see org.w3c.dom.NodeList#item(int)
      */
@@ -187,7 +187,7 @@ public class IIOMetadataNode
   {
     // Do nothing here.
   }
-  
+
   public IIOMetadataNode(String nodename)
   {
     name = nodename;
@@ -202,7 +202,7 @@ public class IIOMetadataNode
   {
     obj = o;
   }
-  
+
   public short compareDocumentPosition(Node other)
     throws DOMException
   {
@@ -260,7 +260,7 @@ public class IIOMetadataNode
       getElementsRecurse(list, name);
     }
   }
-  
+
   /* (non-Javadoc)
    * @see org.w3c.dom.Element#getElementsByTagName(java.lang.String)
    */
@@ -280,7 +280,7 @@ public class IIOMetadataNode
     getElementsRecurse(list, name);
     return list;
   }
-  
+
   /* (non-Javadoc)
    * @see org.w3c.dom.Element#getTagName()
    */
@@ -288,7 +288,7 @@ public class IIOMetadataNode
   {
     return name;
   }
-  
+
   /* (non-Javadoc)
    * @see org.w3c.dom.Element#hasAttribute(java.lang.String)
    */
@@ -296,7 +296,7 @@ public class IIOMetadataNode
   {
     return attrs.containsKey(name);
   }
-  
+
   /* (non-Javadoc)
    * @see org.w3c.dom.Element#hasAttributeNS(java.lang.String, java.lang.String)
    */
@@ -304,7 +304,7 @@ public class IIOMetadataNode
   {
     return attrs.containsKey(localName);
   }
-  
+
   /* (non-Javadoc)
    * @see org.w3c.dom.Element#removeAttribute(java.lang.String)
    */
@@ -320,7 +320,7 @@ public class IIOMetadataNode
   {
     return (Attr)attrs.remove(oldAttr.getName());
   }
-  
+
   /* (non-Javadoc)
    * @see org.w3c.dom.Element#removeAttributeNS(java.lang.String, java.lang.String)
    */
@@ -328,7 +328,7 @@ public class IIOMetadataNode
   {
     removeAttribute(localName);
   }
-  
+
   /* (non-Javadoc)
    * @see org.w3c.dom.Element#setAttribute(java.lang.String, java.lang.String)
    */
@@ -340,7 +340,7 @@ public class IIOMetadataNode
     else
       attrs.put(name, new IIOMetadataNodeAttr(this, name, value));
   }
-  
+
   /* (non-Javadoc)
    * @see org.w3c.dom.Element#setAttributeNode(org.w3c.dom.Attr)
    */
@@ -348,7 +348,7 @@ public class IIOMetadataNode
   {
     return (Attr)attrs.put(newAttr.getName(), newAttr);
   }
-  
+
   /* (non-Javadoc)
    * @see org.w3c.dom.Element#setAttributeNodeNS(org.w3c.dom.Attr)
    */
@@ -356,15 +356,15 @@ public class IIOMetadataNode
   {
     return (Attr)attrs.put(newAttr.getName(), newAttr);
   }
-  
+
   /* (non-Javadoc)
    * @see org.w3c.dom.Element#setAttributeNS(java.lang.String, java.lang.String, java.lang.String)
    */
   public void setAttributeNS(String namespaceURI, String qualifiedName, String value)
   {
-    setAttribute(qualifiedName, value);    
+    setAttribute(qualifiedName, value);
   }
-  
+
   /* (non-Javadoc)
    * @see org.w3c.dom.NodeList#getLength()
    */
@@ -372,7 +372,7 @@ public class IIOMetadataNode
   {
     return children.size();
   }
-  
+
   /* (non-Javadoc)
    * @see org.w3c.dom.NodeList#item(int)
    */
@@ -383,7 +383,7 @@ public class IIOMetadataNode
     else
       return null;
   }
-  
+
   /* (non-Javadoc)
    * @see org.w3c.dom.Node#appendChild(org.w3c.dom.Node)
    */
@@ -391,9 +391,9 @@ public class IIOMetadataNode
   {
     if (newChild == null)
       throw new IllegalArgumentException("Child node is null");
-    
+
     IIOMetadataNode child = (IIOMetadataNode) newChild;
-    
+
     children.add(child);
     child.parent = this;
     return this;
@@ -412,7 +412,7 @@ public class IIOMetadataNode
       for (int i=0; i < children.size(); i++)
         newnode.children.add(((Node)children.get(i)).cloneNode(deep));
     }
-    
+
     // clone attrs
     for (Iterator it = attrs.values().iterator(); it.hasNext();)
     {
@@ -452,7 +452,7 @@ public class IIOMetadataNode
   {
     return (children.size() > 0) ? (Node)children.get(0) : null;
   }
-  
+
   /* (non-Javadoc)
    * @see org.w3c.dom.Node#getLastChild()
    */
@@ -469,7 +469,7 @@ public class IIOMetadataNode
   {
     return name;
   }
-  
+
   /* (non-Javadoc)
    * @see org.w3c.dom.Node#getNamespaceURI()
    */
@@ -477,7 +477,7 @@ public class IIOMetadataNode
   {
     return null;
   }
-  
+
   /* (non-Javadoc)
    * @see org.w3c.dom.Node#getNextSibling()
    */
@@ -497,7 +497,7 @@ public class IIOMetadataNode
   {
     return name;
   }
-  
+
   /* (non-Javadoc)
    * @see org.w3c.dom.Node#getNodeType()
    */
@@ -530,7 +530,7 @@ public class IIOMetadataNode
   {
     return parent;
   }
-  
+
   /* (non-Javadoc)
    * @see org.w3c.dom.Node#getPrefix()
    */
@@ -538,7 +538,7 @@ public class IIOMetadataNode
   {
     return null;
   }
-  
+
   /* (non-Javadoc)
    * @see org.w3c.dom.Node#getPreviousSibling()
    */
@@ -566,7 +566,7 @@ public class IIOMetadataNode
   {
     return null;
   }
-  
+
   /* (non-Javadoc)
    * @see org.w3c.dom.Node#hasAttributes()
    */
@@ -574,7 +574,7 @@ public class IIOMetadataNode
   {
     return !attrs.isEmpty();
   }
-  
+
   /* (non-Javadoc)
    * @see org.w3c.dom.Node#hasChildNodes()
    */
@@ -590,14 +590,14 @@ public class IIOMetadataNode
   {
     if (newChild == null)
       throw new IllegalArgumentException();
-    
+
     int idx = children.indexOf(refChild);
     if (idx == -1)
       children.add(newChild);
     else
       children.add(idx, newChild);
     ((IIOMetadataNode)newChild).parent = this;
-    
+
     return newChild;
   }
 
@@ -610,12 +610,12 @@ public class IIOMetadataNode
   {
     return true;
   }
-  
+
   public boolean isSameNode(Node other)
   {
     return this == other;
   }
-  
+
   /* (non-Javadoc)
    * @see org.w3c.dom.Node#isSupported(java.lang.String, java.lang.String)
    */
@@ -624,12 +624,12 @@ public class IIOMetadataNode
     // No DOM features are supported
     return false;
   }
-  
+
   public String lookupNamespaceURI(String prefix)
   {
     return null;
   }
-  
+
   public String lookupPrefix(String namespaceURI)
   {
     return null;
@@ -667,7 +667,7 @@ public class IIOMetadataNode
     ((IIOMetadataNode)oldChild).parent = null;
     return oldChild;
   }
-  
+
   public void setIdAttribute(String name, boolean isId)
     throws DOMException
   {
@@ -682,14 +682,14 @@ public class IIOMetadataNode
     throws DOMException
   {
   }
-  
+
   /* (non-Javadoc)
    * @see org.w3c.dom.Node#setNodeValue(java.lang.String)
    */
   public void setNodeValue(String nodeValue) throws DOMException
   {
   }
-  
+
   /* (non-Javadoc)
    * @see org.w3c.dom.Node#setPrefix(java.lang.String)
    */
@@ -701,7 +701,7 @@ public class IIOMetadataNode
     throws DOMException
   {
   }
-  
+
   public Object setUserData(String key, Object data, UserDataHandler handler)
   {
     return null;

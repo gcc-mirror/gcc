@@ -150,7 +150,7 @@ public class LogManager
    * this case.
    */
   private final PropertyChangeSupport pcs = new PropertyChangeSupport( /* source bean */
-								      LogManager.class);
+                                                                      LogManager.class);
 
   protected LogManager()
   {
@@ -272,13 +272,13 @@ public class LogManager
     ref = loggers.get(name);
     if (ref != null)
       {
-	if (ref.get() != null)
-	  return false;
+        if (ref.get() != null)
+          return false;
 
-	/* There has been a logger under this name in the past,
-	 * but it has been garbage collected.
-	 */
-	loggers.remove(ref);
+        /* There has been a logger under this name in the past,
+         * but it has been garbage collected.
+         */
+        loggers.remove(ref);
       }
 
     /* Adding a named logger requires a security permission. */
@@ -292,10 +292,10 @@ public class LogManager
 
     // The level of the newly added logger must be specified.
     // The easiest case is if there is a level for exactly this logger
-    // in the properties. If no such level exists the level needs to be 
+    // in the properties. If no such level exists the level needs to be
     // searched along the hirachy. So if there is a new logger 'foo.blah.blub'
     // and an existing parent logger 'foo' the properties 'foo.blah.blub.level'
-    // and 'foo.blah.level' need to be checked. If both do not exist in the 
+    // and 'foo.blah.level' need to be checked. If both do not exist in the
     // properties the level of the new logger is set to 'null' (i.e. it uses the
     // level of its parent 'foo').
     Level logLevel = logger.getLevel();
@@ -320,21 +320,21 @@ public class LogManager
      */
     for (Iterator iter = loggers.keySet().iterator(); iter.hasNext();)
       {
-	Logger possChild = (Logger) ((WeakReference) loggers.get(iter.next()))
-	  .get();
-	if ((possChild == null) || (possChild == logger)
-	    || (possChild.getParent() != parent))
-	  continue;
-	
-	if (! possChild.getName().startsWith(name))
-	  continue;
-	
-	if (possChild.getName().charAt(name.length()) != '.')
-	  continue;
-	
-	possChild.setParent(logger);
+        Logger possChild = (Logger) ((WeakReference) loggers.get(iter.next()))
+          .get();
+        if ((possChild == null) || (possChild == logger)
+            || (possChild.getParent() != parent))
+          continue;
+
+        if (! possChild.getName().startsWith(name))
+          continue;
+
+        if (possChild.getName().charAt(name.length()) != '.')
+          continue;
+
+        possChild.setParent(logger);
       }
-    
+
     return true;
   }
 
@@ -369,20 +369,20 @@ public class LogManager
 
     for (String candName : loggers.keySet())
       {
-	candNameLength = candName.length();
+        candNameLength = candName.length();
 
-	if (candNameLength > bestNameLength
-	    && childNameLength > candNameLength
-	    && childName.startsWith(candName)
-	    && childName.charAt(candNameLength) == '.')
-	  {
-	    cand = loggers.get(candName).get();
-	    if ((cand == null) || (cand == child))
-	      continue;
+        if (candNameLength > bestNameLength
+            && childNameLength > candNameLength
+            && childName.startsWith(candName)
+            && childName.charAt(candNameLength) == '.')
+          {
+            cand = loggers.get(candName).get();
+            if ((cand == null) || (cand == child))
+              continue;
 
-	    bestNameLength = candName.length();
-	    best = cand;
-	  }
+            bestNameLength = candName.length();
+            best = cand;
+          }
       }
 
     return best;
@@ -447,22 +447,22 @@ public class LogManager
     Iterator<WeakReference<Logger>> iter = loggers.values().iterator();
     while (iter.hasNext())
       {
-	WeakReference<Logger> ref;
-	Logger logger;
+        WeakReference<Logger> ref;
+        Logger logger;
 
-	ref = iter.next();
-	if (ref != null)
-	  {
-	    logger = ref.get();
+        ref = iter.next();
+        if (ref != null)
+          {
+            logger = ref.get();
 
-	    if (logger == null)
-	      iter.remove();
-	    else if (logger != Logger.root)
-	      {
-	        logger.resetLogger();
-	        logger.setLevel(null);
-	      }
-	  }
+            if (logger == null)
+              iter.remove();
+            else if (logger != Logger.root)
+              {
+                logger.resetLogger();
+                logger.setLevel(null);
+              }
+          }
       }
 
     Logger.root.setLevel(Level.INFO);
@@ -505,7 +505,7 @@ public class LogManager
         try
           {
             inputStream = new URL(url).openStream();
-          } 
+          }
         catch (Exception e)
           {
             inputStream=null;
@@ -549,46 +549,46 @@ public class LogManager
 
     while (keys.hasMoreElements())
       {
-	String key = ((String) keys.nextElement()).trim();
-	String value = newProperties.getProperty(key);
+        String key = ((String) keys.nextElement()).trim();
+        String value = newProperties.getProperty(key);
 
-	if (value == null)
-	  continue;
+        if (value == null)
+          continue;
 
-	value = value.trim();
+        value = value.trim();
 
-	if ("handlers".equals(key))
-	  {
-	    // In Java 5 and earlier this was specified to be
-	    // whitespace-separated, but in reality it also accepted
-	    // commas (tomcat relied on this), and in Java 6 the
-	    // documentation was updated to fit the implementation.
-	    StringTokenizer tokenizer = new StringTokenizer(value,
-							    " \t\n\r\f,");
-	    while (tokenizer.hasMoreTokens())
-	      {
-		String handlerName = tokenizer.nextToken();
+        if ("handlers".equals(key))
+          {
+            // In Java 5 and earlier this was specified to be
+            // whitespace-separated, but in reality it also accepted
+            // commas (tomcat relied on this), and in Java 6 the
+            // documentation was updated to fit the implementation.
+            StringTokenizer tokenizer = new StringTokenizer(value,
+                                                            " \t\n\r\f,");
+            while (tokenizer.hasMoreTokens())
+              {
+                String handlerName = tokenizer.nextToken();
                 Handler handler = (Handler)
                   createInstance(handlerName, Handler.class, key);
-		// Tomcat also relies on the implementation ignoring
-		// items in 'handlers' which are not class names.
-		if (handler != null)
-		  Logger.root.addHandler(handler);
-	      }
-	  }
+                // Tomcat also relies on the implementation ignoring
+                // items in 'handlers' which are not class names.
+                if (handler != null)
+                  Logger.root.addHandler(handler);
+              }
+          }
 
-	if (key.endsWith(".level"))
-	  {
-	    String loggerName = key.substring(0, key.length() - 6);
-	    Logger logger = getLogger(loggerName);
+        if (key.endsWith(".level"))
+          {
+            String loggerName = key.substring(0, key.length() - 6);
+            Logger logger = getLogger(loggerName);
 
-	    if (logger == null)
-	      {
-		logger = Logger.getLogger(loggerName);
-		addLogger(logger);
-	      }
+            if (logger == null)
+              {
+                logger = Logger.getLogger(loggerName);
+                addLogger(logger);
+              }
             Level level = null;
-	    try
+            try
               {
                 level = Level.parse(value);
               }
@@ -600,8 +600,8 @@ public class LogManager
               {
                 logger.setLevel(level);
               }
-	    continue;
-	  }
+            continue;
+          }
       }
 
     /* The API specification does not talk about the
@@ -640,11 +640,11 @@ public class LogManager
   {
     try
       {
-	return Integer.parseInt(getLogManager().getProperty(name));
+        return Integer.parseInt(getLogManager().getProperty(name));
       }
     catch (Exception ex)
       {
-	return defaultValue;
+        return defaultValue;
       }
   }
 
@@ -691,11 +691,11 @@ public class LogManager
   {
     try
       {
-	return (Boolean.valueOf(getLogManager().getProperty(name))).booleanValue();
+        return (Boolean.valueOf(getLogManager().getProperty(name))).booleanValue();
       }
     catch (Exception ex)
       {
-	return defaultValue;
+        return defaultValue;
       }
   }
 
@@ -717,14 +717,14 @@ public class LogManager
     try
       {
         String value = getLogManager().getProperty(propertyName);
-	if (value != null)
-	  return Level.parse(getLogManager().getProperty(propertyName));
+        if (value != null)
+          return Level.parse(getLogManager().getProperty(propertyName));
         else
-	   return defaultValue;
+           return defaultValue;
       }
     catch (Exception ex)
       {
-	return defaultValue;
+        return defaultValue;
       }
   }
 
@@ -784,15 +784,15 @@ public class LogManager
 
     try
       {
-	return defaultClass.newInstance();
+        return defaultClass.newInstance();
       }
     catch (java.lang.InstantiationException ex)
       {
-	throw new RuntimeException(ex.getMessage());
+        throw new RuntimeException(ex.getMessage());
       }
     catch (java.lang.IllegalAccessException ex)
       {
-	throw new RuntimeException(ex.getMessage());
+        throw new RuntimeException(ex.getMessage());
       }
   }
 

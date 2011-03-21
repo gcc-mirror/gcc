@@ -105,33 +105,33 @@ public class MBeanAttributeInfo
    * @throws IntrospectionException if both the accessor and mutator method
    *                                are <code>null</code>.
    */
-  public MBeanAttributeInfo(String name, String desc, 
-			    Method getter, Method setter)
+  public MBeanAttributeInfo(String name, String desc,
+                            Method getter, Method setter)
     throws IntrospectionException
   {
     super(name, desc);
     if (getter == null && setter == null)
       throw new IntrospectionException("Both the getter and setter methods can " +
-				       "not be null.");
+                                       "not be null.");
     if (getter == null)
       {
-	Type t = setter.getGenericParameterTypes()[0];
-	if (t instanceof Class)
-	  attributeType = ((Class<?>) t).getName();
-	else
-	  attributeType = t.toString();
-	isRead = false;
-	is = false;
+        Type t = setter.getGenericParameterTypes()[0];
+        if (t instanceof Class)
+          attributeType = ((Class<?>) t).getName();
+        else
+          attributeType = t.toString();
+        isRead = false;
+        is = false;
       }
     else
       {
-	Type t = getter.getGenericReturnType();
-	if (t instanceof Class)
-	  attributeType = ((Class<?>) t).getName();
-	else
-	  attributeType = t.toString();
-	isRead = true;
-	is = getter.getName().startsWith("is");
+        Type t = getter.getGenericReturnType();
+        if (t instanceof Class)
+          attributeType = ((Class<?>) t).getName();
+        else
+          attributeType = t.toString();
+        isRead = true;
+        is = getter.getName().startsWith("is");
       }
     if (setter != null)
       isWrite = true;
@@ -140,7 +140,7 @@ public class MBeanAttributeInfo
   /**
    * Constructs a new {@link MBeanAttributeInfo} using the specified
    * name, description and type with the given settings for the accessor
-   * and mutator methods.  
+   * and mutator methods.
    *
    * @param name the name of the attribute.
    * @param type the type of the attribute, in the form of its class name.
@@ -152,13 +152,13 @@ public class MBeanAttributeInfo
    *                                  and unwritable.
    */
   public MBeanAttributeInfo(String name, String type, String desc,
-			    boolean isReadable, boolean isWritable,
-			    boolean isIs)
+                            boolean isReadable, boolean isWritable,
+                            boolean isIs)
   {
     super(name, desc);
     if (!isReadable && !isWritable)
       throw new IllegalArgumentException("The attribute can not be both " +
-					 "unreadable and unwritable.");
+                                         "unreadable and unwritable.");
     attributeType = type;
     isRead = isReadable;
     isWrite = isWritable;
@@ -179,13 +179,13 @@ public class MBeanAttributeInfo
   {
     try
       {
-	return super.clone();
+        return super.clone();
       }
     catch (CloneNotSupportedException e)
       {
-	/* This shouldn't happen; we implement Cloneable */
-	throw new IllegalStateException("clone() called on " +
-					"non-cloneable object.");
+        /* This shouldn't happen; we implement Cloneable */
+        throw new IllegalStateException("clone() called on " +
+                                        "non-cloneable object.");
       }
   }
 
@@ -200,7 +200,7 @@ public class MBeanAttributeInfo
    *
    * @param obj the object to compare.
    * @return true if the object is a {@link MBeanAttributeInfo}
-   *         instance, 
+   *         instance,
    *         <code>name.equals(object.getName())</code>,
    *         <code>description.equals(object.getDescription())</code>,
    *         <code>attributeType.equals(object.getType())</code>,
@@ -216,9 +216,9 @@ public class MBeanAttributeInfo
       return false;
     MBeanAttributeInfo o = (MBeanAttributeInfo) obj;
     return (attributeType.equals(o.getType()) &&
-	    isRead == o.isReadable() &&
-	    isWrite == o.isWritable() &&
-	    is == o.isIs());
+            isRead == o.isReadable() &&
+            isWrite == o.isWritable() &&
+            is == o.isIs());
   }
 
   /**
@@ -284,8 +284,8 @@ public class MBeanAttributeInfo
    * Returns a textual representation of this instance.  This
    * is constructed using the class name
    * (<code>javax.management.MBeanAttributeInfo</code>),
-   * the name, description and type of the attribute and the 
-   * current settings of the {@link #isReadable()}, 
+   * the name, description and type of the attribute and the
+   * current settings of the {@link #isReadable()},
    * {@link #isWritable()} and {@link #isIs()} properties.
    * </p>
    * <p>
@@ -301,13 +301,13 @@ public class MBeanAttributeInfo
   {
     if (string == null)
       {
-	super.toString();
-	string = string.substring(0, string.length() - 1) 
-	  + ",type=" + attributeType
-	  + ",isReadable=" + (isRead ? "yes" : "no")
-	  + ",isWritable=" + (isWrite ? "yes" : "no")
-	  + ",isIs=" + (is ? "yes" : "no")
-	  + "]";
+        super.toString();
+        string = string.substring(0, string.length() - 1)
+          + ",type=" + attributeType
+          + ",isReadable=" + (isRead ? "yes" : "no")
+          + ",isWritable=" + (isWrite ? "yes" : "no")
+          + ",isIs=" + (is ? "yes" : "no")
+          + "]";
       }
     return string;
   }

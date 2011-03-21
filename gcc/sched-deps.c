@@ -715,9 +715,6 @@ sd_init_insn (rtx insn)
   INSN_FORW_DEPS (insn) = create_deps_list ();
   INSN_RESOLVED_FORW_DEPS (insn) = create_deps_list ();
 
-  if (DEBUG_INSN_P (insn))
-    DEBUG_INSN_SCHED_P (insn) = TRUE;
-
   /* ??? It would be nice to allocate dependency caches here.  */
 }
 
@@ -726,12 +723,6 @@ void
 sd_finish_insn (rtx insn)
 {
   /* ??? It would be nice to deallocate dependency caches here.  */
-
-  if (DEBUG_INSN_P (insn))
-    {
-      gcc_assert (DEBUG_INSN_SCHED_P (insn));
-      DEBUG_INSN_SCHED_P (insn) = FALSE;
-    }
 
   free_deps_list (INSN_HARD_BACK_DEPS (insn));
   INSN_HARD_BACK_DEPS (insn) = NULL;
@@ -1575,7 +1566,7 @@ add_insn_mem_dependence (struct deps_desc *deps, bool read_p,
   if (sched_deps_info->use_cselib)
     {
       mem = shallow_copy_rtx (mem);
-      XEXP (mem, 0) = cselib_subst_to_values (XEXP (mem, 0));
+      XEXP (mem, 0) = cselib_subst_to_values (XEXP (mem, 0), GET_MODE (mem));
     }
   link = alloc_EXPR_LIST (VOIDmode, canon_rtx (mem), *mem_list);
   *mem_list = link;
@@ -2292,8 +2283,9 @@ sched_analyze_1 (struct deps_desc *deps, rtx x, rtx insn)
 	    = targetm.addr_space.address_mode (MEM_ADDR_SPACE (dest));
 
 	  t = shallow_copy_rtx (dest);
-	  cselib_lookup_from_insn (XEXP (t, 0), address_mode, 1, insn);
-	  XEXP (t, 0) = cselib_subst_to_values (XEXP (t, 0));
+	  cselib_lookup_from_insn (XEXP (t, 0), address_mode, 1,
+				   GET_MODE (t), insn);
+	  XEXP (t, 0) = cselib_subst_to_values (XEXP (t, 0), GET_MODE (t));
 	}
       t = canon_rtx (t);
 
@@ -2449,8 +2441,9 @@ sched_analyze_2 (struct deps_desc *deps, rtx x, rtx insn)
 	      = targetm.addr_space.address_mode (MEM_ADDR_SPACE (t));
 
 	    t = shallow_copy_rtx (t);
-	    cselib_lookup_from_insn (XEXP (t, 0), address_mode, 1, insn);
-	    XEXP (t, 0) = cselib_subst_to_values (XEXP (t, 0));
+	    cselib_lookup_from_insn (XEXP (t, 0), address_mode, 1,
+				     GET_MODE (t), insn);
+	    XEXP (t, 0) = cselib_subst_to_values (XEXP (t, 0), GET_MODE (t));
 	  }
 
 	if (!DEBUG_INSN_P (insn))

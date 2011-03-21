@@ -8,7 +8,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -81,7 +81,7 @@ public class ObjectStreamClass implements Serializable
    *
    * Warning: If this class contains an invalid serialPersistentField arrays
    * lookup will not throw anything. However {@link #getFields()} will return
-   * an empty array and {@link java.io.ObjectOutputStream#writeObject} will throw an 
+   * an empty array and {@link java.io.ObjectOutputStream#writeObject} will throw an
    * {@link java.io.InvalidClassException}.
    *
    * @see java.io.Serializable
@@ -112,9 +112,9 @@ public class ObjectStreamClass implements Serializable
       return osc;
     else
       {
-	osc = new ObjectStreamClass(cl);
-	classLookupTable.put(cl, osc);
-	return osc;
+        osc = new ObjectStreamClass(cl);
+        classLookupTable.put(cl, osc);
+        return osc;
       }
   }
 
@@ -180,7 +180,7 @@ public class ObjectStreamClass implements Serializable
   {
     for (int i = 0; i < fields.length; i++)
       if (fields[i].getName().equals(name))
-	return fields[i];
+        return fields[i];
     return null;
   }
 
@@ -256,24 +256,24 @@ public class ObjectStreamClass implements Serializable
    */
   ObjectStreamClass[] hierarchy()
   {
-    ObjectStreamClass[] result = hierarchy; 
+    ObjectStreamClass[] result = hierarchy;
     if (result == null)
         {
-        int d = 0; 
-  
+        int d = 0;
+
         for(ObjectStreamClass osc = this; osc != null; osc = osc.getSuper())
           d++;
-  
+
         result = new ObjectStreamClass[d];
-  
+
         for (ObjectStreamClass osc = this; osc != null; osc = osc.getSuper())
           {
             result[--d] = osc;
           }
-  
-        hierarchy = result; 
+
+        hierarchy = result;
       }
-    return result; 
+    return result;
   }
 
   /**
@@ -292,7 +292,7 @@ public class ObjectStreamClass implements Serializable
 
 
   ObjectStreamClass(String name, long uid, byte flags,
-		    ObjectStreamField[] fields)
+                    ObjectStreamField[] fields)
   {
     this.name = name;
     this.uid = uid;
@@ -322,117 +322,117 @@ public class ObjectStreamClass implements Serializable
       uid = class_uid;
     else
       {
-	// Check that the actual UID of the resolved class matches the UID from 
-	// the stream. Mismatches for array classes are ignored.
-	if (!cl.isArray() && uid != class_uid)
-	  {
-	    String msg = cl + 
-	      ": Local class not compatible: stream serialVersionUID="
-	      + uid + ", local serialVersionUID=" + class_uid;
-	    throw new InvalidClassException (msg);
-	  }
+        // Check that the actual UID of the resolved class matches the UID from
+        // the stream. Mismatches for array classes are ignored.
+        if (!cl.isArray() && uid != class_uid)
+          {
+            String msg = cl +
+              ": Local class not compatible: stream serialVersionUID="
+              + uid + ", local serialVersionUID=" + class_uid;
+            throw new InvalidClassException (msg);
+          }
       }
 
     isProxyClass = clazz != null && Proxy.isProxyClass(clazz);
     this.superClass = superClass;
     calculateOffsets();
-    
+
     try
       {
-	ObjectStreamField[] exportedFields = getSerialPersistentFields (clazz);  
+        ObjectStreamField[] exportedFields = getSerialPersistentFields (clazz);
 
-	if (exportedFields == null)
-	  return;
+        if (exportedFields == null)
+          return;
 
-	ObjectStreamField[] newFieldList = new ObjectStreamField[exportedFields.length + fields.length];
-	int i, j, k;
+        ObjectStreamField[] newFieldList = new ObjectStreamField[exportedFields.length + fields.length];
+        int i, j, k;
 
-	/* We now check the import fields against the exported fields.
-	 * There should not be contradiction (e.g. int x and String x)
-	 * but extra virtual fields can be added to the class.
-	 */
+        /* We now check the import fields against the exported fields.
+         * There should not be contradiction (e.g. int x and String x)
+         * but extra virtual fields can be added to the class.
+         */
 
-	Arrays.sort(exportedFields);
+        Arrays.sort(exportedFields);
 
-	i = 0; j = 0; k = 0;
-	while (i < fields.length && j < exportedFields.length)
-	  {
-	    int comp = fields[i].compareTo(exportedFields[j]);
+        i = 0; j = 0; k = 0;
+        while (i < fields.length && j < exportedFields.length)
+          {
+            int comp = fields[i].compareTo(exportedFields[j]);
 
-	    if (comp < 0)
-	      {
-		newFieldList[k] = fields[i];
-		fields[i].setPersistent(false);
-		fields[i].setToSet(false);
-		i++;
-	      }
-	    else if (comp > 0)
-	      {
-		/* field not found in imported fields. We add it
-		 * in the list of supported fields.
-		 */
-		newFieldList[k] = exportedFields[j];
-		newFieldList[k].setPersistent(true);
-		newFieldList[k].setToSet(false);
-		try
-		  {
-		    newFieldList[k].lookupField(clazz);
-		    newFieldList[k].checkFieldType();
-		  }
-		catch (NoSuchFieldException _)
-		  {
-		  }
-		j++;
-	      }
-	    else
-	      {
-		try
-		  {
-		    exportedFields[j].lookupField(clazz);
-		    exportedFields[j].checkFieldType();
-		  }
-		catch (NoSuchFieldException _)
-		  {
-		  }
+            if (comp < 0)
+              {
+                newFieldList[k] = fields[i];
+                fields[i].setPersistent(false);
+                fields[i].setToSet(false);
+                i++;
+              }
+            else if (comp > 0)
+              {
+                /* field not found in imported fields. We add it
+                 * in the list of supported fields.
+                 */
+                newFieldList[k] = exportedFields[j];
+                newFieldList[k].setPersistent(true);
+                newFieldList[k].setToSet(false);
+                try
+                  {
+                    newFieldList[k].lookupField(clazz);
+                    newFieldList[k].checkFieldType();
+                  }
+                catch (NoSuchFieldException _)
+                  {
+                  }
+                j++;
+              }
+            else
+              {
+                try
+                  {
+                    exportedFields[j].lookupField(clazz);
+                    exportedFields[j].checkFieldType();
+                  }
+                catch (NoSuchFieldException _)
+                  {
+                  }
 
-		if (!fields[i].getType().equals(exportedFields[j].getType()))
-		  throw new InvalidClassException
-		    ("serialPersistentFields must be compatible with" +
-		     " imported fields (about " + fields[i].getName() + ")");
-		newFieldList[k] = fields[i];
-		fields[i].setPersistent(true);
-		i++;
-		j++;
-	      }
-	    k++;
-	  }
+                if (!fields[i].getType().equals(exportedFields[j].getType()))
+                  throw new InvalidClassException
+                    ("serialPersistentFields must be compatible with" +
+                     " imported fields (about " + fields[i].getName() + ")");
+                newFieldList[k] = fields[i];
+                fields[i].setPersistent(true);
+                i++;
+                j++;
+              }
+            k++;
+          }
 
-	if (i < fields.length)
-	  for (;i<fields.length;i++,k++)
-	    {
-	      fields[i].setPersistent(false);
-	      fields[i].setToSet(false);
-	      newFieldList[k] = fields[i];
-	    }
-	else
-	  if (j < exportedFields.length)
-	    for (;j<exportedFields.length;j++,k++)
-	      {
-		exportedFields[j].setPersistent(true);
-		exportedFields[j].setToSet(false);
-		newFieldList[k] = exportedFields[j];
-	      }
-	
-	fields = new ObjectStreamField[k];
-	System.arraycopy(newFieldList, 0, fields, 0, k);
+        if (i < fields.length)
+          for (;i<fields.length;i++,k++)
+            {
+              fields[i].setPersistent(false);
+              fields[i].setToSet(false);
+              newFieldList[k] = fields[i];
+            }
+        else
+          if (j < exportedFields.length)
+            for (;j<exportedFields.length;j++,k++)
+              {
+                exportedFields[j].setPersistent(true);
+                exportedFields[j].setToSet(false);
+                newFieldList[k] = exportedFields[j];
+              }
+
+        fields = new ObjectStreamField[k];
+        System.arraycopy(newFieldList, 0, fields, 0, k);
       }
     catch (NoSuchFieldException ignore)
       {
-	return;
+        return;
       }
     catch (IllegalAccessException ignore)
       {
-	return;
+        return;
       }
   }
 
@@ -450,31 +450,31 @@ public class ObjectStreamClass implements Serializable
     int fcount = fields.length;
     for (i = 0; i < fcount; ++ i)
       {
-	field = fields[i];
+        field = fields[i];
 
-	if (! field.isPrimitive())
-	  break;
+        if (! field.isPrimitive())
+          break;
 
-	field.setOffset(primFieldSize);
-	switch (field.getTypeCode())
-	  {
-	  case 'B':
-	  case 'Z':
-	    ++ primFieldSize;
-	    break;
-	  case 'C':
-	  case 'S':
-	    primFieldSize += 2;
-	    break;
-	  case 'I':
-	  case 'F':
-	    primFieldSize += 4;
-	    break;
-	  case 'D':
-	  case 'J':
-	    primFieldSize += 8;
-	    break;
-	  }
+        field.setOffset(primFieldSize);
+        switch (field.getTypeCode())
+          {
+          case 'B':
+          case 'Z':
+            ++ primFieldSize;
+            break;
+          case 'C':
+          case 'S':
+            primFieldSize += 2;
+            break;
+          case 'I':
+          case 'F':
+            primFieldSize += 4;
+            break;
+          case 'D':
+          case 'J':
+            primFieldSize += 8;
+            break;
+          }
       }
 
     for (objectFieldCount = 0; i < fcount; ++ i)
@@ -482,12 +482,12 @@ public class ObjectStreamClass implements Serializable
   }
 
   private Method findMethod(Method[] methods, String name, Class[] params,
-			    Class returnType, boolean mustBePrivate)
+                            Class returnType, boolean mustBePrivate)
   {
 outer:
     for (int i = 0; i < methods.length; i++)
     {
-	final Method m = methods[i];
+        final Method m = methods[i];
         int mods = m.getModifiers();
         if (Modifier.isStatic(mods)
             || (mustBePrivate && !Modifier.isPrivate(mods)))
@@ -495,23 +495,23 @@ outer:
             continue;
         }
 
-	if (m.getName().equals(name)
-	   && m.getReturnType() == returnType)
-	{
-	    Class[] mp = m.getParameterTypes();
-	    if (mp.length == params.length)
-	    {
-		for (int j = 0; j < mp.length; j++)
-		{
-		    if (mp[j] != params[j])
-		    {
-			continue outer;
-		    }
-		}
-		AccessController.doPrivileged(new SetAccessibleAction(m));
-		return m;
-	    }
-	}
+        if (m.getName().equals(name)
+           && m.getReturnType() == returnType)
+        {
+            Class[] mp = m.getParameterTypes();
+            if (mp.length == params.length)
+            {
+                for (int j = 0; j < mp.length; j++)
+                {
+                    if (mp[j] != params[j])
+                    {
+                        continue outer;
+                    }
+                }
+                AccessController.doPrivileged(new SetAccessibleAction(m));
+                return m;
+            }
+        }
     }
     return null;
   }
@@ -540,23 +540,23 @@ outer:
   {
     for (Class c = from; c != null; c = c.getSuperclass())
       {
-	try
-	  {
-	    Method res = c.getDeclaredMethod(name, noArgs);
-	    int mods = res.getModifiers();
-	    
-	    if (c == from  
-		|| Modifier.isProtected(mods)
-		|| Modifier.isPublic(mods)
-		|| (! Modifier.isPrivate(mods) && inSamePackage(c, from)))
-	      {
-		AccessController.doPrivileged(new SetAccessibleAction(res));
-		return res;
-	      }
-	  }
-	catch (NoSuchMethodException e)
-	  {
-	  }
+        try
+          {
+            Method res = c.getDeclaredMethod(name, noArgs);
+            int mods = res.getModifiers();
+
+            if (c == from
+                || Modifier.isProtected(mods)
+                || Modifier.isPublic(mods)
+                || (! Modifier.isPrivate(mods) && inSamePackage(c, from)))
+              {
+                AccessController.doPrivileged(new SetAccessibleAction(res));
+                return res;
+              }
+          }
+        catch (NoSuchMethodException e)
+          {
+          }
       }
 
     return null;
@@ -576,37 +576,37 @@ outer:
   private static boolean loadedByBootOrApplicationClassLoader(Class cl)
   {
     ClassLoader l = cl.getClassLoader();
-    return 
-      (   l == null                             /* boot loader */       ) 
+    return
+      (   l == null                             /* boot loader */       )
       || (l == ClassLoader.getSystemClassLoader() /* application loader */);
-  } 
+  }
 
-  static Hashtable methodCache = new Hashtable(); 
-  
+  static Hashtable methodCache = new Hashtable();
+
   static final Class[] readObjectSignature  = { ObjectInputStream.class };
   static final Class[] writeObjectSignature = { ObjectOutputStream.class };
 
   private void cacheMethods()
   {
-    Class cl = forClass(); 
-    Method[] cached = (Method[]) methodCache.get(cl); 
+    Class cl = forClass();
+    Method[] cached = (Method[]) methodCache.get(cl);
     if (cached == null)
       {
         cached = new Method[4];
         Method[] methods = cl.getDeclaredMethods();
-        
+
         cached[0] = findMethod(methods, "readObject",
-                               readObjectSignature, 
+                               readObjectSignature,
                                Void.TYPE, true);
         cached[1] = findMethod(methods, "writeObject",
-                               writeObjectSignature, 
+                               writeObjectSignature,
                                Void.TYPE, true);
 
         // readResolve and writeReplace can be in parent classes, as long as they
         // are accessible from this class.
         cached[2] = findAccessibleMethod("readResolve", cl);
         cached[3] = findAccessibleMethod("writeReplace", cl);
-        
+
         /* put in cache if classes not loaded by user class loader.
          * For a user class loader, the cache may otherwise grow
          * without limit.
@@ -681,65 +681,65 @@ outer:
 
     if (!isSerializable() || isExternalizable() || isEnum())
       {
-	fields = NO_FIELDS;
-	return;
+        fields = NO_FIELDS;
+        return;
       }
 
     try
       {
-	final Field f =
-	  cl.getDeclaredField("serialPersistentFields");
-	setAccessible.setMember(f);
-	AccessController.doPrivileged(setAccessible);
-	int modifiers = f.getModifiers();
+        final Field f =
+          cl.getDeclaredField("serialPersistentFields");
+        setAccessible.setMember(f);
+        AccessController.doPrivileged(setAccessible);
+        int modifiers = f.getModifiers();
 
-	if (Modifier.isStatic(modifiers)
-	    && Modifier.isFinal(modifiers)
-	    && Modifier.isPrivate(modifiers))
-	  {
-	    fields = getSerialPersistentFields(cl);
-	    if (fields != null)
-	      {
-		ObjectStreamField[] fieldsName = new ObjectStreamField[fields.length];
-		System.arraycopy(fields, 0, fieldsName, 0, fields.length);
+        if (Modifier.isStatic(modifiers)
+            && Modifier.isFinal(modifiers)
+            && Modifier.isPrivate(modifiers))
+          {
+            fields = getSerialPersistentFields(cl);
+            if (fields != null)
+              {
+                ObjectStreamField[] fieldsName = new ObjectStreamField[fields.length];
+                System.arraycopy(fields, 0, fieldsName, 0, fields.length);
 
-		Arrays.sort (fieldsName, new Comparator() {
-			public int compare(Object o1, Object o2)
-			{
-			  ObjectStreamField f1 = (ObjectStreamField)o1;
-			  ObjectStreamField f2 = (ObjectStreamField)o2;
-			    
-			  return f1.getName().compareTo(f2.getName());
-			}
-		    });
-		
-		for (int i=1; i < fields.length; i++)
-		  {
-		    if (fieldsName[i-1].getName().equals(fieldsName[i].getName()))
-			{
-			    fields = INVALID_FIELDS;
-			    return;
-			}
-		  }
+                Arrays.sort (fieldsName, new Comparator() {
+                        public int compare(Object o1, Object o2)
+                        {
+                          ObjectStreamField f1 = (ObjectStreamField)o1;
+                          ObjectStreamField f2 = (ObjectStreamField)o2;
 
-		Arrays.sort (fields);
-		// Retrieve field reference.
-		for (int i=0; i < fields.length; i++)
-		  {
-		    try
-		      {
-			fields[i].lookupField(cl);
-		      }
-		    catch (NoSuchFieldException _)
-		      {
-			fields[i].setToSet(false);
-		      }
-		  }
-		
-		calculateOffsets();
-		return;
-	      }
-	  }
+                          return f1.getName().compareTo(f2.getName());
+                        }
+                    });
+
+                for (int i=1; i < fields.length; i++)
+                  {
+                    if (fieldsName[i-1].getName().equals(fieldsName[i].getName()))
+                        {
+                            fields = INVALID_FIELDS;
+                            return;
+                        }
+                  }
+
+                Arrays.sort (fields);
+                // Retrieve field reference.
+                for (int i=0; i < fields.length; i++)
+                  {
+                    try
+                      {
+                        fields[i].lookupField(cl);
+                      }
+                    catch (NoSuchFieldException _)
+                      {
+                        fields[i].setToSet(false);
+                      }
+                  }
+
+                calculateOffsets();
+                return;
+              }
+          }
       }
     catch (NoSuchFieldException ignore)
       {
@@ -755,34 +755,34 @@ outer:
     // set non-serializable fields to null in all_fields
     for (int i = 0; i < all_fields.length; i++)
       {
-	modifiers = all_fields[i].getModifiers();
-	if (Modifier.isTransient(modifiers)
-	    || Modifier.isStatic(modifiers))
-	  all_fields[i] = null;
-	else
-	  num_good_fields++;
+        modifiers = all_fields[i].getModifiers();
+        if (Modifier.isTransient(modifiers)
+            || Modifier.isStatic(modifiers))
+          all_fields[i] = null;
+        else
+          num_good_fields++;
       }
 
     // make a copy of serializable (non-null) fields
     fields = new ObjectStreamField[ num_good_fields ];
     for (int from = 0, to = 0; from < all_fields.length; from++)
       if (all_fields[from] != null)
-	{
-	  final Field f = all_fields[from];
-	  setAccessible.setMember(f);
-	  AccessController.doPrivileged(setAccessible);
-	  fields[to] = new ObjectStreamField(all_fields[from]);
-	  to++;
-	}
+        {
+          final Field f = all_fields[from];
+          setAccessible.setMember(f);
+          AccessController.doPrivileged(setAccessible);
+          fields[to] = new ObjectStreamField(all_fields[from]);
+          to++;
+        }
 
     Arrays.sort(fields);
     // Make sure we don't have any duplicate field names
     // (Sun JDK 1.4.1. throws an Internal Error as well)
     for (int i = 1; i < fields.length; i++)
       {
-	if(fields[i - 1].getName().equals(fields[i].getName()))
-	    throw new InternalError("Duplicate field " + 
-			fields[i].getName() + " in class " + cl.getName());
+        if(fields[i - 1].getName().equals(fields[i].getName()))
+            throw new InternalError("Duplicate field " +
+                        fields[i].getName() + " in class " + cl.getName());
       }
     calculateOffsets();
   }
@@ -796,17 +796,17 @@ outer:
     long result = 0;
     Long cache = (Long) uidCache.get(cl);
     if (cache != null)
-      result = cache.longValue(); 
+      result = cache.longValue();
     else
       {
-	// Note that we can't use Class.isEnum() here, because that returns
-	// false for java.lang.Enum and enum value sub classes.
-	if (Enum.class.isAssignableFrom(cl) || Proxy.isProxyClass(cl))
-	  {
-	    // Spec says that enums and dynamic proxies have
-	    // a serialVersionUID of 0L.
-	    return 0L;
-	  }
+        // Note that we can't use Class.isEnum() here, because that returns
+        // false for java.lang.Enum and enum value sub classes.
+        if (Enum.class.isAssignableFrom(cl) || Proxy.isProxyClass(cl))
+          {
+            // Spec says that enums and dynamic proxies have
+            // a serialVersionUID of 0L.
+            return 0L;
+          }
         try
           {
             result = getClassUIDFromField(cl);
@@ -844,11 +844,11 @@ outer:
    * @throws NoSuchFieldException if such a field does not exist or is
    * not static, not final, not of type Long or not accessible.
    */
-  long getClassUIDFromField(Class cl) 
+  long getClassUIDFromField(Class cl)
     throws NoSuchFieldException
   {
     long result;
-    
+
     try
       {
         // Use getDeclaredField rather than getField, since serialVersionUID
@@ -858,7 +858,7 @@ outer:
         SetAccessibleAction setAccessible = new SetAccessibleAction(suid);
         AccessController.doPrivileged(setAccessible);
         int modifiers = suid.getModifiers();
-        
+
         if (Modifier.isStatic(modifiers)
             && Modifier.isFinal(modifiers)
             && suid.getType() == Long.TYPE)
@@ -887,12 +887,12 @@ outer:
    * @throws IOException if writing to the DigestOutputStream causes
    * an IOException.
    */
-  long calculateClassUID(Class cl) 
+  long calculateClassUID(Class cl)
     throws NoSuchAlgorithmException, IOException
   {
-    long result; 
+    long result;
     MessageDigest md;
-    try 
+    try
       {
         md = MessageDigest.getInstance("SHA");
       }
@@ -903,19 +903,19 @@ outer:
         Security.addProvider(gnuProvider);
         md = MessageDigest.getInstance("SHA");
       }
-    
+
     DigestOutputStream digest_out =
       new DigestOutputStream(nullOutputStream, md);
     DataOutputStream data_out = new DataOutputStream(digest_out);
-    
+
     data_out.writeUTF(cl.getName());
-    
+
     int modifiers = cl.getModifiers();
     // just look at interesting bits
     modifiers = modifiers & (Modifier.ABSTRACT | Modifier.FINAL
                              | Modifier.INTERFACE | Modifier.PUBLIC);
     data_out.writeInt(modifiers);
-    
+
     // Pretend that an array has no interfaces, because when array
     // serialization was defined (JDK 1.1), arrays didn't have it.
     if (! cl.isArray())
@@ -925,7 +925,7 @@ outer:
         for (int i = 0; i < interfaces.length; i++)
           data_out.writeUTF(interfaces[i].getName());
       }
-    
+
     Field field;
     Field[] fields = cl.getDeclaredFields();
     Arrays.sort(fields, memberComparator);
@@ -937,12 +937,12 @@ outer:
             && (Modifier.isStatic(modifiers)
                 || Modifier.isTransient(modifiers)))
           continue;
-        
+
         data_out.writeUTF(field.getName());
         data_out.writeInt(modifiers);
         data_out.writeUTF(TypeSignature.getEncodingOfClass (field.getType()));
       }
-    
+
     // write class initializer method if present
     if (VMObjectStreamClass.hasClassInitializer(cl))
       {
@@ -950,7 +950,7 @@ outer:
         data_out.writeInt(Modifier.STATIC);
         data_out.writeUTF("()V");
       }
-    
+
     Constructor constructor;
     Constructor[] constructors = cl.getDeclaredConstructors();
     Arrays.sort (constructors, memberComparator);
@@ -960,16 +960,16 @@ outer:
         modifiers = constructor.getModifiers();
         if (Modifier.isPrivate(modifiers))
           continue;
-        
+
         data_out.writeUTF("<init>");
         data_out.writeInt(modifiers);
-        
+
         // the replacement of '/' with '.' was needed to make computed
         // SUID's agree with those computed by JDK
-        data_out.writeUTF 
+        data_out.writeUTF
           (TypeSignature.getEncodingOfConstructor(constructor).replace('/','.'));
       }
-    
+
     Method method;
     Method[] methods = cl.getDeclaredMethods();
     Arrays.sort(methods, memberComparator);
@@ -979,16 +979,16 @@ outer:
         modifiers = method.getModifiers();
         if (Modifier.isPrivate(modifiers))
           continue;
-        
+
         data_out.writeUTF(method.getName());
         data_out.writeInt(modifiers);
-        
+
         // the replacement of '/' with '.' was needed to make computed
         // SUID's agree with those computed by JDK
         data_out.writeUTF
           (TypeSignature.getEncodingOfMethod(method).replace('/', '.'));
       }
-    
+
     data_out.close();
     byte[] sha = md.digest();
     result = 0;
@@ -1008,7 +1008,7 @@ outer:
    * @param clazz Class to retrieve 'serialPersistentFields' from.
    * @return The content of 'serialPersistentFields'.
    */
-  private ObjectStreamField[] getSerialPersistentFields(Class clazz) 
+  private ObjectStreamField[] getSerialPersistentFields(Class clazz)
     throws NoSuchFieldException, IllegalAccessException
   {
     ObjectStreamField[] fieldsArray = null;
@@ -1021,12 +1021,12 @@ outer:
 
     int modifiers = f.getModifiers();
     if (!(Modifier.isStatic(modifiers) &&
-	  Modifier.isFinal(modifiers) &&
-	  Modifier.isPrivate(modifiers)))
+          Modifier.isFinal(modifiers) &&
+          Modifier.isPrivate(modifiers)))
       return null;
-    
+
     o = (ObjectStreamField[]) f.get(null);
-    
+
     if (o == null)
       return null;
 
@@ -1047,40 +1047,40 @@ outer:
   {
     synchronized(this)
     {
-	if (constructor == null)
-	{
-	    try
-	    {
-		final Constructor c = clazz.getConstructor(new Class[0]);
+        if (constructor == null)
+        {
+            try
+            {
+                final Constructor c = clazz.getConstructor(new Class[0]);
 
-		AccessController.doPrivileged(new PrivilegedAction()
-		{
-		    public Object run()
-		    {
-			c.setAccessible(true);
-			return null;
-		    }
-		});
+                AccessController.doPrivileged(new PrivilegedAction()
+                {
+                    public Object run()
+                    {
+                        c.setAccessible(true);
+                        return null;
+                    }
+                });
 
-		constructor = c;
-	    }
-	    catch(NoSuchMethodException x)
-	    {
-		throw new InvalidClassException(clazz.getName(),
-		    "No public zero-argument constructor");
-	    }
-	}
+                constructor = c;
+            }
+            catch(NoSuchMethodException x)
+            {
+                throw new InvalidClassException(clazz.getName(),
+                    "No public zero-argument constructor");
+            }
+        }
     }
 
     try
     {
-	return (Externalizable)constructor.newInstance();
+        return (Externalizable)constructor.newInstance();
     }
     catch(Exception x)
     {
-	throw (InvalidClassException)
-	    new InvalidClassException(clazz.getName(),
-		     "Unable to instantiate").initCause(x);
+        throw (InvalidClassException)
+            new InvalidClassException(clazz.getName(),
+                     "Unable to instantiate").initCause(x);
     }
   }
 
@@ -1153,7 +1153,7 @@ outer:
 
       if (comp == 0)
         return TypeSignature.getEncodingOfMember(m1).
-	  compareTo(TypeSignature.getEncodingOfMember(m2));
+          compareTo(TypeSignature.getEncodingOfMember(m2));
       else
         return comp;
     }

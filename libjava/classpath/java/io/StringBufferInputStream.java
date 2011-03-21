@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -43,7 +43,7 @@ package java.io;
  * plus online API docs for JDK 1.2 beta from http://www.javasoft.com.
  * Status:  Believed complete and correct.  Deprecated in JDK 1.1.
  */
- 
+
 /**
   * This class permits a <code>String</code> to be read as an input stream.
   * The low eight bits of each character in the <code>String</code> are the
@@ -51,10 +51,10 @@ package java.io;
   * discarded.
   * <p>
   * The mark/reset functionality in this class behaves differently than
-  * normal.  The <code>mark()</code> method is always ignored and the 
-  * <code>reset()</code> method always resets in stream to start reading from 
-  * position 0 in the String.  Note that since this method does not override 
-  * <code>markSupported()</code> in <code>InputStream</code>, calling that 
+  * normal.  The <code>mark()</code> method is always ignored and the
+  * <code>reset()</code> method always resets in stream to start reading from
+  * position 0 in the String.  Note that since this method does not override
+  * <code>markSupported()</code> in <code>InputStream</code>, calling that
   * method will return <code>false</code>.
   * <p>
   * Note that this class is deprecated because it does not properly handle
@@ -104,7 +104,7 @@ public class StringBufferInputStream extends InputStream
   }
 
  /**
-  * This method reads one byte from the stream.  The <code>pos</code> counter 
+  * This method reads one byte from the stream.  The <code>pos</code> counter
   * is advanced to the next byte to be read.  The byte read is returned as
   * an int in the range of 0-255.  If the stream position is already at the
   * end of the buffer, no byte is read and a -1 is returned in order to
@@ -115,18 +115,18 @@ public class StringBufferInputStream extends InputStream
   public int read()
   {
     if (pos >= count)
-      return -1;	// EOF
+      return -1;        // EOF
 
     return ((int) buffer.charAt(pos++)) & 0xFF;
   }
 
 /**
   * This method reads bytes from the stream and stores them into a caller
-  * supplied buffer.  It starts storing the data at index <code>offset</code> 
+  * supplied buffer.  It starts storing the data at index <code>offset</code>
   * into the buffer and attempts to read <code>len</code> bytes.  This method
   * can return before reading the number of bytes requested if the end of the
-  * stream is encountered first.  The actual number of bytes read is 
-  * returned.  If no bytes can be read because the stream is already at 
+  * stream is encountered first.  The actual number of bytes read is
+  * returned.  If no bytes can be read because the stream is already at
   * the end of stream position, a -1 is returned.
   * <p>
   * This method does not block.
@@ -143,7 +143,7 @@ public class StringBufferInputStream extends InputStream
       throw new ArrayIndexOutOfBoundsException();
 
     if (pos >= count)
-      return -1;	// EOF
+      return -1;        // EOF
 
     int numRead = Math.min(len, count - pos);
     if (numRead < 0)

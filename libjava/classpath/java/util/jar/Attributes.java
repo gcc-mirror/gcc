@@ -67,7 +67,7 @@ import java.util.Set;
  * @see java.util.jar.Attributes.Name
  * @author Mark Wielaard (mark@klomp.org)
  */
-public class Attributes 
+public class Attributes
   implements Cloneable, Map<Object, Object>
 {
 
@@ -87,16 +87,16 @@ public class Attributes
    * know names for the general main attributes, stand alone application
    * attributes, applet attributes, extension identification attributes,
    * package versioning and sealing attributes, file contents attributes,
-   * bean objects attribute and signing attributes. See the 
-   * 
+   * bean objects attribute and signing attributes. See the
+   *
    * <p>The characters of a Name must obey the following restrictions:</p>
-   * 
+   *
    * <ul>
    * <li>Must contain at least one character</li>
    * <li>The first character must be alphanumeric (a-z, A-Z, 0-9)</li>
    * <li>All other characters must be alphanumeric, a '-' or a '_'</li>
    * </ul>
-   * 
+   *
    * <p>When comparing Names (with <code>equals</code>) all characters are
    * converted to lowercase. But you can get the original case sensitive
    * string with the <code>toString()</code> method.</p>
@@ -125,13 +125,13 @@ public class Attributes
      * the version of this Manifest file.
      */
     public static final Name MANIFEST_VERSION = new Name(JarUtils.MANIFEST_VERSION);
-    
+
     /**
      * General main attribute -
      * the version of the jar file signature.
      */
     public static final Name SIGNATURE_VERSION = new Name(JarUtils.SIGNATURE_VERSION);
-    
+
     /**
      * General main attribute -
      * (relative) file paths of the libraries/classpaths that the Classes in
@@ -172,7 +172,7 @@ public class Attributes
      * the name if the extension library contained in the jar.
      */
     public static final Name EXTENSION_NAME = new Name("Extension-Name");
-    
+
     /**
      * Extension identification attribute -
      * synonym for <code>EXTENSTION_NAME</code>.
@@ -180,42 +180,42 @@ public class Attributes
     public static final Name EXTENSION_INSTALLATION = EXTENSION_NAME;
 
     // Package versioning and sealing attributes
-    
+
     /**
      * Package versioning -
      * name of extension library contained in this jar.
      */
     public static final Name IMPLEMENTATION_TITLE
       = new Name("Implementation-Title");
-    
+
     /**
      * Package versioning -
      * version of the extension library contained in this jar.
      */
     public static final Name IMPLEMENTATION_VERSION
       = new Name("Implementation-Version");
-    
+
     /**
      * Package versioning -
      * name of extension library creator contained in this jar.
      */
     public static final Name IMPLEMENTATION_VENDOR
       = new Name("Implementation-Vendor");
-    
+
     /**
      * Package versioning -
      * unique id of extension library creator.
      */
     public static final Name IMPLEMENTATION_VENDOR_ID
       = new Name("Implementation-Vendor-Id");
-    
+
     /**
      * Package versioning -
      * location where this implementation can be downloaded.
      */
     public static final Name IMPLEMENTATION_URL
       = new Name("Implementation-URL");
-    
+
     /**
      * Package versioning -
      * title of the specification contained in this jar.
@@ -263,7 +263,7 @@ public class Attributes
      * Creates a new Name from the given String.
      * Throws an IllegalArgumentException if the given String is empty or
      * contains any illegal Name characters.
-     * 
+     *
      * @param name the name of the new Name
      * @exception IllegalArgumentException if name isn't a valid String
      * representation of a Name
@@ -278,28 +278,28 @@ public class Attributes
 
       // there must be at least one character
       if (chars.length == 0)
-	throw new
-	  IllegalArgumentException
-	  ("There must be at least one character in a name");
+        throw new
+          IllegalArgumentException
+          ("There must be at least one character in a name");
 
       // first character must be alphanum
       char c = chars[0];
       if (!((c >= 'a' && c <= 'z') ||
-	    (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9')))
-	throw new
-	  IllegalArgumentException("First character must be alphanum");
+            (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9')))
+        throw new
+          IllegalArgumentException("First character must be alphanum");
 
       // all other characters must be alphanums, '-' or '_'
       for (int i = 1; i < chars.length; i++)
-	{
-	  c = chars[i];
-	  if (!((c >= 'a' && c <= 'z') ||
-		(c >= 'A' && c <= 'Z') ||
-		(c >= '0' && c <= '9') || (c == '-') || (c == '_')))
-	    throw new
-	      IllegalArgumentException
-	      ("Characters must be alphanums, '-' or '_'");
-	}
+        {
+          c = chars[i];
+          if (!((c >= 'a' && c <= 'z') ||
+                (c >= 'A' && c <= 'Z') ||
+                (c >= '0' && c <= '9') || (c == '-') || (c == '_')))
+            throw new
+              IllegalArgumentException
+              ("Characters must be alphanums, '-' or '_'");
+        }
 
       // Still here? Then convert to lower case and be done.
       // Store the original name for toString();
@@ -325,23 +325,23 @@ public class Attributes
     {
       // Quick and dirty check
       if (name == o)
-	return true;
+        return true;
 
       try
-	{
-	  // Note that the constructor already converts the strings to
-	  // lowercase.
-	  String otherName = ((Name) o).name;
-	  return name.equals(otherName);
-	}
+        {
+          // Note that the constructor already converts the strings to
+          // lowercase.
+          String otherName = ((Name) o).name;
+          return name.equals(otherName);
+        }
       catch (ClassCastException cce)
-	{
-	  return false;
-	}
+        {
+          return false;
+        }
       catch (NullPointerException npe)
-	{
-	  return false;
-	}
+        {
+          return false;
+        }
     }
 
     /**
@@ -514,15 +514,15 @@ public class Attributes
 
     try
       {
-	return map.equals(((Attributes) o).map);
+        return map.equals(((Attributes) o).map);
       }
     catch (ClassCastException cce)
       {
-	return false;
+        return false;
       }
     catch (NullPointerException npe)
       {
-	return false;
+        return false;
       }
   }
 
@@ -591,8 +591,8 @@ public class Attributes
   {
     if (!(attr instanceof Attributes))
       {
-	throw new
-	  ClassCastException("Supplied Map is not an instance of Attributes");
+        throw new
+          ClassCastException("Supplied Map is not an instance of Attributes");
       }
     map.putAll(attr);
   }

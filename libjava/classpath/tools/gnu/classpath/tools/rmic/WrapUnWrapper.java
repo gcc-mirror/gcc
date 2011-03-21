@@ -43,9 +43,9 @@ public class WrapUnWrapper
 {
   /**
    * Get the wrapper class for the primitive type
-   * 
+   *
    * @param primitive the class of the primitive type
-   * 
+   *
    * @return the wrapper class
    */
   public static Class getWrappingClass(Class primitive)
@@ -67,12 +67,12 @@ public class WrapUnWrapper
     else
       return null;
   }
-  
+
   /**
    * Get the method, invocation of that would return the wrapped value.
-   * 
+   *
    * @param primitive the class of the primitive type.
-   * 
+   *
    * @return the wrapper method that unwraps the value to the primitive type.
    */
   public static String getUnwrappingMethod(Class primitive)
@@ -92,8 +92,8 @@ public class WrapUnWrapper
     if (primitive.equals(char.class))
       return "charValue()";
     else
-      return null;    
+      return null;
   }
-  
-  
+
+
 }

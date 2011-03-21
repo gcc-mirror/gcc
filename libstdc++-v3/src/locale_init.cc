@@ -203,7 +203,9 @@ namespace
 #endif
 } // anonymous namespace
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   locale::locale() throw() : _M_impl(0)
   { 
@@ -468,4 +470,5 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 #endif
   }
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace

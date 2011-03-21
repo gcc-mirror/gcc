@@ -1,4 +1,4 @@
-/* MacOutputStream.java -- 
+/* MacOutputStream.java --
    Copyright (C) 2003, 2006 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -59,7 +59,7 @@ public class MacOutputStream
    * to digest data written, the <code>mac</code> argument must have already
    * been initialized, and the <code>mac</code> argument is <b>not</b>
    * cloned.
-   * 
+   *
    * @param out The underlying output stream.
    * @param mac The mac instance to use.
    */
@@ -74,7 +74,7 @@ public class MacOutputStream
 
   /**
    * Returns the MAC this stream is updating.
-   * 
+   *
    * @return The MAC.
    */
   public IMac getMac()
@@ -85,7 +85,7 @@ public class MacOutputStream
   /**
    * Sets the MAC this stream is updating, which must have already been
    * initialized. The argument is not cloned by this method.
-   * 
+   *
    * @param mac The non-null new MAC.
    * @throws NullPointerException If the argument is null.
    */
@@ -99,7 +99,7 @@ public class MacOutputStream
   /**
    * Turns the digesting state on or off. When off, the MAC will not be updated
    * when data is written to the stream.
-   * 
+   *
    * @param flag The new digesting state.
    */
   public void on(boolean flag)

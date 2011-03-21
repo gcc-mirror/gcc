@@ -83,7 +83,7 @@ public class SpinnerNumberModel extends AbstractSpinnerModel
    * @param minimum the minimum value
    * @param maximum the maximum value
    * @param stepSize the step size
-   * @throws IllegalArgumentException if minimum &lt;= value &lt;= maximum does 
+   * @throws IllegalArgumentException if minimum &lt;= value &lt;= maximum does
    *         not hold.
    */
   public SpinnerNumberModel(double value, double minimum, double maximum,
@@ -100,7 +100,7 @@ public class SpinnerNumberModel extends AbstractSpinnerModel
    * @param minimum the minimum value
    * @param maximum the maximum value
    * @param stepSize the step size
-   * @throws IllegalArgumentException if minimum &lt;= value &lt;= maximum does 
+   * @throws IllegalArgumentException if minimum &lt;= value &lt;= maximum does
    *         not hold.
    */
   public SpinnerNumberModel(int value, int minimum, int maximum, int stepSize)
@@ -111,7 +111,7 @@ public class SpinnerNumberModel extends AbstractSpinnerModel
 
   /**
    * Creates a <code>SpinnerNumberModel</code> with the given attributes.  The
-   * caller should ensure that both <code>minimum</code> and 
+   * caller should ensure that both <code>minimum</code> and
    * <code>maximum</code> are serializable.
    *
    * @param value the initial value (<code>null</code> not permitted).
@@ -121,9 +121,9 @@ public class SpinnerNumberModel extends AbstractSpinnerModel
    *
    * @throws IllegalArgumentException if minimum &lt;= value &lt;= maximum
    *         does not hold
-   * @throws IllegalArgumentException if <code>value</code> is 
+   * @throws IllegalArgumentException if <code>value</code> is
    *         <code>null</code>.
-   * @throws IllegalArgumentException if <code>stepSize</code> is 
+   * @throws IllegalArgumentException if <code>stepSize</code> is
    *         <code>null</code>.
    */
   public SpinnerNumberModel(Number value, Comparable minimum,
@@ -165,7 +165,7 @@ public class SpinnerNumberModel extends AbstractSpinnerModel
     if (! (value instanceof Number))
       throw new IllegalArgumentException("value must be a Number");
 
-    if (!this.value.equals(value)) 
+    if (!this.value.equals(value))
       {
         this.value = (Number) value;
         fireStateChanged();
@@ -177,7 +177,7 @@ public class SpinnerNumberModel extends AbstractSpinnerModel
    * {@link Number}.
    *
    * @return The current value.
-   * 
+   *
    * @see #getNumber()
    */
   public Object getValue()
@@ -187,10 +187,10 @@ public class SpinnerNumberModel extends AbstractSpinnerModel
 
   /**
    * Returns the next value, or <code>null</code> if adding the step size to
-   * the current value results in a value greater than the maximum value.  
+   * the current value results in a value greater than the maximum value.
    * The current value is not changed.
    *
-   * @return The next value, or <code>null</code> if the current value is the 
+   * @return The next value, or <code>null</code> if the current value is the
    *         maximum value represented by this model.
    */
   public Object getNextValue()
@@ -209,11 +209,11 @@ public class SpinnerNumberModel extends AbstractSpinnerModel
       num = new Short((short) (value.shortValue() + stepSize.shortValue()));
     else
       num = new Byte((byte) (value.byteValue() + stepSize.byteValue()));
-    
+
     // check upper bound if set
     if ((maximum != null) && maximum.compareTo(num) < 0)
       num = null;
-    
+
     return num;
   }
 
@@ -241,7 +241,7 @@ public class SpinnerNumberModel extends AbstractSpinnerModel
       num = new Short((short) (value.shortValue() - stepSize.shortValue()));
     else
       num = new Byte((byte) (value.byteValue() - stepSize.byteValue()));
-    
+
     // check lower bound if set
     if ((minimum != null) && minimum.compareTo(num) > 0)
       num = null;
@@ -261,9 +261,9 @@ public class SpinnerNumberModel extends AbstractSpinnerModel
 
   /**
    * Returns the minimum value, or <code>null</code> if there is no minimum.
-   * 
+   *
    * @return The minimum value.
-   * 
+   *
    * @see #setMinimum(Comparable)
    */
   public Comparable getMinimum()
@@ -273,15 +273,15 @@ public class SpinnerNumberModel extends AbstractSpinnerModel
 
   /**
    * Sets the minimum value and, if the new value is different to the old
-   * value, sends a {@link ChangeEvent} to all registered listeners.  A 
+   * value, sends a {@link ChangeEvent} to all registered listeners.  A
    * <code>null</code> value is interpreted as "no minimum value".  No check
-   * is made to ensure that the new minimum is less than or equal to the 
-   * current value, the caller is responsible for ensuring that this 
+   * is made to ensure that the new minimum is less than or equal to the
+   * current value, the caller is responsible for ensuring that this
    * relationship holds.  In addition, the caller should ensure that
    * <code>newMinimum</code> is {@link Serializable}.
-   * 
+   *
    * @param newMinimum  the new minimum value (<code>null</code> permitted).
-   * 
+   *
    * @see #getMinimum()
    */
   public void setMinimum(Comparable newMinimum)
@@ -295,9 +295,9 @@ public class SpinnerNumberModel extends AbstractSpinnerModel
 
   /**
    * Returns the maximum value, or <code>null</code> if there is no maximum.
-   * 
+   *
    * @return The maximum value.
-   * 
+   *
    * @see #getMinimum()
    * @see #setMaximum(Comparable)
    */
@@ -308,15 +308,15 @@ public class SpinnerNumberModel extends AbstractSpinnerModel
 
   /**
    * Sets the maximum value and, if the new value is different to the old
-   * value, sends a {@link ChangeEvent} to all registered listeners.  A 
+   * value, sends a {@link ChangeEvent} to all registered listeners.  A
    * <code>null</code> value is interpreted as "no maximum value".  No check
-   * is made to ensure that the new maximum is greater than or equal to the 
-   * current value, the caller is responsible for ensuring that this 
+   * is made to ensure that the new maximum is greater than or equal to the
+   * current value, the caller is responsible for ensuring that this
    * relationship holds. In addition, the caller should ensure that
    * <code>newMaximum</code> is {@link Serializable}.
-   * 
+   *
    * @param newMaximum  the new maximum (<code>null</code> permitted).
-   * 
+   *
    * @see #getMaximum()
    */
   public void setMaximum(Comparable newMaximum)
@@ -330,7 +330,7 @@ public class SpinnerNumberModel extends AbstractSpinnerModel
 
   /**
    * Returns the step size.
-   * 
+   *
    * @return The step size (never <code>null</code>).
    */
   public Number getStepSize()
@@ -341,10 +341,10 @@ public class SpinnerNumberModel extends AbstractSpinnerModel
   /**
    * Sets the step size and, if the new step size is different to the old
    * step size, sends a {@link ChangeEvent} to all registered listeners.
-   * 
+   *
    * @param newStepSize  the new step size (<code>null</code> not permitted).
-   * 
-   * @throws IllegalArgumentException if <code>newStepSize</code> is 
+   *
+   * @throws IllegalArgumentException if <code>newStepSize</code> is
    *         <code>null</code>.
    */
   public void setStepSize(Number newStepSize)

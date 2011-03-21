@@ -44,7 +44,7 @@ import java.util.List;
 
 /**
  * Class for handling proxies for different connections.
- * 
+ *
  * @since 1.5
  */
 public abstract class ProxySelector
@@ -100,17 +100,17 @@ public abstract class ProxySelector
 
   /**
    * Signals to the selector that a proxy was no available.
-   * 
+   *
    * @throws IllegalArgumentException If one argument is null
    */
   public abstract void connectFailed(URI uri, SocketAddress address,
-				     IOException exception);
+                                     IOException exception);
 
   /**
    * Returns the list of proxy settings for a given URI.
    *
    * @return list of proxy settings
-   * 
+   *
    * @throws IllegalArgumentException If uri is null
    */
   public abstract List<Proxy> select(URI uri);

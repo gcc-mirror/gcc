@@ -29,7 +29,9 @@
 
 #include <fstream>
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template class basic_filebuf<char, char_traits<char> >;
   template class basic_ifstream<char>;
@@ -43,4 +45,5 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   template class basic_fstream<wchar_t>;
 #endif
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace

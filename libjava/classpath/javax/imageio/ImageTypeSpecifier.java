@@ -90,7 +90,7 @@ public class ImageTypeSpecifier
     if (!colorModel.isCompatibleSampleModel(sampleModel))
       throw new IllegalArgumentException
         ("sample Model not compatible with colorModel");
-    
+
     this.colorModel = colorModel;
     this.sampleModel = sampleModel;
   }
@@ -107,7 +107,7 @@ public class ImageTypeSpecifier
   {
     if (image == null)
       throw new IllegalArgumentException("image may not be null");
-    
+
     this.colorModel = image.getColorModel();
     this.sampleModel = image.getSampleModel();
   }
@@ -324,11 +324,11 @@ public class ImageTypeSpecifier
    * data type
    */
   public static ImageTypeSpecifier createIndexed (byte[] redLUT,
-						  byte[] greenLUT,
-						  byte[] blueLUT,
-						  byte[] alphaLUT,
-						  int bits,
-						  int dataType)
+                                                  byte[] greenLUT,
+                                                  byte[] blueLUT,
+                                                  byte[] alphaLUT,
+                                                  int bits,
+                                                  int dataType)
   {
     if (redLUT == null || greenLUT == null || blueLUT == null)
       throw new IllegalArgumentException ("null colour table");
@@ -402,10 +402,10 @@ public class ImageTypeSpecifier
    * one value of the given data type.
    *
    * @param colorSpace the color space to use in the color model
-   * @param redMask the bitmask for the red bits 
-   * @param greenMask the bitmask for the green bits 
-   * @param blueMask the bitmask for the blue bits 
-   * @param alphaMask the bitmask for the alpha bits 
+   * @param redMask the bitmask for the red bits
+   * @param greenMask the bitmask for the green bits
+   * @param blueMask the bitmask for the blue bits
+   * @param alphaMask the bitmask for the alpha bits
    * @param transferType the data type used to store pixel values
    * @param isAlphaPremultiplied true if other colour channels should
    * be premultiplied by the alpha value, false otherwise

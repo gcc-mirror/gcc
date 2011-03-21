@@ -1,4 +1,4 @@
-/* NIOServerSocket.java -- 
+/* NIOServerSocket.java --
    Copyright (C) 2003, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -55,7 +55,7 @@ import java.security.PrivilegedExceptionAction;
 public final class NIOServerSocket extends ServerSocket
 {
   private ServerSocketChannelImpl channel;
-    
+
   protected NIOServerSocket (ServerSocketChannelImpl channel)
     throws IOException
   {
@@ -67,24 +67,24 @@ public final class NIOServerSocket extends ServerSocket
   {
     try
       {
-	final Object t = this;
-	final Method method = ServerSocket.class.getDeclaredMethod("getImpl", new Class[0]);
-	method.setAccessible(true);
-	PrivilegedExceptionAction action = new PrivilegedExceptionAction()
-	  {
-	    public Object run() throws Exception
-	    {
-	      return method.invoke(t, new Object[0]);
-	    }
-	  };
-	return (PlainSocketImpl) AccessController.doPrivileged(action);
+        final Object t = this;
+        final Method method = ServerSocket.class.getDeclaredMethod("getImpl", new Class[0]);
+        method.setAccessible(true);
+        PrivilegedExceptionAction action = new PrivilegedExceptionAction()
+          {
+            public Object run() throws Exception
+            {
+              return method.invoke(t, new Object[0]);
+            }
+          };
+        return (PlainSocketImpl) AccessController.doPrivileged(action);
       }
     catch (Exception e)
       {
-	// This should never happen.
-	Error error = new InternalError("unable to invoke method ServerSocket.getImpl()");
-	error.initCause(e);
-	throw error;
+        // This should never happen.
+        Error error = new InternalError("unable to invoke method ServerSocket.getImpl()");
+        error.initCause(e);
+        throw error;
       }
   }
 

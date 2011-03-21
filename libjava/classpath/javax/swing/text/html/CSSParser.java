@@ -43,18 +43,18 @@ import java.io.*;
 /**
  * Parses a CSS document. This works by way of a delegate that implements the
  * CSSParserCallback interface. The delegate is notified of the following
- * events: 
- * - Import statement: handleImport 
- * - Selectors handleSelector. This is invoked for each string. For example if 
- * the Reader contained p, bar , a {}, the delegate would be notified 4 times, 
- * for 'p,' 'bar' ',' and 'a'. 
- * - When a rule starts, startRule 
+ * events:
+ * - Import statement: handleImport
+ * - Selectors handleSelector. This is invoked for each string. For example if
+ * the Reader contained p, bar , a {}, the delegate would be notified 4 times,
+ * for 'p,' 'bar' ',' and 'a'.
+ * - When a rule starts, startRule
  * - Properties in the rule via the handleProperty. This
  * is invoked one per property/value key, eg font size: foo;, would cause the
- * delegate to be notified once with a value of 'font size'. 
- * - Values in the rule via the handleValue, this is notified for the total value. 
+ * delegate to be notified once with a value of 'font size'.
+ * - Values in the rule via the handleValue, this is notified for the total value.
  * - When a rule ends, endRule
- * 
+ *
  * @author Lillian Angel (langel@redhat.com)
  */
 class CSSParser
@@ -68,7 +68,7 @@ class CSSParser
   {
     /**
      * Handles the import statment in the document.
-     * 
+     *
      * @param imp - the import string
      */
     public abstract void handleImport(String imp);
@@ -85,21 +85,21 @@ class CSSParser
 
     /**
      * Handles the selector of a rule.
-     * 
+     *
      * @param selector - the selector in the rule
      */
     public abstract void handleSelector(String selector);
 
     /**
      * Handles the properties in the document.
-     * 
+     *
      * @param property - the property in the document.
      */
     public abstract void handleProperty(String property);
 
     /**
      * Handles the values in the document.
-     * 
+     *
      * @param value - the value to handle.
      */
     public abstract void handleValue(String value);
@@ -212,7 +212,7 @@ class CSSParser
 
   /**
    * Appends a character to the token buffer.
-   * 
+   *
    * @param c - the character to append
    */
   private void append(char c)
@@ -233,7 +233,7 @@ class CSSParser
 
   /**
    * Fetches the next token.
-   * 
+   *
    * @param c - the character to fetch.
    * @return the location
    * @throws IOException - any i/o error encountered while reading
@@ -276,7 +276,7 @@ class CSSParser
 
   /**
    * Reads a character from the stream.
-   * 
+   *
    * @return the number of characters read or -1 if end of stream is reached.
    * @throws IOException - any i/o encountered while reading
    */
@@ -293,19 +293,19 @@ class CSSParser
   /**
    * Parses the the contents of the reader using the
    * callback.
-   * 
+   *
    * @param reader - the reader to read from
    * @param callback - the callback instance
    * @param parsingDeclaration - true if parsing a declaration
    * @throws IOException - any i/o error from the reader
    */
-  void parse(Reader reader, CSSParser.CSSParserCallback callback, 
+  void parse(Reader reader, CSSParser.CSSParserCallback callback,
              boolean parsingDeclaration)
       throws IOException
   {
     this.reader = reader;
     this.callback = callback;
-    
+
     try
     {
       if (!parsingDeclaration)
@@ -322,7 +322,7 @@ class CSSParser
 
   /**
    * Skips any white space, returning the character after the white space.
-   * 
+   *
    * @return the character after the whitespace
    * @throws IOException - any i/o error from the reader
    */
@@ -337,7 +337,7 @@ class CSSParser
           return next;
         next = tempNext;
       }
-    
+
     // Its all whitespace
     return END;
   }
@@ -345,7 +345,7 @@ class CSSParser
   /**
    * Gets the next statement, returning false if the end is reached.
    * A statement is either an At-rule, or a ruleset.
-   * 
+   *
    * @return false if the end is reached
    * @throws IOException - any i/o error from the reader
    */
@@ -368,7 +368,7 @@ class CSSParser
             parseAtRule();
           else
             parseRuleSet();
-          break;  
+          break;
         case END:
           return false;
       }
@@ -377,28 +377,28 @@ class CSSParser
 
   /**
    * Parses an @ rule, stopping at a matching brace pair, or ;.
-   * 
+   *
    * @throws IOException - any i/o error from the reader
    */
   private void parseAtRule() throws IOException
-  {    
-    // An At-Rule begins with the "@" character followed immediately by a keyword. 
-    // Following the keyword separated by a space is an At-rule statement appropriate 
-    // to the At-keyword used. If the At-Rule is a simple declarative statement 
-    // (charset, import, fontdef), it is terminated by a semi-colon (";".) 
-    // If the At-Rule is a conditional or informative statement (media, page, font-face), 
-    // it is followed by optional arguments and then a style declaration block inside matching 
-    // curly braces ("{", "}".) At-Rules are sometimes nestable, depending on the context. 
+  {
+    // An At-Rule begins with the "@" character followed immediately by a keyword.
+    // Following the keyword separated by a space is an At-rule statement appropriate
+    // to the At-keyword used. If the At-Rule is a simple declarative statement
+    // (charset, import, fontdef), it is terminated by a semi-colon (";".)
+    // If the At-Rule is a conditional or informative statement (media, page, font-face),
+    // it is followed by optional arguments and then a style declaration block inside matching
+    // curly braces ("{", "}".) At-Rules are sometimes nestable, depending on the context.
     // If any part of an At-Rule is not understood, it should be ignored.
-    
+
     // FIXME: Not Implemented
-    // call handleimport 
+    // call handleimport
   }
 
   /**
-   * Parses the next rule set, which is a selector followed by a declaration 
+   * Parses the next rule set, which is a selector followed by a declaration
    * block.
-   * 
+   *
    * @throws IOException - any i/o error from the reader
    */
   private void parseRuleSet() throws IOException
@@ -411,9 +411,9 @@ class CSSParser
   }
 
   /**
-   * Parses a set of selectors, returning false if the end of the stream is 
+   * Parses a set of selectors, returning false if the end of the stream is
    * reached.
-   * 
+   *
    * @return false if the end of stream is reached
    * @throws IOException - any i/o error from the reader
    */
@@ -421,13 +421,13 @@ class CSSParser
   {
     // FIXME: Not Implemented
     // call handleselector
-    return false; 
+    return false;
   }
 
   /**
    * Parses a declaration block. Which a number of declarations followed by a
    * })].
-   * 
+   *
    * @throws IOException - any i/o error from the reader
    */
   private void parseDeclarationBlock() throws IOException
@@ -439,7 +439,7 @@ class CSSParser
   /**
    * Parses a single declaration, which is an identifier a : and another identifier.
    * This returns the last token seen.
-   * 
+   *
    * @returns the last token
    * @throws IOException - any i/o error from the reader
    */
@@ -447,13 +447,13 @@ class CSSParser
   {
     // call handleValue
     // FIXME: Not Implemented
-    return 0; 
+    return 0;
   }
 
   /**
    * Parses identifiers until c is encountered, returning the ending token,
    * which will be IDENTIFIER if c is found.
-   * 
+   *
    * @param c - the stop character
    * @param wantsBlocks - true if blocks are wanted
    * @return the ending token
@@ -469,7 +469,7 @@ class CSSParser
   /**
    * Parses till a matching block close is encountered. This is only appropriate
    * to be called at the top level (no nesting).
-   * 
+   *
    * @param i - FIXME
    * @throws IOException - any i/o error from the reader
    */
@@ -481,7 +481,7 @@ class CSSParser
   /**
    * Gets an identifier, returning true if the length of the string is greater
    * than 0, stopping when c, whitespace, or one of {}()[] is hit.
-   * 
+   *
    * @param c - the stop character
    * @return returns true if the length of the string > 0
    * @throws IOException - any i/o error from the reader
@@ -494,7 +494,7 @@ class CSSParser
 
   /**
    * Reads till c is encountered, escaping characters as necessary.
-   * 
+   *
    * @param c - the stop character
    * @throws IOException - any i/o error from the reader
    */
@@ -505,7 +505,7 @@ class CSSParser
 
   /**
    * Parses a comment block.
-   * 
+   *
    * @throws IOException - any i/o error from the reader
    */
   private void readComment() throws IOException
@@ -516,7 +516,7 @@ class CSSParser
 
   /**
    * Called when a block start is encountered ({[.
-   * 
+   *
    * @param start of block
    */
   private void startBlock(int start)
@@ -526,7 +526,7 @@ class CSSParser
 
   /**
    * Called when an end block is encountered )]}
-   * 
+   *
    * @param end of block
    */
   private void endBlock(int end)
@@ -536,18 +536,18 @@ class CSSParser
 
   /**
    * Checks if currently in a block.
-   * 
+   *
    * @return true if currently in a block.
    */
   private boolean inBlock()
   {
     // FIXME: Not Implemented
-    return false; 
+    return false;
   }
 
   /**
    * Supports one character look ahead, this will throw if called twice in a row.
-   * 
+   *
    * @param c - the character to push.
    * @throws IOException - if called twice in a row
    */
@@ -559,5 +559,3 @@ class CSSParser
     pushedChar = c;
   }
 }
-
- 

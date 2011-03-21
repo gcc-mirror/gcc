@@ -1,4 +1,4 @@
-/* NonNegativeIntegerType.java -- 
+/* NonNegativeIntegerType.java --
    Copyright (C) 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -105,7 +105,7 @@ final class NonNegativeIntegerType
         throw new DatatypeException(i, "invalid non-negative integer value");
       }
   }
-  
+
   public Object createValue(String literal, ValidationContext context) {
     try
       {
@@ -116,6 +116,5 @@ final class NonNegativeIntegerType
         return null;
       }
   }
-  
-}
 
+}

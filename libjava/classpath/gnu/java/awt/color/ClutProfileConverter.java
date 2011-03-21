@@ -56,24 +56,24 @@ public class ClutProfileConverter implements ColorSpaceConverter
     nChannels = profile.getNumComponents();
 
     // Sun does not specifiy which rendering intent should be used,
-    // neither does the ICC v2 spec really. 
+    // neither does the ICC v2 spec really.
     // Try intent 0
     try
       {
-	toPCS = new ColorLookUpTable(profile, ICC_Profile.icSigAToB0Tag);
+        toPCS = new ColorLookUpTable(profile, ICC_Profile.icSigAToB0Tag);
       }
     catch (Exception e)
       {
-	toPCS = null;
+        toPCS = null;
       }
 
     try
       {
-	fromPCS = new ColorLookUpTable(profile, ICC_Profile.icSigBToA0Tag);
+        fromPCS = new ColorLookUpTable(profile, ICC_Profile.icSigBToA0Tag);
       }
     catch (Exception e)
       {
-	fromPCS = null;
+        fromPCS = null;
       }
 
     if (toPCS != null || fromPCS != null)
@@ -82,20 +82,20 @@ public class ClutProfileConverter implements ColorSpaceConverter
     // If no intent 0 clut is available, look for a intent 1 clut.
     try
       {
-	toPCS = new ColorLookUpTable(profile, ICC_Profile.icSigAToB1Tag);
+        toPCS = new ColorLookUpTable(profile, ICC_Profile.icSigAToB1Tag);
       }
     catch (Exception e)
       {
-	toPCS = null;
+        toPCS = null;
       }
 
     try
       {
-	fromPCS = new ColorLookUpTable(profile, ICC_Profile.icSigBToA1Tag);
+        fromPCS = new ColorLookUpTable(profile, ICC_Profile.icSigBToA1Tag);
       }
     catch (Exception e)
       {
-	fromPCS = null;
+        fromPCS = null;
       }
 
     if (toPCS != null || fromPCS != null)
@@ -104,20 +104,20 @@ public class ClutProfileConverter implements ColorSpaceConverter
     // Last shot.. intent 2 CLUT.
     try
       {
-	toPCS = new ColorLookUpTable(profile, ICC_Profile.icSigAToB2Tag);
+        toPCS = new ColorLookUpTable(profile, ICC_Profile.icSigAToB2Tag);
       }
     catch (Exception e)
       {
-	toPCS = null;
+        toPCS = null;
       }
 
     try
       {
-	fromPCS = new ColorLookUpTable(profile, ICC_Profile.icSigBToA2Tag);
+        fromPCS = new ColorLookUpTable(profile, ICC_Profile.icSigBToA2Tag);
       }
     catch (Exception e)
       {
-	fromPCS = null;
+        fromPCS = null;
       }
 
     if (toPCS == null && fromPCS == null)

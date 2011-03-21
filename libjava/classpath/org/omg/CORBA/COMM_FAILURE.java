@@ -41,17 +41,17 @@ package org.omg.CORBA;
 import java.io.Serializable;
 
 /**
- * Means that the communication has been lost while an operation 
+ * Means that the communication has been lost while an operation
  * was in progress
- * 
+ *
  * @author Audrius Meskauskas (AudriusA@Bioinformatics.org)
  */
 public final class COMM_FAILURE
   extends SystemException
   implements Serializable
 {
-  /** 
-   * Use serialVersionUID for interoperability. 
+  /**
+   * Use serialVersionUID for interoperability.
    */
   private static final long serialVersionUID = 294856734784364267L;
 

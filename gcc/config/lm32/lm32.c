@@ -117,6 +117,8 @@ static const struct default_options lm32_option_optimization_table[] =
 #define TARGET_CAN_ELIMINATE lm32_can_eliminate
 #undef TARGET_LEGITIMATE_ADDRESS_P
 #define TARGET_LEGITIMATE_ADDRESS_P lm32_legitimate_address_p
+#undef TARGET_EXCEPT_UNWIND_INFO
+#define TARGET_EXCEPT_UNWIND_INFO sjlj_except_unwind_info
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -174,6 +176,9 @@ gen_int_relational (enum rtx_code code,
 {
   enum machine_mode mode;
   int branch_p;
+  rtx temp;
+  rtx cond;
+  rtx label;
 
   mode = GET_MODE (cmp0);
   if (mode == VOIDmode)
@@ -389,18 +394,17 @@ lm32_expand_prologue (void)
       /* Setup frame pointer if it's needed.  */
       if (frame_pointer_needed == 1)
 	{
-	  /* Load offset - Don't use total_size, as that includes pretend_size, 
-             which isn't part of this frame?  */
-	  insn =
-	    emit_move_insn (frame_pointer_rtx,
-			    GEN_INT (current_frame_info.args_size +
-				     current_frame_info.callee_size +
-				     current_frame_info.locals_size));
-	  RTX_FRAME_RELATED_P (insn) = 1;
+	  /* Move sp to fp.  */
+	  insn = emit_move_insn (frame_pointer_rtx, stack_pointer_rtx);
+	  RTX_FRAME_RELATED_P (insn) = 1; 
 
-	  /* Add in sp.  */
-	  insn = emit_add (frame_pointer_rtx,
-			   frame_pointer_rtx, stack_pointer_rtx);
+	  /* Add offset - Don't use total_size, as that includes pretend_size, 
+             which isn't part of this frame?  */
+	  insn = emit_add (frame_pointer_rtx, 
+			   frame_pointer_rtx,
+			   GEN_INT (current_frame_info.args_size +
+				    current_frame_info.callee_size +
+				    current_frame_info.locals_size));
 	  RTX_FRAME_RELATED_P (insn) = 1;
 	}
 

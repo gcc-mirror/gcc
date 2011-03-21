@@ -94,9 +94,8 @@ public class BadBinaryOpValueExpException
   public String toString()
   {
     return getClass().getName()
-      + "[exp=" + exp 
+      + "[exp=" + exp
       + "]";
   }
 
 }
-

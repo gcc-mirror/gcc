@@ -349,7 +349,7 @@ public class HashMap<K, V> extends AbstractMap<K, V>
         if (equals(key, e.key))
           {
             e.access(); // Must call this for bookkeeping in LinkedHashMap.
-	    V r = e.value;
+            V r = e.value;
             e.value = value;
             return r;
           }
@@ -384,12 +384,12 @@ public class HashMap<K, V> extends AbstractMap<K, V>
     final Iterator<Map.Entry<K,V>> it = addMap.entrySet().iterator();
     while (it.hasNext())
       {
-	final Map.Entry<K,V> e = it.next();
+        final Map.Entry<K,V> e = it.next();
         // Optimize in case the Entry is one of our own.
         if (e instanceof AbstractMap.SimpleEntry)
           {
             AbstractMap.SimpleEntry<? extends K, ? extends V> entry
-	      = (AbstractMap.SimpleEntry<? extends K, ? extends V>) e;
+              = (AbstractMap.SimpleEntry<? extends K, ? extends V>) e;
             put(entry.key, entry.value);
           }
         else
@@ -702,8 +702,8 @@ public class HashMap<K, V> extends AbstractMap<K, V>
   }
 
   /**
-   * A simplified, more efficient internal implementation of putAll(). clone() 
-   * should not call putAll or put, in order to be compatible with the JDK 
+   * A simplified, more efficient internal implementation of putAll(). clone()
+   * should not call putAll or put, in order to be compatible with the JDK
    * implementation with respect to subclasses.
    *
    * @param m the map to initialize this from
@@ -715,11 +715,11 @@ public class HashMap<K, V> extends AbstractMap<K, V>
     size = 0;
     while (it.hasNext())
       {
-	final Map.Entry<K,V> e = it.next();
+        final Map.Entry<K,V> e = it.next();
         size++;
-	K key = e.getKey();
-	int idx = hash(key);
-	addEntry(key, e.getValue(), idx, false);
+        K key = e.getKey();
+        int idx = hash(key);
+        addEntry(key, e.getValue(), idx, false);
       }
   }
 

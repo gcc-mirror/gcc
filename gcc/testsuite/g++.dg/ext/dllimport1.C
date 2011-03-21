@@ -1,5 +1,5 @@
 //  PR c++/7910
-// { dg-do compile { target i?86-*-cygwin* i?86-*-mingw*} }
+// { dg-do compile { target i?86-*-cygwin* i?86-*-mingw* x86_64-*-mingw* } }
 // { dg-options { -Wall -W } }
 
 class __attribute__((dllimport)) Foo
@@ -28,4 +28,4 @@ Bar::~Bar()
 void Bar::dummy_bar_func()
 {}
 
-// { dg-final { scan-assembler-not "__imp___ZN3Foo14dummy_foo_fun" } }
+// { dg-final { scan-assembler-not "__imp\[_\]*__ZN3Foo14dummy_foo_fun" } }

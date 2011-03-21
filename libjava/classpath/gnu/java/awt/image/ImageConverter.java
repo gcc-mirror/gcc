@@ -55,7 +55,7 @@ import java.util.Hashtable;
 
 /**
  * Convert an Image to a BufferedImage.
- * 
+ *
  * @author Roman Kennke (kennke@aicas.com)
  */
 public class ImageConverter implements ImageConsumer
@@ -121,7 +121,7 @@ public class ImageConverter implements ImageConsumer
                                       scansize, transparency);
       }
     else if (model instanceof IndexColorModel
-             && targetColorModel.equals(ColorModel.getRGBdefault())) 
+             && targetColorModel.equals(ColorModel.getRGBdefault()))
       {
         transparency = convertIndexColorModelToSRGB(x, y, w, h,
                                                     (IndexColorModel) model,
@@ -246,7 +246,7 @@ public class ImageConverter implements ImageConsumer
    * @param offset the offset in the pixel array
    * @param scansize the scanline size
    * @param transparency the assumed transparency
-   * 
+   *
    * @return the determined transparency
    */
   private int transferPixels(int x, int y, int w, int h, ColorModel model,
@@ -281,7 +281,7 @@ public class ImageConverter implements ImageConsumer
    * @param offset the offset in the pixel array
    * @param scansize the scanline size
    * @param transparency the assumed transparency
-   * 
+   *
    * @return the determined transparency
    */
   private int transferPixels(int x, int y, int w, int h, ColorModel model,
@@ -317,7 +317,7 @@ public class ImageConverter implements ImageConsumer
    * @param offset the offset in the pixel array
    * @param scansize the scanline size
    * @param transparency the assumed transparency
-   * 
+   *
    * @return the determined transparency
    */
   private int convertPixels(int x, int y, int w, int h, ColorModel model,
@@ -356,7 +356,7 @@ public class ImageConverter implements ImageConsumer
    * @param offset the offset in the pixel array
    * @param scansize the scanline size
    * @param transparency the assumed transparency
-   * 
+   *
    * @return the determined transparency
    */
   private int convertPixels(int x, int y, int w, int h, ColorModel model,
@@ -394,7 +394,7 @@ public class ImageConverter implements ImageConsumer
    * @param offset the offset in the pixel array
    * @param scansize the scanline size
    * @param transparency the assumed transparency
-   * 
+   *
    * @return the determined transparency
    */
   private int convertIndexColorModelToSRGB(int x, int y, int w, int h,
@@ -447,7 +447,7 @@ public class ImageConverter implements ImageConsumer
    * @param offset the offset in the pixel array
    * @param scansize the scanline size
    * @param transparency the assumed transparency
-   * 
+   *
    * @return the determined transparency
    */
   private int convertIndexColorModelToSRGB(int x, int y, int w, int h,

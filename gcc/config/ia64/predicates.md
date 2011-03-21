@@ -1,5 +1,5 @@
 ;; Predicate definitions for IA-64.
-;; Copyright (C) 2004, 2005, 2007 Free Software Foundation, Inc.
+;; Copyright (C) 2004, 2005, 2007, 2010 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -624,3 +624,7 @@
   return REG_P (op) && REG_POINTER (op);
 })
 
+;; True if this is the right-most vector element; for mux1 @brcst.
+(define_predicate "mux1_brcst_element"
+  (and (match_code "const_int")
+       (match_test "INTVAL (op) == (TARGET_BIG_ENDIAN ? 7 : 0)")))

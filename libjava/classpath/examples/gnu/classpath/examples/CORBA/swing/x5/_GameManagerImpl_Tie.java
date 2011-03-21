@@ -56,14 +56,14 @@ import org.omg.PortableServer.Servant;
  * Normally generated with rmic compiler, this class represents the GameManager
  * Tie on the client side. The Game Manager methods contain the code for remote
  * invocation.
- * 
- * This class is normally generated with rmic or grmic from the 
+ *
+ * This class is normally generated with rmic or grmic from the
  * {@link GameManagerImpl}. See tools/gnu/classpath/tools/giop/README.
- * 
+ *
  * In this example the class was manually edited and commented for better
  * understanding of functionality.
- * 
- * @author Audrius Meskauskas (AudriusA@Bioinformatics.org) 
+ *
+ * @author Audrius Meskauskas (AudriusA@Bioinformatics.org)
  */
 public class _GameManagerImpl_Tie
   extends Servant
@@ -77,7 +77,7 @@ public class _GameManagerImpl_Tie
   /**
    * The GameManager repository Id.
    */
-  private static final String[] _type_ids = 
+  private static final String[] _type_ids =
   { "RMI:gnu.classpath.examples.CORBA.swing.x5.GameManager:0000000000000000" };
 
   /**
@@ -161,7 +161,7 @@ public class _GameManagerImpl_Tie
 
   /**
    * This method is invoked by CORBA system to handle the remote invocation.
-   * 
+   *
    * @param method the name of the method being invoked.
    * @param _in the stream to read the method parameters.
    * @param reply the responsed handler that can create the output stream to
@@ -173,7 +173,7 @@ public class _GameManagerImpl_Tie
   {
     try
       {
-        org.omg.CORBA_2_3.portable.InputStream in = 
+        org.omg.CORBA_2_3.portable.InputStream in =
           (org.omg.CORBA_2_3.portable.InputStream) _in;
         if (method.equals("requestTheGame"))
           {

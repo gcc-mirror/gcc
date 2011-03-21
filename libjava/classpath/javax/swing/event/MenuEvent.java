@@ -44,14 +44,14 @@ import java.util.EventObject;
  * @author Andrew Selkirk
  * @author Ronald Veldema
  */
-public class MenuEvent extends EventObject 
+public class MenuEvent extends EventObject
 {
 
   /**
    * Constructor MenuEvent
    * @param source Source object
    */
-  public MenuEvent(Object source) 
+  public MenuEvent(Object source)
   {
     super(source);
   }

@@ -51,7 +51,7 @@ import java.io.IOException;
 /**
  * Notification from the VM that a single step has compleated including the
  * thread and location stepped to
- * 
+ *
  * @author Kyle Galloway (kgallowa@redhat.com)
  */
 public class SingleStepEvent
@@ -68,7 +68,7 @@ public class SingleStepEvent
 
   /**
    * Constructs a new <code>SingleStepEvent</code>
-   * 
+   *
    * @param thread the thread where the exception occurred
    * @param location the location single stepped to
    * @param instance the instance in which the single step occurred
@@ -84,7 +84,7 @@ public class SingleStepEvent
   /**
    * Returns a specific filtering parameter for this event. Valid types are
    * thread and location
-   * 
+   *
    * @param type the type of parameter desired
    * @returns the desired parameter or null
    */
@@ -104,11 +104,11 @@ public class SingleStepEvent
 
   /**
    * Writes the event to the given stream
-   * 
+   *
    * @param outStream the output stream to write the event to
    * @throws IOException
    */
-  protected void _writeData(DataOutputStream outStream) 
+  protected void _writeData(DataOutputStream outStream)
     throws IOException
   {
     VMIdManager idm = VMIdManager.getDefault();

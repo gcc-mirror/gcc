@@ -453,8 +453,11 @@ remove_unused_scope_block_p (tree scope)
       else if (TREE_CODE (*t) == VAR_DECL && DECL_HAS_VALUE_EXPR_P (*t))
 	unused = false;
 
-      /* Remove everything we don't generate debug info for.  */
-      else if (DECL_IGNORED_P (*t))
+      /* Remove everything we don't generate debug info for.
+	 Don't remove larger vars though, because BLOCK_VARS are
+	 used also during expansion to determine which variables
+	 might share stack space.  */
+      else if (DECL_IGNORED_P (*t) && is_gimple_reg (*t))
 	{
 	  *t = DECL_CHAIN (*t);
 	  next = t;
@@ -465,7 +468,7 @@ remove_unused_scope_block_p (tree scope)
 	 Exception are the scope blocks not containing any instructions
 	 at all so user can't get into the scopes at first place.  */
       else if ((ann = var_ann (*t)) != NULL
-		&& ann->used)
+	       && is_used_p (*t))
 	unused = false;
       else if (TREE_CODE (*t) == LABEL_DECL && TREE_USED (*t))
 	/* For labels that are still used in the IL, the decision to
@@ -490,11 +493,16 @@ remove_unused_scope_block_p (tree scope)
 	 can be considered dead.  We only want to keep around blocks user can
 	 breakpoint into and ask about value of optimized out variables.
 
-	 Similarly we need to keep around types at least until all variables of
-	 all nested blocks are gone.  We track no information on whether given
-	 type is used or not.  */
+	 Similarly we need to keep around types at least until all
+	 variables of all nested blocks are gone.  We track no
+	 information on whether given type is used or not, so we have
+	 to keep them even when not emitting debug information,
+	 otherwise we may end up remapping variables and their (local)
+	 types in different orders depending on whether debug
+	 information is being generated.  */
 
-      else if (debug_info_level == DINFO_LEVEL_NORMAL
+      else if (TREE_CODE (*t) == TYPE_DECL
+	       || debug_info_level == DINFO_LEVEL_NORMAL
 	       || debug_info_level == DINFO_LEVEL_VERBOSE)
 	;
       else
@@ -625,13 +633,11 @@ dump_scope_block (FILE *file, int indent, tree scope, int flags)
   for (var = BLOCK_VARS (scope); var; var = DECL_CHAIN (var))
     {
       bool used = false;
-      var_ann_t ann;
 
-      if ((ann = var_ann (var))
-	  && ann->used)
-	used = true;
+      if (var_ann (var))
+	used = is_used_p (var);
 
-      fprintf (file, "%*s",indent, "");
+      fprintf (file, "%*s", indent, "");
       print_generic_decl (file, var, flags);
       fprintf (file, "%s\n", used ? "" : " (unused)");
     }
@@ -699,8 +705,8 @@ remove_unused_locals (void)
   mark_scope_block_unused (DECL_INITIAL (current_function_decl));
 
   /* Assume all locals are unused.  */
-  FOR_EACH_REFERENCED_VAR (t, rvi)
-    var_ann (t)->used = false;
+  FOR_EACH_REFERENCED_VAR (cfun, t, rvi)
+    clear_is_used (t);
 
   /* Walk the CFG marking all referenced symbols.  */
   FOR_EACH_BB (bb)
@@ -761,7 +767,7 @@ remove_unused_locals (void)
       var = VEC_index (tree, cfun->local_decls, srcidx);
       if (TREE_CODE (var) != FUNCTION_DECL
 	  && (!(ann = var_ann (var))
-	      || !ann->used))
+	      || !is_used_p (var)))
 	{
 	  if (is_global_var (var))
 	    {
@@ -793,7 +799,7 @@ remove_unused_locals (void)
 	if (TREE_CODE (var) == VAR_DECL
 	    && is_global_var (var)
 	    && (ann = var_ann (var)) != NULL
-	    && ann->used)
+	    && is_used_p (var))
 	  mark_all_vars_used (&DECL_INITIAL (var), global_unused_vars);
 
       num = VEC_length (tree, cfun->local_decls);
@@ -815,12 +821,12 @@ remove_unused_locals (void)
     }
 
   /* Remove unused variables from REFERENCED_VARs.  */
-  FOR_EACH_REFERENCED_VAR (t, rvi)
+  FOR_EACH_REFERENCED_VAR (cfun, t, rvi)
     if (!is_global_var (t)
 	&& TREE_CODE (t) != PARM_DECL
 	&& TREE_CODE (t) != RESULT_DECL
-	&& !(ann = var_ann (t))->used
-	&& !ann->is_heapvar)
+	&& !is_used_p (t)
+	&& !var_ann (t)->is_heapvar)
       remove_referenced_var (t);
   remove_unused_scope_block_p (DECL_INITIAL (current_function_decl));
   if (dump_file && (dump_flags & TDF_DETAILS))

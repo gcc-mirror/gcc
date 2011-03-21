@@ -47,10 +47,10 @@ import java.util.TreeSet;
 /**
  * @author Graydon Hoare
  * @author Michael Koch
- * 
+ *
  * @since 1.4
  */
-public class SortingFocusTraversalPolicy 
+public class SortingFocusTraversalPolicy
   extends InternalFrameFocusTraversalPolicy
 {
   /**
@@ -75,7 +75,7 @@ public class SortingFocusTraversalPolicy
    * @see #getImplicitDownCycleTraversal()
    */
   boolean implicitDownCycleTraversal = true;
-  
+
   /**
    * Creates a new <code>SortingFocusTraversalPolicy</code> with no
    * comparator set.
@@ -97,7 +97,7 @@ public class SortingFocusTraversalPolicy
   }
 
   /**
-   * Decide whether a component is an acceptable focus owner. 
+   * Decide whether a component is an acceptable focus owner.
    *
    * @param comp The component which is a candidate for focus ownership.
    *
@@ -107,16 +107,16 @@ public class SortingFocusTraversalPolicy
   protected boolean accept(Component comp)
   {
     return (comp.isVisible()
-	    && comp.isDisplayable()
-	    && comp.isEnabled()
-	    && comp.isFocusable());
+            && comp.isDisplayable()
+            && comp.isEnabled()
+            && comp.isFocusable());
   }
 
   /**
    * Get the current value of the {@link #comparator} property.
    *
    * @return the current value of the property
-   * 
+   *
    * @see #setComparator
    */
   protected Comparator<? super Component> getComparator()
@@ -128,7 +128,7 @@ public class SortingFocusTraversalPolicy
    * Set the current value of the {@link #comparator} property.
    *
    * @param comparator the new value of the property
-   * 
+   *
    * @see #getComparator
    */
   protected void setComparator(Comparator<? super Component> comparator)
@@ -139,11 +139,11 @@ public class SortingFocusTraversalPolicy
   private TreeSet getSortedCycle(Container root, TreeSet set)
   {
     if (set == null)
-      set = (getComparator() == null 
+      set = (getComparator() == null
              ? new TreeSet()
              : new TreeSet(getComparator()));
-    
-    if (root != null) 
+
+    if (root != null)
       {
         Component[] comps = root.getComponents();
         for (int i = 0; i < comps.length; ++i)
@@ -168,23 +168,23 @@ public class SortingFocusTraversalPolicy
    * <code>comp</code> is a focus cycle root, an "implicit DownCycle"
    * occurs and the method returns the
    * <code>getDefaultComponent(comp)</code>.
-   * 
+   *
    * @param root the focus cycle root to search for a successor within
    * @param comp the component to search for the successor of
    *
    * @return the component following the specified component under
    * the specified root, or null if no such component is found
-   * 
+   *
    * @throws IllegalArgumentException if either argument is null, or
    * if the root is not a focus cycle root of the component
    */
-  public Component getComponentAfter(Container root, 
+  public Component getComponentAfter(Container root,
                                      Component comp)
   {
     if (comp == null || root == null || !comp.isFocusCycleRoot(root))
       throw new IllegalArgumentException();
 
-    if (getImplicitDownCycleTraversal() 
+    if (getImplicitDownCycleTraversal()
         && comp instanceof Container
         && ((Container)comp).isFocusCycleRoot())
       {
@@ -212,17 +212,17 @@ public class SortingFocusTraversalPolicy
    * focus cycle, relative to the order imposed by {@link
    * #comparator}. Candidate components are only considered if they are
    * accepted by the {@link #accept} method.
-   * 
+   *
    * @param root the focus cycle root to search for a predecessor within
    * @param comp the component to search for the predecessor of
    *
    * @return the component preceding the specified component under the
    * specified root, or null if no such component is found
-   * 
+   *
    * @throws IllegalArgumentException if either argument is null, or
    * if the root is not a focus cycle root of the component
    */
-  public Component getComponentBefore(Container root, 
+  public Component getComponentBefore(Container root,
                                       Component comp)
   {
     if (comp == null || root == null || !comp.isFocusCycleRoot(root))
@@ -256,7 +256,7 @@ public class SortingFocusTraversalPolicy
     return getFirstComponent(root);
   }
 
-  /** 
+  /**
    * Return the first focusable component of the focus cycle root
    * <code>comp</code> under the ordering imposed by the {@link
    * #comparator} property. Candidate components are only considered if
@@ -279,8 +279,8 @@ public class SortingFocusTraversalPolicy
       return (Component) i.next();
     return null;
   }
-  
-  /** 
+
+  /**
    * Return the last focusable component of the focus cycle root
    * <code>comp</code> under the ordering imposed by the {@link
    * #comparator} property. Candidate components are only considered if
@@ -310,7 +310,7 @@ public class SortingFocusTraversalPolicy
    * property.
    *
    * @return the current value of the property
-   * 
+   *
    * @see #setImplicitDownCycleTraversal
    */
   public boolean getImplicitDownCycleTraversal()
@@ -323,7 +323,7 @@ public class SortingFocusTraversalPolicy
    * property.
    *
    * @param down the new value of the property
-   * 
+   *
    * @see #getImplicitDownCycleTraversal
    */
   public void setImplicitDownCycleTraversal(boolean down)

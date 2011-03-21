@@ -1,4 +1,4 @@
-/* KeyboardManager.java -- 
+/* KeyboardManager.java --
    Copyright (C) 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -49,11 +49,11 @@ import java.util.Vector;
 import java.util.WeakHashMap;
 
 /**
- * This class maintains a mapping from top-level containers to a 
- * Hashtable.  The Hashtable maps KeyStrokes to Components to be used when 
+ * This class maintains a mapping from top-level containers to a
+ * Hashtable.  The Hashtable maps KeyStrokes to Components to be used when
  * Components register keyboard actions with the condition
  * JComponent.WHEN_IN_FOCUSED_WINDOW.
- * 
+ *
  * @author Anthony Balkissoon abalkiss at redhat dot com
  *
  */
@@ -61,13 +61,13 @@ class KeyboardManager
 {
   /** Shared instance of KeyboardManager **/
   static KeyboardManager manager = new KeyboardManager();
-  
-  /** 
-   * A mapping between top level containers and Hashtables that 
+
+  /**
+   * A mapping between top level containers and Hashtables that
    * map KeyStrokes to Components.
    */
-  WeakHashMap topLevelLookup = new WeakHashMap();  
-  
+  WeakHashMap topLevelLookup = new WeakHashMap();
+
   /**
    * A mapping between top level containers and Vectors of JMenuBars
    * used to allow all the JMenuBars within a top level container
@@ -91,22 +91,22 @@ class KeyboardManager
   {
     Container topLevel = (c instanceof Container) ? (Container) c
                                                  : c.getParent();
-    while (topLevel != null && 
-           !(topLevel instanceof Window) && 
-           !(topLevel instanceof Applet) && 
+    while (topLevel != null &&
+           !(topLevel instanceof Window) &&
+           !(topLevel instanceof Applet) &&
            !(topLevel instanceof JInternalFrame))
       topLevel = topLevel.getParent();
     return topLevel;
   }
-  
+
   /**
-   * Returns the Hashtable that maps KeyStrokes to Components, for 
+   * Returns the Hashtable that maps KeyStrokes to Components, for
    * the specified top-level container c.  If no Hashtable exists
    * we create and register it here and return the newly created
    * Hashtable.
-   * 
+   *
    * @param c the top-level container whose Hashtable we want
-   * @return the Hashtable mapping KeyStrokes to Components for the 
+   * @return the Hashtable mapping KeyStrokes to Components for the
    * specified top-level container
    */
   Hashtable getHashtableForTopLevel (Container c)
@@ -119,13 +119,13 @@ class KeyboardManager
       }
     return keyToComponent;
   }
-  
+
   /**
    * Registers a KeyStroke with a Component.  This does not register
-   * the KeyStroke to a specific Action.  When searching for a 
+   * the KeyStroke to a specific Action.  When searching for a
    * WHEN_IN_FOCUSED_WINDOW binding we will first go up to the focused
-   * top-level Container, then get the Hashtable that maps KeyStrokes 
-   * to components for that particular top-level Container, then 
+   * top-level Container, then get the Hashtable that maps KeyStrokes
+   * to components for that particular top-level Container, then
    * call processKeyBindings on that component with the condition
    * JComponent.WHEN_IN_FOCUSED_WINDOW.
    * @param comp the JComponent associated with the KeyStroke
@@ -135,7 +135,7 @@ class KeyboardManager
   {
     // This method associates a KeyStroke with a particular JComponent
     // When the KeyStroke occurs, if this component's top-level ancestor
-    // has focus (one of its children is the focused Component) then 
+    // has focus (one of its children is the focused Component) then
     // comp.processKeyBindings will be called with condition
     // JComponent.WHEN_IN_FOCUSED_WINDOW.
 
@@ -143,16 +143,16 @@ class KeyboardManager
     Container topLevel = findTopLevel(comp);
     if (topLevel == null)
       return;
-    
+
     // Now get the Hashtable for this top-level container
-    Hashtable keyToComponent = getHashtableForTopLevel(topLevel);    
-    
+    Hashtable keyToComponent = getHashtableForTopLevel(topLevel);
+
     // And add the new binding to this Hashtable
     // FIXME: should allow more than one JComponent to be associated
     // with a KeyStroke, in case one of them is disabled
     keyToComponent.put(key, comp);
   }
-  
+
   public void clearBindingsForComp(JComponent comp)
   {
     // This method clears all the WHEN_IN_FOCUSED_WINDOW bindings associated
@@ -162,9 +162,9 @@ class KeyboardManager
     // bindings from the updated ComponentInputMap.  This is only a preliminary
     // strategy and should be improved upon once the WHEN_IN_FOCUSED_WINDOW
     // bindings work.
-    
+
     // Find the top-level ancestor
-    
+
     Container topLevel = findTopLevel(comp);
     if (topLevel == null)
       return;
@@ -179,22 +179,22 @@ class KeyboardManager
       {
         temp = keys.nextElement();
         if (comp == (JComponent)keyToComponent.get(temp))
-          keyToComponent.remove(temp);          
+          keyToComponent.remove(temp);
       }
   }
-    
+
   /**
    * This method registers all the bindings in the given ComponentInputMap.
    * Rather than call registerBinding on all the keys, we do the work here
-   * so that we don't duplicate finding the top-level container and 
+   * so that we don't duplicate finding the top-level container and
    * getting its Hashtable.
-   * 
+   *
    * @param map the ComponentInputMap whose bindings we want to register
    */
   public void registerEntireMap (ComponentInputMap map)
   {
     if (map == null)
-      return;    
+      return;
     JComponent comp = map.getComponent();
     KeyStroke[] keys = map.allKeys();
     if (keys == null)
@@ -203,13 +203,13 @@ class KeyboardManager
     Container topLevel = findTopLevel(comp);
     if (topLevel == null)
       return;
-    
+
     // Register the KeyStrokes in the top-level container's Hashtable
     Hashtable keyToComponent = getHashtableForTopLevel(topLevel);
     for (int i = 0; i < keys.length; i++)
       keyToComponent.put(keys[i], comp);
   }
-  
+
   public boolean processKeyStroke (Component comp, KeyStroke key, KeyEvent e)
   {
     boolean pressed = e.getID() == KeyEvent.KEY_PRESSED;
@@ -217,15 +217,15 @@ class KeyboardManager
     // Look for the top-level ancestor
     Container topLevel = findTopLevel(comp);
     if (topLevel == null)
-      return false;    
+      return false;
     // Now get the Hashtable for that top-level container
     Hashtable keyToComponent = getHashtableForTopLevel(topLevel);
     Enumeration keys = keyToComponent.keys();
-    JComponent target = (JComponent)keyToComponent.get(key);    
+    JComponent target = (JComponent)keyToComponent.get(key);
     if (target != null && target.processKeyBinding
         (key, e, JComponent.WHEN_IN_FOCUSED_WINDOW, pressed))
       return true;
-    
+
     // Have to give all the JMenuBars a chance to consume the event
     Vector menuBars = getVectorForTopLevel(topLevel);
     for (int i = 0; i < menuBars.size(); i++)
@@ -233,7 +233,7 @@ class KeyboardManager
         return true;
     return false;
   }
-  
+
   /**
    * Returns the Vector of JMenuBars associated with the top-level
    * @param c the top-level container whose JMenuBar Vector we want
@@ -249,11 +249,11 @@ class KeyboardManager
       }
     return result;
   }
-  
+
   /**
-   * In processKeyStroke, KeyManager must give all JMenuBars in the 
-   * focused top-level container a chance to process the event.  So, 
-   * JMenuBars must be registered in KeyManager and associated with a 
+   * In processKeyStroke, KeyManager must give all JMenuBars in the
+   * focused top-level container a chance to process the event.  So,
+   * JMenuBars must be registered in KeyManager and associated with a
    * top-level container.  That's what this method is for.
    * @param menuBar the JMenuBar to register
    */
@@ -264,9 +264,9 @@ class KeyboardManager
     if (!menuBars.contains(menuBar))
       menuBars.add(menuBar);
   }
-  
+
   /**
-   * Unregisters a JMenuBar from its top-level container.  This is 
+   * Unregisters a JMenuBar from its top-level container.  This is
    * called before the JMenuBar is actually removed from the container
    * so findTopLevel will still find us the correct top-level container.
    * @param menuBar the JMenuBar to unregister.

@@ -52,10 +52,10 @@ public class DemoJAWT extends Canvas
 
     f.addWindowListener (new WindowAdapter ()
       {
-	public void windowClosing (WindowEvent evt)
-	{
-	  System.exit (0);
-	}
+        public void windowClosing (WindowEvent evt)
+        {
+          System.exit (0);
+        }
       });
 
     f.show ();
@@ -63,13 +63,13 @@ public class DemoJAWT extends Canvas
     while (true)
     {
       try
-	{
-	  Thread.sleep (500);
-	}
+        {
+          Thread.sleep (500);
+        }
       catch (InterruptedException ie)
-	{
-	  // ignored
-	}
+        {
+          // ignored
+        }
       jawtDemo.on = ! jawtDemo.on;
       f.repaint();
     }

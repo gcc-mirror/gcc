@@ -46,29 +46,29 @@ import java.util.EventListener;
  */
 public interface TreeModelListener extends EventListener {
 
-	/**
-	 * Tree nodes changed
-	 * @param event Tree Model Event
-	 */
-	void treeNodesChanged(TreeModelEvent event);
+        /**
+         * Tree nodes changed
+         * @param event Tree Model Event
+         */
+        void treeNodesChanged(TreeModelEvent event);
 
-	/**
-	 * Tree nodes inserted
-	 * @param event Tree Model Event
-	 */
-	void treeNodesInserted(TreeModelEvent event);
+        /**
+         * Tree nodes inserted
+         * @param event Tree Model Event
+         */
+        void treeNodesInserted(TreeModelEvent event);
 
-	/**
-	 * Tree nodes removed
-	 * @param event Tree Model Event
-	 */
-	void treeNodesRemoved(TreeModelEvent event);
+        /**
+         * Tree nodes removed
+         * @param event Tree Model Event
+         */
+        void treeNodesRemoved(TreeModelEvent event);
 
-	/**
-	 * Tree structured changed
-	 * @param event Tree Model Event
-	 */
-	void treeStructureChanged(TreeModelEvent event);
+        /**
+         * Tree structured changed
+         * @param event Tree Model Event
+         */
+        void treeStructureChanged(TreeModelEvent event);
 
 
 } // TreeModelListener

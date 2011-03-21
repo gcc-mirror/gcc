@@ -76,7 +76,7 @@ public class Unsafe
       sm.checkPropertiesAccess();
     return unsafe;
   }
-  
+
   /**
    * Returns the memory address offset of the given static field.
    * The offset is merely used as a means to access a particular field
@@ -272,7 +272,7 @@ public class Unsafe
   /**
    * Returns the offset of the first element for a given array class.
    * To access elements of the array class, this value may be used along
-   * with that returned by 
+   * with that returned by
    * <a href="#arrayIndexScale"><code>arrayIndexScale</code></a>,
    * if non-zero.
    *
@@ -287,7 +287,7 @@ public class Unsafe
    * Returns the scale factor used for addressing elements of the supplied
    * array class.  Where a suitable scale factor can not be returned (e.g.
    * for primitive types), zero should be returned.  The returned value
-   * can be used with 
+   * can be used with
    * <a href="#arrayBaseOffset"><code>arrayBaseOffset</code></a>
    * to access elements of the class.
    *
@@ -295,9 +295,9 @@ public class Unsafe
    * @return the scale factor, or zero if not supported for this array class.
    */
   public native int arrayIndexScale(Class arrayClass);
-  
+
   /**
-   * Releases the block on a thread created by 
+   * Releases the block on a thread created by
    * <a href="#park"><code>park</code></a>.  This method can also be used
    * to terminate a blockage caused by a prior call to <code>park</code>.
    * This operation is unsafe, as the thread must be guaranteed to be
@@ -308,7 +308,7 @@ public class Unsafe
   public native void unpark(Object thread);
 
   /**
-   * Blocks the thread until a matching 
+   * Blocks the thread until a matching
    * <a href="#unpark"><code>unpark</code></a> occurs, the thread is
    * interrupted or the optional timeout expires.  If an <code>unpark</code>
    * call has already occurred, this also counts.  A timeout value of zero

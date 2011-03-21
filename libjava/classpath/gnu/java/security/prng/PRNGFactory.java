@@ -1,4 +1,4 @@
-/* PRNGFactory.java -- 
+/* PRNGFactory.java --
    Copyright (C) 2001, 2002, 2003, 2006 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -57,7 +57,7 @@ public class PRNGFactory
 
   /**
    * Returns an instance of a padding algorithm given its name.
-   * 
+   *
    * @param prng the case-insensitive name of the PRNG.
    * @return an instance of the pseudo-random number generator.
    * @exception InternalError if the implementation does not pass its self-
@@ -79,7 +79,7 @@ public class PRNGFactory
   /**
    * Returns a {@link Set} of names of padding algorithms supported by this
    * <i>Factory</i>.
-   * 
+   *
    * @return a {@link Set} of pseudo-random number generator algorithm names
    *         (Strings).
    */

@@ -1,7 +1,7 @@
 /* Emit RTL for the GCC expander.
    Copyright (C) 1987, 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
    1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009,
-   2010
+   2010, 2011
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -59,6 +59,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "df.h"
 #include "params.h"
 #include "target.h"
+#include "tree-flow.h"
 
 struct target_rtl default_target_rtl;
 #if SWITCHABLE_TARGET
@@ -325,7 +326,7 @@ reg_attrs_htab_hash (const void *x)
 {
   const reg_attrs *const p = (const reg_attrs *) x;
 
-  return ((p->offset * 1000) ^ (long) p->decl);
+  return ((p->offset * 1000) ^ (intptr_t) p->decl);
 }
 
 /* Returns nonzero if the value represented by X (which is really a
@@ -1540,11 +1541,11 @@ void
 set_mem_attributes_minus_bitpos (rtx ref, tree t, int objectp,
 				 HOST_WIDE_INT bitpos)
 {
-  alias_set_type alias = MEM_ALIAS_SET (ref);
-  tree expr = MEM_EXPR (ref);
-  rtx offset = MEM_OFFSET (ref);
-  rtx size = MEM_SIZE (ref);
-  unsigned int align = MEM_ALIGN (ref);
+  alias_set_type alias;
+  tree expr = NULL;
+  rtx offset = NULL_RTX;
+  rtx size = NULL_RTX;
+  unsigned int align = BITS_PER_UNIT;
   HOST_WIDE_INT apply_bitpos = 0;
   tree type;
 
@@ -1579,6 +1580,34 @@ set_mem_attributes_minus_bitpos (rtx ref, tree t, int objectp,
       && ! AGGREGATE_TYPE_P (type)
       && TREE_CODE (type) != COMPLEX_TYPE)
     MEM_SCALAR_P (ref) = 1;
+
+  /* Default values from pre-existing memory attributes if present.  */
+  if (MEM_ATTRS (ref))
+    {
+      /* ??? Can this ever happen?  Calling this routine on a MEM that
+	 already carries memory attributes should probably be invalid.  */
+      expr = MEM_EXPR (ref);
+      offset = MEM_OFFSET (ref);
+      size = MEM_SIZE (ref);
+      align = MEM_ALIGN (ref);
+    }
+
+  /* Otherwise, default values from the mode of the MEM reference.  */
+  else if (GET_MODE (ref) != BLKmode)
+    {
+      /* Respect mode size.  */
+      size = GEN_INT (GET_MODE_SIZE (GET_MODE (ref)));
+      /* ??? Is this really necessary?  We probably should always get
+	 the size from the type below.  */
+
+      /* Respect mode alignment for STRICT_ALIGNMENT targets if T is a type;
+         if T is an object, always compute the object alignment below.  */
+      if (STRICT_ALIGNMENT && TYPE_P (t))
+	align = GET_MODE_ALIGNMENT (GET_MODE (ref));
+      /* ??? If T is a type, respecting mode alignment may *also* be wrong
+	 e.g. if the type carries an alignment attribute.  Should we be
+	 able to simply always use TYPE_ALIGN?  */
+    }
 
   /* We can set the alignment from the type if we are making an object,
      this is an INDIRECT_REF, or if TYPE_ALIGN_OK.  */
@@ -1641,36 +1670,14 @@ set_mem_attributes_minus_bitpos (rtx ref, tree t, int objectp,
 	     || TREE_CODE (t) == SAVE_EXPR)
 	t = TREE_OPERAND (t, 0);
 
-      /* We may look through structure-like accesses for the purposes of
-	 examining TREE_THIS_NOTRAP, but not array-like accesses.  */
-      base = t;
-      while (TREE_CODE (base) == COMPONENT_REF
-	     || TREE_CODE (base) == REALPART_EXPR
-	     || TREE_CODE (base) == IMAGPART_EXPR
-	     || TREE_CODE (base) == BIT_FIELD_REF)
-	base = TREE_OPERAND (base, 0);
+      /* Note whether this expression can trap.  */
+      MEM_NOTRAP_P (ref) = !tree_could_trap_p (t);
 
-      if (TREE_CODE (base) == MEM_REF
-	  && TREE_CODE (TREE_OPERAND (base, 0)) == ADDR_EXPR)
-	base = TREE_OPERAND (TREE_OPERAND (base, 0), 0);
-      if (DECL_P (base))
-	{
-	  if (CODE_CONTAINS_STRUCT (TREE_CODE (base), TS_DECL_WITH_VIS))
-	    MEM_NOTRAP_P (ref) = !DECL_WEAK (base);
-	  else
-	    MEM_NOTRAP_P (ref) = 1;
-	}
-      else if (TREE_CODE (base) == INDIRECT_REF
-	       || TREE_CODE (base) == MEM_REF
-	       || TREE_CODE (base) == TARGET_MEM_REF
-	       || TREE_CODE (base) == ARRAY_REF
-	       || TREE_CODE (base) == ARRAY_RANGE_REF)
-	MEM_NOTRAP_P (ref) = TREE_THIS_NOTRAP (base);
-
-      base = get_base_address (base);
+      base = get_base_address (t);
       if (base && DECL_P (base)
 	  && TREE_READONLY (base)
-	  && (TREE_STATIC (base) || DECL_EXTERNAL (base)))
+	  && (TREE_STATIC (base) || DECL_EXTERNAL (base))
+	  && !TREE_THIS_VOLATILE (base))
 	MEM_READONLY_P (ref) = 1;
 
       /* If this expression uses it's parent's alias set, mark it such
@@ -3470,10 +3477,6 @@ try_split (rtx pat, rtx trial, int last)
 	      p = &XEXP (*p, 1);
 	    *p = CALL_INSN_FUNCTION_USAGE (trial);
 	    SIBLING_CALL_P (insn) = SIBLING_CALL_P (trial);
-
-	    /* Update the debug information for the CALL_INSN.  */
-	    if (flag_enable_icf_debug)
-	      (*debug_hooks->copy_call_info) (trial, insn);
 	  }
     }
 

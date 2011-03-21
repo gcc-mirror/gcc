@@ -47,11 +47,11 @@ package gnu.classpath.examples.CORBA.SimpleCommunication.communication;
 public class TreeNode
   implements org.omg.CORBA.portable.IDLEntity
 {
-  /** 
-   * Use serialVersionUID for interoperability. 
+  /**
+   * Use serialVersionUID for interoperability.
    */
   private static final long serialVersionUID = 1;
-  
+
   /** The TreeNode name */
   public String name = null;
 

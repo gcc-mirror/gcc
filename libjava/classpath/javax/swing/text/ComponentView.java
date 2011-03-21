@@ -1,4 +1,4 @@
-/* ComponentView.java -- 
+/* ComponentView.java --
    Copyright (C) 2002, 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -459,7 +459,7 @@ public class ComponentView extends View
           }
       }
   }
-    
+
   /**
    * Maps coordinates from the <code>View</code>'s space into a position
    * in the document model.

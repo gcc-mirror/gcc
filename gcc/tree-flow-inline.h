@@ -103,7 +103,7 @@ next_htab_element (htab_iterator *hti)
 static inline tree
 referenced_var (unsigned int uid)
 {
-  tree var = referenced_var_lookup (uid);
+  tree var = referenced_var_lookup (cfun, uid);
   gcc_assert (var || uid == 0);
   return var;
 }
@@ -112,10 +112,10 @@ referenced_var (unsigned int uid)
    referenced_vars hashtable, and return that variable.  */
 
 static inline tree
-first_referenced_var (referenced_var_iterator *iter)
+first_referenced_var (struct function *fn, referenced_var_iterator *iter)
 {
   return (tree) first_htab_element (&iter->hti,
-				    gimple_referenced_vars (cfun));
+				    gimple_referenced_vars (fn));
 }
 
 /* Return true if we have hit the end of the referenced variables ITER is
@@ -569,9 +569,26 @@ static inline void
 set_is_used (tree var)
 {
   var_ann_t ann = get_var_ann (var);
-  ann->used = 1;
+  ann->used = true;
 }
 
+/* Clear VAR's used flag.  */
+
+static inline void
+clear_is_used (tree var)
+{
+  var_ann_t ann = var_ann (var);
+  ann->used = false;
+}
+
+/* Return true if VAR is marked as used.  */
+
+static inline bool
+is_used_p (tree var)
+{
+  var_ann_t ann = var_ann (var);
+  return ann->used;
+}
 
 /* Return true if T (assumed to be a DECL) is a global variable.
    A variable is considered global if its storage is not automatic.  */

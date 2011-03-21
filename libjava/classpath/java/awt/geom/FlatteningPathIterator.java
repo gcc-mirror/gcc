@@ -141,8 +141,8 @@ public class FlatteningPathIterator
    */
   private int[] recLevel;
 
-  
-  
+
+
   private final double[] scratch = new double[6];
 
 
@@ -387,7 +387,7 @@ public class FlatteningPathIterator
     }
 
     srcSegType = srcIter.currentSegment(scratch);
-    
+
     switch (srcSegType)
     {
     case PathIterator.SEG_CLOSE:
@@ -493,7 +493,7 @@ public class FlatteningPathIterator
            && (CubicCurve2D.getFlatnessSq(stack, sp) >= flatnessSq))
     {
       recLevel[stackSize] = recLevel[stackSize - 1] = ++level;
-      
+
       CubicCurve2D.subdivide(stack, sp, stack, sp - 6, stack, sp);
       ++stackSize;
       sp -= 6;

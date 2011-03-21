@@ -117,3 +117,35 @@ semrelease (uint32 *addr)
       __go_assert (i == 0);
     }
 }
+
+
+#ifndef HAVE_SYNC_FETCH_AND_ADD_4
+
+/* For targets which don't have the required sync support.  Really
+   this should be provided by gcc itself.  FIXME.  */
+
+static pthread_mutex_t sync_lock = PTHREAD_MUTEX_INITIALIZER;
+
+uint32
+__sync_fetch_and_add_4(uint32*, uint32)
+  __attribute__((visibility("hidden")));
+
+uint32
+__sync_fetch_and_add_4(uint32* ptr, uint32 add)
+{
+  int i;
+  uint32 ret;
+
+  i = pthread_mutex_lock(&sync_lock);
+  __go_assert(i == 0);
+
+  ret = *ptr;
+  *ptr += add;
+
+  i = pthread_mutex_unlock(&sync_lock);
+  __go_assert(i == 0);
+
+  return ret;
+}
+
+#endif

@@ -68,11 +68,11 @@ import javax.swing.text.html.FormSubmitEvent;
 
 /**
  * Parses and displays HTML content.
- * 
+ *
  * @author Audrius Meskauskas (audriusa@bioinformatics.org)
  */
 public class HtmlDemo extends JPanel
-{ 
+{
 
   private class LoadActionListener
     implements ActionListener
@@ -101,10 +101,10 @@ public class HtmlDemo extends JPanel
   /**
    * The URL entry field.
    */
-  JTextField url = new JTextField(); 
+  JTextField url = new JTextField();
 
   JTextPane html = new JTextPane();
-  
+
   int n;
 
   /**
@@ -152,7 +152,7 @@ public class HtmlDemo extends JPanel
               }
           }
       }
-      
+
     });
 
     JScrollPane scroller = new JScrollPane(html);
@@ -190,7 +190,7 @@ public class HtmlDemo extends JPanel
       }
     setPreferredSize(new Dimension(800, 600));
   }
- 
+
 
   /**
    * Creates the toolbar with the control buttons.
@@ -254,7 +254,7 @@ public class HtmlDemo extends JPanel
 
   /**
    * The executable method to display the editable table.
-   * 
+   *
    * @param args
    *          unused.
    */
@@ -377,4 +377,3 @@ public class HtmlDemo extends JPanel
     };
   }
 }
-

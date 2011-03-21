@@ -80,7 +80,7 @@ public abstract class NameDynAnyPairHelper
       {
         BAD_OPERATION bad = new BAD_OPERATION("NameDynAnyPair expected");
         bad.initCause(cex);
-        bad.minor = Minor.Any;        
+        bad.minor = Minor.Any;
         throw bad;
       }
   }
@@ -105,16 +105,16 @@ public abstract class NameDynAnyPairHelper
   {
     ORB orb = OrbRestricted.Singleton;
     StructMember[] members = new StructMember[ 2 ];
-    
+
     TypeCode field;
-    
+
     field =
       orb.create_alias_tc("IDL:omg.org/DynamicAny/FieldName:1.0",
                           "FieldName",
                           orb.get_primitive_tc(TCKind.tk_string)
       );
     members [ 0 ] = new StructMember("id", field, null);
-    
+
     field = DynAnyHelper.type();
     members [ 1 ] = new StructMember("value", field, null);
     return orb.create_struct_tc(id(), "NameDynAnyPair", members);

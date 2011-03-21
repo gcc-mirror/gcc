@@ -1,4 +1,4 @@
-// { dg-do "compile" }
+// { dg-do compile }
 // { dg-options "-std=c++0x" }
 template<typename T>
 struct vector { 

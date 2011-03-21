@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -100,7 +100,7 @@ public class Statement
    * <li>Static methods can be executed by providing the class as a
    * target.</li>
    *
-   * <li>The method name new is reserved to call the constructor 
+   * <li>The method name new is reserved to call the constructor
    * new() will construct an object and return it.  Not useful unless
    * an expression :-)</li>
    *
@@ -123,34 +123,34 @@ public class Statement
    * declared in the source file.</p>
    *
    * @throws Exception if an exception occurs while locating or
-   * 		       invoking the method.
+   *                   invoking the method.
    */
   public void execute() throws Exception
   {
     doExecute();
   }
-  
-  private static Class wrappers[] = 
+
+  private static Class wrappers[] =
     {
       Boolean.class, Byte.class, Character.class, Double.class, Float.class,
       Integer.class, Long.class, Short.class
     };
 
-  private static Class natives[] = 
+  private static Class natives[] =
     {
       Boolean.TYPE, Byte.TYPE, Character.TYPE, Double.TYPE, Float.TYPE,
       Integer.TYPE, Long.TYPE, Short.TYPE
     };
 
   /** Given a wrapper class, return the native class for it.
-   * <p>For example, if <code>c</code> is <code>Integer</code>, 
+   * <p>For example, if <code>c</code> is <code>Integer</code>,
    * <code>Integer.TYPE</code> is returned.</p>
    */
   private Class unwrap(Class c)
   {
     for (int i = 0; i < wrappers.length; i++)
       if (c == wrappers[i])
-	return natives[i];
+        return natives[i];
     return null;
   }
 
@@ -168,16 +168,16 @@ public class Statement
     // any type.
     if (args[i] == null)
       continue;
-    
-    // Treat Integer like int if appropriate
-	Class nativeType = unwrap(args[i]);
-	if (nativeType != null && params[i].isPrimitive()
-	    && params[i].isAssignableFrom(nativeType))
-	  continue;
-	if (params[i].isAssignableFrom(args[i]))
-	  continue;
 
-	return false;
+    // Treat Integer like int if appropriate
+        Class nativeType = unwrap(args[i]);
+        if (nativeType != null && params[i].isPrimitive()
+            && params[i].isAssignableFrom(nativeType))
+          continue;
+        if (params[i].isAssignableFrom(args[i]))
+          continue;
+
+        return false;
       }
     return true;
   }
@@ -201,9 +201,9 @@ public class Statement
   {
     for (int j=0; j < first.length; j++)
       {
-	if (second[j].isAssignableFrom(first[j]))
-	  continue;
-	return false;
+        if (second[j].isAssignableFrom(first[j]))
+          continue;
+        return false;
       }
     return true;
   }
@@ -211,10 +211,10 @@ public class Statement
   final Object doExecute() throws Exception
   {
     Class klazz = (target instanceof Class)
-	? (Class) target : target.getClass();
+        ? (Class) target : target.getClass();
     Object args[] = (arguments == null) ? new Object[0] : arguments;
     Class argTypes[] = new Class[args.length];
-    
+
     // Retrieve type or use null if the argument is null. The null argument
     // type is later used in compatible().
     for (int i = 0; i < args.length; i++)
@@ -222,18 +222,18 @@ public class Statement
 
     if (target.getClass().isArray())
       {
-	// FIXME: invoke may have to be used.  For now, cast to Number
-	// and hope for the best.  If caller didn't behave, we go boom
-	// and throw the exception.
-	if (methodName.equals("get") && argTypes.length == 1)
-	  return Array.get(target, ((Number)args[0]).intValue());
-	if (methodName.equals("set") && argTypes.length == 2)
-	  {
-	    Object obj = Array.get(target, ((Number)args[0]).intValue());
-	    Array.set(target, ((Number)args[0]).intValue(), args[1]);
-	    return obj;
-	  }
-	throw new NoSuchMethodException("No matching method for statement " + toString());
+        // FIXME: invoke may have to be used.  For now, cast to Number
+        // and hope for the best.  If caller didn't behave, we go boom
+        // and throw the exception.
+        if (methodName.equals("get") && argTypes.length == 1)
+          return Array.get(target, ((Number)args[0]).intValue());
+        if (methodName.equals("set") && argTypes.length == 2)
+          {
+            Object obj = Array.get(target, ((Number)args[0]).intValue());
+            Array.set(target, ((Number)args[0]).intValue(), args[1]);
+            return obj;
+          }
+        throw new NoSuchMethodException("No matching method for statement " + toString());
       }
 
     // If we already cached the method, just use it.
@@ -253,62 +253,62 @@ public class Statement
 
     if (methodName.equals("new") && target instanceof Class)
       {
-	Constructor ctors[] = klazz.getConstructors();
-	for (int i = 0; i < ctors.length; i++)
-	  {
-	    // Skip methods with wrong number of args.
-	    Class ptypes[] = ctors[i].getParameterTypes();
+        Constructor ctors[] = klazz.getConstructors();
+        for (int i = 0; i < ctors.length; i++)
+          {
+            // Skip methods with wrong number of args.
+            Class ptypes[] = ctors[i].getParameterTypes();
 
-	    if (ptypes.length != args.length)
-	      continue;
+            if (ptypes.length != args.length)
+              continue;
 
-	    // Check if method matches
-	    if (!compatible(ptypes, argTypes))
-	      continue;
+            // Check if method matches
+            if (!compatible(ptypes, argTypes))
+              continue;
 
-	    // Use method[i] if it is more specific. 
-	    // FIXME: should this check both directions and throw if
-	    // neither is more specific?
-	    if (ctor == null)
-	      {
-		ctor = ctors[i];
-		continue;
-	      }
-	    Class mptypes[] = ctor.getParameterTypes();
-	    if (moreSpecific(ptypes, mptypes))
-	      ctor = ctors[i];
-	  }
-	if (ctor == null)
-	  throw new InstantiationException("No matching constructor for statement " + toString());
-	return ctor.newInstance(args);
+            // Use method[i] if it is more specific.
+            // FIXME: should this check both directions and throw if
+            // neither is more specific?
+            if (ctor == null)
+              {
+                ctor = ctors[i];
+                continue;
+              }
+            Class mptypes[] = ctor.getParameterTypes();
+            if (moreSpecific(ptypes, mptypes))
+              ctor = ctors[i];
+          }
+        if (ctor == null)
+          throw new InstantiationException("No matching constructor for statement " + toString());
+        return ctor.newInstance(args);
       }
 
     Method methods[] = klazz.getMethods();
 
     for (int i = 0; i < methods.length; i++)
       {
-	// Skip methods with wrong name or number of args.
-	if (!methods[i].getName().equals(methodName))
-	  continue;
-	Class ptypes[] = methods[i].getParameterTypes();
-	if (ptypes.length != args.length)
-	  continue;
+        // Skip methods with wrong name or number of args.
+        if (!methods[i].getName().equals(methodName))
+          continue;
+        Class ptypes[] = methods[i].getParameterTypes();
+        if (ptypes.length != args.length)
+          continue;
 
-	// Check if method matches
-	if (!compatible(ptypes, argTypes))
-	  continue;
+        // Check if method matches
+        if (!compatible(ptypes, argTypes))
+          continue;
 
-	// Use method[i] if it is more specific. 
-	// FIXME: should this check both directions and throw if
-	// neither is more specific?
-	if (method == null)
-	  {
-	    method = methods[i];
-	    continue;
-	  }
-	Class mptypes[] = method.getParameterTypes();
-	if (moreSpecific(ptypes, mptypes))
-	  method = methods[i];
+        // Use method[i] if it is more specific.
+        // FIXME: should this check both directions and throw if
+        // neither is more specific?
+        if (method == null)
+          {
+            method = methods[i];
+            continue;
+          }
+        Class mptypes[] = method.getParameterTypes();
+        if (moreSpecific(ptypes, mptypes))
+          method = methods[i];
       }
     if (method == null)
       throw new NoSuchMethodException("No matching method for statement " + toString());
@@ -329,7 +329,7 @@ public class Statement
     return method.invoke(target, args);
     } catch(IllegalArgumentException iae){
       System.err.println("method: " + method);
-      
+
       for(int i=0;i<args.length;i++){
         System.err.println("args[" + i + "]: " + args[i]);
       }
@@ -337,7 +337,7 @@ public class Statement
     }
   }
 
-  
+
 
   /** Return the statement arguments. */
   public Object[] getArguments() { return arguments; }
@@ -348,19 +348,19 @@ public class Statement
   /** Return the statement object. */
   public Object getTarget() { return target; }
 
-  /** 
-   * Returns a string representation of this <code>Statement</code>. 
-   * 
-   * @return A string representation of this <code>Statement</code>. 
+  /**
+   * Returns a string representation of this <code>Statement</code>.
+   *
+   * @return A string representation of this <code>Statement</code>.
    */
   public String toString()
   {
-    CPStringBuilder result = new CPStringBuilder(); 
+    CPStringBuilder result = new CPStringBuilder();
 
     String targetName;
     if (target != null)
       targetName = target.getClass().getSimpleName();
-    else 
+    else
       targetName = "null";
 
     result.append(targetName);
@@ -373,7 +373,7 @@ public class Statement
       {
         result.append(sep);
         result.append(
-          ( arguments[i] == null ) ? "null" : 
+          ( arguments[i] == null ) ? "null" :
             ( arguments[i] instanceof String ) ? "\"" + arguments[i] + "\"" :
             arguments[i].getClass().getSimpleName());
         sep = ", ";
@@ -382,5 +382,5 @@ public class Statement
 
     return result.toString();
   }
-  
+
 }

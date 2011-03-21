@@ -31,7 +31,7 @@ f4 (int *p)
   asm ("asm4 %0" : "=es" (p[100]));
 }
 
-/* { dg-final { scan-assembler "asm1 3,4" } } */
-/* { dg-final { scan-assembler "asm2u 16\\(3\\)" } } */
-/* { dg-final { scan-assembler "asm3 0\\(3\\)" } } */
-/* { dg-final { scan-assembler "asm4 400\\(3\\)" } } */
+/* { dg-final { scan-assembler "asm1 %?r?3,%?r?4" } } */
+/* { dg-final { scan-assembler "asm2u 16\\(%?r?3\\)" } } */
+/* { dg-final { scan-assembler "asm3 0\\(%?r?3\\)" } } */
+/* { dg-final { scan-assembler "asm4 400\\(%?r?3\\)" } } */

@@ -83,7 +83,7 @@ public class InputSecurityParameters
   /**
    * Decrypt a record, storing the decrypted fragment into the given array
    * of byte buffers.
-   * 
+   *
    * @param record The input record.
    * @param output The output buffers.
    * @param offset The offset of the first buffer to use.
@@ -94,7 +94,7 @@ public class InputSecurityParameters
    *  and the input fragment is not a multiple of the block size.
    * @throws MacException If verifying the MAC fails.
    * @throws SSLException ???
-   * @throws ShortBufferException 
+   * @throws ShortBufferException
    */
   public int decrypt(Record record, ByteBuffer[] output, int offset, int length)
     throws DataFormatException, IllegalBlockSizeException,
@@ -102,11 +102,11 @@ public class InputSecurityParameters
   {
     return decrypt(record, output, offset, length, null);
   }
-  
+
   /**
    * Decrypt a record, storing the decrypted fragment into the given growable
    * buffer.
-   * 
+   *
    * @param record The input record.
    * @param outputStream The output buffer.
    * @return The number of bytes put into the output buffer.
@@ -122,7 +122,7 @@ public class InputSecurityParameters
   {
     return decrypt(record, null, 0, 0, outputStream);
   }
-  
+
   private int decrypt(Record record, ByteBuffer[] output, int offset, int length,
                       ByteBufferOutputStream outputStream)
     throws DataFormatException, IllegalBlockSizeException,
@@ -142,7 +142,7 @@ public class InputSecurityParameters
     if (Debug.DEBUG_DECRYPTION)
       logger.logv(Component.SSL_RECORD_LAYER, "decrypted fragment:\n{0}",
                   Util.hexDump((ByteBuffer) fragment.duplicate().position(0), " >> "));
-    
+
     int fragmentLength = record.length();
     int maclen = 0;
     if (mac != null)
@@ -178,14 +178,14 @@ public class InputSecurityParameters
               logger.logv(Component.SSL_RECORD_LAYER, "TLSv1.x padding\n{0}",
                           new ByteArray(pad));
           }
-        
+
         if (Debug.DEBUG)
           logger.logv(Component.SSL_RECORD_LAYER, "padding bad? {0}",
                       badPadding);
         if (!badPadding)
           fragmentLength = fragmentLength - padRemoveLen;
       }
-    
+
     int ivlen = 0;
     if (session.version.compareTo(ProtocolVersion.TLS_1_1) >= 0
         && !suite.isStreamCipher())
@@ -244,7 +244,7 @@ public class InputSecurityParameters
         else
           fragment.position(0);
         fragment.limit(fragmentLength);
-        
+
         while (!done)
           {
             int l;
@@ -259,7 +259,7 @@ public class InputSecurityParameters
             out.write(outbuffer, 0, l);
             done = !fragment.hasRemaining() && inflater.finished();
           }
-        
+
         ByteBuffer outbuf = out.buffer();
         if (outputStream != null)
           {
@@ -323,10 +323,10 @@ public class InputSecurityParameters
       }
 
     sequence++;
-    
+
     return produced;
   }
-  
+
   CipherSuite cipherSuite ()
   {
     return suite;

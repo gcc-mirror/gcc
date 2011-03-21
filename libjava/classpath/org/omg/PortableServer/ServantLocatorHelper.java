@@ -116,23 +116,23 @@ public abstract class ServantLocatorHelper
         throw bad;
       }
   }
-  
+
   /**
    * Narrow the given object to the ServantLocator. For the objects that are
    * always local, this operation does not differ from the ordinary
    * {@link #narrow} (ClassCastException will be thrown if narrowing something
    * different). See OMG issue 4158.
-   * 
+   *
    * @param obj the object to cast.
-   * 
+   *
    * @return the casted ServantLocator.
-   * 
+   *
    * @since 1.5
    */
   public static ServantLocator unchecked_narrow(org.omg.CORBA.Object obj)
   {
     return narrow(obj);
-  }    
+  }
 
   /**
    * This should read the servant locator, but it cannot be transferred

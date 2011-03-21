@@ -52,7 +52,7 @@ import java.util.ArrayList;
 public class PlainDocument extends AbstractDocument
 {
   private static final long serialVersionUID = 4758290289196893664L;
-    
+
   public static final String lineLimitAttribute = "lineLimit";
   public static final String tabSizeAttribute = "tabSize";
 
@@ -62,7 +62,7 @@ public class PlainDocument extends AbstractDocument
    * createDefaultRoot() (when overridden by a subclass).
    */
   private Element rootElement;
-  
+
   public PlainDocument()
   {
     this(new GapContent());
@@ -80,7 +80,7 @@ public class PlainDocument extends AbstractDocument
   private void reindex()
   {
     Element[] lines;
-    try 
+    try
       {
         String str = content.getString(0, content.length());
 
@@ -91,10 +91,10 @@ public class PlainDocument extends AbstractDocument
             elts.add(createLeafElement(rootElement, SimpleAttributeSet.EMPTY, j, i + 1));
             j = i + 1;
           }
-        
+
         if (j < content.length())
           elts.add(createLeafElement(rootElement, SimpleAttributeSet.EMPTY, j, content.length()));
-        
+
         lines = new Element[elts.size()];
         for (int i = 0; i < elts.size(); ++i)
           lines[i] = (Element) elts.get(i);
@@ -116,7 +116,7 @@ public class PlainDocument extends AbstractDocument
     Element[] array = new Element[1];
     array[0] = createLeafElement(root, null, 0, 1);
     root.replace(0, 0, array);
-    
+
     return root;
   }
 
@@ -239,9 +239,9 @@ public class PlainDocument extends AbstractDocument
         removed = new Element [i2 - i1 + 1];
         for (int i = i1; i <= i2; i++)
           removed[i-i1] = rootElement.getElement(i);
-        
+
         int start = rootElement.getElement(i1).getStartOffset();
-        int end = rootElement.getElement(i2).getEndOffset();        
+        int end = rootElement.getElement(i2).getEndOffset();
         added[0] = createLeafElement(rootElement,
                                           SimpleAttributeSet.EMPTY,
                                           start, end);

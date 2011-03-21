@@ -59,11 +59,11 @@ import org.omg.CORBA.NO_IMPLEMENT;
 public class RequestHeader
   extends gnu.CORBA.GIOP.v1_0.RequestHeader
 {
-  /** 
-   * Use serialVersionUID for interoperability. 
+  /**
+   * Use serialVersionUID for interoperability.
    */
   private static final long serialVersionUID = 1;
-  
+
   /**
    * Indicates that the object is addressed by the object key.
    */

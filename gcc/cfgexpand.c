@@ -1,5 +1,5 @@
 /* A pass for lowering trees to RTL.
-   Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010
+   Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -520,7 +520,7 @@ update_alias_info_with_stack_vars (void)
 	     for -O0 where we are preserving even unreferenced variables.  */
 	  gcc_assert (DECL_P (decl)
 		      && (!optimize
-			  || referenced_var_lookup (DECL_UID (decl))));
+			  || referenced_var_lookup (cfun, DECL_UID (decl))));
 	  bitmap_set_bit (part, uid);
 	  *((bitmap *) pointer_map_insert (decls_to_partitions,
 					   (void *)(size_t) uid)) = part;
@@ -1311,30 +1311,6 @@ create_stack_guard (void)
   crtl->stack_protect_guard = guard;
 }
 
-/* A subroutine of expand_used_vars.  Walk down through the BLOCK tree
-   expanding variables.  Those variables that can be put into registers
-   are allocated pseudos; those that can't are put on the stack.
-
-   TOPLEVEL is true if this is the outermost BLOCK.  */
-
-static HOST_WIDE_INT
-account_used_vars_for_block (tree block, bool toplevel)
-{
-  tree t;
-  HOST_WIDE_INT size = 0;
-
-  /* Expand all variables at this level.  */
-  for (t = BLOCK_VARS (block); t ; t = DECL_CHAIN (t))
-    if (TREE_USED (t))
-      size += expand_one_var (t, toplevel, false);
-
-  /* Expand all variables at containing levels.  */
-  for (t = BLOCK_SUBBLOCKS (block); t ; t = BLOCK_CHAIN (t))
-    size += account_used_vars_for_block (t, false);
-
-  return size;
-}
-
 /* Prepare for expanding variables.  */
 static void
 init_vars_expansion (void)
@@ -1366,34 +1342,30 @@ fini_vars_expansion (void)
   stack_vars_alloc = stack_vars_num = 0;
 }
 
-/* Make a fair guess for the size of the stack frame of the decl
-   passed.  This doesn't have to be exact, the result is only used
-   in the inline heuristics.  So we don't want to run the full stack
-   var packing algorithm (which is quadratic in the number of stack
-   vars).  Instead, we calculate the total size of all stack vars.
-   This turns out to be a pretty fair estimate -- packing of stack
-   vars doesn't happen very often.  */
+/* Make a fair guess for the size of the stack frame of the function
+   in NODE.  This doesn't have to be exact, the result is only used in
+   the inline heuristics.  So we don't want to run the full stack var
+   packing algorithm (which is quadratic in the number of stack vars).
+   Instead, we calculate the total size of all stack vars.  This turns
+   out to be a pretty fair estimate -- packing of stack vars doesn't
+   happen very often.  */
 
 HOST_WIDE_INT
-estimated_stack_frame_size (tree decl)
+estimated_stack_frame_size (struct cgraph_node *node)
 {
   HOST_WIDE_INT size = 0;
   size_t i;
-  tree var, outer_block = DECL_INITIAL (current_function_decl);
-  unsigned ix;
+  tree var;
   tree old_cur_fun_decl = current_function_decl;
-  current_function_decl = decl;
-  push_cfun (DECL_STRUCT_FUNCTION (decl));
+  referenced_var_iterator rvi;
+  struct function *fn = DECL_STRUCT_FUNCTION (node->decl);
 
-  init_vars_expansion ();
+  current_function_decl = node->decl;
+  push_cfun (fn);
 
-  FOR_EACH_LOCAL_DECL (cfun, ix, var)
-    {
-      if (TREE_USED (var))
-        size += expand_one_var (var, true, false);
-      TREE_USED (var) = 1;
-    }
-  size += account_used_vars_for_block (outer_block, true);
+  gcc_checking_assert (gimple_referenced_vars (fn));
+  FOR_EACH_REFERENCED_VAR (fn, var, rvi)
+    size += expand_one_var (var, true, false);
 
   if (stack_vars_num > 0)
     {
@@ -2320,15 +2292,21 @@ round_udiv_adjust (enum machine_mode mode, rtx mod, rtx op1)
    any rtl.  */
 
 static rtx
-convert_debug_memory_address (enum machine_mode mode, rtx x)
+convert_debug_memory_address (enum machine_mode mode, rtx x,
+			      addr_space_t as)
 {
   enum machine_mode xmode = GET_MODE (x);
 
 #ifndef POINTERS_EXTEND_UNSIGNED
-  gcc_assert (mode == Pmode);
+  gcc_assert (mode == Pmode
+	      || mode == targetm.addr_space.address_mode (as));
   gcc_assert (xmode == mode || xmode == VOIDmode);
 #else
-  gcc_assert (mode == Pmode || mode == ptr_mode);
+  rtx temp;
+  enum machine_mode address_mode = targetm.addr_space.address_mode (as);
+  enum machine_mode pointer_mode = targetm.addr_space.pointer_mode (as);
+
+  gcc_assert (mode == address_mode || mode == pointer_mode);
 
   if (GET_MODE (x) == mode || GET_MODE (x) == VOIDmode)
     return x;
@@ -2342,7 +2320,47 @@ convert_debug_memory_address (enum machine_mode mode, rtx x)
   else if (!POINTERS_EXTEND_UNSIGNED)
     x = gen_rtx_SIGN_EXTEND (mode, x);
   else
-    gcc_unreachable ();
+    {
+      switch (GET_CODE (x))
+	{
+	case SUBREG:
+	  if ((SUBREG_PROMOTED_VAR_P (x)
+	       || (REG_P (SUBREG_REG (x)) && REG_POINTER (SUBREG_REG (x)))
+	       || (GET_CODE (SUBREG_REG (x)) == PLUS
+		   && REG_P (XEXP (SUBREG_REG (x), 0))
+		   && REG_POINTER (XEXP (SUBREG_REG (x), 0))
+		   && CONST_INT_P (XEXP (SUBREG_REG (x), 1))))
+	      && GET_MODE (SUBREG_REG (x)) == mode)
+	    return SUBREG_REG (x);
+	  break;
+	case LABEL_REF:
+	  temp = gen_rtx_LABEL_REF (mode, XEXP (x, 0));
+	  LABEL_REF_NONLOCAL_P (temp) = LABEL_REF_NONLOCAL_P (x);
+	  return temp;
+	case SYMBOL_REF:
+	  temp = shallow_copy_rtx (x);
+	  PUT_MODE (temp, mode);
+	  return temp;
+	case CONST:
+	  temp = convert_debug_memory_address (mode, XEXP (x, 0), as);
+	  if (temp)
+	    temp = gen_rtx_CONST (mode, temp);
+	  return temp;
+	case PLUS:
+	case MINUS:
+	  if (CONST_INT_P (XEXP (x, 1)))
+	    {
+	      temp = convert_debug_memory_address (mode, XEXP (x, 0), as);
+	      if (temp)
+		return gen_rtx_fmt_ee (GET_CODE (x), mode, temp, XEXP (x, 1));
+	    }
+	  break;
+	default:
+	  break;
+	}
+      /* Don't know how to express ptr_extend as operation in debug info.  */
+      return NULL;
+    }
 #endif /* POINTERS_EXTEND_UNSIGNED */
 
   return x;
@@ -2560,6 +2578,15 @@ expand_debug_expr (tree exp)
       }
 
     case MEM_REF:
+      if (!is_gimple_mem_ref_addr (TREE_OPERAND (exp, 0)))
+	{
+	  tree newexp = fold_binary (MEM_REF, TREE_TYPE (exp),
+				     TREE_OPERAND (exp, 0),
+				     TREE_OPERAND (exp, 1));
+	  if (newexp)
+	    return expand_debug_expr (newexp);
+	}
+      /* FALLTHROUGH */
     case INDIRECT_REF:
       op0 = expand_debug_expr (TREE_OPERAND (exp, 0));
       if (!op0)
@@ -2567,6 +2594,13 @@ expand_debug_expr (tree exp)
 
       if (TREE_CODE (exp) == MEM_REF)
 	{
+	  if (GET_CODE (op0) == DEBUG_IMPLICIT_PTR
+	      || (GET_CODE (op0) == PLUS
+		  && GET_CODE (XEXP (op0, 0)) == DEBUG_IMPLICIT_PTR))
+	    /* (mem (debug_implicit_ptr)) might confuse aliasing.
+	       Instead just use get_inner_reference.  */
+	    goto component_ref;
+
 	  op1 = expand_debug_expr (TREE_OPERAND (exp, 1));
 	  if (!op1 || !CONST_INT_P (op1))
 	    return NULL;
@@ -2579,9 +2613,16 @@ expand_debug_expr (tree exp)
       else
 	as = ADDR_SPACE_GENERIC;
 
-      op0 = gen_rtx_MEM (mode, op0);
+      op0 = convert_debug_memory_address (targetm.addr_space.address_mode (as),
+					  op0, as);
+      if (op0 == NULL_RTX)
+	return NULL;
 
+      op0 = gen_rtx_MEM (mode, op0);
       set_mem_attributes (op0, exp, 0);
+      if (TREE_CODE (exp) == MEM_REF
+	  && !is_gimple_mem_ref_addr (TREE_OPERAND (exp, 0)))
+	set_mem_expr (op0, NULL_TREE);
       set_mem_addr_space (op0, as);
 
       return op0;
@@ -2596,7 +2637,15 @@ expand_debug_expr (tree exp)
       if (!op0)
 	return NULL;
 
-      as = TYPE_ADDR_SPACE (TREE_TYPE (exp));
+      if (POINTER_TYPE_P (TREE_TYPE (exp)))
+	as = TYPE_ADDR_SPACE (TREE_TYPE (TREE_TYPE (exp)));
+      else
+	as = ADDR_SPACE_GENERIC;
+
+      op0 = convert_debug_memory_address (targetm.addr_space.address_mode (as),
+					  op0, as);
+      if (op0 == NULL_RTX)
+	return NULL;
 
       op0 = gen_rtx_MEM (mode, op0);
 
@@ -2605,6 +2654,7 @@ expand_debug_expr (tree exp)
 
       return op0;
 
+    component_ref:
     case ARRAY_REF:
     case ARRAY_RANGE_REF:
     case COMPONENT_REF:
@@ -3059,7 +3109,8 @@ expand_debug_expr (tree exp)
 	  return NULL;
 	}
 
-      op0 = convert_debug_memory_address (mode, XEXP (op0, 0));
+      as = TYPE_ADDR_SPACE (TREE_TYPE (exp));
+      op0 = convert_debug_memory_address (mode, XEXP (op0, 0), as);
 
       return op0;
 
@@ -3120,11 +3171,35 @@ expand_debug_expr (tree exp)
 	    int part = var_to_partition (SA.map, exp);
 
 	    if (part == NO_PARTITION)
-	      return NULL;
+	      {
+		/* If this is a reference to an incoming value of parameter
+		   that is never used in the code or where the incoming
+		   value is never used in the code, use PARM_DECL's
+		   DECL_RTL if set.  */
+		if (SSA_NAME_IS_DEFAULT_DEF (exp)
+		    && TREE_CODE (SSA_NAME_VAR (exp)) == PARM_DECL)
+		  {
+		    rtx incoming = DECL_INCOMING_RTL (SSA_NAME_VAR (exp));
+		    if (incoming
+			&& GET_MODE (incoming) != BLKmode
+			&& (REG_P (incoming)
+			    || (MEM_P (incoming) && REG_P (XEXP (incoming, 0)))))
+		      {
+			op0 = gen_rtx_ENTRY_VALUE (GET_MODE (incoming));
+			ENTRY_VALUE_EXP (op0) = incoming;
+			goto adjust_mode;
+		      }
+		    op0 = expand_debug_expr (SSA_NAME_VAR (exp));
+		    if (!op0)
+		      return NULL;
+		    goto adjust_mode;
+		  }
+		return NULL;
+	      }
 
 	    gcc_assert (part >= 0 && (unsigned)part < SA.map->num_partitions);
 
-	    op0 = SA.partition_to_pseudo[part];
+	    op0 = copy_rtx (SA.partition_to_pseudo[part]);
 	  }
 	goto adjust_mode;
       }
@@ -4085,7 +4160,19 @@ gimple_expand_cfg (void)
       for (ei = ei_start (bb->succs); (e = ei_safe_edge (ei)); )
 	{
 	  if (e->insns.r)
-	    commit_one_edge_insertion (e);
+	    {
+	      /* Avoid putting insns before parm_birth_insn.  */
+	      if (e->src == ENTRY_BLOCK_PTR
+		  && single_succ_p (ENTRY_BLOCK_PTR)
+		  && parm_birth_insn)
+		{
+		  rtx insns = e->insns.r;
+		  e->insns.r = NULL_RTX;
+		  emit_insn_after_noloc (insns, parm_birth_insn, e->dest);
+		}
+	      else
+		commit_one_edge_insertion (e);
+	    }
 	  else
 	    ei_next (&ei);
 	}

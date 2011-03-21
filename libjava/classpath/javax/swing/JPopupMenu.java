@@ -79,10 +79,10 @@ import javax.swing.plaf.PopupMenuUI;
  * popupMenuBecomeInvisible() or popupMenuCancelled() methods of
  * PopupMenuListeners will be invoked.
  *
- * JPopupMenu also fires PropertyChangeEvents when its bound properties 
- * change.In addittion to inheritted bound properties, JPopupMenu has 
+ * JPopupMenu also fires PropertyChangeEvents when its bound properties
+ * change.In addittion to inheritted bound properties, JPopupMenu has
  * 'visible' bound property. When JPopupMenu becomes visible/invisible on
- * the screen it fires PropertyChangeEvents to its registered 
+ * the screen it fires PropertyChangeEvents to its registered
  * PropertyChangeListeners.
  */
 public class JPopupMenu extends JComponent implements Accessible, MenuElement
@@ -139,7 +139,7 @@ public class JPopupMenu extends JComponent implements Accessible, MenuElement
 
   /* Field indicating if popup menu is visible or not */
   private boolean visible = false;
-  
+
   /**
    * Creates a new JPopupMenu object.
    */
@@ -326,7 +326,7 @@ public class JPopupMenu extends JComponent implements Accessible, MenuElement
    */
   public void setSelectionModel(SingleSelectionModel model)
   {
-	selectionModel = model;
+        selectionModel = model;
   }
 
   /**
@@ -397,9 +397,9 @@ public class JPopupMenu extends JComponent implements Accessible, MenuElement
   {
     if (label != this.label)
       {
-	String oldLabel = this.label;
-	this.label = label;
-	firePropertyChange("label", oldLabel, label);
+        String oldLabel = this.label;
+        this.label = label;
+        firePropertyChange("label", oldLabel, label);
       }
   }
 
@@ -408,40 +408,40 @@ public class JPopupMenu extends JComponent implements Accessible, MenuElement
    */
   public void addSeparator()
   {
-    // insert separator at the end of the list of menu items    
+    // insert separator at the end of the list of menu items
     this.insert(new Separator(), -1);
   }
 
   /**
    * Adds a MenuKeyListener to the popup.
-   * 
+   *
    * @param l - the listener to add.
    */
   public void addMenuKeyListener(MenuKeyListener l)
   {
     listenerList.add(MenuKeyListener.class, l);
   }
-  
+
   /**
    * Removes a MenuKeyListener from the popup.
-   * 
+   *
    * @param l - the listener to remove.
    */
   public void removeMenuKeyListener(MenuKeyListener l)
   {
     listenerList.remove(MenuKeyListener.class, l);
   }
-  
+
   /**
    * Returns array of getMenuKeyListeners that are listening to JPopupMenu.
-   * 
+   *
    * @return array of getMenuKeyListeners that are listening to JPopupMenu
    */
   public MenuKeyListener[] getMenuKeyListeners()
   {
     return ((MenuKeyListener[]) listenerList.getListeners(MenuKeyListener.class));
   }
-  
+
   /**
    * Adds popupMenuListener to listen for PopupMenuEvents fired
    * by the JPopupMenu
@@ -691,8 +691,8 @@ public class JPopupMenu extends JComponent implements Accessible, MenuElement
 
     for (int i = 0; i < items.length; i++)
       {
-	if (items[i].equals(component))
-	  return i;
+        if (items[i].equals(component))
+          return i;
       }
 
     return -1;
@@ -783,7 +783,7 @@ public class JPopupMenu extends JComponent implements Accessible, MenuElement
   }
 
   /**
-  * Process mouse events forwarded from MenuSelectionManager. This method 
+  * Process mouse events forwarded from MenuSelectionManager. This method
   * doesn't do anything. It is here to conform to the MenuElement interface.
   *
   * @param event event forwarded from MenuSelectionManager
@@ -846,7 +846,7 @@ public class JPopupMenu extends JComponent implements Accessible, MenuElement
 
     for (int i = 0; i < items.length; i++)
       if (items[i] instanceof MenuElement)
-	subElements.add(items[i]);
+        subElements.add(items[i]);
 
     return (MenuElement[])
       subElements.toArray(new MenuElement[subElements.size()]);

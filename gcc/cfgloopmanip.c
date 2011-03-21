@@ -1,5 +1,5 @@
 /* Loop manipulation code for GNU compiler.
-   Copyright (C) 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010
+   Copyright (C) 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -174,7 +174,7 @@ fix_bb_placements (basic_block from,
 {
   sbitmap in_queue;
   basic_block *queue, *qtop, *qbeg, *qend;
-  struct loop *base_loop;
+  struct loop *base_loop, *target_loop;
   edge e;
 
   /* We pass through blocks back-reachable from FROM, testing whether some
@@ -185,7 +185,11 @@ fix_bb_placements (basic_block from,
      fix_loop_placement.  */
 
   base_loop = from->loop_father;
-  if (base_loop == current_loops->tree_root)
+  /* If we are already in the outermost loop, the basic blocks cannot be moved
+     outside of it.  If FROM is the header of the base loop, it cannot be moved
+     outside of it, either.  In both cases, we can end now.  */
+  if (base_loop == current_loops->tree_root
+      || from == base_loop->header)
     return;
 
   in_queue = sbitmap_alloc (last_basic_block);
@@ -214,12 +218,14 @@ fix_bb_placements (basic_block from,
 	  /* Subloop header, maybe move the loop upward.  */
 	  if (!fix_loop_placement (from->loop_father))
 	    continue;
+	  target_loop = loop_outer (from->loop_father);
 	}
       else
 	{
 	  /* Ordinary basic block.  */
 	  if (!fix_bb_placement (from))
 	    continue;
+	  target_loop = from->loop_father;
 	}
 
       FOR_EACH_EDGE (e, ei, from->succs)
@@ -248,9 +254,12 @@ fix_bb_placements (basic_block from,
 	      && (nca == base_loop
 		  || nca != pred->loop_father))
 	    pred = pred->loop_father->header;
-	  else if (!flow_loop_nested_p (from->loop_father, pred->loop_father))
+	  else if (!flow_loop_nested_p (target_loop, pred->loop_father))
 	    {
-	      /* No point in processing it.  */
+	      /* If PRED is already higher in the loop hierarchy than the
+		 TARGET_LOOP to that we moved FROM, the change of the position
+		 of FROM does not affect the position of PRED, so there is no
+		 point in processing it.  */
 	      continue;
 	    }
 

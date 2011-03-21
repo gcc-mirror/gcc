@@ -1,7 +1,7 @@
 /* Process declarations and variables for C++ compiler.
    Copyright (C) 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010
-   Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010,
+   2011 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -1052,7 +1052,8 @@ grokbitfield (const cp_declarator *declarator,
   if (width != error_mark_node)
     {
       /* The width must be an integer type.  */
-      if (!INTEGRAL_OR_UNSCOPED_ENUMERATION_TYPE_P (TREE_TYPE (width)))
+      if (!type_dependent_expression_p (width)
+	  && !INTEGRAL_OR_UNSCOPED_ENUMERATION_TYPE_P (TREE_TYPE (width)))
 	error ("width of bit-field %qD has non-integral type %qT", value,
 	       TREE_TYPE (width));
       DECL_INITIAL (value) = width;
@@ -1263,6 +1264,25 @@ cp_reconstruct_complex_type (tree type, tree bottom)
   return cp_build_qualified_type (outer, cp_type_quals (type));
 }
 
+/* Replaces any constexpr expression that may be into the attributes
+   arguments with their reduced value.  */
+
+static void
+cp_check_const_attributes (tree attributes)
+{
+  tree attr;
+  for (attr = attributes; attr; attr = TREE_CHAIN (attr))
+    {
+      tree arg;
+      for (arg = TREE_VALUE (attr); arg; arg = TREE_CHAIN (arg))
+	{
+	  tree expr = TREE_VALUE (arg);
+	  if (EXPR_P (expr))
+	    TREE_VALUE (arg) = maybe_constant_value (expr);
+	}
+    }
+}
+
 /* Like decl_attributes, but handle C++ complexity.  */
 
 void
@@ -1282,6 +1302,8 @@ cplus_decl_attributes (tree *decl, tree attributes, int flags)
       if (attributes == NULL_TREE)
 	return;
     }
+
+  cp_check_const_attributes (attributes);
 
   if (TREE_CODE (*decl) == TEMPLATE_DECL)
     decl = &DECL_TEMPLATE_RESULT (*decl);
@@ -1409,7 +1431,8 @@ finish_anon_union (tree anon_union_decl)
       /* Use main_decl to set the mangled name.  */
       DECL_NAME (anon_union_decl) = DECL_NAME (main_decl);
       maybe_commonize_var (anon_union_decl);
-      mangle_decl (anon_union_decl);
+      if (TREE_STATIC (anon_union_decl) || DECL_EXTERNAL (anon_union_decl))
+	mangle_decl (anon_union_decl);
       DECL_NAME (anon_union_decl) = NULL_TREE;
     }
 
@@ -1780,7 +1803,8 @@ decl_needed_p (tree decl)
       return true;
   /* Functions marked "dllexport" must be emitted so that they are
      visible to other DLLs.  */
-  if (lookup_attribute ("dllexport", DECL_ATTRIBUTES (decl)))
+  if (flag_keep_inline_dllexport
+      && lookup_attribute ("dllexport", DECL_ATTRIBUTES (decl)))
     return true;
   /* Otherwise, DECL does not need to be emitted -- yet.  A subsequent
      reference to DECL might cause it to be emitted later.  */
@@ -2073,7 +2097,8 @@ determine_visibility (tree decl)
 	  tree underlying_type = TREE_TYPE (DECL_NAME (decl));
 	  int underlying_vis = type_visibility (underlying_type);
 	  if (underlying_vis == VISIBILITY_ANON
-	      || CLASSTYPE_VISIBILITY_SPECIFIED (underlying_type))
+	      || (CLASS_TYPE_P (underlying_type)
+		  && CLASSTYPE_VISIBILITY_SPECIFIED (underlying_type)))
 	    constrain_visibility (decl, underlying_vis);
 	  else
 	    DECL_VISIBILITY (decl) = VISIBILITY_DEFAULT;
@@ -3547,20 +3572,21 @@ decl_constant_var_p (tree decl)
   tree type = TREE_TYPE (decl);
   if (TREE_CODE (decl) != VAR_DECL)
     return false;
-  if (DECL_DECLARED_CONSTEXPR_P (decl))
-    ret = true;
-  else if (CP_TYPE_CONST_NON_VOLATILE_P (type)
-	   && INTEGRAL_OR_ENUMERATION_TYPE_P (type))
+  if (DECL_DECLARED_CONSTEXPR_P (decl)
+      || (CP_TYPE_CONST_NON_VOLATILE_P (type)
+	  && INTEGRAL_OR_ENUMERATION_TYPE_P (type)))
     {
       /* We don't know if a template static data member is initialized with
-	 a constant expression until we instantiate its initializer.  */
+	 a constant expression until we instantiate its initializer.  Even
+	 in the case of a constexpr variable, we can't treat it as a
+	 constant until its initializer is complete in case it's used in
+	 its own initializer.  */
       mark_used (decl);
       ret = DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (decl);
     }
   else
     ret = false;
 
-  gcc_assert (!ret || DECL_INITIAL (decl));
   return ret;
 }
 

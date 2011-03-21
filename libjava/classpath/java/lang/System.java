@@ -134,7 +134,7 @@ public final class System
     SecurityManager sm = SecurityManager.current; // Be thread-safe.
     if (sm != null)
       sm.checkPermission(new RuntimePermission("setIO"));
-    
+
     VMSystem.setIn(in);
   }
 
@@ -151,7 +151,7 @@ public final class System
   {
     SecurityManager sm = SecurityManager.current; // Be thread-safe.
     if (sm != null)
-      sm.checkPermission(new RuntimePermission("setIO"));    
+      sm.checkPermission(new RuntimePermission("setIO"));
     VMSystem.setOut(out);
   }
 
@@ -202,15 +202,15 @@ public final class System
     // preload it here.
     if (SecurityManager.current == null)
       {
-	try
-	  {
-	    Class.forName("java.security.Security");
-	  }
-	catch (ClassNotFoundException e)
-	  {
-	  }
+        try
+          {
+            Class.forName("java.security.Security");
+          }
+        catch (ClassNotFoundException e)
+          {
+          }
       }
-    
+
     SecurityManager.current = sm;
   }
 
@@ -237,8 +237,8 @@ public final class System
   {
     return VMSystem.currentTimeMillis();
   }
-  
-  /** 
+
+  /**
    * <p>
    * Returns the current value of a nanosecond-precise system timer.
    * The value of the timer is an offset relative to some arbitrary fixed
@@ -261,7 +261,7 @@ public final class System
    * </p>
    *
    * @return the time of a system timer in nanoseconds.
-   * @since 1.5 
+   * @since 1.5
    */
   public static long nanoTime()
   {
@@ -365,7 +365,7 @@ public final class System
    * <dt>gnu.java.io.encoding_scheme_alias.iso-latin-_?</dt> <dd>8859_?</dd>
    * <dt>gnu.java.io.encoding_scheme_alias.latin?</dt>       <dd>8859_?</dd>
    * <dt>gnu.java.io.encoding_scheme_alias.utf-8</dt>        <dd>UTF8</dd>
-   * <dt>gnu.java.util.zoneinfo.dir</dt>	<dd>Root of zoneinfo tree</dd>
+   * <dt>gnu.java.util.zoneinfo.dir</dt>        <dd>Root of zoneinfo tree</dd>
    * <dt>gnu.javax.print.server</dt>     <dd>Hostname of external CUPS server.</dd>
    * </dl>
    *
@@ -549,7 +549,7 @@ public final class System
 
     if (environmentMap == null)
       {
-	Map<String,String> variables = new EnvironmentMap();
+        Map<String,String> variables = new EnvironmentMap();
         List<String> environ = (List<String>)VMSystem.environ();
         for (String envEntry : environ)
           {
@@ -558,16 +558,16 @@ public final class System
               {
                 // it's perfectly legal that some entries may be in the form
                 // key=value=value=value
-                int equalSignIndex = envEntry.indexOf('=');            
+                int equalSignIndex = envEntry.indexOf('=');
                 String key = envEntry.substring(0, equalSignIndex);
                 String value = envEntry.substring(equalSignIndex + 1);
                 variables.put(key, value);
               }
           }
-        
+
         environmentMap = Collections.unmodifiableMap(variables);
       }
-    
+
     return environmentMap;
   }
 
@@ -731,7 +731,7 @@ public final class System
     {
       c = coll;
     }
-        
+
     /**
      * Blocks queries containing a null object or an object which
      * isn't of type <code>String</code>.  All other queries
@@ -745,15 +745,15 @@ public final class System
     public boolean contains(Object obj)
     {
       if (obj == null)
-	  throw new
-	    NullPointerException("This collection does not support " +
-				 "null values.");
+          throw new
+            NullPointerException("This collection does not support " +
+                                 "null values.");
       if (!(obj instanceof String))
-	  throw new
-	    ClassCastException("This collection only supports Strings.");
+          throw new
+            ClassCastException("This collection only supports Strings.");
       return c.contains(obj);
     }
-    
+
     /**
      * Blocks queries where the collection contains a null object or
      * an object which isn't of type <code>String</code>.  All other
@@ -768,15 +768,15 @@ public final class System
     public boolean containsAll(Collection<?> coll)
     {
       for (Object o: coll)
-	{
-	  if (o == null)
-	      throw new
-		NullPointerException("This collection does not support " +
-				     "null values.");
-	  if (!(o instanceof String))
-	      throw new
-		ClassCastException("This collection only supports Strings.");
-	}
+        {
+          if (o == null)
+              throw new
+                NullPointerException("This collection does not support " +
+                                     "null values.");
+          if (!(o instanceof String))
+              throw new
+                ClassCastException("This collection only supports Strings.");
+        }
       return c.containsAll(coll);
     }
 
@@ -790,7 +790,7 @@ public final class System
     {
       return c.iterator();
     }
-    
+
     /**
      * Blocks the removal of elements from the collection.
      *
@@ -802,15 +802,15 @@ public final class System
     public boolean remove(Object key)
     {
       if (key == null)
-	  throw new
-	    NullPointerException("This collection does not support " +
-				 "null values.");
+          throw new
+            NullPointerException("This collection does not support " +
+                                 "null values.");
       if (!(key instanceof String))
-	  throw new
-	    ClassCastException("This collection only supports Strings.");
+          throw new
+            ClassCastException("This collection only supports Strings.");
       return c.contains(key);
-    }	
-        
+    }
+
     /**
      * Blocks the removal of all elements in the specified
      * collection from the collection.
@@ -824,18 +824,18 @@ public final class System
     public boolean removeAll(Collection<?> coll)
     {
       for (Object o: coll)
-	{
-	  if (o == null)
-	      throw new
-		NullPointerException("This collection does not support " +
-				     "null values.");
-	  if (!(o instanceof String))
-	    throw new
-	      ClassCastException("This collection only supports Strings.");
-	}
+        {
+          if (o == null)
+              throw new
+                NullPointerException("This collection does not support " +
+                                     "null values.");
+          if (!(o instanceof String))
+            throw new
+              ClassCastException("This collection only supports Strings.");
+        }
       return c.removeAll(coll);
     }
-    
+
     /**
      * Blocks the retention of all elements in the specified
      * collection from the collection.
@@ -849,15 +849,15 @@ public final class System
     public boolean retainAll(Collection<?> coll)
     {
       for (Object o: coll)
-	{
-	  if (o == null)
-	      throw new
-		NullPointerException("This collection does not support " +
-				     "null values.");
-	  if (!(o instanceof String))
-	    throw new
-	      ClassCastException("This collection only supports Strings.");
-	}
+        {
+          if (o == null)
+              throw new
+                NullPointerException("This collection does not support " +
+                                     "null values.");
+          if (!(o instanceof String))
+            throw new
+              ClassCastException("This collection only supports Strings.");
+        }
       return c.containsAll(coll);
     }
 
@@ -877,14 +877,14 @@ public final class System
   /**
    * This is a specialised <code>HashMap</code>, which
    * prevents the addition or querying of anything other than
-   * <code>String</code> objects. 
+   * <code>String</code> objects.
    *
    * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
    */
   static class EnvironmentMap
     extends HashMap<String,String>
   {
-    
+
     /**
      * Cache the entry set.
      */
@@ -915,7 +915,7 @@ public final class System
      * @param m the map to be added to this.
      * @throws NullPointerException if a key or value is null.
      * @throws ClassCastException if a key or value is not a String.
-     */    
+     */
     EnvironmentMap(Map<String,String> m)
     {
       super(m);
@@ -933,14 +933,14 @@ public final class System
     public boolean containsKey(Object key)
     {
       if (key == null)
-	throw new
-	  NullPointerException("This map does not support null keys.");
+        throw new
+          NullPointerException("This map does not support null keys.");
       if (!(key instanceof String))
-	throw new
-	  ClassCastException("This map only allows queries using Strings.");
+        throw new
+          ClassCastException("This map only allows queries using Strings.");
       return super.containsKey(key);
     }
-    
+
     /**
      * Blocks queries using a null or non-<code>String</code> value.
      * All other queries are forwarded to the superclass.
@@ -952,11 +952,11 @@ public final class System
     public boolean containsValue(Object value)
     {
       if (value == null)
-	  throw new
-	    NullPointerException("This map does not support null values.");
+          throw new
+            NullPointerException("This map does not support null values.");
       if (!(value instanceof String))
-	throw new
-	  ClassCastException("This map only allows queries using Strings.");
+        throw new
+          ClassCastException("This map only allows queries using Strings.");
       return super.containsValue(value);
     }
 
@@ -985,14 +985,14 @@ public final class System
     public String get(Object key)
     {
       if (key == null)
-	throw new
-	  NullPointerException("This map does not support null keys.");
+        throw new
+          NullPointerException("This map does not support null keys.");
       if (!(key instanceof String))
-	throw new
-	  ClassCastException("This map only allows queries using Strings.");
+        throw new
+          ClassCastException("This map only allows queries using Strings.");
       return super.get(key);
     }
-    
+
     /**
      * Returns a set view of the keys, with the same
      * provisions as for the underlying map.
@@ -1021,13 +1021,13 @@ public final class System
     public String put(String key, String value)
     {
       if (key == null)
-	throw new NullPointerException("A new key is null.");
+        throw new NullPointerException("A new key is null.");
       if (value == null)
-	throw new NullPointerException("A new value is null.");
+        throw new NullPointerException("A new value is null.");
       if (!(key instanceof String))
-	throw new ClassCastException("A new key is not a String.");
+        throw new ClassCastException("A new key is not a String.");
       if (!(value instanceof String))
-	throw new ClassCastException("A new value is not a String.");
+        throw new ClassCastException("A new value is not a String.");
       return super.put(key, value);
     }
 
@@ -1043,14 +1043,14 @@ public final class System
     public String remove(Object key)
     {
       if (key == null)
-	throw new
-	  NullPointerException("This map does not support null keys.");
+        throw new
+          NullPointerException("This map does not support null keys.");
       if (!(key instanceof String))
-	throw new
-	  ClassCastException("This map only allows queries using Strings.");
+        throw new
+          ClassCastException("This map only allows queries using Strings.");
       return super.remove(key);
     }
-    
+
     /**
      * Returns a collection view of the values, with the same
      * provisions as for the underlying map.
@@ -1063,7 +1063,7 @@ public final class System
         values = new EnvironmentCollection(super.values());
       return values;
     }
-    
+
   }
 
   /**

@@ -19,6 +19,7 @@ mvt (long N)
     for (j = 0; j < N; j++)
       x1[i] = x1[i] + a[i][j] * y1[j];
 
+  /* These two loops should be interchanged.  */
   for (i = 0; i < N; i++)
     for (j = 0; j < N; j++)
       x2[i] = x2[i] + a[j][i] * y2[j];
@@ -57,6 +58,6 @@ main (void)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "will be interchanged" 1 "graphite" { xfail *-*-* } } } */
+/* { dg-final { scan-tree-dump-times "will be interchanged" 1 "graphite" } } */
 /* { dg-final { cleanup-tree-dump "graphite" } } */
 

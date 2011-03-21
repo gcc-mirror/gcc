@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -53,7 +53,7 @@ package java.io;
  *
  * @author Aaron M. Renn (arenn@urbanophile.com)
  * @author Tom Tromey (tromey@cygnus.com)
- * @date September 25, 1998 
+ * @date September 25, 1998
  */
 public class BufferedWriter extends Writer
 {
@@ -110,7 +110,7 @@ public class BufferedWriter extends Writer
   }
 
   /**
-   * This method flushes any remaining buffered chars then closes the 
+   * This method flushes any remaining buffered chars then closes the
    * underlying output stream.  Any further attempts to write to this stream
    * may throw an exception
    *
@@ -120,11 +120,11 @@ public class BufferedWriter extends Writer
   {
     synchronized (lock)
       {
-	// It is safe to call localFlush even if the stream is already
-	// closed.
-	localFlush ();
-	out.close();
-	buffer = null;
+        // It is safe to call localFlush even if the stream is already
+        // closed.
+        localFlush ();
+        out.close();
+        buffer = null;
       }
   }
 
@@ -138,10 +138,10 @@ public class BufferedWriter extends Writer
   {
     synchronized (lock)
       {
-	if (buffer == null)
-	  throw new IOException ("Stream closed");
-	localFlush ();
-	out.flush();
+        if (buffer == null)
+          throw new IOException ("Stream closed");
+        localFlush ();
+        out.flush();
       }
   }
 
@@ -171,17 +171,17 @@ public class BufferedWriter extends Writer
   {
     synchronized (lock)
       {
-	if (buffer == null)
-	  throw new IOException ("Stream closed");
-	buffer[count++] = (char) oneChar;
-	if (count == buffer.length)
-	  localFlush ();
+        if (buffer == null)
+          throw new IOException ("Stream closed");
+        buffer[count++] = (char) oneChar;
+        if (count == buffer.length)
+          localFlush ();
       }
   }
 
   /**
-   * This method writes <code>len</code> chars from the char array 
-   * <code>buf</code> starting at position <code>offset</code> in the buffer. 
+   * This method writes <code>len</code> chars from the char array
+   * <code>buf</code> starting at position <code>offset</code> in the buffer.
    * These chars will be written to the internal buffer.  However, if this
    * write operation fills the buffer, the buffer will be flushed to the
    * underlying output stream.
@@ -196,28 +196,28 @@ public class BufferedWriter extends Writer
   {
     synchronized (lock)
       {
-	if (buffer == null)
-	  throw new IOException ("Stream closed");
+        if (buffer == null)
+          throw new IOException ("Stream closed");
 
-	// Bypass buffering if there is too much incoming data.
-	if (count + len > buffer.length)
-	  {
-	    localFlush ();
-	    out.write(buf, offset, len);
-	  }
-	else
-	  {
-	    System.arraycopy(buf, offset, buffer, count, len);
-	    count += len;
-	    if (count == buffer.length)
-	      localFlush ();
-	  }
+        // Bypass buffering if there is too much incoming data.
+        if (count + len > buffer.length)
+          {
+            localFlush ();
+            out.write(buf, offset, len);
+          }
+        else
+          {
+            System.arraycopy(buf, offset, buffer, count, len);
+            count += len;
+            if (count == buffer.length)
+              localFlush ();
+          }
       }
   }
 
   /**
    * This method writes <code>len</code> chars from the <code>String</code>
-   * <code>str</code> starting at position <code>offset</code> in the string. 
+   * <code>str</code> starting at position <code>offset</code> in the string.
    * These chars will be written to the internal buffer.  However, if this
    * write operation fills the buffer, the buffer will be flushed to the
    * underlying output stream.
@@ -232,21 +232,21 @@ public class BufferedWriter extends Writer
   {
     synchronized (lock)
       {
-	if (buffer == null)
-	  throw new IOException ("Stream closed");
+        if (buffer == null)
+          throw new IOException ("Stream closed");
 
-	if (count + len > buffer.length)
-	  {
-	    localFlush ();
-	    out.write(str, offset, len);
-	  }
-	else
-	  {
-	    str.getChars(offset, offset + len, buffer, count);
-	    count += len;
-	    if (count == buffer.length)
-	      localFlush ();
-	  }
+        if (count + len > buffer.length)
+          {
+            localFlush ();
+            out.write(str, offset, len);
+          }
+        else
+          {
+            str.getChars(offset, offset + len, buffer, count);
+            count += len;
+            if (count == buffer.length)
+              localFlush ();
+          }
       }
   }
 
@@ -255,8 +255,8 @@ public class BufferedWriter extends Writer
   {
     if (count > 0)
       {
-	out.write(buffer, 0, count);
-	count = 0;
+        out.write(buffer, 0, count);
+        count = 0;
       }
   }
 }

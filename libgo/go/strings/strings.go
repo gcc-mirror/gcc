@@ -142,6 +142,24 @@ func IndexAny(s, chars string) int {
 	return -1
 }
 
+// LastIndexAny returns the index of the last instance of any Unicode code
+// point from chars in s, or -1 if no Unicode code point from chars is
+// present in s.
+func LastIndexAny(s, chars string) int {
+	if len(chars) > 0 {
+		for i := len(s); i > 0; {
+			rune, size := utf8.DecodeLastRuneInString(s[0:i])
+			i -= size
+			for _, m := range chars {
+				if rune == m {
+					return i
+				}
+			}
+		}
+	}
+	return -1
+}
+
 // Generic split: splits after each instance of sep,
 // including sepSave bytes of sep in the subarrays.
 func genSplit(s, sep string, sepSave, n int) []string {
@@ -197,8 +215,8 @@ func Fields(s string) []string {
 }
 
 // FieldsFunc splits the string s at each run of Unicode code points c satisfying f(c)
-// and returns an array of slices of s. If no code points in s satisfy f(c), an empty slice
-// is returned.
+// and returns an array of slices of s. If all code points in s satisfy f(c) or the
+// string is empty, an empty slice is returned.
 func FieldsFunc(s string, f func(int) bool) []string {
 	// First count the fields.
 	n := 0
@@ -299,7 +317,7 @@ func Map(mapping func(rune int) int, s string) string {
 				copy(nb, b[0:nbytes])
 				b = nb
 			}
-			nbytes += utf8.EncodeRune(rune, b[nbytes:maxbytes])
+			nbytes += utf8.EncodeRune(b[nbytes:maxbytes], rune)
 		}
 	}
 	return string(b[0:nbytes])

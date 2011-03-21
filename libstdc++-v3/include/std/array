@@ -38,7 +38,9 @@
 #include <bits/stl_algobase.h>
 #include <bits/range_access.h>
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /**
    *  @brief A standard container for storing a fixed size sequence of elements.
@@ -264,7 +266,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     get(const array<_Tp, _Nm>& __arr)
     { return __arr[_Int]; }
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
 
 #endif // __GXX_EXPERIMENTAL_CXX0X__
 

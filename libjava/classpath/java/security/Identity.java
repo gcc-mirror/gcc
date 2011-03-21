@@ -44,14 +44,14 @@ import java.util.Vector;
  * The <code>Identity</code> class is used to represent people and companies
  * that can be authenticated using public key encryption. The identities can
  * also be abstract objects such as smart cards.
- * 
+ *
  * <p><code>Identity</code> objects store a name and public key for each
  * identity. The names cannot be changed and the identities can be scoped. Each
  * identity (name and public key) within a scope are unique to that scope.</p>
- * 
+ *
  * <p>Each identity has a set of ceritificates which all specify the same
  * public key, but not necessarily the same name.</p>
- * 
+ *
  * <p>The <code>Identity</code> class can be subclassed to allow additional
  * information to be attached to it.</p>
  *
@@ -81,7 +81,7 @@ public abstract class Identity implements Principal, Serializable
   /**
    * Constructs a new instance of <code>Identity</code> with the specified
    * name and scope.
-   * 
+   *
    * @param name
    *          the name to use.
    * @param scope
@@ -99,7 +99,7 @@ public abstract class Identity implements Principal, Serializable
   /**
    * Constructs a new instance of <code>Identity</code> with the specified
    * name and no scope.
-   * 
+   *
    * @param name
    *          the name to use.
    */
@@ -133,7 +133,7 @@ public abstract class Identity implements Principal, Serializable
   /**
    * Sets the public key for this identity. The old key and all certificates
    * are removed.
-   * 
+   *
    * @param key
    *          the public key to use.
    * @throws KeyManagementException
@@ -154,7 +154,7 @@ public abstract class Identity implements Principal, Serializable
 
   /**
    * Sets the general information string.
-   * 
+   *
    * @param info
    *          the general information string.
    * @throws SecurityException
@@ -183,7 +183,7 @@ public abstract class Identity implements Principal, Serializable
    * Adds a certificate to the list of ceritificates for this identity. The
    * public key in this certificate must match the existing public key if it
    * exists.
-   * 
+   *
    * @param certificate
    *          the certificate to add.
    * @throws KeyManagementException
@@ -202,15 +202,15 @@ public abstract class Identity implements Principal, Serializable
     // Check public key of this certificate against the first one in the vector
     if (certificates.size() > 0)
       {
-	if (((Certificate) certificates.firstElement()).getPublicKey() != publicKey)
-	  throw new KeyManagementException("Public key does not match");
+        if (((Certificate) certificates.firstElement()).getPublicKey() != publicKey)
+          throw new KeyManagementException("Public key does not match");
       }
     certificates.addElement(certificate);
   }
 
   /**
    * Removes a certificate from the list of ceritificates for this identity.
-   * 
+   *
    * @param certificate
    *          the certificate to remove.
    * @throws KeyManagementException
@@ -248,7 +248,7 @@ public abstract class Identity implements Principal, Serializable
    * checks if they are the same object, then if the name and scope match and
    * returns <code>true</code> if successful. If these tests fail, the
    * {@link #identityEquals(Identity)} method is called.
-   * 
+   *
    * @return <code>true</code> if they are equal, <code>false</code>
    *         otherwise.
    */
@@ -256,14 +256,14 @@ public abstract class Identity implements Principal, Serializable
   {
     if (identity instanceof Identity)
       {
-	if (identity == this)
-	  return true;
+        if (identity == this)
+          return true;
 
-	if ((((Identity) identity).getName().equals(this.name)) &&
-	    (((Identity) identity).getScope().equals(this.scope)))
-	  return true;
+        if ((((Identity) identity).getName().equals(this.name)) &&
+            (((Identity) identity).getScope().equals(this.scope)))
+          return true;
 
-	return identityEquals((Identity) identity);
+        return identityEquals((Identity) identity);
       }
     return false;
   }
@@ -272,19 +272,19 @@ public abstract class Identity implements Principal, Serializable
    * Checks for equality between this Identity and a specified object. A
    * subclass should override this method. The default behavior is to return
    * <code>true</code> if the public key and names match.
-   * 
+   *
    * @return <code>true</code> if they are equal, <code>false</code>
    *         otherwise.
    */
   protected boolean identityEquals(Identity identity)
   {
     return ((identity.getName().equals(this.name)) &&
-	    (identity.getPublicKey().equals(this.publicKey)));
+            (identity.getPublicKey().equals(this.publicKey)));
   }
 
   /**
    * Returns a string representation of this Identity.
-   * 
+   *
    * @return a string representation of this Identity.
    * @throws SecurityException
    *           if a {@link SecurityManager} is installed which disallows this
@@ -302,7 +302,7 @@ public abstract class Identity implements Principal, Serializable
 
   /**
    * Returns a detailed string representation of this Identity.
-   * 
+   *
    * @param detailed
    *          indicates whether or detailed information is desired.
    * @return a string representation of this Identity.
@@ -318,13 +318,13 @@ public abstract class Identity implements Principal, Serializable
 
     if (detailed)
       {
-	/* TODO: Insert proper detailed format here */
-	return (name + ":@" + scope + " Public Key: " + publicKey);
+        /* TODO: Insert proper detailed format here */
+        return (name + ":@" + scope + " Public Key: " + publicKey);
       }
     else
       {
-	/* TODO: Insert proper format here */
-	return (name + ":@" + scope + " Public Key: " + publicKey);
+        /* TODO: Insert proper format here */
+        return (name + ":@" + scope + " Public Key: " + publicKey);
       }
   }
 

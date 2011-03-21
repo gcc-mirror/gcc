@@ -287,10 +287,10 @@ dispatchEventImpl(AWTEvent e)
         }
     }
 
-  if (e.id <= ItemEvent.ITEM_LAST 
+  if (e.id <= ItemEvent.ITEM_LAST
       && e.id >= ItemEvent.ITEM_FIRST
-      && (item_listeners != null 
-	  || (eventMask & AWTEvent.ITEM_EVENT_MASK) != 0))
+      && (item_listeners != null
+          || (eventMask & AWTEvent.ITEM_EVENT_MASK) != 0))
     processEvent(e);
   else
     super.dispatchEventImpl(e);
@@ -307,7 +307,7 @@ public String
 paramString()
 {
   return ("label=" + getLabel() + ",state=" + state
-	  + "," + super.paramString());
+          + "," + super.paramString());
 }
 
   /**
@@ -321,7 +321,7 @@ paramString()
   public <T extends EventListener> T[] getListeners (Class<T> listenerType)
   {
     if (listenerType == ItemListener.class)
-      return AWTEventMulticaster.getListeners (item_listeners, listenerType); 
+      return AWTEventMulticaster.getListeners (item_listeners, listenerType);
 
     return super.getListeners (listenerType);
   }
@@ -340,10 +340,10 @@ paramString()
     implements AccessibleAction, AccessibleValue
   {
     // I think the base class provides the necessary implementation
-    
+
     private static final long serialVersionUID = -1122642964303476L;
   }
-  
+
   /**
    * Gets the AccessibleContext associated with this <code>CheckboxMenuItem</code>.
    * The context is created, if necessary.
@@ -357,7 +357,7 @@ paramString()
       accessibleContext = new AccessibleAWTCheckboxMenuItem();
     return accessibleContext;
   }
-  
+
   /**
    * Generate a unique name for this <code>CheckboxMenuItem</code>.
    *
@@ -374,4 +374,3 @@ paramString()
   }
 
 } // class CheckboxMenuItem
-

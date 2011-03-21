@@ -1,7 +1,7 @@
 /* Routines required for instrumenting a program.  */
 /* Compile this one with gcc.  */
 /* Copyright (C) 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
-   2000, 2001, 2002, 2003, 2004, 2005, 2008, 2009
+   2000, 2001, 2002, 2003, 2004, 2005, 2008, 2009, 2010
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -283,7 +283,7 @@ gcov_exit (void)
 	      }
         }
       /* Update complete filename with stripped original. */
-      if (!IS_DIR_SEPARATOR (*fname))
+      if (!IS_DIR_SEPARATOR (*fname) && !HAS_DRIVE_SPEC(fname))
 	{
 	  strcpy (gi_filename_up, "/");
 	  strcpy (gi_filename_up + 1, fname);

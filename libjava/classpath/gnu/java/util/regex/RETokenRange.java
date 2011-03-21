@@ -67,8 +67,8 @@ final class RETokenRange extends REToken
     char c = input.charAt (mymatch.index);
     if (matchOneChar (c))
       {
-	++mymatch.index;
-	return mymatch;
+        ++mymatch.index;
+        return mymatch;
       }
     return null;
   }
@@ -80,13 +80,13 @@ final class RETokenRange extends REToken
     boolean matches = (c >= lo) && (c <= hi);
     if (!matches && insens)
       {
-	char c1 = toLowerCase (c, unicodeAware);
-	matches = (c1 >= lo) && (c1 <= hi);
-	if (!matches)
-	  {
-	    c1 = toUpperCase (c, unicodeAware);
-	    matches = (c1 >= lo) && (c1 <= hi);
-	  }
+        char c1 = toLowerCase (c, unicodeAware);
+        matches = (c1 >= lo) && (c1 <= hi);
+        if (!matches)
+          {
+            c1 = toUpperCase (c, unicodeAware);
+            matches = (c1 >= lo) && (c1 <= hi);
+          }
       }
     return matches;
   }
@@ -102,12 +102,12 @@ final class RETokenRange extends REToken
     int numRepeats = 0;
     while (true)
       {
-	if (numRepeats >= max)
-	  break;
-	char ch = input.charAt (index++);
-	if (!matchOneChar (ch))
-	  break;
-	numRepeats++;
+        if (numRepeats >= max)
+          break;
+        char ch = input.charAt (index++);
+        if (!matchOneChar (ch))
+          break;
+        numRepeats++;
       }
     return numRepeats;
   }

@@ -313,7 +313,7 @@ public final class CipherSuite implements Constructed
                      SignatureAlgorithm.DSA,
                      MacAlgorithm.SHA, 32, 0x00, 0x58,
                      "TLS_SRP_SHA_DSS_WITH_AES_256_CBC_SHA");*/
-  
+
   // Pre-shared key suites.
   public static final CipherSuite TLS_PSK_WITH_RC4_128_SHA =
     new CipherSuite(CipherAlgorithm.RC4,
@@ -364,7 +364,7 @@ public final class CipherSuite implements Constructed
                     SignatureAlgorithm.ANONYMOUS,
                     MacAlgorithm.SHA, 32, 0x00, 0x91,
                     "TLS_DHE_PSK_WITH_AES_256_CBC_SHA");
-  
+
   public static final CipherSuite TLS_RSA_PSK_WITH_RC4_128_SHA =
     new CipherSuite(CipherAlgorithm.RC4,
                     KeyExchangeAlgorithm.RSA_PSK,
@@ -629,7 +629,7 @@ public final class CipherSuite implements Constructed
       throw new NoSuchAlgorithmException(toString() + ": unresolved cipher suite");
     if (macAlgorithm == MacAlgorithm.NULL)
       return null;
-    
+
     String macAlg = null;
     if (version == ProtocolVersion.SSL_3)
       {
@@ -642,7 +642,7 @@ public final class CipherSuite implements Constructed
         if (macAlgorithm == MacAlgorithm.SHA)
           macAlg = "HMac-SHA1";
       }
-    
+
     GetSecurityPropertyAction gspa =
       new GetSecurityPropertyAction ("jessie.jce.provider");
     final String provider = AccessController.doPrivileged (gspa);
@@ -689,7 +689,7 @@ public final class CipherSuite implements Constructed
   {
     buf.put (id);
   }
-  
+
   public CipherSuite resolve()
   {
     if (id[0] == 0x00) switch (id[1] & 0xFF)
@@ -764,7 +764,7 @@ public final class CipherSuite implements Constructed
       }
     return this;
   }
-  
+
   public boolean isResolved()
   {
     return isResolved;

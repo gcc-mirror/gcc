@@ -1,6 +1,6 @@
 /* Definitions for c-common.c.
    Copyright (C) 1987, 1993, 1994, 1995, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -671,7 +671,7 @@ extern enum cxx_dialect cxx_dialect;
 
 /* Maximum template instantiation depth.  This limit is rather
    arbitrary, but it exists to limit the time it takes to notice
-   infinite template instantiations.  */
+   excessively recursive template instantiations.  */
 
 extern int max_tinst_depth;
 
@@ -793,6 +793,7 @@ extern bool float_const_decimal64_p (void);
 extern bool keyword_begins_type_specifier (enum rid);
 extern bool keyword_is_storage_class_specifier (enum rid);
 extern bool keyword_is_type_qualifier (enum rid);
+extern bool keyword_is_decl_specifier (enum rid);
 
 #define c_sizeof(LOC, T)  c_sizeof_or_alignof_type (LOC, T, true, 1)
 #define c_alignof(LOC, T) c_sizeof_or_alignof_type (LOC, T, false, 1)
@@ -979,7 +980,7 @@ enum lvalue_use {
 };
 
 extern void readonly_error (tree, enum lvalue_use);
-extern void lvalue_error (enum lvalue_use);
+extern void lvalue_error (location_t, enum lvalue_use);
 extern void invalid_indirection_error (location_t, tree, ref_operator);
 
 extern int complete_array_type (tree *, tree, bool);

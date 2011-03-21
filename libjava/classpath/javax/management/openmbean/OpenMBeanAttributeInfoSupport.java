@@ -44,7 +44,7 @@ import java.util.Set;
 import javax.management.MBeanAttributeInfo;
 
 /**
- * Describes an attribute of an open management bean.  
+ * Describes an attribute of an open management bean.
  *
  * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
  * @since 1.5
@@ -113,11 +113,11 @@ public class OpenMBeanAttributeInfoSupport
    *                                  the empty string.
    */
   public OpenMBeanAttributeInfoSupport(String name, String desc, OpenType<?> type,
-				       boolean isReadable, boolean isWritable,
-				       boolean isIs)
+                                       boolean isReadable, boolean isWritable,
+                                       boolean isIs)
   {
     super(name, type == null ? null : type.getClassName(), desc, isReadable,
-	  isWritable, isIs);
+          isWritable, isIs);
     if (name == null)
       throw new IllegalArgumentException("The name may not be null.");
     if (desc == null)
@@ -128,7 +128,7 @@ public class OpenMBeanAttributeInfoSupport
       throw new IllegalArgumentException("The name may not be the empty string.");
     if (desc.length() == 0)
       throw new IllegalArgumentException("The description may not be the " +
-					 "empty string.");
+                                         "empty string.");
   }
 
   /**
@@ -158,8 +158,8 @@ public class OpenMBeanAttributeInfoSupport
    *                           of {@link ArrayType} or {@link TabularType}.
    */
   public <T> OpenMBeanAttributeInfoSupport(String name, String desc, OpenType<T> type,
-					   boolean isReadable, boolean isWritable,
-					   boolean isIs, T defaultValue)
+                                           boolean isReadable, boolean isWritable,
+                                           boolean isIs, T defaultValue)
     throws OpenDataException
   {
     this(name, desc, type, isReadable, isWritable, isIs, defaultValue, null);
@@ -168,7 +168,7 @@ public class OpenMBeanAttributeInfoSupport
   /**
    * <p>
    * Constructs a new {@link OpenMBeanAttributeInfo} using the
-   * specified name, description, open type, access properties, 
+   * specified name, description, open type, access properties,
    * default, maximum and minimum values.  The name, description
    * and open type cannot be <code>null</code> and the name and
    * description may not be equal to the empty string.  The
@@ -187,7 +187,7 @@ public class OpenMBeanAttributeInfoSupport
    * <li>The default value must be smaller than or equal to the maximum value
    * (literally, <code>defaultValue.compareTo(maxValue) <= 0</code>.</li>
    * </ul>
-   * 
+   *
    * @param name the name of the attribute.
    * @param desc a description of the attribute.
    * @param type the open type of the attribute.
@@ -205,39 +205,39 @@ public class OpenMBeanAttributeInfoSupport
    */
   @SuppressWarnings("unchecked")
   public <T> OpenMBeanAttributeInfoSupport(String name, String desc, OpenType<T> type,
-					   boolean isReadable, boolean isWritable,
-					   boolean isIs, T defaultValue,
-					   Comparable<T> minimumValue,
-					   Comparable<T> maximumValue)
+                                           boolean isReadable, boolean isWritable,
+                                           boolean isIs, T defaultValue,
+                                           Comparable<T> minimumValue,
+                                           Comparable<T> maximumValue)
     throws OpenDataException
   {
     this(name, desc, type, isReadable, isWritable, isIs);
     if (defaultValue != null && !(type.isValue(defaultValue)))
       throw new OpenDataException("The default value is not a member of the " +
-				  "open type given.");
+                                  "open type given.");
     if (minimumValue != null && !(type.isValue(minimumValue)))
       throw new OpenDataException("The minimum value is not a member of the " +
-				  "open type given.");
+                                  "open type given.");
     if (maximumValue != null && !(type.isValue(maximumValue)))
       throw new OpenDataException("The maximum value is not a member of the " +
-				  "open type given.");
-    if (defaultValue != null && (type instanceof ArrayType || 
-				 type instanceof TabularType))
+                                  "open type given.");
+    if (defaultValue != null && (type instanceof ArrayType ||
+                                 type instanceof TabularType))
       throw new OpenDataException("Default values are not applicable for " +
-				  "array or tabular types.");
-    if (minimumValue != null && maximumValue != null 
-	&& minimumValue.compareTo((T) maximumValue) > 0)
+                                  "array or tabular types.");
+    if (minimumValue != null && maximumValue != null
+        && minimumValue.compareTo((T) maximumValue) > 0)
       throw new OpenDataException("The minimum value is greater than the " +
-				  "maximum.");
-    if (minimumValue != null && defaultValue != null 
-	&& minimumValue.compareTo(defaultValue) > 0)
+                                  "maximum.");
+    if (minimumValue != null && defaultValue != null
+        && minimumValue.compareTo(defaultValue) > 0)
       throw new OpenDataException("The minimum value is greater than the " +
-				  "default.");
+                                  "default.");
     if (defaultValue != null && maximumValue != null
-	&& maximumValue.compareTo(defaultValue) < 0)
+        && maximumValue.compareTo(defaultValue) < 0)
       throw new OpenDataException("The default value is greater than the " +
-				  "maximum.");
-    
+                                  "maximum.");
+
     openType = type;
     this.defaultValue = defaultValue;
     minValue = minimumValue;
@@ -282,40 +282,40 @@ public class OpenMBeanAttributeInfoSupport
    * @throws OpenDataException if any condition in the list above is broken.
    */
   public <T> OpenMBeanAttributeInfoSupport(String name, String desc, OpenType<T> type,
-					   boolean isReadable, boolean isWritable,
-					   boolean isIs, T defaultValue,
-					   T[] legalValues)
+                                           boolean isReadable, boolean isWritable,
+                                           boolean isIs, T defaultValue,
+                                           T[] legalValues)
     throws OpenDataException
   {
     this(name, desc, type, isReadable, isWritable, isIs);
     if (defaultValue != null && !(type.isValue(defaultValue)))
       throw new OpenDataException("The default value is not a member of the " +
-				  "open type given.");
-    if (defaultValue != null && (type instanceof ArrayType || 
-				 type instanceof TabularType))
+                                  "open type given.");
+    if (defaultValue != null && (type instanceof ArrayType ||
+                                 type instanceof TabularType))
       throw new OpenDataException("Default values are not applicable for " +
-				  "array or tabular types.");
-    if (legalValues != null && (type instanceof ArrayType || 
-				type instanceof TabularType))
+                                  "array or tabular types.");
+    if (legalValues != null && (type instanceof ArrayType ||
+                                type instanceof TabularType))
       throw new OpenDataException("Legal values are not applicable for " +
-				  "array or tabular types.");
+                                  "array or tabular types.");
     if (legalValues != null && legalValues.length > 0)
       {
-	Set<T> lv = new HashSet<T>(legalValues.length);
-	for (int a = 0; a < legalValues.length; ++a)
-	  {
-	    if (legalValues[a] != null && 
-		!(type.isValue(legalValues[a])))
-	      throw new OpenDataException("The legal value, " 
-					  + legalValues[a] + 
-					  "is not a member of the " +
-					  "open type given.");
-	    lv.add(legalValues[a]);
-	  }
-	if (defaultValue != null && !(lv.contains(defaultValue)))
-	  throw new OpenDataException("The default value is not in the set " +
-				      "of legal values.");
-	this.legalValues = Collections.unmodifiableSet(lv);
+        Set<T> lv = new HashSet<T>(legalValues.length);
+        for (int a = 0; a < legalValues.length; ++a)
+          {
+            if (legalValues[a] != null &&
+                !(type.isValue(legalValues[a])))
+              throw new OpenDataException("The legal value, "
+                                          + legalValues[a] +
+                                          "is not a member of the " +
+                                          "open type given.");
+            lv.add(legalValues[a]);
+          }
+        if (defaultValue != null && !(lv.contains(defaultValue)))
+          throw new OpenDataException("The default value is not in the set " +
+                                      "of legal values.");
+        this.legalValues = Collections.unmodifiableSet(lv);
       }
     openType = type;
     this.defaultValue = defaultValue;
@@ -329,7 +329,7 @@ public class OpenMBeanAttributeInfoSupport
    *
    * @param obj the object to compare.
    * @return true if the object is a {@link OpenMBeanAttributeInfo}
-   *         instance, 
+   *         instance,
    *         <code>name.equals(object.getName())</code>,
    *         <code>openType.equals(object.getOpenType())</code>,
    *         <code>isRead == object.isReadable()</code>,
@@ -446,20 +446,20 @@ public class OpenMBeanAttributeInfoSupport
   public int hashCode()
   {
     if (hashCode == null)
-      hashCode = Integer.valueOf(getName().hashCode() + 
-				 openType.hashCode() +
-				 Boolean.valueOf(isReadable()).hashCode() +
-				 (2 * 
-				  Boolean.valueOf(isWritable()).hashCode()) +
-				 (4 * Boolean.valueOf(isIs()).hashCode()) +
-				 (defaultValue == null ? 0 :
-				  defaultValue.hashCode()) +
-				 (minValue == null ? 0 :
-				  minValue.hashCode()) +
-				 (maxValue == null ? 0 :
-				  maxValue.hashCode()) +
-				 (legalValues == null ? 0 :
-				  legalValues.hashCode()));
+      hashCode = Integer.valueOf(getName().hashCode() +
+                                 openType.hashCode() +
+                                 Boolean.valueOf(isReadable()).hashCode() +
+                                 (2 *
+                                  Boolean.valueOf(isWritable()).hashCode()) +
+                                 (4 * Boolean.valueOf(isIs()).hashCode()) +
+                                 (defaultValue == null ? 0 :
+                                  defaultValue.hashCode()) +
+                                 (minValue == null ? 0 :
+                                  minValue.hashCode()) +
+                                 (maxValue == null ? 0 :
+                                  maxValue.hashCode()) +
+                                 (legalValues == null ? 0 :
+                                  legalValues.hashCode()));
     return hashCode.intValue();
   }
 
@@ -531,16 +531,16 @@ public class OpenMBeanAttributeInfoSupport
   {
     if (string == null)
       string = getClass().getName()
-	+ "[name=" + getName() 
-	+ ",openType=" + openType
-	+ ",isReadable=" + isReadable()
-	+ ",isWritable=" + isWritable()
-	+ ",isIs=" + isIs()
-	+ ",defaultValue=" + defaultValue
-	+ ",minValue=" + minValue
-	+ ",maxValue=" + maxValue
-	+ ",legalValues=" + legalValues
-	+ "]";
+        + "[name=" + getName()
+        + ",openType=" + openType
+        + ",isReadable=" + isReadable()
+        + ",isWritable=" + isWritable()
+        + ",isIs=" + isIs()
+        + ",defaultValue=" + defaultValue
+        + ",minValue=" + minValue
+        + ",maxValue=" + maxValue
+        + ",legalValues=" + legalValues
+        + "]";
     return string;
   }
 

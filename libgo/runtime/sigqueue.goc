@@ -102,7 +102,7 @@ func Signame(sig int32) (name String) {
 		s = buf;
 	}
 	int32 len = __builtin_strlen(s);
-	unsigned char *data = runtime_mallocgc(len, RefNoPointers, 0, 0);
+	unsigned char *data = runtime_mallocgc(len, FlagNoPointers, 0, 0);
 	__builtin_memcpy(data, s, len);
 	name.__data = data;
 	name.__length = len;

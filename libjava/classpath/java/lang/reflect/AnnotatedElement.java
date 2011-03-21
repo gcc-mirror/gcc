@@ -57,7 +57,7 @@ import java.lang.annotation.Annotation;
  * <code>AnnotationTypeMismatchException</code> or
  * <code>IncompleteAnnotationException</code>.
  * </p>
- * 
+ *
  * @author Tom Tromey (tromey@redhat.com)
  * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
  * @since 1.5

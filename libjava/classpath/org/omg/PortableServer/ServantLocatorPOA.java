@@ -59,7 +59,7 @@ import org.omg.PortableServer.ServantLocatorPackage.CookieHolder;
  * You do not need to derive your servant locator from this stub,
  * it is enough to implement the {@link ServantLocator} interface.
  * But you may choose to do this if you need its functional
- * {@link org.omg.PortableServer.ServantActivatorPOA.delegator#_ids()} 
+ * {@link org.omg.PortableServer.ServantActivatorPOA.delegator#_ids()}
  * method or want to keep default behaviour during pre- or post- invokcations.
  * </p>
  * @author Audrius Meskauskas, Lithuania (AudriusA@Bioinformatics.org)

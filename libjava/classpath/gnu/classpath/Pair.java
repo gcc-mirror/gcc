@@ -101,11 +101,11 @@ public class Pair<A,B>
   {
     if (obj instanceof Pair)
       {
-	Pair<A,B> p = (Pair<A,B>) obj;
-	A lp = p.getLeft();
-	B rp = p.getRight(); 
-	return (lp == null ? left == null : lp.equals(left)) &&
-	  (rp == null ? right == null : rp.equals(right));
+        Pair<A,B> p = (Pair<A,B>) obj;
+        A lp = p.getLeft();
+        B rp = p.getRight();
+        return (lp == null ? left == null : lp.equals(left)) &&
+          (rp == null ? right == null : rp.equals(right));
       }
     return false;
   }

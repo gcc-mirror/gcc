@@ -59,4 +59,3 @@ public interface Attributes extends Cloneable, Serializable
   Attribute remove(String attrID);
   Object clone();
 }
-

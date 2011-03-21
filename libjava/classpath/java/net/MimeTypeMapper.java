@@ -258,15 +258,15 @@ class MimeTypeMapper implements FileNameMap
       }
   }
 
-  public static void fillFromFile (Map<String, String> table, String fname) 
+  public static void fillFromFile (Map<String, String> table, String fname)
     throws IOException
   {
-    LineNumberReader reader = 
+    LineNumberReader reader =
       new LineNumberReader (new FileReader (fname));
 
     while (reader.ready ())
       {
-        StringTokenizer tokenizer = 
+        StringTokenizer tokenizer =
           new StringTokenizer (reader.readLine ());
 
         try
@@ -308,10 +308,10 @@ class MimeTypeMapper implements FileNameMap
     int index = filename.lastIndexOf(".");
     if (index != -1)
       {
-	if (index == filename.length())
-	  return "application/octet-stream";
-	else
-	  filename = filename.substring(index + 1);
+        if (index == filename.length())
+          return "application/octet-stream";
+        else
+          filename = filename.substring(index + 1);
       }
 
     String type = (String) mime_types.get(filename);
@@ -338,7 +338,7 @@ class MimeTypeMapper implements FileNameMap
         String key = it.next();
         String value = map.get(key);
         // Put the "," first since it is easier to make correct syntax this way.
-        System.out.println("      " + (first ? "  " : ", ") 
+        System.out.println("      " + (first ? "  " : ", ")
                            + "{ \"" + key + "\", \"" + value + "\" }");
         first = false;
       }

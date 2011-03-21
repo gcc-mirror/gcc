@@ -74,7 +74,7 @@ public final class AnySeqHolder
   }
 
   /**
-   * Constructs an instance of AnySeqHolder,  
+   * Constructs an instance of AnySeqHolder,
    * initializing {@link #value} to the given array
    */
   public AnySeqHolder(Any [] a_value)

@@ -75,7 +75,7 @@ import java.util.Map;
 
 /**
  * QtGraphics is an abstract implementation of Graphics2D over a QPainter
- * object. This is to be subclassed for different drawing contexts, 
+ * object. This is to be subclassed for different drawing contexts,
  * which may have different requirements.
  */
 public abstract class QtGraphics extends Graphics2D
@@ -100,9 +100,9 @@ public abstract class QtGraphics extends Graphics2D
   protected Paint currentPaint;  // current paint
   protected RenderingHints renderingHints; // the rendering hints.
 
-  /** 
+  /**
    * Owner Graphics, used by subcontext created by create()
-   * to avoid GC of the original context. 
+   * to avoid GC of the original context.
    */
   Graphics parent;
 
@@ -154,12 +154,12 @@ public abstract class QtGraphics extends Graphics2D
   {
     AffineTransform current = getTransform();
     setTransform( identity );
-    setClip( initialClip );    
+    setClip( initialClip );
     setTransform( current );
   }
 
-  protected native void initImage(QtImage image);  
-  protected native void initVolatileImage(QtVolatileImage image);  
+  protected native void initImage(QtImage image);
+  protected native void initVolatileImage(QtVolatileImage image);
 
   // Creates a new native QPainter object on the same context.
   private native void cloneNativeContext( QtGraphics parent );
@@ -174,10 +174,10 @@ public abstract class QtGraphics extends Graphics2D
   private native void setNativeStroke(QPen p);
   private native void setNativeComposite(int alphaMode);
   private native void drawStringNative(String string, double x, double y);
-  private native void setLinearGradient(int r1, int g1, int b1, 
-					int r2, int g2, int b2, 
-					double x1, double y1, 
-					double x2, double y2, boolean cyclic);
+  private native void setLinearGradient(int r1, int g1, int b1,
+                                        int r2, int g2, int b2,
+                                        double x1, double y1,
+                                        double x2, double y2, boolean cyclic);
   private native void setAlphaNative(double alpha);
   private native void setFontNative(QtFontPeer font);
   private native QPainterPath getClipNative();
@@ -195,8 +195,8 @@ public abstract class QtGraphics extends Graphics2D
    */
   public abstract Graphics create();
 
-  public abstract void copyArea(int x, int y, int width, int height, 
-				int dx, int dy);
+  public abstract void copyArea(int x, int y, int width, int height,
+                                int dx, int dy);
 
   public abstract GraphicsConfiguration getDeviceConfiguration();
 
@@ -210,7 +210,7 @@ public abstract class QtGraphics extends Graphics2D
   {
     if( c == null )
       c = Color.white;
-    this.color = c; 
+    this.color = c;
     int alpha = (int)(c.getAlpha() * currentAlpha);
     setColor(c.getRed(), c.getGreen(), c.getBlue(), alpha);
   }
@@ -238,15 +238,15 @@ public abstract class QtGraphics extends Graphics2D
   {
     if( onStroke )
       {
-	Shape stroked = currentStroke.createStrokedShape( s );
-	return stroked.intersects( (double)rect.x, (double)rect.y, 
-				   (double)rect.width, (double)rect.height );
+        Shape stroked = currentStroke.createStrokedShape( s );
+        return stroked.intersects( (double)rect.x, (double)rect.y,
+                                   (double)rect.width, (double)rect.height );
       }
-    return s.intersects( (double)rect.x, (double)rect.y, 
-			 (double)rect.width, (double)rect.height );
+    return s.intersects( (double)rect.x, (double)rect.y,
+                         (double)rect.width, (double)rect.height );
   }
 
-  // ******************* Font ***********************  
+  // ******************* Font ***********************
   public Font getFont()
   {
     return font;
@@ -287,7 +287,7 @@ public abstract class QtGraphics extends Graphics2D
   }
 
   public Shape getClip()
-  { 
+  {
     return getClipNative().getPath();
   }
 
@@ -307,7 +307,7 @@ public abstract class QtGraphics extends Graphics2D
   // ***************** Drawing primitives *********************
 
   public void draw(Shape s)
-  { 
+  {
     if( nativeStroking )
       drawNative( new QPainterPath(s) );
     else
@@ -330,14 +330,14 @@ public abstract class QtGraphics extends Graphics2D
   public void drawRect(int x, int y, int width, int height)
   {
     if( nativeStroking )
-      drawNative( new QPainterPath((double)x, (double)y, 
-				   (double)width, (double)height) );
+      drawNative( new QPainterPath((double)x, (double)y,
+                                   (double)width, (double)height) );
     else
       fillNative( new QPainterPath
-		  ( currentStroke.createStrokedShape
-		    (new Rectangle2D.Double
-		     ((double)x, (double)y, 
-		      (double)width, (double)height) ) ) );
+                  ( currentStroke.createStrokedShape
+                    (new Rectangle2D.Double
+                     ((double)x, (double)y,
+                      (double)width, (double)height) ) ) );
   }
 
   public void fillRect(int x, int y, int width, int height)
@@ -353,24 +353,24 @@ public abstract class QtGraphics extends Graphics2D
     setColor( c );
   }
 
-  public void drawRoundRect(int x, int y, int width, int height, 
-			    int arcWidth, int arcHeight)
+  public void drawRoundRect(int x, int y, int width, int height,
+                            int arcWidth, int arcHeight)
   {
-    draw( new RoundRectangle2D.Double(x, y, width, height, 
-				      arcWidth, arcHeight) );
+    draw( new RoundRectangle2D.Double(x, y, width, height,
+                                      arcWidth, arcHeight) );
   }
 
-  public void fillRoundRect(int x, int y, int width, int height, 
-			    int arcWidth, int arcHeight)
+  public void fillRoundRect(int x, int y, int width, int height,
+                            int arcWidth, int arcHeight)
   {
-    fill( new RoundRectangle2D.Double(x, y, width, height, 
-				      arcWidth, arcHeight) );
+    fill( new RoundRectangle2D.Double(x, y, width, height,
+                                      arcWidth, arcHeight) );
   }
 
   public void drawOval(int x, int y, int width, int height)
   {
-    draw( new Ellipse2D.Double((double)x, (double)y, 
-			       (double)width, (double)height) );
+    draw( new Ellipse2D.Double((double)x, (double)y,
+                               (double)width, (double)height) );
   }
 
   public void fillOval(int x, int y, int width, int height)
@@ -378,18 +378,18 @@ public abstract class QtGraphics extends Graphics2D
     fill( new Ellipse2D.Double(x, y, width, height) );
   }
 
-  public void drawArc(int x, int y, int width, int height, 
-		      int arcStart, int arcAngle)
+  public void drawArc(int x, int y, int width, int height,
+                      int arcStart, int arcAngle)
   {
-    draw( new Arc2D.Double(x, y, width, height, arcStart, arcAngle, 
-			   Arc2D.OPEN) );
+    draw( new Arc2D.Double(x, y, width, height, arcStart, arcAngle,
+                           Arc2D.OPEN) );
   }
 
-  public void fillArc(int x, int y, int width, int height, 
-		      int arcStart, int arcAngle)
+  public void fillArc(int x, int y, int width, int height,
+                      int arcStart, int arcAngle)
   {
-    fill( new Arc2D.Double(x, y, width, height, arcStart, arcAngle, 
-			   Arc2D.CHORD) );
+    fill( new Arc2D.Double(x, y, width, height, arcStart, arcAngle,
+                           Arc2D.CHORD) );
   }
 
   public void drawPolyline(int xPoints[], int yPoints[], int npoints)
@@ -428,17 +428,17 @@ public abstract class QtGraphics extends Graphics2D
   {
     // FIXME - to something more correct ?
     String s = "";
-    for(char c = ci.first(); c != CharacterIterator.DONE; c = ci.next()) 
+    for(char c = ci.first(); c != CharacterIterator.DONE; c = ci.next())
       s += c;
     drawString(s, x, y);
   }
 
-  public void drawString(AttributedCharacterIterator ci, 
-			 float x, float y)
+  public void drawString(AttributedCharacterIterator ci,
+                         float x, float y)
   {
     // FIXME - to something more correct ?
     String s = "";
-    for(char c = ci.first(); c != CharacterIterator.DONE; c = ci.next()) 
+    for(char c = ci.first(); c != CharacterIterator.DONE; c = ci.next())
       s += c;
     drawString(s, x, y);
   }
@@ -450,68 +450,68 @@ public abstract class QtGraphics extends Graphics2D
 
   // ******************* Image drawing ******************************
   public boolean drawImage(Image image,
-			   AffineTransform Tx,
-			   ImageObserver obs)
+                           AffineTransform Tx,
+                           ImageObserver obs)
   {
     if (image instanceof QtImage)
       return ((QtImage)image).drawImage(this, new QMatrix( Tx ), obs);
 
-    return (new QtImage(image.getSource())).drawImage(this, 
-						      new QMatrix( Tx ), 
-						      obs);
+    return (new QtImage(image.getSource())).drawImage(this,
+                                                      new QMatrix( Tx ),
+                                                      obs);
   }
 
-  public boolean drawImage(Image image, int x, int y, Color bgcolor, 
-			   ImageObserver observer)
+  public boolean drawImage(Image image, int x, int y, Color bgcolor,
+                           ImageObserver observer)
   {
     if (image instanceof QtImage)
       return ((QtImage)image).drawImage (this, x, y, bgcolor, observer);
-    return (new QtImage(image.getSource())).drawImage (this, x, y, 
-						       bgcolor, observer);
+    return (new QtImage(image.getSource())).drawImage (this, x, y,
+                                                       bgcolor, observer);
   }
 
-  public boolean drawImage(Image image, 
-			   int dx1, int dy1, int dx2, int dy2, 
-			   int sx1, int sy1, int sx2, int sy2, 
-			   Color bgcolor, ImageObserver observer)
+  public boolean drawImage(Image image,
+                           int dx1, int dy1, int dx2, int dy2,
+                           int sx1, int sy1, int sx2, int sy2,
+                           Color bgcolor, ImageObserver observer)
   {
     if (image instanceof QtImage)
-      return ((QtImage)image).drawImage(this, dx1, dy1, dx2, dy2, 
-					sx1, sy1, sx2, sy2, bgcolor, observer);
+      return ((QtImage)image).drawImage(this, dx1, dy1, dx2, dy2,
+                                        sx1, sy1, sx2, sy2, bgcolor, observer);
 
-    return (new QtImage(image.getSource())).drawImage(this, dx1, dy1, 
-						      dx2, dy2, 
-						      sx1, sy1, sx2, sy2, 
-						      bgcolor, observer);
+    return (new QtImage(image.getSource())).drawImage(this, dx1, dy1,
+                                                      dx2, dy2,
+                                                      sx1, sy1, sx2, sy2,
+                                                      bgcolor, observer);
   }
 
-  public boolean drawImage(Image image, int x, int y, 
-			   int width, int height, Color bgcolor, 
-			   ImageObserver observer)
+  public boolean drawImage(Image image, int x, int y,
+                           int width, int height, Color bgcolor,
+                           ImageObserver observer)
   {
     if (image instanceof QtImage)
-      return ((QtImage)image).drawImage (this, x, y, width, height, 
-					 bgcolor, observer);
-    return (new QtImage(image.getSource())).drawImage (this, x, y, 
-						       width, height, 
-						       bgcolor, observer);
+      return ((QtImage)image).drawImage (this, x, y, width, height,
+                                         bgcolor, observer);
+    return (new QtImage(image.getSource())).drawImage (this, x, y,
+                                                       width, height,
+                                                       bgcolor, observer);
   }
-  
-  public boolean drawImage(Image image, int x, int y, int width, int height, 
-			   ImageObserver observer)
+
+  public boolean drawImage(Image image, int x, int y, int width, int height,
+                           ImageObserver observer)
   {
     return drawImage(image, x, y, width, height, null, observer);
   }
- 
+
   public boolean drawImage(Image image, int x, int y, ImageObserver observer)
   {
     return drawImage(image, x, y, null, observer);
   }
- 
+
   public boolean drawImage(Image image, int dx1, int dy1, int dx2, int dy2, int sx1, int sy1, int sx2, int sy2, ImageObserver observer)
   {
-    return drawImage(image, dx1, dy1, dx2, dy2, 
-		     sx1, sy1, sx2, sy2, null, observer);
+    return drawImage(image, dx1, dy1, dx2, dy2,
+                     sx1, sy1, sx2, sy2, null, observer);
   }
 
   // *********************** Transform methods *************************
@@ -531,7 +531,7 @@ public abstract class QtGraphics extends Graphics2D
     xform.rotate( theta );
     setQtTransform( new QMatrix( xform ) );
   }
-  
+
   public void rotate(double theta, double x, double y)
   {
     xform.rotate(theta, x, y);
@@ -549,7 +549,7 @@ public abstract class QtGraphics extends Graphics2D
     xform.shear(shx, shy);
     setQtTransform( new QMatrix( xform ) );
   }
-  
+
   public void transform(AffineTransform Tx)
   {
     xform.concatenate( Tx );
@@ -572,14 +572,14 @@ public abstract class QtGraphics extends Graphics2D
   {
     try  // ..to convert the stroke into a native one.
       {
-	QPen pen = new QPen( s );
-	nativeStroking = true;
- 	setNativeStroke( pen );
-	setColor( color );
-      } 
+        QPen pen = new QPen( s );
+        nativeStroking = true;
+        setNativeStroke( pen );
+        setColor( color );
+      }
     catch (IllegalArgumentException e)
       {
-	nativeStroking = false;
+        nativeStroking = false;
       }
     currentStroke = s;
   }
@@ -593,27 +593,27 @@ public abstract class QtGraphics extends Graphics2D
   {
     if( comp == null)
       {
-	setNativeComposite( AlphaComposite.SRC_OVER );
-	return;
+        setNativeComposite( AlphaComposite.SRC_OVER );
+        return;
       }
 
     if( comp instanceof AlphaComposite )
       {
- 	if( ((AlphaComposite)comp).getRule() != AlphaComposite.XOR )
- 	  setAlpha( ((AlphaComposite)comp).getAlpha() );
-	setNativeComposite( ((AlphaComposite)comp).getRule() );
-	composite = comp;
+        if( ((AlphaComposite)comp).getRule() != AlphaComposite.XOR )
+          setAlpha( ((AlphaComposite)comp).getAlpha() );
+        setNativeComposite( ((AlphaComposite)comp).getRule() );
+        composite = comp;
       }
     else
       {
-	// FIXME: this check is only required "if this Graphics2D
-	// context is drawing to a Component on the display screen".
-	SecurityManager sm = System.getSecurityManager();
-	if (sm != null)
-	  sm.checkPermission(new AWTPermission("readDisplayPixels"));
+        // FIXME: this check is only required "if this Graphics2D
+        // context is drawing to a Component on the display screen".
+        SecurityManager sm = System.getSecurityManager();
+        if (sm != null)
+          sm.checkPermission(new AWTPermission("readDisplayPixels"));
 
-	throw new UnsupportedOperationException("We don't support custom"+
-						" composites yet.");
+        throw new UnsupportedOperationException("We don't support custom"+
+                                                " composites yet.");
       }
   }
 
@@ -625,28 +625,28 @@ public abstract class QtGraphics extends Graphics2D
   public void setPaint(Paint p)
   {
     if( p == null )
-      return; 
+      return;
 
     // FIXME
     currentPaint = p;
     if( p instanceof GradientPaint )
       {
-	GradientPaint lg = (GradientPaint)p;
-	setLinearGradient(lg.getColor1().getRed(), lg.getColor1().getGreen(), 
-			  lg.getColor1().getBlue(), lg.getColor2().getRed(), 
-			  lg.getColor2().getGreen(), lg.getColor2().getBlue(),
-			  lg.getPoint1().getX(), lg.getPoint1().getY(),
-			  lg.getPoint2().getX(), lg.getPoint2().getY(),
-			  lg.isCyclic() );
-	return;
+        GradientPaint lg = (GradientPaint)p;
+        setLinearGradient(lg.getColor1().getRed(), lg.getColor1().getGreen(),
+                          lg.getColor1().getBlue(), lg.getColor2().getRed(),
+                          lg.getColor2().getGreen(), lg.getColor2().getBlue(),
+                          lg.getPoint1().getX(), lg.getPoint1().getY(),
+                          lg.getPoint2().getX(), lg.getPoint2().getY(),
+                          lg.isCyclic() );
+        return;
       }
     if( p instanceof Color )
       {
-	setColor((Color) p);
-	return;
+        setColor((Color) p);
+        return;
       }
     throw new UnsupportedOperationException("We don't support custom"+
-					    " paints yet.");
+                                            " paints yet.");
   }
 
   public Paint getPaint()
@@ -671,7 +671,7 @@ public abstract class QtGraphics extends Graphics2D
   {
     return (RenderingHints) renderingHints.clone();
   }
-  
+
   public void setRenderingHints(Map<?,?> hints)
   {
     renderingHints = new RenderingHints( null );
@@ -711,5 +711,4 @@ public abstract class QtGraphics extends Graphics2D
   {
     throw new UnsupportedOperationException("Not implemented yet");
   }
-} 
-
+}

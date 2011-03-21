@@ -1,4 +1,4 @@
-/* DomHTMLFormElement.java -- 
+/* DomHTMLFormElement.java --
    Copyright (C) 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -85,7 +85,7 @@ public class DomHTMLFormElement
   {
     setHTMLAttribute("name", name);
   }
-  
+
   public String getAcceptCharset()
   {
     return getHTMLAttribute("accept-charset");
@@ -95,7 +95,7 @@ public class DomHTMLFormElement
   {
     setHTMLAttribute("accept-charset", acceptCharset);
   }
-  
+
   public String getAction()
   {
     return getHTMLAttribute("action");
@@ -105,7 +105,7 @@ public class DomHTMLFormElement
   {
     setHTMLAttribute("action", action);
   }
-  
+
   public String getEnctype()
   {
     return getHTMLAttribute("enctype");
@@ -115,7 +115,7 @@ public class DomHTMLFormElement
   {
     setHTMLAttribute("enctype", enctype);
   }
-  
+
   public String getMethod()
   {
     return getHTMLAttribute("method");
@@ -125,7 +125,7 @@ public class DomHTMLFormElement
   {
     setHTMLAttribute("method", method);
   }
-  
+
   public String getTarget()
   {
     return getHTMLAttribute("target");
@@ -145,6 +145,5 @@ public class DomHTMLFormElement
   {
     dispatchUIEvent("reset");
   }
-  
-}
 
+}

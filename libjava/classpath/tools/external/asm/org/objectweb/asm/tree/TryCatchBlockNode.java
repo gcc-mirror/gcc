@@ -34,7 +34,7 @@ import org.objectweb.asm.MethodVisitor;
 
 /**
  * A node that represents a try catch block.
- * 
+ *
  * @author Eric Bruneton
  */
 public class TryCatchBlockNode {
@@ -62,7 +62,7 @@ public class TryCatchBlockNode {
 
     /**
      * Constructs a new {@link TryCatchBlockNode}.
-     * 
+     *
      * @param start beginning of the exception handler's scope (inclusive).
      * @param end end of the exception handler's scope (exclusive).
      * @param handler beginning of the exception handler's code.
@@ -84,7 +84,7 @@ public class TryCatchBlockNode {
 
     /**
      * Makes the given visitor visit this try catch block.
-     * 
+     *
      * @param mv a method visitor.
      */
     public void accept(final MethodVisitor mv) {

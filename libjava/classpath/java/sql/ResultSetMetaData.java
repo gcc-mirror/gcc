@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -41,12 +41,12 @@ package java.sql;
 /**
  * This interface provides a mechanism for obtaining information about
  * the columns that are present in a <code>ResultSet</code>.
- * 
+ *
  * <p> Note that in this class column indices start at 1, not 0.</p>
  *
  * @author Aaron M. Renn (arenn@urbanophile.com)
  */
-public interface ResultSetMetaData 
+public interface ResultSetMetaData
 {
   /**
    * The column does not allow NULL's.
@@ -93,7 +93,7 @@ public interface ResultSetMetaData
   boolean isCaseSensitive(int columnIndex) throws SQLException;
 
   /**
-   * This method tests whether not the specified column can be used in 
+   * This method tests whether not the specified column can be used in
    * a WHERE clause.
    *
    * @param columnIndex The index of the column to test.

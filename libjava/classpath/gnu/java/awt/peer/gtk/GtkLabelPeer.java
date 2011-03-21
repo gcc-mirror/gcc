@@ -74,7 +74,7 @@ public class GtkLabelPeer extends GtkComponentPeer
     if (text != null)
       setNativeText(text);
   }
-  
+
   public GtkLabelPeer (Label l)
   {
     super (l);

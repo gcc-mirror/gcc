@@ -71,7 +71,7 @@ import java.awt.peer.LightweightPeer;
  * Lightweight components are painted directly onto their parent
  * containers through an Image object provided by the toolkit.
  */
-public class GLightweightPeer 
+public class GLightweightPeer
   implements LightweightPeer, ContainerPeer
 {
   public GLightweightPeer()
@@ -80,39 +80,39 @@ public class GLightweightPeer
   }
 
   // -------- java.awt.peer.ContainerPeer implementation:
-  
+
   public Insets insets()
   {
     // Nothing to do here for lightweights.
     return null;
   }
-  
+
   public Insets getInsets()
   {
     // Nothing to do here for lightweights.
     return null;
   }
-  
+
   public void beginValidate()
   {
     // Nothing to do here for lightweights.
   }
-  
+
   public void endValidate()
   {
     // Nothing to do here for lightweights.
   }
-  
+
   public void beginLayout()
   {
     // Nothing to do here for lightweights.
   }
-  
+
   public void endLayout()
   {
     // Nothing to do here for lightweights.
   }
-  
+
   public boolean isPaintPending()
   {
     // Nothing to do here for lightweights.
@@ -235,7 +235,7 @@ public class GLightweightPeer
     // Nothing to do here for lightweights.
   }
 
-  public boolean isFocusable() 
+  public boolean isFocusable()
   {
     // Nothing to do here for lightweights.
     return false;
@@ -263,7 +263,7 @@ public class GLightweightPeer
   }
 
   public boolean prepareImage(Image img, int width, int height,
-			      ImageObserver o)
+                              ImageObserver o)
   {
     // Nothing to do here for lightweights.
     return false;
@@ -373,10 +373,10 @@ public class GLightweightPeer
     // Nothing to do here for lightweights.
   }
 
-  public VolatileImage createVolatileImage(int width, int height) 
-  { 
+  public VolatileImage createVolatileImage(int width, int height)
+  {
     // Nothing to do here for lightweights.
-    return null; 
+    return null;
   }
 
   public boolean handlesWheelScrolling()
@@ -385,7 +385,7 @@ public class GLightweightPeer
     return false;
   }
 
-  public void createBuffers(int x, BufferCapabilities capabilities) 
+  public void createBuffers(int x, BufferCapabilities capabilities)
     throws AWTException
   {
     // Nothing to do here for lightweights.

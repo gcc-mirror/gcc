@@ -1,4 +1,4 @@
-/* TransformerImpl.java -- 
+/* TransformerImpl.java --
    Copyright (C) 2004,2005,2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -231,9 +231,9 @@ class TransformerImpl
     String publicId = outputProperties.getProperty(OutputKeys.DOCTYPE_PUBLIC);
     String systemId = outputProperties.getProperty(OutputKeys.DOCTYPE_SYSTEM);
     String version = outputProperties.getProperty(OutputKeys.VERSION);
-    boolean omitXmlDeclaration = 
+    boolean omitXmlDeclaration =
       "yes".equals(outputProperties.getProperty(OutputKeys.OMIT_XML_DECLARATION));
-    boolean standalone = 
+    boolean standalone =
       "yes".equals(outputProperties.getProperty(OutputKeys.STANDALONE));
     String mediaType = outputProperties.getProperty(OutputKeys.MEDIA_TYPE);
     String cdataSectionElements =

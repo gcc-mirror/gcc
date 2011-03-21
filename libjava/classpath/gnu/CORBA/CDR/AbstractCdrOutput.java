@@ -79,7 +79,7 @@ import java.math.BigDecimal;
  * The same class also implements the {@link DataInputStream},
  * providing support for writing the value type objects
  * in a user defined way.
- * 
+ *
  * TODO This class uses 16 bits per Unicode character only, as it was until
  * jdk 1.4 inclusive.
  *
@@ -90,11 +90,11 @@ public abstract class AbstractCdrOutput
   implements org.omg.CORBA.DataOutputStream
 {
   /**
-   * The runtime, associated with this stream. This field is only used when 
+   * The runtime, associated with this stream. This field is only used when
    * reading and writing value types and filled-in in gnu.CORBA.CDR.Vio.
    */
-  public transient gnuRuntime runtime;  
-  
+  public transient gnuRuntime runtime;
+
   /**
    * This instance is used to convert primitive data types into the
    * byte sequences.
@@ -177,7 +177,7 @@ public abstract class AbstractCdrOutput
    * stream is different from 0.
    */
   public abstract void setOffset(int an_offset);
-  
+
   /**
    * Clone all important settings to another stream.
    */
@@ -187,7 +187,7 @@ public abstract class AbstractCdrOutput
     stream.setCodeSet(getCodeSet());
     stream.setVersion(giop);
     stream.setOrb(orb);
-  }  
+  }
 
   /**
    * Set the current code set context.
@@ -336,7 +336,7 @@ public abstract class AbstractCdrOutput
    * Read the CORBA object. The object is written form of the plain (not a
    * string-encoded) IOR profile without the heading endian indicator. The
    * responsible method for reading such data is {@link IOR.write_no_endian}.
-   * 
+   *
    * The null value is written as defined in OMG specification (zero length
    * string, followed by an empty set of profiles).
    */
@@ -901,7 +901,7 @@ public abstract class AbstractCdrOutput
   /**
    * Writes the character as two byte short integer (Unicode value), high byte
    * first. Writes in Big Endian, but never writes the endian indicator.
-   * 
+   *
    * The character is always written using the native UTF-16BE charset because
    * its size under arbitrary encoding is not evident.
    */
@@ -944,11 +944,11 @@ public abstract class AbstractCdrOutput
 
   /**
    * Write the array of wide chars.
-   * 
+   *
    * @param chars the array of wide chars
    * @param offset offset
    * @param length length
-   * 
+   *
    * The char array is always written using the native UTF-16BE charset because
    * the character size under arbitrary encoding is not evident.
    */

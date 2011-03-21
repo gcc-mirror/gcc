@@ -100,7 +100,7 @@ public class BasicOptionPaneUI extends OptionPaneUI
       JOptionPane op = (JOptionPane) event.getSource();
       op.setValue(new Integer(JOptionPane.CLOSED_OPTION));
     }
-    
+
   }
 
   /**
@@ -136,18 +136,18 @@ public class BasicOptionPaneUI extends OptionPaneUI
       Object value = new Integer(JOptionPane.CLOSED_OPTION);
       Object[] options = optionPane.getOptions();
       if (options != null)
-	value = new Integer(buttonIndex);
+        value = new Integer(buttonIndex);
       else
         {
-	  String text = ((JButton) e.getSource()).getText();
-	  if (text.equals(OK_STRING))
-	    value = new Integer(JOptionPane.OK_OPTION);
-	  if (text.equals(CANCEL_STRING))
-	    value = new Integer(JOptionPane.CANCEL_OPTION);
-	  if (text.equals(YES_STRING))
-	    value = new Integer(JOptionPane.YES_OPTION);
-	  if (text.equals(NO_STRING))
-	    value = new Integer(JOptionPane.NO_OPTION);
+          String text = ((JButton) e.getSource()).getText();
+          if (text.equals(OK_STRING))
+            value = new Integer(JOptionPane.OK_OPTION);
+          if (text.equals(CANCEL_STRING))
+            value = new Integer(JOptionPane.CANCEL_OPTION);
+          if (text.equals(YES_STRING))
+            value = new Integer(JOptionPane.YES_OPTION);
+          if (text.equals(NO_STRING))
+            value = new Integer(JOptionPane.NO_OPTION);
         }
       optionPane.setValue(value);
       resetInputValue();
@@ -155,7 +155,7 @@ public class BasicOptionPaneUI extends OptionPaneUI
       Window owner = SwingUtilities.windowForComponent(optionPane);
 
       if (owner instanceof JDialog)
-	((JDialog) owner).dispose();
+        ((JDialog) owner).dispose();
 
       //else we probably have some kind of internal frame.
       JInternalFrame inf = (JInternalFrame) SwingUtilities.getAncestorOfClass(
@@ -265,21 +265,21 @@ public class BasicOptionPaneUI extends OptionPaneUI
       Component[] buttonList = container.getComponents();
       int x = container.getInsets().left;
       if (getCentersChildren())
-	x += (int) ((double) (container.getSize().width) / 2
-	- (double) (buttonRowLength(container)) / 2);
+        x += (int) ((double) (container.getSize().width) / 2
+        - (double) (buttonRowLength(container)) / 2);
       for (int i = 0; i < buttonList.length; i++)
         {
-	  Dimension dims = buttonList[i].getPreferredSize();
-	  if (syncAllWidths)
-	    {
-	      buttonList[i].setBounds(x, 0, widthOfWidestButton, dims.height);
-	      x += widthOfWidestButton + getPadding();
-	    }
-	  else
-	    {
-	      buttonList[i].setBounds(x, 0, dims.width, dims.height);
-	      x += dims.width + getPadding();
-	    }
+          Dimension dims = buttonList[i].getPreferredSize();
+          if (syncAllWidths)
+            {
+              buttonList[i].setBounds(x, 0, widthOfWidestButton, dims.height);
+              x += widthOfWidestButton + getPadding();
+            }
+          else
+            {
+              buttonList[i].setBounds(x, 0, dims.width, dims.height);
+              x += dims.width + getPadding();
+            }
         }
     }
 
@@ -301,10 +301,10 @@ public class BasicOptionPaneUI extends OptionPaneUI
 
       for (int i = 0; i < buttonList.length; i++)
         {
-	  Dimension dims = buttonList[i].getPreferredSize();
-	  buttonLength += dims.width + getPadding();
-	  widest = Math.max(widest, dims.width);
-	  tallest = Math.max(tallest, dims.height);
+          Dimension dims = buttonList[i].getPreferredSize();
+          buttonLength += dims.width + getPadding();
+          widest = Math.max(widest, dims.width);
+          tallest = Math.max(tallest, dims.height);
         }
 
       widthOfWidestButton = widest;
@@ -312,10 +312,10 @@ public class BasicOptionPaneUI extends OptionPaneUI
 
       int width;
       if (getSyncAllWidths())
-	width = widest * buttonList.length
-	        + getPadding() * (buttonList.length - 1);
+        width = widest * buttonList.length
+                + getPadding() * (buttonList.length - 1);
       else
-	width = buttonLength;
+        width = buttonLength;
 
       Insets insets = c.getInsets();
       width += insets.left + insets.right;
@@ -438,10 +438,10 @@ public class BasicOptionPaneUI extends OptionPaneUI
   /** Whether the JOptionPane contains custom components. */
   protected boolean hasCustomComponents;
 
-  // The initialFocusComponent seems to always be set to a button (even if 
-  // I try to set initialSelectionValue). This is different from what the 
-  // javadocs state (which should switch this reference to the input component 
-  // if one is present since that is what's going to get focus). 
+  // The initialFocusComponent seems to always be set to a button (even if
+  // I try to set initialSelectionValue). This is different from what the
+  // javadocs state (which should switch this reference to the input component
+  // if one is present since that is what's going to get focus).
 
   /**
    * The button that will receive focus based on initialValue when no input
@@ -531,20 +531,20 @@ public class BasicOptionPaneUI extends OptionPaneUI
     {
       public void paintIcon(Component c, Graphics g, int x, int y)
       {
-	Polygon oct = new Polygon(new int[] { 0, 0, 9, 27, 36, 36, 27, 9 },
-	                          new int[] { 9, 27, 36, 36, 27, 9, 0, 0 }, 8);
-	g.translate(x, y);
+        Polygon oct = new Polygon(new int[] { 0, 0, 9, 27, 36, 36, 27, 9 },
+                                  new int[] { 9, 27, 36, 36, 27, 9, 0, 0 }, 8);
+        g.translate(x, y);
 
-	Color saved = g.getColor();
-	g.setColor(Color.RED);
+        Color saved = g.getColor();
+        g.setColor(Color.RED);
 
-	g.fillPolygon(oct);
+        g.fillPolygon(oct);
 
-	g.setColor(Color.BLACK);
-	g.drawRect(13, 16, 10, 4);
+        g.setColor(Color.BLACK);
+        g.drawRect(13, 16, 10, 4);
 
-	g.setColor(saved);
-	g.translate(-x, -y);
+        g.setColor(saved);
+        g.translate(-x, -y);
       }
     };
 
@@ -553,24 +553,24 @@ public class BasicOptionPaneUI extends OptionPaneUI
     {
       public void paintIcon(Component c, Graphics g, int x, int y)
       {
-	g.translate(x, y);
-	Color saved = g.getColor();
+        g.translate(x, y);
+        Color saved = g.getColor();
 
-	// Should be purple.
-	g.setColor(Color.RED);
+        // Should be purple.
+        g.setColor(Color.RED);
 
-	g.fillOval(0, 0, ICON_SIZE, ICON_SIZE);
+        g.fillOval(0, 0, ICON_SIZE, ICON_SIZE);
 
-	g.setColor(Color.BLACK);
-	g.drawOval(16, 6, 4, 4);
+        g.setColor(Color.BLACK);
+        g.drawOval(16, 6, 4, 4);
 
-	Polygon bottomI = new Polygon(new int[] { 15, 15, 13, 13, 23, 23, 21, 21 },
-	                              new int[] { 12, 28, 28, 30, 30, 28, 28, 12 },
-	                              8);
-	g.drawPolygon(bottomI);
+        Polygon bottomI = new Polygon(new int[] { 15, 15, 13, 13, 23, 23, 21, 21 },
+                                      new int[] { 12, 28, 28, 30, 30, 28, 28, 12 },
+                                      8);
+        g.drawPolygon(bottomI);
 
-	g.setColor(saved);
-	g.translate(-x, -y);
+        g.setColor(saved);
+        g.translate(-x, -y);
       }
     };
 
@@ -579,23 +579,23 @@ public class BasicOptionPaneUI extends OptionPaneUI
     {
       public void paintIcon(Component c, Graphics g, int x, int y)
       {
-	g.translate(x, y);
-	Color saved = g.getColor();
-	g.setColor(Color.YELLOW);
+        g.translate(x, y);
+        Color saved = g.getColor();
+        g.setColor(Color.YELLOW);
 
-	Polygon triangle = new Polygon(new int[] { 0, 18, 36 },
-	                               new int[] { 36, 0, 36 }, 3);
-	g.fillPolygon(triangle);
+        Polygon triangle = new Polygon(new int[] { 0, 18, 36 },
+                                       new int[] { 36, 0, 36 }, 3);
+        g.fillPolygon(triangle);
 
-	g.setColor(Color.BLACK);
+        g.setColor(Color.BLACK);
 
-	Polygon excl = new Polygon(new int[] { 15, 16, 20, 21 },
-	                           new int[] { 8, 26, 26, 8 }, 4);
-	g.drawPolygon(excl);
-	g.drawOval(16, 30, 4, 4);
+        Polygon excl = new Polygon(new int[] { 15, 16, 20, 21 },
+                                   new int[] { 8, 26, 26, 8 }, 4);
+        g.drawPolygon(excl);
+        g.drawOval(16, 30, 4, 4);
 
-	g.setColor(saved);
-	g.translate(-x, -y);
+        g.setColor(saved);
+        g.translate(-x, -y);
       }
     };
 
@@ -604,32 +604,32 @@ public class BasicOptionPaneUI extends OptionPaneUI
     {
       public void paintIcon(Component c, Graphics g, int x, int y)
       {
-	g.translate(x, y);
-	Color saved = g.getColor();
-	g.setColor(Color.GREEN);
+        g.translate(x, y);
+        Color saved = g.getColor();
+        g.setColor(Color.GREEN);
 
-	g.fillRect(0, 0, ICON_SIZE, ICON_SIZE);
+        g.fillRect(0, 0, ICON_SIZE, ICON_SIZE);
 
-	g.setColor(Color.BLACK);
+        g.setColor(Color.BLACK);
 
-	g.drawOval(11, 2, 16, 16);
-	g.drawOval(14, 5, 10, 10);
+        g.drawOval(11, 2, 16, 16);
+        g.drawOval(14, 5, 10, 10);
 
-	g.setColor(Color.GREEN);
-	g.fillRect(0, 10, ICON_SIZE, ICON_SIZE - 10);
+        g.setColor(Color.GREEN);
+        g.fillRect(0, 10, ICON_SIZE, ICON_SIZE - 10);
 
-	g.setColor(Color.BLACK);
+        g.setColor(Color.BLACK);
 
-	g.drawLine(11, 10, 14, 10);
+        g.drawLine(11, 10, 14, 10);
 
-	g.drawLine(24, 10, 17, 22);
-	g.drawLine(27, 10, 20, 22);
-	g.drawLine(17, 22, 20, 22);
+        g.drawLine(24, 10, 17, 22);
+        g.drawLine(27, 10, 20, 22);
+        g.drawLine(17, 22, 20, 22);
 
-	g.drawOval(17, 25, 3, 3);
+        g.drawOval(17, 25, 3, 3);
 
-	g.setColor(saved);
-	g.translate(-x, -y);
+        g.setColor(saved);
+        g.translate(-x, -y);
       }
     };
 
@@ -659,25 +659,25 @@ public class BasicOptionPaneUI extends OptionPaneUI
       return;
     for (int i = 0; i < buttons.length; i++)
       {
-	if (buttons[i] != null)
-	  {
-	    Component toAdd;
-	    if (buttons[i] instanceof Component)
-	      toAdd = (Component) buttons[i];
-	    else
-	      {
-		if (buttons[i] instanceof Icon)
-		  toAdd = new JButton((Icon) buttons[i]);
-		else
-		  toAdd = new JButton(buttons[i].toString());
-		hasCustomComponents = true;
-	      }
-	    if (toAdd instanceof JButton)
-	      ((JButton) toAdd).addActionListener(createButtonActionListener(i));
-	    if (i == initialIndex)
-	      initialFocusComponent = toAdd;
-	    container.add(toAdd);
-	  }
+        if (buttons[i] != null)
+          {
+            Component toAdd;
+            if (buttons[i] instanceof Component)
+              toAdd = (Component) buttons[i];
+            else
+              {
+                if (buttons[i] instanceof Icon)
+                  toAdd = new JButton((Icon) buttons[i]);
+                else
+                  toAdd = new JButton(buttons[i].toString());
+                hasCustomComponents = true;
+              }
+            if (toAdd instanceof JButton)
+              ((JButton) toAdd).addActionListener(createButtonActionListener(i));
+            if (i == initialIndex)
+              initialFocusComponent = toAdd;
+            container.add(toAdd);
+          }
       }
     selectInitialValue(optionPane);
   }
@@ -693,9 +693,9 @@ public class BasicOptionPaneUI extends OptionPaneUI
     Icon icon = getIcon();
     if (icon != null)
       {
-	iconLabel = new JLabel(icon);
+        iconLabel = new JLabel(icon);
         configureLabel(iconLabel);
-	top.add(iconLabel, BorderLayout.WEST);
+        top.add(iconLabel, BorderLayout.WEST);
       }
   }
 
@@ -743,38 +743,38 @@ public class BasicOptionPaneUI extends OptionPaneUI
     hasCustomComponents = internallyCreated;
     if (msg instanceof Object[])
       {
-	Object[] arr = (Object[]) msg;
-	for (int i = 0; i < arr.length; i++)
-	  addMessageComponents(container, cons, arr[i], maxll,
-	                       internallyCreated);
-	return;
+        Object[] arr = (Object[]) msg;
+        for (int i = 0; i < arr.length; i++)
+          addMessageComponents(container, cons, arr[i], maxll,
+                               internallyCreated);
+        return;
       }
     else if (msg instanceof Component)
       {
-	container.add((Component) msg, cons);
-	cons.gridy++;
+        container.add((Component) msg, cons);
+        cons.gridy++;
       }
     else if (msg instanceof Icon)
       {
         JLabel label = new JLabel((Icon) msg);
         configureLabel(label);
-	container.add(label, cons);
-	cons.gridy++;
+        container.add(label, cons);
+        cons.gridy++;
       }
     else
       {
-	// Undocumented behaviour.
-	// if msg.toString().length greater than maxll
-	// it will create a box and burst the string.
-	// otherwise, it will just create a label and re-call 
-	// this method with the label o.O
-	if (msg.toString().length() > maxll || msg.toString().contains("\n"))
-	  {
-	    Box tmp = new Box(BoxLayout.Y_AXIS);
-	    burstStringInto(tmp, msg.toString(), maxll);
-	    addMessageComponents(container, cons, tmp, maxll, true);
-	  }
-	else
+        // Undocumented behaviour.
+        // if msg.toString().length greater than maxll
+        // it will create a box and burst the string.
+        // otherwise, it will just create a label and re-call
+        // this method with the label o.O
+        if (msg.toString().length() > maxll || msg.toString().contains("\n"))
+          {
+            Box tmp = new Box(BoxLayout.Y_AXIS);
+            burstStringInto(tmp, msg.toString(), maxll);
+            addMessageComponents(container, cons, tmp, maxll, true);
+          }
+        else
           {
             JLabel label = new JLabel(msg.toString());
             configureLabel(label);
@@ -817,7 +817,7 @@ public class BasicOptionPaneUI extends OptionPaneUI
     if (remainder.length() == 0)
       return;
 
-    // Recursively call ourselves to burst the remainder of the string, 
+    // Recursively call ourselves to burst the remainder of the string,
     if (remainder.length() > maxll || remainder.contains("\n"))
       burstStringInto(c, remainder, maxll);
     else
@@ -901,27 +901,27 @@ public class BasicOptionPaneUI extends OptionPaneUI
     rightSide.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
     rightSide.setLayout(new GridBagLayout());
     GridBagConstraints con = createConstraints();
-    
+
     addMessageComponents(rightSide, con, getMessage(),
                          getMaxCharactersPerLineCount(), false);
 
     if (optionPane.getWantsInput())
       {
-	Object[] selection = optionPane.getSelectionValues();
+        Object[] selection = optionPane.getSelectionValues();
 
-	if (selection == null)
+        if (selection == null)
           inputComponent = new JTextField(15);
-	else if (selection.length < 20)
+        else if (selection.length < 20)
           inputComponent = new JComboBox(selection);
-	else
-	  inputComponent = new JList(selection);
-	if (inputComponent != null)
-	  {
-	    addMessageComponents(rightSide, con, inputComponent,
+        else
+          inputComponent = new JList(selection);
+        if (inputComponent != null)
+          {
+            addMessageComponents(rightSide, con, inputComponent,
                                  getMaxCharactersPerLineCount(), false);
-	    resetSelectedValue();
-	    selectInitialValue(optionPane);
-	  }
+            resetSelectedValue();
+            selectInitialValue(optionPane);
+          }
       }
 
     messageArea.add(rightSide, BorderLayout.CENTER);
@@ -979,11 +979,11 @@ public class BasicOptionPaneUI extends OptionPaneUI
     switch (optionPane.getOptionType())
       {
       case JOptionPane.YES_NO_OPTION:
-	return new Object[] { YES_STRING, NO_STRING };
+        return new Object[] { YES_STRING, NO_STRING };
       case JOptionPane.YES_NO_CANCEL_OPTION:
-	return new Object[] { YES_STRING, NO_STRING, CANCEL_STRING };
+        return new Object[] { YES_STRING, NO_STRING, CANCEL_STRING };
       case JOptionPane.OK_CANCEL_OPTION:
-	return new Object[] { OK_STRING, CANCEL_STRING };
+        return new Object[] { OK_STRING, CANCEL_STRING };
       case JOptionPane.DEFAULT_OPTION:
         return (optionPane.getWantsInput()) ?
                new Object[] { OK_STRING, CANCEL_STRING } :
@@ -1022,17 +1022,17 @@ public class BasicOptionPaneUI extends OptionPaneUI
     switch (messageType)
       {
       case JOptionPane.ERROR_MESSAGE:
-	tmp = errorIcon;
-	break;
+        tmp = errorIcon;
+        break;
       case JOptionPane.INFORMATION_MESSAGE:
-	tmp = infoIcon;
-	break;
+        tmp = infoIcon;
+        break;
       case JOptionPane.WARNING_MESSAGE:
-	tmp = warningIcon;
-	break;
+        tmp = warningIcon;
+        break;
       case JOptionPane.QUESTION_MESSAGE:
-	tmp = questionIcon;
-	break;
+        tmp = questionIcon;
+        break;
       }
     return tmp;
     // FIXME: Don't cast till the default icons are in.
@@ -1055,8 +1055,8 @@ public class BasicOptionPaneUI extends OptionPaneUI
 
     for (int i = 0; i < buttons.length; i++)
       {
-	if (select == buttons[i])
-	  return i;
+        if (select == buttons[i])
+          return i;
       }
     return 0;
   }
@@ -1251,12 +1251,12 @@ public class BasicOptionPaneUI extends OptionPaneUI
   {
     if (c instanceof JOptionPane)
       {
-	optionPane = (JOptionPane) c;
+        optionPane = (JOptionPane) c;
 
-	installDefaults();
-	installComponents();
-	installListeners();
-	installKeyboardActions();
+        installDefaults();
+        installComponents();
+        installListeners();
+        installKeyboardActions();
       }
   }
 
@@ -1268,16 +1268,16 @@ public class BasicOptionPaneUI extends OptionPaneUI
   {
     if (optionPane.getWantsInput() && inputComponent != null)
       {
-	Object output = null;
-	if (inputComponent instanceof JTextField)
-	  output = ((JTextField) inputComponent).getText();
-	else if (inputComponent instanceof JComboBox)
-	  output = ((JComboBox) inputComponent).getSelectedItem();
-	else if (inputComponent instanceof JList)
-	  output = ((JList) inputComponent).getSelectedValue();
+        Object output = null;
+        if (inputComponent instanceof JTextField)
+          output = ((JTextField) inputComponent).getText();
+        else if (inputComponent instanceof JComboBox)
+          output = ((JComboBox) inputComponent).getSelectedItem();
+        else if (inputComponent instanceof JList)
+          output = ((JList) inputComponent).getSelectedValue();
 
-	if (output != null)
-	  optionPane.setInputValue(output);
+        if (output != null)
+          optionPane.setInputValue(output);
       }
   }
 
@@ -1291,8 +1291,8 @@ public class BasicOptionPaneUI extends OptionPaneUI
   {
     if (inputComponent != null)
       {
-	inputComponent.requestFocus();
-	return;
+        inputComponent.requestFocus();
+        return;
       }
     if (initialFocusComponent != null)
       initialFocusComponent.requestFocus();
@@ -1307,17 +1307,17 @@ public class BasicOptionPaneUI extends OptionPaneUI
   {
     if (inputComponent != null)
       {
-	Object init = optionPane.getInitialSelectionValue();
-	if (init == null)
-	  return;
-	if (inputComponent instanceof JTextField)
-	  ((JTextField) inputComponent).setText((String) init);
-	else if (inputComponent instanceof JComboBox)
-	  ((JComboBox) inputComponent).setSelectedItem(init);
-	else if (inputComponent instanceof JList)
-	  {
-	    //  ((JList) inputComponent).setSelectedValue(init, true);
-	  }
+        Object init = optionPane.getInitialSelectionValue();
+        if (init == null)
+          return;
+        if (inputComponent instanceof JTextField)
+          ((JTextField) inputComponent).setText((String) init);
+        else if (inputComponent instanceof JComboBox)
+          ((JComboBox) inputComponent).setSelectedItem(init);
+        else if (inputComponent instanceof JList)
+          {
+            //  ((JList) inputComponent).setSelectedValue(init, true);
+          }
       }
   }
 

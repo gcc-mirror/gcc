@@ -455,13 +455,19 @@ insert_debug_temp_for_var_def (gimple_stmt_iterator *gsi, tree var)
 	continue;
 
       if (value)
-	FOR_EACH_IMM_USE_ON_STMT (use_p, imm_iter)
-	  /* unshare_expr is not needed here.  vexpr is either a
-	     SINGLE_RHS, that can be safely shared, some other RHS
-	     that was unshared when we found it had a single debug
-	     use, or a DEBUG_EXPR_DECL, that can be safely
-	     shared.  */
-	  SET_USE (use_p, value);
+	{
+	  FOR_EACH_IMM_USE_ON_STMT (use_p, imm_iter)
+	    /* unshare_expr is not needed here.  vexpr is either a
+	       SINGLE_RHS, that can be safely shared, some other RHS
+	       that was unshared when we found it had a single debug
+	       use, or a DEBUG_EXPR_DECL, that can be safely
+	       shared.  */
+	    SET_USE (use_p, value);
+	  /* If we didn't replace uses with a debug decl fold the
+	     resulting expression.  Otherwise we end up with invalid IL.  */
+	  if (TREE_CODE (value) != DEBUG_EXPR_DECL)
+	    fold_stmt_inplace (stmt);
+	}
       else
 	gimple_debug_bind_reset_value (stmt);
 
@@ -1157,7 +1163,7 @@ delete_tree_ssa (void)
   tree var;
 
   /* Remove annotations from every referenced local variable.  */
-  FOR_EACH_REFERENCED_VAR (var, rvi)
+  FOR_EACH_REFERENCED_VAR (cfun, var, rvi)
     {
       if (is_global_var (var))
 	continue;
@@ -1851,18 +1857,40 @@ maybe_rewrite_mem_ref_base (tree *tp)
     tp = &TREE_OPERAND (*tp, 0);
   if (TREE_CODE (*tp) == MEM_REF
       && TREE_CODE (TREE_OPERAND (*tp, 0)) == ADDR_EXPR
-      && integer_zerop (TREE_OPERAND (*tp, 1))
       && (sym = TREE_OPERAND (TREE_OPERAND (*tp, 0), 0))
       && DECL_P (sym)
       && !TREE_ADDRESSABLE (sym)
       && symbol_marked_for_renaming (sym))
     {
-      if (!useless_type_conversion_p (TREE_TYPE (*tp),
-				      TREE_TYPE (sym)))
-	*tp = build1 (VIEW_CONVERT_EXPR,
+      if (TREE_CODE (TREE_TYPE (sym)) == VECTOR_TYPE
+	  && useless_type_conversion_p (TREE_TYPE (*tp),
+					TREE_TYPE (TREE_TYPE (sym)))
+	  && multiple_of_p (sizetype, TREE_OPERAND (*tp, 1),
+			    TYPE_SIZE_UNIT (TREE_TYPE (*tp))))
+	{
+	  *tp = build3 (BIT_FIELD_REF, TREE_TYPE (*tp), sym, 
+			TYPE_SIZE (TREE_TYPE (*tp)),
+			int_const_binop (MULT_EXPR,
+					 bitsize_int (BITS_PER_UNIT),
+					 TREE_OPERAND (*tp, 1), 0));
+	}
+      else if (TREE_CODE (TREE_TYPE (sym)) == COMPLEX_TYPE
+	       && useless_type_conversion_p (TREE_TYPE (*tp),
+					     TREE_TYPE (TREE_TYPE (sym))))
+	{
+	  *tp = build1 (integer_zerop (TREE_OPERAND (*tp, 1))
+			? REALPART_EXPR : IMAGPART_EXPR,
 			TREE_TYPE (*tp), sym);
-      else
-	*tp = sym;
+	}
+      else if (integer_zerop (TREE_OPERAND (*tp, 1)))
+	{
+	  if (!useless_type_conversion_p (TREE_TYPE (*tp),
+					  TREE_TYPE (sym)))
+	    *tp = build1 (VIEW_CONVERT_EXPR,
+			  TREE_TYPE (*tp), sym);
+	  else
+	    *tp = sym;
+	}
     }
 }
 
@@ -1882,11 +1910,22 @@ non_rewritable_mem_ref_base (tree ref)
     base = TREE_OPERAND (base, 0);
 
   /* But watch out for MEM_REFs we cannot lower to a
-     VIEW_CONVERT_EXPR.  */
+     VIEW_CONVERT_EXPR or a BIT_FIELD_REF.  */
   if (TREE_CODE (base) == MEM_REF
       && TREE_CODE (TREE_OPERAND (base, 0)) == ADDR_EXPR)
     {
       tree decl = TREE_OPERAND (TREE_OPERAND (base, 0), 0);
+      if ((TREE_CODE (TREE_TYPE (decl)) == VECTOR_TYPE
+	   || TREE_CODE (TREE_TYPE (decl)) == COMPLEX_TYPE)
+	  && useless_type_conversion_p (TREE_TYPE (base),
+					TREE_TYPE (TREE_TYPE (decl)))
+	  && double_int_fits_in_uhwi_p (mem_ref_offset (base))
+	  && double_int_ucmp
+	       (tree_to_double_int (TYPE_SIZE_UNIT (TREE_TYPE (decl))),
+		mem_ref_offset (base)) == 1
+	  && multiple_of_p (sizetype, TREE_OPERAND (base, 1),
+			    TYPE_SIZE_UNIT (TREE_TYPE (base))))
+	return NULL_TREE;
       if (DECL_P (decl)
 	  && (!integer_zerop (TREE_OPERAND (base, 1))
 	      || (DECL_SIZE (decl)
@@ -1896,6 +1935,34 @@ non_rewritable_mem_ref_base (tree ref)
     }
 
   return NULL_TREE;
+}
+
+/* For an lvalue tree LHS return true if it cannot be rewritten into SSA form.
+   Otherwise return true.  */
+
+static bool 
+non_rewritable_lvalue_p (tree lhs)
+{
+  /* A plain decl is always rewritable.  */
+  if (DECL_P (lhs))
+    return false;
+
+  /* A decl that is wrapped inside a MEM-REF that covers
+     it full is also rewritable.
+     ???  The following could be relaxed allowing component
+     references that do not change the access size.  */
+  if (TREE_CODE (lhs) == MEM_REF
+      && TREE_CODE (TREE_OPERAND (lhs, 0)) == ADDR_EXPR
+      && integer_zerop (TREE_OPERAND (lhs, 1)))
+    {
+      tree decl = TREE_OPERAND (TREE_OPERAND (lhs, 0), 0);
+      if (DECL_P (decl)
+	  && DECL_SIZE (decl) == TYPE_SIZE (TREE_TYPE (lhs))
+	  && (TREE_THIS_VOLATILE (decl) == TREE_THIS_VOLATILE (lhs)))
+	return false;
+    }
+
+  return true;
 }
 
 /* When possible, clear TREE_ADDRESSABLE bit or set DECL_GIMPLE_REG_P bit and
@@ -1915,7 +1982,7 @@ maybe_optimize_var (tree var, bitmap addresses_taken, bitmap not_reg_needs)
 
   /* If the variable is not in the list of referenced vars then we
      do not need to touch it nor can we rename it.  */
-  if (!referenced_var_lookup (DECL_UID (var)))
+  if (!referenced_var_lookup (cfun, DECL_UID (var)))
     return false;
 
   if (TREE_ADDRESSABLE (var)
@@ -1991,29 +2058,13 @@ execute_update_addresses_taken (void)
 	  if (code == GIMPLE_ASSIGN || code == GIMPLE_CALL)
 	    {
               tree lhs = gimple_get_lhs (stmt);
-
-              /* A plain decl does not need it set.  */
-              if (lhs && !DECL_P (lhs))
+              if (lhs
+		  && TREE_CODE (lhs) != SSA_NAME
+		  && non_rewritable_lvalue_p (lhs))
 		{
-		  tree orig_lhs = lhs;
-
-		  while (handled_component_p (lhs))
-		    lhs = TREE_OPERAND (lhs, 0);
-
-                  if (DECL_P (lhs))
-                    bitmap_set_bit (not_reg_needs, DECL_UID (lhs));
-		  else if (TREE_CODE (lhs) == MEM_REF
-			   && TREE_CODE (TREE_OPERAND (lhs, 0)) == ADDR_EXPR)
-		    {
-		      decl = TREE_OPERAND (TREE_OPERAND (lhs, 0), 0);
-		      if (DECL_P (decl)
-			  && (!integer_zerop (TREE_OPERAND (lhs, 1))
-			      || (DECL_SIZE (decl)
-				  != TYPE_SIZE (TREE_TYPE (orig_lhs)))
-			      || (TREE_THIS_VOLATILE (lhs)
-				  != TREE_THIS_VOLATILE (decl))))
-			bitmap_set_bit (not_reg_needs, DECL_UID (decl));
-		    }
+		  decl = get_base_address (lhs);
+		  if (DECL_P (decl))
+		    bitmap_set_bit (not_reg_needs, DECL_UID (decl));
                 }
 	    }
 
@@ -2040,29 +2091,17 @@ execute_update_addresses_taken (void)
 		{
 		  tree link = gimple_asm_output_op (stmt, i);
 		  tree lhs = TREE_VALUE (link);
-
-		  /* A plain decl does not need it set.  */
-		  if (!DECL_P (lhs))
+		  if (TREE_CODE (lhs) != SSA_NAME)
 		    {
-		      tree orig_lhs = lhs;
-
-		      while (handled_component_p (lhs))
-			lhs = TREE_OPERAND (lhs, 0);
-		  
-		      if (DECL_P (lhs))
-			bitmap_set_bit (not_reg_needs, DECL_UID (lhs));
-		      else if (TREE_CODE (lhs) == MEM_REF
-			       && TREE_CODE (TREE_OPERAND (lhs, 0)) == ADDR_EXPR)
-			{
-			  decl = TREE_OPERAND (TREE_OPERAND (lhs, 0), 0);
-			  if (DECL_P (decl)
-			      && (!integer_zerop (TREE_OPERAND (lhs, 1))
-				  || (TYPE_MAIN_VARIANT (TREE_TYPE (decl))
-				      != TYPE_MAIN_VARIANT (TREE_TYPE (orig_lhs)))
-				  || (TREE_THIS_VOLATILE (lhs)
-				      != TREE_THIS_VOLATILE (decl))))
-			    bitmap_set_bit (not_reg_needs, DECL_UID (decl));
-			}
+		      decl = get_base_address (lhs);
+		      if (DECL_P (decl)
+			  && (non_rewritable_lvalue_p (lhs)
+			      /* We cannot move required conversions from
+				 the lhs to the rhs in asm statements, so
+				 require we do not need any.  */
+			      || !useless_type_conversion_p
+			            (TREE_TYPE (lhs), TREE_TYPE (decl))))
+			bitmap_set_bit (not_reg_needs, DECL_UID (decl));
 		    }
 		}
 	      for (i = 0; i < gimple_asm_ninputs (stmt); ++i)

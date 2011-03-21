@@ -46,7 +46,7 @@ package java.util.zip;
  * but we only need at most 15, so this is all safe.
  *
  * There are some optimizations in this class, for example, you must
- * never peek more then 8 bits more than needed, and you must first 
+ * never peek more then 8 bits more than needed, and you must first
  * peek bits before you may drop them.  This is not a general purpose
  * class but optimized for the behaviour of the Inflater.
  *
@@ -66,17 +66,17 @@ class StreamManipulator
    * Get the next n bits but don't increase input pointer.  n must be
    * less or equal 16 and if you if this call succeeds, you must drop
    * at least n-8 bits in the next call.
-   * 
+   *
    * @return the value of the bits, or -1 if not enough bits available.  */
   public final int peekBits(int n)
   {
     if (bits_in_buffer < n)
       {
-	if (window_start == window_end)
-	  return -1;
-	buffer |= (window[window_start++] & 0xff
-		   | (window[window_start++] & 0xff) << 8) << bits_in_buffer;
-	bits_in_buffer += 16;
+        if (window_start == window_end)
+          return -1;
+        buffer |= (window[window_start++] & 0xff
+                   | (window[window_start++] & 0xff) << 8) << bits_in_buffer;
+        bits_in_buffer += 16;
       }
     return buffer & ((1 << n) - 1);
   }
@@ -94,7 +94,7 @@ class StreamManipulator
   /**
    * Gets the next n bits and increases input pointer.  This is equivalent
    * to peekBits followed by dropBits, except for correct error handling.
-   * @return the value of the bits, or -1 if not enough bits available. 
+   * @return the value of the bits, or -1 if not enough bits available.
    */
   public final int getBits(int n)
   {
@@ -114,7 +114,7 @@ class StreamManipulator
   }
 
   /**
-   * Gets the number of bytes available.  
+   * Gets the number of bytes available.
    * @return the number of bytes available.
    */
   public final int getAvailableBytes()
@@ -141,24 +141,24 @@ class StreamManipulator
    * byte aligned.  If not enough bytes are available, copies fewer
    * bytes.
    * @param length the length to copy, 0 is allowed.
-   * @return the number of bytes copied, 0 if no byte is available.  
+   * @return the number of bytes copied, 0 if no byte is available.
    */
   public int copyBytes(byte[] output, int offset, int length)
   {
     if (length < 0)
       throw new IllegalArgumentException("length negative");
-    if ((bits_in_buffer & 7) != 0)  
+    if ((bits_in_buffer & 7) != 0)
       /* bits_in_buffer may only be 0 or 8 */
       throw new IllegalStateException("Bit buffer is not aligned!");
 
     int count = 0;
     while (bits_in_buffer > 0 && length > 0)
       {
-	output[offset++] = (byte) buffer;
-	buffer >>>= 8;
-	bits_in_buffer -= 8;
-	length--;
-	count++;
+        output[offset++] = (byte) buffer;
+        buffer >>>= 8;
+        bits_in_buffer -= 8;
+        length--;
+        count++;
       }
     if (length == 0)
       return count;
@@ -171,9 +171,9 @@ class StreamManipulator
 
     if (((window_start - window_end) & 1) != 0)
       {
-	/* We always want an even number of bytes in input, see peekBits */
-	buffer = (window[window_start++] & 0xff);
-	bits_in_buffer = 8;
+        /* We always want an even number of bytes in input, see peekBits */
+        buffer = (window[window_start++] & 0xff);
+        bits_in_buffer = 8;
       }
     return count + length;
   }
@@ -191,26 +191,25 @@ class StreamManipulator
   {
     if (window_start < window_end)
       throw new IllegalStateException
-	("Old input was not completely processed");
+        ("Old input was not completely processed");
 
     int end = off + len;
 
     /* We want to throw an ArrayIndexOutOfBoundsException early.  The
-     * check is very tricky: it also handles integer wrap around.  
+     * check is very tricky: it also handles integer wrap around.
      */
     if (0 > off || off > end || end > buf.length)
       throw new ArrayIndexOutOfBoundsException();
-    
+
     if ((len & 1) != 0)
       {
-	/* We always want an even number of bytes in input, see peekBits */
-	buffer |= (buf[off++] & 0xff) << bits_in_buffer;
-	bits_in_buffer += 8;
+        /* We always want an even number of bytes in input, see peekBits */
+        buffer |= (buf[off++] & 0xff) << bits_in_buffer;
+        bits_in_buffer += 8;
       }
-    
+
     window = buf;
     window_start = off;
     window_end = end;
   }
 }
-

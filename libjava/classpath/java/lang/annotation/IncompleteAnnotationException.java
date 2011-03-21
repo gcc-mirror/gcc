@@ -40,8 +40,8 @@ package java.lang.annotation;
 /**
  * Thrown when accessing an element within an annotation which
  * was added since compilation or serialization took place, and
- * does not have a default value.  
- * 
+ * does not have a default value.
+ *
  * @author Tom Tromey (tromey@redhat.com)
  * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
  * @since 1.5
@@ -59,7 +59,7 @@ public class IncompleteAnnotationException extends RuntimeException
    * @param name the name of the missing element.
    */
   public IncompleteAnnotationException(Class<? extends Annotation> type,
-				       String name)
+                                       String name)
   {
     this.annotationType = type;
     this.elementName = name;
@@ -100,7 +100,7 @@ public class IncompleteAnnotationException extends RuntimeException
   /**
    * The name of the missing element.
    *
-   * @serial the name of the missing element. 
+   * @serial the name of the missing element.
    */
   private String elementName;
 

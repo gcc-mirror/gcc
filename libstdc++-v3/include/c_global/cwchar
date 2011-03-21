@@ -61,11 +61,10 @@ extern "C"
 }
 #endif
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
-
+namespace std
+{
   using ::mbstate_t;
-
-_GLIBCXX_END_NAMESPACE
+} // namespace std
 
 // Get rid of those macros defined in <wchar.h> in lieu of real functions.
 #undef btowc
@@ -135,8 +134,8 @@ _GLIBCXX_END_NAMESPACE
 
 #if _GLIBCXX_USE_WCHAR_T
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
-
+namespace std _GLIBCXX_VISIBILITY(default)
+{
   using ::wint_t;
 
   using ::btowc;
@@ -208,6 +207,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   using ::wcsstr;
   using ::wmemchr;
 
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
 #ifndef __CORRECT_ISO_CPP_WCHAR_H_PROTO
   inline wchar_t*
   wcschr(wchar_t* __p, wchar_t __c)
@@ -230,7 +231,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   { return wmemchr(const_cast<const wchar_t*>(__p), __c, __n); }
 #endif
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
 
 #if _GLIBCXX_USE_C99
 
@@ -238,8 +240,8 @@ _GLIBCXX_END_NAMESPACE
 #undef wcstoll
 #undef wcstoull
 
-_GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
-
+namespace __gnu_cxx
+{
 #if _GLIBCXX_USE_C99_CHECK || _GLIBCXX_USE_C99_DYNAMIC
   extern "C" long double
     (wcstold)(const wchar_t * __restrict, wchar_t ** __restrict) throw ();
@@ -257,16 +259,14 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
   using ::wcstoll;
   using ::wcstoull;
 #endif
+} // namespace __gnu_cxx
 
-_GLIBCXX_END_NAMESPACE
-
-_GLIBCXX_BEGIN_NAMESPACE(std)
-
+namespace std
+{
   using ::__gnu_cxx::wcstold;
   using ::__gnu_cxx::wcstoll;
   using ::__gnu_cxx::wcstoull;
-
-_GLIBCXX_END_NAMESPACE
+} // namespace
 
 #endif
 
@@ -276,8 +276,8 @@ _GLIBCXX_END_NAMESPACE
 
 #ifdef _GLIBCXX_USE_WCHAR_T
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
-
+namespace std
+{
 #if _GLIBCXX_HAVE_WCSTOF
   using std::wcstof;
 #endif
@@ -296,8 +296,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   using std::wcstoll;
   using std::wcstoull;
 #endif
-
-_GLIBCXX_END_NAMESPACE
+} // namespace
 
 #endif // _GLIBCXX_USE_WCHAR_T
 

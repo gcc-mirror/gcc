@@ -1,4 +1,4 @@
-/* UserAlreadyExistsException.java -- 
+/* UserAlreadyExistsException.java --
    Copyright (C) 2003, 2006 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -60,7 +60,7 @@ public class UserAlreadyExistsException
    * Constructs a <code>UserAlreadyExistsException</code> with the specified
    * detail message. In the case of this exception, the detail message
    * designates the offending username.
-   * 
+   *
    * @param userName the detail message, which in this case is the username.
    */
   public UserAlreadyExistsException(String userName)

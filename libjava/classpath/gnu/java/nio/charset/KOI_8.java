@@ -47,7 +47,7 @@ public final class KOI_8 extends ByteCharset
   /**
    * This is the lookup table for this encoding
    */
-    private static final char[]	lookup =
+    private static final char[] lookup =
     {
       0x0000, 0x0001, 0x0002, 0x0003, 0x0004, 0x0005, 0x0006, 0x0007,
       0x0008, 0x0009, 0x000A, 0x000B, 0x000C, 0x000D, 0x000E, 0x000F,
@@ -81,21 +81,20 @@ public final class KOI_8 extends ByteCharset
       0x0425, 0x0418, 0x0419, 0x041A, 0x041B, 0x041C, 0x041D, 0x041E,
       0x041F, 0x042F, 0x0420, 0x0421, 0x0422, 0x0423, 0x0416, 0x0412,
       0x042C, 0x042B, 0x0417, 0x0428, 0x042D, 0x0429, 0x0427, 0x042A
-    }; 
+    };
 
   public KOI_8()
   {
       super("KOI8-R", new String[] {
-	  "KOI8_R",
-	  "KOI8",
-	  "KOI-8",
-	  "KOI_8",
-	  "koi8-r", 
-	  "koi8r", 
-	  "koi-8-r",
-	  "koi"
+          "KOI8_R",
+          "KOI8",
+          "KOI-8",
+          "KOI_8",
+          "koi8-r",
+          "koi8r",
+          "koi-8-r",
+          "koi"
       }, lookup);
  }
-  
-} // class KOI_8
 
+} // class KOI_8

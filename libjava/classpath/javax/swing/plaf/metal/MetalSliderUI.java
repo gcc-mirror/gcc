@@ -74,11 +74,11 @@ public class MetalSliderUI extends BasicSliderUI
     {
       // Nothing to do here.
     }
-    
+
     /**
      * Handles property change events.  Events with the name "JSlider.isFilled"
      * are handled here, and other events are passed to the superclass.
-     * 
+     *
      * @param e  the property change event.
      */
     public void propertyChange(PropertyChangeEvent e)
@@ -89,38 +89,38 @@ public class MetalSliderUI extends BasicSliderUI
         if (b == null)
           filledSlider = false;
         else
-          filledSlider = b.booleanValue();   
+          filledSlider = b.booleanValue();
       }
       else
         super.propertyChange(e);
     }
   }
-  
+
   /** The thumb color (unused, because an icon is used to draw the thumb). */
   protected static Color thumbColor;
-  
-  /** 
+
+  /**
    * The highlight color used for drawing the track rect when the slider is
    * enabled.
    */
   protected static Color highlightColor;
-  
+
   /**
    * The shadow color used for drawing the track rect when the slider is
    * enabled.
    */
   protected static Color darkShadowColor;
-  
+
   /** The track width. */
   protected static int trackWidth = UIManager.getInt("Slider.trackWidth");
-  
+
   /** The length of the major tick marks. */
   protected static int tickLength = UIManager.getInt("Slider.majorTickLength");
-  
+
   /** The icon used for the thumb control of horizontally oriented sliders. */
   protected static Icon horizThumbIcon = UIManager.getIcon(
           "Slider.horizontalThumbIcon");
-  
+
   /** The icon used for the thumb control of vertically oriented sliders. */
   protected static Icon vertThumbIcon = UIManager.getIcon(
           "Slider.verticalThumbIcon");
@@ -130,8 +130,8 @@ public class MetalSliderUI extends BasicSliderUI
 
   /** A key to look up the filledSlider setting in the {@link UIManager}. */
   protected final String SLIDER_FILL = "JSlider.isFilled";
-  
-  /** 
+
+  /**
    * A flag that controls whether or not the track is filled up to the value
    * of the slider.
    */
@@ -159,38 +159,38 @@ public class MetalSliderUI extends BasicSliderUI
   {
     return new MetalSliderUI();
   }
-  
+
   /**
    * Installs the default for this UI delegate in the supplied component.
-   * 
+   *
    * @param c  the component.
    */
   public void installUI(JComponent c)
   {
     super.installUI(c);
     Boolean b = (Boolean) c.getClientProperty(SLIDER_FILL);
-    if (b != null) 
+    if (b != null)
       filledSlider = b.booleanValue();
   }
 
   /**
-   * Creates a property change listener for the slider.  
-   * 
+   * Creates a property change listener for the slider.
+   *
    * @param slider  the slider.
-   * 
+   *
    * @return A new instance of {@link MetalPropertyListener}.
    */
   protected PropertyChangeListener createPropertyChangeListener(JSlider slider)
   {
-    return new MetalPropertyListener();    
+    return new MetalPropertyListener();
   }
-  
+
   /**
    * Paints the thumb icon for the slider.
-   * 
+   *
    * @param g  the graphics device.
    */
-  public void paintThumb(Graphics g) 
+  public void paintThumb(Graphics g)
   {
     Color save = g.getColor();
     g.setColor(thumbColor);
@@ -200,10 +200,10 @@ public class MetalSliderUI extends BasicSliderUI
       vertThumbIcon.paintIcon(slider, g, thumbRect.x, thumbRect.y);
     g.setColor(save);
   }
-  
+
   /**
    * Paints the track along which the thumb control moves.
-   * 
+   *
    * @param g  the graphics device.
    */
   public void paintTrack(Graphics g)
@@ -215,10 +215,10 @@ public class MetalSliderUI extends BasicSliderUI
         int trackY = trackRect.y + (trackRect.height - getTrackWidth()) / 2;
         int trackW = trackRect.width;
         int trackH = getTrackWidth();
-        
+
         // draw border
         if (slider.isEnabled())
-          BasicGraphicsUtils.drawEtchedRect(g, trackX, trackY, trackW, trackH, 
+          BasicGraphicsUtils.drawEtchedRect(g, trackX, trackY, trackW, trackH,
               darkShadowColor, shadowColor, darkShadowColor, highlightColor);
         else
           {
@@ -233,7 +233,7 @@ public class MetalSliderUI extends BasicSliderUI
               {
                 int xPos = xPositionForValue(slider.getValue());
                 int x = slider.getInverted() ? xPos : trackRect.x;
-                int w = slider.getInverted() ? trackX + trackW - xPos 
+                int w = slider.getInverted() ? trackX + trackW - xPos
                                              : xPos - trackRect.x;
                 g.setColor(MetalLookAndFeel.getWhite());
                 g.drawLine(x + 1, trackY + 1, x + w - 3, trackY + 1);
@@ -245,11 +245,11 @@ public class MetalSliderUI extends BasicSliderUI
                 g.drawLine(x + 1, trackY + 4, x + w - 3, trackY + 4);
               }
           }
-        else if (filledSlider) 
+        else if (filledSlider)
           {
             int xPos = xPositionForValue(slider.getValue());
             int x = slider.getInverted() ? xPos : trackRect.x;
-            int w = slider.getInverted() ? trackX + trackW - xPos 
+            int w = slider.getInverted() ? trackX + trackW - xPos
                                          : xPos - trackRect.x;
             g.setColor(MetalLookAndFeel.getControlShadow());
             g.fillRect(x + 1, trackY + 1, w - 3, getTrackWidth() - 3);
@@ -257,7 +257,7 @@ public class MetalSliderUI extends BasicSliderUI
               {
                 g.setColor(MetalLookAndFeel.getControl());
                 g.drawLine(x + 1, trackY + 1, x + w - 3, trackY + 1);
-                g.drawLine(x + 1, trackY + 1, x + 1, 
+                g.drawLine(x + 1, trackY + 1, x + 1,
                            trackY + getTrackWidth() - 3);
               }
           }
@@ -269,7 +269,7 @@ public class MetalSliderUI extends BasicSliderUI
         int trackW = getTrackWidth();
         int trackH = trackRect.height;
         if (slider.isEnabled())
-          BasicGraphicsUtils.drawEtchedRect(g, trackX, trackY, trackW, trackH, 
+          BasicGraphicsUtils.drawEtchedRect(g, trackX, trackY, trackW, trackH,
               darkShadowColor, shadowColor, darkShadowColor, highlightColor);
         else
           {
@@ -284,9 +284,9 @@ public class MetalSliderUI extends BasicSliderUI
               {
                 int yPos = yPositionForValue(slider.getValue());
                 int y = slider.getInverted() ? trackY : yPos;
-                int h = slider.getInverted() ? yPos - trackY 
+                int h = slider.getInverted() ? yPos - trackY
                         : trackY + trackH - yPos;
-                
+
                 g.setColor(MetalLookAndFeel.getWhite());
                 g.drawLine(trackX + 1, y + 1, trackX + 1, y + h - 3);
                 g.setColor(UIManager.getColor("Slider.altTrackColor"));
@@ -297,11 +297,11 @@ public class MetalSliderUI extends BasicSliderUI
                 g.drawLine(trackX + 4, y + 1, trackX + 4, y + h - 3);
               }
           }
-        else if (filledSlider) 
+        else if (filledSlider)
           {
           int yPos = yPositionForValue(slider.getValue());
           int y = slider.getInverted() ? trackY : yPos;
-          int h = slider.getInverted() ? yPos - trackY 
+          int h = slider.getInverted() ? yPos - trackY
                   : trackY + trackH - yPos;
           g.setColor(MetalLookAndFeel.getControlShadow());
           g.fillRect(trackX + 1, y + 1, getTrackWidth() - 3, h - 3);
@@ -314,14 +314,14 @@ public class MetalSliderUI extends BasicSliderUI
           }
       }
   }
-  
+
   /**
-   * Draws the focus rectangle for the slider.  The Metal look and feel 
-   * indicates that the {@link JSlider} has the focus by changing the color of 
-   * the thumb control - this is handled elsewhere and so this method is empty 
+   * Draws the focus rectangle for the slider.  The Metal look and feel
+   * indicates that the {@link JSlider} has the focus by changing the color of
+   * the thumb control - this is handled elsewhere and so this method is empty
    * (it overrides the method in the {@link BasicSliderUI} class to prevent
    * a default focus highlight from being drawn).
-   * 
+   *
    * @param g  the graphics device.
    */
   public void paintFocus(Graphics g)
@@ -329,25 +329,25 @@ public class MetalSliderUI extends BasicSliderUI
     thumbColor = getFocusColor();
     paintThumb(g);
   }
-  
+
   /**
    * Returns the size of the thumb icon.
-   * 
+   *
    * @return The size of the thumb icon.
    */
   protected Dimension getThumbSize()
   {
     if (slider.getOrientation() == JSlider.HORIZONTAL)
-      return new Dimension(horizThumbIcon.getIconWidth(), 
+      return new Dimension(horizThumbIcon.getIconWidth(),
               horizThumbIcon.getIconHeight());
     else
-      return new Dimension(vertThumbIcon.getIconWidth(), 
+      return new Dimension(vertThumbIcon.getIconWidth(),
               vertThumbIcon.getIconHeight());
   }
-  
+
   /**
    * Returns the length of the major tick marks.
-   * 
+   *
    * @return The length of the major tick marks.
    */
   public int getTickLength()
@@ -357,31 +357,31 @@ public class MetalSliderUI extends BasicSliderUI
       len += 2;
     return len;
   }
-  
+
   /**
    * Returns the track width.
-   * 
+   *
    * @return The track width.
    */
   protected int getTrackWidth()
   {
     return trackWidth;
   }
-  
+
   /**
    * Returns the track length.
-   * 
+   *
    * @return The track length.
    */
   protected int getTrackLength()
   {
-    return slider.getOrientation() == JSlider.HORIZONTAL 
+    return slider.getOrientation() == JSlider.HORIZONTAL
            ? tickRect.width : tickRect.height;
   }
-  
+
   /**
    * Returns the thumb overhang.
-   * 
+   *
    * @return The thumb overhang.
    */
   protected int getThumbOverhang()
@@ -389,16 +389,16 @@ public class MetalSliderUI extends BasicSliderUI
     // FIXME:  for what might this method be used?
     return 0;
   }
-  
+
   protected void scrollDueToClickInTrack(int dir)
   {
     // FIXME:  for what might this method be overridden?
     super.scrollDueToClickInTrack(dir);
   }
-  
+
   /**
    * Paints the minor ticks for a slider with a horizontal orientation.
-   * 
+   *
    * @param g  the graphics device.
    * @param tickBounds  the tick bounds.
    * @param x  the x value for the tick.
@@ -406,7 +406,7 @@ public class MetalSliderUI extends BasicSliderUI
   protected void paintMinorTickForHorizSlider(Graphics g, Rectangle tickBounds,
                                               int x)
   {
-    // Note the incoming 'g' has a translation in place to get us to the 
+    // Note the incoming 'g' has a translation in place to get us to the
     // start of the tick rect already...
     if (slider.isEnabled())
       g.setColor(slider.getForeground());
@@ -414,10 +414,10 @@ public class MetalSliderUI extends BasicSliderUI
       g.setColor(MetalLookAndFeel.getControlShadow());
     g.drawLine(x, TICK_BUFFER, x, TICK_BUFFER + tickLength / 2);
   }
- 
+
   /**
    * Paints the major ticks for a slider with a horizontal orientation.
-   * 
+   *
    * @param g  the graphics device.
    * @param tickBounds  the tick bounds.
    * @param x  the x value for the tick.
@@ -425,7 +425,7 @@ public class MetalSliderUI extends BasicSliderUI
   protected void paintMajorTickForHorizSlider(Graphics g, Rectangle tickBounds,
                                               int x)
   {
-    // Note the incoming 'g' has a translation in place to get us to the 
+    // Note the incoming 'g' has a translation in place to get us to the
     // start of the tick rect already...
     if (slider.isEnabled())
       g.setColor(slider.getForeground());
@@ -433,10 +433,10 @@ public class MetalSliderUI extends BasicSliderUI
       g.setColor(MetalLookAndFeel.getControlShadow());
     g.drawLine(x, TICK_BUFFER, x, TICK_BUFFER + tickLength - 1);
   }
-  
+
   /**
    * Paints the minor ticks for a slider with a vertical orientation.
-   * 
+   *
    * @param g  the graphics device.
    * @param tickBounds  the tick bounds.
    * @param y  the y value for the tick.
@@ -444,7 +444,7 @@ public class MetalSliderUI extends BasicSliderUI
   protected void paintMinorTickForVertSlider(Graphics g, Rectangle tickBounds,
                                              int y)
   {
-    // Note the incoming 'g' has a translation in place to get us to the 
+    // Note the incoming 'g' has a translation in place to get us to the
     // start of the tick rect already...
     if (slider.isEnabled())
       g.setColor(slider.getForeground());
@@ -452,10 +452,10 @@ public class MetalSliderUI extends BasicSliderUI
       g.setColor(MetalLookAndFeel.getControlShadow());
     g.drawLine(TICK_BUFFER, y, TICK_BUFFER + tickLength / 2, y);
   }
-  
+
   /**
    * Paints the major ticks for a slider with a vertical orientation.
-   * 
+   *
    * @param g  the graphics device.
    * @param tickBounds  the tick bounds.
    * @param y  the y value for the tick.
@@ -463,7 +463,7 @@ public class MetalSliderUI extends BasicSliderUI
   protected void paintMajorTickForVertSlider(Graphics g, Rectangle tickBounds,
                                              int y)
   {
-    // Note the incoming 'g' has a translation in place to get us to the 
+    // Note the incoming 'g' has a translation in place to get us to the
     // start of the tick rect already...
     if (slider.isEnabled())
       g.setColor(slider.getForeground());
@@ -471,5 +471,5 @@ public class MetalSliderUI extends BasicSliderUI
       g.setColor(MetalLookAndFeel.getControlShadow());
     g.drawLine(TICK_BUFFER, y, TICK_BUFFER + tickLength, y);
   }
-  
+
 }

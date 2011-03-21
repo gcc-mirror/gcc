@@ -107,17 +107,17 @@ public class AligningInput
   {
     return buf;
   }
-  
+
   /**
    * Get the current position in the buffer.
-   * 
+   *
    * @return The position in the buffer, taking offset into consideration.
    */
   public int getPosition()
   {
     return pos + offset;
-  }  
-  
+  }
+
   /**
    * Jump to the given position, taking offset into consideration.
    */
@@ -127,5 +127,5 @@ public class AligningInput
       throw new ArrayIndexOutOfBoundsException(position
         + " is out of valid ["+offset+".." + (count+offset) + "[ range");
     pos = position - offset;
-  }  
+  }
 }

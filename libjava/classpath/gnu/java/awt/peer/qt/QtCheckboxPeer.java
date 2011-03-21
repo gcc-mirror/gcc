@@ -50,18 +50,18 @@ public class QtCheckboxPeer extends QtComponentPeer implements CheckboxPeer
   // Map QButtonGroup<->CheckboxGroup
   private static WeakHashMap groupMap;
 
-  static 
+  static
   {
     groupMap = new WeakHashMap();
   }
-  
+
   public QtCheckboxPeer( QtToolkit kit, Checkbox owner )
   {
     super( kit, owner );
   }
-  
+
   protected native void init();
-  
+
   protected void setup()
   {
     super.setup();
@@ -73,32 +73,32 @@ public class QtCheckboxPeer extends QtComponentPeer implements CheckboxPeer
   private void fireToggle(boolean checked)
   {
     if (group == null)
-      ((Checkbox)owner).setState( checked ); 
+      ((Checkbox)owner).setState( checked );
     else
       if ( checked )
-	group.setSelectedCheckbox((Checkbox)owner);
+        group.setSelectedCheckbox((Checkbox)owner);
 
     int sel = checked ? ItemEvent.SELECTED : ItemEvent.DESELECTED;
-    ItemEvent e = new ItemEvent((Checkbox)owner, 
-				ItemEvent.ITEM_STATE_CHANGED, 
-				((Checkbox)owner).getLabel(),
-				sel);
+    ItemEvent e = new ItemEvent((Checkbox)owner,
+                                ItemEvent.ITEM_STATE_CHANGED,
+                                ((Checkbox)owner).getLabel(),
+                                sel);
     QtToolkit.eventQueue.postEvent(e);
   }
-  
+
   // ************ Public methods *********************
-  
+
   public void setCheckboxGroup( CheckboxGroup group )
-  {    
-    if(this.group == group) 
+  {
+    if(this.group == group)
       return;
 
     // if we change from a checkbox to a radio button or vice versa
     if((this.group == null) != (group == null))
       {
-	this.group = group;
-	callInit();
-	setup();
+        this.group = group;
+        callInit();
+        setup();
       }
 
     this.group = group;
@@ -109,5 +109,3 @@ public class QtCheckboxPeer extends QtComponentPeer implements CheckboxPeer
   public native void setState( boolean state );
 
 }
-
-

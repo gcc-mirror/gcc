@@ -117,7 +117,7 @@ public class AtomicLong extends Number implements java.io.Serializable {
      * the actual value was not equal to the expected value.
      */
     public final boolean compareAndSet(long expect, long update) {
-	return unsafe.compareAndSwapLong(this, valueOffset, expect, update);
+        return unsafe.compareAndSwapLong(this, valueOffset, expect, update);
     }
 
     /**
@@ -131,7 +131,7 @@ public class AtomicLong extends Number implements java.io.Serializable {
      * @return true if successful.
      */
     public final boolean weakCompareAndSet(long expect, long update) {
-	return unsafe.compareAndSwapLong(this, valueOffset, expect, update);
+        return unsafe.compareAndSwapLong(this, valueOffset, expect, update);
     }
 
     /**
@@ -230,19 +230,19 @@ public class AtomicLong extends Number implements java.io.Serializable {
 
 
     public int intValue() {
-	return (int)get();
+        return (int)get();
     }
 
     public long longValue() {
-	return (long)get();
+        return (long)get();
     }
 
     public float floatValue() {
-	return (float)get();
+        return (float)get();
     }
 
     public double doubleValue() {
-	return (double)get();
+        return (double)get();
     }
 
 }

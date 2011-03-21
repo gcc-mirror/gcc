@@ -46,14 +46,14 @@ import javax.swing.JFileChooser;
 
 
 /**
- * The base class providing a view of the file system for use by the 
+ * The base class providing a view of the file system for use by the
  * {@link JFileChooser} component.
  */
 public abstract class FileSystemView
 {
   /** The instance returned by {@link #getFileSystemView()}. */
   private static FileSystemView defaultFileSystemView;
-  
+
   /**
    * Creates a new file object with the given name in the specified directory.
    *
@@ -101,12 +101,12 @@ public abstract class FileSystemView
    * Creates a new folder with a unique name in the specified directory and
    * returns a {@link File} object representing the new directory.
    *
-   * @param containingDir  the directory to contain the new folder 
+   * @param containingDir  the directory to contain the new folder
    *                       (<code>null</code> not permitted).
    *
    * @return A {@link File} object representing the new directory.
    *
-   * @throws IOException if an exception occurs while creating the new 
+   * @throws IOException if an exception occurs while creating the new
    *                     directory.
    */
   public abstract File createNewFolder(File containingDir)
@@ -137,8 +137,8 @@ public abstract class FileSystemView
   }
 
   /**
-   * Returns an array containing the files in the given directory.  The 
-   * <code>useFileHiding</code> controls whether or not hidden files are 
+   * Returns an array containing the files in the given directory.  The
+   * <code>useFileHiding</code> controls whether or not hidden files are
    * included in the result.
    *
    * @param dir  the directory (if <code>null</code>
@@ -158,7 +158,7 @@ public abstract class FileSystemView
     ArrayList trim = new ArrayList();
     for (int i = 0; i < files.length; i++)
       if (! files[i].isHidden())
-	trim.add(files[i]);
+        trim.add(files[i]);
     File[] value = (File[]) trim.toArray(new File[trim.size()]);
     return value;
   }
@@ -220,12 +220,12 @@ public abstract class FileSystemView
   }
 
   /**
-   * Returns the name of a file as it would be displayed by the underlying 
+   * Returns the name of a file as it would be displayed by the underlying
    * system.
    *
    * @param f  the file.
    *
-   * @return the name of a file as it would be displayed by the underlying 
+   * @return the name of a file as it would be displayed by the underlying
    *         system
    *
    * @specnote The specification suggests that the information here is
@@ -242,8 +242,8 @@ public abstract class FileSystemView
   }
 
   /**
-   * Returns the icon that would be displayed for the given file by the 
-   * underlying system.  This implementation returns <code>null</code>, 
+   * Returns the icon that would be displayed for the given file by the
+   * underlying system.  This implementation returns <code>null</code>,
    * subclasses must override.
    *
    * @param f  the file.
@@ -256,8 +256,8 @@ public abstract class FileSystemView
   }
 
   /**
-   * Returns the type description of a file that would be displayed by the 
-   * underlying system.  This implementation returns <code>null</code>, 
+   * Returns the type description of a file that would be displayed by the
+   * underlying system.  This implementation returns <code>null</code>,
    * subclasses must override.
    *
    * @param f  the file.
@@ -282,7 +282,7 @@ public abstract class FileSystemView
   }
 
   /**
-   * Returns <code>true</code> if the given directory represents a disk 
+   * Returns <code>true</code> if the given directory represents a disk
    * drive, and <code>false</code> otherwise.  This default implementation
    * always returns <code>false</code>.
    *
@@ -326,12 +326,12 @@ public abstract class FileSystemView
     String filename = dir.getAbsolutePath();
     for (int i = 0; i < roots.length; i++)
       if (roots[i].getAbsolutePath().equals(filename))
-	return true;
+        return true;
     return false;
   }
 
   /**
-   * Returns <code>true</code> if the given directory represents a floppy 
+   * Returns <code>true</code> if the given directory represents a floppy
    * drive, and <code>false</code> otherwise.  This default implementation
    * always returns <code>false</code>.
    *
@@ -345,12 +345,12 @@ public abstract class FileSystemView
   }
 
   /**
-   * Returns <code>true</code> if the given file is hidden, and 
+   * Returns <code>true</code> if the given file is hidden, and
    * <code>false</code> otherwise.
    *
    * @param f  the file.
    *
-   * @return <code>true</code> if the given file is hidden, and 
+   * @return <code>true</code> if the given file is hidden, and
    *         <code>false</code> otherwise.
    */
   public boolean isHiddenFile(File f)
@@ -359,13 +359,13 @@ public abstract class FileSystemView
   }
 
   /**
-   * Returns <code>true</code> if <code>folder</code> is the parent of 
+   * Returns <code>true</code> if <code>folder</code> is the parent of
    * <code>file</code>, and <code>false</code> otherwise.
    *
    * @param folder  the folder (<code>null</code> not permitted).
    * @param file  the file (<code>null</code> not permitted).
    *
-   * @return <code>true</code> if <code>folder</code> is the parent of 
+   * @return <code>true</code> if <code>folder</code> is the parent of
    *         <code>file</code>, and <code>false</code> otherwise.
    */
   public boolean isParent(File folder, File file)
@@ -390,13 +390,13 @@ public abstract class FileSystemView
   }
 
   /**
-   * Returns <code>true</code> if the file is traversable, and 
+   * Returns <code>true</code> if the file is traversable, and
    * <code>false</code> otherwise.  Here, all directories are considered
-   * traversable, and files are considered non-traversable. 
+   * traversable, and files are considered non-traversable.
    *
    * @param f  the file or directory (<code>null</code> not permitted).
    *
-   * @return <code>true</code> if the file is traversable, and 
+   * @return <code>true</code> if the file is traversable, and
    *         <code>false</code> otherwise.
    */
   public Boolean isTraversable(File f)

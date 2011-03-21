@@ -107,47 +107,47 @@ public class JavaPrinterGraphics extends Graphics implements PrinterGraphics
    * If Pageable is non-null, it will print that, otherwise it will use
    * the supplied printable and pageFormat.
    */
-  public SpooledDocument spoolPostScript(Printable printable, 
-					 PageFormat pageFormat,
-					 Pageable pageable)
+  public SpooledDocument spoolPostScript(Printable printable,
+                                         PageFormat pageFormat,
+                                         Pageable pageable)
     throws PrinterException
   {
-    try 
+    try
       {
-	// spool to a temporary file
-	File temp = File.createTempFile("cpspool", ".ps");
-	temp.deleteOnExit();
-	
-	PrintWriter out = new PrintWriter
-	  (new BufferedWriter
-	    (new OutputStreamWriter
-	     (new FileOutputStream(temp), "ISO8859_1"), 1000000));
+        // spool to a temporary file
+        File temp = File.createTempFile("cpspool", ".ps");
+        temp.deleteOnExit();
 
-	writePSHeader(out);
-	
-	if(pageable != null)
-	  {
-	    for(int index = 0; index < pageable.getNumberOfPages(); index++)
-	      spoolPage(out, pageable.getPrintable(index),
-			pageable.getPageFormat(index), index);
-	  }
-	else
-	  {
-	    int index = 0;
-	    while(spoolPage(out, printable, pageFormat, index++) ==
-		  Printable.PAGE_EXISTS)
+        PrintWriter out = new PrintWriter
+          (new BufferedWriter
+            (new OutputStreamWriter
+             (new FileOutputStream(temp), "ISO8859_1"), 1000000));
+
+        writePSHeader(out);
+
+        if(pageable != null)
+          {
+            for(int index = 0; index < pageable.getNumberOfPages(); index++)
+              spoolPage(out, pageable.getPrintable(index),
+                        pageable.getPageFormat(index), index);
+          }
+        else
+          {
+            int index = 0;
+            while(spoolPage(out, printable, pageFormat, index++) ==
+                  Printable.PAGE_EXISTS)
               ;
-	  }
-	 out.println("%%Trailer");
-	 out.println("%%EOF");
-	 out.close();
-	 return new SpooledDocument( temp );
-       } 
-    catch (IOException e) 
+          }
+         out.println("%%Trailer");
+         out.println("%%EOF");
+         out.close();
+         return new SpooledDocument( temp );
+       }
+    catch (IOException e)
       {
-	PrinterException pe = new PrinterException();
-	pe.initCause(e);
-	throw pe;
+        PrinterException pe = new PrinterException();
+        pe.initCause(e);
+        throw pe;
       }
   }
 
@@ -156,9 +156,9 @@ public class JavaPrinterGraphics extends Graphics implements PrinterGraphics
    * PAGE_EXISTS if it was.
    */
   public int spoolPage(PrintWriter out,
-		       Printable printable, 
-		       PageFormat pageFormat, 
-		       int index) throws IOException, PrinterException
+                       Printable printable,
+                       PageFormat pageFormat,
+                       int index) throws IOException, PrinterException
   {
     initImage( pageFormat );
     if(printable.print(this, pageFormat, index) == Printable.NO_SUCH_PAGE)
@@ -168,22 +168,22 @@ public class JavaPrinterGraphics extends Graphics implements PrinterGraphics
     writePage( out, pageFormat );
     return Printable.PAGE_EXISTS;
   }
-  
+
   private void initImage(PageFormat pageFormat)
   {
     // Create a really big image and draw to that.
     xSize = (int)(DPI*pageFormat.getWidth()/72.0);
     ySize = (int)(DPI*pageFormat.getHeight()/72.0);
-    
+
     // Swap X and Y sizes if it's a Landscape page.
     if( pageFormat.getOrientation() != PageFormat.PORTRAIT )
       {
-	int t = xSize;
-	xSize = ySize;
-	ySize = t;
+        int t = xSize;
+        xSize = ySize;
+        ySize = t;
       }
 
-    // FIXME: This should at least be BufferedImage. 
+    // FIXME: This should at least be BufferedImage.
     // Fix once we have a working B.I.
     // Graphics2D should also be supported of course.
     image = CairoSurface.getBufferedImage(xSize, ySize);
@@ -196,7 +196,7 @@ public class JavaPrinterGraphics extends Graphics implements PrinterGraphics
 
   private void writePSHeader(PrintWriter out)
   {
-    out.println("%!PS-Adobe-3.0");      
+    out.println("%!PS-Adobe-3.0");
     out.println("%%Title: "+printerJob.getJobName());
     out.println("%%Creator: GNU Classpath ");
     out.println("%%DocumentData: Clean8Bit");
@@ -204,19 +204,19 @@ public class JavaPrinterGraphics extends Graphics implements PrinterGraphics
     out.println("%%DocumentNeededResources: font Times-Roman Helvetica Courier");
     //    out.println("%%Pages: "+);  // FIXME # pages.
     out.println("%%EndComments");
-    
+
     out.println("%%BeginProlog");
     out.println("%%EndProlog");
     out.println("%%BeginSetup");
-    
+
     // FIXME: Paper name
     // E.g. "A4" "Letter"
     //    out.println("%%BeginFeature: *PageSize A4");
-    
+
     out.println("%%EndFeature");
 
     out.println("%%EndSetup");
-    
+
     //    out.println("%%Page: 1 1");
   }
 
@@ -232,14 +232,14 @@ public class JavaPrinterGraphics extends Graphics implements PrinterGraphics
       out.println( "%%Orientation: Portrait" );
     else
       {
-	out.println( "%%Orientation: Landscape" );
-	double t = pWidth;
-	pWidth = pHeight;
-	pHeight = t;
+        out.println( "%%Orientation: Landscape" );
+        double t = pWidth;
+        pWidth = pHeight;
+        pHeight = t;
       }
-      
+
     out.println("gsave % first save");
-    
+
     // 595x842; 612x792 respectively
     out.println("<< /PageSize [" +pWidth + " "+pHeight+ "] >> setpagedevice");
 
@@ -247,8 +247,8 @@ public class JavaPrinterGraphics extends Graphics implements PrinterGraphics
     AffineTransform pageTransform = new AffineTransform();
     if( pageFormat.getOrientation() == PageFormat.REVERSE_LANDSCAPE )
       {
-	pageTransform.translate(pWidth, pHeight);
-	pageTransform.scale(-1.0, -1.0);
+        pageTransform.translate(pWidth, pHeight);
+        pageTransform.scale(-1.0, -1.0);
       }
     concatCTM(out, pageTransform);
     out.println("%%EndPageSetup");
@@ -257,7 +257,7 @@ public class JavaPrinterGraphics extends Graphics implements PrinterGraphics
 
 
     // Draw the image
-    out.println(xSize+" "+ySize+" 8 [1 0 0 -1 0 "+ySize+" ]"); 
+    out.println(xSize+" "+ySize+" 8 [1 0 0 -1 0 "+ySize+" ]");
     out.println("{currentfile 3 string readhexstring pop} bind");
     out.println("false 3 colorimage");
     int[] pixels = new int[xSize * ySize];
@@ -272,19 +272,19 @@ public class JavaPrinterGraphics extends Graphics implements PrinterGraphics
     int n = 0;
     for (int j = 0; j < ySize; j++) {
       for (int i = 0; i < xSize; i++) {
-	out.print( colorTripleHex(pixels[j * xSize + i]) );
-	if(((++n)%11) == 0) out.println();
+        out.print( colorTripleHex(pixels[j * xSize + i]) );
+        if(((++n)%11) == 0) out.println();
       }
     }
-    
+
     out.println();
     out.println("%%EOF");
     out.println("grestore");
     out.println("showpage");
   }
-  
+
   /**
-   * Get a nonsperated hex RGB triple, e.g. FFFFFF = white 
+   * Get a nonsperated hex RGB triple, e.g. FFFFFF = white
    */
   private String colorTripleHex(int num){
     String s = "";
@@ -292,10 +292,10 @@ public class JavaPrinterGraphics extends Graphics implements PrinterGraphics
     try {
       s = Integer.toHexString( ( num & 0x00FFFFFF ) );
       if( s.length() < 6 )
-	{
-	  s = "000000"+s;
-	  return s.substring(s.length()-6);
-	}
+        {
+          s = "000000"+s;
+          return s.substring(s.length()-6);
+        }
     } catch (Exception e){
       s = "FFFFFF";
     }
@@ -306,7 +306,7 @@ public class JavaPrinterGraphics extends Graphics implements PrinterGraphics
   private void concatCTM(PrintWriter out, AffineTransform Tx){
     double[] matrixElements = new double[6];
     Tx.getMatrix(matrixElements);
-    
+
     out.print("[ ");
     for(int i=0;i<6;i++)
       out.print(matrixElements[i]+" ");
@@ -349,14 +349,14 @@ public class JavaPrinterGraphics extends Graphics implements PrinterGraphics
   {
   }
 
-  public void drawArc(int x, int y, int width, int height, int startAngle, 
-		      int arcAngle)
+  public void drawArc(int x, int y, int width, int height, int startAngle,
+                      int arcAngle)
   {
     g.drawArc(x, y, width, height, startAngle, arcAngle);
   }
 
-  public boolean drawImage(Image img, int x, int y, Color bgcolor, 
-			   ImageObserver observer)
+  public boolean drawImage(Image img, int x, int y, Color bgcolor,
+                           ImageObserver observer)
   {
     return g.drawImage(img, x, y, bgcolor, observer);
   }
@@ -366,31 +366,31 @@ public class JavaPrinterGraphics extends Graphics implements PrinterGraphics
     return g.drawImage(img, x, y, observer);
   }
 
-  public boolean drawImage(Image img, int x, int y, int width, int height, 
-			   Color bgcolor, ImageObserver observer)
+  public boolean drawImage(Image img, int x, int y, int width, int height,
+                           Color bgcolor, ImageObserver observer)
   {
     return g.drawImage(img, x, y, width, height, bgcolor, observer);
   }
 
-  public boolean drawImage(Image img, int x, int y, int width, int height, 
-			   ImageObserver observer)
+  public boolean drawImage(Image img, int x, int y, int width, int height,
+                           ImageObserver observer)
   {
     return g.drawImage(img, x, y, width, height, observer);
   }
 
-  public boolean drawImage(Image img, int dx1, int dy1, int dx2, int dy2, 
-			   int sx1, int sy1, int sx2, int sy2, Color bgcolor, 
-			   ImageObserver observer)
+  public boolean drawImage(Image img, int dx1, int dy1, int dx2, int dy2,
+                           int sx1, int sy1, int sx2, int sy2, Color bgcolor,
+                           ImageObserver observer)
   {
-    return g.drawImage(img, dx1,  dy1,  dx2,  dy2,  
-		     sx1,  sy1,  sx2,  sy2, bgcolor, observer);
+    return g.drawImage(img, dx1,  dy1,  dx2,  dy2,
+                     sx1,  sy1,  sx2,  sy2, bgcolor, observer);
   }
 
-  public boolean drawImage(Image img, int dx1, int dy1, int dx2, int dy2, 
-			   int sx1, int sy1, int sx2, int sy2, ImageObserver observer)
+  public boolean drawImage(Image img, int dx1, int dy1, int dx2, int dy2,
+                           int sx1, int sy1, int sx2, int sy2, ImageObserver observer)
   {
-    return g.drawImage(img, dx1,  dy1,  dx2,  dy2,  
-		     sx1,  sy1,  sx2,  sy2, observer);
+    return g.drawImage(img, dx1,  dy1,  dx2,  dy2,
+                     sx1,  sy1,  sx2,  sy2, observer);
   }
 
   public void drawLine(int x1, int y1, int x2, int y2)
@@ -413,8 +413,8 @@ public class JavaPrinterGraphics extends Graphics implements PrinterGraphics
     g.drawPolyline(xPoints, yPoints, nPoints);
   }
 
-  public void drawRoundRect(int x, int y, int width, int height, 
-			    int arcWidth, int arcHeight)
+  public void drawRoundRect(int x, int y, int width, int height,
+                            int arcWidth, int arcHeight)
   {
     g.drawRoundRect(x, y, width, height, arcWidth, arcHeight);
   }
@@ -429,8 +429,8 @@ public class JavaPrinterGraphics extends Graphics implements PrinterGraphics
     g.drawString(str, x, y);
   }
 
-  public void fillArc(int x, int y, int width, int height, 
-		      int startAngle, int arcAngle)
+  public void fillArc(int x, int y, int width, int height,
+                      int startAngle, int arcAngle)
   {
     g.fillArc(x, y, width, height, startAngle, arcAngle);
   }
@@ -450,8 +450,8 @@ public class JavaPrinterGraphics extends Graphics implements PrinterGraphics
     g.fillRect(x, y, width, height);
   }
 
-  public void fillRoundRect(int x, int y, int width, int height, 
-			    int arcWidth, int arcHeight)
+  public void fillRoundRect(int x, int y, int width, int height,
+                            int arcWidth, int arcHeight)
   {
     g.fillRoundRect(x, y, width, height, arcWidth, arcHeight);
   }
@@ -516,4 +516,3 @@ public class JavaPrinterGraphics extends Graphics implements PrinterGraphics
     g.translate(x, y);
   }
 }
-

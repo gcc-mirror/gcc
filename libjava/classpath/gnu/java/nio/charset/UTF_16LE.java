@@ -1,4 +1,4 @@
-/* UTF_16LE.java -- 
+/* UTF_16LE.java --
    Copyright (C) 2002, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -53,7 +53,7 @@ final class UTF_16LE extends Charset
   {
     super ("UTF-16LE", new String[] {
         // witnessed by the internet
-        "UTF16LE", 
+        "UTF16LE",
         /* These names are provided by
          * http://oss.software.ibm.com/cgi-bin/icu/convexp?s=ALL
          */

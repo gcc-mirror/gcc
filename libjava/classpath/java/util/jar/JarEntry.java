@@ -108,7 +108,7 @@ public class JarEntry extends ZipEntry
     super(entry);
     try
       {
-	attr = entry.getAttributes();
+        attr = entry.getAttributes();
       }
     catch (IOException _)
       {
@@ -130,11 +130,11 @@ public class JarEntry extends ZipEntry
   {
     if (attr != null)
       {
-	return (Attributes) attr.clone();
+        return (Attributes) attr.clone();
       }
     else
       {
-	return null;
+        return null;
       }
   }
 

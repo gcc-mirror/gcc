@@ -1,4 +1,4 @@
-/* SimpleType.java -- 
+/* SimpleType.java --
    Copyright (C) 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -60,12 +60,12 @@ public class SimpleType
    * The variety of the <code>anySimpleType</code> datatype.
    */
   public static final int ANY = 0;
-  
+
   /**
    * The atomic variety.
    */
   public static final int ATOMIC = 1;
-  
+
   /**
    * The list variety.
    */
@@ -229,15 +229,15 @@ public class SimpleType
   {
     throw new UnsupportedOperationException();
   }
-  
+
   public Object createValue(String literal, ValidationContext context) {
     return literal;
   }
-  
+
   public boolean sameValue(Object value1, Object value2) {
     return value1.equals(value2);
   }
-  
+
   public int valueHashCode(Object value) {
     return value.hashCode();
   }
@@ -253,4 +253,3 @@ public class SimpleType
   }
 
 }
-

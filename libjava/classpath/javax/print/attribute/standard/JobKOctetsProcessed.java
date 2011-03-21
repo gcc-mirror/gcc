@@ -1,4 +1,4 @@
-/* JobKOctetsProcessed.java -- 
+/* JobKOctetsProcessed.java --
    Copyright (C) 2003, 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -46,11 +46,11 @@ import javax.print.attribute.PrintJobAttribute;
  * the total number of octets already processed in K octets units.
  * <p>
  * The supplied value will be rounded up to the next highest K octets.
- * This attribute will not include a multiplication factor from the number 
+ * This attribute will not include a multiplication factor from the number
  * of copies.
  * </p>
  * <p>
- * This attribute belongs to a group of job progress attributes which are 
+ * This attribute belongs to a group of job progress attributes which are
  * reporting on the progress of a print job.
  * </p>
  * <p>
@@ -58,17 +58,17 @@ import javax.print.attribute.PrintJobAttribute;
  * </p>
  * @see javax.print.attribute.standard.JobMediaSheetsCompleted
  * @see javax.print.attribute.standard.JobImpressionsCompleted
- * 
+ *
  * @author Michael Koch
  */
 public final class JobKOctetsProcessed extends IntegerSyntax
   implements PrintJobAttribute
 {
   private static final long serialVersionUID = -6265238509657881806L;
-  
+
   /**
    * Creates a <code>JobKOctetsProcessed</code> object.
-   * The value is in units of K (1024) octets rounded up to the next highest K. 
+   * The value is in units of K (1024) octets rounded up to the next highest K.
    *
    * @param value the number of processed K octets
    *
@@ -81,13 +81,13 @@ public final class JobKOctetsProcessed extends IntegerSyntax
     if (value < 0)
       throw new IllegalArgumentException("value may not be less than 0");
   }
-  
+
   /**
    * Tests if the given object is equal to this object.
    *
    * @param obj the object to test
    *
-   * @return <code>true</code> if both objects are equal, 
+   * @return <code>true</code> if both objects are equal,
    * <code>false</code> otherwise.
    */
   public boolean equals(Object obj)

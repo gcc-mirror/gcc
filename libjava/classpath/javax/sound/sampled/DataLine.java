@@ -1,4 +1,4 @@
-/* 
+/*
    Copyright (C) 2005-2007 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -43,7 +43,7 @@ import gnu.java.lang.CPStringBuilder;
  * The DataLine interface adds data-related functionality to the Line
  * interface.  For example, it adds methods to start and stop the data
  * on the line.
- * @since 1.3 
+ * @since 1.3
  */
 public interface DataLine extends Line
 {
@@ -158,7 +158,7 @@ public interface DataLine extends Line
       if (minBufferSize < other.minBufferSize ||
           maxBufferSize > other.maxBufferSize)
         return false;
-      
+
       for (int i = 0; i < formats.length; ++i)
         {
           boolean ok = false;
@@ -173,7 +173,7 @@ public interface DataLine extends Line
           if (! ok)
             return false;
         }
-      
+
       return true;
     }
 
@@ -190,14 +190,14 @@ public interface DataLine extends Line
             result.append(", ");
           result.append(formats[i].toString());
         }
-      
+
       result.append("]; minBufferSize: ");
       result.append(minBufferSize);
       result.append("; maxBufferSize: ");
       result.append(maxBufferSize);
       return result.toString();
     }
-    
+
   } // end class: Info
 
   /**
@@ -237,7 +237,7 @@ public interface DataLine extends Line
   float getLevel();
 
   /**
-   * Return the current frame position. 
+   * Return the current frame position.
    * @since 1.5
    */
   long getLongFramePosition();

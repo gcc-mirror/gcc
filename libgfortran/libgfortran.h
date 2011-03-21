@@ -1,5 +1,6 @@
 /* Common declarations for all of libgfortran.
-   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+   2011
    Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>, and
    Andy Vaught <andy@xena.eas.asu.edu>
@@ -738,9 +739,6 @@ extern void internal_error (st_parameter_common *, const char *)
   __attribute__ ((noreturn));
 internal_proto(internal_error);
 
-extern const char *get_oserror (void);
-internal_proto(get_oserror);
-
 extern const char *translate_error (int);
 internal_proto(translate_error);
 
@@ -755,6 +753,9 @@ internal_proto(notify_std);
 
 extern notification notification_std(int);
 internal_proto(notification_std);
+
+extern char *gf_strerror (int, char *, size_t);
+internal_proto(gf_strerror);
 
 /* fpu.c */
 

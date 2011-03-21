@@ -58,26 +58,26 @@ public final class DOMImplementationRegistry {
      * DOMImplementationSource class names.
      */
     public static final String PROPERTY =
-	"org.w3c.dom.DOMImplementationSourceList";
-    
+        "org.w3c.dom.DOMImplementationSourceList";
+
     /**
      * Default columns per line.
      */
     private static final int DEFAULT_LINE_LENGTH = 80;
-    
+
     /**
      * The list of DOMImplementationSources.
      */
     private Vector sources;
-    
+
     /**
      * Private constructor.
      * @param srcs Vector List of DOMImplementationSources
      */
     private DOMImplementationRegistry(final Vector srcs) {
-	sources = srcs;
+        sources = srcs;
     }
-    
+
     /**
      * Obtain a new instance of a <code>DOMImplementationRegistry</code>.
      *
@@ -106,49 +106,49 @@ public final class DOMImplementationRegistry {
      * <code>DOMImplementationSource</code>
      */
     public static DOMImplementationRegistry newInstance()
-	throws
-	ClassNotFoundException,
-	InstantiationException,
-	IllegalAccessException,
-	ClassCastException {
-	Vector sources = new Vector();
-	
-	ClassLoader classLoader = getClassLoader();
-	// fetch system property:
-	String p = getSystemProperty(PROPERTY);
-	
-	//
-	// if property is not specified then use contents of
+        throws
+        ClassNotFoundException,
+        InstantiationException,
+        IllegalAccessException,
+        ClassCastException {
+        Vector sources = new Vector();
+
+        ClassLoader classLoader = getClassLoader();
+        // fetch system property:
+        String p = getSystemProperty(PROPERTY);
+
+        //
+        // if property is not specified then use contents of
         // META_INF/org.w3c.dom.DOMImplementationSourceList from classpath
-	if (p == null) {
-	    p = getServiceValue(classLoader);
-	} 
         if (p == null) {
-	    //
-	    // DOM Implementations can modify here to add *additional* fallback
-	    // mechanisms to access a list of default DOMImplementationSources.
-	    p = "gnu.xml.dom.ImplementationSource";
-	}
-	if (p != null) {
-	    StringTokenizer st = new StringTokenizer(p);
-	    while (st.hasMoreTokens()) {
-		String sourceName = st.nextToken();
-		// Use context class loader, falling back to Class.forName
-		// if and only if this fails...
-		Class sourceClass = null;
-		if (classLoader != null) {
-		    sourceClass = classLoader.loadClass(sourceName);
-		} else {
-		    sourceClass = Class.forName(sourceName);
-		}
-		DOMImplementationSource source =
-		    (DOMImplementationSource) sourceClass.newInstance();
-		sources.addElement(source);
-	    }
-	}
-	return new DOMImplementationRegistry(sources);
+            p = getServiceValue(classLoader);
+        }
+        if (p == null) {
+            //
+            // DOM Implementations can modify here to add *additional* fallback
+            // mechanisms to access a list of default DOMImplementationSources.
+            p = "gnu.xml.dom.ImplementationSource";
+        }
+        if (p != null) {
+            StringTokenizer st = new StringTokenizer(p);
+            while (st.hasMoreTokens()) {
+                String sourceName = st.nextToken();
+                // Use context class loader, falling back to Class.forName
+                // if and only if this fails...
+                Class sourceClass = null;
+                if (classLoader != null) {
+                    sourceClass = classLoader.loadClass(sourceName);
+                } else {
+                    sourceClass = Class.forName(sourceName);
+                }
+                DOMImplementationSource source =
+                    (DOMImplementationSource) sourceClass.newInstance();
+                sources.addElement(source);
+            }
+        }
+        return new DOMImplementationRegistry(sources);
     }
-    
+
     /**
      * Return the first implementation that has the desired
      * features, or <code>null</code> if none is found.
@@ -162,19 +162,19 @@ public final class DOMImplementationRegistry {
      *         or <code>null</code> if none found.
      */
     public DOMImplementation getDOMImplementation(final String features) {
-	int size = sources.size();
-	String name = null;
-	for (int i = 0; i < size; i++) {
-	    DOMImplementationSource source =
-		(DOMImplementationSource) sources.elementAt(i);
-	    DOMImplementation impl = source.getDOMImplementation(features);
-	    if (impl != null) {
-		return impl;
-	    }
-	}
-	return null;
+        int size = sources.size();
+        String name = null;
+        for (int i = 0; i < size; i++) {
+            DOMImplementationSource source =
+                (DOMImplementationSource) sources.elementAt(i);
+            DOMImplementation impl = source.getDOMImplementation(features);
+            if (impl != null) {
+                return impl;
+            }
+        }
+        return null;
     }
-    
+
     /**
      * Return a list of implementations that support the
      * desired features.
@@ -187,51 +187,51 @@ public final class DOMImplementationRegistry {
      * @return A list of DOMImplementations that support the desired features.
      */
     public DOMImplementationList getDOMImplementationList(final String features) {
-	final Vector implementations = new Vector();
-	int size = sources.size();
-	for (int i = 0; i < size; i++) {
-	    DOMImplementationSource source =
-		(DOMImplementationSource) sources.elementAt(i);
-	    DOMImplementationList impls =
-		source.getDOMImplementationList(features);
-	    for (int j = 0; j < impls.getLength(); j++) {
-		DOMImplementation impl = impls.item(j);
-		implementations.addElement(impl);
-	    }
-	}
-	return new DOMImplementationList() {
-		public DOMImplementation item(final int index) {
-		    if (index >= 0 && index < implementations.size()) {
-			try {
-			    return (DOMImplementation)
-				implementations.elementAt(index);
-			} catch (ArrayIndexOutOfBoundsException e) {
-			    return null;
-			}
-		    }
-		    return null;
-		}
-		
-		public int getLength() {
-		    return implementations.size();
-		}
-	    };
+        final Vector implementations = new Vector();
+        int size = sources.size();
+        for (int i = 0; i < size; i++) {
+            DOMImplementationSource source =
+                (DOMImplementationSource) sources.elementAt(i);
+            DOMImplementationList impls =
+                source.getDOMImplementationList(features);
+            for (int j = 0; j < impls.getLength(); j++) {
+                DOMImplementation impl = impls.item(j);
+                implementations.addElement(impl);
+            }
+        }
+        return new DOMImplementationList() {
+                public DOMImplementation item(final int index) {
+                    if (index >= 0 && index < implementations.size()) {
+                        try {
+                            return (DOMImplementation)
+                                implementations.elementAt(index);
+                        } catch (ArrayIndexOutOfBoundsException e) {
+                            return null;
+                        }
+                    }
+                    return null;
+                }
+
+                public int getLength() {
+                    return implementations.size();
+                }
+            };
     }
-    
+
     /**
      * Register an implementation.
      *
      * @param s The source to be registered, may not be <code>null</code>
      */
     public void addSource(final DOMImplementationSource s) {
-	if (s == null) {
-	    throw new NullPointerException();
-	}
-	if (!sources.contains(s)) {
-	    sources.addElement(s);
-	}
+        if (s == null) {
+            throw new NullPointerException();
+        }
+        if (!sources.contains(s)) {
+            sources.addElement(s);
+        }
     }
-    
+
     /**
      *
      * Gets a class loader.
@@ -239,20 +239,20 @@ public final class DOMImplementationRegistry {
      * @return A class loader, possibly <code>null</code>
      */
     private static ClassLoader getClassLoader() {
-	try {
-	    ClassLoader contextClassLoader = getContextClassLoader();
-	    
-	    if (contextClassLoader != null) {
-		return contextClassLoader;
-	    }
-	} catch (Exception e) {
-	    // Assume that the DOM application is in a JRE 1.1, use the
-	    // current ClassLoader
-	    return DOMImplementationRegistry.class.getClassLoader();
-	}
-	return DOMImplementationRegistry.class.getClassLoader();
+        try {
+            ClassLoader contextClassLoader = getContextClassLoader();
+
+            if (contextClassLoader != null) {
+                return contextClassLoader;
+            }
+        } catch (Exception e) {
+            // Assume that the DOM application is in a JRE 1.1, use the
+            // current ClassLoader
+            return DOMImplementationRegistry.class.getClassLoader();
+        }
+        return DOMImplementationRegistry.class.getClassLoader();
     }
-    
+
     /**
      * This method attempts to return the first line of the resource
      * META_INF/services/org.w3c.dom.DOMImplementationSourceList
@@ -262,52 +262,52 @@ public final class DOMImplementationRegistry {
      * @return first line of resource, or <code>null</code>
      */
     private static String getServiceValue(final ClassLoader classLoader) {
-	String serviceId = "META-INF/services/" + PROPERTY;
-	// try to find services in CLASSPATH
-	try {
-	    InputStream is = getResourceAsStream(classLoader, serviceId);
-	    
-	    if (is != null) {
-		BufferedReader rd;
-		try {
-		    rd =
-			new BufferedReader(new InputStreamReader(is, "UTF-8"),
-					   DEFAULT_LINE_LENGTH);
-		} catch (java.io.UnsupportedEncodingException e) {
-		    rd =
-			new BufferedReader(new InputStreamReader(is),
-					   DEFAULT_LINE_LENGTH);
-		}		
-		String serviceValue = rd.readLine();
-		rd.close();
-		if (serviceValue != null && serviceValue.length() > 0) {
-		    return serviceValue;
-		}
-	    }
-	} catch (Exception ex) {
-	    return null;
-	}
-	return null;
+        String serviceId = "META-INF/services/" + PROPERTY;
+        // try to find services in CLASSPATH
+        try {
+            InputStream is = getResourceAsStream(classLoader, serviceId);
+
+            if (is != null) {
+                BufferedReader rd;
+                try {
+                    rd =
+                        new BufferedReader(new InputStreamReader(is, "UTF-8"),
+                                           DEFAULT_LINE_LENGTH);
+                } catch (java.io.UnsupportedEncodingException e) {
+                    rd =
+                        new BufferedReader(new InputStreamReader(is),
+                                           DEFAULT_LINE_LENGTH);
+                }
+                String serviceValue = rd.readLine();
+                rd.close();
+                if (serviceValue != null && serviceValue.length() > 0) {
+                    return serviceValue;
+                }
+            }
+        } catch (Exception ex) {
+            return null;
+        }
+        return null;
     }
-    
+
     /**
      * A simple JRE (Java Runtime Environment) 1.1 test
      *
-     * @return <code>true</code> if JRE 1.1 
+     * @return <code>true</code> if JRE 1.1
      */
     private static boolean isJRE11() {
-	try {
-	    Class c = Class.forName("java.security.AccessController");
-	    // java.security.AccessController existed since 1.2 so, if no
-	    // exception was thrown, the DOM application is running in a JRE
-	    // 1.2 or higher
-	    return false;
-	} catch (Exception ex) {
-	    // ignore 
-	}
-	return true;
+        try {
+            Class c = Class.forName("java.security.AccessController");
+            // java.security.AccessController existed since 1.2 so, if no
+            // exception was thrown, the DOM application is running in a JRE
+            // 1.2 or higher
+            return false;
+        } catch (Exception ex) {
+            // ignore
+        }
+        return true;
     }
-    
+
     /**
      * This method returns the ContextClassLoader or <code>null</code> if
      * running in a JRE 1.1
@@ -315,73 +315,73 @@ public final class DOMImplementationRegistry {
      * @return The Context Classloader
      */
     private static ClassLoader getContextClassLoader() {
-	return isJRE11()
-	    ? null
-	    : (ClassLoader)
- 	      AccessController.doPrivileged(new PrivilegedAction() {
-		    public Object run() {
-			ClassLoader classLoader = null;
-			try {
-			    classLoader =
-				Thread.currentThread().getContextClassLoader();
-			} catch (SecurityException ex) {
-			}
-			return classLoader;
-		    }
-		});
+        return isJRE11()
+            ? null
+            : (ClassLoader)
+              AccessController.doPrivileged(new PrivilegedAction() {
+                    public Object run() {
+                        ClassLoader classLoader = null;
+                        try {
+                            classLoader =
+                                Thread.currentThread().getContextClassLoader();
+                        } catch (SecurityException ex) {
+                        }
+                        return classLoader;
+                    }
+                });
     }
-    
+
     /**
      * This method returns the system property indicated by the specified name
      * after checking access control privileges. For a JRE 1.1, this check is
      * not done.
-     * 	 
-     * @param name the name of the system property	 
+     *
+     * @param name the name of the system property
      * @return the system property
      */
     private static String getSystemProperty(final String name) {
-	return isJRE11()
-	    ? (String) System.getProperty(name)
-	    : (String) AccessController.doPrivileged(new PrivilegedAction() {
-		    public Object run() {
-			return System.getProperty(name);
-		    }
-		});
+        return isJRE11()
+            ? (String) System.getProperty(name)
+            : (String) AccessController.doPrivileged(new PrivilegedAction() {
+                    public Object run() {
+                        return System.getProperty(name);
+                    }
+                });
     }
-    
+
     /**
      * This method returns an Inputstream for the reading resource
      * META_INF/services/org.w3c.dom.DOMImplementationSourceList after checking
      * access control privileges. For a JRE 1.1, this check is not done.
      *
-     * @param classLoader classLoader	 
-     * @param name the resource 	 
+     * @param classLoader classLoader
+     * @param name the resource
      * @return an Inputstream for the resource specified
      */
     private static InputStream getResourceAsStream(final ClassLoader classLoader,
-						   final String name) {
-	if (isJRE11()) {
-	    InputStream ris;
-	    if (classLoader == null) {
-		ris = ClassLoader.getSystemResourceAsStream(name);
-	    } else {
-		ris = classLoader.getResourceAsStream(name);
-	    }    
-	    return ris;
-	} else {
-	    return (InputStream)
-		AccessController.doPrivileged(new PrivilegedAction() {
-			public Object run() {
-			    InputStream ris;
-			    if (classLoader == null) {
-				ris =
-				    ClassLoader.getSystemResourceAsStream(name);
-			    } else {
-				ris = classLoader.getResourceAsStream(name);
-			    }
-			    return ris;
-			}
-		    });
-	}
+                                                   final String name) {
+        if (isJRE11()) {
+            InputStream ris;
+            if (classLoader == null) {
+                ris = ClassLoader.getSystemResourceAsStream(name);
+            } else {
+                ris = classLoader.getResourceAsStream(name);
+            }
+            return ris;
+        } else {
+            return (InputStream)
+                AccessController.doPrivileged(new PrivilegedAction() {
+                        public Object run() {
+                            InputStream ris;
+                            if (classLoader == null) {
+                                ris =
+                                    ClassLoader.getSystemResourceAsStream(name);
+                            } else {
+                                ris = classLoader.getResourceAsStream(name);
+                            }
+                            return ris;
+                        }
+                    });
+        }
     }
 }

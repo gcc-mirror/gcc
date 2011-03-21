@@ -13,16 +13,16 @@ import (
 
 func TestUnmarshalFeed(t *testing.T) {
 	var f Feed
-	if err := Unmarshal(StringReader(rssFeedString), &f); err != nil {
+	if err := Unmarshal(StringReader(atomFeedString), &f); err != nil {
 		t.Fatalf("Unmarshal: %s", err)
 	}
-	if !reflect.DeepEqual(f, rssFeed) {
-		t.Fatalf("have %#v\nwant %#v", f, rssFeed)
+	if !reflect.DeepEqual(f, atomFeed) {
+		t.Fatalf("have %#v\nwant %#v", f, atomFeed)
 	}
 }
 
 // hget http://codereview.appspot.com/rss/mine/rsc
-const rssFeedString = `
+const atomFeedString = `
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en-us"><title>Code Review - My issues</title><link href="http://codereview.appspot.com/" rel="alternate"></link><li-nk href="http://codereview.appspot.com/rss/mine/rsc" rel="self"></li-nk><id>http://codereview.appspot.com/</id><updated>2009-10-04T01:35:58+00:00</updated><author><name>rietveld&lt;&gt;</name></author><entry><title>rietveld: an attempt at pubsubhubbub
 </title><link hre-f="http://codereview.appspot.com/126085" rel="alternate"></link><updated>2009-10-04T01:35:58+00:00</updated><author><name>email-address-removed</name></author><id>urn:md5:134d9179c41f806be79b3a5f7877d19a</id><summary type="html">
@@ -115,7 +115,7 @@ type Text struct {
 
 type Time string
 
-var rssFeed = Feed{
+var atomFeed = Feed{
 	XMLName: Name{"http://www.w3.org/2005/Atom", "feed"},
 	Title:   "Code Review - My issues",
 	Link: []Link{
@@ -227,6 +227,103 @@ func TestFieldName(t *testing.T) {
 		a := fieldName(tt.in)
 		if a != tt.out {
 			t.Fatalf("have %#v\nwant %#v\n\n", a, tt.out)
+		}
+	}
+}
+
+const pathTestString = `
+<result>
+    <before>1</before>
+    <items>
+        <item1>
+            <value>A</value>
+        </item1>
+        <item2>
+            <value>B</value>
+        </item2>
+        <Item1>
+            <Value>C</Value>
+            <Value>D</Value>
+        </Item1>
+    </items>
+    <after>2</after>
+</result>
+`
+
+type PathTestItem struct {
+	Value string
+}
+
+type PathTestA struct {
+	Items         []PathTestItem ">item1"
+	Before, After string
+}
+
+type PathTestB struct {
+	Other         []PathTestItem "items>Item1"
+	Before, After string
+}
+
+type PathTestC struct {
+	Values1       []string "items>item1>value"
+	Values2       []string "items>item2>value"
+	Before, After string
+}
+
+type PathTestSet struct {
+	Item1 []PathTestItem
+}
+
+type PathTestD struct {
+	Other         PathTestSet "items>"
+	Before, After string
+}
+
+var pathTests = []interface{}{
+	&PathTestA{Items: []PathTestItem{{"A"}, {"D"}}, Before: "1", After: "2"},
+	&PathTestB{Other: []PathTestItem{{"A"}, {"D"}}, Before: "1", After: "2"},
+	&PathTestC{Values1: []string{"A", "C", "D"}, Values2: []string{"B"}, Before: "1", After: "2"},
+	&PathTestD{Other: PathTestSet{Item1: []PathTestItem{{"A"}, {"D"}}}, Before: "1", After: "2"},
+}
+
+func TestUnmarshalPaths(t *testing.T) {
+	for _, pt := range pathTests {
+		p := reflect.MakeZero(reflect.NewValue(pt).Type()).(*reflect.PtrValue)
+		p.PointTo(reflect.MakeZero(p.Type().(*reflect.PtrType).Elem()))
+		v := p.Interface()
+		if err := Unmarshal(StringReader(pathTestString), v); err != nil {
+			t.Fatalf("Unmarshal: %s", err)
+		}
+		if !reflect.DeepEqual(v, pt) {
+			t.Fatalf("have %#v\nwant %#v", v, pt)
+		}
+	}
+}
+
+type BadPathTestA struct {
+	First  string "items>item1"
+	Other  string "items>item2"
+	Second string "items>"
+}
+
+type BadPathTestB struct {
+	Other  string "items>item2>value"
+	First  string "items>item1"
+	Second string "items>item1>value"
+}
+
+var badPathTests = []struct {
+	v, e interface{}
+}{
+	{&BadPathTestA{}, &TagPathError{reflect.Typeof(BadPathTestA{}), "First", "items>item1", "Second", "items>"}},
+	{&BadPathTestB{}, &TagPathError{reflect.Typeof(BadPathTestB{}), "First", "items>item1", "Second", "items>item1>value"}},
+}
+
+func TestUnmarshalBadPaths(t *testing.T) {
+	for _, tt := range badPathTests {
+		err := Unmarshal(StringReader(pathTestString), tt.v)
+		if !reflect.DeepEqual(err, tt.e) {
+			t.Fatalf("Unmarshal with %#v didn't fail properly: %#v", tt.v, err)
 		}
 	}
 }

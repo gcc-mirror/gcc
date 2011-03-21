@@ -1,3 +1,474 @@
+2011-01-20  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-sese-to-poly.c (dr_indices_valid_in_loop): New.
+	(close_phi_written_to_memory): Call for_each_index with
+	dr_indices_valid_in_loop.
+
+	* gfortran.dg/graphite/id-24.f: New.
+	* gfortran.dg/graphite/id-25.f: New.
+
+2011-01-19  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-sese-to-poly.c (new_pbb_from_pbb): Only copy PBB_DOMAIN
+	when it is initialized.
+
+	* gfortran.dg/graphite/id-23.f: New.
+
+2011-01-19  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-scop-detection.c (stmt_has_simple_data_refs_p): Update
+	call to graphite_find_data_references_in_stmt.
+	* graphite-sese-to-poly.c (outermost_loop_in_sese_1): New.
+	(try_generate_gimple_bb): Call outermost_loop_in_sese_1.  Update
+	call to graphite_find_data_references_in_stmt.
+	(analyze_drs_in_stmts): Same.
+	* tree-data-ref.c (dr_analyze_indices): Pass in parameter the loop
+	in which the scalar analysis of indices is performed.
+	(create_data_ref): Same.  Update call to dr_analyze_indices.
+	(find_data_references_in_stmt): Update call to create_data_ref.
+	(graphite_find_data_references_in_stmt): Same.
+	* tree-data-ref.h (graphite_find_data_references_in_stmt): Update
+	declaration.
+	(create_data_ref): Same.
+	* tree-ssa-loop-prefetch.c (determine_loop_nest_reuse): Update
+	call to create_data_ref.
+
+2011-01-19  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-sese-to-poly.c (build_poly_scop): Move
+	rewrite_commutative_reductions_out_of_ssa before
+	find_scop_parameters.
+
+2011-01-18  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR tree-optimization/46970
+	* gcc.dg/graphite/pr46970.c: New.
+
+2011-01-18  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR tree-optimization/46215
+	* gcc.dg/graphite/pr46215.c: New.
+
+2011-01-18  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR tree-optimization/46168
+	* gcc.dg/graphite/pr46168.c: New.
+
+2011-01-18  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR tree-optimization/43657
+	* gcc.dg/graphite/pr43657.c: New.
+
+2011-01-18  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR tree-optimization/29832
+	* gfortran.dg/graphite/pr29832.f90: New.
+
+2011-01-18  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR tree-optimization/43567
+	* gcc.dg/graphite/pr43567.c: New.
+
+2011-01-18  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR tree-optimization/43567
+	* gcc.dg/graphite/pr43567.c: New.
+
+2011-01-17  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* Makefile.in (LAMBDA_H): Removed.
+	(TREE_DATA_REF_H): Remove dependence on LAMBDA_H.
+	(OBJS-common): Remove dependence on lambda-code.o, lambda-mat.o,
+	lambda-trans.o, and tree-loop-linear.o.
+	(lto-symtab.o): Remove dependence on LAMBDA_H.
+	(tree-loop-linear.o): Remove rule.
+	(lambda-mat.o): Same.
+	(lambda-trans.o): Same.
+	(lambda-code.o): Same.
+	(tree-vect-loop.o): Add missing dependence on TREE_DATA_REF_H.
+	(tree-vect-slp.o): Same.
+	* hwint.h (gcd): Moved here.
+	(least_common_multiple): Same.
+	* lambda-code.c: Removed.
+	* lambda-mat.c: Removed.
+	* lambda-trans.c: Removed.
+	* lambda.h: Removed.
+	* tree-loop-linear.c: Removed.
+	* lto-symtab.c: Do not include lambda.h.
+	* omega.c (gcd): Removed.
+	* passes.c (init_optimization_passes): Remove pass_linear_transform.
+	* tree-data-ref.c (print_lambda_vector): Moved here.
+	(lambda_vector_copy): Same.
+	(lambda_matrix_copy): Same.
+	(lambda_matrix_id): Same.
+	(lambda_vector_first_nz): Same.
+	(lambda_matrix_row_add): Same.
+	(lambda_matrix_row_exchange): Same.
+	(lambda_vector_mult_const): Same.
+	(lambda_vector_negate): Same.
+	(lambda_matrix_row_negate): Same.
+	(lambda_vector_equal): Same.
+	(lambda_matrix_right_hermite): Same.
+	* tree-data-ref.h: Do not include lambda.h.
+	(lambda_vector): Moved here.
+	(lambda_matrix): Same.
+	(dependence_level): Same.
+	(lambda_transform_legal_p): Removed declaration.
+	(lambda_collect_parameters): Same.
+	(lambda_compute_access_matrices): Same.
+	(lambda_vector_gcd): Same.
+	(lambda_vector_new): Same.
+	(lambda_vector_clear): Same.
+	(lambda_vector_lexico_pos): Same.
+	(lambda_vector_zerop): Same.
+	(lambda_matrix_new): Same.
+	* tree-flow.h (least_common_multiple): Removed declaration.
+	* tree-parloops.c (lambda_trans_matrix): Moved here.
+	(LTM_MATRIX): Same.
+	(LTM_ROWSIZE): Same.
+	(LTM_COLSIZE): Same.
+	(LTM_DENOMINATOR): Same.
+	(lambda_trans_matrix_new): Same.
+	(lambda_matrix_vector_mult): Same.
+	(lambda_transform_legal_p): Same.
+	* tree-pass.h (pass_linear_transform): Removed declaration.
+	* tree-ssa-loop.c (tree_linear_transform): Removed.
+	(gate_tree_linear_transform): Removed.
+	(pass_linear_transform): Removed.
+	(gate_graphite_transforms): Make flag_tree_loop_linear an alias of
+	flag_loop_interchange.
+
+	* gfortran.dg/graphite/interchange-4.f: New.
+	* gfortran.dg/graphite/interchange-5.f: New.
+
+	* gcc.dg/tree-ssa/ltrans-1.c: Removed.
+	* gcc.dg/tree-ssa/ltrans-2.c: Removed.
+	* gcc.dg/tree-ssa/ltrans-3.c: Removed.
+	* gcc.dg/tree-ssa/ltrans-4.c: Removed.
+	* gcc.dg/tree-ssa/ltrans-5.c: Removed.
+	* gcc.dg/tree-ssa/ltrans-6.c: Removed.
+	* gcc.dg/tree-ssa/ltrans-8.c: Removed.
+	* gfortran.dg/ltrans-7.f90: Removed.
+	* gcc.dg/tree-ssa/data-dep-1.c: Removed.
+
+	* gcc.dg/pr18792.c: -> gcc.dg/graphite/pr18792.c
+	* gcc.dg/pr19910.c: -> gcc.dg/graphite/pr19910.c
+	* gcc.dg/tree-ssa/20041110-1.c: -> gcc.dg/graphite/pr20041110-1.c
+	* gcc.dg/tree-ssa/pr20256.c: -> gcc.dg/graphite/pr20256.c
+	* gcc.dg/pr23625.c: -> gcc.dg/graphite/pr23625.c
+	* gcc.dg/tree-ssa/pr23820.c: -> gcc.dg/graphite/pr23820.c
+	* gcc.dg/tree-ssa/pr24309.c: -> gcc.dg/graphite/pr24309.c
+	* gcc.dg/tree-ssa/pr26435.c: -> gcc.dg/graphite/pr26435.c
+	* gcc.dg/pr29330.c: -> gcc.dg/graphite/pr29330.c
+	* gcc.dg/pr29581-1.c: -> gcc.dg/graphite/pr29581-1.c
+	* gcc.dg/pr29581-2.c: -> gcc.dg/graphite/pr29581-2.c
+	* gcc.dg/pr29581-3.c: -> gcc.dg/graphite/pr29581-3.c
+	* gcc.dg/pr29581-4.c: -> gcc.dg/graphite/pr29581-4.c
+	* gcc.dg/tree-ssa/loop-27.c: -> gcc.dg/graphite/pr30565.c
+	* gcc.dg/tree-ssa/pr31183.c: -> gcc.dg/graphite/pr31183.c
+	* gcc.dg/tree-ssa/pr33576.c: -> gcc.dg/graphite/pr33576.c
+	* gcc.dg/tree-ssa/pr33766.c: -> gcc.dg/graphite/pr33766.c
+	* gcc.dg/pr34016.c: -> gcc.dg/graphite/pr34016.c
+	* gcc.dg/tree-ssa/pr34017.c: -> gcc.dg/graphite/pr34017.c
+	* gcc.dg/tree-ssa/pr34123.c: -> gcc.dg/graphite/pr34123.c
+	* gcc.dg/tree-ssa/pr36287.c: -> gcc.dg/graphite/pr36287.c
+	* gcc.dg/tree-ssa/pr37686.c: -> gcc.dg/graphite/pr37686.c
+	* gcc.dg/pr42917.c: -> gcc.dg/graphite/pr42917.c
+	* gcc.dg/tree-ssa/data-dep-1.c
+	* gfortran.dg/loop_nest_1.f90: -> gfortran.dg/graphite/pr29290.f90
+	* gfortran.dg/pr29581.f90: -> gfortran.dg/graphite/pr29581.f90
+	* gfortran.dg/pr36286.f90: -> gfortran.dg/graphite/pr36286.f90
+	* gfortran.dg/pr36922.f: -> gfortran.dg/graphite/pr36922.f
+	* gfortran.dg/pr39516.f: -> gfortran.dg/graphite/pr39516.f
+
+2011-01-17  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-sese-to-poly.c (close_phi_written_to_memory): Also allow
+	VAR_DECL, PARM_DECL, and RESULT_DECL.
+
+	* gfortran.dg/graphite/interchange-3.f90: Un-XFAILed.
+
+2011-01-17  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-dependences.c (reduction_dr_1): Allow several reductions
+	in a reduction PBB.
+	* graphite-sese-to-poly.c (split_reduction_stmt): Do not split PBBs
+	that have already been marked as PBB_IS_REDUCTION.
+
+2011-01-17  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-scop-detection.c (same_close_phi_node): New.
+	(remove_duplicate_close_phi): New.
+	(make_close_phi_nodes_unique): New.
+	(canonicalize_loop_closed_ssa): Call make_close_phi_nodes_unique.
+
+2011-01-17  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-dependences.c (new_poly_ddr): Call same_pdr_p.
+	* graphite-poly.h (same_pdr_p): Do not expect that the PDR_TYPE
+	of both data references to be the same.
+
+2011-01-17  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-dependences.c (build_lexicographical_constraint): Remove the
+	gdim parameter.
+	(build_lexicographical_constraint): Adjust call to ppl_powerset_is_empty.
+	(dependence_polyhedron): Same.
+	(graphite_legal_transform_dr): Same.
+	(graphite_carried_dependence_level_k): Same.
+	* graphite-ppl.c (ppl_powerset_is_empty): Remove the nb_params parameter.
+	* graphite-ppl.h (ppl_powerset_is_empty): Adjust declaration.
+
+2011-01-15  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-sese-to-poly.c
+	(translate_scalar_reduction_to_array_for_stmt): Call unshare_expr.
+	(close_phi_written_to_memory): New.
+	(translate_scalar_reduction_to_array): Call close_phi_written_to_memory
+	and unshare_expr.
+
+	* gcc.dg/graphite/block-0.c: Un-XFAILed.
+	* gcc.dg/graphite/block-1.c: Un-XFAILed.
+	* gcc.dg/graphite/block-7.c: Un-XFAILed.
+	* gcc.dg/graphite/block-8.c: Un-XFAILed.
+	* gcc.dg/graphite/interchange-12.c: Un-XFAILed.
+	* gcc.dg/graphite/interchange-14.c: Un-XFAILed.
+	* gcc.dg/graphite/interchange-15.c: Un-XFAILed.
+	* gcc.dg/graphite/interchange-8.c: Un-XFAILed.
+	* gcc.dg/graphite/interchange-mvt.c: Un-XFAILed.
+
+2011-01-15  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* doc/install.texi: Update the expected version number of PPL to 0.11.
+	* graphite-ppl.c (ppl_powerset_is_empty): Remove now dead code under
+	#if PPL_VERSION_MINOR < 11.
+
+2011-01-15  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-dependences.c (new_poly_ddr): Inlined into
+	dependence_polyhedron.
+	(free_poly_ddr): Moved close by new_poly_ddr.
+	(dependence_polyhedron_1): Renamed dependence_polyhedron.
+	Early return NULL when ppl_powerset_is_empty returns true.
+	(dependence_polyhedron): Renamed new_poly_ddr.  Call only once
+	poly_drs_may_alias_p.  Avoid one call to ppl_powerset_is_empty.
+	(graphite_legal_transform_dr): Call new_poly_ddr.
+	(graphite_carried_dependence_level_k): Same.
+	(dot_original_deps_stmt_1): Renamed dot_deps_stmt_2.  Use new_poly_ddr.
+	(dot_transformed_deps_stmt_1): Removed.
+	(dot_deps_stmt_1): Call dot_deps_stmt_2.
+	(dot_original_deps): Renamed dot_deps_2.  Call new_poly_ddr.
+	(dot_deps_1): Call dot_deps_2.
+
+2011-01-15  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-dependences.c (new_poly_dr): Call ppl_powerset_is_empty.
+	(build_lexicographical_constraint): Same.
+	(dependence_polyhedron_1): Same.
+	(graphite_legal_transform_dr): Same.
+	(graphite_carried_dependence_level_k): Same.
+	* graphite-ppl.c (ppl_powerset_is_empty): New.
+	* graphite-ppl.h (ppl_powerset_is_empty): Declared.
+	* tree-data-ref.c (dump_data_reference): Print the basic block index.
+
+	* gcc.dg/graphite/block-0.c: Add documentation.
+	* gcc.dg/graphite/block-4.c: Same.
+	* gcc.dg/graphite/block-7.c: Same.
+	* gcc.dg/graphite/block-8.c: New.
+	* gcc.dg/graphite/interchange-1.c: Un-XFAILed.
+	* gcc.dg/graphite/interchange-11.c: Un-XFAILed.
+	* gcc.dg/graphite/interchange-12.c: Add documentation.
+	* gcc.dg/graphite/interchange-13.c: New.
+	* gcc.dg/graphite/interchange-14.c: New.
+	* gcc.dg/graphite/interchange-15.c: New.
+	* gcc.dg/graphite/interchange-8.c: Add documentation.
+	* gcc.dg/graphite/interchange-mvt.c: Same.
+
+2011-01-15  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-dependences.c (build_pairwise_scheduling): Correctly compute
+	the "a followed by b" relation and document it.
+
+2011-01-15  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-dependences.c (build_lexicographical_constraint): Stop the
+	iteration when the bag of constraints is empty.
+
+2011-01-15  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-poly.c (pbb_remove_duplicate_pdrs): Make it work.
+
+2011-01-15  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-interchange.c (lst_interchange_profitable_p): Takes a loop
+	nest and two loop depths as parameters.
+	(lst_try_interchange_loops): Call lst_interchange_profitable_p after
+	lst_perfect_nestify.
+
+2011-01-15  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-dependences.c (print_pddr): Call
+	ppl_io_fprint_Pointset_Powerset_C_Polyhedron.
+
+2011-01-15  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-ppl.c (debug_gmp_value): New.
+	* graphite-ppl.h (debug_gmp_value): Declared.
+
+2011-01-13  Tobias Grosser  <grosser@fim.uni-passau.de>
+
+	* doc/install.texi: Document availability of cloog-0.16
+
+2011-01-05  Vladimir Kargov  <kargov@gmail.com>
+
+	* graphite-scop-detection.c (is_valid_stmt_p): Pass the entry basic
+	block instead of region start to the instantiation.
+	(is_valid_bb_p): Add support for basic blocks with conditional
+	statements.
+	(find_scops_new): Recalculate dominance info before SCOP
+	detection.
+
+2011-01-05  Vladimir Kargov  <kargov@gmail.com>
+
+	* graphite-scop-detection.c (get_outermost_loop_in_region): New.
+	(is_valid_loop_p): Correct loop passed to stmt_has_simple_data_refs_p
+
+2011-01-05  Vladimir Kargov  <kargov@gmail.com>
+
+	* graphite-scop-detection.c (canonicalize_loop_closed_ssa): Free
+	invalid postdominance info
+
+2010-12-29  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* Makefile.in (graphite-opencl-codegen.o): Update dependences.
+	(graphite-opencl-meta-clast.o): Same.
+	(graphite-opencl.o): Same.
+	(refined-regions.o): Same.
+	* graphite-opencl-codegen.c: Do not include unnecessary .h files.
+	* graphite-opencl-meta-clast.c: Same.
+	* graphite-opencl.c: Same.
+	* refined-regions.c: Same.
+
+2010-12-27  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-opencl-codegen.c: Use FOR_EACH_VEC_ELT.
+	* graphite-opencl-meta-clast.c: Same.
+	* graphite-opencl.c: Same.
+
+2010-12-27  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-opencl-codegen.c: Do not include sys/time.h.
+	* graphite-opencl.c: Same.
+
+2010-12-27  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-opencl.c (h_context, h_cmd_queue, h_program): Moved
+	out of ifdef HAVE_cloog section.
+
+2010-12-27  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* Makefile.in (graphite-opencl.o): Depends on
+	graphite-opencl-functions.def.
+	* graphite-opencl-functions.def: New.
+	* graphite-opencl.c (enum OPENCL_FUNCTIONS): Read data from
+	graphite-opencl-functions.def.
+	(opencl_function_names): Same.
+	(opencl_create_function_decl): Use the enum OPENCL_FUNCTIONS
+	as indices of opencl_function_names.
+
+2010-12-27  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-opencl-codegen.c: Fix formatting.
+	* graphite-opencl-meta-clast.c: Same.
+	* graphite-opencl.c: Same.
+
+2010-12-27  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-opencl-codegen.c: Fix formating problems.
+	* graphite-opencl-meta-clast.c: Same.
+	* graphite-opencl.c: Same.
+	* graphite-opencl.h: Same.
+
+2010-12-27  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-opencl-codegen.c: Sort topologically static functions.
+	* graphite-opencl.c: Same.
+
+2010-12-25  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-cloog-compat.h (cloog_names_nb_scattering): New.
+	(cloog_names_scattering): New.
+	* graphite-opencl-codegen.c (opencl_constant_expression_p): Use
+	clast_expr_* instead of expr_*.  Call clast_name_to_str.
+	(opencl_clast_name_to_tree): Now takes a clast_name_p in parameter.
+	(opencl_get_scat_real_name): Same.  Call clast_name_to_str.
+	(opencl_add_scat_as_arg): Same.
+	(opencl_print_local_vars): Call cloog_names_scattering and
+	cloog_names_nb_scattering.
+	(opencl_print_for): Do not call value_*.
+	(opencl_print_term): Same.
+	(opencl_print_expr): Use clast_expr_* instead of expr_*.
+	(opencl_print_sum): Same.
+	(opencl_print_binary): Same.
+
+2010-12-25  Alexey Kravets  <kayrick@ispras.ru>
+
+	* Makefile.in (OBJS-common): Add graphite-opencl-codegen.o,
+	graphite-opencl-meta-clast.o and graphite-opencl.o.
+	(graphite-opencl-codegen.o): New.
+	(graphite-opencl-meta-clast.o): New.
+	(graphite-opencl.o): New.
+	(GTFILES): Add graphite-opencl.c.
+	* common.opt (fgraphite-opencl): New.
+	(fgraphite-opencl-cpu): New.
+	(fgraphite-opencl-ignore-depth-heuristic): New.
+	(fgraphite-opencl-ignore-mem-heuristic): New.
+	(fgraphite-opencl-ignore-dep): New.
+	(fgraphite-opencl-ignore-types): New.
+	(fgraphite-opencl-depth-base): New.
+	(fgraphite-opencl-debug): New.
+	* graphite-opencl-codegen.c: New file.
+	* graphite-opencl-meta-clast.c: New file.
+	* graphite-opencl.c: New file.
+	* graphite-opencl.h: New file.
+	* graphite.c (graphite_transform_loops): Call graphite_opencl_init and
+	graphite_opencl_finalize.
+	* tree-ssa-loop.c (gate_graphite_transforms): Handle
+	flag_graphite_opencl.
+	* graphite-clast-to-gimple.c (gloog): Call opencl_transform_clast.
+	* dbgcnt.def (opencl_scop_cnt): New counter.
+
+2010-12-25  Alexander Monakov  <amonakov@ispras.ru>
+
+	* graphite-dependences.c (graphite_outer_subscript_bound): New.
+	(graphite_carried_dependence_level_k): Export.
+	* graphite-dependences.h (graphite_outer_subscript_bound): Declare.
+	(graphite_carried_dependence_level_k): Ditto.
+
+2010-12-25  Alexey Kravets  <kayrick@ispras.ru>
+
+	* graphite-clast-to-gimple.c (struct clast_name_index): Move
+	definition to graphite-clast-to-gimple.h.
+	(clast_name_to_index): Ditto.
+	(clast_name_index_elt_info): Ditto.
+	(eq_clast_name_indexes): Ditto.
+	(save_clast_name_index): Export.
+	(clast_name_to_gcc): Ditto.
+	(clast_to_gcc_expression): Ditto.
+	(gcc_type_for_clast_expr): Ditto.
+	(graphite_create_new_guard): Ditto.
+	(gcc_type_for_iv_of_clast_loop): Ditto.
+	(graphite_create_new_loop): Ditto.
+	(build_iv_mapping): Ditto.
+	(graphite_create_new_loop_guard): Ditto.
+	(debug_clast_name_index): New.
+	(debug_clast_name_indices): New debug function.
+
+2010-12-21  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR tree-optimization/47021
+	* graphite-sese-to-poly.c (scan_tree_for_params): Handle ADDR_EXPR.
+
 2010-11-26  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* graphite-sese-to-poly.c (analyze_drs_in_stmts): Fix set but

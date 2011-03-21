@@ -255,7 +255,7 @@ public class ORB_1_4
     super.set_parameters(para, props);
     registerInterceptors(props, para);
   }
-  
+
   /**
    * This method is called by RMI-IIOP {@link javax.rmi.Tie#orb(ORB)}, passing
    * <code>this</code> as parameter. The ORB will try to connect that tie as
@@ -288,6 +288,6 @@ public class ORB_1_4
               throw bad;
             }
       }
-  }  
+  }
 
 }

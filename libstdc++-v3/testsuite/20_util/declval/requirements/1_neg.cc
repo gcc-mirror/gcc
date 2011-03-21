@@ -2,7 +2,7 @@
 // { dg-do compile }
 // 2009-11-12  Paolo Carlini  <paolo.carlini@oracle.com>
 //
-// Copyright (C) 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2009, 2010, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -19,7 +19,7 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-error "static assertion failed" "" { target *-*-* } 1132 }
+// { dg-error "static assertion failed" "" { target *-*-* } 1134 }
 
 #include <utility>
 

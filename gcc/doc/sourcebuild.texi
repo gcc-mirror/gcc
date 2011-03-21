@@ -1,4 +1,4 @@
-@c Copyright (C) 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010
+@c Copyright (C) 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010, 2011
 @c Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
@@ -83,7 +83,7 @@ The Fortran runtime library.
 
 @item libgo
 The Go runtime library.  The bulk of this library is mirrored from the
-@uref{http://code.google.com/@/p/@/go, master Go repository}.
+@uref{http://code.google.com/@/p/@/go/, master Go repository}.
 
 @item libgomp
 The GNU OpenMP runtime library.
@@ -1588,7 +1588,10 @@ PowerPC target supports executing AltiVec instructions.
 
 @table @code
 @item avx
-Target supports compiling AVX instructions.
+Target supports compiling @code{avx} instructions.
+
+@item avx_runtime
+Target supports the execution of @code{avx} instructions.
 
 @item cell_hw
 Test system can execute AltiVec and Cell PPU instructions.
@@ -1935,6 +1938,9 @@ take arguments could be replaced with effective-target keywords.
 @table @code
 @item dg-require-alias ""
 Skip the test if the target does not support the @samp{alias} attribute.
+
+@item dg-require-ascii-locale ""
+Skip the test if the host does not support an ASCII locale.
 
 @item dg-require-compat-dfp ""
 Skip this test unless both compilers in a @file{compat} testsuite

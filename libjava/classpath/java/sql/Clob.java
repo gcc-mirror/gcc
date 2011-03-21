@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -46,14 +46,14 @@ import java.io.Writer;
 /**
  * This interface contains methods for accessing a SQL CLOB (Character Large
  * OBject) type.
- * 
+ *
  * @author Aaron M. Renn (arenn@urbanophile.com)
  */
 public interface Clob
 {
   /**
    * This method returns the number of characters in this <code>Clob</code>.
-   * 
+   *
    * @return The number of characters in this <code>Clob</code>.
    * @exception SQLException If an error occurs.
    * @since 1.2
@@ -63,7 +63,7 @@ public interface Clob
   /**
    * This method returns the specified portion of this <code>Clob</code> as a
    * <code>String</code>.
-   * 
+   *
    * @param start The index into this <code>Clob</code> (index values
    *              start at 1) to start returning characters from.
    * @param count The requested number of characters to return.
@@ -76,7 +76,7 @@ public interface Clob
   /**
    * This method returns a character stream that reads the contents of this
    * <code>Clob</code>.
-   * 
+   *
    * @return A character stream to read this <code>Clob</code>'s contents.
    * @exception SQLException If an error occurs.
    * @since 1.2
@@ -86,7 +86,7 @@ public interface Clob
   /**
    * This method returns a byte stream that reads the contents of this
    * <code>Clob</code> as a series of ASCII bytes.
-   * 
+   *
    * @return A stream to read this <code>Clob</code>'s contents.
    * @exception SQLException If an error occurs.
    * @since 1.2
@@ -97,7 +97,7 @@ public interface Clob
    * This method returns the index into this <code>Clob</code> of the first
    * occurrence of the specified character pattern (supplied by the caller as a
    * <code>String</code>). The search begins at the specified index.
-   * 
+   *
    * @param pattern The character pattern to search for, passed as a
    *                <code>String</code>.
    * @param start The index into this <code>Clob</code> to start searching
@@ -113,7 +113,7 @@ public interface Clob
    * This method returns the index into this <code>Clob</code> of the first
    * occurrence of the specified character pattern (supplied by the caller as a
    * <code>Clob</code>). The search begins at the specified index.
-   * 
+   *
    * @param pattern The character pattern to search for, passed as a
    *                <code>Clob</code>.
    * @param start The index into this <code>Clob</code> to start searching
@@ -128,7 +128,7 @@ public interface Clob
   /**
    * Writes the specified string into this <code>Clob</code>, starting at the
    * specified index.
-   * 
+   *
    * @param start The index at which the writing starts.
    * @param value The string to write.
    * @return The number of characters written.
@@ -140,7 +140,7 @@ public interface Clob
   /**
    * Writes the specified portion of a string into this <code>Clob</code>,
    * starting at the specified index.
-   * 
+   *
    * @param startWrite The index at which the writing starts.
    * @param value The string to write a portion of.
    * @param startRead The offset into the string where the portion to copy
@@ -156,7 +156,7 @@ public interface Clob
   /**
    * Returns an ASCII text stream that writes into this <code>Clob</code>,
    * starting at the specified index.
-   * 
+   *
    * @param start The index at which the writing starts.
    * @return An ASCII text stream to write into this <code>Clob</code>.
    * @exception SQLException If an error occurs.
@@ -167,7 +167,7 @@ public interface Clob
   /**
    * Returns a character stream that writes into this <code>Clob</code>,
    * starting at the specified index.
-   * 
+   *
    * @param start The index at which the writing starts.
    * @return A character stream to write into this <code>Clob</code>.
    * @exception SQLException If an error occurs.
@@ -178,7 +178,7 @@ public interface Clob
   /**
    * Truncates this <code>Clob</code> to be at most the specified number of
    * characters long.
-   * 
+   *
    * @param count The length this <code>Clob</code> is truncated to.
    * @exception SQLException If an error occurs.
    * @since 1.4

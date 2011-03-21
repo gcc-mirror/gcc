@@ -112,7 +112,7 @@ public abstract class Servant
   {
     if (delegate == null) {
       throw new BAD_INV_ORDER
-	("The Servant has not been associated with an ORBinstance");
+        ("The Servant has not been associated with an ORBinstance");
     }
     return delegate;
   }

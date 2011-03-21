@@ -1,7 +1,7 @@
 /* Language-independent node constructors for parse phase of GNU compiler.
    Copyright (C) 1987, 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
-   Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+   2011 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1376,8 +1376,14 @@ build_vector_from_val (tree vectype, tree sc)
   if (sc == error_mark_node)
     return sc;
 
-  gcc_assert (useless_type_conversion_p (TREE_TYPE (sc),
-					 TREE_TYPE (vectype)));
+  /* Verify that the vector type is suitable for SC.  Note that there
+     is some inconsistency in the type-system with respect to restrict
+     qualifications of pointers.  Vector types always have a main-variant
+     element type and the qualification is applied to the vector-type.
+     So TREE_TYPE (vector-type) does not return a properly qualified
+     vector element-type.  */
+  gcc_checking_assert (types_compatible_p (TYPE_MAIN_VARIANT (TREE_TYPE (sc)),
+					   TREE_TYPE (vectype)));
 
   v = VEC_alloc (constructor_elt, gc, nunits);
   for (i = 0; i < nunits; ++i)
@@ -4590,6 +4596,25 @@ free_lang_data_in_decl (tree decl)
     }
   else if (TREE_CODE (decl) == TYPE_DECL)
     DECL_INITIAL (decl) = NULL_TREE;
+  else if (TREE_CODE (decl) == TRANSLATION_UNIT_DECL
+           && DECL_INITIAL (decl)
+           && TREE_CODE (DECL_INITIAL (decl)) == BLOCK)
+    {
+      /* Strip builtins from the translation-unit BLOCK.  We still have
+	 targets without builtin_decl support and also builtins are
+	 shared nodes and thus we can't use TREE_CHAIN in multiple
+	 lists.  */
+      tree *nextp = &BLOCK_VARS (DECL_INITIAL (decl));
+      while (*nextp)
+        {
+          tree var = *nextp;
+          if (TREE_CODE (var) == FUNCTION_DECL
+              && DECL_BUILT_IN (var))
+	    *nextp = TREE_CHAIN (var);
+	  else
+	    nextp = &TREE_CHAIN (var);
+        }
+    }
 }
 
 
@@ -4816,7 +4841,8 @@ find_decls_types_r (tree *tp, int *ws, void *data)
       fld_worklist_push (BLOCK_ABSTRACT_ORIGIN (t), fld);
     }
 
-  fld_worklist_push (TREE_TYPE (t), fld);
+  if (TREE_CODE (t) != IDENTIFIER_NODE)
+    fld_worklist_push (TREE_TYPE (t), fld);
 
   return NULL_TREE;
 }
@@ -5522,7 +5548,8 @@ handle_dll_attribute (tree * pnode, tree name, tree args, int flags,
         DECL_DLLIMPORT_P (node) = 1;
     }
   else if (TREE_CODE (node) == FUNCTION_DECL
-	   && DECL_DECLARED_INLINE_P (node))
+	   && DECL_DECLARED_INLINE_P (node)
+	   && flag_keep_inline_dllexport)
     /* An exported function, even if inline, must be emitted.  */
     DECL_EXTERNAL (node) = 0;
 
@@ -5980,10 +6007,16 @@ type_hash_eq (const void *va, const void *vb)
       || TREE_TYPE (a->type) != TREE_TYPE (b->type)
       || !attribute_list_equal (TYPE_ATTRIBUTES (a->type),
 				 TYPE_ATTRIBUTES (b->type))
-      || TYPE_ALIGN (a->type) != TYPE_ALIGN (b->type)
-      || TYPE_MODE (a->type) != TYPE_MODE (b->type)
       || (TREE_CODE (a->type) != COMPLEX_TYPE
           && TYPE_NAME (a->type) != TYPE_NAME (b->type)))
+    return 0;
+
+  /* Be careful about comparing arrays before and after the element type
+     has been completed; don't compare TYPE_ALIGN unless both types are
+     complete.  */
+  if (COMPLETE_TYPE_P (a->type) && COMPLETE_TYPE_P (b->type)
+      && (TYPE_ALIGN (a->type) != TYPE_ALIGN (b->type)
+	  || TYPE_MODE (a->type) != TYPE_MODE (b->type)))
     return 0;
 
   switch (TREE_CODE (a->type))
@@ -6026,15 +6059,16 @@ type_hash_eq (const void *va, const void *vb)
       return TYPE_OFFSET_BASETYPE (a->type) == TYPE_OFFSET_BASETYPE (b->type);
 
     case METHOD_TYPE:
-      return (TYPE_METHOD_BASETYPE (a->type) == TYPE_METHOD_BASETYPE (b->type)
-	      && (TYPE_ARG_TYPES (a->type) == TYPE_ARG_TYPES (b->type)
-		  || (TYPE_ARG_TYPES (a->type)
-		      && TREE_CODE (TYPE_ARG_TYPES (a->type)) == TREE_LIST
-		      && TYPE_ARG_TYPES (b->type)
-		      && TREE_CODE (TYPE_ARG_TYPES (b->type)) == TREE_LIST
-		      && type_list_equal (TYPE_ARG_TYPES (a->type),
-					  TYPE_ARG_TYPES (b->type)))));
-
+      if (TYPE_METHOD_BASETYPE (a->type) == TYPE_METHOD_BASETYPE (b->type)
+	  && (TYPE_ARG_TYPES (a->type) == TYPE_ARG_TYPES (b->type)
+	      || (TYPE_ARG_TYPES (a->type)
+		  && TREE_CODE (TYPE_ARG_TYPES (a->type)) == TREE_LIST
+		  && TYPE_ARG_TYPES (b->type)
+		  && TREE_CODE (TYPE_ARG_TYPES (b->type)) == TREE_LIST
+		  && type_list_equal (TYPE_ARG_TYPES (a->type),
+				      TYPE_ARG_TYPES (b->type)))))
+        break;
+      return 0;
     case ARRAY_TYPE:
       return TYPE_DOMAIN (a->type) == TYPE_DOMAIN (b->type);
 

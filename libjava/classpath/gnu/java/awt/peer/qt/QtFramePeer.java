@@ -75,7 +75,7 @@ public class QtFramePeer extends QtWindowPeer implements FramePeer
   private native int menuBarHeight();
 
   // ************ Public methods *********************
-  
+
   public void destroy()
   {
     dispose();
@@ -83,13 +83,13 @@ public class QtFramePeer extends QtWindowPeer implements FramePeer
 
   public int getState()
   {
-    // FIXME 
+    // FIXME
     return theState;
   }
 
   public Insets getInsets()
   {
-    int mbHeight = ( ((Frame)owner).getMenuBar() != null ) ? 
+    int mbHeight = ( ((Frame)owner).getMenuBar() != null ) ?
       menuBarHeight() : 0;
     return new Insets(mbHeight, 0, 0, 0);
   }
@@ -98,30 +98,30 @@ public class QtFramePeer extends QtWindowPeer implements FramePeer
   {
     if (im instanceof QtImage)
       setIcon( (QtImage)im );
-    else 
+    else
       setIcon( new QtImage( im.getSource() ) );
   }
 
   public void setMaximizedBounds(Rectangle rect)
   {
     // FIXME
-  }  
+  }
 
   public void setMenuBar(MenuBar mb)
   {
     if( mb != null )
       {
-	QtMenuBarPeer mbpeer = (QtMenuBarPeer)mb.getPeer();
-	if( mbpeer == null )
-	  {
-	    mb.addNotify();
-	    mbpeer = (QtMenuBarPeer)mb.getPeer();
-	    if( mbpeer == null )
-	      throw new IllegalStateException("No menu bar peer.");
-	  }
-	mbpeer.addMenus();
-	setMenu( mbpeer );
-      } 
+        QtMenuBarPeer mbpeer = (QtMenuBarPeer)mb.getPeer();
+        if( mbpeer == null )
+          {
+            mb.addNotify();
+            mbpeer = (QtMenuBarPeer)mb.getPeer();
+            if( mbpeer == null )
+              throw new IllegalStateException("No menu bar peer.");
+          }
+        mbpeer.addMenus();
+        setMenu( mbpeer );
+      }
     else
       setMenu( null );
   }
@@ -140,13 +140,13 @@ public class QtFramePeer extends QtWindowPeer implements FramePeer
   public void setBoundsPrivate(int x, int y, int width, int height)
   {
     // TODO Auto-generated method stub
-    
+
   }
 
   public void updateAlwaysOnTop()
   {
     // TODO Auto-generated method stub
-    
+
   }
 
   public boolean requestWindowFocus()

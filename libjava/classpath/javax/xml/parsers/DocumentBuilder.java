@@ -1,4 +1,4 @@
-/* DocumentBuilder.java -- 
+/* DocumentBuilder.java --
    Copyright (C) 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -70,7 +70,7 @@ public abstract class DocumentBuilder
    * @param is an XML input stream
    * @exception IllegalArgumentException if the input stream is null
    */
-  public Document parse(InputStream is) 
+  public Document parse(InputStream is)
     throws SAXException, IOException
   {
     if (is == null)
@@ -86,7 +86,7 @@ public abstract class DocumentBuilder
    * @param systemId the system ID of the XML document
    * @exception IllegalArgumentException if the input stream is null
    */
-  public Document parse(InputStream is, String systemId) 
+  public Document parse(InputStream is, String systemId)
     throws SAXException, IOException
   {
     if (is == null)
@@ -103,7 +103,7 @@ public abstract class DocumentBuilder
    * @param uri an XML system ID
    * @exception IllegalArgumentException if the URI is null
    */
-  public Document parse(String uri) 
+  public Document parse(String uri)
     throws SAXException, IOException
   {
     if (uri == null)
@@ -118,7 +118,7 @@ public abstract class DocumentBuilder
    * @param f the XML file
    * @exception IllegalArgumentException if the file is null
    */
-  public Document parse(File f) 
+  public Document parse(File f)
     throws SAXException, IOException
   {
     if (f == null)
@@ -135,7 +135,7 @@ public abstract class DocumentBuilder
    * @param source the input source
    * @exception IllegalArgumentException if the input source is null
    */
-  public abstract Document parse(InputSource source) 
+  public abstract Document parse(InputSource source)
     throws SAXException, IOException;
 
   /**
@@ -175,7 +175,7 @@ public abstract class DocumentBuilder
   public abstract DOMImplementation getDOMImplementation();
 
   // -- JAXP 1.3 methods --
-  
+
   /**
    * Reset this document builder to its original configuration.
    * @since 1.3
@@ -199,5 +199,5 @@ public abstract class DocumentBuilder
   {
     return false;
   }
-  
+
 }

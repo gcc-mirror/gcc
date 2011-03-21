@@ -6,6 +6,7 @@ package bytes_test
 
 import (
 	. "bytes"
+	"os"
 	"rand"
 	"testing"
 	"utf8"
@@ -165,7 +166,7 @@ func TestBasicOperations(t *testing.T) {
 			t.Error("ReadByte unexpected eof")
 		}
 		if c != data[1] {
-			t.Error("ReadByte wrong value c=%v", c)
+			t.Errorf("ReadByte wrong value c=%v", c)
 		}
 		c, err = buf.ReadByte()
 		if err == nil {
@@ -238,7 +239,7 @@ func TestMixedReadsAndWrites(t *testing.T) {
 func TestNil(t *testing.T) {
 	var b *Buffer
 	if b.String() != "<nil>" {
-		t.Errorf("expcted <nil>; got %q", b.String())
+		t.Errorf("expected <nil>; got %q", b.String())
 	}
 }
 
@@ -272,13 +273,13 @@ func TestRuneIO(t *testing.T) {
 	var buf Buffer
 	n := 0
 	for r := 0; r < NRune; r++ {
-		size := utf8.EncodeRune(r, b[n:])
+		size := utf8.EncodeRune(b[n:], r)
 		nbytes, err := buf.WriteRune(r)
 		if err != nil {
-			t.Fatalf("WriteRune(0x%x) error: %s", r, err)
+			t.Fatalf("WriteRune(%U) error: %s", r, err)
 		}
 		if nbytes != size {
-			t.Fatalf("WriteRune(0x%x) expected %d, got %d", r, size, nbytes)
+			t.Fatalf("WriteRune(%U) expected %d, got %d", r, size, nbytes)
 		}
 		n += size
 	}
@@ -289,12 +290,27 @@ func TestRuneIO(t *testing.T) {
 		t.Fatalf("incorrect result from WriteRune: %q not %q", buf.Bytes(), b)
 	}
 
+	p := make([]byte, utf8.UTFMax)
 	// Read it back with ReadRune
 	for r := 0; r < NRune; r++ {
-		size := utf8.EncodeRune(r, b)
+		size := utf8.EncodeRune(p, r)
 		nr, nbytes, err := buf.ReadRune()
 		if nr != r || nbytes != size || err != nil {
-			t.Fatalf("ReadRune(0x%x) got 0x%x,%d not 0x%x,%d (err=%s)", r, nr, nbytes, r, size, err)
+			t.Fatalf("ReadRune(%U) got %U,%d not %U,%d (err=%s)", r, nr, nbytes, r, size, err)
+		}
+	}
+
+	// Check that UnreadRune works
+	buf.Reset()
+	buf.Write(b)
+	for r := 0; r < NRune; r++ {
+		r1, size, _ := buf.ReadRune()
+		if err := buf.UnreadRune(); err != nil {
+			t.Fatalf("UnreadRune(%U) got error %q", r, err)
+		}
+		r2, nbytes, err := buf.ReadRune()
+		if r1 != r2 || r1 != r || nbytes != size || err != nil {
+			t.Fatalf("ReadRune(%U) after UnreadRune got %U,%d not %U,%d (err=%s)", r, r2, nbytes, r, size, err)
 		}
 	}
 }
@@ -329,6 +345,41 @@ func TestNext(t *testing.T) {
 					}
 				}
 			}
+		}
+	}
+}
+
+var readBytesTests = []struct {
+	buffer   string
+	delim    byte
+	expected []string
+	err      os.Error
+}{
+	{"", 0, []string{""}, os.EOF},
+	{"a\x00", 0, []string{"a\x00"}, nil},
+	{"abbbaaaba", 'b', []string{"ab", "b", "b", "aaab"}, nil},
+	{"hello\x01world", 1, []string{"hello\x01"}, nil},
+	{"foo\nbar", 0, []string{"foo\nbar"}, os.EOF},
+	{"alpha\nbeta\ngamma\n", '\n', []string{"alpha\n", "beta\n", "gamma\n"}, nil},
+	{"alpha\nbeta\ngamma", '\n', []string{"alpha\n", "beta\n", "gamma"}, os.EOF},
+}
+
+func TestReadBytes(t *testing.T) {
+	for _, test := range readBytesTests {
+		buf := NewBufferString(test.buffer)
+		var err os.Error
+		for _, expected := range test.expected {
+			var bytes []byte
+			bytes, err = buf.ReadBytes(test.delim)
+			if string(bytes) != expected {
+				t.Errorf("expected %q, got %q", expected, bytes)
+			}
+			if err != nil {
+				break
+			}
+		}
+		if err != test.err {
+			t.Errorf("expected error %v, got %v", test.err, err)
 		}
 	}
 }

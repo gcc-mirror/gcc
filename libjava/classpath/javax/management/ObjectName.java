@@ -101,7 +101,7 @@ import java.io.ObjectOutputStream;
  * '<code>domain: key1 = value1 </code>' has a key ' key1 ' with value
  * ' value1 '.  Newlines are disallowed, except where escaped in quoted
  * values.
- * </p> 
+ * </p>
  *
  * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
  * @since 1.5
@@ -156,13 +156,13 @@ public class ObjectName
   {
     try
       {
-	WILDCARD = new ObjectName("");
+        WILDCARD = new ObjectName("");
       }
     catch (MalformedObjectNameException e)
       {
-	throw (InternalError) (new InternalError("A problem occurred " +
-						 "initializing the ObjectName " +
-						 "wildcard.").initCause(e));
+        throw (InternalError) (new InternalError("A problem occurred " +
+                                                 "initializing the ObjectName " +
+                                                 "wildcard.").initCause(e));
       }
   }
 
@@ -208,34 +208,34 @@ public class ObjectName
     String[] pairs = rest.split(",");
     if (pairs.length == 0 && !isPattern())
       throw new MalformedObjectNameException("A name that is not a " +
-					     "pattern must contain at " +
-					     "least one key-value pair.");
+                                             "pattern must contain at " +
+                                             "least one key-value pair.");
     propertyListString = "";
     for (int a = 0; a < pairs.length; ++a)
       {
-	if (pairs[a].equals("*"))
-	  {
-	    if (propertyListPattern)
-	      throw new MalformedObjectNameException("Multiple wildcards " +
-						     "in properties.");
-	    propertyListPattern = true;
-	    continue;
-	  }
-	int sep = pairs[a].indexOf('=');
-	if (sep == -1)
-	  throw new MalformedObjectNameException("A key must be " +
-						 "followed by a value.");
-	String key = pairs[a].substring(0, sep);
-	if (properties.containsKey(key))
-	  throw new MalformedObjectNameException("The same key occurs " +
-						 "more than once.");
-	String value = pairs[a].substring(sep+1);
-	properties.put(key, value);
-	propertyListString += key + "=" + value + ",";
+        if (pairs[a].equals("*"))
+          {
+            if (propertyListPattern)
+              throw new MalformedObjectNameException("Multiple wildcards " +
+                                                     "in properties.");
+            propertyListPattern = true;
+            continue;
+          }
+        int sep = pairs[a].indexOf('=');
+        if (sep == -1)
+          throw new MalformedObjectNameException("A key must be " +
+                                                 "followed by a value.");
+        String key = pairs[a].substring(0, sep);
+        if (properties.containsKey(key))
+          throw new MalformedObjectNameException("The same key occurs " +
+                                                 "more than once.");
+        String value = pairs[a].substring(sep+1);
+        properties.put(key, value);
+        propertyListString += key + "=" + value + ",";
       }
     if (propertyListString.length() > 0)
       propertyListString =
-	propertyListString.substring(0, propertyListString.length() - 1);
+        propertyListString.substring(0, propertyListString.length() - 1);
     checkComponents();
   }
 
@@ -300,48 +300,48 @@ public class ObjectName
   {
     if (domain.indexOf(':') != -1)
       throw new MalformedObjectNameException("The domain includes a ':' " +
-					     "character.");
+                                             "character.");
     if (domain.indexOf('\n') != -1)
       throw new MalformedObjectNameException("The domain includes a newline " +
-					     "character.");
+                                             "character.");
     char[] keychars = new char[] { '\n', ':', ',', '*', '?', '=' };
     char[] valchars = new char[] { '\n', ':', ',', '=' };
     for (Map.Entry<String,String> entry : properties.entrySet())
       {
-	for (int a = 0; a < keychars.length; ++a)
-	  if (entry.getKey().indexOf(keychars[a]) != -1)
-	    throw new MalformedObjectNameException("A key contains a '" +
-						   keychars[a] + "' " +
-						   "character.");
-	String value = entry.getValue();
-	int quote = value.indexOf('"');
-	if (quote == 0)
-	  {
-	    try
-	      {
-		unquote(value);
-	      }
-	    catch (IllegalArgumentException e)
-	      {
-		throw (MalformedObjectNameException)
-		  new MalformedObjectNameException("The quoted value is " +
-						   "invalid.").initCause(e);
-	      }
-	  }
-	else if (quote != -1)
-	  throw new MalformedObjectNameException("A value contains " +
-						 "a '\"' character.");
-	else
-	  {
-	    for (int a = 0; a < valchars.length; ++a)
-	      if (value.indexOf(valchars[a]) != -1)
-		throw new MalformedObjectNameException("A value contains " +
-						       "a '" + valchars[a] + "' " +
-						       "character.");
-	    
-	  }
-	if (value.indexOf('*') != -1 || value.indexOf('?') != -1)
-	  propertyValuePattern = true;
+        for (int a = 0; a < keychars.length; ++a)
+          if (entry.getKey().indexOf(keychars[a]) != -1)
+            throw new MalformedObjectNameException("A key contains a '" +
+                                                   keychars[a] + "' " +
+                                                   "character.");
+        String value = entry.getValue();
+        int quote = value.indexOf('"');
+        if (quote == 0)
+          {
+            try
+              {
+                unquote(value);
+              }
+            catch (IllegalArgumentException e)
+              {
+                throw (MalformedObjectNameException)
+                  new MalformedObjectNameException("The quoted value is " +
+                                                   "invalid.").initCause(e);
+              }
+          }
+        else if (quote != -1)
+          throw new MalformedObjectNameException("A value contains " +
+                                                 "a '\"' character.");
+        else
+          {
+            for (int a = 0; a < valchars.length; ++a)
+              if (value.indexOf(valchars[a]) != -1)
+                throw new MalformedObjectNameException("A value contains " +
+                                                       "a '" + valchars[a] + "' " +
+                                                       "character.");
+
+          }
+        if (value.indexOf('*') != -1 || value.indexOf('?') != -1)
+          propertyValuePattern = true;
       }
   }
 
@@ -375,33 +375,33 @@ public class ObjectName
 
     if (isDomainPattern())
       {
-	if (!domainMatches(domain, 0, name.getDomain(), 0))
-	  return false;
+        if (!domainMatches(domain, 0, name.getDomain(), 0))
+          return false;
       }
     else
       {
-	if (!domain.equals(name.getDomain()))
-	  return false;
+        if (!domain.equals(name.getDomain()))
+          return false;
       }
 
     if (isPropertyPattern())
       {
-	Hashtable<String,String> oProps = name.getKeyPropertyList();
-	for (Map.Entry<String,String> entry : properties.entrySet())
-	  {
-	    String key = entry.getKey();
-	    if (!(oProps.containsKey(key)))
-	      return false;
-	    String val = entry.getValue();
-	    if (!(val.equals(oProps.get(key))))
-	      return false;
-	  }
+        Hashtable<String,String> oProps = name.getKeyPropertyList();
+        for (Map.Entry<String,String> entry : properties.entrySet())
+          {
+            String key = entry.getKey();
+            if (!(oProps.containsKey(key)))
+              return false;
+            String val = entry.getValue();
+            if (!(val.equals(oProps.get(key))))
+              return false;
+          }
       }
     else
       {
-	if (!getCanonicalKeyPropertyListString().equals
-	    (name.getCanonicalKeyPropertyListString()))
-	  return false;
+        if (!getCanonicalKeyPropertyListString().equals
+            (name.getCanonicalKeyPropertyListString()))
+          return false;
       }
     return true;
   }
@@ -416,29 +416,29 @@ public class ObjectName
    * @return true if the domain matches the pattern.
    */
   private static boolean domainMatches(String pattern, int patternindex,
-				       String domain, int domainindex)
+                                       String domain, int domainindex)
   {
     while (patternindex < pattern.length())
       {
-	char c = pattern.charAt(patternindex++);
-	
-	if (c == '*')
-	  {
-	    for (int i = domain.length(); i >= domainindex; i--)
-	      {
-		if (domainMatches(pattern, patternindex, domain, i))
-		  return true;
-	      }
-	    return false;
-	  }
+        char c = pattern.charAt(patternindex++);
 
-	if (domainindex >= domain.length())
-	  return false;
-	
-	if (c != '?' && c != domain.charAt(domainindex))
-	  return false;
+        if (c == '*')
+          {
+            for (int i = domain.length(); i >= domainindex; i--)
+              {
+                if (domainMatches(pattern, patternindex, domain, i))
+                  return true;
+              }
+            return false;
+          }
 
-	domainindex++;
+        if (domainindex >= domain.length())
+          return false;
+
+        if (c != '?' && c != domain.charAt(domainindex))
+          return false;
+
+        domainindex++;
       }
     return true;
   }
@@ -457,8 +457,8 @@ public class ObjectName
   {
     if (obj instanceof ObjectName)
       {
-	ObjectName o = (ObjectName) obj;
-	return getCanonicalName().equals(o.getCanonicalName());
+        ObjectName o = (ObjectName) obj;
+        return getCanonicalName().equals(o.getCanonicalName());
       }
     return false;
   }
@@ -467,7 +467,7 @@ public class ObjectName
    * Returns the property list in canonical form.  The keys
    * are ordered using the lexicographic ordering used by
    * {@link java.lang.String#compareTo(java.lang.Object)}.
-   * 
+   *
    * @return the property list, with the keys in lexicographic
    *         order.
    */
@@ -477,10 +477,10 @@ public class ObjectName
     Iterator<Map.Entry<String,String>> i = properties.entrySet().iterator();
     while (i.hasNext())
       {
-	Map.Entry<String,String> entry = i.next();
-	builder.append(entry.getKey() + "=" + entry.getValue());
-	if (i.hasNext())
-	  builder.append(",");
+        Map.Entry<String,String> entry = i.next();
+        builder.append(entry.getKey() + "=" + entry.getValue());
+        if (i.hasNext())
+          builder.append(",");
       }
     return builder.toString();
   }
@@ -488,7 +488,7 @@ public class ObjectName
   /**
    * <p>
    * Returns the name as a string in canonical form.  More precisely,
-   * this returns a string of the format 
+   * this returns a string of the format
    * &lt;domain&gt;:&lt;properties&gt;&lt;wild&gt;.  &lt;properties&gt;
    * is the same value as returned by
    * {@link #getCanonicalKeyPropertyListString()}.  &lt;wild&gt;
@@ -499,7 +499,7 @@ public class ObjectName
    * <li>'*' if &lt;properties&gt; is empty.</li>
    * <li>',*' if there is at least one key-value pair.</li>
    * </ul>
-   * 
+   *
    * @return the canonical string form of the object name, as specified
    *         above.
    */
@@ -539,13 +539,13 @@ public class ObjectName
   {
     try
       {
-	return new ObjectName(name.getCanonicalName());
+        return new ObjectName(name.getCanonicalName());
       }
     catch (MalformedObjectNameException e)
       {
-	throw (InternalError)
-	  (new InternalError("The canonical name of " +
-			     "the given name is invalid.").initCause(e));
+        throw (InternalError)
+          (new InternalError("The canonical name of " +
+                             "the given name is invalid.").initCause(e));
       }
   }
 
@@ -557,7 +557,7 @@ public class ObjectName
    *
    * @param name the {@link ObjectName} to provide an instance of.
    * @return a instance for the given name, which may or may not be a subclass
-   *         of {@link ObjectName}.  
+   *         of {@link ObjectName}.
    * @throws MalformedObjectNameException the domain, a key or a value
    *                                      contains an illegal
    *                                      character or a value
@@ -582,7 +582,7 @@ public class ObjectName
    * @param key the key of the property.
    * @param value the value of the property.
    * @return a instance for the given name, which may or may not be a subclass
-   *         of {@link ObjectName}.  
+   *         of {@link ObjectName}.
    * @throws MalformedObjectNameException the domain, a key or a value
    *                                      contains an illegal
    *                                      character or a value
@@ -606,7 +606,7 @@ public class ObjectName
    * @param domain the domain part of the object name.
    * @param properties the key-value property pairs.
    * @return a instance for the given name, which may or may not be a subclass
-   *         of {@link ObjectName}.  
+   *         of {@link ObjectName}.
    * @throws MalformedObjectNameException the domain, a key or a value
    *                                      contains an illegal
    *                                      character or a value
@@ -615,7 +615,7 @@ public class ObjectName
    * @throws NullPointerException if <code>name</code> is <code>null</code>.
    */
   public static ObjectName getInstance(String domain,
-				       Hashtable<String,String> properties)
+                                       Hashtable<String,String> properties)
     throws MalformedObjectNameException
   {
     return new ObjectName(domain, properties);
@@ -654,7 +654,7 @@ public class ObjectName
    * list.  If the object name was created using {@link
    * ObjectName(String)}, then this string will contain the properties
    * in the same order they were given in at creation.
-   * 
+   *
    * @return the property list.
    */
   public String getKeyPropertyListString()
@@ -784,8 +784,8 @@ public class ObjectName
    * <li>Otherwise, s is used verbatim.
    * </ul></li>
    * <li>The string is terminated with a closing quote character, '"'.</li>
-   * </ul> 
-   * 
+   * </ul>
+   *
    * @param string the string to quote.
    * @return a quoted version of the supplied string.
    * @throws NullPointerException if <code>string</code> is <code>null</code>.
@@ -796,27 +796,27 @@ public class ObjectName
     builder.append('"');
     for (int a = 0; a < string.length(); ++a)
       {
-	char s = string.charAt(a);
-	switch (s)
-	  {
-	  case '"':
-	    builder.append("\\\"");
-	    break;
-	  case '*':
-	    builder.append("\\*");
-	    break;
-	  case '?':
-	    builder.append("\\?");
-	    break;
-	  case '\\':
-	    builder.append("\\\\");
-	    break;
-	  case '\n':
-	    builder.append("\\\n");
-	    break;
-	  default:
-	    builder.append(s);
-	  }
+        char s = string.charAt(a);
+        switch (s)
+          {
+          case '"':
+            builder.append("\\\"");
+            break;
+          case '*':
+            builder.append("\\*");
+            break;
+          case '?':
+            builder.append("\\?");
+            break;
+          case '\\':
+            builder.append("\\\\");
+            break;
+          case '\n':
+            builder.append("\\\n");
+            break;
+          default:
+            builder.append(s);
+          }
       }
     builder.append('"');
     return builder.toString();
@@ -881,7 +881,7 @@ public class ObjectName
    * @param in the input stream to read from.
    * @throws IOException if an I/O error occurs.
    */
-  private void readObject(ObjectInputStream in) 
+  private void readObject(ObjectInputStream in)
     throws IOException, ClassNotFoundException
    {
      in.defaultReadObject();
@@ -908,7 +908,7 @@ public class ObjectName
    * @return the unquoted string.
    * @throws NullPointerException if <code>q</code> is <code>null</code>.
    * @throws IllegalArgumentException if the string is not a valid
-   *                                  quoted string i.e. it is not 
+   *                                  quoted string i.e. it is not
    *                                  surrounded by quotation marks
    *                                  and/or characters are not properly
    *                                  escaped.
@@ -917,25 +917,25 @@ public class ObjectName
   {
     if (q.charAt(0) != '"')
       throw new IllegalArgumentException("The string does " +
-					 "not start with a quote.");
+                                         "not start with a quote.");
     if (q.charAt(q.length() - 1) != '"')
       throw new IllegalArgumentException("The string does " +
-					 "not end with a quote.");
+                                         "not end with a quote.");
     CPStringBuilder builder = new CPStringBuilder();
     for (int a = 1; a < (q.length() - 1); ++a)
       {
-	char n = q.charAt(a);
-	if (n == '\\')
-	  {
-	    n = q.charAt(++a);
-	    if (n != '"' && n != '?' && n != '*' &&
-		n != 'n' && n != '\\')
-	      throw new IllegalArgumentException("Illegal escaped character: "
-						 + n);
-	  }
-	else if (n == '"' || n == '\n') 
-	  throw new IllegalArgumentException("Illegal character: " + n);
-	builder.append(n);
+        char n = q.charAt(a);
+        if (n == '\\')
+          {
+            n = q.charAt(++a);
+            if (n != '"' && n != '?' && n != '*' &&
+                n != 'n' && n != '\\')
+              throw new IllegalArgumentException("Illegal escaped character: "
+                                                 + n);
+          }
+        else if (n == '"' || n == '\n')
+          throw new IllegalArgumentException("Illegal character: " + n);
+        builder.append(n);
       }
 
     return builder.toString();

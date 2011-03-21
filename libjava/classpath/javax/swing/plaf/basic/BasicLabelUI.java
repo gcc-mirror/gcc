@@ -114,7 +114,7 @@ public class BasicLabelUI extends LabelUI implements PropertyChangeListener
 
   /**
    * Returns the preferred size of this component as calculated by the
-   * {@link #layoutCL(JLabel, FontMetrics, String, Icon, Rectangle, Rectangle, 
+   * {@link #layoutCL(JLabel, FontMetrics, String, Icon, Rectangle, Rectangle,
    * Rectangle)} method.
    *
    * @param c This {@link JComponent} to get a preferred size for.
@@ -188,7 +188,7 @@ public class BasicLabelUI extends LabelUI implements PropertyChangeListener
 
   /**
    * The method that paints the label according to its current state.
-   * 
+   *
    * @param g The {@link Graphics} object to paint with.
    * @param c The {@link JComponent} to paint.
    */
@@ -217,7 +217,7 @@ public class BasicLabelUI extends LabelUI implements PropertyChangeListener
         text = layoutCL(b, fm, text, icon, vr, ir, tr);
 
         if (icon != null)
-          icon.paintIcon(b, g, ir.x, ir.y);       
+          icon.paintIcon(b, g, ir.x, ir.y);
 
         if (text != null && ! text.equals(""))
           {
@@ -239,7 +239,7 @@ public class BasicLabelUI extends LabelUI implements PropertyChangeListener
 
   /**
    * This method is simply calls SwingUtilities's layoutCompoundLabel.
-   * 
+   *
    * @param label The label to lay out.
    * @param fontMetrics The FontMetrics for the font used.
    * @param text The text to paint.
@@ -247,7 +247,7 @@ public class BasicLabelUI extends LabelUI implements PropertyChangeListener
    * @param viewR The entire viewable rectangle.
    * @param iconR The icon bounds rectangle.
    * @param textR The text bounds rectangle.
-   * 
+   *
    * @return A possibly clipped version of the text.
    */
   protected String layoutCL(JLabel label, FontMetrics fontMetrics, String text,
@@ -421,11 +421,11 @@ public class BasicLabelUI extends LabelUI implements PropertyChangeListener
           {
             // add a keystroke for the given mnemonic mapping to 'press';
             InputMap keyMap = new InputMap();
-            keyMap.put(KeyStroke.getKeyStroke(mnemonic, KeyEvent.VK_ALT), 
+            keyMap.put(KeyStroke.getKeyStroke(mnemonic, KeyEvent.VK_ALT),
                 "press");
-            SwingUtilities.replaceUIInputMap(l, 
+            SwingUtilities.replaceUIInputMap(l,
                 JComponent.WHEN_IN_FOCUSED_WINDOW, keyMap);
-            
+
             // add an action to focus the component when 'press' happens
             ActionMap map = new ActionMap();
             map.put("press", new AbstractAction() {
@@ -439,7 +439,7 @@ public class BasicLabelUI extends LabelUI implements PropertyChangeListener
             });
             SwingUtilities.replaceUIActionMap(l, map);
           }
-      }   
+      }
   }
 
   /**
@@ -450,7 +450,7 @@ public class BasicLabelUI extends LabelUI implements PropertyChangeListener
   protected void uninstallKeyboardActions(JLabel l)
   {
     SwingUtilities.replaceUIActionMap(l, null);
-    SwingUtilities.replaceUIInputMap(l, JComponent.WHEN_IN_FOCUSED_WINDOW, 
+    SwingUtilities.replaceUIInputMap(l, JComponent.WHEN_IN_FOCUSED_WINDOW,
                                      null);
   }
 
@@ -500,9 +500,9 @@ public class BasicLabelUI extends LabelUI implements PropertyChangeListener
             int newMnemonic = ((Integer) e.getNewValue()).intValue();
             InputMap keyMap = label.getInputMap(
                 JComponent.WHEN_IN_FOCUSED_WINDOW);
-            keyMap.put(KeyStroke.getKeyStroke(oldMnemonic, 
+            keyMap.put(KeyStroke.getKeyStroke(oldMnemonic,
                 KeyEvent.ALT_DOWN_MASK), null);
-            keyMap.put(KeyStroke.getKeyStroke(newMnemonic, 
+            keyMap.put(KeyStroke.getKeyStroke(newMnemonic,
                 KeyEvent.ALT_DOWN_MASK), "press");
           }
       }
@@ -512,8 +512,8 @@ public class BasicLabelUI extends LabelUI implements PropertyChangeListener
         InputMap keyMap = label.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
         int mnemonic = label.getDisplayedMnemonic();
         if (mnemonic > 0)
-          keyMap.put(KeyStroke.getKeyStroke(mnemonic, KeyEvent.ALT_DOWN_MASK), 
-              "press");       
+          keyMap.put(KeyStroke.getKeyStroke(mnemonic, KeyEvent.ALT_DOWN_MASK),
+              "press");
       }
   }
 

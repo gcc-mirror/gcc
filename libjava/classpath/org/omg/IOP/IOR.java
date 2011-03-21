@@ -53,7 +53,7 @@ import java.io.Serializable;
  * The IOR is a standard structure, transferred when sending an object with
  * {@link org.omg.CORBA.portable.OutputStream#write_Object(org.omg.CORBA.Object)}
  * and receiving with {@link org.omg.CORBA.portable.InputStream#read_Object()}.
- * The stringified object references, managed by 
+ * The stringified object references, managed by
  * {@link org.omg.CORBA.ORB#string_to_object}
  * and {@link org.omg.CORBA.ORB#object_to_string} are also IORs, where the
  * initially binary data are encoded as strings using hexadecimal notation.

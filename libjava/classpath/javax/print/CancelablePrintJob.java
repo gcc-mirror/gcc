@@ -39,18 +39,18 @@ exception statement from your version. */
 package javax.print;
 
 /**
- * <code>CancelablePrintJob</code> represents a print job which can be 
+ * <code>CancelablePrintJob</code> represents a print job which can be
  * canceled.
  * <p>
- * It is implemented by <code>DocPrintJob</code>s which support to cancel 
- * a print job during processing. Clients need to explicitly test if a given 
- * <code>DocPrintJob</code> object from a print service implementes this 
+ * It is implemented by <code>DocPrintJob</code>s which support to cancel
+ * a print job during processing. Clients need to explicitly test if a given
+ * <code>DocPrintJob</code> object from a print service implementes this
  * interface and therefore supports cancelling.
  * </p><p>
  * Implementor of java print services should implement this interface if
  * cancelling is supported by the underlying print system. If implemented the
- * corresponding print job event 
- * {@link javax.print.event.PrintJobEvent#JOB_CANCELED} should be delivered to 
+ * corresponding print job event
+ * {@link javax.print.event.PrintJobEvent#JOB_CANCELED} should be delivered to
  * registered clients. Implementations have to be thread-safe.
  * </p>
  *

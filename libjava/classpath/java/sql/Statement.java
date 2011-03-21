@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -43,7 +43,7 @@ package java.sql;
  *
  * @author Aaron M. Renn (arenn@urbanophile.com)
  */
-public interface Statement 
+public interface Statement
 {
   int CLOSE_CURRENT_RESULT = 1;
   int KEEP_CURRENT_RESULT = 2;
@@ -66,7 +66,7 @@ public interface Statement
   /**
    * This method executes the specified SQL INSERT, UPDATE, or DELETE statement
    * and returns the number of rows affected, which may be 0.
-   * 
+   *
    * @param sql The SQL statement to execute.
    * @return The number of rows affected by the SQL statement.
    * @exception SQLException If an error occurs.
@@ -117,7 +117,7 @@ public interface Statement
    * This method sets the local escape processing mode on or off.  The
    * default value is on.
    *
-   * @param escape <code>true</code> to enable local escape processing, 
+   * @param escape <code>true</code> to enable local escape processing,
    *               <code>false</code> to disable it.
    * @exception SQLException If an error occurs.
    */
@@ -214,10 +214,10 @@ public interface Statement
   int getUpdateCount() throws SQLException;
 
   /**
-   * This method advances the result set pointer to the next result set, 
+   * This method advances the result set pointer to the next result set,
    * which can then be retrieved using <code>getResultSet</code>
    *
-   * @return <code>true</code> if there is another result set, 
+   * @return <code>true</code> if there is another result set,
    *         <code>false</code> otherwise (for example, the next result is an
    *         update count).
    * @exception SQLException If an error occurs.

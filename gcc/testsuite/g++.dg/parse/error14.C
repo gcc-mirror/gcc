@@ -21,6 +21,6 @@ struct X
 
 }; // { dg-error "2:expected '.' at end of input" "at end of input" }
    // { dg-error "1:expected primary-expression before '.' token" "primary" { target *-*-* } 22 }
-   // { dg-error "2:expected ';' after struct definition" "semicolon" { target *-*-* } 22 }
+   // { dg-error "1:expected unqualified-id" "unqualified-id" { target *-*-* } 22 }
    // { dg-error "1:expected ';' before '.' token" "function" { target *-*-* } 22 }
 

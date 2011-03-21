@@ -46,18 +46,18 @@ import org.omg.CORBA.portable.IDLEntity;
 /**
  * The {@link org.omg.CORBA.TypeCode#member_name(int) },
  * {@link org.omg.CORBA.TypeCode#member_type(int) } and
- * {@link org.omg.CORBA.TypeCode#member_label(int) } raise Bounds when 
+ * {@link org.omg.CORBA.TypeCode#member_label(int) } raise Bounds when
  * the parameter is larger than the index of the last member,
  * constituting the type.
- * 
+ *
  * @author Audrius Meskauskas (AudriusA@Bioinformatics.org)
  */
 public final class Bounds
   extends UserException
   implements IDLEntity, Serializable
 {
-  /** 
-   * Use serialVersionUID for interoperability. 
+  /**
+   * Use serialVersionUID for interoperability.
    */
   private static final long serialVersionUID = -5418177951071152101L;
 

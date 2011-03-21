@@ -1,4 +1,4 @@
-/* XSLComparator.java -- 
+/* XSLComparator.java --
    Copyright (C) 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -65,54 +65,54 @@ class XSLComparator
   {
     for (SortKey sortKey : sortKeys)
       {
-	String k1 = sortKey.key(n1);
-	String k2 = sortKey.key(n2);
-	if ("text".equals(sortKey.dataType))
-	  {
-	    Locale locale = (sortKey.lang == null) ? Locale.getDefault() :
-	      new Locale(sortKey.lang);
-	    Collator collator = Collator.getInstance(locale);
-	    int d = collator.compare(k1, k2);
-	    if (d != 0)
-	      {
-		switch (sortKey.caseOrder)
-		  {
-		  case SortKey.UPPER_FIRST:
-		    // TODO
-		    break;
-		  case SortKey.LOWER_FIRST:
-		    // TODO
-		    break;
-		  }
-		if (sortKey.descending)
-		  {
-		    d = -d;
-		  }
-		return d;
-	      }
-	  }
-	else if ("number".equals(sortKey.dataType))
-	  {
-	    double kn1 = Expr._number(n1, k1);
-	    double kn2 = Expr._number(n2, k2);
-	    int d;
-	    if (Double.isNaN(kn1) || Double.isInfinite(kn2))
-	      {
-		d = -1;
-	      }
-	    else if (Double.isNaN(kn2) || Double.isInfinite(kn1))
-	      {
-		d = 1;
-	      }
-	    else
-	      {
-		// conversion to int may give 0 for small numbers
-		d = (kn1 > kn2) ? 1 : (kn1 < kn2) ? -1 : 0;
-	      }
-	    return (sortKey.descending) ? -d : d;
-	  }
+        String k1 = sortKey.key(n1);
+        String k2 = sortKey.key(n2);
+        if ("text".equals(sortKey.dataType))
+          {
+            Locale locale = (sortKey.lang == null) ? Locale.getDefault() :
+              new Locale(sortKey.lang);
+            Collator collator = Collator.getInstance(locale);
+            int d = collator.compare(k1, k2);
+            if (d != 0)
+              {
+                switch (sortKey.caseOrder)
+                  {
+                  case SortKey.UPPER_FIRST:
+                    // TODO
+                    break;
+                  case SortKey.LOWER_FIRST:
+                    // TODO
+                    break;
+                  }
+                if (sortKey.descending)
+                  {
+                    d = -d;
+                  }
+                return d;
+              }
+          }
+        else if ("number".equals(sortKey.dataType))
+          {
+            double kn1 = Expr._number(n1, k1);
+            double kn2 = Expr._number(n2, k2);
+            int d;
+            if (Double.isNaN(kn1) || Double.isInfinite(kn2))
+              {
+                d = -1;
+              }
+            else if (Double.isNaN(kn2) || Double.isInfinite(kn1))
+              {
+                d = 1;
+              }
+            else
+              {
+                // conversion to int may give 0 for small numbers
+                d = (kn1 > kn2) ? 1 : (kn1 < kn2) ? -1 : 0;
+              }
+            return (sortKey.descending) ? -d : d;
+          }
       }
     return 0;
   }
-  
+
 }

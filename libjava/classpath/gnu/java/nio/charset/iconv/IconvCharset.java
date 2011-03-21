@@ -63,11 +63,11 @@ public final class IconvCharset extends Charset
   {
     try
       {
-	return new IconvDecoder(this, info);
+        return new IconvDecoder(this, info);
       }
     catch (IllegalArgumentException e)
       {
-	return null;
+        return null;
       }
   }
 
@@ -75,11 +75,11 @@ public final class IconvCharset extends Charset
   {
     try
       {
-	return new IconvEncoder(this, info);
+        return new IconvEncoder(this, info);
       }
     catch (IllegalArgumentException e)
       {
-	return null;
+        return null;
       }
   }
 }

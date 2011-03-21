@@ -1,4 +1,4 @@
-/* Reverb attributes 
+/* Reverb attributes
    Copyright (C) 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -61,7 +61,7 @@ public class ReverbType
    * @param decay the decay time in microseconds
    */
   protected ReverbType(String name, int earlyDelay, float earlyInten,
-		       int lateDelay, float lateInten, int decay)
+                       int lateDelay, float lateInten, int decay)
   {
     this.name = name;
     this.earlyReflectionDelay = earlyDelay;
@@ -136,9 +136,9 @@ public class ReverbType
   public final String toString()
   {
     return ("name=" + name + "; earlyReflectionDelay=" + earlyReflectionDelay
-	    + "; earlyReflectionIntensity=" + earlyReflectionIntensity
-	    + "; lateReflectionDelay=" + lateReflectionDelay
-	    + "; lateReflectionIntensity=" + lateReflectionIntensity
-	    + "; decayTime=" + decayTime);
+            + "; earlyReflectionIntensity=" + earlyReflectionIntensity
+            + "; lateReflectionDelay=" + lateReflectionDelay
+            + "; lateReflectionIntensity=" + lateReflectionIntensity
+            + "; decayTime=" + decayTime);
   }
 }

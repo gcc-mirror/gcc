@@ -56,16 +56,16 @@ public class KDEDesktopPeer
     "gconftool-2 -g /desktop/gnome/url-handlers/http/command";
 
   protected String getCommand(String action)
-  {   
+  {
     // check if a command already exists
     String command = super.getCommand(action);
-    
+
     if (command == null)
       {
         try
           {
             if (action == _MAIL)
-              { 
+              {
                 command = "kfmclient exec";
               }
             else if (action == _PRINT)
@@ -82,27 +82,27 @@ public class KDEDesktopPeer
             command = null;
           }
       }
-    
+
     return command;
   }
-     
+
   protected boolean supportCommand(String check)
   {
     return true;
   }
-  
+
   public void mail() throws IOException
   {
     checkPermissions();
-    
+
     String mail = getCommand(_MAIL);
-    
+
     if (mail == null)
       throw new UnsupportedOperationException();
-    
+
     Runtime.getRuntime().exec(mail + " 'mailto: '");
   }
-  
+
   protected String execQuery(String command) throws IOException
   {
     InputStream in = null;
@@ -129,7 +129,7 @@ public class KDEDesktopPeer
     // remove %s from the string, leave only the command line
     int index = output.indexOf("%s");
     output.delete(index, index + 1);
-    
+
     return output.toString().trim();
   }
 }

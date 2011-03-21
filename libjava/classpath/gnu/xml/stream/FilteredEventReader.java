@@ -1,4 +1,4 @@
-/* FilteredEventReader.java -- 
+/* FilteredEventReader.java --
    Copyright (C) 2005,2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -72,7 +72,7 @@ class FilteredEventReader
     while (!filter.accept(ret));
     return ret;
   }
-  
+
   public Object next()
   {
     try
@@ -86,7 +86,7 @@ class FilteredEventReader
         throw e2;
       }
   }
-  
+
   public XMLEvent peek()
     throws XMLStreamException
   {
@@ -98,7 +98,7 @@ class FilteredEventReader
     while (!filter.accept(ret));
     return ret;
   }
-  
+
   public XMLEvent nextTag()
     throws XMLStreamException
   {
@@ -110,6 +110,5 @@ class FilteredEventReader
     while (!filter.accept(ret));
     return ret;
   }
-  
-}
 
+}

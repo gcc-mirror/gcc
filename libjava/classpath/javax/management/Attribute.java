@@ -42,9 +42,9 @@ import java.io.Serializable;
 /**
  * Represents an MBean attribute, having the name and the assigned value. The
  * MBean objects use this class to get and set attributes values.
- * 
+ *
  * @since 1.5
- * 
+ *
  * @author Audrius Meskauskas, Lithuania (AudriusA@Bioinformatics.org)
  */
 public class Attribute
@@ -67,7 +67,7 @@ public class Attribute
 
   /**
    * Create the attribute with the given name and value.
-   * 
+   *
    * @param name the attribute name
    * @param value the attribute value
    */
@@ -79,9 +79,9 @@ public class Attribute
 
   /**
    * Compares the attribute with another attribute.
-   * 
+   *
    * @param other the other object to compare with
-   * 
+   *
    * @return true if both value and object are equal, false otherwise.
    */
   public boolean equals(Object other)
@@ -99,7 +99,7 @@ public class Attribute
           v = oa.m_value == m_value;
         else
           v = oa.m_value.equals(m_value);
-        
+
         return n && v;
 
       }
@@ -109,7 +109,7 @@ public class Attribute
 
   /**
    * Returns the attribute name.
-   * 
+   *
    * @return the attribute name
    */
   public String getName()
@@ -119,7 +119,7 @@ public class Attribute
 
   /**
    * Returns the attribute value.
-   * 
+   *
    * @return the attribute value.
    */
   public Object getValue()
@@ -129,14 +129,14 @@ public class Attribute
 
   /**
    * Need to override as {@link #equals} is overridden.
-   * 
+   *
    * @return the expression, dependent of the object and name hashcodes.
    */
   public int hashCode()
   {
     int n = m_name == null ? 0 : m_name.hashCode();
     int v = m_value == null ? 0 : m_value.hashCode();
-    
+
     return n ^ v;
   }
 

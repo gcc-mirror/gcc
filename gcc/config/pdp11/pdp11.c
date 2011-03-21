@@ -235,6 +235,12 @@ static const struct default_options pdp11_option_optimization_table[] =
 
 #undef  TARGET_ASM_FUNCTION_SECTION
 #define TARGET_ASM_FUNCTION_SECTION pdp11_function_section
+
+#undef  TARGET_PRINT_OPERAND
+#define TARGET_PRINT_OPERAND pdp11_asm_print_operand
+
+#undef  TARGET_PRINT_OPERAND_PUNCT_VALID_P
+#define TARGET_PRINT_OPERAND_PUNCT_VALID_P pdp11_asm_print_operand_punct_valid_p
 
 /* Implement TARGET_HANDLE_OPTION.  */
 
@@ -716,6 +722,60 @@ output_ascii (FILE *file, const char *p, int size)
 
 
 void
+pdp11_asm_output_var (FILE *file, const char *name, int size,
+		      int align, bool global)
+{
+  if (align > 8)
+    fprintf (file, "\n\t.even\n");
+  if (global)
+    {
+      fprintf (file, ".globl ");
+      assemble_name (file, name);
+    }
+  fprintf (file, "\n");
+  assemble_name (file, name);
+  fprintf (file, ": .=.+ %#ho\n", (unsigned short)size);
+}
+
+static void
+pdp11_asm_print_operand (FILE *file, rtx x, int code)
+{
+  REAL_VALUE_TYPE r;
+  long sval[2];
+ 
+  if (code == '#')
+    fprintf (file, "#");
+  else if (code == '@')
+    {
+      if (TARGET_UNIX_ASM)
+	fprintf (file, "*");
+      else
+	fprintf (file, "@");
+    }
+  else if (GET_CODE (x) == REG)
+    fprintf (file, "%s", reg_names[REGNO (x)]);
+  else if (GET_CODE (x) == MEM)
+    output_address (XEXP (x, 0));
+  else if (GET_CODE (x) == CONST_DOUBLE && GET_MODE (x) != SImode)
+    {
+      REAL_VALUE_FROM_CONST_DOUBLE (r, x);
+      REAL_VALUE_TO_TARGET_DOUBLE (r, sval);
+      fprintf (file, "$%#lo", sval[0] >> 16);
+    }
+  else
+    {
+      putc ('$', file);
+      output_addr_const_pdp11 (file, x);
+    }
+}
+
+static bool
+pdp11_asm_print_operand_punct_valid_p (unsigned char c)
+{
+  return (c == '#' || c == '@');
+}
+
+void
 print_operand_address (FILE *file, register rtx addr)
 {
   register rtx breg;
@@ -1154,236 +1214,157 @@ output_block_move(rtx *operands)
 {
     static int count = 0;
     char buf[200];
+    int unroll;
+    int lastbyte = 0;
     
-    if (GET_CODE(operands[2]) == CONST_INT
-	&& ! optimize_size)
+    /* Move of zero bytes is a NOP.  */
+    if (operands[2] == const0_rtx)
+      return "";
+    
+    /* Look for moves by small constant byte counts, those we'll
+       expand to straight line code.  */
+    if (CONSTANT_P (operands[2]))
     {
-	if (INTVAL(operands[2]) < 16
-	    && INTVAL(operands[3]) == 1)
+	if (INTVAL (operands[2]) < 16
+	    && (!optimize_size || INTVAL (operands[2]) < 5)
+	    && INTVAL (operands[3]) == 1)
 	{
 	    register int i;
 	    
-	    for (i = 1; i <= INTVAL(operands[2]); i++)
+	    for (i = 1; i <= INTVAL (operands[2]); i++)
 		output_asm_insn("movb (%1)+, (%0)+", operands);
 
 	    return "";
 	}
-	else if (INTVAL(operands[2]) < 32)
+	else if (INTVAL(operands[2]) < 32
+		 && (!optimize_size || INTVAL (operands[2]) < 9)
+		 && INTVAL (operands[3]) >= 2)
 	{
 	    register int i;
 	    
-	    for (i = 1; i <= INTVAL(operands[2])/2; i++)
-		output_asm_insn("mov (%1)+, (%0)+", operands);
+	    for (i = 1; i <= INTVAL (operands[2]) / 2; i++)
+		output_asm_insn ("mov (%1)+, (%0)+", operands);
+	    if (INTVAL (operands[2]) & 1)
+	      output_asm_insn ("movb (%1), (%0)", operands);
 	    
-	    /* may I assume that moved quantity is 
-	       multiple of alignment ???
-
-	       I HOPE SO !
-	    */
-
 	    return "";
 	}
-	
-
-	/* can do other clever things, maybe... */
     }
 
-    if (CONSTANT_P(operands[2]) )
+    /* Ideally we'd look for moves that are multiples of 4 or 8
+       bytes and handle those by unrolling the move loop.  That
+       makes for a lot of code if done at run time, but it's ok
+       for constant counts.  Also, for variable counts we have
+       to worry about odd byte count with even aligned pointers.
+       On 11/40 and up we handle that case; on older machines
+       we don't and just use byte-wise moves all the time.  */
+
+    if (CONSTANT_P (operands[2]) )
     {
-	/* just move count to scratch */
-	output_asm_insn("mov %2, %4", operands);
+      if (INTVAL (operands[3]) < 2)
+	unroll = 0;
+      else
+	{
+	  lastbyte = INTVAL (operands[2]) & 1;
+
+	  if (optimize_size || INTVAL (operands[2]) & 2)
+	    unroll = 1;
+	  else if (INTVAL (operands[2]) & 4)
+	    unroll = 2;
+	  else
+	    unroll = 3;
+	}
+      
+      /* Loop count is byte count scaled by unroll.  */
+      operands[2] = GEN_INT (INTVAL (operands[2]) >> unroll);
+      output_asm_insn ("mov %2, %4", operands);
     }
     else
     {
-	/* just clobber the register */
+	/* Variable byte count; use the input register
+	   as the scratch.  */
 	operands[4] = operands[2];
-    }
-    
 
-    /* switch over alignment */
-    switch (INTVAL(operands[3]))
-    {
-      case 1:
-	
-	/* 
-	  x:
-	  movb (%1)+, (%0)+
-	  
-	  if (TARGET_45)
-	     sob %4,x
-	  else
-	     dec %4
-	     bgt x
-
-	*/
-
-	sprintf(buf, "\nmovestrhi%d:", count);
-	output_asm_insn(buf, NULL);
-	
-	output_asm_insn("movb (%1)+, (%0)+", operands);
-	
-	if (TARGET_45)
-	{
-	    sprintf(buf, "sob %%4, movestrhi%d", count);
-	    output_asm_insn(buf, operands);
-	}
+	/* Decide whether to move by words, and check
+	   the byte count for zero.  */
+	if (TARGET_40_PLUS && INTVAL (operands[3]) > 1)
+	  {
+	    unroll = 1;
+	    output_asm_insn ("asr %4", operands);
+	  }
 	else
-	{
-	    output_asm_insn("dec %4", operands);
-	    
-	    sprintf(buf, "bgt movestrhi%d", count);
-	    output_asm_insn(buf, NULL);
-	}
+	  {
+	    unroll = 0;
+	    output_asm_insn ("tst %4", operands);
+	  }
+	sprintf (buf, "beq movestrhi%d", count + 1);
+	output_asm_insn (buf, NULL);
+    }
+
+    /* Output the loop label.  */
+    sprintf (buf, "\nmovestrhi%d:", count);
+    output_asm_insn (buf, NULL);
+
+    /* Output the appropriate move instructions.  */
+    switch (unroll)
+    {
+      case 0:
+	output_asm_insn ("movb (%1)+, (%0)+", operands);
+	break;
 	
-	count ++;
+      case 1:
+	output_asm_insn ("mov (%1)+, (%0)+", operands);
 	break;
 	
       case 2:
-	
-	/* 
-	   asr %4
-
-	   x:
-
-	   mov (%1)+, (%0)+
-
-	   if (TARGET_45)
-	     sob %4, x
-	   else
-	     dec %4
-	     bgt x
-	*/
-
-      generate_compact_code:
-
-	output_asm_insn("asr %4", operands);
-
-	sprintf(buf, "\nmovestrhi%d:", count);
-	output_asm_insn(buf, NULL);
-	
-	output_asm_insn("mov (%1)+, (%0)+", operands);
-	
-	if (TARGET_45)
-	{
-	    sprintf(buf, "sob %%4, movestrhi%d", count);
-	    output_asm_insn(buf, operands);
-	}
-	else
-	{
-	    output_asm_insn("dec %4", operands);
-	    
-	    sprintf(buf, "bgt movestrhi%d", count);
-	    output_asm_insn(buf, NULL);
-	}
-	
-	count ++;
+	output_asm_insn ("mov (%1)+, (%0)+", operands);
+	output_asm_insn ("mov (%1)+, (%0)+", operands);
 	break;
-
-      case 4:
 	
-	/*
-
-	   asr %4
-	   asr %4
-
-	   x:
-
-	   mov (%1)+, (%0)+
-	   mov (%1)+, (%0)+
-
-	   if (TARGET_45)
-	     sob %4, x
-	   else
-	     dec %4
-	     bgt x
-	*/
-
-	if (optimize_size)
-	    goto generate_compact_code;
-	
-	output_asm_insn("asr %4", operands);
-	output_asm_insn("asr %4", operands);
-
-	sprintf(buf, "\nmovestrhi%d:", count);
-	output_asm_insn(buf, NULL);
-	
-	output_asm_insn("mov (%1)+, (%0)+", operands);
-	output_asm_insn("mov (%1)+, (%0)+", operands);
-	
-	if (TARGET_45)
-	{
-	    sprintf(buf, "sob %%4, movestrhi%d", count);
-	    output_asm_insn(buf, operands);
-	}
-	else
-	{
-	    output_asm_insn("dec %4", operands);
-	    
-	    sprintf(buf, "bgt movestrhi%d", count);
-	    output_asm_insn(buf, NULL);
-	}
-	
-	count ++;
-	break;
-       
       default:
-	
-	/*
-	   
-	   asr %4
-	   asr %4
-	   asr %4
-
-	   x:
-
-	   mov (%1)+, (%0)+
-	   mov (%1)+, (%0)+
-	   mov (%1)+, (%0)+
-	   mov (%1)+, (%0)+
-	   
-	   if (TARGET_45)
-	     sob %4, x
-	   else
-	     dec %4
-	     bgt x
-	*/
-
-
-	if (optimize_size)
-	    goto generate_compact_code;
-	
-	output_asm_insn("asr %4", operands);
-	output_asm_insn("asr %4", operands);
-	output_asm_insn("asr %4", operands);
-
-	sprintf(buf, "\nmovestrhi%d:", count);
-	output_asm_insn(buf, NULL);
-	
-	output_asm_insn("mov (%1)+, (%0)+", operands);
-	output_asm_insn("mov (%1)+, (%0)+", operands);
-	output_asm_insn("mov (%1)+, (%0)+", operands);
-	output_asm_insn("mov (%1)+, (%0)+", operands);
-	
-	if (TARGET_45)
-	{
-	    sprintf(buf, "sob %%4, movestrhi%d", count);
-	    output_asm_insn(buf, operands);
-	}
-	else
-	{
-	    output_asm_insn("dec %4", operands);
-	    
-	    sprintf(buf, "bgt movestrhi%d", count);
-	    output_asm_insn(buf, NULL);
-	}
-	
-	count ++;
+	output_asm_insn ("mov (%1)+, (%0)+", operands);
+	output_asm_insn ("mov (%1)+, (%0)+", operands);
+	output_asm_insn ("mov (%1)+, (%0)+", operands);
+	output_asm_insn ("mov (%1)+, (%0)+", operands);
 	break;
-	
-	;
-	
     }
+
+    /* Output the decrement and test.  */
+    if (TARGET_40_PLUS)
+      {
+	sprintf (buf, "sob %%4, movestrhi%d", count);
+	output_asm_insn (buf, operands);
+      }
+    else
+      {
+	output_asm_insn ("dec %4", operands);
+	sprintf (buf, "bgt movestrhi%d", count);
+	output_asm_insn (buf, NULL);
+      }
+    count ++;
+
+    /* If constant odd byte count, move the last byte.  */
+    if (lastbyte)
+      output_asm_insn ("movb (%1), (%0)", operands);
+    else if (!CONSTANT_P (operands[2]))
+      {
+	/* Output the destination label for the zero byte count check.  */
+	sprintf (buf, "\nmovestrhi%d:", count);
+	output_asm_insn (buf, NULL);
+	count++;
     
+	/* If we did word moves, check for trailing last byte. */
+	if (unroll)
+	  {
+	    sprintf (buf, "bcc movestrhi%d", count);
+	    output_asm_insn (buf, NULL);
+	    output_asm_insn ("movb (%1), (%0)", operands);
+	    sprintf (buf, "\nmovestrhi%d:", count);
+	    output_asm_insn (buf, NULL);
+	    count++;
+	  }
+      }
+	     
     return "";
 }
 

@@ -62,10 +62,9 @@ public class QPen extends NativeWrapper
   private native void init(double width, int cap, int join, double miterlimit);
 
   public native void dispose();
-  
+
   public void finalize()
   {
     dispose();
   }
 }
-

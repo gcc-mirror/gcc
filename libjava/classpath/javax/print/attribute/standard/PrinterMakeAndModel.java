@@ -1,4 +1,4 @@
-/* PrinterMakeAndModel.java -- 
+/* PrinterMakeAndModel.java --
    Copyright (C) 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -50,7 +50,7 @@ import javax.print.attribute.TextSyntax;
  * <p>
  * <b>IPP Compatibility:</b> PrinterMakeAndModel is an IPP 1.1 attribute.
  * </p>
- * 
+ *
  * @author Michael Koch (konqueror@gmx.de)
  */
 public final class PrinterMakeAndModel extends TextSyntax
@@ -77,7 +77,7 @@ public final class PrinterMakeAndModel extends TextSyntax
    *
    * @param obj the object to test
    *
-   * @return <code>true</code> if both objects are equal, 
+   * @return <code>true</code> if both objects are equal,
    * <code>false</code> otherwise.
    */
   public boolean equals(Object obj)

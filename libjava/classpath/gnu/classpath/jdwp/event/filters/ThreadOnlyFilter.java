@@ -91,9 +91,9 @@ public class ThreadOnlyFilter
     Object thread = event.getParameter (Event.EVENT_THREAD);
     if (thread != null)
       {
-	Thread eventThread = (Thread) thread;
-	Thread myThread = (Thread) _tid.getReference().get ();
-	return (eventThread == myThread);
+        Thread eventThread = (Thread) thread;
+        Thread myThread = (Thread) _tid.getReference().get ();
+        return (eventThread == myThread);
       }
 
     return false;

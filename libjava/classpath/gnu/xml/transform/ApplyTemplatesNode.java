@@ -1,4 +1,4 @@
-/* ApplyTemplatesNode.java -- 
+/* ApplyTemplatesNode.java --
    Copyright (C) 2004,2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -191,7 +191,7 @@ final class ApplyTemplatesNode
       }
     return super.references(var);
   }
-  
+
   public String toString()
   {
     CPStringBuilder buf = new CPStringBuilder("apply-templates");
@@ -215,5 +215,5 @@ final class ApplyTemplatesNode
     buf.append(']');
     return buf.toString();
   }
-  
+
 }

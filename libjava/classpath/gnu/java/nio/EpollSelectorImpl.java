@@ -65,20 +65,20 @@ public class EpollSelectorImpl extends AbstractSelector
   // XXX is this reasonable? Does it matter?
   private static final int DEFAULT_EPOLL_SIZE = 128;
   private static final int sizeof_struct_epoll_event;
-  
+
   private static final int OP_ACCEPT  = SelectionKey.OP_ACCEPT;
   private static final int OP_CONNECT = SelectionKey.OP_CONNECT;
   private static final int OP_READ    = SelectionKey.OP_READ;
   private static final int OP_WRITE   = SelectionKey.OP_WRITE;
-  
+
   /** our epoll file descriptor. */
   private int epoll_fd;
-  
+
   private final HashMap keys;
   private Set selectedKeys;
   private Thread waitingThread;
   private ByteBuffer events;
-  
+
   private static final int INITIAL_CAPACITY;
   private static final int MAX_DOUBLING_CAPACITY;
   private static final int CAPACITY_INCREMENT;
@@ -87,17 +87,17 @@ public class EpollSelectorImpl extends AbstractSelector
   {
     if (Configuration.INIT_LOAD_LIBRARY)
       System.loadLibrary("javanio");
-    
+
     if (epoll_supported())
       sizeof_struct_epoll_event = sizeof_struct();
     else
       sizeof_struct_epoll_event = -1;
-    
+
     INITIAL_CAPACITY = 64 * sizeof_struct_epoll_event;
     MAX_DOUBLING_CAPACITY = 1024 * sizeof_struct_epoll_event;
     CAPACITY_INCREMENT = 128 * sizeof_struct_epoll_event;
   }
-  
+
   public EpollSelectorImpl(SelectorProvider provider)
     throws IOException
   {
@@ -135,7 +135,7 @@ public class EpollSelectorImpl extends AbstractSelector
       throw new IllegalArgumentException("invalid timeout");
     return doSelect((int) timeout);
   }
-    
+
   private int doSelect(int timeout) throws IOException
   {
     synchronized (keys)
@@ -152,7 +152,7 @@ public class EpollSelectorImpl extends AbstractSelector
             it.remove();
             deregister(key);
           }
-        
+
         // Clear out closed channels. The fds are removed from the epoll
         // fd when closed, so there is no need to remove them manually.
         for (Iterator it = keys.values().iterator(); it.hasNext(); )
@@ -165,7 +165,7 @@ public class EpollSelectorImpl extends AbstractSelector
                   it.remove();
               }
           }
-        
+
         // Don't bother if we have nothing to select.
         if (keys.isEmpty())
           return 0;
@@ -183,7 +183,7 @@ public class EpollSelectorImpl extends AbstractSelector
             waitingThread = null;
             end();
           }
-      
+
         HashSet s = new HashSet(ret);
         for (int i = 0; i < ret; i++)
           {
@@ -197,9 +197,9 @@ public class EpollSelectorImpl extends AbstractSelector
             key.selectedOps = selected_ops(b) & key.interestOps;
             s.add(key);
           }
-        
+
         reallocateBuffer();
-        
+
         selectedKeys = s;
         return ret;
       }
@@ -239,7 +239,7 @@ public class EpollSelectorImpl extends AbstractSelector
       }
     return this;
   }
-  
+
   /* (non-Javadoc)
    * @see java.nio.channels.spi.AbstractSelector#implCloseSelector()
    */
@@ -275,7 +275,7 @@ public class EpollSelectorImpl extends AbstractSelector
           result.key = System.identityHashCode(result);
           epoll_add(epoll_fd, result.fd, ops);
           keys.put(Integer.valueOf(native_fd), result);
-	  reallocateBuffer();
+          reallocateBuffer();
           return result;
         }
       }
@@ -284,7 +284,7 @@ public class EpollSelectorImpl extends AbstractSelector
         throw new IllegalArgumentException(ioe);
       }
   }
-  
+
   private void reallocateBuffer()
   {
     // Ensure we have enough space for all potential events that may be
@@ -301,18 +301,18 @@ public class EpollSelectorImpl extends AbstractSelector
     // Ensure that the events buffer is not too large, given the number of
     // events registered.
     else if (events.capacity() > keys.size() * sizeof_struct_epoll_event * 2 + 1
-	     && events.capacity() > INITIAL_CAPACITY)
+             && events.capacity() > INITIAL_CAPACITY)
       {
         int cap = events.capacity() >>> 1;
         events = ByteBuffer.allocateDirect(cap);
       }
   }
-  
+
   void epoll_modify(EpollSelectionKeyImpl key, int ops) throws IOException
   {
     epoll_modify(epoll_fd, key.fd, ops);
   }
-  
+
   /**
    * Tell if epoll is supported by this system, and support was compiled in.
    *
@@ -327,8 +327,8 @@ public class EpollSelectorImpl extends AbstractSelector
    * @return The size of `struct epoll_event'.
    */
   private static native int sizeof_struct();
-  
- 
+
+
   /**
    * Open a new epoll file descriptor.
    *
@@ -337,7 +337,7 @@ public class EpollSelectorImpl extends AbstractSelector
    * @throws IOException If allocating a new epoll descriptor fails.
    */
   private static native int epoll_create(int size) throws IOException;
-  
+
   /**
    * Add a file descriptor to this selector.
    *
@@ -347,7 +347,7 @@ public class EpollSelectorImpl extends AbstractSelector
    */
   private static native void epoll_add(int efd, int fd, int ops)
     throws IOException;
-  
+
   /**
    * Modify the interest ops of the key selecting for the given FD.
    *
@@ -358,7 +358,7 @@ public class EpollSelectorImpl extends AbstractSelector
    */
   private static native void epoll_modify(int efd, int fd, int ops)
     throws IOException;
-  
+
   /**
    * Remove a file descriptor from this selector.
    *
@@ -367,7 +367,7 @@ public class EpollSelectorImpl extends AbstractSelector
    * @throws IOException
    */
   private static native void epoll_delete(int efd, int fd) throws IOException;
-  
+
   /**
    * Select events.
    *
@@ -380,7 +380,7 @@ public class EpollSelectorImpl extends AbstractSelector
    */
   private static native int epoll_wait(int efd, ByteBuffer state, int n, int timeout)
     throws IOException;
-  
+
   /**
    * Fetch the fd value from a selected struct epoll_event.
    *
@@ -388,7 +388,7 @@ public class EpollSelectorImpl extends AbstractSelector
    * @return The fd value.
    */
   private static native int selected_fd(ByteBuffer struct);
-  
+
   /**
    * Fetch the enabled operations from a selected struct epoll_event.
    *

@@ -26,7 +26,7 @@ entry bar3()
   bar3 = ""
 end function test3
 
-function test4(n) ! { dg-error "returning variables of different string lengths" }
+function test4(n) ! { dg-warning "returning variables of different string lengths" }
   integer  :: n
   character(n) :: test4
   character(*) :: bar4 ! { dg-warning "Obsolescent feature" }
@@ -36,7 +36,7 @@ entry bar4()
   bar4 = ""
 end function test4
 
-function test5() ! { dg-error "returning variables of different string lengths" }
+function test5() ! { dg-warning "returning variables of different string lengths" }
   character(1) :: test5
   character(2) :: bar5
   test5 = ""

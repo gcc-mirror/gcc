@@ -813,15 +813,16 @@ pbb_remove_duplicate_pdrs (poly_bb_p pbb)
 {
   int i, j;
   poly_dr_p pdr1, pdr2;
-  unsigned n = VEC_length (poly_dr_p, PBB_DRS (pbb));
-  VEC (poly_dr_p, heap) *collapsed = VEC_alloc (poly_dr_p, heap, n);
 
   FOR_EACH_VEC_ELT (poly_dr_p, PBB_DRS (pbb), i, pdr1)
-    FOR_EACH_VEC_ELT (poly_dr_p, collapsed, j, pdr2)
-      if (!can_collapse_pdrs (pdr1, pdr2))
-	VEC_quick_push (poly_dr_p, collapsed, pdr1);
+    for (j = i + 1; VEC_iterate (poly_dr_p, PBB_DRS (pbb), j, pdr2); j++)
+      if (can_collapse_pdrs (pdr1, pdr2))
+	{
+	  PDR_NB_REFS (pdr1) += PDR_NB_REFS (pdr2);
+	  free_poly_dr (pdr2);
+	  VEC_ordered_remove (poly_dr_p, PBB_DRS (pbb), j);
+	}
 
-  VEC_free (poly_dr_p, heap, collapsed);
   PBB_PDR_DUPLICATES_REMOVED (pbb) = true;
 }
 

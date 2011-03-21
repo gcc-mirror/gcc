@@ -116,7 +116,7 @@ public class RSAKeyPairPKCS8Codec
    *     coefficient             INTEGER, -- (inverse of q) mod p
    *   }
    * </pre>
-   * 
+   *
    * @return the DER encoded form of the ASN.1 representation of the
    *         <i>PrivateKeyInfo</i> field for an RSA {@link PrivateKey}..
    * @throw InvalidParameterException if an error occurs during the marshalling
@@ -251,7 +251,7 @@ public class RSAKeyPairPKCS8Codec
         der = new DERReader(pkBytes);
         DERValue derRSAPrivateKey = der.read();
         DerUtil.checkIsConstructed(derRSAPrivateKey, "Wrong RSAPrivateKey field");
-        
+
         val = der.read();
         DerUtil.checkIsBigInteger(val, "Wrong RSAPrivateKey Version field");
         version = (BigInteger) val.getValue();

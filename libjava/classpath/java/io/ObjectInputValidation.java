@@ -1,4 +1,4 @@
-/* ObjectInputValidation.java -- Validate an object 
+/* ObjectInputValidation.java -- Validate an object
    Copyright (C) 1998, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -36,7 +36,7 @@ obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
 
-package java.io; 
+package java.io;
 
 /**
   * This class allows an object to validate that it is valid after
@@ -46,7 +46,7 @@ package java.io;
   * be used to perform re-initialization type activities on an object
   * after it has been completely deserialized.
   *
-  * Since this method functions as a type of callback, it must be 
+  * Since this method functions as a type of callback, it must be
   * registered through <code>ObjectInputStream.registerValidation</code>
   * in order to be invoked.  This is typically done in the
   * <code>readObject</code> method.

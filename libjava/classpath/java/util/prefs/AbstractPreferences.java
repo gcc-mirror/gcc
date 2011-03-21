@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -118,7 +118,7 @@ public abstract class AbstractPreferences extends Preferences {
 
     /**
      * Creates a new AbstractPreferences node with the given parent and name.
-     * 
+     *
      * @param parent the parent of this node or null when this is the root node
      * @param name the name of this node, can not be null, only 80 characters
      *             maximum, must be empty when parent is null and cannot
@@ -174,9 +174,9 @@ public abstract class AbstractPreferences extends Preferences {
      */
     public boolean isUserNode() {
         AbstractPreferences root = this;
-	while (root.parent != null)
-	    root = root.parent;
-	return root == Preferences.userRoot();
+        while (root.parent != null)
+            root = root.parent;
+        return root == Preferences.userRoot();
     }
 
     /**
@@ -238,7 +238,7 @@ public abstract class AbstractPreferences extends Preferences {
 
             // First get all cached node names
             childrenNames.addAll(childCache.keySet());
-            
+
             // Then add any others
             String names[] = childrenNamesSpi();
             for (int i = 0; i < names.length; i++) {
@@ -339,7 +339,7 @@ public abstract class AbstractPreferences extends Preferences {
         if (child == null) {
 
             if (childName.length() > MAX_NAME_LENGTH)
-               throw new IllegalArgumentException(childName); 
+               throw new IllegalArgumentException(childName);
 
             // Not in childCache yet so create a new sub node
             child = childSpi(childName);
@@ -457,7 +457,7 @@ public abstract class AbstractPreferences extends Preferences {
             for (int i=0; i < names.length; i++)
                 if (name.equals(names[i]))
                     return childSpi(name);
-           
+
             // No child with that name found
             return null;
         }
@@ -523,8 +523,8 @@ public abstract class AbstractPreferences extends Preferences {
      * This method locks this node and checks if the node has not been
      * removed, if it has been removed it throws an exception, then it returns
      * the result of calling <code>keysSpi()</code>.
-     * 
-     * @exception BackingStoreException when the backing store cannot be     
+     *
+     * @exception BackingStoreException when the backing store cannot be
      *            reached
      * @exception IllegalStateException if this node has been removed
      */
@@ -597,7 +597,7 @@ public abstract class AbstractPreferences extends Preferences {
 
         if ("false".equalsIgnoreCase(value))
             return false;
-        
+
         return defaultVal;
     }
 
@@ -625,7 +625,7 @@ public abstract class AbstractPreferences extends Preferences {
         else
             return defaultVal;
     }
-    
+
     /**
      * Helper method for decoding a Base64 string as an byte array.
      * Returns null on encoding error. This method does not allow any other
@@ -807,7 +807,7 @@ public abstract class AbstractPreferences extends Preferences {
             if (preferenceListeners != null)
               fire(new PreferenceChangeEvent(this, key, value));
         }
-            
+
     }
 
     /**
@@ -948,7 +948,7 @@ public abstract class AbstractPreferences extends Preferences {
 
     /**
      * Removes the preferences entry from this preferences node.
-     * <p>     
+     * <p>
      * The result will be immediately visible in this VM, but may not be
      * immediately written to the backing store.
      * <p>
@@ -1040,7 +1040,7 @@ public abstract class AbstractPreferences extends Preferences {
     public void sync() throws BackingStoreException {
         flushNode(true);
     }
-    
+
 
     /**
      * Private helper method that locks this node and calls either
@@ -1247,7 +1247,7 @@ public abstract class AbstractPreferences extends Preferences {
               listener.preferenceChange(event);
             }
           };
-          
+
           Executor executor =
             Executors.newSingleThreadExecutor(new DefaultDaemonThreadFactory());
           executor.execute(dispatcher);
@@ -1273,7 +1273,7 @@ public abstract class AbstractPreferences extends Preferences {
                 listener.childRemoved(event);
             }
           };
-          
+
           Executor executor =
             Executors.newSingleThreadExecutor(new DefaultDaemonThreadFactory());
           executor.execute(dispatcher);
@@ -1316,11 +1316,11 @@ public abstract class AbstractPreferences extends Preferences {
      * not been removed. May throw an exception when the backing store cannot
      * be accessed.
      *
-     * @exception BackingStoreException when the backing store cannot be     
+     * @exception BackingStoreException when the backing store cannot be
      *            reached
      */
     protected abstract String[] keysSpi() throws BackingStoreException;
-     
+
     /**
      * Returns the value associated with the key in this preferences node or
      * null when the key does not exist in this preferences node.

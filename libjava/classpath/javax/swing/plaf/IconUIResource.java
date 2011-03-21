@@ -63,7 +63,7 @@ public class IconUIResource implements Icon, UIResource, Serializable
 
 
   /**
-   * The icon that is wrapped by this <code>IconUIResource</code> (never 
+   * The icon that is wrapped by this <code>IconUIResource</code> (never
    * <code>null</code>).
    */
   private Icon delegate;

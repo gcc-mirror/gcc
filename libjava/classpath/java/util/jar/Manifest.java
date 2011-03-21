@@ -38,7 +38,7 @@ exception statement from your version. */
 package java.util.jar;
 
 import gnu.java.util.jar.JarUtils;
- 
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -48,7 +48,7 @@ import java.util.Map;
 /**
  * Reads, writes and manipulaties jar manifest files.
  * XXX
- * 
+ *
  * @since 1.2
  * @author Mark Wielaard (mark@klomp.org)
  */
@@ -153,7 +153,7 @@ public class Manifest implements Cloneable
 
   /**
    * Read and merge a <code>Manifest</code> from the designated input stream.
-   * 
+   *
    * @param in the input stream to read from.
    * @throws IOException if an I/O related exception occurs during the process.
    */
@@ -166,7 +166,7 @@ public class Manifest implements Cloneable
    * Writes the contents of this <code>Manifest</code> to the designated
    * output stream. Line-endings are platform-independent and consist of the
    * 2-codepoint sequence <code>0x0D</code> and <code>0x0A</code>.
-   * 
+   *
    * @param out the output stream to write this <code>Manifest</code> to.
    * @throws IOException if an I/O related exception occurs during the process.
    */

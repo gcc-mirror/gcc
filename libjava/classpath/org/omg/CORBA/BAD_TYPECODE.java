@@ -43,7 +43,7 @@ import java.io.Serializable;
 /**
  * Means that the some TypeCode has been realized to be invalid
  * (for example, has an invalid TCKind value).
- * 
+ *
  * @author Audrius Meskauskas (AudriusA@Bioinformatics.org)
  */
 public final class BAD_TYPECODE
@@ -51,7 +51,7 @@ public final class BAD_TYPECODE
   implements Serializable
 {
   /**
-   *  Use serialVersionUID for interoperability. 
+   *  Use serialVersionUID for interoperability.
    */
   private static final long serialVersionUID = 6193364410915696901L;
 

@@ -1,4 +1,4 @@
-/* KDF.java -- 
+/* KDF.java --
    Copyright (C) 2003, 2006 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -63,7 +63,7 @@ public class KDF
   /**
    * Constructs an instance of the <code>KDF</code> initialised with the
    * designated shared secret bytes.
-   * 
+   *
    * @param keyMaterial the SASL SRP shared secret (K) bytes.
    */
   private KDF(final byte[] keyMaterial, final int ndx)
@@ -84,7 +84,7 @@ public class KDF
   /**
    * A Factory mehod that returns an instance of a <code>KDF</code> based on
    * supplied seed data.
-   * 
+   *
    * @param K the SASL SRP shared secret for a <code>KDF</code> to be used for
    *          <i>CALG</i> and <i>IALG</i> setup. <code>null</code> otherwise.
    * @return an instance of a <code>KDF</code>.
@@ -116,7 +116,7 @@ public class KDF
   /**
    * Returns a designated number of bytes suitable for use in the SASL SRP
    * mechanism.
-   * 
+   *
    * @param length the number of bytes needed.
    * @return a byte array containing the generated/selected bytes.
    */

@@ -63,38 +63,38 @@ import javax.swing.plaf.basic.BasicToolTipUI;
 public class MetalToolTipUI
   extends BasicToolTipUI
 {
-  /** 
-   * The amount of space between the tool tip text and the accelerator 
-   * description (if visible). 
+  /**
+   * The amount of space between the tool tip text and the accelerator
+   * description (if visible).
    */
   public static final int padSpaceBetweenStrings = 12;
 
   /** The shared UI instance. */
   private static MetalToolTipUI instance;
-  
+
   /** A flag controlling the visibility of the accelerator (if there is one). */
   private boolean isAcceleratorHidden;
-  
+
   /** A string representing the accelerator key for the component. */
   private String acceleratorString;
-  
-  /** 
+
+  /**
    * The delimiter for the accelerator string.
    */
   private String acceleratorDelimiter;
-  
+
   /** The font for the accelerator string. */
   private Font acceleratorFont;
-  
+
   /** The color for the accelerator string. */
   private Color acceleratorForeground;
-  
+
   /** The active border. */
   private Border activeBorder;
-  
+
   /** The inactive border. */
   private Border inactiveBorder;
-  
+
   /**
    * Constructs a new instance of <code>MetalToolTipUI</code>.
    */
@@ -124,21 +124,21 @@ public class MetalToolTipUI
       instance = new MetalToolTipUI();
     return instance;
   }
-  
+
   /**
-   * Returns a string representing the accelerator key (if there is one) for 
+   * Returns a string representing the accelerator key (if there is one) for
    * the component that the tool tip belongs to.
-   * 
+   *
    * @return A string representing the accelerator key.
    */
   public String getAcceleratorString()
   {
-    return acceleratorString;   
+    return acceleratorString;
   }
-  
+
   /**
    * Installs the UI for the specified component (a {@link JToolTip}).
-   * 
+   *
    * @param c  the {@link JToolTip} component.
    */
   public void installUI(JComponent c)
@@ -151,12 +151,12 @@ public class MetalToolTipUI
           c.setBorder(activeBorder);
         else
           c.setBorder(inactiveBorder);
-      }   
+      }
   }
-  
+
   /**
    * Clears the defaults set in {@link #installUI(JComponent)}.
-   * 
+   *
    * @param c  the component.
    */
   public void uninstallUI(JComponent c)
@@ -165,7 +165,7 @@ public class MetalToolTipUI
     if (c.getBorder() instanceof UIResource)
       c.setBorder(null);
   }
-  
+
   /**
    * Returns <code>true</code> if the accelerator string is hidden, and
    * <code>false</code> otherwise.  This setting is controlled by the
@@ -177,12 +177,12 @@ public class MetalToolTipUI
   {
     return isAcceleratorHidden;
   }
-  
+
   /**
    * Returns the preferred size for the {@link JToolTip} component.
-   * 
+   *
    * @param c  the component (a {@link JToolTip}).
-   * 
+   *
    * @return The preferred size.
    */
   public Dimension getPreferredSize(JComponent c)
@@ -196,10 +196,10 @@ public class MetalToolTipUI
       }
     return d;
   }
-  
+
   /**
    * Paints the tool tip.
-   * 
+   *
    * @param g  the graphics context.
    * @param c  the {@link JToolTip} component.
    */
@@ -208,14 +208,14 @@ public class MetalToolTipUI
     super.paint(g, c);
     // Somehow paint accelerator. Keep care for possible HTML rendering.
   }
-  
+
   /**
-   * Returns a string representing the accelerator for the component, or 
+   * Returns a string representing the accelerator for the component, or
    * <code>null</code> if the component has no accelerator.
-   * 
+   *
    * @param c  the component.
-   * 
-   * @return A string representing the accelerator (possibly 
+   *
+   * @return A string representing the accelerator (possibly
    *         <code>null</code>).
    */
   private String fetchAcceleratorString(JComponent c)
@@ -240,19 +240,19 @@ public class MetalToolTipUI
             mne = button.getMnemonic();
           }
         if (mne > 0)
-          ks = KeyStroke.getKeyStroke(Character.toUpperCase((char) mne), 
+          ks = KeyStroke.getKeyStroke(Character.toUpperCase((char) mne),
                 InputEvent.ALT_MASK, false);
         if (ks != null)
           result = acceleratorToString(ks);
       }
     return result;
   }
-  
+
   /**
    * Returns a string representing an accelerator.
-   * 
+   *
    * @param accelerator  the accelerator (<code>null</code> not permitted).
-   * 
+   *
    * @return A string representing an accelerator.
    */
   private String acceleratorToString(KeyStroke accelerator)
@@ -262,9 +262,9 @@ public class MetalToolTipUI
     int modifiers = accelerator.getModifiers();
     char keyChar = accelerator.getKeyChar();
     int keyCode = accelerator.getKeyCode();
-    
+
     if (modifiers != 0)
-      modifiersText = KeyEvent.getKeyModifiersText(modifiers) 
+      modifiersText = KeyEvent.getKeyModifiersText(modifiers)
           + acceleratorDelimiter;
 
     if (keyCode == KeyEvent.VK_UNDEFINED)

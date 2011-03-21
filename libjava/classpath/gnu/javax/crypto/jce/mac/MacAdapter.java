@@ -1,4 +1,4 @@
-/* MacAdapter.java -- 
+/* MacAdapter.java --
    Copyright (C) 2002, 2006  Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -69,7 +69,7 @@ class MacAdapter
 
   /**
    * Creates a new Mac instance for the given name.
-   * 
+   *
    * @param name The name of the mac to create.
    */
   protected MacAdapter(String name)
@@ -80,7 +80,7 @@ class MacAdapter
 
   /**
    * Private constructor for cloning purposes.
-   * 
+   *
    * @param mac a clone of the internal {@link IMac} instance.
    * @param attributes a clone of the current {@link Map} of attributes.
    */

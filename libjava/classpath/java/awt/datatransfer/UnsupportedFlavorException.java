@@ -62,4 +62,4 @@ public class UnsupportedFlavorException extends Exception
   {
     super(flavor == null ? null : flavor.getHumanPresentableName());
   }
-} // class UnsupportedFlavorException 
+} // class UnsupportedFlavorException

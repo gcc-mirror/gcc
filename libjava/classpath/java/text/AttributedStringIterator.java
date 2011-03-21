@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -73,14 +73,14 @@ class AttributedStringIterator implements AttributedCharacterIterator
 
   /**
    * Creates a new instance.
-   * 
+   *
    * @param sci  an iterator for the string content.
    * @param attribs  the attribute ranges.
    * @param beginIndex  the start index.
    * @param endIndex  the end index.
    * @param restricts  the attributes that the user is interested in.
    */
-  AttributedStringIterator(StringCharacterIterator sci, 
+  AttributedStringIterator(StringCharacterIterator sci,
                            AttributedString.AttributeRange[] attribs,
                            int beginIndex, int endIndex,
                            AttributedCharacterIterator.Attribute[] restricts)
@@ -132,7 +132,7 @@ class AttributedStringIterator implements AttributedCharacterIterator
 
   public char setIndex(int index)
   {
-    return(ci.setIndex(index));  
+    return(ci.setIndex(index));
   }
 
   public int getBeginIndex()
@@ -147,7 +147,7 @@ class AttributedStringIterator implements AttributedCharacterIterator
 
   /*
    * Here is where the AttributedCharacterIterator methods start.
-   */ 
+   */
 
   /*************************************************************************/
 
@@ -164,8 +164,8 @@ class AttributedStringIterator implements AttributedCharacterIterator
     for (int i = 0; i < attribs.length; i++)
     {
       if (attribs[i].beginIndex > getEndIndex()
-	  || attribs[i].endIndex <= getBeginIndex())
-	continue;
+          || attribs[i].endIndex <= getBeginIndex())
+        continue;
 
       Set key_set = attribs[i].attribs.keySet();
       Iterator iter = key_set.iterator();
@@ -201,30 +201,30 @@ class AttributedStringIterator implements AttributedCharacterIterator
   {
     if (attributeSet == null)
       return ci.getEndIndex();
-    
+
     int current = ci.getIndex();
     int end = ci.getEndIndex();
     int limit = current;
-    if (current == end) 
+    if (current == end)
       return end;
     Map runValues = getAttributes();
-    while (limit < end) 
+    while (limit < end)
     {
       Iterator iterator = attributeSet.iterator();
-      while (iterator.hasNext()) 
+      while (iterator.hasNext())
       {
         Attribute attributeKey = (Attribute) iterator.next();
         Object v1 = runValues.get(attributeKey);
         Object v2 = getAttribute(attributeKey, limit + 1);
         boolean changed = false;
         // check for equal or both null, if NO return start
-        if (v1 != null) 
+        if (v1 != null)
           {
             changed = !v1.equals(v2);
           }
-        else 
+        else
           {
-            changed = (v2 != null);  
+            changed = (v2 != null);
           }
         if (changed)
           return limit + 1;
@@ -246,7 +246,7 @@ class AttributedStringIterator implements AttributedCharacterIterator
    * Returns the index of the first character in the run containing the current
    * character and defined by all the attributes defined for that character
    * position.
-   * 
+   *
    * @return The run start index.
    */
   public int getRunStart()
@@ -255,11 +255,11 @@ class AttributedStringIterator implements AttributedCharacterIterator
   }
 
   /**
-   * Returns the index of the first character in the run, defined by the 
+   * Returns the index of the first character in the run, defined by the
    * specified attribute, that contains the current character.
-   * 
+   *
    * @param attrib  the attribute (<code>null</code> permitted).
-   * 
+   *
    * return The index of the first character in the run.
    */
   public int getRunStart(AttributedCharacterIterator.Attribute attrib)
@@ -272,42 +272,42 @@ class AttributedStringIterator implements AttributedCharacterIterator
   }
 
   /**
-   * Returns the index of the first character in the run, defined by the 
+   * Returns the index of the first character in the run, defined by the
    * specified attribute set, that contains the current character.
-   * 
+   *
    * @param attributeSet  the attribute set (<code>null</code> permitted).
-   * 
+   *
    * return The index of the first character in the run.
    */
   public int getRunStart(Set attributeSet)
   {
     if (attributeSet == null)
       return ci.getBeginIndex();
-    
+
     int current = ci.getIndex();
     int begin = ci.getBeginIndex();
     int start = current;
-    if (start == begin) 
+    if (start == begin)
       return begin;
     Map runValues = getAttributes();
     int prev = start - 1;
-    while (start > begin) 
+    while (start > begin)
     {
       Iterator iterator = attributeSet.iterator();
-      while (iterator.hasNext()) 
+      while (iterator.hasNext())
       {
         Attribute attributeKey = (Attribute) iterator.next();
         Object v1 = runValues.get(attributeKey);
         Object v2 = getAttribute(attributeKey, prev);
         boolean changed = false;
         // check for equal or both null, if NO return start
-        if (v1 != null) 
+        if (v1 != null)
           {
             changed = !v1.equals(v2);
           }
-        else 
+        else
           {
-            changed = (v2 != null);  
+            changed = (v2 != null);
           }
         if (changed)
           return start;
@@ -325,13 +325,13 @@ class AttributedStringIterator implements AttributedCharacterIterator
    * Returns the value for an attribute at the specified position.  If the
    * attribute key (<code>key</code>) is <code>null</code>, the method returns
    * <code>null</code>.
-   * 
+   *
    * @param key  the key (<code>null</code> permitted).
    * @param pos  the character position.
-   * 
+   *
    * @return The attribute value (possibly <code>null</code>).
    */
-  private Object getAttribute(AttributedCharacterIterator.Attribute key, 
+  private Object getAttribute(AttributedCharacterIterator.Attribute key,
           int pos)
   {
     if (attribs == null)
@@ -341,22 +341,22 @@ class AttributedStringIterator implements AttributedCharacterIterator
         if (pos >= attribs[i].beginIndex && pos < attribs[i].endIndex)
           {
             Set keys = attribs[i].attribs.keySet();
-            if (keys.contains(key)) 
+            if (keys.contains(key))
               {
                 return attribs[i].attribs.get(key);
               }
           }
       }
-    return null;   
+    return null;
   }
-  
+
   /**
    * Returns the value for an attribute at the current position.  If the
    * attribute key (<code>key</code>) is <code>null</code>, the method returns
    * <code>null</code>.
-   * 
+   *
    * @param key  the key (<code>null</code> permitted).
-   * 
+   *
    * @return The attribute value (possibly <code>null</code>).
    */
   public Object getAttribute(AttributedCharacterIterator.Attribute key)
@@ -375,7 +375,7 @@ class AttributedStringIterator implements AttributedCharacterIterator
     HashMap m = new HashMap();
     if (attribs == null)
       return(m);
-  
+
     for (int i = 0; i < attribs.length; i++)
       {
          if ((ci.getIndex() >= attribs[i].beginIndex) &&

@@ -45,8 +45,8 @@ import java.rmi.RemoteException;
 /**
  * Defines remote methods that are invoked by another player or by the
  * challenge server.
- * 
- * @author Audrius Meskauskas (AudriusA@Bioinformatics.org) 
+ *
+ * @author Audrius Meskauskas (AudriusA@Bioinformatics.org)
  */
 public interface Player extends Remote
 {

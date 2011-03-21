@@ -47,7 +47,7 @@ public final class GlyphJustificationInfo
   public static final int PRIORITY_WHITESPACE = 1;
   public static final int PRIORITY_INTERCHAR = 2;
   public static final int PRIORITY_NONE = 3;
-  
+
   public final float weight;
   public final int growPriority;
   public final boolean growAbsorb;
@@ -57,7 +57,7 @@ public final class GlyphJustificationInfo
   public final boolean shrinkAbsorb;
   public final float shrinkLeftLimit;
   public final float shrinkRightLimit;
-	
+
   public GlyphJustificationInfo (float weight, boolean growAbsorb,
                                  int growPriority, float growLeftLimit,
                                  float growRightLimit, boolean shrinkAbsorb,

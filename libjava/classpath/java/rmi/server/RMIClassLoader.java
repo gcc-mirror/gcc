@@ -74,7 +74,7 @@ public class RMIClassLoader
   {
     RMIClassLoaderSpi spi = getProviderInstance();
     if (spi == null)
-      spi = getDefaultProviderInstance(); 
+      spi = getDefaultProviderInstance();
     return spi.loadClass(codebase, name, null);
   }
 
@@ -84,7 +84,7 @@ public class RMIClassLoader
   {
     RMIClassLoaderSpi spi = getProviderInstance();
     if (spi == null)
-      spi = getDefaultProviderInstance(); 
+      spi = getDefaultProviderInstance();
     return spi.loadClass(codebase, name, defaultLoader);
   }
 
@@ -120,29 +120,29 @@ public class RMIClassLoader
   {
     RMIClassLoaderSpi spi = getProviderInstance();
     if (spi == null)
-      spi = getDefaultProviderInstance(); 
+      spi = getDefaultProviderInstance();
     return spi.loadClass(codeBase.toString(), name, null);
   }
 
   /**
    * Gets a classloader for the given codebase and with the current
    * context classloader as parent.
-   * 
+   *
    * @param codebase
-   * 
+   *
    * @return a classloader for the given codebase
-   * 
+   *
    * @throws MalformedURLException if the codebase contains a malformed URL
    */
-  public static ClassLoader getClassLoader(String codebase) 
+  public static ClassLoader getClassLoader(String codebase)
     throws MalformedURLException
   {
     RMIClassLoaderSpi spi = getProviderInstance();
     if (spi == null)
-      spi = getDefaultProviderInstance(); 
+      spi = getDefaultProviderInstance();
     return spi.getClassLoader(codebase);
   }
- 
+
   /**
    * Returns a string representation of the network location where a remote
    * endpoint can get the class-definition of the given class.
@@ -156,7 +156,7 @@ public class RMIClassLoader
   {
     RMIClassLoaderSpi spi = getProviderInstance();
     if (spi == null)
-      spi = getDefaultProviderInstance(); 
+      spi = getDefaultProviderInstance();
     return spi.getClassAnnotation(cl);
   }
 

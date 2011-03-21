@@ -87,67 +87,67 @@ public class DragGestureEvent extends EventObject
 
   /**
    * Returns the source casted as a DragGestureRecognizer.
-   * 
+   *
    * @return the source casted as a DragGestureRecognizer.
    */
   public DragGestureRecognizer getSourceAsDragGestureRecognizer()
   {
     return (DragGestureRecognizer) getSource();
   }
-  
+
   /**
    * Returns the Component corresponding to this.
-   * 
+   *
    * @return the Component corresponding to this.
    */
   public Component getComponent()
   {
     return component;
   }
-  
+
   /**
    * Gets the DragSource corresponding to this.
-   * 
+   *
    * @return the DragSource corresponding to this.
    */
   public DragSource getDragSource()
   {
     return dragSource;
   }
-  
+
   /**
    * Returns the origin of the drag.
-   * 
+   *
    * @return the origin of the drag.
    */
   public Point getDragOrigin()
   {
     return origin;
   }
-  
+
   /**
    * Gets an iterator representation of the List of events.
-   * 
+   *
    * @return an iterator representation of the List of events.
    */
   public Iterator<InputEvent> iterator()
   {
     return events.iterator();
   }
-  
+
   /**
    * Gets an array representation of the List of events.
-   * 
+   *
    * @return an array representation of the List of events.
    */
   public Object[] toArray()
   {
     return events.toArray();
   }
-  
+
   /**
    * Gets an array representation of the List of events.
-   * 
+   *
    * @param array - the array to store the events in.
    * @return an array representation of the List of events.
    */
@@ -158,17 +158,17 @@ public class DragGestureEvent extends EventObject
 
   /**
    * Gets the user's preferred action.
-   * 
+   *
    * @return the user's preferred action.
    */
   public int getDragAction()
   {
     return action;
   }
-  
+
   /**
    * Get the event that triggered this gesture.
-   * 
+   *
    * @return the event that triggered this gesture.
    */
   public InputEvent getTriggerEvent()

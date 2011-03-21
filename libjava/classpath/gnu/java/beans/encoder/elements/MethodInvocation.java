@@ -41,22 +41,22 @@ package gnu.java.beans.encoder.elements;
 import gnu.java.beans.encoder.Writer;
 
 /** Generates an XML element denoting a non-static method call.
- * 
+ *
  * @author Robert Schuster (robertschuster@fsfe.org)
  *
  */
 public class MethodInvocation extends Element
 {
   final String methodName;
-  
+
   public MethodInvocation(String newMethodName)
   {
     methodName = newMethodName;
   }
-  
+
   public void writeStart(Writer writer)
   {
     writer.write("void", "method", methodName, isEmpty());
   }
-  
+
 }

@@ -1,5 +1,5 @@
 /* This used to ICE. */
-/* { dg-do "compile" } */
+/* { dg-do compile } */
 
 struct a {};
 

@@ -80,7 +80,7 @@ public interface MBeanServerConnection
    *                                                      Object)
    */
   void addNotificationListener(ObjectName name, NotificationListener listener,
-			       NotificationFilter filter, Object passback)
+                               NotificationFilter filter, Object passback)
     throws InstanceNotFoundException, IOException;
 
   /**
@@ -89,7 +89,7 @@ public interface MBeanServerConnection
    * bean.  Notifications emitted by the management bean are forwarded
    * to the listener via the server, which will convert any MBean
    * references in the source to portable {@link ObjectName}
-   * instances.  The notification is otherwise unchanged.  
+   * instances.  The notification is otherwise unchanged.
    * </p>
    * <p>
    * The listener that receives notifications will be the one that is
@@ -123,7 +123,7 @@ public interface MBeanServerConnection
    *                                                      Object)
    */
   void addNotificationListener(ObjectName name, ObjectName listener,
-			       NotificationFilter filter, Object passback)
+                               NotificationFilter filter, Object passback)
     throws InstanceNotFoundException, RuntimeOperationsException, IOException;
 
   /**
@@ -132,7 +132,7 @@ public interface MBeanServerConnection
    * using the default constructor and registers it with the server
    * under the supplied name.  The class is loaded using the
    * {@link javax.management.loading.ClassLoaderRepository default
-   * loader repository} of the server. 
+   * loader repository} of the server.
    * </p>
    * <p>
    * If the name supplied is <code>null</code>, then the bean is
@@ -141,7 +141,7 @@ public interface MBeanServerConnection
    * of this interface will be used to obtain the name in this case.
    * </p>
    * <p>
-   * This method is equivalent to calling {@link 
+   * This method is equivalent to calling {@link
    * #createMBean(String, ObjectName, Object[], String[])
    * <code>createMBean(className, name, (Object[]) null,
    * (String[]) null)</code>} with <code>null</code> parameters
@@ -173,8 +173,8 @@ public interface MBeanServerConnection
    */
   ObjectInstance createMBean(String className, ObjectName name)
     throws ReflectionException, InstanceAlreadyExistsException,
-	   MBeanRegistrationException, MBeanException,
-	   NotCompliantMBeanException, IOException;
+           MBeanRegistrationException, MBeanException,
+           NotCompliantMBeanException, IOException;
 
   /**
    * <p>
@@ -182,7 +182,7 @@ public interface MBeanServerConnection
    * using the given constructor and registers it with the server
    * under the supplied name.  The class is loaded using the
    * {@link javax.management.loading.ClassLoaderRepository default
-   * loader repository} of the server. 
+   * loader repository} of the server.
    * </p>
    * <p>
    * If the name supplied is <code>null</code>, then the bean is
@@ -190,7 +190,7 @@ public interface MBeanServerConnection
    * The {@link MBeanRegistration#preRegister preRegister} method
    * of this interface will be used to obtain the name in this case.
    * </p>
-   * 
+   *
    * @param className the class of the management bean, of which
    *                  an instance should be created.
    * @param name the name to register the new bean with.
@@ -216,10 +216,10 @@ public interface MBeanServerConnection
    *                     the bean server.
    */
   ObjectInstance createMBean(String className, ObjectName name,
-			     Object[] params, String[] sig)
+                             Object[] params, String[] sig)
     throws ReflectionException, InstanceAlreadyExistsException,
-	   MBeanRegistrationException, MBeanException,
-	   NotCompliantMBeanException, IOException;
+           MBeanRegistrationException, MBeanException,
+           NotCompliantMBeanException, IOException;
 
   /**
    * <p>
@@ -237,7 +237,7 @@ public interface MBeanServerConnection
    * of this interface will be used to obtain the name in this case.
    * </p>
    * <p>
-   * This method is equivalent to calling {@link 
+   * This method is equivalent to calling {@link
    * #createMBean(String, ObjectName, ObjectName, Object[], String)
    * <code>createMBean(className, name, loaderName, (Object[]) null,
    * (String) null)</code>} with <code>null</code> parameters
@@ -270,12 +270,12 @@ public interface MBeanServerConnection
    *                     the bean server.
    * @see #createMBean(String, ObjectName, ObjectName, Object[], String[])
    */
-  ObjectInstance createMBean(String className, ObjectName name, 
-			     ObjectName loaderName)
+  ObjectInstance createMBean(String className, ObjectName name,
+                             ObjectName loaderName)
     throws ReflectionException, InstanceAlreadyExistsException,
-	   MBeanRegistrationException, MBeanException,
-	   NotCompliantMBeanException, InstanceNotFoundException,
-	   IOException;
+           MBeanRegistrationException, MBeanException,
+           NotCompliantMBeanException, InstanceNotFoundException,
+           IOException;
 
   /**
    * <p>
@@ -284,7 +284,7 @@ public interface MBeanServerConnection
    * under the supplied name.  The class is loaded using the
    * given class loader.  If this argument is <code>null</code>,
    * then the same class loader as was used to load the server
-   * is used. 
+   * is used.
    * </p>
    * <p>
    * If the name supplied is <code>null</code>, then the bean is
@@ -292,7 +292,7 @@ public interface MBeanServerConnection
    * The {@link MBeanRegistration#preRegister preRegister} method
    * of this interface will be used to obtain the name in this case.
    * </p>
-   * 
+   *
    * @param className the class of the management bean, of which
    *                  an instance should be created.
    * @param name the name to register the new bean with.
@@ -321,12 +321,12 @@ public interface MBeanServerConnection
    *                     the bean server.
    */
   ObjectInstance createMBean(String className, ObjectName name,
-			     ObjectName loaderName, Object[] params,
-			     String[] sig)
+                             ObjectName loaderName, Object[] params,
+                             String[] sig)
     throws ReflectionException, InstanceAlreadyExistsException,
-	   MBeanRegistrationException, MBeanException,
-	   NotCompliantMBeanException, InstanceNotFoundException,
-	   IOException;
+           MBeanRegistrationException, MBeanException,
+           NotCompliantMBeanException, InstanceNotFoundException,
+           IOException;
 
   /**
    * Returns the value of the supplied attribute from the specified
@@ -352,8 +352,8 @@ public interface MBeanServerConnection
    */
   Object getAttribute(ObjectName bean, String name)
     throws MBeanException, AttributeNotFoundException,
-	   InstanceNotFoundException, ReflectionException,
-	   IOException;
+           InstanceNotFoundException, ReflectionException,
+           IOException;
 
   /**
    * Returns the values of the named attributes from the specified
@@ -375,7 +375,7 @@ public interface MBeanServerConnection
    */
   AttributeList getAttributes(ObjectName bean, String[] names)
     throws InstanceNotFoundException, ReflectionException,
-	   IOException;
+           IOException;
 
   /**
    * Returns the default domain this server applies to beans that have
@@ -427,7 +427,7 @@ public interface MBeanServerConnection
    */
   MBeanInfo getMBeanInfo(ObjectName name)
     throws InstanceNotFoundException, IntrospectionException,
-	   ReflectionException, IOException;
+           ReflectionException, IOException;
 
   /**
    * Returns the {@link ObjectInstance} created for the specified
@@ -463,7 +463,7 @@ public interface MBeanServerConnection
    */
   Object invoke(ObjectName bean, String name, Object[] params, String[] sig)
     throws InstanceNotFoundException, MBeanException,
-	   ReflectionException, IOException;
+           ReflectionException, IOException;
 
   /**
    * <p>
@@ -480,7 +480,7 @@ public interface MBeanServerConnection
    * <li>Both the class of B and C were loaded by the same class loader,
    * and B is assignable to C.</li>
    * </ul>
-   * 
+   *
    * @param name the name of the management bean.
    * @param className the name of the class to test if <code>name</code> is
    *                  an instance of.
@@ -523,7 +523,7 @@ public interface MBeanServerConnection
    * <p>
    * If both the object name and the query expression are <code>null</code>,
    * or the object name has no domain and no key properties,
-   * no filtering will be performed and all beans are returned. 
+   * no filtering will be performed and all beans are returned.
    * </p>
    *
    * @param name an {@link ObjectName} to use as a filter.
@@ -535,7 +535,7 @@ public interface MBeanServerConnection
    */
   Set<ObjectInstance> queryMBeans(ObjectName name, QueryExp query)
     throws IOException;
-  
+
   /**
    * <p>
    * Returns a set of {@link ObjectName}s matching the specified
@@ -550,7 +550,7 @@ public interface MBeanServerConnection
    * <p>
    * If both the object name and the query expression are <code>null</code>,
    * or the object name has no domain and no key properties,
-   * no filtering will be performed and all beans are returned. 
+   * no filtering will be performed and all beans are returned.
    * </p>
    *
    * @param name an {@link ObjectName} to use as a filter.
@@ -584,9 +584,9 @@ public interface MBeanServerConnection
    * @see NotificationBroadcaster#removeNotificationListener(NotificationListener)
    */
   void removeNotificationListener(ObjectName name,
-				  NotificationListener listener)
+                                  NotificationListener listener)
     throws InstanceNotFoundException, ListenerNotFoundException,
-	   IOException;
+           IOException;
 
   /**
    * Removes the specified listener from the list of recipients
@@ -614,11 +614,11 @@ public interface MBeanServerConnection
    *                                                     Object)
    */
   void removeNotificationListener(ObjectName name,
-				  NotificationListener listener,
-				  NotificationFilter filter,
-				  Object passback)
+                                  NotificationListener listener,
+                                  NotificationFilter filter,
+                                  Object passback)
     throws InstanceNotFoundException, ListenerNotFoundException,
-	   IOException;
+           IOException;
 
   /**
    * Removes the specified listener from the list of recipients
@@ -643,7 +643,7 @@ public interface MBeanServerConnection
    */
   void removeNotificationListener(ObjectName name, ObjectName listener)
     throws InstanceNotFoundException, ListenerNotFoundException,
-	   IOException;
+           IOException;
 
   /**
    * Removes the specified listener from the list of recipients
@@ -672,15 +672,15 @@ public interface MBeanServerConnection
    *                                                     Object)
    */
   void removeNotificationListener(ObjectName name,
-				  ObjectName listener,
-				  NotificationFilter filter,
-				  Object passback)
+                                  ObjectName listener,
+                                  NotificationFilter filter,
+                                  Object passback)
     throws InstanceNotFoundException, ListenerNotFoundException,
-	   IOException;
+           IOException;
 
   /**
    * Sets the value of the specified attribute of the supplied
-   * management bean.  
+   * management bean.
    *
    * @param name the name of the management bean.
    * @param attribute the attribute to set.
@@ -710,8 +710,8 @@ public interface MBeanServerConnection
    */
   void setAttribute(ObjectName name, Attribute attribute)
     throws InstanceNotFoundException, AttributeNotFoundException,
-	   InvalidAttributeValueException, MBeanException,
-	   ReflectionException, IOException;
+           InvalidAttributeValueException, MBeanException,
+           ReflectionException, IOException;
 
   /**
    * Sets the value of each of the specified attributes
@@ -739,7 +739,7 @@ public interface MBeanServerConnection
    */
   AttributeList setAttributes(ObjectName name, AttributeList attributes)
     throws InstanceNotFoundException, ReflectionException,
-	   IOException;
+           IOException;
 
   /**
    * Unregisters the specified management bean.  Following this operation,
@@ -760,9 +760,9 @@ public interface MBeanServerConnection
    *                                    {@link MBeanServerDelegate} bean.
    * @throws IOException if an I/O error occurred in communicating with
    *                     the bean server.
-   */ 
+   */
   void unregisterMBean(ObjectName name)
     throws InstanceNotFoundException, MBeanRegistrationException,
-	   IOException;
+           IOException;
 
 }

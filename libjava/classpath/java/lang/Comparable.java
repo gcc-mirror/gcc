@@ -52,8 +52,8 @@ package java.lang;
  *
  * <p>Lists, arrays, and sets of objects that implement this interface can
  * be sorted automatically, without the need for an explicit
- * {@link java.util.Comparator}. Note that <code>e1.compareTo(null)</code> 
- * should throw an Exception; as should comparison between incompatible 
+ * {@link java.util.Comparator}. Note that <code>e1.compareTo(null)</code>
+ * should throw an Exception; as should comparison between incompatible
  * classes.
  *
  * @author Geoff Berry

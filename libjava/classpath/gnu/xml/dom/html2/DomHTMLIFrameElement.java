@@ -1,4 +1,4 @@
-/* DomHTMLIFrameElement.java -- 
+/* DomHTMLIFrameElement.java --
    Copyright (C) 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -65,7 +65,7 @@ public class DomHTMLIFrameElement
   {
     setHTMLAttribute("align", align);
   }
-  
+
   public String getFrameBorder()
   {
     return getHTMLAttribute("frameborder");
@@ -75,7 +75,7 @@ public class DomHTMLIFrameElement
   {
     setHTMLAttribute("frameborder", frameBorder);
   }
-  
+
   public String getHeight()
   {
     return getHTMLAttribute("height");
@@ -85,7 +85,7 @@ public class DomHTMLIFrameElement
   {
     setHTMLAttribute("height", height);
   }
-  
+
   public String getLongDesc()
   {
     return getHTMLAttribute("longdesc");
@@ -95,7 +95,7 @@ public class DomHTMLIFrameElement
   {
     setHTMLAttribute("longdesc", longDesc);
   }
-  
+
   public String getMarginHeight()
   {
     return getHTMLAttribute("marginheight");
@@ -105,7 +105,7 @@ public class DomHTMLIFrameElement
   {
     setHTMLAttribute("marginheight", marginHeight);
   }
-  
+
   public String getMarginWidth()
   {
     return getHTMLAttribute("marginwidth");
@@ -115,7 +115,7 @@ public class DomHTMLIFrameElement
   {
     setHTMLAttribute("marginwidth", marginWidth);
   }
-  
+
   public String getName()
   {
     return getHTMLAttribute("name");
@@ -125,7 +125,7 @@ public class DomHTMLIFrameElement
   {
     setHTMLAttribute("name", name);
   }
-  
+
   public String getScrolling()
   {
     return getHTMLAttribute("scrolling");
@@ -135,7 +135,7 @@ public class DomHTMLIFrameElement
   {
     setHTMLAttribute("scrolling", scrolling);
   }
-  
+
   public String getSrc()
   {
     return getHTMLAttribute("src");
@@ -155,12 +155,11 @@ public class DomHTMLIFrameElement
   {
     setHTMLAttribute("width", width);
   }
-  
+
   public Document getContentDocument()
   {
     // TODO getContentDocument
     return null;
   }
-  
-}
 
+}

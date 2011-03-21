@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -45,7 +45,7 @@ package java.io;
  */
 
 /**
-  * This is the common superclass of all standard classes that filter 
+  * This is the common superclass of all standard classes that filter
   * input.  It acts as a layer on top of an underlying <code>Reader</code>
   * and simply redirects calls made to it to the subordinate Reader
   * instead.  Subclasses of this class perform additional filtering
@@ -54,7 +54,7 @@ package java.io;
   * When creating a subclass of <code>FilterReader</code>, override the
   * appropriate methods to implement the desired filtering.  However, note
   * that the <code>read(char[])</code> method does not need to be overridden
-  * as this class redirects calls to that method to 
+  * as this class redirects calls to that method to
   * <code>read(yte[], int, int)</code> instead of to the subordinate
   * <code>Reader} read(yte[])</code> method.
   *
@@ -98,7 +98,7 @@ public abstract class FilterReader extends Reader
   /**
     * Calls the <code>in.markSupported()</code> method.
     *
-    * @return <code>true</code> if mark/reset is supported, 
+    * @return <code>true</code> if mark/reset is supported,
     * <code>false</code> otherwise
     */
   public boolean markSupported()
@@ -131,7 +131,7 @@ public abstract class FilterReader extends Reader
   /**
     * Calls the <code>in.skip(long)</code> method
     *
-    * @param num_chars The requested number of chars to skip. 
+    * @param num_chars The requested number of chars to skip.
     *
     * @return The value returned from <code>in.skip(long)</code>
     *
@@ -182,4 +182,3 @@ public abstract class FilterReader extends Reader
   }
 
 } // class FilterReader
-

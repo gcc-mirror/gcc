@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -38,16 +38,16 @@ exception statement from your version. */
 
 package java.io;
 
-// NOTE: This implementation is very similar to that of PipedWriter.  If you 
-// fix a bug in here, chances are you should make a similar change to the 
+// NOTE: This implementation is very similar to that of PipedWriter.  If you
+// fix a bug in here, chances are you should make a similar change to the
 // PipedWriter code.
 
 /**
-  * This class writes its bytes to a <code>PipedInputStream</code> to 
+  * This class writes its bytes to a <code>PipedInputStream</code> to
   * which it is connected.
   * <p>
   * It is highly recommended that a <code>PipedOutputStream</code> and its
-  * connected <code>PipedInputStream</code> be in different threads.  If 
+  * connected <code>PipedInputStream</code> be in different threads.  If
   * they are in the same thread, read and write operations could deadlock
   * the thread.
   *
@@ -55,14 +55,14 @@ package java.io;
   */
 public class PipedOutputStream extends OutputStream
 {
-  /** Target PipedInputStream to which this is connected. Null only if this 
+  /** Target PipedInputStream to which this is connected. Null only if this
     * OutputStream hasn't been connected yet. */
   PipedInputStream sink;
-  
+
   /** Set to true if close() has been called on this OutputStream. */
   boolean closed;
-  
-  /** 
+
+  /**
     * Create an unconnected PipedOutputStream.  It must be connected
     * to a <code>PipedInputStream</code> using the <code>connect</code>
     * method prior to writing any data or an exception will be thrown.
@@ -78,7 +78,7 @@ public class PipedOutputStream extends OutputStream
     *
     * @param sink The <code>PipedInputStream</code> to connect this stream to.
     *
-    * @exception IOException If <code>sink</code> has already been connected 
+    * @exception IOException If <code>sink</code> has already been connected
     *                        to a different PipedOutputStream.
     */
   public PipedOutputStream(PipedInputStream sink) throws IOException
@@ -87,7 +87,7 @@ public class PipedOutputStream extends OutputStream
   }
 
   /**
-    * Connects this object to the specified <code>PipedInputStream</code> 
+    * Connects this object to the specified <code>PipedInputStream</code>
     * object.  This stream will then be ready for writing.
     *
     * @param sink The <code>PipedInputStream</code> to connect this stream to
@@ -103,29 +103,29 @@ public class PipedOutputStream extends OutputStream
   }
 
   /**
-    * Write a single byte of date to the stream.  Note that this method will 
-    * block if the <code>PipedInputStream</code> to which this object is 
+    * Write a single byte of date to the stream.  Note that this method will
+    * block if the <code>PipedInputStream</code> to which this object is
     * connected has a full buffer.
     *
     * @param b The byte of data to be written, passed as an <code>int</code>.
     *
     * @exception IOException If the stream has not been connected or has
     *                        been closed.
-    */  
+    */
   public void write(int b) throws IOException
   {
     if (sink == null)
       throw new IOException ("Not connected");
     if (closed)
       throw new IOException ("Pipe closed");
-      
+
     sink.receive (b);
   }
-  
+
   /**
     * This method writes <code>len</code> bytes of data from the byte array
     * <code>buf</code> starting at index <code>offset</code> in the array
-    * to the stream.  Note that this method will block if the  
+    * to the stream.  Note that this method will block if the
     * <code>PipedInputStream</code> to which this object is connected has
     * a buffer that cannot hold all of the bytes to be written.
     *
@@ -142,7 +142,7 @@ public class PipedOutputStream extends OutputStream
       throw new IOException ("Not connected");
     if (closed)
       throw new IOException ("Pipe closed");
-      
+
     sink.receive(buffer, offset, len);
   }
 
@@ -157,7 +157,7 @@ public class PipedOutputStream extends OutputStream
   public void flush() throws IOException
   {
   }
-  
+
   /**
     * This method closes this stream so that no more data can be written
     * to it. Any further attempts to write to this stream may throw an
@@ -170,12 +170,12 @@ public class PipedOutputStream extends OutputStream
     // A close call on an unconnected PipedOutputStream has no effect.
     if (sink != null)
       {
-	closed = true;
-	// Notify any waiting readers that the stream is now closed.
-	synchronized (sink)
-	{	  
-	  sink.notifyAll();
-	}
+        closed = true;
+        // Notify any waiting readers that the stream is now closed.
+        synchronized (sink)
+        {
+          sink.notifyAll();
+        }
       }
   }
 }

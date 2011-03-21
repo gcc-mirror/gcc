@@ -32,7 +32,9 @@
 
 #include <limits>
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #define const _GLIBCXX_USE_CONSTEXPR
 
@@ -514,7 +516,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
 #undef const
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
 
 // XXX GLIBCXX_ABI Deprecated
 #ifdef _GLIBCXX_LONG_DOUBLE_COMPAT

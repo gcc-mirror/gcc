@@ -55,10 +55,10 @@ public abstract class NVList
    * Create and add a new named value object with null name,
    * null value and having given flags.
    * @param a_flags the flags, the normally expected values are
-   * {@link org.omg.CORBA.ARG_IN#value}, 
-   * {@link org.omg.CORBA.ARG_OUT#value} and 
+   * {@link org.omg.CORBA.ARG_IN#value},
+   * {@link org.omg.CORBA.ARG_OUT#value} and
    * {@link org.omg.CORBA.ARG_INOUT#value} or 0.
-   * 
+   *
    * @return the created and added value.
    */
   public abstract NamedValue add(int a_flags);
@@ -71,7 +71,7 @@ public abstract class NVList
    * {@link org.omg.CORBA.ARG_IN#value},
    * {@link org.omg.CORBA.ARG_OUT#value} and
    * {@link org.omg.CORBA.ARG_INOUT#value} or 0.
-   * 
+   *
    * @return the created and added value.
    */
   public abstract NamedValue add_item(String a_name, int a_flags);
@@ -85,14 +85,14 @@ public abstract class NVList
    * {@link org.omg.CORBA.ARG_IN#value},
    * {@link org.omg.CORBA.ARG_OUT#value} and
    * {@link org.omg.CORBA.ARG_INOUT#value} or 0.
-   * 
+   *
    * @return the created object.
    */
   public abstract NamedValue add_value(String a_name, Any a_value, int a_flags);
 
   /**
    * Get the number of the present named value pairs.
-   * 
+   *
    * @return the number of objects in the list.
    */
   public abstract int count();
@@ -100,7 +100,7 @@ public abstract class NVList
   /**
    * Get the item at the given index
    * @param at the index.
-   * 
+   *
    * @return the item at the index
    * @throws Bounds if the index is out of bounds.
    */

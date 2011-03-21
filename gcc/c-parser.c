@@ -1,6 +1,6 @@
 /* Parser for C and Objective-C.
    Copyright (C) 1987, 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
 
    Parser actions based on the old Bison parser; structure somewhat
@@ -258,8 +258,7 @@ c_lex_one_token (c_parser *parser, c_token *token)
 		/* We found an Objective-C "pq" keyword (in, out,
 		   inout, bycopy, byref, oneway).  They need special
 		   care because the interpretation depends on the
-		   context.
-		 */
+		   context.  */
 		if (parser->objc_pq_context)
 		  {
 		    token->type = CPP_KEYWORD;
@@ -280,21 +279,19 @@ c_lex_one_token (c_parser *parser, c_token *token)
 		       you can't use 'in' as the name of the running
 		       variable in a C for loop.  We could potentially
 		       try to add code here to disambiguate, but it
-		       seems a reasonable limitation.
-		    */
+		       seems a reasonable limitation.  */
 		    token->type = CPP_KEYWORD;
 		    token->keyword = rid_code;
 		    break;
 		  }
 		/* Else, "pq" keywords outside of the "pq" context are
 		   not keywords, and we fall through to the code for
-		   normal tokens.
-		*/
+		   normal tokens.  */
 	      }
 	    else if (c_dialect_objc () && OBJC_IS_PATTR_KEYWORD (rid_code))
 	      {
-		/* We found an Objective-C "property attribute" keyword 
-		   (readonly, copies, getter, setter, ivar). These are 
+		/* We found an Objective-C "property attribute"
+		   keyword (getter, setter, readonly, etc). These are
 		   only valid in the property context.  */
 		if (parser->objc_property_attr_context)
 		  {
@@ -315,8 +312,7 @@ c_lex_one_token (c_parser *parser, c_token *token)
 		   protected, public, try, catch, throw) without a
 		   preceding '@' sign.  Do nothing and fall through to
 		   the code for normal tokens (in C++ we would still
-		   consider the CXX ones keywords, but not in C).
-		*/
+		   consider the CXX ones keywords, but not in C).  */
 		;
 	      }
 	    else
@@ -1069,13 +1065,15 @@ disable_extension_diagnostics (void)
 	     | (warn_traditional << 2)
 	     | (flag_iso << 3)
 	     | (warn_long_long << 4)
-	     | (warn_cxx_compat << 5));
+	     | (warn_cxx_compat << 5)
+	     | (warn_overlength_strings << 6));
   cpp_opts->cpp_pedantic = pedantic = 0;
   warn_pointer_arith = 0;
   cpp_opts->cpp_warn_traditional = warn_traditional = 0;
   flag_iso = 0;
   cpp_opts->cpp_warn_long_long = warn_long_long = 0;
   warn_cxx_compat = 0;
+  warn_overlength_strings = 0;
   return ret;
 }
 
@@ -1091,6 +1089,7 @@ restore_extension_diagnostics (int flags)
   flag_iso = (flags >> 3) & 1;
   cpp_opts->cpp_warn_long_long = warn_long_long = (flags >> 4) & 1;
   warn_cxx_compat = (flags >> 5) & 1;
+  warn_overlength_strings = (flags >> 6) & 1;
 }
 
 /* Possibly kinds of declarator to parse.  */
@@ -1581,8 +1580,7 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
 	case RID_AT_PROPERTY:
 	  if (specs->attrs)
 	    {
-	      c_parser_error (parser, 
-	      		      "attributes may not be specified before" );
+	      c_parser_error (parser, "unexpected attribute");
 	      specs->attrs = NULL;
 	    }
 	  break;
@@ -3303,6 +3301,8 @@ static tree
 c_parser_asm_string_literal (c_parser *parser)
 {
   tree str;
+  int save_flag = warn_overlength_strings;
+  warn_overlength_strings = 0;
   if (c_parser_next_token_is (parser, CPP_STRING))
     {
       str = c_parser_peek_token (parser)->value;
@@ -3320,6 +3320,7 @@ c_parser_asm_string_literal (c_parser *parser)
       c_parser_error (parser, "expected string literal");
       str = NULL_TREE;
     }
+  warn_overlength_strings = save_flag;
   return str;
 }
 
@@ -4837,7 +4838,9 @@ c_parser_for_statement (c_parser *parser)
 {
   tree block, cond, incr, save_break, save_cont, body;
   /* The following are only used when parsing an ObjC foreach statement.  */
-  tree object_expression, collection_expression;
+  tree object_expression;
+  /* Silence the bogus uninitialized warning.  */
+  tree collection_expression = NULL;
   location_t loc = c_parser_peek_token (parser)->location;
   location_t for_loc = c_parser_peek_token (parser)->location;
   bool is_foreach_statement = false;
@@ -7584,6 +7587,14 @@ c_parser_objc_type_name (c_parser *parser)
     type_name = c_parser_type_name (parser);
   if (type_name)
     type = groktypename (type_name, NULL, NULL);
+
+  /* If the type is unknown, and error has already been produced and
+     we need to recover from the error.  In that case, use NULL_TREE
+     for the type, as if no type had been specified; this will use the
+     default type ('id') which is good for error recovery.  */
+  if (type == error_mark_node)
+    type = NULL_TREE;
+
   return build_tree_list (quals, type);
 }
 
@@ -8056,8 +8067,12 @@ c_parser_objc_at_property_declaration (c_parser *parser)
 	    case RID_SETTER:
 	      if (c_parser_next_token_is_not (parser, CPP_EQ))
 		{
-		  c_parser_error (parser,
-				  "getter/setter attribute must be followed by %<=%>");
+		  if (keyword == RID_GETTER)
+		    c_parser_error (parser,
+				    "missing %<=%> (after %<getter%> attribute)");
+		  else
+		    c_parser_error (parser,
+				    "missing %<=%> (after %<setter%> attribute)");
 		  syntax_error = true;
 		  break;
 		}
@@ -9428,6 +9443,9 @@ c_parser_omp_atomic (location_t loc, c_parser *parser)
 	  goto saw_error;
 	}
 
+      /* Arrange to pass the location of the assignment operator to
+	 c_finish_omp_atomic.  */
+      loc = c_parser_peek_token (parser)->location;
       c_parser_consume_token (parser);
       {
 	location_t rhs_loc = c_parser_peek_token (parser)->location;

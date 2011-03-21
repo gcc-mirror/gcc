@@ -94,7 +94,7 @@ public class SSLContext
   /**
    * Get an instance of a context for the specified protocol from the first
    * provider that implements it.
-   * 
+   *
    * @param protocol The name of the protocol to get a context for.
    * @return The new context.
    * @throws NoSuchAlgorithmException If no provider implements the given
@@ -124,7 +124,7 @@ public class SSLContext
   /**
    * Get an instance of a context for the specified protocol from the named
    * provider.
-   * 
+   *
    * @param protocol The name of the protocol to get a context for.
    * @param provider The name of the provider to get the implementation from.
    * @return The new context.
@@ -149,7 +149,7 @@ public class SSLContext
   /**
    * Get an instance of a context for the specified protocol from the specified
    * provider.
-   * 
+   *
    * @param protocol The name of the protocol to get a context for.
    * @param provider The name of the provider to get the implementation from.
    * @return The new context.

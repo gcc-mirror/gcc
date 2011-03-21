@@ -1,4 +1,4 @@
-/* DomHTMLButtonElement.java -- 
+/* DomHTMLButtonElement.java --
    Copyright (C) 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -70,7 +70,7 @@ public class DomHTMLButtonElement
   {
     setHTMLAttribute("accesskey", accessKey);
   }
-  
+
   public boolean getDisabled()
   {
     return getBooleanHTMLAttribute("disabled");
@@ -80,7 +80,7 @@ public class DomHTMLButtonElement
   {
     setBooleanHTMLAttribute("disabled", disabled);
   }
-  
+
   public String getName()
   {
     return getHTMLAttribute("name");
@@ -90,7 +90,7 @@ public class DomHTMLButtonElement
   {
     setHTMLAttribute("name", name);
   }
-  
+
   public int getTabIndex()
   {
     return getIntHTMLAttribute("tabindex");
@@ -105,7 +105,7 @@ public class DomHTMLButtonElement
   {
     return getHTMLAttribute("type");
   }
-  
+
   public String getValue()
   {
     return getHTMLAttribute("value");
@@ -115,6 +115,5 @@ public class DomHTMLButtonElement
   {
     setHTMLAttribute("value", value);
   }
-  
-}
 
+}

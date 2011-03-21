@@ -1,4 +1,4 @@
-/* CharactersImpl.java -- 
+/* CharactersImpl.java --
    Copyright (C) 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -88,12 +88,12 @@ public class CharactersImpl
   {
     return cdata;
   }
-  
+
   public boolean isIgnorableWhiteSpace()
   {
     return ignorableWhitespace;
   }
-  
+
   public void writeAsEncodedUnicode(Writer writer)
     throws XMLStreamException
   {
@@ -105,7 +105,7 @@ public class CharactersImpl
             writer.write(data);
             writer.write("]]>");
           }
-        else   
+        else
           writer.write(encode(data, false));
       }
     catch (IOException e)
@@ -115,6 +115,5 @@ public class CharactersImpl
         throw e2;
       }
   }
-  
-}
 
+}

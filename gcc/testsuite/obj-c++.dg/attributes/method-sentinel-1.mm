@@ -4,6 +4,8 @@
 
 #include <objc/objc.h>
 #include <stdlib.h>
+/* Ensure a compatible definition of nil.  */
+#include "../../objc-obj-c++-shared/objc-test-suite-types.h"
 
 @interface NSArray
 {

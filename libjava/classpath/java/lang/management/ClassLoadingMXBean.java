@@ -38,7 +38,7 @@ exception statement from your version. */
 package java.lang.management;
 
 /**
- * Provides access to information about the class loading 
+ * Provides access to information about the class loading
  * behaviour of the current invocation of the virtual
  * machine.  An instance of this bean is obtained by calling
  * {@link ManagementFactory#getClassLoadingMXBean()}.
@@ -100,4 +100,3 @@ public interface ClassLoadingMXBean
   void setVerbose(boolean verbose);
 
 }
-

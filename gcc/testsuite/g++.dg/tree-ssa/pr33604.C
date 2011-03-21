@@ -42,7 +42,8 @@ int main(int argc, char *argv[])
    yielding
      D.2137.lhs.m ={v} &I;
    so that SRA can promote all locals to registers and we end up
-   referencing a single virtual operand at abort () after optimization.  */
+   referencing two virtual operands at abort () and the return
+   after optimization.  */
 
-/* { dg-final { scan-tree-dump-times ".MEM_\[0-9\]*\\\(D\\\)" 1 "optimized" } } */
+/* { dg-final { scan-tree-dump-times ".MEM_\[0-9\]*\\\(D\\\)" 2 "optimized" } } */
 /* { dg-final { cleanup-tree-dump "optimized" } } */

@@ -54,7 +54,7 @@ import org.omg.CORBA.portable.ResponseHandler;
 /**
  * The base for the class that is actually implementing the functionality
  * of the object on the server side ({@link DemoServant} of our case).
- * 
+ *
  * Following CORBA standards, the name of this class must start from
  * underscore and end by the "ImplBase".
  *

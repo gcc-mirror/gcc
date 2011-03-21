@@ -88,7 +88,7 @@ package documentation, see @uref{http://golang.org/}.
                                 How you can share and copy this manual.
 * Invoking gccgo::              How to run gccgo.
 * Import and Export::           Importing and exporting package data.
-* C Interoperability::          Calling C from Go and vice-vera.
+* C Interoperability::          Calling C from Go and vice-versa.
 * Index::                       Index.
 @end menu
 
@@ -186,7 +186,7 @@ export information will be stored directly in the object file.  When a
 package is imported, @command{gccgo} must be able to find the file.
 
 @cindex @file{.gox}
-When Go code imports the package @file{gopackage}, @command{gccgo}
+When Go code imports the package @file{@var{gopackage}}, @command{gccgo}
 will look for the import data using the following filenames, using the
 first one that it finds.
 

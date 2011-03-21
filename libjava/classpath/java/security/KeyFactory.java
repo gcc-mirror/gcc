@@ -50,7 +50,7 @@ import java.security.spec.KeySpec;
  * Key factories are used to convert keys (opaque cryptographic keys of type
  * {@link Key}) into key specifications (transparent representations of the
  * underlying key material).
- * 
+ *
  * <p>Key factories are bi-directional. They allow a key class to be converted
  * into a key specification (key material) and back again. For example DSA
  * public keys can be specified as <code>DSAPublicKeySpec</code> or
@@ -76,7 +76,7 @@ public class KeyFactory
   /**
    * Constructs a new instance of <code>KeyFactory</code> with the specified
    * parameters.
-   * 
+   *
    * @param keyFacSpi
    *          the key factory to use.
    * @param provider
@@ -85,7 +85,7 @@ public class KeyFactory
    *          the name of the key algorithm to use.
    */
   protected KeyFactory(KeyFactorySpi keyFacSpi, Provider provider,
-		       String algorithm)
+                       String algorithm)
   {
     this.keyFacSpi = keyFacSpi;
     this.provider = provider;
@@ -95,7 +95,7 @@ public class KeyFactory
   /**
    * Returns a new instance of <code>KeyFactory</code> representing the
    * specified key factory.
-   * 
+   *
    * @param algorithm the name of algorithm to use.
    * @return a new instance repesenting the desired algorithm.
    * @throws NoSuchAlgorithmException if the algorithm is not implemented by any
@@ -125,7 +125,7 @@ public class KeyFactory
   /**
    * Returns a new instance of <code>KeyFactory</code> representing the
    * specified key factory from the specified provider.
-   * 
+   *
    * @param algorithm the name of algorithm to use.
    * @param provider the name of the provider to use.
    * @return a new instance repesenting the desired algorithm.
@@ -152,7 +152,7 @@ public class KeyFactory
   /**
    * Returns a new instance of <code>KeyFactory</code> representing the
    * specified key factory from the designated {@link Provider}.
-   * 
+   *
    * @param algorithm the name of algorithm to use.
    * @param provider the {@link Provider} to use.
    * @return a new instance repesenting the desired algorithm.
@@ -195,7 +195,7 @@ public class KeyFactory
 
   /**
    * Returns the {@link Provider} of this instance.
-   * 
+   *
    * @return the {@link Provider} of this instance.
    */
   public final Provider getProvider()
@@ -205,7 +205,7 @@ public class KeyFactory
 
   /**
    * Returns the name of the algorithm used.
-   * 
+   *
    * @return the name of the algorithm used.
    */
   public final String getAlgorithm()
@@ -215,7 +215,7 @@ public class KeyFactory
 
   /**
    * Generates a public key from the provided key specification.
-   * 
+   *
    * @param keySpec
    *          the key specification.
    * @return the public key.
@@ -230,7 +230,7 @@ public class KeyFactory
 
   /**
    * Generates a private key from the provided key specification.
-   * 
+   *
    * @param keySpec
    *          the key specification.
    * @return the private key.
@@ -246,7 +246,7 @@ public class KeyFactory
   /**
    * Returns a key specification for the given key. <code>keySpec</code>
    * identifies the specification class to return the key material in.
-   * 
+   *
    * @param key
    *          the key to use.
    * @param keySpec
@@ -266,7 +266,7 @@ public class KeyFactory
   /**
    * Translates the key from an unknown or untrusted provider into a key from
    * this key factory.
-   * 
+   *
    * @param key
    *          the key to translate from.
    * @return the translated key.

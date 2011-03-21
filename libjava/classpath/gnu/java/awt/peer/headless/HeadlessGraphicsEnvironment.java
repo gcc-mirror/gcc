@@ -1,4 +1,4 @@
-/* HeadlessGraphicsEnvironment.java -- A graphics environment for headless mode 
+/* HeadlessGraphicsEnvironment.java -- A graphics environment for headless mode
    Copyright (C) 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.

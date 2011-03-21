@@ -1,4 +1,4 @@
-/* JobImpressionsCompleted.java -- 
+/* JobImpressionsCompleted.java --
    Copyright (C) 2003, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -45,12 +45,12 @@ import javax.print.attribute.PrintJobAttribute;
  * The <code>JobImpressionsCompleted</code> printing attribute reports
  * the number of impressions already processed.
  * <p>
- * An impression is specified by the IPP specification as the image imposed 
- * onto a single media sheet. This attribute will not include a multiplication 
+ * An impression is specified by the IPP specification as the image imposed
+ * onto a single media sheet. This attribute will not include a multiplication
  * factor from the number of copies.
  * </p>
  * <p>
- * This attribute belongs to a group of job progress attributes which are 
+ * This attribute belongs to a group of job progress attributes which are
  * reporting on the progress of a print job.
  * </p>
  * <p>
@@ -58,14 +58,14 @@ import javax.print.attribute.PrintJobAttribute;
  * </p>
  * @see javax.print.attribute.standard.JobMediaSheetsCompleted
  * @see javax.print.attribute.standard.JobKOctetsProcessed
- * 
+ *
  * @author Michael Koch (konqueror@gmx.de)
  */
 public final class JobImpressionsCompleted extends IntegerSyntax
   implements PrintJobAttribute
 {
   private static final long serialVersionUID = 6722648442432393294L;
-  
+
   /**
    * Creates a <code>JobImpressionsCompleted</code> object.
    *
@@ -80,13 +80,13 @@ public final class JobImpressionsCompleted extends IntegerSyntax
     if (value < 0)
       throw new IllegalArgumentException("value may not be less than 0");
   }
-  
+
   /**
    * Tests if the given object is equal to this object.
    *
    * @param obj the object to test
    *
-   * @return <code>true</code> if both objects are equal, 
+   * @return <code>true</code> if both objects are equal,
    * <code>false</code> otherwise.
    */
   public boolean equals(Object obj)

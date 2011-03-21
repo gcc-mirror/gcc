@@ -83,7 +83,7 @@ public class ComponentGraphics extends CairoGraphics2D
   ComponentGraphics()
   {
   }
-  
+
   private ComponentGraphics(GtkComponentPeer component)
   {
     this.component = component;
@@ -114,7 +114,7 @@ public class ComponentGraphics extends CairoGraphics2D
   /**
    * Obtain and hold a GDK lock, which is required for all drawing operations
    * in this graphics context (since it is backed by an X surface).
-   * 
+   *
    * This method causes the GDK locking behaviour to be re-entrant.  No race
    * conditions are caused since a ThreadLocal is used and each thread has its
    * own lock counter.
@@ -176,11 +176,11 @@ public class ComponentGraphics extends CairoGraphics2D
    */
   private static native Pointer nativeGrab(GtkComponentPeer component);
 
-  private native void copyAreaNative(GtkComponentPeer component, int x, int y, 
+  private native void copyAreaNative(GtkComponentPeer component, int x, int y,
                                      int width, int height, int dx, int dy);
 
   private native void drawVolatile(GtkComponentPeer component,
-                                   long vimg, int x, int y, 
+                                   long vimg, int x, int y,
                                    int width, int height, int cx, int cy,
                                    int cw, int ch);
 
@@ -193,7 +193,7 @@ public class ComponentGraphics extends CairoGraphics2D
   }
 
   /**
-   * Returns a Graphics2D object for a component, either an instance of this 
+   * Returns a Graphics2D object for a component, either an instance of this
    * class (if xrender is supported), or a context which copies.
    */
   public static Graphics2D getComponentGraphics(GtkComponentPeer component)
@@ -214,7 +214,7 @@ public class ComponentGraphics extends CairoGraphics2D
   {
     return new ComponentGraphics(this);
   }
-  
+
   protected Rectangle2D getRealBounds()
   {
     return component.awtComponent.getBounds();
@@ -226,23 +226,23 @@ public class ComponentGraphics extends CairoGraphics2D
   }
 
   /**
-   * Overloaded methods that do actual drawing need to enter the gdk threads 
+   * Overloaded methods that do actual drawing need to enter the gdk threads
    * and also do certain things before and after.
    */
   public void draw(Shape s)
   {
     if (comp == null || comp instanceof AlphaComposite)
       super.draw(s);
-    
+
     else
       {
         createBuffer();
-        
+
         Graphics2D g2d = (Graphics2D)buffer.getGraphics();
         g2d.setStroke(this.getStroke());
         g2d.setColor(this.getColor());
         g2d.draw(s);
-        
+
         drawComposite(s.getBounds2D(), null);
       }
   }
@@ -251,16 +251,16 @@ public class ComponentGraphics extends CairoGraphics2D
   {
     if (comp == null || comp instanceof AlphaComposite)
       super.fill(s);
-    
+
     else
       {
         createBuffer();
-        
+
         Graphics2D g2d = (Graphics2D)buffer.getGraphics();
         g2d.setPaint(this.getPaint());
         g2d.setColor(this.getColor());
         g2d.fill(s);
-        
+
         drawComposite(s.getBounds2D(), null);
       }
   }
@@ -269,7 +269,7 @@ public class ComponentGraphics extends CairoGraphics2D
   {
     if (comp == null || comp instanceof AlphaComposite)
       super.drawRenderedImage(image, xform);
-    
+
     else
       {
         createBuffer();
@@ -277,18 +277,18 @@ public class ComponentGraphics extends CairoGraphics2D
         Graphics2D g2d = (Graphics2D)buffer.getGraphics();
         g2d.setRenderingHints(this.getRenderingHints());
         g2d.drawRenderedImage(image, xform);
-        
+
         drawComposite(buffer.getRaster().getBounds(), null);
       }
   }
 
   protected boolean drawImage(Image img, AffineTransform xform,
-			      Color bgcolor, ImageObserver obs)
+                              Color bgcolor, ImageObserver obs)
   {
     boolean rv;
     if (comp == null || comp instanceof AlphaComposite)
       rv = super.drawImage(img, xform, bgcolor, obs);
-    
+
     else
       {
         // Get buffered image of source
@@ -300,7 +300,7 @@ public class ComponentGraphics extends CairoGraphics2D
             img = Toolkit.getDefaultToolkit().createImage(source);
           }
         BufferedImage bImg = (BufferedImage) img;
-        
+
         // Find translated bounds
         Point2D origin = new Point2D.Double(bImg.getMinX(), bImg.getMinY());
         Point2D pt = new Point2D.Double(bImg.getWidth() + bImg.getMinX(),
@@ -310,10 +310,10 @@ public class ComponentGraphics extends CairoGraphics2D
             origin = xform.transform(origin, origin);
             pt = xform.transform(pt, pt);
           }
-        
+
         // Create buffer and draw image
         createBuffer();
-        
+
         Graphics2D g2d = (Graphics2D)buffer.getGraphics();
         g2d.setRenderingHints(this.getRenderingHints());
         g2d.drawImage(img, xform, obs);
@@ -331,7 +331,7 @@ public class ComponentGraphics extends CairoGraphics2D
   {
     if (comp == null || comp instanceof AlphaComposite)
       super.drawGlyphVector(gv, x, y);
-    
+
     else
       {
         createBuffer();
@@ -340,14 +340,14 @@ public class ComponentGraphics extends CairoGraphics2D
         g2d.setPaint(this.getPaint());
         g2d.setStroke(this.getStroke());
         g2d.drawGlyphVector(gv, x, y);
-        
+
         Rectangle2D bounds = gv.getLogicalBounds();
         bounds = new Rectangle2D.Double(x + bounds.getX(), y + bounds.getY(),
                                         bounds.getWidth(), bounds.getHeight());
         drawComposite(bounds, null);
       }
   }
-  
+
   public boolean drawImage(Image img, int x, int y, ImageObserver observer)
   {
     // If it is a GtkVolatileImage with an "easy" transform then
@@ -390,7 +390,7 @@ public class ComponentGraphics extends CairoGraphics2D
       }
     return super.drawImage(bimg, x, y, observer);
   }
-  
+
   public boolean drawImage(Image img, int x, int y, int width, int height,
                            ImageObserver observer)
   {
@@ -446,41 +446,41 @@ public class ComponentGraphics extends CairoGraphics2D
     clip = new Rectangle(buffer.getMinX(), buffer.getMinY(),
                          buffer.getWidth(), buffer.getHeight());
     Rectangle2D.intersect(bounds, clip, bounds);
-    
+
     BufferedImage buffer2 = buffer;
     if (!bounds.equals(buffer2.getRaster().getBounds()))
       buffer2 = buffer2.getSubimage((int)bounds.getX(), (int)bounds.getY(),
                                     (int)bounds.getWidth(),
                                     (int)bounds.getHeight());
-    
+
     // Get destination clip to bounds
     double[] points = new double[] {bounds.getX(), bounds.getY(),
                                     bounds.getMaxX(), bounds.getMaxY()};
     transform.transform(points, 0, points, 0, 2);
-    
+
     Rectangle2D deviceBounds = new Rectangle2D.Double(points[0], points[1],
                                                       points[2] - points[0],
                                                       points[3] - points[1]);
-    
+
     Rectangle2D.intersect(deviceBounds, this.getClipInDevSpace(), deviceBounds);
-    
+
     // Get current image on the component
     GtkImage img = grab(component);
     Graphics gr = componentBuffer.createGraphics();
     gr.drawImage(img, 0, 0, null);
     gr.dispose();
-    
+
     BufferedImage cBuffer = componentBuffer;
     if (!deviceBounds.equals(cBuffer.getRaster().getBounds()))
       cBuffer = cBuffer.getSubimage((int)deviceBounds.getX(),
                                     (int)deviceBounds.getY(),
                                     (int)deviceBounds.getWidth(),
                                     (int)deviceBounds.getHeight());
-    
+
     // Perform actual composite operation
     compCtx.compose(buffer2.getRaster(), cBuffer.getRaster(),
                     cBuffer.getRaster());
-    
+
     // This MUST call directly into the "action" method in CairoGraphics2D,
     // not one of the wrappers, to ensure that the composite isn't processed
     // more than once!
@@ -490,7 +490,7 @@ public class ComponentGraphics extends CairoGraphics2D
                                  null, null);
     return rv;
   }
-  
+
   private void createBuffer()
   {
     if (buffer == null)
@@ -499,7 +499,7 @@ public class ComponentGraphics extends CairoGraphics2D
         rst = Raster.createWritableRaster(GtkVolatileImage.createGdkSampleModel(component.awtComponent.getWidth(),
                                                                                 component.awtComponent.getHeight()),
                                           new Point(0,0));
-        
+
         buffer = new BufferedImage(GtkVolatileImage.gdkColorModel, rst,
                                    GtkVolatileImage.gdkColorModel.isAlphaPremultiplied(),
                                    new Hashtable());
@@ -507,60 +507,60 @@ public class ComponentGraphics extends CairoGraphics2D
     else
       {
         Graphics2D g2d = ((Graphics2D)buffer.getGraphics());
-        
+
         g2d.setBackground(new Color(0,0,0,0));
         g2d.clearRect(0, 0, buffer.getWidth(), buffer.getHeight());
       }
-    
+
     if (componentBuffer == null)
       {
         WritableRaster rst;
         rst = Raster.createWritableRaster(GtkVolatileImage.createGdkSampleModel(component.awtComponent.getWidth(),
                                                                                 component.awtComponent.getHeight()),
                                           new Point(0,0));
-        
+
         componentBuffer = new BufferedImage(GtkVolatileImage.gdkColorModel, rst,
                                             GtkVolatileImage.gdkColorModel.isAlphaPremultiplied(),
                                             new Hashtable());
       }
   }
-  
+
   protected ColorModel getNativeCM()
   {
     return GtkVolatileImage.gdkColorModel;
   }
-  
+
   /* --- START OVERRIDDEN NATIVE METHODS ----
    * All native methods in CairoGraphics2D should be overridden here and
    * enclosed in locks, since the cairo surface is backed by an X surface
    * in this graphics context and the X surface requires external locking.
-   * 
+   *
    * We lock everything "just in case", since it's difficult to know which
    * calls are and aren't thread-safe.  Overriding and locking the native
-   * methods allows superclass code in CairoGraphics2D to execute properly, 
+   * methods allows superclass code in CairoGraphics2D to execute properly,
    * without the need to override every single method.
-   * 
+   *
    * CAVEAT: if native code obtains a lock (using gdk_threads_enter(), not the
    * lock() method provided here) and then calls back into Java and one of these
    * methods ends up being called, we will deadlock.  The lock is only reentrant
-   * when called via our lock() method. 
+   * when called via our lock() method.
    */
-  
+
   /* These methods are already locked in the superclass CairoGraphics2D
    * so they do not need to be overridden:
-   * 
+   *
    * public void disposeNative
    *
    * protected void cairoDrawGlyphVector
-   * 
+   *
    * protected void cairoSetFont
    */
-  
+
   @Override
   protected long init(long pointer)
   {
     long ret;
-    
+
     try
     {
       lock();
@@ -570,10 +570,10 @@ public class ComponentGraphics extends CairoGraphics2D
     {
       unlock();
     }
-    
+
     return ret;
   }
-  
+
   @Override
   protected void drawPixels(long pointer, int[] pixels, int w, int h,
                             int stride, double[] i2u, double alpha,
@@ -590,10 +590,10 @@ public class ComponentGraphics extends CairoGraphics2D
       unlock();
     }
   }
-  
+
   @Override
-  protected void setGradient(long pointer, double x1, double y1, 
-                             double x2, double y2, 
+  protected void setGradient(long pointer, double x1, double y1,
+                             double x2, double y2,
                              int r1, int g1, int b1, int a1,
                              int r2, int g2, int b2, int a2, boolean cyclic)
   {
@@ -608,7 +608,7 @@ public class ComponentGraphics extends CairoGraphics2D
       unlock();
     }
   }
-  
+
   @Override
   protected void setPaintPixels(long pointer, int[] pixels, int w, int h,
                                 int stride, boolean repeat, int x, int y)
@@ -623,7 +623,7 @@ public class ComponentGraphics extends CairoGraphics2D
       unlock();
     }
   }
-  
+
   @Override
   protected void cairoSetMatrix(long pointer, double[] m)
   {
@@ -637,7 +637,7 @@ public class ComponentGraphics extends CairoGraphics2D
       unlock();
     }
   }
-  
+
   @Override
   protected void cairoScale(long pointer, double x, double y)
   {
@@ -651,7 +651,7 @@ public class ComponentGraphics extends CairoGraphics2D
       unlock();
     }
   }
-  
+
   @Override
   protected void cairoSetOperator(long pointer, int cairoOperator)
   {
@@ -665,7 +665,7 @@ public class ComponentGraphics extends CairoGraphics2D
       unlock();
     }
   }
-  
+
   @Override
   protected void cairoSetRGBAColor(long pointer, double red, double green,
                                    double blue, double alpha)
@@ -680,7 +680,7 @@ public class ComponentGraphics extends CairoGraphics2D
       unlock();
     }
   }
-  
+
   @Override
   protected void cairoSetFillRule(long pointer, int cairoFillRule)
   {
@@ -694,7 +694,7 @@ public class ComponentGraphics extends CairoGraphics2D
       unlock();
     }
   }
-  
+
   @Override
   protected void cairoSetLine(long pointer, double width, int cap, int join,
                               double miterLimit)
@@ -709,9 +709,9 @@ public class ComponentGraphics extends CairoGraphics2D
       unlock();
     }
   }
-  
+
   @Override
-  protected void cairoSetDash(long pointer, double[] dashes, int ndash, 
+  protected void cairoSetDash(long pointer, double[] dashes, int ndash,
                               double offset)
   {
     try
@@ -739,9 +739,9 @@ public class ComponentGraphics extends CairoGraphics2D
       unlock();
     }
   }
-  
+
   @Override
-  protected void cairoArc(long pointer, double x, double y, 
+  protected void cairoArc(long pointer, double x, double y,
                           double radius, double angle1, double angle2)
   {
     try
@@ -754,7 +754,7 @@ public class ComponentGraphics extends CairoGraphics2D
       unlock();
     }
   }
-  
+
   @Override
   protected void cairoSave(long pointer)
   {
@@ -768,7 +768,7 @@ public class ComponentGraphics extends CairoGraphics2D
       unlock();
     }
   }
-  
+
   @Override
   protected void cairoRestore(long pointer)
   {
@@ -782,7 +782,7 @@ public class ComponentGraphics extends CairoGraphics2D
       unlock();
     }
   }
-  
+
   @Override
   protected void cairoNewPath(long pointer)
   {
@@ -796,7 +796,7 @@ public class ComponentGraphics extends CairoGraphics2D
       unlock();
     }
   }
-  
+
   @Override
   protected void cairoClosePath(long pointer)
   {
@@ -810,7 +810,7 @@ public class ComponentGraphics extends CairoGraphics2D
       unlock();
     }
   }
-  
+
   @Override
   protected void cairoMoveTo(long pointer, double x, double y)
   {
@@ -824,7 +824,7 @@ public class ComponentGraphics extends CairoGraphics2D
       unlock();
     }
   }
-  
+
   @Override
   protected void cairoLineTo(long pointer, double x, double y)
   {
@@ -838,7 +838,7 @@ public class ComponentGraphics extends CairoGraphics2D
       unlock();
     }
   }
-  
+
   @Override
   protected void cairoCurveTo(long pointer, double x1, double y1, double x2,
                               double y2, double x3, double y3)
@@ -853,7 +853,7 @@ public class ComponentGraphics extends CairoGraphics2D
       unlock();
     }
   }
-  
+
   @Override
   protected void cairoStroke(long pointer)
   {
@@ -867,7 +867,7 @@ public class ComponentGraphics extends CairoGraphics2D
       unlock();
     }
   }
-  
+
   @Override
   protected void cairoFill(long pointer, double alpha)
   {
@@ -881,7 +881,7 @@ public class ComponentGraphics extends CairoGraphics2D
       unlock();
     }
   }
-  
+
   @Override
   protected void cairoClip(long pointer)
   {
@@ -895,7 +895,7 @@ public class ComponentGraphics extends CairoGraphics2D
       unlock();
     }
   }
-  
+
   @Override
   protected void cairoResetClip(long pointer)
   {
@@ -909,7 +909,7 @@ public class ComponentGraphics extends CairoGraphics2D
       unlock();
     }
   }
-  
+
   @Override
   protected void cairoSetAntialias(long pointer, boolean aa)
   {
@@ -923,7 +923,7 @@ public class ComponentGraphics extends CairoGraphics2D
       unlock();
     }
   }
-  
+
   @Override
   protected void drawCairoSurface(CairoSurface surface, AffineTransform tx,
                                   double alpha, int interpolation)

@@ -1,4 +1,4 @@
-/* CertificateEntry.java -- 
+/* CertificateEntry.java --
    Copyright (C) 2003, 2006 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -58,7 +58,7 @@ public final class CertificateEntry
 
   /**
    * Creates a new certificate entry.
-   * 
+   *
    * @param certificate The certificate.
    * @param creationDate The creation date.
    * @param properties The alias.
@@ -106,7 +106,7 @@ public final class CertificateEntry
 
   /**
    * Returns this entry's certificate.
-   * 
+   *
    * @return The certificate.
    */
   public Certificate getCertificate()

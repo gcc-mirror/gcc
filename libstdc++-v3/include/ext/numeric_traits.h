@@ -34,7 +34,9 @@
 #include <bits/cpp_type_traits.h>
 #include <ext/type_traits.h>
 
-_GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
+namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // Compile time constants for builtin types.
   // Sadly std::numeric_limits member functions cannot be used for this.
@@ -125,7 +127,8 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 				__numeric_traits_floating<_Value> >::__type
     { };
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
 
 #undef __glibcxx_floating
 #undef __glibcxx_max_digits10

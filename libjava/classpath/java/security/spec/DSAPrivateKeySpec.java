@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -40,14 +40,14 @@ package java.security.spec;
 import java.math.BigInteger;
 
 /**
-	DSA Private Key class Specification. Used to maintain the DSA
-	Private Keys.
+        DSA Private Key class Specification. Used to maintain the DSA
+        Private Keys.
 
-	@since JDK 1.2
+        @since JDK 1.2
 
-	@author Mark Benvenuto
+        @author Mark Benvenuto
 */
-public class DSAPrivateKeySpec implements KeySpec 
+public class DSAPrivateKeySpec implements KeySpec
 {
   private BigInteger x = null;
   private BigInteger p = null;
@@ -62,7 +62,7 @@ public class DSAPrivateKeySpec implements KeySpec
      @param q the sub-prime
      @param g the base
   */
-  public DSAPrivateKeySpec(BigInteger x, BigInteger p, BigInteger q, BigInteger g) 
+  public DSAPrivateKeySpec(BigInteger x, BigInteger p, BigInteger q, BigInteger g)
   {
     this.x = x;
     this.p = p;
@@ -75,7 +75,7 @@ public class DSAPrivateKeySpec implements KeySpec
 
      @return Returns the requested BigInteger
   */
-  public BigInteger getX() 
+  public BigInteger getX()
   {
     return this.x;
   }
@@ -85,7 +85,7 @@ public class DSAPrivateKeySpec implements KeySpec
 
      @return Returns the requested BigInteger
   */
-  public BigInteger getP() 
+  public BigInteger getP()
   {
     return this.p;
   }
@@ -95,7 +95,7 @@ public class DSAPrivateKeySpec implements KeySpec
 
      @return Returns the requested BigInteger
   */
-  public BigInteger getQ() 
+  public BigInteger getQ()
   {
     return this.q;
   }
@@ -105,7 +105,7 @@ public class DSAPrivateKeySpec implements KeySpec
 
      @return Returns the requested BigInteger
   */
-  public BigInteger getG() 
+  public BigInteger getG()
   {
     return this.g;
   }

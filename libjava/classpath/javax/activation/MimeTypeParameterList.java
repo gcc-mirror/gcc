@@ -57,7 +57,7 @@ public class MimeTypeParameterList
 
   private final List<String> parameterNames;
   private final Map<String,String> parameterValues;
-  
+
   /**
    * Constructor for an empty parameter list.
    */
@@ -122,11 +122,11 @@ public class MimeTypeParameterList
       {
         params.add(param);
       }
-    
+
     // Tokenize each parameter into name + value
     for (Iterator<String> i = params.iterator(); i.hasNext();)
       {
-	param = i.next();
+        param = i.next();
         int ei = param.indexOf('=');
         if (ei == -1)
           {
@@ -147,12 +147,12 @@ public class MimeTypeParameterList
           {
             MimeType.checkValidity(name, "Parameter value is invalid");
           }
-        
+
         parameterNames.add(name);
         parameterValues.put(name.toLowerCase(), value);
       }
   }
-  
+
   /**
    * Returns the number of parameters.
    */
@@ -160,7 +160,7 @@ public class MimeTypeParameterList
   {
     return parameterNames.size();
   }
-  
+
   /**
    * Indicates if there are no parameters.
    */
@@ -178,7 +178,7 @@ public class MimeTypeParameterList
     name = name.trim();
     return parameterValues.get(name.toLowerCase());
   }
-  
+
   /**
    * Sets the value for the specified parameter name.
    * @param name the parameter name
@@ -201,7 +201,7 @@ public class MimeTypeParameterList
       }
     parameterValues.put(name.toLowerCase(), value);
   }
-  
+
   /**
    * Removes the parameter identified by the specified name.
    * @param name the parameter name
@@ -211,7 +211,7 @@ public class MimeTypeParameterList
     name = name.trim();
     for (Iterator<String> i = parameterNames.iterator();i.hasNext();)
       {
-	String pname = i.next();
+        String pname = i.next();
         if (name.equalsIgnoreCase(pname))
           {
             i.remove();
@@ -219,7 +219,7 @@ public class MimeTypeParameterList
       }
     parameterValues.remove(name.toLowerCase());
   }
-  
+
   /**
    * Returns an enumeration of all the parameter names.
    */
@@ -229,7 +229,7 @@ public class MimeTypeParameterList
   {
     return new IteratorEnumeration(parameterNames.iterator());
   }
-  
+
   /**
    * Returns an RFC 2045-compliant string representation of this parameter
    * list.
@@ -240,7 +240,7 @@ public class MimeTypeParameterList
     for (String name : parameterNames)
       {
         String value = parameterValues.get(name.toLowerCase());
-        
+
         buffer.append(';');
         buffer.append(' ');
         buffer.append(name);
@@ -249,7 +249,7 @@ public class MimeTypeParameterList
       }
     return buffer.toString();
   }
-  
+
   private static String quote(String value)
   {
     boolean needsQuoting = false;
@@ -262,7 +262,7 @@ public class MimeTypeParameterList
             break;
           }
       }
-    
+
     if (needsQuoting)
       {
         CPStringBuilder buffer = new CPStringBuilder();
@@ -281,7 +281,7 @@ public class MimeTypeParameterList
       }
     return value;
   }
-  
+
   private static String unquote(String value)
   {
     int len = value.length();
@@ -305,32 +305,31 @@ public class MimeTypeParameterList
       }
     return buffer.toString();
   }
-  
+
   /**
    * Enumeration proxy for an Iterator.
    */
   static class IteratorEnumeration
     implements Enumeration<String>
   {
-    
+
     final Iterator<String> iterator;
-    
+
     IteratorEnumeration(Iterator<String> iterator)
     {
       this.iterator = iterator;
     }
-    
+
     public boolean hasMoreElements()
     {
       return iterator.hasNext();
     }
-    
+
     public String nextElement()
     {
       return iterator.next();
     }
-    
-  }
-  
-}
 
+  }
+
+}

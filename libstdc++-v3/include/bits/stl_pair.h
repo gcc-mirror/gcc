@@ -63,7 +63,9 @@
 #include <type_traits> // for std::__decay_and_strip too
 #endif
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
   /// piecewise_construct_t
@@ -271,6 +273,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     { return pair<_T1, _T2>(__x, __y); }
 #endif
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
 
 #endif /* _STL_PAIR_H */

@@ -2250,10 +2250,10 @@ update_vtable_entry_for_fn (tree t, tree binfo, tree fn, tree* virtuals,
 	{
 	  tree main_binfo = TYPE_BINFO (BINFO_TYPE (b));
 	  tree bv = chain_index (ix, BINFO_VIRTUALS (main_binfo));
-	  if (BINFO_LOST_PRIMARY_P (b))
-	    lost = true;
 	  if (!DECL_THUNK_P (TREE_VALUE (bv)))
 	    break;
+	  if (BINFO_LOST_PRIMARY_P (b))
+	    lost = true;
 	}
       first_defn = b;
     }
@@ -2637,6 +2637,70 @@ maybe_add_class_template_decl_list (tree type, tree t, int friend_p)
 		   t, CLASSTYPE_DECL_LIST (type));
 }
 
+/* This function is called from declare_virt_assop_and_dtor via
+   dfs_walk_all.
+
+   DATA is a type that direcly or indirectly inherits the base
+   represented by BINFO.  If BINFO contains a virtual assignment [copy
+   assignment or move assigment] operator or a virtual constructor,
+   declare that function in DATA if it hasn't been already declared.  */
+
+static tree
+dfs_declare_virt_assop_and_dtor (tree binfo, void *data)
+{
+  tree bv, fn, t = (tree)data;
+  tree opname = ansi_assopname (NOP_EXPR);
+
+  gcc_assert (t && CLASS_TYPE_P (t));
+  gcc_assert (binfo && TREE_CODE (binfo) == TREE_BINFO);
+
+  if (!TYPE_CONTAINS_VPTR_P (BINFO_TYPE (binfo)))
+    /* A base without a vtable needs no modification, and its bases
+       are uninteresting.  */
+    return dfs_skip_bases;
+
+  if (BINFO_PRIMARY_P (binfo))
+    /* If this is a primary base, then we have already looked at the
+       virtual functions of its vtable.  */
+    return NULL_TREE;
+
+  for (bv = BINFO_VIRTUALS (binfo); bv; bv = TREE_CHAIN (bv))
+    {
+      fn = BV_FN (bv);
+
+      if (DECL_NAME (fn) == opname)
+	{
+	  if (CLASSTYPE_LAZY_COPY_ASSIGN (t))
+	    lazily_declare_fn (sfk_copy_assignment, t);
+	  if (CLASSTYPE_LAZY_MOVE_ASSIGN (t))
+	    lazily_declare_fn (sfk_move_assignment, t);
+	}
+      else if (DECL_DESTRUCTOR_P (fn)
+	       && CLASSTYPE_LAZY_DESTRUCTOR (t))
+	lazily_declare_fn (sfk_destructor, t);
+    }
+
+  return NULL_TREE;
+}
+
+/* If the class type T has a direct or indirect base that contains a
+   virtual assignment operator or a virtual destructor, declare that
+   function in T if it hasn't been already declared.  */
+
+static void
+declare_virt_assop_and_dtor (tree t)
+{
+  if (!(TYPE_POLYMORPHIC_P (t)
+	&& (CLASSTYPE_LAZY_COPY_ASSIGN (t)
+	    || CLASSTYPE_LAZY_MOVE_ASSIGN (t)
+	    || CLASSTYPE_LAZY_DESTRUCTOR (t))))
+    return;
+
+  dfs_walk_all (TYPE_BINFO (t),
+		dfs_declare_virt_assop_and_dtor,
+		NULL, t);
+}
+
 /* Create default constructors, assignment operators, and so forth for
    the type indicated by T, if they are needed.  CANT_HAVE_CONST_CTOR,
    and CANT_HAVE_CONST_ASSIGNMENT are nonzero if, for whatever reason,
@@ -2706,34 +2770,7 @@ add_implicitly_declared_members (tree t,
 
   /* We can't be lazy about declaring functions that might override
      a virtual function from a base class.  */
-  if (TYPE_POLYMORPHIC_P (t)
-      && (CLASSTYPE_LAZY_COPY_ASSIGN (t)
-	  || CLASSTYPE_LAZY_MOVE_ASSIGN (t)
-	  || CLASSTYPE_LAZY_DESTRUCTOR (t)))
-    {
-      tree binfo = TYPE_BINFO (t);
-      tree base_binfo;
-      int ix;
-      tree opname = ansi_assopname (NOP_EXPR);
-      for (ix = 0; BINFO_BASE_ITERATE (binfo, ix, base_binfo); ++ix)
-	{
-	  tree bv;
-	  for (bv = BINFO_VIRTUALS (base_binfo); bv; bv = TREE_CHAIN (bv))
-	    {
-	      tree fn = BV_FN (bv);
-	      if (DECL_NAME (fn) == opname)
-		{
-		  if (CLASSTYPE_LAZY_COPY_ASSIGN (t))
-		    lazily_declare_fn (sfk_copy_assignment, t);
-		  if (CLASSTYPE_LAZY_MOVE_ASSIGN (t))
-		    lazily_declare_fn (sfk_move_assignment, t);
-		}
-	      else if (DECL_DESTRUCTOR_P (fn)
-		       && CLASSTYPE_LAZY_DESTRUCTOR (t))
-		lazily_declare_fn (sfk_destructor, t);
-	    }
-	}
-    }
+  declare_virt_assop_and_dtor (t);
 }
 
 /* Subroutine of finish_struct_1.  Recursively count the number of fields
@@ -4349,7 +4386,11 @@ type_has_constexpr_default_constructor (tree t)
   tree fns;
 
   if (!CLASS_TYPE_P (t))
-    return false;
+    {
+      /* The caller should have stripped an enclosing array.  */
+      gcc_assert (TREE_CODE (t) != ARRAY_TYPE);
+      return false;
+    }
   if (CLASSTYPE_LAZY_DEFAULT_CTOR (t))
     return synthesized_default_constructor_is_constexpr (t);
   fns = locate_ctor (t);

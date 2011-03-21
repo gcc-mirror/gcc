@@ -17,7 +17,6 @@
 load_lib libgo.exp
 
 lappend options "additional_flags=-I. -w -g"
-lappend ld_options "ldflags=-lgotesting"
 
 if [istarget "*-*-rtems*"] {
     global options
@@ -44,9 +43,9 @@ if [istarget "*-*-rtems*"] {
 }
 
 set object_files [glob -nocomplain "*.o"]
-regsub $gluefile $object_files "" object_files
-
-lappend options $ld_options
+if [info exists gluefile] {
+    regsub $gluefile $object_files "" object_files
+}
 
 set comp_output [go_target_compile "$object_files _testmain.go" \
 			 "./a.exe" "executable" $options]
@@ -55,4 +54,7 @@ if ![ string match "" $comp_output ] {
     exit 1
 }
 
-libgo_load "./a.exe" "" ""
+set result [libgo_load "./a.exe" "" ""]
+
+set status [lindex $result 0]
+$status go

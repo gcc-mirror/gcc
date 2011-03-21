@@ -1,4 +1,4 @@
-/* DomHTMLLegendElement.java -- 
+/* DomHTMLLegendElement.java --
    Copyright (C) 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -70,7 +70,7 @@ public class DomHTMLLegendElement
   {
     setHTMLAttribute("accesskey", accessKey);
   }
-  
+
   public String getAlign()
   {
     return getHTMLAttribute("align");
@@ -80,6 +80,5 @@ public class DomHTMLLegendElement
   {
     setHTMLAttribute("align", align);
   }
-  
-}
 
+}

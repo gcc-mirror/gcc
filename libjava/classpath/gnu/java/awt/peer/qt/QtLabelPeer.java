@@ -46,9 +46,9 @@ public class QtLabelPeer extends QtComponentPeer implements LabelPeer
   {
     super( kit, owner );
   }
-  
+
   protected native void init();
-  
+
   protected void setup()
   {
     super.setup();

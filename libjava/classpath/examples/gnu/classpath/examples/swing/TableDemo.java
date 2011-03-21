@@ -65,28 +65,28 @@ import javax.swing.table.TableColumnModel;
 
 /**
  * Displays the editable table. The first column consists of check boxes.
- * 
+ *
  * @author Audrius Meskauskas (audriusa@bioinformatics.org)
  */
 public class TableDemo extends JPanel
-{ 
+{
   /**
    * The initial row count for this table.
-   */ 
+   */
   static int rows = 32;
-  
+
   /**
    * The initial column count for this table.
-   */ 
+   */
   static int cols = 7;
-  
-  
+
+
   /**
    * The table model.
    */
   class TModel extends DefaultTableModel
   {
-    
+
     /**
      * All cells are editable in our table.
      */
@@ -94,7 +94,7 @@ public class TableDemo extends JPanel
     {
       return true;
     }
-    
+
     /**
      * Get the number of the table rows.
      */
@@ -110,7 +110,7 @@ public class TableDemo extends JPanel
     {
       return cols;
     }
-    
+
     /**
      * Set the value at the given position
      */
@@ -118,7 +118,7 @@ public class TableDemo extends JPanel
     {
       values[aRow][aColumn] = aValue;
     }
-    
+
     /**
      * Get the value at the given position.
      */
@@ -126,7 +126,7 @@ public class TableDemo extends JPanel
     {
       return values[aRow][aColumn];
     }
-    
+
     /**
      * The column name, as suggested by model. This header should not be
      * visible, as it is overridden by setting the header name with
@@ -136,9 +136,9 @@ public class TableDemo extends JPanel
     {
        return "Error "+column;
     }
-    
+
     /**
-     * The first column contains booleans, the second - icons, 
+     * The first column contains booleans, the second - icons,
      * others - default class.
      */
     public Class getColumnClass(int column)
@@ -149,7 +149,7 @@ public class TableDemo extends JPanel
         return Icon.class;
       else
         return super.getColumnClass(column);
-    }    
+    }
   }
 
   /**
@@ -163,12 +163,12 @@ public class TableDemo extends JPanel
      * The editor bar.
      */
     JSlider bar;
-    
+
     /**
      * The renderer bar.
      */
     JSlider rendererBar;
-    
+
     /**
      * The border around the bar, if required.
      */
@@ -179,9 +179,9 @@ public class TableDemo extends JPanel
       bar = new JSlider();
       bar.setOrientation(JScrollBar.HORIZONTAL);
       bar.setMinimum(0);
-      bar.setMaximum(rows);      
+      bar.setMaximum(rows);
       bar.setBorder(border);
-      
+
       rendererBar = new JSlider();
       rendererBar.setMinimum(0);
       rendererBar.setMaximum(rows);
@@ -199,7 +199,7 @@ public class TableDemo extends JPanel
         bar.setValue(((Integer) value).intValue());
       return bar;
     }
-    
+
     /**
      * Get the renderer.
      */
@@ -221,13 +221,13 @@ public class TableDemo extends JPanel
       return new Integer(bar.getValue());
     }
 
-  }  
-  
+  }
+
   /**
    * The table being displayed.
    */
   JTable table = new JTable();
- 
+
   /**
    * The table model.
    */
@@ -237,26 +237,26 @@ public class TableDemo extends JPanel
    * The table value array.
    */
   Object[][] values;
-  
+
   /**
    * The icons that appear in the icon column.
-   */ 
+   */
   Icon[] icons = new Icon[]
-    {                            
+    {
       MetalIconFactory.getTreeComputerIcon(),
       MetalIconFactory.getTreeHardDriveIcon(),
       MetalIconFactory.getTreeFolderIcon(),
     };
-    
+
   /**
    * The choices in the combo boxes
    */
   String [] sides = new String[]
     {
-      "north", "south", "east", "west"                           
+      "north", "south", "east", "west"
     };
-  
-  
+
+
   /**
    * Create the table demo with the given titel.
    */
@@ -265,7 +265,7 @@ public class TableDemo extends JPanel
     super();
     createContent();
   }
-  
+
   /**
    * Returns a panel with the demo content. The panel uses a BorderLayout(), and
    * the BorderLayout.SOUTH area is empty, to allow callers to add controls to
@@ -276,7 +276,7 @@ public class TableDemo extends JPanel
   {
     setLayout(new BorderLayout());
     values = new Object[rows][];
-    
+
     for (int i = 0; i < values.length; i++)
       {
         values[i] = new Object[cols];
@@ -289,44 +289,44 @@ public class TableDemo extends JPanel
         values [i][2] = sides [ i % sides.length ];
         values [i][4] = new Integer(i);
       }
-        
-    table.setModel(model);        
-        
+
+    table.setModel(model);
+
     // Make the columns with gradually increasing width:
     DefaultTableColumnModel cm = new DefaultTableColumnModel();
     table.setColumnModel(cm);
-    
+
     for (int i = 0; i < cols; i++)
       {
         TableColumn column = new TableColumn(i);
-            
+
         // Showing the variable width columns.
         int width = 100+10*i;
         column.setPreferredWidth(width);
-            
+
         // If we do not set the header value here, the value, returned
         // by model, is used.
         column.setHeaderValue("Width +"+(20*i));
-            
-        cm.addColumn(column);            
+
+        cm.addColumn(column);
       }
-    
+
     setCustomEditors();
     setInformativeHeaders();
 
     // Create the table, place it into scroll pane and place
     // the pane into this frame.
     JScrollPane scroll = new JScrollPane();
-        
+
     // The horizontal scroll bar is never needed.
     scroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
     scroll.getViewport().add(table);
     add(scroll, BorderLayout.CENTER);
-    
+
     // Increase the row height to make the icons and sliders look better.
     table.setRowHeight(table.getRowHeight()+2);
   }
-  
+
   /**
    * Set the more informative column headers for specific columns.
    */
@@ -340,7 +340,7 @@ public class TableDemo extends JPanel
     cm.getColumn(3).setHeaderValue("edit combo");
     cm.getColumn(4).setHeaderValue("slider");
   }
-  
+
   /**
    * Set the custom editors for combo boxes. This method also sets one
    * custom renderer.
@@ -348,31 +348,31 @@ public class TableDemo extends JPanel
   void setCustomEditors()
   {
     TableColumnModel cm = table.getColumnModel();
-    
+
     // Set combo-box based editor for icons (note that no custom
     // renderer is needed for JComboBox to work with icons.
     JComboBox combo0 = new JComboBox(icons);
     cm.getColumn(1).setCellEditor(new DefaultCellEditor(combo0));
-    
+
     // Set the simple combo box editor for the third column:
     JComboBox combo1 = new JComboBox(sides);
     cm.getColumn(2).setCellEditor(new DefaultCellEditor(combo1));
-    
+
     // Set the editable combo box for the forth column:
     JComboBox combo2 = new JComboBox(sides);
     combo2.setEditable(true);
     cm.getColumn(3).setCellEditor(new DefaultCellEditor(combo2));
-    
+
     SliderCell scrollView = new SliderCell();
     cm.getColumn(4).setCellEditor(scrollView);
-    cm.getColumn(4).setCellRenderer(scrollView);    
+    cm.getColumn(4).setCellRenderer(scrollView);
 
     table.setColumnModel(cm);
   }
-  
+
   /**
    * The executable method to display the editable table.
-   * 
+   *
    * @param args
    *          unused.
    */
@@ -408,4 +408,3 @@ public class TableDemo extends JPanel
     };
   }
 }
-

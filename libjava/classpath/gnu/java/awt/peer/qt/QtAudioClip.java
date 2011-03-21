@@ -57,9 +57,9 @@ public class QtAudioClip extends NativeWrapper implements AudioClip
     File f = new File(filename);
     try
       {
-	String fn = f.getCanonicalPath();
-	loadClip( fn );
-      } 
+        String fn = f.getCanonicalPath();
+        loadClip( fn );
+      }
     catch(IOException e)
       {
       }
@@ -67,7 +67,7 @@ public class QtAudioClip extends NativeWrapper implements AudioClip
 
   public QtAudioClip(URL url)
   {
-    
+
   }
 
   private native void loadClip(String filename);
@@ -78,7 +78,7 @@ public class QtAudioClip extends NativeWrapper implements AudioClip
 
   /**
    * Checks that Qt and sound is available.
-   */ 
+   */
   private void checkForQt()
   {
     if( t == null )

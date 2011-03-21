@@ -25,6 +25,7 @@ int main(void) {
   return 0;
 }
 
-/* { dg-final { scan-assembler-not "_OBJC_CLASS_REFERENCES_0" } } */
+/* { dg-final { scan-assembler-not "_OBJC_ClassRefs_0" { target { *-*-darwin* && { ! lp64 } } } } } */
+/* { dg-final { scan-assembler-not "_OBJC_ClassRef_Base" { target { *-*-darwin* && { lp64 } } } } } */
 /* { dg-final { scan-assembler "objc_getClass" } } */
 

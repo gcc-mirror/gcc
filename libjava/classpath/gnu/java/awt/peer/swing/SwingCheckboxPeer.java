@@ -62,7 +62,7 @@ public class SwingCheckboxPeer extends SwingComponentPeer implements
 
   /**
    * A spezialized Swing checkbox used to paint the checkbox for the
-   * AWT checkbox. 
+   * AWT checkbox.
    */
   private class SwingCheckbox
     extends JCheckBox
@@ -211,7 +211,7 @@ public class SwingCheckboxPeer extends SwingComponentPeer implements
      * Receives notification when an action was performend on the button.
      *
      * @param event the action event
-     */ 
+     */
     public void itemStateChanged(ItemEvent event)
     {
       awtCheckbox.setState(event.getStateChange()==ItemEvent.SELECTED);
@@ -224,7 +224,7 @@ public class SwingCheckboxPeer extends SwingComponentPeer implements
         l[i].itemStateChanged(ev);
     }
   }
-    
+
   /**
    * Creates a new SwingCheckboxPeer instance.
    */

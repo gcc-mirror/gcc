@@ -70,18 +70,27 @@ pthread_default_stacksize_np (unsigned long new, unsigned long *old)
 #endif
 
 #ifdef L_pthread_mutex_lock
-int pthread_mutex_lock (void * __attribute__((unused)));
+int pthread_mutex_lock (void);
 int
-pthread_mutex_lock (void *p)
+pthread_mutex_lock (void)
 {
   return 0;
 }
 #endif
 
 #ifdef L_pthread_mutex_unlock
-int pthread_mutex_unlock (void * __attribute__((unused)));
+int pthread_mutex_unlock (void);
 int
-pthread_mutex_unlock (void *p)
+pthread_mutex_unlock (void)
+{
+  return 0;
+}
+#endif
+
+#ifdef L_pthread_once
+int pthread_once (void);
+int
+pthread_once (void)
 {
   return 0;
 }

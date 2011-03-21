@@ -60,7 +60,7 @@ public abstract class GtkMenuComponentPeer extends GtkGenericPeer
   {
     MenuComponent mc = ((MenuComponent) awtWidget);
     Font f = mc.getFont();
-    
+
     if (f == null)
       {
         MenuContainer parent = mc.getParent ();

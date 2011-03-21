@@ -39,7 +39,7 @@ exception statement from your version. */
 package javax.naming.event;
 
 import java.util.EventListener;
- 
+
 /**
  * @author Warren Levy (warrenl@redhat.com)
  * @date June 1, 2001

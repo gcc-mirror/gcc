@@ -53,7 +53,7 @@ public class InvalidThreadException
   public InvalidThreadException (long id)
   {
     super (JdwpConstants.Error.INVALID_THREAD,
-	   "invalid thread id (" + id + ")");
+           "invalid thread id (" + id + ")");
   }
 
   public InvalidThreadException (Throwable t)

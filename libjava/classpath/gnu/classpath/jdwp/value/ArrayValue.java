@@ -46,7 +46,7 @@ import java.io.IOException;
 
 /**
  * Wrapper for an Array value.
- * 
+ *
  * @author Kyle Galloway <kgallowa@redhat.com>
  */
 public class ArrayValue
@@ -57,7 +57,7 @@ public class ArrayValue
 
   /**
    * Create a new ArrayValue from an Object
-   * 
+   *
    * @param value the Object to wrap
    */
   public ArrayValue(Object value)
@@ -65,10 +65,10 @@ public class ArrayValue
     super(JdwpConstants.Tag.ARRAY);
     _value = value;
   }
-  
+
   /**
    * Return an object representing this type
-   * 
+   *
    * @return an Object represntation of this value
    */
   @Override
@@ -79,7 +79,7 @@ public class ArrayValue
 
   /**
    * Write the wrapped object to the given DataOutputStream.
-   * 
+   *
    * @param os the output stream to write to
    */
   @Override

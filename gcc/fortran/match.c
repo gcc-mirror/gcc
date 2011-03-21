@@ -1,7 +1,7 @@
 /* Matching subroutines in all sizes, shapes and colors.
    Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008,
-   2009, 2010
-   2010 Free Software Foundation, Inc.
+   2009, 2010, 2011
+   Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -1746,6 +1746,9 @@ gfc_match_critical (void)
       return MATCH_ERROR;
     }
 
+  if (gfc_implicit_pure (NULL))
+    gfc_current_ns->proc_name->attr.implicit_pure = 0;
+
   if (gfc_notify_std (GFC_STD_F2008, "Fortran 2008: CRITICAL statement at %C")
       == FAILURE)
     return MATCH_ERROR;
@@ -2189,6 +2192,9 @@ gfc_match_stopcode (gfc_statement st)
       goto cleanup;
     }
 
+  if (gfc_implicit_pure (NULL))
+    gfc_current_ns->proc_name->attr.implicit_pure = 0;
+
   if (st == ST_STOP && gfc_find_state (COMP_CRITICAL) == SUCCESS)
     {
       gfc_error ("Image control statement STOP at %C in CRITICAL block");
@@ -2320,6 +2326,9 @@ sync_statement (gfc_statement st)
       gfc_error ("Image control statement SYNC at %C in PURE procedure");
       return MATCH_ERROR;
     }
+
+  if (gfc_implicit_pure (NULL))
+    gfc_current_ns->proc_name->attr.implicit_pure = 0;
 
   if (gfc_notify_std (GFC_STD_F2008, "Fortran 2008: SYNC statement at %C")
       == FAILURE)
@@ -2642,7 +2651,7 @@ gfc_match_goto (void)
 					     NULL, i++);
 
       tail->op = EXEC_SELECT;
-      tail->ext.case_list = cp;
+      tail->ext.block.case_list = cp;
 
       tail->next = gfc_get_code ();
       tail->next->op = EXEC_GOTO;
@@ -2920,6 +2929,10 @@ gfc_match_allocate (void)
 	  goto cleanup;
 	}
 
+      if (gfc_implicit_pure (NULL)
+	    && gfc_impure_variable (tail->expr->symtree->n.sym))
+	gfc_current_ns->proc_name->attr.implicit_pure = 0;
+
       if (tail->expr->ts.deferred)
 	{
 	  saw_deferred = true;
@@ -2956,7 +2969,7 @@ gfc_match_allocate (void)
       b1 = !(tail->expr->ref
 	   && (tail->expr->ref->type == REF_COMPONENT
 		|| tail->expr->ref->type == REF_ARRAY));
-      if (sym && sym->ts.type == BT_CLASS)
+      if (sym && sym->ts.type == BT_CLASS && sym->attr.class_ok)
 	b2 = !(CLASS_DATA (sym)->attr.allocatable
 	       || CLASS_DATA (sym)->attr.class_pointer);
       else
@@ -3121,10 +3134,11 @@ alloc_opt_list:
     }
 
   /* Check F03:C623,  */
-  if (saw_deferred && ts.type == BT_UNKNOWN && !source)
+  if (saw_deferred && ts.type == BT_UNKNOWN && !source && !mold)
     {
       gfc_error ("Allocate-object at %L with a deferred type parameter "
-		 "requires either a type-spec or SOURCE tag", &deferred_locus);
+		 "requires either a type-spec or SOURCE tag or a MOLD tag",
+		 &deferred_locus);
       goto cleanup;
     }
   
@@ -3262,6 +3276,9 @@ gfc_match_deallocate (void)
 	  gfc_error ("Illegal allocate-object at %C for a PURE procedure");
 	  goto cleanup;
 	}
+
+      if (gfc_implicit_pure (NULL) && gfc_impure_variable (sym))
+	gfc_current_ns->proc_name->attr.implicit_pure = 0;
 
       /* FIXME: disable the checking on derived types.  */
       b1 = !(tail->expr->ref
@@ -3591,7 +3608,7 @@ gfc_match_call (void)
 	  new_case = gfc_get_case ();
 	  new_case->high = gfc_get_int_expr (gfc_default_integer_kind, NULL, i);
 	  new_case->low = new_case->high;
-	  c->ext.case_list = new_case;
+	  c->ext.block.case_list = new_case;
 
 	  c->next = gfc_get_code ();
 	  c->next->op = EXEC_GOTO;
@@ -4010,13 +4027,6 @@ gfc_match_namelist (void)
 	  if (sym->as && sym->as->type == AS_ASSUMED_SIZE)
 	    {
 	      gfc_error ("Assumed size array '%s' in namelist '%s' at "
-			 "%C is not allowed", sym->name, group_name->name);
-	      gfc_error_check ();
-	    }
-
-	  if (sym->ts.type == BT_CHARACTER && sym->ts.u.cl->length == NULL)
-	    {
-	      gfc_error ("Assumed character length '%s' in namelist '%s' at "
 			 "%C is not allowed", sym->name, group_name->name);
 	      gfc_error_check ();
 	    }
@@ -4526,11 +4536,8 @@ select_type_set_tmp (gfc_typespec *ts)
   gfc_add_pointer (&tmp->n.sym->attr, NULL);
   gfc_add_flavor (&tmp->n.sym->attr, FL_VARIABLE, name, NULL);
   if (ts->type == BT_CLASS)
-    {
-      gfc_build_class_symbol (&tmp->n.sym->ts, &tmp->n.sym->attr,
-			      &tmp->n.sym->as, false);
-      tmp->n.sym->attr.class_ok = 1;
-    }
+    gfc_build_class_symbol (&tmp->n.sym->ts, &tmp->n.sym->attr,
+			    &tmp->n.sym->as, false);
   tmp->n.sym->attr.select_type_temporary = 1;
 
   /* Add an association for it, so the rest of the parser knows it is
@@ -4642,7 +4649,7 @@ gfc_match_case (void)
       new_st.op = EXEC_SELECT;
       c = gfc_get_case ();
       c->where = gfc_current_locus;
-      new_st.ext.case_list = c;
+      new_st.ext.block.case_list = c;
       return MATCH_YES;
     }
 
@@ -4674,7 +4681,7 @@ gfc_match_case (void)
     goto cleanup;
 
   new_st.op = EXEC_SELECT;
-  new_st.ext.case_list = head;
+  new_st.ext.block.case_list = head;
 
   return MATCH_YES;
 
@@ -4722,7 +4729,7 @@ gfc_match_type_is (void)
     goto cleanup;
 
   new_st.op = EXEC_SELECT_TYPE;
-  new_st.ext.case_list = c;
+  new_st.ext.block.case_list = c;
 
   /* Create temporary variable.  */
   select_type_set_tmp (&c->ts);
@@ -4762,7 +4769,7 @@ gfc_match_class_is (void)
       c = gfc_get_case ();
       c->where = gfc_current_locus;
       c->ts.type = BT_UNKNOWN;
-      new_st.ext.case_list = c;
+      new_st.ext.block.case_list = c;
       select_type_set_tmp (NULL);
       return MATCH_YES;
     }
@@ -4795,7 +4802,7 @@ gfc_match_class_is (void)
     goto cleanup;
 
   new_st.op = EXEC_SELECT_TYPE;
-  new_st.ext.case_list = c;
+  new_st.ext.block.case_list = c;
   
   /* Create temporary variable.  */
   select_type_set_tmp (&c->ts);

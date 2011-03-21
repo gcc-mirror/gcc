@@ -90,24 +90,24 @@ public class TransportFactory
 
     for (int i = 0; i < _transportMethods.length; ++i)
       {
-	if (_transportMethods[i].name.equals (name))
-	  {
-	    try
-	      {
-		ITransport t;
-		t = (ITransport) _transportMethods[i].clazz.newInstance ();
-		t.configure (properties);
-		return t;
-	      }
-	    catch (TransportException te)
-	      {
-		throw te;
-	      }
-	    catch (Exception e)
-	      {
-		throw new TransportException (e);
-	      }
-	  }
+        if (_transportMethods[i].name.equals (name))
+          {
+            try
+              {
+                ITransport t;
+                t = (ITransport) _transportMethods[i].clazz.newInstance ();
+                t.configure (properties);
+                return t;
+              }
+            catch (TransportException te)
+              {
+                throw te;
+              }
+            catch (Exception e)
+              {
+                throw new TransportException (e);
+              }
+          }
       }
 
     throw new TransportException ("transport \"" + name + "\" not found");

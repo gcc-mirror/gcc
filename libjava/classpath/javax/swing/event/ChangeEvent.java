@@ -41,24 +41,24 @@ import java.util.EventObject;
 
 /**
  * An event used to signal a state change for an object.
- * 
+ *
  * @see ChangeListener
  * @see CellEditorListener
  * @see TableColumnModelListener
- * 
+ *
  * @author Andrew Selkirk
  * @author Ronald Veldema
  */
-public class ChangeEvent 
-  extends EventObject 
+public class ChangeEvent
+  extends EventObject
 {
 
   /**
    * Creates a new <code>ChangeEvent</code> instance for the specified source.
-   * 
+   *
    * @param source  the source for the event (<code>null</code> not permitted).
    */
-  public ChangeEvent(Object source) 
+  public ChangeEvent(Object source)
   {
     super(source);
   }

@@ -1,4 +1,4 @@
-/* SSLServerSocketFactoryImpl.java -- 
+/* SSLServerSocketFactoryImpl.java --
    Copyright (C) 2006  Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -50,7 +50,7 @@ import javax.net.ssl.SSLServerSocketFactory;
 public class SSLServerSocketFactoryImpl extends SSLServerSocketFactory
 {
   private final SSLContextImpl contextImpl;
-  
+
   public SSLServerSocketFactoryImpl(SSLContextImpl contextImpl)
   {
     this.contextImpl = contextImpl;

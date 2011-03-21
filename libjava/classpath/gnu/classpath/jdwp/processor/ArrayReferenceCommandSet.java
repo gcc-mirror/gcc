@@ -56,7 +56,7 @@ import java.nio.ByteBuffer;
 
 /**
  * A class representing the ArrayReference Command Set.
- * 
+ *
  * @author Aaron Luchko <aluchko@redhat.com>
  */
 public class ArrayReferenceCommandSet

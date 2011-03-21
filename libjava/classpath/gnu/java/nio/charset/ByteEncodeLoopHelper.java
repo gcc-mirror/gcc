@@ -43,7 +43,7 @@ import java.nio.charset.CoderResult;
 
 /**
  * Helper class to deal with encoding loops that write a byte at a time
- * 
+ *
  * @author Ian Rogers
  */
 public abstract class ByteEncodeLoopHelper
@@ -62,7 +62,7 @@ public abstract class ByteEncodeLoopHelper
   /**
    * Encodes one or more characters into one or more bytes, mapping each
    * character to only one byte
-   * 
+   *
    * @param in character buffer to read from
    * @param out byte buffer to write to
    * @return the result state of the encoder
@@ -121,7 +121,7 @@ public abstract class ByteEncodeLoopHelper
     int outRemaining = out.remaining();
     CoderResult result;
 
-	bailOut:
+        bailOut:
     if (inRemaining <= outRemaining)
       {
         for (int i = 0; i < inRemaining; i++)

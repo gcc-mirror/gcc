@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -52,7 +52,7 @@ public class PlatformHelper
   public static final char pathSeparatorChar = pathSeparator.charAt(0);
 
   /**
-   * On most platforms 260 is equal or greater than a max path value, 
+   * On most platforms 260 is equal or greater than a max path value,
    * so we can set the initial buffer size of StringBuffer to half of this value
    * to improve performance.
    */
@@ -106,7 +106,7 @@ public class PlatformHelper
   }
 
   /**
-   * This routine removes from input param "path" the tail separator if it exists, 
+   * This routine removes from input param "path" the tail separator if it exists,
    * and return the remain part.
    */
   public static final String removeTailSeparator(String path)
@@ -118,7 +118,7 @@ public class PlatformHelper
   }
 
   /**
-   * This routine returns last index of separator in input param "path", 
+   * This routine returns last index of separator in input param "path",
    * and return it.
    */
   public static final int lastIndexOfSeparator(String path)

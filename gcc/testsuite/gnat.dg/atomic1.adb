@@ -15,3 +15,4 @@ end;
 
 -- { dg-final { scan-tree-dump-times "v_16" 1 "gimple"} }
 -- { dg-final { scan-tree-dump-times "v_32" 1 "gimple"} }
+-- { dg-final { cleanup-tree-dump "gimple" } }

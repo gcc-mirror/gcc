@@ -53,9 +53,9 @@ public abstract class ImageInputStreamImpl implements ImageInputStream
 {
   private boolean closed;
   private Stack markStack = new Stack();
-  
+
   byte[] buffer = new byte[8];
-  
+
   protected int bitOffset;
   protected ByteOrder byteOrder = ByteOrder.BIG_ENDIAN;
   protected long flushedPos;
@@ -79,7 +79,7 @@ public abstract class ImageInputStreamImpl implements ImageInputStream
     checkClosed();
     closed = true;
   }
-  
+
   protected void finalize()
     throws Throwable
   {
@@ -153,7 +153,7 @@ public abstract class ImageInputStreamImpl implements ImageInputStream
   {
     try
       {
-	markStack.push(new Long(getStreamPosition()));
+        markStack.push(new Long(getStreamPosition()));
       }
     catch (IOException e)
       {
@@ -193,7 +193,7 @@ public abstract class ImageInputStreamImpl implements ImageInputStream
         seek(getStreamPosition() - 1);
         data = (byte) (data >> (8 - newOffset));
       }
-    
+
     bitOffset = newOffset;
     return data & 0x1;
   }
@@ -210,8 +210,8 @@ public abstract class ImageInputStreamImpl implements ImageInputStream
 
     for (int i = 0; i < numBits; i++)
       {
-	bits <<= 1;
-	bits |= readBit();
+        bits <<= 1;
+        bits |= readBit();
       }
     return bits;
   }
@@ -351,9 +351,9 @@ public abstract class ImageInputStreamImpl implements ImageInputStream
 
     while (!eol)
       {
-	switch(c)
-	  {
-	  case '\r':
+        switch(c)
+          {
+          case '\r':
             // Check for following '\n'.
             long oldPosition = getStreamPosition();
             c = read();
@@ -366,14 +366,14 @@ public abstract class ImageInputStreamImpl implements ImageInputStream
               }
             continue;
 
-	  case '\n':
-	    eol = true;
+          case '\n':
+            eol = true;
             continue;
 
-	  default:
-	    buffer.append((char) c);
-	    break;
-	  }
+          default:
+            buffer.append((char) c);
+            break;
+          }
         c = read();
         if (c == -1)
           eol = true;
@@ -454,13 +454,13 @@ public abstract class ImageInputStreamImpl implements ImageInputStream
 
     try
       {
-	data = DataInputStream.readUTF(this);
+        data = DataInputStream.readUTF(this);
       }
     finally
       {
-	setByteOrder(old);
+        setByteOrder(old);
       }
-    
+
     return data;
   }
 
@@ -468,7 +468,7 @@ public abstract class ImageInputStreamImpl implements ImageInputStream
     throws IOException
   {
     checkClosed();
-    
+
     long mark = ((Long) markStack.pop()).longValue();
     seek(mark);
   }
@@ -489,7 +489,7 @@ public abstract class ImageInputStreamImpl implements ImageInputStream
     throws IOException
   {
     checkClosed();
-    
+
     if (bitOffset < 0 || bitOffset > 7)
       throw new IllegalArgumentException("bitOffset not between 0 and 7 inclusive");
 
@@ -505,7 +505,7 @@ public abstract class ImageInputStreamImpl implements ImageInputStream
     throws IOException
   {
     checkClosed();
-    
+
     seek(getStreamPosition() + num);
     bitOffset = 0;
     return num;
@@ -515,7 +515,7 @@ public abstract class ImageInputStreamImpl implements ImageInputStream
     throws IOException
   {
     checkClosed();
-    
+
     seek(getStreamPosition() + num);
     bitOffset = 0;
     return num;
@@ -530,12 +530,12 @@ public abstract class ImageInputStreamImpl implements ImageInputStream
 
     while (len > 0)
       {
-	// read will block until some data is available.
-	int numread = read (buf, offset, len);
-	if (numread < 0)
-	  throw new EOFException ();
-	len -= numread;
-	offset += numread;
+        // read will block until some data is available.
+        int numread = read (buf, offset, len);
+        if (numread < 0)
+          throw new EOFException ();
+        len -= numread;
+        offset += numread;
       }
     bitOffset = 0;
   }

@@ -108,18 +108,18 @@ public class JarInputStream extends ZipInputStream
   {
     firstEntry = (JarEntry) super.getNextEntry();
     while ((firstEntry != null) &&
-	   firstEntry.getName().startsWith("META-INF/"))
+           firstEntry.getName().startsWith("META-INF/"))
       {
-	if (firstEntry.getName().equals(JarFile.MANIFEST_NAME))
-	  {
-	    manifest = new Manifest(this);
-	  }
-	firstEntry = (JarEntry) super.getNextEntry();
+        if (firstEntry.getName().equals(JarFile.MANIFEST_NAME))
+          {
+            manifest = new Manifest(this);
+          }
+        firstEntry = (JarEntry) super.getNextEntry();
       }
 
     if (verify)
       {
-	// XXX
+        // XXX
       }
   }
 
@@ -136,7 +136,7 @@ public class JarInputStream extends ZipInputStream
     JarEntry jarEntry = new JarEntry(zipEntry);
     if (manifest != null)
       {
-	jarEntry.attr = manifest.getAttributes(name);
+        jarEntry.attr = manifest.getAttributes(name);
       }
     return jarEntry;
   }
@@ -163,12 +163,12 @@ public class JarInputStream extends ZipInputStream
     ZipEntry entry;
     if (firstEntry != null)
       {
-	entry = firstEntry;
-	firstEntry = null;
+        entry = firstEntry;
+        firstEntry = null;
       }
     else
       {
-	entry = super.getNextEntry();
+        entry = super.getNextEntry();
       }
     return entry;
   }

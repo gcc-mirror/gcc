@@ -59,12 +59,12 @@ import javax.swing.plaf.basic.BasicToolBarUI;
  */
 public class MetalToolBarUI extends BasicToolBarUI
 {
-  
+
   /**
-   * A listener (no longer used) that responds when components are added to or 
+   * A listener (no longer used) that responds when components are added to or
    * removed from the {@link JToolBar}.  The required behaviour is now
-   * handled in the super class. 
-   * 
+   * handled in the super class.
+   *
    * @see MetalToolBarUI#createContainerListener()
    */
   protected class MetalContainerListener
@@ -81,9 +81,9 @@ public class MetalToolBarUI extends BasicToolBarUI
 
   /**
    * A listener (no longer used) that responds to property change events in a
-   * {@link JToolBar} component.  The required behaviour is now handled in the 
-   * super class. 
-   * 
+   * {@link JToolBar} component.  The required behaviour is now handled in the
+   * super class.
+   *
    * @see MetalToolBarUI#createRolloverListener()
    */
   protected class MetalRolloverListener
@@ -97,16 +97,16 @@ public class MetalToolBarUI extends BasicToolBarUI
       // Nothing to do here.
     }
   }
-  
-  /** 
+
+  /**
    * The container listener (an implementation specific field, according to the
    * spec, and not used in GNU Classpath).
    */
   protected ContainerListener contListener;
-  
-  /** 
+
+  /**
    * The rollover listener (an implementation specific field, according to the
-   * spec, and not used in GNU Classpath). 
+   * spec, and not used in GNU Classpath).
    */
   protected PropertyChangeListener rolloverListener;
 
@@ -129,43 +129,43 @@ public class MetalToolBarUI extends BasicToolBarUI
   {
     return new MetalToolBarUI();
   }
-  
+
   /**
    * Returns <code>null</code> as permitted by recent versions of the API
-   * specification.  Originally it seems this method returned a new instance of 
+   * specification.  Originally it seems this method returned a new instance of
    * {@link MetalRolloverListener}, but this is now redundant.
-   * 
+   *
    * @return <code>null</code>.
    */
   protected PropertyChangeListener createRolloverListener()
   {
     return null;
   }
-  
+
   /**
    * Returns <code>null</code> as permitted by recent versions of the API
-   * specification.  Originally it seems this method returned a new instance of 
+   * specification.  Originally it seems this method returned a new instance of
    * {@link MetalContainerListener}, but this is now redundant.
-   * 
+   *
    * @return <code>null</code>.
    */
   protected ContainerListener createContainerListener()
   {
     return null;
   }
-  
+
   /**
    * Returns a border with no rollover effect for buttons in the tool bar.
-   * 
+   *
    * @return A border.
-   * 
+   *
    * @see MetalBorders#getToolbarButtonBorder()
    */
   protected Border createNonRolloverBorder()
   {
-    return MetalBorders.getToolbarButtonBorder();   
+    return MetalBorders.getToolbarButtonBorder();
   }
-  
+
   /**
    * Sets the offset for the window used for dragging the toolbar.
    * It is set as long as the window is not null (it has been installed).
@@ -175,23 +175,23 @@ public class MetalToolBarUI extends BasicToolBarUI
     if (dragWindow != null)
       dragWindow.setOffset(p);
   }
-  
-  /** 
+
+  /**
    * Creates and returns an instance of MetalDockingListener.
-   * 
+   *
    * @return an instance of MetalDockingListener.
    */
   protected MouseInputListener createDockingListener()
   {
     return new MetalDockingListener(toolBar);
   }
-  
+
   /**
    * This is the MouseHandler class that allows the user to drag the JToolBar
    * in and out of the parent and dock it if it can.
    */
   protected class MetalDockingListener extends BasicToolBarUI.DockingListener
-  {    
+  {
     /**
      * Creates a new DockingListener object.
      *
@@ -201,7 +201,7 @@ public class MetalToolBarUI extends BasicToolBarUI
     {
       super(t);
     }
-    
+
     /**
      * This method is called when the mouse is pressed in the JToolBar. If the
      * press doesn't occur in a place where it causes the JToolBar to be
@@ -214,7 +214,7 @@ public class MetalToolBarUI extends BasicToolBarUI
       super.mousePressed(e);
       setDragOffset(new Point(e.getX(), e.getY()));
     }
-    
+
     /**
      * This method is called when the mouse is dragged. It delegates the drag
      * painting to the dragTo method.
@@ -223,7 +223,7 @@ public class MetalToolBarUI extends BasicToolBarUI
      */
     public void mouseDragged(MouseEvent e)
     {
-      // Does not do anything differently than dragging 
+      // Does not do anything differently than dragging
       // BasicToolBarUI.DockingListener
       super.mouseDragged(e);
     }

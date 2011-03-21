@@ -72,7 +72,7 @@ public class DragSourceContext
   private int sourceActions;
   private Image image;
   private Point offset;
-  
+
   /**
    * Initializes a drag source context.
    *
@@ -81,13 +81,13 @@ public class DragSourceContext
    * or if the source actions for the DragGestureRecognizer associated with the
    * trigger event are equal to DnDConstants.ACTION_NONE.
    * @exception NullPointerException If peer, trans or trigger is null or if the
-   * image is not null but the offset is. 
+   * image is not null but the offset is.
    */
   public DragSourceContext (DragSourceContextPeer peer,
                             DragGestureEvent trigger, Cursor cursor,
                             Image image, Point offset, Transferable trans,
                             DragSourceListener dsl)
-  {    
+  {
     if (peer == null
         || trigger == null || trans == null
         || (image != null && offset == null))
@@ -108,7 +108,7 @@ public class DragSourceContext
     this.transferable = trans;
     this.dragSourceListener = dsl;
     this.sourceActions = trigger.getSourceAsDragGestureRecognizer().getSourceActions();
-    
+
     setCursor(cursor);
     updateCurrentCursor(trigger.getDragAction(), sourceActions, DEFAULT);
   }
@@ -116,7 +116,7 @@ public class DragSourceContext
   /**
    * Returns the DragSource object associated with the
    * DragGestureEvent.
-   * 
+   *
    * @return the DragSource associated with the trigger.
    */
   public DragSource getDragSource()
@@ -126,7 +126,7 @@ public class DragSourceContext
 
   /**
    * Returns the component associated with this.
-   * 
+   *
    * @return the component associated with the trigger.
    */
   public Component getComponent()
@@ -136,7 +136,7 @@ public class DragSourceContext
 
   /**
    * Gets the trigger associated with this.
-   * 
+   *
    * @return the trigger.
    */
   public DragGestureEvent getTrigger()
@@ -146,7 +146,7 @@ public class DragSourceContext
 
   /**
    * Returns the source actions for the DragGestureRecognizer.
-   * 
+   *
    * @return the source actions for DragGestureRecognizer.
    */
   public int getSourceActions()
@@ -158,7 +158,7 @@ public class DragSourceContext
 
   /**
    * Sets the cursor for this drag operation to the specified cursor.
-   * 
+   *
    * @param cursor c - the Cursor to use, or null to use the default drag
    *          cursor.
    */
@@ -175,7 +175,7 @@ public class DragSourceContext
   /**
    * Returns the current cursor or null if the default
    * drag cursor is used.
-   * 
+   *
    * @return the current cursor or null.
    */
   public Cursor getCursor()
@@ -215,57 +215,57 @@ public class DragSourceContext
   /**
    * Calls dragEnter on the listeners registered with this
    * and with the DragSource.
-   * 
+   *
    * @param e - the DragSourceDragEvent
    */
   public void dragEnter(DragSourceDragEvent e)
   {
     if (dragSourceListener != null)
       dragSourceListener.dragEnter(e);
-    
+
     DragSource ds = getDragSource();
     DragSourceListener[] dsl = ds.getDragSourceListeners();
     for (int i = 0; i < dsl.length; i++)
       dsl[i].dragEnter(e);
-    
+
     updateCurrentCursor(e.getDropAction(), e.getTargetActions(), ENTER);
   }
 
   /**
    * Calls dragOver on the listeners registered with this
    * and with the DragSource.
-   * 
+   *
    * @param e - the DragSourceDragEvent
    */
   public void dragOver(DragSourceDragEvent e)
   {
     if (dragSourceListener != null)
       dragSourceListener.dragOver(e);
-    
+
     DragSource ds = getDragSource();
     DragSourceListener[] dsl = ds.getDragSourceListeners();
     for (int i = 0; i < dsl.length; i++)
       dsl[i].dragOver(e);
-    
+
     updateCurrentCursor(e.getDropAction(), e.getTargetActions(), OVER);
   }
-  
+
   /**
    * Calls dragExit on the listeners registered with this
    * and with the DragSource.
-   * 
+   *
    * @param e - the DragSourceEvent
    */
   public void dragExit(DragSourceEvent e)
   {
     if (dragSourceListener != null)
       dragSourceListener.dragExit(e);
-    
+
     DragSource ds = getDragSource();
     DragSourceListener[] dsl = ds.getDragSourceListeners();
     for (int i = 0; i < dsl.length; i++)
       dsl[i].dragExit(e);
-    
+
     updateCurrentCursor(DnDConstants.ACTION_NONE, DnDConstants.ACTION_NONE,
                         DEFAULT);
   }
@@ -273,33 +273,33 @@ public class DragSourceContext
   /**
    * Calls dropActionChanged on the listeners registered with this
    * and with the DragSource.
-   * 
+   *
    * @param e - the DragSourceDragEvent
    */
   public void dropActionChanged(DragSourceDragEvent e)
   {
     if (dragSourceListener != null)
       dragSourceListener.dropActionChanged(e);
-    
+
     DragSource ds = getDragSource();
     DragSourceListener[] dsl = ds.getDragSourceListeners();
     for (int i = 0; i < dsl.length; i++)
       dsl[i].dropActionChanged(e);
-    
+
     updateCurrentCursor(e.getDropAction(), e.getTargetActions(), CHANGED);
   }
 
   /**
    * Calls dragDropEnd on the listeners registered with this
    * and with the DragSource.
-   * 
+   *
    * @param e - the DragSourceDropEvent
    */
   public void dragDropEnd(DragSourceDropEvent e)
   {
     if (dragSourceListener != null)
       dragSourceListener.dragDropEnd(e);
-    
+
     DragSource ds = getDragSource();
     DragSourceListener[] dsl = ds.getDragSourceListeners();
     for (int i = 0; i < dsl.length; i++)
@@ -308,7 +308,7 @@ public class DragSourceContext
 
   /**
    * Calls dragMouseMoved on the listeners registered with the DragSource.
-   * 
+   *
    * @param e - the DragSourceDragEvent
    */
   public void dragMouseMoved(DragSourceDragEvent e)
@@ -321,7 +321,7 @@ public class DragSourceContext
 
   /**
    * Returns the Transferable set with this object.
-   * 
+   *
    * @return the transferable.
    */
   public Transferable getTransferable()
@@ -333,7 +333,7 @@ public class DragSourceContext
    * This function sets the drag cursor for the specified operation, actions and
    * status if the default drag cursor is active. Otherwise, the cursor is not
    * updated in any way.
-   * 
+   *
    * @param dropOp - the current operation.
    * @param targetAct - the supported actions.
    * @param status - the status of the cursor (constant).
@@ -370,7 +370,7 @@ public class DragSourceContext
                   newCursor = DragSource.DefaultCopyDrop;
               }
           }
-        
+
         if (cursor == null || ! cursor.equals(newCursor))
           {
             cursor = newCursor;

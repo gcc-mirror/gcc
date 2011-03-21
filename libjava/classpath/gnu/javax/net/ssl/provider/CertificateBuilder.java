@@ -1,4 +1,4 @@
-/* CertificateBuilder.java -- 
+/* CertificateBuilder.java --
    Copyright (C) 2006  Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -46,7 +46,7 @@ import java.security.cert.CertificateException;
 
 /**
  * Builder for {@link Certificate} objects.
- * 
+ *
  * @author Casey Marshall (csm@gnu.org)
  */
 public class CertificateBuilder extends Certificate implements Builder

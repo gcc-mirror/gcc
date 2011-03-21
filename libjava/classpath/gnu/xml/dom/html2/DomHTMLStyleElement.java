@@ -1,4 +1,4 @@
-/* DomHTMLStyleElement.java -- 
+/* DomHTMLStyleElement.java --
    Copyright (C) 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -64,7 +64,7 @@ public class DomHTMLStyleElement
   {
     setBooleanHTMLAttribute("disabled", disabled);
   }
-  
+
   public String getMedia()
   {
     return getHTMLAttribute("media");
@@ -74,7 +74,7 @@ public class DomHTMLStyleElement
   {
     setHTMLAttribute("media", media);
   }
-  
+
   public String getType()
   {
     return getHTMLAttribute("type");
@@ -84,6 +84,5 @@ public class DomHTMLStyleElement
   {
     setHTMLAttribute("type", type);
   }
-  
-}
 
+}

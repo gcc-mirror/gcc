@@ -1,4 +1,4 @@
-/* Copies.java -- 
+/* Copies.java --
    Copyright (C) 2003, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -46,22 +46,22 @@ import javax.print.attribute.PrintRequestAttribute;
  * The <code>Copies</code> printing attribute specifies the number
  * of copies to be printed.
  * <p>
- * <b>Note:</b> The effect of this attribute on jobs with multiple documents 
- * is controlled by the job attribute 
+ * <b>Note:</b> The effect of this attribute on jobs with multiple documents
+ * is controlled by the job attribute
  * {@link javax.print.attribute.standard.MultipleDocumentHandling}.
  * </p>
  * <p>
  * <b>IPP Compatibility:</b> Copies is an IPP 1.1 attribute.
  * </p>
  * @see javax.print.attribute.standard.MultipleDocumentHandling
- * 
+ *
  * @author Michael Koch (konqueror@gmx.de)
  */
 public final class Copies extends IntegerSyntax
   implements PrintJobAttribute, PrintRequestAttribute
 {
   private static final long serialVersionUID = -6426631521680023833L;
-  
+
   /**
    * Creates a <code>Copies</code> object.
    *
@@ -76,13 +76,13 @@ public final class Copies extends IntegerSyntax
     if (value < 1)
       throw new IllegalArgumentException("value may not be less than 1");
   }
-  
+
   /**
    * Tests if the given object is equal to this object.
    *
    * @param obj the object to test
    *
-   * @return <code>true</code> if both objects are equal, 
+   * @return <code>true</code> if both objects are equal,
    * <code>false</code> otherwise.
    */
   public boolean equals(Object obj)

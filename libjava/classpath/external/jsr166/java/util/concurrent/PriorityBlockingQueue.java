@@ -503,8 +503,8 @@ public class PriorityBlockingQueue<E> extends AbstractQueue<E>
      */
     private class Itr implements Iterator<E> {
         final Object[] array; // Array of all elements
-	int cursor;           // index of next element to return;
-	int lastRet;          // index of last element, or -1 if no such
+        int cursor;           // index of next element to return;
+        int lastRet;          // index of last element, or -1 if no such
 
         Itr(Object[] array) {
             lastRet = -1;
@@ -524,7 +524,7 @@ public class PriorityBlockingQueue<E> extends AbstractQueue<E>
 
         public void remove() {
             if (lastRet < 0)
-		throw new IllegalStateException();
+                throw new IllegalStateException();
             Object x = array[lastRet];
             lastRet = -1;
             // Traverse underlying queue to find == element,

@@ -195,7 +195,7 @@ public class SwingComponentPeer
   public Image createImage(ImageProducer prod)
   {
     Image image = Toolkit.getDefaultToolkit().createImage(prod);
-	return image;
+        return image;
   }
 
   /**
@@ -379,7 +379,7 @@ public class SwingComponentPeer
 
   /**
    * Handles the given event. This is called from
-   * {@link Component#dispatchEvent(AWTEvent)} to give the peer a chance to 
+   * {@link Component#dispatchEvent(AWTEvent)} to give the peer a chance to
    * react to events for the component.
    *
    * @param e the event
@@ -458,7 +458,7 @@ public class SwingComponentPeer
   /**
    * Returns <code>true</code> if the component can receive keyboard input
    * focus. This is called from {@link Component#isFocusTraversable()}.
-   * 
+   *
    * This is implemented to return isFocusable() from the Swing component.
    *
    * @specnote Part of the earlier 1.1 API, replaced by isFocusable().
@@ -591,10 +591,10 @@ public class SwingComponentPeer
   /**
    * Requests that this component receives the focus. This is called from
    * {@link Component#requestFocus()}.
-   * 
+   *
    * This calls requestFocus() on the Swing component.
    *
-   * @specnote Part of the earlier 1.1 API, apparently replaced by argument 
+   * @specnote Part of the earlier 1.1 API, apparently replaced by argument
    *           form of the same method.
    */
   public void requestFocus()
@@ -762,7 +762,7 @@ public class SwingComponentPeer
       swingComponent.getJComponent().setVisible(true);
   }
 
-  /** 
+  /**
    * Get the graphics configuration of the component. The color model
    * of the component can be derived from the configuration.
    *
@@ -845,7 +845,7 @@ public class SwingComponentPeer
    * Returns true, if this component can handle wheel scrolling,
    * <code>false</code> otherwise.
    *
-   * This is not yet implemented and returns <code>false</code>. 
+   * This is not yet implemented and returns <code>false</code>.
    *
    * @return true, if this component can handle wheel scrolling,
    *         <code>false</code> otherwise
@@ -979,7 +979,7 @@ public class SwingComponentPeer
 
   /**
    * Reparent this component under another container.
-   * 
+   *
    * @param parent
    * @since 1.5
    */
@@ -1009,7 +1009,7 @@ public class SwingComponentPeer
 
   /**
    * Check if this component supports being reparented.
-   * 
+   *
    * @return true if this component can be reparented,
    * false otherwise.
    * @since 1.5
@@ -1051,13 +1051,13 @@ public class SwingComponentPeer
     } finally {
         userGraphics.dispose();
     }
-    
+
   }
 
   /**
    * Paints the actual 'heavyweight' swing component, if there is one
    * associated to this peer.
-   * 
+   *
    * @param g the graphics to paint the component with
    */
   protected void peerPaintComponent(Graphics g)
@@ -1115,7 +1115,7 @@ public class SwingComponentPeer
       swingComponent.handleFocusEvent(e);
   }
 
-  
+
   /**
    * Returns the AWT component for this peer.
    *

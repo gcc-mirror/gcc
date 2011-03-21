@@ -76,12 +76,12 @@
 
 (define_insn_reservation "cortex_m4_f_load" 2
   (and (eq_attr "tune" "cortexm4")
-       (eq_attr "type" "f_load"))
+       (eq_attr "type" "f_loads"))
   "cortex_m4_ex_v*2")
 
 (define_insn_reservation "cortex_m4_f_store" 2
   (and (eq_attr "tune" "cortexm4")
-       (eq_attr "type" "f_store"))
+       (eq_attr "type" "f_stores"))
   "cortex_m4_ex_v*2")
 
 (define_insn_reservation "cortex_m4_f_loadd" 3

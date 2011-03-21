@@ -74,7 +74,9 @@
 #undef tan
 #undef tanh
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   inline double
   abs(double __x)
@@ -462,7 +464,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     tanh(_Tp __x)
     { return __builtin_tanh(__x); }
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
 
 #if _GLIBCXX_USE_C99_MATH
 #if !_GLIBCXX_USE_C99_FP_MACROS_DYNAMIC
@@ -481,7 +484,9 @@ _GLIBCXX_END_NAMESPACE
 #undef islessgreater
 #undef isunordered
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
   inline int
@@ -840,7 +845,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
 #endif
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
 
 #endif /* _GLIBCXX_USE_C99_FP_MACROS_DYNAMIC */
 #endif
@@ -955,7 +961,9 @@ _GLIBCXX_END_NAMESPACE
 #undef truncf
 #undef truncl
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // types
   using ::double_t;
@@ -1648,7 +1656,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       return trunc(__type(__x));
     }
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
 
 #endif // _GLIBCXX_USE_C99_MATH_TR1
 

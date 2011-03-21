@@ -1,6 +1,6 @@
 // Backward-compat support -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2004, 2005, 2009, 2010
+// Copyright (C) 2001, 2002, 2004, 2005, 2009, 2010, 2011
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -41,6 +41,11 @@
 // MAY BE REMOVED in a future standard revision.  One should use the
 // header <sstream> instead.
 
+/** @file backward/strstream
+ *  This is an internal header file, included by other library headers.
+ *  Do not attempt to use it directly. @headername{sstream}
+ */
+
 #ifndef _BACKWARD_STRSTREAM
 #define _BACKWARD_STRSTREAM
 
@@ -51,7 +56,9 @@
 #include <ostream>
 #include <string>
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // Class strstreambuf, a streambuf class that manages an array of char.
   // Note that this class is not a template.
@@ -172,6 +179,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     strstreambuf _M_buf;
   };
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
 
 #endif

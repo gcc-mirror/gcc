@@ -1,4 +1,4 @@
-/* HashFactory.java -- 
+/* HashFactory.java --
    Copyright (C) 2001, 2002, 2003, 2006 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -57,7 +57,7 @@ public class HashFactory
 
   /**
    * Return an instance of a hash algorithm given its name.
-   * 
+   *
    * @param name the name of the hash algorithm.
    * @return an instance of the hash algorithm, or null if none found.
    * @exception InternalError if the implementation does not pass its self-
@@ -111,7 +111,7 @@ public class HashFactory
   /**
    * Returns a {@link Set} of names of hash algorithms supported by this
    * <i>Factory</i>.
-   * 
+   *
    * @return a {@link Set} of hash names (Strings).
    */
   public static final Set getNames()

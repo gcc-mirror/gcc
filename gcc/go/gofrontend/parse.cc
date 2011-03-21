@@ -46,8 +46,8 @@ Parse::Parse(Lex* lex, Gogo* gogo)
     unget_token_(Token::make_invalid_token(0)),
     unget_token_valid_(false),
     gogo_(gogo),
-    break_stack_(),
-    continue_stack_(),
+    break_stack_(NULL),
+    continue_stack_(NULL),
     iota_(0),
     enclosing_vars_()
 {
@@ -1655,16 +1655,22 @@ Parse::init_vars_from_map(const Typed_identifier_list* vars, Type* type,
   if (!this->gogo_->in_global_scope())
     this->gogo_->add_statement(s);
   else if (!val_no->is_sink())
-    val_no->var_value()->add_preinit_statement(s);
+    {
+      if (val_no->is_variable())
+	val_no->var_value()->add_preinit_statement(this->gogo_, s);
+    }
   else if (!no->is_sink())
-    no->var_value()->add_preinit_statement(s);
+    {
+      if (no->is_variable())
+	no->var_value()->add_preinit_statement(this->gogo_, s);
+    }
   else
     {
       // Execute the map index expression just so that we can fail if
       // the map is nil.
       Named_object* dummy = this->create_dummy_global(Type::lookup_bool_type(),
 						      NULL, location);
-      dummy->var_value()->add_preinit_statement(s);
+      dummy->var_value()->add_preinit_statement(this->gogo_, s);
     }
 
   return true;
@@ -1716,14 +1722,20 @@ Parse::init_vars_from_receive(const Typed_identifier_list* vars, Type* type,
   if (!this->gogo_->in_global_scope())
     this->gogo_->add_statement(s);
   else if (!val_no->is_sink())
-    val_no->var_value()->add_preinit_statement(s);
+    {
+      if (val_no->is_variable())
+	val_no->var_value()->add_preinit_statement(this->gogo_, s);
+    }
   else if (!no->is_sink())
-    no->var_value()->add_preinit_statement(s);
+    {
+      if (no->is_variable())
+	no->var_value()->add_preinit_statement(this->gogo_, s);
+    }
   else
     {
       Named_object* dummy = this->create_dummy_global(Type::lookup_bool_type(),
 						      NULL, location);
-      dummy->var_value()->add_preinit_statement(s);
+      dummy->var_value()->add_preinit_statement(this->gogo_, s);
     }
 
   return true;
@@ -1776,13 +1788,19 @@ Parse::init_vars_from_type_guard(const Typed_identifier_list* vars,
   if (!this->gogo_->in_global_scope())
     this->gogo_->add_statement(s);
   else if (!val_no->is_sink())
-    val_no->var_value()->add_preinit_statement(s);
+    {
+      if (val_no->is_variable())
+	val_no->var_value()->add_preinit_statement(this->gogo_, s);
+    }
   else if (!no->is_sink())
-    no->var_value()->add_preinit_statement(s);
+    {
+      if (no->is_variable())
+	no->var_value()->add_preinit_statement(this->gogo_, s);
+    }
   else
     {
       Named_object* dummy = this->create_dummy_global(type, NULL, location);
-      dummy->var_value()->add_preinit_statement(s);
+      dummy->var_value()->add_preinit_statement(this->gogo_, s);
     }
 
   return true;
@@ -1830,7 +1848,13 @@ Parse::init_var(const Typed_identifier& tid, Type* type, Expression* init,
   *is_new = true;
   Variable* var = new Variable(type, init, this->gogo_->in_global_scope(),
 			       false, false, location);
-  return this->gogo_->add_variable(tid.name(), var);
+  Named_object* no = this->gogo_->add_variable(tid.name(), var);
+  if (!no->is_variable())
+    {
+      // The name is already defined, so we just gave an error.
+      return this->gogo_->add_sink();
+    }
+  return no;
 }
 
 // Create a dummy global variable to force an initializer to be run in
@@ -1841,6 +1865,8 @@ Named_object*
 Parse::create_dummy_global(Type* type, Expression* init,
 			   source_location location)
 {
+  if (type == NULL && init == NULL)
+    type = Type::lookup_bool_type();
   Variable* var = new Variable(type, init, true, false, false, location);
   static int count;
   char buf[30];
@@ -2037,9 +2063,12 @@ Parse::function_decl()
 	  return;
 	}
       this->advance_token();
-      named_object = this->gogo_->declare_function(name, fntype, location);
-      if (named_object->is_function_declaration())
-	named_object->func_declaration_value()->set_asm_name(asm_name);
+      if (!Gogo::is_sink_name(name))
+	{
+	  named_object = this->gogo_->declare_function(name, fntype, location);
+	  if (named_object->is_function_declaration())
+	    named_object->func_declaration_value()->set_asm_name(asm_name);
+	}
     }
 
   // Check for the easy error of a newline before the opening brace.
@@ -2056,8 +2085,8 @@ Parse::function_decl()
 
   if (!this->peek_token()->is_op(OPERATOR_LCURLY))
     {
-      if (named_object == NULL)
-	named_object = this->gogo_->declare_function(name, fntype, location);
+      if (named_object == NULL && !Gogo::is_sink_name(name))
+	this->gogo_->declare_function(name, fntype, location);
     }
   else
     {
@@ -2551,11 +2580,23 @@ Parse::function_lit()
   if (!this->peek_token()->is_op(OPERATOR_LCURLY))
     return Expression::make_type(type, location);
 
+  Bc_stack* hold_break_stack = this->break_stack_;
+  Bc_stack* hold_continue_stack = this->continue_stack_;
+  this->break_stack_ = NULL;
+  this->continue_stack_ = NULL;
+
   Named_object* no = this->gogo_->start_function("", type, true, location);
 
   source_location end_loc = this->block();
 
   this->gogo_->finish_function(end_loc);
+
+  if (this->break_stack_ != NULL)
+    delete this->break_stack_;
+  if (this->continue_stack_ != NULL)
+    delete this->continue_stack_;
+  this->break_stack_ = hold_break_stack;
+  this->continue_stack_ = hold_continue_stack;
 
   hold_enclosing_vars.swap(this->enclosing_vars_);
 
@@ -3761,11 +3802,14 @@ Parse::switch_stat(const Label* label)
 		  // This must be a TypeSwitchGuard.
 		  switch_val = this->simple_stat(false, true, NULL,
 						 &type_switch);
-		  if (!type_switch.found
-		      && !switch_val->is_error_expression())
+		  if (!type_switch.found)
 		    {
-		      error_at(id_loc, "expected type switch assignment");
-		      switch_val = Expression::make_error(id_loc);
+		      if (switch_val == NULL
+			  || !switch_val->is_error_expression())
+			{
+			  error_at(id_loc, "expected type switch assignment");
+			  switch_val = Expression::make_error(id_loc);
+			}
 		    }
 		}
 	    }
@@ -3825,6 +3869,7 @@ Parse::expr_switch_body(const Label* label, Expression* switch_val,
   this->push_break_statement(statement, label);
 
   Case_clauses* case_clauses = new Case_clauses();
+  bool saw_default = false;
   while (!this->peek_token()->is_op(OPERATOR_RCURLY))
     {
       if (this->peek_token()->is_eof())
@@ -3833,7 +3878,7 @@ Parse::expr_switch_body(const Label* label, Expression* switch_val,
 	    error_at(this->location(), "missing %<}%>");
 	  return NULL;
 	}
-      this->expr_case_clause(case_clauses);
+      this->expr_case_clause(case_clauses, &saw_default);
     }
   this->advance_token();
 
@@ -3848,7 +3893,7 @@ Parse::expr_switch_body(const Label* label, Expression* switch_val,
 // FallthroughStat = "fallthrough" .
 
 void
-Parse::expr_case_clause(Case_clauses* clauses)
+Parse::expr_case_clause(Case_clauses* clauses, bool* saw_default)
 {
   source_location location = this->location();
 
@@ -3878,6 +3923,16 @@ Parse::expr_case_clause(Case_clauses* clauses)
       is_fallthrough = true;
       if (this->advance_token()->is_op(OPERATOR_SEMICOLON))
 	this->advance_token();
+    }
+
+  if (is_default)
+    {
+      if (*saw_default)
+	{
+	  error_at(location, "multiple defaults in switch");
+	  return;
+	}
+      *saw_default = true;
     }
 
   if (is_default || vals != NULL)
@@ -3936,6 +3991,7 @@ Parse::type_switch_body(const Label* label, const Type_switch& type_switch,
   this->push_break_statement(statement, label);
 
   Type_case_clauses* case_clauses = new Type_case_clauses();
+  bool saw_default = false;
   while (!this->peek_token()->is_op(OPERATOR_RCURLY))
     {
       if (this->peek_token()->is_eof())
@@ -3943,7 +3999,7 @@ Parse::type_switch_body(const Label* label, const Type_switch& type_switch,
 	  error_at(this->location(), "missing %<}%>");
 	  return NULL;
 	}
-      this->type_case_clause(switch_no, case_clauses);
+      this->type_case_clause(switch_no, case_clauses, &saw_default);
     }
   this->advance_token();
 
@@ -3957,7 +4013,8 @@ Parse::type_switch_body(const Label* label, const Type_switch& type_switch,
 // TypeCaseClause  = TypeSwitchCase ":" [ StatementList ] .
 
 void
-Parse::type_case_clause(Named_object* switch_no, Type_case_clauses* clauses)
+Parse::type_case_clause(Named_object* switch_no, Type_case_clauses* clauses,
+			bool* saw_default)
 {
   source_location location = this->location();
 
@@ -4000,6 +4057,12 @@ Parse::type_case_clause(Named_object* switch_no, Type_case_clauses* clauses)
   if (is_default)
     {
       gcc_assert(types.empty());
+      if (*saw_default)
+	{
+	  error_at(location, "multiple defaults in type switch");
+	  return;
+	}
+      *saw_default = true;
       clauses->add(NULL, false, true, statements, location);
     }
   else if (!types.empty())
@@ -4076,6 +4139,7 @@ Parse::select_stat(const Label* label)
   this->push_break_statement(statement, label);
 
   Select_clauses* select_clauses = new Select_clauses();
+  bool saw_default = false;
   while (!this->peek_token()->is_op(OPERATOR_RCURLY))
     {
       if (this->peek_token()->is_eof())
@@ -4083,7 +4147,7 @@ Parse::select_stat(const Label* label)
 	  error_at(this->location(), "expected %<}%>");
 	  return;
 	}
-      this->comm_clause(select_clauses);
+      this->comm_clause(select_clauses, &saw_default);
     }
 
   this->advance_token();
@@ -4098,7 +4162,7 @@ Parse::select_stat(const Label* label)
 // CommClause = CommCase [ StatementList ] .
 
 void
-Parse::comm_clause(Select_clauses* clauses)
+Parse::comm_clause(Select_clauses* clauses, bool* saw_default)
 {
   source_location location = this->location();
   bool is_send = false;
@@ -4130,8 +4194,24 @@ Parse::comm_clause(Select_clauses* clauses)
       statements = this->gogo_->finish_block(this->location());
     }
 
+  if (is_default)
+    {
+      if (*saw_default)
+	{
+	  error_at(location, "multiple defaults in select");
+	  return;
+	}
+      *saw_default = true;
+    }
+
   if (got_case)
     clauses->add(is_send, channel, val, var, is_default, statements, location);
+  else if (statements != NULL)
+    {
+      // Add the statements to make sure that any names they define
+      // are traversed.
+      this->gogo_->add_block(statements, location);
+    }
 }
 
 // CommCase = ( "default" | ( "case" ( SendExpr | RecvExpr) ) ) ":" .
@@ -4467,7 +4547,9 @@ Parse::range_clause_expr(const Expression_list* vals,
 void
 Parse::push_break_statement(Statement* enclosing, const Label* label)
 {
-  this->break_stack_.push_back(std::make_pair(enclosing, label));
+  if (this->break_stack_ == NULL)
+    this->break_stack_ = new Bc_stack();
+  this->break_stack_->push_back(std::make_pair(enclosing, label));
 }
 
 // Push a statement on the continue stack.
@@ -4475,7 +4557,9 @@ Parse::push_break_statement(Statement* enclosing, const Label* label)
 void
 Parse::push_continue_statement(Statement* enclosing, const Label* label)
 {
-  this->continue_stack_.push_back(std::make_pair(enclosing, label));
+  if (this->continue_stack_ == NULL)
+    this->continue_stack_ = new Bc_stack();
+  this->continue_stack_->push_back(std::make_pair(enclosing, label));
 }
 
 // Pop the break stack.
@@ -4483,7 +4567,7 @@ Parse::push_continue_statement(Statement* enclosing, const Label* label)
 void
 Parse::pop_break_statement()
 {
-  this->break_stack_.pop_back();
+  this->break_stack_->pop_back();
 }
 
 // Pop the continue stack.
@@ -4491,7 +4575,7 @@ Parse::pop_break_statement()
 void
 Parse::pop_continue_statement()
 {
-  this->continue_stack_.pop_back();
+  this->continue_stack_->pop_back();
 }
 
 // Find a break or continue statement given a label name.
@@ -4499,6 +4583,8 @@ Parse::pop_continue_statement()
 Statement*
 Parse::find_bc_statement(const Bc_stack* bc_stack, const std::string& label)
 {
+  if (bc_stack == NULL)
+    return NULL;
   for (Bc_stack::const_reverse_iterator p = bc_stack->rbegin();
        p != bc_stack->rend();
        ++p)
@@ -4519,17 +4605,17 @@ Parse::break_stat()
   Statement* enclosing;
   if (!token->is_identifier())
     {
-      if (this->break_stack_.empty())
+      if (this->break_stack_ == NULL || this->break_stack_->empty())
 	{
 	  error_at(this->location(),
 		   "break statement not within for or switch or select");
 	  return;
 	}
-      enclosing = this->break_stack_.back().first;
+      enclosing = this->break_stack_->back().first;
     }
   else
     {
-      enclosing = this->find_bc_statement(&this->break_stack_,
+      enclosing = this->find_bc_statement(this->break_stack_,
 					  token->identifier());
       if (enclosing == NULL)
 	{
@@ -4573,16 +4659,16 @@ Parse::continue_stat()
   Statement* enclosing;
   if (!token->is_identifier())
     {
-      if (this->continue_stack_.empty())
+      if (this->continue_stack_ == NULL || this->continue_stack_->empty())
 	{
 	  error_at(this->location(), "continue statement not within for");
 	  return;
 	}
-      enclosing = this->continue_stack_.back().first;
+      enclosing = this->continue_stack_->back().first;
     }
   else
     {
-      enclosing = this->find_bc_statement(&this->continue_stack_,
+      enclosing = this->find_bc_statement(this->continue_stack_,
 					  token->identifier());
       if (enclosing == NULL)
 	{

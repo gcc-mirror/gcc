@@ -1,4 +1,4 @@
-/* SAXParser.java -- 
+/* SAXParser.java --
    Copyright (C) 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -59,7 +59,7 @@ import org.xml.sax.helpers.DefaultHandler;
  */
 public abstract class SAXParser
 {
-  
+
   protected SAXParser()
   {
   }
@@ -76,7 +76,7 @@ public abstract class SAXParser
    * @exception IllegalArgumentException if the input stream is null
    * @see #parse(java.io.InputStream,org.xml.sax.helpers.DefaultHandler)
    */
-  public void parse(InputStream is, HandlerBase hb) 
+  public void parse(InputStream is, HandlerBase hb)
     throws SAXException, IOException
   {
     if (is == null)
@@ -118,7 +118,7 @@ public abstract class SAXParser
    * @param dh the SAX2 handler
    * @exception IllegalArgumentException if the input stream is null
    */
-  public void parse(InputStream is, DefaultHandler dh) 
+  public void parse(InputStream is, DefaultHandler dh)
     throws SAXException, IOException
   {
     if (is == null)
@@ -158,7 +158,7 @@ public abstract class SAXParser
    * @exception IllegalArgumentException if the URI is null
    * @see #parse(java.lang.String,org.xml.sax.helpers.DefaultHandler)
    */
-  public void parse(String uri, HandlerBase hb) 
+  public void parse(String uri, HandlerBase hb)
     throws SAXException, IOException
   {
     if (uri == null)
@@ -175,7 +175,7 @@ public abstract class SAXParser
    * @param dh the SAX2 handler
    * @exception IllegalArgumentException if the URI is null
    */
-  public void parse(String uri, DefaultHandler dh) 
+  public void parse(String uri, DefaultHandler dh)
     throws SAXException, IOException
   {
     if (uri == null)
@@ -195,7 +195,7 @@ public abstract class SAXParser
    * @exception IllegalArgumentException if the file is null
    * @see #parse(java.io.File,org.xml.sax.helpers.DefaultHandler)
    */
-  public void parse(File f, HandlerBase hb) 
+  public void parse(File f, HandlerBase hb)
     throws SAXException, IOException
   {
     if (f == null)
@@ -214,7 +214,7 @@ public abstract class SAXParser
    * @param dh the SAX2 handler
    * @exception IllegalArgumentException if the file is null
    */
-  public void parse(File f, DefaultHandler dh) 
+  public void parse(File f, DefaultHandler dh)
     throws SAXException, IOException
   {
     if (f == null)
@@ -236,7 +236,7 @@ public abstract class SAXParser
    * @exception IllegalArgumentException if the input source is null
    * @see #parse(org.xml.sax.InputSource,org.xml.sax.helpers.DefaultHandler)
    */
-  public void parse(InputSource is, HandlerBase hb) 
+  public void parse(InputSource is, HandlerBase hb)
     throws SAXException, IOException
   {
     if (is == null)
@@ -258,7 +258,7 @@ public abstract class SAXParser
    * @param dh the SAX2 handler
    * @exception IllegalArgumentException if the input source is null
    */
-  public void parse(InputSource is, DefaultHandler dh) 
+  public void parse(InputSource is, DefaultHandler dh)
     throws SAXException, IOException
   {
     if (is == null)
@@ -299,14 +299,14 @@ public abstract class SAXParser
    * @param name the name of the property
    * @param value the value of the property
    */
-  public abstract void setProperty(String name, Object value) 
+  public abstract void setProperty(String name, Object value)
     throws SAXNotRecognizedException, SAXNotSupportedException;
 
   /**
    * Returns the value of the specified SAX2 parser property.
    * @param name the name of the property
    */
-  public abstract Object getProperty(String name) 
+  public abstract Object getProperty(String name)
     throws SAXNotRecognizedException, SAXNotSupportedException;
 
   // -- JAXP 1.3 methods --
@@ -336,5 +336,5 @@ public abstract class SAXParser
   {
     return false;
   }
-  
+
 }

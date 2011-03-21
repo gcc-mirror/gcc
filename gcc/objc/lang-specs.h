@@ -1,5 +1,5 @@
 /* Definitions for specs for Objective-C.
-   Copyright (C) 1998, 1999, 2002, 2002, 2003, 2005, 2007, 2010
+   Copyright (C) 1998, 1999, 2002, 2002, 2003, 2005, 2007, 2010, 2011
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -29,9 +29,9 @@ along with GCC; see the file COPYING3.  If not see
       %{!E:%{!M:%{!MM:\
 	%{traditional|traditional-cpp:\
 %eGNU Objective C no longer supports traditional compilation}\
-	%{save-temps|no-integrated-cpp:cc1obj -E %(cpp_options) -o %{save-temps:%b.mi} %{!save-temps:%g.mi} \n\
-	    cc1obj -fpreprocessed %{save-temps:%b.mi} %{!save-temps:%g.mi} %(cc1_options) %{print-objc-runtime-info} %{gen-decls}}\
-	%{!save-temps:%{!no-integrated-cpp:\
+	%{save-temps*|no-integrated-cpp:cc1obj -E %(cpp_options) -o %{save-temps*:%b.mi} %{!save-temps*:%g.mi} \n\
+	    cc1obj -fpreprocessed %{save-temps*:%b.mi} %{!save-temps*:%g.mi} %(cc1_options) %{print-objc-runtime-info} %{gen-decls}}\
+	%{!save-temps*:%{!no-integrated-cpp:\
 	    cc1obj %(cpp_unique_options) %(cc1_options) %{print-objc-runtime-info} %{gen-decls}}}\
         %{!fsyntax-only:%(invoke_as)}}}}", 0, 0, 0},
   {"@objective-c-header",
@@ -40,11 +40,11 @@ along with GCC; see the file COPYING3.  If not see
       %{!E:%{!M:%{!MM:\
 	%{traditional|traditional-cpp:\
 %eGNU Objective C no longer supports traditional compilation}\
-	%{save-temps|no-integrated-cpp:cc1obj -E %(cpp_options) -o %{save-temps:%b.mi} %{!save-temps:%g.mi} \n\
+	%{save-temps*|no-integrated-cpp:cc1obj -E %(cpp_options) -o %{save-temps*:%b.mi} %{!save-temps*:%g.mi} \n\
 	    cc1obj -fpreprocessed %b.mi %(cc1_options) %{print-objc-runtime-info} %{gen-decls}\
                         -o %g.s %{!o*:--output-pch=%i.gch}\
                         %W{o*:--output-pch=%*}%V}\
-	%{!save-temps:%{!no-integrated-cpp:\
+	%{!save-temps*:%{!no-integrated-cpp:\
 	    cc1obj %(cpp_unique_options) %(cc1_options) %{print-objc-runtime-info} %{gen-decls}\
                         -o %g.s %{!o*:--output-pch=%i.gch}\
                         %W{o*:--output-pch=%*}%V}}}}}", 0, 0, 0},

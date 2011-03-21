@@ -301,8 +301,7 @@ pdr_may_write_p (poly_dr_p pdr)
 static inline bool
 same_pdr_p (poly_dr_p pdr1, poly_dr_p pdr2)
 {
-  return PDR_TYPE (pdr1) == PDR_TYPE (pdr2)
-    && PDR_NB_SUBSCRIPTS (pdr1) == PDR_NB_SUBSCRIPTS (pdr2)
+  return PDR_NB_SUBSCRIPTS (pdr1) == PDR_NB_SUBSCRIPTS (pdr2)
     && PDR_BASE_OBJECT_SET (pdr1) == PDR_BASE_OBJECT_SET (pdr2);
 }
 

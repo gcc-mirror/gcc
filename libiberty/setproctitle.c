@@ -1,5 +1,5 @@
 /* Set the title of a process.
-   Copyright (C) 2010 Free Software Foundation, Inc.
+   Copyright (C) 2010, 2011 Free Software Foundation, Inc.
 
 This file is part of the libiberty library.
 Libiberty is free software; you can redistribute it and/or
@@ -28,7 +28,7 @@ Boston, MA 02110-1301, USA.  */
 
 /*
 
-@deftypefn Supplemental void setproctitle (const char *@var{fmt} ...)
+@deftypefn Supplemental void setproctitle (const char *@var{fmt}, ...)
 
 Set the title of a process to @var{fmt}. va args not supported for now,
 but defined for compatibility with BSD. 

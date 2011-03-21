@@ -1,3 +1,52 @@
+2011-02-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/47886
+	* testsuite/libgomp.fortran/task3.f90: New test.
+
+2011-02-24  Tobias Burnus  <burnus@net-b.de>
+
+	* libgomp.texi (GOMP_STACKSIZE): Fix @ref to OMP_STACKSIZE.
+
+2011-02-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/47854
+	* libgomp.texi (omp_get_wtime): Don't say time in the past
+	must be Unix Epoch.
+
+2011-02-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/47804
+	* testsuite/libgomp.fortran/fortran.exp: Check for both
+	libquadmath.a and libquadmath.${shlib_ext}.  If neither exists,
+	but $blddir != "", still append ${blddir}/${lang_library_path}
+	to ld_library_path.
+
+2011-02-16  Tobias Burnus  <burnus@net-b.de>
+
+	PR libgomp/47758
+	* testsuite/libgomp.fortran/fortran.exp: Check for the existence
+	of libquadmath.a before adding its libpath to ldflags.
+
+2011-02-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/47731
+	* config/linux/futex.h (futex_wait): Pass NULL as timeout argument
+	to FUTEX_WAIT futex syscall.
+	* config/linux/wait.h: Include <futex.h> instead of "futex.h".
+
+2011-02-13  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* configure: Regenerate.
+
+2011-01-20  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/36104
+	* acinclude.m4 (LIBGOMP_ENABLE_SYMVERS): Accept gnu variants.
+
+2011-01-16  Gerald Pfeifer
+
+	* configure.tgt (*-*-freebsd*): Add -lpthread to XLDFLAGS.
+
 2010-12-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/46874

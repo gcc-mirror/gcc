@@ -82,7 +82,7 @@ public class AlphaCompositeContext
   /**
    * Creates a new AlphaCompositeContext.
    *
-   * @param aComp the AlphaComposite object 
+   * @param aComp the AlphaComposite object
    * @param srcCM the source color model
    * @param dstCM the destination color model
    */
@@ -93,7 +93,7 @@ public class AlphaCompositeContext
     srcColorModel = srcCM;
     dstColorModel = dstCM;
 
-    
+
     // Determine the blending factors according to the rule in the
     // AlphaComposite. For some rules the factors must be determined
     // dynamically because they depend on the actual pixel value.
@@ -301,7 +301,7 @@ public class AlphaCompositeContext
               {
                 for (int i = 0; i < dstComponentsLength - 1; i++)
                   {
-                    dstComponents[i] = dstComponents[i] / dstAlpha; 
+                    dstComponents[i] = dstComponents[i] / dstAlpha;
                   }
               }
 

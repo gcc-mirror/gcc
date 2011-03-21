@@ -31,7 +31,9 @@
 #include <ios>
 #include <locale>
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // Called only by basic_ios<>::init.
   void
@@ -54,4 +56,5 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     return __old;
   }
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace

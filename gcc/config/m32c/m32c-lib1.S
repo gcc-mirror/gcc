@@ -1,5 +1,5 @@
 /* libgcc routines for R8C/M16C/M32C
-   Copyright (C) 2005, 2009
+   Copyright (C) 2005, 2009, 2010
    Free Software Foundation, Inc.
    Contributed by Red Hat.
 

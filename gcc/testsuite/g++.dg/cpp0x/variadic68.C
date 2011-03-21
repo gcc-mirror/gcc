@@ -1,4 +1,4 @@
-// { dg-do "run" }
+// { dg-do run }
 // { dg-options "-std=gnu++0x" }
 extern "C" void abort();
 

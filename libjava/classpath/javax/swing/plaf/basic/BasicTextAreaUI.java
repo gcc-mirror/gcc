@@ -1,4 +1,4 @@
-/* BasicTextAreaUI.java -- 
+/* BasicTextAreaUI.java --
    Copyright (C) 2004, 2006,  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -65,9 +65,9 @@ public class BasicTextAreaUI extends BasicTextUI
   /**
    * Create the view.  Returns a WrappedPlainView if the text area
    * has lineWrap set to true, otherwise returns a PlainView.  If
-   * lineWrap is true has to check whether the wrap style is word 
+   * lineWrap is true has to check whether the wrap style is word
    * or character and return an appropriate WrappedPlainView.
-   * 
+   *
    * @param elem the element to create a View for
    * @return an appropriate View for the element
    */
@@ -94,11 +94,11 @@ public class BasicTextAreaUI extends BasicTextUI
   {
     return "TextArea";
   }
-  
+
   /**
    * Receives notification whenever one of the text component's bound
    * properties changes. This changes the view to WrappedPlainView
-   * if setLineWrap(true) is called, and back to PlainView if 
+   * if setLineWrap(true) is called, and back to PlainView if
    * setLineWrap(false) is called.
    *
    * @param ev the property change event

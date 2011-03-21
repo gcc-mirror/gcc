@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *        Copyright (C) 2005-2009  Free Software Foundation, Inc.           *
+ *        Copyright (C) 2005-2011, Free Software Foundation, Inc.           *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -33,7 +33,13 @@
 /*  extension for object and executable files. It is used by the compiler,  */
 /*  binder and tools.                                                       */
 
+#ifdef IN_RTS
+#include "tconfig.h"
+#include "tsystem.h"
+#else
+#include "config.h"
 #include "system.h"
+#endif
 #include "coretypes.h"
 #include "tm.h"
 

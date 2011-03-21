@@ -42,7 +42,7 @@
 #include <cstdlib> // atof, atoi, strtol, getenv, atexit, abort
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
-#define _GLIBCXX_IMPL_UNORDERED_MAP std::_GLIBCXX_STD_PR::unordered_map
+#define _GLIBCXX_IMPL_UNORDERED_MAP std::_GLIBCXX_STD_C::unordered_map
 #include <unordered_map>
 #else
 #include <tr1/unordered_map>
@@ -97,7 +97,7 @@ namespace __gnu_profile
     { return __magnitude < __other.__magnitude; }
   };
 
-  typedef std::_GLIBCXX_STD_PR::vector<__warning_data> __warning_vector_t;
+  typedef std::_GLIBCXX_STD_C::vector<__warning_data> __warning_vector_t;
 
   // Defined in profiler_<diagnostic name>.h.
   class __trace_hash_func;
@@ -128,7 +128,7 @@ namespace __gnu_profile
     float __value;
   };
 
-  typedef std::_GLIBCXX_STD_PR::vector<__cost_factor*> __cost_factor_vector;
+  typedef std::_GLIBCXX_STD_C::vector<__cost_factor*> __cost_factor_vector;
 
   _GLIBCXX_PROFILE_DEFINE_DATA(__trace_hash_func*, _S_hash_func, 0);
   _GLIBCXX_PROFILE_DEFINE_DATA(__trace_hashtable_size*, _S_hashtable_size, 0);

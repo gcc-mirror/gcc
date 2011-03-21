@@ -90,11 +90,11 @@ public class Jessie extends Provider
 
           put("Mac.SSLv3HMac-MD5", SSLv3HMacMD5Impl.class.getName());
           put("Mac.SSLv3HMac-SHA", SSLv3HMacSHAImpl.class.getName());
-          
+
           put("Signature.TLSv1.1-RSA", SSLRSASignatureImpl.class.getName());
           put("Alg.Alias.Signature.TLSv1-RSA", "TLSv1.1-RSA");
           put("Alg.Alias.Signature.SSLv3-RSA", "TLSv1.1-RSA");
-          
+
           return null;
         }
       });

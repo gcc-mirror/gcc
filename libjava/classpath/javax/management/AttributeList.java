@@ -119,7 +119,7 @@ public class AttributeList
    * the @link{IndexOutOfBoundsException} from the underlying
    * array list.
    * </p>
-   * 
+   *
    * @param index the index at which to place the new attribute.
    * @param attribute the new attribute to add.
    * @throws RuntimeOperationsException if <code>index < 0</code>
@@ -130,11 +130,11 @@ public class AttributeList
   {
     try
       {
-	super.add(index, attribute);
+        super.add(index, attribute);
       }
     catch (IndexOutOfBoundsException e)
       {
-	throw new RuntimeOperationsException(e, "Invalid index.");
+        throw new RuntimeOperationsException(e, "Invalid index.");
       }
   }
 
@@ -171,7 +171,7 @@ public class AttributeList
    * the @link{IndexOutOfBoundsException} from the underlying
    * array list.
    * </p>
-   * 
+   *
    * @param index the index at which to place the new attribute.
    * @param list the list of attributes to add.
    * @return true if the list changed.
@@ -183,11 +183,11 @@ public class AttributeList
   {
     try
       {
-	return super.addAll(index, list);
+        return super.addAll(index, list);
       }
     catch (IndexOutOfBoundsException e)
       {
-	throw new RuntimeOperationsException(e, "Invalid index.");
+        throw new RuntimeOperationsException(e, "Invalid index.");
       }
   }
 
@@ -209,12 +209,12 @@ public class AttributeList
   {
     try
       {
-	super.set(index, attribute);
+        super.set(index, attribute);
       }
     catch (IndexOutOfBoundsException e)
       {
-	throw new RuntimeOperationsException(e, "Invalid index.");
+        throw new RuntimeOperationsException(e, "Invalid index.");
       }
   }
-    
+
 }

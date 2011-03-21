@@ -1,4 +1,4 @@
-/* SumFunction.java -- 
+/* SumFunction.java --
    Copyright (C) 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -66,18 +66,18 @@ final class SumFunction
     this.arg = arg;
   }
 
-  @Override 
+  @Override
   public Object evaluate(Node context, int pos, int len)
   {
     Object val = arg.evaluate(context, pos, len);
     double sum = 0.0d;
     if (val instanceof Collection)
       {
-	/* Suppression is safe, as we know context produces
-	   Collection<Node> */
-	@SuppressWarnings("unchecked")
-	  Collection<Node> nodes = (Collection<Node>) val;
-	for (Node node : nodes)
+        /* Suppression is safe, as we know context produces
+           Collection<Node> */
+        @SuppressWarnings("unchecked")
+          Collection<Node> nodes = (Collection<Node>) val;
+        for (Node node : nodes)
           {
             String s = stringValue(node);
             sum += _number(context, s);
@@ -100,5 +100,5 @@ final class SumFunction
   {
     return "sum(" + arg + ")";
   }
-  
+
 }

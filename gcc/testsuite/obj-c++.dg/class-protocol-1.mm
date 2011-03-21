@@ -326,8 +326,8 @@ testComptypes(void)
     objP1 == cls; /* { dg-warning "lacks a cast" } */
   }
   { /* id <protocol>, non-ObjC  */
-    num == objP1; /* { dg-warning "between pointer" } */
-    objP1 == num; /* { dg-warning "between pointer" } */
+    num == objP1; /* { dg-error "between pointer" } */
+    objP1 == num; /* { dg-error "between pointer" } */
 
     ptr == objP1;
     objP1 == ptr;
@@ -352,8 +352,8 @@ testComptypes(void)
     clsP1 == cls;
   }
   { /* Class <protocol>, non-ObjC */
-    num == clsP1; /* { dg-warning "between pointer" } */
-    clsP1 == num; /* { dg-warning "between pointer" } */
+    num == clsP1; /* { dg-error "between pointer" } */
+    clsP1 == num; /* { dg-error "between pointer" } */
 
     ptr == clsP1;
     clsP1 == ptr;

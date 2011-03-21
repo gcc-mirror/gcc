@@ -4,7 +4,7 @@
 /* { dg-do compile { target { *-*-darwin* } } } */
 /* { dg-skip-if "" { *-*-* } { "-fgnu-runtime" } { "" } } */
 
-#include "../objc-obj-c++-shared/Object1.h"
+#include <objc/Object.h>
 
 @interface Base: Object 
 - (void)setValues;
@@ -22,7 +22,6 @@
 -(void)checkValues { }
 @end
 
-/* { dg-final { scan-assembler "L_OBJC_SYMBOLS.*:\n\t.long\t0\n\t.long\t0\n\t.word\t2\n\t.word\t0\n\t.long\tL_OBJC_CLASS_Derived.*\n\t.long\tL_OBJC_CLASS_Base.*\n" { target { *86*-*-darwin* && { ! lp64 } } } } } */
-/* { dg-final { scan-assembler "L_OBJC_SYMBOLS.*:\n\t.long\t0\n\t.long\t0\n\t.short\t2\n\t.short\t0\n\t.long\tL_OBJC_CLASS_Derived.*\n\t.long\tL_OBJC_CLASS_Base.*\n" { target { powerpc*-*-darwin* && { ! lp64 } } } } } */
-/* { dg-final { scan-assembler "L_OBJC_SYMBOLS.*:\n\t.quad\t0\n\t.quad\t0\n\t.word\t2\n\t.word\t0\n\t.space 4\n\t.quad\tL_OBJC_CLASS_Derived.*\n\t.quad\tL_OBJC_CLASS_Base.*\n" { target { *86*-*-darwin* && { lp64 } } } } } */
-/* { dg-final { scan-assembler "L_OBJC_SYMBOLS.*:\n\t.quad\t0\n\t.quad\t0\n\t.short\t2\n\t.short\t0\n\t.space 4\n\t.quad\tL_OBJC_CLASS_Derived.*\n\t.quad\tL_OBJC_CLASS_Base.*\n" { target { powerpc*-*-darwin* && { lp64 } } } } } */
+/* { dg-final { scan-assembler "L_OBJC_Symbols.*:\n\t.long\t0\n\t.long\t0\n\t.word\t2\n\t.word\t0\n\t.long\tL_OBJC_Class_Derived.*\n\t.long\tL_OBJC_Class_Base.*\n" { target { *86*-*-darwin* && { ! lp64 } } } } } */
+/* { dg-final { scan-assembler "L_OBJC_Symbols.*:\n\t.long\t0\n\t.long\t0\n\t.short\t2\n\t.short\t0\n\t.long\tL_OBJC_Class_Derived.*\n\t.long\tL_OBJC_Class_Base.*\n" { target { powerpc*-*-darwin* && { ! lp64 } } } } } */
+/* { dg-final { scan-assembler-not "L_OBJC_Symbols" { target { *-*-darwin* && { lp64 } } } } } */

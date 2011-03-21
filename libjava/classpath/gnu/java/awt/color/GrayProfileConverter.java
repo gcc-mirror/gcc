@@ -67,11 +67,11 @@ public class GrayProfileConverter implements ColorSpaceConverter
   {
     try
       {
-	trc = new ToneReproductionCurve(profile.getGamma());
+        trc = new ToneReproductionCurve(profile.getGamma());
       }
     catch (ProfileDataException e)
       {
-	trc = new ToneReproductionCurve(profile.getTRC());
+        trc = new ToneReproductionCurve(profile.getTRC());
       }
 
     // linear grayscale converter
@@ -84,20 +84,20 @@ public class GrayProfileConverter implements ColorSpaceConverter
     // unpredictable results. This is in line with the Java specification,
     try
       {
-	toPCS = new ColorLookUpTable(profile, ICC_Profile.icSigAToB0Tag);
+        toPCS = new ColorLookUpTable(profile, ICC_Profile.icSigAToB0Tag);
       }
     catch (Exception e)
       {
-	toPCS = null;
+        toPCS = null;
       }
 
     try
       {
-	fromPCS = new ColorLookUpTable(profile, ICC_Profile.icSigBToA0Tag);
+        fromPCS = new ColorLookUpTable(profile, ICC_Profile.icSigBToA0Tag);
       }
     catch (Exception e)
       {
-	fromPCS = null;
+        fromPCS = null;
       }
   }
 

@@ -178,7 +178,7 @@ public abstract class htmlValidator
 
                 // If the tag has a content model defined, forcibly close all
                 // tags that were opened after the tag being currently closed.
-                closing: 
+                closing:
                 if (x.element.content != null)
                   {
                     iter = stack.listIterator(stack.size());
@@ -272,7 +272,7 @@ public abstract class htmlValidator
           {
             if (!stack.isEmpty())
               {
-                closing: 
+                closing:
                 do
                   {
                     hTag last = (hTag) stack.getLast();
@@ -311,7 +311,7 @@ public abstract class htmlValidator
    * content model recommends to insert making the situation ok. If Boolean.True
    * is returned, the content model current position is moved forward. Otherwise
    * this position remains the same.
-   * 
+   *
    * @param tElement
    * @return
    */
@@ -503,9 +503,9 @@ public abstract class htmlValidator
       {
         CPStringBuilder valid =
           new CPStringBuilder("The tag <" + tag.getHTMLTag() +
-			      "> cannot contain the attribute '" + foundAttribute +
-			      "'. The valid attributes for this tag are: "
-			      );
+                              "> cannot contain the attribute '" + foundAttribute +
+                              "'. The valid attributes for this tag are: "
+                              );
 
         AttributeList a = tag.getElement().getAttributes();
 
@@ -551,18 +551,18 @@ public abstract class htmlValidator
         if (dtdAttribute.values.size() == 1)
           valid =
             new CPStringBuilder("The attribute '" + foundAttribute +
-				"' of the tag <" + tag.getHTMLTag() +
-				"> cannot have the value '" + value +
-				"'. The only valid value is "
-				);
+                                "' of the tag <" + tag.getHTMLTag() +
+                                "> cannot have the value '" + value +
+                                "'. The only valid value is "
+                                );
         else
           valid =
             new CPStringBuilder("The attribute '" + foundAttribute +
-				"' of the tag <" + tag.getHTMLTag() +
-				"> cannot have the value '" + value + "'. The " +
-				dtdAttribute.values.size() +
-				" valid values are: "
-				);
+                                "' of the tag <" + tag.getHTMLTag() +
+                                "> cannot have the value '" + value + "'. The " +
+                                dtdAttribute.values.size() +
+                                " valid values are: "
+                                );
 
         Enumeration vv = dtdAttribute.values.elements();
         while (vv.hasMoreElements())

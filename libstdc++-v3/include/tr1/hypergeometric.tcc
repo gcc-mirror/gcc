@@ -42,16 +42,16 @@
 #ifndef _GLIBCXX_TR1_HYPERGEOMETRIC_TCC
 #define _GLIBCXX_TR1_HYPERGEOMETRIC_TCC 1
 
-namespace std
+namespace std _GLIBCXX_VISIBILITY(default)
 {
 namespace tr1
 {
-
   // [5.2] Special functions
 
   // Implementation-space details.
   namespace __detail
   {
+  _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     /**
      *   @brief This routine returns the confluent hypergeometric function
@@ -771,6 +771,7 @@ namespace tr1
         return __hyperg_luke(__a, __b, __c, __x);
     }
 
+  _GLIBCXX_END_NAMESPACE_VERSION
   } // namespace std::tr1::__detail
 }
 }

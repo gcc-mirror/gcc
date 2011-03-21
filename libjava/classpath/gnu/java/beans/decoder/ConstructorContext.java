@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -57,7 +57,7 @@ class ConstructorContext extends AbstractCreatableObjectContext
   ConstructorContext(String id, Class newClass)
   {
     setId(id);
-    // sets superclass field 
+    // sets superclass field
     klass = newClass;
   }
 
@@ -76,27 +76,27 @@ class ConstructorContext extends AbstractCreatableObjectContext
 
     try
       {
-	Constructor constructor = MethodFinder.getConstructor(klass, args);
+        Constructor constructor = MethodFinder.getConstructor(klass, args);
 
-	// instantiates object (klass field gets re-set by superclass)
-	return constructor.newInstance(args);
+        // instantiates object (klass field gets re-set by superclass)
+        return constructor.newInstance(args);
       }
     catch (NoSuchMethodException nsme)
       {
-	throw new AssemblyException(nsme);
+        throw new AssemblyException(nsme);
       }
     catch (InvocationTargetException ite)
       {
-	throw new AssemblyException(ite.getCause());
+        throw new AssemblyException(ite.getCause());
       }
     catch (IllegalAccessException iae)
       {
-	throw new AssemblyException(iae);
+        throw new AssemblyException(iae);
       }
     catch (InstantiationException ie)
       {
-	throw new AssemblyException(ie);
+        throw new AssemblyException(ie);
       }
   }
-  
+
 }

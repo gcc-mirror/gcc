@@ -73,6 +73,9 @@ extern "C" {
 extern int filename_cmp (const char *s1, const char *s2);
 #define FILENAME_CMP(s1, s2)	filename_cmp(s1, s2)
 
+extern int filename_ncmp (const char *s1, const char *s2,
+			  size_t n);
+
 #ifdef __cplusplus
 }
 #endif

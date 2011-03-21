@@ -161,10 +161,10 @@ public class MBeanServerPermission
     super(checkName(name), actions);
     if (actions != null && actions.length() > 0)
       throw new IllegalArgumentException("The supplied action list " +
-					 "was not equal to null or the " +
-					 "empty string.");
+                                         "was not equal to null or the " +
+                                         "empty string.");
   }
-  
+
   /**
    * Returns true if the given object is also an {@link MBeanServerPermission}
    * with the same name.
@@ -177,8 +177,8 @@ public class MBeanServerPermission
   {
     if (obj instanceof MBeanServerPermission)
       {
-	MBeanServerPermission o = (MBeanServerPermission) obj;
-	return o.getName().equals(getName());
+        MBeanServerPermission o = (MBeanServerPermission) obj;
+        return o.getName().equals(getName());
       }
     return false;
   }
@@ -209,28 +209,28 @@ public class MBeanServerPermission
   {
     if (p instanceof MBeanServerPermission)
       {
-	if (getName().equals("*"))
-	  return true;
-	MBeanServerPermission msp = (MBeanServerPermission) p;
-	String[] thisCaps = getName().split(",");
-	String[] mspCaps = msp.getName().split(",");
-	for (int a = 0; a < mspCaps.length; ++a)
-	  {
-	    boolean found = false;
-	    String mc = mspCaps[a].trim();
-	    for (int b = 0; b < thisCaps.length; ++b)
-	      {
-		String tc = thisCaps[b].trim();
-		if (tc.equals(mc))
-		  found = true;
-		if (tc.equals("createMBeanServer") &&
-		    mc.equals("newMBeanServer"))
-		  found = true;
-	      }
-	    if (!found)
-	      return false;
-	  }
-	return true;
+        if (getName().equals("*"))
+          return true;
+        MBeanServerPermission msp = (MBeanServerPermission) p;
+        String[] thisCaps = getName().split(",");
+        String[] mspCaps = msp.getName().split(",");
+        for (int a = 0; a < mspCaps.length; ++a)
+          {
+            boolean found = false;
+            String mc = mspCaps[a].trim();
+            for (int b = 0; b < thisCaps.length; ++b)
+              {
+                String tc = thisCaps[b].trim();
+                if (tc.equals(mc))
+                  found = true;
+                if (tc.equals("createMBeanServer") &&
+                    mc.equals("newMBeanServer"))
+                  found = true;
+              }
+            if (!found)
+              return false;
+          }
+        return true;
       }
     return false;
   }
@@ -246,7 +246,7 @@ public class MBeanServerPermission
   {
     return new MBeanServerPermissionCollection();
   }
-  
+
   /**
    * A collection of {@link MBeanServerPermission}s, stored
    * as a single permission with the union of the capabilities
@@ -284,46 +284,46 @@ public class MBeanServerPermission
     public void add(Permission p)
     {
       if (isReadOnly())
-	throw new SecurityException("This collection is read only.");
+        throw new SecurityException("This collection is read only.");
       if (p instanceof MBeanServerPermission)
-	{
-	  MBeanServerPermission msp = (MBeanServerPermission) p;
-	  if (collectionPermission == null)
-	    collectionPermission = msp;
-	  else
-	    {
-	      String finalString = collectionPermission.getName();
-	      String[] cp = finalString.split(",");
-	      String[] np = msp.getName().split(",");
-	      int createms = finalString.indexOf("createMBeanServer");
-	      int newms = finalString.indexOf("newMBeanServer");
-	      for (int a = 0; a < np.length; ++a)
-		{
-		  boolean found = false;
-		  String nps = np[a].trim();
-		  for (int b = 0; b < cp.length; ++b)
-		    {
-		      String cps = cp[b].trim();
-		      if (cps.equals(nps))
-			found = true;
-		      if (nps.equals("newMBeanServer") 
-			  && createms != -1)
-			found = true;
-		      if (nps.equals("createMBeanServer")
-			  && newms != -1)
-			finalString =
-			  finalString.replace("newMBeanServer",
-					      "createMBeanServer");
-		    }
-		  if (!found)
-		    finalString += "," + nps;
-		}
-	      collectionPermission =
-		new MBeanServerPermission(finalString);
-	    }
-	}
+        {
+          MBeanServerPermission msp = (MBeanServerPermission) p;
+          if (collectionPermission == null)
+            collectionPermission = msp;
+          else
+            {
+              String finalString = collectionPermission.getName();
+              String[] cp = finalString.split(",");
+              String[] np = msp.getName().split(",");
+              int createms = finalString.indexOf("createMBeanServer");
+              int newms = finalString.indexOf("newMBeanServer");
+              for (int a = 0; a < np.length; ++a)
+                {
+                  boolean found = false;
+                  String nps = np[a].trim();
+                  for (int b = 0; b < cp.length; ++b)
+                    {
+                      String cps = cp[b].trim();
+                      if (cps.equals(nps))
+                        found = true;
+                      if (nps.equals("newMBeanServer")
+                          && createms != -1)
+                        found = true;
+                      if (nps.equals("createMBeanServer")
+                          && newms != -1)
+                        finalString =
+                          finalString.replace("newMBeanServer",
+                                              "createMBeanServer");
+                    }
+                  if (!found)
+                    finalString += "," + nps;
+                }
+              collectionPermission =
+                new MBeanServerPermission(finalString);
+            }
+        }
     }
-    
+
     /**
      * Returns an enumeration over the single permission.
      *
@@ -333,7 +333,7 @@ public class MBeanServerPermission
     public Enumeration<Permission> elements()
     {
       return new
-	MBeanServerPermissionEnumeration(collectionPermission);
+        MBeanServerPermissionEnumeration(collectionPermission);
     }
 
     /**
@@ -365,8 +365,8 @@ public class MBeanServerPermission
        */
       public MBeanServerPermissionEnumeration(MBeanServerPermission p)
       {
-	this.p = p;
-	done = false;
+        this.p = p;
+        done = false;
       }
 
       /**
@@ -376,7 +376,7 @@ public class MBeanServerPermission
        */
       public boolean hasMoreElements()
       {
-	return !done;
+        return !done;
       }
 
       /**
@@ -386,13 +386,13 @@ public class MBeanServerPermission
        */
       public Permission nextElement()
       {
-	if (hasMoreElements())
-	  {
-	    done = true;
-	    return p;
-	  }
-	else
-	  throw new NoSuchElementException("No more elements are available.");
+        if (hasMoreElements())
+          {
+            done = true;
+            return p;
+          }
+        else
+          throw new NoSuchElementException("No more elements are available.");
       }
 
     }
@@ -433,42 +433,38 @@ public class MBeanServerPermission
   {
     if (!(name.equals("*")))
       {
-	String[] constraints = name.split(",");
-	name = "";
-	boolean seenCreate = false;
-	boolean seenNew = false;
-	boolean start = true;
-	for (int a = 0; a < constraints.length; ++a)
-	  {
-	    String next = constraints[a].trim();
-	    if (!(next.equals("createMBeanServer") ||
-		  next.equals("findMBeanServer") ||
-		  next.equals("newMBeanServer") ||
-		  next.equals("releaseMBeanServer")))
-	      throw new IllegalArgumentException("An invalid constraint, " +
-						 next + ", was specified.");
-	    if (next.equals("newMBeanServer"))
-	      seenNew = true;
-	    else if (next.equals("createMBeanServer"))
-	      seenCreate = true;
-	    else
-	      {
-		if (!start)
-		  name += ",";
-		name += next;
-		start = false;
-	      }
-	  }
-	if (seenNew && !seenCreate)
-	  name += (start ? "" : ",") + "newMBeanServer";
-	else if (seenCreate)
-	  name += (start ? "" : ",") + "createMBeanServer";
+        String[] constraints = name.split(",");
+        name = "";
+        boolean seenCreate = false;
+        boolean seenNew = false;
+        boolean start = true;
+        for (int a = 0; a < constraints.length; ++a)
+          {
+            String next = constraints[a].trim();
+            if (!(next.equals("createMBeanServer") ||
+                  next.equals("findMBeanServer") ||
+                  next.equals("newMBeanServer") ||
+                  next.equals("releaseMBeanServer")))
+              throw new IllegalArgumentException("An invalid constraint, " +
+                                                 next + ", was specified.");
+            if (next.equals("newMBeanServer"))
+              seenNew = true;
+            else if (next.equals("createMBeanServer"))
+              seenCreate = true;
+            else
+              {
+                if (!start)
+                  name += ",";
+                name += next;
+                start = false;
+              }
+          }
+        if (seenNew && !seenCreate)
+          name += (start ? "" : ",") + "newMBeanServer";
+        else if (seenCreate)
+          name += (start ? "" : ",") + "createMBeanServer";
       }
     return name;
   }
 
 }
-
-
-
-

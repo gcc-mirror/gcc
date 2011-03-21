@@ -103,7 +103,7 @@ public final class GnuSasl
   /**
    * Returns a {@link Set} of names of SASL Client mechanisms available from
    * this {@link Provider}.
-   * 
+   *
    * @return a {@link Set} of SASL Client mechanisms (Strings).
    */
   public static final Set getSaslClientMechanismNames()
@@ -114,7 +114,7 @@ public final class GnuSasl
   /**
    * Returns a {@link Set} of names of SASL Server mechanisms available from
    * this {@link Provider}.
-   * 
+   *
    * @return a {@link Set} of SASL Server mechanisms (Strings).
    */
   public static final Set getSaslServerMechanismNames()

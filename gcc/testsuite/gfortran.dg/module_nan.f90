@@ -19,7 +19,7 @@ program a
   if (log(abs(inf))  < huge(inf)) call abort()
   if (log(abs(minf)) < huge(inf)) call abort()
   if (.not. isnan(nan)) call abort()
-  write(str,*) inf
+  write(str,"(sp,f10.2)") inf
   if (adjustl(str) /= "+Infinity") call abort()
   write(str,*) minf
   if (adjustl(str) /= "-Infinity") call abort()

@@ -1,6 +1,6 @@
 /* Subroutines used for code generation on IBM S/390 and zSeries
    Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,
-   2007, 2008, 2009, 2010 Free Software Foundation, Inc.
+   2007, 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
    Contributed by Hartmut Penner (hpenner@de.ibm.com) and
                   Ulrich Weigand (uweigand@de.ibm.com) and
                   Andreas Krebbel (Andreas.Krebbel@de.ibm.com).
@@ -383,6 +383,32 @@ struct GTY(()) machine_function
 /* That's the read ahead of the dynamic branch prediction unit in
    bytes on a z10 (or higher) CPU.  */
 #define PREDICT_DISTANCE (TARGET_Z10 ? 384 : 2048)
+
+/* Return the alignment for LABEL.  We default to the -falign-labels
+   value except for the literal pool base label.  */
+int
+s390_label_align (rtx label)
+{
+  rtx prev_insn = prev_active_insn (label);
+
+  if (prev_insn == NULL_RTX)
+    goto old;
+
+  prev_insn = single_set (prev_insn);
+
+  if (prev_insn == NULL_RTX)
+    goto old;
+
+  prev_insn = SET_SRC (prev_insn);
+
+  /* Don't align literal pool base labels.  */
+  if (GET_CODE (prev_insn) == UNSPEC
+      && XINT (prev_insn, 1) == UNSPEC_MAIN_BASE)
+    return 0;
+
+ old:
+  return align_labels_log;
+}
 
 static enum machine_mode
 s390_libgcc_cmp_return_mode (void)
@@ -2065,6 +2091,16 @@ s390_decompose_address (rtx addr, struct s390_address *out)
       else if (GET_CODE (disp) == UNSPEC
 	       && XINT (disp, 1) == UNSPEC_LTREL_OFFSET)
         {
+	  /* In case CSE pulled a non literal pool reference out of
+	     the pool we have to reject the address.  This is
+	     especially important when loading the GOT pointer on non
+	     zarch CPUs.  In this case the literal pool contains an lt
+	     relative offset to the _GLOBAL_OFFSET_TABLE_ label which
+	     will most likely exceed the displacement.  */
+	  if (GET_CODE (XVECEXP (disp, 0, 0)) != SYMBOL_REF
+	      || !CONSTANT_POOL_ADDRESS_P (XVECEXP (disp, 0, 0)))
+	    return false;
+
 	  orig_disp = gen_rtx_CONST (Pmode, disp);
 	  if (offset)
 	    {
@@ -2426,6 +2462,31 @@ s390_float_const_zero_p (rtx value)
 	  && value == CONST0_RTX (GET_MODE (value)));
 }
 
+/* Implement TARGET_REGISTER_MOVE_COST.  */
+
+static int
+s390_register_move_cost (enum machine_mode mode ATTRIBUTE_UNUSED,
+                         reg_class_t from, reg_class_t to)
+{
+/* On s390, copy between fprs and gprs is expensive.  */
+  if ((reg_classes_intersect_p (from, GENERAL_REGS)
+       && reg_classes_intersect_p (to, FP_REGS))
+      || (reg_classes_intersect_p (from, FP_REGS)
+	  && reg_classes_intersect_p (to, GENERAL_REGS)))
+    return 10;
+
+  return 1;
+}
+
+/* Implement TARGET_MEMORY_MOVE_COST.  */
+
+static int
+s390_memory_move_cost (enum machine_mode mode ATTRIBUTE_UNUSED,
+		       reg_class_t rclass ATTRIBUTE_UNUSED,
+		       bool in ATTRIBUTE_UNUSED)
+{
+  return 1;
+}
 
 /* Compute a (partial) cost for rtx X.  Return true if the complete
    cost has been computed, and false if subexpressions should be
@@ -2926,8 +2987,8 @@ legitimate_reload_fp_constant_p (rtx op)
 /* Given an rtx OP being reloaded into a reg required to be in class RCLASS,
    return the class of reg to actually use.  */
 
-enum reg_class
-s390_preferred_reload_class (rtx op, enum reg_class rclass)
+static reg_class_t
+s390_preferred_reload_class (rtx op, reg_class_t rclass)
 {
   switch (GET_CODE (op))
     {
@@ -4954,6 +5015,23 @@ s390_delegitimize_address (rtx orig_x)
 
   orig_x = delegitimize_mem_from_attrs (orig_x);
   x = orig_x;
+
+  /* Extract the symbol ref from:
+     (plus:SI (reg:SI 12 %r12)
+              (const:SI (unspec:SI [(symbol_ref/f:SI ("*.LC0"))]
+	                            UNSPEC_GOTOFF)))  */
+  if (GET_CODE (x) == PLUS
+      && REG_P (XEXP (x, 0))
+      && REGNO (XEXP (x, 0)) == PIC_OFFSET_TABLE_REGNUM
+      && GET_CODE (XEXP (x, 1)) == CONST)
+    {
+      /* The const operand.  */
+      y = XEXP (XEXP (x, 1), 0);
+      if (GET_CODE (y) == UNSPEC
+	  && XINT (y, 1) == UNSPEC_GOTOFF)
+	return XVECEXP (y, 0, 0);
+    }
+
   if (GET_CODE (x) != MEM)
     return orig_x;
 
@@ -4966,20 +5044,29 @@ s390_delegitimize_address (rtx orig_x)
       y = XEXP (XEXP (x, 1), 0);
       if (GET_CODE (y) == UNSPEC
 	  && XINT (y, 1) == UNSPEC_GOT)
-	return XVECEXP (y, 0, 0);
-      return orig_x;
+	y = XVECEXP (y, 0, 0);
+      else
+	return orig_x;
     }
-
-  if (GET_CODE (x) == CONST)
+  else if (GET_CODE (x) == CONST)
     {
       y = XEXP (x, 0);
       if (GET_CODE (y) == UNSPEC
 	  && XINT (y, 1) == UNSPEC_GOTENT)
-	return XVECEXP (y, 0, 0);
-      return orig_x;
+	y = XVECEXP (y, 0, 0);
+      else
+	return orig_x;
     }
+  else
+    return orig_x;
 
-  return orig_x;
+  if (GET_MODE (orig_x) != Pmode)
+    {
+      y = lowpart_subreg (GET_MODE (orig_x), y, Pmode);
+      if (y == NULL_RTX)
+	return orig_x;
+    }
+  return y;
 }
 
 /* Output operand OP to stdio stream FILE.
@@ -5056,7 +5143,7 @@ get_some_local_dynamic_name (void)
    in assembler syntax to stdio stream FILE.  Returns true if the
    constant X could be recognized, false otherwise.  */
 
-bool
+static bool
 s390_output_addr_const_extra (FILE *file, rtx x)
 {
   if (GET_CODE (x) == UNSPEC && XVECLEN (x, 0) == 1)
@@ -5131,7 +5218,8 @@ print_operand_address (FILE *file, rtx addr)
     {
       if (!TARGET_Z10)
 	{
-	  error ("symbolic memory references are only supported on z10 or later");
+	  output_operand_lossage ("symbolic memory references are "
+				  "only supported on z10 or later");
 	  return;
 	}
       output_addr_const (file, addr);
@@ -5200,7 +5288,8 @@ print_operand (FILE *file, rtx x, int code)
       else if (GET_CODE (x) == GT)
 	fprintf (file, "h");
       else
-	error ("invalid comparison operator for 'E' output modifier");
+	output_operand_lossage ("invalid comparison operator "
+				"for 'E' output modifier");
       return;
 
     case 'J':
@@ -5220,7 +5309,7 @@ print_operand (FILE *file, rtx x, int code)
 	  assemble_name (file, get_some_local_dynamic_name ());
 	}
       else
-	error ("invalid reference for 'J' output modifier");
+	output_operand_lossage ("invalid reference for 'J' output modifier");
       return;
 
     case 'G':
@@ -5234,7 +5323,8 @@ print_operand (FILE *file, rtx x, int code)
 
 	if (!MEM_P (x))
 	  {
-	    error ("memory reference expected for 'O' output modifier");
+	    output_operand_lossage ("memory reference expected for "
+				    "'O' output modifier");
 	    return;
 	  }
 
@@ -5244,7 +5334,7 @@ print_operand (FILE *file, rtx x, int code)
 	    || (ad.base && !REGNO_OK_FOR_BASE_P (REGNO (ad.base)))
 	    || ad.indx)
 	  {
-	    error ("invalid address for 'O' output modifier");
+	    output_operand_lossage ("invalid address for 'O' output modifier");
 	    return;
 	  }
 
@@ -5262,7 +5352,8 @@ print_operand (FILE *file, rtx x, int code)
 
 	if (!MEM_P (x))
 	  {
-	    error ("memory reference expected for 'R' output modifier");
+	    output_operand_lossage ("memory reference expected for "
+				    "'R' output modifier");
 	    return;
 	  }
 
@@ -5272,7 +5363,7 @@ print_operand (FILE *file, rtx x, int code)
 	    || (ad.base && !REGNO_OK_FOR_BASE_P (REGNO (ad.base)))
 	    || ad.indx)
 	  {
-	    error ("invalid address for 'R' output modifier");
+	    output_operand_lossage ("invalid address for 'R' output modifier");
 	    return;
 	  }
 
@@ -5290,7 +5381,8 @@ print_operand (FILE *file, rtx x, int code)
 
 	if (!MEM_P (x))
 	  {
-	    error ("memory reference expected for 'S' output modifier");
+	    output_operand_lossage ("memory reference expected for "
+				    "'S' output modifier");
 	    return;
 	  }
 	ret = s390_decompose_address (XEXP (x, 0), &ad);
@@ -5299,7 +5391,7 @@ print_operand (FILE *file, rtx x, int code)
 	    || (ad.base && !REGNO_OK_FOR_BASE_P (REGNO (ad.base)))
 	    || ad.indx)
 	  {
-	    error ("invalid address for 'S' output modifier");
+	    output_operand_lossage ("invalid address for 'S' output modifier");
 	    return;
 	  }
 
@@ -5319,7 +5411,8 @@ print_operand (FILE *file, rtx x, int code)
       else if (GET_CODE (x) == MEM)
 	x = change_address (x, VOIDmode, plus_constant (XEXP (x, 0), 4));
       else
-	error ("register or memory expression expected for 'N' output modifier");
+	output_operand_lossage ("register or memory expression expected "
+				"for 'N' output modifier");
       break;
 
     case 'M':
@@ -5328,7 +5421,8 @@ print_operand (FILE *file, rtx x, int code)
       else if (GET_CODE (x) == MEM)
 	x = change_address (x, VOIDmode, plus_constant (XEXP (x, 0), 8));
       else
-	error ("register or memory expression expected for 'M' output modifier");
+	output_operand_lossage ("register or memory expression expected "
+				"for 'M' output modifier");
       break;
 
     case 'Y':
@@ -5387,21 +5481,26 @@ print_operand (FILE *file, rtx x, int code)
       else if (code == 'x')
         fprintf (file, HOST_WIDE_INT_PRINT_DEC, CONST_DOUBLE_LOW (x) & 0xffff);
       else if (code == 'h')
-        fprintf (file, HOST_WIDE_INT_PRINT_DEC, ((CONST_DOUBLE_LOW (x) & 0xffff) ^ 0x8000) - 0x8000);
+        fprintf (file, HOST_WIDE_INT_PRINT_DEC,
+		 ((CONST_DOUBLE_LOW (x) & 0xffff) ^ 0x8000) - 0x8000);
       else
 	{
 	  if (code == 0)
-	    error ("invalid constant - try using an output modifier");
+	    output_operand_lossage ("invalid constant - try using "
+				    "an output modifier");
 	  else
-	    error ("invalid constant for output modifier '%c'", code);
+	    output_operand_lossage ("invalid constant for output modifier '%c'",
+				    code);
 	}
       break;
 
     default:
       if (code == 0)
-	error ("invalid expression - try using an output modifier");
+	output_operand_lossage ("invalid expression - try using "
+				"an output modifier");
       else
-	error ("invalid expression for output modifier '%c'", code);
+	output_operand_lossage ("invalid expression for output "
+				"modifier '%c'", code);
       break;
     }
 }
@@ -6569,7 +6668,7 @@ s390_chunkify_start (void)
 	  s390_add_execute (curr_pool, insn);
 	  s390_add_pool_insn (curr_pool, insn);
 	}
-      else if (GET_CODE (insn) == INSN || GET_CODE (insn) == CALL_INSN)
+      else if (GET_CODE (insn) == INSN || CALL_P (insn))
 	{
 	  rtx pool_ref = NULL_RTX;
 	  find_constant_pool_ref (PATTERN (insn), &pool_ref);
@@ -6593,6 +6692,15 @@ s390_chunkify_start (void)
 		  gcc_assert (!pending_ltrel);
 		  pending_ltrel = pool_ref;
 		}
+	    }
+	  /* Make sure we do not split between a call and its
+	     corresponding CALL_ARG_LOCATION note.  */
+	  if (CALL_P (insn))
+	    {
+	      rtx next = NEXT_INSN (insn);
+	      if (next && NOTE_P (next)
+		  && NOTE_KIND (next) == NOTE_INSN_CALL_ARG_LOCATION)
+		continue;
 	    }
 	}
 
@@ -8650,17 +8758,23 @@ s390_promote_function_mode (const_tree type, enum machine_mode mode,
   return mode;
 }
 
-/* Define where to return a (scalar) value of type TYPE.
-   If TYPE is null, define where to return a (scalar)
+/* Define where to return a (scalar) value of type RET_TYPE.
+   If RET_TYPE is null, define where to return a (scalar)
    value of mode MODE from a libcall.  */
 
-rtx
-s390_function_value (const_tree type, const_tree fn, enum machine_mode mode)
+static rtx
+s390_function_and_libcall_value (enum machine_mode mode,
+				 const_tree ret_type,
+				 const_tree fntype_or_decl,
+				 bool outgoing ATTRIBUTE_UNUSED)
 {
-  if (type)
+  /* For normal functions perform the promotion as
+     promote_function_mode would do.  */
+  if (ret_type)
     {
-      int unsignedp = TYPE_UNSIGNED (type);
-      mode = promote_function_mode (type, TYPE_MODE (type), &unsignedp, fn, 1);
+      int unsignedp = TYPE_UNSIGNED (ret_type);
+      mode = promote_function_mode (ret_type, mode, &unsignedp,
+				    fntype_or_decl, 1);
     }
 
   gcc_assert (GET_MODE_CLASS (mode) == MODE_INT || SCALAR_FLOAT_MODE_P (mode));
@@ -8673,6 +8787,10 @@ s390_function_value (const_tree type, const_tree fn, enum machine_mode mode)
     return gen_rtx_REG (mode, 2);
   else if (GET_MODE_SIZE (mode) == 2 * UNITS_PER_LONG)
     {
+      /* This case is triggered when returning a 64 bit value with
+	 -m31 -mzarch.  Although the value would fit into a single
+	 register it has to be forced into a 32 bit register pair in
+	 order to match the ABI.  */
       rtvec p = rtvec_alloc (2);
 
       RTVEC_ELT (p, 0)
@@ -8684,6 +8802,26 @@ s390_function_value (const_tree type, const_tree fn, enum machine_mode mode)
     }
 
   gcc_unreachable ();
+}
+
+/* Define where to return a scalar return value of type RET_TYPE.  */
+
+static rtx
+s390_function_value (const_tree ret_type, const_tree fn_decl_or_type,
+		     bool outgoing)
+{
+  return s390_function_and_libcall_value (TYPE_MODE (ret_type), ret_type,
+					  fn_decl_or_type, outgoing);
+}
+
+/* Define where to return a scalar libcall return value of mode
+   MODE.  */
+
+static rtx
+s390_libcall_value (enum machine_mode mode, const_rtx fun ATTRIBUTE_UNUSED)
+{
+  return s390_function_and_libcall_value (mode, NULL_TREE,
+					  NULL_TREE, true);
 }
 
 
@@ -10600,6 +10738,9 @@ s390_loop_unroll_adjust (unsigned nunroll, struct loop *loop)
 #undef  TARGET_EXPAND_BUILTIN
 #define TARGET_EXPAND_BUILTIN s390_expand_builtin
 
+#undef TARGET_ASM_OUTPUT_ADDR_CONST_EXTRA
+#define TARGET_ASM_OUTPUT_ADDR_CONST_EXTRA s390_output_addr_const_extra
+
 #undef TARGET_ASM_OUTPUT_MI_THUNK
 #define TARGET_ASM_OUTPUT_MI_THUNK s390_output_mi_thunk
 #undef TARGET_ASM_CAN_OUTPUT_MI_THUNK
@@ -10625,6 +10766,10 @@ s390_loop_unroll_adjust (unsigned nunroll, struct loop *loop)
 #define TARGET_RTX_COSTS s390_rtx_costs
 #undef TARGET_ADDRESS_COST
 #define TARGET_ADDRESS_COST s390_address_cost
+#undef TARGET_REGISTER_MOVE_COST
+#define TARGET_REGISTER_MOVE_COST s390_register_move_cost
+#undef TARGET_MEMORY_MOVE_COST
+#define TARGET_MEMORY_MOVE_COST s390_memory_move_cost
 
 #undef TARGET_MACHINE_DEPENDENT_REORG
 #define TARGET_MACHINE_DEPENDENT_REORG s390_reorg
@@ -10650,6 +10795,10 @@ s390_loop_unroll_adjust (unsigned nunroll, struct loop *loop)
 #define TARGET_FUNCTION_ARG s390_function_arg
 #undef TARGET_FUNCTION_ARG_ADVANCE
 #define TARGET_FUNCTION_ARG_ADVANCE s390_function_arg_advance
+#undef TARGET_FUNCTION_VALUE
+#define TARGET_FUNCTION_VALUE s390_function_value
+#undef TARGET_LIBCALL_VALUE
+#define TARGET_LIBCALL_VALUE s390_libcall_value
 
 #undef TARGET_FIXED_CONDITION_CODE_REGS
 #define TARGET_FIXED_CONDITION_CODE_REGS s390_fixed_condition_code_regs
@@ -10672,6 +10821,9 @@ s390_loop_unroll_adjust (unsigned nunroll, struct loop *loop)
 
 #undef TARGET_SCALAR_MODE_SUPPORTED_P
 #define TARGET_SCALAR_MODE_SUPPORTED_P s390_scalar_mode_supported_p
+
+#undef  TARGET_PREFERRED_RELOAD_CLASS
+#define TARGET_PREFERRED_RELOAD_CLASS s390_preferred_reload_class
 
 #undef TARGET_SECONDARY_RELOAD
 #define TARGET_SECONDARY_RELOAD s390_secondary_reload

@@ -3,7 +3,6 @@
 /* Test deprecate attribute with an @interface declaration.  */
 
 #include <objc/objc.h>
-#include <objc/runtime.h>
 
 __attribute__ ((deprecated)) 
 @interface DeprecatedClass

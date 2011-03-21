@@ -1,6 +1,6 @@
 /* StackFrameCommandSet.java -- class to implement the StackFrame Command Set
    Copyright (C) 2005, 2007 Free Software Foundation
- 
+
 This file is part of GNU Classpath.
 
 GNU Classpath is free software; you can redistribute it and/or modify
@@ -56,7 +56,7 @@ import java.nio.ByteBuffer;
 
 /**
  * A class representing the StackFrame Command Set.
- * 
+ *
  * @author Aaron Luchko <aluchko@redhat.com>
  */
 public class StackFrameCommandSet
@@ -83,7 +83,7 @@ public class StackFrameCommandSet
             executePopFrames(bb, os);
             break;
           default:
-            throw new NotImplementedException("Command " + command + 
+            throw new NotImplementedException("Command " + command +
             " not found in Stack Frame Command Set.");
           }
       }
@@ -158,8 +158,8 @@ public class StackFrameCommandSet
   {
     if (!VMVirtualMachine.canPopFrames)
       {
-	String msg = "popping frames is unsupported";
-	throw new NotImplementedException(msg);
+        String msg = "popping frames is unsupported";
+        throw new NotImplementedException(msg);
       }
 
     ThreadId tid = (ThreadId) idMan.readObjectId(bb);

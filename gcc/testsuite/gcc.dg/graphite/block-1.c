@@ -17,6 +17,7 @@ main (void)
   int A[MAX * MAX];
   int B[MAX * MAX];
 
+  /* These loops should be loop blocked.  */
   for (i = 0; i < MAX; i++)
     for (j = 0; j < MAX; j++)
       {
@@ -24,10 +25,12 @@ main (void)
 	B[i*MAX + j] = j;
       }
 
+  /* These loops should be loop blocked.  */
   for (i = 0; i < MAX; i++)
     for (j = 0; j < MAX; j++)
       A[i*MAX + j] += B[j*MAX + i];
 
+  /* These loops should be loop blocked.  */
   for(i = 0; i < MAX; i++)
     for(j = 0; j < MAX; j++)
       sum += A[i*MAX + j];
@@ -42,5 +45,5 @@ main (void)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "will be loop blocked" 2 "graphite" { xfail *-*-* } } } */ 
+/* { dg-final { scan-tree-dump-times "will be loop blocked" 3 "graphite" } } */
 /* { dg-final { cleanup-tree-dump "graphite" } } */

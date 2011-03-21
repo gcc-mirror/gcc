@@ -1,6 +1,6 @@
 /* Generic partial redundancy elimination with lazy code motion support.
-   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008
-   Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008,
+   2010, 2011 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -451,6 +451,8 @@ pre_edge_lcm (int n_exprs, sbitmap *transp,
 
   *insert = sbitmap_vector_alloc (num_edges, n_exprs);
   *del = sbitmap_vector_alloc (last_basic_block, n_exprs);
+  sbitmap_vector_zero (*insert, num_edges);
+  sbitmap_vector_zero (*del, last_basic_block);
   compute_insert_delete (edge_list, antloc, later, laterin, *insert, *del);
 
   sbitmap_vector_free (laterin);

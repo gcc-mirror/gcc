@@ -62,7 +62,7 @@ import java.io.Serializable;
  * point is in the middle, an X alignment of 1.0 means, the aligment point is
  * at the right edge. So if you have three components, the first with 0.0, the
  * second with 0.5 and the third with 1.0, then they are laid out like this:
- * 
+ *
  * <pre>
  *          +-------+
  *          |   1   |
@@ -300,7 +300,7 @@ public class OverlayLayout implements LayoutManager2, Serializable
    * at the right edge. So if you have three components, the first with 0.0,
    * the second with 0.5 and the third with 1.0, then they are laid out like
    * this:
-   * 
+   *
    * <pre>
    *          +-------+
    *          |   1   |

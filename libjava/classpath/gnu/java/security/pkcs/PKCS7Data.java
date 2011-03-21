@@ -52,7 +52,7 @@ public class PKCS7Data
   /**
    * Constructs a new instance of <code>PKCS7Data</code> with the possibly
    * null (implicetly referenced) content data.
-   * 
+   *
    * @param data the raw bytes of the data to use in a PKCS#7 framework.
    */
   public PKCS7Data(byte[] data)

@@ -50,7 +50,7 @@ import javax.security.auth.Destroyable;
  * This class represents a Kerberos key.  See the Kerberos
  * authentication RFC for more information:
  * <a href="http://www.ietf.org/rfc/rfc1510.txt">RFC 1510</a>.
- * 
+ *
  * @since 1.4
  */
 public class KerberosKey

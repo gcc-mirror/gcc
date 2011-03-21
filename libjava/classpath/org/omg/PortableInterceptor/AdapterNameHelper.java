@@ -52,14 +52,14 @@ import org.omg.CORBA.portable.OutputStream;
  * Provides static helper methods for working with the adapter name helper.
  * The adapter name helper is an array of strings, so {@link StringSeqHelper}
  * could be used for io operations. The separate helper is provided anyway.
- * 
+ *
  * @since 1.5
  *
  * @author Audrius Meskauskas (AudriusA@Bioinformatics.org)
  */
 public abstract class AdapterNameHelper
 {
-  
+
   /**
    * Extract the adapter name (<code>String[]</code>) from the given {@link Any}.
    *
@@ -75,8 +75,8 @@ public abstract class AdapterNameHelper
 
   /**
    * Returns the agreed Id.
-   * 
-   * @return "IDL:omg.org/PortableInterceptor/AdapterName:1.0", always. 
+   *
+   * @return "IDL:omg.org/PortableInterceptor/AdapterName:1.0", always.
    */
   public static String id()
   {
@@ -85,7 +85,7 @@ public abstract class AdapterNameHelper
 
   /**
    * Insert into the given adapter name (<code>String[]</code>) into the
-   * given {@link Any}. 
+   * given {@link Any}.
    *
    * @param into the target Any.
    * @param that the array to insert.
@@ -111,7 +111,7 @@ public abstract class AdapterNameHelper
   /**
    * Creates and returns a new instance of the TypeCode, corresponding the
    * adapter name.
-   * 
+   *
    * @return the alias of the string sequence, named "AdapterName".
    */
   public static TypeCode type()
@@ -124,7 +124,7 @@ public abstract class AdapterNameHelper
 
   /**
    * Writes the <code>String[]</code> into the given stream.
-   * 
+   *
    * @param output the CORBA output stream to write.
    * @param value the value that must be written.
    */

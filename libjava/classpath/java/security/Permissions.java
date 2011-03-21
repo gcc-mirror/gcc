@@ -231,13 +231,13 @@ public final class Permissions extends PermissionCollection
     public boolean implies(Permission perm)
     {
       Enumeration elements = elements();
-      
+
       while (elements.hasMoreElements())
-	{
-	  Permission p = (Permission)elements.nextElement();
-	  if (p.implies(perm))
-	    return true;
-	}
+        {
+          Permission p = (Permission)elements.nextElement();
+          if (p.implies(perm))
+            return true;
+        }
       return false;
     }
 

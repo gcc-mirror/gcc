@@ -1,4 +1,4 @@
-/* XMLSchema.java -- 
+/* XMLSchema.java --
    Copyright (C) 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -58,7 +58,7 @@ final class XMLSchema
   static final int FINAL_LIST = 0x04;
   static final int FINAL_UNION = 0x08;
   static final int FINAL_ALL = 0x0f;
-  
+
   static final int BLOCK_NONE = 0x00;
   static final int BLOCK_EXTENSION = 0x01;
   static final int BLOCK_RESTRICTION = 0x02;
@@ -129,6 +129,5 @@ final class XMLSchema
     //return new XMLSchemaValidatorHandler(this);
     return null;
   }
-  
-}
 
+}

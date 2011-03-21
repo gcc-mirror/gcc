@@ -1,4 +1,4 @@
-/* AttributeDeclaration.java -- 
+/* AttributeDeclaration.java --
    Copyright (C) 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -63,7 +63,7 @@ class AttributeDeclaration
    * One of NONE, DEFAULT, FIXED.
    */
   final int type;
-  
+
   /**
    * The value constraint.
    */
@@ -78,7 +78,7 @@ class AttributeDeclaration
    * The type definition corresponding to this attribute.
    */
   final SimpleType datatype;
-  
+
   /**
    * The annotation associated with this attribute declaration, if any.
    */
@@ -94,6 +94,5 @@ class AttributeDeclaration
     this.datatype = datatype;
     this.annotation = annotation;
   }
-  
-}
 
+}

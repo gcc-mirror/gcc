@@ -1,4 +1,4 @@
-/* GnomeElement.java - 
+/* GnomeElement.java -
    Copyright (C) 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -67,7 +67,7 @@ class GnomeElement
   {
     super(id);
   }
-  
+
   public String getTagName()
   {
     return getNodeName();
@@ -77,7 +77,7 @@ class GnomeElement
 
   public native void setAttribute(String name, String value)
     throws DOMException;
-  
+
   public void removeAttribute(String name)
     throws DOMException
   {
@@ -89,7 +89,7 @@ class GnomeElement
   }
 
   public native Attr getAttributeNode(String name);
-  
+
   public native Attr setAttributeNode(Attr newAttr)
     throws DOMException;
 
@@ -97,9 +97,9 @@ class GnomeElement
     throws DOMException;
 
   public native NodeList getElementsByTagName(String name);
-  
+
   public native String getAttributeNS(String namespaceURI, String localName);
-  
+
   public native void setAttributeNS(String namespaceURI, String
                                     qualifiedName, String value)
     throws DOMException;
@@ -113,7 +113,7 @@ class GnomeElement
         removeAttributeNode(attr);
       }
   }
-  
+
   public native Attr getAttributeNodeNS(String namespaceURI,
                                         String localName);
 
@@ -122,7 +122,7 @@ class GnomeElement
 
   public native NodeList getElementsByTagNameNS(String namespaceURI,
                                                 String localName);
-  
+
   public native boolean hasAttribute(String name);
 
   public native boolean hasAttributeNS(String namespaceURI,

@@ -6,7 +6,7 @@ void abort (void);
 void parloop (int N)
 {
   int i, j,ii;
-  int x[400][10][400];
+  int x[401][10][401];
 
 for (ii = 0; ii < N; ii++)
   for (i = 0; i < N; i++)

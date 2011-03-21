@@ -1,6 +1,6 @@
 // posix.h -- Helper functions for POSIX-flavored OSs.
 
-/* Copyright (C) 2000, 2002, 2003, 2006  Free Software Foundation
+/* Copyright (C) 2000, 2002, 2003, 2006, 2010  Free Software Foundation
 
    This file is part of libgcj.
 

@@ -1,4 +1,4 @@
-/* IllegalCharsetNameException.java -- 
+/* IllegalCharsetNameException.java --
    Copyright (C) 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -47,9 +47,9 @@ public class IllegalCharsetNameException extends IllegalArgumentException
    * Compatible with JDK 1.4+
    */
   private static final long serialVersionUID = 1457525358470002989L;
-  
+
   private String charsetName;
-  
+
   /**
    * Creates the exception
    *

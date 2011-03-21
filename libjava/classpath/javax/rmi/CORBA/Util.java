@@ -77,7 +77,7 @@ import javax.transaction.TransactionRolledbackException;
  * The functionality is forwarded to the enclosed UtilDelegate. This delegate
  * can be altered by setting the system property "javax.rmi.CORBA.UtilClass" to
  * the name of the alternative class that must implement {@link UtilDelegate}.
- * 
+ *
  * @author Audrius Meskauskas (AudriusA@Bioinformatics.org)
  */
 public class Util
@@ -119,7 +119,7 @@ public class Util
   /**
    * Get the value handler that Serializes Java objects to and from CDR (GIOP)
    * streams.
-   * 
+   *
    * When using the default Util implementation, the class of the returned
    * handler can be altered by setting by setting the system property
    * "javax.rmi.CORBA.ValueHandlerClass" to the name of the alternative class
@@ -143,7 +143,7 @@ public class Util
    * pair has not been previously registered using {@link #registerTarget},
    * this method tries to locate a tie class by the name pattern. If this
    * succeeds, the tie-target pair is also registered.
-   * 
+   *
    * @return the Tie.
    */
   public static Tie getTie(Remote target)
@@ -154,10 +154,10 @@ public class Util
   /**
    * Checks if the given stub is local. The implementation it delegates call to
    * {@link ObjectImpl#_is_local().
-   * 
+   *
    * @param stub a stub to check.
    * @return true if the stub is local, false otherwise.
-   * 
+   *
    * @throws RemoteException if the {@link ObjectImpl#_is_local()} throws a
    * {@link org.omg.CORBA.SystemException}.
    */
@@ -171,7 +171,7 @@ public class Util
    * Load the class. The method uses class loaders from the call stact first. If
    * this fails, the further behaviour depends on the System Property
    * "java.rmi.server.useCodebaseOnly" with default value "false".
-   * 
+   *
    * <ul>
    * <li>If remoteCodebase is non-null and useCodebaseOnly is "false" then call
    * java.rmi.server.RMIClassLoader.loadClass (remoteCodebase, className)</li>
@@ -180,12 +180,12 @@ public class Util
    * <li>If a class is still not successfully loaded and the loader != null
    * then try Class.forName(className, false, loader). </li>
    * </ul>
-   * 
+   *
    * @param className the name of the class.
    * @param remoteCodebase the codebase.
    * @param loader the class loader.
    * @return the loaded class.
-   * 
+   *
    * @throws ClassNotFoundException of the class cannot be loaded.
    */
   public static Class loadClass(String className, String remoteCodebase,
@@ -331,14 +331,14 @@ public class Util
    * <td>{@link UnexpectedException}</td>
    * </tr>
    * </table>
-   * 
+   *
    * @param exception an exception that was thrown on a server side implementation.
-   * 
+   *
    * @return the corresponding RemoteException unless it is a RuntimeException.
-   * 
+   *
    * @throws RuntimeException the passed exception if it is an instance of
    * RuntimeException.
-   * 
+   *
    * @specnote It is the same behavior, as in Suns implementations 1.4.0-1.5.0.
    */
   public static RemoteException wrapException(Throwable exception)
@@ -354,10 +354,10 @@ public class Util
    * {@link #writeRemoteObject}. The written data contains discriminator,
    * defining, that was written. Another method that writes the same content is
    * {@link org.omg.CORBA_2_3.portable.OutputStream#write_abstract_interface(java.lang.Object)}.
-   * 
+   *
    * @param output a stream to write to, must be
    * {@link org.omg.CORBA_2_3.portable.OutputStream}.
-   * 
+   *
    * @param object an object to write, must be CORBA object, Remote
    */
   public static void writeAbstractObject(OutputStream output,
@@ -375,7 +375,7 @@ public class Util
    * method writes CORBA object, value type or value box. For value types Null
    * is written with the abstract interface, its typecode having repository id
    * "IDL:omg.org/CORBA/AbstractBase:1.0" and the empty string name.
-   * 
+   *
    * @param output the object to write.
    * @param object the java object that must be written in the form of the CORBA
    * {@link Any}.
@@ -384,9 +384,9 @@ public class Util
   {
     delegate.writeAny(output, object);
   }
-  
+
   /**
-   * Read Any from the input stream. 
+   * Read Any from the input stream.
    */
   public static java.lang.Object readAny(InputStream input)
   {
@@ -403,7 +403,7 @@ public class Util
    * used in write_value(..) method group in
    * {@link org.omg.CORBA_2_3.portable.OutputStream} and also may be called
    * directly from generated Stubs and Ties.
-   * 
+   *
    * @param output a stream to write to, must be
    * org.omg.CORBA_2_3.portable.OutputStream
    * @param object an object to write.

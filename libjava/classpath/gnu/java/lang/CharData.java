@@ -58,7 +58,7 @@ package gnu.java.lang;
  * attribute tables are much smaller than 0xffff entries; as many characters
  * in Unicode share common attributes.  Numbers that are too large to fit
  * into NUM_VALUE as 16 bit chars are stored in LARGENUMS and a number N is
- * stored in NUM_VALUE such that (-N - 3) is the offset into LARGENUMS for 
+ * stored in NUM_VALUE such that (-N - 3) is the offset into LARGENUMS for
  * the particular character. The DIRECTION table also contains a field for
  * detecting characters with multi-character uppercase expansions.
  * Next, there is a listing for <code>TITLE</code> exceptions (most characters
@@ -81,7 +81,7 @@ public interface CharData
 
   /**
    * The character shift amount to look up the block offset. In other words,
-   * <code>(char) (BLOCKS.value[ch >> SHIFT[p]] + ch)</code> is the index 
+   * <code>(char) (BLOCKS.value[ch >> SHIFT[p]] + ch)</code> is the index
    * where <code>ch</code> is described in <code>DATA</code> if <code>ch</code>
    * is in Unicode plane <code>p</code>.  Note that <code>p</code> is simply
    * the integer division of ch and 0x10000.

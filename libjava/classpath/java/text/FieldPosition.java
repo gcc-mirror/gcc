@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -169,14 +169,14 @@ public class FieldPosition
    * <ul>
    * <li>The specified object is not <code>null</code>.
    * <li>The specified object has the same class as this object.
-   * <li>The specified object has the same field identifier, field attribute 
+   * <li>The specified object has the same field identifier, field attribute
    * and beginning and ending index as this object.
    * </ul>
    *
    * @param obj The object to test for equality to this object.
    *
    * @return <code>true</code> if the specified object is equal to
-   * this object, <code>false</code> otherwise. 
+   * this object, <code>false</code> otherwise.
    */
   public boolean equals (Object obj)
   {
@@ -188,17 +188,17 @@ public class FieldPosition
 
     FieldPosition fp = (FieldPosition) obj;
     return (field_id == fp.field_id
-	    && (field_attribute == fp.field_attribute 
-		|| (field_attribute != null 
-		    && field_attribute.equals(fp.field_attribute)))
-	    && begin == fp.begin
-	    && end == fp.end);
+            && (field_attribute == fp.field_attribute
+                || (field_attribute != null
+                    && field_attribute.equals(fp.field_attribute)))
+            && begin == fp.begin
+            && end == fp.end);
   }
 
 
   /**
    * This method returns a hash value for this object
-   * 
+   *
    * @return A hash value for this object.
    */
   public int hashCode ()
@@ -208,7 +208,7 @@ public class FieldPosition
     hash = 31 * hash + field_id;
     hash = 31 * hash + begin;
     hash = 31 * hash + end;
-    hash = 31 * hash + 
+    hash = 31 * hash +
       (null == field_attribute ? 0 : field_attribute.hashCode());
 
     return hash;
@@ -223,10 +223,10 @@ public class FieldPosition
   public String toString ()
   {
     return (getClass ().getName ()
-	    + "[field=" + getField ()
-	    + ",attribute=" + getFieldAttribute ()
-	    + ",beginIndex=" + getBeginIndex () 
-	    + ",endIndex=" + getEndIndex () 
-	    + "]");
+            + "[field=" + getField ()
+            + ",attribute=" + getFieldAttribute ()
+            + ",beginIndex=" + getBeginIndex ()
+            + ",endIndex=" + getEndIndex ()
+            + "]");
   }
 }

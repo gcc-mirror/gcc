@@ -68,7 +68,7 @@ public class CairoSurface extends WritableRaster
   int width = -1, height = -1;
 
   /**
-   * The native pointer to the Cairo surface. 
+   * The native pointer to the Cairo surface.
    */
   long surfacePointer;
 
@@ -93,8 +93,8 @@ public class CairoSurface extends WritableRaster
                                                        0xFF000000,
                                                        true,
                                                        Buffers.smallestAppropriateTransferType(32));
-  
-  // This CM corresponds to the CAIRO_FORMAT_RGB24 type in Cairo 
+
+  // This CM corresponds to the CAIRO_FORMAT_RGB24 type in Cairo
   static ColorModel cairoCM_opaque = new DirectColorModel(24, 0x00FF0000,
                                                           0x0000FF00,
                                                           0x000000FF);
@@ -112,7 +112,7 @@ public class CairoSurface extends WritableRaster
   private native void destroy(long surfacePointer, int[] buf);
 
   /**
-   * Draws this image to a given CairoGraphics context, 
+   * Draws this image to a given CairoGraphics context,
    * with an affine transform given by i2u.
    */
   public native void nativeDrawSurface(long surfacePointer, long contextPointer,
@@ -122,23 +122,23 @@ public class CairoSurface extends WritableRaster
   /**
    * Synchronizes the image's data buffers, copying any changes made in the
    * Java array into the native array.
-   * 
+   *
    * This method should only be called if (sharedBuffers == false).
    */
   native void syncNativeToJava(long surfacePointer, int[] buffer);
-  
+
   /**
    * Synchronizes the image's data buffers, copying any changes made in the
    * native array into the Java array.
-   * 
+   *
    * This method should only be called if (sharedBuffers == false).
    */
   native void syncJavaToNative(long surfacePointer, int[] buffer);
-  
+
   /**
    * Return the buffer, with the sample values of each pixel reversed
-   * (ie, in ABGR instead of ARGB). 
-   * 
+   * (ie, in ABGR instead of ARGB).
+   *
    * @return A pointer to a flipped buffer.  The memory is allocated in native
    *        code, and must be explicitly freed when it is no longer needed.
    */
@@ -146,21 +146,21 @@ public class CairoSurface extends WritableRaster
 
   /**
    * Create a cairo_surface_t with specified width and height.
-   * The format will be ARGB32 with premultiplied alpha and native bit 
+   * The format will be ARGB32 with premultiplied alpha and native bit
    * and word ordering.
    */
   public CairoSurface(int width, int height)
   {
     this(0, 0, width, height);
   }
-  
+
   public CairoSurface(int x, int y, int width, int height)
   {
     super(createCairoSampleModel(width, height), null, new Point(x, y));
 
     if(width <= 0 || height <= 0)
       throw new IllegalArgumentException("Image must be at least 1x1 pixels.");
-    
+
     this.width = width;
     this.height = height;
     dataBuffer = new DataBufferInt(width * height);
@@ -169,7 +169,7 @@ public class CairoSurface extends WritableRaster
     if(surfacePointer == 0)
       throw new Error("Could not allocate bitmap.");
   }
-  
+
   /**
    * Create a Cairo Surface that is a subimage of another Cairo Surface
    */
@@ -177,7 +177,7 @@ public class CairoSurface extends WritableRaster
                       Point origin)
   {
     super(sm, parent.dataBuffer, bounds, origin, parent);
-    
+
     this.width = super.width;
     this.height = super.height;
     this.surfacePointer = parent.surfacePointer;
@@ -258,10 +258,10 @@ public class CairoSurface extends WritableRaster
   {
     return new GtkImage(width, height, getFlippedBuffer(surfacePointer));
   }
-  
+
   /**
    * Convenience method to quickly grab the data array backing this Raster.
-   * 
+   *
    * @return The array behind the databuffer.
    */
   public int[] getData()
@@ -271,16 +271,16 @@ public class CairoSurface extends WritableRaster
 
   /**
    * Returns a BufferedImage backed by a Cairo surface.
-   */    
+   */
   public static BufferedImage getBufferedImage(int width, int height)
   {
     return getBufferedImage(new CairoSurface(width, height));
   }
 
   /**
-   * Returns a BufferedImage backed by a Cairo surface, 
+   * Returns a BufferedImage backed by a Cairo surface,
    * created from a GtkImage.
-   */    
+   */
   public static BufferedImage getBufferedImage(GtkImage image)
   {
     return getBufferedImage(new CairoSurface(image));
@@ -288,7 +288,7 @@ public class CairoSurface extends WritableRaster
 
   /**
    * Returns a BufferedImage backed by a Cairo surface.
-   */    
+   */
   public static BufferedImage getBufferedImage(CairoSurface surface)
   {
     return new BufferedImage(cairoColorModel, surface,
@@ -302,7 +302,7 @@ public class CairoSurface extends WritableRaster
   public Graphics2D getGraphics()
   {
     return new CairoSurfaceGraphics(this);
-  } 
+  }
 
   ///// Methods used by CairoSurfaceGraphics /////
   /**
@@ -319,7 +319,7 @@ public class CairoSurface extends WritableRaster
   /**
    * Copy a portion of this surface to another area on the surface.  The given
    * parameters must be within bounds - count on a segfault otherwise.
-   * 
+   *
    * @param x The x coordinate of the area to be copied from.
    * @param y The y coordinate of the area to be copied from.
    * @param width The width of the area to be copied.
@@ -336,7 +336,7 @@ public class CairoSurface extends WritableRaster
   native void copyAreaNative2(long surfacePointer,
                               int x, int y, int width, int height,
                               int dx, int dy, int stride);
-  
+
   /**
    * Creates a SampleModel that matches Cairo's native format
    */
@@ -344,12 +344,12 @@ public class CairoSurface extends WritableRaster
   {
     return new SinglePixelPackedSampleModel(DataBuffer.TYPE_INT, w, h,
                                             new int[]{0x00FF0000, 0x0000FF00,
-                                                      0x000000FF, 0xFF000000});    
+                                                      0x000000FF, 0xFF000000});
   }
-  
+
   /**
    * Returns whether this ColorModel is compatible with Cairo's native types.
-   * 
+   *
    * @param cm The color model to check.
    * @return Whether it is compatible.
    */
@@ -358,10 +358,10 @@ public class CairoSurface extends WritableRaster
     return (cm.equals(cairoCM_pre) || cm.equals(cairoCM_opaque) ||
             cm.equals(cairoColorModel));
   }
-  
+
   /**
    * Returns whether this SampleModel is compatible with Cairo's native types.
-   * 
+   *
    * @param sm The sample model to check.
    * @return Whether it is compatible.
    */
@@ -381,23 +381,23 @@ public class CairoSurface extends WritableRaster
     return createWritableChild(parentX, parentY, width, height,
                                childMinX, childMinY, bandList);
   }
-  
+
   public WritableRaster createCompatibleWritableRaster()
   {
     return new CairoSurface(width, height);
   }
-  
+
   public WritableRaster createCompatibleWritableRaster (int x, int y,
                                                         int w, int h)
   {
     return new CairoSurface(x, y, w, h);
   }
-  
+
   public Raster createTranslatedChild(int childMinX, int childMinY)
   {
     return createWritableTranslatedChild(childMinX, childMinY);
   }
-  
+
   public WritableRaster createWritableChild(int parentX, int parentY,
                                             int w, int h, int childMinX,
                                             int childMinY, int[] bandList)
@@ -405,7 +405,7 @@ public class CairoSurface extends WritableRaster
     if (parentX < minX || parentX + w > minX + width
         || parentY < minY || parentY + h > minY + height)
       throw new RasterFormatException("Child raster extends beyond parent");
-    
+
     SampleModel sm = (bandList == null) ?
       sampleModel :
       sampleModel.createSubsetSampleModel(bandList);
@@ -415,12 +415,12 @@ public class CairoSurface extends WritableRaster
                             new Point(sampleModelTranslateX + childMinX - parentX,
                                       sampleModelTranslateY + childMinY - parentY));
   }
-  
+
   public WritableRaster createWritableTranslatedChild(int x, int y)
   {
     int tcx = sampleModelTranslateX - minX + x;
     int tcy = sampleModelTranslateY - minY + y;
-    
+
     return new CairoSurface(sampleModel, this,
                       new Rectangle(x, y, width, height),
                       new Point(tcx, tcy));

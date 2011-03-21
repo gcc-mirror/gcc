@@ -50,7 +50,7 @@ import java.io.IOException;
 /**
  * Notification from the VM that an exception has occurred along with where it
  * occurred, and if and where it was caught.
- * 
+ *
  * @author Kyle Galloway (kgallowa@redhat.com)
  */
 public class ExceptionEvent
@@ -58,7 +58,7 @@ public class ExceptionEvent
 {
   //object instance
   private Object _instance;
-  
+
   // the exception thrown
   private Throwable _exception;
 
@@ -67,17 +67,17 @@ public class ExceptionEvent
 
   // the location where the exception was thrown
   private Location _location;
-  
+
   //the location where the exception was caught
   private Location _catchLocation;
-  
+
   //the class where the exeption was thrown
   private Class _klass;
 
   /**
    * Constructs a new <code>ExceptionEvent</code> where the exception was
    * caught.
-   * 
+   *
    * @param exception the throwable object that generated the event
    * @param thread the thread where the exception occurred
    * @param location the location where the exception was thrown
@@ -99,7 +99,7 @@ public class ExceptionEvent
   /**
    * Returns a specific filtering parameter for this event. Valid types are
    * thread, location, and catchLocation.
-   * 
+   *
    * @param type the type of parameter desired
    * @returns the desired parameter or null
    */
@@ -123,11 +123,11 @@ public class ExceptionEvent
 
     return null;
   }
-  
+
   /**
    * Sets the catchLocation, used for exceptions that are caught in different
    * stack frames from where they are thrown.
-   * 
+   *
    * @param catchLoc the location of the catch
    */
   public void setCatchLoc(Location catchLoc)
@@ -137,11 +137,11 @@ public class ExceptionEvent
 
   /**
    * Writes the event to the given stream
-   * 
+   *
    * @param outStream the output stream to write the event to
    * @throws IOException
    */
-  protected void _writeData(DataOutputStream outStream) 
+  protected void _writeData(DataOutputStream outStream)
     throws IOException
   {
     VMIdManager idm = VMIdManager.getDefault();

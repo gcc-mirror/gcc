@@ -51,7 +51,7 @@ import java.util.prefs.Preferences;
 /**
  * Offers a common implementation for the Desktop peers, that enables
  * access to default system application within java processes.
- * 
+ *
  * @author Mario Torre <neugens@limasoftware.net>
  */
 public class ClasspathDesktopPeer
@@ -59,39 +59,39 @@ public class ClasspathDesktopPeer
 {
   /** This is the fallback browser, if no desktop was detected. */
   protected static final String _DEFAULT_BROWSER = "firefox";
-  
+
   /** gnu.java.awt.peer.Desktop.html.command */
   protected static final String _BROWSE = "html";
-  
+
   /** gnu.java.awt.peer.Desktop.mail.command */
   protected static final String _MAIL = "mail";
-  
+
   /** gnu.java.awt.peer.Desktop.edit.command */
   protected static final String _EDIT = "edit";
-  
+
   /** gnu.java.awt.peer.Desktop.print.command */
   protected static final String _PRINT = "print";
-  
+
   /** gnu.java.awt.peer.Desktop.open.command */
   protected static final String _OPEN = "open";
-  
+
   /** */
   protected static final KDEDesktopPeer kde = new KDEDesktopPeer();
-  
+
   /** */
   protected static final GnomeDesktopPeer gnome = new GnomeDesktopPeer();
-  
+
   /** */
   protected static final ClasspathDesktopPeer classpath =
-    new ClasspathDesktopPeer(); 
-  
+    new ClasspathDesktopPeer();
+
   /**
    * Preference subsystem. Packagers and users can override the default
    * behaviour of this class via preferences and system properties.
    */
   protected Preferences prefs =
     Preferences.userNodeForPackage(ClasspathDesktopPeer.class).node("Desktop");
-  
+
   /**
    * @param target
    */
@@ -103,131 +103,131 @@ public class ClasspathDesktopPeer
   public boolean isSupported(Action action)
   {
     String check = null;
-    
+
     switch(action)
     {
       case BROWSE:
         check = _BROWSE;
         break;
-        
+
       case MAIL:
         check = _MAIL;
         break;
-        
+
       case EDIT:
         check = _EDIT;
         break;
-        
+
       case PRINT:
         check = _PRINT;
         break;
-      
+
       case OPEN: default:
         check = _OPEN;
         break;
     }
-    
+
     return this.supportCommand(check);
   }
 
   public void browse(URI url) throws IOException
   {
     checkPermissions();
-    
+
     String browser = getCommand(_BROWSE);
-    
+
     if (browser == null)
       throw new UnsupportedOperationException();
-    
+
     browser = browser + " " + url.toString();
-    
+
     Runtime.getRuntime().exec(browser);
   }
 
   public void edit(File file) throws IOException
   {
     checkPermissions(file, false);
-    
+
     String edit = getCommand(_EDIT);
-    
+
     if (edit == null)
       throw new UnsupportedOperationException();
-    
-    edit = edit + " " + file.getAbsolutePath(); 
+
+    edit = edit + " " + file.getAbsolutePath();
     Runtime.getRuntime().exec(edit);
   }
 
   public void mail(URI mailtoURL) throws IOException
   {
     checkPermissions();
-    
+
     String scheme = mailtoURL.getScheme();
     if (scheme == null || !scheme.equalsIgnoreCase("mailto"))
       throw new IllegalArgumentException("URI Scheme not of type mailto");
-    
+
     String mail = getCommand(_MAIL);
-    
+
     if (mail == null)
       throw new UnsupportedOperationException();
-    
+
     mail = mail + " " + mailtoURL.toString();
-    
+
     Runtime.getRuntime().exec(mail);
   }
 
   public void mail() throws IOException
   {
     checkPermissions();
-    
+
     String mail = getCommand(_MAIL);
-    
+
     if (mail == null)
       throw new UnsupportedOperationException();
-    
+
     Runtime.getRuntime().exec(mail);
   }
-  
+
   public void open(File file) throws IOException
   {
     checkPermissions(file, true);
-    
+
     String open = getCommand(_OPEN);
-    
+
     if (open == null)
       throw new UnsupportedOperationException();
-    
-    open = open + " " + file.getAbsolutePath(); 
+
+    open = open + " " + file.getAbsolutePath();
     Runtime.getRuntime().exec(open);
   }
 
   public void print(File file) throws IOException
   {
     checkPrintPermissions(file);
-    
+
     String print = getCommand(_PRINT);
-    
+
     if (print == null)
       throw new UnsupportedOperationException();
-    
-    print = print + " " + file.getAbsolutePath(); 
+
+    print = print + " " + file.getAbsolutePath();
     Runtime.getRuntime().exec(print);
   }
-  
+
   protected String getCommand(String action)
   {
     // check if a system property exist
     String command =
       System.getProperty("gnu.java.awt.peer.Desktop." + action + ".command");
-    
+
     // otherwise, get it from preferences, if any
     if (command == null)
       {
         command = prefs.node(action).get("command", null);
       }
-    
+
     return command;
   }
-  
+
   /**
    * Note: Checks for AWTPermission("showWindowWithoutWarningBanner") only.
    */
@@ -238,22 +238,22 @@ public class ClasspathDesktopPeer
         sm.checkPermission(new AWTPermission("showWindowWithoutWarningBanner"));
     }
   }
-  
+
   /**
-   * Calls checkPermissions() and checks for SecurityManager.checkRead() 
-   * and, if readOnly is false, for SecurityManager.checkWrite() 
+   * Calls checkPermissions() and checks for SecurityManager.checkRead()
+   * and, if readOnly is false, for SecurityManager.checkWrite()
    */
   protected void checkPermissions(File file, boolean readOnly)
   {
     checkPermissions();
-    
+
     SecurityManager sm = System.getSecurityManager();
     if (sm != null) {
         sm.checkRead(file.toString());
         if (!readOnly) sm.checkWrite(file.toString());
     }
   }
-  
+
   /**
    * Calls checkPermissions(file, true) and checks for
    * SecurityManager.checkPrintJobAccess()
@@ -261,13 +261,13 @@ public class ClasspathDesktopPeer
   protected void checkPrintPermissions(File file)
   {
     checkPermissions(file, true);
-    
+
     SecurityManager sm = System.getSecurityManager();
     if (sm != null) {
       sm.checkPrintJobAccess();
-    }  
+    }
   }
-  
+
   /**
    * @param check
    * @return
@@ -276,7 +276,7 @@ public class ClasspathDesktopPeer
   {
     return ((this.getCommand(check) != null) ?  true : false);
   }
-  
+
   /**
    * @return
    */
@@ -285,7 +285,7 @@ public class ClasspathDesktopPeer
     //  check if we are under Gnome or KDE or anything else
     String desktopSession = System.getenv("GNOME_DESKTOP_SESSION_ID");
     if (desktopSession == null)
-      { 
+      {
         desktopSession = System.getenv("KDE_FULL_SESSION");
         if (desktopSession != null)
           return kde;
@@ -294,7 +294,7 @@ public class ClasspathDesktopPeer
       {
         return gnome;
       }
-    
+
     // revert to this class for default values
     return classpath;
   }

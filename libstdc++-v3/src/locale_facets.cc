@@ -24,7 +24,9 @@
 
 #include <locale>
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // Definitions for static const data members of time_base.
   template<> 
@@ -112,4 +114,5 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     return __test;
   }
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace

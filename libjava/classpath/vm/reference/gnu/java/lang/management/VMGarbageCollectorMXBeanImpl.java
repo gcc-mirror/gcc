@@ -70,7 +70,7 @@ final class VMGarbageCollectorMXBeanImpl
    * Note that the accumulated time may not change, even when the
    * collection count increases, if the time taken is sufficiently
    * short; this depends on the resolution of the timer used.
-   * 
+   *
    * @param name the name of the garbage collector.
    * @return the accumulated number of milliseconds spent collecting,
    *         or -1 if this is undefined.

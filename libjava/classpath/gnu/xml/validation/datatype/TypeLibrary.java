@@ -1,4 +1,4 @@
-/* TypeLibrary.java -- 
+/* TypeLibrary.java --
    Copyright (C) 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -52,7 +52,7 @@ import org.relaxng.datatype.DatatypeLibrary;
 public class TypeLibrary
   implements DatatypeLibrary
 {
-  
+
   public static final SimpleType ANY_SIMPLE_TYPE = new AnySimpleType();
 
   public static final SimpleType STRING = new StringType();
@@ -169,5 +169,5 @@ public class TypeLibrary
       throw new DatatypeException("Unknown type name: " + typeLocalName);
     return type;
   }
-  
+
 }

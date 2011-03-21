@@ -1,4 +1,4 @@
-/* SRPPrivateKey.java -- 
+/* SRPPrivateKey.java --
    Copyright (C) 2003, 2006 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -71,7 +71,7 @@ public class SRPPrivateKey
 
   /**
    * Public constructor for use from outside this package.
-   * 
+   *
    * @param N the public shared modulus.
    * @param g the generator.
    * @param x the private exponent of the ephemeral key.
@@ -83,7 +83,7 @@ public class SRPPrivateKey
 
   /**
    * Public constructor for use from outside this package.
-   * 
+   *
    * @param N the public shared modulus.
    * @param g the generator.
    * @param x the private exponent of the ephemeral key.
@@ -100,7 +100,7 @@ public class SRPPrivateKey
 
   /**
    * Default constructor. Assumes N and g are already validated.
-   * 
+   *
    * @param params an array of either 3 or 4 values representing N, g, and
    *          either v and X for the server, or just X for the client. Those
    *          values represent the following:
@@ -133,7 +133,7 @@ public class SRPPrivateKey
    * method of an SRP keypair codec object (an instance implementing
    * {@link IKeyPairCodec} for DSS keys, and re-constructs an instance of this
    * object.
-   * 
+   *
    * @param k the contents of a previously encoded instance of this object.
    * @throws ArrayIndexOutOfBoundsException if there is not enough bytes, in
    *           <code>k</code>, to represent a valid encoding of an instance
@@ -160,7 +160,7 @@ public class SRPPrivateKey
 
   /**
    * Returns the private exponent of the key as a {@link BigInteger}.
-   * 
+   *
    * @return the private exponent of the key as a {@link BigInteger}.
    */
   public BigInteger getX()
@@ -170,7 +170,7 @@ public class SRPPrivateKey
 
   /**
    * Returns the user's verifier as a {@link BigInteger}.
-   * 
+   *
    * @return the user's verifier as a {@link BigInteger} if this is an SRP
    *         private key of a Host, or <code>null</code> if this is a private
    *         SRP key for a User.
@@ -183,7 +183,7 @@ public class SRPPrivateKey
   /**
    * Returns the encoded form of this private key according to the designated
    * format.
-   * 
+   *
    * @param format the desired format identifier of the resulting encoding.
    * @return the byte sequence encoding this key according to the designated
    *         format.
@@ -207,7 +207,7 @@ public class SRPPrivateKey
    * Returns <code>true</code> if the designated object is an instance of
    * <code>SRPPrivateKey</code> and has the same SRP parameter values as this
    * one.
-   * 
+   *
    * @param obj the other non-null SRP key to compare to.
    * @return <code>true</code> if the designated object is of the same type
    *         and value as this one.

@@ -38,7 +38,8 @@
 
 @deftypefn Supplement {long int} random (void)
 @deftypefnx Supplement void srandom (unsigned int @var{seed})
-@deftypefnx Supplement void* initstate (unsigned int @var{seed}, void *@var{arg_state}, unsigned long @var{n})
+@deftypefnx Supplement void* initstate (unsigned int @var{seed}, @
+  void *@var{arg_state}, unsigned long @var{n})
 @deftypefnx Supplement void* setstate (void *@var{arg_state})
 
 Random number functions.  @code{random} returns a random number in the

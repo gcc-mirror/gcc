@@ -43,86 +43,86 @@ import java.io.File;
 import javax.swing.Icon;
 
 /**
- * An abstract class that provides presentation information about files and 
+ * An abstract class that provides presentation information about files and
  * directories.  .
- * 
+ *
  * @author  Andrew Selkirk
  */
-public abstract class FileView 
+public abstract class FileView
 {
 
   /**
    * Creates a new <code>FileView</code> instance.
    */
-  public FileView() 
+  public FileView()
   {
     // Nothing to do here.
-  } 
+  }
 
   /**
    * Returns the name for the specified file.  This method always returns
    * <code>null</code> and should be overridden by subclasses.
-   * 
+   *
    * @param file  the file.
-   * 
+   *
    * @return Always <code>null</code>.
    */
-  public String getName(File file) 
+  public String getName(File file)
   {
     return null;
-  } 
+  }
 
   /**
    * Returns a description for the specified file.  This method always returns
    * <code>null</code> and should be overridden by subclasses.
-   * 
+   *
    * @param file  the file.
-   * 
+   *
    * @return Always <code>null</code>.
    */
-  public String getDescription(File file) 
+  public String getDescription(File file)
   {
     return null;
-  } 
+  }
 
   /**
-   * Returns a description for the type of the specified file.  This method 
+   * Returns a description for the type of the specified file.  This method
    * always returns <code>null</code> and should be overridden by subclasses.
-   * 
+   *
    * @param file  the file.
-   * 
+   *
    * @return Always <code>null</code>.
    */
-  public String getTypeDescription(File file) 
+  public String getTypeDescription(File file)
   {
     return null;
-  } 
+  }
 
   /**
-   * Returns an {@link Icon} to represent the specified file.  This method 
+   * Returns an {@link Icon} to represent the specified file.  This method
    * always returns <code>null</code> and should be overridden by subclasses.
-   * 
+   *
    * @param file  the file.
-   * 
+   *
    * @return Always <code>null</code>.
    */
-  public Icon getIcon(File file) 
+  public Icon getIcon(File file)
   {
     return null;
-  } 
+  }
 
   /**
    * Returns {@link Boolean#TRUE} if the given directory is traversable, and
-   * {@link Boolean#FALSE} if it is not.  This method always returns 
+   * {@link Boolean#FALSE} if it is not.  This method always returns
    * <code>null</code> and should be overridden by subclasses.
-   * 
+   *
    * @param directory  the directory.
-   * 
+   *
    * @return Always <code>null</code>.
    */
-  public Boolean isTraversable(File directory) 
+  public Boolean isTraversable(File directory)
   {
     return null;
-  } 
+  }
 
 }

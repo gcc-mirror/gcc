@@ -299,10 +299,10 @@
 ; ffarith	Fast floating point arithmetic (2 cycle)
 ; float_em	a floating point arithmetic operation that is normally emulated
 ;		even on a machine with an fpa.
-; f_load	a floating point load from memory
-; f_store	a floating point store to memory
-; f_load[sd]	single/double load from memory
-; f_store[sd]	single/double store to memory
+; f_fpa_load	a floating point load from memory. Only for the FPA.
+; f_fpa_store	a floating point store to memory. Only for the FPA.
+; f_load[sd]	A single/double load from memory. Used for VFP unit.
+; f_store[sd]	A single/double store to memory. Used for VFP unit.
 ; f_flag	a transfer of co-processor flags to the CPSR
 ; f_mem_r	a transfer of a floating point register to a real reg via mem
 ; r_mem_f	the reverse of f_mem_r
@@ -326,7 +326,7 @@
 ;
 
 (define_attr "type"
-	"alu,alu_shift,alu_shift_reg,mult,block,float,fdivx,fdivd,fdivs,fmul,fmuls,fmuld,fmacs,fmacd,ffmul,farith,ffarith,f_flag,float_em,f_load,f_store,f_loads,f_loadd,f_stores,f_stored,f_mem_r,r_mem_f,f_2_r,r_2_f,f_cvt,branch,call,load_byte,load1,load2,load3,load4,store1,store2,store3,store4,mav_farith,mav_dmult,fconsts,fconstd,fadds,faddd,ffariths,ffarithd,fcmps,fcmpd,fcpys"
+	"alu,alu_shift,alu_shift_reg,mult,block,float,fdivx,fdivd,fdivs,fmul,fmuls,fmuld,fmacs,fmacd,ffmul,farith,ffarith,f_flag,float_em,f_fpa_load,f_fpa_store,f_loads,f_loadd,f_stores,f_stored,f_mem_r,r_mem_f,f_2_r,r_2_f,f_cvt,branch,call,load_byte,load1,load2,load3,load4,store1,store2,store3,store4,mav_farith,mav_dmult,fconsts,fconstd,fadds,faddd,ffariths,ffarithd,fcmps,fcmpd,fcpys"
 	(if_then_else 
 	 (eq_attr "insn" "smulxy,smlaxy,smlalxy,smulwy,smlawx,mul,muls,mla,mlas,umull,umulls,umlal,umlals,smull,smulls,smlal,smlals")
 	 (const_string "mult")
@@ -450,7 +450,7 @@
 ; to stall the processor.  Used with model_wbuf above.
 (define_attr "write_conflict" "no,yes"
   (if_then_else (eq_attr "type"
-		 "block,float_em,f_load,f_store,f_mem_r,r_mem_f,call,load1")
+		 "block,float_em,f_fpa_load,f_fpa_store,f_mem_r,r_mem_f,call,load1")
 		(const_string "yes")
 		(const_string "no")))
 
@@ -5790,12 +5790,11 @@
 ;; Pattern to recognize insn generated default case above
 (define_insn "*movhi_insn_arch4"
   [(set (match_operand:HI 0 "nonimmediate_operand" "=r,r,m,r")
-	(match_operand:HI 1 "general_operand"      "rI,K,r,m"))]
+	(match_operand:HI 1 "general_operand"      "rI,K,r,mi"))]
   "TARGET_ARM
    && arm_arch4
-   && (GET_CODE (operands[1]) != CONST_INT
-       || const_ok_for_arm (INTVAL (operands[1]))
-       || const_ok_for_arm (~INTVAL (operands[1])))"
+   && (register_operand (operands[0], HImode)
+       || register_operand (operands[1], HImode))"
   "@
    mov%?\\t%0, %1\\t%@ movhi
    mvn%?\\t%0, #%B1\\t%@ movhi
@@ -10285,7 +10284,7 @@
     output_asm_insn (pattern, operands);
     return \"\";
   }"
-  [(set_attr "type" "f_store")]
+  [(set_attr "type" "f_fpa_store")]
 )
 
 ;; Special patterns for dealing with the constant pool
@@ -10581,13 +10580,15 @@
   [(set_attr "conds" "clob")]
 )
 
+;; We only care about the lower 16 bits of the constant 
+;; being inserted into the upper 16 bits of the register.
 (define_insn "*arm_movtas_ze" 
   [(set (zero_extract:SI (match_operand:SI 0 "s_register_operand" "+r")
                    (const_int 16)
                    (const_int 16))
         (match_operand:SI 1 "const_int_operand" ""))]
   "arm_arch_thumb2"
-  "movt%?\t%0, %c1"
+  "movt%?\t%0, %L1"
  [(set_attr "predicable" "yes")
    (set_attr "length" "4")]
 )

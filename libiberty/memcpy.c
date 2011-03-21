@@ -3,7 +3,8 @@
 
 /*
 
-@deftypefn Supplemental void* memcpy (void *@var{out}, const void *@var{in}, size_t @var{length})
+@deftypefn Supplemental void* memcpy (void *@var{out}, const void *@var{in}, @
+  size_t @var{length})
 
 Copies @var{length} bytes from memory region @var{in} to region
 @var{out}.  Returns a pointer to @var{out}.

@@ -278,7 +278,7 @@ public class InputMethodEvent extends AWTEvent
         while (--j >= 0)
           s.append(text.setIndex(i++));
         s.append("\", ").append(committedCharacterCount)
-          .append(" characters committed, caret: ");          
+          .append(" characters committed, caret: ");
       }
     s.append(caret == null ? (Object) "no caret" : caret).append(", ")
       .append(visiblePosition == null ? (Object) "no visible position"

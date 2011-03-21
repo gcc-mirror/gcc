@@ -227,7 +227,7 @@ public class Random implements Serializable
    * an int value whose 32 bits are independent chosen random bits
    * (0 and 1 are equally likely).  The implementation for
    * java.util.Random is:
-   * 
+   *
 <pre>public int nextInt()
 {
   return next(32);
@@ -246,7 +246,7 @@ public class Random implements Serializable
    * each value has the same likelihodd (1/<code>n</code>).
    * (0 and 1 are equally likely).  The implementation for
    * java.util.Random is:
-   * 
+   *
 <pre>
 public int nextInt(int n)
 {
@@ -266,7 +266,7 @@ public int nextInt(int n)
 
   return val;
 }</pre>
-   *   
+   *
    * <p>This algorithm would return every value with exactly the same
    * probability, if the next()-method would be a perfect random number
    * generator.
@@ -323,7 +323,7 @@ public int nextInt(int n)
   /**
    * Generates the next pseudorandom boolean.  True and false have
    * the same probability.  The implementation is:
-   * 
+   *
 <pre>public boolean nextBoolean()
 {
   return next(1) != 0;
@@ -341,7 +341,7 @@ public int nextInt(int n)
    * Generates the next pseudorandom float uniformly distributed
    * between 0.0f (inclusive) and 1.0f (exclusive).  The
    * implementation is as follows.
-   * 
+   *
 <pre>public float nextFloat()
 {
   return next(24) / ((float)(1 &lt;&lt; 24));
@@ -375,7 +375,7 @@ public int nextInt(int n)
    * Generates the next pseudorandom, Gaussian (normally) distributed
    * double value, with mean 0.0 and standard deviation 1.0.
    * The algorithm is as follows.
-   * 
+   *
 <pre>public synchronized double nextGaussian()
 {
   if (haveNextNextGaussian)

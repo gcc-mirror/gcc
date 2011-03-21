@@ -1,4 +1,4 @@
-/* EventFilter.java -- 
+/* EventFilter.java --
    Copyright (C) 1999,2000,2001 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -89,35 +89,35 @@ import org.xml.sax.helpers.XMLFilterImpl;
  * {@link org.xml.sax.helpers.XMLFilterImpl XMLFilterImpl} class.
  * Key differences include: <ul>
  *
- *	<li> This fully separates consumer and producer roles:  it
- *	does not implement the producer side <em>XMLReader</em> or
- *	<em>EntityResolver</em> interfaces, so it can only be used
- *	in "push" mode (it has no <em>parse()</em> methods).
+ *      <li> This fully separates consumer and producer roles:  it
+ *      does not implement the producer side <em>XMLReader</em> or
+ *      <em>EntityResolver</em> interfaces, so it can only be used
+ *      in "push" mode (it has no <em>parse()</em> methods).
  *
- *	<li> "Extension" handlers are fully supported, enabling a
- *	richer set of application requirements.
- *	And it implements {@link EventConsumer}, which groups related
- *	consumer methods together, rather than leaving them separated.
+ *      <li> "Extension" handlers are fully supported, enabling a
+ *      richer set of application requirements.
+ *      And it implements {@link EventConsumer}, which groups related
+ *      consumer methods together, rather than leaving them separated.
  *
- *	<li> The chaining which is visible is "downstream" to the next
- *	consumer, not "upstream" to the preceding producer.
- *	It supports "fan-in", where
- *	a consumer can be fed by several producers.  (For "fan-out",
- *	see the {@link TeeConsumer} class.)
+ *      <li> The chaining which is visible is "downstream" to the next
+ *      consumer, not "upstream" to the preceding producer.
+ *      It supports "fan-in", where
+ *      a consumer can be fed by several producers.  (For "fan-out",
+ *      see the {@link TeeConsumer} class.)
  *
- *	<li> Event chaining is set up differently.  It is intended to
- *	work "upstream" from terminus towards producer, during filter
- *	construction, as described above.
- *	This is part of an early binding model:
- *	events don't need to pass through stages which ignore them.
+ *      <li> Event chaining is set up differently.  It is intended to
+ *      work "upstream" from terminus towards producer, during filter
+ *      construction, as described above.
+ *      This is part of an early binding model:
+ *      events don't need to pass through stages which ignore them.
  *
- *	<li> ErrorHandler support is separated, on the grounds that
- *	pipeline stages need to share the same error handling policy.
- *	For the same reason, error handler setup goes "downstream":
- *	when error handlers get set, they are passed to subsequent
- *	consumers.
+ *      <li> ErrorHandler support is separated, on the grounds that
+ *      pipeline stages need to share the same error handling policy.
+ *      For the same reason, error handler setup goes "downstream":
+ *      when error handlers get set, they are passed to subsequent
+ *      consumers.
  *
- *	</ul>
+ *      </ul>
  *
  * <p> The {@link #chainTo chainTo()} convenience routine supports chaining to
  * an XMLFilterImpl, in its role as a limited functionality event
@@ -137,34 +137,34 @@ import org.xml.sax.helpers.XMLFilterImpl;
  */
 public class EventFilter
     implements EventConsumer, ContentHandler, DTDHandler,
-	    LexicalHandler, DeclHandler
+            LexicalHandler, DeclHandler
 {
     // SAX handlers
-    private ContentHandler		docHandler, docNext;
-    private DTDHandler			dtdHandler, dtdNext;
-    private LexicalHandler		lexHandler, lexNext;
-    private DeclHandler			declHandler, declNext;
+    private ContentHandler              docHandler, docNext;
+    private DTDHandler                  dtdHandler, dtdNext;
+    private LexicalHandler              lexHandler, lexNext;
+    private DeclHandler                 declHandler, declNext;
     // and ideally, one more for the stuff SAX2 doesn't show
 
-    private Locator			locator;
-    private EventConsumer		next;
-    private ErrorHandler		errHandler;
+    private Locator                     locator;
+    private EventConsumer               next;
+    private ErrorHandler                errHandler;
 
-    
+
     /** SAX2 URI prefix for standard feature flags. */
-    public static final String		FEATURE_URI
-	= "http://xml.org/sax/features/";
+    public static final String          FEATURE_URI
+        = "http://xml.org/sax/features/";
     /** SAX2 URI prefix for standard properties (mostly for handlers). */
-    public static final String		PROPERTY_URI
-	= "http://xml.org/sax/properties/";
+    public static final String          PROPERTY_URI
+        = "http://xml.org/sax/properties/";
 
     /** SAX2 property identifier for {@link DeclHandler} events */
-    public static final String		DECL_HANDLER
-	= PROPERTY_URI + "declaration-handler";
+    public static final String          DECL_HANDLER
+        = PROPERTY_URI + "declaration-handler";
     /** SAX2 property identifier for {@link LexicalHandler} events */
-    public static final String		LEXICAL_HANDLER
-	= PROPERTY_URI + "lexical-handler";
-    
+    public static final String          LEXICAL_HANDLER
+        = PROPERTY_URI + "lexical-handler";
+
     //
     // These class objects will be null if the relevant class isn't linked.
     // Small configurations (pJava and some kinds of embedded systems) need
@@ -176,11 +176,11 @@ public class EventFilter
     // that's associated with "this" class loader.  But that wouldn't be true
     // for classes in another package.
     //
-    private static boolean		loaded;
-    private static Class		nsClass;
-    private static Class		validClass;
-    private static Class		wfClass;
-    private static Class		xincClass;
+    private static boolean              loaded;
+    private static Class                nsClass;
+    private static Class                validClass;
+    private static Class                wfClass;
+    private static Class                xincClass;
 
     static ClassLoader getClassLoader ()
     {
@@ -206,25 +206,25 @@ public class EventFilter
 
     static Class loadClass (ClassLoader classLoader, String className)
     {
-	try {
-	    if (classLoader == null)
-		return Class.forName(className);
-	    else
-		return classLoader.loadClass(className);
-	} catch (Exception e) {
-	    return null;
-	}
+        try {
+            if (classLoader == null)
+                return Class.forName(className);
+            else
+                return classLoader.loadClass(className);
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     static private void loadClasses ()
     {
-	ClassLoader	loader = getClassLoader ();
+        ClassLoader     loader = getClassLoader ();
 
-	nsClass = loadClass (loader, "gnu.xml.pipeline.NSFilter");
-	validClass = loadClass (loader, "gnu.xml.pipeline.ValidationConsumer");
-	wfClass = loadClass (loader, "gnu.xml.pipeline.WellFormednessFilter");
-	xincClass = loadClass (loader, "gnu.xml.pipeline.XIncludeFilter");
-	loaded = true;
+        nsClass = loadClass (loader, "gnu.xml.pipeline.NSFilter");
+        validClass = loadClass (loader, "gnu.xml.pipeline.ValidationConsumer");
+        wfClass = loadClass (loader, "gnu.xml.pipeline.WellFormednessFilter");
+        xincClass = loadClass (loader, "gnu.xml.pipeline.XIncludeFilter");
+        loaded = true;
     }
 
 
@@ -246,146 +246,146 @@ public class EventFilter
      * of the XMLReader implementation in use; for example, it permits
      * validating output of a {@link gnu.xml.util.DomParser}. <ul>
      *
-     *	<li> {@link NSFilter} will be removed if the producer can be
-     *	told not to discard namespace data, using the "namespace-prefixes"
-     *	feature flag.
+     *  <li> {@link NSFilter} will be removed if the producer can be
+     *  told not to discard namespace data, using the "namespace-prefixes"
+     *  feature flag.
      *
-     *	<li> {@link ValidationConsumer} will be removed if the producer
-     *	can be told to validate, using the "validation" feature flag.
+     *  <li> {@link ValidationConsumer} will be removed if the producer
+     *  can be told to validate, using the "validation" feature flag.
      *
-     *	<li> {@link WellFormednessFilter} is always removed, on the
-     *	grounds that no XMLReader is permitted to producee malformed
-     *	event streams and this would just be processing overhead.
+     *  <li> {@link WellFormednessFilter} is always removed, on the
+     *  grounds that no XMLReader is permitted to producee malformed
+     *  event streams and this would just be processing overhead.
      *
-     *	<li> {@link XIncludeFilter} stops the special handling, except
-     *	that it's told about the "namespace-prefixes" feature of the
-     *	event producer so that the event stream is internally consistent.
+     *  <li> {@link XIncludeFilter} stops the special handling, except
+     *  that it's told about the "namespace-prefixes" feature of the
+     *  event producer so that the event stream is internally consistent.
      *
-     *	<li> The first consumer which is not one of those classes stops
-     *	such special handling.  This means that if you want to force
-     *	one of those filters to be used, you could just precede it with
-     *	an instance of {@link EventFilter} configured as a pass-through.
-     *	You might need to do that if you are using an {@link NSFilter}
-     *	subclass to fix names found in attributes or character data.
+     *  <li> The first consumer which is not one of those classes stops
+     *  such special handling.  This means that if you want to force
+     *  one of those filters to be used, you could just precede it with
+     *  an instance of {@link EventFilter} configured as a pass-through.
+     *  You might need to do that if you are using an {@link NSFilter}
+     *  subclass to fix names found in attributes or character data.
      *
-     *	</ul>
+     *  </ul>
      *
      * <p> Other than that, this method works with any kind of event consumer,
      * not just event filters.  Note that in all cases, the standard handlers
      * are assigned; any previous handler assignments for the handler will
      * be overridden.
      *
-     * @param producer will deliver events to the specified consumer 
+     * @param producer will deliver events to the specified consumer
      * @param consumer pipeline supplying event handlers to be associated
-     *	with the producer (may not be null)
+     *  with the producer (may not be null)
      */
     public static void bind (XMLReader producer, EventConsumer consumer)
     {
-	Class	klass = null;
-	boolean	prefixes;
+        Class   klass = null;
+        boolean prefixes;
 
-	if (!loaded)
-	    loadClasses ();
+        if (!loaded)
+            loadClasses ();
 
-	// DOM building, printing, layered validation, and other
-	// things don't work well when prefix info is discarded.
-	// Include it by default, whenever possible.
-	try {
-	    producer.setFeature (FEATURE_URI + "namespace-prefixes",
-		true);
-	    prefixes = true;
-	} catch (SAXException e) {
-	    prefixes = false;
-	}
+        // DOM building, printing, layered validation, and other
+        // things don't work well when prefix info is discarded.
+        // Include it by default, whenever possible.
+        try {
+            producer.setFeature (FEATURE_URI + "namespace-prefixes",
+                true);
+            prefixes = true;
+        } catch (SAXException e) {
+            prefixes = false;
+        }
 
-	// NOTE:  This loop doesn't use "instanceof", since that
-	// would prevent compiling/linking without those classes
-	// being present.
-	while (consumer != null) {
-	    klass = consumer.getClass ();
+        // NOTE:  This loop doesn't use "instanceof", since that
+        // would prevent compiling/linking without those classes
+        // being present.
+        while (consumer != null) {
+            klass = consumer.getClass ();
 
-	    // we might have already changed this problematic SAX2 default.
-	    if (nsClass != null && nsClass.isAssignableFrom (klass)) {
-		if (!prefixes)
-		    break;
-		consumer = ((EventFilter)consumer).getNext ();
+            // we might have already changed this problematic SAX2 default.
+            if (nsClass != null && nsClass.isAssignableFrom (klass)) {
+                if (!prefixes)
+                    break;
+                consumer = ((EventFilter)consumer).getNext ();
 
-	    // the parser _might_ do DTD validation by default ...
-	    // if not, maybe we can change this setting.
-	    } else if (validClass != null
-		    && validClass.isAssignableFrom (klass)) {
-		try {
-		    producer.setFeature (FEATURE_URI + "validation",
-			true);
-		    consumer = ((ValidationConsumer)consumer).getNext ();
-		} catch (SAXException e) {
-		    break;
-		}
+            // the parser _might_ do DTD validation by default ...
+            // if not, maybe we can change this setting.
+            } else if (validClass != null
+                    && validClass.isAssignableFrom (klass)) {
+                try {
+                    producer.setFeature (FEATURE_URI + "validation",
+                        true);
+                    consumer = ((ValidationConsumer)consumer).getNext ();
+                } catch (SAXException e) {
+                    break;
+                }
 
-	    // parsers are required not to have such bugs
-	    } else if (wfClass != null && wfClass.isAssignableFrom (klass)) {
-		consumer = ((WellFormednessFilter)consumer).getNext ();
+            // parsers are required not to have such bugs
+            } else if (wfClass != null && wfClass.isAssignableFrom (klass)) {
+                consumer = ((WellFormednessFilter)consumer).getNext ();
 
-	    // stop on the first pipeline stage we can't remove
-	    } else
-		break;
-	    
-	    if (consumer == null)
-		klass = null;
-	}
+            // stop on the first pipeline stage we can't remove
+            } else
+                break;
 
-	// the actual setting here doesn't matter as much
-	// as that producer and consumer agree
-	if (xincClass != null && klass != null
-		&& xincClass.isAssignableFrom (klass))
-	    ((XIncludeFilter)consumer).setSavingPrefixes (prefixes);
+            if (consumer == null)
+                klass = null;
+        }
 
-	// Some SAX parsers can't handle null handlers -- bleech
-	DefaultHandler2	h = new DefaultHandler2 ();
+        // the actual setting here doesn't matter as much
+        // as that producer and consumer agree
+        if (xincClass != null && klass != null
+                && xincClass.isAssignableFrom (klass))
+            ((XIncludeFilter)consumer).setSavingPrefixes (prefixes);
 
-	if (consumer != null && consumer.getContentHandler () != null)
-	    producer.setContentHandler (consumer.getContentHandler ());
-	else
-	    producer.setContentHandler (h);
-	if (consumer != null && consumer.getDTDHandler () != null)
-	    producer.setDTDHandler (consumer.getDTDHandler ());
-	else
-	    producer.setDTDHandler (h);
+        // Some SAX parsers can't handle null handlers -- bleech
+        DefaultHandler2 h = new DefaultHandler2 ();
 
-	try {
-	    Object	dh;
-	    
-	    if (consumer != null)
-		dh = consumer.getProperty (DECL_HANDLER);
-	    else
-		dh = null;
-	    if (dh == null)
-		dh = h;
-	    producer.setProperty (DECL_HANDLER, dh);
-	} catch (Exception e) { /* ignore */ }
-	try {
-	    Object	lh;
-	    
-	    if (consumer != null)
-		lh = consumer.getProperty (LEXICAL_HANDLER);
-	    else
-		lh = null;
-	    if (lh == null)
-		lh = h;
-	    producer.setProperty (LEXICAL_HANDLER, lh);
-	} catch (Exception e) { /* ignore */ }
+        if (consumer != null && consumer.getContentHandler () != null)
+            producer.setContentHandler (consumer.getContentHandler ());
+        else
+            producer.setContentHandler (h);
+        if (consumer != null && consumer.getDTDHandler () != null)
+            producer.setDTDHandler (consumer.getDTDHandler ());
+        else
+            producer.setDTDHandler (h);
 
-	// this binding goes the other way around
-	if (producer.getErrorHandler () == null)
-	    producer.setErrorHandler (h);
-	if (consumer != null)
-	    consumer.setErrorHandler (producer.getErrorHandler ());
+        try {
+            Object      dh;
+
+            if (consumer != null)
+                dh = consumer.getProperty (DECL_HANDLER);
+            else
+                dh = null;
+            if (dh == null)
+                dh = h;
+            producer.setProperty (DECL_HANDLER, dh);
+        } catch (Exception e) { /* ignore */ }
+        try {
+            Object      lh;
+
+            if (consumer != null)
+                lh = consumer.getProperty (LEXICAL_HANDLER);
+            else
+                lh = null;
+            if (lh == null)
+                lh = h;
+            producer.setProperty (LEXICAL_HANDLER, lh);
+        } catch (Exception e) { /* ignore */ }
+
+        // this binding goes the other way around
+        if (producer.getErrorHandler () == null)
+            producer.setErrorHandler (h);
+        if (consumer != null)
+            consumer.setErrorHandler (producer.getErrorHandler ());
     }
-    
+
     /**
      * Initializes all handlers to null.
      */
-	// constructor used by PipelineFactory
+        // constructor used by PipelineFactory
     public EventFilter () { }
 
 
@@ -394,30 +394,30 @@ public class EventFilter
      * the specified consumer, making it easy to pass events through.
      * If the consumer is null, all handlers are initialzed to null.
      */
-	// constructor used by PipelineFactory
+        // constructor used by PipelineFactory
     public EventFilter (EventConsumer consumer)
     {
-	if (consumer == null)
-	    return;
+        if (consumer == null)
+            return;
 
-	next = consumer;
+        next = consumer;
 
-	// We delegate through the "xxNext" handlers, and
-	// report the "xxHandler" ones on our input side.
+        // We delegate through the "xxNext" handlers, and
+        // report the "xxHandler" ones on our input side.
 
-	// Normally a subclass would both override handler
-	// methods and register itself as the "xxHandler".
+        // Normally a subclass would both override handler
+        // methods and register itself as the "xxHandler".
 
-	docHandler = docNext = consumer.getContentHandler ();
-	dtdHandler = dtdNext = consumer.getDTDHandler ();
-	try {
-	    declHandler = declNext = (DeclHandler)
-		    consumer.getProperty (DECL_HANDLER);
-	} catch (SAXException e) { /* leave value null */ }
-	try {
-	    lexHandler = lexNext = (LexicalHandler)
-		    consumer.getProperty (LEXICAL_HANDLER);
-	} catch (SAXException e) { /* leave value null */ }
+        docHandler = docNext = consumer.getContentHandler ();
+        dtdHandler = dtdNext = consumer.getDTDHandler ();
+        try {
+            declHandler = declNext = (DeclHandler)
+                    consumer.getProperty (DECL_HANDLER);
+        } catch (SAXException e) { /* leave value null */ }
+        try {
+            lexHandler = lexNext = (LexicalHandler)
+                    consumer.getProperty (LEXICAL_HANDLER);
+        } catch (SAXException e) { /* leave value null */ }
     }
 
     /**
@@ -442,33 +442,33 @@ public class EventFilter
      *
      * @param next the next downstream component of the pipeline.
      * @exception IllegalStateException if the "next" consumer has
-     *	already been set through the constructor.
+     *  already been set through the constructor.
      */
     public void chainTo (XMLFilterImpl next)
     {
-	if (this.next != null)
-	    throw new IllegalStateException ();
+        if (this.next != null)
+            throw new IllegalStateException ();
 
-	docNext = next.getContentHandler ();
-	if (docHandler == null)
-	    docHandler = docNext;
-	dtdNext = next.getDTDHandler ();
-	if (dtdHandler == null)
-	    dtdHandler = dtdNext;
+        docNext = next.getContentHandler ();
+        if (docHandler == null)
+            docHandler = docNext;
+        dtdNext = next.getDTDHandler ();
+        if (dtdHandler == null)
+            dtdHandler = dtdNext;
 
-	try {
-	    declNext = (DeclHandler) next.getProperty (DECL_HANDLER);
-	    if (declHandler == null)
-		declHandler = declNext;
-	} catch (SAXException e) { /* leave value null */ }
-	try {
-	    lexNext = (LexicalHandler) next.getProperty (LEXICAL_HANDLER);
-	    if (lexHandler == null)
-		lexHandler = lexNext;
-	} catch (SAXException e) { /* leave value null */ }
+        try {
+            declNext = (DeclHandler) next.getProperty (DECL_HANDLER);
+            if (declHandler == null)
+                declHandler = declNext;
+        } catch (SAXException e) { /* leave value null */ }
+        try {
+            lexNext = (LexicalHandler) next.getProperty (LEXICAL_HANDLER);
+            if (lexHandler == null)
+                lexHandler = lexNext;
+        } catch (SAXException e) { /* leave value null */ }
 
-	if (errHandler != null)
-	    next.setErrorHandler (errHandler);
+        if (errHandler != null)
+            next.setErrorHandler (errHandler);
     }
 
     /**
@@ -477,9 +477,9 @@ public class EventFilter
      */
     final public void setErrorHandler (ErrorHandler handler)
     {
-	errHandler = handler;
-	if (next != null)
-	    next.setErrorHandler (handler);
+        errHandler = handler;
+        if (next != null)
+            next.setErrorHandler (handler);
     }
 
     /**
@@ -488,7 +488,7 @@ public class EventFilter
      */
     final public ErrorHandler getErrorHandler ()
     {
-	return errHandler;
+        return errHandler;
     }
 
 
@@ -497,7 +497,7 @@ public class EventFilter
      * is no such handler.
      */
     final public EventConsumer getNext ()
-	{ return next; }
+        { return next; }
 
 
     /**
@@ -508,13 +508,13 @@ public class EventFilter
      */
     final public void setContentHandler (ContentHandler h)
     {
-	docHandler = h;
+        docHandler = h;
     }
 
     /** Returns the content handler being used. */
     final public ContentHandler getContentHandler ()
     {
-	return docHandler;
+        return docHandler;
     }
 
     /**
@@ -524,12 +524,12 @@ public class EventFilter
      * probably pointed to the next consumer by the base class constructor.
      */
     final public void setDTDHandler (DTDHandler h)
-	{ dtdHandler = h; }
+        { dtdHandler = h; }
 
     /** Returns the dtd handler being used. */
     final public DTDHandler getDTDHandler ()
     {
-	return dtdHandler;
+        return dtdHandler;
     }
 
     /**
@@ -541,36 +541,36 @@ public class EventFilter
     final public void setProperty (String id, Object o)
     throws SAXNotRecognizedException, SAXNotSupportedException
     {
-	try {
-	    Object	value = getProperty (id);
+        try {
+            Object      value = getProperty (id);
 
-	    if (value == o)
-		return;
-	    if (DECL_HANDLER.equals (id)) {
-		declHandler = (DeclHandler) o;
-		return;
-	    }
-	    if (LEXICAL_HANDLER.equals (id)) {
-		lexHandler = (LexicalHandler) o;
-		return;
-	    }
-	    throw new SAXNotSupportedException (id);
+            if (value == o)
+                return;
+            if (DECL_HANDLER.equals (id)) {
+                declHandler = (DeclHandler) o;
+                return;
+            }
+            if (LEXICAL_HANDLER.equals (id)) {
+                lexHandler = (LexicalHandler) o;
+                return;
+            }
+            throw new SAXNotSupportedException (id);
 
-	} catch (ClassCastException e) {
-	    throw new SAXNotSupportedException (id);
-	}
+        } catch (ClassCastException e) {
+            throw new SAXNotSupportedException (id);
+        }
     }
 
     /** Retrieves a property of unknown intent (usually a handler) */
     final public Object getProperty (String id)
     throws SAXNotRecognizedException
     {
-	if (DECL_HANDLER.equals (id)) 
-	    return declHandler;
-	if (LEXICAL_HANDLER.equals (id))
-	    return lexHandler;
+        if (DECL_HANDLER.equals (id))
+            return declHandler;
+        if (LEXICAL_HANDLER.equals (id))
+            return lexHandler;
 
-	throw new SAXNotRecognizedException (id);
+        throw new SAXNotRecognizedException (id);
     }
 
     /**
@@ -578,7 +578,7 @@ public class EventFilter
      * (or a subclass) is handling {@link ContentHandler } events.
      */
     public Locator getDocumentLocator ()
-	{ return locator; }
+        { return locator; }
 
 
     // CONTENT HANDLER DELEGATIONS
@@ -586,113 +586,113 @@ public class EventFilter
     /** <b>SAX2:</b> passes this callback to the next consumer, if any */
     public void setDocumentLocator (Locator locator)
     {
-	this.locator = locator;
-	if (docNext != null)
-	    docNext.setDocumentLocator (locator);
+        this.locator = locator;
+        if (docNext != null)
+            docNext.setDocumentLocator (locator);
     }
 
     /** <b>SAX2:</b> passes this callback to the next consumer, if any */
     public void startDocument () throws SAXException
     {
-	if (docNext != null)
-	    docNext.startDocument ();
+        if (docNext != null)
+            docNext.startDocument ();
     }
 
     /** <b>SAX2:</b> passes this callback to the next consumer, if any */
     public void skippedEntity (String name) throws SAXException
     {
-	if (docNext != null)
-	    docNext.skippedEntity (name);
+        if (docNext != null)
+            docNext.skippedEntity (name);
     }
 
     /** <b>SAX2:</b> passes this callback to the next consumer, if any */
     public void processingInstruction (String target, String data)
     throws SAXException
     {
-	if (docNext != null)
-	    docNext.processingInstruction (target, data);
+        if (docNext != null)
+            docNext.processingInstruction (target, data);
     }
 
     /** <b>SAX2:</b> passes this callback to the next consumer, if any */
     public void characters (char ch [], int start, int length)
     throws SAXException
     {
-	if (docNext != null)
-	    docNext.characters (ch, start, length);
+        if (docNext != null)
+            docNext.characters (ch, start, length);
     }
 
     /** <b>SAX2:</b> passes this callback to the next consumer, if any */
     public void ignorableWhitespace (char ch [], int start, int length)
     throws SAXException
     {
-	if (docNext != null)
-	    docNext.ignorableWhitespace (ch, start, length);
+        if (docNext != null)
+            docNext.ignorableWhitespace (ch, start, length);
     }
 
     /** <b>SAX2:</b> passes this callback to the next consumer, if any */
     public void startPrefixMapping (String prefix, String uri)
     throws SAXException
     {
-	if (docNext != null)
-	    docNext.startPrefixMapping (prefix, uri);
+        if (docNext != null)
+            docNext.startPrefixMapping (prefix, uri);
     }
 
     /** <b>SAX2:</b> passes this callback to the next consumer, if any */
     public void startElement (
-	String uri, String localName,
-	String qName, Attributes atts
+        String uri, String localName,
+        String qName, Attributes atts
     ) throws SAXException
     {
-	if (docNext != null)
-	    docNext.startElement (uri, localName, qName, atts);
+        if (docNext != null)
+            docNext.startElement (uri, localName, qName, atts);
     }
 
     /** <b>SAX2:</b> passes this callback to the next consumer, if any */
     public void endElement (String uri, String localName, String qName)
     throws SAXException
     {
-	if (docNext != null)
-	    docNext.endElement (uri, localName, qName);
+        if (docNext != null)
+            docNext.endElement (uri, localName, qName);
     }
 
     /** <b>SAX2:</b> passes this callback to the next consumer, if any */
     public void endPrefixMapping (String prefix) throws SAXException
     {
-	if (docNext != null)
-	    docNext.endPrefixMapping (prefix);
+        if (docNext != null)
+            docNext.endPrefixMapping (prefix);
     }
 
     /** <b>SAX2:</b> passes this callback to the next consumer, if any */
     public void endDocument () throws SAXException
     {
-	if (docNext != null)
-	    docNext.endDocument ();
-	locator = null;
+        if (docNext != null)
+            docNext.endDocument ();
+        locator = null;
     }
 
 
     // DTD HANDLER DELEGATIONS
-    
+
     /** <b>SAX1:</b> passes this callback to the next consumer, if any */
     public void unparsedEntityDecl (
-	String name,
-	String publicId,
-	String systemId,
-	String notationName
+        String name,
+        String publicId,
+        String systemId,
+        String notationName
     ) throws SAXException
     {
-	if (dtdNext != null)
-	    dtdNext.unparsedEntityDecl (name, publicId, systemId, notationName);
+        if (dtdNext != null)
+            dtdNext.unparsedEntityDecl (name, publicId, systemId, notationName);
     }
-    
+
     /** <b>SAX1:</b> passes this callback to the next consumer, if any */
     public void notationDecl (String name, String publicId, String systemId)
     throws SAXException
     {
-	if (dtdNext != null)
-	    dtdNext.notationDecl (name, publicId, systemId);
+        if (dtdNext != null)
+            dtdNext.notationDecl (name, publicId, systemId);
     }
-    
+
 
     // LEXICAL HANDLER DELEGATIONS
 
@@ -700,40 +700,40 @@ public class EventFilter
     public void startDTD (String name, String publicId, String systemId)
     throws SAXException
     {
-	if (lexNext != null)
-	    lexNext.startDTD (name, publicId, systemId);
+        if (lexNext != null)
+            lexNext.startDTD (name, publicId, systemId);
     }
 
     /** <b>SAX2:</b> passes this callback to the next consumer, if any */
     public void endDTD ()
     throws SAXException
     {
-	if (lexNext != null)
-	    lexNext.endDTD ();
+        if (lexNext != null)
+            lexNext.endDTD ();
     }
 
     /** <b>SAX2:</b> passes this callback to the next consumer, if any */
     public void comment (char ch [], int start, int length)
     throws SAXException
     {
-	if (lexNext != null)
-	    lexNext.comment (ch, start, length);
+        if (lexNext != null)
+            lexNext.comment (ch, start, length);
     }
 
     /** <b>SAX2:</b> passes this callback to the next consumer, if any */
     public void startCDATA ()
     throws SAXException
     {
-	if (lexNext != null)
-	    lexNext.startCDATA ();
+        if (lexNext != null)
+            lexNext.startCDATA ();
     }
 
     /** <b>SAX2:</b> passes this callback to the next consumer, if any */
     public void endCDATA ()
     throws SAXException
     {
-	if (lexNext != null)
-	    lexNext.endCDATA ();
+        if (lexNext != null)
+            lexNext.endCDATA ();
     }
 
     /**
@@ -742,8 +742,8 @@ public class EventFilter
     public void startEntity (String name)
     throws SAXException
     {
-	if (lexNext != null)
-	    lexNext.startEntity (name);
+        if (lexNext != null)
+            lexNext.startEntity (name);
     }
 
     /**
@@ -752,10 +752,10 @@ public class EventFilter
     public void endEntity (String name)
     throws SAXException
     {
-	if (lexNext != null)
-	    lexNext.endEntity (name);
+        if (lexNext != null)
+            lexNext.endEntity (name);
     }
-    
+
 
     // DECLARATION HANDLER DELEGATIONS
 
@@ -764,33 +764,33 @@ public class EventFilter
     public void elementDecl (String name, String model)
     throws SAXException
     {
-	if (declNext != null)
-	    declNext.elementDecl (name, model);
+        if (declNext != null)
+            declNext.elementDecl (name, model);
     }
 
     /** <b>SAX2:</b> passes this callback to the next consumer, if any */
     public void attributeDecl (String eName, String aName,
-	    String type, String mode, String value)
+            String type, String mode, String value)
     throws SAXException
     {
-	if (declNext != null)
-	    declNext.attributeDecl (eName, aName, type, mode, value);
+        if (declNext != null)
+            declNext.attributeDecl (eName, aName, type, mode, value);
     }
 
     /** <b>SAX2:</b> passes this callback to the next consumer, if any */
     public void externalEntityDecl (String name,
-    	String publicId, String systemId)
+        String publicId, String systemId)
     throws SAXException
     {
-	if (declNext != null)
-	    declNext.externalEntityDecl (name, publicId, systemId);
+        if (declNext != null)
+            declNext.externalEntityDecl (name, publicId, systemId);
     }
 
     /** <b>SAX2:</b> passes this callback to the next consumer, if any */
     public void internalEntityDecl (String name, String value)
     throws SAXException
     {
-	if (declNext != null)
-	    declNext.internalEntityDecl (name, value);
+        if (declNext != null)
+            declNext.internalEntityDecl (name, value);
     }
 }

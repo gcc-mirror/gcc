@@ -1,4 +1,4 @@
-/* Location.java -- 
+/* Location.java --
    Copyright (C) 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -71,6 +71,5 @@ public interface Location
    * Returns the system identifier for the underlying source.
    */
   String getSystemId();
-  
-}
 
+}

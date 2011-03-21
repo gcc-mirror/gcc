@@ -16,7 +16,7 @@ __go_byte_array_to_string (const void* p, size_t len)
   struct __go_string ret;
 
   bytes = (const unsigned char *) p;
-  retdata = runtime_mallocgc (len, RefNoPointers, 1, 0);
+  retdata = runtime_mallocgc (len, FlagNoPointers, 1, 0);
   __builtin_memcpy (retdata, bytes, len);
   ret.__data = retdata;
   ret.__length = len;

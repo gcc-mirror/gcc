@@ -44,31 +44,31 @@ import java.awt.geom.Rectangle2D;
 
 /**
  * LookupOp is a filter that converts each pixel using a lookup table.
- * 
+ *
  * For filtering Rasters, the lookup table must have either one component
  * that is applied to all bands, or one component for every band in the
  * Rasters.
- * 
+ *
  * For BufferedImages, the lookup table may apply to both color and alpha
  * components.  If the lookup table contains one component, or if there are
  * the same number of components as color components in the source, the table
  * applies to all color components.  Otherwise the table applies to all
  * components including alpha.  Alpha premultiplication is ignored during the
  * lookup filtering.
- * 
+ *
  * After filtering, if color conversion is necessary, the conversion happens,
  * taking alpha premultiplication into account.
- * 
+ *
  * @author jlquinn
  */
 public class LookupOp implements BufferedImageOp, RasterOp
 {
   private LookupTable lut;
   private RenderingHints hints;
-  
+
   /**
    * Construct a new LookupOp using the given LookupTable.
-   * 
+   *
    * @param lookup LookupTable to use.
    * @param hints Rendering hints (can be null).
    */
@@ -77,12 +77,12 @@ public class LookupOp implements BufferedImageOp, RasterOp
     lut = lookup;
     this.hints = hints;
   }
-  
+
   /**
    * Converts the source image using the lookup table specified in the
    * constructor.  The resulting image is stored in the destination image if one
-   * is provided; otherwise a new BufferedImage is created and returned. 
-   * 
+   * is provided; otherwise a new BufferedImage is created and returned.
+   *
    * The source image cannot use an IndexColorModel, and the destination image
    * (if one is provided) must have the same size.
    *
@@ -98,17 +98,17 @@ public class LookupOp implements BufferedImageOp, RasterOp
   {
     if (src.getColorModel() instanceof IndexColorModel)
       throw new IllegalArgumentException("LookupOp.filter: IndexColorModel "
-					 + "not allowed");
-    
+                                         + "not allowed");
+
     if (lut.getNumComponents() != 1
          && lut.getNumComponents() != src.getColorModel().getNumComponents()
          && lut.getNumComponents() != src.getColorModel().getNumColorComponents())
      throw new IllegalArgumentException("LookupOp.filter: Incompatible " +
                 "lookup table and source image");
-    
+
     if (dst == null)
       dst = createCompatibleDestImage(src, null);
-    
+
     else if (src.getHeight() != dst.getHeight() || src.getWidth() != dst.getWidth())
       throw new IllegalArgumentException("Source and destination images are " +
                 "different sizes.");
@@ -131,16 +131,16 @@ public class LookupOp implements BufferedImageOp, RasterOp
       int[] dbuf = new int[src.getColorModel().getNumComponents()];
       int tmpBands = src.getColorModel().getNumColorComponents();
       int[] tmp = new int[tmpBands];
-        
+
       // Filter the pixels
       for (int y = src.getMinY(); y < src.getHeight() + src.getMinY(); y++)
         for (int x = src.getMinX(); x < src.getWidth() + src.getMinX(); x++)
-        {	
+        {
           // Filter only color components, but also copy alpha
           sr.getPixel(x, y, dbuf);
           System.arraycopy(dbuf, 0, tmp, 0, tmpBands);
           dr.setPixel(x, y, lut.lookupPixel(tmp, dbuf));
-          
+
           /* The reference implementation does not use LookupTable.lookupPixel,
            * but rather it seems to copy the table into a native array.  The
            * effect of this (a probable bug in their implementation) is that
@@ -148,7 +148,7 @@ public class LookupOp implements BufferedImageOp, RasterOp
            * out of bounds exception, but will instead return random garbage.
            * A bad lookup on a ShortLookupTable, however, will throw an
            * exception.
-           * 
+           *
            * Instead of mimicing this behaviour, we always throw an
            * ArrayOutofBoundsException by virtue of using
            * LookupTable.lookupPixle.
@@ -159,16 +159,16 @@ public class LookupOp implements BufferedImageOp, RasterOp
     {
       // No alpha to ignore
       int[] dbuf = new int[src.getColorModel().getNumComponents()];
-          
+
       // Filter the pixels
       for (int y = src.getMinY(); y < src.getHeight() + src.getMinY(); y++)
         for (int x = src.getMinX(); x < src.getWidth() + src.getMinX(); x++)
           dr.setPixel(x, y, lut.lookupPixel(sr.getPixel(x, y, dbuf), dbuf));
     }
-    
+
     if (tgt != dst)
       new ColorConvertOp(hints).filter(tgt, dst);
-    
+
     return dst;
   }
 
@@ -184,13 +184,13 @@ public class LookupOp implements BufferedImageOp, RasterOp
    * @see java.awt.image.BufferedImageOp#createCompatibleDestImage(java.awt.image.BufferedImage, java.awt.image.ColorModel)
    */
   public BufferedImage createCompatibleDestImage(BufferedImage src,
-						 ColorModel dstCM)
+                                                 ColorModel dstCM)
   {
     if (dstCM != null)
       return new BufferedImage(dstCM,
                                src.getRaster().createCompatibleWritableRaster(),
                                src.isAlphaPremultiplied(), null);
-    
+
     // This is a strange exception, done for compatibility with the reference
     // (as demonstrated by a mauve testcase)
     int imgType = src.getType();
@@ -202,9 +202,9 @@ public class LookupOp implements BufferedImageOp, RasterOp
 
   /**
    * Returns the corresponding destination point for a given source point.
-   * 
+   *
    * This Op will return the source point unchanged.
-   * 
+   *
    * @param src The source point.
    * @param dst The destination point.
    */
@@ -219,7 +219,7 @@ public class LookupOp implements BufferedImageOp, RasterOp
 
   /**
    * Return the LookupTable for this op.
-   * 
+   *
    *  @return The lookup table.
    */
   public final LookupTable getTable()
@@ -237,11 +237,11 @@ public class LookupOp implements BufferedImageOp, RasterOp
 
   /**
    * Filter a raster through a lookup table.
-   * 
+   *
    * Applies the lookup table for this Rasterop to each pixel of src and
    * puts the results in dest.  If dest is null, a new Raster is created and
    * returned.
-   * 
+   *
    * @param src The source raster.
    * @param dest The destination raster.
    * @return The WritableRaster with the filtered pixels.
@@ -252,7 +252,7 @@ public class LookupOp implements BufferedImageOp, RasterOp
    */
   public final WritableRaster filter(Raster src, WritableRaster dest)
   {
-    if (dest == null) 
+    if (dest == null)
       // Allocate a raster if needed
       dest = createCompatibleDestRaster(src);
     else
@@ -260,19 +260,19 @@ public class LookupOp implements BufferedImageOp, RasterOp
         throw new IllegalArgumentException("Source and destination rasters " +
                 "are incompatible.");
 
-    if (lut.getNumComponents() != 1 
+    if (lut.getNumComponents() != 1
         && lut.getNumComponents() != src.getNumBands())
       throw new IllegalArgumentException("Lookup table is incompatible with " +
             "this raster.");
-   
-    // Allocate pixel storage. 
+
+    // Allocate pixel storage.
     int[] tmp = new int[src.getNumBands()];
-    
+
     // Filter the pixels
     for (int y = src.getMinY(); y < src.getHeight() + src.getMinY(); y++)
       for (int x = src.getMinX(); x < src.getWidth() + src.getMinX(); x++)
         dest.setPixel(x, y, lut.lookupPixel(src.getPixel(x, y, tmp), tmp));
-    
+
     /* The reference implementation does not use LookupTable.lookupPixel,
      * but rather it seems to copy the table into a native array.  The
      * effect of this (a probable bug in their implementation) is that
@@ -280,7 +280,7 @@ public class LookupOp implements BufferedImageOp, RasterOp
      * out of bounds exception, but will instead return random garbage.
      * A bad lookup on a ShortLookupTable, however, will throw an
      * exception.
-     * 
+     *
      * Instead of mimicing this behaviour, we always throw an
      * ArrayOutofBoundsException by virtue of using
      * LookupTable.lookupPixle.

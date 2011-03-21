@@ -81,7 +81,7 @@ public final class NotFoundReasonHolder
 
   /**
    * Get the type code of {@link NotFoundReason}.
-   * 
+   *
    * @return the typecode of enumeration, allowed value names being
    *         "missing_node", "not_context" and "not_object"
    */

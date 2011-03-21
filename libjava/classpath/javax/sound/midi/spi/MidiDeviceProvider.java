@@ -42,7 +42,7 @@ import javax.sound.midi.*;
 
 /**
  * The abstract base class for all MidiDeviceProvider types.
- * 
+ *
  * @author Anthony Green (green@redhat.com)
  * @since 1.3
  *
@@ -51,36 +51,36 @@ public abstract class MidiDeviceProvider
 {
   /**
    * Returns true if this provider supports a specific MIDI device.
-   * 
+   *
    * @param info the MIDI device descriptor
    * @return true if this provider supports info
    */
   public boolean isDeviceSupported(MidiDevice.Info info)
   {
     MidiDevice.Info infos[] = getDeviceInfo();
-    
+
     int i = infos.length;
-    
+
     while (i > 0)
     {
       if (info.equals(infos[--i]))
         return true;
     }
-    
+
     return false;
   }
-  
+
   /**
    * Get the list descriptors for all MIDI devices supported by
    * this provider.
-   * 
+   *
    * @return an array of descriptors for all supported MIDI devices.
    */
   public abstract MidiDevice.Info[] getDeviceInfo();
-  
+
   /**
    * Get the MidiDevice for the MIDI device described by info
-   * 
+   *
    * @param info the descriptor for the MIDI device we want
    * @return the MidiDevice we're looking for
    * @throws IllegalArgumentException is this provider doesn't support info

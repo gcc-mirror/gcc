@@ -113,9 +113,9 @@ public class MetalToggleButtonUI
   }
 
   /**
-   * Returns the color for the text label of disabled buttons.  The value 
+   * Returns the color for the text label of disabled buttons.  The value
    * is initialised in the {@link #installDefaults(AbstractButton)} method
-   * by reading the <code>ToggleButton.disabledText</code> item from the UI 
+   * by reading the <code>ToggleButton.disabledText</code> item from the UI
    * defaults.
    *
    * @return The color for the text label of disabled buttons.
@@ -127,7 +127,7 @@ public class MetalToggleButtonUI
 
   /**
    * Updates the button with the defaults for this look and feel.
-   * 
+   *
    * @param b  the button.
    */
   public void installDefaults(AbstractButton b)
@@ -137,10 +137,10 @@ public class MetalToggleButtonUI
     selectColor = UIManager.getColor(getPropertyPrefix() + "select");
     disabledTextColor = UIManager.getColor(getPropertyPrefix() + "disabledText");
   }
-  
+
   /**
-   * Paints the button background when it is pressed/selected. 
-   * 
+   * Paints the button background when it is pressed/selected.
+   *
    * @param g  the graphics device.
    * @param b  the button.
    */
@@ -155,19 +155,19 @@ public class MetalToggleButtonUI
         g.setColor(saved);
       }
   }
-  
+
   /**
    * Paints the text for the button.
-   * 
+   *
    * As of JDK 1.4 this method is obsolete.
-   * Use {@link BasicButtonUI#paintText(java.awt.Graphics, 
+   * Use {@link BasicButtonUI#paintText(java.awt.Graphics,
    * javax.swing.AbstractButton, java.awt.Rectangle, java.lang.String)}.
    *
    * @param g  the graphics device.
    * @param c  the component.
    * @param textRect  the bounds for the text.
    * @param text  the text.
-   * 
+   *
    */
   protected void paintText(Graphics g, JComponent c, Rectangle textRect,
                            String text)
@@ -185,10 +185,10 @@ public class MetalToggleButtonUI
     g.setFont(savedFont);
     g.setColor(savedColor);
   }
-  
+
   /**
    * Draws the focus highlight around the text and icon.
-   * 
+   *
    * @param g  the graphics device.
    * @param b  the button.
    */
@@ -201,7 +201,7 @@ public class MetalToggleButtonUI
     g.setColor(focusColor);
     Rectangle fr = iconRect.union(textRect);
     g.drawRect(fr.x - 1, fr.y - 1, fr.width + 1, fr.height + 1);
-    g.setColor(saved);    
+    g.setColor(saved);
   }
 
   /**
@@ -226,5 +226,5 @@ public class MetalToggleButtonUI
     else
       super.update(g, c);
   }
-  
+
 }

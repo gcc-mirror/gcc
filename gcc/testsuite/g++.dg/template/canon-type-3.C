@@ -1,6 +1,6 @@
 // Contributed by Dodji Seketeli <dodji@redhat.com>
 // Origin PR c++/39754
-// { dg-do "compile" }
+// { dg-do compile }
 
 template<typename> struct A ;
 template<typename T , typename = A<T> > struct B { } ;

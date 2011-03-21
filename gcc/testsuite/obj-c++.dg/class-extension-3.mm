@@ -10,8 +10,8 @@
   Class isa;
   int count;
 }
-- (int) test;
-@property int count; /* { dg-warning "originally specified here" } */
+- (int) test;        /* { dg-message "previous declaration" } */
+@property int count; /* { dg-message "originally specified here" } */
 @end
 
 @interface MyObject ()

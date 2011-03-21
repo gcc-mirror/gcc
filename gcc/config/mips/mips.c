@@ -1,6 +1,7 @@
 /* Subroutines used for MIPS code generation.
    Copyright (C) 1989, 1990, 1991, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+   2011
    Free Software Foundation, Inc.
    Contributed by A. Lichnewsky, lich@inria.inria.fr.
    Changes by Michael Meissner, meissner@osf.org.
@@ -1669,10 +1670,13 @@ mips_classify_symbol (const_rtx x, enum mips_symbol_context context)
 
   if (GET_CODE (x) == LABEL_REF)
     {
-      /* LABEL_REFs are used for jump tables as well as text labels.
-	 Only return SYMBOL_PC_RELATIVE if we know the label is in
-	 the text section.  */
-      if (TARGET_MIPS16_SHORT_JUMP_TABLES)
+      /* Only return SYMBOL_PC_RELATIVE if we are generating MIPS16
+	 code and if we know that the label is in the current function's
+	 text section.  LABEL_REFs are used for jump tables as well as
+	 text labels, so we must check whether jump tables live in the
+	 text section.  */
+      if (TARGET_MIPS16_SHORT_JUMP_TABLES
+	  && !LABEL_REF_NONLOCAL_P (x))
 	return SYMBOL_PC_RELATIVE;
 
       if (TARGET_ABICALLS && !TARGET_ABSOLUTE_ABICALLS)
@@ -10801,10 +10805,10 @@ mips_modes_tieable_p (enum machine_mode mode1, enum machine_mode mode2)
 	      && !mips_mode_ok_for_mov_fmt_p (mode2)));
 }
 
-/* Implement PREFERRED_RELOAD_CLASS.  */
+/* Implement TARGET_PREFERRED_RELOAD_CLASS.  */
 
-enum reg_class
-mips_preferred_reload_class (rtx x, enum reg_class rclass)
+static reg_class_t
+mips_preferred_reload_class (rtx x, reg_class_t rclass)
 {
   if (mips_dangerous_for_la25_p (x) && reg_class_subset_p (LEA_REGS, rclass))
     return LEA_REGS;
@@ -12154,7 +12158,7 @@ mips_multipass_dfa_lookahead (void)
   if (TUNE_SB1)
     return 4;
 
-  if (TUNE_LOONGSON_2EF)
+  if (TUNE_LOONGSON_2EF || TUNE_LOONGSON_3A)
     return 4;
 
   if (TUNE_OCTEON)
@@ -16386,12 +16390,12 @@ void mips_function_profiler (FILE *file)
 
 /* Implement TARGET_SHIFT_TRUNCATION_MASK.  We want to keep the default
    behaviour of TARGET_SHIFT_TRUNCATION_MASK for non-vector modes even
-   when TARGET_LOONGSON_2EF is true.  */
+   when TARGET_LOONGSON_VECTORS is true.  */
 
 static unsigned HOST_WIDE_INT
 mips_shift_truncation_mask (enum machine_mode mode)
 {
-  if (TARGET_LOONGSON_2EF && VECTOR_MODE_P (mode))
+  if (TARGET_LOONGSON_VECTORS && VECTOR_MODE_P (mode))
     return 0;
 
   return GET_MODE_BITSIZE (mode) - 1;
@@ -16483,6 +16487,9 @@ mips_shift_truncation_mask (enum machine_mode mode)
 
 #undef TARGET_MACHINE_DEPENDENT_REORG
 #define TARGET_MACHINE_DEPENDENT_REORG mips_reorg
+
+#undef  TARGET_PREFERRED_RELOAD_CLASS
+#define TARGET_PREFERRED_RELOAD_CLASS mips_preferred_reload_class
 
 #undef TARGET_ASM_FILE_START
 #define TARGET_ASM_FILE_START mips_file_start

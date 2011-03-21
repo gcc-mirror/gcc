@@ -1,6 +1,6 @@
 /* Output VMS debug format symbol table information from GCC.
    Copyright (C) 1987, 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
    Contributed by Douglas B. Rupp (rupp@gnat.com).
    Updated by Bernard W. Giroud (bgiroud@users.sourceforge.net).
@@ -205,10 +205,6 @@ const struct gcc_debug_hooks vmsdbg_debug_hooks
    debug_nothing_int,		  /* handle_pch */
    debug_nothing_rtx,		  /* var_location */
    debug_nothing_void,            /* switch_text_section */
-   debug_nothing_tree,		  /* direct_call */
-   debug_nothing_tree_int,	  /* virtual_call_token */
-   debug_nothing_rtx_rtx,	  /* copy_call_info */
-   debug_nothing_uid,		  /* virtual_call */
    debug_nothing_tree_tree,	  /* set_name */
    0,                             /* start_end_main_source_file */
    TYPE_SYMTAB_IS_ADDRESS         /* tree_type_symtab_field */
@@ -1454,18 +1450,18 @@ vmsdbgout_end_source_file (unsigned int lineno ATTRIBUTE_UNUSED)
 /* Set up for Debug output at the start of compilation.  */
 
 static void
-vmsdbgout_init (const char *main_input_filename)
+vmsdbgout_init (const char *filename)
 {
   const char *language_string = lang_hooks.name;
 
   if (write_symbols == VMS_AND_DWARF2_DEBUG)
-    (*dwarf2_debug_hooks.init) (main_input_filename);
+    (*dwarf2_debug_hooks.init) (filename);
 
   if (debug_info_level == DINFO_LEVEL_NONE)
     return;
 
   /* Remember the name of the primary input file.  */
-  primary_filename = main_input_filename;
+  primary_filename = filename;
 
   /* Allocate the initial hunk of the file_info_table.  */
   file_info_table = XCNEWVEC (dst_file_info_entry, FILE_TABLE_INCREMENT);
@@ -1568,13 +1564,13 @@ vmsdbgout_abstract_function (tree decl)
    VMS Debug debugging info.  */
 
 static void
-vmsdbgout_finish (const char *main_input_filename ATTRIBUTE_UNUSED)
+vmsdbgout_finish (const char *filename ATTRIBUTE_UNUSED)
 {
   unsigned int i, ifunc;
   int totsize;
 
   if (write_symbols == VMS_AND_DWARF2_DEBUG)
-    (*dwarf2_debug_hooks.finish) (main_input_filename);
+    (*dwarf2_debug_hooks.finish) (filename);
 
   if (debug_info_level == DINFO_LEVEL_NONE)
     return;

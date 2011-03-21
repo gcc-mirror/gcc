@@ -46,7 +46,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * A collection of (key, value) items that provide 'hints' for the 
+ * A collection of (key, value) items that provide 'hints' for the
  * {@link java.awt.Graphics2D} rendering pipeline.  Because these
  * items are hints only, they may be ignored by a particular
  * {@link java.awt.Graphics2D} implementation.
@@ -66,7 +66,7 @@ public class RenderingHints
 
     /**
      * Creates a new key.
-     * 
+     *
      * @param privateKey  the private key.
      */
     protected Key(int privateKey)
@@ -77,16 +77,16 @@ public class RenderingHints
     /**
      * Returns <code>true</code> if the specified value is compatible with
      * this key, and <code>false</code> otherwise.
-     * 
+     *
      * @param value  the value (<code>null</code> permitted).
-     * 
+     *
      * @return A boolean.
      */
     public abstract boolean isCompatibleValue(Object value);
 
     /**
      * Returns the private key for this instance.
-     * 
+     *
      * @return The private key.
      */
     protected final int intKey()
@@ -96,7 +96,7 @@ public class RenderingHints
 
     /**
      * Returns a hash code for the key.
-     * 
+     *
      * @return A hash code.
      */
     public final int hashCode()
@@ -106,9 +106,9 @@ public class RenderingHints
 
     /**
      * Checks this key for equality with an arbitrary object.
-     * 
+     *
      * @param other  the object (<code>null</code> permitted)
-     * 
+     *
      * @return A boolean.
      */
     public final boolean equals(Object other)
@@ -137,9 +137,9 @@ public class RenderingHints
     /**
      * Returns <code>true</code> if the specified value is compatible with
      * this key, and <code>false</code> otherwise.
-     * 
+     *
      * @param value  the value (<code>null</code> permitted).
-     * 
+     *
      * @return A boolean.
      */
     public boolean isCompatibleValue(Object value)
@@ -149,7 +149,7 @@ public class RenderingHints
 
     /**
      * Returns a string representation of the key.
-     * 
+     *
      * @return A string.
      */
     public String toString()
@@ -547,8 +547,8 @@ public class RenderingHints
   /**
    * Creates a new collection of hints containing all the (key, value) pairs
    * in the specified map.
-   * 
-   * @param init  a map containing a collection of hints (<code>null</code> 
+   *
+   * @param init  a map containing a collection of hints (<code>null</code>
    *              permitted).
    */
   public RenderingHints(Map<Key,?> init)
@@ -559,7 +559,7 @@ public class RenderingHints
 
   /**
    * Creates a new collection containing a single (key, value) pair.
-   * 
+   *
    * @param key  the key.
    * @param value  the value.
    */
@@ -570,7 +570,7 @@ public class RenderingHints
 
   /**
    * Returns the number of hints in the collection.
-   * 
+   *
    * @return The number of hints.
    */
   public int size()
@@ -581,7 +581,7 @@ public class RenderingHints
   /**
    * Returns <code>true</code> if there are no hints in the collection,
    * and <code>false</code> otherwise.
-   * 
+   *
    * @return A boolean.
    */
   public boolean isEmpty()
@@ -592,11 +592,11 @@ public class RenderingHints
   /**
    * Returns <code>true</code> if the collection of hints contains the
    * specified key, and <code>false</code> otherwise.
-   * 
+   *
    * @param key  the key (<code>null</code> not permitted).
-   * 
+   *
    * @return A boolean.
-   * 
+   *
    * @throws NullPointerException if <code>key</code> is <code>null</code>.
    * @throws ClassCastException if <code>key</code> is not a {@link Key}.
    */
@@ -611,9 +611,9 @@ public class RenderingHints
   /**
    * Returns <code>true</code> if the collection of hints contains the
    * specified value, and <code>false</code> otherwise.
-   * 
+   *
    * @param value  the value.
-   * 
+   *
    * @return A boolean.
    */
   public boolean containsValue(Object value)
@@ -624,13 +624,13 @@ public class RenderingHints
   /**
    * Returns the value associated with the specified key, or <code>null</code>
    * if there is no value defined for the key.
-   * 
+   *
    * @param key  the key (<code>null</code> permitted).
-   * 
+   *
    * @return The value (possibly <code>null</code>).
-   * 
+   *
    * @throws ClassCastException if <code>key</code> is not a {@link Key}.
-   * 
+   *
    * @see #containsKey(Object)
    */
   public Object get(Object key)
@@ -641,12 +641,12 @@ public class RenderingHints
 
   /**
    * Adds a (key, value) pair to the collection of hints (if the
-   * collection already contains the specified key, then the 
+   * collection already contains the specified key, then the
    * value is updated).
-   * 
+   *
    * @param key  the key.
    * @param value  the value.
-   * 
+   *
    * @return  the previous value of the key or <code>null</code> if the key
    * didn't have a value yet.
    */
@@ -661,7 +661,7 @@ public class RenderingHints
 
   /**
    * Adds all the hints from a collection to this collection.
-   * 
+   *
    * @param hints  the hint collection.
    */
   public void add(RenderingHints hints)
@@ -679,27 +679,27 @@ public class RenderingHints
 
   /**
    * Removes a hint from the collection.
-   * 
+   *
    * @param key  the key.
-   * 
-   * @return The value that was associated with the key, or <code>null</code> if 
+   *
+   * @return The value that was associated with the key, or <code>null</code> if
    *         the key was not part of the collection
-   * 
-   * @throws ClassCastException if the key is not a subclass of 
+   *
+   * @throws ClassCastException if the key is not a subclass of
    *         {@link RenderingHints.Key}.
    */
   public Object remove(Object key)
   {
     // don't remove the (Key) cast, it is necessary to throw the exception
     // required by the spec
-    return hintMap.remove((Key) key);  
+    return hintMap.remove((Key) key);
   }
 
   /**
    * Adds a collection of (key, value) pairs to the collection.
-   * 
+   *
    * @param m  a map containing (key, value) items.
-   * 
+   *
    * @throws ClassCastException if the map contains a key that is not
    *         a subclass of {@link RenderingHints.Key}.
    * @throws IllegalArgumentException if the map contains a value that is
@@ -721,7 +721,7 @@ public class RenderingHints
 
   /**
    * Returns a set containing the keys from this collection.
-   * 
+   *
    * @return A set of keys.
    */
   public Set<Object> keySet()
@@ -731,9 +731,9 @@ public class RenderingHints
 
   /**
    * Returns a collection of the values from this hint collection.  The
-   * collection is backed by the <code>RenderingHints</code> instance, 
+   * collection is backed by the <code>RenderingHints</code> instance,
    * so updates to one will affect the other.
-   * 
+   *
    * @return A collection of values.
    */
   public Collection<Object> values()
@@ -743,7 +743,7 @@ public class RenderingHints
 
   /**
    * Returns a set of entries from the collection.
-   * 
+   *
    * @return A set of entries.
    */
   public Set<Map.Entry<Object,Object>> entrySet()
@@ -753,9 +753,9 @@ public class RenderingHints
 
   /**
    * Checks this collection for equality with an arbitrary object.
-   * 
+   *
    * @param o  the object (<code>null</code> permitted)
-   * 
+   *
    * @return A boolean.
    */
   public boolean equals(Object o)
@@ -765,7 +765,7 @@ public class RenderingHints
 
   /**
    * Returns a hash code for the collection of hints.
-   * 
+   *
    * @return A hash code.
    */
   public int hashCode()
@@ -775,7 +775,7 @@ public class RenderingHints
 
   /**
    * Creates a clone of this instance.
-   * 
+   *
    * @return A clone.
    */
   public Object clone()
@@ -794,7 +794,7 @@ public class RenderingHints
 
   /**
    * Returns a string representation of this instance.
-   * 
+   *
    * @return A string.
    */
   public String toString()

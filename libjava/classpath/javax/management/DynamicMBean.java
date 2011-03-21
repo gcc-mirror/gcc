@@ -49,7 +49,7 @@ package javax.management;
  */
 public interface DynamicMBean
 {
-  
+
   /**
    * Obtains the value of the specified attribute of the
    * management bean.  The management bean should perform
@@ -73,7 +73,7 @@ public interface DynamicMBean
    */
   Object getAttribute(String name)
     throws AttributeNotFoundException, MBeanException,
-	   ReflectionException;
+           ReflectionException;
 
   /**
    * Obtains the values of each of the specified attributes
@@ -103,7 +103,7 @@ public interface DynamicMBean
    * corresponding to each parameter.  The class loader used to
    * load these classes is the same as that used for loading the
    * management bean itself.
-   * 
+   *
    * @param name the name of the action to invoke.
    * @param params the parameters used to call the action.
    * @param signature the signature of the action.
@@ -145,7 +145,7 @@ public interface DynamicMBean
    */
   void setAttribute(Attribute attribute)
     throws AttributeNotFoundException, InvalidAttributeValueException,
-	   MBeanException, ReflectionException;
+           MBeanException, ReflectionException;
 
   /**
    * Sets the value of each of the specified attributes

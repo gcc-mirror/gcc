@@ -14,7 +14,7 @@ import javax.swing.plaf.metal.MetalLookAndFeel;
  * icons as they would be described in the text (sheet of paper with image and
  * broken sheet of paper with image). They are not pixel to pixel identical and
  * contain elements from the metal icon factory.
- * 
+ *
  * @author Audrius Meskauskas (audriusa@bioinformatics.org)
  */
 public class ImageViewIconFactory
@@ -22,10 +22,10 @@ public class ImageViewIconFactory
   private static Icon noImageIcon;
 
   private static Icon loadingImageIcon;
-  
+
   /**
    * This icon reflects the general concept (broken sheet of paper with
-   * image), but is currently not pixel to pixel identical with the Sun's 
+   * image), but is currently not pixel to pixel identical with the Sun's
    * implementation.
    */
   public static class NoImageIcon implements Icon, Serializable
@@ -40,7 +40,7 @@ public class ImageViewIconFactory
 
     /**
      * Returns the width of the icon, in pixels.
-     * 
+     *
      * @return The width of the icon.
      */
     public int getIconWidth()
@@ -50,7 +50,7 @@ public class ImageViewIconFactory
 
     /**
      * Returns the height of the icon, in pixels.
-     * 
+     *
      * @return The height of the icon.
      */
     public int getIconHeight()
@@ -60,7 +60,7 @@ public class ImageViewIconFactory
 
     /**
      * Paints the icon using colors from the {@link MetalLookAndFeel}.
-     * 
+     *
      * @param c
      *          the component (ignored).
      * @param g
@@ -166,7 +166,7 @@ public class ImageViewIconFactory
 
     /**
      * Returns the width of the icon, in pixels.
-     * 
+     *
      * @return The width of the icon.
      */
     public int getIconWidth()
@@ -176,7 +176,7 @@ public class ImageViewIconFactory
 
     /**
      * Returns the height of the icon, in pixels.
-     * 
+     *
      * @return The height of the icon.
      */
     public int getIconHeight()
@@ -186,7 +186,7 @@ public class ImageViewIconFactory
 
     /**
      * Paints the icon using colors from the {@link MetalLookAndFeel}.
-     * 
+     *
      * @param c
      *          the component (ignored).
      * @param g
@@ -219,7 +219,7 @@ public class ImageViewIconFactory
       g.drawLine(x + 21, y + 24, x + 21, y + 7);
       g.drawLine(x + 18, y + 2, x + 20, y + 4);
 
-      // Picture (house) 
+      // Picture (house)
 
       y += 3;
       x += 3;

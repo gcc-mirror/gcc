@@ -1,6 +1,6 @@
 /* Build expressions with type checking for C++ compiler.
    Copyright (C) 1987, 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
@@ -1768,10 +1768,13 @@ tree
 unlowered_expr_type (const_tree exp)
 {
   tree type;
+  tree etype = TREE_TYPE (exp);
 
   type = is_bitfield_expr_with_lowered_type (exp);
-  if (!type)
-    type = TREE_TYPE (exp);
+  if (type)
+    type = cp_build_qualified_type (type, cp_type_quals (etype));
+  else
+    type = etype;
 
   return type;
 }
@@ -4756,7 +4759,7 @@ cp_build_addr_expr_1 (tree arg, bool strict_lvalue, tsubst_flags_t complain)
       if (kind == clk_none)
 	{
 	  if (complain & tf_error)
-	    lvalue_error (lv_addressof);
+	    lvalue_error (input_location, lv_addressof);
 	  return error_mark_node;
 	}
       if (strict_lvalue && (kind & (clk_rvalueref|clk_class)))
@@ -7454,7 +7457,7 @@ convert_for_initialization (tree exp, tree type, tree rhs, int flags,
     return rhs;
 
   if (MAYBE_CLASS_TYPE_P (type))
-    return ocp_convert (type, rhs, CONV_IMPLICIT|CONV_FORCE_TEMP, flags);
+    return perform_implicit_conversion_flags (type, rhs, complain, flags);
 
   return convert_for_assignment (type, rhs, errtype, fndecl, parmnum,
 				 complain, flags);
@@ -7760,12 +7763,19 @@ check_return_expr (tree retval, bool *no_warning)
 
       /* Under C++0x [12.8/16 class.copy], a returned lvalue is sometimes
 	 treated as an rvalue for the purposes of overload resolution to
-	 favor move constructors over copy constructors.  */
-      if ((cxx_dialect != cxx98) 
-          && named_return_value_okay_p
-          /* The variable must not have the `volatile' qualifier.  */
-	  && !CP_TYPE_VOLATILE_P (TREE_TYPE (retval))
-	  /* The return type must be a class type.  */
+	 favor move constructors over copy constructors.
+
+         Note that these conditions are similar to, but not as strict as,
+	 the conditions for the named return value optimization.  */
+      if ((cxx_dialect != cxx98)
+          && (TREE_CODE (retval) == VAR_DECL
+	      || TREE_CODE (retval) == PARM_DECL)
+	  && DECL_CONTEXT (retval) == current_function_decl
+	  && !TREE_STATIC (retval)
+	  && same_type_p ((TYPE_MAIN_VARIANT (TREE_TYPE (retval))),
+			  (TYPE_MAIN_VARIANT
+			   (TREE_TYPE (TREE_TYPE (current_function_decl)))))
+	  /* This is only interesting for class type.  */
 	  && CLASS_TYPE_P (TREE_TYPE (TREE_TYPE (current_function_decl))))
 	flags = flags | LOOKUP_PREFER_RVALUE;
 
@@ -8219,7 +8229,7 @@ lvalue_or_else (tree ref, enum lvalue_use use, tsubst_flags_t complain)
   if (kind == clk_none)
     {
       if (complain & tf_error)
-	lvalue_error (use);
+	lvalue_error (input_location, use);
       return 0;
     }
   else if (kind & (clk_rvalueref|clk_class))

@@ -1,5 +1,5 @@
 /* Declaration statement matcher
-   Copyright (C) 2002, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+   Copyright (C) 2002, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
@@ -502,6 +502,9 @@ match_old_style_init (const char *name)
       return MATCH_ERROR;
     }
 
+  if (gfc_implicit_pure (NULL))
+    gfc_current_ns->proc_name->attr.implicit_pure = 0;
+
   /* Mark the variable as having appeared in a data statement.  */
   if (gfc_add_data (&sym->attr, sym->name, &sym->declared_at) == FAILURE)
     {
@@ -559,6 +562,9 @@ gfc_match_data (void)
       gfc_error ("DATA statement at %C is not allowed in a PURE procedure");
       return MATCH_ERROR;
     }
+
+  if (gfc_implicit_pure (NULL))
+    gfc_current_ns->proc_name->attr.implicit_pure = 0;
 
   return MATCH_YES;
 
@@ -1171,10 +1177,8 @@ build_sym (const char *name, gfc_charlen *cl, bool cl_deferred,
 
   sym->attr.implied_index = 0;
 
-  if (sym->ts.type == BT_CLASS
-      && (sym->attr.class_ok = sym->attr.dummy || sym->attr.pointer
-			       || sym->attr.allocatable))
-    gfc_build_class_symbol (&sym->ts, &sym->attr, &sym->as, false);
+  if (sym->ts.type == BT_CLASS)
+    return gfc_build_class_symbol (&sym->ts, &sym->attr, &sym->as, false);
 
   return SUCCESS;
 }
@@ -1633,9 +1637,8 @@ scalar:
       bool delayed = (gfc_state_stack->sym == c->ts.u.derived)
 		     || (!c->ts.u.derived->components
 			 && !c->ts.u.derived->attr.zero_comp);
-      gfc_build_class_symbol (&c->ts, &c->attr, &c->as, delayed);
+      return gfc_build_class_symbol (&c->ts, &c->attr, &c->as, delayed);
     }
-
 
   return t;
 }
@@ -2608,6 +2611,16 @@ gfc_match_decl_type_spec (gfc_typespec *ts, int implicit_flag)
     ts->type = BT_DERIVED;
   else
     {
+      /* Match CLASS declarations.  */
+      m = gfc_match (" class ( * )");
+      if (m == MATCH_ERROR)
+	return MATCH_ERROR;
+      else if (m == MATCH_YES)
+	{
+	  gfc_fatal_error ("Unlimited polymorphism at %C not yet supported");
+	  return MATCH_ERROR;
+	}
+
       m = gfc_match (" class ( %n )", name);
       if (m != MATCH_YES)
 	return m;
@@ -6040,10 +6053,12 @@ attr_decl1 (void)
 	}
     }
     
-  if (sym->ts.type == BT_CLASS && !sym->attr.class_ok
-      && (sym->attr.class_ok = sym->attr.class_ok || current_attr.allocatable
-			       || current_attr.pointer))
-    gfc_build_class_symbol (&sym->ts, &sym->attr, &sym->as, false);
+  if (sym->ts.type == BT_CLASS
+      && gfc_build_class_symbol (&sym->ts, &sym->attr, &sym->as, false) == FAILURE)
+    {
+      m = MATCH_ERROR;
+      goto cleanup;
+    }
 
   if (gfc_set_array_spec (sym, as, &var_locus) == FAILURE)
     {
@@ -7183,46 +7198,6 @@ gfc_get_type_attr_spec (symbol_attribute *attr, char *name)
 }
 
 
-/* Assign a hash value for a derived type. The algorithm is that of
-   SDBM. The hashed string is '[module_name #] derived_name'.  */
-static unsigned int
-hash_value (gfc_symbol *sym)
-{
-  unsigned int hash = 0;
-  const char *c;
-  int i, len;
-
-  /* Hash of the module or procedure name.  */
-  if (sym->module != NULL)
-    c = sym->module;
-  else if (sym->ns && sym->ns->proc_name
-	     && sym->ns->proc_name->attr.flavor == FL_MODULE)
-    c = sym->ns->proc_name->name;
-  else
-    c = NULL;
-
-  if (c)
-    { 
-      len = strlen (c);
-      for (i = 0; i < len; i++, c++)
-	hash =  (hash << 6) + (hash << 16) - hash + (*c);
-
-      /* Disambiguate between 'a' in 'aa' and 'aa' in 'a'.  */ 
-      hash =  (hash << 6) + (hash << 16) - hash + '#';
-    }
-
-  /* Hash of the derived type name.  */
-  len = strlen (sym->name);
-  c = sym->name;
-  for (i = 0; i < len; i++, c++)
-    hash = (hash << 6) + (hash << 16) - hash + (*c);
-
-  /* Return the hash but take the modulus for the sake of module read,
-     even though this slightly increases the chance of collision.  */
-  return (hash % 100000000);
-}
-
-
 /* Match the beginning of a derived type declaration.  If a type name
    was the result of a function, then it is possible to have a symbol
    already to be known as a derived type yet have no components.  */
@@ -7355,7 +7330,7 @@ gfc_match_derived_decl (void)
 
   if (!sym->hash_value)
     /* Set the hash for the compound name for this type.  */
-    sym->hash_value = hash_value (sym);
+    sym->hash_value = gfc_hash_value (sym);
 
   /* Take over the ABSTRACT attribute.  */
   sym->attr.abstract = attr.abstract;

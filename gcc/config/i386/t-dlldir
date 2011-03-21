@@ -1,0 +1,6 @@
+
+# In a native build, target DLLs go in bindir, where they can be executed.
+# Note double quoting to prevent variables from being evaluated until install
+# time; we don't want to expand them during libgcc.mvars generation.
+
+SHLIB_DLLDIR = $$(bindir)

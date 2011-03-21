@@ -49,17 +49,17 @@ import javax.swing.event.TableColumnModelListener;
 /**
  * The interface used by {@link JTable} to access the columns in the table
  * view.
- * 
+ *
  * @author Andrew Selkirk
  */
 public interface TableColumnModel
 {
   /**
    * Adds a column to the model.
-   * 
+   *
    * @param column  the new column (<code>null</code> not permitted).
-   * 
-   * @throws IllegalArgumentException if <code>column</code> is 
+   *
+   * @throws IllegalArgumentException if <code>column</code> is
    *         <code>null</code>.
    */
   void addColumn(TableColumn column);
@@ -67,14 +67,14 @@ public interface TableColumnModel
   /**
    * Removes a column from the model.  If <code>column</code> is not defined
    * in the model, this method does nothing.
-   * 
+   *
    * @param column TableColumn
    */
   void removeColumn(TableColumn column);
 
   /**
    * Moves a column.
-   * 
+   *
    * @param columnIndex Index of column to move
    * @param newIndex New index of column
    */
@@ -83,23 +83,23 @@ public interface TableColumnModel
   /**
    * Sets the column margin and sends a {@link ChangeEvent} to all registered
    * {@link TableColumnModelListener}s registered with the model.
-   * 
+   *
    * @param margin  the column margin.
-   * 
+   *
    * @see #getColumnMargin()
    */
   void setColumnMargin(int margin);
 
   /**
    * Returns the number of columns in the model.
-   * 
+   *
    * @return The column count.
    */
   int getColumnCount();
 
   /**
    * Returns an enumeration of the columns in the model.
-   * 
+   *
    * @return An enumeration of the columns in the model.
    */
   Enumeration<TableColumn> getColumns();
@@ -108,28 +108,28 @@ public interface TableColumnModel
    * Returns the index of the {@link TableColumn} with the given identifier.
    *
    * @param identifier  the identifier (<code>null</code> not permitted).
-   * 
+   *
    * @return The index of the {@link TableColumn} with the given identifier.
-   * 
-   * @throws IllegalArgumentException if <code>identifier</code> is 
+   *
+   * @throws IllegalArgumentException if <code>identifier</code> is
    *         <code>null</code> or there is no column with that identifier.
    */
   int getColumnIndex(Object identifier);
 
   /**
    * Returns the <code>TableColumn</code> at the specified index.
-   * 
+   *
    * @param columnIndex  the column index.
-   * 
+   *
    * @return The table column.
    */
   TableColumn getColumn(int columnIndex);
 
   /**
    * Returns the column margin.
-   * 
+   *
    * @return The column margin.
-   * 
+   *
    * @see #setColumnMargin(int)
    */
   int getColumnMargin();
@@ -143,11 +143,11 @@ public interface TableColumnModel
    * <li>individual column widths are taken into account, but the column margin
    *     is ignored.</li>
    * </ul>
-   * If no column contains the specified position, this method returns 
+   * If no column contains the specified position, this method returns
    * <code>-1</code>.
-   * 
+   *
    * @param xPosition  the x-position.
-   * 
+   *
    * @return The column index, or <code>-1</code>.
    */
   int getColumnIndexAtX(int xPosition);
@@ -164,17 +164,17 @@ public interface TableColumnModel
    * Sets the flag that indicates whether or not column selection is allowed.
    *
    * @param allowed  the new flag value.
-   * 
+   *
    * @see #getColumnSelectionAllowed()
    */
   void setColumnSelectionAllowed(boolean allowed);
 
   /**
-   * Returns <code>true</code> if column selection is allowed, and 
+   * Returns <code>true</code> if column selection is allowed, and
    * <code>false</code> if column selection is not allowed.
    *
    * @return A boolean.
-   * 
+   *
    * @see #setColumnSelectionAllowed(boolean)
    */
   boolean getColumnSelectionAllowed();
@@ -187,29 +187,29 @@ public interface TableColumnModel
 
   /**
    * Returns the number of selected columns in the model.
-   * 
+   *
    * @return The selected column count.
-   * 
+   *
    * @see #getSelectionModel()
    */
   int getSelectedColumnCount();
 
   /**
-   * Sets the selection model that will be used to keep track of the selected 
+   * Sets the selection model that will be used to keep track of the selected
    * columns.
    *
    * @param model  the selection model (<code>null</code> not permitted).
-   * 
-   * @throws IllegalArgumentException if <code>model</code> is 
+   *
+   * @throws IllegalArgumentException if <code>model</code> is
    *     <code>null</code>.
    */
   void setSelectionModel(ListSelectionModel model);
 
   /**
    * Returns the selection model used to track table column selections.
-   * 
+   *
    * @return The selection model.
-   * 
+   *
    * @see #setSelectionModel(ListSelectionModel)
    */
   ListSelectionModel getSelectionModel();
@@ -223,9 +223,9 @@ public interface TableColumnModel
   void addColumnModelListener(TableColumnModelListener listener);
 
   /**
-   * Deregisters a listener, so that it will no longer receive 
+   * Deregisters a listener, so that it will no longer receive
    * {@link TableColumnModelEvent} notifications.
-   * 
+   *
    * @param listener  the listener.
    */
   void removeColumnModelListener(TableColumnModelListener listener);

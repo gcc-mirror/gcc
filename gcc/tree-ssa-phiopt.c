@@ -311,14 +311,26 @@ tree_ssa_phiopt_worker (bool do_store_elim)
       else
 	{
 	  gimple_seq phis = phi_nodes (bb2);
+	  gimple_stmt_iterator gsi;
 
-	  /* Check to make sure that there is only one PHI node.
+	  /* Check to make sure that there is only one non-virtual PHI node.
 	     TODO: we could do it with more than one iff the other PHI nodes
 	     have the same elements for these two edges.  */
-	  if (! gimple_seq_singleton_p (phis))
+	  phi = NULL;
+	  for (gsi = gsi_start (phis); !gsi_end_p (gsi); gsi_next (&gsi))
+	    {
+	      if (!is_gimple_reg (gimple_phi_result (gsi_stmt (gsi))))
+		continue;
+	      if (phi)
+		{
+		  phi = NULL;
+		  break;
+		}
+	      phi = gsi_stmt (gsi);
+	    }
+	  if (!phi)
 	    continue;
 
-	  phi = gsi_stmt (gsi_start (phis));
 	  arg0 = gimple_phi_arg_def (phi, e1->dest_idx);
 	  arg1 = gimple_phi_arg_def (phi, e2->dest_idx);
 

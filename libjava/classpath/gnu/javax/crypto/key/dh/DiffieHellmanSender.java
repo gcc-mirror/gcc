@@ -1,4 +1,4 @@
-/* DiffieHellmanSender.java -- 
+/* DiffieHellmanSender.java --
    Copyright (C) 2003, 2006 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -53,7 +53,7 @@ import javax.crypto.interfaces.DHPrivateKey;
 /**
  * This implementation is the sender's part of the basic version of the
  * Diffie-Hellman key agreement exchange (A in [HAC]).
- * 
+ *
  * @see DiffieHellmanKeyAgreement
  */
 public class DiffieHellmanSender

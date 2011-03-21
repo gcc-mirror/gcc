@@ -34,7 +34,9 @@
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /**
    *  @brief  Return an iterator pointing to the first element of
@@ -95,7 +97,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     end(_Tp (&__arr)[_Nm])
     { return __arr + _Nm; }
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
 
 #endif // __GXX_EXPERIMENTAL_CXX0X__
 

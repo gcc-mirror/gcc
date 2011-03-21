@@ -1,5 +1,5 @@
 /* Lower vector operations to scalar operations.
-   Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009
+   Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -520,7 +520,24 @@ expand_vector_operations_1 (gimple_stmt_iterator *gsi)
       /* Try for a vector/scalar shift, and if we don't have one, see if we
          have a vector/vector shift */
       else if (!vector_scalar_shift)
-        op = optab_for_tree_code (code, type, optab_vector);
+	{
+	  op = optab_for_tree_code (code, type, optab_vector);
+
+	  if (op && (optab_handler (op, TYPE_MODE (type)) 
+		     != CODE_FOR_nothing))
+	    {
+	      /* Transform vector <op> scalar => vector <op> {x,x,x,x}.  */
+	      int n_parts = TYPE_VECTOR_SUBPARTS (type);
+	      int part_size = tree_low_cst (TYPE_SIZE (TREE_TYPE (type)), 1);
+	      tree part_type = lang_hooks.types.type_for_size (part_size, 1);
+	      tree vect_type = build_vector_type (part_type, n_parts);
+
+	      rhs2 = fold_convert (part_type, rhs2);
+	      rhs2 = build_vector_from_val (vect_type, rhs2);
+	      gimple_assign_set_rhs2 (stmt, rhs2);
+	      update_stmt (stmt);
+	    }
+	}
     }
   else
     op = optab_for_tree_code (code, type, optab_default);
@@ -589,8 +606,7 @@ expand_vector_operations_1 (gimple_stmt_iterator *gsi)
      way to do it is change expand_vector_operation and its callees to
      return a tree_code, RHS1 and RHS2 instead of a tree. */
   gimple_assign_set_rhs_from_tree (gsi, new_rhs);
-
-  gimple_set_modified (gsi_stmt (*gsi), true);
+  update_stmt (gsi_stmt (*gsi));
 }
 
 /* Use this to lower vector operations introduced by the vectorizer,
@@ -607,16 +623,24 @@ expand_vector_operations (void)
 {
   gimple_stmt_iterator gsi;
   basic_block bb;
+  bool cfg_changed = false;
 
   FOR_EACH_BB (bb)
     {
       for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
 	{
 	  expand_vector_operations_1 (&gsi);
-	  update_stmt_if_modified (gsi_stmt (gsi));
+	  /* ???  If we do not cleanup EH then we will ICE in
+	     verification.  But in reality we have created wrong-code
+	     as we did not properly transition EH info and edges to
+	     the piecewise computations.  */
+	  if (maybe_clean_eh_stmt (gsi_stmt (gsi))
+	      && gimple_purge_dead_eh_edges (bb))
+	    cfg_changed = true;
 	}
     }
-  return 0;
+
+  return cfg_changed ? TODO_cleanup_cfg : 0;
 }
 
 struct gimple_opt_pass pass_lower_vector =

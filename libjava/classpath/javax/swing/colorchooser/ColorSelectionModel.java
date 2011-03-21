@@ -47,22 +47,22 @@ import javax.swing.event.ChangeListener;
 /**
  * A model that is used by the {@link JColorChooser} component to represent the
  * selected color.
- * 
- * @author	Andrew Selkirk
+ *
+ * @author      Andrew Selkirk
  */
-public interface ColorSelectionModel 
+public interface ColorSelectionModel
 {
 
   /**
    * Returns the selected color.
-   * 
+   *
    * @return The selected color.
    */
   Color getSelectedColor();
 
   /**
    * Sets the selected color.
-   * 
+   *
    * @param color  the selected color.
    */
   void setSelectedColor(Color color);
@@ -70,13 +70,13 @@ public interface ColorSelectionModel
   /**
    * Registers a listener to receive {@link ChangeEvent} notifications
    * from this model.
-   * 
+   *
    * @param listener  the listener.
    */
   void addChangeListener(ChangeListener listener);
 
   /**
-   * Deregisters a listener so that it no longer receives {@link ChangeEvent} 
+   * Deregisters a listener so that it no longer receives {@link ChangeEvent}
    * notifications from this action.
    *
    * @param listener  the listener.

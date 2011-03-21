@@ -36,7 +36,7 @@ import org.objectweb.asm.FieldVisitor;
 /**
  * A {@link FieldVisitor} that collects the {@link Constant}s of the fields it
  * visits.
- * 
+ *
  * @author Eric Bruneton
  */
 public class FieldConstantsCollector implements FieldVisitor {

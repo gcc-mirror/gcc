@@ -1,4 +1,4 @@
-! { dg-do compile )
+! { dg-do compile }
 ! PR45889 Regression with I/O of element of allocatable array in derived type 
 module cell
   implicit none

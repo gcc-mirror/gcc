@@ -1,4 +1,4 @@
-/* DomDocument.java -- 
+/* DomDocument.java --
    Copyright (C) 1999,2000,2001,2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -76,7 +76,7 @@ import org.w3c.dom.xpath.XPathNSResolver;
  * of basic XML conformance tests.  (The huge XML character tables are
  * hairy to implement.)
  *
- * @author David Brownell 
+ * @author David Brownell
  * @author <a href='mailto:dog@gnu.org'>Chris Burdess</a>
  */
 public class DomDocument
@@ -90,7 +90,7 @@ public class DomDocument
   private boolean defaultAttributes = true;
 
   boolean building; // if true, skip mutation events in the tree
-  
+
   DomDocumentConfiguration config;
 
   String inputEncoding;
@@ -98,7 +98,7 @@ public class DomDocument
   String version = "1.0";
   boolean standalone;
   String systemId;
-  
+
   /**
    * Constructs a Document node, associating it with an instance
    * of the DomImpl class.
@@ -115,7 +115,7 @@ public class DomDocument
   {
     this(new DomImpl());
   }
-  
+
   /**
    * Constructs a Document node, associating it with the specified
    * implementation.  This should only be used in conjunction with
@@ -165,7 +165,7 @@ public class DomDocument
   {
     defaultAttributes = flag;
   }
-  
+
   /**
    * <b>DOM L1</b>
    * Returns the constant "#document".
@@ -236,12 +236,12 @@ public class DomDocument
       {
         doctype = null;
       }
-    
+
     // yes, this is linear in size of document.
     // it'd be easy enough to maintain a hashtable.
     Node current = getDocumentElement();
     Node temp;
-    
+
     if (current == null)
       {
         return null;
@@ -286,14 +286,14 @@ public class DomDocument
                 return element;
               }
           }
-        
+
         // descend?
         if (current.hasChildNodes())
           {
             current = current.getFirstChild();
             continue;
           }
-        
+
         // lateral?
         temp = current.getNextSibling();
         if (temp != null)
@@ -301,8 +301,8 @@ public class DomDocument
             current = temp;
             continue;
           }
-        
-        // back up ... 
+
+        // back up ...
         do
           {
             temp = current.getParentNode();
@@ -385,13 +385,13 @@ public class DomDocument
       }
     return super.replaceChild(newChild, refChild);
   }
- 
+
   // NOTE:  DOM can't really tell when the name of an entity,
   // notation, or PI must follow the namespace rules (excluding
   // colons) instead of the XML rules (which allow them without
   // much restriction).  That's an API issue.  verifyXmlName
   // aims to enforce the XML rules, not the namespace rules.
-  
+
   /**
    * Throws a DOM exception if the specified name is not a legal XML 1.0
    * Name.
@@ -417,7 +417,7 @@ public class DomDocument
       }
 
     // dog: rewritten to use the rules for XML 1.0 and 1.1
-    
+
     // Name start character
     char c = name.charAt(0);
     if (xml11)
@@ -565,13 +565,13 @@ public class DomDocument
     char[] chars = value.toCharArray();
     checkChar(chars, 0, chars.length, xml11);
   }
-  
+
   static void checkChar(char[] buf, int off, int len, boolean xml11)
   {
     for (int i = 0; i < len; i++)
       {
         char c = buf[i];
-        
+
         // assume surrogate pairing checks out OK, for simplicity
         if ((c >= 0x0020 && c <= 0xd7ff) ||
             (c == 0x000a || c == 0x000d || c == 0x0009) ||
@@ -603,7 +603,7 @@ public class DomDocument
   public Element createElement(String name)
   {
     Element element;
-    
+
     if (checkingCharacters)
       {
         checkName(name, "1.1".equals(version));
@@ -633,7 +633,7 @@ public class DomDocument
       {
         checkNCName(name, "1.1".equals(version));
       }
-    
+
     if ("".equals(namespaceURI))
       {
         namespaceURI = null;
@@ -661,13 +661,13 @@ public class DomDocument
                                   "prefixed name '" + name +
                                   "' needs a URI", this, 0);
       }
-    
+
     Element  element = new DomElement(this, namespaceURI, name);
     if (defaultAttributes)
       setDefaultAttributes(element, name);
     return element;
   }
-  
+
   private void setDefaultAttributes(Element element, String name)
   {
     DomDoctype doctype = (DomDoctype) getDoctype();
@@ -687,7 +687,7 @@ public class DomDocument
             if ("#IMPLIED".equals(attr.mode) && value == null)
               continue;
             DomAttr node = (DomAttr) createAttribute(attr.name);
-            
+
             if (value == null)
               {
                 value = "";
@@ -830,7 +830,7 @@ public class DomDocument
       {
         checkNCName(name, "1.1".equals(version));
       }
-    
+
     if ("".equals(namespaceURI))
       {
         namespaceURI = null;
@@ -871,7 +871,7 @@ public class DomDocument
       }
     return new DomAttr(this, namespaceURI, name);
   }
-  
+
   /**
    * <b>DOM L1</b>
    * Returns a newly created reference to the specified entity.
@@ -1006,7 +1006,7 @@ public class DomDocument
           {
             Attr a = (Attr) srcAttrs.item(i);
             Attr dflt;
-            
+
             // maybe update defaulted attributes
             dflt = (Attr) dstAttrs.getNamedItem(a.getNodeName());
             if (dflt != null)
@@ -1019,7 +1019,7 @@ public class DomDocument
                   }
                 continue;
               }
-            
+
             dstAttrs.setNamedItem((Attr) importNode(a, false));
           }
         if (deep)
@@ -1039,7 +1039,7 @@ public class DomDocument
       default:
         throw new DomDOMException(DOMException.NOT_SUPPORTED_ERR, null, src, 0);
       }
-    
+
     // FIXME cleanup a bit -- for deep copies, copy those
     // children in one place, here (code sharing is healthy)
 
@@ -1077,7 +1077,7 @@ public class DomDocument
   }
 
   // DOM Level 3 methods
-  
+
   /**
    * DOM L3
    */
@@ -1090,7 +1090,7 @@ public class DomDocument
   {
     this.inputEncoding = inputEncoding;
   }
-  
+
   /**
    * DOM L3
    */
@@ -1098,12 +1098,12 @@ public class DomDocument
   {
     return encoding;
   }
-  
+
   public void setXmlEncoding(String encoding)
   {
     this.encoding = encoding;
   }
-  
+
   public boolean getXmlStandalone()
   {
     return standalone;
@@ -1181,7 +1181,7 @@ public class DomDocument
     return systemId;
     */
   }
-  
+
   public String getDocumentURI()
   {
     return systemId;
@@ -1454,7 +1454,7 @@ public class DomDocument
         ctx = ctxNext;
       }
   }
-  
+
   public Node renameNode(Node n, String namespaceURI, String qualifiedName)
     throws DOMException
   {
@@ -1514,7 +1514,7 @@ public class DomDocument
                                 "xmlns namespace must be " +
                                 XMLConstants.XMLNS_ATTRIBUTE_NS_URI, src, 0);
               }
-                
+
           }
         src.setNodeName(qualifiedName);
         src.setNamespaceURI(namespaceURI);
@@ -1527,19 +1527,19 @@ public class DomDocument
   }
 
   // -- XPathEvaluator --
-  
+
   public XPathExpression createExpression(String expression,
                                           XPathNSResolver resolver)
     throws XPathException, DOMException
   {
     return new DomXPathExpression(this, expression, resolver);
   }
-  
+
   public XPathNSResolver createNSResolver(Node nodeResolver)
   {
     return new DomXPathNSResolver(nodeResolver);
   }
-    
+
   public Object evaluate(String expression,
                          Node contextNode,
                          XPathNSResolver resolver,
@@ -1553,4 +1553,3 @@ public class DomDocument
   }
 
 }
-

@@ -54,53 +54,50 @@ public class DecodeBF32 extends BMPDecoder {
     private int[] bitmasks;
     private boolean useDefaultMasks;
 
-    public DecodeBF32(BMPFileHeader fh, BMPInfoHeader ih, 
-		      boolean udm){
-	super(fh,ih);
+    public DecodeBF32(BMPFileHeader fh, BMPInfoHeader ih,
+                      boolean udm){
+        super(fh,ih);
 
-	useDefaultMasks = udm;
-	if(useDefaultMasks)
-	    bitmasks = new int[] { 0x00FF0000, 0x0000FF00, 0x000000FF };
+        useDefaultMasks = udm;
+        if(useDefaultMasks)
+            bitmasks = new int[] { 0x00FF0000, 0x0000FF00, 0x000000FF };
     }
 
     public BufferedImage decode(ImageInputStream in) throws IOException, BMPException {
-	if(!useDefaultMasks)
-	    bitmasks = readBitMasks(in);
-	skipToImage(in);
+        if(!useDefaultMasks)
+            bitmasks = readBitMasks(in);
+        skipToImage(in);
 
-	Dimension d = infoHeader.getSize();
-	int h = (int)d.getHeight();
-	int w = (int)d.getWidth();
+        Dimension d = infoHeader.getSize();
+        int h = (int)d.getHeight();
+        int w = (int)d.getWidth();
 
-	// BMP scanlines are padded to dword offsets
-	int scansize = w << 2;
-	int[] data = new int[w*h];
+        // BMP scanlines are padded to dword offsets
+        int scansize = w << 2;
+        int[] data = new int[w*h];
 
-	
-	for(int y=h-1;y>=0;y--){
-	    byte[] scanline = new byte[scansize];
-	    if(in.read(scanline) != scansize)
-		throw new IOException("Couldn't read image data.");
 
-	    for(int x=0;x<w;x++)
-		data[x + y*w] = ((scanline[x<<2] & (0xFF)) | 
-				 ((scanline[(x<<2)+1] & (0xFF)) << 8) |
-				 ((scanline[(x<<2)+2] & (0xFF)) << 16) |
-				 ((scanline[(x<<2)+3] & (0xFF)) << 24));
-	}
+        for(int y=h-1;y>=0;y--){
+            byte[] scanline = new byte[scansize];
+            if(in.read(scanline) != scansize)
+                throw new IOException("Couldn't read image data.");
 
-	ColorModel cm = new DirectColorModel(32,
-					     bitmasks[0], bitmasks[1], bitmasks[2]);
-	SampleModel sm = new SinglePixelPackedSampleModel(DataBuffer.TYPE_INT, 
-							  w, h, 
-							  bitmasks);
-	DataBuffer db = new DataBufferInt(data, w*h);
-	WritableRaster raster = Raster.createWritableRaster(sm, db, null);
-    
-	return new BufferedImage(cm, raster, false, null);
+            for(int x=0;x<w;x++)
+                data[x + y*w] = ((scanline[x<<2] & (0xFF)) |
+                                 ((scanline[(x<<2)+1] & (0xFF)) << 8) |
+                                 ((scanline[(x<<2)+2] & (0xFF)) << 16) |
+                                 ((scanline[(x<<2)+3] & (0xFF)) << 24));
+        }
+
+        ColorModel cm = new DirectColorModel(32,
+                                             bitmasks[0], bitmasks[1], bitmasks[2]);
+        SampleModel sm = new SinglePixelPackedSampleModel(DataBuffer.TYPE_INT,
+                                                          w, h,
+                                                          bitmasks);
+        DataBuffer db = new DataBufferInt(data, w*h);
+        WritableRaster raster = Raster.createWritableRaster(sm, db, null);
+
+        return new BufferedImage(cm, raster, false, null);
     }
 
 }
-
-
-

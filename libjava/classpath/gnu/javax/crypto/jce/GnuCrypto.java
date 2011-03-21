@@ -1,4 +1,4 @@
-/* GnuCrypto.java -- 
+/* GnuCrypto.java --
    Copyright (C) 2004, 2006 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -51,7 +51,7 @@ import java.util.Set;
 /**
  * The additional GNU algorithm implementation as a Java Cryptographic Extension
  * (JCE) Provider.
- * 
+ *
  * @see java.security.Provider
  */
 public final class GnuCrypto
@@ -574,7 +574,7 @@ public final class GnuCrypto
   /**
    * Returns a {@link Set} of names of symmetric key block cipher algorithms
    * available from this {@link Provider}.
-   * 
+   *
    * @return a {@link Set} of cipher names (Strings).
    */
   public static final Set getCipherNames()
@@ -588,7 +588,7 @@ public final class GnuCrypto
   /**
    * Returns a {@link Set} of names of MAC algorithms available from this
    * {@link Provider}.
-   * 
+   *
    * @return a {@link Set} of MAC names (Strings).
    */
   public static final Set getMacNames()

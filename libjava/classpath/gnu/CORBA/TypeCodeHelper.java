@@ -84,7 +84,7 @@ public class TypeCodeHelper
           p.setLength(in.read_long());
           rt = p;
           break;
-          
+
         case TCKind._tk_string :
         case TCKind._tk_wstring :
           s = new StringTypeCode(kind);

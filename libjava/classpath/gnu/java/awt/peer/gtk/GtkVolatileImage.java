@@ -65,7 +65,7 @@ public class GtkVolatileImage extends VolatileImage
                                                          0x0000FF00,
                                                          0x00FF0000,
                                                          0xFF000000);
-                                                         
+
   /**
    * Don't touch, accessed from native code.
    */
@@ -76,15 +76,15 @@ public class GtkVolatileImage extends VolatileImage
   native void destroy(long pointer);
 
   native int[] nativeGetPixels(long pointer);
-  
+
   /**
    * Gets the pixels in the current image from GDK.
-   * 
+   *
    * Note that pixels are in 32-bit RGBA, non-premultiplied, which is different
    * from Cairo's premultiplied ARGB, which is different from Java's standard
    * non-premultiplied ARGB.  Caution is advised when using this method, to
    * ensure that the data format remains consistent with what you expect.
-   *  
+   *
    * @return the current pixels, as reported by GDK.
    */
   public int[] getPixels()
@@ -106,8 +106,8 @@ public class GtkVolatileImage extends VolatileImage
     nativeDrawVolatile(nativePointer, srcPtr, x, y, w, h);
   }
 
-  public GtkVolatileImage(GtkComponentPeer component, 
-			  int width, int height, ImageCapabilities caps)
+  public GtkVolatileImage(GtkComponentPeer component,
+                          int width, int height, ImageCapabilities caps)
   {
     this.width = width;
     this.height = height;
@@ -184,7 +184,7 @@ public class GtkVolatileImage extends VolatileImage
   {
     return width;
   }
-  
+
   public int getHeight(java.awt.image.ImageObserver observer)
   {
     return height;
@@ -194,7 +194,7 @@ public class GtkVolatileImage extends VolatileImage
   {
     return null;
   }
-  
+
   /**
    * Creates a SampleModel that matches GDK's native format
    */

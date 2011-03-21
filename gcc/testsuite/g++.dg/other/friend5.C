@@ -1,7 +1,7 @@
 /* PR c++/32111 */
 /* This used to ICE. */
 
-/* { dg-do "compile" } */
+/* { dg-do compile } */
 
 struct A
 {

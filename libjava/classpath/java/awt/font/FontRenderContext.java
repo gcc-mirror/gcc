@@ -48,7 +48,7 @@ public class FontRenderContext
   private AffineTransform affineTransform;
   private boolean isAntiAliased;
   private boolean usesFractionalMetrics;
- 
+
   /**
    * Construct a new <code>FontRenderContext</code>.
    */
@@ -56,7 +56,7 @@ public class FontRenderContext
   {
     // Do nothing here.
   }
- 
+
   /**
    * Construct a new <code>FontRenderContext</code>.
    */
@@ -68,7 +68,7 @@ public class FontRenderContext
       {
         this.affineTransform = new AffineTransform (tx);
       }
-    
+
     this.isAntiAliased = isAntiAliased;
     this.usesFractionalMetrics = usesFractionalMetrics;
   }
@@ -135,4 +135,3 @@ public class FontRenderContext
     return usesFractionalMetrics;
   }
 }
- 

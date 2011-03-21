@@ -44,58 +44,58 @@ import javax.swing.table.TableModel;
 
 /**
  * An event that describes changes to a {@link TableModel}.
- * 
+ *
  * @see javax.swing.event.TableModelListener
- * 
+ *
  * @author Andrew Selkirk
  */
 public class TableModelEvent extends EventObject
 {
   private static final long serialVersionUID = -7849342674552212824L;
-  
+
   /** A column index representing all columns. */
   public static final int ALL_COLUMNS = -1;
-  
-  /** 
-   * An event type indicating that one or more rows have been deleted from the 
-   * model. 
+
+  /**
+   * An event type indicating that one or more rows have been deleted from the
+   * model.
    */
   public static final int DELETE = -1;
-  
+
   /** A row index representing the header row. */
   public static final int HEADER_ROW = -1;
-  
-  /** 
-   * An event type indicating that one or more rows have been inserted into the 
-   * model. 
+
+  /**
+   * An event type indicating that one or more rows have been inserted into the
+   * model.
    */
   public static final int INSERT = 1;
-  
+
   /** An event type indicating that data has been updated in the model. */
   public static final int UPDATE = 0;
 
   /** The column in the table model that the event relates to. */
   protected int column = 0;
-  
+
   /** The first row in the table model that the event relates to. */
   protected int firstRow = 0;
-  
+
   /** The last row in the table model that the event relates to. */
   protected int lastRow = 0;
-  
-  /** 
-   * The event type (one of {@link #UPDATE}, {@link #INSERT}, {@link #DELETE}). 
+
+  /**
+   * The event type (one of {@link #UPDATE}, {@link #INSERT}, {@link #DELETE}).
    */
   protected int type = 0;
 
   /**
-   * Creates a new <code>TableModelEvent</code> indicating an {@link #UPDATE} 
+   * Creates a new <code>TableModelEvent</code> indicating an {@link #UPDATE}
    * to the data in all columns and rows.
-   * 
+   *
    * @param source  the source object (<code>null</code> not permitted).
-   * 
-   * @throws IllegalArgumentException if <code>source</code> is 
-   *         <code>null</code>. 
+   *
+   * @throws IllegalArgumentException if <code>source</code> is
+   *         <code>null</code>.
    */
   public TableModelEvent(TableModel source)
   {
@@ -105,11 +105,11 @@ public class TableModelEvent extends EventObject
   /**
    * Creates a new <code>TableModelEvent</code> indicating an {@link #UPDATE}
    * to the data in a single row across all columns.
-   * 
+   *
    * @param source  the source object (<code>null</code> not permitted).
    * @param row  the updated row.
-   * 
-   * @throws IllegalArgumentException if <code>source</code> is 
+   *
+   * @throws IllegalArgumentException if <code>source</code> is
    *         <code>null</code>.
    */
   public TableModelEvent(TableModel source, int row)
@@ -120,12 +120,12 @@ public class TableModelEvent extends EventObject
   /**
    * Creates a new <code>TableModelEvent</code> indicating an {@link #UPDATE}
    * to the data in the specified rows across all columns.
-   * 
+   *
    * @param source  the source object (<code>null</code> not permitted).
    * @param firstRow  the first row of update.
    * @param lastRow  the last row of update.
-   * 
-   * @throws IllegalArgumentException if <code>source</code> is 
+   *
+   * @throws IllegalArgumentException if <code>source</code> is
    *         <code>null</code>.
    */
   public TableModelEvent(TableModel source, int firstRow, int lastRow)
@@ -135,18 +135,18 @@ public class TableModelEvent extends EventObject
 
   /**
    * Creates a new <code>TableModelEvent</code> indicating an {@link #UPDATE}
-   * to the data in the specified rows and column.  Use {@link #ALL_COLUMNS} 
+   * to the data in the specified rows and column.  Use {@link #ALL_COLUMNS}
    * for the <code>column</code> argument to indicate all columns.
-   * 
+   *
    * @param source  the source object (<code>null</code> not permitted).
    * @param firstRow  the first row of update.
    * @param lastRow  the last row of update.
    * @param column  the affected column.
-   *    
-   * @throws IllegalArgumentException if <code>source</code> is 
+   *
+   * @throws IllegalArgumentException if <code>source</code> is
    *         <code>null</code>.
    */
-  public TableModelEvent(TableModel source, int firstRow, int lastRow, 
+  public TableModelEvent(TableModel source, int firstRow, int lastRow,
                          int column)
   {
     this(source, firstRow, lastRow, column, UPDATE);
@@ -157,17 +157,17 @@ public class TableModelEvent extends EventObject
    * the specified <code>type</code> on the data in the specified rows and
    * column.  The event type is usually one of {@link #UPDATE}, {@link #INSERT},
    * and {@link #DELETE}.
-   * 
+   *
    * @param source  the source object (<code>null</code> not permitted).
    * @param firstRow  the first row of update.
    * @param lastRow  the last row of update.
    * @param column  the affected column.
    * @param type  the type of change.
-   * 
-   * @throws IllegalArgumentException if <code>source</code> is 
+   *
+   * @throws IllegalArgumentException if <code>source</code> is
    *         <code>null</code>.
    */
-  public TableModelEvent(TableModel source, int firstRow, int lastRow, 
+  public TableModelEvent(TableModel source, int firstRow, int lastRow,
                          int column, int type)
   {
     super(source);
@@ -179,7 +179,7 @@ public class TableModelEvent extends EventObject
 
   /**
    * Returns the affected column of this event.
-   * 
+   *
    * @return The column index.
    */
   public int getColumn()
@@ -189,7 +189,7 @@ public class TableModelEvent extends EventObject
 
   /**
    * Returns the first affected row of this event.
-   * 
+   *
    * @return The row index.
    */
   public int getFirstRow()
@@ -199,7 +199,7 @@ public class TableModelEvent extends EventObject
 
   /**
    * Returns the last affected row of this event.
-   * 
+   *
    * @return The row index.
    */
   public int getLastRow()
@@ -208,9 +208,9 @@ public class TableModelEvent extends EventObject
   }
 
   /**
-   * Returns the type of change indicated by this event (usually one of 
+   * Returns the type of change indicated by this event (usually one of
    * {@link #UPDATE}, {@link #INSERT}, {@link #DELETE}).
-   * 
+   *
    * @return The type.
    */
   public int getType()

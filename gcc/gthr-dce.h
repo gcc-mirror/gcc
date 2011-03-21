@@ -483,7 +483,7 @@ __gthread_mutex_init_function (__gthread_mutex_t *__mutex)
 }
 
 static inline int
-__gthread_mutx_destroy (__gthread_mutex_t *__mutex)
+__gthread_mutex_destroy (__gthread_mutex_t *__mutex)
 {
   if (__gthread_active_p ())
     return __gthrw_(pthread_mutex_destroy) (__mutex);

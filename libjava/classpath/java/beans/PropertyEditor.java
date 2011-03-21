@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -109,101 +109,101 @@ package java.beans;
  **/
 
 public interface PropertyEditor {
-	/** Called by the RAD tool to set the value of this property for the PropertyEditor.
-	 ** If the property type is native, it should be wrapped in the appropriate
-	 ** wrapper type.
-	 ** @param value the value to set this property to.
-	 **/
-	void setValue(Object value);
+        /** Called by the RAD tool to set the value of this property for the PropertyEditor.
+         ** If the property type is native, it should be wrapped in the appropriate
+         ** wrapper type.
+         ** @param value the value to set this property to.
+         **/
+        void setValue(Object value);
 
-	/** Accessor method to get the current value the PropertyEditor is working with.
-	 ** If the property type is native, it will be wrapped in the appropriate
-	 ** wrapper type.
-	 ** @return the current value of the PropertyEditor.
-	 **/
-	Object getValue();
-
-
-	/** Set the value of this property using a String.
-	 ** Whether or not this PropertyEditor is editing a String type, this converts
-	 ** the String into the type of the PropertyEditor.
-	 ** @param text the text to set it to.
-	 ** @exception IllegalArgumentException if the String is in the wrong format or setAsText() is not supported.
-	 **/
-	void setAsText(String text) throws IllegalArgumentException;
-
-	/** Get the value of this property in String format.
-	 ** Many times this can simply use Object.toString().<P>
-	 ** Return null if you do not support getAsText()/setAsText().
-	 ** <code>setAsText(getAsText())</code> should be valid; i.e. the stuff you spit out in
-	 ** getAsText() should be able to go into setAsText().
-	 ** @return the value of this property in String format.
-	 **/
-	String getAsText();
-
-	/** Get a list of possible Strings which this property type can have.
-	 ** The value of these will be used by the RAD tool to construct some sort
-	 ** of list box or to check text box input, and the resulting String passed
-	 ** to setAsText() should be one of these.  Note, however, that like most things
-	 ** with this mammoth, unwieldy interface, this is not guaranteed.  Thus, you
-	 ** must check the value in setAsText() anyway.
-	 ** @return the list of possible String values for this property type.
-	 **/
-	String[] getTags();
+        /** Accessor method to get the current value the PropertyEditor is working with.
+         ** If the property type is native, it will be wrapped in the appropriate
+         ** wrapper type.
+         ** @return the current value of the PropertyEditor.
+         **/
+        Object getValue();
 
 
-	/** The RAD tool calls this to find out whether the PropertyEditor can paint itself.
-	 ** @return true if it can paint itself graphically, false if it cannot.
-	 **/
-	boolean isPaintable();
+        /** Set the value of this property using a String.
+         ** Whether or not this PropertyEditor is editing a String type, this converts
+         ** the String into the type of the PropertyEditor.
+         ** @param text the text to set it to.
+         ** @exception IllegalArgumentException if the String is in the wrong format or setAsText() is not supported.
+         **/
+        void setAsText(String text) throws IllegalArgumentException;
 
-	/** The RAD tool calls this to paint the actual value of the property.
-	 ** The Graphics context will have the same current font, color, etc. as the
-	 ** parent Container.  You may safely change the font, color, etc. and not
-	 ** change them back.<P>
-	 ** This method should do a silent no-op if isPaintable() is false.
-	 ** @param g the Graphics context to paint on
-	 ** @param bounds the rectangle you have reserved to work in
-	 **/
-	void paintValue(java.awt.Graphics g, java.awt.Rectangle bounds);
+        /** Get the value of this property in String format.
+         ** Many times this can simply use Object.toString().<P>
+         ** Return null if you do not support getAsText()/setAsText().
+         ** <code>setAsText(getAsText())</code> should be valid; i.e. the stuff you spit out in
+         ** getAsText() should be able to go into setAsText().
+         ** @return the value of this property in String format.
+         **/
+        String getAsText();
 
-
-	/** The RAD tool calls this to find out whether the PropertyEditor supports a custom component to edit and display itself.
-	 ** @return true if getCustomEditor() will return a component, false if not.
-	 **/
-	boolean supportsCustomEditor();
-
-	/** The RAD tool calls this to grab the component that can edit this type.
-	 ** The component may be painted anywhere the RAD tool wants to paint it--
-	 ** even in its own window.<P>
-	 ** The component must hook up with the PropertyEditor and, whenever a
-	 ** change to the value is made, fire a PropertyChangeEvent to the source.<P>
-	 ** @return the custom editor for this property type.
-	 **/
-	java.awt.Component getCustomEditor();
+        /** Get a list of possible Strings which this property type can have.
+         ** The value of these will be used by the RAD tool to construct some sort
+         ** of list box or to check text box input, and the resulting String passed
+         ** to setAsText() should be one of these.  Note, however, that like most things
+         ** with this mammoth, unwieldy interface, this is not guaranteed.  Thus, you
+         ** must check the value in setAsText() anyway.
+         ** @return the list of possible String values for this property type.
+         **/
+        String[] getTags();
 
 
-	/** Adds a property change listener to this PropertyEditor.
-	 ** @param listener the listener to add
-	 **/
-	void addPropertyChangeListener(PropertyChangeListener listener);
+        /** The RAD tool calls this to find out whether the PropertyEditor can paint itself.
+         ** @return true if it can paint itself graphically, false if it cannot.
+         **/
+        boolean isPaintable();
 
-	/** Removes a property change listener from this PropertyEditor.
-	 ** @param listener the listener to remove
-	 **/
-	void removePropertyChangeListener(PropertyChangeListener listener);
+        /** The RAD tool calls this to paint the actual value of the property.
+         ** The Graphics context will have the same current font, color, etc. as the
+         ** parent Container.  You may safely change the font, color, etc. and not
+         ** change them back.<P>
+         ** This method should do a silent no-op if isPaintable() is false.
+         ** @param g the Graphics context to paint on
+         ** @param bounds the rectangle you have reserved to work in
+         **/
+        void paintValue(java.awt.Graphics g, java.awt.Rectangle bounds);
 
-	/** Get a Java language-specific String which could be used to create an Object
-	 ** of the specified type.  Every PropertyEditor must support this.<P>
-	 ** The reason for this is that while most RAD tools will serialize the Beans
-	 ** and deserialize them at runtime, some RAD tools will generate code that
-	 ** creates the Beans.  Examples of Java initialization strings would be:<P>
-	 ** <OL>
-	 **     <LI><CODE>2</CODE></LI>
-	 **     <LI><CODE>"I am a String"</CODE></LI>
-	 **     <LI><CODE>new MyObject(2, "String", new StringBuffer())</CODE></LI>
-	 ** </OL>
-	 ** @return the initialization string for this object in Java.
-	 **/
-	String getJavaInitializationString();
+
+        /** The RAD tool calls this to find out whether the PropertyEditor supports a custom component to edit and display itself.
+         ** @return true if getCustomEditor() will return a component, false if not.
+         **/
+        boolean supportsCustomEditor();
+
+        /** The RAD tool calls this to grab the component that can edit this type.
+         ** The component may be painted anywhere the RAD tool wants to paint it--
+         ** even in its own window.<P>
+         ** The component must hook up with the PropertyEditor and, whenever a
+         ** change to the value is made, fire a PropertyChangeEvent to the source.<P>
+         ** @return the custom editor for this property type.
+         **/
+        java.awt.Component getCustomEditor();
+
+
+        /** Adds a property change listener to this PropertyEditor.
+         ** @param listener the listener to add
+         **/
+        void addPropertyChangeListener(PropertyChangeListener listener);
+
+        /** Removes a property change listener from this PropertyEditor.
+         ** @param listener the listener to remove
+         **/
+        void removePropertyChangeListener(PropertyChangeListener listener);
+
+        /** Get a Java language-specific String which could be used to create an Object
+         ** of the specified type.  Every PropertyEditor must support this.<P>
+         ** The reason for this is that while most RAD tools will serialize the Beans
+         ** and deserialize them at runtime, some RAD tools will generate code that
+         ** creates the Beans.  Examples of Java initialization strings would be:<P>
+         ** <OL>
+         **     <LI><CODE>2</CODE></LI>
+         **     <LI><CODE>"I am a String"</CODE></LI>
+         **     <LI><CODE>new MyObject(2, "String", new StringBuffer())</CODE></LI>
+         ** </OL>
+         ** @return the initialization string for this object in Java.
+         **/
+        String getJavaInitializationString();
 }

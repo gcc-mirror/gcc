@@ -49,11 +49,11 @@ public abstract class BMPDecoder {
     protected BMPInfoHeader infoHeader;
     protected BMPFileHeader fileHeader;
     protected long offset;
-    
+
     public BMPDecoder(BMPFileHeader fh, BMPInfoHeader ih){
-	fileHeader = fh;
-	infoHeader = ih;
-	offset = BMPFileHeader.SIZE + BMPInfoHeader.SIZE;
+        fileHeader = fh;
+        infoHeader = ih;
+        offset = BMPFileHeader.SIZE + BMPInfoHeader.SIZE;
     }
 
     /**
@@ -61,108 +61,108 @@ public abstract class BMPDecoder {
      * decoder.
      */
     public static BMPDecoder getDecoder(BMPFileHeader fh, BMPInfoHeader ih){
-	switch(ih.getCompression()){
-	case BMPInfoHeader.BI_RGB: // uncompressed RGB
-	    switch(ih.getBitCount()){
-	    case 32:
-		return new DecodeBF32(fh, ih, true);
+        switch(ih.getCompression()){
+        case BMPInfoHeader.BI_RGB: // uncompressed RGB
+            switch(ih.getBitCount()){
+            case 32:
+                return new DecodeBF32(fh, ih, true);
 
-	    case 24:
-		return new DecodeRGB24(fh, ih);
+            case 24:
+                return new DecodeRGB24(fh, ih);
 
-	    case 16:
-		return new DecodeBF16(fh, ih, true);
+            case 16:
+                return new DecodeBF16(fh, ih, true);
 
-	    case 8:
-		return new DecodeRGB8(fh, ih);
+            case 8:
+                return new DecodeRGB8(fh, ih);
 
-	    case 4:
-		return new DecodeRGB4(fh, ih);
+            case 4:
+                return new DecodeRGB4(fh, ih);
 
-	    case 1:
-		return new DecodeRGB1(fh, ih);
+            case 1:
+                return new DecodeRGB1(fh, ih);
 
-	    default:
-		return null;
-	    }
+            default:
+                return null;
+            }
 
-	case BMPInfoHeader.BI_RLE8:
-	    return new DecodeRLE8(fh, ih);
+        case BMPInfoHeader.BI_RLE8:
+            return new DecodeRLE8(fh, ih);
 
-	case BMPInfoHeader.BI_RLE4:
-	    return new DecodeRLE4(fh, ih);
+        case BMPInfoHeader.BI_RLE4:
+            return new DecodeRLE4(fh, ih);
 
-	case BMPInfoHeader.BI_BITFIELDS:
-	    switch(ih.getBitCount()){
-	    case 16:
-		return new DecodeBF16(fh, ih, false);
+        case BMPInfoHeader.BI_BITFIELDS:
+            switch(ih.getBitCount()){
+            case 16:
+                return new DecodeBF16(fh, ih, false);
 
-	    case 32:
-		return new DecodeBF32(fh, ih, false);
+            case 32:
+                return new DecodeBF32(fh, ih, false);
 
-	    default:
-		return null;
-	    }
-		
-	default:
-	    return null;
-	}
+            default:
+                return null;
+            }
+
+        default:
+            return null;
+        }
     }
 
     /**
      * The image decoder.
      */
-    public abstract BufferedImage decode(ImageInputStream in) 
-	throws IOException, BMPException;
+    public abstract BufferedImage decode(ImageInputStream in)
+        throws IOException, BMPException;
 
     /**
      * Reads r,g,b bit masks from an inputstream
      */
     protected int[] readBitMasks(ImageInputStream in) throws IOException {
-	int[] bitmasks = new int[3];
-	byte[] temp = new byte[12];
-	if(in.read(temp) != 12)
-	    throw new IOException("Couldn't read bit masks.");
-	offset += 12;
+        int[] bitmasks = new int[3];
+        byte[] temp = new byte[12];
+        if(in.read(temp) != 12)
+            throw new IOException("Couldn't read bit masks.");
+        offset += 12;
 
-	ByteBuffer buf = ByteBuffer.wrap(temp);
-	buf.order(ByteOrder.LITTLE_ENDIAN);
-	bitmasks[0] = buf.getInt();
-	bitmasks[1] = buf.getInt();
-	bitmasks[2] = buf.getInt();
-	return bitmasks;
+        ByteBuffer buf = ByteBuffer.wrap(temp);
+        buf.order(ByteOrder.LITTLE_ENDIAN);
+        bitmasks[0] = buf.getInt();
+        bitmasks[1] = buf.getInt();
+        bitmasks[2] = buf.getInt();
+        return bitmasks;
     }
 
     /**
-     * Reads an N-color palette from an inputstream in RGBQUAD format and 
+     * Reads an N-color palette from an inputstream in RGBQUAD format and
      * returns an equivalent ColorModel object
      */
     protected IndexColorModel readPalette(ImageInputStream in) throws IOException {
-	int N = infoHeader.getNumberOfPaletteEntries();
-	byte[] r = new byte[N];
-	byte[] g = new byte[N];
-	byte[] b = new byte[N];
-	for(int i=0;i<N;i++){
-	    byte[] RGBquad = new byte[4];
-	    if(in.read(RGBquad) != 4)
-		throw new IOException("Error reading palette information.");
-	    // RGBQUAD structure is b,g,r,0
-	    r[i] = RGBquad[2];
-	    g[i] = RGBquad[1];
-	    b[i] = RGBquad[0];
-	}
-	
-	offset += 4*N;
-	return new IndexColorModel(8, N, r, g, b);
+        int N = infoHeader.getNumberOfPaletteEntries();
+        byte[] r = new byte[N];
+        byte[] g = new byte[N];
+        byte[] b = new byte[N];
+        for(int i=0;i<N;i++){
+            byte[] RGBquad = new byte[4];
+            if(in.read(RGBquad) != 4)
+                throw new IOException("Error reading palette information.");
+            // RGBQUAD structure is b,g,r,0
+            r[i] = RGBquad[2];
+            g[i] = RGBquad[1];
+            b[i] = RGBquad[0];
+        }
+
+        offset += 4*N;
+        return new IndexColorModel(8, N, r, g, b);
     }
 
     /**
      * Read bytes to the start of the image data
      */
     protected void skipToImage(ImageInputStream in) throws IOException {
-	byte[] d = new byte[1];
-	long n = fileHeader.getOffset() - offset;
-	for(int i=0;i<n;i++)
-	    in.read(d);
+        byte[] d = new byte[1];
+        long n = fileHeader.getOffset() - offset;
+        for(int i=0;i<n;i++)
+            in.read(d);
     }
 }

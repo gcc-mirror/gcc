@@ -60,22 +60,20 @@ static const int RUNTIME_TYPE_KIND_UINT16 = 9;
 static const int RUNTIME_TYPE_KIND_UINT32 = 10;
 static const int RUNTIME_TYPE_KIND_UINT64 = 11;
 static const int RUNTIME_TYPE_KIND_UINTPTR = 12;
-static const int RUNTIME_TYPE_KIND_FLOAT = 13;
-static const int RUNTIME_TYPE_KIND_FLOAT32 = 14;
-static const int RUNTIME_TYPE_KIND_FLOAT64 = 15;
-static const int RUNTIME_TYPE_KIND_COMPLEX = 16;
-static const int RUNTIME_TYPE_KIND_COMPLEX64 = 17;
-static const int RUNTIME_TYPE_KIND_COMPLEX128 = 18;
-static const int RUNTIME_TYPE_KIND_ARRAY = 19;
-static const int RUNTIME_TYPE_KIND_CHAN = 20;
-static const int RUNTIME_TYPE_KIND_FUNC = 21;
-static const int RUNTIME_TYPE_KIND_INTERFACE = 22;
-static const int RUNTIME_TYPE_KIND_MAP = 23;
-static const int RUNTIME_TYPE_KIND_PTR = 24;
-static const int RUNTIME_TYPE_KIND_SLICE = 25;
-static const int RUNTIME_TYPE_KIND_STRING = 26;
-static const int RUNTIME_TYPE_KIND_STRUCT = 27;
-static const int RUNTIME_TYPE_KIND_UNSAFE_POINTER = 28;
+static const int RUNTIME_TYPE_KIND_FLOAT32 = 13;
+static const int RUNTIME_TYPE_KIND_FLOAT64 = 14;
+static const int RUNTIME_TYPE_KIND_COMPLEX64 = 15;
+static const int RUNTIME_TYPE_KIND_COMPLEX128 = 16;
+static const int RUNTIME_TYPE_KIND_ARRAY = 17;
+static const int RUNTIME_TYPE_KIND_CHAN = 18;
+static const int RUNTIME_TYPE_KIND_FUNC = 19;
+static const int RUNTIME_TYPE_KIND_INTERFACE = 20;
+static const int RUNTIME_TYPE_KIND_MAP = 21;
+static const int RUNTIME_TYPE_KIND_PTR = 22;
+static const int RUNTIME_TYPE_KIND_SLICE = 23;
+static const int RUNTIME_TYPE_KIND_STRING = 24;
+static const int RUNTIME_TYPE_KIND_STRUCT = 25;
+static const int RUNTIME_TYPE_KIND_UNSAFE_POINTER = 26;
 
 // To build the complete list of methods for a named type we need to
 // gather all methods from anonymous fields.  Those methods may
@@ -801,6 +799,10 @@ class Type
   check_make_expression(Expression_list* args, source_location location)
   { return this->do_check_make_expression(args, location); }
 
+  // Convert the builtin named types.
+  static void
+  convert_builtin_named_types(Gogo*);
+
   // Return a tree representing this type.
   tree
   get_tree(Gogo*);
@@ -1083,6 +1085,9 @@ class Type
 			     Type_identical) Type_trees;
 
   static Type_trees type_trees;
+
+  // A list of builtin named types.
+  static std::vector<Named_type*> named_builtin_types;
 
   // The type classification.
   Type_classification classification_;
@@ -1607,6 +1612,9 @@ class Function_type : public Type
   Function_type*
   copy_with_receiver(Type*) const;
 
+  static Type*
+  make_function_type_descriptor_type();
+
  protected:
   int
   do_traverse(Traverse*);
@@ -1638,9 +1646,6 @@ class Function_type : public Type
   do_export(Export*) const;
 
  private:
-  static Type*
-  make_function_type_descriptor_type();
-
   Expression*
   type_descriptor_params(Type*, const Typed_identifier*,
 			 const Typed_identifier_list*);
@@ -1682,6 +1687,9 @@ class Pointer_type : public Type
   static Pointer_type*
   do_import(Import*);
 
+  static Type*
+  make_pointer_type_descriptor_type();
+
  protected:
   int
   do_traverse(Traverse*);
@@ -1712,9 +1720,6 @@ class Pointer_type : public Type
   do_export(Export*) const;
 
  private:
-  static Type*
-  make_pointer_type_descriptor_type();
-
   // The type to which this type points.
   Type* to_type_;
 };
@@ -1938,6 +1943,9 @@ class Struct_type : public Type
   tree
   fill_in_tree(Gogo*, tree);
 
+  static Type*
+  make_struct_type_descriptor_type();
+
  protected:
   int
   do_traverse(Traverse*);
@@ -1970,12 +1978,17 @@ class Struct_type : public Type
   do_export(Export*) const;
 
  private:
+  // Used to avoid infinite loops in field_reference_depth.
+  struct Saw_named_type
+  {
+    Saw_named_type* next;
+    Named_type* nt;
+  };
+
   Field_reference_expression*
   field_reference_depth(Expression* struct_expr, const std::string& name,
-			source_location, unsigned int* depth) const;
-
-  static Type*
-  make_struct_type_descriptor_type();
+			source_location, Saw_named_type*,
+			unsigned int* depth) const;
 
   // The fields of the struct.
   Struct_field_list* fields_;
@@ -2030,9 +2043,19 @@ class Array_type : public Type
   static Array_type*
   do_import(Import*);
 
+  // Fill in the fields for a named array type.
+  tree
+  fill_in_array_tree(Gogo*, tree);
+
   // Fill in the fields for a named slice type.
   tree
-  fill_in_tree(Gogo*, tree);
+  fill_in_slice_tree(Gogo*, tree);
+
+  static Type*
+  make_array_type_descriptor_type();
+
+  static Type*
+  make_slice_type_descriptor_type();
 
  protected:
   int
@@ -2082,12 +2105,6 @@ class Array_type : public Type
   tree
   get_length_tree(Gogo*);
 
-  Type*
-  make_array_type_descriptor_type();
-
-  Type*
-  make_slice_type_descriptor_type();
-
   Expression*
   array_type_descriptor(Gogo*, Named_type*);
 
@@ -2130,6 +2147,9 @@ class Map_type : public Type
   static Map_type*
   do_import(Import*);
 
+  static Type*
+  make_map_type_descriptor_type();
+
  protected:
   int
   do_traverse(Traverse*);
@@ -2170,9 +2190,6 @@ class Map_type : public Type
   do_export(Export*) const;
 
  private:
-  static Type*
-  make_map_type_descriptor_type();
-
   // The key type.
   Type* key_type_;
   // The value type.
@@ -2216,6 +2233,9 @@ class Channel_type : public Type
   static Channel_type*
   do_import(Import*);
 
+  static Type*
+  make_chan_type_descriptor_type();
+
  protected:
   int
   do_traverse(Traverse* traverse)
@@ -2254,9 +2274,6 @@ class Channel_type : public Type
   do_export(Export*) const;
 
  private:
-  static Type*
-  make_chan_type_descriptor_type();
-
   // Whether this channel can send data.
   bool may_send_;
   // Whether this channel can receive data.
@@ -2275,6 +2292,11 @@ class Interface_type : public Type
     : Type(TYPE_INTERFACE),
       methods_(methods), location_(location)
   { gcc_assert(methods == NULL || !methods->empty()); }
+
+  // The location where the interface type was defined.
+  source_location
+  location() const
+  { return this->location_; }
 
   // Return whether this is an empty interface.
   bool
@@ -2329,9 +2351,20 @@ class Interface_type : public Type
   static Interface_type*
   do_import(Import*);
 
+  // Make a struct for an empty interface type.
+  static tree
+  empty_type_tree(Gogo*);
+
+  // Make a struct for non-empty interface type.
+  static tree
+  non_empty_type_tree(source_location);
+
   // Fill in the fields for a named interface type.
   tree
   fill_in_tree(Gogo*, tree);
+
+  static Type*
+  make_interface_type_descriptor_type();
 
  protected:
   int
@@ -2363,9 +2396,6 @@ class Interface_type : public Type
   do_export(Export*) const;
 
  private:
-  static Type*
-  make_interface_type_descriptor_type();
-
   // The list of methods associated with the interface.  This will be
   // NULL for the empty interface.
   Typed_identifier_list* methods_;
@@ -2387,8 +2417,9 @@ class Named_type : public Type
       named_object_(named_object), in_function_(NULL), type_(type),
       local_methods_(NULL), all_methods_(NULL),
       interface_method_tables_(NULL), pointer_interface_method_tables_(NULL),
-      location_(location), named_tree_(NULL), is_visible_(true),
-      is_error_(false), seen_(0)
+      location_(location), named_tree_(NULL), dependencies_(),
+      is_visible_(true), is_error_(false), is_converted_(false),
+      is_circular_(false), seen_(0)
   { }
 
   // Return the associated Named_object.  This holds the actual name.
@@ -2460,6 +2491,12 @@ class Named_type : public Type
   bool
   is_builtin() const
   { return this->location_ == BUILTINS_LOCATION; }
+
+  // Whether this is a circular type: a pointer or function type that
+  // refers to itself, which is not possible in C.
+  bool
+  is_circular() const
+  { return this->is_circular_; }
 
   // Return the base type for this type.
   Type*
@@ -2535,6 +2572,12 @@ class Named_type : public Type
   bool
   named_type_has_hidden_fields(std::string* reason) const;
 
+  // Note that a type must be converted to the backend representation
+  // before we convert this type.
+  void
+  add_dependency(Named_type* nt)
+  { this->dependencies_.push_back(nt); }
+
   // Export the type.
   void
   export_named_type(Export*, const std::string& name) const;
@@ -2542,6 +2585,10 @@ class Named_type : public Type
   // Import a named type.
   static void
   import_named_type(Import*, Named_type**);
+
+  // Initial conversion to backend representation.
+  void
+  convert(Gogo*);
 
  protected:
   int
@@ -2586,6 +2633,10 @@ class Named_type : public Type
   do_export(Export*) const;
 
  private:
+  // Create the placeholder during conversion.
+  void
+  create_placeholder(Gogo*);
+
   // A mapping from interfaces to the associated interface method
   // tables for this type.  This maps to a decl.
   typedef Unordered_map_hash(const Interface_type*, tree, Type_hash_identical,
@@ -2615,6 +2666,14 @@ class Named_type : public Type
   // The tree for this type while converting to GENERIC.  This is used
   // to avoid endless recursion when a named type refers to itself.
   tree named_tree_;
+  // A list of types which must be converted to the backend
+  // representation before this type can be converted.  This is for
+  // cases like
+  //   type S1 { p *S2 }
+  //   type S2 { s S1 }
+  // where we can't convert S2 to the backend representation unless we
+  // have converted S1.
+  std::vector<Named_type*> dependencies_;
   // Whether this type is visible.  This is false if this type was
   // created because it was referenced by an imported object, but the
   // type itself was not exported.  This will always be true for types
@@ -2622,6 +2681,12 @@ class Named_type : public Type
   bool is_visible_;
   // Whether this type is erroneous.
   bool is_error_;
+  // Whether this type has been converted to the backend
+  // representation.
+  bool is_converted_;
+  // Whether this is a pointer or function type which refers to the
+  // type itself.
+  bool is_circular_;
   // In a recursive operation such as has_hidden_fields, this flag is
   // used to prevent infinite recursion when a type refers to itself.
   // This is mutable because it is always reset to false when the

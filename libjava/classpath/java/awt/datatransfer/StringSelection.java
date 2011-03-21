@@ -55,7 +55,7 @@ public class StringSelection implements Transferable, ClipboardOwner
 
 // List of flavors we support
 // XXX: DataFlavor.plainTextFlavor is deprecated.
-static final DataFlavor[] supported_flavors 
+static final DataFlavor[] supported_flavors
    = { DataFlavor.stringFlavor,
        DataFlavor.plainTextFlavor };
 
@@ -154,5 +154,4 @@ lostOwnership(Clipboard clipboard, Transferable contents)
   // FIXME: What does this do?
 }
 
-} // class StringSelection 
-
+} // class StringSelection

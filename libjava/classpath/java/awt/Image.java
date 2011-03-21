@@ -193,13 +193,13 @@ public abstract class Image
     {
       case SCALE_AREA_AVERAGING:
       case SCALE_SMOOTH:
-	filter = new AreaAveragingScaleFilter(width, height);
-	break;
+        filter = new AreaAveragingScaleFilter(width, height);
+        break;
       case SCALE_DEFAULT:
       case SCALE_FAST:
       case SCALE_REPLICATE:
       default:
-	filter = new ReplicateScaleFilter(width, height);
+        filter = new ReplicateScaleFilter(width, height);
     }
 
     ImageProducer producer = new FilteredImageSource(getSource(), filter);
@@ -215,7 +215,7 @@ public abstract class Image
   /**
    * Sets the acceleration priority of the image.
    * This is a value from 0 (lowest) to 1 (highest), which may
-   * be used as a hint for image acceleration. 
+   * be used as a hint for image acceleration.
    * E.g. higher priority images may be stored in video memory.
    * @param priority - the priority
    * @throws IllegalArgumentException if priority is not >= 0 and <= 1.

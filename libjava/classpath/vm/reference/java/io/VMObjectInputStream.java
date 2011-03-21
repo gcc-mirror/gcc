@@ -48,7 +48,7 @@ final class VMObjectInputStream
   {
     if (Configuration.INIT_LOAD_LIBRARY)
       {
-	System.loadLibrary("javaio");
+        System.loadLibrary("javaio");
       }
   }
 
@@ -59,6 +59,6 @@ final class VMObjectInputStream
    * which is a super class of the given clazz.
    */
   static native Object allocateObject(Class clazz, Class constr_clazz,
-				      Constructor constructor)
+                                      Constructor constructor)
     throws InstantiationException;
 }

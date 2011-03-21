@@ -1,4 +1,4 @@
-/* SelectorImpl.java -- 
+/* SelectorImpl.java --
    Copyright (C) 2002, 2003, 2004, 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -62,12 +62,12 @@ public class SelectorImpl extends AbstractSelector
    * selectThread and unhandledWakeup fields.
    */
   private Object selectThreadMutex = new Object ();
-  
+
   /**
    * Any thread that's currently blocked in a select operation.
    */
   private Thread selectThread;
-  
+
   /**
    * Indicates whether we have an unhandled wakeup call. This can
    * be due to either wakeup() triggering a thread interruption while
@@ -82,7 +82,7 @@ public class SelectorImpl extends AbstractSelector
   public SelectorImpl (SelectorProvider provider)
   {
     super (provider);
-    
+
     keys = new HashSet<SelectionKey> ();
     selected = new HashSet<SelectionKey> ();
   }
@@ -97,7 +97,7 @@ public class SelectorImpl extends AbstractSelector
   {
     // Cancel any pending select operation.
     wakeup();
-    
+
     synchronized (keys)
       {
         synchronized (selected)
@@ -117,7 +117,7 @@ public class SelectorImpl extends AbstractSelector
 
     return Collections.unmodifiableSet (keys);
   }
-    
+
   public final int selectNow()
     throws IOException
   {
@@ -174,7 +174,7 @@ public class SelectorImpl extends AbstractSelector
   {
     if (!isOpen())
       throw new ClosedSelectorException();
-      
+
     synchronized (keys)
       {
         synchronized (selected)
@@ -199,7 +199,7 @@ public class SelectorImpl extends AbstractSelector
             // FIXME: Not sure from the spec at what point we should
             // return "immediately". Is it here or immediately upon
             // entry to this function?
-            
+
             // NOTE: There's a possibility of another thread calling
             // wakeup() immediately after our thread releases
             // selectThreadMutex's monitor here, in which case we'll
@@ -285,18 +285,18 @@ public class SelectorImpl extends AbstractSelector
                 // Set new ready write ops
                 for (int i = 0; i < write.length; i++)
                   {
-		    if (key.getNativeFD() == write[i])
-		      {
-			if (key.channel() instanceof SocketChannel)
-			  {
-			    if (((SocketChannel) key.channel ()).isConnected ())
-			      ops = ops | SelectionKey.OP_WRITE;
-			    else
-			      ops = ops | SelectionKey.OP_CONNECT;
-			  }
-			else
-			  ops = ops | SelectionKey.OP_WRITE;
-		      }
+                    if (key.getNativeFD() == write[i])
+                      {
+                        if (key.channel() instanceof SocketChannel)
+                          {
+                            if (((SocketChannel) key.channel ()).isConnected ())
+                              ops = ops | SelectionKey.OP_WRITE;
+                            else
+                              ops = ops | SelectionKey.OP_CONNECT;
+                          }
+                        else
+                          ops = ops | SelectionKey.OP_WRITE;
+                      }
                   }
 
                 // FIXME: We dont handle exceptional file descriptors yet.
@@ -311,12 +311,12 @@ public class SelectorImpl extends AbstractSelector
                 key.readyOps (key.interestOps () & ops);
               }
             deregisterCancelledKeys();
-            
+
             return result;
           }
         }
   }
-    
+
   public final Set<SelectionKey> selectedKeys()
   {
     if (!isOpen())
@@ -332,19 +332,19 @@ public class SelectorImpl extends AbstractSelector
     // do the reverse under the covers: wakeup triggers a thread
     // interrupt followed by a subsequent reset of the thread's
     // interrupt status within select().
-    
+
     // First, acquire the monitor of the object regulating
     // access to our selectThread and unhandledWakeup fields.
     synchronized (selectThreadMutex)
       {
         unhandledWakeup = true;
-        
+
         // Interrupt any thread which is currently blocked in
         // a select operation.
         if (selectThread != null)
           selectThread.interrupt ();
       }
-      
+
     return this;
   }
 
@@ -372,7 +372,7 @@ public class SelectorImpl extends AbstractSelector
                                          Object att)
   {
     SelectionKeyImpl result;
-    
+
     if (ch instanceof SocketChannelImpl)
       result = new SocketChannelSelectionKey (ch, this);
     else if (ch instanceof DatagramChannelImpl)
@@ -388,8 +388,8 @@ public class SelectorImpl extends AbstractSelector
       {
         keys.add (result);
 
-	result.interestOps (ops);
-	result.attach (att);
+        result.interestOps (ops);
+        result.attach (att);
       }
 
     return result;

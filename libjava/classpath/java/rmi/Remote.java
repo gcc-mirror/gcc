@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -42,15 +42,15 @@ package java.rmi;
  * from outside of this virtual machine through remote method calls.
  * <p>
  * Remote invokable methods of remote object implementations are specified
- * as the methods defined in the implemented remote interfaces. Typically 
- * remote object implementations are subclasses of the convenience classes 
- * {@link java.rmi.server.UnicastRemoteObject} or 
+ * as the methods defined in the implemented remote interfaces. Typically
+ * remote object implementations are subclasses of the convenience classes
+ * {@link java.rmi.server.UnicastRemoteObject} or
  * {@link java.rmi.activation.Activatable} implementing one or more remote
  * interfaces indicating their remotely accessible methods. The convenience
- * classes provide implementations for correct remote object creation, 
+ * classes provide implementations for correct remote object creation,
  * hash, equals and toString methods.
  * </p>
- * 
+ *
  * @author unknown
  */
 public interface Remote {

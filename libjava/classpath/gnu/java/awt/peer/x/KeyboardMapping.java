@@ -54,7 +54,7 @@ final class KeyboardMapping
 
   /**
    * Maps X keycodes to AWT keycodes.
-   * 
+   *
    * @param xInput the X input event
    * @param xKeyCode the X keycode to map
    * @param xMods the X modifiers

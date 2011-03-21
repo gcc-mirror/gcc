@@ -59,7 +59,7 @@ import java.util.Map;
 
 /**
  * Provides the default transient activation system.
- * 
+ *
  * @author Audrius Meskauskas (audriusa@bioinformatics.org)
  */
 public class ActivationSystemTransient
@@ -69,8 +69,8 @@ public class ActivationSystemTransient
   /**
    * Maps group identifiers into group descriptions.
    */
-  protected final BidiTable groupDescs;  
-  
+  protected final BidiTable groupDescs;
+
   /**
    * Maps object identifiers into object activation descriptions
    */
@@ -80,29 +80,29 @@ public class ActivationSystemTransient
    * Maps group identifiers into already activated groups.
    */
   protected transient final Map groupInstantiators = new Hashtable();
-  
+
   /**
    * The cache of the activated objects, maps activation ids to remote
    * object stubs.
    */
   protected transient final Map activatedObjects = new HashMap();
- 
+
   /**
    * The object incarnation counter.
    */
   static long groupIncarnations = 0;
-  
+
   /**
    * The singleton of this activation system
    */
   static ActivationSystem singleton;
-  
+
   /**
    * Set to true to print the event messages to console.
    */
   public static boolean debug = false;
-  
-  
+
+
   /**
    * Creates the group which uses the given maps to store the data.
    */
@@ -112,7 +112,7 @@ public class ActivationSystemTransient
     descriptions = objectDescriptions;
     groupDescs = groupDescriptiopns;
   }
-  
+
   /**
    * Creates the group with transient maps.
    */
@@ -120,14 +120,14 @@ public class ActivationSystemTransient
   {
     this (new BidiTable(), new BidiTable());
   }
-  
+
   public static ActivationSystem getInstance()
   {
     if (singleton == null)
       singleton = new ActivationSystemTransient();
     return singleton;
   }
-  
+
   /**
    * Activate the given object (try cache first if force = false)
    */
@@ -149,7 +149,7 @@ public class ActivationSystemTransient
       throw new UnknownObjectException("Activating unknown object  "+
                                        id == null ? "null" : id.toString());
 
-    ActivationInstantiator group = 
+    ActivationInstantiator group =
       (ActivationInstantiator) groupInstantiators.get(desc.getGroupID());
 
     if (group == null)
@@ -159,7 +159,7 @@ public class ActivationSystemTransient
         ActivationGroupDesc adesc = (ActivationGroupDesc) groupDescs.get(gid);
 
         if (adesc == null)
-          throw new UnknownGroupException("Activating unknown group " 
+          throw new UnknownGroupException("Activating unknown group "
                                           + gid + " for "+ id+" this "+this);
 
         synchronized (ActivationSystemTransient.class)
@@ -179,7 +179,7 @@ public class ActivationSystemTransient
       }
     return object;
   }
-  
+
   /**
    * Returns the activation monitor (THIS) and remebers the instantiator, used
    * by that group.
@@ -192,10 +192,10 @@ public class ActivationSystemTransient
     groupInstantiators.put(id, group);
     return this;
   }
-  
+
   /**
    * Get the activation descriptor for the given activation id.
-   * 
+   *
    * @return the activation descriptor, never null.
    * @throws UnknownObjectException if such object is unknown.
    */
@@ -208,10 +208,10 @@ public class ActivationSystemTransient
                                        id == null ? "null" : id.toString());
     return desc;
   }
-  
+
   /**
    * Get the descriptor of the given activation group.
-   * 
+   *
    * @return the activation group descriptor, never null.
    * @throws UnknownGroupException if such group is unknown
    */
@@ -245,7 +245,7 @@ public class ActivationSystemTransient
 
     return id;
   }
-  
+
   /**
    * Create the object activation id and put this id-descriptor combination into
    * the group map. The new ID will only be created if this description has not
@@ -261,13 +261,13 @@ public class ActivationSystemTransient
         id = new ActivationID(this);
         descriptions.put(id, desc);
       }
-    
+
     if (debug)
       System.out.println("Register object " + id +":"+desc+" this "+this);
-    
+
     return id;
   }
-  
+
   /**
    * Replace the activation descriptor, return the previous descriptor.
    */
@@ -279,7 +279,7 @@ public class ActivationSystemTransient
     descriptions.put(id, desc);
     return prev;
   }
-   
+
   /**
    * Replace the activation group descriptor, return the previous descriptor.
    */
@@ -292,7 +292,7 @@ public class ActivationSystemTransient
     groupDescs.put(groupId, groupDesc);
     return prev;
   }
-  
+
   /**
    * Calls .shutdown on all bidirectional tables (has no effect if these
    * table are not persistent).
@@ -302,7 +302,7 @@ public class ActivationSystemTransient
     descriptions.shutdown();
     groupDescs.shutdown();
   }
-  
+
   /**
    * Remove the group from the group map
    */
@@ -311,11 +311,11 @@ public class ActivationSystemTransient
   {
     if (! groupDescs.containsKey(groupId))
       throw new UnknownGroupException("Unknown group "+groupId);
-    
+
     groupDescs.removeKey(groupId);
     groupInstantiators.remove(groupId);
   }
-  
+
   /**
    * Remove the object id from the active object and description maps.
    */
@@ -331,7 +331,7 @@ public class ActivationSystemTransient
         activatedObjects.remove(id);
       }
   }
-  
+
   /**
    * Put the object into active object map.
    */
@@ -360,7 +360,7 @@ public class ActivationSystemTransient
         throw un;
       }
   }
-  
+
   /**
    * Check if the group is known. Remove all active objects, belonging to
    * that group, from the active object cache.
@@ -370,9 +370,9 @@ public class ActivationSystemTransient
   {
     if (! groupInstantiators.containsKey(groupId))
       throw new UnknownGroupException("Inactivating unkwnon group");
-    
+
     groupInstantiators.remove(groupId);
-    
+
     // Remove all members of this group from the cache.
     synchronized (activatedObjects)
     {

@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -16,7 +16,7 @@ General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with GNU Classpath; see the file COPYING.  If not, write to the
 Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-02111-1307 USA. 
+02111-1307 USA.
 
 Linking this library statically or dynamically with other modules is
 making a combined work based on this library.  Thus, the terms and
@@ -198,13 +198,13 @@ public class Driver {
 
    /**
     *  Path to the directory where temporary files should be stored.
-    *  Defaults to system tempdir, but can be overridden by user 
+    *  Defaults to system tempdir, but can be overridden by user
     *  with -workpath.
     */
    private String workingPath = System.getProperty("java.io.tmpdir");
 
    /**
-    *  Temporary directory created by this doclet where all 
+    *  Temporary directory created by this doclet where all
     *  temporary files will be stored in. If no temporary
     *  files are needed (i.e. no XSLT postprocessing stage
     *  specified by user), this is <code>null</code>.
@@ -272,7 +272,7 @@ public class Driver {
    /**
     *  Stores options to be passed to the DocTranslet.
     */
-   private DocTransletOptions docTransletOptions = new DocTransletOptions();   
+   private DocTransletOptions docTransletOptions = new DocTransletOptions();
 
    /**
     *  Stores the package groups specified in the user
@@ -301,7 +301,7 @@ public class Driver {
     *  Output an XML tag describing a com.sun.javadoc.Type object.
     *  Assumes that the tag does not have subtags.
     *
-    *  @param level  Level of indentation. Will be multiplied by 
+    *  @param level  Level of indentation. Will be multiplied by
     *                <code>indentStep</code> to yield actual amount
     *                of whitespace inserted at start of line.
     *  @param tag    Identifier for the XML tag being output.
@@ -321,11 +321,11 @@ public class Driver {
          packageName = typeAsClassDoc.containingPackage().name();
       }
       println(level, "<"+tagPrefix+":"+tag + " typename=\""+type.typeName()+"\""+
-	      " qualifiedtypename=\""+type.qualifiedTypeName()+"\""
-	      +(type.dimension().length()==0?"":" dimension=\""+type.dimension()+"\"")
+              " qualifiedtypename=\""+type.qualifiedTypeName()+"\""
+              +(type.dimension().length()==0?"":" dimension=\""+type.dimension()+"\"")
               +(isIncluded?" isIncluded=\"true\"" : "")
               +((null != packageName)?" package=\"" + packageName + "\"" : "")
-	      +(atomic?"/":"")+">");
+              +(atomic?"/":"")+">");
    }
 
    protected void outputExecutableMemberDocBody(int level, ExecutableMemberDoc memberDoc) {
@@ -336,24 +336,24 @@ public class Driver {
 
       Parameter[] parameters = memberDoc.parameters();
       for (int i=0, ilim=parameters.length; i<ilim; ++i) {
-	 Parameter parameter = parameters[i];
-	 outputType(level, "parameter name=\""+parameter.name()+"\"", parameter.type());
+         Parameter parameter = parameters[i];
+         outputType(level, "parameter name=\""+parameter.name()+"\"", parameter.type());
       }
 
       ClassDoc[] exceptions = memberDoc.thrownExceptions();
       for (int i=0, ilim=exceptions.length; i<ilim; ++i) {
-	 ClassDoc exception = exceptions[i];
-	 outputType(level, "thrownException", exception);
+         ClassDoc exception = exceptions[i];
+         outputType(level, "thrownException", exception);
        }
 
       printAtomTag(level, "signature full=\""+memberDoc.signature()+"\" flat=\""+memberDoc.flatSignature()+"\"");
 
       if (memberDoc.isNative()) {
-	 printAtomTag(level, "isNative");
+         printAtomTag(level, "isNative");
       }
 
       if (memberDoc.isSynchronized()) {
-	 printAtomTag(level, "isSynchronized");
+         printAtomTag(level, "isSynchronized");
       }
    }
 
@@ -373,10 +373,10 @@ public class Driver {
    protected void outputFieldDocBody(int level, FieldDoc fieldDoc) {
       outputType(level, "type", fieldDoc.type());
       if (fieldDoc.isTransient()) {
-	 printAtomTag(level, "isTransient");
+         printAtomTag(level, "isTransient");
       }
       if (fieldDoc.isVolatile()) {
-	 printAtomTag(level, "isVolatile");
+         printAtomTag(level, "isVolatile");
       }
    }
 
@@ -397,13 +397,13 @@ public class Driver {
 
    protected void outputSuperInterfacesRec(int level, ClassDoc classDoc) {
       if (null!=classDoc) {
-	 ClassDoc[] interfaces = classDoc.interfaces();
+         ClassDoc[] interfaces = classDoc.interfaces();
          if (null != interfaces) {
             for (int i=0, ilim=interfaces.length; i<ilim; ++i) {
                outputType(level, "superimplements", interfaces[i]);
             }
          }
-	 outputSuperInterfacesRec(level, classDoc.superclass());
+         outputSuperInterfacesRec(level, classDoc.superclass());
       }
    }
 
@@ -411,12 +411,12 @@ public class Driver {
       println();
       printOpenTag(1, "classdoc name=\""+classDoc.name()+"\" qualifiedtypename=\""+classDoc.qualifiedName()+"\" isIncluded=\"true\"");
       if (null!=classDoc.superclass()) {
-	 outputType(2, "superclass", classDoc.superclass());
+         outputType(2, "superclass", classDoc.superclass());
       }
 
       ClassDoc[] interfaces = classDoc.interfaces();
       for (int i=0, ilim=interfaces.length; i<ilim; ++i) {
-	 outputType(2, "implements", interfaces[i]);
+         outputType(2, "implements", interfaces[i]);
       }
       outputSuperInterfacesRec(2, classDoc.superclass());
 
@@ -441,33 +441,33 @@ public class Driver {
       println();
       printOpenTag(1, "packagedoc name=\""+packageDoc.name()+"\"");
       if (packageDoc.firstSentenceTags().length > 0) {
-	 printOpenTag(2, "firstSentenceTags", false);
-	 outputTags(3, packageDoc.firstSentenceTags(), true, CONTEXT_PACKAGE);
-	 printCloseTag(0, "firstSentenceTags");
-	 printOpenTag(2, "inlineTags", false);
-	 outputTags(3, packageDoc.inlineTags(), true, CONTEXT_PACKAGE);
-	 printCloseTag(0, "inlineTags");
+         printOpenTag(2, "firstSentenceTags", false);
+         outputTags(3, packageDoc.firstSentenceTags(), true, CONTEXT_PACKAGE);
+         printCloseTag(0, "firstSentenceTags");
+         printOpenTag(2, "inlineTags", false);
+         outputTags(3, packageDoc.inlineTags(), true, CONTEXT_PACKAGE);
+         printCloseTag(0, "inlineTags");
       }
 
       if (packageDoc.tags().length > 0) {
-	 printOpenTag(2, "tags");
-	 outputTags(3, packageDoc.tags(), true, CONTEXT_PACKAGE);
-	 printCloseTag(2, "tags");
+         printOpenTag(2, "tags");
+         outputTags(3, packageDoc.tags(), true, CONTEXT_PACKAGE);
+         printCloseTag(2, "tags");
       }
 
       if (packageDoc.seeTags().length > 0) {
-	 printOpenTag(2, "seeTags");
-	 outputTags(3, packageDoc.seeTags(), true, CONTEXT_PACKAGE);
-	 printCloseTag(2, "seeTags");
+         printOpenTag(2, "seeTags");
+         outputTags(3, packageDoc.seeTags(), true, CONTEXT_PACKAGE);
+         printCloseTag(2, "seeTags");
       }
 
       ClassDoc[] allClasses = (ClassDoc[]) packageDoc.allClasses().clone();
       Arrays.sort(allClasses);
 
       if (false) {
-	 for (int i = 0, ilim = allClasses.length; i < ilim; ++ i) {
-	    printAtomTag(2, "containsClass qualifiedtypename=\""+allClasses[i].qualifiedTypeName()+"\"");
-	 }
+         for (int i = 0, ilim = allClasses.length; i < ilim; ++ i) {
+            printAtomTag(2, "containsClass qualifiedtypename=\""+allClasses[i].qualifiedTypeName()+"\"");
+         }
       }
 
       printCloseTag(1, "packagedoc");
@@ -482,44 +482,44 @@ public class Driver {
 
       ClassDoc[] interfaces = classDoc.interfaces();
       for (int i=0, ilim=interfaces.length; i<ilim; ++i) {
-	 outputType(2, "implements", interfaces[i]);
+         outputType(2, "implements", interfaces[i]);
       }
       outputSuperInterfacesRec(2, classDoc.superclass());
 
       outputProgramElementDocBody(2, classDoc);
       if (classDoc.isAbstract())
-	 printAtomTag(2, "isAbstract");
+         printAtomTag(2, "isAbstract");
       if (classDoc.isSerializable())
-	 printAtomTag(2, "isSerializable");
+         printAtomTag(2, "isSerializable");
       if (classDoc.isExternalizable())
-	 printAtomTag(2, "isExternalizable");
+         printAtomTag(2, "isExternalizable");
       if (classDoc.definesSerializableFields()) {
-	 printAtomTag(2, "definesSerializableFields");
+         printAtomTag(2, "definesSerializableFields");
       }
 
       ConstructorDoc[] constructors = classDoc.constructors();
       for (int i=0, ilim=constructors.length; i<ilim; ++i) {
-	 outputConstructorDoc(2, constructors[i]);
+         outputConstructorDoc(2, constructors[i]);
       }
 
       MethodDoc[] methods = classDoc.methods();
       for (int i=0, ilim=methods.length; i<ilim; ++i) {
-	 outputMethodDoc(2, methods[i]);
+         outputMethodDoc(2, methods[i]);
       }
 
       FieldDoc[] fields = classDoc.fields();
       for (int i=0, ilim=fields.length; i<ilim; ++i) {
-	 outputFieldDoc(2, fields[i]);
+         outputFieldDoc(2, fields[i]);
       }
 
       if (classDoc.serializableFields().length > 0) {
-	 printOpenTag(2, "serializableFields");
+         printOpenTag(2, "serializableFields");
 
          FieldDoc[] sfields = classDoc.serializableFields();
          for (int i=0, ilim=sfields.length; i<ilim; ++i) {
             outputFieldDoc(2, sfields[i]);
          }
-	 printCloseTag(2, "serializableFields");
+         printCloseTag(2, "serializableFields");
       }
 
       Java2xhtml java2xhtml = new Java2xhtml();
@@ -536,12 +536,12 @@ public class Driver {
          FileReader sourceReader = new FileReader(sourceFile);
          IOToolkit.copyStream(sourceReader, sourceBuffer);
          print(java2xhtml.makeHTML(sourceBuffer.getBuffer(), sourceFile.getName()));
-         printCloseTag(2, "source");      
+         printCloseTag(2, "source");
       }
 
       ClassDoc superclassDoc = classDoc.superclass();
       while (superclassDoc != null) {
-	 outputType(2, "superclass", superclassDoc, false);
+         outputType(2, "superclass", superclassDoc, false);
 
          // FIXME: remove the following after adjusting the XSLT sheets:
          printAtomTag(3, "containingPackage name=\"" + superclassDoc.containingPackage().name() + "\"");
@@ -552,7 +552,7 @@ public class Driver {
                printAtomTag(3, "methoddoc name=\"" + superMethods[i].name() + "\" signature=\"" + superMethods[i].signature() + "\"");
             }
          }
-         
+
          FieldDoc[] superFields = superclassDoc.fields();
          if (null != superFields) {
             for (int i=0, ilim=superFields.length; i<ilim; ++i) {
@@ -560,7 +560,7 @@ public class Driver {
             }
          }
          printCloseTag(2, "superclass");
-         
+
          superclassDoc = superclassDoc.superclass();
       }
 
@@ -598,7 +598,7 @@ public class Driver {
       int context = CONTEXT_TYPE;
 
       if (doc.isClass()) {
-	 printAtomTag(level, "isClass");
+         printAtomTag(level, "isClass");
 
          ClassDoc classDoc = (ClassDoc)doc;
          ClassDoc[] classes = rootDoc.classes();
@@ -612,24 +612,24 @@ public class Driver {
          outputHeritageClose(level, classDoc);
       }
       if (doc.isConstructor()) {
-	 printAtomTag(level, "isConstructor");
+         printAtomTag(level, "isConstructor");
          context = CONTEXT_CONSTRUCTOR;
       }
       if (doc.isError()) {
-	 printAtomTag(level, "isError");
+         printAtomTag(level, "isError");
       }
       if (doc.isException()) {
-	 printAtomTag(level, "isException");
+         printAtomTag(level, "isException");
       }
       if (doc.isField()) {
-	 printAtomTag(level, "isField");
+         printAtomTag(level, "isField");
          context = CONTEXT_FIELD;
       }
       if (doc.isIncluded()) {
-	 printAtomTag(level, "isIncluded");
+         printAtomTag(level, "isIncluded");
       }
       if (doc.isInterface()) {
-	 printAtomTag(level, "isInterface");
+         printAtomTag(level, "isInterface");
 
          ClassDoc classDoc = (ClassDoc)doc;
          ClassDoc[] classes = rootDoc.classes();
@@ -649,40 +649,40 @@ public class Driver {
          }
       }
       if (doc.isMethod()) {
-	 printAtomTag(level, "isMethod");
+         printAtomTag(level, "isMethod");
          context = CONTEXT_METHOD;
       }
       if (doc.isOrdinaryClass()) {
-	 printAtomTag(level, "isOrdinaryClass");
+         printAtomTag(level, "isOrdinaryClass");
       }
 
       if (doc.inlineTags().length > 0) {
-	 printOpenTag(level, "inlineTags", false);
-	 outputTags(level+1, doc.inlineTags(), true, context);
-	 printCloseTag(0, "inlineTags");
+         printOpenTag(level, "inlineTags", false);
+         outputTags(level+1, doc.inlineTags(), true, context);
+         printCloseTag(0, "inlineTags");
       }
 
       if (doc.firstSentenceTags().length > 0) {
-	 printOpenTag(level, "firstSentenceTags", false);
-	 outputTags(level+1, doc.firstSentenceTags(), true, context);
-	 printCloseTag(0, "firstSentenceTags");
+         printOpenTag(level, "firstSentenceTags", false);
+         outputTags(level+1, doc.firstSentenceTags(), true, context);
+         printCloseTag(0, "firstSentenceTags");
       }
 
       if (doc.tags().length > 0) {
-	 printOpenTag(level, "tags");
+         printOpenTag(level, "tags");
          outputTaglets(level+1, doc.tags(), true, context);
-	 printCloseTag(level, "tags");
+         printCloseTag(level, "tags");
       }
 
       if (doc.seeTags().length > 0) {
-	 printOpenTag(level, "seeTags");
-	 outputTags(level+1, doc.seeTags(), true, context);
-	 printCloseTag(level, "seeTags");
+         printOpenTag(level, "seeTags");
+         outputTags(level+1, doc.seeTags(), true, context);
+         printCloseTag(level, "seeTags");
       }
 
       SourcePosition position = doc.position();
       if (null != position) {
-	 printAtomTag(level, "position file=\"" + position.file().getAbsolutePath() + "\" line=\"" + position.line() + "\" column=\"" + position.column() + "\"");
+         printAtomTag(level, "position file=\"" + position.file().getAbsolutePath() + "\" line=\"" + position.line() + "\" column=\"" + position.column() + "\"");
       }
    }
 
@@ -690,24 +690,24 @@ public class Driver {
       outputDocBody(level, programElementDoc);
       printAtomTag(level, "containingPackage name=\""+programElementDoc.containingPackage().name()+"\"");
       if (null!=programElementDoc.containingClass()) {
-	 outputType(level, "containingClass", programElementDoc.containingClass());
+         outputType(level, "containingClass", programElementDoc.containingClass());
       }
       String access;
-      if (programElementDoc.isPublic()) 
-	 access="public";
-      else if (programElementDoc.isProtected()) 
-	 access="protected";
-      else if (programElementDoc.isPrivate()) 
-	 access="private";
-      else if (programElementDoc.isPackagePrivate()) 
-	 access="package";
+      if (programElementDoc.isPublic())
+         access="public";
+      else if (programElementDoc.isProtected())
+         access="protected";
+      else if (programElementDoc.isPrivate())
+         access="private";
+      else if (programElementDoc.isPackagePrivate())
+         access="package";
       else
-	 throw new RuntimeException("Huh? "+programElementDoc+" is neither public, protected, private nor package protected.");
+         throw new RuntimeException("Huh? "+programElementDoc+" is neither public, protected, private nor package protected.");
       printAtomTag(level, "access scope=\""+access+"\"");
       if (programElementDoc.isFinal())
-	 printAtomTag(level, "isFinal");
+         printAtomTag(level, "isFinal");
       if (programElementDoc.isStatic())
-	 printAtomTag(level, "isStatic");
+         printAtomTag(level, "isStatic");
    }
 
    protected void outputTags(int level, Tag[] tags, boolean descend, int context) {
@@ -720,7 +720,7 @@ public class Driver {
    protected void outputTag(Tag tag, int level, boolean descend, int context, boolean lastTag) {
 
       if (!"Text".equals(tag.name())) {
-         printOpenTag(0 /* don't introduce additional whitespace */, 
+         printOpenTag(0 /* don't introduce additional whitespace */,
                       "tag kind=\""+tag.kind()+"\" name=\""+tag.name()+"\"", false);
       }
       if (tag instanceof ThrowsTag) {
@@ -782,7 +782,7 @@ public class Driver {
             outputTags(level+2, tag.firstSentenceTags(), false, context);
             printCloseTag(0, "firstSentenceTags");
          }
-	    
+
          if (tag.inlineTags().length>0) {
             printOpenTag(level+1, "inlineTags", false);
             outputTags(level+2, tag.firstSentenceTags(), false, context);
@@ -810,7 +810,7 @@ public class Driver {
       }
    }
 
-   void outputTaglets(int level, Tag[] tags, boolean descend, int context) 
+   void outputTaglets(int level, Tag[] tags, boolean descend, int context)
    {
       for (Iterator it = tagletMap.keySet().iterator(); it.hasNext(); ) {
          String tagName = (String)it.next();
@@ -824,7 +824,7 @@ public class Driver {
                  || (context != CONTEXT_OVERVIEW || taglet.inOverview())
                  || (context != CONTEXT_PACKAGE || taglet.inPackage())
                  || (context != CONTEXT_TYPE || taglet.inType()))) {
-            
+
             List tagsOfThisType = new ArrayList();
             for (int i=0, ilim=tags.length; i<ilim; ++i) {
                if (tags[i].name().substring(1).equals(tagName)) {
@@ -887,113 +887,113 @@ public class Driver {
       DeprecatedTaglet.setTagletEnabled(true);
 
       try {
-	 {
+         {
 
-	    // Process command line options passed through to this doclet
-	    
-	    TargetContext targetContext = null;
-	    
-	    TargetContext htmlTargetContext
-               = new TargetContext(DocTranslet.fromClasspath("/doctranslets/html/gjdoc.xsl"), 
+            // Process command line options passed through to this doclet
+
+            TargetContext targetContext = null;
+
+            TargetContext htmlTargetContext
+               = new TargetContext(DocTranslet.fromClasspath("/doctranslets/html/gjdoc.xsl"),
                                    targetDirectory);
 
-	    for (int i=0, ilim=rootDoc.options().length; i<ilim; ++i) {
+            for (int i=0, ilim=rootDoc.options().length; i<ilim; ++i) {
 
-	       String[] option = rootDoc.options()[i];
-	       String optionTag = option[0];
+               String[] option = rootDoc.options()[i];
+               String optionTag = option[0];
 
-	       if ("-d".equals(optionTag)) {
-		  if (null == targetDirectory) {
-		     targetDirectory = new File(option[1]);
-		  }
-		  if (null != targetContext) {
-		     targetContext.setTargetDirectory(targetDirectory);
-		  }
-	       }
+               if ("-d".equals(optionTag)) {
+                  if (null == targetDirectory) {
+                     targetDirectory = new File(option[1]);
+                  }
+                  if (null != targetContext) {
+                     targetContext.setTargetDirectory(targetDirectory);
+                  }
+               }
 
-	       else if ("-nofixhtml".equals(optionTag)) {
-		  fixHTML = false;
+               else if ("-nofixhtml".equals(optionTag)) {
+                  fixHTML = false;
                   printError("-nofixhtml currently not supported.");
                   return false;
-	       }
-	       else if ("-compress".equals(optionTag)) {
-		  compress = true;
-	       }
-	       else if ("-nohtmlwarn".equals(optionTag)) {
-		  noHTMLWarn = true;
-	       }
-	       else if ("-noemailwarn".equals(optionTag)) {
-		  noEmailWarn = true;
-	       }
-	       else if ("-indentstep".equals(optionTag)) {
-		  indentStep = Integer.parseInt(option[1]);
-	       }
-	       else if ("-doctranslet".equals(optionTag)) {
-		  targets.add(targetContext = new TargetContext(DocTranslet.fromJarFile(new File(option[1])), 
+               }
+               else if ("-compress".equals(optionTag)) {
+                  compress = true;
+               }
+               else if ("-nohtmlwarn".equals(optionTag)) {
+                  noHTMLWarn = true;
+               }
+               else if ("-noemailwarn".equals(optionTag)) {
+                  noEmailWarn = true;
+               }
+               else if ("-indentstep".equals(optionTag)) {
+                  indentStep = Integer.parseInt(option[1]);
+               }
+               else if ("-doctranslet".equals(optionTag)) {
+                  targets.add(targetContext = new TargetContext(DocTranslet.fromJarFile(new File(option[1])),
                                                                 targetDirectory));
-	       }
-	       else if ("-genhtml".equals(optionTag)) {
-		  htmlTargetContext.setTargetDirectory(targetDirectory);
-		  targets.add(targetContext = htmlTargetContext);
+               }
+               else if ("-genhtml".equals(optionTag)) {
+                  htmlTargetContext.setTargetDirectory(targetDirectory);
+                  targets.add(targetContext = htmlTargetContext);
                   xmlOnly = false;
-	       } 
-	       else if ("-geninfo".equals(optionTag)) {
+               }
+               else if ("-geninfo".equals(optionTag)) {
                   targetContext
-                              = new TargetContext(DocTranslet.fromClasspath("/doctranslets/info/gengj.xsl"), 
+                              = new TargetContext(DocTranslet.fromClasspath("/doctranslets/info/gengj.xsl"),
                                                   targetDirectory);
-		  targets.add(targetContext);
-		  if (!fixHTML) {
-		     printNotice("NOTE: -geninfo implies -fixhtml.");
-		     fixHTML = true;
-		  }
+                  targets.add(targetContext);
+                  if (!fixHTML) {
+                     printNotice("NOTE: -geninfo implies -fixhtml.");
+                     fixHTML = true;
+                  }
                   xmlOnly = false;
-	       }
-	       else if ("-gendocbook".equals(optionTag)) {
-                  targetContext = new TargetContext(DocTranslet.fromClasspath("/doctranslets/docbook/gengj.xsl"), 
+               }
+               else if ("-gendocbook".equals(optionTag)) {
+                  targetContext = new TargetContext(DocTranslet.fromClasspath("/doctranslets/docbook/gengj.xsl"),
                                                     targetDirectory);
-		  targets.add(targetContext);
-		  if (!fixHTML) {
-		     printNotice("NOTE: -gendocbook implies -fixhtml.");
-		     fixHTML = true;
-		  }
-	       }
-	       else if ("-genpdf".equals(optionTag)) {
+                  targets.add(targetContext);
+                  if (!fixHTML) {
+                     printNotice("NOTE: -gendocbook implies -fixhtml.");
+                     fixHTML = true;
+                  }
+               }
+               else if ("-genpdf".equals(optionTag)) {
                   targetContext
-                     = new TargetContext(DocTranslet.fromClasspath("/doctranslets/docbook/gengj.xsl"), 
+                     = new TargetContext(DocTranslet.fromClasspath("/doctranslets/docbook/gengj.xsl"),
                                          targetDirectory);
                                          /** "gnu.classpath.tools.doclets.xmldoclet.DocBookPostprocessor") **/
-		  targets.add(targetContext);
-		  if (!fixHTML) {
-		     printNotice("NOTE: -genpdf implies -fixhtml.");
-		     fixHTML = true;
-		  }
-	       }
-	       else if ("-xmlonly".equals(optionTag)) {
-		  xmlOnly = true;
-	       }
-	       else if ("-bottomnote".equals(optionTag)) {
+                  targets.add(targetContext);
+                  if (!fixHTML) {
+                     printNotice("NOTE: -genpdf implies -fixhtml.");
+                     fixHTML = true;
+                  }
+               }
+               else if ("-xmlonly".equals(optionTag)) {
+                  xmlOnly = true;
+               }
+               else if ("-bottomnote".equals(optionTag)) {
 
-		  FileReader reader = new FileReader(option[1]);
-		  StringWriter writer = new StringWriter();
-		  char[] buf = new char[256];
-		  int nread;
-		  while ((nread = reader.read(buf)) >= 0) {
-		     writer.write(buf, 0, nread);
-		  }
-		  writer.flush();
-		  bottomNote = writer.toString();
-		  writer.close();
-		  reader.close();
-	       }
-	       else if ("-title".equals(optionTag)) {
+                  FileReader reader = new FileReader(option[1]);
+                  StringWriter writer = new StringWriter();
+                  char[] buf = new char[256];
+                  int nread;
+                  while ((nread = reader.read(buf)) >= 0) {
+                     writer.write(buf, 0, nread);
+                  }
+                  writer.flush();
+                  bottomNote = writer.toString();
+                  writer.close();
+                  reader.close();
+               }
+               else if ("-title".equals(optionTag)) {
 
-		  title = option[1];
-	       }
-	       else if ("-workpath".equals(optionTag)) {
+                  title = option[1];
+               }
+               else if ("-workpath".equals(optionTag)) {
 
-		  workingPath = option[1];
-	       }
-	       else if ("-tagletpath".equals(optionTag)) {
+                  workingPath = option[1];
+               }
+               else if ("-tagletpath".equals(optionTag)) {
 
                   if (null == tagletPath) {
                      tagletPath = option[1];
@@ -1001,7 +1001,7 @@ public class Driver {
                   else {
                      tagletPath = tagletPath + File.pathSeparator + option[1];
                   }
-	       }
+               }
                else if ("-taglet".equals(optionTag)) {
 
                   boolean tagletLoaded = false;
@@ -1066,30 +1066,30 @@ public class Driver {
                      return false;
                   }
                }
-	       else if ("-author".equals(optionTag)) {
+               else if ("-author".equals(optionTag)) {
                   AuthorTaglet.setTagletEnabled(true);
                }
-	       else if ("-version".equals(optionTag)) {
+               else if ("-version".equals(optionTag)) {
                   VersionTaglet.setTagletEnabled(true);
                }
-	       else if ("-nosince".equals(optionTag)) {
+               else if ("-nosince".equals(optionTag)) {
                   SinceTaglet.setTagletEnabled(false);
                }
-	       else if ("-nodeprecated".equals(optionTag)) {
+               else if ("-nodeprecated".equals(optionTag)) {
                   DeprecatedTaglet.setTagletEnabled(false);
                }
-	       else if ("-authormail".equals(optionTag)) {
-                  
-		  if ("no-replace".equalsIgnoreCase(option[1])) {
+               else if ("-authormail".equals(optionTag)) {
+
+                  if ("no-replace".equalsIgnoreCase(option[1])) {
                      AuthorTaglet.setEmailReplacementType(AuthorTaglet.EmailReplacement.NO_REPLACEMENT);
                   }
-		  else if ("mailto-name".equalsIgnoreCase(option[1])) {
+                  else if ("mailto-name".equalsIgnoreCase(option[1])) {
                      AuthorTaglet.setEmailReplacementType(AuthorTaglet.EmailReplacement.MAILTO_NAME);
                   }
-		  else if ("name-mailto-address".equalsIgnoreCase(option[1])) {
+                  else if ("name-mailto-address".equalsIgnoreCase(option[1])) {
                      AuthorTaglet.setEmailReplacementType(AuthorTaglet.EmailReplacement.NAME_MAILTO_ADDRESS);
                   }
-		  else if ("name-mangled-address".equalsIgnoreCase(option[1])) {
+                  else if ("name-mangled-address".equalsIgnoreCase(option[1])) {
                      AuthorTaglet.setEmailReplacementType(AuthorTaglet.EmailReplacement.NAME_MANGLED_ADDRESS);
                   }
                   else {
@@ -1097,77 +1097,77 @@ public class Driver {
                                 + " no-replace, mailto-name, name-mailto-address, name-mangled-address.");
                      return false;
                   }
-	       }
-	       else if ("-mailmangledot".equals(optionTag)) {
+               }
+               else if ("-mailmangledot".equals(optionTag)) {
                   AuthorTaglet.setDotReplacement(option[1]);
                }
-	       else if ("-mailmangleat".equals(optionTag)) {
+               else if ("-mailmangleat".equals(optionTag)) {
                   AuthorTaglet.setAtReplacement(option[1]);
                }
-	       else if ("-docfilessubdirs".equals(optionTag)) {
+               else if ("-docfilessubdirs".equals(optionTag)) {
                   docFilesSubdirsEnabled = true;
                }
-	       else if ("-excludedocfilessubdir".equals(optionTag)) {
+               else if ("-excludedocfilessubdir".equals(optionTag)) {
                   StringTokenizer st = new StringTokenizer(option[1]);
                   while (st.hasMoreTokens()) {
                      excludeDocFilesSubDirs.add(st.nextToken());
                   }
                }
-	       else if ("-nonavbar".equals(optionTag)) {
+               else if ("-nonavbar".equals(optionTag)) {
                   docTransletOptions.nonavbar = true;
                }
-	       else if ("-noindex".equals(optionTag)) {
+               else if ("-noindex".equals(optionTag)) {
                   docTransletOptions.noindex = true;
                }
-	       else if ("-notree".equals(optionTag)) {
+               else if ("-notree".equals(optionTag)) {
                   docTransletOptions.notree = true;
                }
-	       else if ("-nocomment".equals(optionTag)) {
+               else if ("-nocomment".equals(optionTag)) {
                   docTransletOptions.nocomment = true;
                }
-	       else if ("-nohelp".equals(optionTag)) {
+               else if ("-nohelp".equals(optionTag)) {
                   docTransletOptions.nohelp = true;
                }
-	       else if ("-splitindex".equals(optionTag)) {
+               else if ("-splitindex".equals(optionTag)) {
                   docTransletOptions.splitindex = true;
                }
-	       else if ("-linksource".equals(optionTag)) {
+               else if ("-linksource".equals(optionTag)) {
                   docTransletOptions.linksource = true;
                }
-	       else if ("-windowtitle".equals(optionTag)) {
+               else if ("-windowtitle".equals(optionTag)) {
                   docTransletOptions.windowtitle = option[1];
                }
-	       else if ("-helpfile".equals(optionTag)) {
+               else if ("-helpfile".equals(optionTag)) {
                   docTransletOptions.helpfile = new File(option[1]).toURL().toString();
                }
-	       else if ("-stylesheetfile".equals(optionTag)) {
+               else if ("-stylesheetfile".equals(optionTag)) {
                   docTransletOptions.stylesheetfile = new File(option[1]).toURL().toString();
                }
-	       else if ("-header".equals(optionTag)) {
+               else if ("-header".equals(optionTag)) {
                   docTransletOptions.header = option[1];
                }
-	       else if ("-footer".equals(optionTag)) {
+               else if ("-footer".equals(optionTag)) {
                   docTransletOptions.footer = option[1];
                }
-	       else if ("-bottom".equals(optionTag)) {
+               else if ("-bottom".equals(optionTag)) {
                   docTransletOptions.bottom = option[1];
                }
-	       else if ("-doctitle".equals(optionTag)) {
+               else if ("-doctitle".equals(optionTag)) {
                   docTransletOptions.doctitle = option[1];
                }
-	       else if ("-nodeprecatedlist".equals(optionTag)) {
+               else if ("-nodeprecatedlist".equals(optionTag)) {
                   docTransletOptions.nodeprecatedlist = true;
                }
-	       else if ("-uses".equals(optionTag)) {
+               else if ("-uses".equals(optionTag)) {
                   docTransletOptions.uses = true;
                }
-	       else if ("-group".equals(optionTag)) {
+               else if ("-group".equals(optionTag)) {
                   if (!processGroupOption(option[1], option[2])) {
                      printError("Invalid package wildcard list in -group option \"" + option[1] + "\" " + option[2]);
                      return false;
                   }
                }
-	       else if ("-tag".equals(optionTag)) {
+               else if ("-tag".equals(optionTag)) {
                   String tagSpec = option[1];
                   boolean validTagSpec = false;
                   int ndx1 = tagSpec.indexOf(':');
@@ -1182,7 +1182,7 @@ public class Driver {
                         }
                         else {
                            mentionedTags.add(taglet);
-                           
+
                            // re-append taglet
                            tagletMap.remove(tagSpec);
                            tagletMap.put(tagSpec, taglet);
@@ -1212,11 +1212,11 @@ public class Driver {
                         boolean tagScopeMethods = false;
                         boolean tagScopeFields = false;
                         boolean tagDisabled = false;
-                        
+
                      tag_option_loop:
                         for (int n=ndx1+1; n<ndx2; ++n) {
                            switch (tagSpec.charAt(n)) {
-                           case 'X': 
+                           case 'X':
                               tagDisabled = true;
                               break;
                            case 'a':
@@ -1250,7 +1250,7 @@ public class Driver {
                               break tag_option_loop;
                            }
                         }
-                        
+
                         if (validTagSpec) {
                            GenericTaglet taglet
                               = new GenericTaglet(tagName,
@@ -1271,7 +1271,7 @@ public class Driver {
                      printError("Value for option -tag must be in format \"<tagname>:Xaoptcmf:<taghead>\".");
                   }
                }
-	    }
+            }
 
             // Use current directory if target directory hasn't been set.
             if (null == targetDirectory) {
@@ -1281,57 +1281,57 @@ public class Driver {
                targetContext.setTargetDirectory(targetDirectory);
             }
 
-	    // It is illegal to specify targets AND -xmlonly.
+            // It is illegal to specify targets AND -xmlonly.
 
-	    if (xmlOnly && targets.size() > 0) {
+            if (xmlOnly && targets.size() > 0) {
 
-	       printError("You can only specify one of -xmlonly and a target format.");
-	       return false;
-	    }
+               printError("You can only specify one of -xmlonly and a target format.");
+               return false;
+            }
 
-	    // If no target was specified and XML only was not
-	    // requested, use HTML as default target.
+            // If no target was specified and XML only was not
+            // requested, use HTML as default target.
 
-	    if (!xmlOnly && targets.size() == 0) {
-	       targets.add(targetContext = htmlTargetContext);
-	    }
+            if (!xmlOnly && targets.size() == 0) {
+               targets.add(targetContext = htmlTargetContext);
+            }
 
-	    // Set the same target directory for all output.
+            // Set the same target directory for all output.
 
-	    // FIXME: Allow separate target directories for different
-	    // output formats.
+            // FIXME: Allow separate target directories for different
+            // output formats.
 
-	    for (Iterator it = targets.iterator(); it.hasNext(); ) {
-	       TargetContext t = (TargetContext)it.next();
-	       t.setTargetDirectory(targetDirectory);
-	    }
+            for (Iterator it = targets.iterator(); it.hasNext(); ) {
+               TargetContext t = (TargetContext)it.next();
+               t.setTargetDirectory(targetDirectory);
+            }
 
-	    // Create temporary directory if necessary
+            // Create temporary directory if necessary
 
-	    if (xmlOnly) {
+            if (xmlOnly) {
 
-	       xmlTargetDirectory = targetDirectory;
-	    }
-	    else {
+               xmlTargetDirectory = targetDirectory;
+            }
+            else {
 
-	       File workingTopDirectory = new File(workingPath);
+               File workingTopDirectory = new File(workingPath);
 
-	       workingDirectory = new File(workingTopDirectory, "gjdoc.tmp."+System.currentTimeMillis());
-	    
-	       if (!workingDirectory.mkdir()) {
-		  printError("Cannot create temporary directory at "+System.getProperty("java.io.tmpdir"));
-		  return false;
-	       }
+               workingDirectory = new File(workingTopDirectory, "gjdoc.tmp."+System.currentTimeMillis());
 
-	       File xmlTempDirectory = new File(workingDirectory, "xmloutput");
+               if (!workingDirectory.mkdir()) {
+                  printError("Cannot create temporary directory at "+System.getProperty("java.io.tmpdir"));
+                  return false;
+               }
 
-	       if (!xmlTempDirectory.mkdir()) {
-		  printError("Cannot create temporary directory for XML output at "+System.getProperty("java.io.tmpdir"));
-		  return false;
-	       }
+               File xmlTempDirectory = new File(workingDirectory, "xmloutput");
 
-	       xmlTargetDirectory = xmlTempDirectory;
-	    }
+               if (!xmlTempDirectory.mkdir()) {
+                  printError("Cannot create temporary directory for XML output at "+System.getProperty("java.io.tmpdir"));
+                  return false;
+               }
+
+               xmlTargetDirectory = xmlTempDirectory;
+            }
 
             // Create target directory if necessary
 
@@ -1373,7 +1373,7 @@ public class Driver {
                         hasDeprecatedClasses = true;
                      }
                   }
-                  
+
                   MethodDoc[] methods = c.methods();
                   for (int j = 0, jlim = methods.length; j < jlim; ++ j) {
                      MethodDoc m = methods[j];
@@ -1382,7 +1382,7 @@ public class Driver {
                         hasDeprecatedMethods = true;
                      }
                   }
-                  
+
                   FieldDoc[] fields = c.fields();
                   for (int j = 0, jlim = fields.length; j < jlim; ++ j) {
                      FieldDoc f = fields[j];
@@ -1402,21 +1402,21 @@ public class Driver {
 
             // Begin XML generation
 
-	    printNotice("Writing XML Index file...");
+            printNotice("Writing XML Index file...");
 
-	    // Assign output stream
+            // Assign output stream
 
-	    setTargetFile("index.xml");
+            setTargetFile("index.xml");
 
-	    // Output XML document header
+            // Output XML document header
 
-	    println(0, "<?xml version=\"1.0\"?>");
-	    println("<!DOCTYPE gjdoc SYSTEM \"dtd/gjdoc.dtd\">");
-	    println();
-	    printOpenTag(0, "rootdoc xmlns=\"http://www.w3.org/TR/REC-html40\" xmlns:gjdoc=\"http://www.gnu.org/software/cp-tools/gjdocxml\"");
+            println(0, "<?xml version=\"1.0\"?>");
+            println("<!DOCTYPE gjdoc SYSTEM \"dtd/gjdoc.dtd\">");
+            println();
+            printOpenTag(0, "rootdoc xmlns=\"http://www.w3.org/TR/REC-html40\" xmlns:gjdoc=\"http://www.gnu.org/software/cp-tools/gjdocxml\"");
 
-	    println();
-	    println(1, "<!-- Tags from overview page, if available -->");
+            println();
+            println(1, "<!-- Tags from overview page, if available -->");
 
             if (rootDoc.firstSentenceTags().length > 0) {
                printOpenTag(2, "firstSentenceTags", false);
@@ -1429,22 +1429,22 @@ public class Driver {
                outputTags(3, rootDoc.inlineTags(), true, CONTEXT_PACKAGE);
                printCloseTag(2, "inlineTags");
             }
-	 
-	    if (null != bottomNote) {
-	       printOpenTag(1, "bottomnote");
-	       print(bottomNote);
-	       printCloseTag(1, "bottomnote");
-	    }
 
-	    if (null != title) {
-	       printOpenTag(1, "title");
-	       println(2, title);
-	       printCloseTag(1, "title");
-	    }
-	 
-	    printOpenTag(1, "created");
-	    println(2, DateFormat.getDateInstance(DateFormat.LONG, Locale.US).format(new java.util.Date()));
-	    printCloseTag(1, "created");
+            if (null != bottomNote) {
+               printOpenTag(1, "bottomnote");
+               print(bottomNote);
+               printCloseTag(1, "bottomnote");
+            }
+
+            if (null != title) {
+               printOpenTag(1, "title");
+               println(2, title);
+               printCloseTag(1, "title");
+            }
+
+            printOpenTag(1, "created");
+            println(2, DateFormat.getDateInstance(DateFormat.LONG, Locale.US).format(new java.util.Date()));
+            printCloseTag(1, "created");
 
             if (hasDeprecatedClasses) printAtomTag(1, "hasDeprecatedClasses");
             if (hasDeprecatedInterfaces) printAtomTag(1, "hasDeprecatedInterfaces");
@@ -1453,40 +1453,40 @@ public class Driver {
             if (hasDeprecatedMethods) printAtomTag(1, "hasDeprecatedMethods");
             if (hasDeprecatedFields) printAtomTag(1, "hasDeprecatedFields");
 
-	    // Output summary of all classes specified on command line
+            // Output summary of all classes specified on command line
 
-	    println();
-	    println(1, "<!-- Classes specified by user on command line -->");
-	    ClassDoc[] specifiedClasses = rootDoc.specifiedClasses();
-	    for (int i=0, ilim=specifiedClasses.length; i<ilim; ++i) {
-	       ClassDoc sc = specifiedClasses[i];
-	       printAtomTag(1, "specifiedclass fqname=\""+sc.qualifiedName()+"\" name=\""+sc.name()+"\"");
-	    }
-	    specifiedClasses = null;
+            println();
+            println(1, "<!-- Classes specified by user on command line -->");
+            ClassDoc[] specifiedClasses = rootDoc.specifiedClasses();
+            for (int i=0, ilim=specifiedClasses.length; i<ilim; ++i) {
+               ClassDoc sc = specifiedClasses[i];
+               printAtomTag(1, "specifiedclass fqname=\""+sc.qualifiedName()+"\" name=\""+sc.name()+"\"");
+            }
+            specifiedClasses = null;
 
-	    // Output summary of all packages specified on command line
+            // Output summary of all packages specified on command line
 
-	    println();
-	    println(1, "<!-- Packages specified by user on command line -->");
-	    PackageDoc[] specifiedPackages = rootDoc.specifiedPackages();
-	    for (int i=0, ilim=specifiedPackages.length; i<ilim; ++i) {
-	       PackageDoc sp = specifiedPackages[i];
-	       printAtomTag(1, "specifiedpackage name=\""+sp.name()+"\"");
-	    }
-	    specifiedPackages = null;
+            println();
+            println(1, "<!-- Packages specified by user on command line -->");
+            PackageDoc[] specifiedPackages = rootDoc.specifiedPackages();
+            for (int i=0, ilim=specifiedPackages.length; i<ilim; ++i) {
+               PackageDoc sp = specifiedPackages[i];
+               printAtomTag(1, "specifiedpackage name=\""+sp.name()+"\"");
+            }
+            specifiedPackages = null;
 
-	    // Output package group information specified on the
-	    // command line
+            // Output package group information specified on the
+            // command line
 
-	    println();
-	    println(1, "<!-- Package groups specified by user on command line -->");
+            println();
+            println(1, "<!-- Package groups specified by user on command line -->");
             {
                Iterator packageGroupIt = packageGroups.iterator();
                while (packageGroupIt.hasNext()) {
                   PackageGroup packageGroup = (PackageGroup)packageGroupIt.next();
                   SortedSet groupedPackages = packageGroup.getPackages();
                   if (groupedPackages.isEmpty()) {
-                     printWarning("Package group named '" 
+                     printWarning("Package group named '"
                                   + packageGroup.getName() + "' didn't match any packages.");
                   }
                   else {
@@ -1502,53 +1502,53 @@ public class Driver {
                packageGroups = null;
             }
 
-	    // Output information on all packages for which documentation
-	    // has been made available via the Doclet API
+            // Output information on all packages for which documentation
+            // has been made available via the Doclet API
 
-	    println();
-	    println(1, "<!-- Documentation for all packages -->");
-	    PackageDoc[] packages = rootDoc.specifiedPackages();
-	    for (int i=0, ilim=packages.length; i<ilim; ++i) {
-	       PackageDoc c = packages[i];
-	       outputPackageDoc(c);
-	    }
-	    packages = null;
+            println();
+            println(1, "<!-- Documentation for all packages -->");
+            PackageDoc[] packages = rootDoc.specifiedPackages();
+            for (int i=0, ilim=packages.length; i<ilim; ++i) {
+               PackageDoc c = packages[i];
+               outputPackageDoc(c);
+            }
+            packages = null;
 
-	    // Output brief summary on all classes for which documentation
-	    // has been made available via the Doclet API.
-	    //
-	    // While this is redundant, it can speed up XSLT
-	    // processing by orders of magnitude
+            // Output brief summary on all classes for which documentation
+            // has been made available via the Doclet API.
+            //
+            // While this is redundant, it can speed up XSLT
+            // processing by orders of magnitude
 
-	    println();
-	    println(1, "<!-- Brief summary for all classes -->");
-	    ClassDoc[] sumclasses = rootDoc.classes();
-	    for (int i=0, ilim=sumclasses.length; i<ilim; ++i) {
-	       ClassDoc c = sumclasses[i];
-	       outputClassDocSummary(c);
-	    }
-	    sumclasses = null;
-	    
-	    // Output closing tag, finish output stream
+            println();
+            println(1, "<!-- Brief summary for all classes -->");
+            ClassDoc[] sumclasses = rootDoc.classes();
+            for (int i=0, ilim=sumclasses.length; i<ilim; ++i) {
+               ClassDoc c = sumclasses[i];
+               outputClassDocSummary(c);
+            }
+            sumclasses = null;
 
-	    println();
-	    printCloseTag(0, "rootdoc");
+            // Output closing tag, finish output stream
 
-	    closeTargetFile();
+            println();
+            printCloseTag(0, "rootdoc");
+
+            closeTargetFile();
 
             createIndexByName();
 
 
 
-	    // Output information on all classes for which documentation
-	    // has been made available via the Doclet API
-	    
-	    println();
-	    println(1, "<!-- Documentation for all classes -->");
-	    ClassDoc[] classes = rootDoc.classes();
+            // Output information on all classes for which documentation
+            // has been made available via the Doclet API
+
+            println();
+            println(1, "<!-- Documentation for all classes -->");
+            ClassDoc[] classes = rootDoc.classes();
             String prevPackageName = null;
-	    for (int i = 0, ilim = classes.length; i < ilim; ++ i) {
-	       ClassDoc c = classes[i];
+            for (int i = 0, ilim = classes.length; i < ilim; ++ i) {
+               ClassDoc c = classes[i];
 
                if (isVerbose()) {
                   printNotice("Writing XML information for "+c.qualifiedName()+"...");
@@ -1560,24 +1560,24 @@ public class Driver {
                      prevPackageName = packageName;
                   }
                }
-	       
-	       setTargetFile(c.qualifiedName().replace('/','.')+".xml");
-	       
-	       println("<?xml version=\"1.0\"?>");
+
+               setTargetFile(c.qualifiedName().replace('/','.')+".xml");
+
+               println("<?xml version=\"1.0\"?>");
                println("<!DOCTYPE gjdoc SYSTEM \"dtd/gjdoc.dtd\">");
-	       
-	       outputClassDoc(c);
-	       
-	       closeTargetFile();
-	    }
-	    classes = null;
-	 }
-	 
+
+               outputClassDoc(c);
+
+               closeTargetFile();
+            }
+            classes = null;
+         }
+
          // Copy DTD files to temporary directory
-         
+
          // FIXME: try to solve this via jar: URLs. but this will
          // probably break libxmlj compatibility (?)
-         
+
          String[] resources = new String[] {
             "gjdoc.dtd",
             "gjdoc-alphaindex.dtd",
@@ -1609,7 +1609,7 @@ public class Driver {
          if ((tempDtdDirectory.exists() || tempDtdDirectory.mkdir())
              && (tempDtdEntDirectory.exists() || tempDtdEntDirectory.mkdir())) {
             for (int i = 0; i < resources.length; ++ i) {
-               copyResourceToFile("/dtd/" + resources[i], 
+               copyResourceToFile("/dtd/" + resources[i],
                                   new File(tempDtdDirectory, resources[i]));
             }
          }
@@ -1630,52 +1630,52 @@ public class Driver {
             }
          }
 
-	 // All information has been output. Apply stylesheet if given.
+         // All information has been output. Apply stylesheet if given.
 
-	 gnu.classpath.tools.gjdoc.Main.releaseRootDoc();
-         
-	 this.currentClass = null;
-	 this.currentMember = null;
-	 this.currentExecMember = null;
-	 
-	 System.gc();	 
+         gnu.classpath.tools.gjdoc.Main.releaseRootDoc();
 
-	 // From this point we are only operating on files, so we don't
-	 // need this anymore and can free up some memory
+         this.currentClass = null;
+         this.currentMember = null;
+         this.currentExecMember = null;
+
+         System.gc();
+
+         // From this point we are only operating on files, so we don't
+         // need this anymore and can free up some memory
 
          for (Iterator it = targets.iterator(); it.hasNext(); ) {
 
             TargetContext target = (TargetContext)it.next();
 
-	    // We have XSLT postprocessing, run DocTranslet.
+            // We have XSLT postprocessing, run DocTranslet.
 
             //DocTranslet docTranslet = DocTranslet.fromClasspath("/doctranslets/html/gjdoc.xsl");
-            
+
             //docTranslet.setOptions(docTransletOptions);
 
             target.getDocTranslet().setOptions(docTransletOptions);
 
-            target.getDocTranslet().apply(xmlTargetDirectory, 
-                                          target.getTargetDirectory(), 
+            target.getDocTranslet().apply(xmlTargetDirectory,
+                                          target.getTargetDirectory(),
                                           rootDoc);
-	 }
+         }
 
-	 // Done
+         // Done
 
-	 targets = null;
+         targets = null;
 
-	 System.gc();
+         System.gc();
          Runtime.getRuntime().runFinalization();
 
-	 return true;
+         return true;
       }
       catch (Exception e) {
 
-	 // Something went wrong. Report to stderr and pass error to
-	 // Javadoc Reporter
+         // Something went wrong. Report to stderr and pass error to
+         // Javadoc Reporter
 
-	 e.printStackTrace();
-	 printError(e.toString());
+         e.printStackTrace();
+         printError(e.toString());
 
          Throwable rootCause = e.getCause();
          if (null != rootCause) {
@@ -1686,20 +1686,20 @@ public class Driver {
             rootCause.printStackTrace();
          }
 
-	 return false;
+         return false;
       }
       finally {
 
-	 // In any case, delete the working directory if we created one
+         // In any case, delete the working directory if we created one
 
-	 if (null != workingDirectory) {
+         if (null != workingDirectory) {
 
-	    if (!deleteRecursive(workingDirectory)) {
-	       printWarning("Could not delete temporary directory at "+workingDirectory);
-	    }
-	 }
+            if (!deleteRecursive(workingDirectory)) {
+               printWarning("Could not delete temporary directory at "+workingDirectory);
+            }
+         }
 
-	 printNotice("Done.");
+         printNotice("Done.");
       }
    }
 
@@ -1717,16 +1717,16 @@ public class Driver {
 
       for (int i=0, ilim=files.length; i<ilim; ++i) {
 
-	 File file = files[i];
+         File file = files[i];
 
-	 if (file.isDirectory()) {
+         if (file.isDirectory()) {
 
-	    success = deleteRecursive(file) && success;
-	 }
-	 else {
+            success = deleteRecursive(file) && success;
+         }
+         else {
 
-	    success = file.delete() && success;
-	 }
+            success = file.delete() && success;
+         }
       }
 
       return directory.delete() && success;
@@ -1734,7 +1734,7 @@ public class Driver {
 
    /**
     *  Prints a string to stdout and appends a newline.  Convenience
-    *  method.  
+    *  method.
     */
    protected void println(String str) {
       out.println(str);
@@ -1742,7 +1742,7 @@ public class Driver {
 
    /**
     *  Prints a string to stdout without appending a newline.
-    *  Convenience method.  
+    *  Convenience method.
     */
    protected void print(String str) {
       out.print(str);
@@ -1751,31 +1751,31 @@ public class Driver {
    /**
     *  In standard mode, prints an empty line to stdout.
     *  In thight mode, nothing happens.
-    *  Convenience method.  
+    *  Convenience method.
     */
    protected void println() {
       if (!compress) {
-	 out.println();
+         out.println();
       }
    }
 
    /**
-    *  In standard mode, prints the given text indented to stdout and appends newline. 
+    *  In standard mode, prints the given text indented to stdout and appends newline.
     *  In tight mode, doesn't print indentation or newlines.
     */
    protected void print(int indentLevel, String msg) {
       if (compress) {
-	 out.print(msg);
+         out.print(msg);
       }
       else {
-	 StringBuffer indentation = new StringBuffer();
-	 for (int i=0; i<indentLevel*indentStep; ++i) {
-	    indentation.append(' ');
-	 }
-	 out.print(indentation+msg);
+         StringBuffer indentation = new StringBuffer();
+         for (int i=0; i<indentLevel*indentStep; ++i) {
+            indentation.append(' ');
+         }
+         out.print(indentation+msg);
       }
    }
-   
+
    /**
     *  In tight mode, prints a message at a given indentation level.
     *  In standard mode, appends a newline in addition.
@@ -1805,10 +1805,10 @@ public class Driver {
     */
    protected void printOpenTag(int level, String tag, boolean appendNewline) {
       if (appendNewline && !compress) {
-	 println(level, "<"+tagPrefix+":"+replaceCharsInTag(tag)+">");
+         println(level, "<"+tagPrefix+":"+replaceCharsInTag(tag)+">");
       }
       else {
-	 print(level, "<"+tagPrefix+":"+replaceCharsInTag(tag)+">");
+         print(level, "<"+tagPrefix+":"+replaceCharsInTag(tag)+">");
       }
    }
 
@@ -1825,10 +1825,10 @@ public class Driver {
     */
    protected void printCloseTag(int level, String tag, boolean appendNewline) {
       if (appendNewline && !compress) {
-	 println(level, "</"+tagPrefix+":"+replaceCharsInTag(tag)+">");
+         println(level, "</"+tagPrefix+":"+replaceCharsInTag(tag)+">");
       }
       else {
-	 print(level, "</"+tagPrefix+":"+replaceCharsInTag(tag)+">");
+         print(level, "</"+tagPrefix+":"+replaceCharsInTag(tag)+">");
       }
    }
 
@@ -1893,21 +1893,21 @@ public class Driver {
     *
     *  @param tagContent  String to process
     *
-    *  @return given String with all special characters replaced by 
+    *  @return given String with all special characters replaced by
     *          HTML entities.
     */
    private static String replaceCharsInTag(String tagContent) {
-      return 
-	 replaceString(
-	    replaceString(
-	       replaceString(
-		  tagContent, 
-		  "<", "&lt;"
-		  ), 
-	       ">", "&gt;"
-	       ),
-	    "&", "&amp;"
-	    );
+      return
+         replaceString(
+            replaceString(
+               replaceString(
+                  tagContent,
+                  "<", "&lt;"
+                  ),
+               ">", "&gt;"
+               ),
+            "&", "&amp;"
+            );
    }
 
    /**
@@ -1921,10 +1921,10 @@ public class Driver {
    private static String replaceString(String haystack, String needle, String replacement) {
       int ndx = haystack.indexOf(needle);
       if (ndx<0)
-	 return haystack;
+         return haystack;
       else
-	 return haystack.substring(0, ndx) + replacement 
-	    + replaceString(haystack.substring(ndx+needle.length()), needle, replacement);
+         return haystack.substring(0, ndx) + replacement
+            + replaceString(haystack.substring(ndx+needle.length()), needle, replacement);
    }
 
    protected void setTargetFile(String filename) throws IOException {
@@ -1942,67 +1942,67 @@ public class Driver {
    private String cdata(String str) {
 
       if (null==str) {
-	 return str;
+         return str;
       } // end of if ((null==str)
 
       StringBuffer rc = new StringBuffer();
       for (int i=0; i<str.length(); ++i) {
-	 char c = str.charAt(i);
-	 if (c==0x09 || c==0x0a || c==0x0d || (c>=0x20 && c<=0xd7ff) || (c>=0xe000 && c<=0xfffd) || (c>=0x10000 && c<=0x10ffff)) {
-	    rc.append(c);
-	 }
-	 else {
-	    printWarning("Invalid Unicode character 0x"+Integer.toString(c, 16)+" in javadoc markup has been stripped.");
-	 } // end of else
-	 
+         char c = str.charAt(i);
+         if (c==0x09 || c==0x0a || c==0x0d || (c>=0x20 && c<=0xd7ff) || (c>=0xe000 && c<=0xfffd) || (c>=0x10000 && c<=0x10ffff)) {
+            rc.append(c);
+         }
+         else {
+            printWarning("Invalid Unicode character 0x"+Integer.toString(c, 16)+" in javadoc markup has been stripped.");
+         } // end of else
+
       }
       return rc.toString();
    }
 
    static void copyResourceToFile(String resourceName, File target) throws IOException {
-      
+
       InputStream in = Driver.class.getResourceAsStream(resourceName);
 
       if (null != in) {
 
-	 FileOutputStream out = new FileOutputStream(target);
-	 int size;
-	 byte[] buffer = new byte[512];
-	 while ((size = in.read(buffer)) >= 0) {
-	    out.write(buffer, 0, size);
-	 }
-	 out.close();
+         FileOutputStream out = new FileOutputStream(target);
+         int size;
+         byte[] buffer = new byte[512];
+         while ((size = in.read(buffer)) >= 0) {
+            out.write(buffer, 0, size);
+         }
+         out.close();
       }
       else {
 
-	 throw new IOException("Can't find resource named "+resourceName);
+         throw new IOException("Can't find resource named "+resourceName);
       }
    }
 
    private void printError(String error) {
       if (null != rootDoc) {
-	 rootDoc.printError(error);
+         rootDoc.printError(error);
       }
       else {
-	 System.err.println("ERROR: "+error);
+         System.err.println("ERROR: "+error);
       }
    }
 
    private void printWarning(String warning) {
       if (null != rootDoc) {
-	 rootDoc.printWarning(warning);
+         rootDoc.printWarning(warning);
       }
       else {
-	 System.err.println("WARNING: "+warning);
+         System.err.println("WARNING: "+warning);
       }
    }
 
    private void printNotice(String notice) {
       if (null != rootDoc) {
-	 rootDoc.printNotice(notice);
+         rootDoc.printNotice(notice);
       }
       else {
-	 System.err.println(notice);
+         System.err.println(notice);
       }
    }
 
@@ -2014,7 +2014,7 @@ public class Driver {
       File docFilesSourceDirectory
          = new File(packageDoc.packageDirectory(), "doc-files");
       File docFilesTargetDirectory
-         = new File(this.targetDirectory, 
+         = new File(this.targetDirectory,
                     packageDoc.name().replace('.', File.separatorChar));
       if (docFilesSourceDirectory.exists()) {
          printNotice("Copying files from " + docFilesSourceDirectory);
@@ -2028,7 +2028,7 @@ public class Driver {
     *  Recursively copy the contents of the input directory to the
     *  output directory. The output directory must exist.
     */
-   private static void copyDirectory(File sourceDir, File targetDir, 
+   private static void copyDirectory(File sourceDir, File targetDir,
                                      boolean recursive,
                                      Set excludeDirs) throws IOException {
       if (!targetDir.exists() && !targetDir.mkdirs()) {
@@ -2038,9 +2038,9 @@ public class Driver {
       File[] sourceFiles = sourceDir.listFiles();
       for (int i=0; i<sourceFiles.length; ++i) {
          if (sourceFiles[i].isDirectory()) {
-            if (recursive && (null == excludeDirs 
+            if (recursive && (null == excludeDirs
                               || !excludeDirs.contains(sourceFiles[i].getName()))) {
-               File targetSubDir = new File(targetDir, 
+               File targetSubDir = new File(targetDir,
                                             sourceFiles[i].getName());
                if (targetSubDir.exists() || targetSubDir.mkdir()) {
                   copyDirectory(sourceFiles[i], targetSubDir, recursive, null);
@@ -2077,7 +2077,7 @@ public class Driver {
       // Create index
 
       // Collect index
-            
+
       Map indexMap = new TreeMap(new Comparator() {
             public int compare(Object o1, Object o2) {
                return o1.toString().toLowerCase().compareTo(o2.toString().toLowerCase());
@@ -2135,7 +2135,7 @@ public class Driver {
       println("<!DOCTYPE gjdoc SYSTEM \"dtd/gjdoc-alphaindex.dtd\">");
       println();
       printOpenTag(0, "alphaindex xmlns=\"http://www.w3.org/TR/REC-html40\" xmlns:gjdoc=\"http://www.gnu.org/software/cp-tools/gjdocxml\"");
-      
+
       Iterator it = indexMap.keySet().iterator();
 
       char previousCategoryLetter = '\0';
@@ -2235,8 +2235,8 @@ public class Driver {
          this.id = id;
       }
 
-      public String toString() { 
-         return "UsageType{id=" + id + "}"; 
+      public String toString() {
+         return "UsageType{id=" + id + "}";
       }
 
       public String getId() {
@@ -2281,7 +2281,7 @@ public class Driver {
          ClassDoc clazz = classes[i];
 
          // classes derived from
-         for (ClassDoc superclass = clazz.superclass(); superclass != null; 
+         for (ClassDoc superclass = clazz.superclass(); superclass != null;
               superclass = superclass.superclass()) {
             addUsedBy(superclass, UsageType.CLASS_DERIVED_FROM, clazz, clazz.containingPackage());
          }
@@ -2290,10 +2290,10 @@ public class Driver {
          for (int j = 0, jlim = fields.length; j < jlim; ++ j) {
             FieldDoc field = fields[j];
 
-            // fields of type                  
+            // fields of type
             ClassDoc fieldType = field.type().asClassDoc();
             if (null != fieldType) {
-               addUsedBy(fieldType, UsageType.FIELD_OF_TYPE, 
+               addUsedBy(fieldType, UsageType.FIELD_OF_TYPE,
                          field, clazz.containingPackage());
             }
          }
@@ -2306,7 +2306,7 @@ public class Driver {
 
             ClassDoc returnType = method.returnType().asClassDoc();
             if (null != returnType) {
-               addUsedBy(returnType, UsageType.METHOD_WITH_RETURN_TYPE, 
+               addUsedBy(returnType, UsageType.METHOD_WITH_RETURN_TYPE,
                          method, clazz.containingPackage());
             }
             Parameter[] parameters = method.parameters();
@@ -2317,7 +2317,7 @@ public class Driver {
                Parameter parameter = parameters[k];
                ClassDoc parameterType = parameter.type().asClassDoc();
                if (null != parameterType) {
-                  addUsedBy(parameterType, UsageType.METHOD_WITH_PARAMETER_TYPE, 
+                  addUsedBy(parameterType, UsageType.METHOD_WITH_PARAMETER_TYPE,
                             method, clazz.containingPackage());
                }
             }
@@ -2327,11 +2327,11 @@ public class Driver {
             ClassDoc[] thrownExceptions = method.thrownExceptions();
             for (int k = 0, klim = thrownExceptions.length; k < klim; ++ k) {
                ClassDoc thrownException = thrownExceptions[k];
-               addUsedBy(thrownException, UsageType.METHOD_WITH_THROWN_TYPE, 
+               addUsedBy(thrownException, UsageType.METHOD_WITH_THROWN_TYPE,
                          method, clazz.containingPackage());
             }
          }
-                  
+
          ConstructorDoc[] constructors = clazz.constructors();
          for (int j = 0, jlim = constructors.length; j < jlim; ++ j) {
 
@@ -2341,11 +2341,11 @@ public class Driver {
             for (int k = 0, klim = parameters.length; k < klim; ++ k) {
 
                // constructors with parameter type
-                     
+
                Parameter parameter = parameters[k];
                ClassDoc parameterType = parameter.type().asClassDoc();
                if (null != parameterType) {
-                  addUsedBy(parameterType, UsageType.CONSTRUCTOR_WITH_PARAMETER_TYPE, 
+                  addUsedBy(parameterType, UsageType.CONSTRUCTOR_WITH_PARAMETER_TYPE,
                             constructor, clazz.containingPackage());
                }
             }
@@ -2355,7 +2355,7 @@ public class Driver {
             ClassDoc[] thrownExceptions = constructor.thrownExceptions();
             for (int k = 0, klim = thrownExceptions.length; k < klim; ++ k) {
                ClassDoc thrownException = thrownExceptions[k];
-               addUsedBy(thrownException, UsageType.CONSTRUCTOR_WITH_THROWN_TYPE, 
+               addUsedBy(thrownException, UsageType.CONSTRUCTOR_WITH_THROWN_TYPE,
                          constructor, clazz.containingPackage());
             }
          }

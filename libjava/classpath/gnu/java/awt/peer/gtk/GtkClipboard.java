@@ -149,7 +149,7 @@ public class GtkClipboard extends Clipboard
    * gtk+ clipboard.
    */
   public synchronized void setContents(Transferable contents,
-				       ClipboardOwner owner)
+                                       ClipboardOwner owner)
   {
     super.setContents(contents, owner);
 
@@ -224,7 +224,7 @@ public class GtkClipboard extends Clipboard
                                        boolean text,
                                        boolean images,
                                        boolean files);
-  
+
   /**
    * Called by the gtk+ clipboard when an application has requested
    * text.  Return a string representing the current clipboard

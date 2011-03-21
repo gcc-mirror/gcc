@@ -1,4 +1,4 @@
-/* ServerHelloBuilder.java -- 
+/* ServerHelloBuilder.java --
    Copyright (C) 2006  Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -57,11 +57,11 @@ public class ServerHelloBuilder extends ServerHello implements Builder
   {
     return ((ByteBuffer) buffer.duplicate().position(0).limit(length())).slice();
   }
-  
+
   // We don't reallocate the buffer in any of the following methods,
   // because we always allocate a large enough buffer for the base
   // object in the constructor.
-  
+
   public void setVersion (final ProtocolVersion version)
   {
     buffer.putShort (0, (short) version.rawValue ());
@@ -95,12 +95,12 @@ public class ServerHelloBuilder extends ServerHello implements Builder
   }
 
   // For extensions, we do reallocate the buffer.
-  
+
   public void setDisableExtensions(boolean disable)
   {
     disableExtensions = disable;
   }
-  
+
   public void setExtensionsLength (final int length)
   {
     if (length < 0 || length > 16384)
@@ -111,7 +111,7 @@ public class ServerHelloBuilder extends ServerHello implements Builder
     buffer.putShort (SESSID_OFFSET2 + (buffer.get (SESSID_OFFSET) & 0xFF) + 3,
                      (short) length);
   }
-  
+
   public void setExtensions(ByteBuffer extensions)
   {
     extensions = (ByteBuffer)
@@ -120,7 +120,7 @@ public class ServerHelloBuilder extends ServerHello implements Builder
                                               + (buffer.get(SESSID_OFFSET) & 0xFF)
                                               )).put(extensions);
   }
-  
+
   public void ensureCapacity(int newCapacity)
   {
     ByteBuffer newBuffer = ByteBuffer.allocate(newCapacity);

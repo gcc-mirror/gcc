@@ -29,7 +29,9 @@
 #include <ext/rope>
 #include <ext/stdio_filebuf.h>
 
-_GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
+namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   namespace
   {
@@ -60,4 +62,5 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
   template class stdio_filebuf<wchar_t>;
 #endif
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace

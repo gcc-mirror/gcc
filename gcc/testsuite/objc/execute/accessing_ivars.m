@@ -1,7 +1,9 @@
 /* Contributed by Nicola Pero - Thu Mar  8 16:27:46 CET 2001 */
 #include <stdlib.h>
-#import "../../objc-obj-c++-shared/Object1.h"
+#ifndef __NEXT_RUNTIME__
 #include <objc/objc-api.h>
+#endif
+#include "../../objc-obj-c++-shared/Object1.h"
 
 /* Test that by using -> we can access ivars of other objects of the same 
    class */
@@ -53,3 +55,4 @@ int main (void)
 
   return 0;
 }
+#include "../../objc-obj-c++-shared/Object1-implementation.h"

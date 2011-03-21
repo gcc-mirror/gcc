@@ -64,7 +64,7 @@ public class ServerDHParams implements Builder, ServerKeyExchangeParams
   {
     this.buffer = buffer.duplicate().order(ByteOrder.BIG_ENDIAN);
   }
-  
+
   public ServerDHParams (final BigInteger p, final BigInteger g,
                          final BigInteger y)
   {
@@ -72,7 +72,7 @@ public class ServerDHParams implements Builder, ServerKeyExchangeParams
     byte[] g_bytes = g.toByteArray();
     byte[] y_bytes = y.toByteArray();
     int len = p_bytes.length + g_bytes.length + y_bytes.length + 6;
-    
+
     int p_off = 0;
     if (p_bytes[0] == 0x00)
       {
@@ -94,7 +94,7 @@ public class ServerDHParams implements Builder, ServerKeyExchangeParams
     int p_len = p_bytes.length - p_off;
     int g_len = g_bytes.length - g_off;
     int y_len = y_bytes.length - y_off;
-    
+
     buffer = ByteBuffer.allocate(len);
     buffer.putShort((short) p_len);
     buffer.put(p_bytes, p_off, p_len);
@@ -121,7 +121,7 @@ public class ServerDHParams implements Builder, ServerKeyExchangeParams
   {
     return (ByteBuffer) buffer.duplicate().position(0).limit(length());
   }
-  
+
   /**
    * Returns the server's prime modulus.
    *

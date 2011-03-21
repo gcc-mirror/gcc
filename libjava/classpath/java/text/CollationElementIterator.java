@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -48,11 +48,11 @@ import java.util.ArrayList;
  */
 
 /**
- * This class walks through the character collation elements of a 
- * <code>String</code> as defined by the collation rules in an instance of 
+ * This class walks through the character collation elements of a
+ * <code>String</code> as defined by the collation rules in an instance of
  * <code>RuleBasedCollator</code>.  There is no public constructor for
  * this class.  An instance is created by calling the
- * <code>getCollationElementIterator</code> method on 
+ * <code>getCollationElementIterator</code> method on
  * <code>RuleBasedCollator</code>.
  *
  * @author Aaron M. Renn (arenn@urbanophile.com)
@@ -62,7 +62,7 @@ import java.util.ArrayList;
 public final class CollationElementIterator
 {
   /**
-   * This is a constant value that is returned to indicate that the end of 
+   * This is a constant value that is returned to indicate that the end of
    * the string was encountered.
    */
   public static final int NULLORDER = -1;
@@ -109,8 +109,8 @@ public final class CollationElementIterator
   CollationElementIterator(RuleBasedCollator collator, String text)
   {
     this.collator = collator;
-    
-    setText (text);    
+
+    setText (text);
   }
 
   /**
@@ -124,17 +124,17 @@ public final class CollationElementIterator
   CollationElementIterator(RuleBasedCollator collator, CharacterIterator text)
   {
     this.collator = collator;
-    
-    setText (text);    
+
+    setText (text);
   }
 
   RuleBasedCollator.CollationElement nextBlock()
   {
     if (index >= text_decomposition.length)
       return null;
-    
+
     RuleBasedCollator.CollationElement e = text_decomposition[index];
-    
+
     textIndex = text_indexes[index+1];
 
     index++;
@@ -146,12 +146,12 @@ public final class CollationElementIterator
   {
     if (index == 0)
       return null;
-    
+
     index--;
     RuleBasedCollator.CollationElement e = text_decomposition[index];
 
     textIndex = text_indexes[index+1];
-    
+
     return e;
   }
 
@@ -169,7 +169,7 @@ public final class CollationElementIterator
 
     if (e == null)
       return NULLORDER;
-    
+
     return e.getValue();
   }
 
@@ -186,7 +186,7 @@ public final class CollationElementIterator
 
     if (e == null)
       return NULLORDER;
-    
+
     return e.getValue();
   }
 
@@ -194,7 +194,7 @@ public final class CollationElementIterator
    * This method returns the primary order value for the given collation
    * value.
    *
-   * @param order The collation value returned from <code>next()</code> or 
+   * @param order The collation value returned from <code>next()</code> or
    *              <code>previous()</code>.
    *
    * @return The primary order value of the specified collation value.  This is
@@ -220,10 +220,10 @@ public final class CollationElementIterator
    * This method returns the secondary order value for the given collation
    * value.
    *
-   * @param order The collation value returned from <code>next()</code> or 
+   * @param order The collation value returned from <code>next()</code> or
    *              <code>previous()</code>.
    *
-   * @return The secondary order value of the specified collation value.  This 
+   * @return The secondary order value of the specified collation value.  This
    *         is the bits 8-15.
    */
   public static short secondaryOrder(int order)
@@ -236,10 +236,10 @@ public final class CollationElementIterator
    * This method returns the tertiary order value for the given collation
    * value.
    *
-   * @param order The collation value returned from <code>next()</code> or 
+   * @param order The collation value returned from <code>next()</code> or
    *              <code>previous()</code>.
    *
-   * @return The tertiary order value of the specified collation value.  This 
+   * @return The tertiary order value of the specified collation value.  This
    *         is the low eight bits.
    */
   public static short tertiaryOrder(int order)
@@ -274,136 +274,136 @@ public final class CollationElementIterator
     // Build element collection ordered as they come in "text".
     while (idx < work_text.length())
       {
-	String key, key_old;
+        String key, key_old;
 
-	Object object = null;
-	int p = 1;
-	
-	// IMPROVE: use a TreeMap with a prefix-ordering rule.
-	key_old = key = null;
-	do
-	  {
-	    if (object != null)
-	      key_old = key;
-	    key = work_text.substring (idx, idx+p);
-	    object = collator.prefix_tree.get (key);
-	    if (object != null && idx < alreadyExpanded)
-	      {
-		RuleBasedCollator.CollationElement prefix = (RuleBasedCollator.CollationElement)object;
-		if (prefix.expansion != null && 
-		    prefix.expansion.startsWith(work_text.substring(0, idx)))
-		{
-		  object = null;
-		  key = key_old;
-		}
-	      }
-	    p++;
-	  }
-	while (idx+p <= work_text.length());
-	
-	if (object == null)
-	  key = key_old;
-	
-	RuleBasedCollator.CollationElement prefix =
-	  (RuleBasedCollator.CollationElement) collator.prefix_tree.get (key);
+        Object object = null;
+        int p = 1;
 
-	/*
-	 * First case: There is no such sequence in the database.
-	 * We will have to build one from the context.
-	 */
-	if (prefix == null)
-	  {
-	    /*
-	     * We are dealing with sequences in an expansion. They
-	     * are treated as accented characters (tertiary order).
-	     */
-	    if (alreadyExpanded > 0)
-	      {
-		RuleBasedCollator.CollationElement e =
-		  collator.getDefaultAccentedElement (work_text.charAt (idx));
-		
-		a_element.add (e);
-		a_idx.add (new Integer(idx_idx));
-		idx++;
-		alreadyExpanded--;
-		if (alreadyExpanded == 0)
-		  {
-		    /* There is not any characters left in the expansion set.
-		     * We can increase the pointer in the source string.
-		     */
-		    idx_idx += idxToMove;
-		    idxToMove = 0; 
-		  }
-		else
-		  idx_idx++;
-	      }
-	    else
-	      {
-		/* This is a normal character. */
-		RuleBasedCollator.CollationElement e =
-		  collator.getDefaultElement (work_text.charAt (idx));
-		Integer i_ref = new Integer(idx_idx);
+        // IMPROVE: use a TreeMap with a prefix-ordering rule.
+        key_old = key = null;
+        do
+          {
+            if (object != null)
+              key_old = key;
+            key = work_text.substring (idx, idx+p);
+            object = collator.prefix_tree.get (key);
+            if (object != null && idx < alreadyExpanded)
+              {
+                RuleBasedCollator.CollationElement prefix = (RuleBasedCollator.CollationElement)object;
+                if (prefix.expansion != null &&
+                    prefix.expansion.startsWith(work_text.substring(0, idx)))
+                {
+                  object = null;
+                  key = key_old;
+                }
+              }
+            p++;
+          }
+        while (idx+p <= work_text.length());
 
-		/* Don't forget to mark it as a special sequence so the
-		 * string can be ordered.
-		 */
-		a_element.add (RuleBasedCollator.SPECIAL_UNKNOWN_SEQ);
-		a_idx.add (i_ref);
-		a_element.add (e);
-		a_idx.add (i_ref);
-		idx_idx++;
-		idx++;
-	      }
-	    continue;
-	  }
- 
-	/*
-	 * Second case: Here we have found a matching sequence.
-	 * Here we have an expansion string prepend it to the "work text" and
-	 * add the corresponding sorting element. We must also mark 
-	 */
-	if (prefix.expansion != null)
-	  {
-	    work_text = prefix.expansion
-	      + work_text.substring (idx+prefix.key.length());
-	    idx = 0;
-	    a_element.add (prefix);
-	    a_idx.add (new Integer(idx_idx));
-	    if (alreadyExpanded == 0)
-	      idxToMove = prefix.key.length();
-	    alreadyExpanded += prefix.expansion.length()-prefix.key.length();
-	  }
-	else
-	  {
-	    /* Third case: the simplest. We have got the prefix and it
-	     * has not to be expanded.
-	     */
-	    a_element.add (prefix);
-	    a_idx.add (new Integer(idx_idx));
-	    idx += prefix.key.length();
-	    /* If the sequence is in an expansion, we must decrease the
-	     * counter.
-	     */
-	    if (alreadyExpanded > 0)
-	      {
-		alreadyExpanded -= prefix.key.length();
-		if (alreadyExpanded == 0)
-		  {
-		    idx_idx += idxToMove;
-		    idxToMove = 0;
-		  }
-	      }
-	    else
-	      idx_idx += prefix.key.length();
-	  }
+        if (object == null)
+          key = key_old;
+
+        RuleBasedCollator.CollationElement prefix =
+          (RuleBasedCollator.CollationElement) collator.prefix_tree.get (key);
+
+        /*
+         * First case: There is no such sequence in the database.
+         * We will have to build one from the context.
+         */
+        if (prefix == null)
+          {
+            /*
+             * We are dealing with sequences in an expansion. They
+             * are treated as accented characters (tertiary order).
+             */
+            if (alreadyExpanded > 0)
+              {
+                RuleBasedCollator.CollationElement e =
+                  collator.getDefaultAccentedElement (work_text.charAt (idx));
+
+                a_element.add (e);
+                a_idx.add (new Integer(idx_idx));
+                idx++;
+                alreadyExpanded--;
+                if (alreadyExpanded == 0)
+                  {
+                    /* There is not any characters left in the expansion set.
+                     * We can increase the pointer in the source string.
+                     */
+                    idx_idx += idxToMove;
+                    idxToMove = 0;
+                  }
+                else
+                  idx_idx++;
+              }
+            else
+              {
+                /* This is a normal character. */
+                RuleBasedCollator.CollationElement e =
+                  collator.getDefaultElement (work_text.charAt (idx));
+                Integer i_ref = new Integer(idx_idx);
+
+                /* Don't forget to mark it as a special sequence so the
+                 * string can be ordered.
+                 */
+                a_element.add (RuleBasedCollator.SPECIAL_UNKNOWN_SEQ);
+                a_idx.add (i_ref);
+                a_element.add (e);
+                a_idx.add (i_ref);
+                idx_idx++;
+                idx++;
+              }
+            continue;
+          }
+
+        /*
+         * Second case: Here we have found a matching sequence.
+         * Here we have an expansion string prepend it to the "work text" and
+         * add the corresponding sorting element. We must also mark
+         */
+        if (prefix.expansion != null)
+          {
+            work_text = prefix.expansion
+              + work_text.substring (idx+prefix.key.length());
+            idx = 0;
+            a_element.add (prefix);
+            a_idx.add (new Integer(idx_idx));
+            if (alreadyExpanded == 0)
+              idxToMove = prefix.key.length();
+            alreadyExpanded += prefix.expansion.length()-prefix.key.length();
+          }
+        else
+          {
+            /* Third case: the simplest. We have got the prefix and it
+             * has not to be expanded.
+             */
+            a_element.add (prefix);
+            a_idx.add (new Integer(idx_idx));
+            idx += prefix.key.length();
+            /* If the sequence is in an expansion, we must decrease the
+             * counter.
+             */
+            if (alreadyExpanded > 0)
+              {
+                alreadyExpanded -= prefix.key.length();
+                if (alreadyExpanded == 0)
+                  {
+                    idx_idx += idxToMove;
+                    idxToMove = 0;
+                  }
+              }
+            else
+              idx_idx += prefix.key.length();
+          }
       }
-    
+
     text_decomposition = (RuleBasedCollator.CollationElement[])
-	   a_element.toArray(new RuleBasedCollator.CollationElement[a_element.size()]);
+           a_element.toArray(new RuleBasedCollator.CollationElement[a_element.size()]);
     text_indexes = new int[a_idx.size()+1];
-    for (int i = 0; i < a_idx.size(); i++) 
+    for (int i = 0; i < a_idx.size(); i++)
       {
-	text_indexes[i] = ((Integer)a_idx.get(i)).intValue();
+        text_indexes[i] = ((Integer)a_idx.get(i)).intValue();
       }
     text_indexes[a_idx.size()] = text.length();
   }
@@ -422,8 +422,8 @@ public final class CollationElementIterator
 
     // For now assume we read from the beginning of the string.
     for (char c = source.first();
-	 c != CharacterIterator.DONE;
-	 c = source.next())
+         c != CharacterIterator.DONE;
+         c = source.next())
       expand.append(c);
 
     setText(expand.toString());
@@ -459,11 +459,11 @@ public final class CollationElementIterator
 
     if (offset > (text.getEndIndex() - 1))
       throw new IllegalArgumentException("Offset too large: " + offset);
-    
+
     for (index = 0; index < text_decomposition.length; index++)
-      {	
-	if (offset <= text_indexes[index])
-	  break;
+      {
+        if (offset <= text_indexes[index])
+          break;
       }
     /*
      * As text_indexes[0] == 0, we should not have to take care whether index is

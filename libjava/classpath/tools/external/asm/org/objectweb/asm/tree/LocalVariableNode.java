@@ -34,7 +34,7 @@ import org.objectweb.asm.Label;
 
 /**
  * A node that represents a local variable declaration.
- * 
+ *
  * @author Eric Bruneton
  */
 public class LocalVariableNode {
@@ -73,7 +73,7 @@ public class LocalVariableNode {
 
     /**
      * Constructs a new {@link LocalVariableNode}.
-     * 
+     *
      * @param name the name of a local variable.
      * @param desc the type descriptor of this local variable.
      * @param signature the signature of this local variable. May be
@@ -102,7 +102,7 @@ public class LocalVariableNode {
 
     /**
      * Makes the given visitor visit this local variable declaration.
-     * 
+     *
      * @param mv a method visitor.
      */
     public void accept(final MethodVisitor mv) {

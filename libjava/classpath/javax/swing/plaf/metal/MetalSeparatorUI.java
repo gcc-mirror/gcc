@@ -83,13 +83,13 @@ public class MetalSeparatorUI
   }
 
   /**
-   * The separator is made of two lines. The top line will be 
+   * The separator is made of two lines. The top line will be
    * the Metal theme color separatorForeground (or left line if it's vertical).
    * The bottom or right line will be the Metal theme color
    * separatorBackground.
-   * The two lines will 
-   * be centered inside the bounds box. If the separator is horizontal, 
-   * then it will be vertically centered, or if it's vertical, it will 
+   * The two lines will
+   * be centered inside the bounds box. If the separator is horizontal,
+   * then it will be vertically centered, or if it's vertical, it will
    * be horizontally centered.
    *
    * @param g The Graphics object to paint with
@@ -107,9 +107,9 @@ public class MetalSeparatorUI
       s = (JSeparator) c;
     else
       return;
-      
+
     if (s.getOrientation() == JSeparator.HORIZONTAL)
-      {    
+      {
         int midAB = r.height / 2;
         g.setColor(c1);
         g.drawLine(r.x, r.y + midAB - 1, r.x + r.width, r.y + midAB - 1);

@@ -59,7 +59,7 @@ import java.util.Map;
 
 /**
  * The optionally persistent RMI registry implementation.
- * 
+ *
  * @author Audrius Meskauskas (audriusa@bioinformatics.org)
  */
 public class Main
@@ -68,7 +68,7 @@ public class Main
    * The stop command.
    */
   public static String STOP = "gnu.classpath.tools.rmi.registry.command.STOP";
-  
+
   /**
    * If true, the registry prints registration events to console.
    */
@@ -195,7 +195,7 @@ public class Main
           {
             Registry r = LocateRegistry.getRegistry(port);
             // Search for this specific line will command to stop the registry.
-            
+
             // Our service returns null, but any other service will thrown
             // NotBoundException.
             r.unbind(STOP);

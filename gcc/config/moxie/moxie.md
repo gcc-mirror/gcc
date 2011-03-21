@@ -188,15 +188,15 @@
 
 ;; Push a register onto the stack
 (define_insn "movsi_push"
-  [(set:SI (mem:SI (pre_dec:SI (reg:SI 1)))
-	(match_operand:SI 0 "register_operand" "r"))]
+  [(set (mem:SI (pre_dec:SI (reg:SI 1)))
+  	(match_operand:SI 0 "register_operand" "r"))]
   ""
   "push   $sp, %0")
 
 ;; Pop a register from the stack
 (define_insn "movsi_pop"
-  [(set:SI (match_operand:SI 1 "register_operand" "=r")
-	(mem:SI (post_inc:SI (match_operand:SI 0 "register_operand" "r"))))]
+  [(set (match_operand:SI 1 "register_operand" "=r")
+  	(mem:SI (post_inc:SI (match_operand:SI 0 "register_operand" "r"))))]
   ""
   "pop    %0, %1")
 

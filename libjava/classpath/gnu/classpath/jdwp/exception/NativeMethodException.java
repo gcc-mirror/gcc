@@ -53,7 +53,7 @@ public class NativeMethodException
   public NativeMethodException(long id)
   {
     super(JdwpConstants.Error.NATIVE_METHOD,
-	   "invalid method id (" + id + ")");
+           "invalid method id (" + id + ")");
   }
 
   public NativeMethodException(Throwable t)

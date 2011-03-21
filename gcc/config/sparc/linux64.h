@@ -1,6 +1,6 @@
 /* Definitions for 64-bit SPARC running Linux-based GNU systems with ELF.
    Copyright 1996, 1997, 1998, 2000, 2002, 2003, 2004, 2005, 2006, 2007, 2008,
-   2009, 2010 Free Software Foundation, Inc.
+   2009, 2010, 2011 Free Software Foundation, Inc.
    Contributed by David S. Miller (davem@caip.rutgers.edu)
 
 This file is part of GCC.
@@ -115,20 +115,18 @@ along with GCC; see the file COPYING3.  If not see
 
 #define LINK_ARCH32_SPEC "-m elf32_sparc -Y P,%R/usr/lib %{shared:-shared} \
   %{!shared: \
-    %{!ibcs: \
-      %{!static: \
-        %{rdynamic:-export-dynamic} \
-        -dynamic-linker " LINUX_DYNAMIC_LINKER32 "} \
-        %{static:-static}}} \
+    %{!static: \
+      %{rdynamic:-export-dynamic} \
+      -dynamic-linker " LINUX_DYNAMIC_LINKER32 "} \
+      %{static:-static}} \
 "
 
 #define LINK_ARCH64_SPEC "-m elf64_sparc -Y P,%R/usr/lib64 %{shared:-shared} \
   %{!shared: \
-    %{!ibcs: \
-      %{!static: \
-        %{rdynamic:-export-dynamic} \
-        -dynamic-linker " LINUX_DYNAMIC_LINKER64 "} \
-        %{static:-static}}} \
+    %{!static: \
+      %{rdynamic:-export-dynamic} \
+      -dynamic-linker " LINUX_DYNAMIC_LINKER64 "} \
+      %{static:-static}} \
 "
 
 #define LINK_ARCH_SPEC "\
@@ -150,24 +148,16 @@ along with GCC; see the file COPYING3.  If not see
 #undef	CC1_SPEC
 #if DEFAULT_ARCH32_P
 #define CC1_SPEC "%{profile:-p} \
-%{sun4:} %{target:} \
-%{mcypress:-mcpu=cypress} \
-%{msparclite:-mcpu=sparclite} %{mf930:-mcpu=f930} %{mf934:-mcpu=f934} \
-%{mv8:-mcpu=v8} %{msupersparc:-mcpu=supersparc} \
 %{m32:%{m64:%emay not use both -m32 and -m64}} \
 %{m64:-mptr64 -mstack-bias -mlong-double-128 \
-  %{!mcpu*:%{!mcypress:%{!msparclite:%{!mf930:%{!mf934:%{!mv8:%{!msupersparc:-mcpu=ultrasparc}}}}}}} \
+  %{!mcpu*:-mcpu=ultrasparc} \
   %{!mno-vis:%{!mcpu=v9:-mvis}}} \
 "
 #else
 #define CC1_SPEC "%{profile:-p} \
-%{sun4:} %{target:} \
-%{mcypress:-mcpu=cypress} \
-%{msparclite:-mcpu=sparclite} %{mf930:-mcpu=f930} %{mf934:-mcpu=f934} \
-%{mv8:-mcpu=v8} %{msupersparc:-mcpu=supersparc} \
 %{m32:%{m64:%emay not use both -m32 and -m64}} \
 %{m32:-mptr32 -mno-stack-bias %{!mlong-double-128:-mlong-double-64} \
-  %{!mcpu*:%{!mcypress:%{!msparclite:%{!mf930:%{!mf934:%{!mv8:%{!msupersparc:-mcpu=cypress}}}}}}}} \
+  %{!mcpu*:-mcpu=cypress}} \
 %{!m32:%{!mcpu*:-mcpu=ultrasparc}} \
 %{!mno-vis:%{!m32:%{!mcpu=v9:-mvis}}} \
 "
@@ -186,12 +176,12 @@ along with GCC; see the file COPYING3.  If not see
 #define OPTION_DEFAULT_SPECS \
   {"cpu", "%{!m64:%{!mcpu=*:-mcpu=%(VALUE)}}" }, \
   {"tune", "%{!mtune=*:-mtune=%(VALUE)}" }, \
-  {"float", "%{!msoft-float:%{!mhard-float:%{!fpu:%{!no-fpu:-m%(VALUE)-float}}}}" }
+  {"float", "%{!msoft-float:%{!mhard-float:%{!mfpu:%{!mno-fpu:-m%(VALUE)-float}}}}" }
 #else
 #define OPTION_DEFAULT_SPECS \
   {"cpu", "%{!m32:%{!mcpu=*:-mcpu=%(VALUE)}}" }, \
   {"tune", "%{!mtune=*:-mtune=%(VALUE)}" }, \
-  {"float", "%{!msoft-float:%{!mhard-float:%{!fpu:%{!no-fpu:-m%(VALUE)-float}}}}" }
+  {"float", "%{!msoft-float:%{!mhard-float:%{!mfpu:%{!mno-fpu:-m%(VALUE)-float}}}}" }
 #endif
 
 #if DEFAULT_ARCH32_P
@@ -205,23 +195,19 @@ along with GCC; see the file COPYING3.  If not see
 #undef LINK_SPEC
 #define LINK_SPEC "-m elf64_sparc -Y P,%R/usr/lib64 %{shared:-shared} \
   %{!shared: \
-    %{!ibcs: \
-      %{!static: \
-        %{rdynamic:-export-dynamic} \
-        -dynamic-linker " LINUX_DYNAMIC_LINKER64 "} \
-        %{static:-static}}} \
+    %{!static: \
+      %{rdynamic:-export-dynamic} \
+      -dynamic-linker " LINUX_DYNAMIC_LINKER64 "} \
+    %{static:-static}} \
 %{mlittle-endian:-EL} \
 %{!mno-relax:%{!r:-relax}} \
 "
 
 #endif /* !SPARC_BI_ARCH */
 
-/* The sun bundled assembler doesn't accept -Yd, (and neither does gas).
-   It's safe to pass -s always, even if -g is not used.  */
+/* It's safe to pass -s always, even if -g is not used.  */
 #undef ASM_SPEC
 #define ASM_SPEC "\
-%{!Qn:-Qy} \
-%{Ym,*} \
 -s \
 %{fpic|fPIC|fpie|fPIE:-K PIC} \
 %{!.c:%{findirect-dispatch:-K PIC}} \

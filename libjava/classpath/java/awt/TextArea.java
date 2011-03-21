@@ -177,8 +177,8 @@ public class TextArea extends TextComponent implements java.io.Serializable
    * contains the specified text.  The TextArea can display the
    * specified number of rows and columns of text, without the need to
    * scroll.  This constructor allows specification of the scroll bar
-   * display policy.  The TextArea initially contains the specified text.  
-   * If text specified as <code>null<code>, it will be set to "". 
+   * display policy.  The TextArea initially contains the specified text.
+   * If text specified as <code>null<code>, it will be set to "".
    *
    * @param text The text to display in this text area (<code>null</code> permitted).
    * @param rows The number of rows in this text area.
@@ -200,7 +200,7 @@ public class TextArea extends TextComponent implements java.io.Serializable
       this.rows = 0;
     else
       this.rows = rows;
-    
+
     if (columns < 0)
       this.columns = 0;
     else
@@ -311,7 +311,7 @@ public class TextArea extends TextComponent implements java.io.Serializable
 
   /**
    * Retrieve the minimum size for this text area.
-   * 
+   *
    * @return The minimum size for this text area.
    *
    * @deprecated This method is deprecated in favor of
@@ -340,7 +340,7 @@ public class TextArea extends TextComponent implements java.io.Serializable
   {
     if (isMinimumSizeSet())
       return new Dimension(minSize);
-    
+
     TextAreaPeer peer = (TextAreaPeer) getPeer ();
     if (peer == null)
       return new Dimension (getWidth(), getHeight());
@@ -405,7 +405,7 @@ public class TextArea extends TextComponent implements java.io.Serializable
   {
     if (isPreferredSizeSet())
       return new Dimension(prefSize);
-    
+
     TextAreaPeer peer = (TextAreaPeer) getPeer ();
     if (peer == null)
       return new Dimension (getWidth(), getHeight());
@@ -459,7 +459,7 @@ public class TextArea extends TextComponent implements java.io.Serializable
     if (peer != null)
       peer.insert (str, peer.getText().length ());
     else
-      setText(getText() + str);   
+      setText(getText() + str);
   }
 
   /**
@@ -488,7 +488,7 @@ public class TextArea extends TextComponent implements java.io.Serializable
   {
     String tmp1 = null;
     String tmp2 = null;
-    
+
     TextAreaPeer peer = (TextAreaPeer) getPeer ();
 
     if (peer != null)
@@ -562,17 +562,17 @@ public class TextArea extends TextComponent implements java.io.Serializable
     switch (scrollbarVisibility)
       {
       case SCROLLBARS_BOTH:
-	sbVisibility = "both";
-	break;
+        sbVisibility = "both";
+        break;
       case SCROLLBARS_VERTICAL_ONLY:
-	sbVisibility = "vertical-only";
-	break;
+        sbVisibility = "vertical-only";
+        break;
       case SCROLLBARS_HORIZONTAL_ONLY:
-	sbVisibility = "horizontal-only";
-	break;
+        sbVisibility = "horizontal-only";
+        break;
       case SCROLLBARS_NONE:
-	sbVisibility = "none";
-	break;
+        sbVisibility = "none";
+        break;
       }
 
     String editable = "";
@@ -600,7 +600,7 @@ public class TextArea extends TextComponent implements java.io.Serializable
   {
     return next_text_number++;
   }
-  
+
   protected class AccessibleAWTTextArea extends AccessibleAWTTextComponent
   {
     private static final long serialVersionUID = 3472827823632144419L;
@@ -608,13 +608,13 @@ public class TextArea extends TextComponent implements java.io.Serializable
     protected AccessibleAWTTextArea()
     {
     }
-    
+
     public AccessibleStateSet getAccessibleStateSet()
     {
       return super.getAccessibleStateSet();
     }
   }
-  
+
   /**
    * Gets the AccessibleContext associated with this <code>TextArea</code>.
    * The context is created, if necessary.

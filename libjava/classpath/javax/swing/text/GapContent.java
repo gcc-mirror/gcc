@@ -64,7 +64,7 @@ import javax.swing.undo.UndoableEdit;
 public class GapContent
     implements AbstractDocument.Content, Serializable
 {
-  
+
   /**
    * A {@link Position} implementation for <code>GapContent</code>.
    */
@@ -80,7 +80,7 @@ public class GapContent
 
     /**
      * Returns the current offset of this Position within the content.
-     * 
+     *
      * @return the current offset of this Position within the content.
      */
     public int getOffset()
@@ -94,7 +94,7 @@ public class GapContent
    * the actual offset of the position. This is pulled out of the
    * GapContentPosition object so that the mark and position can be handled
    * independently, and most important, so that the GapContentPosition can
-   * be garbage collected while we still hold a reference to the Mark object. 
+   * be garbage collected while we still hold a reference to the Mark object.
    */
   private class Mark
     extends WeakReference
@@ -149,7 +149,7 @@ public class GapContent
 
   /**
    * Stores a reference to a mark that can be resetted to the original value
-   * after a mark has been moved. This is used for undoing actions. 
+   * after a mark has been moved. This is used for undoing actions.
    */
   private class UndoPosRef
   {
@@ -213,7 +213,7 @@ public class GapContent
           throw new CannotUndoException();
         }
     }
-    
+
     public void redo () throws CannotUndoException
     {
       super.redo();
@@ -231,9 +231,9 @@ public class GapContent
           throw new CannotRedoException();
         }
     }
-    
+
   }
-  
+
   private class UndoRemove extends AbstractUndoableEdit
   {
     public int where;
@@ -265,7 +265,7 @@ public class GapContent
         throw new CannotUndoException();
       }
     }
-    
+
     public void redo () throws CannotUndoException
     {
       super.redo();
@@ -280,7 +280,7 @@ public class GapContent
           throw new CannotRedoException();
         }
     }
-    
+
   }
 
   /** The serialization UID (compatible with JDK1.5). */
@@ -348,7 +348,7 @@ public class GapContent
 
   /**
    * Creates a new GapContent object with a specified initial size.
-   * 
+   *
    * @param size the initial size of the buffer
    */
   public GapContent(int size)
@@ -365,9 +365,9 @@ public class GapContent
   /**
    * Allocates an array of the specified length that can then be used as
    * buffer.
-   * 
+   *
    * @param size the size of the array to be allocated
-   * 
+   *
    * @return the allocated array
    */
   protected Object allocateArray(int size)
@@ -377,7 +377,7 @@ public class GapContent
 
   /**
    * Returns the length of the allocated buffer array.
-   * 
+   *
    * @return the length of the allocated buffer array
    */
   protected int getArrayLength()
@@ -387,7 +387,7 @@ public class GapContent
 
   /**
    * Returns the length of the content.
-   * 
+   *
    * @return the length of the content
    */
   public int length()
@@ -397,12 +397,12 @@ public class GapContent
 
   /**
    * Inserts a string at the specified position.
-   * 
+   *
    * @param where the position where the string is inserted
    * @param str the string that is to be inserted
-   * 
+   *
    * @return an UndoableEdit object
-   * 
+   *
    * @throws BadLocationException if <code>where</code> is not a valid
    *         location in the buffer
    */
@@ -429,12 +429,12 @@ public class GapContent
 
   /**
    * Removes a piece of content at th specified position.
-   * 
+   *
    * @param where the position where the content is to be removed
    * @param nitems number of characters to be removed
-   * 
+   *
    * @return an UndoableEdit object
-   * 
+   *
    * @throws BadLocationException if <code>where</code> is not a valid
    *         location in the buffer
    */
@@ -442,11 +442,11 @@ public class GapContent
   {
     // check arguments
     int length = length();
-    
+
     if ((where + nitems) >= length)
       throw new BadLocationException("where + nitems cannot be greater"
           + " than the content length", where + nitems);
-    
+
     String removedText = getString(where, nitems);
     UndoRemove undoRemove = new UndoRemove(where, removedText);
     replace(where, nitems, null, 0);
@@ -456,10 +456,10 @@ public class GapContent
 
   /**
    * Returns a piece of content as String.
-   * 
+   *
    * @param where the start location of the fragment
    * @param len the length of the fragment
-   * 
+   *
    * @throws BadLocationException if <code>where</code> or
    *         <code>where + len</code> are no valid locations in the buffer
    */
@@ -487,15 +487,15 @@ public class GapContent
 
   /**
    * Fetches a piece of content and stores it in a {@link Segment} object.
-   * 
+   *
    * If the requested piece of text spans the gap, the content is copied into a
    * new array. If it doesn't then it is contiguous and the actual content
    * store is returned.
-   * 
+   *
    * @param where the start location of the fragment
    * @param len the length of the fragment
    * @param txt the Segment object to store the fragment in
-   * 
+   *
    * @throws BadLocationException if <code>where</code> or
    *         <code>where + len</code> are no valid locations in the buffer
    */
@@ -515,7 +515,7 @@ public class GapContent
     if (len < 0)
       throw new BadLocationException("negative length not allowed: ", len);
 
-    // Optimized to copy only when really needed. 
+    // Optimized to copy only when really needed.
     if (where + len <= gapStart)
       {
         // Simple case: completely before gap.
@@ -556,11 +556,11 @@ public class GapContent
 
   /**
    * Creates and returns a mark at the specified position.
-   * 
+   *
    * @param offset the position at which to create the mark
-   * 
+   *
    * @return the create Position object for the mark
-   * 
+   *
    * @throws BadLocationException if the offset is not a valid position in the
    *         buffer
    */
@@ -597,7 +597,7 @@ public class GapContent
         marks.add(insertIndex, m);
       }
     // Otherwise use the found position.
-      
+
     return pos;
   }
 
@@ -606,7 +606,7 @@ public class GapContent
    * segment before the gap as it is and the segment after the gap at the end
    * of the new buffer array. This does change the gapEnd mark but not the
    * gapStart mark.
-   * 
+   *
    * @param newSize the new size of the gap
    */
   protected void shiftEnd(int newSize)
@@ -641,7 +641,7 @@ public class GapContent
 
   /**
    * Shifts the gap to the specified position.
-   * 
+   *
    * @param newGapStart the new start position of the gap
    */
   protected void shiftGap(int newGapStart)
@@ -746,14 +746,14 @@ public class GapContent
         m.mark = newGapEnd;
       }
 
-    
+
     gapEnd = newGapEnd;
     resetMarksAtZero();
   }
 
   /**
    * Returns the allocated buffer array.
-   * 
+   *
    * @return the allocated buffer array
    */
   protected final Object getArray()
@@ -763,7 +763,7 @@ public class GapContent
 
   /**
    * Replaces a portion of the storage with the specified items.
-   * 
+   *
    * @param position the position at which to remove items
    * @param rmSize the number of items to remove
    * @param addItems the items to add at location
@@ -915,7 +915,7 @@ public class GapContent
       }
     return v;
   }
-  
+
   /**
    * Resets all <code>Position</code> that have an offset of <code>0</code>,
    * to also have an array index of <code>0</code>. This might be necessary

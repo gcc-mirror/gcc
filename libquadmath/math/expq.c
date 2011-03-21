@@ -21,6 +21,13 @@
    02111-1307 USA.  */
 
 #include "quadmath-imp.h"
+#ifdef HAVE_FENV_H
+# include <fenv.h>
+# if defined HAVE_FEHOLDEXCEPT && defined HAVE_FESETROUND \
+     && defined HAVE_FESETENV && defined FE_TONEAREST
+#  define USE_FENV_H
+# endif
+#endif
 
 
 /* __expl_table basically consists of four tables, T_EXPL_ARG{1,2} and
@@ -1093,6 +1100,14 @@ expq (__float128 x)
       int tval1, tval2, unsafe, n_i;
       __float128 x22, n, t, result, xl;
       ieee854_float128 ex2_u, scale_u;
+#ifdef USE_FENV_H
+      fenv_t oldenv;
+
+      feholdexcept (&oldenv);
+# ifdef FE_TONEAREST
+      fesetround (FE_TONEAREST);
+# endif
+#endif
 
       /* Calculate n.  */
       n = x * M_1_LN2 + THREEp111;
@@ -1140,6 +1155,9 @@ expq (__float128 x)
       x22 = x + x*x*(P1+x*(P2+x*(P3+x*(P4+x*(P5+x*P6)))));
 
       /* Return result.  */
+#ifdef USE_FENV_H
+      fesetenv (&oldenv);
+#endif
       result = x22 * ex2_u.value + ex2_u.value;
 
       /* Now we can test whether the result is ultimate or if we are unsure.
@@ -1153,12 +1171,24 @@ expq (__float128 x)
 
 	  union ieee854_long_double ex3_u;
 
+#ifdef USE_FENV_H
+	  #ifdef FE_TONEAREST
+	    fesetround (FE_TONEAREST);
+	  #endif
+#endif
 	  ex3_u.d = (result - ex2_u.d) - x22 * ex2_u.d;
 	  ex2_u.d = result;
 	  ex3_u.ieee.exponent += LDBL_MANT_DIG + 15 + IEEE854_LONG_DOUBLE_BIAS
 	  			 - ex2_u.ieee.exponent;
 	  n_i = abs (ex3_u.d);
 	  n_i = (n_i + 1) / 2;
+#ifdef USE_FENV_H
+	  fesetenv (&oldenv);
+	  #ifdef FE_TONEAREST
+	  if (fegetround () == FE_TONEAREST)
+	    n_i -= 0x4000;
+	  #endif
+#endif
 	  if (!n_i) {
 	    return __ieee754_expl_proc2 (origx);
 	  }

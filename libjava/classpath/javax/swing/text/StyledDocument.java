@@ -42,8 +42,8 @@ import java.awt.Font;
 
 /**
  * StyledDocument
- * @author	Andrew Selkirk
- * @version	1.0
+ * @author      Andrew Selkirk
+ * @version     1.0
  */
 public interface StyledDocument extends Document
 {

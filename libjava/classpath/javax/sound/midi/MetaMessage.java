@@ -40,7 +40,7 @@ package javax.sound.midi;
 
 /**
  * A system exclusive MIDI message.
- * 
+ *
  * @author Anthony Green (green@redhat.com)
  * @since 1.3
  *
@@ -51,15 +51,15 @@ public class MetaMessage extends MidiMessage
    * The META status code.  Only valid for MIDI files, not the wire protocol.
    */
   public static final int META = 0xFF;
-  
+
   // The length of the variable length data length encoding.
   private int lengthLength = 0;
-  
+
   /**
    * Create a default valid meta message.
-   * 
+   *
    * The official specs don't specify what message is to be
-   * created.  For now, we create a zero length meta message 
+   * created.  For now, we create a zero length meta message
    * with a type code of 0.
    */
   public MetaMessage()
@@ -71,7 +71,7 @@ public class MetaMessage extends MidiMessage
     data[3] = (byte) 0; // Length
     lengthLength = 1;
   }
-  
+
   /**
    * Create a MetaMessage object.
    * @param data a complete system exclusive message
@@ -84,10 +84,10 @@ public class MetaMessage extends MidiMessage
     while ((data[index++] & 0x80) > 0)
       lengthLength++;
   }
-  
+
   /**
    * Set the meta message.
-   *  
+   *
    * @param type the meta type byte (< 128)
    * @param data the message data
    * @param length the length of the message data
@@ -101,9 +101,9 @@ public class MetaMessage extends MidiMessage
                                          + Integer.toHexString(type)
                                          + " must be less than 128");
 
-    // For a nice description of how variable length values are handled, 
+    // For a nice description of how variable length values are handled,
     // see http://www.borg.com/~jglatt/tech/midifile.htm
-    
+
     // First compute the length of the length value
     lengthLength = 0;
     int lengthValue = length;
@@ -111,13 +111,13 @@ public class MetaMessage extends MidiMessage
       lengthValue = lengthValue >> 7;
       lengthLength++;
     } while (lengthValue > 0);
-    
+
     // Now allocate our data array
     this.length = 2 + lengthLength + length;
     this.data = new byte[this.length];
     this.data[0] = (byte) META;
     this.data[1] = (byte) type;
-    
+
     // Now compute the length representation
     long buffer = length & 0x7F;
     while ((length >>= 7) > 0)
@@ -125,7 +125,7 @@ public class MetaMessage extends MidiMessage
       buffer <<= 8;
       buffer |= ((length & 0x7F) | 0x80);
     }
-    
+
     // Now store the variable length length value
     int index = 2;
     do
@@ -135,25 +135,25 @@ public class MetaMessage extends MidiMessage
         break;
       buffer >>= 8;
     } while (true);
- 
+
     // Now copy the real data.
     System.arraycopy(data, 0, this.data, index, length);
   }
-  
+
   /**
    * Get the meta message type.
-   * 
+   *
    * @return the meta message type
    */
   public int getType()
   {
     return data[1];
   }
-  
+
   /**
    * Get the data for this message, not including the status,
    * type, or length information.
-   * 
+   *
    * @return the message data, not including status, type or lenght info
    */
   public byte[] getData()
@@ -163,7 +163,7 @@ public class MetaMessage extends MidiMessage
     System.arraycopy(data, 2 + lengthLength, result, 0, dataLength);
     return result;
   }
-  
+
   /* Create a deep-copy clone of this object.
    * @see java.lang.Object#clone()
    */
@@ -171,6 +171,6 @@ public class MetaMessage extends MidiMessage
   {
     byte message[] = new byte[length];
     System.arraycopy(data, 0, message, 0, length);
-    return new MetaMessage(message); 
+    return new MetaMessage(message);
   }
 }

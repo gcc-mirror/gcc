@@ -83,7 +83,7 @@ public class SwingMenuItemPeer
       event.setSource(awtMenuItem);
       Toolkit.getDefaultToolkit().getSystemEventQueue().postEvent(event);
     }
-    
+
   }
 
   /**

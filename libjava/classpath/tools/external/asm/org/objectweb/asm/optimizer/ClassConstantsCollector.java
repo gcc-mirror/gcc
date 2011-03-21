@@ -40,7 +40,7 @@ import org.objectweb.asm.Opcodes;
 /**
  * A {@link ClassVisitor} that collects the {@link Constant}s of the classes it
  * visits.
- * 
+ *
  * @author Eric Bruneton
  */
 public class ClassConstantsCollector extends ClassAdapter {

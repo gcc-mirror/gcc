@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler, for IBM S/390
    Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,
-   2007, 2008, 2009, 2010 Free Software Foundation, Inc.
+   2007, 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
    Contributed by Hartmut Penner (hpenner@de.ibm.com) and
                   Ulrich Weigand (uweigand@de.ibm.com).
                   Andreas Krebbel (Andreas.Krebbel@de.ibm.com)
@@ -531,11 +531,6 @@ extern const enum reg_class regclass_map[FIRST_PSEUDO_REGISTER];
 #define REGNO_OK_FOR_BASE_P(REGNO) REGNO_OK_FOR_INDEX_P (REGNO)
 
 
-/* Given an rtx X being reloaded into a reg required to be in class CLASS,
-   return the class of reg to actually use.  */
-#define PREFERRED_RELOAD_CLASS(X, CLASS)	\
-  s390_preferred_reload_class ((X), (CLASS))
-
 /* We need secondary memory to move data between GPRs and FPRs.  With
    DFP the ldgr lgdr instructions are available.  But these
    instructions do not handle GPR pairs so it is not possible for 31
@@ -693,14 +688,6 @@ CUMULATIVE_ARGS;
   (N) == 16 || (N) == 17 || (TARGET_64BIT && ((N) == 18 || (N) == 19)))
 
 
-/* Scalar return values.  */
-
-#define FUNCTION_VALUE(VALTYPE, FUNC) \
-  s390_function_value ((VALTYPE), (FUNC), VOIDmode)
-
-#define LIBCALL_VALUE(MODE) \
-  s390_function_value (NULL, NULL, (MODE))
-
 /* Only gpr 2 and fpr 0 are ever used as return registers.  */
 #define FUNCTION_VALUE_REGNO_P(N) ((N) == 2 || (N) == 16)
 
@@ -779,18 +766,6 @@ do {									\
   s390_canonicalize_comparison (&(CODE), &(OP0), &(OP1))
 
 /* Relative costs of operations.  */
-
-/* On s390, copy between fprs and gprs is expensive.  */
-#define REGISTER_MOVE_COST(MODE, CLASS1, CLASS2)                        \
-  ((   (   reg_classes_intersect_p ((CLASS1), GENERAL_REGS)		\
-        && reg_classes_intersect_p ((CLASS2), FP_REGS))			\
-    || (   reg_classes_intersect_p ((CLASS1), FP_REGS)			\
-        && reg_classes_intersect_p ((CLASS2), GENERAL_REGS))) ? 10 : 1)
-
-/* A C expression for the cost of moving data of mode M between a
-   register and memory.  A value of 2 is the default; this cost is
-   relative to those in `REGISTER_MOVE_COST'.  */
-#define MEMORY_MOVE_COST(M, C, I) 1
 
 /* A C expression for the cost of a branch instruction.  A value of 1
    is the default; other values are interpreted relative to that.  */
@@ -895,6 +870,9 @@ do {									\
 /* The LOCAL_LABEL_PREFIX variable is used by dbxelf.h.  */
 #define LOCAL_LABEL_PREFIX "."
 
+#define LABEL_ALIGN(LABEL) \
+  s390_label_align (LABEL)
+
 /* How to refer to registers in assembler output.  This sequence is
    indexed by compiler's hard-register-number (see above).  */
 #define REGISTER_NAMES							\
@@ -908,13 +886,6 @@ do {									\
 /* Print operand X (an rtx) in assembler syntax to file FILE.  */
 #define PRINT_OPERAND(FILE, X, CODE) print_operand (FILE, X, CODE)
 #define PRINT_OPERAND_ADDRESS(FILE, ADDR) print_operand_address (FILE, ADDR)
-
-/* Output machine-dependent UNSPECs in address constants.  */
-#define OUTPUT_ADDR_CONST_EXTRA(FILE, X, FAIL)		\
-do {							\
-  if (!s390_output_addr_const_extra (FILE, (X)))	\
-    goto FAIL;						\
-} while (0);
 
 /* Output an element of a case-vector that is absolute.  */
 #define ASM_OUTPUT_ADDR_VEC_ELT(FILE, VALUE)				\

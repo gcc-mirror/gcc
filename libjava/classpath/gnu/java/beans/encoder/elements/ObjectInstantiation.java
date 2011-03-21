@@ -42,7 +42,7 @@ import gnu.java.beans.encoder.ObjectId;
 import gnu.java.beans.encoder.Writer;
 
 /** Generates an XML element denoting the instantiation of an object.
- * 
+ *
  * @author Robert Schuster (robertschuster@fsfe.org)
  *
  */

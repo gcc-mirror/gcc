@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -50,7 +50,7 @@ import java.net.URL;
  *
  * @author Aaron M. Renn (arenn@urbanophile.com)
  */
-public interface SQLOutput 
+public interface SQLOutput
 {
   /**
    * This method writes the specified Java <code>String</code>
@@ -143,7 +143,7 @@ public interface SQLOutput
   void writeBytes(byte[] value) throws SQLException;
 
   /**
-   * This method writes the specified Java <code>java.sql.Date</code> 
+   * This method writes the specified Java <code>java.sql.Date</code>
    * to the SQL stream.
    *
    * @param value The value to write to the stream.
@@ -152,7 +152,7 @@ public interface SQLOutput
   void writeDate(Date value) throws SQLException;
 
   /**
-   * This method writes the specified Java <code>java.sql.Time</code> 
+   * This method writes the specified Java <code>java.sql.Time</code>
    * to the SQL stream.
    *
    * @param value The value to write to the stream.
@@ -161,7 +161,7 @@ public interface SQLOutput
   void writeTime(Time value) throws SQLException;
 
   /**
-   * This method writes the specified Java <code>java.sql.Timestamp</code> 
+   * This method writes the specified Java <code>java.sql.Timestamp</code>
    * to the SQL stream.
    *
    * @param value The value to write to the stream.
@@ -256,9 +256,9 @@ public interface SQLOutput
   void writeArray(Array value) throws SQLException;
 
   /**
-   * This method writes the specified <code>java.net.URL</code> object to the 
+   * This method writes the specified <code>java.net.URL</code> object to the
    * SQL stream.
-   * 
+   *
    * @param value The value to write to the stream.
    * @exception SQLException If an error occurs.
    * @since 1.4

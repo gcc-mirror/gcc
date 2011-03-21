@@ -59,7 +59,7 @@ public interface OpenMBeanParameterInfo
    *
    * @param obj the object to compare.
    * @return true if the object is a {@link OpenMBeanParameterInfo}
-   *         instance, 
+   *         instance,
    *         <code>name.equals(object.getName())</code>,
    *         <code>openType.equals(object.getOpenType())</code>,
    *         <code>defaultValue.equals(object.getDefaultValue())</code>,

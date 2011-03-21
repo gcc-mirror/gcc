@@ -41,7 +41,7 @@ package javax.sound.midi;
 /**
  * A MIDI event is the combination of a MIDI message and a timestamp specified
  * in MIDI ticks.
- * 
+ *
  * @author Anthony Green (green@redhat.com)
  * @since 1.3
  *
@@ -50,10 +50,10 @@ public class MidiEvent
 {
   private final MidiMessage message;
   private long tick;
-  
+
   /**
    * Create a MIDI event object from the given MIDI message and timestamp.
-   * 
+   *
    * @param message the MidiMessage for this event
    * @param tick the timestamp for this event
    */
@@ -62,30 +62,30 @@ public class MidiEvent
     this.message = message;
     this.tick = tick;
   }
-  
+
   /**
    * Get the MIDI message for this event.
-   * 
+   *
    * @return the MidiMessage for this event
    */
   public MidiMessage getMessage()
   {
     return message;
   }
-  
+
   /**
    * Set the timestemp for this event in MIDI ticks.
-   * 
+   *
    * @param tick the timestamp
    */
   public void setTick(long tick)
   {
     this.tick = tick;
   }
-  
+
   /**
    * Get the timestamp for this event in MIDI ticks.
-   * 
+   *
    * @return the timestamp for this even in MIDI ticks
    */
   public long getTick()

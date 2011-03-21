@@ -49,11 +49,11 @@ import java.text.SimpleDateFormat;
 /**
  * <p>
  * This class represents a specific time in milliseconds since the epoch.
- * The epoch is 1970, January 1 00:00:00.0000 UTC.  
+ * The epoch is 1970, January 1 00:00:00.0000 UTC.
  * </p>
  * <p>
  * <code>Date</code> is intended to reflect universal time coordinate (UTC),
- * but this depends on the underlying host environment.  Most operating systems 
+ * but this depends on the underlying host environment.  Most operating systems
  * don't handle the leap second, which occurs about once every year or
  * so.  The leap second is added to the last minute of the day on either
  * the 30th of June or the 31st of December, creating a minute 61 seconds
@@ -127,13 +127,13 @@ public class Date
    * An array of week names used to map names to integer values.
    */
   private static final String[] weekNames = { "Sun", "Mon", "Tue", "Wed",
-					      "Thu", "Fri", "Sat" };
+                                              "Thu", "Fri", "Sat" };
   /**
    * An array of month names used to map names to integer values.
    */
   private static final String[] monthNames = { "Jan", "Feb", "Mar", "Apr",
-					       "May", "Jun", "Jul", "Aug",
-					       "Sep", "Oct", "Nov", "Dec" };
+                                               "May", "Jun", "Jul", "Aug",
+                                               "Sep", "Oct", "Nov", "Dec" };
   /**
    * Creates a new Date Object representing the current time.
    */
@@ -187,7 +187,7 @@ public class Date
    * Creates a new Date Object representing the given time.
    *
    * @deprecated use <code>new GregorianCalendar(year+1900, month,
-   * day, hour, min, sec)</code> instead. 
+   * day, hour, min, sec)</code> instead.
    * @param year the difference between the required year and 1900.
    * @param month the month as a value between 0 and 11.
    * @param day the day as a value between 0 and 31.
@@ -200,7 +200,7 @@ public class Date
   public Date(int year, int month, int day, int hour, int min, int sec)
   {
     GregorianCalendar cal =
-	new GregorianCalendar(year + 1900, month, day, hour, min, sec);
+        new GregorianCalendar(year + 1900, month, day, hour, min, sec);
     time = cal.getTimeInMillis();
   }
 
@@ -208,7 +208,7 @@ public class Date
    * Creates a new Date from the given string representation.  This
    * does the same as <code>new Date(Date.parse(s))</code>
    * @see #parse
-   * @deprecated use <code>java.text.DateFormat.parse(s)</code> instead.  
+   * @deprecated use <code>java.text.DateFormat.parse(s)</code> instead.
    */
   public Date(String s)
   {
@@ -226,11 +226,11 @@ public class Date
   {
     try
       {
-	return super.clone();
+        return super.clone();
       }
     catch (CloneNotSupportedException ex)
       {
-	return null;
+        return null;
       }
   }
 
@@ -253,7 +253,7 @@ public class Date
    * @return the time in milliseconds since the epoch.
    */
   public static long UTC(int year, int month, int date,
-			 int hrs, int min, int sec)
+                         int hrs, int min, int sec)
   {
     GregorianCalendar cal =
       new GregorianCalendar(year + 1900, month, date, hrs, min, sec);
@@ -278,7 +278,7 @@ public class Date
    * from this object is also used to determine whether or not daylight savings
    * time is in effect.  For example, the offset for the UK would be 0 if the
    * month of the date object was January, and 1 if the month was August.
-   * 
+   *
    * @deprecated use
    * <code>Calendar.get(Calendar.ZONE_OFFSET)+Calendar.get(Calendar.DST_OFFSET)</code>
    * instead.
@@ -291,13 +291,13 @@ public class Date
     Calendar cal = Calendar.getInstance();
     cal.setTimeInMillis(time);
     return - (cal.get(Calendar.ZONE_OFFSET)
-	    + cal.get(Calendar.DST_OFFSET)) / (60 * 1000);
+            + cal.get(Calendar.DST_OFFSET)) / (60 * 1000);
   }
 
   /**
    * Sets the time which this object should represent.
    *
-   * @param time the time in milliseconds since the epoch.  
+   * @param time the time in milliseconds since the epoch.
    */
   public void setTime(long time)
   {
@@ -309,7 +309,7 @@ public class Date
    *
    * @param when the other date
    * @return true, if the date represented by this object is
-   * strictly later than the time represented by when.  
+   * strictly later than the time represented by when.
    */
   public boolean after(Date when)
   {
@@ -334,7 +334,7 @@ public class Date
    * @param obj the object to compare.
    * @return true, if obj is a Date object and the time represented
    * by obj is exactly the same as the time represented by this
-   * object.  
+   * object.
    */
   public boolean equals(Object obj)
   {
@@ -348,7 +348,7 @@ public class Date
    * @return 0, if the date represented
    * by obj is exactly the same as the time represented by this
    * object, a negative if this Date is before the other Date, and
-   * a positive value otherwise.  
+   * a positive value otherwise.
    */
   public int compareTo(Date when)
   {
@@ -414,7 +414,7 @@ public class Date
    * </li>
    * </ul>
    * <p>
-   * The <code>DateFormat</code> class should now be 
+   * The <code>DateFormat</code> class should now be
    * preferred over using this method.
    * </p>
    *
@@ -439,11 +439,11 @@ public class Date
       + sec.substring(sec.length() - 2) + " "
       +
       cal.getTimeZone().getDisplayName(cal.getTimeZone().inDaylightTime(this),
-				       TimeZone.SHORT) + " " +
+                                       TimeZone.SHORT) + " " +
       year.substring(year.length() - 4);
   }
 
-  /** 
+  /**
    * Returns a locale-dependent string representation of this
    * <code>Date</code> object.
    *
@@ -457,7 +457,7 @@ public class Date
     return java.text.DateFormat.getInstance().format(this);
   }
 
-  /** 
+  /**
    * <p>
    * Returns a string representation of this <code>Date</code>
    * object using GMT rather than the local timezone.
@@ -497,7 +497,7 @@ public class Date
    * the local timezone.
    * </li>
    * </ul>
-   * 
+   *
    * @deprecated Use DateFormat.format(Date) with a GMT TimeZone.
    * @return A string of the form 'd mon yyyy hh:mm:ss GMT' using
    *         GMT as opposed to the local timezone.
@@ -526,12 +526,12 @@ public class Date
 
     try
       {
-	// parseInt doesn't handle '+' so strip off sign.
-	num = Integer.parseInt(tok.substring(1));
+        // parseInt doesn't handle '+' so strip off sign.
+        num = Integer.parseInt(tok.substring(1));
       }
     catch (NumberFormatException ex)
       {
-	throw new IllegalArgumentException(tok);
+        throw new IllegalArgumentException(tok);
       }
 
     // Convert hours to minutes.
@@ -557,8 +557,8 @@ public class Date
     // We could possibly use the fields of DateFormatSymbols but that is
     // localized and thus might not match the English words specified.
     String months[] = { "JANUARY", "FEBRUARY", "MARCH", "APRIL", "MAY",
-			"JUNE", "JULY", "AUGUST", "SEPTEMBER", "OCTOBER",
-			"NOVEMBER", "DECEMBER" };
+                        "JUNE", "JULY", "AUGUST", "SEPTEMBER", "OCTOBER",
+                        "NOVEMBER", "DECEMBER" };
 
     int i;
     for (i = 0; i < 12; i++)
@@ -581,7 +581,7 @@ public class Date
     // We could possibly use the fields of DateFormatSymbols but that is
     // localized and thus might not match the English words specified.
     String daysOfWeek[] = { "SUNDAY", "MONDAY", "TUESDAY", "WEDNESDAY",
-			    "THURSDAY", "FRIDAY", "SATURDAY" };
+                            "THURSDAY", "FRIDAY", "SATURDAY" };
 
     int i;
     for (i = 0; i < 7; i++)
@@ -591,7 +591,7 @@ public class Date
     return false;
   }
 
-  /** 
+  /**
    * <p>
    * Parses a String and returns the time, in milliseconds since the
    * epoch, it represents.  Most syntaxes are handled, including
@@ -612,7 +612,7 @@ public class Date
    * failure.  The ASCII characters A-Z, a-z, 0-9, and ',', '+', '-',
    * ':' and '/' are the only characters permitted within the string,
    * besides whitespace and characters enclosed within parantheses
-   * '(' and ')'.  
+   * '(' and ')'.
    * </p>
    * <p>
    * A sequence of consecutive digits are recognised as a number,
@@ -729,15 +729,15 @@ public class Date
     int len = string.length();
     for (int i = 0;  i < len;  i++)
       {
-	char ch = string.charAt(i);
-	if (ch >= 'a' && ch <= 'z')
-	  ch -= 'a' - 'A';
-	if (ch == '(')
-	  parenNesting++;
-	else if (parenNesting == 0)
-	  buf.append(ch);
-	else if (ch == ')')
-	  parenNesting--;
+        char ch = string.charAt(i);
+        if (ch >= 'a' && ch <= 'z')
+          ch -= 'a' - 'A';
+        if (ch == '(')
+          parenNesting++;
+        else if (parenNesting == 0)
+          buf.append(ch);
+        else if (ch == ')')
+          parenNesting--;
       }
     int tmpMonth;
 
@@ -747,163 +747,163 @@ public class Date
 
     while (strtok.hasMoreTokens())
       {
-	String tok = strtok.nextToken();
-	char firstch = tok.charAt(0);
-	if ((firstch == '+' || firstch == '-') && year >= 0)
-	  {
-	    timezone = parseTz(tok, firstch);
-	    localTimezone = false;
-	  }
-	else if (firstch >= '0' && firstch <= '9')
-	  {
-	    int lastPunct = -1;
-	    while (tok != null && tok.length() > 0)
-	      {
-		int punctOffset = tok.length();
-		int num = 0;
-		int punct;
-		for (int i = 0;  ;  i++)
-		  {
-		    if (i >= punctOffset)
-		      {
-			punct = -1;
-			break;
-		      }
-		    else
-		      {
-			punct = tok.charAt(i);
-			if (punct >= '0' && punct <= '9')
-			  {
-			    if (num > 999999999) // in case of overflow
-			      throw new IllegalArgumentException(tok);
-			    num = 10 * num + (punct - '0');
-			  }
-			else
-			  {
-			    punctOffset = i;
-			    break;
-			  }
-		      }
-		      
-		  }
+        String tok = strtok.nextToken();
+        char firstch = tok.charAt(0);
+        if ((firstch == '+' || firstch == '-') && year >= 0)
+          {
+            timezone = parseTz(tok, firstch);
+            localTimezone = false;
+          }
+        else if (firstch >= '0' && firstch <= '9')
+          {
+            int lastPunct = -1;
+            while (tok != null && tok.length() > 0)
+              {
+                int punctOffset = tok.length();
+                int num = 0;
+                int punct;
+                for (int i = 0;  ;  i++)
+                  {
+                    if (i >= punctOffset)
+                      {
+                        punct = -1;
+                        break;
+                      }
+                    else
+                      {
+                        punct = tok.charAt(i);
+                        if (punct >= '0' && punct <= '9')
+                          {
+                            if (num > 999999999) // in case of overflow
+                              throw new IllegalArgumentException(tok);
+                            num = 10 * num + (punct - '0');
+                          }
+                        else
+                          {
+                            punctOffset = i;
+                            break;
+                          }
+                      }
 
-		if (punct == ':')
-		  {
-		    if (hour < 0)
-		      hour = num;
-		    else
-		      minute = num;
-		  }
-		else if (lastPunct == ':' && hour >= 0 && (minute < 0 || second < 0))
-		  {
-		    if (minute < 0)
-		      minute = num;
-		    else
-		      second = num;
-		  }
-	        else if ((num >= 70
-			  && (punct == ' ' || punct == ','
-			      || punct == '/' || punct < 0))
-			 || (num < 70 && day >= 0 && month >= 0 && year < 0))
-		  {
-		    if (num >= 100)
-		      year = num;
-		    else
-		      {
-			int curYear = 1900 + new Date().getYear();
-			int firstYear = curYear - 80;
-			year = firstYear / 100 * 100 + num;
-			if (year < firstYear)
-			  year += 100;
-		      }
-		  }
-		else if (punct == '/')
-		  {
-		    if (month < 0)
-		      month = num - 1;
-		    else
-		      day = num;
-		  }
-		else if (hour >= 0 && minute < 0)
-		  minute = num;
-		else if (minute >= 0 && second < 0)
-		  second = num;
-		else if (day < 0)
-		  day = num;
-		else
-		  throw new IllegalArgumentException(tok);
+                  }
 
-		// Advance string if there's more to process in this token.
-		if (punct < 0 || punctOffset + 1 >= tok.length())
-		  tok = null;
-		else
-		  tok = tok.substring(punctOffset + 1);
-		lastPunct = punct;
-	      }
-	  }
-	else if (firstch >= 'A' && firstch <= 'Z')
-	  {
-	    if (tok.equals("AM"))
-	      {
-		if (hour < 1 || hour > 12)
-		  throw new IllegalArgumentException(tok);
-		if (hour == 12)
-		  hour = 0;
-	      }
-	    else if (tok.equals("PM"))
-	      {
-		if (hour < 1 || hour > 12)
-		  throw new IllegalArgumentException(tok);
-		if (hour < 12)
-		  hour += 12;
-	      }
-	    else if (parseDayOfWeek(tok))
-	      { /* Ignore it; throw the token away. */ }
-	    else if (tok.equals("UT") || tok.equals("UTC") || tok.equals("GMT"))
-	      localTimezone = false;
-	    else if (tok.startsWith("UT") || tok.startsWith("GMT"))
-	      {
-		int signOffset = 3;
-		if (tok.charAt(1) == 'T' && tok.charAt(2) != 'C')
-		  signOffset = 2;
+                if (punct == ':')
+                  {
+                    if (hour < 0)
+                      hour = num;
+                    else
+                      minute = num;
+                  }
+                else if (lastPunct == ':' && hour >= 0 && (minute < 0 || second < 0))
+                  {
+                    if (minute < 0)
+                      minute = num;
+                    else
+                      second = num;
+                  }
+                else if ((num >= 70
+                          && (punct == ' ' || punct == ','
+                              || punct == '/' || punct < 0))
+                         || (num < 70 && day >= 0 && month >= 0 && year < 0))
+                  {
+                    if (num >= 100)
+                      year = num;
+                    else
+                      {
+                        int curYear = 1900 + new Date().getYear();
+                        int firstYear = curYear - 80;
+                        year = firstYear / 100 * 100 + num;
+                        if (year < firstYear)
+                          year += 100;
+                      }
+                  }
+                else if (punct == '/')
+                  {
+                    if (month < 0)
+                      month = num - 1;
+                    else
+                      day = num;
+                  }
+                else if (hour >= 0 && minute < 0)
+                  minute = num;
+                else if (minute >= 0 && second < 0)
+                  second = num;
+                else if (day < 0)
+                  day = num;
+                else
+                  throw new IllegalArgumentException(tok);
 
-	        char sign = tok.charAt(signOffset);
-		if (sign != '+' && sign != '-')
-		  throw new IllegalArgumentException(tok);
+                // Advance string if there's more to process in this token.
+                if (punct < 0 || punctOffset + 1 >= tok.length())
+                  tok = null;
+                else
+                  tok = tok.substring(punctOffset + 1);
+                lastPunct = punct;
+              }
+          }
+        else if (firstch >= 'A' && firstch <= 'Z')
+          {
+            if (tok.equals("AM"))
+              {
+                if (hour < 1 || hour > 12)
+                  throw new IllegalArgumentException(tok);
+                if (hour == 12)
+                  hour = 0;
+              }
+            else if (tok.equals("PM"))
+              {
+                if (hour < 1 || hour > 12)
+                  throw new IllegalArgumentException(tok);
+                if (hour < 12)
+                  hour += 12;
+              }
+            else if (parseDayOfWeek(tok))
+              { /* Ignore it; throw the token away. */ }
+            else if (tok.equals("UT") || tok.equals("UTC") || tok.equals("GMT"))
+              localTimezone = false;
+            else if (tok.startsWith("UT") || tok.startsWith("GMT"))
+              {
+                int signOffset = 3;
+                if (tok.charAt(1) == 'T' && tok.charAt(2) != 'C')
+                  signOffset = 2;
 
-	        timezone = parseTz(tok.substring(signOffset), sign);
-	        localTimezone = false;
-	      }
-	    else if ((tmpMonth = parseMonth(tok)) >= 0)
-	      month = tmpMonth;
-	    else if (tok.length() == 3 && tok.charAt(2) == 'T')
-	      {
-		// Convert timezone offset from hours to minutes.
-		char ch = tok.charAt(0);
-		if (ch == 'E')
-		  timezone = -5 * 60;
-		else if (ch == 'C')
-		  timezone = -6 * 60;
-		else if (ch == 'M')
-		  timezone = -7 * 60;
-		else if (ch == 'P')
-		  timezone = -8 * 60;
-		else
-		  throw new IllegalArgumentException(tok);
+                char sign = tok.charAt(signOffset);
+                if (sign != '+' && sign != '-')
+                  throw new IllegalArgumentException(tok);
 
-		// Shift 60 minutes for Daylight Savings Time.
-		if (tok.charAt(1) == 'D')
-		  timezone += 60;
-		else if (tok.charAt(1) != 'S')
-		  throw new IllegalArgumentException(tok);
+                timezone = parseTz(tok.substring(signOffset), sign);
+                localTimezone = false;
+              }
+            else if ((tmpMonth = parseMonth(tok)) >= 0)
+              month = tmpMonth;
+            else if (tok.length() == 3 && tok.charAt(2) == 'T')
+              {
+                // Convert timezone offset from hours to minutes.
+                char ch = tok.charAt(0);
+                if (ch == 'E')
+                  timezone = -5 * 60;
+                else if (ch == 'C')
+                  timezone = -6 * 60;
+                else if (ch == 'M')
+                  timezone = -7 * 60;
+                else if (ch == 'P')
+                  timezone = -8 * 60;
+                else
+                  throw new IllegalArgumentException(tok);
 
-	        localTimezone = false;
-	      }
-	    else
-	      throw new IllegalArgumentException(tok);
-	  }
-	else
-	  throw new IllegalArgumentException(tok);
+                // Shift 60 minutes for Daylight Savings Time.
+                if (tok.charAt(1) == 'D')
+                  timezone += 60;
+                else if (tok.charAt(1) != 'S')
+                  throw new IllegalArgumentException(tok);
+
+                localTimezone = false;
+              }
+            else
+              throw new IllegalArgumentException(tok);
+          }
+        else
+          throw new IllegalArgumentException(tok);
       }
 
     // Unspecified hours, minutes, or seconds should default to 0.
@@ -925,8 +925,8 @@ public class Date
       = new GregorianCalendar(year, month, day, hour, minute, second);
     if (!localTimezone)
       {
-	cal.set(Calendar.ZONE_OFFSET, timezone * 60 * 1000);
-	cal.set(Calendar.DST_OFFSET, 0);
+        cal.set(Calendar.ZONE_OFFSET, timezone * 60 * 1000);
+        cal.set(Calendar.DST_OFFSET, 0);
       }
     return cal.getTimeInMillis();
   }
@@ -965,7 +965,7 @@ public class Date
    * @param year the year minus 1900.
    * @deprecated Use Calendar instead of Date, and use
    * set(Calendar.YEAR, year) instead.  Note about the 1900
-   * difference in year.  
+   * difference in year.
    * @see #getYear()
    * @see Calendar
    */
@@ -1008,13 +1008,13 @@ public class Date
    * in the seconds value being reset to 0 and the minutes
    * value being incremented by 1, if the new time does
    * not include a leap second.
-   * 
+   *
    * @param month the month, with a zero-based index
    *        from January.
    * @deprecated Use Calendar instead of Date, and use
    * set(Calendar.MONTH, month) instead.
    * @see #getMonth()
-   * @see Calendar 
+   * @see Calendar
    */
   public void setMonth(int month)
   {
@@ -1059,7 +1059,7 @@ public class Date
    *
    * @param date the date.
    * @deprecated Use Calendar instead of Date, and use
-   * set(Calendar.DATE, date) instead. 
+   * set(Calendar.DATE, date) instead.
    * @see Calendar
    * @see #getDate()
    */
@@ -1121,7 +1121,7 @@ public class Date
    * @deprecated Use Calendar instead of Date, and use
    * set(Calendar.HOUR_OF_DAY, hours) instead.
    * @see Calendar
-   * @see #getHours() 
+   * @see #getHours()
    */
   public void setHours(int hours)
   {
@@ -1162,7 +1162,7 @@ public class Date
    *
    * @param minutes the minutes.
    * @deprecated Use Calendar instead of Date, and use
-   * set(Calendar.MINUTE, minutes) instead. 
+   * set(Calendar.MINUTE, minutes) instead.
    * @see Calendar
    * @see #getMinutes()
    */
@@ -1207,7 +1207,7 @@ public class Date
    * @deprecated Use Calendar instead of Date, and use
    * set(Calendar.SECOND, seconds) instead.
    * @see Calendar
-   * @see #getSeconds() 
+   * @see #getSeconds()
    */
   public void setSeconds(int seconds)
   {

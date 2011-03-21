@@ -107,17 +107,17 @@ public abstract class ServiceInformationHelper
   public static TypeCode type()
   {
     ORB orb = OrbRestricted.Singleton;
-    
+
     StructMember[] members = new StructMember[ 2 ];
     TypeCode member;
-    
+
     member =
       orb.create_alias_tc("IDL:omg.org/CORBA/ServiceOptionSeq:1.0",
                           "ServiceOptionSeq", LongSeqHelper.type()
       );
-    
+
     members [ 0 ] = new StructMember("service_options", member, null);
-    
+
     member = ServiceDetailHelper.type();
     member = orb.create_sequence_tc(0, member);
     member =
@@ -125,7 +125,7 @@ public abstract class ServiceInformationHelper
                           "ServiceDetailSeq", member
       );
     members [ 1 ] = new StructMember("service_details", member, null);
-    
+
     return
     orb.create_struct_tc(ServiceInformationHelper.id(),
                          "ServiceInformation", members

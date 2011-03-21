@@ -1,4 +1,4 @@
-/* Predicate.java -- 
+/* Predicate.java --
    Copyright (C) 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -76,10 +76,10 @@ class Predicate
   {
     return expr.references(var);
   }
-  
+
   public String toString()
   {
     return "[" + expr + "]";
   }
-  
+
 }

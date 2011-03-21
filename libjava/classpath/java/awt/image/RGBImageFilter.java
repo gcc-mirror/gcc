@@ -39,7 +39,7 @@ exception statement from your version. */
 package java.awt.image;
 
 /**
- * A filter designed to filter images in the default RGBColorModel regardless of 
+ * A filter designed to filter images in the default RGBColorModel regardless of
  * the ImageProducer's ColorModel.
  *
  * @author Mark Benvenuto (mcb54@columbia.edu)
@@ -49,7 +49,7 @@ public abstract class RGBImageFilter extends ImageFilter
   protected ColorModel origmodel;
 
   protected ColorModel newmodel;
-    
+
   /**
    * Specifies whether to apply the filter to the index entries of the
    * IndexColorModel. Subclasses should set this to true if the filter
@@ -60,7 +60,7 @@ public abstract class RGBImageFilter extends ImageFilter
   /**
    * Construct new RGBImageFilter.
    */
-  public RGBImageFilter() 
+  public RGBImageFilter()
   {
   }
 
@@ -75,7 +75,7 @@ public abstract class RGBImageFilter extends ImageFilter
    *
    * @see ColorModel
    */
-  public void setColorModel(ColorModel model) 
+  public void setColorModel(ColorModel model)
   {
     if ((model instanceof IndexColorModel) && canFilterIndexColorModel)
       {
@@ -90,10 +90,10 @@ public abstract class RGBImageFilter extends ImageFilter
   }
 
   /**
-   * Registers a new ColorModel to subsitute for the old ColorModel when 
-   * setPixels encounters the a pixel with the old ColorModel. The pixel 
+   * Registers a new ColorModel to subsitute for the old ColorModel when
+   * setPixels encounters the a pixel with the old ColorModel. The pixel
    * remains unchanged except for a new ColorModel.
-   * 
+   *
    * @param oldcm the old ColorModel
    * @param newcm the new ColorModel
    */
@@ -109,7 +109,7 @@ public abstract class RGBImageFilter extends ImageFilter
    *
    * @param icm an IndexColorModel to filter
    */
-  public IndexColorModel filterIndexColorModel(IndexColorModel icm) 
+  public IndexColorModel filterIndexColorModel(IndexColorModel icm)
   {
     int len = icm.getMapSize();
     byte[] reds = new byte[len];
@@ -175,8 +175,8 @@ public abstract class RGBImageFilter extends ImageFilter
   }
 
   /**
-   * If the ColorModel is the same ColorModel which as already converted 
-   * then it converts it the converted ColorModel. Otherwise it passes the 
+   * If the ColorModel is the same ColorModel which as already converted
+   * then it converts it the converted ColorModel. Otherwise it passes the
    * array of pixels through filterRGBpixels.
    *
    * @param x the x coordinate of the rectangle
@@ -217,7 +217,7 @@ public abstract class RGBImageFilter extends ImageFilter
   /**
    * This function delivers a rectangle of pixels where any
    * pixel(m,n) is stored in the array as an <code>int</code> at
-   * index (n * scansize + m + offset).  
+   * index (n * scansize + m + offset).
    *
    * @param x the x coordinate of the rectangle
    * @param y the y coordinate of the rectangle

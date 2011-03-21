@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -96,8 +96,8 @@ public class BorderUIResource implements Border, UIResource, Serializable
    * called.
    */
   private static Border loweredBevelBorderUIResource;
-  
-  
+
+
   /**
    * A shared instance of a {@link BevelBorderUIResource} whose
    * <code>bevelType</code> is {@link
@@ -106,8 +106,8 @@ public class BorderUIResource implements Border, UIResource, Serializable
    * called.
    */
   private static Border raisedBevelBorderUIResource;
-  
-  
+
+
   /**
    * A shared instance of a {@link LineBorderUIResource} for
    * a one-pixel thick black line, or <code>null</code> if
@@ -132,7 +132,7 @@ public class BorderUIResource implements Border, UIResource, Serializable
       etchedBorderUIResource = new EtchedBorderUIResource();
     return etchedBorderUIResource;
   }
-  
+
 
   /**
    * Returns a shared instance of {@link BevelBorderUIResource} whose
@@ -170,8 +170,8 @@ public class BorderUIResource implements Border, UIResource, Serializable
         BevelBorder.RAISED);
     return raisedBevelBorderUIResource;
   }
-  
-  
+
+
   /**
    * Returns a shared instance of {@link LineBorderUIResource} for
    * a black, one-pixel width border.
@@ -193,23 +193,23 @@ public class BorderUIResource implements Border, UIResource, Serializable
    * The wrapped border.
    */
   private Border delegate;
-  
-  
+
+
   /**
    * Constructs a <code>BorderUIResource</code> for wrapping
    * a <code>Border</code> object.
-   * 
+   *
    * @param delegate the border to be wrapped.
    */
   public BorderUIResource(Border delegate)
   {
     if (delegate == null)
       throw new IllegalArgumentException();
-    
+
     this.delegate = delegate;
   }
 
-  
+
   /**
    * Paints the border around an enclosed component by calling
    * the <code>paintBorder</code> method of the wrapped delegate.
@@ -226,8 +226,8 @@ public class BorderUIResource implements Border, UIResource, Serializable
   {
     delegate.paintBorder(c, g, x, y, width, height);
   }
-  
-  
+
+
   /**
    * Measures the width of this border by calling the
    * <code>getBorderInsets</code> method of the wrapped
@@ -240,11 +240,11 @@ public class BorderUIResource implements Border, UIResource, Serializable
    *         width of the border at the respective edge.
    */
   public Insets getBorderInsets(Component c)
-  { 
+  {
     return delegate.getBorderInsets(c);
   }
-  
-  
+
+
   /**
    * Determines whether this border fills every pixel in its area
    * when painting by calling the <code>isBorderOpaque</code>
@@ -255,7 +255,7 @@ public class BorderUIResource implements Border, UIResource, Serializable
    *         can shine through the border.
    */
   public boolean isBorderOpaque()
-  { 
+  {
     return delegate.isBorderOpaque();
   }
 
@@ -272,12 +272,12 @@ public class BorderUIResource implements Border, UIResource, Serializable
    * @author Brian Jones (cbj@gnu.org)
    * @author Sascha Brawer (brawer@dandelis.ch)
    */
-  public static class BevelBorderUIResource 
+  public static class BevelBorderUIResource
     extends BevelBorder
     implements UIResource, Serializable
   {
     private static final long serialVersionUID = -1275542891108351642L;
-    
+
     /**
      * Constructs a BevelBorderUIResource whose colors will be derived
      * from the background of the enclosed component. The background
@@ -296,12 +296,12 @@ public class BorderUIResource implements Border, UIResource, Serializable
      * @throws IllegalArgumentException if <code>bevelType</code> has
      *         an unsupported value.
      */
-    public BevelBorderUIResource(int bevelType) 
-    { 
+    public BevelBorderUIResource(int bevelType)
+    {
       super(bevelType);
     }
-    
-    
+
+
     /**
      * Constructs a BevelBorderUIResource given its appearance type
      * and two colors for its highlight and shadow.
@@ -334,9 +334,9 @@ public class BorderUIResource implements Border, UIResource, Serializable
      * @throws NullPointerException if <code>highlight</code> or
      *         <code>shadow</code> is <code>null</code>.
      */
-    public BevelBorderUIResource(int bevelType, 
-                                 Color highlight, 
-                                 Color shadow) 
+    public BevelBorderUIResource(int bevelType,
+                                 Color highlight,
+                                 Color shadow)
     {
       super(bevelType, highlight, shadow);
     }
@@ -382,15 +382,15 @@ public class BorderUIResource implements Border, UIResource, Serializable
                                  Color highlightOuter,
                                  Color highlightInner,
                                  Color shadowOuter,
-                                 Color shadowInner) 
+                                 Color shadowInner)
     {
       super(bevelType,
             highlightOuter, highlightInner,
             shadowOuter, shadowInner);
     }
   }
-  
-  
+
+
   /**
    * A {@link javax.swing.border.CompoundBorder} that also implements the
    * {@link UIResource} marker interface.  This is useful for
@@ -408,7 +408,7 @@ public class BorderUIResource implements Border, UIResource, Serializable
     implements UIResource, Serializable
   {
     private static final long serialVersionUID = 7550017084975167341L;
-    
+
     /**
      * Constructs a CompoundBorderUIResource with the specified inside
      * and outside borders.
@@ -429,8 +429,8 @@ public class BorderUIResource implements Border, UIResource, Serializable
       super(outsideBorder, insideBorder);
     }
   }
-  
-  
+
+
   /**
    * An {@link javax.swing.border.EmptyBorder} that also implements the
    * {@link UIResource} marker interface.  This is useful for
@@ -447,12 +447,12 @@ public class BorderUIResource implements Border, UIResource, Serializable
    * @author Brian Jones (cbj@gnu.org)
    * @author Sascha Brawer (brawer@dandelis.ch)
    */
-  public static class EmptyBorderUIResource 
+  public static class EmptyBorderUIResource
     extends EmptyBorder
     implements UIResource, Serializable
   {
     private static final long serialVersionUID = -4914187529340071708L;
-    
+
     /**
      * Constructs an empty border given the number of pixels required
      * on each side.
@@ -473,8 +473,8 @@ public class BorderUIResource implements Border, UIResource, Serializable
     {
       super(top, left, bottom, right);
     }
-    
-    
+
+
     /**
      * Constructs an empty border given the number of pixels required
      * on each side, passed in an Insets object.
@@ -486,8 +486,8 @@ public class BorderUIResource implements Border, UIResource, Serializable
       super(insets);
     }
   }
-  
-  
+
+
   /**
    * An {@link javax.swing.border.EtchedBorder} that also implements the
    * {@link UIResource} marker interface.  This is useful for
@@ -509,7 +509,7 @@ public class BorderUIResource implements Border, UIResource, Serializable
     implements UIResource, Serializable
   {
     private static final long serialVersionUID = -8186391754165296656L;
-    
+
     /**
      * Constructs an EtchedBorderUIResource that appears lowered into
      * the surface. The colors will be derived from the background
@@ -519,8 +519,8 @@ public class BorderUIResource implements Border, UIResource, Serializable
     {
       super();
     }
-    
-    
+
+
     /**
      * Constructs an EtchedBorderUIResource with the specified
      * appearance. The colors will be derived from the background
@@ -537,12 +537,12 @@ public class BorderUIResource implements Border, UIResource, Serializable
      * @throws IllegalArgumentException if <code>etchType</code> has
      *         an unsupported value.
      */
-    public EtchedBorderUIResource(int etchType) 
+    public EtchedBorderUIResource(int etchType)
     {
       super(etchType);
     }
-    
-    
+
+
     /**
      * Constructs a lowered EtchedBorderUIResource, explicitly
      * selecting the colors that will be used for highlight and
@@ -560,8 +560,8 @@ public class BorderUIResource implements Border, UIResource, Serializable
     {
       super(highlight, shadow);
     }
-    
-    
+
+
     /**
      * Constructs an EtchedBorderUIResource with the specified
      * appearance, explicitly selecting the colors that will be used
@@ -590,8 +590,8 @@ public class BorderUIResource implements Border, UIResource, Serializable
       super(etchType, highlight, shadow);
     }
   }
-  
-  
+
+
   /**
    * A {@link javax.swing.border.LineBorder} that also implements the
    * {@link UIResource} marker interface.  This is useful for
@@ -612,7 +612,7 @@ public class BorderUIResource implements Border, UIResource, Serializable
     implements UIResource, Serializable
   {
     private static final long serialVersionUID = -6171232338180172310L;
-    
+
     /**
      * Constructs a LineBorderUIResource given its color.  The border
      * will be one pixel thick and have plain corners.
@@ -621,10 +621,10 @@ public class BorderUIResource implements Border, UIResource, Serializable
      */
     public LineBorderUIResource(Color color)
     {
-      super(color); 
+      super(color);
     }
-    
-    
+
+
     /**
      * Constructs a LineBorder given its color and thickness.  The
      * border will have plain corners.
@@ -636,13 +636,13 @@ public class BorderUIResource implements Border, UIResource, Serializable
     {
       super(color, thickness);
     }
-    
-    
+
+
     /* Note: Since JDK1.3, javax.swing.border.LineBorder also has a
      * constructor which accepts a value for the roundedCorners
      * property. However, as of JDK1.4.1, the LineBorderUIResource
      * subclass does not have a corresponding constructor.
-     * 
+     *
      * A request for enhancing the Swing API has been filed with Sun:
      * http://developer.java.sun.com/developer/bugParade/bugs/4879999.html
      */
@@ -669,7 +669,7 @@ public class BorderUIResource implements Border, UIResource, Serializable
     implements UIResource, Serializable
   {
     private static final long serialVersionUID = -8107923147541851122L;
-    
+
     /**
      * Constructs a MatteBorderUIResource given the width on each side
      * and a fill color.
@@ -690,8 +690,8 @@ public class BorderUIResource implements Border, UIResource, Serializable
     {
       super(top, left, bottom, right, color);
     }
-    
-    
+
+
     /**
      * Constructs a MatteBorderUIResource given the width on each side
      * and an icon for tiling the border area.
@@ -712,8 +712,8 @@ public class BorderUIResource implements Border, UIResource, Serializable
     {
       super(top, left, bottom, right, tileIcon);
     }
-    
-    
+
+
     /**
      * Constructs a MatteBorderUIResource given an icon for tiling the
      * border area. The icon width is used for the border insets at
@@ -724,15 +724,15 @@ public class BorderUIResource implements Border, UIResource, Serializable
      * height="150" alt="[A picture of a MatteBorder made by this
      * constructor]" /></p>
      *
-     * @param tileIcon an icon for tiling the border area. 
+     * @param tileIcon an icon for tiling the border area.
      */
     public MatteBorderUIResource(Icon tileIcon)
     {
       super(tileIcon);
     }
   }
-  
-  
+
+
   /**
    * A {@link javax.swing.border.TitledBorder} that also implements the
    * {@link UIResource} marker interface.  This is useful for
@@ -750,7 +750,7 @@ public class BorderUIResource implements Border, UIResource, Serializable
     implements UIResource, Serializable
   {
     private static final long serialVersionUID = 7667113547406407427L;
-    
+
     /**
      * Constructs a TitledBorderUIResource given the text of its title.
      *
@@ -761,8 +761,8 @@ public class BorderUIResource implements Border, UIResource, Serializable
     {
       super(title);
     }
-    
-    
+
+
     /**
      * Constructs an initially untitled TitledBorderUIResource
      * given another border.
@@ -775,8 +775,8 @@ public class BorderUIResource implements Border, UIResource, Serializable
     {
       super(border);
     }
-    
-    
+
+
     /**
      * Constructs a TitledBorder given its border and title text.
      *
@@ -878,8 +878,8 @@ public class BorderUIResource implements Border, UIResource, Serializable
       super(border, title, titleJustification, titlePosition,
             titleFont);
     }
-    
-    
+
+
     /**
      * Constructs a TitledBorder given its border, title text,
      * horizontal alignment, vertical position, font, and color.
@@ -928,4 +928,3 @@ public class BorderUIResource implements Border, UIResource, Serializable
     }
   }
 }
-

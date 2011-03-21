@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -81,7 +81,7 @@ import java.lang.annotation.Annotation;
 public final class Constructor<T>
   extends AccessibleObject
   implements GenericDeclaration, Member
-{  
+{
   private static final int CONSTRUCTOR_MODIFIERS
     = Modifier.PRIVATE | Modifier.PROTECTED | Modifier.PUBLIC;
 
@@ -108,7 +108,7 @@ public final class Constructor<T>
    */
   public Class<T> getDeclaringClass()
   {
-    // Inescapable as the VM layer is 1.4 based. 
+    // Inescapable as the VM layer is 1.4 based.
     @SuppressWarnings("unchecked")
       Class<T> declClass = (Class<T>) cons.getDeclaringClass();
     return declClass;
@@ -314,7 +314,7 @@ public final class Constructor<T>
     throws InstantiationException, IllegalAccessException,
            InvocationTargetException
   {
-    // Inescapable as the VM layer is 1.4 based. 
+    // Inescapable as the VM layer is 1.4 based.
     @SuppressWarnings("unchecked")
       T ins = (T) cons.construct(args);
     return ins;
@@ -336,10 +336,10 @@ public final class Constructor<T>
   {
     if (p == null)
       {
-	String sig = cons.getSignature();
-	if (sig == null)
-	  return new TypeVariable[0];
-	p = new MethodSignatureParser(this, sig);
+        String sig = cons.getSignature();
+        if (sig == null)
+          return new TypeVariable[0];
+        p = new MethodSignatureParser(this, sig);
       }
     return p.getTypeParameters();
   }
@@ -350,7 +350,7 @@ public final class Constructor<T>
    * An array of size zero is returned if this constructor declares no
    * exceptions.
    *
-   * @return the exception types declared by this constructor. 
+   * @return the exception types declared by this constructor.
    * @throws GenericSignatureFormatError if the generic signature does
    *         not conform to the format specified in the Virtual Machine
    *         specification, version 3.
@@ -360,10 +360,10 @@ public final class Constructor<T>
   {
     if (p == null)
       {
-	String sig = cons.getSignature();
-	if (sig == null)
-	  return getExceptionTypes();
-	p = new MethodSignatureParser(this, sig);
+        String sig = cons.getSignature();
+        if (sig == null)
+          return getExceptionTypes();
+        p = new MethodSignatureParser(this, sig);
       }
     return p.getGenericExceptionTypes();
   }
@@ -384,10 +384,10 @@ public final class Constructor<T>
   {
     if (p == null)
       {
-	String sig = cons.getSignature();
-	if (sig == null)
-	  return getParameterTypes();
-	p = new MethodSignatureParser(this, sig);
+        String sig = cons.getSignature();
+        if (sig == null)
+          return getParameterTypes();
+        p = new MethodSignatureParser(this, sig);
       }
     return p.getGenericParameterTypes();
   }
@@ -406,7 +406,7 @@ public final class Constructor<T>
    * The returned annotations are serialized.  Changing the annotations has
    * no affect on the return value of future calls to this method.
    * </p>
-   * 
+   *
    * @return an array of arrays which represents the annotations used on the
    *         parameters of this constructor.  The order of the array elements
    *         matches the declaration order of the parameters.
@@ -428,7 +428,7 @@ public final class Constructor<T>
    */
   public <T extends Annotation> T getAnnotation(Class<T> annotationClass)
   {
-    // Inescapable as the VM layer is 1.4 based. 
+    // Inescapable as the VM layer is 1.4 based.
     @SuppressWarnings("unchecked")
       T ann = (T) cons.getAnnotation(annotationClass);
     return ann;

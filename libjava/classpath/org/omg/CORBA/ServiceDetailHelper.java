@@ -134,19 +134,19 @@ public abstract class ServiceDetailHelper
   public static TypeCode type()
   {
     ORB orb = OrbRestricted.Singleton;
-    
+
     StructMember[] members = new StructMember[ 2 ];
-    
+
     TypeCode type =
       orb.create_alias_tc(_id, "ServiceDetailType",
                           orb.get_primitive_tc(TCKind.tk_ulong)
       );
     members [ 0 ] = new StructMember("service_detail_type", type, null);
-    
+
     TypeCode data =
       orb.create_sequence_tc(0, orb.get_primitive_tc(TCKind.tk_octet));
     members [ 1 ] = new StructMember("service_detail", data, null);
-    
+
     return orb.create_struct_tc(id(), "ServiceDetail", members);
   }
 

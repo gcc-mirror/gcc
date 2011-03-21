@@ -1,4 +1,4 @@
-/* ClientHandshake.java -- 
+/* ClientHandshake.java --
    Copyright (C) 2006  Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -103,27 +103,27 @@ public class ClientHandshake extends AbstractHandshake
     WRITE_FINISHED (false, true),
     READ_FINISHED (true, false),
     DONE (false, false);
-    
+
     private final boolean isWriteState;
     private final boolean isReadState;
-    
+
     private State(boolean isReadState, boolean isWriteState)
     {
       this.isReadState = isReadState;
       this.isWriteState = isWriteState;
     }
-    
+
     boolean isReadState()
     {
       return isReadState;
     }
-    
+
     boolean isWriteState()
     {
       return isWriteState;
     }
   }
-  
+
   private State state;
   private ByteBuffer outBuffer;
   private boolean continuedSession;
@@ -134,14 +134,14 @@ public class ClientHandshake extends AbstractHandshake
   private MaxFragmentLength maxFragmentLengthSent;
   private boolean truncatedHMacSent;
   private ProtocolVersion sentVersion;
-  
+
   // Delegated tasks.
   private CertVerifier certVerifier;
   private ParamsVerifier paramsVerifier;
   private DelegatedTask keyExchange;
   private CertLoader certLoader;
   private GenCertVerify genCertVerify;
-  
+
   public ClientHandshake(SSLEngineImpl engine) throws NoSuchAlgorithmException
   {
     super(engine);
@@ -160,7 +160,7 @@ public class ClientHandshake extends AbstractHandshake
     if (state.isWriteState()
         || (outBuffer != null && outBuffer.hasRemaining()))
       return HandshakeStatus.NEED_WRAP;
-    
+
     // Copy the current buffer, and prepare it for reading.
     ByteBuffer buffer = handshakeBuffer.duplicate ();
     buffer.flip();
@@ -169,7 +169,7 @@ public class ClientHandshake extends AbstractHandshake
     Handshake handshake = new Handshake(buffer.slice(),
                                         engine.session().suite,
                                         engine.session().version);
-        
+
     if (Debug.DEBUG)
       logger.logv(Component.SSL_HANDSHAKE, "processing in state {0}:\n{1}",
                   state, handshake);
@@ -241,7 +241,7 @@ public class ClientHandshake extends AbstractHandshake
             state = READ_CERTIFICATE_REQUEST;
         }
         break;
-        
+
         // Server Certificate.
         case READ_CERTIFICATE:
         {
@@ -274,7 +274,7 @@ public class ClientHandshake extends AbstractHandshake
           engine.session().setPeerCertificates(chain);
           certVerifier = new CertVerifier(true, chain);
           tasks.add(certVerifier);
-          
+
           // If we are doing an RSA key exchange, generate our parameters.
           KeyExchangeAlgorithm kea = engine.session().suite.keyExchangeAlgorithm();
           if (kea == RSA || kea == RSA_PSK)
@@ -290,7 +290,7 @@ public class ClientHandshake extends AbstractHandshake
             state = READ_SERVER_KEY_EXCHANGE;
         }
         break;
-        
+
         // Server Key Exchange.
         case READ_SERVER_KEY_EXCHANGE:
         {
@@ -301,7 +301,7 @@ public class ClientHandshake extends AbstractHandshake
               && kexalg != DHE_PSK && kexalg != PSK && kexalg != RSA_PSK)
             throw new AlertException(new Alert(Level.FATAL,
                                                Description.UNEXPECTED_MESSAGE));
-          
+
           if (handshake.type() != Handshake.Type.SERVER_KEY_EXCHANGE)
             {
               if (kexalg != RSA_PSK && kexalg != PSK)
@@ -320,14 +320,14 @@ public class ClientHandshake extends AbstractHandshake
               paramsBuffer = ByteBuffer.allocate(b.remaining());
               paramsBuffer.put(b);
             }
-          
+
           if (s.signatureAlgorithm() != SignatureAlgorithm.ANONYMOUS)
             {
               byte[] signature = skex.signature().signature();
               paramsVerifier = new ParamsVerifier(paramsBuffer, signature);
               tasks.add(paramsVerifier);
             }
-          
+
           if (kexalg == DHE_DSS || kexalg == DHE_RSA || kexalg == DH_anon)
             {
               ServerDHParams dhParams = (ServerDHParams) skex.params();
@@ -357,7 +357,7 @@ public class ClientHandshake extends AbstractHandshake
           state = READ_CERTIFICATE_REQUEST;
         }
         break;
-        
+
         // Certificate Request.
         case READ_CERTIFICATE_REQUEST:
         {
@@ -366,23 +366,23 @@ public class ClientHandshake extends AbstractHandshake
               state = READ_SERVER_HELLO_DONE;
               return HandshakeStatus.NEED_UNWRAP;
             }
-          
+
           CertificateRequest req = (CertificateRequest) handshake.body();
           ClientCertificateTypeList types = req.types();
           LinkedList<String> typeList = new LinkedList<String>();
           for (ClientCertificateType t : types)
             typeList.add(t.name());
-          
+
           X500PrincipalList issuers = req.authorities();
           LinkedList<X500Principal> issuerList = new LinkedList<X500Principal>();
           for (X500Principal p : issuers)
             issuerList.add(p);
-          
+
           certLoader = new CertLoader(typeList, issuerList);
           tasks.add(certLoader);
         }
         break;
-        
+
         // Server Hello Done.
         case READ_SERVER_HELLO_DONE:
         {
@@ -392,7 +392,7 @@ public class ClientHandshake extends AbstractHandshake
           state = WRITE_CERTIFICATE;
         }
         break;
-        
+
         // Finished.
         case READ_FINISHED:
         {
@@ -422,7 +422,7 @@ public class ClientHandshake extends AbstractHandshake
           if (Debug.DEBUG)
             logger.logv(Component.SSL_HANDSHAKE, "clientFinished: {0}",
                         clientFinished);
-          
+
           if (engine.session().version == ProtocolVersion.SSL_3)
             {
               if (!Arrays.equals(clientFinished.md5Hash(),
@@ -453,13 +453,13 @@ public class ClientHandshake extends AbstractHandshake
             state = DONE;
         }
         break;
-        
+
         default:
           throw new IllegalStateException("invalid state: " + state);
       }
-    
+
     handshakeOffset += handshake.length() + 4;
-    
+
     if (!tasks.isEmpty())
       return HandshakeStatus.NEED_TASK;
     if (state.isWriteState()
@@ -488,7 +488,7 @@ public class ClientHandshake extends AbstractHandshake
         fragment.put((ByteBuffer) outBuffer.duplicate().limit(outBuffer.position() + l));
         outBuffer.position(outBuffer.position() + l);
       }
-    
+
     if (!fragment.hasRemaining())
       {
         if (state.isWriteState() || outBuffer.hasRemaining())
@@ -518,7 +518,7 @@ outer_loop:
               // that ID.
               if (continued != null)
                 sid = continued.id();
-              
+
               hello.setSessionId(sid.id());
               sentVersion = chooseVersion();
               hello.setVersion(sentVersion);
@@ -551,7 +551,7 @@ outer_loop:
                       extensions.add(new Extension(Extension.Type.SERVER_NAME,
                                                    names));
                     }
-                  
+
                   if (truncatedHMac())
                     {
                       extensions.add(new Extension(Extension.Type.TRUNCATED_HMAC,
@@ -564,7 +564,7 @@ outer_loop:
                 }
               else
                 hello.setDisableExtensions(true);
-              
+
               if (Debug.DEBUG)
                 logger.logv(Component.SSL_HANDSHAKE, "{0}", hello);
 
@@ -579,7 +579,7 @@ outer_loop:
               state = READ_SERVER_HELLO;
             }
             break;
-            
+
             case WRITE_CERTIFICATE:
             {
               java.security.cert.Certificate[] chain
@@ -598,12 +598,12 @@ outer_loop:
                                                          Description.INTERNAL_ERROR),
                                                ce);
                     }
-                  
+
                   outBuffer = cert.buffer();
-                  
+
                   fragment.putInt((Handshake.Type.CERTIFICATE.getValue() << 24)
                                   | (cert.length() & 0xFFFFFF));
-                  
+
                   int l = Math.min(fragment.remaining(), outBuffer.remaining());
                   fragment.put((ByteBuffer) outBuffer.duplicate()
                                .limit(outBuffer.position() + l));
@@ -612,7 +612,7 @@ outer_loop:
               state = WRITE_CLIENT_KEY_EXCHANGE;
             }
             break;
-            
+
             case WRITE_CLIENT_KEY_EXCHANGE:
             {
               KeyExchangeAlgorithm kea = engine.session().suite.keyExchangeAlgorithm();
@@ -698,10 +698,10 @@ outer_loop:
                                                            engine.session().suite);
                   engine.session().privateData.masterSecret = new byte[0];
                 }
-              
+
               if (Debug.DEBUG)
                 logger.logv(Component.SSL_HANDSHAKE, "{0}", ckex);
-              
+
               outBuffer = ckex.buffer();
               if (Debug.DEBUG)
                 logger.logv(Component.SSL_HANDSHAKE, "client kex buffer {0}", outBuffer);
@@ -726,28 +726,28 @@ outer_loop:
             // Both states terminate in a NEED_TASK, or a need to change cipher
             // specs; so we can't write any more messages here.
             break outer_loop;
-            
+
             case WRITE_CERTIFICATE_VERIFY:
             {
               assert(genCertVerify != null);
               assert(genCertVerify.hasRun());
               CertificateVerify verify = new CertificateVerify(genCertVerify.signed(),
                                                                engine.session().suite.signatureAlgorithm());
-              
+
               outBuffer = verify.buffer();
               fragment.putInt((Handshake.Type.CERTIFICATE_VERIFY.getValue() << 24)
                               | (verify.length() & 0xFFFFFF));
               int l = Math.min(fragment.remaining(), outBuffer.remaining());
               fragment.put((ByteBuffer) outBuffer.duplicate().limit(outBuffer.position() + l));
               outBuffer.position(outBuffer.position() + l);
-              
+
               // XXX This is a potential problem: we may not have drained
               // outBuffer, but set the changeCipherSpec toggle.
               engine.changeCipherSpec();
               state = WRITE_FINISHED;
             }
             break outer_loop;
-            
+
             case WRITE_FINISHED:
             {
               MessageDigest md5copy = null;
@@ -766,10 +766,10 @@ outer_loop:
               outBuffer
                 = generateFinished(md5copy, shacopy, true,
                                    engine.session());
-              
+
               fragment.putInt((Handshake.Type.FINISHED.getValue() << 24)
                               | outBuffer.remaining() & 0xFFFFFF);
-              
+
               int l = Math.min(outBuffer.remaining(), fragment.remaining());
               fragment.put((ByteBuffer) outBuffer.duplicate().limit(outBuffer.position() + l));
               outBuffer.position(outBuffer.position() + l);
@@ -777,10 +777,10 @@ outer_loop:
               if (continuedSession)
                 state = DONE;
               else
-                state = READ_FINISHED;              
+                state = READ_FINISHED;
             }
             break;
-            
+
             default:
               throw new IllegalStateException("invalid state: " + state);
           }
@@ -808,7 +808,7 @@ outer_loop:
       return HandshakeStatus.NEED_WRAP;
     return HandshakeStatus.FINISHED;
   }
-  
+
   @Override void checkKeyExchange() throws SSLException
   {
     // XXX implement.
@@ -821,7 +821,7 @@ outer_loop:
   {
     throw new SSLException("this should be impossible");
   }
-  
+
   private ProtocolVersion chooseVersion() throws SSLException
   {
     // Select the highest enabled version, for our initial key exchange.
@@ -839,13 +839,13 @@ outer_loop:
             continue;
           }
       }
-    
+
     if (version == null)
       throw new SSLException("no suitable enabled versions");
-    
+
     return version;
   }
-  
+
   private List<CipherSuite> getSuites() throws SSLException
   {
     List<CipherSuite> suites = new LinkedList<CipherSuite>();
@@ -859,7 +859,7 @@ outer_loop:
       throw new SSLException("no cipher suites enabled");
     return suites;
   }
-  
+
   private List<CompressionMethod> getCompressionMethods()
   {
     List<CompressionMethod> methods = new LinkedList<CompressionMethod>();
@@ -869,14 +869,14 @@ outer_loop:
     methods.add(CompressionMethod.NULL);
     return methods;
   }
-  
+
   private boolean enableExtensions()
   {
     GetSecurityPropertyAction action
       = new GetSecurityPropertyAction("jessie.client.enable.extensions");
     return Boolean.valueOf(AccessController.doPrivileged(action));
   }
-  
+
   private MaxFragmentLength maxFragmentLength()
   {
     GetSecurityPropertyAction action
@@ -905,35 +905,35 @@ outer_loop:
       }
     return null;
   }
-  
+
   private boolean truncatedHMac()
   {
     GetSecurityPropertyAction action
       = new GetSecurityPropertyAction("jessie.client.truncatedHMac");
     return Boolean.valueOf(AccessController.doPrivileged(action));
   }
-  
+
   private String getPSKIdentity()
   {
     GetSecurityPropertyAction action
       = new GetSecurityPropertyAction("jessie.client.psk.identity");
     return AccessController.doPrivileged(action);
   }
-  
+
   // Delegated tasks.
-  
+
   class ParamsVerifier extends DelegatedTask
   {
     private final ByteBuffer paramsBuffer;
     private final byte[] signature;
     private boolean verified;
-    
+
     ParamsVerifier(ByteBuffer paramsBuffer, byte[] signature)
     {
       this.paramsBuffer = paramsBuffer;
       this.signature = signature;
     }
-    
+
     public void implRun()
       throws InvalidKeyException, NoSuchAlgorithmException,
              SSLPeerUnverifiedException, SignatureException
@@ -949,26 +949,26 @@ outer_loop:
           notifyAll();
         }
     }
-    
+
     boolean verified()
     {
       return verified;
     }
   }
-  
+
   class ClientDHGen extends DelegatedTask
   {
     private final DHPublicKey serverKey;
     private final DHParameterSpec params;
     private final boolean full;
-    
+
     ClientDHGen(DHPublicKey serverKey, DHParameterSpec params, boolean full)
     {
       this.serverKey = serverKey;
       this.params = params;
       this.full = full;
     }
-    
+
     public void implRun()
       throws InvalidAlgorithmParameterException, NoSuchAlgorithmException,
              SSLException
@@ -1006,24 +1006,24 @@ outer_loop:
       if (phase.thrown() != null)
         throw new SSLException(phase.thrown());
     }
-    
+
     DHPublicKey serverKey()
     {
       return serverKey;
     }
   }
-  
+
   class CertLoader extends DelegatedTask
   {
     private final List<String> keyTypes;
     private final List<X500Principal> issuers;
-    
+
     CertLoader(List<String> keyTypes, List<X500Principal> issuers)
     {
       this.keyTypes = keyTypes;
       this.issuers = issuers;
     }
-    
+
     public void implRun()
     {
       X509ExtendedKeyManager km = engine.contextImpl.keyManager;
@@ -1041,17 +1041,17 @@ outer_loop:
   {
     private byte[] encryptedPreMasterSecret;
     private final boolean full;
-    
+
     RSAGen()
     {
       this(true);
     }
-    
+
     RSAGen(boolean full)
     {
       this.full = full;
     }
-    
+
     public void implRun()
       throws BadPaddingException, IllegalBlockSizeException, InvalidKeyException,
              NoSuchAlgorithmException, NoSuchPaddingException,
@@ -1087,7 +1087,7 @@ outer_loop:
         }
       rsa.init(Cipher.ENCRYPT_MODE, cert.getPublicKey());
       encryptedPreMasterSecret = rsa.doFinal(preMasterSecret);
-      
+
       // Generate our session keys, because we can.
       if (full)
         {
@@ -1096,18 +1096,18 @@ outer_loop:
           setupSecurityParameters(keys, true, engine, compression);
         }
     }
-    
+
     byte[] encryptedSecret()
     {
       return encryptedPreMasterSecret;
     }
   }
-  
+
   class GenCertVerify extends DelegatedTask
   {
     private final MessageDigest md5, sha;
     private byte[] signed;
-    
+
     GenCertVerify(MessageDigest md5, MessageDigest sha)
     {
       try
@@ -1137,14 +1137,14 @@ outer_loop:
           else
             toSign = sha.digest();
         }
-      
+
       java.security.Signature sig =
         java.security.Signature.getInstance(engine.session().suite.signatureAlgorithm().name());
       sig.initSign(privateKey);
       sig.update(toSign);
       signed = sig.sign();
     }
-    
+
     byte[] signed()
     {
       return signed;

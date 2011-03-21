@@ -41,19 +41,19 @@ package javax.naming.spi;
 import javax.naming.Context;
 import javax.naming.Name;
 import javax.naming.NamingException;
- 
+
 /**
  * <p>Represents the object, capable for the at least partial name resolution.
  * The object is not necessay capable for the complete name resolution and
  * need not implement the {@link Context}.</p>
  * <p>
  * Both passed parameters and returned results are owned by the caller.</p>
- * 
+ *
  * @author Warren Levy (warrenl@redhat.com)
  */
 public interface Resolver
 {
-  ResolveResult resolveToClass(Name name, 
+  ResolveResult resolveToClass(Name name,
                                Class<? extends Context> contextType)
     throws NamingException;
   ResolveResult resolveToClass(String name,

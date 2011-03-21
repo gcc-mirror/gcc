@@ -57,7 +57,7 @@ import javax.sound.sampled.spi.MixerProvider;
  * This clas is the primary interface to the audio system.  It contains
  * a number of static methods which can be used to access this package's
  * functionality.
- * 
+ *
  * @since 1.3
  */
 public class AudioSystem
@@ -77,7 +77,7 @@ public class AudioSystem
    * Return the file format of a given File.
    * @param f the file to check
    * @return the format of the file
-   * @throws UnsupportedAudioFileException if the file's format is not 
+   * @throws UnsupportedAudioFileException if the file's format is not
    * recognized
    * @throws IOException if there is an I/O error reading the file
    */
@@ -104,7 +104,7 @@ public class AudioSystem
    * Return the file format of a given input stream.
    * @param is the input stream to check
    * @return the format of the stream
-   * @throws UnsupportedAudioFileException if the stream's format is not 
+   * @throws UnsupportedAudioFileException if the stream's format is not
    * recognized
    * @throws IOException if there is an I/O error reading the stream
    */
@@ -131,7 +131,7 @@ public class AudioSystem
    * Return the file format of a given URL.
    * @param url the URL to check
    * @return the format of the URL
-   * @throws UnsupportedAudioFileException if the URL's format is not 
+   * @throws UnsupportedAudioFileException if the URL's format is not
    * recognized
    * @throws IOException if there is an I/O error reading the URL
    */
@@ -197,14 +197,14 @@ public class AudioSystem
   /**
    * Given an audio input stream, this will try to create a new audio input
    * stream whose encoding matches the given target encoding.  If no provider
-   * offers this conversion, an exception is thrown. 
+   * offers this conversion, an exception is thrown.
    * @param targ the target encoding
    * @param ais the original audio stream
    * @return a new audio stream
    * @throws IllegalArgumentException if the conversion cannot be made
    */
   public static AudioInputStream getAudioInputStream(AudioFormat.Encoding targ,
-						     AudioInputStream ais)
+                                                     AudioInputStream ais)
   {
     Iterator i = ServiceFactory.lookupProviders(FormatConversionProvider.class);
     while (i.hasNext())
@@ -220,14 +220,14 @@ public class AudioSystem
   /**
    * Given an audio input stream, this will try to create a new audio input
    * stream whose format matches the given target format.  If no provider
-   * offers this conversion, an exception is thrown. 
+   * offers this conversion, an exception is thrown.
    * @param targ the target format
    * @param ais the original audio stream
    * @return a new audio stream
    * @throws IllegalArgumentException if the conversion cannot be made
    */
   public static AudioInputStream getAudioInputStream(AudioFormat targ,
-						     AudioInputStream ais)
+                                                     AudioInputStream ais)
   {
     Iterator i = ServiceFactory.lookupProviders(FormatConversionProvider.class);
     while (i.hasNext())
@@ -457,7 +457,7 @@ public class AudioSystem
    * @since 1.5
    */
   public static SourceDataLine getSourceDataLine(AudioFormat fmt,
-						 Mixer.Info mixer)
+                                                 Mixer.Info mixer)
     throws LineUnavailableException
   {
     DataLine.Info info = new DataLine.Info(SourceDataLine.class, fmt);
@@ -489,7 +489,7 @@ public class AudioSystem
   /**
    * Find and return a target data line matching the given audio format.
    * @param fmt the format to match
-   * @throws LineUnavailableException if no matching line was found 
+   * @throws LineUnavailableException if no matching line was found
    * @since 1.5
    */
   public static TargetDataLine getTargetDataLine(AudioFormat fmt)
@@ -517,7 +517,7 @@ public class AudioSystem
    * @since 1.5
    */
   public static TargetDataLine getTargetDataLine(AudioFormat fmt,
-						 Mixer.Info mixer)
+                                                 Mixer.Info mixer)
     throws LineUnavailableException
   {
     DataLine.Info info = new DataLine.Info(TargetDataLine.class, fmt);
@@ -571,12 +571,12 @@ public class AudioSystem
 
   /**
    * Given a target encoding and a source audio format, return an array of all
-   * matching audio formats to which data in this source format can be converted. 
+   * matching audio formats to which data in this source format can be converted.
    * @param encoding the target encoding
    * @param sourceFmt the source format
    */
   public static AudioFormat[] getTargetFormats(AudioFormat.Encoding encoding,
-					       AudioFormat sourceFmt)
+                                               AudioFormat sourceFmt)
   {
     HashSet<AudioFormat> result = new HashSet<AudioFormat>();
     Iterator i = ServiceFactory.lookupProviders(FormatConversionProvider.class);
@@ -616,9 +616,9 @@ public class AudioSystem
    * @param source the source format
    */
   public static boolean isConversionSupported(AudioFormat.Encoding targ,
-					      AudioFormat source)
+                                              AudioFormat source)
   {
-    Iterator i 
+    Iterator i
       = ServiceFactory.lookupProviders(FormatConversionProvider.class);
     while (i.hasNext())
       {
@@ -636,9 +636,9 @@ public class AudioSystem
    * @param source the source format
    */
   public static boolean isConversionSupported(AudioFormat targ,
-					      AudioFormat source)
+                                              AudioFormat source)
   {
-    Iterator i 
+    Iterator i
       = ServiceFactory.lookupProviders(FormatConversionProvider.class);
     while (i.hasNext())
       {
@@ -672,20 +672,20 @@ public class AudioSystem
 
   /**
    * Return true if the given audio file format is supported for the
-   * given audio input stream by one of the providers installed on the 
+   * given audio input stream by one of the providers installed on the
    * system.
    * @param type the audio file format type
    * @param ais the audio input stream
    */
   public static boolean isFileTypeSupported(AudioFileFormat.Type type,
-					    AudioInputStream ais)
+                                            AudioInputStream ais)
   {
     return isFileTypeSupported(getAudioFileTypes(ais), type);
   }
 
   /**
    * Return true if some provider on the system supplies a line
-   * matching the argument. 
+   * matching the argument.
    * @param info the line to match
    */
   public static boolean isLineSupported(Line.Info info)
@@ -711,7 +711,7 @@ public class AudioSystem
    * @throws IllegalArgumentException if the file type is not supported
    */
   public static int write(AudioInputStream ais, AudioFileFormat.Type type,
-			  File out)
+                          File out)
     throws IOException
   {
     Iterator i = ServiceFactory.lookupProviders(AudioFileWriter.class);
@@ -736,7 +736,7 @@ public class AudioSystem
    * @throws IllegalArgumentException if the file type is not supported
    */
   public static int write(AudioInputStream ais, AudioFileFormat.Type type,
-			  OutputStream os)
+                          OutputStream os)
     throws IOException
   {
     Iterator i = ServiceFactory.lookupProviders(AudioFileWriter.class);

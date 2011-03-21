@@ -71,44 +71,44 @@ public class MidiDataOutputStream
 
     while ((value >>= 7) != 0)
       {
-	buffer <<= 8;
-	buffer |= ((value & 0x7F) | 0x80);
+        buffer <<= 8;
+        buffer |= ((value & 0x7F) | 0x80);
       }
-      
+
     while (true)
       {
-	length++;
-	if ((buffer & 0x80) != 0)
-	  buffer >>>= 8;
-	else
-	  break;
+        length++;
+        if ((buffer & 0x80) != 0)
+          buffer >>>= 8;
+        else
+          break;
       }
 
     return length;
   }
-  
+
   /**
    * Write an int encoded in the MIDI-style variable length
    * encoding format.
    */
-  public synchronized void writeVariableLengthInt (int value) 
+  public synchronized void writeVariableLengthInt (int value)
     throws IOException
   {
     int buffer = value & 0x7F;
 
     while ((value >>= 7) != 0)
       {
-	buffer <<= 8;
-	buffer |= ((value & 0x7F) | 0x80);
+        buffer <<= 8;
+        buffer |= ((value & 0x7F) | 0x80);
       }
-      
+
     while (true)
       {
-	writeByte(buffer & 0xff);
-	if ((buffer & 0x80) != 0)
-	  buffer >>>= 8;
-	else
-	  break;
+        writeByte(buffer & 0xff);
+        if ((buffer & 0x80) != 0)
+          buffer >>>= 8;
+        else
+          break;
       }
   }
 }

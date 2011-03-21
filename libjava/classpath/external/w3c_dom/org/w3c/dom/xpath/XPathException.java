@@ -13,7 +13,7 @@
 package org.w3c.dom.xpath;
 
 /**
- * A new exception has been created for exceptions specific to these XPath 
+ * A new exception has been created for exceptions specific to these XPath
  * interfaces.
  * <p>See also the <a href='http://www.w3.org/TR/2004/NOTE-DOM-Level-3-XPath-20040226'>Document Object Model (DOM) Level 3 XPath Specification</a>.
  */
@@ -25,9 +25,9 @@ public class XPathException extends RuntimeException {
     public short   code;
     // XPathExceptionCode
     /**
-     * If the expression has a syntax error or otherwise is not a legal 
-     * expression according to the rules of the specific 
-     * <code>XPathEvaluator</code> or contains specialized extension 
+     * If the expression has a syntax error or otherwise is not a legal
+     * expression according to the rules of the specific
+     * <code>XPathEvaluator</code> or contains specialized extension
      * functions or variables not supported by this implementation.
      */
     public static final short INVALID_EXPRESSION_ERR    = 51;

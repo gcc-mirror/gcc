@@ -62,7 +62,7 @@ import java.util.logging.Logger;
  *      <dd>The fully qualified path of the file to read the certificate from.
  *      If this option is omitted, the tool will process STDIN.
  *      <p></dd>
- *      
+ *
  *      <dt>-v</dt>
  *      <dd>Use this option to enable more verbose output.</dd>
  * </dl>

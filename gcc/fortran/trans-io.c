@@ -1463,6 +1463,7 @@ nml_full_name (const char* var_name, const char* cmp_name)
   return full_name;
 }
 
+
 /* nml_get_addr_expr builds an address expression from the
    gfc_symbol or gfc_component backend_decl's. An offset is
    provided so that the address of an element of an array of
@@ -1475,9 +1476,6 @@ nml_get_addr_expr (gfc_symbol * sym, gfc_component * c,
 {
   tree decl = NULL_TREE;
   tree tmp;
-  tree itmp;
-  int array_flagged;
-  int dummy_arg_flagged;
 
   if (sym)
     {
@@ -1503,18 +1501,8 @@ nml_get_addr_expr (gfc_symbol * sym, gfc_component * c,
 
   /* Build indirect reference, if dummy argument.  */
 
-  dummy_arg_flagged = POINTER_TYPE_P (TREE_TYPE(tmp));
-
-  itmp = (dummy_arg_flagged) ? build_fold_indirect_ref_loc (input_location,
-							tmp) : tmp;
-
-  /* If an array, set flag and use indirect ref. if built.  */
-
-  array_flagged = (TREE_CODE (TREE_TYPE (itmp)) == ARRAY_TYPE
-		   && !TYPE_STRING_FLAG (TREE_TYPE (itmp)));
-
-  if (array_flagged)
-    tmp = itmp;
+  if (POINTER_TYPE_P (TREE_TYPE(tmp)))
+    tmp = build_fold_indirect_ref_loc (input_location, tmp);
 
   /* Treat the component of a derived type, using base_addr for
      the derived type.  */
@@ -1523,28 +1511,26 @@ nml_get_addr_expr (gfc_symbol * sym, gfc_component * c,
     tmp = fold_build3_loc (input_location, COMPONENT_REF, TREE_TYPE (tmp),
 			   base_addr, tmp, NULL_TREE);
 
-  /* If we have a derived type component, a reference to the first
-     element of the array is built.  This is done so that base_addr,
-     used in the build of the component reference, always points to
-     a RECORD_TYPE.  */
+  if (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (tmp)))
+    tmp = gfc_conv_array_data (tmp);
+  else
+    {
+      if (!POINTER_TYPE_P (TREE_TYPE (tmp)))
+	tmp = gfc_build_addr_expr (NULL_TREE, tmp);
 
-  if (array_flagged)
-    tmp = gfc_build_array_ref (tmp, gfc_index_zero_node, NULL);
+      if (TREE_CODE (TREE_TYPE (tmp)) == ARRAY_TYPE)
+         tmp = gfc_build_array_ref (tmp, gfc_index_zero_node, NULL);
 
-  /* Now build the address expression.  */
-
-  tmp = gfc_build_addr_expr (NULL_TREE, tmp);
-
-  /* If scalar dummy, resolve indirect reference now.  */
-
-  if (dummy_arg_flagged && !array_flagged)
-    tmp = build_fold_indirect_ref_loc (input_location,
+      if (!POINTER_TYPE_P (TREE_TYPE (tmp)))
+	tmp = build_fold_indirect_ref_loc (input_location,
 				   tmp);
+    }
 
   gcc_assert (tmp && POINTER_TYPE_P (TREE_TYPE (tmp)));
 
   return tmp;
 }
+
 
 /* For an object VAR_NAME whose base address is BASE_ADDR, generate a
    call to iocall[IOCALL_SET_NML_VAL].  For derived type variable, recursively
@@ -1565,6 +1551,7 @@ transfer_namelist_element (stmtblock_t * block, const char * var_name,
   tree tmp;
   tree dtype;
   tree dt_parm_addr;
+  tree decl = NULL_TREE;
   int n_dim; 
   int itype;
   int rank = 0;
@@ -1588,7 +1575,10 @@ transfer_namelist_element (stmtblock_t * block, const char * var_name,
 
   if (rank)
     {
-      dt =  TREE_TYPE ((sym) ? sym->backend_decl : c->backend_decl);
+      decl = (sym) ? sym->backend_decl : c->backend_decl;
+      if (sym && sym->attr.dummy)
+        decl = build_fold_indirect_ref_loc (input_location, decl);
+      dt =  TREE_TYPE (decl);
       dtype = gfc_get_dtype (dt);
     }
   else
@@ -1622,9 +1612,9 @@ transfer_namelist_element (stmtblock_t * block, const char * var_name,
 			     iocall[IOCALL_SET_NML_VAL_DIM], 5,
 			     dt_parm_addr,
 			     IARG (n_dim),
-			     GFC_TYPE_ARRAY_STRIDE (dt, n_dim),
-			     GFC_TYPE_ARRAY_LBOUND (dt, n_dim),
-			     GFC_TYPE_ARRAY_UBOUND (dt, n_dim));
+			     gfc_conv_array_stride (decl, n_dim),
+			     gfc_conv_array_lbound (decl, n_dim),
+			     gfc_conv_array_ubound (decl, n_dim));
       gfc_add_expr_to_block (block, tmp);
     }
 

@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -45,21 +45,21 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 
 /**
- * This class is only for java.rmi.MarshalledObject to deserialize object from 
+ * This class is only for java.rmi.MarshalledObject to deserialize object from
  * objBytes and locBytes
  */
 
 public class RMIMarshalledObjectInputStream extends RMIObjectInputStream
 {
   private ObjectInputStream locStream;
-  
+
   public RMIMarshalledObjectInputStream(byte[] objBytes, byte[] locBytes) throws IOException
   {
     super(new ByteArrayInputStream(objBytes));
     if(locBytes != null)
       locStream = new ObjectInputStream(new ByteArrayInputStream(locBytes));
   }
-  
+
   //This method overrides RMIObjectInputStream's
   protected Object getAnnotation() throws IOException, ClassNotFoundException
   {
@@ -67,5 +67,5 @@ public class RMIMarshalledObjectInputStream extends RMIObjectInputStream
       return null;
     return locStream.readObject();
   }
-  
+
 } // End of RMIMarshalledObjectInputStream

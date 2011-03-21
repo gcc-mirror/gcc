@@ -68,7 +68,7 @@ import java.util.Map;
  * object in the default implementation. If you wish to share peers between
  * fonts, you will need to subclass both ClasspathFontPeer and
  * {@link ClasspathToolKit}.</p>
- * 
+ *
  * <p><b>Thread Safety:</b> Methods of this interface may be called
  * from arbitrary threads at any time. Implementations of the
  * <code>ClasspathFontPeer</code> interface are required to perform
@@ -85,11 +85,11 @@ public abstract class ClasspathFontPeer
 {
 
   /*************************************************************************/
-  
+
   /*
    * Instance Variables
    */
-  
+
   /**
    * The 3 names of this font. all fonts have 3 names, some of which
    * may be equal:
@@ -98,19 +98,19 @@ public abstract class ClasspathFontPeer
    * family  -- a designer or brand name (Helvetica)
    * face -- specific instance of a design (Helvetica Regular)
    *
-   * @see isLogicalFontName 
+   * @see isLogicalFontName
    */
-  
+
   protected String logicalName;
   protected String familyName;
   protected String faceName;
-  
+
   /**
    * The font style, which is a combination (by OR-ing) of the font style
    * constants PLAIN, BOLD and ITALIC, in this class.
    */
   protected int style;
-  
+
   /**
    * The font point size. A point is 1/72 of an inch.
    */
@@ -143,13 +143,13 @@ public abstract class ClasspathFontPeer
     return (ClasspathToolkit)(Toolkit.getDefaultToolkit ());
   }
 
-  /* 
+  /*
    * Confusingly, a Logical Font is a concept unrelated to
-   * a Font's Logical Name. 
+   * a Font's Logical Name.
    *
    * A Logical Font is one of 6 built-in, abstract font types
    * which must be supported by any java environment: SansSerif,
-   * Serif, Monospaced, Dialog, and DialogInput. 
+   * Serif, Monospaced, Dialog, and DialogInput.
    *
    * A Font's Logical Name is the name the font was constructed
    * from. This might be the name of a Logical Font, or it might
@@ -209,32 +209,32 @@ public abstract class ClasspathFontPeer
     if (fam != null)
       attrs.put (TextAttribute.FAMILY, fam);
   }
-  
+
   public static void copySizeToAttrs (float size, Map attrs)
   {
     attrs.put (TextAttribute.SIZE, new Float (size));
   }
-  
+
   protected static void copyTransformToAttrs (AffineTransform trans, Map attrs)
   {
     if (trans != null)
       {
-	TransformAttribute ta;
+        TransformAttribute ta;
         synchronized(transCache)
           {
-	    ta = transCache.get(trans);
-	    if (ta == null)
-	      {
-		ta = new TransformAttribute(trans);
-		transCache.put(trans, ta);
-	      }
-	  }
-	attrs.put(TextAttribute.TRANSFORM, ta);
+            ta = transCache.get(trans);
+            if (ta == null)
+              {
+                ta = new TransformAttribute(trans);
+                transCache.put(trans, ta);
+              }
+          }
+        attrs.put(TextAttribute.TRANSFORM, ta);
       }
   }
 
 
-  protected void setStandardAttributes (String name, String family, int style, 
+  protected void setStandardAttributes (String name, String family, int style,
                                         float size, AffineTransform trans)
   {
     this.logicalName = name;
@@ -248,7 +248,7 @@ public abstract class ClasspathFontPeer
       this.familyName = family;
     else
       this.familyName = faceNameToFamilyName (faceName);
-    
+
     this.style = style;
     this.size = size;
     this.transform = trans;
@@ -296,16 +296,16 @@ public abstract class ClasspathFontPeer
 
     if (attribs.containsKey (TextAttribute.TRANSFORM))
       {
-        TransformAttribute ta = (TransformAttribute) 
+        TransformAttribute ta = (TransformAttribute)
           attribs.get(TextAttribute.TRANSFORM);
-        trans = ta.getTransform ();        
+        trans = ta.getTransform ();
       }
 
     setStandardAttributes (name, family, style, size, trans);
   }
 
   protected void getStandardAttributes (Map attrs)
-  {    
+  {
     copyFamilyToAttrs (this.familyName, attrs);
     copySizeToAttrs (this.size, attrs);
     copyStyleToAttrs (this.style, attrs);
@@ -322,11 +322,11 @@ public abstract class ClasspathFontPeer
 
   public ClasspathFontPeer (String name, int style, int size)
   {
-    setStandardAttributes (name, (String)null, style, 
+    setStandardAttributes (name, (String)null, style,
                            (float)size, (AffineTransform)null);
   }
 
-  /** 
+  /**
    * Implementation of {@link Font#getName}
    *
    * @param font the font this peer is being called from. This may be
@@ -334,12 +334,12 @@ public abstract class ClasspathFontPeer
    * be ignored.
    */
 
-  public String getName (Font font) 
-  { 
-    return logicalName; 
+  public String getName (Font font)
+  {
+    return logicalName;
   }
 
-  /** 
+  /**
    * Implementation of {@link Font#getFamily()}
    *
    * @param font the font this peer is being called from. This may be
@@ -347,12 +347,12 @@ public abstract class ClasspathFontPeer
    * be ignored.
    */
 
-  public String getFamily (Font font) 
-  { 
-    return familyName; 
+  public String getFamily (Font font)
+  {
+    return familyName;
   }
 
-  /** 
+  /**
    * Implementation of {@link Font#getFamily(Locale)}
    *
    * @param font the font this peer is being called from. This may be
@@ -360,12 +360,12 @@ public abstract class ClasspathFontPeer
    * be ignored.
    */
 
-  public String getFamily (Font font, Locale lc) 
-  { 
-    return familyName; 
+  public String getFamily (Font font, Locale lc)
+  {
+    return familyName;
   }
 
-  /** 
+  /**
    * Implementation of {@link Font#getFontName()}
    *
    * @param font the font this peer is being called from. This may be
@@ -373,12 +373,12 @@ public abstract class ClasspathFontPeer
    * be ignored.
    */
 
-  public String getFontName (Font font) 
-  { 
-    return faceName; 
+  public String getFontName (Font font)
+  {
+    return faceName;
   }
 
-  /** 
+  /**
    * Implementation of {@link Font#getFontName(Locale)}
    *
    * @param font the font this peer is being called from. This may be
@@ -386,12 +386,12 @@ public abstract class ClasspathFontPeer
    * be ignored.
    */
 
-  public String getFontName (Font font, Locale lc) 
-  { 
-    return faceName; 
+  public String getFontName (Font font, Locale lc)
+  {
+    return faceName;
   }
 
-  /** 
+  /**
    * Implementation of {@link Font#getSize}
    *
    * @param font the font this peer is being called from. This may be
@@ -399,38 +399,38 @@ public abstract class ClasspathFontPeer
    * be ignored.
    */
 
-  public float getSize (Font font) 
-  { 
-    return size; 
+  public float getSize (Font font)
+  {
+    return size;
   }
 
-  /** 
+  /**
    * Implementation of {@link Font#isPlain}
    *
    * @param font the font this peer is being called from. This may be
    * useful if you are sharing peers between Font objects. Otherwise it may
    * be ignored.
    */
-  
-  public boolean isPlain (Font font) 
-  { 
-    return style == Font.PLAIN; 
+
+  public boolean isPlain (Font font)
+  {
+    return style == Font.PLAIN;
   }
 
-  /** 
+  /**
    * Implementation of {@link Font#isBold}
    *
    * @param font the font this peer is being called from. This may be
    * useful if you are sharing peers between Font objects. Otherwise it may
    * be ignored.
    */
-  
-  public boolean isBold (Font font) 
-  { 
-    return ((style & Font.BOLD) == Font.BOLD); 
+
+  public boolean isBold (Font font)
+  {
+    return ((style & Font.BOLD) == Font.BOLD);
   }
 
-  /** 
+  /**
    * Implementation of {@link Font#isItalic}
    *
    * @param font the font this peer is being called from. This may be
@@ -438,12 +438,12 @@ public abstract class ClasspathFontPeer
    * be ignored.
    */
 
-  public boolean isItalic (Font font) 
-  { 
-    return ((style & Font.ITALIC) == Font.ITALIC); 
+  public boolean isItalic (Font font)
+  {
+    return ((style & Font.ITALIC) == Font.ITALIC);
   }
 
-  /** 
+  /**
    * Implementation of {@link Font#deriveFont(int, float)}
    *
    * @param font the font this peer is being called from. This may be
@@ -460,7 +460,7 @@ public abstract class ClasspathFontPeer
     return tk().getFont (logicalName, attrs);
   }
 
-  /** 
+  /**
    * Implementation of {@link Font#deriveFont(float)}
    *
    * @param font the font this peer is being called from. This may be
@@ -476,7 +476,7 @@ public abstract class ClasspathFontPeer
     return tk().getFont (logicalName, attrs);
   }
 
-  /** 
+  /**
    * Implementation of {@link Font#deriveFont(int)}
    *
    * @param font the font this peer is being called from. This may be
@@ -492,7 +492,7 @@ public abstract class ClasspathFontPeer
     return tk().getFont (logicalName, attrs);
   }
 
-  /** 
+  /**
    * Implementation of {@link Font#deriveFont(int, AffineTransform)}
    *
    * @param font the font this peer is being called from. This may be
@@ -509,7 +509,7 @@ public abstract class ClasspathFontPeer
     return tk().getFont (logicalName, attrs);
   }
 
-  /** 
+  /**
    * Implementation of {@link Font#deriveFont(AffineTransform)}
    *
    * @param font the font this peer is being called from. This may be
@@ -525,7 +525,7 @@ public abstract class ClasspathFontPeer
     return tk().getFont (logicalName, attrs);
   }
 
-  /** 
+  /**
    * Implementation of {@link Font#deriveFont(Map)}
    *
    * @param font the font this peer is being called from. This may be
@@ -538,7 +538,7 @@ public abstract class ClasspathFontPeer
     return tk().getFont (logicalName, attrs);
   }
 
-  /** 
+  /**
    * Implementation of {@link Font#getAttributes()}
    *
    * @param font the font this peer is being called from. This may be
@@ -553,7 +553,7 @@ public abstract class ClasspathFontPeer
     return h;
   }
 
-  /** 
+  /**
    * Implementation of {@link Font#getAvailableAttributes()}
    *
    * @param font the font this peer is being called from. This may be
@@ -563,7 +563,7 @@ public abstract class ClasspathFontPeer
 
   public AttributedCharacterIterator.Attribute[] getAvailableAttributes(Font font)
   {
-    AttributedCharacterIterator.Attribute a[] = 
+    AttributedCharacterIterator.Attribute a[] =
       new AttributedCharacterIterator.Attribute[5];
     a[0] = TextAttribute.FAMILY;
     a[1] = TextAttribute.SIZE;
@@ -573,7 +573,7 @@ public abstract class ClasspathFontPeer
     return a;
   }
 
-  /** 
+  /**
    * Implementation of {@link Font#getTransform()}
    *
    * @param font the font this peer is being called from. This may be
@@ -588,7 +588,7 @@ public abstract class ClasspathFontPeer
     return transform;
   }
 
-  /** 
+  /**
    * Implementation of {@link Font#isTransformed()}
    *
    * @param font the font this peer is being called from. This may be
@@ -601,7 +601,7 @@ public abstract class ClasspathFontPeer
     return ! transform.isIdentity ();
   }
 
-  /** 
+  /**
    * Implementation of {@link Font#getItalicAngle()}
    *
    * @param font the font this peer is being called from. This may be
@@ -618,7 +618,7 @@ public abstract class ClasspathFontPeer
   }
 
 
-  /** 
+  /**
    * Implementation of {@link Font#getStyle()}
    *
    * @param font the font this peer is being called from. This may be
@@ -626,9 +626,9 @@ public abstract class ClasspathFontPeer
    * be ignored.
    */
 
-  public int getStyle (Font font) 
-  { 
-    return style; 
+  public int getStyle (Font font)
+  {
+    return style;
   }
 
 
@@ -636,7 +636,7 @@ public abstract class ClasspathFontPeer
 
   /* Remaining methods are abstract */
 
-  /** 
+  /**
    * Implementation of {@link Font#canDisplay(char)}
    *
    * @param font the font this peer is being called from. This may be
@@ -646,7 +646,7 @@ public abstract class ClasspathFontPeer
 
   public abstract boolean canDisplay (Font font, int c);
 
-  /** 
+  /**
    * Implementation of {@link Font#canDisplay(String)},
    * {@link Font#canDisplay(char [], int, int)}, and
    * {@link Font#canDisplay(CharacterIterator, int, int)}.
@@ -678,9 +678,9 @@ public abstract class ClasspathFontPeer
    */
 
   public abstract String getSubFamilyName (Font font, Locale locale);
-  
 
-  /** 
+
+  /**
    * Implementation of {@link Font#getPSName()}
    *
    * @param font the font this peer is being called from. This may be
@@ -691,7 +691,7 @@ public abstract class ClasspathFontPeer
   public abstract String getPostScriptName (Font font);
 
 
-  /** 
+  /**
    * Implementation of {@link Font#getNumGlyphs()}
    *
    * @param font the font this peer is being called from. This may be
@@ -702,7 +702,7 @@ public abstract class ClasspathFontPeer
   public abstract int getNumGlyphs (Font font);
 
 
-  /** 
+  /**
    * Implementation of {@link Font#getMissingGlyphCode()}
    *
    * @param font the font this peer is being called from. This may be
@@ -713,7 +713,7 @@ public abstract class ClasspathFontPeer
   public abstract int getMissingGlyphCode (Font font);
 
 
-  /** 
+  /**
    * Implementation of {@link Font#getBaselineFor(char)}
    *
    * @param font the font this peer is being called from. This may be
@@ -767,7 +767,7 @@ public abstract class ClasspathFontPeer
   public abstract String getGlyphName (Font font, int glyphIndex);
 
 
-  /** 
+  /**
    * Implementation of {@link
    * Font#createGlyphVector(FontRenderContext, String)}, {@link
    * Font#createGlyphVector(FontRenderContext, char[])}, and {@link
@@ -782,9 +782,9 @@ public abstract class ClasspathFontPeer
   public abstract GlyphVector createGlyphVector (Font font,
                                                  FontRenderContext frc,
                                                  CharacterIterator ci);
-  
 
-  /** 
+
+  /**
    * Implementation of {@link Font#createGlyphVector(FontRenderContext,
    * int[])}.
    *
@@ -794,12 +794,12 @@ public abstract class ClasspathFontPeer
    * not with font peers.
    */
 
-  public abstract GlyphVector createGlyphVector (Font font, 
-                                                 FontRenderContext ctx, 
+  public abstract GlyphVector createGlyphVector (Font font,
+                                                 FontRenderContext ctx,
                                                  int[] glyphCodes);
 
 
-  /** 
+  /**
    * Implementation of {@link Font#layoutGlyphVector(FontRenderContext,
    * char[], int, int, int)}.
    *
@@ -809,13 +809,13 @@ public abstract class ClasspathFontPeer
    * not with font peers.
    */
 
-  public abstract GlyphVector layoutGlyphVector (Font font, 
-                                                 FontRenderContext frc, 
-                                                 char[] chars, int start, 
+  public abstract GlyphVector layoutGlyphVector (Font font,
+                                                 FontRenderContext frc,
+                                                 char[] chars, int start,
                                                  int limit, int flags);
 
 
-  /** 
+  /**
    * Implementation of {@link Font#getFontMetrics()}
    *
    * @param font the font this peer is being called from. This may be
@@ -826,7 +826,7 @@ public abstract class ClasspathFontPeer
   public abstract FontMetrics getFontMetrics (Font font);
 
 
-  /** 
+  /**
    * Implementation of {@link Font#hasUniformLineMetrics()}
    *
    * @param font the font this peer is being called from. This may be
@@ -837,7 +837,7 @@ public abstract class ClasspathFontPeer
   public abstract boolean hasUniformLineMetrics (Font font);
 
 
-  /** 
+  /**
    * Implementation of {@link Font#getLineMetrics(CharacterIterator, int,
    * int, FontRenderContext)}
    *
@@ -846,12 +846,12 @@ public abstract class ClasspathFontPeer
    * be ignored.
    */
 
-  public abstract LineMetrics getLineMetrics (Font font, 
-                                              CharacterIterator ci, 
-                                              int begin, int limit, 
+  public abstract LineMetrics getLineMetrics (Font font,
+                                              CharacterIterator ci,
+                                              int begin, int limit,
                                               FontRenderContext rc);
 
-  /** 
+  /**
    * Implementation of {@link Font#getMaxCharBounds(FontRenderContext)}
    *
    * @param font the font this peer is being called from. This may be
@@ -859,7 +859,7 @@ public abstract class ClasspathFontPeer
    * be ignored.
    */
 
-  public abstract Rectangle2D getMaxCharBounds (Font font, 
+  public abstract Rectangle2D getMaxCharBounds (Font font,
                                                 FontRenderContext rc);
 
 }

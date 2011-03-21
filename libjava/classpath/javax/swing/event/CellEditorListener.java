@@ -46,17 +46,17 @@ import java.util.EventListener;
  */
 public interface CellEditorListener extends EventListener {
 
-	/**
-	 * Editing has been canceled
-	 * @param event Change Event
-	 */
-	void editingCanceled(ChangeEvent event);
+        /**
+         * Editing has been canceled
+         * @param event Change Event
+         */
+        void editingCanceled(ChangeEvent event);
 
-	/**
-	 * Editing has been stopped
-	 * @param event Change Event
-	 */
-	void editingStopped(ChangeEvent event);
+        /**
+         * Editing has been stopped
+         * @param event Change Event
+         */
+        void editingStopped(ChangeEvent event);
 
 
 } // CellEditorListener

@@ -1,5 +1,5 @@
 // Tests for late-specified return type.
-// { dg-options "-std=c++0x" }
+// { dg-options "-std=c++0x -fabi-version=5" }
 
 auto f() -> int
 {
@@ -78,7 +78,6 @@ auto k(T t, U u, V v) -> decltype (t.U::template B<V>::MEM)
   return t.U::template B<V>::MEM;
 }
 
-// For these two examples we can elide the 'decltype' and just mangle the type.
 template <class T>
 auto l(T t) -> decltype (t)
 {
@@ -111,8 +110,8 @@ int main()
   h(a,1.0);
   // { dg-final { scan-assembler "_Z1kI1C1AIiE1DEDtdtfp_srNT0_1BIT1_EE3MEMET_S4_S6_" } }
   k( C(), A<int>(), D() );
-  // { dg-final { scan-assembler "_Z1lIiET_S0_" } }
+  // { dg-final { scan-assembler "_Z1lIiEDtfp_ET_" } }
   l(1);
-  // { dg-final { scan-assembler "_Z1mIiLi1EET_S0_" } }
+  // { dg-final { scan-assembler "_Z1mIiLi1EEDtT0_ET_" } }
   m<int,1>(1);
 }

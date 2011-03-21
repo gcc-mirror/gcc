@@ -1,4 +1,4 @@
-/* DomHTMLModElement.java -- 
+/* DomHTMLModElement.java --
    Copyright (C) 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -64,7 +64,7 @@ public class DomHTMLModElement
   {
     setHTMLAttribute("cite", cite);
   }
-  
+
   public String getDateTime()
   {
     return getHTMLAttribute("datetime");
@@ -74,6 +74,5 @@ public class DomHTMLModElement
   {
     setHTMLAttribute("datetime", dateTime);
   }
-  
-}
 
+}

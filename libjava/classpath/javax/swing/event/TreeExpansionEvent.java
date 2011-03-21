@@ -46,7 +46,7 @@ import javax.swing.tree.TreePath;
  * TreeExpansionEvent
  * @author Andrew Selkirk
  */
-public class TreeExpansionEvent extends EventObject 
+public class TreeExpansionEvent extends EventObject
 {
 
   /**
@@ -59,7 +59,7 @@ public class TreeExpansionEvent extends EventObject
    * @param source Source object
    * @param path Path
    */
-  public TreeExpansionEvent(Object source, TreePath path) 
+  public TreeExpansionEvent(Object source, TreePath path)
   {
     super(source);
     this.path = path;
@@ -69,9 +69,9 @@ public class TreeExpansionEvent extends EventObject
    * getPath
    * @return Tree path
    */
-  public TreePath getPath() 
+  public TreePath getPath()
   {
     return path;
-  } 
+  }
 
-} 
+}

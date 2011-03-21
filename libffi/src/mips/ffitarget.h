@@ -29,9 +29,17 @@
 
 #ifdef linux
 # include <asm/sgidefs.h>
+#elif defined(__rtems__)
+/*
+ * Subprogram calling convention - copied from sgidefs.h
+ */
+#define _MIPS_SIM_ABI32		1
+#define _MIPS_SIM_NABI32	2
+#define _MIPS_SIM_ABI64		3
 #else
 # include <sgidefs.h>
 #endif
+
 #  ifndef _ABIN32
 #    define _ABIN32 _MIPS_SIM_NABI32
 #  endif

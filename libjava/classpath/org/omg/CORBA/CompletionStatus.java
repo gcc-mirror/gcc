@@ -110,7 +110,7 @@ public final class CompletionStatus
 
   /**
    * Returns the CompletionStatus, matching the given integer constant
-   * 
+   *
    * @param completion one of COMPLETED_YES, COMPLETED_NO or COMPLEED_MAYBE.
    * @return one of COMPLETED_YES, COMPLETED_NO or COMPLEED_MAYBE.
    * @throws BAD_PARAM if the parameter is not one of these three valid values.

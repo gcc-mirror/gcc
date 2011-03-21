@@ -59,7 +59,7 @@ public class JPEGComponent
 
   /**
    * Initializes the component
-   * 
+   *
    * @param id
    * @param factorHorizontal
    * @param factorVertical
@@ -78,7 +78,7 @@ public class JPEGComponent
    * If a restart marker is found with too little of an MCU count (i.e. our
    * Restart Interval is 63 and we have 61 we copy the last MCU until it's
    * full)
-   * 
+   *
    * @param index
    * @param length
    */
@@ -180,7 +180,7 @@ public class JPEGComponent
   /**
    * This write the block of data to the raster throwing out anything that
    * spills over the raster width or height.
-   * 
+   *
    * @param raster
    * @param data
    * @param compIndex
@@ -210,7 +210,7 @@ public class JPEGComponent
    * but it writes the data to the raster block by factor size in a zig zag
    * fashion. This has the helper function writeBlock which does the actual
    * writing.
-   * 
+   *
    * @param raster
    * @param componentIndex
    */
@@ -263,7 +263,7 @@ public class JPEGComponent
 
   /**
    * Set the quantization table for this component.
-   * 
+   *
    * @param quanttable
    */
   public void setQuantizationTable(int[] quanttable)
@@ -273,7 +273,7 @@ public class JPEGComponent
 
   /**
    * Read in a partial MCU for this component
-   * 
+   *
    * @param stream TODO
    * @throws JPEGException TODO
    * @throws IOException TODO
@@ -293,7 +293,7 @@ public class JPEGComponent
   /**
    * Generated from text on F-22, F.2.2.1 - Huffman decoding of DC
    * coefficients on ISO DIS 10918-1. Requirements and Guidelines.
-   * 
+   *
    * @param JPEGStream TODO
    *
    * @return TODO
@@ -301,7 +301,7 @@ public class JPEGComponent
    * @throws IOException TODO
    */
   public double decode_dc_coefficient(JPEGImageInputStream JPEGStream)
-	throws JPEGException, IOException
+        throws JPEGException, IOException
   {
     int t = DCTable.decode(JPEGStream);
     double diff = JPEGStream.readBits(t);
@@ -314,7 +314,7 @@ public class JPEGComponent
   /**
    * Generated from text on F-23, F.13 - Huffman decoded of AC coefficients
    * on ISO DIS 10918-1. Requirements and Guidelines.
-   * 
+   *
    * @param JPEGStream TODO
    * @return TODO
    *

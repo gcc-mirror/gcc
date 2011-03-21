@@ -1236,7 +1236,7 @@ main (int argc, char **argv)
 #endif
       }
     vflag = debug;
-    if (no_partition)
+    if (no_partition && lto_mode == LTO_MODE_WHOPR)
       lto_mode = LTO_MODE_LTO;
   }
 

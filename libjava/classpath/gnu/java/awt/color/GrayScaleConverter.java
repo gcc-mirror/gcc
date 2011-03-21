@@ -95,15 +95,15 @@ public class GrayScaleConverter implements ColorSpaceConverter
     out[0] = 0;
     for (int i = 0; i < 3; i++)
       {
-	float n = in[i];
-	if (n < 0)
-	  n = 0f;
-	if (n > 1)
-	  n = 1f;
-	if (n <= 0.03928f)
-	  out[0] += (float) (coeff[i] * n / 12.92);
-	else
-	  out[0] += (float) (coeff[i] * Math.exp(2.4 * Math.log((n + 0.055) / 1.055)));
+        float n = in[i];
+        if (n < 0)
+          n = 0f;
+        if (n > 1)
+          n = 1f;
+        if (n <= 0.03928f)
+          out[0] += (float) (coeff[i] * n / 12.92);
+        else
+          out[0] += (float) (coeff[i] * Math.exp(2.4 * Math.log((n + 0.055) / 1.055)));
       }
     return out;
   }

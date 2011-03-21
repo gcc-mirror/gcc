@@ -70,8 +70,8 @@ final class RETokenPOSIX extends REToken
   {
     for (int i = 0; i < s_nameTable.length; i++)
       {
-	if (s_nameTable[i].equals (key))
-	  return i;
+        if (s_nameTable[i].equals (key))
+          return i;
       }
     return -1;
   }
@@ -100,8 +100,8 @@ final class RETokenPOSIX extends REToken
     boolean retval = matchOneChar (ch);
     if (retval)
       {
-	++mymatch.index;
-	return mymatch;
+        ++mymatch.index;
+        return mymatch;
       }
     return null;
   }
@@ -115,49 +115,49 @@ final class RETokenPOSIX extends REToken
     switch (type)
       {
       case ALNUM:
-	// Note that there is some debate over whether '_' should be included
-	retval = Character.isLetterOrDigit (ch) || (ch == '_');
-	break;
+        // Note that there is some debate over whether '_' should be included
+        retval = Character.isLetterOrDigit (ch) || (ch == '_');
+        break;
       case ALPHA:
-	retval = Character.isLetter (ch);
-	break;
+        retval = Character.isLetter (ch);
+        break;
       case BLANK:
-	retval = ((ch == ' ') || (ch == '\t'));
-	break;
+        retval = ((ch == ' ') || (ch == '\t'));
+        break;
       case CNTRL:
-	retval = Character.isISOControl (ch);
-	break;
+        retval = Character.isISOControl (ch);
+        break;
       case DIGIT:
-	retval = Character.isDigit (ch);
-	break;
+        retval = Character.isDigit (ch);
+        break;
       case GRAPH:
-	retval =
-	  (!(Character.isWhitespace (ch) || Character.isISOControl (ch)));
-	break;
+        retval =
+          (!(Character.isWhitespace (ch) || Character.isISOControl (ch)));
+        break;
       case LOWER:
-	retval = ((insens && Character.isLetter (ch))
-		  || Character.isLowerCase (ch));
-	break;
+        retval = ((insens && Character.isLetter (ch))
+                  || Character.isLowerCase (ch));
+        break;
       case PRINT:
-	retval =
-	  (!(Character.isWhitespace (ch) || Character.isISOControl (ch)))
-	  || (ch == ' ');
-	break;
+        retval =
+          (!(Character.isWhitespace (ch) || Character.isISOControl (ch)))
+          || (ch == ' ');
+        break;
       case PUNCT:
-	// This feels sloppy, especially for non-U.S. locales.
-	retval = ("`~!@#$%^&*()-_=+[]{}\\|;:'\"/?,.<>".indexOf (ch) != -1);
-	break;
+        // This feels sloppy, especially for non-U.S. locales.
+        retval = ("`~!@#$%^&*()-_=+[]{}\\|;:'\"/?,.<>".indexOf (ch) != -1);
+        break;
       case SPACE:
-	retval = Character.isWhitespace (ch);
-	break;
+        retval = Character.isWhitespace (ch);
+        break;
       case UPPER:
-	retval = ((insens && Character.isLetter (ch))
-		  || Character.isUpperCase (ch));
-	break;
+        retval = ((insens && Character.isLetter (ch))
+                  || Character.isUpperCase (ch));
+        break;
       case XDIGIT:
-	retval = (Character.isDigit (ch)
-		  || ("abcdefABCDEF".indexOf (ch) != -1));
-	break;
+        retval = (Character.isDigit (ch)
+                  || ("abcdefABCDEF".indexOf (ch) != -1));
+        break;
       }
 
     if (negated)
@@ -176,12 +176,12 @@ final class RETokenPOSIX extends REToken
     int numRepeats = 0;
     while (true)
       {
-	if (numRepeats >= max)
-	  break;
-	char ch = input.charAt (index++);
-	if (!matchOneChar (ch))
-	  break;
-	numRepeats++;
+        if (numRepeats >= max)
+          break;
+        char ch = input.charAt (index++);
+        if (!matchOneChar (ch))
+          break;
+        numRepeats++;
       }
     return numRepeats;
   }

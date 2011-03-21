@@ -5,7 +5,7 @@
 
 namespace std {
   struct A {
-    virtual void f () { }
+    A() { }
   };
 }
 

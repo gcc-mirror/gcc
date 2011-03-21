@@ -49,7 +49,7 @@ package javax.management;
 public interface NotificationEmitter
   extends NotificationBroadcaster
 {
-  
+
   /**
    * Removes the specified listener from the list of recipients
    * of notifications from this bean.  Only the first instance with
@@ -68,9 +68,8 @@ public interface NotificationEmitter
    *                               java.lang.Object)
    */
   void removeNotificationListener(NotificationListener listener,
-				  NotificationFilter filter,
-				  Object passback)
+                                  NotificationFilter filter,
+                                  Object passback)
     throws ListenerNotFoundException;
 
 }
-

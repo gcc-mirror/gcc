@@ -13,14 +13,14 @@ import (
 // Test values for the stream test.
 // One of each JSON kind.
 var streamTest = []interface{}{
-	float64(0.1),
+	0.1,
 	"hello",
 	nil,
 	true,
 	false,
 	[]interface{}{"a", "b", "c"},
 	map[string]interface{}{"K": "Kelvin", "ß": "long s"},
-	float64(3.14), // another value to make sure something can follow map
+	3.14, // another value to make sure something can follow map
 }
 
 var streamEncoded = `0.1
@@ -71,10 +71,10 @@ func TestDecoder(t *testing.T) {
 			}
 		}
 		if !reflect.DeepEqual(out, streamTest[0:i]) {
-			t.Errorf("decoding %d items: mismatch")
+			t.Errorf("decoding %d items: mismatch", i)
 			for j := range out {
 				if !reflect.DeepEqual(out[j], streamTest[j]) {
-					t.Errorf("#%d: have %v want %v", out[j], streamTest[j])
+					t.Errorf("#%d: have %v want %v", j, out[j], streamTest[j])
 				}
 			}
 			break

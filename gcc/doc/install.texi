@@ -332,7 +332,7 @@ and @option{--with-mpc-include}.  Alternatively, if an MPC source
 distribution is found in a subdirectory of your GCC sources named
 @file{mpc}, it will be built together with GCC@.
 
-@item Parma Polyhedra Library (PPL) version 0.10
+@item Parma Polyhedra Library (PPL) version 0.11
 
 Necessary to build GCC with the Graphite loop optimizations.
 It can be downloaded from @uref{http://www.cs.unipr.it/ppl/Download/}.
@@ -340,16 +340,23 @@ It can be downloaded from @uref{http://www.cs.unipr.it/ppl/Download/}.
 The @option{--with-ppl} configure option should be used if PPL is not
 installed in your default library search path.
 
-@item CLooG-PPL version 0.15
+@item CLooG-PPL version 0.15 or CLooG 0.16
 
-Necessary to build GCC with the Graphite loop optimizations.  It can
-be downloaded from @uref{ftp://gcc.gnu.org/pub/gcc/infrastructure/}.
-The code in @file{cloog-ppl-0.15.tar.gz} comes from a branch of CLooG
-available from @uref{http://repo.or.cz/w/cloog-ppl.git}.  CLooG-PPL
-should be configured with @option{--with-ppl}.
+Necessary to build GCC with the Graphite loop optimizations.  There
+are two versions available.  CLooG-PPL 0.15 as well as CLooG 0.16.
+The former is the default right now.  It can be downloaded from
+@uref{ftp://gcc.gnu.org/pub/gcc/infrastructure/} as
+@file{cloog-ppl-0.15.tar.gz}.
 
-The @option{--with-cloog} configure option should be used if CLooG is
-not installed in your default library search path.
+CLooG 0.16 support is still in testing stage, but will be the
+default in future GCC releases.  It is also available at
+@uref{ftp://gcc.gnu.org/pub/gcc/infrastructure/} as
+@file{cloog-0.16.1.tar.gz}.  To use it add the additional configure
+option @option{--enable-cloog-backend=isl}.  Even if CLooG 0.16
+does not use PPL, PPL is still required for Graphite.
+
+In both cases @option{--with-cloog} configure option should be used
+if CLooG is not installed in your default library search path.
 
 @item @command{jar}, or InfoZIP (@command{zip} and @command{unzip})
 
@@ -1046,7 +1053,8 @@ endians, with little endian being the default:
 Example 2: to configure a compiler for both SH4A and SH4AL-DSP, but with
 only little endian SH4AL:
 @smallexample
---with-cpu=sh4a --with-endian=little,big --with-multilib-list=sh4al,!mb/m4al
+--with-cpu=sh4a --with-endian=little,big \
+--with-multilib-list=sh4al,!mb/m4al
 @end smallexample
 
 @item --with-endian=@var{endians}
@@ -1559,22 +1567,25 @@ If you do not have GMP (the GNU Multiple Precision library), the MPFR
 library and/or the MPC library installed in a standard location and
 you want to build GCC, you can explicitly specify the directory where
 they are installed (@samp{--with-gmp=@var{gmpinstalldir}},
-@samp{--with-mpfr=@var{mpfrinstalldir}},
-@samp{--with-mpc=@var{mpcinstalldir}}).  The
-@option{--with-gmp=@var{gmpinstalldir}} option is shorthand for
-@option{--with-gmp-lib=@var{gmpinstalldir}/lib} and
-@option{--with-gmp-include=@var{gmpinstalldir}/include}.  Likewise the
-@option{--with-mpfr=@var{mpfrinstalldir}} option is shorthand for
-@option{--with-mpfr-lib=@var{mpfrinstalldir}/lib} and
-@option{--with-mpfr-include=@var{mpfrinstalldir}/include}, also the
-@option{--with-mpc=@var{mpcinstalldir}} option is shorthand for
-@option{--with-mpc-lib=@var{mpcinstalldir}/lib} and
-@option{--with-mpc-include=@var{mpcinstalldir}/include}.  If these
+@samp{--with-mpfr=@/@var{mpfrinstalldir}},
+@samp{--with-mpc=@/@var{mpcinstalldir}}).  The
+@option{--with-gmp=@/@var{gmpinstalldir}} option is shorthand for
+@option{--with-gmp-lib=@/@var{gmpinstalldir}/lib} and
+@option{--with-gmp-include=@/@var{gmpinstalldir}/include}.  Likewise the
+@option{--with-mpfr=@/@var{mpfrinstalldir}} option is shorthand for
+@option{--with-mpfr-lib=@/@var{mpfrinstalldir}/lib} and
+@option{--with-mpfr-include=@/@var{mpfrinstalldir}/include}, also the
+@option{--with-mpc=@/@var{mpcinstalldir}} option is shorthand for
+@option{--with-mpc-lib=@/@var{mpcinstalldir}/lib} and
+@option{--with-mpc-include=@/@var{mpcinstalldir}/include}.  If these
 shorthand assumptions are not correct, you can use the explicit
 include and lib options directly.  You might also need to ensure the
 shared libraries can be found by the dynamic linker when building and
 using GCC, for example by setting the runtime shared library path
 variable (@env{LD_LIBRARY_PATH} on GNU/Linux and Solaris systems).
+
+These flags are applicable to the host platform only.  When building
+a cross compiler, they will not be used to configure target libraries.
 
 @item --with-ppl=@var{pathname}
 @itemx --with-ppl-include=@var{pathname}
@@ -1585,16 +1596,19 @@ variable (@env{LD_LIBRARY_PATH} on GNU/Linux and Solaris systems).
 If you do not have PPL (the Parma Polyhedra Library) and the CLooG
 libraries installed in a standard location and you want to build GCC,
 you can explicitly specify the directory where they are installed
-(@samp{--with-ppl=@var{pplinstalldir}},
-@samp{--with-cloog=@var{clooginstalldir}}). The
-@option{--with-ppl=@var{pplinstalldir}} option is shorthand for
-@option{--with-ppl-lib=@var{pplinstalldir}/lib} and
-@option{--with-ppl-include=@var{pplinstalldir}/include}.  Likewise the
-@option{--with-cloog=@var{clooginstalldir}} option is shorthand for
-@option{--with-cloog-lib=@var{clooginstalldir}/lib} and
-@option{--with-cloog-include=@var{clooginstalldir}/include}.  If these
+(@samp{--with-ppl=@/@var{pplinstalldir}},
+@samp{--with-cloog=@/@var{clooginstalldir}}). The
+@option{--with-ppl=@/@var{pplinstalldir}} option is shorthand for
+@option{--with-ppl-lib=@/@var{pplinstalldir}/lib} and
+@option{--with-ppl-include=@/@var{pplinstalldir}/include}.  Likewise the
+@option{--with-cloog=@/@var{clooginstalldir}} option is shorthand for
+@option{--with-cloog-lib=@/@var{clooginstalldir}/lib} and
+@option{--with-cloog-include=@/@var{clooginstalldir}/include}.  If these
 shorthand assumptions are not correct, you can use the explicit
 include and lib options directly.
+
+These flags are applicable to the host platform only.  When building
+a cross compiler, they will not be used to configure target libraries.
 
 @item --with-host-libstdcxx=@var{linker-args}
 If you are linking with a static copy of PPL, you can use this option
@@ -1652,13 +1666,12 @@ GLIBC 2.11 or above, otherwise disabled.
 Enable support for link-time optimization (LTO).  This is enabled by
 default, and may be disabled using @option{--disable-lto}.
 
-@item --enable-gold
-Enable support for using @command{gold} as the linker.  If gold support is
-enabled together with @option{--enable-lto}, an additional directory
-@file{lto-plugin} will be built.  The code in this directory is a
-plugin for gold that allows the link-time optimizer to extract object
-files with LTO information out of library archives.  See
-@option{-flto} and @option{-fwhopr} for details.
+@item --with-plugin-ld=@var{pathname}
+Enable an alternate linker to be used at link-time optimization (LTO)
+link time when @option{-fuse-linker-plugin} is enabled.
+This linker should have plugin support such as gold starting with
+version 2.20 or GNU ld starting with version 2.21.
+See @option{-fuse-linker-plugin} for details.
 @end table
 
 @subheading Cross-Compiler-Specific Options
@@ -2825,10 +2838,6 @@ HP-UX:
 @end itemize
 
 @item
-Motorola 68HC11/68HC12---@uref{http://www.gnu-m68hc11.org,,GNU
-Development Tools for the Motorola 68HC11/68HC12}.
-
-@item
 @uref{http://www.sco.com/skunkware/devtools/index.html#gcc,,SCO
 OpenServer/Unixware}.
 
@@ -3223,7 +3232,7 @@ For @code{cris-axis-elf} you need binutils 2.11
 or newer.  For @code{cris-axis-linux-gnu} you need binutils 2.12 or newer.
 
 Pre-packaged tools can be obtained from
-@uref{ftp://ftp.axis.com/pub/axis/tools/cris/compiler-kit/}.  More
+@uref{ftp://ftp.axis.com/@/pub/@/axis/@/tools/@/cris/@/compiler-kit/}.  More
 information about this platform is available at
 @uref{http://developer.axis.com/}.
 
@@ -3250,8 +3259,11 @@ is also used to build the @samp{newlib} C library for CRX.
 
 It is also possible to build libstdc++-v3 for the CRX architecture. This
 needs to be done in a separate step with the following configure settings:
-@samp{gcc/libstdc++-v3/configure --host=crx-elf --with-newlib
---enable-sjlj-exceptions --enable-cxx-flags='-fexceptions -frtti'}
+
+@smallexample
+gcc/libstdc++-v3/configure --host=crx-elf --with-newlib \
+    --enable-sjlj-exceptions --enable-cxx-flags='-fexceptions -frtti'
+@end smallexample
 
 @html
 <hr />
@@ -3374,22 +3386,7 @@ More specific information to @samp{hppa*-hp-hpux*} targets follows.
 @heading @anchor{hppa-hp-hpux10}hppa*-hp-hpux10
 
 For hpux10.20, we @emph{highly} recommend you pick up the latest sed patch
-@code{PHCO_19798} from HP@.  HP has two sites which provide patches free of
-charge:
-
-@itemize @bullet
-@item
-@html
-<a href="http://us.itrc.hp.com/service/home/home.do">US, Canada, Asia-Pacific, and
-Latin-America</a>
-@end html
-@ifnothtml
-@uref{http://us.itrc.hp.com/service/home/home.do,,} US, Canada, Asia-Pacific,
-and Latin-America.
-@end ifnothtml
-@item
-@uref{http://europe.itrc.hp.com/service/home/home.do,,} Europe.
-@end itemize
+@code{PHCO_19798} from HP@.
 
 The C++ ABI has changed incompatibly in GCC 4.0.  COMDAT subspaces are
 used for one-only code and data.  This resolves many of the previous
@@ -3573,8 +3570,8 @@ due to a packaging bug the version in Solaris 10, from GNU binutils
 2.19, works, as does the latest version, from GNU binutils 2.20.1.
 
 To use GNU @command{as}, configure with the options
-@option{--with-gnu-as --with-as=/usr/sfw/bin/gas}.  It may be necessary
-to configure with @option{--without-gnu-ld --with-ld=/usr/ccs/bin/ld} to
+@option{--with-gnu-as --with-as=@//usr/@/sfw/@/bin/@/gas}.  It may be necessary
+to configure with @option{--without-gnu-ld --with-ld=@//usr/@/ccs/@/bin/@/ld} to
 guarantee use of Sun @command{ld}.
 @c FIXME: why --without-gnu-ld --with-ld?
 
@@ -4045,8 +4042,7 @@ PowerPC running Darwin (Mac OS X kernel).
 Pre-installed versions of Mac OS X may not include any developer tools,
 meaning that you will not be able to build GCC from source.  Tool
 binaries are available at
-@uref{http://developer.apple.com/darwin/projects/compiler/} (free
-registration required).
+@uref{http://opensource.apple.com/}.
 
 This version of GCC requires at least cctools-590.36.  The
 cctools-590.36 package referenced from
@@ -4544,8 +4540,6 @@ The Interix target is used by OpenNT, Interix, Services For UNIX (SFU),
 and Subsystem for UNIX-based Applications (SUA).  Applications compiled 
 with this target run in the Interix subsystem, which is separate from 
 the Win32 subsystem.  This target was last known to work in GCC 3.3.
-
-For more information, see @uref{http://www.interix.com/}.
 
 @html
 <hr />

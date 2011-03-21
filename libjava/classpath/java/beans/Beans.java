@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -52,7 +52,7 @@ import java.net.URL;
  *
  * @author John Keiser
  * @author Robert Schuster
- * 
+ *
  * @since 1.1
  * @status updated to 1.4
  *
@@ -74,13 +74,13 @@ public class Beans
 
    /** Creates a bean.
     * <p>This is a convenience method that calls <code>instantiate(cl, beanName, null, null)</code>.</p>
-    * 
+    *
     * @see instantiate(ClassLoader, String, BeanContext, AppletInitializer)
     * @param cl ClassLoader to be used or <code>null</code> for the system classloader.
     * @param beanName Name of a serialized bean or class name.
     * @return A newly created bean.
     * @throws IOException If access of an IO resource failed.
-    * @throws ClassNotFoundException If the class name is not known or does not lead to a proper bean class. 
+    * @throws ClassNotFoundException If the class name is not known or does not lead to a proper bean class.
     */
     public static Object instantiate(ClassLoader cl, String beanName)
         throws IOException, ClassNotFoundException
@@ -89,16 +89,16 @@ public class Beans
     }
 
    /** Creates a bean.
-    * 
+    *
     * <p>This is a convenience method that calls <code>instantiate(cl, beanName, beanContext, null)</code>.</p>
-    * 
+    *
     * @see instantiate(ClassLoader, String, BeanContext, AppletInitializer)
     * @param cl ClassLoader to be used or <code>null</code> for the system classloader.
     * @param beanName Name of a serialized bean or class name.
     * @param beanContext Context to which the newly created Bean should be added.
     * @return A newly created bean.
     * @throws IOException If access of an IO resource failed.
-    * @throws ClassNotFoundException If the class name is not known or does not lead to a proper bean class. 
+    * @throws ClassNotFoundException If the class name is not known or does not lead to a proper bean class.
     */
     public static Object instantiate(
         ClassLoader cl,
@@ -110,38 +110,38 @@ public class Beans
     }
 
    /** Instantiates a bean according to Beans 1.0.
-    * 
+    *
     * <p>In Beans 1.0 the instantiation scheme is as follows:</p>
     * <p>The name should be dot-separated (e.g "place.for.beans.myBean") and indicate either a
     * serialized object or a class name. In the first case all dots in the name are replaced with
     * slashes ('/') and ".ser" is appended ("place.for.beans.myBean" becomes "place/for/beans/myBean.ser").
     * The bean is then loaded as an application or system resource depending on whether a
     * <code>ClassLoader</code> was provided.</p>
-    * 
+    *
     * <p>If no such resource exists or if it contains no bean the name is interpreted as a class name of
     * which an instance is then created.</p>
-    * 
+    *
     * <p>If a <code>BeanContext</code> instance is available the created bean is added to it.</p>
-    * 
+    *
     * <p>If the created Bean is an <code>Applet</code> or subclass and an <code>AppletInitializer</code>
     * instance is available the applet is initialized and afterwards activated using the initializer. Additionally
     * every instantiated <code>Applet</code> bean is initialized using the {@link Applet.init} method.
     * Furthermore every applet gets a default <code>AppletStub</code>. The <code>Applet</code>'s
     * document base is the location of the ".ser" file if it was deserialized or the location of its class
     * file if it was instantiated.</p>
-    * 
+    *
     * <p>A <code>ClassNotFoundException</code> is not only thrown when a class name was unknown
     * but even when the class has public no-argument constructor
     * (<code>IllegalAccessException</code> is wrapped) or an exception is thrown while
     * invoking such a constructor (causing exception is wrapped).</p>
-    * 
+    *
     * @param cl ClassLoader to be used or <code>null</code> for the system classloader.
     * @param beanName Name of a serialized bean or class name.
     * @param beanContext Context to which the newly created Bean should be added.
     * @param initializer The AppletInitializer which is used for initializing <code>Applet</code> beans.
     * @return A newly created bean.
     * @throws IOException If access of an IO resource failed.
-    * @throws ClassNotFoundException If the class name is not known or does not lead to a proper bean class. 
+    * @throws ClassNotFoundException If the class name is not known or does not lead to a proper bean class.
     */
    public static Object instantiate(
         ClassLoader cl,
@@ -154,12 +154,12 @@ public class Beans
         URL beanLocation = null;
         URL classLocation = null;
 
-        // Converts bean name into a resource name (eg. "a.b.c" -> "a/b/c").  
+        // Converts bean name into a resource name (eg. "a.b.c" -> "a/b/c").
         String resourceName = beanName.replace('.', '/');
 
         /* Tries to get an input stream of the Bean, reading it as a system resource
          * if no ClassLoader is present or as an application resource if a classloader
-         * is given. 
+         * is given.
          */
         beanLocation =
             (cl == null)
@@ -211,10 +211,10 @@ public class Beans
                 bean = beanClass.newInstance();
             }
             catch(Exception e) {
-		/* Wraps all kinds of Exceptions in a ClassNotFoundException (this behavior
-		 * matches with official >= 1.5, this was different for <=1.4)
-		 */
-		throw new ClassNotFoundException(null, e);
+                /* Wraps all kinds of Exceptions in a ClassNotFoundException (this behavior
+                 * matches with official >= 1.5, this was different for <=1.4)
+                 */
+                throw new ClassNotFoundException(null, e);
             }
         }
 
@@ -224,8 +224,8 @@ public class Beans
          * - as every other Bean Applets are added to a BeanContext if one is available
          * - each instantiated Applet is initialized using Applet.init() (this is not done for deserialized ones)
          * - finally AppletS get activated using the AppletInitializerS activate-Method
-         * 
-         * The order of operations is important for compatibility.    
+         *
+         * The order of operations is important for compatibility.
          */
         Applet applet = null;
         if (bean instanceof Applet)
@@ -344,7 +344,7 @@ public class Beans
 
    /**
     * Sets whether the GUI is available to use.
-    * 
+    *
     * @param guiAvailable whether the GUI is available to use.
     */
    public static void setGuiAvailable(boolean guiAvailable)

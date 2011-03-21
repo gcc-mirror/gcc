@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -44,10 +44,10 @@ package java.io;
  */
 
 /**
- * This abstract class forms the base of the hierarchy of classes that 
+ * This abstract class forms the base of the hierarchy of classes that
  * write output as a stream of chars.  It provides a common set of methods
  * for writing chars to stream.  Subclasses implement and/or extend these
- * methods to write chars in a particular manner or to a particular 
+ * methods to write chars in a particular manner or to a particular
  * destination such as a file on disk or network connection.
  *
  * @author Aaron M. Renn (arenn@urbanophile.com)
@@ -98,7 +98,7 @@ public abstract class Writer implements Appendable, Closeable, Flushable
   public abstract void flush() throws IOException;
 
   /**
-   * This method closes the stream.  Any internal or native resources 
+   * This method closes the stream.  Any internal or native resources
    * associated
    * with this stream are freed.  Any subsequent attempt to access the stream
    * might throw an exception.
@@ -110,7 +110,7 @@ public abstract class Writer implements Appendable, Closeable, Flushable
   public abstract void close() throws IOException;
 
   /**
-   * This method writes a single char to the output stream. 
+   * This method writes a single char to the output stream.
    *
    * @param b The char to be written to the output stream, passed as an int
    *
@@ -125,8 +125,8 @@ public abstract class Writer implements Appendable, Closeable, Flushable
   }
 
   /**
-   * This method all the writes char from the passed array to the output 
-   * stream. This method is equivalent to 
+   * This method all the writes char from the passed array to the output
+   * stream. This method is equivalent to
    * <code>write(buf, 0, buf.length)</code> which
    * is exactly how it is implemented in this class.
    *
@@ -148,10 +148,10 @@ public abstract class Writer implements Appendable, Closeable, Flushable
    * @param buf The array of char to write from
    * @param offset The index into the array to start writing from
    * @param len The number of char to write
-   * 
+   *
    * @exception IOException If an error occurs
    */
-  public abstract void write(char[] buf, int offset, int len) 
+  public abstract void write(char[] buf, int offset, int len)
     throws IOException;
 
   /**
@@ -165,7 +165,7 @@ public abstract class Writer implements Appendable, Closeable, Flushable
   public void write(String str) throws IOException
   {
     write(str, 0, str.length());
-  } 
+  }
 
   /**
    * This method writes <code>len</code> chars from the <code>String</code>
@@ -180,7 +180,7 @@ public abstract class Writer implements Appendable, Closeable, Flushable
    */
   public void write(String str, int offset, int len) throws IOException
   {
-    // FIXME - for libgcj re-write using native code to not require 
+    // FIXME - for libgcj re-write using native code to not require
     // copied buffer.
     char[] buf = new char[len];
 

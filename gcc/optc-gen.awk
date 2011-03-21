@@ -1,4 +1,4 @@
-#  Copyright (C) 2003, 2004, 2007, 2008, 2009, 2010
+#  Copyright (C) 2003, 2004, 2007, 2008, 2009, 2010, 2011
 #  Free Software Foundation, Inc.
 #  Contributed by Kelley Cook, June 2004.
 #  Original code from Neil Booth, May 2003.
@@ -249,6 +249,10 @@ for (i = 0; i < n_opts; i++) {
 		print "  0, /* " name " (private state) */"
 		print "#undef x_" name
 	}
+}
+for (i = 0; i < n_opts; i++) {
+	if (flag_set_p("SetByCombined", flags[i]))
+		print "  false, /* frontend_set_" var_name(flags[i]) " */"
 }
 print "};"
 print ""

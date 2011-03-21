@@ -46,7 +46,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gcov-io.h"
 
 static void output_varpool (cgraph_node_set, varpool_node_set);
-static void output_cgraph_opt_summary (void);
+static void output_cgraph_opt_summary (cgraph_node_set set);
 static void input_cgraph_opt_summary (VEC (cgraph_node_ptr, heap) * nodes);
 
 
@@ -383,10 +383,6 @@ bool
 reachable_from_this_partition_p (struct cgraph_node *node, cgraph_node_set set)
 {
   struct cgraph_edge *e;
-  if (!node->analyzed)
-    return false;
-  if (node->global.inlined_to)
-    return false;
   for (e = node->callers; e; e = e->next_caller)
     if (cgraph_node_in_set_p (e->caller, set))
       return true;
@@ -503,6 +499,7 @@ lto_output_node (struct lto_simple_output_block *ob, struct cgraph_node *node,
   bp_pack_value (&bp, node->local.finalized, 1);
   bp_pack_value (&bp, node->local.inlinable, 1);
   bp_pack_value (&bp, node->local.versionable, 1);
+  bp_pack_value (&bp, node->local.can_change_signature, 1);
   bp_pack_value (&bp, node->local.disregard_inline_limits, 1);
   bp_pack_value (&bp, node->local.redefined_extern_inline, 1);
   bp_pack_value (&bp, node->local.vtable_method, 1);
@@ -554,6 +551,7 @@ lto_output_node (struct lto_simple_output_block *ob, struct cgraph_node *node,
 	      lto_output_fn_decl_index (ob->decl_state, ob->main_stream,
 					alias->thunk.alias);
 	    }
+	  gcc_assert (cgraph_get_node (alias->thunk.alias) == node);
 	  lto_output_uleb128_stream (ob->main_stream, alias->resolution);
 	  alias = alias->previous;
 	}
@@ -861,7 +859,7 @@ output_cgraph (cgraph_node_set set, varpool_node_set vset)
   static bool asm_nodes_output = false;
 
   if (flag_wpa)
-    output_cgraph_opt_summary ();
+    output_cgraph_opt_summary (set);
 
   ob = lto_create_simple_output_block (LTO_section_cgraph);
 
@@ -954,6 +952,7 @@ input_overwrite_node (struct lto_file_decl_data *file_data,
   node->local.finalized = bp_unpack_value (bp, 1);
   node->local.inlinable = bp_unpack_value (bp, 1);
   node->local.versionable = bp_unpack_value (bp, 1);
+  node->local.can_change_signature = bp_unpack_value (bp, 1);
   node->local.disregard_inline_limits = bp_unpack_value (bp, 1);
   node->local.redefined_extern_inline = bp_unpack_value (bp, 1);
   node->local.vtable_method = bp_unpack_value (bp, 1);
@@ -976,6 +975,7 @@ input_overwrite_node (struct lto_file_decl_data *file_data,
 	  || node->clone_of->decl != node->decl))
     {
       DECL_EXTERNAL (node->decl) = 1;
+      DECL_ABSTRACT_ORIGIN (node->decl) = NULL_TREE;
       TREE_STATIC (node->decl) = 0;
     }
   node->alias = bp_unpack_value (bp, 1);
@@ -1096,7 +1096,7 @@ input_node (struct lto_file_decl_data *file_data,
 	  tree real_alias;
 	  decl_index = lto_input_uleb128 (ib);
 	  real_alias = lto_file_decl_data_get_fn_decl (file_data, decl_index);
-	  alias = cgraph_same_body_alias (alias_decl, real_alias);
+	  alias = cgraph_same_body_alias (node, alias_decl, real_alias);
 	}
       else
         {
@@ -1105,12 +1105,13 @@ input_node (struct lto_file_decl_data *file_data,
 	  tree real_alias;
 	  decl_index = lto_input_uleb128 (ib);
 	  real_alias = lto_file_decl_data_get_fn_decl (file_data, decl_index);
-	  alias = cgraph_add_thunk (alias_decl, fn_decl, type & 2, fixed_offset,
+	  alias = cgraph_add_thunk (node, alias_decl, fn_decl, type & 2, fixed_offset,
 				    virtual_value,
 				    (type & 4) ? size_int (virtual_value) : NULL_TREE,
 				    real_alias);
 	}
-       alias->resolution = (enum ld_plugin_symbol_resolution)lto_input_uleb128 (ib);
+      gcc_assert (alias);
+      alias->resolution = (enum ld_plugin_symbol_resolution)lto_input_uleb128 (ib);
     }
   return node;
 }
@@ -1146,6 +1147,7 @@ input_varpool_node (struct lto_file_decl_data *file_data,
   if (node->in_other_partition)
     {
       DECL_EXTERNAL (node->decl) = 1;
+      DECL_ABSTRACT_ORIGIN (node->decl) = NULL_TREE;
       TREE_STATIC (node->decl) = 0;
     }
   aliases_p = bp_unpack_value (&bp, 1);
@@ -1435,9 +1437,6 @@ input_profile_summary (struct lto_input_block *ib,
     {
       file_data->profile_info.runs = runs;
       file_data->profile_info.sum_max = lto_input_uleb128 (ib);
-      if (runs > file_data->profile_info.sum_max)
-	fatal_error ("Corrupted profile info in %s: sum_max is smaller than runs",
-		     file_data->file_name);
     }
 
 }
@@ -1596,26 +1595,53 @@ input_cgraph (void)
 /* True when we need optimization summary for NODE.  */
 
 static int
-output_cgraph_opt_summary_p (struct cgraph_node *node)
+output_cgraph_opt_summary_p (struct cgraph_node *node, cgraph_node_set set)
 {
-  if (!node->clone_of)
-    return false;
-  return (node->clone.tree_map
-          || node->clone.args_to_skip
-          || node->clone.combined_args_to_skip);
+  struct cgraph_edge *e;
+
+  if (cgraph_node_in_set_p (node, set))
+    {
+      for (e = node->callees; e; e = e->next_callee)
+	if (e->indirect_info
+	    && e->indirect_info->thunk_delta != 0)
+	  return true;
+
+      for (e = node->indirect_calls; e; e = e->next_callee)
+	if (e->indirect_info->thunk_delta != 0)
+	  return true;
+    }
+
+  return (node->clone_of
+	  && (node->clone.tree_map
+	      || node->clone.args_to_skip
+	      || node->clone.combined_args_to_skip));
+}
+
+/* Output optimization summary for EDGE to OB.  */
+static void
+output_edge_opt_summary (struct output_block *ob,
+			 struct cgraph_edge *edge)
+{
+  if (edge->indirect_info)
+    lto_output_sleb128_stream (ob->main_stream,
+			       edge->indirect_info->thunk_delta);
+  else
+    lto_output_sleb128_stream (ob->main_stream, 0);
 }
 
 /* Output optimization summary for NODE to OB.  */
 
 static void
 output_node_opt_summary (struct output_block *ob,
-			 struct cgraph_node *node)
+			 struct cgraph_node *node,
+			 cgraph_node_set set)
 {
   unsigned int index;
   bitmap_iterator bi;
   struct ipa_replace_map *map;
   struct bitpack_d bp;
   int i;
+  struct cgraph_edge *e;
 
   lto_output_uleb128_stream (ob->main_stream,
 			     bitmap_count_bits (node->clone.args_to_skip));
@@ -1646,13 +1672,21 @@ output_node_opt_summary (struct output_block *ob,
       bp_pack_value (&bp, map->ref_p, 1);
       lto_output_bitpack (&bp);
     }
+
+  if (cgraph_node_in_set_p (node, set))
+    {
+      for (e = node->callees; e; e = e->next_callee)
+	output_edge_opt_summary (ob, e);
+      for (e = node->indirect_calls; e; e = e->next_callee)
+	output_edge_opt_summary (ob, e);
+    }
 }
 
 /* Output optimization summaries stored in callgraph.
    At the moment it is the clone info structure.  */
 
 static void
-output_cgraph_opt_summary (void)
+output_cgraph_opt_summary (cgraph_node_set set)
 {
   struct cgraph_node *node;
   int i, n_nodes;
@@ -1664,23 +1698,40 @@ output_cgraph_opt_summary (void)
   encoder = ob->decl_state->cgraph_node_encoder;
   n_nodes = lto_cgraph_encoder_size (encoder);
   for (i = 0; i < n_nodes; i++)
-    if (output_cgraph_opt_summary_p (lto_cgraph_encoder_deref (encoder, i)))
+    if (output_cgraph_opt_summary_p (lto_cgraph_encoder_deref (encoder, i),
+				     set))
       count++;
   lto_output_uleb128_stream (ob->main_stream, count);
   for (i = 0; i < n_nodes; i++)
     {
       node = lto_cgraph_encoder_deref (encoder, i);
-      if (output_cgraph_opt_summary_p (node))
+      if (output_cgraph_opt_summary_p (node, set))
 	{
 	  lto_output_uleb128_stream (ob->main_stream, i);
-	  output_node_opt_summary (ob, node);
+	  output_node_opt_summary (ob, node, set);
 	}
     }
   produce_asm (ob, NULL);
   destroy_output_block (ob);
 }
 
-/* Input optimiation summary of NODE.  */
+/* Input optimisation summary of EDGE.  */
+
+static void
+input_edge_opt_summary (struct cgraph_edge *edge,
+			struct lto_input_block *ib_main)
+{
+  HOST_WIDE_INT thunk_delta;
+  thunk_delta = lto_input_sleb128 (ib_main);
+  if (thunk_delta != 0)
+    {
+      gcc_assert (!edge->indirect_info);
+      edge->indirect_info = cgraph_allocate_init_indirect_info ();
+      edge->indirect_info->thunk_delta = thunk_delta;
+    }
+}
+
+/* Input optimisation summary of NODE.  */
 
 static void
 input_node_opt_summary (struct cgraph_node *node,
@@ -1691,6 +1742,7 @@ input_node_opt_summary (struct cgraph_node *node,
   int count;
   int bit;
   struct bitpack_d bp;
+  struct cgraph_edge *e;
 
   count = lto_input_uleb128 (ib_main);
   if (count)
@@ -1726,6 +1778,10 @@ input_node_opt_summary (struct cgraph_node *node,
       map->replace_p = bp_unpack_value (&bp, 1);
       map->ref_p = bp_unpack_value (&bp, 1);
     }
+  for (e = node->callees; e; e = e->next_callee)
+    input_edge_opt_summary (e, ib_main);
+  for (e = node->indirect_calls; e; e = e->next_callee)
+    input_edge_opt_summary (e, ib_main);
 }
 
 /* Read section in file FILE_DATA of length LEN with data DATA.  */
@@ -1759,7 +1815,7 @@ input_cgraph_opt_section (struct lto_file_decl_data *file_data,
       input_node_opt_summary (VEC_index (cgraph_node_ptr, nodes, ref),
 			      &ib_main, data_in);
     }
-  lto_free_section_data (file_data, LTO_section_jump_functions, NULL, data,
+  lto_free_section_data (file_data, LTO_section_cgraph_opt_sum, NULL, data,
 			 len);
   lto_data_in_delete (data_in);
 }

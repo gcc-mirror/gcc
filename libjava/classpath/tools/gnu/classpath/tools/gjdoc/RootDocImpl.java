@@ -7,7 +7,7 @@
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2, or (at your option)
    any later version.
- 
+
    GNU Classpath is distributed in the hope that it will be useful, but
    WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -16,7 +16,7 @@
    You should have received a copy of the GNU General Public License
    along with GNU Classpath; see the file COPYING.  If not, write to the
    Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-   02111-1307 USA. 
+   02111-1307 USA.
 
    Linking this library statically or dynamically with other modules is
    making a combined work based on this library.  Thus, the terms and
@@ -42,8 +42,8 @@ import java.util.*;
 import java.io.*;
 import java.lang.reflect.*;
 
-public class RootDocImpl 
-   extends DocImpl 
+public class RootDocImpl
+   extends DocImpl
    implements GjdocRootDoc {
 
    private ErrorReporter reporter = new ErrorReporter();
@@ -53,7 +53,7 @@ public class RootDocImpl
    /**
     *  All options and their corresponding values which are not recognized
     *  by Gjdoc. These are passed to the Doclet as "custom options".
-    *  Each element in this array is again a String array, with the 
+    *  Each element in this array is again a String array, with the
     *  option name as first element (including prefix dash) and possible
     *  option values as following elements.
     */
@@ -67,7 +67,7 @@ public class RootDocImpl
    private List specifiedSourceFiles = new LinkedList();
 
    /**
-    *  The names of all packages explicitly specified on the 
+    *  The names of all packages explicitly specified on the
     *  command line.
     *
     *  @contains String
@@ -85,7 +85,7 @@ public class RootDocImpl
 
    /**
     *  Stores all classes loaded in the course of preparing
-    *  the documentation data. Maps the fully qualified name 
+    *  the documentation data. Maps the fully qualified name
     *  of a class to its ClassDocImpl representation.
     *
     *  @contains String->ClassDocImpl
@@ -94,7 +94,7 @@ public class RootDocImpl
 
    /**
     *  Stores all packages loaded in the course of preparing
-    *  the documentation data. Maps the package name 
+    *  the documentation data. Maps the package name
     *  to its PackageDocImpl representation.
     *
     *  @contains String->PackageDocImpl
@@ -106,13 +106,13 @@ public class RootDocImpl
     *  individually specified on the command line and those contained
     *  in packages specified on the command line (as Array for quick
     *  retrieval by Doclet).  This is created from classesList after
-    *  all classes have been loaded.  
+    *  all classes have been loaded.
     */
    private ClassDocImpl[] classes;
 
    /**
-    *  All classes which were individually specified on the command 
-    *  line (as Array for quick retrieval by Doclet). This is created 
+    *  All classes which were individually specified on the command
+    *  line (as Array for quick retrieval by Doclet). This is created
     *  from specifiedClassNames after all classes have been loaded.
     */
    private List specifiedClasses;
@@ -120,7 +120,7 @@ public class RootDocImpl
    /**
     *  All packages which were specified on the command line (as Array
     *  for quick retrieval by Doclet). This is created from
-    *  specifiedPackageNames after all classes have been loaded.  
+    *  specifiedPackageNames after all classes have been loaded.
     */
    private Set specifiedPackages;
 
@@ -141,7 +141,7 @@ public class RootDocImpl
    private Set unlocatableReportedSet = new HashSet();
 
    private Set inaccessibleReportedSet = new HashSet();
-   
+
    //--------------------------------------------------------------------------
    //
    // Implementation of RootDoc interface
@@ -149,61 +149,61 @@ public class RootDocImpl
    //--------------------------------------------------------------------------
 
    /**
-    *  Return classes and interfaces to be documented. 
+    *  Return classes and interfaces to be documented.
     */
-   public ClassDoc[] classes() { return classes; } 
+   public ClassDoc[] classes() { return classes; }
 
    /**
-    *  Return a ClassDoc object for the specified class/interface 
+    *  Return a ClassDoc object for the specified class/interface
     *  name.
     *
-    *  @return a ClassDoc object describing the given class, or 
+    *  @return a ClassDoc object describing the given class, or
     *  <code>null</code> if no corresponding ClassDoc object
     *  has been constructed.
     */
-   public ClassDoc classNamed(String qualifiedName) { 
-      return (ClassDoc)classDocMap.get(qualifiedName); 
-   } 
+   public ClassDoc classNamed(String qualifiedName) {
+      return (ClassDoc)classDocMap.get(qualifiedName);
+   }
 
    /**
     *  Return an xxx
     */
-   public String[][] options() { return customOptionArr; } 
+   public String[][] options() { return customOptionArr; }
 
-   // Return a PackageDoc for the specified package name 
-   public PackageDoc packageNamed(String name) { 
-      return (PackageDoc)packageDocMap.get(name); 
+   // Return a PackageDoc for the specified package name
+   public PackageDoc packageNamed(String name) {
+      return (PackageDoc)packageDocMap.get(name);
    }
 
 
-  // classes and interfaces specified on the command line. 
-  public ClassDoc[] specifiedClasses() 
-  { 
-    return (ClassDocImpl[]) specifiedClasses.toArray(new ClassDocImpl[0]); 
-  } 
+  // classes and interfaces specified on the command line.
+  public ClassDoc[] specifiedClasses()
+  {
+    return (ClassDocImpl[]) specifiedClasses.toArray(new ClassDocImpl[0]);
+  }
 
-   // packages specified on the command line. 
-  public PackageDoc[] specifiedPackages() 
+   // packages specified on the command line.
+  public PackageDoc[] specifiedPackages()
   {
     return (PackageDocImpl[])specifiedPackages.toArray(new PackageDocImpl[0]);
   }
 
-   // Print error message, increment error count. 
+   // Print error message, increment error count.
    public void printError(java.lang.String msg) {
       reporter.printError(msg);
    }
 
-   // Print error message, increment error count. 
+   // Print error message, increment error count.
    public void printFatal(java.lang.String msg) {
       reporter.printFatal(msg);
    }
 
-   // Print a message. 
+   // Print a message.
    public void printNotice(java.lang.String msg) {
       reporter.printNotice(msg);
    }
-   
-   // Print warning message, increment warning count. 
+
+   // Print warning message, increment warning count.
    public void printWarning(java.lang.String msg) {
       reporter.printWarning(msg);
    }
@@ -232,30 +232,30 @@ public class RootDocImpl
          Iterator it = javaLangSourceDirs.iterator();
          while (it.hasNext()) {
             File javaLangSourceDir = (File)it.next();
-            parser.processSourceDir(javaLangSourceDir, 
+            parser.processSourceDir(javaLangSourceDir,
                                     sourceEncoding, "java.lang");
          }
       }
       else {
 
-	 Debug.log(1, "Sourcepath is "+sourcePath);
+         Debug.log(1, "Sourcepath is "+sourcePath);
 
-	 // Core docs not included in source-path: 
-	 // we need to gather the information about java.lang
-	 // classes via reflection...
+         // Core docs not included in source-path:
+         // we need to gather the information about java.lang
+         // classes via reflection...
 
       }
 
       //--- Parse all files in explicitly specified package directories.
-	 
+
       for (Iterator it=specifiedPackageNames.iterator(); it.hasNext(); ) {
 
-	 String specifiedPackageName = (String)it.next();
+         String specifiedPackageName = (String)it.next();
          String displayPackageName = specifiedPackageName;
          if (null == displayPackageName || 0 == displayPackageName.length()) {
             displayPackageName = "<unnamed>";
          }
-	 printNotice("Loading classes for package "+displayPackageName+"...");
+         printNotice("Loading classes for package "+displayPackageName+"...");
          String relPath;
          if (null != specifiedPackageName) {
             relPath = specifiedPackageName.replace('.',File.separatorChar);
@@ -263,17 +263,17 @@ public class RootDocImpl
          else {
             relPath = "";
          }
-	 List sourceDirs = findSourceFiles(relPath);
-	 if (!sourceDirs.isEmpty()) {
+         List sourceDirs = findSourceFiles(relPath);
+         if (!sourceDirs.isEmpty()) {
             Iterator sourceDirIt = sourceDirs.iterator();
             while (sourceDirIt.hasNext()) {
                File sourceDir = (File)sourceDirIt.next();
                parser.processSourceDir(sourceDir, sourceEncoding, specifiedPackageName);
             }
-	 }
-	 else {
-	    printError("Package '"+specifiedPackageName+"' not found.");
-	 }
+         }
+         else {
+            printError("Package '"+specifiedPackageName+"' not found.");
+         }
       }
 
       specifiedClasses = new LinkedList();
@@ -282,17 +282,17 @@ public class RootDocImpl
 
       for (Iterator it=specifiedSourceFiles.iterator(); it.hasNext(); ) {
 
-	 File specifiedSourceFile = (File)it.next();
-	 printNotice("Loading source file "+specifiedSourceFile+" ...");
+         File specifiedSourceFile = (File)it.next();
+         printNotice("Loading source file "+specifiedSourceFile+" ...");
          ClassDocImpl classDoc = parser.processSourceFile(specifiedSourceFile, true, sourceEncoding, null);
          if (null != classDoc) {
-	   specifiedClasses.add(classDoc);
-	   classesList.add(classDoc);
-	   classDoc.setIsIncluded(true);
-	   addPackageDoc(classDoc.containingPackage());
+           specifiedClasses.add(classDoc);
+           classesList.add(classDoc);
+           classDoc.setIsIncluded(true);
+           addPackageDoc(classDoc.containingPackage());
          }
       }
-   
+
 
       //--- Let the user know that all specified classes are loaded.
 
@@ -311,7 +311,7 @@ public class RootDocImpl
       printNotice("Resolving references in classes...");
 
       for (Iterator it = classDocMap.values().iterator(); it.hasNext(); ) {
-	 ClassDoc cd=(ClassDoc)it.next();
+         ClassDoc cd=(ClassDoc)it.next();
          if (cd instanceof ClassDocImpl) {
             ((ClassDocImpl)cd).resolve();
          }
@@ -322,28 +322,28 @@ public class RootDocImpl
       printNotice("Resolving references in packages...");
 
       for (Iterator it = packageDocMap.values().iterator(); it.hasNext(); ) {
-	 PackageDocImpl pd=(PackageDocImpl)it.next();
-	 pd.resolve();
+         PackageDocImpl pd=(PackageDocImpl)it.next();
+         pd.resolve();
       }
 
       //--- Assemble the array with all specified packages
 
       specifiedPackages = new LinkedHashSet();
       for (Iterator it = specifiedPackageNames.iterator(); it.hasNext(); ) {
-	 String specifiedPackageName = (String)it.next();
-	 PackageDoc specifiedPackageDoc = (PackageDoc)packageDocMap.get(specifiedPackageName);
-	 if (null!=specifiedPackageDoc) {
-	    ((PackageDocImpl)specifiedPackageDoc).setIsIncluded(true);
-	    specifiedPackages.add(specifiedPackageDoc);
+         String specifiedPackageName = (String)it.next();
+         PackageDoc specifiedPackageDoc = (PackageDoc)packageDocMap.get(specifiedPackageName);
+         if (null!=specifiedPackageDoc) {
+            ((PackageDocImpl)specifiedPackageDoc).setIsIncluded(true);
+            specifiedPackages.add(specifiedPackageDoc);
 
-	    ClassDoc[] packageClassDocs=specifiedPackageDoc.allClasses();
-	    for (int i=0; i<packageClassDocs.length; ++i) {
-	       ClassDocImpl specifiedPackageClassDoc=(ClassDocImpl)packageClassDocs[i];
-            
-	       specifiedPackageClassDoc.setIsIncluded(true);
-	       classesList.add(specifiedPackageClassDoc);
-	    }
-	 }
+            ClassDoc[] packageClassDocs=specifiedPackageDoc.allClasses();
+            for (int i=0; i<packageClassDocs.length; ++i) {
+               ClassDocImpl specifiedPackageClassDoc=(ClassDocImpl)packageClassDocs[i];
+
+               specifiedPackageClassDoc.setIsIncluded(true);
+               classesList.add(specifiedPackageClassDoc);
+            }
+         }
       }
 
       //--- Resolve pending references in comment data of all classes
@@ -351,7 +351,7 @@ public class RootDocImpl
       printNotice("Resolving references in class comments...");
 
       for (Iterator it=classDocMap.values().iterator(); it.hasNext(); ) {
-	 ClassDoc cd=(ClassDoc)it.next();
+         ClassDoc cd=(ClassDoc)it.next();
          if (cd instanceof ClassDocImpl) {
             ((ClassDocImpl)cd).resolveComments();
          }
@@ -362,8 +362,8 @@ public class RootDocImpl
       printNotice("Resolving references in package comments...");
 
       for (Iterator it=packageDocMap.values().iterator(); it.hasNext(); ) {
-	 PackageDocImpl pd=(PackageDocImpl)it.next();
-	 pd.resolveComments();
+         PackageDocImpl pd=(PackageDocImpl)it.next();
+         pd.resolveComments();
       }
 
       //--- Create array with all loaded classes
@@ -380,32 +380,32 @@ public class RootDocImpl
 
    public long writeRawComment(String rawComment) {
       try {
-	 long pos=rawCommentCache.getFilePointer();
-	 //rawCommentCache.writeUTF(rawComment);
+         long pos=rawCommentCache.getFilePointer();
+         //rawCommentCache.writeUTF(rawComment);
          byte[] bytes = rawComment.getBytes("utf-8");
          rawCommentCache.writeInt(bytes.length);
          rawCommentCache.write(bytes);
-	 return pos;
+         return pos;
       }
       catch (IOException e) {
-	 printFatal("Cannot write to comment cache: "+e.getMessage());
-	 return -1;
+         printFatal("Cannot write to comment cache: "+e.getMessage());
+         return -1;
       }
    }
 
    public String readRawComment(long pos) {
       try {
-	 rawCommentCache.seek(pos);
+         rawCommentCache.seek(pos);
          int sz = rawCommentCache.readInt();
          byte[] bytes = new byte[sz];
          rawCommentCache.read(bytes);
          return new String(bytes, "utf-8");
-	 //return rawCommentCache.readUTF();
+         //return rawCommentCache.readUTF();
       }
       catch (IOException e) {
          e.printStackTrace();
-	 printFatal("Cannot read from comment cache: "+e.getMessage());
-	 return null;
+         printFatal("Cannot read from comment cache: "+e.getMessage());
+         return null;
       }
    }
 
@@ -413,9 +413,9 @@ public class RootDocImpl
 
       List result = new LinkedList();
       for (Iterator it = sourcePath.iterator(); it.hasNext(); ) {
-	 File path = (File)it.next();
-	 File file = new File(path, relPath);
-	 if (file.exists()) {
+         File path = (File)it.next();
+         File file = new File(path, relPath);
+         if (file.exists()) {
             result.add(file);
          }
       }
@@ -426,8 +426,8 @@ public class RootDocImpl
    PackageDocImpl findOrCreatePackageDoc(String packageName) {
       PackageDocImpl rc=(PackageDocImpl)getPackageDoc(packageName);
       if (null==rc) {
-	 rc=new PackageDocImpl(packageName);
-	 if (specifiedPackageNames.contains(packageName)) {
+         rc=new PackageDocImpl(packageName);
+         if (specifiedPackageNames.contains(packageName)) {
             String packageDirectoryName = packageName.replace('.', File.separatorChar);
             List packageDirectories = findSourceFiles(packageDirectoryName);
             Iterator it = packageDirectories.iterator();
@@ -450,8 +450,8 @@ public class RootDocImpl
             if (!packageDocFound) {
                printNotice("No description found for package "+packageName);
             }
-	 }
-	 addPackageDoc(rc);
+         }
+         addPackageDoc(rc);
       }
       return rc;
    }
@@ -485,10 +485,10 @@ public class RootDocImpl
       ClassDoc contextClass;
       String qualifiedName;
       ScheduledClass(ClassDoc contextClass, String qualifiedName) {
-	 this.contextClass=contextClass;
-	 this.qualifiedName=qualifiedName;
+         this.contextClass=contextClass;
+         this.qualifiedName=qualifiedName;
       }
-      
+
       public String toString() { return "ScheduledClass{"+qualifiedName+"}"; }
    }
 
@@ -496,10 +496,10 @@ public class RootDocImpl
 
       if (classDocMap.get(qualifiedName)==null) {
 
-	 //Debug.log(9,"Scheduling "+qualifiedName+", context "+context+".");
+         //Debug.log(9,"Scheduling "+qualifiedName+", context "+context+".");
          //System.err.println("Scheduling " + qualifiedName + ", context " + context);
 
-	 scheduledClasses.add(new ScheduledClass(context, qualifiedName));
+         scheduledClasses.add(new ScheduledClass(context, qualifiedName));
       }
    }
 
@@ -521,7 +521,7 @@ public class RootDocImpl
     *  The task of this method is to ensure that Gjdoc has all this
     *  information at hand when it exits.
     *
-    * 
+    *
     */
    public void loadScheduledClasses(Parser parser) throws ParseException, IOException {
 
@@ -531,77 +531,77 @@ public class RootDocImpl
 
       while (!scheduledClasses.isEmpty()) {
 
-	 // Make a copy of scheduledClasses and empty it. This 
-	 // prevents any Concurrent Modification issues.
-	 // As the copy won't need to grow (as it won't change)
-	 // we make it an Array for performance reasons.
+         // Make a copy of scheduledClasses and empty it. This
+         // prevents any Concurrent Modification issues.
+         // As the copy won't need to grow (as it won't change)
+         // we make it an Array for performance reasons.
 
-	 ScheduledClass[] scheduledClassesArr = (ScheduledClass[])scheduledClasses.toArray(new ScheduledClass[0]);
-	 scheduledClasses.clear();
+         ScheduledClass[] scheduledClassesArr = (ScheduledClass[])scheduledClasses.toArray(new ScheduledClass[0]);
+         scheduledClasses.clear();
 
-	 // Load each class specified in our array copy
-	 
-	 for (int i=0; i<scheduledClassesArr.length; ++i) {
+         // Load each class specified in our array copy
 
-	    // The name of the class we are looking for. This name
-	    // needs not be fully qualified.
-	    
-	    String scheduledClassName=scheduledClassesArr[i].qualifiedName;
+         for (int i=0; i<scheduledClassesArr.length; ++i) {
 
-	    // The ClassDoc in whose context the scheduled class was looked for.
-	    // This is necessary in order to resolve non-fully qualified 
-	    // class names.
-	    ClassDoc scheduledClassContext=scheduledClassesArr[i].contextClass;
+            // The name of the class we are looking for. This name
+            // needs not be fully qualified.
 
-	    // If there already is a class doc with this name, skip. There's
-	    // nothing to do for us.
-	    if (classDocMap.get(scheduledClassName)!=null) {
-	       continue;
-	    }
+            String scheduledClassName=scheduledClassesArr[i].qualifiedName;
 
-	    try {
-	       // Try to load the class
+            // The ClassDoc in whose context the scheduled class was looked for.
+            // This is necessary in order to resolve non-fully qualified
+            // class names.
+            ClassDoc scheduledClassContext=scheduledClassesArr[i].contextClass;
+
+            // If there already is a class doc with this name, skip. There's
+            // nothing to do for us.
+            if (classDocMap.get(scheduledClassName)!=null) {
+               continue;
+            }
+
+            try {
+               // Try to load the class
                //printNotice("Trying to load " + scheduledClassName);
-	       loadScheduledClass(parser, scheduledClassName, scheduledClassContext);
-	    }
-	    catch (ParseException e) {
+               loadScheduledClass(parser, scheduledClassName, scheduledClassContext);
+            }
+            catch (ParseException e) {
 
-	       /**********************************************************
+               /**********************************************************
 
                // Check whether the following is necessary at all.
 
 
-	       if (scheduledClassName.indexOf('.')>0) {
+               if (scheduledClassName.indexOf('.')>0) {
 
-	       // Maybe the dotted notation doesn't mean a package
-	       // name but instead an inner class, as in 'Outer.Inner'.
-	       // so let's assume this and try to load the outer class.
+               // Maybe the dotted notation doesn't mean a package
+               // name but instead an inner class, as in 'Outer.Inner'.
+               // so let's assume this and try to load the outer class.
 
-		  String outerClass="";
-		  for (StringTokenizer st=new StringTokenizer(scheduledClassName,"."); st.hasMoreTokens(); ) {
-		     if (outerClass.length()>0) outerClass+=".";
-		     outerClass+=st.nextToken();
-		     if (!st.hasMoreTokens()) break;
-		     try {
-			loadClass(outerClass);
-			//FIXME: shouldn't this be loadScheduledClass(outerClass, scheduledClassContext); ???
-			continue;
-		     }
-		     catch (Exception ee) {
-		     // Ignore: try next level
-		     }
-		  }
-	       }
+                  String outerClass="";
+                  for (StringTokenizer st=new StringTokenizer(scheduledClassName,"."); st.hasMoreTokens(); ) {
+                     if (outerClass.length()>0) outerClass+=".";
+                     outerClass+=st.nextToken();
+                     if (!st.hasMoreTokens()) break;
+                     try {
+                        loadClass(outerClass);
+                        //FIXME: shouldn't this be loadScheduledClass(outerClass, scheduledClassContext); ???
+                        continue;
+                     }
+                     catch (Exception ee) {
+                     // Ignore: try next level
+                     }
+                  }
+               }
 
-	       **********************************************************/
+               **********************************************************/
 
-	       // If we arrive here, the class could not be found
+               // If we arrive here, the class could not be found
 
-	       printWarning("Couldn't load class "+scheduledClassName+" referenced by "+scheduledClassContext);
+               printWarning("Couldn't load class "+scheduledClassName+" referenced by "+scheduledClassContext);
 
-	       //FIXME: shouldn't this be throw new Error("cannot load: "+scheduledClassName);
-	    }
-	 }
+               //FIXME: shouldn't this be throw new Error("cannot load: "+scheduledClassName);
+            }
+         }
       }
    }
 
@@ -611,7 +611,7 @@ public class RootDocImpl
 
       if (loadedClass==null || loadedClass instanceof ClassDocProxy) {
 
-	 ClassDoc classDoc = findScheduledClassFile(scheduledClassName, scheduledClassContext);
+         ClassDoc classDoc = findScheduledClassFile(scheduledClassName, scheduledClassContext);
          if (null != classDoc) {
 
             if (classDoc instanceof ClassDocReflectedImpl) {
@@ -619,58 +619,58 @@ public class RootDocImpl
             }
 
             if (Main.DESCEND_SUPERCLASS
-                && null != classDoc.superclass() 
+                && null != classDoc.superclass()
                 && (classDoc.superclass() instanceof ClassDocProxy)) {
                scheduleClass(classDoc, classDoc.superclass().qualifiedName());
             }
          }
          else {
-	    // It might be an inner class of one of the outer/super classes.
-	    // But we can only check that when they are all fully loaded.
-	    boolean retryLater = false;
+            // It might be an inner class of one of the outer/super classes.
+            // But we can only check that when they are all fully loaded.
+            boolean retryLater = false;
 
-	    int numberOfProcessedFilesBefore = parser.getNumberOfProcessedFiles();
+            int numberOfProcessedFilesBefore = parser.getNumberOfProcessedFiles();
 
-	    ClassDoc cc = scheduledClassContext.containingClass();
-	    while (cc != null && !retryLater) {
-	       ClassDoc sc = cc.superclass();
-	       while (sc != null && !retryLater) {
-		  if (sc instanceof ClassDocProxy) {
-		     ((ClassDocImpl)cc).resolve();
-		     retryLater = true;
-		  }
-		  sc = sc.superclass();
-	       }
-	       cc = cc.containingClass();
-	    }
+            ClassDoc cc = scheduledClassContext.containingClass();
+            while (cc != null && !retryLater) {
+               ClassDoc sc = cc.superclass();
+               while (sc != null && !retryLater) {
+                  if (sc instanceof ClassDocProxy) {
+                     ((ClassDocImpl)cc).resolve();
+                     retryLater = true;
+                  }
+                  sc = sc.superclass();
+               }
+               cc = cc.containingClass();
+            }
 
-	    // Now that outer/super references have been resolved, try again
-	    // to find the class.
+            // Now that outer/super references have been resolved, try again
+            // to find the class.
 
-	    loadedClass = (ClassDoc)scheduledClassContext.findClass(scheduledClassName);
+            loadedClass = (ClassDoc)scheduledClassContext.findClass(scheduledClassName);
 
-	    int numberOfProcessedFilesAfter = parser.getNumberOfProcessedFiles();
+            int numberOfProcessedFilesAfter = parser.getNumberOfProcessedFiles();
 
-	    boolean filesWereProcessed = numberOfProcessedFilesAfter > numberOfProcessedFilesBefore;
+            boolean filesWereProcessed = numberOfProcessedFilesAfter > numberOfProcessedFilesBefore;
 
-	    // Only re-schedule class if additional files have been processed
-	    // If there haven't, there's no point in re-scheduling.
-	    // Will avoid infinite loops of re-scheduling
-	    if (null == loadedClass && retryLater && filesWereProcessed)
-	       scheduleClass(scheduledClassContext, scheduledClassName);
+            // Only re-schedule class if additional files have been processed
+            // If there haven't, there's no point in re-scheduling.
+            // Will avoid infinite loops of re-scheduling
+            if (null == loadedClass && retryLater && filesWereProcessed)
+               scheduleClass(scheduledClassContext, scheduledClassName);
 
-	    /* A warning needn't be emitted - this is normal, can happen
-	       if the scheduled class is in a package which is not
-	       included on the command line.
+            /* A warning needn't be emitted - this is normal, can happen
+               if the scheduled class is in a package which is not
+               included on the command line.
 
-	       else if (null == loadedClass)
-	       printWarning("Can't find scheduled class '"
-	       + scheduledClassName
-	       + "' in context '"
-	       + scheduledClassContext.qualifiedName()
-	       + "'");
-	    */
-	 }
+               else if (null == loadedClass)
+               printWarning("Can't find scheduled class '"
+               + scheduledClassName
+               + "' in context '"
+               + scheduledClassContext.qualifiedName()
+               + "'");
+            */
+         }
       }
    }
 
@@ -706,9 +706,9 @@ public class RootDocImpl
 
       public String match(String name)
       {
-	 if ((name.equals(this.name)) || (importSpecifier.equals(name)))
-	    return this.name;
-	 // FIXME: note that we don't handle on-demand imports here.
+         if ((name.equals(this.name)) || (importSpecifier.equals(name)))
+            return this.name;
+         // FIXME: note that we don't handle on-demand imports here.
          return null;
       }
 
@@ -761,7 +761,7 @@ public class RootDocImpl
                innerClassName = topLevelName.substring(ndx + 1);
                topLevelName = topLevelName.substring(0, ndx);
             }
-            
+
             if (topLevelClassNames.contains(topLevelName)) {
                //System.err.println(this + ".match returns " + packageName + "." + name);
                return packageName + "." + name;
@@ -828,7 +828,7 @@ public class RootDocImpl
    {
       StringTokenizer st = new StringTokenizer(innerClassName, ".");
    outer:
-      
+
       while (st.hasMoreTokens()) {
          String innerClassNameComponent = st.nextToken();
          ClassDoc[] innerClasses = topLevelClass.innerClasses();
@@ -934,7 +934,7 @@ public class RootDocImpl
          }
       }
    }
-   
+
    private class ResolvedImportReflectionClass
       implements ResolvedImport
    {
@@ -1060,7 +1060,7 @@ public class RootDocImpl
          importedPackageOrClass = importedPackageOrClass.substring(0, importedPackageOrClass.length() - 2);
 
          return new ResolvedImportReflectionPackage(importedPackageOrClass);
-         
+
          //return null;
       }
       else {
@@ -1086,7 +1086,7 @@ public class RootDocImpl
       String longestUnlocatablePrefix = "";
 
       for (Iterator it=sourcePath.iterator(); it.hasNext(); ) {
-            
+
          File _sourcePath = (File)it.next();
 
          StringBuffer packageOrClassPrefix = new StringBuffer();
@@ -1094,7 +1094,7 @@ public class RootDocImpl
          while (st.hasMoreTokens() && _sourcePath.isDirectory()) {
             String token = st.nextToken();
             if ("*".equals(token)) {
-               return new ResolvedImportPackageFile(_sourcePath, 
+               return new ResolvedImportPackageFile(_sourcePath,
                                                     packageOrClassPrefix.substring(0, packageOrClassPrefix.length() - 1));
             }
             else {
@@ -1136,7 +1136,7 @@ public class RootDocImpl
 
    private ResolvedImport getResolvedImport(String importSpecifier)
    {
-      ResolvedImport result 
+      ResolvedImport result
          = (ResolvedImport)resolvedImportCache.get(importSpecifier);
       if (null == result) {
          result = resolveImport(importSpecifier);
@@ -1160,9 +1160,9 @@ public class RootDocImpl
       return className;
    }
 
-   public ClassDoc findScheduledClassFile(String scheduledClassName, 
+   public ClassDoc findScheduledClassFile(String scheduledClassName,
                                           ClassDoc scheduledClassContext)
-      throws ParseException, IOException 
+      throws ParseException, IOException
    {
       String resolvedScheduledClassName = null;
 
@@ -1295,7 +1295,7 @@ public class RootDocImpl
       super(null);
    }
 
-   public static String readHtmlBody(File file) 
+   public static String readHtmlBody(File file)
       throws IOException
    {
       FileReader fr=new FileReader(file);

@@ -64,7 +64,7 @@ public abstract class SocketChannel extends AbstractSelectableChannel
    * Opens a socket channel.
    *
    * @return the new <code>SocketChannel</code> object
-   * 
+   *
    * @exception IOException If an error occurs
    */
   public static SocketChannel open() throws IOException
@@ -76,7 +76,7 @@ public abstract class SocketChannel extends AbstractSelectableChannel
    * Opens a channel and connects it to a remote address.
    *
    * @return the new <code>SocketChannel</code> object
-   * 
+   *
    * @exception AsynchronousCloseException If this channel is already connected.
    * @exception ClosedByInterruptException If another thread interrupts the
    * current thread while the connect operation is in progress, thereby closing
@@ -120,7 +120,7 @@ public abstract class SocketChannel extends AbstractSelectableChannel
    * Writes data to the channel.
    *
    * @return the number of bytes written, zero is valid too
-   * 
+   *
    * @exception IOException If an error occurs
    * @exception NotYetConnectedException If this channel is not yet connected.
    */
@@ -150,7 +150,7 @@ public abstract class SocketChannel extends AbstractSelectableChannel
    *
    * @return the number of bytes read, zero is valid too, -1 if end of stream
    * is reached
-   * 
+   *
    * @exception IOException If an error occurs
    * @exception NotYetConnectedException If this channel is not yet connected.
    */
@@ -162,7 +162,7 @@ public abstract class SocketChannel extends AbstractSelectableChannel
    * @return <code>true</code> if the channel got successfully connected,
    * <code>false</code> if the channel is in non-blocking mode and connection
    * operation is still in progress.
-   * 
+   *
    * @exception AlreadyConnectedException If this channel is already connected.
    * @exception AsynchronousCloseException If this channel is already connected.
    * @exception ClosedByInterruptException If another thread interrupts the
@@ -211,7 +211,7 @@ public abstract class SocketChannel extends AbstractSelectableChannel
    *
    * @return the number of bytes read, zero is valid too, -1 if end of stream
    * is reached
-   * 
+   *
    * @exception IOException If an error occurs
    * @exception NotYetConnectedException If this channel is not yet connected.
    */
@@ -229,7 +229,7 @@ public abstract class SocketChannel extends AbstractSelectableChannel
    * Writes data to the channel.
    *
    * @return the number of bytes written, zero is valid too
-   * 
+   *
    * @exception IOException If an error occurs
    * @exception NotYetConnectedException If this channel is not yet connected.
    */
@@ -239,7 +239,7 @@ public abstract class SocketChannel extends AbstractSelectableChannel
    * Writes data to the channel.
    *
    * @return the number of bytes written, zero is valid too
-   * 
+   *
    * @exception IOException If an error occurs
    * @exception NotYetConnectedException If this channel is not yet connected.
    */

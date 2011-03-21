@@ -117,7 +117,7 @@ public class BigDecimalHelper
         if (f >= 0)
           bout.write(f);
       }
-    // The last byte has 0xC or 0xD in the last halfbyte.  
+    // The last byte has 0xC or 0xD in the last halfbyte.
     while ((f & 0xF) <= 0x9);
 
     return createFixed(scale, bout.toByteArray());
@@ -126,7 +126,7 @@ public class BigDecimalHelper
   /**
    * Write the big decimal as CORBA <code>fixed<.code>.
    * The scale will not be stored.
-   * 
+   *
    * @param out a stream to write into.
    * @param x a big decimal to write.
    *

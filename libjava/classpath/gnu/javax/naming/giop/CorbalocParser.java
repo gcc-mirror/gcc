@@ -65,15 +65,15 @@ import org.omg.CORBA.ORBPackage.InvalidName;
 
 /**
  * Parses the alternative IOR representations into our IOR structure.
- * 
+ *
  * TODO This parser currently supports only one address per target string. A
  * string with the multiple addresses will be accepted, but only the last
  * address will be taken into consideration. The fault tolerance is not yet
  * implemented.
- * 
+ *
  * The key string is filtered using {@link java.net.URLDecoder} that replaces
  * the agreed escape sequences by the corresponding non alphanumeric characters.
- * 
+ *
  * @author Audrius Meskauskas (AudriusA@Bioinformatics.org)
  */
 public class CorbalocParser
@@ -93,17 +93,17 @@ public class CorbalocParser
    * The IOR prefix.
    */
   public static final String pxIOR = "ior";
-  
+
   /**
    * The file:// prefix.
    */
   public static final String pxFILE = "file://";
-  
+
   /**
    * The ftp:// prefix.
    */
   public static final String pxFTP = "ftp://";
-  
+
   /**
    * The http:// prefix.
    */
@@ -146,7 +146,7 @@ public class CorbalocParser
 
   /**
    * Parse CORBALOC.
-   * 
+   *
    * The expected format is: <br>
    * 1. corbaloc:[iiop][version.subversion@]:host[:port]/key <br>
    * 2. corbaloc:rir:[/key] <br>
@@ -155,14 +155,14 @@ public class CorbalocParser
    * 5. file://[file name]<br>
    * 6. http://[url]<br>
    * 7. ftp://[url]<br>
-   * 
+   *
    * Protocol defaults to IOP, the object key defaults to the NameService.
-   * 
+   *
    * @param corbaloc the string to parse.
    * @param orb the ORB, needed to create IORs and resolve rir references.
-   * 
+   *
    * @return the arrey of strings, first member being the IOR of the
-   * naming service, second member the name in the naming service. 
+   * naming service, second member the name in the naming service.
    */
   public synchronized String[] corbaloc(String corbaloc,
     ORB orb)
@@ -170,7 +170,7 @@ public class CorbalocParser
   {
     return corbaloc(corbaloc, orb, 0);
   }
-  
+
   /**
    * Parse controlling against the infinite recursion loop.
    */
@@ -182,7 +182,7 @@ public class CorbalocParser
     // by malicious attempt.
     if (recursion > 10)
       throw new DATA_CONVERSION("More than 10 redirections");
-    
+
     if (corbaloc.startsWith(pxFILE))
       return corbaloc(readFile(corbaloc.substring(pxFILE.length())), orb, recursion+1);
     else if (corbaloc.startsWith(pxHTTP))
@@ -334,7 +334,7 @@ public class CorbalocParser
       throw new InvalidNameException("Unsupported protocol '" + t[p] +
                                      "' (iiop expected)");
   }
-  
+
   /**
    * Read IOR from the file in the local file system.
    */
@@ -363,7 +363,7 @@ public class CorbalocParser
         throw (d);
       }
   }
-  
+
   /**
    * Read IOR from the remote URL.
    */

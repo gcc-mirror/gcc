@@ -1,5 +1,5 @@
 ;; Constraint definitions for Renesas M32R cpu for GNU C compiler
-;; Copyright (C) 2007 Free Software Foundation, Inc.
+;; Copyright (C) 2007, 2011 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -118,7 +118,12 @@
 (define_constraint "S"
   "A store with pre {inc,dec}rement."
   (and (match_code "mem")
-       (match_test "STORE_PREINC_PREDEC_P (GET_MODE (op), XEXP (op, 0))")))
+       (match_test "mode == SImode || mode == SFmode")
+       (match_code "pre_inc,pre_dec" "0")
+       (match_code "reg" "00")
+       (match_test "GPR_P (REGNO (XEXP (XEXP (op, 0), 0)))
+		    || REGNO (XEXP (XEXP (op, 0), 0)) == ARG_POINTER_REGNUM
+		    || ! HARD_REGISTER_P (XEXP (XEXP (op, 0), 0))")))
 
 (define_constraint "T"
   "An indirect of a pointer."
@@ -128,7 +133,12 @@
 (define_constraint "U"
   "A load with post increment."
   (and (match_code "mem")
-       (match_test "LOAD_POSTINC_P (GET_MODE (op), XEXP (op, 0))")))
+       (match_test "mode == SImode || mode == SFmode")
+       (match_code "post_inc" "0")
+       (match_code "reg" "00")
+       (match_test "GPR_P (REGNO (XEXP (XEXP (op, 0), 0)))
+		    || REGNO (XEXP (XEXP (op, 0), 0)) == ARG_POINTER_REGNUM
+		    || ! HARD_REGISTER_P (XEXP (XEXP (op, 0), 0))")))
 
 (define_constraint "W"
   "zero immediate."

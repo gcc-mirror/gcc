@@ -51,7 +51,7 @@ public class GstSourceDataLine
 {
   private GstPipeline pipeline = null;
   private boolean open = false;
-  
+
   public GstSourceDataLine(AudioFormat format)
   {
     super(format);
@@ -60,20 +60,20 @@ public class GstSourceDataLine
   public void open() throws LineUnavailableException
   {
     AudioSecurityManager.checkPermissions(Permission.PLAY);
-    
+
     if (open)
       throw new IllegalStateException("Line already opened");
-    
+
     // create the pipeline
     pipeline = GstNativeDataLine.createSourcePipeline(getBufferSize());
-    
+
     this.open = true;
   }
-  
+
   public void open(AudioFormat fmt) throws LineUnavailableException
   {
     AudioSecurityManager.checkPermissions(Permission.PLAY);
-    
+
     setFormat(fmt);
     this.open();
   }
@@ -81,13 +81,13 @@ public class GstSourceDataLine
   public void open(AudioFormat fmt, int size) throws LineUnavailableException
   {
     AudioSecurityManager.checkPermissions(Permission.PLAY);
-    
+
     setBufferSize(size);
     this.open(fmt);
   }
 
   public int write(byte[] buf, int offset, int length)
-  { 
+  {
     return this.pipeline.write(buf, offset, length);
   }
 
@@ -145,7 +145,7 @@ public class GstSourceDataLine
     pipeline.close();
     this.open = false;
   }
-  
+
   public boolean isRunning()
   {
     return (pipeline.getState() == State.PLAY);

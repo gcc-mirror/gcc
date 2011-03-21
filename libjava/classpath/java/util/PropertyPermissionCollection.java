@@ -67,7 +67,7 @@ class PropertyPermissionCollection extends PermissionCollection
   /**
    * A flag to detect if "*" is in the collection.
    *
-   * @serial true if "*" is in the collection 
+   * @serial true if "*" is in the collection
    */
   private boolean all_allowed;
 

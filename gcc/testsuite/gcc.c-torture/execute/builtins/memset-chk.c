@@ -13,8 +13,8 @@ extern int memcmp (const void *, const void *, size_t);
 
 char buffer[32];
 int argc = 1;
-size_t l1 = 1;
-char *s3 = "FGH";
+volatile size_t l1 = 1;  /* prevent constant propagation to happen when whole program assumptions are made.  */
+volatile char *s3 = "FGH"; /* prevent constant propagation to happen when whole program assumptions are made.  */
 char *s4;
 
 void

@@ -50,7 +50,7 @@ import javax.sound.midi.Sequence;
 /**
  * The MidiFileReader abstract class defines the methods to be provided
  * by a MIDI file reader.
- * 
+ *
  * @author Anthony Green (green@redhat.com)
  * @since 1.3
  *
@@ -59,7 +59,7 @@ public abstract class MidiFileReader
 {
   /**
    * Read a MidiFileFormat from the given stream.
-   * 
+   *
    * @param stream the stream from which to read the MIDI data
    * @return the MidiFileFormat object
    * @throws InvalidMidiDataException if the stream refers to invalid data
@@ -67,32 +67,32 @@ public abstract class MidiFileReader
    */
   public abstract MidiFileFormat getMidiFileFormat(InputStream stream)
     throws InvalidMidiDataException, IOException;
-  
+
   /**
    * Read a MidiFileFormat from the given stream.
-   * 
+   *
    * @param url the url from which to read the MIDI data
    * @return the MidiFileFormat object
    * @throws InvalidMidiDataException if the url refers to invalid data
    * @throws IOException if an I/O exception occurs while reading
    */
   public abstract MidiFileFormat getMidiFileFormat(URL url)
-    throws InvalidMidiDataException, IOException;  
+    throws InvalidMidiDataException, IOException;
 
   /**
    * Read a MidiFileFormat from the given stream.
-   * 
+   *
    * @param file the file from which to read the MIDI data
    * @return the MidiFileFormat object
    * @throws InvalidMidiDataException if the file refers to invalid data
    * @throws IOException if an I/O exception occurs while reading
    */
   public abstract MidiFileFormat getMidiFileFormat(File file)
-    throws InvalidMidiDataException, IOException; 
-  
+    throws InvalidMidiDataException, IOException;
+
   /**
    * Read a Sequence from the given stream.
-   * 
+   *
    * @param stream the stream from which to read the MIDI data
    * @return the Sequence object
    * @throws InvalidMidiDataException if the stream refers to invalid data
@@ -100,26 +100,26 @@ public abstract class MidiFileReader
    */
   public abstract Sequence getSequence(InputStream stream)
     throws InvalidMidiDataException, IOException;
-  
+
   /**
    * Read a Sequence from the given stream.
-   * 
+   *
    * @param url the url from which to read the MIDI data
    * @return the Sequence object
    * @throws InvalidMidiDataException if the url refers to invalid data
    * @throws IOException if an I/O exception occurs while reading
    */
   public abstract Sequence getSequence(URL url)
-    throws InvalidMidiDataException, IOException;  
+    throws InvalidMidiDataException, IOException;
 
   /**
    * Read a Sequence from the given stream.
-   * 
+   *
    * @param file the file from which to read the MIDI data
    * @return the Sequence object
    * @throws InvalidMidiDataException if the file refers to invalid data
    * @throws IOException if an I/O exception occurs while reading
    */
   public abstract Sequence getSequence(File file)
-    throws InvalidMidiDataException, IOException; 
+    throws InvalidMidiDataException, IOException;
 }

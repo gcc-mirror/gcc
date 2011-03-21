@@ -121,6 +121,9 @@ is built with the --enable-threads configure-time option.}		\
   %{!shared:								\
     %{!pg: %{pthread:-lpthread} -lc}					\
     %{pg:  %{pthread:-lpthread_p} -lc_p}				\
+  }									\
+  %{shared:								\
+    %{pthread:-lpthread} -lc						\
   }"
 #endif
 #endif

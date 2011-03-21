@@ -1,5 +1,5 @@
 /* Callgraph construction.
-   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009
+   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
@@ -141,6 +141,11 @@ record_eh_tables (struct cgraph_node *node, struct function *fun)
 {
   eh_region i;
 
+  if (DECL_FUNCTION_PERSONALITY (node->decl))
+    ipa_record_reference (node, NULL,
+			  cgraph_node (DECL_FUNCTION_PERSONALITY (node->decl)),
+			  NULL, IPA_REF_ADDR, NULL);
+
   i = fun->eh->region_tree;
   if (!i)
     return;
@@ -234,8 +239,7 @@ compute_call_stmt_bb_frequency (tree decl, basic_block bb)
 /* Mark address taken in STMT.  */
 
 static bool
-mark_address (gimple stmt ATTRIBUTE_UNUSED, tree addr,
-	      void *data ATTRIBUTE_UNUSED)
+mark_address (gimple stmt, tree addr, void *data)
 {
   addr = get_base_address (addr);
   if (TREE_CODE (addr) == FUNCTION_DECL)
@@ -268,12 +272,21 @@ mark_address (gimple stmt ATTRIBUTE_UNUSED, tree addr,
 /* Mark load of T.  */
 
 static bool
-mark_load (gimple stmt ATTRIBUTE_UNUSED, tree t,
-	   void *data ATTRIBUTE_UNUSED)
+mark_load (gimple stmt, tree t, void *data)
 {
   t = get_base_address (t);
-  if (t && TREE_CODE (t) == VAR_DECL
-      && (TREE_STATIC (t) || DECL_EXTERNAL (t)))
+  if (t && TREE_CODE (t) == FUNCTION_DECL)
+    {
+      /* ??? This can happen on platforms with descriptors when these are
+	 directly manipulated in the code.  Pretend that it's an address.  */
+      struct cgraph_node *node = cgraph_node (t);
+      cgraph_mark_address_taken_node (node);
+      ipa_record_reference ((struct cgraph_node *)data, NULL,
+			    node, NULL,
+			    IPA_REF_ADDR, stmt);
+    }
+  else if (t && TREE_CODE (t) == VAR_DECL
+	   && (TREE_STATIC (t) || DECL_EXTERNAL (t)))
     {
       struct varpool_node *vnode = varpool_node (t);
       int walk_subtrees;
@@ -293,8 +306,7 @@ mark_load (gimple stmt ATTRIBUTE_UNUSED, tree t,
 /* Mark store of T.  */
 
 static bool
-mark_store (gimple stmt ATTRIBUTE_UNUSED, tree t,
-	    void *data ATTRIBUTE_UNUSED)
+mark_store (gimple stmt, tree t, void *data)
 {
   t = get_base_address (t);
   if (t && TREE_CODE (t) == VAR_DECL
@@ -310,7 +322,7 @@ mark_store (gimple stmt ATTRIBUTE_UNUSED, tree t,
 	vnode = vnode->extra_name;
       ipa_record_reference ((struct cgraph_node *)data, NULL,
 			    NULL, vnode,
-			    IPA_REF_STORE, NULL);
+			    IPA_REF_STORE, stmt);
      }
   return false;
 }

@@ -67,8 +67,8 @@ final class RETokenChar extends REToken
   {
     if (matchOneString (input, mymatch.index))
       {
-	mymatch.index += matchedLength;
-	return mymatch;
+        mymatch.index += matchedLength;
+        return mymatch;
       }
     // java.util.regex.Matcher#hitEnd() requires that the length of
     // partial match be counted.
@@ -85,12 +85,12 @@ final class RETokenChar extends REToken
     char c;
     for (int i = 0; i < z; i++)
       {
-	c = input.charAt (index + i);
-	if (!charEquals (c, ch[i]))
-	  {
-	    return false;
-	  }
-	++matchedLength;
+        c = input.charAt (index + i);
+        if (!charEquals (c, ch[i]))
+          {
+            return false;
+          }
+        ++matchedLength;
       }
     return true;
   }
@@ -120,15 +120,15 @@ final class RETokenChar extends REToken
     int z = ch.length;
     while (true)
       {
-	if (numRepeats >= max)
-	  break;
-	if (matchOneString (input, index))
-	  {
-	    index += z;
-	    numRepeats++;
-	  }
-	else
-	  break;
+        if (numRepeats >= max)
+          break;
+        if (matchOneString (input, index))
+          {
+            index += z;
+            numRepeats++;
+          }
+        else
+          break;
       }
     return numRepeats;
   }
@@ -138,18 +138,18 @@ final class RETokenChar extends REToken
   {
     if (next instanceof RETokenChar && ((RETokenChar) next).insens == insens)
       {
-	RETokenChar cnext = (RETokenChar) next;
-	int newsize = ch.length + cnext.ch.length;
+        RETokenChar cnext = (RETokenChar) next;
+        int newsize = ch.length + cnext.ch.length;
 
-	char[] chTemp = new char[newsize];
+        char[] chTemp = new char[newsize];
 
-	System.arraycopy (ch, 0, chTemp, 0, ch.length);
-	System.arraycopy (cnext.ch, 0, chTemp, ch.length, cnext.ch.length);
+        System.arraycopy (ch, 0, chTemp, 0, ch.length);
+        System.arraycopy (cnext.ch, 0, chTemp, ch.length, cnext.ch.length);
 
-	ch = chTemp;
-	if (cnext.next == null)
-	  return false;
-	return chain (cnext.next);
+        ch = chTemp;
+        if (cnext.next == null)
+          return false;
+        return chain (cnext.next);
       }
     else
       return super.chain (next);

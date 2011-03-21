@@ -49,7 +49,7 @@ import java.rmi.server.RemoteCall;
 import java.rmi.server.SkeletonMismatchException;
 
 /**
- * This skeleton supports unlikely cases when the naming service is 
+ * This skeleton supports unlikely cases when the naming service is
  * contacted from other interoperable java implementation that still uses
  * the old style skeleton-dependent invocations.
  */
@@ -57,18 +57,18 @@ public final class RegistryImpl_Skel
     implements java.rmi.server.Skeleton
 {
     private static final long interfaceHash = 4905912898345647071L;
-    
+
     /**
      * Repeated multiple times.
      */
     static final String EUM = "error unmarshalling arguments for Registry";
-    
+
     /**
      * Repeated multiple times.
      */
     static final String EMR = "error marshalling return from Registry";
-    
-    private static final Operation[] operations = 
+
+    private static final Operation[] operations =
       {
          new Operation("void bind(java.lang.String, Remote"),
          new Operation("java.lang.String[] list("),
@@ -76,12 +76,12 @@ public final class RegistryImpl_Skel
          new Operation("void rebind(java.lang.String, Remote"),
          new Operation("void unbind(java.lang.String")
       };
-    
+
     public Operation[] getOperations()
   {
     return ((Operation[]) operations.clone());
   }
-    
+
     public void dispatch(Remote obj, RemoteCall call,
                        int opnum, long hash) throws java.lang.Exception
   {

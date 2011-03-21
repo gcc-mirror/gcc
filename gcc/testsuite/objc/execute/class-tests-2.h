@@ -1,6 +1,7 @@
 /* Contributed by Nicola Pero on Tue Mar  6 23:05:53 CET 2001 */
 #include <objc/objc.h>
 #include <objc/objc-api.h>
+#include <stdio.h>
 #include <stdlib.h>
 
 /*

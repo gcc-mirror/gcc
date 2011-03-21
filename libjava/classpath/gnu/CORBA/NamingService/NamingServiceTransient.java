@@ -51,11 +51,11 @@ import java.io.UnsupportedEncodingException;
  * The server for the gnu classpath naming service. This is an executable class
  * that must be started to launch the GNU Classpath CORBA transient naming
  * service.
- * 
+ *
  * GNU Classpath currently works with this naming service and is also
  * interoperable with the Sun Microsystems naming services from releases 1.3 and
  * 1.4, both transient <i>tnameserv</i> and persistent <i>orbd</i>.
- * 
+ *
  * @author Audrius Meskauskas, Lithuania (AudriusA@Bioinformatics.org)
  */
 public class NamingServiceTransient
@@ -69,7 +69,7 @@ public class NamingServiceTransient
   /**
    * Get the object key for the naming service. The default key is the string
    * "NameService" in ASCII.
-   * 
+   *
    * @return the byte array.
    */
   public static byte[] getDefaultKey()
@@ -86,7 +86,7 @@ public class NamingServiceTransient
 
   /**
    * Start the naming service on the current host at the given port.
-   * 
+   *
    * @param portArgument the port on which the service will be
    * started, or -1 to use the default port, 900
    * @param fileArgument if non-null, store the IOR string of this

@@ -1,5 +1,5 @@
 /* Implementation of various C99 functions 
-   Copyright (C) 2004, 2009 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2009, 2010 Free Software Foundation, Inc.
 
 This file is part of the GNU Fortran 95 runtime library (libgfortran).
 
@@ -600,7 +600,7 @@ roundl (long double x)
   if (x > DBL_MAX || x < -DBL_MAX)
     {
 #ifdef HAVE_NEXTAFTERL
-      static long double prechalf = nexafterl (0.5L, LDBL_MAX);
+      long double prechalf = nextafterl (0.5L, LDBL_MAX);
 #else
       static long double prechalf = 0.5L;
 #endif

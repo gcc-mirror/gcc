@@ -12,6 +12,7 @@ foo (void)
   int j;
   int i;
 
+  /* This is not blocked as it is not profitable.  */
   for (i = 0; i < N; i++)
     for (j = 0; j < N; j++)
       a[j] = a[i] + 1;
@@ -41,5 +42,5 @@ main (void)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "will be loop blocked" 1 "graphite" { xfail *-*-* } } } */
+/* { dg-final { scan-tree-dump-not "will be loop blocked" "graphite" } } */
 /* { dg-final { cleanup-tree-dump "graphite" } } */

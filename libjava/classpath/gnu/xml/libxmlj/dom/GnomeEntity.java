@@ -1,4 +1,4 @@
-/* GnomeEntity.java - 
+/* GnomeEntity.java -
    Copyright (C) 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -63,25 +63,25 @@ implements Entity
   public native String getNotationName ();
 
   // DOM Level 3 methods
-  
+
   public String getInputEncoding ()
   {
     // TODO
-    return null;    
+    return null;
   }
-  
+
   public String getXmlEncoding ()
   {
     // TODO
     return null;
   }
-  
+
   public String getXmlVersion ()
   {
     // TODO
     return null;
   }
-  
+
   public String toString ()
   {
     String publicId = getPublicId ();

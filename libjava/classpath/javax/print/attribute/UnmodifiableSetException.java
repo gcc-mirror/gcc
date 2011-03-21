@@ -1,4 +1,4 @@
-/* UnmodifiableSetException.java -- 
+/* UnmodifiableSetException.java --
    Copyright (C) 2003, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -41,7 +41,7 @@ package javax.print.attribute;
 /**
  * Exception which is thrown if an operation on an unmodifiable set
  * is invoked.
- * 
+ *
  * @author Michael Koch (konqueror@gmx.de)
  *
  * @since 1.4

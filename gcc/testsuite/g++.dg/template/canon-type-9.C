@@ -1,6 +1,6 @@
 // Contributed by Dodji Seketeli <dodji@redhat.com>
 // { dg-options "-std=c++0x" }
-// { dg-do "compile" }
+// { dg-do compile }
 
 struct F { F(int) {}};
 
@@ -11,7 +11,7 @@ struct S
 };
 
 template<class T, T *u>
-T* S<T, u>::foo(T)
+decltype(u) S<T, u>::foo(T)
 {
   T t;
   return t;

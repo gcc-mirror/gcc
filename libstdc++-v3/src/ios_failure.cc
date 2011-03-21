@@ -29,7 +29,9 @@
 
 #include <ios>
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   ios_base::failure::failure(const string& __str) throw()
   : _M_msg(__str) { }
@@ -41,4 +43,5 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   ios_base::failure::what() const throw()
   { return _M_msg.c_str(); }
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace

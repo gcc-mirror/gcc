@@ -1,4 +1,4 @@
-/* BaseSignature.java -- 
+/* BaseSignature.java --
    Copyright (C) 2001, 2002, 2003, 2006 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -77,7 +77,7 @@ public abstract class BaseSignature
 
   /**
    * Trivial constructor.
-   * 
+   *
    * @param schemeName the name of this signature scheme.
    * @param md the underlying instance of the message digest algorithm.
    * @throws IllegalArgumentException if the designated hash instance is
@@ -174,7 +174,7 @@ public abstract class BaseSignature
 
   /**
    * Fills the designated byte array with random data.
-   * 
+   *
    * @param buffer the byte array to fill with random data.
    */
   protected void nextRandomBytes(byte[] buffer)

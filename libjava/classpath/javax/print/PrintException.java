@@ -42,8 +42,8 @@ package javax.print;
  * <code>PrintException</code> is used to report exceptions during the
  * usage of a print service implementation.
  * <p>
- * This base class only provides the possibility to report a message as 
- * exception. A concrete print service implementation may provide 
+ * This base class only provides the possibility to report a message as
+ * exception. A concrete print service implementation may provide
  * specialised subclasses implementing one or more of the following
  * exception interfaces:<br>
  * <ul>
@@ -52,7 +52,7 @@ package javax.print;
  * <li>{@link javax.print.URIException}</li>
  * </ul>
  * </p>
- * 
+ *
  * @author Michael Koch (konqueror@gmx.de)
  */
 public class PrintException extends Exception
@@ -67,7 +67,7 @@ public class PrintException extends Exception
 
   /**
    * Construct a print exception.
-   * 
+   *
    * @param e chained exception
    */
   public PrintException(Exception e)
@@ -77,7 +77,7 @@ public class PrintException extends Exception
 
   /**
    * Construct a print exception.
-   * 
+   *
    * @param s detailed message, or null for no message
    */
   public PrintException(String s)
@@ -87,7 +87,7 @@ public class PrintException extends Exception
 
   /**
    * Construct a print exception.
-   * 
+   *
    * @param s detailed message, or null for no message
    * @param e chained exception
    */

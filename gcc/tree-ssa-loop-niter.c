@@ -1890,7 +1890,7 @@ number_of_iterations_exit (struct loop *loop, edge exit,
   /* With -funsafe-loop-optimizations we assume that nothing bad can happen.
      But if we can prove that there is overflow or some other source of weird
      behavior, ignore the loop even with -funsafe-loop-optimizations.  */
-  if (integer_zerop (niter->assumptions))
+  if (integer_zerop (niter->assumptions) || !single_exit (loop))
     return false;
 
   if (flag_unsafe_loop_optimizations)

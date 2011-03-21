@@ -1,4 +1,4 @@
-/* DocumentBuilderFactory.java -- 
+/* DocumentBuilderFactory.java --
    Copyright (C) 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -111,13 +111,13 @@ public abstract class DocumentBuilderFactory
               {
                 throw new FactoryConfigurationError(e,
                     "error instantiating class " + className);
-              } 
+              }
           }
       }
     while (className == null && count < 3);
     return new gnu.xml.dom.DomDocumentBuilderFactory();
   }
-  
+
   private static String getFactoryClassName(ClassLoader loader, int attempt)
   {
     final String propertyName = "javax.xml.parsers.DocumentBuilderFactory";
@@ -141,7 +141,7 @@ public abstract class DocumentBuilderFactory
             {
               return null;
             }
-        case 2: 
+        case 2:
           try
             {
               String serviceKey = "/META-INF/services/" + propertyName;
@@ -293,7 +293,7 @@ public abstract class DocumentBuilderFactory
    * @param value the new value
    * @exception IllegalArgumentException if the attribute is not recognized
    */
-  public abstract void setAttribute(String name, Object value) 
+  public abstract void setAttribute(String name, Object value)
     throws IllegalArgumentException;
 
   /**
@@ -301,7 +301,7 @@ public abstract class DocumentBuilderFactory
    * @param name the name of the attribute
    * @exception IllegalArgumentException if the attribute is not recognized
    */
-  public abstract Object getAttribute(String name) 
+  public abstract Object getAttribute(String name)
     throws IllegalArgumentException;
 
   // -- JAXP 1.3 methods --
@@ -365,5 +365,5 @@ public abstract class DocumentBuilderFactory
    */
   public abstract boolean getFeature(String name)
     throws ParserConfigurationException;
-  
+
 }

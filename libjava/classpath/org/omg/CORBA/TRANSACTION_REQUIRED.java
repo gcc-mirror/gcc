@@ -41,7 +41,7 @@ package org.omg.CORBA;
 import java.io.Serializable;
 
 /**
- * Means that request carried a null transaction context, but an 
+ * Means that request carried a null transaction context, but an
  * active transaction is required.
  * @author Audrius Meskauskas (AudriusA@Bioinformatics.org)
  */
@@ -49,8 +49,8 @@ public final class TRANSACTION_REQUIRED
   extends SystemException
   implements Serializable
 {
-  /** 
-   * Use serialVersionUID for interoperability. 
+  /**
+   * Use serialVersionUID for interoperability.
    */
   private static final long serialVersionUID = -1900254548742148576L;
 

@@ -63,7 +63,7 @@ public class MenuItem extends MenuComponent
 /*
  * Static Variables
  */
-  
+
 
   /**
    * The number used to generate the name returned by getName.
@@ -121,24 +121,24 @@ private transient ActionListener action_listeners;
     {
       super();
     }
-  
-  
-  
+
+
+
     public String getAccessibleName()
     {
       return label;
     }
-  
+
     public AccessibleAction getAccessibleAction()
     {
       return this;
     }
-  
+
     public AccessibleRole getAccessibleRole()
     {
       return AccessibleRole.MENU_ITEM;
     }
-  
+
     /* (non-Javadoc)
      * @see javax.accessibility.AccessibleAction#getAccessibleActionCount()
      */
@@ -153,9 +153,9 @@ private transient ActionListener action_listeners;
     public String getAccessibleActionDescription(int i)
     {
       if (i == 0)
-	return label;
+        return label;
       else
-	return null;
+        return null;
     }
 
     /* (non-Javadoc)
@@ -164,7 +164,7 @@ private transient ActionListener action_listeners;
     public boolean doAccessibleAction(int i)
     {
       if (i != 0)
-	return false;
+        return false;
       processActionEvent(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, actionCommand));
       return true;
     }
@@ -173,7 +173,7 @@ private transient ActionListener action_listeners;
     {
       return this;
     }
-  
+
     /* (non-Javadoc)
      * @see javax.accessibility.AccessibleValue#getCurrentAccessibleValue()
      */
@@ -191,7 +191,7 @@ private transient ActionListener action_listeners;
       // this. is required by javac 1.3, otherwise it is confused with
       // MenuItem.this.setEnabled.
       this.setEnabled(result);
-      return result; 
+      return result;
     }
 
     /* (non-Javadoc)
@@ -209,7 +209,7 @@ private transient ActionListener action_listeners;
     {
       return new Integer(0);
     }
-  
+
   }
 
 
@@ -236,7 +236,7 @@ MenuItem()
   *
   * @param label The label for this menu item.
   */
-public 
+public
 MenuItem(String label)
 {
   this.label = label;
@@ -311,7 +311,7 @@ isEnabled()
 
 /**
   * Sets the enabled status of this menu item.
-  * 
+  *
   * @param enabled <code>true</code> to enable this menu item,
   * <code>false</code> otherwise.
   */
@@ -325,7 +325,7 @@ setEnabled(boolean enabled)
 
 /**
   * Sets the enabled status of this menu item.
-  * 
+  *
   * @param enabled <code>true</code> to enable this menu item,
   * <code>false</code> otherwise.
   *
@@ -449,7 +449,7 @@ setActionCommand(String actionCommand)
 /*************************************************************************/
 
 /**
-  * Enables the specified events.  This is done automatically when a 
+  * Enables the specified events.  This is done automatically when a
   * listener is added and does not normally need to be done by
   * application code.
   *
@@ -460,7 +460,7 @@ protected final void
 enableEvents(long events)
 {
   eventMask |= events;
-  // TODO: see comment in Component.enableEvents().    
+  // TODO: see comment in Component.enableEvents().
 }
 
 /*************************************************************************/
@@ -518,10 +518,10 @@ removeActionListener(ActionListener l)
                                        ActionListener.class);
   }
 
-/** Returns all registered EventListers of the given listenerType. 
- * listenerType must be a subclass of EventListener, or a 
+/** Returns all registered EventListers of the given listenerType.
+ * listenerType must be a subclass of EventListener, or a
  * ClassClassException is thrown.
- * @since 1.3 
+ * @since 1.3
  */
   public <T extends EventListener> T[] getListeners(Class<T> listenerType)
   {
@@ -535,10 +535,10 @@ removeActionListener(ActionListener l)
 void
 dispatchEventImpl(AWTEvent e)
 {
-  if (e.id <= ActionEvent.ACTION_LAST 
+  if (e.id <= ActionEvent.ACTION_LAST
       && e.id >= ActionEvent.ACTION_FIRST
       && (action_listeners != null
-	  || (eventMask & AWTEvent.ACTION_EVENT_MASK) != 0))
+          || (eventMask & AWTEvent.ACTION_EVENT_MASK) != 0))
     processEvent(e);
 
   // Send the event to the parent menu if it has not yet been
@@ -588,7 +588,7 @@ public String
 paramString()
 {
   return ("label=" + label + ",enabled=" + enabled +
-	  ",actionCommand=" + actionCommand + "," + super.paramString());
+          ",actionCommand=" + actionCommand + "," + super.paramString());
 }
 
 /**
@@ -620,4 +620,4 @@ private static synchronized long getUniqueLong()
   return next_menuitem_number++;
 }
 
-} // class MenuItem 
+} // class MenuItem

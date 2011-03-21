@@ -247,8 +247,8 @@ public class ServerSocket
 
     try
       {
-	impl.bind(addr, port);
-	impl.listen(backlog);
+        impl.bind(addr, port);
+        impl.listen(backlog);
         this.port = port;
         local = new InetSocketAddress(
             (InetAddress) impl.getOption(SocketOptions.SO_BINDADDR),
@@ -259,7 +259,7 @@ public class ServerSocket
         try
           {
             if (local == null)
-	      close();
+              close();
           }
         catch (IOException _)
           {
@@ -297,7 +297,7 @@ public class ServerSocket
    * Returns the local socket address
    *
    * @return the local socket address, null if not bound
-   * 
+   *
    * @since 1.4
    */
   public SocketAddress getLocalSocketAddress()
@@ -326,33 +326,33 @@ public class ServerSocket
 
     try
       {
-	implAccept(socket);
+        implAccept(socket);
       }
     catch (IOException e)
       {
-	try
-	  {
-	    socket.close();
-	  }
-	catch (IOException e2)
-	  {
-	    // Ignore.
-	  }
+        try
+          {
+            socket.close();
+          }
+        catch (IOException e2)
+          {
+            // Ignore.
+          }
 
-	throw e;
+        throw e;
       }
     catch (SecurityException e)
       {
-	try
-	  {
-	    socket.close();
-	  }
-	catch (IOException e2)
-	  {
-	    // Ignore.
-	  }
+        try
+          {
+            socket.close();
+          }
+        catch (IOException e2)
+          {
+            // Ignore.
+          }
 
-	throw e;
+        throw e;
       }
 
     return socket;
@@ -391,7 +391,7 @@ public class ServerSocket
     SecurityManager sm = System.getSecurityManager();
     if (sm != null)
       sm.checkAccept(socket.getInetAddress().getHostAddress(),
-		     socket.getPort());
+                     socket.getPort());
   }
 
   /**
@@ -416,7 +416,7 @@ public class ServerSocket
    * by <code>ServerSocketChannel.open()</code>.</p>
    *
    * @return the associated socket channel, null if none exists
-   * 
+   *
    * @since 1.4
    */
   public ServerSocketChannel getChannel()
@@ -428,7 +428,7 @@ public class ServerSocket
    * Returns true when the socket is bound, otherwise false
    *
    * @return true if socket is bound, false otherwise
-   * 
+   *
    * @since 1.4
    */
   public boolean isBound()
@@ -440,7 +440,7 @@ public class ServerSocket
    * Returns true if the socket is closed, otherwise false
    *
    * @return true if socket is closed, false otherwise
-   * 
+   *
    * @since 1.4
    */
   public boolean isClosed()
@@ -501,7 +501,7 @@ public class ServerSocket
    * Enables/Disables the SO_REUSEADDR option
    *
    * @param on true if SO_REUSEADDR should be enabled, false otherwise
-   * 
+   *
    * @exception SocketException If an error occurs
    *
    * @since 1.4

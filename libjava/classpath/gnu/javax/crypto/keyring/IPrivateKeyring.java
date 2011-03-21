@@ -1,4 +1,4 @@
-/* IPrivateKeyring.java -- 
+/* IPrivateKeyring.java --
    Copyright (C) 2003, 2006 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -56,7 +56,7 @@ public interface IPrivateKeyring
   /**
    * Tests if this keyring contains a private key entry with the given
    * <code>alias</code>.
-   * 
+   *
    * @param alias The alias to check.
    * @return <code>true</code> if this keyring contains a private key with the
    *         given <code>alias</code>; <code>false</code> otherwise.
@@ -65,7 +65,7 @@ public interface IPrivateKeyring
 
   /**
    * Returns the private key with the given <code>alias</code>.
-   * 
+   *
    * @param alias The alias of the private key to find.
    * @param password The password of the private key.
    * @return The private, or secret, key if one is found; <code>null</code> if
@@ -78,7 +78,7 @@ public interface IPrivateKeyring
 
   /**
    * Adds a private key to this keyring.
-   * 
+   *
    * @param alias The alias of the private key.
    * @param key The private key.
    * @param password The password used to protect this private key.
@@ -88,7 +88,7 @@ public interface IPrivateKeyring
   /**
    * Checks if this keyring contains a public key with the given
    * <code>alias</code>.
-   * 
+   *
    * @param alias The alias to test.
    * @return <code>true</code> if this keyring contains a public key entry
    *         with the given <code>alias</code>; <code>false</code>
@@ -99,7 +99,7 @@ public interface IPrivateKeyring
   /**
    * Returns the public key with the given <code>alias</code>, or
    * <code>null</code> if there is no such entry.
-   * 
+   *
    * @param alias The alias of the public key to find.
    * @return The public key; or <code>null</code> if none were found.
    */
@@ -107,7 +107,7 @@ public interface IPrivateKeyring
 
   /**
    * Sets a public key entry.
-   * 
+   *
    * @param alias The alias for this public key.
    * @param key The public key.
    */
@@ -116,7 +116,7 @@ public interface IPrivateKeyring
   /**
    * Checks if this keyring contains a certificate path with the given
    * <code>alias</code>.
-   * 
+   *
    * @param alias The alias to check.
    * @return <code>true</code> if this keyring contains a certificate path
    *         with the given <code>alias</code>; <code>false</code>
@@ -127,7 +127,7 @@ public interface IPrivateKeyring
   /**
    * Returns the certificate path with the given <code>alias</code>, or
    * <code>null</code> if there is no such entry.
-   * 
+   *
    * @param alias The alias of the certificate path to find.
    * @return The certificate path for the designated <code>alias</code>; or
    *         <code>null</code> if none were found.
@@ -136,7 +136,7 @@ public interface IPrivateKeyring
 
   /**
    * Sets a certificate path entry.
-   * 
+   *
    * @param alias The alias for this certificate path.
    * @param path The certificate path.
    */

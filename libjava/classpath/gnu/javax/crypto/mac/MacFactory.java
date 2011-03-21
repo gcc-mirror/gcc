@@ -1,4 +1,4 @@
-/* MacFactory.java -- 
+/* MacFactory.java --
    Copyright (C) 2001, 2002, 2006 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -64,7 +64,7 @@ public class MacFactory
 
   /**
    * Returns an instance of a <i>MAC</i> algorithm given its name.
-   * 
+   *
    * @param name the name of the MAC algorithm.
    * @return an instance of the <i>MAC</i> algorithm, or <code>null</code> if
    *         none can be constructed.
@@ -105,7 +105,7 @@ public class MacFactory
   /**
    * Returns a {@link Set} of names of <i>MAC</i> algorithms supported by this
    * <i>Factory</i>.
-   * 
+   *
    * @return a {@link Set} of MAC names (Strings).
    */
   public static final Set getNames()

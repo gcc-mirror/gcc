@@ -1,0 +1,442 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Writing and Generating Documentation</title><meta name="generator" content="DocBook XSL-NS Stylesheets V1.75.2"/><meta name="keywords" content="ISO C++, documentation, style, docbook, doxygen"/><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    "/><link rel="home" href="../spine.html" title="The GNU C++ Library"/><link rel="up" href="appendix_porting.html" title="Appendix B.  Porting and Maintenance"/><link rel="prev" href="appendix_porting.html" title="Appendix B.  Porting and Maintenance"/><link rel="next" href="internals.html" title="Porting to New Hardware or Operating Systems"/></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Writing and Generating Documentation</th></tr><tr><td align="left"><a accesskey="p" href="appendix_porting.html">Prev</a> </td><th width="60%" align="center">Appendix B. 
+  Porting and Maintenance
+  
+</th><td align="right"> <a accesskey="n" href="internals.html">Next</a></td></tr></table><hr/></div><div class="section" title="Writing and Generating Documentation"><div class="titlepage"><div><div><h2 class="title"><a id="appendix.porting.doc"/>Writing and Generating Documentation</h2></div></div></div><div class="section" title="Introduction"><div class="titlepage"><div><div><h3 class="title"><a id="doc.intro"/>Introduction</h3></div></div></div><p>
+      Documentation for the GNU C++ Library is created from three
+      independent sources: a manual, a FAQ, and an API reference.
+    </p><p>
+      The sub-directory <code class="filename">doc</code>
+      within the main source directory contains
+      <code class="filename">Makefile.am</code> and
+      <code class="filename">Makefile.in</code>, which provide rules for
+      generating documentation, described in excruciating detail
+      below. The <code class="filename">doc</code>
+      sub-directory also contains three directories: <code class="filename">doxygen</code>, which contains scripts and
+      fragments for <span class="command"><strong>doxygen</strong></span>, <code class="filename">html</code>, which contains an html
+      version of the manual, and <code class="filename">xml</code>, which contains an xml version
+      of the manual.
+    </p><p>
+      Diverging from established documentation conventions in the rest
+      of the GCC project, libstdc++ does not use Texinfo as a markup
+      language. Instead, Docbook is used to create the manual and the
+      FAQ, and Doxygen is used to construct the API
+      reference. Although divergent, this conforms to the GNU Project
+      recommendations as long as the output is of sufficient quality,
+      as per
+      <a class="link" href="http://www.gnu.org/prep/standards/standards.html#Documentation" target="">
+      GNU Manuals</a>.
+    </p></div><div class="section" title="Generating Documentation"><div class="titlepage"><div><div><h3 class="title"><a id="doc.generation"/>Generating Documentation</h3></div></div></div><p>
+      Certain Makefile rules are required by the GNU Coding
+      Standards. These standard rules generate HTML, PDF, XML, or man
+      files. For each of the generative rules, there is an additional
+      install rule that is used to install any generated documentation
+      files into the prescribed installation directory. Files are
+      installed into <code class="filename">share/doc</code>
+      or <code class="filename">share/man</code> directories.
+    </p><p>
+      The standard Makefile rules are conditionally supported, based
+      on the results of examining the host environment for
+      prerequisites at configuration time. If requirements are not
+      found, the rule is aliased to a dummy rule that does nothing,
+      and produces no documentation. If the requirements are found,
+      the rule forwards to a private rule that produces the requested
+      documentation.
+    </p><p>
+      For more details on what prerequisites were found and where,
+      please consult the file <code class="filename">config.log</code> in the
+      libstdc++ build directory. Compare this log to what is expected
+      for the relevant Makefile conditionals:
+      <code class="literal">BUILD_INFO</code>, <code class="literal">BUILD_XML</code>,
+      <code class="literal">BUILD_HTML</code>, <code class="literal">BUILD_MAN</code>,
+      <code class="literal">BUILD_PDF</code>, and <code class="literal">BUILD_EPUB</code>.
+    </p><p>
+      Supported Makefile rules:
+    </p><div class="variablelist"><dl><dt><span class="term">
+	  <span class="emphasis"><em>make html</em></span>
+	, </span><span class="term">
+	  <span class="emphasis"><em>make install-html</em></span>
+	</span></dt><dd><p>
+	    Generates multi-page HTML documentation, and installs it
+	    in the following directories:
+	  </p><p>
+	    <code class="filename">
+	      doc/libstdc++/libstdc++-api.html
+	    </code>
+	  </p><p>
+	    <code class="filename">
+	      doc/libstdc++/libstdc++-manual.html
+	    </code>
+	  </p></dd><dt><span class="term">
+	  <span class="emphasis"><em>make pdf</em></span>
+	, </span><span class="term">
+	  <span class="emphasis"><em>make install-pdf</em></span>
+	</span></dt><dd><p>
+	    Generates indexed PDF documentation, and installs it as
+	    the following files:
+	  </p><p>
+	    <code class="filename">doc/libstdc++/libstdc++-api.pdf</code>
+	  </p><p>
+	    <code class="filename">doc/libstdc++/libstdc++-manual.pdf</code>
+	  </p></dd><dt><span class="term">
+	  <span class="emphasis"><em>make man</em></span>
+	, </span><span class="term">
+	  <span class="emphasis"><em>make install-man</em></span>
+	</span></dt><dd><p>
+	    Generates man pages, and installs it in the following directory:
+	  </p><p>
+	    <code class="filename">man/man3/</code>
+	  </p><p>
+	    The generated man pages are namespace-qualified, so to look at
+	    the man page for <code class="classname">vector</code>, one would use
+	    <span class="command"><strong>man std::vector</strong></span>.
+	  </p></dd><dt><span class="term">
+	  <span class="emphasis"><em>make epub</em></span>
+	, </span><span class="term">
+	  <span class="emphasis"><em>make install-epub</em></span>
+	</span></dt><dd><p>
+	    Generates documentation in the ebook/portable electronic
+	    reader format called Epub, and installs it as the
+	    following file.
+	  </p><p>
+	    <code class="filename">doc/libstdc++/libstdc++-manual.epub</code>
+	  </p></dd><dt><span class="term">
+	  <span class="emphasis"><em>make xml</em></span>
+	, </span><span class="term">
+	  <span class="emphasis"><em>make install-xml</em></span>
+	</span></dt><dd><p>
+	    Generates single-file XML documentation, and installs it
+	    as the following files:
+	  </p><p>
+	    <code class="filename">doc/libstdc++/libstdc++-api-single.xml</code>
+	  </p><p>
+	    <code class="filename">doc/libstdc++/libstdc++-manual-single.xml</code>
+	  </p></dd></dl></div><p>
+      Makefile rules for several other formats are explicitly not
+      supported, and are always aliased to dummy rules. These
+      unsupported formats are: <span class="emphasis"><em>info</em></span>,
+      <span class="emphasis"><em>ps</em></span>, and <span class="emphasis"><em>dvi</em></span>.
+    </p></div><div class="section" title="Doxygen"><div class="titlepage"><div><div><h3 class="title"><a id="doc.doxygen"/>Doxygen</h3></div></div></div><div class="section" title="Prerequisites"><div class="titlepage"><div><div><h4 class="title"><a id="doxygen.prereq"/>Prerequisites</h4></div></div></div><div class="table"><a id="id615654"/><p class="title"><b>Table B.1. Doxygen Prerequisites</b></p><div class="table-contents"><table summary="Doxygen Prerequisites" border="1"><colgroup><col style="text-align: center"/><col style="text-align: center"/><col style="text-align: center"/></colgroup><thead><tr><th style="text-align: center">Tool</th><th style="text-align: center">Version</th><th style="text-align: center">Required By</th></tr></thead><tbody><tr><td style="text-align: center">coreutils</td><td style="text-align: center">8.5</td><td style="text-align: center">all</td></tr><tr><td style="text-align: center">bash</td><td style="text-align: center">4.1</td><td style="text-align: center">all</td></tr><tr><td style="text-align: center">doxygen</td><td style="text-align: center">1.7.0</td><td style="text-align: center">all</td></tr><tr><td style="text-align: center">graphviz</td><td style="text-align: center">2.26</td><td style="text-align: center">graphical hierarchies</td></tr><tr><td style="text-align: center">pdflatex</td><td style="text-align: center">2007-59</td><td style="text-align: center">pdf output</td></tr></tbody></table></div></div><br class="table-break"/><p>
+	Prerequisite tools are Bash 2.0 or later,
+	<a class="link" href="http://www.doxygen.org/" target="">Doxygen</a>, and
+	the <a class="link" href="http://www.gnu.org/software/coreutils/" target="">GNU
+	coreutils</a>. (GNU versions of find, xargs, and possibly
+	sed and grep are used, just because the GNU versions make
+	things very easy.) 
+      </p><p>
+	To generate the pretty pictures and hierarchy
+	graphs, the
+	<a class="link" href="http://www.graphviz.org" target="">Graphviz</a> package
+	will need to be installed. For PDF
+	output, <a class="link" href="http://www.tug.org/applications/pdftex/" target="">
+	pdflatex</a> is required.
+      </p></div><div class="section" title="Generating the Doxygen Files"><div class="titlepage"><div><div><h4 class="title"><a id="doxygen.rules"/>Generating the Doxygen Files</h4></div></div></div><p>
+	The following Makefile rules run Doxygen to generate HTML
+	docs, XML docs, XML docs as a single file, PDF docs, and the
+	man pages. These rules are not conditional! If the required
+	tools are not found, or are the wrong versions, the rule may
+	end in an error.
+      </p><p>
+      </p><pre class="screen"><strong class="userinput"><code>make doc-html-doxygen</code></strong></pre><p>
+      </p><p>
+      </p><pre class="screen"><strong class="userinput"><code>make doc-xml-doxygen</code></strong></pre><p>
+      </p><p>
+      </p><pre class="screen"><strong class="userinput"><code>make doc-xml-single-doxygen</code></strong></pre><p>
+      </p><p>
+      </p><pre class="screen"><strong class="userinput"><code>make doc-pdf-doxygen</code></strong></pre><p>
+      </p><p>
+      </p><pre class="screen"><strong class="userinput"><code>make doc-man-doxygen</code></strong></pre><p>
+      </p><p>
+	Generated files are output into separate sub directories of
+	<code class="filename">doc/doxygen/</code> in the
+	build directory, based on the output format. For instance, the
+	HTML docs will be in <code class="filename">doc/doxygen/html</code>.
+      </p><p>
+	Careful observers will see that the Makefile rules simply call
+	a script from the source tree, <code class="filename">run_doxygen</code>, which
+	does the actual work of running Doxygen and then (most
+	importantly) massaging the output files. If for some reason
+	you prefer to not go through the Makefile, you can call this
+	script directly. (Start by passing <code class="literal">--help</code>.)
+      </p><p>
+	If you wish to tweak the Doxygen settings, do so by editing
+	<code class="filename">doc/doxygen/user.cfg.in</code>. Notes to fellow
+	library hackers are written in triple-# comments.
+      </p></div><div class="section" title="Markup"><div class="titlepage"><div><div><h4 class="title"><a id="doxygen.markup"/>Markup</h4></div></div></div><p>
+	In general, libstdc++ files should be formatted according to
+	the rules found in the
+	<a class="link" href="source_code_style.html" title="Coding Style">Coding Standard</a>. Before
+	any doxygen-specific formatting tweaks are made, please try to
+	make sure that the initial formatting is sound.
+      </p><p>
+	Adding Doxygen markup to a file (informally called
+	<span class="quote">“<span class="quote">doxygenating</span>”</span>) is very simple. The Doxygen manual can be
+	found
+	<a class="link" href="http://www.stack.nl/~dimitri/doxygen/download.html#latestman" target="">here</a>.
+	We try to use a very-recent version of Doxygen.
+      </p><p>
+	For classes, use
+	<code class="classname">deque</code>/<code class="classname">vector</code>/<code class="classname">list</code>
+	and <code class="classname">std::pair</code> as examples.  For
+	functions, see their member functions, and the free functions
+	in <code class="filename">stl_algobase.h</code>. Member functions of
+	other container-like types should read similarly to these
+	member functions.
+      </p><p>
+	Some commentary to accompany
+	the first list in the <a class="link" href="http://www.stack.nl/~dimitri/doxygen/docblocks.html" target="">Special
+	Documentation Blocks</a> section of
+	the Doxygen manual:
+      </p><div class="orderedlist"><ol class="orderedlist"><li class="listitem"><p>For longer comments, use the Javadoc style...</p></li><li class="listitem"><p>
+	    ...not the Qt style. The intermediate *'s are preferred.
+	  </p></li><li class="listitem"><p>
+	    Use the triple-slash style only for one-line comments (the
+	    <span class="quote">“<span class="quote">brief</span>”</span> mode).
+	  </p></li><li class="listitem"><p>
+	    This is disgusting. Don't do this.
+	  </p></li></ol></div><p>
+	Some specific guidelines:
+      </p><p>
+	Use the @-style of commands, not the !-style. Please be
+	careful about whitespace in your markup comments. Most of the
+	time it doesn't matter; doxygen absorbs most whitespace, and
+	both HTML and *roff are agnostic about whitespace. However,
+	in &lt;pre&gt; blocks and @code/@endcode sections, spacing can
+	have <span class="quote">“<span class="quote">interesting</span>”</span> effects.
+      </p><p>
+	Use either kind of grouping, as
+	appropriate. <code class="filename">doxygroups.cc</code> exists for this
+	purpose. See <code class="filename">stl_iterator.h</code> for a good example
+	of the <span class="quote">“<span class="quote">other</span>”</span> kind of grouping.
+      </p><p>
+	Please use markup tags like @p and @a when referring to things
+	such as the names of function parameters. Use @e for emphasis
+	when necessary. Use @c to refer to other standard names.
+	(Examples of all these abound in the present code.)
+      </p><p>
+	Complicated math functions should use the multi-line
+	format. An example from <code class="filename">random.h</code>:
+      </p><p>
+</p><div class="literallayout"><p><br/>
+/**<br/>
+ * @brief A model of a linear congruential random number generator.<br/>
+ *<br/>
+ * @f[<br/>
+ *     x_{i+1}\leftarrow(ax_{i} + c) \bmod m<br/>
+ * @f]<br/>
+ */<br/>
+</p></div><p>
+      </p><p>
+	One area of note is the markup required for
+	<code class="literal">@file</code> markup in header files. Two details
+	are important: for filenames that have the same name in
+	multiple directories, include part of the installed path to
+	disambiguate. For example:
+      </p><p>
+</p><div class="literallayout"><p><br/>
+/** @file debug/vector<br/>
+ *  This file is a GNU debug extension to the Standard C++ Library.<br/>
+ */<br/>
+</p></div><p>
+      </p><p>
+	The other relevant detail for header files is the use of a
+	libstdc++-specific doxygen alias that helps distinguish
+	between public header files (like <code class="filename">random</code>)
+	from implementation or private header files (like
+	<code class="filename">bits/c++config.h</code>.) This alias is spelled
+	<code class="literal">@headername</code> and can take one or two
+	arguments that detail the public header file or files that
+	should be included to use the contents of the file. All header
+	files that are not intended for direct inclusion must use
+	<code class="literal">headername</code> in the <code class="literal">file</code>
+	block. An example:
+      </p><p>
+</p><div class="literallayout"><p><br/>
+/** @file bits/basic_string.h<br/>
+ *  This is an internal header file, included by other library headers.<br/>
+ *  Do not attempt to use it directly. @headername{string}<br/>
+ */<br/>
+</p></div><p>
+      </p><p>
+	Be careful about using certain, special characters when
+	writing Doxygen comments. Single and double quotes, and
+	separators in filenames are two common trouble spots. When in
+	doubt, consult the following table.
+      </p><div class="table"><a id="id616157"/><p class="title"><b>Table B.2. HTML to Doxygen Markup Comparison</b></p><div class="table-contents"><table summary="HTML to Doxygen Markup Comparison" border="1"><colgroup><col style="text-align: left"/><col style="text-align: left"/></colgroup><thead><tr><th style="text-align: left">HTML</th><th style="text-align: left">Doxygen</th></tr></thead><tbody><tr><td style="text-align: left">\</td><td style="text-align: left">\\</td></tr><tr><td style="text-align: left">"</td><td style="text-align: left">\"</td></tr><tr><td style="text-align: left">'</td><td style="text-align: left">\'</td></tr><tr><td style="text-align: left">&lt;i&gt;</td><td style="text-align: left">@a word</td></tr><tr><td style="text-align: left">&lt;b&gt;</td><td style="text-align: left">@b word</td></tr><tr><td style="text-align: left">&lt;code&gt;</td><td style="text-align: left">@c word</td></tr><tr><td style="text-align: left">&lt;em&gt;</td><td style="text-align: left">@a word</td></tr><tr><td style="text-align: left">&lt;em&gt;</td><td style="text-align: left">&lt;em&gt;two words or more&lt;/em&gt;</td></tr></tbody></table></div></div><br class="table-break"/></div></div><div class="section" title="Docbook"><div class="titlepage"><div><div><h3 class="title"><a id="doc.docbook"/>Docbook</h3></div></div></div><div class="section" title="Prerequisites"><div class="titlepage"><div><div><h4 class="title"><a id="docbook.prereq"/>Prerequisites</h4></div></div></div><div class="table"><a id="id616319"/><p class="title"><b>Table B.3. Docbook Prerequisites</b></p><div class="table-contents"><table summary="Docbook Prerequisites" border="1"><colgroup><col style="text-align: center"/><col style="text-align: center"/><col style="text-align: center"/></colgroup><thead><tr><th style="text-align: center">Tool</th><th style="text-align: center">Version</th><th style="text-align: center">Required By</th></tr></thead><tbody><tr><td style="text-align: center">docbook5-style-xsl</td><td style="text-align: center">1.76.1</td><td style="text-align: center">all</td></tr><tr><td style="text-align: center">xsltproc</td><td style="text-align: center">1.1.26</td><td style="text-align: center">all</td></tr><tr><td style="text-align: center">xmllint</td><td style="text-align: center">2.7.7</td><td style="text-align: center">validation</td></tr><tr><td style="text-align: center">dblatex</td><td style="text-align: center">0.3</td><td style="text-align: center">pdf output</td></tr><tr><td style="text-align: center">pdflatex</td><td style="text-align: center">2007-59</td><td style="text-align: center">pdf output</td></tr><tr><td style="text-align: center">docbook2X</td><td style="text-align: center">0.8.8</td><td style="text-align: center">info output</td></tr></tbody></table></div></div><br class="table-break"/><p>
+	Editing the DocBook sources requires an XML editor. Many
+	exist: some notable options
+	include <span class="command"><strong>emacs</strong></span>, <span class="application">Kate</span>,
+	or <span class="application">Conglomerate</span>.
+      </p><p>
+	Some editors support special <span class="quote">“<span class="quote">XML Validation</span>”</span>
+	modes that can validate the file as it is
+	produced. Recommended is the <span class="command"><strong>nXML Mode</strong></span>
+	for <span class="command"><strong>emacs</strong></span>.
+      </p><p>
+	Besides an editor, additional DocBook files and XML tools are
+	also required.
+      </p><p>
+	Access to the DocBook 5.0 stylesheets and schema is required. The
+	stylesheets are usually packaged by vendor, in something
+	like <code class="filename">docbook5-style-xsl</code>. To exactly match
+	generated output, please use a version of the stylesheets
+	equivalent
+	to <code class="filename">docbook5-style-xsl-1.75.2-3</code>. The
+	installation directory for this package corresponds to
+	the <code class="literal">XSL_STYLE_DIR</code>
+	in <code class="filename">doc/Makefile.am</code> and defaults
+	to <code class="filename">/usr/share/sgml/docbook/xsl-ns-stylesheets</code>.
+      </p><p>
+	For processing XML, an XML processor and some style
+	sheets are necessary. Defaults are <span class="command"><strong>xsltproc</strong></span>
+	provided by <code class="filename">libxslt</code>.
+      </p><p>
+	For validating the XML document, you'll need
+	something like <span class="command"><strong>xmllint</strong></span> and access to the
+	relevant DocBook schema. These are provided
+	by a vendor package like <code class="filename">libxml2</code> and <code class="filename">docbook5-schemas-5.0-4</code>
+      </p><p>
+	For PDF output, something that transforms valid Docbook XML to PDF is
+	required. Possible solutions include <a class="link" href="http://dblatex.sourceforge.net" target="">dblatex</a>,
+	<span class="command"><strong>xmlto</strong></span>, or <span class="command"><strong>prince</strong></span>. Of
+	these, <span class="command"><strong>dblatex</strong></span> is the default. Other
+	options are listed on the DocBook web <a class="link" href="http://wiki.docbook.org/topic/DocBookPublishingTools" target="">pages</a>. Please
+	consult the <code class="email">&lt;<a class="email" href="mailto:libstdc++@gcc.gnu.org">libstdc++@gcc.gnu.org</a>&gt;</code> list when
+	preparing printed manuals for current best practice and
+	suggestions.
+      </p><p>
+	For Texinfo output, something that transforms valid Docbook
+	XML to Texinfo is required. The default choice is <a class="link" href="http://docbook2x.sourceforge.net/" target="">docbook2X</a>.
+      </p></div><div class="section" title="Generating the DocBook Files"><div class="titlepage"><div><div><h4 class="title"><a id="docbook.rules"/>Generating the DocBook Files</h4></div></div></div><p>
+	The following Makefile rules generate (in order): an HTML
+	version of all the DocBook documentation, a PDF version of the
+	same, and a single XML document.  These rules are not
+	conditional! If the required tools are not found, or are the
+	wrong versions, the rule may end in an error.
+      </p><p>
+      </p><pre class="screen"><strong class="userinput"><code>make doc-html-docbook</code></strong></pre><p>
+      </p><p>
+      </p><pre class="screen"><strong class="userinput"><code>make doc-pdf-docbook</code></strong></pre><p>
+      </p><p>
+      </p><pre class="screen"><strong class="userinput"><code>make doc-xml-single-docbook</code></strong></pre><p>
+      </p><p>
+	Generated files are output into separate sub directores of
+	<code class="filename">doc/docbook/</code> in the
+	build directory, based on the output format. For instance, the
+	HTML docs will be in <code class="filename">doc/docbook/html</code>.
+      </p><p>
+	If the Docbook stylesheets are installed in a custom location,
+	one can use the variable <code class="literal">XSL_STYLE_DIR</code> to
+	over-ride the Makefile defaults. As so:
+      </p><pre class="screen">
+	<strong class="userinput"><code>
+make <code class="literal">XSL_STYLE_DIR="/usr/share/xml/docbook/stylesheet/nwalsh"</code> doc-html-docbook
+	</code></strong>
+      </pre></div><div class="section" title="Editing and Validation"><div class="titlepage"><div><div><h4 class="title"><a id="docbook.validation"/>Editing and Validation</h4></div></div></div><p>
+	After editing the xml sources, please make sure that the XML
+	documentation and markup is still valid. This can be
+	done easily, with the following validation rule:
+      </p><pre class="screen">
+	<strong class="userinput"><code>make doc-xml-validate-docbook</code></strong>
+      </pre><p>
+	This is equivalent to doing:
+      </p><pre class="screen">
+	<strong class="userinput"><code>
+	  xmllint --noout --valid <code class="filename">xml/index.xml</code>
+	</code></strong>
+      </pre><p>
+	Please note that individual sections and chapters of the
+	manual can be validated by substiuting the file desired for
+	<code class="filename">xml/index.xml</code> in the command
+	above. Reducing scope in this manner can be helpful when
+	validation on the entire manual fails.
+      </p><p>
+	All Docbook xml sources should always validate. No excuses!
+      </p></div><div class="section" title="File Organization and Basics"><div class="titlepage"><div><div><h4 class="title"><a id="docbook.examples"/>File Organization and Basics</h4></div></div></div><div class="literallayout"><p><br/>
+      <span class="emphasis"><em>Which files are important</em></span><br/>
+<br/>
+      All Docbook files are in the directory<br/>
+      libstdc++-v3/doc/xml<br/>
+<br/>
+      Inside this directory, the files of importance:<br/>
+      spine.xml	 	- index to documentation set<br/>
+      manual/spine.xml  - index to manual<br/>
+      manual/*.xml  	- individual chapters and sections of the manual<br/>
+      faq.xml  		- index to FAQ<br/>
+      api.xml  		- index to source level / API<br/>
+<br/>
+      All *.txml files are template xml files, i.e., otherwise empty files with<br/>
+      the correct structure, suitable for filling in with new information.<br/>
+<br/>
+      <span class="emphasis"><em>Canonical Writing Style</em></span><br/>
+<br/>
+      class template<br/>
+      function template<br/>
+      member function template<br/>
+      (via C++ Templates, Vandevoorde)<br/>
+<br/>
+      class in namespace std: allocator, not std::allocator<br/>
+<br/>
+      header file: iostream, not &lt;iostream&gt;<br/>
+<br/>
+<br/>
+      <span class="emphasis"><em>General structure</em></span><br/>
+<br/>
+      &lt;set&gt;<br/>
+      &lt;book&gt;<br/>
+      &lt;/book&gt;<br/>
+<br/>
+      &lt;book&gt;<br/>
+      &lt;chapter&gt;<br/>
+      &lt;/chapter&gt;<br/>
+      &lt;/book&gt;<br/>
+<br/>
+      &lt;book&gt;<br/>
+      &lt;part&gt;<br/>
+      &lt;chapter&gt;<br/>
+      &lt;section&gt;<br/>
+      &lt;/section&gt;<br/>
+<br/>
+      &lt;sect1&gt;<br/>
+      &lt;/sect1&gt;<br/>
+<br/>
+      &lt;sect1&gt;<br/>
+      &lt;sect2&gt;<br/>
+      &lt;/sect2&gt;<br/>
+      &lt;/sect1&gt;<br/>
+      &lt;/chapter&gt;<br/>
+<br/>
+      &lt;chapter&gt;<br/>
+      &lt;/chapter&gt;<br/>
+      &lt;/part&gt;<br/>
+      &lt;/book&gt;<br/>
+<br/>
+      &lt;/set&gt;<br/>
+    </p></div></div><div class="section" title="Markup By Example"><div class="titlepage"><div><div><h4 class="title"><a id="docbook.markup"/>Markup By Example</h4></div></div></div><p>
+	Complete details on Docbook markup can be found in the DocBook
+	Element Reference,
+	<a class="link" href="http://www.docbook.org/tdg/en/html/part2.html" target="">online</a>.
+	An incomplete reference for HTML to Docbook conversion is
+	detailed in the table below.
+      </p><div class="table"><a id="id616796"/><p class="title"><b>Table B.4. HTML to Docbook XML Markup Comparison</b></p><div class="table-contents"><table summary="HTML to Docbook XML Markup Comparison" border="1"><colgroup><col style="text-align: left"/><col style="text-align: left"/></colgroup><thead><tr><th style="text-align: left">HTML</th><th style="text-align: left">Docbook</th></tr></thead><tbody><tr><td style="text-align: left">&lt;p&gt;</td><td style="text-align: left">&lt;para&gt;</td></tr><tr><td style="text-align: left">&lt;pre&gt;</td><td style="text-align: left">&lt;computeroutput&gt;, &lt;programlisting&gt;,
+	&lt;literallayout&gt;</td></tr><tr><td style="text-align: left">&lt;ul&gt;</td><td style="text-align: left">&lt;itemizedlist&gt;</td></tr><tr><td style="text-align: left">&lt;ol&gt;</td><td style="text-align: left">&lt;orderedlist&gt;</td></tr><tr><td style="text-align: left">&lt;il&gt;</td><td style="text-align: left">&lt;listitem&gt;</td></tr><tr><td style="text-align: left">&lt;dl&gt;</td><td style="text-align: left">&lt;variablelist&gt;</td></tr><tr><td style="text-align: left">&lt;dt&gt;</td><td style="text-align: left">&lt;term&gt;</td></tr><tr><td style="text-align: left">&lt;dd&gt;</td><td style="text-align: left">&lt;listitem&gt;</td></tr><tr><td style="text-align: left">&lt;a href=""&gt;</td><td style="text-align: left">&lt;ulink url=""&gt;</td></tr><tr><td style="text-align: left">&lt;code&gt;</td><td style="text-align: left">&lt;literal&gt;, &lt;programlisting&gt;</td></tr><tr><td style="text-align: left">&lt;strong&gt;</td><td style="text-align: left">&lt;emphasis&gt;</td></tr><tr><td style="text-align: left">&lt;em&gt;</td><td style="text-align: left">&lt;emphasis&gt;</td></tr><tr><td style="text-align: left">"</td><td style="text-align: left">&lt;quote&gt;</td></tr></tbody></table></div></div><br class="table-break"/><p>
+  And examples of detailed markup for which there are no real HTML
+  equivalents are listed in the table below.
+</p><div class="table"><a id="id616997"/><p class="title"><b>Table B.5. Docbook XML Element Use</b></p><div class="table-contents"><table summary="Docbook XML Element Use" border="1"><colgroup><col style="text-align: left"/><col style="text-align: left"/></colgroup><thead><tr><th style="text-align: left">Element</th><th style="text-align: left">Use</th></tr></thead><tbody><tr><td style="text-align: left">&lt;structname&gt;</td><td style="text-align: left">&lt;structname&gt;char_traits&lt;/structname&gt;</td></tr><tr><td style="text-align: left">&lt;classname&gt;</td><td style="text-align: left">&lt;classname&gt;string&lt;/classname&gt;</td></tr><tr><td style="text-align: left">&lt;function&gt;</td><td style="text-align: left">
+	<p>&lt;function&gt;clear()&lt;/function&gt;</p>
+	<p>&lt;function&gt;fs.clear()&lt;/function&gt;</p>
+      </td></tr><tr><td style="text-align: left">&lt;type&gt;</td><td style="text-align: left">&lt;type&gt;long long&lt;/type&gt;</td></tr><tr><td style="text-align: left">&lt;varname&gt;</td><td style="text-align: left">&lt;varname&gt;fs&lt;/varname&gt;</td></tr><tr><td style="text-align: left">&lt;literal&gt;</td><td style="text-align: left">
+	<p>&lt;literal&gt;-Weffc++&lt;/literal&gt;</p>
+	<p>&lt;literal&gt;rel_ops&lt;/literal&gt;</p>
+      </td></tr><tr><td style="text-align: left">&lt;constant&gt;</td><td style="text-align: left">
+	<p>&lt;constant&gt;_GNU_SOURCE&lt;/constant&gt;</p>
+	<p>&lt;constant&gt;3.0&lt;/constant&gt;</p>
+      </td></tr><tr><td style="text-align: left">&lt;command&gt;</td><td style="text-align: left">&lt;command&gt;g++&lt;/command&gt;</td></tr><tr><td style="text-align: left">&lt;errortext&gt;</td><td style="text-align: left">&lt;errortext&gt;In instantiation of&lt;/errortext&gt;</td></tr><tr><td style="text-align: left">&lt;filename&gt;</td><td style="text-align: left">
+	<p>&lt;filename class="headerfile"&gt;ctype.h&lt;/filename&gt;</p>
+	<p>&lt;filename class="directory"&gt;/home/gcc/build&lt;/filename&gt;</p>
+	<p>&lt;filename class="libraryfile"&gt;libstdc++.so&lt;/filename&gt;</p>
+      </td></tr></tbody></table></div></div><br class="table-break"/></div></div></div><div class="navfooter"><hr/><table width="100%" summary="Navigation footer"><tr><td align="left"><a accesskey="p" href="appendix_porting.html">Prev</a> </td><td align="center"><a accesskey="u" href="appendix_porting.html">Up</a></td><td align="right"> <a accesskey="n" href="internals.html">Next</a></td></tr><tr><td align="left" valign="top">Appendix B. 
+  Porting and Maintenance
+  
+ </td><td align="center"><a accesskey="h" href="../spine.html">Home</a></td><td align="right" valign="top"> Porting to New Hardware or Operating Systems</td></tr></table></div></body></html>

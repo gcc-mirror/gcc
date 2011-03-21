@@ -60,7 +60,7 @@ import java.util.Arrays;
  * <p>This class is also a thread that is responsible for pulling
  * packets off the wire and sticking them in a queue for packet
  * processing threads.
- * 
+ *
  * @author Keith Seitz (keiths@redhat.com)
  */
 public class JdwpConnection
@@ -68,7 +68,7 @@ public class JdwpConnection
 {
   // The JDWP handshake
   private static final byte[] _HANDSHAKE = {'J', 'D', 'W', 'P', '-', 'H', 'a',
-					    'n', 'd', 's', 'h', 'a', 'k', 'e'};
+                                            'n', 'd', 's', 'h', 'a', 'k', 'e'};
 
   // Transport method
   private ITransport _transport;
@@ -121,13 +121,13 @@ public class JdwpConnection
     // Do handshake
     try
       {
-	_inStream = new DataInputStream (_transport.getInputStream ());
-	_outStream = new DataOutputStream (_transport.getOutputStream ());
-	_doHandshake ();
+        _inStream = new DataInputStream (_transport.getInputStream ());
+        _outStream = new DataOutputStream (_transport.getOutputStream ());
+        _doHandshake ();
       }
     catch (IOException ioe)
       {
-	throw new TransportException (ioe);
+        throw new TransportException (ioe);
       }
   }
 
@@ -147,13 +147,13 @@ public class JdwpConnection
 
     if (Arrays.equals (hshake, _HANDSHAKE))
       {
-	// Send reply handshake
-	_outStream.write (_HANDSHAKE, 0, _HANDSHAKE.length);
-	return;
+        // Send reply handshake
+        _outStream.write (_HANDSHAKE, 0, _HANDSHAKE.length);
+        return;
       }
     else
       {
-	throw new IOException ("invalid JDWP handshake (\"" + hshake + "\")");
+        throw new IOException ("invalid JDWP handshake (\"" + hshake + "\")");
       }
   }
 
@@ -171,25 +171,25 @@ public class JdwpConnection
 
     while (!_shutdown)
       {
-	try
-	  {
-	    _readOnePacket ();
-	  }
-	catch (IOException ioe)
-	  {
-	    /* IOException can occur for two reasons:
-	       1. Lost connection with the other side
-	       2. Transport was shutdown
-	       In either case, we make sure that all of the
-	       back-end gets shutdown. */
-	    Jdwp.getDefault().shutdown ();
-	  }
-	catch (Throwable t)
-	  {
-	    System.out.println ("JdwpConnection.run: caught an exception: "
-				+ t);
-	    // Just keep going
-	  }
+        try
+          {
+            _readOnePacket ();
+          }
+        catch (IOException ioe)
+          {
+            /* IOException can occur for two reasons:
+               1. Lost connection with the other side
+               2. Transport was shutdown
+               In either case, we make sure that all of the
+               back-end gets shutdown. */
+            Jdwp.getDefault().shutdown ();
+          }
+        catch (Throwable t)
+          {
+            System.out.println ("JdwpConnection.run: caught an exception: "
+                                + t);
+            // Just keep going
+          }
       }
   }
 
@@ -204,8 +204,8 @@ public class JdwpConnection
     int length = _inStream.readInt ();
     if (length < 11)
       {
-	throw new IOException ("JDWP packet length < 11 (" 
-			       + length + ")");
+        throw new IOException ("JDWP packet length < 11 ("
+                               + length + ")");
       }
 
     data = new byte[length];
@@ -218,11 +218,11 @@ public class JdwpConnection
     JdwpPacket packet = JdwpPacket.fromBytes (data);
     if (packet != null)
       {
-	synchronized (_commandQueue)
-	  {
-	    _commandQueue.add (packet);
-	    _commandQueue.notifyAll ();
-	  }
+        synchronized (_commandQueue)
+          {
+            _commandQueue.add (packet);
+            _commandQueue.notifyAll ();
+          }
       }
   }
 
@@ -236,21 +236,21 @@ public class JdwpConnection
   {
     synchronized (_commandQueue)
       {
-	while (_commandQueue.isEmpty ())
-	  {
-	    try
-	      {
-		_commandQueue.wait ();
-	      }
-	    catch (InterruptedException ie)
-	      {
-		/* PacketProcessor is interrupted
-		   when shutting down */
-		return null;
-	      }
-	  }
+        while (_commandQueue.isEmpty ())
+          {
+            try
+              {
+                _commandQueue.wait ();
+              }
+            catch (InterruptedException ie)
+              {
+                /* PacketProcessor is interrupted
+                   when shutting down */
+                return null;
+              }
+          }
 
-	return (JdwpPacket) _commandQueue.remove (0);
+        return (JdwpPacket) _commandQueue.remove (0);
       }
   }
 
@@ -277,16 +277,16 @@ public class JdwpConnection
    * @throws IOException
    */
   public void sendEvents(EventRequest[] requests, Event[] events,
-			 byte suspendPolicy)
+                         byte suspendPolicy)
     throws IOException
   {
     JdwpPacket pkt;
 
     synchronized (_bytes)
       {
-	_bytes.reset ();
-	pkt = Event.toPacket (_doStream, events, requests, suspendPolicy);
-	pkt.setData (_bytes.toByteArray ());
+        _bytes.reset ();
+        pkt = Event.toPacket (_doStream, events, requests, suspendPolicy);
+        pkt.setData (_bytes.toByteArray ());
       }
 
     sendPacket (pkt);
@@ -299,9 +299,9 @@ public class JdwpConnection
   {
     if (!_shutdown)
       {
-	_transport.shutdown ();
-	_shutdown = true;
-	interrupt ();
+        _transport.shutdown ();
+        _shutdown = true;
+        interrupt ();
       }
   }
 }

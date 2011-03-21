@@ -37,7 +37,7 @@ import org.objectweb.asm.Attribute;
 
 /**
  * An abstract class, field or method node.
- * 
+ *
  * @author Eric Bruneton
  */
 public abstract class MemberNode {
@@ -45,7 +45,7 @@ public abstract class MemberNode {
     /**
      * The runtime visible annotations of this class, field or method. This list
      * is a list of {@link AnnotationNode} objects. May be <tt>null</tt>.
-     * 
+     *
      * @associates org.objectweb.asm.tree.AnnotationNode
      * @label visible
      */
@@ -54,7 +54,7 @@ public abstract class MemberNode {
     /**
      * The runtime invisible annotations of this class, field or method. This
      * list is a list of {@link AnnotationNode} objects. May be <tt>null</tt>.
-     * 
+     *
      * @associates org.objectweb.asm.tree.AnnotationNode
      * @label invisible
      */
@@ -63,7 +63,7 @@ public abstract class MemberNode {
     /**
      * The non standard attributes of this class, field or method. This list is
      * a list of {@link Attribute} objects. May be <tt>null</tt>.
-     * 
+     *
      * @associates org.objectweb.asm.Attribute
      */
     public List attrs;
@@ -76,7 +76,7 @@ public abstract class MemberNode {
 
     /**
      * Visits an annotation of this class, field or method.
-     * 
+     *
      * @param desc the class descriptor of the annotation class.
      * @param visible <tt>true</tt> if the annotation is visible at runtime.
      * @return a visitor to visit the annotation values.
@@ -102,7 +102,7 @@ public abstract class MemberNode {
 
     /**
      * Visits a non standard attribute of this class, field or method.
-     * 
+     *
      * @param attr an attribute.
      */
     public void visitAttribute(final Attribute attr) {

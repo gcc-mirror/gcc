@@ -8,7 +8,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -57,17 +57,17 @@ import java.io.InputStream;
 public class InflaterInputStream extends FilterInputStream
 {
   /**
-   * Decompressor for this filter 
+   * Decompressor for this filter
    */
   protected Inflater inf;
 
   /**
-   * Byte array used as a buffer 
+   * Byte array used as a buffer
    */
   protected byte[] buf;
 
   /**
-   * Size of buffer   
+   * Size of buffer
    */
   protected int len;
 
@@ -81,7 +81,7 @@ public class InflaterInputStream extends FilterInputStream
    *
    * @param in the InputStream to read bytes from
    */
-  public InflaterInputStream(InputStream in) 
+  public InflaterInputStream(InputStream in)
   {
     this(in, new Inflater(), 4096);
   }
@@ -93,7 +93,7 @@ public class InflaterInputStream extends FilterInputStream
    * @param in the InputStream to read bytes from
    * @param inf the decompressor used to decompress data read from in
    */
-  public InflaterInputStream(InputStream in, Inflater inf) 
+  public InflaterInputStream(InputStream in, Inflater inf)
   {
     this(in, inf, 4096);
   }
@@ -106,7 +106,7 @@ public class InflaterInputStream extends FilterInputStream
    * @param inf the decompressor used to decompress data read from in
    * @param size size of the buffer to use
    */
-  public InflaterInputStream(InputStream in, Inflater inf, int size) 
+  public InflaterInputStream(InputStream in, Inflater inf, int size)
   {
     super(in);
 
@@ -116,7 +116,7 @@ public class InflaterInputStream extends FilterInputStream
       throw new NullPointerException("inf may not be null");
     if (size < 0)
       throw new IllegalArgumentException("size may not be negative");
-    
+
     this.inf = inf;
     this.buf = new byte [size];
   }
@@ -151,12 +151,12 @@ public class InflaterInputStream extends FilterInputStream
   {
     if (in == null)
       throw new ZipException ("InflaterInputStream is closed");
-    
+
     len = in.read(buf, 0, buf.length);
 
     if (len < 0)
       throw new ZipException("Deflated stream ends early.");
-    
+
     inf.setInput(buf, 0, len);
   }
 
@@ -166,7 +166,7 @@ public class InflaterInputStream extends FilterInputStream
    * The byte is in the lower 8 bits of the int.
    */
   public int read() throws IOException
-  { 
+  {
     int nread = read(onebytebuffer, 0, 1);
     if (nread > 0)
       return onebytebuffer[0] & 0xff;
@@ -192,27 +192,27 @@ public class InflaterInputStream extends FilterInputStream
     int count = 0;
     while (count == 0)
       {
-	if (inf.needsInput())
-	  fill();
-	
-	try
-	  {
-	    count = inf.inflate(b, off, len);
-	    if (count == 0)
-	      {
-		if (this.len == -1)
-		  {
-		    // Couldn't get any more data to feed to the Inflater
-		    return -1;
-		  }
-		if (inf.needsDictionary())
-		  throw new ZipException("Inflater needs Dictionary");
-	      }
-	  } 
-	catch (DataFormatException dfe) 
-	  {
-	    throw new ZipException(dfe.getMessage());
-	  }
+        if (inf.needsInput())
+          fill();
+
+        try
+          {
+            count = inf.inflate(b, off, len);
+            if (count == 0)
+              {
+                if (this.len == -1)
+                  {
+                    // Couldn't get any more data to feed to the Inflater
+                    return -1;
+                  }
+                if (inf.needsDictionary())
+                  throw new ZipException("Inflater needs Dictionary");
+              }
+          }
+        catch (DataFormatException dfe)
+          {
+            throw new ZipException(dfe.getMessage());
+          }
       }
     return count;
   }
@@ -238,12 +238,12 @@ public class InflaterInputStream extends FilterInputStream
     long skipped = 0L;
     while (n > 0L)
       {
-	int numread = read(tmpbuf, 0, buflen);
-	if (numread <= 0)
-	  break;
-	n -= numread;
-	skipped += numread;
-	buflen = (int) Math.min(n, 2048);
+        int numread = read(tmpbuf, 0, buflen);
+        if (numread <= 0)
+          break;
+        n -= numread;
+        skipped += numread;
+        buflen = (int) Math.min(n, 2048);
       }
 
     return skipped;

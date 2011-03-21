@@ -1,4 +1,4 @@
-/* IMessageDigest.java -- 
+/* IMessageDigest.java --
    Copyright (C) 2001, 2002, 2006 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -49,28 +49,28 @@ public interface IMessageDigest
 {
   /**
    * Returns the canonical name of this algorithm.
-   * 
+   *
    * @return the canonical name of this instance.
    */
   String name();
 
   /**
    * Returns the output length in bytes of this message digest algorithm.
-   * 
+   *
    * @return the output length in bytes of this message digest algorithm.
    */
   int hashSize();
 
   /**
    * Returns the algorithm's (inner) block size in bytes.
-   * 
+   *
    * @return the algorithm's inner block size in bytes.
    */
   int blockSize();
 
   /**
    * Continues a message digest operation using the input byte.
-   * 
+   *
    * @param b the input byte to digest.
    */
   void update(byte b);
@@ -79,7 +79,7 @@ public interface IMessageDigest
    * Continues a message digest operation, by filling the buffer, processing
    * data in the algorithm's HASH_SIZE-bit block(s), updating the context and
    * count, and buffering the remaining bytes in buffer for the next operation.
-   * 
+   *
    * @param in the input block.
    */
   void update(byte[] in);
@@ -88,7 +88,7 @@ public interface IMessageDigest
    * Continues a message digest operation, by filling the buffer, processing
    * data in the algorithm's HASH_SIZE-bit block(s), updating the context and
    * count, and buffering the remaining bytes in buffer for the next operation.
-   * 
+   *
    * @param in the input block.
    * @param offset start of meaningful bytes in input block.
    * @param length number of bytes, in input block, to consider.
@@ -98,7 +98,7 @@ public interface IMessageDigest
   /**
    * Completes the message digest by performing final operations such as padding
    * and resetting the instance.
-   * 
+   *
    * @return the array of bytes representing the hash value.
    */
   byte[] digest();
@@ -112,7 +112,7 @@ public interface IMessageDigest
   /**
    * A basic test. Ensures that the digest of a pre-determined message is equal
    * to a known pre-computed value.
-   * 
+   *
    * @return <code>true</code> if the implementation passes a basic self-test.
    *         Returns <code>false</code> otherwise.
    */
@@ -120,7 +120,7 @@ public interface IMessageDigest
 
   /**
    * Returns a clone copy of this instance.
-   * 
+   *
    * @return a clone copy of this instance.
    */
   Object clone();

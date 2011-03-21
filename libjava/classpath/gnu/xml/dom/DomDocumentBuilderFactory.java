@@ -1,4 +1,4 @@
-/* DomDocumentBuilderFactory.java -- 
+/* DomDocumentBuilderFactory.java --
    Copyright (C) 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -156,7 +156,7 @@ public class DomDocumentBuilderFactory
   {
     // TODO
   }
-  
+
   public void setFeature(String name, boolean value)
     throws ParserConfigurationException
   {
@@ -177,6 +177,5 @@ public class DomDocumentBuilderFactory
       return secureProcessing;
     throw new ParserConfigurationException(name);
   }
-  
-}
 
+}

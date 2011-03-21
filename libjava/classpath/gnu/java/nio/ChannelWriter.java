@@ -117,7 +117,7 @@ public class ChannelWriter
       {
         if (enc == null)
           throw new IOException("writer already closed");
-    
+
         byteBuffer.clear();
         charBuffer.flip();
         CoderResult res = enc.encode(charBuffer, byteBuffer, true);
@@ -173,7 +173,7 @@ public class ChannelWriter
                 break;
               }
             lastLen = len;
-            
+
             // Convert.
             byteBuffer.clear();
             CoderResult res = enc.encode(charBuffer, byteBuffer, false);

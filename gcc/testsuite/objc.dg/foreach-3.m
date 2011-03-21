@@ -50,6 +50,7 @@ struct __objcFastEnumerationState
   length = l;
   objects = o;
   mutated = 0;
+  return self;
 }
 - (void) mutate
 {

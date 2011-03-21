@@ -43,7 +43,7 @@ import java.util.prefs.PreferencesFactory;
 /**
  * Factory object that generates a Preferences nodes that are read from a GConf
  * daemon.
- * 
+ *
  * @author Mario Torre <neugens@limasoftware.net>
  */
 public class GConfBasedFactory implements PreferencesFactory
@@ -58,7 +58,7 @@ public class GConfBasedFactory implements PreferencesFactory
 
   /**
    * Returns the system root preference node.
-   * 
+   *
    * @see java.util.prefs.PreferencesFactory#systemRoot()
    */
   public Preferences systemRoot()
@@ -68,7 +68,7 @@ public class GConfBasedFactory implements PreferencesFactory
 
   /**
    * Returns the user root preference node corresponding to the calling user.
-   * 
+   *
    * @see java.util.prefs.PreferencesFactory#userRoot()
    */
   public Preferences userRoot()

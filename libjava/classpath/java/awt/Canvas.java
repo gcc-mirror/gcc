@@ -68,7 +68,7 @@ public class Canvas
    * Compatible with Sun's JDK.
    */
   private static final long serialVersionUID = -2284879212465893870L;
-  
+
   /**
    * The number used to generate the name returned by getName.
    */
@@ -82,8 +82,8 @@ public class Canvas
   /**
    * Initializes a new instance of <code>Canvas</code>.
    */
-  public Canvas() 
-  { 
+  public Canvas()
+  {
   }
 
   /**
@@ -109,7 +109,7 @@ public class Canvas
   }
 
   /**
-   * Repaints the canvas window.  This method should be overridden by 
+   * Repaints the canvas window.  This method should be overridden by
    * a subclass to do something useful, as this method simply paints
    * the window with the background color.
    *
@@ -154,7 +154,7 @@ public class Canvas
     {
       return AccessibleRole.CANVAS;
     }
-    
+
   }
 
   /**
@@ -186,9 +186,9 @@ public class Canvas
     CanvasBltBufferStrategy(int numBuffers, boolean accelerated)
     {
       super(numBuffers,
-	    new BufferCapabilities(new ImageCapabilities(accelerated),
-				   new ImageCapabilities(accelerated),
-				   BufferCapabilities.FlipContents.COPIED));
+            new BufferCapabilities(new ImageCapabilities(accelerated),
+                                   new ImageCapabilities(accelerated),
+                                   BufferCapabilities.FlipContents.COPIED));
     }
   }
 
@@ -209,9 +209,9 @@ public class Canvas
       throws AWTException
     {
       super(numBuffers,
-	    new BufferCapabilities(new ImageCapabilities(true),
-				   new ImageCapabilities(true),
-				   BufferCapabilities.FlipContents.COPIED));
+            new BufferCapabilities(new ImageCapabilities(true),
+                                   new ImageCapabilities(true),
+                                   BufferCapabilities.FlipContents.COPIED));
     }
   }
 
@@ -242,18 +242,18 @@ public class Canvas
   {
     if (numBuffers < 1)
       throw new IllegalArgumentException("Canvas.createBufferStrategy: number"
-					 + " of buffers is less than one");
+                                         + " of buffers is less than one");
 
     if (!isDisplayable())
       throw new IllegalStateException("Canvas.createBufferStrategy: canvas is"
-				      + " not displayable");
+                                      + " not displayable");
 
     BufferStrategy newStrategy = null;
 
     // try a flipping strategy
     try
       {
-	newStrategy = new CanvasFlipBufferStrategy(numBuffers);
+        newStrategy = new CanvasFlipBufferStrategy(numBuffers);
       }
     catch (AWTException e)
       {
@@ -290,11 +290,11 @@ public class Canvas
   {
     if (numBuffers < 1)
       throw new IllegalArgumentException("Canvas.createBufferStrategy: number"
-					 + " of buffers is less than one");
+                                         + " of buffers is less than one");
 
     if (caps == null)
       throw new IllegalArgumentException("Canvas.createBufferStrategy:"
-					 + " capabilities object is null");
+                                         + " capabilities object is null");
 
     // a flipping strategy was requested
     if (caps.isPageFlipping())
@@ -336,7 +336,7 @@ public class Canvas
     /* Call the paint method */
     paint(graphics);
   }
-  
+
   /**
    * Generate a unique name for this <code>Canvas</code>.
    *

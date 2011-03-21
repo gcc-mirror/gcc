@@ -101,14 +101,14 @@ public class NotificationResult
    *                                  <code>null</code>.
    */
   public NotificationResult(long startSeqNumber, long nextSeqNumber,
-			    TargetedNotification[] notifications)
+                            TargetedNotification[] notifications)
   {
     if (startSeqNumber < 0)
       throw new IllegalArgumentException("Starting sequence number is " +
-					 "less than 0.");
+                                         "less than 0.");
     if (nextSeqNumber < 0)
       throw new IllegalArgumentException("Next sequence number is " +
-					 "less than 0.");
+                                         "less than 0.");
     if (notifications == null)
       throw new IllegalArgumentException("The array of notifications is null.");
     earliestSequenceNumber = startSeqNumber;
@@ -158,7 +158,7 @@ public class NotificationResult
   {
     return getClass().getName() +
       "[earliestSequenceNumber=" + earliestSequenceNumber +
-      ",nextSequenceNumber=" + nextSequenceNumber + 
+      ",nextSequenceNumber=" + nextSequenceNumber +
       ",targetedNotifications=" + targetedNotifications +
       "]";
   }

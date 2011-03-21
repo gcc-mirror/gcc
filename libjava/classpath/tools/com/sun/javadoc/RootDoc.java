@@ -48,7 +48,7 @@ public interface RootDoc extends Doc, DocErrorReporter
   /**
    * This method returns the command line element used to invoke this instance
    * of javadoc.
-   * 
+   *
    * @return The command line arguments for this run.
    */
   public abstract String[][] options();
@@ -58,7 +58,7 @@ public interface RootDoc extends Doc, DocErrorReporter
   /**
    * This method returns the list of packages that were specified on the command
    * line.
-   * 
+   *
    * @return The packages specified on the command line.
    */
   public abstract PackageDoc[] specifiedPackages();
@@ -68,7 +68,7 @@ public interface RootDoc extends Doc, DocErrorReporter
   /**
    * This method returns the list of classes that were specified on the command
    * line.
-   * 
+   *
    * @return The classes specified on the command line.
    */
   public abstract ClassDoc[] specifiedClasses();
@@ -77,7 +77,7 @@ public interface RootDoc extends Doc, DocErrorReporter
 
   /**
    * This method returns the list of classes and interfaces to be documented.
-   * 
+   *
    * @return The list of classes and interfaces to be documented.
    */
   public abstract ClassDoc[] classes();
@@ -87,7 +87,7 @@ public interface RootDoc extends Doc, DocErrorReporter
   /**
    * This method returns a <code>ClassDoc</code> instance for the name class
    * or interface.
-   * 
+   *
    * @param name
    *          The class or interface to look up.
    * @return The requested <code>ClassDoc</code>, or null if the specified
@@ -100,7 +100,7 @@ public interface RootDoc extends Doc, DocErrorReporter
   /**
    * This method returns a <code>PackageDoc</code> instance for the named
    * package.
-   * 
+   *
    * @param name
    *          The package to look up.
    * @return The requested <code>PackageDoc</code>, or null if the specified
@@ -109,4 +109,3 @@ public interface RootDoc extends Doc, DocErrorReporter
   public abstract PackageDoc packageNamed(String name);
 
 } // interface RootDoc
-

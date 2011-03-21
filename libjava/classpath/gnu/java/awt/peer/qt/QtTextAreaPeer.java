@@ -69,7 +69,7 @@ public class QtTextAreaPeer extends QtComponentPeer implements TextAreaPeer
    * Called back on a text edit.
    */
   private void textChanged()
-  {  
+  {
     TextEvent e = new TextEvent(owner, TextEvent.TEXT_VALUE_CHANGED);
     QtToolkit.eventQueue.postEvent(e);
   }
@@ -95,7 +95,7 @@ public class QtTextAreaPeer extends QtComponentPeer implements TextAreaPeer
   public native int getIndexAtPoint(int x, int y);
 
 //   public void reshape(int x, int y,
-// 		      int width, int height)
+//                    int width, int height)
 //   {
 //     if(width != 0 || height != 0)
 //       super.reshape(x, y, width, height);
@@ -177,4 +177,3 @@ public class QtTextAreaPeer extends QtComponentPeer implements TextAreaPeer
     return null;
   }
 }
-

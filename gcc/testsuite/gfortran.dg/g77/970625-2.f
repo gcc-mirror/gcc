@@ -40,7 +40,7 @@
          PROGRAM = THEN - IF
          ELSE IF = THEN .GT. IF
          IF (THEN.GT.REAL) THEN
-            CALL FUNCTION PROGRAM (ELSE IF, GO TO PROGRAM, THEN) ! { dg-warning "Type mismatch in argument" }
+            CALL FUNCTION PROGRAM (ELSE IF, GO TO PROGRAM, THEN) ! { dg-error "Type mismatch in argument" }
          ELSE IF (ELSE IF) THEN
             REAL = THEN + END DO
          END IF

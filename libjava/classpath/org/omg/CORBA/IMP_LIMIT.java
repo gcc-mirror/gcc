@@ -43,15 +43,15 @@ import java.io.Serializable;
 /**
  * Means that the server has reached some implementation limit
  * (too many clients, too many references, too long parameters and so on).
- * 
+ *
  * @author Audrius Meskauskas (AudriusA@Bioinformatics.org)
  */
 public final class IMP_LIMIT
   extends SystemException
   implements Serializable
 {
-  /** 
-   * Use serialVersionUID for interoperability. 
+  /**
+   * Use serialVersionUID for interoperability.
    */
   private static final long serialVersionUID = -8086463494577448422L;
 

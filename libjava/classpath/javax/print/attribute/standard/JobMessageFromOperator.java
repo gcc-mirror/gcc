@@ -1,4 +1,4 @@
-/* JobMessageFromOperator.java -- 
+/* JobMessageFromOperator.java --
    Copyright (C) 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -45,15 +45,15 @@ import javax.print.attribute.PrintJobAttribute;
 import javax.print.attribute.TextSyntax;
 
 /**
- * The <code>JobMessageFromOperator</code> printing attribute provides 
+ * The <code>JobMessageFromOperator</code> printing attribute provides
  * a message from an operator or a system administrator related to the
  * print job. This may include information why a certain action has been
  * taken on the print job like a modification.
  * <p>
- * <b>IPP Compatibility:</b> JobMessageFromOperator is an IPP 1.1 
+ * <b>IPP Compatibility:</b> JobMessageFromOperator is an IPP 1.1
  * attribute.
  * </p>
- * 
+ *
  * @author Michael Koch (konqueror@gmx.de)
  */
 public final class JobMessageFromOperator extends TextSyntax
@@ -80,7 +80,7 @@ public final class JobMessageFromOperator extends TextSyntax
    *
    * @param obj the object to test
    *
-   * @return <code>true</code> if both objects are equal, 
+   * @return <code>true</code> if both objects are equal,
    * <code>false</code> otherwise.
    */
   public boolean equals(Object obj)

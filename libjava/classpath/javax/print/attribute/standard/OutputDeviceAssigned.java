@@ -1,4 +1,4 @@
-/* OutputDeviceAssigned.java -- 
+/* OutputDeviceAssigned.java --
    Copyright (C) 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -46,17 +46,17 @@ import javax.print.attribute.TextSyntax;
 
 /**
  * The <code>OutputDeviceAssigned</code> printing attribute specifies the
- * output printer device assigned by a print service to a print job. 
+ * output printer device assigned by a print service to a print job.
  * <p>
  * This may be empty if a print service is embedded in a printer, e.g. is the
- * output device. However there exist print services with several physical 
+ * output device. However there exist print services with several physical
  * output devices (e.g. CUPS classes) where this attribute provides the actual
  * output device.
  * </p>
  * <p>
  * <b>IPP Compatibility:</b> OutputDeviceAssigned is an IPP 1.1 attribute.
  * </p>
- * 
+ *
  * @author Michael Koch (konqueror@gmx.de)
  */
 public final class OutputDeviceAssigned extends TextSyntax
@@ -83,7 +83,7 @@ public final class OutputDeviceAssigned extends TextSyntax
    *
    * @param obj the object to test
    *
-   * @return <code>true</code> if both objects are equal, 
+   * @return <code>true</code> if both objects are equal,
    * <code>false</code> otherwise.
    */
   public boolean equals(Object obj)

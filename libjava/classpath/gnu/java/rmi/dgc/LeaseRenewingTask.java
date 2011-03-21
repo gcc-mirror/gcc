@@ -54,11 +54,11 @@ import java.util.WeakHashMap;
  * sheduled task does not prevent it from being garbage collected. If the
  * reference has not been garbage collected, the task is resheduled after
  * the lease is renewed.
- * 
+ *
  *  @author Audrius Meskauskas (Audriusa@Bioinformatics.org)
  */
 public class LeaseRenewingTask
-{ 
+{
   /**
    * The sheduled timer task to call the renew() method.
    */
@@ -69,12 +69,12 @@ public class LeaseRenewingTask
       renew();
     }
   }
-  
+
   /**
    * The default requested lease duration time (one minute by default).
    */
   public static long REQUEST_LEASE_DURATION =  60000;
-  
+
   /**
    * The reference to the UnicastRef that must renew its lease until not
    * garbage collected. The different members of this list may point to the
@@ -84,28 +84,28 @@ public class LeaseRenewingTask
    * frequent deletions from the middle easy.
    */
   LinkedList ref = new LinkedList();
-  
+
   /**
    * The granted (or supposed) lease.
    */
   Lease lease = new Lease(null, REQUEST_LEASE_DURATION);
-  
+
   /**
    * The timer, shared by all lease renewing tasks. The same instance is also
    * used for the reference protector discarding in DGCImpl.
    */
   static Timer timer = new Timer(true);
-  
+
   /**
    * Maps the UnicastRef to its renewing task.
    */
-  static WeakHashMap existingTasks = new WeakHashMap();  
-  
+  static WeakHashMap existingTasks = new WeakHashMap();
+
   /**
    * Creates the lease renewing task that renews the lease of the given
    * UnicastRef until it is not collected. This constructor requests the lease
    * value from the server and schedules the lease renewal action.
-   * 
+   *
    * @param renewIt the reference that must be renewed.
    */
   public LeaseRenewingTask(UnicastRef renewIt)
@@ -117,10 +117,10 @@ public class LeaseRenewingTask
         ref.add(new WeakReference(renewIt));
       }
   }
-  
+
   /**
    * Schedule periodic leases for the given UnicastRef reference.
-   * 
+   *
    * @param renewIt the reference, for that the leases must be scheduled.
    */
   public static void scheduleLeases(UnicastRef renewIt)
@@ -155,23 +155,23 @@ public class LeaseRenewingTask
       throw ierr;
     }
   }
-  
+
   /**
    * Shedule the renewing call, taking into consideration that the following
    * lease was granted.
-   * 
+   *
    * @param lease the lease that was granted.
    */
   public void schedule(Lease lease)
   {
     long value = lease.getValue();
-    
+
     // Shedule a 10 % earlier because some time is needed for the message
     // to reach the server.
     long reduced = (value * 90)/100;
     if (reduced == 0)
       reduced = value;
-    
+
     timer.schedule(new LeaseTimerTask(), reduced);
   }
 
@@ -197,11 +197,11 @@ public class LeaseRenewingTask
             iter.remove();
         }
     }
-    
+
     if (renewIt!=null)
       {
         Lease lease = notifyDGC( (UnicastRef) renewIt);
-        
+
         // Schedule the next renewing session.
         if (lease!=null)
           schedule(lease);
@@ -210,10 +210,10 @@ public class LeaseRenewingTask
         // All references collected - discard this entry.
       }
   }
-  
+
   /**
    * Notify DGC that we still hold this reference.
-   * 
+   *
    * @param renewIt the reference we still have (must not be null).
    */
   public Lease notifyDGC(UnicastRef renewIt)

@@ -1,4 +1,4 @@
-/* EncodeRLE4.java -- 
+/* EncodeRLE4.java --
    Copyright (C) 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -63,10 +63,10 @@ public class EncodeRLE4
   private static final byte EOL = (byte)0; // end of line
   private static final byte EOB = (byte)1; // end of bitmap
   private static final byte DELTA = (byte)2; // delta
-  
+
   /**
    * Constructs an instance of this class.
-   * 
+   *
    * @param fh - the file header to use.
    * @param ih - the info header to use.
    */
@@ -77,10 +77,10 @@ public class EncodeRLE4
     infoHeader = ih;
     offset = BMPFileHeader.SIZE + BMPInfoHeader.SIZE;
   }
-  
+
   /**
    * The image encoder.
-   * 
+   *
    * @param o - the image output stream
    * @param streamMetadata - metadata associated with this stream, or
    * null
@@ -111,12 +111,12 @@ public class EncodeRLE4
                                            infoHeader.biHeight, bitmap, 0,
                                            infoHeader.biWidth);
         pg.grabPixels();
-        
+
         for (j = 0; j < size; j++)
           {
             value = bitmap[rowIndex];
             buf.put((byte) (value & 0xFF));
-            
+
             if (rowCount == infoHeader.biWidth)
               {
                 rowCount = 1;
@@ -127,7 +127,7 @@ public class EncodeRLE4
               rowCount++;
             rowIndex++;
           }
-        
+
         buf.flip();
         o.write(uncompress(infoHeader.biWidth, infoHeader.biHeight, buf));
       }
@@ -136,10 +136,10 @@ public class EncodeRLE4
         wb.printStackTrace();
       }
   }
-  
+
   /**
    * Uncompresses the image stored in the buffer.
-   * 
+   *
    * @param w - the width of the image
    * @param h - the height of the image
    * @param buf - the ByteBuffer containing the pixel values.
@@ -190,7 +190,7 @@ public class EncodeRLE4
                     {
                       throw new IOException("Error reading compressed data.");
                     }
-                    
+
                     int dx = cmd[0] & (0xFF);
                     int dy = cmd[1] & (0xFF);
                     x += dx;

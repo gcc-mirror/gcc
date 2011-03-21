@@ -45,12 +45,12 @@ import javax.swing.JFileChooser;
 /**
  * The base class for filters that control the visibility of files in the
  * {@link JFileChooser} component.
- * 
+ *
  * @see JFileChooser#addChoosableFileFilter(FileFilter)
- * 
- * @author	Andrew Selkirk
+ *
+ * @author      Andrew Selkirk
  */
-public abstract class FileFilter 
+public abstract class FileFilter
 {
 
   /**
@@ -64,20 +64,20 @@ public abstract class FileFilter
   /**
    * Returns <code>true</code> if the specified file matches the filter, and
    * <code>false</code> otherwise.
-   * 
+   *
    * @param file  the file.
-   * 
+   *
    * @return A boolean.
    */
   public abstract boolean accept(File file);
 
   /**
-   * Returns a description of the files that will be selected by the filter 
-   * (for example, "Java source files").  This description will usually be 
+   * Returns a description of the files that will be selected by the filter
+   * (for example, "Java source files").  This description will usually be
    * displayed on the {@link JFileChooser} component, often in a combo box that
    * is used to select the appropriate filter (in cases where more than one
    * filter is available).
-   * 
+   *
    * @return A description of the filter.
    */
   public abstract String getDescription();

@@ -33,7 +33,9 @@
 #include <locale>
 #include <ext/codecvt_specializations.h>
 
-_GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
+namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /// class enc_filebuf.
   template<typename _CharT>
@@ -57,6 +59,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       __glibcxx_class_requires(state_type, _SGIAssignableConcept)
     };
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
 
 #endif

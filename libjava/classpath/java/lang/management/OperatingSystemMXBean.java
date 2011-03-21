@@ -89,7 +89,7 @@ public interface OperatingSystemMXBean
   /**
    * Returns the system load average for the last minute, or -1
    * if this is unavailable.  The availability and calculation
-   * of the load average is system-dependent, but is usually 
+   * of the load average is system-dependent, but is usually
    * a damped time-dependent average obtained by monitoring the
    * number of queued and running processes.  It is expected
    * that this method will be called frequently to monitor the

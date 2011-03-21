@@ -350,30 +350,6 @@ enum reg_class
    (as well as added to a displacement).  */
 #define INDEX_REG_CLASS REAL_REGS
 
-/* A C expression which defines the machine-dependent operand constraint
-   letters for register classes.  If CHAR is such a letter, the value should be
-   the register class corresponding to it.  Otherwise, the value should be
-   `NO_REGS'.  The register letter `r', corresponding to class `GENERAL_REGS',
-   will not be passed to this macro; you do not need to handle it.
-
-   The following letters are unavailable, due to being used as
-   constraints:
-	'0'..'9'
-	'<', '>'
-	'E', 'F', 'G', 'H'
-	'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P'
-	'Q', 'R', 'S', 'T', 'U'
-	'V', 'X'
-	'g', 'i', 'm', 'n', 'o', 'p', 'r', 's' */
-
-#define REG_CLASS_FROM_LETTER(CHAR) 	\
-     (  (CHAR) == 'd' ? MULTIPLY_64_REG	\
-      : (CHAR) == 'e' ? MULTIPLY_32_REG	\
-      : (CHAR) == 'h' ? HIGH_REGS	\
-      : (CHAR) == 'l' ? LOW_REGS	\
-      : (CHAR) == 'a' ? ALL_REGS	\
-      : NO_REGS)
-
 /* A C expression which is nonzero if register number NUM is suitable for use
    as a base register in operand addresses.  It may be either a suitable hard
    register or a pseudo register that has been allocated such a hard register.  */
@@ -402,53 +378,6 @@ enum reg_class
    This macro helps control the handling of multiple-word values in
    the reload pass.  */
 #define CLASS_MAX_NREGS(CLASS, MODE) HARD_REGNO_NREGS (0, MODE)
-
-/*}}}*/ 
-/*{{{  CONSTANTS.  */ 
-
-/* A C expression that defines the machine-dependent operand constraint letters
-   (`I', `J', `K', .. 'P') that specify particular ranges of integer values.
-   If C is one of those letters, the expression should check that VALUE, an
-   integer, is in the appropriate range and return 1 if so, 0 otherwise.  If C
-   is not one of those letters, the value should be 0 regardless of VALUE.  */
-#define CONST_OK_FOR_LETTER_P(VALUE, C) 			\
- (  (C) == 'I' ? IN_RANGE (VALUE,    0,       15)		\
-  : (C) == 'J' ? IN_RANGE (VALUE,  -16,       -1)		\
-  : (C) == 'K' ? IN_RANGE (VALUE,   16,       31)		\
-  : (C) == 'L' ? IN_RANGE (VALUE,    0,       (1 <<  8) - 1)	\
-  : (C) == 'M' ? IN_RANGE (VALUE,    0,       (1 << 20) - 1)	\
-  : (C) == 'P' ? IN_RANGE (VALUE,  -(1 << 8), (1 <<  8) - 1)	\
-  : 0)
-     
-/* A C expression that defines the machine-dependent operand constraint letters
-   (`G', `H') that specify particular ranges of `const_double' values.
-
-   If C is one of those letters, the expression should check that VALUE, an RTX
-   of code `const_double', is in the appropriate range and return 1 if so, 0
-   otherwise.  If C is not one of those letters, the value should be 0
-   regardless of VALUE.
-
-   `const_double' is used for all floating-point constants and for `DImode'
-   fixed-point constants.  A given letter can accept either or both kinds of
-   values.  It can use `GET_MODE' to distinguish between these kinds.  */
-#define CONST_DOUBLE_OK_FOR_LETTER_P(VALUE, C) 0
-
-/* A C expression that defines the optional machine-dependent constraint
-   letters (`Q', `R', `S', `T', `U') that can be used to segregate specific
-   types of operands, usually memory references, for the target machine.
-   Normally this macro will not be defined.  If it is required for a particular
-   target machine, it should return 1 if VALUE corresponds to the operand type
-   represented by the constraint letter C.  If C is not defined as an extra
-   constraint, the value returned should be 0 regardless of VALUE.
-
-   For example, on the ROMP, load instructions cannot have their output in r0
-   if the memory reference contains a symbolic address.  Constraint letter `Q'
-   is defined as representing a memory address that does *not* contain a
-   symbolic address.  An alternative is specified with a `Q' constraint on the
-   input and `r' on the output.  The next alternative specifies `m' on the
-   input and a register class that does not include r0 on the output.  */
-#define EXTRA_CONSTRAINT(VALUE, C) \
-   ((C) == 'Q' ? (GET_CODE (VALUE) == MEM && GET_CODE (XEXP (VALUE, 0)) == SYMBOL_REF) : 0)
 
 /*}}}*/ 
 /*{{{  Basic Stack Layout.  */ 

@@ -44,7 +44,7 @@ import java.util.List;
  * This interface represents the management interface for logging.
  * There is a single logging bean per VM instance, which can be
  * retrieved via {@link LogManager#getLoggingMXBean()}.
- * 
+ *
  * @since 1.5
  */
 public interface LoggingMXBean
@@ -73,7 +73,7 @@ public interface LoggingMXBean
 
   /**
    * Sets the logging level for a particular logger.
-   * 
+   *
    * @param logger the name of the logger
    * @param level the name of the new logging level, or null
    * @throws IllegalArgumentException if the level is not

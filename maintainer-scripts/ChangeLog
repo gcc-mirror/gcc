@@ -1,3 +1,23 @@
+2011-03-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* crontab: Enable 4.7 snapshots, switch 4.6 snapshots to
+	4.6 branch.
+
+2011-02-07  Joseph Myers  <joseph@codesourcery.com>
+
+	* update_web_docs_svn: Generate libquadmath-vers.texi.
+
+2011-01-31  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* update_version_svn (FILES): Merge with datestamp_FILES.
+	(SVNROOT2): Introduce and use.
+	
+2011-01-30  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* update_version_svn (SVN): Remove obsolete comment.
+	(CURR_DATE): Fix description.
+	Fix description of checkout procedure.
+
 2010-12-18  Tobias Burnus  <burnus@net-b.de>
 
 	* update_web_docs_svn (MANUALS): Add libquadmath.

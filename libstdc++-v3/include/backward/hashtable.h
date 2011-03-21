@@ -66,7 +66,9 @@
 #include <bits/stl_function.h>
 #include <backward/hash_fun.h>
 
-_GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
+namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   using std::size_t;
   using std::ptrdiff_t;
@@ -1141,6 +1143,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 	}
     }
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
 
 #endif

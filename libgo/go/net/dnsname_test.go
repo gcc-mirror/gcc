@@ -16,18 +16,18 @@ type testCase struct {
 
 var tests = []testCase{
 	// RFC2181, section 11.
-	testCase{"_xmpp-server._tcp.google.com", true},
-	testCase{"_xmpp-server._tcp.google.com", true},
-	testCase{"foo.com", true},
-	testCase{"1foo.com", true},
-	testCase{"26.0.0.73.com", true},
-	testCase{"fo-o.com", true},
-	testCase{"fo1o.com", true},
-	testCase{"foo1.com", true},
-	testCase{"a.b..com", false},
+	{"_xmpp-server._tcp.google.com", true},
+	{"_xmpp-server._tcp.google.com", true},
+	{"foo.com", true},
+	{"1foo.com", true},
+	{"26.0.0.73.com", true},
+	{"fo-o.com", true},
+	{"fo1o.com", true},
+	{"foo1.com", true},
+	{"a.b..com", false},
 }
 
-func getTestCases(ch chan<- *testCase) {
+func getTestCases(ch chan<- testCase) {
 	defer close(ch)
 	var char59 = ""
 	var char63 = ""
@@ -39,17 +39,17 @@ func getTestCases(ch chan<- *testCase) {
 	char64 = char63 + "a"
 
 	for _, tc := range tests {
-		ch <- &tc
+		ch <- tc
 	}
 
-	ch <- &testCase{char63 + ".com", true}
-	ch <- &testCase{char64 + ".com", false}
+	ch <- testCase{char63 + ".com", true}
+	ch <- testCase{char64 + ".com", false}
 	// 255 char name is fine:
-	ch <- &testCase{char59 + "." + char63 + "." + char63 + "." +
+	ch <- testCase{char59 + "." + char63 + "." + char63 + "." +
 		char63 + ".com",
 		true}
 	// 256 char name is bad:
-	ch <- &testCase{char59 + "a." + char63 + "." + char63 + "." +
+	ch <- testCase{char59 + "a." + char63 + "." + char63 + "." +
 		char63 + ".com",
 		false}
 }
@@ -58,7 +58,7 @@ func TestDNSNames(t *testing.T) {
 	if runtime.GOOS == "windows" {
 		return
 	}
-	ch := make(chan *testCase)
+	ch := make(chan testCase)
 	go getTestCases(ch)
 	for tc := range ch {
 		if isDomainName(tc.name) != tc.result {

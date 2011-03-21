@@ -1,4 +1,4 @@
-/* XMLEventReaderImpl.java -- 
+/* XMLEventReaderImpl.java --
    Copyright (C) 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -102,7 +102,7 @@ public class XMLEventReaderImpl
         return false;
       }
   }
-  
+
   public XMLEvent peek()
     throws XMLStreamException
   {
@@ -155,4 +155,3 @@ public class XMLEventReaderImpl
   }
 
 }
-

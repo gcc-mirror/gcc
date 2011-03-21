@@ -84,16 +84,16 @@ public class NamingManager
 
   /**
    * Checks if the initial context factory builder has been set.
-   * 
+   *
    * @return true if the builder has been set
-   * 
+   *
    * @see #setInitialContextFactoryBuilder(InitialContextFactoryBuilder)
    */
   public static boolean hasInitialContextFactoryBuilder ()
   {
     return icfb != null;
   }
-  
+
   /**
    * Creates the initial context. If the initial object factory builder has
    * been set with {@link #setObjectFactoryBuilder(ObjectFactoryBuilder)},
@@ -101,54 +101,54 @@ public class NamingManager
    * for the property Context.INITIAL_CONTEXT_FACTORY first in the passed
    * table and then in the system properties. The value of this property is
    * uses as a class name to install the context factory. The corresponding
-   * class must exist, be public and have the public parameterless constructor. 
-   * 
+   * class must exist, be public and have the public parameterless constructor.
+   *
    * @param environment the properties, used to create the context.
-   * 
+   *
    * @return the created context
-   * 
+   *
    * @throws NoInitialContextException if the initial builder is not set,
    *           the property Context.INITIAL_CONTEXT_FACTORY is missing of the
-   *           class, named by this property, cannot be instantiated. 
+   *           class, named by this property, cannot be instantiated.
    * @throws NamingException if throws by the context factory
    */
   public static Context getInitialContext (Hashtable<?, ?> environment)
     throws NamingException
   {
     InitialContextFactory icf = null;
-    
+
     if (icfb != null)
       icf = icfb.createInitialContextFactory(environment);
     else
-      {	 
-	String java_naming_factory_initial = null;
-	if (environment != null)
-	  java_naming_factory_initial
-	    = (String) environment.get (Context.INITIAL_CONTEXT_FACTORY);
-	if (java_naming_factory_initial == null)
-	  java_naming_factory_initial =
-	    System.getProperty (Context.INITIAL_CONTEXT_FACTORY);
-	if (java_naming_factory_initial == null)
-	  throw new
-	    NoInitialContextException ("Can't find property: "
-				       + Context.INITIAL_CONTEXT_FACTORY);
+      {
+        String java_naming_factory_initial = null;
+        if (environment != null)
+          java_naming_factory_initial
+            = (String) environment.get (Context.INITIAL_CONTEXT_FACTORY);
+        if (java_naming_factory_initial == null)
+          java_naming_factory_initial =
+            System.getProperty (Context.INITIAL_CONTEXT_FACTORY);
+        if (java_naming_factory_initial == null)
+          throw new
+            NoInitialContextException ("Can't find property: "
+                                       + Context.INITIAL_CONTEXT_FACTORY);
 
-	try
-	  {
-	    icf = (InitialContextFactory)Class.forName
-		(java_naming_factory_initial, true,
-		 Thread.currentThread().getContextClassLoader())
-		.newInstance ();
-	  }
-	catch (Exception exception)
-	  {
-	    NoInitialContextException e
-	      = new NoInitialContextException
-	      ("Can't load InitialContextFactory class: "
-	       + java_naming_factory_initial);
-	    e.setRootCause(exception);
-	    throw e;
-	  }
+        try
+          {
+            icf = (InitialContextFactory)Class.forName
+                (java_naming_factory_initial, true,
+                 Thread.currentThread().getContextClassLoader())
+                .newInstance ();
+          }
+        catch (Exception exception)
+          {
+            NoInitialContextException e
+              = new NoInitialContextException
+              ("Can't load InitialContextFactory class: "
+               + java_naming_factory_initial);
+            e.setRootCause(exception);
+            throw e;
+          }
       }
 
     return icf.getInitialContext (environment);
@@ -178,7 +178,7 @@ public class NamingManager
    * After the factory is instantiated, its method
    * {@link ObjectFactory#getObjectInstance(Object, Name, Context, Hashtable)}
    * is called to create and return the object instance.
-   * 
+   *
    * @param refInfo passed to the factory
    * @param name passed to the factory
    * @param nameCtx passed to the factory
@@ -198,7 +198,7 @@ public class NamingManager
 
     // The final default location, as specified in the documentation.
     String finalPrefix = "com.sun.jndi.url";
-  
+
     CPStringBuilder allPrefixes = new CPStringBuilder();
 
     String prefixes;
@@ -208,7 +208,7 @@ public class NamingManager
         if (prefixes != null)
           allPrefixes.append(prefixes);
         }
-  
+
     prefixes = System.getProperty(Context.URL_PKG_PREFIXES);
     if (prefixes != null)
       {
@@ -224,7 +224,7 @@ public class NamingManager
     allPrefixes.append(finalPrefix);
 
       scheme = scheme + "." + scheme + "URLContextFactory";
-  
+
     StringTokenizer tokens = new StringTokenizer(allPrefixes.toString(), ":");
     while (tokens.hasMoreTokens())
         {
@@ -279,8 +279,8 @@ public class NamingManager
           {
             // Anything from getObjectInstance.
           }
-	}
-    
+        }
+
     return null;
   }
 
@@ -322,9 +322,9 @@ public class NamingManager
           }
       }
     return null;
-  }  
-  
-  
+  }
+
+
   /**
    * <p>
    * Creates the URL context for the given URL scheme id.
@@ -345,7 +345,7 @@ public class NamingManager
    * After the factory is instantiated, its method
    * {@link ObjectFactory#getObjectInstance(Object, Name, Context, Hashtable)}
    * is called to create and return the object instance.
-   * 
+   *
    * @param scheme the url scheme that must be supported by the given context
    * @param environment the properties for creating the factory and context
    *                    (may be null)
@@ -354,7 +354,7 @@ public class NamingManager
    *                         context.
    */
   public static Context getURLContext (String scheme,
-				       Hashtable<?, ?> environment) 
+                                       Hashtable<?, ?> environment)
        throws NamingException
   {
     return getURLContext (null, null, null, scheme, environment);
@@ -362,12 +362,12 @@ public class NamingManager
 
   /**
    * Sets the initial object factory builder.
-   * 
+   *
    * @param builder the builder to set
-   * 
+   *
    * @throws SecurityException if the builder cannot be installed due
    *           security restrictions.
-   * @throws NamingException if the builder cannot be installed due other 
+   * @throws NamingException if the builder cannot be installed due other
    *           reasons
    * @throws IllegalStateException if setting the builder repeatedly
    */
@@ -385,7 +385,7 @@ public class NamingManager
   }
 
   static StringTokenizer getPlusPath (String property, Hashtable env,
-				      Context nameCtx)
+                                      Context nameCtx)
     throws NamingException
   {
     String path = (String) env.get (property);
@@ -398,12 +398,12 @@ public class NamingManager
       path += ":" + path2;
     return new StringTokenizer (path != null ? path : "", ":");
   }
-  
+
   /**
    * <p>Creates an object for the specified name context, environment and
    * referencing context object.</p>
    * <p>
-   * If the builder factory is set by 
+   * If the builder factory is set by
    * {@link #setObjectFactoryBuilder(ObjectFactoryBuilder)}, the call is
    * delegated to that factory. Otherwise, the object is created using the
    * following rules:
@@ -415,20 +415,20 @@ public class NamingManager
    *       are StringRefAddrs having the address type "URL", the object is
    *       created by the URL context factory. The used factory corresponds the
    *       the naming schema of the each URL. If the attempt to create
-   *       the object this way is not successful, the subsequent rule is 
+   *       the object this way is not successful, the subsequent rule is
    *       tried.</li>
    * <li>  If the refInfo is not an instance of Reference or Referencable
    *       (for example, null), the object is created by the factories,
-   *       specified in the Context.OBJECT_FACTORIES property of the 
+   *       specified in the Context.OBJECT_FACTORIES property of the
    *       environment and the provider resource file, associated with the
    *       nameCtx. The value of this property is the colon separated list
    *       of the possible factories. If none of the factories can be
-   *       loaded, the refInfo is returned.            
+   *       loaded, the refInfo is returned.
    * </ul>
    * </p>
    * <p>The object factory must be public and have the public parameterless
    * constructor.</p>
-   *  
+   *
    * @param refInfo the referencing object, for which the new object must be
    *          created (can be null). If not null, it is usually an instance of
    *          the {@link Reference} or {@link Referenceable}.
@@ -441,19 +441,19 @@ public class NamingManager
    * @param environment contains additional information for creating the object.
    *          This paramter can be null if there is no need to provide any
    *          additional information.
-   *        
+   *
    * @return  the created object. If the creation fails, in some cases
    *          the parameter refInfo may be returned.
-   * 
+   *
    * @throws NamingException if the attempt to name the new object has failed
    * @throws Exception if the object factory throws it. The object factory
    *           only throws an exception if it does not want other factories
    *           to be used to create the object.
    */
   public static Object getObjectInstance (Object refInfo,
-					  Name name,
-					  Context nameCtx,
-					  Hashtable<?, ?> environment)
+                                          Name name,
+                                          Context nameCtx,
+                                          Hashtable<?, ?> environment)
     throws Exception
   {
     ObjectFactory factory = null;
@@ -462,102 +462,102 @@ public class NamingManager
       factory = ofb.createObjectFactory (refInfo, environment);
     else
       {
-	// First see if we have a Reference or a Referenceable.  If so
-	// we do some special processing.
-	Object ref2 = refInfo;
-	if (refInfo instanceof Referenceable)
-	  ref2 = ((Referenceable) refInfo).getReference ();
-	if (ref2 instanceof Reference)
-	  {
-	    Reference ref = (Reference) ref2;
+        // First see if we have a Reference or a Referenceable.  If so
+        // we do some special processing.
+        Object ref2 = refInfo;
+        if (refInfo instanceof Referenceable)
+          ref2 = ((Referenceable) refInfo).getReference ();
+        if (ref2 instanceof Reference)
+          {
+            Reference ref = (Reference) ref2;
 
-	    // If we have a factory class name then we use that.
-	    String fClass = ref.getFactoryClassName ();
-	    if (fClass != null)
-	      {
-		// Exceptions here are passed to the caller.
-		Class k = Class.forName (fClass,
-					 true,
-					 Thread.currentThread().getContextClassLoader());
-		factory = (ObjectFactory) k.newInstance ();
-	      }
-	    else
-	      {
-		// There's no factory class name.  If the address is a
-		// StringRefAddr with address type `URL', then we try
-		// the URL's context factory.
-		Enumeration e = ref.getAll ();
-		while (e.hasMoreElements ())
-		  {
-		    RefAddr ra = (RefAddr) e.nextElement ();
-		    if (ra instanceof StringRefAddr
-			&& "URL".equals (ra.getType ()))
-		      {
-			factory
-			  = (ObjectFactory) getURLContext (refInfo,
-							   name,
-							   nameCtx,
-							   (String) ra.getContent (),
-							   environment);
-			Object obj = factory.getObjectInstance (refInfo,
-								name,
-								nameCtx,
-								environment);
-			if (obj != null)
-			  return obj;
-		      }
-		  }
+            // If we have a factory class name then we use that.
+            String fClass = ref.getFactoryClassName ();
+            if (fClass != null)
+              {
+                // Exceptions here are passed to the caller.
+                Class k = Class.forName (fClass,
+                                         true,
+                                         Thread.currentThread().getContextClassLoader());
+                factory = (ObjectFactory) k.newInstance ();
+              }
+            else
+              {
+                // There's no factory class name.  If the address is a
+                // StringRefAddr with address type `URL', then we try
+                // the URL's context factory.
+                Enumeration e = ref.getAll ();
+                while (e.hasMoreElements ())
+                  {
+                    RefAddr ra = (RefAddr) e.nextElement ();
+                    if (ra instanceof StringRefAddr
+                        && "URL".equals (ra.getType ()))
+                      {
+                        factory
+                          = (ObjectFactory) getURLContext (refInfo,
+                                                           name,
+                                                           nameCtx,
+                                                           (String) ra.getContent (),
+                                                           environment);
+                        Object obj = factory.getObjectInstance (refInfo,
+                                                                name,
+                                                                nameCtx,
+                                                                environment);
+                        if (obj != null)
+                          return obj;
+                      }
+                  }
 
-		// Have to try the next step.
-		factory = null;
-	      }
-	  }
+                // Have to try the next step.
+                factory = null;
+              }
+          }
 
-	// Now look at OBJECT_FACTORIES to find the factory.
-	if (factory == null)
-	  {
-	    StringTokenizer tokens = getPlusPath (Context.OBJECT_FACTORIES,
-						  environment, nameCtx);
+        // Now look at OBJECT_FACTORIES to find the factory.
+        if (factory == null)
+          {
+            StringTokenizer tokens = getPlusPath (Context.OBJECT_FACTORIES,
+                                                  environment, nameCtx);
 
-	    while (tokens.hasMoreTokens ())
-	      {
-		String klassName = tokens.nextToken ();
-		Class k = Class.forName (klassName,
-					 true,
-					 Thread.currentThread().getContextClassLoader());
-		factory = (ObjectFactory) k.newInstance ();
-		Object obj = factory.getObjectInstance (refInfo, name,
-							nameCtx, environment);
-		if (obj != null)
-		  return obj;
-	      }
+            while (tokens.hasMoreTokens ())
+              {
+                String klassName = tokens.nextToken ();
+                Class k = Class.forName (klassName,
+                                         true,
+                                         Thread.currentThread().getContextClassLoader());
+                factory = (ObjectFactory) k.newInstance ();
+                Object obj = factory.getObjectInstance (refInfo, name,
+                                                        nameCtx, environment);
+                if (obj != null)
+                  return obj;
+              }
 
-	    // Failure.
-	    return refInfo;
-	  }
+            // Failure.
+            return refInfo;
+          }
       }
 
     if (factory == null)
       return refInfo;
     Object obj = factory.getObjectInstance (refInfo, name,
-					    nameCtx, environment);
+                                            nameCtx, environment);
     return obj == null ? refInfo : obj;
   }
 
   /**
    * Sets the initial context factory builder.
-   * 
+   *
    * @param builder the builder to set
-   * 
+   *
    * @throws SecurityException if the builder cannot be installed due
    *           security restrictions.
-   * @throws NamingException if the builder cannot be installed due other 
+   * @throws NamingException if the builder cannot be installed due other
    *           reasons
    * @throws IllegalStateException if setting the builder repeatedly
-   * 
+   *
    * @see #hasInitialContextFactoryBuilder()
    */
-  public static void setInitialContextFactoryBuilder 
+  public static void setInitialContextFactoryBuilder
     (InitialContextFactoryBuilder builder)
     throws NamingException
   {
@@ -570,17 +570,17 @@ public class NamingManager
     if (builder != null)
       icfb = builder;
   }
-  
+
   /**
    * Creates a context in which the context operation must be continued.
    * This method is used by operations on names that span multiple namespaces.
-   * 
+   *
    * @param cpe the exception that triggered this continuation. This method
    * obtains the environment ({@link CannotProceedException#getEnvironment()}
    * and sets the environment property {@link #CPE} = cpe.
-   * 
+   *
    * @return a non null context for continuing the operation
-   * 
+   *
    * @throws NamingException if the naming problems have occured
    */
   public static Context getContinuationContext (CannotProceedException cpe)
@@ -593,12 +593,12 @@ public class NamingManager
     // TODO: Check if this implementation matches the API specification
     try
       {
-	Object obj = getObjectInstance (cpe.getResolvedObj(),
-					cpe.getAltName (),
-					cpe.getAltNameCtx (), 
-					env);
-	if (obj != null)
-	  return (Context) obj;
+        Object obj = getObjectInstance (cpe.getResolvedObj(),
+                                        cpe.getAltName (),
+                                        cpe.getAltNameCtx (),
+                                        env);
+        if (obj != null)
+          return (Context) obj;
       }
     catch (Exception _)
       {
@@ -609,10 +609,10 @@ public class NamingManager
 
     throw cpe;
   }
-  
+
   /**
    * Get the object state for binding.
-   * 
+   *
    * @param obj the object, for that the binding state must be retrieved. Cannot
    *          be null.
    * @param name the name of this object, related to the nameCtx. Can be null if
@@ -624,46 +624,46 @@ public class NamingManager
    * @return the object state for binding, may be null if no changes are
    *         returned by the factory
    * @throws NamingException
-   */ 
+   */
   public static Object getStateToBind (Object obj, Name name,
-				       Context nameCtx, Hashtable<?, ?> environment)
+                                       Context nameCtx, Hashtable<?, ?> environment)
     throws NamingException
   {
     StringTokenizer tokens = getPlusPath (Context.STATE_FACTORIES,
-					  environment, nameCtx);
+                                          environment, nameCtx);
     while (tokens.hasMoreTokens ())
       {
-	String klassName = tokens.nextToken ();
-	try
-	  {
-	    Class k = Class.forName (klassName,
-				     true,
-				     Thread.currentThread().getContextClassLoader());
-	    StateFactory factory = (StateFactory) k.newInstance ();
-	    Object o = factory.getStateToBind (obj, name, nameCtx,
-					       environment);
-	    if (o != null)
-	      return o;
-	  }
-	catch (ClassNotFoundException _1)
-	  {
-	    // Ignore it.
-	  }
-	catch (ClassCastException _2)
-	  {
-	    // This means that the class we found was not an
-	    // ObjectFactory or that the factory returned something
-	    // which was not a Context.
-	  }
-	catch (InstantiationException _3)
-	  {
-	    // If we couldn't instantiate the factory we might get
-	    // this.
-	  }
-	catch (IllegalAccessException _4)
-	  {
-	    // Another possibility when instantiating.
-	  }
+        String klassName = tokens.nextToken ();
+        try
+          {
+            Class k = Class.forName (klassName,
+                                     true,
+                                     Thread.currentThread().getContextClassLoader());
+            StateFactory factory = (StateFactory) k.newInstance ();
+            Object o = factory.getStateToBind (obj, name, nameCtx,
+                                               environment);
+            if (o != null)
+              return o;
+          }
+        catch (ClassNotFoundException _1)
+          {
+            // Ignore it.
+          }
+        catch (ClassCastException _2)
+          {
+            // This means that the class we found was not an
+            // ObjectFactory or that the factory returned something
+            // which was not a Context.
+          }
+        catch (InstantiationException _3)
+          {
+            // If we couldn't instantiate the factory we might get
+            // this.
+          }
+        catch (IllegalAccessException _4)
+          {
+            // Another possibility when instantiating.
+          }
       }
 
     return obj;

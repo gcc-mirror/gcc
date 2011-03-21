@@ -1,4 +1,4 @@
-/* XMLOutputFactoryImpl.java -- 
+/* XMLOutputFactoryImpl.java --
    Copyright (C) 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -149,7 +149,7 @@ public class XMLOutputFactoryImpl
       }
     throw new UnsupportedOperationException();
   }
-  
+
   public void setProperty(String name, Object value)
     throws IllegalArgumentException
   {
@@ -183,6 +183,5 @@ public class XMLOutputFactoryImpl
   {
     prefixDefaulting = value;
   }
-  
-}
 
+}

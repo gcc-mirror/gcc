@@ -3,7 +3,7 @@
 #
 # Makefile for directory with subdirs to build.
 #   Copyright (C) 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-#   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+#   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
 #   Free Software Foundation
 #
 # This file is free software; you can redistribute it and/or modify
@@ -45266,7 +45266,7 @@ configure-lto-plugin:
 	libsrcdir="$$s/lto-plugin"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption}  \
+	  --target=${target_alias} $${srcdiroption} --enable-shared \
 	  || exit 1
 @endif lto-plugin
 
@@ -45300,7 +45300,8 @@ configure-stage1-lto-plugin:
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
 	  --target=${target_alias} $${srcdiroption} \
-	  $(STAGE1_CONFIGURE_FLAGS)
+	  $(STAGE1_CONFIGURE_FLAGS) \
+	  --enable-shared
 @endif lto-plugin-bootstrap
 
 .PHONY: configure-stage2-lto-plugin maybe-configure-stage2-lto-plugin
@@ -45333,7 +45334,8 @@ configure-stage2-lto-plugin:
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
 	  --target=${target_alias} $${srcdiroption} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
-	  $(STAGE2_CONFIGURE_FLAGS)
+	  $(STAGE2_CONFIGURE_FLAGS) \
+	  --enable-shared
 @endif lto-plugin-bootstrap
 
 .PHONY: configure-stage3-lto-plugin maybe-configure-stage3-lto-plugin
@@ -45366,7 +45368,8 @@ configure-stage3-lto-plugin:
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
 	  --target=${target_alias} $${srcdiroption} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
-	  $(STAGE3_CONFIGURE_FLAGS)
+	  $(STAGE3_CONFIGURE_FLAGS) \
+	  --enable-shared
 @endif lto-plugin-bootstrap
 
 .PHONY: configure-stage4-lto-plugin maybe-configure-stage4-lto-plugin
@@ -45399,7 +45402,8 @@ configure-stage4-lto-plugin:
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
 	  --target=${target_alias} $${srcdiroption} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
-	  $(STAGE4_CONFIGURE_FLAGS)
+	  $(STAGE4_CONFIGURE_FLAGS) \
+	  --enable-shared
 @endif lto-plugin-bootstrap
 
 .PHONY: configure-stageprofile-lto-plugin maybe-configure-stageprofile-lto-plugin
@@ -45432,7 +45436,8 @@ configure-stageprofile-lto-plugin:
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
 	  --target=${target_alias} $${srcdiroption} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
-	  $(STAGEprofile_CONFIGURE_FLAGS)
+	  $(STAGEprofile_CONFIGURE_FLAGS) \
+	  --enable-shared
 @endif lto-plugin-bootstrap
 
 .PHONY: configure-stagefeedback-lto-plugin maybe-configure-stagefeedback-lto-plugin
@@ -45465,7 +45470,8 @@ configure-stagefeedback-lto-plugin:
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
 	  --target=${target_alias} $${srcdiroption} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
-	  $(STAGEfeedback_CONFIGURE_FLAGS)
+	  $(STAGEfeedback_CONFIGURE_FLAGS) \
+	  --enable-shared
 @endif lto-plugin-bootstrap
 
 
@@ -60745,6 +60751,14 @@ configure-stage3-gcc: maybe-configure-stage3-intl
 configure-stage4-gcc: maybe-configure-stage4-intl
 configure-stageprofile-gcc: maybe-configure-stageprofile-intl
 configure-stagefeedback-gcc: maybe-configure-stagefeedback-intl
+configure-gcc: maybe-all-lto-plugin
+
+configure-stage1-gcc: maybe-all-stage1-lto-plugin
+configure-stage2-gcc: maybe-all-stage2-lto-plugin
+configure-stage3-gcc: maybe-all-stage3-lto-plugin
+configure-stage4-gcc: maybe-all-stage4-lto-plugin
+configure-stageprofile-gcc: maybe-all-stageprofile-lto-plugin
+configure-stagefeedback-gcc: maybe-all-stagefeedback-lto-plugin
 configure-gcc: maybe-all-binutils
 
 configure-stage1-gcc: maybe-all-stage1-binutils
@@ -60922,6 +60936,14 @@ all-stage4-gcc: maybe-all-stage4-libiberty
 all-stageprofile-gcc: maybe-all-stageprofile-libiberty
 all-stagefeedback-gcc: maybe-all-stagefeedback-libiberty
 all-gcc: maybe-all-fixincludes
+all-gcc: maybe-all-lto-plugin
+
+all-stage1-gcc: maybe-all-stage1-lto-plugin
+all-stage2-gcc: maybe-all-stage2-lto-plugin
+all-stage3-gcc: maybe-all-stage3-lto-plugin
+all-stage4-gcc: maybe-all-stage4-lto-plugin
+all-stageprofile-gcc: maybe-all-stageprofile-lto-plugin
+all-stagefeedback-gcc: maybe-all-stagefeedback-lto-plugin
 info-gcc: maybe-all-build-libiberty
 
 info-stage1-gcc: maybe-all-build-libiberty
@@ -60955,6 +60977,7 @@ html-stage4-gcc: maybe-all-build-libiberty
 html-stageprofile-gcc: maybe-all-build-libiberty
 html-stagefeedback-gcc: maybe-all-build-libiberty
 install-gcc: maybe-install-fixincludes
+install-gcc: maybe-install-lto-plugin
 install-strip-gcc: maybe-install-strip-fixincludes
 configure-libcpp: configure-libiberty
 
@@ -60990,14 +61013,14 @@ all-stageprofile-libcpp: maybe-all-stageprofile-intl
 all-stagefeedback-libcpp: maybe-all-stagefeedback-intl
 all-fixincludes: maybe-all-libiberty
 all-gnattools: maybe-all-target-libada
-all-lto-plugin: maybe-all-gcc
+all-lto-plugin: maybe-all-libiberty
 
-all-stage1-lto-plugin: maybe-all-stage1-gcc
-all-stage2-lto-plugin: maybe-all-stage2-gcc
-all-stage3-lto-plugin: maybe-all-stage3-gcc
-all-stage4-lto-plugin: maybe-all-stage4-gcc
-all-stageprofile-lto-plugin: maybe-all-stageprofile-gcc
-all-stagefeedback-lto-plugin: maybe-all-stagefeedback-gcc
+all-stage1-lto-plugin: maybe-all-stage1-libiberty
+all-stage2-lto-plugin: maybe-all-stage2-libiberty
+all-stage3-lto-plugin: maybe-all-stage3-libiberty
+all-stage4-lto-plugin: maybe-all-stage4-libiberty
+all-stageprofile-lto-plugin: maybe-all-stageprofile-libiberty
+all-stagefeedback-lto-plugin: maybe-all-stagefeedback-libiberty
 configure-mpfr: maybe-all-gmp
 
 configure-stage1-mpfr: maybe-all-stage1-gmp

@@ -308,6 +308,16 @@ do {									\
 #undef  SUBTARGET_INIT_BUILTINS
 #define SUBTARGET_INIT_BUILTINS					\
 do {								\
-  darwin_init_cfstring_builtins ((unsigned) (IX86_BUILTIN_MAX));\
+  ix86_builtins[(int) IX86_BUILTIN_CFSTRING]			\
+    = darwin_init_cfstring_builtins ((unsigned) (IX86_BUILTIN_CFSTRING));	\
+  darwin_rename_builtins ();					\
 } while(0)
 
+/* The system ___divdc3 routine in libSystem on darwin10 is not
+   accurate to 1ulp, ours is, so we avoid ever using the system name
+   for this routine and instead install a non-conflicting name that is
+   accurate.  See darwin_rename_builtins.  */
+#ifdef L_divdc3
+#define DECLARE_LIBRARY_RENAMES \
+  asm(".text; ___divdc3: jmp ___ieee_divdc3 ; .globl ___divdc3");
+#endif

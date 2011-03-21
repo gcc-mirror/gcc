@@ -48,7 +48,7 @@ import java.io.IOException;
 
 /**
  * Notification from the VM that that a method has returned
- * 
+ *
  * @author Kyle Galloway (kgallowa@redhat.com)
  */
 public class MethodExitEvent
@@ -65,7 +65,7 @@ public class MethodExitEvent
 
   /**
    * Constructs a new <code>MethodExitEvent</code>
-   * 
+   *
    * @param thread the thread where the exception occurred
    * @param location the location single stepped to
    * @param instance the instance from which the method was called
@@ -81,7 +81,7 @@ public class MethodExitEvent
   /**
    * Returns a specific filtering parameter for this event. Valid types are
    * thread and location
-   * 
+   *
    * @param type the type of parameter desired
    * @returns the desired parameter or null
    */
@@ -99,11 +99,11 @@ public class MethodExitEvent
 
   /**
    * Writes the event to the given stream
-   * 
+   *
    * @param outStream the output stream to write the event to
    * @throws IOException
    */
-  protected void _writeData(DataOutputStream outStream) 
+  protected void _writeData(DataOutputStream outStream)
     throws IOException
   {
     VMIdManager idm = VMIdManager.getDefault();

@@ -1,6 +1,6 @@
 /* Output routines for GCC for Renesas / SuperH SH.
    Copyright (C) 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002,
-   2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+   2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
    Contributed by Steve Chamberlain (sac@cygnus.com).
    Improved by Jim Wilson (wilson@cygnus.com).
@@ -4875,6 +4875,16 @@ find_barrier (int num_mova, rtx mova, rtx from)
       while (NOTE_P (from) || JUMP_P (from)
 	     || LABEL_P (from))
 	from = PREV_INSN (from);
+
+      /* Make sure we do not split between a call and its corresponding
+	 CALL_ARG_LOCATION note.  */
+      if (CALL_P (from))
+	{
+	  rtx next = NEXT_INSN (from);
+	  if (next && NOTE_P (next)
+	      && NOTE_KIND (next) == NOTE_INSN_CALL_ARG_LOCATION)
+	    from = next;
+	}
 
       from = emit_jump_insn_after (gen_jump (label), from);
       JUMP_LABEL (from) = label;
@@ -10019,8 +10029,20 @@ sh_delegitimize_address (rtx orig_x)
       if (GET_CODE (y) == UNSPEC)
 	{
 	  if (XINT (y, 1) == UNSPEC_GOT
-	      || XINT (y, 1) == UNSPEC_GOTOFF)
+	      || XINT (y, 1) == UNSPEC_GOTOFF
+	      || XINT (y, 1) == UNSPEC_SYMOFF)
 	    return XVECEXP (y, 0, 0);
+	  else if (XINT (y, 1) == UNSPEC_PCREL_SYMOFF)
+	    {
+	      if (GET_CODE (XVECEXP (y, 0, 0)) == CONST)
+		{
+		  rtx symplt = XEXP (XVECEXP (y, 0, 0), 0);
+
+		  if (GET_CODE (symplt) == UNSPEC
+		      && XINT (symplt, 1) == UNSPEC_PLT)
+		    return XVECEXP (symplt, 0, 0);
+		}
+	    }
 	  else if (TARGET_SHMEDIA
 		   && (XINT (y, 1) == UNSPEC_EXTRACT_S16
 		       || XINT (y, 1) == UNSPEC_EXTRACT_U16))

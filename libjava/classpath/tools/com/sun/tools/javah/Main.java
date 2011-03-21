@@ -47,12 +47,12 @@ public class Main
   {
     try
       {
-	gnu.classpath.tools.javah.Main.main(args);
+        gnu.classpath.tools.javah.Main.main(args);
       }
     catch (IOException e)
       {
-	throw new IllegalArgumentException("An I/O error occurred " +
-					   "in executing javah", e);
+        throw new IllegalArgumentException("An I/O error occurred " +
+                                           "in executing javah", e);
       }
   }
 }

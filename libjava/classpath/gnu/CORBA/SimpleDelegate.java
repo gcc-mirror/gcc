@@ -118,7 +118,7 @@ public class SimpleDelegate
     g.set_args(parameters);
     if (returns != null)
       g.set_result(returns);
-    return g;    
+    return g;
   }
 
   /**

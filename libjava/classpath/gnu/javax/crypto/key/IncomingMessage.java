@@ -1,4 +1,4 @@
-/* IncomingMessage.java -- 
+/* IncomingMessage.java --
    Copyright (C) 2003, 2006 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -71,7 +71,7 @@ public class IncomingMessage
   /**
    * Constructs an incoming message given the message's encoded form, including
    * its header bytes.
-   * 
+   *
    * @param b the encoded form, including the header bytes, of an incoming
    *          message.
    * @throws KeyAgreementException if the buffer is malformed.
@@ -103,7 +103,7 @@ public class IncomingMessage
    * <p>
    * Calls the method with the same name and three arguments as:
    * <code>getInstance(raw, 0, raw.length)</code>.
-   * 
+   *
    * @param raw the encoded form, excluding the header bytes.
    * @return a new instance of <code>IncomingMessage</code>.
    */
@@ -115,7 +115,7 @@ public class IncomingMessage
   /**
    * Returns an instance of a message given its encoded contents, excluding the
    * message's header bytes.
-   * 
+   *
    * @param raw the encoded form, excluding the header bytes.
    * @param offset offset where to start using raw bytes from.
    * @param len number of bytes to use.
@@ -130,7 +130,7 @@ public class IncomingMessage
 
   /**
    * Converts two octets into the number that they represent.
-   * 
+   *
    * @param b the two octets.
    * @return the length.
    */
@@ -144,7 +144,7 @@ public class IncomingMessage
 
   /**
    * Converts four octets into the number that they represent.
-   * 
+   *
    * @param b the four octets.
    * @return the length.
    */
@@ -169,7 +169,7 @@ public class IncomingMessage
    * <p>
    * See {@link OutgoingMessage#writePublicKey(java.security.PublicKey)} for
    * more details on the internal format.
-   * 
+   *
    * @throws KeyAgreementException if an encoding size constraint is violated or
    *           a mismatch was detected in the encoding.
    */
@@ -196,7 +196,7 @@ public class IncomingMessage
    * <p>
    * See {@link OutgoingMessage#writePrivateKey(java.security.PrivateKey)} for
    * more details.
-   * 
+   *
    * @throws KeyAgreementException if an encoding size constraint is violated or
    *           a mismatch was detected in the encoding.
    */
@@ -220,7 +220,7 @@ public class IncomingMessage
 
   /**
    * Decodes an MPI from the current message's contents.
-   * 
+   *
    * @return a native representation of an MPI.
    * @throws KeyAgreementException if an encoding exception occurs during the
    *           operation.

@@ -1,5 +1,5 @@
 /* Predictive commoning.
-   Copyright (C) 2005, 2007, 2008, 2009, 2010
+   Copyright (C) 2005, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -1668,6 +1668,8 @@ single_nonlooparound_use (tree name)
 
 	  return NULL;
 	}
+      else if (is_gimple_debug (stmt))
+	continue;
       else if (ret != NULL)
 	return NULL;
       else

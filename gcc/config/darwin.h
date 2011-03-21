@@ -1,6 +1,6 @@
 /* Target definitions for Darwin (Mac OS X) systems.
    Copyright (C) 1989, 1990, 1991, 1992, 1993, 2000, 2001, 2002, 2003, 2004,
-   2005, 2006, 2007, 2008, 2009, 2010
+   2005, 2006, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
    Contributed by Apple Computer Inc.
 
@@ -140,6 +140,16 @@ extern GTY(()) int darwin_ms_struct;
   } while (0)
 
 #define SUBTARGET_C_COMMON_OVERRIDE_OPTIONS do {                        \
+  /* Unless set, force ABI=2 for NeXT and m64, 0 otherwise.  */		\
+  if (!global_options_set.x_flag_objc_abi)				\
+    global_options.x_flag_objc_abi					\
+	= (flag_next_runtime && TARGET_64BIT) ? 2 : 0;			\
+  /* Objective-C family ABI 2 is only valid for next/m64 at present. */	\
+  if (global_options_set.x_flag_objc_abi && flag_next_runtime)		\
+    if (TARGET_64BIT && global_options.x_flag_objc_abi < 2)		\
+      error_at (UNKNOWN_LOCATION, "%<-fobjc-abi-version%> >= 2 is only"	\
+		" supported on %<-m64%> targets for"			\
+		" %<-fnext-runtime%>");					\
   /* Sort out ObjC exceptions: If the runtime is NeXT we default to	\
      sjlj for m32 only.  */						\
   if (!global_options_set.x_flag_objc_sjlj_exceptions)			\
@@ -602,7 +612,7 @@ int darwin_label_is_anonymous_local_objc_name (const char *name);
 	 }								     \
        else if (xname[0] == '+' || xname[0] == '-')			     \
          fprintf (FILE, "\"%s\"", xname);				     \
-       else if (darwin_label_is_anonymous_local_objc_name (xname))				     \
+       else if (darwin_label_is_anonymous_local_objc_name (xname))	     \
          fprintf (FILE, "L%s", xname);					     \
        else if (!strncmp (xname, ".objc_class_name_", 17))		     \
 	 fprintf (FILE, "%s", xname);					     \
@@ -654,11 +664,6 @@ int darwin_label_is_anonymous_local_objc_name (const char *name);
 /* The generic version, archs should over-ride where required.  */
 #define MACHOPIC_NL_SYMBOL_PTR_SECTION ".non_lazy_symbol_pointer"
 
-/* Private flag applied to disable section-anchors in a particular section.
-   This needs to be kept in sync with the flags used by varasm.c (defined in
-   output.h).  */
-#define SECTION_NO_ANCHOR 0x2000000
-
 /* Declare the section variables.  */
 #ifndef USED_FOR_TARGET
 enum darwin_section_enum {
@@ -675,6 +680,10 @@ extern GTY(()) section * darwin_sections[NUM_DARWIN_SECTIONS];
 
 #undef	TARGET_ASM_FUNCTION_SECTION
 #define TARGET_ASM_FUNCTION_SECTION darwin_function_section
+
+#undef	TARGET_ASM_FUNCTION_SWITCHED_TEXT_SECTIONS
+#define TARGET_ASM_FUNCTION_SWITCHED_TEXT_SECTIONS \
+	darwin_function_switched_text_sections
 
 #undef	TARGET_ASM_SELECT_RTX_SECTION
 #define TARGET_ASM_SELECT_RTX_SECTION machopic_select_rtx_section

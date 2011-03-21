@@ -1,4 +1,4 @@
-/* NIODatagramSocket.java -- 
+/* NIODatagramSocket.java --
    Copyright (C) 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -50,7 +50,7 @@ public final class NIODatagramSocket extends DatagramSocket
 {
   private PlainDatagramSocketImpl impl;
   private DatagramChannelImpl channel;
-    
+
   public NIODatagramSocket (PlainDatagramSocketImpl impl,
                             DatagramChannelImpl channel)
   {

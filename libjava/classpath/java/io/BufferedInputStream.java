@@ -35,7 +35,7 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
- 
+
 package java.io;
 
 /* Written using "Java Class Libraries", 2nd edition, ISBN 0-201-31002-3
@@ -43,11 +43,11 @@ package java.io;
  * plus online API docs for JDK 1.2 beta from http://www.javasoft.com.
  * Status:  Believed complete and correct.
  */
- 
+
 /**
- * This subclass of <code>FilterInputStream</code> buffers input from an 
+ * This subclass of <code>FilterInputStream</code> buffers input from an
  * underlying implementation to provide a possibly more efficient read
- * mechanism.  It maintains the buffer and buffer state in instance 
+ * mechanism.  It maintains the buffer and buffer state in instance
  * variables that are available to subclasses.  The default buffer size
  * of 2048 bytes can be overridden by the creator of the stream.
  * <p>
@@ -90,13 +90,13 @@ public class BufferedInputStream extends FilterInputStream
 
   /**
    * The value of <code>pos</code> when the <code>mark()</code> method was
-   * called.  
+   * called.
    * This is set to -1 if there is no mark set.
    */
   protected int markpos = -1;
 
   /**
-   * This is the maximum number of bytes than can be read after a 
+   * This is the maximum number of bytes than can be read after a
    * call to <code>mark()</code> before the mark can be discarded.
    * After this may bytes are read, the <code>reset()</code> method
    * may not be called successfully.
@@ -148,7 +148,7 @@ public class BufferedInputStream extends FilterInputStream
    * stream before a read can block.  A return of 0 indicates that blocking
    * might (or might not) occur on the very next read attempt.
    * <p>
-   * The number of available bytes will be the number of read ahead bytes 
+   * The number of available bytes will be the number of read ahead bytes
    * stored in the internal buffer plus the number of available bytes in
    * the underlying stream.
    *
@@ -179,7 +179,7 @@ public class BufferedInputStream extends FilterInputStream
   /**
    * This method marks a position in the input to which the stream can be
    * "reset" by calling the <code>reset()</code> method.  The parameter
-   * <code>readlimit</code> is the number of bytes that can be read from the 
+   * <code>readlimit</code> is the number of bytes that can be read from the
    * stream after setting the mark before the mark becomes invalid.  For
    * example, if <code>mark()</code> is called with a read limit of 10, then
    * when 11 bytes of data are read from the stream before the
@@ -227,7 +227,7 @@ public class BufferedInputStream extends FilterInputStream
   public synchronized int read() throws IOException
   {
     if (pos >= count && !refill())
-      return -1;	// EOF
+      return -1;        // EOF
 
     return buf[pos++] & 0xFF;
   }
@@ -265,7 +265,7 @@ public class BufferedInputStream extends FilterInputStream
       return 0;
 
     if (pos >= count && !refill())
-      return -1;		// No bytes were read before EOF.
+      return -1;                // No bytes were read before EOF.
 
     int totalBytesRead = Math.min(count - pos, len);
     System.arraycopy(buf, pos, b, off, totalBytesRead);
@@ -275,12 +275,12 @@ public class BufferedInputStream extends FilterInputStream
 
     while (len > 0 && super.available() > 0 && refill())
       {
-	int remain = Math.min(count - pos, len);
-	System.arraycopy(buf, pos, b, off, remain);
-	pos += remain;
-	off += remain;
-	len -= remain;
-	totalBytesRead += remain;
+        int remain = Math.min(count - pos, len);
+        System.arraycopy(buf, pos, b, off, remain);
+        pos += remain;
+        off += remain;
+        len -= remain;
+        totalBytesRead += remain;
       }
 
     return totalBytesRead;
@@ -327,12 +327,12 @@ public class BufferedInputStream extends FilterInputStream
 
     while (n > 0L)
       {
-	if (pos >= count && !refill())
+        if (pos >= count && !refill())
           break;
 
-	int numread = (int) Math.min((long) (count - pos), n);
-	pos += numread;
-	n -= numread;
+        int numread = (int) Math.min((long) (count - pos), n);
+        pos += numread;
+        n -= numread;
       }
 
     return origN - n;
@@ -351,26 +351,26 @@ public class BufferedInputStream extends FilterInputStream
 
     if (markpos == -1 || count - markpos >= marklimit)
       {
-	markpos = -1;
-	pos = count = 0;
+        markpos = -1;
+        pos = count = 0;
       }
     else
       {
-	byte[] newbuf = buf;
-	if (markpos < bufferSize)
-	  {
-	    newbuf = new byte[count - markpos + bufferSize];
-	  }
-	System.arraycopy(buf, markpos, newbuf, 0, count - markpos);
-	buf = newbuf;
-	count -= markpos;
-	pos -= markpos;
-	markpos = 0;
+        byte[] newbuf = buf;
+        if (markpos < bufferSize)
+          {
+            newbuf = new byte[count - markpos + bufferSize];
+          }
+        System.arraycopy(buf, markpos, newbuf, 0, count - markpos);
+        buf = newbuf;
+        count -= markpos;
+        pos -= markpos;
+        markpos = 0;
       }
 
     int numread = super.read(buf, count, bufferSize);
 
-    if (numread <= 0)	// EOF
+    if (numread <= 0)   // EOF
       return false;
 
     count += numread;

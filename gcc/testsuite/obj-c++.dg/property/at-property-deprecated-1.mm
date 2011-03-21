@@ -29,8 +29,8 @@ int main (void)
 {
   MyRootClass *object = [[MyRootClass alloc] init];
 
-  object.a = 40;      /* { dg-warning ".a. is deprecated .declared at " } */
-  if (object.a != 40) /* { dg-warning ".a. is deprecated .declared at " } */
+  object.a = 40;      /* { dg-warning "is deprecated" } */
+  if (object.a != 40) /* { dg-warning "is deprecated" } */
     abort ();
 
   return (0);

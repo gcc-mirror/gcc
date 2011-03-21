@@ -45,7 +45,7 @@ import javax.management.MBeanParameterInfo;
 
 /**
  * Describes the parameters of a constructor or operation associated
- * with an open management bean.  
+ * with an open management bean.
  *
  * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
  * @since 1.5
@@ -122,7 +122,7 @@ public class OpenMBeanParameterInfoSupport
       throw new IllegalArgumentException("The name may not be the empty string.");
     if (desc.length() == 0)
       throw new IllegalArgumentException("The description may not be the " +
-					 "empty string.");
+                                         "empty string.");
     openType = type;
   }
 
@@ -150,7 +150,7 @@ public class OpenMBeanParameterInfoSupport
    *                           of {@link ArrayType} or {@link TabularType}.
    */
   public <T> OpenMBeanParameterInfoSupport(String name, String desc, OpenType<T> type,
-					   T defaultValue)
+                                           T defaultValue)
     throws OpenDataException
   {
     this(name, desc, type, defaultValue, null);
@@ -177,7 +177,7 @@ public class OpenMBeanParameterInfoSupport
    * <li>The default value must be smaller than or equal to the maximum value
    * (literally, <code>defaultValue.compareTo(maxValue) <= 0</code>.</li>
    * </ul>
-   * 
+   *
    * @param name the name of the parameter.
    * @param desc a description of the parameter.
    * @param type the open type of the parameter.
@@ -192,37 +192,37 @@ public class OpenMBeanParameterInfoSupport
    */
   @SuppressWarnings("unchecked")
   public <T> OpenMBeanParameterInfoSupport(String name, String desc, OpenType<T> type,
-					   T defaultValue, Comparable<T> minimumValue,
-					   Comparable<T> maximumValue)
+                                           T defaultValue, Comparable<T> minimumValue,
+                                           Comparable<T> maximumValue)
     throws OpenDataException
   {
     this(name, desc, type);
     if (defaultValue != null && !(type.isValue(defaultValue)))
       throw new OpenDataException("The default value is not a member of the " +
-				  "open type given.");
+                                  "open type given.");
     if (minimumValue != null && !(type.isValue(minimumValue)))
       throw new OpenDataException("The minimum value is not a member of the " +
-				  "open type given.");
+                                  "open type given.");
     if (maximumValue != null && !(type.isValue(maximumValue)))
       throw new OpenDataException("The maximum value is not a member of the " +
-				  "open type given.");
-    if (defaultValue != null && (type instanceof ArrayType || 
-				 type instanceof TabularType))
+                                  "open type given.");
+    if (defaultValue != null && (type instanceof ArrayType ||
+                                 type instanceof TabularType))
       throw new OpenDataException("Default values are not applicable for " +
-				  "array or tabular types.");
-    if (minimumValue != null && maximumValue != null 
-	&& minimumValue.compareTo((T) maximumValue) > 0)
+                                  "array or tabular types.");
+    if (minimumValue != null && maximumValue != null
+        && minimumValue.compareTo((T) maximumValue) > 0)
       throw new OpenDataException("The minimum value is greater than the " +
-				  "maximum.");
-    if (minimumValue != null && defaultValue != null 
-	&& minimumValue.compareTo(defaultValue) > 0)
+                                  "maximum.");
+    if (minimumValue != null && defaultValue != null
+        && minimumValue.compareTo(defaultValue) > 0)
       throw new OpenDataException("The minimum value is greater than the " +
-				  "default.");
+                                  "default.");
     if (defaultValue != null && maximumValue != null
-	&& maximumValue.compareTo(defaultValue) < 0)
+        && maximumValue.compareTo(defaultValue) < 0)
       throw new OpenDataException("The default value is greater than the " +
-				  "maximum.");
-    
+                                  "maximum.");
+
     this.defaultValue = defaultValue;
     minValue = minimumValue;
     maxValue = maximumValue;
@@ -263,38 +263,38 @@ public class OpenMBeanParameterInfoSupport
    * @throws OpenDataException if any condition in the list above is broken.
    */
   public <T> OpenMBeanParameterInfoSupport(String name, String desc, OpenType<T> type,
-					   T defaultValue, T[] legalValues)
+                                           T defaultValue, T[] legalValues)
     throws OpenDataException
   {
     this(name, desc, type);
     if (defaultValue != null && !(type.isValue(defaultValue)))
       throw new OpenDataException("The default value is not a member of the " +
-				  "open type given.");
-    if (defaultValue != null && (type instanceof ArrayType || 
-				 type instanceof TabularType))
+                                  "open type given.");
+    if (defaultValue != null && (type instanceof ArrayType ||
+                                 type instanceof TabularType))
       throw new OpenDataException("Default values are not applicable for " +
-				  "array or tabular types.");
-    if (legalValues != null && (type instanceof ArrayType || 
-				type instanceof TabularType))
+                                  "array or tabular types.");
+    if (legalValues != null && (type instanceof ArrayType ||
+                                type instanceof TabularType))
       throw new OpenDataException("Legal values are not applicable for " +
-				  "array or tabular types.");
+                                  "array or tabular types.");
     if (legalValues != null && legalValues.length > 0)
       {
-	Set<T> lv = new HashSet<T>(legalValues.length);
-	for (int a = 0; a < legalValues.length; ++a)
-	  {
-	    if (legalValues[a] != null && 
-		!(type.isValue(legalValues[a])))
-	      throw new OpenDataException("The legal value, " 
-					  + legalValues[a] + 
-					  "is not a member of the " +
-					  "open type given.");
-	    lv.add(legalValues[a]);
-	  }
-	if (defaultValue != null && !(lv.contains(defaultValue)))
-	  throw new OpenDataException("The default value is not in the set " +
-				      "of legal values.");
-	this.legalValues = Collections.unmodifiableSet(lv);
+        Set<T> lv = new HashSet<T>(legalValues.length);
+        for (int a = 0; a < legalValues.length; ++a)
+          {
+            if (legalValues[a] != null &&
+                !(type.isValue(legalValues[a])))
+              throw new OpenDataException("The legal value, "
+                                          + legalValues[a] +
+                                          "is not a member of the " +
+                                          "open type given.");
+            lv.add(legalValues[a]);
+          }
+        if (defaultValue != null && !(lv.contains(defaultValue)))
+          throw new OpenDataException("The default value is not in the set " +
+                                      "of legal values.");
+        this.legalValues = Collections.unmodifiableSet(lv);
       }
     this.defaultValue = defaultValue;
   }
@@ -307,7 +307,7 @@ public class OpenMBeanParameterInfoSupport
    *
    * @param obj the object to compare.
    * @return true if the object is a {@link OpenMBeanParameterInfo}
-   *         instance, 
+   *         instance,
    *         <code>name.equals(object.getName())</code>,
    *         <code>openType.equals(object.getOpenType())</code>,
    *         <code>defaultValue.equals(object.getDefaultValue())</code>,
@@ -418,16 +418,16 @@ public class OpenMBeanParameterInfoSupport
   public int hashCode()
   {
     if (hashCode == null)
-      hashCode = Integer.valueOf(getName().hashCode() + 
-				 openType.hashCode() +
-				 (defaultValue == null ? 0 :
-				  defaultValue.hashCode()) +
-				 (minValue == null ? 0 :
-				  minValue.hashCode()) +
-				 (maxValue == null ? 0 :
-				  maxValue.hashCode()) +
-				 (legalValues == null ? 0 :
-				  legalValues.hashCode()));
+      hashCode = Integer.valueOf(getName().hashCode() +
+                                 openType.hashCode() +
+                                 (defaultValue == null ? 0 :
+                                  defaultValue.hashCode()) +
+                                 (minValue == null ? 0 :
+                                  minValue.hashCode()) +
+                                 (maxValue == null ? 0 :
+                                  maxValue.hashCode()) +
+                                 (legalValues == null ? 0 :
+                                  legalValues.hashCode()));
     return hashCode.intValue();
   }
 
@@ -499,13 +499,13 @@ public class OpenMBeanParameterInfoSupport
   {
     if (string == null)
       string = getClass().getName()
-	+ "[name=" + getName() 
-	+ ",openType=" + openType 
-	+ ",defaultValue=" + defaultValue
-	+ ",minValue=" + minValue
-	+ ",maxValue=" + maxValue
-	+ ",legalValues=" + legalValues
-	+ "]";
+        + "[name=" + getName()
+        + ",openType=" + openType
+        + ",defaultValue=" + defaultValue
+        + ",minValue=" + minValue
+        + ",maxValue=" + maxValue
+        + ",legalValues=" + legalValues
+        + "]";
     return string;
   }
 

@@ -43,16 +43,17 @@ PREFIX(gerror) (char * msg, gfc_charlen_type msg_len)
   int p_len;
   char *p;
 
-  memset (msg, ' ', msg_len); /* Blank the string.  */
-
-  p = strerror (errno);
-  if (p == NULL)
-    return;
-
+  p = gf_strerror (errno, msg, msg_len);
   p_len = strlen (p);
-  if (msg_len < p_len)
-    memcpy (msg, p, msg_len);
-  else
-    memcpy (msg, p, p_len);
+  /* The returned pointer p might or might not be the same as the msg
+     argument.  */
+  if (p != msg)
+    {
+      if (msg_len < p_len)
+	p_len = msg_len;
+      memcpy (msg, p, p_len);
+    }
+  if (msg_len > p_len)
+    memset (&msg[p_len], ' ', msg_len - p_len);
 }
 #endif

@@ -3,8 +3,6 @@
 // { dg-do run }
 // { dg-options "-std=c++0x" }
 
-#include <cstdio>
-
 /* Preliminary declarations */
 namespace pre
 {
@@ -47,7 +45,6 @@ container run_me_just_once()
     return container(1,2);
 }
 
-/* Template with dependent expression. */
 /* Template with dependent expression. */
 template<typename T> int test1(const T &r)
 {

@@ -1,5 +1,6 @@
 /* Definitions of target machine for GNU compiler, for IBM RS/6000.
-   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009,
+   2010, 2011
    Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
@@ -27,7 +28,8 @@
 #ifdef RTX_CODE
 
 #ifdef TREE_CODE
-extern void init_cumulative_args (CUMULATIVE_ARGS *, tree, rtx, int, int, int);
+extern void init_cumulative_args (CUMULATIVE_ARGS *, tree, rtx, int, int, int,
+				  tree, enum machine_mode);
 #endif /* TREE_CODE */
 
 extern bool easy_altivec_constant (rtx, enum machine_mode);
@@ -39,7 +41,8 @@ extern int small_data_operand (rtx, enum machine_mode);
 extern bool toc_relative_expr_p (rtx);
 extern bool invalid_e500_subreg (rtx, enum machine_mode);
 extern void validate_condition_mode (enum rtx_code, enum machine_mode);
-extern bool legitimate_constant_pool_address_p (const_rtx, bool);
+extern bool legitimate_constant_pool_address_p (const_rtx, enum machine_mode,
+						bool);
 extern bool legitimate_indirect_address_p (rtx, int);
 extern bool legitimate_indexed_address_p (rtx, int);
 extern bool avoiding_indexed_address_p (enum machine_mode);
@@ -129,6 +132,7 @@ extern void rs6000_emit_parity (rtx, rtx);
 extern rtx rs6000_machopic_legitimize_pic_address (rtx, enum machine_mode,
 						   rtx);
 extern rtx rs6000_address_for_fpconvert (rtx);
+extern rtx rs6000_address_for_altivec (rtx);
 extern rtx rs6000_allocate_stack_temp (enum machine_mode, bool, bool);
 extern int rs6000_loop_align (rtx);
 #endif /* RTX_CODE */

@@ -1,4 +1,4 @@
-/* IntegerType.java -- 
+/* IntegerType.java --
    Copyright (C) 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -94,7 +94,7 @@ final class IntegerType
         throw new DatatypeException(i, "invalid integer value");
       }
   }
-  
+
   public Object createValue(String literal, ValidationContext context) {
     try
       {
@@ -105,6 +105,5 @@ final class IntegerType
         return null;
       }
   }
-  
-}
 
+}

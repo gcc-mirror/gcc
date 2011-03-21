@@ -57,7 +57,7 @@ import java.util.WeakHashMap;
 import java.lang.reflect.InvocationTargetException;
 
 /**
- * This class mirrors the javax.swing.SwingUtilities class. It 
+ * This class mirrors the javax.swing.SwingUtilities class. It
  * provides commonly needed functionalities for AWT classes without
  * the need to reference classes in the javax.swing package.
  */
@@ -91,13 +91,13 @@ public class AWTUtilities
        */
       VisibleComponentIterator(int listIndex)
       {
-	this.listIndex = listIndex;
-	int visibleComponentsFound = 0;
-	for (index = 0; visibleComponentsFound != listIndex; index++)
-	  {
-	    if (components[index].isVisible())
-	      visibleComponentsFound++;
-	  }
+        this.listIndex = listIndex;
+        int visibleComponentsFound = 0;
+        for (index = 0; visibleComponentsFound != listIndex; index++)
+          {
+            if (components[index].isVisible())
+              visibleComponentsFound++;
+          }
       }
 
       /**
@@ -109,16 +109,16 @@ public class AWTUtilities
        */
       public boolean hasNext()
       {
-	boolean hasNext = false;
-	for (int i = index; i < components.length; i++)
-	  {
-	    if (components[i].isVisible())
-	      {
-		hasNext = true;
-		break;
-	      }
-	  }
-	return hasNext;
+        boolean hasNext = false;
+        for (int i = index; i < components.length; i++)
+          {
+            if (components[i].isVisible())
+              {
+                hasNext = true;
+                break;
+              }
+          }
+        return hasNext;
       }
 
       /**
@@ -130,23 +130,23 @@ public class AWTUtilities
        */
       public Object next()
       {
-	Object o = null;
-	for (; index < components.length; index++)
-	  {
-	    if (components[index].isVisible())
-	      {
-		o = components[index];
-		break;
-	      }
-	  }
-	if (o != null)
-	  {
-	    index++;
-	    listIndex++;
-	    return o;
-	  }
-	else
-	  throw new NoSuchElementException();
+        Object o = null;
+        for (; index < components.length; index++)
+          {
+            if (components[index].isVisible())
+              {
+                o = components[index];
+                break;
+              }
+          }
+        if (o != null)
+          {
+            index++;
+            listIndex++;
+            return o;
+          }
+        else
+          throw new NoSuchElementException();
       }
 
       /**
@@ -158,16 +158,16 @@ public class AWTUtilities
        */
       public boolean hasPrevious()
       {
-	boolean hasPrevious = false;
-	for (int i = index - 1; i >= 0; i--)
-	  {
-	    if (components[i].isVisible())
-	      {
-		hasPrevious = true;
-		break;
-	      }
-	  }
-	return hasPrevious;
+        boolean hasPrevious = false;
+        for (int i = index - 1; i >= 0; i--)
+          {
+            if (components[i].isVisible())
+              {
+                hasPrevious = true;
+                break;
+              }
+          }
+        return hasPrevious;
       }
 
       /**
@@ -179,22 +179,22 @@ public class AWTUtilities
        */
       public Object previous()
       {
-	Object o = null;
-	for (index--; index >= 0; index--)
-	  {
-	    if (components[index].isVisible())
-	      {
-		o = components[index];
-		break;
-	      }
-	  }
-	if (o != null)
-	  {
-	    listIndex--;
-	    return o;
-	  }
-	else
-	  throw new NoSuchElementException();
+        Object o = null;
+        for (index--; index >= 0; index--)
+          {
+            if (components[index].isVisible())
+              {
+                o = components[index];
+                break;
+              }
+          }
+        if (o != null)
+          {
+            listIndex--;
+            return o;
+          }
+        else
+          throw new NoSuchElementException();
       }
 
       /**
@@ -204,7 +204,7 @@ public class AWTUtilities
        */
       public int nextIndex()
       {
-	return listIndex + 1;
+        return listIndex + 1;
       }
 
       /**
@@ -214,7 +214,7 @@ public class AWTUtilities
        */
       public int previousIndex()
       {
-	return listIndex - 1;
+        return listIndex - 1;
       }
 
       /**
@@ -224,8 +224,8 @@ public class AWTUtilities
        */
       public void remove()
       {
-	throw new UnsupportedOperationException
-	  ("VisibleComponentList is immutable");
+        throw new UnsupportedOperationException
+          ("VisibleComponentList is immutable");
       }
 
       /**
@@ -237,8 +237,8 @@ public class AWTUtilities
        */
       public void set(Object o)
       {
-	throw new UnsupportedOperationException
-	  ("VisibleComponentList is immutable");
+        throw new UnsupportedOperationException
+          ("VisibleComponentList is immutable");
       }
 
       /**
@@ -250,8 +250,8 @@ public class AWTUtilities
        */
       public void add(Object o)
       {
-	throw new UnsupportedOperationException
-	  ("VisibleComponentList is immutable");
+        throw new UnsupportedOperationException
+          ("VisibleComponentList is immutable");
       }
     }
 
@@ -291,8 +291,8 @@ public class AWTUtilities
     {
       int visibleComponents = 0;
       for (int i = 0; i < components.length; i++)
-	if (components[i].isVisible())
-	  visibleComponents++;
+        if (components[i].isVisible())
+          visibleComponents++;
       return visibleComponents;
     }
   }
@@ -322,8 +322,8 @@ public class AWTUtilities
     VisibleComponentList visibleChildren = null;
     if (o == null)
       {
-	visibleChildren = new VisibleComponentList(children);
-	visibleChildrenCache.put(children, visibleChildren);
+        visibleChildren = new VisibleComponentList(children);
+        visibleChildrenCache.put(children, visibleChildren);
       }
     else
       visibleChildren = (VisibleComponentList) o;
@@ -419,8 +419,8 @@ public class AWTUtilities
    *
    * @see #getAncestorOfClass
    * @see #windowForComponent
-   * @see 
-   * 
+   * @see
+   *
    */
   public static Container getAncestorOfClass(Class c, Component comp)
   {
@@ -432,7 +432,7 @@ public class AWTUtilities
   /**
    * Equivalent to calling <code>getAncestorOfClass(Window, comp)</code>.
    *
-   * @param comp The component to search for an ancestor window 
+   * @param comp The component to search for an ancestor window
    *
    * @return An ancestral window, or <code>null</code> if none exists
    */
@@ -500,7 +500,7 @@ public class AWTUtilities
    * <code>(x,y)</code>. Returns <code>null</code> when either
    * <code>(x,y)</code> is outside the bounds of parent, or parent is
    * <code>null</code>.
-   * 
+   *
    * @param parent The component to search the descendents of
    * @param x Horizontal coordinate to search for
    * @param y Vertical coordinate to search for
@@ -593,7 +593,7 @@ public class AWTUtilities
 
     if (destination == null)
       destination = getRoot(source);
-    
+
     if (source.isShowing() && destination.isShowing())
       {
         convertPointToScreen(pt, source);
@@ -603,7 +603,7 @@ public class AWTUtilities
     return pt;
   }
 
-  
+
   /**
    * Converts a rectangle from the coordinate space of one component to
    * another. This is equivalent to converting the rectangle from
@@ -668,18 +668,18 @@ public class AWTUtilities
   }
 
 
-  /** 
+  /**
    * Calls {@link java.awt.EventQueue.invokeLater} with the
-   * specified {@link Runnable}. 
+   * specified {@link Runnable}.
    */
   public static void invokeLater(Runnable doRun)
   {
     java.awt.EventQueue.invokeLater(doRun);
   }
 
-  /** 
+  /**
    * Calls {@link java.awt.EventQueue.invokeAndWait} with the
-   * specified {@link Runnable}. 
+   * specified {@link Runnable}.
    */
   public static void invokeAndWait(Runnable doRun)
   throws InterruptedException,
@@ -688,7 +688,7 @@ public class AWTUtilities
     java.awt.EventQueue.invokeAndWait(doRun);
   }
 
-  /** 
+  /**
    * Calls {@link java.awt.EventQueue.isEventDispatchThread}.
    */
   public static boolean isEventDispatchThread()

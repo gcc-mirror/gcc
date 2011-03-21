@@ -31,16 +31,16 @@
 
 #include <bitset>
 
-namespace std
+namespace std _GLIBCXX_VISIBILITY(default)
 {
 namespace __profile
 {
   /// Class std::bitset wrapper with performance instrumentation.
   template<size_t _Nb>
     class bitset
-    : public _GLIBCXX_STD_D::bitset<_Nb>
+    : public _GLIBCXX_STD_C::bitset<_Nb>
     {
-      typedef _GLIBCXX_STD_D::bitset<_Nb> _Base;
+      typedef _GLIBCXX_STD_C::bitset<_Nb> _Base;
 
     public:
       // bit reference:
@@ -368,7 +368,7 @@ namespace __profile
     {
       size_t
       operator()(const __profile::bitset<_Nb>& __b) const
-      { return std::hash<_GLIBCXX_STD_D::bitset<_Nb>>()(__b._M_base()); }
+      { return std::hash<_GLIBCXX_STD_C::bitset<_Nb>>()(__b._M_base()); }
     };
 #endif
 

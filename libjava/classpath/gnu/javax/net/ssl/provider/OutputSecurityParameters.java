@@ -1,4 +1,4 @@
-/* OutputSecurityParameters.java -- 
+/* OutputSecurityParameters.java --
    Copyright (C) 2006  Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -88,12 +88,12 @@ public class OutputSecurityParameters
     if (offset < 0 || offset >= input.length
         || length <= 0 || offset + length > input.length)
       throw new IndexOutOfBoundsException();
-    
+
     if (Debug.DEBUG)
       for (int i = offset; i < offset+length; i++)
         logger.logv(Component.SSL_RECORD_LAYER, "encrypting record [{0}]: {1}",
                     i-offset, input[i]);
-    
+
     int maclen = 0;
     if (mac != null)
       maclen = session.isTruncatedMac() ? 10 : mac.getMacLength ();
@@ -107,7 +107,7 @@ public class OutputSecurityParameters
         iv = new byte[ivlen];
         session.random().nextBytes(iv);
       }
-        
+
     int padaddlen = 0;
     if (!suite.isStreamCipher()
         && session.version.compareTo(ProtocolVersion.TLS_1) >= 0)
@@ -115,7 +115,7 @@ public class OutputSecurityParameters
         padaddlen = (session.random().nextInt(255 / cipher.getBlockSize())
                      * cipher.getBlockSize());
       }
-    
+
     int fragmentLength = 0;
     ByteBuffer[] fragments = null;
     // Compress the content, if needed.
@@ -126,10 +126,10 @@ public class OutputSecurityParameters
         byte[] inbuf = new byte[1024];
         byte[] outbuf = new byte[1024];
         int written = 0;
-        
+
         // Here we use the guarantee that the deflater won't increase the
         // output size by more than 1K -- we resign ourselves to only deflate
-        // as much data as we have space for *uncompressed*, 
+        // as much data as we have space for *uncompressed*,
         int limit = output.remaining() - (maclen + ivlen + padaddlen) - 1024;
 
         for (int i = offset; i < length && written < limit; i++)
@@ -241,7 +241,7 @@ public class OutputSecurityParameters
     outrecord.setContentType(contentType);
     outrecord.setVersion(session.version);
     outrecord.setLength(fragmentLength);
-    
+
     int consumed = 0;
     ByteBuffer outfragment = outrecord.fragment();
 
@@ -279,14 +279,14 @@ public class OutputSecurityParameters
         if (macValue != null)
           outfragment.put(macValue);
       }
-      
+
     // Advance the output buffer's position.
     output.position(output.position() + outrecord.length() + 5);
     sequence++;
 
     return new int[] { consumed, fragmentLength + 5 };
   }
-  
+
   CipherSuite suite()
   {
     return suite;

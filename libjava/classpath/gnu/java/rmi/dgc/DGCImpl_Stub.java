@@ -45,39 +45,39 @@ public final class DGCImpl_Stub
     implements java.rmi.dgc.DGC
 {
     private static final long serialVersionUID = 2L;
-    
+
     private static final long interfaceHash = -669196253586618813L;
-    
+
     private static boolean useNewInvoke;
-    
+
     private static final java.rmi.server.Operation[] operations = {
         new java.rmi.server.Operation("void clean(java.rmi.server.ObjID[], long, java.rmi.dgc.VMID, boolean)"),
         new java.rmi.server.Operation("java.rmi.dgc.Lease dirty(java.rmi.server.ObjID[], long, java.rmi.dgc.Lease)")
     };
-    
+
     private static java.lang.reflect.Method $method_clean_0;
     private static java.lang.reflect.Method $method_dirty_1;
-    
+
     static {
         try {
             java.rmi.server.RemoteRef.class.getMethod("invoke", new java.lang.Class[] { java.rmi.Remote.class, java.lang.reflect.Method.class, java.lang.Object[].class, long.class });
             useNewInvoke = true;
             $method_clean_0 = gnu.java.rmi.dgc.DGCImpl.class.getMethod("clean", new java.lang.Class[] {java.rmi.server.ObjID[].class, long.class, java.rmi.dgc.VMID.class, boolean.class});
             $method_dirty_1 = gnu.java.rmi.dgc.DGCImpl.class.getMethod("dirty", new java.lang.Class[] {java.rmi.server.ObjID[].class, long.class, java.rmi.dgc.Lease.class});
-            
+
         }
         catch (java.lang.NoSuchMethodException e) {
             useNewInvoke = false;
         }
     }
-    
+
     public DGCImpl_Stub() {
         super();
     }
     public DGCImpl_Stub(java.rmi.server.RemoteRef ref) {
         super(ref);
     }
-    
+
     public void clean(java.rmi.server.ObjID[] $param_0, long $param_1, java.rmi.dgc.VMID $param_2, boolean $param_3) throws java.rmi.RemoteException {
         try {
             if (useNewInvoke) {
@@ -114,7 +114,7 @@ public final class DGCImpl_Stub
             throw new java.rmi.UnexpectedException("undeclared checked exception", e);
         }
     }
-    
+
     public java.rmi.dgc.Lease dirty(java.rmi.server.ObjID[] $param_0, long $param_1, java.rmi.dgc.Lease $param_2) throws java.rmi.RemoteException {
         try {
             if (useNewInvoke) {
@@ -154,5 +154,5 @@ public final class DGCImpl_Stub
             throw new java.rmi.UnexpectedException("undeclared checked exception", e);
         }
     }
-    
+
 }

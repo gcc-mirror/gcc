@@ -26,8 +26,8 @@ import javax.swing.text.html.HTML.Attribute;
 
 /**
  * A view, representing a single image, represented by the HTML IMG tag.
- * 
- * @author Audrius Meskauskas (AudriusA@Bioinformatics.org) 
+ *
+ * @author Audrius Meskauskas (AudriusA@Bioinformatics.org)
  */
 public class ImageView extends View
 {
@@ -51,7 +51,7 @@ public class ImageView extends View
       boolean ret = (flags & ALLBITS) != 0;
       return ret;
     }
-    
+
   }
 
   /**
@@ -64,7 +64,7 @@ public class ImageView extends View
    * The image icon, wrapping the image,
    */
   Image image;
- 
+
   /**
    * The image state.
    */
@@ -124,7 +124,7 @@ public class ImageView extends View
 
   /**
    * Creates the image view that represents the given element.
-   * 
+   *
    * @param element the element, represented by this image view.
    */
   public ImageView(Element element)
@@ -136,7 +136,7 @@ public class ImageView extends View
     reloadImage = true;
     loadOnDemand = false;
   }
- 
+
   /**
    * Load or reload the image. This method initiates the image reloading. After
    * the image is ready, the repaint event will be scheduled. The current image,
@@ -161,13 +161,13 @@ public class ImageView extends View
         loading = false;
       }
   }
-  
+
   /**
    * Get the image alignment. This method works handling standart alignment
    * attributes in the HTML IMG tag (align = top bottom middle left right).
    * Depending from the parameter, either horizontal or vertical alingment
    * information is returned.
-   * 
+   *
    * @param axis -
    *          either X_AXIS or Y_AXIS
    */
@@ -175,7 +175,7 @@ public class ImageView extends View
   {
     AttributeSet attrs = getAttributes();
     Object al = attrs.getAttribute(Attribute.ALIGN);
-    
+
     // Default is top left aligned.
     if (al == null)
       return 0.0f;
@@ -207,7 +207,7 @@ public class ImageView extends View
     else
       throw new IllegalArgumentException("axis " + axis);
   }
-  
+
   /**
    * Get the text that should be shown as the image replacement and also as the
    * image tool tip text. The method returns the value of the attribute, having
@@ -229,7 +229,7 @@ public class ImageView extends View
           return u.getFile();
       }
   }
-  
+
   /**
    * Returns the combination of the document and the style sheet attributes.
    */
@@ -239,7 +239,7 @@ public class ImageView extends View
       attributes = getStyleSheet().getViewAttributes(this);
     return attributes;
   }
-  
+
   /**
    * Get the image to render. May return null if the image is not yet loaded.
    */
@@ -248,13 +248,13 @@ public class ImageView extends View
     updateState();
     return image;
   }
-  
+
   /**
    * Get the URL location of the image to render. If this method returns null,
    * the "no image" icon is rendered instead. By defaul, url must be present as
    * the "src" property of the IMG tag. If it is missing, null is returned and
    * the "no image" icon is rendered.
-   * 
+   *
    * @return the URL location of the image to render.
    */
   public URL getImageURL()
@@ -280,17 +280,17 @@ public class ImageView extends View
   /**
    * Get the icon that should be displayed while the image is loading and hence
    * not yet available.
-   * 
+   *
    * @return an icon, showing a non broken sheet of paper with image.
    */
   public Icon getLoadingImageIcon()
   {
     return ImageViewIconFactory.getLoadingImageIcon();
   }
-  
+
   /**
    * Get the image loading strategy.
-   * 
+   *
    * @return false (default) if the image is loaded when the view is
    *         constructed, true if the image is only loaded on demand when
    *         rendering.
@@ -302,21 +302,21 @@ public class ImageView extends View
 
   /**
    * Get the icon that should be displayed when the image is not available.
-   * 
+   *
    * @return an icon, showing a broken sheet of paper with image.
    */
   public Icon getNoImageIcon()
   {
     return ImageViewIconFactory.getNoImageIcon();
   }
-  
+
   /**
    * Get the preferred span of the image along the axis. The image size is first
    * requested to the attributes {@link Attribute#WIDTH} and
    * {@link Attribute#HEIGHT}. If they are missing, and the image is already
    * loaded, the image size is returned. If there are no attributes, and the
    * image is not loaded, zero is returned.
-   * 
+   *
    * @param axis -
    *          either X_AXIS or Y_AXIS
    * @return either width of height of the image, depending on the axis.
@@ -346,10 +346,10 @@ public class ImageView extends View
     else
       throw new IllegalArgumentException("axis " + axis);
   }
-  
+
   /**
    * Get the associated style sheet from the document.
-   * 
+   *
    * @return the associated style sheet.
    */
   protected StyleSheet getStyleSheet()
@@ -361,7 +361,7 @@ public class ImageView extends View
   /**
    * Get the tool tip text. This is overridden to return the value of the
    * {@link #getAltText()}. The parameters are ignored.
-   * 
+   *
    * @return that is returned by getAltText().
    */
   public String getToolTipText(float x, float y, Shape shape)
@@ -373,7 +373,7 @@ public class ImageView extends View
    * Paints the image or one of the two image state icons. The image is resized
    * to the shape bounds. If there is no image available, the alternative text
    * is displayed besides the image state icon.
-   * 
+   *
    * @param g
    *          the Graphics, used for painting.
    * @param bounds
@@ -407,7 +407,7 @@ public class ImageView extends View
   {
     loadOnDemand = load_on_demand;
   }
- 
+
   /**
    * Update all cached properties from the attribute set, returned by the
    * {@link #getAttributes}.
@@ -429,7 +429,7 @@ public class ImageView extends View
         spans[Y_AXIS].setFontBases(emBase, exBase);
       }
   }
-  
+
   /**
    * Maps the picture co-ordinates into the image position in the model. As the
    * image is not divideable, this is currently implemented always to return the
@@ -439,15 +439,15 @@ public class ImageView extends View
   {
     return getStartOffset();
   }
-  
+
   /**
    * This is currently implemented always to return the area of the image view,
    * as the image is not divideable by character positions.
-   * 
+   *
    * @param pos character position
    * @param area of the image view
    * @param bias bias
-   * 
+   *
    * @return the shape, where the given character position should be mapped.
    */
   public Shape modelToView(int pos, Shape area, Bias bias)
@@ -455,7 +455,7 @@ public class ImageView extends View
   {
     return area;
   }
-  
+
   /**
    * Starts loading the image asynchronuosly. If the image must be loaded
    * synchronuosly instead, the {@link #setLoadsSynchronously} must be
@@ -465,7 +465,7 @@ public class ImageView extends View
   {
     updateState();
     // TODO: Implement this when we have an alt view for the alt=... attribute.
-  }  
+  }
 
   /**
    * This makes sure that the image and properties have been loaded.
@@ -504,7 +504,7 @@ public class ImageView extends View
               {
                 Thread.interrupted();
               }
-            
+
           }
       }
     image = newImage;

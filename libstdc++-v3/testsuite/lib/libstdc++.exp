@@ -1,6 +1,7 @@
 # libstdc++ "tool init file" for DejaGNU
 
-# Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+# Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008,
+# 2009, 2010, 2011
 # Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -1145,12 +1146,70 @@ proc check_v3_target_cstdint { } {
     return $et_cstdint
 }
 
+proc check_v3_target_cmath { } {
+    global cxxflags
+    global DEFAULT_CXXFLAGS
+    global et_c99_math
+
+    global tool
+
+    if { ![info exists et_c99_math_target_name] } {
+	set et_c99_math_target_name ""
+    }
+
+    # If the target has changed since we set the cached value, clear it.
+    set current_target [current_target_name]
+    if { $current_target != $et_c99_math_target_name } {
+	verbose "check_v3_target_c99_math: `$et_c99_math_target_name'" 2
+	set et_c99_math_target_name $current_target
+	if [info exists et_c99_math] {
+	    verbose "check_v3_target_c99_math: removing cached result" 2
+	    unset et_c99_math
+	}
+    }
+
+    if [info exists et_c99_math] {
+	verbose "check_v3_target_c99_math: using cached result" 2
+    } else {
+	set et_c99_math 0
+
+	# Set up and compile a C++0x test program that depends
+	# on the C99 math facilities to be available.
+	set src c99_math[pid].cc
+	set exe c99_math[pid].exe
+
+	set f [open $src "w"]
+	puts $f "#include <tr1/cmath>"
+	puts $f "int main()"
+	puts $f "#ifdef _GLIBCXX_USE_C99_MATH_TR1"
+	puts $f "{ return 0; }"
+	puts $f "#endif"
+	close $f
+
+	set cxxflags_saved $cxxflags
+	set cxxflags "$cxxflags $DEFAULT_CXXFLAGS -Werror"
+
+	set lines [v3_target_compile $src $exe executable ""]
+	set cxxflags $cxxflags_saved
+	file delete $src
+
+	if [string match "" $lines] {
+	    # No error message, compilation succeeded.
+	    set et_c99_math 1
+	} else {
+	    verbose "check_v3_target_c99_math: compilation failed" 2
+	}
+    }
+    verbose "check_v3_target_c99_math: $et_c99_math" 2
+    return $et_c99_math
+}
+
 proc check_v3_target_atomic_builtins { } {
     global cxxflags
     global DEFAULT_CXXFLAGS
-    global et_cstdint
+    global et_atomic_builtins
 
-    global tool	
+    global tool
 
     if { ![info exists et_atomic_builtins_target_name] } {
 	set et_atomic_builtins_target_name ""

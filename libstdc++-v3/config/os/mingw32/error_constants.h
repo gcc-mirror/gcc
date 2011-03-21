@@ -1,6 +1,6 @@
 // Specific definitions for mingw32 platform  -*- C++ -*-
 
-// Copyright (C) 2007, 2008, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -34,7 +34,9 @@
 #include <cerrno>
 
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 // Most of the commented-out error codes are socket-related and could be
 // replaced by Winsock WSA-prefixed equivalents.
@@ -120,6 +122,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
  //   wrong_protocol_type = 			EPROTOTYPE
    };
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
 
 #endif

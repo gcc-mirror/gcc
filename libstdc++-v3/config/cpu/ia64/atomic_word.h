@@ -29,7 +29,7 @@
 
 typedef int _Atomic_word;
 
-namespace __gnu_cxx
+namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
 {
   // Test the first byte of __g and ensure that no loads are hoisted across
   // the test.

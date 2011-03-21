@@ -12,5 +12,5 @@ int g()
   return *i;  /* This should be turned into a.i */
 }
 
-/* { dg-final { scan-tree-dump "= a.i;" "ccp1" } } */
+/* { dg-final { scan-tree-dump "= MEM\\\[\\\(int \\\*\\\)&a\\\];" "ccp1" } } */
 /* { dg-final { cleanup-tree-dump "ccp1" } } */

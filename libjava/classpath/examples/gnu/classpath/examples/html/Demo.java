@@ -1,4 +1,4 @@
-/* Demo.java -- 
+/* Demo.java --
    Copyright (C) 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -60,8 +60,8 @@ public class Demo
   /**
    * The sample HTML to parse.
    */
-  static String input = "<!--2-->a<b iD=1>x</b>y<b><i>c</b>d</i>e";  
-  
+  static String input = "<!--2-->a<b iD=1>x</b>y<b><i>c</b>d</i>e";
+
   public static void main(String[] args)
   {
     try
@@ -69,10 +69,10 @@ public class Demo
         // Create a parser, using our DTD.
         DomHTMLParser p = new DomHTMLParser(HTML_401F.getInstance());
         HTMLDocument d = p.parseDocument(new StringReader(input));
-        
+
         // Print the input HTML.
         System.out.println(input);
-        
+
         // Print the parsed data structure.
         print(System.out, d, 0);
       }
@@ -84,7 +84,7 @@ public class Demo
 
   /**
    * Print the parsed data structure.
-   * 
+   *
    * @param stream the output
    * @param node the node
    * @param ident the identation

@@ -1,4 +1,4 @@
-/* ServerRSA_PSKParameters.java -- 
+/* ServerRSA_PSKParameters.java --
    Copyright (C) 2006  Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.

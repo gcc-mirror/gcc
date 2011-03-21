@@ -47,7 +47,7 @@ import javax.swing.event.EventListenerList;
 /**
  * Provides standard implementations for some of the methods in
  * {@link SpinnerModel}.
- * 
+ *
  * @since 1.4
  *
  * @author Ka-Hing Cheung
@@ -55,7 +55,7 @@ import javax.swing.event.EventListenerList;
 public abstract class AbstractSpinnerModel implements SpinnerModel
 {
   private ChangeEvent changeEvent = new ChangeEvent(this);
-  
+
   /** Stores the listeners registered with the model. */
   protected EventListenerList listenerList = new EventListenerList();
 

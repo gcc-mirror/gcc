@@ -155,8 +155,8 @@ public class BoxView
    * automatically when any of the child view changes its preferences
    * via {@link #preferenceChanged(View, boolean, boolean)}.
    *
-   * The layout will be updated the next time when 
-   * {@link #setSize(float, float)} is called, typically from within the 
+   * The layout will be updated the next time when
+   * {@link #setSize(float, float)} is called, typically from within the
    * {@link #paint(Graphics, Shape)} method.
    *
    * Valid values for the axis are {@link View#X_AXIS} and
@@ -387,7 +387,7 @@ public class BoxView
     int totalDescentMin = 0;
     int totalDescentPref = 0;
     int totalDescentMax = 0;
-    
+
     int count = getViewCount();
     for (int i = 0; i < count; i++)
       {
@@ -578,7 +578,7 @@ public class BoxView
 
     return res;
   }
-  
+
 
   /**
    * Returns <code>true</code> if the specified point lies before the
@@ -699,7 +699,7 @@ public class BoxView
    * Computes the allocation for a child <code>View</code>. The parameter
    * <code>a</code> stores the allocation of this <code>CompositeView</code>
    * and is then adjusted to hold the allocation of the child view.
-   * 
+   *
    * @param index
    *          the index of the child <code>View</code>
    * @param a
@@ -957,13 +957,13 @@ public class BoxView
      updateRequirements(axis);
      return requirements[axis].alignment;
   }
-  
+
   /**
    * Called by a child View when its preferred span has changed.
-   * 
+   *
    * @param width indicates that the preferred width of the child changed.
    * @param height indicates that the preferred height of the child changed.
-   * @param child the child View. 
+   * @param child the child View.
    */
   public void preferenceChanged(View child, boolean width, boolean height)
   {
@@ -979,7 +979,7 @@ public class BoxView
       }
     super.preferenceChanged(child, width, height);
   }
-  
+
   /**
    * Maps the document model position <code>pos</code> to a Shape
    * in the view coordinate space.  This method overrides CompositeView's

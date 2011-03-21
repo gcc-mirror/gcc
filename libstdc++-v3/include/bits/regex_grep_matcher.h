@@ -1,6 +1,6 @@
 // class template regex -*- C++ -*-
 
-// Copyright (C) 2010 Free Software Foundation, Inc.
+// Copyright (C) 2010, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -28,17 +28,23 @@
  *  Do not attempt to use it directly. @headername{regex}
  */
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _BiIter>
     class sub_match;
 
   template<typename _Bi_iter, typename _Allocator>
     class match_results;
+
+_GLIBCXX_END_NAMESPACE_VERSION
   
 namespace __regex
 {
-  // A _Results facade specialized for wrapping a templated sub_match.
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
+  // A _Results facade specialized for wrapping a templated match_results.
   template<typename _FwdIterT, typename _Alloc>
     class _SpecializedResults
     : public _Results
@@ -66,17 +72,14 @@ namespace __regex
                         match_results<_FwdIterT, _Alloc>& __m)
     : _M_results(__m)
     {
-      typedef typename match_results<_FwdIterT, _Alloc>::size_type size_type;
       _M_results.clear();
-      std::sub_match<_FwdIterT> __sm;
-      __sm.matched = false;
-      size_type __result_count = __size + 2;
-      for (size_type __i = 0; __i < __result_count; ++__i)
-	_M_results.push_back(__sm);
-      _M_results.at(__size+0).first = __cursor._M_begin();
-      _M_results.at(__size+0).second = __cursor._M_begin();
-      _M_results.at(__size+1).first = __cursor._M_end();
-      _M_results.at(__size+1).second = __cursor._M_end();
+      _M_results.reserve(__size + 2);
+      _M_results.resize(__size);
+      typename match_results<_FwdIterT, _Alloc>::value_type __sm;
+      __sm.first = __sm.second = __cursor._M_begin();
+      _M_results.push_back(__sm);
+      __sm.first = __sm.second = __cursor._M_end();
+      _M_results.push_back(__sm);
     }
 
   template<typename _FwdIterT, typename _Alloc>
@@ -122,8 +125,8 @@ namespace __regex
     _Results&                          _M_results;
   };
 
+_GLIBCXX_END_NAMESPACE_VERSION
 } // namespace __regex
-
-_GLIBCXX_END_NAMESPACE
+} // namespace
 
 #include <bits/regex_grep_matcher.tcc>

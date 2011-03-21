@@ -46,7 +46,7 @@ import java.io.IOException;
 
 /**
  * Wrapper for an Object value.
- * 
+ *
  * @author Kyle Galloway <kgallowa@redhat.com>
  */
 public final class ObjectValue
@@ -57,7 +57,7 @@ public final class ObjectValue
 
   /**
    * Create a new ObjectValue from an Object
-   * 
+   *
    * @param value the Object to wrap
    */
   public ObjectValue(Object value)
@@ -65,10 +65,10 @@ public final class ObjectValue
     super(JdwpConstants.Tag.OBJECT);
     _value = value;
   }
-  
+
   /**
    * Get the value held in this Value
-   * 
+   *
    * @return the value represented by this Value object
    */
   public Object getValue()
@@ -78,7 +78,7 @@ public final class ObjectValue
 
   /**
    * Return an object representing this type
-   * 
+   *
    * @return an Object represntation of this value
    */
   @Override
@@ -89,7 +89,7 @@ public final class ObjectValue
 
   /**
    * Write the wrapped object to the given DataOutputStream.
-   * 
+   *
    * @param os the output stream to write to
    */
   @Override

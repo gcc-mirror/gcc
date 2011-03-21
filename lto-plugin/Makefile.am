@@ -12,16 +12,27 @@ AM_CFLAGS = -Wall -Werror
 AM_LIBTOOLFLAGS = --tag=disable-static
 
 libexecsub_LTLIBRARIES = liblto_plugin.la
+gcc_build_dir = ../$(host_subdir)/gcc
+in_gcc_libs = $(foreach lib, $(libexecsub_LTLIBRARIES), $(gcc_build_dir)/$(lib))
+
+# Can be removed when libiberty becomes a normal convenience library
+Wc=-Wc,
 
 liblto_plugin_la_SOURCES = lto-plugin.c
 liblto_plugin_la_LIBADD = \
-	$(if $(wildcard ../libiberty/pic/libiberty.a),../libiberty/pic/libiberty.a,)
+	$(if $(wildcard ../libiberty/pic/libiberty.a),$(Wc)../libiberty/pic/libiberty.a,)
 # Note that we intentionally override the bindir supplied by ACX_LT_HOST_FLAGS
-liblto_plugin_la_LDFLAGS = $(lt_host_flags) -bindir $(libexecsubdir) \
+liblto_plugin_la_LDFLAGS = $(lt_host_flags) -module -bindir $(libexecsubdir) \
 	$(if $(wildcard ../libiberty/pic/libiberty.a),,-Wc,../libiberty/libiberty.a)
+liblto_plugin_la_DEPENDENCIES = $(if $(wildcard \
+	../libiberty/pic/libiberty.a),../libiberty/pic/libiberty.a,)
 
-all: copy_lto_plugin
+all-local: $(in_gcc_libs)
 
-copy_lto_plugin: all-am
-	$(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=install $(INSTALL) $(INSTALL_STRIP_FLAG) $(libexecsub_LTLIBRARIES) `pwd`/../gcc/
-
+$(in_gcc_libs) : $(gcc_build_dir)/%: %
+	@if test "X`dlname=; . ./$*; echo dlname:$$dlname`" = "Xdlname:"; then \
+	  echo WARNING: $* is static, not copying to $@ >&2 ; \
+	else \
+	  $(mkinstalldirs) $(gcc_build_dir) && \
+	  $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=install $(INSTALL) $(INSTALL_STRIP_FLAG) $* `pwd`/$@ ; \
+	fi

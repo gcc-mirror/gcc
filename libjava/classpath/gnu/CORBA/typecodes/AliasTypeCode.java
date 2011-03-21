@@ -51,11 +51,11 @@ import org.omg.CORBA.TypeCodePackage.BadKind;
 public class AliasTypeCode
   extends PrimitiveTypeCode
 {
-  /** 
-   * Use serialVersionUID for interoperability. 
+  /**
+   * Use serialVersionUID for interoperability.
    */
   private static final long serialVersionUID = 1;
-  
+
   /**
    * The typecode repository id.
    */

@@ -52,12 +52,12 @@ package javax.management;
 public class RuntimeOperationsException
   extends JMRuntimeException
 {
- 
+
   /**
    * Compatible with JDK 1.5
    */
   private static final long serialVersionUID = -8408923047489133588L;
-  
+
   /* Sun re-implemented causality -- don't know why, but
      serialization demands we do too... */
 
@@ -89,7 +89,7 @@ public class RuntimeOperationsException
    * @param message the error message to give to the user.
    */
   public RuntimeOperationsException(RuntimeException e,
-				    String message)
+                                    String message)
   {
     super(message);
     runtimeException = e;
@@ -118,4 +118,3 @@ public class RuntimeOperationsException
   }
 
 }
-

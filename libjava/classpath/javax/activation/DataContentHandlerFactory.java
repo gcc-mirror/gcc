@@ -51,6 +51,5 @@ public interface DataContentHandlerFactory
    * @param mimeType the MIME type
    */
   DataContentHandler createDataContentHandler(String mimeType);
-  
-}
 
+}

@@ -1,4 +1,4 @@
-/* NameTest.java -- 
+/* NameTest.java --
    Copyright (C) 2004,2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -139,5 +139,5 @@ public final class NameTest
       return "*";
     return qName.toString();
   }
-  
+
 }

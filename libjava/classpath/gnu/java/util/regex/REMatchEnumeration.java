@@ -47,7 +47,7 @@ import java.util.NoSuchElementException;
  * An REMatchEnumeration enumerates regular expression matches over a
  * given input text.  You obtain a reference to an enumeration using
  * the <code>getMatchEnumeration()</code> methods on an instance of
- * RE. 
+ * RE.
  *
  * <P>
  *
@@ -59,15 +59,15 @@ import java.util.NoSuchElementException;
  * not need to be searched immediately.
  *
  * <P>
- * 
+ *
  * The enumerated type is especially useful when searching on a Reader
  * or InputStream, because the InputStream read position cannot be
  * guaranteed after calling <code>getMatch()</code> (see the
  * description of that method for an explanation of why).  Enumeration
  * also saves a lot of overhead required when calling
  * <code>getMatch()</code> multiple times.
- * 
- * @author <A HREF="mailto:wes@cacas.org">Wes Biggs</A> 
+ *
+ * @author <A HREF="mailto:wes@cacas.org">Wes Biggs</A>
  */
 public class REMatchEnumeration
   implements Enumeration < REMatch >, Serializable
@@ -113,17 +113,17 @@ public class REMatchEnumeration
   {
     if (more == MAYBE)
       {
-	match = expr.getMatchImpl (input, index, eflags, buffer);
-	if (match != null)
-	  {
-	    input.move ((match.end[0] > 0) ? match.end[0] : 1);
+        match = expr.getMatchImpl (input, index, eflags, buffer);
+        if (match != null)
+          {
+            input.move ((match.end[0] > 0) ? match.end[0] : 1);
 
-	    index =
-	      (match.end[0] > 0) ? match.end[0] + match.offset : index + 1;
-	    more = YES;
-	  }
-	else
-	  more = NO;
+            index =
+              (match.end[0] > 0) ? match.end[0] + match.offset : index + 1;
+            more = YES;
+          }
+        else
+          more = NO;
       }
     return (more == YES);
   }
@@ -133,8 +133,8 @@ public class REMatchEnumeration
   {
     if (hasMoreElements ())
       {
-	more = (input.isValid ())? MAYBE : NO;
-	return match;
+        more = (input.isValid ())? MAYBE : NO;
+        return match;
       }
     throw new NoSuchElementException ();
   }

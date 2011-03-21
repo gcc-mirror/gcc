@@ -3,7 +3,7 @@
    symbol.
    Origin: Ian Lance Taylor <iant@google.com>.  */
 
-/* { dg-do compile} */
+/* { dg-do compile } */
 /* { dg-options "-Waddress" } */
 /* { dg-require-weak "" } */
 

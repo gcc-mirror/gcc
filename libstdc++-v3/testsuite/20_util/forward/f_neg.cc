@@ -18,7 +18,7 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-error "static assertion failed" "" { target *-*-* } 64 }
+// { dg-error "static assertion failed" "" { target *-*-* } 69 }
 
 #include <utility>
 

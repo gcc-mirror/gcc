@@ -1,3 +1,63 @@
+2011-02-13  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* Makefile.in: Regenerate.
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
+
+2011-02-12  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* Makefile.am (all-local): Rename from 'all'.
+	* Makefile.in: Regenerate.
+
+2011-02-12  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR lto/47225
+	* Makefile.am (gcc_build_dir, in_gcc_libs): New.
+	(liblto_plugin_la_LDFLAGS): Add -module.
+	(copy_lto_plugin): Renamed to...
+	($(in_gcc_libs)): ... this.  Add mkinstalldirs.  Skip copying
+	of static modules.
+	* Makefile.in: Rebuild.
+
+2011-02-07  Kai Tietz  <kai.tietz@onevision.com>
+
+	PR lto/47225
+	* Makefile.am (Wc): New helper for encoding -Wc,.
+	(liblto_plugin_la_LIBADD): Use Wc for libiberty library.
+	(liblto_plugin_la_DEPENDENCIES): Special case pic libiberty.
+	* Makefile.in: Regenerated.
+
+2011-02-07  Paolo Bonzini  <bonzini@gnu.org>
+
+	Revert:
+
+	2011-02-07  Kai Tietz  <kai.tietz@onevision.com>
+
+	PR lto/47225
+	* Makefile.am (Wl): New helper for encoding -Wl,.
+	(liblto_plugin_la_LIBADD): Use -Wl for libiberty library.
+	* Makefile.in: Regenerated.
+
+2011-02-07  Kai Tietz  <kai.tietz@onevision.com>
+
+	PR lto/47225
+	* Makefile.am (Wl): New helper for encoding -Wl,.
+	(liblto_plugin_la_LIBADD): Use -Wl for libiberty library.
+	* Makefile.in: Regenerated.
+
+2011-01-25  Ian Lance Taylor  <iant@google.com>
+
+	* lto-plugin.c (gold_version): New static variable.
+	(all_symbols_read_handler): Don't check pass_through_items if
+	using gold 1.11 or later.
+	(onload): Set gold_version if we see LDPT_GOLD_VERSION.
+
+2011-01-12  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/47264
+	* lto-plugin.c (parse_table_entry): Use memcpy to access
+	unaligned fields.
+
 2010-12-20  Dave Korn  <dave.korn.cygwin@gmail.com>
 
 	* Makefile.am (AM_LIBTOOLFLAGS): Define, adding disable-static tag.

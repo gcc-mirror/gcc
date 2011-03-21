@@ -93,7 +93,7 @@ public class QtFontMetrics extends FontMetrics
   native Rectangle2D getStringBounds(String s);
 
   // ****************** Package private ***************************
-  
+
   native boolean canDisplay( int c );
 
   // ****************** Public methods ****************************

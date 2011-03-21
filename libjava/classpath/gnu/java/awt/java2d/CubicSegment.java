@@ -80,11 +80,11 @@ public class CubicSegment extends Segment
   public Object clone()
   {
     CubicSegment segment = null;
-    
+
     try
       {
         segment = (CubicSegment) super.clone();
-        
+
         segment.P1 = (Point2D) P1.clone();
         segment.P2 = (Point2D) P2.clone();
         segment.cp1 = (Point2D) cp1.clone();
@@ -96,7 +96,7 @@ public class CubicSegment extends Segment
         ie.initCause(cnse);
         throw ie;
       }
-  
+
     return segment;
   }
 
@@ -161,7 +161,7 @@ public class CubicSegment extends Segment
 
     return new Segment[] { segmentTop, segmentBottom };
   }
-  
+
   public void reverse()
   {
     Point2D temp = P1;
@@ -174,11 +174,11 @@ public class CubicSegment extends Segment
 
   public double[] cp1()
   {
-    return new double[]{cp1.getX(), cp1.getY()}; 
+    return new double[]{cp1.getX(), cp1.getY()};
   }
 
   public double[] cp2()
   {
-    return new double[]{cp2.getX(), cp2.getY()}; 
+    return new double[]{cp2.getX(), cp2.getY()};
   }
 } // class CubicSegment

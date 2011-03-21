@@ -45,7 +45,7 @@ import java.awt.image.WritableRaster;
 /**
  * This class extends the GraphicsEnvironment API with some Classpath-specific
  * methods, in order to provide optimized graphics handling.
- * 
+ *
  * @author Francis Kung <fkung@redhat.com>
  */
 public abstract class ClasspathGraphicsEnvironment
@@ -54,7 +54,7 @@ public abstract class ClasspathGraphicsEnvironment
   /**
    * Returns an appropriate Raster that can efficiently back a
    * BufferedImage with the given ColorModel and SampleModel.
-   * 
+   *
    * @param cm The color model.
    * @param sm The samepl model.
    * @return An appropriate WritableRaster, or null if acceleration/optimization

@@ -1,4 +1,4 @@
-/* StreamSerializer.java -- 
+/* StreamSerializer.java --
    Copyright (C) 2004,2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -67,7 +67,7 @@ import org.w3c.dom.Node;
  */
 public class StreamSerializer
 {
-  
+
   static final int SPACE = 0x20;
   static final int BANG = 0x21; // !
   static final int APOS = 0x27; // '
@@ -83,7 +83,7 @@ public class StreamSerializer
   static
   {
     HashSet set;
-    
+
     set = new HashSet();
     set.add("nohref");
     HTML_BOOLEAN_ATTRIBUTES.put("area", set);
@@ -95,11 +95,11 @@ public class StreamSerializer
     set = new HashSet();
     set.add("declare");
     HTML_BOOLEAN_ATTRIBUTES.put("object", set);
-    
+
     set = new HashSet();
     set.add("noshade");
     HTML_BOOLEAN_ATTRIBUTES.put("hr", set);
-    
+
     set = new HashSet();
     set.add("compact");
     HTML_BOOLEAN_ATTRIBUTES.put("dl", set);
@@ -107,46 +107,46 @@ public class StreamSerializer
     HTML_BOOLEAN_ATTRIBUTES.put("ul", set);
     HTML_BOOLEAN_ATTRIBUTES.put("dir", set);
     HTML_BOOLEAN_ATTRIBUTES.put("menu", set);
-    
+
     set = new HashSet();
     set.add("checked");
     set.add("disabled");
     set.add("readonly");
     set.add("ismap");
     HTML_BOOLEAN_ATTRIBUTES.put("input", set);
-    
+
     set = new HashSet();
     set.add("multiple");
     set.add("disabled");
     HTML_BOOLEAN_ATTRIBUTES.put("select", set);
-    
+
     set = new HashSet();
     set.add("disabled");
     HTML_BOOLEAN_ATTRIBUTES.put("optgroup", set);
-    
+
     set = new HashSet();
     set.add("selected");
     set.add("disabled");
     HTML_BOOLEAN_ATTRIBUTES.put("option", set);
-    
+
     set = new HashSet();
     set.add("disabled");
     set.add("readonly");
     HTML_BOOLEAN_ATTRIBUTES.put("textarea", set);
-    
+
     set = new HashSet();
     set.add("disabled");
     HTML_BOOLEAN_ATTRIBUTES.put("button", set);
-    
+
     set = new HashSet();
     set.add("nowrap");
     HTML_BOOLEAN_ATTRIBUTES.put("th", set);
     HTML_BOOLEAN_ATTRIBUTES.put("td", set);
-    
+
     set = new HashSet();
     set.add("noresize");
     HTML_BOOLEAN_ATTRIBUTES.put("frame", set);
-    
+
     set = new HashSet();
     set.add("defer");
     HTML_BOOLEAN_ATTRIBUTES.put("script", set);
@@ -168,7 +168,7 @@ public class StreamSerializer
 
   protected boolean discardDefaultContent;
   protected boolean xmlDeclaration = true;
-  
+
   // has a META element with the encoding been added?
   private boolean htmlEncoded;
 
@@ -204,7 +204,7 @@ public class StreamSerializer
   {
     serialize(node, out, false);
   }
-  
+
   void serialize(Node node, final OutputStream out,
                  boolean convertToCdata)
     throws IOException

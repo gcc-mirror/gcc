@@ -75,7 +75,7 @@ public class JniIncludePrinter
             if (! (field.value instanceof Integer)
                 && ! (field.value instanceof Long))
               continue;
-            
+
             // Note that we don't want to mangle the field name.
             String name = (JniHelper.mangle(klass.name) + "_" + field.name);
             out.print("#undef ");

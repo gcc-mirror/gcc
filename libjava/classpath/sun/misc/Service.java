@@ -54,13 +54,12 @@ public class Service
    * implemented by any loaded service providers.
    * @param cl the class loader that will be used to load the
    * service providers, or <code>null</code> for the system class
-   * loader. 
+   * loader.
    * @return an iterator over the service providers.
-   */  
+   */
   public static <P> Iterator<P> providers(Class<P> c, ClassLoader cl)
   {
     return (Iterator<P>) ServiceFactory.lookupProviders(c, cl);
   }
 
 }
-

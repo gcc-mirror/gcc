@@ -134,7 +134,7 @@ public class KeyManagerFactory
   /**
    * Create an instance of the named key manager factory, from the first
    * provider that implements it.
-   * 
+   *
    * @param algorithm The type of key manager factory to get.
    * @return An appropriate implementation of that algoritm.
    * @throws NoSuchAlgorithmException If no provider implements the requested
@@ -164,7 +164,7 @@ public class KeyManagerFactory
   /**
    * Create an instance of the named key manager factory, from the named
    * provider.
-   * 
+   *
    * @param algorithm The type of key manager factory to get.
    * @param provider The name of the provider to get the implementation from.
    * @return An appropriate implementation of that algorithm.
@@ -190,7 +190,7 @@ public class KeyManagerFactory
   /**
    * Create an instance of the named key manager factory, from the given
    * provider.
-   * 
+   *
    * @param algorithm The type of key manager factory to get.
    * @param provider The provider to get the implementation from.
    * @return An appropriate implementation of that algorithm.

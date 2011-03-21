@@ -5,5 +5,5 @@
 ! Entry is obsolete in Fortran 2008
 !
 subroutine foo()
-entry bar() ! { dg-error "Fortran 2008 obsolescent feature: ENTRY" }
+entry bar() ! { dg-warning "Fortran 2008 obsolescent feature: ENTRY" }
 end 

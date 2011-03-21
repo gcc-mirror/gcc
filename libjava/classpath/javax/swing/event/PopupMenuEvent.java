@@ -46,13 +46,13 @@ import java.util.EventObject;
  */
 public class PopupMenuEvent extends EventObject {
 
-	/**
-	 * Constructor PopupMenuEvent
-	 * @param source Source
-	 */
-	public PopupMenuEvent(Object source) {
-		super(source);
-	} // PopupMenuEvent()
+        /**
+         * Constructor PopupMenuEvent
+         * @param source Source
+         */
+        public PopupMenuEvent(Object source) {
+                super(source);
+        } // PopupMenuEvent()
 
 
 } // PopupMenuEvent

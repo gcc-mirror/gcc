@@ -46,47 +46,47 @@ import java.util.EventListener;
  */
 public interface InternalFrameListener extends EventListener {
 
-	/**
-	 * Internal frame activated
-	 * @param event Internal Frame Event
-	 */
-	void internalFrameActivated(InternalFrameEvent event);
+        /**
+         * Internal frame activated
+         * @param event Internal Frame Event
+         */
+        void internalFrameActivated(InternalFrameEvent event);
 
-	/**
-	 * Internal frame closed
-	 * @param event Internal Frame Event
-	 */
-	void internalFrameClosed(InternalFrameEvent event);
+        /**
+         * Internal frame closed
+         * @param event Internal Frame Event
+         */
+        void internalFrameClosed(InternalFrameEvent event);
 
-	/**
-	 * Internal frame closing
-	 * @param event Internal Frame Event
-	 */
-	void internalFrameClosing(InternalFrameEvent event);
+        /**
+         * Internal frame closing
+         * @param event Internal Frame Event
+         */
+        void internalFrameClosing(InternalFrameEvent event);
 
-	/**
-	 * Internal frame deactivated
-	 * @param event Internal Frame Event
-	 */
-	void internalFrameDeactivated(InternalFrameEvent event);
+        /**
+         * Internal frame deactivated
+         * @param event Internal Frame Event
+         */
+        void internalFrameDeactivated(InternalFrameEvent event);
 
-	/**
-	 * Internal frame deiconified
-	 * @param event Internal Frame Event
-	 */
-	void internalFrameDeiconified(InternalFrameEvent event);
+        /**
+         * Internal frame deiconified
+         * @param event Internal Frame Event
+         */
+        void internalFrameDeiconified(InternalFrameEvent event);
 
-	/**
-	 * Internal frame iconified
-	 * @param event Internal Frame Event
-	 */
-	void internalFrameIconified(InternalFrameEvent event);
+        /**
+         * Internal frame iconified
+         * @param event Internal Frame Event
+         */
+        void internalFrameIconified(InternalFrameEvent event);
 
-	/**
-	 * Internal frame opened
-	 * @param event Internal Frame Event
-	 */
-	void internalFrameOpened(InternalFrameEvent event);
+        /**
+         * Internal frame opened
+         * @param event Internal Frame Event
+         */
+        void internalFrameOpened(InternalFrameEvent event);
 
 
 } // InternalFrameListener

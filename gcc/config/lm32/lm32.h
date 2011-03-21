@@ -1,7 +1,7 @@
 /* Definitions of target machine for GNU compiler, Lattice Mico32 architecture.
    Contributed by Jon Beniston <jon@beniston.com>
 
-   Copyright (C) 2009, 2010 Free Software Foundation, Inc.
+   Copyright (C) 2009, 2010, 2011 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -54,7 +54,7 @@
 %{mdivide-enabled} \
 %{mbarrel-shift-enabled} \
 %{msign-extend-enabled} \
-%{muser-extend-enabled} \
+%{muser-enabled} \
 "
 
 /* Let link script define all link options. 
@@ -238,6 +238,8 @@ enum reg_class
 #define FRAME_POINTER_REGNUM FP_REGNUM
 
 #define ARG_POINTER_REGNUM FRAME_POINTER_REGNUM
+
+#define INCOMING_RETURN_ADDR_RTX gen_rtx_REG (SImode, RA_REGNUM)
 
 #define RETURN_ADDR_RTX(count, frame)                                   \
   lm32_return_addr_rtx (count, frame)

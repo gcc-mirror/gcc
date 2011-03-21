@@ -1,4 +1,4 @@
-/* AffineTransformOp.java --  This class performs affine 
+/* AffineTransformOp.java --  This class performs affine
    transformation between two images or rasters in 2 dimensions.
    Copyright (C) 2004, 2006 Free Software Foundation
 
@@ -51,19 +51,19 @@ import java.util.Arrays;
 /**
  * AffineTransformOp performs matrix-based transformations (translations,
  * scales, flips, rotations, and shears).
- * 
+ *
  * If interpolation is required, nearest neighbour, bilinear, and bicubic
  * methods are available.
  *
- * @author Olga Rodimina (rodimina@redhat.com) 
+ * @author Olga Rodimina (rodimina@redhat.com)
  * @author Francis Kung (fkung@redhat.com)
  */
 public class AffineTransformOp implements BufferedImageOp, RasterOp
 {
     public static final int TYPE_NEAREST_NEIGHBOR = 1;
-    
+
     public static final int TYPE_BILINEAR = 2;
-    
+
     /**
      * @since 1.5.0
      */
@@ -71,13 +71,13 @@ public class AffineTransformOp implements BufferedImageOp, RasterOp
 
     private AffineTransform transform;
     private RenderingHints hints;
-    
+
     /**
      * Construct AffineTransformOp with the given xform and interpolationType.
      * Interpolation type can be TYPE_BILINEAR, TYPE_BICUBIC or
      * TYPE_NEAREST_NEIGHBOR.
      *
-     * @param xform AffineTransform that will applied to the source image 
+     * @param xform AffineTransform that will applied to the source image
      * @param interpolationType type of interpolation used
      * @throws ImagingOpException if the transform matrix is noninvertible
      */
@@ -90,12 +90,12 @@ public class AffineTransformOp implements BufferedImageOp, RasterOp
       switch (interpolationType)
       {
       case TYPE_BILINEAR:
-        hints = new RenderingHints (RenderingHints.KEY_INTERPOLATION, 
+        hints = new RenderingHints (RenderingHints.KEY_INTERPOLATION,
                                     RenderingHints.VALUE_INTERPOLATION_BILINEAR);
         break;
       case TYPE_BICUBIC:
-        hints = new RenderingHints (RenderingHints.KEY_INTERPOLATION, 
-				    RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+        hints = new RenderingHints (RenderingHints.KEY_INTERPOLATION,
+                                    RenderingHints.VALUE_INTERPOLATION_BICUBIC);
         break;
       default:
         hints = new RenderingHints (RenderingHints.KEY_INTERPOLATION,
@@ -105,7 +105,7 @@ public class AffineTransformOp implements BufferedImageOp, RasterOp
 
     /**
      * Construct AffineTransformOp with the given xform and rendering hints.
-     * 
+     *
      * @param xform AffineTransform that will applied to the source image
      * @param hints rendering hints that will be used during transformation
      * @throws ImagingOpException if the transform matrix is noninvertible
@@ -119,9 +119,9 @@ public class AffineTransformOp implements BufferedImageOp, RasterOp
     }
 
     /**
-     * Creates a new BufferedImage with the size equal to that of the 
-     * transformed image and the correct number of bands. The newly created 
-     * image is created with the specified ColorModel. 
+     * Creates a new BufferedImage with the size equal to that of the
+     * transformed image and the correct number of bands. The newly created
+     * image is created with the specified ColorModel.
      * If a ColorModel is not specified, an appropriate ColorModel is used.
      *
      * @param src the source image.
@@ -149,7 +149,7 @@ public class AffineTransformOp implements BufferedImageOp, RasterOp
     }
 
     /**
-     * Creates a new WritableRaster with the size equal to the transformed 
+     * Creates a new WritableRaster with the size equal to the transformed
      * source raster and correct number of bands .
      *
      * @param src the source raster.
@@ -159,18 +159,18 @@ public class AffineTransformOp implements BufferedImageOp, RasterOp
     public WritableRaster createCompatibleDestRaster (Raster src)
     {
       Rectangle2D rect = getBounds2D(src);
-      
-      if (rect.getWidth() == 0 || rect.getHeight() == 0) 
+
+      if (rect.getWidth() == 0 || rect.getHeight() == 0)
         throw new RasterFormatException("width or height is 0");
 
-      return src.createCompatibleWritableRaster((int) rect.getWidth(), 
+      return src.createCompatibleWritableRaster((int) rect.getWidth(),
                                                 (int) rect.getHeight());
     }
 
     /**
      * Transforms source image using transform specified at the constructor.
      * The resulting transformed image is stored in the destination image if one
-     * is provided; otherwise a new BufferedImage is created and returned. 
+     * is provided; otherwise a new BufferedImage is created and returned.
      *
      * @param src source image
      * @param dst destination image
@@ -218,7 +218,7 @@ public class AffineTransformOp implements BufferedImageOp, RasterOp
       if (src.getNumBands() != dst.getNumBands())
         throw new IllegalArgumentException("src and dst must have same number"
                                            + " of bands");
-      
+
       // Optimization for rasters that can be represented in the RGB colormodel:
       // wrap the rasters in images, and let Cairo do the transformation
       if (ColorModel.getRGBdefault().isCompatibleSampleModel(src.getSampleModel())
@@ -232,7 +232,7 @@ public class AffineTransformOp implements BufferedImageOp, RasterOp
                                                  src2, false, null);
           BufferedImage iDst = new BufferedImage(ColorModel.getRGBdefault(), dst,
                                                  false, null);
-  
+
           return filter(iSrc, iDst).getRaster();
         }
 
@@ -256,7 +256,7 @@ public class AffineTransformOp implements BufferedImageOp, RasterOp
       // Use an inverse transform to map each point in the destination to
       // a point in the source.  Note that, while all points in the destination
       // matrix are integers, this is not necessarily true for points in the
-      // source (hence why interpolation is required) 
+      // source (hence why interpolation is required)
       try
         {
           AffineTransform inverseTx = transform.createInverse();
@@ -271,18 +271,18 @@ public class AffineTransformOp implements BufferedImageOp, RasterOp
       // Different interpolation methods...
       if (hints.containsValue(RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR))
         filterNearest(src, dst, dstPts, srcPts);
-      
+
       else if (hints.containsValue(RenderingHints.VALUE_INTERPOLATION_BILINEAR))
         filterBilinear(src, dst, dstPts, srcPts);
-    
+
       else          // bicubic
         filterBicubic(src, dst, dstPts, srcPts);
 
-      return dst;  
+      return dst;
     }
 
     /**
-     * Transforms source image using transform specified at the constructor and 
+     * Transforms source image using transform specified at the constructor and
      * returns bounds of the transformed image.
      *
      * @param src image to be transformed
@@ -292,7 +292,7 @@ public class AffineTransformOp implements BufferedImageOp, RasterOp
     {
       return getBounds2D (src.getRaster());
     }
-   
+
     /**
      * Returns bounds of the transformed raster.
      *
@@ -313,18 +313,18 @@ public class AffineTransformOp implements BufferedImageOp, RasterOp
     {
       if (hints.containsValue(RenderingHints.VALUE_INTERPOLATION_BILINEAR))
         return TYPE_BILINEAR;
-      
+
       else if (hints.containsValue(RenderingHints.VALUE_INTERPOLATION_BICUBIC))
         return TYPE_BICUBIC;
-      
-      else 
+
+      else
         return TYPE_NEAREST_NEIGHBOR;
     }
 
-    /** 
-     * Returns location of the transformed source point. The resulting point 
+    /**
+     * Returns location of the transformed source point. The resulting point
      * is stored in the dstPt if one is specified.
-     *  
+     *
      * @param srcPt point to be transformed
      * @param dstPt destination point
      * @return the location of the transformed source point.
@@ -354,10 +354,10 @@ public class AffineTransformOp implements BufferedImageOp, RasterOp
     {
       return transform;
     }
-    
+
     /**
      * Perform nearest-neighbour filtering
-     * 
+     *
      * @param src the source raster
      * @param dst the destination raster
      * @param dpts array of points on the destination raster
@@ -367,14 +367,14 @@ public class AffineTransformOp implements BufferedImageOp, RasterOp
                                double[] pts)
     {
       Rectangle srcbounds = src.getBounds();
-  
+
       // For all points on the destination raster, copy the value from the
       // corrosponding (rounded) source point
       for (int i = 0; i < dpts.length; i += 2)
         {
           int srcX = (int) Math.round(pts[i]) + src.getMinX();
           int srcY = (int) Math.round(pts[i + 1]) + src.getMinY();
-          
+
           if (srcbounds.contains(srcX, srcY))
             dst.setDataElements((int) dpts[i] + dst.getMinX(),
                                 (int) dpts[i + 1] + dst.getMinY(),
@@ -384,7 +384,7 @@ public class AffineTransformOp implements BufferedImageOp, RasterOp
 
     /**
      * Perform bilinear filtering
-     * 
+     *
      * @param src the source raster
      * @param dst the destination raster
      * @param dpts array of points on the destination raster
@@ -394,26 +394,26 @@ public class AffineTransformOp implements BufferedImageOp, RasterOp
                               double[] pts)
     {
       Rectangle srcbounds = src.getBounds();
-  
+
       Object xyarr = null;
       Object xp1arr = null;
       Object yp1arr = null;
       Object xyp1arr = null;
-      
+
       double xy;
       double xp1;
       double yp1;
       double xyp1;
 
       double[] result = new double[src.getNumBands()];
-      
+
       // For all points in the destination raster, use bilinear interpolation
       // to find the value from the corrosponding source points
       for (int i = 0; i < dpts.length; i += 2)
         {
           int srcX = (int) Math.round(pts[i]) + src.getMinX();
           int srcY = (int) Math.round(pts[i + 1]) + src.getMinY();
-          
+
           if (srcbounds.contains(srcX, srcY))
             {
               // Corner case at the bottom or right edge; use nearest neighbour
@@ -422,7 +422,7 @@ public class AffineTransformOp implements BufferedImageOp, RasterOp
                 dst.setDataElements((int) dpts[i] + dst.getMinX(),
                                     (int) dpts[i + 1] + dst.getMinY(),
                                     src.getDataElements(srcX, srcY, null));
-  
+
               // Standard case, apply the bilinear formula
               else
                 {
@@ -448,11 +448,11 @@ public class AffineTransformOp implements BufferedImageOp, RasterOp
                       yp1arr = src.getPixel(x, y+1, (int[])yp1arr);
                       xyp1arr = src.getPixel(x+1, y+1, (int[])xyp1arr);
                     }
-                  // using 
+                  // using
                   // array[] pixels = src.getPixels(x, y, 2, 2, pixels);
                   // instead of doing four individual src.getPixel() calls
                   // should be faster, but benchmarking shows that it's not...
-                  
+
                   // Run interpolation for each band
                   for (int j = 0; j < src.getNumBands(); j++)
                     {
@@ -472,16 +472,16 @@ public class AffineTransformOp implements BufferedImageOp, RasterOp
                           yp1 = ((int[])yp1arr)[j];
                           xyp1 = ((int[])xyp1arr)[j];
                         }
-                      
-                      // If all four samples are identical, there's no need to 
+
+                      // If all four samples are identical, there's no need to
                       // calculate anything
                       if (xy == xp1 && xy == yp1 && xy == xyp1)
                         result[j] = xy;
-                      
+
                       // Run bilinear interpolation formula
                       else
-                        result[j] = (xy * (1-xdiff) + xp1 * xdiff) 
-                                      * (1-ydiff) 
+                        result[j] = (xy * (1-xdiff) + xp1 * xdiff)
+                                      * (1-ydiff)
                                     + (yp1 * (1-xdiff) + xyp1 * xdiff)
                                       * ydiff;
                     }
@@ -497,7 +497,7 @@ public class AffineTransformOp implements BufferedImageOp, RasterOp
     /**
      * Perform bicubic filtering
      * based on http://local.wasp.uwa.edu.au/~pbourke/colour/bicubic/
-     * 
+     *
      * @param src the source raster
      * @param dst the destination raster
      * @param dpts array of points on the destination raster
@@ -522,7 +522,7 @@ public class AffineTransformOp implements BufferedImageOp, RasterOp
               double dx = pts[i] + src.getMinX() - x;
               double dy = pts[i + 1] + src.getMinY() - y;
               Arrays.fill(result, 0);
-  
+
               for (int m = - 1; m < 3; m++)
                 for (int n = - 1; n < 3; n++)
                   {
@@ -597,7 +597,7 @@ public class AffineTransformOp implements BufferedImageOp, RasterOp
                           result[j] += ((int[])pixels)[j] * r1 * r2;
                       }
                   }
-  
+
               // Put it all together
               dst.setPixel((int)dpts[i] + dst.getMinX(),
                            (int)dpts[i+1] + dst.getMinY(),

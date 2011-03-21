@@ -1,6 +1,6 @@
 // -*- C++ -*- header.
 
-// Copyright (C) 2008, 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -22,7 +22,7 @@
 // see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 // <http://www.gnu.org/licenses/>.
 
-/** @file bits/atomic_base.h 
+/** @file bits/atomic_base.h
  *  This is an internal header file, included by other library headers.
  *  Do not attempt to use it directly. @headername{atomic}
  */
@@ -33,11 +33,12 @@
 #pragma GCC system_header
 
 #include <bits/c++config.h>
-#include <stddef.h>
 #include <stdbool.h>
 #include <stdint.h>
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /**
    * @defgroup atomics Atomics
@@ -67,17 +68,23 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     return __mo2;
   }
 
+  void
+  atomic_thread_fence(memory_order);
+
+  void
+  atomic_signal_fence(memory_order);
+
   /// kill_dependency
   template<typename _Tp>
     inline _Tp
     kill_dependency(_Tp __y)
     {
-      _Tp ret(__y);
-      return ret;
+      _Tp __ret(__y);
+      return __ret;
     }
 
   /**
-   *  @brief Base type for atomic_flag. 
+   *  @brief Base type for atomic_flag.
    *
    *  Base type is POD with data, allowing atomic_flag to derive from
    *  it and meet the standard layout type requirement. In addition to
@@ -113,27 +120,24 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   namespace __atomic0
   {
     struct atomic_flag;
-    struct atomic_address;
 
     template<typename _IntTp>
       struct __atomic_base;
-  } 
+  }
 
   namespace __atomic2
   {
     struct atomic_flag;
-    struct atomic_address;
 
     template<typename _IntTp>
       struct __atomic_base;
-  } 
+  }
 
   namespace __atomic1
   {
     using __atomic2::atomic_flag;
-    using __atomic0::atomic_address;
     using __atomic0::__atomic_base;
-  } 
+  }
 
   /// Lock-free Property
 #if defined(_GLIBCXX_ATOMIC_BUILTINS_1) && defined(_GLIBCXX_ATOMIC_BUILTINS_2) \
@@ -156,7 +160,6 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 #define ATOMIC_INT_LOCK_FREE _GLIBCXX_ATOMIC_PROPERTY
 #define ATOMIC_LONG_LOCK_FREE _GLIBCXX_ATOMIC_PROPERTY
 #define ATOMIC_LLONG_LOCK_FREE _GLIBCXX_ATOMIC_PROPERTY
-#define ATOMIC_ADDRESS_LOCK_FREE _GLIBCXX_ATOMIC_PROPERTY
 
   inline namespace _GLIBCXX_ATOMIC_NAMESPACE { }
 
@@ -165,28 +168,28 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   typedef __atomic_base<char>  	       		atomic_char;
 
   /// atomic_schar
-  typedef __atomic_base<signed char>         	atomic_schar;
+  typedef __atomic_base<signed char>	     	atomic_schar;
 
   /// atomic_uchar
-  typedef __atomic_base<unsigned char>  	atomic_uchar;
+  typedef __atomic_base<unsigned char>		atomic_uchar;
 
   /// atomic_short
-  typedef __atomic_base<short>  		atomic_short;
+  typedef __atomic_base<short>			atomic_short;
 
   /// atomic_ushort
-  typedef __atomic_base<unsigned short>  	atomic_ushort;
+  typedef __atomic_base<unsigned short>	 	atomic_ushort;
 
   /// atomic_int
   typedef __atomic_base<int>  	       		atomic_int;
 
   /// atomic_uint
-  typedef __atomic_base<unsigned int>        	atomic_uint;
+  typedef __atomic_base<unsigned int>	     	atomic_uint;
 
   /// atomic_long
   typedef __atomic_base<long>  	       		atomic_long;
 
   /// atomic_ulong
-  typedef __atomic_base<unsigned long>  	atomic_ulong;
+  typedef __atomic_base<unsigned long>		atomic_ulong;
 
   /// atomic_llong
   typedef __atomic_base<long long>  		atomic_llong;
@@ -211,50 +214,50 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   typedef __atomic_base<int_least8_t>  		atomic_int_least8_t;
 
   /// atomic_uint_least8_t
-  typedef __atomic_base<uint_least8_t>         	atomic_uint_least8_t;
+  typedef __atomic_base<uint_least8_t>	       	atomic_uint_least8_t;
 
   /// atomic_int_least16_t
-  typedef __atomic_base<int_least16_t>         	atomic_int_least16_t;
+  typedef __atomic_base<int_least16_t>	       	atomic_int_least16_t;
 
   /// atomic_uint_least16_t
-  typedef __atomic_base<uint_least16_t>        	atomic_uint_least16_t;
+  typedef __atomic_base<uint_least16_t>	       	atomic_uint_least16_t;
 
   /// atomic_int_least32_t
-  typedef __atomic_base<int_least32_t>         	atomic_int_least32_t;
+  typedef __atomic_base<int_least32_t>	       	atomic_int_least32_t;
 
   /// atomic_uint_least32_t
-  typedef __atomic_base<uint_least32_t>        	atomic_uint_least32_t;
+  typedef __atomic_base<uint_least32_t>	       	atomic_uint_least32_t;
 
   /// atomic_int_least64_t
-  typedef __atomic_base<int_least64_t>         	atomic_int_least64_t;
+  typedef __atomic_base<int_least64_t>	       	atomic_int_least64_t;
 
   /// atomic_uint_least64_t
-  typedef __atomic_base<uint_least64_t>        	atomic_uint_least64_t;
+  typedef __atomic_base<uint_least64_t>	       	atomic_uint_least64_t;
 
 
   /// atomic_int_fast8_t
   typedef __atomic_base<int_fast8_t>  		atomic_int_fast8_t;
 
   /// atomic_uint_fast8_t
-  typedef __atomic_base<uint_fast8_t>         	atomic_uint_fast8_t;
+  typedef __atomic_base<uint_fast8_t>	      	atomic_uint_fast8_t;
 
   /// atomic_int_fast16_t
-  typedef __atomic_base<int_fast16_t>         	atomic_int_fast16_t;
+  typedef __atomic_base<int_fast16_t>	      	atomic_int_fast16_t;
 
   /// atomic_uint_fast16_t
-  typedef __atomic_base<uint_fast16_t>        	atomic_uint_fast16_t;
+  typedef __atomic_base<uint_fast16_t>	      	atomic_uint_fast16_t;
 
   /// atomic_int_fast32_t
-  typedef __atomic_base<int_fast32_t>         	atomic_int_fast32_t;
+  typedef __atomic_base<int_fast32_t>	      	atomic_int_fast32_t;
 
   /// atomic_uint_fast32_t
-  typedef __atomic_base<uint_fast32_t>        	atomic_uint_fast32_t;
+  typedef __atomic_base<uint_fast32_t>	      	atomic_uint_fast32_t;
 
   /// atomic_int_fast64_t
-  typedef __atomic_base<int_fast64_t>         	atomic_int_fast64_t;
+  typedef __atomic_base<int_fast64_t>	      	atomic_int_fast64_t;
 
   /// atomic_uint_fast64_t
-  typedef __atomic_base<uint_fast64_t>        	atomic_uint_fast64_t;
+  typedef __atomic_base<uint_fast64_t>	      	atomic_uint_fast64_t;
 
 
   /// atomic_intptr_t
@@ -264,7 +267,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   typedef __atomic_base<uintptr_t>  	       	atomic_uintptr_t;
 
   /// atomic_size_t
-  typedef __atomic_base<size_t>  	       	atomic_size_t;
+  typedef __atomic_base<size_t>	 	       	atomic_size_t;
 
   /// atomic_intmax_t
   typedef __atomic_base<intmax_t>  	       	atomic_intmax_t;
@@ -276,15 +279,17 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   typedef __atomic_base<ptrdiff_t>  	       	atomic_ptrdiff_t;
 
 
-  struct atomic_bool;
-
 #define ATOMIC_VAR_INIT(_VI) { _VI }
 
   template<typename _Tp>
     struct atomic;
 
+  template<typename _Tp>
+    struct atomic<_Tp*>;
+
   // @} group atomics
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace std
 
 #endif

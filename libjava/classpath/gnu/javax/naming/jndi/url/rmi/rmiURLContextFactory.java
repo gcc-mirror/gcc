@@ -45,22 +45,22 @@ import javax.naming.spi.ObjectFactory;
 
 /**
  * Find the RMI URL context. This factory checks the Context.PROVIDER_URL
- * property for the address of the RMI naming service and creates the 
+ * property for the address of the RMI naming service and creates the
  * context that operates talking with this naming service. If such property
  * is missing, "rmi://localhost:1099" is assumed.
- * 
- * @author Audrius Meskauskas (audriusa@Bioinformatics.org) 
+ *
+ * @author Audrius Meskauskas (audriusa@Bioinformatics.org)
  */
 public class rmiURLContextFactory implements ObjectFactory
 {
 
   /**
-   * Create a new instance of the context. 
+   * Create a new instance of the context.
    */
   public Object getObjectInstance(Object refObj, Name name, Context nameCtx,
                                   Hashtable environment)
   {
     return new rmiURLContext(environment);
   }
-  
+
 }

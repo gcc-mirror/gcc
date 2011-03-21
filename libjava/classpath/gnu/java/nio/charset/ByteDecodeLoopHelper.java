@@ -43,7 +43,7 @@ import java.nio.charset.CoderResult;
 
 /**
  * Helper class to deal with decoding loops that read a byte at a time
- * 
+ *
  * @author Ian Rogers
  */
 public abstract class ByteDecodeLoopHelper
@@ -61,7 +61,7 @@ public abstract class ByteDecodeLoopHelper
   /**
    * Encodes one or more characters into one or more bytes, mapping each
    * character to only one byte
-   * 
+   *
    * @param in character buffer to read from
    * @param out byte buffer to write to
    * @return the result state of the encoder
@@ -120,7 +120,7 @@ public abstract class ByteDecodeLoopHelper
     int outRemaining = out.remaining();
     CoderResult result;
 
-	bailOut:
+        bailOut:
     if (inRemaining <= outRemaining)
       {
         for (int i = 0; i < inRemaining; i++)
@@ -131,7 +131,7 @@ public abstract class ByteDecodeLoopHelper
               {
                 inPos--;
                 result = CoderResult.unmappableForLength(1);
-				break bailOut;
+                                break bailOut;
               }
             char c = mapToChar(b);
             outArray[outPos] = c;
@@ -149,7 +149,7 @@ public abstract class ByteDecodeLoopHelper
               {
                 inPos--;
                 result = CoderResult.unmappableForLength(1);
-				break bailOut;
+                                break bailOut;
               }
             char c = mapToChar(b);
             outArray[outPos] = c;

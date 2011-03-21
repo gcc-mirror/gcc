@@ -78,7 +78,7 @@ public class MetalSplitPaneUI extends BasicSplitPaneUI
    * The divider returned by this method is a {@link BasicSplitPaneDivider}
    * that is drawn using the Metal look.
    *
-   * @return the default divider to use for <code>JSplitPane</code>s. 
+   * @return the default divider to use for <code>JSplitPane</code>s.
    */
   public BasicSplitPaneDivider createDefaultDivider()
   {

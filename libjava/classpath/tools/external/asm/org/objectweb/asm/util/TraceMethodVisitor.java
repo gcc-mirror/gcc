@@ -43,7 +43,7 @@ import java.util.HashMap;
 /**
  * A {@link MethodVisitor} that prints a disassembled view of the methods it
  * visits.
- * 
+ *
  * @author Eric Bruneton
  */
 public class TraceMethodVisitor extends TraceAbstractVisitor implements
@@ -85,7 +85,7 @@ public class TraceMethodVisitor extends TraceAbstractVisitor implements
 
     /**
      * Constructs a new {@link TraceMethodVisitor}.
-     * 
+     *
      * @param mv the {@link MethodVisitor} to which this visitor delegates
      *        calls. May be <tt>null</tt>.
      */
@@ -472,7 +472,7 @@ public class TraceMethodVisitor extends TraceAbstractVisitor implements
     /**
      * Appends the name of the given label to {@link #buf buf}. Creates a new
      * label name if the given label does not yet have one.
-     * 
+     *
      * @param l a label.
      */
     public void appendLabel(final Label l) {

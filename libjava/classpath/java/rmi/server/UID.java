@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -49,8 +49,8 @@ import java.net.InetAddress;
  * it. It contains time (when created), counter (the number of the UID
  * creation order) and virtual machine id components. The UID can also be
  * constructed specifying a "well known" identifier in the for of short:
- * this identifier defines the UID uniqueness alone. 
- * 
+ * this identifier defines the UID uniqueness alone.
+ *
  * @author Audrius Meskauskas (audriusa@bioinformatics.org)
  */
 public final class UID
@@ -60,16 +60,16 @@ public final class UID
    * Use the serial version uid for interoperability.
    */
   private static final long serialVersionUID = 1086053664494604050L;
- 
+
   /**
    * The UID counter (the ordinary number in the sequence of number of UID's,
-   * created during the recent millisecond). In the next millisecond, it 
+   * created during the recent millisecond). In the next millisecond, it
    * starts from the minimal value again. In the unlikely case of creating
    * more than 65536 uids per millisecond the process pauses till the next
    * ms.
    */
   private static short uidCounter = Short.MIN_VALUE;
-  
+
   /**
    * The time, when the last UID has been created.
    */
@@ -94,7 +94,7 @@ public final class UID
    * The time stamp, when the UID was created.
    */
   private long time;
-  
+
   /**
    * Create the new UID that would have the described features of the
    * uniqueness.
@@ -130,19 +130,19 @@ public final class UID
           }
       }
   }
-  
+
   /**
    * Create the new UID with the well known id (number). All UIDs, creates
    * with the this constructor having the same parameter are equal to each
    * other (regardless to the host and time where they were created.
-   * 
+   *
    * @param wellKnownId the well known UID.
    */
   public UID(short wellKnownId)
   {
     unique = wellKnownId;
   }
-  
+
   /**
    * Get the hashCode of this UID.
    */
@@ -150,7 +150,7 @@ public final class UID
   {
     return (int) (unique ^ time ^ count);
   }
-  
+
   /**
    * Compare this UID with another UID for equality (not equal to other types of
    * objects).
@@ -165,7 +165,7 @@ public final class UID
     else
       return false;
   }
-  
+
   public static UID read(DataInput in) throws IOException
   {
     UID uid = new UID();
@@ -208,10 +208,10 @@ public final class UID
     return new Object().hashCode() ^ (int) System.currentTimeMillis()
            ^ hostIpHash;
   }
-  
+
     /**
    * Get the string representation of this UID.
-   * 
+   *
    * @return a string, uniquely identifying this id.
    */
   public String toString()

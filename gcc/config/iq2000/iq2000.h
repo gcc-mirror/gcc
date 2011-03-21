@@ -235,12 +235,6 @@ enum reg_class
 
 #define INDEX_REG_CLASS NO_REGS
 
-#define REG_CLASS_FROM_LETTER(C) \
-  ((C) == 'd' ? GR_REGS :        \
-   (C) == 'b' ? ALL_REGS :       \
-   (C) == 'y' ? GR_REGS :        \
-   NO_REGS)
-
 #define REGNO_OK_FOR_INDEX_P(regno)	0
 
 #define PREFERRED_RELOAD_CLASS(X,CLASS)				\
@@ -256,53 +250,6 @@ enum reg_class
 
 #define CLASS_MAX_NREGS(CLASS, MODE)    \
   ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
-
-/* For IQ2000:
-
-   `I'	is used for the range of constants an arithmetic insn can
-	actually contain (16-bits signed integers).
-
-   `J'	is used for the range which is just zero (i.e., $r0).
-
-   `K'	is used for the range of constants a logical insn can actually
-	contain (16-bit zero-extended integers).
-
-   `L'	is used for the range of constants that be loaded with lui
-	(i.e., the bottom 16 bits are zero).
-
-   `M'	is used for the range of constants that take two words to load
-	(i.e., not matched by `I', `K', and `L').
-
-   `N'	is used for constants 0xffffnnnn or 0xnnnnffff
-
-   `O'	is a 5-bit zero-extended integer.  */
-
-#define CONST_OK_FOR_LETTER_P(VALUE, C)					\
-  ((C) == 'I' ? ((unsigned HOST_WIDE_INT) ((VALUE) + 0x8000) < 0x10000)	\
-   : (C) == 'J' ? ((VALUE) == 0)					\
-   : (C) == 'K' ? ((unsigned HOST_WIDE_INT) (VALUE) < 0x10000)		\
-   : (C) == 'L' ? (((VALUE) & 0x0000ffff) == 0				\
-		   && (((VALUE) & ~2147483647) == 0			\
-		       || ((VALUE) & ~2147483647) == ~2147483647))	\
-   : (C) == 'M' ? ((((VALUE) & ~0x0000ffff) != 0)			\
-		   && (((VALUE) & ~0x0000ffff) != ~0x0000ffff)		\
-		   && (((VALUE) & 0x0000ffff) != 0			\
-		       || (((VALUE) & ~2147483647) != 0			\
-			   && ((VALUE) & ~2147483647) != ~2147483647)))	\
-   : (C) == 'N' ? ((((VALUE) & 0xffff) == 0xffff)			\
-		   || (((VALUE) & 0xffff0000) == 0xffff0000))		\
-   : (C) == 'O' ? ((unsigned HOST_WIDE_INT) ((VALUE) + 0x20) < 0x40)	\
-   : 0)
-
-#define CONST_DOUBLE_OK_FOR_LETTER_P(VALUE, C)				\
-  ((C) == 'G'								\
-   && (VALUE) == CONST0_RTX (GET_MODE (VALUE)))
-
-/* `R' is for memory references which take 1 word for the instruction.  */
-
-#define EXTRA_CONSTRAINT(OP,CODE)					\
-  (((CODE) == 'R')	  ? simple_memory_operand (OP, GET_MODE (OP))	\
-   : FALSE)
 
 
 /* Basic Stack Layout.  */

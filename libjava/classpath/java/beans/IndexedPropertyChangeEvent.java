@@ -71,7 +71,7 @@ public class IndexedPropertyChangeEvent extends PropertyChangeEvent
   }
 
   /**
-   * Return the index of the changed property. 
+   * Return the index of the changed property.
    * @return the index
    */
   public int getIndex()

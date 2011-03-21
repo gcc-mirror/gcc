@@ -39,7 +39,7 @@ import org.objectweb.asm.tree.MethodInsnNode;
 /**
  * An extended {@link BasicInterpreter} that checks that bytecode instructions
  * are correctly used.
- * 
+ *
  * @author Eric Bruneton
  * @author Bing Ran
  */

@@ -81,7 +81,7 @@ public class XImage
 
   public ImageProducer getSource()
   {
-    return new XImageProducer(); 
+    return new XImageProducer();
   }
 
   /**
@@ -113,11 +113,11 @@ public class XImage
   {
     pixmap.free();
   }
-  
+
   protected class XImageProducer implements ImageProducer
   {
     private Vector<ImageConsumer> consumers = new Vector<ImageConsumer>();
-    
+
     public void addConsumer(ImageConsumer ic)
     {
       if (ic != null && !isConsumer(ic))
@@ -148,30 +148,30 @@ public class XImage
         {
           int width = XImage.this.getWidth(null);
           int height = XImage.this.getHeight(null);
-          
+
           XGraphics2D graphics = (XGraphics2D) getGraphics();
           ColorModel model = graphics.getColorModel();
           graphics.dispose();
-          
+
           ZPixmap zpixmap = (ZPixmap)
             XImage.this.pixmap.image(0, 0, width, height,
                                      0xffffffff,
                                      gnu.x11.image.Image.Format.ZPIXMAP);
-          
+
           int size = zpixmap.get_data_length();
           System.out.println("size: " + size + ", w = " + width + ", h = " + height);
-          
+
           int [] pixel = new int[size];
           for (int i = 0; i < size; i++)
             pixel[i] = zpixmap.get_data_element(i);
 
           consumer.setHints(ImageConsumer.SINGLEPASS);
-          
+
           consumer.setDimensions(width, height);
           consumer.setPixels(0, 0, width, height, model, pixel, 0, width);
           consumer.imageComplete(ImageConsumer.STATICIMAGEDONE);
         }
-      
+
       System.out.println("done!");
     }
   }

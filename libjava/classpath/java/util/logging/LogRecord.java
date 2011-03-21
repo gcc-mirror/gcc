@@ -140,7 +140,7 @@ public class LogRecord
    *
    * @param message the message text (which will be used as key
    *                for looking up the localized message text
-   *                if a resource bundle has been associated). 
+   *                if a resource bundle has been associated).
    */
   public LogRecord(Level level, String message)
   {
@@ -182,7 +182,7 @@ public class LogRecord
     {
       parameters = new Object[numParams];
       for (int i = 0; i < numParams; i++)
-	parameters[i] = in.readObject();
+        parameters[i] = in.readObject();
     }
   }
 
@@ -220,10 +220,10 @@ public class LogRecord
       out.writeInt(parameters.length);
       for (int i = 0; i < parameters.length; i++)
       {
-	if (parameters[i] == null)
-	  out.writeObject(null);
-	else
-	  out.writeObject(parameters[i].toString());
+        if (parameters[i] == null)
+          out.writeObject(null);
+        else
+          out.writeObject(parameters[i].toString());
       }
     }
   }
@@ -331,11 +331,11 @@ public class LogRecord
   {
     resourceBundleName = name;
     bundle = null;
-    
+
     try
     {
       if (resourceBundleName != null)
-	bundle = ResourceBundle.getBundle(resourceBundleName);
+        bundle = ResourceBundle.getBundle(resourceBundleName);
     }
     catch (java.util.MissingResourceException _)
     {
@@ -427,7 +427,7 @@ public class LogRecord
    * parameter to some logging calls, and in certain cases, the
    * logging framework tries to determine an approximation
    * (which may or may not be accurate).
-   * 
+   *
    * @return the name of the class that issued the logging request,
    *         or <code>null</code> if this information could not
    *         be obtained.
@@ -450,7 +450,7 @@ public class LogRecord
    * to the logging framework, applications should not modify it
    * anymore.  Therefore, this method should only be called on
    * freshly constructed LogRecords.
-   * 
+   *
    * @param sourceClassName the name of the class that issued the
    *          logging request, or <code>null</code> to indicate that
    *          this information could not be obtained.
@@ -467,7 +467,7 @@ public class LogRecord
    * parameter to some logging calls, and in certain cases, the
    * logging framework tries to determine an approximation
    * (which may or may not be accurate).
-   * 
+   *
    * @return the name of the method that issued the logging request,
    *         or <code>null</code> if this information could not
    *         be obtained.
@@ -490,7 +490,7 @@ public class LogRecord
    * to the logging framework, applications should not modify it
    * anymore.  Therefore, this method should only be called on
    * freshly constructed LogRecords.
-   * 
+   *
    * @param sourceMethodName the name of the method that issued the
    *          logging request, or <code>null</code> to indicate that
    *          this information could not be obtained.
@@ -543,7 +543,7 @@ public class LogRecord
    *
    * @param message the message text (which will be used as key
    *                for looking up the localized message text
-   *                if a resource bundle has been associated). 
+   *                if a resource bundle has been associated).
    */
   public void setMessage(String message)
   {

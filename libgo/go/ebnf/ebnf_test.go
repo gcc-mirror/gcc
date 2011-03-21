@@ -5,46 +5,50 @@
 package ebnf
 
 import (
+	"go/token"
 	"io/ioutil"
 	"testing"
 )
 
 
+var fset = token.NewFileSet()
+
+
 var grammars = []string{
-	`Program = .
-	`,
+`Program = .
+`,
 
-	`Program = foo .
-	foo = "foo" .
-	`,
+`Program = foo .
+foo = "foo" .
+`,
 
-	`Program = "a" | "b" "c" .
-	`,
+`Program = "a" | "b" "c" .
+`,
 
-	`Program = "a" ... "z" .
-	`,
+`Program = "a" ... "z" .
+`,
 
-	`Program = Song .
-	 Song = { Note } .
-	 Note = Do | (Re | Mi | Fa | So | La) | Ti .
-	 Do = "c" .
-	 Re = "d" .
-	 Mi = "e" .
-	 Fa = "f" .
-	 So = "g" .
-	 La = "a" .
-	 Ti = ti .
-	 ti = "b" .
-	`,
+`Program = Song .
+ Song = { Note } .
+ Note = Do | (Re | Mi | Fa | So | La) | Ti .
+ Do = "c" .
+ Re = "d" .
+ Mi = "e" .
+ Fa = "f" .
+ So = "g" .
+ La = "a" .
+ Ti = ti .
+ ti = "b" .
+`,
 }
 
 
 func check(t *testing.T, filename string, src []byte) {
-	grammar, err := Parse(filename, src)
+	grammar, err := Parse(fset, filename, src)
 	if err != nil {
 		t.Errorf("Parse(%s) failed: %v", src, err)
 	}
-	if err = Verify(grammar, "Program"); err != nil {
+	if err = Verify(fset, grammar, "Program"); err != nil {
 		t.Errorf("Verify(%s) failed: %v", src, err)
 	}
 }

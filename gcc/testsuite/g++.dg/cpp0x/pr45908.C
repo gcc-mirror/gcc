@@ -14,5 +14,5 @@ struct vector {
 class block {
     vector v;
     auto end() const -> decltype(v.begin())
-    { return v.begin(); } // { dg-error "conversion" }
+    { return v.begin(); } // { dg-error "could not convert" }
 };

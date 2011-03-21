@@ -80,7 +80,7 @@ public abstract class NumberFormatProvider
   /**
    * Returns a {@link java.text.NumberFormat} instance
    * for integers in the specified {@link java.util.Locale}.
-   * The returned instance should be configured to round 
+   * The returned instance should be configured to round
    * floating point numbers to the nearest integer using
    * {@link java.math.RoundingMode#HALF_EVEN} rounding,
    * and to parse only the integer part of a number.

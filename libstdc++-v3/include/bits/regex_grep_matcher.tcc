@@ -30,11 +30,10 @@
 
 #include <regex>
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
-
+namespace std _GLIBCXX_VISIBILITY(default)
+{
 namespace
 {
-
   // A stack of states used in evaluating the NFA.
   typedef std::stack<std::__regex::_StateIdT,
                      std::vector<std::__regex::_StateIdT>
@@ -102,6 +101,8 @@ namespace
 
 namespace __regex
 {
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
   inline _Grep_matcher::
   _Grep_matcher(_PatternCursor& __p, _Results& __r,
 		const _AutomatonPtr& __nfa,
@@ -173,6 +174,6 @@ namespace __regex
     return __e;
   }
 
+_GLIBCXX_END_NAMESPACE_VERSION
 } // namespace __regex
-
-_GLIBCXX_END_NAMESPACE
+} // namespace

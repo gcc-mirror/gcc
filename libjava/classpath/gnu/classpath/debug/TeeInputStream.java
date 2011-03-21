@@ -94,5 +94,5 @@ public class TeeInputStream
   {
     return false;
   }
-  
+
 }

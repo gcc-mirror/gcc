@@ -1,6 +1,8 @@
+// { dg-timeout-factor 2.0 }
+
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2009, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -31,8 +33,7 @@
 
 /**
  * @file hash_illegal_resize_example.cpp
- * An example of illegally
- *    externally resizing a hash-based container object.
+ * An example of illegally externally resizing a hash-based container object.
  */
 
 /**
@@ -45,6 +46,15 @@
 #include <ext/pb_ds/hash_policy.hpp>
 #include <ext/pb_ds/exception.hpp>
 #include <cassert>
+
+// size of test containers
+#ifdef _GLIBCXX_DEBUG
+# define SIZE 100
+# define RESIZE 20
+#else
+# define SIZE 1000
+# define RESIZE 200
+#endif
 
 using namespace std;
 using namespace __gnu_pbds;
@@ -68,8 +78,7 @@ int main()
     int,
     int,
     int_hash,
-    equal_to<
-    int>,
+    equal_to<int>,
     // Combining function.
     direct_mod_range_hashing<>,
     // Probe function.
@@ -90,20 +99,20 @@ int main()
   // Insert some elements.
   int i;
 
-  for (i = 0; i < 1000; ++i)
+  for (i = 0; i < SIZE; ++i)
     g[i] = 2*  i;
 
   // Check all ok.
-  assert(g.size() == 1000);
-  for (i = 0; i < 1000; ++i)
-    assert(g.find(i) != g.end()&&  g.find(i)->second == 2*  i);
+  assert(g.size() == SIZE);
+  for (i = 0; i < SIZE; ++i)
+    assert(g.find(i) != g.end() && g.find(i)->second == 2 * i);
 
   // Now attempt to resize the table to 200 (impossible).
   bool ex_thrown = false;
 
   try
     {
-      g.resize(200);
+      g.resize(RESIZE);
     }
   catch(__gnu_pbds::resize_error& )
     {
@@ -118,10 +127,9 @@ int main()
   // container object should still be in a valid state; the following
   // checks this.
   // Check all ok.
-  assert(g.size() == 1000);
-  for (i = 0; i < 1000; ++i)
-    assert(g.find(i) != g.end()&&  g.find(i)->second == 2*  i);
+  assert(g.size() == SIZE);
+  for (i = 0; i < SIZE; ++i)
+    assert(g.find(i) != g.end() && g.find(i)->second == 2 * i);
 
   return 0;
 }
-

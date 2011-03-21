@@ -224,7 +224,7 @@ public final class ServiceFactory
    * <code>null</code>.
    */
   public static <P> Iterator<P> lookupProviders(Class<P> spi,
-						ClassLoader loader)
+                                                ClassLoader loader)
   {
     return lookupProviders(spi, loader, false);
   }
@@ -268,8 +268,8 @@ public final class ServiceFactory
    * <code>null</code>.
    */
   public static <P> Iterator<P> lookupProviders(Class<P> spi,
-						ClassLoader loader,
-						boolean error)
+                                                ClassLoader loader,
+                                                boolean error)
   {
     String resourceName;
     Enumeration<URL> urls;
@@ -292,18 +292,18 @@ public final class ServiceFactory
          * does not return anything (no providers installed).
          */
         log(Level.WARNING, "cannot access {0}", resourceName, ioex);
-	if (error)
-	  throw new ServiceConfigurationError("Failed to access + " +
-					      resourceName, ioex);
-	else
-	  {
-	    List<P> empty = Collections.emptyList();
-	    return empty.iterator();
-	  }
+        if (error)
+          throw new ServiceConfigurationError("Failed to access + " +
+                                              resourceName, ioex);
+        else
+          {
+            List<P> empty = Collections.emptyList();
+            return empty.iterator();
+          }
       }
 
     return new ServiceIterator<P>(spi, urls, loader, error,
-				  AccessController.getContext());
+                                  AccessController.getContext());
   }
 
 
@@ -379,7 +379,7 @@ public final class ServiceFactory
      * been fetched.
      */
     private BufferedReader reader;
-    
+
 
     /**
      * The URL currently being processed. This is only used for
@@ -425,7 +425,7 @@ public final class ServiceFactory
      * and initializing service providers.
      */
     ServiceIterator(Class<P> spi, Enumeration<URL> urls, ClassLoader loader,
-		    boolean error, AccessControlContext securityContext)
+                    boolean error, AccessControlContext securityContext)
     {
       this.spi = spi;
       this.urls = urls;
@@ -468,7 +468,7 @@ public final class ServiceFactory
     private P loadNextServiceProvider()
     {
       String line;
-      
+
       if (reader == null)
         advanceReader();
 
@@ -489,9 +489,9 @@ public final class ServiceFactory
               log(Level.WARNING, "IOException upon reading {0}", currentURL,
                   readProblem);
               line = null;
-	      if (error)
-		throw new ServiceConfigurationError("Error reading " +
-						    currentURL, readProblem);
+              if (error)
+                throw new ServiceConfigurationError("Error reading " +
+                                                    currentURL, readProblem);
             }
 
           /* When we are at the end of one list of services,
@@ -540,16 +540,16 @@ public final class ServiceFactory
                   + " of \"{1}\". Specified"
                   + " by \"META-INF/services/{1}\" in {2}.";
 
-              log(Level.WARNING, msg,                  
+              log(Level.WARNING, msg,
                   new Object[] { line, spi.getName(), currentURL },
                   ex);
-	      if (error)
-		throw new ServiceConfigurationError("Cannot load service "+
-						    "provider class " +
-						    line + " specified by "+
-						    "\"META-INF/services/"+
-						    spi.getName() + "\" in "+
-						    currentURL, ex);
+              if (error)
+                throw new ServiceConfigurationError("Cannot load service "+
+                                                    "provider class " +
+                                                    line + " specified by "+
+                                                    "\"META-INF/services/"+
+                                                    spi.getName() + "\" in "+
+                                                    currentURL, ex);
               continue;
             }
         }
@@ -570,9 +570,9 @@ public final class ServiceFactory
               catch (Exception ex)
                 {
                   log(Level.WARNING, "cannot close {0}", currentURL, ex);
-		  if (error)
-		    throw new ServiceConfigurationError("Cannot close " +
-							currentURL, ex);
+                  if (error)
+                    throw new ServiceConfigurationError("Cannot close " +
+                                                        currentURL, ex);
                 }
               reader = null;
               currentURL = null;
@@ -591,9 +591,9 @@ public final class ServiceFactory
         catch (Exception ex)
           {
             log(Level.WARNING, "cannot open {0}", currentURL, ex);
-	    if (error)
-	      throw new ServiceConfigurationError("Cannot open " +
-						  currentURL, ex);
+            if (error)
+              throw new ServiceConfigurationError("Cannot open " +
+                                                  currentURL, ex);
           }
         }
       while (reader == null);

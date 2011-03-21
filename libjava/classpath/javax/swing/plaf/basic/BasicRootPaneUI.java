@@ -130,7 +130,7 @@ public class BasicRootPaneUI extends RootPaneUI
     }
   }
 
-  public static ComponentUI createUI(JComponent x) 
+  public static ComponentUI createUI(JComponent x)
   {
     return new BasicRootPaneUI();
   }

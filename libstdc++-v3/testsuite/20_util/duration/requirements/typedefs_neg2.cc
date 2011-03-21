@@ -32,6 +32,6 @@ void test01()
   test_type d;
 }
 
-// { dg-error "must be a specialization of ratio" "" { target *-*-* } 219 }
+// { dg-error "must be a specialization of ratio" "" { target *-*-* } 227 }
 // { dg-error "instantiated from here" "" { target *-*-* } 32 }
 // { dg-excess-errors "In instantiation of" }

@@ -73,7 +73,7 @@ public class SynthLookAndFeel
    * Creates a new instance of <code>SynthLookAndFeel</code>. In order to use
    * the Synth look and feel you either need to call {@link #load} to load a
    * set of styles from an XML file, or you need to call
-   * {@link #setStyleFactory} to provide your own style factory. 
+   * {@link #setStyleFactory} to provide your own style factory.
    */
   public SynthLookAndFeel()
   {

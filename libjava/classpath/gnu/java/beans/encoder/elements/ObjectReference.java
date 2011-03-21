@@ -42,7 +42,7 @@ import gnu.java.beans.encoder.ObjectId;
 import gnu.java.beans.encoder.Writer;
 
 /** Generates an XML element denoting referencing an existing object.
- * 
+ *
  * @author Robert Schuster (robertschuster@fsfe.org)
  *
  */
@@ -53,7 +53,7 @@ public class ObjectReference extends Element
   public ObjectReference(ObjectId newId)
   {
     id = newId;
-    
+
     // Initializing the Id here is making sure it gets
     // actually used. This step modifies the Id instance
     // in other elements.
@@ -64,5 +64,5 @@ public class ObjectReference extends Element
   {
     writer.write("object", "idref", id.toString(), isEmpty());
   }
-  
+
 }

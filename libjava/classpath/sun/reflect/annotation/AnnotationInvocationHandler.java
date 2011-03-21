@@ -8,7 +8,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -79,19 +79,19 @@ public final class AnnotationInvocationHandler
     public static Annotation create(Class type, Map memberValues)
     {
       for (Method m : type.getDeclaredMethods())
-	{
-	  String name = m.getName();
-	  if (! memberValues.containsKey(name))
-	    {
-	      // FIXME: what to do about exceptions here?
-	      memberValues.put(name, m.getDefaultValue());
-	    }
-	}
+        {
+          String name = m.getName();
+          if (! memberValues.containsKey(name))
+            {
+              // FIXME: what to do about exceptions here?
+              memberValues.put(name, m.getDefaultValue());
+            }
+        }
       AnnotationInvocationHandler handler
-	= new AnnotationInvocationHandler(type, memberValues);
+        = new AnnotationInvocationHandler(type, memberValues);
       return (Annotation) Proxy.newProxyInstance(type.getClassLoader(),
-						 new Class[] { type },
-						 handler);
+                                                 new Class[] { type },
+                                                 handler);
     }
 
     /**
@@ -318,31 +318,31 @@ public final class AnnotationInvocationHandler
     private Object arrayClone(Object obj)
     {
         if (obj instanceof boolean[])
-	    return ((boolean[]) obj).clone();
+            return ((boolean[]) obj).clone();
 
         if (obj instanceof byte[])
-	    return ((byte[]) obj).clone();
+            return ((byte[]) obj).clone();
 
         if (obj instanceof char[])
-	    return ((char[]) obj).clone();
+            return ((char[]) obj).clone();
 
         if (obj instanceof short[])
-	    return ((short[]) obj).clone();
+            return ((short[]) obj).clone();
 
         if (obj instanceof int[])
-	    return ((int[]) obj).clone();
+            return ((int[]) obj).clone();
 
         if (obj instanceof float[])
-	    return ((float[]) obj).clone();
+            return ((float[]) obj).clone();
 
         if (obj instanceof long[])
-	    return ((long[]) obj).clone();
+            return ((long[]) obj).clone();
 
         if (obj instanceof double[])
-	    return ((double[]) obj).clone();
+            return ((double[]) obj).clone();
 
         if (obj instanceof Object[])
-	    return ((Object[]) obj).clone();
+            return ((Object[]) obj).clone();
 
         return obj;
     }
@@ -377,10 +377,10 @@ public final class AnnotationInvocationHandler
                     throw new AnnotationTypeMismatchException(method,
                         val.getClass().getName());
                 }
-		if (val.getClass().isArray())
-		{
-		    val = arrayClone(val);
-		}
+                if (val.getClass().isArray())
+                {
+                    val = arrayClone(val);
+                }
                 return val;
             }
         }

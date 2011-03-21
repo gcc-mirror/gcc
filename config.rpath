@@ -284,9 +284,6 @@ else
     dgux*)
       hardcode_libdir_flag_spec='-L$libdir'
       ;;
-    freebsd1*)
-      ld_shlibs=no
-      ;;
     freebsd2.2*)
       hardcode_libdir_flag_spec='-R$libdir'
       hardcode_direct=yes
@@ -447,8 +444,6 @@ case "$host_os" in
     shrext=.dylib
     ;;
   dgux*)
-    ;;
-  freebsd1*)
     ;;
   freebsd*)
     ;;

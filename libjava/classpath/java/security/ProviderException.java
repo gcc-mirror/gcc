@@ -39,7 +39,7 @@ package java.security;
 
 /**
  * This exception indicates that a runtime problem was encounterd with
- * a security provider. 
+ * a security provider.
  *
  * @author Aaron M. Renn (arenn@urbanophile.com)
  * @status updated to 1.4

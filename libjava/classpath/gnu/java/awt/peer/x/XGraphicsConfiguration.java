@@ -127,7 +127,7 @@ public class XGraphicsConfiguration
         throw new UnsupportedOperationException("Not yet implemented");
       default:
         throw new IllegalArgumentException("Unknown transparency type: "
-                                           + transparency);  
+                                           + transparency);
       }
     return im;
   }
@@ -159,8 +159,8 @@ public class XGraphicsConfiguration
   {
     Display d = device.getDisplay();
     Screen screen = d.default_screen;
-    
-    return new Rectangle(0, 0, screen.width, screen.height); 
+
+    return new Rectangle(0, 0, screen.width, screen.height);
   }
 
   /**

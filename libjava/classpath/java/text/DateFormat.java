@@ -8,7 +8,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -89,11 +89,11 @@ public abstract class DateFormat extends Format implements Cloneable
   /**
    * Represents the position of the era
    * pattern character in the array of
-   * localized pattern characters. 
+   * localized pattern characters.
    * For example, 'AD' is an era used
    * in the Gregorian calendar system.
    * In the U.S. locale, this is 'G'.
-   */  
+   */
   public static final int ERA_FIELD = 0;
   /**
    * Represents the position of the year
@@ -197,7 +197,7 @@ public abstract class DateFormat extends Format implements Cloneable
    */
   public static final int AM_PM_FIELD = 14;
   /**
-   * Represents the position of the 12 
+   * Represents the position of the 12
    * hour pattern character in the array of
    * localized pattern characters.
    * In the U.S. locale, this is 'h'.
@@ -205,7 +205,7 @@ public abstract class DateFormat extends Format implements Cloneable
    */
   public static final int HOUR1_FIELD = 15;
   /**
-   * Represents the position of the 12 
+   * Represents the position of the 12
    * hour pattern character in the array of
    * localized pattern characters.
    * In the U.S. locale, this is 'K'.
@@ -223,45 +223,45 @@ public abstract class DateFormat extends Format implements Cloneable
   public static class Field extends Format.Field
   {
     static final long serialVersionUID = 7441350119349544720L;
-    
+
     private int calendarField;
 
     public static final DateFormat.Field ERA
-	= new Field("era", Calendar.ERA);
+        = new Field("era", Calendar.ERA);
     public static final DateFormat.Field YEAR
-	= new Field("year", Calendar.YEAR);
+        = new Field("year", Calendar.YEAR);
     public static final DateFormat.Field MONTH
-	= new Field("month", Calendar.MONTH);
+        = new Field("month", Calendar.MONTH);
     public static final DateFormat.Field DAY_OF_MONTH
-	= new Field("day of month", Calendar.DAY_OF_MONTH);
+        = new Field("day of month", Calendar.DAY_OF_MONTH);
     public static final DateFormat.Field HOUR_OF_DAY1
-	= new Field("hour of day 1", Calendar.HOUR_OF_DAY);
+        = new Field("hour of day 1", Calendar.HOUR_OF_DAY);
     public static final DateFormat.Field HOUR_OF_DAY0
-	= new Field("hour of day 0", Calendar.HOUR_OF_DAY);
+        = new Field("hour of day 0", Calendar.HOUR_OF_DAY);
     public static final DateFormat.Field MINUTE
-	= new Field("minute", Calendar.MINUTE);
+        = new Field("minute", Calendar.MINUTE);
     public static final DateFormat.Field SECOND
-	= new Field("second", Calendar.SECOND);
+        = new Field("second", Calendar.SECOND);
     public static final DateFormat.Field MILLISECOND
-	= new Field("millisecond", Calendar.MILLISECOND);
+        = new Field("millisecond", Calendar.MILLISECOND);
     public static final DateFormat.Field DAY_OF_WEEK
-	= new Field("day of week", Calendar.DAY_OF_WEEK);
+        = new Field("day of week", Calendar.DAY_OF_WEEK);
     public static final DateFormat.Field DAY_OF_YEAR
-	= new Field("day of year", Calendar.DAY_OF_YEAR);
+        = new Field("day of year", Calendar.DAY_OF_YEAR);
     public static final DateFormat.Field DAY_OF_WEEK_IN_MONTH
-	= new Field("day of week in month", Calendar.DAY_OF_WEEK_IN_MONTH);
+        = new Field("day of week in month", Calendar.DAY_OF_WEEK_IN_MONTH);
     public static final DateFormat.Field WEEK_OF_YEAR
-	= new Field("week of year", Calendar.WEEK_OF_YEAR);
+        = new Field("week of year", Calendar.WEEK_OF_YEAR);
     public static final DateFormat.Field WEEK_OF_MONTH
-	= new Field("week of month", Calendar.WEEK_OF_MONTH);
+        = new Field("week of month", Calendar.WEEK_OF_MONTH);
     public static final DateFormat.Field AM_PM
-	= new Field("am/pm", Calendar.AM_PM);
+        = new Field("am/pm", Calendar.AM_PM);
     public static final DateFormat.Field HOUR1
-	= new Field("hour1", Calendar.HOUR);
+        = new Field("hour1", Calendar.HOUR);
     public static final DateFormat.Field HOUR0
-	= new Field("hour0", Calendar.HOUR);
+        = new Field("hour0", Calendar.HOUR);
     public static final DateFormat.Field TIME_ZONE
-	= new Field("timezone", Calendar.ZONE_OFFSET);
+        = new Field("timezone", Calendar.ZONE_OFFSET);
 
     static final DateFormat.Field[] allFields =
     {
@@ -283,7 +283,7 @@ public abstract class DateFormat extends Format implements Cloneable
       super(name);
       this.calendarField = calendarField;
     }
-    
+
     public int getCalendarField()
     {
       return calendarField;
@@ -292,20 +292,20 @@ public abstract class DateFormat extends Format implements Cloneable
     public static Field ofCalendarField(int calendarField)
     {
       if (calendarField >= allFields.length || calendarField < 0)
-	throw new IllegalArgumentException("no such calendar field ("
-					   + calendarField + ")");
-      
+        throw new IllegalArgumentException("no such calendar field ("
+                                           + calendarField + ")");
+
       return allFields[calendarField];
     }
-    
+
     protected Object readResolve() throws InvalidObjectException
     {
       String s = getName();
 
       for (int i=0;i<allFields.length;i++)
-	if (s.equals(allFields[i].getName()))
-	  return allFields[i];
-      
+        if (s.equals(allFields[i].getName()))
+          return allFields[i];
+
       throw new InvalidObjectException("no such DateFormat field called " + s);
     }
   }
@@ -327,7 +327,7 @@ public abstract class DateFormat extends Format implements Cloneable
    * <li>Is an instance of <code>DateFormat</code>.</li>
    * <li>Has equal numberFormat field as this object.</li>
    * <li>Has equal (Calendar) TimeZone rules as this object.</li>
-   * <li>Has equal (Calendar) isLenient results.</li> 
+   * <li>Has equal (Calendar) isLenient results.</li>
    * <li>Has equal Calendar first day of week and minimal days in week
    * values.</li>
    * </ul>
@@ -339,7 +339,7 @@ public abstract class DateFormat extends Format implements Cloneable
    * are not taken into account.
    *
    * @param obj The object to test for equality against.
-   * 
+   *
    * @return <code>true</code> if the specified object is equal to this object,
    * <code>false</code> otherwise.
    */
@@ -353,18 +353,18 @@ public abstract class DateFormat extends Format implements Cloneable
     TimeZone tzd = d.getTimeZone();
     if (tz.hasSameRules(tzd))
       if (isLenient() == d.isLenient())
-	{
-	  Calendar c = getCalendar();
-	  Calendar cd = d.getCalendar();
-	  if ((c == null && cd == null)
-	      ||
-	      (c.getFirstDayOfWeek() == cd.getFirstDayOfWeek()
-	       &&
-	       c.getMinimalDaysInFirstWeek()
-	       == cd.getMinimalDaysInFirstWeek()))
-	    return ((numberFormat == null && d.numberFormat == null)
-		    || numberFormat.equals(d.numberFormat));
-	}
+        {
+          Calendar c = getCalendar();
+          Calendar cd = d.getCalendar();
+          if ((c == null && cd == null)
+              ||
+              (c.getFirstDayOfWeek() == cd.getFirstDayOfWeek()
+               &&
+               c.getMinimalDaysInFirstWeek()
+               == cd.getMinimalDaysInFirstWeek()))
+            return ((numberFormat == null && d.numberFormat == null)
+                    || numberFormat.equals(d.numberFormat));
+        }
 
     return false;
   }
@@ -397,19 +397,19 @@ public abstract class DateFormat extends Format implements Cloneable
    * formatted date/time appended.
    */
   public final StringBuffer format (Object obj,
-				    StringBuffer buf, FieldPosition pos)
+                                    StringBuffer buf, FieldPosition pos)
   {
     if (obj instanceof Number)
       obj = new Date(((Number) obj).longValue());
     else if (! (obj instanceof Date))
       throw new IllegalArgumentException
-	("Cannot format given Object as a Date");
+        ("Cannot format given Object as a Date");
 
     return format ((Date) obj, buf, pos);
   }
 
-  /**  
-    * Formats the date argument according to the pattern specified. 
+  /**
+    * Formats the date argument according to the pattern specified.
     *
     * @param date The formatted date.
     */
@@ -434,7 +434,7 @@ public abstract class DateFormat extends Format implements Cloneable
    * formatted date/time appended.
    */
   public abstract StringBuffer format (Date date,
-				       StringBuffer buf, FieldPosition pos);
+                                       StringBuffer buf, FieldPosition pos);
 
   /**
    * This method returns a list of available locales supported by this
@@ -474,136 +474,136 @@ public abstract class DateFormat extends Format implements Cloneable
 
     ResourceBundle res =
       ResourceBundle.getBundle("gnu.java.locale.LocaleInformation",
-			       loc, ClassLoader.getSystemClassLoader());
+                               loc, ClassLoader.getSystemClassLoader());
 
     String pattern = null;
     if (use_date)
       {
-	String name, def;
-	switch (dateStyle)
-	  {
-	  case FULL:
-	    name = "fullDateFormat";
-	    def = "EEEE MMMM d, yyyy G";
-	    break;
-	  case LONG:
-	    name = "longDateFormat";
-	    def = "MMMM d, yyyy";
-	    break;
-	  case MEDIUM:
-	    name = "mediumDateFormat";
-	    def = "d-MMM-yy";
-	    break;
-	  case SHORT:
-	    name = "shortDateFormat";
-	    def = "M/d/yy";
-	    break;
-	  default:
-	    throw new IllegalArgumentException ();
-	  }
-	try
-	  {
-	    pattern = res == null ? def : res.getString(name);
-	  }
-	catch (MissingResourceException x)
-	  {
-	    pattern = def;
-	  }
+        String name, def;
+        switch (dateStyle)
+          {
+          case FULL:
+            name = "fullDateFormat";
+            def = "EEEE MMMM d, yyyy G";
+            break;
+          case LONG:
+            name = "longDateFormat";
+            def = "MMMM d, yyyy";
+            break;
+          case MEDIUM:
+            name = "mediumDateFormat";
+            def = "d-MMM-yy";
+            break;
+          case SHORT:
+            name = "shortDateFormat";
+            def = "M/d/yy";
+            break;
+          default:
+            throw new IllegalArgumentException ();
+          }
+        try
+          {
+            pattern = res == null ? def : res.getString(name);
+          }
+        catch (MissingResourceException x)
+          {
+            pattern = def;
+          }
       }
 
     if (use_time)
       {
-	if (pattern == null)
-	  pattern = "";
-	else
-	  pattern += " ";
+        if (pattern == null)
+          pattern = "";
+        else
+          pattern += " ";
 
-	String name, def;
-	switch (timeStyle)
-	  {
-	  case FULL:
-	    name = "fullTimeFormat";
-	    def = "h:mm:ss;S 'o''clock' a z";
-	    break;
-	  case LONG:
-	    name = "longTimeFormat";
-	    def = "h:mm:ss a z";
-	    break;
-	  case MEDIUM:
-	    name = "mediumTimeFormat";
-	    def = "h:mm:ss a";
-	    break;
-	  case SHORT:
-	    name = "shortTimeFormat";
-	    def = "h:mm a";
-	    break;
-	  default:
-	    throw new IllegalArgumentException ();
-	  }
+        String name, def;
+        switch (timeStyle)
+          {
+          case FULL:
+            name = "fullTimeFormat";
+            def = "h:mm:ss;S 'o''clock' a z";
+            break;
+          case LONG:
+            name = "longTimeFormat";
+            def = "h:mm:ss a z";
+            break;
+          case MEDIUM:
+            name = "mediumTimeFormat";
+            def = "h:mm:ss a";
+            break;
+          case SHORT:
+            name = "shortTimeFormat";
+            def = "h:mm a";
+            break;
+          default:
+            throw new IllegalArgumentException ();
+          }
 
-	String s;
-	try
-	  {
-	    s = res == null ? def : res.getString(name);
-	  }
-	catch (MissingResourceException x)
-	  {
-	    s = def;
-	  }
-	pattern += s;
+        String s;
+        try
+          {
+            s = res == null ? def : res.getString(name);
+          }
+        catch (MissingResourceException x)
+          {
+            s = def;
+          }
+        pattern += s;
       }
 
     return new SimpleDateFormat (pattern, loc);
   }
 
   private static DateFormat computeDefault (int dateStyle, int timeStyle,
-					    boolean use_date, boolean use_time)
+                                            boolean use_date, boolean use_time)
   {
     String pattern = null;
     if (use_date)
       {
-	switch (dateStyle)
-	  {
-	  case FULL:
-	    pattern = "EEEE MMMM d, yyyy G";
-	    break;
-	  case LONG:
-	    pattern = "MMMM d, yyyy";
-	    break;
-	  case MEDIUM:
-	    pattern = "d-MMM-yy";
-	    break;
-	  case SHORT:
-	    pattern = "M/d/yy";
-	  default:
-	    throw new IllegalArgumentException ();
-	  }
+        switch (dateStyle)
+          {
+          case FULL:
+            pattern = "EEEE MMMM d, yyyy G";
+            break;
+          case LONG:
+            pattern = "MMMM d, yyyy";
+            break;
+          case MEDIUM:
+            pattern = "d-MMM-yy";
+            break;
+          case SHORT:
+            pattern = "M/d/yy";
+          default:
+            throw new IllegalArgumentException ();
+          }
       }
-    
+
     if (use_time)
       {
-	if (pattern == null)
-	  pattern = "";
-	else
-	  pattern += " ";
+        if (pattern == null)
+          pattern = "";
+        else
+          pattern += " ";
 
-	switch (timeStyle)
-	  {
-	  case FULL:
-	    pattern += "h:mm:ss;S 'o''clock' a z";
-	    break;
-	  case LONG:
-	    pattern += "h:mm:ss a z";
-	    break;
-	  case MEDIUM:
-	    pattern += "h:mm:ss a";
-	    break;
-	  case SHORT:
-	    pattern += "h:mm a";
-	    break;
-	  default:
-	    throw new IllegalArgumentException ();
-	  }
+        switch (timeStyle)
+          {
+          case FULL:
+            pattern += "h:mm:ss;S 'o''clock' a z";
+            break;
+          case LONG:
+            pattern += "h:mm:ss a z";
+            break;
+          case MEDIUM:
+            pattern += "h:mm:ss a";
+            break;
+          case SHORT:
+            pattern += "h:mm a";
+            break;
+          default:
+            throw new IllegalArgumentException ();
+          }
       }
 
     return new SimpleDateFormat (pattern, Locale.ROOT);
@@ -624,8 +624,8 @@ public abstract class DateFormat extends Format implements Cloneable
    * This method returns an instance of <code>DateFormat</code> that will
    * format using the specified formatting style for dates.
    *
-   * @param style The type of formatting to perform. 
-   * 
+   * @param style The type of formatting to perform.
+   *
    * @return A new <code>DateFormat</code> instance.
    */
   public static final DateFormat getDateInstance (int style)
@@ -638,35 +638,35 @@ public abstract class DateFormat extends Format implements Cloneable
    * format using the specified formatting style for dates.  The specified
    * localed will be used in place of the default.
    *
-   * @param style The type of formatting to perform. 
+   * @param style The type of formatting to perform.
    * @param loc The desired locale.
-   * 
+   *
    * @return A new <code>DateFormat</code> instance.
    */
   public static final DateFormat getDateInstance (int style, Locale loc)
   {
     try
       {
-	return computeInstance (style, loc, true, false);
+        return computeInstance (style, loc, true, false);
       }
     catch (MissingResourceException e)
       {
-	for (DateFormatProvider p :
-	       ServiceLoader.load(DateFormatProvider.class))
-	  {
-	    for (Locale l : p.getAvailableLocales())
-	      {
-		if (l.equals(loc))
-		  {
-		    DateFormat df = p.getDateInstance(style, loc);
-		    if (df != null)
-		      return df;
-		    break;
-		  }
-	      }
-	  }
-	return getDateInstance(style,
-			       LocaleHelper.getFallbackLocale(loc));
+        for (DateFormatProvider p :
+               ServiceLoader.load(DateFormatProvider.class))
+          {
+            for (Locale l : p.getAvailableLocales())
+              {
+                if (l.equals(loc))
+                  {
+                    DateFormat df = p.getDateInstance(style, loc);
+                    if (df != null)
+                      return df;
+                    break;
+                  }
+              }
+          }
+        return getDateInstance(style,
+                               LocaleHelper.getFallbackLocale(loc));
       }
   }
 
@@ -687,8 +687,8 @@ public abstract class DateFormat extends Format implements Cloneable
    *
    * @return A new <code>DateFormat</code>instance.
    */
-  public static final DateFormat getDateTimeInstance (int dateStyle, 
-						      int timeStyle)
+  public static final DateFormat getDateTimeInstance (int dateStyle,
+                                                      int timeStyle)
   {
     return getDateTimeInstance (dateStyle, timeStyle, Locale.getDefault());
   }
@@ -696,39 +696,39 @@ public abstract class DateFormat extends Format implements Cloneable
   /**
    * This method returns a new instance of <code>DateFormat</code> that
    * formats both dates and times using the specified styles.
-   * 
+   *
    * @param dateStyle The desired style for date formatting.
    * @param timeStyle The desired style for time formatting
    *
    * @return A new <code>DateFormat</code>instance.
    */
-  public static final DateFormat getDateTimeInstance (int dateStyle, 
-						      int timeStyle, 
-						      Locale loc)
+  public static final DateFormat getDateTimeInstance (int dateStyle,
+                                                      int timeStyle,
+                                                      Locale loc)
   {
     try
       {
-	return computeInstance (dateStyle, timeStyle, loc, true, true);
+        return computeInstance (dateStyle, timeStyle, loc, true, true);
       }
     catch (MissingResourceException e)
       {
-	for (DateFormatProvider p :
-	       ServiceLoader.load(DateFormatProvider.class))
-	  {
-	    for (Locale l : p.getAvailableLocales())
-	      {
-		if (l.equals(loc))
-		  {
-		    DateFormat df = p.getDateTimeInstance(dateStyle,
-							  timeStyle, loc);
-		    if (df != null)
-		      return df;
-		    break;
-		  }
-	      }
-	  }
-	return getDateTimeInstance(dateStyle, timeStyle,
-				   LocaleHelper.getFallbackLocale(loc));
+        for (DateFormatProvider p :
+               ServiceLoader.load(DateFormatProvider.class))
+          {
+            for (Locale l : p.getAvailableLocales())
+              {
+                if (l.equals(loc))
+                  {
+                    DateFormat df = p.getDateTimeInstance(dateStyle,
+                                                          timeStyle, loc);
+                    if (df != null)
+                      return df;
+                    break;
+                  }
+              }
+          }
+        return getDateTimeInstance(dateStyle, timeStyle,
+                                   LocaleHelper.getFallbackLocale(loc));
       }
   }
 
@@ -770,8 +770,8 @@ public abstract class DateFormat extends Format implements Cloneable
    * This method returns an instance of <code>DateFormat</code> that will
    * format using the specified formatting style for times.
    *
-   * @param style The type of formatting to perform. 
-   * 
+   * @param style The type of formatting to perform.
+   *
    * @return A new <code>DateFormat</code> instance.
    */
   public static final DateFormat getTimeInstance (int style)
@@ -784,35 +784,35 @@ public abstract class DateFormat extends Format implements Cloneable
    * format using the specified formatting style for times.  The specified
    * localed will be used in place of the default.
    *
-   * @param style The type of formatting to perform. 
+   * @param style The type of formatting to perform.
    * @param loc The desired locale.
-   * 
+   *
    * @return A new <code>DateFormat</code> instance.
    */
   public static final DateFormat getTimeInstance (int style, Locale loc)
   {
     try
       {
-	return computeInstance (style, loc, false, true);
+        return computeInstance (style, loc, false, true);
       }
     catch (MissingResourceException e)
       {
-	for (DateFormatProvider p :
-	       ServiceLoader.load(DateFormatProvider.class))
-	  {
-	    for (Locale l : p.getAvailableLocales())
-	      {
-		if (l.equals(loc))
-		  {
-		    DateFormat df = p.getTimeInstance(style, loc);
-		    if (df != null)
-		      return df;
-		    break;
-		  }
-	      }
-	  }
-	return getTimeInstance(style,
-			       LocaleHelper.getFallbackLocale(loc));
+        for (DateFormatProvider p :
+               ServiceLoader.load(DateFormatProvider.class))
+          {
+            for (Locale l : p.getAvailableLocales())
+              {
+                if (l.equals(loc))
+                  {
+                    DateFormat df = p.getTimeInstance(style, loc);
+                    if (df != null)
+                      return df;
+                    break;
+                  }
+              }
+          }
+        return getTimeInstance(style,
+                               LocaleHelper.getFallbackLocale(loc));
       }
   }
 
@@ -829,7 +829,7 @@ public abstract class DateFormat extends Format implements Cloneable
 
   /**
    * This method returns a hash value for this object.
-   * 
+   *
    * @return A hash value for this object.
    */
   public int hashCode ()
@@ -866,17 +866,17 @@ public abstract class DateFormat extends Format implements Cloneable
     Date result = parse (source, pos);
     if (result == null)
       {
-	int index = pos.getErrorIndex();
-	if (index < 0)
-	  index = pos.getIndex();
-	throw new ParseException("invalid Date syntax in \""
-				 + source + '\"', index);
+        int index = pos.getErrorIndex();
+        if (index < 0)
+          index = pos.getIndex();
+        throw new ParseException("invalid Date syntax in \""
+                                 + source + '\"', index);
       }
     return result;
   }
 
-  /** 
-   * This method parses the specified <code>String</code> into a 
+  /**
+   * This method parses the specified <code>String</code> into a
    * <code>Date</code>.  The <code>pos</code> argument contains the
    * starting parse position on method entry and the ending parse
    * position on method exit.
@@ -894,7 +894,7 @@ public abstract class DateFormat extends Format implements Cloneable
    * This method is identical to <code>parse(String, ParsePosition)</code>,
    * but returns its result as an <code>Object</code> instead of a
    * <code>Date</code>.
-   * 
+   *
    * @param source The string to parse.
    * @param pos The starting parse position in entry, the ending parse
    * position on exit.
@@ -908,7 +908,7 @@ public abstract class DateFormat extends Format implements Cloneable
   }
 
   /**
-   * This method specified the <code>Calendar</code> that should be used 
+   * This method specified the <code>Calendar</code> that should be used
    * by this object to parse/format datetimes.
    *
    * @param calendar The new <code>Calendar</code> for this object.
@@ -921,7 +921,7 @@ public abstract class DateFormat extends Format implements Cloneable
   }
 
   /**
-   * This method specifies whether or not this object should be lenient in 
+   * This method specifies whether or not this object should be lenient in
    * the syntax it accepts while parsing date/time values.
    *
    * @param lenient <code>true</code> if parsing should be lenient,

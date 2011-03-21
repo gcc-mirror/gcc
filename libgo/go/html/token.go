@@ -15,31 +15,35 @@ import (
 type TokenType int
 
 const (
-	// Error means that an error occurred during tokenization.
-	Error TokenType = iota
-	// Text means a text node.
-	Text
-	// A StartTag looks like <a>.
-	StartTag
-	// An EndTag looks like </a>.
-	EndTag
-	// A SelfClosingTag tag looks like <br/>.
-	SelfClosingTag
+	// ErrorToken means that an error occurred during tokenization.
+	ErrorToken TokenType = iota
+	// TextToken means a text node.
+	TextToken
+	// A StartTagToken looks like <a>.
+	StartTagToken
+	// An EndTagToken looks like </a>.
+	EndTagToken
+	// A SelfClosingTagToken tag looks like <br/>.
+	SelfClosingTagToken
+	// A CommentToken looks like <!--x-->.
+	CommentToken
 )
 
 // String returns a string representation of the TokenType.
 func (t TokenType) String() string {
 	switch t {
-	case Error:
+	case ErrorToken:
 		return "Error"
-	case Text:
+	case TextToken:
 		return "Text"
-	case StartTag:
+	case StartTagToken:
 		return "StartTag"
-	case EndTag:
+	case EndTagToken:
 		return "EndTag"
-	case SelfClosingTag:
+	case SelfClosingTagToken:
 		return "SelfClosingTag"
+	case CommentToken:
+		return "Comment"
 	}
 	return "Invalid(" + strconv.Itoa(int(t)) + ")"
 }
@@ -52,8 +56,8 @@ type Attribute struct {
 }
 
 // A Token consists of a TokenType and some Data (tag name for start and end
-// tags, content for text). A tag Token may also contain a slice of Attributes.
-// Data is unescaped for both tag and text Tokens (it looks like "a<b" rather
+// tags, content for text and comments). A tag Token may also contain a slice
+// of Attributes. Data is unescaped for all Tokens (it looks like "a<b" rather
 // than "a&lt;b").
 type Token struct {
 	Type TokenType
@@ -81,22 +85,28 @@ func (t Token) tagString() string {
 // String returns a string representation of the Token.
 func (t Token) String() string {
 	switch t.Type {
-	case Error:
+	case ErrorToken:
 		return ""
-	case Text:
+	case TextToken:
 		return EscapeString(t.Data)
-	case StartTag:
+	case StartTagToken:
 		return "<" + t.tagString() + ">"
-	case EndTag:
+	case EndTagToken:
 		return "</" + t.tagString() + ">"
-	case SelfClosingTag:
+	case SelfClosingTagToken:
 		return "<" + t.tagString() + "/>"
+	case CommentToken:
+		return "<!--" + EscapeString(t.Data) + "-->"
 	}
 	return "Invalid(" + strconv.Itoa(int(t.Type)) + ")"
 }
 
 // A Tokenizer returns a stream of HTML Tokens.
 type Tokenizer struct {
+	// If ReturnComments is set, Next returns comment tokens;
+	// otherwise it skips over comments (default).
+	ReturnComments bool
+
 	// r is the source of the HTML text.
 	r io.Reader
 	// tt is the TokenType of the most recently read token. If tt == Error
@@ -109,10 +119,10 @@ type Tokenizer struct {
 	buf    []byte
 }
 
-// Error returns the error associated with the most recent Error token. This is
-// typically os.EOF, meaning the end of tokenization.
+// Error returns the error associated with the most recent ErrorToken token.
+// This is typically os.EOF, meaning the end of tokenization.
 func (z *Tokenizer) Error() os.Error {
-	if z.tt != Error {
+	if z.tt != ErrorToken {
 		return nil
 	}
 	return z.err
@@ -176,44 +186,77 @@ func (z *Tokenizer) readTo(x uint8) os.Error {
 	panic("unreachable")
 }
 
+// nextMarkupDeclaration returns the next TokenType starting with "<!".
+func (z *Tokenizer) nextMarkupDeclaration() (TokenType, os.Error) {
+	// TODO: check for <!DOCTYPE ... >, don't just assume that it's a comment.
+	for i := 0; i < 2; i++ {
+		c, err := z.readByte()
+		if err != nil {
+			return TextToken, err
+		}
+		if c != '-' {
+			return z.nextText(), nil
+		}
+	}
+	// <!--> is a valid comment.
+	for dashCount := 2; ; {
+		c, err := z.readByte()
+		if err != nil {
+			return TextToken, err
+		}
+		switch c {
+		case '-':
+			dashCount++
+		case '>':
+			if dashCount >= 2 {
+				return CommentToken, nil
+			}
+			fallthrough
+		default:
+			dashCount = 0
+		}
+	}
+	panic("unreachable")
+}
+
 // nextTag returns the next TokenType starting from the tag open state.
 func (z *Tokenizer) nextTag() (tt TokenType, err os.Error) {
 	c, err := z.readByte()
 	if err != nil {
-		return Error, err
+		return ErrorToken, err
 	}
 	switch {
 	case c == '/':
-		tt = EndTag
+		tt = EndTagToken
 	// Lower-cased characters are more common in tag names, so we check for them first.
 	case 'a' <= c && c <= 'z' || 'A' <= c && c <= 'Z':
-		tt = StartTag
+		tt = StartTagToken
 	case c == '!':
-		return Error, os.NewError("html: TODO(nigeltao): implement comments")
+		return z.nextMarkupDeclaration()
 	case c == '?':
-		return Error, os.NewError("html: TODO(nigeltao): implement XML processing instructions")
+		return ErrorToken, os.NewError("html: TODO(nigeltao): implement XML processing instructions")
 	default:
-		return Error, os.NewError("html: TODO(nigeltao): handle malformed tags")
+		return ErrorToken, os.NewError("html: TODO(nigeltao): handle malformed tags")
 	}
 	for {
 		c, err := z.readByte()
 		if err != nil {
-			return Text, err
+			return TextToken, err
 		}
 		switch c {
 		case '"':
 			err = z.readTo('"')
 			if err != nil {
-				return Text, err
+				return TextToken, err
 			}
 		case '\'':
 			err = z.readTo('\'')
 			if err != nil {
-				return Text, err
+				return TextToken, err
 			}
 		case '>':
-			if z.buf[z.p1-2] == '/' && tt == StartTag {
-				return SelfClosingTag, nil
+			if z.buf[z.p1-2] == '/' && tt == StartTagToken {
+				return SelfClosingTagToken, nil
 			}
 			return tt, nil
 		}
@@ -221,36 +264,47 @@ func (z *Tokenizer) nextTag() (tt TokenType, err os.Error) {
 	panic("unreachable")
 }
 
-// Next scans the next token and returns its type.
-func (z *Tokenizer) Next() TokenType {
-	if z.err != nil {
-		z.tt = Error
-		return z.tt
-	}
-	z.p0 = z.p1
-	c, err := z.readByte()
-	if err != nil {
-		z.tt, z.err = Error, err
-		return z.tt
-	}
-	if c == '<' {
-		z.tt, z.err = z.nextTag()
-		return z.tt
-	}
+// nextText reads all text up until an '<'.
+func (z *Tokenizer) nextText() TokenType {
 	for {
 		c, err := z.readByte()
 		if err != nil {
-			z.tt, z.err = Error, err
+			z.tt, z.err = ErrorToken, err
 			if err == os.EOF {
-				z.tt = Text
+				z.tt = TextToken
 			}
 			return z.tt
 		}
 		if c == '<' {
 			z.p1--
-			z.tt = Text
+			z.tt = TextToken
 			return z.tt
 		}
+	}
+	panic("unreachable")
+}
+
+// Next scans the next token and returns its type.
+func (z *Tokenizer) Next() TokenType {
+	for {
+		if z.err != nil {
+			z.tt = ErrorToken
+			return z.tt
+		}
+		z.p0 = z.p1
+		c, err := z.readByte()
+		if err != nil {
+			z.tt, z.err = ErrorToken, err
+			return z.tt
+		}
+		if c == '<' {
+			z.tt, z.err = z.nextTag()
+			if z.tt == CommentToken && !z.ReturnComments {
+				continue
+			}
+			return z.tt
+		}
+		return z.nextText()
 	}
 	panic("unreachable")
 }
@@ -277,7 +331,7 @@ func (z *Tokenizer) trim(i int) int {
 	return k
 }
 
-// lower finds the largest alphabetic [a-zA-Z]* word at the start of z.buf[i:]
+// lower finds the largest alphabetic [0-9A-Za-z]* word at the start of z.buf[i:]
 // and returns that word lower-cased, as well as the trimmed cursor location
 // after that word.
 func (z *Tokenizer) lower(i int) ([]byte, int) {
@@ -285,8 +339,9 @@ func (z *Tokenizer) lower(i int) ([]byte, int) {
 loop:
 	for ; i < z.p1; i++ {
 		c := z.buf[i]
-		// TODO(nigeltao): Check what '0' <= c && c <= '9' should do.
 		switch {
+		case '0' <= c && c <= '9':
+			// No-op.
 		case 'A' <= c && c <= 'Z':
 			z.buf[i] = c + 'a' - 'A'
 		case 'a' <= c && c <= 'z':
@@ -298,18 +353,33 @@ loop:
 	return z.buf[i0:i], z.trim(i)
 }
 
-// Text returns the raw data after unescaping.
+// Text returns the unescaped text of a TextToken or a CommentToken.
 // The contents of the returned slice may change on the next call to Next.
 func (z *Tokenizer) Text() []byte {
-	s := unescape(z.Raw())
-	z.p0 = z.p1
-	return s
+	switch z.tt {
+	case TextToken:
+		s := unescape(z.Raw())
+		z.p0 = z.p1
+		return s
+	case CommentToken:
+		// We trim the "<!--" from the left and the "-->" from the right.
+		// "<!-->" is a valid comment, so the adjusted endpoints might overlap.
+		i0 := z.p0 + 4
+		i1 := z.p1 - 3
+		z.p0 = z.p1
+		var s []byte
+		if i0 < i1 {
+			s = unescape(z.buf[i0:i1])
+		}
+		return s
+	}
+	return nil
 }
 
 // TagName returns the lower-cased name of a tag token (the `img` out of
-// `<IMG SRC="foo">`), and whether the tag has attributes.
+// `<IMG SRC="foo">`) and whether the tag has attributes.
 // The contents of the returned slice may change on the next call to Next.
-func (z *Tokenizer) TagName() (name []byte, remaining bool) {
+func (z *Tokenizer) TagName() (name []byte, hasAttr bool) {
 	i := z.p0 + 1
 	if i >= z.p1 {
 		z.p0 = z.p1
@@ -319,14 +389,14 @@ func (z *Tokenizer) TagName() (name []byte, remaining bool) {
 		i++
 	}
 	name, z.p0 = z.lower(i)
-	remaining = z.p0 != z.p1
+	hasAttr = z.p0 != z.p1
 	return
 }
 
 // TagAttr returns the lower-cased key and unescaped value of the next unparsed
-// attribute for the current tag token, and whether there are more attributes.
+// attribute for the current tag token and whether there are more attributes.
 // The contents of the returned slices may change on the next call to Next.
-func (z *Tokenizer) TagAttr() (key, val []byte, remaining bool) {
+func (z *Tokenizer) TagAttr() (key, val []byte, moreAttr bool) {
 	key, i := z.lower(z.p0)
 	// Get past the "=\"".
 	if i == z.p1 || z.buf[i] != '=' {
@@ -362,7 +432,7 @@ loop:
 		}
 	}
 	val, z.p0 = z.buf[i:dst], z.trim(src)
-	remaining = z.p0 != z.p1
+	moreAttr = z.p0 != z.p1
 	return
 }
 
@@ -371,14 +441,14 @@ loop:
 func (z *Tokenizer) Token() Token {
 	t := Token{Type: z.tt}
 	switch z.tt {
-	case Text:
+	case TextToken, CommentToken:
 		t.Data = string(z.Text())
-	case StartTag, EndTag, SelfClosingTag:
+	case StartTagToken, EndTagToken, SelfClosingTagToken:
 		var attr []Attribute
-		name, remaining := z.TagName()
-		for remaining {
+		name, moreAttr := z.TagName()
+		for moreAttr {
 			var key, val []byte
-			key, val, remaining = z.TagAttr()
+			key, val, moreAttr = z.TagAttr()
 			attr = append(attr, Attribute{string(key), string(val)})
 		}
 		t.Data = string(name)

@@ -69,7 +69,7 @@ import javax.rmi.CORBA.ValueHandler;
 
 /**
  * A specialised class for reading and writing the value types.
- * 
+ *
  * @author Audrius Meskauskas (AudriusA@Bioinformatics.org)
  */
 public abstract class Vio
@@ -79,7 +79,7 @@ public abstract class Vio
    * and is not required for interoperability with jdk 1.5, but is left in the
    * implementation as the optional mode for solving possible interoperability
    * problems with non-Sun CORBA implementations.
-   * 
+   *
    * The current implementation would accept both single chunk or multiple
    * chunks, but will always send a single chunk (if true) or unchunked data (if
    * false).
@@ -155,11 +155,11 @@ public abstract class Vio
    * required when an unitialised instance or at least class of the value type
    * is known. Hence it may be faster to use the alternative methods,
    * read(InputStream, Class) or read(InputStream, Serializable).
-   * 
+   *
    * @param input a stream to read from.
-   * 
+   *
    * @return the loaded value.
-   * 
+   *
    * @throws MARSHAL if the reading has failed due any reason.
    */
   public static Serializable read(InputStream input)
@@ -173,12 +173,12 @@ public abstract class Vio
    * required when an unitialised instance or at least class of the value type
    * is known. Hence it may be faster to use the alternative methods,
    * read(InputStream, Class) or read(InputStream, Serializable).
-   * 
+   *
    * @param input a stream to read from.
    * @param repository_id a repository id of the object being read, may be null.
-   * 
+   *
    * @return the loaded value.
-   * 
+   *
    * @throws MARSHAL if the reading has failed due any reason.
    */
   public static Serializable read(InputStream input, String repository_id)
@@ -240,7 +240,7 @@ public abstract class Vio
     catch (Exception ex)
       {
         MARSHAL m = new MARSHAL();
-        m.minor = Minor.Value;        
+        m.minor = Minor.Value;
         m.initCause(ex);
         throw m;
       }
@@ -249,12 +249,12 @@ public abstract class Vio
   /**
    * Read the value base from the given input stream when the value base class
    * is available. Hence there is no need to guess it from the repository id.
-   * 
+   *
    * @param input a stream to read from.
    * @param value_class the class of the value being read.
-   * 
+   *
    * @return the loaded value.
-   * 
+   *
    * @throws MARSHAL if the reading has failed due any reason.
    */
   public static Serializable read(InputStream input, Class value_class)
@@ -353,18 +353,18 @@ public abstract class Vio
    * Read the value base from the given input stream when the unitialised
    * instance is available. Hence there is no need to guess the class from the
    * repository id and then to instantiate an instance.
-   * 
+   *
    * @param input a stream to read from.
-   * 
+   *
    * @param value_instance an pre-created instance of the value. If the helper
    * is not null, this parameter is ignored an should be null.
-   * 
+   *
    * @param helper a helper to create an instance and read the object- specific
    * part of the record. If the value_instance is used instead, this parameter
    * should be null.
-   * 
+   *
    * @return the loaded value.
-   * 
+   *
    * @throws MARSHAL if the reading has failed due any reason.
    */
   public static Object read(InputStream input, Object value_instance,
@@ -431,10 +431,10 @@ public abstract class Vio
    * Read using provided boxed value helper. This method expects the full value
    * type header, followed by contents, that are delegated to the provided
    * helper. It handles null.
-   * 
+   *
    * @param input the stream to read from.
    * @param helper the helper that reads the type-specific part of the content.
-   * 
+   *
    * @return the value, created by the helper, or null if the header indicates
    * that null was previously written.
    */
@@ -447,17 +447,17 @@ public abstract class Vio
    * Fill in the instance fields by the data from the input stream. The method
    * assumes that the value header, if any, is already behind. The information
    * from the stream is stored into the passed ox parameter.
-   * 
+   *
    * @param input an input stream to read from.
-   * 
+   *
    * @param value a pre-instantiated value type object, must be either
    * Streamable or CustomMarshal. If the helper is used, this parameter is
    * ignored and should be null.
-   * 
+   *
    * @param value_tag the tag that must be read previously.
    * @param helper the helper for read object specific part; may be null to read
    * in using other methods.
-   * 
+   *
    * @return the value that was read.
    */
   static Object read_instance(InputStream input, final int position,
@@ -542,13 +542,13 @@ public abstract class Vio
   /**
    * Read the chunked nested value from the given input stream, transferring the
    * contents to the given output stream.
-   * 
+   *
    * @param value_tag the value tag of the value being read.
    * @param input the input stream from where the remainder of the nested value
    * must be read.
    * @param output the output stream where the unchunked nested value must be
    * copied.
-   * 
+   *
    * @return the tag that ended the nested value.
    */
   public static int readNestedValue(int value_tag, InputStream input,
@@ -769,12 +769,12 @@ public abstract class Vio
 
   /**
    * Write the value base into the given stream.
-   * 
+   *
    * @param output a stream to write to.
-   * 
+   *
    * @param value a value type object, must be either Streamable or
    * CustomMarshal.
-   * 
+   *
    * @throws MARSHAL if the writing failed due any reason.
    */
   public static void write(OutputStream output, Serializable value)
@@ -791,11 +791,11 @@ public abstract class Vio
   /**
    * Write the value base into the given stream, stating that it is an instance
    * of the given class.
-   * 
+   *
    * @param output a stream to write to.
-   * 
+   *
    * @param value a value to write.
-   * 
+   *
    * @throws MARSHAL if the writing failed due any reason.
    */
   public static void write(OutputStream output, Serializable value,
@@ -831,11 +831,11 @@ public abstract class Vio
    * Write the value base into the given stream, supplementing it with an array
    * of the provided repository ids plus the repository id, derived from the
    * passed value.
-   * 
+   *
    * @param output a stream to write to.
-   * 
+   *
    * @param value a value to write.
-   * 
+   *
    * @throws MARSHAL if the writing failed due any reason.
    */
   public static void write(OutputStream output, Serializable value,
@@ -857,7 +857,7 @@ public abstract class Vio
   /**
    * Write value when its repository Id is explicitly given. Only this Id is
    * written, the type of value is not taken into consideration.
-   * 
+   *
    * @param output an output stream to write into.
    * @param value a value to write.
    * @param id a value repository id.
@@ -873,7 +873,7 @@ public abstract class Vio
   /**
    * Write standard value type header, followed by contents, produced by the
    * boxed value helper.
-   * 
+   *
    * @param output the stream to write to.
    * @param value the value to write, can be null.
    * @param helper the helper that writes the value content if it is not null
@@ -902,7 +902,7 @@ public abstract class Vio
   /**
    * Write value when its repository Id is explicitly given. Does not handle
    * null.
-   * 
+   *
    * @param output an output stream to write into.
    * @param value a value to write.
    * @param ids a value repository id (can be either single string or string
@@ -1070,7 +1070,7 @@ public abstract class Vio
   /**
    * Read the indirection data and return the object that was already written to
    * this stream.
-   * 
+   *
    * @param an_input the input stream, must be BufferredCdrInput.
    */
   static Serializable readIndirection(InputStream an_input)
@@ -1106,9 +1106,9 @@ public abstract class Vio
 
   /**
    * Check the passed value tag for correctness.
-   * 
+   *
    * @param value_tag a tag to check, must be between 0x7fffff00 and 0x7fffffff
-   * 
+   *
    * @throws MARSHAL if the tag is outside this interval.
    */
   static void checkTag(int value_tag)
@@ -1452,7 +1452,7 @@ public abstract class Vio
    * Instantiate an instance of this class anyway; also in the case when it has
    * no parameterless or any other constructor. The fields will be assigned
    * while reading the class from the stream.
-   * 
+   *
    * @param clazz a class for that the instance should be instantiated.
    */
   public static Object instantiateAnyWay(Class clazz)

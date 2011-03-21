@@ -1,4 +1,4 @@
-! { dg-do "compile" }
+! { dg-do compile }
 ! PR fortran/34402 - allocatable components shall not be
 ! data-initialized in init expr
 

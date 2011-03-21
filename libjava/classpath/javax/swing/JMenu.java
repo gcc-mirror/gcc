@@ -74,7 +74,7 @@ import javax.swing.plaf.MenuItemUI;
  * <p>
  * JMenu's fires MenuEvents when this menu's selection changes. If this menu
  * is selected, then fireMenuSelectedEvent() is invoked. In case when menu is
- * deselected or cancelled, then fireMenuDeselectedEvent() or 
+ * deselected or cancelled, then fireMenuDeselectedEvent() or
  * fireMenuCancelledEvent() is invoked, respectivelly.
  * </p>
  */
@@ -156,7 +156,7 @@ public class JMenu extends JMenuItem implements Accessible, MenuElement
   public JMenu(String text)
   {
     super(text);
-    popupMenu = new JPopupMenu(); 
+    popupMenu = new JPopupMenu();
     popupMenu.setInvoker(this);
     setOpaque(false);
   }
@@ -274,7 +274,7 @@ public class JMenu extends JMenuItem implements Accessible, MenuElement
   {
     if (index < 0 || (index > 0 && getMenuComponentCount() == 0))
       throw new IllegalArgumentException();
-  
+
     if (getMenuComponentCount() > 0)
       popupMenu.remove(index);
   }
@@ -445,7 +445,7 @@ public class JMenu extends JMenuItem implements Accessible, MenuElement
 
   /**
    * Returns origin point of the popup menu. This takes the screen bounds
-   * into account and places the popup where it fits best. 
+   * into account and places the popup where it fits best.
    *
    * @return the origin of the popup menu
    */
@@ -459,7 +459,7 @@ public class JMenu extends JMenuItem implements Accessible, MenuElement
     JPopupMenu popup = getPopupMenu();
     Dimension popupSize = popup.getSize();
     if (popupSize.width == 0 || popupSize.height == 0)
-      popupSize = popup.getPreferredSize(); 
+      popupSize = popup.getPreferredSize();
 
     // Determine screen bounds.
     Toolkit tk = Toolkit.getDefaultToolkit();
@@ -652,7 +652,7 @@ public class JMenu extends JMenuItem implements Accessible, MenuElement
 
     if (getItemCount() == 0)
       return null;
-    
+
     Component c = popupMenu.getComponentAtIndex(index);
 
     if (c instanceof JMenuItem)
@@ -680,7 +680,7 @@ public class JMenu extends JMenuItem implements Accessible, MenuElement
    */
   public boolean isTearOff()
   {
-    // NOT YET IMPLEMENTED 
+    // NOT YET IMPLEMENTED
     throw new Error("The method isTearOff() has not yet been implemented.");
   }
 
@@ -706,7 +706,7 @@ public class JMenu extends JMenuItem implements Accessible, MenuElement
   {
     if (getPopupMenu() == null || getMenuComponentCount() == 0)
       return null;
-    
+
     return popupMenu.getComponentAtIndex(index);
   }
 
@@ -784,7 +784,7 @@ public class JMenu extends JMenuItem implements Accessible, MenuElement
    * Returns all registered <code>MenuListener</code> objects.
    *
    * @return an array of listeners
-   * 
+   *
    * @since 1.4
    */
   public MenuListener[] getMenuListeners()
@@ -853,7 +853,7 @@ public class JMenu extends JMenuItem implements Accessible, MenuElement
    */
   public void menuSelectionChanged(boolean changed)
   {
-    // if this menu selection is true, then activate this menu and 
+    // if this menu selection is true, then activate this menu and
     // display popup associated with this menu
     setSelected(changed);
   }
@@ -910,11 +910,11 @@ public class JMenu extends JMenuItem implements Accessible, MenuElement
     getModel().setPressed(true);
     try
       {
-	java.lang.Thread.sleep(time);
+        java.lang.Thread.sleep(time);
       }
     catch (java.lang.InterruptedException e)
       {
-	// probably harmless
+        // probably harmless
       }
 
     getModel().setPressed(false);
@@ -1237,7 +1237,7 @@ public class JMenu extends JMenuItem implements Accessible, MenuElement
 
       Action a = menuItem.getAction();
       if (a != null)
-	a.addPropertyChangeListener(this);
+        a.addPropertyChangeListener(this);
     }
 
     /**This method is invoked when some change occures in menuItem's action*/

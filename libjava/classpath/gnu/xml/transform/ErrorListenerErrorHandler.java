@@ -1,4 +1,4 @@
-/* ErrorListenerErrorHandler.java -- 
+/* ErrorListenerErrorHandler.java --
    Copyright (C) 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -71,7 +71,7 @@ class ErrorListenerErrorHandler
         throw new SAXException(e2);
       }
   }
-  
+
   public void error(SAXParseException e)
     throws SAXException
   {
@@ -84,7 +84,7 @@ class ErrorListenerErrorHandler
         throw new SAXException(e2);
       }
   }
-  
+
   public void fatalError(SAXParseException e)
     throws SAXException
   {
@@ -97,5 +97,5 @@ class ErrorListenerErrorHandler
         throw new SAXException(e2);
       }
   }
-  
+
 }

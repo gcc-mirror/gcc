@@ -1,4 +1,4 @@
-/* AtomicSimpleType.java -- 
+/* AtomicSimpleType.java --
    Copyright (C) 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -50,7 +50,7 @@ import org.relaxng.datatype.ValidationContext;
 public class AtomicSimpleType
   extends SimpleType
 {
-  
+
   public AtomicSimpleType(QName name,
                           Set facets,
                           int fundamentalFacets,
@@ -73,6 +73,5 @@ public class AtomicSimpleType
     if (baseType != null)
       baseType.checkValid(value, context);
   }
-  
-}
 
+}

@@ -39,7 +39,7 @@ exception statement from your version. */
 package javax.naming.directory;
 
 import java.io.Serializable;
- 
+
 /**
  * @author Warren Levy (warrenl@redhat.com)
  * @date June 13, 2001
@@ -57,8 +57,8 @@ public class ModificationItem implements Serializable
     if (attr == null)
       throw new IllegalArgumentException("attr is null");
     if (mod_op != DirContext.ADD_ATTRIBUTE &&
-	mod_op != DirContext.REPLACE_ATTRIBUTE &&
-	mod_op != DirContext.REMOVE_ATTRIBUTE)
+        mod_op != DirContext.REPLACE_ATTRIBUTE &&
+        mod_op != DirContext.REMOVE_ATTRIBUTE)
       throw new IllegalArgumentException("mod_op is invalid");
     this.mod_op = mod_op;
     this.attr = attr;

@@ -3,7 +3,7 @@
            Copyright (c) 2002  Ranjit Mathew
            Copyright (c) 2002  Bo Thorsen
            Copyright (c) 2002  Roger Sayle
-           Copyright (C) 2008  Free Software Foundation, Inc.
+           Copyright (C) 2008, 2010  Free Software Foundation, Inc.
 
    x86 Foreign Function Interface
 

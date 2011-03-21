@@ -1,4 +1,4 @@
-/* IAuthInfoProviderFactory.java -- 
+/* IAuthInfoProviderFactory.java --
    Copyright (C) 2003, 2006 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -46,7 +46,7 @@ public interface IAuthInfoProviderFactory
   /**
    * Returns an implementation of a provider for a designated mechanism capable
    * of honouring {@link IAuthInfoProvider} requests.
-   * 
+   *
    * @param mechanism the unique name of a mechanism.
    * @return an implementation of {@link IAuthInfoProvider} for that mechanism
    *         or <code>null</code> if none found.

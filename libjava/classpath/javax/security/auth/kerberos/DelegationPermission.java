@@ -64,12 +64,12 @@ public final class DelegationPermission
 
   /**
    * Create a new instance with the given name and actions.
-   * 
+   *
    * The name consists of two parts: first the subordinate
    * service principal, then the target service principal.
    * Each principal is surrounded by quotes; the two are separated
    * by a space.
-   * 
+   *
    * @param name the name
    * @param actions the actions; this is ignored
    */

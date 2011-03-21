@@ -52,7 +52,7 @@ import org.omg.CosNaming.NamingContext;
 /**
  * Iterates over name class pairs, obtaining values first from the binding list
  * and then from the binding iterator.
- * 
+ *
  * @author Audrius Meskauskas
  */
 public class ListEnumeration extends GiopNamingEnumeration implements
@@ -60,7 +60,7 @@ public class ListEnumeration extends GiopNamingEnumeration implements
 {
   /**
    * Create the new enumeration
-   * 
+   *
    * @param bh
    *          holder, containing the first portion of the bindings
    * @param bih
@@ -69,18 +69,18 @@ public class ListEnumeration extends GiopNamingEnumeration implements
    *          the number of bindings the the iterator will be requested to
    *          return as a single pack
    */
-  public ListEnumeration(BindingListHolder bh, 
+  public ListEnumeration(BindingListHolder bh,
                                  BindingIteratorHolder bih, int batchSize)
   {
     super(bh, bih, batchSize);
   }
-  
+
   /**
    * Convert from the CORBA binding into the {@link NameClassPair} that this
    * enumeration should return. This method converts into NameClassPair,
    * connecting the name components with slashes and setting the class name
    * to either NamingContext or GIOP Object.
-   * 
+   *
    * @param binding
    *          the binding to convert
    * @return the value, that must be returned by the {@link #next()}.
@@ -113,6 +113,6 @@ public class ListEnumeration extends GiopNamingEnumeration implements
 
     NameClassPair pair = new NameClassPair(name.toString(), className);
     return pair;
-  }  
-  
+  }
+
 }

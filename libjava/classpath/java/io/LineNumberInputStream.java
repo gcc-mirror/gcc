@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -82,7 +82,7 @@ public class LineNumberInputStream extends FilterInputStream
   private boolean justReadReturnChar = false;
 
   /**
-   * Create a new <code>LineNumberInputStream</code> that reads from the 
+   * Create a new <code>LineNumberInputStream</code> that reads from the
    * specified subordinate <code>InputStream</code>
    *
    * @param in The subordinate <code>InputStream</code> to read from
@@ -147,7 +147,7 @@ public class LineNumberInputStream extends FilterInputStream
    * functionality.
    *
    * @param readlimit The number of bytes that can be read before the
-   * mark becomes invalid 
+   * mark becomes invalid
    */
   public void mark(int readlimit)
   {
@@ -170,7 +170,7 @@ public class LineNumberInputStream extends FilterInputStream
    * to be read.
    *
    * @return The byte read or -1 if end of stream
-   * 
+   *
    * @exception IOException If an error occurs
    */
   public int read() throws IOException
@@ -183,17 +183,17 @@ public class LineNumberInputStream extends FilterInputStream
 
     if (ch == '\n')
       if (justReadReturnChar)
-	{
-	  ch = in.read();
+        {
+          ch = in.read();
           justReadReturnChar = false;
-	}
+        }
       else
-	lineNumber++;
+        lineNumber++;
     else if (ch == '\r')
       {
-	ch = '\n';
-	justReadReturnChar = true;
-	lineNumber++;
+        ch = '\n';
+        justReadReturnChar = true;
+        lineNumber++;
       }
     else
       justReadReturnChar = false;
@@ -239,11 +239,11 @@ public class LineNumberInputStream extends FilterInputStream
     final int origOff = off;
     while (len-- > 0)
       {
-	int ch = read();
-	if (ch < 0)
-	  break;
+        int ch = read();
+        if (ch < 0)
+          break;
 
-	b[off++] = (byte) ch;
+        b[off++] = (byte) ch;
       }
 
     // This is safe since we already know that some bytes were
@@ -274,7 +274,7 @@ public class LineNumberInputStream extends FilterInputStream
 
   /**
    * This method sets the current line number to the specified value.
-   * 
+   *
    * @param lineNumber The new line number
    */
   public void setLineNumber(int lineNumber)
@@ -283,7 +283,7 @@ public class LineNumberInputStream extends FilterInputStream
   }
 
   /**
-   * This method skips up to the requested number of bytes in the 
+   * This method skips up to the requested number of bytes in the
    * input stream.  The actual number of bytes skipped is returned.  If the
    * desired number of bytes to skip is negative, no bytes are skipped.
    *
@@ -302,11 +302,11 @@ public class LineNumberInputStream extends FilterInputStream
 
     do
       {
-	int ch = read();
-	if (ch < 0)
-	  break;
-	if (ch == '\n' || ch == '\r')
-	  lineNumber++;
+        int ch = read();
+        if (ch < 0)
+          break;
+        if (ch == '\n' || ch == '\r')
+          lineNumber++;
       }
     while (--n > 0);
 

@@ -57,7 +57,7 @@ import javax.swing.tree.TreeCellEditor;
  * The default implementation of {@link TableCellEditor} and
  * {@link TreeCellEditor}. It provides editor components for
  * some standard object types.
- * 
+ *
  * @author Andrew Selkirk
  * @author Audrius Meskauskas
  */
@@ -69,12 +69,12 @@ public class DefaultCellEditor
 
   /**
    * This changeable module access the editor component in the component
-   * specific way. For instance, to set the value for JTextField, we need to 
-   * call setText(String), and for JCheckBox we need to call 
+   * specific way. For instance, to set the value for JTextField, we need to
+   * call setText(String), and for JCheckBox we need to call
    * setSelected(boolean). Each default editor has the component specific
    * derivative of this class. These derivatives are private inner classes of
    * the DefaultCellEditor.
-   * 
+   *
    * The editor delegate is also set for the editor component as the action
    * listener. It listens for the events that indicate that editing has stopped.
    */
@@ -98,7 +98,7 @@ public class DefaultCellEditor
     {
       // Nothing to do here.
     }
-    
+
     /**
      * Set the value for the editor component. This method is normally
      * overridden to set the value in the way, specific for the text
@@ -121,12 +121,12 @@ public class DefaultCellEditor
     public Object getCellEditorValue()
     {
       return value;
-    } 
+    }
 
     /**
-     * The default method returns true for the {@link MouseEvent} and false 
+     * The default method returns true for the {@link MouseEvent} and false
      * for any other events.
-     * 
+     *
      * @param event the event to check
      *
      * @return true if the passed event is the mouse event and false otherwise.
@@ -141,10 +141,10 @@ public class DefaultCellEditor
 
     /**
      * Returns true to indicate that the editing cell can be selected.
-     * 
+     *
      * The default method returns true without action but may be overridden
      * in derived classes for more specific behavior.
-     * 
+     *
      * @param event unused in default method
      *
      * @return true always
@@ -158,8 +158,8 @@ public class DefaultCellEditor
     /**
      * Finish the cell editing session. This method notifies the registered
      * cell editor listeners (including the table) that the editing has been
-     * stopped. 
-     * 
+     * stopped.
+     *
      * @return boolean
      */
     public boolean stopCellEditing()
@@ -182,9 +182,9 @@ public class DefaultCellEditor
      * Start editing session and returns true to indicate the editing has begun.
      * The default method returns true without action but may be overridden
      * in derived classes for more specific behavior.
-     * 
+     *
      * @param event  the event.
-     * 
+     *
      * @return true, always
      */
     public boolean startCellEditing(EventObject event)
@@ -196,8 +196,8 @@ public class DefaultCellEditor
     /**
      * This event is fired by the editor component (for instance, by pressing
      * ENTER in the {@link JTextField}. The default method delegates call to
-     * the {@link #stopCellEditing}, finishing the editing session. 
-     * 
+     * the {@link #stopCellEditing}, finishing the editing session.
+     *
      * @param event unused in default method
      */
     public void actionPerformed(ActionEvent event)
@@ -207,8 +207,8 @@ public class DefaultCellEditor
 
     /**
      * This event is fired by the editor component.The default method delegates
-     * call to the {@link #stopCellEditing}, finishing the editing session. 
-     * 
+     * call to the {@link #stopCellEditing}, finishing the editing session.
+     *
      * @param event unused in default method
      */
     public void itemStateChanged(ItemEvent event)
@@ -225,9 +225,9 @@ public class DefaultCellEditor
       CellEditorListener[] listeners = getCellEditorListeners();
       for (int index = 0; index < listeners.length; index++)
         listeners[index].editingStopped(changeEvent);
-      
+
     }
-    
+
     /**
      * Notify the registered listeners (including the table) that the editing
      * has been canceled.
@@ -239,10 +239,10 @@ public class DefaultCellEditor
         listeners[index].editingCanceled(changeEvent);
     }
   } // EditorDelegate
-  
+
   /**
    * Provides getter and setter methods to work with the text component.
-   * 
+   *
    * @author Audrius Meskauskas (audriusa@Bioinformatics.org)
    */
   private class JTextFieldDelegate extends EditorDelegate
@@ -251,7 +251,7 @@ public class DefaultCellEditor
      * Use the serial version UID for interoperability.
      */
     private static final long serialVersionUID = 1;
-    
+
     /**
      * Set the value for the editor component.
      *
@@ -268,21 +268,21 @@ public class DefaultCellEditor
     }
 
     /**
-     * Get the value for the editor component. 
+     * Get the value for the editor component.
      *
      * @return value the value of the component (String)
      */
     public Object getCellEditorValue()
     {
       JTextField f = (JTextField) editorComponent;
-      return value = f.getText();      
-    }     
+      return value = f.getText();
+    }
   }
 
   /**
    * Provides getter and setter methods to work with the combo box.
-   * 
-   * @author Audrius Meskauskas (audriusa@Bioinformatics.org) 
+   *
+   * @author Audrius Meskauskas (audriusa@Bioinformatics.org)
    */
   private class JComboBoxDelegate extends EditorDelegate
   {
@@ -290,7 +290,7 @@ public class DefaultCellEditor
      * Use the serial version UID for interoperability.
      */
     private static final long serialVersionUID = 1;
-    
+
     /**
      * Set the value for the editor component.
      *
@@ -298,14 +298,14 @@ public class DefaultCellEditor
      */
     public void setValue(Object aValue)
     {
-      value = aValue;      
+      value = aValue;
       JComboBox c = (JComboBox) editorComponent;
       if (value != null)
         c.setSelectedItem(value);
     }
 
     /**
-     * Get the value for the editor component. 
+     * Get the value for the editor component.
      *
      * @return value the value of the component (as String)
      */
@@ -313,13 +313,13 @@ public class DefaultCellEditor
     {
       JComboBox c = (JComboBox) editorComponent;
       return value = c.getSelectedItem();
-    } 
-    
+    }
+
     /**
      * Returns true to indicate that the editing cell can be selected. If the
      * check box is not editable, expands it. If it is editable, brings
      * focus to the editor field.
-     * 
+     *
      * @param event unused in default method
      *
      * @return true always
@@ -330,13 +330,13 @@ public class DefaultCellEditor
       if (!c.isEditable)
         c.showPopup();
       return true;
-    }    
+    }
   }
 
   /**
    * Provides getter and setter methods to work with the check box.
-   * 
-   * @author Audrius Meskauskas (audriusa@Bioinformatics.org) 
+   *
+   * @author Audrius Meskauskas (audriusa@Bioinformatics.org)
    */
   private class JCheckBoxDelegate extends EditorDelegate
   {
@@ -344,7 +344,7 @@ public class DefaultCellEditor
      * Use the serial version UID for interoperability.
      */
     private static final long serialVersionUID = 1;
-    
+
     /**
      * Set the value for the editor component.
      *
@@ -353,7 +353,7 @@ public class DefaultCellEditor
     public void setValue(Object value)
     {
       JCheckBox c = (JCheckBox) editorComponent;
-      
+
       if (value == null)
         c.setSelected(false);
       else
@@ -361,7 +361,7 @@ public class DefaultCellEditor
     }
 
     /**
-     * Get the value for the editor component. 
+     * Get the value for the editor component.
      *
      * @return value the value of the component (must be CharSequence)
      */
@@ -370,9 +370,9 @@ public class DefaultCellEditor
       JCheckBox c = (JCheckBox) editorComponent;
       value = c.isSelected() ? Boolean.TRUE : Boolean.FALSE;
       return value;
-    }     
+    }
   }
-  
+
   /**
    * The Swing JComponent, performing the editing session.
    */
@@ -392,7 +392,7 @@ public class DefaultCellEditor
   /**
    * Create the DefaultCellEditor that uses the text field as its editor
    * component (appropriate for the text content)
-   * 
+   *
    * @param textfield the text field as will be used as the editor component
    */
   public DefaultCellEditor(JTextField textfield)
@@ -406,7 +406,7 @@ public class DefaultCellEditor
   /**
    * Constructor DefaultCellEditor that uses the checkbox (appropriate
    * for boolean values)
-   * 
+   *
    * @param checkbox the checkbox that will be used with this editor.
    */
   public DefaultCellEditor(JCheckBox checkbox)
@@ -419,7 +419,7 @@ public class DefaultCellEditor
 
   /**
    * Constructor DefaultCellEditor that uses the combo box.
-   * 
+   *
    * @param combobox the combo box that will be used with this editor.
    */
   public DefaultCellEditor(JComboBox combobox)
@@ -431,19 +431,19 @@ public class DefaultCellEditor
   } // DefaultCellEditor()
 
   /**
-   * Get the component that performs the editing sessions. It is the same 
+   * Get the component that performs the editing sessions. It is the same
    * component that was passed in constructor.
-   * 
-   * @return the component, performing the editing sessions. 
+   *
+   * @return the component, performing the editing sessions.
    */
   public Component getComponent()
   {
-    return editorComponent; 
+    return editorComponent;
   } // getComponent()
 
   /**
    * Get the number of mouse clicks, required to start the editing session.
-   * 
+   *
    * @return int the number of mouse clicks, required to start the session
    */
   public int getClickCountToStart()
@@ -453,7 +453,7 @@ public class DefaultCellEditor
 
   /**
    * Set the number of mouse clicks, required to start the editing session.
-   * 
+   *
    * @param count the number of clicks, required to start the session
    */
   public void setClickCountToStart(int count)
@@ -462,9 +462,9 @@ public class DefaultCellEditor
   } // setClickCountToStart()
 
   /**
-   * Get the value, currently being displayed by the editor component. The 
+   * Get the value, currently being displayed by the editor component. The
    * call is forwarded to the {@link #delegate}.
-   * 
+   *
    * @return Object the value (class depends on the editor component)
    */
   public Object getCellEditorValue()
@@ -474,7 +474,7 @@ public class DefaultCellEditor
 
   /**
    * Forwards call to the {@link #delegate}.
-   * 
+   *
    * @param event forwarded to the delegate.
    *
    * @return boolean returned by delegate
@@ -486,7 +486,7 @@ public class DefaultCellEditor
 
   /**
    * Forwards call to the {@link #delegate}.
-   * 
+   *
    * @param event forwarded to the delegate.
    *
    * @return boolean returned by delegate
@@ -498,7 +498,7 @@ public class DefaultCellEditor
 
   /**
    * Forwards call to the {@link #delegate}.
-   * 
+   *
    * @return boolean returned by delegate
    */
   public boolean stopCellEditing()
@@ -515,14 +515,14 @@ public class DefaultCellEditor
   } // cancelCellEditing()
 
   /**
-   * Sets an initial value for the editor. 
-   * This will cause the editor to stopEditing and lose any partially 
+   * Sets an initial value for the editor.
+   * This will cause the editor to stopEditing and lose any partially
    * edited value if the editor is editing when this method is called.
-   * Returns the component that should be added to the client's Component 
-   * hierarchy. Once installed in the client's hierarchy this component will 
-   * then be able to draw and receive user input. 
-   * 
-   * @param tree - the JTree that is asking the editor to edit; this 
+   * Returns the component that should be added to the client's Component
+   * hierarchy. Once installed in the client's hierarchy this component will
+   * then be able to draw and receive user input.
+   *
+   * @param tree - the JTree that is asking the editor to edit; this
    * parameter can be null
    * @param value - the value of the cell to be edited
    * @param isSelected - true is the cell is to be renderer with selection
@@ -546,21 +546,21 @@ public class DefaultCellEditor
    * Get the cell editor component that will perform the editing session. If
    * returned once, the same component is also returned on the repetetive calls
    * again (reused).
-   * 
+   *
    * @param table the table where the editing is performed
-   * @param value the current value of the table. It is set as the initial 
+   * @param value the current value of the table. It is set as the initial
    *        component value.
    * @param isSelected if true, the cell is currently selected
    * @param row the row of the cell being edited
    * @param column the column of the cell being edited
-   * 
+   *
    * @return Component the component that will perform the editing session
    */
   public Component getTableCellEditorComponent(JTable table, Object value,
                                                boolean isSelected, int row,
                                                int column)
   {
-    // NOTE: as specified by Sun, we don't call new() everytime, we return 
+    // NOTE: as specified by Sun, we don't call new() everytime, we return
     // editorComponent on each call to getTableCellEditorComponent or
     // getTreeCellEditorComponent.
     delegate.setValue(value);

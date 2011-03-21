@@ -38,14 +38,14 @@ exception statement from your version. */
 package javax.swing;
 
 /**
- * Defines some constants that are used in Swing's top-level containers.  See 
+ * Defines some constants that are used in Swing's top-level containers.  See
  * the following methods:
  * <ul>
  * <li>{@link JFrame#setDefaultCloseOperation(int)};</li>
  * <li>{@link JInternalFrame#setDefaultCloseOperation(int)};</li>
  * <li>{@link JDialog#setDefaultCloseOperation(int)};</li>
  * </ul>
- * 
+ *
  * @author Andrew Selkirk
  */
 public interface WindowConstants
@@ -62,16 +62,16 @@ public interface WindowConstants
 
   /**
    * Dispose the container when it is closed.
-   * 
+   *
    * @see Window#dispose()
    */
   int DISPOSE_ON_CLOSE = 2;
 
   /**
    * Exit the application when the container is closed.
-   * 
+   *
    * @see System#exit(int)
-   * 
+   *
    * @since 1.4
    */
   int EXIT_ON_CLOSE = 3;

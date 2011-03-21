@@ -1,4 +1,4 @@
-/* AbstractInterruptibleChannel.java -- 
+/* AbstractInterruptibleChannel.java --
    Copyright (C) 2002, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -76,8 +76,8 @@ public abstract class AbstractInterruptibleChannel
   {
     if (! closed)
       {
-	closed = true;
-	implCloseChannel();
+        closed = true;
+        implCloseChannel();
       }
   }
 
@@ -96,7 +96,7 @@ public abstract class AbstractInterruptibleChannel
     throws AsynchronousCloseException
   {
     // FIXME: check more here.
-    
+
     if (closed) throw new AsynchronousCloseException();
   }
 
@@ -109,8 +109,8 @@ public abstract class AbstractInterruptibleChannel
 
   /**
    * Tells whether or not this channel is open.
-   * 
-   * @return true if the channel is open, false otherwise 
+   *
+   * @return true if the channel is open, false otherwise
    */
   public final boolean isOpen()
   {

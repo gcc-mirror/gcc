@@ -1,4 +1,4 @@
-! { dg-do "run" }
+! { dg-do run }
 ! Transformational intrinsic DOT_PRODUCT as initialization expression.
 
   INTEGER, PARAMETER :: n = 10

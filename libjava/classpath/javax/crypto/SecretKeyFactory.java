@@ -96,7 +96,7 @@ public class SecretKeyFactory
 
   /**
    * Create a new secret key factory from the first appropriate instance.
-   * 
+   *
    * @param algorithm The algorithm name.
    * @return The appropriate key factory, if found.
    * @throws NoSuchAlgorithmException If no provider implements the specified
@@ -125,7 +125,7 @@ public class SecretKeyFactory
 
   /**
    * Create a new secret key factory from the named provider.
-   * 
+   *
    * @param algorithm The algorithm name.
    * @param provider The provider name.
    * @return The appropriate key factory, if found.
@@ -150,7 +150,7 @@ public class SecretKeyFactory
 
   /**
    * Create a new secret key factory from the specified provider.
-   * 
+   *
    * @param algorithm The algorithm name.
    * @param provider The provider.
    * @return The appropriate key factory, if found.

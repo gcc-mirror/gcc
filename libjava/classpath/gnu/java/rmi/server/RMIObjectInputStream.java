@@ -8,7 +8,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -48,44 +48,44 @@ import java.net.MalformedURLException;
 import java.rmi.server.RMIClassLoader;
 
 public class RMIObjectInputStream
-	extends ObjectInputStream {
+        extends ObjectInputStream {
 
 public RMIObjectInputStream(InputStream strm) throws IOException {
-	super(strm);
-	enableResolveObject(true);
+        super(strm);
+        enableResolveObject(true);
 }
 
 protected Class resolveClass(ObjectStreamClass desc) throws IOException, ClassNotFoundException {
-	try {
+        try {
                 return RMIClassLoader.loadClass(
                     (String)getAnnotation(),
                     desc.getName(),
                     VMStackWalker.firstNonNullClassLoader());
-	}
-	catch (MalformedURLException x) {
-		throw new ClassNotFoundException(desc.getName(), x);
-	}
+        }
+        catch (MalformedURLException x) {
+                throw new ClassNotFoundException(desc.getName(), x);
+        }
 }
 
 //Separate it for override by MarshalledObject
 protected Object getAnnotation()
-	    throws IOException, ClassNotFoundException
+            throws IOException, ClassNotFoundException
 {
     return readObject();
 }
-	
+
 
   protected Class resolveProxyClass(String intfs[]) throws IOException,
       ClassNotFoundException
   {
-    try 
+    try
       {
         return RMIClassLoader.loadProxyClass(
             (String)getAnnotation(),
             intfs,
             VMStackWalker.firstNonNullClassLoader());
       }
-    catch (MalformedURLException x) 
+    catch (MalformedURLException x)
       {
         throw new ClassNotFoundException(null, x);
       }

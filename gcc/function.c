@@ -1,7 +1,7 @@
 /* Expands front end tree to back end RTL for GCC.
    Copyright (C) 1987, 1988, 1989, 1991, 1992, 1993, 1994, 1995, 1996, 1997,
    1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009,
-   2010  Free Software Foundation, Inc.
+   2010, 2011  Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -355,14 +355,17 @@ add_frame_space (HOST_WIDE_INT start, HOST_WIDE_INT end)
    -2 means use BITS_PER_UNIT,
    positive specifies alignment boundary in bits.
 
-   If REDUCE_ALIGNMENT_OK is true, it is OK to reduce alignment.
+   KIND has ASLK_REDUCE_ALIGN bit set if it is OK to reduce
+   alignment and ASLK_RECORD_PAD bit set if we should remember
+   extra space we allocated for alignment purposes.  When we are
+   called from assign_stack_temp_for_type, it is not set so we don't
+   track the same stack slot in two independent lists.
 
    We do not round to stack_boundary here.  */
 
 rtx
 assign_stack_local_1 (enum machine_mode mode, HOST_WIDE_INT size,
-		      int align,
-		      bool reduce_alignment_ok ATTRIBUTE_UNUSED)
+		      int align, int kind)
 {
   rtx x, addr;
   int bigend_correction = 0;
@@ -412,7 +415,7 @@ assign_stack_local_1 (enum machine_mode mode, HOST_WIDE_INT size,
 		  /* It is OK to reduce the alignment as long as the
 		     requested size is 0 or the estimated stack
 		     alignment >= mode alignment.  */
-		  gcc_assert (reduce_alignment_ok
+		  gcc_assert ((kind & ASLK_REDUCE_ALIGN)
 		              || size == 0
 			      || (crtl->stack_alignment_estimated
 				  >= GET_MODE_ALIGNMENT (mode)));
@@ -430,21 +433,24 @@ assign_stack_local_1 (enum machine_mode mode, HOST_WIDE_INT size,
 
   if (mode != BLKmode || size != 0)
     {
-      struct frame_space **psp;
-
-      for (psp = &crtl->frame_space_list; *psp; psp = &(*psp)->next)
+      if (kind & ASLK_RECORD_PAD)
 	{
-	  struct frame_space *space = *psp;
-	  if (!try_fit_stack_local (space->start, space->length, size,
-				    alignment, &slot_offset))
-	    continue;
-	  *psp = space->next;
-	  if (slot_offset > space->start)
-	    add_frame_space (space->start, slot_offset);
-	  if (slot_offset + size < space->start + space->length)
-	    add_frame_space (slot_offset + size,
-			     space->start + space->length);
-	  goto found_space;
+	  struct frame_space **psp;
+
+	  for (psp = &crtl->frame_space_list; *psp; psp = &(*psp)->next)
+	    {
+	      struct frame_space *space = *psp;
+	      if (!try_fit_stack_local (space->start, space->length, size,
+					alignment, &slot_offset))
+		continue;
+	      *psp = space->next;
+	      if (slot_offset > space->start)
+		add_frame_space (space->start, slot_offset);
+	      if (slot_offset + size < space->start + space->length)
+		add_frame_space (slot_offset + size,
+				 space->start + space->length);
+	      goto found_space;
+	    }
 	}
     }
   else if (!STACK_ALIGNMENT_NEEDED)
@@ -460,20 +466,26 @@ assign_stack_local_1 (enum machine_mode mode, HOST_WIDE_INT size,
       frame_offset -= size;
       try_fit_stack_local (frame_offset, size, size, alignment, &slot_offset);
 
-      if (slot_offset > frame_offset)
-	add_frame_space (frame_offset, slot_offset);
-      if (slot_offset + size < old_frame_offset)
-	add_frame_space (slot_offset + size, old_frame_offset);
+      if (kind & ASLK_RECORD_PAD)
+	{
+	  if (slot_offset > frame_offset)
+	    add_frame_space (frame_offset, slot_offset);
+	  if (slot_offset + size < old_frame_offset)
+	    add_frame_space (slot_offset + size, old_frame_offset);
+	}
     }
   else
     {
       frame_offset += size;
       try_fit_stack_local (old_frame_offset, size, size, alignment, &slot_offset);
 
-      if (slot_offset > old_frame_offset)
-	add_frame_space (old_frame_offset, slot_offset);
-      if (slot_offset + size < frame_offset)
-	add_frame_space (slot_offset + size, frame_offset);
+      if (kind & ASLK_RECORD_PAD)
+	{
+	  if (slot_offset > old_frame_offset)
+	    add_frame_space (old_frame_offset, slot_offset);
+	  if (slot_offset + size < frame_offset)
+	    add_frame_space (slot_offset + size, frame_offset);
+	}
     }
 
  found_space:
@@ -513,7 +525,7 @@ assign_stack_local_1 (enum machine_mode mode, HOST_WIDE_INT size,
 rtx
 assign_stack_local (enum machine_mode mode, HOST_WIDE_INT size, int align)
 {
-  return assign_stack_local_1 (mode, size, align, false);
+  return assign_stack_local_1 (mode, size, align, ASLK_RECORD_PAD);
 }
 
 
@@ -868,11 +880,13 @@ assign_stack_temp_for_type (enum machine_mode mode, HOST_WIDE_INT size,
 	 and round it now.  We also make sure ALIGNMENT is at least
 	 BIGGEST_ALIGNMENT.  */
       gcc_assert (mode != BLKmode || align == BIGGEST_ALIGNMENT);
-      p->slot = assign_stack_local (mode,
-				    (mode == BLKmode
-				     ? CEIL_ROUND (size, (int) align / BITS_PER_UNIT)
-				     : size),
-				    align);
+      p->slot = assign_stack_local_1 (mode,
+				      (mode == BLKmode
+				       ? CEIL_ROUND (size,
+						     (int) align
+						     / BITS_PER_UNIT)
+				       : size),
+				      align, 0);
 
       p->align = align;
 
@@ -928,8 +942,11 @@ assign_stack_temp_for_type (enum machine_mode mode, HOST_WIDE_INT size,
   if (type != 0)
     {
       MEM_VOLATILE_P (slot) = TYPE_VOLATILE (type);
-      MEM_SET_IN_STRUCT_P (slot, (AGGREGATE_TYPE_P (type)
-				  || TREE_CODE (type) == COMPLEX_TYPE));
+      gcc_checking_assert (!MEM_SCALAR_P (slot) && !MEM_IN_STRUCT_P (slot));
+      if (AGGREGATE_TYPE_P (type) || TREE_CODE (type) == COMPLEX_TYPE)
+	MEM_IN_STRUCT_P (slot) = 1;
+      else
+	MEM_SCALAR_P (slot) = 1;
     }
   MEM_NOTRAP_P (slot) = 1;
 
@@ -1784,8 +1801,21 @@ instantiate_expr (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
   if (! EXPR_P (t))
     {
       *walk_subtrees = 0;
-      if (DECL_P (t) && DECL_RTL_SET_P (t))
-	instantiate_decl_rtl (DECL_RTL (t));
+      if (DECL_P (t))
+	{
+	  if (DECL_RTL_SET_P (t))
+	    instantiate_decl_rtl (DECL_RTL (t));
+	  if (TREE_CODE (t) == PARM_DECL && DECL_NAMELESS (t)
+	      && DECL_INCOMING_RTL (t))
+	    instantiate_decl_rtl (DECL_INCOMING_RTL (t));
+	  if ((TREE_CODE (t) == VAR_DECL
+	       || TREE_CODE (t) == RESULT_DECL)
+	      && DECL_HAS_VALUE_EXPR_P (t))
+	    {
+	      tree v = DECL_VALUE_EXPR (t);
+	      walk_tree (&v, instantiate_expr, NULL, NULL);
+	    }
+	}
     }
   return NULL;
 }
@@ -1828,6 +1858,18 @@ instantiate_decls (tree fndecl)
     {
       instantiate_decl_rtl (DECL_RTL (decl));
       instantiate_decl_rtl (DECL_INCOMING_RTL (decl));
+      if (DECL_HAS_VALUE_EXPR_P (decl))
+	{
+	  tree v = DECL_VALUE_EXPR (decl);
+	  walk_tree (&v, instantiate_expr, NULL, NULL);
+	}
+    }
+
+  if ((decl = DECL_RESULT (fndecl))
+      && TREE_CODE (decl) == RESULT_DECL)
+    {
+      if (DECL_RTL_SET_P (decl))
+	instantiate_decl_rtl (DECL_RTL (decl));
       if (DECL_HAS_VALUE_EXPR_P (decl))
 	{
 	  tree v = DECL_VALUE_EXPR (decl);
@@ -3372,7 +3414,15 @@ assign_parms (tree fndecl)
 	}
 
       /* Record permanently how this parm was passed.  */
-      set_decl_incoming_rtl (parm, data.entry_parm, data.passed_pointer);
+      if (data.passed_pointer)
+	{
+	  rtx incoming_rtl
+	    = gen_rtx_MEM (TYPE_MODE (TREE_TYPE (data.passed_type)),
+			   data.entry_parm);
+	  set_decl_incoming_rtl (parm, incoming_rtl, true);
+	}
+      else
+	set_decl_incoming_rtl (parm, data.entry_parm, false);
 
       /* Update info on where next arg arrives in registers.  */
       targetm.calls.function_arg_advance (&all.args_so_far, data.promoted_mode,
@@ -5093,10 +5143,15 @@ expand_function_end (void)
   if (! EXIT_IGNORE_STACK
       && cfun->calls_alloca)
     {
-      rtx tem = 0;
+      rtx tem = 0, seq;
 
-      emit_stack_save (SAVE_FUNCTION, &tem, parm_birth_insn);
-      emit_stack_restore (SAVE_FUNCTION, tem, NULL_RTX);
+      start_sequence ();
+      emit_stack_save (SAVE_FUNCTION, &tem);
+      seq = get_insns ();
+      end_sequence ();
+      emit_insn_before (seq, parm_birth_insn);
+
+      emit_stack_restore (SAVE_FUNCTION, tem);
     }
 
   /* ??? This should no longer be necessary since stupid is no longer with
@@ -5472,7 +5527,8 @@ thread_prologue_and_epilogue_insns (void)
       start_sequence ();
       epilogue_end = emit_note (NOTE_INSN_EPILOGUE_BEG);
       seq = gen_epilogue ();
-      emit_jump_insn (seq);
+      if (seq)
+	emit_jump_insn (seq);
 
       /* Retain a map of the epilogue insns.  */
       record_insns (seq, NULL, &epilogue_insn_hash);

@@ -1,6 +1,6 @@
 ; Options for the Matsushita MN10300 port of the compiler.
 
-; Copyright (C) 2005, 2007, 2010 Free Software Foundation, Inc.
+; Copyright (C) 2005, 2007, 2010, 2011 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -39,6 +39,10 @@ Target Report Mask(MULT_BUG)
 Work around hardware multiply bug
 
 ; Ignored by the compiler
+mno-crt0
+Target RejectNegative
+
+; Ignored by the compiler
 mrelax
 Target RejectNegative
 Enable linker relaxations
@@ -46,3 +50,7 @@ Enable linker relaxations
 mreturn-pointer-on-d0
 Target Report Mask(PTR_A0D0)
 Return pointers in both a0 and d0
+
+mliw
+Target Report Mask(ALLOW_LIW)
+Allow gcc to generate LIW instructions

@@ -74,7 +74,7 @@ public abstract class NameHelper
       {
         BAD_OPERATION bad = new BAD_OPERATION("Name expected");
         bad.initCause(ex);
-        bad.minor = Minor.Any;        
+        bad.minor = Minor.Any;
         throw bad;
       }
   }

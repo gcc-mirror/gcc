@@ -1,6 +1,6 @@
 // std::messages implementation details, IEEE 1003.1-200x version -*- C++ -*-
 
-// Copyright (C) 2001, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -33,7 +33,9 @@
 
 // Written by Benjamin Kosnik <bkoz@redhat.com>
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // Non-virtual member functions.
   template<typename _CharT>
@@ -69,4 +71,5 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     messages<_CharT>::do_close(catalog __c) const 
     { catclose(reinterpret_cast<nl_catd>(__c)); }
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace

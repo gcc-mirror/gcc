@@ -1,6 +1,6 @@
 // Profiling multimap implementation -*- C++ -*-
 
-// Copyright (C) 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2009, 2010, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -31,7 +31,7 @@
 
 #include <utility>
 
-namespace std
+namespace std _GLIBCXX_VISIBILITY(default)
 {
 namespace __profile
 {
@@ -39,9 +39,9 @@ namespace __profile
   template<typename _Key, typename _Tp, typename _Compare = std::less<_Key>,
 	   typename _Allocator = std::allocator<std::pair<const _Key, _Tp> > >
     class multimap
-    : public _GLIBCXX_STD_D::multimap<_Key, _Tp, _Compare, _Allocator>
+    : public _GLIBCXX_STD_C::multimap<_Key, _Tp, _Compare, _Allocator>
     {
-      typedef _GLIBCXX_STD_D::multimap<_Key, _Tp, _Compare, _Allocator> _Base;
+      typedef _GLIBCXX_STD_C::multimap<_Key, _Tp, _Compare, _Allocator> _Base;
 
     public:
       // types:
@@ -62,8 +62,6 @@ namespace __profile
       typedef typename _Base::difference_type        difference_type;
       typedef typename _Base::pointer                pointer;
       typedef typename _Base::const_pointer          const_pointer;
-
-      using _Base::value_compare;
 
       // 23.3.1.1 construct/copy/destroy:
       explicit multimap(const _Compare& __comp = _Compare(),

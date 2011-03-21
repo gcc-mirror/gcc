@@ -18,12 +18,12 @@ package org.w3c.dom.html2;
  */
 public interface HTMLDListElement extends HTMLElement {
     /**
-     * Reduce spacing between list items. See the compact attribute definition 
+     * Reduce spacing between list items. See the compact attribute definition
      * in HTML 4.01. This attribute is deprecated in HTML 4.01.
      */
     public boolean getCompact();
     /**
-     * Reduce spacing between list items. See the compact attribute definition 
+     * Reduce spacing between list items. See the compact attribute definition
      * in HTML 4.01. This attribute is deprecated in HTML 4.01.
      */
     public void setCompact(boolean compact);

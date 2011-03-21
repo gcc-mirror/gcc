@@ -38,13 +38,15 @@ if { $lang_test_file_found } {
     set tests [lsort [find $srcdir/$subdir *.\[fF\]{,90,95,03,08}]]
 
     if { $blddir != "" } {
-	# We could, perhaps, test for the presence of the quad math lib - but if it 
-	# is required then its absence will cause a fail, and if it is not required
-	# the additions here should be harmless.
-	lappend ALWAYS_CFLAGS "ldflags=-L${blddir}/${quadmath_library_path}/"
-	# Allow for spec subsitution.
-	lappend ALWAYS_CFLAGS "additional_flags=-B${blddir}/${quadmath_library_path}/"
-	set ld_library_path "$always_ld_library_path:${blddir}/${lang_library_path}:${blddir}/${quadmath_library_path}"
+	if { [file exists "${blddir}/${quadmath_library_path}/libquadmath.a"]
+	     || [file exists "${blddir}/${quadmath_library_path}/libquadmath.${shlib_ext}"] } {
+	    lappend ALWAYS_CFLAGS "ldflags=-L${blddir}/${quadmath_library_path}/"
+	    # Allow for spec subsitution.
+	    lappend ALWAYS_CFLAGS "additional_flags=-B${blddir}/${quadmath_library_path}/"
+	    set ld_library_path "$always_ld_library_path:${blddir}/${lang_library_path}:${blddir}/${quadmath_library_path}"
+	} else {
+	    set ld_library_path "$always_ld_library_path:${blddir}/${lang_library_path}"
+	}
     } else {
         set ld_library_path "$always_ld_library_path"
     }

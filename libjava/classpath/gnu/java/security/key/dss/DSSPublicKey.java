@@ -1,4 +1,4 @@
-/* DSSPublicKey.java -- 
+/* DSSPublicKey.java --
    Copyright 2001, 2002, 2003, 2006 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -51,7 +51,7 @@ import java.security.interfaces.DSAPublicKey;
 
 /**
  * An object that embodies a DSS (Digital Signature Standard) public key.
- * 
+ *
  * @see #getEncoded
  */
 public class DSSPublicKey
@@ -71,7 +71,7 @@ public class DSSPublicKey
    * Conveience constructor. Calls the constructor with 5 arguments passing
    * {@link Registry#RAW_ENCODING_ID} as the identifier of the preferred
    * encoding format.
-   * 
+   *
    * @param p the public modulus.
    * @param q the public prime divisor of <code>p-1</code>.
    * @param g a generator of the unique cyclic group <code>Z<sup>*</sup>
@@ -86,7 +86,7 @@ public class DSSPublicKey
   /**
    * Constructs a new instance of <code>DSSPublicKey</code> given the
    * designated arguments.
-   * 
+   *
    * @param preferredFormat the identifier of the preferred encoding format to
    *          use when externalizing this key.
    * @param p the public modulus.
@@ -109,7 +109,7 @@ public class DSSPublicKey
    * method of a DSS keypair codec object (an instance implementing
    * {@link gnu.java.security.key.IKeyPairCodec} for DSS keys, and re-constructs
    * an instance of this object.
-   * 
+   *
    * @param k the contents of a previously encoded instance of this object.
    * @exception ArrayIndexOutOfBoundsException if there is not enough bytes, in
    *              <code>k</code>, to represent a valid encoding of an
@@ -140,7 +140,7 @@ public class DSSPublicKey
   /**
    * Returns the encoded form of this public key according to the designated
    * format.
-   * 
+   *
    * @param format the desired format identifier of the resulting encoding.
    * @return the byte sequence encoding this key according to the designated
    *         format.
@@ -169,7 +169,7 @@ public class DSSPublicKey
    * Returns <code>true</code> if the designated object is an instance of
    * {@link DSAPublicKey} and has the same DSS (Digital Signature Standard)
    * parameter values as this one.
-   * 
+   *
    * @param obj the other non-null DSS key to compare to.
    * @return <code>true</code> if the designated object is of the same type
    *         and value as this one.

@@ -49,9 +49,9 @@ import java.util.Locale;
  * @see org.xml.sax.HandlerBase
  * @see org.xml.sax.InputSource
  */
-public interface Parser 
+public interface Parser
 {
-    
+
     /**
      * Allow an application to request a locale for errors and warnings.
      *
@@ -62,15 +62,15 @@ public interface Parser
      *
      * @param locale A Java Locale object.
      * @exception org.xml.sax.SAXException Throws an exception
-     *            (using the previous or default locale) if the 
+     *            (using the previous or default locale) if the
      *            requested locale is not supported.
      * @see org.xml.sax.SAXException
      * @see org.xml.sax.SAXParseException
      */
     public abstract void setLocale (Locale locale)
-	throws SAXException;
-    
-    
+        throws SAXException;
+
+
     /**
      * Allow an application to register a custom entity resolver.
      *
@@ -88,8 +88,8 @@ public interface Parser
      * @see HandlerBase
      */
     public abstract void setEntityResolver (EntityResolver resolver);
-    
-    
+
+
     /**
      * Allow an application to register a DTD event handler.
      *
@@ -107,8 +107,8 @@ public interface Parser
      * @see HandlerBase
      */
     public abstract void setDTDHandler (DTDHandler handler);
-    
-    
+
+
     /**
      * Allow an application to register a document event handler.
      *
@@ -126,8 +126,8 @@ public interface Parser
      * @see HandlerBase
      */
     public abstract void setDocumentHandler (DocumentHandler handler);
-    
-    
+
+
     /**
      * Allow an application to register an error event handler.
      *
@@ -146,8 +146,8 @@ public interface Parser
      * @see HandlerBase
      */
     public abstract void setErrorHandler (ErrorHandler handler);
-    
-    
+
+
     /**
      * Parse an XML document.
      *
@@ -176,9 +176,9 @@ public interface Parser
      * @see #setErrorHandler
      */
     public abstract void parse (InputSource source)
-	throws SAXException, IOException;
-    
-    
+        throws SAXException, IOException;
+
+
     /**
      * Parse an XML document from a system identifier (URI).
      *
@@ -202,8 +202,8 @@ public interface Parser
      * @see #parse(org.xml.sax.InputSource)
      */
     public abstract void parse (String systemId)
-	throws SAXException, IOException;
-    
+        throws SAXException, IOException;
+
 }
 
 // end of Parser.java

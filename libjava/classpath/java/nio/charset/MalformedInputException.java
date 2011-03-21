@@ -1,4 +1,4 @@
-/* MalformedInputException.java -- 
+/* MalformedInputException.java --
    Copyright (C) 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -45,7 +45,7 @@ public class MalformedInputException extends CharacterCodingException
   private static final long serialVersionUID = - 3438823399834806194L;
 
   private int inputLength;
-  
+
   /**
    * Creates the exception
    *

@@ -50,7 +50,7 @@ LIBGCC1_TEST =
 
 T_CFLAGS += -DUSE_LIBUNWIND_EXCEPTIONS
 
-LIB2ADDEH =
+LIB2ADDEH = $(srcdir)/unwind-c.c
 
 SHLIB_EXT = .so
 # Must include -lunwind in the link, so that libgcc_s.so has the necessary

@@ -1,5 +1,5 @@
 /* Language-dependent trees for LTO.
-   Copyright 2009 Free Software Foundation, Inc.
+   Copyright 2009, 2010 Free Software Foundation, Inc.
    Contributed by CodeSourcery, Inc.
 
 This file is part of GCC.
@@ -54,8 +54,5 @@ union GTY((desc ("lto_tree_node_structure (&%h)"),
   union tree_node GTY ((tag ("TS_LTO_GENERIC"),
 			desc ("tree_node_structure (&%h)"))) generic;
 };
-
-/* Vector to keep track of external variables we've seen so far.  */
-extern GTY(()) VEC(tree,gc) *lto_global_var_decls;
 
 #endif /* GCC_LTO_TREE_H */

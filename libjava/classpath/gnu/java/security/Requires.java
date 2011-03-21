@@ -46,8 +46,8 @@ import static java.lang.annotation.RetentionPolicy.CLASS;
 import java.security.Permission;
 
 /**
- * 
- * 
+ *
+ *
  * @author Casey Marshall (csm@gnu.org)
  */
 @Documented @Retention(CLASS) @Target(METHOD)

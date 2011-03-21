@@ -52,12 +52,12 @@
 /* This is sometimes OK, sometimes not OK.  */
 @interface Test2
 {
-  int v;                   /* { dg-warning "originally specified here" } */
-  float w;                 /* { dg-warning "originally specified here" } */
-  id x;                    /* { dg-warning "originally specified here" } */
+  int v;                   /* { dg-message "originally specified here" } */
+  float w;                 /* { dg-message "originally specified here" } */
+  id x;                    /* { dg-message "originally specified here" } */
   Test *y;                 
-  id <MyProtocol> *z;      /* { dg-warning "originally specified here" } */
-  ClassA *a;               /* { dg-warning "originally specified here" } */
+  id <MyProtocol> *z;      /* { dg-message "originally specified here" } */
+  ClassA *a;               /* { dg-message "originally specified here" } */
   ClassB *b;               
 }
 @property (assign, readonly) float v;

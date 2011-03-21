@@ -1,12 +1,6 @@
 /* { dg-do run } */
-/* { dg-options "-fno-ipa-cp-clone" } */
 
 /* Verify that the RX specific builtin functions work.  */
-
-/* IPA CP cloning is disabled because the constant propagation
-   has no understanding of the saturation behaviour of the
-   __builtin_rx_sat function and so it will optimize away the
-   saturation addition test.  */
    
 #include <stdlib.h>
 #include <stdio.h>
@@ -23,20 +17,6 @@ int
 half_word_swap (int arg)
 {
   return __builtin_rx_revw (arg);
-}
-
-int
-saturate_add (int arg1, int arg2)
-{
-  arg1 += arg2;
-  return __builtin_rx_sat (arg1);
-}
-
-int
-exchange (int arg1, int arg2)
-{
-  arg1 = __builtin_rx_xchg (arg2);
-  return arg1;
 }
 
 long
@@ -118,7 +98,6 @@ int
 main (void)
 {
   CHECK_1ARG (half_word_swap, 0x12345678, 0x34127856);
-  CHECK_2ARG (saturate_add, 0x80000000, 0x80000000, 0x80000000);
   CHECK_3ARG (multiply_and_accumulate, 0x111, 0x222, 0x333, 0x70007);
   CHECK_1ARG (rxround, 0.5, 1);
   return 0;
@@ -162,10 +141,4 @@ void
 rmpa (int * multiplicand, int * multiplier, int num)
 {
   __builtin_rx_rmpa ();
-}
-
-void
-set_interrupts (void)
-{
-  __builtin_mvtipl (3);
 }

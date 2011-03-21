@@ -66,7 +66,7 @@ public class ListenerData
    * event occurring.
    */
   private Object passback;
-  
+
   /**
    * Constructs a new {@link ListenerData} with the specified
    * listener, filter and passback object.
@@ -76,13 +76,13 @@ public class ListenerData
    * @param passback the object to passback on an incoming event.
    */
   public ListenerData(NotificationListener listener,
-		      NotificationFilter filter, Object passback)
+                      NotificationFilter filter, Object passback)
   {
     this.listener = listener;
     this.filter = filter;
     this.passback = passback;
   }
-  
+
   /**
    * Returns the listener.
    *
@@ -92,7 +92,7 @@ public class ListenerData
   {
     return listener;
   }
-  
+
   /**
    * Returns the filter.
    *
@@ -102,7 +102,7 @@ public class ListenerData
   {
     return filter;
   }
-  
+
   /**
    * Returns the passback object.
    *
@@ -112,7 +112,7 @@ public class ListenerData
   {
     return passback;
   }
-  
+
   /**
    * Returns true if the supplied object is an instance of
    * {@link ListenerData} and has the same listener, filter
@@ -125,12 +125,12 @@ public class ListenerData
   {
     if (obj instanceof ListenerData)
       {
-	ListenerData data = (ListenerData) obj;
-	return (data.getListener() == listener &&
-		data.getFilter() == filter &&
-		data.getPassback() == passback);
+        ListenerData data = (ListenerData) obj;
+        return (data.getListener() == listener &&
+                data.getFilter() == filter &&
+                data.getPassback() == passback);
       }
     return false;
   }
-  
+
 }

@@ -46,7 +46,7 @@ import java.awt.Image;
  * <code>ImageProducer</code> asynchronously.
  *
  * @see ImageProducer
- * @author C. Brian Jones (cbj@gnu.org) 
+ * @author C. Brian Jones (cbj@gnu.org)
  */
 public interface ImageObserver
 {
@@ -54,7 +54,7 @@ public interface ImageObserver
      * The width of the image has been provided as the
      * <code>width</code> argument to <code>imageUpdate</code>.
      *
-     * @see #imageUpdate 
+     * @see #imageUpdate
      */
     int WIDTH = 1;
 
@@ -62,7 +62,7 @@ public interface ImageObserver
      * The height of the image has been provided as the
      * <code>height</code> argument to <code>imageUpdate</code>.
      *
-     * @see #imageUpdate 
+     * @see #imageUpdate
      */
     int HEIGHT = 2;
 
@@ -78,7 +78,7 @@ public interface ImageObserver
      * More pixels are now available for drawing a scaled variation of
      * the image.
      *
-     * @see #imageUpdate 
+     * @see #imageUpdate
      */
     int SOMEBITS = 8;
 
@@ -86,7 +86,7 @@ public interface ImageObserver
      * All the pixels needed to draw a complete frame of a multi-frame
      * image are available.
      *
-     * @see #imageUpdate 
+     * @see #imageUpdate
      */
     int FRAMEBITS = 16;
 
@@ -121,9 +121,9 @@ public interface ImageObserver
      * @param y the y coordinate of the image
      * @param width the width of the image
      * @param height the height of the image
-     * 
-     * @see java.awt.Image 
+     *
+     * @see java.awt.Image
      */
-    boolean imageUpdate(Image image, int flags, int x, 
-					int y, int width, int height);
+    boolean imageUpdate(Image image, int flags, int x,
+                                        int y, int width, int height);
 }

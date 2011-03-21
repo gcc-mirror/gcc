@@ -3,47 +3,6 @@
 @c Edit the *.c files, configure with --enable-maintainer-mode,
 @c run 'make stamp-functions' and gather-docs will build a new copy.
 
-@c splay-tree.c:277
-@defvr Extension HOST_CHARSET
-This macro indicates the basic character set and encoding used by the
-host: more precisely, the encoding used for character constants in
-preprocessor @samp{#if} statements (the C "execution character set").
-It is defined by @file{safe-ctype.h}, and will be an integer constant
-with one of the following values:
-
-@ftable @code
-@item HOST_CHARSET_UNKNOWN
-The host character set is unknown - that is, not one of the next two
-possibilities.
-
-@item HOST_CHARSET_ASCII
-The host character set is ASCII.
-
-@item HOST_CHARSET_EBCDIC
-The host character set is some variant of EBCDIC.  (Only one of the
-nineteen EBCDIC varying characters is tested; exercise caution.)
-@end ftable
-@end defvr
-@deftypefn Supplemental splay_tree splay_tree_new_with_typed_alloc
-(splay_tree_compare_fn @var{compare_fn},
-splay_tree_delete_key_fn @var{delete_key_fn},
-splay_tree_delete_value_fn @var{delete_value_fn},
-splay_tree_allocate_fn @var{tree_allocate_fn},
-splay_tree_allocate_fn @var{node_allocate_fn},
-splay_tree_deallocate_fn @var{deallocate_fn},
-void * @var{allocate_data})
-
-This function creates a splay tree that uses two different allocators
-@var{tree_allocate_fn} and @var{node_allocate_fn} to use for allocating the
-tree itself and its nodes respectively.  This is useful when variables of
-different types need to be allocated with different allocators.
-
-The splay tree will use @var{compare_fn} to compare nodes,
-@var{delete_key_fn} to deallocate keys, and @var{delete_value_fn} to
-deallocate values.
-
-@end deftypefn
-
 @c alloca.c:26
 @deftypefn Replacement void* alloca (size_t @var{size})
 
@@ -110,7 +69,9 @@ Copies @var{length} bytes from memory region @var{in} to region
 @end deftypefn
 
 @c bsearch.c:33
-@deftypefn Supplemental void* bsearch (const void *@var{key}, const void *@var{base}, size_t @var{nmemb}, size_t @var{size}, int (*@var{compar})(const void *, const void *))
+@deftypefn Supplemental void* bsearch (const void *@var{key}, @
+  const void *@var{base}, size_t @var{nmemb}, size_t @var{size}, @
+  int (*@var{compar})(const void *, const void *))
 
 Performs a search over an array of @var{nmemb} elements pointed to by
 @var{base} for a member that matches the object pointed to by @var{key}.
@@ -177,7 +138,7 @@ not recommended.
 
 @end deftypefn
 
-@c make-temp-file.c:95
+@c make-temp-file.c:96
 @deftypefn Replacement char* choose_tmpdir ()
 
 Returns a pointer to a directory path suitable for creating temporary
@@ -195,7 +156,8 @@ number of seconds used.
 @end deftypefn
 
 @c concat.c:24
-@deftypefn Extension char* concat (const char *@var{s1}, const char *@var{s2}, @dots{}, @code{NULL})
+@deftypefn Extension char* concat (const char *@var{s1}, const char *@var{s2}, @
+  @dots{}, @code{NULL})
 
 Concatenate zero or more of strings and return the result in freshly
 @code{xmalloc}ed memory.  Returns @code{NULL} if insufficient memory is
@@ -205,7 +167,8 @@ pointer encountered.  Pointers to empty strings are ignored.
 @end deftypefn
 
 @c crc32.c:141
-@deftypefn Extension unsigned int crc32 (const unsigned char *@var{buf}, int @var{len}, unsigned int @var{init})
+@deftypefn Extension {unsigned int} crc32 (const unsigned char *@var{buf}, @
+  int @var{len}, unsigned int @var{init})
 
 Compute the 32-bit CRC of @var{buf} which has length @var{len}.  The
 starting value is @var{init}; this may be used to compute the CRC of
@@ -296,8 +259,9 @@ and inode numbers.
 
 @end deftypefn
 
-@c fopen_unlocked.c:48
-@deftypefn Extension {FILE *} fdopen_unlocked (int @var{fildes}, const char * @var{mode})
+@c fopen_unlocked.c:49
+@deftypefn Extension {FILE *} fdopen_unlocked (int @var{fildes}, @
+  const char * @var{mode})
 
 Opens and returns a @code{FILE} pointer via @code{fdopen}.  If the
 operating system supports it, ensure that the stream is setup to avoid
@@ -332,8 +296,27 @@ and backward slashes are equal.
 
 @end deftypefn
 
+@c filename_cmp.c:81
+@deftypefn Extension int filename_ncmp (const char *@var{s1}, const char *@var{s2}, size_t @var{n})
+
+Return zero if the two file names @var{s1} and @var{s2} are equivalent
+in range @var{n}.
+If not equivalent, the returned value is similar to what @code{strncmp}
+would return.  In other words, it returns a negative value if @var{s1}
+is less than @var{s2}, or a positive value if @var{s2} is greater than
+@var{s2}.
+
+This function does not normalize file names.  As a result, this function
+will treat filenames that are spelled differently as different even in
+the case when the two filenames point to the same underlying file.
+However, it does handle the fact that on DOS-like file systems, forward
+and backward slashes are equal.
+
+@end deftypefn
+
 @c fnmatch.txh:1
-@deftypefn Replacement int fnmatch (const char *@var{pattern}, const char *@var{string}, int @var{flags})
+@deftypefn Replacement int fnmatch (const char *@var{pattern}, @
+  const char *@var{string}, int @var{flags})
 
 Matches @var{string} against @var{pattern}, returning zero if it
 matches, @code{FNM_NOMATCH} if not.  @var{pattern} may contain the
@@ -383,7 +366,8 @@ Ignores case when performing the comparison.
 @end deftypefn
 
 @c fopen_unlocked.c:39
-@deftypefn Extension {FILE *} fopen_unlocked (const char *@var{path}, const char * @var{mode})
+@deftypefn Extension {FILE *} fopen_unlocked (const char *@var{path}, @
+  const char * @var{mode})
 
 Opens and returns a @code{FILE} pointer via @code{fopen}.  If the
 operating system supports it, ensure that the stream is setup to avoid
@@ -402,8 +386,9 @@ itself.
 
 @end deftypefn
 
-@c fopen_unlocked.c:57
-@deftypefn Extension {FILE *} freopen_unlocked (const char * @var{path}, const char * @var{mode}, FILE * @var{stream})
+@c fopen_unlocked.c:59
+@deftypefn Extension {FILE *} freopen_unlocked (const char * @var{path}, @
+  const char * @var{mode}, FILE * @var{stream})
 
 Opens and returns a @code{FILE} pointer via @code{freopen}.  If the
 operating system supports it, ensure that the stream is setup to avoid
@@ -496,10 +481,32 @@ systems.
 
 @end deftypefn
 
+@c safe-ctype.c:25
+@defvr Extension HOST_CHARSET
+This macro indicates the basic character set and encoding used by the
+host: more precisely, the encoding used for character constants in
+preprocessor @samp{#if} statements (the C "execution character set").
+It is defined by @file{safe-ctype.h}, and will be an integer constant
+with one of the following values:
+
+@ftable @code
+@item HOST_CHARSET_UNKNOWN
+The host character set is unknown - that is, not one of the next two
+possibilities.
+
+@item HOST_CHARSET_ASCII
+The host character set is ASCII.
+
+@item HOST_CHARSET_EBCDIC
+The host character set is some variant of EBCDIC.  (Only one of the
+nineteen EBCDIC varying characters is tested; exercise caution.)
+@end ftable
+@end defvr
+
 @c hashtab.c:336
-@deftypefn Supplemental htab_t htab_create_typed_alloc (size_t @var{size},
-htab_hash @var{hash_f}, htab_eq @var{eq_f}, htab_del @var{del_f},
-htab_alloc @var{alloc_tab_f}, htab_alloc @var{alloc_f},
+@deftypefn Supplemental htab_t htab_create_typed_alloc (size_t @var{size}, @
+htab_hash @var{hash_f}, htab_eq @var{eq_f}, htab_del @var{del_f}, @
+htab_alloc @var{alloc_tab_f}, htab_alloc @var{alloc_f}, @
 htab_free @var{free_f})
 
 This function creates a hash table that uses two different allocators
@@ -524,7 +531,8 @@ deprecated in new programs in favor of @code{strchr}.
 @end deftypefn
 
 @c insque.c:6
-@deftypefn Supplemental void insque (struct qelem *@var{elem}, struct qelem *@var{pred})
+@deftypefn Supplemental void insque (struct qelem *@var{elem}, @
+  struct qelem *@var{pred})
 @deftypefnx Supplemental void remque (struct qelem *@var{elem})
 
 Routines to manipulate queues built from doubly linked lists.  The
@@ -643,7 +651,8 @@ components will be simplified.  The returned value will be allocated using
 @end deftypefn
 
 @c make-relative-prefix.c:24
-@deftypefn Extension {const char*} make_relative_prefix (const char *@var{progname}, const char *@var{bin_prefix}, const char *@var{prefix})
+@deftypefn Extension {const char*} make_relative_prefix (const char *@var{progname}, @
+  const char *@var{bin_prefix}, const char *@var{prefix})
 
 Given three paths @var{progname}, @var{bin_prefix}, @var{prefix},
 return the path that is in the same position relative to
@@ -667,7 +676,7 @@ relative prefix can be found, return @code{NULL}.
 
 @end deftypefn
 
-@c make-temp-file.c:173
+@c make-temp-file.c:174
 @deftypefn Replacement char* make_temp_file (const char *@var{suffix})
 
 Return a temporary file name (as a string) or @code{NULL} if unable to
@@ -677,7 +686,8 @@ string is @code{malloc}ed, and the temporary file has been created.
 @end deftypefn
 
 @c memchr.c:3
-@deftypefn Supplemental void* memchr (const void *@var{s}, int @var{c}, size_t @var{n})
+@deftypefn Supplemental void* memchr (const void *@var{s}, int @var{c}, @
+  size_t @var{n})
 
 This function searches memory starting at @code{*@var{s}} for the
 character @var{c}.  The search only ends with the first occurrence of
@@ -690,7 +700,8 @@ returned.
 @end deftypefn
 
 @c memcmp.c:6
-@deftypefn Supplemental int memcmp (const void *@var{x}, const void *@var{y}, size_t @var{count})
+@deftypefn Supplemental int memcmp (const void *@var{x}, const void *@var{y}, @
+  size_t @var{count})
 
 Compares the first @var{count} bytes of two areas of memory.  Returns
 zero if they are the same, a value less than zero if @var{x} is
@@ -701,7 +712,8 @@ as if comparing unsigned char arrays.
 @end deftypefn
 
 @c memcpy.c:6
-@deftypefn Supplemental void* memcpy (void *@var{out}, const void *@var{in}, size_t @var{length})
+@deftypefn Supplemental void* memcpy (void *@var{out}, const void *@var{in}, @
+  size_t @var{length})
 
 Copies @var{length} bytes from memory region @var{in} to region
 @var{out}.  Returns a pointer to @var{out}.
@@ -709,7 +721,8 @@ Copies @var{length} bytes from memory region @var{in} to region
 @end deftypefn
 
 @c memmem.c:20
-@deftypefn Supplemental void* memmem (const void *@var{haystack}, size_t @var{haystack_len} const void *@var{needle}, size_t @var{needle_len})
+@deftypefn Supplemental void* memmem (const void *@var{haystack}, @
+  size_t @var{haystack_len} const void *@var{needle}, size_t @var{needle_len})
 
 Returns a pointer to the first occurrence of @var{needle} (length
 @var{needle_len}) in @var{haystack} (length @var{haystack_len}).
@@ -718,7 +731,8 @@ Returns @code{NULL} if not found.
 @end deftypefn
 
 @c memmove.c:6
-@deftypefn Supplemental void* memmove (void *@var{from}, const void *@var{to}, size_t @var{count})
+@deftypefn Supplemental void* memmove (void *@var{from}, const void *@var{to}, @
+  size_t @var{count})
 
 Copies @var{count} bytes from memory area @var{from} to memory area
 @var{to}, returning a pointer to @var{to}.
@@ -726,7 +740,8 @@ Copies @var{count} bytes from memory area @var{from} to memory area
 @end deftypefn
 
 @c mempcpy.c:23
-@deftypefn Supplemental void* mempcpy (void *@var{out}, const void *@var{in}, size_t @var{length})
+@deftypefn Supplemental void* mempcpy (void *@var{out}, const void *@var{in}, @
+  size_t @var{length})
 
 Copies @var{length} bytes from memory region @var{in} to region
 @var{out}.  Returns a pointer to @var{out} + @var{length}.
@@ -734,7 +749,8 @@ Copies @var{length} bytes from memory region @var{in} to region
 @end deftypefn
 
 @c memset.c:6
-@deftypefn Supplemental void* memset (void *@var{s}, int @var{c}, size_t @var{count})
+@deftypefn Supplemental void* memset (void *@var{s}, int @var{c}, @
+  size_t @var{count})
 
 Sets the first @var{count} bytes of @var{s} to the constant byte
 @var{c}, returning a pointer to @var{s}.
@@ -759,7 +775,7 @@ reading and writing.
 
 @end deftypefn
 
-@c pexecute.txh:266
+@c pexecute.txh:278
 @deftypefn Extension void pex_free (struct pex_obj @var{obj})
 
 Clean up and free all data associated with @var{obj}.  If you have not
@@ -768,8 +784,9 @@ try to kill the subprocesses.
 
 @end deftypefn
 
-@c pexecute.txh:241
-@deftypefn Extension int pex_get_status (struct pex_obj *@var{obj}, int @var{count}, int *@var{vector})
+@c pexecute.txh:251
+@deftypefn Extension int pex_get_status (struct pex_obj *@var{obj}, @
+  int @var{count}, int *@var{vector})
 
 Returns the exit status of all programs run using @var{obj}.
 @var{count} is the number of results expected.  The results will be
@@ -778,8 +795,9 @@ to @code{pex_run}.  Returns 0 on error, 1 on success.
 
 @end deftypefn
 
-@c pexecute.txh:250
-@deftypefn Extension int pex_get_times (struct pex_obj *@var{obj}, int @var{count}, struct pex_time *@var{vector})
+@c pexecute.txh:261
+@deftypefn Extension int pex_get_times (struct pex_obj *@var{obj}, @
+  int @var{count}, struct pex_time *@var{vector})
 
 Returns the process execution times of all programs run using
 @var{obj}.  @var{count} is the number of results expected.  The
@@ -796,7 +814,8 @@ process times, all the fields will be set to @code{0}.
 @end deftypefn
 
 @c pexecute.txh:2
-@deftypefn Extension {struct pex_obj *} pex_init (int @var{flags}, const char *@var{pname}, const char *@var{tempbase})
+@deftypefn Extension {struct pex_obj *} pex_init (int @var{flags}, @
+  const char *@var{pname}, const char *@var{tempbase})
 
 Prepare to execute one or more programs, with standard output of each
 program fed to standard input of the next.  This is a system
@@ -827,8 +846,9 @@ temporary files; it may be @code{NULL} to use a randomly chosen name.
 
 @end deftypefn
 
-@c pexecute.txh:155
-@deftypefn Extension {FILE *} pex_input_file (struct pex_obj *@var{obj}, int @var{flags}, const char *@var{in_name})
+@c pexecute.txh:161
+@deftypefn Extension {FILE *} pex_input_file (struct pex_obj *@var{obj}, @
+  int @var{flags}, const char *@var{in_name})
 
 Return a stream for a temporary file to pass to the first program in
 the pipeline as input.
@@ -845,8 +865,9 @@ binary mode; otherwise, open it in the default mode.  Including
 @code{PEX_BINARY_OUTPUT} in @var{flags} has no effect on Unix.
 @end deftypefn
 
-@c pexecute.txh:172
-@deftypefn Extension {FILE *} pex_input_pipe (struct pex_obj *@var{obj}, int @var{binary})
+@c pexecute.txh:179
+@deftypefn Extension {FILE *} pex_input_pipe (struct pex_obj *@var{obj}, @
+  int @var{binary})
 
 Return a stream @var{fp} for a pipe connected to the standard input of
 the first program in the pipeline; @var{fp} is opened for writing.
@@ -890,8 +911,11 @@ the output pipe is you, but you are blocked on the input pipe.
 
 @end deftypefn
 
-@c pexecute.txh:274
-@deftypefn Extension {const char *} pex_one (int @var{flags}, const char *@var{executable}, char * const *@var{argv}, const char *@var{pname}, const char *@var{outname}, const char *@var{errname}, int *@var{status}, int *@var{err})
+@c pexecute.txh:286
+@deftypefn Extension {const char *} pex_one (int @var{flags}, @
+  const char *@var{executable}, char * const *@var{argv}, @
+  const char *@var{pname}, const char *@var{outname}, const char *@var{errname}, @
+  int *@var{status}, int *@var{err})
 
 An interface to permit the easy execution of a
 single program.  The return value and most of the parameters are as
@@ -903,8 +927,9 @@ be set to the exit status of the program.
 
 @end deftypefn
 
-@c pexecute.txh:228
-@deftypefn Extension {FILE *} pex_read_err (struct pex_obj *@var{obj}, int @var{binary})
+@c pexecute.txh:237
+@deftypefn Extension {FILE *} pex_read_err (struct pex_obj *@var{obj}, @
+  int @var{binary})
 
 Returns a @code{FILE} pointer which may be used to read the standard
 error of the last program in the pipeline.  When this is used,
@@ -916,8 +941,9 @@ it will be closed by @code{pex_free}.
 
 @end deftypefn
 
-@c pexecute.txh:216
-@deftypefn Extension {FILE *} pex_read_output (struct pex_obj *@var{obj}, int @var{binary})
+@c pexecute.txh:224
+@deftypefn Extension {FILE *} pex_read_output (struct pex_obj *@var{obj}, @
+  int @var{binary})
 
 Returns a @code{FILE} pointer which may be used to read the standard
 output of the last program in the pipeline.  When this is used,
@@ -929,8 +955,10 @@ it will be closed by @code{pex_free}.
 
 @end deftypefn
 
-@c pexecute.txh:33
-@deftypefn Extension {const char *} pex_run (struct pex_obj *@var{obj}, int @var{flags}, const char *@var{executable}, char * const *@var{argv}, const char *@var{outname}, const char *@var{errname}, int *@var{err})
+@c pexecute.txh:34
+@deftypefn Extension {const char *} pex_run (struct pex_obj *@var{obj}, @
+  int @var{flags}, const char *@var{executable}, char * const *@var{argv}, @
+  const char *@var{outname}, const char *@var{errname}, int *@var{err})
 
 Execute one program in a pipeline.  On success this returns
 @code{NULL}.  On failure it returns an error message, a statically
@@ -1039,8 +1067,11 @@ value, or to 0 if there is no relevant @code{errno}.
 
 @end deftypefn
 
-@c pexecute.txh:142
-@deftypefn Extension {const char *} pex_run_in_environment (struct pex_obj *@var{obj}, int @var{flags}, const char *@var{executable}, char * const *@var{argv}, char * const *@var{env}, int @var{env_size}, const char *@var{outname}, const char *@var{errname}, int *@var{err})
+@c pexecute.txh:145
+@deftypefn Extension {const char *} pex_run_in_environment (struct pex_obj *@var{obj}, @
+  int @var{flags}, const char *@var{executable}, char * const *@var{argv}, @
+  char * const *@var{env}, int @var{env_size}, const char *@var{outname}, @
+  const char *@var{errname}, int *@var{err})
 
 Execute one program in a pipeline, permitting the environment for the
 program to be specified.  Behaviour and parameters not listed below are
@@ -1053,8 +1084,11 @@ form @code{VAR=VALUE}, with the exception of the last element that must be
 
 @end deftypefn
 
-@c pexecute.txh:286
-@deftypefn Extension int pexecute (const char *@var{program}, char * const *@var{argv}, const char *@var{this_pname}, const char *@var{temp_base}, char **@var{errmsg_fmt}, char **@var{errmsg_arg}, int @var{flags})
+@c pexecute.txh:301
+@deftypefn Extension int pexecute (const char *@var{program}, @
+  char * const *@var{argv}, const char *@var{this_pname}, @
+  const char *@var{temp_base}, char **@var{errmsg_fmt}, @
+  char **@var{errmsg_arg}, int @var{flags})
 
 This is the old interface to execute one or more programs.  It is
 still supported for compatibility purposes, but is no longer
@@ -1081,7 +1115,7 @@ name is unset/removed.
 
 @end deftypefn
 
-@c pexecute.txh:294
+@c pexecute.txh:312
 @deftypefn Extension int pwait (int @var{pid}, int *@var{status}, int @var{flags})
 
 Another part of the old execution interface.
@@ -1091,7 +1125,8 @@ Another part of the old execution interface.
 @c random.c:39
 @deftypefn Supplement {long int} random (void)
 @deftypefnx Supplement void srandom (unsigned int @var{seed})
-@deftypefnx Supplement void* initstate (unsigned int @var{seed}, void *@var{arg_state}, unsigned long @var{n})
+@deftypefnx Supplement void* initstate (unsigned int @var{seed}, @
+  void *@var{arg_state}, unsigned long @var{n})
 @deftypefnx Supplement void* setstate (void *@var{arg_state})
 
 Random number functions.  @code{random} returns a random number in the
@@ -1103,8 +1138,9 @@ control over the state of the random number generator.
 
 @end deftypefn
 
-@c concat.c:173
-@deftypefn Extension char* reconcat (char *@var{optr}, const char *@var{s1}, @dots{}, @code{NULL})
+@c concat.c:174
+@deftypefn Extension char* reconcat (char *@var{optr}, const char *@var{s1}, @
+  @dots{}, @code{NULL})
 
 Same as @code{concat}, except that if @var{optr} is not @code{NULL} it
 is freed after the string is created.  This is intended to be useful
@@ -1134,8 +1170,9 @@ deprecated in new programs in favor of @code{strrchr}.
 
 @end deftypefn
 
-@c setenv.c:22
-@deftypefn Supplemental int setenv (const char *@var{name}, const char *@var{value}, int @var{overwrite})
+@c setenv.c:23
+@deftypefn Supplemental int setenv (const char *@var{name}, @
+  const char *@var{value}, int @var{overwrite})
 @deftypefnx Supplemental void unsetenv (const char *@var{name})
 
 @code{setenv} adds @var{name} to the environment with value
@@ -1146,8 +1183,8 @@ environment.  This implementation is not safe for multithreaded code.
 
 @end deftypefn
 
-@c setproctitle.c:30
-@deftypefn Supplemental void setproctitle (const char *@var{fmt} ...)
+@c setproctitle.c:31
+@deftypefn Supplemental void setproctitle (const char *@var{fmt}, ...)
 
 Set the title of a process to @var{fmt}. va args not supported for now,
 but defined for compatibility with BSD. 
@@ -1181,8 +1218,10 @@ be the value @code{1}).
 
 @end deftypefn
 
-@c simple-object.txh:87
-@deftypefn Extension {const char *} simple_object_attributes_compare (simple_object_attributes *@var{attrs1}, simple_object_attributes *@var{attrs2}, int *@var{err})
+@c simple-object.txh:96
+@deftypefn Extension {const char *} simple_object_attributes_compare @
+  (simple_object_attributes *@var{attrs1}, simple_object_attributes *@var{attrs2}, @
+   int *@var{err})
 
 Compare @var{attrs1} and @var{attrs2}.  If they could be linked
 together without error, return @code{NULL}.  Otherwise, return an
@@ -1191,8 +1230,9 @@ if there is no relevant errno.
 
 @end deftypefn
 
-@c simple-object.txh:73
-@deftypefn Extension {simple_object_attributes *} simple_object_fetch_attributes (simple_object_read *@var{simple_object}, const char **@var{errmsg}, int *@var{err})
+@c simple-object.txh:81
+@deftypefn Extension {simple_object_attributes *} simple_object_fetch_attributes @
+  (simple_object_read *@var{simple_object}, const char **@var{errmsg}, int *@var{err})
 
 Fetch the attributes of @var{simple_object}.  The attributes are
 internal information such as the format of the object file, or the
@@ -1206,8 +1246,10 @@ error message, and sets @code{*@var{err}} to an errno value or
 
 @end deftypefn
 
-@c simple-object.txh:44
-@deftypefn Extension {int} simple_object_find_section (simple_object_read *@var{simple_object} off_t *@var{offset}, off_t *@var{length}, const char **@var{errmsg}, int *@var{err})           
+@c simple-object.txh:49
+@deftypefn Extension {int} simple_object_find_section @
+  (simple_object_read *@var{simple_object} off_t *@var{offset}, @
+  off_t *@var{length}, const char **@var{errmsg}, int *@var{err})
 
 Look for the section @var{name} in @var{simple_object}.  This returns
 information for the first section with that name.
@@ -1229,8 +1271,11 @@ relevant errno.
 
 @end deftypefn
 
-@c simple-object.txh:25
-@deftypefn Extension {const char *} simple_object_find_sections (simple_object_read *@var{simple_object}, int (*@var{pfn}) (void *@var{data}, const char *@var{name}, off_t @var{offset}, off_t @var{length}), void *@var{data}, int *@var{err})
+@c simple-object.txh:27
+@deftypefn Extension {const char *} simple_object_find_sections @
+  (simple_object_read *@var{simple_object}, int (*@var{pfn}) (void *@var{data}, @
+  const char *@var{name}, off_t @var{offset}, off_t @var{length}), @
+  void *@var{data}, int *@var{err})
 
 This function calls @var{pfn} for each section in @var{simple_object}.
 It calls @var{pfn} with the section name, the offset within the file
@@ -1250,7 +1295,9 @@ or @code{0} if there is no relevant errno.
 @end deftypefn
 
 @c simple-object.txh:2
-@deftypefn Extension {simple_object_read *} simple_object_open_read (int @var{descriptor}, off_t @var{offset}, const char *{segment_name}, const char **@var{errmsg}, int *@var{err})
+@deftypefn Extension {simple_object_read *} simple_object_open_read @
+  (int @var{descriptor}, off_t @var{offset}, const char *{segment_name}, @
+  const char **@var{errmsg}, int *@var{err})
 
 Opens an object file for reading.  Creates and returns an
 @code{simple_object_read} pointer which may be passed to other
@@ -1273,30 +1320,35 @@ an errno value or @code{0} if there is no relevant errno.
 
 @end deftypefn
 
-@c simple-object.txh:96
-@deftypefn Extension {void} simple_object_release_attributes (simple_object_attributes *@var{attrs})
+@c simple-object.txh:107
+@deftypefn Extension {void} simple_object_release_attributes @
+  (simple_object_attributes *@var{attrs})
 
 Release all resources associated with @var{attrs}.
 
 @end deftypefn
 
-@c simple-object.txh:66
-@deftypefn Extension {void} simple_object_release_read (simple_object_read *@var{simple_object})
+@c simple-object.txh:73
+@deftypefn Extension {void} simple_object_release_read @
+  (simple_object_read *@var{simple_object})
 
 Release all resources associated with @var{simple_object}.  This does
 not close the file descriptor.
 
 @end deftypefn
 
-@c simple-object.txh:164
-@deftypefn Extension {void} simple_object_release_write (simple_object_write *@var{simple_object})
+@c simple-object.txh:184
+@deftypefn Extension {void} simple_object_release_write @
+  (simple_object_write *@var{simple_object})
 
 Release all resources associated with @var{simple_object}.
 
 @end deftypefn
 
-@c simple-object.txh:102
-@deftypefn Extension {simple_object_write *} simple_object_start_write (simple_object_attributes @var{attrs}, const char *@var{segment_name}, const char **@var{errmsg}, int *@var{err})
+@c simple-object.txh:114
+@deftypefn Extension {simple_object_write *} simple_object_start_write @
+  (simple_object_attributes @var{attrs}, const char *@var{segment_name}, @
+  const char **@var{errmsg}, int *@var{err})
 
 Start creating a new object file using the object file format
 described in @var{attrs}.  You must fetch attribute information from
@@ -1314,8 +1366,11 @@ to an errno value or @code{0} if there is no relevant errno.
 
 @end deftypefn
 
-@c simple-object.txh:137
-@deftypefn Extension {const char *} simple_object_write_add_data (simple_object_write *@var{simple_object}, simple_object_write_section *@var{section}, const void *@var{buffer}, size_t @var{size}, int @var{copy}, int *@var{err})
+@c simple-object.txh:153
+@deftypefn Extension {const char *} simple_object_write_add_data @
+  (simple_object_write *@var{simple_object}, @
+  simple_object_write_section *@var{section}, const void *@var{buffer}, @
+  size_t @var{size}, int @var{copy}, int *@var{err})
 
 Add data @var{buffer}/@var{size} to @var{section} in
 @var{simple_object}.  If @var{copy} is non-zero, the data will be
@@ -1329,8 +1384,10 @@ no relevant erro.
 
 @end deftypefn
 
-@c simple-object.txh:120
-@deftypefn Extension {simple_object_write_section *} simple_object_write_create_section (simple_object_write *@var{simple_object}, const char *@var{name}, unsigned int @var{align}, const char **@var{errmsg}, int *@var{err})
+@c simple-object.txh:134
+@deftypefn Extension {simple_object_write_section *} simple_object_write_create_section @
+  (simple_object_write *@var{simple_object}, const char *@var{name}, @
+  unsigned int @var{align}, const char **@var{errmsg}, int *@var{err})
 
 Add a section to @var{simple_object}.  @var{name} is the name of the
 new section.  @var{align} is the required alignment expressed as the
@@ -1347,8 +1404,9 @@ error message, and sets @code{*@var{err}} to an errno value or
 
 @end deftypefn
 
-@c simple-object.txh:151
-@deftypefn Extension {const char *} simple_object_write_to_file (simple_object_write *@var{simple_object}, int @var{descriptor}, int *@var{err})
+@c simple-object.txh:170
+@deftypefn Extension {const char *} simple_object_write_to_file @
+  (simple_object_write *@var{simple_object}, int @var{descriptor}, int *@var{err})
 
 Write the complete object file to @var{descriptor}, an open file
 descriptor.  This writes out all the data accumulated by calls to
@@ -1362,7 +1420,8 @@ there is no relevant errno.
 @end deftypefn
 
 @c snprintf.c:28
-@deftypefn Supplemental int snprintf (char *@var{buf}, size_t @var{n}, const char *@var{format}, ...)
+@deftypefn Supplemental int snprintf (char *@var{buf}, size_t @var{n}, @
+  const char *@var{format}, ...)
 
 This function is similar to @code{sprintf}, but it will write to
 @var{buf} at most @code{@var{n}-1} bytes of text, followed by a
@@ -1385,6 +1444,27 @@ valid until at least the next call.
 
 @end deftypefn
 
+@c splay-tree.c:303
+@deftypefn Supplemental splay_tree splay_tree_new_with_typed_alloc @
+(splay_tree_compare_fn @var{compare_fn}, @
+splay_tree_delete_key_fn @var{delete_key_fn}, @
+splay_tree_delete_value_fn @var{delete_value_fn}, @
+splay_tree_allocate_fn @var{tree_allocate_fn}, @
+splay_tree_allocate_fn @var{node_allocate_fn}, @
+splay_tree_deallocate_fn @var{deallocate_fn}, @
+void * @var{allocate_data})
+
+This function creates a splay tree that uses two different allocators
+@var{tree_allocate_fn} and @var{node_allocate_fn} to use for allocating the
+tree itself and its nodes respectively.  This is useful when variables of
+different types need to be allocated with different allocators.
+
+The splay tree will use @var{compare_fn} to compare nodes,
+@var{delete_key_fn} to deallocate keys, and @var{delete_value_fn} to
+deallocate values.
+
+@end deftypefn
+
 @c stpcpy.c:23
 @deftypefn Supplemental char* stpcpy (char *@var{dst}, const char *@var{src})
 
@@ -1394,7 +1474,8 @@ Copies the string @var{src} into @var{dst}.  Returns a pointer to
 @end deftypefn
 
 @c stpncpy.c:23
-@deftypefn Supplemental char* stpncpy (char *@var{dst}, const char *@var{src}, size_t @var{len})
+@deftypefn Supplemental char* stpncpy (char *@var{dst}, const char *@var{src}, @
+  size_t @var{len})
 
 Copies the string @var{src} into @var{dst}, copying exactly @var{len}
 and padding with zeros if necessary.  If @var{len} < strlen(@var{src})
@@ -1476,7 +1557,8 @@ A case-insensitive @code{strncmp}.
 @end deftypefn
 
 @c strncmp.c:6
-@deftypefn Supplemental int strncmp (const char *@var{s1}, const char *@var{s2}, size_t @var{n})
+@deftypefn Supplemental int strncmp (const char *@var{s1}, @
+  const char *@var{s2}, size_t @var{n})
 
 Compares the first @var{n} bytes of two strings, returning a value as
 @code{strcmp}.
@@ -1553,7 +1635,8 @@ length, the function returns @var{string}.
 @end deftypefn
 
 @c strtod.c:27
-@deftypefn Supplemental double strtod (const char *@var{string}, char **@var{endptr})
+@deftypefn Supplemental double strtod (const char *@var{string}, @
+  char **@var{endptr})
 
 This ISO C function converts the initial portion of @var{string} to a
 @code{double}.  If @var{endptr} is not @code{NULL}, a pointer to the
@@ -1573,8 +1656,10 @@ to an errno value.  If no translation is found, returns 0.
 @end deftypefn
 
 @c strtol.c:33
-@deftypefn Supplemental {long int} strtol (const char *@var{string}, char **@var{endptr}, int @var{base})
-@deftypefnx Supplemental {unsigned long int} strtoul (const char *@var{string}, char **@var{endptr}, int @var{base})
+@deftypefn Supplemental {long int} strtol (const char *@var{string}, @
+  char **@var{endptr}, int @var{base})
+@deftypefnx Supplemental {unsigned long int} strtoul (const char *@var{string}, @
+  char **@var{endptr}, int @var{base})
 
 The @code{strtol} function converts the string in @var{string} to a
 long integer value according to the given @var{base}, which must be
@@ -1683,7 +1768,8 @@ pointer unchanged.  If the @var{stream} is @code{NULL} do nothing.
 @end deftypefn
 
 @c vasprintf.c:47
-@deftypefn Extension int vasprintf (char **@var{resptr}, const char *@var{format}, va_list @var{args})
+@deftypefn Extension int vasprintf (char **@var{resptr}, @
+  const char *@var{format}, va_list @var{args})
 
 Like @code{vsprintf}, but instead of passing a pointer to a buffer,
 you pass a pointer to a pointer.  This function will compute the size
@@ -1704,8 +1790,10 @@ Emulates @code{vfork} by calling @code{fork} and returning its value.
 
 @c vprintf.c:3
 @deftypefn Supplemental int vprintf (const char *@var{format}, va_list @var{ap})
-@deftypefnx Supplemental int vfprintf (FILE *@var{stream}, const char *@var{format}, va_list @var{ap})
-@deftypefnx Supplemental int vsprintf (char *@var{str}, const char *@var{format}, va_list @var{ap})
+@deftypefnx Supplemental int vfprintf (FILE *@var{stream}, @
+  const char *@var{format}, va_list @var{ap})
+@deftypefnx Supplemental int vsprintf (char *@var{str}, @
+  const char *@var{format}, va_list @var{ap})
 
 These functions are the same as @code{printf}, @code{fprintf}, and
 @code{sprintf}, respectively, except that they are called with a
@@ -1717,7 +1805,8 @@ nonstandard but common function @code{_doprnt}.
 @end deftypefn
 
 @c vsnprintf.c:28
-@deftypefn Supplemental int vsnprintf (char *@var{buf}, size_t @var{n}, const char *@var{format}, va_list @var{ap})
+@deftypefn Supplemental int vsnprintf (char *@var{buf}, size_t @var{n}, @
+  const char *@var{format}, va_list @var{ap})
 
 This function is similar to @code{vsprintf}, but it will write to
 @var{buf} at most @code{@var{n}-1} bytes of text, followed by a
@@ -1806,7 +1895,8 @@ You can use this to set the name of the program used by
 @end deftypefn
 
 @c xmemdup.c:7
-@deftypefn Replacement void* xmemdup (void *@var{input}, size_t @var{copy_size}, size_t @var{alloc_size})
+@deftypefn Replacement void* xmemdup (void *@var{input}, @
+  size_t @var{copy_size}, size_t @var{alloc_size})
 
 Duplicates a region of memory without fail.  First, @var{alloc_size} bytes
 are allocated, then @var{copy_size} bytes from @var{input} are copied into

@@ -41,7 +41,7 @@ package org.omg.DynamicAny;
 /**
  * Provides operations, applicable to {@link DynAny}s that may hold CORBA
  * <code>null</code>.
- * 
+ *
  * @author Audrius Meskauskas, Lithuania (AudriusA@Bioinformatics.org)
  */
 public interface DynValueCommonOperations
@@ -49,7 +49,7 @@ public interface DynValueCommonOperations
 {
   /**
    * Check if this {@link DynAny} is holding the <code>null</code>.
-   * 
+   *
    * @return true if this {@link DynAny} is holding the <code>null</code>,
    * false otherwise.
    */

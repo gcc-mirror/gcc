@@ -404,7 +404,7 @@ public class PropertyChangeSupport implements Serializable
 
   /**
    * Fire an indexed property change event.  This will only fire
-   * an event if the old and new values are not equal and not null. 
+   * an event if the old and new values are not equal and not null.
    * @param name the name of the property which changed
    * @param index the index of the property which changed
    * @param oldValue the old value of the property

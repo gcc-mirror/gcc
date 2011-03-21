@@ -1,4 +1,4 @@
-/* DatagramChannelImpl.java -- 
+/* DatagramChannelImpl.java --
    Copyright (C) 2002, 2003, 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -57,7 +57,7 @@ public final class DatagramChannelImpl extends DatagramChannel
 {
   private NIODatagramSocket socket;
   private VMChannel channel;
-  
+
   /**
    * Indicates whether this channel initiated whatever operation
    * is being invoked on our datagram socket.
@@ -85,7 +85,7 @@ public final class DatagramChannelImpl extends DatagramChannel
   {
     return inChannelOperation;
   }
-  
+
   /**
    * Sets our indicator of whether we are initiating an I/O operation
    * on our socket.
@@ -94,18 +94,18 @@ public final class DatagramChannelImpl extends DatagramChannel
   {
     inChannelOperation = b;
   }
- 
+
   public DatagramSocket socket ()
   {
     return socket;
   }
-    
+
   protected void implCloseSelectableChannel ()
     throws IOException
   {
     channel.close();
   }
-    
+
   protected void implConfigureBlocking (boolean blocking)
     throws IOException
   {
@@ -117,7 +117,7 @@ public final class DatagramChannelImpl extends DatagramChannel
   {
     if (!isOpen())
       throw new ClosedChannelException();
-    
+
     try
       {
         channel.connect((InetSocketAddress) remote, 0);
@@ -128,14 +128,14 @@ public final class DatagramChannelImpl extends DatagramChannel
       }
     return this;
   }
-    
+
   public DatagramChannel disconnect ()
     throws IOException
   {
     channel.disconnect();
     return this;
   }
-    
+
   public boolean isConnected()
   {
     try
@@ -147,13 +147,13 @@ public final class DatagramChannelImpl extends DatagramChannel
         return false;
       }
   }
-    
+
   public int write (ByteBuffer src)
     throws IOException
   {
     if (!isConnected ())
       throw new NotYetConnectedException ();
-    
+
     return channel.write(src);
   }
 
@@ -180,32 +180,32 @@ public final class DatagramChannelImpl extends DatagramChannel
   {
     if (!isConnected ())
       throw new NotYetConnectedException ();
-    
+
     return channel.read(dst);
   }
-    
+
   public long read (ByteBuffer[] dsts, int offset, int length)
     throws IOException
   {
     if (!isConnected())
       throw new NotYetConnectedException();
-    
+
     if ((offset < 0)
         || (offset > dsts.length)
         || (length < 0)
         || (length > (dsts.length - offset)))
       throw new IndexOutOfBoundsException();
-      
+
     /* Likewise, see the comment int write above. */
     return channel.readScattering(dsts, offset, length);
   }
-    
+
   public SocketAddress receive (ByteBuffer dst)
     throws IOException
   {
     if (!isOpen())
       throw new ClosedChannelException();
-    
+
     try
       {
         begin();
@@ -216,23 +216,23 @@ public final class DatagramChannelImpl extends DatagramChannel
         end(true);
       }
   }
-    
+
   public int send (ByteBuffer src, SocketAddress target)
     throws IOException
   {
     if (!isOpen())
       throw new ClosedChannelException();
-    
+
     if (!(target instanceof InetSocketAddress))
       throw new IOException("can only send to inet socket addresses");
-    
+
     InetSocketAddress dst = (InetSocketAddress) target;
     if (dst.isUnresolved())
       throw new IOException("Target address not resolved");
 
     return channel.send(src, dst);
   }
-  
+
   public VMChannel getVMChannel()
   {
     return channel;

@@ -8,7 +8,7 @@ void foo(int n)
   int *p;
   for (p = a; n != 0; --n, ++p)
     ;
-  if ((__SIZE_TYPE__)p & (sizeof (int) - 1))
+  if ((__SIZE_TYPE__)p & (__alignof__ (int) - 1))
     link_error ();
 }
 int main()

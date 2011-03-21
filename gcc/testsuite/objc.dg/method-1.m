@@ -2,12 +2,12 @@
 /* { dg-do compile } */
 
 @interface class1
-- (int) meth1;
+- (int) meth1;   /* { dg-message "previous declaration" } */
 - (void) meth1;  /* { dg-error "duplicate declaration of method .\\-meth1." } */
 @end
 
 @interface class2
-+ (void) meth1;
++ (void) meth1; /* { dg-message "previous declaration" } */
 + (int) meth1;  /* { dg-error "duplicate declaration of method .\\+meth1." } */
 @end
 

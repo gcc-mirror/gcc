@@ -84,7 +84,7 @@ public final class SSLEngineImpl extends SSLEngine
 
   private String[] enabledSuites;
   private String[] enabledProtocols;
-  
+
   /**
    * We can receive any message chunked across multiple records,
    * including alerts, even though all alert messages are only two
@@ -100,7 +100,7 @@ public final class SSLEngineImpl extends SSLEngine
   private Mode mode;
 
   private enum Mode { SERVER, CLIENT }
-  
+
   SSLEngineImpl (SSLContextImpl contextImpl, String host, int port)
   {
     super(host, port);
@@ -113,11 +113,11 @@ public final class SSLEngineImpl extends SSLEngine
     contextImpl.random.nextBytes(sid);
     session.setId(new Session.ID(sid));
     session.setRandom(contextImpl.random);
-    
+
     if (Debug.DEBUG)
       logger.logv(Component.SSL_RECORD_LAYER, "generated session ID {0} with random {1}",
                   session.id(), contextImpl.random);
-    
+
     // Begin with no encryption.
     insec = new InputSecurityParameters (null, null, null, session,
                                          CipherSuite.TLS_NULL_WITH_NULL_NULL);
@@ -134,7 +134,7 @@ public final class SSLEngineImpl extends SSLEngine
     lastAlert = null;
     handshakeStatus = SSLEngineResult.HandshakeStatus.NOT_HANDSHAKING;
     changeCipherSpec = false;
-    
+
     // Set up default protocols and suites.
     enabledProtocols = new String[] {
       ProtocolVersion.TLS_1_1.toString(),
@@ -143,7 +143,7 @@ public final class SSLEngineImpl extends SSLEngine
     };
     enabledSuites = defaultSuites();
   }
-  
+
   static String[] defaultSuites()
   {
     return new String[] {
@@ -204,7 +204,7 @@ public final class SSLEngineImpl extends SSLEngine
 
     if (mode == null)
       throw new IllegalStateException("setUseClientMode was never used");
-    
+
     switch (mode)
       {
       case SERVER:
@@ -219,7 +219,7 @@ public final class SSLEngineImpl extends SSLEngine
             throw new SSLException(nsae);
           }
         break;
-        
+
       case CLIENT:
         try
           {
@@ -244,7 +244,7 @@ public final class SSLEngineImpl extends SSLEngine
   {
     lastAlert = new Alert(Alert.Level.WARNING, Alert.Description.CLOSE_NOTIFY);
   }
-  
+
   @Override
   public Runnable getDelegatedTask()
   {
@@ -252,13 +252,13 @@ public final class SSLEngineImpl extends SSLEngine
       return null;
     return handshake.getTask();
   }
-  
+
   @Override
   public String[] getEnabledCipherSuites()
   {
     return (String[]) enabledSuites.clone();
   }
-  
+
   @Override
   public String[] getEnabledProtocols()
   {
@@ -270,7 +270,7 @@ public final class SSLEngineImpl extends SSLEngine
   {
     return createSessions;
   }
-  
+
   @Override
   public HandshakeStatus getHandshakeStatus()
   {
@@ -278,43 +278,43 @@ public final class SSLEngineImpl extends SSLEngine
       return HandshakeStatus.NOT_HANDSHAKING;
     return handshake.status();
   }
-  
+
   @Override
   public boolean getNeedClientAuth()
   {
     return needClientAuth;
   }
-  
+
   @Override
   public SSLSession getSession()
   {
     return session;
   }
-  
+
   @Override
   public boolean getUseClientMode ()
   {
     return (mode == Mode.CLIENT);
   }
-  
+
   @Override
   public boolean getWantClientAuth()
   {
     return wantClientAuth;
   }
-  
+
   @Override
   public boolean isInboundDone()
   {
     return inClosed;
   }
-  
+
   @Override
   public boolean isOutboundDone()
   {
     return outClosed;
   }
-  
+
   @Override
   public void setEnableSessionCreation(final boolean createSessions)
   {
@@ -336,16 +336,16 @@ public final class SSLEngineImpl extends SSLEngine
       throw new IllegalArgumentException("need at least one protocol");
     enabledProtocols = (String[]) protocols.clone();
   }
-  
+
   @Override
   public String[] getSupportedCipherSuites()
   {
     // XXX if we ever want to support "pluggable" cipher suites, we'll need
     // to figure this out.
-    
+
     return CipherSuite.availableSuiteNames().toArray(new String[0]);
   }
-  
+
   @Override
   public String[] getSupportedProtocols()
   {
@@ -359,7 +359,7 @@ public final class SSLEngineImpl extends SSLEngine
   {
     this.needClientAuth = needClientAuth;
   }
-  
+
   @Override
   public void setUseClientMode (final boolean clientMode)
   {
@@ -368,7 +368,7 @@ public final class SSLEngineImpl extends SSLEngine
     else
       mode = Mode.SERVER;
   }
-  
+
   public @Override void setWantClientAuth(final boolean wantClientAuth)
   {
     this.wantClientAuth = wantClientAuth;
@@ -385,13 +385,13 @@ public final class SSLEngineImpl extends SSLEngine
     if (inClosed)
       return new SSLEngineResult(SSLEngineResult.Status.CLOSED,
                                  handshakeStatus, 0, 0);
-    
+
     if (source.remaining() < 5)
       {
         return new SSLEngineResult(SSLEngineResult.Status.BUFFER_UNDERFLOW,
                                    handshakeStatus, 0, 0);
       }
-    
+
     Record record = null;
     boolean helloV2 = false;
 
@@ -410,15 +410,15 @@ public final class SSLEngineImpl extends SSLEngine
         if (Debug.DEBUG)
           logger.log (Component.SSL_RECORD_LAYER,
                       "converting SSLv2 client hello to version 3 hello");
-        
+
         source.getShort(); // skip length
         ClientHelloV2 v2 = new ClientHelloV2(source.slice());
-        
+
         if (Debug.DEBUG)
           logger.log(Component.SSL_RECORD_LAYER, "v2 hello: {0}", v2);
-        
+
         List<CipherSuite> suites = v2.cipherSpecs();
-        
+
         ClientHelloBuilder hello = new ClientHelloBuilder();
         hello.setVersion(v2.version ());
 
@@ -448,31 +448,31 @@ public final class SSLEngineImpl extends SSLEngine
         record.setContentType(ContentType.HANDSHAKE);
         record.setVersion(v2.version());
         record.setLength(hello.length() + 4);
-        
+
         Handshake handshake = new Handshake(record.fragment());
         handshake.setLength(hello.length());
         handshake.setType(Handshake.Type.CLIENT_HELLO);
-        
+
         handshake.bodyBuffer().put(hello.buffer());
         source.position(source.position() + hellolen);
         helloV2 = true;
       }
     else
       record = new Record(source);
-    
+
     ContentType type = record.contentType ();
-    
+
     if (Debug.DEBUG)
       logger.log(Component.SSL_RECORD_LAYER, "input record:\n{0}", record);
-    
+
     if (record.length() > session.getPacketBufferSize() - 5)
       {
         lastAlert = new Alert(Alert.Level.FATAL,
                               Alert.Description.RECORD_OVERFLOW);
         throw new AlertException(lastAlert);
       }
-    
-    ByteBufferOutputStream sysMsg = null;    
+
+    ByteBufferOutputStream sysMsg = null;
     ByteBuffer msg = null;
 
     int produced = 0;
@@ -492,7 +492,7 @@ public final class SSLEngineImpl extends SSLEngine
                 insec.decrypt(record, sysMsg);
               }
           }
-        
+
         // Advance the input buffer past the record we just read.
         if (!helloV2)
           source.position(source.position() + record.length() + 5);
@@ -532,7 +532,7 @@ public final class SSLEngineImpl extends SSLEngine
       }
 
     SSLEngineResult result = null;
-    
+
     // If we need to handle the output here, do it. Otherwise, the output
     // has been stored in the supplied output buffers.
     if (sysMsg != null)
@@ -541,7 +541,7 @@ public final class SSLEngineImpl extends SSLEngine
           logger.logv(Component.SSL_RECORD_LAYER, "sysmessage {0}", sysMsg);
         msg = sysMsg.buffer();
       }
-    
+
     if (type == ContentType.CHANGE_CIPHER_SPEC)
       {
         // We *may* get a partial message, even though the message is only
@@ -665,7 +665,7 @@ public final class SSLEngineImpl extends SSLEngine
 
     if (Debug.DEBUG)
       logger.logv(Component.SSL_RECORD_LAYER, "return result: {0}", result);
-    
+
     return result;
   }
 
@@ -679,7 +679,7 @@ public final class SSLEngineImpl extends SSLEngine
     if (outClosed)
       return new SSLEngineResult(SSLEngineResult.Status.CLOSED,
                                  handshakeStatus, 0, 0);
-    
+
     ContentType type = null;
     ByteBuffer sysMessage = null;
     if (Debug.DEBUG)
@@ -720,7 +720,7 @@ public final class SSLEngineImpl extends SSLEngine
                           new Record((ByteBuffer) sink.duplicate().position(orig)));
             SSLEngineResult result = new SSLEngineResult(SSLEngineResult.Status.OK,
                                                          handshakeStatus, 0, produced);
-            
+
             // Note, this will only happen if we transition from
             // TLS_NULL_WITH_NULL_NULL *to* TLS_NULL_WITH_NULL_NULL, which
             // doesn't make a lot of sense, but we support it anyway.
@@ -731,7 +731,7 @@ public final class SSLEngineImpl extends SSLEngine
               }
             return result;
           }
-       
+
         // Rough guideline; XXX.
         sysMessage = ByteBuffer.allocate(sink.remaining() - 2048);
         type = ContentType.HANDSHAKE;
@@ -753,7 +753,7 @@ public final class SSLEngineImpl extends SSLEngine
 
     int produced = 0;
     int consumed = 0;
-    
+
     try
       {
         int orig = sink.position();
@@ -773,7 +773,7 @@ public final class SSLEngineImpl extends SSLEngine
             consumed = inout[0];
             produced = inout[1];
           }
-        
+
         if (Debug.DEBUG)
           logger.logv(Component.SSL_RECORD_LAYER, "emitting record:\n{0}",
                       new Record((ByteBuffer) sink.duplicate().position(orig).limit(produced)));
@@ -798,14 +798,14 @@ public final class SSLEngineImpl extends SSLEngine
         lastAlert = new Alert(Alert.Level.FATAL, Alert.Description.INTERNAL_ERROR);
         return new SSLEngineResult(SSLEngineResult.Status.OK, handshakeStatus, 0, 0);
       }
-    
+
     if (lastAlert != null && lastAlert.level() == Alert.Level.FATAL)
       {
         AlertException ae = new AlertException(lastAlert);
         lastAlert = null;
         throw ae;
       }
-    
+
     if (changeCipherSpec)
       {
         outsec = handshake.getOutputParams();
@@ -829,12 +829,12 @@ public final class SSLEngineImpl extends SSLEngine
   {
     return session;
   }
-  
+
   void setSession(SessionImpl session)
   {
     this.session = session;
   }
-  
+
   void changeCipherSpec()
   {
     changeCipherSpec = true;

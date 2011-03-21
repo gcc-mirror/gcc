@@ -117,7 +117,7 @@ public class NotificationBroadcasterSupport
    * thread; only calls which have successfully passed through the
    * filter are sent to the executor.  This is equivalent to calling
    * <code>NotificationBroadcasterSupport(executor, null)</code>.
-   * 
+   *
    * @param executor the executor to use for each call to
    *                 <code>handleNotification()</code>.
    * @since 1.6
@@ -138,7 +138,7 @@ public class NotificationBroadcasterSupport
    * calling <code>NotificationBroadcasterSupport(null, info)</code>.
    *
    * @param info an array of {@link MBeanNotificationInfo} objects
-   *             describing the notifications delivered by this 
+   *             describing the notifications delivered by this
    *             broadcaster.  This may be <code>null</code>, which
    *             is taken as being equivalent to an empty array.
    */
@@ -159,17 +159,17 @@ public class NotificationBroadcasterSupport
    * information about the notifications on calls to
    * {@link #getNotificationInfo()}, where a clone will be
    * returned if the array is non-empty.
-   * 
+   *
    * @param executor the executor to use for each call to
    *                 <code>handleNotification()</code>.
    * @param info an array of {@link MBeanNotificationInfo} objects
-   *             describing the notifications delivered by this 
+   *             describing the notifications delivered by this
    *             broadcaster.  This may be <code>null</code>, which
    *             is taken as being equivalent to an empty array.
    * @since 1.6
    */
   public NotificationBroadcasterSupport(Executor executor,
-					MBeanNotificationInfo... info)
+                                        MBeanNotificationInfo... info)
   {
     this.executor = executor;
     this.info = info;
@@ -196,8 +196,8 @@ public class NotificationBroadcasterSupport
    * @see #removeNotificationListener(NotificationListener)
    */
   public void addNotificationListener(NotificationListener listener,
-				      NotificationFilter filter,
-				      Object passback)
+                                      NotificationFilter filter,
+                                      Object passback)
     throws IllegalArgumentException
   {
     if (listener == null)
@@ -234,8 +234,8 @@ public class NotificationBroadcasterSupport
    * @param passback the passback object of the listener.
    */
   protected void handleNotification(NotificationListener listener,
-				    Notification notif,
-				    Object passback)
+                                    Notification notif,
+                                    Object passback)
   {
     listener.handleNotification(notif, passback);
   }
@@ -260,15 +260,15 @@ public class NotificationBroadcasterSupport
     boolean foundOne = false;
     while (it.hasNext())
       {
-	if (it.next().getListener() == listener)
-	  {
-	    it.remove();
-	    foundOne = true;
-	  }
+        if (it.next().getListener() == listener)
+          {
+            it.remove();
+            foundOne = true;
+          }
       }
     if (!foundOne)
       throw new ListenerNotFoundException("The specified listener, " + listener +
-					  "is not registered with this bean.");
+                                          "is not registered with this bean.");
   }
 
   /**
@@ -289,16 +289,16 @@ public class NotificationBroadcasterSupport
    *                               java.lang.Object)
    */
   public void removeNotificationListener(NotificationListener listener,
-					 NotificationFilter filter,
-					 Object passback)
+                                         NotificationFilter filter,
+                                         Object passback)
     throws ListenerNotFoundException
   {
     if (!(listeners.remove(new ListenerData(listener, filter, passback))))
       {
-	throw new ListenerNotFoundException("The specified listener, " + listener +
-					    " with filter " + filter + 
-					    "and passback " + passback + 
-					    ", is not registered with this bean.");
+        throw new ListenerNotFoundException("The specified listener, " + listener +
+                                            " with filter " + filter +
+                                            "and passback " + passback +
+                                            ", is not registered with this bean.");
       }
   }
 
@@ -326,19 +326,19 @@ public class NotificationBroadcasterSupport
   {
     for (ListenerData ldata : listeners)
       {
-	NotificationFilter filter = ldata.getFilter();
-	if (filter == null || filter.isNotificationEnabled(notif))
-	  {
-	    if (executor == null)
-	      try
-		{
-		  handleNotification(ldata.getListener(), notif,
-				     ldata.getPassback());
-		}
-	      catch (Exception e) { /* Ignore */ }
-	    else
-	      executor.execute(new DispatchTask(ldata, notif));
-	  }
+        NotificationFilter filter = ldata.getFilter();
+        if (filter == null || filter.isNotificationEnabled(notif))
+          {
+            if (executor == null)
+              try
+                {
+                  handleNotification(ldata.getListener(), notif,
+                                     ldata.getPassback());
+                }
+              catch (Exception e) { /* Ignore */ }
+            else
+              executor.execute(new DispatchTask(ldata, notif));
+          }
       }
   }
 
@@ -366,7 +366,7 @@ public class NotificationBroadcasterSupport
      * @param notif the notification to send.
      */
     public DispatchTask(ListenerData ldata,
-			Notification notif)
+                        Notification notif)
     {
       this.ldata = ldata;
       this.notif = notif;
@@ -378,13 +378,12 @@ public class NotificationBroadcasterSupport
     public void run()
     {
       try
-	{
-	  handleNotification(ldata.getListener(), notif,
-			     ldata.getPassback());
-	}
+        {
+          handleNotification(ldata.getListener(), notif,
+                             ldata.getPassback());
+        }
       catch (Exception e) { /* Ignore */ }
     }
   }
 
 }
-

@@ -88,16 +88,16 @@ public class JPEGImageReaderSpi extends ImageReaderSpi
           extraImageMetadataFormatClassNames);
     System.out.println ("JPEGImageReaderSPI!!!");
   }
-    
+
   public String getDescription(Locale locale)
   {
     return "JPEG ISO 10918-1, JFIF V1.02";
   }
-    
+
   public boolean canDecodeInput(Object input)
     throws IOException
   {
-    if (!(input instanceof ImageInputStream)) 
+    if (!(input instanceof ImageInputStream))
       return false;
 
     ImageInputStream in = (ImageInputStream) input;
@@ -117,7 +117,7 @@ public class JPEGImageReaderSpi extends ImageReaderSpi
 
     return retval;
   }
-    
+
   public ImageReader createReaderInstance(Object extension)
   {
     return new JPEGImageReader(this);

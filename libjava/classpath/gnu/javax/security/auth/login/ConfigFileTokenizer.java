@@ -52,7 +52,7 @@ import java.util.logging.Logger;
  * the deault syntax. This class emulates, to a certain extent, the behavior of
  * a {@link java.io.StreamTokenizer} instance <code>st</code>, when set as
  * follows:
- * 
+ *
  *  <pre>
  *  st.resetSyntax();
  *  st.lowerCaseMode(false);
@@ -77,7 +77,7 @@ import java.util.logging.Logger;
  * <p>The most important (negative) difference with a
  * {@link java.io.StreamTokenizer} is that this tokenizer does not properly
  * handle C++ and Java // style comments in the middle of the line. It only
- * ignores them if/when found at the start of the line.</p>  
+ * ignores them if/when found at the start of the line.</p>
  */
 public class ConfigFileTokenizer
 {

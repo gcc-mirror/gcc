@@ -1,4 +1,4 @@
-// Copyright (C) 2008, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2008, 2009, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -24,7 +24,7 @@ int main()
 {
   using namespace std;
   using namespace tr1;
-  using namespace placeholders;
+  using namespace std::tr1::placeholders;
 
   int t[10];
   sort(t, t+10, bind(less<int>(), _1, _2));

@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for HP PA-RISC
-   Copyright (C) 1998, 1999, 2000, 2002, 2003, 2004, 2005, 2007, 2008
+   Copyright (C) 1998, 1999, 2000, 2002, 2003, 2004, 2005, 2007, 2008, 2010
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -114,16 +114,17 @@ along with GCC; see the file COPYING3.  If not see
    -z %{mlinker-opt:-O} %{!shared:-u main -u __gcc_plt_call}\
    %{static:-a archive} %{shared:-b}"
 
-/* HP-UX 11 has posix threads.  HP libc contains pthread stubs so that
-   non-threaded applications can be linked with a thread-safe libc
-   without a subsequent loss of performance.  For more details, see
-   <http://docs.hp.com/en/1896/pthreads.html>.  */
+/* HP-UX 11 has posix threads.  HP's shared libc contains pthread stubs
+   so that non-threaded applications can be linked with a thread-safe
+   libc without a subsequent loss of performance.  For more details,
+   see <http://docs.hp.com/en/1896/pthreads.html>.  */
 #undef LIB_SPEC
 #define LIB_SPEC \
   "%{!shared:\
      %{fopenmp:%{static:-a archive_shared} -lrt %{static:-a archive}}\
      %{mt|pthread:-lpthread} -lc\
-     %{static:%{!nolibdld:-a archive_shared -ldld -a archive -lc}}}\
+     %{static:%{!nolibdld:-a archive_shared -ldld -a archive -lc}\
+       %{!mt:%{!pthread:-a shared -lc -a archive}}}}\
    %{shared:%{mt|pthread:-lpthread}}"
 
 /* The libgcc_stub.a library needs to come last.  */

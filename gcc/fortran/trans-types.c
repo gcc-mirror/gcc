@@ -1,6 +1,6 @@
 /* Backend support for Fortran 95 basic types and derived types.
    Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009,
-   2010
+   2010, 2011
    Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
    and Steven Bosscher <s.bosscher@student.tudelft.nl>
@@ -1746,6 +1746,171 @@ gfc_build_pointer_type (gfc_symbol * sym, tree type)
   else
     return build_pointer_type (type);
 }
+
+static tree gfc_nonrestricted_type (tree t);
+/* Given two record or union type nodes TO and FROM, ensure
+   that all fields in FROM have a corresponding field in TO,
+   their type being nonrestrict variants.  This accepts a TO
+   node that already has a prefix of the fields in FROM.  */
+static void
+mirror_fields (tree to, tree from)
+{
+  tree fto, ffrom;
+  tree *chain;
+
+  /* Forward to the end of TOs fields.  */
+  fto = TYPE_FIELDS (to);
+  ffrom = TYPE_FIELDS (from);
+  chain = &TYPE_FIELDS (to);
+  while (fto)
+    {
+      gcc_assert (ffrom && DECL_NAME (fto) == DECL_NAME (ffrom));
+      chain = &DECL_CHAIN (fto);
+      fto = DECL_CHAIN (fto);
+      ffrom = DECL_CHAIN (ffrom);
+    }
+
+  /* Now add all fields remaining in FROM (starting with ffrom).  */
+  for (; ffrom; ffrom = DECL_CHAIN (ffrom))
+    {
+      tree newfield = copy_node (ffrom);
+      DECL_CONTEXT (newfield) = to;
+      /* The store to DECL_CHAIN might seem redundant with the
+	 stores to *chain, but not clearing it here would mean
+	 leaving a chain into the old fields.  If ever
+	 our called functions would look at them confusion
+	 will arise.  */
+      DECL_CHAIN (newfield) = NULL_TREE;
+      *chain = newfield;
+      chain = &DECL_CHAIN (newfield);
+
+      if (TREE_CODE (ffrom) == FIELD_DECL)
+	{
+	  tree elemtype = gfc_nonrestricted_type (TREE_TYPE (ffrom));
+	  TREE_TYPE (newfield) = elemtype;
+	}
+    }
+  *chain = NULL_TREE;
+}
+
+/* Given a type T, returns a different type of the same structure,
+   except that all types it refers to (recursively) are always
+   non-restrict qualified types.  */
+static tree
+gfc_nonrestricted_type (tree t)
+{
+  tree ret = t;
+
+  /* If the type isn't layed out yet, don't copy it.  If something
+     needs it for real it should wait until the type got finished.  */
+  if (!TYPE_SIZE (t))
+    return t;
+
+  if (!TYPE_LANG_SPECIFIC (t))
+    TYPE_LANG_SPECIFIC (t)
+      = ggc_alloc_cleared_lang_type (sizeof (struct lang_type));
+  /* If we're dealing with this very node already further up
+     the call chain (recursion via pointers and struct members)
+     we haven't yet determined if we really need a new type node.
+     Assume we don't, return T itself.  */
+  if (TYPE_LANG_SPECIFIC (t)->nonrestricted_type == error_mark_node)
+    return t;
+
+  /* If we have calculated this all already, just return it.  */
+  if (TYPE_LANG_SPECIFIC (t)->nonrestricted_type)
+    return TYPE_LANG_SPECIFIC (t)->nonrestricted_type;
+
+  /* Mark this type.  */
+  TYPE_LANG_SPECIFIC (t)->nonrestricted_type = error_mark_node;
+
+  switch (TREE_CODE (t))
+    {
+      default:
+	break;
+
+      case POINTER_TYPE:
+      case REFERENCE_TYPE:
+	{
+	  tree totype = gfc_nonrestricted_type (TREE_TYPE (t));
+	  if (totype == TREE_TYPE (t))
+	    ret = t;
+	  else if (TREE_CODE (t) == POINTER_TYPE)
+	    ret = build_pointer_type (totype);
+	  else
+	    ret = build_reference_type (totype);
+	  ret = build_qualified_type (ret,
+				      TYPE_QUALS (t) & ~TYPE_QUAL_RESTRICT);
+	}
+	break;
+
+      case ARRAY_TYPE:
+	{
+	  tree elemtype = gfc_nonrestricted_type (TREE_TYPE (t));
+	  if (elemtype == TREE_TYPE (t))
+	    ret = t;
+	  else
+	    {
+	      ret = build_variant_type_copy (t);
+	      TREE_TYPE (ret) = elemtype;
+	      if (TYPE_LANG_SPECIFIC (t)
+		  && GFC_TYPE_ARRAY_DATAPTR_TYPE (t))
+		{
+		  tree dataptr_type = GFC_TYPE_ARRAY_DATAPTR_TYPE (t);
+		  dataptr_type = gfc_nonrestricted_type (dataptr_type);
+		  if (dataptr_type != GFC_TYPE_ARRAY_DATAPTR_TYPE (t))
+		    {
+		      TYPE_LANG_SPECIFIC (ret)
+			= ggc_alloc_cleared_lang_type (sizeof (struct
+							       lang_type));
+		      *TYPE_LANG_SPECIFIC (ret) = *TYPE_LANG_SPECIFIC (t);
+		      GFC_TYPE_ARRAY_DATAPTR_TYPE (ret) = dataptr_type;
+		    }
+		}
+	    }
+	}
+	break;
+
+      case RECORD_TYPE:
+      case UNION_TYPE:
+      case QUAL_UNION_TYPE:
+	{
+	  tree field;
+	  /* First determine if we need a new type at all.
+	     Careful, the two calls to gfc_nonrestricted_type per field
+	     might return different values.  That happens exactly when
+	     one of the fields reaches back to this very record type
+	     (via pointers).  The first calls will assume that we don't
+	     need to copy T (see the error_mark_node marking).  If there
+	     are any reasons for copying T apart from having to copy T,
+	     we'll indeed copy it, and the second calls to
+	     gfc_nonrestricted_type will use that new node if they
+	     reach back to T.  */
+	  for (field = TYPE_FIELDS (t); field; field = DECL_CHAIN (field))
+	    if (TREE_CODE (field) == FIELD_DECL)
+	      {
+		tree elemtype = gfc_nonrestricted_type (TREE_TYPE (field));
+		if (elemtype != TREE_TYPE (field))
+		  break;
+	      }
+	  if (!field)
+	    break;
+	  ret = build_variant_type_copy (t);
+	  TYPE_FIELDS (ret) = NULL_TREE;
+
+	  /* Here we make sure that as soon as we know we have to copy
+	     T, that also fields reaching back to us will use the new
+	     copy.  It's okay if that copy still contains the old fields,
+	     we won't look at them.  */
+	  TYPE_LANG_SPECIFIC (t)->nonrestricted_type = ret;
+	  mirror_fields (ret, t);
+	}
+        break;
+    }
+
+  TYPE_LANG_SPECIFIC (t)->nonrestricted_type = ret;
+  return ret;
+}
+
 
 /* Return the type for a symbol.  Special handling is required for character
    types to get the correct level of indirection.
@@ -1796,6 +1961,9 @@ gfc_sym_type (gfc_symbol * sym)
 
   restricted = !sym->attr.target && !sym->attr.pointer
                && !sym->attr.proc_pointer && !sym->attr.cray_pointee;
+  if (!restricted)
+    type = gfc_nonrestricted_type (type);
+
   if (sym->attr.dimension)
     {
       if (gfc_is_nodesc_array (sym))
@@ -1919,7 +2087,7 @@ gfc_add_field_to_struct (tree context, tree name, tree type, tree **chain)
 
 int
 gfc_copy_dt_decls_ifequal (gfc_symbol *from, gfc_symbol *to,
-		       bool from_gsym)
+			   bool from_gsym)
 {
   gfc_component *to_cm;
   gfc_component *from_cm;
@@ -1992,7 +2160,6 @@ gfc_get_derived_type (gfc_symbol * derived)
   gfc_component *c;
   gfc_dt_list *dt;
   gfc_namespace *ns;
-  gfc_gsymbol *gsym;
 
   gcc_assert (derived && derived->attr.flavor == FL_DERIVED);
 
@@ -2017,27 +2184,13 @@ gfc_get_derived_type (gfc_symbol * derived)
       return derived->backend_decl;
     }
 
-/* If use associated, use the module type for this one.  */
+  /* If use associated, use the module type for this one.  */
   if (gfc_option.flag_whole_file
 	&& derived->backend_decl == NULL
 	&& derived->attr.use_assoc
-	&& derived->module)
-    {
-      gsym =  gfc_find_gsymbol (gfc_gsym_root, derived->module);
-      if (gsym && gsym->ns && gsym->type == GSYM_MODULE)
-	{
-	  gfc_symbol *s;
-	  s = NULL;
-	  gfc_find_symbol (derived->name, gsym->ns, 0, &s);
-	  if (s)
-	    {
-	      if (!s->backend_decl)
-		s->backend_decl = gfc_get_derived_type (s);
-	      gfc_copy_dt_decls_ifequal (s, derived, true);
-	      goto copy_derived_types;
-	    }
-	}
-    }
+	&& derived->module
+	&& gfc_get_module_backend_decl (derived))
+    goto copy_derived_types;
 
   /* If a whole file compilation, the derived types from an earlier
      namespace can be used as the the canonical type.  */
@@ -2352,7 +2505,6 @@ gfc_get_function_type (gfc_symbol * sym)
   tree typelist;
   gfc_formal_arglist *f;
   gfc_symbol *arg;
-  int nstr;
   int alternate_return;
 
   /* Make sure this symbol is a function, a subroutine or the main
@@ -2363,7 +2515,6 @@ gfc_get_function_type (gfc_symbol * sym)
   if (sym->backend_decl)
     return TREE_TYPE (sym->backend_decl);
 
-  nstr = 0;
   alternate_return = 0;
   typelist = NULL_TREE;
 
@@ -2392,7 +2543,16 @@ gfc_get_function_type (gfc_symbol * sym)
 
       typelist = gfc_chainon_list (typelist, type);
       if (arg->ts.type == BT_CHARACTER)
-	typelist = gfc_chainon_list (typelist, gfc_charlen_type_node);
+	{
+	  if (!arg->ts.deferred)
+	    /* Transfer by value.  */
+	    typelist = gfc_chainon_list (typelist, gfc_charlen_type_node);
+	  else
+	    /* Deferred character lengths are transferred by reference
+	       so that the value can be returned.  */
+	    typelist = gfc_chainon_list (typelist,
+				build_pointer_type (gfc_charlen_type_node));
+	}
     }
 
   /* Build the argument types for the function.  */
@@ -2428,8 +2588,7 @@ gfc_get_function_type (gfc_symbol * sym)
 	     Contained procedures could pass by value as these are never
 	     used without an explicit interface, and cannot be passed as
 	     actual parameters for a dummy procedure.  */
-	  if (arg->ts.type == BT_CHARACTER && !sym->attr.is_bind_c)
-            nstr++;
+
 	  typelist = gfc_chainon_list (typelist, type);
 	}
       else
@@ -2440,8 +2599,22 @@ gfc_get_function_type (gfc_symbol * sym)
     }
 
   /* Add hidden string length parameters.  */
-  while (nstr--)
-    typelist = gfc_chainon_list (typelist, gfc_charlen_type_node);
+  for (f = sym->formal; f; f = f->next)
+    {
+      arg = f->sym;
+      if (arg && arg->ts.type == BT_CHARACTER && !sym->attr.is_bind_c)
+	{
+	  if (!arg->ts.deferred)
+	    /* Transfer by value.  */
+	    type = gfc_charlen_type_node;
+	  else
+	    /* Deferred character lengths are transferred by reference
+	       so that the value can be returned.  */
+	    type = build_pointer_type (gfc_charlen_type_node);
+
+	  typelist = gfc_chainon_list (typelist, type);
+	}
+    }
 
   if (typelist)
     typelist = chainon (typelist, void_list_node);

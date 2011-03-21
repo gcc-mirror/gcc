@@ -54,7 +54,7 @@ import java.util.NoSuchElementException;
 
 /**
  * The ServerName extension.
- * 
+ *
  * <pre>
  struct {
    NameType name_type;
@@ -82,12 +82,12 @@ struct {
 public class ServerNameList extends Value implements Iterable<ServerNameList.ServerName>
 {
   private ByteBuffer buffer;
-  
+
   public ServerNameList (final ByteBuffer buffer)
   {
     this.buffer = buffer.duplicate().order(ByteOrder.BIG_ENDIAN);
   }
-  
+
   public ServerNameList(List<ServerName> names)
   {
     int length = 2;
@@ -104,12 +104,12 @@ public class ServerNameList extends Value implements Iterable<ServerNameList.Ser
   {
     return (buffer.getShort(0) & 0xFFFF) + 2;
   }
-  
+
   public ByteBuffer buffer()
   {
     return (ByteBuffer) buffer.duplicate().limit(length());
   }
-  
+
   public int size()
   {
     int n = 0;
@@ -122,7 +122,7 @@ public class ServerNameList extends Value implements Iterable<ServerNameList.Ser
       }
     return n;
   }
-  
+
   public ServerName get (int index)
   {
     final int len = length();
@@ -142,14 +142,14 @@ public class ServerNameList extends Value implements Iterable<ServerNameList.Ser
     ByteBuffer buf = ((ByteBuffer) buffer.duplicate().position(i).limit(i+l+3)).slice();
     return new ServerName (buf);
   }
-  
+
   public void setLength(final int newLength)
   {
     if (newLength < 0 || newLength > 65535)
       throw new IllegalArgumentException("length must be between 0 and 65535");
     buffer.putShort(0, (short) newLength);
   }
-  
+
   public String toString()
   {
     return toString(null);
@@ -172,7 +172,7 @@ public class ServerNameList extends Value implements Iterable<ServerNameList.Ser
     out.print ("};");
     return str.toString();
   }
-  
+
   public java.util.Iterator<ServerName> iterator()
   {
     return new Iterator();
@@ -181,17 +181,17 @@ public class ServerNameList extends Value implements Iterable<ServerNameList.Ser
   public class Iterator implements java.util.Iterator<ServerName>
   {
     private int index;
-    
+
     public Iterator()
     {
       index = 0;
     }
-    
+
     public boolean hasNext()
     {
       return index < size();
     }
-    
+
     public ServerName next() throws NoSuchElementException
     {
       try
@@ -203,7 +203,7 @@ public class ServerNameList extends Value implements Iterable<ServerNameList.Ser
           throw new NoSuchElementException();
         }
     }
-    
+
     public void remove()
     {
       throw new UnsupportedOperationException();
@@ -213,12 +213,12 @@ public class ServerNameList extends Value implements Iterable<ServerNameList.Ser
   public static class ServerName implements Constructed
   {
     private ByteBuffer buffer;
-    
+
     public ServerName(final ByteBuffer buffer)
     {
       this.buffer = buffer.duplicate().order(ByteOrder.BIG_ENDIAN);
     }
-    
+
     public ServerName(NameType type, String name)
     {
       CharsetEncoder utf8 = Charset.forName("UTF-8").newEncoder();
@@ -239,12 +239,12 @@ public class ServerNameList extends Value implements Iterable<ServerNameList.Ser
       buffer.put(nameBuf);
       buffer.rewind();
     }
-    
+
     public int length()
     {
       return (buffer.getShort(1) & 0xFFFF) + 3;
     }
-    
+
     public ByteBuffer buffer()
     {
       return (ByteBuffer) buffer.duplicate().limit(length());
@@ -259,19 +259,19 @@ public class ServerNameList extends Value implements Iterable<ServerNameList.Ser
         }
       throw new IllegalArgumentException ("illegal name type: " + v);
     }
-    
+
     public String name()
     {
       int len = length();
       Charset cs = Charset.forName ("UTF-8");
       return cs.decode(((ByteBuffer) buffer.duplicate().position(3).limit(len))).toString();
     }
-    
+
     public String toString()
     {
       return toString (null);
     }
-    
+
     public String toString(String prefix)
     {
       StringWriter str = new StringWriter();
@@ -295,14 +295,14 @@ public class ServerNameList extends Value implements Iterable<ServerNameList.Ser
   public static enum NameType
   {
     HOST_NAME (0);
-    
+
     private final int value;
-    
+
     private NameType (int value)
     {
       this.value = value;
     }
-    
+
     public int getValue()
     {
       return value;

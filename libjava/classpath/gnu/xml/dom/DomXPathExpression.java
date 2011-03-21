@@ -1,4 +1,4 @@
-/* DomXPathExpression.java -- 
+/* DomXPathExpression.java --
    Copyright (C) 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -73,13 +73,13 @@ implements org.w3c.dom.xpath.XPathExpression
   {
     this.doc = doc;
     this.resolver = resolver;
-    
-		XPathFactory factory = XPathFactory.newInstance();
-		XPath xpath = factory.newXPath();
-		if (resolver != null)
-		  {
-				xpath.setNamespaceContext(new DomNSResolverContext(resolver));
-	 	  }
+
+                XPathFactory factory = XPathFactory.newInstance();
+                XPath xpath = factory.newXPath();
+                if (resolver != null)
+                  {
+                                xpath.setNamespaceContext(new DomNSResolverContext(resolver));
+                  }
     try
       {
         this.expression = xpath.compile(expression);
@@ -87,61 +87,61 @@ implements org.w3c.dom.xpath.XPathExpression
     catch (XPathExpressionException e)
       {
         throw new XPathException(XPathException.INVALID_EXPRESSION_ERR,
-						                     e.getMessage ());
+                                                                     e.getMessage ());
       }
   }
 
   public Object evaluate(Node contextNode, short type, Object result)
     throws XPathException, DOMException
   {
-		try
-		  {
-				QName typeName = null;
-				switch (type)
-				  {
-						case XPathResult.BOOLEAN_TYPE:
-							typeName = XPathConstants.BOOLEAN;
-							break;
-						case XPathResult.NUMBER_TYPE:
-							typeName = XPathConstants.NUMBER;
-							break;
-						case XPathResult.STRING_TYPE:
-							typeName = XPathConstants.STRING;
-							break;
-						case XPathResult.ANY_UNORDERED_NODE_TYPE:
-						case XPathResult.FIRST_ORDERED_NODE_TYPE:
-							typeName = XPathConstants.NODE;
-							break;
-						case XPathResult.UNORDERED_NODE_ITERATOR_TYPE:
-						case XPathResult.UNORDERED_NODE_SNAPSHOT_TYPE:
-						case XPathResult.ORDERED_NODE_ITERATOR_TYPE:
-						case XPathResult.ORDERED_NODE_SNAPSHOT_TYPE:
-							typeName = XPathConstants.NODESET;
-							break;
-						default:
-							throw new XPathException(XPathException.TYPE_ERR, null);
-					}
-				Object val = expression.evaluate(contextNode, typeName);
-				switch (type)
-				  {
-						case XPathResult.ORDERED_NODE_ITERATOR_TYPE:
-						case XPathResult.ORDERED_NODE_SNAPSHOT_TYPE:
-							// Sort the nodes
-							List ns = new ArrayList((Collection) val);
-							Collections.sort(ns, new DocumentOrderComparator());
-							val = ns;
-					}
-				return new DomXPathResult(val, type);
-			}
-		catch (javax.xml.xpath.XPathException e)
-		  {
-				throw new XPathException(XPathException.TYPE_ERR, e.getMessage());
-			}
+                try
+                  {
+                                QName typeName = null;
+                                switch (type)
+                                  {
+                                                case XPathResult.BOOLEAN_TYPE:
+                                                        typeName = XPathConstants.BOOLEAN;
+                                                        break;
+                                                case XPathResult.NUMBER_TYPE:
+                                                        typeName = XPathConstants.NUMBER;
+                                                        break;
+                                                case XPathResult.STRING_TYPE:
+                                                        typeName = XPathConstants.STRING;
+                                                        break;
+                                                case XPathResult.ANY_UNORDERED_NODE_TYPE:
+                                                case XPathResult.FIRST_ORDERED_NODE_TYPE:
+                                                        typeName = XPathConstants.NODE;
+                                                        break;
+                                                case XPathResult.UNORDERED_NODE_ITERATOR_TYPE:
+                                                case XPathResult.UNORDERED_NODE_SNAPSHOT_TYPE:
+                                                case XPathResult.ORDERED_NODE_ITERATOR_TYPE:
+                                                case XPathResult.ORDERED_NODE_SNAPSHOT_TYPE:
+                                                        typeName = XPathConstants.NODESET;
+                                                        break;
+                                                default:
+                                                        throw new XPathException(XPathException.TYPE_ERR, null);
+                                        }
+                                Object val = expression.evaluate(contextNode, typeName);
+                                switch (type)
+                                  {
+                                                case XPathResult.ORDERED_NODE_ITERATOR_TYPE:
+                                                case XPathResult.ORDERED_NODE_SNAPSHOT_TYPE:
+                                                        // Sort the nodes
+                                                        List ns = new ArrayList((Collection) val);
+                                                        Collections.sort(ns, new DocumentOrderComparator());
+                                                        val = ns;
+                                        }
+                                return new DomXPathResult(val, type);
+                        }
+                catch (javax.xml.xpath.XPathException e)
+                  {
+                                throw new XPathException(XPathException.TYPE_ERR, e.getMessage());
+                        }
   }
 
   public String toString ()
   {
     return getClass ().getName () + "[expression=" + expression + "]";
   }
-  
+
 }

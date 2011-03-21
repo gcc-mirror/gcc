@@ -39,7 +39,9 @@
 
 #define _Instantiate(...) template void __function_requires< __VA_ARGS__ > ()
 
-_GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
+namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template void __aux_require_boolean_expr<bool>(bool const&);
 
@@ -101,7 +103,8 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
   _Instantiate(_RandomAccessIteratorConcept<wchar_t const*> );
 #endif
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
 
 #undef _Instantiate
 

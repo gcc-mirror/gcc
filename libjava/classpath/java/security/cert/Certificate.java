@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -49,18 +49,18 @@ import java.security.PublicKey;
 import java.security.SignatureException;
 
 /**
- * The Certificate class is an abstract class used to manage 
+ * The Certificate class is an abstract class used to manage
  * identity certificates. An identity certificate is a
- * combination of a principal and a public key which is 
- * certified by another principal. This is the puprose of 
+ * combination of a principal and a public key which is
+ * certified by another principal. This is the puprose of
  * Certificate Authorities (CA).
- * 
+ *
  * <p>This class is used to manage different types of certificates
- * but have important common puposes. Different types of 
+ * but have important common puposes. Different types of
  * certificates like X.509 and OpenPGP share general certificate
  * functions (like encoding and verifying) and information like
  * public keys.
- * 
+ *
  * <p>X.509, OpenPGP, and SDSI can be implemented by subclassing this
  * class even though they differ in storage methods and information
  * stored.
@@ -74,7 +74,7 @@ import java.security.SignatureException;
 public abstract class Certificate implements Serializable
 {
   private static final long serialVersionUID = -3585440601605666277L;
-	
+
   private String type;
 
   /**
@@ -111,19 +111,19 @@ public abstract class Certificate implements Serializable
   {
     if( other instanceof Certificate ) {
       try {
-	Certificate x = (Certificate) other;
-	if( getEncoded().length != x.getEncoded().length )
-	  return false;
+        Certificate x = (Certificate) other;
+        if( getEncoded().length != x.getEncoded().length )
+          return false;
 
-	byte[] b1 = getEncoded();
-	byte[] b2 = x.getEncoded();
+        byte[] b1 = getEncoded();
+        byte[] b2 = x.getEncoded();
 
-	for( int i = 0; i < b1.length; i++ )
-	  if( b1[i] != b2[i] )
-	    return false;
+        for( int i = 0; i < b1.length; i++ )
+          if( b1[i] != b2[i] )
+            return false;
 
-      } catch( CertificateEncodingException cee ) { 
-	return false;
+      } catch( CertificateEncodingException cee ) {
+        return false;
       }
       return true;
     }
@@ -154,7 +154,7 @@ public abstract class Certificate implements Serializable
 
   /**
      Verifies that this Certificate was properly signed with the
-     PublicKey that corresponds to its private key. 
+     PublicKey that corresponds to its private key.
 
      @param key PublicKey to verify with
 
@@ -174,7 +174,7 @@ public abstract class Certificate implements Serializable
   /**
      Verifies that this Certificate was properly signed with the
      PublicKey that corresponds to its private key and uses
-     the signature engine provided by the provider. 
+     the signature engine provided by the provider.
 
      @param key PublicKey to verify with
      @param sigProvider Provider to use for signature algorithm
@@ -186,7 +186,7 @@ public abstract class Certificate implements Serializable
      @throws SignatureException signature error
   */
   public abstract void verify(PublicKey key,
-			      String sigProvider)
+                              String sigProvider)
     throws CertificateException,
     NoSuchAlgorithmException,
     InvalidKeyException,
@@ -251,7 +251,7 @@ public abstract class Certificate implements Serializable
 
     /** From JDK1.4. */
     private static final long serialVersionUID = -8563758940495660020L;
-  
+
     /** The certificate type, e.g. "X.509". */
     private String type;
 

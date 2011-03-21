@@ -74,12 +74,12 @@ public class BasicColorChooserUI extends ColorChooserUI
     public void propertyChange(PropertyChangeEvent e)
     {
       if (e.getPropertyName() == JColorChooser.CHOOSER_PANELS_PROPERTY)
-	makeTabs(chooser.getChooserPanels());
+        makeTabs(chooser.getChooserPanels());
       else if (e.getPropertyName() == JColorChooser.PREVIEW_PANEL_PROPERTY)
-	updatePreviewPanel(chooser.getPreviewPanel());
+        updatePreviewPanel(chooser.getPreviewPanel());
       else if (e.getPropertyName() == JColorChooser.SELECTION_MODEL_PROPERTY)
-	((AbstractColorChooserPanel) pane.getSelectedComponent())
-	.updateChooser();
+        ((AbstractColorChooserPanel) pane.getSelectedComponent())
+        .updateChooser();
 
       chooser.repaint();
     }
@@ -100,10 +100,10 @@ public class BasicColorChooserUI extends ColorChooserUI
     {
       if (pane != null)
         {
-	  AbstractColorChooserPanel panel = (AbstractColorChooserPanel) pane
-	                                    .getSelectedComponent();
-	  if (panel != null)
-	    panel.updateChooser();
+          AbstractColorChooserPanel panel = (AbstractColorChooserPanel) pane
+                                            .getSelectedComponent();
+          if (panel != null)
+            panel.updateChooser();
         }
       chooser.repaint();
     }
@@ -190,30 +190,30 @@ public class BasicColorChooserUI extends ColorChooserUI
   {
     if (c instanceof JColorChooser)
       {
-	chooser = (JColorChooser) c;
-	chooser.setLayout(new BorderLayout());
+        chooser = (JColorChooser) c;
+        chooser.setLayout(new BorderLayout());
 
-	// Do this first, so we avoid doing work for property change events.
-	defaultChoosers = createDefaultChoosers();
-	chooser.setChooserPanels(defaultChoosers);
-	pane = new JTabbedPane();
+        // Do this first, so we avoid doing work for property change events.
+        defaultChoosers = createDefaultChoosers();
+        chooser.setChooserPanels(defaultChoosers);
+        pane = new JTabbedPane();
 
-	pane.addChangeListener(new ChangeListener()
-	    {
-	      public void stateChanged(ChangeEvent e)
-	      {
-		pane.repaint();
-	      }
-	    });
+        pane.addChangeListener(new ChangeListener()
+            {
+              public void stateChanged(ChangeEvent e)
+              {
+                pane.repaint();
+              }
+            });
 
-	makeTabs(defaultChoosers);
+        makeTabs(defaultChoosers);
 
-	chooser.add(pane, BorderLayout.NORTH);
+        chooser.add(pane, BorderLayout.NORTH);
 
-	installPreviewPanel();
+        installPreviewPanel();
 
-	installDefaults();
-	installListeners();
+        installDefaults();
+        installListeners();
       }
   }
 
@@ -274,9 +274,9 @@ public class BasicColorChooserUI extends ColorChooserUI
   {
     if (prevContainer == null)
       {
-	prevContainer = new JPanel();
-	prevContainer.setLayout(new BorderLayout());
-	chooser.add(prevContainer, BorderLayout.CENTER);
+        prevContainer = new JPanel();
+        prevContainer.setLayout(new BorderLayout());
+        chooser.add(prevContainer, BorderLayout.CENTER);
       }
     prevContainer.removeAll();
     prevContainer.add(preview, BorderLayout.CENTER);

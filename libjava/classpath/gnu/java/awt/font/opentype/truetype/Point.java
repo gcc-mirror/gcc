@@ -53,7 +53,7 @@ public class Point
   public static final short FLAG_INFLECTION = 32;
   public static final short FLAG_DONE_X = 64;
   public static final short FLAG_DONE_Y = 128;
-  
+
   /**
    * Right direction.
    */

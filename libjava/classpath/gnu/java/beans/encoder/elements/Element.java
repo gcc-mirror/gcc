@@ -45,11 +45,11 @@ import gnu.java.beans.encoder.ObjectId;
 import gnu.java.beans.encoder.Writer;
 
 /** <code>Element</code> is the base class for the object tree elements.
- * 
+ *
  * <p>It provides the neccessary infrastructure every element subclass
  * needs in order to interact with the {@link gnu.java.beans.encoder.Root}
  * class.</p>
- * 
+ *
  * @author Robert Schuster (robertschuster@fsfe.org)
  */
 public abstract class Element
@@ -58,100 +58,100 @@ public abstract class Element
    * Stores the child elements.
    */
   private LinkedList children = new LinkedList();
-  
+
   /**
    * An optional ObjectId instance which is needed for certain subclasses
    * only.
    */
   private ObjectId objectId;
-  
+
   /** Sets an {@link gnu.java.beans.encoder.ObjectId} instance in this
    * <code>Element</code>.
-   * 
+   *
    * <p>This can only be done once.</p>
-   * 
+   *
    * @param objectId An ObjectId instance.
    */
   public final void initId(ObjectId objectId)
   {
     assert (this.objectId == null);
     assert (objectId != null);
-    
+
     this.objectId = objectId;
   }
 
   /** Adds a child element to this <code>Element</code>.
-   * 
+   *
    * @param elem The new child.
    */
   public final void addChild(Element elem)
   {
     children.add(elem);
   }
-  
+
   /** Removes the child element added last.
    */
   public final void removeLast()
   {
     children.removeLast();
   }
-  
+
   /** Provides access to the child elements via an iterator.
-   * 
+   *
    * @return An iterator for the child elements.
    */
   public final Iterator iterator(){
     return children.iterator();
   }
-  
+
   /** Clears all the stored child elements.
-   * 
+   *
    */
   public final void clear()
   {
-   children.clear(); 
+   children.clear();
   }
-  
+
   /** Returns whether this element contains child elements.
-   * 
+   *
    * <p>This method is useful to decide which formatting variant
    * for the XML element can be chosen.</p>
-   * 
+   *
    * @return Whether the element has child elements.
    */
   public final boolean isEmpty()
   {
-    return children.isEmpty(); 
+    return children.isEmpty();
   }
-  
+
   /** Retrieves the element's {@link gnu.java.beans.encoder.ObjectId} instance
    * if it has one.
-   * 
+   *
    * @return The ObjectId instance or <code>null</code>.
    */
   public final ObjectId getId()
   {
     return objectId;
   }
-  
+
   /** Writes the opening XML tag.
-   * 
+   *
    * @param writer The writer to be used for XML writing.
    */
   public abstract void writeStart(Writer writer);
-  
+
   /** Writes the closing XML tag.
-   * 
+   *
    * <p>By default this does <code>writer.writeEnd(children.isEmpty())</code>.
    * Override if neccessary, for example when using the
    * {@link gnu.java.beans.encoder.Writer#writeNoChildren}</code> method
-   * variants. 
-   * 
+   * variants.
+   *
    * @param writer The writer to be used for XML writing.
    */
   public void writeEnd(Writer writer)
   {
     writer.writeEnd(children.isEmpty());
   }
-  
+
 }

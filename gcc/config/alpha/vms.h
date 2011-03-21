@@ -72,8 +72,8 @@ along with GCC; see the file COPYING3.  If not see
 #define MAX_OFILE_ALIGNMENT 524288  /* 8 x 2^16 by DEC Ada Test CD40VRA */
 
 /* The maximum alignment 'malloc' honors.  */
-#undef  MALLOC_ALIGNMENT
-#define MALLOC_ALIGNMENT ((TARGET_MALLOC64 ? 16 : 8) * BITS_PER_UNIT)
+#undef  MALLOC_ABI_ALIGNMENT
+#define MALLOC_ABI_ALIGNMENT ((TARGET_MALLOC64 ? 16 : 8) * BITS_PER_UNIT)
 
 #undef FIXED_REGISTERS
 #define FIXED_REGISTERS  \

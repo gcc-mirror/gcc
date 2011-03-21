@@ -55,8 +55,8 @@ import java.util.NoSuchElementException;
  * An example XML document might look like this:
  * <code>
  * &lt;java&gt;
- * 	&lt;string&gt;Hello World&lt;/string&gt;
- * 	&lt;int&gt;200&lt;/int&gt;
+ *      &lt;string&gt;Hello World&lt;/string&gt;
+ *      &lt;int&gt;200&lt;/int&gt;
  * &lt;/java&gt;
  * </code>
  * <p>To read the <code>String</code> and the <code>Integer</code> instance the following can be used (assume
@@ -71,12 +71,12 @@ import java.util.NoSuchElementException;
  * <p>An owner object can be set using the <code>setOwner</code> method which can then be accessed when
  * decoding. This feature is only useful if the XML data is aware of the owner object. Such data may
  * look like this (assume that the owner object is a JFrame instance):</p>
- * <code> 
+ * <code>
  * &lt;java&gt;
- * 	&lt;void method="getOwner"&gt;
- * 		&lt;void method="setVisible"&gt;
- * 			&lt;boolean&gt;true&lt;boolean&gt;
- * 		&lt;/void&gt;
+ *      &lt;void method="getOwner"&gt;
+ *              &lt;void method="setVisible"&gt;
+ *                      &lt;boolean&gt;true&lt;boolean&gt;
+ *              &lt;/void&gt;
  *  &lt;/void&gt;
  * &lt;/java&gt;
  * </code>
@@ -98,210 +98,210 @@ import java.util.NoSuchElementException;
  * the resulting <code>XMLDecoder</code> will be silently (without any exception) useless. Each call
  * to <code>readObject</code> will return <code>null</code> and never throws an
  * <code>ArrayIndexOutOfBoundsException</code>.</p>
- *  
+ *
  * @author Robert Schuster
  * @since 1.4
  * @status updated to 1.5
  */
 public class XMLDecoder
 {
-	private Object owner;
+        private Object owner;
 
-	private ExceptionListener exceptionListener;
+        private ExceptionListener exceptionListener;
 
-	private InputStream inputStream;
+        private InputStream inputStream;
 
-	private boolean isStreamClosed;
+        private boolean isStreamClosed;
 
-	private ClassLoader classLoader;
+        private ClassLoader classLoader;
 
-	private Iterator iterator;
+        private Iterator iterator;
 
-	/** Creates a XMLDecoder instance that parses the XML data of the given input stream.
-	 * Using this constructor no special ClassLoader, a default ExceptionListener
-	 * and no owner object is used.
-	 * 
-	 * @param in InputStream to read XML data from.
-	 */
-	public XMLDecoder(InputStream in)
-	{
-		this(in, null);
-	}
+        /** Creates a XMLDecoder instance that parses the XML data of the given input stream.
+         * Using this constructor no special ClassLoader, a default ExceptionListener
+         * and no owner object is used.
+         *
+         * @param in InputStream to read XML data from.
+         */
+        public XMLDecoder(InputStream in)
+        {
+                this(in, null);
+        }
 
-	/** Creates a XMLDecoder instance that parses the XML data of the given input stream.
-	 * Using this constructor no special ClassLoader and a default ExceptionListener
-	 * is used.
-	 * 
-	 * @param in InputStream to read XML data from.
-	 * @param owner Owner object which can be accessed and modified while parsing.
-	 */
-	public XMLDecoder(InputStream in, Object owner)
-	{
-		this(in, owner, null);
-	}
+        /** Creates a XMLDecoder instance that parses the XML data of the given input stream.
+         * Using this constructor no special ClassLoader and a default ExceptionListener
+         * is used.
+         *
+         * @param in InputStream to read XML data from.
+         * @param owner Owner object which can be accessed and modified while parsing.
+         */
+        public XMLDecoder(InputStream in, Object owner)
+        {
+                this(in, owner, null);
+        }
 
-	/** Creates a XMLDecoder instance that parses the XML data of the given input stream.
-	 * If the ExceptionListener argument is null a default implementation is used.
-	 * 
-	 * @param in InputStream to read XML data from.
-	 * @param owner Owner object which can be accessed and modified while parsing.
-	 * @param exceptionListener ExceptionListener instance to which exception notifications are send.
-	 */
-	public XMLDecoder(
-		InputStream in,
-		Object owner,
-		ExceptionListener exceptionListener)
-	{
-		this(
-			in,
-			owner,
-			exceptionListener,
-			Thread.currentThread().getContextClassLoader());
-	}
+        /** Creates a XMLDecoder instance that parses the XML data of the given input stream.
+         * If the ExceptionListener argument is null a default implementation is used.
+         *
+         * @param in InputStream to read XML data from.
+         * @param owner Owner object which can be accessed and modified while parsing.
+         * @param exceptionListener ExceptionListener instance to which exception notifications are send.
+         */
+        public XMLDecoder(
+                InputStream in,
+                Object owner,
+                ExceptionListener exceptionListener)
+        {
+                this(
+                        in,
+                        owner,
+                        exceptionListener,
+                        Thread.currentThread().getContextClassLoader());
+        }
 
-	/** Creates a XMLDecoder instance that parses the XML data of the given input stream.
-	 * If the ExceptionListener argument is null a default implementation is used.
-	 * 
-	 * @param in InputStream to read XML data from.
-	 * @param owner Owner object which can be accessed and modified while parsing.
-	 * @param listener ExceptionListener instance to which exception notifications are send.
-	 * @param cl ClassLoader instance that is used for calls to <code>Class.forName(String, boolean, ClassLoader)</code>
-	 * @since 1.5
-	 */
-	public XMLDecoder(
-		InputStream in,
-		Object owner,
-		ExceptionListener listener,
-		ClassLoader cl)
-	{
-		// initially here was a check for the validity of the InputStream argument but some
-		// great engineers decided that this API should silently discard this and behave rather
-		// odd: readObject will always return null ...
-		inputStream = in;
+        /** Creates a XMLDecoder instance that parses the XML data of the given input stream.
+         * If the ExceptionListener argument is null a default implementation is used.
+         *
+         * @param in InputStream to read XML data from.
+         * @param owner Owner object which can be accessed and modified while parsing.
+         * @param listener ExceptionListener instance to which exception notifications are send.
+         * @param cl ClassLoader instance that is used for calls to <code>Class.forName(String, boolean, ClassLoader)</code>
+         * @since 1.5
+         */
+        public XMLDecoder(
+                InputStream in,
+                Object owner,
+                ExceptionListener listener,
+                ClassLoader cl)
+        {
+                // initially here was a check for the validity of the InputStream argument but some
+                // great engineers decided that this API should silently discard this and behave rather
+                // odd: readObject will always return null ...
+                inputStream = in;
 
-		setExceptionListener(listener);
+                setExceptionListener(listener);
 
-		// validity of this object is checked in Class.forName() and therefore may be null
-		classLoader = cl;
+                // validity of this object is checked in Class.forName() and therefore may be null
+                classLoader = cl;
 
-		this.owner = owner;
-	}
+                this.owner = owner;
+        }
 
-	/** Closes the stream associated with this decoder. This should be done after having read all 
-	 * decoded objects.
-	 * <p>See the description of the {@link #readObject()} for the effect caused by <code>close</code>.</p> 
-	 */
-	public void close()
-	{
-		if (isStreamClosed)
-		{
-			return;
-		}
+        /** Closes the stream associated with this decoder. This should be done after having read all
+         * decoded objects.
+         * <p>See the description of the {@link #readObject()} for the effect caused by <code>close</code>.</p>
+         */
+        public void close()
+        {
+                if (isStreamClosed)
+                {
+                        return;
+                }
 
-		try
-		{
-			inputStream.close();
-			isStreamClosed = true;
-		}
-		catch (IOException e)
-		{
-			// bad style forced by original API design ... 
-		}
-	}
+                try
+                {
+                        inputStream.close();
+                        isStreamClosed = true;
+                }
+                catch (IOException e)
+                {
+                        // bad style forced by original API design ...
+                }
+        }
 
-	/** Returns the ExceptionListener instance associated with this decoder.
-	 * <p>See the description of {@link XMLDecoder} class for more information on the ExceptionListener.</p>
-	 * 
-	 * @return Current ExceptionListener of the decoder.
-	 */
-	public ExceptionListener getExceptionListener()
-	{
-		return exceptionListener;
-	}
+        /** Returns the ExceptionListener instance associated with this decoder.
+         * <p>See the description of {@link XMLDecoder} class for more information on the ExceptionListener.</p>
+         *
+         * @return Current ExceptionListener of the decoder.
+         */
+        public ExceptionListener getExceptionListener()
+        {
+                return exceptionListener;
+        }
 
-	/** Returns the owner object of the decoder. This method is usually called
-	 * from within the parsed XML data.
-	 * <p>See the description of {@link XMLDecoder} class for more information on the owner object.</p>
-	 * 
-	 * @return The owner object of this decoder.
-	 */
-	public Object getOwner()
-	{
-		return owner;
-	}
+        /** Returns the owner object of the decoder. This method is usually called
+         * from within the parsed XML data.
+         * <p>See the description of {@link XMLDecoder} class for more information on the owner object.</p>
+         *
+         * @return The owner object of this decoder.
+         */
+        public Object getOwner()
+        {
+                return owner;
+        }
 
-	/** Returns the next available decoded object.
-	 * <p>Note that the actual decoding takes place when the method is called for the first time.</p>
-	 * <p>If the <code>close</code> method was already called a <code>NoSuchElementException</code>
-	 * is thrown.</p>
-	 * <p>If the InputStream instance used in the constructors was <code>null</code> this method
-	 * will always return <code>null</code> itself.</p>
-	 * 
-	 * @return The next object in a sequence decoded from XML data.
-	 * @throws ArrayIndexOutOfBoundsException When no more objects are available.
-	 */
-	public Object readObject() throws ArrayIndexOutOfBoundsException
-	{
-		// note: the RI does it this way ...
-		if(inputStream == null) {
-			return null;
-		}
-		
-		// note: the original API documentation says nothing on what to do
-		// when the stream was closed before readObject is called but it actually
-		// throws a NoSuchElementException - this behaviour is imitated here
-		if (isStreamClosed)
-		{
-			throw new NoSuchElementException("Cannot read any objects - XMLDecoder was already closed.");
-		}
+        /** Returns the next available decoded object.
+         * <p>Note that the actual decoding takes place when the method is called for the first time.</p>
+         * <p>If the <code>close</code> method was already called a <code>NoSuchElementException</code>
+         * is thrown.</p>
+         * <p>If the InputStream instance used in the constructors was <code>null</code> this method
+         * will always return <code>null</code> itself.</p>
+         *
+         * @return The next object in a sequence decoded from XML data.
+         * @throws ArrayIndexOutOfBoundsException When no more objects are available.
+         */
+        public Object readObject() throws ArrayIndexOutOfBoundsException
+        {
+                // note: the RI does it this way ...
+                if(inputStream == null) {
+                        return null;
+                }
 
-		// creates the PersistenceParser (doing the parsing and decoding) and returns its
-		// Iterator on first invocation
-		if (iterator == null)
-		{
-			iterator =
-				new PersistenceParser(
-					inputStream,
-					exceptionListener,
-					classLoader,
-					this)
-					.iterator();
-		}
+                // note: the original API documentation says nothing on what to do
+                // when the stream was closed before readObject is called but it actually
+                // throws a NoSuchElementException - this behaviour is imitated here
+                if (isStreamClosed)
+                {
+                        throw new NoSuchElementException("Cannot read any objects - XMLDecoder was already closed.");
+                }
 
-		// note: done according to the official documentation
-		if (!iterator.hasNext())
-		{
-			throw new ArrayIndexOutOfBoundsException("No more objects available from this XMLDecoder.");
-		}
+                // creates the PersistenceParser (doing the parsing and decoding) and returns its
+                // Iterator on first invocation
+                if (iterator == null)
+                {
+                        iterator =
+                                new PersistenceParser(
+                                        inputStream,
+                                        exceptionListener,
+                                        classLoader,
+                                        this)
+                                        .iterator();
+                }
 
-		// returns just the next object if there was no problem
-		return iterator.next();
-	}
+                // note: done according to the official documentation
+                if (!iterator.hasNext())
+                {
+                        throw new ArrayIndexOutOfBoundsException("No more objects available from this XMLDecoder.");
+                }
 
-	/** Sets the ExceptionListener instance to which notifications of exceptions are send
-	 * while parsing the XML data.
-	 * <p>See the description of {@link XMLDecoder} class for more information on the ExceptionListener.</p>
-	 *
-	 * @param listener
-	 */
-	public void setExceptionListener(ExceptionListener listener)
-	{
-		// uses a default implementation when null 
-		if (listener == null)
-		{
-			listener = DefaultExceptionListener.INSTANCE;
-		}
-		exceptionListener = listener;
-	}
+                // returns just the next object if there was no problem
+                return iterator.next();
+        }
 
-	/** Sets the owner object which can be accessed from the parsed XML data.
-	 * <p>See the description of {@link XMLDecoder} class for more information on the owner object.</p>
-	 * 
-	 * @param newOwner
-	 */
-	public void setOwner(Object newOwner)
-	{
-		owner = newOwner;
-	}
+        /** Sets the ExceptionListener instance to which notifications of exceptions are send
+         * while parsing the XML data.
+         * <p>See the description of {@link XMLDecoder} class for more information on the ExceptionListener.</p>
+         *
+         * @param listener
+         */
+        public void setExceptionListener(ExceptionListener listener)
+        {
+                // uses a default implementation when null
+                if (listener == null)
+                {
+                        listener = DefaultExceptionListener.INSTANCE;
+                }
+                exceptionListener = listener;
+        }
+
+        /** Sets the owner object which can be accessed from the parsed XML data.
+         * <p>See the description of {@link XMLDecoder} class for more information on the owner object.</p>
+         *
+         * @param newOwner
+         */
+        public void setOwner(Object newOwner)
+        {
+                owner = newOwner;
+        }
 
 }

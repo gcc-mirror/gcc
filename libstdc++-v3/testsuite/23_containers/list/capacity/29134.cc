@@ -31,7 +31,7 @@ void test01()
 #if ! defined _GLIBCXX_DEBUG && ! defined _GLIBCXX_PROFILE
   using std::_List_node;
 #else
-  using std::_GLIBCXX_STD_D::_List_node;
+  using std::_GLIBCXX_STD_C::_List_node;
 #endif
 
   VERIFY( l.max_size() == std::allocator<_List_node<int> >().max_size() );

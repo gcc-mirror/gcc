@@ -22,15 +22,6 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "config.h"
 #include "system.h"
-
-/* If plugin support is not enabled, do not try to execute any code
-   that may reference libdl.  The generic code is still compiled in to
-   avoid including too many conditional compilation paths in the rest
-   of the compiler.  */
-#ifdef ENABLE_PLUGIN
-#include <dlfcn.h>
-#endif
-
 #include "coretypes.h"
 #include "diagnostic-core.h"
 #include "tree.h"

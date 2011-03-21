@@ -62,54 +62,54 @@ public class GtkDragSourceContextPeer
   private Cursor cursor;
   private DragSourceContext context;
   public static Component target;
-  
+
   native void nativeStartDrag(Image i, int x, int y, int action, String target);
   native void connectSignals(ComponentPeer comp);
   native void create(ComponentPeer comp);
   native void nativeSetCursor(int cursor);
   native void setTarget(GtkDropTargetContextPeer target);
-  
+
   public GtkDragSourceContextPeer(DragGestureEvent e)
   {
     super(e.getComponent());
     Component comp = e.getComponent();
     peer = getComponentPeer(comp);
-    
+
     create(peer);
     connectSignals(peer);
     cursor = comp.getCursor();
-    
+
     // FIXME: Where do we set the target?
-    
+
     if ((target != null))
       setTarget(new GtkDropTargetContextPeer(target));
   }
-  
+
   ComponentPeer getComponentPeer(Component c)
   {
     if (c == null)
       return null;
-    
+
     Component curr = c;
     while (curr.getPeer() instanceof LightweightPeer)
       curr = curr.getParent();
-    
+
     if (curr != null)
       return curr.getPeer();
     return null;
   }
-  
+
   public void startDrag(DragSourceContext context, Cursor c, Image i, Point p)
       throws InvalidDnDOperationException
-  {   
+  {
     this.context = context;
 
     if (p == null)
       p = new Point();
-    
+
     // FIXME: use proper DataFlavor, not "text/plain".
     // Also, add check to determine if dragging.
-    
+
     setCursor(c);
     nativeStartDrag(i, p.x, p.y, context.getTrigger().getDragAction(),
                     "text/plain");
@@ -133,7 +133,7 @@ public class GtkDragSourceContextPeer
   {
     // Nothing to do here.
   }
-  
+
   /**
    * Called from native code.
    */

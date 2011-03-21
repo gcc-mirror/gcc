@@ -1,6 +1,6 @@
 // class template regex -*- C++ -*-
 
-// Copyright (C) 2010 Free Software Foundation, Inc.
+// Copyright (C) 2010, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -28,18 +28,21 @@
  *  Do not attempt to use it directly. @headername{regex}
  */
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
-
+namespace std _GLIBCXX_VISIBILITY(default)
+{
 namespace __regex
 {
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
   struct _Scanner_base
   {
-    // FIXME: replace these constanst with constexpr
     typedef unsigned int _StateT;
 
-    static const _StateT _S_state_at_start    = 1 << 0;
-    static const _StateT _S_state_in_brace    = 1 << 2;
-    static const _StateT _S_state_in_bracket  = 1 << 3;
+    static constexpr _StateT _S_state_at_start    = 1 << 0;
+    static constexpr _StateT _S_state_in_brace    = 1 << 2;
+    static constexpr _StateT _S_state_in_bracket  = 1 << 3;
+
+    virtual ~_Scanner_base() { };
   };
 
   //
@@ -49,8 +52,8 @@ namespace __regex
   // range passed to its constructor as a sequence of parse tokens passed to
   // the regular expression compiler.  The sequence of tokens provided depends
   // on the flag settings passed to the constructor:  different regular
-  // expression gramars will interpret the same input pattern in syntactically
-  // different ways.
+  // expression grammars will interpret the same input pattern in
+  // syntactically different ways.
   //
   template<typename _InputIterator>
     class _Scanner: public _Scanner_base
@@ -170,6 +173,9 @@ namespace __regex
 	  _M_scan_in_brace();
 	  return;
 	}
+#if 0
+      // TODO: re-enable line anchors when _M_assertion is implemented.
+      // See PR libstdc++/47724
       else if (_M_state & _S_state_at_start && __c == _M_ctype.widen('^'))
 	{
 	  _M_curToken = _S_token_line_begin;
@@ -182,6 +188,7 @@ namespace __regex
 	  ++_M_current;
 	  return;
 	}
+#endif
       else if (__c == _M_ctype.widen('.'))
 	{
 	  _M_curToken = _S_token_anychar;
@@ -712,23 +719,18 @@ namespace __regex
     : _M_traits(__traits), _M_scanner(__b, __e, __flags, _M_traits.getloc()),
       _M_state_store(__flags)
     {
-      using std::bind;
-      using std::placeholders::_1;
-      using std::placeholders::_2;
       typedef _StartTagger<_InIter, _TraitsT> _Start;
       typedef _EndTagger<_InIter, _TraitsT> _End;
 
       _StateSeq __r(_M_state_store,
-      		    _M_state_store._M_insert_subexpr_begin(
-                        bind(_Start(0), _1, _2)));
+      		    _M_state_store._M_insert_subexpr_begin(_Start(0)));
       _M_disjunction();
       if (!_M_stack.empty())
 	{
 	  __r._M_append(_M_stack.top());
 	  _M_stack.pop();
 	}
-      __r._M_append(_M_state_store.
-		    _M_insert_subexpr_end(0, bind(_End(0), _1, _2)));
+      __r._M_append(_M_state_store._M_insert_subexpr_end(0, _End(0)));
       __r._M_append(_M_state_store._M_insert_accept());
     }
 
@@ -903,9 +905,6 @@ namespace __regex
     _Compiler<_InIter, _TraitsT>::
     _M_atom()
     {
-      using std::bind;
-      using std::placeholders::_1;
-      using std::placeholders::_2;
       typedef _CharMatcher<_InIter, _TraitsT> _CMatcher;
       typedef _StartTagger<_InIter, _TraitsT> _Start;
       typedef _EndTagger<_InIter, _TraitsT> _End;
@@ -913,26 +912,23 @@ namespace __regex
       if (_M_match_token(_ScannerT::_S_token_anychar))
 	{
 	  _M_stack.push(_StateSeq(_M_state_store,
-				  _M_state_store.
-				  _M_insert_matcher(bind(_AnyMatcher, _1))));
+                                  _M_state_store._M_insert_matcher
+                                  (_AnyMatcher)));
 	  return true;
 	}
       if (_M_match_token(_ScannerT::_S_token_ord_char))
 	{
-	  _M_stack.push(_StateSeq
-			(_M_state_store, _M_state_store. 
-			 _M_insert_matcher
-			 (bind(_CMatcher(_M_cur_value[0], _M_traits), _1))));
+	  _M_stack.push(_StateSeq(_M_state_store,
+                                  _M_state_store._M_insert_matcher
+                                  (_CMatcher(_M_cur_value[0], _M_traits))));
 	  return true;
 	}
       if (_M_match_token(_ScannerT::_S_token_quoted_char))
 	{
 	  // note that in the ECMA grammar, this case covers backrefs.
 	  _M_stack.push(_StateSeq(_M_state_store,
-				  _M_state_store.
-				  _M_insert_matcher
-				  (bind(_CMatcher(_M_cur_value[0], _M_traits),
-					_1))));
+				  _M_state_store._M_insert_matcher
+				  (_CMatcher(_M_cur_value[0], _M_traits))));
 	  return true;
 	}
       if (_M_match_token(_ScannerT::_S_token_backref))
@@ -945,7 +941,7 @@ namespace __regex
 	  int __mark = _M_state_store._M_sub_count();
 	  _StateSeq __r(_M_state_store,
 			_M_state_store.
-			_M_insert_subexpr_begin(bind(_Start(__mark), _1, _2)));
+			_M_insert_subexpr_begin(_Start(__mark)));
 	  this->_M_disjunction();
 	  if (!_M_match_token(_ScannerT::_S_token_subexpr_end))
 	    __throw_regex_error(regex_constants::error_paren);
@@ -955,7 +951,7 @@ namespace __regex
 	      _M_stack.pop();
 	    }
 	  __r._M_append(_M_state_store._M_insert_subexpr_end
-			(__mark, bind(_End(__mark), _1, _2)));
+			(__mark, _End(__mark)));
 	  _M_stack.push(__r);
 	  return true;
 	}
@@ -967,8 +963,6 @@ namespace __regex
     _Compiler<_InIter, _TraitsT>::
     _M_bracket_expression()
     {
-      using std::bind;
-      using std::placeholders::_1;
       if (_M_match_token(_ScannerT::_S_token_bracket_begin))
 	{
 	  _RMatcherT __matcher(_M_match_token(_ScannerT::_S_token_line_begin),
@@ -977,8 +971,7 @@ namespace __regex
 	      || !_M_match_token(_ScannerT::_S_token_bracket_end))
 	    __throw_regex_error(regex_constants::error_brack);
 	  _M_stack.push(_StateSeq(_M_state_store,
-				  _M_state_store._M_insert_matcher
-				  (bind(__matcher, _1))));
+				  _M_state_store._M_insert_matcher(__matcher)));
 	  return true;
 	}
       return false;
@@ -1109,8 +1102,8 @@ namespace __regex
     { return _AutomatonPtr(new _Nfa(_Compiler<_InIter, _TraitsT>(__b, __e, __t,
                                         __f)._M_nfa())); }
 
+_GLIBCXX_END_NAMESPACE_VERSION
 } // namespace __regex
-
-_GLIBCXX_END_NAMESPACE
+} // namespace std
 
 /* vim: set ts=8 sw=2 sts=2: */

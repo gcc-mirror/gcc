@@ -41,7 +41,9 @@
 #include <ieeefp.h>
 #endif
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<>
     void
@@ -229,9 +231,12 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   locale::facet::_S_lc_ctype_c_locale(__c_locale, const char*)
   { return __c_locale(); }
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
 
-_GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
+namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   const char* const category_names[6 + _GLIBCXX_NUM_CATEGORIES] =
     {
@@ -243,13 +248,17 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       "LC_MESSAGES"
     };
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   const char* const* const locale::_S_categories = __gnu_cxx::category_names;
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
 
 // XXX GLIBCXX_ABI Deprecated
 #ifdef _GLIBCXX_LONG_DOUBLE_COMPAT

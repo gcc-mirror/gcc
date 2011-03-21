@@ -66,14 +66,19 @@
 //
 
 // Forward declaration hack, should really include this from somewhere.
-_GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
+namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Iterator, typename _Container>
     class __normal_iterator;
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   struct __true_type { };
   struct __false_type { };
@@ -414,6 +419,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     };
 #endif
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
 
 #endif //_CPP_TYPE_TRAITS_H

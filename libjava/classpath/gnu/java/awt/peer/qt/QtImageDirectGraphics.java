@@ -75,7 +75,7 @@ public class QtImageDirectGraphics extends QtImageGraphics
   }
 
   public void draw(Shape s)
-  { 
+  {
     super.draw(s);
     scheduleUpdate();
   }
@@ -105,43 +105,41 @@ public class QtImageDirectGraphics extends QtImageGraphics
   }
 
   public boolean drawImage(Image image,
-			   AffineTransform Tx,
-			   ImageObserver obs)
+                           AffineTransform Tx,
+                           ImageObserver obs)
   {
     boolean r = super.drawImage(image, Tx, obs);
     scheduleUpdate();
     return r;
   }
 
-  public boolean drawImage(Image image, int x, int y, Color bgcolor, 
-			   ImageObserver observer)
+  public boolean drawImage(Image image, int x, int y, Color bgcolor,
+                           ImageObserver observer)
   {
     boolean r = super.drawImage(image, x, y, bgcolor, observer);
     scheduleUpdate();
     return r;
   }
 
-  public boolean drawImage(Image image, 
-			   int dx1, int dy1, int dx2, int dy2, 
-			   int sx1, int sy1, int sx2, int sy2, 
-			   Color bgcolor, ImageObserver observer)
+  public boolean drawImage(Image image,
+                           int dx1, int dy1, int dx2, int dy2,
+                           int sx1, int sy1, int sx2, int sy2,
+                           Color bgcolor, ImageObserver observer)
   {
-    boolean r = super.drawImage( image, dx1,  dy1,  dx2,  dy2, 
-				 sx1,  sy1,  sx2,  sy2, 
-				 bgcolor, observer);
+    boolean r = super.drawImage( image, dx1,  dy1,  dx2,  dy2,
+                                 sx1,  sy1,  sx2,  sy2,
+                                 bgcolor, observer);
     scheduleUpdate();
     return r;
   }
 
-  public boolean drawImage(Image image, int x, int y, 
-			   int width, int height, Color bgcolor, 
-			   ImageObserver observer)
+  public boolean drawImage(Image image, int x, int y,
+                           int width, int height, Color bgcolor,
+                           ImageObserver observer)
   {
-    boolean r = super.drawImage(image, x, y, width, height, bgcolor, 
-				observer);
+    boolean r = super.drawImage(image, x, y, width, height, bgcolor,
+                                observer);
     scheduleUpdate();
     return r;
   }
-} 
-
-
+}

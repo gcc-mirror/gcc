@@ -45,26 +45,26 @@ import java.util.Map;
 
 /**
  * The bidirectional hash table, maps both a to b and b to a.
- * 
- * @author Audrius Meskauskas (audriusa@bioinformatics.org) 
+ *
+ * @author Audrius Meskauskas (audriusa@bioinformatics.org)
  */
-public class BidiTable 
+public class BidiTable
 {
   /**
    * Use serialVerionUID for interoperability.
    */
   private static final long serialVersionUID = 1;
-  
+
   /**
    * Maps keys to values
    */
   protected Map k2v;
-  
+
   /**
    * Maps values to keys (in reverse)
    */
   protected Map v2k;
-  
+
   /**
    * Create a new table that is ready to use.
    */
@@ -73,17 +73,17 @@ public class BidiTable
     k2v = new HashMap();
     v2k = new HashMap();
   }
-  
+
   /**
    * Create a new instance where the hashtable fields are not initialised
    * (called from derivatives that intialise hashtables in they own way.
-   * 
+   *
    * @param flags currently used to mark the different constructor only.
    */
   protected BidiTable(int flags)
   {
   }
-  
+
   /**
    * Get key by value
    */
@@ -91,7 +91,7 @@ public class BidiTable
   {
     return v2k.get(value);
   }
-  
+
   /**
    * Put key-value pair.
    */
@@ -100,7 +100,7 @@ public class BidiTable
     k2v.put(key, value);
     v2k.put(value, key);
   }
-  
+
   /**
    * Get value from key
    */
@@ -108,7 +108,7 @@ public class BidiTable
   {
     return k2v.get(key);
   }
-  
+
   /**
    * Remove the key-value pair by key
    */
@@ -121,7 +121,7 @@ public class BidiTable
         v2k.remove(value);
       }
   }
-  
+
   /**
    * Check if the table contains this key.
    */
@@ -129,7 +129,7 @@ public class BidiTable
   {
     return k2v.containsKey(key);
   }
-  
+
   /**
    * This method is called before exit and may be used to write the database
    * to the disk. The default method does nothing.
@@ -137,7 +137,7 @@ public class BidiTable
   public synchronized void shutdown()
   {
   }
-  
+
   /**
    * Get the size.
    */
@@ -145,7 +145,7 @@ public class BidiTable
   {
     return k2v.size();
   }
-  
+
   /**
    * Get the key collection.
    */
@@ -157,7 +157,7 @@ public class BidiTable
     Iterator iter = keys.iterator();
     for (int i = 0; i < k.length; i++)
       k[i] = iter.next();
-    
+
     return k;
   }
 }

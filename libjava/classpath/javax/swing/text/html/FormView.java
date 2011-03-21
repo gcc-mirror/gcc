@@ -96,7 +96,7 @@ import javax.swing.text.StyleConstants;
  * <td>JList in JScrollPane</td></tr>
  * <tr><td>select, size unspecified or == 1</td><td>JComboBox</td></tr>
  * <tr><td>textarea, text</td><td>JTextArea in JScrollPane</td></tr>
- * <tr><td>input, file</td><td>JTextField</td></tr> 
+ * <tr><td>input, file</td><td>JTextField</td></tr>
  * </table>
  *
  * @author Roman Kennke (kennke@aicas.com)
@@ -352,7 +352,7 @@ public class FormView
   /**
    * If the value attribute of an <code>&lt;input type=&quot;submit&quot;&gt>
    * tag is not specified, then this string is used.
-   * 
+   *
    * @deprecated As of JDK1.3 the value is fetched from the UIManager property
    *             <code>FormView.submitButtonText</code>.
    */
@@ -362,7 +362,7 @@ public class FormView
   /**
    * If the value attribute of an <code>&lt;input type=&quot;reset&quot;&gt>
    * tag is not specified, then this string is used.
-   * 
+   *
    * @deprecated As of JDK1.3 the value is fetched from the UIManager property
    *             <code>FormView.resetButtonText</code>.
    */
@@ -638,7 +638,7 @@ public class FormView
       }
     else
       {
-        data = name + ".x=" + p.x + "&" + name + ".y=" + p.y; 
+        data = name + ".x=" + p.x + "&" + name + ".y=" + p.y;
       }
     return data;
   }

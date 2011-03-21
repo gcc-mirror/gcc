@@ -629,6 +629,9 @@ darwin_cpp_builtins (cpp_reader *pfile)
       builtin_define ("__strong=");
       builtin_define ("__weak=");
     }
+
+  if (flag_objc_abi == 2)
+    builtin_define ("__OBJC2__");
 }
 
 /* Handle C family front-end options.  */

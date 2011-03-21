@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -89,7 +89,7 @@ public abstract class Reference<T>
    * reference is not enqueued.  Otherwise it points to the next
    * reference.  The last reference on a queue will point to itself
    * (not to null, that value is used to mark a not enqueued
-   * reference).  
+   * reference).
    */
   volatile Reference nextOnQueue;
 
@@ -103,7 +103,7 @@ public abstract class Reference<T>
   /**
    * Creates a new reference that is not registered to any queue.
    * Since it is package private, it is not possible to overload this
-   * class in a different package.  
+   * class in a different package.
    * @param ref the object we refer to.
    */
   Reference(T ref)
@@ -114,7 +114,7 @@ public abstract class Reference<T>
   /**
    * Creates a reference that is registered to a queue.  Since this is
    * package private, it is not possible to overload this class in a
-   * different package.  
+   * different package.
    * @param ref the object we refer to.
    * @param q the reference queue to register on.
    * @exception NullPointerException if q is null.
@@ -129,21 +129,21 @@ public abstract class Reference<T>
 
   /**
    * Returns the object, this reference refers to.
-   * @return the object, this reference refers to, or null if the 
+   * @return the object, this reference refers to, or null if the
    * reference was cleared.
    */
   public T get()
   {
     synchronized (lock)
       {
-	return referent;
+        return referent;
       }
   }
 
   /**
    * Clears the reference, so that it doesn't refer to its object
    * anymore.  For soft and weak references this is called by the
-   * garbage collector.  For phantom references you should call 
+   * garbage collector.  For phantom references you should call
    * this when enqueuing the reference.
    */
   public void clear()
@@ -164,12 +164,12 @@ public abstract class Reference<T>
    * Enqueue an object on a reference queue.  This is normally executed
    * by the garbage collector.
    */
-  public boolean enqueue() 
+  public boolean enqueue()
   {
     ReferenceQueue q = queue;
     if (q != null)
       {
-	return q.enqueue(this);
+        return q.enqueue(this);
       }
     return false;
   }

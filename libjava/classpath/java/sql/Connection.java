@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -45,7 +45,7 @@ import java.util.Map;
  *
  * @author Aaron M. Renn (arenn@urbanophile.com)
  */
-public interface Connection 
+public interface Connection
 {
   /**
    * This transaction isolation level indicates that transactions are not
@@ -90,7 +90,7 @@ public interface Connection
    * This method creates a new SQL statement.  The default result set type
    * and concurrency will be used.
    *
-   * @return A new <code>Statement</code> object. 
+   * @return A new <code>Statement</code> object.
    * @exception SQLException If an error occurs.
    * @see Statement
    */
@@ -101,7 +101,7 @@ public interface Connection
    * SQL string.  This method is designed for use with parameterized
    * statements.  The default result set type and concurrency will be used.
    *
-   * @param sql The SQL statement to use in creating this 
+   * @param sql The SQL statement to use in creating this
    *            <code>PreparedStatement</code>.
    * @return A new <code>PreparedStatement</code>.
    * @exception SQLException If an error occurs.
@@ -110,12 +110,12 @@ public interface Connection
   PreparedStatement prepareStatement(String sql) throws SQLException;
 
   /**
-   * This method creates a new <code>CallableStatement</code> for the 
+   * This method creates a new <code>CallableStatement</code> for the
    * specified SQL string.  Thie method is designed to be used with
    * stored procedures.  The default result set type and concurrency
    * will be used.
    *
-   * @param sql The SQL statement to use in creating this 
+   * @param sql The SQL statement to use in creating this
    *            <code>CallableStatement</code>.
    * @return A new <code>CallableStatement</code>.
    * @exception SQLException If an error occurs.
@@ -151,7 +151,7 @@ public interface Connection
    * In auto commit mode,  every SQL statement is committed its own transaction.
    * Otherwise a transaction must be explicitly committed or rolled back.
    *
-   * @return <code>true</code> if auto commit mode is enabled, 
+   * @return <code>true</code> if auto commit mode is enabled,
    *         <code>false</code> otherwise.
    * @exception SQLException If an error occurs.
    * @see #commit()
@@ -160,7 +160,7 @@ public interface Connection
   boolean getAutoCommit() throws SQLException;
 
  /**
-  * This method commits any SQL statements executed on this connection since 
+  * This method commits any SQL statements executed on this connection since
   * the last commit or rollback.
   *
   * @exception SQLException If an error occurs.
@@ -183,7 +183,7 @@ public interface Connection
   void close() throws SQLException;
 
   /**
-   * This method tests whether or not this connection has been closed. 
+   * This method tests whether or not this connection has been closed.
    *
    * @return <code>true</code> if the connection is closed, <code>false</code>
    *         otherwise.
@@ -233,7 +233,7 @@ public interface Connection
    * This method returns the name of the catalog in use by this connection,
    * if any.
    *
-   * @return The name of the catalog, or <code>null</code> if none 
+   * @return The name of the catalog, or <code>null</code> if none
    *         exists or catalogs are not supported by this database.
    * @exception SQLException If an error occurs.
    */
@@ -262,7 +262,7 @@ public interface Connection
    * if any.  If there were any subsequence warnings, they will be chained
    * to the first one.
    *
-   * @return The first <code>SQLWarning</code> that occurred, or 
+   * @return The first <code>SQLWarning</code> that occurred, or
    *         <code>null</code> if there have been no warnings.
    * @exception SQLException If an error occurs.
    */
@@ -298,7 +298,7 @@ public interface Connection
    * Valid values for these parameters are specified in the
    * <code>ResultSet</code> class.
    *
-   * @param sql The SQL statement to use in creating this 
+   * @param sql The SQL statement to use in creating this
    *            <code>PreparedStatement</code>.
    * @param resultSetType The type of result set to use for this statement.
    * @param resultSetConcurrency  The type of concurrency to be used in
@@ -308,17 +308,17 @@ public interface Connection
    * @see PreparedStatement
    * @see ResultSet
    */
-  PreparedStatement prepareStatement(String sql, int resultSetType, 
+  PreparedStatement prepareStatement(String sql, int resultSetType,
     int resultSetConcurrency) throws SQLException;
 
   /**
-   * This method creates a new <code>CallableStatement</code> for the 
+   * This method creates a new <code>CallableStatement</code> for the
    * specified SQL string.  Thie method is designed to be used with
    * stored procedures.  The specified result set type and concurrency
    * will be used.  Valid values for these parameters are specified in the
    * <code>ResultSet</code> class.
    *
-   * @param sql The SQL statement to use in creating this 
+   * @param sql The SQL statement to use in creating this
    *            <code>PreparedStatement</code>.
    * @param resultSetType The type of result set to use for this statement.
    * @param resultSetConcurrency  The type of concurrency to be used in
@@ -353,7 +353,7 @@ public interface Connection
   /**
    * Sets the default holdability of <code>ResultSet</code>S that are created
    * from <code>Statement</code>S using this <code>Connection</code>.
-   * 
+   *
    * @param holdability The default holdability value to set, this must be one
    *                    of <code>ResultSet.HOLD_CURSORS_OVER_COMMIT</code> or
    *                    <code>ResultSet.CLOSE_CURSORS_AT_COMMIT</code>.
@@ -366,7 +366,7 @@ public interface Connection
   /**
    * Gets the default holdability of <code>ResultSet</code>S that are created
    * from <code>Statement</code>S using this <code>Connection</code>.
-   * 
+   *
    * @return The current default holdability value, this must be one of
    *          <code>ResultSet.HOLD_CURSORS_OVER_COMMIT</code> or
    *          <code>ResultSet.CLOSE_CURSORS_AT_COMMIT</code>.
@@ -378,7 +378,7 @@ public interface Connection
 
   /**
    * Creates a new unnamed savepoint for this <code>Connection</code>
-   * 
+   *
    * @return The <code>Savepoint</code> object representing the savepoint.
    * @exception SQLException If an error occurs.
    * @since 1.4
@@ -388,7 +388,7 @@ public interface Connection
   /**
    * Creates a new savepoint with the specifiend name for this
    * <code>Connection</code>.
-   * 
+   *
    * @param name The name of the savepoint.
    * @return The <code>Savepoint</code> object representing the savepoint.
    * @exception SQLException If an error occurs.
@@ -398,7 +398,7 @@ public interface Connection
 
   /**
    * Undoes all changes made after the specified savepoint was set.
-   * 
+   *
    * @param savepoint The safepoint to roll back to.
    * @exception SQLException If an error occurs.
    * @since 1.4
@@ -409,7 +409,7 @@ public interface Connection
    * Removes the specified savepoint from this <code>Connection</code>.
    * Refering to a savepoint after it was removed is an error and will throw an
    * SQLException.
-   * 
+   *
    * @param savepoint The savepoint to release.
    * @exception SQLException If an error occurs.
    * @since 1.4
@@ -420,7 +420,7 @@ public interface Connection
    * This method creates a new SQL statement with the specified type,
    * concurrency and holdability, instead of using the defaults.  Valid values
    * for these parameters are specified in the <code>ResultSet</code> class.
-   * 
+   *
    * @param resultSetType The type of result set to use for this statement.
    * @param resultSetConcurrency The type of concurrency to be used in
    *                             the result set for this statement.
@@ -441,7 +441,7 @@ public interface Connection
    * will be used. Valid values for these parameters are specified in the
    * <code>ResultSet</code> class.
    *
-   * @param sql The SQL statement to use in creating this 
+   * @param sql The SQL statement to use in creating this
    *            <code>PreparedStatement</code>.
    * @param resultSetType The type of result set to use for this statement.
    * @param resultSetConcurrency The type of concurrency to be used in
@@ -458,13 +458,13 @@ public interface Connection
       resultSetConcurrency, int resultSetHoldability) throws SQLException;
 
   /**
-   * This method creates a new <code>CallableStatement</code> for the 
+   * This method creates a new <code>CallableStatement</code> for the
    * specified SQL string.  Thie method is designed to be used with
    * stored procedures.  The specified result set type, concurrency and
    * holdability will be used.  Valid values for these parameters are specified
    * in the <code>ResultSet</code> class.
    *
-   * @param sql The SQL statement to use in creating this 
+   * @param sql The SQL statement to use in creating this
    *            <code>PreparedStatement</code>.
    * @param resultSetType The type of result set to use for this statement.
    * @param resultSetConcurrency The type of concurrency to be used in

@@ -719,7 +719,7 @@ public class AWTEventMulticaster
    * Chain <code>WindowListener</code> a and b.
    *
    * @param a the "a" listener, may be null
-   * @param b the "b" listener, may be null 
+   * @param b the "b" listener, may be null
    * @return latest entry in the chain
    */
   public static WindowListener add(WindowListener a, WindowListener b)
@@ -731,7 +731,7 @@ public class AWTEventMulticaster
    * Chain <code>WindowStateListener</code> a and b.
    *
    * @param a the "a" listener, may be null
-   * @param b the "b" listener, may be null 
+   * @param b the "b" listener, may be null
    * @return latest entry in the chain
    * @since 1.4
    */
@@ -745,7 +745,7 @@ public class AWTEventMulticaster
    * Chain <code>WindowFocusListener</code> a and b.
    *
    * @param a the "a" listener, may be null
-   * @param b the "b" listener, may be null 
+   * @param b the "b" listener, may be null
    * @return latest entry in the chain
    * @since 1.4
    */
@@ -1083,7 +1083,7 @@ public class AWTEventMulticaster
    * Chain <code>EventListener</code> a and b.
    *
    * @param a the "a" listener, may be null
-   * @param b the "b" listener, may be null 
+   * @param b the "b" listener, may be null
    * @return latest entry in the chain
    */
   protected static EventListener addInternal(EventListener a, EventListener b)
@@ -1176,7 +1176,7 @@ public class AWTEventMulticaster
    * @since 1.4
    */
   public static <T extends EventListener> T[] getListeners(EventListener l,
-							   Class<T> type)
+                                                           Class<T> type)
   {
     ArrayList<EventListener> list = new ArrayList<EventListener>();
     if (l instanceof AWTEventMulticaster)

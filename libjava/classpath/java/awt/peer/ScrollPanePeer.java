@@ -49,4 +49,3 @@ public interface ScrollPanePeer extends ContainerPeer
   void setUnitIncrement(Adjustable item, int inc);
   void setValue(Adjustable item, int value);
 } // interface ScollPanePeer
-

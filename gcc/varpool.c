@@ -1,5 +1,5 @@
 /* Callgraph handling code.
-   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2010
+   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2010, 2011
    Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
@@ -370,7 +370,7 @@ const_value_known_p (tree decl)
 
   gcc_assert (TREE_CODE (decl) == VAR_DECL);
 
-  if (!TREE_READONLY (decl))
+  if (!TREE_READONLY (decl) || TREE_THIS_VOLATILE (decl))
     return false;
 
   /* Gimplifier takes away constructors of local vars  */
@@ -565,11 +565,29 @@ varpool_remove_unreferenced_decls (void)
   varpool_analyze_pending_decls ();
 }
 
+/* For variables in named sections make sure get_variable_section
+   is called before we switch to those sections.  Then section
+   conflicts between read-only and read-only requiring relocations
+   sections can be resolved.  */
+void
+varpool_finalize_named_section_flags (struct varpool_node *node)
+{
+  if (!TREE_ASM_WRITTEN (node->decl)
+      && !node->alias
+      && !node->in_other_partition
+      && !DECL_EXTERNAL (node->decl)
+      && TREE_CODE (node->decl) == VAR_DECL
+      && !DECL_HAS_VALUE_EXPR_P (node->decl)
+      && DECL_SECTION_NAME (node->decl))
+    get_variable_section (node->decl, false);
+}
+
 /* Output all variables enqueued to be assembled.  */
 bool
 varpool_assemble_pending_decls (void)
 {
   bool changed = false;
+  struct varpool_node *node;
 
   if (seen_error ())
     return false;
@@ -579,6 +597,9 @@ varpool_assemble_pending_decls (void)
      we don't create references to new function, but it should not be used
      elsewhere.  */
   varpool_analyze_pending_decls ();
+
+  for (node = varpool_nodes_queue; node; node = node->next_needed)
+    varpool_finalize_named_section_flags (node);
 
   while (varpool_nodes_queue)
     {

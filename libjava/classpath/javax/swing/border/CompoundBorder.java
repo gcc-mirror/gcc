@@ -1,4 +1,4 @@
-/* CompoundBorder.java -- 
+/* CompoundBorder.java --
    Copyright (C) 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -115,7 +115,7 @@ public class CompoundBorder extends AbstractBorder
    */
   public boolean isBorderOpaque()
   {
-    // Although the API specification states that this method 
+    // Although the API specification states that this method
     // returns true if both the inside and outside borders are non-null
     // and opaque, and false otherwise, a mauve test shows that if both
     // the inside or outside borders are null, then true is returned.
@@ -137,7 +137,7 @@ public class CompoundBorder extends AbstractBorder
 
   /**
    * Paints the compound border by first painting the outside border,
-   * then painting the inside border tightly nested into the outside. 
+   * then painting the inside border tightly nested into the outside.
    *
    * @param c the component whose border is to be painted.
    * @param g the graphics for painting.
@@ -233,7 +233,7 @@ public class CompoundBorder extends AbstractBorder
    * Returns the outside border, which is painted outside both the
    * bordered Component and the inside border. It is valid for the
    * result to be <code>null</code>.
-   * 
+   *
    * @return The outside border (possibly <code>null</code>).
    */
   public Border getOutsideBorder()
@@ -245,7 +245,7 @@ public class CompoundBorder extends AbstractBorder
    * Returns the inside border, which is painted between the bordered
    * Component and the outside border. It is valid for the result to
    * be <code>null</code>.
-   * 
+   *
    * @return The inside border (possibly <code>null</code>).
    */
   public Border getInsideBorder()

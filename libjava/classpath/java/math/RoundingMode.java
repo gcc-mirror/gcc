@@ -1,4 +1,4 @@
-/* RoundingMode.java -- An Enum to replace BigDecimal rounding constants. 
+/* RoundingMode.java -- An Enum to replace BigDecimal rounding constants.
    Copyright (C) 1999, 2000, 2002, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -52,7 +52,7 @@ public enum RoundingMode
    * For compatability with Sun's JDK
    */
   private static final long serialVersionUID = 432302042773881265L;
-  
+
   /**
    * Returns the RoundingMode object corresponding to the legacy rounding modes
    * in BigDecimal.
@@ -80,9 +80,9 @@ public enum RoundingMode
       case BigDecimal.ROUND_UNNECESSARY:
         return UNNECESSARY;
       default:
-        throw new 
-          IllegalArgumentException("invalid argument: " + rm + 
-                                   ".  Argument should be one of the " + 
+        throw new
+          IllegalArgumentException("invalid argument: " + rm +
+                                   ".  Argument should be one of the " +
                                    "rounding modes defined in BigDecimal.");
       }
   }

@@ -1,6 +1,6 @@
 // Special functions -*- C++ -*-
 
-// Copyright (C) 2006, 2007, 2008, 2009
+// Copyright (C) 2006, 2007, 2008, 2009, 2010
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -43,16 +43,16 @@
 #ifndef _GLIBCXX_TR1_ELL_INTEGRAL_TCC
 #define _GLIBCXX_TR1_ELL_INTEGRAL_TCC 1
 
-namespace std
+namespace std _GLIBCXX_VISIBILITY(default)
 {
 namespace tr1
 {
-
   // [5.2] Special functions
 
   // Implementation-space details.
   namespace __detail
   {
+  _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     /**
      *   @brief Return the Carlson elliptic function @f$ R_F(x,y,z) @f$
@@ -742,6 +742,7 @@ namespace tr1
         }
     }
 
+  _GLIBCXX_END_NAMESPACE_VERSION
   } // namespace std::tr1::__detail
 }
 }

@@ -46,7 +46,7 @@ import java.io.IOException;
 
 /**
  * Event notifying the debugger that the virtual machine has terminated.
- * 
+ *
  * @author Keith Seitz  (keiths@redhat.com)
  */
 public class VmDeathEvent

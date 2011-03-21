@@ -89,7 +89,7 @@ public class BasicInternalFrameTitlePane extends JComponent
     {
       super("Close");
     }
-    
+
     /**
      * This method is called when something closes the JInternalFrame.
      *
@@ -371,7 +371,7 @@ public class BasicInternalFrameTitlePane extends JComponent
     {
       Icon frameIcon = frame.getFrameIcon();
       if (frameIcon == null)
-	frameIcon = BasicDesktopIconUI.defaultIcon;
+        frameIcon = BasicDesktopIconUI.defaultIcon;
       frameIcon.paintIcon(this, g, 0, 0);
     }
 
@@ -453,8 +453,8 @@ public class BasicInternalFrameTitlePane extends JComponent
         }
 
       if (title != null)
-	title.setBounds(insets.left + menupref.width, insets.top,
-	                loc - menupref.width - insets.left, height);
+        title.setBounds(insets.left + menupref.width, insets.top,
+                        loc - menupref.width - insets.left, height);
     }
 
     /**
@@ -581,7 +581,7 @@ public class BasicInternalFrameTitlePane extends JComponent
 
   /** The icon displayed in the close button. */
   protected Icon closeIcon;
-  
+
   /** The JInternalFrame that this TitlePane is used in. */
   protected JInternalFrame frame;
 
@@ -620,7 +620,7 @@ public class BasicInternalFrameTitlePane extends JComponent
    * This is package-private to avoid an accessor method.
    */
   transient JLabel title;
-  
+
   static
     {
       // not constants in JDK
@@ -739,7 +739,7 @@ public class BasicInternalFrameTitlePane extends JComponent
     selectedTitleColor = UIManager.getColor("InternalFrame.activeTitleBackground");
     notSelectedTextColor = UIManager.getColor("InternalFrame.inactiveTitleForeground");
     notSelectedTitleColor = UIManager.getColor("InternalFrame.inactiveTitleBackground");
-  
+
     closeIcon = UIManager.getIcon("InternalFrame.closeIcon");
     iconIcon = UIManager.getIcon("InternalFrame.iconifyIcon");
     maxIcon = UIManager.getIcon("InternalFrame.maximizeIcon");
@@ -755,7 +755,7 @@ public class BasicInternalFrameTitlePane extends JComponent
     selectedTitleColor = null;
     notSelectedTextColor = null;
     notSelectedTitleColor = null;
-    
+
     closeIcon = null;
     iconIcon = null;
     maxIcon = null;
@@ -894,17 +894,17 @@ public class BasicInternalFrameTitlePane extends JComponent
     paintTitleBackground(g);
     if (frame.getTitle() != null && title != null)
       {
-	Color saved = g.getColor();
+        Color saved = g.getColor();
         Font f = title.getFont();
         g.setFont(f);
         FontMetrics fm = g.getFontMetrics(f);
-	if (frame.isSelected())
-	  g.setColor(selectedTextColor);
-	else
-	  g.setColor(notSelectedTextColor);
-	title.setText(getTitle(frame.getTitle(), fm, title.getBounds().width));
-	SwingUtilities.paintComponent(g, title, null, title.getBounds());
-	g.setColor(saved);
+        if (frame.isSelected())
+          g.setColor(selectedTextColor);
+        else
+          g.setColor(notSelectedTextColor);
+        title.setText(getTitle(frame.getTitle(), fm, title.getBounds().width));
+        SwingUtilities.paintComponent(g, title, null, title.getBounds());
+        g.setColor(saved);
       }
   }
 
@@ -964,7 +964,7 @@ public class BasicInternalFrameTitlePane extends JComponent
   {
     // FIXME: Implement postClosingEvent when I figure out what
     // it's supposed to do.
-    // It says that this fires an WINDOW_CLOSING like event. 
+    // It says that this fires an WINDOW_CLOSING like event.
     // So the closest thing is some kind of InternalFrameEvent.
     // But none is fired.
     // Can't see it called or anything.

@@ -333,7 +333,7 @@ public class PKCS7SignedData
   /**
    * Constructs a new instance of <code>PKCS7SignedData</code> given a
    * designated set of fields.
-   * 
+   *
    * @param digestAlgorithms the collection of DigestAlgorithm elements. Each
    *          DigestAlgorithm is a {@link List} of two elements, the first is an
    *          OID while the second is dependent on the value of the OID element.
@@ -401,7 +401,7 @@ public class PKCS7SignedData
   /**
    * Writes to the designated output stream the DER encoding of the current
    * contents of this instance.
-   * 
+   *
    * @param out the destination output stream.
    * @throws IOException if an I/O related exception occurs during the process.
    * @throws CRLException if an exception occurs while encoding the certificate

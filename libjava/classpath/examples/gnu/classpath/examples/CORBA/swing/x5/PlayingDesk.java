@@ -269,10 +269,10 @@ public class PlayingDesk
       {
         g.drawLine(0, y, w, y);
       }
-      
+
     g.setColor(Color.gray);
     g.drawRect(0,0, frame.DESK_SIZE.width, frame.DESK_SIZE.height);
-    g.drawRect(0,0, frame.DESK_SIZE.width+3, frame.DESK_SIZE.height+3);    
+    g.drawRect(0,0, frame.DESK_SIZE.width+3, frame.DESK_SIZE.height+3);
   }
 
   public void drawFigures(Graphics g)
@@ -446,8 +446,8 @@ public class PlayingDesk
                 frame.talk(Color.black, "Partner goes " + x + "-" + y
                   + ". Your move?");
                 player.set_current_state(I_THINK);
-              }            
-            repaint();            
+              }
+            repaint();
           }
       }
     catch (RemoteException rex)

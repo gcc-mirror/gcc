@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2010, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2011, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -62,6 +62,13 @@
    intrusive preprocessor directives.  */
 #ifndef TARGET_ABI_OPEN_VMS
 #define TARGET_ABI_OPEN_VMS 0
+#endif
+
+/* In configurations where blocks have no end_locus attached, just
+   sink assignments into a dummy global.  */
+#ifndef BLOCK_SOURCE_END_LOCATION
+static location_t block_end_locus_sink;
+#define BLOCK_SOURCE_END_LOCATION(BLOCK) block_end_locus_sink
 #endif
 
 /* For efficient float-to-int rounding, it is necessary to know whether
@@ -198,13 +205,13 @@ static tree emit_check (tree, tree, int, Node_Id);
 static tree build_unary_op_trapv (enum tree_code, tree, tree, Node_Id);
 static tree build_binary_op_trapv (enum tree_code, tree, tree, tree, Node_Id);
 static tree convert_with_check (Entity_Id, tree, bool, bool, bool, Node_Id);
-static bool smaller_form_type_p (tree, tree);
 static bool addressable_p (tree, tree);
 static tree assoc_to_constructor (Entity_Id, Node_Id, tree);
 static tree extract_values (tree, tree);
 static tree pos_to_constructor (Node_Id, tree, Entity_Id);
 static tree maybe_implicit_deref (tree);
 static void set_expr_location_from_node (tree, Node_Id);
+static bool set_end_locus_from_node (tree, Node_Id);
 static void set_gnu_expr_location_from_node (tree, Node_Id);
 static int lvalue_required_p (Node_Id, tree, bool, bool, bool);
 static tree build_raise_check (int, tree, enum exception_info_kind);
@@ -979,27 +986,6 @@ Identifier_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p)
     }
   else
     gnu_result = gnat_to_gnu_entity (gnat_temp, NULL_TREE, 0);
-
-  /* If we are in an exception handler, force this variable into memory to
-     ensure optimization does not remove stores that appear redundant but are
-     actually needed in case an exception occurs.
-
-     ??? Note that we need not do this if the variable is declared within the
-     handler, only if it is referenced in the handler and declared in an
-     enclosing block, but we have no way of testing that right now.
-
-     ??? We used to essentially set the TREE_ADDRESSABLE flag on the variable
-     here, but it can now be removed by the Tree aliasing machinery if the
-     address of the variable is never taken.  All we can do is to make the
-     variable volatile, which might incur the generation of temporaries just
-     to access the memory in some circumstances.  This can be avoided for
-     variables of non-constant size because they are automatically allocated
-     to memory.  There might be no way of allocating a proper temporary for
-     them in any case.  We only do this for SJLJ though.  */
-  if (VEC_last (tree, gnu_except_ptr_stack)
-      && TREE_CODE (gnu_result) == VAR_DECL
-      && TREE_CODE (DECL_SIZE_UNIT (gnu_result)) == INTEGER_CST)
-    TREE_THIS_VOLATILE (gnu_result) = TREE_SIDE_EFFECTS (gnu_result) = 1;
 
   /* Some objects (such as parameters passed by reference, globals of
      variable size, and renamed objects) actually represent the address
@@ -1967,6 +1953,7 @@ Case_Statement_to_gnu (Node_Id gnat_node)
 {
   tree gnu_result, gnu_expr, gnu_label;
   Node_Id gnat_when;
+  location_t end_locus;
   bool may_fallthru = false;
 
   gnu_expr = gnat_to_gnu (Expression (gnat_node));
@@ -1990,7 +1977,10 @@ Case_Statement_to_gnu (Node_Id gnat_node)
 
   /* We build a SWITCH_EXPR that contains the code with interspersed
      CASE_LABEL_EXPRs for each label.  */
-  gnu_label = create_artificial_label (input_location);
+  if (!Sloc_to_locus (Sloc (gnat_node) + UI_To_Int (End_Span (gnat_node)),
+      &end_locus))
+    end_locus = input_location;
+  gnu_label = create_artificial_label (end_locus);
   start_stmt_group ();
 
   for (gnat_when = First_Non_Pragma (Alternatives (gnat_node));
@@ -2075,7 +2065,9 @@ Case_Statement_to_gnu (Node_Id gnat_node)
 	  add_stmt (group);
 	  if (group_may_fallthru)
 	    {
-	      add_stmt (build1 (GOTO_EXPR, void_type_node, gnu_label));
+	      tree stmt = build1 (GOTO_EXPR, void_type_node, gnu_label);
+	      SET_EXPR_LOCATION (stmt, end_locus);
+	      add_stmt (stmt);
 	      may_fallthru = true;
 	    }
 	}
@@ -2616,6 +2608,31 @@ Subprogram_Body_to_gnu (Node_Id gnat_node)
   gnat_poplevel ();
   gnu_result = end_stmt_group ();
 
+  /* If we populated the parameter attributes cache, we need to make sure that
+     the cached expressions are evaluated on all the possible paths leading to
+     their uses.  So we force their evaluation on entry of the function.  */
+  cache = DECL_STRUCT_FUNCTION (gnu_subprog_decl)->language->parm_attr_cache;
+  if (cache)
+    {
+      struct parm_attr_d *pa;
+      int i;
+
+      start_stmt_group ();
+
+      FOR_EACH_VEC_ELT (parm_attr, cache, i, pa)
+	{
+	  if (pa->first)
+	    add_stmt_with_node_force (pa->first, gnat_node);
+	  if (pa->last)
+	    add_stmt_with_node_force (pa->last, gnat_node);
+	  if (pa->length)
+	    add_stmt_with_node_force (pa->length, gnat_node);
+	}
+
+      add_stmt (gnu_result);
+      gnu_result = end_stmt_group ();
+    }
+
   /* If we are dealing with a return from an Ada procedure with parameters
      passed by copy-in/copy-out, we need to return a record containing the
      final values of these parameters.  If the list contains only one entry,
@@ -2650,39 +2667,13 @@ Subprogram_Body_to_gnu (Node_Id gnat_node)
 
   VEC_pop (tree, gnu_return_label_stack);
 
-  /* If we populated the parameter attributes cache, we need to make sure that
-     the cached expressions are evaluated on all the possible paths leading to
-     their uses.  So we force their evaluation on entry of the function.  */
-  cache = DECL_STRUCT_FUNCTION (gnu_subprog_decl)->language->parm_attr_cache;
-  if (cache)
-    {
-      struct parm_attr_d *pa;
-      int i;
-
-      start_stmt_group ();
-
-      FOR_EACH_VEC_ELT (parm_attr, cache, i, pa)
-	{
-	  if (pa->first)
-	    add_stmt_with_node_force (pa->first, gnat_node);
-	  if (pa->last)
-	    add_stmt_with_node_force (pa->last, gnat_node);
-	  if (pa->length)
-	    add_stmt_with_node_force (pa->length, gnat_node);
-	}
-
-      add_stmt (gnu_result);
-      gnu_result = end_stmt_group ();
-    }
-
-  /* Set the end location.  */
-  Sloc_to_locus
-    ((Present (End_Label (Handled_Statement_Sequence (gnat_node)))
-      ? Sloc (End_Label (Handled_Statement_Sequence (gnat_node)))
-      : Sloc (gnat_node)),
-     &DECL_STRUCT_FUNCTION (gnu_subprog_decl)->function_end_locus);
-
   end_subprog_body (gnu_result);
+
+  /* Attempt setting the end_locus of our GCC body tree, typically a
+     BIND_EXPR or STATEMENT_LIST, then the end_locus of our GCC subprogram
+     declaration tree.  */
+  set_end_locus_from_node (gnu_result, gnat_node);
+  set_end_locus_from_node (gnu_subprog_decl, gnat_node);
 
   /* Finally annotate the parameters and disconnect the trees for parameters
      that we have turned into variables since they are now unusable.  */
@@ -3079,9 +3070,9 @@ call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target)
 	      = convert (DECL_ARG_TYPE (gnu_formal), integer_zero_node);
 	  else
 	    gnu_actual = build_unary_op (ADDR_EXPR, NULL_TREE,
-					 fill_vms_descriptor (gnu_actual,
-							      gnat_formal,
-							      gnat_actual));
+					 fill_vms_descriptor
+					 (TREE_TYPE (TREE_TYPE (gnu_formal)),
+					  gnu_actual, gnat_actual));
 	}
       else
 	{
@@ -3818,9 +3809,7 @@ Compilation_Unit_to_gnu (Node_Id gnat_node)
   gnat_poplevel ();
   DECL_SAVED_TREE (gnu_elab_proc_decl) = end_stmt_group ();
 
-  Sloc_to_locus
-    (Sloc (gnat_unit),
-     &DECL_STRUCT_FUNCTION (gnu_elab_proc_decl)->function_end_locus);
+  set_end_locus_from_node (gnu_elab_proc_decl, gnat_unit);
 
   info->next = elab_info_list;
   info->elab_proc = gnu_elab_proc_decl;
@@ -7232,30 +7221,6 @@ convert_with_check (Entity_Id gnat_type, tree gnu_expr, bool overflowp,
   return convert (gnu_type, gnu_result);
 }
 
-/* Return true if TYPE is a smaller form of ORIG_TYPE.  */
-
-static bool
-smaller_form_type_p (tree type, tree orig_type)
-{
-  tree size, osize;
-
-  /* We're not interested in variants here.  */
-  if (TYPE_MAIN_VARIANT (type) == TYPE_MAIN_VARIANT (orig_type))
-    return false;
-
-  /* Like a variant, a packable version keeps the original TYPE_NAME.  */
-  if (TYPE_NAME (type) != TYPE_NAME (orig_type))
-    return false;
-
-  size = TYPE_SIZE (type);
-  osize = TYPE_SIZE (orig_type);
-
-  if (!(TREE_CODE (size) == INTEGER_CST && TREE_CODE (osize) == INTEGER_CST))
-    return false;
-
-  return tree_int_cst_lt (size, osize) != 0;
-}
-
 /* Return true if GNU_EXPR can be directly addressed.  This is the case
    unless it is an expression involving computation or if it involves a
    reference to a bitfield or to an object not sufficiently aligned for
@@ -7762,7 +7727,10 @@ set_gnu_expr_location_from_node (tree node, Node_Id gnat_node)
 
     default:
       if (!REFERENCE_CLASS_P (node) && !EXPR_HAS_LOCATION (node))
-	set_expr_location_from_node (node, gnat_node);
+	{
+	  set_expr_location_from_node (node, gnat_node);
+	  set_end_locus_from_node (node, gnat_node);
+	}
       break;
     }
 }
@@ -7826,6 +7794,61 @@ post_error_ne_num (const char *msg, Node_Id node, Entity_Id ent, int num)
 {
   Error_Msg_Uint_1 = UI_From_Int (num);
   post_error_ne (msg, node, ent);
+}
+
+/* Set the end_locus information for GNU_NODE, if any, from an explicit end
+   location associated with GNAT_NODE or GNAT_NODE itself, whichever makes
+   most sense.  Return true if a sensible assignment was performed.  */
+
+static bool
+set_end_locus_from_node (tree gnu_node, Node_Id gnat_node)
+{
+  Node_Id gnat_end_label = Empty;
+  location_t end_locus;
+
+  /* Pick the GNAT node of which we'll take the sloc to assign to the GCC node
+     end_locus when there is one.  We consider only GNAT nodes with a possible
+     End_Label attached.  If the End_Label actually was unassigned, fallback
+     on the orginal node.  We'd better assign an explicit sloc associated with
+     the outer construct in any case.  */
+
+  switch (Nkind (gnat_node))
+    {
+    case N_Package_Body:
+    case N_Subprogram_Body:
+    case N_Block_Statement:
+      gnat_end_label = End_Label (Handled_Statement_Sequence (gnat_node));
+      break;
+
+    case N_Package_Declaration:
+      gnat_end_label = End_Label (Specification (gnat_node));
+      break;
+
+    default:
+      return false;
+    }
+
+  gnat_node = Present (gnat_end_label) ? gnat_end_label : gnat_node;
+
+  /* Some expanded subprograms have neither an End_Label nor a Sloc
+     attached.  Notify that to callers.  */
+
+  if (!Sloc_to_locus (Sloc (gnat_node), &end_locus))
+    return false;
+
+  switch (TREE_CODE (gnu_node))
+    {
+    case BIND_EXPR:
+      BLOCK_SOURCE_END_LOCATION (BIND_EXPR_BLOCK (gnu_node)) = end_locus;
+      return true;
+
+    case FUNCTION_DECL:
+      DECL_STRUCT_FUNCTION (gnu_node)->function_end_locus = end_locus;
+      return true;
+
+    default:
+      return false;
+    }
 }
 
 /* Similar to post_error_ne, but T is a GCC tree representing the number to

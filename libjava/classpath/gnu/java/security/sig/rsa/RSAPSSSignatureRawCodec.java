@@ -1,4 +1,4 @@
-/* RSAPSSSignatureRawCodec.java -- 
+/* RSAPSSSignatureRawCodec.java --
    Copyright (C) 2001, 2002, 2003, 2006 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -72,7 +72,7 @@ public class RSAPSSSignatureRawCodec
    * bytes in internet order,</li>
    * <li>the RSA-PSS signature bytes in internet order.</li>
    * </ol>
-   * 
+   *
    * @param signature the signature to encode, consisting of the output of the
    *          <code>sign()</code> method of a {@link RSAPSSSignature} instance
    *          --a byte array.

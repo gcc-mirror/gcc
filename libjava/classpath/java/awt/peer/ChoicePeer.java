@@ -48,7 +48,6 @@ public interface ChoicePeer extends ComponentPeer
 
   void removeAll();
 
-  void select (int index);  
+  void select (int index);
 
-} // interface ChoicePeer 
-
+} // interface ChoicePeer

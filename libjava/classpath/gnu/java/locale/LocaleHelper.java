@@ -85,7 +85,7 @@ public class LocaleHelper
     int uscore = variant.indexOf('_');
     if (uscore != -1)
       return new Locale(language, country,
-			variant.substring(0, uscore));
+                        variant.substring(0, uscore));
     if (!variant.isEmpty())
       return new Locale(language, country, "");
     if (!country.isEmpty())
@@ -95,7 +95,7 @@ public class LocaleHelper
 
   /**
    * Return an array of all the locales for which there is a
-   * {@link Collator} instance.  A new array is returned each time. 
+   * {@link Collator} instance.  A new array is returned each time.
    */
   public static Locale[] getCollatorLocales()
   {
@@ -145,4 +145,3 @@ public class LocaleHelper
     return LocaleData.localeNames[n];
   }
 }
-

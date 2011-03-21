@@ -38,15 +38,15 @@ exception statement from your version. */
 
 package java.util;
 
-/** 
+/**
  * Thrown when a method is called on a {@link Formatter} but
  * it has already been closed.
  *
  * @author Tom Tromey (tromey@redhat.com)
  * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
- * @since 1.5 
+ * @since 1.5
  */
-public class FormatterClosedException 
+public class FormatterClosedException
   extends IllegalStateException
 {
   private static final long serialVersionUID = 18111216L;

@@ -91,7 +91,7 @@ public final class AlphaComposite implements Composite
   public static final AlphaComposite SrcAtop = getInstance(SRC_ATOP);
   public static final AlphaComposite DstAtop = getInstance(DST_ATOP);
   public static final AlphaComposite Xor = getInstance(XOR);
-  
+
   private final int rule;
   private final float alpha;
   private AlphaComposite(int rule, float alpha)
@@ -113,7 +113,7 @@ public final class AlphaComposite implements Composite
   {
     return getInstance(rule, 1);
   }
-  
+
   /**
    * Creates an AlphaComposite object with the specified rule and the constant
    * alpha to multiply with the alpha of the source. The source is multiplied
@@ -162,7 +162,7 @@ public final class AlphaComposite implements Composite
    * Return an <code>AlphaComposite</code> similar to <code>this</code>,
    * that uses the specified rule. If <code>rule</code> is the same as
    * <code>this.rule</code>, then <code>this</code> is returned.
-   * 
+   *
    * @since 1.6
    */
   public AlphaComposite derive(int rule)
@@ -172,14 +172,14 @@ public final class AlphaComposite implements Composite
     else
       return AlphaComposite.getInstance(rule, this.getAlpha());
   }
-  
+
   /**
    * Return an <code>AlphaComposite</code> similar to <code>this</code>,
    * that uses the specified <code>alpha</code>.
-   * 
+   *
    * If <code>alph</code> is the same as <code>this.alpha</code>,
    * then <code>this</code> is returned.
-   * 
+   *
    * @since 1.6
    */
   public AlphaComposite derive(float alpha)
@@ -189,22 +189,22 @@ public final class AlphaComposite implements Composite
       else
         return AlphaComposite.getInstance(this.getRule(), alpha);
   }
-  
+
   public float getAlpha()
   {
     return alpha;
   }
-  
+
   public int getRule()
   {
     return rule;
   }
-  
+
   public int hashCode()
   {
     return 31 * Float.floatToIntBits(alpha) + rule;
   }
-  
+
   public boolean equals(Object o)
   {
     if (! (o instanceof AlphaComposite))

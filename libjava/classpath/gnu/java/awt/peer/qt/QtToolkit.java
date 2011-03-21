@@ -111,7 +111,7 @@ import java.util.Properties;
 public class QtToolkit extends ClasspathToolkit
 {
   public static EventQueue eventQueue = null; // the native event queue
-  public static QtRepaintThread repaintThread = null; 
+  public static QtRepaintThread repaintThread = null;
   public static MainQtThread guiThread = null;
   public static QtGraphicsEnvironment graphicsEnv = null;
 
@@ -122,12 +122,12 @@ public class QtToolkit extends ClasspathToolkit
     System.loadLibrary("qtpeer");
 
     String theme = null;
-    try 
+    try
       {
-	String style = System.getProperty("qtoptions.style");
-	if(style != null)
-	  theme = style;
-      } 
+        String style = System.getProperty("qtoptions.style");
+        if(style != null)
+          theme = style;
+      }
     catch(SecurityException e)
       {
       }
@@ -136,12 +136,12 @@ public class QtToolkit extends ClasspathToolkit
       }
 
     boolean doublebuffer = true;
-    try 
+    try
       {
-	String style = System.getProperty("qtoptions.nodoublebuffer");
-	if(style != null)
-	  doublebuffer = false;
-      } 
+        String style = System.getProperty("qtoptions.nodoublebuffer");
+        if(style != null)
+          doublebuffer = false;
+      }
     catch(SecurityException e)
       {
       }
@@ -171,7 +171,7 @@ public class QtToolkit extends ClasspathToolkit
   }
 
   native String[] nativeFontFamilies();
-  
+
   native int numScreens();
 
   native int defaultScreen();
@@ -213,7 +213,7 @@ public class QtToolkit extends ClasspathToolkit
     return new QtMenuItemPeer( this, target );
   }
 
-  public DragSourceContextPeer createDragSourceContextPeer(DragGestureEvent dge) 
+  public DragSourceContextPeer createDragSourceContextPeer(DragGestureEvent dge)
   {
     throw new RuntimeException("Not implemented");
   }
@@ -232,16 +232,16 @@ public class QtToolkit extends ClasspathToolkit
   {
     return new QtImage( producer );
   }
-  
+
   public Image createImage(byte[] imageData,
-			   int imageOffset,
-			   int imageLength)
+                           int imageOffset,
+                           int imageLength)
   {
     byte[] dataCopy = new byte[imageLength];
     System.arraycopy(imageData, imageOffset, dataCopy, 0, imageLength);
     return new QtImage( dataCopy );
   }
-  
+
   public Image createImage(String filename)
   {
     return new QtImage( filename );
@@ -256,7 +256,7 @@ public class QtToolkit extends ClasspathToolkit
   {
     return new QtTextFieldPeer(this,target);
   }
-  
+
   protected LabelPeer createLabel(Label target)
   {
     return new QtLabelPeer( this, target );
@@ -335,11 +335,11 @@ public class QtToolkit extends ClasspathToolkit
 
   public ColorModel getColorModel()
   {
-    return new DirectColorModel(32, 
-				0x00FF0000,
-				0x0000FF00,
-				0x000000FF,
-				0xFF000000);
+    return new DirectColorModel(32,
+                                0x00FF0000,
+                                0x0000FF00,
+                                0x000000FF,
+                                0xFF000000);
   }
 
   /**
@@ -347,11 +347,11 @@ public class QtToolkit extends ClasspathToolkit
    */
   public String[] getFontList()
   {
-    String[] builtIn = new String[] { "Dialog", 
-				      "DialogInput", 
-				      "Monospaced", 
-				      "Serif", 
-				      "SansSerif" };
+    String[] builtIn = new String[] { "Dialog",
+                                      "DialogInput",
+                                      "Monospaced",
+                                      "Serif",
+                                      "SansSerif" };
     String[] nat = nativeFontFamilies();
     String[] allFonts = new String[ nat.length + 5 ];
     System.arraycopy(builtIn, 0, allFonts, 0, 5);
@@ -365,7 +365,7 @@ public class QtToolkit extends ClasspathToolkit
   }
 
   protected FontPeer getFontPeer(String name,
-				 int style)
+                                 int style)
   {
     Map attrs = new HashMap ();
     ClasspathFontPeer.copyStyleToAttrs(style, attrs);
@@ -384,14 +384,14 @@ public class QtToolkit extends ClasspathToolkit
   }
 
   public PrintJob getPrintJob(Frame frame,
-			      String jobtitle,
-			      Properties props)
+                              String jobtitle,
+                              Properties props)
   {
     SecurityManager sm;
     sm = System.getSecurityManager();
     if (sm != null)
       sm.checkPrintJobAccess();
-    
+
     throw new RuntimeException("Not implemented");
   }
 
@@ -412,8 +412,8 @@ public class QtToolkit extends ClasspathToolkit
   public Map mapInputMethodHighlight(InputMethodHighlight highlight)
   {
     return null; // FIXME
-  }  
-  
+  }
+
   public boolean prepareImage(Image image, int w, int h, ImageObserver observer)
   {
     if(image instanceof QtImage)
@@ -431,7 +431,7 @@ public class QtToolkit extends ClasspathToolkit
   }
 
   public ClasspathFontPeer getClasspathFontPeer (String name, Map attrs)
-  {  
+  {
     return new QtFontPeer (name, attrs);
   }
 

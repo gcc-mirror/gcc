@@ -1,4 +1,4 @@
-/* PrinterMessageFromOperator.java -- 
+/* PrinterMessageFromOperator.java --
    Copyright (C) 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -45,15 +45,15 @@ import javax.print.attribute.PrintServiceAttribute;
 import javax.print.attribute.TextSyntax;
 
 /**
- * The <code>PrinterMessageFromOperator</code> printing attribute provides 
- * a message from an operator or a system administrator related to the 
+ * The <code>PrinterMessageFromOperator</code> printing attribute provides
+ * a message from an operator or a system administrator related to the
  * printer. This may include informations about the status of the printer
  * or expected downtimes, etc.
  * <p>
- * <b>IPP Compatibility:</b> PrinterMessageFromOperator is an IPP 1.1 
+ * <b>IPP Compatibility:</b> PrinterMessageFromOperator is an IPP 1.1
  * attribute.
  * </p>
- * 
+ *
  * @author Michael Koch (konqueror@gmx.de)
  */
 public final class PrinterMessageFromOperator extends TextSyntax
@@ -80,7 +80,7 @@ public final class PrinterMessageFromOperator extends TextSyntax
    *
    * @param obj the object to test
    *
-   * @return <code>true</code> if both objects are equal, 
+   * @return <code>true</code> if both objects are equal,
    * <code>false</code> otherwise.
    */
   public boolean equals(Object obj)

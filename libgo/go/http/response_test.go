@@ -34,14 +34,55 @@ var respTests = []respTest{
 			ProtoMajor:    1,
 			ProtoMinor:    0,
 			RequestMethod: "GET",
-			Header: map[string]string{
-				"Connection": "close", // TODO(rsc): Delete?
+			Header: Header{
+				"Connection": {"close"}, // TODO(rsc): Delete?
 			},
 			Close:         true,
 			ContentLength: -1,
 		},
 
 		"Body here\n",
+	},
+
+	// Unchunked HTTP/1.1 response without Content-Length or
+	// Connection headers.
+	{
+		"HTTP/1.1 200 OK\r\n" +
+			"\r\n" +
+			"Body here\n",
+
+		Response{
+			Status:        "200 OK",
+			StatusCode:    200,
+			Proto:         "HTTP/1.1",
+			ProtoMajor:    1,
+			ProtoMinor:    1,
+			RequestMethod: "GET",
+			Close:         true,
+			ContentLength: -1,
+		},
+
+		"Body here\n",
+	},
+
+	// Unchunked HTTP/1.1 204 response without Content-Length.
+	{
+		"HTTP/1.1 204 No Content\r\n" +
+			"\r\n" +
+			"Body should not be read!\n",
+
+		Response{
+			Status:        "204 No Content",
+			StatusCode:    204,
+			Proto:         "HTTP/1.1",
+			ProtoMajor:    1,
+			ProtoMinor:    1,
+			RequestMethod: "GET",
+			Close:         false,
+			ContentLength: 0,
+		},
+
+		"",
 	},
 
 	// Unchunked response with Content-Length.
@@ -59,9 +100,9 @@ var respTests = []respTest{
 			ProtoMajor:    1,
 			ProtoMinor:    0,
 			RequestMethod: "GET",
-			Header: map[string]string{
-				"Connection":     "close", // TODO(rsc): Delete?
-				"Content-Length": "10",    // TODO(rsc): Delete?
+			Header: Header{
+				"Connection":     {"close"}, // TODO(rsc): Delete?
+				"Content-Length": {"10"},    // TODO(rsc): Delete?
 			},
 			Close:         true,
 			ContentLength: 10,
@@ -87,7 +128,7 @@ var respTests = []respTest{
 			ProtoMajor:       1,
 			ProtoMinor:       0,
 			RequestMethod:    "GET",
-			Header:           map[string]string{},
+			Header:           Header{},
 			Close:            true,
 			ContentLength:    -1,
 			TransferEncoding: []string{"chunked"},
@@ -114,13 +155,51 @@ var respTests = []respTest{
 			ProtoMajor:       1,
 			ProtoMinor:       0,
 			RequestMethod:    "GET",
-			Header:           map[string]string{},
+			Header:           Header{},
 			Close:            true,
 			ContentLength:    -1, // TODO(rsc): Fix?
 			TransferEncoding: []string{"chunked"},
 		},
 
 		"Body here\n",
+	},
+
+	// Status line without a Reason-Phrase, but trailing space.
+	// (permitted by RFC 2616)
+	{
+		"HTTP/1.0 303 \r\n\r\n",
+		Response{
+			Status:        "303 ",
+			StatusCode:    303,
+			Proto:         "HTTP/1.0",
+			ProtoMajor:    1,
+			ProtoMinor:    0,
+			RequestMethod: "GET",
+			Header:        Header{},
+			Close:         true,
+			ContentLength: -1,
+		},
+
+		"",
+	},
+
+	// Status line without a Reason-Phrase, and no trailing space.
+	// (not permitted by RFC 2616, but we'll accept it anyway)
+	{
+		"HTTP/1.0 303\r\n\r\n",
+		Response{
+			Status:        "303 ",
+			StatusCode:    303,
+			Proto:         "HTTP/1.0",
+			ProtoMajor:    1,
+			ProtoMinor:    0,
+			RequestMethod: "GET",
+			Header:        Header{},
+			Close:         true,
+			ContentLength: -1,
+		},
+
+		"",
 	},
 }
 

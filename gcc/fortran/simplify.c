@@ -1,6 +1,6 @@
 /* Simplify intrinsic functions at compile-time.
    Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009,
-   2010 Free Software Foundation, Inc.
+   2010, 2011 Free Software Foundation, Inc.
    Contributed by Andy Vaught & Katherine Holcomb
 
 This file is part of GCC.
@@ -2199,6 +2199,93 @@ gfc_simplify_float (gfc_expr *a)
     result = gfc_int2real (a, gfc_default_real_kind);
 
   return range_check (result, "FLOAT");
+}
+
+
+static bool
+is_last_ref_vtab (gfc_expr *e)
+{
+  gfc_ref *ref;
+  gfc_component *comp = NULL;
+
+  if (e->expr_type != EXPR_VARIABLE)
+    return false;
+
+  for (ref = e->ref; ref; ref = ref->next)
+    if (ref->type == REF_COMPONENT)
+      comp = ref->u.c.component;
+
+  if (!e->ref || !comp)
+    return e->symtree->n.sym->attr.vtab;
+
+  if (comp->name[0] == '_' && strcmp (comp->name, "_vptr") == 0)
+    return true;
+
+  return false;
+}
+
+
+gfc_expr *
+gfc_simplify_extends_type_of (gfc_expr *a, gfc_expr *mold)
+{
+  /* Avoid simplification of resolved symbols.  */
+  if (is_last_ref_vtab (a) || is_last_ref_vtab (mold))
+    return NULL;
+
+  if (a->ts.type == BT_DERIVED && mold->ts.type == BT_DERIVED)
+    return gfc_get_logical_expr (gfc_default_logical_kind, &a->where,
+				 gfc_type_is_extension_of (mold->ts.u.derived,
+							   a->ts.u.derived));
+  /* Return .false. if the dynamic type can never be the same.  */
+  if ((a->ts.type == BT_CLASS && mold->ts.type == BT_CLASS
+       && !gfc_type_is_extension_of
+			(mold->ts.u.derived->components->ts.u.derived,
+			 a->ts.u.derived->components->ts.u.derived)
+       && !gfc_type_is_extension_of
+			(a->ts.u.derived->components->ts.u.derived,
+			 mold->ts.u.derived->components->ts.u.derived))
+      || (a->ts.type == BT_DERIVED && mold->ts.type == BT_CLASS
+	  && !gfc_type_is_extension_of
+			(a->ts.u.derived,
+			 mold->ts.u.derived->components->ts.u.derived)
+	  && !gfc_type_is_extension_of
+			(mold->ts.u.derived->components->ts.u.derived,
+			 a->ts.u.derived))
+      || (a->ts.type == BT_CLASS && mold->ts.type == BT_DERIVED
+	  && !gfc_type_is_extension_of
+			(mold->ts.u.derived,
+			 a->ts.u.derived->components->ts.u.derived)))
+    return gfc_get_logical_expr (gfc_default_logical_kind, &a->where, false);
+
+  if (mold->ts.type == BT_DERIVED
+      && gfc_type_is_extension_of (mold->ts.u.derived,
+				   a->ts.u.derived->components->ts.u.derived))
+    return gfc_get_logical_expr (gfc_default_logical_kind, &a->where, true);
+
+  return NULL;
+}
+
+
+gfc_expr *
+gfc_simplify_same_type_as (gfc_expr *a, gfc_expr *b)
+{
+  /* Avoid simplification of resolved symbols.  */
+  if (is_last_ref_vtab (a) || is_last_ref_vtab (b))
+    return NULL;
+
+  /* Return .false. if the dynamic type can never be the
+     same.  */
+  if ((a->ts.type == BT_CLASS || b->ts.type == BT_CLASS)
+      && !gfc_type_compatible (&a->ts, &b->ts)
+      && !gfc_type_compatible (&b->ts, &a->ts))
+    return gfc_get_logical_expr (gfc_default_logical_kind, &a->where, false);
+
+  if (a->ts.type != BT_DERIVED || b->ts.type != BT_DERIVED)
+     return NULL;
+
+  return gfc_get_logical_expr (gfc_default_logical_kind, &a->where,
+			       gfc_compare_derived_types (a->ts.u.derived,
+							  b->ts.u.derived));
 }
 
 
@@ -5409,20 +5496,19 @@ gfc_simplify_set_exponent (gfc_expr *x, gfc_expr *i)
 
 
 gfc_expr *
-gfc_simplify_shape (gfc_expr *source)
+gfc_simplify_shape (gfc_expr *source, gfc_expr *kind)
 {
   mpz_t shape[GFC_MAX_DIMENSIONS];
   gfc_expr *result, *e, *f;
   gfc_array_ref *ar;
   int n;
   gfc_try t;
+  int k = get_kind (BT_INTEGER, kind, "SHAPE", gfc_default_integer_kind);
+
+  result = gfc_get_array_expr (BT_INTEGER, k, &source->where);
 
   if (source->rank == 0)
-    return gfc_get_array_expr (BT_INTEGER, gfc_default_integer_kind,
-			       &source->where);
-
-  result = gfc_get_array_expr (BT_INTEGER, gfc_default_integer_kind,
-			       &source->where);
+    return result;
 
   if (source->expr_type == EXPR_VARIABLE)
     {
@@ -5443,8 +5529,7 @@ gfc_simplify_shape (gfc_expr *source)
 
   for (n = 0; n < source->rank; n++)
     {
-      e = gfc_get_constant_expr (BT_INTEGER, gfc_default_integer_kind,
-				 &source->where);
+      e = gfc_get_constant_expr (BT_INTEGER, k, &source->where);
 
       if (t == SUCCESS)
 	{
@@ -6759,9 +6844,9 @@ gfc_simplify_compiler_version (void)
   char *buffer;
   size_t len;
 
-  len = strlen ("GCC version ") + strlen (version_string) + 1;
-  buffer = (char*) alloca (len);
-  snprintf (buffer, len, "GCC version %s", version_string);
+  len = strlen ("GCC version ") + strlen (version_string);
+  buffer = XALLOCAVEC (char, len + 1);
+  snprintf (buffer, len + 1, "GCC version %s", version_string);
   return gfc_get_character_expr (gfc_default_character_kind,
                                 &gfc_current_locus, buffer, len);
 }

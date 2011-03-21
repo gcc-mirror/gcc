@@ -4,6 +4,8 @@
 
 package runtime
 
+import "unsafe"
+
 // Breakpoint() executes a breakpoint trap.
 func Breakpoint()
 
@@ -26,6 +28,9 @@ func GOMAXPROCS(n int) int
 // Cgocalls returns the number of cgo calls made by the current process.
 func Cgocalls() int64
 
+// Goroutines returns the number of goroutines that currently exist.
+func Goroutines() int32
+
 type MemStatsType struct {
 	// General statistics.
 	// Not locked during update; approximate.
@@ -34,6 +39,7 @@ type MemStatsType struct {
 	Sys        uint64 // bytes obtained from system (should be sum of XxxSys below)
 	Lookups    uint64 // number of pointer lookups
 	Mallocs    uint64 // number of mallocs
+	Frees      uint64 // number of frees
 
 	// Main allocation heap statistics.
 	HeapAlloc   uint64 // bytes allocated and still in use
@@ -51,22 +57,32 @@ type MemStatsType struct {
 	MSpanSys    uint64
 	MCacheInuse uint64 // mcache structures
 	MCacheSys   uint64
-	MHeapMapSys uint64 // heap map
 	BuckHashSys uint64 // profiling bucket hash table
 
 	// Garbage collector statistics.
-	NextGC   uint64
-	PauseNs  uint64
-	NumGC    uint32
-	EnableGC bool
-	DebugGC  bool
+	NextGC       uint64
+	PauseTotalNs uint64
+	PauseNs      [256]uint64 // most recent GC pause times
+	NumGC        uint32
+	EnableGC     bool
+	DebugGC      bool
 
 	// Per-size allocation statistics.
 	// Not locked during update; approximate.
-	BySize [67]struct {
+	// 61 is NumSizeClasses in the C code.
+	BySize [61]struct {
 		Size    uint32
 		Mallocs uint64
 		Frees   uint64
+	}
+}
+
+var Sizeof_C_MStats int // filled in by malloc.goc
+
+func init() {
+	if Sizeof_C_MStats != unsafe.Sizeof(MemStats) {
+		println(Sizeof_C_MStats, unsafe.Sizeof(MemStats))
+		panic("MStats vs MemStatsType size mismatch")
 	}
 }
 

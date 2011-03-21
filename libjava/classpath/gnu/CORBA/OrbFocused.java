@@ -62,16 +62,16 @@ import java.util.StringTokenizer;
  * to allow CORBA to work on one fixed port or (for better performance) on a
  * small fixed range of ports. This does not restrict the maximal number of the
  * connected objects as the objects can share the same port.
- * 
+ *
  * The used port or the used port range can be specified via property
  * gnu.CORBA.ListenerPort. The value of this property is a single port or range
  * of ports, boundary values (inclusive) being separeted by dash (for instance,
  * "1245-1250").
- * 
+ *
  * It is possible to instantiate multiple instances of the focused ORBs and
  * combine them with the ordinary ORBs. If you instantiate several instances of
  * the focused ORBs on the same host, they used port sets should not overlap.
- * 
+ *
  * @author Audrius Meskauskas, Lithuania (AudriusA@Bioinformatics.org)
  */
 public class OrbFocused
@@ -136,7 +136,7 @@ public class OrbFocused
 
   /**
    * Set the port range.
-   * 
+   *
    * @param from - start of the port range, inclusive.
    * @param to - end of the port range, inclusive.
    */
@@ -231,7 +231,7 @@ public class OrbFocused
   /**
    * Start the ORBs main working cycle (receive invocation - invoke on the local
    * object - send response - wait for another invocation).
-   * 
+   *
    * The method only returns after calling {@link #shutdown(boolean)}.
    */
   public void run()
@@ -281,7 +281,7 @@ public class OrbFocused
    * Connect the given CORBA object to this ORB, explicitly specifying the
    * object key and the identity of the thread (and port), where the object must
    * be served. The identity is normally the POA.
-   * 
+   *
    * The new port server will be started only if there is no one already running
    * for the same identity. Otherwise, the task of the existing port server will
    * be widened, including duty to serve the given object. All objects,
@@ -289,13 +289,13 @@ public class OrbFocused
    * subsequently in the same thread. The method is used when the expected
    * number of the objects is too large to have a single port and thread per
    * object. This method is used by POAs, having a single thread policy.
-   * 
+   *
    * @param object the object, must implement the {@link InvokeHandler})
    * interface.
    * @param key the object key, usually used to identify the object from remote
    * side.
    * @param port the port, where the object must be connected.
-   * 
+   *
    * @throws BAD_PARAM if the object does not implement the
    * {@link InvokeHandler}).
    */

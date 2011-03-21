@@ -1,4 +1,4 @@
-/* Pattern.java -- 
+/* Pattern.java --
    Copyright (C) 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -45,4 +45,3 @@ package gnu.xml.validation.relaxng;
 abstract class Pattern
 {
 }
-

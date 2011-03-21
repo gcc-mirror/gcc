@@ -108,11 +108,11 @@ public class InvocationEvent extends AWTEvent implements ActiveEvent
 
   /**
    * This is the caught Throwable thrown in the <code>run()</code> method.
-   * It is null if throwables are ignored, the run method hasn't completed, 
+   * It is null if throwables are ignored, the run method hasn't completed,
    * or there were no throwables thrown.
    */
   private Throwable throwable;
-  
+
   /**
    * The timestamp when this event was created.
    *
@@ -202,9 +202,9 @@ public class InvocationEvent extends AWTEvent implements ActiveEvent
     Object o = notifier;
     if (o != null)
       synchronized(o)
-	{
-	  o.notifyAll();
-	}
+        {
+          o.notifyAll();
+        }
   }
 
   /**
@@ -230,7 +230,7 @@ public class InvocationEvent extends AWTEvent implements ActiveEvent
   {
     return throwable;
   }
-  
+
   /**
    * Gets the timestamp of when this event was created.
    *

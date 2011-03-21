@@ -1,3 +1,194 @@
+2011-03-18  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config.guess: Update to version 2011-02-02
+	* config.sub: Update to version 2011-02-24
+
+2011-03-16  Jack Howarth  <howarth@bromo.med.uc.edu>
+
+	PR lto/48086
+	* configure.ac: Re-enable LTO on *-apple-darwin9.
+	* configure: Regenerate.
+
+2011-03-13  Jack Howarth  <howarth@bromo.med.uc.edu>
+
+	PR lto/48086
+	* configure.ac: Disable LTO on darwin due to an assembler change in
+	Xcode 3.2.6/4.0 that limits the total number of sections/segments to
+	under 256.
+	* configure: Regenerate.
+
+2011-03-11  Chen Liqin <liqin.gcc@gmail.com>
+
+	* MAINTAINERS: Update myself as score backend maintainer, update my e-mail address.
+
+2011-03-09  Xuepeng Guo  <terry.guo@arm.com>
+
+	* MAINTAINERS: Update my e-mail address.
+
+2011-03-06  Joey Ye  <joey.ye@arm.com>
+
+	* MAINTAINERS: Update my e-mail address.
+
+2011-03-02  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* configure.ac: Adjust test of with_ppl.
+	* configure: Regenerated.
+
+2011-03-02  Kai Tietz  <ktietz@redhat.com>
+
+	* MAINTAINERS: Adjust my e-mail address.
+
+2011-03-02  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* configure.ac: Add -lpwl to ppllibs.
+	* configure: Regenerated.
+
+2011-03-02  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* config/cloog.m4: Add -lisl to clooglibs.
+	* configure: Regenerated.
+
+2011-02-24  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	* MAINTAINERS (CPU Port maintainers): Add self.
+
+2011-02-16  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* MAINTAINERS: Add myself as testsuite maintainer.
+
+2011-02-15  Mike Stump  <mikestump@comcast.net>
+
+	* MAINTAINERS: Add myself as testsuite maintainer.
+
+2011-02-13  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	Import from Libtool and gnulib:
+
+	2011-01-27  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	Prepare for supporting FreeBSD 10.
+	* config.rpath: Remove handling of freebsd1* which soon would
+	match FreeBSD 10.0.
+
+	2011-01-20  Gerald Pfeifer  <gerald@pfeifer.com>  (tiny change)
+
+	Remove support for FreeBSD 1.x.
+	* libtool.m4 (_LT_LINKER_SHLIBS)
+	(_LT_SYS_DYNAMIC_LINKER): Remove handling of freebsd1* which
+	soon would incorrectly match FreeBSD 10.0.
+
+2011-02-12  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	PR binutils/12283
+	* move-if-change: Import version from gnulib.
+
+2011-02-12  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR lto/47225
+	* Makefile.def (lto-plugin): Double dash for enable-shared.
+	(configure-gcc): Depend on all-lto-plugin.
+	* Makefile.in: Rebuilt.
+
+2011-02-11  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* configure.ac: Remove extra bracket.
+	* configure: Regenerate.
+
+2011-02-08  Tobias Burnus  <burnus@net-b.de>
+
+	* MAINTAINERS: Add myself as libquadmath maintainer.
+
+2011-02-08  Thomas Schwinge  <thomas@schwinge.name>
+
+	* MAINTAINERS: Update my email address.
+
+2011-02-07  Joseph Myers  <joseph@codesourcery.com>
+
+	* MAINTAINERS (option handling): Add self.
+
+2011-02-06  Kai Tietz  <kai.tietz@onevision.com>
+
+	PR lto/47225
+	* Makefile.def: Add dependency for install-gcc
+	on install-lto-plugin.
+	* Makfile.in: Regenerated
+
+2011-02-01  Sebastien Bourdeauducq  <sebastien@milkymist.org>
+
+	* MAINTAINERS (CPU Port Maintainers): Add myself.
+
+2011-01-31  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR libgcj/44341
+	* configure.ac: Discard --with-* flags for host when configuring
+	target libraries for cross build.
+	* configure: Rebuilt.
+
+2011-01-25  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* MAINTAINERS (linear loop transforms): Removed.
+
+2011-01-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* configure.ac: If with_ppl is no, move setting with_cloog=no
+	after CLOOG_REQUESTED check.
+	* configure: Regenerated.
+
+2011-01-25  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* configure.ac: Call AC_MSG_ERROR when PPL 0.11 is not present and
+	CLooG has been requested.
+	* configure: Regenerated.
+
+2011-01-25  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* configure: Regenerated.
+	* configure.ac: Check for version 0.11 (or later revision) of PPL.
+
+2011-01-25  Tobias Grosser  <grosser@fim.uni-passau.de>
+
+	* configure: Regenerated.
+	* configure.ac: Use CLOOG_CHECK_VERSION(0,16,1).
+
+2011-01-21  Andreas Schwab  <schwab@redhat.com>
+
+	* configure.ac: Use AS_HELP_STRING throughout.
+	* configure: Regenerate.
+
+2011-01-18  Jie Zhang  <jie.zhang@analog.com>
+
+	* configure.ac (bfin-*-*): Remove gdb from noconfigdirs.
+	* configure: Regenerate.
+
+2011-01-13  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* ltmain.sh (relink): Use absolute path when hardcoding with -L.
+
+2011-01-13  Joel Brobecker  <brobecker@adacore.com>
+
+	* configure.ac: Remove readline, mmalloc, and gdb from noconfigdirs
+	for ia64-hpux.
+	* configure: Regenerate.
+
+2011-01-07  Jan Hubicka  <jh@suse.cz>
+
+	PR lto/47225
+	* Makefile.in: Regenerate.
+	* Makefile.def (lto-plugin): Always pass enable-shared to the plugin
+	configure.
+
+2011-01-07  Jan Hubicka  <jh@suse.cz>
+
+	* Makefile.in: Regenerate.
+	* Makefile.def (gcc host module) and soft dependency on lto-plugin
+	and configure dependency on lto-plugin configure.
+	(lto-plugin module): Remove dependency on GCC; add dependency on
+	liniberty.
+
+2011-01-07  William Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
 2010-12-23  Hariharan Sandanagobalane <hariharan@picochip.com>
 
 	* configure: Regenerate.

@@ -162,7 +162,7 @@ public class JPEGHuffmanTable
    * the array arguments. lengths[index] stores the number of Huffman
    * values with Huffman codes of length index + 1. The values array
    * stores the Huffman values in order of increasing code length.
-   * 
+   *
    * @param lengths an array of Huffman code lengths
    * @param values a sorted array of Huffman values
    * @throws IllegalArgumentException if either parameter is null, if
@@ -266,17 +266,17 @@ public class JPEGHuffmanTable
   public String toString()
   {
     CPStringBuilder buffer = new CPStringBuilder();
-    
+
     buffer.append("JPEGHuffmanTable:\nlengths:");
-    
+
     for (int i = 0; i < lengths.length; i++)
       buffer.append(" " + lengths[i]);
-    
+
     buffer.append("\nvalues:");
-    
+
     for (int i = 0; i < values.length; i++)
       buffer.append(" " + values[i]);
-    
+
     return buffer.toString();
   }
 }

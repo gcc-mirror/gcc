@@ -396,6 +396,8 @@ void gfc_trans_vla_type_sizes (gfc_symbol *, stmtblock_t *);
 
 /* Add an expression to the end of a block.  */
 void gfc_add_expr_to_block (stmtblock_t *, tree);
+/* Add an expression to the beginning of a block.  */
+void gfc_prepend_expr_to_block (stmtblock_t *, tree);
 /* Add a block to the end of a block.  */
 void gfc_add_block_to_block (stmtblock_t *, stmtblock_t *);
 /* Add a MODIFY_EXPR to a block.  */
@@ -443,6 +445,9 @@ void gfc_build_builtin_function_decls (void);
 
 /* Set the backend source location of a decl.  */
 void gfc_set_decl_location (tree, locus *);
+
+/* Get a module symbol backend_decl if possible.  */
+bool gfc_get_module_backend_decl (gfc_symbol *);
 
 /* Return the variable decl for a symbol.  */
 tree gfc_get_symbol_decl (gfc_symbol *);
@@ -700,6 +705,7 @@ struct GTY((variable_size))	lang_type	 {
   tree dataptr_type;
   tree span;
   tree base_decl[2];
+  tree nonrestricted_type;
 };
 
 struct GTY((variable_size)) lang_decl {

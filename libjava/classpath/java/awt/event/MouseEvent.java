@@ -293,8 +293,8 @@ public class MouseEvent extends InputEvent
     // release event.
     if (id == MOUSE_RELEASED)
       this.modifiersEx &= ~(BUTTON1_DOWN_MASK
-			    | BUTTON2_DOWN_MASK
-			    | BUTTON3_DOWN_MASK);
+                            | BUTTON2_DOWN_MASK
+                            | BUTTON3_DOWN_MASK);
 
     this.absX = absX;
     this.absY = absY;
@@ -469,10 +469,10 @@ public class MouseEvent extends InputEvent
     // FIXME: need a mauve test for this method
     if (modifiersEx != 0)
       s.append(",extModifiers=").append(getModifiersExText(modifiersEx));
-    
+
     s.append(",clickCount=").append(clickCount);
     s.append(",consumed=").append(consumed);
-    
+
     return s.toString();
   }
 

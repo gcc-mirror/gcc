@@ -1,4 +1,4 @@
-/* TransformerException.java -- 
+/* TransformerException.java --
    Copyright (C) 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -91,7 +91,7 @@ public class TransformerException
   /**
    * Constructor with detail message, locator and underlying cause.
    */
-  public TransformerException(String msg, SourceLocator locator, 
+  public TransformerException(String msg, SourceLocator locator,
                               Throwable cause)
   {
     super(msg);

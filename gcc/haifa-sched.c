@@ -1,6 +1,6 @@
 /* Instruction scheduling pass.
    Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
-   2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+   2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com) Enhanced by,
    and currently maintained by, Jim Wilson (wilson@cygnus.com)
@@ -672,11 +672,11 @@ setup_ref_regs (rtx x)
   if (REG_P (x))
     {
       regno = REGNO (x);
-      if (regno >= FIRST_PSEUDO_REGISTER)
-	bitmap_set_bit (region_ref_regs, REGNO (x));
+      if (HARD_REGISTER_NUM_P (regno))
+	bitmap_set_range (region_ref_regs, regno,
+			  hard_regno_nregs[regno][GET_MODE (x)]);
       else
-	for (i = hard_regno_nregs[regno][GET_MODE (x)] - 1; i >= 0; i--)
-	  bitmap_set_bit (region_ref_regs, regno + i);
+	bitmap_set_bit (region_ref_regs, REGNO (x));
       return;
     }
   fmt = GET_RTX_FORMAT (code);
@@ -1900,8 +1900,33 @@ get_ebb_head_tail (basic_block beg, basic_block end, rtx *headp, rtx *tailp)
     beg_head = NEXT_INSN (beg_head);
 
   while (beg_head != beg_tail)
-    if (NOTE_P (beg_head) || BOUNDARY_DEBUG_INSN_P (beg_head))
+    if (NOTE_P (beg_head))
       beg_head = NEXT_INSN (beg_head);
+    else if (DEBUG_INSN_P (beg_head))
+      {
+	rtx note, next;
+
+	for (note = NEXT_INSN (beg_head);
+	     note != beg_tail;
+	     note = next)
+	  {
+	    next = NEXT_INSN (note);
+	    if (NOTE_P (note))
+	      {
+		if (sched_verbose >= 9)
+		  fprintf (sched_dump, "reorder %i\n", INSN_UID (note));
+
+		reorder_insns_nobb (note, note, PREV_INSN (beg_head));
+
+		if (BLOCK_FOR_INSN (note) != beg)
+		  df_insn_change_bb (note, beg);
+	      }
+	    else if (!DEBUG_INSN_P (note))
+	      break;
+	  }
+
+	break;
+      }
     else
       break;
 
@@ -1913,8 +1938,36 @@ get_ebb_head_tail (basic_block beg, basic_block end, rtx *headp, rtx *tailp)
     end_head = NEXT_INSN (end_head);
 
   while (end_head != end_tail)
-    if (NOTE_P (end_tail) || BOUNDARY_DEBUG_INSN_P (end_tail))
+    if (NOTE_P (end_tail))
       end_tail = PREV_INSN (end_tail);
+    else if (DEBUG_INSN_P (end_tail))
+      {
+	rtx note, prev;
+
+	for (note = PREV_INSN (end_tail);
+	     note != end_head;
+	     note = prev)
+	  {
+	    prev = PREV_INSN (note);
+	    if (NOTE_P (note))
+	      {
+		if (sched_verbose >= 9)
+		  fprintf (sched_dump, "reorder %i\n", INSN_UID (note));
+
+		reorder_insns_nobb (note, note, end_tail);
+
+		if (end_tail == BB_END (end))
+		  BB_END (end) = note;
+
+		if (BLOCK_FOR_INSN (note) != end)
+		  df_insn_change_bb (note, end);
+	      }
+	    else if (!DEBUG_INSN_P (note))
+	      break;
+	  }
+
+	break;
+      }
     else
       break;
 
@@ -1928,8 +1981,7 @@ no_real_insns_p (const_rtx head, const_rtx tail)
 {
   while (head != NEXT_INSN (tail))
     {
-      if (!NOTE_P (head) && !LABEL_P (head)
-	  && !BOUNDARY_DEBUG_INSN_P (head))
+      if (!NOTE_P (head) && !LABEL_P (head))
 	return 0;
       head = NEXT_INSN (head);
     }
@@ -2812,7 +2864,7 @@ schedule_block (basic_block *target_bb)
   last_scheduled_insn = prev_head;
 
   gcc_assert ((NOTE_P (last_scheduled_insn)
-	       || BOUNDARY_DEBUG_INSN_P (last_scheduled_insn))
+	       || DEBUG_INSN_P (last_scheduled_insn))
 	      && BLOCK_FOR_INSN (last_scheduled_insn) == *target_bb);
 
   /* Initialize INSN_QUEUE.  Q_SIZE is the total number of insns in the
@@ -3319,7 +3371,7 @@ set_priorities (rtx head, rtx tail)
 	current_sched_info->sched_max_insns_priority;
   rtx prev_head;
 
-  if (head == tail && (! INSN_P (head) || BOUNDARY_DEBUG_INSN_P (head)))
+  if (head == tail && ! INSN_P (head))
     gcc_unreachable ();
 
   n_insn = 0;
@@ -3851,7 +3903,7 @@ fix_tick_ready (rtx next)
 {
   int tick, delay;
 
-  if (!sd_lists_empty_p (next, SD_LIST_RES_BACK))
+  if (!DEBUG_INSN_P (next) && !sd_lists_empty_p (next, SD_LIST_RES_BACK))
     {
       int full_p;
       sd_iterator_def sd_it;

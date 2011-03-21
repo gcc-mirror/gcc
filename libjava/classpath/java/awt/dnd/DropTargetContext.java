@@ -66,7 +66,7 @@ public class DropTargetContext implements Serializable
       this.transferable = t;
       this.isLocal = local;
     }
-    
+
     public DataFlavor[] getTransferDataFlavors()
     {
       return transferable.getTransferDataFlavors();
@@ -156,7 +156,7 @@ public class DropTargetContext implements Serializable
   protected void rejectDrop ()
   {
     if (dtcp != null)
-      dtcp.rejectDrop();    
+      dtcp.rejectDrop();
   }
 
   protected DataFlavor[] getCurrentDataFlavors ()
@@ -181,7 +181,7 @@ public class DropTargetContext implements Serializable
    *
    * @exception InvalidDnDOperationException If a drag is not outstanding.
    */
-  protected Transferable getTransferable() 
+  protected Transferable getTransferable()
     throws InvalidDnDOperationException
   {
     // FIXME: Implement this

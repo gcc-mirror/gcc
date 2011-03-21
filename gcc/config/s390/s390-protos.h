@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for IBM S/390.
-   Copyright (C) 2000, 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010
+   Copyright (C) 2000, 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
 
    Contributed by Hartmut Penner (hpenner@de.ibm.com)
@@ -70,7 +70,6 @@ extern int legitimate_constant_p (rtx);
 extern bool legitimate_reload_constant_p (rtx);
 extern rtx legitimize_pic_address (rtx, rtx);
 extern rtx legitimize_reload_address (rtx, enum machine_mode, int, int);
-extern enum reg_class s390_preferred_reload_class (rtx, enum reg_class);
 extern enum reg_class s390_secondary_input_reload_class (enum reg_class,
 							 enum machine_mode,
 							 rtx);
@@ -99,10 +98,10 @@ extern bool s390_logical_operator_ok_p (rtx *);
 extern void s390_narrow_logical_operator (enum rtx_code, rtx *, rtx *);
 extern void s390_split_access_reg (rtx, rtx *, rtx *);
 
-extern bool s390_output_addr_const_extra (FILE*, rtx);
 extern void print_operand_address (FILE *, rtx);
 extern void print_operand (FILE *, rtx, int);
 extern void s390_output_pool_entry (rtx, enum machine_mode, unsigned int);
+extern int s390_label_align (rtx);
 extern int s390_agen_dep_p (rtx, rtx);
 extern rtx s390_load_got (void);
 extern rtx s390_get_thread_pointer (void);
@@ -113,9 +112,3 @@ extern int s390_branch_condition_mask (rtx);
 extern int s390_compare_and_branch_condition_mask (rtx);
 
 #endif /* RTX_CODE */
-
-#ifdef TREE_CODE
-#ifdef RTX_CODE
-extern rtx s390_function_value (const_tree, const_tree, enum machine_mode);
-#endif /* RTX_CODE */
-#endif /* TREE_CODE */

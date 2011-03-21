@@ -1,5 +1,5 @@
 /* RTL dead store elimination.
-   Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010
+   Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
 
    Contributed by Richard Sandiford <rsandifor@codesourcery.com>
@@ -47,6 +47,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "optabs.h"
 #include "dbgcnt.h"
 #include "target.h"
+#include "params.h"
 
 /* This file contains three techniques for performing Dead Store
    Elimination (dse).
@@ -387,6 +388,7 @@ static alloc_pool insn_info_pool;
 /* The linked list of stores that are under consideration in this
    basic block.  */
 static insn_info_t active_local_stores;
+static int active_local_stores_len;
 
 struct bb_info
 {
@@ -806,93 +808,36 @@ free_store_info (insn_info_t insn_info)
   insn_info->store_rec = NULL;
 }
 
-
-struct insn_size {
-  int size;
-  rtx insn;
-};
-
-
-/* Add an insn to do the add inside a x if it is a
-   PRE/POST-INC/DEC/MODIFY.  D is an structure containing the insn and
-   the size of the mode of the MEM that this is inside of.  */
+/* Callback for for_each_inc_dec that emits an INSN that sets DEST to
+   SRC + SRCOFF before insn ARG.  */
 
 static int
-replace_inc_dec (rtx *r, void *d)
+emit_inc_dec_insn_before (rtx mem ATTRIBUTE_UNUSED,
+			  rtx op ATTRIBUTE_UNUSED,
+			  rtx dest, rtx src, rtx srcoff, void *arg)
 {
-  rtx x = *r;
-  struct insn_size *data = (struct insn_size *)d;
-  switch (GET_CODE (x))
-    {
-    case PRE_INC:
-    case POST_INC:
-      {
-	rtx r1 = XEXP (x, 0);
-	rtx c = gen_int_mode (data->size, GET_MODE (r1));
-	emit_insn_before (gen_rtx_SET (VOIDmode, r1,
-				       gen_rtx_PLUS (GET_MODE (r1), r1, c)),
-			  data->insn);
-	return -1;
-      }
+  rtx insn = (rtx)arg;
 
-    case PRE_DEC:
-    case POST_DEC:
-      {
-	rtx r1 = XEXP (x, 0);
-	rtx c = gen_int_mode (-data->size, GET_MODE (r1));
-	emit_insn_before (gen_rtx_SET (VOIDmode, r1,
-				       gen_rtx_PLUS (GET_MODE (r1), r1, c)),
-			  data->insn);
-	return -1;
-      }
+  if (srcoff)
+    src = gen_rtx_PLUS (GET_MODE (src), src, srcoff);
 
-    case PRE_MODIFY:
-    case POST_MODIFY:
-      {
-	/* We can reuse the add because we are about to delete the
-	   insn that contained it.  */
-	rtx add = XEXP (x, 0);
-	rtx r1 = XEXP (add, 0);
-	emit_insn_before (gen_rtx_SET (VOIDmode, r1, add), data->insn);
-	return -1;
-      }
+  /* We can reuse all operands without copying, because we are about
+     to delete the insn that contained it.  */
 
-    default:
-      return 0;
-    }
-}
+  emit_insn_before (gen_rtx_SET (VOIDmode, dest, src), insn);
 
-
-/* If X is a MEM, check the address to see if it is PRE/POST-INC/DEC/MODIFY
-   and generate an add to replace that.  */
-
-static int
-replace_inc_dec_mem (rtx *r, void *d)
-{
-  rtx x = *r;
-  if (x != NULL_RTX && MEM_P (x))
-    {
-      struct insn_size data;
-
-      data.size = GET_MODE_SIZE (GET_MODE (x));
-      data.insn = (rtx) d;
-
-      for_each_rtx (&XEXP (x, 0), replace_inc_dec, &data);
-
-      return -1;
-    }
-  return 0;
+  return -1;
 }
 
 /* Before we delete INSN, make sure that the auto inc/dec, if it is
    there, is split into a separate insn.  */
 
-static void
+void
 check_for_inc_dec (rtx insn)
 {
   rtx note = find_reg_note (insn, REG_INC, NULL_RTX);
   if (note)
-    for_each_rtx (&insn, replace_inc_dec_mem, insn);
+    for_each_inc_dec (&insn, emit_inc_dec_insn_before, insn);
 }
 
 
@@ -1004,6 +949,7 @@ add_wild_read (bb_info_t bb_info)
     }
   insn_info->wild_read = true;
   active_local_stores = NULL;
+  active_local_stores_len = 0;
 }
 
 
@@ -1107,7 +1053,7 @@ canon_address (rtx mem,
 
   *alias_set_out = 0;
 
-  cselib_lookup (mem_address, address_mode, 1);
+  cselib_lookup (mem_address, address_mode, 1, GET_MODE (mem));
 
   if (dump_file)
     {
@@ -1187,7 +1133,7 @@ canon_address (rtx mem,
 	}
     }
 
-  *base = cselib_lookup (address, address_mode, true);
+  *base = cselib_lookup (address, address_mode, true, GET_MODE (mem));
   *group_id = -1;
 
   if (*base == NULL)
@@ -1587,20 +1533,21 @@ record_store (rtx body, bb_info_t bb_info)
 
       /* An insn can be deleted if every position of every one of
 	 its s_infos is zero.  */
-      if (any_positions_needed_p (s_info)
-	  || ptr->cannot_delete)
+      if (any_positions_needed_p (s_info))
 	del = false;
 
       if (del)
 	{
 	  insn_info_t insn_to_delete = ptr;
 
+	  active_local_stores_len--;
 	  if (last)
 	    last->next_local_store = ptr->next_local_store;
 	  else
 	    active_local_stores = ptr->next_local_store;
 
-	  delete_dead_store_insn (insn_to_delete);
+	  if (!insn_to_delete->cannot_delete)
+	    delete_dead_store_insn (insn_to_delete);
 	}
       else
 	last = ptr;
@@ -1781,12 +1728,11 @@ look_for_hardregs (rtx x, const_rtx pat ATTRIBUTE_UNUSED, void *data)
   bitmap regs_set = (bitmap) data;
 
   if (REG_P (x)
-      && REGNO (x) < FIRST_PSEUDO_REGISTER)
+      && HARD_REGISTER_P (x))
     {
-      int regno = REGNO (x);
-      int n = hard_regno_nregs[regno][GET_MODE (x)];
-      while (--n >= 0)
-	bitmap_set_bit (regs_set, regno + n);
+      unsigned int regno = REGNO (x);
+      bitmap_set_range (regs_set, regno,
+			hard_regno_nregs[regno][GET_MODE (x)]);
     }
 }
 
@@ -2131,6 +2077,7 @@ check_mem_read_rtx (rtx *loc, void *data)
 	      if (dump_file)
 		dump_insn_info ("removing from active", i_ptr);
 
+	      active_local_stores_len--;
 	      if (last)
 		last->next_local_store = i_ptr->next_local_store;
 	      else
@@ -2220,6 +2167,7 @@ check_mem_read_rtx (rtx *loc, void *data)
 	      if (dump_file)
 		dump_insn_info ("removing from active", i_ptr);
 
+	      active_local_stores_len--;
 	      if (last)
 		last->next_local_store = i_ptr->next_local_store;
 	      else
@@ -2279,6 +2227,7 @@ check_mem_read_rtx (rtx *loc, void *data)
 	      if (dump_file)
 		dump_insn_info ("removing from active", i_ptr);
 
+	      active_local_stores_len--;
 	      if (last)
 		last->next_local_store = i_ptr->next_local_store;
 	      else
@@ -2483,6 +2432,7 @@ scan_insn (bb_info_t bb_info, rtx insn)
 		  if (dump_file)
 		    dump_insn_info ("removing from active", i_ptr);
 
+		  active_local_stores_len--;
 		  if (last)
 		    last->next_local_store = i_ptr->next_local_store;
 		  else
@@ -2510,6 +2460,12 @@ scan_insn (bb_info_t bb_info, rtx insn)
 		    fprintf (dump_file, "handling memset as BLKmode store\n");
 		  if (mems_found == 1)
 		    {
+		      if (active_local_stores_len++
+			  >= PARAM_VALUE (PARAM_MAX_DSE_ACTIVE_LOCAL_STORES))
+			{
+			  active_local_stores_len = 1;
+			  active_local_stores = NULL;
+			}
 		      insn_info->next_local_store = active_local_stores;
 		      active_local_stores = insn_info;
 		    }
@@ -2553,6 +2509,12 @@ scan_insn (bb_info_t bb_info, rtx insn)
      it as cannot delete.  This simplifies the processing later.  */
   if (mems_found == 1)
     {
+      if (active_local_stores_len++
+	  >= PARAM_VALUE (PARAM_MAX_DSE_ACTIVE_LOCAL_STORES))
+	{
+	  active_local_stores_len = 1;
+	  active_local_stores = NULL;
+	}
       insn_info->next_local_store = active_local_stores;
       active_local_stores = insn_info;
     }
@@ -2591,6 +2553,7 @@ remove_useless_values (cselib_val *base)
 
       if (del)
 	{
+	  active_local_stores_len--;
 	  if (last)
 	    last->next_local_store = insn_info->next_local_store;
 	  else
@@ -2641,6 +2604,7 @@ dse_step1 (void)
 	    = create_alloc_pool ("cse_store_info_pool",
 				 sizeof (struct store_info), 100);
 	  active_local_stores = NULL;
+	  active_local_stores_len = 0;
 	  cselib_clear_table ();
 
 	  /* Scan the insns.  */

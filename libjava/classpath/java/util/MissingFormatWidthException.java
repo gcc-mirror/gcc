@@ -38,15 +38,15 @@ exception statement from your version. */
 
 package java.util;
 
-/** 
+/**
  * Thrown when the a format specification for a {@link Formatter}
  * does not include a width for a value where one is required.
  *
  * @author Tom Tromey (tromey@redhat.com)
  * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
- * @since 1.5 
+ * @since 1.5
  */
-public class MissingFormatWidthException 
+public class MissingFormatWidthException
   extends IllegalFormatException
 {
   private static final long serialVersionUID = 15560123L;

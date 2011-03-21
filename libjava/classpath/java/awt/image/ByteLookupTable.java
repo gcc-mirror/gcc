@@ -58,7 +58,7 @@ public class ByteLookupTable extends LookupTable
    * Offset is subtracted from pixel values when looking up in the translation
    * tables.  If data.length is one, the same table is applied to all pixel
    * components.
-   * 
+   *
    * @param offset Offset to be subtracted.
    * @param data Array of lookup tables (<code>null</code> not permitted).
    * @exception IllegalArgumentException if offset &lt; 0 or data.length &lt; 1.
@@ -67,9 +67,9 @@ public class ByteLookupTable extends LookupTable
     throws IllegalArgumentException
   {
     super(offset, data.length);
-    
+
     // tests show that Sun's implementation creates a new array to store the
-    // references from the incoming 'data' array - not sure why, but we'll 
+    // references from the incoming 'data' array - not sure why, but we'll
     // match that behaviour just in case it matters...
     this.data = new byte[data.length][];
     for (int i = 0; i < data.length; i++)
@@ -81,9 +81,9 @@ public class ByteLookupTable extends LookupTable
    *
    * Offset is subtracted from pixel values when looking up in the translation
    * table.  The same table is applied to all pixel components.
-   * 
+   *
    * @param offset Offset to be subtracted.
-   * @param data Lookup table for all components (<code>null</code> not 
+   * @param data Lookup table for all components (<code>null</code> not
    *     permitted).
    * @exception IllegalArgumentException if offset &lt; 0.
    */
@@ -131,11 +131,11 @@ public class ByteLookupTable extends LookupTable
 
     if (data.length == 1)
       for (int i=0; i < src.length; i++)
-	dst[i] = data[0][src[i] - offset];
+        dst[i] = data[0][src[i] - offset];
     else
       for (int i=0; i < src.length; i++)
-	dst[i] = data[i][src[i] - offset];
-      
+        dst[i] = data[i][src[i] - offset];
+
     return dst;
   }
 
@@ -164,11 +164,11 @@ public class ByteLookupTable extends LookupTable
 
     if (data.length == 1)
       for (int i=0; i < src.length; i++)
-	dst[i] = data[0][((int)src[i]) - offset];
+        dst[i] = data[0][((int)src[i]) - offset];
     else
       for (int i=0; i < src.length; i++)
-	dst[i] = data[i][((int)src[i]) - offset];
-      
+        dst[i] = data[i][((int)src[i]) - offset];
+
     return dst;
 
   }

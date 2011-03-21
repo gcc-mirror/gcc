@@ -1,7 +1,7 @@
 /* This file contains the definitions and documentation for the
    additional tree codes used in the Objective C front end (see tree.def
    for the standard codes).
-   Copyright (C) 1990, 1997, 1998, 1999, 2000, 2001, 2003, 2004, 2007
+   Copyright (C) 1990, 1997, 1998, 1999, 2000, 2001, 2003, 2004, 2007, 2010
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -46,7 +46,10 @@ DEFTREECODE (CLASS_REFERENCE_EXPR, "class_reference_expr", tcc_expression, 1)
    representing the expression), and Operand 1 is the property (the
    PROPERTY_DECL).  Operand 2 is the 'getter' call, ready to be used;
    we pregenerate it because it is hard to generate it properly later
-   on.  A PROPERTY_REF tree needs to be transformed into 'setter' and
+   on.  Operand 3 records whether using the 'getter' call should
+   generate a deprecation warning or not.
+
+   A PROPERTY_REF tree needs to be transformed into 'setter' and
    'getter' calls at some point; at the moment this happens in two
    places:
 
@@ -58,13 +61,14 @@ DEFTREECODE (CLASS_REFERENCE_EXPR, "class_reference_expr", tcc_expression, 1)
       gimplification; at that point, we convert each PROPERTY_REF into
       a 'getter' call during ObjC/ObjC++ gimplify.  At that point, it
       is quite hard to build a 'getter' call, but we have already built
-      it and we just need to swap Operand 2 in.
+      it and we just need to swap Operand 2 in, and emit the deprecation
+      warnings from Operand 3 if needed.
 
   Please note that when the Objective-C 2.0 "dot-syntax" 'object.component' 
   is encountered, where 'component' is not a property but there are valid
   setter/getter methods for it, an artificial PROPERTY_DECL is generated
   and used in the PROPERTY_REF.  */
-DEFTREECODE (PROPERTY_REF, "property_ref", tcc_expression, 3)
+DEFTREECODE (PROPERTY_REF, "property_ref", tcc_expression, 4)
 
 /*
 Local variables:

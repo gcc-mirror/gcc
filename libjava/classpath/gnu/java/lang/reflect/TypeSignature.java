@@ -176,7 +176,7 @@ public class TypeSignature
    * @see #getClassForEncoding(String, boolean)
    */
   public static Class getClassForEncoding(String type_code, boolean descriptor,
-		 			  ClassLoader loader)
+                                          ClassLoader loader)
     throws ClassNotFoundException
   {
     if (descriptor)

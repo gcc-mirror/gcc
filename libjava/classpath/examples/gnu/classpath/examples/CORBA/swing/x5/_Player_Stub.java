@@ -56,25 +56,25 @@ import org.omg.CORBA.portable.ServantObject;
  * Generate with rmic, command line
  * rmic -iiop -poa -keep gnu.classpath.examples.CORBA.swing.x5.PlayerImpl
  * (the compiled package must be present in the current folder).
- * 
+ *
  * This class is normally generated with rmic from the {@link GameManagerImpl}:
  * <pre>
  * rmic -iiop -poa -keep gnu.classpath.examples.CORBA.swing.x5.GameManagerImpl
  * </pre>
  * (the compiled package must be present in the current folder).
- * 
- * In this example the class was manually edited and commented for better 
+ *
+ * In this example the class was manually edited and commented for better
  * understanding of functionality.
- * 
- * @author Audrius Meskauskas (AudriusA@Bioinformatics.org) 
+ *
+ * @author Audrius Meskauskas (AudriusA@Bioinformatics.org)
  */
 public class _Player_Stub extends Stub implements Player
 {
-  /** 
-   * Use serialVersionUID for interoperability. 
+  /**
+   * Use serialVersionUID for interoperability.
    */
   private static final long serialVersionUID = 1;
-  
+
   private static final String[] _type_ids =
     { "RMI:gnu.classpath.examples.CORBA.swing.x5.Player:0000000000000000" };
 
@@ -82,7 +82,7 @@ public class _Player_Stub extends Stub implements Player
   {
     return _type_ids;
   }
-  
+
   public boolean start_game(Player arg0, boolean arg1)
     throws RemoteException
   {

@@ -25,21 +25,6 @@ extern void *__splitstack_find (void *, void *, size_t *, void **, void **,
 				void **);
 #endif
 
-/* We need to ensure that all callee-saved registers are stored on the
-   stack, in case they hold pointers.  */
-
-#if defined(__i386__)
- #ifndef __PIC__
-  #define SAVE_REGS asm ("" : : : "esi", "edi", "ebx")
- #else
-  #define SAVE_REGS asm ("" : : : "esi", "edi")
- #endif
-#elif defined(__x86_64__)
- #define SAVE_REGS asm ("" : : : "r12", "r13", "r14", "r15", "rbp", "rbx")
-#else
- #error must define SAVE_REGS
-#endif
-
 /* We stop the threads by sending them the signal GO_SIG_STOP and we
    start them by sending them the signal GO_SIG_START.  */
 
@@ -107,17 +92,31 @@ remove_current_thread (void)
   if (list_entry->next != NULL)
     list_entry->next->prev = list_entry->prev;
 
+  /* This will look runtime_mheap as needed.  */
   runtime_MCache_ReleaseAll (mcache);
 
-  i = pthread_mutex_unlock (&__go_thread_ids_lock);
-  __go_assert (i == 0);
-
+  /* This should never deadlock--there shouldn't be any code that
+     holds the runtime_mheap lock when locking __go_thread_ids_lock.
+     We don't want to do this after releasing __go_thread_ids_lock
+     because it will mean that the garbage collector might run, and
+     the garbage collector does not try to lock runtime_mheap in all
+     cases since it knows it is running single-threaded.  */
   runtime_lock (&runtime_mheap);
   mstats.heap_alloc += mcache->local_alloc;
   mstats.heap_objects += mcache->local_objects;
   __builtin_memset (mcache, 0, sizeof (struct MCache));
   runtime_FixAlloc_Free (&runtime_mheap.cachealloc, mcache);
   runtime_unlock (&runtime_mheap);
+
+  /* As soon as we release this look, a GC could run.  Since this
+     thread is no longer on the list, the GC will not find our M
+     structure, so it could get freed at any time.  That means that
+     any code from here to thread exit must not assume that m is
+     valid.  */
+  m = NULL;
+
+  i = pthread_mutex_unlock (&__go_thread_ids_lock);
+  __go_assert (i == 0);
 
   free (list_entry);
 }
@@ -312,6 +311,15 @@ gc_stop_handler (int sig __attribute__ ((unused)))
 {
   struct M *pm = m;
 
+  if (__sync_bool_compare_and_swap (&pm->holds_finlock, 1, 1))
+    {
+      /* We can't interrupt the thread while it holds the finalizer
+	 lock.  Otherwise we can get into a deadlock when mark calls
+	 runtime_walkfintab.  */
+      __sync_bool_compare_and_swap (&pm->gcing_for_finlock, 0, 1);
+      return;
+    }
+
   if (__sync_bool_compare_and_swap (&pm->mallocing, 1, 1))
     {
       /* m->mallocing was already non-zero.  We can't interrupt the
@@ -344,7 +352,7 @@ __go_run_goroutine_gc (int r)
      needed if we are called directly, since otherwise we might miss
      something that a function somewhere up the call stack is holding
      in a register.  */
-  SAVE_REGS;
+  __builtin_unwind_init ();
 
   stop_for_gc ();
 
@@ -433,7 +441,7 @@ __go_scanstacks (void (*scan) (byte *, int64))
   struct __go_thread_id *p;
 
   /* Make sure all the registers for this thread are on the stack.  */
-  SAVE_REGS;
+  __builtin_unwind_init ();
 
   me = pthread_self ();
   for (p = __go_all_thread_ids; p != NULL; p = p->next)

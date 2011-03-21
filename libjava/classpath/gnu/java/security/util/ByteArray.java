@@ -65,23 +65,23 @@ public final class ByteArray
     int len = value.length;
     while (i < len)
       {
-	out.print (formatInt (i, 16, 8));
-	out.print ("  ");
-	int l = Math.min (16, len - i);
-	String s = toHexString (value, i, l, ' ');
-	out.print (s);
-	for (int j = 56 - (56 - s.length ()); j < 56; j++)
-	  out.print (" ");
-	for (int j = 0; j < l; j++)
-	  {
-	    byte b = value[i+j];
-	    if ((b & 0xFF) < 0x20 || (b & 0xFF) > 0x7E)
-	      out.print (".");
-	    else
-	      out.print ((char) (b & 0xFF));
-	  }
-	out.println ();
-	i += 16;
+        out.print (formatInt (i, 16, 8));
+        out.print ("  ");
+        int l = Math.min (16, len - i);
+        String s = toHexString (value, i, l, ' ');
+        out.print (s);
+        for (int j = 56 - (56 - s.length ()); j < 56; j++)
+          out.print (" ");
+        for (int j = 0; j < l; j++)
+          {
+            byte b = value[i+j];
+            if ((b & 0xFF) < 0x20 || (b & 0xFF) > 0x7E)
+              out.print (".");
+            else
+              out.print ((char) (b & 0xFF));
+          }
+        out.println ();
+        i += 16;
       }
     return str.toString ();
   }
@@ -91,8 +91,8 @@ public final class ByteArray
     CPStringBuilder str = new CPStringBuilder();
     for (int i = 0; i < len; i++)
       {
-	str.append (Character.forDigit (buf[i+off] >>> 4 & 0x0F, 16));
-	str.append (Character.forDigit (buf[i+off] & 0x0F, 16));
+        str.append (Character.forDigit (buf[i+off] >>> 4 & 0x0F, 16));
+        str.append (Character.forDigit (buf[i+off] & 0x0F, 16));
         if (i < len - 1)
           str.append(sep);
       }

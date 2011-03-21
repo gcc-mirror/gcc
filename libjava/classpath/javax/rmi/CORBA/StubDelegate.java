@@ -51,7 +51,7 @@ import java.rmi.RemoteException;
  * The default delegate can be altered by setting the system property
  * "javax.rmi.CORBA.StubClass" to the name of the alternative class that must
  * implement StubDelegate.
- * 
+ *
  * @author Audrius Meskauskas (AudriusA@Bioinformatics.org)
  */
 public interface StubDelegate
@@ -64,9 +64,9 @@ public interface StubDelegate
    * It is frequently easier to call {@link PortableRemoteObject#connect} rather
    * than this method.
    * </p>
-   * 
+   *
    * @param orb the ORB where the Stub must be connected.
-   * 
+   *
    * @throws RemoteException if the stub is already connected to some other ORB.
    * If the stub is already connected to the ORB that was passed as parameter,
    * the method returns without action.

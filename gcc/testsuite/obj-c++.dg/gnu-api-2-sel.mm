@@ -3,6 +3,7 @@
   This is test 'sel', covering all functions starting with 'sel'.  */
 
 /* { dg-do run } */
+/* { dg-skip-if "No API#2 pre-Darwin9" { *-*-darwin[5-8]* } { "-fnext-runtime" } { "" } } */
 
 /* To get the modern GNU Objective-C Runtime API, you include
    objc/runtime.h.  */
@@ -45,6 +46,21 @@
 - (void) method { return; }
 @end
 
+@interface ClassA : MyRootClass
+- (id) conflictingSelectorMethod;
+@end
+
+@implementation ClassA
+- (id) conflictingSelectorMethod { return nil; }
+@end
+
+@interface ClassB : MyRootClass
+- (void) conflictingSelectorMethod;
+@end
+
+@implementation ClassB
+- (void) conflictingSelectorMethod { return; }
+@end
 
 int main ()
 {
@@ -130,6 +146,13 @@ int main ()
     /* Try getting it.  Nothing should be returned because it is
        untyped.  */
     selector = sel_getTypedSelector ("registered_with_no_types");
+
+    if (selector != NULL)
+      abort ();
+
+    /* Now try a selector with multiple, conflicting types.  NULL
+       should be returned.  */
+    selector = sel_getTypedSelector ("conflictingSelectorMethod");
 
     if (selector != NULL)
       abort ();

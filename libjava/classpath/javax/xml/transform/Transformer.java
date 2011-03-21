@@ -1,4 +1,4 @@
-/* Transformer.java -- 
+/* Transformer.java --
    Copyright (C) 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -58,9 +58,9 @@ public abstract class Transformer
    * @param xmlSource the XML source
    * @param outputTarget the result of the transformation
    */
-  public abstract void transform(Source xmlSource, Result outputTarget) 
+  public abstract void transform(Source xmlSource, Result outputTarget)
     throws TransformerException;
-  
+
   /**
    * Sets a parameter value for the transformation.
    * Parameters may be referenced in the XSLT stylesheet.
@@ -104,7 +104,7 @@ public abstract class Transformer
    * @param oformat a set of output properties, or null to reset all the
    * properties to their default values
    */
-  public abstract void setOutputProperties(Properties oformat) 
+  public abstract void setOutputProperties(Properties oformat)
     throws IllegalArgumentException;
 
   /**
@@ -125,7 +125,7 @@ public abstract class Transformer
    * @param value the string value of the property
    * @exception IllegalArgumentException if the property is not supported
    */
-  public abstract void setOutputProperty(String name, String value) 
+  public abstract void setOutputProperty(String name, String value)
     throws IllegalArgumentException;
 
   /**
@@ -136,7 +136,7 @@ public abstract class Transformer
    * XML Name of the form <code>{<i>namespaceURI</i>}<i>localName</i></code>
    * @exception IllegalArgumentException if the property is not supported
    */
-  public abstract String getOutputProperty(String name) 
+  public abstract String getOutputProperty(String name)
     throws IllegalArgumentException;
 
   /**
@@ -145,7 +145,7 @@ public abstract class Transformer
    */
   public abstract void setErrorListener(ErrorListener listener)
     throws IllegalArgumentException;
-  
+
   /**
    * Returns the callback used to report errors during the transformation.
    */

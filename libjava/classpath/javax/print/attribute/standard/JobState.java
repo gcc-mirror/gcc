@@ -50,11 +50,11 @@ import javax.print.attribute.PrintJobAttribute;
  * attribute provides further detailed information about
  * the given job state. Detailed information about the job
  * state and job state reasons can be found in the RFC 2911.
- * </p> 
+ * </p>
  * <p>
  * <b>IPP Compatibility:</b> JobState is an IPP 1.1 attribute.
  * </p>
- * 
+ *
  * @author Michael Koch (konqueror@gmx.de)
  * @author Wolfgang Baer (WBaer@gmx.de)
  */
@@ -67,12 +67,12 @@ public class JobState extends EnumSyntax
    * The job state is currently unknown.
    */
   public static final JobState UNKNOWN = new JobState(0);
-  
+
   /**
    * The job is pending processing.
    */
   public static final JobState PENDING = new JobState(3);
-  
+
   /**
    * The job is currently not a candidate for printing because
    * of reasons reported by the job-state-reasons attribute. If
@@ -80,52 +80,52 @@ public class JobState extends EnumSyntax
    * pending state.
    */
   public static final JobState PENDING_HELD = new JobState(4);
-  
+
   /**
    * The job is currently processed.
    */
   public static final JobState PROCESSING = new JobState(5);
-  
+
   /**
    * The job's processing has stopped. The job-state-reasons
    * attribute may indicate the reason(s). The job will return
    * to the processing state if the reasons are no longer present.
    */
   public static final JobState PROCESSING_STOPPED = new JobState(6);
-  
+
   /**
    * The job has been canceled by the client.
    */
   public static final JobState CANCELED = new JobState(7);
-  
+
   /**
    * The job has been aborted by the system.
    */
   public static final JobState ABORTED = new JobState(8);
-  
+
   /**
    * The job has completed successfully.
    */
   public static final JobState COMPLETED = new JobState(9);
 
 
-  private static final String[] stringTable = { "unknown", null, null, 
+  private static final String[] stringTable = { "unknown", null, null,
                                                 "pending", "pending-held",
-                                                "processing", 
+                                                "processing",
                                                 "processing-stopped",
-                                                "canceled", "aborted", 
+                                                "canceled", "aborted",
                                                 "completed"};
-  
+
   private static final JobState[] enumValueTable = { UNKNOWN, null, null,
                                                      PENDING, PENDING_HELD,
                                                      PROCESSING,
                                                      PROCESSING_STOPPED,
                                                      CANCELED, ABORTED,
                                                      COMPLETED };
-  
+
   /**
    * Constructs a <code>JobState</code> object.
-   * 
+   *
    * @param value the enum value.
    */
   protected JobState(int value)
@@ -152,7 +152,7 @@ public class JobState extends EnumSyntax
   {
     return "job-state";
   }
-  
+
   /**
    * Returns a table with the enumeration values represented as strings
    * for this object.

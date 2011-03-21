@@ -1,4 +1,4 @@
-/* SRPKeyPairRawCodec.java -- 
+/* SRPKeyPairRawCodec.java --
    Copyright (C) 2003, 2006 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -92,7 +92,7 @@ public class SRPKeyPairRawCodec
    * the <code>toByteArray()</code> method on the SRP parameter <code>y</code>,
    * </li>
    * </ol>
-   * 
+   *
    * @param key the key to encode.
    * @return the <i>Raw</i> format encoding of the designated key.
    * @throws IllegalArgumentException if the designated key is not an SRP one.
@@ -215,7 +215,7 @@ public class SRPKeyPairRawCodec
    * the <code>toByteArray()</code> method on the SRP parameter <code>v</code>,
    * </li>
    * </ol>
-   * 
+   *
    * @param key the key to encode.
    * @return the <i>Raw</i> format encoding of the designated key.
    * @throws IllegalArgumentException if the designated key is not an SRP one.

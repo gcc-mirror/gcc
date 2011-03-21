@@ -31,7 +31,11 @@
 //   anoncvs@anoncvs.netbsd.org:/cvsroot/basesrc/include/ctype.h
 // See www.netbsd.org for details of access.
   
-_GLIBCXX_BEGIN_NAMESPACE(std)
+#include <sys/param.h>
+
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /// @brief  Base class for ctype.
   struct ctype_base
@@ -42,6 +46,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     // NB: Offsets into ctype<char>::_M_table force a particular size
     // on the mask type. Because of this, we don't use an enum.
     typedef unsigned char      	mask;
+
+#if __NetBSD_Version__ < 599004100
     static const mask upper    	= _U;
     static const mask lower 	= _L;
     static const mask alpha 	= _U | _L;
@@ -53,6 +59,20 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     static const mask cntrl 	= _C;
     static const mask punct 	= _P;
     static const mask alnum 	= _U | _L | _N;
+#else
+    static const mask upper    	= _CTYPE_U;
+    static const mask lower 	= _CTYPE_L;
+    static const mask alpha 	= _CTYPE_U | _CTYPE_L;
+    static const mask digit 	= _CTYPE_N;
+    static const mask xdigit 	= _CTYPE_N | _CTYPE_X;
+    static const mask space 	= _CTYPE_S;
+    static const mask print 	= _CTYPE_P | _CTYPE_U | _CTYPE_L | _CTYPE_N | _CTYPE_B;
+    static const mask graph 	= _CTYPE_P | _CTYPE_U | _CTYPE_L | _CTYPE_N;
+    static const mask cntrl 	= _CTYPE_C;
+    static const mask punct 	= _CTYPE_P;
+    static const mask alnum 	= _CTYPE_U | _CTYPE_L | _CTYPE_N;
+#endif
   };
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace

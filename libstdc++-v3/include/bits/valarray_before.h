@@ -37,7 +37,9 @@
 
 #include <bits/slice_array.h>
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   //
   // Implementing a loosened valarray return value is tricky.
@@ -726,6 +728,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       _SClos (_Array<_Tp> __a, const slice& __s) : _Base (__a, __s) {}
     };
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
 
 #endif /* _CPP_VALARRAY_BEFORE_H */

@@ -78,10 +78,10 @@ class Demo
        interested in. */
     addWindowListener(new WindowAdapter ()
       {
-	public void windowClosing (WindowEvent e)
-	{
-	  dispose();
-	}
+        public void windowClosing (WindowEvent e)
+        {
+          dispose();
+        }
       });
     flavors.addItemListener(this);
     Toolkit t = Toolkit.getDefaultToolkit();
@@ -101,8 +101,8 @@ class Demo
     Panel textPanel = new Panel();
     textPanel.setLayout(new BorderLayout());
     text = new TextArea("GNU Everywhere!",
-			2, 80,
-			TextArea.SCROLLBARS_VERTICAL_ONLY);
+                        2, 80,
+                        TextArea.SCROLLBARS_VERTICAL_ONLY);
     text.setEditable(false);
     text.setEnabled(true);
     Panel textButtons = new Panel();
@@ -167,7 +167,7 @@ class Demo
     objectPanel.add(objectButtons, BorderLayout.SOUTH);
     return objectPanel;
   }
-  
+
   /**
    * The Files Panel shows the files from the current working
    * directory. They can be copied and pasted between other
@@ -189,7 +189,7 @@ class Demo
     filesPanel.add(filesButtons, BorderLayout.SOUTH);
     return filesPanel;
   }
-  
+
   /**
    * The Flavors Panel shows the different formats (mime-types) that
    * data on the clipboard is available in. By clicking on a flavor
@@ -235,18 +235,18 @@ class Demo
     String s = flavors.getSelectedItem();
     if (s != null)
       {
-	try
-	  {
-	    df = new DataFlavor(s);
-	  }
-	catch (ClassNotFoundException cnfe)
-	  {
-	    cnfe.printStackTrace();
-	  }
+        try
+          {
+            df = new DataFlavor(s);
+          }
+        catch (ClassNotFoundException cnfe)
+          {
+            cnfe.printStackTrace();
+          }
       }
     details.setDataFlavor(df);
   }
-  
+
   /**
    * ActionListener implementations that will copy or past data
    * to/from the clipboard when the user requests that for the text,
@@ -262,24 +262,24 @@ class Demo
 
     if (b == pasteText)
       {
-	String s = null;
-	try
-	  {
-	    s = (String) c.getData(DataFlavor.stringFlavor);
-	  }
-	catch (UnsupportedFlavorException dfnse)
-	  {
-	  }
-	catch (IOException ioe)
-	  {
-	  }
-	catch (ClassCastException cce)
-	  {
-	  }
-	if (s == null)
-	  t.beep();
-	else
-	  text.setText(s);
+        String s = null;
+        try
+          {
+            s = (String) c.getData(DataFlavor.stringFlavor);
+          }
+        catch (UnsupportedFlavorException dfnse)
+          {
+          }
+        catch (IOException ioe)
+          {
+          }
+        catch (ClassCastException cce)
+          {
+          }
+        if (s == null)
+          t.beep();
+        else
+          text.setText(s);
       }
 
     if (b == copyImage)
@@ -287,24 +287,24 @@ class Demo
 
     if (b == pasteImage)
       {
-	Image i = null;
-	try
-	  {
-	    i = (Image) c.getData(DataFlavor.imageFlavor);
-	  }
-	catch (UnsupportedFlavorException dfnse)
-	  {
-	  }
-	catch (IOException ioe)
-	  {
-	  }
-	catch (ClassCastException cce)
-	  {
-	  }
-	if (i == null)
-	  t.beep();
-	else
-	  image.setImage(i);
+        Image i = null;
+        try
+          {
+            i = (Image) c.getData(DataFlavor.imageFlavor);
+          }
+        catch (UnsupportedFlavorException dfnse)
+          {
+          }
+        catch (IOException ioe)
+          {
+          }
+        catch (ClassCastException cce)
+          {
+          }
+        if (i == null)
+          t.beep();
+        else
+          image.setImage(i);
       }
 
     if (b == copyObject)
@@ -312,24 +312,24 @@ class Demo
 
     if (b == pasteObject)
       {
-	Serializable o = null;
-	try
-	  {
-	    o = (Serializable) c.getData(ObjectSelection.objFlavor);
-	  }
-	catch (UnsupportedFlavorException dfnse)
-	  {
-	  }
-	catch (IOException ioe)
-	  {
-	  }
-	catch (ClassCastException cce)
-	  {
-	  }
-	if (o == null)
-	  t.beep();
-	else
-	  object.setObject(o);
+        Serializable o = null;
+        try
+          {
+            o = (Serializable) c.getData(ObjectSelection.objFlavor);
+          }
+        catch (UnsupportedFlavorException dfnse)
+          {
+          }
+        catch (IOException ioe)
+          {
+          }
+        catch (ClassCastException cce)
+          {
+          }
+        if (o == null)
+          t.beep();
+        else
+          object.setObject(o);
       }
 
     if (b == copyFiles)
@@ -337,24 +337,24 @@ class Demo
 
     if (b == pasteFiles)
       {
-	java.util.List fs = null;
-	try
-	  {
-	    fs = (java.util.List) c.getData(DataFlavor.javaFileListFlavor);
-	  }
-	catch (UnsupportedFlavorException dfnse)
-	  {
-	  }
-	catch (IOException ioe)
-	  {
-	  }
-	catch (ClassCastException cce)
-	  {
-	  }
-	if (fs == null)
-	  t.beep();
-	else
-	  files.setFiles(fs);
+        java.util.List fs = null;
+        try
+          {
+            fs = (java.util.List) c.getData(DataFlavor.javaFileListFlavor);
+          }
+        catch (UnsupportedFlavorException dfnse)
+          {
+          }
+        catch (IOException ioe)
+          {
+          }
+        catch (ClassCastException cce)
+          {
+          }
+        if (fs == null)
+          t.beep();
+        else
+          files.setFiles(fs);
       }
   }
 
@@ -412,8 +412,8 @@ class Demo
     {
       this.object = object;
       setText("Class: " + object.getClass().getName()
-	      + "\n"
-	      + "toString(): " + object.toString());
+              + "\n"
+              + "toString(): " + object.toString());
       repaint();
     }
   }
@@ -424,44 +424,44 @@ class Demo
   static class FilesComponent extends List
   {
     private File[] files;
-    
+
     FilesComponent(File[] files)
     {
       super(4, true);
       setFiles(files);
     }
-    
+
     File[] getFiles()
     {
       String[] strings = getSelectedItems();
       if (strings == null || strings.length == 0)
-	return (File[]) files.clone();
-      
+        return (File[]) files.clone();
+
       File[] fs = new File[strings.length];
       for (int i = 0; i < strings.length; i++)
-	fs[i] = new File(strings[i]);
+        fs[i] = new File(strings[i]);
       return fs;
     }
-    
+
     void setFiles(File[] files)
     {
       this.files = files;
       removeAll();
       for (int i = 0; i < files.length; i++)
         {
-	  addItem(files[i].toString());
-	  select(i);
+          addItem(files[i].toString());
+          select(i);
         }
     }
-    
+
     void setFiles(java.util.List list)
     {
       File[] fs = new File[list.size()];
       int i = 0;
       Iterator it = list.iterator();
       while (it.hasNext())
-	fs[i++] = (File) it.next();
-      
+        fs[i++] = (File) it.next();
+
       setFiles(fs);
     }
   }
@@ -481,9 +481,9 @@ class Demo
     {
       removeAll();
       for (int i = 0; i < flavors.length; i++)
-	{
-	  addItem(flavors[i].getMimeType());
-	}
+        {
+          addItem(flavors[i].getMimeType());
+        }
     }
   }
 
@@ -507,40 +507,40 @@ class Demo
     void setDataFlavor(DataFlavor df)
     {
       if (df == this.df
-	  || (df != null && df.equals(this.df)))
-	return;
+          || (df != null && df.equals(this.df)))
+        return;
 
       this.df = df;
 
       if (df == null)
-	setText("No flavor selected");
+        setText("No flavor selected");
       else
-	{
-	  Object o = null;
-	  Throwable exception = null;
-	  try
-	    {
-	      Toolkit t = Toolkit.getDefaultToolkit();
-	      Clipboard c = t.getSystemClipboard();
-	      o = c.getData(df);
-	    }
-	  catch (Throwable t)
-	    {
-	      exception = t;
-	    }
-	  if (o != null)
-	    {
-	      setText("Data: " + o.getClass().getName()
-		      + "\n"
-		      + o);
-	    }
-	  else
-	    {
-	      setText("Error retrieving: " + df
-		      + "\n"
-		      + exception != null ? exception.toString() : "");
-	    }
-	}
+        {
+          Object o = null;
+          Throwable exception = null;
+          try
+            {
+              Toolkit t = Toolkit.getDefaultToolkit();
+              Clipboard c = t.getSystemClipboard();
+              o = c.getData(df);
+            }
+          catch (Throwable t)
+            {
+              exception = t;
+            }
+          if (o != null)
+            {
+              setText("Data: " + o.getClass().getName()
+                      + "\n"
+                      + o);
+            }
+          else
+            {
+              setText("Error retrieving: " + df
+                      + "\n"
+                      + exception != null ? exception.toString() : "");
+            }
+        }
       repaint();
     }
   }
@@ -573,7 +573,7 @@ class Demo
       throws UnsupportedFlavorException
     {
       if (!isDataFlavorSupported(flavor))
-	throw new UnsupportedFlavorException(flavor);
+        throw new UnsupportedFlavorException(flavor);
 
       return img;
     }
@@ -593,7 +593,7 @@ class Demo
     }
 
     static DataFlavor objFlavor = new DataFlavor(Serializable.class,
-						 "Serialized Object");
+                                                 "Serialized Object");
     static DataFlavor[] flavors = new DataFlavor[] { objFlavor };
     public DataFlavor[] getTransferDataFlavors()
     {
@@ -609,7 +609,7 @@ class Demo
       throws UnsupportedFlavorException
     {
       if (!isDataFlavorSupported(flavor))
-	throw new UnsupportedFlavorException(flavor);
+        throw new UnsupportedFlavorException(flavor);
 
       return obj;
     }
@@ -644,7 +644,7 @@ class Demo
       throws UnsupportedFlavorException
     {
       if (!isDataFlavorSupported(flavor))
-	throw new UnsupportedFlavorException(flavor);
+        throw new UnsupportedFlavorException(flavor);
 
       return Arrays.asList(files);
     }

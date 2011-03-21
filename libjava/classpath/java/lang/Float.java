@@ -224,7 +224,7 @@ public final class Float extends Number implements Comparable<Float>
 
     int bits = floatToIntBits(f);
     CPStringBuilder result = new CPStringBuilder();
-    
+
     if (bits < 0)
       result.append('-');
     result.append("0x");
@@ -611,21 +611,21 @@ public final class Float extends Number implements Comparable<Float>
   {
       // handle the easy cases:
       if (x < y)
-	  return -1;
+          return -1;
       if (x > y)
-	  return 1;
+          return 1;
 
       // handle equality respecting that 0.0 != -0.0 (hence not using x == y):
       int ix = floatToRawIntBits(x);
       int iy = floatToRawIntBits(y);
       if (ix == iy)
-	  return 0;
+          return 0;
 
       // handle NaNs:
       if (x != x)
-	  return (y != y) ? 0 : 1;
+          return (y != y) ? 0 : 1;
       else if (y != y)
-	  return -1;
+          return -1;
 
       // handle +/- 0.0
       return (ix < iy) ? -1 : 1;

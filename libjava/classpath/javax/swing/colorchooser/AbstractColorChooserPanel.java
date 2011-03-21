@@ -77,9 +77,9 @@ public abstract class AbstractColorChooserPanel extends JPanel
   /**
    * Returns the key code for the mnemonic for this panel.  This method returns
    * zero to indicate no mnemonic, subclasses can override this.
-   * 
+   *
    * @return <code>0</code>, to indicate no mnemonic key code.
-   * 
+   *
    * @see #getDisplayedMnemonicIndex()
    * @since 1.4
    */
@@ -87,14 +87,14 @@ public abstract class AbstractColorChooserPanel extends JPanel
   {
     return 0;
   }
-  
+
   /**
-   * Returns the index of the character in the display name that is the 
+   * Returns the index of the character in the display name that is the
    * mnemonic.  This method returns <code>-1</code> to indicate no mnemonic,
    * subclasses can override.
-   * 
+   *
    * @return <code>-1</code>, to indicate no mnemonic.
-   * 
+   *
    * @see #getDisplayName()
    * @see #getMnemonic()
    * @since 1.4
@@ -103,7 +103,7 @@ public abstract class AbstractColorChooserPanel extends JPanel
   {
     return -1;
   }
-  
+
   /**
    * This method updates the chooser panel when the JColorChooser's color has
    * changed.

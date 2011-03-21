@@ -29,12 +29,12 @@ package org.xml.sax;
  * In order to detect validity errors, an ErrorHandler that does something
  * with {@link #error error()} calls must be registered.</p>
  *
- * <p>For XML processing errors, a SAX driver must use this interface 
- * in preference to throwing an exception: it is up to the application 
- * to decide whether to throw an exception for different types of 
- * errors and warnings.  Note, however, that there is no requirement that 
- * the parser continue to report additional errors after a call to 
- * {@link #fatalError fatalError}.  In other words, a SAX driver class 
+ * <p>For XML processing errors, a SAX driver must use this interface
+ * in preference to throwing an exception: it is up to the application
+ * to decide whether to throw an exception for different types of
+ * errors and warnings.  Note, however, that there is no requirement that
+ * the parser continue to report additional errors after a call to
+ * {@link #fatalError fatalError}.  In other words, a SAX driver class
  * may throw an exception after reporting any fatalError.
  * Also parsers may throw appropriate exceptions for non-XML errors.
  * For example, {@link XMLReader#parse XMLReader.parse()} would throw
@@ -44,11 +44,11 @@ package org.xml.sax;
  * @author David Megginson
  * @version 2.0.1+ (sax2r3pre1)
  * @see org.xml.sax.XMLReader#setErrorHandler
- * @see org.xml.sax.SAXParseException 
+ * @see org.xml.sax.SAXParseException
  */
 public interface ErrorHandler {
-    
-    
+
+
     /**
      * Receive notification of a warning.
      *
@@ -68,12 +68,12 @@ public interface ErrorHandler {
      *                  SAX parse exception.
      * @exception org.xml.sax.SAXException Any SAX exception, possibly
      *            wrapping another exception.
-     * @see org.xml.sax.SAXParseException 
+     * @see org.xml.sax.SAXParseException
      */
     public abstract void warning (SAXParseException exception)
-	throws SAXException;
-    
-    
+        throws SAXException;
+
+
     /**
      * Receive notification of a recoverable error.
      *
@@ -97,12 +97,12 @@ public interface ErrorHandler {
      *                  SAX parse exception.
      * @exception org.xml.sax.SAXException Any SAX exception, possibly
      *            wrapping another exception.
-     * @see org.xml.sax.SAXParseException 
+     * @see org.xml.sax.SAXParseException
      */
     public abstract void error (SAXParseException exception)
-	throws SAXException;
-    
-    
+        throws SAXException;
+
+
     /**
      * Receive notification of a non-recoverable error.
      *
@@ -126,14 +126,14 @@ public interface ErrorHandler {
      * other events once this method has been invoked.</p>
      *
      * @param exception The error information encapsulated in a
-     *                  SAX parse exception.  
+     *                  SAX parse exception.
      * @exception org.xml.sax.SAXException Any SAX exception, possibly
      *            wrapping another exception.
      * @see org.xml.sax.SAXParseException
      */
     public abstract void fatalError (SAXParseException exception)
-	throws SAXException;
-    
+        throws SAXException;
+
 }
 
 // end of ErrorHandler.java

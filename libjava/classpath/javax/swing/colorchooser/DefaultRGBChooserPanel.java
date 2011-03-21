@@ -72,7 +72,7 @@ class DefaultRGBChooserPanel extends AbstractColorChooserPanel
     public void stateChanged(ChangeEvent e)
     {
       if (updateChange)
-	return;
+        return;
 
       int color = R.getValue() << 16 | G.getValue() << 8 | B.getValue();
 
@@ -95,7 +95,7 @@ class DefaultRGBChooserPanel extends AbstractColorChooserPanel
     public void stateChanged(ChangeEvent e)
     {
       if (updateChange)
-	return;
+        return;
 
       int red = ((Number) RSpinner.getValue()).intValue();
       int green = ((Number) GSpinner.getValue()).intValue();
@@ -198,21 +198,21 @@ class DefaultRGBChooserPanel extends AbstractColorChooserPanel
 
     if (! sliderChange)
       {
-	if (R != null)
-	  R.setValue(red);
-	if (G != null)
-	  G.setValue(green);
-	if (B != null)
-	  B.setValue(blue);
+        if (R != null)
+          R.setValue(red);
+        if (G != null)
+          G.setValue(green);
+        if (B != null)
+          B.setValue(blue);
       }
     if (! spinnerChange)
       {
-	if (GSpinner != null)
-	  GSpinner.setValue(new Integer(green));
-	if (RSpinner != null)
-	  RSpinner.setValue(new Integer(red));
-	if (BSpinner != null)
-	  BSpinner.setValue(new Integer(blue));
+        if (GSpinner != null)
+          GSpinner.setValue(new Integer(green));
+        if (RSpinner != null)
+          RSpinner.setValue(new Integer(red));
+        if (BSpinner != null)
+          BSpinner.setValue(new Integer(blue));
       }
 
     updateChange = false;

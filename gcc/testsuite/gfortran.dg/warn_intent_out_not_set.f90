@@ -1,4 +1,4 @@
-! { dg-do "compile" }
+! { dg-do compile }
 ! { dg-options "-c -Wall" }
 !
 ! PR fortran/42360

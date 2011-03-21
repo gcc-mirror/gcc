@@ -1,4 +1,4 @@
-/* CTR.java -- 
+/* CTR.java --
    Copyright (C) 2001, 2002, 2006 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -49,14 +49,14 @@ import java.util.Iterator;
  * The implementation of the Counter Mode.
  * <p>
  * The algorithm steps are formally described as follows:
- * 
+ *
  * <pre>
  *     CTR Encryption: O[j] = E(K)(T[j]); for j = 1, 2...n;
  *                     C[j] = P[j] &circ; O[j]; for j = 1, 2...n.
  *     CTR Decryption: O[j] = E(K)(T[j]); for j = 1, 2...n;
  *                     P[j] = C[j] &circ; O[j]; for j = 1, 2...n.
  * </pre>
- * 
+ *
  * <p>
  * where <code>P</code> is the plaintext, <code>C</code> is the ciphertext,
  * <code>E(K)</code> is the underlying block cipher encryption function
@@ -83,7 +83,7 @@ public class CTR
 
   /**
    * Trivial package-private constructor for use by the Factory class.
-   * 
+   *
    * @param underlyingCipher the underlying cipher implementation.
    * @param cipherBlockSize the underlying cipher block size to use.
    */
@@ -94,7 +94,7 @@ public class CTR
 
   /**
    * Private constructor for cloning purposes.
-   * 
+   *
    * @param that the instance to clone.
    */
   private CTR(CTR that)

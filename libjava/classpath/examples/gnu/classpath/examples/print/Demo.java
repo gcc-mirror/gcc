@@ -76,12 +76,12 @@ import javax.swing.JTextField;
  * A simple demo showing the use of the Java Print Service API.
  * @author Wolfgang Baer (WBaer@gmx.de)
  */
-public class Demo extends JFrame 
+public class Demo extends JFrame
   implements ActionListener
 {
   // The discovered print services
   private static PrintService[] services;
-  
+
   // variables for the PrintPanel demo
   private HashPrintRequestAttributeSet atts;
   private PrintService dialogSelectedService;
@@ -90,102 +90,102 @@ public class Demo extends JFrame
   private JComboBox dialogSelectedServicedocFormat;
   private JTextField selectedFileTf;
   private File selectedFile;
-  
+
   // variables for the PrintServicePanel demo
   private JComboBox serviceBox;
   private JList docFormat;
   private JList attCategories;
-  
+
   static
   {
     // lookup all services without any constraints
-    services = PrintServiceLookup.lookupPrintServices(null, null);   
+    services = PrintServiceLookup.lookupPrintServices(null, null);
   }
-  
+
   /**
    * Constructs the Print Demo
    * @param title - the demo title.
    */
-  public Demo(String title) 
+  public Demo(String title)
   {
     super(title);
     JPanel content = new JPanel(new BorderLayout());
-    
+
     JTabbedPane tabbed = new JTabbedPane();
     tabbed.addTab("Discover print services", createPrintServicePanel());
     tabbed.addTab("Print a file", createPrintPanel());
-    
+
     JPanel closePanel = new JPanel();
     JButton closeButton = new JButton("Close");
     closeButton.setActionCommand("CLOSE");
     closeButton.addActionListener(this);
     closePanel.add(closeButton);
-    
+
     content.add(tabbed, BorderLayout.CENTER);
     content.add(closePanel, BorderLayout.SOUTH);
     getContentPane().add(content);
   }
-    
-  private JPanel createPrintServicePanel() 
-  {   
+
+  private JPanel createPrintServicePanel()
+  {
     JPanel panel = new JPanel(new GridBagLayout());
     GridBagConstraints c = new GridBagConstraints();
-    
+
     c.insets = new Insets(5,5,5,5);
     c.gridx = 0;
-    c.gridy = 0;   
+    c.gridy = 0;
     c.anchor = GridBagConstraints.WEST;
     c.fill = GridBagConstraints.HORIZONTAL;
     JLabel serviceBoxLb = new JLabel("Available print services: ");
-    panel.add(serviceBoxLb, c); 
-    
+    panel.add(serviceBoxLb, c);
+
     c.gridx = 1;
     c.gridy = 0;
     serviceBox = new JComboBox(services);
     serviceBox.setActionCommand("SERVICE");
     serviceBox.addActionListener(this);
-    panel.add(serviceBox, c); 
-    
+    panel.add(serviceBox, c);
+
     c.gridx = 0;
     c.gridy = 1;
     JLabel docFormatLb = new JLabel("Supported DocFormat: ");
-    panel.add(docFormatLb, c); 
-    
+    panel.add(docFormatLb, c);
+
     c.gridx = 1;
     c.gridy = 1;
     docFormat = new JList(services[0].getSupportedDocFlavors());
     docFormat.setVisibleRowCount(3);
     JScrollPane scrollPane = new JScrollPane(docFormat);
-    panel.add(scrollPane, c); 
-    
+    panel.add(scrollPane, c);
+
     c.gridx = 0;
     c.gridy = 2;
     JLabel categoriesLb = new JLabel("Supported Attribute categories: ");
-    panel.add(categoriesLb, c); 
-    
+    panel.add(categoriesLb, c);
+
     c.gridx = 1;
     c.gridy = 2;
     attCategories = new JList(services[0].getSupportedAttributeCategories());
     attCategories.setVisibleRowCount(3);
-    JScrollPane scrollPane2 = new JScrollPane(attCategories);    
-    panel.add(scrollPane2, c); 
-    
+    JScrollPane scrollPane2 = new JScrollPane(attCategories);
+    panel.add(scrollPane2, c);
+
     return panel;
   }
-  
-  private JPanel createPrintPanel() 
+
+  private JPanel createPrintPanel()
   {
-    JPanel panel = new JPanel(new GridBagLayout());    
+    JPanel panel = new JPanel(new GridBagLayout());
     GridBagConstraints c = new GridBagConstraints();
-    
+
     c.insets = new Insets(5,5,5,5);
     c.gridx = 0;
     c.gridy = 0;
-    c.gridwidth = 2;    
+    c.gridwidth = 2;
     JButton serviceBtn = new JButton("Show print dialog ...");
     serviceBtn.addActionListener(this);
-    panel.add(serviceBtn, c); 
-    
+    panel.add(serviceBtn, c);
+
     c.gridx = 0;
     c.gridy = 1;
     c.gridwidth = 1;
@@ -193,55 +193,55 @@ public class Demo extends JFrame
     c.fill = GridBagConstraints.HORIZONTAL;
     JLabel selectedLb = new JLabel("Selected print service: ");
     panel.add(selectedLb, c);
-    
+
     c.gridx = 1;
     c.gridy = 1;
     dialogSelectedService_Tf = new JTextField(25);
     panel.add(dialogSelectedService_Tf, c);
-    
+
     c.gridx = 0;
     c.gridy = 2;
     JLabel selectedAttsLb = new JLabel("Selected Attributes: ");
     panel.add(selectedAttsLb, c);
-    
+
     c.gridx = 1;
     c.gridy = 2;
     c.weighty = 1.5;
     c.fill = GridBagConstraints.BOTH;
     dialogSelectedServiceAtts = new JList();
-    dialogSelectedServiceAtts.setVisibleRowCount(3);    
+    dialogSelectedServiceAtts.setVisibleRowCount(3);
     JScrollPane scrollPane = new JScrollPane(dialogSelectedServiceAtts);
     panel.add(scrollPane, c);
-    
+
     c.gridx = 0;
     c.gridy = 3;
     c.fill = GridBagConstraints.HORIZONTAL;
     JLabel fileLb = new JLabel("File to print: ");
     panel.add(fileLb, c);
-    
+
     c.gridx = 1;
     c.gridy = 3;
     selectedFileTf = new JTextField(25);
     panel.add(selectedFileTf, c);
-    
+
     c.gridx = 2;
     c.gridy = 3;
     c.fill = GridBagConstraints.NONE;
     JButton fileBt = new JButton("Choose file");
     fileBt.addActionListener(this);
     panel.add(fileBt, c);
-    
+
     c.gridx = 0;
     c.gridy = 4;
     c.fill = GridBagConstraints.HORIZONTAL;
     JLabel docFormatLb = new JLabel("Document format of file: ");
     panel.add(docFormatLb, c);
-    
+
     c.gridx = 1;
     c.gridy = 4;
     dialogSelectedServicedocFormat = new JComboBox();
     panel.add(dialogSelectedServicedocFormat, c);
-    
+
     c.gridx = 0;
     c.gridy = 5;
     c.gridwidth = 2;
@@ -251,7 +251,7 @@ public class Demo extends JFrame
     printBt.setActionCommand("PRINT");
     printBt.addActionListener(this);
     panel.add(printBt, c);
-    
+
     return panel;
   }
 
@@ -264,14 +264,14 @@ public class Demo extends JFrame
     if (event.getActionCommand().equals("CLOSE"))
       {
         System.exit(0);
-      } 
+      }
     else if (event.getActionCommand().equals("Choose file"))
       {
         JFileChooser chooser = new JFileChooser();
         chooser.showOpenDialog(this);
-        
+
         selectedFile = chooser.getSelectedFile();
-        
+
         if (selectedFile != null)
           selectedFileTf.setText(selectedFile.getName());
         else
@@ -279,17 +279,17 @@ public class Demo extends JFrame
       }
     else if (event.getActionCommand().equals("Show print dialog ..."))
       {
-        atts = new HashPrintRequestAttributeSet();        
+        atts = new HashPrintRequestAttributeSet();
         dialogSelectedService = ServiceUI.printDialog(null, 50, 50, services,
                                                       null, null, atts);
-        
+
         if (dialogSelectedService != null)
           {
             dialogSelectedService_Tf.setText(dialogSelectedService.getName());
-            
+
             // we do not want to have the class representation in the dialog
             // as we later always use an InputStream to open the file selected
-            
+
             // use set to remove duplicates
             DocFlavor[] docflavors = dialogSelectedService.getSupportedDocFlavors();
             HashSet set = new HashSet();
@@ -301,8 +301,8 @@ public class Demo extends JFrame
                   mimetype += "; charset=" + charset;
                 set.add(mimetype);
               }
-            
-            dialogSelectedServicedocFormat.removeAllItems();       
+
+            dialogSelectedServicedocFormat.removeAllItems();
             for (Iterator it = set.iterator(); it.hasNext(); )
               dialogSelectedServicedocFormat.addItem(it.next());
           }
@@ -314,19 +314,19 @@ public class Demo extends JFrame
         for (int i = 0; i < attsSTr.length; i++)
           attsSTr[i] = attsArray[i].getName() + " - " + attsArray[i].toString();
 
-        dialogSelectedServiceAtts.setListData(attsSTr);    
-        
-        validate();          
-      } 
+        dialogSelectedServiceAtts.setListData(attsSTr);
+
+        validate();
+      }
     else if (event.getActionCommand().equals("PRINT"))
-      {  
-        if (selectedFile != null && dialogSelectedService != null) 
+      {
+        if (selectedFile != null && dialogSelectedService != null)
           {
             DocPrintJob job = dialogSelectedService.createPrintJob();
-            
+
             // choose correct docflavor
             String mimetype = (String) dialogSelectedServicedocFormat.getSelectedItem();
-                        
+
             DocFlavor flavor = null;
             if (mimetype.equals(DocFlavor.INPUT_STREAM.GIF.getMimeType()))
               flavor = DocFlavor.INPUT_STREAM.GIF;
@@ -348,7 +348,7 @@ public class Demo extends JFrame
               flavor = DocFlavor.INPUT_STREAM.TEXT_PLAIN_HOST;
             else
               flavor = new DocFlavor(mimetype, "java.io.InputStream");
-            
+
             try
               {
                 SimpleDoc doc = new SimpleDoc(new FileInputStream(selectedFile), flavor, null);
@@ -363,7 +363,7 @@ public class Demo extends JFrame
               {
                 JOptionPane.showMessageDialog(this, e, "PrintException", JOptionPane.ERROR_MESSAGE);
                 e.printStackTrace();
-              }           
+              }
           }
         else
           JOptionPane.showMessageDialog(this, "Please select a file to print using the FileChooser", "No file selected", JOptionPane.INFORMATION_MESSAGE);
@@ -371,7 +371,7 @@ public class Demo extends JFrame
     else if (event.getActionCommand().equals("SERVICE"))
       {  // A new service was selected
         PrintService selected = (PrintService) serviceBox.getSelectedItem();
-        
+
         DocFlavor[] flavors = selected.getSupportedDocFlavors();
         docFormat.setListData(flavors);
         attCategories.setListData(selected.getSupportedAttributeCategories());

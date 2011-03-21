@@ -124,7 +124,7 @@ public class JdwpReplyPacket extends JdwpPacket
   {
     int i = 0;
     setErrorCode ((short) ((bytes[index + i++] & 0xff) << 8
-			   | (bytes[index + i++] & 0xff)));
+                           | (bytes[index + i++] & 0xff)));
     return i;
   }
 

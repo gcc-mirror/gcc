@@ -79,8 +79,8 @@
 
 #if _GLIBCXX_USE_WCHAR_T
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
-
+namespace std
+{
   using ::wctrans_t;
   using ::wctype_t;
   using ::wint_t;
@@ -105,8 +105,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   using ::towupper;
   using ::wctrans;
   using ::wctype;
-
-_GLIBCXX_END_NAMESPACE
+} // namespace
 
 #endif //_GLIBCXX_USE_WCHAR_T
 
@@ -114,13 +113,12 @@ _GLIBCXX_END_NAMESPACE
 
 #ifdef _GLIBCXX_USE_WCHAR_T
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
-
+namespace std
+{
 #if _GLIBCXX_HAVE_ISWBLANK
   using std::iswblank;
 #endif  
-
-_GLIBCXX_END_NAMESPACE
+} // namespace
 
 #endif // _GLIBCXX_USE_WCHAR_T
 

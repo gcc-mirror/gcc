@@ -312,13 +312,17 @@ remap_decl (tree decl, copy_body_data *id)
 	    walk_tree (&DECL_QUALIFIER (t), copy_tree_body_r, id, NULL);
 	}
 
-      if (cfun && gimple_in_ssa_p (cfun)
-	  && (TREE_CODE (t) == VAR_DECL
-	      || TREE_CODE (t) == RESULT_DECL || TREE_CODE (t) == PARM_DECL))
-	{
-	  get_var_ann (t);
-	  add_referenced_var (t);
-	}
+      if ((TREE_CODE (t) == VAR_DECL
+	   || TREE_CODE (t) == RESULT_DECL
+	   || TREE_CODE (t) == PARM_DECL)
+	  && id->src_fn && DECL_STRUCT_FUNCTION (id->src_fn)
+	  && gimple_referenced_vars (DECL_STRUCT_FUNCTION (id->src_fn))
+	  /* We don't want to mark as referenced VAR_DECLs that were
+	     not marked as such in the src function.  */
+	  && (TREE_CODE (decl) != VAR_DECL
+	      || referenced_var_lookup (DECL_STRUCT_FUNCTION (id->src_fn),
+					DECL_UID (decl))))
+	add_referenced_var (t);
       return t;
     }
 
@@ -811,57 +815,47 @@ remap_gimple_op_r (tree *tp, int *walk_subtrees, void *data)
 	 knows not to copy VAR_DECLs, etc., so this is safe.  */
       if (TREE_CODE (*tp) == MEM_REF)
 	{
+	  tree ptr = TREE_OPERAND (*tp, 0);
+	  tree old = *tp;
+	  tree tem;
+
 	  /* We need to re-canonicalize MEM_REFs from inline substitutions
-	     that can happen when a pointer argument is an ADDR_EXPR.  */
-	  tree decl = TREE_OPERAND (*tp, 0);
-	  tree *n;
-
-          /* See remap_ssa_name.  */
-          if (TREE_CODE (decl) == SSA_NAME
-              && TREE_CODE (SSA_NAME_VAR (decl)) == RESULT_DECL
-              && id->transform_return_to_modify)
-            decl = SSA_NAME_VAR (decl);
-
-	  n = (tree *) pointer_map_contains (id->decl_map, decl);
-	  if (n)
+	     that can happen when a pointer argument is an ADDR_EXPR.
+	     Recurse here manually to allow that.  */
+	  walk_tree (&ptr, remap_gimple_op_r, data, NULL);
+	  if ((tem = maybe_fold_offset_to_reference (EXPR_LOCATION (*tp),
+						     ptr,
+						     TREE_OPERAND (*tp, 1),
+						     TREE_TYPE (*tp)))
+	      && TREE_THIS_VOLATILE (tem) == TREE_THIS_VOLATILE (old))
 	    {
-	      tree old = *tp;
-	      tree ptr = unshare_expr (*n);
-	      tree tem;
-	      if ((tem = maybe_fold_offset_to_reference (EXPR_LOCATION (*tp),
-							 ptr,
-							 TREE_OPERAND (*tp, 1),
-							 TREE_TYPE (*tp)))
-		  && TREE_THIS_VOLATILE (tem) == TREE_THIS_VOLATILE (old))
-		{
-		  tree *tem_basep = &tem;
-		  while (handled_component_p (*tem_basep))
-		    tem_basep = &TREE_OPERAND (*tem_basep, 0);
-		  if (TREE_CODE (*tem_basep) == MEM_REF)
-		    *tem_basep
-		      = build2 (MEM_REF, TREE_TYPE (*tem_basep),
-				TREE_OPERAND (*tem_basep, 0),
-				fold_convert (TREE_TYPE (TREE_OPERAND (*tp, 1)),
-					      TREE_OPERAND (*tem_basep, 1)));
-		  else
-		    *tem_basep
-		      = build2 (MEM_REF, TREE_TYPE (*tem_basep),
-				build_fold_addr_expr (*tem_basep),
-				build_int_cst
-				  (TREE_TYPE (TREE_OPERAND (*tp, 1)), 0));
-		  *tp = tem;
-		}
+	      tree *tem_basep = &tem;
+	      while (handled_component_p (*tem_basep))
+		tem_basep = &TREE_OPERAND (*tem_basep, 0);
+	      if (TREE_CODE (*tem_basep) == MEM_REF)
+		*tem_basep
+		    = build2 (MEM_REF, TREE_TYPE (*tem_basep),
+			      TREE_OPERAND (*tem_basep, 0),
+			      fold_convert (TREE_TYPE (TREE_OPERAND (*tp, 1)),
+					    TREE_OPERAND (*tem_basep, 1)));
 	      else
-		{
-		  *tp = fold_build2 (MEM_REF, TREE_TYPE (*tp),
-				     ptr, TREE_OPERAND (*tp, 1));
-		  TREE_THIS_VOLATILE (*tp) = TREE_THIS_VOLATILE (old);
-		  TREE_THIS_NOTRAP (*tp) = TREE_THIS_NOTRAP (old);
-		}
-	      TREE_NO_WARNING (*tp) = TREE_NO_WARNING (old);
-	      *walk_subtrees = 0;
-	      return NULL;
+		*tem_basep
+		    = build2 (MEM_REF, TREE_TYPE (*tem_basep),
+			      build_fold_addr_expr (*tem_basep),
+			      build_int_cst
+			      (TREE_TYPE (TREE_OPERAND (*tp, 1)), 0));
+	      *tp = tem;
 	    }
+	  else
+	    {
+	      *tp = fold_build2 (MEM_REF, TREE_TYPE (*tp),
+				 ptr, TREE_OPERAND (*tp, 1));
+	      TREE_THIS_VOLATILE (*tp) = TREE_THIS_VOLATILE (old);
+	      TREE_THIS_NOTRAP (*tp) = TREE_THIS_NOTRAP (old);
+	    }
+	  TREE_NO_WARNING (*tp) = TREE_NO_WARNING (old);
+	  *walk_subtrees = 0;
+	  return NULL;
 	}
 
       /* Here is the "usual case".  Copy this tree node, and then
@@ -2557,10 +2551,7 @@ setup_one_parameter (copy_body_data *id, tree p, tree value, tree fn,
 
   /* We're actually using the newly-created var.  */
   if (gimple_in_ssa_p (cfun) && TREE_CODE (var) == VAR_DECL)
-    {
-      get_var_ann (var);
-      add_referenced_var (var);
-    }
+    add_referenced_var (var);
 
   /* Declare this new variable.  */
   DECL_CHAIN (var) = *vars;
@@ -2759,7 +2750,6 @@ declare_return_variable (copy_body_data *id, tree return_slot, tree modify_dest,
 			 basic_block entry_bb)
 {
   tree callee = id->src_fn;
-  tree caller = id->dst_fn;
   tree result = DECL_RESULT (callee);
   tree callee_type = TREE_TYPE (result);
   tree caller_type;
@@ -2868,13 +2858,9 @@ declare_return_variable (copy_body_data *id, tree return_slot, tree modify_dest,
 
   var = copy_result_decl_to_var (result, id);
   if (gimple_in_ssa_p (cfun))
-    {
-      get_var_ann (var);
-      add_referenced_var (var);
-    }
+    add_referenced_var (var);
 
   DECL_SEEN_IN_BIND_EXPR_P (var) = 1;
-  add_local_decl (DECL_STRUCT_FUNCTION (caller), var);
 
   /* Do not have the rest of GCC warn about this variable as it should
      not be visible to the user.  */
@@ -2908,10 +2894,7 @@ declare_return_variable (copy_body_data *id, tree return_slot, tree modify_dest,
     {
       tree temp = create_tmp_var (TREE_TYPE (result), "retvalptr");
       if (gimple_in_ssa_p (id->src_cfun))
-	{
-	  get_var_ann (temp);
-	  add_referenced_var (temp);
-	}
+	add_referenced_var (temp);
       insert_decl_map (id, result, temp);
       /* When RESULT_DECL is in SSA form, we need to use it's default_def
 	 SSA_NAME.  */
@@ -3783,14 +3766,19 @@ expand_call_inline (basic_block bb, gimple stmt, copy_body_data *id)
   if (gimple_code (stmt) != GIMPLE_CALL)
     goto egress;
 
-  /* First, see if we can figure out what function is being called.
-     If we cannot, then there is no hope of inlining the function.  */
-  fn = gimple_call_fndecl (stmt);
-  if (!fn)
+  /* Objective C and fortran still calls tree_rest_of_compilation directly.
+     Kill this check once this is fixed.  */
+  if (!id->dst_node->analyzed)
     goto egress;
 
-  /* Turn forward declarations into real ones.  */
-  fn = cgraph_node (fn)->decl;
+  cg_edge = cgraph_edge (id->dst_node, stmt);
+  gcc_checking_assert (cg_edge);
+  /* First, see if we can figure out what function is being called.
+     If we cannot, then there is no hope of inlining the function.  */
+  if (cg_edge->indirect_unknown_callee)
+    goto egress;
+  fn = cg_edge->callee->decl;
+  gcc_checking_assert (fn);
 
   /* If FN is a declaration of a function in a nested scope that was
      globally declared inline, we don't set its DECL_INITIAL.
@@ -3803,13 +3791,6 @@ expand_call_inline (basic_block bb, gimple stmt, copy_body_data *id)
       && DECL_ABSTRACT_ORIGIN (fn)
       && gimple_has_body_p (DECL_ABSTRACT_ORIGIN (fn)))
     fn = DECL_ABSTRACT_ORIGIN (fn);
-
-  /* Objective C and fortran still calls tree_rest_of_compilation directly.
-     Kill this check once this is fixed.  */
-  if (!id->dst_node->analyzed)
-    goto egress;
-
-  cg_edge = cgraph_edge (id->dst_node, stmt);
 
   /* First check that inlining isn't simply forbidden in this case.  */
   if (inline_forbidden_into_p (cg_edge->caller->decl, cg_edge->callee->decl))
@@ -4767,6 +4748,14 @@ copy_decl_for_dup_finish (copy_body_data *id, tree decl, tree copy)
        new function.  */
     DECL_CONTEXT (copy) = id->dst_fn;
 
+  if (TREE_CODE (decl) == VAR_DECL
+      /* C++ clones functions during parsing, before
+	 referenced_vars.  */
+      && gimple_referenced_vars (DECL_STRUCT_FUNCTION (id->src_fn))
+      && referenced_var_lookup (DECL_STRUCT_FUNCTION (id->src_fn),
+				DECL_UID (decl)))
+    add_referenced_var (copy);
+
   return copy;
 }
 
@@ -4878,7 +4867,6 @@ copy_arguments_for_versioning (tree orig_parm, copy_body_data * id,
 	   as temporary variable later in function, the uses will be
 	   replaced by local variable.  */
 	tree var = copy_decl_to_var (arg, id);
-	get_var_ann (var);
 	add_referenced_var (var);
 	insert_decl_map (id, arg, var);
         /* Declare this new variable.  */
@@ -5168,6 +5156,7 @@ tree_function_versioning (tree old_decl, tree new_decl,
       				     args_to_skip, &vars);
 
   DECL_INITIAL (new_decl) = remap_blocks (DECL_INITIAL (id.src_fn), &id);
+  BLOCK_SUPERCONTEXT (DECL_INITIAL (new_decl)) = new_decl;
 
   declare_inline_vars (DECL_INITIAL (new_decl), vars);
 
@@ -5175,16 +5164,26 @@ tree_function_versioning (tree old_decl, tree new_decl,
     /* Add local vars.  */
     add_local_variables (DECL_STRUCT_FUNCTION (old_decl), cfun, &id, false);
 
+  if (DECL_RESULT (old_decl) != NULL_TREE)
+    {
+      tree old_name;
+      DECL_RESULT (new_decl) = remap_decl (DECL_RESULT (old_decl), &id);
+      lang_hooks.dup_lang_specific_decl (DECL_RESULT (new_decl));
+      if (gimple_in_ssa_p (id.src_cfun)
+	  && DECL_BY_REFERENCE (DECL_RESULT (old_decl))
+	  && (old_name
+	      = gimple_default_def (id.src_cfun, DECL_RESULT (old_decl))))
+	{
+	  tree new_name = make_ssa_name (DECL_RESULT (new_decl), NULL);
+	  insert_decl_map (&id, old_name, new_name);
+	  SSA_NAME_DEF_STMT (new_name) = gimple_build_nop ();
+	  set_default_def (DECL_RESULT (new_decl), new_name);
+	}
+    }
+
   /* Copy the Function's body.  */
   copy_body (&id, old_entry_block->count, REG_BR_PROB_BASE,
 	     ENTRY_BLOCK_PTR, EXIT_BLOCK_PTR, blocks_to_copy, new_entry);
-
-  if (DECL_RESULT (old_decl) != NULL_TREE)
-    {
-      tree *res_decl = &DECL_RESULT (old_decl);
-      DECL_RESULT (new_decl) = remap_decl (*res_decl, &id);
-      lang_hooks.dup_lang_specific_decl (DECL_RESULT (new_decl));
-    }
 
   /* Renumber the lexical scoping (non-code) blocks consecutively.  */
   number_blocks (new_decl);
@@ -5380,7 +5379,8 @@ tree_can_inline_p (struct cgraph_edge *e)
   if (inline_forbidden_into_p (caller, callee))
     {
       e->inline_failed = CIF_UNSPECIFIED;
-      gimple_call_set_cannot_inline (e->call_stmt, true);
+      if (e->call_stmt)
+	gimple_call_set_cannot_inline (e->call_stmt, true);
       return false;
     }
 
@@ -5388,7 +5388,8 @@ tree_can_inline_p (struct cgraph_edge *e)
   if (!targetm.target_option.can_inline_p (caller, callee))
     {
       e->inline_failed = CIF_TARGET_OPTION_MISMATCH;
-      gimple_call_set_cannot_inline (e->call_stmt, true);
+      if (e->call_stmt)
+	gimple_call_set_cannot_inline (e->call_stmt, true);
       e->call_stmt_cannot_inline_p = true;
       return false;
     }
@@ -5405,7 +5406,8 @@ tree_can_inline_p (struct cgraph_edge *e)
 	  || !gimple_check_call_args (e->call_stmt)))
     {
       e->inline_failed = CIF_MISMATCHED_ARGUMENTS;
-      gimple_call_set_cannot_inline (e->call_stmt, true);
+      if (e->call_stmt)
+	gimple_call_set_cannot_inline (e->call_stmt, true);
       e->call_stmt_cannot_inline_p = true;
       return false;
     }

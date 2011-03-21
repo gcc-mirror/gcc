@@ -44,7 +44,7 @@ import java.io.IOException;
 
 /**
  * Wrapper for an boolean value.
- * 
+ *
  * @author Kyle Galloway <kgallowa@redhat.com>
  */
 public final class BooleanValue
@@ -55,7 +55,7 @@ public final class BooleanValue
 
   /**
    * Create a new BooleanValue from an boolean
-   * 
+   *
    * @param value the boolean to wrap
    */
   public BooleanValue(boolean value)
@@ -63,20 +63,20 @@ public final class BooleanValue
     super(JdwpConstants.Tag.BOOLEAN);
     _value = value;
   }
-  
+
   /**
    * Get the value held in this Value
-   * 
+   *
    * @return the value represented by this Value object
    */
   public boolean getValue()
   {
     return _value;
   }
-  
+
   /**
    * Return an object representing this type
-   * 
+   *
    * @return an Object represntation of this value
    */
   @Override
@@ -87,7 +87,7 @@ public final class BooleanValue
 
   /**
    * Write the wrapped boolean to the given DataOutputStream.
-   * 
+   *
    * @param os the output stream to write to
    */
   @Override
@@ -97,4 +97,3 @@ public final class BooleanValue
     os.writeBoolean(_value);
   }
 }
-

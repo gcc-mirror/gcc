@@ -43,12 +43,12 @@ import java.io.Serializable;
 
 /**
  * This class provides a mechanism for using an {@link AffineTransform} as
- * an <i>immutable</i> attribute (for example, in the 
- * {@link java.text.AttributedString} class).  Any transform passed to 
+ * an <i>immutable</i> attribute (for example, in the
+ * {@link java.text.AttributedString} class).  Any transform passed to
  * this class is copied before being stored, and any transform handed out
- * by this class is a copy of the stored transform.  In this way, it is 
+ * by this class is a copy of the stored transform.  In this way, it is
  * not possible to modify the stored transform.
- * 
+ *
  * @author Michael Koch
  */
 public final class TransformAttribute implements Serializable
@@ -56,16 +56,16 @@ public final class TransformAttribute implements Serializable
   private static final long serialVersionUID = 3356247357827709530L;
 
   private AffineTransform affineTransform;
-  
+
   /**
    * Creates a new attribute that contains a copy of the given transform.
-   * 
+   *
    * @param transform  the transform (<code>null</code> not permitted).
-   * 
-   * @throws IllegalArgumentException if <code>transform</code> is 
+   *
+   * @throws IllegalArgumentException if <code>transform</code> is
    *         <code>null</code>.
    */
-  public TransformAttribute (AffineTransform transform) 
+  public TransformAttribute (AffineTransform transform)
   {
     if (transform == null)
       {
@@ -76,7 +76,7 @@ public final class TransformAttribute implements Serializable
 
   /**
    * Returns a copy of the transform contained by this attribute.
-   * 
+   *
    * @return A copy of the transform.
    */
   public AffineTransform getTransform ()
@@ -87,10 +87,10 @@ public final class TransformAttribute implements Serializable
   /**
    * Returns <code>true</code> if the transform contained by this attribute is
    * an identity transform, and <code>false</code> otherwise.
-   * 
+   *
    * @return <code>true</code> if the transform contained by this attribute is
    * an identity transform, and <code>false</code> otherwise.
-   * 
+   *
    * @since 1.4
    */
   public boolean isIdentity ()

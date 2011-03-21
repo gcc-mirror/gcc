@@ -1,4 +1,4 @@
-/* Reject ivars with an unknown size.  */
+/* Reject ivars that use flexible array members.  */
 /* Contributed by Nicola Pero  <nicola.pero@meta-innovation.com> */
 /* { dg-do compile } */
 
@@ -10,9 +10,9 @@ typedef struct
 
 @interface Test
 {
-  test_type c;
+  test_type c; /* { dg-error "instance variable .c. uses flexible array member" } */
 }
 @end
 
 @implementation Test
-@end /* { dg-error "instance variable has unknown size" } */
+@end

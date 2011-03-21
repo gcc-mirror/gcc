@@ -1,4 +1,4 @@
-/* JRadioButton.java -- 
+/* JRadioButton.java --
    Copyright (C) 2002, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -105,12 +105,12 @@ public class JRadioButton extends JToggleButton
 
   /**
    * Constructs an unselected radio button with no text or icon.
-   */ 
+   */
   public JRadioButton()
   {
     this(null, null, false);
   }
-    
+
   /**
    * Constructs a radio button using the labelling, state
    * and icon specified by the supplied action.
@@ -130,10 +130,10 @@ public class JRadioButton extends JToggleButton
    * @param icon the icon to use.
    */
   public JRadioButton(Icon icon)
-  { 
+  {
     this(null, icon, false);
-  }    
-  
+  }
+
   /**
    * Constructs a radio button with the supplied icon and state.
    *
@@ -142,10 +142,10 @@ public class JRadioButton extends JToggleButton
    *        selected state.  Otherwise, the button is unselected.
    */
   public JRadioButton(Icon icon, boolean selected)
-  { 
+  {
     this(null, icon, selected);
-  }    
-  
+  }
+
   /**
    * Constructs an unselected radio button using the supplied text
    * and no icon.
@@ -168,7 +168,7 @@ public class JRadioButton extends JToggleButton
   {
     this(text, null, selected);
   }
-      
+
   /**
    * Constructs an unselected radio button with the supplied text
    * and icon.
@@ -180,7 +180,7 @@ public class JRadioButton extends JToggleButton
   {
     this(text, icon, false);
   }
-  
+
   /**
    * Constructs a radio button with the supplied text, icon and state.
    *
@@ -195,7 +195,7 @@ public class JRadioButton extends JToggleButton
     setBorderPainted(false);
     setHorizontalAlignment(LEADING);
   }
-      
+
   /**
    * Returns the accessible context for this <code>JRadioButton</code>,
    * in the form of an instance of <code>AccessibleJRadioButton</code>.
@@ -209,23 +209,23 @@ public class JRadioButton extends JToggleButton
     if (accessibleContext == null)
       {
         /* Create the context */
-	accessibleContext = new AccessibleJRadioButton();
+        accessibleContext = new AccessibleJRadioButton();
       }
     return accessibleContext;
   }
-  
+
   /**
    * Returns a string specifying the name of the Look and Feel UI class
    * that renders this component.
    *
    * @return the Look and Feel UI class for <code>JRadioButton</code>s
    *         as a <code>String</code>.
-   */  
+   */
   public String getUIClassID()
   {
     return "RadioButtonUI";
   }
-  
+
   /**
    * Returns a string representation of this component for debugging use.
    * Users should not depend on anything as regards the content or formatting
@@ -233,19 +233,19 @@ public class JRadioButton extends JToggleButton
    * null (only empty).
    *
    * @return the component in <code>String</code> form for debugging.
-   */  
+   */
   protected  String paramString()
   {
     return super.paramString();
   }
-  
+
   /**
    * This method resets the radio button's UI delegate to the default UI for
    * the current look and feel.
    */
   public void updateUI()
   {
-    /* 
+    /*
        I can't see any difference between this and the superclass one,
        but Sun reimplements it... there is no RadioButtonUI class for it
        to be cast to.
@@ -254,6 +254,3 @@ public class JRadioButton extends JToggleButton
   }
 
 }
-
-
-

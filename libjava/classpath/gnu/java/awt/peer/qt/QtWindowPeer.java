@@ -53,7 +53,7 @@ public class QtWindowPeer extends QtContainerPeer implements WindowPeer
   {
     super.setup();
   }
-  
+
   // ************ Public methods *********************
 
   public native void toBack();
@@ -68,7 +68,7 @@ public class QtWindowPeer extends QtContainerPeer implements WindowPeer
   public void updateAlwaysOnTop()
   {
     // TODO Auto-generated method stub
-    
+
   }
 
   public boolean requestWindowFocus()

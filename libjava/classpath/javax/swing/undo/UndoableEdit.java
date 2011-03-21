@@ -39,10 +39,10 @@ package javax.swing.undo;
 
 /**
  * An editing operation that supports undo/redoability.
- * 
+ *
  * @author Andrew Selkirk
  */
-public interface UndoableEdit 
+public interface UndoableEdit
 {
 
   /**
@@ -50,8 +50,8 @@ public interface UndoableEdit
    * combined action.
    *
    * @param edit the editing action to be incorporated.
-   * 
-   * @return <code>true</code> if the edit was combined successfully, and 
+   *
+   * @return <code>true</code> if the edit was combined successfully, and
    *         <code>false</code> if it could not be combined.
    */
   boolean addEdit(UndoableEdit edit);
@@ -98,14 +98,14 @@ public interface UndoableEdit
 
   /**
    * Returns the redo presentation name.
-   * 
+   *
    * @return The redo presentation name.
    */
   String getRedoPresentationName();
 
   /**
    * Returns the undo presentation name.
-   * 
+   *
    * @return The undo presentation name.
    */
   String getUndoPresentationName();
@@ -138,8 +138,8 @@ public interface UndoableEdit
    * combined action that replaces the argument action.
    *
    * @param edit the editing action to be replaced.
-   * 
-   * @return <code>true</code> if the edit is successfully replaced, and 
+   *
+   * @return <code>true</code> if the edit is successfully replaced, and
    *         <code>false</code> otherwise.
    */
   boolean replaceEdit(UndoableEdit edit);

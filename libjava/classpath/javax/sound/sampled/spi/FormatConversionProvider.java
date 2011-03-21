@@ -42,7 +42,7 @@ import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
 
 /**
- * A format conversion provider supplies methods for converting between 
+ * A format conversion provider supplies methods for converting between
  * different audio formats.  This abstract class defines the interface
  * to this functionality; concrete subclasses will implement the methods
  * declared here.
@@ -67,7 +67,7 @@ public abstract class FormatConversionProvider
    * @throws IllegalArgumentException if the conversion is not supported
    */
   public abstract AudioInputStream getAudioInputStream(AudioFormat.Encoding encoding,
-						       AudioInputStream source);
+                                                       AudioInputStream source);
 
   /**
    * Return an audio input stream given the desired target format and
@@ -79,7 +79,7 @@ public abstract class FormatConversionProvider
    * @throws IllegalArgumentException if the conversion is not supported
    */
   public abstract AudioInputStream getAudioInputStream(AudioFormat format,
-						       AudioInputStream source);
+                                                       AudioInputStream source);
 
   /**
    * Return an array of all the source encodings supported by this conversion
@@ -109,7 +109,7 @@ public abstract class FormatConversionProvider
    * @return an array of supported target formats
    */
   public abstract AudioFormat[] getTargetFormats(AudioFormat.Encoding targ,
-						 AudioFormat src);
+                                                 AudioFormat src);
 
   /**
    * Return true if this provider supports conversion from the given
@@ -119,13 +119,13 @@ public abstract class FormatConversionProvider
    * @return true if the conversion is supported
    */
   public boolean isConversionSupported(AudioFormat.Encoding targ,
-				       AudioFormat src)
+                                       AudioFormat src)
   {
     AudioFormat.Encoding[] encodings = getTargetEncodings(src);
     for (int i = 0; i < encodings.length; ++i)
       {
-	if (targ.equals(encodings[i]))
-	  return true;
+        if (targ.equals(encodings[i]))
+          return true;
       }
     return false;
   }
@@ -154,14 +154,14 @@ public abstract class FormatConversionProvider
     AudioFormat.Encoding[] srcs = getSourceEncodings();
     for (int i = 0; i < srcs.length; ++i)
       {
-	if (src.equals(srcs[i]))
-	  return true;
+        if (src.equals(srcs[i]))
+          return true;
       }
     return false;
   }
 
   /**
-   * Return true if an encoding matching the argument is supported as a 
+   * Return true if an encoding matching the argument is supported as a
    * target encoding by this provider.
    * @param targ the target encoding
    * @return true if it is supported
@@ -171,8 +171,8 @@ public abstract class FormatConversionProvider
     AudioFormat.Encoding[] encodings = getTargetEncodings();
     for (int i = 0; i < encodings.length; ++i)
       {
-	if (targ.equals(encodings[i]))
-	  return true;
+        if (targ.equals(encodings[i]))
+          return true;
       }
     return false;
   }

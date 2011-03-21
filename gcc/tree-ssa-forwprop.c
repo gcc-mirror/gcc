@@ -1,5 +1,5 @@
 /* Forward propagation of expressions for single use variables.
-   Copyright (C) 2004, 2005, 2007, 2008, 2009, 2010
+   Copyright (C) 2004, 2005, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -299,34 +299,34 @@ can_propagate_from (gimple def_stmt)
   return true;
 }
 
-/* Remove a copy chain ending in NAME along the defs but not
-   further or including UP_TO_STMT.  If NAME was replaced in
-   its only use then this function can be used to clean up
-   dead stmts.  Returns true if UP_TO_STMT can be removed
-   as well, otherwise false.  */
+/* Remove a copy chain ending in NAME along the defs.
+   If NAME was replaced in its only use then this function can be used
+   to clean up dead stmts.  Returns true if cleanup-cfg has to run.  */
 
 static bool
-remove_prop_source_from_use (tree name, gimple up_to_stmt)
+remove_prop_source_from_use (tree name)
 {
   gimple_stmt_iterator gsi;
   gimple stmt;
+  bool cfg_changed = false;
 
   do {
+    basic_block bb;
+
     if (!has_zero_uses (name))
-      return false;
+      return cfg_changed;
 
     stmt = SSA_NAME_DEF_STMT (name);
-    if (stmt == up_to_stmt)
-      return true;
-
     gsi = gsi_for_stmt (stmt);
+    bb = gimple_bb (stmt);
     release_defs (stmt);
     gsi_remove (&gsi, true);
+    cfg_changed |= gimple_purge_dead_eh_edges (bb);
 
     name = (gimple_assign_copy_p (stmt)) ? gimple_assign_rhs1 (stmt) : NULL;
   } while (name && TREE_CODE (name) == SSA_NAME);
 
-  return false;
+  return cfg_changed;
 }
 
 /* Return the rhs of a gimple_assign STMT in a form of a single tree,
@@ -468,9 +468,8 @@ forward_propagate_into_gimple_cond (gimple stmt)
 	update_stmt (stmt);
 
 	/* Remove defining statements.  */
-	remove_prop_source_from_use (name, NULL);
-
-	if (is_gimple_min_invariant (tmp))
+	if (remove_prop_source_from_use (name)
+	    || is_gimple_min_invariant (tmp))
 	  did_something = 2;
 	else if (did_something == 0)
 	  did_something = 1;
@@ -579,9 +578,8 @@ forward_propagate_into_cond (gimple_stmt_iterator *gsi_p)
 	update_stmt (stmt);
 
 	/* Remove defining statements.  */
-	remove_prop_source_from_use (name, NULL);
-
-	if (is_gimple_min_invariant (tmp))
+	if (remove_prop_source_from_use (name)
+	    || is_gimple_min_invariant (tmp))
 	  did_something = 2;
 	else if (did_something == 0)
 	  did_something = 1;
@@ -1114,7 +1112,7 @@ forward_propagate_addr_expr (tree name, tree rhs)
 	}
     }
 
-  return all;
+  return all && has_zero_uses (name);
 }
 
 /* Forward propagate the comparison defined in STMT like
@@ -1207,9 +1205,6 @@ forward_propagate_comparison (gimple stmt)
 	update_stmt (use_stmt);
       }
 
-      /* Remove defining statements.  */
-      remove_prop_source_from_use (name, stmt);
-
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
 	  tree old_rhs = rhs_to_tree (TREE_TYPE (gimple_assign_lhs (stmt)),
@@ -1221,7 +1216,8 @@ forward_propagate_comparison (gimple stmt)
 	  fprintf (dump_file, "'\n");
 	}
 
-      return true;
+      /* Remove defining statements.  */
+      return remove_prop_source_from_use (name);
     }
 
   return false;
@@ -1658,9 +1654,9 @@ simplify_bitwise_and (gimple_stmt_iterator *gsi, gimple stmt)
 
 
 /* Perform re-associations of the plus or minus statement STMT that are
-   always permitted.  */
+   always permitted.  Returns true if the CFG was changed.  */
 
-static void
+static bool
 associate_plusminus (gimple stmt)
 {
   tree rhs1 = gimple_assign_rhs1 (stmt);
@@ -1671,7 +1667,7 @@ associate_plusminus (gimple stmt)
 
   /* We can't reassociate at all for saturating types.  */
   if (TYPE_SATURATING (TREE_TYPE (rhs1)))
-    return;
+    return false;
 
   /* First contract negates.  */
   do
@@ -1934,7 +1930,12 @@ out:
     {
       fold_stmt_inplace (stmt);
       update_stmt (stmt);
+      if (maybe_clean_or_replace_eh_stmt (stmt, stmt)
+	  && gimple_purge_dead_eh_edges (gimple_bb (stmt)))
+	return true;
     }
+
+  return false;
 }
 
 /* Main entry point for the forward propagation optimizer.  */
@@ -2046,13 +2047,8 @@ tree_ssa_forward_propagate_single_use_vars (void)
 					== tcc_comparison)
 		{
 		  if (forward_propagate_comparison (stmt))
-		    {
-		      release_defs (stmt);
-		      todoflags |= TODO_remove_unused_locals;
-		      gsi_remove (&gsi, true);
-		    }
-		  else
-		    gsi_next (&gsi);
+		    cfg_changed = true;
+		  gsi_next (&gsi);
 		}
 	      else if (gimple_assign_rhs_code (stmt) == BIT_AND_EXPR)
 		{
@@ -2062,7 +2058,7 @@ tree_ssa_forward_propagate_single_use_vars (void)
 	      else if (gimple_assign_rhs_code (stmt) == PLUS_EXPR
 		       || gimple_assign_rhs_code (stmt) == MINUS_EXPR)
 		{
-		  associate_plusminus (stmt);
+		  cfg_changed |= associate_plusminus (stmt);
 		  gsi_next (&gsi);
 		}
 	      else

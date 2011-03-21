@@ -1,4 +1,4 @@
-/* GYearMonthType.java -- 
+/* GYearMonthType.java --
    Copyright (C) 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -88,7 +88,7 @@ final class GYearMonthType
         }
       return 0;
     }
-    
+
   }
 
   static final int[] CONSTRAINING_FACETS = {
@@ -155,7 +155,7 @@ final class GYearMonthType
         throw new DatatypeException("illegal GYear value");
       }
   }
-  
+
   public Object createValue(String literal, ValidationContext context) {
     try
       {
@@ -172,6 +172,5 @@ final class GYearMonthType
         return null;
       }
   }
-  
-}
 
+}

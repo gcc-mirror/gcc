@@ -43,7 +43,7 @@ import java.util.prefs.BackingStoreException;
 
 /**
  * Native peer for GConf based preference backend.
- * 
+ *
  * @author Mario Torre <neugens@limasoftware.net>
  */
 public final class GConfNativePeer
@@ -59,7 +59,7 @@ public final class GConfNativePeer
   /**
    * Queries whether the node <code>node</code> exists in theGConf database.
    * Returns <code>true</code> or <code>false</code>.
-   * 
+   *
    * @param node the node to check.
    */
   public boolean nodeExist(String node)
@@ -72,7 +72,7 @@ public final class GConfNativePeer
    * exist before (ie it was unset or it only had a default value).
    * Key names must be valid GConf key names, that is, there can be more
    * restrictions than for normal Preference Backend.
-   * 
+   *
    * @param key the key to alter (or add).
    * @param value the new value for this key.
    * @return true if the key was updated, false otherwise.
@@ -86,7 +86,7 @@ public final class GConfNativePeer
    * Unsets the value of key; if key is already unset, has no effect. Depending
    * on the GConf daemon, unsetting a key may have the side effect to remove it
    * completely form the database.
-   * 
+   *
    * @param key the key to unset.
    * @return true on success, false if the key was not updated.
    */
@@ -97,7 +97,7 @@ public final class GConfNativePeer
 
   /**
    * Gets the value of a configuration key.
-   * 
+   *
    * @param key the configuration key.
    * @return the values of this key, null if the key is not valid.
    */
@@ -110,7 +110,7 @@ public final class GConfNativePeer
    * Lists the key in the given node. Does not list subnodes. Keys names are the
    * stripped names (name relative to the current node) of the keys stored in
    * this node.
-   * 
+   *
    * @param node the node where keys are stored.
    * @return a java.util.List of keys. If there are no keys in the given node, a
    *         list of size 0 is returned.
@@ -123,7 +123,7 @@ public final class GConfNativePeer
   /**
    * Lists the subnodes in <code>node</code>. The returned list contains
    * allocated strings. Each string is the name relative tho the given node.
-   * 
+   *
    * @param node the node to get subnodes from. If there are no subnodes in the
    *          given node, a list of size 0 is returned.
    */
@@ -139,7 +139,7 @@ public final class GConfNativePeer
   {
     return gconf_escape_key(plain);
   }
-  
+
   /**
    * Unescape a string escaped with {@link #escapeString}.
    */
@@ -147,7 +147,7 @@ public final class GConfNativePeer
   {
     return gconf_unescape_key(escaped);
   }
-  
+
   /**
    * Suggest to the backend GConf daemon to synch with the database.
    */
@@ -155,7 +155,7 @@ public final class GConfNativePeer
   {
     gconf_suggest_sync();
   }
-  
+
   protected void finalize() throws Throwable
   {
     try
@@ -181,7 +181,7 @@ public final class GConfNativePeer
    * It is meant to be used by the static initializer.
    */
   native synchronized static final private void init_id_cache();
-  
+
   /**
    * Initialize the GConf native peer. This is meant to be used by the
    * class constructor.
@@ -196,7 +196,7 @@ public final class GConfNativePeer
   /**
    * Queries the GConf database to see if the given node exists, returning
    * true if the node exist, false otherwise.
-   * 
+   *
    * @param node the node to query for existence.
    * @return true if the node exist, false otherwise.
    */
@@ -206,7 +206,7 @@ public final class GConfNativePeer
   /**
    * Sets the given key/value pair into the GConf database.
    * The key must be a valid GConf key.
-   * 
+   *
    * @param key the key to store in the GConf database
    * @param value the value to associate to the given key.
    * @return true if the change has effect, false otherwise.
@@ -217,7 +217,7 @@ public final class GConfNativePeer
   /**
    * Returns the key associated to the given key. Null is returned if the
    * key is not valid.
-   * 
+   *
    * @param key the key to return the value of.
    * @return The value associated to the given key, or null.
    */
@@ -226,7 +226,7 @@ public final class GConfNativePeer
 
   /**
    * Usets the given key, removing the key from the database.
-   * 
+   *
    * @param key the key to remove.
    * @return true if the operation success, false otherwise.
    */
@@ -238,46 +238,46 @@ public final class GConfNativePeer
    */
   native synchronized static final protected void gconf_suggest_sync()
     throws BackingStoreException;
-  
+
   /**
    * Returns a list of all nodes under the given node.
-   * 
+   *
    * @param node the source node.
    * @return A list of nodes under the given source node.
    */
   native
   static synchronized final protected List<String> gconf_all_nodes(String node)
     throws BackingStoreException;
-  
+
   /**
    * Returns a list of all keys stored in the given node.
-   * 
+   *
    * @param node the source node.
    * @return A list of all keys stored in the given node.
    */
-  native synchronized 
+  native synchronized
   static final protected List<String> gconf_all_keys(String node)
     throws BackingStoreException;
 
   /**
    * Escape the input String so that it's a valid element for GConf.
-   * 
+   *
    * @param plain the String to escape.
    * @return An escaped String for use with GConf.
    */
-  native synchronized 
+  native synchronized
   static final protected String gconf_escape_key(String plain);
-  
+
   /**
    * Converts a string escaped with gconf_escape_key back into its
    * original form.
-   * 
-   * @param escaped key as returned by gconf_escape_key 
+   *
+   * @param escaped key as returned by gconf_escape_key
    * @return An unescaped key.
    */
-  native synchronized 
+  native synchronized
   static final protected String gconf_unescape_key(String escaped);
-  
+
   static
     {
       System.loadLibrary("gconfpeer");

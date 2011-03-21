@@ -40,7 +40,7 @@ long foo(void) {
   receiver += [objrcvr2 someValue];
   receiver += [objrcvr2 anotherValue];
   receiver += [(Obj *)objrcvr2 someValue]; /* { dg-warning ".Obj. may not respond to .\\-someValue." } */
-/* { dg-warning "invalid conversion" "" { target *-*-* } 42 } */
+/* { dg-error "invalid conversion" "" { target *-*-* } 42 } */
 
   receiver += [(Obj *)objrcvr2 anotherValue];
 

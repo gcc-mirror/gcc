@@ -49,22 +49,22 @@ import javax.print.attribute.URISyntax;
  * The <code>Destination</code> attribute provides a URI for an alternate
  * destination of the printing output.
  * <p>
- * As not an IPP attribute many print services will not support this 
+ * As not an IPP attribute many print services will not support this
  * attribute and only provide the printer device as a destination.
  * An alternate output destination would be a file on the local harddisk
  * given as a file scheme URI.
  * </p>
- * <p> 
- * If a print service does not support the destination attributes URI it 
+ * <p>
+ * If a print service does not support the destination attributes URI it
  * will throw a PrintException. This exception may further implement the
- * interface {@link javax.print.URIException}. 
+ * interface {@link javax.print.URIException}.
  * </p>
  * <p>
  * <b>IPP Compatibility:</b> Destination is not an IPP 1.1 attribute.
  * </p>
  * @see javax.print.PrintException
  * @see javax.print.URIException
- * 
+ *
  * @author Michael Koch (konqueror@gmx.de)
  * @author Wolfgang Baer (WBaer@gmx.de)
  */
@@ -75,7 +75,7 @@ public final class Destination extends URISyntax
 
   /**
    * Constructs a <code>Destination</code> object.
-   * 
+   *
    * @param uri the URI of the output destination.
    * @throws NullPointerException if the given uri is null.
    */
@@ -83,13 +83,13 @@ public final class Destination extends URISyntax
   {
     super(uri);
   }
-  
+
   /**
    * Tests if the given object is equal to this object.
    *
    * @param obj the object to test
    *
-   * @return <code>true</code> if both objects are equal, 
+   * @return <code>true</code> if both objects are equal,
    * <code>false</code> otherwise.
    */
   public boolean equals(Object obj)

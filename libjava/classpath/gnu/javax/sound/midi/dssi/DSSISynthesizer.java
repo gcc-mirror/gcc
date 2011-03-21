@@ -57,9 +57,9 @@ import javax.sound.midi.VoiceStatus;
 
 /**
  * DSSI soft-synth support.
- * 
+ *
  * All DSSI soft-synths are expected to be installed in /usr/lib/dssi.
- * 
+ *
  * @author Anthony Green (green@redhat.com)
  *
  */
@@ -67,7 +67,7 @@ public class DSSISynthesizer implements Synthesizer
 {
   /**
    * The DSSI Instrument class.
-   * 
+   *
    * @author Anthony Green (green@redhat.com)
    *
    */
@@ -77,7 +77,7 @@ public class DSSISynthesizer implements Synthesizer
     {
       super (soundbank, patch, name, null);
     }
-    
+
     /* @see javax.sound.midi.SoundbankResource#getData()
      */
     public Object getData()
@@ -89,7 +89,7 @@ public class DSSISynthesizer implements Synthesizer
 
 /**
    * DSSISoundbank holds all instruments.
-   * 
+   *
    * @author Anthony Green (green@redhat.com)
    *
    */
@@ -101,7 +101,7 @@ public class DSSISynthesizer implements Synthesizer
     private List resources = new ArrayList();
     private String vendor;
     private String version;
-    
+
     public DSSISoundbank(String name, String description, String vendor, String version)
     {
       this.name = name;
@@ -109,12 +109,12 @@ public class DSSISynthesizer implements Synthesizer
       this.vendor = vendor;
       this.version = version;
     }
-    
+
     void add(Instrument instrument)
     {
       instruments.add(instrument);
     }
-    
+
     /* @see javax.sound.midi.Soundbank#getName()
      */
     public String getName()
@@ -164,14 +164,14 @@ public class DSSISynthesizer implements Synthesizer
     public Instrument getInstrument(Patch patch)
     {
       Iterator itr = instruments.iterator();
-      
+
       while (itr.hasNext())
       {
         Instrument i = (Instrument) itr.next();
         if (i.getPatch().equals(patch))
           return i;
       }
-      
+
       return null;
     }
   }
@@ -179,7 +179,7 @@ public class DSSISynthesizer implements Synthesizer
 /**
    * The Receiver class receives all MIDI messages from a connected
    * Transmitter.
-   * 
+   *
    * @author Anthony Green (green@redhat.com)
    *
    */
@@ -194,13 +194,13 @@ public class DSSISynthesizer implements Synthesizer
       if (message instanceof ShortMessage)
       {
         ShortMessage smessage = (ShortMessage) message;
-      
+
         switch (message.getStatus())
         {
         case ShortMessage.NOTE_ON:
           int velocity = smessage.getData2();
           if (velocity > 0)
-            channels[smessage.getChannel()].noteOn(smessage.getData1(), 
+            channels[smessage.getChannel()].noteOn(smessage.getData1(),
                                                    smessage.getData2());
           else
             channels[smessage.getChannel()].noteOff(smessage.getData1());
@@ -226,8 +226,8 @@ public class DSSISynthesizer implements Synthesizer
 
   }
 
-  static native void noteOn_(long handle, int channel, int noteNumber, int velocity);  
-  static native void noteOff_(long handle, int channel, int noteNumber, int velocity);  
+  static native void noteOn_(long handle, int channel, int noteNumber, int velocity);
+  static native void noteOff_(long handle, int channel, int noteNumber, int velocity);
   static native void setPolyPressure_(long handle, int channel, int noteNumber, int pressure);
   static native int getPolyPressure_(long handle, int channel, int noteNumber);
   static native void controlChange_(long handle, int channel, int control, int value);
@@ -237,7 +237,7 @@ public class DSSISynthesizer implements Synthesizer
   static native int getProgramBank_(long handle, int index);
   static native int getProgramProgram_(long handle, int index);
   static native void selectProgram_(long handle, int bank, int program);
-      
+
   /**
    * @author Anthony Green (green@redhat.com)
    *
@@ -245,7 +245,7 @@ public class DSSISynthesizer implements Synthesizer
   public class DSSIMidiChannel implements MidiChannel
   {
     int channel = 0;
-    
+
     /**
      * Default contructor.
      */
@@ -484,18 +484,18 @@ public class DSSISynthesizer implements Synthesizer
   }
 
   long sohandle;
-  long handle; 
+  long handle;
   private Info info;
-  
+
   MidiChannel channels[] = new MidiChannel[16];
-  
+
   // The list of known soundbanks, and the default one.
   List soundbanks = new ArrayList();
   DSSISoundbank defaultSoundbank;
-  
+
   /**
    * Create a DSSI Synthesizer.
-   * 
+   *
    * @param info the DSSIInfo for this soft-synth
    * @param soname the name of the .so file for this DSSI synth
    * @param index the DSSI index for this soft-synth
@@ -507,10 +507,10 @@ public class DSSISynthesizer implements Synthesizer
     sohandle = DSSIMidiDeviceProvider.dlopen_(soname);
     handle = DSSIMidiDeviceProvider.getDSSIHandle_(sohandle, index);
     channels[0] = new DSSIMidiChannel(0);
-    defaultSoundbank = new DSSISoundbank("name", "description", 
+    defaultSoundbank = new DSSISoundbank("name", "description",
                                          "vendor", "version");
     soundbanks.add(defaultSoundbank);
-    
+
     int i = 0;
     String name;
     do
@@ -519,7 +519,7 @@ public class DSSISynthesizer implements Synthesizer
       if (name != null)
       {
         defaultSoundbank.
-          add(new DSSIInstrument(defaultSoundbank, 
+          add(new DSSIInstrument(defaultSoundbank,
                                  new Patch(getProgramBank_(sohandle, i),
                                            getProgramProgram_(sohandle, i)),
                                  name));
@@ -581,7 +581,7 @@ public class DSSISynthesizer implements Synthesizer
     // be in any soundbank.
     if (instrument.getSoundbank() != defaultSoundbank)
       throw new IllegalArgumentException ("Synthesizer doesn't support this instrument's soundbank");
-      
+
     Patch patch = instrument.getPatch();
     selectProgram_(sohandle, patch.getBank(), patch.getProgram());
     return true;

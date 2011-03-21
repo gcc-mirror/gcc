@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -66,7 +66,7 @@ public abstract class AbstractWriter
   // Number of characters we have currently written.
   private int lineLength;
   // True if we can apply line wrapping.
-  private boolean canWrapLines;	// FIXME default?
+  private boolean canWrapLines; // FIXME default?
   // The number of spaces per indentation level.
   private int indentSpace = 2;
   // The current indentation level.
@@ -167,7 +167,7 @@ public abstract class AbstractWriter
   /**
    * This method must be overridden by a concrete subclass.  It is
    * responsible for iterating over the Elements of the Document and
-   * writing them out. 
+   * writing them out.
    */
   protected abstract void write() throws IOException, BadLocationException;
 
@@ -182,9 +182,9 @@ public abstract class AbstractWriter
   {
     if (! elt.isLeaf())
       throw new BadLocationException("Element is not a leaf",
-				     elt.getStartOffset());
-    return document.getText(elt.getStartOffset(), 
-			    elt.getEndOffset() - elt.getStartOffset());
+                                     elt.getStartOffset());
+    return document.getText(elt.getStartOffset(),
+                            elt.getEndOffset() - elt.getStartOffset());
   }
 
   /**
@@ -239,37 +239,37 @@ public abstract class AbstractWriter
   {
     if (getCanWrapLines())
       {
-	// FIXME: should we be handling newlines specially here?
-	for (int i = 0; i < len; )
-	  {
-	    int start_i = i;
-	    // Find next space.
-	    while (i < len && data[start + i] != ' ')
-	      ++i;
-	    if (i < len && lineLength + i - start_i >= maxLineLength)
-	      writeLineSeparator();
-	    else if (i < len)
-	      {
-		// Write the trailing space.
-		++i;
-	      }
-	    // Write out the text.
-	    output(data, start + start_i, start + i - start_i);
-	  }
+        // FIXME: should we be handling newlines specially here?
+        for (int i = 0; i < len; )
+          {
+            int start_i = i;
+            // Find next space.
+            while (i < len && data[start + i] != ' ')
+              ++i;
+            if (i < len && lineLength + i - start_i >= maxLineLength)
+              writeLineSeparator();
+            else if (i < len)
+              {
+                // Write the trailing space.
+                ++i;
+              }
+            // Write out the text.
+            output(data, start + start_i, start + i - start_i);
+          }
       }
     else
       {
-	int saved_i = start;
-	for (int i = start; i < start + len; ++i)
-	  {
-	    if (data[i] == NEWLINE)
-	      {
-		output(data, saved_i, i - saved_i);
-		writeLineSeparator();
-	      }
-	  }
-	if (saved_i < start + len - 1)
-	  output(data, saved_i, start + len - saved_i);
+        int saved_i = start;
+        for (int i = start; i < start + len; ++i)
+          {
+            if (data[i] == NEWLINE)
+              {
+                output(data, saved_i, i - saved_i);
+                writeLineSeparator();
+              }
+          }
+        if (saved_i < start + len - 1)
+          output(data, saved_i, start + len - saved_i);
       }
   }
 
@@ -284,9 +284,9 @@ public abstract class AbstractWriter
     int spaces = indentLevel * indentSpace;
     if (spaces > 0)
       {
-	char[] v = new char[spaces];
-	Arrays.fill(v, ' ');
-	write(v, 0, v.length);
+        char[] v = new char[spaces];
+        Arrays.fill(v, ' ');
+        write(v, 0, v.length);
       }
     indented = true;
   }
@@ -318,7 +318,7 @@ public abstract class AbstractWriter
     int eltStart = elt.getStartOffset();
     int eltEnd = elt.getEndOffset();
     return ((eltStart >= startOffset && eltStart < endOffset)
-	    || (eltEnd >= startOffset && eltEnd < endOffset));
+            || (eltEnd >= startOffset && eltEnd < endOffset));
   }
 
   /**
@@ -472,10 +472,10 @@ public abstract class AbstractWriter
     Enumeration e = attrs.getAttributeNames();
     while (e.hasMoreElements())
       {
-	Object name = e.nextElement();
-	Object val = attrs.getAttribute(name);
-	write(name + "=" + val);
-	writeLineSeparator();
+        Object name = e.nextElement();
+        Object val = attrs.getAttribute(name);
+        write(name + "=" + val);
+        writeLineSeparator();
       }
   }
 }

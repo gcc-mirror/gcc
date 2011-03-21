@@ -1,4 +1,4 @@
-/* AttributeSet.java -- 
+/* AttributeSet.java --
    Copyright (C) 2002, 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -52,7 +52,7 @@ import java.util.Enumeration;
  * @author Roman Kennke (roman@kennke.org)
  */
 public interface AttributeSet
-{ 
+{
   /**
    * Used as keys to identify character-run attributes.
    */
@@ -191,5 +191,5 @@ public interface AttributeSet
    *         are equal to the attributes in this <code>AttributeSet</code>,
    *         <code>false</code> otherwise
    */
-  boolean isEqual(AttributeSet attr);     
+  boolean isEqual(AttributeSet attr);
 }

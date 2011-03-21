@@ -38,7 +38,8 @@ DIST_COMMON = $(top_srcdir)/fragment.am $(srcdir)/Makefile.in \
 	$(srcdir)/Makefile.am
 subdir = include
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-am__aclocal_m4_deps = $(top_srcdir)/../config/enable.m4 \
+am__aclocal_m4_deps = $(top_srcdir)/../config/acx.m4 \
+	$(top_srcdir)/../config/enable.m4 \
 	$(top_srcdir)/../config/futex.m4 \
 	$(top_srcdir)/../config/iconv.m4 \
 	$(top_srcdir)/../config/lead-dot.m4 \
@@ -105,8 +106,12 @@ CXXFILT = @CXXFILT@
 CXXFLAGS = @CXXFLAGS@
 CYGPATH_W = @CYGPATH_W@
 C_INCLUDE_DIR = @C_INCLUDE_DIR@
+DBLATEX = @DBLATEX@
+DBTOEPUB = @DBTOEPUB@
 DEBUG_FLAGS = @DEBUG_FLAGS@
 DEFS = @DEFS@
+DOT = @DOT@
+DOXYGEN = @DOXYGEN@
 DSYMUTIL = @DSYMUTIL@
 DUMPBIN = @DUMPBIN@
 ECHO_C = @ECHO_C@
@@ -156,7 +161,9 @@ PACKAGE_TARNAME = @PACKAGE_TARNAME@
 PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
+PDFLATEX = @PDFLATEX@
 RANLIB = @RANLIB@
+RUBY = @RUBY@
 SECTION_FLAGS = @SECTION_FLAGS@
 SECTION_LDFLAGS = @SECTION_LDFLAGS@
 SED = @SED@
@@ -169,6 +176,9 @@ USE_NLS = @USE_NLS@
 VERSION = @VERSION@
 WARN_FLAGS = @WARN_FLAGS@
 WERROR = @WERROR@
+XMLLINT = @XMLLINT@
+XSLTPROC = @XSLTPROC@
+XSL_STYLE_DIR = @XSL_STYLE_DIR@
 abs_builddir = @abs_builddir@
 abs_srcdir = @abs_srcdir@
 abs_top_builddir = @abs_top_builddir@
@@ -413,6 +423,14 @@ bits_headers = \
 	${bits_srcdir}/valarray_before.h \
 	${bits_srcdir}/valarray_after.h \
 	${bits_srcdir}/vector.tcc
+
+bits_sup_srcdir = ${glibcxx_srcdir}/libsupc++
+bits_sup_headers = \
+        ${bits_sup_srcdir}/cxxabi_forced.h \
+        ${bits_sup_srcdir}/exception_defines.h \
+        ${bits_sup_srcdir}/exception_ptr.h \
+        ${bits_sup_srcdir}/hash_bytes.h \
+        ${bits_sup_srcdir}/nested_exception.h
 
 backward_srcdir = ${glibcxx_srcdir}/include/backward
 backward_builddir = ./backward
@@ -1116,7 +1134,7 @@ PCHFLAGS = -x c++-header -nostdinc++ $(CXXFLAGS)
 # List of all timestamp files.  By keeping only one copy of this list, both
 # CLEANFILES and all-local are kept up-to-date.
 allstamped = \
-	stamp-std stamp-bits stamp-c_base stamp-c_compatibility \
+	stamp-std stamp-bits stamp-bits-sup stamp-c_base stamp-c_compatibility \
 	stamp-backward stamp-ext stamp-pb stamp-tr1 stamp-decimal \
 	stamp-debug stamp-parallel stamp-profile stamp-profile-impl \
 	stamp-host 
@@ -1307,6 +1325,10 @@ stamp-bits: ${bits_headers}
 	@-cd ${bits_builddir} && $(LN_S) $? . 2>/dev/null
 	@$(STAMP) stamp-bits
 
+stamp-bits-sup: stamp-bits ${bits_sup_headers}
+	@-cd ${bits_builddir} && $(LN_S) $? . 2>/dev/null
+	@$(STAMP) stamp-bits-sup
+
 stamp-c_base: ${c_base_headers}
 	@-mkdir -p ${c_base_builddir}
 	@-cd ${c_base_builddir} && $(LN_S) $? . 2>/dev/null
@@ -1441,6 +1463,11 @@ stamp-host: ${host_headers} ${host_headers_noinst} stamp-${host_alias}
 @ENABLE_SYMVERS_GNU_NAMESPACE_FALSE@stamp-namespace-version:
 @ENABLE_SYMVERS_GNU_NAMESPACE_FALSE@	echo 0 > stamp-namespace-version
 
+@ENABLE_EXTERN_TEMPLATE_TRUE@stamp-extern-template:
+@ENABLE_EXTERN_TEMPLATE_TRUE@	echo 1 > stamp-extern-template
+@ENABLE_EXTERN_TEMPLATE_FALSE@stamp-extern-template:
+@ENABLE_EXTERN_TEMPLATE_FALSE@	echo 0 > stamp-extern-template
+
 @ENABLE_VISIBILITY_TRUE@stamp-visibility:
 @ENABLE_VISIBILITY_TRUE@	echo 1 > stamp-visibility
 @ENABLE_VISIBILITY_FALSE@stamp-visibility:
@@ -1453,17 +1480,20 @@ ${host_builddir}/c++config.h: ${CONFIG_HEADER} \
 			      stamp-${host_alias} \
 			      ${toplevel_srcdir}/gcc/DATESTAMP \
 			      stamp-namespace-version \
-			      stamp-visibility
+			      stamp-visibility \
+			      stamp-extern-template
 	@date=`cat ${toplevel_srcdir}/gcc/DATESTAMP` ;\
-	nsa_version=`cat stamp-namespace-version` ;\
+	ns_version=`cat stamp-namespace-version` ;\
 	visibility=`cat stamp-visibility` ;\
+	externtemplate=`cat stamp-extern-template` ;\
 	ldbl_compat='s,g,g,' ;\
 	grep "^[ 	]*#[ 	]*define[ 	][ 	]*_GLIBCXX_LONG_DOUBLE_COMPAT[ 	][ 	]*1[ 	]*$$" \
 	${CONFIG_HEADER} > /dev/null 2>&1 \
 	&& ldbl_compat='s,^#undef _GLIBCXX_LONG_DOUBLE_COMPAT$$,#define _GLIBCXX_LONG_DOUBLE_COMPAT 1,' ;\
 	sed -e "s,define __GLIBCXX__,define __GLIBCXX__ $$date," \
-	-e "s,define _GLIBCXX_NAMESPACE_ASSOCIATION_VERSION, define _GLIBCXX_NAMESPACE_ASSOCIATION_VERSION $$nsa_version," \
+	-e "s,define _GLIBCXX_INLINE_VERSION, define _GLIBCXX_INLINE_VERSION $$ns_version," \
 	-e "s,define _GLIBCXX_HAVE_ATTRIBUTE_VISIBILITY, define _GLIBCXX_HAVE_ATTRIBUTE_VISIBILITY $$visibility," \
+	-e "s,define _GLIBCXX_EXTERN_TEMPLATE, define _GLIBCXX_EXTERN_TEMPLATE $$externtemplate," \
 	-e "$$ldbl_compat" \
             < ${glibcxx_srcdir}/include/bits/c++config > $@ ;\
 	sed -e 's/HAVE_/_GLIBCXX_HAVE_/g' \
@@ -1554,7 +1584,8 @@ ${pch3_output}: ${pch3_source} ${pch2_output}
 install-freestanding-headers:
 	$(mkinstalldirs) $(DESTDIR)${gxx_include_dir}
 	$(mkinstalldirs) $(DESTDIR)${host_installdir}
-	for file in ${host_srcdir}/os_defines.h ${host_builddir}/c++config.h; do \
+	for file in ${host_srcdir}/os_defines.h ${host_builddir}/c++config.h \
+	  ${glibcxx_srcdir}/$(CPU_DEFINES_SRCDIR)/cpu_defines.h; do \
 	  $(INSTALL_DATA) $${file} $(DESTDIR)${host_installdir}; done
 	$(mkinstalldirs) $(DESTDIR)${gxx_include_dir}/${std_builddir}
 	$(INSTALL_DATA) ${std_builddir}/limits $(DESTDIR)${gxx_include_dir}/${std_builddir}

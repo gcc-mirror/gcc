@@ -74,7 +74,7 @@
 #undef islessgreater
 #undef isunordered
 
-namespace std
+namespace std _GLIBCXX_VISIBILITY(default)
 {
   inline double
   abs(double __x)

@@ -1,7 +1,8 @@
 /* Contributed by Nicola Pero - Fri Mar  9 21:35:47 CET 2001 */
 
 #include <stdlib.h>
-#include "../../objc-obj-c++-shared/Protocol1.h"
+#include <objc/Protocol.h>
+#include "../../objc-obj-c++-shared/next-mapping.h"
 
 /* Test defining a protocol, and accessing it using @protocol */
 

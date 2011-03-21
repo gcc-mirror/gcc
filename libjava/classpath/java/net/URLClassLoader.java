@@ -288,8 +288,8 @@ public class URLClassLoader extends SecureClassLoader
         if (newUrl == null)
           return; // Silently ignore...
 
-	// Reset the toString() value.
-	thisString = null;
+        // Reset the toString() value.
+        thisString = null;
 
         // Create a loader for this URL.
         URLLoader loader = null;
@@ -394,8 +394,8 @@ public class URLClassLoader extends SecureClassLoader
                                            newUrl);
           }
 
-	urlinfos.add(loader);
-	ArrayList<URLLoader> extra = loader.getClassPath();
+        urlinfos.add(loader);
+        ArrayList<URLLoader> extra = loader.getClassPath();
         if (extra != null)
           urlinfos.addAll(extra);
       }
@@ -414,8 +414,8 @@ public class URLClassLoader extends SecureClassLoader
   {
     for (int i = 0; i < newUrls.length; i++)
       {
-	urls.add(newUrls[i]);
-	addURLImpl(newUrls[i]);
+        urls.add(newUrls[i]);
+        addURLImpl(newUrls[i]);
       }
   }
 
@@ -424,7 +424,7 @@ public class URLClassLoader extends SecureClassLoader
    * object, if not null, has precedence.
    */
   private String getAttributeValue(Attributes.Name name, Attributes first,
-				   Attributes second)
+                                   Attributes second)
   {
     String result = null;
     if (first != null)
@@ -457,7 +457,7 @@ public class URLClassLoader extends SecureClassLoader
     CPStringBuilder xform = new CPStringBuilder(name);
     for (int i = xform.length () - 1; i >= 0; --i)
       if (xform.charAt(i) == '.')
-	xform.setCharAt(i, '/');
+        xform.setCharAt(i, '/');
     xform.append('/');
     String xformName = xform.toString();
 
@@ -466,22 +466,22 @@ public class URLClassLoader extends SecureClassLoader
 
     String specTitle
       = getAttributeValue(Attributes.Name.SPECIFICATION_TITLE,
-			  entryAttr, attr);
+                          entryAttr, attr);
     String specVersion
       = getAttributeValue(Attributes.Name.SPECIFICATION_VERSION,
-			  entryAttr, attr);
+                          entryAttr, attr);
     String specVendor
       = getAttributeValue(Attributes.Name.SPECIFICATION_VENDOR,
-			  entryAttr, attr);
+                          entryAttr, attr);
     String implTitle
       = getAttributeValue(Attributes.Name.IMPLEMENTATION_TITLE,
-			  entryAttr, attr);
+                          entryAttr, attr);
     String implVersion
       = getAttributeValue(Attributes.Name.IMPLEMENTATION_VERSION,
-			  entryAttr, attr);
+                          entryAttr, attr);
     String implVendor
       = getAttributeValue(Attributes.Name.IMPLEMENTATION_VENDOR,
-			  entryAttr, attr);
+                          entryAttr, attr);
 
     // Look if the Manifest indicates that this package is sealed
     // XXX - most likely not completely correct!
@@ -494,9 +494,9 @@ public class URLClassLoader extends SecureClassLoader
       url = null;
 
     return definePackage(name,
-			 specTitle, specVendor, specVersion,
-			 implTitle, implVendor, implVersion,
-			 url);
+                         specTitle, specVendor, specVersion,
+                         implTitle, implVendor, implVersion,
+                         url);
   }
 
   /**
@@ -534,47 +534,47 @@ public class URLClassLoader extends SecureClassLoader
     // construct the class (and watch out for those nasty IOExceptions)
     try
       {
-	byte[] data;
-	InputStream in = resource.getInputStream();
-	try
-	  {
-	    int length = resource.getLength();
-	    if (length != -1)
-	      {
-		// We know the length of the data.
-		// Just try to read it in all at once
-		data = new byte[length];
-		int pos = 0;
-		while (length - pos > 0)
-		  {
-		    int len = in.read(data, pos, length - pos);
-		    if (len == -1)
-		      throw new EOFException("Not enough data reading from: "
-					     + in);
-		    pos += len;
-		  }
-	      }
-	    else
-	      {
-		// We don't know the data length.
-		// Have to read it in chunks.
-		ByteArrayOutputStream out = new ByteArrayOutputStream(4096);
-		byte[] b = new byte[4096];
-		int l = 0;
-		while (l != -1)
-		  {
-		    l = in.read(b);
-		    if (l != -1)
-		      out.write(b, 0, l);
-		  }
-		data = out.toByteArray();
-	      }
-	  }
-	finally
-	  {
-	    in.close();
-	  }
-	final byte[] classData = data;
+        byte[] data;
+        InputStream in = resource.getInputStream();
+        try
+          {
+            int length = resource.getLength();
+            if (length != -1)
+              {
+                // We know the length of the data.
+                // Just try to read it in all at once
+                data = new byte[length];
+                int pos = 0;
+                while (length - pos > 0)
+                  {
+                    int len = in.read(data, pos, length - pos);
+                    if (len == -1)
+                      throw new EOFException("Not enough data reading from: "
+                                             + in);
+                    pos += len;
+                  }
+              }
+            else
+              {
+                // We don't know the data length.
+                // Have to read it in chunks.
+                ByteArrayOutputStream out = new ByteArrayOutputStream(4096);
+                byte[] b = new byte[4096];
+                int l = 0;
+                while (l != -1)
+                  {
+                    l = in.read(b);
+                    if (l != -1)
+                      out.write(b, 0, l);
+                  }
+                data = out.toByteArray();
+              }
+          }
+        finally
+          {
+            in.close();
+          }
+        final byte[] classData = data;
 
         // Now get the CodeSource
         final CodeSource source = resource.getCodeSource();
@@ -620,18 +620,18 @@ public class URLClassLoader extends SecureClassLoader
         Certificate[] resourceCertificates = resource.getCertificates();
         if(resourceCertificates != null)
           super.setSigners(result, resourceCertificates);
-        
+
         return result;
       }
     catch (IOException ioe)
       {
-	throw new ClassNotFoundException(className + " not found in " + this, ioe);
+        throw new ClassNotFoundException(className + " not found in " + this, ioe);
       }
   }
-  
+
   // Cached String representation of this URLClassLoader
   private String thisString;
-  
+
   /**
    * Returns a String representation of this URLClassLoader giving the
    * actual Class name, the URLs that are searched and the parent
@@ -641,25 +641,25 @@ public class URLClassLoader extends SecureClassLoader
   {
     synchronized (this)
       {
-	if (thisString == null)
-	  {
-	    CPStringBuilder sb = new CPStringBuilder();
-	    sb.append(this.getClass().getName());
-	    sb.append("{urls=[" );
-	    URL[] thisURLs = getURLs();
-	    for (int i = 0; i < thisURLs.length; i++)
-	      {
-		sb.append(thisURLs[i]);
-		if (i < thisURLs.length - 1)
-		  sb.append(',');
-	      }
-	    sb.append(']');
-	    sb.append(", parent=");
-	    sb.append(getParent());
-	    sb.append('}');
-	    thisString = sb.toString();
-	  }
-	return thisString;
+        if (thisString == null)
+          {
+            CPStringBuilder sb = new CPStringBuilder();
+            sb.append(this.getClass().getName());
+            sb.append("{urls=[" );
+            URL[] thisURLs = getURLs();
+            for (int i = 0; i < thisURLs.length; i++)
+              {
+                sb.append(thisURLs[i]);
+                if (i < thisURLs.length - 1)
+                  sb.append(',');
+              }
+            sb.append(']');
+            sb.append(", parent=");
+            sb.append(getParent());
+            sb.append('}');
+            thisString = sb.toString();
+          }
+        return thisString;
       }
   }
 

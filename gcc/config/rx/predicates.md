@@ -1,5 +1,5 @@
 ;; Predicate definitions for Renesas RX.
-;; Copyright (C) 2008, 2009 Free Software Foundation, Inc.
+;; Copyright (C) 2008, 2009, 2010 Free Software Foundation, Inc.
 ;; Contributed by Red Hat.
 ;;
 ;; This file is part of GCC.
@@ -37,19 +37,19 @@
 ;; Only small integers or a value in a register are permitted.
 
 (define_predicate "rx_shift_operand"
-  (match_code "const_int,reg")
-  {
-    if (CONST_INT_P (op))
-      return IN_RANGE (INTVAL (op), 0, 31);
-    return true;
-  }
+  (ior (match_operand 0 "register_operand")
+       (and (match_code "const_int")
+	    (match_test "IN_RANGE (INTVAL (op), 0, 31)")))
 )
 
 (define_predicate "rx_constshift_operand"
-  (match_code "const_int")
-  {
-    return IN_RANGE (INTVAL (op), 0, 31);
-  }
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (INTVAL (op), 0, 31)"))
+)
+
+(define_predicate "rx_restricted_mem_operand"
+  (and (match_code "mem")
+       (match_test "rx_is_restricted_memory_address (XEXP (op, 0), mode)"))
 )
 
 ;; Check that the operand is suitable as the source operand
@@ -57,20 +57,9 @@
 ;; and a restricted subset of memory addresses are allowed.
 
 (define_predicate "rx_source_operand"
-  (match_code "const_int,const_double,const,symbol_ref,label_ref,reg,mem")
-  {
-    if (CONSTANT_P (op))
-      return rx_is_legitimate_constant (op);
-
-    if (! MEM_P (op))
-      return true;
-      
-    /* Do not allow size conversions whilst accessing memory.  */
-    if (GET_MODE (op) != mode)
-      return false;
-
-    return rx_is_restricted_memory_address (XEXP (op, 0), mode);
-  }
+  (ior (match_operand 0 "register_operand")
+       (match_operand 0 "immediate_operand")
+       (match_operand 0 "rx_restricted_mem_operand"))
 )
 
 ;; Check that the operand is suitable as the source operand
@@ -79,16 +68,8 @@
 ;; CONST_INTs are not.
 
 (define_predicate "rx_compare_operand"
-  (match_code "subreg,reg,mem")
-  {
-    if (GET_CODE (op) == SUBREG)
-      return REG_P (XEXP (op, 0));
-    
-    if (! MEM_P (op))
-      return true;
-
-    return rx_is_restricted_memory_address (XEXP (op, 0), mode);
-  }
+  (ior (match_operand 0 "register_operand")
+       (match_operand 0 "rx_restricted_mem_operand"))
 )
 
 ;; Return true if OP is a store multiple operation.  This looks like:
@@ -293,3 +274,24 @@
   element = XVECEXP (op, 0, count - 1);
   return GET_CODE (element) == RETURN;
 })
+
+(define_predicate "label_ref_operand"
+  (match_code "label_ref")
+)
+
+(define_predicate "rx_z_comparison_operator"
+  (match_code "eq,ne")
+)
+
+(define_predicate "rx_zs_comparison_operator"
+  (match_code "eq,ne,lt,ge")
+)
+
+;; GT and LE omitted due to operand swap required.
+(define_predicate "rx_fp_comparison_operator"
+  (match_code "eq,ne,lt,ge,ordered,unordered")
+)
+
+(define_predicate "rshift_operator"
+  (match_code "ashiftrt,lshiftrt")
+)

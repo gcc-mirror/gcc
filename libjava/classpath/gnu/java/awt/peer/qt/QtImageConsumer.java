@@ -86,44 +86,44 @@ public class QtImageConsumer implements ImageConsumer
   public synchronized void setHints (int flags)
   {
     // This method informs us in which order the pixels are
-    // delivered, for progressive-loading support, etc. 
+    // delivered, for progressive-loading support, etc.
     // Since we wait until it's all loaded, we can ignore the hints.
   }
 
-  public synchronized void setPixels (int x, int y, int width, int height, 
-				      ColorModel cm, byte[] pixels,
-				      int offset, int scansize)
+  public synchronized void setPixels (int x, int y, int width, int height,
+                                      ColorModel cm, byte[] pixels,
+                                      int offset, int scansize)
   {
     setPixels (x, y, width, height, cm, convertPixels (pixels), offset,
                scansize);
   }
 
-  public synchronized void setPixels (int x, int y, int width, int height, 
-				      ColorModel cm, int[] pixels,
-				      int offset, int scansize)
+  public synchronized void setPixels (int x, int y, int width, int height,
+                                      ColorModel cm, int[] pixels,
+                                      int offset, int scansize)
   {
     if (pixelCache == null)
       return; // Not sure this should ever happen.
 
     if (cm.equals(QtImage.nativeModel))
       for (int i = 0; i < height; i++)
-	System.arraycopy (pixels, offset + (i * scansize),
-			  pixelCache, (y + i) * this.width + x,
-			  width);
+        System.arraycopy (pixels, offset + (i * scansize),
+                          pixelCache, (y + i) * this.width + x,
+                          width);
     else
       {
-	for (int i = 0; i < height; i++)
-	  for (int j = 0; j < width; j++)
-	    {
-	      // get in AARRGGBB and convert to AABBGGRR
-	      int pix = cm.getRGB(pixels[offset + (i * scansize) + x + j]);
-	      byte b = (byte)(pix & 0xFF);
-	      byte r = (byte)(((pix & 0x00FF0000) >> 16) & 0xFF);
-	      pix &= 0xFF00FF00;
-	      pix |= ((b & 0xFF) << 16);
-	      pix |= (r & 0xFF);
-	      pixelCache[(y + i) * this.width + x + j] = pix;
-	    }
+        for (int i = 0; i < height; i++)
+          for (int j = 0; j < width; j++)
+            {
+              // get in AARRGGBB and convert to AABBGGRR
+              int pix = cm.getRGB(pixels[offset + (i * scansize) + x + j]);
+              byte b = (byte)(pix & 0xFF);
+              byte r = (byte)(((pix & 0x00FF0000) >> 16) & 0xFF);
+              pix &= 0xFF00FF00;
+              pix |= ((b & 0xFF) << 16);
+              pix |= (r & 0xFF);
+              pixelCache[(y + i) * this.width + x + j] = pix;
+            }
       }
   }
 
@@ -136,7 +136,7 @@ public class QtImageConsumer implements ImageConsumer
 
     for (int i = 0; i < pixels.length; i++)
       ret[i] = pixels[i] & 0xFF;
-    
+
     return ret;
   }
 
@@ -145,5 +145,3 @@ public class QtImageConsumer implements ImageConsumer
     this.properties = props;
   }
 }
-
-

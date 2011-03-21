@@ -41,7 +41,9 @@
 #include <locale>
 #include <iconv.h>
 
-_GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
+namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /// Extension to use iconv for dealing with character encodings.
   // This includes conversions and comparisons between various character
@@ -213,10 +215,13 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       typedef typename std::fpos<state_type>		pos_type;
     };
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
 
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   using __gnu_cxx::encoding_state;
 
@@ -503,6 +508,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     do_max_length() const throw()
     { return 1; }
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
 
 #endif

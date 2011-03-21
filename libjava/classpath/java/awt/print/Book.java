@@ -135,8 +135,8 @@ public class Book implements Pageable
   {
     for (int i = 0; i < num_pages; i++)
       {
-	printables.addElement(printable);
-	page_formats.addElement(page_format);
+        printables.addElement(printable);
+        page_formats.addElement(page_format);
       }
   }
 

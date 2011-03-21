@@ -48,12 +48,11 @@
 // Get rid of those macros defined in <signal.h> in lieu of real functions.
 #undef raise
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
-
+namespace std
+{
   using ::sig_atomic_t;
   using ::signal;
   using ::raise;
-
-_GLIBCXX_END_NAMESPACE
+} // namespace std
 
 #endif

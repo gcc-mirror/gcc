@@ -92,9 +92,9 @@ public class MimetypesFileTypeMap
       {
       }
   }
-  
+
   private Map<String,String>[] mimetypes;
-  
+
   /**
    * Default constructor.
    */
@@ -102,7 +102,7 @@ public class MimetypesFileTypeMap
   {
     init(null);
   }
-  
+
   /**
    * Constructor specifying a filename.
    * @param mimeTypeFileName the name of the file to read mime.types
@@ -125,7 +125,7 @@ public class MimetypesFileTypeMap
           }
       }
   }
-  
+
   /**
    * Constructor specifying an input stream.
    * @param is the input stream to read mime.types entries from
@@ -156,7 +156,7 @@ public class MimetypesFileTypeMap
           {
           }
       }
-    
+
     if (debug)
       {
         System.out.println("MimetypesFileTypeMap: load HOME");
@@ -175,7 +175,7 @@ public class MimetypesFileTypeMap
     catch (SecurityException e)
       {
       }
-    
+
     if (debug)
       {
         System.out.println("MimetypesFileTypeMap: load SYS");
@@ -184,8 +184,8 @@ public class MimetypesFileTypeMap
       {
         parseFile(mimetypes[SYS],
                   new CPStringBuilder(System.getProperty("java.home"))
-                  .append(File.separatorChar)                                                     
-		  .append("lib")
+                  .append(File.separatorChar)
+                  .append("lib")
                   .append(File.separatorChar)
                   .append("mime.types")
                   .toString());
@@ -232,14 +232,14 @@ public class MimetypesFileTypeMap
       {
         parseResource(mimetypes[JAR], "/META-INF/mime.types");
       }
-    
+
     if (debug)
       {
         System.out.println("MimetypesFileTypeMap: load DEF");
       }
     parseResource(mimetypes[DEF], "/META-INF/mimetypes.default");
   }
-  
+
   /**
    * Adds entries prorammatically to the registry.
    * @param mime_types a mime.types formatted entries string
@@ -268,7 +268,7 @@ public class MimetypesFileTypeMap
   {
     return getContentType(f.getName());
   }
-  
+
   /**
    * Returns the MIME type based on the given filename.
    * If no entry is found, returns "application/octet-stream".
@@ -296,7 +296,7 @@ public class MimetypesFileTypeMap
       }
     return DEFAULT_MIME_TYPE;
   }
-  
+
   private void parseFile(Map<String,String> mimetypes, String filename)
   {
     Reader in = null;
@@ -322,7 +322,7 @@ public class MimetypesFileTypeMap
           }
       }
   }
-  
+
   private void parseResource(Map<String,String> mimetypes, String name)
   {
     Reader in = null;
@@ -352,7 +352,7 @@ public class MimetypesFileTypeMap
           }
       }
   }
-  
+
   private void parse(Map<String,String> mimetypes, Reader in)
     throws IOException
   {
@@ -386,9 +386,9 @@ public class MimetypesFileTypeMap
           }
       }
   }
-  
+
   private void parseEntry(Map<String,String> mimetypes,
-			  String line)
+                          String line)
   {
     // Tokenize
     String mimeType = null;
@@ -418,9 +418,9 @@ public class MimetypesFileTypeMap
         mimetypes.put(buffer.toString(), mimeType);
       }
   }
-  
+
   // -- Utility methods --
-  
+
   private List<URL> getSystemResources(String name)
   {
     List<URL> acc = new ArrayList<URL>();
@@ -435,6 +435,5 @@ public class MimetypesFileTypeMap
       }
     return acc;
   }
-  
-}
 
+}

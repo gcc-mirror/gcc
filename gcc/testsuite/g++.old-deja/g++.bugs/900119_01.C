@@ -8,6 +8,8 @@
 
 // keywords: member declaration, member initialization
 
+// { dg-prune-output "non-static data member initializers" }
+
 int global_int;
 
 class class0 {

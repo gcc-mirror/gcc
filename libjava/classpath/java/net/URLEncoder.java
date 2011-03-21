@@ -83,14 +83,14 @@ public class URLEncoder
   {
     try
       {
-	// We default to 8859_1 for compatibility with the same
-	// default elsewhere in the library.
-	return encode(s, System.getProperty("file.encoding", "8859_1"));
+        // We default to 8859_1 for compatibility with the same
+        // default elsewhere in the library.
+        return encode(s, System.getProperty("file.encoding", "8859_1"));
       }
     catch (UnsupportedEncodingException uee)
       {
-	// Should never happen since default should always be supported
-	return s;
+        // Should never happen since default should always be supported
+        return s;
       }
   }
 
@@ -118,40 +118,40 @@ public class URLEncoder
     CPStringBuilder result = new CPStringBuilder(length);
     while (true)
       {
-	while (i < length && isSafe(s.charAt(i)))
-	  i++;
+        while (i < length && isSafe(s.charAt(i)))
+          i++;
 
-	// Safe character can just be added
-	result.append(s.substring(start, i));
+        // Safe character can just be added
+        result.append(s.substring(start, i));
 
-	// Are we done?
-	if (i >= length)
-	  return result.toString();
-	else if (s.charAt(i) == ' ')
-	  {
-	    result.append('+'); // Replace space char with plus symbol.
-	    i++;
-	  }
-	else
-	  {
-	    // Get all unsafe characters
-	    start = i;
-	    char c;
-	    while (i < length && (c = s.charAt(i)) != ' ' && ! isSafe(c))
-	      i++;
+        // Are we done?
+        if (i >= length)
+          return result.toString();
+        else if (s.charAt(i) == ' ')
+          {
+            result.append('+'); // Replace space char with plus symbol.
+            i++;
+          }
+        else
+          {
+            // Get all unsafe characters
+            start = i;
+            char c;
+            while (i < length && (c = s.charAt(i)) != ' ' && ! isSafe(c))
+              i++;
 
-	    // Convert them to %XY encoded strings
-	    String unsafe = s.substring(start, i);
-	    byte[] bytes = unsafe.getBytes(encoding);
-	    for (int j = 0; j < bytes.length; j++)
-	      {
-		result.append('%');
-		int val = bytes[j];
-		result.append(hex.charAt((val & 0xf0) >> 4));
-		result.append(hex.charAt(val & 0x0f));
-	      }
-	  }
-	start = i;
+            // Convert them to %XY encoded strings
+            String unsafe = s.substring(start, i);
+            byte[] bytes = unsafe.getBytes(encoding);
+            for (int j = 0; j < bytes.length; j++)
+              {
+                result.append('%');
+                int val = bytes[j];
+                result.append(hex.charAt((val & 0xf0) >> 4));
+                result.append(hex.charAt(val & 0x0f));
+              }
+          }
+        start = i;
       }
   }
 

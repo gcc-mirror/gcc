@@ -143,7 +143,7 @@ compute_object_offset (const_tree expr, const_tree var)
 
     case MEM_REF:
       gcc_assert (TREE_CODE (TREE_OPERAND (expr, 0)) == ADDR_EXPR);
-      return TREE_OPERAND (expr, 1);
+      return double_int_to_tree (sizetype, mem_ref_offset (expr));
 
     default:
       return error_mark_node;

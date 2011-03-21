@@ -99,4 +99,3 @@ public abstract int
 compareTo(Object obj);
 
 } // interface SerialFieldTag
-

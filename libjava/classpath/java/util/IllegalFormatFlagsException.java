@@ -38,15 +38,15 @@ exception statement from your version. */
 
 package java.util;
 
-/** 
+/**
  * Thrown when the flags supplied to the {@link Formatter#format()}
  * method of a {@link Formatter} form an illegal combination.
  *
  * @author Tom Tromey (tromey@redhat.com)
  * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
- * @since 1.5 
+ * @since 1.5
  */
-public class IllegalFormatFlagsException 
+public class IllegalFormatFlagsException
   extends IllegalFormatException
 {
   private static final long serialVersionUID = 790824L;

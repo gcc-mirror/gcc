@@ -74,8 +74,8 @@ import javax.swing.text.View;
 public class SwingUtilities
   implements SwingConstants
 {
-  /** 
-   * This frame should be used as parent for JWindow or JDialog 
+  /**
+   * This frame should be used as parent for JWindow or JDialog
    * that doesn't an owner
    */
   private static OwnerFrame ownerFrame;
@@ -92,7 +92,7 @@ public class SwingUtilities
    * of the <em>component's</em> coordinate system, where (0,0) is the
    * upper left corner of the component's bounds.
    *
-   * @param c  the component to measure the bounds of (if <code>null</code>, 
+   * @param c  the component to measure the bounds of (if <code>null</code>,
    *     this method returns <code>null</code>).
    * @param r  a carrier to store the return value in (if <code>null</code>, a
    *     new <code>Rectangle</code> instance is created).
@@ -115,11 +115,11 @@ public class SwingUtilities
   /**
    * Returns the focus owner or <code>null</code> if <code>comp</code> is not
    * the focus owner or a parent of it.
-   * 
+   *
    * @param comp the focus owner or a parent of it
-   * 
+   *
    * @return the focus owner, or <code>null</code>
-   * 
+   *
    * @deprecated 1.4 Replaced by
    * <code>KeyboardFocusManager.getFocusOwner()</code>.
    */
@@ -127,22 +127,22 @@ public class SwingUtilities
   {
     // Get real focus owner.
     Component focusOwner = KeyboardFocusManager.getCurrentKeyboardFocusManager()
-					       .getFocusOwner();
+                                               .getFocusOwner();
 
     // Check if comp is the focus owner or a parent of it.
     Component tmp = focusOwner;
-    
+
     while (tmp != null)
       {
-	if (tmp == comp)
-	  return focusOwner;
+        if (tmp == comp)
+          return focusOwner;
 
-	tmp = tmp.getParent();
+        tmp = tmp.getParent();
       }
-    
+
     return null;
   }
-  
+
   /**
    * Returns the <code>Accessible</code> child of the specified component
    * which appears at the supplied <code>Point</code>.  If there is no
@@ -280,7 +280,7 @@ public class SwingUtilities
    * @param comp The component to get the JRootPane of
    *
    * @return a suitable JRootPane for <code>comp</code>, or <code>null</code>
-   * 
+   *
    * @see javax.swing.RootPaneContainer#getRootPane
    * @see #getAncestorOfClass
    */
@@ -354,7 +354,7 @@ public class SwingUtilities
   /**
    * Equivalent to calling <code>getAncestorOfClass(Window, comp)</code>.
    *
-   * @param comp The component to search for an ancestor window 
+   * @param comp The component to search for an ancestor window
    *
    * @return An ancestral window, or <code>null</code> if none exists
    */
@@ -387,7 +387,7 @@ public class SwingUtilities
           app = (Applet) comp;
         comp = comp.getParent();
       }
-    
+
     if (win != null)
       return win;
     return app;
@@ -395,7 +395,7 @@ public class SwingUtilities
 
   /**
    * Return true if a descends from b, in other words if b is an ancestor of a.
-   * 
+   *
    * @param a The child to search the ancestry of
    * @param b The potential ancestor to search for
    * @return true if a is a descendent of b, false otherwise
@@ -419,7 +419,7 @@ public class SwingUtilities
    * <code>(x,y)</code>. Returns <code>null</code> when either
    * <code>(x,y)</code> is outside the bounds of parent, or parent is
    * <code>null</code>.
-   * 
+   *
    * @param parent The component to search the descendents of
    * @param x Horizontal coordinate to search for
    * @param y Vertical coordinate to search for
@@ -520,7 +520,7 @@ public class SwingUtilities
 
     return pt;
   }
-  
+
   public static Point convertPoint(Component source, Point aPoint, Component destination)
   {
     return convertPoint(source, aPoint.x, aPoint.y, destination);
@@ -704,17 +704,17 @@ public class SwingUtilities
    * which is laid out in this label
    */
 
-  public static String layoutCompoundLabel(JComponent c, 
+  public static String layoutCompoundLabel(JComponent c,
                                            FontMetrics fm,
-                                           String text, 
-                                           Icon icon, 
+                                           String text,
+                                           Icon icon,
                                            int verticalAlignment,
-                                           int horizontalAlignment, 
+                                           int horizontalAlignment,
                                            int verticalTextPosition,
-                                           int horizontalTextPosition, 
+                                           int horizontalTextPosition,
                                            Rectangle viewR,
-                                           Rectangle iconR, 
-                                           Rectangle textR, 
+                                           Rectangle iconR,
+                                           Rectangle textR,
                                            int textIconGap)
   {
 
@@ -921,8 +921,8 @@ public class SwingUtilities
     if (text == null || text.equals(""))
       {
         textIconGap = 0;
-	textR.width = 0;
-	textR.height = 0;
+        textR.width = 0;
+        textR.height = 0;
         text = "";
       }
     else
@@ -1070,18 +1070,18 @@ public class SwingUtilities
     return clipped;
   }
 
-  /** 
+  /**
    * Calls {@link java.awt.EventQueue#invokeLater} with the
-   * specified {@link Runnable}. 
+   * specified {@link Runnable}.
    */
   public static void invokeLater(Runnable doRun)
   {
     java.awt.EventQueue.invokeLater(doRun);
   }
 
-  /** 
+  /**
    * Calls {@link java.awt.EventQueue#invokeAndWait} with the
-   * specified {@link Runnable}. 
+   * specified {@link Runnable}.
    */
   public static void invokeAndWait(Runnable doRun)
     throws InterruptedException,
@@ -1090,21 +1090,21 @@ public class SwingUtilities
     java.awt.EventQueue.invokeAndWait(doRun);
   }
 
-  /** 
+  /**
    * Calls {@link java.awt.EventQueue#isDispatchThread()}.
-   * 
-   * @return <code>true</code> if the current thread is the current AWT event 
+   *
+   * @return <code>true</code> if the current thread is the current AWT event
    * dispatch thread.
    */
   public static boolean isEventDispatchThread()
   {
     return java.awt.EventQueue.isDispatchThread();
   }
-  
+
   /**
    * This method paints the given component at the given position and size.
    * The component will be reparented to the container given.
-   * 
+   *
    * @param g The Graphics object to draw with.
    * @param c The Component to draw
    * @param p The Container to reparent to.
@@ -1113,22 +1113,22 @@ public class SwingUtilities
    * @param w The width of the drawing area.
    * @param h The height of the drawing area.
    */
-  public static void paintComponent(Graphics g, Component c, Container p, 
+  public static void paintComponent(Graphics g, Component c, Container p,
                                     int x, int y, int w, int h)
-  {       
+  {
     Container parent = c.getParent();
     if (parent != null)
       parent.remove(c);
     if (p != null)
       p.add(c);
-    
+
     Shape savedClip = g.getClip();
-    
+
     g.setClip(x, y, w, h);
     g.translate(x, y);
 
     c.paint(g);
-    
+
     g.translate(-x, -y);
     g.setClip(savedClip);
   }
@@ -1136,23 +1136,23 @@ public class SwingUtilities
   /**
    * This method paints the given component in the given rectangle.
    * The component will be reparented to the container given.
-   * 
+   *
    * @param g The Graphics object to draw with.
    * @param c The Component to draw
    * @param p The Container to reparent to.
    * @param r The rectangle that describes the drawing area.
-   */  
-  public static void paintComponent(Graphics g, Component c, 
+   */
+  public static void paintComponent(Graphics g, Component c,
                                     Container p, Rectangle r)
   {
     paintComponent(g, c, p, r.x, r.y, r.width, r.height);
   }
-  
+
   /**
    * This method returns the common Frame owner used in JDialogs or
    * JWindow when no owner is provided.
    *
-   * @return The common Frame 
+   * @return The common Frame
    */
   static Window getOwnerFrame(Window owner)
   {
@@ -1188,7 +1188,7 @@ public class SwingUtilities
   public static boolean isMiddleMouseButton(MouseEvent event)
   {
     return ((event.getModifiersEx() & InputEvent.BUTTON2_DOWN_MASK)
-	     == InputEvent.BUTTON2_DOWN_MASK);
+             == InputEvent.BUTTON2_DOWN_MASK);
   }
 
   /**
@@ -1201,9 +1201,9 @@ public class SwingUtilities
   public static boolean isRightMouseButton(MouseEvent event)
   {
     return ((event.getModifiersEx() & InputEvent.BUTTON3_DOWN_MASK)
-	     == InputEvent.BUTTON3_DOWN_MASK);
+             == InputEvent.BUTTON3_DOWN_MASK);
   }
-  
+
   /**
    * This frame should be used when constructing a Window/JDialog without
    * a parent. In this case, we are forced to use this frame as a window's
@@ -1214,9 +1214,9 @@ public class SwingUtilities
   {
     public void setVisible(boolean b)
     {
-      // Do nothing here. 
+      // Do nothing here.
     }
-    
+
     public boolean isShowing()
     {
       return true;
@@ -1251,9 +1251,9 @@ public class SwingUtilities
    * parent-pointer chain, as illustrated:</p>
    *
    * <pre>
-   *  [{@link javax.swing.JComponent#getActionMap()}] 
-   *          --&gt; [{@link javax.swing.ActionMap}] 
-   *     parent --&gt; [{@link javax.swing.text.JTextComponent.KeymapActionMap}] 
+   *  [{@link javax.swing.JComponent#getActionMap()}]
+   *          --&gt; [{@link javax.swing.ActionMap}]
+   *     parent --&gt; [{@link javax.swing.text.JTextComponent.KeymapActionMap}]
    *       parent --&gt; [{@link javax.swing.plaf.ActionMapUIResource}]
    * </pre>
    *
@@ -1266,7 +1266,7 @@ public class SwingUtilities
    * call as a request to remove the UI-managed ActionMap from the
    * component's ActionMap parent chain.</p>
    */
-  public static void replaceUIActionMap(JComponent component, 
+  public static void replaceUIActionMap(JComponent component,
                                         ActionMap uiActionMap)
   {
     ActionMap child = component.getActionMap();
@@ -1294,9 +1294,9 @@ public class SwingUtilities
    * <em>end</em> of the parent-pointer chain, as illustrated:</p>
    *
    * <pre>
-   *  [{@link javax.swing.JComponent#getInputMap()}] 
-   *          --&gt; [{@link javax.swing.InputMap}] 
-   *     parent --&gt; [{@link javax.swing.text.JTextComponent.KeymapWrapper}] 
+   *  [{@link javax.swing.JComponent#getInputMap()}]
+   *          --&gt; [{@link javax.swing.InputMap}]
+   *     parent --&gt; [{@link javax.swing.text.JTextComponent.KeymapWrapper}]
    *       parent --&gt; [{@link javax.swing.plaf.InputMapUIResource}]
    * </pre>
    *
@@ -1309,8 +1309,8 @@ public class SwingUtilities
    * call as a request to remove the UI-managed InputMap from the
    * component's InputMap parent chain.</p>
    */
-  public static void replaceUIInputMap(JComponent component, 
-                                       int condition, 
+  public static void replaceUIInputMap(JComponent component,
+                                       int condition,
                                        InputMap uiInputMap)
   {
     InputMap child = component.getInputMap(condition);
@@ -1357,7 +1357,7 @@ public class SwingUtilities
     int h2 = rectB.height;
 
     // (outer box = rectA)
-    // ------------- 
+    // -------------
     // |_____0_____|
     // |  |rectB|  |
     // |_1|_____|_2|
@@ -1393,11 +1393,11 @@ public class SwingUtilities
     int n = 0;
     for (int i = 0; i < 4; i++)
       if (r[i] != null)
-	n++;
+        n++;
     Rectangle[] out = new Rectangle[n];
     for (int i = 3; i >= 0; i--)
       if (r[i] != null)
-	out[--n] = r[i];
+        out[--n] = r[i];
 
     return out;
   }
@@ -1441,13 +1441,13 @@ public class SwingUtilities
 
     return rect;
   }
-  
+
   /**
    * Calculates the width of a given string.
    *
    * @param fm the <code>FontMetrics</code> object to use
    * @param str the string
-   * 
+   *
    * @return the width of the the string.
    */
   public static int computeStringWidth(FontMetrics fm, String str)
@@ -1551,7 +1551,7 @@ public class SwingUtilities
   }
 
   /**
-   * Processes key bindings for the component that is associated with the 
+   * Processes key bindings for the component that is associated with the
    * key event. Note that this method does not make sense for
    * JComponent-derived components, except when
    * {@link JComponent#processKeyEvent(KeyEvent)} is overridden and super is
@@ -1575,7 +1575,7 @@ public class SwingUtilities
     KeyboardManager km = KeyboardManager.getManager();
     return km.processKeyStroke(c, s, ev);
   }
-  
+
   /**
    * Returns a string representing one of the horizontal alignment codes
    * defined in the {@link SwingConstants} interface.  The following table
@@ -1609,16 +1609,16 @@ public class SwingUtilities
    * </p>
    * If the supplied code is not one of those listed, this methods will throw
    * an {@link IllegalArgumentException}.
-   * 
+   *
    * @param code  the code.
-   * 
+   *
    * @return A string representing the given code.
    */
   static String convertHorizontalAlignmentCodeToString(int code)
   {
-    switch (code) 
+    switch (code)
     {
-      case SwingConstants.CENTER: 
+      case SwingConstants.CENTER:
         return "CENTER";
       case SwingConstants.LEFT:
         return "LEFT";
@@ -1632,7 +1632,7 @@ public class SwingUtilities
         throw new IllegalArgumentException("Unrecognised code: " + code);
     }
   }
-  
+
   /**
    * Returns a string representing one of the vertical alignment codes
    * defined in the {@link SwingConstants} interface.  The following table
@@ -1658,9 +1658,9 @@ public class SwingUtilities
    * </p>
    * If the supplied code is not one of those listed, this methods will throw
    * an {@link IllegalArgumentException}.
-   * 
+   *
    * @param code  the code.
-   * 
+   *
    * @return A string representing the given code.
    */
   static String convertVerticalAlignmentCodeToString(int code)
@@ -1677,7 +1677,7 @@ public class SwingUtilities
         throw new IllegalArgumentException("Unrecognised code: " + code);
     }
   }
-  
+
   /**
    * Returns a string representing one of the default operation codes
    * defined in the {@link WindowConstants} interface.  The following table
@@ -1707,12 +1707,12 @@ public class SwingUtilities
    * </p>
    * If the supplied code is not one of those listed, this method will throw
    * an {@link IllegalArgumentException}.
-   * 
+   *
    * @param code  the code.
-   * 
+   *
    * @return A string representing the given code.
    */
-  static String convertWindowConstantToString(int code) 
+  static String convertWindowConstantToString(int code)
   {
     switch (code)
     {

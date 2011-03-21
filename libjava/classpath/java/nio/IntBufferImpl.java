@@ -1,4 +1,4 @@
-/* IntBufferImpl.java -- 
+/* IntBufferImpl.java --
    Copyright (C) 2002, 2003, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -49,33 +49,33 @@ final class IntBufferImpl extends IntBuffer
   {
     this (new int [capacity], 0, capacity, capacity, 0, -1, false);
   }
-  
+
   IntBufferImpl (int[] buffer, int offset, int capacity, int limit, int position, int mark, boolean readOnly)
   {
     super (capacity, limit, position, mark, null, buffer, offset);
     this.readOnly = readOnly;
   }
-  
+
   public boolean isReadOnly ()
   {
     return readOnly;
   }
-  
+
   public IntBuffer slice ()
   {
     return new IntBufferImpl (backing_buffer, array_offset + position (), remaining (), remaining (), 0, -1, isReadOnly ());
   }
-  
+
   public IntBuffer duplicate ()
   {
     return new IntBufferImpl (backing_buffer, array_offset, capacity (), limit (), position (), mark, isReadOnly ());
   }
-  
+
   public IntBuffer asReadOnlyBuffer ()
   {
     return new IntBufferImpl (backing_buffer, array_offset, capacity (), limit (), position (), mark, true);
   }
-  
+
   public IntBuffer compact ()
   {
     checkIfReadOnly();
@@ -91,7 +91,7 @@ final class IntBufferImpl extends IntBuffer
     limit(capacity());
     return this;
   }
-  
+
   public boolean isDirect ()
   {
     return false;
@@ -112,12 +112,12 @@ final class IntBufferImpl extends IntBuffer
     position (position () + 1);
     return result;
   }
-  
+
   /**
    * Relative put method. Writes <code>value</code> to the next position
    * in the buffer.
    *
-   * @exception BufferOverflowException If there no remaining 
+   * @exception BufferOverflowException If there no remaining
    * space in this buffer.
    * @exception ReadOnlyBufferException If this buffer is read-only.
    */
@@ -130,7 +130,7 @@ final class IntBufferImpl extends IntBuffer
     position (position () + 1);
     return this;
   }
-  
+
   /**
    * Absolute get method. Reads the <code>int</code> at position
    * <code>index</code>.
@@ -144,7 +144,7 @@ final class IntBufferImpl extends IntBuffer
 
     return backing_buffer [index];
   }
-  
+
   /**
    * Absolute put method. Writes <code>value</code> to position
    * <code>index</code> in the buffer.
@@ -161,7 +161,7 @@ final class IntBufferImpl extends IntBuffer
     backing_buffer [index] = value;
     return this;
   }
-  
+
   public ByteOrder order ()
   {
     return ByteOrder.nativeOrder ();

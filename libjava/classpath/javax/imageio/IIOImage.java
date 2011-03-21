@@ -96,12 +96,12 @@ public class IIOImage
   {
     if (raster == null)
       throw new IllegalArgumentException ("raster may not be null");
-    
+
     this.raster = raster;
     this.thumbnails = thumbnails;
     this.metadata = metadata;
   }
-  
+
   /**
    * Construct an IIOImage containing rendered image data, thumbnails
    * and metadata.
@@ -117,7 +117,7 @@ public class IIOImage
   {
     if (image == null)
       throw new IllegalArgumentException ("image may not be null");
-    
+
     this.image = image;
     this.thumbnails = thumbnails;
     this.metadata = metadata;
@@ -232,7 +232,7 @@ public class IIOImage
   {
     if (raster == null)
       throw new IllegalArgumentException ("raster may not be null");
-    
+
     this.image = null;
     this.raster = raster;
   }

@@ -496,14 +496,14 @@ public abstract class QuadCurve2D implements Shape, Cloneable
 
     if (left != null)
       {
-	left[leftOff] = x1;
-	left[leftOff + 1] = y1;
+        left[leftOff] = x1;
+        left[leftOff + 1] = y1;
       }
 
     if (right != null)
       {
-	right[rightOff + 4] = x2;
-	right[rightOff + 5] = y2;
+        right[rightOff + 4] = x2;
+        right[rightOff + 5] = y2;
       }
 
     x1 = (x1 + xc) / 2;
@@ -515,18 +515,18 @@ public abstract class QuadCurve2D implements Shape, Cloneable
 
     if (left != null)
       {
-	left[leftOff + 2] = x1;
-	left[leftOff + 3] = y1;
-	left[leftOff + 4] = xc;
-	left[leftOff + 5] = yc;
+        left[leftOff + 2] = x1;
+        left[leftOff + 3] = y1;
+        left[leftOff + 4] = xc;
+        left[leftOff + 5] = yc;
       }
 
     if (right != null)
       {
-	right[rightOff] = xc;
-	right[rightOff + 1] = yc;
-	right[rightOff + 2] = x2;
-	right[rightOff + 3] = y2;
+        right[rightOff] = xc;
+        right[rightOff + 1] = yc;
+        right[rightOff + 2] = x2;
+        right[rightOff + 3] = y2;
       }
   }
 
@@ -643,11 +643,11 @@ public abstract class QuadCurve2D implements Shape, Cloneable
     // for linear functions.
     if (a == 0)
       {
-	if (b == 0)
-	  return -1;
+        if (b == 0)
+          return -1;
 
-	res[0] = -c / b;
-	return 1;
+        res[0] = -c / b;
+        return 1;
       }
 
     disc = b * b - 4 * a * c;
@@ -657,32 +657,32 @@ public abstract class QuadCurve2D implements Shape, Cloneable
 
     if (disc == 0)
       {
-	// The GNU Scientific Library returns two identical results here.
-	// We just return one.
-	res[0] = -0.5 * b / a;
-	return 1;
+        // The GNU Scientific Library returns two identical results here.
+        // We just return one.
+        res[0] = -0.5 * b / a;
+        return 1;
       }
 
     // disc > 0
     if (b == 0)
       {
-	double r;
+        double r;
 
-	r = Math.abs(0.5 * Math.sqrt(disc) / a);
-	res[0] = -r;
-	res[1] = r;
+        r = Math.abs(0.5 * Math.sqrt(disc) / a);
+        res[0] = -r;
+        res[1] = r;
       }
     else
       {
-	double sgnb;
-	double temp;
+        double sgnb;
+        double temp;
 
-	sgnb = (b > 0 ? 1 : -1);
-	temp = -0.5 * (b + sgnb * Math.sqrt(disc));
+        sgnb = (b > 0 ? 1 : -1);
+        temp = -0.5 * (b + sgnb * Math.sqrt(disc));
 
-	// The GNU Scientific Library sorts the result here. We don't.
-	res[0] = temp / a;
-	res[1] = c / temp;
+        // The GNU Scientific Library sorts the result here. We don't.
+        res[0] = temp / a;
+        res[1] = c / temp;
       }
     return 2;
   }
@@ -750,7 +750,7 @@ public abstract class QuadCurve2D implements Shape, Cloneable
   }
 
   /**
-   * Determines whether any part of a Rectangle2D is inside the area bounded 
+   * Determines whether any part of a Rectangle2D is inside the area bounded
    * by the curve and the straight line connecting its end points.
    * @see #intersects(double, double, double, double)
    */
@@ -790,7 +790,7 @@ public abstract class QuadCurve2D implements Shape, Cloneable
   }
 
   /**
-   * Determines whether a Rectangle2D is entirely inside the area that is 
+   * Determines whether a Rectangle2D is entirely inside the area that is
    * bounded by the curve and the straight line connecting its end points.
    * @see #contains(double, double, double, double)
    */
@@ -818,73 +818,73 @@ public abstract class QuadCurve2D implements Shape, Cloneable
   {
     return new PathIterator()
       {
-	/** Current coordinate. */
-	private int current = 0;
+        /** Current coordinate. */
+        private int current = 0;
 
-	public int getWindingRule()
-	{
-	  return WIND_NON_ZERO;
-	}
+        public int getWindingRule()
+        {
+          return WIND_NON_ZERO;
+        }
 
-	public boolean isDone()
-	{
-	  return current >= 2;
-	}
+        public boolean isDone()
+        {
+          return current >= 2;
+        }
 
-	public void next()
-	{
-	  current++;
-	}
+        public void next()
+        {
+          current++;
+        }
 
-	public int currentSegment(float[] coords)
-	{
-	  int result;
-	  switch (current)
-	    {
-	    case 0:
-	      coords[0] = (float) getX1();
-	      coords[1] = (float) getY1();
-	      result = SEG_MOVETO;
-	      break;
-	    case 1:
-	      coords[0] = (float) getCtrlX();
-	      coords[1] = (float) getCtrlY();
-	      coords[2] = (float) getX2();
-	      coords[3] = (float) getY2();
-	      result = SEG_QUADTO;
-	      break;
-	    default:
-	      throw new NoSuchElementException("quad iterator out of bounds");
-	    }
-	  if (at != null)
-	    at.transform(coords, 0, coords, 0, 2);
-	  return result;
-	}
+        public int currentSegment(float[] coords)
+        {
+          int result;
+          switch (current)
+            {
+            case 0:
+              coords[0] = (float) getX1();
+              coords[1] = (float) getY1();
+              result = SEG_MOVETO;
+              break;
+            case 1:
+              coords[0] = (float) getCtrlX();
+              coords[1] = (float) getCtrlY();
+              coords[2] = (float) getX2();
+              coords[3] = (float) getY2();
+              result = SEG_QUADTO;
+              break;
+            default:
+              throw new NoSuchElementException("quad iterator out of bounds");
+            }
+          if (at != null)
+            at.transform(coords, 0, coords, 0, 2);
+          return result;
+        }
 
-	public int currentSegment(double[] coords)
-	{
-	  int result;
-	  switch (current)
-	    {
-	    case 0:
-	      coords[0] = getX1();
-	      coords[1] = getY1();
-	      result = SEG_MOVETO;
-	      break;
-	    case 1:
-	      coords[0] = getCtrlX();
-	      coords[1] = getCtrlY();
-	      coords[2] = getX2();
-	      coords[3] = getY2();
-	      result = SEG_QUADTO;
-	      break;
-	    default:
-	      throw new NoSuchElementException("quad iterator out of bounds");
-	    }
-	  if (at != null)
-	    at.transform(coords, 0, coords, 0, 2);
-	  return result;
-	}
+        public int currentSegment(double[] coords)
+        {
+          int result;
+          switch (current)
+            {
+            case 0:
+              coords[0] = getX1();
+              coords[1] = getY1();
+              result = SEG_MOVETO;
+              break;
+            case 1:
+              coords[0] = getCtrlX();
+              coords[1] = getCtrlY();
+              coords[2] = getX2();
+              coords[3] = getY2();
+              result = SEG_QUADTO;
+              break;
+            default:
+              throw new NoSuchElementException("quad iterator out of bounds");
+            }
+          if (at != null)
+            at.transform(coords, 0, coords, 0, 2);
+          return result;
+        }
       };
   }
 
@@ -902,11 +902,11 @@ public abstract class QuadCurve2D implements Shape, Cloneable
   {
     try
       {
-	return super.clone();
+        return super.clone();
       }
     catch (CloneNotSupportedException e)
       {
-	throw (Error) new InternalError().initCause(e); // Impossible
+        throw (Error) new InternalError().initCause(e); // Impossible
       }
   }
 
@@ -940,34 +940,34 @@ public abstract class QuadCurve2D implements Shape, Cloneable
 
     if (useYaxis)
       {
-	a0 = getY1() - y;
-	a1 = getCtrlY() - y;
-	a2 = getY2() - y;
-	b0 = getX1() - x;
-	b1 = getCtrlX() - x;
-	b2 = getX2() - x;
+        a0 = getY1() - y;
+        a1 = getCtrlY() - y;
+        a2 = getY2() - y;
+        b0 = getX1() - x;
+        b1 = getCtrlX() - x;
+        b2 = getX2() - x;
       }
     else
       {
-	a0 = getX1() - x;
-	a1 = getCtrlX() - x;
-	a2 = getX2() - x;
-	b0 = getY1() - y;
-	b1 = getCtrlY() - y;
-	b2 = getY2() - y;
+        a0 = getX1() - x;
+        a1 = getCtrlX() - x;
+        a2 = getX2() - x;
+        b0 = getY1() - y;
+        b1 = getCtrlY() - y;
+        b2 = getY2() - y;
       }
 
-    /* If the axis intersects a start/endpoint, shift it up by some small 
+    /* If the axis intersects a start/endpoint, shift it up by some small
        amount to guarantee the line is 'inside'
        If this is not done,bad behaviour may result for points on that axis. */
     if (a0 == 0.0 || a2 == 0.0)
       {
-	double small = getFlatness() * EPSILON;
-	if (a0 == 0.0)
-	  a0 -= small;
+        double small = getFlatness() * EPSILON;
+        if (a0 == 0.0)
+          a0 -= small;
 
-	if (a2 == 0.0)
-	  a2 -= small;
+        if (a2 == 0.0)
+          a2 -= small;
       }
 
     r[0] = a0;
@@ -977,26 +977,26 @@ public abstract class QuadCurve2D implements Shape, Cloneable
     nRoots = solveQuadratic(r);
     for (int i = 0; i < nRoots; i++)
       {
-	double t = r[i];
-	if (t >= 0.0 && t <= 1.0)
-	  {
-	    double crossing = t * t * (b2 - 2 * b1 + b0) + 2 * t * (b1 - b0)
-	                      + b0;
-	    /* single root is always doubly degenerate in quads */
-	    if (crossing > 0 && crossing < distance)
-	      nCrossings += (nRoots == 1) ? 2 : 1;
-	  }
+        double t = r[i];
+        if (t >= 0.0 && t <= 1.0)
+          {
+            double crossing = t * t * (b2 - 2 * b1 + b0) + 2 * t * (b1 - b0)
+                              + b0;
+            /* single root is always doubly degenerate in quads */
+            if (crossing > 0 && crossing < distance)
+              nCrossings += (nRoots == 1) ? 2 : 1;
+          }
       }
 
     if (useYaxis)
       {
-	if (Line2D.linesIntersect(b0, a0, b2, a2, EPSILON, 0.0, distance, 0.0))
-	  nCrossings++;
+        if (Line2D.linesIntersect(b0, a0, b2, a2, EPSILON, 0.0, distance, 0.0))
+          nCrossings++;
       }
     else
       {
-	if (Line2D.linesIntersect(a0, b0, a2, b2, 0.0, EPSILON, 0.0, distance))
-	  nCrossings++;
+        if (Line2D.linesIntersect(a0, b0, a2, b2, 0.0, EPSILON, 0.0, distance))
+          nCrossings++;
       }
 
     return (nCrossings);

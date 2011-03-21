@@ -44,5 +44,4 @@ public interface DialogPeer extends WindowPeer
 
   void setTitle (String title);
 
-} // interface DialogPeer 
-
+} // interface DialogPeer

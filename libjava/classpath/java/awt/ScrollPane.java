@@ -48,7 +48,7 @@ import javax.accessibility.AccessibleRole;
 
 
 /**
-  * This widget provides a scrollable region that allows a single 
+  * This widget provides a scrollable region that allows a single
   * subcomponent to be viewed through a smaller window.
   *
   * @author Aaron M. Renn (arenn@urbanophile.com)
@@ -227,7 +227,7 @@ getVAdjustable()
   * @return The viewport size.
   */
 public Dimension getViewportSize ()
-{ 
+{
   Dimension viewsize = getSize ();
   Insets insets = getInsets ();
 
@@ -237,9 +237,9 @@ public Dimension getViewportSize ()
   Component[] list = getComponents();
   if ((list == null) || (list.length <= 0))
     return viewsize;
-  
+
   Dimension dim = list[0].getPreferredSize();
-  
+
   if (dim.width <= 0 && dim.height <= 0)
     return viewsize;
 
@@ -282,7 +282,7 @@ public Dimension getViewportSize ()
     needHorizontal = true;
   else if (dim.width > (viewsize.width - vScrollbarWidth))
     mayNeedHorizontal = true;
-  
+
   if (needVertical && mayNeedHorizontal)
     needHorizontal = true;
 
@@ -294,7 +294,7 @@ public Dimension getViewportSize ()
 
   if (needVertical)
     viewsize.width -= vScrollbarWidth;
-  
+
   return viewsize;
 }
 
@@ -338,7 +338,7 @@ getVScrollbarWidth()
   * Returns the current scroll position of the viewport.
   *
   * @return The current scroll position of the viewport.
-  * 
+  *
   * @throws NullPointerException if the scrollpane does have a child.
   */
 public Point
@@ -346,7 +346,7 @@ getScrollPosition()
 {
   if (getComponentCount() == 0)
     throw new NullPointerException();
-  
+
   int x = 0;
   int y = 0;
 
@@ -386,7 +386,7 @@ setScrollPosition(Point scrollPosition) throws IllegalArgumentException
   * @param y The new Y coordinate of the scroll position.
   *
   * @throws NullPointerException if scrollpane does not have a child.
-  * 
+  *
   * @exception IllegalArgumentException If the specified value is outside
   * the legal scrolling range.
   */
@@ -405,15 +405,15 @@ setScrollPosition(int x, int y)
     x = 0;
   if (y < 0)
     y = 0;
-    
+
   Adjustable h = getHAdjustable();
   Adjustable v = getVAdjustable();
-  
+
   if (h != null)
     h.setValue(x);
   if (v != null)
     v.setValue(y);
-   
+
   ScrollPanePeer spp = (ScrollPanePeer)getPeer();
   if (spp != null)
     spp.setScrollPosition(x, y);
@@ -457,7 +457,7 @@ removeNotify()
 /*************************************************************************/
 
 /**
-  * Adds the specified child component to this container.  A 
+  * Adds the specified child component to this container.  A
   * <code>ScrollPane</code> can have at most one child, so if a second
   * one is added, then first one is removed.
   *
@@ -467,7 +467,7 @@ removeNotify()
   * in this implementation.
   */
   protected final void addImpl (Component component, Object constraints,
-				int index)
+                                int index)
 {
   Component[] list = getComponents();
   if ((list != null) && (list.length > 0))
@@ -507,14 +507,14 @@ layout()
       Dimension vp = getViewportSize ();
 
       if (dim.width < vp.width)
-	dim.width = vp.width;
+        dim.width = vp.width;
 
       if (dim.height < vp.height)
-	dim.height = vp.height;
+        dim.height = vp.height;
 
       ScrollPanePeer peer = (ScrollPanePeer) getPeer ();
       if (peer != null)
-	peer.childResized (dim.width, dim.height);
+        peer.childResized (dim.width, dim.height);
 
       list[0].setSize (dim);
 
@@ -525,7 +525,7 @@ layout()
         p.y = dim.height;
 
       setScrollPosition (p);
-      
+
       list[0].setLocation(new Point());
     }
 }
@@ -538,7 +538,7 @@ layout()
   * not have layout managers.
   *
   * @param layoutManager Ignored
-  * @throws AWTError Always throws this error when called. 
+  * @throws AWTError Always throws this error when called.
   */
 public final void
 setLayout(LayoutManager layoutManager)
@@ -575,7 +575,7 @@ paramString()
          + getY() + ","
          + getWidth() + "x" + getHeight() + ","
          + getIsValidString() + ","
-         + "ScrollPosition=(" + scrollPosition.x + "," 
+         + "ScrollPosition=(" + scrollPosition.x + ","
                               + scrollPosition.y + "),"
          + "Insets=(" + insets.top + ","
                       + insets.left + ","
@@ -596,7 +596,7 @@ getScrollbarDisplayPolicyString()
     return "never";
 }
 
-private String 
+private String
 getIsValidString()
 {
   if (isValid())
@@ -637,7 +637,7 @@ getIsValidString()
   {
     wheelScrollingEnabled = enable;
   }
-  
+
   protected class AccessibleAWTScrollPane extends AccessibleAWTContainer
   {
     private static final long serialVersionUID = 6100703663886637L;
@@ -661,7 +661,7 @@ getIsValidString()
       accessibleContext = new AccessibleAWTScrollPane();
     return accessibleContext;
   }
-  
+
   /**
    * Generate a unique name for this <code>ScrollPane</code>.
    *
@@ -676,6 +676,5 @@ getIsValidString()
   {
     return next_scrollpane_number++;
   }
-  
-} // class ScrollPane 
 
+} // class ScrollPane

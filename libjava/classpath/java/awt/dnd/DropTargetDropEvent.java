@@ -56,7 +56,7 @@ public class DropTargetDropEvent extends DropTargetEvent
   private final int actions;
   private final Point location;
   private final boolean isLocalTx;
-  
+
   /**
    * Initializes a <code>DropTargetDropEvent</code>. By default this constructor
    * assumes that the target is not int same JVM.
@@ -103,16 +103,16 @@ public class DropTargetDropEvent extends DropTargetEvent
                       | DnDConstants.ACTION_COPY_OR_MOVE
                       | DnDConstants.ACTION_LINK
                       | DnDConstants.ACTION_REFERENCE;
-    
+
     if (~(actions ^ actionsMask) != 0)
       throw new IllegalArgumentException();
-    
+
     this.dropAction = dropAction;
     this.actions = actions;
     this.location = location;
     this.isLocalTx = isLocalTx;
   }
-  
+
   public Point getLocation()
   {
     return location;

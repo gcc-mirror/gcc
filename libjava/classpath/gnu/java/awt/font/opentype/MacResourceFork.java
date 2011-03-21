@@ -123,7 +123,7 @@ final class MacResourceFork
       }
     }
   }
-  
+
 
   public Resource[] getResources(int type)
   {
@@ -137,7 +137,7 @@ final class MacResourceFork
     }
     return null;
   }
-  
+
 
   public Resource getResource(int type, short id)
   {
@@ -149,7 +149,7 @@ final class MacResourceFork
       {
         if (types[i] != type)
           continue;
-          
+
         res = resources[i];
         for (int j = 0; j < res.length; j++)
           if (res[j].getID() == id)

@@ -77,72 +77,72 @@ public class JFileChooser extends JComponent implements Accessible
 {
   private static final long serialVersionUID = 3162921138695327837L;
 
-  /** 
-   * A dialog type for selecting a file to open. 
+  /**
+   * A dialog type for selecting a file to open.
    * @see #setDialogType(int)
    */
   public static final int OPEN_DIALOG = 0;
 
-  /** 
-   * A dialog type for selecting a file to save.  
+  /**
+   * A dialog type for selecting a file to save.
    * @see #setDialogType(int)
    */
   public static final int SAVE_DIALOG = 1;
 
-  /** 
+  /**
    * A dialog type for some custom purpose.
    * @see #setDialogType(int)
    */
   public static final int CUSTOM_DIALOG = 2;
 
-  /** 
+  /**
    * A return value indicating the file chooser has been closed by cancelling.
-   * 
+   *
    * @see #showOpenDialog(Component)
-   * @see #showSaveDialog(Component) 
+   * @see #showSaveDialog(Component)
    */
   public static final int CANCEL_OPTION = 1;
 
-  /** 
+  /**
    * A return value indicating the file chooser has been closed by approving
    * the selection.
    * @see #showOpenDialog(Component)
-   * @see #showSaveDialog(Component) 
+   * @see #showSaveDialog(Component)
    */
   public static final int APPROVE_OPTION = 0;
 
-  /** 
+  /**
    * A return value indicating the file chooser has been closed by some error.
    * @see #showOpenDialog(Component)
-   * @see #showSaveDialog(Component) 
+   * @see #showSaveDialog(Component)
    */
   public static final int ERROR_OPTION = -1;
 
-  /** 
+  /**
    * A selection mode constant indicating acceptance of files only.
    * @see #setFileSelectionMode(int)
    */
   public static final int FILES_ONLY = 0;
 
-  /** 
-   * A selection mode constant indicating acceptance of directories only. 
+  /**
+   * A selection mode constant indicating acceptance of directories only.
    * @see #setFileSelectionMode(int)
    */
   public static final int DIRECTORIES_ONLY = 1;
 
-  /** 
+  /**
    * A selection mode constant indicating acceptance of files and directories.
    * @see #setFileSelectionMode(int)
    */
   public static final int FILES_AND_DIRECTORIES = 2;
 
-  /** 
+  /**
    * Action command string for cancelling the current selection.
    * @see #cancelSelection()
    */
   public static final String CANCEL_SELECTION = "CancelSelection";
 
-  /** 
+  /**
    * Action command string for approving the current selection.
    * @see #cancelSelection()
    */
@@ -150,7 +150,7 @@ public class JFileChooser extends JComponent implements Accessible
 
   /**
    * The name of the property for the approve button text.
-   * @see #setApproveButtonText(String) 
+   * @see #setApproveButtonText(String)
    */
   public static final String APPROVE_BUTTON_TEXT_CHANGED_PROPERTY =
     "ApproveButtonTextChangedProperty";
@@ -178,7 +178,7 @@ public class JFileChooser extends JComponent implements Accessible
 
   /**
    * The name of the property for the current directory.
-   * @see #setCurrentDirectory(File)  
+   * @see #setCurrentDirectory(File)
    */
   public static final String DIRECTORY_CHANGED_PROPERTY = "directoryChanged";
 
@@ -196,23 +196,23 @@ public class JFileChooser extends JComponent implements Accessible
   public static final String SELECTED_FILES_CHANGED_PROPERTY =
     "SelectedFilesChangedProperty";
 
-  /** 
+  /**
    * The name of the property for multi-selection.
-   * @see #setMultiSelectionEnabled(boolean) 
+   * @see #setMultiSelectionEnabled(boolean)
    */
   public static final String MULTI_SELECTION_ENABLED_CHANGED_PROPERTY =
     "MultiSelectionEnabledChangedProperty";
 
   /**
    * The name of the 'file system view' property.
-   * @see #setFileSystemView(FileSystemView) 
+   * @see #setFileSystemView(FileSystemView)
    */
   public static final String FILE_SYSTEM_VIEW_CHANGED_PROPERTY =
     "FileSystemViewChanged";
 
   /**
    * The name of the 'file view' property.
-   * @see #setFileView(FileView) 
+   * @see #setFileView(FileView)
    */
   public static final String FILE_VIEW_CHANGED_PROPERTY = "fileViewChanged";
 
@@ -272,13 +272,13 @@ public class JFileChooser extends JComponent implements Accessible
   public static final String CHOOSABLE_FILE_FILTER_CHANGED_PROPERTY =
     "ChoosableFileFilterChangedProperty";
 
-  /** 
-   * The accessible context. 
+  /**
+   * The accessible context.
    * @see #getAccessibleContext()
    */
   protected AccessibleContext accessibleContext;
 
-  /** 
+  /**
    * The file system view.
    * @see #setFileSystemView(FileSystemView)
    */
@@ -353,46 +353,46 @@ public class JFileChooser extends JComponent implements Accessible
 
   /**
    * The file selection mode.
-   * @see #setFileSelectionMode(int) 
+   * @see #setFileSelectionMode(int)
    */
   private int fileSelectionMode = FILES_ONLY;
 
-  /** 
+  /**
    * The file view.
    * @see #setFileView(FileView)
    */
   private FileView fv = null;
 
-  /** 
-   * A flag controlling whether or not the control buttons are visible. 
-   * @see #setControlButtonsAreShown(boolean) 
+  /**
+   * A flag controlling whether or not the control buttons are visible.
+   * @see #setControlButtonsAreShown(boolean)
    */
   private boolean controlButtonsShown = true;
 
-  /** 
-   * The current directory. 
+  /**
+   * The current directory.
    * @see #setCurrentDirectory(File)
    */
   private File currentDir = null;
 
-  /** 
+  /**
    * The current file filter.
    * @see #setFileFilter(FileFilter)
    */
   private FileFilter currentFilter = null;
 
-  /** 
+  /**
    * An array of selected files.
-   * @see #setSelectedFiles(File[]) 
+   * @see #setSelectedFiles(File[])
    */
   private File[] selectedFiles;
 
-  /** 
-   * The selected file. 
+  /**
+   * The selected file.
    * @see #setSelectedFile(File)
    */
   private File selectedFile;
-  
+
   /**
    * The drag enabled property.
    * @see #setDragEnabled(boolean)
@@ -413,7 +413,7 @@ public class JFileChooser extends JComponent implements Accessible
    * Creates a new <code>JFileChooser</code> object.
    *
    * @param currentDirectoryPath the directory that should initially be
-   *        shown in the filechooser (if <code>null</code>, the user's home 
+   *        shown in the filechooser (if <code>null</code>, the user's home
    *        directory is used).
    */
   public JFileChooser(String currentDirectoryPath)
@@ -422,11 +422,11 @@ public class JFileChooser extends JComponent implements Accessible
   }
 
   /**
-   * Creates a new <code>JFileChooser</code> object with the specified 
+   * Creates a new <code>JFileChooser</code> object with the specified
    * directory and {@link FileSystemView}.
    *
    * @param currentDirectoryPath  the directory that should initially be
-   *        shown in the filechooser (if <code>null</code>, the user's home 
+   *        shown in the filechooser (if <code>null</code>, the user's home
    *        directory is used).
    * @param fsv  the file system view (if <code>null</code>, the default file
    *             system view is used).
@@ -444,7 +444,7 @@ public class JFileChooser extends JComponent implements Accessible
    * Creates a new <code>JFileChooser</code> object.
    *
    * @param currentDirectory  the directory that should initially be
-   *        shown in the filechooser (if <code>null</code>, the user's home 
+   *        shown in the filechooser (if <code>null</code>, the user's home
    *        directory is used).
    */
   public JFileChooser(File currentDirectory)
@@ -469,7 +469,7 @@ public class JFileChooser extends JComponent implements Accessible
    * Creates a new <code>JFileChooser</code> object.
    *
    * @param currentDirectory  the directory that should initially be
-   *        shown in the filechooser (if <code>null</code>, the user's home 
+   *        shown in the filechooser (if <code>null</code>, the user's home
    *        directory is used).
    * @param fsv  the file system view (if <code>null</code>, the default file
    *             system view is used).
@@ -485,7 +485,7 @@ public class JFileChooser extends JComponent implements Accessible
    *
    * @param view  the file system view (if <code>null</code>, the default file
    *              system view is used).
-   * 
+   *
    * @see FileSystemView#getFileSystemView()
    */
   protected void setup(FileSystemView view)
@@ -499,18 +499,18 @@ public class JFileChooser extends JComponent implements Accessible
   /**
    * Sets the dragEnabled property, this disables/enables automatic drag
    * handling (drag and drop) on this component. The default value of the
-   * dragEnabled property is false. 
-   * 
+   * dragEnabled property is false.
+   *
    * Some look and feels might not support automatic drag and drop; they
    * will ignore this property.
-   * 
+   *
    * @param b - the new dragEnabled value
    */
   public void setDragEnabled(boolean b)
   {
     if (b && GraphicsEnvironment.isHeadless())
       throw new HeadlessException();
-    
+
     dragEnabled = b;
   }
 
@@ -528,7 +528,7 @@ public class JFileChooser extends JComponent implements Accessible
    * Returns the selected file, if there is one.
    *
    * @return The selected file (possibly <code>null</code>).
-   * 
+   *
    * @see #setSelectedFile(File)
    */
   public File getSelectedFile()
@@ -538,7 +538,7 @@ public class JFileChooser extends JComponent implements Accessible
 
   /**
    * Sets the selected file and sends a {@link PropertyChangeEvent} to all
-   * registered listeners.  The property name is 
+   * registered listeners.  The property name is
    * {@link #SELECTED_FILE_CHANGED_PROPERTY}.
    *
    * @param file  the file (<code>null</code> permitted).
@@ -547,9 +547,9 @@ public class JFileChooser extends JComponent implements Accessible
   {
     if (selectedFile == null || !selectedFile.equals(file))
       {
-	File old = selectedFile;
-	selectedFile = file;
-	firePropertyChange(SELECTED_FILE_CHANGED_PROPERTY, old, selectedFile);
+        File old = selectedFile;
+        selectedFile = file;
+        firePropertyChange(SELECTED_FILE_CHANGED_PROPERTY, old, selectedFile);
       }
   }
 
@@ -569,9 +569,9 @@ public class JFileChooser extends JComponent implements Accessible
   }
 
   /**
-   * Sets the selected files and sends a {@link PropertyChangeEvent} (with the 
-   * name {@link #SELECTED_FILES_CHANGED_PROPERTY}) to all registered 
-   * listeners.  
+   * Sets the selected files and sends a {@link PropertyChangeEvent} (with the
+   * name {@link #SELECTED_FILES_CHANGED_PROPERTY}) to all registered
+   * listeners.
    *
    * @param selectedFiles  the selected files (<code>null</code> permitted).
    */
@@ -585,9 +585,9 @@ public class JFileChooser extends JComponent implements Accessible
       setSelectedFile(null);
     if (this.selectedFiles != selectedFiles)
       {
-	File[] old = this.selectedFiles;
-	this.selectedFiles = selectedFiles;
-	firePropertyChange(SELECTED_FILES_CHANGED_PROPERTY, old, selectedFiles);
+        File[] old = this.selectedFiles;
+        this.selectedFiles = selectedFiles;
+        firePropertyChange(SELECTED_FILES_CHANGED_PROPERTY, old, selectedFiles);
       }
 
   }
@@ -603,26 +603,26 @@ public class JFileChooser extends JComponent implements Accessible
   }
 
   /**
-   * Sets the current directory and fires a {@link PropertyChangeEvent} (with 
-   * the property name {@link #DIRECTORY_CHANGED_PROPERTY}) to all registered 
-   * listeners.  If <code>dir</code> is <code>null</code>, the current 
+   * Sets the current directory and fires a {@link PropertyChangeEvent} (with
+   * the property name {@link #DIRECTORY_CHANGED_PROPERTY}) to all registered
+   * listeners.  If <code>dir</code> is <code>null</code>, the current
    * directory is set to the default directory returned by the file system
    * view.
    *
    * @param dir  the new directory (<code>null</code> permitted).
-   * 
+   *
    * @see FileSystemView#getDefaultDirectory()
    */
   public void setCurrentDirectory(File dir)
   {
     if (currentDir != dir || dir == null)
       {
-	if (dir == null)
-	  dir = fsv.getDefaultDirectory();
+        if (dir == null)
+          dir = fsv.getDefaultDirectory();
 
-	File old = currentDir;
-	currentDir = dir;
-	firePropertyChange(DIRECTORY_CHANGED_PROPERTY, old, currentDir);
+        File old = currentDir;
+        currentDir = dir;
+        firePropertyChange(DIRECTORY_CHANGED_PROPERTY, old, currentDir);
       }
   }
 
@@ -643,7 +643,7 @@ public class JFileChooser extends JComponent implements Accessible
   }
 
   /**
-   * Ensures the the specified file is visible (this is handled by the 
+   * Ensures the the specified file is visible (this is handled by the
    * UI delegate).
    *
    * @param f  the file.
@@ -654,13 +654,13 @@ public class JFileChooser extends JComponent implements Accessible
   }
 
   /**
-   * Displays the file chooser in a modal dialog using the 
+   * Displays the file chooser in a modal dialog using the
    * {@link #OPEN_DIALOG} type.
    *
    * @param parent  the parent component.
    *
-   * @return A return value indicating how the dialog was closed (one of 
-   *         {@link #APPROVE_OPTION}, {@link #CANCEL_OPTION} and 
+   * @return A return value indicating how the dialog was closed (one of
+   *         {@link #APPROVE_OPTION}, {@link #CANCEL_OPTION} and
    *         {@link #ERROR_OPTION}).
    *
    * @throws HeadlessException DOCUMENT ME!
@@ -681,13 +681,13 @@ public class JFileChooser extends JComponent implements Accessible
   }
 
   /**
-   * Displays the file chooser in a modal dialog using the 
+   * Displays the file chooser in a modal dialog using the
    * {@link #SAVE_DIALOG} type.
    *
    * @param parent  the parent component.
    *
-   * @return A return value indicating how the dialog was closed (one of 
-   *         {@link #APPROVE_OPTION}, {@link #CANCEL_OPTION} and 
+   * @return A return value indicating how the dialog was closed (one of
+   *         {@link #APPROVE_OPTION}, {@link #CANCEL_OPTION} and
    *         {@link #ERROR_OPTION}).
    *
    * @throws HeadlessException DOCUMENT ME!
@@ -705,13 +705,13 @@ public class JFileChooser extends JComponent implements Accessible
   }
 
   /**
-   * Displays the file chooser in a modal dialog using the 
+   * Displays the file chooser in a modal dialog using the
    * {@link #CUSTOM_DIALOG} type.
    *
    * @param parent  the parent component.
    *
-   * @return A return value indicating how the dialog was closed (one of 
-   *         {@link #APPROVE_OPTION}, {@link #CANCEL_OPTION} and 
+   * @return A return value indicating how the dialog was closed (one of
+   *         {@link #APPROVE_OPTION}, {@link #CANCEL_OPTION} and
    *         {@link #ERROR_OPTION}).
    *
    * @throws HeadlessException DOCUMENT ME!
@@ -750,10 +750,10 @@ public class JFileChooser extends JComponent implements Accessible
     dialog.getContentPane().add(this);
     dialog.addWindowListener( new WindowAdapter()
       {
-	public void windowClosing(WindowEvent e)
-	{
-	  cancelSelection();
-	}
+        public void windowClosing(WindowEvent e)
+        {
+          cancelSelection();
+        }
       });
     dialog.setModal(true);
     dialog.invalidate();
@@ -766,7 +766,7 @@ public class JFileChooser extends JComponent implements Accessible
    * shown on the file chooser.
    *
    * @return A boolean.
-   * 
+   *
    * @see #setControlButtonsAreShown(boolean)
    */
   public boolean getControlButtonsAreShown()
@@ -786,18 +786,18 @@ public class JFileChooser extends JComponent implements Accessible
   {
     if (controlButtonsShown != b)
       {
-	controlButtonsShown = b;
-	firePropertyChange(CONTROL_BUTTONS_ARE_SHOWN_CHANGED_PROPERTY,
-	                   ! controlButtonsShown, controlButtonsShown);
+        controlButtonsShown = b;
+        firePropertyChange(CONTROL_BUTTONS_ARE_SHOWN_CHANGED_PROPERTY,
+                           ! controlButtonsShown, controlButtonsShown);
       }
   }
 
   /**
    * Returns the type of file chooser.
    *
-   * @return {@link #OPEN_DIALOG}, {@link #SAVE_DIALOG} or 
+   * @return {@link #OPEN_DIALOG}, {@link #SAVE_DIALOG} or
    * {@link #CUSTOM_DIALOG}.
-   * 
+   *
    * @see #setDialogType(int)
    */
   public int getDialogType()
@@ -807,12 +807,12 @@ public class JFileChooser extends JComponent implements Accessible
 
   /**
    * Sets the dialog type and fires a {@link PropertyChangeEvent} (with the
-   * property name {@link #DIALOG_TYPE_CHANGED_PROPERTY}) to all 
+   * property name {@link #DIALOG_TYPE_CHANGED_PROPERTY}) to all
    * registered listeners.
    *
    * @param dialogType  the dialog type (one of: {@link #OPEN_DIALOG},
    * {@link #SAVE_DIALOG}, {@link #CUSTOM_DIALOG}).
-   * 
+   *
    * @throws IllegalArgumentException if <code>dialogType</code> is not valid.
    */
   public void setDialogType(int dialogType)
@@ -823,28 +823,28 @@ public class JFileChooser extends JComponent implements Accessible
 
     if (this.dialogType != dialogType)
       {
-	int old = this.dialogType;
-	this.dialogType = dialogType;
-	firePropertyChange(DIALOG_TYPE_CHANGED_PROPERTY, old, this.dialogType);
+        int old = this.dialogType;
+        this.dialogType = dialogType;
+        firePropertyChange(DIALOG_TYPE_CHANGED_PROPERTY, old, this.dialogType);
       }
   }
 
   /**
-   * Sets the dialog title and sends a {@link PropertyChangeEvent} (with the 
-   * property name {@link #DIALOG_TITLE_CHANGED_PROPERTY}) to all 
+   * Sets the dialog title and sends a {@link PropertyChangeEvent} (with the
+   * property name {@link #DIALOG_TITLE_CHANGED_PROPERTY}) to all
    * registered listeners.
    *
    * @param dialogTitle  the dialog title (<code>null</code> permitted).
-   * 
+   *
    * @see #getDialogTitle()
    */
   public void setDialogTitle(String dialogTitle)
   {
     if (this.dialogTitle != dialogTitle)
       {
-	String old = this.dialogTitle;
-	this.dialogTitle = dialogTitle;
-	firePropertyChange(DIALOG_TITLE_CHANGED_PROPERTY, old, this.dialogTitle);
+        String old = this.dialogTitle;
+        this.dialogTitle = dialogTitle;
+        firePropertyChange(DIALOG_TITLE_CHANGED_PROPERTY, old, this.dialogTitle);
       }
   }
 
@@ -852,7 +852,7 @@ public class JFileChooser extends JComponent implements Accessible
    * Returns the dialog title.
    *
    * @return The dialog title (possibly <code>null</code>).
-   * 
+   *
    * @see #setDialogTitle(String)
    */
   public String getDialogTitle()
@@ -861,9 +861,9 @@ public class JFileChooser extends JComponent implements Accessible
   }
 
   /**
-   * Sets the tool tip text for the approve button and sends a 
+   * Sets the tool tip text for the approve button and sends a
    * {@link PropertyChangeEvent} (with the property name
-   * {@link #APPROVE_BUTTON_TOOL_TIP_TEXT_CHANGED_PROPERTY}) to all 
+   * {@link #APPROVE_BUTTON_TOOL_TIP_TEXT_CHANGED_PROPERTY}) to all
    * registered listeners.
    *
    * @param toolTipText  the text.
@@ -872,10 +872,10 @@ public class JFileChooser extends JComponent implements Accessible
   {
     if (approveButtonToolTipText != toolTipText)
       {
-	String oldText = approveButtonToolTipText;
-	approveButtonToolTipText = toolTipText;
-	firePropertyChange(APPROVE_BUTTON_TOOL_TIP_TEXT_CHANGED_PROPERTY,
-	                   oldText, approveButtonToolTipText);
+        String oldText = approveButtonToolTipText;
+        approveButtonToolTipText = toolTipText;
+        firePropertyChange(APPROVE_BUTTON_TOOL_TIP_TEXT_CHANGED_PROPERTY,
+                           oldText, approveButtonToolTipText);
       }
   }
 
@@ -883,7 +883,7 @@ public class JFileChooser extends JComponent implements Accessible
    * Returns the tool tip text for the approve button.
    *
    * @return The tool tip text for the approve button.
-   * 
+   *
    * @see #setApproveButtonToolTipText(String)
    */
   public String getApproveButtonToolTipText()
@@ -895,7 +895,7 @@ public class JFileChooser extends JComponent implements Accessible
    * Returns the approve button mnemonic, or zero if no mnemonic has been set.
    *
    * @return The approve button mnemonic.
-   * 
+   *
    * @see #setApproveButtonMnemonic(int)
    */
   public int getApproveButtonMnemonic()
@@ -904,34 +904,34 @@ public class JFileChooser extends JComponent implements Accessible
   }
 
   /**
-   * Sets the mnemonic for the approve button and sends a 
-   * {@link PropertyChangeEvent} (with the property name 
-   * {@link #APPROVE_BUTTON_MNEMONIC_CHANGED_PROPERTY}) to all registered 
+   * Sets the mnemonic for the approve button and sends a
+   * {@link PropertyChangeEvent} (with the property name
+   * {@link #APPROVE_BUTTON_MNEMONIC_CHANGED_PROPERTY}) to all registered
    * listeners.
    *
    * @param mnemonic  the mnemonic.
-   * 
+   *
    * @see #setApproveButtonMnemonic(char)
    */
   public void setApproveButtonMnemonic(int mnemonic)
   {
     if (approveButtonMnemonic != mnemonic)
       {
-	int oldMnemonic = approveButtonMnemonic;
-	approveButtonMnemonic = mnemonic;
-	firePropertyChange(APPROVE_BUTTON_MNEMONIC_CHANGED_PROPERTY,
-	                   oldMnemonic, approveButtonMnemonic);
+        int oldMnemonic = approveButtonMnemonic;
+        approveButtonMnemonic = mnemonic;
+        firePropertyChange(APPROVE_BUTTON_MNEMONIC_CHANGED_PROPERTY,
+                           oldMnemonic, approveButtonMnemonic);
       }
   }
 
   /**
-   * Sets the mnemonic for the approve button and sends a 
-   * {@link PropertyChangeEvent} (with the property name 
-   * {@link #APPROVE_BUTTON_MNEMONIC_CHANGED_PROPERTY}) to all registered 
+   * Sets the mnemonic for the approve button and sends a
+   * {@link PropertyChangeEvent} (with the property name
+   * {@link #APPROVE_BUTTON_MNEMONIC_CHANGED_PROPERTY}) to all registered
    * listeners.
    *
    * @param mnemonic  the mnemonic.
-   * 
+   *
    * @see #setApproveButtonMnemonic(int)
    */
   public void setApproveButtonMnemonic(char mnemonic)
@@ -940,22 +940,22 @@ public class JFileChooser extends JComponent implements Accessible
   }
 
   /**
-   * Sets the approve button text and fires a {@link PropertyChangeEvent} 
-   * (with the property name {@link #APPROVE_BUTTON_TEXT_CHANGED_PROPERTY}) to 
+   * Sets the approve button text and fires a {@link PropertyChangeEvent}
+   * (with the property name {@link #APPROVE_BUTTON_TEXT_CHANGED_PROPERTY}) to
    * all registered listeners.
    *
    * @param approveButtonText  the text (<code>null</code> permitted).
-   * 
+   *
    * @see #getApproveButtonText()
    */
   public void setApproveButtonText(String approveButtonText)
   {
     if (this.approveButtonText != approveButtonText)
       {
-	String oldText = this.approveButtonText;
-	this.approveButtonText = approveButtonText;
-	firePropertyChange(APPROVE_BUTTON_TEXT_CHANGED_PROPERTY, oldText,
-	                   this.approveButtonText);
+        String oldText = this.approveButtonText;
+        this.approveButtonText = approveButtonText;
+        firePropertyChange(APPROVE_BUTTON_TEXT_CHANGED_PROPERTY, oldText,
+                           this.approveButtonText);
       }
   }
 
@@ -963,7 +963,7 @@ public class JFileChooser extends JComponent implements Accessible
    * Returns the approve button text.
    *
    * @return The approve button text (possibly <code>null</code>).
-   * 
+   *
    * @see #setApproveButtonText(String)
    */
   public String getApproveButtonText()
@@ -982,9 +982,9 @@ public class JFileChooser extends JComponent implements Accessible
   }
 
   /**
-   * Adds a file filter to the list of available filters and sends a 
-   * {@link PropertyChangeEvent} (with the property name 
-   * {@link #CHOOSABLE_FILE_FILTER_CHANGED_PROPERTY}) to all registered 
+   * Adds a file filter to the list of available filters and sends a
+   * {@link PropertyChangeEvent} (with the property name
+   * {@link #CHOOSABLE_FILE_FILTER_CHANGED_PROPERTY}) to all registered
    * listeners.
    *
    * @param filter  the filter (<code>null</code> permitted).
@@ -996,21 +996,21 @@ public class JFileChooser extends JComponent implements Accessible
         FileFilter[] old = getChoosableFileFilters();
         choosableFilters.add(filter);
         FileFilter[] newFilters = getChoosableFileFilters();
-        firePropertyChange(CHOOSABLE_FILE_FILTER_CHANGED_PROPERTY, old, 
+        firePropertyChange(CHOOSABLE_FILE_FILTER_CHANGED_PROPERTY, old,
               newFilters);
       }
     setFileFilter(filter);
   }
 
   /**
-   * Removes a file filter from the list of available filters and sends a 
-   * {@link PropertyChangeEvent} (with the property name 
-   * {@link #CHOOSABLE_FILE_FILTER_CHANGED_PROPERTY}) to all registered 
+   * Removes a file filter from the list of available filters and sends a
+   * {@link PropertyChangeEvent} (with the property name
+   * {@link #CHOOSABLE_FILE_FILTER_CHANGED_PROPERTY}) to all registered
    * listeners.
    *
    * @param f  the file filter.
    *
-   * @return <code>true</code> if the filter was removed and 
+   * @return <code>true</code> if the filter was removed and
    *         <code>false</code> otherwise.
    */
   public boolean removeChoosableFileFilter(FileFilter f)
@@ -1047,11 +1047,11 @@ public class JFileChooser extends JComponent implements Accessible
   }
 
   /**
-   * Returns the flag that controls whether or not the 'accept all' file 
+   * Returns the flag that controls whether or not the 'accept all' file
    * filter is included in the list of filters.
    *
    * @return A boolean.
-   * 
+   *
    * @see #setAcceptAllFileFilterUsed(boolean)
    */
   public boolean isAcceptAllFileFilterUsed()
@@ -1061,9 +1061,9 @@ public class JFileChooser extends JComponent implements Accessible
 
   /**
    * Sets the flag that controls whether or not the 'accept all' file filter
-   * is included in the list of filters, and sends a 
-   * {@link PropertyChangeEvent} (with the property name 
-   * {@link #ACCEPT_ALL_FILE_FILTER_USED_CHANGED_PROPERTY}) to all registered 
+   * is included in the list of filters, and sends a
+   * {@link PropertyChangeEvent} (with the property name
+   * {@link #ACCEPT_ALL_FILE_FILTER_USED_CHANGED_PROPERTY}) to all registered
    * listeners.
    *
    * @param b  the new value of the flag.
@@ -1072,13 +1072,13 @@ public class JFileChooser extends JComponent implements Accessible
   {
     if (isAcceptAll != b)
       {
-	isAcceptAll = b;
+        isAcceptAll = b;
         if (b)
           addChoosableFileFilter(getAcceptAllFileFilter());
-        else 
+        else
           removeChoosableFileFilter(getAcceptAllFileFilter());
-	firePropertyChange(ACCEPT_ALL_FILE_FILTER_USED_CHANGED_PROPERTY,
-	                   ! isAcceptAll, isAcceptAll);
+        firePropertyChange(ACCEPT_ALL_FILE_FILTER_USED_CHANGED_PROPERTY,
+                           ! isAcceptAll, isAcceptAll);
       }
   }
 
@@ -1087,7 +1087,7 @@ public class JFileChooser extends JComponent implements Accessible
    * value is <code>null</code>.
    *
    * @return The accessory component (possibly <code>null</code>).
-   * 
+   *
    * @see #setAccessory(JComponent)
    */
   public JComponent getAccessory()
@@ -1096,7 +1096,7 @@ public class JFileChooser extends JComponent implements Accessible
   }
 
   /**
-   * Sets the accessory component for the file chooser and sends a 
+   * Sets the accessory component for the file chooser and sends a
    * {@link PropertyChangeEvent} to all registered listeners.  The property
    * name is {@link #ACCESSORY_CHANGED_PROPERTY}.
    *
@@ -1106,20 +1106,20 @@ public class JFileChooser extends JComponent implements Accessible
   {
     if (accessory != newAccessory)
       {
-	JComponent old = accessory;
-	accessory = newAccessory;
-	firePropertyChange(ACCESSORY_CHANGED_PROPERTY, old, accessory);
+        JComponent old = accessory;
+        accessory = newAccessory;
+        firePropertyChange(ACCESSORY_CHANGED_PROPERTY, old, accessory);
       }
   }
 
   /**
    * Sets the file selection mode and sends a {@link PropertyChangeEvent}
-   * to all registered listeners.  The property name is 
+   * to all registered listeners.  The property name is
    * {@link #FILE_SELECTION_MODE_CHANGED_PROPERTY}.
    *
    * @param mode  the mode ({@link #FILES_ONLY}, {@link #DIRECTORIES_ONLY} or
    *              {@link #FILES_AND_DIRECTORIES}).
-   * 
+   *
    * @throws IllegalArgumentException if the mode is invalid.
    */
   public void setFileSelectionMode(int mode)
@@ -1129,20 +1129,20 @@ public class JFileChooser extends JComponent implements Accessible
       throw new IllegalArgumentException("Choose a correct file selection mode.");
     if (fileSelectionMode != mode)
       {
-	int old = fileSelectionMode;
-	fileSelectionMode = mode;
-	firePropertyChange(FILE_SELECTION_MODE_CHANGED_PROPERTY, old,
-	                   fileSelectionMode);
+        int old = fileSelectionMode;
+        fileSelectionMode = mode;
+        firePropertyChange(FILE_SELECTION_MODE_CHANGED_PROPERTY, old,
+                           fileSelectionMode);
       }
   }
 
   /**
-   * Returns the file selection mode, one of: {@link #FILES_ONLY}, 
+   * Returns the file selection mode, one of: {@link #FILES_ONLY},
    * {@link #DIRECTORIES_ONLY} or {@link #FILES_AND_DIRECTORIES}.  The
    * default is {@link #FILES_ONLY}.
    *
    * @return The file selection mode.
-   * 
+   *
    * @see #setFileSelectionMode(int)
    */
   public int getFileSelectionMode()
@@ -1151,13 +1151,13 @@ public class JFileChooser extends JComponent implements Accessible
   }
 
   /**
-   * Returns <code>true</code> if file selection is enabled, and 
+   * Returns <code>true</code> if file selection is enabled, and
    * <code>false</code> otherwise.  File selection is enabled when the
-   * file selection mode is {@link #FILES_ONLY} or 
+   * file selection mode is {@link #FILES_ONLY} or
    * {@link #FILES_AND_DIRECTORIES}.
    *
    * @return <code>true</code> if file selection is enabled.
-   * 
+   *
    * @see #getFileSelectionMode()
    */
   public boolean isFileSelectionEnabled()
@@ -1167,13 +1167,13 @@ public class JFileChooser extends JComponent implements Accessible
   }
 
   /**
-   * Returns <code>true</code> if directory selection is enabled, and 
+   * Returns <code>true</code> if directory selection is enabled, and
    * <code>false</code> otherwise.  Directory selection is enabled when the
-   * file selection mode is {@link #DIRECTORIES_ONLY} or 
+   * file selection mode is {@link #DIRECTORIES_ONLY} or
    * {@link #FILES_AND_DIRECTORIES}.
    *
    * @return <code>true</code> if file selection is enabled.
-   * 
+   *
    * @see #getFileSelectionMode()
    */
   public boolean isDirectorySelectionEnabled()
@@ -1183,9 +1183,9 @@ public class JFileChooser extends JComponent implements Accessible
   }
 
   /**
-   * Sets the flag that controls whether multiple selections are allowed in 
-   * this filechooser and sends a {@link PropertyChangeEvent} (with the 
-   * property name {@link #MULTI_SELECTION_ENABLED_CHANGED_PROPERTY}) to all 
+   * Sets the flag that controls whether multiple selections are allowed in
+   * this filechooser and sends a {@link PropertyChangeEvent} (with the
+   * property name {@link #MULTI_SELECTION_ENABLED_CHANGED_PROPERTY}) to all
    * registered listeners.
    *
    * @param b  the new value of the flag.
@@ -1194,9 +1194,9 @@ public class JFileChooser extends JComponent implements Accessible
   {
     if (multiSelection != b)
       {
-	multiSelection = b;
-	firePropertyChange(MULTI_SELECTION_ENABLED_CHANGED_PROPERTY,
-	                   ! multiSelection, multiSelection);
+        multiSelection = b;
+        firePropertyChange(MULTI_SELECTION_ENABLED_CHANGED_PROPERTY,
+                           ! multiSelection, multiSelection);
       }
   }
 
@@ -1205,7 +1205,7 @@ public class JFileChooser extends JComponent implements Accessible
    * file chooser, and <code>false</code> otherwise.
    *
    * @return A boolean.
-   * 
+   *
    * @see #setMultiSelectionEnabled(boolean)
    */
   public boolean isMultiSelectionEnabled()
@@ -1214,11 +1214,11 @@ public class JFileChooser extends JComponent implements Accessible
   }
 
   /**
-   * Returns <code>true</code> if hidden files are to be hidden, and 
+   * Returns <code>true</code> if hidden files are to be hidden, and
    * <code>false</code> otherwise.
    *
    * @return A boolean.
-   * 
+   *
    * @see #setFileHidingEnabled(boolean)
    */
   public boolean isFileHidingEnabled()
@@ -1237,15 +1237,15 @@ public class JFileChooser extends JComponent implements Accessible
   {
     if (fileHiding != b)
       {
-	fileHiding = b;
-	firePropertyChange(FILE_HIDING_CHANGED_PROPERTY, ! fileHiding,
-	                   fileHiding);
+        fileHiding = b;
+        firePropertyChange(FILE_HIDING_CHANGED_PROPERTY, ! fileHiding,
+                           fileHiding);
       }
   }
 
   /**
    * Sets the file filter and sends a {@link PropertyChangeEvent} (with the
-   * property name {@link #FILE_FILTER_CHANGED_PROPERTY}) to all registered 
+   * property name {@link #FILE_FILTER_CHANGED_PROPERTY}) to all registered
    * listeners.
    *
    * @param filter  the filter (<code>null</code> permitted).
@@ -1266,7 +1266,7 @@ public class JFileChooser extends JComponent implements Accessible
    * Returns the file filter.
    *
    * @return The file filter.
-   * 
+   *
    * @see #setFileFilter(FileFilter)
    */
   public FileFilter getFileFilter()
@@ -1275,7 +1275,7 @@ public class JFileChooser extends JComponent implements Accessible
   }
 
   /**
-   * Sets a custom {@link FileView} for the file chooser and sends a 
+   * Sets a custom {@link FileView} for the file chooser and sends a
    * {@link PropertyChangeEvent} to all registered listeners.  The property
    * name is {@link #FILE_VIEW_CHANGED_PROPERTY}.
    *
@@ -1287,9 +1287,9 @@ public class JFileChooser extends JComponent implements Accessible
   {
     if (fv != fileView)
       {
-	FileView old = fv;
-	fv = fileView;
-	firePropertyChange(FILE_VIEW_CHANGED_PROPERTY, old, fv);
+        FileView old = fv;
+        fv = fileView;
+        firePropertyChange(FILE_VIEW_CHANGED_PROPERTY, old, fv);
       }
   }
 
@@ -1340,7 +1340,7 @@ public class JFileChooser extends JComponent implements Accessible
   }
 
   /**
-   * Returns the type description for the file, generated by the current (or 
+   * Returns the type description for the file, generated by the current (or
    * default) {@link FileView}.
    *
    * @param f  the file.
@@ -1375,7 +1375,7 @@ public class JFileChooser extends JComponent implements Accessible
   }
 
   /**
-   * Returns <code>true</code> if the file is traversable, and 
+   * Returns <code>true</code> if the file is traversable, and
    * <code>false</code> otherwise.
    *
    * @param f  the file or directory.
@@ -1400,14 +1400,14 @@ public class JFileChooser extends JComponent implements Accessible
     if (f == null)
       return true;
     FileFilter ff = getFileFilter();
-    if (ff != null) 
+    if (ff != null)
       return ff.accept(f);
     else
       return true;
   }
 
   /**
-   * Sets the file system view for the file chooser and sends a 
+   * Sets the file system view for the file chooser and sends a
    * {@link PropertyChangeEvent} to all registered listeners.
    *
    * @param fsv  the file system view.
@@ -1416,9 +1416,9 @@ public class JFileChooser extends JComponent implements Accessible
   {
     if (this.fsv != fsv)
       {
-	FileSystemView old = this.fsv;
-	this.fsv = fsv;
-	firePropertyChange(FILE_SYSTEM_VIEW_CHANGED_PROPERTY, old, this.fsv);
+        FileSystemView old = this.fsv;
+        this.fsv = fsv;
+        firePropertyChange(FILE_SYSTEM_VIEW_CHANGED_PROPERTY, old, this.fsv);
       }
   }
 
@@ -1426,7 +1426,7 @@ public class JFileChooser extends JComponent implements Accessible
    * Returns the file system view being used by this file chooser.
    *
    * @return The file system view.
-   * 
+   *
    * @see #setFileSystemView(FileSystemView)
    */
   public FileSystemView getFileSystemView()
@@ -1473,11 +1473,11 @@ public class JFileChooser extends JComponent implements Accessible
   {
     try
       {
-	listenerList.remove(ActionListener.class, l);
+        listenerList.remove(ActionListener.class, l);
       }
     catch (IllegalArgumentException e)
       {
-	e.printStackTrace();
+        e.printStackTrace();
       }
   }
 
@@ -1535,12 +1535,12 @@ public class JFileChooser extends JComponent implements Accessible
   }
 
   /**
-   * Returns a string describing the attributes for the 
-   * <code>JFileChooser</code> component, for use in debugging.  The return 
-   * value is guaranteed to be non-<code>null</code>, but the format of the 
+   * Returns a string describing the attributes for the
+   * <code>JFileChooser</code> component, for use in debugging.  The return
+   * value is guaranteed to be non-<code>null</code>, but the format of the
    * string may vary between implementations.
    *
-   * @return A string describing the attributes of the 
+   * @return A string describing the attributes of the
    *     <code>JFileChooser</code>.
    */
   protected String paramString()
@@ -1587,7 +1587,7 @@ public class JFileChooser extends JComponent implements Accessible
    * Returns the object that provides accessibility features for this
    * <code>JFileChooser</code> component.
    *
-   * @return The accessible context (an instance of 
+   * @return The accessible context (an instance of
    *     {@link AccessibleJFileChooser}).
    */
   public AccessibleContext getAccessibleContext()
@@ -1601,7 +1601,7 @@ public class JFileChooser extends JComponent implements Accessible
    * Provides the accessibility features for the <code>JFileChooser</code>
    * component.
    */
-  protected class AccessibleJFileChooser 
+  protected class AccessibleJFileChooser
     extends JComponent.AccessibleJComponent
   {
     /**
@@ -1611,9 +1611,9 @@ public class JFileChooser extends JComponent implements Accessible
     {
       // Nothing to do here.
     }
-    
+
     /**
-     * Returns the accessible role for the <code>JFileChooser</code> 
+     * Returns the accessible role for the <code>JFileChooser</code>
      * component.
      *
      * @return {@link AccessibleRole#FILE_CHOOSER}.

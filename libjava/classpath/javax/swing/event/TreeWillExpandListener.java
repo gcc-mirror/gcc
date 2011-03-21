@@ -49,7 +49,7 @@ public interface TreeWillExpandListener extends EventListener
 {
   /**
    * Invoked whenever a node in the tree is about to be collapsed.
-   * 
+   *
    * @param event The tree expansion Event
    */
   void treeWillCollapse(TreeExpansionEvent event)
@@ -57,9 +57,9 @@ public interface TreeWillExpandListener extends EventListener
 
   /**
    * Invoked whenever a node in the tree is about to be expanded.
-   * 
+   *
    * @param event The tree expansion Event
    */
   void treeWillExpand(TreeExpansionEvent event)
     throws ExpandVetoException;
-}  
+}

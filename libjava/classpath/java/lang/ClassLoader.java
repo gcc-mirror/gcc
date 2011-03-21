@@ -165,23 +165,23 @@ public abstract class ClassLoader
       if (secman != null && SecurityManager.current == null)
         {
           if (secman.equals("") || secman.equals("default"))
-	    {
-	      SecurityManager.current = new SecurityManager();
-	    }
-	  else
-	    {
-	      try
-	        {
-	  	  Class cl = Class.forName(secman, false, StaticData.systemClassLoader);
-		  SecurityManager.current = (SecurityManager)cl.newInstance();
-	        }
-	      catch (Exception x)
-	        {
-		  throw (InternalError)
-		      new InternalError("Unable to create SecurityManager")
-		  	  .initCause(x);
-	        }
-	    }
+            {
+              SecurityManager.current = new SecurityManager();
+            }
+          else
+            {
+              try
+                {
+                  Class cl = Class.forName(secman, false, StaticData.systemClassLoader);
+                  SecurityManager.current = (SecurityManager)cl.newInstance();
+                }
+              catch (Exception x)
+                {
+                  throw (InternalError)
+                      new InternalError("Unable to create SecurityManager")
+                          .initCause(x);
+                }
+            }
         }
     }
 
@@ -320,23 +320,23 @@ public abstract class ClassLoader
     Class<?> c = findLoadedClass(name);
     if (c == null)
       {
-	// Can the class be loaded by a parent?
-	try
-	  {
-	    if (parent == null)
-	      {
-		c = VMClassLoader.loadClass(name, resolve);
-		if (c != null)
-		  return c;
-	      }
-	    else
-	      {
-		return parent.loadClass(name, resolve);
-	      }
-	  }
+        // Can the class be loaded by a parent?
+        try
+          {
+            if (parent == null)
+              {
+                c = VMClassLoader.loadClass(name, resolve);
+                if (c != null)
+                  return c;
+              }
+            else
+              {
+                return parent.loadClass(name, resolve);
+              }
+          }
         catch (ClassNotFoundException e)
-	  {
-	  }
+          {
+          }
         // Still not found, we have to do it ourself.
         c = findClass(name);
       }
@@ -431,7 +431,7 @@ public abstract class ClassLoader
    * @since 1.1
    */
   protected final Class<?> defineClass(String name, byte[] data, int offset,
-				       int len) throws ClassFormatError
+                                       int len) throws ClassFormatError
   {
     return defineClass(name, data, offset, len, null);
   }
@@ -460,16 +460,16 @@ public abstract class ClassLoader
    * @since 1.2
    */
   protected final synchronized Class<?> defineClass(String name, byte[] data,
-						    int offset, int len,
-						    ProtectionDomain domain)
+                                                    int offset, int len,
+                                                    ProtectionDomain domain)
     throws ClassFormatError
   {
     checkInitialized();
     if (domain == null)
       domain = StaticData.defaultProtectionDomain;
-    
+
     return VMClassLoader.defineClassWithTransformers(this, name, data, offset,
-						     len, domain);
+                                                     len, domain);
   }
 
   /**
@@ -493,7 +493,7 @@ public abstract class ClassLoader
    * @since 1.5
    */
   protected final Class<?> defineClass(String name, ByteBuffer buf,
-				       ProtectionDomain domain)
+                                       ProtectionDomain domain)
     throws ClassFormatError
   {
     byte[] data = new byte[buf.remaining()];
@@ -547,8 +547,8 @@ public abstract class ClassLoader
     SecurityManager sm = SecurityManager.current;
     if (sm != null)
       {
-	ClassLoader cl = VMStackWalker.getCallingClassLoader();
-	if (cl != null && ! cl.isAncestorOf(this))
+        ClassLoader cl = VMStackWalker.getCallingClassLoader();
+        if (cl != null && ! cl.isAncestorOf(this))
           sm.checkPermission(new RuntimePermission("getClassLoader"));
       }
     return parent;
@@ -791,9 +791,9 @@ public abstract class ClassLoader
     SecurityManager sm = SecurityManager.current;
     if (sm != null)
       {
-	ClassLoader cl = VMStackWalker.getCallingClassLoader();
-	if (cl != null && cl != StaticData.systemClassLoader)
-	  sm.checkPermission(new RuntimePermission("getClassLoader"));
+        ClassLoader cl = VMStackWalker.getCallingClassLoader();
+        if (cl != null && cl != StaticData.systemClassLoader)
+          sm.checkPermission(new RuntimePermission("getClassLoader"));
       }
 
     return StaticData.systemClassLoader;
@@ -863,10 +863,10 @@ public abstract class ClassLoader
 
     if (p == null)
       {
-	synchronized (definedPackages)
-	  {
-	    p = definedPackages.get(name);
-	  }
+        synchronized (definedPackages)
+          {
+            p = definedPackages.get(name);
+          }
       }
     return p;
   }
@@ -895,7 +895,7 @@ public abstract class ClassLoader
       parentPackages = parent.getPackages();
 
     Package[] allPackages = new Package[parentPackages.length
-					+ packages.length];
+                                        + packages.length];
     System.arraycopy(parentPackages, 0, allPackages, 0,
                      parentPackages.length);
     System.arraycopy(packages, 0, allPackages, parentPackages.length,
@@ -937,7 +937,7 @@ public abstract class ClassLoader
   {
     defaultAssertionStatus = enabled;
   }
-  
+
   /**
    * Set the default assertion status for packages, used unless overridden
    * by a class request. This default also covers subpackages, unless they
@@ -958,7 +958,7 @@ public abstract class ClassLoader
         = new HashMap<String, Boolean>(StaticData.systemPackageAssertionStatus);
     packageAssertionStatus.put(name, Boolean.valueOf(enabled));
   }
-  
+
   /**
    * Set the default assertion status for a class. This only affects the
    * status of top-level classes, any other string is harmless.
@@ -976,11 +976,11 @@ public abstract class ClassLoader
   {
     if (classAssertionStatus == null)
       classAssertionStatus
-	= new HashMap<String, Boolean>(StaticData.systemClassAssertionStatus);
+        = new HashMap<String, Boolean>(StaticData.systemClassAssertionStatus);
     // The toString() hack catches null, as required.
     classAssertionStatus.put(name.toString(), Boolean.valueOf(enabled));
   }
-  
+
   /**
    * Resets the default assertion status of this classloader, its packages
    * and classes, all to false. This allows overriding defaults inherited
@@ -1007,9 +1007,9 @@ public abstract class ClassLoader
   {
     while (loader != null)
       {
-	if (this == loader)
-	  return true;
-	loader = loader.parent;
+        if (this == loader)
+          return true;
+        loader = loader.parent;
       }
     return false;
   }
@@ -1021,17 +1021,17 @@ public abstract class ClassLoader
     ArrayList list = new ArrayList();
     while (tok.hasMoreTokens())
       {
-	try
-	  {
-	    File f = new File(tok.nextToken());
-	    File[] files = f.listFiles();
-	    if (files != null)
-	      for (int i = 0; i < files.length; i++)
-		list.add(files[i].toURL());
-	  }
-	catch(Exception x)
-	  {
-	  }
+        try
+          {
+            File f = new File(tok.nextToken());
+            File[] files = f.listFiles();
+            if (files != null)
+              for (int i = 0; i < files.length; i++)
+                list.add(files[i].toURL());
+          }
+        catch(Exception x)
+          {
+          }
       }
     URL[] urls = new URL[list.size()];
     list.toArray(urls);
@@ -1042,7 +1042,7 @@ public abstract class ClassLoader
   {
     try
       {
-	list.add(new File(file).toURL());
+        list.add(new File(file).toURL());
       }
     catch(java.net.MalformedURLException x)
       {
@@ -1056,22 +1056,22 @@ public abstract class ClassLoader
     ArrayList list = new ArrayList();
     while (tok.hasMoreTokens())
       {
-	String s = tok.nextToken();
-	if (s.equals(File.pathSeparator))
-	    addFileURL(list, ".");
-	else
-	  {
-	    addFileURL(list, s);
-	    if (tok.hasMoreTokens())
-	      {
-		// Skip the separator.
-		tok.nextToken();
-		// If the classpath ended with a separator,
-		// append the current directory.
-		if (!tok.hasMoreTokens())
-		    addFileURL(list, ".");
-	      }
-	  }
+        String s = tok.nextToken();
+        if (s.equals(File.pathSeparator))
+            addFileURL(list, ".");
+        else
+          {
+            addFileURL(list, s);
+            if (tok.hasMoreTokens())
+              {
+                // Skip the separator.
+                tok.nextToken();
+                // If the classpath ended with a separator,
+                // append the current directory.
+                if (!tok.hasMoreTokens())
+                    addFileURL(list, ".");
+              }
+          }
       }
     URL[] urls = new URL[list.size()];
     list.toArray(urls);
@@ -1096,22 +1096,22 @@ public abstract class ClassLoader
   static ClassLoader createSystemClassLoader(URL[] urls, ClassLoader parent)
   {
     return
-	new URLClassLoader(urls, parent)
-	{
-	    protected synchronized Class loadClass(String name,
-		boolean resolve)
-		throws ClassNotFoundException
-	    {
-		SecurityManager sm = SecurityManager.current;
-		if (sm != null)
-		{
-		    int lastDot = name.lastIndexOf('.');
-		    if (lastDot != -1)
-			sm.checkPackageAccess(name.substring(0, lastDot));
-		}
-		return super.loadClass(name, resolve);
-	    }
-	};
+        new URLClassLoader(urls, parent)
+        {
+            protected synchronized Class loadClass(String name,
+                boolean resolve)
+                throws ClassNotFoundException
+            {
+                SecurityManager sm = SecurityManager.current;
+                if (sm != null)
+                {
+                    int lastDot = name.lastIndexOf('.');
+                    if (lastDot != -1)
+                        sm.checkPackageAccess(name.substring(0, lastDot));
+                }
+                return super.loadClass(name, resolve);
+            }
+        };
   }
 
   static ClassLoader createAuxiliarySystemClassLoader(ClassLoader parent)
@@ -1119,20 +1119,20 @@ public abstract class ClassLoader
     String loader = SystemProperties.getProperty("java.system.class.loader", null);
     if (loader == null)
       {
-	return parent;
+        return parent;
       }
     try
       {
-	Constructor c = Class.forName(loader, false, parent)
-	    .getConstructor(new Class[] { ClassLoader.class });
-	return (ClassLoader)c.newInstance(new Object[] { parent });
+        Constructor c = Class.forName(loader, false, parent)
+            .getConstructor(new Class[] { ClassLoader.class });
+        return (ClassLoader)c.newInstance(new Object[] { parent });
       }
     catch (Exception e)
       {
-	System.err.println("Requested system classloader " + loader + " failed.");
-	throw (Error)
-	    new Error("Requested system classloader " + loader + " failed.")
-		.initCause(e);
+        System.err.println("Requested system classloader " + loader + " failed.");
+        throw (Error)
+            new Error("Requested system classloader " + loader + " failed.")
+                .initCause(e);
       }
   }
 

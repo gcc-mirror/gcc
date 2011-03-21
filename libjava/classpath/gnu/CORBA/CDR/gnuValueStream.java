@@ -48,24 +48,24 @@ public interface gnuValueStream
 {
   /**
    * Get the current position in the buffer.
-   * 
+   *
    * @return The position in the buffer, taking offset into consideration.
    */
   public int getPosition();
-  
+
   /**
    * Jump to the given position, taking offset into consideration.
    */
   public void seek(int position);
-  
+
   /**
-   * Get the RunTime information. 
+   * Get the RunTime information.
    */
   public gnuRuntime getRunTime();
-  
+
   /**
-   * Replace the instance of RunTime. 
+   * Replace the instance of RunTime.
    */
   public void setRunTime(gnuRuntime a_runtime);
-  
+
 }

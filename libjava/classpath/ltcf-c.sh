@@ -423,10 +423,6 @@ else
     link_all_deplibs=yes
     ;;
 
-  freebsd1*)
-  ld_shlibs=no
-  ;;
-
   # FreeBSD 2.2.[012] allows us to include c++rt0.o to get C++ constructor
   # support.  Future versions do this automatically, but an explicit c++rt0.o
   # does not break anything, and helps significantly (at the cost of a little

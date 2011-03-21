@@ -42,26 +42,26 @@ package gnu.java.beans.encoder.elements;
 import gnu.java.beans.encoder.Writer;
 
 /**
- * 
+ *
  * @author Robert Schuster (robertschuster@fsfe.org)
  *
  */
 public class StaticMethodInvocation extends Element
 {
   final String className;
-  
+
   final String methodName;
-  
+
   public StaticMethodInvocation(String newClassName, String newMethodName)
   {
     className = newClassName;
     methodName = newMethodName;
   }
-  
+
   public void writeStart(Writer writer)
   {
     writer.write("void", new String[] { "class", "method" },
                  new String[] { className, methodName }, isEmpty());
   }
-  
+
 }

@@ -55,7 +55,7 @@ import org.omg.CosNaming.NamingContextPackage.NotFound;
  * This class implements the persistent naming service, defined by
  * {@link NamingContext}. The 'persistent' means that the service remembers the
  * mappings, stored between restarts.
- * 
+ *
  * @author Audrius Meskauskas, Lithuania (AudriusA@Bioinformatics.org)
  */
 public class PersistentContext
@@ -65,27 +65,27 @@ public class PersistentContext
    * Use serial version UID for interoperability.
    */
   private static final long serialVersionUID = 2;
-  
+
   /**
    * The folder, where the persistent context information is stored.
    */
   File contextFolder;
-  
+
   /**
    * The uinque context identifier.
    */
   static long num = System.currentTimeMillis();
-  
+
   /**
    * The naming service orb.
    */
   ORB orb;
-  
+
   /**
    * Create the persistent naming context that will store the files in the given
    * folder of the local file system. This method also connects object to the
    * passed ORB.
-   * 
+   *
    * @param an_orb the naming service ORB, used to obtain and produce the object
    *          stringified references.
    * @param folder the folder, where the persistent information is stored.
@@ -97,23 +97,23 @@ public class PersistentContext
   {
     super(
          new PersistentContextMap(an_orb, new File(folder, "contexts.txt"), reset),
-         new PersistentMap(an_orb, new File(folder, "objects.txt"), reset));         
+         new PersistentMap(an_orb, new File(folder, "objects.txt"), reset));
     contextFolder = folder;
     folder.mkdirs();
     orb = an_orb;
     orb.connect(this);
   }
-  
+
   /**
    * Get the unique context number;
-   * 
+   *
    * @return the context number
    */
   static synchronized String getNum()
   {
     return Long.toHexString(num++);
   }
-  
+
   /**
    * Create new persistent context.
    */
@@ -122,11 +122,11 @@ public class PersistentContext
     File ctxFolder = new File(contextFolder, "ctx_"+getNum());
     return new PersistentContext(orb, ctxFolder, true);
   }
-  
+
   /**
    * Create a new context and give it a given name (bound it) in the current
    * context. The method benefits from passing the better readable context name.
-   * 
+   *
    * @param a_name the name being given to the new context.
    * @return the newly created context.
    * @throws AlreadyBound if the name is already in use.
@@ -148,5 +148,5 @@ public class PersistentContext
     NamingContext child = new PersistentContext(orb, ctxFolder, true);
     bind_context(a_name, child);
     return child;
-  }  
+  }
 }

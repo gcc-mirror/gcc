@@ -1,4 +1,4 @@
-// { dg-do "compile" }
+// { dg-do compile }
 // { dg-options "-std=gnu++0x" }
 
 constexpr int verysquare(int x) { return x * x; }

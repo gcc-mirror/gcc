@@ -124,7 +124,7 @@ public abstract class Toolkit
   /** The toolkit properties. */
   private static Properties props = new Properties();
 
-  protected final Map<String,Object> desktopProperties = 
+  protected final Map<String,Object> desktopProperties =
     new Hashtable<String,Object>();
 
   protected final PropertyChangeSupport desktopPropsSupport
@@ -150,19 +150,19 @@ public abstract class Toolkit
   }
 
   /**
-   * 
+   *
    * @param target
    * @return
    * @throws HeadlessException
    */
   protected abstract DesktopPeer createDesktopPeer(Desktop target)
     throws HeadlessException;
-  
+
   /**
    * Creates a peer object for the specified <code>Button</code>.
    *
    * @param target The <code>Button</code> to create the peer for.
-   * 
+   *
    * @return The peer for the specified <code>Button</code> object.
    *
    * @exception HeadlessException If GraphicsEnvironment.isHeadless() is true.
@@ -353,7 +353,7 @@ public abstract class Toolkit
   protected abstract MenuItemPeer createMenuItem(MenuItem target);
 
   /**
-   * Returns a MouseInfoPeer. 
+   * Returns a MouseInfoPeer.
    * The default implementation of this method throws
    * UnsupportedOperationException.
    *
@@ -493,7 +493,7 @@ public abstract class Toolkit
    * Returns the dimensions of the screen in pixels.
    *
    * @return The dimensions of the screen in pixels.
-   * 
+   *
    * @exception HeadlessException If GraphicsEnvironment.isHeadless() is true.
    */
   public abstract Dimension getScreenSize();
@@ -521,7 +521,7 @@ public abstract class Toolkit
    * Returns the color model of the screen.
    *
    * @return The color model of the screen.
-   * 
+   *
    * @exception HeadlessException If GraphicsEnvironment.isHeadless() is true.
    */
   public abstract ColorModel getColorModel();
@@ -815,7 +815,7 @@ public abstract class Toolkit
   {
     if (AWTUtilities.isValidKey(keyCode))
       throw new UnsupportedOperationException
-	("cannot get locking state of key code " + keyCode);
+        ("cannot get locking state of key code " + keyCode);
 
     throw new IllegalArgumentException("invalid key code " + keyCode);
   }
@@ -835,7 +835,7 @@ public abstract class Toolkit
         && keyCode != KeyEvent.VK_NUM_LOCK
         && keyCode != KeyEvent.VK_SCROLL_LOCK)
       throw new IllegalArgumentException();
-    
+
     throw new UnsupportedOperationException();
   }
 
@@ -915,7 +915,7 @@ public abstract class Toolkit
    * Returns whether Toolkit supports this state for Frames.
    *
    * @exception HeadlessException If GraphicsEnvironment.isHeadless() is true.
-   * 
+   *
    * @since 1.4
    */
   public boolean isFrameStateSupported(int state)

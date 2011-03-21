@@ -1,4 +1,4 @@
-/* UHash32Spi.java -- 
+/* UHash32Spi.java --
    Copyright (C) 2002, 2006  Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.

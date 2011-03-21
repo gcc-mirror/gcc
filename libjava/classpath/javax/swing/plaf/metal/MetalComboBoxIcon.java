@@ -48,20 +48,20 @@ import javax.swing.Icon;
 /**
  * An icon used by the {@link MetalComboBoxUI} class.
  */
-public class MetalComboBoxIcon implements Icon, Serializable 
+public class MetalComboBoxIcon implements Icon, Serializable
 {
-  
+
   /**
    * Creates a new icon.
    */
-  public MetalComboBoxIcon() 
+  public MetalComboBoxIcon()
   {
     // nothing required.
   }
-  
+
   /**
    * Returns the icon width, which for this icon is 10 pixels.
-   * 
+   *
    * @return <code>10</code>.
    */
   public int getIconWidth()
@@ -71,7 +71,7 @@ public class MetalComboBoxIcon implements Icon, Serializable
 
   /**
    * Returns the icon height, which for this icon is 5 pixels.
-   * 
+   *
    * @return <code>5</code>.
    */
   public int getIconHeight()
@@ -81,7 +81,7 @@ public class MetalComboBoxIcon implements Icon, Serializable
 
   /**
    * Paints the icon at the location (x, y).
-   * 
+   *
    * @param c  the combo box (ignored here).
    * @param g  the graphics device.
    * @param x  the x coordinate.

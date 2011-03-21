@@ -59,7 +59,7 @@ public final class FilePermission extends Permission implements Serializable
     String action;
     int i = actionsString.indexOf(',');
     int startI = 0;
-    while (i != -1) 
+    while (i != -1)
       {
         action = actionsString.substring(startI, i).trim().toLowerCase();
         if (action.equals("read"))
@@ -70,9 +70,9 @@ public final class FilePermission extends Permission implements Serializable
           executePerm = true;
         else if (action.equals("delete"))
           deletePerm = true;
-	else
-	  throw new IllegalArgumentException("Unknown action: " + action);
-      
+        else
+          throw new IllegalArgumentException("Unknown action: " + action);
+
         startI = i + 1;
         i = actionsString.indexOf(',', startI);
       }
@@ -99,7 +99,7 @@ public final class FilePermission extends Permission implements Serializable
    *        permission represents. The actions must be "read", "write",
    *        "execute" and/or "delete".
    */
-  public FilePermission(String pathExpression, String actionsString) 
+  public FilePermission(String pathExpression, String actionsString)
   {
     // FIXME: what to do when the file string is malformed?
     super(pathExpression);
@@ -110,26 +110,26 @@ public final class FilePermission extends Permission implements Serializable
     this.actionsString = actionsString;
     checkPerms();
   }
-  
+
   /**
    * Get the actions this FilePermission supports.
    * @return the String representing the actions this FilePermission supports.
    */
-  public String getActions() 
+  public String getActions()
   {
     return actionsString;
   }
 
   /**
    * Get the hash code for this Object.<P>
-   * FilePermission's hash code is calculated as the exclusive or of the 
+   * FilePermission's hash code is calculated as the exclusive or of the
    * target
    * String's hash code and the action String's hash code.
-   * @specnote Sun did not specify how to calculate the hash code; 
+   * @specnote Sun did not specify how to calculate the hash code;
    * I made this up.
    * @return the hash code for this Object.
    */
-  public int hashCode() 
+  public int hashCode()
   {
     return getName().hashCode() ^ actionsString.hashCode();
   }
@@ -141,7 +141,7 @@ public final class FilePermission extends Permission implements Serializable
    * @param o the Object to compare to.
    * @return whether the Objects are semantically equivalent.
    */
-  public boolean equals(Object o) 
+  public boolean equals(Object o)
   {
     if (! (o instanceof FilePermission))
       return false;
@@ -152,38 +152,38 @@ public final class FilePermission extends Permission implements Serializable
 
     // Compare names, taking into account if they refer to a directory
     // and one has a separator and the other does not.
-    if (f1.length() > 0 && f1.charAt(f1.length() - 1) == File.separatorChar) 
+    if (f1.length() > 0 && f1.charAt(f1.length() - 1) == File.separatorChar)
       {
         if (f2.length() > 0
-	    && f2.charAt(f2.length() - 1) == File.separatorChar) 
+            && f2.charAt(f2.length() - 1) == File.separatorChar)
           {
-	    if (! f2.equals(f1))
-	      return false;
+            if (! f2.equals(f1))
+              return false;
           }
         else
           {
-	    if (! f2.equals(f1.substring(0, f1.length() - 1)))
-	      return false;
+            if (! f2.equals(f1.substring(0, f1.length() - 1)))
+              return false;
           }
       }
     else
       {
         if (f2.length() > 0
-	    && f2.charAt(f2.length() - 1) == File.separatorChar)
+            && f2.charAt(f2.length() - 1) == File.separatorChar)
           {
-	    if (! f1.equals(f2.substring(0, f2.length() - 1)))
-	      return false;
+            if (! f1.equals(f2.substring(0, f2.length() - 1)))
+              return false;
           }
         else
           {
-	    if (! f1.equals(f2))
-	      return false;
+            if (! f1.equals(f2))
+              return false;
           }
       }
     return (readPerm == p.readPerm
-	    && writePerm == p.writePerm
-	    && executePerm == p.executePerm
-	    && deletePerm == p.deletePerm);
+            && writePerm == p.writePerm
+            && executePerm == p.executePerm
+            && deletePerm == p.deletePerm);
   }
 
   /**
@@ -191,14 +191,14 @@ public final class FilePermission extends Permission implements Serializable
    * Permission A implies permission B if these things are all true:
    * <OL>
    * <LI>A and B are both FilePermissions.</LI>
-   * <LI>All possible files in B are included in A 
+   * <LI>All possible files in B are included in A
    * (possibly more are in A).</LI>
    * <LI>All actions B supports, A also supports.</LI>
    * </OL>
    * @param p the Permission to compare against.
    * @return whether this Permission implies p
    */
-  public boolean implies(Permission p) 
+  public boolean implies(Permission p)
   {
     if (! (p instanceof FilePermission))
       return false;
@@ -207,7 +207,7 @@ public final class FilePermission extends Permission implements Serializable
 
     if (f1.equals(ALL_FILES))
       return true;
-    
+
     FilePermission fp = (FilePermission) p;
     String f2 = fp.getName();
 
@@ -216,12 +216,12 @@ public final class FilePermission extends Permission implements Serializable
 
     try
       {
-	f1 = new File(f1).getCanonicalPath();
-	f2 = new File(f2).getCanonicalPath();
+        f1 = new File(f1).getCanonicalPath();
+        f2 = new File(f2).getCanonicalPath();
       }
     catch (IOException ioe)
       {
-	return false;
+        return false;
       }
 
     String sub1;
@@ -229,54 +229,54 @@ public final class FilePermission extends Permission implements Serializable
     switch (f1.charAt(f1.length() - 1))
       {
       case '*':
-	sub1 = f1.substring(0, f1.length() - 1); // chop off "*"
-	if (f2.length() <= sub1.length())
-	  {
-	    // If it's smaller, there is no way it could be part of
-	    // this directory.  If it's the same (or length - 1), it
-	    // could be the same directory but specifies access to
-	    // the directory rather than the files in it.
-	    return false;
-	  } 
-	else if (f2.charAt(sub1.length() - 1) == File.separatorChar)
-	  {
-	    // Make sure the part before the "/" is the same.
-	    if (! f2.substring(0, sub1.length()).equals(sub1))
-	      return false;
-	    // Make sure there are no subdirectories specified
-	    // underneath this one.
-	    if (f2.substring(sub1.length() + 1).indexOf(File.separatorChar)
-		!= -1)
-	      return false;
-	  }
-	else
-	  {
-	    // Obviously not equal: f2 is either not a directory or
-	    // is not the same directory (its name continues further
-	    // than we want).
-	    return false;
-	  }
-	break;
+        sub1 = f1.substring(0, f1.length() - 1); // chop off "*"
+        if (f2.length() <= sub1.length())
+          {
+            // If it's smaller, there is no way it could be part of
+            // this directory.  If it's the same (or length - 1), it
+            // could be the same directory but specifies access to
+            // the directory rather than the files in it.
+            return false;
+          }
+        else if (f2.charAt(sub1.length() - 1) == File.separatorChar)
+          {
+            // Make sure the part before the "/" is the same.
+            if (! f2.substring(0, sub1.length()).equals(sub1))
+              return false;
+            // Make sure there are no subdirectories specified
+            // underneath this one.
+            if (f2.substring(sub1.length() + 1).indexOf(File.separatorChar)
+                != -1)
+              return false;
+          }
+        else
+          {
+            // Obviously not equal: f2 is either not a directory or
+            // is not the same directory (its name continues further
+            // than we want).
+            return false;
+          }
+        break;
       case '-':
-	// Chop off "/-".
-	sub1 = f1.substring(0, f1.length() - 2);
-	if (f2.length() < sub1.length())
-	  {
-	    // If it's smaller, there is no way it could be part of
-	    // this directory.
-	    return false;
-	  }
-	else if (f2.length() > sub1.length()
-		 && f2.charAt(sub1.length()) != File.separatorChar)
-	  return false;
-	else if (! f2.substring(0, sub1.length()).equals(sub1))
-	  return false;
-	break;
+        // Chop off "/-".
+        sub1 = f1.substring(0, f1.length() - 2);
+        if (f2.length() < sub1.length())
+          {
+            // If it's smaller, there is no way it could be part of
+            // this directory.
+            return false;
+          }
+        else if (f2.length() > sub1.length()
+                 && f2.charAt(sub1.length()) != File.separatorChar)
+          return false;
+        else if (! f2.substring(0, sub1.length()).equals(sub1))
+          return false;
+        break;
 
       default:
-	if (!f1.equals(f2))
-	  return false;
-	break;
+        if (!f1.equals(f2))
+          return false;
+        break;
       }
 
     if (fp.readPerm && ! readPerm)
@@ -287,7 +287,7 @@ public final class FilePermission extends Permission implements Serializable
       return false;
     if (fp.deletePerm && ! deletePerm)
       return false;
-    
+
     return true;
   }
 }

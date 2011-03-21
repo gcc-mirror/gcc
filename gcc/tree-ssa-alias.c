@@ -25,6 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "tree.h"
 #include "tm_p.h"
+#include "target.h"
 #include "basic-block.h"
 #include "timevar.h"
 #include "ggc.h"
@@ -177,7 +178,7 @@ ptr_deref_may_alias_decl_p (tree ptr, tree decl)
       || (TREE_CODE (decl) != VAR_DECL
 	  && TREE_CODE (decl) != PARM_DECL
 	  && TREE_CODE (decl) != RESULT_DECL))
-    return false;
+    return true;
 
   /* Disregard pointer offsetting.  */
   if (TREE_CODE (ptr) == POINTER_PLUS_EXPR)
@@ -363,7 +364,7 @@ dump_alias_info (FILE *file)
 
   fprintf (file, "Aliased symbols\n\n");
 
-  FOR_EACH_REFERENCED_VAR (var, rvi)
+  FOR_EACH_REFERENCED_VAR (cfun, var, rvi)
     {
       if (may_be_aliased (var))
 	dump_variable (file, var);
@@ -807,7 +808,8 @@ indirect_ref_may_alias_decl_p (tree ref1 ATTRIBUTE_UNUSED, tree base1,
     return aliasing_component_refs_p (ref1, TREE_TYPE (ptrtype1),
 				      ref1_alias_set, base1_alias_set,
 				      offset1, max_size1,
-				      ref2, TREE_TYPE (base2),
+				      ref2, TREE_TYPE
+				              (reference_alias_ptr_type (ref2)),
 				      ref2_alias_set, base2_alias_set,
 				      offset2, max_size2, true);
 
@@ -1078,7 +1080,12 @@ refs_may_alias_p_1 (ao_ref *ref1, ao_ref *ref2, bool tbaa_p)
 				      ao_ref_alias_set (ref2), -1,
 				      tbaa_p);
 
+  /* We really do not want to end up here, but returning true is safe.  */
+#ifdef ENABLE_CHECKING
   gcc_unreachable ();
+#else
+  return true;
+#endif
 }
 
 bool
@@ -1417,24 +1424,10 @@ call_may_clobber_ref_p_1 (gimple call, ao_ref *ref)
 	   being the definition point for the pointer.  */
 	case BUILT_IN_MALLOC:
 	case BUILT_IN_CALLOC:
-	  /* Unix98 specifies that errno is set on allocation failure.
-	     Until we properly can track the errno location assume it
-	     is not a local decl but external or anonymous storage in
-	     a different translation unit.  Also assume it is of
-	     type int as required by the standard.  */
+	  /* Unix98 specifies that errno is set on allocation failure.  */
 	  if (flag_errno_math
-	      && TREE_TYPE (base) == integer_type_node)
-	    {
-	      struct ptr_info_def *pi;
-	      if (DECL_P (base)
-		  && !TREE_STATIC (base))
-		return true;
-	      else if ((INDIRECT_REF_P (base)
-			|| TREE_CODE (base) == MEM_REF)
-		       && TREE_CODE (TREE_OPERAND (base, 0)) == SSA_NAME
-		       && (pi = SSA_NAME_PTR_INFO (TREE_OPERAND (base, 0))))
-		return pi->pt.anything || pi->pt.nonlocal;
-	    }
+	      && targetm.ref_may_alias_errno (ref))
+	    return true;
 	  return false;
 	/* Freeing memory kills the pointed-to memory.  More importantly
 	   the call has to serve as a barrier for moving loads and stores

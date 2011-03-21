@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -43,17 +43,17 @@ import java.util.Properties;
   * This interface specifies a mechanism for accessing a JDBC database
   * driver.  When the class implementing this method is loaded, it should
   * register an instance of itself with the <code>DriverManager</code> in
-  * a static initializer.  
+  * a static initializer.
   * <p>
   * Because the <code>DriverManager</code> might attempt to use several
-  * drivers to find one that can connect to the requested database, 
+  * drivers to find one that can connect to the requested database,
   * this driver should not cause large numbers of classes and code to
   * be loaded.  If another driver is the one that ends up performing the
   * request, any loading done by this driver would be wasted.
   *
   * @author Aaron M. Renn (arenn@urbanophile.com)
   */
-public interface Driver 
+public interface Driver
 {
   /**
    * This method connects to the specified database using the connection
@@ -61,7 +61,7 @@ public interface Driver
    * URL, it should return <code>null</code> instead of throwing an
    * exception since the <code>DriverManager</code> will probe a driver
    * in this manner.
-   * 
+   *
    * @param url The URL string for this connection.
    * @param properties The list of database connection properties.
    * @return A <code>Connection</code> object for the newly established
@@ -72,12 +72,12 @@ public interface Driver
 
   /**
    * This method tests whether or not the driver believes it can connect to
-   * the specified database.  The driver should only test whether it 
-   * understands and accepts the URL. It should not necessarily attempt to 
+   * the specified database.  The driver should only test whether it
+   * understands and accepts the URL. It should not necessarily attempt to
    * probe the database for a connection.
    *
    * @param url The database URL string.
-   * @return <code>true</code> if the drivers can connect to the database, 
+   * @return <code>true</code> if the drivers can connect to the database,
    *         <code>false</code> otherwise.
    * @exception SQLException If an error occurs.
    */
@@ -101,7 +101,7 @@ public interface Driver
    * This method returns the major version number of the driver.
    *
    * @return The major version number of the driver.
-   */      
+   */
   int getMajorVersion();
 
   /**

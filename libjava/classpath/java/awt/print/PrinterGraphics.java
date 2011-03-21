@@ -42,7 +42,7 @@ package java.awt.print;
  * This interface is implemented by the <code>Graphics</code> instance that is
  * used for rendering pages. It provides a hook to return the object that is
  * controlling the print job.
- * 
+ *
  * @author Aaron M. Renn (arenn@urbanophile.com)
  */
 public interface PrinterGraphics
@@ -50,7 +50,7 @@ public interface PrinterGraphics
   /**
    * This method returns the instance of <code>PrinterJob</code> that is
    * controlling this print job.
-   * 
+   *
    * @return The <code>PrinterJob</code> that is controlling this print job.
    */
   PrinterJob getPrinterJob();

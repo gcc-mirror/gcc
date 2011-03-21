@@ -40,7 +40,7 @@ package java.security;
 /**
  * This class is the common superclass of all security exceptions.  All
  * exceptions in java.security extend this class with the exception (no
- * pun intended) of <code>AccessControlException</code> and 
+ * pun intended) of <code>AccessControlException</code> and
  * <code>CertificateException</code> (which extend
  * <code>SecurityException</code>), <code>ProviderException</code>
  * (<code>RuntimeException</code>), and <code>InvalidParamterException</code>

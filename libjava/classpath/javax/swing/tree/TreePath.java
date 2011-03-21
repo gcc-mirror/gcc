@@ -45,7 +45,7 @@ import java.util.Arrays;
  * A <code>TreePath</code> represents a sequence of tree elements that form
  * a path starting from the root of a tree.  A tree element can be represented
  * by any {@link Object}.
- * 
+ *
  * @author Andrew Selkirk
  */
 public class TreePath implements Serializable
@@ -57,7 +57,7 @@ public class TreePath implements Serializable
    * assumes that the TreePath is immutable, so it is marked final here.
    */
   private final Object[] path;
-  
+
   /**
    * The parent path (to be reused).
    */
@@ -68,9 +68,9 @@ public class TreePath implements Serializable
    * Creates a path from the list of objects representing tree elements.  The
    * incoming array is copied so that subsequent changes do not affect this
    * tree path.
-   * 
+   *
    * @param path  the elements in the path (<code>null</code> not permitted).
-   * 
+   *
    * @throws IllegalArgumentException if <code>path</code> is <code>null</code>.
    */
   public TreePath(Object[] path)
@@ -83,10 +83,10 @@ public class TreePath implements Serializable
 
   /**
    * Creates a new path from a single element.
-   * 
+   *
    * @param element the element (<code>null</code> not permitted).
-   * 
-   * @throws IllegalArgumentException if <code>element</code> is 
+   *
+   * @throws IllegalArgumentException if <code>element</code> is
    *         <code>null</code>.
    */
   public TreePath(Object element)
@@ -98,7 +98,7 @@ public class TreePath implements Serializable
   /**
    * Creates a new tree path by adding the specified <code>element</code> to
    * the <code>path</code>.
-   * 
+   *
    * @param path  a tree path.
    * @param element  a path element.
    */
@@ -117,7 +117,7 @@ public class TreePath implements Serializable
   /**
    * Creates a new tree path using the first <code>length</code> elements
    * from the given array.
-   * 
+   *
    * @param path  the path elements.
    * @param length  the path length.
    */
@@ -139,7 +139,7 @@ public class TreePath implements Serializable
 
   /**
    * Returns a hashcode for the path.
-   * 
+   *
    * @return A hashcode.
    */
   public int hashCode()
@@ -148,7 +148,7 @@ public class TreePath implements Serializable
   }
 
   /**
-   * Tests this path for equality with an arbitrary object.  An object is 
+   * Tests this path for equality with an arbitrary object.  An object is
    * considered equal to this path if and only if:
    * <ul>
    * <li>the object is not <code>null</code>;</li>
@@ -156,9 +156,9 @@ public class TreePath implements Serializable
    * <li>the object contains the same elements in the same order as this
    * {@link TreePath};</li>
    * </ul>
-   * 
+   *
    * @param object  the object (<code>null</code> permitted).
-   * 
+   *
    * @return <code>true</code> if <code>obj</code> is equal to this tree path,
    *         and <code>false</code> otherwise.
    */
@@ -188,7 +188,7 @@ public class TreePath implements Serializable
 
   /**
    * Returns a string representation of this path.
-   * 
+   *
    * @return A string representation of this path.
    */
   public String toString()
@@ -201,7 +201,7 @@ public class TreePath implements Serializable
 
   /**
    * Returns an array containing the path elements.
-   * 
+   *
    * @return An array containing the path elements.
    */
   public Object[] getPath()
@@ -211,7 +211,7 @@ public class TreePath implements Serializable
 
   /**
    * Returns the last object in the path.
-   * 
+   *
    * @return The last object in the path.
    */
   public Object getLastPathComponent()
@@ -221,7 +221,7 @@ public class TreePath implements Serializable
 
   /**
    * Returns the number of elements in the path.
-   * 
+   *
    * @return The number of elements in the path.
    */
   public int getPathCount()
@@ -231,29 +231,29 @@ public class TreePath implements Serializable
 
   /**
    * Returns the element at the specified position in the path.
-   * 
-   * @param position the element position (<code>0 &lt N - 1</code>, where 
+   *
+   * @param position the element position (<code>0 &lt N - 1</code>, where
    *                 <code>N</code> is the number of elements in the path).
-   * 
+   *
    * @return The element at the specified position.
-   * 
+   *
    * @throws IllegalArgumentException if <code>position</code> is outside the
    *         valid range.
    */
   public Object getPathComponent(int position)
   {
-    if (position < 0 || position >= getPathCount()) 
+    if (position < 0 || position >= getPathCount())
       throw new IllegalArgumentException("Invalid position: " + position);
     return path[position];
   }
 
   /**
    * Returns <code>true</code> if <code>path</code> is a descendant of this
-   * path, and <code>false</code> otherwise.  If <code>path</code> is 
+   * path, and <code>false</code> otherwise.  If <code>path</code> is
    * <code>null</code>, this method returns <code>false</code>.
-   * 
+   *
    * @param path  the path to check (<code>null</code> permitted).
-   * 
+   *
    * @return <code>true</code> if <code>path</code> is a descendant of this
    *         path, and <code>false</code> otherwise
    */
@@ -270,16 +270,16 @@ public class TreePath implements Serializable
         otherPathLength--;
         path = path.getParentPath();
       }
-    
+
     return equals(path);
   }
 
   /**
    * Creates a new path that is equivalent to this path plus the specified
    * element.
-   * 
+   *
    * @param element  the element.
-   * 
+   *
    * @return A tree path.
    */
   public TreePath pathByAddingChild(Object element)
@@ -291,7 +291,7 @@ public class TreePath implements Serializable
    * Returns the parent path, which is a path containing all the same elements
    * as this path, except for the last one.  If this path contains only one
    * element, the method returns <code>null</code>.
-   * 
+   *
    * @return The parent path, or <code>null</code> if this path has only one
    *         element.
    */
@@ -301,12 +301,12 @@ public class TreePath implements Serializable
     // is what the JDK does.
     if (path.length <= 1)
       return null;
-    
+
     // Reuse the parent path, if possible. The parent path is requested
     // during the tree repainting, so reusing generates a lot less garbage.
     if (parentPath == null)
       parentPath = new TreePath(this.getPath(), path.length - 1);
-    
+
     return parentPath;
   }
 }

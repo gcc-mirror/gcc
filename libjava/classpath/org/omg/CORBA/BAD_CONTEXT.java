@@ -43,15 +43,15 @@ import java.io.Serializable;
 /**
  * Means that the operation is invoked by a client but the passed
  * context has no values required by this operation.
- * 
+ *
  * @author Audrius Meskauskas (AudriusA@Bioinformatics.org)
  */
 public final class BAD_CONTEXT
   extends SystemException
   implements Serializable
 {
-  /** 
-   * Use serialVersionUID for interoperability. 
+  /**
+   * Use serialVersionUID for interoperability.
    */
   private static final long serialVersionUID = -5025677944847478264L;
 

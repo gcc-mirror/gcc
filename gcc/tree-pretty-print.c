@@ -232,23 +232,27 @@ dump_function_declaration (pretty_printer *buffer, tree node,
   pp_space (buffer);
   pp_character (buffer, '(');
 
-  /* Print the argument types.  The last element in the list is a VOID_TYPE.
-     The following avoids printing the last element.  */
+  /* Print the argument types.  */
   arg = TYPE_ARG_TYPES (node);
-  while (arg && TREE_CHAIN (arg) && arg != error_mark_node)
+  while (arg && arg != void_list_node && arg != error_mark_node)
     {
-      wrote_arg = true;
-      dump_generic_node (buffer, TREE_VALUE (arg), spc, flags, false);
-      arg = TREE_CHAIN (arg);
-      if (TREE_CHAIN (arg) && TREE_CODE (TREE_CHAIN (arg)) == TREE_LIST)
+      if (wrote_arg)
 	{
 	  pp_character (buffer, ',');
 	  pp_space (buffer);
 	}
+      wrote_arg = true;
+      dump_generic_node (buffer, TREE_VALUE (arg), spc, flags, false);
+      arg = TREE_CHAIN (arg);
     }
 
-  if (!wrote_arg)
+  /* Drop the trailing void_type_node if we had any previous argument.  */
+  if (arg == void_list_node && !wrote_arg)
     pp_string (buffer, "void");
+  /* Properly dump vararg function types.  */
+  else if (!arg && wrote_arg)
+    pp_string (buffer, ", ...");
+  /* Avoid printing any arg for unprototyped functions.  */
 
   pp_character (buffer, ')');
 }

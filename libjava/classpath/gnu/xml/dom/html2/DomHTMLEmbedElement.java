@@ -1,4 +1,4 @@
-/* DomHTMLEmbedElement.java -- 
+/* DomHTMLEmbedElement.java --
    Copyright (C) 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -46,7 +46,7 @@ public class DomHTMLEmbedElement
   {
     super(owner, namespaceURI, name);
   }
-  
+
   public String getJavaObject()
   {
     return getHTMLAttribute("java_object");
@@ -56,7 +56,7 @@ public class DomHTMLEmbedElement
   {
     setHTMLAttribute("java_object", object);
   }
-  
+
   public String getJavaCodeBase()
   {
     return getHTMLAttribute("java_codebase");
@@ -66,7 +66,7 @@ public class DomHTMLEmbedElement
   {
     setHTMLAttribute("java_codebase", codeBase);
   }
-  
+
   public String getJavaArchive()
   {
     return getHTMLAttribute("java_archive");
@@ -81,42 +81,42 @@ public class DomHTMLEmbedElement
   {
     setHTMLAttribute("java_code", code);
   }
-  
+
   public String getJavaCode()
   {
     return getHTMLAttribute("java_code");
   }
-  
+
   public void setJavaType(String type)
   {
     setHTMLAttribute("java_type", type);
   }
-  
+
   public String getJavaType()
   {
     return getHTMLAttribute("java_type");
   }
-  
+
   public void setType(String type)
   {
     setHTMLAttribute("type", type);
   }
-  
+
   public String getType()
   {
     return getHTMLAttribute("type");
   }
-  
+
   public String getPluginsPage()
   {
     return getHTMLAttribute("pluginspage");
   }
-  
+
   public void setPluginsPage(String pluginspage)
   {
     setHTMLAttribute("pluginspage", pluginspage);
   }
-  
+
   public String getMayscript()
   {
     return getHTMLAttribute("mayscript");

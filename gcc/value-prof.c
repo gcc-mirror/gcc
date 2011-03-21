@@ -1,5 +1,5 @@
 /* Transformations based on profile information for values.
-   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -474,8 +474,12 @@ check_counter (gimple stmt, const char * name,
       else
 	{
 	  error_at (locus, "corrupted value profile: %s "
-		    "profiler overall count (%d) does not match BB count (%d)",
-		    name, (int)*all, (int)bb_count);
+		    "profile counter (%d out of %d) inconsistent with "
+		    "basic-block count (%d)",
+		    name,
+		    (int) *count,
+		    (int) *all,
+		    (int) bb_count);
 	  return true;
 	}
     }
@@ -1400,6 +1404,21 @@ gimple_stringop_fixed_value (gimple vcall_stmt, tree icall_size, int prob,
 
   e_vj->probability = REG_BR_PROB_BASE;
   e_vj->count = all - count;
+
+  /* Insert PHI node for the call result if necessary.  */
+  if (gimple_call_lhs (vcall_stmt)
+      && TREE_CODE (gimple_call_lhs (vcall_stmt)) == SSA_NAME)
+    {
+      tree result = gimple_call_lhs (vcall_stmt);
+      gimple phi = create_phi_node (result, join_bb);
+      SSA_NAME_DEF_STMT (result) = phi;
+      gimple_call_set_lhs (vcall_stmt,
+			   make_ssa_name (SSA_NAME_VAR (result), vcall_stmt));
+      add_phi_arg (phi, gimple_call_lhs (vcall_stmt), e_vj, UNKNOWN_LOCATION);
+      gimple_call_set_lhs (icall_stmt,
+			   make_ssa_name (SSA_NAME_VAR (result), icall_stmt));
+      add_phi_arg (phi, gimple_call_lhs (icall_stmt), e_ij, UNKNOWN_LOCATION);
+    }
 
   /* Because these are all string op builtins, they're all nothrow.  */
   gcc_assert (!stmt_could_throw_p (vcall_stmt));

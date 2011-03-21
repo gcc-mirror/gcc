@@ -1,4 +1,4 @@
-/* GnuRSAPrivateKey.java -- 
+/* GnuRSAPrivateKey.java --
    Copyright 2001, 2002, 2003, 2006 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -92,7 +92,7 @@ public class GnuRSAPrivateKey
    * Convenience constructor. Calls the constructor with 5 arguments passing
    * {@link Registry#RAW_ENCODING_ID} as the identifier of the preferred
    * encoding format.
-   * 
+   *
    * @param p the modulus first prime divisor.
    * @param q the modulus second prime divisor.
    * @param e the public exponent.
@@ -106,7 +106,7 @@ public class GnuRSAPrivateKey
   /**
    * Constructs a new instance of a <code>GnuRSAPrivateKey</code> given the
    * designated arguments.
-   * 
+   *
    * @param preferredFormat the indetifier of the preferred encoding format to
    *          use when externalizing this key.
    * @param p the modulus first prime divisor.
@@ -128,7 +128,7 @@ public class GnuRSAPrivateKey
   /**
    * Constructs a new instance of a <code>GnuRSAPrivateKey</code> given the
    * designated arguments.
-   * 
+   *
    * @param preferredFormat the indetifier of the preferred encoding format to
    *          use when externalizing this key.
    * @param n the public modulus, which is also the product of <code>p</code>
@@ -173,7 +173,7 @@ public class GnuRSAPrivateKey
    * method of an RSA keypair codec object (an instance implementing
    * {@link IKeyPairCodec} for RSA keys, and re-constructs an instance of this
    * object.
-   * 
+   *
    * @param k the contents of a previously encoded instance of this object.
    * @throws ArrayIndexOutOfBoundsException if there is not enough bytes, in
    *           <code>k</code>, to represent a valid encoding of an instance
@@ -229,7 +229,7 @@ public class GnuRSAPrivateKey
   /**
    * Returns the encoded form of this private key according to the designated
    * format.
-   * 
+   *
    * @param format the desired format identifier of the resulting encoding.
    * @return the byte sequence encoding this key according to the designated
    *         format.
@@ -258,7 +258,7 @@ public class GnuRSAPrivateKey
   /**
    * Returns <code>true</code> if the designated object is an instance of this
    * class and has the same RSA parameter values as this one.
-   * 
+   *
    * @param obj the other non-null RSA key to compare to.
    * @return <code>true</code> if the designated object is of the same type
    *         and value as this one.

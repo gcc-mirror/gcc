@@ -1,4 +1,4 @@
-/* MaxInclusiveFacet.java -- 
+/* MaxInclusiveFacet.java --
    Copyright (C) 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -49,7 +49,7 @@ import java.util.Date;
 public final class MaxInclusiveFacet
   extends Facet
 {
-  
+
   public final Object value;
 
   public final boolean fixed;
@@ -60,7 +60,7 @@ public final class MaxInclusiveFacet
     this.value = value;
     this.fixed = fixed;
   }
-  
+
   public int hashCode()
   {
     return value.hashCode();
@@ -71,7 +71,7 @@ public final class MaxInclusiveFacet
     return (other instanceof MaxInclusiveFacet &&
             ((MaxInclusiveFacet) other).value.equals(value));
   }
-  
+
   boolean matches(Object test)
   {
     if (value instanceof Date)
@@ -107,6 +107,5 @@ public final class MaxInclusiveFacet
       return false;
     return ((Number) test).doubleValue() <= nvalue.doubleValue();
   }
-  
-}
 
+}

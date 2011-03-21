@@ -63,7 +63,7 @@ public interface PolicyOperations
    * Return an integer number, corresponding the type of this policy.
    * The values, defining the different policy types, are allocated
    * by OMG (request AT omg DOT org).
-   * 
+   *
    * @return the integer policy code.
    */
   int policy_type();

@@ -1,4 +1,4 @@
-/* FileChannelImpl.java -- 
+/* FileChannelImpl.java --
    Copyright (C) 2002, 2004, 2005, 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -58,7 +58,7 @@ import java.nio.channels.WritableByteChannel;
 /**
  * This file is not user visible !
  * But alas, Java does not have a concept of friendly packages
- * so this class is public. 
+ * so this class is public.
  * Instances of this class are created by invoking getChannel
  * Upon a Input/Output/RandomAccessFile object.
  */
@@ -86,7 +86,7 @@ public final class FileChannelImpl extends FileChannel
       {
         System.loadLibrary("javanio");
       }
-    
+
     //init();
 
     FileChannelImpl ch = null;
@@ -99,7 +99,7 @@ public final class FileChannelImpl extends FileChannel
         throw new Error(ioe);
       }
     in = ch;
-    
+
     ch = null;
     try
       {
@@ -110,11 +110,11 @@ public final class FileChannelImpl extends FileChannel
         throw new Error(ioe);
       }
     out = ch;
-    
+
     ch = null;
     try
       {
-        ch = new FileChannelImpl(VMChannel.getStderr(), WRITE);        
+        ch = new FileChannelImpl(VMChannel.getStderr(), WRITE);
       }
     catch (IOException ioe)
       {
@@ -154,16 +154,16 @@ public final class FileChannelImpl extends FileChannel
     // to avoid race condition.
     if (file.isDirectory())
       {
-	try 
-	  {
-	    close();
-	  }
-	catch (IOException e)
-	  {
-	    /* ignore it */
-	  }
+        try
+          {
+            close();
+          }
+        catch (IOException e)
+          {
+            /* ignore it */
+          }
 
-	throw new FileNotFoundException(description + " is a directory");
+        throw new FileNotFoundException(description + " is a directory");
       }
   }
 
@@ -202,7 +202,7 @@ public final class FileChannelImpl extends FileChannel
   {
     ch.truncate(size);
   }
-  
+
   public void unlock(long pos, long len) throws IOException
   {
     ch.unlock(pos, len);
@@ -212,7 +212,7 @@ public final class FileChannelImpl extends FileChannel
   {
     return ch.size();
   }
-    
+
   protected void implCloseChannel() throws IOException
   {
     ch.close();
@@ -241,7 +241,7 @@ public final class FileChannelImpl extends FileChannel
     position (position);
     int result = read(dst);
     position (oldPosition);
-    
+
     return result;
   }
 
@@ -260,7 +260,7 @@ public final class FileChannelImpl extends FileChannel
   {
     return ch.write(src);
   }
-    
+
   public int write (ByteBuffer src, long position)
     throws IOException
   {
@@ -269,7 +269,7 @@ public final class FileChannelImpl extends FileChannel
 
     if (!isOpen ())
       throw new ClosedChannelException ();
-    
+
     if ((mode & WRITE) == 0)
        throw new NonWritableChannelException ();
 
@@ -280,7 +280,7 @@ public final class FileChannelImpl extends FileChannel
     seek (position);
     result = write(src);
     seek (oldPosition);
-    
+
     return result;
   }
 
@@ -296,30 +296,30 @@ public final class FileChannelImpl extends FileChannel
   }
 
   public MappedByteBuffer map (FileChannel.MapMode mode,
-			       long position, long size)
+                               long position, long size)
     throws IOException
   {
     char nmode = 0;
     if (mode == MapMode.READ_ONLY)
       {
-	nmode = 'r';
-	if ((this.mode & READ) == 0)
-	  throw new NonReadableChannelException();
+        nmode = 'r';
+        if ((this.mode & READ) == 0)
+          throw new NonReadableChannelException();
       }
     else if (mode == MapMode.READ_WRITE || mode == MapMode.PRIVATE)
       {
-	nmode = mode == MapMode.READ_WRITE ? '+' : 'c';
-	if ((this.mode & WRITE) != WRITE)
-	  throw new NonWritableChannelException();
-	if ((this.mode & READ) != READ)
-	  throw new NonReadableChannelException();
+        nmode = mode == MapMode.READ_WRITE ? '+' : 'c';
+        if ((this.mode & WRITE) != WRITE)
+          throw new NonWritableChannelException();
+        if ((this.mode & READ) != READ)
+          throw new NonReadableChannelException();
       }
     else
       throw new IllegalArgumentException ("mode: " + mode);
-    
+
     if (position < 0 || size < 0 || size > Integer.MAX_VALUE)
       throw new IllegalArgumentException ("position: " + position
-					  + ", size: " + size);
+                                          + ", size: " + size);
     return ch.map(nmode, position, (int) size);
   }
 
@@ -335,99 +335,99 @@ public final class FileChannelImpl extends FileChannel
   }
 
   // like transferTo, but with a count of less than 2Gbytes
-  private int smallTransferTo (long position, int count, 
-			       WritableByteChannel target)
+  private int smallTransferTo (long position, int count,
+                               WritableByteChannel target)
     throws IOException
   {
     ByteBuffer buffer;
     try
       {
-	// Try to use a mapped buffer if we can.  If this fails for
-	// any reason we'll fall back to using a ByteBuffer.
-	buffer = map (MapMode.READ_ONLY, position, count);
+        // Try to use a mapped buffer if we can.  If this fails for
+        // any reason we'll fall back to using a ByteBuffer.
+        buffer = map (MapMode.READ_ONLY, position, count);
       }
     catch (IOException e)
       {
-	buffer = ByteBuffer.allocate (count);
-	read (buffer, position);
-	buffer.flip();
+        buffer = ByteBuffer.allocate (count);
+        read (buffer, position);
+        buffer.flip();
       }
 
     return target.write (buffer);
   }
 
-  public long transferTo (long position, long count, 
-			  WritableByteChannel target)
+  public long transferTo (long position, long count,
+                          WritableByteChannel target)
     throws IOException
   {
     if (position < 0
         || count < 0)
       throw new IllegalArgumentException ("position: " + position
-					  + ", count: " + count);
+                                          + ", count: " + count);
 
     if (!isOpen ())
       throw new ClosedChannelException ();
 
     if ((mode & READ) == 0)
        throw new NonReadableChannelException ();
-   
+
     final int pageSize = 65536;
     long total = 0;
 
     while (count > 0)
       {
-	int transferred 
-	  = smallTransferTo (position, (int)Math.min (count, pageSize), 
-			     target);
-	if (transferred < 0)
-	  break;
-	total += transferred;
-	position += transferred;
-	count -= transferred;
+        int transferred
+          = smallTransferTo (position, (int)Math.min (count, pageSize),
+                             target);
+        if (transferred < 0)
+          break;
+        total += transferred;
+        position += transferred;
+        count -= transferred;
       }
 
     return total;
   }
 
   // like transferFrom, but with a count of less than 2Gbytes
-  private int smallTransferFrom (ReadableByteChannel src, long position, 
-				 int count)
+  private int smallTransferFrom (ReadableByteChannel src, long position,
+                                 int count)
     throws IOException
   {
     ByteBuffer buffer = null;
 
     if (src instanceof FileChannel)
       {
-	try
-	  {
-	    // Try to use a mapped buffer if we can.  If this fails
-	    // for any reason we'll fall back to using a ByteBuffer.
-	    buffer = ((FileChannel)src).map (MapMode.READ_ONLY, position, 
-					     count);
-	  }
-	catch (IOException e)
-	  {
-	  }
+        try
+          {
+            // Try to use a mapped buffer if we can.  If this fails
+            // for any reason we'll fall back to using a ByteBuffer.
+            buffer = ((FileChannel)src).map (MapMode.READ_ONLY, position,
+                                             count);
+          }
+        catch (IOException e)
+          {
+          }
       }
 
     if (buffer == null)
       {
-	buffer = ByteBuffer.allocate (count);
-	src.read (buffer);
-	buffer.flip();
+        buffer = ByteBuffer.allocate (count);
+        src.read (buffer);
+        buffer.flip();
       }
 
     return write (buffer, position);
   }
 
-  public long transferFrom (ReadableByteChannel src, long position, 
-			    long count)
+  public long transferFrom (ReadableByteChannel src, long position,
+                            long count)
     throws IOException
   {
     if (position < 0
         || count < 0)
       throw new IllegalArgumentException ("position: " + position
-					  + ", count: " + count);
+                                          + ", count: " + count);
 
     if (!isOpen ())
       throw new ClosedChannelException ();
@@ -440,13 +440,13 @@ public final class FileChannelImpl extends FileChannel
 
     while (count > 0)
       {
-	int transferred = smallTransferFrom (src, position, 
-					     (int)Math.min (count, pageSize));
-	if (transferred < 0)
-	  break;
-	total += transferred;
-	position += transferred;
-	count -= transferred;
+        int transferred = smallTransferFrom (src, position,
+                                             (int)Math.min (count, pageSize));
+        if (transferred < 0)
+          break;
+        total += transferred;
+        position += transferred;
+        count -= transferred;
       }
 
     return total;
@@ -459,14 +459,14 @@ public final class FileChannelImpl extends FileChannel
     if (position < 0
         || size < 0)
       throw new IllegalArgumentException ("position: " + position
-					  + ", size: " + size);
+                                          + ", size: " + size);
 
     if (!isOpen ())
       throw new ClosedChannelException();
 
     if (shared && ((mode & READ) == 0))
       throw new NonReadableChannelException();
-	
+
     if (!shared && ((mode & WRITE) == 0))
       throw new NonWritableChannelException();
   }
@@ -479,19 +479,19 @@ public final class FileChannelImpl extends FileChannel
     boolean completed = false;
     try
       {
-	begin();
-	boolean lockable = ch.lock(position, size, shared, false);
-	completed = true;
-	return (lockable
-		? new FileLockImpl(this, position, size, shared)
-		: null);
+        begin();
+        boolean lockable = ch.lock(position, size, shared, false);
+        completed = true;
+        return (lockable
+                ? new FileLockImpl(this, position, size, shared)
+                : null);
       }
     finally
       {
-	end(completed);
+        end(completed);
       }
   }
-  
+
   public FileLock lock (long position, long size, boolean shared)
     throws IOException
   {
@@ -500,15 +500,15 @@ public final class FileChannelImpl extends FileChannel
     boolean completed = false;
     try
       {
-	boolean lockable = ch.lock(position, size, shared, true);
-	completed = true;
-	return (lockable
-		? new FileLockImpl(this, position, size, shared)
-		: null);
+        boolean lockable = ch.lock(position, size, shared, true);
+        completed = true;
+        return (lockable
+                ? new FileLockImpl(this, position, size, shared)
+                : null);
       }
     finally
       {
-	end(completed);
+        end(completed);
       }
   }
 
@@ -520,7 +520,7 @@ public final class FileChannelImpl extends FileChannel
 
     return implPosition ();
   }
-  
+
   public FileChannel position (long newPosition)
     throws IOException
   {
@@ -535,7 +535,7 @@ public final class FileChannelImpl extends FileChannel
     seek (newPosition);
     return this;
   }
-  
+
   public FileChannel truncate (long size)
     throws IOException
   {
@@ -557,9 +557,9 @@ public final class FileChannelImpl extends FileChannel
   public String toString()
   {
     return (super.toString()
-	    + "[ fd: " + ch.getState()
-	    + "; mode: " + Integer.toOctalString(mode)
-	    + "; " + description + " ]");
+            + "[ fd: " + ch.getState()
+            + "; mode: " + Integer.toOctalString(mode)
+            + "; " + description + " ]");
   }
 
   /**

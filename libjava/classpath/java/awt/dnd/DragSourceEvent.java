@@ -50,7 +50,7 @@ public class DragSourceEvent extends EventObject
    * Compatible with JDK 1.2+
    */
   private static final long serialVersionUID = -763287114604032641L;
-  
+
   private final boolean locationSpecified;
   private final int x;
   private final int y;

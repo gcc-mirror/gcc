@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2010, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2011, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -2216,58 +2216,6 @@ build_allocator (tree type, tree init, tree result_type, Entity_Id gnat_proc,
   return convert (result_type, result);
 }
 
-/* Fill in a VMS descriptor for EXPR and return a constructor for it.
-   GNAT_FORMAL is how we find the descriptor record.  GNAT_ACTUAL is
-   how we derive the source location to raise C_E on an out of range
-   pointer. */
-
-tree
-fill_vms_descriptor (tree expr, Entity_Id gnat_formal, Node_Id gnat_actual)
-{
-  tree parm_decl = get_gnu_tree (gnat_formal);
-  tree record_type = TREE_TYPE (TREE_TYPE (parm_decl));
-  tree field;
-  const bool do_range_check
-    = strcmp ("MBO",
-	      IDENTIFIER_POINTER (DECL_NAME (TYPE_FIELDS (record_type))));
-  VEC(constructor_elt,gc) *v = NULL;
-
-  expr = maybe_unconstrained_array (expr);
-  gnat_mark_addressable (expr);
-
-  for (field = TYPE_FIELDS (record_type); field; field = DECL_CHAIN (field))
-    {
-      tree conexpr = convert (TREE_TYPE (field),
-			      SUBSTITUTE_PLACEHOLDER_IN_EXPR
-			      (DECL_INITIAL (field), expr));
-
-      /* Check to ensure that only 32-bit pointers are passed in
-	 32-bit descriptors */
-      if (do_range_check
-          && strcmp (IDENTIFIER_POINTER (DECL_NAME (field)), "POINTER") == 0)
-        {
-	  tree pointer64type
-	    = build_pointer_type_for_mode (void_type_node, DImode, false);
-	  tree addr64expr = build_unary_op (ADDR_EXPR, pointer64type, expr);
-	  tree malloc64low
-	    = build_int_cstu (long_integer_type_node, 0x80000000);
-
-	  add_stmt (build3 (COND_EXPR, void_type_node,
-			    build_binary_op (GE_EXPR, boolean_type_node,
-					     convert (long_integer_type_node,
-						      addr64expr),
-					     malloc64low),
-			    build_call_raise (CE_Range_Check_Failed,
-					      gnat_actual,
-					      N_Raise_Constraint_Error),
-			    NULL_TREE));
-        }
-      CONSTRUCTOR_APPEND_ELT (v, field, conexpr);
-    }
-
-  return gnat_build_constructor (record_type, v);
-}
-
 /* Indicate that we need to take the address of T and that it therefore
    should not be allocated in a register.  Returns true if successful.  */
 

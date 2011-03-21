@@ -1,5 +1,5 @@
 ! { dg-lto-do link }
-! { dg-lto-options {{-flto -g -fPIC -shared} {-O -flto -g -fPIC -shared}} }
+! { dg-lto-options {{-flto -g -fPIC -r -nostdlib} {-O -flto -g -fPIC -r -nostdlib}} }
 
       FUNCTION makenumberstring(x)
       IMPLICIT NONE

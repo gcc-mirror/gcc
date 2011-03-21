@@ -55,7 +55,9 @@ _GLIBCXX_LOC_ID (_ZNSt9money_putIwSt19ostreambuf_iteratorIwSt11char_traitsIwEEE2
 # endif
 #endif
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // Definitions for static const data members of locale.
   const locale::category 	locale::none;
@@ -438,4 +440,5 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     return _M_index - 1;
   }
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace

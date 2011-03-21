@@ -1,6 +1,6 @@
 ; Options for the language- and target-independent parts of the compiler.
 
-; Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+; Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
 ; Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
@@ -31,6 +31,11 @@ int optimize
 
 Variable
 int optimize_size
+
+; Not used directly to control optimizations, only to save -Ofast
+; setting for "optimize" attributes.
+Variable
+int optimize_fast
 
 ; 0 means straightforward implementation of complex divide acceptable.
 ; 1 means wide ranges of inputs must work for complex divide.
@@ -712,6 +717,13 @@ Driver
 e
 Driver Joined Separate
 
+; This option has historically been passed down to the linker by an
+; accident of a %{e*} spec, so ensure it continues to be passed down
+; as a single option.  The supported option for this purpose is
+; -rdynamic.  See PR 47390.
+export-dynamic
+Driver Undocumented
+
 ; The version of the C++ ABI in use.  The following values are allowed:
 ;
 ; 0: The version of the ABI believed most conformant with the C++ ABI
@@ -727,7 +739,12 @@ Driver Joined Separate
 ;    in template non-type arguments of pointer type.
 ;
 ; 4: The version of the ABI that introduces unambiguous mangling of
-;    vector types.
+;    vector types.  First selectable in G++ 4.5.
+;
+; 5: The version of the ABI that ignores attribute const/noreturn
+;    in function pointer mangling, and corrects mangling of decltype and
+;    function parameters used in other parameters and the return type.
+;    First selectable in G++ 4.6.
 ;
 ; Additional positive integers will be assigned as new versions of
 ; the ABI become the default version of the ABI.
@@ -853,6 +870,10 @@ fcompare-debug-second
 Common Driver RejectNegative Var(flag_compare_debug)
 Run only the second compilation of -fcompare-debug
 
+fcompare-elim
+Common Report Var(flag_compare_elim_after_reload) Optimization
+Perform comparison elimination after register allocation has finished
+
 fconserve-stack
 Common Var(flag_conserve_stack) Optimization
 Do not perform optimizations increasing noticeably stack usage
@@ -874,7 +895,7 @@ Common Ignore
 Does nothing.  Preserved for backward compatibility.
 
 fcx-limited-range
-Common Report Var(flag_cx_limited_range) Optimization
+Common Report Var(flag_cx_limited_range) Optimization SetByCombined
 Omit range reduction step when performing complex division
 
 fcx-fortran-rules
@@ -910,6 +931,10 @@ Attempt to fill delay slots of branch instructions
 fdelete-null-pointer-checks
 Common Report Var(flag_delete_null_pointer_checks) Init(1) Optimization
 Delete useless null pointer checks
+
+fdevirtualize
+Common Report Var(flag_devirtualize) Optimization
+Try to convert virtual calls to direct ones.
 
 fdiagnostics-show-location=
 Common Joined RejectNegative Enum(diagnostic_prefixing_rule)
@@ -987,10 +1012,6 @@ femit-class-debug-always
 Common Report Var(flag_emit_class_debug_always) Init(0)
 Do not suppress C++ class debug information.
 
-fenable-icf-debug
-Common Report Var(flag_enable_icf_debug)
-Generate debug information to support Identical Code Folding (ICF)
-
 fexceptions
 Common Report Var(flag_exceptions) Optimization
 Enable exception handling
@@ -1016,7 +1037,7 @@ ffast-math
 Common
 
 ffinite-math-only
-Common Report Var(flag_finite_math_only) Optimization
+Common Report Var(flag_finite_math_only) Optimization SetByCombined
 Assume no NaNs or infinities are generated
 
 ffixed-
@@ -1332,7 +1353,7 @@ Common Report Var(flag_lto_report) Init(0) Optimization
 Report various link-time optimization statistics
 
 fmath-errno
-Common Report Var(flag_errno_math) Init(1) Optimization
+Common Report Var(flag_errno_math) Init(1) Optimization SetByCombined
 Set errno after built-in math functions
 
 fmax-errors=
@@ -1569,7 +1590,7 @@ Common Ignore
 Does nothing.  Preserved for backward compatibility.
 
 frounding-math
-Common Report Var(flag_rounding_math) Optimization
+Common Report Var(flag_rounding_math) Optimization SetByCombined
 Disable optimizations that assume default FP rounding behavior
 
 fsched-interblock
@@ -1698,11 +1719,11 @@ Common Report Var(flag_show_column) Init(1)
 Show column numbers in diagnostics, when available.  Default on
 
 fsignaling-nans
-Common Report Var(flag_signaling_nans) Optimization
+Common Report Var(flag_signaling_nans) Optimization SetByCombined
 Disable optimizations observable by IEEE signaling NaNs
 
 fsigned-zeros
-Common Report Var(flag_signed_zeros) Init(1) Optimization
+Common Report Var(flag_signed_zeros) Init(1) Optimization SetByCombined
 Disable floating point optimizations that ignore the IEEE signedness of zero
 
 fsingle-precision-constant
@@ -1819,7 +1840,7 @@ Perform superblock formation via tail duplication
 ; (user-visible) trap.  This is the case, for example, in nonstop
 ; IEEE 754 arithmetic.
 ftrapping-math
-Common Report Var(flag_trapping_math) Init(1) Optimization
+Common Report Var(flag_trapping_math) Init(1) Optimization SetByCombined
 Assume floating-point operations can trap
 
 ftrapv
@@ -1895,8 +1916,8 @@ Common Report Var(flag_tree_loop_im) Init(1) Optimization
 Enable loop invariant motion on trees
 
 ftree-loop-linear
-Common Report Var(flag_tree_loop_linear) Optimization
-Enable linear loop transforms on trees
+Common Alias(floop-interchange)
+Enable loop interchange transforms.  Same as -floop-interchange
 
 ftree-loop-ivcanon
 Common Report Var(flag_tree_loop_ivcanon) Init(1) Optimization
@@ -1970,12 +1991,12 @@ Common Report Var(flag_unsafe_loop_optimizations) Optimization
 Allow loop optimizations to assume that the loops behave in normal way
 
 fassociative-math
-Common Report Var(flag_associative_math)
+Common Report Var(flag_associative_math) SetByCombined
 Allow optimization for floating-point arithmetic which may change the
 result of the operation due to rounding.
 
 freciprocal-math
-Common Report Var(flag_reciprocal_math)
+Common Report Var(flag_reciprocal_math) SetByCombined
 Same as -fassociative-math for expressions which include division.
 
 ; Nonzero means that unsafe floating-point math optimizations are allowed
@@ -1983,7 +2004,7 @@ Same as -fassociative-math for expressions which include division.
 ; are allowed to assume that their arguments and results are "normal"
 ; (e.g., nonnegative for SQRT).
 funsafe-math-optimizations
-Common Report Var(flag_unsafe_math_optimizations) Optimization
+Common Report Var(flag_unsafe_math_optimizations) Optimization SetByCombined
 Allow math optimizations that may violate IEEE or ISO standards
 
 funswitch-loops
@@ -2166,6 +2187,9 @@ no-canonical-prefixes
 Driver
 
 nodefaultlibs
+Driver
+
+nostartfiles
 Driver
 
 nostdlib

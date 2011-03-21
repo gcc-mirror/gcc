@@ -18,10 +18,11 @@ avx_test (void)
   double s[4] = {1.1, 2.2, 3.3, 4.4};
   double e [4] = {0.0};
   double d [4] = {0.0};
-  union256d src, mask;
+  union256d src;
+  union256i_q mask;
   
   src.x = _mm256_loadu_pd (s);
-  mask.x = _mm256_loadu_pd ((double*)m);
+  mask.x = _mm256_loadu_si256 ((__m256i *)m);
   _mm256_maskstore_pd (d, mask.x, src.x);
 
   for (i = 0 ; i < 4; i++) 

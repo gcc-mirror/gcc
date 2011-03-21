@@ -1,8 +1,10 @@
 /*
 
 @deftypefn Supplemental int vprintf (const char *@var{format}, va_list @var{ap})
-@deftypefnx Supplemental int vfprintf (FILE *@var{stream}, const char *@var{format}, va_list @var{ap})
-@deftypefnx Supplemental int vsprintf (char *@var{str}, const char *@var{format}, va_list @var{ap})
+@deftypefnx Supplemental int vfprintf (FILE *@var{stream}, @
+  const char *@var{format}, va_list @var{ap})
+@deftypefnx Supplemental int vsprintf (char *@var{str}, @
+  const char *@var{format}, va_list @var{ap})
 
 These functions are the same as @code{printf}, @code{fprintf}, and
 @code{sprintf}, respectively, except that they are called with a

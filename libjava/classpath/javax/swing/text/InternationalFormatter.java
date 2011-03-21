@@ -206,7 +206,7 @@ public class InternationalFormatter
    * one of the mentioned methods in order to customize behaviour.
    *
    * @param ftf the {@link JFormattedTextField} in which this formatter
-   *     is installed 
+   *     is installed
    */
   public void install(JFormattedTextField ftf)
   {

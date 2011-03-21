@@ -1,6 +1,6 @@
 /* Subroutines for insn-output.c for ATMEL AVR micro controllers
    Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004, 2005, 2006, 2007, 2008,
-   2009, 2010 Free Software Foundation, Inc.
+   2009, 2010, 2011 Free Software Foundation, Inc.
    Contributed by Denis Chertykov (chertykov@gmail.com)
 
    This file is part of GCC.
@@ -73,7 +73,10 @@ static void avr_file_end (void);
 static bool avr_legitimate_address_p (enum machine_mode, rtx, bool);
 static void avr_asm_function_end_prologue (FILE *);
 static void avr_asm_function_begin_epilogue (FILE *);
+static bool avr_cannot_modify_jumps_p (void);
 static rtx avr_function_value (const_tree, const_tree, bool);
+static rtx avr_libcall_value (enum machine_mode, const_rtx);
+static bool avr_function_value_regno_p (const unsigned int);
 static void avr_insert_attributes (tree, tree *);
 static void avr_asm_init_sections (void);
 static unsigned int avr_section_type_flags (tree, const char *, int);
@@ -81,6 +84,8 @@ static unsigned int avr_section_type_flags (tree, const char *, int);
 static void avr_reorg (void);
 static void avr_asm_out_ctor (rtx, int);
 static void avr_asm_out_dtor (rtx, int);
+static int avr_register_move_cost (enum machine_mode, reg_class_t, reg_class_t);
+static int avr_memory_move_cost (enum machine_mode, reg_class_t, bool);
 static int avr_operand_rtx_cost (rtx, enum machine_mode, enum rtx_code, bool);
 static bool avr_rtx_costs (rtx, int, int, int *, bool);
 static int avr_address_cost (rtx, bool);
@@ -96,6 +101,7 @@ static rtx avr_function_arg (CUMULATIVE_ARGS *, enum machine_mode,
 			     const_tree, bool);
 static void avr_function_arg_advance (CUMULATIVE_ARGS *, enum machine_mode,
 				      const_tree, bool);
+static void avr_help (void);
 
 /* Allocate registers from r25 to r8 for parameters for function calls.  */
 #define FIRST_CUM_REG 26
@@ -162,8 +168,14 @@ static const struct default_options avr_option_optimization_table[] =
 #define TARGET_ASM_FUNCTION_END_PROLOGUE avr_asm_function_end_prologue
 #undef TARGET_ASM_FUNCTION_BEGIN_EPILOGUE
 #define TARGET_ASM_FUNCTION_BEGIN_EPILOGUE avr_asm_function_begin_epilogue
+
 #undef TARGET_FUNCTION_VALUE
 #define TARGET_FUNCTION_VALUE avr_function_value
+#undef TARGET_LIBCALL_VALUE
+#define TARGET_LIBCALL_VALUE avr_libcall_value
+#undef TARGET_FUNCTION_VALUE_REGNO_P
+#define TARGET_FUNCTION_VALUE_REGNO_P avr_function_value_regno_p
+
 #undef TARGET_ATTRIBUTE_TABLE
 #define TARGET_ATTRIBUTE_TABLE avr_attribute_table
 #undef TARGET_ASM_FUNCTION_RODATA_SECTION
@@ -172,6 +184,10 @@ static const struct default_options avr_option_optimization_table[] =
 #define TARGET_INSERT_ATTRIBUTES avr_insert_attributes
 #undef TARGET_SECTION_TYPE_FLAGS
 #define TARGET_SECTION_TYPE_FLAGS avr_section_type_flags
+#undef TARGET_REGISTER_MOVE_COST
+#define TARGET_REGISTER_MOVE_COST avr_register_move_cost
+#undef TARGET_MEMORY_MOVE_COST
+#define TARGET_MEMORY_MOVE_COST avr_memory_move_cost
 #undef TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS avr_rtx_costs
 #undef TARGET_ADDRESS_COST
@@ -217,6 +233,12 @@ static const struct default_options avr_option_optimization_table[] =
 #undef TARGET_OPTION_OPTIMIZATION_TABLE
 #define TARGET_OPTION_OPTIMIZATION_TABLE avr_option_optimization_table
 
+#undef TARGET_CANNOT_MODIFY_JUMPS_P
+#define TARGET_CANNOT_MODIFY_JUMPS_P avr_cannot_modify_jumps_p
+
+#undef TARGET_HELP
+#define TARGET_HELP avr_help
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 static void
@@ -232,10 +254,8 @@ avr_option_override (void)
 
   if (!t->name)
     {
-      fprintf (stderr, "unknown MCU '%s' specified\nKnown MCU names:\n",
-	       avr_mcu_name);
-      for (t = avr_mcu_types; t->name; t++)
-	fprintf (stderr,"   %s\n", t->name);
+      error ("unrecognized argument to -mmcu= option: %qs", avr_mcu_name);
+      inform (input_location,  "See --target-help for supported MCUs");
     }
 
   avr_current_device = t;
@@ -246,6 +266,42 @@ avr_option_override (void)
   zero_reg_rtx = gen_rtx_REG (QImode, ZERO_REGNO);
 
   init_machine_status = avr_init_machine_status;
+}
+
+/* Implement TARGET_HELP */
+/* Report extra information for --target-help */
+
+static void
+avr_help (void)
+{
+  const struct mcu_type_s *t;
+  const char * const indent = "  ";
+  int len;
+
+  /* Give a list of MCUs that are accepted by -mmcu=* .
+     Note that MCUs supported by the compiler might differ from
+     MCUs supported by binutils. */
+
+  len = strlen (indent);
+  printf ("Known MCU names:\n%s", indent);
+
+  /* Print a blank-separated list of all supported MCUs */
+
+  for (t = avr_mcu_types; t->name; t++)
+    {
+      printf ("%s ", t->name);
+      len += 1 + strlen (t->name);
+
+      /* Break long lines */
+      
+      if (len > 66 && (t+1)->name)
+        {
+          printf ("\n%s", indent);
+          len = strlen (indent);
+        }
+    }
+
+  printf ("\n\n");
 }
 
 /*  return register class from register number.  */
@@ -979,6 +1035,27 @@ avr_asm_function_begin_epilogue (FILE *file)
 {
   fprintf (file, "/* epilogue start */\n");
 }
+
+
+/* Implement TARGET_CANNOT_MODITY_JUMPS_P */
+
+static bool
+avr_cannot_modify_jumps_p (void)
+{
+
+  /* Naked Functions must not have any instructions after
+     their epilogue, see PR42240 */
+     
+  if (reload_completed
+      && cfun->machine
+      && cfun->machine->is_naked)
+    {
+      return true;
+    }
+
+  return false;
+}
+
 
 /* Return nonzero if X (an RTX) is a legitimate memory address on the target
    machine for a memory operand of mode MODE.  */
@@ -5069,6 +5146,32 @@ order_regs_for_local_alloc (void)
 }
 
 
+/* Implement `TARGET_REGISTER_MOVE_COST' */
+
+static int
+avr_register_move_cost (enum machine_mode mode ATTRIBUTE_UNUSED,
+                        reg_class_t from, reg_class_t to)
+{
+  return (from == STACK_REG ? 6
+          : to == STACK_REG ? 12
+          : 2);
+}
+
+
+/* Implement `TARGET_MEMORY_MOVE_COST' */
+
+static int
+avr_memory_move_cost (enum machine_mode mode, reg_class_t rclass ATTRIBUTE_UNUSED,
+                      bool in ATTRIBUTE_UNUSED)
+{
+  return (mode == QImode ? 2
+          : mode == HImode ? 4
+          : mode == SImode ? 8
+          : mode == SFmode ? 8
+          : 16);
+}
+
+
 /* Mutually recursive subroutine of avr_rtx_cost for calculating the
    cost of an RTX operand given its context.  X is the rtx of the
    operand, MODE is its mode, and OUTER is the rtx_code of this
@@ -5815,36 +5918,49 @@ avr_reorg (void)
 
 /* Returns register number for function return value.*/
 
-int
+static inline int
 avr_ret_register (void)
 {
   return 24;
 }
 
+/* Worker function for TARGET_FUNCTION_VALUE_REGNO_P.  */
+
+static bool
+avr_function_value_regno_p (const unsigned int regno)
+{
+  return (regno == avr_ret_register ());
+}
+
 /* Create an RTX representing the place where a
    library function returns a value of mode MODE.  */
 
-rtx
-avr_libcall_value (enum machine_mode mode)
+static rtx
+avr_libcall_value (enum machine_mode mode,
+		   const_rtx func ATTRIBUTE_UNUSED)
 {
   int offs = GET_MODE_SIZE (mode);
   if (offs < 2)
     offs = 2;
-  return gen_rtx_REG (mode, RET_REGISTER + 2 - offs);
+  return gen_rtx_REG (mode, avr_ret_register () + 2 - offs);
 }
 
 /* Create an RTX representing the place where a
    function returns a value of data type VALTYPE.  */
 
-rtx
-avr_function_value (const_tree type, 
-		    const_tree func ATTRIBUTE_UNUSED, 
+static rtx
+avr_function_value (const_tree type, const_tree fn_decl_or_type,
 		    bool outgoing ATTRIBUTE_UNUSED)
 {
   unsigned int offs;
-  
+  const_rtx func = fn_decl_or_type;
+
+  if (fn_decl_or_type
+      && !DECL_P (fn_decl_or_type))
+  fn_decl_or_type = NULL;
+
   if (TYPE_MODE (type) != BLKmode)
-    return avr_libcall_value (TYPE_MODE (type));
+    return avr_libcall_value (TYPE_MODE (type), func);
   
   offs = int_size_in_bytes (type);
   if (offs < 2)
@@ -5854,7 +5970,7 @@ avr_function_value (const_tree type,
   else if (offs > GET_MODE_SIZE (SImode) && offs < GET_MODE_SIZE (DImode))
     offs = GET_MODE_SIZE (DImode);
   
-  return gen_rtx_REG (BLKmode, RET_REGISTER + 2 - offs);
+  return gen_rtx_REG (BLKmode, avr_ret_register () + 2 - offs);
 }
 
 int

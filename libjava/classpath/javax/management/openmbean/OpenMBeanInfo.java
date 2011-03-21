@@ -66,7 +66,7 @@ public interface OpenMBeanInfo
    *
    * @param obj the object to compare.
    * @return true if the object is a {@link OpenMBeanInfo}
-   *         instance, 
+   *         instance,
    *         <code>className.equals(object.getClassName())</code>
    *         and each info class has an equal in the other object.
    */

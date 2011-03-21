@@ -43,12 +43,6 @@ nodist_libsubinclude_HEADERS = quadmath.h quadmath_weak.h
 libsubincludedir = $(libdir)/gcc/$(target_alias)/$(gcc_version)/include
 
 libquadmath_la_SOURCES = \
-  gdtoa/arith.h gdtoa/gdtoa_fltrnds.h gdtoa/gd_qnan.h gdtoa/gdtoaimp.h \
-  gdtoa/gdtoa.h quadmath-imp.h \
-  gdtoa/dmisc.c gdtoa/gdtoa.c gdtoa/hd_init.c gdtoa/smisc.c gdtoa/sum.c \
-  gdtoa/g_Qfmt.c gdtoa/gethex.c gdtoa/hexnan.c gdtoa/strtodg.c \
-  gdtoa/ulp.c gdtoa/g__fmt.c gdtoa/gmisc.c gdtoa/misc.c gdtoa/strtopQ.c \
-  quadmath_io.c \
   math/acoshq.c math/fmodq.c math/acosq.c math/frexpq.c \
   math/rem_pio2q.c math/asinhq.c math/hypotq.c math/remainderq.c \
   math/asinq.c math/rintq.c math/atan2q.c math/isinfq.c \
@@ -61,7 +55,17 @@ libquadmath_la_SOURCES = \
   math/erfq.c math/logq.c math/sqrtq.c math/expm1q.c math/lroundq.c \
   math/tanhq.c math/expq.c math/modfq.c math/tanq.c math/fabsq.c \
   math/nanq.c math/tgammaq.c math/finiteq.c math/nextafterq.c \
-  math/truncq.c math/floorq.c math/powq.c
+  math/truncq.c math/floorq.c math/powq.c math/fmaq.c \
+  math/cacoshq.c math/cacosq.c math/casinhq.c math/casinq.c \
+  math/catanhq.c math/catanq.c math/cimagq.c math/conjq.c math/cprojq.c \
+  math/crealq.c math/fdimq.c math/fmaxq.c math/fminq.c math/ilogbq.c \
+  math/llrintq.c math/log2q.c math/lrintq.c math/nearbyintq.c math/remquoq.c \
+  printf/addmul_1.c printf/add_n.c printf/cmp.c printf/divrem.c \
+  printf/flt1282mpn.c printf/fpioconst.c printf/lshift.c printf/mul_1.c \
+  printf/mul_n.c printf/mul.c printf/printf_fphex.c printf/printf_fp.c \
+  printf/quadmath-printf.c printf/rshift.c printf/submul_1.c printf/sub_n.c \
+  strtod/strtoflt128.c strtod/mpn2flt128.c strtod/tens_in_limb.c
+
 
 # Work around what appears to be a GNU make bug handling MAKEFLAGS
 # values defined in terms of make variables, as is the case for CC and
@@ -126,16 +130,18 @@ stamp-geninsrc: libquadmath.info
 	cp -p $(top_builddir)/libquadmath.info $(srcdir)/libquadmath.info
 	@touch $@
 
-libquadmath.info: $(STAMP_BUILD_INFO)
-
-stamp-build-info: libquadmath.texi
+stamp-build-info: libquadmath.texi $(libquadmath_TEXINFOS)
 	$(MAKEINFO) $(AM_MAKEINFOFLAGS) $(MAKEINFOFLAGS) -I $(srcdir) -o libquadmath.info $(srcdir)/libquadmath.texi
 	@touch $@
 
 CLEANFILES = $(STAMP_GENINSRC) $(STAMP_BUILD_INFO) libquadmath.info
 MAINTAINERCLEANFILES = $(srcdir)/libquadmath.info
 
-endif
+endif BUILD_LIBQUADMATH
+
+# Unconditionally override this target, so that automake's definition
+# does not wrongly interfere.
+libquadmath.info: $(STAMP_BUILD_INFO)
 
 
 # Automake Documentation:
@@ -148,3 +154,7 @@ TEXINFO_TEX   = ../gcc/doc/include/texinfo.tex
 # Defines info, dvi, pdf and html targets
 MAKEINFOFLAGS = -I $(srcdir)/../gcc/doc/include
 info_TEXINFOS = libquadmath.texi
+libquadmath_TEXINFOS = libquadmath-vers.texi
+
+libquadmath-vers.texi:
+	echo "@set BUGURL $(REPORT_BUGS_TEXI)" > $@

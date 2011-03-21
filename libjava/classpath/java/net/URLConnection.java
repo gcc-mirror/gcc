@@ -173,7 +173,7 @@ public abstract class URLConnection
 
   private static SimpleDateFormat[] dateFormats;
   private static boolean dateformats_initialized;
-  
+
   /**
    * The connection timeout period.
    */
@@ -236,7 +236,7 @@ public abstract class URLConnection
 
   /**
    * Set the connection timeout speed, in milliseconds, or zero if the timeout
-   * is to be considered infinite. Note that in certain socket 
+   * is to be considered infinite. Note that in certain socket
    * implementations/platforms this method may not have any effect.
    *
    * Throws an <code>IllegalArgumentException</code> if timeout < 0.
@@ -270,7 +270,7 @@ public abstract class URLConnection
 
   /**
    * Set the read timeout, in milliseconds, or zero if the timeout
-   * is to be considered infinite. Note that in certain socket 
+   * is to be considered infinite. Note that in certain socket
    * implementations/platforms this method may not have any effect.
    *
    * Throws an <code>IllegalArgumentException</code> if timeout < 0.
@@ -368,7 +368,7 @@ public abstract class URLConnection
   /**
    * Return a String representing the header value at the specified index.
    * This allows the caller to walk the list of header fields.  The analogous
-   * {@link #getHeaderField(int)} method allows access to the corresponding 
+   * {@link #getHeaderField(int)} method allows access to the corresponding
    * key for this header field
    *
    * @param index The index into the header field list to retrieve the value for
@@ -397,8 +397,8 @@ public abstract class URLConnection
 
   /**
    * Returns an unmodifiable Map containing all sent header fields.
-   * 
-   * @return The map of header fields. The map consists of String keys with 
+   *
+   * @return The map of header fields. The map consists of String keys with
    * an unmodifiable List of String objects as value.
    *
    * @since 1.4
@@ -430,11 +430,11 @@ public abstract class URLConnection
 
     try
       {
-	return Integer.parseInt(value);
+        return Integer.parseInt(value);
       }
     catch (NumberFormatException e)
       {
-	return defaultValue;
+        return defaultValue;
       }
   }
 
@@ -463,15 +463,15 @@ public abstract class URLConnection
 
     if (str != null)
       {
-	for (int i = 0; i < dateFormats.length; i++)
-	  {
-	    SimpleDateFormat df = dateFormats[i];
-	    position.setIndex(0);
-	    position.setErrorIndex(0);
-	    Date date = df.parse(str, position);
-	    if (date != null)
-	      return date.getTime();
-	  }
+        for (int i = 0; i < dateFormats.length; i++)
+          {
+            SimpleDateFormat df = dateFormats[i];
+            position.setIndex(0);
+            position.setErrorIndex(0);
+            Date date = df.parse(str, position);
+            if (date != null)
+              return date.getTime();
+          }
       }
 
     return result;
@@ -480,7 +480,7 @@ public abstract class URLConnection
   /**
    * Returns a String representing the header key at the specified index.
    * This allows the caller to walk the list of header fields.  The analogous
-   * {@link #getHeaderField(int)} method allows access to the corresponding 
+   * {@link #getHeaderField(int)} method allows access to the corresponding
    * value for this tag.
    *
    * @param index The index into the header field list to retrieve the key for.
@@ -527,7 +527,7 @@ public abstract class URLConnection
       connect();
 
     // FIXME: Doc indicates that other criteria should be applied as
-    // heuristics to determine the true content type, e.g. see 
+    // heuristics to determine the true content type, e.g. see
     // guessContentTypeFromName() and guessContentTypeFromStream methods
     // as well as FileNameMap class & fileNameMap field & get/set methods.
     String type = getContentType();
@@ -698,7 +698,7 @@ public abstract class URLConnection
   {
     if (connected)
       throw new IllegalStateException("Already connected");
-    
+
     allowUserInteraction = allow;
   }
 
@@ -820,8 +820,8 @@ public abstract class URLConnection
   }
 
   /**
-   * Sets the value of the named request property. 
-   * This method does overwrite the value of existing properties with 
+   * Sets the value of the named request property.
+   * This method does overwrite the value of existing properties with
    * the new value.
    *
    * @param key The name of the property
@@ -898,8 +898,8 @@ public abstract class URLConnection
 
   /**
    * Returns an unmodifiable Map containing the request properties.
-   * 
-   * @return The map of properties. The map consists of String keys with an 
+   *
+   * @return The map of properties. The map consists of String keys with an
    * unmodifiable List of String objects as value.
    *
    * @exception IllegalStateException If already connected
@@ -1074,11 +1074,11 @@ public abstract class URLConnection
       handler = factory.createContentHandler(contentType);
 
     // Now try default factory. Using this factory to instantiate built-in
-    // content handlers is preferable  
+    // content handlers is preferable
     if (handler == null)
       handler = defaultFactory.createContentHandler(contentType);
 
-    // User-set factory has not returned a handler. Use the default search 
+    // User-set factory has not returned a handler. Use the default search
     // algorithm.
     if (handler == null)
       {
@@ -1103,7 +1103,7 @@ public abstract class URLConnection
           {
             if (cArray[i] == '/')
               cArray[i] = '.';
-            else if (! ((cArray[i] >= 'A' && cArray[i] <= 'Z') || 
+            else if (! ((cArray[i] >= 'A' && cArray[i] <= 'Z') ||
                         (cArray[i] >= 'a' && cArray[i] <= 'z') ||
                         (cArray[i] >= '0' && cArray[i] <= '9')))
               cArray[i] = '_';
@@ -1129,7 +1129,7 @@ public abstract class URLConnection
 
     return handler;
   }
-  
+
   // We don't put these in a static initializer, because it creates problems
   // with initializer co-dependency: SimpleDateFormat's constructors
   // eventually depend on URLConnection (via the java.text.*Symbols classes).

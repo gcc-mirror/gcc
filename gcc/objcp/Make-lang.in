@@ -1,5 +1,5 @@
 # Top level -*- makefile -*- fragment for GNU Objective-C++
-#   Copyright (C) 2005, 2007, 2008, 2009, 2010
+#   Copyright (C) 2005, 2007, 2008, 2009, 2010, 2011
 #   Free Software Foundation, Inc.
 #   Contributed by Ziemowit Laski  <zlaski@apple.com>
 
@@ -44,12 +44,19 @@ obj-c++: cc1objplus$(exeext)
 # Tell GNU make to ignore these if they exist.
 .PHONY: obj-c++
 
+START_HDRS = $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) $(CXX_TREE_H) \
+  langhooks.h c-family/c-objc.h objc/objc-act.h
+
 # Use maximal warnings for this front end.  Also, make ObjC and C++
 # headers accessible.
 objcp-warn = $(STRICT_WARN) -DOBJCPLUS -I$(srcdir)/objc -I$(srcdir)/cp
 
 # Language-specific object files for Objective C++.
 OBJCXX_OBJS = objcp/objcp-act.o objcp/objcp-lang.o objcp/objcp-decl.o \
+   objcp/objc-runtime-shared-support.o \
+   objcp/objc-gnu-runtime-abi-01.o \
+   objcp/objc-next-runtime-abi-01.o \
+   objcp/objc-next-runtime-abi-02.o \
    $(CXX_AND_OBJCXX_OBJS)
 
 obj-c++_OBJS = $(OBJCXX_OBJS) cc1objplus-checksum.o
@@ -69,23 +76,48 @@ cc1objplus$(exeext): $(OBJCXX_OBJS) cc1objplus-checksum.o $(BACKEND) $(LIBDEPS)
 
 # Objective C++ language specific files.
 
-objcp/objcp-lang.o : objcp/objcp-lang.c \
-  $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) $(CXX_TREE_H) \
-  $(C_COMMON_H) $(LANGHOOKS_DEF_H) objc/objc-act.h cp/cp-objcp-common.h \
-  $(TARGET_H) gtype-objcp.h c-family/c-objc.h
+objcp/objcp-lang.o : objcp/objcp-lang.c $(START_HDRS) \
+  $(C_COMMON_H) $(LANGHOOKS_DEF_H) cp/cp-objcp-common.h \
+  $(TARGET_H) gtype-objcp.h 
 
 objcp/objcp-decl.o : objcp/objcp-decl.c \
    $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) $(CXX_TREE_H) \
    objc/objc-act.h objcp/objcp-decl.h c-family/c-objc.h
 
+objcp/objc-runtime-shared-support.o : objc/objc-runtime-shared-support.c \
+   $(START_HDRS) objc/objc-runtime-shared-support.h $(OBSTACK_H) \
+   objc/objc-next-metadata-tags.h gt-objc-objc-runtime-shared-support.h
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $< \
+		$(OUTPUT_OPTION)
+
+objcp/objc-gnu-runtime-abi-01.o: objc/objc-gnu-runtime-abi-01.c $(START_HDRS) \
+   objc/objc-runtime-hooks.h $(GGC_H) \
+   gt-objc-objc-gnu-runtime-abi-01.h toplev.h 
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $< \
+		$(OUTPUT_OPTION)
+
+objcp/objc-next-runtime-abi-01.o: objc/objc-next-runtime-abi-01.c $(START_HDRS) \
+   $(GGC_H) objc/objc-runtime-hooks.h \
+   objc/objc-next-metadata-tags.h gt-objc-objc-next-runtime-abi-01.h output.h \
+   objc/objc-runtime-shared-support.h $(TARGET_H)
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $< \
+		$(OUTPUT_OPTION)
+
+objcp/objc-next-runtime-abi-02.o: objc/objc-next-runtime-abi-02.c $(START_HDRS) \
+   $(GGC_H) objc/objc-runtime-hooks.h \
+   objc/objc-next-metadata-tags.h gt-objc-objc-next-runtime-abi-02.h $(TARGET_H) \
+   objc/objc-runtime-shared-support.h $(OBSTACK_H)
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $< \
+		$(OUTPUT_OPTION)
+
+
 # The following must be an explicit rule; please keep in sync with the implicit
 # one in Makefile.in.
-objcp/objcp-act.o : objc/objc-act.c \
-   $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) $(RTL_H) $(TM_P_H) \
-   $(EXPR_H) $(TARGET_H) $(CXX_TREE_H) $(DIAGNOSTIC_H) toplev.h $(FLAGS_H) \
-   objc/objc-act.h input.h $(FUNCTION_H) output.h debug.h langhooks.h \
+objcp/objcp-act.o : objc/objc-act.c $(START_HDRS) $(GGC_H) \
+   $(RTL_H) $(EXPR_H) $(TARGET_H) $(DIAGNOSTIC_H) toplev.h $(FLAGS_H) \
+   input.h $(FUNCTION_H) output.h debug.h $(OBSTACK_H) \
    objcp/objcp-decl.h $(LANGHOOKS_DEF_H) $(HASHTAB_H) gt-objc-objc-act.h \
-   $(GIMPLE_H) c-family/c-objc.h
+   $(GIMPLE_H) objc/objc-runtime-hooks.h objc/objc-runtime-shared-support.h
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $< \
 		$(OUTPUT_OPTION)
 
@@ -110,7 +142,7 @@ obj-c++.man:
 obj-c++.install-plugin:
 
 obj-c++.tags: force
-	cd $(srcdir)/objcp; etags -o TAGS.sub *.y *.c *.h; \
+	cd $(srcdir)/objcp; etags -o TAGS.sub *.c *.h; \
 	etags --include TAGS.sub --include ../TAGS.sub
 
 lang_checks += check-obj-c++

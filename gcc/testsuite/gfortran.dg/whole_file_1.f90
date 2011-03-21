@@ -19,7 +19,7 @@ subroutine b
     integer :: u1
   end type
   type (u) :: q
-  call a(q)  ! { dg-error "Type mismatch" }
+  call a(q)  ! { dg-warning "Type mismatch" }
   print *, q%u1
 end subroutine
 
@@ -36,7 +36,7 @@ subroutine d
     integer :: u1
   end type
   type (u) :: q
-  call c(q)  ! { dg-error "Type mismatch" }
+  call c(q)  ! { dg-warning "Type mismatch" }
   print *, q%u1
 end subroutine
 

@@ -91,10 +91,10 @@ public class JPanel extends JComponent implements Accessible
 
   /**
    * Creates a new panel with double-buffering enabled or disabled as
-   * specified.  The default layout manager is an instance of 
+   * specified.  The default layout manager is an instance of
    * {@link FlowLayout}.
-   * 
-   * @param isDoubleBuffered  a flag that controls whether or not 
+   *
+   * @param isDoubleBuffered  a flag that controls whether or not
    *     double-buffering is enabled.
    */
   public JPanel(boolean isDoubleBuffered)
@@ -105,7 +105,7 @@ public class JPanel extends JComponent implements Accessible
   /**
    * Creates a new panel with the specified layout manager.  Double-buffering
    * is enabled by default.
-   * 
+   *
    * @param layout  the layout manager (<code>null</code> permitted).
    */
   public JPanel(LayoutManager layout)
@@ -114,24 +114,24 @@ public class JPanel extends JComponent implements Accessible
   }
 
   /**
-   * Creates a new panel with the specified layout manager and 
+   * Creates a new panel with the specified layout manager and
    * double-buffering.
-   * 
+   *
    * @param layout  the layout manager (<code>null</code> permitted).
-   * @param isDoubleBuffered  a flag that controls whether or not 
+   * @param isDoubleBuffered  a flag that controls whether or not
    *     double-buffering is enabled.
    */
   public JPanel(LayoutManager layout, boolean isDoubleBuffered)
   {
-    setLayout(layout); 
+    setLayout(layout);
     setOpaque(true);
     setDoubleBuffered(isDoubleBuffered);
-    updateUI();	
-  } 
+    updateUI();
+  }
 
   /**
-   * Returns the suffix (<code>"PanelUI"</code> in this case) used to 
-   * determine the class name for a UI delegate that can provide the look and 
+   * Returns the suffix (<code>"PanelUI"</code> in this case) used to
+   * determine the class name for a UI delegate that can provide the look and
    * feel for a <code>JPanel</code>.
    *
    * @return <code>"PanelUI"</code>.
@@ -143,9 +143,9 @@ public class JPanel extends JComponent implements Accessible
 
   /**
    * Sets the UI delegate for the <code>JPanel</code> component.
-   * 
+   *
    * @param ui  the UI delegate.
-   * 
+   *
    * @since 1.4
    * @see #getUI()
    */
@@ -156,9 +156,9 @@ public class JPanel extends JComponent implements Accessible
 
   /**
    * Returns the UI delegate for the <code>JPanel</code> component.
-   * 
+   *
    * @return The UI delegate.
-   * 
+   *
    * @since 1.4
    * @see #setUI(PanelUI)
    */
@@ -188,7 +188,7 @@ public class JPanel extends JComponent implements Accessible
       accessibleContext = new AccessibleJPanel();
     return accessibleContext;
   }
-    
+
   /**
    * Returns an implementation-dependent string describing the attributes of
    * this <code>JPanel</code>.
@@ -198,6 +198,6 @@ public class JPanel extends JComponent implements Accessible
    */
   protected String paramString()
   {
-	return super.paramString();
+        return super.paramString();
   }
 }

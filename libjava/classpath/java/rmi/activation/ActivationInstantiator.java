@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -45,7 +45,7 @@ import java.rmi.RemoteException;
 /**
  * The implementation of this interface creates (instantiates) the new remote
  * objects in response to the activation request. The instantiator is returned
- * by the {@link ActivationGroup} that calls 
+ * by the {@link ActivationGroup} that calls
  * {@link ActivationSystem#activeGroup(ActivationGroupID, ActivationInstantiator, long)}.
  */
 public interface ActivationInstantiator
@@ -60,7 +60,7 @@ public interface ActivationInstantiator
    * <li>Creates an instance of the object using its special two parameter
    * activation constructor, the first parameter being the {@link ActivationID}
    * and the second the {@link MarshalledObject}.</li>
-   * 
+   *
    * @param id the id of the object being instantiated
    * @param desc the activation descriptor being instantiated
    * @return the MarshalledObject, containing the stub to the newly created

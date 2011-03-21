@@ -998,8 +998,6 @@ sjlj_assign_call_site_values (void)
 
 	/* First: build the action table.  */
 	action = collect_one_action_chain (ar_hash, lp->region);
-	if (action != -1)
-	  crtl->uses_eh_lsda = 1;
 
 	/* Next: assign call-site values.  If dwarf2 terms, this would be
 	   the region number assigned by convert_to_eh_region_ranges, but
@@ -1065,6 +1063,9 @@ sjlj_mark_call_sites (void)
 	  this_call_site = 0;
 	}
 
+      if (this_call_site != -1)
+	crtl->uses_eh_lsda = 1;
+
       if (this_call_site == last_call_site)
 	continue;
 
@@ -1119,27 +1120,30 @@ sjlj_emit_function_enter (rtx dispatch_label)
   else
     emit_move_insn (mem, const0_rtx);
 
+  if (dispatch_label)
+    {
 #ifdef DONT_USE_BUILTIN_SETJMP
-  {
-    rtx x, last;
-    x = emit_library_call_value (setjmp_libfunc, NULL_RTX, LCT_RETURNS_TWICE,
-				 TYPE_MODE (integer_type_node), 1,
-				 plus_constant (XEXP (fc, 0),
-						sjlj_fc_jbuf_ofs), Pmode);
+      rtx x, last;
+      x = emit_library_call_value (setjmp_libfunc, NULL_RTX, LCT_RETURNS_TWICE,
+				   TYPE_MODE (integer_type_node), 1,
+				   plus_constant (XEXP (fc, 0),
+						  sjlj_fc_jbuf_ofs), Pmode);
 
-    emit_cmp_and_jump_insns (x, const0_rtx, NE, 0,
-			     TYPE_MODE (integer_type_node), 0, dispatch_label);
-    last = get_last_insn ();
-    if (JUMP_P (last) && any_condjump_p (last))
-      {
-        gcc_assert (!find_reg_note (last, REG_BR_PROB, 0));
-        add_reg_note (last, REG_BR_PROB, GEN_INT (REG_BR_PROB_BASE / 100));
-      }
-  }
-#else
-  expand_builtin_setjmp_setup (plus_constant (XEXP (fc, 0), sjlj_fc_jbuf_ofs),
+      emit_cmp_and_jump_insns (x, const0_rtx, NE, 0,
+			       TYPE_MODE (integer_type_node), 0,
 			       dispatch_label);
+      last = get_last_insn ();
+      if (JUMP_P (last) && any_condjump_p (last))
+	{
+	  gcc_assert (!find_reg_note (last, REG_BR_PROB, 0));
+	  add_reg_note (last, REG_BR_PROB, GEN_INT (REG_BR_PROB_BASE / 100));
+	}
+#else
+      expand_builtin_setjmp_setup (plus_constant (XEXP (fc, 0),
+						  sjlj_fc_jbuf_ofs),
+				   dispatch_label);
 #endif
+    }
 
   emit_library_call (unwind_sjlj_register_libfunc, LCT_NORMAL, VOIDmode,
 		     1, XEXP (fc, 0), Pmode);
@@ -1360,6 +1364,23 @@ sjlj_build_landing_pads (void)
       sjlj_mark_call_sites ();
       sjlj_emit_function_enter (dispatch_label);
       sjlj_emit_dispatch_table (dispatch_label, num_dispatch);
+      sjlj_emit_function_exit ();
+    }
+
+  /* If we do not have any landing pads, we may still need to register a
+     personality routine and (empty) LSDA to handle must-not-throw regions.  */
+  else if (function_needs_eh_personality (cfun) != eh_personality_none)
+    {
+      int align = STACK_SLOT_ALIGNMENT (sjlj_fc_type_node,
+					TYPE_MODE (sjlj_fc_type_node),
+					TYPE_ALIGN (sjlj_fc_type_node));
+      crtl->eh.sjlj_fc
+	= assign_stack_local (TYPE_MODE (sjlj_fc_type_node),
+			      int_size_in_bytes (sjlj_fc_type_node),
+			      align);
+
+      sjlj_mark_call_sites ();
+      sjlj_emit_function_enter (NULL_RTX);
       sjlj_emit_function_exit ();
     }
 
@@ -2421,30 +2442,33 @@ convert_to_eh_region_ranges (void)
 	if (last_action != this_action
 	    || last_landing_pad != this_landing_pad)
 	  {
+	    /* If there is a queued no-action region in the other section
+	       with hot/cold partitioning, emit it now.  */
+	    if (first_no_action_insn_before_switch)
+	      {
+		gcc_assert (this_action != -1
+			    && last_action == (first_no_action_insn
+					       ? -1 : -3));
+		call_site = add_call_site (NULL_RTX, 0, 0);
+		note = emit_note_before (NOTE_INSN_EH_REGION_BEG,
+					 first_no_action_insn_before_switch);
+		NOTE_EH_HANDLER (note) = call_site;
+		note = emit_note_after (NOTE_INSN_EH_REGION_END,
+					last_no_action_insn_before_switch);
+		NOTE_EH_HANDLER (note) = call_site;
+		gcc_assert (last_action != -3
+			    || (last_action_insn
+				== last_no_action_insn_before_switch));
+		first_no_action_insn_before_switch = NULL_RTX;
+		last_no_action_insn_before_switch = NULL_RTX;
+		call_site_base++;
+	      }
 	    /* If we'd not seen a previous action (-3) or the previous
 	       action was must-not-throw (-2), then we do not need an
 	       end note.  */
 	    if (last_action >= -1)
 	      {
 		/* If we delayed the creation of the begin, do it now.  */
-		if (first_no_action_insn_before_switch)
-		  {
-		    call_site = add_call_site (NULL_RTX, 0, 0);
-		    note
-		      = emit_note_before (NOTE_INSN_EH_REGION_BEG,
-					  first_no_action_insn_before_switch);
-		    NOTE_EH_HANDLER (note) = call_site;
-		    if (first_no_action_insn)
-		      {
-			note
-			  = emit_note_after (NOTE_INSN_EH_REGION_END,
-					     last_no_action_insn_before_switch);
-			NOTE_EH_HANDLER (note) = call_site;
-		      }
-		    else
-		      gcc_assert (last_action_insn
-				  == last_no_action_insn_before_switch);
-		  }
 		if (first_no_action_insn)
 		  {
 		    call_site = add_call_site (NULL_RTX, 0, cur_sec);
@@ -3194,7 +3218,7 @@ dump_eh_tree (FILE * out, struct function *fun)
 	    }
 	  else
 	    {
-	      for (lp = i->landing_pads; lp ; lp = lp->next_lp);
+	      for (lp = i->landing_pads; lp ; lp = lp->next_lp)
 		{
 		  fprintf (out, "{%i,", lp->index);
 		  if (lp->landing_pad)

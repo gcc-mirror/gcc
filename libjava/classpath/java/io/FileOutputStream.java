@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -71,7 +71,7 @@ public class FileOutputStream extends OutputStream
    * Before opening a file, a security check is performed by calling the
    * <code>checkWrite</code> method of the <code>SecurityManager</code> (if
    * one exists) with the name of the file to be opened.  An exception is
-   * thrown if writing is not allowed. 
+   * thrown if writing is not allowed.
    *
    * @param path The name of the file this stream should write to
    * @param append <code>true</code> to append bytes to the end of the file,
@@ -94,7 +94,7 @@ public class FileOutputStream extends OutputStream
    * Before opening a file, a security check is performed by calling the
    * <code>checkWrite</code> method of the <code>SecurityManager</code> (if
    * one exists) with the name of the file to be opened.  An exception is
-   * thrown if writing is not allowed. 
+   * thrown if writing is not allowed.
    *
    * @param path The name of the file this stream should write to
    *
@@ -109,14 +109,14 @@ public class FileOutputStream extends OutputStream
 
   /**
    * This method initializes a <code>FileOutputStream</code> object to write
-   * to the specified <code>File</code> object.  The file is created if it 
-   * does not exist, and the bytes written are written starting at the 
+   * to the specified <code>File</code> object.  The file is created if it
+   * does not exist, and the bytes written are written starting at the
    * beginning of the file.
    * <p>
    * Before opening a file, a security check is performed by calling the
    * <code>checkWrite</code> method of the <code>SecurityManager</code> (if
    * one exists) with the name of the file to be opened.  An exception is
-   * thrown if writing is not allowed. 
+   * thrown if writing is not allowed.
    *
    * @param file The <code>File</code> object this stream should write to
    *
@@ -131,16 +131,16 @@ public class FileOutputStream extends OutputStream
 
   /**
    * This method initializes a <code>FileOutputStream</code> object to write
-   * to the specified <code>File</code> object.  The file is created if it 
-   * does not exist, and the bytes written are written starting at the 
-   * beginning of the file if the <code>append</code> parameter is 
+   * to the specified <code>File</code> object.  The file is created if it
+   * does not exist, and the bytes written are written starting at the
+   * beginning of the file if the <code>append</code> parameter is
    * <code>false</code>.  Otherwise bytes are written at the end of the
    * file.
    * <p>
    * Before opening a file, a security check is performed by calling the
    * <code>checkWrite</code> method of the <code>SecurityManager</code> (if
    * one exists) with the name of the file to be opened.  An exception is
-   * thrown if writing is not allowed. 
+   * thrown if writing is not allowed.
    *
    * @param file The <code>File</code> object this stream should write to
    * @param append <code>true</code> to append bytes to the end of the file,
@@ -185,7 +185,7 @@ public class FileOutputStream extends OutputStream
    * Before opening a file, a security check is performed by calling the
    * <code>checkWrite</code> method of the <code>SecurityManager</code> (if
    * one exists) with the specified <code>FileDescriptor</code> as an argument.
-   * An exception is thrown if writing is not allowed. 
+   * An exception is thrown if writing is not allowed.
    *
    * @param fdObj The <code>FileDescriptor</code> this stream should write to
    *
@@ -230,14 +230,14 @@ public class FileOutputStream extends OutputStream
   {
     synchronized (this)
       {
-	if (fd == null)
-	  fd = new FileDescriptor (ch);
-	return fd;
+        if (fd == null)
+          fd = new FileDescriptor (ch);
+        return fd;
       }
   }
 
   /**
-   * This method writes a single byte of data to the file.  
+   * This method writes a single byte of data to the file.
    *
    * @param b The byte of data to write, passed as an <code>int</code>
    *
@@ -263,7 +263,7 @@ public class FileOutputStream extends OutputStream
   }
 
   /**
-   * This method writes <code>len</code> bytes from the byte array 
+   * This method writes <code>len</code> bytes from the byte array
    * <code>buf</code> to the file starting at index <code>offset</code>.
    *
    * @param buf The array of bytes to write to the file
@@ -279,7 +279,7 @@ public class FileOutputStream extends OutputStream
         || len < 0
         || offset + len > buf.length)
       throw new ArrayIndexOutOfBoundsException ();
-    
+
     ch.write(ByteBuffer.wrap(buf, offset, len));
   }
 
@@ -301,10 +301,9 @@ public class FileOutputStream extends OutputStream
    * A file channel must be created by first creating an instance of
    * Input/Output/RandomAccessFile and invoking the getChannel() method on it.
    */
-  public synchronized FileChannel getChannel() 
+  public synchronized FileChannel getChannel()
   {
     return ch;
   }
 
 } // class FileOutputStream
-

@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -56,7 +56,7 @@ final class DeleteFileHelper extends Thread
     if (filesToDelete == null)
       {
         filesToDelete = new ArrayList<File>();
-        
+
         AccessController.doPrivileged(new PrivilegedAction()
           {
             public Object run()
@@ -70,12 +70,12 @@ final class DeleteFileHelper extends Thread
                   // Shutdown is already in progress, so we can't
                   // register ours.
                 }
-                
+
               return null;
             }
           });
       }
-      
+
     filesToDelete.add(file);
   }
 
@@ -83,14 +83,14 @@ final class DeleteFileHelper extends Thread
   {
     for (File file : filesToDelete)
       {
-	try
-	  {
-	    file.delete();
-	  }
-	catch (Exception e)
-	  {
-	    // Do nothing here.
-	  }
+        try
+          {
+            file.delete();
+          }
+        catch (Exception e)
+          {
+            // Do nothing here.
+          }
       }
   }
 
@@ -98,7 +98,7 @@ final class DeleteFileHelper extends Thread
   DeleteFileHelper()
   {
   }
-  
+
   public void run()
   {
     deleteFiles();

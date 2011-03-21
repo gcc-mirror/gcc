@@ -64,27 +64,27 @@ import org.w3c.dom.NodeList;
 
 public class TagParser
 {
-    
+
   /**
    * Parsed document.
    */
   DomHTMLDocument document;
-  
+
   /**
    * The document base of this applet.
    */
   URL documentbase;
-  
+
   /**
    * The document base of all the applets.
    */
   static URL db;
-  
-  /** 
+
+  /**
    * The tags in the document.
    */
   Vector tags = new Vector();
-  
+
   /**
    * Default constructor.
    */
@@ -95,7 +95,7 @@ public class TagParser
 
   /**
    * Constructs and parses document using the given location.
-   * 
+   *
    * @param location - location of applet
    */
   TagParser(String location) throws IOException
@@ -108,7 +108,7 @@ public class TagParser
 
   /**
    * Constructs and parses document.
-   * 
+   *
    * @param in - Reader to parse document from.
    * @param documentBase - the URL of the applet
    * @throws IOException - is thrown if any IO error occurs.
@@ -119,19 +119,19 @@ public class TagParser
     db = documentbase;
     document = (DomHTMLDocument) (new DomHTMLParser(HTML_401F.getInstance()).parseDocument(in));
   }
-  
+
   /**
    * Parses all applet tags in document.
-   * 
+   *
    * @return a list of AppletTag objects representing the applet tags
    * in document
    */
   ArrayList parseAppletTags()
-  {    
+  {
     ArrayList allTags = new ArrayList();
     if (document == null)
       return null;
-    
+
     recurseDocument(document.getChildNodes());
 
     int sz = tags.size();
@@ -151,13 +151,13 @@ public class TagParser
         a.documentbase = documentbase;
         allTags.add(a);
       }
-    
+
     return allTags;
   }
-  
+
   /**
    * Recurses the document in search for the appropriate tags.
-   * 
+   *
    * @param list - the Node list.
    */
   private void recurseDocument(NodeList list)
@@ -167,17 +167,17 @@ public class TagParser
     for (int i = 0; i < length; i++)
       {
         DomNode curr = (DomNode) list.item(i);
-        if ((curr instanceof DomHTMLEmbedElement) || 
+        if ((curr instanceof DomHTMLEmbedElement) ||
             (curr instanceof DomHTMLAppletElement) ||
             (curr instanceof DomHTMLObjectElement))
           tags.add(curr);
         recurseDocument(curr.getChildNodes());
       }
   }
-  
+
   /**
    * Parses the param elements for a given node.
-   * 
+   *
    * @param node - the node element to parse.
    */
   static void parseParams(DomNode node, AppletTag t)
@@ -187,7 +187,7 @@ public class TagParser
     boolean jc = false;
     NodeList l = node.getChildNodes();
     int size = l.getLength();
-    
+
     if (size != 0)
       for (int i = 0; i < size; i++)
         {
@@ -197,7 +197,7 @@ public class TagParser
           DomHTMLParamElement curr = (DomHTMLParamElement) c;
           String key = curr.getName();
           String val = curr.getValue();
-          
+
           if (key.equals("java_code"))
             {
               jc = true;
@@ -234,10 +234,10 @@ public class TagParser
           t.parameters.put(key.toLowerCase(), val);
         }
   }
-  
+
   /**
    * This method does the same thing as the g_strcompress function in glib.
-   * 
+   *
    * @param value
    * @return value in its original one-byte equivalence.
    */
@@ -288,10 +288,10 @@ public class TagParser
       }
     return unescVal;
   }
-  
+
   /**
    * Parses the archive string and returns a list.
-   * 
+   *
    * @param arcs the list of archives (comma-separated) in a String.
    */
   static ArrayList parseArchives(String arcs, AppletTag t)
@@ -311,10 +311,10 @@ public class TagParser
       }
     return null;
   }
-  
+
   /**
    * Gets the location to the URL, given a location.
-   * 
+   *
    * @param location - the given location.
    * @return the URL.
    */
@@ -323,10 +323,10 @@ public class TagParser
     URL tmpDocumentBase = null;
 
     try
-      {        
+      {
         // Try parsing location as a URL.
         tmpDocumentBase = new URL(location);
-        
+
         // If no file was specified in the URL the assume the user
         // meant the root page.
         String f = tmpDocumentBase.getFile();
@@ -346,11 +346,11 @@ public class TagParser
                           + location).getCanonicalPath();
 
         tmpDocumentBase = new URL("file", "", path);
-        
+
         if (new File(tmpDocumentBase.getFile()).isDirectory())
           tmpDocumentBase = new URL("file", "", path + File.separator);
       }
-    
+
     return tmpDocumentBase;
   }
 }

@@ -1,4 +1,4 @@
-/* PageAttributes.java -- 
+/* PageAttributes.java --
    Copyright (C) 2002, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -265,7 +265,7 @@ public final class PageAttributes implements Cloneable
     }
   } // class PrintQualityType
 
-
+
   private ColorType color;
   private MediaType media;
   private OrientationRequestedType orientation;

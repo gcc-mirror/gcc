@@ -217,12 +217,13 @@ mfix-and-continue
 Target Report Var(darwin_fix_and_continue)
 Generate code suitable for fast turn around debugging
 
-; The Init here is for the convenience of GCC developers, so that
-; cc1 and cc1plus don't crash if no -mmacosx-version-min is passed.  The
-; driver will always pass a -mmacosx-version-min, so in normal use
-; the Init is never used.
+; The Init here is for the convenience of GCC developers, so that cc1
+; and cc1plus don't crash if no -mmacosx-version-min is passed.  The
+; driver will always pass a -mmacosx-version-min, so in normal use the
+; Init is never used.  Useful for setting the OS on which people
+; ususally debug.
 mmacosx-version-min=
-Target Joined Report Var(darwin_macosx_version_min) Init("10.1")
+Target Joined Report Var(darwin_macosx_version_min) Init("10.6")
 The earliest MacOS X version on which this program will run
 
 mone-byte-bool

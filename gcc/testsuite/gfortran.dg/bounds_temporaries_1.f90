@@ -22,7 +22,7 @@ end subroutine gfcbug34
 ! This is PR25669
 subroutine foo (a)
   real a(*)
-  call bar (a, LBOUND(a),2) ! { dg-warning "Rank mismatch in argument" }
+  call bar (a, LBOUND(a),2) ! { dg-error "Rank mismatch in argument" }
 end subroutine foo
 subroutine bar (b, i, j)
   real b(i:j)

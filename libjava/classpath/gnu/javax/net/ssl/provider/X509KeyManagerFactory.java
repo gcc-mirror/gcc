@@ -270,7 +270,7 @@ public class X509KeyManagerFactory extends KeyManagerFactorySpi
         }
       return null;
     }
-    
+
     public @Override String chooseEngineClientAlias(String[] keyTypes,
                                                     Principal[] issuers,
                                                     SSLEngine engine)
@@ -297,7 +297,7 @@ public class X509KeyManagerFactory extends KeyManagerFactorySpi
         return s[0];
       return null;
     }
-    
+
     public @Override String chooseEngineServerAlias(String keyType,
                                                     Principal[] issuers,
                                                     SSLEngine engine)

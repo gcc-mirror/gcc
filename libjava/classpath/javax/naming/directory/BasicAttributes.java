@@ -54,7 +54,7 @@ import javax.naming.NamingException;
 public class BasicAttributes implements Attributes
 {
   private static final long serialVersionUID = 4980164073184639448L;
-  
+
   public BasicAttributes ()
   {
     this (false);
@@ -98,16 +98,16 @@ public class BasicAttributes implements Attributes
 
     Attributes bs = (Attributes) obj;
     if (ignoreCase != bs.isCaseIgnored()
-	|| attributes.size () != bs.size ())
+        || attributes.size () != bs.size ())
       return false;
 
     NamingEnumeration bas = bs.getAll();
     while (bas.hasMoreElements())
       {
-	Attribute a = (Attribute) bas.nextElement();
-	Attribute b = get(a.getID ());
-	if (! a.equals(b))
-	  return false;
+        Attribute a = (Attribute) bas.nextElement();
+        Attribute b = get(a.getID ());
+        if (! a.equals(b))
+          return false;
       }
 
     return true;
@@ -117,10 +117,10 @@ public class BasicAttributes implements Attributes
   {
     for (int i = 0; i < attributes.size (); ++i)
       {
-	Attribute at = attributes.get (i);
-	if ((ignoreCase && attrID.equalsIgnoreCase (at.getID ()))
-	    || (! ignoreCase && attrID.equals (at.getID ())))
-	  return at;
+        Attribute at = attributes.get (i);
+        if ((ignoreCase && attrID.equalsIgnoreCase (at.getID ()))
+            || (! ignoreCase && attrID.equals (at.getID ())))
+          return at;
       }
 
     return null;
@@ -139,7 +139,7 @@ public class BasicAttributes implements Attributes
       {
         return attrs.hasMore();
       }
-      
+
       public boolean hasMoreElements()
       {
         return attrs.hasMoreElements();
@@ -191,13 +191,13 @@ public class BasicAttributes implements Attributes
   {
     for (int i = 0; i < attributes.size (); ++i)
       {
-	Attribute at = (Attribute) attributes.get (i);
-	if ((ignoreCase && attrID.equalsIgnoreCase (at.getID ()))
-	    || (! ignoreCase && attrID.equals (at.getID ())))
-	  {
-	    attributes.remove (i);
-	    return at;
-	  }
+        Attribute at = (Attribute) attributes.get (i);
+        if ((ignoreCase && attrID.equalsIgnoreCase (at.getID ()))
+            || (! ignoreCase && attrID.equals (at.getID ())))
+          {
+            attributes.remove (i);
+            return at;
+          }
       }
 
     return null;
@@ -213,9 +213,9 @@ public class BasicAttributes implements Attributes
     String r = "";
     for (int i = 0; i < attributes.size (); ++i)
       {
-	if (i > 0)
-	  r += "; ";
-	r += attributes.get (i).toString ();
+        if (i > 0)
+          r += "; ";
+        r += attributes.get (i).toString ();
       }
     return r;
   }
@@ -230,7 +230,7 @@ public class BasicAttributes implements Attributes
   {
     s.defaultReadObject();
     int size = s.readInt();
-    attributes = new Vector<Attribute>(size);    
+    attributes = new Vector<Attribute>(size);
     for (int i = 0; i < size; i++)
       attributes.add((Attribute) s.readObject());
   }
@@ -275,7 +275,7 @@ public class BasicAttributes implements Attributes
     public Attribute nextElement () throws NoSuchElementException
     {
       if (where >= attributes.size ())
-	throw new NoSuchElementException ("no more elements");
+        throw new NoSuchElementException ("no more elements");
       Attribute at = attributes.get (where);
       ++where;
       return at;

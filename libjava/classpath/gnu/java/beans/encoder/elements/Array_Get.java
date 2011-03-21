@@ -42,7 +42,7 @@ import gnu.java.beans.encoder.Writer;
 
 /**
  * Generates an XML element denoting the retrieval of an array value.
- * 
+ *
  * @author Robert Schuster (robertschuster@fsfe.org)
  */
 public class Array_Get extends Element

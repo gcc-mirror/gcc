@@ -110,7 +110,7 @@ public class GlyphView extends View implements TabableView, Cloneable
     /**
      * Determines the model offset, so that the text between <code>p0</code>
      * and this offset fits within the span starting at <code>x</code> with
-     * the length of <code>len</code>. 
+     * the length of <code>len</code>.
      *
      * @param v the glyph view
      * @param p0 the starting offset in the model
@@ -403,7 +403,7 @@ public class GlyphView extends View implements TabableView, Cloneable
                                        : Position.Bias.Backward;
       return pos + v.getStartOffset();
     }
-    
+
   }
 
   /**
@@ -424,7 +424,7 @@ public class GlyphView extends View implements TabableView, Cloneable
       float height = fontMetrics.getHeight();
       return height;
     }
-    
+
     /**
      * Paints the glyphs.
      *
@@ -562,7 +562,7 @@ public class GlyphView extends View implements TabableView, Cloneable
     /**
      * Determines the model offset, so that the text between <code>p0</code>
      * and this offset fits within the span starting at <code>x</code> with
-     * the length of <code>len</code>. 
+     * the length of <code>len</code>.
      *
      * @param v the glyph view
      * @param p0 the starting offset in the model
@@ -739,7 +739,7 @@ public class GlyphView extends View implements TabableView, Cloneable
         g.fillRect(r.x, r.y, r.width, r.height);
       }
 
-    
+
     // Paint layered highlights if there are any.
     if (tc != null)
       {
@@ -972,11 +972,11 @@ public class GlyphView extends View implements TabableView, Cloneable
       }
     catch (BadLocationException ex)
       {
-	AssertionError ae;
+        AssertionError ae;
         ae = new AssertionError("BadLocationException should not be "
-				+ "thrown here. p0 = " + p0 + ", p1 = " + p1);
-	ae.initCause(ex);
-	throw ae;
+                                + "thrown here. p0 = " + p0 + ", p1 = " + p1);
+        ae.initCause(ex);
+        throw ae;
       }
 
     return cached;

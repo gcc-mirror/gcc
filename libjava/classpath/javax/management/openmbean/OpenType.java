@@ -47,7 +47,7 @@ import java.util.List;
  * applicable data values for open MBeans.  An open type
  * is defined by its name and description, and the name
  * of the Java class it maps to.
- * 
+ *
  * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
  * @since 1.5
  */
@@ -99,7 +99,7 @@ public abstract class OpenType<T>
     "java.util.Date",
     "javax.management.ObjectName",
     CompositeData.class.getName(),
-    TabularData.class.getName() 
+    TabularData.class.getName()
   };
 
   /**
@@ -107,8 +107,8 @@ public abstract class OpenType<T>
    * used as open types.  Note that each type is also available
    * in array form, possibly with multiple dimensions.
    */
-  public static final List<String> ALLOWED_CLASSNAMES_LIST = 
-    Arrays.asList(ALLOWED_CLASSNAMES); 
+  public static final List<String> ALLOWED_CLASSNAMES_LIST =
+    Arrays.asList(ALLOWED_CLASSNAMES);
 
   /**
    * Constructs a new {@link OpenType} for the specified class
@@ -136,25 +136,25 @@ public abstract class OpenType<T>
   {
     if (name == null || name.equals(""))
       throw new IllegalArgumentException("The name can not be null " +
-					 "or the empty string.");
+                                         "or the empty string.");
     if (desc == null || desc.equals(""))
       throw new IllegalArgumentException("The description can not " +
-					 "be null or the empty string.");
+                                         "be null or the empty string.");
     Class<?> type;
     try
       {
-	type = Class.forName(className);
+        type = Class.forName(className);
       }
     catch (ClassNotFoundException e)
       {
-	throw (OpenDataException) new OpenDataException("The class name, " + className +
-							", is unavailable.").initCause(e);
+        throw (OpenDataException) new OpenDataException("The class name, " + className +
+                                                        ", is unavailable.").initCause(e);
       }
     while (type.isArray())
       type = type.getComponentType();
     if (!(type.isPrimitive() || ALLOWED_CLASSNAMES_LIST.contains(type.getName())))
-      throw new OpenDataException("The class name, " + className + 
-				  ", does not specify a valid open type.");
+      throw new OpenDataException("The class name, " + className +
+                                  ", does not specify a valid open type.");
     this.className = className;
     typeName = name;
     description = desc;
@@ -172,7 +172,7 @@ public abstract class OpenType<T>
   /**
    * Returns the name of the Java class this type represents.  This must
    * be one of the {@link ALLOWED_CLASSNAMES} or an array of one of them.
-   * The specification of arrays follows the standard set by 
+   * The specification of arrays follows the standard set by
    * {@link java.lang.Class#getName()} i.e. the name is the class name
    * preceded by n instances of '[' and an 'L', where n is number of
    * dimensions used by the array.

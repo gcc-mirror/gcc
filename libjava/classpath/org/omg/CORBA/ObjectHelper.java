@@ -64,7 +64,7 @@ public abstract class ObjectHelper
       {
         BAD_OPERATION bad = new BAD_OPERATION("CORBA object expected");
         bad.minor = Minor.Any;
-        throw bad;        
+        throw bad;
       }
   }
 

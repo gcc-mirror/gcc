@@ -92,11 +92,11 @@ public class GtkImageConsumer implements ImageConsumer
   public synchronized void setHints (int flags)
   {
     // This method informs us in which order the pixels are
-    // delivered, for progressive-loading support, etc. 
+    // delivered, for progressive-loading support, etc.
     // Since we wait until it's all loaded, we can ignore the hints.
   }
 
-  public synchronized void setPixels (int x, int y, int width, int height, 
+  public synchronized void setPixels (int x, int y, int width, int height,
                                       ColorModel cm, byte[] pixels,
                                       int offset, int scansize)
   {
@@ -158,7 +158,7 @@ public class GtkImageConsumer implements ImageConsumer
 
     for (int i = 0; i < pixels.length; i++)
       ret[i] = pixels[i] & 0xFF;
-    
+
     return ret;
   }
 
@@ -167,5 +167,3 @@ public class GtkImageConsumer implements ImageConsumer
     this.properties = props;
   }
 }
-
-

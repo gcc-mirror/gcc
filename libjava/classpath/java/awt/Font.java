@@ -101,7 +101,7 @@ public class Font implements Serializable
   /**
    * Constant indicating the baseline mode characteristic of Devanigri.
    */
-  public static final int HANGING_BASELINE = 2;  
+  public static final int HANGING_BASELINE = 2;
 
 
   /**
@@ -117,11 +117,11 @@ public class Font implements Serializable
    * @since 1.3
    */
   public static final int TRUETYPE_FONT = 0;
-  
+
   /**
    * Indicates to <code>createFont</code> that the supplied font data
    * is in Type1 format.
-   * 
+   *
    * @since 1.5
    */
   public static final int TYPE1_FONT = 1;
@@ -249,15 +249,15 @@ public class Font implements Serializable
    * The style should be one of BOLD, ITALIC, or BOLDITALIC.  The default
    * style if none is specified is PLAIN.  The default size if none
    * is specified is 12.
-   * 
-   * @param fontspec  a string specifying the required font (<code>null</code> 
+   *
+   * @param fontspec  a string specifying the required font (<code>null</code>
    *                  permitted, interpreted as 'Dialog-PLAIN-12').
-   * 
+   *
    * @return A font.
    */
   public static Font decode(String fontspec)
   {
-    if (fontspec == null) 
+    if (fontspec == null)
       fontspec = "Dialog-PLAIN-12";
     String name = null;
     int style = PLAIN;
@@ -336,7 +336,7 @@ public class Font implements Serializable
    * @param propname The name of the system property.
    * @param defval Value to use if the property is not found.
    *
-   * @return The requested font, or <code>default</code> if the property 
+   * @return The requested font, or <code>default</code> if the property
    * not exist or is malformed.
    */
   public static Font getFont(String propname, Font defval)
@@ -352,7 +352,7 @@ public class Font implements Serializable
    *
    * @param propname The name of the system property.
    *
-   * @return The requested font, or <code>null</code> if the property 
+   * @return The requested font, or <code>null</code> if the property
    * not exist or is malformed.
    */
   public static Font getFont(String propname)
@@ -430,7 +430,7 @@ public class Font implements Serializable
   /**
    * Returns the size of the font, in typographics points (1/72 of an inch),
    * rounded to an integer.
-   * 
+   *
    * @return The font size
    */
   public int getSize()
@@ -440,7 +440,7 @@ public class Font implements Serializable
 
   /**
    * Returns the size of the font, in typographics points (1/72 of an inch).
-   * 
+   *
    * @return The font size
    */
   public float getSize2D()
@@ -457,7 +457,7 @@ public class Font implements Serializable
    */
   public boolean isPlain()
   {
-    return peer.isPlain(this); 
+    return peer.isPlain(this);
   }
 
   /**
@@ -535,7 +535,7 @@ public class Font implements Serializable
   }
 
   /**
-   * Checks how much of a given string can be mapped to glyphs in 
+   * Checks how much of a given string can be mapped to glyphs in
    * this font.
    *
    * @param s The string to check.
@@ -548,7 +548,7 @@ public class Font implements Serializable
    */
   public int canDisplayUpTo(String s)
   {
-    return peer.canDisplayUpTo(this, new StringCharacterIterator(s), 
+    return peer.canDisplayUpTo(this, new StringCharacterIterator(s),
                                0, s.length() - 1);
   }
 
@@ -595,7 +595,7 @@ public class Font implements Serializable
    */
   public int canDisplayUpTo(CharacterIterator i, int start, int limit)
   {
-    return peer.canDisplayUpTo(this, i, start, limit);    
+    return peer.canDisplayUpTo(this, i, start, limit);
   }
 
   /**
@@ -717,7 +717,7 @@ public class Font implements Serializable
 
   /**
    * Extracts a sequence of glyphs from a font, returning a new {@link
-   * GlyphVector} with a mapped glyph for each input glyph code. 
+   * GlyphVector} with a mapped glyph for each input glyph code.
    *
    * @param ctx The rendering context used for precise glyph placement.
    * @param glyphCodes Array of characters to convert to glyphs.
@@ -858,7 +858,7 @@ public class Font implements Serializable
   }
 
   /**
-   * Returns an array of chracter attribute keys which this font understands. 
+   * Returns an array of chracter attribute keys which this font understands.
    *
    * @return An array of chracter attribute keys which this font understands.
    *
@@ -917,7 +917,7 @@ public class Font implements Serializable
    */
   public String getFamily(Locale lc)
   {
-    return peer.getFamily(this, lc); 
+    return peer.getFamily(this, lc);
   }
 
   /**
@@ -929,7 +929,7 @@ public class Font implements Serializable
    *
    * @since 1.2
    *
-   * @see java.awt.font.TextAttribute  
+   * @see java.awt.font.TextAttribute
    */
   public static Font getFont(Map<? extends AttributedCharacterIterator.Attribute, ?> attributes)
   {
@@ -990,7 +990,7 @@ public class Font implements Serializable
 
   /**
    * Returns a {@link LineMetrics} object constructed with the specified
-   * text and {@link FontRenderContext}. 
+   * text and {@link FontRenderContext}.
    *
    * @param text The string to calculate metrics from.
    * @param begin Index of first character in <code>text</code> to measure.
@@ -1002,16 +1002,16 @@ public class Font implements Serializable
    * @throws IndexOutOfBoundsException if the range [begin, limit] is
    * invalid in <code>text</code>.
    */
-  public LineMetrics getLineMetrics(String text, int begin, 
+  public LineMetrics getLineMetrics(String text, int begin,
                                     int limit, FontRenderContext rc)
   {
-    return peer.getLineMetrics(this, new StringCharacterIterator(text), 
+    return peer.getLineMetrics(this, new StringCharacterIterator(text),
                                begin, limit, rc);
   }
 
   /**
    * Returns a {@link LineMetrics} object constructed with the specified
-   * text and {@link FontRenderContext}. 
+   * text and {@link FontRenderContext}.
    *
    * @param chars The string to calculate metrics from.
    * @param begin Index of first character in <code>text</code> to measure.
@@ -1023,17 +1023,17 @@ public class Font implements Serializable
    * @throws IndexOutOfBoundsException if the range [begin, limit] is
    * invalid in <code>chars</code>.
    */
-  public LineMetrics getLineMetrics(char[] chars, int begin, 
+  public LineMetrics getLineMetrics(char[] chars, int begin,
                                     int limit, FontRenderContext rc)
   {
     return peer.getLineMetrics(this,
-                               new StringCharacterIterator(new String(chars)), 
+                               new StringCharacterIterator(new String(chars)),
                                begin, limit, rc);
   }
 
   /**
    * Returns a {@link LineMetrics} object constructed with the specified
-   * text and {@link FontRenderContext}. 
+   * text and {@link FontRenderContext}.
    *
    * @param ci The string to calculate metrics from.
    * @param begin Index of first character in <code>text</code> to measure.
@@ -1045,7 +1045,7 @@ public class Font implements Serializable
    * @throws IndexOutOfBoundsException if the range [begin, limit] is
    * invalid in <code>ci</code>.
    */
-  public LineMetrics getLineMetrics(CharacterIterator ci, int begin, 
+  public LineMetrics getLineMetrics(CharacterIterator ci, int begin,
                                     int limit, FontRenderContext rc)
   {
     return peer.getLineMetrics(this, ci, begin, limit, rc);
@@ -1086,7 +1086,7 @@ public class Font implements Serializable
    * <code>[ 0, getNumGlyphs() - 1 ]</code>.
    *
    * @return The number of glyphs in this font.
-   * 
+   *
    * @since 1.2
    */
   public int getNumGlyphs()
@@ -1095,7 +1095,7 @@ public class Font implements Serializable
   }
 
   /**
-   * Returns the PostScript Name of this font.   
+   * Returns the PostScript Name of this font.
    *
    * @return The PostScript Name of this font.
    *
@@ -1115,12 +1115,12 @@ public class Font implements Serializable
    * font in the specified {@link FontRenderContext}. This box will include the
    * glyph origin, ascent, advance, height, and leading, but may not include all
    * diacritics or accents. To get the complete visual bounding box of all the
-   * glyphs in a run of text, use the {@link TextLayout#getBounds} method of 
+   * glyphs in a run of text, use the {@link TextLayout#getBounds} method of
    * {@link TextLayout}.
    *
    * @param str The string to measure.
    * @param frc The context in which to make the precise glyph measurements.
-   * 
+   *
    * @return A bounding box covering the logical bounds of the specified text.
    *
    * @see #createGlyphVector(FontRenderContext, String)
@@ -1143,7 +1143,7 @@ public class Font implements Serializable
    * @param begin Index of the first character in <code>str</code> to measure.
    * @param limit Index of the last character in <code>str</code> to measure.
    * @param frc The context in which to make the precise glyph measurements.
-   * 
+   *
    * @return A bounding box covering the logical bounds of the specified text.
    *
    * @throws IndexOutOfBoundsException if the range [begin, limit] is
@@ -1153,7 +1153,7 @@ public class Font implements Serializable
    *
    * @see #createGlyphVector(FontRenderContext, String)
    */
-  public Rectangle2D getStringBounds(String str, int begin, 
+  public Rectangle2D getStringBounds(String str, int begin,
                                      int limit, FontRenderContext frc)
   {
     String sub = str.substring(begin, limit);
@@ -1172,7 +1172,7 @@ public class Font implements Serializable
    * @param begin Index of the first character in <code>ci</code> to measure.
    * @param limit Index of the last character in <code>ci</code> to measure.
    * @param frc The context in which to make the precise glyph measurements.
-   * 
+   *
    * @return A bounding box covering the logical bounds of the specified text.
    *
    * @throws IndexOutOfBoundsException if the range [begin, limit] is
@@ -1182,7 +1182,7 @@ public class Font implements Serializable
    *
    * @see #createGlyphVector(FontRenderContext, CharacterIterator)
    */
-  public Rectangle2D getStringBounds(CharacterIterator ci, int begin, 
+  public Rectangle2D getStringBounds(CharacterIterator ci, int begin,
                                      int limit, FontRenderContext frc)
   {
     int start = ci.getBeginIndex();
@@ -1209,7 +1209,7 @@ public class Font implements Serializable
    * @param begin Index of the first character in <code>ci</code> to measure.
    * @param limit Index of the last character in <code>ci</code> to measure.
    * @param frc The context in which to make the precise glyph measurements.
-   * 
+   *
    * @return A bounding box covering the logical bounds of the specified text.
    *
    * @throws IndexOutOfBoundsException if the range [begin, limit] is
@@ -1219,7 +1219,7 @@ public class Font implements Serializable
    *
    * @see #createGlyphVector(FontRenderContext, char[])
    */
-  public Rectangle2D getStringBounds(char[] chars, int begin, 
+  public Rectangle2D getStringBounds(char[] chars, int begin,
                                      int limit, FontRenderContext frc)
   {
     String str = new String(chars, begin, limit - begin);
@@ -1293,10 +1293,10 @@ public class Font implements Serializable
    * @return A new {@link GlyphVector} representing the specified text.
    *
    * @throws IndexOutOfBoundsException if the range [begin, limit] is
-   * invalid in <code>chars</code>. 
+   * invalid in <code>chars</code>.
    */
-  public GlyphVector layoutGlyphVector(FontRenderContext frc, 
-                                       char[] chars, int start, 
+  public GlyphVector layoutGlyphVector(FontRenderContext frc,
+                                       char[] chars, int start,
                                        int limit, int flags)
   {
     return peer.layoutGlyphVector(this, frc, chars, start, limit, flags);
@@ -1318,7 +1318,7 @@ public class Font implements Serializable
 
   /**
    * Returns a hash value for this font.
-   * 
+   *
    * @return A hash for this font.
    */
   public int hashCode()
@@ -1395,8 +1395,8 @@ public class Font implements Serializable
       default:
         styleString = "unknown";
      }
-    
-    return getClass().getName() 
+
+    return getClass().getName()
              + "[family=" + getFamily ()
              + ",name=" + getFontName ()
              + ",style=" + styleString

@@ -420,5 +420,9 @@ lto_reissue_options (void)
 	gcc_unreachable ();
     }
 
+  /* Flag_shlib is usually set by finish_options, but we are issuing flag_pic
+     too late.  */
+  if (flag_pic && !flag_pie)
+    flag_shlib = 1;
   VEC_free (opt_t, heap, opts);
 }

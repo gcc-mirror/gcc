@@ -60,7 +60,7 @@ public abstract class AlgorithmParametersSpi
   }
 
   /**
-   * Initializes the engine with the specified 
+   * Initializes the engine with the specified
    * AlgorithmParameterSpec class.
    *
    * @param paramSpec A AlgorithmParameterSpec to initialize with
@@ -72,7 +72,7 @@ public abstract class AlgorithmParametersSpi
     throws InvalidParameterSpecException;
 
   /**
-   * Initializes the engine with the specified 
+   * Initializes the engine with the specified
    * parameters stored in the byte array and decodes them
    * according to the ASN.1 specification. If the ASN.1
    * specification exists then it succeeds or else it throws
@@ -85,10 +85,10 @@ public abstract class AlgorithmParametersSpi
   protected abstract void engineInit(byte[]params) throws IOException;
 
   /**
-   * Initializes the engine with the specified 
+   * Initializes the engine with the specified
    * parameters stored in the byte array and decodes them
-   * according to the specified decoding specification. 
-   * If format is null, then it is decoded using the ASN.1 
+   * according to the specified decoding specification.
+   * If format is null, then it is decoded using the ASN.1
    * specification if it exists or else it throws
    * IOException.
    *
@@ -113,13 +113,13 @@ public abstract class AlgorithmParametersSpi
    * @throws InvalidParameterSpecException if the paramSpec is an
    * invalid parameter class
    */
-  protected abstract <T extends AlgorithmParameterSpec> 
+  protected abstract <T extends AlgorithmParameterSpec>
   T engineGetParameterSpec(Class<T> paramSpec)
     throws InvalidParameterSpecException;
 
 
   /**
-   * Returns the parameters in the default encoding format. 
+   * Returns the parameters in the default encoding format.
    * The primary encoding format is ASN.1 format if it exists
    * for the specified type.
    *
@@ -129,9 +129,9 @@ public abstract class AlgorithmParametersSpi
 
 
   /**
-   * Returns the parameters in the specified encoding format. 
-   * If <code>format</code> is <code>null</code> then the 
-   * primary encoding format is used, the ASN.1 format, 
+   * Returns the parameters in the specified encoding format.
+   * If <code>format</code> is <code>null</code> then the
+   * primary encoding format is used, the ASN.1 format,
    * if it exists for the specified type.
    *
    * @return byte array representing the parameters
@@ -140,7 +140,7 @@ public abstract class AlgorithmParametersSpi
     throws IOException;
 
   /**
-   * Returns a string describing the parameters in the 
+   * Returns a string describing the parameters in the
    * AlgorithmParametersSpi class.
    *
    * @return A string representing the format of the parameters.

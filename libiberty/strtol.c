@@ -30,8 +30,10 @@
 
 /*
 
-@deftypefn Supplemental {long int} strtol (const char *@var{string}, char **@var{endptr}, int @var{base})
-@deftypefnx Supplemental {unsigned long int} strtoul (const char *@var{string}, char **@var{endptr}, int @var{base})
+@deftypefn Supplemental {long int} strtol (const char *@var{string}, @
+  char **@var{endptr}, int @var{base})
+@deftypefnx Supplemental {unsigned long int} strtoul (const char *@var{string}, @
+  char **@var{endptr}, int @var{base})
 
 The @code{strtol} function converts the string in @var{string} to a
 long integer value according to the given @var{base}, which must be

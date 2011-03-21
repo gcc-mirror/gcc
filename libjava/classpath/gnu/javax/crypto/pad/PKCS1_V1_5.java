@@ -1,4 +1,4 @@
-/* PKCS1_V1_5.java -- 
+/* PKCS1_V1_5.java --
    Copyright (C) 2003, 2006 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -60,7 +60,7 @@ import java.util.logging.Logger;
  * RSA Cryptography Specifications Version 2.1.<br>
  * Jakob Jonsson and Burt Kaliski.</li>
  * </ol>
- * 
+ *
  * @see EME_PKCS1_V1_5
  */
 public class PKCS1_V1_5

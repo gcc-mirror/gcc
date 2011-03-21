@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -65,7 +65,7 @@ abstract class SimpleHandler extends AbstractElementHandler
   protected final Context startElement(Attributes attributes, ExceptionListener exceptionListener)
     throws AssemblyException
   {
-  	
+
     // note: simple elements should not have any attributes. We inform
     // the user of this syntactical but uncritical problem by sending
     // an IllegalArgumentException for each unneccessary attribute
@@ -79,7 +79,7 @@ abstract class SimpleHandler extends AbstractElementHandler
                                     + "' discarded.");
             exceptionListener.exceptionThrown(e);
     }
-    
+
     return context = new ObjectContext();
   }
 
@@ -89,11 +89,11 @@ abstract class SimpleHandler extends AbstractElementHandler
     // reports the number when the character data can be parsed
     try
       {
-	context.setObject(parse(characters));
+        context.setObject(parse(characters));
       }
     catch (NumberFormatException nfe)
       {
-	throw new AssemblyException(nfe);
+        throw new AssemblyException(nfe);
       }
   }
 

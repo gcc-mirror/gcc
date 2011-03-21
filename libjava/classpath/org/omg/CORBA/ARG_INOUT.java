@@ -1,4 +1,4 @@
-/* ARG_IN.java -- 
+/* ARG_IN.java --
    Copyright (C) 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -39,12 +39,12 @@ package org.omg.CORBA;
 
 /**
  * This simple interface defines just one constant, normally used
- * to mark that the the parameter is used both to pass and to 
+ * to mark that the the parameter is used both to pass and to
  * return some value. It is a similar conception like passing a
  * parameter "by reference" in C or Pascal.
- * 
+ *
  * @author Audrius Meskauskas (AudriusA@Bioinformatics.org)
- * 
+ *
  * @see NamedValue
  */
 public interface ARG_INOUT

@@ -1,4 +1,4 @@
-/* XMLEventAllocator.java -- 
+/* XMLEventAllocator.java --
    Copyright (C) 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -51,7 +51,7 @@ public interface XMLEventAllocator
    * Creates a new allocator.
    */
   XMLEventAllocator newInstance();
-  
+
   /**
    * Allocates an event based on the current state of the stream reader.
    */
@@ -64,6 +64,5 @@ public interface XMLEventAllocator
    */
   void allocate(XMLStreamReader reader, XMLEventConsumer consumer)
     throws XMLStreamException;
-  
-}
 
+}

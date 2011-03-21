@@ -105,7 +105,7 @@ public class DigestOutputStream extends FilterOutputStream
    *
    * @param b A byte to write to the output stream
    *
-   * @exception IOException if the underlying output stream 
+   * @exception IOException if the underlying output stream
    * cannot write the byte, this is thrown.
    */
   public void write(int b) throws IOException
@@ -124,7 +124,7 @@ public class DigestOutputStream extends FilterOutputStream
    * @param off Offset to start to start at in array
    * @param len Length of data to write
    *
-   * @exception IOException if the underlying output stream 
+   * @exception IOException if the underlying output stream
    * cannot write the bytes, this is thrown.
    */
   public void write(byte[]b, int off, int len) throws IOException

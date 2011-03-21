@@ -143,7 +143,7 @@ public class BufferCapabilities implements Cloneable
    * null
    */
   public BufferCapabilities(ImageCapabilities frontCaps,
-			    ImageCapabilities backCaps,
+                            ImageCapabilities backCaps,
                             FlipContents flip)
   {
     if (frontCaps ==  null || backCaps == null)

@@ -1,4 +1,4 @@
-/* DomLSParser.java -- 
+/* DomLSParser.java --
    Copyright (C) 1999,2000,2001,2007 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -125,12 +125,12 @@ public class DomLSParser
   }
 
   // -- LSParser --
-  
+
   public DOMConfiguration getDomConfig()
   {
     return this;
   }
-  
+
   public LSParserFilter getFilter()
   {
     return filter;
@@ -283,7 +283,7 @@ public class DomLSParser
         catch (SAXNotRecognizedException e)
           {
             // ignore
-          } 
+          }
         try
           {
             reader.setFeature("http://xml.org/sax/features/use-attributes2",
@@ -563,6 +563,5 @@ public class DomLSParser
       }
     abort();
   }
-  
-}
 
+}

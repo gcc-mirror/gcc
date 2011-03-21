@@ -1,7 +1,7 @@
 // Contributed by Dodji Seketeli <dodji@redhat.com>
 // Origin: PR c++/39639
+// { dg-do compile }
 // { dg-options "-std=c++0x" }
-// { dg-do "compile" }
 
 template <class... Types>
 struct S

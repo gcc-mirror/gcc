@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -56,32 +56,32 @@ public final class LocateRegistry {
   private LocateRegistry() {}
 
 public static Registry getRegistry() throws RemoteException {
-	return (getRegistry("localhost", Registry.REGISTRY_PORT));
+        return (getRegistry("localhost", Registry.REGISTRY_PORT));
 }
 
 public static Registry getRegistry(int port) throws RemoteException {
-	return (getRegistry("localhost", port));
+        return (getRegistry("localhost", port));
 }
 
 public static Registry getRegistry(String host) throws RemoteException {
-	return (getRegistry(host, Registry.REGISTRY_PORT));
+        return (getRegistry(host, Registry.REGISTRY_PORT));
 }
 
 public static Registry getRegistry(String host, int port) throws RemoteException {
-	return (getRegistry(host, port, RMISocketFactory.getSocketFactory()));
+        return (getRegistry(host, port, RMISocketFactory.getSocketFactory()));
 }
 
 public static Registry getRegistry(String host, int port, RMIClientSocketFactory csf) throws RemoteException {
-	RemoteRef ref = new UnicastRef(new ObjID(ObjID.REGISTRY_ID), host, port, csf);
-	return (new RegistryImpl_Stub(ref));
+        RemoteRef ref = new UnicastRef(new ObjID(ObjID.REGISTRY_ID), host, port, csf);
+        return (new RegistryImpl_Stub(ref));
 }
 
 public static Registry createRegistry(int port) throws RemoteException {
-	return (createRegistry(port, RMISocketFactory.getSocketFactory(), RMISocketFactory.getSocketFactory()));
+        return (createRegistry(port, RMISocketFactory.getSocketFactory(), RMISocketFactory.getSocketFactory()));
 }
 
 public static Registry createRegistry(int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
-	return (new RegistryImpl(port, csf, ssf));
+        return (new RegistryImpl(port, csf, ssf));
 }
 
 }

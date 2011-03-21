@@ -58,7 +58,7 @@ public class PixelInterleavedSampleModel
           bandOffsets);
   }
 
-  
+
   /**
    * Creates a new <code>SampleModel</code> that is like this one, but
    * uses the specified width and height.

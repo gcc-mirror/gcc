@@ -100,7 +100,7 @@ public class AttributeChangeNotificationFilter
     if (!enabledAttributes.contains(name))
       enabledAttributes.add(name);
   }
-  
+
   /**
    * Returns the list of enabled attributes for this
    * filter.
@@ -127,9 +127,9 @@ public class AttributeChangeNotificationFilter
   {
     if (notif instanceof AttributeChangeNotification)
       {
-	AttributeChangeNotification n =
-	  (AttributeChangeNotification) notif;
-	return enabledAttributes.contains(n.getAttributeName());
+        AttributeChangeNotification n =
+          (AttributeChangeNotification) notif;
+        return enabledAttributes.contains(n.getAttributeName());
       }
     return false;
   }

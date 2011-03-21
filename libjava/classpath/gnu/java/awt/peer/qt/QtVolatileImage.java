@@ -74,11 +74,11 @@ public class QtVolatileImage extends VolatileImage
   /*
    * The 32-bit AARRGGBB format the  uses.
    */
-  static ColorModel nativeModel = new DirectColorModel(32, 
-						       0x00FF0000,
-						       0x0000FF00,
-						       0x000000FF,
-						       0xFF000000);
+  static ColorModel nativeModel = new DirectColorModel(32,
+                                                       0x00FF0000,
+                                                       0x0000FF00,
+                                                       0x000000FF,
+                                                       0xFF000000);
 
   /**
    * Clears the image to RGBA 0
@@ -111,7 +111,7 @@ public class QtVolatileImage extends VolatileImage
   private native void freeImage();
 
   /**
-   * Blit a QImage 
+   * Blit a QImage
    */
   public native void blit(QtImage i);
   public native void blit(QtImage i, int x, int y, int w, int h);
@@ -124,35 +124,35 @@ public class QtVolatileImage extends VolatileImage
   /**
    * Draws the image optionally composited.
    */
-  private native void drawPixels (QtGraphics gc, 
-				  int bg_red, int bg_green, int bg_blue, 
-				  int x, int y, 
-				  boolean composite);
+  private native void drawPixels (QtGraphics gc,
+                                  int bg_red, int bg_green, int bg_blue,
+                                  int x, int y,
+                                  boolean composite);
   /**
    * Draws the image, optionally scaled and composited.
    */
-  private native void drawPixelsScaled (QtGraphics gc, 
-					int bg_red, int bg_green, int bg_blue, 
-					int x, int y, int width, int height, 
-					boolean composite);
+  private native void drawPixelsScaled (QtGraphics gc,
+                                        int bg_red, int bg_green, int bg_blue,
+                                        int x, int y, int width, int height,
+                                        boolean composite);
 
   /**
    * Draws the image transformed.
    */
   private native void drawPixelsTransformed (QtGraphics gc, QMatrix transform);
-  
+
   /**
    * Draws the image scaled flipped and optionally composited.
    */
-  native void drawPixelsScaledFlipped (QtGraphics gc, 
-				       int bg_red, int bg_green, 
-				       int bg_blue, 
-				       boolean flipX, boolean flipY,
-				       int srcX, int srcY,
-				       int srcWidth, int srcHeight,
-				       int dstX, int dstY,
-				       int dstWidth, int dstHeight,
-				       boolean composite);
+  native void drawPixelsScaledFlipped (QtGraphics gc,
+                                       int bg_red, int bg_green,
+                                       int bg_blue,
+                                       boolean flipX, boolean flipY,
+                                       int srcX, int srcY,
+                                       int srcWidth, int srcHeight,
+                                       int dstX, int dstY,
+                                       int dstWidth, int dstHeight,
+                                       boolean composite);
 
   /**
    * Constructs an empty QtVolatileImage.
@@ -169,8 +169,8 @@ public class QtVolatileImage extends VolatileImage
   /**
    * Constructs a scaled version of the src bitmap, using Qt
    */
-  private QtVolatileImage (QtVolatileImage src, int width, int height, 
-			   int hints)
+  private QtVolatileImage (QtVolatileImage src, int width, int height,
+                           int hints)
   {
     this.width = width;
     this.height = height;
@@ -190,7 +190,7 @@ public class QtVolatileImage extends VolatileImage
     if( painters == null || painters.isEmpty() )
       freeImage();
     else
-      killFlag = true; // can't destroy image yet. 
+      killFlag = true; // can't destroy image yet.
     // Do so when all painters are gone.
   }
 
@@ -200,7 +200,7 @@ public class QtVolatileImage extends VolatileImage
   {
     return getWidth();
   }
-  
+
   public int getHeight (ImageObserver observer)
   {
     return getHeight();
@@ -217,8 +217,8 @@ public class QtVolatileImage extends VolatileImage
    */
   public ImageProducer getSource ()
   {
-    return new MemoryImageSource(width, height, nativeModel, getPixels(), 
-				 0, width);
+    return new MemoryImageSource(width, height, nativeModel, getPixels(),
+                                 0, width);
   }
 
   void putPainter(QtImageGraphics g)
@@ -244,17 +244,17 @@ public class QtVolatileImage extends VolatileImage
     putPainter( g );
     return g;
   }
-  
+
   /**
    * Returns a scaled instance of this image.
    */
   public Image getScaledInstance(int width,
-				 int height,
-				 int hints)
+                                 int height,
+                                 int hints)
   {
     if (width <= 0 || height <= 0)
       throw new IllegalArgumentException("Width and height of scaled bitmap"+
-					 "must be >= 0");
+                                         "must be >= 0");
 
     return new QtVolatileImage(this, width, height, hints);
   }
@@ -280,7 +280,7 @@ public class QtVolatileImage extends VolatileImage
    * Draws an image with eventual scaling/transforming.
    */
   public boolean drawImage (QtGraphics g, QMatrix matrix,
-			    ImageObserver observer)
+                            ImageObserver observer)
   {
     drawPixelsTransformed (g, matrix);
     return true;
@@ -291,11 +291,11 @@ public class QtVolatileImage extends VolatileImage
    * compositing with a background color.
    */
   public boolean drawImage (QtGraphics g, int x, int y,
-			    Color bgcolor, ImageObserver observer)
+                            Color bgcolor, ImageObserver observer)
   {
     if(bgcolor != null)
-      drawPixels(g, bgcolor.getRed (), bgcolor.getGreen (), 
-		 bgcolor.getBlue (), x, y, true);
+      drawPixels(g, bgcolor.getRed (), bgcolor.getGreen (),
+                 bgcolor.getBlue (), x, y, true);
     else
       drawPixels(g, 0, 0, 0, x, y, false);
 
@@ -303,27 +303,27 @@ public class QtVolatileImage extends VolatileImage
   }
 
   /**
-   * Draws an image to the QtGraphics context, at (x,y) scaled to 
+   * Draws an image to the QtGraphics context, at (x,y) scaled to
    * width and height, with optional compositing with a background color.
    */
   public boolean drawImage (QtGraphics g, int x, int y, int width, int height,
-			    Color bgcolor, ImageObserver observer)
+                            Color bgcolor, ImageObserver observer)
   {
     if(bgcolor != null)
-      drawPixelsScaled(g, bgcolor.getRed (), bgcolor.getGreen (), 
-		       bgcolor.getBlue (), x, y, width, height, true);
+      drawPixelsScaled(g, bgcolor.getRed (), bgcolor.getGreen (),
+                       bgcolor.getBlue (), x, y, width, height, true);
     else
       drawPixelsScaled(g, 0, 0, 0, x, y, width, height, false);
-    
+
     return true;
   }
 
   /**
    * Draws an image with eventual scaling/transforming.
    */
-  public boolean drawImage (QtGraphics g, int dx1, int dy1, int dx2, int dy2, 
-			    int sx1, int sy1, int sx2, int sy2, 
-			    Color bgcolor, ImageObserver observer)
+  public boolean drawImage (QtGraphics g, int dx1, int dy1, int dx2, int dy2,
+                            int sx1, int sy1, int sx2, int sy2,
+                            Color bgcolor, ImageObserver observer)
   {
     boolean flipX = (dx1 > dx2)^(sx1 > sx2);
     boolean flipY = (dy1 > dy2)^(sy1 > sy2);
@@ -336,53 +336,53 @@ public class QtVolatileImage extends VolatileImage
     int dstX = (dx1 < dx2) ? dx1 : dx2;
     int dstY = (dy1 < dy2) ? dy1 : dy2;
 
-    // Clipping. This requires the dst to be scaled as well, 
+    // Clipping. This requires the dst to be scaled as well,
     if (srcWidth > width)
       {
-	dstWidth = (int)((double)dstWidth*((double)width/(double)srcWidth));
-	srcWidth = width - srcX;
+        dstWidth = (int)((double)dstWidth*((double)width/(double)srcWidth));
+        srcWidth = width - srcX;
       }
 
-    if (srcHeight > height) 
+    if (srcHeight > height)
       {
-	dstHeight = (int)((double)dstHeight*((double)height/(double)srcHeight));
-	srcHeight = height - srcY;
+        dstHeight = (int)((double)dstHeight*((double)height/(double)srcHeight));
+        srcHeight = height - srcY;
       }
 
     if (srcWidth + srcX > width)
       {
-	dstWidth = (int)((double)dstWidth * (double)(width - srcX)/(double)srcWidth);
-	srcWidth = width - srcX;
+        dstWidth = (int)((double)dstWidth * (double)(width - srcX)/(double)srcWidth);
+        srcWidth = width - srcX;
       }
 
     if (srcHeight + srcY > height)
       {
-	dstHeight = (int)((double)dstHeight * (double)(width - srcY)/(double)srcHeight);
-	srcHeight = height - srcY;
+        dstHeight = (int)((double)dstHeight * (double)(width - srcY)/(double)srcHeight);
+        srcHeight = height - srcY;
       }
 
     if ( srcWidth <= 0 || srcHeight <= 0 || dstWidth <= 0 || dstHeight <= 0)
       return true;
 
     if(bgcolor != null)
-      drawPixelsScaledFlipped (g, bgcolor.getRed (), bgcolor.getGreen (), 
-			       bgcolor.getBlue (), 
-			       flipX, flipY,
-			       srcX, srcY,
-			       srcWidth, srcHeight,
-			       dstX,  dstY,
-			       dstWidth, dstHeight,
-			       true);
+      drawPixelsScaledFlipped (g, bgcolor.getRed (), bgcolor.getGreen (),
+                               bgcolor.getBlue (),
+                               flipX, flipY,
+                               srcX, srcY,
+                               srcWidth, srcHeight,
+                               dstX,  dstY,
+                               dstWidth, dstHeight,
+                               true);
     else
       drawPixelsScaledFlipped (g, 0, 0, 0, flipX, flipY,
-			       srcX, srcY, srcWidth, srcHeight,
-			       dstX,  dstY, dstWidth, dstHeight,
-			       false);
+                               srcX, srcY, srcWidth, srcHeight,
+                               dstX,  dstY, dstWidth, dstHeight,
+                               false);
     return true;
   }
-  
-  public native void copyArea(int x, int y, int width, int height, 
-			      int dx, int dy);
+
+  public native void copyArea(int x, int y, int width, int height,
+                              int dx, int dy);
 
   //******************** VolatileImage stuff ********************
 
@@ -402,10 +402,10 @@ public class QtVolatileImage extends VolatileImage
   {
     return new ImageCapabilities(false)
       {
-	public boolean isTrueVolatile()
-	{
-	  return false;
-	}
+        public boolean isTrueVolatile()
+        {
+          return false;
+        }
       };
   }
 
@@ -416,8 +416,8 @@ public class QtVolatileImage extends VolatileImage
 
   public BufferedImage getSnapshot()
   {
-    BufferedImage bi = new BufferedImage(width, height, 
-					 BufferedImage.TYPE_INT_ARGB_PRE);
+    BufferedImage bi = new BufferedImage(width, height,
+                                         BufferedImage.TYPE_INT_ARGB_PRE);
     bi.setRGB( 0, 0, width, height, getPixels(), 0, width);
     return bi;
   }

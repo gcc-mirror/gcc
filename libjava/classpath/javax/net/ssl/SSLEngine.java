@@ -73,7 +73,7 @@ public abstract class SSLEngine
     this.peerPort = peerPort;
   }
 
-
+
 
   /**
    * Begin, or restart, the SSL handshake.
@@ -359,8 +359,8 @@ public abstract class SSLEngine
    * negative, or if 'length+offset' is greater than 'sinks.length'.
    */
   public abstract SSLEngineResult unwrap (ByteBuffer source,
-					  ByteBuffer[] sinks, int offset,
-					  int length)
+                                          ByteBuffer[] sinks, int offset,
+                                          int length)
     throws javax.net.ssl.SSLException;
 
   /**
@@ -436,7 +436,7 @@ public abstract class SSLEngine
    * negative, or if 'length+offset' is greater than 'sources.length'.
    */
   public abstract SSLEngineResult wrap (ByteBuffer[] sources, int offset,
-					int length, ByteBuffer sink)
+                                        int length, ByteBuffer sink)
     throws SSLException;
 
 }

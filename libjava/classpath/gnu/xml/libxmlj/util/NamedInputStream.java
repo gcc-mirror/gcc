@@ -1,4 +1,4 @@
-/* NamedInputStream.java - 
+/* NamedInputStream.java -
    Copyright (C) 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -54,7 +54,7 @@ extends FilterInputStream
 {
 
   private static int DETECT_BUFFER_SIZE = 50;
-  
+
   private String name;
 
   NamedInputStream (String name, InputStream in, int size)
@@ -95,5 +95,5 @@ extends FilterInputStream
         return ret;
       }
   }
-  
+
 }

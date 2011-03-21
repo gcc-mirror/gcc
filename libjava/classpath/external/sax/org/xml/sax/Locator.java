@@ -34,17 +34,17 @@ package org.xml.sax;
  * locator, it must do so before reporting any other document events.
  * If no locator has been set by the time the application receives
  * the {@link org.xml.sax.ContentHandler#startDocument startDocument}
- * event, the application should assume that a locator is not 
+ * event, the application should assume that a locator is not
  * available.</p>
  *
  * @since SAX 1.0
  * @author David Megginson
  * @version 2.0.1 (sax2r2)
- * @see org.xml.sax.ContentHandler#setDocumentLocator 
+ * @see org.xml.sax.ContentHandler#setDocumentLocator
  */
 public interface Locator {
-    
-    
+
+
     /**
      * Return the public identifier for the current document event.
      *
@@ -57,8 +57,8 @@ public interface Locator {
      * @see #getSystemId
      */
     public abstract String getPublicId ();
-    
-    
+
+
     /**
      * Return the system identifier for the current document event.
      *
@@ -76,8 +76,8 @@ public interface Locator {
      * @see #getPublicId
      */
     public abstract String getSystemId ();
-    
-    
+
+
     /**
      * Return the line number where the current document event ends.
      * Lines are delimited by line ends, which are defined in
@@ -95,16 +95,16 @@ public interface Locator {
      * in the document entity or external parsed entity where the
      * markup triggering the event appears.</p>
      *
-     * <p>If possible, the SAX driver should provide the line position 
-     * of the first character after the text associated with the document 
+     * <p>If possible, the SAX driver should provide the line position
+     * of the first character after the text associated with the document
      * event.  The first line is line 1.</p>
      *
      * @return The line number, or -1 if none is available.
      * @see #getColumnNumber
      */
     public abstract int getLineNumber ();
-    
-    
+
+
     /**
      * Return the column number where the current document event ends.
      * This is one-based number of Java <code>char</code> values since
@@ -122,15 +122,15 @@ public interface Locator {
      * in the document entity or external parsed entity where the
      * markup triggering the event appears.</p>
      *
-     * <p>If possible, the SAX driver should provide the line position 
-     * of the first character after the text associated with the document 
+     * <p>If possible, the SAX driver should provide the line position
+     * of the first character after the text associated with the document
      * event.  The first column in each line is column 1.</p>
      *
      * @return The column number, or -1 if none is available.
      * @see #getLineNumber
      */
     public abstract int getColumnNumber ();
-    
+
 }
 
 // end of Locator.java

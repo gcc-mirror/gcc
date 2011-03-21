@@ -1,6 +1,6 @@
 /* Expand builtin functions.
    Copyright (C) 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
-   2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+   2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -191,6 +191,7 @@ static tree fold_builtin_strncat (location_t, tree, tree, tree);
 static tree fold_builtin_strspn (location_t, tree, tree);
 static tree fold_builtin_strcspn (location_t, tree, tree);
 static tree fold_builtin_sprintf (location_t, tree, tree, tree, int);
+static tree fold_builtin_snprintf (location_t, tree, tree, tree, tree, int);
 
 static rtx expand_builtin_object_size (tree);
 static rtx expand_builtin_memory_chk (tree, rtx, enum machine_mode,
@@ -605,7 +606,7 @@ c_readstr (const char *str, enum machine_mode mode)
       if (WORDS_BIG_ENDIAN)
 	j = GET_MODE_SIZE (mode) - i - 1;
       if (BYTES_BIG_ENDIAN != WORDS_BIG_ENDIAN
-	  && GET_MODE_SIZE (mode) > UNITS_PER_WORD)
+	  && GET_MODE_SIZE (mode) >= UNITS_PER_WORD)
 	j = j + UNITS_PER_WORD - 2 * (j % UNITS_PER_WORD) - 1;
       j *= BITS_PER_UNIT;
       gcc_assert (j < 2 * HOST_BITS_PER_WIDE_INT);
@@ -652,9 +653,10 @@ target_char_cast (tree cst, char *p)
 static tree
 builtin_save_expr (tree exp)
 {
-  if (TREE_ADDRESSABLE (exp) == 0
-      && (TREE_CODE (exp) == PARM_DECL
-	  || (TREE_CODE (exp) == VAR_DECL && !TREE_STATIC (exp))))
+  if (TREE_CODE (exp) == SSA_NAME
+      || (TREE_ADDRESSABLE (exp) == 0
+	  && (TREE_CODE (exp) == PARM_DECL
+	      || (TREE_CODE (exp) == VAR_DECL && !TREE_STATIC (exp)))))
     return exp;
 
   return save_expr (exp);
@@ -783,7 +785,7 @@ expand_builtin_setjmp_setup (rtx buf_addr, rtx receiver_label)
 			    plus_constant (buf_addr,
 					   2 * GET_MODE_SIZE (Pmode)));
   set_mem_alias_set (stack_save, setjmp_alias_set);
-  emit_stack_save (SAVE_NONLOCAL, &stack_save, NULL_RTX);
+  emit_stack_save (SAVE_NONLOCAL, &stack_save);
 
   /* If there is further processing to do, do it.  */
 #ifdef HAVE_builtin_setjmp_setup
@@ -931,7 +933,7 @@ expand_builtin_longjmp (rtx buf_addr, rtx value)
 	  emit_clobber (gen_rtx_MEM (BLKmode, hard_frame_pointer_rtx));
 
 	  emit_move_insn (hard_frame_pointer_rtx, fp);
-	  emit_stack_restore (SAVE_NONLOCAL, stack, NULL_RTX);
+	  emit_stack_restore (SAVE_NONLOCAL, stack);
 
 	  emit_use (hard_frame_pointer_rtx);
 	  emit_use (stack_pointer_rtx);
@@ -1004,7 +1006,7 @@ expand_builtin_nonlocal_goto (tree exp)
 	 The non-local goto handler will then adjust it to contain the
 	 proper value and reload the argument pointer, if needed.  */
       emit_move_insn (hard_frame_pointer_rtx, r_fp);
-      emit_stack_restore (SAVE_NONLOCAL, r_sp, NULL_RTX);
+      emit_stack_restore (SAVE_NONLOCAL, r_sp);
 
       /* USE of hard_frame_pointer_rtx added for consistency;
 	 not clear if really needed.  */
@@ -1074,7 +1076,7 @@ expand_builtin_update_setjmp_buf (rtx buf_addr)
     emit_insn (gen_setjmp ());
 #endif
 
-  emit_stack_save (SAVE_NONLOCAL, &stack_save, NULL_RTX);
+  emit_stack_save (SAVE_NONLOCAL, &stack_save);
 }
 
 /* Expand a call to __builtin_prefetch.  For a target that does not support
@@ -1557,10 +1559,10 @@ expand_builtin_apply (rtx function, rtx arguments, rtx argsize)
   /* Save the stack with nonlocal if available.  */
 #ifdef HAVE_save_stack_nonlocal
   if (HAVE_save_stack_nonlocal)
-    emit_stack_save (SAVE_NONLOCAL, &old_stack_level, NULL_RTX);
+    emit_stack_save (SAVE_NONLOCAL, &old_stack_level);
   else
 #endif
-    emit_stack_save (SAVE_BLOCK, &old_stack_level, NULL_RTX);
+    emit_stack_save (SAVE_BLOCK, &old_stack_level);
 
   /* Allocate a block of memory onto the stack and copy the memory
      arguments to the outgoing arguments address.  We can pass TRUE
@@ -1676,10 +1678,10 @@ expand_builtin_apply (rtx function, rtx arguments, rtx argsize)
   /* Restore the stack.  */
 #ifdef HAVE_save_stack_nonlocal
   if (HAVE_save_stack_nonlocal)
-    emit_stack_restore (SAVE_NONLOCAL, old_stack_level, NULL_RTX);
+    emit_stack_restore (SAVE_NONLOCAL, old_stack_level);
   else
 #endif
-    emit_stack_restore (SAVE_BLOCK, old_stack_level, NULL_RTX);
+    emit_stack_restore (SAVE_BLOCK, old_stack_level);
 
   OK_DEFER_POP;
 
@@ -10595,6 +10597,9 @@ fold_builtin_3 (location_t loc, tree fndecl,
     case BUILT_IN_SPRINTF:
       return fold_builtin_sprintf (loc, arg0, arg1, arg2, ignore);
 
+    case BUILT_IN_SNPRINTF:
+      return fold_builtin_snprintf (loc, arg0, arg1, arg2, NULL_TREE, ignore);
+
     case BUILT_IN_STRCPY_CHK:
     case BUILT_IN_STPCPY_CHK:
       return fold_builtin_stxcpy_chk (loc, fndecl, arg0, arg1, arg2, NULL_TREE,
@@ -10659,6 +10664,9 @@ fold_builtin_4 (location_t loc, tree fndecl,
 
     case BUILT_IN_STRNCAT_CHK:
       return fold_builtin_strncat_chk (loc, fndecl, arg0, arg1, arg2, arg3);
+
+    case BUILT_IN_SNPRINTF:
+      return fold_builtin_snprintf (loc, arg0, arg1, arg2, arg3, ignore);
 
     case BUILT_IN_FPRINTF_CHK:
     case BUILT_IN_VFPRINTF_CHK:
@@ -11912,6 +11920,126 @@ fold_builtin_sprintf (location_t loc, tree dest, tree fmt,
       retval = fold_convert_loc
 	(loc, TREE_TYPE (TREE_TYPE (implicit_built_in_decls[BUILT_IN_SPRINTF])),
 	 retval);
+      return build2 (COMPOUND_EXPR, TREE_TYPE (retval), call, retval);
+    }
+  else
+    return call;
+}
+
+/* Simplify a call to the snprintf builtin with arguments DEST, DESTSIZE,
+   FMT, and ORIG.  ORIG may be null if this is a 3-argument call.  We don't
+   attempt to simplify calls with more than 4 arguments.
+
+   Return NULL_TREE if no simplification was possible, otherwise return the
+   simplified form of the call as a tree.  If IGNORED is true, it means that
+   the caller does not use the returned value of the function.  */
+
+static tree
+fold_builtin_snprintf (location_t loc, tree dest, tree destsize, tree fmt,
+		       tree orig, int ignored)
+{
+  tree call, retval;
+  const char *fmt_str = NULL;
+  unsigned HOST_WIDE_INT destlen;
+
+  /* Verify the required arguments in the original call.  We deal with two
+     types of snprintf() calls: 'snprintf (str, cst, fmt)' and
+     'snprintf (dest, cst, "%s", orig)'.  */
+  if (!validate_arg (dest, POINTER_TYPE)
+      || !validate_arg (destsize, INTEGER_TYPE)
+      || !validate_arg (fmt, POINTER_TYPE))
+    return NULL_TREE;
+  if (orig && !validate_arg (orig, POINTER_TYPE))
+    return NULL_TREE;
+
+  if (!host_integerp (destsize, 1))
+    return NULL_TREE;
+
+  /* Check whether the format is a literal string constant.  */
+  fmt_str = c_getstr (fmt);
+  if (fmt_str == NULL)
+    return NULL_TREE;
+
+  call = NULL_TREE;
+  retval = NULL_TREE;
+
+  if (!init_target_chars ())
+    return NULL_TREE;
+
+  destlen = tree_low_cst (destsize, 1);
+
+  /* If the format doesn't contain % args or %%, use strcpy.  */
+  if (strchr (fmt_str, target_percent) == NULL)
+    {
+      tree fn = implicit_built_in_decls[BUILT_IN_STRCPY];
+      size_t len = strlen (fmt_str);
+
+      /* Don't optimize snprintf (buf, 4, "abc", ptr++).  */
+      if (orig)
+	return NULL_TREE;
+
+      /* We could expand this as
+	 memcpy (str, fmt, cst - 1); str[cst - 1] = '\0';
+	 or to
+	 memcpy (str, fmt_with_nul_at_cstm1, cst);
+	 but in the former case that might increase code size
+	 and in the latter case grow .rodata section too much.
+	 So punt for now.  */
+      if (len >= destlen)
+	return NULL_TREE;
+
+      if (!fn)
+	return NULL_TREE;
+
+      /* Convert snprintf (str, cst, fmt) into strcpy (str, fmt) when
+	 'format' is known to contain no % formats and
+	 strlen (fmt) < cst.  */
+      call = build_call_expr_loc (loc, fn, 2, dest, fmt);
+
+      if (!ignored)
+	retval = build_int_cst (NULL_TREE, strlen (fmt_str));
+    }
+
+  /* If the format is "%s", use strcpy if the result isn't used.  */
+  else if (fmt_str && strcmp (fmt_str, target_percent_s) == 0)
+    {
+      tree fn = implicit_built_in_decls[BUILT_IN_STRCPY];
+      unsigned HOST_WIDE_INT origlen;
+
+      /* Don't crash on snprintf (str1, cst, "%s").  */
+      if (!orig)
+	return NULL_TREE;
+
+      retval = c_strlen (orig, 1);
+      if (!retval || !host_integerp (retval, 1))  
+	return NULL_TREE;
+
+      origlen = tree_low_cst (retval, 1);
+      /* We could expand this as
+	 memcpy (str1, str2, cst - 1); str1[cst - 1] = '\0';
+	 or to
+	 memcpy (str1, str2_with_nul_at_cstm1, cst);
+	 but in the former case that might increase code size
+	 and in the latter case grow .rodata section too much.
+	 So punt for now.  */
+      if (origlen >= destlen)
+	return NULL_TREE;
+
+      /* Convert snprintf (str1, cst, "%s", str2) into
+	 strcpy (str1, str2) if strlen (str2) < cst.  */
+      if (!fn)
+	return NULL_TREE;
+
+      call = build_call_expr_loc (loc, fn, 2, dest, orig);
+
+      if (ignored)
+	retval = NULL_TREE;
+    }
+
+  if (call && retval)
+    {
+      tree fn = built_in_decls[BUILT_IN_SNPRINTF];
+      retval = fold_convert_loc (loc, TREE_TYPE (TREE_TYPE (fn)), retval);
       return build2 (COMPOUND_EXPR, TREE_TYPE (retval), call, retval);
     }
   else

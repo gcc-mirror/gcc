@@ -1,6 +1,6 @@
 // std::messages implementation details, generic version -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2009
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2009, 2010
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -34,7 +34,9 @@
 
 // Written by Benjamin Kosnik <bkoz@redhat.com>
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // Non-virtual member functions.
   template<typename _CharT>
@@ -87,4 +89,5 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	  }
      }
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace

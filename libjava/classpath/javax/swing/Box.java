@@ -60,19 +60,19 @@ import javax.accessibility.AccessibleRole;
 public class Box extends JComponent implements Accessible
 {
   private static final long serialVersionUID = 1525417495883046342L;
-  
+
   /**
    * Provides accessibility support for <code>Box</code>es.
    */
   protected class AccessibleBox extends Container.AccessibleAWTContainer
   {
     private static final long serialVersionUID = -7775079816389931944L;
-  
+
     protected AccessibleBox()
     {
       // Nothing to do here.
     }
-    
+
     public AccessibleRole getAccessibleRole()
     {
       return null;
@@ -85,7 +85,7 @@ public class Box extends JComponent implements Accessible
   public static class Filler extends JComponent implements Accessible
   {
     private static final long serialVersionUID = -1204263191910183998L;
-  
+
     /**
      * Provides accessibility support for <code>Box.Filler</code>.
      */
@@ -93,20 +93,20 @@ public class Box extends JComponent implements Accessible
       extends Component.AccessibleAWTComponent
     {
       private static final long serialVersionUID = 164963348357479321L;
-      
+
       protected AccessibleBoxFiller()
       {
         // Nothing to do here.
       }
-      
+
       public AccessibleRole getAccessibleRole()
       {
         return null;
       }
     }
-    
+
     private transient Dimension min, pref, max;
-    
+
     /**
      * Creates a new instance of Filler.
      *
@@ -118,7 +118,7 @@ public class Box extends JComponent implements Accessible
     {
       changeShape(min, pref, max);
     }
-    
+
     /**
      * Changes the dimensions of this Filler.
      *
@@ -130,16 +130,16 @@ public class Box extends JComponent implements Accessible
     {
       this.min = min;
       this.pref = pref;
-      this.max = max;    
+      this.max = max;
     }
-    
+
     public AccessibleContext getAccessibleContext()
     {
       if (accessibleContext == null)
         accessibleContext = new AccessibleBoxFiller();
       return accessibleContext;
     }
-    
+
     /**
      * Returns the maximum size of this Filler.
      *
@@ -149,7 +149,7 @@ public class Box extends JComponent implements Accessible
     {
       return max;
     }
-    
+
     /**
      * Returns the minimum size of this Filler.
      *
@@ -159,7 +159,7 @@ public class Box extends JComponent implements Accessible
     {
       return min;
     }
-    
+
     /**
      * Returns the preferred size of this Filler.
      *
@@ -170,7 +170,7 @@ public class Box extends JComponent implements Accessible
       return pref;
     }
   }
-  
+
   /**
    * Creates a new Box component, that lays out its children according
    * to the <code>axis</code> parameter.
@@ -184,9 +184,9 @@ public class Box extends JComponent implements Accessible
    */
   public Box(int axis)
   {
-    super.setLayout(new BoxLayout(this, axis));	
+    super.setLayout(new BoxLayout(this, axis));
   }
-  
+
   /**
    * Creates a filler component which acts as glue between components.
    * It does not take space unless some extra space is available. If extra
@@ -200,12 +200,12 @@ public class Box extends JComponent implements Accessible
                              new Dimension(Short.MAX_VALUE, Short.MAX_VALUE));
     return glue;
   }
-  
+
   public static Box createHorizontalBox()
   {
     return new Box(BoxLayout.X_AXIS);
   }
-  
+
   /**
    * Creates a filler component which acts as glue between components.
    * It does not take space unless some extra space is available. If extra
@@ -219,7 +219,7 @@ public class Box extends JComponent implements Accessible
                              new Dimension(Short.MAX_VALUE, 0));
     return glue;
   }
-  
+
   /**
    * Creates a filler component which acts as strut between components.
    * It will fill exactly the specified horizontal size.
@@ -235,17 +235,17 @@ public class Box extends JComponent implements Accessible
                               new Dimension(width, Integer.MAX_VALUE));
     return strut;
   }
-  
+
   public static Component createRigidArea(Dimension d)
   {
     return new Filler(d, d, d);
   }
-  
+
   public static Box createVerticalBox()
   {
     return new Box(BoxLayout.Y_AXIS);
   }
-  
+
   /**
    * Creates a filler component which acts as glue between components.
    * It does not take space unless some extra space is available. If extra
@@ -257,7 +257,7 @@ public class Box extends JComponent implements Accessible
   {
     return createGlue();
   }
-  
+
   /**
    * Creates a filler component which acts as strut between components.
    * It will fill exactly the specified vertical size.
@@ -273,18 +273,18 @@ public class Box extends JComponent implements Accessible
                               new Dimension(Integer.MAX_VALUE, height));
     return strut;
   }
-  
+
   public void setLayout(LayoutManager l)
   {
     throw new AWTError("Not allowed to set layout managers for boxes.");
   }
-  
+
   public AccessibleContext getAccessibleContext()
   {
     if (accessibleContext == null)
       accessibleContext = new AccessibleBox();
     return accessibleContext;
   }
-  
-  
+
+
 }

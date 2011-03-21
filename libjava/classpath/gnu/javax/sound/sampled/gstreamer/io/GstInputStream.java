@@ -45,66 +45,66 @@ import java.io.InputStream;
 
 /**
  * Encapsulates the functionality of an InputStream Object.
- * 
+ *
  * This class is only meant to be used by the native code, to allow reading
  * of the given InputStream as part of a the GStreamer InputStream Source
  * Plugin.
- * 
+ *
  * <strong>Note:</strong> this class will be not garbage collected as the
  * native code contains strong references to internal fields.
  * The native layer provides a method that can be called by the C code to
  * free the resources and to let the garbage collected to handle this class
  * when not needed anymore.
- * 
+ *
  * @author Mario Torre <neugens@limasoftware.net>
  */
 public class GstInputStream
 {
   /** The real InputStream on which to perform reading operations. */
   private InputStream istream;
-  
+
   /**
-   * Initialized in the native code, don't change without changes 
+   * Initialized in the native code, don't change without changes
    * in the native layer.
    */
   private Pointer gstInputStream = null;
-  
+
   public GstInputStream(InputStream istream)
   {
     this.istream = istream;
     init_instance();
   }
-  
+
   public int read(byte[] buf, int off, int len) throws IOException
   {
     return this.istream.read(buf, off, len);
   }
-  
+
   public int available() throws IOException
   {
     return this.istream.available();
   }
-  
+
   /**
    * Return a reference to the GstInputStream native class as a Pointer object.
    * This method is intended as an helper accessor and the returned pointer
-   * needs to be casted and used in the native code only. 
-   *  
+   * needs to be casted and used in the native code only.
+   *
    * @return Pointer to the native GstInputStream class.
    */
   public Pointer getNativeClass()
   {
     return this.gstInputStream;
   }
-  
+
   /* native methods */
-  
+
   /**
    * Initialize the native peer and enables the object cache.
    * It is meant to be used by the class constructor.
    */
   native private final void init_instance();
-  
+
   /**
    * Initialize the native peer and enables the object cache.
    * It is meant to be used by the static initializer.

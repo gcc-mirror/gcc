@@ -52,7 +52,7 @@ import java.io.Serializable;
  * </p>
  * <p>
  * This class is designed to provide an alternative to using integer bit flags
- * by providing a typesafe {@link Collection} interface with an underlying 
+ * by providing a typesafe {@link Collection} interface with an underlying
  * implementation that utilises the assumptions above to give an equivalent level
  * of efficiency.  The values in a {@link EnumSet} must all be from the same
  * {@link Enum} type, which allows the contents to be packed into a bit vector.
@@ -76,7 +76,7 @@ import java.io.Serializable;
  * @author Tom Tromey (tromey@redhat.com)
  * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
  * @author Dalibor Topic (robilad@kaffe.org)
- * @since 1.5 
+ * @since 1.5
  */
 
 // FIXME: serialization is special, uses SerializationProxy.
@@ -115,7 +115,7 @@ public abstract class EnumSet<T extends Enum<T>>
 
   /**
    * Returns a clone of the set.
-   * 
+   *
    * @return a clone of the set.
    */
   public EnumSet<T> clone()
@@ -124,12 +124,12 @@ public abstract class EnumSet<T extends Enum<T>>
 
     try
       {
-	r = (EnumSet<T>) super.clone();
+        r = (EnumSet<T>) super.clone();
       }
     catch (CloneNotSupportedException _)
       {
-	/* Can't happen */
-	return null;
+        /* Can't happen */
+        return null;
       }
     r.store = (BitSet) store.clone();
     return r;
@@ -190,16 +190,16 @@ public abstract class EnumSet<T extends Enum<T>>
     if (other instanceof EnumSet)
       return copyOf((EnumSet<T>) other);
     if (other.isEmpty())
-	throw new IllegalArgumentException("Collection is empty");
+        throw new IllegalArgumentException("Collection is empty");
 
     EnumSet<T> r = null;
 
     for (T val : other)
       {
-	if (r == null)
-	  r = of(val);
-	else
-	  r.add(val);
+        if (r == null)
+          r = of(val);
+        else
+          r.add(val);
       }
 
     return r;
@@ -225,7 +225,7 @@ public abstract class EnumSet<T extends Enum<T>>
 
   /**
    * Creates a new {@link EnumSet} populated with the given element.
-   * 
+   *
    * @param first the element to use to populate the new set.
    * @return an {@link EnumSet} containing the element.
    * @throws NullPointerException if <code>first</code> is <code>null</code>.
@@ -236,149 +236,149 @@ public abstract class EnumSet<T extends Enum<T>>
     {
       public boolean add(T val)
       {
-	if (store.get(val.ordinal()))
-	  return false;
+        if (store.get(val.ordinal()))
+          return false;
 
-	store.set(val.ordinal());
-	++cardinality;
-	return true;
+        store.set(val.ordinal());
+        ++cardinality;
+        return true;
       }
 
       public boolean addAll(Collection<? extends T> c)
       {
-	boolean result = false;
-	if (c instanceof EnumSet)
-	{
-	  EnumSet<T> other = (EnumSet<T>) c;
-	  if (enumClass == other.enumClass)
-	  {
-	    store.or(other.store);
-	    int save = cardinality;
-	    cardinality = store.cardinality();
-	    result = save != cardinality;
-	  }
-	}
-	else
-	{
-	  for (T val : c)
-	  {
-	    if (add (val))
-	    result = true;
-	  }
-	}
-	return result;
+        boolean result = false;
+        if (c instanceof EnumSet)
+        {
+          EnumSet<T> other = (EnumSet<T>) c;
+          if (enumClass == other.enumClass)
+          {
+            store.or(other.store);
+            int save = cardinality;
+            cardinality = store.cardinality();
+            result = save != cardinality;
+          }
+        }
+        else
+        {
+          for (T val : c)
+          {
+            if (add (val))
+            result = true;
+          }
+        }
+        return result;
       }
 
       public void clear()
       {
-	store.clear();
-	cardinality = 0;
+        store.clear();
+        cardinality = 0;
       }
 
       public boolean contains(Object o)
       {
-	if (! (o instanceof Enum))
-	  return false;
+        if (! (o instanceof Enum))
+          return false;
 
-	Enum<T> e = (Enum<T>) o;
-	if (e.getDeclaringClass() != enumClass)
-	  return false;
+        Enum<T> e = (Enum<T>) o;
+        if (e.getDeclaringClass() != enumClass)
+          return false;
 
-	return store.get(e.ordinal());
+        return store.get(e.ordinal());
       }
 
       public boolean containsAll(Collection<?> c)
       {
-	if (c instanceof EnumSet)
-	{
-	  EnumSet<T> other = (EnumSet<T>) c;
-	  if (enumClass == other.enumClass)
-	    return store.containsAll(other.store);
+        if (c instanceof EnumSet)
+        {
+          EnumSet<T> other = (EnumSet<T>) c;
+          if (enumClass == other.enumClass)
+            return store.containsAll(other.store);
 
-	  return false;
-	}
-	return super.containsAll(c);
+          return false;
+        }
+        return super.containsAll(c);
       }
 
       public Iterator<T> iterator()
       {
-	return new Iterator<T>()
-	{
-	  int next = -1;
-	  int count = 0;
+        return new Iterator<T>()
+        {
+          int next = -1;
+          int count = 0;
 
-	  public boolean hasNext()
-	  {
-	    return count < cardinality;
-	  }
+          public boolean hasNext()
+          {
+            return count < cardinality;
+          }
 
-	  public T next()
-	  {
-	    next = store.nextSetBit(next + 1);
-	    ++count;
-	    return enumClass.getEnumConstants()[next];
-	  }
+          public T next()
+          {
+            next = store.nextSetBit(next + 1);
+            ++count;
+            return enumClass.getEnumConstants()[next];
+          }
 
-	  public void remove()
-	  {
-	    if (! store.get(next))
-	    {
-		store.clear(next);
-		--cardinality;
-	    }
-	  }
-	};
+          public void remove()
+          {
+            if (! store.get(next))
+            {
+                store.clear(next);
+                --cardinality;
+            }
+          }
+        };
       }
 
       public boolean remove(Object o)
       {
-	if (! (o instanceof Enum))
-	  return false;
+        if (! (o instanceof Enum))
+          return false;
 
-	Enum<T> e = (Enum<T>) o;
-	if (e.getDeclaringClass() != enumClass)
-	  return false;
+        Enum<T> e = (Enum<T>) o;
+        if (e.getDeclaringClass() != enumClass)
+          return false;
 
-	store.clear(e.ordinal());
-	--cardinality;
-	return true;
+        store.clear(e.ordinal());
+        --cardinality;
+        return true;
       }
 
       public boolean removeAll(Collection<?> c)
       {
-	if (c instanceof EnumSet)
-	{
-	  EnumSet<T> other = (EnumSet<T>) c;
-	  if (enumClass != other.enumClass)
-	    return false;
+        if (c instanceof EnumSet)
+        {
+          EnumSet<T> other = (EnumSet<T>) c;
+          if (enumClass != other.enumClass)
+            return false;
 
-	  store.andNot(other.store);
-	  int save = cardinality;
-	  cardinality = store.cardinality();
-	  return save != cardinality;
-	}
-	return super.removeAll(c);
+          store.andNot(other.store);
+          int save = cardinality;
+          cardinality = store.cardinality();
+          return save != cardinality;
+        }
+        return super.removeAll(c);
       }
 
       public boolean retainAll(Collection<?> c)
       {
-	if (c instanceof EnumSet)
-	{
-	  EnumSet<T> other = (EnumSet<T>) c;
-	  if (enumClass != other.enumClass)
-	    return false;
+        if (c instanceof EnumSet)
+        {
+          EnumSet<T> other = (EnumSet<T>) c;
+          if (enumClass != other.enumClass)
+            return false;
 
-	  store.and(other.store);
-	  int save = cardinality;
-	  cardinality = store.cardinality();
-	  return save != cardinality;
-	}
-	return super.retainAll(c);
+          store.and(other.store);
+          int save = cardinality;
+          cardinality = store.cardinality();
+          return save != cardinality;
+        }
+        return super.retainAll(c);
       }
 
       public int size()
       {
-	return cardinality;
+        return cardinality;
       }
     };
 
@@ -392,7 +392,7 @@ public abstract class EnumSet<T extends Enum<T>>
 
   /**
    * Creates a new {@link EnumSet} populated with the given two elements.
-   * 
+   *
    * @param first the first element to use to populate the new set.
    * @param second the second element to use.
    * @return an {@link EnumSet} containing the elements.
@@ -407,7 +407,7 @@ public abstract class EnumSet<T extends Enum<T>>
 
   /**
    * Creates a new {@link EnumSet} populated with the given three elements.
-   * 
+   *
    * @param first the first element to use to populate the new set.
    * @param second the second element to use.
    * @param third the third element to use.
@@ -423,7 +423,7 @@ public abstract class EnumSet<T extends Enum<T>>
 
   /**
    * Creates a new {@link EnumSet} populated with the given four elements.
-   * 
+   *
    * @param first the first element to use to populate the new set.
    * @param second the second element to use.
    * @param third the third element to use.
@@ -432,7 +432,7 @@ public abstract class EnumSet<T extends Enum<T>>
    * @throws NullPointerException if any of the parameters are <code>null</code>.
    */
   public static <T extends Enum<T>> EnumSet<T> of(T first, T second, T third,
-						  T fourth)
+                                                  T fourth)
   {
     EnumSet<T> r = of(first, second, third);
     r.add(fourth);
@@ -441,7 +441,7 @@ public abstract class EnumSet<T extends Enum<T>>
 
   /**
    * Creates a new {@link EnumSet} populated with the given five elements.
-   * 
+   *
    * @param first the first element to use to populate the new set.
    * @param second the second element to use.
    * @param third the third element to use.
@@ -451,7 +451,7 @@ public abstract class EnumSet<T extends Enum<T>>
    * @throws NullPointerException if any of the parameters are <code>null</code>.
    */
   public static <T extends Enum<T>> EnumSet<T> of(T first, T second, T third,
-						  T fourth, T fifth)
+                                                  T fourth, T fifth)
   {
     EnumSet<T> r = of(first, second, third, fourth);
     r.add(fifth);
@@ -460,7 +460,7 @@ public abstract class EnumSet<T extends Enum<T>>
 
   /**
    * Creates a new {@link EnumSet} populated with the given elements.
-   * 
+   *
    * @param first the first element to use to populate the new set.
    * @param rest the other elements to use.
    * @return an {@link EnumSet} containing the elements.

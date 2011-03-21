@@ -64,7 +64,9 @@
 
 #include <bits/concept_check.h>
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _InputIterator>
     inline typename iterator_traits<_InputIterator>::difference_type
@@ -195,6 +197,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
 #endif // __GXX_EXPERIMENTAL_CXX0X__
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
 
 #endif /* _STL_ITERATOR_BASE_FUNCS_H */

@@ -455,7 +455,7 @@ public class CSS implements Serializable
      *
      * @param attr the attribute string
      * @param inherited if the attribute should be inherited or not
-     * @param def a default value; may be <code>null</code> 
+     * @param def a default value; may be <code>null</code>
      */
     Attribute(String attr, boolean inherited, String def)
     {
@@ -463,7 +463,7 @@ public class CSS implements Serializable
       isInherited = inherited;
       defaultValue = def;
       if( attributeMap == null)
-	attributeMap = new HashMap();
+        attributeMap = new HashMap();
       attributeMap.put( attr, this );
     }
 

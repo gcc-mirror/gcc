@@ -61,8 +61,8 @@ import javax.naming.NamingException;
 import javax.naming.OperationNotSupportedException;
 
 /**
- * The implementation of the RMI URL context. This context connects 
- * 
+ * The implementation of the RMI URL context. This context connects
+ *
  * @author Audrius Meskauskas
  */
 public class rmiURLContext implements Context
@@ -71,19 +71,19 @@ public class rmiURLContext implements Context
    * The default registry location.
    */
   public static final String DEFAULT_REGISTRY_LOCATION = "rmi://localhost:1099";
-  
+
   /**
    * The registry cache, maps the registry URL's to they instances. The
    * obtained registries are reused, as newly obtaining them may cause the
    * resource leak.
    */
   static WeakHashMap registryCache = new WeakHashMap();
-  
+
   /**
    * The properties.
    */
   Properties properties;
-  
+
   /**
    * The flag, indicating, that the lookup methods were called before.
    * If the lookup methods were called before, the existing ORB cannot be
@@ -91,14 +91,14 @@ public class rmiURLContext implements Context
    * unfunctional.
    */
   boolean lookupCalled;
-  
+
   /**
    * Add new environment property to the environment of this context. Both name
    * and value of the new property must not be null. If the property is already
    * defined, is current value is replaced by the propVal. This method replaces
    * the registry. The new registry will be lazily instantiated on the first
    * call.
-   * 
+   *
    * @param key
    *          the name of the new property
    * @param value
@@ -118,7 +118,7 @@ public class rmiURLContext implements Context
    * table should never be modified by the caller (the registry would not be updated
    * in such case). Use {@link #addToEnvironment} and
    * {@link #removeFromEnvironment} to modify the environement, if needed.
-   * 
+   *
    * @return the table, representing the environment of this context
    * @throws NamingException
    */
@@ -133,7 +133,7 @@ public class rmiURLContext implements Context
    * constructing the new ORB with the changes set of properties (you can
    * replace the CORBA implementation provider, for instance). The new ORB will
    * be lazily instantiated on the first call.
-   * 
+   *
    * @param propName
    *          the name of the property being removed.
    * @return the value of the property that has been removed or null if the
@@ -144,10 +144,10 @@ public class rmiURLContext implements Context
   {
     return properties.remove(propName);
   }
-  
+
   /**
    * Get the cached or new registry reference.
-   * 
+   *
    * @return the registry reference, either cached or new.
    */
   public Registry getRegistry(String netAddress) throws NamingException
@@ -157,8 +157,8 @@ public class rmiURLContext implements Context
     synchronized (registryCache)
       {
         registry = (Registry) registryCache.get(netAddress);
-      }    
-    
+      }
+
     if (registry == null)
       {
         // The colon, if present, indicates the start of the port number.
@@ -188,18 +188,18 @@ public class rmiURLContext implements Context
           {
             throw new CommunicationException(e.toString());
           }
-        
+
         synchronized (registryCache)
           {
             registryCache.put(netAddress, registry);
-          }        
+          }
       }
     return registry;
   }
 
   /**
    * Create the rmi url context that works, talking with the given RMI registry.
-   * 
+   *
    * @param props
    *          the properties for this context
    */
@@ -209,11 +209,11 @@ public class rmiURLContext implements Context
     if (props != null)
       properties.putAll(props);
   }
-  
+
   /**
    * Bind the given name into this context. The .toString() is called to
    * convert into the string representation, required by RMI registry.
-   * 
+   *
    * @throws NamingException if the object is not an instance of Remote
    */
   public void bind(Name name, Object obj) throws NamingException
@@ -366,7 +366,7 @@ public class rmiURLContext implements Context
 
   /**
    * List existing bindings of this context (the parameter must be empty name,
-   * indicating the root context). 
+   * indicating the root context).
    */
   public NamingEnumeration listBindings(Name name) throws NamingException
   {
@@ -383,7 +383,7 @@ public class rmiURLContext implements Context
         String [] n = split(name);
         if (n[1].length() > 0)
           throw new InvalidNameException(name+", the name part must be empty");
-        
+
         Registry r = getRegistry(n[0]);
         return new ListBindingsEnumeration(r.list(), r);
       }
@@ -413,7 +413,7 @@ public class rmiURLContext implements Context
 
   /**
    * Rebinds this object.
-   * 
+   *
    * @param name
    *          the object name (.toString()) is used to convert into string
    *          representation.
@@ -427,7 +427,7 @@ public class rmiURLContext implements Context
 
   /**
    * Rebinds this object.
-   * 
+   *
    * @param name
    *          the object name.
    * @param obj
@@ -437,7 +437,7 @@ public class rmiURLContext implements Context
   {
     try
       {
-        String [] n = split(name);        
+        String [] n = split(name);
         getRegistry(n[0]).rebind(n[1], (Remote) obj);
       }
     catch (AccessException e)
@@ -454,7 +454,7 @@ public class rmiURLContext implements Context
                                   + obj.getClass().getName());
       }
   }
-  
+
   /**
    * Renames the object. If the new name is already bound in the given context,
    * the {@link AlreadyBoundException} is thrown and the oldName binding is
@@ -476,12 +476,12 @@ public class rmiURLContext implements Context
     try
       {
         String [] n = split(oldName);
-        Registry r = getRegistry(n[0]);        
+        Registry r = getRegistry(n[0]);
         Remote object = r.lookup(n[1]);
         r.unbind(oldName);
         try
           {
-            String [] n2 = split(newName);            
+            String [] n2 = split(newName);
             Registry r2 = getRegistry(n2[0]);
             r2.bind(n2[1], object);
           }
@@ -529,7 +529,7 @@ public class rmiURLContext implements Context
   {
     try
       {
-        String [] n = split(name);        
+        String [] n = split(name);
         getRegistry(n[0]).unbind(n[1]);
       }
     catch (AccessException e)
@@ -545,17 +545,17 @@ public class rmiURLContext implements Context
         throw new CommunicationException(e.toString());
       }
   }
-  
+
   /**
    * Release the associated resources.
    */
   public void close() throws NamingException
   {
   }
-  
+
   /**
    * Resolve the object by name.
-   * 
+   *
    * @param name
    *          the object name, .toString() is used to get the string
    *          representation.
@@ -564,10 +564,10 @@ public class rmiURLContext implements Context
   {
     return lookup(name.toString());
   }
-  
+
   /**
    * Resolve the object by name
-   * 
+   *
    * @param name the object name.
    */
   public Object lookup(String name) throws NamingException
@@ -590,11 +590,11 @@ public class rmiURLContext implements Context
         throw new NameNotFoundException(name);
       }
   }
-  
+
   /**
    * Split the given rmi address into the network address and naming service
    * name.
-   * 
+   *
    * @param address
    *          the address to split
    * @return the two member array, lower being the network address of the naming

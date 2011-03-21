@@ -43,7 +43,7 @@ import gnu.classpath.jdwp.event.Event;
 import gnu.classpath.jdwp.exception.InvalidStringException;
 
 /**
- * An event filter which excludes events matching a 
+ * An event filter which excludes events matching a
  * specified class pattern (exact match or start/end with "*").
  *
  * @author Keith Seitz  (keiths@redhat.com)

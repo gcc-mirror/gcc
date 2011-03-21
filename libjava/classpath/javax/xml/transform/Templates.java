@@ -1,4 +1,4 @@
-/* Templates.java -- 
+/* Templates.java --
    Copyright (C) 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -42,7 +42,7 @@ import java.util.Properties;
 /**
  * A compiled, reusable XSL transformation.
  * Implementations of this class are guaranteed to be thread safe.
- * 
+ *
  * @author (a href='mailto:dog@gnu.org'>Chris Burdess</a)
  */
 public interface Templates

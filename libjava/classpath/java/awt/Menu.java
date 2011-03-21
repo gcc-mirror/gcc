@@ -163,10 +163,10 @@ public class Menu extends MenuItem implements MenuContainer, Serializable
   {
     return items.size();
   }
- 
+
   /**
    * Returns the item at the specified index.
-   * 
+   *
    * @param index  the item index.
    *
    * @return The item at the specified index.
@@ -240,7 +240,7 @@ public class Menu extends MenuItem implements MenuContainer, Serializable
         MenuContainer parent = item.getParent();
         if (parent != null)
           parent.remove(item);
-      
+
         items.insertElementAt(item, index);
         item.setParent(this);
 
@@ -263,8 +263,8 @@ public class Menu extends MenuItem implements MenuContainer, Serializable
   }
 
   /**
-   * Inserts an item with the specified label into this menu at the specified 
-   * index.  If the index is greater than or equal to the number of items 
+   * Inserts an item with the specified label into this menu at the specified
+   * index.  If the index is greater than or equal to the number of items
    * already in the menu, the new item is added as the last item in the menu.
    *
    * @param label The label of the item to add.
@@ -302,7 +302,7 @@ public class Menu extends MenuItem implements MenuContainer, Serializable
    * Deletes the item at the specified index from this menu.
    *
    * @param index The index of the item to remove.
-   * 
+   *
    * @exception ArrayIndexOutOfBoundsException If the index is otherwise invalid.
    */
   public synchronized void remove(int index)
@@ -391,7 +391,7 @@ public class Menu extends MenuItem implements MenuContainer, Serializable
   public String paramString()
   {
     return (",tearOff=" + tearOff + ",isHelpMenu=" + isHelpMenu
-	    + super.paramString());
+            + super.paramString());
   }
 
   /**
@@ -405,7 +405,7 @@ public class Menu extends MenuItem implements MenuContainer, Serializable
     protected AccessibleAWTMenu()
     {
     }
-    
+
     public AccessibleRole getAccessibleRole()
     {
       return AccessibleRole.MENU;
@@ -425,7 +425,7 @@ public class Menu extends MenuItem implements MenuContainer, Serializable
       accessibleContext = new AccessibleAWTMenu();
     return accessibleContext;
   }
-  
+
   /**
    * Generate a unique name for this <code>Menu</code>.
    *
@@ -440,5 +440,5 @@ public class Menu extends MenuItem implements MenuContainer, Serializable
   {
     return next_menu_number++;
   }
-  
+
 } // class Menu

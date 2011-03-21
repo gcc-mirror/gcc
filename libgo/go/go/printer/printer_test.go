@@ -10,6 +10,7 @@ import (
 	"io/ioutil"
 	"go/ast"
 	"go/parser"
+	"go/token"
 	"path"
 	"testing"
 )
@@ -22,6 +23,9 @@ const (
 
 
 var update = flag.Bool("update", false, "update golden files")
+
+
+var fset = token.NewFileSet()
 
 
 func lineString(text []byte, i int) string {
@@ -43,7 +47,7 @@ const (
 
 func check(t *testing.T, source, golden string, mode checkMode) {
 	// parse source
-	prog, err := parser.ParseFile(source, nil, parser.ParseComments)
+	prog, err := parser.ParseFile(fset, source, nil, parser.ParseComments)
 	if err != nil {
 		t.Error(err)
 		return
@@ -63,7 +67,7 @@ func check(t *testing.T, source, golden string, mode checkMode) {
 
 	// format source
 	var buf bytes.Buffer
-	if _, err := cfg.Fprint(&buf, prog); err != nil {
+	if _, err := cfg.Fprint(&buf, fset, prog); err != nil {
 		t.Error(err)
 	}
 	res := buf.Bytes()
@@ -123,12 +127,47 @@ var data = []entry{
 }
 
 
-func Test(t *testing.T) {
+func TestFiles(t *testing.T) {
 	for _, e := range data {
 		source := path.Join(dataDir, e.source)
 		golden := path.Join(dataDir, e.golden)
 		check(t, source, golden, e.mode)
 		// TODO(gri) check that golden is idempotent
 		//check(t, golden, golden, e.mode);
+	}
+}
+
+
+// TestLineComments, using a simple test case, checks that consequtive line
+// comments are properly terminated with a newline even if the AST position
+// information is incorrect.
+//
+func TestLineComments(t *testing.T) {
+	const src = `// comment 1
+	// comment 2
+	// comment 3
+	package main
+	`
+
+	fset := token.NewFileSet()
+	ast1, err1 := parser.ParseFile(fset, "", src, parser.ParseComments)
+	if err1 != nil {
+		panic(err1)
+	}
+
+	var buf bytes.Buffer
+	fset = token.NewFileSet() // use the wrong file set
+	Fprint(&buf, fset, ast1)
+
+	nlines := 0
+	for _, ch := range buf.Bytes() {
+		if ch == '\n' {
+			nlines++
+		}
+	}
+
+	const expected = 3
+	if nlines < expected {
+		t.Errorf("got %d, expected %d\n", nlines, expected)
 	}
 }

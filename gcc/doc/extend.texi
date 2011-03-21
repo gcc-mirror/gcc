@@ -1,5 +1,5 @@
 @c Copyright (C) 1988, 1989, 1992, 1993, 1994, 1996, 1998, 1999, 2000, 2001,
-@c 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+@c 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
 @c Free Software Foundation, Inc.
 
 @c This is part of the GCC manual.
@@ -934,6 +934,7 @@ typedef _Complex float __attribute__((mode(XC))) _Complex80;
 
 Not all targets support additional floating point types.  @code{__float80}
 and @code{__float128} types are supported on i386, x86_64 and ia64 targets.
+The @code{__float128} type is supported on hppa HP-UX targets.
 
 @node Half-Precision
 @section Half-Precision Floating Point
@@ -2212,9 +2213,14 @@ On systems that support the @code{visibility} attribute, this
 attribute also implies ``default'' visibility.  It is an error to
 explicitly specify any other visibility.
 
-Currently, the @code{dllexport} attribute is ignored for inlined
-functions, unless the @option{-fkeep-inline-functions} flag has been
-used.  The attribute is also ignored for undefined symbols.
+In previous versions of GCC, the @code{dllexport} attribute was ignored 
+for inlined functions, unless the @option{-fkeep-inline-functions} flag
+had been used.  The default behaviour now is to emit all dllexported
+inline functions; however, this can cause object file-size bloat, in
+which case the old behaviour can be restored by using
+@option{-fno-keep-inline-dllexport}.
+
+The attribute is also ignored for undefined symbols.
 
 When applied to C++ classes, the attribute marks defined non-inlined
 member functions and static data members as exports.  Static consts
@@ -3285,8 +3291,6 @@ int core2_func (void) __attribute__ ((__target__ ("arch=core2")));
 int sse3_func (void) __attribute__ ((__target__ ("sse3")));
 @end smallexample
 
-@table @samp
-@item i386 target attributes
 On the 386, the following options are allowed:
 
 @table @samp
@@ -3429,8 +3433,8 @@ Specify which floating point unit to use.  The
 @code{target("fpmath=sse,387")} option must be specified as
 @code{target("fpmath=sse+387")} because the comma would separate
 different options.
+@end table
 
-@item PowerPC target attributes
 On the PowerPC, the following options are allowed:
 
 @table @samp
@@ -3601,8 +3605,6 @@ you do not specify the @code{target("tune=@var{TUNE}")} attribute and
 you do specify the @code{target("cpu=@var{CPU}")} attribute,
 compilation will tune for the @var{CPU} architecture, and not the
 default tuning specified on the command line.
-@end table
-@end table
 @end table
 
 On the 386/x86_64 and PowerPC backends, you can use either multiple
@@ -12353,6 +12355,12 @@ vector bool long vec_cmplt (vector double, vector double);
 vector float vec_div (vector float, vector float);
 vector double vec_div (vector double, vector double);
 vector double vec_floor (vector double);
+vector double vec_ld (int, const vector double *);
+vector double vec_ld (int, const double *);
+vector double vec_ldl (int, const vector double *);
+vector double vec_ldl (int, const double *);
+vector unsigned char vec_lvsl (int, const volatile double *);
+vector unsigned char vec_lvsr (int, const volatile double *);
 vector double vec_madd (vector double, vector double, vector double);
 vector double vec_max (vector double, vector double);
 vector double vec_min (vector double, vector double);
@@ -12381,6 +12389,8 @@ vector double vec_sel (vector double, vector double, vector unsigned long);
 vector double vec_sub (vector double, vector double);
 vector float vec_sqrt (vector float);
 vector double vec_sqrt (vector double);
+void vec_st (vector double, int, vector double *);
+void vec_st (vector double, int, double *);
 vector double vec_trunc (vector double);
 vector double vec_xor (vector double, vector double);
 vector double vec_xor (vector double, vector bool long);
@@ -12409,7 +12419,65 @@ int vec_any_ngt (vector double, vector double);
 int vec_any_nle (vector double, vector double);
 int vec_any_nlt (vector double, vector double);
 int vec_any_numeric (vector double);
+
+vector double vec_vsx_ld (int, const vector double *);
+vector double vec_vsx_ld (int, const double *);
+vector float vec_vsx_ld (int, const vector float *);
+vector float vec_vsx_ld (int, const float *);
+vector bool int vec_vsx_ld (int, const vector bool int *);
+vector signed int vec_vsx_ld (int, const vector signed int *);
+vector signed int vec_vsx_ld (int, const int *);
+vector signed int vec_vsx_ld (int, const long *);
+vector unsigned int vec_vsx_ld (int, const vector unsigned int *);
+vector unsigned int vec_vsx_ld (int, const unsigned int *);
+vector unsigned int vec_vsx_ld (int, const unsigned long *);
+vector bool short vec_vsx_ld (int, const vector bool short *);
+vector pixel vec_vsx_ld (int, const vector pixel *);
+vector signed short vec_vsx_ld (int, const vector signed short *);
+vector signed short vec_vsx_ld (int, const short *);
+vector unsigned short vec_vsx_ld (int, const vector unsigned short *);
+vector unsigned short vec_vsx_ld (int, const unsigned short *);
+vector bool char vec_vsx_ld (int, const vector bool char *);
+vector signed char vec_vsx_ld (int, const vector signed char *);
+vector signed char vec_vsx_ld (int, const signed char *);
+vector unsigned char vec_vsx_ld (int, const vector unsigned char *);
+vector unsigned char vec_vsx_ld (int, const unsigned char *);
+
+void vec_vsx_st (vector double, int, vector double *);
+void vec_vsx_st (vector double, int, double *);
+void vec_vsx_st (vector float, int, vector float *);
+void vec_vsx_st (vector float, int, float *);
+void vec_vsx_st (vector signed int, int, vector signed int *);
+void vec_vsx_st (vector signed int, int, int *);
+void vec_vsx_st (vector unsigned int, int, vector unsigned int *);
+void vec_vsx_st (vector unsigned int, int, unsigned int *);
+void vec_vsx_st (vector bool int, int, vector bool int *);
+void vec_vsx_st (vector bool int, int, unsigned int *);
+void vec_vsx_st (vector bool int, int, int *);
+void vec_vsx_st (vector signed short, int, vector signed short *);
+void vec_vsx_st (vector signed short, int, short *);
+void vec_vsx_st (vector unsigned short, int, vector unsigned short *);
+void vec_vsx_st (vector unsigned short, int, unsigned short *);
+void vec_vsx_st (vector bool short, int, vector bool short *);
+void vec_vsx_st (vector bool short, int, unsigned short *);
+void vec_vsx_st (vector pixel, int, vector pixel *);
+void vec_vsx_st (vector pixel, int, unsigned short *);
+void vec_vsx_st (vector pixel, int, short *);
+void vec_vsx_st (vector bool short, int, short *);
+void vec_vsx_st (vector signed char, int, vector signed char *);
+void vec_vsx_st (vector signed char, int, signed char *);
+void vec_vsx_st (vector unsigned char, int, vector unsigned char *);
+void vec_vsx_st (vector unsigned char, int, unsigned char *);
+void vec_vsx_st (vector bool char, int, vector bool char *);
+void vec_vsx_st (vector bool char, int, unsigned char *);
+void vec_vsx_st (vector bool char, int, signed char *);
 @end smallexample
+
+Note that the @samp{vec_ld} and @samp{vec_st} builtins will always
+generate the Altivec @samp{LVX} and @samp{STVX} instructions even
+if the VSX instruction set is available.  The @samp{vec_vsx_ld} and
+@samp{vec_vsx_st} builtins will always generate the VSX @samp{LXVD2X},
+@samp{LXVW4X}, @samp{STXVD2X}, and @samp{STXVW4X} instructions.
 
 GCC provides a few other builtins on Powerpc to access certain instructions:
 @smallexample
@@ -13023,8 +13091,7 @@ aliases.
 @cindex pragma, weak
 This pragma declares @var{symbol} to be weak, as if the declaration
 had the attribute of the same name.  The pragma may appear before
-or after the declaration of @var{symbol}, but must appear before
-either its first use or its definition.  It is not an error for
+or after the declaration of @var{symbol}.  It is not an error for
 @var{symbol} to never be defined at all.
 
 @item #pragma weak @var{symbol1} = @var{symbol2}
@@ -13285,12 +13352,11 @@ The compiler gives errors for such constructs.
 @opindex fms-extensions
 Unless @option{-fms-extensions} is used, the unnamed field must be a
 structure or union definition without a tag (for example, @samp{struct
-@{ int a; @};}), or a @code{typedef} name for such a structure or
-union.  If @option{-fms-extensions} is used, the field may
+@{ int a; @};}).  If @option{-fms-extensions} is used, the field may
 also be a definition with a tag such as @samp{struct foo @{ int a;
 @};}, a reference to a previously defined structure or union such as
 @samp{struct foo;}, or a reference to a @code{typedef} name for a
-previously defined structure or union type with a tag.
+previously defined structure or union type.
 
 @opindex fplan9-extensions
 The option @option{-fplan9-extensions} enables
@@ -13365,7 +13431,7 @@ In C++, if an initializer is present for a thread-local variable, it must
 be a @var{constant-expression}, as defined in 5.19.2 of the ANSI/ISO C++
 standard.
 
-See @uref{http://people.redhat.com/drepper/tls.pdf,
+See @uref{http://www.akkadia.org/drepper/tls.pdf,
 ELF Handling For Thread-Local Storage} for a detailed explanation of
 the four thread-local storage addressing models, and how the run-time
 is expected to function.
@@ -13644,9 +13710,9 @@ The C++ standard differs from the C standard in its treatment of
 volatile objects.  It fails to specify what constitutes a volatile
 access, except to say that C++ should behave in a similar manner to C
 with respect to volatiles, where possible.  However, the different
-lvalueness of expressions between C and C++ complicate the behaviour.
+lvalueness of expressions between C and C++ complicate the behavior.
 G++ behaves the same as GCC for volatile access, @xref{C
-Extensions,,Volatiles}, for a description of GCC's behaviour.
+Extensions,,Volatiles}, for a description of GCC's behavior.
 
 The C and C++ language specifications differ when an object is
 accessed in a void context:
@@ -13676,7 +13742,7 @@ possible to ignore the return value from functions returning volatile
 references.  Again, if you wish to force a read, cast the reference to
 an rvalue.
 
-G++ implements the same behaviour as GCC does when assigning to a
+G++ implements the same behavior as GCC does when assigning to a
 volatile object -- there is no reread of the assigned-to object, the
 assigned rvalue is reused.  Note that in C++ assignment expressions
 are lvalues, and if used as an lvalue, the volatile object will be

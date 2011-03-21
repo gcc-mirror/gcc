@@ -52,20 +52,20 @@ public class PNGChunk
    */
   private static long[] crcTable;
 
-  static 
+  static
    {
      long c;
      crcTable = new long[256];
-   
+
      for(int i = 0; i < 256; i++)
        {
-	 c = i;
-	 for(int j = 0; j < 8; j++) 
-	   if( (c & 1) == 1 )
-	     c = 0xEDB88320L ^ (c >> 1);
-	   else
-	     c = c >> 1;
-	 crcTable[i] = c;
+         c = i;
+         for(int j = 0; j < 8; j++)
+           if( (c & 1) == 1 )
+             c = 0xEDB88320L ^ (c >> 1);
+           else
+             c = c >> 1;
+         crcTable[i] = c;
        }
    }
 
@@ -90,7 +90,7 @@ public class PNGChunk
    * The chunk data
    */
   protected byte[] data;
-  
+
   /**
    * The chunk's crc
    */
@@ -107,7 +107,7 @@ public class PNGChunk
   }
 
   /**
-   * Constructor for creating new chunks. 
+   * Constructor for creating new chunks.
    * (only used by subclasses - creating a generic chunk is rather useless)
    */
   protected PNGChunk( int type )
@@ -122,44 +122,44 @@ public class PNGChunk
    * @param strict - if true, a PNGException is thrown on all invalid chunks,
    * if false, only critical chunks will throw PNGExceptions.
    */
-  public static PNGChunk readChunk(InputStream in, boolean strict) 
+  public static PNGChunk readChunk(InputStream in, boolean strict)
     throws IOException, PNGException
   {
     byte data[] = new byte[4];
     if( in.read( data ) != 4 )
       throw new IOException("Could not read chunk length.");
-    int length = ((data[0] & 0xFF) << 24) | ((data[1] & 0xFF) << 16 ) | 
+    int length = ((data[0] & 0xFF) << 24) | ((data[1] & 0xFF) << 16 ) |
       ((data[2] & 0xFF) << 8) | (data[3] & 0xFF);
 
     if( in.read( data ) != 4 )
       throw new IOException("Could not read chunk type.");
-    int type = ((data[0] & 0xFF) << 24) | ((data[1] & 0xFF) << 16 ) | 
+    int type = ((data[0] & 0xFF) << 24) | ((data[1] & 0xFF) << 16 ) |
       ((data[2] & 0xFF) << 8) | (data[3] & 0xFF);
 
     byte[] chkdata = new byte[ length ];
     if( in.read( chkdata ) != length )
       throw new IOException("Could not read chunk data.");
-    
+
     if( in.read( data ) != 4 )
       throw new IOException("Could not read chunk CRC.");
-    
-    int crc = ((data[0] & 0xFF) << 24) | ( (data[1] & 0xFF) << 16 ) | 
+
+    int crc = ((data[0] & 0xFF) << 24) | ( (data[1] & 0xFF) << 16 ) |
       ((data[2] & 0xFF) << 8) | (data[3] & 0xFF);
 
     if( strict )
       return getChunk( type, chkdata, crc );
     else
       {
-	try
-	  {
-	    return getChunk( type, chkdata, crc );
-	  }
-	catch(PNGException pnge)
-	  {
-	    if( isEssentialChunk( type ) )
-	      throw pnge;
-	    return null;
-	  }
+        try
+          {
+            return getChunk( type, chkdata, crc );
+          }
+        catch(PNGException pnge)
+          {
+            if( isEssentialChunk( type ) )
+              throw pnge;
+            return null;
+          }
       }
   }
 
@@ -172,21 +172,21 @@ public class PNGChunk
     switch( type )
       {
       case TYPE_HEADER:
-	return new PNGHeader( type, data, crc );
+        return new PNGHeader( type, data, crc );
       case TYPE_DATA:
-	return new PNGData( type, data, crc );
+        return new PNGData( type, data, crc );
       case TYPE_PALETTE:
-	return new PNGPalette( type, data, crc );
+        return new PNGPalette( type, data, crc );
       case TYPE_TIME:
-	return new PNGTime( type, data, crc );
+        return new PNGTime( type, data, crc );
       case TYPE_PHYS:
-	return new PNGPhys( type, data, crc );
+        return new PNGPhys( type, data, crc );
       case TYPE_GAMMA:
-	return new PNGGamma( type, data, crc );
+        return new PNGGamma( type, data, crc );
       case TYPE_PROFILE:
-	return new PNGICCProfile( type, data, crc );
+        return new PNGICCProfile( type, data, crc );
       default:
-	return new PNGChunk( type, data, crc );
+        return new PNGChunk( type, data, crc );
       }
   }
 
@@ -201,9 +201,9 @@ public class PNGChunk
       case TYPE_DATA:
       case TYPE_PALETTE:
       case TYPE_END:
-	return true;
+        return true;
       default:
-	return false;
+        return false;
       }
   }
 
@@ -224,7 +224,7 @@ public class PNGChunk
   }
 
   /**
-   * Writes a PNG chunk to an output stream, 
+   * Writes a PNG chunk to an output stream,
    * performing the CRC calculation as well.
    */
   public void writeChunk(OutputStream out) throws IOException
@@ -267,7 +267,7 @@ public class PNGChunk
     byte[] t = getInt( type );
     for(int i = 0; i < 4; i++)
       c = crcTable[ (int)((c ^ t[i]) & 0xFF) ] ^ (c >> 8);
-      
+
     for(int i = 0; i < data.length; i++)
       c = crcTable[ (int)((c ^ data[i]) & 0xFF) ] ^ (c >> 8);
 
@@ -276,8 +276,8 @@ public class PNGChunk
 
   public String toString()
   {
-    return "PNG Chunk. Type: " + new String( getInt(type) ) + " , CRC: " + 
+    return "PNG Chunk. Type: " + new String( getInt(type) ) + " , CRC: " +
       crc + " , calculated CRC: "+calcCRC();
   }
-   
+
 }

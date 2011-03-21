@@ -340,7 +340,7 @@ public class SwingContainerPeer
           }
       }
   }
-  
+
   /**
    * Handles key events on the component. This is usually forwarded to the
    * SwingComponent's processKeyEvent() method.
@@ -352,12 +352,12 @@ public class SwingContainerPeer
     Component owner = getFocusOwner();
     if(owner != null)
       owner.getPeer().handleEvent(e);
-    else 
+    else
       super.handleKeyEvent(e);
   }
 
   private Component focusOwner = null;
-  
+
   private Component getFocusOwner()
   {
       if(focusOwner == null)
@@ -369,10 +369,10 @@ public class SwingContainerPeer
           {
               focusOwner = child;
             break;
-          }          
+          }
       }
       }
       return focusOwner;
   }
-  
+
 }

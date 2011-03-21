@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -39,12 +39,12 @@ exception statement from your version. */
 package java.security.spec;
 
 /**
-	X.509 Encoded Key Specification class which is used to store 
-	"X.509" byte encoded keys.
+        X.509 Encoded Key Specification class which is used to store
+        "X.509" byte encoded keys.
 
-	@since JDK 1.2
+        @since JDK 1.2
 
-	@author Mark Benvenuto
+        @author Mark Benvenuto
 */
 public class X509EncodedKeySpec extends EncodedKeySpec
 {

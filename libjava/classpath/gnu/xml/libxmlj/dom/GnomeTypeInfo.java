@@ -1,4 +1,4 @@
-/* GnomeTypeInfo.java - 
+/* GnomeTypeInfo.java -
    Copyright (C) 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -61,5 +61,5 @@ class GnomeTypeInfo implements TypeInfo
   public native boolean isDerivedFrom (String typeNamespaceArg,
                                        String typeNameArg,
                                        int derivationMethod);
-  
+
 }

@@ -180,7 +180,7 @@ public class OpenTypeFontPeer
     {
       return 0.F;
     }
-    
+
   }
 
   private class XFontMetrics
@@ -207,7 +207,7 @@ public class OpenTypeFontPeer
       return (int) fontDelegate.getDescent(getFont().getSize(), IDENDITY,
                                            false, false, false);
     }
-    
+
     public int getHeight()
     {
       GlyphVector gv = fontDelegate.createGlyphVector(getFont(),
@@ -441,7 +441,7 @@ public class OpenTypeFontPeer
       case Font.PLAIN:
       default:
         key.append("p");
-      
+
     }
 
     return key.toString();

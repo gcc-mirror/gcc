@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -60,7 +60,7 @@ import java.util.spi.CurrencyNameProvider;
  * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
  * @since 1.4
  */
-public final class Currency 
+public final class Currency
   implements Serializable
 {
   /**
@@ -95,7 +95,7 @@ public final class Currency
    * @serial the number of fraction digits
    */
   private transient int fractionDigits;
-  
+
   /**
    * A cached map of country codes
    * instances to international currency code
@@ -115,7 +115,7 @@ public final class Currency
    * is the international currency code.
    *
    * @see #getInstance(java.util.Locale)
-   * @see #getInstance(java.lang.String) 
+   * @see #getInstance(java.lang.String)
    * @see #readResolve()
    * @serial ignored.
    */
@@ -133,7 +133,7 @@ public final class Currency
     /* Create the properties object */
     properties = new Properties();
     /* Try and load the properties from our iso4217.properties resource */
-    try 
+    try
       {
         properties.load(Currency.class.getResourceAsStream("iso4217.properties"));
       }
@@ -157,7 +157,7 @@ public final class Currency
    * country code, are ignored.  The results of calling this
    * method may vary over time, as the currency associated with
    * a particular country changes.  For countries without
-   * a given currency (e.g. Antarctica), the result is null. 
+   * a given currency (e.g. Antarctica), the result is null.
    *
    * @param loc the locale for the new currency, or null if
    *        there is no country code specified or a currency
@@ -176,8 +176,8 @@ public final class Currency
     if (countryCode.equals(""))
       {
         throw new
-	  IllegalArgumentException("Invalid (empty) country code for locale:"
-			  	   + loc);
+          IllegalArgumentException("Invalid (empty) country code for locale:"
+                                   + loc);
       }
     /* Construct the key for the currency */
     currencyKey = countryCode + ".currency";
@@ -206,7 +206,7 @@ public final class Currency
    * currency code.
    *
    * @param code the code to use.
-   */  
+   */
   private Currency(String code)
   {
     currencyCode = code;
@@ -234,19 +234,19 @@ public final class Currency
    * currencies, such as IMF Special Drawing Rights, -1 is returned.
    *
    * @return the number of digits after the decimal separator for this currency.
-   */   
+   */
   public int getDefaultFractionDigits()
   {
     return fractionDigits;
   }
-    
+
   /**
    * Builds a new currency instance for this locale.
    * All components of the given locale, other than the
    * country code, are ignored.  The results of calling this
    * method may vary over time, as the currency associated with
    * a particular country changes.  For countries without
-   * a given currency (e.g. Antarctica), the result is null. 
+   * a given currency (e.g. Antarctica), the result is null.
    *
    * @param locale a <code>Locale</code> instance.
    * @return a new <code>Currency</code> instance.
@@ -254,7 +254,7 @@ public final class Currency
    *         country code is null.
    * @throws IllegalArgumentException if the country of
    *         the given locale is not a supported ISO3166 code.
-   */ 
+   */
   public static Currency getInstance(Locale locale)
   {
     /**
@@ -270,39 +270,39 @@ public final class Currency
     String country = locale.getCountry();
     if (locale == null || country == null)
       {
-	throw new
-	  NullPointerException("The locale or its country is null.");
+        throw new
+          NullPointerException("The locale or its country is null.");
       }
-    
+
     /* Check that country of locale given is valid. */
     if (country.length() != 2)
       throw new IllegalArgumentException();
-    
+
     /* Attempt to get the currency from the cache */
     String code = (String) countryMap.get(country);
     if (code == null)
       {
         /* Create the currency for this locale */
         newCurrency = new Currency(locale);
-        /* 
+        /*
          * If the currency code is null, then creation failed
          * and we return null.
          */
-	code = newCurrency.getCurrencyCode();
+        code = newCurrency.getCurrencyCode();
         if (code == null)
           {
             return null;
           }
-        else 
+        else
           {
             /* Cache it */
             countryMap.put(country, code);
-	    cache.put(code, newCurrency);
+            cache.put(code, newCurrency);
           }
       }
     else
       {
-	newCurrency = (Currency) cache.get(code);
+        newCurrency = (Currency) cache.get(code);
       }
     /* Return the instance */
     return newCurrency;
@@ -321,10 +321,10 @@ public final class Currency
   {
     Locale[] allLocales;
 
-    /* 
+    /*
      * Throw a null pointer exception explicitly if currencyCode is null.
      * One is not thrown otherwise.  It results in an
-     * IllegalArgumentException. 
+     * IllegalArgumentException.
      */
     if (currencyCode == null)
       {
@@ -336,35 +336,35 @@ public final class Currency
     Currency newCurrency = (Currency) cache.get(currencyCode);
     if (newCurrency == null)
       {
-	/* Get all locales */
-	allLocales = Locale.getAvailableLocales();
-	/* Loop through each locale, looking for the code */
-	for (int i = 0;i < allLocales.length; i++)
-	  {
-	    try
-	      {
-		Currency testCurrency = getInstance (allLocales[i]);
-		if (testCurrency != null &&
-		    testCurrency.getCurrencyCode().equals(currencyCode))
-		  {
-		    return testCurrency;
-		  }
-	      }
-	    catch (IllegalArgumentException exception)
-	      {
-		/* Ignore locales without valid countries */
-	      }
-	  }
-	/* 
-	 * If we get this far, the code is not supported by any of
-	 * our locales.
-	 */
-	throw new IllegalArgumentException("The currency code, " + currencyCode +
-					   ", is not supported.");
+        /* Get all locales */
+        allLocales = Locale.getAvailableLocales();
+        /* Loop through each locale, looking for the code */
+        for (int i = 0;i < allLocales.length; i++)
+          {
+            try
+              {
+                Currency testCurrency = getInstance (allLocales[i]);
+                if (testCurrency != null &&
+                    testCurrency.getCurrencyCode().equals(currencyCode))
+                  {
+                    return testCurrency;
+                  }
+              }
+            catch (IllegalArgumentException exception)
+              {
+                /* Ignore locales without valid countries */
+              }
+          }
+        /*
+         * If we get this far, the code is not supported by any of
+         * our locales.
+         */
+        throw new IllegalArgumentException("The currency code, " + currencyCode +
+                                           ", is not supported.");
       }
     else
       {
-	return newCurrency;
+        return newCurrency;
       }
   }
 
@@ -413,27 +413,27 @@ public final class Currency
     try
       {
         return ResourceBundle.getBundle("gnu.java.locale.LocaleInformation",
-					locale).getString(property);
+                                        locale).getString(property);
       }
     catch (MissingResourceException exception)
       {
-	/* This means runtime support for the locale
-	 * is not available, so we check providers. */
+        /* This means runtime support for the locale
+         * is not available, so we check providers. */
       }
     for (CurrencyNameProvider p :
-	   ServiceLoader.load(CurrencyNameProvider.class))
+           ServiceLoader.load(CurrencyNameProvider.class))
       {
-	for (Locale loc : p.getAvailableLocales())
-	  {
-	    if (loc.equals(locale))
-	      {
-		String localizedString = p.getSymbol(currencyCode,
-						     locale);
-		if (localizedString != null)
-		  return localizedString;
-		break;
-	      }
-	  }
+        for (Locale loc : p.getAvailableLocales())
+          {
+            if (loc.equals(locale))
+              {
+                String localizedString = p.getSymbol(currencyCode,
+                                                     locale);
+                if (localizedString != null)
+                  return localizedString;
+                break;
+              }
+          }
       }
     if (locale.equals(Locale.ROOT)) // Base case
       return currencyCode;

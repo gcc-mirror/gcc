@@ -1,4 +1,4 @@
-// { dg-do "compile" }
+// { dg-do compile }
 // { dg-options "-std=gnu++0x" }
 
 // From N2235

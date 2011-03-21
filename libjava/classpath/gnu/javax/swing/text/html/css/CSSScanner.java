@@ -485,7 +485,7 @@ class CSSScanner
       }
     else
       throw new CSSLexicalException("Escape must start with '\\'");
-    
+
   }
 
   private void readName()
@@ -595,7 +595,7 @@ class CSSScanner
       }
     // Push back last character read.
     lookahead[0] = ch;
-    
+
   }
 
   private void readURI()
@@ -642,7 +642,7 @@ class CSSScanner
       }
     if (ch == -1)
       throw new CSSLexicalException("Unterminated comment");
-    
+
     // Push back last character read.
     lookahead[0] = ch;
   }
@@ -675,7 +675,7 @@ class CSSScanner
             parseBuffer[tokenEnd] = (char) ch;
             tokenEnd++;
             ch = read();
-          }                            
+          }
       }
     else
       throw new CSSLexicalException("Invalid number");

@@ -71,7 +71,7 @@ public class JOptionPane extends JComponent implements Accessible
   protected class AccessibleJOptionPane extends JComponent.AccessibleJComponent
   {
     private static final long serialVersionUID = 686071432213084821L;
-    
+
     /**
      * Creates a new <code>AccessibleJOptionPane</code> instance.
      */
@@ -477,7 +477,7 @@ public class JOptionPane extends JComponent implements Accessible
    * Returns the object that provides accessibility features for this
    * <code>JOptionPane</code> component.
    *
-   * @return The accessible context (an instance of 
+   * @return The accessible context (an instance of
    *     {@link AccessibleJOptionPane}).
    */
   public AccessibleContext getAccessibleContext()
@@ -700,9 +700,9 @@ public class JOptionPane extends JComponent implements Accessible
   {
     if (icon != newIcon)
       {
-	Icon old = icon;
-	icon = newIcon;
-	firePropertyChange(ICON_PROPERTY, old, icon);
+        Icon old = icon;
+        icon = newIcon;
+        firePropertyChange(ICON_PROPERTY, old, icon);
       }
   }
 
@@ -715,10 +715,10 @@ public class JOptionPane extends JComponent implements Accessible
   {
     if (initialSelectionValue != newValue)
       {
-	Object old = initialSelectionValue;
-	initialSelectionValue = newValue;
-	firePropertyChange(INITIAL_SELECTION_VALUE_PROPERTY, old,
-	                   initialSelectionValue);
+        Object old = initialSelectionValue;
+        initialSelectionValue = newValue;
+        firePropertyChange(INITIAL_SELECTION_VALUE_PROPERTY, old,
+                           initialSelectionValue);
       }
   }
 
@@ -731,9 +731,9 @@ public class JOptionPane extends JComponent implements Accessible
   {
     if (initialValue != newValue)
       {
-	Object old = initialValue;
-	initialValue = newValue;
-	firePropertyChange(INITIAL_VALUE_PROPERTY, old, initialValue);
+        Object old = initialValue;
+        initialValue = newValue;
+        firePropertyChange(INITIAL_VALUE_PROPERTY, old, initialValue);
       }
   }
 
@@ -746,9 +746,9 @@ public class JOptionPane extends JComponent implements Accessible
   {
     if (inputValue != newValue)
       {
-	Object old = inputValue;
-	inputValue = newValue;
-	firePropertyChange(INPUT_VALUE_PROPERTY, old, inputValue);
+        Object old = inputValue;
+        inputValue = newValue;
+        firePropertyChange(INPUT_VALUE_PROPERTY, old, inputValue);
       }
   }
 
@@ -761,9 +761,9 @@ public class JOptionPane extends JComponent implements Accessible
   {
     if (message != newMessage)
       {
-	Object old = message;
-	message = newMessage;
-	firePropertyChange(MESSAGE_PROPERTY, old, message);
+        Object old = message;
+        message = newMessage;
+        firePropertyChange(MESSAGE_PROPERTY, old, message);
       }
   }
 
@@ -780,9 +780,9 @@ public class JOptionPane extends JComponent implements Accessible
       throw new IllegalArgumentException("Message Type not legal value.");
     if (newType != messageType)
       {
-	int old = messageType;
-	messageType = newType;
-	firePropertyChange(MESSAGE_TYPE_PROPERTY, old, messageType);
+        int old = messageType;
+        messageType = newType;
+        firePropertyChange(MESSAGE_TYPE_PROPERTY, old, messageType);
       }
   }
 
@@ -795,9 +795,9 @@ public class JOptionPane extends JComponent implements Accessible
   {
     if (options != newOptions)
       {
-	Object[] old = options;
-	options = newOptions;
-	firePropertyChange(OPTIONS_PROPERTY, old, options);
+        Object[] old = options;
+        options = newOptions;
+        firePropertyChange(OPTIONS_PROPERTY, old, options);
       }
   }
 
@@ -814,9 +814,9 @@ public class JOptionPane extends JComponent implements Accessible
       throw new IllegalArgumentException("Option Type not legal value.");
     if (newType != optionType)
       {
-	int old = optionType;
-	optionType = newType;
-	firePropertyChange(OPTION_TYPE_PROPERTY, old, optionType);
+        int old = optionType;
+        optionType = newType;
+        firePropertyChange(OPTION_TYPE_PROPERTY, old, optionType);
       }
   }
 
@@ -840,11 +840,11 @@ public class JOptionPane extends JComponent implements Accessible
   {
     if (newValues != selectionValues)
       {
-	if (newValues != null)
-	  wantsInput = true;
-	Object[] old = selectionValues;
-	selectionValues = newValues;
-	firePropertyChange(SELECTION_VALUES_PROPERTY, old, selectionValues);
+        if (newValues != null)
+          wantsInput = true;
+        Object[] old = selectionValues;
+        selectionValues = newValues;
+        firePropertyChange(SELECTION_VALUES_PROPERTY, old, selectionValues);
       }
   }
 
@@ -867,9 +867,9 @@ public class JOptionPane extends JComponent implements Accessible
   {
     if (value != newValue)
       {
-	Object old = value;
-	value = newValue;
-	firePropertyChange(VALUE_PROPERTY, old, value);
+        Object old = value;
+        value = newValue;
+        firePropertyChange(VALUE_PROPERTY, old, value);
       }
   }
 
@@ -882,9 +882,9 @@ public class JOptionPane extends JComponent implements Accessible
   {
     if (wantsInput != newValue)
       {
-	boolean old = wantsInput;
-	wantsInput = newValue;
-	firePropertyChange(WANTS_INPUT_PROPERTY, old, wantsInput);
+        boolean old = wantsInput;
+        wantsInput = newValue;
+        firePropertyChange(WANTS_INPUT_PROPERTY, old, wantsInput);
       }
   }
 
@@ -904,7 +904,7 @@ public class JOptionPane extends JComponent implements Accessible
     JOptionPane pane = new JOptionPane(message, QUESTION_MESSAGE);
     JDialog dialog = pane.createDialog(parentComponent, "Select an Option");
     dialog.show();
-    
+
     if (pane.getValue() instanceof Integer)
       return ((Integer) pane.getValue()).intValue();
     return -1;
@@ -1011,7 +1011,7 @@ public class JOptionPane extends JComponent implements Accessible
     pane.setWantsInput(true);
     JDialog dialog = pane.createDialog(parentComponent, null);
     dialog.show();
-    
+
     return (String) pane.getInputValue();
   }
 
@@ -1037,7 +1037,7 @@ public class JOptionPane extends JComponent implements Accessible
     pane.setWantsInput(true);
     JDialog dialog = pane.createDialog(parentComponent, null);
     dialog.show();
-    
+
     return (String) pane.getInputValue();
   }
 
@@ -1062,7 +1062,7 @@ public class JOptionPane extends JComponent implements Accessible
     pane.setWantsInput(true);
     JDialog dialog = pane.createDialog(parentComponent, title);
     dialog.show();
-    
+
     return (String) pane.getInputValue();
   }
 
@@ -1094,7 +1094,7 @@ public class JOptionPane extends JComponent implements Accessible
     pane.setInitialSelectionValue(initialSelectionValue);
     JDialog dialog = pane.createDialog(parentComponent, title);
     dialog.show();
-    
+
     return pane.getInputValue();
   }
 
@@ -1114,7 +1114,7 @@ public class JOptionPane extends JComponent implements Accessible
     pane.setWantsInput(true);
     JDialog dialog = pane.createDialog(null, null);
     dialog.show();
-    
+
     return (String) pane.getInputValue();
   }
 
@@ -1138,7 +1138,7 @@ public class JOptionPane extends JComponent implements Accessible
     pane.setInitialSelectionValue(initialSelectionValue);
     JDialog dialog = pane.createDialog(null, null);
     dialog.show();
-    
+
     return (String) pane.getInputValue();
   }
 
@@ -1160,7 +1160,7 @@ public class JOptionPane extends JComponent implements Accessible
     JInternalFrame frame = pane.createInternalFrame(parentComponent, null);
 
     startModal(frame);
-    
+
     if (pane.getValue() instanceof Integer)
       return ((Integer) pane.getValue()).intValue();
     return -1;
@@ -1270,7 +1270,7 @@ public class JOptionPane extends JComponent implements Accessible
     JInternalFrame frame = pane.createInternalFrame(parentComponent, null);
 
     startModal(frame);
-    
+
     return (String) pane.getInputValue();
   }
 
@@ -1296,7 +1296,7 @@ public class JOptionPane extends JComponent implements Accessible
     JInternalFrame frame = pane.createInternalFrame(parentComponent, title);
 
     startModal(frame);
-    
+
     return (String) pane.getInputValue();
   }
 
@@ -1331,7 +1331,7 @@ public class JOptionPane extends JComponent implements Accessible
     JInternalFrame frame = pane.createInternalFrame(parentComponent, title);
 
     startModal(frame);
-    
+
     return pane.getInputValue();
   }
 
@@ -1424,7 +1424,7 @@ public class JOptionPane extends JComponent implements Accessible
     JInternalFrame frame = pane.createInternalFrame(parentComponent, title);
 
     startModal(frame);
- 
+
     if (pane.getValue() instanceof Integer)
       return ((Integer) pane.getValue()).intValue();
     return -1;
@@ -1441,7 +1441,7 @@ public class JOptionPane extends JComponent implements Accessible
   {
     JOptionPane pane = new JOptionPane(message, INFORMATION_MESSAGE);
     JDialog dialog = pane.createDialog(parentComponent, null);
-    dialog.show();   
+    dialog.show();
   }
 
   /**
@@ -1539,7 +1539,7 @@ public class JOptionPane extends JComponent implements Accessible
       case PLAIN_MESSAGE:
       case QUESTION_MESSAGE:
       case WARNING_MESSAGE:
-	return true;
+        return true;
       }
     return false;
   }
@@ -1559,7 +1559,7 @@ public class JOptionPane extends JComponent implements Accessible
       case OK_CANCEL_OPTION:
       case YES_NO_CANCEL_OPTION:
       case YES_NO_OPTION:
-	return true;
+        return true;
       }
     return false;
   }

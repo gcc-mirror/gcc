@@ -82,7 +82,7 @@ import javax.management.openmbean.TabularData;
 /**
  * <p>
  * Provides access to the system's management beans via a series
- * of static methods.  
+ * of static methods.
  * </p>
  * <p>
  * An instance of a system management bean can be obtained by
@@ -251,16 +251,16 @@ public class ManagementFactory
   public static OperatingSystemMXBean getOperatingSystemMXBean()
   {
     if (osBean == null)
-      try 
-	{
-	  osBean = new OperatingSystemMXBeanImpl();
-	}
+      try
+        {
+          osBean = new OperatingSystemMXBeanImpl();
+        }
       catch (NotCompliantMBeanException e)
-	{
-	  throw new InternalError("The GNU implementation of the " +
-				  "operating system bean is not a " +
-				  "compliant management bean.");
-	}
+        {
+          throw new InternalError("The GNU implementation of the " +
+                                  "operating system bean is not a " +
+                                  "compliant management bean.");
+        }
     return osBean;
   }
 
@@ -275,15 +275,15 @@ public class ManagementFactory
   {
     if (runtimeBean == null)
       try
-	{
-	  runtimeBean = new RuntimeMXBeanImpl();
-	}
+        {
+          runtimeBean = new RuntimeMXBeanImpl();
+        }
       catch (NotCompliantMBeanException e)
-	{
-	  throw new InternalError("The GNU implementation of the " +
-				  "runtime bean is not a compliant " +
-				  "management bean.");
-	}
+        {
+          throw new InternalError("The GNU implementation of the " +
+                                  "runtime bean is not a compliant " +
+                                  "management bean.");
+        }
     return runtimeBean;
   }
 
@@ -298,15 +298,15 @@ public class ManagementFactory
   {
     if (classLoadingBean == null)
       try
-	{
-	  classLoadingBean = new ClassLoadingMXBeanImpl();
-	}
+        {
+          classLoadingBean = new ClassLoadingMXBeanImpl();
+        }
       catch (NotCompliantMBeanException e)
-	{
-	  throw new InternalError("The GNU implementation of the " +
-				  "class loading bean is not a " +
-				  "compliant management bean.");
-	}
+        {
+          throw new InternalError("The GNU implementation of the " +
+                                  "class loading bean is not a " +
+                                  "compliant management bean.");
+        }
     return classLoadingBean;
   }
 
@@ -321,15 +321,15 @@ public class ManagementFactory
   {
     if (threadBean == null)
       try
-	{
-	  threadBean = new ThreadMXBeanImpl();
-	}
+        {
+          threadBean = new ThreadMXBeanImpl();
+        }
       catch (NotCompliantMBeanException e)
-	{
-	  throw new InternalError("The GNU implementation of the " +
-				  "thread bean is not a compliant " +
-				  "management bean.");
-	}
+        {
+          throw new InternalError("The GNU implementation of the " +
+                                  "thread bean is not a compliant " +
+                                  "management bean.");
+        }
     return threadBean;
   }
 
@@ -344,15 +344,15 @@ public class ManagementFactory
   {
     if (memoryBean == null)
       try
-	{
-	  memoryBean = new MemoryMXBeanImpl();
-	}
+        {
+          memoryBean = new MemoryMXBeanImpl();
+        }
       catch (NotCompliantMBeanException e)
-	{
-	  throw new InternalError("The GNU implementation of the " +
-				  "memory bean is not a compliant " +
-				  "management bean.");
-	}
+        {
+          throw new InternalError("The GNU implementation of the " +
+                                  "memory bean is not a compliant " +
+                                  "management bean.");
+        }
     return memoryBean;
   }
 
@@ -369,17 +369,17 @@ public class ManagementFactory
   public static CompilationMXBean getCompilationMXBean()
   {
     if (compilationBean == null &&
-	SystemProperties.getProperty("gnu.java.compiler.name") != null)
+        SystemProperties.getProperty("gnu.java.compiler.name") != null)
       try
-	{
-	  compilationBean = new CompilationMXBeanImpl();
-	}
+        {
+          compilationBean = new CompilationMXBeanImpl();
+        }
       catch (NotCompliantMBeanException e)
-	{
-	  throw new InternalError("The GNU implementation of the " +
-				  "compilation bean is not a compliant " +
-				  "management bean.");
-	}
+        {
+          throw new InternalError("The GNU implementation of the " +
+                                  "compilation bean is not a compliant " +
+                                  "management bean.");
+        }
     return compilationBean;
   }
 
@@ -397,15 +397,15 @@ public class ManagementFactory
     String[] names = VMManagementFactory.getMemoryPoolNames();
     for (int a = 0; a < names.length; ++a)
       try
-	{
-	  poolBeans.add(new MemoryPoolMXBeanImpl(names[a]));
-	}
+        {
+          poolBeans.add(new MemoryPoolMXBeanImpl(names[a]));
+        }
       catch (NotCompliantMBeanException e)
-	{
-	  throw new InternalError("The GNU implementation of the " +
-				  "memory pool bean, " + a + ", is " +
-				  "not a compliant management bean.");
-	}
+        {
+          throw new InternalError("The GNU implementation of the " +
+                                  "memory pool bean, " + a + ", is " +
+                                  "not a compliant management bean.");
+        }
     return poolBeans;
   }
 
@@ -423,15 +423,15 @@ public class ManagementFactory
     String[] names = VMManagementFactory.getMemoryManagerNames();
     for (int a = 0; a < names.length; ++a)
       try
-	{
-	  managerBeans.add(new MemoryManagerMXBeanImpl(names[a]));
-	}
+        {
+          managerBeans.add(new MemoryManagerMXBeanImpl(names[a]));
+        }
       catch (NotCompliantMBeanException e)
-	{
-	  throw new InternalError("The GNU implementation of the " +
-				  "memory manager bean, " + a + ", is " +
-				  "not a compliant management bean.");
-	}
+        {
+          throw new InternalError("The GNU implementation of the " +
+                                  "memory manager bean, " + a + ", is " +
+                                  "not a compliant management bean.");
+        }
     managerBeans.addAll(getGarbageCollectorMXBeans());
     return managerBeans;
   }
@@ -450,16 +450,16 @@ public class ManagementFactory
     String[] names = VMManagementFactory.getGarbageCollectorNames();
     for (int a = 0; a < names.length; ++a)
       try
-	{
-	  gcBeans.add(new GarbageCollectorMXBeanImpl(names[a]));
-	}
+        {
+          gcBeans.add(new GarbageCollectorMXBeanImpl(names[a]));
+        }
       catch (NotCompliantMBeanException e)
-	{
-	  throw new InternalError("The GNU implementation of the " +
-				  "garbage collector bean, " + a + 
-				  ", is not a compliant management " +
-				  "bean.");
-	}
+        {
+          throw new InternalError("The GNU implementation of the " +
+                                  "garbage collector bean, " + a +
+                                  ", is not a compliant management " +
+                                  "bean.");
+        }
     return gcBeans;
   }
 
@@ -490,77 +490,77 @@ public class ManagementFactory
   {
     if (platformServer == null)
       {
-	platformServer = MBeanServerFactory.createMBeanServer();
-	try
-	  {
-	    platformServer.registerMBean(getOperatingSystemMXBean(),
-					 new ObjectName(OPERATING_SYSTEM_MXBEAN_NAME));
-	    platformServer.registerMBean(getRuntimeMXBean(),
-					 new ObjectName(RUNTIME_MXBEAN_NAME));
-	    platformServer.registerMBean(getClassLoadingMXBean(),
-					 new ObjectName(CLASS_LOADING_MXBEAN_NAME));
-	    platformServer.registerMBean(getThreadMXBean(),
-					 new ObjectName(THREAD_MXBEAN_NAME));
-	    platformServer.registerMBean(getMemoryMXBean(),
-					 new ObjectName(MEMORY_MXBEAN_NAME));
-	    CompilationMXBean compBean = getCompilationMXBean();
-	    if (compBean != null)
-	      platformServer.registerMBean(compBean,
-					   new ObjectName(COMPILATION_MXBEAN_NAME));
-	    Iterator beans = getMemoryPoolMXBeans().iterator();
-	    while (beans.hasNext())
-	      {
-		MemoryPoolMXBean bean = (MemoryPoolMXBean) beans.next();
-		platformServer.registerMBean(bean,
-					     new ObjectName(MEMORY_POOL_MXBEAN_DOMAIN_TYPE +
-							    ",name=" +
-							    bean.getName()));
-	      }
-	    beans = getMemoryManagerMXBeans().iterator();
-	    while (beans.hasNext())
-	      {
-		MemoryManagerMXBean bean = (MemoryManagerMXBean) beans.next();
-		platformServer.registerMBean(bean,
-					     new ObjectName(MEMORY_MANAGER_MXBEAN_DOMAIN_TYPE +
-							    ",name=" +
-							    bean.getName()));
-	      }
-	    beans = getGarbageCollectorMXBeans().iterator();
-	    while (beans.hasNext())
-	      {
-		GarbageCollectorMXBean bean = (GarbageCollectorMXBean) beans.next();
-		platformServer.registerMBean(bean,
-					     new ObjectName(GARBAGE_COLLECTOR_MXBEAN_DOMAIN_TYPE +
-							    ",name=" +
-							    bean.getName()));
-	      }
-	    platformServer.registerMBean(LogManager.getLoggingMXBean(),
-					 new ObjectName(LogManager.LOGGING_MXBEAN_NAME));
-	  }
-	catch (InstanceAlreadyExistsException e)
-	  {
-	    throw (Error) 
-	      (new InternalError("One of the management beans is " +
-				 "already registered.").initCause(e));
-	  }
-	catch (MBeanRegistrationException e)
-	  {
-	    throw (Error) 
-	      (new InternalError("One of the management beans' preRegister " +
-				 "methods threw an exception.").initCause(e));
-	  }
-	catch (NotCompliantMBeanException e)
-	  {
-	    throw (Error) 
-	      (new InternalError("One of the management beans is " +
-				 "not compliant.").initCause(e));
-	  }
-	catch (MalformedObjectNameException e)
-	  {
-	    throw (Error) 
-	      (new InternalError("The object name of a management bean is " +
-				 "not compliant.").initCause(e));
-	  }
+        platformServer = MBeanServerFactory.createMBeanServer();
+        try
+          {
+            platformServer.registerMBean(getOperatingSystemMXBean(),
+                                         new ObjectName(OPERATING_SYSTEM_MXBEAN_NAME));
+            platformServer.registerMBean(getRuntimeMXBean(),
+                                         new ObjectName(RUNTIME_MXBEAN_NAME));
+            platformServer.registerMBean(getClassLoadingMXBean(),
+                                         new ObjectName(CLASS_LOADING_MXBEAN_NAME));
+            platformServer.registerMBean(getThreadMXBean(),
+                                         new ObjectName(THREAD_MXBEAN_NAME));
+            platformServer.registerMBean(getMemoryMXBean(),
+                                         new ObjectName(MEMORY_MXBEAN_NAME));
+            CompilationMXBean compBean = getCompilationMXBean();
+            if (compBean != null)
+              platformServer.registerMBean(compBean,
+                                           new ObjectName(COMPILATION_MXBEAN_NAME));
+            Iterator beans = getMemoryPoolMXBeans().iterator();
+            while (beans.hasNext())
+              {
+                MemoryPoolMXBean bean = (MemoryPoolMXBean) beans.next();
+                platformServer.registerMBean(bean,
+                                             new ObjectName(MEMORY_POOL_MXBEAN_DOMAIN_TYPE +
+                                                            ",name=" +
+                                                            bean.getName()));
+              }
+            beans = getMemoryManagerMXBeans().iterator();
+            while (beans.hasNext())
+              {
+                MemoryManagerMXBean bean = (MemoryManagerMXBean) beans.next();
+                platformServer.registerMBean(bean,
+                                             new ObjectName(MEMORY_MANAGER_MXBEAN_DOMAIN_TYPE +
+                                                            ",name=" +
+                                                            bean.getName()));
+              }
+            beans = getGarbageCollectorMXBeans().iterator();
+            while (beans.hasNext())
+              {
+                GarbageCollectorMXBean bean = (GarbageCollectorMXBean) beans.next();
+                platformServer.registerMBean(bean,
+                                             new ObjectName(GARBAGE_COLLECTOR_MXBEAN_DOMAIN_TYPE +
+                                                            ",name=" +
+                                                            bean.getName()));
+              }
+            platformServer.registerMBean(LogManager.getLoggingMXBean(),
+                                         new ObjectName(LogManager.LOGGING_MXBEAN_NAME));
+          }
+        catch (InstanceAlreadyExistsException e)
+          {
+            throw (Error)
+              (new InternalError("One of the management beans is " +
+                                 "already registered.").initCause(e));
+          }
+        catch (MBeanRegistrationException e)
+          {
+            throw (Error)
+              (new InternalError("One of the management beans' preRegister " +
+                                 "methods threw an exception.").initCause(e));
+          }
+        catch (NotCompliantMBeanException e)
+          {
+            throw (Error)
+              (new InternalError("One of the management beans is " +
+                                 "not compliant.").initCause(e));
+          }
+        catch (MalformedObjectNameException e)
+          {
+            throw (Error)
+              (new InternalError("The object name of a management bean is " +
+                                 "not compliant.").initCause(e));
+          }
       }
     return platformServer;
   }
@@ -600,51 +600,51 @@ public class ManagementFactory
    * @throws IOException if the connection throws one.
    */
   public static <T> T newPlatformMXBeanProxy(MBeanServerConnection connection,
-					     String mxbeanName,
-					     Class<T> mxbeanInterface)
+                                             String mxbeanName,
+                                             Class<T> mxbeanInterface)
     throws IOException
   {
     if (!(mxbeanName.equals(CLASS_LOADING_MXBEAN_NAME) ||
-	  mxbeanName.equals(COMPILATION_MXBEAN_NAME) ||
-	  mxbeanName.startsWith(GARBAGE_COLLECTOR_MXBEAN_DOMAIN_TYPE) ||
-	  mxbeanName.startsWith(MEMORY_MANAGER_MXBEAN_DOMAIN_TYPE) ||
-	  mxbeanName.equals(MEMORY_MXBEAN_NAME) ||
-	  mxbeanName.startsWith(MEMORY_POOL_MXBEAN_DOMAIN_TYPE) ||
-	  mxbeanName.equals(OPERATING_SYSTEM_MXBEAN_NAME) ||
-	  mxbeanName.equals(RUNTIME_MXBEAN_NAME) ||
-	  mxbeanName.equals(THREAD_MXBEAN_NAME)))
+          mxbeanName.equals(COMPILATION_MXBEAN_NAME) ||
+          mxbeanName.startsWith(GARBAGE_COLLECTOR_MXBEAN_DOMAIN_TYPE) ||
+          mxbeanName.startsWith(MEMORY_MANAGER_MXBEAN_DOMAIN_TYPE) ||
+          mxbeanName.equals(MEMORY_MXBEAN_NAME) ||
+          mxbeanName.startsWith(MEMORY_POOL_MXBEAN_DOMAIN_TYPE) ||
+          mxbeanName.equals(OPERATING_SYSTEM_MXBEAN_NAME) ||
+          mxbeanName.equals(RUNTIME_MXBEAN_NAME) ||
+          mxbeanName.equals(THREAD_MXBEAN_NAME)))
       {
-	throw new IllegalArgumentException("The named bean, " + mxbeanName +
-					   ", is not a platform name.");
+        throw new IllegalArgumentException("The named bean, " + mxbeanName +
+                                           ", is not a platform name.");
       }
     if ((mxbeanName.equals(CLASS_LOADING_MXBEAN_NAME) &&
-	 mxbeanInterface != ClassLoadingMXBean.class) ||
-	(mxbeanName.equals(COMPILATION_MXBEAN_NAME) &&
-	 mxbeanInterface != CompilationMXBean.class) ||
-	(mxbeanName.startsWith(GARBAGE_COLLECTOR_MXBEAN_DOMAIN_TYPE) &&
-	 mxbeanInterface != GarbageCollectorMXBean.class) ||
-	(mxbeanName.startsWith(MEMORY_MANAGER_MXBEAN_DOMAIN_TYPE) &&
-	 mxbeanInterface != MemoryManagerMXBean.class) ||
-	(mxbeanName.equals(MEMORY_MXBEAN_NAME) &&
-	 mxbeanInterface != MemoryMXBean.class) ||
-	(mxbeanName.startsWith(MEMORY_POOL_MXBEAN_DOMAIN_TYPE) &&
-	 mxbeanInterface != MemoryPoolMXBean.class) ||
-	(mxbeanName.equals(OPERATING_SYSTEM_MXBEAN_NAME) &&
-	 mxbeanInterface != OperatingSystemMXBean.class) ||
-	(mxbeanName.equals(RUNTIME_MXBEAN_NAME) &&
-	 mxbeanInterface != RuntimeMXBean.class) ||
-	(mxbeanName.equals(THREAD_MXBEAN_NAME) &&
-	 mxbeanInterface != ThreadMXBean.class))
+         mxbeanInterface != ClassLoadingMXBean.class) ||
+        (mxbeanName.equals(COMPILATION_MXBEAN_NAME) &&
+         mxbeanInterface != CompilationMXBean.class) ||
+        (mxbeanName.startsWith(GARBAGE_COLLECTOR_MXBEAN_DOMAIN_TYPE) &&
+         mxbeanInterface != GarbageCollectorMXBean.class) ||
+        (mxbeanName.startsWith(MEMORY_MANAGER_MXBEAN_DOMAIN_TYPE) &&
+         mxbeanInterface != MemoryManagerMXBean.class) ||
+        (mxbeanName.equals(MEMORY_MXBEAN_NAME) &&
+         mxbeanInterface != MemoryMXBean.class) ||
+        (mxbeanName.startsWith(MEMORY_POOL_MXBEAN_DOMAIN_TYPE) &&
+         mxbeanInterface != MemoryPoolMXBean.class) ||
+        (mxbeanName.equals(OPERATING_SYSTEM_MXBEAN_NAME) &&
+         mxbeanInterface != OperatingSystemMXBean.class) ||
+        (mxbeanName.equals(RUNTIME_MXBEAN_NAME) &&
+         mxbeanInterface != RuntimeMXBean.class) ||
+        (mxbeanName.equals(THREAD_MXBEAN_NAME) &&
+         mxbeanInterface != ThreadMXBean.class))
       throw new IllegalArgumentException("The interface, " + mxbeanInterface +
-					 ", does not match the bean, " + mxbeanName);
+                                         ", does not match the bean, " + mxbeanName);
     ObjectName bean;
     try
       {
-	bean = new ObjectName(mxbeanName);
+        bean = new ObjectName(mxbeanName);
       }
     catch (MalformedObjectNameException e)
       {
-	throw new IllegalArgumentException("The named bean is invalid.");
+        throw new IllegalArgumentException("The named bean is invalid.");
       }
     if (!(connection.isRegistered(bean)))
       throw new IllegalArgumentException("The bean is not registered on this connection.");
@@ -654,8 +654,8 @@ public class ManagementFactory
     else
       interfaces = new Class[] { mxbeanInterface };
     return (T) Proxy.newProxyInstance(mxbeanInterface.getClassLoader(),
-				      interfaces,
-				      new ManagementInvocationHandler(connection, bean));
+                                      interfaces,
+                                      new ManagementInvocationHandler(connection, bean));
   }
 
   /**
@@ -688,7 +688,7 @@ public class ManagementFactory
      * @param bean the bean to proxy.
      */
     public ManagementInvocationHandler(MBeanServerConnection conn,
-				       ObjectName bean)
+                                       ObjectName bean)
       throws IOException
     {
       this.conn = conn;
@@ -715,46 +715,46 @@ public class ManagementFactory
     {
       String name = method.getName();
       if (name.equals("toString"))
-	return "Proxy for " + bean + " using " + conn;
+        return "Proxy for " + bean + " using " + conn;
       if (name.equals("addNotificationListener"))
-	{
-	  conn.addNotificationListener(bean,
-				       (NotificationListener) args[0],
-				       (NotificationFilter) args[1],
-				       args[2]);
-	  return null;
-	}
+        {
+          conn.addNotificationListener(bean,
+                                       (NotificationListener) args[0],
+                                       (NotificationFilter) args[1],
+                                       args[2]);
+          return null;
+        }
       if (name.equals("getNotificationInfo"))
-	return conn.getMBeanInfo(bean).getNotifications();
+        return conn.getMBeanInfo(bean).getNotifications();
       if (name.equals("removeNotificationListener"))
-	{
-	  if (args.length == 1)
-	    conn.removeNotificationListener(bean, 
-					    (NotificationListener)
-					    args[0]);
-	  else
-	    conn.removeNotificationListener(bean, 
-					    (NotificationListener)
-					    args[0],
-					    (NotificationFilter)
-					    args[1], args[2]);
-	  return null;
-	}
+        {
+          if (args.length == 1)
+            conn.removeNotificationListener(bean,
+                                            (NotificationListener)
+                                            args[0]);
+          else
+            conn.removeNotificationListener(bean,
+                                            (NotificationListener)
+                                            args[0],
+                                            (NotificationFilter)
+                                            args[1], args[2]);
+          return null;
+        }
       String attrib = null;
       if (name.startsWith("get"))
-	attrib = name.substring(3);
+        attrib = name.substring(3);
       else if (name.startsWith("is"))
-	attrib = name.substring(2);
+        attrib = name.substring(2);
       if (attrib != null)
-	return translate(conn.getAttribute(bean, attrib), method);
+        return translate(conn.getAttribute(bean, attrib), method);
       else if (name.startsWith("set"))
-	{
-	  conn.setAttribute(bean, new Attribute(name.substring(3),
-						args[0]));
-	  return null;
-	}
+        {
+          conn.setAttribute(bean, new Attribute(name.substring(3),
+                                                args[0]));
+          return null;
+        }
       else
-	return translate(conn.invoke(bean, name, args, null), method);
+        return translate(conn.invoke(bean, name, args, null), method);
     }
 
     /**
@@ -772,44 +772,44 @@ public class ManagementFactory
     {
       Class<?> returnType = method.getReturnType();
       if (returnType.isEnum())
-	{
-	  String ename = (String) otype;
-	  Enum[] constants = (Enum[]) returnType.getEnumConstants();
-	  for (Enum c : constants)
-	    if (c.name().equals(ename))
-	      return c;
-	}
+        {
+          String ename = (String) otype;
+          Enum[] constants = (Enum[]) returnType.getEnumConstants();
+          for (Enum c : constants)
+            if (c.name().equals(ename))
+              return c;
+        }
       if (List.class.isAssignableFrom(returnType))
-	{
-	  Object[] elems = (Object[]) otype;
-	  List l = new ArrayList(elems.length);
-	  for (Object elem : elems)
-	    l.add(elem);
-	  return l;
-	}
+        {
+          Object[] elems = (Object[]) otype;
+          List l = new ArrayList(elems.length);
+          for (Object elem : elems)
+            l.add(elem);
+          return l;
+        }
       if (Map.class.isAssignableFrom(returnType))
-	{
-	  TabularData data = (TabularData) otype;
-	  Map m = new HashMap(data.size());
-	  for (Object val : data.values())
-	    {
-	      CompositeData vals = (CompositeData) val;
-	      m.put(vals.get("key"), vals.get("value"));
-	    }
-	  return m;
-	}
+        {
+          TabularData data = (TabularData) otype;
+          Map m = new HashMap(data.size());
+          for (Object val : data.values())
+            {
+              CompositeData vals = (CompositeData) val;
+              m.put(vals.get("key"), vals.get("value"));
+            }
+          return m;
+        }
       try
-	{
-	  Method m = returnType.getMethod("from",
-					  new Class[]
-	    { CompositeData.class });
-	  return m.invoke(null, (CompositeData) otype);
-	}
+        {
+          Method m = returnType.getMethod("from",
+                                          new Class[]
+            { CompositeData.class });
+          return m.invoke(null, (CompositeData) otype);
+        }
       catch (NoSuchMethodException e)
-	{
-	  /* Ignored; we expect this if this
-	     isn't a from(CompositeData) class */
-	}
+        {
+          /* Ignored; we expect this if this
+             isn't a from(CompositeData) class */
+        }
       return otype;
     }
 

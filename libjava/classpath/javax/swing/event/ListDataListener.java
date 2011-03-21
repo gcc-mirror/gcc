@@ -44,11 +44,11 @@ import javax.swing.ListModel;
 /**
  * A <code>ListDataListener</code> can register with a {@link ListModel} and
  * receive notification of updates to the model.
- * 
+ *
  * @author Andrew Selkirk
  * @author Ronald Veldema
  */
-public interface ListDataListener extends EventListener 
+public interface ListDataListener extends EventListener
 {
 
   /**
@@ -56,7 +56,7 @@ public interface ListDataListener extends EventListener
    * in some way.  This method will be called if the change cannot be
    * notified via the {@link #intervalAdded(ListDataEvent)} or the
    * {@link #intervalRemoved(ListDataEvent)} methods.
-   * 
+   *
    * @param event  the event.
    */
   void contentsChanged(ListDataEvent event);
@@ -65,16 +65,16 @@ public interface ListDataListener extends EventListener
    * Notifies the listener that one or more items have been added to the
    * list.  The <code>event</code> argument can supply the indices for the
    * range of items added.
-   * 
+   *
    * @param event  the event.
    */
   void intervalAdded(ListDataEvent event);
 
   /**
    * Notifies the listener that one or more items have been removed from
-   * the list.  The <code>event</code> argument can supply the indices for 
+   * the list.  The <code>event</code> argument can supply the indices for
    * the range of items removed.
-   * 
+   *
    * @param event  the event.
    */
   void intervalRemoved(ListDataEvent event);

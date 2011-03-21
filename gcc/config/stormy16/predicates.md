@@ -140,8 +140,8 @@
 {
   /* 'Q' is for pushes, 'R' for pops.  */
   return (nonimmediate_operand (op, mode) 
-	  && ! xstormy16_extra_constraint_p (op, 'Q')
-	  && ! xstormy16_extra_constraint_p (op, 'R'));
+	  && ! satisfies_constraint_Q (op)
+	  && ! satisfies_constraint_R (op));
 })
 
 (define_predicate "xstormy16_carry_plus_operand"

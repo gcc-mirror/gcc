@@ -262,4 +262,3 @@ public abstract SourcePosition
 position();
 
 } // interface Doc
-

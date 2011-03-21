@@ -50,11 +50,11 @@ import javax.print.attribute.URISyntax;
  * <p>
  * The URI may for example contain a reference to a HTML page with information.
  * The information is normally intended for end users.
- * </p> 
+ * </p>
  * <p>
  * <b>IPP Compatibility:</b> PrinterMoreInfo is an IPP 1.1 attribute.
  * </p>
- * 
+ *
  * @author Michael Koch (konqueror@gmx.de)
  * @author Wolfgang Baer (WBaer@gmx.de)
  */
@@ -65,7 +65,7 @@ public final class PrinterMoreInfo extends URISyntax
 
   /**
    * Constructs a <code>PrinterMoreInfo</code> object.
-   * 
+   *
    * @param uri the URI of the information.
    * @throws NullPointerException if the given uri is null.
    */
@@ -73,13 +73,13 @@ public final class PrinterMoreInfo extends URISyntax
   {
     super(uri);
   }
-  
+
   /**
    * Tests if the given object is equal to this object.
    *
    * @param obj the object to test
    *
-   * @return <code>true</code> if both objects are equal, 
+   * @return <code>true</code> if both objects are equal,
    * <code>false</code> otherwise.
    */
   public boolean equals(Object obj)

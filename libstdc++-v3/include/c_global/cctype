@@ -61,8 +61,8 @@
 #undef tolower
 #undef toupper
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
-
+namespace std
+{
   using ::isalnum;
   using ::isalpha;
   using ::iscntrl;
@@ -76,8 +76,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   using ::isxdigit;
   using ::tolower;
   using ::toupper;
-
-_GLIBCXX_END_NAMESPACE
+} // namespace std
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
 
@@ -85,11 +84,10 @@ _GLIBCXX_END_NAMESPACE
 
 #undef isblank
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
-
+namespace std
+{
   using ::isblank;
-
-_GLIBCXX_END_NAMESPACE
+} // namespace std
 
 #endif // _GLIBCXX_USE_C99_CTYPE_TR1
 

@@ -7,7 +7,7 @@
  it under the terms of the GNU General Public License as published by
  the Free Software Foundation; either version 2, or (at your option)
  any later version.
- 
+
  GNU Classpath is distributed in the hope that it will be useful, but
  WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -49,10 +49,10 @@ import java.util.Iterator;
 /** <p>A <code>PersistenceDelegate</code> implementation that calls
  * the no-argument constructor to create the Collection instance and
  * uses an iterator to add all the objects it reaches through it.</p>
- * 
+ *
  * <p>It is used for <code>Set</code> and <code>List</code>
  * implementations.</p>
- * 
+ *
  * @author Robert Schuster (robertschuster@fsfe.org)
  */
 public class CollectionPersistenceDelegate extends PersistenceDelegate

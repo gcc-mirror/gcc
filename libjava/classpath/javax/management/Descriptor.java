@@ -197,7 +197,7 @@ public interface Descriptor
    * Returns a clone of this descriptor, which can then be modified
    * independently of this descriptor.  If the descriptor is
    * immutable, it is sufficient to return this instance.
-   * 
+   *
    * @return a clone of this descriptor.
    * @throws RuntimeOperationsException if creation of the new
    *                                    descriptor fails for any
@@ -224,7 +224,7 @@ public interface Descriptor
    * must return true.</li>
    * <li>Otherwise, {@link Object#equals(Object)} must return true.</li>
    * </ul>
-   * 
+   *
    * @param obj the object to compare according to the above.
    * @return true if the above holds.
    * @see Object#equals(Object)
@@ -265,7 +265,7 @@ public interface Descriptor
   /**
    * Returns the value of the specified field, or <code>null</code>
    * if no value is present for the given field name.
-   * 
+   *
    * @param name the field name.
    * @return the value of the field, or <code>null</code> if there
    *         is no value present.
@@ -283,7 +283,7 @@ public interface Descriptor
    * being returned if the field is not present.  This applies
    * even if the given field name is <code>null</code> or
    * the empty string.
-   * 
+   *
    * @param names an array of field names whose values should
    *              be returned.
    * @return the values of the specified fields.

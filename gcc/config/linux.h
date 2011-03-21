@@ -1,6 +1,9 @@
-/* Definitions for Linux-based GNU systems with ELF format
+/* Definitions for systems using the Linux kernel, with or without
+   MMU, using ELF at the compiler level but possibly FLT for final
+   linked executables and shared libraries in some no-MMU cases, and
+   possibly with a choice of libc implementations.
    Copyright (C) 1995, 1996, 1997, 1998, 1999, 2000, 2003, 2004, 2005, 2006,
-   2007, 2009, 2010 Free Software Foundation, Inc.
+   2007, 2009, 2010, 2011 Free Software Foundation, Inc.
    Contributed by Eric Youngdale.
    Modified for stabs-in-ELF by H.J. Lu (hjl@lucon.org).
 
@@ -25,60 +28,6 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
-/* Don't assume anything about the header files.  */
-#define NO_IMPLICIT_EXTERN_C
-
-#undef ASM_APP_ON
-#define ASM_APP_ON "#APP\n"
-
-#undef ASM_APP_OFF
-#define ASM_APP_OFF "#NO_APP\n"
-
-/* Provide a STARTFILE_SPEC appropriate for GNU/Linux.  Here we add
-   the GNU/Linux magical crtbegin.o file (see crtstuff.c) which
-   provides part of the support for getting C++ file-scope static
-   object constructed before entering `main'.  */
-   
-#if defined HAVE_LD_PIE
-#define LINUX_TARGET_STARTFILE_SPEC \
-  "%{!shared: %{pg|p|profile:gcrt1.o%s;pie:Scrt1.o%s;:crt1.o%s}} \
-   crti.o%s %{static:crtbeginT.o%s;shared|pie:crtbeginS.o%s;:crtbegin.o%s}"
-#else
-#define LINUX_TARGET_STARTFILE_SPEC \
-  "%{!shared: %{pg|p|profile:gcrt1.o%s;:crt1.o%s}} \
-   crti.o%s %{static:crtbeginT.o%s;shared|pie:crtbeginS.o%s;:crtbegin.o%s}"
-#endif
-#undef  STARTFILE_SPEC
-#define STARTFILE_SPEC LINUX_TARGET_STARTFILE_SPEC
-
-/* Provide a ENDFILE_SPEC appropriate for GNU/Linux.  Here we tack on
-   the GNU/Linux magical crtend.o file (see crtstuff.c) which
-   provides part of the support for getting C++ file-scope static
-   object constructed before entering `main', followed by a normal
-   GNU/Linux "finalizer" file, `crtn.o'.  */
-
-#define LINUX_TARGET_ENDFILE_SPEC \
-  "%{shared|pie:crtendS.o%s;:crtend.o%s} crtn.o%s"
-#undef  ENDFILE_SPEC
-#define ENDFILE_SPEC LINUX_TARGET_ENDFILE_SPEC
-
-/* This is for -profile to use -lc_p instead of -lc.  */
-#define LINUX_TARGET_CC1_SPEC "%{profile:-p}"
-#ifndef CC1_SPEC
-#define CC1_SPEC LINUX_TARGET_CC1_SPEC
-#endif
-
-/* The GNU C++ standard library requires that these macros be defined.  */
-#undef CPLUSPLUS_CPP_SPEC
-#define CPLUSPLUS_CPP_SPEC "-D_GNU_SOURCE %(cpp)"
-
-#define LINUX_TARGET_LIB_SPEC \
-  "%{pthread:-lpthread} \
-   %{shared:-lc} \
-   %{!shared:%{mieee-fp:-lieee} %{profile:-lc_p}%{!profile:-lc}}"
-#undef  LIB_SPEC
-#define LIB_SPEC LINUX_TARGET_LIB_SPEC
-
 /* C libraries supported on Linux.  */
 #ifdef SINGLE_LIBC
 #define OPTION_GLIBC  (DEFAULT_LIBC == LIBC_GLIBC)
@@ -100,19 +49,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 	builtin_assert ("system=unix");				\
 	builtin_assert ("system=posix");			\
     } while (0)
-
-#if defined(HAVE_LD_EH_FRAME_HDR)
-#define LINK_EH_SPEC "%{!static:--eh-frame-hdr} "
-#endif
-
-#undef LINK_GCC_C_SEQUENCE_SPEC
-#define LINK_GCC_C_SEQUENCE_SPEC \
-  "%{static:--start-group} %G %L %{static:--end-group}%{!static:%G}"
-
-/* Use --as-needed -lgcc_s for eh support.  */
-#ifdef HAVE_LD_AS_NEEDED
-#define USE_LD_AS_NEEDED 1
-#endif
 
 /* Determine which dynamic linker to use depending on whether GLIBC or
    uClibc or Bionic is the default C library and whether
@@ -161,5 +97,3 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 /* Whether we have sincos that follows the GNU extension.  */
 #define TARGET_HAS_SINCOS (OPTION_GLIBC || OPTION_BIONIC)
-
-#define TARGET_POSIX_IO

@@ -98,12 +98,12 @@ public class XFontPeer
   {
     /**
      * The ascent of the font.
-     */ 
+     */
     int ascent;
 
     /**
      * The descent of the font.
-     */ 
+     */
     int descent;
 
     /**
@@ -253,7 +253,7 @@ public class XFontPeer
      *
      * @param c the char buffer holding the string
      * @param offset the starting offset of the string in the buffer
-     * @param length the number of characters in the string buffer 
+     * @param length the number of characters in the string buffer
      *
      * @return the overall width of the specified string
      */
@@ -393,7 +393,7 @@ public class XFontPeer
     {
       return 1.F; // TODO: Provided by X??
     }
-      
+
   }
 
   /**
@@ -410,7 +410,7 @@ public class XFontPeer
   /**
    * The font metrics for this font.
    */
-  XFontMetrics fontMetrics; 
+  XFontMetrics fontMetrics;
 
   /**
    * Creates a new XFontPeer for the specified font name, style and size.
@@ -694,7 +694,7 @@ public class XFontPeer
       case Font.PLAIN:
       default:
         key.append("plain");
-      
+
     }
 
     String protoType = fontProperties.getProperty(key.toString());

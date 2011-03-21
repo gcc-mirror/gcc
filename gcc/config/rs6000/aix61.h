@@ -116,9 +116,9 @@ do {									\
 #define TARGET_DEFAULT (MASK_POWERPC | MASK_NEW_MNEMONICS)
 
 #undef  PROCESSOR_DEFAULT
-#define PROCESSOR_DEFAULT PROCESSOR_POWER5
+#define PROCESSOR_DEFAULT PROCESSOR_POWER7
 #undef  PROCESSOR_DEFAULT64
-#define PROCESSOR_DEFAULT64 PROCESSOR_POWER5
+#define PROCESSOR_DEFAULT64 PROCESSOR_POWER7
 
 #undef  TARGET_POWER
 #define TARGET_POWER 0
@@ -196,9 +196,5 @@ extern long long int    atoll(const char *);
    but does not have crtbegin/end.  */
 
 #define TARGET_USE_JCR_SECTION 0
-
-/* Default to 128 bit long double.  */
-
-#define RS6000_DEFAULT_LONG_DOUBLE_SIZE 128
 
 #define TARGET_AIX_VERSION 61

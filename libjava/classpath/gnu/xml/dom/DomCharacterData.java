@@ -1,4 +1,4 @@
-/* DomCharacterData.java -- 
+/* DomCharacterData.java --
    Copyright (C) 1999,2000,2001,2004,2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -73,7 +73,7 @@ public abstract class DomCharacterData
     {
       return null;
     }
-    
+
   }
 
   /**
@@ -82,7 +82,7 @@ public abstract class DomCharacterData
   static final NodeList CHILD_NODES = new EmptyNodeList();
 
   private String text;
-  
+
   // package private
   DomCharacterData(short nodeType, DomDocument doc, String value)
   {
@@ -113,7 +113,7 @@ public abstract class DomCharacterData
     mutating(value);
     text = value;
   }
-  
+
   /**
    * <b>DOM L1</b>
    * Modifies the value of this node.
@@ -153,7 +153,7 @@ public abstract class DomCharacterData
         throw new DomDOMException(DOMException.INDEX_SIZE_ERR);
       }
   }
-    
+
   /**
    * <b>DOM L1</b>
    * Returns the value of this node.
@@ -162,7 +162,7 @@ public abstract class DomCharacterData
   {
     return text;
   }
-    
+
   /**
    * <b>DOM L1</b>
    * Returns the value of this node; same as getNodeValue.
@@ -180,7 +180,7 @@ public abstract class DomCharacterData
   {
     return text.length();
   }
-  
+
   /**
    * <b>DOM L1</b>
    * Modifies the value of this node.
@@ -194,7 +194,7 @@ public abstract class DomCharacterData
     char[] raw = text.toCharArray();
     char[] tmp = arg.toCharArray ();
     char[] buf = new char[raw.length + tmp.length];
-    
+
     try
       {
         System.arraycopy(raw, 0, buf, 0, offset);
@@ -210,7 +210,7 @@ public abstract class DomCharacterData
         throw new DomDOMException(DOMException.INDEX_SIZE_ERR);
       }
   }
-    
+
   /**
    * <b>DOM L1</b>
    * Modifies the value of this node.  Causes DOMCharacterDataModified
@@ -223,7 +223,7 @@ public abstract class DomCharacterData
         throw new DomDOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR);
       }
     char[] raw = text.toCharArray();
-    
+
     // deleteData
     if (offset < 0 || count < 0 || offset > raw.length)
       {
@@ -239,7 +239,7 @@ public abstract class DomCharacterData
         System.arraycopy(raw, 0, buf, 0, offset);
         System.arraycopy(raw, offset + count, buf, offset,
                          raw.length - (offset + count));
-        
+
         // insertData
         char[] tmp = arg.toCharArray ();
         char[] buf2 = new char[buf.length + tmp.length];
@@ -256,7 +256,7 @@ public abstract class DomCharacterData
         throw new DomDOMException(DOMException.INDEX_SIZE_ERR);
       }
   }
-    
+
   /**
    * <b>DOM L1</b>
    * Assigns the value of this node.
@@ -275,7 +275,7 @@ public abstract class DomCharacterData
     mutating(value);
     text = value;
   }
- 
+
   /**
    * <b>DOM L1</b>
    * Assigns the value of this node; same as setNodeValue.
@@ -329,17 +329,16 @@ public abstract class DomCharacterData
       {
         return;
       }
-    
+
     // EVENT:  DOMCharacterDataModified, target = this,
     //  prev/new values provided
     MutationEvent  event;
-    
+
     event = (MutationEvent) createEvent("MutationEvents");
     event.initMutationEvent("DOMCharacterDataModified",
                             true /* bubbles */, false /* nocancel */,
                             null, text, newValue, null, (short) 0);
     dispatchEvent(event);
   }
-  
-}
 
+}

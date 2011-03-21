@@ -1,4 +1,4 @@
-/* ChooseNode.java -- 
+/* ChooseNode.java --
    Copyright (C) 2004,2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -76,7 +76,7 @@ final class ChooseNode
                  context, pos, len,
                  parent, nextSibling);
   }
-  
+
   public String toString()
   {
     CPStringBuilder buf = new CPStringBuilder("choose");
@@ -84,5 +84,5 @@ final class ChooseNode
     buf.append(']');
     return buf.toString();
   }
-  
+
 }

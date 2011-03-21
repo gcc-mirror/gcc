@@ -78,22 +78,22 @@ public class MetalComboBoxUI extends BasicComboBoxUI
     {
       // Nothing to do here.
     }
-    
+
     /**
      * Arranges the editor (if visible) and button that comprise the combo
      * box.
-     * 
+     *
      * @param parent  the parent.
      */
     public void layoutContainer(Container parent)
     {
       layoutComboBox(parent, this);
     }
-    
+
     /**
-     * Calls the <code>layoutContainer(Container)</code> method in the super 
+     * Calls the <code>layoutContainer(Container)</code> method in the super
      * class.
-     * 
+     *
      * @param parent  the container.
      */
     public void superLayout(Container parent)
@@ -101,9 +101,9 @@ public class MetalComboBoxUI extends BasicComboBoxUI
       super.layoutContainer(parent);
     }
   }
-  
+
   /**
-   * A listener used to handle property changes in the {@link JComboBox} 
+   * A listener used to handle property changes in the {@link JComboBox}
    * component, to ensure that the UI delegate accurately reflects the current
    * state in the rendering onscreen.
    */
@@ -117,11 +117,11 @@ public class MetalComboBoxUI extends BasicComboBoxUI
     {
       // Nothing to do here.
     }
-    
+
     /**
      * Handles a property change event, updating the UI components as
      * appropriate.
-     * 
+     *
      * @param e  the event.
      */
     public void propertyChange(PropertyChangeEvent e)
@@ -156,7 +156,7 @@ public class MetalComboBoxUI extends BasicComboBoxUI
 
   /**
    * A popup menu for the combo-box.
-   * 
+   *
    * @see #createPopup()
    *
    * @deprecated 1.4
@@ -165,20 +165,20 @@ public class MetalComboBoxUI extends BasicComboBoxUI
   {
     /**
      * Creates a new popup.
-     * 
+     *
      * @param cBox  the combo box.
      */
     public MetalComboPopup(JComboBox cBox)
     {
-      super(cBox); 
+      super(cBox);
     }
-    
+
     public void delegateFocus(MouseEvent e)
     {
       super.delegateFocus(e);
     }
   }
-  
+
   /**
    * Constructs a new instance of MetalComboBoxUI.
    */
@@ -198,61 +198,61 @@ public class MetalComboBoxUI extends BasicComboBoxUI
   {
     return new MetalComboBoxUI();
   }
-  
+
   /**
    * Creates an editor for the combo box.
-   * 
+   *
    * @return An editor.
    */
   protected ComboBoxEditor createEditor()
   {
-    return new MetalComboBoxEditor.UIResource();   
+    return new MetalComboBoxEditor.UIResource();
   }
-  
+
   /**
    * Creates a popup for the combo box.
-   * 
+   *
    * @return A popup.
    */
   protected ComboPopup createPopup()
   {
     return super.createPopup();
   }
-  
+
   /**
    * Creates a new button for use in rendering the JComboBox.
-   * 
+   *
    * @return A button.
    */
   protected JButton createArrowButton()
   {
-    JButton button = new MetalComboBoxButton(comboBox, new MetalComboBoxIcon(), 
-            currentValuePane, listBox);  
+    JButton button = new MetalComboBoxButton(comboBox, new MetalComboBoxIcon(),
+            currentValuePane, listBox);
     button.setMargin(new Insets(0, 1, 1, 3));
     return button;
   }
-  
+
   /**
    * Creates a new property change listener.
-   * 
+   *
    * @return A new property change listener.
    */
   public PropertyChangeListener createPropertyChangeListener()
   {
     return new MetalPropertyChangeListener();
   }
-  
+
   public void paint(Graphics g, JComponent c)
   {
     // do nothing, the button and text field are painted elsewhere
   }
-  
+
   /**
    * Updates the button and text field to reflect a change in the 'editable'
    * property.
-   * 
+   *
    * @param e  the event.
-   * 
+   *
    * @deprecated 1.4
    */
   protected void editablePropertyChanged(PropertyChangeEvent e)
@@ -265,32 +265,32 @@ public class MetalComboBoxUI extends BasicComboBoxUI
         comboBox.repaint();
       }
   }
-  
+
   /**
    * Creates a new layout manager for the UI delegate.
-   * 
+   *
    * @return A new layout manager.
    */
   protected LayoutManager createLayoutManager()
   {
     return new MetalComboBoxLayoutManager();
   }
-  
+
   /**
    * Not used in Classpath.
-   * 
+   *
    * @deprecated 1.4
    */
   protected void removeListeners()
   {
-    // no longer used in JDK 1.4 
+    // no longer used in JDK 1.4
   }
-  
+
   /**
    * Returns the minimum size for the combo.
-   * 
+   *
    * @param c  the component
-   * 
+   *
    * @return The minimum size for the combo box.
    */
   public Dimension getMinimumSize(JComponent c)
@@ -328,7 +328,7 @@ public class MetalComboBoxUI extends BasicComboBoxUI
     isMinimumSizeDirty = false;
     return new Dimension(cachedMinimumSize);
   }
-  
+
   /**
    * Configures the editor for this combo box.
    */
@@ -350,8 +350,8 @@ public class MetalComboBoxUI extends BasicComboBoxUI
     if (focusListener != null)
       editor.removeFocusListener(focusListener);
   }
-  
-  /** 
+
+  /**
    * Lays out the ComboBox
    */
   public void layoutComboBox(Container parent,

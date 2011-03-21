@@ -1,4 +1,4 @@
-/* GradientPaintContext.java -- 
+/* GradientPaintContext.java --
    Copyright (C) 2005, Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -47,39 +47,39 @@ import java.awt.Color;
 /**
  * A {@link PaintContext} used by the {@link GradientPaint} class.
  */
-public class GradientPaintContext implements PaintContext 
+public class GradientPaintContext implements PaintContext
 {
 
-  // This implementation follows the technique described in 
+  // This implementation follows the technique described in
   // "Java(tm) 2D Graphics" by Jonathan Knudsen (O'Reilly 1999).
-    
+
   /** The x-coordinate of the anchor point for color 1. */
   private final float x1;
-    
+
   /** The y-coordinate of the anchor point for color 1. */
   private final float y1;
-    
+
   /** Color 1. */
   private final Color c1;
-    
+
   /** The x-coordinate of the anchor point for color 2. */
   private final float x2;
-    
+
   /** The y-coordinate of the anchor point for color 2. */
   private final float y2;
-    
+
   /** Color 2. */
   private final Color c2;
-    
+
   /** A flag indicating whether the gradient is cyclic or acyclic. */
   private final boolean cyclic;
-    
+
   /** The length of the gradient line - computed from the two anchor points. */
-  private final double length; 
+  private final double length;
 
   /**
    * Creates a new instance.
-   * 
+   *
    * @param x1  the x-coordinate for the anchor point for color 1.
    * @param y1  the y-coordinate for the anchor point for color 1.
    * @param c1  color 1.
@@ -89,9 +89,9 @@ public class GradientPaintContext implements PaintContext
    * @param cyclic  a flag that determines whether the gradient is cyclic
    *                or acyclic.
    */
-  public GradientPaintContext(float x1, float y1, Color c1, 
-                              float x2, float y2, Color c2, boolean cyclic) 
-  {     
+  public GradientPaintContext(float x1, float y1, Color c1,
+                              float x2, float y2, Color c2, boolean cyclic)
+  {
     this.x1 = x1;
     this.y1 = y1;
     this.c1 = c1;
@@ -101,7 +101,7 @@ public class GradientPaintContext implements PaintContext
     this.cyclic = cyclic;
     length = Point2D.distance(x1, y1, x2, y2);
   }
-    
+
   /**
    * Return the color model of this context. It may be different from the
    * hint specified during createContext, as not all contexts can generate
@@ -109,9 +109,9 @@ public class GradientPaintContext implements PaintContext
    *
    * @return the context color model
    */
-  public ColorModel getColorModel() 
+  public ColorModel getColorModel()
   {
-    return ColorModel.getRGBdefault();   
+    return ColorModel.getRGBdefault();
   }
 
   /**
@@ -131,21 +131,21 @@ public class GradientPaintContext implements PaintContext
     for (int r = 0; r < h; r++) {
       for (int c = 0; c < w; c++) {
         double u = 0.0;
-        if (pd2 != 0) 
-          u = (((x + c) - x1) * (x2 - x1) + ((y + r) - y1) * (y2 - y1)) 
+        if (pd2 != 0)
+          u = (((x + c) - x1) * (x2 - x1) + ((y + r) - y1) * (y2 - y1))
                   / Math.sqrt(pd2);
         double ratio = u / length;
         if (cyclic)
           ratio = Math.abs(ratio - Math.floor((ratio + 1.0) / 2.0) * 2.0);
-        else 
+        else
           ratio = Math.max(0.0, Math.min(1.0, ratio));
         int base = (r * w + c) * 4;
         data[base] = (int) (c1.getRed() + ratio * (c2.getRed() - c1.getRed()));
-        data[base + 1] 
+        data[base + 1]
           = (int) (c1.getGreen() + ratio * (c2.getGreen() - c1.getGreen()));
-        data[base + 2] 
+        data[base + 2]
           = (int) (c1.getBlue() + ratio * (c2.getBlue() - c1.getBlue()));
-        data[base + 3] 
+        data[base + 3]
           = (int) (c1.getAlpha() + ratio * (c2.getAlpha() - c1.getAlpha()));
       }
     }
@@ -154,11 +154,11 @@ public class GradientPaintContext implements PaintContext
   }
 
   /**
-   * Release the resources allocated for the paint (none in this 
+   * Release the resources allocated for the paint (none in this
    * implementation).
    */
   public void dispose() {
-    // nothing to do    
+    // nothing to do
   }
-    
+
 }

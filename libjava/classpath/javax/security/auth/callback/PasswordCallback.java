@@ -149,11 +149,11 @@ public class PasswordCallback implements Callback, Serializable
   {
     if (inputPassword != null)
       {
-	for (int i = 0; i < inputPassword.length; i++)
-	  {
-	    inputPassword[i] = '\0';
-	  }
-	inputPassword = null;
+        for (int i = 0; i < inputPassword.length; i++)
+          {
+            inputPassword[i] = '\0';
+          }
+        inputPassword = null;
       }
   }
 
@@ -161,7 +161,7 @@ public class PasswordCallback implements Callback, Serializable
   {
     if ((prompt == null) || (prompt.length() == 0))
       {
-	throw new IllegalArgumentException("invalid prompt");
+        throw new IllegalArgumentException("invalid prompt");
       }
     this.prompt = prompt;
   }

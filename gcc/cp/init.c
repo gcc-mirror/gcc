@@ -1,7 +1,7 @@
 /* Handle initialization things in C++.
    Copyright (C) 1987, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
-   Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+   2011 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -140,10 +140,13 @@ initialize_vtbl_ptrs (tree addr)
    is the number of elements in the array.  If STATIC_STORAGE_P is
    TRUE, initializers are only generated for entities for which
    zero-initialization does not simply mean filling the storage with
-   zero bytes.  */
+   zero bytes.  FIELD_SIZE, if non-NULL, is the bit size of the field,
+   subfields with bit positions at or above that bit size shouldn't
+   be added.  */
 
-tree
-build_zero_init (tree type, tree nelts, bool static_storage_p)
+static tree
+build_zero_init_1 (tree type, tree nelts, bool static_storage_p,
+		   tree field_size)
 {
   tree init = NULL_TREE;
 
@@ -188,15 +191,32 @@ build_zero_init (tree type, tree nelts, bool static_storage_p)
 	  if (TREE_CODE (field) != FIELD_DECL)
 	    continue;
 
+	  /* Don't add virtual bases for base classes if they are beyond
+	     the size of the current field, that means it is present
+	     somewhere else in the object.  */
+	  if (field_size)
+	    {
+	      tree bitpos = bit_position (field);
+	      if (TREE_CODE (bitpos) == INTEGER_CST
+		  && !tree_int_cst_lt (bitpos, field_size))
+		continue;
+	    }
+
 	  /* Note that for class types there will be FIELD_DECLs
 	     corresponding to base classes as well.  Thus, iterating
 	     over TYPE_FIELDs will result in correct initialization of
 	     all of the subobjects.  */
 	  if (!static_storage_p || !zero_init_p (TREE_TYPE (field)))
 	    {
-	      tree value = build_zero_init (TREE_TYPE (field),
-					    /*nelts=*/NULL_TREE,
-					    static_storage_p);
+	      tree new_field_size
+		= (DECL_FIELD_IS_BASE (field)
+		   && DECL_SIZE (field)
+		   && TREE_CODE (DECL_SIZE (field)) == INTEGER_CST)
+		  ? DECL_SIZE (field) : NULL_TREE;
+	      tree value = build_zero_init_1 (TREE_TYPE (field),
+					      /*nelts=*/NULL_TREE,
+					      static_storage_p,
+					      new_field_size);
 	      if (value)
 		CONSTRUCTOR_APPEND_ELT(v, field, value);
 	    }
@@ -244,9 +264,9 @@ build_zero_init (tree type, tree nelts, bool static_storage_p)
 	    ce->index = build2 (RANGE_EXPR, sizetype, size_zero_node,
 				max_index);
 
-	  ce->value = build_zero_init (TREE_TYPE (type),
-				       /*nelts=*/NULL_TREE,
-				       static_storage_p);
+	  ce->value = build_zero_init_1 (TREE_TYPE (type),
+					 /*nelts=*/NULL_TREE,
+					 static_storage_p, NULL_TREE);
 	}
 
       /* Build a constructor to contain the initializations.  */
@@ -262,6 +282,24 @@ build_zero_init (tree type, tree nelts, bool static_storage_p)
     TREE_CONSTANT (init) = 1;
 
   return init;
+}
+
+/* Return an expression for the zero-initialization of an object with
+   type T.  This expression will either be a constant (in the case
+   that T is a scalar), or a CONSTRUCTOR (in the case that T is an
+   aggregate), or NULL (in the case that T does not require
+   initialization).  In either case, the value can be used as
+   DECL_INITIAL for a decl of the indicated TYPE; it is a valid static
+   initializer. If NELTS is non-NULL, and TYPE is an ARRAY_TYPE, NELTS
+   is the number of elements in the array.  If STATIC_STORAGE_P is
+   TRUE, initializers are only generated for entities for which
+   zero-initialization does not simply mean filling the storage with
+   zero bytes.  */
+
+tree
+build_zero_init (tree type, tree nelts, bool static_storage_p)
+{
+  return build_zero_init_1 (type, nelts, static_storage_p, NULL_TREE);
 }
 
 /* Return a suitable initializer for value-initializing an object of type
@@ -535,8 +573,10 @@ perform_member_init (tree member, tree init)
 		       "uninitialized member %qD with %<const%> type %qT",
 		       member, type);
 
+	  core_type = strip_array_types (type);
+
 	  if (DECL_DECLARED_CONSTEXPR_P (current_function_decl)
-	      && !type_has_constexpr_default_constructor (type))
+	      && !type_has_constexpr_default_constructor (core_type))
 	    {
 	      if (!DECL_TEMPLATE_INSTANTIATION (current_function_decl))
 		error ("uninitialized member %qD in %<constexpr%> constructor",
@@ -544,7 +584,6 @@ perform_member_init (tree member, tree init)
 	      DECL_DECLARED_CONSTEXPR_P (current_function_decl) = false;
 	    }
 
-	  core_type = strip_array_types (type);
 	  if (CLASS_TYPE_P (core_type)
 	      && (CLASSTYPE_READONLY_FIELDS_NEED_INIT (core_type)
 		  || CLASSTYPE_REF_FIELDS_NEED_INIT (core_type)))
@@ -1759,17 +1798,15 @@ constant_value_1 (tree decl, bool integral_p)
 	init = TREE_VALUE (init);
       if (!init
 	  || !TREE_TYPE (init)
-	  || uses_template_parms (init)
-	  || (integral_p
-	      ? false
-	      : (!TREE_CONSTANT (init)
-		 /* Do not return an aggregate constant (of which
-		    string literals are a special case), as we do not
-		    want to make inadvertent copies of such entities,
-		    and we must be sure that their addresses are the
-		    same everywhere.  */
-		 || TREE_CODE (init) == CONSTRUCTOR
-		 || TREE_CODE (init) == STRING_CST)))
+	  || !TREE_CONSTANT (init)
+	  || (!integral_p
+	      /* Do not return an aggregate constant (of which
+		 string literals are a special case), as we do not
+		 want to make inadvertent copies of such entities,
+		 and we must be sure that their addresses are the
+		 same everywhere.  */
+	      && (TREE_CODE (init) == CONSTRUCTOR
+		  || TREE_CODE (init) == STRING_CST)))
 	break;
       decl = unshare_expr (init);
     }
@@ -2294,7 +2331,22 @@ build_new_1 (VEC(tree,gc) **placement, tree type, tree nelts,
 	  explicit_value_init_p = true;
 	}
 
-      if (array_p)
+      if (processing_template_decl && explicit_value_init_p)
+	{
+	  /* build_value_init doesn't work in templates, and we don't need
+	     the initializer anyway since we're going to throw it away and
+	     rebuild it at instantiation time, so just build up a single
+	     constructor call to get any appropriate diagnostics.  */
+	  init_expr = cp_build_indirect_ref (data_addr, RO_NULL, complain);
+	  if (TYPE_NEEDS_CONSTRUCTING (elt_type))
+	    init_expr = build_special_member_call (init_expr,
+						   complete_ctor_identifier,
+						   init, elt_type,
+						   LOOKUP_NORMAL,
+						   complain);
+	  stable = stabilize_init (init_expr, &init_preeval_expr);
+	}
+      else if (array_p)
 	{
 	  tree vecinit = NULL_TREE;
 	  if (*init && VEC_length (tree, *init) == 1
@@ -2343,8 +2395,7 @@ build_new_1 (VEC(tree,gc) **placement, tree type, tree nelts,
 	{
 	  init_expr = cp_build_indirect_ref (data_addr, RO_NULL, complain);
 
-	  if (TYPE_NEEDS_CONSTRUCTING (type)
-	      && (!explicit_value_init_p || processing_template_decl))
+	  if (TYPE_NEEDS_CONSTRUCTING (type) && !explicit_value_init_p)
 	    {
 	      init_expr = build_special_member_call (init_expr,
 						     complete_ctor_identifier,
@@ -2354,17 +2405,11 @@ build_new_1 (VEC(tree,gc) **placement, tree type, tree nelts,
 	    }
 	  else if (explicit_value_init_p)
 	    {
-	      if (processing_template_decl)
-		/* Don't worry about it, we'll handle this properly at
-		   instantiation time.  */;
-	      else
-		{
-		  /* Something like `new int()'.  */
-		  tree val = build_value_init (type, complain);
-		  if (val == error_mark_node)
-		    return error_mark_node;
-		  init_expr = build2 (INIT_EXPR, type, init_expr, val);
-		}
+	      /* Something like `new int()'.  */
+	      tree val = build_value_init (type, complain);
+	      if (val == error_mark_node)
+		return error_mark_node;
+	      init_expr = build2 (INIT_EXPR, type, init_expr, val);
 	    }
 	  else
 	    {
@@ -3117,7 +3162,7 @@ build_vec_init (tree base, tree maxindex, tree init,
       tree elt_init;
       tree to;
 
-      for_stmt = begin_for_stmt ();
+      for_stmt = begin_for_stmt (NULL_TREE, NULL_TREE);
       finish_for_init_stmt (for_stmt);
       finish_for_cond (build2 (NE_EXPR, boolean_type_node, iterator,
 			       build_int_cst (TREE_TYPE (iterator), -1)),

@@ -1,6 +1,7 @@
 ;; ??? This file needs auditing for thumb2
 ;; Patterns for the Intel Wireless MMX technology architecture.
-;; Copyright (C) 2003, 2004, 2005, 2007, 2008 Free Software Foundation, Inc.
+;; Copyright (C) 2003, 2004, 2005, 2007, 2008, 2010
+;; Free Software Foundation, Inc.
 ;; Contributed by Red Hat.
 
 ;; This file is part of GCC.
@@ -550,7 +551,7 @@
 ;;
 ;; Note - you cannot use patterns like these here:
 ;;
-;;   (set:<vector> (match:<vector>) (<comparator>:<vector> (match:<vector>) (match:<vector>)))
+;;   (set (match:<vector>) (<comparator>:<vector> (match:<vector>) (match:<vector>)))
 ;;
 ;; Because GCC will assume that the truth value (1 or 0) is installed
 ;; into the entire destination vector, (with the '1' going into the least

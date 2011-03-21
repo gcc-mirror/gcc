@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Chapter 8.  Localization</title><meta name="generator" content="DocBook XSL Stylesheets V1.75.2" /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><link rel="home" href="../spine.html" title="The GNU C++ Library Documentation" /><link rel="up" href="bk01pt02.html" title="Part II.  Standard Contents" /><link rel="prev" href="strings.html" title="Chapter 7.  Strings" /><link rel="next" href="facets.html" title="Facets" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Chapter 8. 
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Chapter 8.  Localization</title><meta name="generator" content="DocBook XSL-NS Stylesheets V1.75.2"/><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    "/><link rel="home" href="../spine.html" title="The GNU C++ Library"/><link rel="up" href="bk01pt02.html" title="Part II.  Standard Contents"/><link rel="prev" href="strings.html" title="Chapter 7.  Strings"/><link rel="next" href="facets.html" title="Facets"/></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Chapter 8. 
   Localization
   
-</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="strings.html">Prev</a> </td><th width="60%" align="center">Part II. 
-  Standard Contents
-</th><td width="20%" align="right"> <a accesskey="n" href="facets.html">Next</a></td></tr></table><hr /></div><div class="chapter" title="Chapter 8.  Localization"><div class="titlepage"><div><div><h2 class="title"><a id="std.localization"></a>Chapter 8. 
+</th></tr><tr><td align="left"><a accesskey="p" href="strings.html">Prev</a> </td><th width="60%" align="center">Part II. 
+    Standard Contents
+  </th><td align="right"> <a accesskey="n" href="facets.html">Next</a></td></tr></table><hr/></div><div class="chapter" title="Chapter 8.  Localization"><div class="titlepage"><div><div><h1 class="title"><a id="std.localization"/>
   Localization
-  <a id="id492578" class="indexterm"></a>
-</h2></div></div></div><div class="toc"><p><b>Table of Contents</b></p><dl><dt><span class="section"><a href="localization.html#std.localization.locales">Locales</a></span></dt><dd><dl><dt><span class="section"><a href="localization.html#std.localization.locales.locale">locale</a></span></dt></dl></dd><dt><span class="section"><a href="facets.html">Facets</a></span></dt><dd><dl><dt><span class="section"><a href="facets.html#std.localization.facet.ctype">ctype</a></span></dt><dt><span class="section"><a href="facets.html#std.localization.facet.codecvt">codecvt</a></span></dt><dt><span class="section"><a href="facets.html#manual.localization.facet.messages">messages</a></span></dt></dl></dd></dl></div><div class="section" title="Locales"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="std.localization.locales"></a>Locales</h2></div></div></div><div class="section" title="locale"><div class="titlepage"><div><div><h3 class="title"><a id="std.localization.locales.locale"></a>locale</h3></div></div></div><p>
+  <a id="id596473" class="indexterm"/>
+</h1></div></div></div><div class="toc"><p><b>Table of Contents</b></p><dl><dt><span class="section"><a href="localization.html#std.localization.locales">Locales</a></span></dt><dd><dl><dt><span class="section"><a href="localization.html#std.localization.locales.locale">locale</a></span></dt></dl></dd><dt><span class="section"><a href="facets.html">Facets</a></span></dt><dd><dl><dt><span class="section"><a href="facets.html#std.localization.facet.ctype">ctype</a></span></dt><dt><span class="section"><a href="facets.html#std.localization.facet.codecvt">codecvt</a></span></dt><dt><span class="section"><a href="facets.html#manual.localization.facet.messages">messages</a></span></dt></dl></dd></dl></div><div class="section" title="Locales"><div class="titlepage"><div><div><h2 class="title"><a id="std.localization.locales"/>Locales</h2></div></div></div><div class="section" title="locale"><div class="titlepage"><div><div><h3 class="title"><a id="std.localization.locales.locale"/>locale</h3></div></div></div><p>
 Describes the basic locale object, including nested
 classes id, facet, and the reference-counted implementation object,
 class _Impl.
-</p><div class="section" title="Requirements"><div class="titlepage"><div><div><h4 class="title"><a id="locales.locale.req"></a>Requirements</h4></div></div></div><p>
+</p><div class="section" title="Requirements"><div class="titlepage"><div><div><h4 class="title"><a id="locales.locale.req"/>Requirements</h4></div></div></div><p>
 Class locale is non-templatized and has two distinct types nested
 inside of it:
 </p><div class="blockquote"><blockquote class="blockquote"><p>
@@ -26,7 +26,7 @@ called numpunct is the data object that can be used to query for the
 thousands separator in the locale.
 </p><p>
 Literally, a facet is strictly defined:
-</p><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p>
+</p><div class="itemizedlist"><ul class="itemizedlist"><li class="listitem"><p>
       Containing the following public data member:
     </p><p>
       <code class="code">static locale::id id;</code>
@@ -48,14 +48,14 @@ class id
 </em></span>
 </p></blockquote></div><p>
 Provides an index for looking up specific facets.
-</p></div><div class="section" title="Design"><div class="titlepage"><div><div><h4 class="title"><a id="locales.locale.design"></a>Design</h4></div></div></div><p>
+</p></div><div class="section" title="Design"><div class="titlepage"><div><div><h4 class="title"><a id="locales.locale.design"/>Design</h4></div></div></div><p>
 The major design challenge is fitting an object-orientated and
 non-global locale design on top of POSIX and other relevant standards,
 which include the Single Unix (nee X/Open.)
 </p><p>
 Because C and earlier versions of POSIX fall down so completely,
 portability is an issue.
-</p></div><div class="section" title="Implementation"><div class="titlepage"><div><div><h4 class="title"><a id="locales.locale.impl"></a>Implementation</h4></div></div></div><div class="section" title="Interacting with &quot;C&quot; locales"><div class="titlepage"><div><div><h5 class="title"><a id="locale.impl.c"></a>Interacting with "C" locales</h5></div></div></div><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p>
+</p></div><div class="section" title="Implementation"><div class="titlepage"><div><div><h4 class="title"><a id="locales.locale.impl"/>Implementation</h4></div></div></div><div class="section" title="Interacting with &quot;C&quot; locales"><div class="titlepage"><div><div><h5 class="title"><a id="locale.impl.c"/>Interacting with "C" locales</h5></div></div></div><div class="itemizedlist"><ul class="itemizedlist"><li class="listitem"><p>
        <code class="code">`locale -a`</code> displays available locales.
      </p><div class="blockquote"><blockquote class="blockquote"><pre class="programlisting">
 af_ZA
@@ -385,7 +385,7 @@ global locale" (emphasis Paolo), that is:
   particular on the working of locale(""), which constructs the locale
   object from the environment of the running program, that is, in
   practice, the set of LC_ALL, LANG, etc. variable of the shell.
-</p></div></div><div class="section" title="Future"><div class="titlepage"><div><div><h4 class="title"><a id="locales.locale.future"></a>Future</h4></div></div></div><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p>
+</p></div></div><div class="section" title="Future"><div class="titlepage"><div><div><h4 class="title"><a id="locales.locale.future"/>Future</h4></div></div></div><div class="itemizedlist"><ul class="itemizedlist"><li class="listitem"><p>
        Locale initialization: at what point does _S_classic, _S_global
        get initialized? Can named locales assume this initialization
        has already taken place?
@@ -403,37 +403,34 @@ global locale" (emphasis Paolo), that is:
        What should non-required facet instantiations do?  If the
        generic implementation is provided, then how to end-users
        provide specializations?
-   </p></li></ul></div></div><div class="bibliography" title="Bibliography"><div class="titlepage"><div><div><h4 class="title"><a id="locales.locale.biblio"></a>Bibliography</h4></div></div></div><div class="biblioentry" title="The GNU C Library"><a id="id469670"></a><p><span class="title"><i>
+   </p></li></ul></div></div><div class="bibliography" title="Bibliography"><div class="titlepage"><div><div><h4 class="title"><a id="locales.locale.biblio"/>Bibliography</h4></div></div></div><div class="biblioentry"><a id="id596835"/><p><span class="citetitle"><em class="citetitle">
       The GNU C Library
-    </i>. </span><span class="author"><span class="firstname">Roland</span> <span class="surname">McGrath</span>. </span><span class="author"><span class="firstname">Ulrich</span> <span class="surname">Drepper</span>. </span><span class="copyright">Copyright © 2007 FSF. </span><span class="pagenums">
+    </em>. </span><span class="author"><span class="firstname">Roland</span> <span class="surname">McGrath</span>. </span><span class="author"><span class="firstname">Ulrich</span> <span class="surname">Drepper</span>. </span><span class="copyright">Copyright © 2007 FSF. </span><span class="pagenums">
       Chapters 6 Character Set Handling and 7 Locales and
       Internationalization
-    . </span></p></div><div class="biblioentry" title="Correspondence"><a id="id506284"></a><p><span class="title"><i>
+    . </span></p></div><div class="biblioentry"><a id="id596875"/><p><span class="citetitle"><em class="citetitle">
       Correspondence
-    </i>. </span><span class="author"><span class="firstname">Ulrich</span> <span class="surname">Drepper</span>. </span><span class="copyright">Copyright © 2002 . </span></p></div><div class="biblioentry" title="ISO/IEC 14882:1998 Programming languages - C++"><a id="id404778"></a><p><span class="title"><i>
+    </em>. </span><span class="author"><span class="firstname">Ulrich</span> <span class="surname">Drepper</span>. </span><span class="copyright">Copyright © 2002 . </span></p></div><div class="biblioentry"><a id="id596901"/><p><span class="citetitle"><em class="citetitle">
       ISO/IEC 14882:1998 Programming languages - C++
-    </i>. </span><span class="copyright">Copyright © 1998 ISO. </span></p></div><div class="biblioentry" title="ISO/IEC 9899:1999 Programming languages - C"><a id="id404796"></a><p><span class="title"><i>
+    </em>. </span><span class="copyright">Copyright © 1998 ISO. </span></p></div><div class="biblioentry"><a id="id596920"/><p><span class="citetitle"><em class="citetitle">
       ISO/IEC 9899:1999 Programming languages - C
-    </i>. </span><span class="copyright">Copyright © 1999 ISO. </span></p></div><div class="biblioentry"><a id="id415109"></a><p><span class="biblioid">
-      <a class="ulink" href="http://www.opengroup.org/austin" target="_top">
-	<em class="citetitle">
-	  System Interface Definitions, Issue 7 (IEEE Std. 1003.1-2008)
-	</em>
-      </a>
-    . </span><span class="copyright">Copyright © 2008 
+    </em>. </span><span class="copyright">Copyright © 1999 ISO. </span></p></div><div class="biblioentry"><a id="id596939"/><p><span class="biblioid">
+    . </span><span class="citetitle"><em class="citetitle">
+      System Interface Definitions, Issue 7 (IEEE Std. 1003.1-2008)
+    </em>. </span><span class="copyright">Copyright © 2008 
 	The Open Group/The Institute of Electrical and Electronics
 	Engineers, Inc.
-      . </span></p></div><div class="biblioentry" title="The C++ Programming Language, Special Edition"><a id="id376691"></a><p><span class="title"><i>
+      . </span></p></div><div class="biblioentry"><a id="id596968"/><p><span class="citetitle"><em class="citetitle">
       The C++ Programming Language, Special Edition
-    </i>. </span><span class="author"><span class="firstname">Bjarne</span> <span class="surname">Stroustrup</span>. </span><span class="copyright">Copyright © 2000 Addison Wesley, Inc.. </span><span class="pagenums">Appendix D. </span><span class="publisher"><span class="publishername">
+    </em>. </span><span class="author"><span class="firstname">Bjarne</span> <span class="surname">Stroustrup</span>. </span><span class="copyright">Copyright © 2000 Addison Wesley, Inc.. </span><span class="pagenums">Appendix D. </span><span class="publisher"><span class="publishername">
 	Addison Wesley
-      . </span></span></p></div><div class="biblioentry" title="Standard C++ IOStreams and Locales"><a id="id349259"></a><p><span class="title"><i>
+      . </span></span></p></div><div class="biblioentry"><a id="id597007"/><p><span class="citetitle"><em class="citetitle">
       Standard C++ IOStreams and Locales
-    </i>. </span><span class="subtitle">
+    </em>. </span><span class="subtitle">
       Advanced Programmer's Guide and Reference
     . </span><span class="author"><span class="firstname">Angelika</span> <span class="surname">Langer</span>. </span><span class="author"><span class="firstname">Klaus</span> <span class="surname">Kreft</span>. </span><span class="copyright">Copyright © 2000 Addison Wesley Longman, Inc.. </span><span class="publisher"><span class="publishername">
 	Addison Wesley Longman
-      . </span></span></p></div></div></div></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="strings.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="bk01pt02.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="facets.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Chapter 7. 
+      . </span></span></p></div></div></div></div></div><div class="navfooter"><hr/><table width="100%" summary="Navigation footer"><tr><td align="left"><a accesskey="p" href="strings.html">Prev</a> </td><td align="center"><a accesskey="u" href="bk01pt02.html">Up</a></td><td align="right"> <a accesskey="n" href="facets.html">Next</a></td></tr><tr><td align="left" valign="top">Chapter 7. 
   Strings
   
- </td><td width="20%" align="center"><a accesskey="h" href="../spine.html">Home</a></td><td width="40%" align="right" valign="top"> Facets</td></tr></table></div></body></html>
+ </td><td align="center"><a accesskey="h" href="../spine.html">Home</a></td><td align="right" valign="top"> Facets</td></tr></table></div></body></html>

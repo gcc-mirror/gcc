@@ -1,4 +1,4 @@
-// { dg-do "run" }
+// { dg-do run }
 // { dg-options "-std=gnu++0x" }
 struct A {};
 struct B {};

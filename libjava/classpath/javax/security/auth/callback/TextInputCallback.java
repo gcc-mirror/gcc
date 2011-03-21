@@ -161,7 +161,7 @@ public class TextInputCallback implements Callback, Serializable
   {
     if ((prompt == null) || (prompt.length() == 0))
       {
-	throw new IllegalArgumentException("invalid prompt");
+        throw new IllegalArgumentException("invalid prompt");
       }
     this.prompt = prompt;
   }
@@ -170,7 +170,7 @@ public class TextInputCallback implements Callback, Serializable
   {
     if ((defaultText == null) || (defaultText.length() == 0))
       {
-	throw new IllegalArgumentException("invalid default text");
+        throw new IllegalArgumentException("invalid default text");
       }
     this.defaultText = defaultText;
   }

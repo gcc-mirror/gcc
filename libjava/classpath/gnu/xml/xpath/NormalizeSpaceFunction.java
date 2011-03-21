@@ -1,4 +1,4 @@
-/* NormalizeSpaceFunction.java -- 
+/* NormalizeSpaceFunction.java --
    Copyright (C) 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -65,7 +65,7 @@ final class NormalizeSpaceFunction
   {
     this(args.get(0));
   }
-  
+
   NormalizeSpaceFunction(Expr arg)
   {
     this.arg = arg;
@@ -80,7 +80,7 @@ final class NormalizeSpaceFunction
     CPStringBuilder buf = new CPStringBuilder();
     if (st.hasMoreTokens())
       {
-        buf.append(st.nextToken()); 
+        buf.append(st.nextToken());
         while (st.hasMoreTokens())
           {
             buf.append(' ');
@@ -104,5 +104,5 @@ final class NormalizeSpaceFunction
   {
     return (arg == null) ? "normalize-space()" : "normalize-space(" + arg + ")";
   }
-  
+
 }

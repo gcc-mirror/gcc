@@ -1,4 +1,4 @@
-/* ProcessingInstructionImpl.java -- 
+/* ProcessingInstructionImpl.java --
    Copyright (C) 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -78,7 +78,7 @@ public class ProcessingInstructionImpl
   {
     return data;
   }
-  
+
   public void writeAsEncodedUnicode(Writer writer)
     throws XMLStreamException
   {
@@ -100,6 +100,5 @@ public class ProcessingInstructionImpl
         throw e2;
       }
   }
-  
-}
 
+}

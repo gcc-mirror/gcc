@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -43,7 +43,7 @@ package java.io;
   *
   * @author Warren Levy (warrenl@cygnus.com)
   * @author Aaron M. Renn (arenn@urbanophile.com)
-  */ 
+  */
 public class ByteArrayInputStream extends InputStream
 {
   /**
@@ -78,9 +78,9 @@ public class ByteArrayInputStream extends InputStream
    * of the array.  It is identical to calling an overloaded constructor
    * as <code>ByteArrayInputStream(buf, 0, buf.length)</code>.
    * <p>
-   * Note that this array is not copied.  If its contents are changed 
+   * Note that this array is not copied.  If its contents are changed
    * while this stream is being read, those changes will be reflected in the
-   * bytes supplied to the reader.  Please use caution in changing the 
+   * bytes supplied to the reader.  Please use caution in changing the
    * contents of the buffer while this stream is open.
    *
    * @param buffer The byte array buffer this stream will read from.
@@ -100,9 +100,9 @@ public class ByteArrayInputStream extends InputStream
    * The <code>length</code> value should be viewed as the array index
    * one greater than the last position in the buffer to read.
    * <p>
-   * Note that this array is not copied.  If its contents are changed 
+   * Note that this array is not copied.  If its contents are changed
    * while this stream is being read, those changes will be reflected in the
-   * bytes supplied to the reader.  Please use caution in changing the 
+   * bytes supplied to the reader.  Please use caution in changing the
    * contents of the buffer while this stream is open.
    *
    * @param buffer The byte array buffer this stream will read from.
@@ -129,7 +129,7 @@ public class ByteArrayInputStream extends InputStream
    * stream.  The value returned will be equal to <code>count - pos</code>.
    *
    * @return The number of bytes that can be read from this stream
-   * before blocking, which is all of them 
+   * before blocking, which is all of them
    */
   public synchronized int available()
   {

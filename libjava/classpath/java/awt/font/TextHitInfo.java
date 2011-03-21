@@ -1,4 +1,4 @@
-/* TextHitInfo.java -- 
+/* TextHitInfo.java --
    Copyright (C) 2002, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -44,13 +44,13 @@ public final class TextHitInfo
 {
   private int charIndex;
   private boolean leadingEdge;
-  
+
   TextHitInfo (int charIndex, boolean leadingEdge)
   {
     this.charIndex = charIndex;
     this.leadingEdge = leadingEdge;
   }
-  
+
   public int getCharIndex()
   {
     return charIndex;
@@ -75,7 +75,7 @@ public final class TextHitInfo
   {
     if(obj instanceof TextHitInfo)
       return this.equals((TextHitInfo) obj);
-    
+
     return false;
   }
 
@@ -83,7 +83,7 @@ public final class TextHitInfo
   {
     if (hitInfo == null)
       return false;
-    
+
     return (charIndex == hitInfo.getCharIndex ())
             && (leadingEdge == hitInfo.isLeadingEdge ());
   }

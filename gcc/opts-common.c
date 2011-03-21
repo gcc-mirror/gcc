@@ -607,11 +607,15 @@ decode_cmdline_option (const char **argv, unsigned int lang_mask,
     {
       if (i < result)
 	{
+	  size_t len;
 	  if (opt_index == OPT_SPECIAL_unknown)
 	    decoded->canonical_option[i] = argv[i];
 	  else
 	    decoded->canonical_option[i] = NULL;
-	  total_len += strlen (argv[i]) + 1;
+	  len = strlen (argv[i]);
+	  /* If the argument is an empty string, we will print it as "" in
+	     orig_option_with_args_text.  */
+	  total_len += (len != 0 ? len : 2) + 1;
 	}
       else
 	decoded->canonical_option[i] = NULL;
@@ -637,7 +641,14 @@ decode_cmdline_option (const char **argv, unsigned int lang_mask,
     {
       size_t len = strlen (argv[i]);
 
-      memcpy (p, argv[i], len);
+      /* Print the empty string verbally.  */
+      if (len == 0)
+	{
+	  *p++ = '"';
+	  *p++ = '"';
+	}
+      else
+	memcpy (p, argv[i], len);
       p += len;
       if (i == result - 1)
 	*p++ = 0;
@@ -960,12 +971,6 @@ read_cmdline_option (struct gcc_options *opts,
       return;
     }
 
-  if (decoded->errors & CL_ERR_WRONG_LANG)
-    {
-      handlers->wrong_lang_callback (decoded, lang_mask);
-      return;
-    }
-
   if (decoded->errors & CL_ERR_MISSING_ARG)
     {
       if (option->missing_argument_error)
@@ -1009,6 +1014,12 @@ read_cmdline_option (struct gcc_options *opts,
 	}
       p[-1] = 0;
       inform (loc, "valid arguments to %qs are: %s", option->opt_text, s);
+      return;
+    }
+
+  if (decoded->errors & CL_ERR_WRONG_LANG)
+    {
+      handlers->wrong_lang_callback (decoded, lang_mask);
       return;
     }
 

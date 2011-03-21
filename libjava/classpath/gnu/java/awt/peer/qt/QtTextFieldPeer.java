@@ -80,7 +80,7 @@ public class QtTextFieldPeer extends QtComponentPeer implements TextFieldPeer
 
   // ************ Public methods *********************
 
-  public long filterEvents(long e) 
+  public long filterEvents(long e)
   {
     return e;
   }
@@ -91,7 +91,7 @@ public class QtTextFieldPeer extends QtComponentPeer implements TextFieldPeer
   {
     return new Rectangle(0,0,0,0);
   }
-  
+
   public int getIndexAtPoint(int x, int y)
   {
     // FIXME
@@ -157,4 +157,3 @@ public class QtTextFieldPeer extends QtComponentPeer implements TextFieldPeer
     return null;
   }
 }
-

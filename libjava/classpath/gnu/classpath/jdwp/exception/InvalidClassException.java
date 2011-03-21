@@ -53,7 +53,7 @@ public class InvalidClassException
   public InvalidClassException (long id)
   {
     super (JdwpConstants.Error.INVALID_CLASS,
-	   "invalid class id (" + id + ")");
+           "invalid class id (" + id + ")");
   }
 
   public InvalidClassException (Throwable t)

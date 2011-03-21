@@ -1,6 +1,6 @@
 // class template regex -*- C++ -*-
 
-// Copyright (C) 2010 Free Software Foundation, Inc.
+// Copyright (C) 2010, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -28,7 +28,9 @@
  *  Do not attempt to use it directly. @headername{regex}
  */
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 /**
  * @defgroup regex Regular Expressions
@@ -341,9 +343,10 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     public:
       // types:
       typedef _Ch_type                            value_type;
+      typedef _Rx_traits                          traits_type;
+      typedef typename traits_type::string_type   string_type;
       typedef regex_constants::syntax_option_type flag_type;
-      typedef typename _Rx_traits::locale_type    locale_type;
-      typedef typename _Rx_traits::string_type    string_type;
+      typedef typename traits_type::locale_type   locale_type;
 
       /**
        * @name Constants
@@ -433,7 +436,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *
        * @param rhs A @p regex object.
        */
-      basic_regex(const basic_regex&& __rhs)
+      basic_regex(const basic_regex&& __rhs) noexcept
       : _M_flags(__rhs._M_flags), _M_traits(__rhs._M_traits),
         _M_automaton(std::move(__rhs._M_automaton))
       { }
@@ -509,7 +512,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        * @brief Move-assigns one regular expression to another.
        */
       basic_regex&
-      operator=(basic_regex&& __rhs)
+      operator=(basic_regex&& __rhs) noexcept
       { return this->assign(std::move(__rhs)); }
 
       /**
@@ -554,7 +557,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        * @param rhs Another regular expression object.
        */
       basic_regex&
-      assign(basic_regex&& __rhs)
+      assign(basic_regex&& __rhs) noexcept
       {
 	basic_regex __tmp(std::move(__rhs));
 	this->swap(__tmp);
@@ -763,6 +766,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     public:
       bool matched;
       
+      constexpr sub_match() : matched() { }
+
       /**
        * Gets the length of the matching sequence.
        */
@@ -939,7 +944,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	       typename iterator_traits<_Bi_iter>::value_type,
 	       _Ch_traits, _Ch_alloc>& __lhs,
 	       const sub_match<_Bi_iter>& __rhs)
-    { return __lhs == __rhs.str(); }
+    { return __rhs.compare(__lhs.c_str()) == 0; }
 
   /**
    * @brief Tests the inequivalence of a string and a regular expression
@@ -953,7 +958,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     operator!=(const basic_string<
 	       typename iterator_traits<_Bi_iter>::value_type,
 	       _Ch_traits, _Ch_alloc>& __lhs, const sub_match<_Bi_iter>& __rhs)
-    { return __lhs != __rhs.str(); }
+    { return !(__lhs == __rhs); }
 
   /**
    * @brief Tests the ordering of a string and a regular expression submatch.
@@ -966,7 +971,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     operator<(const basic_string<
 	      typename iterator_traits<_Bi_iter>::value_type,
 	      _Ch_traits, _Ch_alloc>& __lhs, const sub_match<_Bi_iter>& __rhs)
-     { return __lhs < __rhs.str(); }
+     { return __rhs.compare(__lhs.c_str()) > 0; }
 
   /**
    * @brief Tests the ordering of a string and a regular expression submatch.
@@ -979,7 +984,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     operator>(const basic_string<
 	      typename iterator_traits<_Bi_iter>::value_type, 
 	      _Ch_traits, _Ch_alloc>& __lhs, const sub_match<_Bi_iter>& __rhs)
-    { return __lhs > __rhs.str(); }
+    { return __rhs < __lhs; }
 
   /**
    * @brief Tests the ordering of a string and a regular expression submatch.
@@ -992,7 +997,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     operator>=(const basic_string<
 	       typename iterator_traits<_Bi_iter>::value_type,
 	       _Ch_traits, _Ch_alloc>& __lhs, const sub_match<_Bi_iter>& __rhs)
-    { return __lhs >= __rhs.str(); }
+    { return !(__lhs < __rhs); }
 
   /**
    * @brief Tests the ordering of a string and a regular expression submatch.
@@ -1005,7 +1010,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     operator<=(const basic_string<
 	       typename iterator_traits<_Bi_iter>::value_type,
 	       _Ch_traits, _Ch_alloc>& __lhs, const sub_match<_Bi_iter>& __rhs)
-    { return __lhs <= __rhs.str(); }
+    { return !(__rhs < __lhs); }
 
   /**
    * @brief Tests the equivalence of a regular expression submatch and a
@@ -1020,7 +1025,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	       const basic_string<
 	       typename iterator_traits<_Bi_iter>::value_type,
 	       _Ch_traits, _Ch_alloc>& __rhs)
-    { return __lhs.str() == __rhs; }
+    { return __lhs.compare(__rhs.c_str()) == 0; }
 
   /**
    * @brief Tests the inequivalence of a regular expression submatch and a
@@ -1035,7 +1040,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	       const basic_string<
 	       typename iterator_traits<_Bi_iter>::value_type,
 	       _Ch_traits, _Ch_alloc>& __rhs)
-    { return __lhs.str() != __rhs; }
+    { return !(__lhs == __rhs); }
 
   /**
    * @brief Tests the ordering of a regular expression submatch and a string.
@@ -1049,7 +1054,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	      const basic_string<
 	      typename iterator_traits<_Bi_iter>::value_type,
 	      _Ch_traits, _Ch_alloc>& __rhs)
-    { return __lhs.str() < __rhs; }
+    { return __lhs.compare(__rhs.c_str()) < 0; }
 
   /**
    * @brief Tests the ordering of a regular expression submatch and a string.
@@ -1063,7 +1068,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	      const basic_string<
 	      typename iterator_traits<_Bi_iter>::value_type,
 	      _Ch_traits, _Ch_alloc>& __rhs)
-    { return __lhs.str() > __rhs; }
+    { return __rhs < __lhs; }
 
   /**
    * @brief Tests the ordering of a regular expression submatch and a string.
@@ -1077,7 +1082,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	       const basic_string<
 	       typename iterator_traits<_Bi_iter>::value_type,
 	       _Ch_traits, _Ch_alloc>& __rhs)
-    { return __lhs.str() >= __rhs; }
+    { return !(__lhs < __rhs); }
 
   /**
    * @brief Tests the ordering of a regular expression submatch and a string.
@@ -1091,7 +1096,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	       const basic_string<
 	       typename iterator_traits<_Bi_iter>::value_type,
 	       _Ch_traits, _Ch_alloc>& __rhs)
-    { return __lhs.str() <= __rhs; }
+    { return !(__rhs < __lhs); }
 
   /**
    * @brief Tests the equivalence of a C string and a regular expression
@@ -1104,7 +1109,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     inline bool
     operator==(typename iterator_traits<_Bi_iter>::value_type const* __lhs,
 	       const sub_match<_Bi_iter>& __rhs)
-    { return __lhs == __rhs.str(); }
+    { return __rhs.compare(__lhs) == 0; }
 
   /**
    * @brief Tests the inequivalence of an iterator value and a regular
@@ -1117,7 +1122,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     inline bool
     operator!=(typename iterator_traits<_Bi_iter>::value_type const* __lhs,
 	       const sub_match<_Bi_iter>& __rhs)
-    { return __lhs != __rhs.str(); }
+    { return !(__lhs == __rhs); }
 
   /**
    * @brief Tests the ordering of a string and a regular expression submatch.
@@ -1129,7 +1134,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     inline bool
     operator<(typename iterator_traits<_Bi_iter>::value_type const* __lhs,
 	      const sub_match<_Bi_iter>& __rhs)
-    { return __lhs < __rhs.str(); }
+    { return __rhs.compare(__lhs) > 0; }
 
   /**
    * @brief Tests the ordering of a string and a regular expression submatch.
@@ -1141,7 +1146,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     inline bool
     operator>(typename iterator_traits<_Bi_iter>::value_type const* __lhs,
 	      const sub_match<_Bi_iter>& __rhs)
-    { return __lhs > __rhs.str(); }
+    { return __rhs < __lhs; }
 
   /**
    * @brief Tests the ordering of a string and a regular expression submatch.
@@ -1153,7 +1158,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     inline bool
     operator>=(typename iterator_traits<_Bi_iter>::value_type const* __lhs,
 	       const sub_match<_Bi_iter>& __rhs)
-    { return __lhs >= __rhs.str(); }
+    { return !(__lhs < __rhs); }
 
   /**
    * @brief Tests the ordering of a string and a regular expression submatch.
@@ -1165,7 +1170,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     inline bool
     operator<=(typename iterator_traits<_Bi_iter>::value_type const* __lhs,
 	       const sub_match<_Bi_iter>& __rhs)
-    { return __lhs <= __rhs.str(); }
+    { return !(__rhs < __lhs); }
 
   /**
    * @brief Tests the equivalence of a regular expression submatch and a
@@ -1178,7 +1183,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     inline bool
     operator==(const sub_match<_Bi_iter>& __lhs,
 	       typename iterator_traits<_Bi_iter>::value_type const* __rhs)
-    { return __lhs.str() == __rhs; }
+    { return __lhs.compare(__rhs) == 0; }
 
   /**
    * @brief Tests the inequivalence of a regular expression submatch and a
@@ -1191,7 +1196,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     inline bool
     operator!=(const sub_match<_Bi_iter>& __lhs,
 	       typename iterator_traits<_Bi_iter>::value_type const* __rhs)
-    { return __lhs.str() != __rhs; }
+    { return !(__lhs == __rhs); }
 
   /**
    * @brief Tests the ordering of a regular expression submatch and a string.
@@ -1203,7 +1208,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     inline bool
     operator<(const sub_match<_Bi_iter>& __lhs,
 	      typename iterator_traits<_Bi_iter>::value_type const* __rhs)
-    { return __lhs.str() < __rhs; }
+    { return __lhs.compare(__rhs) < 0; }
 
   /**
    * @brief Tests the ordering of a regular expression submatch and a string.
@@ -1215,7 +1220,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     inline bool
     operator>(const sub_match<_Bi_iter>& __lhs,
 	      typename iterator_traits<_Bi_iter>::value_type const* __rhs)
-    { return __lhs.str() > __rhs; }
+    { return __rhs < __lhs; }
 
   /**
    * @brief Tests the ordering of a regular expression submatch and a string.
@@ -1227,7 +1232,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     inline bool
     operator>=(const sub_match<_Bi_iter>& __lhs,
 	       typename iterator_traits<_Bi_iter>::value_type const* __rhs)
-    { return __lhs.str() >= __rhs; }
+    { return !(__lhs < __rhs); }
 
   /**
    * @brief Tests the ordering of a regular expression submatch and a string.
@@ -1239,7 +1244,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     inline bool
     operator<=(const sub_match<_Bi_iter>& __lhs,
 	       typename iterator_traits<_Bi_iter>::value_type const* __rhs)
-    { return __lhs.str() <= __rhs; }
+    { return !(__rhs < __lhs); }
 
   /**
    * @brief Tests the equivalence of a string and a regular expression
@@ -1252,7 +1257,10 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     inline bool
     operator==(typename iterator_traits<_Bi_iter>::value_type const& __lhs,
 	       const sub_match<_Bi_iter>& __rhs)
-    { return __lhs == __rhs.str(); }
+    {
+      return __rhs.compare(typename sub_match<_Bi_iter>::string_type(1, __lhs))
+             == 0;
+    }
 
   /**
    * @brief Tests the inequivalence of a string and a regular expression
@@ -1265,7 +1273,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     inline bool
     operator!=(typename iterator_traits<_Bi_iter>::value_type const& __lhs,
 	       const sub_match<_Bi_iter>& __rhs)
-    { return __lhs != __rhs.str(); }
+    { return !(__lhs == __rhs); }
 
   /**
    * @brief Tests the ordering of a string and a regular expression submatch.
@@ -1277,7 +1285,10 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     inline bool
     operator<(typename iterator_traits<_Bi_iter>::value_type const& __lhs,
 	      const sub_match<_Bi_iter>& __rhs)
-    { return __lhs < __rhs.str(); }
+    {
+      return __rhs.compare(typename sub_match<_Bi_iter>::string_type(1, __lhs))
+             > 0;
+    }
 
   /**
    * @brief Tests the ordering of a string and a regular expression submatch.
@@ -1289,7 +1300,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     inline bool
     operator>(typename iterator_traits<_Bi_iter>::value_type const& __lhs,
 	      const sub_match<_Bi_iter>& __rhs)
-    { return __lhs > __rhs.str(); }
+    { return __rhs < __lhs; }
 
   /**
    * @brief Tests the ordering of a string and a regular expression submatch.
@@ -1301,7 +1312,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     inline bool
     operator>=(typename iterator_traits<_Bi_iter>::value_type const& __lhs,
 	       const sub_match<_Bi_iter>& __rhs)
-    { return __lhs >= __rhs.str(); }
+    { return !(__lhs < __rhs); }
 
   /**
    * @brief Tests the ordering of a string and a regular expression submatch.
@@ -1313,7 +1324,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     inline bool
     operator<=(typename iterator_traits<_Bi_iter>::value_type const& __lhs,
 	       const sub_match<_Bi_iter>& __rhs)
-    { return __lhs <= __rhs.str(); }
+    { return !(__rhs < __lhs); }
 
   /**
    * @brief Tests the equivalence of a regular expression submatch and a
@@ -1326,7 +1337,10 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     inline bool
     operator==(const sub_match<_Bi_iter>& __lhs,
 	       typename iterator_traits<_Bi_iter>::value_type const& __rhs)
-    { return __lhs.str() == __rhs; }
+    {
+      return __lhs.compare(typename sub_match<_Bi_iter>::string_type(1, __rhs))
+             == 0;
+    }
 
   /**
    * @brief Tests the inequivalence of a regular expression submatch and a
@@ -1339,7 +1353,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     inline bool
     operator!=(const sub_match<_Bi_iter>& __lhs,
 	       typename iterator_traits<_Bi_iter>::value_type const& __rhs)
-    { return __lhs.str() != __rhs; }
+    { return !(__lhs == __rhs); }
 
   /**
    * @brief Tests the ordering of a regular expression submatch and a string.
@@ -1351,7 +1365,10 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     inline bool
     operator<(const sub_match<_Bi_iter>& __lhs,
 	      typename iterator_traits<_Bi_iter>::value_type const& __rhs)
-    { return __lhs.str() < __rhs; }
+    {
+      return __lhs.compare(typename sub_match<_Bi_iter>::string_type(1, __rhs))
+             < 0;
+    }
 
   /**
    * @brief Tests the ordering of a regular expression submatch and a string.
@@ -1363,7 +1380,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     inline bool
     operator>(const sub_match<_Bi_iter>& __lhs,
 	      typename iterator_traits<_Bi_iter>::value_type const& __rhs)
-    { return __lhs.str() > __rhs; }
+    { return __rhs < __lhs; }
 
   /**
    * @brief Tests the ordering of a regular expression submatch and a string.
@@ -1375,7 +1392,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     inline bool
     operator>=(const sub_match<_Bi_iter>& __lhs,
 	       typename iterator_traits<_Bi_iter>::value_type const& __rhs)
-    { return __lhs.str() >= __rhs; }
+    { return !(__lhs < __rhs); }
 
   /**
    * @brief Tests the ordering of a regular expression submatch and a string.
@@ -1387,7 +1404,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     inline bool
     operator<=(const sub_match<_Bi_iter>& __lhs,
 	       typename iterator_traits<_Bi_iter>::value_type const& __rhs)
-    { return __lhs.str() <= __rhs; }
+    { return !(__rhs < __lhs); }
 
   /**
    * @brief Inserts a matched string into an output stream.
@@ -1442,7 +1459,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   template<typename _Bi_iter,
 	   typename _Allocator = allocator<sub_match<_Bi_iter> > >
     class match_results
-    : private std::vector<std::sub_match<_Bi_iter>, _Allocator>
+    : private std::vector<sub_match<_Bi_iter>, _Allocator>
     {
     private:
       /*
@@ -1456,8 +1473,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        * [n+1] prefix
        * [n+2] suffix
        */
-      typedef std::vector<std::sub_match<_Bi_iter>, _Allocator>
-                                                              _Base_type;
+      typedef std::vector<sub_match<_Bi_iter>, _Allocator>    _Base_type;
 
     public:
       /**
@@ -1481,7 +1497,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   
     public:
       /**
-       * @name 10.1 Construction, Copying, and Destruction
+       * @name 28.10.1 Construction, Copying, and Destruction
        */
       //@{
 
@@ -1502,12 +1518,29 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       { }
 
       /**
+       * @brief Move constructs a %match_results.
+       */
+      match_results(match_results&& __rhs) noexcept
+      : _Base_type(std::move(__rhs))
+      { }
+
+      /**
        * @brief Assigns rhs to *this.
        */
       match_results&
-      operator=(const match_results __rhs)
+      operator=(const match_results& __rhs)
       {
 	match_results(__rhs).swap(*this);
+	return *this;
+      }
+
+      /**
+       * @brief Move-assigns rhs to *this.
+       */
+      match_results&
+      operator=(match_results&& __rhs)
+      {
+	match_results(std::move(__rhs)).swap(*this);
 	return *this;
       }
 
@@ -1519,8 +1552,16 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       
       //@}
 
+      // 28.10.2, state:
       /**
-       * @name 10.2 Size
+       * @brief Indicates if the %match_results is ready.
+       * @retval true   The object has a fully-established result state.
+       * @retval false  The object is not ready.
+       */
+      bool ready() const { return !_Base_type::empty(); }
+
+      /**
+       * @name 28.10.2 Size
        */
       //@{
 
@@ -1551,7 +1592,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        */
       bool
       empty() const
-      { return _Base_type::empty(); }
+      { return size() == 0; }
       
       //@}
 
@@ -1563,17 +1604,19 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       /**
        * @brief Gets the length of the indicated submatch.
        * @param sub indicates the submatch.
+       * @pre   ready() == true
        *
        * This function returns the length of the indicated submatch, or the
        * length of the entire match if @p sub is zero (the default).
        */
       difference_type
       length(size_type __sub = 0) const
-      { return this[__sub].length(); }
+      { return (*this)[__sub].length(); }
 
       /**
        * @brief Gets the offset of the beginning of the indicated submatch.
        * @param sub indicates the submatch.
+       * @pre   ready() == true
        *
        * This function returns the offset from the beginning of the target
        * sequence to the beginning of the submatch, unless the value of @p sub
@@ -1593,6 +1636,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       /**
        * @brief Gets the match or submatch converted to a string type.
        * @param sub indicates the submatch.
+       * @pre   ready() == true
        *
        * This function gets the submatch (or match, if @p sub is zero) extracted
        * from the target range and converted to the associated string type.
@@ -1604,6 +1648,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       /**
        * @brief Gets a %sub_match reference for the match or submatch.
        * @param sub indicates the submatch.
+       * @pre   ready() == true
        *
        * This function gets a reference to the indicated submatch, or the entire
        * match if @p sub is zero.
@@ -1614,6 +1659,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       const_reference
       operator[](size_type __sub) const
       { 
+      	_GLIBCXX_DEBUG_ASSERT( ready() );
       	return __sub < size()
 	       ?  _Base_type::operator[](__sub)
 	       : __unmatched_sub<_Bi_iter>();
@@ -1621,6 +1667,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
       /**
        * @brief Gets a %sub_match representing the match prefix.
+       * @pre   ready() == true
        *
        * This function gets a reference to a %sub_match object representing the
        * part of the target range between the start of the target range and the
@@ -1629,6 +1676,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       const_reference
       prefix() const
       {
+      	_GLIBCXX_DEBUG_ASSERT( ready() );
       	return !empty()
       	       ? _Base_type::operator[](_Base_type::size() - 2)
 	       : __unmatched_sub<_Bi_iter>();
@@ -1636,6 +1684,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
       /**
        * @brief Gets a %sub_match representing the match suffix.
+       * @pre   ready() == true
        *
        * This function gets a reference to a %sub_match object representing the
        * part of the target range between the end of the match and the end of
@@ -1644,8 +1693,9 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       const_reference
       suffix() const
       {
-      	return !empty()
-      	       ? _Base_type::operator[](_Base_type::size() - 1)
+	_GLIBCXX_DEBUG_ASSERT( ready() );
+	return !empty()
+	       ? _Base_type::operator[](_Base_type::size() - 1)
 	       : __unmatched_sub<_Bi_iter>();
       }
 
@@ -1668,52 +1718,80 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        */
       const_iterator
       end() const
-      {
-      	return !empty()
-      	       ? _Base_type::end() - 2
-	       : _Base_type::end();
-      }
+      { return !empty() ? _Base_type::end() - 2 : _Base_type::end(); }
       
       /**
        * @brief Gets an iterator to one-past-the-end of the collection.
        */
       const_iterator
       cend() const
-      {
-      	return !empty()
-      	       ? _Base_type::cend() - 2
-	       : _Base_type::cend();
-      }
+      { return end(); }
 
       //@}
 
       /**
        * @name 10.4 Formatting
        *
-       * These functions perform formatted substitution of the matched character
-       * sequences into their target.  The format specifiers and escape sequences
-       * accepted by these functions are determined by their @p flags parameter 
-       * as documented above.
+       * These functions perform formatted substitution of the matched
+       * character sequences into their target.  The format specifiers and
+       * escape sequences accepted by these functions are determined by
+       * their @p flags parameter as documented above.
        */
        //@{
 
       /**
+       * @pre   ready() == true
        * @todo Implement this function.
        */
       template<typename _Out_iter>
         _Out_iter
-        format(_Out_iter __out, const string_type& __fmt,
+        format(_Out_iter __out, const char_type* __fmt_first,
+	       const char_type* __fmt_last,
 	       regex_constants::match_flag_type __flags
 	       = regex_constants::format_default) const
         { return __out; }
 
       /**
-       * @todo Implement this function.
+       * @pre   ready() == true
+       */
+      template<typename _Out_iter, typename _St, typename _Sa>
+        _Out_iter
+        format(_Out_iter __out, const basic_string<char_type, _St, _Sa>& __fmt,
+	       regex_constants::match_flag_type __flags
+	       = regex_constants::format_default) const
+        {
+          return format(__out, __fmt.data(), __fmt.data() + __fmt.size(),
+                        __flags);
+        }
+
+      /**
+       * @pre   ready() == true
+       */
+      template<typename _Out_iter, typename _St, typename _Sa>
+        basic_string<char_type, _St, _Sa>
+        format(const basic_string<char_type, _St, _Sa>& __fmt,
+	       regex_constants::match_flag_type __flags
+	       = regex_constants::format_default) const
+        {
+          basic_string<char_type, _St, _Sa> __result;
+          format(std::back_inserter(__result), __fmt, __flags);
+          return __result;
+        }
+
+      /**
+       * @pre   ready() == true
        */
       string_type
-      format(const string_type& __fmt,
+      format(const char_type* __fmt,
 	     regex_constants::match_flag_type __flags
-	     = regex_constants::format_default) const;
+	     = regex_constants::format_default) const
+      {
+        string_type __result;
+        format(std::back_inserter(__result),
+               __fmt + char_traits<char_type>::length(__fmt),
+               __flags);
+        return __result;
+      }
 
       //@} 
 
@@ -1760,12 +1838,25 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
    * @brief Compares two match_results for equality.
    * @returns true if the two objects refer to the same match,
    * false otherwise.
-   * @todo Implement this function.
    */
   template<typename _Bi_iter, typename _Allocator>
     inline bool
     operator==(const match_results<_Bi_iter, _Allocator>& __m1,
-	       const match_results<_Bi_iter, _Allocator>& __m2);
+	       const match_results<_Bi_iter, _Allocator>& __m2)
+    {
+      if (__m1.ready() != __m2.ready())
+        return false;
+      if (!__m1.ready())  // both are not ready
+        return true;
+      if (__m1.empty() != __m2.empty())
+        return false;
+      if (__m1.empty())   // both are empty
+        return true;
+      return __m1.prefix() == __m2.prefix()
+        && __m1.size() == __m2.size()
+        && std::equal(__m1.begin(), __m1.end(), __m2.begin())
+        && __m1.suffix() == __m2.suffix();
+    }
 
   /**
    * @brief Compares two match_results for inequality.
@@ -2421,5 +2512,6 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 #endif
   
   //@} // group regex
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
 

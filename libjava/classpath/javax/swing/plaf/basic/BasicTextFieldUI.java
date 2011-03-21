@@ -60,7 +60,7 @@ public class BasicTextFieldUI extends BasicTextUI
   {
     return new FieldView(elem);
   }
-  
+
   public static ComponentUI createUI(JComponent c)
   {
     return new BasicTextFieldUI();
@@ -85,7 +85,7 @@ public class BasicTextFieldUI extends BasicTextUI
    * Receives notification whenever one of the text component's bound
    * properties changes. Here we check for the editable and enabled
    * properties and adjust the background color accordingly.
-   * 
+   *
    * <p>The colors are only changed if they are not a
    * <code>ColorUIResource</code>.</p>
    *

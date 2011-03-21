@@ -69,12 +69,12 @@ import java.util.logging.Logger;
  *      a default value of <code>mykey</code> shall be used when this option is
  *      omitted from the command line.
  *      <p></dd>
- *      
+ *
  *      <dt>-file FILE_NAME</dt>
  *      <dd>The fully qualified path of the file where the certificate will be
  *      exported to. If omitted, STDOUT will be used instead.
  *      <p></dd>
- *      
+ *
  *      <dt>-storetype STORE_TYPE</dt>
  *      <dd>Use this option to specify the type of the key store to use. The
  *      default value, if this option is omitted, is that of the property
@@ -82,7 +82,7 @@ import java.util.logging.Logger;
  *      obtained by invoking the {@link java.security.KeyStore#getDefaultType()}
  *      static method.
  *      <p></dd>
- *      
+ *
  *      <dt>-keystore URL</dt>
  *      <dd>Use this option to specify the location of the key store to use.
  *      The default value is a file {@link java.net.URL} referencing the file
@@ -95,13 +95,13 @@ import java.util.logging.Logger;
  *      name (with absolute or relative path-name) of a key store --as if the
  *      protocol was <code>file:</code>.
  *      <p></dd>
- *      
+ *
  *      <dt>-storepass PASSWORD</dt>
  *      <dd>Use this option to specify the password protecting the key store. If
  *      this option is omitted from the command line, you will be prompted to
  *      provide a password.
  *      <p></dd>
- *      
+ *
  *      <dt>-provider PROVIDER_CLASS_NAME</dt>
  *      <dd>A fully qualified class name of a Security Provider to add to the
  *      current list of Security Providers already installed in the JVM in-use.
@@ -109,11 +109,11 @@ import java.util.logging.Logger;
  *      added to the runtime --i.e. it was not already installed-- then the tool
  *      will attempt to removed this Security Provider before exiting.
  *      <p></dd>
- *      
+ *
  *      <dt>-rfc</dt>
  *      <dd>Use RFC-1421 specifications when encoding the output.
  *      <p></dd>
- *      
+ *
  *      <dt>-v</dt>
  *      <dd>Output the certificate in binary DER encoding. This is the default
  *      output format of the command if neither <code>-rfc</code> nor

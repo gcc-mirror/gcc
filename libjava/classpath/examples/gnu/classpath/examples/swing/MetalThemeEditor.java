@@ -134,7 +134,7 @@ public class MetalThemeEditor
       g.setColor(color);
       g.fillRect(x, y, 30, 10);
     }
-    
+
   }
 
   /**
@@ -477,7 +477,7 @@ public class MetalThemeEditor
       {
         ex.printStackTrace();
       }
-    
+
   }
 
   /**

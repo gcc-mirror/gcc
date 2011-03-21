@@ -18,11 +18,11 @@ package org.xml.sax;
  * </blockquote>
  *
  * <p>This is the main interface that most SAX applications
- * implement: if the application needs to be informed of basic parsing 
- * events, it implements this interface and registers an instance with 
- * the SAX parser using the {@link org.xml.sax.XMLReader#setContentHandler 
- * setContentHandler} method.  The parser uses the instance to report 
- * basic document-related events like the start and end of elements 
+ * implement: if the application needs to be informed of basic parsing
+ * events, it implements this interface and registers an instance with
+ * the SAX parser using the {@link org.xml.sax.XMLReader#setContentHandler
+ * setContentHandler} method.  The parser uses the instance to report
+ * basic document-related events like the start and end of elements
  * and character data.</p>
  *
  * <p>The order of events in this interface is very important, and
@@ -36,7 +36,7 @@ package org.xml.sax;
  * and for reporting skipped entities (in non-validating XML
  * processors).</p>
  *
- * <p>Implementors should note that there is also a 
+ * <p>Implementors should note that there is also a
  * <code>ContentHandler</code> class in the <code>java.net</code>
  * package; that means that it's probably a bad idea to do</p>
  *
@@ -92,7 +92,7 @@ public interface ContentHandler
      * Receive notification of the beginning of a document.
      *
      * <p>The SAX parser will invoke this method only once, before any
-     * other event callbacks (except for {@link #setDocumentLocator 
+     * other event callbacks (except for {@link #setDocumentLocator
      * setDocumentLocator}).</p>
      *
      * @throws org.xml.sax.SAXException any SAX exception, possibly
@@ -100,7 +100,7 @@ public interface ContentHandler
      * @see #endDocument
      */
     public void startDocument ()
-	throws SAXException;
+        throws SAXException;
 
 
     /**
@@ -125,14 +125,14 @@ public interface ContentHandler
      * @see #startDocument
      */
     public void endDocument()
-	throws SAXException;
+        throws SAXException;
 
 
     /**
      * Begin the scope of a prefix-URI Namespace mapping.
      *
      * <p>The information from this event is not necessary for
-     * normal Namespace processing: the SAX XML reader will 
+     * normal Namespace processing: the SAX XML reader will
      * automatically replace prefixes for element and attribute
      * names when the <code>http://xml.org/sax/features/namespaces</code>
      * feature is <var>true</var> (the default).</p>
@@ -147,19 +147,19 @@ public interface ContentHandler
      * <p>Note that start/endPrefixMapping events are not
      * guaranteed to be properly nested relative to each other:
      * all startPrefixMapping events will occur immediately before the
-     * corresponding {@link #startElement startElement} event, 
+     * corresponding {@link #startElement startElement} event,
      * and all {@link #endPrefixMapping endPrefixMapping}
      * events will occur immediately after the corresponding
      * {@link #endElement endElement} event,
-     * but their order is not otherwise 
+     * but their order is not otherwise
      * guaranteed.</p>
      *
      * <p>There should never be start/endPrefixMapping events for the
      * "xml" prefix, since it is predeclared and immutable.</p>
      *
      * @param prefix the Namespace prefix being declared.
-     *	An empty string is used for the default element namespace,
-     *	which has no prefix.
+     *  An empty string is used for the default element namespace,
+     *  which has no prefix.
      * @param uri the Namespace URI the prefix is mapped to
      * @throws org.xml.sax.SAXException the client may throw
      *            an exception during processing
@@ -167,27 +167,27 @@ public interface ContentHandler
      * @see #startElement
      */
     public void startPrefixMapping (String prefix, String uri)
-	throws SAXException;
+        throws SAXException;
 
 
     /**
      * End the scope of a prefix-URI mapping.
      *
-     * <p>See {@link #startPrefixMapping startPrefixMapping} for 
+     * <p>See {@link #startPrefixMapping startPrefixMapping} for
      * details.  These events will always occur immediately after the
-     * corresponding {@link #endElement endElement} event, but the order of 
+     * corresponding {@link #endElement endElement} event, but the order of
      * {@link #endPrefixMapping endPrefixMapping} events is not otherwise
      * guaranteed.</p>
      *
      * @param prefix the prefix that was being mapped.
-     *	This is the empty string when a default mapping scope ends.
+     *  This is the empty string when a default mapping scope ends.
      * @throws org.xml.sax.SAXException the client may throw
      *            an exception during processing
      * @see #startPrefixMapping
      * @see #endElement
      */
     public void endPrefixMapping (String prefix)
-	throws SAXException;
+        throws SAXException;
 
 
     /**
@@ -215,7 +215,7 @@ public interface ContentHandler
      * properties:</p>
      *
      * <ul>
-     * <li>the Namespace URI and local name are required when 
+     * <li>the Namespace URI and local name are required when
      * the namespaces property is <var>true</var> (the default), and are
      * optional when the namespaces property is <var>false</var> (if one is
      * specified, both must be);</li>
@@ -230,7 +230,7 @@ public interface ContentHandler
      * will contain attributes used for Namespace declarations
      * (xmlns* attributes) only if the
      * <code>http://xml.org/sax/features/namespace-prefixes</code>
-     * property is true (it is false by default, and support for a 
+     * property is true (it is false by default, and support for a
      * true value is optional).</p>
      *
      * <p>Like {@link #characters characters()}, attribute values may have
@@ -255,8 +255,8 @@ public interface ContentHandler
      * @see org.xml.sax.helpers.AttributesImpl
      */
     public void startElement (String uri, String localName,
-			      String qName, Attributes atts)
-	throws SAXException;
+                              String qName, Attributes atts)
+        throws SAXException;
 
 
     /**
@@ -264,7 +264,7 @@ public interface ContentHandler
      *
      * <p>The SAX parser will invoke this method at the end of every
      * element in the XML document; there will be a corresponding
-     * {@link #startElement startElement} event for every endElement 
+     * {@link #startElement startElement} event for every endElement
      * event (even when the element is empty).</p>
      *
      * <p>For information on the names, see startElement.</p>
@@ -281,8 +281,8 @@ public interface ContentHandler
      *            wrapping another exception
      */
     public void endElement (String uri, String localName,
-			    String qName)
-	throws SAXException;
+                            String qName)
+        throws SAXException;
 
 
     /**
@@ -317,7 +317,7 @@ public interface ContentHandler
      *
      * <p>Note that some parsers will report whitespace in element
      * content using the {@link #ignorableWhitespace ignorableWhitespace}
-     * method rather than this one (validating parsers <em>must</em> 
+     * method rather than this one (validating parsers <em>must</em>
      * do so).</p>
      *
      * @param ch the characters from the XML document
@@ -325,11 +325,11 @@ public interface ContentHandler
      * @param length the number of characters to read from the array
      * @throws org.xml.sax.SAXException any SAX exception, possibly
      *            wrapping another exception
-     * @see #ignorableWhitespace 
+     * @see #ignorableWhitespace
      * @see org.xml.sax.Locator
      */
     public void characters (char ch[], int start, int length)
-	throws SAXException;
+        throws SAXException;
 
 
     /**
@@ -358,7 +358,7 @@ public interface ContentHandler
      * @see #characters
      */
     public void ignorableWhitespace (char ch[], int start, int length)
-	throws SAXException;
+        throws SAXException;
 
 
     /**
@@ -384,7 +384,7 @@ public interface ContentHandler
      *            wrapping another exception
      */
     public void processingInstruction (String target, String data)
-	throws SAXException;
+        throws SAXException;
 
 
     /**
@@ -405,7 +405,7 @@ public interface ContentHandler
      * <code>http://xml.org/sax/features/external-parameter-entities</code>
      * properties.</p>
      *
-     * @param name the name of the skipped entity.  If it is a 
+     * @param name the name of the skipped entity.  If it is a
      *        parameter entity, the name will begin with '%', and if
      *        it is the external DTD subset, it will be the string
      *        "[dtd]"
@@ -413,7 +413,7 @@ public interface ContentHandler
      *            wrapping another exception
      */
     public void skippedEntity (String name)
-	throws SAXException;
+        throws SAXException;
 }
 
 // end of ContentHandler.java

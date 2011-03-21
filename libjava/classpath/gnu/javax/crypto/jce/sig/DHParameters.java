@@ -92,8 +92,8 @@ public class DHParameters
 
   /**
    * Decodes the set of DH parameters as per RFC-2459; i.e. the DER-encoded
-   * form of the following ASN.1 construct: 
-   * 
+   * form of the following ASN.1 construct:
+   *
    * <pre>
    *   DhParams ::= SEQUENCE {
    *     p  INTEGER, -- odd prime, p=jq +1
@@ -151,8 +151,8 @@ public class DHParameters
 
   /**
    * Encodes the set of DH parameters as per RFC-2459; i.e. as the DER-encoded
-   * form of the following ASN.1 construct: 
-   * 
+   * form of the following ASN.1 construct:
+   *
    * <pre>
    *   DhParams ::= SEQUENCE {
    *     p  INTEGER, -- odd prime, p=jq +1

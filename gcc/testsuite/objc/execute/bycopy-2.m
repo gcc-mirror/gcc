@@ -27,5 +27,4 @@ int main (void)
 
    exit (0);
 }
-
-
+#include "../../objc-obj-c++-shared/Object1-implementation.h"

@@ -84,7 +84,7 @@ public class Parser
   /**
    * Create a new parser. The program name is used when printing error messages.
    * The version string is printed verbatim in response to "--version".
-   * 
+   *
    * @param programName the name of the program
    * @param versionString the program's version information
    */
@@ -101,7 +101,7 @@ public class Parser
    * <p>
    * The text to print may contain <code>\n</code> characters. This method will
    * force a line-break for each such character.
-   * 
+   *
    * @param out the {@link PrintStream} destination of the formatted text.
    * @param text the text to print.
    * @see Parser#MAX_LINE_LENGTH
@@ -122,7 +122,7 @@ public class Parser
    * <p>
    * The text to print may contain <code>\n</code> characters. This method will
    * force a line-break for each such character.
-   * 
+   *
    * @param out the {@link PrintStream} destination of the formatted text.
    * @param text the text to print.
    * @param aLocale the {@link Locale} instance to use when constructing the
@@ -159,7 +159,7 @@ public class Parser
   /**
    * Create a new parser. The program name is used when printing error messages.
    * The version string is printed verbatim in response to "--version".
-   * 
+   *
    * @param programName the name of the program
    * @param versionString the program's version information
    * @param longOnly true if the parser should work in long-option-only mode
@@ -194,7 +194,7 @@ public class Parser
 
   /**
    * Set the header text that is printed by --help.
-   * 
+   *
    * @param headerText the header text
    */
   public synchronized void setHeader(String headerText)
@@ -204,7 +204,7 @@ public class Parser
 
   /**
    * Set the footer text that is printed by --help.
-   * 
+   *
    * @param footerText the footer text
    */
   public synchronized void setFooter(String footerText)
@@ -215,7 +215,7 @@ public class Parser
   /**
    * Add an option to this parser. The option is added to the default option
    * group; this affects where it is placed in the help output.
-   * 
+   *
    * @param opt the option
    */
   public synchronized void add(Option opt)
@@ -237,7 +237,7 @@ public class Parser
   /**
    * Add an option group to this parser. All the options in this group will be
    * recognized by the parser.
-   * 
+   *
    * @param group the option group
    */
   public synchronized void add(OptionGroup group)
@@ -259,8 +259,8 @@ public class Parser
     Iterator it = optionGroups.iterator();
     while (it.hasNext())
       {
-	OptionGroup group = (OptionGroup) it.next();
-	options.addAll(group.options);
+        OptionGroup group = (OptionGroup) it.next();
+        options.addAll(group.options);
       }
   }
 
@@ -308,7 +308,7 @@ public class Parser
    * user to the <code>--help</code> option.
    * <p>
    * The base implementation does nothing.
-   * 
+   *
    * @throws OptionException the error encountered
    */
   protected void validate() throws OptionException
@@ -426,7 +426,7 @@ public class Parser
    * Parse a command line. Any files which are found will be passed to the file
    * argument callback. This method will exit on error or when --help or
    * --version is specified.
-   * 
+   *
    * @param inArgs the command-line arguments
    * @param files the file argument callback
    */
@@ -477,7 +477,7 @@ public class Parser
   /**
    * Parse a command line. Any files which are found will be returned. This
    * method will exit on error or when --help or --version is specified.
-   * 
+   *
    * @param inArgs the command-line arguments
    */
   public String[] parse(String[] inArgs)

@@ -41,15 +41,15 @@ package gnu.classpath.tools.rmic;
 /**
  * This error is thrown when the target being compiled has illegal
  * strutures.
- * 
+ *
  * @author Audrius Meskauskas, Lithuania (audriusa@Bioinformatics.org)
  */
 public class CompilationError extends Error
 {
-  /** 
-   * Use serialVersionUID for interoperability. 
+  /**
+   * Use serialVersionUID for interoperability.
    */
-  private static final long serialVersionUID = 1;  
+  private static final long serialVersionUID = 1;
 
   /**
    * Create error with explaining message and cause.

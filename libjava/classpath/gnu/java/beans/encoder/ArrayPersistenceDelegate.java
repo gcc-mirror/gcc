@@ -7,7 +7,7 @@
  it under the terms of the GNU General Public License as published by
  the Free Software Foundation; either version 2, or (at your option)
  any later version.
- 
+
  GNU Classpath is distributed in the hope that it will be useful, but
  WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -92,12 +92,12 @@ public class ArrayPersistenceDelegate extends PersistenceDelegate
     // Compares the array value against a prototypical
     // null value of the array's component type in order to skip
     // writing the default values of an array.
-    
+
     // Note: I have no idea why the persistence delegate for arrays writes
     // an Expression that reads the value and then writes a Statement that sets
     // the value. However it turned out that object arrays work better with the
     // get-Expression and primitive array work fine with the set-Statement.
-    
+
     type = type.getComponentType();
     if (type.isPrimitive())
       {
@@ -113,7 +113,7 @@ public class ArrayPersistenceDelegate extends PersistenceDelegate
                                                    new Object[] { oldInstance,
                                                                  Integer.valueOf(i),
                                                                  }));
-                
+
                 out.writeStatement(new Statement(Array.class, "set",
                                                new Object[] {
                                                  oldInstance,
@@ -122,7 +122,7 @@ public class ArrayPersistenceDelegate extends PersistenceDelegate
                                                  }));
               }
           }
-        
+
       }
     else
       {
@@ -130,14 +130,14 @@ public class ArrayPersistenceDelegate extends PersistenceDelegate
         for (int i = 0; i < length; i++)
           {
             Object oldValue = Array.get(oldInstance, i);
-            
+
             if (oldValue != null)
               {
                 out.writeExpression(new Expression(Array.class, "get",
                                                  new Object[] { oldInstance,
                                                                Integer.valueOf(i),
                                                                }));
-                
+
                 out.writeStatement(new Statement(Array.class, "set",
                                                    new Object[] {
                                                      oldInstance,
@@ -147,7 +147,7 @@ public class ArrayPersistenceDelegate extends PersistenceDelegate
               }
           }
       }
-    
+
   }
 
 }

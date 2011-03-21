@@ -218,7 +218,7 @@ dump_referenced_vars (FILE *file)
   fprintf (file, "\nReferenced variables in %s: %u\n\n",
 	   get_name (current_function_decl), (unsigned) num_referenced_vars);
 
-  FOR_EACH_REFERENCED_VAR (var, rvi)
+  FOR_EACH_REFERENCED_VAR (cfun, var, rvi)
     {
       fprintf (file, "Variable: ");
       dump_variable (file, var);
@@ -400,7 +400,7 @@ collect_dfa_stats (struct dfa_stats_d *dfa_stats_p ATTRIBUTE_UNUSED)
   memset ((void *)dfa_stats_p, 0, sizeof (struct dfa_stats_d));
 
   /* Count all the variable annotations.  */
-  FOR_EACH_REFERENCED_VAR (var, vi)
+  FOR_EACH_REFERENCED_VAR (cfun, var, vi)
     if (var_ann (var))
       dfa_stats_p->num_var_anns++;
 
@@ -488,12 +488,12 @@ find_referenced_vars_in (gimple stmt)
    variable.  */
 
 tree
-referenced_var_lookup (unsigned int uid)
+referenced_var_lookup (struct function *fn, unsigned int uid)
 {
   tree h;
   struct tree_decl_minimal in;
   in.uid = uid;
-  h = (tree) htab_find_with_hash (gimple_referenced_vars (cfun), &in, uid);
+  h = (tree) htab_find_with_hash (gimple_referenced_vars (fn), &in, uid);
   return h;
 }
 

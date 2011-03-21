@@ -49,10 +49,10 @@ package java.lang.management;
 public interface MemoryManagerMXBean
 {
 
-  /** 
+  /**
    * Returns an array containing the names of the memory pools
    * this memory manager manages.
-   * 
+   *
    * @return an array containing the name of each memory pool
    *         this manager is responsible for.
    */

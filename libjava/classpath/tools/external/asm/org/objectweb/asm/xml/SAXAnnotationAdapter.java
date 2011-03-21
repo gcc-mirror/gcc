@@ -36,7 +36,7 @@ import org.xml.sax.helpers.AttributesImpl;
 
 /**
  * SAXAnnotationAdapter
- * 
+ *
  * @author Eugene Kuleshov
  */
 public class SAXAnnotationAdapter extends SAXAdapter implements

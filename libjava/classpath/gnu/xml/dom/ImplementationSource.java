@@ -1,4 +1,4 @@
-/* ImplementationSource.java -- 
+/* ImplementationSource.java --
    Copyright (C) 2004 Free Software Foundation, Inc..
 
 This file is part of GNU Classpath.
@@ -72,7 +72,7 @@ public class ImplementationSource
       }
     catch (Exception e)
       {
-        // libxmlj not available        
+        // libxmlj not available
       }
     catch (UnsatisfiedLinkError e)
       {

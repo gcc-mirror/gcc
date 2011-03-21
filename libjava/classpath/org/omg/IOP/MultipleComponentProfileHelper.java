@@ -65,7 +65,7 @@ public abstract class MultipleComponentProfileHelper
   /**
    * Insert the MultipleComponentProfile into the given Any. This method uses
    * the MultipleComponentProfileHolder.
-   * 
+   *
    * @param any the Any to insert into.
    * @param those the TaggedComponent[] to insert.
    */
@@ -89,7 +89,7 @@ public abstract class MultipleComponentProfileHelper
     catch (ClassCastException cex)
       {
         BAD_OPERATION bad = new BAD_OPERATION("MultipleComponentProfile expected");
-        bad.minor = Minor.Any;        
+        bad.minor = Minor.Any;
         bad.initCause(cex);
         throw bad;
       }

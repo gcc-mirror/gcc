@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -45,8 +45,8 @@ final class VMField
   Class clazz;
   String name;
   int slot;
-  
-  /** 
+
+  /**
    * This field allows us to refer back to the main constructor instance.
    *  It is set by the constructor of Field.
    */
@@ -512,7 +512,7 @@ final class VMField
   {
     if (!(o instanceof Field))
       return false;
-    Field that = (Field)o; 
+    Field that = (Field)o;
     if (clazz != that.getDeclaringClass())
       return false;
     if (!name.equals(that.getName()))

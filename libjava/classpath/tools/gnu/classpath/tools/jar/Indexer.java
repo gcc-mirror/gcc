@@ -89,7 +89,7 @@ public class Indexer
         result.append(fileName);
         // Any line ending will do.
         result.append('\n');
-	for (String s : entries)
+        for (String s : entries)
           {
             result.append(s);
             result.append('\n');

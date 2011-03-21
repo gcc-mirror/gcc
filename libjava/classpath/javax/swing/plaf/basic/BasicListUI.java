@@ -78,7 +78,7 @@ import javax.swing.plaf.ListUI;
 import javax.swing.plaf.UIResource;
 
 /**
- * The Basic Look and Feel UI delegate for the 
+ * The Basic Look and Feel UI delegate for the
  * JList.
  */
 public class BasicListUI extends ListUI
@@ -111,7 +111,7 @@ public class BasicListUI extends ListUI
     }
 
     /**
-     * Helper method to repaint the focused cell's 
+     * Helper method to repaint the focused cell's
      * lost or acquired focus state.
      */
     protected void repaintCellFocus()
@@ -170,7 +170,7 @@ public class BasicListUI extends ListUI
   public class ListSelectionHandler implements ListSelectionListener
   {
     /**
-     * Called when the list selection changes.  
+     * Called when the list selection changes.
      *
      * @param e The event representing the change
      */
@@ -197,7 +197,7 @@ public class BasicListUI extends ListUI
     ActionListener target;
     String bindingCommandName;
 
-    public ActionListenerProxy(ActionListener li, 
+    public ActionListenerProxy(ActionListener li,
                                String cmd)
     {
       target = li;
@@ -237,13 +237,13 @@ public class BasicListUI extends ListUI
     {
       int lead = list.getLeadSelectionIndex();
       int max = list.getModel().getSize() - 1;
-      DefaultListSelectionModel selModel 
+      DefaultListSelectionModel selModel
           = (DefaultListSelectionModel) list.getSelectionModel();
       String command = e.getActionCommand();
       // Do nothing if list is empty
       if (max == -1)
         return;
-      
+
       if (command.equals("selectNextRow"))
         {
           selectNextIndex();
@@ -265,7 +265,7 @@ public class BasicListUI extends ListUI
         }
       else if (command.equals("selectLastRow"))
         {
-          list.setSelectedIndex(list.getModel().getSize() - 1); 
+          list.setSelectedIndex(list.getModel().getSize() - 1);
         }
       else if (command.equals("selectLastRowChangeLead"))
         {
@@ -276,7 +276,7 @@ public class BasicListUI extends ListUI
           int target;
           if (lead == list.getLastVisibleIndex())
             {
-              target = Math.min(max, lead + (list.getLastVisibleIndex() 
+              target = Math.min(max, lead + (list.getLastVisibleIndex()
                   - list.getFirstVisibleIndex() + 1));
             }
           else
@@ -288,7 +288,7 @@ public class BasicListUI extends ListUI
           int target;
           if (lead == list.getLastVisibleIndex())
             {
-              target = Math.min(max, lead + (list.getLastVisibleIndex() 
+              target = Math.min(max, lead + (list.getLastVisibleIndex()
                   - list.getFirstVisibleIndex() + 1));
             }
           else
@@ -300,7 +300,7 @@ public class BasicListUI extends ListUI
           int target;
           if (lead == list.getFirstVisibleIndex())
             {
-              target = Math.max(0, lead - (list.getLastVisibleIndex() 
+              target = Math.max(0, lead - (list.getLastVisibleIndex()
                   - list.getFirstVisibleIndex() + 1));
             }
           else
@@ -312,7 +312,7 @@ public class BasicListUI extends ListUI
           int target;
           if (lead == list.getFirstVisibleIndex())
             {
-              target = Math.max(0, lead - (list.getLastVisibleIndex() 
+              target = Math.max(0, lead - (list.getLastVisibleIndex()
                   - list.getFirstVisibleIndex() + 1));
             }
           else
@@ -344,12 +344,12 @@ public class BasicListUI extends ListUI
           int target;
           if (lead == list.getFirstVisibleIndex())
             {
-              target = Math.max(0, lead - (list.getLastVisibleIndex() 
+              target = Math.max(0, lead - (list.getLastVisibleIndex()
                   - list.getFirstVisibleIndex() + 1));
             }
           else
             target = list.getFirstVisibleIndex();
-          list.setSelectedIndex(target);          
+          list.setSelectedIndex(target);
         }
       else if (command.equals("selectLastRowExtendSelection"))
         {
@@ -360,7 +360,7 @@ public class BasicListUI extends ListUI
           int target;
           if (lead == list.getLastVisibleIndex())
             {
-              target = Math.min(max, lead + (list.getLastVisibleIndex() 
+              target = Math.min(max, lead + (list.getLastVisibleIndex()
                   - list.getFirstVisibleIndex() + 1));
             }
           else
@@ -384,7 +384,7 @@ public class BasicListUI extends ListUI
             {
               selModel.moveLeadSelectionIndex(Math.max(0, lead - 1));
             }
-        }      
+        }
       else if (command.equals("addToSelection"))
         {
           list.addSelectionInterval(lead, lead);
@@ -402,20 +402,20 @@ public class BasicListUI extends ListUI
             list.removeSelectionInterval(lead, lead);
           selModel.setAnchorSelectionIndex(lead);
         }
-      else 
+      else
         {
-          // DEBUG: uncomment the following line to print out 
+          // DEBUG: uncomment the following line to print out
           // key bindings that aren't implemented yet
-          
+
           // System.out.println ("not implemented: "+e.getActionCommand());
         }
-      
+
       list.ensureIndexIsVisible(list.getLeadSelectionIndex());
     }
   }
 
   /**
-   * A helper class which listens for {@link MouseEvent}s 
+   * A helper class which listens for {@link MouseEvent}s
    * from the {@link JList}.
    */
   public class MouseInputHandler implements MouseInputListener
@@ -436,20 +436,20 @@ public class BasicListUI extends ListUI
         {
           if (list.getSelectionMode() == ListSelectionModel.SINGLE_SELECTION)
             list.setSelectedIndex(index);
-          else if (list.getSelectionMode() == 
+          else if (list.getSelectionMode() ==
                    ListSelectionModel.SINGLE_INTERVAL_SELECTION)
             // COMPAT: the IBM VM is compatible with the following line of code.
-            // However, compliance with Sun's VM would correspond to replacing 
-            // getAnchorSelectionIndex() with getLeadSelectionIndex().This is 
-            // both unnatural and contradictory to the way they handle other 
+            // However, compliance with Sun's VM would correspond to replacing
+            // getAnchorSelectionIndex() with getLeadSelectionIndex().This is
+            // both unnatural and contradictory to the way they handle other
             // similar UI interactions.
             list.setSelectionInterval(list.getAnchorSelectionIndex(), index);
           else
             // COMPAT: both Sun and IBM are compatible instead with:
             // list.setSelectionInterval
             //     (list.getLeadSelectionIndex(),index);
-            // Note that for IBM this is contradictory to what they did in 
-            // the above situation for SINGLE_INTERVAL_SELECTION.  
+            // Note that for IBM this is contradictory to what they did in
+            // the above situation for SINGLE_INTERVAL_SELECTION.
             // The most natural thing to do is the following:
             if (list.isSelectedIndex(list.getAnchorSelectionIndex()))
               list.getSelectionModel().setLeadSelectionIndex(index);
@@ -467,7 +467,7 @@ public class BasicListUI extends ListUI
         }
       else
         list.setSelectedIndex(index);
-      
+
       list.ensureIndexIsVisible(list.getLeadSelectionIndex());
     }
 
@@ -530,7 +530,7 @@ public class BasicListUI extends ListUI
         return;
       if (!event.isShiftDown() && !event.isControlDown())
         list.setSelectedIndex(index);
-      
+
       list.ensureIndexIsVisible(list.getLeadSelectionIndex());
     }
 
@@ -664,7 +664,7 @@ public class BasicListUI extends ListUI
   /** The width of a single cell in the list. */
   protected int cellWidth;
 
-  /** 
+  /**
    * An array of varying heights of cells in the list, in cases where each
    * cell might have a different height. This field is used when the
    * <code>fixedCellHeight</code> property of the list is not set. Otherwise
@@ -692,7 +692,7 @@ public class BasicListUI extends ListUI
    * The {@link CellRendererPane} that is used for painting.
    */
   protected CellRendererPane rendererPane;
-  
+
   /** The action bound to KeyStrokes. */
   ListAction action;
 
@@ -729,7 +729,7 @@ public class BasicListUI extends ListUI
    * @param index1 The first row to include in the bounds
    * @param index2 The last row to incude in the bounds
    *
-   * @return A rectangle encompassing the range of rows between 
+   * @return A rectangle encompassing the range of rows between
    * <code>index1</code> and <code>index2</code> inclusive, or null
    * such a rectangle couldn't be calculated for the given indexes.
    */
@@ -953,7 +953,7 @@ public class BasicListUI extends ListUI
   }
 
   /**
-   * Resets to <code>null</code> those defaults which were installed in 
+   * Resets to <code>null</code> those defaults which were installed in
    * {@link #installDefaults}
    */
   protected void uninstallDefaults()
@@ -1002,7 +1002,7 @@ public class BasicListUI extends ListUI
     list.removeMouseMotionListener(mouseInputListener);
     list.removePropertyChangeListener(propertyChangeListener);
   }
-  
+
   /**
    * Installs keyboard actions for this UI in the {@link JList}.
    */
@@ -1125,7 +1125,7 @@ public class BasicListUI extends ListUI
    * Gets the size this list would prefer to assume. This is calculated by
    * calling {@link #getCellBounds} over the entire list.
    *
-   * @param c Ignored; uses the saved {@link JList} reference 
+   * @param c Ignored; uses the saved {@link JList} reference
    *
    * @return DOCUMENT ME!
    */
@@ -1150,7 +1150,7 @@ public class BasicListUI extends ListUI
           {
             // We cast to double here to force double divisions.
             double modelSize = size;
-            int neededColumns = (int) Math.ceil(modelSize / visibleRows); 
+            int neededColumns = (int) Math.ceil(modelSize / visibleRows);
             int adjustedRows = (int) Math.ceil(modelSize / neededColumns);
             h = maxCellHeight * adjustedRows;
             w = cellWidth * neededColumns;
@@ -1220,7 +1220,7 @@ public class BasicListUI extends ListUI
    * cell in the list.
    *
    * @param g The graphics context to paint with
-   * @param c Ignored; uses the saved {@link JList} reference 
+   * @param c Ignored; uses the saved {@link JList} reference
    */
   public void paint(Graphics g, JComponent c)
   {
@@ -1238,7 +1238,7 @@ public class BasicListUI extends ListUI
     int startIndex = locationToIndex(list, new Point(clip.x, clip.y));
     int endIndex = locationToIndex(list, new Point(clip.x + clip.width,
                                              clip.y + clip.height));
-    
+
     for (int row = startIndex; row <= endIndex; ++row)
       {
         Rectangle bounds = getCellBounds(list, row, row);

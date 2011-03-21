@@ -15,16 +15,22 @@ foo (int arg1, int arg2, int arg3, int arg4, int arg5, int arg6, int arg7)
   return y;
 }
 
-/* { dg-final { gdb-test 12 "arg1" "1" } } */
-/* { dg-final { gdb-test 12 "arg2" "2" } } */
+/* On s390(x) r2 and r3 are (depending on the optimization level) used
+   when adjusting the addresses in order to meet the alignment
+   requirements above.  They usually hold the function arguments arg1
+   and arg2.  So it is expected that these values are unavailable in
+   some of these tests.  */
+
+/* { dg-final { gdb-test 12 "arg1" "1" { target { ! "s390*-*-*" } } } } */
+/* { dg-final { gdb-test 12 "arg2" "2" { target { ! "s390*-*-*" } } } } */
 /* { dg-final { gdb-test 12 "arg3" "3" } } */
 /* { dg-final { gdb-test 12 "arg4" "4" } } */
 /* { dg-final { gdb-test 12 "arg5" "5" } } */
 /* { dg-final { gdb-test 12 "arg6" "6" } } */
 /* { dg-final { gdb-test 12 "arg7" "30" } } */
 /* { dg-final { gdb-test 12 "y" "2" } } */
-/* { dg-final { gdb-test 14 "arg1" "1" } } */
-/* { dg-final { gdb-test 14 "arg2" "2" } } */
+/* { dg-final { gdb-test 14 "arg1" "1" { target { ! "s390*-*-*" } } } } */
+/* { dg-final { gdb-test 14 "arg2" "2" { target { ! "s390*-*-*" } } } } */
 /* { dg-final { gdb-test 14 "arg3" "3" } } */
 /* { dg-final { gdb-test 14 "arg4" "4" } } */
 /* { dg-final { gdb-test 14 "arg5" "5" } } */

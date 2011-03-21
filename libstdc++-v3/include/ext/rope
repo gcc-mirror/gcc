@@ -62,8 +62,8 @@
 
 #include <ext/memory> // For uninitialized_copy_n
 
-_GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
-
+namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
+{
   namespace __detail
   {
     enum { _S_max_rope_depth = 45 };
@@ -74,6 +74,8 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
   using std::ptrdiff_t;
   using std::allocator;
   using std::_Destroy;
+
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // See libstdc++/36832.
   template<typename _ForwardIterator, typename _Allocator>
@@ -2917,13 +2919,16 @@ protected:
     swap(rope<_CharT, _Alloc>& __x, rope<_CharT, _Alloc>& __y)
     { __x.swap(__y); }
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
 
 
-namespace std
+namespace std _GLIBCXX_VISIBILITY(default)
 { 
 namespace tr1
 {
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
   template<>
     struct hash<__gnu_cxx::crope>
     {
@@ -2950,6 +2955,8 @@ namespace tr1
 	return 13 * __str[0] + 5 * __str[__size - 1] + __size;
       }
     };
+
+_GLIBCXX_END_NAMESPACE_VERSION
 } // namespace tr1
 } // namespace std
 

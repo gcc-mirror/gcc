@@ -1,4 +1,4 @@
-/* TransformerException.java -- 
+/* TransformerException.java --
    Copyright (C) 2003, 2006 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -95,7 +95,7 @@ public class TransformerException
    * Prints this exception's stack trace to a print stream. If this exception
    * has a root exception; the stack trace of the root exception is also printed
    * to the print stream.
-   * 
+   *
    * @param ps the non-null print stream to which to print.
    */
   public void printStackTrace(PrintStream ps)
@@ -109,7 +109,7 @@ public class TransformerException
    * Prints this exception's stack trace to a print writer. If this exception
    * has a root exception; the stack trace of the root exception is also printed
    * to the print writer.
-   * 
+   *
    * @param pw the non-null print writer to use for output.
    */
   public void printStackTrace(PrintWriter pw)
@@ -125,7 +125,7 @@ public class TransformerException
    * and if it has a root exception, the string representation of the root
    * exception. This string representation is meant for debugging and not meant
    * to be interpreted programmatically.
-   * 
+   *
    * @return the non-null string representation of this exception.
    * @see Throwable#getMessage()
    */

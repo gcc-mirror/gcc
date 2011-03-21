@@ -57,8 +57,8 @@ import javax.swing.plaf.ProgressBarUI;
 /**
  * A component that displays a visual indicator of the progress of a task. The
  * component has two modes: determinate and indeterminate.  In determinate mode,
- * the <code>JProgressBar</code> fills a percentage of its bar based on its 
- * current value. In indeterminate mode, it creates box and bounces it between 
+ * the <code>JProgressBar</code> fills a percentage of its bar based on its
+ * current value. In indeterminate mode, it creates box and bounces it between
  * its bounds.
  * <p>
  * This component has the following properties:
@@ -67,10 +67,10 @@ import javax.swing.plaf.ProgressBarUI;
  * <tr><th> Property         </th><th> Stored in   </th><th> Bound? </th></tr>
  * <tr><td> borderPainted    </td><td> progressBar </td><td> yes    </td></tr>
  * <tr><td> changeListeners  </td><td> progressBar </td><td> no     </td></tr>
- * <tr><td> indeterminate    </td><td> progressBar </td><td> yes    </td></tr> 
+ * <tr><td> indeterminate    </td><td> progressBar </td><td> yes    </td></tr>
  * <tr><td> maximum          </td><td> model       </td><td> no     </td></tr>
  * <tr><td> minimum          </td><td> model       </td><td> no     </td></tr>
- * <tr><td> model            </td><td> progressBar </td><td> no     </td></tr> 
+ * <tr><td> model            </td><td> progressBar </td><td> no     </td></tr>
  * <tr><td> orientation      </td><td> progressBar </td><td> yes    </td></tr>
  * <tr><td> percentComplete  </td><td> progressBar </td><td> no     </td></tr>
  * <tr><td> string           </td><td> progressBar </td><td> yes    </td></tr>
@@ -89,17 +89,17 @@ public class JProgressBar extends JComponent implements SwingConstants,
     implements AccessibleValue
   {
     private static final long serialVersionUID = -2938130009392721813L;
-  
+
     /**
      * Creates a new <code>AccessibleJProgressBar</code> instance.
      */
     protected AccessibleJProgressBar()
     {
       // Nothing to do here.
-    } 
+    }
 
     /**
-     * Returns a set containing the current state of the {@link JProgressBar} 
+     * Returns a set containing the current state of the {@link JProgressBar}
      * component.
      *
      * @return The accessible state set.
@@ -112,7 +112,7 @@ public class JProgressBar extends JComponent implements SwingConstants,
       else if (orientation == JProgressBar.VERTICAL)
         result.add(AccessibleState.VERTICAL);
       return result;
-    } 
+    }
 
     /**
      * Returns the accessible role for the <code>JProgressBar</code> component.
@@ -122,10 +122,10 @@ public class JProgressBar extends JComponent implements SwingConstants,
     public AccessibleRole getAccessibleRole()
     {
       return AccessibleRole.PROGRESS_BAR;
-    } 
+    }
 
     /**
-     * Returns an object that provides access to the current, minimum and 
+     * Returns an object that provides access to the current, minimum and
      * maximum values.
      *
      * @return The accessible value.
@@ -133,7 +133,7 @@ public class JProgressBar extends JComponent implements SwingConstants,
     public AccessibleValue getAccessibleValue()
     {
       return this;
-    } 
+    }
 
     /**
      * Returns the current value of the {@link JProgressBar} component, as an
@@ -148,14 +148,14 @@ public class JProgressBar extends JComponent implements SwingConstants,
 
     /**
      * Sets the current value of the {@link JProgressBar} component and sends a
-     * {@link PropertyChangeEvent} (with the property name 
+     * {@link PropertyChangeEvent} (with the property name
      * {@link AccessibleContext#ACCESSIBLE_VALUE_PROPERTY}) to all registered
-     * listeners.  If the supplied value is <code>null</code>, this method 
+     * listeners.  If the supplied value is <code>null</code>, this method
      * does nothing and returns <code>false</code>.
      *
      * @param value  the new progress bar value (<code>null</code> permitted).
      *
-     * @return <code>true</code> if the slider value is updated, and 
+     * @return <code>true</code> if the slider value is updated, and
      *     <code>false</code> otherwise.
      */
     public boolean setCurrentAccessibleValue(Number value)
@@ -164,7 +164,7 @@ public class JProgressBar extends JComponent implements SwingConstants,
         return false;
       Number oldValue = getCurrentAccessibleValue();
       setValue(value.intValue());
-      firePropertyChange(AccessibleContext.ACCESSIBLE_VALUE_PROPERTY, oldValue, 
+      firePropertyChange(AccessibleContext.ACCESSIBLE_VALUE_PROPERTY, oldValue,
                          new Integer(getValue()));
       return true;
     }
@@ -190,63 +190,63 @@ public class JProgressBar extends JComponent implements SwingConstants,
     {
       return new Integer(getMaximum());
     }
-  } 
+  }
 
   private static final long serialVersionUID = 1980046021813598781L;
-  
-  /** 
-   * A flag that determines the mode (<code>true</code> for indeterminate, 
+
+  /**
+   * A flag that determines the mode (<code>true</code> for indeterminate,
    * <code>false</code> for determinate).
    */
   private transient boolean indeterminate = false;
 
-  /** 
-   * The orientation of the <code>JProgressBar</code> 
-   * ({@link SwingConstants#HORIZONTAL} or {@link SwingConstants#VERTICAL}). 
+  /**
+   * The orientation of the <code>JProgressBar</code>
+   * ({@link SwingConstants#HORIZONTAL} or {@link SwingConstants#VERTICAL}).
    * Defaults to {@link SwingConstants#HORIZONTAL}.
    * @see #setOrientation(int)
    */
   protected int orientation;
 
-  /** 
+  /**
    * A flag the controls whether or not the component's border is painted.
-   * The default is <code>true</code>. 
+   * The default is <code>true</code>.
    * @see #setBorderPainted(boolean)
    */
   protected boolean paintBorder = true;
 
-  /** 
+  /**
    * The model defining the bounds and current value for the progress bar.
-   * @see #setModel(BoundedRangeModel) 
+   * @see #setModel(BoundedRangeModel)
    */
   protected BoundedRangeModel model;
 
-  /** 
-   * A custom string for display in the progress bar.  If this is 
-   * <code>null</code>, a default string will be generated. 
+  /**
+   * A custom string for display in the progress bar.  If this is
+   * <code>null</code>, a default string will be generated.
    * @see #setString(String)
    */
   protected String progressString;
 
-  /** 
-   * A flag that controls whether a string is displayed within the progress 
-   * bar. 
+  /**
+   * A flag that controls whether a string is displayed within the progress
+   * bar.
    * @see #setStringPainted(boolean)
    */
   protected boolean paintString = false;
 
-  /** 
+  /**
    * A single change event reused for all events.
-   * @see #fireStateChanged() 
+   * @see #fireStateChanged()
    */
   protected transient ChangeEvent changeEvent;
 
-  /** 
+  /**
    * The listener that is registered with the model. */
   protected ChangeListener changeListener;
 
   /**
-   * Creates a new <code>JProgressBar</code> with default attributes.  The 
+   * Creates a new <code>JProgressBar</code> with default attributes.  The
    * following defaults are used:
    * <p>
    * <ul>
@@ -254,7 +254,7 @@ public class JProgressBar extends JComponent implements SwingConstants,
    * <li><code>minimum</code>: 0;</li>
    * <li><code>maximum</code>: 100;</li>
    * <li><code>orientation</code>: {@link SwingConstants#HORIZONTAL}.</li>
-   * </ul>  
+   * </ul>
    */
   public JProgressBar()
   {
@@ -262,18 +262,18 @@ public class JProgressBar extends JComponent implements SwingConstants,
   }
 
   /**
-   * Creates a new <code>JProgressBar</code> with the specified 
+   * Creates a new <code>JProgressBar</code> with the specified
    * <code>orientation</code>.  The following defaults are used:
    * <p>
    * <ul>
    * <li><code>value</code>: 0;</li>
    * <li><code>minimum</code>: 0;</li>
    * <li><code>maximum</code>: 100;</li>
-   * </ul>  
-   * 
-   * @param orientation  the orientation ({@link #HORIZONTAL} or 
+   * </ul>
+   *
+   * @param orientation  the orientation ({@link #HORIZONTAL} or
    *     {@link #VERTICAL}).
-   * 
+   *
    * @throws IllegalArgumentException if <code>orientation</code> is not one of
    *     the specified values.
    */
@@ -289,8 +289,8 @@ public class JProgressBar extends JComponent implements SwingConstants,
    * <ul>
    * <li><code>value</code>: <code>minimum</code>;</li>
    * <li><code>orientation</code>: {@link SwingConstants#HORIZONTAL}.</li>
-   * </ul>  
-   * 
+   * </ul>
+   *
    * @param minimum  the lower bound of the value range.
    * @param maximum  the upper bound of the value range.
    */
@@ -305,13 +305,13 @@ public class JProgressBar extends JComponent implements SwingConstants,
    * <p>
    * <ul>
    * <li><code>value</code>: <code>minimum</code>;</li>
-   * </ul>  
-   * 
+   * </ul>
+   *
    * @param minimum  the lower bound of the value range.
    * @param maximum  the upper bound of the value range.
-   * @param orientation  the orientation ({@link #HORIZONTAL} or 
+   * @param orientation  the orientation ({@link #HORIZONTAL} or
    *     {@link #VERTICAL}).
-   * 
+   *
    * @throws IllegalArgumentException if <code>orientation</code> is not one of
    *     the specified values.
    */
@@ -320,7 +320,7 @@ public class JProgressBar extends JComponent implements SwingConstants,
     model = new DefaultBoundedRangeModel(minimum, 0, minimum, maximum);
     if (orientation != HORIZONTAL && orientation != VERTICAL)
       throw new IllegalArgumentException(orientation
-                                         + " is not a legal orientation");    
+                                         + " is not a legal orientation");
     this.orientation = orientation;
     changeListener = createChangeListener();
     model.addChangeListener(changeListener);
@@ -333,8 +333,8 @@ public class JProgressBar extends JComponent implements SwingConstants,
    * <p>
    * <ul>
    * <li><code>orientation</code>: {@link SwingConstants#HORIZONTAL}.</li>
-   * </ul>  
-   * 
+   * </ul>
+   *
    * @param model  the model (<code>null</code> not permitted).
    */
   public JProgressBar(BoundedRangeModel model)
@@ -343,15 +343,15 @@ public class JProgressBar extends JComponent implements SwingConstants,
     changeListener = createChangeListener();
     if (model != null)
       model.addChangeListener(changeListener);
-    updateUI();    
+    updateUI();
   }
 
   /**
-   * Returns the current value for the <code>JProgressBar</code>.  This value 
+   * Returns the current value for the <code>JProgressBar</code>.  This value
    * is fetched from the model.
    *
    * @return The current value.
-   * 
+   *
    * @see #setValue(int)
    */
   public int getValue()
@@ -361,18 +361,18 @@ public class JProgressBar extends JComponent implements SwingConstants,
 
   /**
    * Sets the current value for the <code>JProgressBar</code>.  The value is
-   * stored in the component's <code>model</code> (see {@link #getModel()}).  
-   * If the new value is different to the old value, a {@link ChangeEvent} is 
-   * sent to the model's registered listeners.  In turn, this triggers a call 
-   * to {@link #fireStateChanged()} which will send a <code>ChangeEvent</code> 
+   * stored in the component's <code>model</code> (see {@link #getModel()}).
+   * If the new value is different to the old value, a {@link ChangeEvent} is
+   * sent to the model's registered listeners.  In turn, this triggers a call
+   * to {@link #fireStateChanged()} which will send a <code>ChangeEvent</code>
    * to this component's registered listeners.
    * <p>
-   * If <code>value</code> is outside the range <code>minimum</code> to 
-   * <code>maximum</code>, it will be set to the nearest of those boundary 
+   * If <code>value</code> is outside the range <code>minimum</code> to
+   * <code>maximum</code>, it will be set to the nearest of those boundary
    * values.
    *
    * @param value  the new value.
-   * 
+   *
    * @see #getValue()
    */
   public void setValue(int value)
@@ -385,7 +385,7 @@ public class JProgressBar extends JComponent implements SwingConstants,
    * returns <code>true</code>.
    *
    * @param graphics  the graphics object to paint with.
-   * 
+   *
    * @see #setBorderPainted(boolean)
    */
   protected void paintBorder(Graphics graphics)
@@ -397,12 +397,12 @@ public class JProgressBar extends JComponent implements SwingConstants,
 
   /**
    * Returns the orientation of the <code>JProgressBar</code> component, which
-   * is either {@link SwingConstants#HORIZONTAL} or 
-   * {@link SwingConstants#VERTICAL}.  The default orientation is 
+   * is either {@link SwingConstants#HORIZONTAL} or
+   * {@link SwingConstants#VERTICAL}.  The default orientation is
    * <code>HORIZONTAL</code>.
    *
    * @return The orientation.
-   * 
+   *
    * @see #setOrientation(int)
    */
   public int getOrientation()
@@ -412,22 +412,22 @@ public class JProgressBar extends JComponent implements SwingConstants,
 
   /**
    * Sets the orientation for this <code>JProgressBar</code> component and,
-   * if the value changes, sends a {@link PropertyChangeEvent} (with the 
+   * if the value changes, sends a {@link PropertyChangeEvent} (with the
    * property name <code>"orientation"</code>) to all registered listeners.
    *
-   * @param orientation  the orientation ({@link #HORIZONTAL} or 
+   * @param orientation  the orientation ({@link #HORIZONTAL} or
    *     {@link #VERTICAL}).
-   * 
+   *
    * @throws IllegalArgumentException if <code>orientation</code> is not
    *     one of the listed values.
-   *     
+   *
    * @see #getOrientation()
    */
   public void setOrientation(int orientation)
   {
     if (orientation != VERTICAL && orientation != HORIZONTAL)
       throw new IllegalArgumentException(orientation
-                                         + " is not a legal orientation");    
+                                         + " is not a legal orientation");
     if (this.orientation != orientation)
       {
         int oldOrientation = this.orientation;
@@ -438,12 +438,12 @@ public class JProgressBar extends JComponent implements SwingConstants,
 
   /**
    * Returns the flag that controls whether or not the string returned by
-   * {@link #getString()} is displayed by the <code>JProgressBar</code> 
+   * {@link #getString()} is displayed by the <code>JProgressBar</code>
    * component.
    *
-   * @return <code>true</code> if the string should be displayed, and 
+   * @return <code>true</code> if the string should be displayed, and
    *     <code>false</code> otherwise.
-   * 
+   *
    * @see #setStringPainted(boolean)
    */
   public boolean isStringPainted()
@@ -453,13 +453,13 @@ public class JProgressBar extends JComponent implements SwingConstants,
 
   /**
    * Sets the flag that controls whether or not the string returned by
-   * {@link #getString()} is displayed by the <code>JProgressBar</code> 
-   * component.  If the flag value changes, a {@link PropertyChangeEvent} (with 
-   * the property name <code>"stringPainted"</code>) is sent to all registered 
+   * {@link #getString()} is displayed by the <code>JProgressBar</code>
+   * component.  If the flag value changes, a {@link PropertyChangeEvent} (with
+   * the property name <code>"stringPainted"</code>) is sent to all registered
    * listeners.
    *
    * @param painted  the new flag value.
-   * 
+   *
    * @see #isStringPainted()
    * @see #setString(String)
    */
@@ -474,13 +474,13 @@ public class JProgressBar extends JComponent implements SwingConstants,
   }
 
   /**
-   * Returns the string that is painted on the <code>JProgressBar</code> if 
-   * {@link #isStringPainted()} returns <code>true</code>.  If no string has 
-   * been explicitly set, this method will return a string displaying the 
+   * Returns the string that is painted on the <code>JProgressBar</code> if
+   * {@link #isStringPainted()} returns <code>true</code>.  If no string has
+   * been explicitly set, this method will return a string displaying the
    * value of {@link #getPercentComplete()}.
    *
    * @return The string.
-   * 
+   *
    * @see #setString(String)
    * @see #setStringPainted(boolean)
    */
@@ -494,13 +494,13 @@ public class JProgressBar extends JComponent implements SwingConstants,
 
   /**
    * Sets the string to display within the progress bar and, if the new value
-   * is different to the old value, sends a {@link PropertyChangeEvent} (with 
-   * the property name <code>"string"</code>) to all registered listeners. If 
+   * is different to the old value, sends a {@link PropertyChangeEvent} (with
+   * the property name <code>"string"</code>) to all registered listeners. If
    * the string is set to <code>null</code>, {@link #getString()} will return
    * a default string.
    *
    * @param string  the string (<code>null</code> permitted).
-   * 
+   *
    * @see #getString()
    * @see #setStringPainted(boolean)
    */
@@ -508,7 +508,7 @@ public class JProgressBar extends JComponent implements SwingConstants,
   {
     if (((string == null || progressString == null) &&
         string != progressString) || (string != null &&
-	! string.equals(progressString)))
+        ! string.equals(progressString)))
       {
         String oldString = progressString;
         progressString = string;
@@ -517,7 +517,7 @@ public class JProgressBar extends JComponent implements SwingConstants,
   }
 
   /**
-   * Returns the current value expressed as a percentage.  This is calculated 
+   * Returns the current value expressed as a percentage.  This is calculated
    * as <code>(value - min) / (max - min)</code>.
    *
    * @return The percentage (a value in the range 0.0 to 1.0).
@@ -527,7 +527,7 @@ public class JProgressBar extends JComponent implements SwingConstants,
     if (getMaximum() == getMinimum())
       return 1.0;
     else
-      return (double) (model.getValue() - model.getMinimum()) 
+      return (double) (model.getValue() - model.getMinimum())
           / (model.getMaximum() - model.getMinimum());
   }
 
@@ -537,7 +537,7 @@ public class JProgressBar extends JComponent implements SwingConstants,
    *
    * @return <code>true</code> if the component's border should be painted,
    *     and <code>false</code> otherwise.
-   *     
+   *
    * @see #setBorderPainted(boolean)
    */
   public boolean isBorderPainted()
@@ -547,12 +547,12 @@ public class JProgressBar extends JComponent implements SwingConstants,
 
   /**
    * Sets the flag that controls whether or not the component's border is
-   * painted.  If the flag value is changed, this method sends a 
-   * {@link PropertyChangeEvent} (with the property name "borderPainted") to 
+   * painted.  If the flag value is changed, this method sends a
+   * {@link PropertyChangeEvent} (with the property name "borderPainted") to
    * all registered listeners.
    *
    * @param painted  the new flag value.
-   * 
+   *
    * @see #isBorderPainted()
    * @see #paintBorder
    */
@@ -587,7 +587,7 @@ public class JProgressBar extends JComponent implements SwingConstants,
   }
 
   /**
-   * Sets this <code>JProgressBar</code>'s UI delegate to the default 
+   * Sets this <code>JProgressBar</code>'s UI delegate to the default
    * (obtained from the {@link UIManager}) for the current look and feel.
    */
   public void updateUI()
@@ -596,8 +596,8 @@ public class JProgressBar extends JComponent implements SwingConstants,
   }
 
   /**
-   * Returns the suffix (<code>"ProgressBarUI"</code> in this case) used to 
-   * determine the class name for a UI delegate that can provide the look and 
+   * Returns the suffix (<code>"ProgressBarUI"</code> in this case) used to
+   * determine the class name for a UI delegate that can provide the look and
    * feel for a <code>JProgressBar</code>.
    *
    * @return <code>"ProgressBarUI"</code>.
@@ -608,11 +608,11 @@ public class JProgressBar extends JComponent implements SwingConstants,
   }
 
   /**
-   * Creates a new {@link ChangeListener} that calls 
+   * Creates a new {@link ChangeListener} that calls
    * {@link #fireStateChanged()} whenever it receives a {@link ChangeEvent}
-   * (typically from the component's <code>model</code>).  This listener is 
-   * registered with the progress bar's model, so that changes made to the 
-   * model directly will automatically result in the progress bar's listeners 
+   * (typically from the component's <code>model</code>).  This listener is
+   * registered with the progress bar's model, so that changes made to the
+   * model directly will automatically result in the progress bar's listeners
    * being notified also.
    *
    * @return A new listener.
@@ -624,16 +624,16 @@ public class JProgressBar extends JComponent implements SwingConstants,
         public void stateChanged(ChangeEvent ce)
         {
           fireStateChanged();
-	    }
+            }
       };
   }
 
   /**
-   * Registers a listener with this component so that it will receive 
+   * Registers a listener with this component so that it will receive
    * notification of component state changes.
    *
    * @param listener  the listener.
-   * 
+   *
    * @see #removeChangeListener(ChangeListener)
    */
   public void addChangeListener(ChangeListener listener)
@@ -646,31 +646,31 @@ public class JProgressBar extends JComponent implements SwingConstants,
    * component state changes.
    *
    * @param listener  the listener.
-   * 
+   *
    * @see #addChangeListener(ChangeListener)
    */
   public void removeChangeListener(ChangeListener listener)
   {
     listenerList.remove(ChangeListener.class, listener);
   }
-  
+
   /**
    * Returns an array of the listeners that are registered with this component.
    * The array may be empty, but is never <code>null</code>.
    *
    * @return An array of listeners.
-   * 
+   *
    * @since 1.4
    */
   public ChangeListener[] getChangeListeners()
   {
     return (ChangeListener[]) listenerList.getListeners(ChangeListener.class);
-  }  
+  }
 
   /**
    * Sends a {@link ChangeEvent} to all registered listeners to indicate that
-   * the state of the <code>JProgressBar</code> has changed.  
-   * 
+   * the state of the <code>JProgressBar</code> has changed.
+   *
    * @see #createChangeListener()
    */
   protected void fireStateChanged()
@@ -689,7 +689,7 @@ public class JProgressBar extends JComponent implements SwingConstants,
    * Returns the model for the <code>JProgressBar</code>.
    *
    * @return The model (never <code>null</code>).
-   * 
+   *
    * @see #setModel(BoundedRangeModel)
    */
   public BoundedRangeModel getModel()
@@ -698,11 +698,11 @@ public class JProgressBar extends JComponent implements SwingConstants,
   }
 
   /**
-   * Sets the model for the <code>JProgressBar</code> and sends a 
+   * Sets the model for the <code>JProgressBar</code> and sends a
    * {@link ChangeEvent} to all registered listeners.
    *
    * @param model  the model (<code>null</code> not permitted).
-   * 
+   *
    * @see #getModel()
    */
   public void setModel(BoundedRangeModel model)
@@ -717,12 +717,12 @@ public class JProgressBar extends JComponent implements SwingConstants,
   }
 
   /**
-   * Returns the minimum value for the <code>JProgressBar</code>. This defines 
-   * the lower bound for the current value, and is stored in the component's 
+   * Returns the minimum value for the <code>JProgressBar</code>. This defines
+   * the lower bound for the current value, and is stored in the component's
    * <code>model</code>.
    *
    * @return The minimum value.
-   * 
+   *
    * @see #setMinimum(int)
    */
   public int getMinimum()
@@ -732,14 +732,14 @@ public class JProgressBar extends JComponent implements SwingConstants,
 
   /**
    * Sets the minimum value for the <code>JProgressBar</code>.  The value is
-   * stored in the component's <code>model</code> (see {@link #getModel()}).  
-   * If the new value is different to the old value, a {@link ChangeEvent} is 
-   * sent to the model's registered listeners.  In turn, this triggers a call 
-   * to {@link #fireStateChanged()} which will send a <code>ChangeEvent</code> 
+   * stored in the component's <code>model</code> (see {@link #getModel()}).
+   * If the new value is different to the old value, a {@link ChangeEvent} is
+   * sent to the model's registered listeners.  In turn, this triggers a call
+   * to {@link #fireStateChanged()} which will send a <code>ChangeEvent</code>
    * to this component's registered listeners.
-   * 
+   *
    * @param minimum  the minimum value.
-   * 
+   *
    * @see #getMinimum()
    */
   public void setMinimum(int minimum)
@@ -748,12 +748,12 @@ public class JProgressBar extends JComponent implements SwingConstants,
   }
 
   /**
-   * Returns the maximum value for the <code>JProgressBar</code>.  This defines 
-   * the upper bound for the current value, and is stored in the component's 
+   * Returns the maximum value for the <code>JProgressBar</code>.  This defines
+   * the upper bound for the current value, and is stored in the component's
    * <code>model</code>.
    *
    * @return The maximum value.
-   * 
+   *
    * @see #setMaximum(int)
    */
   public int getMaximum()
@@ -763,14 +763,14 @@ public class JProgressBar extends JComponent implements SwingConstants,
 
   /**
    * Sets the maximum value for the <code>JProgressBar</code>.  The value is
-   * stored in the component's <code>model</code> (see {@link #getModel()}).  
-   * If the new value is different to the old value, a {@link ChangeEvent} is 
-   * sent to the model's registered listeners.  In turn, this triggers a call 
-   * to {@link #fireStateChanged()} which will send a <code>ChangeEvent</code> 
+   * stored in the component's <code>model</code> (see {@link #getModel()}).
+   * If the new value is different to the old value, a {@link ChangeEvent} is
+   * sent to the model's registered listeners.  In turn, this triggers a call
+   * to {@link #fireStateChanged()} which will send a <code>ChangeEvent</code>
    * to this component's registered listeners.
    *
    * @param maximum  the maximum value.
-   * 
+   *
    * @see #getMaximum()
    */
   public void setMaximum(int maximum)
@@ -782,7 +782,7 @@ public class JProgressBar extends JComponent implements SwingConstants,
    * Returns an implementation-dependent string describing the attributes of
    * this <code>JProgressBar</code>.
    *
-   * @return A string describing the attributes of this 
+   * @return A string describing the attributes of this
    *     <code>JProgressBar</code> (never <code>null</code>).
    */
   protected String paramString()
@@ -806,17 +806,17 @@ public class JProgressBar extends JComponent implements SwingConstants,
   /**
    * Sets the flag that controls the mode for this <code>JProgressBar</code>
    * (<code>true</code> for indeterminate mode, and <code>false</code> for
-   * determinate mode).  If the flag value changes, this method sends a 
-   * {@link PropertyChangeEvent} (with the property name 
+   * determinate mode).  If the flag value changes, this method sends a
+   * {@link PropertyChangeEvent} (with the property name
    * <code>"indeterminate"</code>) to all registered listeners.
    * <p>
    * If the <code>JProgressBar</code> is determinate, it paints a percentage
-   * of the bar described by its value. If it is indeterminate, it simply 
-   * bounces a box between the ends of the bar; the value of the 
+   * of the bar described by its value. If it is indeterminate, it simply
+   * bounces a box between the ends of the bar; the value of the
    * <code>JProgressBar</code> is ignored.
    *
    * @param flag  the new flag value.
-   * 
+   *
    * @see #isIndeterminate()
    * @since 1.4
    */
@@ -831,11 +831,11 @@ public class JProgressBar extends JComponent implements SwingConstants,
 
   /**
    * Returns a flag that indicates the mode for this <code>JProgressBar</code>
-   * (<code>true</code> for indeterminate mode, and <code>false</code> for 
-   * determinate mode).  
+   * (<code>true</code> for indeterminate mode, and <code>false</code> for
+   * determinate mode).
    *
    * @return A flag indicating the mode for the <code>JProgressBar</code>.
-   * 
+   *
    * @see #setIndeterminate(boolean)
    * @since 1.4
    */
@@ -848,14 +848,14 @@ public class JProgressBar extends JComponent implements SwingConstants,
    * Returns the object that provides accessibility features for this
    * <code>JProgressBar</code> component.
    *
-   * @return The accessible context (an instance of 
+   * @return The accessible context (an instance of
    *     {@link AccessibleJProgressBar}).
    */
   public AccessibleContext getAccessibleContext()
   {
     if (accessibleContext == null)
       accessibleContext = new AccessibleJProgressBar();
-    
+
     return accessibleContext;
-  } 
+  }
 }

@@ -73,7 +73,7 @@ public class SSLSocketImpl extends SSLSocket
   {
     private final ByteBuffer buffer;
     private final OutputStream out;
-    
+
     SocketOutputStream() throws IOException
     {
       buffer = ByteBuffer.wrap(new byte[getSession().getPacketBufferSize()]);
@@ -112,12 +112,12 @@ public class SSLSocketImpl extends SSLSocket
             }
         }
     }
-    
+
     @Override public void write(int b) throws IOException
     {
       write(new byte[] { (byte) b });
     }
-    
+
     @Override public void close() throws IOException
     {
       SSLSocketImpl.this.close();
@@ -197,12 +197,12 @@ public class SSLSocketImpl extends SSLSocket
   private IOException handshakeException;
   private boolean initialHandshakeDone = false;
   private final boolean autoClose;
-  
+
   public SSLSocketImpl(SSLContextImpl contextImpl, String host, int port)
   {
     this(contextImpl, host, port, new Socket(), true);
   }
-  
+
   public SSLSocketImpl(SSLContextImpl contextImpl, String host, int port,
                        Socket underlyingSocket, boolean autoClose)
   {
@@ -361,7 +361,7 @@ public class SSLSocketImpl extends SSLSocket
 
     if (handshakeException != null)
       throw handshakeException;
-    
+
     Thread t = new Thread(new Runnable()
     {
       public void run()
@@ -378,7 +378,7 @@ public class SSLSocketImpl extends SSLSocket
     }, "HandshakeThread@" + System.identityHashCode(this));
     t.start();
   }
-  
+
   void doHandshake() throws IOException
   {
     synchronized (engine)
@@ -396,13 +396,13 @@ public class SSLSocketImpl extends SSLSocket
           }
         isHandshaking = true;
       }
-    
+
     if (initialHandshakeDone)
       throw new SSLException("rehandshaking not yet implemented");
 
     long now = -System.currentTimeMillis();
     engine.beginHandshake();
-    
+
     HandshakeStatus status = engine.getHandshakeStatus();
     assert(status != HandshakeStatus.NOT_HANDSHAKING);
 
@@ -411,10 +411,10 @@ public class SSLSocketImpl extends SSLSocket
     ByteBuffer outBuffer = ByteBuffer.wrap(new byte[getSession().getPacketBufferSize()]);
     ByteBuffer emptyBuffer = ByteBuffer.allocate(0);
     SSLEngineResult result = null;
-    
+
     DataInputStream sockIn = new DataInputStream(underlyingSocket.getInputStream());
     OutputStream sockOut = underlyingSocket.getOutputStream();
-    
+
     try
       {
         while (status != HandshakeStatus.NOT_HANDSHAKING
@@ -477,7 +477,7 @@ public class SSLSocketImpl extends SSLSocket
                     throw new SSLException("unexpected SSL status "
                                            + result.getStatus());
                   outBuffer.flip();
-                  sockOut.write(outBuffer.array(), outBuffer.position(), 
+                  sockOut.write(outBuffer.array(), outBuffer.position(),
                                 outBuffer.limit());
                 }
                 break;
@@ -536,14 +536,14 @@ public class SSLSocketImpl extends SSLSocket
           }
       }
   }
-  
+
   // Methods overriding Socket.
 
   @Override public void bind(SocketAddress bindpoint) throws IOException
   {
     underlyingSocket.bind(bindpoint);
   }
-  
+
   @Override public void connect(SocketAddress endpoint) throws IOException
   {
     underlyingSocket.connect(endpoint);
@@ -559,12 +559,12 @@ public class SSLSocketImpl extends SSLSocket
   {
     return underlyingSocket.getInetAddress();
   }
-  
+
   @Override public InetAddress getLocalAddress()
   {
     return underlyingSocket.getLocalAddress();
   }
-  
+
   @Override public int getPort()
   {
     return underlyingSocket.getPort();

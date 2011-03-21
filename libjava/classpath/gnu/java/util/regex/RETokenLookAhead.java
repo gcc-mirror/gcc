@@ -65,16 +65,16 @@ final class RETokenLookAhead extends REToken
     REMatch trymatch = (REMatch) mymatch.clone ();
     if (re.match (input, trymatch))
       {
-	if (negative)
-	  return null;
-	trymatch.index = mymatch.index;
-	return trymatch;
+        if (negative)
+          return null;
+        trymatch.index = mymatch.index;
+        return trymatch;
       }
     else
       {
-	if (negative)
-	  return mymatch;
-	return null;
+        if (negative)
+          return mymatch;
+        return null;
       }
   }
 

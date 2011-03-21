@@ -41,7 +41,9 @@
 #include <cwchar>
 #endif
 
-_GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
+namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /**
    *  @brief Provides a layer of compatibility for C.
@@ -282,6 +284,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 #endif
 #endif
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
 
 #endif

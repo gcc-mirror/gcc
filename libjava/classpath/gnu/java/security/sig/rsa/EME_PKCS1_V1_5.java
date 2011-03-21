@@ -1,4 +1,4 @@
-/* EME_PKCS1_V1_5.java -- 
+/* EME_PKCS1_V1_5.java --
    Copyright (C) 2003, 2006 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -104,7 +104,7 @@ public class EME_PKCS1_V1_5
    * </pre>
    * <p>
    * This method uses a default PRNG to obtain the padding bytes.
-   * 
+   *
    * @param M the message to encode.
    * @return the encoded message <code>EM</code>.
    */
@@ -133,7 +133,7 @@ public class EME_PKCS1_V1_5
    * Similar to {@link #encode(byte[])} method, except that the source of
    * randomness to use for obtaining the padding bytes (an instance of
    * {@link IRandom}) is given as a parameter.
-   * 
+   *
    * @param M the message to encode.
    * @param irnd the {@link IRandom} instance to use as a source of randomness.
    * @return the encoded message <code>EM</code>.
@@ -173,7 +173,7 @@ public class EME_PKCS1_V1_5
   /**
    * Similar to the {@link #encode(byte[], IRandom)} method, except that the
    * source of randmoness is an instance of {@link Random}.
-   * 
+   *
    * @param M the message to encode.
    * @param rnd the {@link Random} instance to use as a source of randomness.
    * @return the encoded message <code>EM</code>.
@@ -213,7 +213,7 @@ public class EME_PKCS1_V1_5
    * hexadecimal value <code>0x00</code> to separate <code>PS</code> from
    * <code>M</code>, or if the length of <code>PS</code> is less than
    * <code>8</code> octets, output "decryption error" and stop.
-   * 
+   *
    * @param EM the designated encoded message.
    * @return the decoded message <code>M</code> framed in the designated
    *         <code>EM</code> value.

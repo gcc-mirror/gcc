@@ -1,4 +1,4 @@
-/* CharsetEncoder.java -- 
+/* CharsetEncoder.java --
    Copyright (C) 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -50,7 +50,7 @@ public abstract class CharsetEncoder
   private static final int STATE_CODING  = 1;
   private static final int STATE_END     = 2;
   private static final int STATE_FLUSHED = 3;
-  
+
   private static final byte[] DEFAULT_REPLACEMENT = {(byte)'?'};
 
   private final Charset charset;
@@ -71,7 +71,7 @@ public abstract class CharsetEncoder
     this (cs, averageBytesPerChar, maxBytesPerChar, DEFAULT_REPLACEMENT);
   }
 
-  protected CharsetEncoder (Charset cs, float averageBytesPerChar, 
+  protected CharsetEncoder (Charset cs, float averageBytesPerChar,
                             float maxBytesPerChar, byte[] replacement)
   {
     if (averageBytesPerChar <= 0.0f)
@@ -87,7 +87,7 @@ public abstract class CharsetEncoder
     this.replacement = replacement;
     implReplaceWith (replacement);
   }
- 
+
   public final float averageBytesPerChar ()
   {
     return averageBytesPerChar;

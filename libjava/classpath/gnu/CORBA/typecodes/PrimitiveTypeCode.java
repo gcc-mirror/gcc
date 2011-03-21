@@ -64,11 +64,11 @@ public class PrimitiveTypeCode
   extends TypeCode
   implements IDLEntity, Serializable
 {
-  /** 
-   * Use serialVersionUID for interoperability. 
+  /**
+   * Use serialVersionUID for interoperability.
    */
   private static final long serialVersionUID = 1;
-  
+
   /**
    * The kind of this TypeCode.
    */

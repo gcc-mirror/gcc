@@ -41,7 +41,7 @@ package javax.sound.midi;
 /**
  * This interface specifies the methods required by objects which send
  * MIDI events to Receivers, including MIDI IN ports and Sequencers.
- * 
+ *
  * @author Anthony Green (green@redhat.com)
  * @since 1.3
  *
@@ -50,14 +50,14 @@ public interface Transmitter
 {
   /**
    * Set the Receiver to which MIDI events will be sent.
-   * 
+   *
    * @param receiver the Receiver to which MIDI events will be sent
    */
   public void setReceiver(Receiver receiver);
-  
+
   /**
    * Get the Receiver to which MIDI events will be sent (possibly null)
-   * 
+   *
    * @return the Receiver to which MIDI events will be sent (possibly null)
    */
   public Receiver getReceiver();
@@ -66,5 +66,5 @@ public interface Transmitter
    * Close this Transmitter, possibly releasing system resources.
    * FIXME: Does this mean the Receiver is closed?  I think it must.
    */
-  public void close();  
+  public void close();
 }

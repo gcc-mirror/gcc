@@ -50,12 +50,12 @@ public class GtkDropTargetContextPeer
     extends GtkGenericPeer
     implements DropTargetContextPeer
 {
-  
+
   public GtkDropTargetContextPeer(Object obj)
   {
     super(obj);
   }
-  
+
   public void setTargetActions(int actions)
   {
     // FIXME: Not Implemented

@@ -6,11 +6,6 @@
 
 package syscall
 
-const ENONE = 0
-
-func GetErrno() int
-func SetErrno(int)
-
 func Errstr(errno int) string {
 	for len := Size_t(128); ; len *= 2 {
 		b := make([]byte, len+1)

@@ -52,45 +52,43 @@ import java.awt.Dimension;
 public class DecodeRGB1 extends BMPDecoder {
 
     public DecodeRGB1(BMPFileHeader fh, BMPInfoHeader ih){
-	super(fh, ih);
+        super(fh, ih);
     }
 
-    public BufferedImage decode(ImageInputStream in) 
-	throws IOException, BMPException {
+    public BufferedImage decode(ImageInputStream in)
+        throws IOException, BMPException {
 
-	IndexColorModel palette = readPalette(in);
-	skipToImage(in);
+        IndexColorModel palette = readPalette(in);
+        skipToImage(in);
 
-	Dimension d = infoHeader.getSize();
-	int h = (int)d.getHeight();
-	int w = (int)d.getWidth();
-	int size = (w*h)>>3;
+        Dimension d = infoHeader.getSize();
+        int h = (int)d.getHeight();
+        int w = (int)d.getWidth();
+        int size = (w*h)>>3;
 
-	int scansize = w>>3;
-	byte[] data = new byte[size];
+        int scansize = w>>3;
+        byte[] data = new byte[size];
 
-	for(int y=h-1;y>=0;y--){
-	    // Scanlines are padded to dword boundries
-	    int readsize = scansize;
-	    if((readsize & 3) != 0) readsize += (4 - (scansize & 3));
+        for(int y=h-1;y>=0;y--){
+            // Scanlines are padded to dword boundries
+            int readsize = scansize;
+            if((readsize & 3) != 0) readsize += (4 - (scansize & 3));
 
-	    byte[] scanline = new byte[readsize];
-	    if(in.read(scanline) != readsize)
-		throw new IOException("Couldn't read image data.");
+            byte[] scanline = new byte[readsize];
+            if(in.read(scanline) != readsize)
+                throw new IOException("Couldn't read image data.");
 
-	    for(int x=0;x<scansize;x++)
-		data[x + y*scansize] = scanline[x];
-	}
+            for(int x=0;x<scansize;x++)
+                data[x + y*scansize] = scanline[x];
+        }
 
-	SampleModel sm = new MultiPixelPackedSampleModel(DataBuffer.TYPE_BYTE, 
-							 w, h, 1);
+        SampleModel sm = new MultiPixelPackedSampleModel(DataBuffer.TYPE_BYTE,
+                                                         w, h, 1);
 
-	DataBuffer db = new DataBufferByte(data, size, 0);
-	WritableRaster raster = Raster.createWritableRaster(sm, db, null);
-    
-	return new BufferedImage(palette, raster, false, null);
+        DataBuffer db = new DataBufferByte(data, size, 0);
+        WritableRaster raster = Raster.createWritableRaster(sm, db, null);
+
+        return new BufferedImage(palette, raster, false, null);
     }
 
 }
-
-

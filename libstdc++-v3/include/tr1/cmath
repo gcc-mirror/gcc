@@ -1,6 +1,7 @@
 // TR1 cmath -*- C++ -*-
 
-// Copyright (C) 2006, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011
+// Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -143,10 +144,12 @@
 
 #endif
 
-namespace std
+namespace std _GLIBCXX_VISIBILITY(default)
 {
 namespace tr1
 {
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
 #if _GLIBCXX_USE_C99_MATH_TR1
 
   // types
@@ -573,7 +576,24 @@ namespace tr1
       return expm1(__type(__x));
     }
 
-  using std::fabs;
+  // Note: we deal with fabs in a special way, because an using std::fabs
+  // would bring in also the overloads for complex types, which in C++0x
+  // mode have a different return type.
+  using ::fabs;
+
+  inline float
+  fabs(float __x)
+  { return __builtin_fabsf(__x); }
+
+  inline long double
+  fabs(long double __x)
+  { return __builtin_fabsl(__x); }
+
+  template<typename _Tp>
+    inline typename __gnu_cxx::__enable_if<__is_integer<_Tp>::__value, 
+					   double>::__type
+    fabs(_Tp __x)
+    { return __builtin_fabs(__x); }
 
   inline float
   fdim(float __x, float __y)
@@ -997,13 +1017,16 @@ namespace tr1
     }
 
 #endif
+_GLIBCXX_END_NAMESPACE_VERSION
 }
 }
 
-namespace std
+namespace std _GLIBCXX_VISIBILITY(default)
 {
 namespace tr1
 {
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
   // DR 550. What should the return type of pow(float,int) be?
   // NB: C++0x and TR1 != C++03.
   inline double
@@ -1025,6 +1048,8 @@ namespace tr1
       typedef typename __gnu_cxx::__promote_2<_Tp, _Up>::__type __type;
       return std::pow(__type(__x), __type(__y));
     }
+
+_GLIBCXX_END_NAMESPACE_VERSION
 }
 }
 
@@ -1044,10 +1069,12 @@ namespace tr1
 #include <tr1/poly_laguerre.tcc>
 #include <tr1/riemann_zeta.tcc>
 
-namespace std
+namespace std _GLIBCXX_VISIBILITY(default)
 {
 namespace tr1
 {
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
   /**
    * @defgroup tr1_math_spec_func Mathematical Special Functions
    * @ingroup numerics
@@ -1450,6 +1477,7 @@ namespace tr1
     }
 
   /* @} */ // tr1_math_spec_func
+_GLIBCXX_END_NAMESPACE_VERSION
 }
 }
 

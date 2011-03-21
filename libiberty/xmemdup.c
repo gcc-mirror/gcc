@@ -4,7 +4,8 @@
 
 /*
 
-@deftypefn Replacement void* xmemdup (void *@var{input}, size_t @var{copy_size}, size_t @var{alloc_size})
+@deftypefn Replacement void* xmemdup (void *@var{input}, @
+  size_t @var{copy_size}, size_t @var{alloc_size})
 
 Duplicates a region of memory without fail.  First, @var{alloc_size} bytes
 are allocated, then @var{copy_size} bytes from @var{input} are copied into

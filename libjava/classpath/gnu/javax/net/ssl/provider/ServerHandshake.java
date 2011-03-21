@@ -90,7 +90,7 @@ import javax.net.ssl.SSLEngineResult.HandshakeStatus;
 import javax.security.auth.x500.X500Principal;
 
 class ServerHandshake extends AbstractHandshake
-{  
+{
   /**
    * Handshake state enumeration.
    */
@@ -109,21 +109,21 @@ class ServerHandshake extends AbstractHandshake
     READ_CERTIFICATE_VERIFY (false, true),
     READ_FINISHED (false, true),
     DONE (false, false);
-    
+
     private final boolean isWriteState;
     private final boolean isReadState;
-    
+
     private State(final boolean isWriteState, final boolean isReadState)
     {
       this.isWriteState = isWriteState;
       this.isReadState = isReadState;
     }
-    
+
     boolean isReadState()
     {
       return isReadState;
     }
-    
+
     boolean isWriteState()
     {
       return isWriteState;
@@ -143,7 +143,7 @@ class ServerHandshake extends AbstractHandshake
   private boolean helloV2 = false;
   private KeyPair dhPair;
   private PrivateKey serverKey;
-  
+
   // Delegated tasks we use.
   private GenDH genDH;
   private CertVerifier certVerifier;
@@ -224,11 +224,11 @@ class ServerHandshake extends AbstractHandshake
         kexes.add(DHE_PSK);
         kexes.add(PSK);
       }
-    
+
     if (Debug.DEBUG)
       logger.logv(Component.SSL_HANDSHAKE,
                   "we have certs for key exchange algorithms {0}", kexes);
-    
+
     HashSet<CipherSuite> suites = new HashSet<CipherSuite>();
     for (String s : enabledSuites)
       {
@@ -247,7 +247,7 @@ class ServerHandshake extends AbstractHandshake
         if (suites.contains(resolved))
           return resolved;
       }
-    
+
     // We didn't find a match?
     throw new AlertException(new Alert(Alert.Level.FATAL,
                                        Alert.Description.INSUFFICIENT_SECURITY));
@@ -283,7 +283,7 @@ class ServerHandshake extends AbstractHandshake
 
     throw new SSLException ("no supported compression method");
   }
-  
+
   protected @Override boolean doHash()
   {
     boolean b = helloV2;
@@ -308,7 +308,7 @@ class ServerHandshake extends AbstractHandshake
     Handshake handshake = new Handshake(buffer.slice(),
                                         engine.session().suite,
                                         engine.session().version);
-        
+
     if (Debug.DEBUG)
       logger.logv(Component.SSL_HANDSHAKE, "processing in state {0}:\n{1}",
                   state, handshake);
@@ -328,7 +328,7 @@ class ServerHandshake extends AbstractHandshake
           if (handshake.type () != CLIENT_HELLO)
             throw new AlertException(new Alert(Alert.Level.FATAL,
                                                Alert.Description.UNEXPECTED_MESSAGE));
-            
+
           {
             ClientHello hello = (ClientHello) handshake.body ();
             engine.session().version
@@ -366,7 +366,7 @@ class ServerHandshake extends AbstractHandshake
                       engine.session().maxLength = len;
                       engine.session().setApplicationBufferSize(len.maxLength());
                       break;
-                      
+
                     case SERVER_NAME:
                       requestedNames = (ServerNameList) e.value();
                       List<String> names
@@ -426,7 +426,7 @@ class ServerHandshake extends AbstractHandshake
                 state = READ_CLIENT_KEY_EXCHANGE;
                 return HandshakeStatus.NEED_UNWRAP;
               }
-            
+
             Certificate cert = (Certificate) handshake.body();
             try
               {
@@ -472,7 +472,7 @@ class ServerHandshake extends AbstractHandshake
             if (handshake.type() != CLIENT_KEY_EXCHANGE)
               throw new SSLException("expecting client key exchange");
             ClientKeyExchange kex = (ClientKeyExchange) handshake.body();
-            
+
             KeyExchangeAlgorithm alg = engine.session().suite.keyExchangeAlgorithm();
             switch (alg)
               {
@@ -500,7 +500,7 @@ class ServerHandshake extends AbstractHandshake
                     tasks.add(keyExchangeTask);
                   }
                   break;
-            
+
                 case PSK:
                   {
                     ClientPSKParameters params = (ClientPSKParameters)
@@ -508,7 +508,7 @@ class ServerHandshake extends AbstractHandshake
                     generatePSKSecret(params.identity(), null, false);
                   }
                   break;
-                  
+
                 case DHE_PSK:
                   {
                     ClientDHE_PSKParameters params = (ClientDHE_PSKParameters)
@@ -530,7 +530,7 @@ class ServerHandshake extends AbstractHandshake
                     tasks.add(keyExchangeTask);
                   }
                   break;
-                  
+
                 case RSA_PSK:
                   {
                     ClientRSA_PSKParameters params = (ClientRSA_PSKParameters)
@@ -554,7 +554,7 @@ class ServerHandshake extends AbstractHandshake
                     tasks.add(keyExchangeTask);
                   }
                   break;
-                  
+
                 case NONE:
                   {
                     Inflater inflater = null;
@@ -575,7 +575,7 @@ class ServerHandshake extends AbstractHandshake
                   break;
               }
             // XXX SRP
-            
+
             if (clientCert != null)
               state = READ_CERTIFICATE_VERIFY;
             else
@@ -595,7 +595,7 @@ class ServerHandshake extends AbstractHandshake
           {
             if (handshake.type() != CERTIFICATE_VERIFY)
               throw new SSLException("expecting certificate verify message");
-            
+
             CertificateVerify verify = (CertificateVerify) handshake.body();
             try
               {
@@ -617,7 +617,7 @@ class ServerHandshake extends AbstractHandshake
               state = READ_FINISHED;
           }
           break;
-          
+
         // Finished.
         //
         // This message is sent immediately following the change cipher
@@ -637,7 +637,7 @@ class ServerHandshake extends AbstractHandshake
                                                  Description.UNEXPECTED_MESSAGE));
 
             Finished clientFinished = (Finished) handshake.body();
-            
+
             MessageDigest md5copy = null;
             MessageDigest shacopy = null;
             try
@@ -659,7 +659,7 @@ class ServerHandshake extends AbstractHandshake
             if (Debug.DEBUG)
               logger.log(Component.SSL_HANDSHAKE, "server finished: {0}",
                          serverFinished);
-            
+
             if (engine.session().version == ProtocolVersion.SSL_3)
               {
                 if (!Arrays.equals(clientFinished.md5Hash(),
@@ -680,7 +680,7 @@ class ServerHandshake extends AbstractHandshake
                     throw new SSLException("session verify failed");
                   }
               }
-            
+
             if (continuedSession)
               state = DONE;
             else
@@ -711,7 +711,7 @@ class ServerHandshake extends AbstractHandshake
       logger.logv(Component.SSL_HANDSHAKE,
                   "handle output state: {0}; output fragment: {1}",
                   state, fragment);
-    
+
     // Drain the output buffer, if it needs it.
     if (outBuffer != null && outBuffer.hasRemaining())
       {
@@ -719,7 +719,7 @@ class ServerHandshake extends AbstractHandshake
         fragment.put((ByteBuffer) outBuffer.duplicate().limit(outBuffer.position() + l));
         outBuffer.position(outBuffer.position() + l);
       }
-    
+
     if (!fragment.hasRemaining())
       {
         if (state.isWriteState() || outBuffer.hasRemaining())
@@ -727,7 +727,7 @@ class ServerHandshake extends AbstractHandshake
         else
           return HandshakeStatus.NEED_UNWRAP;
       }
-    
+
     // XXX what we need to do here is generate a "stream" of handshake
     // messages, and insert them into fragment amounts that we have available.
     // A handshake message can span multiple records, and we can put
@@ -808,7 +808,7 @@ output_loop:
               state = READ_CLIENT_HELLO;
             }
             break output_loop; // XXX temporary
-            
+
             // Server Hello.
             //
             // This message is sent immediately following the client hello.
@@ -834,7 +834,7 @@ output_loop:
                 }
               else // Don't send any extensions.
                 hello.setDisableExtensions(true);
-              
+
               if (Debug.DEBUG)
                 logger.log(Component.SSL_HANDSHAKE, "{0}", hello);
 
@@ -921,7 +921,7 @@ output_loop:
                   logger.logv(Component.SSL_HANDSHAKE, "my cert:\n{0}", localCert);
                   logger.logv(Component.SSL_HANDSHAKE, "{0}", cert);
                 }
-              
+
               int typeLen = ((CERTIFICATE.getValue() << 24)
                              | (cert.length() & 0xFFFFFF));
               fragment.putInt(typeLen);
@@ -961,7 +961,7 @@ output_loop:
             case WRITE_SERVER_KEY_EXCHANGE:
             {
               KeyExchangeAlgorithm kex = engine.session().suite.keyExchangeAlgorithm();
-              
+
               ByteBuffer paramBuffer = null;
               ByteBuffer sigBuffer = null;
               if (kex == DHE_DSS || kex == DHE_RSA || kex == DH_anon
@@ -978,7 +978,7 @@ output_loop:
                                     engine.session().random());
                   paramBuffer = genDH.paramsBuffer;
                   sigBuffer = genDH.sigBuffer;
-                  
+
                   if (kex == DHE_PSK)
                     {
                       String identityHint
@@ -1009,7 +1009,7 @@ output_loop:
                     }
                 }
               // XXX handle SRP
-              
+
               if (paramBuffer != null)
                 {
                   ServerKeyExchangeBuilder ske
@@ -1017,10 +1017,10 @@ output_loop:
                   ske.setParams(paramBuffer);
                   if (sigBuffer != null)
                     ske.setSignature(sigBuffer);
-                  
+
                   if (Debug.DEBUG)
                     logger.log(Component.SSL_HANDSHAKE, "{0}", ske);
-                  
+
                   outBuffer = ske.buffer();
                   int l = Math.min(fragment.remaining(), outBuffer.remaining());
                   fragment.putInt((SERVER_KEY_EXCHANGE.getValue() << 24)
@@ -1029,7 +1029,7 @@ output_loop:
                                (outBuffer.position() + l));
                   outBuffer.position(outBuffer.position() + l);
                 }
-              
+
               if (engine.getWantClientAuth() || engine.getNeedClientAuth())
                 state = WRITE_CERTIFICATE_REQUEST;
               else
@@ -1048,7 +1048,7 @@ output_loop:
             case WRITE_CERTIFICATE_REQUEST:
             {
               CertificateRequestBuilder req = new CertificateRequestBuilder();
-              
+
               List<ClientCertificateType> types
                 = new ArrayList<ClientCertificateType>(4);
               types.add(ClientCertificateType.RSA_SIGN);
@@ -1056,7 +1056,7 @@ output_loop:
               types.add(ClientCertificateType.DSS_SIGN);
               types.add(ClientCertificateType.DSS_FIXED_DH);
               req.setTypes(types);
-              
+
               X509Certificate[] anchors
                 = engine.contextImpl.trustManager.getAcceptedIssuers();
               List<X500Principal> issuers
@@ -1064,18 +1064,18 @@ output_loop:
               for (X509Certificate cert : anchors)
                 issuers.add(cert.getIssuerX500Principal());
               req.setAuthorities(issuers);
-              
+
               if (Debug.DEBUG)
                 logger.log(Component.SSL_HANDSHAKE, "{0}", req);
-              
+
               fragment.putInt((CERTIFICATE_REQUEST.getValue() << 24)
                               | (req.length() & 0xFFFFFF));
-              
+
               outBuffer = req.buffer();
               int l = Math.min(outBuffer.remaining(), fragment.remaining());
               fragment.put((ByteBuffer) outBuffer.duplicate().limit(outBuffer.position() + l));
               outBuffer.position(outBuffer.position() + l);
-              
+
               state = WRITE_SERVER_HELLO_DONE;
             }
             break;
@@ -1097,7 +1097,7 @@ output_loop:
               state = READ_CERTIFICATE;
             }
             break output_loop; // XXX temporary
-            
+
             // Finished.
             //
             // This is always sent by the server to verify the keys that the
@@ -1129,10 +1129,10 @@ output_loop:
               outBuffer
                 = generateFinished(md5copy, shacopy, false,
                                    engine.session());
-              
+
               fragment.putInt((FINISHED.getValue() << 24)
                               | outBuffer.remaining() & 0xFFFFFF);
-              
+
               int l = Math.min(outBuffer.remaining(), fragment.remaining());
               fragment.put((ByteBuffer) outBuffer.duplicate().limit(outBuffer.position() + l));
               outBuffer.position(outBuffer.position() + l);
@@ -1151,10 +1151,10 @@ output_loop:
       return HandshakeStatus.NEED_WRAP;
     if (state.isReadState())
       return HandshakeStatus.NEED_UNWRAP;
-    
+
     return HandshakeStatus.FINISHED;
   }
-  
+
   @Override HandshakeStatus status()
   {
     if (!tasks.isEmpty())
@@ -1163,7 +1163,7 @@ output_loop:
       return HandshakeStatus.NEED_UNWRAP;
     if (state.isWriteState())
       return HandshakeStatus.NEED_WRAP;
-    
+
     return HandshakeStatus.FINISHED;
   }
 
@@ -1185,7 +1185,7 @@ output_loop:
                                          Alert.Description.HANDSHAKE_FAILURE),
                                keyExchangeTask.thrown());
   }
-  
+
   @Override void handleV2Hello(ByteBuffer hello)
   {
     int len = hello.getShort(0) & 0x7FFF;
@@ -1211,7 +1211,7 @@ output_loop:
     Signature signature = new Signature(sigVal, engine.session().suite.signatureAlgorithm());
     return signature.buffer();
   }
-  
+
   private void verifyClient(byte[] sigValue) throws SSLException, SignatureException
   {
     MessageDigest md5copy = null;
@@ -1236,7 +1236,7 @@ output_loop:
         else
           toSign = shacopy.digest();
       }
-    
+
     try
       {
         java.security.Signature sig = java.security.Signature.getInstance(engine.session().suite.signatureAlgorithm().toString());
@@ -1253,7 +1253,7 @@ output_loop:
         throw new SSLException(nsae);
       }
   }
-  
+
   // Delegated tasks.
 
   class CertLoader extends DelegatedTask
@@ -1261,7 +1261,7 @@ output_loop:
     CertLoader()
     {
     }
-    
+
     public void implRun() throws SSLException
     {
       KeyExchangeAlgorithm kexalg = engine.session().suite.keyExchangeAlgorithm();
@@ -1279,7 +1279,7 @@ output_loop:
                              km.getPrivateKey(keyAlias));
     }
   }
-  
+
   /**
    * Delegated task for generating Diffie-Hellman parameters.
    */
@@ -1297,13 +1297,13 @@ output_loop:
       dhGen.initialize(dhparams, engine.session().random());
       dhPair = dhGen.generateKeyPair();
       DHPublicKey pub = (DHPublicKey) dhPair.getPublic();
-      
+
       // Generate the parameters message.
       ServerDHParams params = new ServerDHParams(pub.getParams().getP(),
                                                  pub.getParams().getG(),
                                                  pub.getY());
       paramsBuffer = params.buffer();
-      
+
       // Sign the parameters, if needed.
       if (engine.session().suite.signatureAlgorithm() != SignatureAlgorithm.ANONYMOUS)
         {
@@ -1316,7 +1316,7 @@ output_loop:
                     dhPair.getPublic(), dhPair.getPrivate());
     }
   }
-  
+
   class RSAKeyExchange extends DelegatedTask
   {
     private final byte[] encryptedPreMasterSecret;
@@ -1325,7 +1325,7 @@ output_loop:
     {
       this.encryptedPreMasterSecret = encryptedPreMasterSecret;
     }
-    
+
     public void implRun()
       throws BadPaddingException, IllegalBlockSizeException, InvalidKeyException,
              NoSuchAlgorithmException, NoSuchPaddingException, SSLException
@@ -1339,18 +1339,18 @@ output_loop:
       setupSecurityParameters(keys, false, engine, compression);
     }
   }
-  
+
   class RSA_PSKExchange extends DelegatedTask
   {
     private final byte[] encryptedPreMasterSecret;
     private final SecretKey psKey;
-    
+
     RSA_PSKExchange(byte[] encryptedPreMasterSecret, SecretKey psKey)
     {
       this.encryptedPreMasterSecret = encryptedPreMasterSecret;
       this.psKey = psKey;
     }
-    
+
     public @Override void implRun()
       throws BadPaddingException, IllegalBlockSizeException, InvalidKeyException,
              NoSuchAlgorithmException, NoSuchPaddingException, SSLException
@@ -1368,7 +1368,7 @@ output_loop:
       preMasterSecret[rsaSecret.length + 3] = (byte)  psSecret.length;
       System.arraycopy(psSecret, 0, preMasterSecret, rsaSecret.length+4,
                        psSecret.length);
-      
+
       generateMasterSecret(clientRandom, serverRandom, engine.session());
       byte[][] keys = generateKeys(clientRandom, serverRandom, engine.session());
       setupSecurityParameters(keys, false, engine, compression);

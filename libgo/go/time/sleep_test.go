@@ -8,6 +8,7 @@ import (
 	"os"
 	"syscall"
 	"testing"
+	"sort"
 	. "time"
 )
 
@@ -25,6 +26,56 @@ func TestSleep(t *testing.T) {
 	}
 }
 
+// Test the basic function calling behavior. Correct queueing
+// behavior is tested elsewhere, since After and AfterFunc share
+// the same code.
+func TestAfterFunc(t *testing.T) {
+	i := 10
+	c := make(chan bool)
+	var f func()
+	f = func() {
+		i--
+		if i >= 0 {
+			AfterFunc(0, f)
+			Sleep(1e9)
+		} else {
+			c <- true
+		}
+	}
+
+	AfterFunc(0, f)
+	<-c
+}
+
+func BenchmarkAfterFunc(b *testing.B) {
+	i := b.N
+	c := make(chan bool)
+	var f func()
+	f = func() {
+		i--
+		if i >= 0 {
+			AfterFunc(0, f)
+		} else {
+			c <- true
+		}
+	}
+
+	AfterFunc(0, f)
+	<-c
+}
+
+func BenchmarkAfter(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		<-After(1)
+	}
+}
+
+func BenchmarkStop(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		NewTimer(1e9).Stop()
+	}
+}
+
 func TestAfter(t *testing.T) {
 	const delay = int64(100e6)
 	start := Nanoseconds()
@@ -34,5 +85,88 @@ func TestAfter(t *testing.T) {
 	}
 	if min := start + delay; end < min {
 		t.Fatalf("After(%d) expect >= %d, got %d", delay, min, end)
+	}
+}
+
+func TestAfterTick(t *testing.T) {
+	const (
+		Delta = 100 * 1e6
+		Count = 10
+	)
+	t0 := Nanoseconds()
+	for i := 0; i < Count; i++ {
+		<-After(Delta)
+	}
+	t1 := Nanoseconds()
+	ns := t1 - t0
+	target := int64(Delta * Count)
+	slop := target * 2 / 10
+	if ns < target-slop || ns > target+slop {
+		t.Fatalf("%d ticks of %g ns took %g ns, expected %g", Count, float64(Delta), float64(ns), float64(target))
+	}
+}
+
+func TestAfterStop(t *testing.T) {
+	const msec = 1e6
+	AfterFunc(100*msec, func() {})
+	t0 := NewTimer(50 * msec)
+	c1 := make(chan bool, 1)
+	t1 := AfterFunc(150*msec, func() { c1 <- true })
+	c2 := After(200 * msec)
+	if !t0.Stop() {
+		t.Fatalf("failed to stop event 0")
+	}
+	if !t1.Stop() {
+		t.Fatalf("failed to stop event 1")
+	}
+	<-c2
+	select {
+	case <-t0.C:
+		t.Fatalf("event 0 was not stopped")
+	case <-c1:
+		t.Fatalf("event 1 was not stopped")
+	default:
+	}
+	if t1.Stop() {
+		t.Fatalf("Stop returned true twice")
+	}
+}
+
+var slots = []int{5, 3, 6, 6, 6, 1, 1, 2, 7, 9, 4, 8, 0}
+
+type afterResult struct {
+	slot int
+	t    int64
+}
+
+func await(slot int, result chan<- afterResult, ac <-chan int64) {
+	result <- afterResult{slot, <-ac}
+}
+
+func TestAfterQueuing(t *testing.T) {
+	const (
+		Delta = 100 * 1e6
+	)
+	// make the result channel buffered because we don't want
+	// to depend on channel queueing semantics that might
+	// possibly change in the future.
+	result := make(chan afterResult, len(slots))
+
+	t0 := Nanoseconds()
+	for _, slot := range slots {
+		go await(slot, result, After(int64(slot)*Delta))
+	}
+	sort.SortInts(slots)
+	for _, slot := range slots {
+		r := <-result
+		if r.slot != slot {
+			t.Fatalf("after queue got slot %d, expected %d", r.slot, slot)
+		}
+		ns := r.t - t0
+		target := int64(slot * Delta)
+		slop := int64(Delta) / 4
+		if ns < target-slop || ns > target+slop {
+			t.Fatalf("after queue slot %d arrived at %g, expected [%g,%g]", slot, float64(ns), float64(target-slop), float64(target+slop))
+		}
 	}
 }

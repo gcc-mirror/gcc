@@ -65,7 +65,7 @@ import java.util.logging.Logger;
  *      <dd>The fully qualified path of the file containing the trusted CA
  *      certificate to import. If omitted, the tool will process STDIN.
  *      <p></dd>
- *      
+ *
  *      <dt>-storetype STORE_TYPE</dt>
  *      <dd>Use this option to specify the type of the key store to use. The
  *      default value, if this option is omitted, is that of the property
@@ -73,7 +73,7 @@ import java.util.logging.Logger;
  *      obtained by invoking the {@link java.security.KeyStore#getDefaultType()}
  *      static method.
  *      <p></dd>
- *      
+ *
  *      <dt>-keystore URL</dt>
  *      <dd>Use this option to specify the location of the key store to use.
  *      The default value is a file {@link java.net.URL} referencing the file
@@ -86,13 +86,13 @@ import java.util.logging.Logger;
  *      name (with absolute or relative path-name) of a key store --as if the
  *      protocol was <code>file:</code>.
  *      <p></dd>
- *      
+ *
  *      <dt>-storepass PASSWORD</dt>
  *      <dd>Use this option to specify the password protecting the key store. If
  *      this option is omitted from the command line, you will be prompted to
  *      provide a password.
  *      <p></dd>
- *      
+ *
  *      <dt>-provider PROVIDER_CLASS_NAME</dt>
  *      <dd>A fully qualified class name of a Security Provider to add to the
  *      current list of Security Providers already installed in the JVM in-use.
@@ -100,7 +100,7 @@ import java.util.logging.Logger;
  *      added to the runtime --i.e. it was not already installed-- then the tool
  *      will attempt to removed this Security Provider before exiting.
  *      <p></dd>
- *      
+ *
  *      <dt>-v</dt>
  *      <dd>Use this option to enable more verbose output.</dd>
  * </dl>
@@ -278,7 +278,7 @@ public class CACertCmd
    * replaces any space and dot characters with underscores. For example the
    * input string <code>brasil.gov.br.cert</code> will result in
    * <code>brasil_gov_br</code> as its alias.
-   * 
+   *
    * @param fileName the name of the file containing the CA certificate
    * @return a string which can, and will, be used as the Alias of this CA
    *         certificate.

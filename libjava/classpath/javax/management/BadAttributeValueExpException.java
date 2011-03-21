@@ -83,9 +83,8 @@ public class BadAttributeValueExpException
   public String toString()
   {
     return getClass().getName()
-      + "[val=" + val 
+      + "[val=" + val
       + "]";
   }
 
 }
-

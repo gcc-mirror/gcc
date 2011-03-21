@@ -35,7 +35,7 @@ import org.objectweb.asm.Type;
 /**
  * An {@link AnnotationVisitor} that collects the {@link Constant}s of the
  * annotations it visits.
- * 
+ *
  * @author Eric Bruneton
  */
 public class AnnotationConstantsCollector implements AnnotationVisitor {

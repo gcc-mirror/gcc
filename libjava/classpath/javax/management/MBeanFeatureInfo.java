@@ -106,7 +106,7 @@ public class MBeanFeatureInfo
    *
    * @param obj the object to compare.
    * @return true if the object is a {@link MBeanFeatureInfo}
-   *         instance, 
+   *         instance,
    *         <code>name.equals(object.getName())</code> and
    *         <code>description.equals(object.getDescription</code>.
    */
@@ -114,13 +114,13 @@ public class MBeanFeatureInfo
   {
     if (obj instanceof MBeanFeatureInfo)
       {
-	MBeanFeatureInfo o = (MBeanFeatureInfo) obj;
-	return ((name == null ? 
-		 o.getName() == null : 
-		 name.equals(o.getName())) &&
-		(description == null ?
-		 o.getDescription() == null :
-		 description.equals(o.getDescription())));
+        MBeanFeatureInfo o = (MBeanFeatureInfo) obj;
+        return ((name == null ?
+                 o.getName() == null :
+                 name.equals(o.getName())) &&
+                (description == null ?
+                 o.getDescription() == null :
+                 description.equals(o.getDescription())));
       }
     else
       return false;
@@ -179,9 +179,9 @@ public class MBeanFeatureInfo
   {
     if (string == null)
       string = getClass().getName()
-	+ "[name=" + name 
-	+ ",desc=" + description 
-	+ "]";
+        + "[name=" + name
+        + ",desc=" + description
+        + "]";
     return string;
   }
 

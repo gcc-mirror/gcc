@@ -8,7 +8,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -51,7 +51,7 @@ public abstract class RemoteServer
     extends RemoteObject
 {
   private static final long serialVersionUID = - 4100238210092549637L;
-  
+
   /**
    * Does nothing, delegates to super().
    */
@@ -59,7 +59,7 @@ public abstract class RemoteServer
   {
     super();
   }
-  
+
   /**
    * Does nothing, delegates to super(ref).
    */
@@ -67,13 +67,13 @@ public abstract class RemoteServer
   {
     super(ref);
   }
-  
+
   /**
    * Get the host of the calling client. The current thread must be an instance
    * of the {@link RMIIncomingThread}.
-   * 
+   *
    * @return the client host address
-   * 
+   *
    * @throws ServerNotActiveException if the current thread is not an instance
    * of the RMIIncomingThread.
    */
@@ -91,20 +91,20 @@ public abstract class RemoteServer
           "Unknown client host - current thread not instance of 'RMIIncomingThread'");
       }
   }
-  
+
   /**
    * Set the stream for logging RMI calls.
-   * 
+   *
    * @param out the stream to set or null to turn the logging off.
    */
   public static void setLog(OutputStream out)
   {
     throw new Error("Not implemented");
   }
-  
+
   /**
    * Get the stream for logging RMI calls.
-   * 
+   *
    * @return the associated stream.
    */
   public static PrintStream getLog()

@@ -1,4 +1,4 @@
-/* 
+/*
    Copyright (C) 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -99,7 +99,7 @@ public abstract class BooleanControl extends Control
    * @param falseLabel the label for the false state
    */
   protected BooleanControl(Type type, boolean init, String trueLabel,
-			   String falseLabel)
+                           String falseLabel)
   {
     super(type);
     this.value = init;

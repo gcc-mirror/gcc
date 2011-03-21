@@ -48,7 +48,7 @@ import org.objectweb.asm.signature.SignatureReader;
  * visitor chain to trace the class that is visited at a given point in this
  * chain. This may be uselful for debugging purposes. <p> The trace printed when
  * visiting the <tt>Hello</tt> class is the following: <p> <blockquote>
- * 
+ *
  * <pre>
  * // class version 49.0 (49)
  * // access flags 33
@@ -74,9 +74,9 @@ import org.objectweb.asm.signature.SignatureReader;
  *     MAXLOCALS = 1
  * }
  * </pre>
- * 
+ *
  * </blockquote> where <tt>Hello</tt> is defined by: <p> <blockquote>
- * 
+ *
  * <pre>
  * public class Hello {
  *
@@ -85,9 +85,9 @@ import org.objectweb.asm.signature.SignatureReader;
  *     }
  * }
  * </pre>
- * 
+ *
  * </blockquote>
- * 
+ *
  * @author Eric Bruneton
  * @author Eugene Kuleshov
  */
@@ -110,9 +110,9 @@ public class TraceClassVisitor extends TraceAbstractVisitor implements
      * Prints a disassembled view of the given class to the standard output. <p>
      * Usage: TraceClassVisitor [-debug] &lt;fully qualified class name or class
      * file name &gt;
-     * 
+     *
      * @param args the command line arguments.
-     * 
+     *
      * @throws Exception if the class cannot be found, or if an IO exception
      *         occurs.
      */
@@ -152,7 +152,7 @@ public class TraceClassVisitor extends TraceAbstractVisitor implements
 
     /**
      * Constructs a new {@link TraceClassVisitor}.
-     * 
+     *
      * @param pw the print writer to be used to print the class.
      */
     public TraceClassVisitor(final PrintWriter pw) {
@@ -161,7 +161,7 @@ public class TraceClassVisitor extends TraceAbstractVisitor implements
 
     /**
      * Constructs a new {@link TraceClassVisitor}.
-     * 
+     *
      * @param cv the {@link ClassVisitor} to which this visitor delegates calls.
      *        May be <tt>null</tt>.
      * @param pw the print writer to be used to print the class.
@@ -490,7 +490,7 @@ public class TraceClassVisitor extends TraceAbstractVisitor implements
     /**
      * Appends a string representation of the given access modifiers to {@link
      * #buf buf}.
-     * 
+     *
      * @param access some access modifiers.
      */
     private void appendAccess(final int access) {

@@ -193,7 +193,9 @@ dump_data_reference (FILE *outf,
 {
   unsigned int i;
 
-  fprintf (outf, "#(Data Ref: \n#  stmt: ");
+  fprintf (outf, "#(Data Ref: \n");
+  fprintf (outf, "#  bb: %d \n", gimple_bb (DR_STMT (dr))->index);
+  fprintf (outf, "#  stmt: ");
   print_gimple_stmt (outf, DR_STMT (dr), 0, 0);
   fprintf (outf, "#  ref: ");
   print_generic_stmt (outf, DR_REF (dr), 0);
@@ -336,6 +338,18 @@ print_dir_vectors (FILE *outf, VEC (lambda_vector, heap) *dir_vects,
 
   FOR_EACH_VEC_ELT (lambda_vector, dir_vects, j, v)
     print_direction_vector (outf, v, length);
+}
+
+/* Print out a vector VEC of length N to OUTFILE.  */
+
+static inline void
+print_lambda_vector (FILE * outfile, lambda_vector vector, int n)
+{
+  int i;
+
+  for (i = 0; i < n; i++)
+    fprintf (outfile, "%3d ", vector[i]);
+  fprintf (outfile, "\n");
 }
 
 /* Print a vector of distance vectors.  */
@@ -818,13 +832,11 @@ dr_analyze_innermost (struct data_reference *dr)
 }
 
 /* Determines the base object and the list of indices of memory reference
-   DR, analyzed in loop nest NEST.  */
+   DR, analyzed in LOOP and instantiated in loop nest NEST.  */
 
 static void
-dr_analyze_indices (struct data_reference *dr, struct loop *nest)
+dr_analyze_indices (struct data_reference *dr, loop_p nest, loop_p loop)
 {
-  gimple stmt = DR_STMT (dr);
-  struct loop *loop = loop_containing_stmt (stmt);
   VEC (tree, heap) *access_fns = NULL;
   tree ref = unshare_expr (DR_REF (dr)), aref = ref, op;
   tree base, off, access_fn = NULL_TREE;
@@ -933,11 +945,13 @@ free_data_ref (data_reference_p dr)
 
 /* Analyzes memory reference MEMREF accessed in STMT.  The reference
    is read if IS_READ is true, write otherwise.  Returns the
-   data_reference description of MEMREF.  NEST is the outermost loop of the
-   loop nest in that the reference should be analyzed.  */
+   data_reference description of MEMREF.  NEST is the outermost loop
+   in which the reference should be instantiated, LOOP is the loop in
+   which the data reference should be analyzed.  */
 
 struct data_reference *
-create_data_ref (struct loop *nest, tree memref, gimple stmt, bool is_read)
+create_data_ref (loop_p nest, loop_p loop, tree memref, gimple stmt,
+		 bool is_read)
 {
   struct data_reference *dr;
 
@@ -954,7 +968,7 @@ create_data_ref (struct loop *nest, tree memref, gimple stmt, bool is_read)
   DR_IS_READ (dr) = is_read;
 
   dr_analyze_innermost (dr);
-  dr_analyze_indices (dr, nest);
+  dr_analyze_indices (dr, nest, loop);
   dr_analyze_alias (dr);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
@@ -2062,6 +2076,168 @@ compute_overlap_steps_for_affine_1_2 (tree chrec_a, tree chrec_b,
   affine_fn_free (overlaps_b_xyz);
 }
 
+/* Copy the elements of vector VEC1 with length SIZE to VEC2.  */
+
+static void
+lambda_vector_copy (lambda_vector vec1, lambda_vector vec2,
+		    int size)
+{
+  memcpy (vec2, vec1, size * sizeof (*vec1));
+}
+
+/* Copy the elements of M x N matrix MAT1 to MAT2.  */
+
+static void
+lambda_matrix_copy (lambda_matrix mat1, lambda_matrix mat2,
+		    int m, int n)
+{
+  int i;
+
+  for (i = 0; i < m; i++)
+    lambda_vector_copy (mat1[i], mat2[i], n);
+}
+
+/* Store the N x N identity matrix in MAT.  */
+
+static void
+lambda_matrix_id (lambda_matrix mat, int size)
+{
+  int i, j;
+
+  for (i = 0; i < size; i++)
+    for (j = 0; j < size; j++)
+      mat[i][j] = (i == j) ? 1 : 0;
+}
+
+/* Return the first nonzero element of vector VEC1 between START and N.
+   We must have START <= N.   Returns N if VEC1 is the zero vector.  */
+
+static int
+lambda_vector_first_nz (lambda_vector vec1, int n, int start)
+{
+  int j = start;
+  while (j < n && vec1[j] == 0)
+    j++;
+  return j;
+}
+
+/* Add a multiple of row R1 of matrix MAT with N columns to row R2:
+   R2 = R2 + CONST1 * R1.  */
+
+static void
+lambda_matrix_row_add (lambda_matrix mat, int n, int r1, int r2, int const1)
+{
+  int i;
+
+  if (const1 == 0)
+    return;
+
+  for (i = 0; i < n; i++)
+    mat[r2][i] += const1 * mat[r1][i];
+}
+
+/* Swap rows R1 and R2 in matrix MAT.  */
+
+static void
+lambda_matrix_row_exchange (lambda_matrix mat, int r1, int r2)
+{
+  lambda_vector row;
+
+  row = mat[r1];
+  mat[r1] = mat[r2];
+  mat[r2] = row;
+}
+
+/* Multiply vector VEC1 of length SIZE by a constant CONST1,
+   and store the result in VEC2.  */
+
+static void
+lambda_vector_mult_const (lambda_vector vec1, lambda_vector vec2,
+			  int size, int const1)
+{
+  int i;
+
+  if (const1 == 0)
+    lambda_vector_clear (vec2, size);
+  else
+    for (i = 0; i < size; i++)
+      vec2[i] = const1 * vec1[i];
+}
+
+/* Negate vector VEC1 with length SIZE and store it in VEC2.  */
+
+static void
+lambda_vector_negate (lambda_vector vec1, lambda_vector vec2,
+		      int size)
+{
+  lambda_vector_mult_const (vec1, vec2, size, -1);
+}
+
+/* Negate row R1 of matrix MAT which has N columns.  */
+
+static void
+lambda_matrix_row_negate (lambda_matrix mat, int n, int r1)
+{
+  lambda_vector_negate (mat[r1], mat[r1], n);
+}
+
+/* Return true if two vectors are equal.  */
+
+static bool
+lambda_vector_equal (lambda_vector vec1, lambda_vector vec2, int size)
+{
+  int i;
+  for (i = 0; i < size; i++)
+    if (vec1[i] != vec2[i])
+      return false;
+  return true;
+}
+
+/* Given an M x N integer matrix A, this function determines an M x
+   M unimodular matrix U, and an M x N echelon matrix S such that
+   "U.A = S".  This decomposition is also known as "right Hermite".
+
+   Ref: Algorithm 2.1 page 33 in "Loop Transformations for
+   Restructuring Compilers" Utpal Banerjee.  */
+
+static void
+lambda_matrix_right_hermite (lambda_matrix A, int m, int n,
+			     lambda_matrix S, lambda_matrix U)
+{
+  int i, j, i0 = 0;
+
+  lambda_matrix_copy (A, S, m, n);
+  lambda_matrix_id (U, m);
+
+  for (j = 0; j < n; j++)
+    {
+      if (lambda_vector_first_nz (S[j], m, i0) < m)
+	{
+	  ++i0;
+	  for (i = m - 1; i >= i0; i--)
+	    {
+	      while (S[i][j] != 0)
+		{
+		  int sigma, factor, a, b;
+
+		  a = S[i-1][j];
+		  b = S[i][j];
+		  sigma = (a * b < 0) ? -1: 1;
+		  a = abs (a);
+		  b = abs (b);
+		  factor = sigma * (a / b);
+
+		  lambda_matrix_row_add (S, n, i, i-1, -factor);
+		  lambda_matrix_row_exchange (S, i, i-1);
+
+		  lambda_matrix_row_add (U, m, i, i-1, -factor);
+		  lambda_matrix_row_exchange (U, i, i-1);
+		}
+	    }
+	}
+    }
+}
+
 /* Determines the overlapping elements due to accesses CHREC_A and
    CHREC_B, that are affine functions.  This function cannot handle
    symbolic evolution functions, ie. when initial conditions are
@@ -2505,14 +2681,6 @@ analyze_miv_subscript (tree chrec_a,
 		       tree *last_conflicts,
 		       struct loop *loop_nest)
 {
-  /* FIXME:  This is a MIV subscript, not yet handled.
-     Example: (A[{1, +, 1}_1] vs. A[{1, +, 1}_2]) that comes from
-     (A[i] vs. A[j]).
-
-     In the SIV test we had to solve a Diophantine equation with two
-     variables.  In the MIV case we have to solve a Diophantine
-     equation with 2*n variables (if the subscript uses n IVs).
-  */
   tree type, difference;
 
   dependence_stats.num_miv++;
@@ -2784,29 +2952,19 @@ build_classic_dist_vector_1 (struct data_dependence_relation *ddr,
 	  && TREE_CODE (access_fn_b) == POLYNOMIAL_CHREC)
 	{
 	  int dist, index;
-	  int index_a = index_in_loop_nest (CHREC_VARIABLE (access_fn_a),
-					    DDR_LOOP_NEST (ddr));
-	  int index_b = index_in_loop_nest (CHREC_VARIABLE (access_fn_b),
-					    DDR_LOOP_NEST (ddr));
+	  int var_a = CHREC_VARIABLE (access_fn_a);
+	  int var_b = CHREC_VARIABLE (access_fn_b);
 
-	  /* The dependence is carried by the outermost loop.  Example:
-	     | loop_1
-	     |   A[{4, +, 1}_1]
-	     |   loop_2
-	     |     A[{5, +, 1}_2]
-	     |   endloop_2
-	     | endloop_1
-	     In this case, the dependence is carried by loop_1.  */
-	  index = index_a < index_b ? index_a : index_b;
-	  *index_carry = MIN (index, *index_carry);
-
-	  if (chrec_contains_undetermined (SUB_DISTANCE (subscript)))
+	  if (var_a != var_b
+	      || chrec_contains_undetermined (SUB_DISTANCE (subscript)))
 	    {
 	      non_affine_dependence_relation (ddr);
 	      return false;
 	    }
 
 	  dist = int_cst_value (SUB_DISTANCE (subscript));
+	  index = index_in_loop_nest (var_a, DDR_LOOP_NEST (ddr));
+	  *index_carry = MIN (index, *index_carry);
 
 	  /* This is the subscript coupling test.  If we have already
 	     recorded a distance for this loop (a distance coming from
@@ -4077,7 +4235,8 @@ find_data_references_in_stmt (struct loop *nest, gimple stmt,
 
   FOR_EACH_VEC_ELT (data_ref_loc, references, i, ref)
     {
-      dr = create_data_ref (nest, *ref->pos, stmt, ref->is_read);
+      dr = create_data_ref (nest, loop_containing_stmt (stmt),
+			    *ref->pos, stmt, ref->is_read);
       gcc_assert (dr != NULL);
 
       /* FIXME -- data dependence analysis does not work correctly for objects
@@ -4098,12 +4257,14 @@ find_data_references_in_stmt (struct loop *nest, gimple stmt,
   return ret;
 }
 
-/* Stores the data references in STMT to DATAREFS.  If there is an unanalyzable
-   reference, returns false, otherwise returns true.  NEST is the outermost
-   loop of the loop nest in which the references should be analyzed.  */
+/* Stores the data references in STMT to DATAREFS.  If there is an
+   unanalyzable reference, returns false, otherwise returns true.
+   NEST is the outermost loop of the loop nest in which the references
+   should be instantiated, LOOP is the loop in which the references
+   should be analyzed.  */
 
 bool
-graphite_find_data_references_in_stmt (struct loop *nest, gimple stmt,
+graphite_find_data_references_in_stmt (loop_p nest, loop_p loop, gimple stmt,
 				       VEC (data_reference_p, heap) **datarefs)
 {
   unsigned i;
@@ -4120,7 +4281,7 @@ graphite_find_data_references_in_stmt (struct loop *nest, gimple stmt,
 
   FOR_EACH_VEC_ELT (data_ref_loc, references, i, ref)
     {
-      dr = create_data_ref (nest, *ref->pos, stmt, ref->is_read);
+      dr = create_data_ref (nest, loop, *ref->pos, stmt, ref->is_read);
       gcc_assert (dr != NULL);
       VEC_safe_push (data_reference_p, heap, *datarefs, dr);
     }

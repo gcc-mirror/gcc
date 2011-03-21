@@ -146,7 +146,7 @@ public class InputContext
   private InputMethod im;
 
   /** Map of locales to the most recently selected input method. */
-  private final HashMap<Locale,InputMethod> recent 
+  private final HashMap<Locale,InputMethod> recent
     = new HashMap<Locale,InputMethod>();
 
   /** The list of acceptable character subsets. */
@@ -427,7 +427,7 @@ public class InputContext
    * method. Clients have to compare the result against known input method
    * control object types. If no input methods are available or the current
    * input method does not provide an input method control object, then null
-   * is returned. 
+   * is returned.
    *
    * @return the control object, or null
    */

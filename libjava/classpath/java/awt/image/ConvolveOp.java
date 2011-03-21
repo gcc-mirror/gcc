@@ -44,58 +44,58 @@ import java.awt.geom.Rectangle2D;
 
 /**
  * Convolution filter.
- * 
+ *
  * ConvolveOp convolves the source image with a Kernel to generate a
  * destination image.  This involves multiplying each pixel and its neighbors
  * with elements in the kernel to compute a new pixel.
- * 
+ *
  * Each band in a Raster is convolved and copied to the destination Raster.
- * For BufferedImages, convolution is applied to all components.  Color 
+ * For BufferedImages, convolution is applied to all components.  Color
  * conversion will be applied if needed.
- * 
+ *
  * Note that this filter ignores whether the source or destination is alpha
  * premultiplied.  The reference spec states that data will be premultiplied
  * prior to convolving and divided back out afterwards (if needed), but testing
  * has shown that this is not the case with their implementation.
- * 
+ *
  * @author jlquinn@optonline.net
  */
 public class ConvolveOp implements BufferedImageOp, RasterOp
 {
   /** Edge pixels are set to 0. */
   public static final int EDGE_ZERO_FILL = 0;
-  
+
   /** Edge pixels are copied from the source. */
   public static final int EDGE_NO_OP = 1;
-  
+
   private Kernel kernel;
   private int edge;
   private RenderingHints hints;
 
   /**
    * Construct a ConvolveOp.
-   * 
+   *
    * The edge condition specifies that pixels outside the area that can be
    * filtered are either set to 0 or copied from the source image.
-   * 
+   *
    * @param kernel The kernel to convolve with.
    * @param edgeCondition Either EDGE_ZERO_FILL or EDGE_NO_OP.
    * @param hints Rendering hints for color conversion, or null.
    */
   public ConvolveOp(Kernel kernel,
-      				int edgeCondition,
-      				RenderingHints hints)
+                                int edgeCondition,
+                                RenderingHints hints)
   {
     this.kernel = kernel;
     edge = edgeCondition;
     this.hints = hints;
   }
-  
+
   /**
    * Construct a ConvolveOp.
-   * 
+   *
    * The edge condition defaults to EDGE_ZERO_FILL.
-   * 
+   *
    * @param kernel The kernel to convolve with.
    */
   public ConvolveOp(Kernel kernel)
@@ -108,8 +108,8 @@ public class ConvolveOp implements BufferedImageOp, RasterOp
   /**
    * Converts the source image using the kernel specified in the
    * constructor.  The resulting image is stored in the destination image if one
-   * is provided; otherwise a new BufferedImage is created and returned. 
-   * 
+   * is provided; otherwise a new BufferedImage is created and returned.
+   *
    * The source and destination BufferedImage (if one is supplied) must have
    * the same dimensions.
    *
@@ -124,10 +124,10 @@ public class ConvolveOp implements BufferedImageOp, RasterOp
     if (src == dst)
       throw new IllegalArgumentException("Source and destination images " +
             "cannot be the same.");
-    
+
     if (dst == null)
       dst = createCompatibleDestImage(src, src.getColorModel());
-    
+
     // Make sure source image is premultiplied
     BufferedImage src1 = src;
     // The spec says we should do this, but mauve testing shows that Sun's
@@ -146,15 +146,15 @@ public class ConvolveOp implements BufferedImageOp, RasterOp
       dst1 = createCompatibleDestImage(src, src.getColorModel());
 
     filter(src1.getRaster(), dst1.getRaster());
-    
+
     // Since we don't coerceData above, we don't need to divide it back out.
     // This is wrong (one mauve test specifically tests converting a non-
     // premultiplied image to a premultiplied image, and it shows that Sun
     // simply ignores the premultipled flag, contrary to the spec), but we
     // mimic it for compatibility.
     /*
-	if (! dst.isAlphaPremultiplied())
-	  dst1.coerceData(false);
+        if (! dst.isAlphaPremultiplied())
+          dst1.coerceData(false);
     */
 
     // Convert between color models if needed
@@ -166,7 +166,7 @@ public class ConvolveOp implements BufferedImageOp, RasterOp
 
   /**
    * Creates an empty BufferedImage with the size equal to the source and the
-   * correct number of bands. The new image is created with the specified 
+   * correct number of bands. The new image is created with the specified
    * ColorModel, or if no ColorModel is supplied, an appropriate one is chosen.
    *
    * @param src The source image.
@@ -191,17 +191,17 @@ public class ConvolveOp implements BufferedImageOp, RasterOp
   {
     return hints;
   }
-  
+
   /**
    * Get the edge condition for this Op.
-   * 
+   *
    * @return The edge condition.
    */
   public int getEdgeCondition()
   {
     return edge;
   }
-  
+
   /**
    * Returns (a clone of) the convolution kernel.
    *
@@ -213,13 +213,13 @@ public class ConvolveOp implements BufferedImageOp, RasterOp
   }
 
   /**
-   * Converts the source raster using the kernel specified in the constructor.  
-   * The resulting raster is stored in the destination raster if one is 
+   * Converts the source raster using the kernel specified in the constructor.
+   * The resulting raster is stored in the destination raster if one is
    * provided; otherwise a new WritableRaster is created and returned.
-   * 
+   *
    * If the convolved value for a sample is outside the range of [0-255], it
    * will be clipped.
-   * 
+   *
    * The source and destination raster (if one is supplied) cannot be the same,
    * and must also have the same dimensions.
    *
@@ -233,7 +233,7 @@ public class ConvolveOp implements BufferedImageOp, RasterOp
   {
     if (src == dest)
       throw new IllegalArgumentException("src == dest is not allowed.");
-    if (kernel.getWidth() > src.getWidth() 
+    if (kernel.getWidth() > src.getWidth()
         || kernel.getHeight() > src.getHeight())
       throw new ImagingOpException("The kernel is too large.");
     if (dest == null)
@@ -248,12 +248,12 @@ public class ConvolveOp implements BufferedImageOp, RasterOp
     int right = Math.max(kWidth - left - 1, 0);
     int top = kernel.getYOrigin();
     int bottom = Math.max(kHeight - top - 1, 0);
-    
+
     // Calculate max sample values for clipping
     int[] maxValue = src.getSampleModel().getSampleSize();
     for (int i = 0; i < maxValue.length; i++)
       maxValue[i] = (int)Math.pow(2, maxValue[i]) - 1;
-    
+
     // process the region that is reachable...
     int regionW = src.width - left - right;
     int regionH = src.height - top - bottom;
@@ -271,8 +271,8 @@ public class ConvolveOp implements BufferedImageOp, RasterOp
               src.getSamples(x, y, kWidth, kHeight, b, tmp);
               for (int i = 0; i < tmp.length; i++)
                 v += tmp[tmp.length - i - 1] * kvals[i];
-                // FIXME: in the above line, I've had to reverse the order of 
-                // the samples array to make the tests pass.  I haven't worked 
+                // FIXME: in the above line, I've had to reverse the order of
+                // the samples array to make the tests pass.  I haven't worked
                 // out why this is necessary.
 
               // This clipping is is undocumented, but determined by testing.
@@ -281,34 +281,34 @@ public class ConvolveOp implements BufferedImageOp, RasterOp
               else if (v < 0)
                 v = 0;
 
-              dest.setSample(x + kernel.getXOrigin(), y + kernel.getYOrigin(), 
+              dest.setSample(x + kernel.getXOrigin(), y + kernel.getYOrigin(),
                              b, v);
             }
           }
       }
-    
+
     // fill in the top border
     fillEdge(src, dest, 0, 0, src.width, top, edge);
-    
+
     // fill in the bottom border
     fillEdge(src, dest, 0, src.height - bottom, src.width, bottom, edge);
-    
+
     // fill in the left border
     fillEdge(src, dest, 0, top, left, regionH, edge);
-    
+
     // fill in the right border
     fillEdge(src, dest, src.width - right, top, right, regionH, edge);
-    
-    return dest;  
+
+    return dest;
   }
-  
+
   /**
    * Fills a range of pixels (typically at the edge of a raster) with either
-   * zero values (if <code>edgeOp</code> is <code>EDGE_ZERO_FILL</code>) or the 
+   * zero values (if <code>edgeOp</code> is <code>EDGE_ZERO_FILL</code>) or the
    * corresponding pixel values from the source raster (if <code>edgeOp</code>
-   * is <code>EDGE_NO_OP</code>).  This utility method is called by the 
+   * is <code>EDGE_NO_OP</code>).  This utility method is called by the
    * {@link #fillEdge(Raster, WritableRaster, int, int, int, int, int)} method.
-   * 
+   *
    * @param src  the source raster.
    * @param dest  the destination raster.
    * @param x  the x-coordinate of the top left pixel in the range.
@@ -318,8 +318,8 @@ public class ConvolveOp implements BufferedImageOp, RasterOp
    * @param edgeOp  indicates how to determine the values for the range
    *     (either {@link #EDGE_ZERO_FILL} or {@link #EDGE_NO_OP}).
    */
-  private void fillEdge(Raster src, WritableRaster dest, int x, int y, int w, 
-                        int h, int edgeOp) 
+  private void fillEdge(Raster src, WritableRaster dest, int x, int y, int w,
+                        int h, int edgeOp)
   {
     if (w <= 0)
       return;
@@ -328,7 +328,7 @@ public class ConvolveOp implements BufferedImageOp, RasterOp
     if (edgeOp == EDGE_ZERO_FILL)  // fill region with zeroes
       {
         float[] zeros = new float[src.getNumBands() * w * h];
-        dest.setPixels(x, y, w, h, zeros); 
+        dest.setPixels(x, y, w, h, zeros);
       }
     else  // copy pixels from source
       {
@@ -366,7 +366,7 @@ public class ConvolveOp implements BufferedImageOp, RasterOp
    * Returns the corresponding destination point for a source point. Because
    * this is not a geometric operation, the destination and source points will
    * be identical.
-   * 
+   *
    * @param src The source point.
    * @param dst The transformed destination point.
    * @return The transformed destination point.

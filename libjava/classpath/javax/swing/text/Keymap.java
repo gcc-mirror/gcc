@@ -1,4 +1,4 @@
-/* Keymap.java -- 
+/* Keymap.java --
    Copyright (C) 2002, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -42,19 +42,17 @@ import javax.swing.KeyStroke;
 
 public interface Keymap
 {
-    void addActionForKeyStroke(KeyStroke key, Action a); 
-    Action getAction(KeyStroke key); 
-    Action[] getBoundActions(); 
-    KeyStroke[] getBoundKeyStrokes(); 
-    Action getDefaultAction(); 
-    KeyStroke[] getKeyStrokesForAction(Action a); 
-    String getName(); 
-    Keymap getResolveParent(); 
-    boolean isLocallyDefined(KeyStroke key); 
-    void removeBindings(); 
-    void removeKeyStrokeBinding(KeyStroke keys); 
-    void setDefaultAction(Action a); 
+    void addActionForKeyStroke(KeyStroke key, Action a);
+    Action getAction(KeyStroke key);
+    Action[] getBoundActions();
+    KeyStroke[] getBoundKeyStrokes();
+    Action getDefaultAction();
+    KeyStroke[] getKeyStrokesForAction(Action a);
+    String getName();
+    Keymap getResolveParent();
+    boolean isLocallyDefined(KeyStroke key);
+    void removeBindings();
+    void removeKeyStrokeBinding(KeyStroke keys);
+    void setDefaultAction(Action a);
     void setResolveParent(Keymap parent);
 }
-
-

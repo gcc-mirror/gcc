@@ -94,7 +94,7 @@ public class StringValueExp
    */
   public ValueExp apply(ObjectName name)
     throws BadStringOperationException, BadBinaryOpValueExpException,
-	   BadAttributeValueExpException, InvalidApplicationException
+           BadAttributeValueExpException, InvalidApplicationException
   {
     return this;
   }

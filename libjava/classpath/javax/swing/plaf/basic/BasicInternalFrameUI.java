@@ -170,10 +170,10 @@ public class BasicInternalFrameUI extends InternalFrameUI
     implements SwingConstants
   {
     /**
-     * The current shape of the cursor. 
+     * The current shape of the cursor.
      */
     transient int showingCursor;
-    
+
     /** FIXME: Use for something. */
     protected final int RESIZE_NONE = 0;
 
@@ -188,7 +188,7 @@ public class BasicInternalFrameUI extends InternalFrameUI
 
     /** Cache rectangle that can be reused. */
     private transient Rectangle cacheRect = new Rectangle();
-    
+
     /**
      * This method is called when the mouse is clicked.
      *
@@ -209,7 +209,7 @@ public class BasicInternalFrameUI extends InternalFrameUI
           {
             // We do nothing if the attempt has been vetoed.
           }
-        
+
       // There is nothing to do when the mouse is clicked
       // on the border.
     }
@@ -288,7 +288,7 @@ public class BasicInternalFrameUI extends InternalFrameUI
 
     /**
      * This method is called when the mouse exits the JInternalFrame.
-     * 
+     *
      * @param e The MouseEvent.
      */
     public void mouseExited(MouseEvent e)
@@ -302,7 +302,7 @@ public class BasicInternalFrameUI extends InternalFrameUI
 
     /**
      * This method is called when the mouse is moved inside the JInternalFrame.
-     * 
+     *
      * @param e The MouseEvent.
      */
     public void mouseMoved(MouseEvent e)
@@ -318,10 +318,10 @@ public class BasicInternalFrameUI extends InternalFrameUI
           setCursor(e);
         }
     }
-    
+
     /**
      * Set the mouse cursor, how applicable.
-     * 
+     *
      * @param e the current mouse event.
      */
     void setCursor(MouseEvent e)
@@ -337,7 +337,7 @@ public class BasicInternalFrameUI extends InternalFrameUI
 
     /**
      * This method is called when the mouse is pressed.
-     * 
+     *
      * @param e The MouseEvent.
      */
     public void mousePressed(MouseEvent e)
@@ -381,7 +381,7 @@ public class BasicInternalFrameUI extends InternalFrameUI
           dm.endDraggingFrame(frame);
           frame.putClientProperty("bufferedDragging", null);
         }
-      
+
       setCursor(e);
     }
 
@@ -398,7 +398,7 @@ public class BasicInternalFrameUI extends InternalFrameUI
     {
       Rectangle b = frame.getBounds();
       int corner = InternalFrameBorder.cornerSize;
-      
+
       if (x < corner && y < corner)
         return Cursor.NW_RESIZE_CURSOR;
       else if (x > b.width - corner && y < corner)
@@ -429,7 +429,7 @@ public class BasicInternalFrameUI extends InternalFrameUI
   {
     /**
      * This method is called when the JDesktopPane is hidden.
-     * 
+     *
      * @param e
      *          The ComponentEvent fired.
      */
@@ -440,7 +440,7 @@ public class BasicInternalFrameUI extends InternalFrameUI
 
     /**
      * This method is called when the JDesktopPane is moved.
-     * 
+     *
      * @param e
      *          The ComponentEvent fired.
      */
@@ -451,7 +451,7 @@ public class BasicInternalFrameUI extends InternalFrameUI
 
     /**
      * This method is called when the JDesktopPane is resized.
-     * 
+     *
      * @param e
      *          The ComponentEvent fired.
      */
@@ -469,7 +469,7 @@ public class BasicInternalFrameUI extends InternalFrameUI
 
     /**
      * This method is called when the JDesktopPane is shown.
-     * 
+     *
      * @param e
      *          The ComponentEvent fired.
      */
@@ -487,7 +487,7 @@ public class BasicInternalFrameUI extends InternalFrameUI
     /**
      * This method is called when the given Component is added to the
      * JInternalFrame.
-     * 
+     *
      * @param name
      *          The name of the Component.
      * @param c
@@ -501,7 +501,7 @@ public class BasicInternalFrameUI extends InternalFrameUI
     /**
      * This method is used to set the bounds of the children of the
      * JInternalFrame.
-     * 
+     *
      * @param c
      *          The Container to lay out.
      */
@@ -562,7 +562,7 @@ public class BasicInternalFrameUI extends InternalFrameUI
 
     /**
      * This method returns the minimum layout size.
-     * 
+     *
      * @param c
      *          The Container to find a minimum layout size for.
      * @return The minimum dimensions for the JInternalFrame.
@@ -574,7 +574,7 @@ public class BasicInternalFrameUI extends InternalFrameUI
 
     /**
      * Th8is method returns the preferred layout size.
-     * 
+     *
      * @param c
      *          The Container to find a preferred layout size for.
      * @return The preferred dimensions for the JInternalFrame.
@@ -586,7 +586,7 @@ public class BasicInternalFrameUI extends InternalFrameUI
 
     /**
      * DOCUMENT ME!
-     * 
+     *
      * @param c
      *          DOCUMENT ME!
      * @param min
@@ -694,7 +694,7 @@ public class BasicInternalFrameUI extends InternalFrameUI
 
     /**
      * This method is called when the mouse enters the glass pane.
-     * 
+     *
      * @param e
      *          The MouseEvent.
      */
@@ -705,7 +705,7 @@ public class BasicInternalFrameUI extends InternalFrameUI
 
     /**
      * This method is called when the mouse is clicked on the glass pane.
-     * 
+     *
      * @param e
      *          The MouseEvent.
      */
@@ -716,7 +716,7 @@ public class BasicInternalFrameUI extends InternalFrameUI
 
     /**
      * This method is called when the mouse is dragged in the glass pane.
-     * 
+     *
      * @param e
      *          The MouseEvent.
      */
@@ -727,7 +727,7 @@ public class BasicInternalFrameUI extends InternalFrameUI
 
     /**
      * This method is called when the mouse exits the glass pane.
-     * 
+     *
      * @param e
      *          The MouseEvent.
      */
@@ -738,7 +738,7 @@ public class BasicInternalFrameUI extends InternalFrameUI
 
     /**
      * This method is called when the mouse is moved in the glass pane.
-     * 
+     *
      * @param e
      *          The MouseEvent.
      */
@@ -749,7 +749,7 @@ public class BasicInternalFrameUI extends InternalFrameUI
 
     /**
      * This method is called when the mouse is pressed in the glass pane.
-     * 
+     *
      * @param e
      *          The MouseEvent.
      */
@@ -764,7 +764,7 @@ public class BasicInternalFrameUI extends InternalFrameUI
 
     /**
      * This method is called when the mouse is released in the glass pane.
-     * 
+     *
      * @param e
      *          The MouseEvent.
      */
@@ -776,7 +776,7 @@ public class BasicInternalFrameUI extends InternalFrameUI
     /**
      * This is a helper method that dispatches the GlassPane MouseEvents to the
      * proper component.
-     * 
+     *
      * @param e the mouse event to be dispatched
      */
     private void handleEvent(MouseEvent e)
@@ -885,7 +885,7 @@ public class BasicInternalFrameUI extends InternalFrameUI
 
     /**
      * This method is called when one of the JInternalFrame's properties change.
-     * 
+     *
      * @param evt
      *          The PropertyChangeEvent.
      */
@@ -971,8 +971,8 @@ public class BasicInternalFrameUI extends InternalFrameUI
   class InternalFrameBorder extends AbstractBorder implements
       UIResource
   {
-    /** 
-     * The width of the border. 
+    /**
+     * The width of the border.
      */
     static final int bSize = 5;
 
@@ -983,7 +983,7 @@ public class BasicInternalFrameUI extends InternalFrameUI
 
     /**
      * This method returns whether the border is opaque.
-     * 
+     *
      * @return Whether the border is opaque.
      */
     public boolean isBorderOpaque()
@@ -993,7 +993,7 @@ public class BasicInternalFrameUI extends InternalFrameUI
 
     /**
      * This method returns the insets of the border.
-     * 
+     *
      * @param c
      *          The Component to find border insets for.
      * @return The border insets.
@@ -1005,7 +1005,7 @@ public class BasicInternalFrameUI extends InternalFrameUI
 
     /**
      * This method paints the border.
-     * 
+     *
      * @param c
      *          The Component that owns the border.
      * @param g
@@ -1051,9 +1051,9 @@ public class BasicInternalFrameUI extends InternalFrameUI
 
       g.fill3DRect(0, cornerSize, bSize, b.height - 2 * cornerSize, false);
       g.fill3DRect(cornerSize, 0, b.width - 2 * cornerSize, bSize, false);
-      g.fill3DRect(cornerSize, b.height - bSize, b.width - 2 * cornerSize, 
+      g.fill3DRect(cornerSize, b.height - bSize, b.width - 2 * cornerSize,
                    bSize, false);
-      g.fill3DRect(b.width - bSize, cornerSize, bSize, 
+      g.fill3DRect(b.width - bSize, cornerSize, bSize,
                    b.height - 2 * cornerSize, false);
 
       g.translate(-x, -y);
@@ -1595,7 +1595,7 @@ public class BasicInternalFrameUI extends InternalFrameUI
     replacePane(northPane, c);
     northPane = c;
     // the following is needed to make internal frames draggable when using
-    // the JGoodies PlasticLookAndFeel, because it overrides the 
+    // the JGoodies PlasticLookAndFeel, because it overrides the
     // createNorthPane() method and doesn't assign anything to the titlePane
     // field.  It is possible there is another way to make this work, but
     // I didn't find it...

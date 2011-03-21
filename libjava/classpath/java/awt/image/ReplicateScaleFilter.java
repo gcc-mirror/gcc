@@ -48,13 +48,13 @@ import java.util.Hashtable;
  * <br>
  * Currently this filter does nothing and needs to be implemented.
  *
- * @author C. Brian Jones (cbj@gnu.org) 
+ * @author C. Brian Jones (cbj@gnu.org)
  */
 public class ReplicateScaleFilter extends ImageFilter
 {
     public ReplicateScaleFilter(int width, int height) {
-	destHeight = height;
-	destWidth = width;
+        destHeight = height;
+        destWidth = width;
     }
 
     /**
@@ -94,45 +94,45 @@ public class ReplicateScaleFilter extends ImageFilter
 
     /**
      * An <code>ImageProducer</code> indicates the size of the image
-     * being produced using this method.  A filter can override this 
+     * being produced using this method.  A filter can override this
      * method to intercept these calls from the producer in order to
      * change either the width or the height before in turn calling
      * the consumer's <code>setDimensions</code> method.
-     * 
+     *
      * @param width the width of the image
-     * @param height the height of the image 
+     * @param height the height of the image
      */
     public void setDimensions(int width, int height)
     {
-	srcWidth = width;
-	srcHeight = height;
+        srcWidth = width;
+        srcHeight = height;
 
-	/* If either destHeight or destWidth is < 0, the image should
-	   maintain its original aspect ratio.  When both are < 0,
-	   just maintain the original width and height. */
-	if (destWidth < 0 && destHeight < 0)
+        /* If either destHeight or destWidth is < 0, the image should
+           maintain its original aspect ratio.  When both are < 0,
+           just maintain the original width and height. */
+        if (destWidth < 0 && destHeight < 0)
         {
-	    destWidth = width;
-	    destHeight = height;
-	}
-	else if (destWidth < 0)
-	{
-	    destWidth = width * destHeight / srcHeight;
-	}
-	else if (destHeight < 0)
-	{
-	    destHeight = height * destWidth / srcWidth;
-	}
+            destWidth = width;
+            destHeight = height;
+        }
+        else if (destWidth < 0)
+        {
+            destWidth = width * destHeight / srcHeight;
+        }
+        else if (destHeight < 0)
+        {
+            destHeight = height * destWidth / srcWidth;
+        }
 
-	if (consumer != null)
-	  consumer.setDimensions(destWidth, destHeight);
+        if (consumer != null)
+          consumer.setDimensions(destWidth, destHeight);
     }
 
     /**
      * An <code>ImageProducer</code> can set a list of properties
      * associated with this image by using this method.
      *
-     * @param props the list of properties associated with this image 
+     * @param props the list of properties associated with this image
      */
     public void setProperties(Hashtable<?, ?> props)
     {
@@ -145,7 +145,7 @@ public class ReplicateScaleFilter extends ImageFilter
     /**
      * This function delivers a rectangle of pixels where any
      * pixel(m,n) is stored in the array as a <code>byte</code> at
-     * index (n * scansize + m + offset).  
+     * index (n * scansize + m + offset).
      *
      * @param x the x coordinate of the rectangle
      * @param y the y coordinate of the rectangle
@@ -156,8 +156,8 @@ public class ReplicateScaleFilter extends ImageFilter
      * @param offset the index of the first pixels in the <code>pixels</code> array
      * @param scansize the width to use in extracting pixels from the <code>pixels</code> array
      */
-    public void setPixels(int x, int y, int w, int h, 
-	   ColorModel model, byte[] pixels, int offset, int scansize)
+    public void setPixels(int x, int y, int w, int h,
+           ColorModel model, byte[] pixels, int offset, int scansize)
     {
       if (srcrows == null || srccols == null)
         setupSources();
@@ -193,7 +193,7 @@ public class ReplicateScaleFilter extends ImageFilter
     /**
      * This function delivers a rectangle of pixels where any
      * pixel(m,n) is stored in the array as an <code>int</code> at
-     * index (n * scansize + m + offset).  
+     * index (n * scansize + m + offset).
      *
      * @param x the x coordinate of the rectangle
      * @param y the y coordinate of the rectangle
@@ -204,7 +204,7 @@ public class ReplicateScaleFilter extends ImageFilter
      * @param offset the index of the first pixels in the <code>pixels</code> array
      * @param scansize the width to use in extracting pixels from the <code>pixels</code> array
      */
-    public void setPixels(int x, int y, int w, int h, 
+    public void setPixels(int x, int y, int w, int h,
            ColorModel model, int[] pixels, int offset, int scansize)
     {
       if (srcrows == null || srccols == null)
@@ -255,4 +255,3 @@ public class ReplicateScaleFilter extends ImageFilter
       }
   }
 }
-

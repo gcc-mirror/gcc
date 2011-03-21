@@ -70,7 +70,7 @@ public abstract class InconsistentTypeCodeHelper
 
   /**
    * Insert the InconsistentTypeCode into the given Any.
-   * 
+   *
    * @param any the Any to insert into.
    * @param that the InconsistentTypeCode to insert.
    */
@@ -97,7 +97,7 @@ public abstract class InconsistentTypeCodeHelper
       {
         BAD_OPERATION bad = new BAD_OPERATION("InconsistentTypeCode expected");
         bad.initCause(cex);
-        bad.minor = Minor.Any;        
+        bad.minor = Minor.Any;
         throw bad;
       }
   }

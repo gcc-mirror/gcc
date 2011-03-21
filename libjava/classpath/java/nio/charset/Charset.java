@@ -1,4 +1,4 @@
-/* Charset.java -- 
+/* Charset.java --
    Copyright (C) 2002, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -64,15 +64,15 @@ public abstract class Charset implements Comparable<Charset>
 {
   private CharsetEncoder cachedEncoder;
   private CharsetDecoder cachedDecoder;
-  
+
   /**
    * Extra Charset providers.
    */
   private static CharsetProvider[] providers;
-  
+
   private final String canonicalName;
   private final String[] aliases;
-  
+
   protected Charset (String canonicalName, String[] aliases)
   {
     checkName (canonicalName);
@@ -121,45 +121,45 @@ public abstract class Charset implements Comparable<Charset>
    *
    * This may be set by the user or VM with the file.encoding
    * property.
-   * 
+   *
    * @since 1.5
    */
   public static Charset defaultCharset()
   {
     String encoding;
-    
-    try 
+
+    try
       {
-	encoding = SystemProperties.getProperty("file.encoding");
+        encoding = SystemProperties.getProperty("file.encoding");
       }
     catch(SecurityException e)
       {
-	// Use fallback.
-	encoding = "ISO-8859-1";
+        // Use fallback.
+        encoding = "ISO-8859-1";
       }
     catch(IllegalArgumentException e)
       {
-	// Use fallback.
-	encoding = "ISO-8859-1";
+        // Use fallback.
+        encoding = "ISO-8859-1";
       }
 
     try
       {
-	return forName(encoding);
+        return forName(encoding);
       }
     catch(UnsupportedCharsetException e)
       {
-	// Ignore.
+        // Ignore.
       }
     catch(IllegalCharsetNameException e)
       {
-	// Ignore.
+        // Ignore.
       }
     catch(IllegalArgumentException e)
       {
-	// Ignore.
+        // Ignore.
       }
-    
+
     throw new IllegalStateException("Can't get default charset!");
   }
 
@@ -170,7 +170,7 @@ public abstract class Charset implements Comparable<Charset>
 
   /**
    * Returns the Charset instance for the charset of the given name.
-   * 
+   *
    * @param charsetName
    * @return the Charset instance for the indicated charset
    * @throws UnsupportedCharsetException if this VM does not support
@@ -184,7 +184,7 @@ public abstract class Charset implements Comparable<Charset>
     // Throws IllegalArgumentException as the JDK does.
     if(charsetName == null)
         throw new IllegalArgumentException("Charset name must not be null.");
-    
+
     Charset cs = charsetForName (charsetName);
     if (cs == null)
       throw new UnsupportedCharsetException (charsetName);
@@ -208,13 +208,13 @@ public abstract class Charset implements Comparable<Charset>
     Charset cs = provider().charsetForName(charsetName);
     if (cs == null)
       {
-	CharsetProvider[] providers = providers2();
-	for (int i = 0; i < providers.length; i++)
-	  {
-	    cs = providers[i].charsetForName(charsetName);
-	    if (cs != null)
-	      break;
-	  }
+        CharsetProvider[] providers = providers2();
+        for (int i = 0; i < providers.length; i++)
+          {
+            cs = providers[i].charsetForName(charsetName);
+            if (cs != null)
+              break;
+          }
       }
     return cs;
   }
@@ -225,8 +225,8 @@ public abstract class Charset implements Comparable<Charset>
       = new TreeMap(String.CASE_INSENSITIVE_ORDER);
     for (Iterator<Charset> i = provider().charsets(); i.hasNext(); )
       {
-	Charset cs = i.next();
-	charsets.put(cs.name(), cs);
+        Charset cs = i.next();
+        charsets.put(cs.name(), cs);
       }
 
     CharsetProvider[] providers = providers2();
@@ -333,21 +333,21 @@ public abstract class Charset implements Comparable<Charset>
   {
     try
       {
-	if (cachedEncoder == null)
-	  {
-	    cachedEncoder = newEncoder ()
-	      .onMalformedInput (CodingErrorAction.REPLACE)
-	      .onUnmappableCharacter (CodingErrorAction.REPLACE);
-	  } else
-	  cachedEncoder.reset();
-	return cachedEncoder.encode (cb);
+        if (cachedEncoder == null)
+          {
+            cachedEncoder = newEncoder ()
+              .onMalformedInput (CodingErrorAction.REPLACE)
+              .onUnmappableCharacter (CodingErrorAction.REPLACE);
+          } else
+          cachedEncoder.reset();
+        return cachedEncoder.encode (cb);
       }
     catch (CharacterCodingException e)
       {
         throw new AssertionError (e);
       }
   }
-  
+
   public final ByteBuffer encode (String str)
   {
     return encode (CharBuffer.wrap (str));
@@ -361,15 +361,15 @@ public abstract class Charset implements Comparable<Charset>
   {
     try
       {
-	if (cachedDecoder == null)
-	  {
-	    cachedDecoder = newDecoder ()
-	      .onMalformedInput (CodingErrorAction.REPLACE)
-	      .onUnmappableCharacter (CodingErrorAction.REPLACE);
-	  } else
-	  cachedDecoder.reset();
+        if (cachedDecoder == null)
+          {
+            cachedDecoder = newDecoder ()
+              .onMalformedInput (CodingErrorAction.REPLACE)
+              .onUnmappableCharacter (CodingErrorAction.REPLACE);
+          } else
+          cachedDecoder.reset();
 
-	return cachedDecoder.decode (bb);
+        return cachedDecoder.decode (bb);
       }
     catch (CharacterCodingException e)
       {

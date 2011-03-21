@@ -1,6 +1,6 @@
 /* Specific flags and argument handling of the Fortran front-end.
    Copyright (C) 1997, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,
-   2007, 2008, 2009, 2010
+   2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -192,12 +192,12 @@ add_arg_libgfortran (bool force_static ATTRIBUTE_UNUSED)
 {
 #ifdef HAVE_LD_STATIC_DYNAMIC
   if (force_static)
-    append_option (OPT_Wl_, "-Bstatic", 1);
+    append_option (OPT_Wl_, LD_STATIC_OPTION, 1);
 #endif
   append_option (OPT_l, FORTRAN_LIBRARY, 1);
 #ifdef HAVE_LD_STATIC_DYNAMIC
   if (force_static)
-    append_option (OPT_Wl_, "-Bdynamic", 1);
+    append_option (OPT_Wl_, LD_DYNAMIC_OPTION, 1);
 #endif
 }
 
@@ -298,7 +298,7 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
 
 	case OPT__version:
 	  printf ("GNU Fortran %s%s\n", pkgversion_string, version_string);
-	  printf ("Copyright %s 2010 Free Software Foundation, Inc.\n\n",
+	  printf ("Copyright %s 2011 Free Software Foundation, Inc.\n\n",
 		  _("(C)"));
 	  printf (_("GNU Fortran comes with NO WARRANTY, to the extent permitted by law.\n\
 You may redistribute copies of GNU Fortran\n\

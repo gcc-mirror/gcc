@@ -61,7 +61,7 @@ public abstract class LookupTable
    *
    * If numComponents is 1, the same translation table is used for all pixel
    * components.
-   * 
+   *
    * @param offset Offset to be subtracted.
    * @param numComponents Number of image components.
    * @exception IllegalArgumentException if offset < 0 or numComponents < 1.
@@ -87,7 +87,7 @@ public abstract class LookupTable
     return offset;
   }
 
-  
+
   /**
    * Return translated values for a pixel.
    *

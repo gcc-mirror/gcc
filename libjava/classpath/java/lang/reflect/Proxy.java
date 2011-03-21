@@ -217,7 +217,7 @@ public class Proxy implements Serializable
    * <p>There are several restrictions on this method, the violation of
    * which will result in an IllegalArgumentException or
    * NullPointerException:</p>
-   * 
+   *
    * <ul>
    * <li>All objects in `interfaces' must represent distinct interfaces.
    *     Classes, primitive types, null, and duplicates are forbidden.</li>
@@ -258,7 +258,7 @@ public class Proxy implements Serializable
   // synchronized so that we aren't trying to build the same class
   // simultaneously in two threads
   public static synchronized Class<?> getProxyClass(ClassLoader loader,
-						    Class<?>... interfaces)
+                                                    Class<?>... interfaces)
   {
     interfaces = (Class[]) interfaces.clone();
     ProxyType pt = new ProxyType(loader, interfaces);
@@ -274,7 +274,7 @@ public class Proxy implements Serializable
                               : ProxyData.getProxyData(pt));
 
             clazz = (VMProxy.HAVE_NATIVE_GENERATE_PROXY_CLASS
-		     ? VMProxy.generateProxyClass(loader, data)
+                     ? VMProxy.generateProxyClass(loader, data)
                      : new ClassFactory(data).generate(loader));
           }
 
@@ -716,7 +716,7 @@ public class Proxy implements Serializable
           if (! Modifier.isPublic(inter.getModifiers()))
             if (in_package)
               {
-		String p = getPackage(inter);
+                String p = getPackage(inter);
                 if (! data.pack.equals(p))
                   throw new IllegalArgumentException("non-public interfaces "
                                                      + "from different "
@@ -769,7 +769,7 @@ public class Proxy implements Serializable
      * Method.equals as it would also check the declaring class, what we do not
      * want. We only want to check that the given method have the same signature
      * as a core method (same name and parameter types)
-     * 
+     *
      * @param method the method to check
      * @return whether the method has the same name and parameter types as
      *         Object.equals, Object.hashCode or Object.toString
@@ -795,7 +795,7 @@ public class Proxy implements Serializable
         }
       return false;
     }
-    
+
   } // class ProxyData
 
   /**
@@ -1260,7 +1260,7 @@ public class Proxy implements Serializable
                            ProtectionDomain.class };
           Method m = vmClassLoader.getDeclaredMethod("defineClass", types);
           // We can bypass the security check of setAccessible(true), since
-	  // we're in the same package.
+          // we're in the same package.
           m.flag = true;
 
           Object[] args = {loader, qualName, bytecode, Integer.valueOf(0),

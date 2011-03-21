@@ -1,5 +1,5 @@
 /* Callgraph handling code.
-   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
@@ -113,6 +113,10 @@ struct GTY(()) cgraph_local_info {
   /* False when there something makes versioning impossible.
      Currently computed and used only by ipa-cp.  */
   unsigned versionable : 1;
+
+  /* False when function calling convention and signature can not be changed.
+     This is the case when __builtin_apply_args is used.  */
+  unsigned can_change_signature : 1;
 
   /* True when function should be inlined independently on its size.  */
   unsigned disregard_inline_limits : 1;
@@ -386,11 +390,11 @@ struct GTY(()) cgraph_indirect_call_info
   HOST_WIDE_INT anc_offset;
   /* OBJ_TYPE_REF_TOKEN of a polymorphic call (if polymorphic is set).  */
   HOST_WIDE_INT otr_token;
+  /* Delta by which must be added to this parameter to compensate for a skipped
+     this adjusting thunk.  */
+  HOST_WIDE_INT thunk_delta;
   /* Type of the object from OBJ_TYPE_REF_OBJECT. */
   tree otr_type;
-  /* Delta by which must be added to this parameter.  For polymorphic calls
-     only.  */
-  tree thunk_delta;
   /* Index of the parameter that is called.  */
   int param_index;
   /* ECF flags determined from the caller.  */
@@ -549,13 +553,14 @@ void cgraph_node_remove_callees (struct cgraph_node *node);
 struct cgraph_edge *cgraph_create_edge (struct cgraph_node *,
 					struct cgraph_node *,
 					gimple, gcov_type, int, int);
-struct cgraph_edge *cgraph_create_indirect_edge (struct cgraph_node *, gimple, int,
-						 gcov_type, int, int);
+struct cgraph_edge *cgraph_create_indirect_edge (struct cgraph_node *, gimple,
+						 int, gcov_type, int, int);
+struct cgraph_indirect_call_info *cgraph_allocate_init_indirect_info (void);
 struct cgraph_node * cgraph_get_node (const_tree);
 struct cgraph_node * cgraph_get_node_or_alias (const_tree);
 struct cgraph_node * cgraph_node (tree);
-struct cgraph_node * cgraph_same_body_alias (tree, tree);
-struct cgraph_node * cgraph_add_thunk (tree, tree, bool, HOST_WIDE_INT,
+struct cgraph_node * cgraph_same_body_alias (struct cgraph_node *, tree, tree);
+struct cgraph_node * cgraph_add_thunk (struct cgraph_node *, tree, tree, bool, HOST_WIDE_INT,
 				       HOST_WIDE_INT, tree, tree);
 void cgraph_remove_same_body_alias (struct cgraph_node *);
 struct cgraph_node *cgraph_node_for_asm (tree);
@@ -578,7 +583,8 @@ struct cgraph_node * cgraph_clone_node (struct cgraph_node *, tree, gcov_type, i
 					int, bool, VEC(cgraph_edge_p,heap) *);
 
 void cgraph_redirect_edge_callee (struct cgraph_edge *, struct cgraph_node *);
-void cgraph_make_edge_direct (struct cgraph_edge *, struct cgraph_node *, tree);
+void cgraph_make_edge_direct (struct cgraph_edge *, struct cgraph_node *,
+			      HOST_WIDE_INT);
 
 struct cgraph_asm_node *cgraph_add_asm_node (tree);
 
@@ -714,6 +720,7 @@ bool cgraph_node_can_be_local_p (struct cgraph_node *);
 
 struct varpool_node * varpool_get_node (const_tree decl);
 void varpool_remove_node (struct varpool_node *node);
+void varpool_finalize_named_section_flags (struct varpool_node *node);
 bool varpool_assemble_pending_decls (void);
 bool varpool_assemble_decl (struct varpool_node *node);
 bool varpool_analyze_pending_decls (void);
@@ -762,7 +769,7 @@ varpool_next_static_initializer (struct varpool_node *node)
 
 /* In ipa-inline.c  */
 void cgraph_clone_inlined_nodes (struct cgraph_edge *, bool, bool);
-unsigned int compute_inline_parameters (struct cgraph_node *);
+void compute_inline_parameters (struct cgraph_node *);
 
 
 /* Create a new static variable of type TYPE.  */
@@ -937,7 +944,7 @@ varpool_can_remove_if_no_refs (struct varpool_node *node)
 /* Return true when all references to VNODE must be visible in ipa_ref_list.
    i.e. if the variable is not externally visible or not used in some magic
    way (asm statement or such).
-   The magic uses are all sumarized in force_output flag.  */
+   The magic uses are all summarized in force_output flag.  */
 
 static inline bool
 varpool_all_refs_explicit_p (struct varpool_node *vnode)

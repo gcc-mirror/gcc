@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -38,7 +38,7 @@ exception statement from your version. */
 package java.rmi.server;
 
 /**
- * This is a base class for the automatically generated RMI stubs. 
+ * This is a base class for the automatically generated RMI stubs.
  */
 public abstract class RemoteStub extends RemoteObject
 {
@@ -46,7 +46,7 @@ public abstract class RemoteStub extends RemoteObject
    * Use serialVersionUID for interoperability.
    */
   static final long serialVersionUID = -1585587260594494182l;
-  
+
   /**
    * Constructs the remote stub with no reference set.
    */
@@ -54,11 +54,11 @@ public abstract class RemoteStub extends RemoteObject
   {
     super ();
   }
-  
+
   /**
    * Constructs the remote stub that uses given remote reference for the
    * method invocations.
-   * 
+   *
    * @param ref the remote reference for the method invocation.
    */
   protected RemoteStub (RemoteRef ref)
@@ -67,10 +67,10 @@ public abstract class RemoteStub extends RemoteObject
   }
 
   /**
-   * Sets the given remote reference for the given stub. This method is 
+   * Sets the given remote reference for the given stub. This method is
    * deprecated. Pass the stub remote reference to the RemoteStub
    * constructor instead.
-   * 
+   *
    * @deprecated
    */
   protected static void setRef (RemoteStub stub,  RemoteRef ref)

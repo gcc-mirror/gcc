@@ -44,24 +44,24 @@ import java.awt.geom.Rectangle2D;
 
 /**
  * This is an implementation of GraphicAttribute that draws shapes in a TextLayout.
- * 
+ *
  * @author Lillian Angel (langel at redhat dot com)
  */
 public final class ShapeGraphicAttribute extends GraphicAttribute
 {
   /** True if the shape should be filled. */
   public static final boolean FILL = false;
-  
+
   /** True if the shape should be stroked with a 1-pixel wide stroke. */
   public static final boolean STROKE = true;
 
   private Shape shape;
   private boolean stroke;
   private Rectangle2D bounds;
-  
+
   /**
    * Constructor.
-   * 
+   *
    * @param shape - the Shape to render. The Shape is rendered with its origin.
    * @param alignment - the alignment
    * @param stroke - true if the Shape should be stroked; false if the Shape
@@ -77,7 +77,7 @@ public final class ShapeGraphicAttribute extends GraphicAttribute
 
   /**
    * Draws the graphic at the given location.
-   * 
+   *
    * @param graphics - the graphics to use.
    * @param x - the x location to draw at.
    * @param y - the y location to draw at.
@@ -94,7 +94,7 @@ public final class ShapeGraphicAttribute extends GraphicAttribute
 
   /**
    * Compares this ShapeGraphicAttribute to obj.
-   * 
+   *
    * @param obj - the object to compare.
    */
   public boolean equals(Object obj)
@@ -107,7 +107,7 @@ public final class ShapeGraphicAttribute extends GraphicAttribute
 
   /**
    * Compares this ShapeGraphicAttribute to rhs.
-   * 
+   *
    * @param rhs - the ShapeGraphicAttribute to compare.
    */
   public boolean equals(ShapeGraphicAttribute rhs)
@@ -118,14 +118,14 @@ public final class ShapeGraphicAttribute extends GraphicAttribute
                             && getAdvance() == rhs.getAdvance()
                             && getAscent() == rhs.getAscent()
                             && getBounds().equals(rhs.getBounds())
-                            && getDescent() == rhs.getDescent() 
+                            && getDescent() == rhs.getDescent()
                             && hashCode() == rhs.hashCode()));
   }
 
   /**
    * Gets the distance from the origin of its Shape to the right side of the
    * bounds of its Shape.
-   * 
+   *
    * @return the advance
    */
   public float getAdvance()
@@ -136,7 +136,7 @@ public final class ShapeGraphicAttribute extends GraphicAttribute
   /**
    * Gets the positive distance from the origin of its Shape to the top of
    * bounds.
-   * 
+   *
    * @return the ascent
    */
   public float getAscent()
@@ -146,7 +146,7 @@ public final class ShapeGraphicAttribute extends GraphicAttribute
 
   /**
    * Gets the distance from the origin of its Shape to the bottom of the bounds.
-   * 
+   *
    * @return the descent
    */
   public float getDescent()
@@ -156,7 +156,7 @@ public final class ShapeGraphicAttribute extends GraphicAttribute
 
   /**
    * Returns a Rectangle2D that encloses all of the bits drawn by this shape.
-   * 
+   *
    * @return the bounds of the shape.
    */
   public Rectangle2D getBounds()
@@ -169,13 +169,13 @@ public final class ShapeGraphicAttribute extends GraphicAttribute
         bounds.width++;
         bounds.height++;
       }
-    
+
     return bounds;
   }
 
   /**
    * Gets the hash code.
-   * 
+   *
    * @return the hash code.
    */
   public int hashCode()

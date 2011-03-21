@@ -260,7 +260,7 @@ public class ConfirmationCallback implements Callback, Serializable
    * not correspond to one of the options in <code>optionType</code>.
    */
   public ConfirmationCallback(String prompt, int messageType, int optionType,
-			      int defaultOption)
+                              int defaultOption)
   {
     super();
 
@@ -297,7 +297,7 @@ public class ConfirmationCallback implements Callback, Serializable
    * <code>options</code>.
    */
   public ConfirmationCallback(String prompt, int messageType, String[] options,
-			      int defaultOption)
+                              int defaultOption)
   {
     super();
 
@@ -352,7 +352,7 @@ public class ConfirmationCallback implements Callback, Serializable
   {
     if (options != null)
       {
-	return UNSPECIFIED_OPTION;
+        return UNSPECIFIED_OPTION;
       }
     return optionType;
   }
@@ -399,11 +399,11 @@ public class ConfirmationCallback implements Callback, Serializable
   {
     if (options != null)
       {
-	setOptions(options, selection);
+        setOptions(options, selection);
       }
     else
       {
-	setOptionType(optionType, selection);
+        setOptionType(optionType, selection);
       }
   }
 
@@ -440,35 +440,35 @@ public class ConfirmationCallback implements Callback, Serializable
     switch (optionType)
       {
       case YES_NO_OPTION:
-	this.optionType = optionType;
-	switch (selectedOption)
-	  {
-	  case YES:
-	  case NO: this.selection = selectedOption; break;
-	  default: throw new IllegalArgumentException("invalid option");
-	  }
-	break;
+        this.optionType = optionType;
+        switch (selectedOption)
+          {
+          case YES:
+          case NO: this.selection = selectedOption; break;
+          default: throw new IllegalArgumentException("invalid option");
+          }
+        break;
       case YES_NO_CANCEL_OPTION:
-	this.optionType = optionType;
-	switch (selectedOption)
-	  {
-	  case YES:
-	  case NO:
-	  case CANCEL: this.selection = selectedOption; break;
-	  default: throw new IllegalArgumentException("invalid option");
-	  }
-	break;
+        this.optionType = optionType;
+        switch (selectedOption)
+          {
+          case YES:
+          case NO:
+          case CANCEL: this.selection = selectedOption; break;
+          default: throw new IllegalArgumentException("invalid option");
+          }
+        break;
       case OK_CANCEL_OPTION:
-	this.optionType = optionType;
-	switch (selectedOption)
-	  {
-	  case OK:
-	  case CANCEL: this.selection = selectedOption; break;
-	  default: throw new IllegalArgumentException("invalid option");
-	  }
-	break;
+        this.optionType = optionType;
+        switch (selectedOption)
+          {
+          case OK:
+          case CANCEL: this.selection = selectedOption; break;
+          default: throw new IllegalArgumentException("invalid option");
+          }
+        break;
       default:
-	throw new IllegalArgumentException("illegal option type");
+        throw new IllegalArgumentException("illegal option type");
       }
   }
 
@@ -477,18 +477,18 @@ public class ConfirmationCallback implements Callback, Serializable
   {
     if ((selectedOption < 0) || (selectedOption > options.length - 1))
       {
-	throw new IllegalArgumentException("invalid selection");
+        throw new IllegalArgumentException("invalid selection");
       }
     if ((options == null) || (options.length == 0))
       {
-	throw new IllegalArgumentException("options is null or empty");
+        throw new IllegalArgumentException("options is null or empty");
       }
     for (int i = 0; i < options.length; i++)
       {
-	if ((options[i] == null) || (options[i].length() == 0))
-	  {
-	    throw new IllegalArgumentException("options[" + i + "] is null or empty");
-	  }
+        if ((options[i] == null) || (options[i].length() == 0))
+          {
+            throw new IllegalArgumentException("options[" + i + "] is null or empty");
+          }
       }
     this.options = options;
     this.selection = selectedOption;
@@ -498,7 +498,7 @@ public class ConfirmationCallback implements Callback, Serializable
   {
     if ((prompt == null) || (prompt.length() == 0))
       {
-	throw new IllegalArgumentException("prompt is null or empty");
+        throw new IllegalArgumentException("prompt is null or empty");
       }
     this.prompt = prompt;
   }

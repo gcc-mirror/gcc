@@ -54,7 +54,7 @@ import java.util.Vector;
  *
  * This class is not thread safe.
  *
- * @author Jochen Hoenicke 
+ * @author Jochen Hoenicke
  */
 public class ZipOutputStream extends DeflaterOutputStream implements ZipConstants
 {
@@ -79,7 +79,7 @@ public class ZipOutputStream extends DeflaterOutputStream implements ZipConstant
    * Compression method.  This method doesn't compress at all.
    */
   public static final int STORED = 0;
-  
+
   /**
    * Compression method.  This method uses the Deflater.
    */
@@ -105,17 +105,17 @@ public class ZipOutputStream extends DeflaterOutputStream implements ZipConstant
     byte[] commentBytes;
     try
       {
-	commentBytes = comment.getBytes("UTF-8");
+        commentBytes = comment.getBytes("UTF-8");
       }
     catch (UnsupportedEncodingException uee)
       {
-	throw new AssertionError(uee);
+        throw new AssertionError(uee);
       }
     if (commentBytes.length > 0xffff)
       throw new IllegalArgumentException("Comment too long.");
     zipComment = commentBytes;
   }
-  
+
   /**
    * Sets default compression method.  If the Zip entry specifies
    * another method its method takes precedence.
@@ -133,7 +133,7 @@ public class ZipOutputStream extends DeflaterOutputStream implements ZipConstant
 
   /**
    * Sets default compression level.  The new level will be activated
-   * immediately.  
+   * immediately.
    * @exception IllegalArgumentException if level is not supported.
    * @see Deflater
    */
@@ -141,11 +141,11 @@ public class ZipOutputStream extends DeflaterOutputStream implements ZipConstant
   {
     def.setLevel(level);
   }
-  
+
   /**
    * Write an unsigned short in little endian byte order.
    */
-  private void writeLeShort(int value) throws IOException 
+  private void writeLeShort(int value) throws IOException
   {
     out.write(value & 0xff);
     out.write((value >> 8) & 0xff);
@@ -154,7 +154,7 @@ public class ZipOutputStream extends DeflaterOutputStream implements ZipConstant
   /**
    * Write an int in little endian byte order.
    */
-  private void writeLeInt(int value) throws IOException 
+  private void writeLeInt(int value) throws IOException
   {
     writeLeShort(value);
     writeLeShort(value >> 16);
@@ -192,27 +192,27 @@ public class ZipOutputStream extends DeflaterOutputStream implements ZipConstant
 
     if (method == STORED)
       {
-	if (entry.getCompressedSize() >= 0)
-	  {
-	    if (entry.getSize() < 0)
-	      entry.setSize(entry.getCompressedSize());
-	    else if (entry.getSize() != entry.getCompressedSize())
-	      throw new ZipException
-		("Method STORED, but compressed size != size");
-	  }
-	else
-	  entry.setCompressedSize(entry.getSize());
+        if (entry.getCompressedSize() >= 0)
+          {
+            if (entry.getSize() < 0)
+              entry.setSize(entry.getCompressedSize());
+            else if (entry.getSize() != entry.getCompressedSize())
+              throw new ZipException
+                ("Method STORED, but compressed size != size");
+          }
+        else
+          entry.setCompressedSize(entry.getSize());
 
-	if (entry.getSize() < 0)
-	  throw new ZipException("Method STORED, but size not set");
-	if (entry.getCrc() < 0)
-	  throw new ZipException("Method STORED, but crc not set");
+        if (entry.getSize() < 0)
+          throw new ZipException("Method STORED, but size not set");
+        if (entry.getCrc() < 0)
+          throw new ZipException("Method STORED, but crc not set");
       }
     else if (method == DEFLATED)
       {
-	if (entry.getCompressedSize() < 0
-	    || entry.getSize() < 0 || entry.getCrc() < 0)
-	  flags |= 8;
+        if (entry.getCompressedSize() < 0
+            || entry.getSize() < 0 || entry.getCrc() < 0)
+          flags |= 8;
       }
 
     if (curEntry != null)
@@ -228,30 +228,30 @@ public class ZipOutputStream extends DeflaterOutputStream implements ZipConstant
     /* Write the local file header */
     writeLeInt(LOCSIG);
     writeLeShort(method == STORED
-		 ? ZIP_STORED_VERSION : ZIP_DEFLATED_VERSION);
+                 ? ZIP_STORED_VERSION : ZIP_DEFLATED_VERSION);
     writeLeShort(flags);
     writeLeShort(method);
     writeLeInt(entry.getDOSTime());
     if ((flags & 8) == 0)
       {
-	writeLeInt((int)entry.getCrc());
-	writeLeInt((int)entry.getCompressedSize());
-	writeLeInt((int)entry.getSize());
+        writeLeInt((int)entry.getCrc());
+        writeLeInt((int)entry.getCompressedSize());
+        writeLeInt((int)entry.getSize());
       }
     else
       {
-	writeLeInt(0);
-	writeLeInt(0);
-	writeLeInt(0);
+        writeLeInt(0);
+        writeLeInt(0);
+        writeLeInt(0);
       }
     byte[] name;
     try
       {
-	name = entry.getName().getBytes("UTF-8");
+        name = entry.getName().getBytes("UTF-8");
       }
     catch (UnsupportedEncodingException uee)
       {
-	throw new AssertionError(uee);
+        throw new AssertionError(uee);
       }
     if (name.length > 0xffff)
       throw new ZipException("Name too long.");
@@ -294,31 +294,31 @@ public class ZipOutputStream extends DeflaterOutputStream implements ZipConstant
       curEntry.setSize(size);
     else if (curEntry.getSize() != size)
       throw new ZipException("size was "+size
-			     +", but I expected "+curEntry.getSize());
+                             +", but I expected "+curEntry.getSize());
 
     if (curEntry.getCompressedSize() < 0)
       curEntry.setCompressedSize(csize);
     else if (curEntry.getCompressedSize() != csize)
       throw new ZipException("compressed size was "+csize
-			     +", but I expected "+curEntry.getSize());
+                             +", but I expected "+curEntry.getSize());
 
     if (curEntry.getCrc() < 0)
       curEntry.setCrc(crc.getValue());
     else if (curEntry.getCrc() != crc.getValue())
       throw new ZipException("crc was " + Long.toHexString(crc.getValue())
-			     + ", but I expected " 
-			     + Long.toHexString(curEntry.getCrc()));
+                             + ", but I expected "
+                             + Long.toHexString(curEntry.getCrc()));
 
     offset += csize;
 
     /* Now write the data descriptor entry if needed. */
     if (curMethod == DEFLATED && (curEntry.flags & 8) != 0)
       {
-	writeLeInt(EXTSIG);
-	writeLeInt((int)curEntry.getCrc());
-	writeLeInt((int)curEntry.getCompressedSize());
-	writeLeInt((int)curEntry.getSize());
-	offset += EXTHDR;
+        writeLeInt(EXTSIG);
+        writeLeInt((int)curEntry.getCrc());
+        writeLeInt((int)curEntry.getCompressedSize());
+        writeLeInt((int)curEntry.getSize());
+        offset += EXTHDR;
       }
 
     entries.addElement(curEntry);
@@ -338,12 +338,12 @@ public class ZipOutputStream extends DeflaterOutputStream implements ZipConstant
     switch (curMethod)
       {
       case DEFLATED:
-	super.write(b, off, len);
-	break;
-	
+        super.write(b, off, len);
+        break;
+
       case STORED:
-	out.write(b, off, len);
-	break;
+        out.write(b, off, len);
+        break;
       }
 
     crc.update(b, off, len);
@@ -364,65 +364,65 @@ public class ZipOutputStream extends DeflaterOutputStream implements ZipConstant
 
     int numEntries = 0;
     int sizeEntries = 0;
-    
+
     Enumeration e = entries.elements();
     while (e.hasMoreElements())
       {
-	ZipEntry entry = (ZipEntry) e.nextElement();
-	
-	int method = entry.getMethod();
-	writeLeInt(CENSIG);
-	writeLeShort(method == STORED
-		     ? ZIP_STORED_VERSION : ZIP_DEFLATED_VERSION);
-	writeLeShort(method == STORED
-		     ? ZIP_STORED_VERSION : ZIP_DEFLATED_VERSION);
-	writeLeShort(entry.flags);
-	writeLeShort(method);
-	writeLeInt(entry.getDOSTime());
-	writeLeInt((int)entry.getCrc());
-	writeLeInt((int)entry.getCompressedSize());
-	writeLeInt((int)entry.getSize());
+        ZipEntry entry = (ZipEntry) e.nextElement();
 
-	byte[] name;
-	try
-	  {
-	    name = entry.getName().getBytes("UTF-8");
-	  }
-	catch (UnsupportedEncodingException uee)
-	  {
-	    throw new AssertionError(uee);
-	  }
-	if (name.length > 0xffff)
-	  throw new ZipException("Name too long.");
-	byte[] extra = entry.getExtra();
-	if (extra == null)
-	  extra = new byte[0];
-	String str = entry.getComment();
-	byte[] comment;
-	try
-	  {
-	    comment = str != null ? str.getBytes("UTF-8") : new byte[0];
-	  }
-	catch (UnsupportedEncodingException uee)
-	  {
-	    throw new AssertionError(uee);
-	  }
-	if (comment.length > 0xffff)
-	  throw new ZipException("Comment too long.");
+        int method = entry.getMethod();
+        writeLeInt(CENSIG);
+        writeLeShort(method == STORED
+                     ? ZIP_STORED_VERSION : ZIP_DEFLATED_VERSION);
+        writeLeShort(method == STORED
+                     ? ZIP_STORED_VERSION : ZIP_DEFLATED_VERSION);
+        writeLeShort(entry.flags);
+        writeLeShort(method);
+        writeLeInt(entry.getDOSTime());
+        writeLeInt((int)entry.getCrc());
+        writeLeInt((int)entry.getCompressedSize());
+        writeLeInt((int)entry.getSize());
 
-	writeLeShort(name.length);
-	writeLeShort(extra.length);
-	writeLeShort(comment.length);
-	writeLeShort(0); /* disk number */
-	writeLeShort(0); /* internal file attr */
-	writeLeInt(0);   /* external file attr */
-	writeLeInt(entry.offset);
+        byte[] name;
+        try
+          {
+            name = entry.getName().getBytes("UTF-8");
+          }
+        catch (UnsupportedEncodingException uee)
+          {
+            throw new AssertionError(uee);
+          }
+        if (name.length > 0xffff)
+          throw new ZipException("Name too long.");
+        byte[] extra = entry.getExtra();
+        if (extra == null)
+          extra = new byte[0];
+        String str = entry.getComment();
+        byte[] comment;
+        try
+          {
+            comment = str != null ? str.getBytes("UTF-8") : new byte[0];
+          }
+        catch (UnsupportedEncodingException uee)
+          {
+            throw new AssertionError(uee);
+          }
+        if (comment.length > 0xffff)
+          throw new ZipException("Comment too long.");
 
-	out.write(name);
-	out.write(extra);
-	out.write(comment);
-	numEntries++;
-	sizeEntries += CENHDR + name.length + extra.length + comment.length;
+        writeLeShort(name.length);
+        writeLeShort(extra.length);
+        writeLeShort(comment.length);
+        writeLeShort(0); /* disk number */
+        writeLeShort(0); /* internal file attr */
+        writeLeInt(0);   /* external file attr */
+        writeLeInt(entry.offset);
+
+        out.write(name);
+        out.write(extra);
+        out.write(comment);
+        numEntries++;
+        sizeEntries += CENHDR + name.length + extra.length + comment.length;
       }
 
     writeLeInt(ENDSIG);

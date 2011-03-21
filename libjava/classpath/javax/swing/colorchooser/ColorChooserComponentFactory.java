@@ -64,7 +64,7 @@ public class ColorChooserComponentFactory
    */
   public static AbstractColorChooserPanel[] getDefaultChooserPanels()
   {
-    AbstractColorChooserPanel[] values = 
+    AbstractColorChooserPanel[] values =
                                          {
                                            new DefaultSwatchChooserPanel(),
                                            new DefaultHSBChooserPanel(),

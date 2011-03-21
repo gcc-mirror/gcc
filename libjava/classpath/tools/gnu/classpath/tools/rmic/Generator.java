@@ -49,14 +49,14 @@ import java.util.Map;
 
 /**
  * Contains basic methods, used in code generation.
- * 
+ *
  * @author Audrius Meskauskas, Lithuania (audriusa@Bioinformatics.org)
  */
 public class Generator
 {
   /**
    * Get resource with the given name, as string.
-   * 
+   *
    * @param name the resource name
    * @return the resourse string (in subfolder /templates).
    */
@@ -96,7 +96,7 @@ public class Generator
    * Replace the variable references (starting from #) in the template string by
    * the values, present in the given map. The strings, not present in the
    * variable map, are ignored.
-   * 
+   *
    * @param template
    *          the template string
    * @param variables

@@ -1,4 +1,4 @@
-/* DateTimeAtProcessing.java -- 
+/* DateTimeAtProcessing.java --
    Copyright (C) 2003, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -52,7 +52,7 @@ import javax.print.attribute.PrintJobAttribute;
  * </p>
  * @see javax.print.attribute.standard.DateTimeAtCompleted
  * @see javax.print.attribute.standard.DateTimeAtCreation
- * 
+ *
  * @author Michael Koch (konqueror@gmx.de)
  */
 public final class DateTimeAtProcessing extends DateTimeSyntax
@@ -77,7 +77,7 @@ public final class DateTimeAtProcessing extends DateTimeSyntax
    *
    * @param obj the object to test
    *
-   * @return <code>true</code> if both objects are equal, 
+   * @return <code>true</code> if both objects are equal,
    * <code>false</code> otherwise.
    */
   public boolean equals(Object obj)

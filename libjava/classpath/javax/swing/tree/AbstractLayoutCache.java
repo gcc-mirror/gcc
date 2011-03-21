@@ -45,7 +45,7 @@ import javax.swing.event.TreeModelEvent;
 
 /**
  * class AbstractLayoutCache
- * 
+ *
  * @author Andrew Selkirk
  */
 public abstract class AbstractLayoutCache
@@ -69,7 +69,7 @@ public abstract class AbstractLayoutCache
     * the method is overridden, like if {@link FixedHeightLayoutCache}. If the
     * method is not overridden and the property is not set, the InternalError is
     * thrown.
-    * 
+    *
     * @param value the last node in the path
     * @param row the node row
     * @param depth the indentation depth
@@ -116,7 +116,7 @@ public abstract class AbstractLayoutCache
 
   /**
    * setNodeDimensions
-   * 
+   *
    * @param dimensions TODO
    */
   public void setNodeDimensions(NodeDimensions dimensions)
@@ -126,7 +126,7 @@ public abstract class AbstractLayoutCache
 
   /**
    * getNodeDimensions
-   * 
+   *
    * @return NodeDimensions
    */
   public NodeDimensions getNodeDimensions()
@@ -139,7 +139,7 @@ public abstract class AbstractLayoutCache
   * (unless the method is overridden, like if
   * {@link FixedHeightLayoutCache}. If the method is not overridden and
   * the property is not set, the InternalError is thrown.
-  * 
+  *
   * @param value the last node in the path
   * @param row the node row
   * @param depth the indentation depth
@@ -152,13 +152,13 @@ public abstract class AbstractLayoutCache
     Rectangle d = null;
     if (nodeDimensions != null)
       d = nodeDimensions.getNodeDimensions(value, row, depth, expanded,
-					   bounds);
+                                           bounds);
     return d;
   }
 
   /**
    * Sets the model that provides the tree data.
-   * 
+   *
    * @param model the model
    */
   public void setModel(TreeModel model)
@@ -168,7 +168,7 @@ public abstract class AbstractLayoutCache
 
   /**
    * Returns the model that provides the tree data.
-   * 
+   *
    * @return the model
    */
   public TreeModel getModel()
@@ -178,7 +178,7 @@ public abstract class AbstractLayoutCache
 
   /**
    * setRootVisible
-   * 
+   *
    * @param visible <code>true</code> if root should be visible,
    * <code>false</code> otherwise
    */
@@ -189,7 +189,7 @@ public abstract class AbstractLayoutCache
 
   /**
    * isRootVisible
-   * 
+   *
    * @return <code>true</code> if root is visible,
    * <code>false</code> otherwise
    */
@@ -200,7 +200,7 @@ public abstract class AbstractLayoutCache
 
   /**
    * setRowHeight
-   * 
+   *
    * @param height the row height
    */
   public void setRowHeight(int height)
@@ -211,7 +211,7 @@ public abstract class AbstractLayoutCache
 
   /**
    * getRowHeight
-   * 
+   *
    * @return the row height
    */
   public int getRowHeight()
@@ -221,7 +221,7 @@ public abstract class AbstractLayoutCache
 
   /**
    * setSelectionModel
-   * 
+   *
    * @param model the model
    */
   public void setSelectionModel(TreeSelectionModel model)
@@ -231,12 +231,12 @@ public abstract class AbstractLayoutCache
     treeSelectionModel = model;
     if (treeSelectionModel != null)
       treeSelectionModel.setRowMapper(this);
-    
+
   }
 
   /**
    * getSelectionModel
-   * 
+   *
    * @return the model
    */
   public TreeSelectionModel getSelectionModel()
@@ -246,7 +246,7 @@ public abstract class AbstractLayoutCache
 
   /**
    * Get the sum of heights for all rows. This class provides a general not
-   * optimized implementation that is overridded in derived classes 
+   * optimized implementation that is overridded in derived classes
    * ({@link VariableHeightLayoutCache}, {@link FixedHeightLayoutCache}) for
    * the better performance.
    */
@@ -265,10 +265,10 @@ public abstract class AbstractLayoutCache
 
   /**
    * Get the maximal width. This class provides a general not
-   * optimized implementation that is overridded in derived classes 
+   * optimized implementation that is overridded in derived classes
    * ({@link VariableHeightLayoutCache}, {@link FixedHeightLayoutCache}) for
    * the better performance.
-   * 
+   *
    * @param rect the rectangle that is used during the method work
    */
   public int getPreferredWidth(Rectangle rect)
@@ -279,7 +279,7 @@ public abstract class AbstractLayoutCache
     for (int i = 0; i < n; i++)
       {
         TreePath path = getPathForRow(i);
-        r.setBounds(0, 0, 0, 0);        
+        r.setBounds(0, 0, 0, 0);
         r = getBounds(path, r);
         if (r.x + r.width > maximalWidth)
           maximalWidth = r.x + r.width;
@@ -292,90 +292,90 @@ public abstract class AbstractLayoutCache
   }
   /**
    * isExpanded
-   * 
+   *
    * @param value0 TODO
-   * 
+   *
    * @return boolean
    */
   public abstract boolean isExpanded(TreePath value0);
 
   /**
    * getBounds
-   * 
+   *
    * @param value0 TODO
    * @param value1 TODO
-   * 
+   *
    * @return Rectangle
    */
   public abstract Rectangle getBounds(TreePath value0, Rectangle value1);
 
   /**
    * getPathForRow
-   * 
+   *
    * @param row the row
-   * 
+   *
    * @return the tree path
    */
   public abstract TreePath getPathForRow(int row);
 
   /**
    * getRowForPath
-   * 
+   *
    * @param path the tree path
-   * 
+   *
    * @return the row
    */
   public abstract int getRowForPath(TreePath path);
 
   /**
    * getPathClosestTo
-   * 
+   *
    * @param value0 TODO
    * @param value1 TODO
-   * 
+   *
    * @return the tree path
    */
   public abstract TreePath getPathClosestTo(int value0, int value1);
 
   /**
    * getVisiblePathsFrom
-   * 
+   *
    * @param path the tree path
-   * 
+   *
    * @return Enumeration
    */
   public abstract Enumeration<TreePath> getVisiblePathsFrom(TreePath path);
 
   /**
    * getVisibleChildCount
-   * 
+   *
    * @param path the tree path
-   * 
+   *
    * @return int
    */
   public abstract int getVisibleChildCount(TreePath path);
 
   /**
    * setExpandedState
-   * 
+   *
    * @param value0 TODO
-   * 
+   *
    * @param value1 TODO
    */
   public abstract void setExpandedState(TreePath value0, boolean value1);
 
   /**
    * getExpandedState
-   * 
+   *
    * @param path the tree path
-   * 
+   *
    * @return boolean
    */
   public abstract boolean getExpandedState(TreePath path);
 
   /**
    * getRowCount
-   * 
+   *
    * @return the number of rows
    */
   public abstract int getRowCount();
@@ -387,35 +387,35 @@ public abstract class AbstractLayoutCache
 
   /**
    * invalidatePathBounds
-   * 
+   *
    * @param path the tree path
    */
   public abstract void invalidatePathBounds(TreePath path);
 
   /**
    * treeNodesChanged
-   * 
+   *
    * @param event the event to send
    */
   public abstract void treeNodesChanged(TreeModelEvent event);
 
   /**
    * treeNodesInserted
-   * 
+   *
    * @param event the event to send
    */
   public abstract void treeNodesInserted(TreeModelEvent event);
 
   /**
    * treeNodesRemoved
-   * 
+   *
    * @param event the event to send
    */
   public abstract void treeNodesRemoved(TreeModelEvent event);
 
   /**
    * treeStructureChanged
-   * 
+   *
    * @param event the event to send
    */
   public abstract void treeStructureChanged(TreeModelEvent event);
@@ -426,7 +426,7 @@ public abstract class AbstractLayoutCache
    * one. To have the benefit from the bulk conversion, the method must be
    * overridden in the derived classes. The default method delegates work
    * to the {@link #getRowForPath(TreePath)}.
-   * 
+   *
    * @param paths the tree paths the array of the tree pathes.
    * @return the array of the matching tree rows.
    */
@@ -445,7 +445,7 @@ public abstract class AbstractLayoutCache
   /**
    * Returns true if this layout supposes that all rows have the fixed
    * height.
-   * 
+   *
    * @return boolean true if all rows in the tree must have the fixed
    * height (false by default).
    */

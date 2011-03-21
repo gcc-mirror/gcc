@@ -3,21 +3,46 @@
 #include "runtime.h"
 #include "malloc.h"
 
+#ifndef MAP_ANON
+#ifdef MAP_ANONYMOUS
+#define MAP_ANON MAP_ANONYMOUS
+#else
+#define USE_DEV_ZERO
+#define MAP_ANON 0
+#endif
+#endif
+
+#ifdef USE_DEV_ZERO
+static int dev_zero = -1;
+#endif
+
 void*
 runtime_SysAlloc(uintptr n)
 {
 	void *p;
+	int fd = -1;
 
 	mstats.sys += n;
-	p = runtime_mmap(nil, n, PROT_READ|PROT_WRITE|PROT_EXEC, MAP_ANON|MAP_PRIVATE, -1, 0);
+
+#ifdef USE_DEV_ZERO
+	if (dev_zero == -1) {
+		dev_zero = open("/dev/zero", O_RDONLY);
+		if (dev_zero < 0) {
+			printf("open /dev/zero: errno=%d\n", errno);
+			exit(2);
+		}
+	}
+	fd = dev_zero;
+#endif
+
+	p = runtime_mmap(nil, n, PROT_READ|PROT_WRITE|PROT_EXEC, MAP_ANON|MAP_PRIVATE, fd, 0);
 	if (p == MAP_FAILED) {
 		if(errno == EACCES) {
-			printf("mmap: access denied\n");
-			printf("If you're running SELinux, enable execmem for this process.\n");
-		} else {
-			printf("mmap: errno=%d\n", errno);
+			printf("runtime: mmap: access denied\n");
+			printf("if you're running SELinux, enable execmem for this process.\n");
+			exit(2);
 		}
-		exit(2);
+		return nil;
 	}
 	return p;
 }
@@ -37,14 +62,61 @@ runtime_SysFree(void *v, uintptr n)
 	runtime_munmap(v, n);
 }
 
-void
-runtime_SysMemInit(void)
+void*
+runtime_SysReserve(void *v, uintptr n)
 {
-	// Code generators assume that references to addresses
-	// on the first page will fault.  Map the page explicitly with
-	// no permissions, to head off possible bugs like the system
-	// allocating that page as the virtual address space fills.
-	// Ignore any error, since other systems might be smart
-	// enough to never allow anything there.
-	runtime_mmap(nil, 4096, PROT_NONE, MAP_FIXED|MAP_ANON|MAP_PRIVATE, -1, 0);
+	int fd = -1;
+
+	// On 64-bit, people with ulimit -v set complain if we reserve too
+	// much address space.  Instead, assume that the reservation is okay
+	// and check the assumption in SysMap.
+	if(sizeof(void*) == 8)
+		return v;
+	
+#ifdef USE_DEV_ZERO
+	if (dev_zero == -1) {
+		dev_zero = open("/dev/zero", O_RDONLY);
+		if (dev_zero < 0) {
+			printf("open /dev/zero: errno=%d\n", errno);
+			exit(2);
+		}
+	}
+	fd = dev_zero;
+#endif
+
+	return runtime_mmap(v, n, PROT_NONE, MAP_ANON|MAP_PRIVATE, fd, 0);
+}
+
+void
+runtime_SysMap(void *v, uintptr n)
+{
+	void *p;
+	int fd = -1;
+	
+	mstats.sys += n;
+
+#ifdef USE_DEV_ZERO
+	if (dev_zero == -1) {
+		dev_zero = open("/dev/zero", O_RDONLY);
+		if (dev_zero < 0) {
+			printf("open /dev/zero: errno=%d\n", errno);
+			exit(2);
+		}
+	}
+	fd = dev_zero;
+#endif
+
+	// On 64-bit, we don't actually have v reserved, so tread carefully.
+	if(sizeof(void*) == 8) {
+		p = runtime_mmap(v, n, PROT_READ|PROT_WRITE|PROT_EXEC, MAP_ANON|MAP_PRIVATE, fd, 0);
+		if(p != v) {
+			runtime_printf("runtime: address space conflict: map(%p) = %p\n", v, p);
+			runtime_throw("runtime: address space conflict");
+		}
+		return;
+	}
+
+	p = runtime_mmap(v, n, PROT_READ|PROT_WRITE|PROT_EXEC, MAP_ANON|MAP_FIXED|MAP_PRIVATE, fd, 0);
+	if(p != v)
+		runtime_throw("runtime: cannot map pages in arena address space");
 }

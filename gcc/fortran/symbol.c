@@ -1,6 +1,6 @@
 /* Maintain binary trees of symbols.
    Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008,
-   2009, 2010
+   2009, 2010, 2011
    Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
@@ -390,6 +390,14 @@ check_conflict (symbol_attribute *attr, const char *name, locus *where)
       goto conflict_std;
     }
 
+  if (attr->in_namelist && (attr->allocatable || attr->pointer))
+    {
+      a1 = in_namelist;
+      a2 = attr->allocatable ? allocatable : pointer;
+      standard = GFC_STD_F2003;
+      goto conflict_std;
+    }
+
   /* Check for attributes not allowed in a BLOCK DATA.  */
   if (gfc_current_state () == COMP_BLOCK_DATA)
     {
@@ -494,9 +502,6 @@ check_conflict (symbol_attribute *attr, const char *name, locus *where)
   conf (in_equivalence, entry);
   conf (in_equivalence, allocatable);
   conf (in_equivalence, threadprivate);
-
-  conf (in_namelist, pointer);
-  conf (in_namelist, allocatable);
 
   conf (entry, result);
 
@@ -1109,6 +1114,9 @@ gfc_add_save (symbol_attribute *attr, save_state s, const char *name,
 	 where);
       return FAILURE;
     }
+
+  if (s == SAVE_EXPLICIT && gfc_implicit_pure (NULL))
+    gfc_current_ns->proc_name->attr.implicit_pure = 0;
 
   if (s == SAVE_EXPLICIT && attr->save == SAVE_EXPLICIT)
     {
@@ -2245,35 +2253,6 @@ done:
 }
 
 
-/*******A helper function for creating new expressions*************/
-
-
-gfc_expr *
-gfc_lval_expr_from_sym (gfc_symbol *sym)
-{
-  gfc_expr *lval;
-  lval = gfc_get_expr ();
-  lval->expr_type = EXPR_VARIABLE;
-  lval->where = sym->declared_at;
-  lval->ts = sym->ts;
-  lval->symtree = gfc_find_symtree (sym->ns->sym_root, sym->name);
-
-  /* It will always be a full array.  */
-  lval->rank = sym->as ? sym->as->rank : 0;
-  if (lval->rank)
-    {
-      lval->ref = gfc_get_ref ();
-      lval->ref->type = REF_ARRAY;
-      lval->ref->u.ar.type = AR_FULL;
-      lval->ref->u.ar.dimen = lval->rank;
-      lval->ref->u.ar.where = sym->declared_at;
-      lval->ref->u.ar.as = sym->as;
-    }
-
-  return lval;
-}
-
-
 /************** Symbol table management subroutines ****************/
 
 /* Basic details: Fortran 95 requires a potentially unlimited number
@@ -2841,41 +2820,6 @@ gfc_get_ha_symbol (const char *name, gfc_symbol **result)
 
   return i;
 }
-
-/* Return true if both symbols could refer to the same data object.  Does
-   not take account of aliasing due to equivalence statements.  */
-
-int
-gfc_symbols_could_alias (gfc_symbol *lsym, gfc_symbol *rsym)
-{
-  /* Aliasing isn't possible if the symbols have different base types.  */
-  if (gfc_compare_types (&lsym->ts, &rsym->ts) == 0)
-    return 0;
-
-  /* Pointers can point to other pointers, target objects and allocatable
-     objects.  Two allocatable objects cannot share the same storage.  */
-  if (lsym->attr.pointer
-      && (rsym->attr.pointer || rsym->attr.allocatable || rsym->attr.target))
-    return 1;
-  if (lsym->attr.target && rsym->attr.pointer)
-    return 1;
-  if (lsym->attr.allocatable && rsym->attr.pointer)
-    return 1;
-
-  /* Special case: Argument association, cf. F90 12.4.1.6, F2003 12.4.1.7
-     and F2008 12.5.2.13 items 3b and 4b. The pointer case (a) is already
-     checked above.  */
-  if (lsym->attr.target && rsym->attr.target
-      && ((lsym->attr.dummy && !lsym->attr.contiguous
-	   && (!lsym->attr.dimension || lsym->as->type == AS_ASSUMED_SHAPE))
-	  || (rsym->attr.dummy && !rsym->attr.contiguous
-	      && (!rsym->attr.dimension
-		  || rsym->as->type == AS_ASSUMED_SHAPE))))
-    return 1;
-
-  return 0;
-}
-
 
 /* Undoes all the changes made to symbols in the current statement.
    This subroutine is made simpler due to the fact that attributes are

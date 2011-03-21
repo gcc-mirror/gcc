@@ -9,7 +9,7 @@
 !
 module test
   implicit none
-  real(4), parameter :: eps4 = epsilon(0.0_4)*2.0_4
+  real(4), parameter :: eps4 = epsilon(0.0_4)*4.0_4
   real(8), parameter :: eps8 = epsilon(0.0_8)*2.0_8
   interface check
     procedure check4, check8

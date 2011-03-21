@@ -1,6 +1,6 @@
 // Functor implementations -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2009, 2010
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2009, 2010, 2011
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -51,13 +51,15 @@
 
 /** @file backward/binders.h
  *  This is an internal header file, included by other library headers.
- *  You should not attempt to use it directly.
+ *  Do not attempt to use it directly. @headername{functional}
  */
 
 #ifndef _BACKWARD_BINDERS_H
 #define _BACKWARD_BINDERS_H 1
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // 20.3.6 binders
   /** @defgroup binders Binder Classes
@@ -117,7 +119,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       typename _Operation::result_type
       operator()(typename _Operation::second_argument_type& __x) const
       { return op(value, __x); }
-    } _GLIBCXX_DEPRECATED_ATTR;
+    } _GLIBCXX_DEPRECATED;
 
   /// One of the @link binders binder functors@endlink.
   template<typename _Operation, typename _Tp>
@@ -152,7 +154,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       typename _Operation::result_type
       operator()(typename _Operation::first_argument_type& __x) const
       { return op(__x, value); }
-    } _GLIBCXX_DEPRECATED_ATTR;
+    } _GLIBCXX_DEPRECATED;
 
   /// One of the @link binders binder functors@endlink.
   template<typename _Operation, typename _Tp>
@@ -164,6 +166,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     } 
   /** @}  */
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
 
 #endif /* _BACKWARD_BINDERS_H */

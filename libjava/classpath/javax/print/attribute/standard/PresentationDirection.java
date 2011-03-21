@@ -45,13 +45,13 @@ import javax.print.attribute.PrintRequestAttribute;
 
 /**
  * The <code>PresentationDirection</code> attribute specifies
- * a value to be used together with the <code>NumberUp</code> attribute 
+ * a value to be used together with the <code>NumberUp</code> attribute
  * to indicate the layout of multiple pages on a single media sheet.
  * <p>
- * <b>IPP Compatibility:</b> PresentationDirection is not an IPP 1.1 
+ * <b>IPP Compatibility:</b> PresentationDirection is not an IPP 1.1
  * attribute.
  * </p>
- * 
+ *
  * @author Michael Koch (konqueror@gmx.de)
  * @author Wolfgang Baer (WBaer@gmx.de)
  */
@@ -61,72 +61,72 @@ public final class PresentationDirection extends EnumSyntax
   private static final long serialVersionUID = 8294728067230931780L;
 
   /**
-   * The single pages are arranged on the media in columns starting 
+   * The single pages are arranged on the media in columns starting
    * at the top left towards the bottom left.
    */
   public static final PresentationDirection TOBOTTOM_TORIGHT =
     new PresentationDirection(0);
-  
+
   /**
-   * The single pages are arranged on the media in columns starting 
+   * The single pages are arranged on the media in columns starting
    * at the top right towards the bottom left.
    */
   public static final PresentationDirection TOBOTTOM_TOLEFT =
     new PresentationDirection(1);
-  
+
   /**
-   * The single pages are arranged on the media in columns starting 
+   * The single pages are arranged on the media in columns starting
    * at the bottom left towards the top right.
    */
   public static final PresentationDirection TOTOP_TORIGHT =
     new PresentationDirection(2);
-  
+
   /**
-   * The single pages are arranged on the media in columns starting 
+   * The single pages are arranged on the media in columns starting
    * at the bottom right towards the top left.
    */
   public static final PresentationDirection TOTOP_TOLEFT =
     new PresentationDirection(3);
-  
+
   /**
-   * The single pages are arranged on the media in rows starting 
+   * The single pages are arranged on the media in rows starting
    * at the top left towards the right bottom.
    */
   public static final PresentationDirection TORIGHT_TOBOTTOM =
     new PresentationDirection(4);
-  
+
   /**
-   * The single pages are arranged on the media in rows starting 
+   * The single pages are arranged on the media in rows starting
    * at the bottom left towards the right top.
    */
   public static final PresentationDirection TORIGHT_TOTOP =
     new PresentationDirection(5);
-  
+
   /**
-   * The single pages are arranged on the media in rows starting 
+   * The single pages are arranged on the media in rows starting
    * at the top right towards the left bottom.
    */
   public static final PresentationDirection TOLEFT_TOBOTTOM =
     new PresentationDirection(6);
-  
+
   /**
-   * The single pages are arranged on the media in rows starting 
+   * The single pages are arranged on the media in rows starting
    * at the bottom right towards the left top.
    */
   public static final PresentationDirection TOLEFT_TOTOP =
     new PresentationDirection(7);
 
-  private static final String[] stringTable = { "tobottom-toright", 
-    "tobottom-toleft", "totop-toright", "totop-toleft", "toright-tobottom", 
+  private static final String[] stringTable = { "tobottom-toright",
+    "tobottom-toleft", "totop-toright", "totop-toleft", "toright-tobottom",
     "toright-totop", "toleft-tobottom", "toleft-totop" };
 
-  private static final PresentationDirection[] enumValueTable = 
-    { TOBOTTOM_TORIGHT, TOBOTTOM_TOLEFT, TOTOP_TORIGHT, TOTOP_TOLEFT, 
+  private static final PresentationDirection[] enumValueTable =
+    { TOBOTTOM_TORIGHT, TOBOTTOM_TOLEFT, TOTOP_TORIGHT, TOTOP_TOLEFT,
       TORIGHT_TOBOTTOM, TORIGHT_TOTOP, TOLEFT_TOBOTTOM, TOLEFT_TOTOP };
-  
+
   /**
    * Constructs a <code>PresentationDirection</code> object.
-   * 
+   *
    * @param value the enum value.
    */
   private PresentationDirection(int value)
@@ -153,7 +153,7 @@ public final class PresentationDirection extends EnumSyntax
   {
     return "presentation-direction";
   }
-  
+
   /**
    * Returns a table with the enumeration values represented as strings
    * for this object.

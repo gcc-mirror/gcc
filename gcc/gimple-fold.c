@@ -565,23 +565,50 @@ maybe_fold_reference (tree expr, bool is_lhs)
   tree *t = &expr;
   tree result;
 
+  if ((TREE_CODE (expr) == VIEW_CONVERT_EXPR
+       || TREE_CODE (expr) == REALPART_EXPR
+       || TREE_CODE (expr) == IMAGPART_EXPR)
+      && CONSTANT_CLASS_P (TREE_OPERAND (expr, 0)))
+    return fold_unary_loc (EXPR_LOCATION (expr),
+			   TREE_CODE (expr),
+			   TREE_TYPE (expr),
+			   TREE_OPERAND (expr, 0));
+  else if (TREE_CODE (expr) == BIT_FIELD_REF
+	   && CONSTANT_CLASS_P (TREE_OPERAND (expr, 0)))
+    return fold_ternary_loc (EXPR_LOCATION (expr),
+			     TREE_CODE (expr),
+			     TREE_TYPE (expr),
+			     TREE_OPERAND (expr, 0),
+			     TREE_OPERAND (expr, 1),
+			     TREE_OPERAND (expr, 2));
+
+  while (handled_component_p (*t))
+    t = &TREE_OPERAND (*t, 0);
+
+  /* Canonicalize MEM_REFs invariant address operand.  Do this first
+     to avoid feeding non-canonical MEM_REFs elsewhere.  */
+  if (TREE_CODE (*t) == MEM_REF
+      && !is_gimple_mem_ref_addr (TREE_OPERAND (*t, 0)))
+    {
+      bool volatile_p = TREE_THIS_VOLATILE (*t);
+      tree tem = fold_binary (MEM_REF, TREE_TYPE (*t),
+			      TREE_OPERAND (*t, 0),
+			      TREE_OPERAND (*t, 1));
+      if (tem)
+	{
+	  TREE_THIS_VOLATILE (tem) = volatile_p;
+	  *t = tem;
+	  tem = maybe_fold_reference (expr, is_lhs);
+	  if (tem)
+	    return tem;
+	  return expr;
+	}
+    }
+
   if (!is_lhs
       && (result = fold_const_aggregate_ref (expr))
       && is_gimple_min_invariant (result))
     return result;
-
-  /* ???  We might want to open-code the relevant remaining cases
-     to avoid using the generic fold.  */
-  if (handled_component_p (*t)
-      && CONSTANT_CLASS_P (TREE_OPERAND (*t, 0)))
-    {
-      tree tem = fold (*t);
-      if (tem != *t)
-	return tem;
-    }
-
-  while (handled_component_p (*t))
-    t = &TREE_OPERAND (*t, 0);
 
   /* Fold back MEM_REFs to reference trees.  */
   if (TREE_CODE (*t) == MEM_REF
@@ -598,7 +625,7 @@ maybe_fold_reference (tree expr, bool is_lhs)
 	 compatibility.  */
       && types_compatible_p (TREE_TYPE (*t),
 			     TREE_TYPE (TREE_OPERAND
-					  (TREE_OPERAND (*t, 0), 0))))
+					(TREE_OPERAND (*t, 0), 0))))
     {
       tree tem;
       *t = TREE_OPERAND (TREE_OPERAND (*t, 0), 0);
@@ -607,44 +634,12 @@ maybe_fold_reference (tree expr, bool is_lhs)
 	return tem;
       return expr;
     }
-  /* Canonicalize MEM_REFs invariant address operand.  */
-  else if (TREE_CODE (*t) == MEM_REF
-	   && !is_gimple_mem_ref_addr (TREE_OPERAND (*t, 0)))
-    {
-      bool volatile_p = TREE_THIS_VOLATILE (*t);
-      tree tem = fold_binary (MEM_REF, TREE_TYPE (*t),
-			      TREE_OPERAND (*t, 0),
-			      TREE_OPERAND (*t, 1));
-      if (tem)
-	{
-	  TREE_THIS_VOLATILE (tem) = volatile_p;
-	  *t = tem;
-	  tem = maybe_fold_reference (expr, is_lhs);
-	  if (tem)
-	    return tem;
-	  return expr;
-	}
-    }
   else if (TREE_CODE (*t) == TARGET_MEM_REF)
     {
       tree tem = maybe_fold_tmr (*t);
       if (tem)
 	{
 	  *t = tem;
-	  tem = maybe_fold_reference (expr, is_lhs);
-	  if (tem)
-	    return tem;
-	  return expr;
-	}
-    }
-  else if (!is_lhs
-	   && DECL_P (*t))
-    {
-      tree tem = get_symbol_constant_value (*t);
-      if (tem
-	  && useless_type_conversion_p (TREE_TYPE (*t), TREE_TYPE (tem)))
-	{
-	  *t = unshare_expr (tem);
 	  tem = maybe_fold_reference (expr, is_lhs);
 	  if (tem)
 	    return tem;
@@ -947,6 +942,7 @@ gimplify_and_update_call_from_tree (gimple_stmt_iterator *si_p, tree expr)
 	 which gets optimized away by C++ gimplification.  */
       if (gimple_seq_empty_p (stmts))
 	{
+	  pop_gimplify_context (NULL);
 	  if (gimple_in_ssa_p (cfun))
 	    {
 	      unlink_stmt_vdef (stmt);
@@ -1447,38 +1443,6 @@ gimple_adjust_this_by_delta (gimple_stmt_iterator *gsi, tree delta)
   gimple_call_set_arg (call_stmt, 0, tmp);
 }
 
-/* Fold a call statement to OBJ_TYPE_REF to a direct call, if possible.  GSI
-   determines the statement, generating new statements is allowed only if
-   INPLACE is false.  Return true iff the statement was changed.  */
-
-static bool
-gimple_fold_obj_type_ref_call (gimple_stmt_iterator *gsi)
-{
-  gimple stmt = gsi_stmt (*gsi);
-  tree ref = gimple_call_fn (stmt);
-  tree obj = OBJ_TYPE_REF_OBJECT (ref);
-  tree binfo, fndecl, delta;
-  HOST_WIDE_INT token;
-
-  if (TREE_CODE (obj) != ADDR_EXPR)
-    return false;
-  obj = TREE_OPERAND (obj, 0);
-  if (!DECL_P (obj)
-      || TREE_CODE (TREE_TYPE (obj)) != RECORD_TYPE)
-    return false;
-  binfo = TYPE_BINFO (TREE_TYPE (obj));
-  if (!binfo)
-    return false;
-
-  token = tree_low_cst (OBJ_TYPE_REF_TOKEN (ref), 1);
-  fndecl = gimple_get_virt_mehtod_for_binfo (token, binfo, &delta, false);
-  if (!fndecl)
-    return false;
-  gcc_assert (integer_zerop (delta));
-  gimple_call_set_fndecl (stmt, fndecl);
-  return true;
-}
-
 /* Attempt to fold a call statement referenced by the statement iterator GSI.
    The statement may be replaced by another statement, e.g., if the call
    simplifies to a constant value. Return true if any changes were made.
@@ -1504,17 +1468,6 @@ gimple_fold_call (gimple_stmt_iterator *gsi, bool inplace)
 	  return true;
 	}
     }
-  else
-    {
-      /* ??? Should perhaps do this in fold proper.  However, doing it
-         there requires that we create a new CALL_EXPR, and that requires
-         copying EH region info to the new node.  Easier to just do it
-         here where we can just smash the call operand.  */
-      callee = gimple_call_fn (stmt);
-      if (TREE_CODE (callee) == OBJ_TYPE_REF)
-	return gimple_fold_obj_type_ref_call (gsi);
-    }
-
   return false;
 }
 

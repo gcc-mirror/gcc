@@ -55,10 +55,10 @@ public interface DesktopPeer
   public boolean isSupported(Action action);
 
   public void mail(URI mailtoURL) throws IOException;
-  
+
   public void mail() throws IOException;
 
   public void open(File file) throws IOException;
-  
+
   public void print(File file) throws IOException;
 }

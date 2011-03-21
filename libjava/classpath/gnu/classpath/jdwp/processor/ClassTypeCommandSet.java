@@ -61,7 +61,7 @@ import java.nio.ByteBuffer;
 
 /**
  * A class representing the ClassType Command Set.
- * 
+ *
  * @author Aaron Luchko <aluchko@redhat.com>
  */
 public class ClassTypeCommandSet
@@ -109,10 +109,10 @@ public class ClassTypeCommandSet
     Class superClazz = clazz.getSuperclass();
 
     if (superClazz == null) {
-    	os.writeLong(0L);
+        os.writeLong(0L);
     } else {
-    	ReferenceTypeId clazzId = idMan.getReferenceTypeId(superClazz);
-    	clazzId.write(os);
+        ReferenceTypeId clazzId = idMan.getReferenceTypeId(superClazz);
+        clazzId.write(os);
     }
   }
 
@@ -198,8 +198,8 @@ public class ClassTypeCommandSet
 
     int invokeOpts = bb.getInt();
     MethodResult mr = VMVirtualMachine.executeMethod(null, thread,
-						     clazz, method,
-						     values, invokeOpts);
+                                                     clazz, method,
+                                                     values, invokeOpts);
     return mr;
   }
 }

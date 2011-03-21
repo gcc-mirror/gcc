@@ -61,7 +61,7 @@ public abstract class CommandSet
   /**
    * Runs the given command with the data in distr and writes the data for the
    * reply packet to ostr.
-   * 
+   *
    * @param bb holds the data portion of the Command Packet
    * @param os data portion of the Reply Packet will be written here
    * @param command the command field of the Command Packet
@@ -69,6 +69,6 @@ public abstract class CommandSet
    * @throws JdwpException command wasn't carried out successfully
    */
   public abstract boolean runCommand(ByteBuffer bb, DataOutputStream os,
-				     byte command) 
+                                     byte command)
     throws JdwpException;
 }

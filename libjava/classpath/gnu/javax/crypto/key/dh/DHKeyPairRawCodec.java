@@ -1,4 +1,4 @@
-/* DHKeyPairRawCodec.java -- 
+/* DHKeyPairRawCodec.java --
    Copyright (C) 2003, 2006 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -89,7 +89,7 @@ public class DHKeyPairRawCodec
    * the <code>toByteArray()</code> method on the DH parameter <code>y</code>,
    * </li>
    * </ol>
-   * 
+   *
    * @param key the key to encode.
    * @return the <i>Raw</i> format encoding of the designated key.
    * @throws IllegalArgumentException if the designated key is not a DH one.
@@ -227,7 +227,7 @@ public class DHKeyPairRawCodec
    * the <code>toByteArray()</code> method on the DH parameter <code>x</code>,
    * </li>
    * </ol>
-   * 
+   *
    * @param key the key to encode.
    * @return the <i>Raw</i> format encoding of the designated key.
    * @throws IllegalArgumentException if the designated key is not a DH one.

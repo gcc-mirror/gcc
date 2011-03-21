@@ -1,4 +1,4 @@
-/* GnomeSAXParserFactory.java - 
+/* GnomeSAXParserFactory.java -
    Copyright (C) 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -88,5 +88,5 @@ extends SAXParserFactory
     GnomeXMLReader.checkFeatureName (name);
     features.put (name, flag ? Boolean.TRUE : Boolean.FALSE);
   }
-  
+
 }

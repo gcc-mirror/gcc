@@ -137,7 +137,7 @@ public final class TrueTypeScaler
                         ByteBuffer htmx,
                         ByteBuffer vhea,
                         ByteBuffer vtmx,
-                        ByteBuffer maxp,                        
+                        ByteBuffer maxp,
                         ByteBuffer controlValueTable,
                         ByteBuffer fpgm,
                         int locaFormat, ByteBuffer loca,
@@ -254,7 +254,7 @@ public final class TrueTypeScaler
     advance.setLocation(
       scaleFactor * glyphMeasurer.getAdvanceWidth(glyphIndex, horizontal),
       scaleFactor * glyphMeasurer.getAdvanceHeight(glyphIndex, horizontal));
-    
+
     transform.transform(advance, advance);
   }
 

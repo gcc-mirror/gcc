@@ -1,4 +1,4 @@
-/* XMLConstants.java -- 
+/* XMLConstants.java --
    Copyright (C) 2004, 2005, 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -45,7 +45,7 @@ package javax.xml;
  */
 public final class XMLConstants
 {
-  
+
   private XMLConstants()
   {
     // to prevent instantiation
@@ -68,7 +68,7 @@ public final class XMLConstants
    * @see http://www.w3.org/TR/REC-xml-names/#ns-qualnames
    */
   public static final String XML_NS_URI =
-	 	"http://www.w3.org/XML/1998/namespace";
+                "http://www.w3.org/XML/1998/namespace";
 
   /**
    * The XML Namespace prefix.
@@ -81,7 +81,7 @@ public final class XMLConstants
    * @see http://www.w3.org/TR/REC-xml-names/#ns-qualnames
    */
   public static final String XMLNS_ATTRIBUTE_NS_URI =
-	 	"http://www.w3.org/2000/xmlns/";
+                "http://www.w3.org/2000/xmlns/";
 
   /**
    * The XML Namespace declaration attribute.
@@ -94,21 +94,21 @@ public final class XMLConstants
    * @see http://www.w3.org/TR/xmlschema-1/#Instance_Document_Constructions
    */
   public static final String W3C_XML_SCHEMA_NS_URI =
-	 	"http://www.w3.org/2001/XMLSchema";
+                "http://www.w3.org/2001/XMLSchema";
 
   /**
    * The XML Schema Instance (XSI) namespace URI.
    * @see http://www.w3.org/TR/xmlschema-1/#Instance_Document_Constructions
    */
   public static final String W3C_XML_SCHEMA_INSTANCE_NS_URI =
-	 	"http://www.w3.org/2001/XMLSchema-instance";
+                "http://www.w3.org/2001/XMLSchema-instance";
 
   /**
    * The XPath 2.0 datatypes namespace URI.
    * @see http://www.w3.org/TR/xpath-datamodel
    */
   public static final String W3C_XPATH_DATATYPE_NS_URI =
-	 	"http://www.w3.org/2003/11/xpath-datatypes";
+                "http://www.w3.org/2003/11/xpath-datatypes";
 
   /**
    * The XML DTD namespace URI.
@@ -120,12 +120,12 @@ public final class XMLConstants
    * @see http://relaxng.org/spec-20011203.html
    */
   public static final String RELAXNG_NS_URI =
-	 	"http://relaxng.org/ns/structure/1.0";
+                "http://relaxng.org/ns/structure/1.0";
 
   /**
    * DOM feature for secure processing.
    */
   public static final String FEATURE_SECURE_PROCESSING =
-	 	"http://javax.xml.XMLConstants/feature/secure-processing";
-  
+                "http://javax.xml.XMLConstants/feature/secure-processing";
+
 }

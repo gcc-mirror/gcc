@@ -15,11 +15,13 @@ foo (void)
 {
   int i, j, k;
 
+  /* This should NOT be blocked: each loop iterates only 24 times.  */
   for (i = 0; i < 24; i++)
     for (j = 0; j < 24; j++)
       for (k = 0; k < 24; k++)
         A[i][j] = B[i][k] * C[k][j];
 
+  /* This should be blocked.  */
   for (i = 0; i < M; i++)
     for (j = 0; j < M; j++)
       for (k = 0; k < M; k++)

@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -45,7 +45,7 @@ import java.util.Enumeration;
  * plus online API docs for JDK 1.2 beta from http://www.javasoft.com.
  * Status:  Believed complete and correct.
  */
- 
+
 /**
   * This class merges a sequence of multiple <code>InputStream</code>'s in
   * order to form a single logical stream that can be read by applications
@@ -126,7 +126,7 @@ public class SequenceInputStream extends InputStream
 
  /**
   * Closes this stream.  This will cause any remaining unclosed subordinate
-  * <code>InputStream</code>'s to be closed as well.  Subsequent attempts to 
+  * <code>InputStream</code>'s to be closed as well.  Subsequent attempts to
   * read from this stream may cause an exception.
   *
   * @exception IOException If an error occurs
@@ -135,8 +135,8 @@ public class SequenceInputStream extends InputStream
   {
     while (in != null)
       {
-	in.close();
-	in = getNextStream ();
+        in.close();
+        in = getNextStream ();
       }
   }
 
@@ -158,7 +158,7 @@ public class SequenceInputStream extends InputStream
 
     while (in != null && (ch = in.read()) < 0)
       {
-	in.close();
+        in.close();
         in = getNextStream();
       }
 
@@ -192,7 +192,7 @@ public class SequenceInputStream extends InputStream
     // don't bother doing it here.
     while (in != null && (ch = in.read(b, off, len)) < 0)
       {
-	in.close();
+        in.close();
         in = getNextStream();
       }
 
@@ -210,12 +210,12 @@ public class SequenceInputStream extends InputStream
     if (e != null)
       {
         if (e.hasMoreElements())
-	  nextIn = e.nextElement();
+          nextIn = e.nextElement();
       }
     else if (in2 != null)
       {
-	nextIn = in2;
-	in2 = null;
+        nextIn = in2;
+        in2 = null;
       }
 
     return nextIn;

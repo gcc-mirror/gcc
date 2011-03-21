@@ -32,7 +32,7 @@ function h(x)       ! { dg-error "is already being used as a FUNCTION" }
 end function h
 
 SUBROUTINE TT()
-  CHARACTER(LEN=10), EXTERNAL :: j ! { dg-warning "Return type mismatch" }
+  CHARACTER(LEN=10), EXTERNAL :: j ! { dg-error "Return type mismatch" }
   CHARACTER(LEN=10)          :: T
 ! PR20881=========================================================== 
 ! Error only appears once but testsuite associates with both lines.

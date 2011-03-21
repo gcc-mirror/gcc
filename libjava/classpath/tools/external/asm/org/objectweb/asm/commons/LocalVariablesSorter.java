@@ -39,7 +39,7 @@ import org.objectweb.asm.Type;
  * A {@link MethodAdapter} that renumbers local variables in their order of
  * appearance. This adapter allows one to easily add new local variables to a
  * method.
- * 
+ *
  * @author Chris Nokleberg
  * @author Eric Bruneton
  */
@@ -132,5 +132,5 @@ public class LocalVariablesSorter extends MethodAdapter {
         }
         return value - 1;
     }
-    
+
 }

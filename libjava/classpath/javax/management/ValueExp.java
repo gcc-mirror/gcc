@@ -70,7 +70,7 @@ public interface ValueExp
    */
   ValueExp apply(ObjectName name)
     throws BadStringOperationException, BadBinaryOpValueExpException,
-	   BadAttributeValueExpException, InvalidApplicationException;
+           BadAttributeValueExpException, InvalidApplicationException;
 
   /**
    * Changes the {@link MBeanServer} on which this query is performed.
@@ -83,4 +83,3 @@ public interface ValueExp
   void setMBeanServer(MBeanServer server);
 
 }
-

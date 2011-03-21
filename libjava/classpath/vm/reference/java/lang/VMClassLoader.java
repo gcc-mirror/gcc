@@ -77,7 +77,7 @@ final class VMClassLoader
 
   /** jars from property java.boot.class.path */
   static final HashMap bootjars = new HashMap();
-  
+
 
   /**
    * Converts the array string of native package names to
@@ -87,18 +87,18 @@ final class VMClassLoader
   static
   {
     String[] packages = getBootPackages();
-    
+
     if( packages != null)
       {
-        String specName = 
+        String specName =
               SystemProperties.getProperty("java.specification.name");
         String vendor =
               SystemProperties.getProperty("java.specification.vendor");
         String version =
               SystemProperties.getProperty("java.specification.version");
-        
+
         Package p;
-              
+
         for(int i = 0; i < packages.length; i++)
           {
             p = new Package(packages[i],
@@ -116,7 +116,7 @@ final class VMClassLoader
       }
   }
 
-  
+
   /**
    * Helper to define a class using a string of bytes. This assumes that
    * the security checks have already been performed, if necessary.
@@ -186,23 +186,23 @@ final class VMClassLoader
     Vector v = new Vector();
     while (st.hasMoreTokens())
       {
-	File file = new File(st.nextToken());
-	if (file.isDirectory())
-	  {
-	    try
-	      {
+        File file = new File(st.nextToken());
+        if (file.isDirectory())
+          {
+            try
+              {
                 File f = new File(file, name);
                 if (!f.exists()) continue;
                 v.add(new URL("file://" + f.getAbsolutePath()));
-	      }
-	    catch (MalformedURLException e)
-	      {
-		throw new Error(e);
-	      }
-	  }
-	else if (file.isFile())
-	  {
-	    ZipFile zip;
+              }
+            catch (MalformedURLException e)
+              {
+                throw new Error(e);
+              }
+          }
+        else if (file.isFile())
+          {
+            ZipFile zip;
             synchronized(bootjars)
               {
                 zip = (ZipFile) bootjars.get(file.getName());
@@ -210,31 +210,31 @@ final class VMClassLoader
             if(zip == null)
               {
                 try
-	          {
+                  {
                     zip = new ZipFile(file);
                     synchronized(bootjars)
                       {
                         bootjars.put(file.getName(), zip);
                       }
-	          }
-	        catch (IOException e)
-	          {
-		    continue;
-	          }
+                  }
+                catch (IOException e)
+                  {
+                    continue;
+                  }
               }
-	    String zname = name.startsWith("/") ? name.substring(1) : name;
-	    if (zip.getEntry(zname) == null)
-	      continue;
-	    try
-	      {
-		v.add(new URL("jar:file://"
-		  + file.getAbsolutePath() + "!/" + zname));
-	      }
-	    catch (MalformedURLException e)
-	      {
-		throw new Error(e);
-	      }
-	  }
+            String zname = name.startsWith("/") ? name.substring(1) : name;
+            if (zip.getEntry(zname) == null)
+              continue;
+            try
+              {
+                v.add(new URL("jar:file://"
+                  + file.getAbsolutePath() + "!/" + zname));
+              }
+            catch (MalformedURLException e)
+              {
+                throw new Error(e);
+              }
+          }
       }
     return v.elements();
   }
@@ -297,9 +297,9 @@ final class VMClassLoader
   }
 
 
-  
+
   /**
-   * Helper to get all packages from the bootstrap class loader.  
+   * Helper to get all packages from the bootstrap class loader.
    *
    * @return all named packages, if any exist
    */
@@ -410,7 +410,7 @@ final class VMClassLoader
   static final Class defineClassWithTransformers(ClassLoader loader,
       String name, byte[] data, int offset, int len, ProtectionDomain pd)
   {
-    
+
     if (instrumenter != null)
       {
         byte[] modifiedData = new byte[len];
@@ -419,7 +419,7 @@ final class VMClassLoader
         modifiedData =
           ((InstrumentationImpl)instrumenter).callTransformers(loader, jvmName,
             null, pd, modifiedData);
-        
+
         return defineClass(loader, name, modifiedData, 0, modifiedData.length,
             pd);
       }

@@ -963,13 +963,10 @@ round_push (rtx size)
 /* Save the stack pointer for the purpose in SAVE_LEVEL.  PSAVE is a pointer
    to a previously-created save area.  If no save area has been allocated,
    this function will allocate one.  If a save area is specified, it
-   must be of the proper mode.
-
-   The insns are emitted after insn AFTER, if nonzero, otherwise the insns
-   are emitted at the current position.  */
+   must be of the proper mode.  */
 
 void
-emit_stack_save (enum save_level save_level, rtx *psave, rtx after)
+emit_stack_save (enum save_level save_level, rtx *psave)
 {
   rtx sa = *psave;
   /* The default is that we use a move insn and save in a Pmode object.  */
@@ -1015,38 +1012,17 @@ emit_stack_save (enum save_level save_level, rtx *psave, rtx after)
 	}
     }
 
-  if (after)
-    {
-      rtx seq;
-
-      start_sequence ();
-      do_pending_stack_adjust ();
-      /* We must validize inside the sequence, to ensure that any instructions
-	 created by the validize call also get moved to the right place.  */
-      if (sa != 0)
-	sa = validize_mem (sa);
-      emit_insn (fcn (sa, stack_pointer_rtx));
-      seq = get_insns ();
-      end_sequence ();
-      emit_insn_after (seq, after);
-    }
-  else
-    {
-      do_pending_stack_adjust ();
-      if (sa != 0)
-	sa = validize_mem (sa);
-      emit_insn (fcn (sa, stack_pointer_rtx));
-    }
+  do_pending_stack_adjust ();
+  if (sa != 0)
+    sa = validize_mem (sa);
+  emit_insn (fcn (sa, stack_pointer_rtx));
 }
 
 /* Restore the stack pointer for the purpose in SAVE_LEVEL.  SA is the save
-   area made by emit_stack_save.  If it is zero, we have nothing to do.
-
-   Put any emitted insns after insn AFTER, if nonzero, otherwise at
-   current position.  */
+   area made by emit_stack_save.  If it is zero, we have nothing to do.  */
 
 void
-emit_stack_restore (enum save_level save_level, rtx sa, rtx after)
+emit_stack_restore (enum save_level save_level, rtx sa)
 {
   /* The default is that we use a move insn.  */
   rtx (*fcn) (rtx, rtx) = gen_move_insn;
@@ -1088,18 +1064,7 @@ emit_stack_restore (enum save_level save_level, rtx sa, rtx after)
 
   discard_pending_stack_adjust ();
 
-  if (after)
-    {
-      rtx seq;
-
-      start_sequence ();
-      emit_insn (fcn (stack_pointer_rtx, sa));
-      seq = get_insns ();
-      end_sequence ();
-      emit_insn_after (seq, after);
-    }
-  else
-    emit_insn (fcn (stack_pointer_rtx, sa));
+  emit_insn (fcn (stack_pointer_rtx, sa));
 }
 
 /* Invoke emit_stack_save on the nonlocal_goto_save_area for the current
@@ -1120,7 +1085,7 @@ update_nonlocal_goto_save_area (void)
 		   integer_one_node, NULL_TREE, NULL_TREE);
   r_save = expand_expr (t_save, NULL_RTX, VOIDmode, EXPAND_WRITE);
 
-  emit_stack_save (SAVE_NONLOCAL, &r_save, NULL_RTX);
+  emit_stack_save (SAVE_NONLOCAL, &r_save);
 }
 
 /* Return an rtx representing the address of an area of memory dynamically
@@ -1150,6 +1115,7 @@ allocate_dynamic_stack_space (rtx size, unsigned size_align,
 {
   HOST_WIDE_INT stack_usage_size = -1;
   rtx final_label, final_target, target;
+  unsigned extra_align = 0;
   bool must_align;
 
   /* If we're asking for zero bytes, it doesn't matter what we point
@@ -1233,21 +1199,25 @@ allocate_dynamic_stack_space (rtx size, unsigned size_align,
      that might result from the alignment operation.  */
 
   must_align = (crtl->preferred_stack_boundary < required_align);
-#if defined (STACK_DYNAMIC_OFFSET) || defined (STACK_POINTER_OFFSET)
-  must_align = true;
-#endif
-
   if (must_align)
     {
-      unsigned extra, extra_align;
-
       if (required_align > PREFERRED_STACK_BOUNDARY)
 	extra_align = PREFERRED_STACK_BOUNDARY;
       else if (required_align > STACK_BOUNDARY)
 	extra_align = STACK_BOUNDARY;
       else
 	extra_align = BITS_PER_UNIT;
-      extra = (required_align - extra_align) / BITS_PER_UNIT;
+    }
+
+  /* ??? STACK_POINTER_OFFSET is always defined now.  */
+#if defined (STACK_DYNAMIC_OFFSET) || defined (STACK_POINTER_OFFSET)
+  must_align = true;
+  extra_align = BITS_PER_UNIT;
+#endif
+
+  if (must_align)
+    {
+      unsigned extra = (required_align - extra_align) / BITS_PER_UNIT;
 
       size = plus_constant (size, extra);
       size = force_operand (size, NULL_RTX);

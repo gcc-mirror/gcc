@@ -101,7 +101,7 @@ public abstract class MessageDigestSpi
 
   /**
    * Updates this digest with the remaining bytes of a byte buffer.
-   * 
+   *
    * @param input The input buffer.
    * @since 1.5
    */
@@ -115,7 +115,7 @@ public abstract class MessageDigestSpi
         engineUpdate (buf, 0, n);
       }
   }
-  
+
   /**
      Computes the final digest of the stored bytes and returns
      them. It performs any necessary padding. The message digest

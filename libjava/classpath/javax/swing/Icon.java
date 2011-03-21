@@ -1,4 +1,4 @@
-/* Icon.java -- 
+/* Icon.java --
    Copyright (C) 2002, 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -48,21 +48,21 @@ public interface Icon
 {
   /**
    * Returns the height of the icon.
-   * 
+   *
    * @return The height of the icon.
    */
   int getIconHeight();
-  
+
   /**
    * Returns the width of the icon.
-   * 
+   *
    * @return The width of the icon.
    */
   int getIconWidth();
-  
+
   /**
    * Draws the icon at the location (x, y) on the specified graphics device.
-   * 
+   *
    * @param c  a component related to the icon in some way (can be ignored by
                some implementing classes).
    * @param g  the graphics device.

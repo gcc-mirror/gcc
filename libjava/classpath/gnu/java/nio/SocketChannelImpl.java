@@ -1,4 +1,4 @@
-/* SocketChannelImpl.java -- 
+/* SocketChannelImpl.java --
    Copyright (C) 2002, 2003, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -62,7 +62,7 @@ public final class SocketChannelImpl extends SocketChannel
   private boolean connectionPending;
   private boolean connected;
   private InetSocketAddress connectAddress;
-  
+
   public SocketChannelImpl(boolean create) throws IOException
   {
     // XXX consider adding security check; this is used by
@@ -74,7 +74,7 @@ public final class SocketChannelImpl extends SocketChannel
   {
     this(new SelectorProviderImpl(), channel, false);
   }
-  
+
   SocketChannelImpl(SelectorProvider provider) throws IOException
   {
     this(provider, true);
@@ -85,7 +85,7 @@ public final class SocketChannelImpl extends SocketChannel
   {
     this(provider, new VMChannel(), create);
   }
-  
+
   SocketChannelImpl(SelectorProvider provider, VMChannel channel, boolean create)
     throws IOException
   {
@@ -96,7 +96,7 @@ public final class SocketChannelImpl extends SocketChannel
     socket = new NIOSocket(this);
     configureBlocking(true);
   }
-  
+
   /*SocketChannelImpl (SelectorProvider provider,
                      NIOSocket socket)
     throws IOException
@@ -133,18 +133,18 @@ public final class SocketChannelImpl extends SocketChannel
   protected void implConfigureBlocking (boolean blocking) throws IOException
   {
     channel.setBlocking(blocking);
-  }   
+  }
 
   public boolean connect (SocketAddress remote) throws IOException
   {
     return connect(remote, 0);
   }
-  
+
   public boolean connect (SocketAddress remote, int timeout) throws IOException
   {
     if (!isOpen())
       throw new ClosedChannelException();
-    
+
     if (isConnected())
       throw new AlreadyConnectedException();
 
@@ -153,12 +153,12 @@ public final class SocketChannelImpl extends SocketChannel
 
     if (!(remote instanceof InetSocketAddress))
       throw new UnsupportedAddressTypeException();
-    
+
     connectAddress = (InetSocketAddress) remote;
 
     if (connectAddress.isUnresolved())
       throw new UnresolvedAddressException();
-    
+
     connected = channel.connect(connectAddress, timeout);
     connectionPending = !connected;
     return connected;
@@ -176,10 +176,10 @@ public final class SocketChannelImpl extends SocketChannel
         connectionPending = false;
         return true;
       }
-    
+
     if (!connectionPending)
       throw new NoConnectionPendingException();
-    
+
     return false;
   }
 
@@ -200,12 +200,12 @@ public final class SocketChannelImpl extends SocketChannel
         return false;
       }
   }
-    
+
   public boolean isConnectionPending ()
   {
     return connectionPending;
   }
-    
+
   public Socket socket ()
   {
     return socket;
@@ -215,25 +215,25 @@ public final class SocketChannelImpl extends SocketChannel
   {
     if (!isConnected())
       throw new NotYetConnectedException();
-    
+
     return channel.read(dst);
   }
-    
+
   public long read (ByteBuffer[] dsts, int offset, int length)
     throws IOException
   {
     if (!isConnected())
       throw new NotYetConnectedException();
-    
+
     if ((offset < 0)
         || (offset > dsts.length)
         || (length < 0)
         || (length > (dsts.length - offset)))
       throw new IndexOutOfBoundsException();
-    
+
     return channel.readScattering(dsts, offset, length);
   }
-     
+
   public int write(ByteBuffer src) throws IOException
   {
     if (!isConnected())
@@ -247,7 +247,7 @@ public final class SocketChannelImpl extends SocketChannel
   {
     if (!isConnected())
       throw new NotYetConnectedException();
-    
+
     if ((offset < 0)
         || (offset > srcs.length)
         || (length < 0)
@@ -256,7 +256,7 @@ public final class SocketChannelImpl extends SocketChannel
 
     return channel.writeGathering(srcs, offset, length);
   }
-  
+
   public VMChannel getVMChannel()
   {
     // XXX security check?

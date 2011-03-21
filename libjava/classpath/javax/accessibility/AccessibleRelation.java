@@ -45,7 +45,7 @@ import java.util.Locale;
  * summarizes all relations of the object. This strongly typed "enumeration"
  * supports localized strings. If the constants of this class are not
  * adequate, new ones may be added in a similar matter.
- * 
+ *
  * @author Eric Blake (ebb9@email.byu.edu)
  * @since 1.2
  * @status updated to 1.4
@@ -210,7 +210,7 @@ public class AccessibleRelation extends AccessibleBundle
 
   /** An empty set of targets. */
   private static final Object[] EMPTY_TARGETS = { };
-  
+
   static
     {
       // not constants in JDK

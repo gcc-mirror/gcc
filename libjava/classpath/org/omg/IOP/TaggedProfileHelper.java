@@ -86,7 +86,7 @@ public abstract class TaggedProfileHelper
   /**
    * Insert the TaggedProfile into the given Any. This method uses the
    * TaggedProfileHolder.
-   * 
+   *
    * @param any the Any to insert into.
    * @param that the TaggedProfile to insert.
    */
@@ -110,7 +110,7 @@ public abstract class TaggedProfileHelper
     catch (ClassCastException cex)
       {
         BAD_OPERATION bad = new BAD_OPERATION("TaggedProfile expected");
-        bad.minor = Minor.Any;        
+        bad.minor = Minor.Any;
         bad.initCause(cex);
         throw bad;
       }

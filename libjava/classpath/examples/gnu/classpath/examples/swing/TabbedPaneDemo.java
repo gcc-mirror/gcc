@@ -78,26 +78,26 @@ public class TabbedPaneDemo
   {
     JPanel p = new JPanel();
     p.setLayout(new GridLayout(1, 1));
-    
+
     int COUNT = 25;
     JTabbedPane tp = createTabbedPane(SwingConstants.TOP, "tab", COUNT);
     p.add(tp);
-    
+
     final JPopupMenu popup = new JPopupMenu();
 
     JMenu menu = new JMenu("tab placement");
     menu.add(createPlacementChangingMenuItem("top",
                                              SwingConstants.TOP,
                                              tp));
-    
+
     menu.add(createPlacementChangingMenuItem("bottom",
                                              SwingConstants.BOTTOM,
                                              tp));
-    
+
     menu.add(createPlacementChangingMenuItem("left",
                                              SwingConstants.LEFT,
                                              tp));
-    
+
     menu.add(createPlacementChangingMenuItem("right",
                                              SwingConstants.RIGHT,
                                              tp));
@@ -107,40 +107,40 @@ public class TabbedPaneDemo
     menu.add(createLayoutPolicyChangingMenuItem("wrapping tabs",
                                                 JTabbedPane.WRAP_TAB_LAYOUT,
                                                 tp));
-    
+
     menu.add(createLayoutPolicyChangingMenuItem("scrolling tabs",
                                                 JTabbedPane.SCROLL_TAB_LAYOUT,
                                                 tp));
     popup.add(menu);
-    
+
     tp.addMouseListener(new MouseAdapter()
                        {
                          public void mousePressed(MouseEvent e) {
                            showPopup(e);
                          }
-                         
+
                          public void mouseReleased(MouseEvent e) {
                            showPopup(e);
                          }
-                         
+
                          void showPopup(MouseEvent e) {
                            if (e.isPopupTrigger()) {
                              popup.show(e.getComponent(), e.getX(), e.getY());
                            }
                          }
                        });
-    
+
     setLayout(new BorderLayout());
     add(p, BorderLayout.CENTER);
-    
+
   }
-  
+
   private JMenuItem createPlacementChangingMenuItem(String t,
                                                     final int v,
                                                     final JTabbedPane dst)
   {
     JMenuItem item = new JMenuItem(t);
-    
+
     item.addActionListener(new ActionListener()
                            {
                              public void actionPerformed(ActionEvent ae)
@@ -148,16 +148,16 @@ public class TabbedPaneDemo
                               dst.setTabPlacement(v);
                              }
                            });
-  
+
     return item;
   }
-  
+
   private JMenuItem createLayoutPolicyChangingMenuItem(String t,
                                                        final int v,
                                                        final JTabbedPane dst)
   {
     JMenuItem item = new JMenuItem(t);
-    
+
     item.addActionListener(new ActionListener()
                            {
                              public void actionPerformed(ActionEvent ae)
@@ -165,24 +165,24 @@ public class TabbedPaneDemo
                               dst.setTabLayoutPolicy(v);
                              }
                            });
-  
+
     return item;
   }
-  
+
   private JTabbedPane createTabbedPane(int direction, String name, int count)
   {
     JTabbedPane pane = new JTabbedPane(direction);
-    
+
     for(int i = 0; i< count; i++)
       {
         pane.addTab(name + " " + i, createTabContent(name + " " + i));
         if (Math.random() >= 0.75)
           pane.setEnabledAt(i, false);
       }
-  
+
     return pane;
   }
-  
+
   private JPanel createTabContent(String name)
   {
     JTextArea ta;
@@ -190,13 +190,13 @@ public class TabbedPaneDemo
     panel.add(new JLabel(name));
     panel.add(new JButton(name));
     panel.add(new JScrollPane(ta = new JTextArea(5, 5)));
-    
+
     ta.setBackground(colors[(int) (Math.random() * colors.length)]);
-    
+
     return panel;
   }
 
-  public void actionPerformed(ActionEvent e) 
+  public void actionPerformed(ActionEvent e)
   {
     if (e.getActionCommand().equals("CLOSE"))
     {
@@ -206,7 +206,7 @@ public class TabbedPaneDemo
 
   /**
    * When the demo is run independently, the frame is displayed, so we should
-   * initialise the content panel (including the demo content and a close 
+   * initialise the content panel (including the demo content and a close
    * button).  But when the demo is run as part of the Swing activity board,
    * only the demo content panel is used, the frame itself is never displayed,
    * so we can avoid this step.

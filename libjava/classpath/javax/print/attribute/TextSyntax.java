@@ -1,4 +1,4 @@
-/* TextSyntax.java -- 
+/* TextSyntax.java --
    Copyright (C) 2003, 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -41,7 +41,7 @@ import java.io.Serializable;
 import java.util.Locale;
 
 /**
- * <code>TextSyntax</code> is the abstract base class of all attribute 
+ * <code>TextSyntax</code> is the abstract base class of all attribute
  * classes which provide a string as value (e.g. the location of the printer).
  * <p>
  * A <code>TextSyntax</code> instance consists of a string value and a
@@ -53,7 +53,7 @@ import java.util.Locale;
 public abstract class TextSyntax implements Cloneable, Serializable
 {
   private static final long serialVersionUID = -8130648736378144102L;
-  
+
   private String value;
   private Locale locale;
 
@@ -71,7 +71,7 @@ public abstract class TextSyntax implements Cloneable, Serializable
   {
     if (value == null)
       throw new NullPointerException("value may not be null");
-    
+
     this.value = value;
     this.locale = (locale == null ? Locale.getDefault() : locale);
   }
@@ -119,7 +119,7 @@ public abstract class TextSyntax implements Cloneable, Serializable
       return false;
 
     TextSyntax tmp = (TextSyntax) obj;
-    
+
     return (value.equals(tmp.getValue())
             && locale.equals(tmp.getLocale()));
   }
@@ -127,7 +127,7 @@ public abstract class TextSyntax implements Cloneable, Serializable
   /**
    * Returns a string representing the object. The returned
    * string is the underlying text value of this object.
-   * 
+   *
    * @return The string representation.
    */
   public String toString()

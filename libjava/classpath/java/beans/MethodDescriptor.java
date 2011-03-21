@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -49,40 +49,39 @@ import java.lang.reflect.Method;
  ** @version 1.1.0, 26 Jul 1998
  **/
 public class MethodDescriptor extends FeatureDescriptor {
-	private Method m;
-	private ParameterDescriptor[] parameterDescriptors;
+        private Method m;
+        private ParameterDescriptor[] parameterDescriptors;
 
-	/** Create a new MethodDescriptor.
-	 ** This method sets the name to the name of the method (Method.getName()).
-	 ** @param m the method it will represent.
-	 **/
-	public MethodDescriptor(Method m) {
-		setName(m.getName());
-		this.m = m;
-	}
+        /** Create a new MethodDescriptor.
+         ** This method sets the name to the name of the method (Method.getName()).
+         ** @param m the method it will represent.
+         **/
+        public MethodDescriptor(Method m) {
+                setName(m.getName());
+                this.m = m;
+        }
 
-	/** Create a new MethodDescriptor.
-	 ** This method sets the name to the name of the method (Method.getName()).
-	 ** @param m the method it will represent.
-	 ** @param parameterDescriptors descriptions of the parameters (especially names).
-	 **/
-	public MethodDescriptor(Method m, ParameterDescriptor[] parameterDescriptors) {
-		setName(m.getName());
-		this.m = m;
-		this.parameterDescriptors = parameterDescriptors;
-	}
+        /** Create a new MethodDescriptor.
+         ** This method sets the name to the name of the method (Method.getName()).
+         ** @param m the method it will represent.
+         ** @param parameterDescriptors descriptions of the parameters (especially names).
+         **/
+        public MethodDescriptor(Method m, ParameterDescriptor[] parameterDescriptors) {
+                setName(m.getName());
+                this.m = m;
+                this.parameterDescriptors = parameterDescriptors;
+        }
 
-	/** Get the parameter descriptors from this method.
-	 ** Since MethodDescriptor has no way of determining what
-	 ** the parameter names were, this defaults to null.
-	 **/
-	public ParameterDescriptor[] getParameterDescriptors() {
-		return parameterDescriptors;
-	}
+        /** Get the parameter descriptors from this method.
+         ** Since MethodDescriptor has no way of determining what
+         ** the parameter names were, this defaults to null.
+         **/
+        public ParameterDescriptor[] getParameterDescriptors() {
+                return parameterDescriptors;
+        }
 
-	/** Get the method this MethodDescriptor represents. **/
-	public Method getMethod() {
-		return m;
-	}
+        /** Get the method this MethodDescriptor represents. **/
+        public Method getMethod() {
+                return m;
+        }
 }
-

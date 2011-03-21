@@ -1,6 +1,6 @@
 // random number generation (out of line) -*- C++ -*-
 
-// Copyright (C) 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2009, 2010, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -32,13 +32,15 @@
 
 #include <numeric> // std::accumulate and std::partial_sum
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
-
+namespace std _GLIBCXX_VISIBILITY(default)
+{
   /*
    * (Further) implementation-space details.
    */
   namespace __detail
   {
+  _GLIBCXX_BEGIN_NAMESPACE_VERSION
+
     // General case for x = (ax + c) mod m -- use Schrage's algorithm to
     // avoid integer overflow.
     //
@@ -100,8 +102,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	  *__result = __unary_op(*__first);
 	return __result;
       }
+
+  _GLIBCXX_END_NAMESPACE_VERSION
   } // namespace __detail
 
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _UIntType, _UIntType __a, _UIntType __c, _UIntType __m>
     constexpr _UIntType
@@ -1020,7 +1025,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
 	double __cand;
 	do
-	  __cand = std::ceil(std::log(__aurng()) / __param._M_log_p);
+	  __cand = std::floor(std::log(__aurng()) / __param._M_log_1_p);
 	while (__cand >= __thr);
 
 	return result_type(__cand + __naf);
@@ -1429,7 +1434,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       {
 	result_type __ret;
 	const _IntType __t = __param.t();
-	const _IntType __p = __param.p();
+	const double __p = __param.p();
 	const double __p12 = __p <= 0.5 ? __p : 1.0 - __p;
 	__detail::_Adaptor<_UniformRandomNumberGenerator, double>
 	  __aurng(__urng);
@@ -2818,6 +2823,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	}
       return __sum / __tmp;
     }
-_GLIBCXX_END_NAMESPACE
+
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
 
 #endif

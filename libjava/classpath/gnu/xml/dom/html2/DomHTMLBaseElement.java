@@ -1,4 +1,4 @@
-/* DomHTMLBaseElement.java -- 
+/* DomHTMLBaseElement.java --
    Copyright (C) 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -64,7 +64,7 @@ public class DomHTMLBaseElement
   {
     setHTMLAttribute("href", href);
   }
-  
+
   public String getTarget()
   {
     return getHTMLAttribute("target");
@@ -74,6 +74,5 @@ public class DomHTMLBaseElement
   {
     setHTMLAttribute("target", target);
   }
-  
-}
 
+}

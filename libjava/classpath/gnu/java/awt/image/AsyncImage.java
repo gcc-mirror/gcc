@@ -159,9 +159,9 @@ public class AsyncImage
       g = r.getGraphics(); // Should we return some dummy graphics instead?
     return g;
   }
-  
+
   public boolean isComplete() {
-  	return complete;
+        return complete;
   }
 
   public int getHeight(ImageObserver observer)

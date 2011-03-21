@@ -100,7 +100,7 @@ public class ThreadLocal<T>
   /**
    * Allocate a new hash.
    */
-  private synchronized int computeNextHash() 
+  private synchronized int computeNextHash()
   {
     return nextHashBase++ * 6709;
   }

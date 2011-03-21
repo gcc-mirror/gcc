@@ -1,4 +1,4 @@
-/* IllegalMechanismStateException.java -- 
+/* IllegalMechanismStateException.java --
    Copyright (C) 2003, 2006 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -62,7 +62,7 @@ public class IllegalMechanismStateException
   /**
    * Constructs a new instance of <code>IllegalMechanismStateException</code>
    * with the specified detail message.
-   * 
+   *
    * @param detail the detail message.
    */
   public IllegalMechanismStateException(String detail)
@@ -73,7 +73,7 @@ public class IllegalMechanismStateException
   /**
    * Constructs a new instance of <code>IllegalMechanismStateException</code>
    * with the specified detail message, and cause.
-   * 
+   *
    * @param detail the detail message.
    * @param ex the original cause.
    */

@@ -44,14 +44,14 @@ import java.util.Map;
 
 /**
  * The open type descriptor for arrays of open data values.
- * 
+ *
  * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
  * @since 1.5
  */
 public class ArrayType<T>
   extends OpenType<T>
 {
-  
+
   /**
    * Compatible with JDK 1.5
    */
@@ -108,8 +108,8 @@ public class ArrayType<T>
    *                           a loadable class.
    */
   private static final String getArrayClassName(OpenType<?> elementType,
-						int dim,
-						boolean primitive)
+                                                int dim,
+                                                boolean primitive)
     throws OpenDataException
   {
     Class<?> type;
@@ -117,22 +117,22 @@ public class ArrayType<T>
       type = getPrimitiveTypeClass((SimpleType<?>) elementType);
     else
       {
-	String className = elementType.getClassName();
-	try
-	  {
-	    type = Class.forName(className);
-	  }
-	catch (ClassNotFoundException e)
-	  {
-	    throw new OpenDataException("The class name, " + className +
-					", is unavailable.");
-	  }
+        String className = elementType.getClassName();
+        try
+          {
+            type = Class.forName(className);
+          }
+        catch (ClassNotFoundException e)
+          {
+            throw new OpenDataException("The class name, " + className +
+                                        ", is unavailable.");
+          }
       }
     while (type.isArray())
       type = type.getComponentType();
     return
       Array.newInstance(type,
-			new int[getDimensions(elementType, dim)]).getClass().getName();
+                        new int[getDimensions(elementType, dim)]).getClass().getName();
   }
 
   /**
@@ -146,11 +146,11 @@ public class ArrayType<T>
    * @throws IllegalArgumentException if <code>dim</code> is less than 1.
    */
   private static final int getDimensions(OpenType<?> elementType,
-					 int dim)
+                                         int dim)
   {
     if (dim < 1)
       throw new IllegalArgumentException("Dimensions must be greater " +
-					 "than or equal to 1.");
+                                         "than or equal to 1.");
     if (elementType instanceof ArrayType)
       return dim + ((ArrayType<?>) elementType).getDimension();
     return dim;
@@ -184,7 +184,7 @@ public class ArrayType<T>
     if (type.equals(Long.TYPE))
       return SimpleType.LONG;
     if (type.equals(Short.TYPE))
-      return SimpleType.SHORT; 
+      return SimpleType.SHORT;
     if (type.equals(Void.TYPE))
       return SimpleType.VOID;
     throw new OpenDataException(type + " is not a primitive type.");
@@ -218,7 +218,7 @@ public class ArrayType<T>
     if (type.equals(SimpleType.LONG))
       return Long.TYPE;
     if (type.equals(SimpleType.SHORT))
-      return Short.TYPE; 
+      return Short.TYPE;
     if (type.equals(SimpleType.VOID))
       return Void.TYPE;
     throw new OpenDataException(type + " is not a primitive type.");
@@ -257,7 +257,7 @@ public class ArrayType<T>
   {
     OpenType<?> trueElemType = getElementType(elemType);
     if (elemType instanceof ArrayType &&
-	((ArrayType<?>) elemType).isPrimitiveArray())
+        ((ArrayType<?>) elemType).isPrimitiveArray())
       return getPrimitiveTypeClass((SimpleType<?>) trueElemType).getName();
     return trueElemType.getClassName();
   }
@@ -309,21 +309,21 @@ public class ArrayType<T>
   public ArrayType(int dim, OpenType<?> elementType)
     throws OpenDataException
   {
-    super(getArrayClassName(elementType, dim, false), 
-	  getArrayClassName(elementType, dim, false), 
-	  getDimensions(elementType, dim) + "-dimension array of " 
-	  + getElementTypeName(elementType));
+    super(getArrayClassName(elementType, dim, false),
+          getArrayClassName(elementType, dim, false),
+          getDimensions(elementType, dim) + "-dimension array of "
+          + getElementTypeName(elementType));
     if (!(elementType instanceof SimpleType ||
-	  elementType instanceof CompositeType ||
-	  elementType instanceof TabularType ||
-	  elementType instanceof ArrayType))
+          elementType instanceof CompositeType ||
+          elementType instanceof TabularType ||
+          elementType instanceof ArrayType))
       throw new OpenDataException("The element type must be a simple " +
-				  "type, an array type, a composite type " +
-				  "or a tabular type.");
+                                  "type, an array type, a composite type " +
+                                  "or a tabular type.");
     dimension = getDimensions(elementType, dim);
     this.elementType = getElementType(elementType);
     primitiveArray = (elementType instanceof ArrayType &&
-		      ((ArrayType<?>) elementType).isPrimitiveArray());
+                      ((ArrayType<?>) elementType).isPrimitiveArray());
   }
 
   /**
@@ -377,10 +377,10 @@ public class ArrayType<T>
     throws OpenDataException
   {
     super(getArrayClassName(elementType, 1, primitiveArray),
-	  getArrayClassName(elementType, 1, primitiveArray), 
-	  "1-dimension array of " + 
-	  (primitiveArray ? getPrimitiveTypeClass(elementType).getName() 
-	   : elementType.getClassName()));
+          getArrayClassName(elementType, 1, primitiveArray),
+          "1-dimension array of " +
+          (primitiveArray ? getPrimitiveTypeClass(elementType).getName()
+           : elementType.getClassName()));
     dimension = 1;
     this.elementType = elementType;
     this.primitiveArray = primitiveArray;
@@ -400,7 +400,7 @@ public class ArrayType<T>
    * <li>The primitive array flag is set the same in both
    * instances.</li>
    * </ul>
-   * 
+   *
    * @param obj the object to compare with.
    * @return true if the conditions above hold.
    */
@@ -410,8 +410,8 @@ public class ArrayType<T>
       return false;
     ArrayType<?> atype = (ArrayType<?>) obj;
     return (atype.getDimension() == dimension &&
-	    atype.getElementOpenType().equals(elementType) &&
-	    atype.isPrimitiveArray() == primitiveArray);
+            atype.getElementOpenType().equals(elementType) &&
+            atype.isPrimitiveArray() == primitiveArray);
   }
 
   /**
@@ -438,7 +438,7 @@ public class ArrayType<T>
    * @throws OpenDataException if the class name of {@code elementType}
    *                           is not in {@link OpenType#ALLOWED_CLASSNAMES_LIST}.
    * @since 1.6
-   */ 
+   */
   @SuppressWarnings("unchecked")
   public static <E> ArrayType<E[]> getArrayType(OpenType<E> elementType)
     throws OpenDataException
@@ -484,7 +484,7 @@ public class ArrayType<T>
    * @throws IllegalArgumentException if the type is not a primitive
    *                                  array.
    * @since 1.6
-   */ 
+   */
   @SuppressWarnings("unchecked")
   public static <T> ArrayType<T> getPrimitiveArrayType(Class<T> type)
   {
@@ -495,32 +495,32 @@ public class ArrayType<T>
     int dim = 0;
     do
       {
-	comType = comType.getComponentType();
-	++dim;
-	if (comType == null)
-	  throw new IllegalArgumentException("The given class is " +
-					     "not an array.");
+        comType = comType.getComponentType();
+        ++dim;
+        if (comType == null)
+          throw new IllegalArgumentException("The given class is " +
+                                             "not an array.");
       } while (comType.isArray());
     try
       {
-	arr = new ArrayType<T>(getPrimitiveType(comType), true);
+        arr = new ArrayType<T>(getPrimitiveType(comType), true);
       }
     catch (OpenDataException e)
       {
-	throw new IllegalArgumentException("The array is not of a primitive " +
-					   "type", e);
+        throw new IllegalArgumentException("The array is not of a primitive " +
+                                           "type", e);
       }
     while (dim > 1)
       try
-	{
-	  arr = new ArrayType<T>(1, arr);
-	  --dim;
-	}
+        {
+          arr = new ArrayType<T>(1, arr);
+          --dim;
+        }
       catch (OpenDataException e)
-	{
-	  throw (Error)
-	    new InternalError("Couldn't generate extra dimensions").initCause(e);
-	}
+        {
+          throw (Error)
+            new InternalError("Couldn't generate extra dimensions").initCause(e);
+        }
     primCache.put(type, arr);
     return arr;
   }
@@ -570,8 +570,8 @@ public class ArrayType<T>
   {
     if (hashCode == null)
       hashCode = Integer.valueOf(dimension +
-				 elementType.hashCode() +
-				 Boolean.valueOf(primitiveArray).hashCode());
+                                 elementType.hashCode() +
+                                 Boolean.valueOf(primitiveArray).hashCode());
     return hashCode.intValue();
   }
 
@@ -619,21 +619,21 @@ public class ArrayType<T>
     Class<?> elementClass = null;
     try
       {
-	elementClass = Class.forName(getClassName());
+        elementClass = Class.forName(getClassName());
       }
     catch (ClassNotFoundException e)
       {
-	throw new IllegalStateException("The array type's element " +
-					"class could not be found.", e);
+        throw new IllegalStateException("The array type's element " +
+                                        "class could not be found.", e);
       }
     if (!(elementClass.isAssignableFrom(objClass)))
       return false;
     for (int a = 0; a < Array.getLength(obj); ++a)
       {
-	Object elem = Array.get(obj, a);
-	if (elem != null &&
-	    (!(elementType.isValue(elem))))
-	  return false;
+        Object elem = Array.get(obj, a);
+        if (elem != null &&
+            (!(elementType.isValue(elem))))
+          return false;
       }
     return true;
   }
@@ -661,11 +661,11 @@ public class ArrayType<T>
   {
     if (string == null)
       string = getClass().getName()
-	+ "[name=" + getTypeName()
-	+ ", dimension=" + dimension
-	+ ", elementType=" + elementType
-	+ ", primitiveArray=" + primitiveArray
-	+ "]";
+        + "[name=" + getTypeName()
+        + ", dimension=" + dimension
+        + ", elementType=" + elementType
+        + ", primitiveArray=" + primitiveArray
+        + "]";
     return string;
   }
 

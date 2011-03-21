@@ -1,4 +1,4 @@
-/* XMLStreamWriter.java -- 
+/* XMLStreamWriter.java --
    Copyright (C) 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -44,7 +44,7 @@ import javax.xml.namespace.NamespaceContext;
  */
 public interface XMLStreamWriter
 {
-  
+
   /**
    * Write the start of a tag.
    */
@@ -178,7 +178,7 @@ public interface XMLStreamWriter
    */
   void writeStartDocument()
     throws XMLStreamException;
-  
+
   /**
    * Write an XML declaration with the specified XML version.
    */
@@ -239,6 +239,5 @@ public interface XMLStreamWriter
    */
   Object getProperty(String name)
     throws IllegalArgumentException;
-  
-}
 
+}

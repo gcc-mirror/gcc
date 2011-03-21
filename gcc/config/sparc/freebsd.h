@@ -1,5 +1,5 @@
 /* Definitions for Sun SPARC64 running FreeBSD using the ELF format
-   Copyright (C) 2001, 2002, 2004, 2005, 2006, 2007, 2010
+   Copyright (C) 2001, 2002, 2004, 2005, 2006, 2007, 2010, 2011
    Free Software Foundation, Inc.
    Contributed by David E. O'Brien <obrien@FreeBSD.org> and BSDi.
 
@@ -29,6 +29,9 @@ along with GCC; see the file COPYING3.  If not see
 #undef  CPP_CPU64_DEFAULT_SPEC
 #define CPP_CPU64_DEFAULT_SPEC \
   "-D__sparc64__ -D__sparc_v9__ -D__sparcv9 -D__arch64__"
+
+#undef ASM_SPEC
+#define ASM_SPEC "%{fpic|fPIC|fpie|fPIE:-K PIC} %(asm_cpu)"
 
 #define LINK_SPEC "%(link_arch)						\
   %{!mno-relax:%{!r:-relax}}						\

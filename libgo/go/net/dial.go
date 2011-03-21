@@ -24,7 +24,7 @@ import "os"
 //	Dial("tcp", "127.0.0.1:123", "127.0.0.1:88")
 //
 func Dial(net, laddr, raddr string) (c Conn, err os.Error) {
-	switch prefixBefore(net, ':') {
+	switch net {
 	case "tcp", "tcp4", "tcp6":
 		var la, ra *TCPAddr
 		if laddr != "" {
@@ -59,7 +59,7 @@ func Dial(net, laddr, raddr string) (c Conn, err os.Error) {
 			return nil, err
 		}
 		return c, nil
-	case "unix", "unixgram":
+	case "unix", "unixgram", "unixpacket":
 		var la, ra *UnixAddr
 		if raddr != "" {
 			if ra, err = ResolveUnixAddr(net, raddr); err != nil {
@@ -102,7 +102,7 @@ Error:
 
 // Listen announces on the local network address laddr.
 // The network string net must be a stream-oriented
-// network: "tcp", "tcp4", "tcp6", or "unix".
+// network: "tcp", "tcp4", "tcp6", or "unix", or "unixpacket".
 func Listen(net, laddr string) (l Listener, err os.Error) {
 	switch net {
 	case "tcp", "tcp4", "tcp6":
@@ -117,7 +117,7 @@ func Listen(net, laddr string) (l Listener, err os.Error) {
 			return nil, err
 		}
 		return l, nil
-	case "unix":
+	case "unix", "unixpacket":
 		var la *UnixAddr
 		if laddr != "" {
 			if la, err = ResolveUnixAddr(net, laddr); err != nil {
@@ -137,7 +137,7 @@ func Listen(net, laddr string) (l Listener, err os.Error) {
 // The network string net must be a packet-oriented network:
 // "udp", "udp4", "udp6", or "unixgram".
 func ListenPacket(net, laddr string) (c PacketConn, err os.Error) {
-	switch prefixBefore(net, ':') {
+	switch net {
 	case "udp", "udp4", "udp6":
 		var la *UDPAddr
 		if laddr != "" {
@@ -162,18 +162,24 @@ func ListenPacket(net, laddr string) (c PacketConn, err os.Error) {
 			return nil, err
 		}
 		return c, nil
-	case "ip", "ip4", "ip6":
-		var la *IPAddr
-		if laddr != "" {
-			if la, err = ResolveIPAddr(laddr); err != nil {
+	}
+
+	if i := last(net, ':'); i > 0 {
+		switch net[0:i] {
+		case "ip", "ip4", "ip6":
+			var la *IPAddr
+			if laddr != "" {
+				if la, err = ResolveIPAddr(laddr); err != nil {
+					return nil, err
+				}
+			}
+			c, err := ListenIP(net, la)
+			if err != nil {
 				return nil, err
 			}
+			return c, nil
 		}
-		c, err := ListenIP(net, la)
-		if err != nil {
-			return nil, err
-		}
-		return c, nil
 	}
+
 	return nil, UnknownNetworkError(net)
 }

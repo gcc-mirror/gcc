@@ -35,17 +35,17 @@
 #include <debug/safe_sequence.h>
 #include <debug/safe_iterator.h>
 
-namespace std
+namespace std _GLIBCXX_VISIBILITY(default)
 {
 namespace __debug
 {
   /// Class std::forward_list with safety/checking/debug instrumentation.
   template<typename _Tp, typename _Alloc = std::allocator<_Tp> >
     class forward_list
-    : public _GLIBCXX_STD_D::forward_list<_Tp, _Alloc>,
+    : public _GLIBCXX_STD_C::forward_list<_Tp, _Alloc>,
       public __gnu_debug::_Safe_sequence<forward_list<_Tp, _Alloc> >
     {
-      typedef _GLIBCXX_STD_D::forward_list<_Tp, _Alloc> _Base;
+      typedef _GLIBCXX_STD_C::forward_list<_Tp, _Alloc> _Base;
       typedef __gnu_debug::_Safe_sequence<forward_list> _Safe_base;
 
       typedef typename _Base::iterator       _Base_iterator;
@@ -600,7 +600,79 @@ namespace __debug
 		   && __it != this->_M_base().cend();
 	  });
       }
+      typedef __gnu_debug::_Safe_iterator_base _Safe_iterator_base;
+      static void
+      _M_swap_aux(forward_list& __lhs,
+		  _Safe_iterator_base*& __lhs_iterators,
+		  forward_list& __rhs,
+		  _Safe_iterator_base*& __rhs_iterators);
+      void _M_swap(forward_list& __list);
     };
+
+   template<typename _Tp, typename _Alloc>
+    void
+    forward_list<_Tp, _Alloc>::
+    _M_swap_aux(forward_list<_Tp, _Alloc>& __lhs,
+		__gnu_debug::_Safe_iterator_base*& __lhs_iterators,
+		forward_list<_Tp, _Alloc>& __rhs,
+		__gnu_debug::_Safe_iterator_base*& __rhs_iterators)
+    {
+      using __gnu_debug::_Safe_iterator_base;
+      _Safe_iterator_base* __bbegin_its = 0;
+      _Safe_iterator_base* __last_bbegin = 0;
+      for (_Safe_iterator_base* __iter = __lhs_iterators; __iter;)
+	{
+	  // Even iterator are casted to const_iterator, not a problem.
+	  const_iterator* __victim = static_cast<const_iterator*>(__iter);
+	  __iter = __iter->_M_next;
+	  if (__victim->base() == __rhs._M_base().cbefore_begin())
+	    {
+	      __victim->_M_unlink();
+	      if (__lhs_iterators == __victim)
+		__lhs_iterators = __victim->_M_next;
+	      if (__bbegin_its)
+		{
+		  __victim->_M_next = __bbegin_its;
+		  __bbegin_its->_M_prior = __victim;
+		}
+	      else
+		__last_bbegin = __victim;
+	      __bbegin_its = __victim;
+	    }
+	  else
+	    __victim->_M_sequence = &__lhs;
+	}
+
+      if (__bbegin_its)
+	{
+	  if (__rhs_iterators)
+	    {
+	      __rhs_iterators->_M_prior = __last_bbegin;
+	      __last_bbegin->_M_next = __rhs_iterators;
+	    }
+	  __rhs_iterators = __bbegin_its;
+	}
+    }
+
+  /* Special forward_list _M_swap version that do not swap the
+   * before-begin ownership.*/
+  template<typename _Tp, typename _Alloc>
+    void
+    forward_list<_Tp, _Alloc>::
+    _M_swap(forward_list<_Tp, _Alloc>& __list)
+    {
+      __gnu_cxx::__scoped_lock sentry(this->_M_get_mutex());
+      std::swap(this->_M_iterators, __list._M_iterators);
+      std::swap(this->_M_const_iterators, __list._M_const_iterators);
+      // Useless, always 1 on forward_list
+      //std::swap(this->_M_version, __list._M_version);
+      _Safe_iterator_base* __this_its = this->_M_iterators;
+      _M_swap_aux(__list, __list._M_iterators, *this, this->_M_iterators);
+      _Safe_iterator_base* __this_const_its = this->_M_const_iterators;
+      _M_swap_aux(__list, __list._M_const_iterators, *this, this->_M_const_iterators);
+      _M_swap_aux(*this, __this_its, __list, __list._M_iterators);
+      _M_swap_aux(*this, __this_const_its, __list, __list._M_const_iterators);
+    }
 
   template<typename _Tp, typename _Alloc>
     bool

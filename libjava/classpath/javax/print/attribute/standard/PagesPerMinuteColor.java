@@ -1,4 +1,4 @@
-/* PagesPerMinuteColor.java -- 
+/* PagesPerMinuteColor.java --
    Copyright (C) 2003, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -42,20 +42,20 @@ import javax.print.attribute.IntegerSyntax;
 import javax.print.attribute.PrintServiceAttribute;
 
 /**
- * The <code>PagesPerMinuteColor</code> printing attribute specifies 
+ * The <code>PagesPerMinuteColor</code> printing attribute specifies
  * the nominal number of pages per minute which may be printed in
- * color by the printer. 
+ * color by the printer.
  * <p>
  * <b>IPP Compatibility:</b> PagesPerMinuteColor is an IPP 1.1 attribute.
  * </p>
- * 
+ *
  * @author Michael Koch
  */
 public final class PagesPerMinuteColor extends IntegerSyntax
   implements PrintServiceAttribute
 {
   private static final long serialVersionUID = 1684993151687470944L;
-  
+
   /**
    * Creates a <code>PagesPerMinuteColor</code> object.
    *
@@ -70,13 +70,13 @@ public final class PagesPerMinuteColor extends IntegerSyntax
     if (value < 0)
       throw new IllegalArgumentException("value may not be less than 0");
   }
-  
+
   /**
    * Tests if the given object is equal to this object.
    *
    * @param obj the object to test
    *
-   * @return <code>true</code> if both objects are equal, 
+   * @return <code>true</code> if both objects are equal,
    * <code>false</code> otherwise.
    */
   public boolean equals(Object obj)

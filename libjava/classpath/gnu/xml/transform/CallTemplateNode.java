@@ -1,4 +1,4 @@
-/* CallTemplateNode.java -- 
+/* CallTemplateNode.java --
    Copyright (C) 2004,2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -132,17 +132,17 @@ final class CallTemplateNode
                    context, pos, len,
                    parent, nextSibling);
   }
-  
+
   public boolean references(QName var)
   {
     for (Iterator i = withParams.iterator(); i.hasNext(); )
       {
-	if (((WithParam) i.next()).references(var))
-	  return true;
+        if (((WithParam) i.next()).references(var))
+          return true;
       }
     return super.references(var);
   }
-  
+
   public String toString()
   {
     CPStringBuilder buf = new CPStringBuilder("call-template");
@@ -152,5 +152,5 @@ final class CallTemplateNode
     buf.append(']');
     return buf.toString();
   }
-  
+
 }

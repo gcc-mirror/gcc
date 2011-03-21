@@ -139,7 +139,7 @@ public class Notification
 
   /**
    * Creates a new {@link Notification} object with the specified type,
-   * source, sequence number and timestamp.  
+   * source, sequence number and timestamp.
    *
    * @param type the type of the notification.
    * @param source the source of the notification.
@@ -147,14 +147,14 @@ public class Notification
    * @param timeStamp the time the notification was emitted.
    */
   public Notification(String type, Object source, long sequenceNumber,
-		      long timeStamp)
+                      long timeStamp)
   {
     this(type, source, sequenceNumber, timeStamp, "");
   }
 
   /**
    * Creates a new {@link Notification} object with the specified type,
-   * source, sequence number, timestamp and message.  
+   * source, sequence number, timestamp and message.
    *
    * @param type the type of the notification.
    * @param source the source of the notification.
@@ -163,7 +163,7 @@ public class Notification
    * @param message the message contained in the notification.
    */
   public Notification(String type, Object source, long sequenceNumber,
-		      long timeStamp, String message)
+                      long timeStamp, String message)
   {
     super(source);
     this.type = type;
@@ -184,7 +184,7 @@ public class Notification
    * @param message the message contained in the notification.
    */
   public Notification(String type, Object source, long sequenceNumber,
-		      String message)
+                      String message)
   {
     this(type, source, sequenceNumber, new Date().getTime(), message);
   }
@@ -304,15 +304,15 @@ public class Notification
 
   /**
    * A textual representation of the notification.
-   * 
+   *
    * @return the notification in {@link java.lang.String} form.
    */
   public String toString()
   {
     return getClass().getName()
-      + "[message=" + message 
-      + ", sequenceNumber=" + sequenceNumber 
-      + ", source=" + source 
+      + "[message=" + message
+      + ", sequenceNumber=" + sequenceNumber
+      + ", source=" + source
       + ", timeStamp=" + timeStamp
       + ", type=" + type
       + ", userData=" + userData
@@ -332,4 +332,3 @@ public class Notification
   }
 
 }
-

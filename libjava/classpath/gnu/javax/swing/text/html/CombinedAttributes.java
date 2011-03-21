@@ -48,8 +48,8 @@ import javax.swing.text.SimpleAttributeSet;
  * Contains the two combined attribute sets what are searched subsequently.
  * This is used to combine style sheet attributes with the HTML view attributes.
  * The parent cannot be used as the view may have its own attribute hierarchy.
- * 
- * @author Audrius Meskauskas (AudriusA@Bioinformatics.org)  
+ *
+ * @author Audrius Meskauskas (AudriusA@Bioinformatics.org)
  */
 public class CombinedAttributes implements AttributeSet, Serializable
 {
@@ -60,7 +60,7 @@ public class CombinedAttributes implements AttributeSet, Serializable
   {
     /**
      * Create a combined enumeration that enumerates over two enumerations.
-     * 
+     *
      * @param first the first enumeration to enumerate
      * @param second the second enumeration to enumerate
      */
@@ -69,46 +69,46 @@ public class CombinedAttributes implements AttributeSet, Serializable
       a = first;
       b = second;
     }
-    
+
     /**
      * The first enumeration (elements returned first)
      */
     final Enumeration a;
-    
+
     /**
      * The second enumeration (elements returned later)
      */
     final Enumeration b;
-    
+
     /** @inheritDoc */
     public boolean hasMoreElements()
     {
       return a.hasMoreElements() || b.hasMoreElements();
     }
-    
+
     /** @inheritDoc */
     public Object nextElement()
     {
       return a.hasMoreElements() ? a.nextElement():b.nextElement();
     }
   }
-  
-  
+
+
   /**
    * The first attribute set.
    */
   final AttributeSet a;
-  
+
   /**
    * The second attribute set.
    */
   final AttributeSet b;
-  
+
   /**
    * Create the CombinedAttributes what search in the two sets. If any of the
    * two passed sets is null, another set is returned. Otherwise, the combined
    * attribute set is returned.
-   * 
+   *
    * @param primary the first set (searched first)
    * @param secondary the second set (searched later).
    */
@@ -122,10 +122,10 @@ public class CombinedAttributes implements AttributeSet, Serializable
     else
       return new CombinedAttributes(primary, secondary);
   }
-  
+
   /**
    * Create the CombinedAttributes what search in the two sets.
-   * 
+   *
    * @param primary the first set (searched first)
    * @param secondary the second set (searched later).
    */
@@ -170,7 +170,7 @@ public class CombinedAttributes implements AttributeSet, Serializable
     Object value = a.getAttribute(key);
     if (value == null)
       value = b.getAttribute(key);
-    
+
     return value;
   }
 
@@ -188,7 +188,7 @@ public class CombinedAttributes implements AttributeSet, Serializable
 
   /**
    * There is no one.
-   * 
+   *
    * @return null, always.
    */
   public AttributeSet getResolveParent()

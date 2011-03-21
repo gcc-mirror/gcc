@@ -1,4 +1,4 @@
-/* SAXParserFactory.java -- 
+/* SAXParserFactory.java --
    Copyright (C) 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -216,8 +216,8 @@ public abstract class SAXParserFactory
    * @param name the feature name
    * @param value the featurevalue
    */
-  public abstract void setFeature(String name, boolean value) 
-    throws ParserConfigurationException, SAXNotRecognizedException, 
+  public abstract void setFeature(String name, boolean value)
+    throws ParserConfigurationException, SAXNotRecognizedException,
            SAXNotSupportedException;
 
   /**
@@ -225,8 +225,8 @@ public abstract class SAXParserFactory
    * factory.
    * @param name the feature name
    */
-  public abstract boolean getFeature(String name) 
-    throws ParserConfigurationException, SAXNotRecognizedException, 
+  public abstract boolean getFeature(String name)
+    throws ParserConfigurationException, SAXNotRecognizedException,
            SAXNotSupportedException;
 
   // -- JAXP 1.3 methods --

@@ -1,4 +1,4 @@
-/* BMPEncoder.java -- 
+/* BMPEncoder.java --
    Copyright (C) 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -59,7 +59,7 @@ public abstract class BMPEncoder
   /**
    * Determines the coding type of the bitmap and returns the corresponding
    * encoder.
-   * 
+   *
    * @param fh - the file header
    * @param ih - the info header
    * @return the appropriate encoder
@@ -94,17 +94,17 @@ public abstract class BMPEncoder
           }
       case BMPInfoHeader.BI_RLE4:
         return new EncodeRLE4(fh, ih);
-        
+
       case BMPInfoHeader.BI_RLE8:
         return new EncodeRLE8(fh, ih);
       default:
         return null;
       }
   }
-  
+
   /**
    * The image encoder.
-   * 
+   *
    * @param o - the image output stream
    * @param streamMetadata - metadata associated with this stream, or
    * null

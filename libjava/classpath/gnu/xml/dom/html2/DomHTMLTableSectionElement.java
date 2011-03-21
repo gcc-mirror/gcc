@@ -1,4 +1,4 @@
-/* DomHTMLTableSectionElement.java -- 
+/* DomHTMLTableSectionElement.java --
    Copyright (C) 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -70,7 +70,7 @@ public class DomHTMLTableSectionElement
   {
     setHTMLAttribute("align", align);
   }
-  
+
   public String getCh()
   {
     return getHTMLAttribute("char");
@@ -80,7 +80,7 @@ public class DomHTMLTableSectionElement
   {
     setHTMLAttribute("char", ch);
   }
-  
+
   public String getChOff()
   {
     return getHTMLAttribute("charoff");
@@ -90,7 +90,7 @@ public class DomHTMLTableSectionElement
   {
     setHTMLAttribute("charoff", chOff);
   }
-  
+
   public String getVAlign()
   {
     return getHTMLAttribute("valign");
@@ -134,9 +134,9 @@ public class DomHTMLTableSectionElement
       }
     removeChild(ref);
   }
-  
+
   Node getRow(final int index)
-  { 
+  {
     int i = 0;
     for (Node ctx = getFirstChild(); ctx != null;
          ctx = ctx.getNextSibling())
@@ -158,6 +158,5 @@ public class DomHTMLTableSectionElement
       }
     return null;
   }
-  
-}
 
+}

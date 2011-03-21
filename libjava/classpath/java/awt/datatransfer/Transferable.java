@@ -80,4 +80,3 @@ public interface Transferable
     throws UnsupportedFlavorException, IOException;
 
 } // interface Transferable
-

@@ -79,11 +79,11 @@ public class DefaultEditorKit extends EditorKit
       try
         {
           JTextComponent t = getTextComponent(event);
-      
+
           if (t != null)
             {
               int offs = Utilities.getPreviousWord(t, t.getCaretPosition());
-      
+
               Caret c = t.getCaret();
               c.moveDot(offs);
               c.setMagicCaretPosition(t.modelToView(offs).getLocation());
@@ -109,11 +109,11 @@ public class DefaultEditorKit extends EditorKit
       try
         {
           JTextComponent t = getTextComponent(event);
-      
+
           if (t != null)
             {
               int offs = Utilities.getNextWord(t, t.getCaretPosition());
-      
+
               Caret c = t.getCaret();
               c.moveDot(offs);
               c.setMagicCaretPosition(t.modelToView(offs).getLocation());
@@ -132,17 +132,17 @@ public class DefaultEditorKit extends EditorKit
     {
       super(selectionBeginWordAction);
     }
-  
+
     public void actionPerformed(ActionEvent event)
     {
       try
         {
           JTextComponent t = getTextComponent(event);
-      
+
           if (t != null)
             {
               int offs = Utilities.getWordStart(t, t.getCaretPosition());
-      
+
               Caret c = t.getCaret();
               c.moveDot(offs);
               c.setMagicCaretPosition(t.modelToView(offs).getLocation());
@@ -154,24 +154,24 @@ public class DefaultEditorKit extends EditorKit
         }
     }
   }
-  
+
   static class SelectionEndWordAction extends TextAction
   {
     SelectionEndWordAction()
     {
       super(selectionEndWordAction);
     }
-  
+
     public void actionPerformed(ActionEvent event)
     {
       try
         {
           JTextComponent t = getTextComponent(event);
-      
+
           if (t != null)
             {
               int offs = Utilities.getWordEnd(t, t.getCaretPosition());
-      
+
               Caret c = t.getCaret();
               c.moveDot(offs);
               c.setMagicCaretPosition(t.modelToView(offs).getLocation());
@@ -183,24 +183,24 @@ public class DefaultEditorKit extends EditorKit
         }
     }
   }
-  
+
   static class BeginWordAction extends TextAction
   {
     BeginWordAction()
     {
       super(beginWordAction);
     }
-  
+
     public void actionPerformed(ActionEvent event)
     {
       try
         {
           JTextComponent t = getTextComponent(event);
-      
+
           if (t != null)
             {
               int offs = Utilities.getWordStart(t, t.getCaretPosition());
-      
+
               Caret c = t.getCaret();
               c.setDot(offs);
               c.setMagicCaretPosition(t.modelToView(offs).getLocation());
@@ -212,24 +212,24 @@ public class DefaultEditorKit extends EditorKit
         }
     }
   }
-  
+
   static class EndWordAction extends TextAction
   {
     EndWordAction()
     {
       super(endWordAction);
     }
-  
+
     public void actionPerformed(ActionEvent event)
     {
       try
         {
           JTextComponent t = getTextComponent(event);
-      
+
           if (t != null)
             {
               int offs = Utilities.getWordEnd(t, t.getCaretPosition());
-      
+
               Caret c = t.getCaret();
               c.setDot(offs);
               c.setMagicCaretPosition(t.modelToView(offs).getLocation());
@@ -255,11 +255,11 @@ public class DefaultEditorKit extends EditorKit
       try
         {
           JTextComponent t = getTextComponent(event);
-      
+
           if (t != null)
             {
               int offs = Utilities.getPreviousWord(t, t.getCaretPosition());
-      
+
               Caret c = t.getCaret();
               c.setDot(offs);
               c.setMagicCaretPosition(t.modelToView(offs).getLocation());
@@ -285,11 +285,11 @@ public class DefaultEditorKit extends EditorKit
       try
         {
           JTextComponent t = getTextComponent(event);
-      
+
           if (t != null)
             {
               int offs = Utilities.getNextWord(t, t.getCaretPosition());
-      
+
               Caret c = t.getCaret();
               c.setDot(offs);
               c.setMagicCaretPosition(t.modelToView(offs).getLocation());
@@ -320,7 +320,7 @@ public class DefaultEditorKit extends EditorKit
           c.setDot(0);
           c.moveDot(offs);
           try
-            {   
+            {
               c.setMagicCaretPosition(t.modelToView(offs).getLocation());
             }
           catch(BadLocationException ble)
@@ -347,7 +347,7 @@ public class DefaultEditorKit extends EditorKit
           Caret c = t.getCaret();
           c.moveDot(0);
           try
-            {   
+            {
               c.setMagicCaretPosition(t.modelToView(0).getLocation());
             }
           catch(BadLocationException ble)
@@ -375,7 +375,7 @@ public class DefaultEditorKit extends EditorKit
           Caret c = t.getCaret();
           c.moveDot(offs);
           try
-            {   
+            {
               c.setMagicCaretPosition(t.modelToView(offs).getLocation());
             }
           catch(BadLocationException ble)
@@ -385,11 +385,11 @@ public class DefaultEditorKit extends EditorKit
         }
     }
   }
-  
+
   static class SelectionBeginLineAction
     extends TextAction
   {
-    
+
     SelectionBeginLineAction()
     {
       super(selectionBeginLineAction);
@@ -440,14 +440,14 @@ public class DefaultEditorKit extends EditorKit
         }
     }
   }
-  
+
   static class SelectLineAction extends TextAction
   {
     SelectLineAction()
     {
       super(selectLineAction);
     }
-  
+
     public void actionPerformed(ActionEvent event)
     {
       JTextComponent t = getTextComponent(event);
@@ -469,14 +469,14 @@ public class DefaultEditorKit extends EditorKit
         }
     }
   }
-  
+
   static class SelectWordAction extends TextAction
   {
     SelectWordAction()
     {
       super(selectWordAction);
     }
-  
+
     public void actionPerformed(ActionEvent event)
     {
       JTextComponent t = getTextComponent(event);
@@ -497,11 +497,11 @@ public class DefaultEditorKit extends EditorKit
               else
                 {
                   // Current cursor position is not on the first character
-                  // in a word. 
+                  // in a word.
                   int nextWord = Utilities.getNextWord(t, dot);
                   int previousWord = Utilities.getPreviousWord(t, dot);
                   int previousWordEnd = Utilities.getWordEnd(t, previousWord);
-                  
+
                   // Cursor position is in the space between two words. In such a
                   // situation just select the space.
                   if (dot >= previousWordEnd && dot <= nextWord)
@@ -542,7 +542,7 @@ public class DefaultEditorKit extends EditorKit
     {
       c.moveDot(offs);
     }
-    
+
   }
 
   static class SelectionUpAction
@@ -614,7 +614,7 @@ public class DefaultEditorKit extends EditorKit
     {
       c.setDot(offs);
     }
-    
+
   }
 
   static class ForwardAction
@@ -629,7 +629,7 @@ public class DefaultEditorKit extends EditorKit
     {
       c.setDot(offs);
     }
-    
+
   }
 
   static class BackwardAction
@@ -644,7 +644,7 @@ public class DefaultEditorKit extends EditorKit
     {
       c.setDot(offs);
     }
-    
+
   }
 
   static class DeletePrevCharAction
@@ -664,7 +664,7 @@ public class DefaultEditorKit extends EditorKit
             {
               int pos = t.getSelectionStart();
               int len = t.getSelectionEnd() - pos;
-              
+
               if (len > 0)
                   t.getDocument().remove(pos, len);
               else if (pos > 0)
@@ -701,12 +701,12 @@ public class DefaultEditorKit extends EditorKit
             {
               int pos = t.getSelectionStart();
               int len = t.getSelectionEnd() - pos;
-              
+
               if (len > 0)
                   t.getDocument().remove(pos, len);
               else if (pos < t.getDocument().getLength())
                   t.getDocument().remove(pos, 1);
-    
+
               Caret c = t.getCaret();
               c.setDot(pos);
               c.setMagicCaretPosition(t.modelToView(pos).getLocation());
@@ -783,7 +783,7 @@ public class DefaultEditorKit extends EditorKit
 
   static class BeginAction extends TextAction
   {
-    
+
     BeginAction()
     {
       super(beginAction);
@@ -810,7 +810,7 @@ public class DefaultEditorKit extends EditorKit
 
   static class EndAction extends TextAction
   {
-      
+
     EndAction()
     {
       super(endAction);
@@ -825,7 +825,7 @@ public class DefaultEditorKit extends EditorKit
           Caret c = t.getCaret();
           c.setDot(offs);
           try
-            {   
+            {
               c.setMagicCaretPosition(t.modelToView(offs).getLocation());
             }
           catch(BadLocationException ble)
@@ -835,7 +835,7 @@ public class DefaultEditorKit extends EditorKit
         }
     }
   }
-  
+
   /**
    * Creates a beep on the PC speaker.
    *
@@ -962,12 +962,12 @@ public class DefaultEditorKit extends EditorKit
    * event is received and no keymap entry exists for that. The purpose
    * of this action is to filter out a couple of characters. This includes
    * the control characters and characters with the ALT-modifier.
-   * 
+   *
    * If an event does not get filtered, it is inserted into the document
    * of the text component. If there is some text selected in the text
    * component, this text will be replaced.
    */
-  public static class DefaultKeyTypedAction 
+  public static class DefaultKeyTypedAction
     extends TextAction
   {
 
@@ -1008,7 +1008,7 @@ public class DefaultEditorKit extends EditorKit
                 }
             }
         }
-    }    
+    }
   }
 
   /**
@@ -1481,9 +1481,9 @@ public class DefaultEditorKit extends EditorKit
    * The <code>Action</code>s that are supported by the
    * <code>DefaultEditorKit</code>.
    */
-  private static Action[] defaultActions = 
+  private static Action[] defaultActions =
   new Action[] {
-    // These classes are public because they are so in the RI.            
+    // These classes are public because they are so in the RI.
     new BeepAction(),
     new CopyAction(),
     new CutAction(),
@@ -1492,29 +1492,29 @@ public class DefaultEditorKit extends EditorKit
     new InsertContentAction(),
     new InsertTabAction(),
     new PasteAction(),
-    
+
     // These are (package-)private inner classes.
     new DeleteNextCharAction(),
     new DeletePrevCharAction(),
 
     new BeginLineAction(),
     new SelectionBeginLineAction(),
-    
+
     new EndLineAction(),
     new SelectionEndLineAction(),
-    
+
     new BackwardAction(),
     new SelectionBackwardAction(),
 
     new ForwardAction(),
     new SelectionForwardAction(),
-    
+
     new UpAction(),
     new SelectionUpAction(),
 
     new DownAction(),
     new SelectionDownAction(),
-    
+
     new NextWordAction(),
     new SelectionNextWordAction(),
 
@@ -1523,16 +1523,16 @@ public class DefaultEditorKit extends EditorKit
 
     new BeginAction(),
     new SelectionBeginAction(),
-    
+
     new EndAction(),
     new SelectionEndAction(),
-    
+
     new BeginWordAction(),
     new SelectionBeginWordAction(),
-    
+
     new EndWordAction(),
     new SelectionEndWordAction(),
-    
+
     new SelectAllAction(),
     new SelectLineAction(),
     new SelectWordAction()
@@ -1640,12 +1640,12 @@ public class DefaultEditorKit extends EditorKit
 
     while ((line = reader.readLine()) != null)
       {
-	content.append(line);
-	content.append("\n");
+        content.append(line);
+        content.append("\n");
       }
-    
+
     document.insertString(offset, content.substring(0, content.length() - 1),
-			  SimpleAttributeSet.EMPTY);
+                          SimpleAttributeSet.EMPTY);
   }
 
   /**
@@ -1680,7 +1680,7 @@ public class DefaultEditorKit extends EditorKit
    * @param offset the beginning offset from where to write
    * @param len the length of the fragment to write
    *
-   * @throws BadLocationException if <code>offset</code> is an 
+   * @throws BadLocationException if <code>offset</code> is an
    * invalid location inside <code>document</code>.
    * @throws IOException if something goes wrong while writing to
    *        <code>out</code>

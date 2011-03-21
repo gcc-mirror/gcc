@@ -1,4 +1,4 @@
-/* PrimitiveEntry.java -- 
+/* PrimitiveEntry.java --
    Copyright (C) 2003, 2006 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -70,7 +70,7 @@ public abstract class PrimitiveEntry
 
   /**
    * Returns the alias of this primitive entry.
-   * 
+   *
    * @return The alias.
    */
   public String getAlias()
@@ -80,7 +80,7 @@ public abstract class PrimitiveEntry
 
   /**
    * Returns the creation date of this primitive entry.
-   * 
+   *
    * @return The creation date.
    */
   public Date getCreationDate()

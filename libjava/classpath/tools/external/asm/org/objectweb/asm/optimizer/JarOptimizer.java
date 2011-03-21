@@ -40,7 +40,7 @@ import java.util.zip.ZipOutputStream;
 
 /**
  * A Jar file optimizer.
- * 
+ *
  * @author Eric Bruneton
  */
 public class JarOptimizer {

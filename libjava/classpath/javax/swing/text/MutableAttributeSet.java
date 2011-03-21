@@ -40,10 +40,10 @@ package javax.swing.text;
 import java.util.Enumeration;
 
 /**
- * An {@link AttributeSet} that supports modification of the stored 
+ * An {@link AttributeSet} that supports modification of the stored
  * attributes.
- * 
- * @author	Andrew Selkirk
+ *
+ * @author      Andrew Selkirk
  * @since 1.2
  */
 public interface MutableAttributeSet extends AttributeSet
@@ -52,54 +52,54 @@ public interface MutableAttributeSet extends AttributeSet
    * Adds an attribute with the given <code>name</code> and <code>value</code>
    * to the set.  If the set already contains an attribute with the given
    * <code>name</code>, the attribute value is updated.
-   * 
+   *
    * @param name  the attribute name (<code>null</code> not permitted).
    * @param value  the value (<code>null</code> not permitted).
-   * 
+   *
    * @throws NullPointerException if either argument is <code>null</code>.
    */
   void addAttribute(Object name, Object value);
 
   /**
    * Adds all the attributes from <code>attributes</code> to this set.
-   * 
+   *
    * @param attributes  the set of attributes to add (<code>null</code> not
    *                    permitted).
-   *                    
-   * @throws NullPointerException if <code>attributes</code> is 
+   *
+   * @throws NullPointerException if <code>attributes</code> is
    *         <code>null</code>.
    */
   void addAttributes(AttributeSet attributes);
 
   /**
-   * Removes the attribute with the specified <code>name</code>, if this 
+   * Removes the attribute with the specified <code>name</code>, if this
    * attribute is defined.  This method will only remove an attribute from
    * this set, not from the resolving parent.
-   * 
+   *
    * @param name  the attribute name (<code>null</code> not permitted).
-   * 
+   *
    * @throws NullPointerException if <code>name</code> is <code>null</code>.
    */
   void removeAttribute(Object name);
 
   /**
    * Removes the attributes listed in <code>names</code>.
-   * 
+   *
    * @param names  the attribute names (<code>null</code> not permitted).
-   * 
-   * @throws NullPointerException if <code>names</code> is <code>null</code> 
+   *
+   * @throws NullPointerException if <code>names</code> is <code>null</code>
    *         or contains any <code>null</code> values.
    */
   void removeAttributes(Enumeration<?> names);
 
   /**
-   * Removes attributes from this set if they are found in the 
+   * Removes attributes from this set if they are found in the
    * given set.  Only attributes whose key AND value are removed.
-   * Removes attributes only from this set, not from the resolving parent.  
-   * Since the resolving parent is stored as an attribute, if 
+   * Removes attributes only from this set, not from the resolving parent.
+   * Since the resolving parent is stored as an attribute, if
    * <code>attributes</code> has the same resolving parent as this set, the
    * parent will be removed from this set.
-   * 
+   *
    * @param attributes  the attributes (<code>null</code> not permitted).
    */
   void removeAttributes(AttributeSet attributes);
@@ -107,10 +107,10 @@ public interface MutableAttributeSet extends AttributeSet
   /**
    * Sets the reolving parent for this set.  When looking up an attribute, if
    * it is not found in this set, then the resolving parent is also used for
-   * the lookup. 
-   * 
+   * the lookup.
+   *
    * @param parent  the parent attribute set (<code>null</code> not permitted).
-   * 
+   *
    * @throws NullPointerException if <code>parent</code> is <code>null</code>.
    */
   void setResolveParent(AttributeSet parent);

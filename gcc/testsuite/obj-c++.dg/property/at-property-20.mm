@@ -37,14 +37,13 @@
 
 @interface MyClass : MyRootClass
 { }
-@property (assign) id <MyProtocolA> a;        /* { dg-warning "originally specified here" } */
-@property int b;                              /* { dg-warning "originally specified here" } */
-@property float c;                            /* { dg-warning "originally specified here" } */
-@property (assign) MyRootClass *d;            /* { dg-warning "originally specified here" } */
-@property (assign) MySubClass1 *e;            /* { dg-warning "originally specified here" } */
-/* FIXME: Mysteriously two of the next three need to be 'dg-message' instead of 'dg-warning' for the testcase to work.  */
+@property (assign) id <MyProtocolA> a;        /* { dg-message "originally specified here" } */
+@property int b;                              /* { dg-message "originally specified here" } */
+@property float c;                            /* { dg-message "originally specified here" } */
+@property (assign) MyRootClass *d;            /* { dg-message "originally specified here" } */
+@property (assign) MySubClass1 *e;            /* { dg-message "originally specified here" } */
 @property (assign, readonly) MySubClass1 *f;  /* { dg-message "originally specified here" } */
-@property (assign) MySubClass3 *g;            /* { dg-warning "originally specified here" } */
+@property (assign) MySubClass3 *g;            /* { dg-message "originally specified here" } */
 @property (assign, readonly) MySubClass3 *h;  /* { dg-message "originally specified here"  } */
 @end
 

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-std=gnu99 -O -Wall" } */
+/* { dg-options "-std=gnu99 -O -Wall -Wno-unused" } */
 
 /* C99 6.2.7: Compatible type and composite type.  */
 

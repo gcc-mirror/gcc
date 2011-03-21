@@ -40,7 +40,7 @@ package javax.print.attribute.standard;
 import javax.print.attribute.EnumSyntax;
 
 /**
- * <code>MediaTray</code> is a subclass of the <code>Media</code> printing 
+ * <code>MediaTray</code> is a subclass of the <code>Media</code> printing
  * attribute and provides selection of media to be used by the means of the
  * input tray of the printer. The class pre-defines commonly available types
  * of input trays in printers. This media type enumeration may be used in
@@ -49,25 +49,25 @@ import javax.print.attribute.EnumSyntax;
  * <b>IPP Compatibility:</b> MediaTray is not an IPP 1.1 attribute on its own.
  * It provides parts of the <code>media</code> attribute type values.
  * </p>
- * 
+ *
  * @author Sven de Marothy
  * @author Wolfgang Baer (WBaer@gmx.de)
  */
 public class MediaTray extends Media
 {
-  
+
   private static final long serialVersionUID = -982503611095214703L;
-  
+
   /**
    * Top tray
    */
   public static final MediaTray TOP = new MediaTray(0);
-  
+
   /**
    * Middle tray
    */
   public static final MediaTray MIDDLE = new MediaTray(1);
-  
+
   /**
    * Bottom tray
    */
@@ -80,9 +80,9 @@ public class MediaTray extends Media
 
   /**
    * Manual-feed tray
-   */ 
+   */
   public static final MediaTray MANUAL = new MediaTray(4);
-  
+
   /**
    * Large capacity tray
    */
@@ -92,22 +92,22 @@ public class MediaTray extends Media
    * Main tray
    */
   public static final MediaTray MAIN = new MediaTray(6);
-  
+
   /**
    * Side tray
    */
-  public static final MediaTray SIDE = new MediaTray(7);  
-  
+  public static final MediaTray SIDE = new MediaTray(7);
+
   private static final String[] stringTable = { "top", "middle", "bottom",
-                                                "envelope", "manual", 
-                                                "large-capacity", "main", 
+                                                "envelope", "manual",
+                                                "large-capacity", "main",
                                                 "side" };
-  
-  private static final MediaTray[] enumValueTable = { TOP, MIDDLE, BOTTOM, 
+
+  private static final MediaTray[] enumValueTable = { TOP, MIDDLE, BOTTOM,
                                                       ENVELOPE, MANUAL,
                                                       LARGE_CAPACITY, MAIN,
-                                                      SIDE };  
-  
+                                                      SIDE };
+
   /**
    * Creates a <code>MediaTray</code> object.
    *
@@ -117,7 +117,7 @@ public class MediaTray extends Media
   {
     super( i );
   }
- 
+
   /**
    * Returns a table with the enumeration values represented as strings
    * for this object.
@@ -139,4 +139,3 @@ public class MediaTray extends Media
     return enumValueTable;
   }
 }
-

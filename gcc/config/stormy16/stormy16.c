@@ -1,6 +1,6 @@
 /* Xstormy16 target functions.
    Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-   2006, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
+   2006, 2007, 2008, 2009, 2010, 2011  Free Software Foundation, Inc.
    Contributed by Red Hat, Inc.
 
    This file is part of GCC.
@@ -46,6 +46,7 @@
 #include "langhooks.h"
 #include "gimple.h"
 #include "df.h"
+#include "reload.h"
 #include "ggc.h"
 
 static rtx emit_addhi3_postreload (rtx, rtx, rtx);
@@ -106,6 +107,15 @@ xstormy16_address_cost (rtx x, bool speed ATTRIBUTE_UNUSED)
   return (CONST_INT_P (x) ? 2
 	  : GET_CODE (x) == PLUS ? 7
 	  : 5);
+}
+
+/* Worker function for TARGET_MEMORY_MOVE_COST.  */
+
+static int
+xstormy16_memory_move_cost (enum machine_mode mode, reg_class_t rclass,
+			    bool in)
+{
+  return (5 + memory_move_secondary_cost (mode, rclass, in));
 }
 
 /* Branches are handled as follows:
@@ -469,8 +479,11 @@ xstormy16_secondary_reload_class (enum reg_class rclass,
   return NO_REGS;
 }
 
-enum reg_class
-xstormy16_preferred_reload_class (rtx x, enum reg_class rclass)
+/* Worker function for TARGET_PREFERRED_RELOAD_CLASS
+   and TARGET_PREFERRED_OUTPUT_RELOAD_CLASS.  */
+
+static reg_class_t
+xstormy16_preferred_reload_class (rtx x, reg_class_t rclass)
 {
   if (rclass == GENERAL_REGS && MEM_P (x))
     return EIGHT_REGS;
@@ -615,7 +628,7 @@ xstormy16_expand_andqi3 (rtx *operands)
   && INTVAL (X) + (OFFSET) < 0x8000					 \
   && (INTVAL (X) + (OFFSET) < 0x100 || INTVAL (X) + (OFFSET) >= 0x7F00))
 
-static bool
+bool
 xstormy16_legitimate_address_p (enum machine_mode mode ATTRIBUTE_UNUSED,
 				rtx x, bool strict)
 {
@@ -647,94 +660,27 @@ xstormy16_legitimate_address_p (enum machine_mode mode ATTRIBUTE_UNUSED,
   return false;
 }
 
-/* Return nonzero if memory address X (an RTX) can have different
-   meanings depending on the machine mode of the memory reference it
-   is used for or if the address is valid for some modes but not
-   others.
-
-   Autoincrement and autodecrement addresses typically have mode-dependent
-   effects because the amount of the increment or decrement is the size of the
-   operand being addressed.  Some machines have other mode-dependent addresses.
-   Many RISC machines have no mode-dependent addresses.
-
-   You may assume that ADDR is a valid address for the machine.
+/* Worker function for TARGET_MODE_DEPENDENT_ADDRESS_P.
 
    On this chip, this is true if the address is valid with an offset
    of 0 but not of 6, because in that case it cannot be used as an
    address for DImode or DFmode, or if the address is a post-increment
    or pre-decrement address.  */
 
-int
-xstormy16_mode_dependent_address_p (rtx x)
+static bool
+xstormy16_mode_dependent_address_p (const_rtx x)
 {
   if (LEGITIMATE_ADDRESS_CONST_INT_P (x, 0)
       && ! LEGITIMATE_ADDRESS_CONST_INT_P (x, 6))
-    return 1;
+    return true;
 
   if (GET_CODE (x) == PLUS
       && LEGITIMATE_ADDRESS_INTEGER_P (XEXP (x, 1), 0)
       && ! LEGITIMATE_ADDRESS_INTEGER_P (XEXP (x, 1), 6))
-    return 1;
-
-  if (GET_CODE (x) == PLUS)
-    x = XEXP (x, 0);
+    return true;
 
   /* Auto-increment addresses are now treated generically in recog.c.  */
-  return 0;
-}
-
-/* A C expression that defines the optional machine-dependent constraint
-   letters (`Q', `R', `S', `T', `U') that can be used to segregate specific
-   types of operands, usually memory references, for the target machine.
-   Normally this macro will not be defined.  If it is required for a particular
-   target machine, it should return 1 if VALUE corresponds to the operand type
-   represented by the constraint letter C.  If C is not defined as an extra
-   constraint, the value returned should be 0 regardless of VALUE.  */
-
-int
-xstormy16_extra_constraint_p (rtx x, int c)
-{
-  switch (c)
-    {
-      /* 'Q' is for pushes.  */
-    case 'Q':
-      return (MEM_P (x)
-	      && GET_CODE (XEXP (x, 0)) == POST_INC
-	      && XEXP (XEXP (x, 0), 0) == stack_pointer_rtx);
-
-      /* 'R' is for pops.  */
-    case 'R':
-      return (MEM_P (x)
-	      && GET_CODE (XEXP (x, 0)) == PRE_DEC
-	      && XEXP (XEXP (x, 0), 0) == stack_pointer_rtx);
-
-      /* 'S' is for immediate memory addresses.  */
-    case 'S':
-      return (MEM_P (x)
-	      && CONST_INT_P (XEXP (x, 0))
-	      && xstormy16_legitimate_address_p (VOIDmode, XEXP (x, 0), 0));
-
-      /* 'T' is for Rx.  */
-    case 'T':
-      /* Not implemented yet.  */
-      return 0;
-
-      /* 'U' is for CONST_INT values not between 2 and 15 inclusive,
-	 for allocating a scratch register for 32-bit shifts.  */
-    case 'U':
-      return (CONST_INT_P (x) && (! IN_RANGE (INTVAL (x), 2, 15)));
-
-      /* 'Z' is for CONST_INT value zero.  This is for adding zero to
-	 a register in addhi3, which would otherwise require a carry.  */
-    case 'Z':
-      return (CONST_INT_P (x) && (INTVAL (x) == 0));
-
-    case 'W':
-      return xstormy16_below100_operand (x, GET_MODE (x));
-
-    default:
-      return 0;
-    }
+  return false;
 }
 
 int
@@ -1483,15 +1429,34 @@ xstormy16_trampoline_init (rtx m_tramp, tree fndecl, rtx static_chain)
   emit_move_insn (reg_addr_mem, reg_fnaddr);
 }
 
-/* Worker function for FUNCTION_VALUE.  */
+/* Worker function for TARGET_FUNCTION_VALUE.  */
 
-rtx
-xstormy16_function_value (const_tree valtype, const_tree func ATTRIBUTE_UNUSED)
+static rtx
+xstormy16_function_value (const_tree valtype,
+			  const_tree func ATTRIBUTE_UNUSED,
+			  bool outgoing ATTRIBUTE_UNUSED)
 {
   enum machine_mode mode;
   mode = TYPE_MODE (valtype);
   PROMOTE_MODE (mode, 0, valtype);
   return gen_rtx_REG (mode, RETURN_VALUE_REGNUM);
+}
+
+/* Worker function for TARGET_LIBCALL_VALUE.  */
+
+static rtx
+xstormy16_libcall_value (enum machine_mode mode,
+			 const_rtx fun ATTRIBUTE_UNUSED)
+{
+  return gen_rtx_REG (mode, RETURN_VALUE_REGNUM);
+}
+
+/* Worker function for TARGET_FUNCTION_VALUE_REGNO_P.  */
+
+static bool
+xstormy16_function_value_regno_p (const unsigned int regno)
+{
+  return (regno == RETURN_VALUE_REGNUM);
 }
 
 /* A C compound statement that outputs the assembler code for a thunk function,
@@ -1677,9 +1642,11 @@ xstormy16_asm_out_constructor (rtx symbol, int priority)
   assemble_integer (symbol, POINTER_SIZE / BITS_PER_UNIT, POINTER_SIZE, 1);
 }
 
-/* Print a memory address as an operand to reference that memory location.  */
+/* Worker function for TARGET_PRINT_OPERAND_ADDRESS.
 
-void
+   Print a memory address as an operand to reference that memory location.  */
+
+static void
 xstormy16_print_operand_address (FILE *file, rtx address)
 {
   HOST_WIDE_INT offset;
@@ -1727,9 +1694,11 @@ xstormy16_print_operand_address (FILE *file, rtx address)
   fputc (')', file);
 }
 
-/* Print an operand to an assembler instruction.  */
+/* Worker function for TARGET_PRINT_OPERAND.
 
-void
+   Print an operand to an assembler instruction.  */
+
+static void
 xstormy16_print_operand (FILE *file, rtx x, int code)
 {
   switch (code)
@@ -2643,6 +2612,13 @@ static const struct default_options xstorym16_option_optimization_table[] =
 #undef  TARGET_ASM_CAN_OUTPUT_MI_THUNK
 #define TARGET_ASM_CAN_OUTPUT_MI_THUNK default_can_output_mi_thunk_no_vcall
 
+#undef  TARGET_PRINT_OPERAND
+#define TARGET_PRINT_OPERAND xstormy16_print_operand
+#undef  TARGET_PRINT_OPERAND_ADDRESS
+#define TARGET_PRINT_OPERAND_ADDRESS xstormy16_print_operand_address
+
+#undef  TARGET_MEMORY_MOVE_COST
+#define TARGET_MEMORY_MOVE_COST xstormy16_memory_move_cost
 #undef  TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS xstormy16_rtx_costs
 #undef  TARGET_ADDRESS_COST
@@ -2667,12 +2643,25 @@ static const struct default_options xstorym16_option_optimization_table[] =
 
 #undef  TARGET_RETURN_IN_MEMORY
 #define TARGET_RETURN_IN_MEMORY xstormy16_return_in_memory
+#undef TARGET_FUNCTION_VALUE
+#define TARGET_FUNCTION_VALUE xstormy16_function_value
+#undef TARGET_LIBCALL_VALUE
+#define TARGET_LIBCALL_VALUE xstormy16_libcall_value
+#undef TARGET_FUNCTION_VALUE_REGNO_P
+#define TARGET_FUNCTION_VALUE_REGNO_P xstormy16_function_value_regno_p
 
 #undef  TARGET_MACHINE_DEPENDENT_REORG
 #define TARGET_MACHINE_DEPENDENT_REORG xstormy16_reorg
 
+#undef  TARGET_PREFERRED_RELOAD_CLASS
+#define TARGET_PREFERRED_RELOAD_CLASS xstormy16_preferred_reload_class
+#undef  TARGET_PREFERRED_OUTPUT_RELOAD_CLASS
+#define TARGET_PREFERRED_OUTPUT_RELOAD_CLASS xstormy16_preferred_reload_class
+
 #undef TARGET_LEGITIMATE_ADDRESS_P
 #define TARGET_LEGITIMATE_ADDRESS_P	xstormy16_legitimate_address_p
+#undef TARGET_MODE_DEPENDENT_ADDRESS_P
+#define TARGET_MODE_DEPENDENT_ADDRESS_P xstormy16_mode_dependent_address_p
 
 #undef TARGET_CAN_ELIMINATE
 #define TARGET_CAN_ELIMINATE xstormy16_can_eliminate

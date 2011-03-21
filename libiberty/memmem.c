@@ -1,4 +1,4 @@
-/* Copyright (C) 1991,92,93,94,96,97,98,2000,2004,2007 Free Software Foundation, Inc.
+/* Copyright (C) 1991,92,93,94,96,97,98,2000,2004,2007,2011 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    This program is free software; you can redistribute it and/or modify
@@ -17,7 +17,8 @@
 
 /*
 
-@deftypefn Supplemental void* memmem (const void *@var{haystack}, size_t @var{haystack_len} const void *@var{needle}, size_t @var{needle_len})
+@deftypefn Supplemental void* memmem (const void *@var{haystack}, @
+  size_t @var{haystack_len} const void *@var{needle}, size_t @var{needle_len})
 
 Returns a pointer to the first occurrence of @var{needle} (length
 @var{needle_len}) in @var{haystack} (length @var{haystack_len}).

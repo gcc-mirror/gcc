@@ -58,11 +58,11 @@ import org.omg.CORBA.ValueMember;
 public class RecordTypeCode
   extends GeneralTypeCode
 {
-  /** 
-   * Use serialVersionUID for interoperability. 
+  /**
+   * Use serialVersionUID for interoperability.
    */
   private static final long serialVersionUID = 1;
-  
+
   /**
    * The individual field of the record.
    */
@@ -151,7 +151,7 @@ public class RecordTypeCode
     f.name = m.name;
     f.type = m.type;
     f.visibility = m.access;
-    
+
   }
 
   /**

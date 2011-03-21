@@ -54,7 +54,7 @@ public abstract class FileArgumentCallback
 
   /**
    * This is called when a file argument is seen.
-   * 
+   *
    * @param fileArgument the file name
    */
   public abstract void notifyFile(String fileArgument)

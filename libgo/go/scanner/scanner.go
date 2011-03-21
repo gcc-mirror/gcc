@@ -34,13 +34,15 @@ import (
 )
 
 
+// TODO(gri): Consider changing this to use the new (token) Position package.
+
 // A source position is represented by a Position value.
 // A position is valid if Line > 0.
 type Position struct {
 	Filename string // filename, if any
 	Offset   int    // byte offset, starting at 0
 	Line     int    // line number, starting at 1
-	Column   int    // column number, starting at 0 (character count per line)
+	Column   int    // column number, starting at 1 (character count per line)
 }
 
 
@@ -136,15 +138,17 @@ type Scanner struct {
 
 	// Source position
 	srcBufOffset int // byte offset of srcBuf[0] in source
-	line         int // newline count + 1
-	column       int // character count on line
+	line         int // line count
+	column       int // character count
+	lastLineLen  int // length of last line in characters (for correct column reporting)
+	lastCharLen  int // length of last character in bytes
 
 	// Token text buffer
 	// Typically, token text is stored completely in srcBuf, but in general
 	// the token text's head may be buffered in tokBuf while the token text's
 	// tail is stored in srcBuf.
 	tokBuf bytes.Buffer // token text head that is not in srcBuf anymore
-	tokPos int          // token text tail position (srcBuf index)
+	tokPos int          // token text tail position (srcBuf index); valid if >= 0
 	tokEnd int          // token text tail end (srcBuf index)
 
 	// One character look-ahead
@@ -175,13 +179,14 @@ type Scanner struct {
 }
 
 
-// Init initializes a Scanner with a new source and returns itself.
+// Init initializes a Scanner with a new source and returns s.
 // Error is set to nil, ErrorCount is set to 0, Mode is set to GoTokens,
 // and Whitespace is set to GoWhitespace.
 func (s *Scanner) Init(src io.Reader) *Scanner {
 	s.src = src
 
 	// initialize source buffer
+	// (the first call to next() will fill it by calling src.Read)
 	s.srcBuf[0] = utf8.RuneSelf // sentinel
 	s.srcPos = 0
 	s.srcEnd = 0
@@ -190,12 +195,15 @@ func (s *Scanner) Init(src io.Reader) *Scanner {
 	s.srcBufOffset = 0
 	s.line = 1
 	s.column = 0
+	s.lastLineLen = 0
+	s.lastCharLen = 0
 
 	// initialize token text buffer
+	// (required for first call to next()).
 	s.tokPos = -1
 
 	// initialize one character look-ahead
-	s.ch = s.next()
+	s.ch = -1 // no char read yet
 
 	// initialize public fields
 	s.Error = nil
@@ -207,12 +215,17 @@ func (s *Scanner) Init(src io.Reader) *Scanner {
 }
 
 
+// TODO(gri): The code for next() and the internal scanner state could benefit
+//            from a rethink. While next() is optimized for the common ASCII
+//            case, the "corrections" needed for proper position tracking undo
+//            some of the attempts for fast-path optimization.
+
 // next reads and returns the next Unicode character. It is designed such
 // that only a minimal amount of work needs to be done in the common ASCII
 // case (one test to check for both ASCII and end-of-buffer, and one test
 // to check for newlines).
 func (s *Scanner) next() int {
-	ch := int(s.srcBuf[s.srcPos])
+	ch, width := int(s.srcBuf[s.srcPos]), 1
 
 	if ch >= utf8.RuneSelf {
 		// uncommon case: not ASCII or not enough bytes
@@ -222,47 +235,64 @@ func (s *Scanner) next() int {
 			if s.tokPos >= 0 {
 				s.tokBuf.Write(s.srcBuf[s.tokPos:s.srcPos])
 				s.tokPos = 0
+				// s.tokEnd is set by Scan()
 			}
 			// move unread bytes to beginning of buffer
 			copy(s.srcBuf[0:], s.srcBuf[s.srcPos:s.srcEnd])
 			s.srcBufOffset += s.srcPos
 			// read more bytes
+			// (an io.Reader must return os.EOF when it reaches
+			// the end of what it is reading - simply returning
+			// n == 0 will make this loop retry forever; but the
+			// error is in the reader implementation in that case)
 			i := s.srcEnd - s.srcPos
 			n, err := s.src.Read(s.srcBuf[i:bufLen])
-			s.srcEnd = i + n
 			s.srcPos = 0
+			s.srcEnd = i + n
 			s.srcBuf[s.srcEnd] = utf8.RuneSelf // sentinel
 			if err != nil {
 				if s.srcEnd == 0 {
+					if s.lastCharLen > 0 {
+						// previous character was not EOF
+						s.column++
+					}
+					s.lastCharLen = 0
 					return EOF
 				}
 				if err != os.EOF {
 					s.error(err.String())
-					break
 				}
+				// If err == EOF, we won't be getting more
+				// bytes; break to avoid infinite loop. If
+				// err is something else, we don't know if
+				// we can get more bytes; thus also break.
+				break
 			}
 		}
 		// at least one byte
 		ch = int(s.srcBuf[s.srcPos])
 		if ch >= utf8.RuneSelf {
 			// uncommon case: not ASCII
-			var width int
 			ch, width = utf8.DecodeRune(s.srcBuf[s.srcPos:s.srcEnd])
 			if ch == utf8.RuneError && width == 1 {
 				s.error("illegal UTF-8 encoding")
 			}
-			s.srcPos += width - 1
 		}
 	}
 
-	s.srcPos++
+	// advance
+	s.srcPos += width
+	s.lastCharLen = width
 	s.column++
+
+	// special situations
 	switch ch {
 	case 0:
 		// implementation restriction for compatibility with other tools
 		s.error("illegal character NUL")
 	case '\n':
 		s.line++
+		s.lastLineLen = s.column
 		s.column = 0
 	}
 
@@ -272,13 +302,13 @@ func (s *Scanner) next() int {
 
 // Next reads and returns the next Unicode character.
 // It returns EOF at the end of the source. It reports
-// a read error by calling s.Error, if set, or else
-// prints an error message to os.Stderr. Next does not
+// a read error by calling s.Error, if not nil; otherwise
+// it prints an error message to os.Stderr. Next does not
 // update the Scanner's Position field; use Pos() to
 // get the current position.
 func (s *Scanner) Next() int {
 	s.tokPos = -1 // don't collect token text
-	ch := s.ch
+	ch := s.Peek()
 	s.ch = s.next()
 	return ch
 }
@@ -288,6 +318,9 @@ func (s *Scanner) Next() int {
 // the scanner. It returns EOF if the scanner's position is at the last
 // character of the source.
 func (s *Scanner) Peek() int {
+	if s.ch < 0 {
+		s.ch = s.next()
+	}
 	return s.ch
 }
 
@@ -511,10 +544,10 @@ func (s *Scanner) scanComment(ch int) {
 // Scan reads the next token or Unicode character from source and returns it.
 // It only recognizes tokens t for which the respective Mode bit (1<<-t) is set.
 // It returns EOF at the end of the source. It reports scanner errors (read and
-// token errors) by calling s.Error, if set; otherwise it prints an error message
-// to os.Stderr.
+// token errors) by calling s.Error, if not nil; otherwise it prints an error
+// message to os.Stderr.
 func (s *Scanner) Scan() int {
-	ch := s.ch
+	ch := s.Peek()
 
 	// reset token text position
 	s.tokPos = -1
@@ -527,12 +560,22 @@ redo:
 
 	// start collecting token text
 	s.tokBuf.Reset()
-	s.tokPos = s.srcPos - 1
+	s.tokPos = s.srcPos - s.lastCharLen
 
 	// set token position
+	// (this is a slightly optimized version of the code in Pos())
 	s.Offset = s.srcBufOffset + s.tokPos
-	s.Line = s.line
-	s.Column = s.column
+	if s.column > 0 {
+		// common case: last character was not a '\n'
+		s.Line = s.line
+		s.Column = s.column
+	} else {
+		// last character was a '\n'
+		// (we cannot be at the beginning of the source
+		// since we have called next() at least once)
+		s.Line = s.line - 1
+		s.Column = s.lastLineLen
+	}
 
 	// determine token value
 	tok := ch
@@ -596,25 +639,33 @@ redo:
 	}
 
 	// end of token text
-	s.tokEnd = s.srcPos - 1
+	s.tokEnd = s.srcPos - s.lastCharLen
 
 	s.ch = ch
 	return tok
 }
 
 
-// Position returns the current source position. If called before Next()
-// or Scan(), it returns the position of the next Unicode character or token
-// returned by these functions. If called afterwards, it returns the position
-// immediately after the last character of the most recent token or character
-// scanned.
-func (s *Scanner) Pos() Position {
-	return Position{
-		s.Filename,
-		s.srcBufOffset + s.srcPos - 1,
-		s.line,
-		s.column,
+// Pos returns the position of the character immediately after
+// the character or token returned by the last call to Next or Scan.
+func (s *Scanner) Pos() (pos Position) {
+	pos.Filename = s.Filename
+	pos.Offset = s.srcBufOffset + s.srcPos - s.lastCharLen
+	switch {
+	case s.column > 0:
+		// common case: last character was not a '\n'
+		pos.Line = s.line
+		pos.Column = s.column
+	case s.lastLineLen > 0:
+		// last character was a '\n'
+		pos.Line = s.line - 1
+		pos.Column = s.lastLineLen
+	default:
+		// at the beginning of the source
+		pos.Line = 1
+		pos.Column = 1
 	}
+	return
 }
 
 

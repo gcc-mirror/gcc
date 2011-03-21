@@ -346,7 +346,7 @@ public class HintingDemo extends JFrame {
         flags &= ~FontDelegate.FLAG_NO_HINT_WEAK_POINTS;
       else
         flags |= FontDelegate.FLAG_NO_HINT_WEAK_POINTS;
-        
+
       refresh();
     }
 

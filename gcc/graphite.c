@@ -54,6 +54,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "graphite-clast-to-gimple.h"
 #include "graphite-sese-to-poly.h"
 
+CloogState *cloog_state;
+
 /* Print global statistics to FILE.  */
 
 static void
@@ -206,6 +208,7 @@ graphite_initialize (void)
   ppl_initialized = ppl_initialize ();
   gcc_assert (ppl_initialized == 0);
 
+  cloog_state = cloog_state_malloc ();
   cloog_initialize ();
 
   if (dump_file && dump_flags)
@@ -229,6 +232,7 @@ graphite_finalize (bool need_cfg_cleanup_p)
       tree_estimate_probability ();
     }
 
+  cloog_state_free (cloog_state);
   cloog_finalize ();
   ppl_finalize ();
   free_original_copy_tables ();

@@ -1,4 +1,4 @@
-/* SpinnerModel.java -- 
+/* SpinnerModel.java --
    Copyright (C) 2003, 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -107,5 +107,5 @@ public interface SpinnerModel
    * @param listener The listener to remove.
    */
   void removeChangeListener(ChangeListener listener);
-    
+
 }

@@ -49,7 +49,7 @@ import javax.accessibility.AccessibleRole;
  * {@link AbstractButton#setSelected} and {@link #setState} can be use used for
  * the same purpose. <code>JCheckBoxMenuItem</code> uses
  * <code>ToggleButtonModel</code> to keep track of its selection.
- * 
+ *
  * @author original author unknown
  */
 public class JCheckBoxMenuItem
@@ -80,7 +80,7 @@ public class JCheckBoxMenuItem
 
   /**
    * Creates a new JCheckBoxMenuItem with given icon
-   * 
+   *
    * @param icon Icon for this menu item
    */
   public JCheckBoxMenuItem(Icon icon)
@@ -90,7 +90,7 @@ public class JCheckBoxMenuItem
 
   /**
    * Creates a new JCheckBoxMenuItem with given label
-   * 
+   *
    * @param text Label for this menu item
    */
   public JCheckBoxMenuItem(String text)
@@ -100,7 +100,7 @@ public class JCheckBoxMenuItem
 
   /**
    * Creates a new JCheckBoxMenuItem using given action
-   * 
+   *
    * @param action Action for this menu item.
    */
   public JCheckBoxMenuItem(Action action)
@@ -111,7 +111,7 @@ public class JCheckBoxMenuItem
 
   /**
    * Creates a new JCheckBoxMenuItem object with given label and icon
-   * 
+   *
    * @param text Label for this menu item
    * @param icon Icon for this menu item
    */
@@ -123,7 +123,7 @@ public class JCheckBoxMenuItem
   /**
    * Creates a new JCheckBoxMenuItem object using specified label and marked as
    * checked if given 'state' is true.
-   * 
+   *
    * @param text Label for this menu item
    * @param state <code>true</code> if this item should be in checked state
    *          and <code>false</code> otherwise
@@ -136,7 +136,7 @@ public class JCheckBoxMenuItem
   /**
    * Creates a new JCheckBoxMenuItem object with given label, icon, and marked
    * as checked if given 'state' is true.
-   * 
+   *
    * @param text Label for this menu item
    * @param icon icon for this menu item
    * @param state <code>true</code> if this item should be in checked state
@@ -155,7 +155,7 @@ public class JCheckBoxMenuItem
   /**
    * This method returns a name to identify which look and feel class will be
    * the UI delegate for the menuItem.
-   * 
+   *
    * @return The Look and Feel classID. "JCheckBoxMenuItemUI"
    */
   public String getUIClassID()
@@ -165,7 +165,7 @@ public class JCheckBoxMenuItem
 
   /**
    * Returns checked state for this check box menu item.
-   * 
+   *
    * @return Returns true if this menu item is in checked state and false
    *         otherwise.
    */
@@ -177,7 +177,7 @@ public class JCheckBoxMenuItem
   /**
    * Sets state for this check box menu item. If given 'state' is true, then
    * mark menu item as checked, and uncheck this menu item otherwise.
-   * 
+   *
    * @param state new state for this menu item
    */
   public synchronized void setState(boolean state)
@@ -188,7 +188,7 @@ public class JCheckBoxMenuItem
   /**
    * This method returns array containing label of this menu item if it is
    * selected and null otherwise.
-   * 
+   *
    * @return Array containing label of this menu item if this menu item is
    *         selected or null otherwise.
    */
@@ -216,7 +216,7 @@ public class JCheckBoxMenuItem
    * <code>JCheckBoxMenuItem</code> component, for use in debugging. The
    * return value is guaranteed to be non-<code>null</code>, but the format
    * of the string may vary between implementations.
-   * 
+   *
    * @return A string describing the attributes of the
    *         <code>JCheckBoxMenuItem</code>.
    */
@@ -230,7 +230,7 @@ public class JCheckBoxMenuItem
   /**
    * Returns the object that provides accessibility features for this
    * <code>JCheckBoxMenuItem</code> component.
-   * 
+   *
    * @return The accessible context (an instance of
    *         {@link AccessibleJCheckBoxMenuItem}).
    */
@@ -245,7 +245,7 @@ public class JCheckBoxMenuItem
   /**
    * Provides the accessibility features for the <code>JCheckBoxMenuItem</code>
    * component.
-   * 
+   *
    * @see JCheckBoxMenuItem#getAccessibleContext()
    */
   protected class AccessibleJCheckBoxMenuItem
@@ -264,7 +264,7 @@ public class JCheckBoxMenuItem
     /**
      * Returns the accessible role for the <code>JCheckBoxMenuItem</code>
      * component.
-     * 
+     *
      * @return {@link AccessibleRole#CHECK_BOX}.
      */
     public AccessibleRole getAccessibleRole()

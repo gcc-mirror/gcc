@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2010, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2011, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -50,14 +50,19 @@
 #include "ada-tree.h"
 #include "gigi.h"
 
-/* Convention_Stdcall should be processed in a specific way on Windows targets
-   only.  The macro below is a helper to avoid having to check for a Windows
-   specific attribute throughout this unit.  */
+/* Convention_Stdcall should be processed in a specific way on 32 bits
+   Windows targets only.  The macro below is a helper to avoid having to
+   check for a Windows specific attribute throughout this unit.  */
 
 #if TARGET_DLLIMPORT_DECL_ATTRIBUTES
-#define Has_Stdcall_Convention(E) (Convention (E) == Convention_Stdcall)
+#ifdef TARGET_64BIT
+#define Has_Stdcall_Convention(E) \
+  (!TARGET_64BIT && Convention (E) == Convention_Stdcall)
 #else
-#define Has_Stdcall_Convention(E) (0)
+#define Has_Stdcall_Convention(E) (Convention (E) == Convention_Stdcall)
+#endif
+#else
+#define Has_Stdcall_Convention(E) 0
 #endif
 
 /* Stack realignment is necessary for functions with foreign conventions when
@@ -5998,15 +6003,9 @@ static tree
 elaborate_expression_1 (tree gnu_expr, Entity_Id gnat_entity, tree gnu_name,
 			bool definition, bool need_debug)
 {
-  /* Skip any conversions and simple arithmetics to see if the expression
-     is a read-only variable.
-     ??? This really should remain read-only, but we have to think about
-     the typing of the tree here.  */
-  tree gnu_inner_expr
-    = skip_simple_arithmetic (remove_conversions (gnu_expr, true));
-  tree gnu_decl = NULL_TREE;
-  bool expr_global = Is_Public (gnat_entity) || global_bindings_p ();
-  bool expr_variable;
+  const bool expr_global_p = Is_Public (gnat_entity) || global_bindings_p ();
+  bool expr_variable_p;
+  tree gnu_decl;
 
   /* In most cases, we won't see a naked FIELD_DECL because a discriminant
      reference will have been replaced with a COMPONENT_REF when the type
@@ -6018,39 +6017,62 @@ elaborate_expression_1 (tree gnu_expr, Entity_Id gnat_entity, tree gnu_name,
 		       build0 (PLACEHOLDER_EXPR, DECL_CONTEXT (gnu_expr)),
 		       gnu_expr, NULL_TREE);
 
-  /* If GNU_EXPR is neither a placeholder nor a constant, nor a variable
-     that is read-only, make a variable that is initialized to contain the
-     bound when the package containing the definition is elaborated.  If
-     this entity is defined at top level and a bound or discriminant value
-     isn't a constant or a reference to a discriminant, replace the bound
-     by the variable; otherwise use a SAVE_EXPR if needed.  Note that we
-     rely here on the fact that an expression cannot contain both the
-     discriminant and some other variable.  */
-  expr_variable = (!CONSTANT_CLASS_P (gnu_expr)
-		   && !(TREE_CODE (gnu_inner_expr) == VAR_DECL
-			&& (TREE_READONLY (gnu_inner_expr)
-			    || DECL_READONLY_ONCE_ELAB (gnu_inner_expr)))
-		   && !CONTAINS_PLACEHOLDER_P (gnu_expr));
+  /* If GNU_EXPR contains a placeholder, just return it.  We rely on the fact
+     that an expression cannot contain both a discriminant and a variable.  */
+  if (CONTAINS_PLACEHOLDER_P (gnu_expr))
+    return gnu_expr;
 
-  /* If GNU_EXPR contains a discriminant, we can't elaborate a variable.  */
-  if (need_debug && CONTAINS_PLACEHOLDER_P (gnu_expr))
-    need_debug = false;
+  /* If GNU_EXPR is neither a constant nor based on a read-only variable, make
+     a variable that is initialized to contain the expression when the package
+     containing the definition is elaborated.  If this entity is defined at top
+     level, replace the expression by the variable; otherwise use a SAVE_EXPR
+     if this is necessary.  */
+  if (CONSTANT_CLASS_P (gnu_expr))
+    expr_variable_p = false;
+  else
+    {
+      /* Skip any conversions and simple arithmetics to see if the expression
+	 is based on a read-only variable.
+	 ??? This really should remain read-only, but we have to think about
+	 the typing of the tree here.  */
+      tree inner
+	= skip_simple_arithmetic (remove_conversions (gnu_expr, true));
+
+      if (handled_component_p (inner))
+	{
+	  HOST_WIDE_INT bitsize, bitpos;
+	  tree offset;
+	  enum machine_mode mode;
+	  int unsignedp, volatilep;
+
+	  inner = get_inner_reference (inner, &bitsize, &bitpos, &offset,
+				       &mode, &unsignedp, &volatilep, false);
+	  /* If the offset is variable, err on the side of caution.  */
+	  if (offset)
+	    inner = NULL_TREE;
+	}
+
+      expr_variable_p
+	= !(inner
+	    && TREE_CODE (inner) == VAR_DECL
+	    && (TREE_READONLY (inner) || DECL_READONLY_ONCE_ELAB (inner)));
+    }
 
   /* Now create the variable if we need it.  */
-  if (need_debug || (expr_variable && expr_global))
+  if (need_debug || (expr_variable_p && expr_global_p))
     gnu_decl
       = create_var_decl (create_concat_name (gnat_entity,
 					     IDENTIFIER_POINTER (gnu_name)),
 			 NULL_TREE, TREE_TYPE (gnu_expr), gnu_expr,
 			 !need_debug, Is_Public (gnat_entity),
-			 !definition, expr_global, NULL, gnat_entity);
+			 !definition, expr_global_p, NULL, gnat_entity);
 
   /* We only need to use this variable if we are in global context since GCC
      can do the right thing in the local case.  */
-  if (expr_global && expr_variable)
+  if (expr_global_p && expr_variable_p)
     return gnu_decl;
 
-  return expr_variable ? gnat_save_expr (gnu_expr) : gnu_expr;
+  return expr_variable_p ? gnat_save_expr (gnu_expr) : gnu_expr;
 }
 
 /* Similar, but take an alignment factor and make it explicit in the tree.  */
@@ -8638,10 +8660,7 @@ substitute_in_type (tree t, tree f, tree r)
 
       return build_complex_type (nt);
 
-    case OFFSET_TYPE:
-    case METHOD_TYPE:
     case FUNCTION_TYPE:
-    case LANG_TYPE:
       /* These should never show up here.  */
       gcc_unreachable ();
 

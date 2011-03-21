@@ -333,9 +333,9 @@ htab_create_alloc_ex (size_t size, htab_hash hash_f, htab_eq eq_f,
 
 /*
 
-@deftypefn Supplemental htab_t htab_create_typed_alloc (size_t @var{size},
-htab_hash @var{hash_f}, htab_eq @var{eq_f}, htab_del @var{del_f},
-htab_alloc @var{alloc_tab_f}, htab_alloc @var{alloc_f},
+@deftypefn Supplemental htab_t htab_create_typed_alloc (size_t @var{size}, @
+htab_hash @var{hash_f}, htab_eq @var{eq_f}, htab_del @var{del_f}, @
+htab_alloc @var{alloc_tab_f}, htab_alloc @var{alloc_f}, @
 htab_free @var{free_f})
 
 This function creates a hash table that uses two different allocators

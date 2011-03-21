@@ -44,17 +44,17 @@ public interface WindowPeer extends ContainerPeer
 {
   void toBack();
   void toFront();
-  
+
   /**
    * Update the always-on-top status of the Window.
    *
    * @since 1.5
    */
   void updateAlwaysOnTop();
-  
+
   /**
    * Request that this window peer be given the window focus.
-   * 
+   *
    * @return true if the window received focus, false otherwise
    * @since 1.5
    */
@@ -66,5 +66,4 @@ public interface WindowPeer extends ContainerPeer
   void updateMinimumSize();
   void updateIconImages();
 
-} // interface WindowPeer 
-
+} // interface WindowPeer

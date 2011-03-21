@@ -78,7 +78,7 @@ public class GtkButtonPeer extends GtkComponentPeer
     create (((Button) awtComponent).getLabel ());
   }
 
-  public void setLabel (String label) 
+  public void setLabel (String label)
   {
     gtkSetLabel(label);
   }
@@ -86,8 +86,8 @@ public class GtkButtonPeer extends GtkComponentPeer
   void postActionEvent (int mods)
   {
     q().postEvent (new ActionEvent (awtWidget,
-				    ActionEvent.ACTION_PERFORMED,
-				    ((Button) awtComponent).getActionCommand (),
-				    mods));
+                                    ActionEvent.ACTION_PERFORMED,
+                                    ((Button) awtComponent).getActionCommand (),
+                                    mods));
   }
 }

@@ -45,12 +45,12 @@ public abstract class Segment implements Cloneable
   // Start and end points of THIS segment
   public Point2D P1;
   public Point2D P2;
-  
+
   // Segments can be linked together internally as a linked list
   public Segment first;
   public Segment next;
   public Segment last;
-  
+
   // Half the stroke width
   protected double radius;
 
@@ -116,7 +116,7 @@ public abstract class Segment implements Cloneable
       {
         dy = radius * ((dx > 0)?1:-1);
         dx = 0;
-      } 
+      }
     else if( dx == 0 )
       {
         dx = radius * ((dy > 0)?-1:1);
@@ -148,7 +148,7 @@ public abstract class Segment implements Cloneable
    * for a line segment.
    */
   public abstract double[] cp1();
-  
+
   /**
    * Returns the coordinates of the second control point, or the end point
    * for a line segment.

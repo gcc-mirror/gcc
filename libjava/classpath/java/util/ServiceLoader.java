@@ -149,37 +149,37 @@ public final class ServiceLoader<S>
   {
     return new Iterator<S>()
       {
-	/**
-	 * The cache iterator.
-	 */
-	private Iterator<S> cacheIt = cache.iterator();
+        /**
+         * The cache iterator.
+         */
+        private Iterator<S> cacheIt = cache.iterator();
 
-	public boolean hasNext()
-	{
-	  if (cacheIt.hasNext())
-	    return true;
-	  if (serviceIt == null)
-	    serviceIt =
-	      ServiceFactory.lookupProviders(spi, loader, true);
-	  return serviceIt.hasNext();
-	}
+        public boolean hasNext()
+        {
+          if (cacheIt.hasNext())
+            return true;
+          if (serviceIt == null)
+            serviceIt =
+              ServiceFactory.lookupProviders(spi, loader, true);
+          return serviceIt.hasNext();
+        }
 
-	public S next()
-	{
-	  if (cacheIt.hasNext())
-	    return cacheIt.next();
-	  if (serviceIt == null)
-	    serviceIt =
-	      ServiceFactory.lookupProviders(spi, loader, true);
-	  S nextService = serviceIt.next();
-	  cache.add(nextService);
-	  return nextService;
-	}
+        public S next()
+        {
+          if (cacheIt.hasNext())
+            return cacheIt.next();
+          if (serviceIt == null)
+            serviceIt =
+              ServiceFactory.lookupProviders(spi, loader, true);
+          S nextService = serviceIt.next();
+          cache.add(nextService);
+          return nextService;
+        }
 
-	public void remove()
-	{
-	  throw new UnsupportedOperationException();
-	}
+        public void remove()
+        {
+          throw new UnsupportedOperationException();
+        }
       };
   }
 
@@ -196,7 +196,7 @@ public final class ServiceLoader<S>
   public static <S> ServiceLoader<S> load(Class<S> service)
   {
     return load(service,
-		Thread.currentThread().getContextClassLoader());
+                Thread.currentThread().getContextClassLoader());
   }
 
   /**
@@ -215,7 +215,7 @@ public final class ServiceLoader<S>
    * @return a new {@link ServiceLoader} instance.
    */
   public static <S> ServiceLoader<S> load(Class<S> service,
-					  ClassLoader loader)
+                                          ClassLoader loader)
   {
     if (loader == null)
       loader = ClassLoader.getSystemClassLoader();
@@ -244,7 +244,7 @@ public final class ServiceLoader<S>
      * of the system class loader, as in
      * ClassLoader.getDefaultSystemClassLoader() */
     return load(service,
-		ClassLoader.getSystemClassLoader().getParent());
+                ClassLoader.getSystemClassLoader().getParent());
   }
 
   /**
@@ -258,8 +258,8 @@ public final class ServiceLoader<S>
 
   /**
    * Returns a textual representation of this
-   * {@link ServiceLoader}. 
-   * 
+   * {@link ServiceLoader}.
+   *
    * @return a textual representation of the
    *         service loader.
    */

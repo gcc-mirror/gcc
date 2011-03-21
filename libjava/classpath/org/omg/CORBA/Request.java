@@ -41,9 +41,9 @@ package org.omg.CORBA;
 
 /**
  * An object, containing the information, needed to invoke the method of
- * the local or remote CORBA object. The Request is used in 
+ * the local or remote CORBA object. The Request is used in
  * Dynamic Invocation Interface (DII) which allows dynamic creation of
- * requests. 
+ * requests.
  *
  * @author Audrius Meskauskas (AudriusA@Bioinformatics.org)
  */
@@ -127,11 +127,11 @@ public abstract class Request
    * @return the list of parameters.
    */
   public abstract NVList arguments();
-  
+
   /**
    * Get the context list object for this request.
-   * 
-   * @return a list of strings that must be resolved and sent with the 
+   *
+   * @return a list of strings that must be resolved and sent with the
    * invocation.
    */
   public abstract ContextList contexts();

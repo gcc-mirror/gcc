@@ -112,7 +112,7 @@ public class JMX
    * <li>Its name ends in {@code "MXBean"} and it does not
    * have an {@link MXBean} annotation.</li>
    * </ul>
-   * 
+   *
    * @param iface the interface class that is to be checked
    *              for {@link MXBean} status.
    * @return true if the interface represents an {@link MXBean}.
@@ -181,7 +181,7 @@ public class JMX
    *      boolean)
    */
   public static <T> T newMBeanProxy(MBeanServerConnection conn,
-				    ObjectName name, Class<T> iface)
+                                    ObjectName name, Class<T> iface)
   {
     return newMBeanProxy(conn, name, iface, false);
   }
@@ -210,11 +210,11 @@ public class JMX
    * @see #newMBeanProxy(MBeanServerConnection, ObjectName, Class)
    */
   public static <T> T newMBeanProxy(MBeanServerConnection conn,
-				    ObjectName name, Class<T> iface,
-				    boolean bcast)
+                                    ObjectName name, Class<T> iface,
+                                    boolean bcast)
   {
     return MBeanServerInvocationHandler.newProxyInstance(conn, name,
-							 iface, bcast);
+                                                         iface, bcast);
   }
 
   /**
@@ -296,7 +296,7 @@ public class JMX
    *      boolean)
    */
   public static <T> T newMXBeanProxy(MBeanServerConnection conn,
-				     ObjectName name, Class<T> iface)
+                                     ObjectName name, Class<T> iface)
   {
     return newMXBeanProxy(conn, name, iface, false);
   }
@@ -327,18 +327,18 @@ public class JMX
   // Suppress warnings as we know an instance of T will be returned.
   @SuppressWarnings("unchecked")
   public static <T> T newMXBeanProxy(MBeanServerConnection conn,
-				    ObjectName name, Class<T> iface,
-				    boolean bcast)
+                                    ObjectName name, Class<T> iface,
+                                    boolean bcast)
   {
     if (bcast)
       return (T) Proxy.newProxyInstance(iface.getClassLoader(),
-					new Class[] { iface,
-						      NotificationEmitter.class },
-					new MBeanServerInvocationHandler(conn,name,true));
+                                        new Class[] { iface,
+                                                      NotificationEmitter.class },
+                                        new MBeanServerInvocationHandler(conn,name,true));
     else
       return (T) Proxy.newProxyInstance(iface.getClassLoader(),
-					new Class[] { iface },
-					new MBeanServerInvocationHandler(conn,name,true));
+                                        new Class[] { iface },
+                                        new MBeanServerInvocationHandler(conn,name,true));
   }
 
 }

@@ -46,9 +46,9 @@ import java.util.Date;
 import java.util.Enumeration;
 
 /**
- * KeyStoreSpi is the Service Provider Interface (SPI) for the 
- * KeyStore class. This is the interface for providers to 
- * supply to implement a keystore for a particular keystore 
+ * KeyStoreSpi is the Service Provider Interface (SPI) for the
+ * KeyStore class. This is the interface for providers to
+ * supply to implement a keystore for a particular keystore
  * type.
  *
  * @since 1.2
@@ -64,7 +64,7 @@ public abstract class KeyStoreSpi
   }
 
   /**
-   * Returns the key associated with given alias using the 
+   * Returns the key associated with given alias using the
    * supplied password.
    *
    * @param alias an alias for the key to get
@@ -85,8 +85,8 @@ public abstract class KeyStoreSpi
    *
    * @param alias the alias name
    *
-   * @return a chain of Certificates ( ordered from the user's 
-   * certificate to the Certificate Authority's ) or 
+   * @return a chain of Certificates ( ordered from the user's
+   * certificate to the Certificate Authority's ) or
    * null if the alias does not exist or there is no
    * certificate chain for the alias ( the alias refers
    * to a trusted certificate entry or there is no entry).
@@ -104,7 +104,7 @@ public abstract class KeyStoreSpi
    *
    * @param alias the alias name
    *
-   * @return a Certificate or null if the alias does not exist 
+   * @return a Certificate or null if the alias does not exist
    * or there is no certificate for the alias
    */
   public abstract java.security.cert.
@@ -121,8 +121,8 @@ public abstract class KeyStoreSpi
 
   /**
    * Assign the key to the alias in the keystore, protecting it
-   * with the given password. It will overwrite an existing 
-   * entry and if the key is a PrivateKey, also add the 
+   * with the given password. It will overwrite an existing
+   * entry and if the key is a PrivateKey, also add the
    * certificate chain representing the corresponding public key.
    *
    * @param alias the alias name
@@ -134,15 +134,15 @@ public abstract class KeyStoreSpi
    * @throws KeyStoreException if it fails
    */
   public abstract void engineSetKeyEntry(String alias, Key key,
-					 char[]password,
-					 java.security.cert.
-					 Certificate[]chain) throws
+                                         char[]password,
+                                         java.security.cert.
+                                         Certificate[]chain) throws
     KeyStoreException;
 
   /**
    * Assign the key to the alias in the keystore. It will overwrite
-   * an existing entry and if the key is a PrivateKey, also 
-   * add the certificate chain representing the corresponding 
+   * an existing entry and if the key is a PrivateKey, also
+   * add the certificate chain representing the corresponding
    * public key.
    *
    * @param alias the alias name
@@ -153,13 +153,13 @@ public abstract class KeyStoreSpi
    * @throws KeyStoreException if it fails
    */
   public abstract void engineSetKeyEntry(String alias, byte[]key,
-					 java.security.cert.
-					 Certificate[]chain) throws
+                                         java.security.cert.
+                                         Certificate[]chain) throws
     KeyStoreException;
 
 
   /**
-   * Assign the certificate to the alias in the keystore. It 
+   * Assign the certificate to the alias in the keystore. It
    * will overwrite an existing entry.
    *
    * @param alias the alias name
@@ -168,8 +168,8 @@ public abstract class KeyStoreSpi
    * @throws KeyStoreException if it fails
    */
   public abstract void engineSetCertificateEntry(String alias,
-						 java.security.cert.
-						 Certificate cert) throws
+                                                 java.security.cert.
+                                                 Certificate cert) throws
     KeyStoreException;
 
   /**
@@ -206,7 +206,7 @@ public abstract class KeyStoreSpi
   public abstract int engineSize();
 
   /**
-   * Determines if the keystore contains a key entry for 
+   * Determines if the keystore contains a key entry for
    * the specified alias.
    *
    * @param alias the alias name
@@ -216,7 +216,7 @@ public abstract class KeyStoreSpi
   public abstract boolean engineIsKeyEntry(String alias);
 
   /**
-   * Determines if the keystore contains a certificate entry for 
+   * Determines if the keystore contains a certificate entry for
    * the specified alias.
    *
    * @param alias the alias name
@@ -226,7 +226,7 @@ public abstract class KeyStoreSpi
   public abstract boolean engineIsCertificateEntry(String alias);
 
   /**
-   * Determines if the keystore contains the specified certificate 
+   * Determines if the keystore contains the specified certificate
    * entry and returns the alias.
    *
    * It checks every entry and for a key entry checks only the
@@ -234,11 +234,11 @@ public abstract class KeyStoreSpi
    *
    * @param cert Certificate to look for
    *
-   * @return alias of first matching certificate, null if it 
+   * @return alias of first matching certificate, null if it
    * does not exist.
    */
   public abstract String engineGetCertificateAlias(java.security.cert.
-						   Certificate cert);
+                                                   Certificate cert);
 
   /**
    * Stores the keystore in the specified output stream and it
@@ -248,7 +248,7 @@ public abstract class KeyStoreSpi
    * @param password the password to protect the keystore integrity with
    *
    * @throws IOException if an I/O error occurs.
-   * @throws NoSuchAlgorithmException the data integrity algorithm 
+   * @throws NoSuchAlgorithmException the data integrity algorithm
    * used cannot be found.
    * @throws CertificateException if any certificates could not be
    * stored in the output stream.
@@ -265,7 +265,7 @@ public abstract class KeyStoreSpi
    * @param password the password to check the keystore integrity with
    *
    * @throws IOException if an I/O error occurs.
-   * @throws NoSuchAlgorithmException the data integrity algorithm 
+   * @throws NoSuchAlgorithmException the data integrity algorithm
    * used cannot be found.
    * @throws CertificateException if any certificates could not be
    * stored in the output stream.

@@ -50,4 +50,3 @@ public interface PopupMenuPeer extends MenuPeer
 
   void show (Event e);
 } // interface PopupMenuPeer
-

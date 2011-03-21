@@ -48,8 +48,8 @@ public final class OBJECT_NOT_EXIST
   extends SystemException
   implements Serializable
 {
-  /** 
-   * Use serialVersionUID for interoperability. 
+  /**
+   * Use serialVersionUID for interoperability.
    */
   private static final long serialVersionUID = 7226958015420512389L;
 

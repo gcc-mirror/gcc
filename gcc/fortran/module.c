@@ -1,7 +1,7 @@
 /* Handle modules, which amounts to loading and saving symbols and
    their attendant structures.
    Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008,
-   2009, 2010
+   2009, 2010, 2011
    Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
@@ -1671,11 +1671,13 @@ typedef enum
   AB_POINTER, AB_TARGET, AB_DUMMY, AB_RESULT, AB_DATA,
   AB_IN_NAMELIST, AB_IN_COMMON, AB_FUNCTION, AB_SUBROUTINE, AB_SEQUENCE,
   AB_ELEMENTAL, AB_PURE, AB_RECURSIVE, AB_GENERIC, AB_ALWAYS_EXPLICIT,
-  AB_CRAY_POINTER, AB_CRAY_POINTEE, AB_THREADPRIVATE, AB_ALLOC_COMP,
-  AB_POINTER_COMP, AB_PRIVATE_COMP, AB_VALUE, AB_VOLATILE, AB_PROTECTED,
+  AB_CRAY_POINTER, AB_CRAY_POINTEE, AB_THREADPRIVATE,
+  AB_ALLOC_COMP, AB_POINTER_COMP, AB_PROC_POINTER_COMP, AB_PRIVATE_COMP,
+  AB_VALUE, AB_VOLATILE, AB_PROTECTED,
   AB_IS_BIND_C, AB_IS_C_INTEROP, AB_IS_ISO_C, AB_ABSTRACT, AB_ZERO_COMP,
   AB_IS_CLASS, AB_PROCEDURE, AB_PROC_POINTER, AB_ASYNCHRONOUS, AB_CODIMENSION,
-  AB_COARRAY_COMP, AB_VTYPE, AB_VTAB, AB_CONTIGUOUS, AB_CLASS_POINTER
+  AB_COARRAY_COMP, AB_VTYPE, AB_VTAB, AB_CONTIGUOUS, AB_CLASS_POINTER,
+  AB_IMPLICIT_PURE
 }
 ab_attribute;
 
@@ -1715,6 +1717,7 @@ static const mstring attr_bits[] =
     minit ("ALLOC_COMP", AB_ALLOC_COMP),
     minit ("COARRAY_COMP", AB_COARRAY_COMP),
     minit ("POINTER_COMP", AB_POINTER_COMP),
+    minit ("PROC_POINTER_COMP", AB_PROC_POINTER_COMP),
     minit ("PRIVATE_COMP", AB_PRIVATE_COMP),
     minit ("ZERO_COMP", AB_ZERO_COMP),
     minit ("PROTECTED", AB_PROTECTED),
@@ -1725,6 +1728,7 @@ static const mstring attr_bits[] =
     minit ("VTYPE", AB_VTYPE),
     minit ("VTAB", AB_VTAB),
     minit ("CLASS_POINTER", AB_CLASS_POINTER),
+    minit ("IMPLICIT_PURE", AB_IMPLICIT_PURE),
     minit (NULL, -1)
 };
 
@@ -1859,6 +1863,8 @@ mio_symbol_attribute (symbol_attribute *attr)
 	MIO_NAME (ab_attribute) (AB_ELEMENTAL, attr_bits);
       if (attr->pure)
 	MIO_NAME (ab_attribute) (AB_PURE, attr_bits);
+      if (attr->implicit_pure)
+	MIO_NAME (ab_attribute) (AB_IMPLICIT_PURE, attr_bits);
       if (attr->recursive)
 	MIO_NAME (ab_attribute) (AB_RECURSIVE, attr_bits);
       if (attr->always_explicit)
@@ -1877,6 +1883,8 @@ mio_symbol_attribute (symbol_attribute *attr)
 	MIO_NAME (ab_attribute) (AB_ALLOC_COMP, attr_bits);
       if (attr->pointer_comp)
 	MIO_NAME (ab_attribute) (AB_POINTER_COMP, attr_bits);
+      if (attr->proc_pointer_comp)
+	MIO_NAME (ab_attribute) (AB_PROC_POINTER_COMP, attr_bits);
       if (attr->private_comp)
 	MIO_NAME (ab_attribute) (AB_PRIVATE_COMP, attr_bits);
       if (attr->coarray_comp)
@@ -1990,6 +1998,9 @@ mio_symbol_attribute (symbol_attribute *attr)
 	    case AB_PURE:
 	      attr->pure = 1;
 	      break;
+	    case AB_IMPLICIT_PURE:
+	      attr->implicit_pure = 1;
+	      break;
 	    case AB_RECURSIVE:
 	      attr->recursive = 1;
 	      break;
@@ -2019,6 +2030,9 @@ mio_symbol_attribute (symbol_attribute *attr)
 	      break;
 	    case AB_POINTER_COMP:
 	      attr->pointer_comp = 1;
+	      break;
+	    case AB_PROC_POINTER_COMP:
+	      attr->proc_pointer_comp = 1;
 	      break;
 	    case AB_PRIVATE_COMP:
 	      attr->private_comp = 1;
@@ -2130,6 +2144,20 @@ mio_typespec (gfc_typespec *ts)
     }
   else
     mio_charlen (&ts->u.cl);
+
+  /* So as not to disturb the existing API, use an ATOM_NAME to
+     transmit deferred characteristic for characters (F2003).  */
+  if (iomode == IO_OUTPUT)
+    {
+      if (ts->type == BT_CHARACTER && ts->deferred)
+	write_atom (ATOM_NAME, "DEFERRED_CL");
+    }
+  else if (peek_atom () != ATOM_RPAREN)
+    {
+      if (parse_atom () != ATOM_NAME)
+	bad_module ("Expected string");
+      ts->deferred = 1;
+    }
 
   mio_rparen ();
 }
@@ -4198,9 +4226,23 @@ read_cleanup (pointer_info *p)
 
   if (p->type == P_SYMBOL && p->u.rsym.state == USED && !p->u.rsym.referenced)
     {
+      gfc_namespace *ns;
       /* Add hidden symbols to the symtree.  */
       q = get_integer (p->u.rsym.ns);
-      st = gfc_get_unique_symtree ((gfc_namespace *) q->u.pointer);
+      ns = (gfc_namespace *) q->u.pointer;
+
+      if (!p->u.rsym.sym->attr.vtype
+	    && !p->u.rsym.sym->attr.vtab)
+	st = gfc_get_unique_symtree (ns);
+      else
+	{
+	  /* There is no reason to use 'unique_symtrees' for vtabs or
+	     vtypes - their name is fine for a symtree and reduces the
+	     namespace pollution.  */
+	  st = gfc_find_symtree (ns->sym_root, p->u.rsym.sym->name);
+	  if (!st)
+	    st = gfc_new_symtree (&ns->sym_root, p->u.rsym.sym->name);
+	}
 
       st->n.sym = p->u.rsym.sym;
       st->n.sym->refs++;
@@ -4557,8 +4599,8 @@ read_module (void)
    PRIVATE, then private, and otherwise it is public unless the default
    access in this context has been declared PRIVATE.  */
 
-bool
-gfc_check_access (gfc_access specific_access, gfc_access default_access)
+static bool
+check_access (gfc_access specific_access, gfc_access default_access)
 {
   if (specific_access == ACCESS_PUBLIC)
     return TRUE;
@@ -4569,6 +4611,16 @@ gfc_check_access (gfc_access specific_access, gfc_access default_access)
     return default_access == ACCESS_PUBLIC;
   else
     return default_access != ACCESS_PRIVATE;
+}
+
+
+bool
+gfc_check_symbol_access (gfc_symbol *sym)
+{
+  if (sym->attr.vtab || sym->attr.vtype)
+    return true;
+  else
+    return check_access (sym->attr.access, sym->ns->default_access);
 }
 
 
@@ -4757,8 +4809,7 @@ write_equiv (void)
 static void
 write_dt_extensions (gfc_symtree *st)
 {
-  if (!gfc_check_access (st->n.sym->attr.access,
-			 st->n.sym->ns->default_access))
+  if (!gfc_check_symbol_access (st->n.sym))
     return;
 
   mio_lparen ();
@@ -4839,7 +4890,7 @@ write_symbol0 (gfc_symtree *st)
       && !sym->attr.subroutine && !sym->attr.function)
     dont_write = true;
 
-  if (!gfc_check_access (sym->attr.access, sym->ns->default_access))
+  if (!gfc_check_symbol_access (sym))
     dont_write = true;
 
   if (!dont_write)
@@ -4896,8 +4947,7 @@ write_operator (gfc_user_op *uop)
   static char nullstring[] = "";
   const char *p = nullstring;
 
-  if (uop->op == NULL
-      || !gfc_check_access (uop->access, uop->ns->default_access))
+  if (uop->op == NULL || !check_access (uop->access, uop->ns->default_access))
     return;
 
   mio_symbol_interface (&uop->name, &p, &uop->op);
@@ -4921,8 +4971,7 @@ write_generic (gfc_symtree *st)
   if (!sym || check_unique_name (st->name))
     return;
 
-  if (sym->generic == NULL
-      || !gfc_check_access (sym->attr.access, sym->ns->default_access))
+  if (sym->generic == NULL || !gfc_check_symbol_access (sym))
     return;
 
   if (sym->module == NULL)
@@ -4947,7 +4996,7 @@ write_symtree (gfc_symtree *st)
 	&& sym->ns->proc_name->attr.if_source == IFSRC_IFBODY)
     return;
 
-  if (!gfc_check_access (sym->attr.access, sym->ns->default_access)
+  if (!gfc_check_symbol_access (sym)
       || (sym->attr.flavor == FL_PROCEDURE && sym->attr.generic
 	  && !sym->attr.subroutine && !sym->attr.function))
     return;
@@ -4978,8 +5027,8 @@ write_module (void)
       if (i == INTRINSIC_USER)
 	continue;
 
-      mio_interface (gfc_check_access (gfc_current_ns->operator_access[i],
-				       gfc_current_ns->default_access)
+      mio_interface (check_access (gfc_current_ns->operator_access[i],
+				   gfc_current_ns->default_access)
 		     ? &gfc_current_ns->op[i] : NULL);
     }
 

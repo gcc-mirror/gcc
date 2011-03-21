@@ -78,20 +78,20 @@ final class IconvEncoder extends CharsetEncoder
       inArr = in.array();
     else
       {
-	inArr = new char[remIn];
-	in.get(inArr);
+        inArr = new char[remIn];
+        in.get(inArr);
       }
 
     if (out.hasArray())
       {
-	ret = encode(inArr, out.array(), inPos, remIn, outPos, remOut);
-	out.position(outPos + (remOut - outremaining));
+        ret = encode(inArr, out.array(), inPos, remIn, outPos, remOut);
+        out.position(outPos + (remOut - outremaining));
       }
     else
       {
-	byte[] outArr = new byte[remOut];
-	ret = encode(inArr, outArr, inPos, remIn, outPos, remOut);
-	out.put(outArr, 0, (remOut - outremaining));
+        byte[] outArr = new byte[remOut];
+        ret = encode(inArr, outArr, inPos, remIn, outPos, remOut);
+        out.put(outArr, 0, (remOut - outremaining));
       }
     in.position(inPos + (remIn - inremaining));
 

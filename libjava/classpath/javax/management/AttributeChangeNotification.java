@@ -67,7 +67,7 @@ public class AttributeChangeNotification
    * notifications.
    */
   public static final String ATTRIBUTE_CHANGE = "jmx.attribute.change";
-  
+
   /**
    * The name of the attribute that changed.
    */
@@ -107,14 +107,14 @@ public class AttributeChangeNotification
    * @param newVal the new value of the attribute.
    */
   public AttributeChangeNotification(Object source,
-				     long sequenceNumber,
-				     long timeStamp,
-				     String msg, String name,
-				     String type, Object oldVal,
-				     Object newVal)
+                                     long sequenceNumber,
+                                     long timeStamp,
+                                     String msg, String name,
+                                     String type, Object oldVal,
+                                     Object newVal)
   {
     super(ATTRIBUTE_CHANGE, source, sequenceNumber,
-	  timeStamp, msg);
+          timeStamp, msg);
     attributeName = name;
     attributeType = type;
     oldValue = oldVal;
@@ -162,5 +162,3 @@ public class AttributeChangeNotification
   }
 
 }
-
-

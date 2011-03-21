@@ -1,6 +1,6 @@
 /* Target macros for the FRV port of GCC.
    Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009,
-   2010
+   2010, 2011
    Free Software Foundation, Inc.
    Contributed by Red Hat Inc.
 
@@ -57,7 +57,7 @@
 
 #undef  ASM_SPEC
 #define ASM_SPEC "\
-%{G*} %{Ym,*} %{Yd,*} \
+%{G*} \
 %{mtomcat-stats} \
 %{!mno-eflags: \
     %{mcpu=*} \
@@ -126,9 +126,7 @@
 %{static:-dn -Bstatic} \
 %{shared:-Bdynamic} \
 %{symbolic:-Bsymbolic} \
-%{G*} \
-%{YP,*} \
-%{Qy:} %{!Qn:-Qy}"
+%{G*}"
 
 #undef  LIB_SPEC
 #define LIB_SPEC "--start-group -lc -lsim --end-group"
@@ -1005,25 +1003,6 @@ extern enum reg_class regno_reg_class[];
    (as well as added to a displacement).  */
 #define INDEX_REG_CLASS GPR_REGS
 
-/* A C expression which defines the machine-dependent operand constraint
-   letters for register classes.  If CHAR is such a letter, the value should be
-   the register class corresponding to it.  Otherwise, the value should be
-   `NO_REGS'.  The register letter `r', corresponding to class `GENERAL_REGS',
-   will not be passed to this macro; you do not need to handle it.
-
-   The following letters are unavailable, due to being used as
-   constraints:
-	'0'..'9'
-	'<', '>'
-	'E', 'F', 'G', 'H'
-	'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P'
-	'Q', 'R', 'S', 'T', 'U'
-	'V', 'X'
-	'g', 'i', 'm', 'n', 'o', 'p', 'r', 's' */
-
-extern enum reg_class reg_class_from_letter[];
-#define REG_CLASS_FROM_LETTER(CHAR) reg_class_from_letter [(unsigned char)(CHAR)]
-
 /* A C expression which is nonzero if register number NUM is suitable for use
    as a base register in operand addresses.  It may be either a suitable hard
    register or a pseudo register that has been allocated such a hard register.  */
@@ -1068,124 +1047,6 @@ extern enum reg_class reg_class_from_letter[];
 #define CLASS_MAX_NREGS(CLASS, MODE) frv_class_max_nregs (CLASS, MODE)
 
 #define ZERO_P(x) (x == CONST0_RTX (GET_MODE (x)))
-
-/* 6-bit signed immediate.  */
-#define CONST_OK_FOR_I(VALUE) IN_RANGE (VALUE, -32, 31)
-/* 10-bit signed immediate.  */
-#define CONST_OK_FOR_J(VALUE) IN_RANGE (VALUE, -512, 511)
-/* Unused */
-#define CONST_OK_FOR_K(VALUE)  0
-/* 16-bit signed immediate.  */
-#define CONST_OK_FOR_L(VALUE) IN_RANGE (VALUE, -32768, 32767)
-/* 16-bit unsigned immediate.  */
-#define CONST_OK_FOR_M(VALUE) IN_RANGE (VALUE, 0, 65535)
-/* 12-bit signed immediate that is negative.  */
-#define CONST_OK_FOR_N(VALUE) IN_RANGE (VALUE, -2048, -1)
-/* Zero */
-#define CONST_OK_FOR_O(VALUE) ((VALUE) == 0)
-/* 12-bit signed immediate that is negative.  */
-#define CONST_OK_FOR_P(VALUE) IN_RANGE (VALUE, 1, 2047)
-
-/* A C expression that defines the machine-dependent operand constraint letters
-   (`I', `J', `K', .. 'P') that specify particular ranges of integer values.
-   If C is one of those letters, the expression should check that VALUE, an
-   integer, is in the appropriate range and return 1 if so, 0 otherwise.  If C
-   is not one of those letters, the value should be 0 regardless of VALUE.  */
-#define CONST_OK_FOR_LETTER_P(VALUE, C)		\
-  (  (C) == 'I' ? CONST_OK_FOR_I (VALUE)        \
-   : (C) == 'J' ? CONST_OK_FOR_J (VALUE)        \
-   : (C) == 'K' ? CONST_OK_FOR_K (VALUE)        \
-   : (C) == 'L' ? CONST_OK_FOR_L (VALUE)        \
-   : (C) == 'M' ? CONST_OK_FOR_M (VALUE)        \
-   : (C) == 'N' ? CONST_OK_FOR_N (VALUE)        \
-   : (C) == 'O' ? CONST_OK_FOR_O (VALUE)        \
-   : (C) == 'P' ? CONST_OK_FOR_P (VALUE)        \
-   : 0)
-
-
-/* A C expression that defines the machine-dependent operand constraint letters
-   (`G', `H') that specify particular ranges of `const_double' values.
-
-   If C is one of those letters, the expression should check that VALUE, an RTX
-   of code `const_double', is in the appropriate range and return 1 if so, 0
-   otherwise.  If C is not one of those letters, the value should be 0
-   regardless of VALUE.
-
-   `const_double' is used for all floating-point constants and for `DImode'
-   fixed-point constants.  A given letter can accept either or both kinds of
-   values.  It can use `GET_MODE' to distinguish between these kinds.  */
-
-#define CONST_DOUBLE_OK_FOR_G(VALUE)					\
-  ((GET_MODE (VALUE) == VOIDmode 					\
-    && CONST_DOUBLE_LOW (VALUE) == 0					\
-    && CONST_DOUBLE_HIGH (VALUE) == 0)					\
-   || ((GET_MODE (VALUE) == SFmode					\
-        || GET_MODE (VALUE) == DFmode)					\
-       && (VALUE) == CONST0_RTX (GET_MODE (VALUE))))
-
-#define CONST_DOUBLE_OK_FOR_H(VALUE) 0
-
-#define CONST_DOUBLE_OK_FOR_LETTER_P(VALUE, C)				\
-  (  (C) == 'G' ? CONST_DOUBLE_OK_FOR_G (VALUE)				\
-   : (C) == 'H' ? CONST_DOUBLE_OK_FOR_H (VALUE)				\
-   : 0)
-
-/* A C expression that defines the optional machine-dependent constraint
-   letters (`Q', `R', `S', `T', `U') that can be used to segregate specific
-   types of operands, usually memory references, for the target machine.
-   Normally this macro will not be defined.  If it is required for a particular
-   target machine, it should return 1 if VALUE corresponds to the operand type
-   represented by the constraint letter C.  If C is not defined as an extra
-   constraint, the value returned should be 0 regardless of VALUE.
-
-   For example, on the ROMP, load instructions cannot have their output in r0
-   if the memory reference contains a symbolic address.  Constraint letter `Q'
-   is defined as representing a memory address that does *not* contain a
-   symbolic address.  An alternative is specified with a `Q' constraint on the
-   input and `r' on the output.  The next alternative specifies `m' on the
-   input and a register class that does not include r0 on the output.  */
-
-/* 12-bit relocations.  */
-#define EXTRA_CONSTRAINT_FOR_Q(VALUE)					\
-  (got12_operand (VALUE, GET_MODE (VALUE)))
-
-/* Double word memory ops that take one instruction.  */
-#define EXTRA_CONSTRAINT_FOR_R(VALUE)					\
-  (dbl_memory_one_insn_operand (VALUE, GET_MODE (VALUE)))
-
-/* SYMBOL_REF */
-#define EXTRA_CONSTRAINT_FOR_S(VALUE) \
-  (CONSTANT_P (VALUE) && call_operand (VALUE, VOIDmode))
-
-/* Double word memory ops that take two instructions.  */
-#define EXTRA_CONSTRAINT_FOR_T(VALUE)					\
-  (dbl_memory_two_insn_operand (VALUE, GET_MODE (VALUE)))
-
-/* Memory operand for conditional execution.  */
-#define EXTRA_CONSTRAINT_FOR_U(VALUE)					\
-  (condexec_memory_operand (VALUE, GET_MODE (VALUE)))
-
-#define EXTRA_CONSTRAINT(VALUE, C)					\
-  (  (C) == 'Q'   ? EXTRA_CONSTRAINT_FOR_Q (VALUE)			\
-   : (C) == 'R' ? EXTRA_CONSTRAINT_FOR_R (VALUE)			\
-   : (C) == 'S' ? EXTRA_CONSTRAINT_FOR_S (VALUE)			\
-   : (C) == 'T' ? EXTRA_CONSTRAINT_FOR_T (VALUE)			\
-   : (C) == 'U' ? EXTRA_CONSTRAINT_FOR_U (VALUE)			\
-   : 0)
-
-#define EXTRA_MEMORY_CONSTRAINT(C,STR) \
-  ((C) == 'U' || (C) == 'R' || (C) == 'T')
-
-#define CONSTRAINT_LEN(C, STR) \
-  ((C) == 'D' ? 3 : DEFAULT_CONSTRAINT_LEN ((C), (STR)))
-
-#define REG_CLASS_FROM_CONSTRAINT(C, STR) \
-  (((C) == 'D' && (STR)[1] == '8' && (STR)[2] == '9') ? GR89_REGS : \
-   ((C) == 'D' && (STR)[1] == '0' && (STR)[2] == '9') ? GR9_REGS : \
-   ((C) == 'D' && (STR)[1] == '0' && (STR)[2] == '8') ? GR8_REGS : \
-   ((C) == 'D' && (STR)[1] == '1' && (STR)[2] == '4') ? FDPIC_FPTR_REGS : \
-   ((C) == 'D' && (STR)[1] == '1' && (STR)[2] == '5') ? FDPIC_REGS : \
-   REG_CLASS_FROM_LETTER ((C)))
 
 
 /* Basic Stack Layout.  */
@@ -1597,9 +1458,9 @@ __trampoline_setup (addr, size, fnaddr, sc)				\
       exit (-1);							\
     }									\
 									\
-  /* Create a function descriptor with the address of the code below
-     and NULL as the FDPIC value.  We don't need the real GOT value
-     here, since we don't use it, so we use NULL, that is just as
+  /* Create a function descriptor with the address of the code below	\
+     and NULL as the FDPIC value.  We don't need the real GOT value	\
+     here, since we don't use it, so we use NULL, that is just as	\
      good.  */								\
   desc[0] = to;								\
   desc[1] = NULL;							\

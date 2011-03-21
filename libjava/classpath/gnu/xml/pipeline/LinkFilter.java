@@ -1,4 +1,4 @@
-/* LinkFilter.java -- 
+/* LinkFilter.java --
    Copyright (C) 1999,2000,2001 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -38,7 +38,7 @@ exception statement from your version. */
 package gnu.xml.pipeline;
 
 import java.io.IOException;
-import java.net.URL; 
+import java.net.URL;
 import java.util.Enumeration;
 import java.util.Vector;
 
@@ -65,21 +65,21 @@ import org.xml.sax.SAXException;
 public class LinkFilter extends EventFilter
 {
     // for storing URIs
-    private Vector		vector = new Vector ();
+    private Vector              vector = new Vector ();
 
-	// struct for "full" link record (tbd)
-	// these for troubleshooting original source:
-	//	original uri
-	//	uri as resolved (base, relative, etc)
-	//	URI of originating doc
-	//	line #
-	//	original element + attrs (img src, desc, etc)
+        // struct for "full" link record (tbd)
+        // these for troubleshooting original source:
+        //      original uri
+        //      uri as resolved (base, relative, etc)
+        //      URI of originating doc
+        //      line #
+        //      original element + attrs (img src, desc, etc)
 
-	// XLink model of the link ... for inter-site pairups ?
+        // XLink model of the link ... for inter-site pairups ?
 
-    private String		baseURI;
+    private String              baseURI;
 
-    private boolean		siteRestricted = false;
+    private boolean             siteRestricted = false;
 
     //
     // XXX leverage blacklist info (like robots.txt)
@@ -93,10 +93,10 @@ public class LinkFilter extends EventFilter
      * Constructs a new event filter, which collects links in private data
      * structure for later enumeration.
      */
-	// constructor used by PipelineFactory
+        // constructor used by PipelineFactory
     public LinkFilter ()
     {
-	super.setContentHandler (this);
+        super.setContentHandler (this);
     }
 
 
@@ -105,11 +105,11 @@ public class LinkFilter extends EventFilter
      * structure for later enumeration and passes all events, unmodified,
      * to the next consumer.
      */
-	// constructor used by PipelineFactory
+        // constructor used by PipelineFactory
     public LinkFilter (EventConsumer next)
     {
-	super (next);
-	super.setContentHandler (this);
+        super (next);
+        super.setContentHandler (this);
     }
 
 
@@ -121,7 +121,7 @@ public class LinkFilter extends EventFilter
      */
     public Enumeration getLinks ()
     {
-	return vector.elements ();
+        return vector.elements ();
     }
 
     /**
@@ -130,7 +130,7 @@ public class LinkFilter extends EventFilter
      */
     public void removeAllLinks ()
     {
-	vector = new Vector ();
+        vector = new Vector ();
     }
 
 
@@ -138,84 +138,84 @@ public class LinkFilter extends EventFilter
      * Collects URIs for (X)HTML content from elements which hold them.
      */
     public void startElement (
-	String		uri,
-	String		localName,
-	String		qName,
-	Attributes	atts
+        String          uri,
+        String          localName,
+        String          qName,
+        Attributes      atts
     ) throws SAXException
     {
-	String	link;
+        String  link;
 
-	// Recognize XHTML links.
-	if ("http://www.w3.org/1999/xhtml".equals (uri)) {
+        // Recognize XHTML links.
+        if ("http://www.w3.org/1999/xhtml".equals (uri)) {
 
-	    if ("a".equals (localName) || "base".equals (localName)
-		    || "area".equals (localName))
-		link = atts.getValue ("href");
-	    else if ("iframe".equals (localName) || "frame".equals (localName))
-		link = atts.getValue ("src");
-	    else if ("blockquote".equals (localName) || "q".equals (localName)
-		    || "ins".equals (localName) || "del".equals (localName))
-		link = atts.getValue ("cite");
-	    else
-		link = null;
-	    link = maybeAddLink (link);
+            if ("a".equals (localName) || "base".equals (localName)
+                    || "area".equals (localName))
+                link = atts.getValue ("href");
+            else if ("iframe".equals (localName) || "frame".equals (localName))
+                link = atts.getValue ("src");
+            else if ("blockquote".equals (localName) || "q".equals (localName)
+                    || "ins".equals (localName) || "del".equals (localName))
+                link = atts.getValue ("cite");
+            else
+                link = null;
+            link = maybeAddLink (link);
 
-	    // "base" modifies designated baseURI
-	    if ("base".equals (localName) && link != null)
-		baseURI = link;
+            // "base" modifies designated baseURI
+            if ("base".equals (localName) && link != null)
+                baseURI = link;
 
-	    if ("iframe".equals (localName) || "img".equals (localName))
-		maybeAddLink (atts.getValue ("longdesc"));
-	}
-	
-	super.startElement (uri, localName, qName, atts);
+            if ("iframe".equals (localName) || "img".equals (localName))
+                maybeAddLink (atts.getValue ("longdesc"));
+        }
+
+        super.startElement (uri, localName, qName, atts);
     }
 
     private String maybeAddLink (String link)
     {
-	int		index;
+        int             index;
 
-	// ignore empty links and fragments inside docs
-	if (link == null)
-	    return null;
-	if ((index = link.indexOf ("#")) >= 0)
-	    link = link.substring (0, index);
-	if (link.equals (""))
-	    return null;
+        // ignore empty links and fragments inside docs
+        if (link == null)
+            return null;
+        if ((index = link.indexOf ("#")) >= 0)
+            link = link.substring (0, index);
+        if (link.equals (""))
+            return null;
 
-	try {
-	    // get the real URI
-	    URL		base = new URL ((baseURI != null)
-				    ? baseURI
-				    : getDocumentLocator ().getSystemId ());
-	    URL		url = new URL (base, link);
+        try {
+            // get the real URI
+            URL         base = new URL ((baseURI != null)
+                                    ? baseURI
+                                    : getDocumentLocator ().getSystemId ());
+            URL         url = new URL (base, link);
 
-	    link = url.toString ();
+            link = url.toString ();
 
-	    // ignore duplicates
-	    if (vector.contains (link))
-		return link;
+            // ignore duplicates
+            if (vector.contains (link))
+                return link;
 
-	    // other than what "base" does, stick to original site:
-	    if (siteRestricted) {
-		// don't switch protocols
-		if (!base.getProtocol ().equals (url.getProtocol ()))
-		    return link;
-		// don't switch servers
-		if (base.getHost () != null
-			&& !base.getHost ().equals (url.getHost ()))
-		    return link;
-	    }
+            // other than what "base" does, stick to original site:
+            if (siteRestricted) {
+                // don't switch protocols
+                if (!base.getProtocol ().equals (url.getProtocol ()))
+                    return link;
+                // don't switch servers
+                if (base.getHost () != null
+                        && !base.getHost ().equals (url.getHost ()))
+                    return link;
+            }
 
-	    vector.addElement (link);
+            vector.addElement (link);
 
-	    return link;
-	    
-	} catch (IOException e) {
-	    // bad URLs we don't want
-	}
-	return null;
+            return link;
+
+        } catch (IOException e) {
+            // bad URLs we don't want
+        }
+        return null;
     }
 
     /**
@@ -224,8 +224,8 @@ public class LinkFilter extends EventFilter
     public void startDocument ()
     throws SAXException
     {
-	if (getDocumentLocator () == null)
-	    throw new SAXException ("no Locator!");
+        if (getDocumentLocator () == null)
+            throw new SAXException ("no Locator!");
     }
 
     /**
@@ -236,7 +236,7 @@ public class LinkFilter extends EventFilter
     public void endDocument ()
     throws SAXException
     {
-	baseURI = null;
-	super.endDocument ();
+        baseURI = null;
+        super.endDocument ();
     }
 }

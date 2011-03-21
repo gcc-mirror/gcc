@@ -38,16 +38,16 @@ exception statement from your version. */
 
 package java.util;
 
-/** 
+/**
  * Thrown when the type of an argument supplied to the
  * {@link Formatter#format()} method of a {@link Formatter}
  * does not match the conversion character specified for it.
  *
  * @author Tom Tromey (tromey@redhat.com)
  * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
- * @since 1.5 
+ * @since 1.5
  */
-public class IllegalFormatConversionException 
+public class IllegalFormatConversionException
   extends IllegalFormatException
 {
   private static final long serialVersionUID = 17000126L;
@@ -81,7 +81,7 @@ public class IllegalFormatConversionException
   public IllegalFormatConversionException(char c, Class<?> arg)
   {
     super("The type, " + arg + ", is invalid for the conversion character, " +
-	  c + ".");
+          c + ".");
     if (arg == null)
       throw new NullPointerException("The supplied type was null.");
     this.c = c;

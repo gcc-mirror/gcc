@@ -108,7 +108,7 @@ public class NotificationFilterSupport
     if (!enabledTypes.contains(prefix))
       enabledTypes.add(prefix);
   }
-  
+
   /**
    * Returns the list of enabled types for this
    * filter.
@@ -132,7 +132,7 @@ public class NotificationFilterSupport
     String nType = notif.getType();
     for (String type : enabledTypes)
       if (nType.startsWith(type))
-	return true;
+        return true;
     return false;
   }
 

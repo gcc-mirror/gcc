@@ -70,7 +70,7 @@ import java.nio.ShortBuffer;
  * obtained from Apple Computer to use the patented technology inside
  * the United States. For other countries, different dates might
  * apply, or no license might be needed.
- * 
+ *
  * <p>The default build of this class does not use the patented
  * algorithms.  If you have obtained a license from Apple, or if the
  * patent protection has expired, or if no license is required for
@@ -348,7 +348,7 @@ class VirtualMachine
     /* Read the contents of the Control Value Table. */
     if (controlValueTable != null)
       this.controlValueTable = controlValueTable.asShortBuffer();
-    
+
     maxInstructionDefs = maxp.getChar(22);
     maxStackElements = maxp.getChar(24);
     storage = new int[maxStorage];
@@ -356,7 +356,7 @@ class VirtualMachine
     this.preProgram = preProgram;
     numTwilightPoints = maxp.getChar(16);
   }
-  
+
 
   /**
    * Sets the graphics state to default values.
@@ -462,7 +462,7 @@ class VirtualMachine
     changeCTM = ((pointSize_Fixed != this.pointSize)
                  || !deviceTransform.equals(this.deviceTransform)
                  || (antialiased != this.antialiased));
-    
+
     if (changeCTM)
     {
       this.pointSize = pointSize_Fixed;
@@ -489,7 +489,7 @@ class VirtualMachine
 
     return executeGlyphInstructions;
   }
-  
+
 
   /**
    * Executes a stream of TrueType instructions.
@@ -577,7 +577,7 @@ class VirtualMachine
         sbuf.append(getHex(inst.get(pc + 1 + i)));
       }
     }
-    
+
     while (sbuf.length() < 30)
       sbuf.append(' ');
     sbuf.append('|');
@@ -814,7 +814,7 @@ class VirtualMachine
     case 0x16: // SZPS, Set Zone PointerS
       zp0 = zp1 = zp2 = getZone(stack[sp--]);
       break;
-      
+
     case 0x17: // SLOOP, Set LOOP variable
       loop = stack[sp--];
       break;
@@ -837,7 +837,7 @@ class VirtualMachine
                 /* illegal: --, -- */   -1, -1,
                 /* handle nested if clauses */ true);
       break;
-      
+
     case 0x1C: // JMPR, JuMP Relative
       inst.position(inst.position() - 1 + stack[sp--]);
       break;
@@ -905,7 +905,7 @@ class VirtualMachine
       execute(fdefBuffer[i], fdefEntryPoint[i]);
       inst.position(e1);
       break;
-      
+
     case 0x2C: // FDEF, Function DEFinition
       i = stack[sp--];
       fdefBuffer[i] = inst;
@@ -1170,7 +1170,7 @@ class VirtualMachine
       sp -= 2 * count;
       deltaC(stack, sp + 1, count, 32);
       break;
-    
+
     case 0x76: // SROUND, Super ROUND
       setRoundingMode(Fixed.ONE, stack[sp--]);
       break;
@@ -1198,7 +1198,7 @@ class VirtualMachine
       break;
 
     case 0x7c: // RUTG, Round Up To Grid
-      setRoundingMode(Fixed.ONE, 0x40);      
+      setRoundingMode(Fixed.ONE, 0x40);
       break;
 
     case 0x7d: // RDTG, Round Down To Grid
@@ -1279,7 +1279,7 @@ class VirtualMachine
         break;
       }
       break;
-      
+
     case 0xb0: // PUSHB[0]
     case 0xb1: // PUSHB[1]
     case 0xb2: // PUSHB[2]
@@ -1424,7 +1424,7 @@ class VirtualMachine
         delta = (arg & 15) - 8;
         if (delta >= 0)
           ++delta;
-        
+
         rightShift = deltaShift - 6;
         if (rightShift > 0)
           delta = delta >> rightShift;
@@ -1570,7 +1570,7 @@ class VirtualMachine
     org_a = getOriginalProjection(zp0, rp1);
     cur_a = getProjection(zp0, rp1);
 
-    org_b = getOriginalProjection(zp1, rp2);    
+    org_b = getOriginalProjection(zp1, rp2);
     cur_b = getProjection(zp1, rp2);
 
     while (--loop >= 0)
@@ -1643,7 +1643,7 @@ class VirtualMachine
     {
       result = compensation - roundPhase + roundThreshold - distance;
       result &= -roundPeriod;
-      return Math.max(-result, 0) - roundPhase;      
+      return Math.max(-result, 0) - roundPhase;
     }
   }
 
@@ -1694,7 +1694,7 @@ class VirtualMachine
     {
       cachedPixelsPerEM = Fixed.intValue(Fixed.vectorLength(
         applyCTM_x(projX >> 8, projY >> 8),
-        applyCTM_y(projX >> 8, projY >> 8)));      
+        applyCTM_y(projX >> 8, projY >> 8)));
     }
 
     return cachedPixelsPerEM;

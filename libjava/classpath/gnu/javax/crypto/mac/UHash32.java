@@ -1,4 +1,4 @@
-/* UHash32.java -- 
+/* UHash32.java --
    Copyright (C) 2001, 2002, 2003, 2006 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -632,7 +632,7 @@ public class UHash32
 
     /**
      * 5.3 POLY: Polynomial hash Function Name: POLY
-     * 
+     *
      * @param wordbits positive integer divisible by 8: called with 64 or 128.
      * @param maxwordrange positive integer less than 2**wordbits.
      * @param k integer in the range 0 .. prime(wordbits) - 1.

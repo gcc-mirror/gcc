@@ -41,7 +41,7 @@ package javax.naming.event;
 import java.util.EventObject;
 
 import javax.naming.NamingException;
- 
+
 /**
  * @author Warren Levy (warrenl@redhat.com)
  * @date June 5, 2001

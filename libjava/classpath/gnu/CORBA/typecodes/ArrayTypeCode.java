@@ -50,12 +50,12 @@ import org.omg.CORBA.TypeCodePackage.BadKind;
 public class ArrayTypeCode
   extends PrimitiveTypeCode
 {
-  /** 
-   * Use serialVersionUID for interoperability. 
+  /**
+   * Use serialVersionUID for interoperability.
    */
   private static final long serialVersionUID = 1;
-  
-  
+
+
   /**
    * The array components.
    */

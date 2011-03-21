@@ -1,4 +1,4 @@
-/* AbstractNumberNode.java -- 
+/* AbstractNumberNode.java --
    Copyright (C) 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -102,7 +102,7 @@ abstract class AbstractNumberNode
     // xsl:number doesn't process children
     if (next != null)
       {
-        next.apply(stylesheet, mode, 
+        next.apply(stylesheet, mode,
                    context, pos, len,
                    parent, nextSibling);
       }
@@ -148,7 +148,7 @@ abstract class AbstractNumberNode
     for (int i = 0; i < len; i++)
       {
         String token = (i < 0) ? "." : (String) tokens.get(i);
-        boolean alpha = (i < 0) ? true : 
+        boolean alpha = (i < 0) ? true :
           ((Boolean) types.get(i)).booleanValue();
         if (!alpha)
           {
@@ -304,7 +304,7 @@ abstract class AbstractNumberNode
       }
     return upper ? buf.toString().toUpperCase() : buf.toString();
   }
-  
+
   abstract int[] compute(Stylesheet stylesheet, Node context, int pos, int len)
     throws TransformerException;
 

@@ -45,29 +45,29 @@ package java.awt.geom;
  */
 public abstract class RoundRectangle2D extends RectangularShape
 {
-  /** 
+  /**
    * Return the arc height of this round rectangle.  The arc height and width
    * control the roundness of the corners of the rectangle.
-   * 
+   *
    * @return The arc height.
-   * 
+   *
    * @see #getArcWidth()
    */
   public abstract double getArcHeight();
 
-  /** 
+  /**
    * Return the arc width of this round rectangle.  The arc width and height
    * control the roundness of the corners of the rectangle.
-   * 
+   *
    * @return The arc width.
-   * 
+   *
    * @see #getArcHeight()
    */
   public abstract double getArcWidth();
 
-  /** 
+  /**
    * Set the values of this round rectangle.
-   * 
+   *
    * @param x The x coordinate
    * @param y The y coordinate
    * @param w The width
@@ -78,7 +78,7 @@ public abstract class RoundRectangle2D extends RectangularShape
   public abstract void setRoundRect(double x, double y, double w, double h,
                                     double arcWidth, double arcHeight);
 
-  /** 
+  /**
    * Create a RoundRectangle2D.  This is protected because this class
    * is abstract and cannot be instantiated.
    */
@@ -86,7 +86,7 @@ public abstract class RoundRectangle2D extends RectangularShape
   {
   }
 
-  /** 
+  /**
    * Return true if this object contains the specified point.
    * @param x The x coordinate
    * @param y The y coordinate
@@ -123,7 +123,7 @@ public abstract class RoundRectangle2D extends RectangularShape
     return dx * dx + dy * dy <= 1.0;
   }
 
-  /** 
+  /**
    * Return true if this object contains the specified rectangle
    * @param x The x coordinate
    * @param y The y coordinate
@@ -138,32 +138,32 @@ public abstract class RoundRectangle2D extends RectangularShape
            && contains(x + w, y));
   }
 
-  /** 
+  /**
    * Return a new path iterator which iterates over this rectangle.
-   * 
+   *
    * @param at An affine transform to apply to the object
    */
-  public PathIterator getPathIterator(final AffineTransform at) 
+  public PathIterator getPathIterator(final AffineTransform at)
   {
     double arcW = Math.min(getArcWidth(), getWidth());
     double arcH = Math.min(getArcHeight(), getHeight());
-    
+
     // check for special cases...
     if (arcW <= 0 || arcH <= 0)
       {
-        Rectangle2D r = new Rectangle2D.Double(getX(), getY(), getWidth(), 
+        Rectangle2D r = new Rectangle2D.Double(getX(), getY(), getWidth(),
                 getHeight());
         return r.getPathIterator(at);
       }
-    else if (arcW >= getWidth() && arcH >= getHeight()) 
+    else if (arcW >= getWidth() && arcH >= getHeight())
       {
-        Ellipse2D e = new Ellipse2D.Double(getX(), getY(), getWidth(), 
+        Ellipse2D e = new Ellipse2D.Double(getX(), getY(), getWidth(),
                 getHeight());
         return e.getPathIterator(at);
       }
-    
+
     // otherwise return the standard case...
-    return new PathIterator() 
+    return new PathIterator()
       {
         double x = getX();
         double y = getY();
@@ -175,7 +175,7 @@ public abstract class RoundRectangle2D extends RectangularShape
         PathIterator corner;
         int step = -1;
 
-        public int currentSegment(double[] coords) 
+        public int currentSegment(double[] coords)
         {
           if (corner != null) // steps 1, 3, 5 and 7
           {
@@ -184,7 +184,7 @@ public abstract class RoundRectangle2D extends RectangularShape
               r = SEG_LINETO;
             return r;
           }
-          if (step == -1) 
+          if (step == -1)
           {
             // move to the start position
             coords[0] = x + w - arcW / 2;
@@ -196,7 +196,7 @@ public abstract class RoundRectangle2D extends RectangularShape
             coords[0] = x + arcW / 2;
             coords[1] = y;
           }
-          else if (step == 2) 
+          else if (step == 2)
           {
             // left line
             coords[0] = x;
@@ -227,7 +227,7 @@ public abstract class RoundRectangle2D extends RectangularShape
               r = SEG_LINETO;
             return r;
           }
-          if (step == -1) 
+          if (step == -1)
           {
             // move to the start position
             coords[0] = (float) (x + w - arcW / 2);
@@ -239,7 +239,7 @@ public abstract class RoundRectangle2D extends RectangularShape
             coords[0] = (float) (x + arcW / 2);
             coords[1] = (float) y;
           }
-          else if (step == 2) 
+          else if (step == 2)
           {
             // left line
             coords[0] = (float) x;
@@ -270,7 +270,7 @@ public abstract class RoundRectangle2D extends RectangularShape
         return step >= 8;
       }
 
-      public void next() 
+      public void next()
       {
         if (corner != null)
           {
@@ -284,7 +284,7 @@ public abstract class RoundRectangle2D extends RectangularShape
         else
           {
             step++;
-            if (step == 1) 
+            if (step == 1)
               {
                 // create top left corner
                 arc.setArc(x, y, arcW, arcH, 90, 90, Arc2D.OPEN);
@@ -292,21 +292,21 @@ public abstract class RoundRectangle2D extends RectangularShape
               }
             else if (step == 3)
               {
-                // create bottom left corner  
-                arc.setArc(x, y + h - arcH, arcW, arcH, 180, 90, 
+                // create bottom left corner
+                arc.setArc(x, y + h - arcH, arcW, arcH, 180, 90,
                         Arc2D.OPEN);
                 corner = arc.getPathIterator(at);
               }
             else if (step == 5)
               {
-                // create bottom right corner  
+                // create bottom right corner
                 arc.setArc(x + w - arcW, y + h - arcH, arcW, arcH, 270, 90,
                         Arc2D.OPEN);
                 corner = arc.getPathIterator(at);
               }
             else if (step == 7)
               {
-                // create top right corner  
+                // create top right corner
                 arc.setArc(x + w - arcW, y, arcW, arcH, 0, 90, Arc2D.OPEN);
                 corner = arc.getPathIterator(at);
               }
@@ -315,7 +315,7 @@ public abstract class RoundRectangle2D extends RectangularShape
     };
   }
 
-  /** 
+  /**
    * Return true if the given rectangle intersects this shape.
    * @param x The x coordinate
    * @param y The y coordinate
@@ -329,7 +329,7 @@ public abstract class RoundRectangle2D extends RectangularShape
            || contains(x + w, y));
   }
 
-  /** 
+  /**
    * Set the boundary of this round rectangle.
    * @param x The x coordinate
    * @param y The y coordinate
@@ -342,7 +342,7 @@ public abstract class RoundRectangle2D extends RectangularShape
     setRoundRect(x, y, w, h, getArcWidth(), getArcHeight());
   }
 
-  /** 
+  /**
    * Set the values of this round rectangle to be the same as those
    * of the argument.
    * @param rr The round rectangle to copy
@@ -353,9 +353,9 @@ public abstract class RoundRectangle2D extends RectangularShape
                  rr.getArcWidth(), rr.getArcHeight());
   }
 
-  /** 
+  /**
    * A subclass of RoundRectangle which keeps its parameters as
-   * doubles.  
+   * doubles.
    */
   public static class Double extends RoundRectangle2D
   {
@@ -377,14 +377,14 @@ public abstract class RoundRectangle2D extends RectangularShape
     /** The height of this object.  */
     public double height;
 
-    /** 
-     * Construct a new instance, with all parameters set to 0.  
+    /**
+     * Construct a new instance, with all parameters set to 0.
      */
     public Double()
     {
     }
 
-    /** 
+    /**
      * Construct a new instance with the given arguments.
      * @param x The x coordinate
      * @param y The y coordinate
@@ -456,9 +456,9 @@ public abstract class RoundRectangle2D extends RectangularShape
     }
   } // class Double
 
-  /** 
+  /**
    * A subclass of RoundRectangle which keeps its parameters as
-   * floats.  
+   * floats.
    */
   public static class Float extends RoundRectangle2D
   {
@@ -480,14 +480,14 @@ public abstract class RoundRectangle2D extends RectangularShape
     /** The height of this object.  */
     public float height;
 
-    /** 
-     * Construct a new instance, with all parameters set to 0.  
+    /**
+     * Construct a new instance, with all parameters set to 0.
      */
     public Float()
     {
     }
 
-    /** 
+    /**
      * Construct a new instance with the given arguments.
      * @param x The x coordinate
      * @param y The y coordinate
@@ -549,14 +549,14 @@ public abstract class RoundRectangle2D extends RectangularShape
 
     /**
      * Sets the dimensions for this rounded rectangle.
-     * 
+     *
      * @param x  the x-coordinate of the top left corner.
      * @param y  the y-coordinate of the top left corner.
      * @param w  the width of the rectangle.
      * @param h  the height of the rectangle.
      * @param arcWidth  the arc width.
      * @param arcHeight  the arc height.
-     * 
+     *
      * @see #setRoundRect(double, double, double, double, double, double)
      */
     public void setRoundRect(float x, float y, float w, float h,

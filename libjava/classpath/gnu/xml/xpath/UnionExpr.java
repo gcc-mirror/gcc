@@ -1,4 +1,4 @@
-/* UnionExpr.java -- 
+/* UnionExpr.java --
    Copyright (C) 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -74,7 +74,7 @@ public final class UnionExpr
     return false;
   }
 
-  @Override 
+  @Override
   public Object evaluate(Node context, int pos, int len)
   {
     Object left = lhs.evaluate(context, pos, len);
@@ -83,13 +83,13 @@ public final class UnionExpr
     if (left instanceof Collection && right instanceof Collection)
       {
         Set<Node> set = new HashSet<Node>();
-	/* Suppression is safe as addAll will check the types 
-	   of the elements and throw a ClassCastException as necessary */
-	@SuppressWarnings("unchecked")
-	  Collection<Node> l = (Collection<Node>) left;
-	@SuppressWarnings("unchecked")
-	  Collection<Node> r = (Collection<Node>) right;
-	set.addAll (l);
+        /* Suppression is safe as addAll will check the types
+           of the elements and throw a ClassCastException as necessary */
+        @SuppressWarnings("unchecked")
+          Collection<Node> l = (Collection<Node>) left;
+        @SuppressWarnings("unchecked")
+          Collection<Node> r = (Collection<Node>) right;
+        set.addAll (l);
         set.addAll (r);
         list = new ArrayList<Node>(set);
         Collections.sort(list, documentOrderComparator);
@@ -113,5 +113,5 @@ public final class UnionExpr
   {
     return lhs + " | " + rhs;
   }
-  
+
 }

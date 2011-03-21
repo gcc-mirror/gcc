@@ -95,7 +95,7 @@ public class JTextField extends JTextComponent
    * gets accepted.
    */
   public static final String notifyAction = "notify-field-accept";
-  
+
   static
     {
       actions = new Action[1];
@@ -108,16 +108,16 @@ public class JTextField extends JTextComponent
         }
       };
     }
-  
+
   private int columns;
   private int align;
-  
+
   /** @since 1.3 */
   private Action action;
 
   /** @since 1.3 */
   private String actionCommand;
-  
+
   private PropertyChangeListener actionPropertyChangeListener;
 
   /**
@@ -142,7 +142,7 @@ public class JTextField extends JTextComponent
   {
     this(null, text, 0);
   }
-  
+
   /**
    * Creates a new instance of <code>JTextField</code>.
    *
@@ -270,7 +270,7 @@ public class JTextField extends JTextComponent
    */
   protected void fireActionPerformed()
   {
-    ActionEvent event = new ActionEvent(this, 0, 
+    ActionEvent event = new ActionEvent(this, 0,
                           actionCommand == null ? getText() : actionCommand);
     ActionListener[] listeners = getActionListeners();
 
@@ -305,8 +305,8 @@ public class JTextField extends JTextComponent
   }
 
   /**
-   * Returns the horizontal alignment, which is one of: JTextField.LEFT, 
-   * JTextField.CENTER, JTextField.RIGHT, JTextField.LEADING, 
+   * Returns the horizontal alignment, which is one of: JTextField.LEFT,
+   * JTextField.CENTER, JTextField.RIGHT, JTextField.LEADING,
    * JTextField.TRAILING.
    * @return the horizontal alignment
    */
@@ -345,7 +345,7 @@ public class JTextField extends JTextComponent
   }
 
   /**
-   * Returns the preferred size.  If there is a non-zero number of columns, 
+   * Returns the preferred size.  If there is a non-zero number of columns,
    * this is the number of columns multiplied by the column width, otherwise
    * it returns super.getPreferredSize().
    */
@@ -374,7 +374,7 @@ public class JTextField extends JTextComponent
 
   /**
    * Sets the scroll offset in pixels.
-   * 
+   *
    * @param offset the scroll offset
    */
   public void setScrollOffset(int offset)
@@ -385,7 +385,7 @@ public class JTextField extends JTextComponent
                                   Math.min(horizontalVisibility.getMaximum()
                                            - horizontalVisibility.getExtent(),
                                            offset));
-    
+
   }
 
   /**
@@ -407,7 +407,7 @@ public class JTextField extends JTextComponent
     for (int index = 0; index < listeners.length; ++index)
       listeners[index].actionPerformed(event);
   }
-  
+
   /**
    * @since 1.3
    */
@@ -480,7 +480,7 @@ public class JTextField extends JTextComponent
   }
 
   /**
-   * 
+   *
    * @since 1.3
    */
   protected void configurePropertiesFromAction(Action action)
@@ -546,15 +546,15 @@ public class JTextField extends JTextComponent
   {
     return ! (getParent() instanceof JViewport);
   }
-  
+
   public void scrollRectToVisible(Rectangle r)
   {
     int v = horizontalVisibility.getValue();
-    
+
     // The extent value is the inner width of the text field.
     int e = horizontalVisibility.getExtent();
     Insets i = getInsets();
-    
+
     // The x value in the rectangle (usually) denotes the new location
     // of the caret. We check whether the location lies inside the left or
     // right border and scroll into the appropriate direction.
@@ -566,5 +566,5 @@ public class JTextField extends JTextComponent
     else if (r.x > e + i.left)
       setScrollOffset(r.x + v - e - i.left);
   }
-  
+
 }

@@ -34,7 +34,9 @@
 #include <ext/atomicity.h>
 #include <bits/stl_iterator_base_funcs.h>
 
-_GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
+namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /**
    *  Documentation?  What's that?
@@ -725,6 +727,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
     }
 #endif
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
 
 #endif /* _RC_STRING_BASE_H */

@@ -87,12 +87,12 @@ public class URLDecoder
   {
     try
       {
-	return decode(s, "UTF-8");
+        return decode(s, "UTF-8");
       }
     catch (UnsupportedEncodingException uee)
       {
-	// Should never happen since UTF-8 encoding should always be supported
-	return s;
+        // Should never happen since UTF-8 encoding should always be supported
+        return s;
       }
   }
 
@@ -132,45 +132,45 @@ public class URLDecoder
     CPStringBuilder result = new CPStringBuilder(length);
     while ((i = str.indexOf('%', start)) >= 0)
       {
-	// Add all non-encoded characters to the result buffer
-	result.append(str.substring(start, i));
-	start = i;
+        // Add all non-encoded characters to the result buffer
+        result.append(str.substring(start, i));
+        start = i;
 
-	// Get all consecutive encoded bytes
-	while ((i + 2 < length) && (str.charAt(i) == '%'))
-	  i += 3;
+        // Get all consecutive encoded bytes
+        while ((i + 2 < length) && (str.charAt(i) == '%'))
+          i += 3;
 
-	// Decode all these bytes
-	if ((bytes == null) || (bytes.length < ((i - start) / 3)))
-	  bytes = new byte[((i - start) / 3)];
+        // Decode all these bytes
+        if ((bytes == null) || (bytes.length < ((i - start) / 3)))
+          bytes = new byte[((i - start) / 3)];
 
-	int index = 0;
-	try
-	  {
-	    while (start < i)
-	      {
-		String sub = str.substring(start + 1, start + 3);
-		bytes[index] = (byte) Integer.parseInt(sub, 16);
-		index++;
-		start += 3;
-	      }
-	  }
-	catch (NumberFormatException nfe)
-	  {
-	    // One of the hex encoded strings was bad
-	  }
+        int index = 0;
+        try
+          {
+            while (start < i)
+              {
+                String sub = str.substring(start + 1, start + 3);
+                bytes[index] = (byte) Integer.parseInt(sub, 16);
+                index++;
+                start += 3;
+              }
+          }
+        catch (NumberFormatException nfe)
+          {
+            // One of the hex encoded strings was bad
+          }
 
-	// Add the bytes as characters according to the given encoding
-	result.append(new String(bytes, 0, index, encoding));
+        // Add the bytes as characters according to the given encoding
+        result.append(new String(bytes, 0, index, encoding));
 
-	// Make sure we skip to just after a % sign
-	// There might not have been enough encoded characters after the %
-	// or the hex chars were not actually hex chars (NumberFormatException)
-	if (start < length && s.charAt(start) == '%')
-	  {
-	    result.append('%');
-	    start++;
-	  }
+        // Make sure we skip to just after a % sign
+        // There might not have been enough encoded characters after the %
+        // or the hex chars were not actually hex chars (NumberFormatException)
+        if (start < length && s.charAt(start) == '%')
+          {
+            result.append('%');
+            start++;
+          }
       }
 
     // Add any characters left

@@ -43,7 +43,7 @@ import javax.swing.tree.TreePath;
 /**
  * The tree path with additional data. Needed for the optimized tree drawing.
  * Returned by layout caches.
- * 
+ *
  * @author Audrius Meskauskas
  */
 public class GnuPath extends TreePath
@@ -52,10 +52,10 @@ public class GnuPath extends TreePath
    * The flag, marking the last visible child.
    */
   public boolean isLastChild;
-  
+
   /**
    * Create a new path, specifying flag if this path is the path to the
-   * last visible child (needed for optimized tree drawing). 
+   * last visible child (needed for optimized tree drawing).
    */
   public GnuPath(Object[] path, boolean lastChild)
   {

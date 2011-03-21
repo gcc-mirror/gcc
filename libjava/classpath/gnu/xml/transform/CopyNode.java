@@ -1,4 +1,4 @@
-/* CopyNode.java -- 
+/* CopyNode.java --
    Copyright (C) 2004,2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -127,7 +127,7 @@ final class CopyNode
                  context, pos, len,
                  parent, nextSibling);
   }
-  
+
   void addAttributeSet(Stylesheet stylesheet, QName mode,
                        Node context, int pos, int len,
                        Node parent, Node nextSibling, String attributeSet)

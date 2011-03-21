@@ -1,5 +1,6 @@
 // -*- C++ -*- Helpers for calling unextected and terminate
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009,
+// 2011
 // Free Software Foundation, Inc.
 //
 // This file is part of GCC.
@@ -25,7 +26,7 @@
 
 #include <bits/c++config.h>
 #include <cstdlib>
-#include <exception_defines.h>
+#include <bits/exception_defines.h>
 #include "unwind-cxx.h"
 
 using namespace __cxxabiv1;

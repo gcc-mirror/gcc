@@ -53,6 +53,6 @@ public class NotImplementedException
   public NotImplementedException (String feature)
   {
     super (JdwpConstants.Error.NOT_IMPLEMENTED,
-	   feature + " is not yet implemented");
+           feature + " is not yet implemented");
   }
 }

@@ -79,7 +79,7 @@ public class DHKeyPairPKCS8Codec
   /**
    * Returns the DER-encoded form of the PKCS#8 ASN.1 <i>PrivateKeyInfo</i>
    * representation of a DH private key. The ASN.1 specification is as follows:
-   * 
+   *
    * <pre>
    *   PrivateKeyInfo ::= SEQUENCE {
    *     version              INTEGER, -- MUST be 0
@@ -105,7 +105,7 @@ public class DHKeyPairPKCS8Codec
    * parameter. RFC-2631 DOES NOT allow for an <i>optional</i> value for that
    * parameter, hence we replace such null values with <code>0</code>, and do
    * the reverse in the corresponding decode method.
-   * 
+   *
    * @return the DER encoded form of the ASN.1 representation of the
    *         <i>PrivateKeyInfo</i> field in an X.509 certificate.
    * @throw InvalidParameterException if an error occurs during the marshalling

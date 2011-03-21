@@ -6,8 +6,10 @@ package fmt_test
 
 import (
 	"bufio"
+	"bytes"
 	. "fmt"
 	"io"
+	"math"
 	"os"
 	"reflect"
 	"regexp"
@@ -49,13 +51,11 @@ var (
 	uint16Val            uint16
 	uint32Val            uint32
 	uint64Val            uint64
-	floatVal             float
 	float32Val           float32
 	float64Val           float64
 	stringVal            string
 	stringVal1           string
 	bytesVal             []byte
-	complexVal           complex
 	complex64Val         complex64
 	complex128Val        complex128
 	renamedBoolVal       renamedBool
@@ -72,33 +72,23 @@ var (
 	renamedUintptrVal    renamedUintptr
 	renamedStringVal     renamedString
 	renamedBytesVal      renamedBytes
-	renamedFloatVal      renamedFloat
 	renamedFloat32Val    renamedFloat32
 	renamedFloat64Val    renamedFloat64
-	renamedComplexVal    renamedComplex
 	renamedComplex64Val  renamedComplex64
 	renamedComplex128Val renamedComplex128
 )
+
+type FloatTest struct {
+	text string
+	in   float64
+	out  float64
+}
 
 // Xs accepts any non-empty run of the verb character
 type Xs string
 
 func (x *Xs) Scan(state ScanState, verb int) os.Error {
-	var tok string
-	var c int
-	var err os.Error
-	wid, present := state.Width()
-	if !present {
-		tok, err = state.Token()
-	} else {
-		for i := 0; i < wid; i++ {
-			c, err = state.GetRune()
-			if err != nil {
-				break
-			}
-			tok += string(c)
-		}
-	}
+	tok, err := state.Token()
 	if err != nil {
 		return err
 	}
@@ -110,6 +100,26 @@ func (x *Xs) Scan(state ScanState, verb int) os.Error {
 }
 
 var xVal Xs
+
+// IntString accepts an integer followed immediately by a string.
+// It tests the embedding of a scan within a scan.
+type IntString struct {
+	i int
+	s string
+}
+
+func (s *IntString) Scan(state ScanState, verb int) os.Error {
+	if _, err := Fscan(state, &s.i); err != nil {
+		return err
+	}
+
+	if _, err := Fscan(state, &s.s); err != nil {
+		return err
+	}
+	return nil
+}
+
+var intStringVal IntString
 
 // myStringReader implements Read but not ReadRune, allowing us to test our readRune wrapper
 // type that creates something that can read runes given only Read().
@@ -126,10 +136,20 @@ func newReader(s string) *myStringReader {
 }
 
 var scanTests = []ScanTest{
-	// Numbers
+	// Basic types
 	{"T\n", &boolVal, true},  // boolean test vals toggle to be sure they are written
 	{"F\n", &boolVal, false}, // restored to zero value
 	{"21\n", &intVal, 21},
+	{"0\n", &intVal, 0},
+	{"000\n", &intVal, 0},
+	{"0x10\n", &intVal, 0x10},
+	{"-0x10\n", &intVal, -0x10},
+	{"0377\n", &intVal, 0377},
+	{"-0377\n", &intVal, -0377},
+	{"0\n", &uintVal, uint(0)},
+	{"000\n", &uintVal, uint(0)},
+	{"0x10\n", &uintVal, uint(0x10)},
+	{"0377\n", &uintVal, uint(0377)},
 	{"22\n", &int8Val, int8(22)},
 	{"23\n", &int16Val, int16(23)},
 	{"24\n", &int32Val, int32(24)},
@@ -154,12 +174,16 @@ var scanTests = []ScanTest{
 	{"30\n", &uint64Val, uint64(30)},
 	{"255\n", &uint8Val, uint8(255)},
 	{"32767\n", &int16Val, int16(32767)},
-	{"2.3\n", &floatVal, 2.3},
+	{"2.3\n", &float64Val, 2.3},
 	{"2.3e1\n", &float32Val, float32(2.3e1)},
-	{"2.3e2\n", &float64Val, float64(2.3e2)},
+	{"2.3e2\n", &float64Val, 2.3e2},
+	{"2.3p2\n", &float64Val, 2.3 * 4},
+	{"2.3p+2\n", &float64Val, 2.3 * 4},
+	{"2.3p+66\n", &float64Val, 2.3 * (1 << 32) * (1 << 32) * 4},
+	{"2.3p-66\n", &float64Val, 2.3 / ((1 << 32) * (1 << 32) * 4)},
 	{"2.35\n", &stringVal, "2.35"},
 	{"2345678\n", &bytesVal, []byte("2345678")},
-	{"(3.4e1-2i)\n", &complexVal, 3.4e1 - 2i},
+	{"(3.4e1-2i)\n", &complex128Val, 3.4e1 - 2i},
 	{"-3.45e1-3i\n", &complex64Val, complex64(-3.45e1 - 3i)},
 	{"-.45e1-1e2i\n", &complex128Val, complex128(-.45e1 - 100i)},
 	{"hello\n", &stringVal, "hello"},
@@ -183,8 +207,9 @@ var scanTests = []ScanTest{
 	{"114\n", &renamedStringVal, renamedString("114")},
 	{"115\n", &renamedBytesVal, renamedBytes([]byte("115"))},
 
-	// Custom scanner.
+	// Custom scanners.
 	{"  vvv ", &xVal, Xs("vvv")},
+	{" 1234hello", &intStringVal, IntString{1234, "hello"}},
 
 	// Fixed bugs
 	{"2147483648\n", &int64Val, int64(2147483648)}, // was: integer overflow
@@ -194,6 +219,8 @@ var scanfTests = []ScanfTest{
 	{"%v", "TRUE\n", &boolVal, true},
 	{"%t", "false\n", &boolVal, false},
 	{"%v", "-71\n", &intVal, -71},
+	{"%v", "0377\n", &intVal, 0377},
+	{"%v", "0x44\n", &intVal, 0x44},
 	{"%d", "72\n", &intVal, 72},
 	{"%c", "a\n", &intVal, 'a'},
 	{"%c", "\u5072\n", &intVal, 0x5072},
@@ -215,6 +242,8 @@ var scanfTests = []ScanfTest{
 	{"%o", "075\n", &uintVal, uint(075)},
 	{"%x", "a75\n", &uintVal, uint(0xa75)},
 	{"%x", "A75\n", &uintVal, uint(0xa75)},
+	{"%U", "U+1234\n", &intVal, int(0x1234)},
+	{"%U", "U+4567\n", &uintVal, uint(0x4567)},
 
 	// Strings
 	{"%s", "using-%s\n", &stringVal, "using-%s"},
@@ -247,10 +276,8 @@ var scanfTests = []ScanfTest{
 	{"%d", "113\n", &renamedUintptrVal, renamedUintptr(113)},
 	{"%s", "114\n", &renamedStringVal, renamedString("114")},
 	{"%q", "\"1155\"\n", &renamedBytesVal, renamedBytes([]byte("1155"))},
-	{"%g", "115.1\n", &renamedFloatVal, renamedFloat(115.1)},
 	{"%g", "116e1\n", &renamedFloat32Val, renamedFloat32(116e1)},
 	{"%g", "-11.7e+1", &renamedFloat64Val, renamedFloat64(-11.7e+1)},
-	{"%g", "11+5.1i\n", &renamedComplexVal, renamedComplex(11 + 5.1i)},
 	{"%g", "11+6e1i\n", &renamedComplex64Val, renamedComplex64(11 + 6e1i)},
 	{"%g", "-11.+7e+1i", &renamedComplex128Val, renamedComplex128(-11. + 7e+1i)},
 
@@ -279,16 +306,17 @@ var overflowTests = []ScanTest{
 	{"65536", &uint16Val, 0},
 	{"1e100", &float32Val, 0},
 	{"1e500", &float64Val, 0},
-	{"(1e100+0i)", &complexVal, 0},
+	{"(1e100+0i)", &complex64Val, 0},
 	{"(1+1e100i)", &complex64Val, 0},
 	{"(1-1e500i)", &complex128Val, 0},
 }
 
 var i, j, k int
-var f float
+var f float64
 var s, t string
-var c complex
+var c complex128
 var x, y Xs
+var z IntString
 
 var multiTests = []ScanfMultiTest{
 	{"", "", nil, nil, ""},
@@ -298,12 +326,13 @@ var multiTests = []ScanfMultiTest{
 	{"%2d.%3d", "66.777", args(&i, &j), args(66, 777), ""},
 	{"%d, %d", "23, 18", args(&i, &j), args(23, 18), ""},
 	{"%3d22%3d", "33322333", args(&i, &j), args(333, 333), ""},
-	{"%6vX=%3fY", "3+2iX=2.5Y", args(&c, &f), args((3 + 2i), float(2.5)), ""},
+	{"%6vX=%3fY", "3+2iX=2.5Y", args(&c, &f), args((3 + 2i), 2.5), ""},
 	{"%d%s", "123abc", args(&i, &s), args(123, "abc"), ""},
 	{"%c%c%c", "2\u50c2X", args(&i, &j, &k), args('2', '\u50c2', 'X'), ""},
 
-	// Custom scanner.
+	// Custom scanners.
 	{"%2e%f", "eefffff", args(&x, &y), args(Xs("ee"), Xs("fffff")), ""},
+	{"%4v%s", "12abcd", args(&z, &s), args(IntString{12, "ab"}, "cd"), ""},
 
 	// Errors
 	{"%t", "23 18", args(&i), nil, "bad verb"},
@@ -326,7 +355,11 @@ func testScan(name string, t *testing.T, scan func(r io.Reader, a ...interface{}
 		}
 		n, err := scan(r, test.in)
 		if err != nil {
-			t.Errorf("%s got error scanning %q: %s", name, test.text, err)
+			m := ""
+			if n > 0 {
+				m = Sprintf(" (%d fields ok)", n)
+			}
+			t.Errorf("%s got error scanning %q: %s%s", name, test.text, err, m)
 			continue
 		}
 		if n != 1 {
@@ -396,6 +429,57 @@ func TestScanOverflow(t *testing.T) {
 		if !re.MatchString(err.String()) {
 			t.Errorf("expected overflow error scanning %q: %s", test.text, err)
 		}
+	}
+}
+
+func verifyNaN(str string, t *testing.T) {
+	var f float64
+	var f32 float32
+	var f64 float64
+	text := str + " " + str + " " + str
+	n, err := Fscan(strings.NewReader(text), &f, &f32, &f64)
+	if err != nil {
+		t.Errorf("got error scanning %q: %s", text, err)
+	}
+	if n != 3 {
+		t.Errorf("count error scanning %q: got %d", text, n)
+	}
+	if !math.IsNaN(float64(f)) || !math.IsNaN(float64(f32)) || !math.IsNaN(f64) {
+		t.Errorf("didn't get NaNs scanning %q: got %g %g %g", text, f, f32, f64)
+	}
+}
+
+func TestNaN(t *testing.T) {
+	for _, s := range []string{"nan", "NAN", "NaN"} {
+		verifyNaN(s, t)
+	}
+}
+
+func verifyInf(str string, t *testing.T) {
+	var f float64
+	var f32 float32
+	var f64 float64
+	text := str + " " + str + " " + str
+	n, err := Fscan(strings.NewReader(text), &f, &f32, &f64)
+	if err != nil {
+		t.Errorf("got error scanning %q: %s", text, err)
+	}
+	if n != 3 {
+		t.Errorf("count error scanning %q: got %d", text, n)
+	}
+	sign := 1
+	if str[0] == '-' {
+		sign = -1
+	}
+	if !math.IsInf(float64(f), sign) || !math.IsInf(float64(f32), sign) || !math.IsInf(f64, sign) {
+		t.Errorf("didn't get right Infs scanning %q: got %g %g %g", text, f, f32, f64)
+	}
+}
+
+
+func TestInf(t *testing.T) {
+	for _, s := range []string{"inf", "+inf", "-inf", "INF", "-INF", "+INF", "Inf", "-Inf", "+Inf"} {
+		verifyInf(s, t)
 	}
 }
 
@@ -472,7 +556,7 @@ func TestScanMultiple(t *testing.T) {
 		t.Errorf("Sscan count error: expected 1: got %d", n)
 	}
 	if err == nil {
-		t.Errorf("Sscan expected error; got none", err)
+		t.Errorf("Sscan expected error; got none: %s", err)
 	}
 	if s != "asdf" {
 		t.Errorf("Sscan wrong values: got %q expected \"asdf\"", s)
@@ -487,7 +571,7 @@ func TestScanEmpty(t *testing.T) {
 		t.Errorf("Sscan count error: expected 1: got %d", n)
 	}
 	if err == nil {
-		t.Errorf("Sscan <one item> expected error; got none")
+		t.Error("Sscan <one item> expected error; got none")
 	}
 	if s1 != "abc" {
 		t.Errorf("Sscan wrong values: got %q expected \"abc\"", s1)
@@ -497,7 +581,7 @@ func TestScanEmpty(t *testing.T) {
 		t.Errorf("Sscan count error: expected 0: got %d", n)
 	}
 	if err == nil {
-		t.Errorf("Sscan <empty> expected error; got none")
+		t.Error("Sscan <empty> expected error; got none")
 	}
 	// Quoted empty string is OK.
 	n, err = Sscanf(`""`, "%q", &s1)
@@ -601,5 +685,180 @@ func TestUnreadRuneWithBufio(t *testing.T) {
 	}
 	if a != "αb" {
 		t.Errorf("expected αb; got %q", a)
+	}
+}
+
+type TwoLines string
+
+// Attempt to read two lines into the object.  Scanln should prevent this
+// because it stops at newline; Scan and Scanf should be fine.
+func (t *TwoLines) Scan(state ScanState, verb int) os.Error {
+	chars := make([]int, 0, 100)
+	for nlCount := 0; nlCount < 2; {
+		c, _, err := state.ReadRune()
+		if err != nil {
+			return err
+		}
+		chars = append(chars, c)
+		if c == '\n' {
+			nlCount++
+		}
+	}
+	*t = TwoLines(string(chars))
+	return nil
+}
+
+func TestMultiLine(t *testing.T) {
+	input := "abc\ndef\n"
+	// Sscan should work
+	var tscan TwoLines
+	n, err := Sscan(input, &tscan)
+	if n != 1 {
+		t.Errorf("Sscan: expected 1 item; got %d", n)
+	}
+	if err != nil {
+		t.Errorf("Sscan: expected no error; got %s", err)
+	}
+	if string(tscan) != input {
+		t.Errorf("Sscan: expected %q; got %q", input, tscan)
+	}
+	// Sscanf should work
+	var tscanf TwoLines
+	n, err = Sscanf(input, "%s", &tscanf)
+	if n != 1 {
+		t.Errorf("Sscanf: expected 1 item; got %d", n)
+	}
+	if err != nil {
+		t.Errorf("Sscanf: expected no error; got %s", err)
+	}
+	if string(tscanf) != input {
+		t.Errorf("Sscanf: expected %q; got %q", input, tscanf)
+	}
+	// Sscanln should not work
+	var tscanln TwoLines
+	n, err = Sscanln(input, &tscanln)
+	if n != 0 {
+		t.Errorf("Sscanln: expected 0 items; got %d: %q", n, tscanln)
+	}
+	if err == nil {
+		t.Error("Sscanln: expected error; got none")
+	} else if err != io.ErrUnexpectedEOF {
+		t.Errorf("Sscanln: expected io.ErrUnexpectedEOF (ha!); got %s", err)
+	}
+}
+
+// RecursiveInt accepts an string matching %d.%d.%d....
+// and parses it into a linked list.
+// It allows us to benchmark recursive descent style scanners.
+type RecursiveInt struct {
+	i    int
+	next *RecursiveInt
+}
+
+func (r *RecursiveInt) Scan(state ScanState, verb int) (err os.Error) {
+	_, err = Fscan(state, &r.i)
+	if err != nil {
+		return
+	}
+	next := new(RecursiveInt)
+	_, err = Fscanf(state, ".%v", next)
+	if err != nil {
+		if err == os.ErrorString("input does not match format") || err == io.ErrUnexpectedEOF {
+			err = nil
+		}
+		return
+	}
+	r.next = next
+	return
+}
+
+// Perform the same scanning task as RecursiveInt.Scan
+// but without recurring through scanner, so we can compare
+// performance more directly.
+func scanInts(r *RecursiveInt, b *bytes.Buffer) (err os.Error) {
+	r.next = nil
+	_, err = Fscan(b, &r.i)
+	if err != nil {
+		return
+	}
+	var c int
+	c, _, err = b.ReadRune()
+	if err != nil {
+		if err == os.EOF {
+			err = nil
+		}
+		return
+	}
+	if c != '.' {
+		return
+	}
+	next := new(RecursiveInt)
+	err = scanInts(next, b)
+	if err == nil {
+		r.next = next
+	}
+	return
+}
+
+func makeInts(n int) []byte {
+	var buf bytes.Buffer
+	Fprintf(&buf, "1")
+	for i := 1; i < n; i++ {
+		Fprintf(&buf, ".%d", i+1)
+	}
+	return buf.Bytes()
+}
+
+func TestScanInts(t *testing.T) {
+	testScanInts(t, scanInts)
+	testScanInts(t, func(r *RecursiveInt, b *bytes.Buffer) (err os.Error) {
+		_, err = Fscan(b, r)
+		return
+	})
+}
+
+const intCount = 1000
+
+func testScanInts(t *testing.T, scan func(*RecursiveInt, *bytes.Buffer) os.Error) {
+	r := new(RecursiveInt)
+	ints := makeInts(intCount)
+	buf := bytes.NewBuffer(ints)
+	err := scan(r, buf)
+	if err != nil {
+		t.Error("unexpected error", err)
+	}
+	i := 1
+	for ; r != nil; r = r.next {
+		if r.i != i {
+			t.Fatal("bad scan: expected %d got %d", i, r.i)
+		}
+		i++
+	}
+	if i-1 != intCount {
+		t.Fatal("bad scan count: expected %d got %d", intCount, i-1)
+	}
+}
+
+func BenchmarkScanInts(b *testing.B) {
+	b.ResetTimer()
+	ints := makeInts(intCount)
+	var r RecursiveInt
+	for i := b.N - 1; i >= 0; i-- {
+		buf := bytes.NewBuffer(ints)
+		b.StartTimer()
+		scanInts(&r, buf)
+		b.StopTimer()
+	}
+}
+
+func BenchmarkScanRecursiveInt(b *testing.B) {
+	b.ResetTimer()
+	ints := makeInts(intCount)
+	var r RecursiveInt
+	for i := b.N - 1; i >= 0; i-- {
+		buf := bytes.NewBuffer(ints)
+		b.StartTimer()
+		Fscan(buf, &r)
+		b.StopTimer()
 	}
 }

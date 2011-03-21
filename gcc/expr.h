@@ -633,10 +633,10 @@ extern void anti_adjust_stack_and_probe (rtx, bool);
 enum save_level {SAVE_BLOCK, SAVE_FUNCTION, SAVE_NONLOCAL};
 
 /* Save the stack pointer at the specified level.  */
-extern void emit_stack_save (enum save_level, rtx *, rtx);
+extern void emit_stack_save (enum save_level, rtx *);
 
 /* Restore the stack pointer from a save area of the specified level.  */
-extern void emit_stack_restore (enum save_level, rtx, rtx);
+extern void emit_stack_restore (enum save_level, rtx);
 
 /* Invoke emit_stack_save for the nonlocal_goto_save_area.  */
 extern void update_nonlocal_goto_save_area (void);

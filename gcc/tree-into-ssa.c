@@ -1156,7 +1156,7 @@ insert_phi_nodes (bitmap_head *dfs)
      differences but no UID ordering differences.  */
 
   vars = BITMAP_ALLOC (NULL);
-  FOR_EACH_REFERENCED_VAR (var, rvi)
+  FOR_EACH_REFERENCED_VAR (cfun, var, rvi)
     {
       struct def_blocks_d *def_map;
 
@@ -1469,7 +1469,7 @@ dump_decl_set (FILE *file, bitmap set)
 
       EXECUTE_IF_SET_IN_BITMAP (set, 0, i, bi)
 	{
-	  tree var = referenced_var_lookup (i);
+	  tree var = referenced_var_lookup (cfun, i);
 	  if (var)
 	    print_generic_expr (file, var, 0);
 	  else
@@ -1573,7 +1573,7 @@ dump_currdefs (FILE *file)
   tree var;
 
   fprintf (file, "\n\nCurrent reaching definitions\n\n");
-  FOR_EACH_REFERENCED_VAR (var, i)
+  FOR_EACH_REFERENCED_VAR (cfun, var, i)
     if (SYMS_TO_RENAME (cfun) == NULL
 	|| bitmap_bit_p (SYMS_TO_RENAME (cfun), DECL_UID (var)))
       {
@@ -1869,11 +1869,27 @@ maybe_register_def (def_operand_p def_p, gimple stmt,
 			gcc_assert (!ef);
 			ef = e;
 		      }
-		  gcc_assert (ef
-			      && single_pred_p (ef->dest)
-			      && !phi_nodes (ef->dest)
-			      && ef->dest != EXIT_BLOCK_PTR);
-		  gsi_insert_on_edge_immediate (ef, note);
+		  /* If there are other predecessors to ef->dest, then
+		     there must be PHI nodes for the modified
+		     variable, and therefore there will be debug bind
+		     stmts after the PHI nodes.  The debug bind notes
+		     we'd insert would force the creation of a new
+		     block (diverging codegen) and be redundant with
+		     the post-PHI bind stmts, so don't add them.
+
+		     As for the exit edge, there wouldn't be redundant
+		     bind stmts, but there wouldn't be a PC to bind
+		     them to either, so avoid diverging the CFG.  */
+		  if (ef && single_pred_p (ef->dest)
+		      && ef->dest != EXIT_BLOCK_PTR)
+		    {
+		      /* If there were PHI nodes in the node, we'd
+			 have to make sure the value we're binding
+			 doesn't need rewriting.  But there shouldn't
+			 be PHI nodes in a single-predecessor block,
+			 so we just add the note.  */
+		      gsi_insert_on_edge_immediate (ef, note);
+		    }
 		}
 	      else
 		gsi_insert_after (&gsi, note, GSI_SAME_STMT);
@@ -2297,7 +2313,7 @@ init_ssa_renamer (void)
   def_blocks = htab_create (num_referenced_vars, def_blocks_hash,
                             def_blocks_eq, def_blocks_free);
 
-  FOR_EACH_REFERENCED_VAR(var, rvi)
+  FOR_EACH_REFERENCED_VAR (cfun, var, rvi)
     set_current_def (var, NULL_TREE);
 }
 

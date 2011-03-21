@@ -56,7 +56,7 @@ import org.objectweb.asm.Label;
  * represents the type u4.</li> <li>If the maximum size of the operand stack
  * is 65535 or less, then <tt>ustack</tt> represents the type u2; otherwise
  * ustack represents the type u4.</li> </ul>
- * 
+ *
  * <pre>
  * stack_map { // attribute StackMap
  *   u2 attribute_name_index;
@@ -65,9 +65,9 @@ import org.objectweb.asm.Label;
  *   stack_map_frame entries[number_of_entries];
  * }
  * </pre>
- * 
+ *
  * Each stack map frame has the following format:
- * 
+ *
  * <pre>
  * stack_map_frame {
  *   uoffset offset;
@@ -77,12 +77,12 @@ import org.objectweb.asm.Label;
  *   verification_type_info stack[number_of_stack_items];
  * }
  * </pre>
- * 
+ *
  * The <tt>verification_type_info</tt> structure consists of a one-byte tag
  * followed by zero or more bytes, giving more information about the tag. Each
  * <tt>verification_type_info</tt> structure specifies the verification type
  * of one or two locations.
- * 
+ *
  * <pre>
  * union verification_type_info {
  *   Top_variable_info;
@@ -95,49 +95,49 @@ import org.objectweb.asm.Label;
  *   Object_variable_info;
  *   Uninitialized_variable_info;
  * }
- *      
+ *
  * Top_variable_info {
  *   u1 tag = ITEM_Top; // 0
  * }
- *      
+ *
  * Integer_variable_info {
  *   u1 tag = ITEM_Integer; // 1
  * }
- *      
+ *
  * Float_variable_info {
  *   u1 tag = ITEM_Float; // 2
  * }
- *      
+ *
  * Long_variable_info {
  *   u1 tag = ITEM_Long; // 4
  * }
- *      
+ *
  * Double_variable_info {
  *   u1 tag = ITEM_Double; // 3
  * }
- *      
+ *
  * Null_variable_info {
  *  u1 tag = ITEM_Null; // 5
  * }
- *      
+ *
  * UninitializedThis_variable_info {
  *   u1 tag = ITEM_UninitializedThis; // 6
  * }
- *      
+ *
  * Object_variable_info {
  *   u1 tag = ITEM_Object; // 7
  *   u2 cpool_index;
  * }
- *      
+ *
  * Uninitialized_variable_info {
  *   u1 tag = ITEM_Uninitialized // 8
  *   uoffset offset;
  * }
  * </pre>
- * 
+ *
  * @see <a href="http://www.jcp.org/en/jsr/detail?id=139">JSR 139 : Connected
  *      Limited Device Configuration 1.1</a>
- * 
+ *
  * @author Eugene Kuleshov
  */
 public class StackMapAttribute extends Attribute {

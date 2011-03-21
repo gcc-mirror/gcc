@@ -1,4 +1,4 @@
-/* ArithmeticExpr.java -- 
+/* ArithmeticExpr.java --
    Copyright (C) 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -72,8 +72,8 @@ final class ArithmeticExpr
       case MULTIPLY:
       case DIVIDE:
       case MODULO:
-				this.op = op;
-				break;
+                                this.op = op;
+                                break;
       default:
         throw new IllegalArgumentException();
       }
@@ -166,5 +166,5 @@ final class ArithmeticExpr
     buf.append(rhs);
     return buf.toString();
   }
-  
+
 }

@@ -34,7 +34,9 @@
 //  masks here, based on the generic masks, and the corresponding
 //  classic_table in ctype_noninline.h.
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /// @brief  Base class for ctype.
   struct ctype_base
@@ -58,4 +60,5 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     static const mask alnum	= (1 << 2) | (1 << 3);  // alpha|digit
   };
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace

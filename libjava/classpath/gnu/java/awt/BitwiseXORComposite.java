@@ -63,7 +63,7 @@ import java.awt.image.WritableRaster;
  * white, blue, black, orange, green, and brown, respectively. Each
  * composite was used to paint a fully white rectangle on top of the
  * blue bar in the background.
- * 
+ *
  * <p>The purpose of this composite is to support the {@link
  * Graphics#setXORMode(Color)} method in composite-aware graphics
  * implementations. Applications typically would use
@@ -96,7 +96,7 @@ public class BitwiseXORComposite
    */
   protected Color xorColor;
 
-  
+
   /**
    * Constructs a new composite for xor-ing the pixel value.
    *
@@ -128,7 +128,7 @@ public class BitwiseXORComposite
     return new GeneralContext(srcColorModel, dstColorModel, xorColor);
   }
 
-  
+
   /**
    * A fallback CompositeContext that performs bitwise XOR of pixel
    * values with the pixel value of the specified <code>xorColor</code>.
@@ -164,7 +164,7 @@ public class BitwiseXORComposite
       Rectangle srcRect = src.getBounds();
       Rectangle dstInRect = dstIn.getBounds();
       Rectangle dstOutRect = dstOut.getBounds();
-      
+
       int xp = xorColor.getRGB();
       int w = Math.min(Math.min(srcRect.width, dstOutRect.width),
                        dstInRect.width);
@@ -186,7 +186,7 @@ public class BitwiseXORComposite
           int sp = srcColorModel.getRGB(srcPix);
           int dp = dstColorModel.getRGB(dstPix);
           int rp = sp ^ xp ^ dp;
-          dstOut.setDataElements(x + dstOutRect.x, y + dstOutRect.y, 
+          dstOut.setDataElements(x + dstOutRect.x, y + dstOutRect.y,
                                  dstColorModel.getDataElements(rp, rpPix));
         }
       }
@@ -249,7 +249,7 @@ public class BitwiseXORComposite
 
       srcLine = new int[width];
       dstLine = new int[width];
-      
+
       /* We need an int[] array with at least one element here;
        * srcLine is as good as any other.
        */
@@ -268,7 +268,7 @@ public class BitwiseXORComposite
       }
     }
 
-    
+
     /**
      * Determines whether an instance of this CompositeContext would
      * be able to process the specified color models.

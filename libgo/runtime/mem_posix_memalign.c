@@ -32,7 +32,13 @@ runtime_SysFree(void *v, uintptr n)
 	free(v);
 }
 
+void*
+runtime_SysReserve(void *v, uintptr n)
+{
+	return runtime_SysAlloc(n);
+}
+
 void
-runtime_SysMemInit(void)
+runtime_SysMap(void *v, uintptr n)
 {
 }

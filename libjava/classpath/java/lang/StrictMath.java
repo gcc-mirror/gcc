@@ -658,12 +658,12 @@ public final strictfp class StrictMath
     // 1. Replace x by |x| (sinh(-x) = -sinh(x)).
     // 2.
     //                                   E + E/(E+1)
-    //	 0       <= x <= 22     :  sinh(x) := --------------,  E=expm1(x)
-    // 	       			              2
+    //   0       <= x <= 22     :  sinh(x) := --------------,  E=expm1(x)
+    //                                        2
     //
     //  22       <= x <= lnovft :  sinh(x) := exp(x)/2
     //  lnovft   <= x <= ln2ovft:  sinh(x) := exp(x/2)/2 * exp(x/2)
-    //	ln2ovft  <  x           :  sinh(x) := +inf (overflow)
+    //  ln2ovft  <  x           :  sinh(x) := +inf (overflow)
 
     double t, w, h;
 
@@ -691,15 +691,15 @@ public final strictfp class StrictMath
     // |x| in [0, 22], return sign(x) * 0.5 * (E+E/(E+1))
     if (h_bits < 0x40360000L)          // |x| < 22
       {
-	if (h_bits < 0x3e300000L)      // |x| < 2^-28
-	  return x;                    // for tiny arguments return x
+        if (h_bits < 0x3e300000L)      // |x| < 2^-28
+          return x;                    // for tiny arguments return x
 
-	t = expm1(abs(x));
+        t = expm1(abs(x));
 
-	if (h_bits < 0x3ff00000L)
-	  return h * (2.0 * t - t * t / (t + 1.0));
+        if (h_bits < 0x3ff00000L)
+          return h * (2.0 * t - t * t / (t + 1.0));
 
-	return h * (t + t / (t + 1.0));
+        return h * (t + t / (t + 1.0));
       }
 
     // |x| in [22, log(Double.MAX_VALUE)], return 0.5 * exp(|x|)
@@ -708,12 +708,12 @@ public final strictfp class StrictMath
 
     // |x| in [log(Double.MAX_VALUE), overflowthreshold]
     if ((h_bits < 0x408633ceL)
-	|| ((h_bits == 0x408633ceL) && (l_bits <= 0x8fb9f87dL)))
+        || ((h_bits == 0x408633ceL) && (l_bits <= 0x8fb9f87dL)))
       {
-	w = exp(0.5 * abs(x));
-	t = h * w;
+        w = exp(0.5 * abs(x));
+        t = h * w;
 
-	return t * w;
+        return t * w;
       }
 
     // |x| > overflowthershold
@@ -749,12 +749,12 @@ public final strictfp class StrictMath
     //  0        <= x <= ln2/2  :  cosh(x) := 1 + -------------------
     //                                                 2*exp(x)
     //
-    //		                              exp(x) +  1/exp(x)
+    //                                        exp(x) +  1/exp(x)
     //  ln2/2    <= x <= 22     :  cosh(x) := ------------------
-    //		       			             2
+    //                                               2
     //  22       <= x <= lnovft :  cosh(x) := exp(x)/2
     //  lnovft   <= x <= ln2ovft:  cosh(x) := exp(x/2)/2 * exp(x/2)
-    //	ln2ovft  <  x	        :  cosh(x) := +inf  (overflow)
+    //  ln2ovft  <  x           :  cosh(x) := +inf  (overflow)
 
     double t, w;
     long bits;
@@ -776,22 +776,22 @@ public final strictfp class StrictMath
     // |x| in [0, 0.5 * ln(2)], return 1 + expm1(|x|)^2 / (2 * exp(|x|))
     if (hx < 0x3fd62e43L)
       {
-	t = expm1(abs(x));
-	w = 1.0 + t;
+        t = expm1(abs(x));
+        w = 1.0 + t;
 
-	// for tiny arguments return 1.
-	if (hx < 0x3c800000L)
-	  return w;
+        // for tiny arguments return 1.
+        if (hx < 0x3c800000L)
+          return w;
 
-	return 1.0 + (t * t) / (w + w);
+        return 1.0 + (t * t) / (w + w);
       }
 
     // |x| in [0.5 * ln(2), 22], return exp(|x|)/2 + 1 / (2 * exp(|x|))
     if (hx < 0x40360000L)
       {
-	t = exp(abs(x));
+        t = exp(abs(x));
 
-	return 0.5 * t + 0.5 / t;
+        return 0.5 * t + 0.5 / t;
       }
 
     // |x| in [22, log(Double.MAX_VALUE)], return 0.5 * exp(|x|)
@@ -801,12 +801,12 @@ public final strictfp class StrictMath
     // |x| in [log(Double.MAX_VALUE), overflowthreshold],
     // return exp(x/2)/2 * exp(x/2)
     if ((hx < 0x408633ceL)
-	|| ((hx == 0x408633ceL) && (lx <= 0x8fb9f87dL)))
+        || ((hx == 0x408633ceL) && (lx <= 0x8fb9f87dL)))
       {
-	w = exp(0.5 * abs(x));
-	t = 0.5 * w;
+        w = exp(0.5 * abs(x));
+        t = 0.5 * w;
 
-	return t * w;
+        return t * w;
       }
 
     // |x| > overflowthreshold
@@ -862,22 +862,22 @@ public final strictfp class StrictMath
 
     if (h_bits < 0x40360000L)                   // |x| <  22
       {
-	if (h_bits < 0x3c800000L)               // |x| <  2^-55
-	  return x * (1.0 + x);
+        if (h_bits < 0x3c800000L)               // |x| <  2^-55
+          return x * (1.0 + x);
 
-	if (h_bits >= 0x3ff00000L)              // |x| >= 1
-	  {
-	    t = expm1(2.0 * abs(x));
-	    z = 1.0 - 2.0 / (t + 2.0);
-	  }
-	else                                    // |x| <  1
-	  {
-	    t = expm1(-2.0 * abs(x));
-	    z = -t / (t + 2.0);
-	  }
+        if (h_bits >= 0x3ff00000L)              // |x| >= 1
+          {
+            t = expm1(2.0 * abs(x));
+            z = 1.0 - 2.0 / (t + 2.0);
+          }
+        else                                    // |x| <  1
+          {
+            t = expm1(-2.0 * abs(x));
+            z = -t / (t + 2.0);
+          }
       }
     else                                        // |x| >= 22
-	z = 1.0;
+        z = 1.0;
 
     return (x >= 0) ? z : -z;
   }
@@ -909,7 +909,7 @@ public final strictfp class StrictMath
   private static double buildDouble(long lowDWord, long highDWord)
   {
     return Double.longBitsToDouble(((highDWord & 0xffffffffL) << 32)
-				   | (lowDWord & 0xffffffffL));
+                                   | (lowDWord & 0xffffffffL));
   }
 
   /**
@@ -960,26 +960,26 @@ public final strictfp class StrictMath
 
     if (bits < 0x0010000000000000L)   // subnormal number
       {
-	t = TWO_54;
-	t *= x;
+        t = TWO_54;
+        t *= x;
 
-	// __HI(t)=__HI(t)/3+B2;
-	bits = Double.doubleToLongBits(t);
-	h = getHighDWord(bits);
-	l = getLowDWord(bits);
+        // __HI(t)=__HI(t)/3+B2;
+        bits = Double.doubleToLongBits(t);
+        h = getHighDWord(bits);
+        l = getLowDWord(bits);
 
-	h = h / 3 + CBRT_B2;
+        h = h / 3 + CBRT_B2;
 
-	t = buildDouble(l, h);
+        t = buildDouble(l, h);
       }
     else
       {
-	// __HI(t)=__HI(x)/3+B1;
-	h = getHighDWord(bits);
-	l = 0;
+        // __HI(t)=__HI(x)/3+B1;
+        h = getHighDWord(bits);
+        l = 0;
 
-	h = h / 3 + CBRT_B1;
-	t = buildDouble(l, h);
+        h = h / 3 + CBRT_B1;
+        t = buildDouble(l, h);
       }
 
     // new cbrt to 23 bits
@@ -998,7 +998,7 @@ public final strictfp class StrictMath
     t = buildDouble(l, h);
 
     // one step newton iteration to 53 bits with error less than 0.667 ulps
-    s = t * t;		    // t * t is exact
+    s = t * t;              // t * t is exact
     r = x / s;
     w = t + t;
     r = (r - t) / (w + r);  // r - t is exact
@@ -1087,75 +1087,75 @@ public final strictfp class StrictMath
   {
     // Method
     //   1. Argument reduction:
-    //	Given x, find r and integer k such that
+    //  Given x, find r and integer k such that
     //
     //            x = k * ln(2) + r,  |r| <= 0.5 * ln(2)
     //
     //  Here a correction term c will be computed to compensate
-    //	the error in r when rounded to a floating-point number.
+    //  the error in r when rounded to a floating-point number.
     //
     //   2. Approximating expm1(r) by a special rational function on
-    //	the interval [0, 0.5 * ln(2)]:
-    //	Since
-    //	    r*(exp(r)+1)/(exp(r)-1) = 2 + r^2/6 - r^4/360 + ...
-    //	we define R1(r*r) by
-    //	    r*(exp(r)+1)/(exp(r)-1) = 2 + r^2/6 * R1(r*r)
-    //	That is,
-    //	    R1(r**2) = 6/r *((exp(r)+1)/(exp(r)-1) - 2/r)
-    //		     = 6/r * ( 1 + 2.0*(1/(exp(r)-1) - 1/r))
-    //		     = 1 - r^2/60 + r^4/2520 - r^6/100800 + ...
+    //  the interval [0, 0.5 * ln(2)]:
+    //  Since
+    //      r*(exp(r)+1)/(exp(r)-1) = 2 + r^2/6 - r^4/360 + ...
+    //  we define R1(r*r) by
+    //      r*(exp(r)+1)/(exp(r)-1) = 2 + r^2/6 * R1(r*r)
+    //  That is,
+    //      R1(r**2) = 6/r *((exp(r)+1)/(exp(r)-1) - 2/r)
+    //               = 6/r * ( 1 + 2.0*(1/(exp(r)-1) - 1/r))
+    //               = 1 - r^2/60 + r^4/2520 - r^6/100800 + ...
     //  We use a special Remes algorithm on [0, 0.347] to generate
-    // 	a polynomial of degree 5 in r*r to approximate R1. The
-    //	maximum error of this polynomial approximation is bounded
-    //	by 2**-61. In other words,
-    //	    R1(z) ~ 1.0 + Q1*z + Q2*z**2 + Q3*z**3 + Q4*z**4 + Q5*z**5
-    //	where 	Q1  =  -1.6666666666666567384E-2,
-    // 		Q2  =   3.9682539681370365873E-4,
-    // 		Q3  =  -9.9206344733435987357E-6,
-    // 		Q4  =   2.5051361420808517002E-7,
-    // 		Q5  =  -6.2843505682382617102E-9;
-    //  	(where z=r*r, and Q1 to Q5 are called EXPM1_Qx in the source)
-    //	with error bounded by
-    //	    |                  5           |     -61
-    //	    | 1.0+Q1*z+...+Q5*z   -  R1(z) | <= 2
-    //	    |                              |
+    //  a polynomial of degree 5 in r*r to approximate R1. The
+    //  maximum error of this polynomial approximation is bounded
+    //  by 2**-61. In other words,
+    //      R1(z) ~ 1.0 + Q1*z + Q2*z**2 + Q3*z**3 + Q4*z**4 + Q5*z**5
+    //  where   Q1  =  -1.6666666666666567384E-2,
+    //          Q2  =   3.9682539681370365873E-4,
+    //          Q3  =  -9.9206344733435987357E-6,
+    //          Q4  =   2.5051361420808517002E-7,
+    //          Q5  =  -6.2843505682382617102E-9;
+    //          (where z=r*r, and Q1 to Q5 are called EXPM1_Qx in the source)
+    //  with error bounded by
+    //      |                  5           |     -61
+    //      | 1.0+Q1*z+...+Q5*z   -  R1(z) | <= 2
+    //      |                              |
     //
-    //	expm1(r) = exp(r)-1 is then computed by the following
-    // 	specific way which minimize the accumulation rounding error:
-    //			       2     3
-    //			      r     r    [ 3 - (R1 + R1*r/2)  ]
-    //	      expm1(r) = r + --- + --- * [--------------------]
-    //		              2     2    [ 6 - r*(3 - R1*r/2) ]
+    //  expm1(r) = exp(r)-1 is then computed by the following
+    //  specific way which minimize the accumulation rounding error:
+    //                         2     3
+    //                        r     r    [ 3 - (R1 + R1*r/2)  ]
+    //        expm1(r) = r + --- + --- * [--------------------]
+    //                        2     2    [ 6 - r*(3 - R1*r/2) ]
     //
-    //	To compensate the error in the argument reduction, we use
-    //		expm1(r+c) = expm1(r) + c + expm1(r)*c
-    //			   ~ expm1(r) + c + r*c
-    //	Thus c+r*c will be added in as the correction terms for
-    //	expm1(r+c). Now rearrange the term to avoid optimization
-    // 	screw up:
-    //		        (      2                                    2 )
-    //		        ({  ( r    [ R1 -  (3 - R1*r/2) ]  )  }    r  )
-    //	 expm1(r+c)~r - ({r*(--- * [--------------------]-c)-c} - --- )
-    //	                ({  ( 2    [ 6 - r*(3 - R1*r/2) ]  )  }    2  )
+    //  To compensate the error in the argument reduction, we use
+    //          expm1(r+c) = expm1(r) + c + expm1(r)*c
+    //                     ~ expm1(r) + c + r*c
+    //  Thus c+r*c will be added in as the correction terms for
+    //  expm1(r+c). Now rearrange the term to avoid optimization
+    //  screw up:
+    //                  (      2                                    2 )
+    //                  ({  ( r    [ R1 -  (3 - R1*r/2) ]  )  }    r  )
+    //   expm1(r+c)~r - ({r*(--- * [--------------------]-c)-c} - --- )
+    //                  ({  ( 2    [ 6 - r*(3 - R1*r/2) ]  )  }    2  )
     //                      (                                             )
     //
-    //		   = r - E
+    //             = r - E
     //   3. Scale back to obtain expm1(x):
-    //	From step 1, we have
-    //	   expm1(x) = either 2^k*[expm1(r)+1] - 1
-    //		    = or     2^k*[expm1(r) + (1-2^-k)]
+    //  From step 1, we have
+    //     expm1(x) = either 2^k*[expm1(r)+1] - 1
+    //              = or     2^k*[expm1(r) + (1-2^-k)]
     //   4. Implementation notes:
-    //	(A). To save one multiplication, we scale the coefficient Qi
-    //	     to Qi*2^i, and replace z by (x^2)/2.
-    //	(B). To achieve maximum accuracy, we compute expm1(x) by
-    //	  (i)   if x < -56*ln2, return -1.0, (raise inexact if x!=inf)
-    //	  (ii)  if k=0, return r-E
-    //	  (iii) if k=-1, return 0.5*(r-E)-0.5
-    //        (iv)	if k=1 if r < -0.25, return 2*((r+0.5)- E)
-    //	       	       else	     return  1.0+2.0*(r-E);
-    //	  (v)   if (k<-2||k>56) return 2^k(1-(E-r)) - 1 (or exp(x)-1)
-    //	  (vi)  if k <= 20, return 2^k((1-2^-k)-(E-r)), else
-    //	  (vii) return 2^k(1-((E+2^-k)-r))
+    //  (A). To save one multiplication, we scale the coefficient Qi
+    //       to Qi*2^i, and replace z by (x^2)/2.
+    //  (B). To achieve maximum accuracy, we compute expm1(x) by
+    //    (i)   if x < -56*ln2, return -1.0, (raise inexact if x!=inf)
+    //    (ii)  if k=0, return r-E
+    //    (iii) if k=-1, return 0.5*(r-E)-0.5
+    //        (iv)      if k=1 if r < -0.25, return 2*((r+0.5)- E)
+    //                 else          return  1.0+2.0*(r-E);
+    //    (v)   if (k<-2||k>56) return 2^k(1-(E-r)) - 1 (or exp(x)-1)
+    //    (vi)  if k <= 20, return 2^k((1-2^-k)-(E-r)), else
+    //    (vii) return 2^k(1-((E+2^-k)-r))
 
     boolean negative = (x < 0);
     double y, hi, lo, c, t, e, hxs, hfx, r1;
@@ -1175,52 +1175,52 @@ public final strictfp class StrictMath
     // handle special cases and large arguments
     if (h_bits >= 0x4043687aL)        // if |x| >= 56 * ln(2)
       {
-	if (h_bits >= 0x40862e42L)    // if |x| >= EXP_LIMIT_H
-	  {
-	    if (h_bits >= 0x7ff00000L)
-	      {
-		if (((h_bits & 0x000fffffL) | (l_bits & 0xffffffffL)) != 0)
-		  return x;                        // exp(NaN) = NaN
-		else
-		  return negative ? -1.0 : x;      // exp({+-inf}) = {+inf, -1}
-	      }
+        if (h_bits >= 0x40862e42L)    // if |x| >= EXP_LIMIT_H
+          {
+            if (h_bits >= 0x7ff00000L)
+              {
+                if (((h_bits & 0x000fffffL) | (l_bits & 0xffffffffL)) != 0)
+                  return x;                        // exp(NaN) = NaN
+                else
+                  return negative ? -1.0 : x;      // exp({+-inf}) = {+inf, -1}
+              }
 
-	    if (x > EXP_LIMIT_H)
-	      return Double.POSITIVE_INFINITY;     // overflow
-	  }
+            if (x > EXP_LIMIT_H)
+              return Double.POSITIVE_INFINITY;     // overflow
+          }
 
-	if (negative)                // x <= -56 * ln(2)
-	  return -1.0;
+        if (negative)                // x <= -56 * ln(2)
+          return -1.0;
       }
 
     // argument reduction
     if (h_bits > 0x3fd62e42L)        // |x| > 0.5 * ln(2)
       {
-	if (h_bits < 0x3ff0a2b2L)    // |x| < 1.5 * ln(2)
-	  {
-	    if (negative)
-	      {
-		hi = x + LN2_H;
-		lo = -LN2_L;
-		k = -1;
-	      }
-	    else
-	      {
-		hi = x - LN2_H;
-		lo = LN2_L;
-		k  = 1;
-	      }
-	  }
-	else
-	  {
-	    k = (int) (INV_LN2 * x + (negative ? - 0.5 : 0.5));
-	    t = k;
-	    hi = x - t * LN2_H;
-	    lo = t * LN2_L;
-	  }
+        if (h_bits < 0x3ff0a2b2L)    // |x| < 1.5 * ln(2)
+          {
+            if (negative)
+              {
+                hi = x + LN2_H;
+                lo = -LN2_L;
+                k = -1;
+              }
+            else
+              {
+                hi = x - LN2_H;
+                lo = LN2_L;
+                k  = 1;
+              }
+          }
+        else
+          {
+            k = (int) (INV_LN2 * x + (negative ? - 0.5 : 0.5));
+            t = k;
+            hi = x - t * LN2_H;
+            lo = t * LN2_L;
+          }
 
-	x = hi - lo;
-	c = (hi - x) - lo;
+        x = hi - lo;
+        c = (hi - x) - lo;
 
       }
     else if (h_bits < 0x3c900000L)   // |x| < 2^-54 return x
@@ -1232,85 +1232,85 @@ public final strictfp class StrictMath
     hfx = 0.5 * x;
     hxs = x * hfx;
     r1 = 1.0 + hxs * (EXPM1_Q1
-	     + hxs * (EXPM1_Q2
+             + hxs * (EXPM1_Q2
              + hxs * (EXPM1_Q3
-	     + hxs * (EXPM1_Q4
-	     + hxs *  EXPM1_Q5))));
+             + hxs * (EXPM1_Q4
+             + hxs *  EXPM1_Q5))));
     t = 3.0 - r1 * hfx;
     e = hxs * ((r1 - t) / (6.0 - x * t));
 
     if (k == 0)
       {
-	return x - (x * e - hxs);    // c == 0
+        return x - (x * e - hxs);    // c == 0
       }
     else
       {
-	e = x * (e - c) - c;
-	e -= hxs;
+        e = x * (e - c) - c;
+        e -= hxs;
 
-	if (k == -1)
-	  return 0.5 * (x - e) - 0.5;
+        if (k == -1)
+          return 0.5 * (x - e) - 0.5;
 
-	if (k == 1)
-	  {
-	    if (x < - 0.25)
-	      return -2.0 * (e - (x + 0.5));
-	    else
-	      return 1.0 + 2.0 * (x - e);
-	  }
+        if (k == 1)
+          {
+            if (x < - 0.25)
+              return -2.0 * (e - (x + 0.5));
+            else
+              return 1.0 + 2.0 * (x - e);
+          }
 
-	if (k <= -2 || k > 56)       // sufficient to return exp(x) - 1
-	  {
-	    y = 1.0 - (e - x);
+        if (k <= -2 || k > 56)       // sufficient to return exp(x) - 1
+          {
+            y = 1.0 - (e - x);
 
-	    bits = Double.doubleToLongBits(y);
-	    h_bits = getHighDWord(bits);
-	    l_bits = getLowDWord(bits);
+            bits = Double.doubleToLongBits(y);
+            h_bits = getHighDWord(bits);
+            l_bits = getLowDWord(bits);
 
-	    h_bits += (k << 20);     // add k to y's exponent
+            h_bits += (k << 20);     // add k to y's exponent
 
-	    y = buildDouble(l_bits, h_bits);
+            y = buildDouble(l_bits, h_bits);
 
-	    return y - 1.0;
-	  }
+            return y - 1.0;
+          }
 
-	t = 1.0;
-	if (k < 20)
-	  {
-	    bits = Double.doubleToLongBits(t);
-	    h_bits = 0x3ff00000L - (0x00200000L >> k);
-	    l_bits = getLowDWord(bits);
+        t = 1.0;
+        if (k < 20)
+          {
+            bits = Double.doubleToLongBits(t);
+            h_bits = 0x3ff00000L - (0x00200000L >> k);
+            l_bits = getLowDWord(bits);
 
-	    t = buildDouble(l_bits, h_bits);      // t = 1 - 2^(-k)
-	    y = t - (e - x);
+            t = buildDouble(l_bits, h_bits);      // t = 1 - 2^(-k)
+            y = t - (e - x);
 
-	    bits = Double.doubleToLongBits(y);
-	    h_bits = getHighDWord(bits);
-	    l_bits = getLowDWord(bits);
+            bits = Double.doubleToLongBits(y);
+            h_bits = getHighDWord(bits);
+            l_bits = getLowDWord(bits);
 
-	    h_bits += (k << 20);     // add k to y's exponent
+            h_bits += (k << 20);     // add k to y's exponent
 
-	    y = buildDouble(l_bits, h_bits);
-	  }
-	else
-	  {
-	    bits = Double.doubleToLongBits(t);
-	    h_bits = (0x000003ffL - k) << 20;
-	    l_bits = getLowDWord(bits);
+            y = buildDouble(l_bits, h_bits);
+          }
+        else
+          {
+            bits = Double.doubleToLongBits(t);
+            h_bits = (0x000003ffL - k) << 20;
+            l_bits = getLowDWord(bits);
 
-	    t = buildDouble(l_bits, h_bits);      // t = 2^(-k)
+            t = buildDouble(l_bits, h_bits);      // t = 2^(-k)
 
-	    y = x - (e + t);
-	    y += 1.0;
+            y = x - (e + t);
+            y += 1.0;
 
-	    bits = Double.doubleToLongBits(y);
-	    h_bits = getHighDWord(bits);
-	    l_bits = getLowDWord(bits);
+            bits = Double.doubleToLongBits(y);
+            h_bits = getHighDWord(bits);
+            l_bits = getLowDWord(bits);
 
-	    h_bits += (k << 20);     // add k to y's exponent
+            h_bits += (k << 20);     // add k to y's exponent
 
-	    y = buildDouble(l_bits, h_bits);
-	  }
+            y = buildDouble(l_bits, h_bits);
+          }
       }
 
     return y;
@@ -2504,7 +2504,7 @@ public final strictfp class StrictMath
    * <li>If <code>a</code> is positive or negative zero, the result is the
    * same.</li>
    * </ul>
-   * 
+   *
    * @param a the numeric argument.
    * @return the sign of the argument.
    * @since 1.5.
@@ -2526,7 +2526,7 @@ public final strictfp class StrictMath
    * <li>If <code>a</code> is positive or negative zero, the result is the
    * same.</li>
    * </ul>
-   * 
+   *
    * @param a the numeric argument.
    * @return the sign of the argument.
    * @since 1.5.

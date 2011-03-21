@@ -31,7 +31,9 @@
 #include <ios>
 #include <limits>
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // Definitions for static const members of ios_base.
   const ios_base::fmtflags ios_base::boolalpha;
@@ -187,4 +189,5 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     _M_callbacks = 0;
   }
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace

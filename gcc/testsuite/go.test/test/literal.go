@@ -6,8 +6,6 @@
 
 package main
 
-import "os"
-
 var nbad int
 
 func assert(cond bool, msg string) {
@@ -20,16 +18,8 @@ func assert(cond bool, msg string) {
 	}
 }
 
-func equal(a, b float) bool {
-	if os.Getenv("GOARCH") != "arm" {
-		return a == b
-	}
-	d := a-b
-	if a > b {
-		return d < a * 1.0e-7
-	}
-	d = -d
-	return d < b * 1.0e-7
+func equal(a, b float32) bool {
+	return a == b
 }
 
 
@@ -47,7 +37,7 @@ func main() {
 	var i04 int8 = -127
 	var i05 int8 = -128
 	var i06 int8 = +127
-	assert(i01 == i00 + 1, "i01")
+	assert(i01 == i00+1, "i01")
 	assert(i02 == -i01, "i02")
 	assert(i03 == -i04, "i03")
 	assert(-(i05+1) == i06, "i05")
@@ -60,7 +50,7 @@ func main() {
 	var i14 int16 = -32767
 	var i15 int16 = -32768
 	var i16 int16 = +32767
-	assert(i11 == i10 + 1, "i11")
+	assert(i11 == i10+1, "i11")
 	assert(i12 == -i11, "i12")
 	assert(i13 == -i14, "i13")
 	assert(-(i15+1) == i16, "i15")
@@ -73,11 +63,11 @@ func main() {
 	var i24 int32 = -2147483647
 	var i25 int32 = -2147483648
 	var i26 int32 = +2147483647
-	assert(i21 == i20 + 1, "i21")
+	assert(i21 == i20+1, "i21")
 	assert(i22 == -i21, "i22")
 	assert(i23 == -i24, "i23")
 	assert(-(i25+1) == i26, "i25")
-	assert(i23 == (1 << 31) - 1, "i23 size")
+	assert(i23 == (1<<31)-1, "i23 size")
 
 	// int64
 	var i30 int64 = 0
@@ -87,27 +77,27 @@ func main() {
 	var i34 int64 = -9223372036854775807
 	var i35 int64 = -9223372036854775808
 	var i36 int64 = +9223372036854775807
-	assert(i31 == i30 + 1, "i31")
+	assert(i31 == i30+1, "i31")
 	assert(i32 == -i31, "i32")
 	assert(i33 == -i34, "i33")
 	assert(-(i35+1) == i36, "i35")
-	assert(i33 == (1<<63) - 1, "i33 size")
+	assert(i33 == (1<<63)-1, "i33 size")
 
 	// uint8
 	var u00 uint8 = 0
 	var u01 uint8 = 1
 	var u02 uint8 = 255
 	var u03 uint8 = +255
-	assert(u01 == u00 + 1, "u01")
+	assert(u01 == u00+1, "u01")
 	assert(u02 == u03, "u02")
-	assert(u03 == (1<<8) - 1, "u03 size")
+	assert(u03 == (1<<8)-1, "u03 size")
 
 	// uint16
 	var u10 uint16 = 0
 	var u11 uint16 = 1
 	var u12 uint16 = 65535
 	var u13 uint16 = +65535
-	assert(u11 == u10 + 1, "u11")
+	assert(u11 == u10+1, "u11")
 	assert(u12 == u13, "u12")
 
 	// uint32
@@ -115,7 +105,7 @@ func main() {
 	var u21 uint32 = 1
 	var u22 uint32 = 4294967295
 	var u23 uint32 = +4294967295
-	assert(u21 == u20 + 1, "u21")
+	assert(u21 == u20+1, "u21")
 	assert(u22 == u23, "u22")
 
 	// uint64
@@ -126,23 +116,23 @@ func main() {
 	_, _, _, _ = u30, u31, u32, u33
 
 	// float
-	var f00 float = 3.14159
-	var f01 float = -3.14159
-	var f02 float = +3.14159
-	var f03 float = 0.0
-	var f04 float = .0
-	var f05 float = 0.
-	var f06 float = -0.0
-	var f07 float = 1e10
-	var f08 float = -1e10
-	var f09 float = 1e-10
-	var f10 float = 1e+10
-	var f11 float = 1.e-10
-	var f12 float = 1.e+10
-	var f13 float = .1e-10
-	var f14 float = .1e+10
-	var f15 float = 1.1e-10
-	var f16 float = 1.1e+10
+	var f00 float32 = 3.14159
+	var f01 float32 = -3.14159
+	var f02 float32 = +3.14159
+	var f03 float32 = 0.0
+	var f04 float32 = .0
+	var f05 float32 = 0.
+	var f06 float32 = -0.0
+	var f07 float32 = 1e10
+	var f08 float32 = -1e10
+	var f09 float32 = 1e-10
+	var f10 float32 = 1e+10
+	var f11 float32 = 1.e-10
+	var f12 float32 = 1.e+10
+	var f13 float32 = .1e-10
+	var f14 float32 = .1e+10
+	var f15 float32 = 1.1e-10
+	var f16 float32 = 1.1e+10
 	assert(f01 == -f00, "f01")
 	assert(f02 == -f01, "f02")
 	assert(f03 == f04, "f03")
@@ -178,7 +168,6 @@ func main() {
 	assert(c7 == 0x09, "c7")
 	assert(c8 == 0x0b, "c8")
 	assert(c9 == 0x672c, "c9")
-
 
 	var c00 uint8 = '\000'
 	var c01 uint8 = '\007'

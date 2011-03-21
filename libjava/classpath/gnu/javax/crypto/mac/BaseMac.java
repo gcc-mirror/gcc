@@ -1,4 +1,4 @@
-/* BaseMac.java -- 
+/* BaseMac.java --
    Copyright (C) 2001, 2002, 2006 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -59,7 +59,7 @@ public abstract class BaseMac
 
   /**
    * Trivial constructor for use by concrete subclasses.
-   * 
+   *
    * @param name the canonical name of this instance.
    */
   protected BaseMac(String name)
@@ -71,7 +71,7 @@ public abstract class BaseMac
 
   /**
    * Trivial constructor for use by concrete subclasses.
-   * 
+   *
    * @param name the canonical name of this instance.
    * @param underlyingHash the underlying message digest algorithm instance.
    */

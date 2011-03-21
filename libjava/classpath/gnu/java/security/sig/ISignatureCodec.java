@@ -1,4 +1,4 @@
-/* ISignatureCodec.java -- 
+/* ISignatureCodec.java --
    Copyright (C) 2001, 2002, 2003, 2006 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.

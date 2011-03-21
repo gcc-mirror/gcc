@@ -1,7 +1,7 @@
 // Exception Handling support header for -*- C++ -*-
 
 // Copyright (C) 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003,
-// 2004, 2005, 2006, 2007, 2008, 2009, 2010
+// 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
 // Free Software Foundation
 //
 // This file is part of GCC.
@@ -120,7 +120,9 @@ namespace std
   // @} group exceptions
 } // namespace std
 
-_GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
+namespace __gnu_cxx
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /**
    *  @brief A replacement for the standard terminate_handler which
@@ -140,7 +142,8 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
    */
   void __verbose_terminate_handler();
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
 
 } // extern "C++"
 
@@ -148,8 +151,8 @@ _GLIBCXX_END_NAMESPACE
 
 #if (defined(__GXX_EXPERIMENTAL_CXX0X__) \
      && defined(_GLIBCXX_ATOMIC_BUILTINS_4))
-#include <exception_ptr.h>
-#include <nested_exception.h>
+#include <bits/exception_ptr.h>
+#include <bits/nested_exception.h>
 #endif
 
 #endif

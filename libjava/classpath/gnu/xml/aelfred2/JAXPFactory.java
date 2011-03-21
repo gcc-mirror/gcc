@@ -1,4 +1,4 @@
-/* JAXPFactory.java -- 
+/* JAXPFactory.java --
    Copyright (C) 2001 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -63,7 +63,7 @@ import javax.xml.parsers.SAXParserFactory;
 public final class JAXPFactory
   extends SAXParserFactory
 {
-  
+
   private Hashtable flags = new Hashtable();
 
   /**
@@ -86,7 +86,7 @@ public final class JAXPFactory
     parser.setFeature(SAXDriver.FEATURE + "validation",
                       isValidating());
     // that makes SAX2 feature flags trump JAXP
-    
+
     while (e.hasMoreElements())
       {
         String uri = (String) e.nextElement();
@@ -98,8 +98,8 @@ public final class JAXPFactory
   }
 
   // yes, this "feature transfer" mechanism doesn't play well
-  
-  public void setFeature(String name, boolean value) 
+
+  public void setFeature(String name, boolean value)
     throws ParserConfigurationException, SAXNotRecognizedException,
            SAXNotSupportedException
   {
@@ -108,7 +108,7 @@ public final class JAXPFactory
         // force "early" detection of errors where possible
         // (flags can't necessarily be set before parsing)
         new JaxpParser().getXMLReader().setFeature(name, value);
-        
+
         flags.put(name, Boolean.valueOf(value));
       }
     catch (SAXNotRecognizedException e)
@@ -127,12 +127,12 @@ public final class JAXPFactory
       }
   }
 
-  public boolean getFeature(String name) 
+  public boolean getFeature(String name)
     throws ParserConfigurationException, SAXNotRecognizedException,
            SAXNotSupportedException
   {
     Boolean value = (Boolean) flags.get(name);
-    
+
     if (value != null)
       {
         return value.booleanValue();
@@ -159,25 +159,25 @@ public final class JAXPFactory
           }
       }
   }
-           
+
   private static class JaxpParser
     extends SAXParser
   {
-    
+
     private XmlReader ae2 = new XmlReader();
     private XMLReaderAdapter parser = null;
-    
+
     JaxpParser()
     {
     }
 
-    public void setProperty(String id, Object value) 
+    public void setProperty(String id, Object value)
       throws SAXNotRecognizedException, SAXNotSupportedException
     {
       ae2.setProperty(id, value);
     }
 
-    public Object getProperty(String id) 
+    public Object getProperty(String id)
       throws SAXNotRecognizedException, SAXNotSupportedException
     {
       return ae2.getProperty(id);
@@ -210,7 +210,7 @@ public final class JAXPFactory
           throw new Error();
         }
     }
-    
+
     public boolean isValidating()
     {
       try
@@ -222,10 +222,9 @@ public final class JAXPFactory
           throw new Error();
         }
     }
-    
-    // TODO isXIncludeAware()
-    
-  }
-  
-}
 
+    // TODO isXIncludeAware()
+
+  }
+
+}

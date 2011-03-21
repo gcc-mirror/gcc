@@ -16,7 +16,7 @@ program main
   b = 1/exp(1000.0)
 
   write(str,*) a
-  if (trim(adjustl(str)) .ne. '+Infinity') call abort
+  if (trim(adjustl(str)) .ne. 'Infinity') call abort
 
   if (b .ne. 0.) call abort
 
@@ -36,7 +36,7 @@ program main
   if (trim(adjustl(str)) .ne. '-Infinity') call abort
 
   write(str,*) 3.0/0.
-  if (trim(adjustl(str)) .ne. '+Infinity') call abort
+  if (trim(adjustl(str)) .ne. 'Infinity') call abort
 
   write(str,*)  nan
   if (trim(adjustl(str)) .ne. 'NaN') call abort
@@ -48,7 +48,7 @@ program main
   if (trim(adjustl(str)) .ne. '(            NaN,            NaN)') call abort
 
   write(str,*) z3
-  if (trim(adjustl(str)) .ne. '(      +Infinity,      -Infinity)') call abort
+  if (trim(adjustl(str)) .ne. '(       Infinity,      -Infinity)') call abort
 
   write(str,*) z4
   if (trim(adjustl(str)) .ne. '(  0.0000000    , -0.0000000    )') call abort

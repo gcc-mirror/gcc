@@ -1,4 +1,4 @@
-/* DomNodeIterator.java -- 
+/* DomNodeIterator.java --
    Copyright (C) 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -140,7 +140,7 @@ public class DomNodeIterator
         current = (ret == null) ? current : ret;
       }
     while (!accept(ret));
-    
+
     return ret;
   }
 

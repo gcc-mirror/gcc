@@ -17,5 +17,5 @@ int main()
   f({});
   B b0 = { };
   B b1 { };    // OK, uses #1
-  B b2 { 1 };  // { dg-error "conversion" }
+  B b2 { 1 };  // { dg-error "could not convert" }
 }

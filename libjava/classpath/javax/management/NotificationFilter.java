@@ -51,7 +51,7 @@ import java.io.Serializable;
 public interface NotificationFilter
   extends Serializable
 {
-  
+
   /**
    * Returns true if the specified notification should be passed
    * on to the listener.
@@ -63,4 +63,3 @@ public interface NotificationFilter
   boolean isNotificationEnabled(Notification notification);
 
 }
-

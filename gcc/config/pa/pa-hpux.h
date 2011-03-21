@@ -22,6 +22,9 @@ along with GCC; see the file COPYING3.  If not see
 #undef TARGET_HPUX
 #define TARGET_HPUX 1
 
+#undef HPUX_LONG_DOUBLE_LIBRARY
+#define HPUX_LONG_DOUBLE_LIBRARY 1
+
 #undef TARGET_DEFAULT
 #define TARGET_DEFAULT MASK_BIG_SWITCH
 
@@ -33,7 +36,6 @@ along with GCC; see the file COPYING3.  If not see
 #define PTRDIFF_TYPE "int"
 
 #define LONG_DOUBLE_TYPE_SIZE 128
-#define HPUX_LONG_DOUBLE_LIBRARY
 #define FLOAT_LIB_COMPARE_RETURNS_BOOL(MODE, COMPARISON) ((MODE) == TFmode)
 
 /* GCC always defines __STDC__.  HP C++ compilers don't define it.  This

@@ -1,4 +1,4 @@
-# Copyright (c) 1999, 2000, 2001, 2002, 2003, 2006, 2010 by Red Hat, Inc.
+# Copyright (c) 1999, 2000, 2001, 2002, 2003, 2006, 2010, 2011 by Red Hat, Inc.
 # All rights reserved.
 # Copyright 2004 Nathanael Nerode
 # 
@@ -193,7 +193,9 @@ case "$THREADS" in
 	# The alternate thread library was only introduced in Solaris 8 and
 	# became the default in Solaris 9, so no need for the special code
 	# above otherwise.
-	THREADLIBS=-lpthread
+	# nanosleep, sched_yield, and sem_* only live in librt before
+	# Solaris 11.
+	THREADLIBS="-lpthread -lrt"
 	;;
      *-*-irix*)
 	AC_DEFINE(GC_IRIX_THREADS,1,[support for Irix pthreads])
@@ -310,9 +312,12 @@ case "$host" in
   *) ;;
 esac
 
-# We never want libdl on darwin. It is a fake libdl that just ends up making
-# dyld calls anyway
 case "$host" in
+  # While IRIX 6 has libdl for the O32 and N32 ABIs, it's missing for N64
+  # and unnecessary everywhere.
+  mips-sgi-irix6*) ;;
+  # We never want libdl on darwin. It is a fake libdl that just ends up making
+  # dyld calls anyway
   *-*-darwin*) ;;
   *)
     AC_CHECK_LIB(dl, dlopen, EXTRA_TEST_LIBS="$EXTRA_TEST_LIBS -ldl")

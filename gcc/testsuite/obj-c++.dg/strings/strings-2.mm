@@ -5,24 +5,24 @@
 /* { dg-options "-fconstant-string-class=MyTestString" } */
 /* { dg-options "-mno-constant-cfstrings -fconstant-string-class=MyTestString" { target *-*-darwin* } } */
 
-/* { dg-additional-sources "../../objc-obj-c++-shared/Object1.mm" } */
-
-#include "../../objc-obj-c++-shared/Object1.h"
-#include "../../objc-obj-c++-shared/next-mapping.h"
+#include "../../objc-obj-c++-shared/objc-test-suite-types.h"
 
 #include <stdlib.h> /* For abort() */
 
-@interface MyTestString : Object
+@interface MyTestString
 {
+  void *dummy_class_ptr;
   char *string;
   unsigned int len;
 }
++ initialize;
 /* All strings should contain the C string 'test'.  Call -check to
    test that this is true.  */
 - (void) check;
 @end
 
 @implementation MyTestString
++ initialize {return self;}
 - (void) check
 {
   if (len != 4 || string[0] != 't' || string[1] != 'e'
@@ -31,13 +31,7 @@
 }
 @end
 
-#ifdef __NEXT_RUNTIME__
-#  ifdef NEXT_OBJC_USE_NEW_INTERFACE
-struct fudge_objc_class _MyTestStringClassReference;
-#  else
-struct objc_class _MyTestStringClassReference;
-#  endif
-#endif
+TNS_STRING_REF_T _MyTestStringClassReference; /* Only used by NeXT.  */
 
 int main (void)
 {
@@ -59,6 +53,7 @@ int main (void)
 }
 
 #ifdef __NEXT_RUNTIME__
+#include <string.h>
 /* The MyTestString metaclass will need to be initialized before we can
    send messages to strings.  */
 

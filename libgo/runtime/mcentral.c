@@ -114,13 +114,11 @@ static void
 MCentral_Free(MCentral *c, void *v)
 {
 	MSpan *s;
-	PageID page;
-	MLink *p, *next;
+	MLink *p;
 	int32 size;
 
 	// Find span for v.
-	page = (uintptr)v >> PageShift;
-	s = runtime_MHeap_Lookup(&runtime_mheap, page);
+	s = runtime_MHeap_Lookup(&runtime_mheap, v);
 	if(s == nil || s->ref == 0)
 		runtime_throw("invalid free");
 
@@ -140,16 +138,8 @@ MCentral_Free(MCentral *c, void *v)
 	if(--s->ref == 0) {
 		size = runtime_class_to_size[c->sizeclass];
 		runtime_MSpanList_Remove(s);
-		// The second word of each freed block indicates
-		// whether it needs to be zeroed.  The first word
-		// is the link pointer and must always be cleared.
-		for(p=s->freelist; p; p=next) {
-			next = p->next;
-			if(size > (int32)sizeof(uintptr) && ((uintptr*)p)[1] != 0)
-				runtime_memclr((byte*)p, size);
-			else
-				p->next = nil;
-		}
+		runtime_unmarkspan((byte*)(s->start<<PageShift), s->npages<<PageShift);
+		*(uintptr*)(s->start<<PageShift) = 1;  // needs zeroing
 		s->freelist = nil;
 		c->nfree -= (s->npages << PageShift) / size;
 		runtime_unlock(c);
@@ -159,7 +149,7 @@ MCentral_Free(MCentral *c, void *v)
 }
 
 void
-runtime_MGetSizeClassInfo(int32 sizeclass, int32 *sizep, int32 *npagesp, int32 *nobj)
+runtime_MGetSizeClassInfo(int32 sizeclass, uintptr *sizep, int32 *npagesp, int32 *nobj)
 {
 	int32 size;
 	int32 npages;
@@ -168,7 +158,7 @@ runtime_MGetSizeClassInfo(int32 sizeclass, int32 *sizep, int32 *npagesp, int32 *
 	size = runtime_class_to_size[sizeclass];
 	*npagesp = npages;
 	*sizep = size;
-	*nobj = (npages << PageShift) / (size + RefcountOverhead);
+	*nobj = (npages << PageShift) / size;
 }
 
 // Fetch a new span from the heap and
@@ -176,7 +166,8 @@ runtime_MGetSizeClassInfo(int32 sizeclass, int32 *sizep, int32 *npagesp, int32 *
 static bool
 MCentral_Grow(MCentral *c)
 {
-	int32 i, n, npages, size;
+	int32 i, n, npages;
+	uintptr size;
 	MLink **tailp, *v;
 	byte *p;
 	MSpan *s;
@@ -193,7 +184,7 @@ MCentral_Grow(MCentral *c)
 	// Carve span into sequence of blocks.
 	tailp = &s->freelist;
 	p = (byte*)(s->start << PageShift);
-	s->gcref = (uint32*)(p + size*n);
+	s->limit = p + size*n;
 	for(i=0; i<n; i++) {
 		v = (MLink*)p;
 		*tailp = v;
@@ -201,6 +192,7 @@ MCentral_Grow(MCentral *c)
 		p += size;
 	}
 	*tailp = nil;
+	runtime_markspan((byte*)(s->start<<PageShift), size, n, size*n < (s->npages<<PageShift));
 
 	runtime_lock(c);
 	c->nfree += n;

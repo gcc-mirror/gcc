@@ -1,4 +1,4 @@
-/* UTF_16.java -- 
+/* UTF_16.java --
    Copyright (C) 2002, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.

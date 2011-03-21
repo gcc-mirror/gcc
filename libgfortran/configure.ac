@@ -82,6 +82,8 @@ else
   LIBGFOR_IS_NATIVE=true
 fi
 
+AC_USE_SYSTEM_EXTENSIONS
+
 # Calculate toolexeclibdir
 # Also toolexecdir, though it's only used in toolexeclibdir
 case ${version_specific_libs} in
@@ -149,7 +151,7 @@ FOO_1.0 {
   global: *foo*; bar; local: *;
 };
 EOF
-AC_TRY_LINK([int foo;],[],[gfortran_use_symver=gnu],[gfortran_use_symver=no])
+AC_LINK_IFELSE([AC_LANG_PROGRAM([[int foo;]],[[]])],[gfortran_use_symver=gnu],[gfortran_use_symver=no])
 if test x$gfortran_use_symver = xno; then
   case "$target_os" in
     solaris2*)
@@ -161,7 +163,7 @@ FOO_1.0 {
   global: foo; local: *;
 };
 EOF
-      AC_TRY_LINK([int foo;],[],[gfortran_use_symver=sun],[gfortran_use_symver=no])
+      AC_LINK_IFELSE([AC_LANG_PROGRAM([[int foo;]],[[]])],[gfortran_use_symver=sun],[gfortran_use_symver=no])
       ;;
   esac
 fi
@@ -179,7 +181,7 @@ ac_save_CFLAGS="$CFLAGS"
 # Check for -ffunction-sections -fdata-sections
 AC_MSG_CHECKING([for gcc that supports -ffunction-sections -fdata-sections])
 CFLAGS='-Werror -ffunction-sections -fdata-sections'
-AC_TRY_COMPILE(, [int foo;], [ac_fdsections=yes], [ac_fdsections=no])
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[]], [[int foo;]])], [ac_fdsections=yes], [ac_fdsections=no])
 if test "$ac_test_CFLAGS" = set; then
   CFLAGS="$ac_save_CFLAGS"
 else
@@ -246,10 +248,11 @@ AC_CHECK_MEMBERS([struct stat.st_rdev])
 # Check for library functions.
 AC_CHECK_FUNCS(getrusage times mkstemp strtof strtold snprintf ftruncate chsize)
 AC_CHECK_FUNCS(chdir strerror getlogin gethostname kill link symlink perror)
-AC_CHECK_FUNCS(sleep time ttyname signal alarm ctime clock access fork execl)
+AC_CHECK_FUNCS(sleep time ttyname signal alarm clock access fork execl)
 AC_CHECK_FUNCS(wait setmode execvp pipe dup2 close fdopen strcasestr getrlimit)
 AC_CHECK_FUNCS(gettimeofday stat fstat lstat getpwuid vsnprintf dup getcwd)
-AC_CHECK_FUNCS(localtime_r gmtime_r)
+AC_CHECK_FUNCS(localtime_r gmtime_r strerror_r getpwuid_r ttyname_r)
+AC_CHECK_FUNCS(clock_gettime strftime)
 
 # Check for glibc backtrace functions
 AC_CHECK_FUNCS(backtrace backtrace_symbols)
@@ -481,6 +484,16 @@ LIBGFOR_CHECK_FLOAT128
 # Check for GNU libc feenableexcept
 AC_CHECK_LIB([m],[feenableexcept],[have_feenableexcept=yes AC_DEFINE([HAVE_FEENABLEEXCEPT],[1],[libm includes feenableexcept])])
 
+# At least for glibc, clock_gettime is in librt.  But don't pull that
+# in if it still doesn't give us the function we want.
+# This test is copied from libgomp, and modified to not link in -lrt
+# as libgfortran calls clock_gettime via a weak reference.
+if test $ac_cv_func_clock_gettime = no; then
+  AC_CHECK_LIB(rt, clock_gettime,
+    [AC_DEFINE(HAVE_CLOCK_GETTIME, 1,
+               [Define to 1 if you have the `clock_gettime' function.])])
+fi
+
 # Check for SysV fpsetmask
 LIBGFOR_CHECK_FPSETMASK
 
@@ -499,6 +512,26 @@ AC_SUBST(FPU_HOST_HEADER)
 # Some targets require additional compiler options for IEEE compatibility.
 IEEE_FLAGS="${ieee_flags}"
 AC_SUBST(IEEE_FLAGS)
+
+
+# Check for POSIX getpwuid_r 
+#
+# There are two versions of getpwuid_r, the POSIX one with 5
+# arguments, and another one with 4 arguments used by at least HP-UX
+# 10.2.
+if test "$ac_cv_func_getpwuid_r" = "yes"; then
+   AC_CACHE_CHECK([POSIX version of getpwuid_r with 5 arguments], libgfor_cv_posix_getpwuid_r, [
+   AC_LINK_IFELSE([AC_LANG_PROGRAM([
+#include <stdio.h>
+#include <sys/types.h>
+#include <pwd.h>], [
+    getpwuid_r(0, NULL, NULL, 0, NULL);
+    ])],  [libgfor_cv_posix_getpwuid_r="yes"], [libgfor_cv_posix_getpwuid_r="no"])])
+fi
+if test "$libgfor_cv_posix_getpwuid_r" = "yes"; then
+    AC_DEFINE([HAVE_POSIX_GETPWUID_R], [1], [Define to 1 if we have POSIX getpwuid_r which takes 5 arguments.])
+fi
+
 
 # Check out attribute support.
 LIBGFOR_CHECK_ATTRIBUTE_VISIBILITY

@@ -46,9 +46,9 @@ public interface Referenceable
 {
   /**
    * Get the reference about this object.
-   * 
+   *
    * @return the reference about this object, cannot be null.
-   * 
+   *
    * @throws NamingException if the naming exception has been raised while
    *           retrieving the reference.
    */

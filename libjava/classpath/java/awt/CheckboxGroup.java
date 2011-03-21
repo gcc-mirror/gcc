@@ -106,14 +106,14 @@ getSelectedCheckbox()
   *
   * @return The selected checkbox.
   *
-  * @deprecated This method is deprecated in favor of 
+  * @deprecated This method is deprecated in favor of
   * <code>getSelectedCheckbox()</code>.
   */
 public Checkbox
 getCurrent()
 {
   return(selectedCheckbox);
-} 
+}
 
 /*************************************************************************/
 
@@ -169,5 +169,4 @@ toString()
   return(getClass().getName() + "[selectedCheckbox=" + selectedCheckbox + "]");
 }
 
-} // class CheckboxGroup 
-
+} // class CheckboxGroup

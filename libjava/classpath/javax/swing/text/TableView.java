@@ -51,7 +51,7 @@ import javax.swing.event.DocumentEvent;
  * horizontal boxes containing the actuall cells of the table. These cells
  * can be arbitrary view implementations and are fetched via the
  * {@link ViewFactory} returned by {@link View#getViewFactory}.
- * 
+ *
  * @author Roman Kennke (kennke@aicas.com)
  */
 public abstract class TableView
@@ -416,7 +416,7 @@ public abstract class TableView
   /**
    * Calculates the requirements of this view for the minor (== horizontal)
    * axis.
-   * 
+   *
    * This is reimplemented to calculate the requirements as the sum of the
    * size requirements of the columns.
    *

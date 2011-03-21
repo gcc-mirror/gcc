@@ -23,7 +23,7 @@
 
 int main()
 {
-  __gnu_test::constexpr_default_constructible test;
+  __gnu_test::constexpr_defaulted_default_constructible test;
   test.operator()<std::default_delete<int>>();
   return 0;
 }

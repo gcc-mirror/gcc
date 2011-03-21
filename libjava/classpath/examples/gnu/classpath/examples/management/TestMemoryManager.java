@@ -34,16 +34,13 @@ public class TestMemoryManager
     Iterator beans = ManagementFactory.getMemoryManagerMXBeans().iterator();
     while (beans.hasNext())
       {
-	MemoryManagerMXBean bean = (MemoryManagerMXBean) beans.next();
-	System.out.println("Bean: " + bean);
-	System.out.println("Name: " + bean.getName());
-	System.out.println("Memory pool names: " 
-			   + Arrays.toString(bean.getMemoryPoolNames()));
-	System.out.println("Is valid: " 
-			   + (bean.isValid() ? "yes" : "no"));
+        MemoryManagerMXBean bean = (MemoryManagerMXBean) beans.next();
+        System.out.println("Bean: " + bean);
+        System.out.println("Name: " + bean.getName());
+        System.out.println("Memory pool names: "
+                           + Arrays.toString(bean.getMemoryPoolNames()));
+        System.out.println("Is valid: "
+                           + (bean.isValid() ? "yes" : "no"));
       }
   }
 }
-
-
-

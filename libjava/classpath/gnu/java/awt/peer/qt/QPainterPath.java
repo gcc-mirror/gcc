@@ -61,31 +61,31 @@ public class QPainterPath extends NativeWrapper
 
     while( !pi.isDone() )
       {
-	switch( pi.currentSegment(coords) )
-	  {
-	  case PathIterator.SEG_MOVETO:
-	    moveTo( coords[0], coords[1] );
-	    break;
+        switch( pi.currentSegment(coords) )
+          {
+          case PathIterator.SEG_MOVETO:
+            moveTo( coords[0], coords[1] );
+            break;
 
-	  case PathIterator.SEG_CLOSE:
-	    close();
-	    break;
-	  
-	  case PathIterator.SEG_LINETO:
-	    lineTo( coords[0], coords[1] );
-	    break;
-	  
-	  case PathIterator.SEG_QUADTO:
-	    quadTo( coords[0], coords[1], coords[2], coords[3] );
-	    break;
-	  
-	  case PathIterator.SEG_CUBICTO:
-	    cubicTo( coords[0], coords[1], 
-		     coords[2], coords[3],
-		     coords[4], coords[5] );
-	    break;
-	  }
-	pi.next();
+          case PathIterator.SEG_CLOSE:
+            close();
+            break;
+
+          case PathIterator.SEG_LINETO:
+            lineTo( coords[0], coords[1] );
+            break;
+
+          case PathIterator.SEG_QUADTO:
+            quadTo( coords[0], coords[1], coords[2], coords[3] );
+            break;
+
+          case PathIterator.SEG_CUBICTO:
+            cubicTo( coords[0], coords[1],
+                     coords[2], coords[3],
+                     coords[4], coords[5] );
+            break;
+          }
+        pi.next();
       }
   }
 
@@ -129,13 +129,12 @@ public class QPainterPath extends NativeWrapper
   private native void quadTo(double x1, double y1, double x2, double y2);
 
   private native void cubicTo(double x1, double y1, double x2, double y2,
-			      double x3, double y3);
+                              double x3, double y3);
 
   public native void dispose();
-  
+
   public void finalize()
   {
     dispose();
   }
 }
-

@@ -209,7 +209,7 @@ public interface MemoryPoolMXBean
   long getUsageThresholdCount();
 
   /**
-   * Returns true if the collection usage level is equal to 
+   * Returns true if the collection usage level is equal to
    * or greater than the collection usage threshold.
    *
    * @return true if the collection usage threshold has been
@@ -236,7 +236,7 @@ public interface MemoryPoolMXBean
   boolean isCollectionUsageThresholdSupported();
 
   /**
-   * Returns true if the usage level is equal to 
+   * Returns true if the usage level is equal to
    * or greater than the usage threshold.
    *
    * @return true if the usage threshold has been
@@ -260,7 +260,7 @@ public interface MemoryPoolMXBean
    * @see #setUsageThreshold(long)
    */
   boolean isUsageThresholdSupported();
-  
+
   /**
    * Returns true if this memory pool is still valid.  A memory pool
    * becomes invalid when it is removed by the virtual machine and

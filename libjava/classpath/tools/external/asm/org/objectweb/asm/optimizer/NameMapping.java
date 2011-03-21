@@ -39,13 +39,13 @@ import org.objectweb.asm.Type;
 
 /**
  * A mapping from names to names, used to rename classes, fields and methods.
- * 
+ *
  * @author Eric Bruneton
  */
 public class NameMapping extends Properties {
 
     public final Set unused;
-    
+
     public NameMapping(final String file) throws IOException {
         load(new FileInputStream(file));
         unused = new HashSet(keySet());

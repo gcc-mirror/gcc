@@ -48,7 +48,7 @@ import java.io.Serializable;
 /**
  * A class to substitute as an ObjectOutputStream for objects using writeObject
  * method.
- * 
+ *
  * @author Audrius Meskauskas, Lithuania (AudriusA@Bioinformatics.org)
  */
 public class CorbaOutput

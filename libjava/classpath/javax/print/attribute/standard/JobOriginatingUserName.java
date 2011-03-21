@@ -1,4 +1,4 @@
-/* JobOriginatingUserName.java -- 
+/* JobOriginatingUserName.java --
    Copyright (C) 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -45,12 +45,12 @@ import javax.print.attribute.PrintJobAttribute;
 import javax.print.attribute.TextSyntax;
 
 /**
- * The <code>JobOriginatingUserName</code> attribute specifies the name of 
+ * The <code>JobOriginatingUserName</code> attribute specifies the name of
  * the user which submitted the print job.
  * <p>
  * <b>IPP Compatibility:</b> JobOriginatingUserName is an IPP 1.1 attribute.
  * </p>
- * 
+ *
  * @author Michael Koch (konqueror@gmx.de)
  */
 public final class JobOriginatingUserName extends TextSyntax
@@ -77,7 +77,7 @@ public final class JobOriginatingUserName extends TextSyntax
    *
    * @param obj the object to test
    *
-   * @return <code>true</code> if both objects are equal, 
+   * @return <code>true</code> if both objects are equal,
    * <code>false</code> otherwise.
    */
   public boolean equals(Object obj)

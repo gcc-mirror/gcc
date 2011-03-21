@@ -48,11 +48,11 @@ import org.omg.CORBA.TCKind;
 public class RecursiveTypeCode
   extends PrimitiveTypeCode
 {
-  /** 
-   * Use serialVersionUID for interoperability. 
+  /**
+   * Use serialVersionUID for interoperability.
    */
   private static final long serialVersionUID = 1;
-  
+
   /**
    * The id of the type for that this type serves as a
    * placeholder.

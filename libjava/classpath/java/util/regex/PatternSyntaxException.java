@@ -58,7 +58,7 @@ public class PatternSyntaxException extends IllegalArgumentException
    * The original pattern that contained the syntax error.
    */
   private final String pattern;
-  
+
   /**
    * Index of the first character in the String that was probably invalid,
    * or -1 when unknown.
@@ -74,8 +74,8 @@ public class PatternSyntaxException extends IllegalArgumentException
    *        probably invalid, or -1 when unknown.
    */
   public PatternSyntaxException(String description,
-		                String pattern,
-				int index)
+                                String pattern,
+                                int index)
   {
     super(description);
     this.desc = description;
@@ -123,11 +123,11 @@ public class PatternSyntaxException extends IllegalArgumentException
     sb.append(pattern);
     if (index != -1)
       {
-	sb.append(lineSep);
-	sb.append('\t');
-	for (int i=0; i<index; i++)
-	  sb.append(' ');
-	sb.append('^');
+        sb.append(lineSep);
+        sb.append('\t');
+        for (int i=0; i<index; i++)
+          sb.append(' ');
+        sb.append('^');
       }
     return sb.toString();
   }

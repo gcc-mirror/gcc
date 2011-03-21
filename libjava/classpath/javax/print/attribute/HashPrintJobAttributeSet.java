@@ -1,4 +1,4 @@
-/* HashPrintJobAttributeSet.java -- 
+/* HashPrintJobAttributeSet.java --
    Copyright (C) 2003, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -47,7 +47,7 @@ public class HashPrintJobAttributeSet extends HashAttributeSet
   implements Serializable, PrintJobAttributeSet
 {
   private static final long serialVersionUID = -4204473656070350348L;
-  
+
   /**
    * Creates an empty <code>HashPrintJobAttributeSet</code> object.
    */
@@ -55,7 +55,7 @@ public class HashPrintJobAttributeSet extends HashAttributeSet
   {
     super(PrintJobAttribute.class);
   }
-  
+
   /**
    * Creates a <code>HashPrintJobAttributeSet</code> object with the given
    * attribute in it.
@@ -68,7 +68,7 @@ public class HashPrintJobAttributeSet extends HashAttributeSet
   {
     super(attribute, PrintJobAttribute.class);
   }
-  
+
   /**
    * Creates a <code>HashPrintJobAttributeSet</code> object with the given
    * attributes in it.
@@ -83,12 +83,12 @@ public class HashPrintJobAttributeSet extends HashAttributeSet
   {
     super(attributes, PrintJobAttribute.class);
   }
-  
+
   /**
    * Creates a <code>HashPrintJobAttributeSet</code> object with the attributes
    * of the given attributes set in it.
    *
-   * @param attributes the attributes set to put into the set. If 
+   * @param attributes the attributes set to put into the set. If
    * <code>null</code> an empty set is created.
    * @exception ClassCastException if any element of attributes is not
    * an instance of <code>PrintJobAttribute</code>

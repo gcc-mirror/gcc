@@ -77,4 +77,3 @@ public abstract ClassDoc
 overriddenClass();
 
 } // interface MethodDoc
-

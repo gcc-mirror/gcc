@@ -88,7 +88,9 @@ AC_DEFUN([CLOOG_REQUESTED],
 [
   AC_REQUIRE([CLOOG_INIT_FLAGS])
 
-  if test "x${with_cloog}" != x \
+  if test "x${with_cloog}" = xno; then
+    $2
+  elif test "x${with_cloog}" != x \
     || test "x${with_cloog_include}" != x \
     || test "x${with_cloog_lib}" != x ; then
     $1
@@ -177,7 +179,7 @@ AC_DEFUN([CLOOG_FIND_FLAGS],
       ;;
     "ISL")
       clooginc="${clooginc} ${_cloogorginc}"
-      clooglibs="${clooglibs} -lcloog-isl"
+      clooglibs="${clooglibs} -lcloog-isl -lisl"
       cloog_org=yes
       ;;
     "PPL")

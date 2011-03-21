@@ -1,3 +1,7 @@
+2011-03-21  Gary Funck  <gary@intrepid.com>
+
+	Merge trunk version 171202 into gupc branch.
+
 2011-03-20  Gary Funck  <gary@intrepid.com>
 
 	* varasm.c: Call error() directly with a format specifier,

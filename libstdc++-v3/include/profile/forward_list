@@ -35,16 +35,16 @@
 
 #include <forward_list>
 
-namespace std
+namespace std _GLIBCXX_VISIBILITY(default)
 {
 namespace __profile
 {
   /// Class std::forward_list wrapper with performance instrumentation.
   template<typename _Tp, typename _Alloc = std::allocator<_Tp> >
     class forward_list
-    : public _GLIBCXX_STD_D::forward_list<_Tp, _Alloc>
+    : public _GLIBCXX_STD_C::forward_list<_Tp, _Alloc>
     {
-      typedef _GLIBCXX_STD_D::forward_list<_Tp, _Alloc> _Base;
+      typedef _GLIBCXX_STD_C::forward_list<_Tp, _Alloc> _Base;
 
     public:
       typedef typename _Base::size_type             size_type;

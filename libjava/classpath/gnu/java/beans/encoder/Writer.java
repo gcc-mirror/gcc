@@ -40,20 +40,20 @@ package gnu.java.beans.encoder;
 
 /** A <code>Writer</code> represents a simplified interface to an XML
  * writer that is used for the XML persistence mechanism.
- * 
+ *
  * <p>Its sole purpose is to allow multiple backends which may remove
  * the need to have certain APIs in the classpath. Eg. it is possible
  * to write a stripped down XML Writer that does not rely on SAX, StAX
  * or DOM APIs.</p>
- * 
+ *
  * <p>The caller may assume that every action is done immediately. However
  * it is possible that the underlying implementation uses buffering streams.
  * To make sure the data is written call the {@link flush} method.</p>
- * 
+ *
  * <p>The <code>Writer</code> implementation should care about the formatting
  * of the XML stream making it possible to generate three types of formats using
  * a special method invocation chain.</p>
- * 
+ *
  * <p>Write
  * <code>
  * &lt;element/&gt;
@@ -61,13 +61,13 @@ package gnu.java.beans.encoder;
  * by issuing <code>write("element", true)</code> (or any of the other
  * write-variants that allows specifying the <code>isEmpty</code> argument)
  * and <code>writeEnd(true)</code>.</p>
- * 
+ *
  * <p>Write
  * <code>
  * &lt;element&gt;body&lt;/element&gt;
  * </code>
  * by issuing <code>writeNoChildren("element", "body")</code> and <code>writeNoChildrenEnd()</code>.</p>
- * 
+ *
  * <p>
  * Write
  * <code>
@@ -80,7 +80,7 @@ package gnu.java.beans.encoder;
  * by issuing <code>write("element", false)</code> (or any of the other
  * write-variants that allows specifying the <code>isEmpty</code> argument)
  * and <code>writeEnd(false)</code>.</p>
- * 
+ *
  * <p>Note: It is important that the values of <code>isEmpty</code> and
  * <code>wasEmpty</code> match. Otherwise strange things might happen to
  * the layout.</p>
@@ -90,40 +90,40 @@ package gnu.java.beans.encoder;
  */
 public interface Writer
 {
-  // TODO: This interface's design is not the best. Feel free to 
+  // TODO: This interface's design is not the best. Feel free to
   // improve it as you like.
 
   /** Writes the XML preamble. */
   void writePreamble();
 
   /** Writes the end of an XML tag.
-   * 
+   *
    * <p>If your tag has not generated any body text or child
    * elements provide <code>true</code> as the argument to generate
-   * more space efficient variant of the tag.>/p> 
-   * 
+   * more space efficient variant of the tag.>/p>
+   *
    * @param wasEmpty Whether the tag was empty or not.
    */
   void writeEnd(boolean wasEmpty);
 
-  /** Writes an XML tag without any attributes. 
-   * 
+  /** Writes an XML tag without any attributes.
+   *
    * @param tagName The name of the tag to write.
    * @param empty Whether the element has child elements.
    */
   void write(String tagName, boolean empty);
 
   /** Writes an XML tag with one attribute name and value.
-   * 
+   *
    * @param tagName The name of the tag to write.
-   * @param attributeName The name of attribute. 
+   * @param attributeName The name of attribute.
    * @param attributeValue The attribute's value.
    * @param empty Whether the element has child elements.
    */
   void write(String tagName, String attributeName, String attributeValue, boolean empty);
 
   /** Writes an XML tag with multiple attributes and a body text.
-   * 
+   *
    * @param tagName The name of the tag to write.
    * @param value The element's body content.
    * @param attributeNames A set of attribute names.
@@ -134,7 +134,7 @@ public interface Writer
              String[] attributeValues, boolean empty);
 
   /** Writes an XML tag with multiple attributes without a body text.
-   * 
+   *
    * @param tagName The name of the tag to write.
    * @param attributeNames A set of attribute names.
    * @param attributeValues A set of attribute values.
@@ -144,7 +144,7 @@ public interface Writer
 
   /** Writes an XML tag with no attributes but with a body text
    * that may have child elements.
-   * 
+   *
    * @param tagName The name of the tag to write.
    * @param value The element's body content.
    */
@@ -152,14 +152,14 @@ public interface Writer
 
   /** Writes an XML tag with no attributes but with a body text
    * that does not have child elements.
-   * 
+   *
    * @param tagName The name of the tag to write.
    * @param value The element's body content.
    */
   void writeNoChildren(String tagName, String value);
-  
+
   /** Writes the end of an XML tag that has no child elements.
-   * 
+   *
    * <p>Must be used in combination with {@link writeNoChildren} only.</p>
    */
   void writeEndNoChildren();

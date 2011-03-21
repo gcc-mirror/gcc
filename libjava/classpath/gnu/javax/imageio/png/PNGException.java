@@ -1,4 +1,4 @@
-/* PNGException.java -- 
+/* PNGException.java --
    Copyright (C) 2006 Free Software Foundation
 
 This file is part of GNU Classpath.
@@ -39,7 +39,7 @@ package gnu.javax.imageio.png;
 
 import java.io.IOException;
 
-public class PNGException extends IOException 
+public class PNGException extends IOException
 {
   public PNGException(String msg)
   {

@@ -1557,6 +1557,9 @@ convert_mult_to_fma (gimple mul_stmt, tree op1, tree op2)
       /* A negate on the multiplication leads to FNMA.  */
       if (use_code == NEGATE_EXPR)
 	{
+	  ssa_op_iter iter;
+	  tree use;
+
 	  result = gimple_assign_lhs (use_stmt);
 
 	  /* Make sure the negate statement becomes dead with this
@@ -1564,6 +1567,11 @@ convert_mult_to_fma (gimple mul_stmt, tree op1, tree op2)
 	  if (!single_imm_use (gimple_assign_lhs (use_stmt),
 			       &use_p, &neguse_stmt))
 	    return false;
+
+	  /* Make sure the multiplication isn't also used on that stmt.  */
+	  FOR_EACH_SSA_TREE_OPERAND (use, neguse_stmt, iter, SSA_OP_USE)
+	    if (use == mul_result)
+	      return false;
 
 	  /* Re-validate.  */
 	  use_stmt = neguse_stmt;

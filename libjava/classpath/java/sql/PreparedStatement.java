@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -48,12 +48,12 @@ import java.util.Calendar;
  * statements.  This provides greater efficiency when calling the same
  * statement multiple times.  Parameters are allowed in a statement,
  * providings for maximum reusability.
- * 
+ *
  * <p> Note that in this class parameter indices start at 1, not 0.</p>
  *
  * @author Aaron M. Renn (arenn@urbanophile.com)
  */
-public interface PreparedStatement extends Statement 
+public interface PreparedStatement extends Statement
 {
   /**
    * This method executes a prepared SQL query and returns its ResultSet.
@@ -78,7 +78,7 @@ public interface PreparedStatement extends Statement
    * for the specified type.
    *
    * @param index The index of the parameter to set.
-   * @param sqlType The SQL type identifier of the parameter from 
+   * @param sqlType The SQL type identifier of the parameter from
    *                <code>Types</code>
    *
    * @exception SQLException If an error occurs.
@@ -268,7 +268,7 @@ public interface PreparedStatement extends Statement
    *
    * @param index The index of the parameter value to set.
    * @param value The value of the parameter.
-   * @param sqlType The SQL type to use for the parameter, from 
+   * @param sqlType The SQL type to use for the parameter, from
    *                <code>Types</code>
    * @param scale The scale of the value, for numeric values only.
    * @exception SQLException If an error occurs.
@@ -283,7 +283,7 @@ public interface PreparedStatement extends Statement
    *
    * @param index The index of the parameter value to set.
    * @param value The value of the parameter.
-   * @param sqlType The SQL type to use for the parameter, from 
+   * @param sqlType The SQL type to use for the parameter, from
    *                      <code>Types</code>
    * @exception SQLException If an error occurs.
    * @see Types
@@ -348,7 +348,7 @@ public interface PreparedStatement extends Statement
    * will be used.
    *
    * @param index The index of the parameter value to set.
-   * @param value The <code>Blob</code> used to set the 
+   * @param value The <code>Blob</code> used to set the
    *             value of the parameter.
    * @exception SQLException If an error occurs.
    */
@@ -437,7 +437,7 @@ public interface PreparedStatement extends Statement
   /**
    * This method sets the specified parameter from the given Java
    * <code>java.net.URL</code> value.
-   * 
+   *
    * @param index The index of the parameter to set.
    * @param value The value of the parameter.
    * @exception SQLException If an error occurs.
@@ -446,10 +446,10 @@ public interface PreparedStatement extends Statement
   void setURL(int index, URL value) throws SQLException;
 
   /**
-   * Returns information about the parameters set on this 
+   * Returns information about the parameters set on this
    * <code>PreparedStatement</code> (see {@link ParameterMetaData} for a
    * detailed description of the provided information).
-   * 
+   *
    * @return Meta data for the parameters of this statement.
    * @see ParameterMetaData
    * @since 1.4

@@ -50,14 +50,14 @@ var reqTests = []reqTest{
 			Proto:      "HTTP/1.1",
 			ProtoMajor: 1,
 			ProtoMinor: 1,
-			Header: map[string]string{
-				"Accept":           "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-				"Accept-Language":  "en-us,en;q=0.5",
-				"Accept-Encoding":  "gzip,deflate",
-				"Accept-Charset":   "ISO-8859-1,utf-8;q=0.7,*;q=0.7",
-				"Keep-Alive":       "300",
-				"Proxy-Connection": "keep-alive",
-				"Content-Length":   "7",
+			Header: Header{
+				"Accept":           {"text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"},
+				"Accept-Language":  {"en-us,en;q=0.5"},
+				"Accept-Encoding":  {"gzip,deflate"},
+				"Accept-Charset":   {"ISO-8859-1,utf-8;q=0.7,*;q=0.7"},
+				"Keep-Alive":       {"300"},
+				"Proxy-Connection": {"keep-alive"},
+				"Content-Length":   {"7"},
 			},
 			Close:         false,
 			ContentLength: 7,
@@ -68,6 +68,41 @@ var reqTests = []reqTest{
 		},
 
 		"abcdef\n",
+	},
+
+	// Tests that we don't parse a path that looks like a
+	// scheme-relative URI as a scheme-relative URI.
+	{
+		"GET //user@host/is/actually/a/path/ HTTP/1.1\r\n" +
+			"Host: test\r\n\r\n",
+
+		Request{
+			Method: "GET",
+			RawURL: "//user@host/is/actually/a/path/",
+			URL: &URL{
+				Raw:          "//user@host/is/actually/a/path/",
+				Scheme:       "",
+				RawPath:      "//user@host/is/actually/a/path/",
+				RawAuthority: "",
+				RawUserinfo:  "",
+				Host:         "",
+				Path:         "//user@host/is/actually/a/path/",
+				RawQuery:     "",
+				Fragment:     "",
+			},
+			Proto:         "HTTP/1.1",
+			ProtoMajor:    1,
+			ProtoMinor:    1,
+			Header:        map[string][]string{},
+			Close:         false,
+			ContentLength: -1,
+			Host:          "test",
+			Referer:       "",
+			UserAgent:     "",
+			Form:          map[string][]string{},
+		},
+
+		"",
 	},
 }
 

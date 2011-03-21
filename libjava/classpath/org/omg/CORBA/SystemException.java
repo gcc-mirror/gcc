@@ -42,7 +42,7 @@ import java.io.Serializable;
 
 /**
  * The root class for all CORBA standard exceptions.
- * 
+ *
  * @author Audrius Meskauskas (AudriusA@Bioinformatics.org)
  */
 public abstract class SystemException
@@ -69,16 +69,16 @@ public abstract class SystemException
    * The Classpath specifice minor exception codes are documented in the headers
    * of the corresponding exceptions (for instance, {@link MARSHAL}).
    * </p>
-   * 
-   * The VMCID 0 and 0xfffff are reserved for experimental use. 
-   * 
+   *
+   * The VMCID 0 and 0xfffff are reserved for experimental use.
+   *
    * @see OMGVMCID
    */
   public int minor;
 
   /**
    * Constructs an instance of the CORBA standard exception.
-   * 
+   *
    * @param a_reason a string, explaining the reason why the exceptions has been
    * thrown.
    * @param a_minor an additional error code (known as the "minor")

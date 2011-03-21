@@ -46,12 +46,12 @@ public class SessionStoreException extends SSLException
   {
     super (message);
   }
-  
+
   public SessionStoreException (final String message, final Throwable cause)
   {
     super (message, cause);
   }
-  
+
   public SessionStoreException (final Throwable cause)
   {
     super (cause);

@@ -150,14 +150,14 @@ show(Component component, int x, int y)
     protected AccessibleAWTPopupMenu()
     {
     }
-    
+
     public AccessibleRole getAccessibleRole()
     {
       return AccessibleRole.POPUP_MENU;
     }
-    
+
   }
-  
+
   /**
    * Gets the AccessibleContext associated with this <code>PopupMenu</code>.
    * The context is created, if necessary.
@@ -171,7 +171,7 @@ show(Component component, int x, int y)
       accessibleContext = new AccessibleAWTPopupMenu();
     return accessibleContext;
   }
-  
+
   /**
    * Generate a unique name for this <code>PopupMenu</code>.
    *
@@ -188,4 +188,3 @@ show(Component component, int x, int y)
   }
 
 } // class PopupMenu
-

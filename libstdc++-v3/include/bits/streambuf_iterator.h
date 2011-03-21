@@ -1,7 +1,7 @@
 // Streambuf iterators
 
 // Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-// 2006, 2007, 2009, 2010
+// 2006, 2007, 2009, 2010, 2011
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -37,7 +37,9 @@
 #include <streambuf>
 #include <debug/debug.h>
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
      
   /**
    * @addtogroup iterators
@@ -337,7 +339,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	      if (__n > 1)
 		{
 		  traits_type::copy(__result, __sb->gptr(), __n);
-		  __sb->gbump(__n);
+		  __sb->__safe_gbump(__n);
 		  __result += __n;
 		  __c = __sb->underflow();
 		}
@@ -377,7 +379,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 							__n, __val);
 		  if (__p)
 		    __n = __p - __sb->gptr();
-		  __sb->gbump(__n);
+		  __sb->__safe_gbump(__n);
 		  __c = __sb->sgetc();
 		}
 	      else
@@ -394,6 +396,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
 // @} group iterators
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
 
 #endif

@@ -55,7 +55,7 @@ public class StartTlsRequest
   /**
    * The assigned object identifier for this response.
    */
-  public static final String OID = "1.3.6.1.4.1.1466.20037"; 
+  public static final String OID = "1.3.6.1.4.1.1466.20037";
 
   /**
    * Create a new instance.

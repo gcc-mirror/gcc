@@ -15,5 +15,5 @@ package body Pack9 is
 
 end Pack9;
 
--- { dg-final { scan-tree-dump-not "gnat_rcheck" "optimized" { xfail *-*-* } } }
+-- { dg-final { scan-tree-dump-not "gnat_rcheck" "optimized" } }
 -- { dg-final { cleanup-tree-dump "optimized" } }

@@ -50,16 +50,16 @@ final class BacktrackStack
     /** A set of data to be used for backtracking. */
   static class Backtrack
   {
-	/** REToken to which to go back */
+        /** REToken to which to go back */
     REToken token;
-	/** CharIndexed on which matches are being searched for. */
+        /** CharIndexed on which matches are being searched for. */
     CharIndexed input;
-	/** REMatch to be used by the REToken token. */
+        /** REMatch to be used by the REToken token. */
     REMatch match;
-	/** Some parameter used by the token's backtrack method. */
+        /** Some parameter used by the token's backtrack method. */
     Object param;
       Backtrack (REToken token, CharIndexed input, REMatch match,
-		 Object param)
+                 Object param)
     {
       this.token = token;
       this.input = input;
@@ -104,7 +104,7 @@ final class BacktrackStack
   {
     for (int i = 0; i < size; i++)
       {
-	stack[i] = null;
+        stack[i] = null;
       }
     size = 0;
   }
@@ -113,10 +113,10 @@ final class BacktrackStack
   {
     if (size >= capacity)
       {
-	capacity += CAPACITY_INCREMENT;
-	Backtrack[]newStack = new Backtrack[capacity];
-	System.arraycopy (stack, 0, newStack, 0, size);
-	stack = newStack;
+        capacity += CAPACITY_INCREMENT;
+        Backtrack[]newStack = new Backtrack[capacity];
+        System.arraycopy (stack, 0, newStack, 0, size);
+        stack = newStack;
       }
     stack[size++] = bt;
   }

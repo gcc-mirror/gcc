@@ -43,7 +43,7 @@ import java.util.Hashtable;
 /**
  * An object implementing the <code>ImageProducer</code> interface can
  * use objects implementing this interface to deliver the image data.
- * 
+ *
  * @author C. Brian Jones (cbj@gnu.org)
  */
 public interface ImageConsumer
@@ -52,7 +52,7 @@ public interface ImageConsumer
      * The pixel order may be random.  This should be
      * the default assumption of the <code>ImageConsumer</code>.
      *
-     * @see #setHints 
+     * @see #setHints
      */
     int RANDOMPIXELORDER = 1;
 
@@ -75,7 +75,7 @@ public interface ImageConsumer
      * most one call to <code>setPixels</code> for any single pixel.
      *
      * @see #setHints
-     * @see #setPixels(int, int, int, int, ColorModel, int[], int, int) 
+     * @see #setPixels(int, int, int, int, ColorModel, int[], int, int)
      */
     int SINGLEPASS = 8;
 
@@ -87,9 +87,9 @@ public interface ImageConsumer
      * changing such as with video then the end of each frame is
      * marked by a similar call to <code>imageComplete</code> with the
      * <code>SINGLEFRAMEDONE</code> flag.
-     * 
+     *
      * @see #setHints
-     * @see #imageComplete 
+     * @see #imageComplete
      */
     int SINGLEFRAME = 16;
 
@@ -102,7 +102,7 @@ public interface ImageConsumer
 
     /**
      * A single frame is complete but more will follow.
-     * 
+     *
      * @see #imageComplete
      */
     int SINGLEFRAMEDONE = 2;
@@ -124,9 +124,9 @@ public interface ImageConsumer
     /**
      * An <code>ImageProducer</code> indicates the size of the image
      * being produced using this method.
-     * 
+     *
      * @param width the width of the image
-     * @param height the height of the image 
+     * @param height the height of the image
      */
     void setDimensions(int width, int height);
 
@@ -134,7 +134,7 @@ public interface ImageConsumer
      * An <code>ImageProducer</code> can set a list of properties
      * associated with this image by using this method.
      *
-     * @param props the list of properties associated with this image 
+     * @param props the list of properties associated with this image
      */
     void setProperties(Hashtable<?,?> props);
 
@@ -145,7 +145,7 @@ public interface ImageConsumer
      * <code>ColorModel</code>.
      *
      * @param model the color model to be used most often by setPixels
-     * @see ColorModel 
+     * @see ColorModel
      */
     void setColorModel(ColorModel model);
 
@@ -154,7 +154,7 @@ public interface ImageConsumer
      * bit mask of hints from any of <code>RANDOMPIXELORDER</code>,
      * <code>TOPDOWNLEFTRIGHT</code>, <code>COMPLETESCANLINES</code>,
      * <code>SINGLEPASS</code>, <code>SINGLEFRAME</code>.
-     * 
+     *
      * @param flags a bit mask of hints
      */
     void setHints(int flags);
@@ -178,8 +178,8 @@ public interface ImageConsumer
      * @param offset offset into pixels array
      * @param scansize width of one row in the pixel block
      */
-    void setPixels(int x, int y, int w, int h, 
-	   ColorModel model, byte[] pixels, int offset, int scansize);
+    void setPixels(int x, int y, int w, int h,
+           ColorModel model, byte[] pixels, int offset, int scansize);
 
     /**
      * Deliver a subset of an ImageProducer's pixels to this ImageConsumer.
@@ -200,14 +200,14 @@ public interface ImageConsumer
      * @param offset offset into pixels array
      * @param scansize width of one row in the pixel block
      */
-    void setPixels(int x, int y, int w, int h, 
+    void setPixels(int x, int y, int w, int h,
            ColorModel model, int[] pixels, int offset, int scansize);
 
     /**
      * The <code>ImageProducer</code> calls this method to indicate a
      * single frame or the entire image is complete.  The method is
      * also used to indicate an error in loading or producing the
-     * image.  
+     * image.
      *
      * @param status the status of image production, represented by a
      * bitwise OR of ImageConsumer flags

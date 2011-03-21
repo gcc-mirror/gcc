@@ -614,7 +614,7 @@ public class Semaphore implements java.io.Serializable {
      * @throws IllegalArgumentException if {@code reduction} is negative
      */
     protected void reducePermits(int reduction) {
-	if (reduction < 0) throw new IllegalArgumentException();
+        if (reduction < 0) throw new IllegalArgumentException();
         sync.reducePermits(reduction);
     }
 

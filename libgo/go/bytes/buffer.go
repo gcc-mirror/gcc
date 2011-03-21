@@ -19,7 +19,19 @@ type Buffer struct {
 	off       int               // read at &buf[off], write at &buf[len(buf)]
 	runeBytes [utf8.UTFMax]byte // avoid allocation of slice on each WriteByte or Rune
 	bootstrap [64]byte          // memory to hold first slice; helps small buffers (Printf) avoid allocation.
+	lastRead  readOp            // last read operation, so that Unread* can work correctly.
 }
+
+// The readOp constants describe the last action performed on
+// the buffer, so that UnreadRune and UnreadByte can
+// check for invalid usage.
+type readOp int
+
+const (
+	opInvalid  readOp = iota // Non-read operation.
+	opReadRune               // Read rune.
+	opRead                   // Any other read operation.
+)
 
 // Bytes returns a slice of the contents of the unread portion of the buffer;
 // len(b.Bytes()) == b.Len().  If the caller changes the contents of the
@@ -44,6 +56,7 @@ func (b *Buffer) Len() int { return len(b.buf) - b.off }
 // Truncate discards all but the first n unread bytes from the buffer.
 // It is an error to call b.Truncate(n) with n > b.Len().
 func (b *Buffer) Truncate(n int) {
+	b.lastRead = opInvalid
 	if n == 0 {
 		// Reuse buffer space.
 		b.off = 0
@@ -82,6 +95,7 @@ func (b *Buffer) grow(n int) int {
 // Write appends the contents of p to the buffer.  The return
 // value n is the length of p; err is always nil.
 func (b *Buffer) Write(p []byte) (n int, err os.Error) {
+	b.lastRead = opInvalid
 	m := b.grow(len(p))
 	copy(b.buf[m:], p)
 	return len(p), nil
@@ -90,6 +104,7 @@ func (b *Buffer) Write(p []byte) (n int, err os.Error) {
 // WriteString appends the contents of s to the buffer.  The return
 // value n is the length of s; err is always nil.
 func (b *Buffer) WriteString(s string) (n int, err os.Error) {
+	b.lastRead = opInvalid
 	m := b.grow(len(s))
 	return copy(b.buf[m:], s), nil
 }
@@ -105,6 +120,7 @@ const MinRead = 512
 // Any error except os.EOF encountered during the read
 // is also returned.
 func (b *Buffer) ReadFrom(r io.Reader) (n int64, err os.Error) {
+	b.lastRead = opInvalid
 	// If buffer is empty, reset to recover space.
 	if b.off >= len(b.buf) {
 		b.Truncate(0)
@@ -138,16 +154,20 @@ func (b *Buffer) ReadFrom(r io.Reader) (n int64, err os.Error) {
 }
 
 // WriteTo writes data to w until the buffer is drained or an error
-// occurs. The return value n is the number of bytes written.
+// occurs. The return value n is the number of bytes written; it always
+// fits into an int, but it is int64 to match the io.WriterTo interface.
 // Any error encountered during the write is also returned.
 func (b *Buffer) WriteTo(w io.Writer) (n int64, err os.Error) {
-	for b.off < len(b.buf) {
+	b.lastRead = opInvalid
+	if b.off < len(b.buf) {
 		m, e := w.Write(b.buf[b.off:])
-		n += int64(m)
 		b.off += m
+		n = int64(m)
 		if e != nil {
 			return n, e
 		}
+		// otherwise all bytes were written, by definition of
+		// Write method in io.Writer
 	}
 	// Buffer is now empty; reset.
 	b.Truncate(0)
@@ -158,6 +178,7 @@ func (b *Buffer) WriteTo(w io.Writer) (n int64, err os.Error) {
 // The returned error is always nil, but is included
 // to match bufio.Writer's WriteByte.
 func (b *Buffer) WriteByte(c byte) os.Error {
+	b.lastRead = opInvalid
 	m := b.grow(1)
 	b.buf[m] = c
 	return nil
@@ -172,7 +193,7 @@ func (b *Buffer) WriteRune(r int) (n int, err os.Error) {
 		b.WriteByte(byte(r))
 		return 1, nil
 	}
-	n = utf8.EncodeRune(r, b.runeBytes[0:])
+	n = utf8.EncodeRune(b.runeBytes[0:], r)
 	b.Write(b.runeBytes[0:n])
 	return n, nil
 }
@@ -182,6 +203,7 @@ func (b *Buffer) WriteRune(r int) (n int, err os.Error) {
 // buffer has no data to return, err is os.EOF even if len(p) is zero;
 // otherwise it is nil.
 func (b *Buffer) Read(p []byte) (n int, err os.Error) {
+	b.lastRead = opInvalid
 	if b.off >= len(b.buf) {
 		// Buffer is empty, reset to recover space.
 		b.Truncate(0)
@@ -189,6 +211,9 @@ func (b *Buffer) Read(p []byte) (n int, err os.Error) {
 	}
 	n = copy(p, b.buf[b.off:])
 	b.off += n
+	if n > 0 {
+		b.lastRead = opRead
+	}
 	return
 }
 
@@ -197,18 +222,23 @@ func (b *Buffer) Read(p []byte) (n int, err os.Error) {
 // If there are fewer than n bytes in the buffer, Next returns the entire buffer.
 // The slice is only valid until the next call to a read or write method.
 func (b *Buffer) Next(n int) []byte {
+	b.lastRead = opInvalid
 	m := b.Len()
 	if n > m {
 		n = m
 	}
 	data := b.buf[b.off : b.off+n]
 	b.off += n
+	if n > 0 {
+		b.lastRead = opRead
+	}
 	return data
 }
 
 // ReadByte reads and returns the next byte from the buffer.
 // If no byte is available, it returns error os.EOF.
 func (b *Buffer) ReadByte() (c byte, err os.Error) {
+	b.lastRead = opInvalid
 	if b.off >= len(b.buf) {
 		// Buffer is empty, reset to recover space.
 		b.Truncate(0)
@@ -216,6 +246,7 @@ func (b *Buffer) ReadByte() (c byte, err os.Error) {
 	}
 	c = b.buf[b.off]
 	b.off++
+	b.lastRead = opRead
 	return c, nil
 }
 
@@ -225,11 +256,13 @@ func (b *Buffer) ReadByte() (c byte, err os.Error) {
 // If the bytes are an erroneous UTF-8 encoding, it
 // consumes one byte and returns U+FFFD, 1.
 func (b *Buffer) ReadRune() (r int, size int, err os.Error) {
+	b.lastRead = opInvalid
 	if b.off >= len(b.buf) {
 		// Buffer is empty, reset to recover space.
 		b.Truncate(0)
 		return 0, 0, os.EOF
 	}
+	b.lastRead = opReadRune
 	c := b.buf[b.off]
 	if c < utf8.RuneSelf {
 		b.off++
@@ -240,9 +273,70 @@ func (b *Buffer) ReadRune() (r int, size int, err os.Error) {
 	return r, n, nil
 }
 
+// UnreadRune unreads the last rune returned by ReadRune.
+// If the most recent read or write operation on the buffer was
+// not a ReadRune, UnreadRune returns an error.  (In this regard
+// it is stricter than UnreadByte, which will unread the last byte
+// from any read operation.)
+func (b *Buffer) UnreadRune() os.Error {
+	if b.lastRead != opReadRune {
+		return os.ErrorString("bytes.Buffer: UnreadRune: previous operation was not ReadRune")
+	}
+	b.lastRead = opInvalid
+	if b.off > 0 {
+		_, n := utf8.DecodeLastRune(b.buf[0:b.off])
+		b.off -= n
+	}
+	return nil
+}
+
+// UnreadByte unreads the last byte returned by the most recent
+// read operation.  If write has happened since the last read, UnreadByte
+// returns an error.
+func (b *Buffer) UnreadByte() os.Error {
+	if b.lastRead != opReadRune && b.lastRead != opRead {
+		return os.ErrorString("bytes.Buffer: UnreadByte: previous operation was not a read")
+	}
+	b.lastRead = opInvalid
+	if b.off > 0 {
+		b.off--
+	}
+	return nil
+}
+
+// ReadBytes reads until the first occurrence of delim in the input,
+// returning a slice containing the data up to and including the delimiter.
+// If ReadBytes encounters an error before finding a delimiter,
+// it returns the data read before the error and the error itself (often os.EOF).
+// ReadBytes returns err != nil if and only if the returned data does not end in
+// delim.
+func (b *Buffer) ReadBytes(delim byte) (line []byte, err os.Error) {
+	i := IndexByte(b.buf[b.off:], delim)
+	size := i + 1
+	if i < 0 {
+		size = len(b.buf) - b.off
+		err = os.EOF
+	}
+	line = make([]byte, size)
+	copy(line, b.buf[b.off:])
+	b.off += size
+	return
+}
+
+// ReadString reads until the first occurrence of delim in the input,
+// returning a string containing the data up to and including the delimiter.
+// If ReadString encounters an error before finding a delimiter,
+// it returns the data read before the error and the error itself (often os.EOF).
+// ReadString returns err != nil if and only if the returned data does not end
+// in delim.
+func (b *Buffer) ReadString(delim byte) (line string, err os.Error) {
+	bytes, err := b.ReadBytes(delim)
+	return string(bytes), err
+}
+
 // NewBuffer creates and initializes a new Buffer using buf as its initial
 // contents.  It is intended to prepare a Buffer to read existing data.  It
-// can also be used to to size the internal buffer for writing.  To do that,
+// can also be used to size the internal buffer for writing.  To do that,
 // buf should have the desired capacity but a length of zero.
 func NewBuffer(buf []byte) *Buffer { return &Buffer{buf: buf} }
 

@@ -69,7 +69,7 @@ public abstract class InvalidNameHelper
 
   /**
    * Insert the InvalidName into the given Any.
-   * 
+   *
    * @param any the Any to insert into.
    * @param that the InvalidName to insert.
    */
@@ -94,7 +94,7 @@ public abstract class InvalidNameHelper
     catch (ClassCastException cex)
       {
         BAD_OPERATION bad = new BAD_OPERATION("InvalidName expected");
-        bad.minor = Minor.Any;        
+        bad.minor = Minor.Any;
         bad.initCause(cex);
         throw bad;
       }

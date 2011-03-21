@@ -38,7 +38,7 @@ import org.objectweb.asm.MethodVisitor;
 
 /**
  * An empty implementation of the ASM visitor interfaces.
- * 
+ *
  * @author Eric Bruneton
  */
 public class EmptyVisitor implements

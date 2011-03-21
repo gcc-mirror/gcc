@@ -49,71 +49,71 @@ import java.util.Map;
 import java.util.TreeMap;
 
 /**
- * <code>DocFlavor</code> provides a description of the format in which the 
+ * <code>DocFlavor</code> provides a description of the format in which the
  * print data will be supplied in a print job to the print service.
  * <p>
  * A doc flavor consists of two parts:
  * <ul>
  * <li>
- * The MIME type (Multipurpose Internet Mail Extensions types as described 
+ * The MIME type (Multipurpose Internet Mail Extensions types as described
  * in RFC 2045/2046) specifying the media format of the print data.
  * </li><li>
- * The representation class name which is the fully qualified name of the 
- * class providing the print data to the print job. For example if the print 
- * data is supplied as a byte array the representation class name will be 
+ * The representation class name which is the fully qualified name of the
+ * class providing the print data to the print job. For example if the print
+ * data is supplied as a byte array the representation class name will be
  * <code>"[B"</code> or for an input stream <code>"java.io.InputStream"</code>.
  * </li>
  * </ul>
- * The <code>DocFlavor</code> class is therefore used in several places in the 
- * Java Print Service API. A print service provides its supported document 
+ * The <code>DocFlavor</code> class is therefore used in several places in the
+ * Java Print Service API. A print service provides its supported document
  * flavors as an array of DocFlavor objects and a print job gets the flavor of
  * its data to print from the <code>Doc</code> object provided as a DocFlavor
  * instance.
  * </p>
  * <p>
- * It has to be differentiated between <b>client formatted</b> and <b>service 
- * formatted</b> print data. Client formatted print data is already provided 
- * formatted by the client e.g. in an image format or as postscript. For 
- * service formatted print data, the Java Print Service instance produces 
- * the formatted print data. Here the doc flavor's representation class name 
- * does specify an interface instead of the actual print data source. The 
+ * It has to be differentiated between <b>client formatted</b> and <b>service
+ * formatted</b> print data. Client formatted print data is already provided
+ * formatted by the client e.g. in an image format or as postscript. For
+ * service formatted print data, the Java Print Service instance produces
+ * the formatted print data. Here the doc flavor's representation class name
+ * does specify an interface instead of the actual print data source. The
  * print service will call the methods of the given implementation of this
  * interface with a special Graphics object capable of producing formatted
  * print data from the graphics routines inside the interface methods.
  * </p>
  * <p>
  * <h3>Client formatted print data document flavors</h3>
- * The print service uses the representation class of the doc flavor to know 
- * how to retrieve the print data. If the representation class is a 
- * <code>URL</code> it will open the URL to read the print data from it. If it is 
- * a <code>byte[]</code> it will directly use the array and send it to the 
- * printer. There are predefined doc flavor as inner class for the most common 
+ * The print service uses the representation class of the doc flavor to know
+ * how to retrieve the print data. If the representation class is a
+ * <code>URL</code> it will open the URL to read the print data from it. If it is
+ * a <code>byte[]</code> it will directly use the array and send it to the
+ * printer. There are predefined doc flavor as inner class for the most common
  * representation class types:
  * <ul>
- * <li>Character arrays (<code>char[]</code>): The characters of the array 
+ * <li>Character arrays (<code>char[]</code>): The characters of the array
  * represent the print data.</li>
- * <li>Character streams (<code>java.io.Reader</code>): The whole characters 
+ * <li>Character streams (<code>java.io.Reader</code>): The whole characters
  * read from the stream represent the print data.</li>
- * <li>String (<code>java.lang.String</code>): The characters of the String 
+ * <li>String (<code>java.lang.String</code>): The characters of the String
  * represent the print data.</li>
- * <li>Byte arrays (<code>byte[]</code>): The bytes of the array represent the 
+ * <li>Byte arrays (<code>byte[]</code>): The bytes of the array represent the
  * print data. Encoding if text content is given in the mime type.</li>
- * <li>Byte streams (<code>java.io.InputStream</code>): The whole bytes read 
- * from the stream represent the print data. If text content the encoding is 
+ * <li>Byte streams (<code>java.io.InputStream</code>): The whole bytes read
+ * from the stream represent the print data. If text content the encoding is
  * specified in the mime type.</li>
- * <li>Uniform Resource Locator (<code>java.net.URL</code>): The bytes read 
- * from the stream through opening of the URL represent the print data. 
+ * <li>Uniform Resource Locator (<code>java.net.URL</code>): The bytes read
+ * from the stream through opening of the URL represent the print data.
  * If text content the encoding is specified in the mime type.</li></li>
  * </ul>
  * </p>
  * <p>
  * <h3>Service formatted print data document flavors</h3>
  * The print service uses the provided object implementing the interface
- * specified by the representation class to produce the formatted print data. 
- * The mime type of service formatted data is always 
- * <code>"application/x-java-jvm-local-objectref"</code> to signal the local 
+ * specified by the representation class to produce the formatted print data.
+ * The mime type of service formatted data is always
+ * <code>"application/x-java-jvm-local-objectref"</code> to signal the local
  * reference to the print data object implementing the interface. Predefined
- * doc flavor classes exist as an inner class for the three available interface 
+ * doc flavor classes exist as an inner class for the three available interface
  * to produce print data:
  * <ul>
  * <li>Pageable object (<code>java.awt.print.Pageable</code>): A pageable object
@@ -122,13 +122,13 @@ import java.util.TreeMap;
  * <li>Printable object (<code>java.awt.print.Printable</code>): A printable object
  * is supplied to the print service. The print service will call the methods of
  * the interface with a Grahics object to produce the formatted print data.</li>
- * <li>Renderable Image object 
+ * <li>Renderable Image object
  * (<code>java.awt.image.renderable.RenderableImage</code>): A renderable image
  * object is supplied to the print service. The print service calls methods of
  * this interface to obtain the image to be printed.</li>
  * </ul>
  * </p>
- * 
+ *
  * @author Michael Koch (konqueror@gmx.de)
  * @author Wolfgang Baer (WBaer@gmx.de)
  */
@@ -137,9 +137,9 @@ public class DocFlavor implements Cloneable, Serializable
   /**
    * Predefined static <code>DocFlavor</code> objects for document
    * types which use a byte array for the print data representation.
-   * <p>All the defined doc flavors have a print data representation 
+   * <p>All the defined doc flavors have a print data representation
    * classname of "[B" (byte array).</p>
-   * 
+   *
    * @author Michael Koch (konqueror@gmx.de)
    */
   public static class BYTE_ARRAY
@@ -206,7 +206,7 @@ public class DocFlavor implements Cloneable, Serializable
     /**
      * Byte array doc flavor with a MIME Type of "text/plain; charset=us-ascii".
      */
-    public static final BYTE_ARRAY TEXT_PLAIN_US_ASCII = new BYTE_ARRAY("text/plain; charset=us-ascii");    
+    public static final BYTE_ARRAY TEXT_PLAIN_US_ASCII = new BYTE_ARRAY("text/plain; charset=us-ascii");
     /**
      * Byte array doc flavor with a MIME Type of "text/plain; charset=utf-16".
      */
@@ -223,13 +223,13 @@ public class DocFlavor implements Cloneable, Serializable
      * Byte array doc flavor with a MIME Type of "text/plain; charset=utf-8".
      */
     public static final BYTE_ARRAY TEXT_PLAIN_UTF_8 = new BYTE_ARRAY("text/plain; charset=utf-8");
-    
+
     /**
-     * Constructor for doc flavor objects with the given MIME type 
+     * Constructor for doc flavor objects with the given MIME type
      * and a print data representation class name of "[B".
-     * 
+     *
      * @param mimeType the mime type string
-     * 
+     *
      * @throws NullPointerException if mimeType is <code>null</code>.
      * @throws IllegalArgumentException if mimeType has the wrong syntax.
      */
@@ -238,20 +238,20 @@ public class DocFlavor implements Cloneable, Serializable
       super(mimeType, "[B");
     }
   }
-  
+
   /**
    * Predefined static <code>DocFlavor</code> objects for document
    * types which use a char array for the print data representation.
-   * <p>All the defined doc flavors have a print data representation 
+   * <p>All the defined doc flavors have a print data representation
    * classname of "[C" (char array).</p>
-   * 
+   *
    * @author Michael Koch (konqueror@gmx.de)
    */
   public static class CHAR_ARRAY
     extends DocFlavor
   {
     private static final long serialVersionUID = -8720590903724405128L;
-    
+
     /**
      * Char array doc flavor with a MIME Type of "text/html; charset=utf-16".
      */
@@ -262,11 +262,11 @@ public class DocFlavor implements Cloneable, Serializable
     public static final DocFlavor.CHAR_ARRAY TEXT_PLAIN = new CHAR_ARRAY("text/plain; charset=utf-16");
 
     /**
-     * Constructor for doc flavor objects with the given MIME type 
+     * Constructor for doc flavor objects with the given MIME type
      * and a print data representation class name of "[C".
-     * 
+     *
      * @param mimeType the mime type string
-     * 
+     *
      * @throws NullPointerException if mimeType is <code>null</code>.
      * @throws IllegalArgumentException if mimeType has the wrong syntax.
      */
@@ -275,13 +275,13 @@ public class DocFlavor implements Cloneable, Serializable
       super(mimeType, "[C");
     }
   }
-  
+
   /**
    * Predefined static <code>DocFlavor</code> objects for document
    * types which use an InputStream to retrieve the print data.
-   * <p>All the defined doc flavors have a print data representation 
+   * <p>All the defined doc flavors have a print data representation
    * classname of "java.io.InputStream".</p>
-   * 
+   *
    * @author Michael Koch (konqueror@gmx.de)
    */
   public static class INPUT_STREAM
@@ -365,13 +365,13 @@ public class DocFlavor implements Cloneable, Serializable
      * InputStream doc flavor with a MIME Type of "text/plain; charset=utf-8".
      */
     public static final INPUT_STREAM TEXT_PLAIN_UTF_8 = new INPUT_STREAM("text/plain; charset=utf-8");
-    
+
     /**
-     * Constructor for doc flavor objects with the given MIME type 
+     * Constructor for doc flavor objects with the given MIME type
      * and a print data representation class name of "java.io.InputStream".
-     * 
+     *
      * @param mimeType the mime type string
-     * 
+     *
      * @throws NullPointerException if mimeType is <code>null</code>.
      * @throws IllegalArgumentException if mimeType has the wrong syntax.
      */
@@ -380,13 +380,13 @@ public class DocFlavor implements Cloneable, Serializable
       super(mimeType, "java.io.InputStream");
     }
   }
-  
+
   /**
    * Predefined static <code>DocFlavor</code> objects for document
    * types which use an Reader to retrieve the print data.
-   * <p>All the defined doc flavors have a print data representation 
+   * <p>All the defined doc flavors have a print data representation
    * classname of "java.io.Reader".</p>
-   * 
+   *
    * @author Michael Koch (konqueror@gmx.de)
    */
   public static class READER
@@ -402,13 +402,13 @@ public class DocFlavor implements Cloneable, Serializable
      * Reader doc flavor with a MIME Type of "text/plain; charset=utf-16".
      */
     public static final DocFlavor.READER TEXT_PLAIN = new READER("text/plain; charset=utf-16");
-    
+
     /**
-     * Constructor for doc flavor objects with the given MIME type 
+     * Constructor for doc flavor objects with the given MIME type
      * and a print data representation class name of "java.io.Reader".
-     * 
+     *
      * @param mimeType the mime type string
-     * 
+     *
      * @throws NullPointerException if mimeType is <code>null</code>.
      * @throws IllegalArgumentException if mimeType has the wrong syntax.
      */
@@ -417,13 +417,13 @@ public class DocFlavor implements Cloneable, Serializable
       super(mimeType, "java.io.Reader");
     }
   }
-  
+
   /**
    * Predefined static <code>DocFlavor</code> objects for document
    * types which use service formatted print data.
-   * <p>All the defined doc flavors have a MIME type of 
+   * <p>All the defined doc flavors have a MIME type of
    * "application/x-java-jvm-local-objectref".</p>
-   * 
+   *
    * @author Michael Koch (konqueror@gmx.de)
    */
   public static class SERVICE_FORMATTED
@@ -432,28 +432,28 @@ public class DocFlavor implements Cloneable, Serializable
     private static final long serialVersionUID = 6181337766266637256L;
 
     /**
-     * Service formatted doc flavor with a representation class of 
+     * Service formatted doc flavor with a representation class of
      * "java.awt.print.Pageable".
      */
     public static final DocFlavor.SERVICE_FORMATTED PAGEABLE = new SERVICE_FORMATTED("java.awt.print.Pageable");
     /**
-     * Service formatted doc flavor with a representation class of 
+     * Service formatted doc flavor with a representation class of
      * "java.awt.print.Printable".
      */
     public static final DocFlavor.SERVICE_FORMATTED PRINTABLE = new SERVICE_FORMATTED("java.awt.print.Printable");
     /**
-     * Service formatted doc flavor with a representation class of 
+     * Service formatted doc flavor with a representation class of
      * "java.awt.image.renderable.RenderableImage".
      */
     public static final DocFlavor.SERVICE_FORMATTED RENDERABLE_IMAGE = new SERVICE_FORMATTED("java.awt.image.renderable.RenderableImage");
-    
+
     /**
-     * Constructor for doc flavor objects with a MIME type of 
+     * Constructor for doc flavor objects with a MIME type of
      * "application/x-java-jvm-local-objectref" and the given
      * print data representation classname.
-     * 
+     *
      * @param className the representation classname
-     * 
+     *
      * @throws NullPointerException if className is <code>null</code>.
      */
     public SERVICE_FORMATTED(String className)
@@ -461,13 +461,13 @@ public class DocFlavor implements Cloneable, Serializable
       super("application/x-java-jvm-local-objectref", className);
     }
   }
-  
+
   /**
    * Predefined static <code>DocFlavor</code> objects for document
    * types which use a String for the print data representation.
-   * <p>All the defined doc flavors have a print data representation 
+   * <p>All the defined doc flavors have a print data representation
    * classname of "java.lang.String".</p>
-   * 
+   *
    * @author Michael Koch (konqueror@gmx.de)
    */
   public static class STRING
@@ -483,13 +483,13 @@ public class DocFlavor implements Cloneable, Serializable
      * String doc flavor with a MIME Type of "text/plain; charset=utf-16".
      */
     public static final DocFlavor.STRING TEXT_PLAIN = new STRING("text/plain; charset=utf-16");
-    
+
     /**
-     * Constructor for doc flavor objects with the given MIME type 
+     * Constructor for doc flavor objects with the given MIME type
      * and a print data representation class name of "java.lang.String".
-     * 
+     *
      * @param mimeType the mime type string
-     * 
+     *
      * @throws NullPointerException if mimeType is <code>null</code>.
      * @throws IllegalArgumentException if mimeType has the wrong syntax.
      */
@@ -498,13 +498,13 @@ public class DocFlavor implements Cloneable, Serializable
       super(mimeType, "java.lang.String");
     }
   }
-  
+
   /**
    * Predefined static <code>DocFlavor</code> objects for document
    * types which have an URL where to retrieve the print data.
-   * <p>All the defined doc flavors have a print data representation 
+   * <p>All the defined doc flavors have a print data representation
    * classname of "java.net.URL".</p>
-   * 
+   *
    * @author Michael Koch (konqueror@gmx.de)
    */
   public static class URL
@@ -588,13 +588,13 @@ public class DocFlavor implements Cloneable, Serializable
      * URL doc flavor with a MIME Type of "text/plain; charset=utf-8".
      */
     public static final DocFlavor.URL TEXT_PLAIN_UTF_8 = new URL("text/plain; charset=utf-8");
-    
+
     /**
-     * Constructor for doc flavor objects with the given MIME type 
+     * Constructor for doc flavor objects with the given MIME type
      * and a print data representation class name of "java.net.URL".
-     * 
+     *
      * @param mimeType the mime type string
-     * 
+     *
      * @throws NullPointerException if mimeType is <code>null</code>.
      * @throws IllegalArgumentException if mimeType has the wrong syntax.
      */
@@ -603,12 +603,12 @@ public class DocFlavor implements Cloneable, Serializable
       super(mimeType, "java.net.URL");
     }
   }
-  
+
   private static final long serialVersionUID = -4512080796965449721L;
-  
+
   /**
    * The string representing the host encoding. This is the encoding
-   * used in the predefined HOST doc flavors 
+   * used in the predefined HOST doc flavors
    * (e.g. {@link BYTE_ARRAY#TEXT_HTML_HOST}).
    */
   public static final String hostEncoding = Charset.defaultCharset().name();
@@ -616,17 +616,17 @@ public class DocFlavor implements Cloneable, Serializable
   private transient String mediaSubtype;
   private transient String mediaType;
   private transient TreeMap params;
-  
+
   // name as defined in Serialized Form JDK 1.4
   private String myClassName;
-  
+
   /**
-   * Constructs a <code>DocFlavor</code> object with the given MIME type and 
+   * Constructs a <code>DocFlavor</code> object with the given MIME type and
    * representation class name.
-   * 
+   *
    * @param mimeType the MIME type string.
    * @param className the fully-qualified name of the representation class.
-   * 
+   *
    * @throws NullPointerException if mimeType or className are <code>null</code>.
    * @throws IllegalArgumentException if given mimeType has syntax errors.
    */
@@ -637,15 +637,15 @@ public class DocFlavor implements Cloneable, Serializable
 
     params = new TreeMap();
     parseMimeType(mimeType);
-    
+
     myClassName = className;
   }
-  
+
   /**
    * Parses the given string as MIME type.
    * The mediatype, mediasubtype and all parameter/value
    * combinations are extracted, comments are dropped.
-   *  
+   *
    * @param mimeType the string to parse
    * @throws IllegalArgumentException if not conformant.
    */
@@ -656,11 +656,11 @@ public class DocFlavor implements Cloneable, Serializable
     int PARAM_NAME = 3;
     int PARAM_VALUE = 4;
     int COMMENT_START = 5;
-    
+
     int state = 0;
     int lastState = 0; // keeps track of state before comment
     int tok;
-    
+
     try
       {
         String paramName = null;
@@ -778,7 +778,7 @@ public class DocFlavor implements Cloneable, Serializable
         throw new InternalError("IOException during parsing String " + mimeType);
       }
   }
-  
+
   /**
    * Checks if this doc flavor object is equal to the given object.
    * <p>
@@ -787,7 +787,7 @@ public class DocFlavor implements Cloneable, Serializable
    * types has to be equal in their media type, media subtype, their
    * paramter/value combinations and the representation classname.
    * </p>
-   * 
+   *
    * @param obj the object to test.
    * @return <code>true</code> if equal, <code>false</code> otherwise.
    */
@@ -799,14 +799,14 @@ public class DocFlavor implements Cloneable, Serializable
     DocFlavor tmp = (DocFlavor) obj;
 
     return (getMimeType().equals(tmp.getMimeType())
-	    && getRepresentationClassName().equals(tmp.getRepresentationClassName()));
+            && getRepresentationClassName().equals(tmp.getRepresentationClassName()));
   }
 
   /**
    * Returns the media subtype of this flavor object.
    * A mimetype of "text/html; charset=us-ascii" will
-   * return "html" as the media subtype. 
-   * 
+   * return "html" as the media subtype.
+   *
    * @return The media subtype.
    */
   public String getMediaSubtype()
@@ -818,7 +818,7 @@ public class DocFlavor implements Cloneable, Serializable
    * Returns the media type of this flavor object.
    * A mimetype of "text/html; charset=us-ascii" will
    * return "text" as the media type.
-   * 
+   *
    * @return The media type.
    */
   public String getMediaType()
@@ -830,7 +830,7 @@ public class DocFlavor implements Cloneable, Serializable
    * Returns the mime type of this flavor object.
    * The mimetype will have every parameter value
    * enclosed in quotes.
-   * 
+   *
    * @return The mime type.
    */
   public String getMimeType()
@@ -840,8 +840,8 @@ public class DocFlavor implements Cloneable, Serializable
 
     while (it.hasNext())
       {
-	Map.Entry entry = (Map.Entry) it.next();
-	mimeType += "; " + entry.getKey() + "=\"" + entry.getValue() + "\"";
+        Map.Entry entry = (Map.Entry) it.next();
+        mimeType += "; " + entry.getKey() + "=\"" + entry.getValue() + "\"";
       }
 
     return mimeType;
@@ -850,7 +850,7 @@ public class DocFlavor implements Cloneable, Serializable
   /**
    * Returns the value for an optional parameter of the mime type of this
    * flavor object.
-   * 
+   *
    * @param paramName the name of the parameter
    * @return The value for the parameter, or <code>null</code> if none bound.
    * @throws NullPointerException if paramName is <code>null</code>.
@@ -859,13 +859,13 @@ public class DocFlavor implements Cloneable, Serializable
   {
     if (paramName == null)
       throw new NullPointerException();
-    
+
     return (String) params.get(paramName.toLowerCase());
   }
 
   /**
    * Returns the name of the representation class of this flavor object.
-   * 
+   *
    * @return The representation classname.
    */
   public String getRepresentationClassName()
@@ -875,30 +875,30 @@ public class DocFlavor implements Cloneable, Serializable
 
   /**
    * Returns a hash code for this doc flavor object.
-   * 
+   *
    * @return The hashcode.
    */
   public int hashCode()
   {
     return ((mediaType.hashCode()
-	     * mediaSubtype.hashCode()
-	     * myClassName.hashCode()) ^ params.hashCode());
+             * mediaSubtype.hashCode()
+             * myClassName.hashCode()) ^ params.hashCode());
   }
 
   /**
    * Returns a string representation of this doc flavor object.
    * The returned string is of the form
    * getMimeType() + "; class=\"" + getRepresentationClassName() + "\"";
-   * 
+   *
    * @return The constructed string representation.
    */
   public String toString()
   {
     return getMimeType() + "; class=\"" + getRepresentationClassName() + "\"";
   }
-  
+
   // needs special treatment for serialization
-  private void readObject(ObjectInputStream stream) 
+  private void readObject(ObjectInputStream stream)
     throws IOException, ClassNotFoundException
   {
     params = new TreeMap();

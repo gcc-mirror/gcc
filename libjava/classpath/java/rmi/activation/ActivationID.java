@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -57,7 +57,7 @@ import java.rmi.server.UID;
  * </ul>
  * An instance of the ActivationID has the {@link UID} as its component and
  * hence is globally unique.
- * 
+ *
  * @author Audrius Meskauskas (audriusa@bioinformatics.org) (from stub)
  */
 public class ActivationID
@@ -72,12 +72,12 @@ public class ActivationID
    * The activator.
    */
   transient Activator activator;
-  
+
   /**
    * The UID, making this instance unique.
    */
-  transient UID uid; 
-  
+  transient UID uid;
+
   /**
    * The activation group that has activated the object with this
    * activation id. The field is filled in inside the group and is used
@@ -87,7 +87,7 @@ public class ActivationID
 
   /**
    * Create a new instance with the given activator.
-   * 
+   *
    * @param an_activator tha activator that should activate the object.
    */
   public ActivationID(Activator an_activator)
@@ -95,10 +95,10 @@ public class ActivationID
     activator = an_activator;
     uid = new UID();
   }
-   
+
   /**
    * Activate the object.
-   * 
+   *
    * @param force if true, always contact the group. Otherwise, the cached value
    *          may be returned.
    * @return the activated object
@@ -116,7 +116,7 @@ public class ActivationID
         catch (IOException e)
           {
             ActivationException acex = new ActivationException("id "+uid, e);
-            throw acex;            
+            throw acex;
           }
         catch (ClassNotFoundException e)
           {
@@ -124,7 +124,7 @@ public class ActivationID
             throw acex;
           }
   }
-  
+
   /**
    * Returns the hash code of the activator.
    */
@@ -132,7 +132,7 @@ public class ActivationID
   {
     return uid == null ? 0 : uid.hashCode();
   }
-  
+
   /**
    * Compares the activators for equality.
    */
@@ -146,12 +146,12 @@ public class ActivationID
     else
       return false;
   }
-  
+
   /**
    * Read the object from the input stream.
-   * 
+   *
    * @param in the stream to read from
-   * 
+   *
    * @throws IOException if thrown by the stream
    * @throws ClassNotFoundException
    */
@@ -161,10 +161,10 @@ public class ActivationID
      uid = (UID) in.readObject();
      activator = (Activator) in.readObject();
   }
-  
+
   /**
    * Write the object to the output stream.
-   * 
+   *
    * @param out the stream to write int
    * @throws IOException if thrown by the stream
    * @throws ClassNotFoundException
@@ -175,7 +175,7 @@ public class ActivationID
     out.writeObject(uid);
     out.writeObject(activator);
   }
-  
+
   /**
    * Compare by .equals if both a and b are not null, compare directly if at
    * least one of them is null.
@@ -186,7 +186,7 @@ public class ActivationID
       return a == b;
     else
       return a.equals(b);
-  }  
+  }
 
   /**
    * Return the content based string representation.
@@ -195,5 +195,5 @@ public class ActivationID
   {
     return uid.toString();
   }
-  
+
 }

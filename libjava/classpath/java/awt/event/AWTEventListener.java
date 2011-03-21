@@ -62,4 +62,4 @@ public interface AWTEventListener extends EventListener
    * @param event the AWTEvent that was dispatched
    */
   void eventDispatched(AWTEvent event);
-} // interface AWTEventListener 
+} // interface AWTEventListener

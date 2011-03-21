@@ -1,5 +1,5 @@
 // { dg-options "-std=gnu++0x" }
-// { dg-do "run" }
+// { dg-do run }
 // A basic implementation of TR1's mem_fn using variadic teplates
 // Contributed by Douglas Gregor <doug.gregor@gmail.com>
 #include <cassert>

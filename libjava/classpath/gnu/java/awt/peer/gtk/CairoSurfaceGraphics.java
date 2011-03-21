@@ -67,7 +67,7 @@ public class CairoSurfaceGraphics extends CairoGraphics2D
   protected CairoSurface surface;
   private BufferedImage buffer;
   private long cairo_t;
-  
+
   /**
    * Create a graphics context from a cairo surface
    */
@@ -82,24 +82,24 @@ public class CairoSurfaceGraphics extends CairoGraphics2D
   /**
    * Creates another context from a surface.
    * Used by create().
-   */ 
+   */
   private CairoSurfaceGraphics(CairoSurfaceGraphics copyFrom)
   {
     surface = copyFrom.surface;
     cairo_t = surface.newCairoContext();
     copy( copyFrom, cairo_t );
   }
-  
+
   public Graphics create()
   {
     return new CairoSurfaceGraphics(this);
   }
-  
+
   public GraphicsConfiguration getDeviceConfiguration()
   {
     return GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDefaultConfiguration();
   }
-  
+
   protected Rectangle2D getRealBounds()
   {
     return new Rectangle2D.Double(0.0, 0.0, surface.width, surface.height);
@@ -109,7 +109,7 @@ public class CairoSurfaceGraphics extends CairoGraphics2D
   {
     surface.copyAreaNative(x, y, width, height, dx, dy, surface.width);
   }
-  
+
   /**
    * Overloaded methods that do actual drawing need to account for custom
    * composites
@@ -118,7 +118,7 @@ public class CairoSurfaceGraphics extends CairoGraphics2D
   {
     if (!surface.sharedBuffer)
       surface.syncJavaToNative(surface.surfacePointer, surface.getData());
-    
+
     // Find total bounds of shape
     Rectangle r = findStrokedBounds(s);
     if (shiftDrawCalls)
@@ -126,24 +126,24 @@ public class CairoSurfaceGraphics extends CairoGraphics2D
         r.width++;
         r.height++;
       }
-    
+
     // Do the drawing
     if (comp == null || comp instanceof AlphaComposite)
       super.draw(s);
-    
+
     else
       {
         createBuffer();
-        
+
         Graphics2D g2d = (Graphics2D)buffer.getGraphics();
         g2d.setStroke(this.getStroke());
         g2d.setColor(this.getColor());
         g2d.setTransform(transform);
         g2d.draw(s);
-        
+
         drawComposite(r.getBounds2D(), null);
       }
-    
+
     if (!surface.sharedBuffer)
       surface.syncNativeToJava(surface.surfacePointer, surface.getData());
   }
@@ -152,23 +152,23 @@ public class CairoSurfaceGraphics extends CairoGraphics2D
   {
     if (!surface.sharedBuffer)
       surface.syncJavaToNative(surface.surfacePointer, surface.getData());
-    
+
     if (comp == null || comp instanceof AlphaComposite)
       super.fill(s);
-    
+
     else
       {
         createBuffer();
-        
+
         Graphics2D g2d = (Graphics2D)buffer.getGraphics();
         g2d.setPaint(this.getPaint());
         g2d.setColor(this.getColor());
         g2d.setTransform(transform);
         g2d.fill(s);
-        
+
         drawComposite(s.getBounds2D(), null);
       }
-    
+
     if (!surface.sharedBuffer)
       surface.syncNativeToJava(surface.surfacePointer, surface.getData());
   }
@@ -177,10 +177,10 @@ public class CairoSurfaceGraphics extends CairoGraphics2D
   {
     if (!surface.sharedBuffer)
       surface.syncJavaToNative(surface.surfacePointer, surface.getData());
-    
+
     if (comp == null || comp instanceof AlphaComposite)
       super.drawRenderedImage(image, xform);
-    
+
     else
       {
         createBuffer();
@@ -189,10 +189,10 @@ public class CairoSurfaceGraphics extends CairoGraphics2D
         g2d.setRenderingHints(this.getRenderingHints());
         g2d.setTransform(transform);
         g2d.drawRenderedImage(image, xform);
-        
+
         drawComposite(buffer.getRaster().getBounds(), null);
       }
-    
+
     if (!surface.sharedBuffer)
       surface.syncNativeToJava(surface.surfacePointer, surface.getData());
   }
@@ -206,7 +206,7 @@ public class CairoSurfaceGraphics extends CairoGraphics2D
     boolean ret;
     if (comp == null || comp instanceof AlphaComposite)
       ret = super.drawImage(img, xform, bgcolor, obs);
-    
+
     else
       {
         // Get buffered image of source
@@ -218,16 +218,16 @@ public class CairoSurfaceGraphics extends CairoGraphics2D
             img = Toolkit.getDefaultToolkit().createImage(source);
           }
         BufferedImage bImg = (BufferedImage) img;
-        
+
         // Find translated bounds
         Rectangle2D bounds = new Rectangle(bImg.getMinX(), bImg.getMinY(),
                                            bImg.getWidth(), bImg.getHeight());
         if (xform != null)
           bounds = getTransformedBounds(bounds, xform);
-        
+
         // Create buffer and draw image
         createBuffer();
-        
+
         Graphics2D g2d = (Graphics2D)buffer.getGraphics();
         g2d.setRenderingHints(this.getRenderingHints());
         g2d.drawImage(img, xform, obs);
@@ -235,10 +235,10 @@ public class CairoSurfaceGraphics extends CairoGraphics2D
         // Perform compositing
         ret = drawComposite(bounds, obs);
       }
-    
+
     if (!surface.sharedBuffer)
       surface.syncNativeToJava(surface.surfacePointer, surface.getData());
-    
+
     return ret;
   }
 
@@ -246,10 +246,10 @@ public class CairoSurfaceGraphics extends CairoGraphics2D
   {
     if (!surface.sharedBuffer)
       surface.syncJavaToNative(surface.surfacePointer, surface.getData());
-    
+
     if (comp == null || comp instanceof AlphaComposite)
       super.drawGlyphVector(gv, x, y);
-    
+
     else
       {
         createBuffer();
@@ -258,17 +258,17 @@ public class CairoSurfaceGraphics extends CairoGraphics2D
         g2d.setPaint(this.getPaint());
         g2d.setStroke(this.getStroke());
         g2d.drawGlyphVector(gv, x, y);
-        
+
         Rectangle2D bounds = gv.getLogicalBounds();
         bounds = new Rectangle2D.Double(x + bounds.getX(), y + bounds.getY(),
                                         bounds.getWidth(), bounds.getHeight());
         drawComposite(bounds, null);
       }
-    
+
     if (!surface.sharedBuffer)
       surface.syncNativeToJava(surface.surfacePointer, surface.getData());
   }
-  
+
   private boolean drawComposite(Rectangle2D bounds, ImageObserver observer)
   {
     // Find bounds in device space
@@ -280,7 +280,7 @@ public class CairoSurfaceGraphics extends CairoGraphics2D
     devClip = new Rectangle(buffer.getMinX(), buffer.getMinY(),
                             buffer.getWidth(), buffer.getHeight());
     Rectangle2D.intersect(bounds, devClip, bounds);
-    
+
     // Round bounds as needed, but be careful in our rounding
     // (otherwise it may leave unpainted stripes)
     double x = bounds.getX();
@@ -290,7 +290,7 @@ public class CairoSurfaceGraphics extends CairoGraphics2D
     x = Math.round(x);
     y = Math.round(y);
     bounds.setRect(x, y, Math.round(maxX - x), Math.round(maxY - y));
-    
+
     // Find subimage of internal buffer for updating
     BufferedImage buffer2 = buffer;
     if (!bounds.equals(buffer2.getRaster().getBounds()))
@@ -307,12 +307,12 @@ public class CairoSurfaceGraphics extends CairoGraphics2D
     // Perform actual composite operation
     compCtx.compose(buffer2.getRaster(), current.getRaster(),
                     buffer2.getRaster());
-    
+
     // Set cairo's composite to direct SRC, since we've already done our own
-    // compositing   
+    // compositing
     Composite oldcomp = comp;
     setComposite(AlphaComposite.Src);
-    
+
     // This MUST call directly into the "action" method in CairoGraphics2D,
     // not one of the wrappers, to ensure that the composite isn't processed
     // more than once!
@@ -324,7 +324,7 @@ public class CairoSurfaceGraphics extends CairoGraphics2D
     updateColor();
     return rv;
   }
-  
+
   private void createBuffer()
   {
     if (buffer == null)
@@ -337,17 +337,17 @@ public class CairoSurfaceGraphics extends CairoGraphics2D
     else
       {
         Graphics2D g2d = ((Graphics2D)buffer.getGraphics());
-        
+
         g2d.setBackground(new Color(0,0,0,0));
         g2d.clearRect(0, 0, buffer.getWidth(), buffer.getHeight());
       }
   }
-  
+
   protected ColorModel getNativeCM()
   {
     return CairoSurface.cairoCM_pre;
   }
-  
+
   protected ColorModel getBufferCM()
   {
     return CairoSurface.cairoColorModel;

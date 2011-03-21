@@ -1,4 +1,4 @@
-/* KeyAgreementFactory.java -- 
+/* KeyAgreementFactory.java --
    Copyright (C) 2003, 2006 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -71,7 +71,7 @@ public class KeyAgreementFactory
    * <code>A</code> in a two-party <code>A..B</code> exchange, given the
    * canonical name of this protocol. Party <code>A</code> is usually the
    * initiator of the exchange.
-   * 
+   *
    * @param name the case-insensitive key agreement protocol name.
    * @return an instance of the key agreement protocol handler for party
    *         <code>A</code>, or <code>null</code> if none found.
@@ -99,7 +99,7 @@ public class KeyAgreementFactory
    * Returns an instance of a key agreeent protocol handler, for party
    * <code>B</code> in a two-party <code>A..B</code> exchange, given the
    * canonical name of this protocol.
-   * 
+   *
    * @param name the case-insensitive key agreement protocol name.
    * @return an instance of the key agreement protocol handler for party
    *         <code>B</code>, or <code>null</code> if none found.
@@ -126,7 +126,7 @@ public class KeyAgreementFactory
   /**
    * Returns a {@link Set} of key agreement protocol names supported by this
    * <i>Factory</i>.
-   * 
+   *
    * @return a {@link Set} of key agreement protocol names (Strings).
    */
   public static final Set getNames()

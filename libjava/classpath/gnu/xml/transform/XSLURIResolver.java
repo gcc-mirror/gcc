@@ -1,4 +1,4 @@
-/* XSLURIResolver.java -- 
+/* XSLURIResolver.java --
    Copyright (C) 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -168,7 +168,7 @@ class XSLURIResolver
                   }
                 conn.connect();
                 lastModified = conn.getLastModified();
-                if (node != null && 
+                if (node != null &&
                     lastModified > 0L &&
                     lastModified <= lastLastModified)
                   {
@@ -266,7 +266,7 @@ class XSLURIResolver
         return (file == null) ? null : file.toURL();
       }
   }
-  
+
   DocumentBuilder getDocumentBuilder()
     throws TransformerException
   {
@@ -317,6 +317,5 @@ class XSLURIResolver
       ((DomDocument) doc).setDocumentURI(systemId);
     return new DOMSource(doc, systemId);
   }
-  
-}
 
+}

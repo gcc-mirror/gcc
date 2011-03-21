@@ -694,6 +694,8 @@ show_components (gfc_symbol *sym)
     {
       fprintf (dumpfile, "(%s ", c->name);
       show_typespec (&c->ts);
+      if (c->attr.allocatable)
+	fputs (" ALLOCATABLE", dumpfile);
       if (c->attr.pointer)
 	fputs (" POINTER", dumpfile);
       if (c->attr.proc_pointer)
@@ -1465,7 +1467,7 @@ show_code_node (int level, gfc_code *c)
 	  code_indent (level, 0);
 
 	  fputs ("CASE ", dumpfile);
-	  for (cp = d->ext.case_list; cp; cp = cp->next)
+	  for (cp = d->ext.block.case_list; cp; cp = cp->next)
 	    {
 	      fputc ('(', dumpfile);
 	      show_expr (cp->low);
@@ -1601,6 +1603,15 @@ show_code_node (int level, gfc_code *c)
 	{
 	  fputs (" ERRMSG=", dumpfile);
 	  show_expr (c->expr2);
+	}
+
+      if (c->expr3)
+	{
+	  if (c->expr3->mold)
+	    fputs (" MOLD=", dumpfile);
+	  else
+	    fputs (" SOURCE=", dumpfile);
+	  show_expr (c->expr3);
 	}
 
       for (a = c->ext.alloc.list; a; a = a->next)

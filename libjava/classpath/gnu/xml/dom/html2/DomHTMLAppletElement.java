@@ -1,4 +1,4 @@
-/* DomHTMLAppletElement.java -- 
+/* DomHTMLAppletElement.java --
    Copyright (C) 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -64,7 +64,7 @@ public class DomHTMLAppletElement
   {
     setHTMLAttribute("align", align);
   }
-  
+
   public String getCls()
   {
     return getHTMLAttribute("class");
@@ -74,7 +74,7 @@ public class DomHTMLAppletElement
   {
     setHTMLAttribute("class", cls);
   }
-  
+
   public String getSrc()
   {
     return getHTMLAttribute("src");
@@ -84,7 +84,7 @@ public class DomHTMLAppletElement
   {
     setHTMLAttribute("src", src);
   }
-  
+
   public String getAlt()
   {
     return getHTMLAttribute("alt");
@@ -94,7 +94,7 @@ public class DomHTMLAppletElement
   {
     setHTMLAttribute("alt", alt);
   }
-  
+
   public String getArchive()
   {
     return getHTMLAttribute("archive");
@@ -104,7 +104,7 @@ public class DomHTMLAppletElement
   {
     setHTMLAttribute("archive", archive);
   }
-  
+
   public String getCode()
   {
     return getHTMLAttribute("code");
@@ -114,7 +114,7 @@ public class DomHTMLAppletElement
   {
     setHTMLAttribute("code", code);
   }
-  
+
   public String getCodeBase()
   {
     return getHTMLAttribute("codebase");
@@ -124,7 +124,7 @@ public class DomHTMLAppletElement
   {
     setHTMLAttribute("codebase", codeBase);
   }
-  
+
   public String getHeight()
   {
     return getHTMLAttribute("height");
@@ -134,7 +134,7 @@ public class DomHTMLAppletElement
   {
     setHTMLAttribute("height", height);
   }
-  
+
   public int getHspace()
   {
     return getIntHTMLAttribute("hspace");
@@ -144,7 +144,7 @@ public class DomHTMLAppletElement
   {
     setIntHTMLAttribute("hspace", hspace);
   }
-  
+
   public String getName()
   {
     return getHTMLAttribute("name");
@@ -154,7 +154,7 @@ public class DomHTMLAppletElement
   {
     setHTMLAttribute("name", name);
   }
-  
+
   public String getObject()
   {
     return getHTMLAttribute("object");
@@ -164,7 +164,7 @@ public class DomHTMLAppletElement
   {
     setHTMLAttribute("object", object);
   }
-  
+
   public int getVspace()
   {
     return getIntHTMLAttribute("vspace");
@@ -174,7 +174,7 @@ public class DomHTMLAppletElement
   {
     setIntHTMLAttribute("vspace", vspace);
   }
-  
+
   public String getWidth()
   {
     return getHTMLAttribute("width");
@@ -185,4 +185,3 @@ public class DomHTMLAppletElement
     setHTMLAttribute("width", width);
   }
 }
-

@@ -47,8 +47,13 @@ copy (char *p, int size)
   __builtin_strncpy (p, "good", size);
 }
 
-int g_edi=INIT_EDI, g_esi=INIT_ESI, g_ebx=INIT_EBX; 
-int g_ebp, g_ebp_save, g_esp, g_esp_save;
+int g_edi __attribute__((externally_visible)) =INIT_EDI;
+int g_esi __attribute__((externally_visible)) =INIT_ESI;
+int g_ebx __attribute__((externally_visible)) = INIT_EBX; 
+int g_ebp __attribute__((externally_visible));
+int g_esp __attribute__((externally_visible));
+int g_ebp_save __attribute__((externally_visible));
+int g_esp_save __attribute__((externally_visible));
 int n_error;
 
 int

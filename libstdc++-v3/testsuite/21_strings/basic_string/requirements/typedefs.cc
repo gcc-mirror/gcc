@@ -1,7 +1,7 @@
 // { dg-options "-std=gnu++0x" }
 // { dg-do compile }
 
-// Copyright (C) 2009 Free Software Foundation, Inc.
+// Copyright (C) 2009, 2010, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -23,4 +23,6 @@
 
 // Check container for required typedefs.
 __gnu_test::types<std::string> t1;
+#ifdef _GLIBCXX_USE_WCHAR_T
 __gnu_test::types<std::wstring> t2;
+#endif

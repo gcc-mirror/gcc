@@ -27,11 +27,13 @@
  *  Do not attempt to use it directly. @headername{tr1/unordered_set}
  */
 
-namespace std
+namespace std _GLIBCXX_VISIBILITY(default)
 {
 namespace tr1
 {
-  // XXX When we get typedef templates these class definitions
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
+  // NB: When we get typedef templates these class definitions
   // will be unnecessary.
   template<class _Value,
 	   class _Hash = hash<_Value>,
@@ -259,5 +261,7 @@ namespace tr1
     swap(unordered_multiset<_Value, _Hash, _Pred, _Alloc>& __x,
 	 unordered_multiset<_Value, _Hash, _Pred, _Alloc>& __y)
     { __x.swap(__y); }
+
+_GLIBCXX_END_NAMESPACE_VERSION
 }
 }

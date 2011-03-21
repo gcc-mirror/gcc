@@ -42,15 +42,15 @@ import java.io.Serializable;
 
 /**
  * Means errors, related to freeing the allocated memory.
- * 
+ *
  * @author Audrius Meskauskas (AudriusA@Bioinformatics.org)
  */
 public final class FREE_MEM
   extends SystemException
   implements Serializable
 {
-  /** 
-   * Use serialVersionUID for interoperability. 
+  /**
+   * Use serialVersionUID for interoperability.
    */
   private static final long serialVersionUID = -1333559476995791982L;
 

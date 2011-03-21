@@ -1,3 +1,27 @@
+2011-02-28  Kai Tietz  <kai.tietz@onevision.com>
+
+	* filename_cmp.c (filename_ncmp): New function.
+	* functions.texi: Regenerated.
+
+2011-02-03  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* splay-tree.c: Escape wrapping newlines in texinfo markup
+	with '@', to fix function declaration output rendering.
+	* gather-docs: Relax and improve macro name matching to actually
+	match all current names and to allow input line wrapping.
+	* bsearch.c, concat.c, crc32.c, fnmatch.txh, fopen_unlocked.c,
+	hashtab.c, insque.c, make-relative-prefix.c, memchr.c, memcmp.c,
+	memcpy.c, memmem.c, memmove.c, mempcpy.c, memset.c,
+	pexecute.txh, random.c, setenv.c, setproctitle.c,
+	simple-object.txh, snprintf.c, stpncpy.c, strncmp.c, strtod.c,
+	strtol.c, vasprintf.c, vprintf.c, vsnprintf.c, xmemdup.c:
+	Wrap long texinfo input lines.
+	* functions.texi: Regenerate.
+
+2011-01-18  Mike Frysinger  <vapier@gentoo.org>
+
+	* .gitignore: New file.
+
 2010-12-08  Doug Evans  <dje@google.com>
 
 	* splay-tree.c (splay_tree_foreach_helper): Remove arg `sp',

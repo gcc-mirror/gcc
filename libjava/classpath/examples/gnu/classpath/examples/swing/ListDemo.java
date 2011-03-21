@@ -62,7 +62,7 @@ public class ListDemo
   implements ActionListener
 {
 
-  private static class LabelCellRenderer 
+  private static class LabelCellRenderer
     extends DefaultListCellRenderer
   {
     public Component getListCellRendererComponent(JList list,
@@ -71,14 +71,14 @@ public class ListDemo
                                                   boolean isSelected,
                                                   boolean cellHasFocus)
     {
-      Component c = super.getListCellRendererComponent(list, value, index, 
+      Component c = super.getListCellRendererComponent(list, value, index,
                                                        isSelected,
                                                        cellHasFocus);
       return c;
     }
   }
 
-  private static class CheckCellRenderer 
+  private static class CheckCellRenderer
     extends JCheckBox
     implements ListCellRenderer
   {
@@ -90,7 +90,7 @@ public class ListDemo
     {
       setSelected(isSelected);
       setText(value.toString());
-      
+
       return this;
     }
   }
@@ -104,7 +104,7 @@ public class ListDemo
   private void createContent()
   {
 
-    String foo[] = new String[] { 
+    String foo[] = new String[] {
       "non alcoholic ",
       "carbonated ",
       "malted ",
@@ -113,8 +113,8 @@ public class ListDemo
       "high fructose ",
       "enriched "
     };
-    
-    String bar[] = new String[] { 
+
+    String bar[] = new String[] {
       "orange juice",
       "ginger beer",
       "yak milk",
@@ -162,7 +162,7 @@ public class ListDemo
     splitter.add(new JScrollPane(list2), JSplitPane.RIGHT);
 
     setLayout(new BorderLayout());
-    JPanel p2 = new JPanel(); 
+    JPanel p2 = new JPanel();
     p2.setLayout(new GridLayout(1, 2));
     p2.add(add);
     p2.add(del);
@@ -171,7 +171,7 @@ public class ListDemo
     add(splitter, BorderLayout.CENTER);
   }
 
-  public void actionPerformed(ActionEvent e) 
+  public void actionPerformed(ActionEvent e)
   {
     if (e.getActionCommand().equals("CLOSE"))
     {
@@ -181,7 +181,7 @@ public class ListDemo
 
   /**
    * When the demo is run independently, the frame is displayed, so we should
-   * initialise the content panel (including the demo content and a close 
+   * initialise the content panel (including the demo content and a close
    * button).  But when the demo is run as part of the Swing activity board,
    * only the demo content panel is used, the frame itself is never displayed,
    * so we can avoid this step.

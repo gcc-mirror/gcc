@@ -1,4 +1,4 @@
-/* XMLName.java - 
+/* XMLName.java -
    Copyright (C) 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -46,7 +46,7 @@ class XMLName
 {
 
   private static final String XML_URI = "http://www.w3.org/XML/1998/namespace";
-  
+
   final String uri;
   final String localName;
   final String qName;

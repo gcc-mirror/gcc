@@ -84,9 +84,8 @@ public class BadStringOperationException
   public String toString()
   {
     return getClass().getName()
-      + "[op=" + op 
+      + "[op=" + op
       + "]";
   }
 
 }
-

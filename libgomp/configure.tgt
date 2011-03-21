@@ -124,6 +124,11 @@ case "${target}" in
 	config_path="bsd posix"
 	;;
 
+  *-*-freebsd*)
+	# Need to link with -lpthread so libgomp.so is self-contained.
+	XLDFLAGS="${XLDFLAGS} -lpthread"
+	;;
+
   mips-sgi-irix6*)
 	# Need to link with -lpthread so libgomp.so is self-contained.
 	XLDFLAGS="${XLDFLAGS} -lpthread"

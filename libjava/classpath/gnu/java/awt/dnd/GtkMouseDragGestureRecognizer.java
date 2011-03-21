@@ -59,28 +59,28 @@ public class GtkMouseDragGestureRecognizer
   {
     this (ds, c, 0, null);
   }
-  
+
   public GtkMouseDragGestureRecognizer (DragSource ds, Component c, int act)
   {
     this(ds, c, act, null);
   }
-  
+
   public GtkMouseDragGestureRecognizer (DragSource ds, Component c, int act,
                                         DragGestureListener dgl)
   {
     super(ds, c, act, dgl);
   }
-  
+
   public void registerListeners ()
   {
     super.registerListeners();
   }
-  
+
   public void unregisterListeners ()
   {
     super.unregisterListeners();
   }
-  
+
   public void mouseClicked (MouseEvent e)
   {
     // Nothing to do here.
@@ -115,7 +115,7 @@ public class GtkMouseDragGestureRecognizer
     if (!events.isEmpty())
       {
         int act = getDropActionFromEvent(e);
-        
+
         if (act == DnDConstants.ACTION_NONE)
           return;
 
@@ -124,14 +124,14 @@ public class GtkMouseDragGestureRecognizer
         int dx = Math.abs(origin.x - current.x);
         int dy = Math.abs(origin.y - current.y);
         int threshold = DragSource.getDragThreshold();
-        
+
         if (dx > threshold || dy > threshold)
           fireDragGestureRecognized(act, origin);
         else
           appendEvent(e);
       }
   }
-  
+
   public void mouseMoved (MouseEvent e)
   {
     // Nothing to do here.
@@ -142,10 +142,10 @@ public class GtkMouseDragGestureRecognizer
     int modEx = e.getModifiersEx();
     int buttons =  modEx & (MouseEvent.BUTTON1_DOWN_MASK
                | MouseEvent.BUTTON2_DOWN_MASK | MouseEvent.BUTTON3_DOWN_MASK);
-    if (!(buttons == MouseEvent.BUTTON1_DOWN_MASK || 
+    if (!(buttons == MouseEvent.BUTTON1_DOWN_MASK ||
         buttons == MouseEvent.BUTTON2_DOWN_MASK))
       return DnDConstants.ACTION_NONE;
-    
+
     // Convert modifier to a drop action
     int sourceActions = getSourceActions();
     int mod = modEx

@@ -601,7 +601,7 @@ requirements of the license of GCC.
     <listitem><para>Replace "new" with "::new".
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="../ext/lwg-active.html#408">408</link>:
+    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="../ext/lwg-closed.html#408">408</link>:
 	<emphasis>
 	Is vector&lt;reverse_iterator&lt;char*&gt; &gt; forbidden?
 	</emphasis>
@@ -686,7 +686,7 @@ requirements of the license of GCC.
 	input_iterator' value_type.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="../ext/lwg-active.html#539">539</link>:
+    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="../ext/lwg-defects.html#539">539</link>:
 	<emphasis>partial_sum and adjacent_difference should mention
 	    requirements</emphasis>
     </term>
@@ -803,7 +803,7 @@ requirements of the license of GCC.
     <listitem><para>Update / add the signatures.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="../ext/lwg-active.html#865">865</link>:
+    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="../ext/lwg-defects.html#865">865</link>:
 	<emphasis>More algorithms that throw away information</emphasis>
     </term>
     <listitem><para>The traditional HP / SGI return type and value is blessed

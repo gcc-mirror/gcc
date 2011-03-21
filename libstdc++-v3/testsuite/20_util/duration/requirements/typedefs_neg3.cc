@@ -3,7 +3,7 @@
 // { dg-require-cstdint "" }
 // 2008-07-31 Chris Fairles <chris.fairles@gmail.com>
 
-// Copyright (C) 2008, 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -33,5 +33,5 @@ void test01()
   test_type d;
 }
 
-// { dg-error "period must be positive" "" { target *-*-* } 221 }
+// { dg-error "period must be positive" "" { target *-*-* } 229 }
 // { dg-error "instantiated from here" "" { target *-*-* } 33 }

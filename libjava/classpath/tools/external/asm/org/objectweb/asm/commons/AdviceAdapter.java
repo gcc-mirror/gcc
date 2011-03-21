@@ -42,16 +42,16 @@ import org.objectweb.asm.Type;
  * <p>
  * The behavior is like this:
  * <ol>
- * 
+ *
  * <li>as long as the INVOKESPECIAL for the object initialization has not been
  *     reached, every bytecode instruction is dispatched in the ctor code visitor</li>
- * 
+ *
  * <li>when this one is reached, it is only added in the ctor code visitor and
  *     a JP invoke is added</li>
  * <li>after that, only the other code visitor receives the instructions</li>
- * 
+ *
  * </ol>
- * 
+ *
  * @author Eugene Kuleshov
  * @author Eric Bruneton
  */
@@ -61,16 +61,16 @@ public abstract class AdviceAdapter extends GeneratorAdapter implements Opcodes 
 
     protected int methodAccess;
     protected String methodDesc;
-    
+
     private boolean constructor;
     private boolean superInitialized;
     private ArrayList stackFrame;
     private HashMap branches;
 
-    
+
     /**
      * Creates a new {@link AdviceAdapter}.
-     * 
+     *
      * @param mv the method visitor to which this adapter delegates calls.
      * @param access the method's access flags (see {@link Opcodes}).
      * @param name the method's name.
@@ -484,8 +484,8 @@ public abstract class AdviceAdapter extends GeneratorAdapter implements Opcodes 
                     if (type == THIS && !superInitialized) {
                         onMethodEnter();
                         superInitialized = true;
-                        // once super has been initialized it is no longer 
-                        // necessary to keep track of stack state                        
+                        // once super has been initialized it is no longer
+                        // necessary to keep track of stack state
                         constructor = false;
                     }
                     break;
@@ -583,16 +583,16 @@ public abstract class AdviceAdapter extends GeneratorAdapter implements Opcodes 
     private Object peekValue() {
         return stackFrame.get(stackFrame.size()-1);
     }
-    
+
     private void pushValue(Object o) {
         stackFrame.add(o);
     }
-    
+
     /**
-     * Called at the beginning of the method or after super 
+     * Called at the beginning of the method or after super
      * class class call in the constructor.
      * <br><br>
-     * 
+     *
      * <i>Custom code can use or change all the local variables,
      * but should not change state of the stack.</i>
      */
@@ -600,9 +600,9 @@ public abstract class AdviceAdapter extends GeneratorAdapter implements Opcodes 
 
     /**
      * Called before explicit exit from the method using either
-     * return or throw. Top element on the stack contains the 
+     * return or throw. Top element on the stack contains the
      * return value or exception instance. For example:
-     * 
+     *
      * <pre>
      *   public void onMethodExit(int opcode) {
      *     if(opcode==RETURN) {
@@ -625,19 +625,18 @@ public abstract class AdviceAdapter extends GeneratorAdapter implements Opcodes 
      *   public static void onExit(int opcode, Object param) {
      *     ...
      * </pre>
-     * 
+     *
      * <br><br>
-     * 
+     *
      * <i>Custom code can use or change all the local variables,
      * but should not change state of the stack.</i>
-     * 
-     * @param opcode one of the RETURN, IRETURN, FRETURN, 
+     *
+     * @param opcode one of the RETURN, IRETURN, FRETURN,
      *   ARETURN, LRETURN, DRETURN or ATHROW
-     * 
+     *
      */
     protected abstract void onMethodExit(int opcode);
 
     // TODO onException, onMethodCall
-    
-}
 
+}

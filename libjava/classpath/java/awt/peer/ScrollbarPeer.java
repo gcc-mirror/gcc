@@ -43,5 +43,4 @@ public interface ScrollbarPeer extends ComponentPeer
   void setLineIncrement(int inc);
   void setPageIncrement(int inc);
   void setValues(int value, int visible, int min, int max);
-} // interface ScrollbarPeer 
-
+} // interface ScrollbarPeer

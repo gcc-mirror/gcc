@@ -10,7 +10,7 @@
   Class isa;
   int count;
 }
-- (int) test;
+- (int) test;        /* { dg-message "previous declaration" } */
 @property int count; /* { dg-message "originally specified here" } */
 @end
 

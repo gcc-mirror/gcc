@@ -51,7 +51,7 @@ public class gnuEnvironment
    * The stored exception.
    */
   protected Exception exception;
-  
+
   /** {@inheritDoc} */
   public void clear()
   {

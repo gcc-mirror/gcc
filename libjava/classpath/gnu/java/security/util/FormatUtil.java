@@ -53,7 +53,7 @@ public class FormatUtil
 
   /**
    * Returns the fully qualified name of the designated encoding ID.
-   * 
+   *
    * @param formatID the unique identifier of the encoding format.
    * @return the fully qualified name of the designated format. Returns
    *         <code>null</code> if no such encoding format is known.
@@ -83,7 +83,7 @@ public class FormatUtil
   /**
    * Returns the short name of the designated encoding ID. This is used by the
    * JCE Adapters.
-   * 
+   *
    * @param formatID the unique identifier of the encoding format.
    * @return the short name of the designated format. Returns <code>null</code>
    *         if no such encoding format is known.
@@ -112,7 +112,7 @@ public class FormatUtil
 
   /**
    * Returns the identifier of the encoding format given its short name.
-   * 
+   *
    * @param name the case-insensitive canonical short name of an encoding
    *          format.
    * @return the identifier of the designated encoding format, or <code>0</code>
@@ -134,7 +134,7 @@ public class FormatUtil
       result = Registry.X509_ENCODING_ID;
     else if (name.equalsIgnoreCase(Registry.PKCS8_ENCODING_SHORT_NAME))
       result = Registry.PKCS8_ENCODING_ID;
-    
+
     return result;
   }
 }

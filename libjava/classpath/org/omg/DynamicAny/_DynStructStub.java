@@ -151,7 +151,7 @@ public class _DynStructStub
   {
     throw new MARSHAL(_DynAnyStub.NOT_APPLICABLE);
   }
-  
+
   /**
    * The remote call of DynAny methods is not possible.
    *

@@ -38,7 +38,7 @@ exception statement from your version. */
 package gnu.javax.sound.midi.file;
 
 /**
- * ExtendedMidiFileFormat is a package private class that simply 
+ * ExtendedMidiFileFormat is a package private class that simply
  * adds the number of MIDI tracks for the MidiFileFormat class.
  *
  * @author Anthony Green (green@redhat.com)
@@ -47,17 +47,17 @@ class ExtendedMidiFileFormat
     extends javax.sound.midi.MidiFileFormat
 {
   private int ntracks;
-  
+
   /**
    * Get the number of tracks for this MIDI file.
-   * 
+   *
    * @return the number of tracks for this MIDI file
    */
   public int getNumberTracks()
   {
     return ntracks;
   }
-  
+
   /**
    * Create an ExtendedMidiFileFormat object from the given parameters.
    *
@@ -68,7 +68,7 @@ class ExtendedMidiFileFormat
    * @param microseconds the MIDI file length in microseconds
    * @param ntracks the number of tracks
    */
-  public ExtendedMidiFileFormat(int type, float divisionType, int resolution, 
+  public ExtendedMidiFileFormat(int type, float divisionType, int resolution,
                                 int bytes, long microseconds, int ntracks)
   {
     super(type, divisionType, resolution, bytes, microseconds);

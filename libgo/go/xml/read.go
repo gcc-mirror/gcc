@@ -6,6 +6,7 @@ package xml
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"os"
 	"reflect"
@@ -39,6 +40,7 @@ import (
 //		Name	string
 //		Phone	string
 //		Email	[]Email
+//		Groups  []string "group>value"
 //	}
 //
 //	result := Result{Name: "name", Phone: "phone", Email: nil}
@@ -53,6 +55,10 @@ import (
 //			<addr>gre@work.com</addr>
 //		</email>
 //		<name>Grace R. Emlin</name>
+// 		<group>
+// 			<value>Friends</value>
+// 			<value>Squash</value>
+// 		</group>
 //		<address>123 Main Street</address>
 //	</result>
 //
@@ -65,10 +71,13 @@ import (
 //			Email{"home", "gre@example.com"},
 //			Email{"work", "gre@work.com"},
 //		},
+//		[]string{"Friends", "Squash"},
 //	}
 //
 // Note that the field r.Phone has not been modified and
-// that the XML <address> element was discarded.
+// that the XML <address> element was discarded. Also, the field
+// Groups was assigned considering the element path provided in the
+// field tag.
 //
 // Because Unmarshal uses the reflect package, it can only
 // assign to upper case fields.  Unmarshal uses a case-insensitive
@@ -97,6 +106,13 @@ import (
 //      The struct field may have type []byte or string.
 //      If there is no such field, the character data is discarded.
 //
+//   * If the XML element contains a sub-element whose name matches
+//      the prefix of a struct field tag formatted as "a>b>c", unmarshal
+//      will descend into the XML structure looking for elements with the
+//      given names, and will map the innermost elements to that struct field.
+//      A struct field tag starting with ">" is equivalent to one starting
+//      with the field name followed by ">".
+//
 //   * If the XML element contains a sub-element whose name
 //      matches a struct field whose tag is neither "attr" nor "chardata",
 //      Unmarshal maps the sub-element to that struct field.
@@ -104,7 +120,7 @@ import (
 //      maps the sub-element to that struct field.
 //
 // Unmarshal maps an XML element to a string or []byte by saving the
-// concatenation of that elements character data in the string or []byte.
+// concatenation of that element's character data in the string or []byte.
 //
 // Unmarshal maps an XML element to a slice by extending the length
 // of the slice and mapping the element to the newly created value.
@@ -140,6 +156,18 @@ func Unmarshal(r io.Reader, val interface{}) os.Error {
 type UnmarshalError string
 
 func (e UnmarshalError) String() string { return string(e) }
+
+// A TagPathError represents an error in the unmarshalling process
+// caused by the use of field tags with conflicting paths.
+type TagPathError struct {
+	Struct       reflect.Type
+	Field1, Tag1 string
+	Field2, Tag2 string
+}
+
+func (e *TagPathError) String() string {
+	return fmt.Sprintf("%s field %q with tag %q conflicts with field %q with tag %q", e.Struct, e.Field1, e.Tag1, e.Field2, e.Tag2)
+}
 
 // The Parser's Unmarshal method is like xml.Unmarshal
 // except that it can be passed a pointer to the initial start element,
@@ -211,7 +239,9 @@ func (p *Parser) unmarshal(val reflect.Value, start *StartElement) os.Error {
 		saveXMLData  []byte
 		sv           *reflect.StructValue
 		styp         *reflect.StructType
+		fieldPaths   map[string]pathInfo
 	)
+
 	switch v := val.(type) {
 	default:
 		return os.ErrorString("unknown type " + v.Type().String())
@@ -233,7 +263,7 @@ func (p *Parser) unmarshal(val reflect.Value, start *StartElement) os.Error {
 				ncap = 4
 			}
 			new := reflect.MakeSlice(typ, n, ncap)
-			reflect.ArrayCopy(new, v)
+			reflect.Copy(new, v)
 			v.Set(new)
 		}
 		v.SetLen(n + 1)
@@ -330,6 +360,24 @@ func (p *Parser) unmarshal(val reflect.Value, start *StartElement) os.Error {
 						saveXMLIndex = p.savedOffset()
 					}
 				}
+
+			default:
+				if strings.Contains(f.Tag, ">") {
+					if fieldPaths == nil {
+						fieldPaths = make(map[string]pathInfo)
+					}
+					path := strings.ToLower(f.Tag)
+					if strings.HasPrefix(f.Tag, ">") {
+						path = strings.ToLower(f.Name) + path
+					}
+					if strings.HasSuffix(f.Tag, ">") {
+						path = path[:len(path)-1]
+					}
+					err := addFieldPath(sv, fieldPaths, path, f.Index)
+					if err != nil {
+						return err
+					}
+				}
 			}
 		}
 	}
@@ -352,9 +400,19 @@ Loop:
 			// Look up by tag name.
 			if sv != nil {
 				k := fieldName(t.Name.Local)
+
+				if fieldPaths != nil {
+					if _, found := fieldPaths[k]; found {
+						if err := p.unmarshalPaths(sv, fieldPaths, k, &t); err != nil {
+							return err
+						}
+						continue Loop
+					}
+				}
+
 				match := func(s string) bool {
 					// check if the name matches ignoring case
-					if strings.ToLower(s) != strings.ToLower(k) {
+					if strings.ToLower(s) != k {
 						return false
 					}
 					// now check that it's public
@@ -389,12 +447,12 @@ Loop:
 
 		case CharData:
 			if saveData != nil {
-				data = bytes.Add(data, t)
+				data = append(data, t...)
 			}
 
 		case Comment:
 			if saveComment != nil {
-				comment = bytes.Add(comment, t)
+				comment = append(comment, t...)
 			}
 		}
 	}
@@ -468,6 +526,75 @@ Loop:
 	}
 
 	return nil
+}
+
+type pathInfo struct {
+	fieldIdx []int
+	complete bool
+}
+
+// addFieldPath takes an element path such as "a>b>c" and fills the
+// paths map with all paths leading to it ("a", "a>b", and "a>b>c").
+// It is okay for paths to share a common, shorter prefix but not ok
+// for one path to itself be a prefix of another.
+func addFieldPath(sv *reflect.StructValue, paths map[string]pathInfo, path string, fieldIdx []int) os.Error {
+	if info, found := paths[path]; found {
+		return tagError(sv, info.fieldIdx, fieldIdx)
+	}
+	paths[path] = pathInfo{fieldIdx, true}
+	for {
+		i := strings.LastIndex(path, ">")
+		if i < 0 {
+			break
+		}
+		path = path[:i]
+		if info, found := paths[path]; found {
+			if info.complete {
+				return tagError(sv, info.fieldIdx, fieldIdx)
+			}
+		} else {
+			paths[path] = pathInfo{fieldIdx, false}
+		}
+	}
+	return nil
+
+}
+
+func tagError(sv *reflect.StructValue, idx1 []int, idx2 []int) os.Error {
+	t := sv.Type().(*reflect.StructType)
+	f1 := t.FieldByIndex(idx1)
+	f2 := t.FieldByIndex(idx2)
+	return &TagPathError{t, f1.Name, f1.Tag, f2.Name, f2.Tag}
+}
+
+// unmarshalPaths walks down an XML structure looking for
+// wanted paths, and calls unmarshal on them.
+func (p *Parser) unmarshalPaths(sv *reflect.StructValue, paths map[string]pathInfo, path string, start *StartElement) os.Error {
+	if info, _ := paths[path]; info.complete {
+		return p.unmarshal(sv.FieldByIndex(info.fieldIdx), start)
+	}
+	for {
+		tok, err := p.Token()
+		if err != nil {
+			return err
+		}
+		switch t := tok.(type) {
+		case StartElement:
+			k := path + ">" + fieldName(t.Name.Local)
+			if _, found := paths[k]; found {
+				if err := p.unmarshalPaths(sv, paths, k, &t); err != nil {
+					return err
+				}
+				continue
+			}
+			if err := p.Skip(); err != nil {
+				return err
+			}
+		case EndElement:
+			return nil
+		}
+	}
+	panic("unreachable")
 }
 
 // Have already read a start element.

@@ -1,5 +1,5 @@
 /* go-backend.c -- Go frontend interface to gcc backend.
-   Copyright (C) 2010 Free Software Foundation, Inc.
+   Copyright (C) 2010, 2011 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -20,9 +20,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tree.h"
 #include "tm.h"
+#include "rtl.h"
+#include "tree.h"
 #include "tm_p.h"
+#include "target.h"
 
 #include "go-c.h"
 
@@ -53,7 +55,7 @@ go_field_alignment (tree t)
 
 #ifdef ADJUST_FIELD_ALIGN
   {
-    tree field;
+    tree field ATTRIBUTE_UNUSED;
     field = build_decl (UNKNOWN_LOCATION, FIELD_DECL, NULL, t);
     v = ADJUST_FIELD_ALIGN (field, v);
   }
@@ -69,4 +71,23 @@ go_trampoline_info (unsigned int *size, unsigned int *alignment)
 {
   *size = TRAMPOLINE_SIZE;
   *alignment = TRAMPOLINE_ALIGNMENT;
+}
+
+/* This is called by the Go frontend proper if the unsafe package was
+   imported.  When that happens we can not do type-based alias
+   analysis.  */
+
+void
+go_imported_unsafe (void)
+{
+  flag_strict_aliasing = false;
+
+  /* This is a real hack.  init_varasm_once has already grabbed an
+     alias set, which we don't want when we aren't doing strict
+     aliasing.  We reinitialize to make it do it again.  This should
+     be OK in practice since we haven't really done anything yet.  */
+  init_varasm_once ();
+
+  /* Let the backend know that the options have changed.  */
+  targetm.override_options_after_change ();
 }

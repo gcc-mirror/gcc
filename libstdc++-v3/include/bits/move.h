@@ -33,7 +33,9 @@
 #include <bits/c++config.h>
 #include <bits/concept_check.h>
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // Used, in C++03 mode too, by allocators, etc.
   template<typename _Tp>
@@ -44,12 +46,15 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	(&const_cast<char&>(reinterpret_cast<const volatile char&>(__r)));
     }
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
 #include <type_traits> // Brings in std::declval too.
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
   
   /// forward (as per N3143)
   template<typename _Tp>
@@ -91,7 +96,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     addressof(_Tp& __r)
     { return std::__addressof(__r); }
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
 
 #define _GLIBCXX_MOVE(__val) std::move(__val)
 #define _GLIBCXX_FORWARD(_Tp, __val) std::forward<_Tp>(__val)
@@ -100,7 +106,9 @@ _GLIBCXX_END_NAMESPACE
 #define _GLIBCXX_FORWARD(_Tp, __val) (__val)
 #endif
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /**
    *  @brief Swaps two values.
@@ -131,6 +139,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	swap(__a[__n], __b[__n]);
     }
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
 
 #endif /* _MOVE_H */

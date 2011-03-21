@@ -1,4 +1,4 @@
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2009
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2009, 2011
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -44,7 +44,9 @@
 // In macro form:
 // _GLIBCXX_ASM_SYMVER(currentname, oldname, GLIBCXX_3.2)
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // Standard stream objects.
   // NB: Iff <iostream> is included, these definitions become wonky.
@@ -68,9 +70,10 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   fake_wostream wclog;
 #endif
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
 
-namespace __gnu_internal _GLIBCXX_VISIBILITY_ATTR(hidden)
+namespace __gnu_internal _GLIBCXX_VISIBILITY(hidden)
 {
   using namespace std;
   using namespace __gnu_cxx;

@@ -18,11 +18,11 @@ package org.w3c.dom.html2;
  */
 public interface HTMLTitleElement extends HTMLElement {
     /**
-     * The specified title as a string. 
+     * The specified title as a string.
      */
     public String getText();
     /**
-     * The specified title as a string. 
+     * The specified title as a string.
      */
     public void setText(String text);
 

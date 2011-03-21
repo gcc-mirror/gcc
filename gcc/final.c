@@ -1,6 +1,7 @@
 /* Convert RTL to assembler code and output it, for GNU compiler.
    Copyright (C) 1987, 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997,
-   1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+   1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009,
+   2010, 2011
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -253,6 +254,13 @@ init_final (const char *filename ATTRIBUTE_UNUSED)
 void
 default_function_pro_epilogue (FILE *file ATTRIBUTE_UNUSED,
 			       HOST_WIDE_INT size ATTRIBUTE_UNUSED)
+{
+}
+
+void
+default_function_switched_text_sections (FILE *file ATTRIBUTE_UNUSED,
+					 tree decl ATTRIBUTE_UNUSED,
+					 bool new_is_cold ATTRIBUTE_UNUSED)
 {
 }
 
@@ -1485,7 +1493,7 @@ remap_debug_filename (const char *filename)
   size_t name_len;
 
   for (map = debug_prefix_maps; map; map = map->next)
-    if (strncmp (filename, map->old_prefix, map->old_len) == 0)
+    if (filename_ncmp (filename, map->old_prefix, map->old_len) == 0)
       break;
   if (!map)
     return filename;
@@ -1841,6 +1849,9 @@ final_scan_insn (rtx insn, FILE *file, int optimize_p ATTRIBUTE_UNUSED,
 	    debug_hooks->switch_text_section ();
 
 	  switch_to_section (current_function_section ());
+	  targetm.asm_out.function_switched_text_sections (asm_out_file,
+							   current_function_decl,
+							   in_cold_section_p);
 	  break;
 
 	case NOTE_INSN_BASIC_BLOCK:
@@ -1995,6 +2006,7 @@ final_scan_insn (rtx insn, FILE *file, int optimize_p ATTRIBUTE_UNUSED,
 	  break;
 
 	case NOTE_INSN_VAR_LOCATION:
+	case NOTE_INSN_CALL_ARG_LOCATION:
 	  if (!DECL_IGNORED_P (current_function_decl))
 	    debug_hooks->var_location (insn);
 	  break;
@@ -2661,30 +2673,12 @@ final_scan_insn (rtx insn, FILE *file, int optimize_p ATTRIBUTE_UNUSED,
 		if (t)
 		  assemble_external (t);
 	      }
+	    if (!DECL_IGNORED_P (current_function_decl))
+	      debug_hooks->var_location (insn);
 	  }
 
 	/* Output assembler code from the template.  */
 	output_asm_insn (templ, recog_data.operand);
-
-	/* Record point-of-call information for ICF debugging.  */
-	if (flag_enable_icf_debug && CALL_P (insn))
-	  {
-	    rtx x = call_from_call_insn (insn);
-	    x = XEXP (x, 0);
-	    if (x && MEM_P (x))
-	      {
-	        if (GET_CODE (XEXP (x, 0)) == SYMBOL_REF)
-	          {
-		    tree t;
-		    x = XEXP (x, 0);
-		    t = SYMBOL_REF_DECL (x);
-		    if (t)
-		      (*debug_hooks->direct_call) (t);
-	          }
-	        else
-	          (*debug_hooks->virtual_call) (INSN_UID (insn));
-	      }
-	  }
 
 	/* Some target machines need to postscan each insn after
 	   it is output.  */
@@ -4392,7 +4386,11 @@ rest_of_clean_state (void)
 	    if (LABEL_P (insn))
 	      INSN_UID (insn) = CODE_LABEL_NUMBER (insn);
 	    else
-	      INSN_UID (insn) = 0;
+	      {
+		if (NOTE_P (insn))
+		  set_block_for_insn (insn, NULL);
+		INSN_UID (insn) = 0;
+	      }
 	}
     }
 
@@ -4409,11 +4407,11 @@ rest_of_clean_state (void)
       if (final_output
 	  && (!NOTE_P (insn) ||
 	      (NOTE_KIND (insn) != NOTE_INSN_VAR_LOCATION
+	       && NOTE_KIND (insn) != NOTE_INSN_CALL_ARG_LOCATION
 	       && NOTE_KIND (insn) != NOTE_INSN_BLOCK_BEG
 	       && NOTE_KIND (insn) != NOTE_INSN_BLOCK_END
 	       && NOTE_KIND (insn) != NOTE_INSN_CFA_RESTORE_STATE)))
 	print_rtl_single (final_output, insn);
-
     }
 
   if (final_output)

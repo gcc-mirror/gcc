@@ -48,7 +48,7 @@ import java.rmi.UnmarshalException;
 import java.util.WeakHashMap;
 
 public abstract class RemoteObject
-	implements Remote, Serializable {
+        implements Remote, Serializable {
 
 private static final long serialVersionUID = -3215090123894869218l;
 
@@ -57,15 +57,15 @@ protected transient RemoteRef ref;
 private static final WeakHashMap stubs = new WeakHashMap();
 
 protected RemoteObject() {
-	this(null);
+        this(null);
 }
 
 protected RemoteObject(RemoteRef newref) {
-	ref = newref;
+        ref = newref;
 }
 
 public RemoteRef getRef() {
-	return (ref);
+        return (ref);
 }
 
 synchronized static void addStub(Remote obj, Remote stub)
@@ -78,7 +78,7 @@ synchronized static void deleteStub(Remote obj)
   stubs.remove(obj);
 }
 
-  public static Remote toStub(Remote obj) throws NoSuchObjectException 
+  public static Remote toStub(Remote obj) throws NoSuchObjectException
   {
     Remote stub = (Remote)stubs.get(obj);
 
@@ -89,36 +89,36 @@ synchronized static void deleteStub(Remote obj)
   }
 
 public int hashCode() {
-	if (ref == null) {
-		return (0);
-	}
-	else {
-		return (ref.hashCode());
-	}
+        if (ref == null) {
+                return (0);
+        }
+        else {
+                return (ref.hashCode());
+        }
 }
 
 public boolean equals(Object obj) {
-	// We only compare references.
-	return (this == obj);
+        // We only compare references.
+        return (this == obj);
 }
 
 /**
  * Get the string representation of this remote object.
  */
-  public String toString() 
+  public String toString()
   {
     if (ref == null)
       return getClass ().toString ();
     return (ref.toString ());
   }
-  
+
   /**
    * Read the remote object from the input stream. Expects the class name
    * without package first. Then the method creates and assigns the {@link #ref}
    * an instance of this class and calls its .readExternal method. The standard
    * packageless class names are UnicastRef, UnicastRef2, UnicastServerRef,
    * UnicastServerRef2, ActivatableRef or ActivatableServerRef.
-   * 
+   *
    * @param in the stream to read from
    * @throws IOException if the IO exception occurs
    * @throws ClassNotFoundException if the class with the given name is not
@@ -171,7 +171,7 @@ public boolean equals(Object obj) {
    * ActivatableRef or ActivatableServerRef. The empty string with the
    * subsequently following serialized ref instance be written if the
    * ref.getRefClass returns null.
-   * 
+   *
    * @param out the stream to write to
    * @throws IOException if one occurs during writing
    * @throws ClassNotFoundException never in this implementation (specified as

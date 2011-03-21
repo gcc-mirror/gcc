@@ -1,6 +1,6 @@
 /* ArrayTypeCommandSet.java -- class to implement the ArrayType Command Set
    Copyright (C) 2005 Free Software Foundation
- 
+
 This file is part of GNU Classpath.
 
 GNU Classpath is free software; you can redistribute it and/or modify
@@ -52,7 +52,7 @@ import java.nio.ByteBuffer;
 
 /**
  * A class representing the ArrayType Command Set.
- * 
+ *
  * @author Aaron Luchko <aluchko@redhat.com>
  */
 public class ArrayTypeCommandSet

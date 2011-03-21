@@ -179,8 +179,7 @@ run_tree_predictive_commoning (void)
   if (!current_loops)
     return 0;
 
-  tree_predictive_commoning ();
-  return 0;
+  return tree_predictive_commoning ();
 }
 
 static bool
@@ -242,45 +241,6 @@ struct gimple_opt_pass pass_vectorize =
   0,                                    /* properties_destroyed */
   0,					/* todo_flags_start */
   TODO_dump_func | TODO_update_ssa
-    | TODO_ggc_collect			/* todo_flags_finish */
- }
-};
-
-/* Loop nest optimizations.  */
-
-static unsigned int
-tree_linear_transform (void)
-{
-  if (number_of_loops () <= 1)
-    return 0;
-
-  linear_transform_loops ();
-  return 0;
-}
-
-static bool
-gate_tree_linear_transform (void)
-{
-  return flag_tree_loop_linear != 0;
-}
-
-struct gimple_opt_pass pass_linear_transform =
-{
- {
-  GIMPLE_PASS,
-  "ltrans",				/* name */
-  gate_tree_linear_transform,		/* gate */
-  tree_linear_transform,       		/* execute */
-  NULL,					/* sub */
-  NULL,					/* next */
-  0,					/* static_pass_number */
-  TV_TREE_LINEAR_TRANSFORM,  		/* tv_id */
-  PROP_cfg | PROP_ssa,			/* properties_required */
-  0,					/* properties_provided */
-  0,					/* properties_destroyed */
-  0,					/* todo_flags_start */
-  TODO_dump_func
-    | TODO_update_ssa_only_virtuals
     | TODO_ggc_collect			/* todo_flags_finish */
  }
 };
@@ -348,7 +308,7 @@ struct gimple_opt_pass pass_graphite_transforms =
   0,					/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
-  0					/* todo_flags_finish */
+  TODO_dump_func			/* todo_flags_finish */
  }
 };
 
@@ -567,7 +527,8 @@ struct gimple_opt_pass pass_complete_unrolli =
   0,					/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
-  TODO_dump_func
+  TODO_verify_flow
+    | TODO_dump_func
     | TODO_ggc_collect 			/* todo_flags_finish */
  }
 };
@@ -709,6 +670,8 @@ struct gimple_opt_pass pass_tree_loop_done =
   0,					/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
-  TODO_cleanup_cfg | TODO_dump_func	/* todo_flags_finish */
+  TODO_cleanup_cfg
+    | TODO_verify_flow
+    | TODO_dump_func			/* todo_flags_finish */
  }
 };

@@ -72,7 +72,7 @@ func (t *Arith) Error(args *Args, reply *Reply) os.Error {
 func listenTCP() (net.Listener, string) {
 	l, e := net.Listen("tcp", "127.0.0.1:0") // any available address
 	if e != nil {
-		log.Exitf("net.Listen tcp :0: %v", e)
+		log.Fatalf("net.Listen tcp :0: %v", e)
 	}
 	return l, l.Addr().String()
 }
@@ -134,14 +134,25 @@ func testRPC(t *testing.T, addr string) {
 		t.Errorf("Add: expected %d got %d", reply.C, args.A+args.B)
 	}
 
+	// Nonexistent method
+	args = &Args{7, 0}
+	reply = new(Reply)
+	err = client.Call("Arith.BadOperation", args, reply)
+	// expect an error
+	if err == nil {
+		t.Error("BadOperation: expected error")
+	} else if !strings.HasPrefix(err.String(), "rpc: can't find method ") {
+		t.Errorf("BadOperation: expected can't find method error; got %q", err)
+	}
+
+	// Unknown service
 	args = &Args{7, 8}
 	reply = new(Reply)
-	err = client.Call("Arith.Mul", args, reply)
-	if err != nil {
-		t.Errorf("Mul: expected no error but got string %q", err.String())
-	}
-	if reply.C != args.A*args.B {
-		t.Errorf("Mul: expected %d got %d", reply.C, args.A*args.B)
+	err = client.Call("Arith.Unknown", args, reply)
+	if err == nil {
+		t.Error("expected error calling unknown service")
+	} else if strings.Index(err.String(), "method") < 0 {
+		t.Error("expected error about method; got", err)
 	}
 
 	// Out of order.
@@ -178,6 +189,15 @@ func testRPC(t *testing.T, addr string) {
 		t.Error("Div: expected divide by zero error; got", err)
 	}
 
+	// Bad type.
+	reply = new(Reply)
+	err = client.Call("Arith.Add", reply, reply) // args, reply would be the correct thing to use
+	if err == nil {
+		t.Error("expected error calling Arith.Add with wrong arg type")
+	} else if strings.Index(err.String(), "type") < 0 {
+		t.Error("expected error about type; got", err)
+	}
+
 	// Non-struct argument
 	const Val = 12345
 	str := fmt.Sprint(Val)
@@ -200,9 +220,19 @@ func testRPC(t *testing.T, addr string) {
 	if str != expect {
 		t.Errorf("String: expected %s got %s", expect, str)
 	}
+
+	args = &Args{7, 8}
+	reply = new(Reply)
+	err = client.Call("Arith.Mul", args, reply)
+	if err != nil {
+		t.Errorf("Mul: expected no error but got string %q", err.String())
+	}
+	if reply.C != args.A*args.B {
+		t.Errorf("Mul: expected %d got %d", reply.C, args.A*args.B)
+	}
 }
 
-func TestHTTPRPC(t *testing.T) {
+func TestHTTP(t *testing.T) {
 	once.Do(startServer)
 	testHTTPRPC(t, "")
 	newOnce.Do(startNewServer)
@@ -230,65 +260,6 @@ func testHTTPRPC(t *testing.T, path string) {
 	}
 	if reply.C != args.A+args.B {
 		t.Errorf("Add: expected %d got %d", reply.C, args.A+args.B)
-	}
-}
-
-func TestCheckUnknownService(t *testing.T) {
-	once.Do(startServer)
-
-	conn, err := net.Dial("tcp", "", serverAddr)
-	if err != nil {
-		t.Fatal("dialing:", err)
-	}
-
-	client := NewClient(conn)
-
-	args := &Args{7, 8}
-	reply := new(Reply)
-	err = client.Call("Unknown.Add", args, reply)
-	if err == nil {
-		t.Error("expected error calling unknown service")
-	} else if strings.Index(err.String(), "service") < 0 {
-		t.Error("expected error about service; got", err)
-	}
-}
-
-func TestCheckUnknownMethod(t *testing.T) {
-	once.Do(startServer)
-
-	conn, err := net.Dial("tcp", "", serverAddr)
-	if err != nil {
-		t.Fatal("dialing:", err)
-	}
-
-	client := NewClient(conn)
-
-	args := &Args{7, 8}
-	reply := new(Reply)
-	err = client.Call("Arith.Unknown", args, reply)
-	if err == nil {
-		t.Error("expected error calling unknown service")
-	} else if strings.Index(err.String(), "method") < 0 {
-		t.Error("expected error about method; got", err)
-	}
-}
-
-func TestCheckBadType(t *testing.T) {
-	once.Do(startServer)
-
-	conn, err := net.Dial("tcp", "", serverAddr)
-	if err != nil {
-		t.Fatal("dialing:", err)
-	}
-
-	client := NewClient(conn)
-
-	reply := new(Reply)
-	err = client.Call("Arith.Add", reply, reply) // args, reply would be the correct thing to use
-	if err == nil {
-		t.Error("expected error calling Arith.Add with wrong arg type")
-	} else if strings.Index(err.String(), "type") < 0 {
-		t.Error("expected error about type; got", err)
 	}
 }
 
@@ -364,14 +335,12 @@ func TestSendDeadlock(t *testing.T) {
 		testSendDeadlock(client)
 		done <- true
 	}()
-	for i := 0; i < 50; i++ {
-		time.Sleep(100 * 1e6)
-		_, ok := <-done
-		if ok {
-			return
-		}
+	select {
+	case <-done:
+		return
+	case <-time.After(5e9):
+		t.Fatal("deadlock")
 	}
-	t.Fatal("deadlock")
 }
 
 func testSendDeadlock(client *Client) {

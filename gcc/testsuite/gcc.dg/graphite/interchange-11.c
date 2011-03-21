@@ -13,6 +13,7 @@ foo (int N, int *res)
   int i, j;
   double sum = 0.0;
 
+  /* These two loops should be interchanged.  */
   for (i = 0; i < 1335; i++)
     {
       for (j = 0; j < 1335; j++)
@@ -45,5 +46,5 @@ main (void)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "will be interchanged" 1 "graphite" { xfail *-*-* } } } */
+/* { dg-final { scan-tree-dump-times "will be interchanged" 1 "graphite" } } */
 /* { dg-final { cleanup-tree-dump "graphite" } } */

@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -16,7 +16,7 @@ General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with GNU Classpath; see the file COPYING.  If not, write to the
 Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-02111-1307 USA. 
+02111-1307 USA.
 
 Linking this library statically or dynamically with other modules is
 making a combined work based on this library.  Thus, the terms and
@@ -42,7 +42,7 @@ exception statement from your version. */
  * NOTE: Common java naming structure is assumed
  *       Capitalize the first letter that appears in a class or interface name
  *       Use lowercase for the first letter in a method or variable name
- *       Use only uppercase letters when naming constants 
+ *       Use only uppercase letters when naming constants
  *
  * @version     0.9, March 2003
  * @author      Shayne Steele
@@ -87,7 +87,7 @@ public class Java2xhtml
     // call the HTMLifier on good input
     public static void main(String args[])
     {
-        // parse the invokation arguments 
+        // parse the invokation arguments
         if (args.length < 1 || args.length > 3) // invoked program incorrectly
         {
             System.out.println("Java2xhtml Version 0.9 (C) 2005 Free Software Foundation");
@@ -140,15 +140,15 @@ public class Java2xhtml
                                " (default false)");
             System.out.println("        hasLineNumbers=boolean" +
                                " (default false)");
-            System.out.println("        hasLineModulusDrawnLines=boolean" + 
+            System.out.println("        hasLineModulusDrawnLines=boolean" +
                                " (default false)");
             System.out.println("        hasLineModulusCodeBlocks=boolean" +
                                " (default false)");
-            System.out.println("        hasFooter=boolean" + 
+            System.out.println("        hasFooter=boolean" +
                                " (default false)");
-            System.out.println("        hasFooterIcons=boolean" + 
+            System.out.println("        hasFooterIcons=boolean" +
                                " (default false)");
-            System.out.println("        hasFooterDate=boolean" + 
+            System.out.println("        hasFooterDate=boolean" +
                                " (default true)");
             System.out.println("    NOTE: filename must end with '.prop'");
             System.out.println("    Default [options file] is " +
@@ -170,7 +170,7 @@ public class Java2xhtml
                                "given options file (options.prop)):");
             System.out.println("    java  Java2xhtml  C:\\HOME options.prop");
         }
-        else  
+        else
         {
             // invoked program correctly, now get command line arguments
             // get the source file name
@@ -178,12 +178,12 @@ public class Java2xhtml
             sourceName = args[0];
             // make sure that the source file exist and if so HTMLify it
             File sourceFilePath = new File(sourceName);
-            if (sourceFilePath.exists())  
+            if (sourceFilePath.exists())
             {
                 // good pathname so HTMLify it
                 // get the default html options file name
                 String propertiesFileName = "options.prop";
-                // create a unique default html file name, 
+                // create a unique default html file name,
                 // bubba.java -> bubba_java.html
                 String htmlFileName = sourceName.replace('.', '_') + ".html";
                 if (args.length == 2 || args.length == 3)
@@ -199,7 +199,7 @@ public class Java2xhtml
                         htmlFileName = args[1];
                     }
                 }
-                if (args.length == 3) 
+                if (args.length == 3)
                 {
                     if (args[2].endsWith(".prop"))
                     {
@@ -212,7 +212,7 @@ public class Java2xhtml
                         htmlFileName = args[2];
                     }
                 }
-                new Java2xhtml(propertiesFileName, sourceFilePath, 
+                new Java2xhtml(propertiesFileName, sourceFilePath,
                                htmlFileName);
             }
             else // source file does not exist, print message and exit normally
@@ -221,10 +221,10 @@ public class Java2xhtml
                                    " file or directory");
                 System.out.println("Run Java2xHtml without parameters for " +
                                    "help");
-            }                 
+            }
         }
     }
-    
+
     // collect various sets of keywords
     static Collection keywordCollection;
     static Collection primitiveTypeCollection;
@@ -250,21 +250,21 @@ public class Java2xhtml
     boolean hasExternalStyleSheet = true;
     String externalStyleSheetName = "style.css";
 
-    static 
+    static
     {
-        // collection type is Hashset for unique elements and fast retieval 
+        // collection type is Hashset for unique elements and fast retieval
         String keywordArray[] =
             {
-                "abstract", "default",      "if",           "private",      
+                "abstract", "default",      "if",           "private",
                 "do",       "implements",   "protected",    "throws",
                 "break",    "import",       "public",       "transient",
                 "else",     "instanceof",   "return",       "try",
                 "case",     "extends",      "throw",        "static",
-                "catch",    "final",        "interface",    "while",       
+                "catch",    "final",        "interface",    "while",
                 "volatile", "finally",      "super",        "synchronized",
                 "class",    "native",       "switch",       "package",
                 "const",    "for",          "new",          "goto",
-                "continue", "this",         "assert",       "strictfp"       
+                "continue", "this",         "assert",       "strictfp"
             };
         keywordCollection = new HashSet(Arrays.asList(keywordArray));
         String primitiveTypeArray[] =
@@ -272,30 +272,30 @@ public class Java2xhtml
                 "boolean",  "char",     "byte",         "short",        "int",
                 "long",     "float",    "double",       "void"
             };
-        primitiveTypeCollection = 
+        primitiveTypeCollection =
             new HashSet(Arrays.asList(primitiveTypeArray));
         String primitiveLiteralArray[]=
             {
                 "false", "null", "true"
             };
-        primitiveLiteralCollection = 
+        primitiveLiteralCollection =
             new HashSet(Arrays.asList(primitiveLiteralArray));
         String javadocTagArray[]=
             {
-                "see", "author", "version", "param", "return", "exception", 
-                "deprecated", "throws", "link", "since", "serial", 
+                "see", "author", "version", "param", "return", "exception",
+                "deprecated", "throws", "link", "since", "serial",
                 "serialField","serialData", "beaninfo"
             };
         javadocTagCollection = new HashSet(Arrays.asList(javadocTagArray));
     }
-    
+
     public Java2xhtml()
     {
     }
 
-    // create the various keyword collections 
+    // create the various keyword collections
     // parse the html options file
-    Java2xhtml(String propertiesFileName, File sourceFilePath, 
+    Java2xhtml(String propertiesFileName, File sourceFilePath,
                String htmlFileName)
     {
         // get html properties (use defaults if necessary)
@@ -303,23 +303,23 @@ public class Java2xhtml
         if (propertiesFilePath.exists())
         {
             // html properies file exist try parsing it
-            try 
+            try
             {
-                InputStream propertiesFile = 
+                InputStream propertiesFile =
                     new FileInputStream(propertiesFileName);
                 Properties htmlProperties = new Properties();
                 htmlProperties.load(propertiesFile);
                 propertiesFile.close();
                 setProperties(htmlProperties);
             }
-            catch (IOException exception) 
+            catch (IOException exception)
             {
-                System.out.println(exception);  
+                System.out.println(exception);
             }
         }
         if (sourceFilePath.isFile())
         {
-            // process the file 
+            // process the file
             processFile(sourceFilePath, htmlFileName);
         }
         else if (sourceFilePath.isDirectory())
@@ -330,8 +330,8 @@ public class Java2xhtml
             {
                 if (((sourceFilePathArray[i]).getName()).endsWith(".java"))
                 {
-                    // process each file that ends in .java 
-                    // create a unique default html file name, 
+                    // process each file that ends in .java
+                    // create a unique default html file name,
                     // bubba.java -> bubba_java.html
                     htmlFileName = ((sourceFilePathArray[i]).getName()).replace(
                         '.', '_') + ".html";
@@ -344,7 +344,7 @@ public class Java2xhtml
     public void setProperties(Properties htmlProperties)
     {
         hasLegend
-            = Boolean.valueOf(htmlProperties.getProperty("hasLegend", 
+            = Boolean.valueOf(htmlProperties.getProperty("hasLegend",
                                                          "false")).booleanValue();
         extraIndentation
             = Integer.parseInt(htmlProperties.getProperty("extraIndentation", "0"));
@@ -391,22 +391,22 @@ public class Java2xhtml
         externalStyleSheetName
             = htmlProperties.getProperty("externalStyleSheetName", "style.css");
     }
-    
-    
+
+
     // read the file and put it into a stringbuffer
     void processFile(File sourceFilePath, String htmlFileName)
     {
-        // open the file, copy it to a Stringbuffer , process into an 
+        // open the file, copy it to a Stringbuffer , process into an
         // HTMLified String and convert result into an HTML file
         try
         {
-            BufferedReader sourceReader = 
+            BufferedReader sourceReader =
                 new BufferedReader(new FileReader(sourceFilePath));
             StringBuffer bufferIn = new StringBuffer();
             int readInInt = 0;
             char presentChar = 0;
             // copy file into a Stringbuffer
-            while (readInInt != -1) // -1 value means end of stream/file 
+            while (readInInt != -1) // -1 value means end of stream/file
             {
                 // put the file into a Stringbuffer
                 readInInt= sourceReader.read();
@@ -414,21 +414,21 @@ public class Java2xhtml
                 bufferIn.append(presentChar);
             }
             sourceReader.close();
-            BufferedWriter tempBufferedWriter = 
+            BufferedWriter tempBufferedWriter =
                 new BufferedWriter(new FileWriter(htmlFileName));
-            tempBufferedWriter.write(makeHTML(bufferIn, 
+            tempBufferedWriter.write(makeHTML(bufferIn,
                                               sourceFilePath.getName()));
-            tempBufferedWriter.close();     
-            System.out.println(sourceFilePath.getName() + " --> " + 
+            tempBufferedWriter.close();
+            System.out.println(sourceFilePath.getName() + " --> " +
                                htmlFileName);
         }
-        catch (IOException exception) 
+        catch (IOException exception)
         {
-            System.out.println(exception);  
+            System.out.println(exception);
         }
     }
-    
-    // constant 'States' java source code can be in 
+
+    // constant 'States' java source code can be in
     public final static class State
     {
         public final static State TEXT = new State();
@@ -440,18 +440,18 @@ public class Java2xhtml
         public final static State SINGLE_QUOTE = new State();
         public final static State TRADITIONAL_COMMENT = new State();
         public final static State LINE_COMMENT = new State();
-        
-        // empty constructor 
+
+        // empty constructor
         private State()
         {
             // empty body
         }
     }
-    
-    // Convert java source code StringBufffer into colorized (and tab spaced) 
+
+    // Convert java source code StringBufffer into colorized (and tab spaced)
     // HTML String .
     // Assumes that Java naming convention is used
-    // Uses a very basic state machine design.   
+    // Uses a very basic state machine design.
     public String makeHTML(StringBuffer bufferIn, String sourceFileName)
     {
         int codeLineNumber = 0;
@@ -467,7 +467,7 @@ public class Java2xhtml
         StringBuffer bufferOut = new StringBuffer(8192);
         if (!isCodeSnippet)
         {
-            bufferOut.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n"); 
+            bufferOut.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n");
             if (isXHTML_1_1)
             {
                 bufferOut.append("<!DOCTYPE html PUBLIC " +
@@ -517,7 +517,7 @@ public class Java2xhtml
                     bufferOut.append("     {\r\n");
                     bufferOut.append("       font-weight: bold;\r\n");
                     bufferOut.append("       color: #000000;\r\n");
-                    bufferOut.append("       background-color: "); 
+                    bufferOut.append("       background-color: ");
                     bufferOut.append("transparent;\r\n");
                     bufferOut.append("     }\r\n");
                     if (hasLineModulusDrawnLines)
@@ -541,7 +541,7 @@ public class Java2xhtml
                         bufferOut.append("     {\r\n");
                         bufferOut.append("       color: #000000;\r\n");
                         bufferOut.append("       background-color: ");
-                        bufferOut.append("#CCCCCC;\r\n"); 
+                        bufferOut.append("#CCCCCC;\r\n");
                         bufferOut.append("     }\r\n");
                     }
                 }
@@ -552,12 +552,12 @@ public class Java2xhtml
                 bufferOut.append("     }\r\n");
                 bufferOut.append("    ." + methodStyle + "\r\n");
                 bufferOut.append("     {\r\n");
-                bufferOut.append("       color: #0000FF;\r\n"); 
+                bufferOut.append("       color: #0000FF;\r\n");
                 bufferOut.append("       background-color: transparent;\r\n");
                 bufferOut.append("     }\r\n");
                 bufferOut.append("    ." + variableStyle + "\r\n");
                 bufferOut.append("     {\r\n");
-                bufferOut.append("       color: #CC9933;\r\n"); 
+                bufferOut.append("       color: #CC9933;\r\n");
                 bufferOut.append("       background-color: transparent;\r\n");
                 bufferOut.append("     }\r\n");
                 bufferOut.append("    ." + singleLineCommentStyle + "\r\n");
@@ -567,7 +567,7 @@ public class Java2xhtml
                 bufferOut.append("     }\r\n");
                 bufferOut.append("    ." + traditionalCommentStyle + "\r\n");
                 bufferOut.append("     {\r\n");
-                bufferOut.append("       color: #FF0000;\r\n"); 
+                bufferOut.append("       color: #FF0000;\r\n");
                 bufferOut.append("       background-color: transparent;\r\n");
                 bufferOut.append("     }\r\n");
                 bufferOut.append("    ." + javadocCommentStyle + "\r\n");
@@ -600,7 +600,7 @@ public class Java2xhtml
                 bufferOut.append("       color: #009966;\r\n");
                 bufferOut.append("       background-color: transparent;\r\n");
                 bufferOut.append("     }\r\n");
-                bufferOut.append("    ." + constructorStyle + "\r\n"); 
+                bufferOut.append("    ." + constructorStyle + "\r\n");
                 bufferOut.append("     {\r\n");
                 bufferOut.append("       color: #3300CC;\r\n");
                 bufferOut.append("       background-color: transparent;\r\n");
@@ -622,27 +622,27 @@ public class Java2xhtml
                 bufferOut.append("       background-color: transparent;\r\n");
                 bufferOut.append("       font-style: oblique;\r\n");
                 bufferOut.append("     }\r\n");
-                bufferOut.append("    ." + numericLiteralStyle + "\r\n"); 
+                bufferOut.append("    ." + numericLiteralStyle + "\r\n");
                 bufferOut.append("     {\r\n");
-                bufferOut.append("       color: #333300;\r\n"); 
+                bufferOut.append("       color: #333300;\r\n");
                 bufferOut.append("       background-color: transparent;\r\n");
                 bufferOut.append("     }\r\n");
                 bufferOut.append("    ." + primitiveLiteralStyle + "\r\n");
                 bufferOut.append("     {\r\n");
-                bufferOut.append("       color: #006600;\r\n"); 
+                bufferOut.append("       color: #006600;\r\n");
                 bufferOut.append("       background-color: transparent;\r\n");
                 bufferOut.append("     }\r\n");
                 if (hasFooterIcons)
                 {
                     bufferOut.append("    ." + iconStyle + "\r\n");
                     bufferOut.append("     {\r\n");
-                    bufferOut.append("       border-style: none;\r\n"); 
+                    bufferOut.append("       border-style: none;\r\n");
                     bufferOut.append("     }\r\n");
                 }
                 if (hasTitle)
                 {
                     bufferOut.append("    #title\r\n");
-                    bufferOut.append("     {\r\n"); 
+                    bufferOut.append("     {\r\n");
                     bufferOut.append("       text-align: center;\r\n");
                     bufferOut.append("       font-size: xx-large;\r\n");
                     bufferOut.append("     }\r\n");
@@ -650,20 +650,20 @@ public class Java2xhtml
                 if (hasLegend)
                 {
                     bufferOut.append("    #legendTitle\r\n");
-                    bufferOut.append("     {\r\n"); 
+                    bufferOut.append("     {\r\n");
                     bufferOut.append("       text-align: center;\r\n");
                     bufferOut.append("       font-size: x-large;\r\n");
                     bufferOut.append("     }\r\n");
                     bufferOut.append("    #legend\r\n");
-                    bufferOut.append("     {\r\n"); 
+                    bufferOut.append("     {\r\n");
                     bufferOut.append("       font-family: monospace;\r\n");
                     bufferOut.append("       font-size: large;\r\n");
                     bufferOut.append("     }\r\n");
-                }                
+                }
                 if (hasFooter)
                 {
                     bufferOut.append("    #footer\r\n");
-                    bufferOut.append("     {\r\n"); 
+                    bufferOut.append("     {\r\n");
                     bufferOut.append("       font-size: xx-small;\r\n");
                     bufferOut.append("     }\r\n");
                 }
@@ -674,7 +674,7 @@ public class Java2xhtml
             if (hasExternalStyleSheet)
             {
                 bufferOut.append("  <link rel=\"stylesheet\" " +
-                                 "type=\"text/css\" href=\"" + 
+                                 "type=\"text/css\" href=\"" +
                                  externalStyleSheetName + "\" />\r\n");
             }
             bufferOut.append(" </head>\r\n");
@@ -754,7 +754,7 @@ public class Java2xhtml
                 // add line numbers if desired
                 // line numbers are 1 - 9999 then rotate line numbers
                 codeLineNumber = (++codeLineNumber)%10000;
-                if ((lineModulus > 0) && hasLineModulusCodeBlocks && 
+                if ((lineModulus > 0) && hasLineModulusCodeBlocks &&
                     (codeLineNumber%lineModulus == 1))
                 {
                     if (isNewBlock)
@@ -762,8 +762,8 @@ public class Java2xhtml
                         if ((State.TRADITIONAL_COMMENT == presentState) ||
                             (State.JAVADOC == presentState))
                         {
-                                bufferOut.insert((bufferOut.length() - 
-                                                  ("\r\n").length()), 
+                                bufferOut.insert((bufferOut.length() -
+                                                  ("\r\n").length()),
                                                  "</span>");
                         }
                         bufferOut.append("</pre>\r\n");
@@ -817,7 +817,7 @@ public class Java2xhtml
                                      bufferIn.charAt(presentIndex))) ||
                                     (bufferIn.charAt(presentIndex) == '\t')))
                             {
-                                // for each tab, insert tabSize spaces 
+                                // for each tab, insert tabSize spaces
                                 if (bufferIn.charAt(presentIndex) == '\t')
                                 {
                                     for (int i = 0; i < tabSize; i++)
@@ -842,7 +842,7 @@ public class Java2xhtml
                                 }
                                 presentIndex++;
                             }
-                            // check if line is empty 
+                            // check if line is empty
                             // (no printable characters on line)
                             if ((presentIndex == (bufferIn.length() - 1)) ||
                                 (Character.isWhitespace(bufferIn.charAt(
@@ -853,18 +853,18 @@ public class Java2xhtml
                             // draw the line
                             if (spaceLength > 1)
                             {
-                                bufferOut.insert((bufferOut.length() - 
+                                bufferOut.insert((bufferOut.length() -
                                                   spaceLength), "<span class=" +
                                                  "\"modulusLineStyle\">");
-                                bufferOut.insert((bufferOut.length() - 
+                                bufferOut.insert((bufferOut.length() -
                                                   (" ").length()), "</span>");
                             }
                             spaceLength = 0;
                         }
                     }
-                    else 
+                    else
                     {
-                        // line numbers are in lineNumberColor 
+                        // line numbers are in lineNumberColor
                         bufferOut.append("<span class=\"" + lineNumberStyle + "\">");
                         bufferOut.append(codeLineNumber);
                         bufferOut.append(":</span> ");
@@ -883,27 +883,27 @@ public class Java2xhtml
                 bufferOut.append(presentChar);
                 identifierLength++;
                 continue; // keep adding characters until identifier is done
-            } 
+            }
             if (identifierLength > 0)
             {
                 // identifier
-                qualifiedIdentifierLength = 
+                qualifiedIdentifierLength =
                     qualifiedIdentifierLength + identifierLength;
                 if (bufferIn.charAt(presentIndex) == '.')
                 {
-                    // qualified identifier 
+                    // qualified identifier
                     bufferOut.append(presentChar);
                     qualifiedIdentifierLength++;
                     identifierLength = 0;
                     continue;  // keep adding characters to qualified identifier
                 }
-                String identifier = 
-                    bufferOut.substring(bufferOut.length() - 
+                String identifier =
+                    bufferOut.substring(bufferOut.length() -
                                         identifierLength);
                 if ((State.PARAM_VARIABLE == presentState))
                 {
                     // any identifier after a param in a javadoc is assumed to
-                    // be a variable 
+                    // be a variable
                     bufferOut.insert(bufferOut.length() -
                                      qualifiedIdentifierLength,
                                      "<span class=\"" + variableStyle + "\">");
@@ -912,9 +912,9 @@ public class Java2xhtml
                 }
                 else if (State.JAVADOC == presentState)
                 {
-                    // in javadoc state 
+                    // in javadoc state
                     if ((javadocTagCollection.contains(identifier)) &&
-                        (bufferIn.charAt(presentIndex - 
+                        (bufferIn.charAt(presentIndex -
                                          (identifierLength + 1)) == '@'))
                     {
                         // identifier is a javadocTag
@@ -924,7 +924,7 @@ public class Java2xhtml
                         if (("param").equals(identifier))
                         {
                             // any identifier after a param is assumed to
-                            // be a variable, get into a state to do this 
+                            // be a variable, get into a state to do this
                             presentState = State.PARAM_VARIABLE;
                         }
                     }
@@ -932,7 +932,7 @@ public class Java2xhtml
                 else if (State.IMPORT_NAME == presentState)
                 {
                     // import identifier
-                    bufferOut.insert(bufferOut.length() - 
+                    bufferOut.insert(bufferOut.length() -
                                      qualifiedIdentifierLength,
                                      "<span class=\"" + importNameStyle + "\">");
                     bufferOut.append("</span>");
@@ -941,7 +941,7 @@ public class Java2xhtml
                 else if (State.PACKAGE_NAME == presentState)
                 {
                     // package identifier
-                    bufferOut.insert(bufferOut.length() - 
+                    bufferOut.insert(bufferOut.length() -
                                      qualifiedIdentifierLength,
                                      "<span class=\"" + packageNameStyle + "\">");
                     bufferOut.append("</span>");
@@ -951,27 +951,27 @@ public class Java2xhtml
                 {
                     if (keywordCollection.contains(identifier))
                     {
-                        // identifier is a keyword 
-                        bufferOut.insert(bufferOut.length() - 
+                        // identifier is a keyword
+                        bufferOut.insert(bufferOut.length() -
                                          qualifiedIdentifierLength,
                                          "<span class=\"" + keywordStyle + "\">");
                         bufferOut.append("</span>");
                         if (("import").equals(identifier))
                         {
-                            // anything after an import in text mode must be 
+                            // anything after an import in text mode must be
                             // an import name, so enter state to process this
                             presentState = State.IMPORT_NAME;
                         }
                         else if (("package").equals(identifier))
                         {
-                            // anything after an package in text mode must be 
+                            // anything after an package in text mode must be
                             // an package name, so enter state to process this
                             presentState = State.PACKAGE_NAME;
                         }
                     }
                     else if (primitiveTypeCollection.contains(identifier))
                     {
-                        // identifier is a primitive type  
+                        // identifier is a primitive type
                         bufferOut.insert(bufferOut.length() -
                                          qualifiedIdentifierLength,
                                          "<span class=\"" + primitiveTypeStyle + "\">");
@@ -982,14 +982,14 @@ public class Java2xhtml
                     {
                         // identifier is a constant
                         bufferOut.insert(bufferOut.length() -
-                                         qualifiedIdentifierLength, 
+                                         qualifiedIdentifierLength,
                                          "<span class=\"" + constantStyle + "\">");
                         bufferOut.append("</span>");
                     }
                     else if (Character.isUpperCase(identifier.charAt(0)))
                     {
                         // identifier is a constructor or non-primitive type
-                        // eat white space 
+                        // eat white space
                         saveIndex = presentIndex;
                         while (Character.isWhitespace(
                                    bufferIn.charAt(saveIndex++)))
@@ -1006,10 +1006,10 @@ public class Java2xhtml
                         }
                         else
                         {
-                            // identifier is a non-primitive type 
+                            // identifier is a non-primitive type
                             bufferOut.insert(bufferOut.length() -
                                              qualifiedIdentifierLength,
-                                             "<span class=" + 
+                                             "<span class=" +
                                              "\"" + nonPrimitiveTypeStyle + "\">");
                             bufferOut.append("</span>");
                         }
@@ -1029,33 +1029,33 @@ public class Java2xhtml
                         // identifier is a method
                         if (bufferIn.charAt(saveIndex) == '(')
                         {
-                            bufferOut.insert(bufferOut.length() - 
-                                             qualifiedIdentifierLength, 
+                            bufferOut.insert(bufferOut.length() -
+                                             qualifiedIdentifierLength,
                                              "<span class=\"" + methodStyle + "\">");
-                            bufferOut.append("</span>");                 
+                            bufferOut.append("</span>");
                         }
                         else if (bufferIn.charAt(saveIndex) == ',')
                         {
                             // comma seperated variables
-                            bufferOut.insert(bufferOut.length() - 
-                                             qualifiedIdentifierLength, 
+                            bufferOut.insert(bufferOut.length() -
+                                             qualifiedIdentifierLength,
                                              "<span class=\"" + variableStyle + "\">");
-                            bufferOut.append("</span>"); 
+                            bufferOut.append("</span>");
                         }
                         else
                         {
                             // a variable
                             // take care of cases such as array[index].variable
-                            if (bufferIn.charAt(presentIndex - 
-                                                (qualifiedIdentifierLength 
+                            if (bufferIn.charAt(presentIndex -
+                                                (qualifiedIdentifierLength
                                                  + 1)) == '.')
                             {
                                 qualifiedIdentifierLength++;
                             }
-                            bufferOut.insert(bufferOut.length() - 
-                                             qualifiedIdentifierLength, 
+                            bufferOut.insert(bufferOut.length() -
+                                             qualifiedIdentifierLength,
                                              "<span class=\"" + variableStyle + "\">");
-                            bufferOut.append("</span>");                        
+                            bufferOut.append("</span>");
                         }
                     }
                     else
@@ -1069,17 +1069,17 @@ public class Java2xhtml
                             bufferOut.append("</span>");
                         }
                         // a numeric literal
-                        else 
+                        else
                         {
-                            if (((presentIndex - 
-                                  (qualifiedIdentifierLength + 1)) > 0) && 
-                                (bufferIn.charAt(presentIndex - 
+                            if (((presentIndex -
+                                  (qualifiedIdentifierLength + 1)) > 0) &&
+                                (bufferIn.charAt(presentIndex -
                                      (qualifiedIdentifierLength + 1)) == '.'))
                             {
                                 qualifiedIdentifierLength++;
                             }
-                            bufferOut.insert(bufferOut.length() - 
-                                             qualifiedIdentifierLength, 
+                            bufferOut.insert(bufferOut.length() -
+                                             qualifiedIdentifierLength,
                                              "<span class=" +
                                              "\"" + numericLiteralStyle + "\">");
                             bufferOut.append("</span>");
@@ -1089,7 +1089,7 @@ public class Java2xhtml
                 qualifiedIdentifierLength = 0;
                 identifierLength = 0;
             }
-            // process characters NOT in identifiers 
+            // process characters NOT in identifiers
             switch (presentChar)
             {
                 case '&': //ampersand
@@ -1108,7 +1108,7 @@ public class Java2xhtml
                         presentState = State.DOUBLE_QUOTE;
                         bufferOut.insert(bufferOut.length()-("&quot;").length(),
                                          "<span class=\"" + doubleQuoteStyle + "\">");
-                    }   
+                    }
                     else if (State.DOUBLE_QUOTE == presentState)
                     {
                         presentState = State.TEXT;
@@ -1120,7 +1120,7 @@ public class Java2xhtml
                     if (State.TEXT == presentState)
                     {
                         presentState = State.SINGLE_QUOTE;
-                        bufferOut.insert(bufferOut.length() - ("\'").length(), 
+                        bufferOut.insert(bufferOut.length() - ("\'").length(),
                                          "<span class=\"" + singleQuoteStyle + "\">");
                     }
                     else if (State.SINGLE_QUOTE == presentState)
@@ -1131,37 +1131,37 @@ public class Java2xhtml
                     break;
                 case '\\': // backslash
                     bufferOut.append("\\");
-                    if ((State.DOUBLE_QUOTE == presentState) || 
+                    if ((State.DOUBLE_QUOTE == presentState) ||
                          (State.SINGLE_QUOTE == presentState))
                     {
-                        // treat as a character escape sequence 
+                        // treat as a character escape sequence
                         bufferOut.append(bufferIn.charAt(++presentIndex));
                     }
                     break;
                 case '\t': // tab
                     // replace tabs with tabsize number of spaces
-                    for (int i = 0; i < tabSize; i++) 
+                    for (int i = 0; i < tabSize; i++)
                     {
                         bufferOut.append(' ');
                     }
                     break;
                 case '*': // star
                     bufferOut.append("*");
-                    if ((State.TEXT ==  presentState) && 
+                    if ((State.TEXT ==  presentState) &&
                         (bufferIn.charAt(presentIndex - 1) == '/'))
                     {
                         if (((bufferIn.length() - 1) > presentIndex)  &&
                             (bufferIn.charAt(presentIndex + 1) == '*'))
                         {
                             presentState = State.JAVADOC;
-                            bufferOut.insert(bufferOut.length() - 
+                            bufferOut.insert(bufferOut.length() -
                                              ("/*").length(), "<span class=" +
                                              "\"" + javadocCommentStyle + "\">");
                         }
                         else
-                        {                        
+                        {
                             presentState = State.TRADITIONAL_COMMENT;
-                            bufferOut.insert(bufferOut.length() - 
+                            bufferOut.insert(bufferOut.length() -
                                              ("/*").length(), "<span class=" +
                                              "\"" + traditionalCommentStyle + "\">");
                         }
@@ -1169,31 +1169,31 @@ public class Java2xhtml
                     break;
                 case '/': // foward slash
                     bufferOut.append("/");
-                    if (((State.TRADITIONAL_COMMENT == presentState) || 
+                    if (((State.TRADITIONAL_COMMENT == presentState) ||
                          (State.JAVADOC == presentState)) &&
                         (bufferIn.charAt(presentIndex - 1) == '*'))
                     {
                         bufferOut.append("</span>");
                         presentState = State.TEXT;
                     }
-                    if ((State.TEXT == presentState) && 
+                    if ((State.TEXT == presentState) &&
                         (presentIndex > 0)  &&
                         (bufferIn.charAt(presentIndex - 1) == '/'))
-                    {   
-                        bufferOut.insert(bufferOut.length() - ("//").length(), 
-                                         "<span class=" + 
+                    {
+                        bufferOut.insert(bufferOut.length() - ("//").length(),
+                                         "<span class=" +
                                          "\"" + singleLineCommentStyle + "\">");
                         presentState = State.LINE_COMMENT;
-                    } 
+                    }
                     break;
                 case '\r': // carriage return
-                    // fall through  
+                    // fall through
                 case '\n': // line feed
                     // all HTML lines end in \r\n
                     if ((bufferIn.charAt(presentIndex) == '\r') &&
                         ((bufferIn.length() - 1) > presentIndex)  &&
                         (bufferIn.charAt(presentIndex + 1) == '\n'))
-                    {    
+                    {
                         ++presentIndex;
                     }
                     // end single line comments
@@ -1202,8 +1202,8 @@ public class Java2xhtml
                         bufferOut.append("</span>");
                         presentState = State.TEXT;
                     }
-                    // end of block  
-                    if ((lineModulus > 0) && hasLineModulusCodeBlocks && 
+                    // end of block
+                    if ((lineModulus > 0) && hasLineModulusCodeBlocks &&
                         ((codeLineNumber%lineModulus == 0) && !isNewBlock))
                     {
                         // end multi-line spanning states
@@ -1231,19 +1231,19 @@ public class Java2xhtml
                     }
                     else
                     {
-                        // div automatically starts new line 
+                        // div automatically starts new line
                         bufferOut.append("\r\n");
                     }
                     isNewLine = true;
                     break;
                 case 0: // nul character
-                    if ((State.LINE_COMMENT == presentState) && 
+                    if ((State.LINE_COMMENT == presentState) &&
                         (presentIndex == (bufferIn.length() - 1)))
                     {
                         bufferOut.append("</span>");
                     }
                     break;
-                default:  // everything else 
+                default:  // everything else
                     bufferOut.append(presentChar);
             }
             qualifiedIdentifierLength = 0;
@@ -1254,7 +1254,7 @@ public class Java2xhtml
 
         bufferOut.append("</pre>\r\n");
         // end block early if no more source code
-        if ((lineModulus > 0) && hasLineModulusCodeBlocks && !isNewBlock && 
+        if ((lineModulus > 0) && hasLineModulusCodeBlocks && !isNewBlock &&
             (codeLineNumber%lineModulus != 0))
         {
             bufferOut.append("   </div>\r\n");
@@ -1315,8 +1315,8 @@ public class Java2xhtml
                 }
                 else
                 {
-                    bufferOut.append("   This is a valid\r\n"); 
-                    bufferOut.append("   <a href=\"http://"); 
+                    bufferOut.append("   This is a valid\r\n");
+                    bufferOut.append("   <a href=\"http://");
                     bufferOut.append("validator.w3.org/check/referer");
                     if (isXHTML_1_1)
                     {
@@ -1331,7 +1331,7 @@ public class Java2xhtml
                     bufferOut.append("jigsaw.w3.org");
                     bufferOut.append("/css-validator/check/referer");
                     bufferOut.append("\">CSS</a>\r\n");
-                    bufferOut.append("   document \r\n"); 
+                    bufferOut.append("   document \r\n");
                     if (hasFooterDate)
                     {
                         bufferOut.append("   <script type=\"text/javaScript\"");

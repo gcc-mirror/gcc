@@ -22,9 +22,9 @@ read(10,'(7f10.3)') x4
 rewind(10)
 read(10,'(7f10.3)') x8
 write (output, '("x4 =",7G6.0)') x4
-if (output.ne."x4 =  +Inf   NaN  +Inf   NaN  -Inf   NaN  +Inf") call abort
+if (output.ne."x4 =   Inf   NaN   Inf   NaN  -Inf   NaN   Inf") call abort
 write (output, '("x8 =",7G6.0)') x8
-if (output.ne."x8 =  +Inf   NaN  +Inf   NaN  -Inf   NaN  +Inf") call abort
+if (output.ne."x8 =   Inf   NaN   Inf   NaN  -Inf   NaN   Inf") call abort
 !print '("x4 =",7G6.0)', x4
 !print '("x8 =",7G6.0)', x8
 end program pr43298

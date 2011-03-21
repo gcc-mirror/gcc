@@ -109,7 +109,7 @@ class ViewAttributeSet
       {
         HTML.Tag tag =
           (HTML.Tag) elAtts.getAttribute(StyleConstants.NameAttribute);
-        AttributeSet rule = styleSheet.getRule(tag, el); 
+        AttributeSet rule = styleSheet.getRule(tag, el);
         if (rule != null)
           atts.add(rule);
       }

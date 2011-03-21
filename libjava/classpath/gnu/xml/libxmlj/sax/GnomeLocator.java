@@ -1,4 +1,4 @@
-/* GnomeLocator.java - 
+/* GnomeLocator.java -
    Copyright (C) 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -67,7 +67,7 @@ implements Locator
         throw new NullPointerException ("loc");
       }
   }
-  
+
   public String getPublicId ()
   {
     return publicId (ctx, loc);
@@ -86,14 +86,14 @@ implements Locator
   {
     return lineNumber (ctx, loc);
   }
-  
+
   private native int lineNumber (Object ctx, Object loc);
 
   public int getColumnNumber ()
   {
     return columnNumber (ctx, loc);
   }
-  
+
   private native int columnNumber (Object ctx, Object loc);
 
 }

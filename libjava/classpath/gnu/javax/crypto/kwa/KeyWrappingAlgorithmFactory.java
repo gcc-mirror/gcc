@@ -51,7 +51,7 @@ public class KeyWrappingAlgorithmFactory
 {
   /** Names of Key Wrapping Algorihms cached for speed. */
   private static Set names;
-  
+
   /** Trivial constructor to enforce Singleton pattern. */
   private KeyWrappingAlgorithmFactory()
   {
@@ -60,7 +60,7 @@ public class KeyWrappingAlgorithmFactory
 
   /**
    * Returns an instance of a key-wrapping algorithm given its name.
-   * 
+   *
    * @param name the case-insensitive name of the key-wrapping algorithm.
    * @return an instance of the designated key-wrapping algorithm, or
    *         <code>null</code> if none was found.
@@ -88,7 +88,7 @@ public class KeyWrappingAlgorithmFactory
   /**
    * Returns a {@link Set} of key wrapping algorithm names supported by this
    * <i>Factory</i>.
-   * 
+   *
    * @return a {@link Set} of key wrapping algorithm names (Strings).
    */
   public static synchronized final Set getNames()

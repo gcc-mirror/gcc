@@ -90,7 +90,7 @@ public final class Properties
   /**
    * Returns the string representation of the library global configuration
    * property with the designated <code>key</code>.
-   * 
+   *
    * @param key the case-insensitive, non-null and non-empty name of a
    *          configuration property.
    * @return the string representation of the designated property, or
@@ -113,7 +113,7 @@ public final class Properties
   /**
    * Sets the value of a designated library global configuration property, to a
    * string representation of what should be a legal value.
-   * 
+   *
    * @param key the case-insensitive, non-null and non-empty name of a
    *          configuration property.
    * @param value the non-null, non-empty string representation of a legal value
@@ -151,7 +151,7 @@ public final class Properties
    * A convenience method that returns, as a boolean, the library global
    * configuration property indicating if the default Pseudo Random Number
    * Generator produces, or not, the same bit stream when instantiated.
-   * 
+   *
    * @return <code>true</code> if the default PRNG produces the same bit
    *         stream with every VM instance. Returns <code>false</code> if the
    *         default PRNG is seeded with the time of day of its first
@@ -171,7 +171,7 @@ public final class Properties
    * block ciphers check, or not, for possible/potential weak and semi-weak keys
    * that may be produced in the course of generating round encryption and/or
    * decryption keys.
-   * 
+   *
    * @return <code>true</code> if the cipher implementations check for weak
    *         and semi-weak keys. Returns <code>false</code> if the cipher
    *         implementations do not check for weak or semi-weak keys.
@@ -188,7 +188,7 @@ public final class Properties
    * A convenience method that returns, as a boolean, the library global
    * configuration property indicating if RSA decryption (RSADP primitive),
    * does, or not, blinding against timing attacks.
-   * 
+   *
    * @return <code>true</code> if the RSA decryption primitive includes a
    *         blinding operation. Returns <code>false</code> if the RSA
    *         decryption primitive does not include the additional blinding
@@ -205,7 +205,7 @@ public final class Properties
   /**
    * A convenience method to set the global property for reproducibility of the
    * default PRNG bit stream output.
-   * 
+   *
    * @param value if <code>true</code> then the default PRNG bit stream output
    *          is the same with every invocation of the VM.
    */
@@ -221,7 +221,7 @@ public final class Properties
   /**
    * A convenience method to set the global property for checking for weak and
    * semi-weak cipher keys.
-   * 
+   *
    * @param value if <code>true</code> then the cipher implementations will
    *          invoke additional checks for weak and semi-weak key values that
    *          may get generated.
@@ -238,7 +238,7 @@ public final class Properties
   /**
    * A convenience method to set the global property fo adding a blinding
    * operation when executing the RSA decryption primitive.
-   * 
+   *
    * @param value if <code>true</code> then the code for performing the RSA
    *          decryption primitive will include a blinding operation.
    */

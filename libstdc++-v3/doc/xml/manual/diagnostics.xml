@@ -95,7 +95,7 @@
    </para>
    <para>
      The primary author of the checking code, Jeremy Siek, had already
-     started work on a replacement implementation.  The new code has been
+     started work on a replacement implementation.  The new code was
      formally reviewed and accepted into
    <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.boost.org/libs/concept_check/concept_check.htm">the
    Boost libraries</link>, and we are pleased to incorporate it into the
@@ -116,10 +116,12 @@
  </para>
 
  <para>
-   Please note that the upcoming C++ standard has first-class
-   support for template parameter constraints based on concepts in the core
-   language. This will obviate the need for the library-simulated concept
-   checking described above.
+   Please note that the checks are based on the requirements in the original
+   C++ standard, some of which have changed in the upcoming C++0x revision.
+   Additionally, some correct code might be rejected by the concept checks,
+   for example template argument types may need to be complete when used in
+   a template definition, rather than at the point of instantiation.
+   There are no plans to address these shortcomings.
  </para>
 
 </section>

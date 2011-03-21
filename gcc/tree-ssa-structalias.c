@@ -413,7 +413,11 @@ new_var_info (tree t, const char *name)
   ret->is_global_var = (t == NULL_TREE);
   ret->is_fn_info = false;
   if (t && DECL_P (t))
-    ret->is_global_var = is_global_var (t);
+    ret->is_global_var = (is_global_var (t)
+			  /* We have to treat even local register variables
+			     as escape points.  */
+			  || (TREE_CODE (t) == VAR_DECL
+			      && DECL_HARD_REGISTER (t)));
   ret->solution = BITMAP_ALLOC (&pta_obstack);
   ret->oldsolution = BITMAP_ALLOC (&oldpta_obstack);
   ret->next = NULL;
@@ -2937,12 +2941,11 @@ process_constraint (constraint_t t)
 static HOST_WIDE_INT
 bitpos_of_field (const tree fdecl)
 {
-
   if (!host_integerp (DECL_FIELD_OFFSET (fdecl), 0)
       || !host_integerp (DECL_FIELD_BIT_OFFSET (fdecl), 0))
     return -1;
 
-  return (TREE_INT_CST_LOW (DECL_FIELD_OFFSET (fdecl)) * 8
+  return (TREE_INT_CST_LOW (DECL_FIELD_OFFSET (fdecl)) * BITS_PER_UNIT
 	  + TREE_INT_CST_LOW (DECL_FIELD_BIT_OFFSET (fdecl)));
 }
 
@@ -4431,12 +4434,14 @@ find_func_aliases (gimple origt)
 	do_structure_copy (lhsop, rhsop);
       else
 	{
+	  enum tree_code code = gimple_assign_rhs_code (t);
+
 	  get_constraint_for (lhsop, &lhsc);
 
-	  if (gimple_assign_rhs_code (t) == POINTER_PLUS_EXPR)
+	  if (code == POINTER_PLUS_EXPR)
 	    get_constraint_for_ptr_offset (gimple_assign_rhs1 (t),
 					   gimple_assign_rhs2 (t), &rhsc);
-	  else if (gimple_assign_rhs_code (t) == BIT_AND_EXPR
+	  else if (code == BIT_AND_EXPR
 		   && TREE_CODE (gimple_assign_rhs2 (t)) == INTEGER_CST)
 	    {
 	      /* Aligning a pointer via a BIT_AND_EXPR is offsetting
@@ -4444,11 +4449,15 @@ find_func_aliases (gimple origt)
 	      get_constraint_for_ptr_offset (gimple_assign_rhs1 (t),
 					     NULL_TREE, &rhsc);
 	    }
-	  else if ((CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (t))
+	  else if ((CONVERT_EXPR_CODE_P (code)
 		    && !(POINTER_TYPE_P (gimple_expr_type (t))
 			 && !POINTER_TYPE_P (TREE_TYPE (rhsop))))
 		   || gimple_assign_single_p (t))
 	    get_constraint_for_rhs (rhsop, &rhsc);
+	  else if (truth_value_p (code))
+	    /* Truth value results are not pointer (parts).  Or at least
+	       very very unreasonable obfuscation of a part.  */
+	    ;
 	  else
 	    {
 	      /* All other operations are merges.  */
@@ -5072,6 +5081,19 @@ push_fields_onto_fieldstack (tree type, VEC(fieldoff_s,heap) **fieldstack,
 
 	    if (!VEC_empty (fieldoff_s, *fieldstack))
 	      pair = VEC_last (fieldoff_s, *fieldstack);
+
+	    /* If there isn't anything at offset zero, create sth.  */
+	    if (!pair
+		&& offset + foff != 0)
+	      {
+		pair = VEC_safe_push (fieldoff_s, heap, *fieldstack, NULL);
+		pair->offset = 0;
+		pair->size = offset + foff;
+		pair->has_unknown_size = false;
+		pair->must_have_pointers = false;
+		pair->may_have_pointers = false;
+		pair->only_restrict_pointers = false;
+	      }
 
 	    if (!DECL_SIZE (field)
 		|| !host_integerp (DECL_SIZE (field), 1))
@@ -6823,11 +6845,34 @@ ipa_pta_execute (void)
       push_cfun (func);
       current_function_decl = node->decl;
 
-      /* For externally visible functions use local constraints for
-	 their arguments.  For local functions we see all callers
-	 and thus do not need initial constraints for parameters.  */
       if (node->local.externally_visible)
-	intra_create_variable_infos ();
+	{
+	  /* For externally visible functions use local constraints for
+	     their arguments.  For local functions we see all callers
+	     and thus do not need initial constraints for parameters.  */
+	  intra_create_variable_infos ();
+
+	  /* We also need to make function return values escape.  Nothing
+	     escapes by returning from main though.  */
+	  if (!MAIN_NAME_P (DECL_NAME (node->decl)))
+	    {
+	      varinfo_t fi, rvi;
+	      fi = lookup_vi_for_tree (node->decl);
+	      rvi = first_vi_for_offset (fi, fi_result);
+	      if (rvi && rvi->offset == fi_result)
+		{
+		  struct constraint_expr includes;
+		  struct constraint_expr var;
+		  includes.var = escaped_id;
+		  includes.offset = 0;
+		  includes.type = SCALAR;
+		  var.var = rvi->id;
+		  var.offset = 0;
+		  var.type = SCALAR;
+		  process_constraint (new_constraint (includes, var));
+		}
+	    }
+	}
 
       /* Build constriants for the function body.  */
       FOR_EACH_BB_FN (bb, func)

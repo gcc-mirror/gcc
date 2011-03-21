@@ -94,7 +94,7 @@ abstract class GlyphLocator
 
     case 1:
       return new GlyphLocator.FourByte(loca, glyf);
-    
+
     default:
       throw new FontFormatException("unsupported loca format");
     }

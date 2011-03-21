@@ -232,7 +232,7 @@ public interface List<E> extends Collection<E>
    * Obtains a hash code for this list. In order to obey the general
    * contract of the hashCode method of class Object, this value is
    * calculated as follows:
-   * 
+   *
 <p><pre>hashCode = 1;
 Iterator i = list.iterator();
 while (i.hasNext())

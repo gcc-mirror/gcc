@@ -54,16 +54,16 @@ import javax.swing.plaf.basic.BasicInternalFrameUI;
 public class MetalInternalFrameUI
   extends BasicInternalFrameUI
 {
-  /** 
-   * The key (<code>JInternalFrame.isPalette</code>) for the client property 
-   * that controls whether the internal frame is displayed using the palette 
-   * style. 
+  /**
+   * The key (<code>JInternalFrame.isPalette</code>) for the client property
+   * that controls whether the internal frame is displayed using the palette
+   * style.
    */
   protected static String IS_PALETTE = "JInternalFrame.isPalette";
 
   /**
    * Constructs a new instance of <code>MetalInternalFrameUI</code>.
-   * 
+   *
    * @param frame  the frame.
    */
   public MetalInternalFrameUI(JInternalFrame frame)
@@ -82,10 +82,10 @@ public class MetalInternalFrameUI
   {
     return new MetalInternalFrameUI((JInternalFrame) component);
   }
-  
+
   /**
    * Sets the fields and properties for the component.
-   * 
+   *
    * @param c  the component.
    */
   public void installUI(JComponent c)
@@ -101,23 +101,23 @@ public class MetalInternalFrameUI
 
   /**
    * Creates and returns the component that will be used for the north pane
-   * of the {@link JInternalFrame}.  
-   * 
+   * of the {@link JInternalFrame}.
+   *
    * @param w  the internal frame.
-   * 
+   *
    * @return A new instance of {@link MetalInternalFrameTitlePane}.
    */
   protected JComponent createNorthPane(JInternalFrame w)
   {
     titlePane = new MetalInternalFrameTitlePane(w);
-    return titlePane;  
+    return titlePane;
   }
-  
+
   /**
    * Sets the state of the {@link JInternalFrame} to reflect whether or not
    * it is using the palette style.  When a frame is displayed as a palette,
    * it uses a different border and the title pane is drawn differently.
-   * 
+   *
    * @param isPalette  use the palette style?
    */
   public void setPalette(boolean isPalette)
@@ -129,17 +129,17 @@ public class MetalInternalFrameUI
     else
       frame.setBorder(new MetalBorders.InternalFrameBorder());
   }
- 
+
   /** A listener that is used to handle IS_PALETTE property changes. */
   private PropertyChangeListener paletteListener;
-  
+
   /**
    * Adds the required listeners.
    */
   protected void installListeners()
   {
-    super.installListeners(); 
-    paletteListener = new PropertyChangeListener() 
+    super.installListeners();
+    paletteListener = new PropertyChangeListener()
     {
       public void propertyChange(PropertyChangeEvent e)
       {
@@ -154,7 +154,7 @@ public class MetalInternalFrameUI
     };
     frame.addPropertyChangeListener(paletteListener);
   }
-  
+
   /**
    * Removes the listeners used.
    */

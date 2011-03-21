@@ -42,16 +42,16 @@ import java.util.Enumeration;
 
 /**
  * A tree node.
- * 
+ *
  * @author Andrew Selkirk
  */
-public interface TreeNode 
+public interface TreeNode
 {
 
   /**
    * Returns the parent node for this tree node, or <code>null</code> if this
    * node has no parent.
-   * 
+   *
    * @return The parent node (possibly <code>null</code>).
    */
   TreeNode getParent();
@@ -59,56 +59,55 @@ public interface TreeNode
   /**
    * Returns the index of the specified child node, or -1 if the node is not
    * in fact a child of this node.
-   * 
+   *
    * @param node  the node (<code>null</code> not permitted).
-   * 
+   *
    * @return The index of the specified child node, or -1.
-   * 
+   *
    * @throws IllegalArgumentException if <code>node</code> is <code>null</code>.
    */
   int getIndex(TreeNode node);
 
   /**
    * Returns the child node at the given index.
-   * 
-   * @param index  the index (in the range <code>0</code> to 
+   *
+   * @param index  the index (in the range <code>0</code> to
    *     <code>getChildCount() - 1</code>).
-   *     
+   *
    * @return The child node at the given index.
    */
   TreeNode getChildAt(int index);
 
   /**
    * Returns the number of children for this node.
-   * 
+   *
    * @return The number of children for this node.
    */
   int getChildCount();
 
   /**
-   * Returns <code>true</code> if this node allows children, and 
+   * Returns <code>true</code> if this node allows children, and
    * <code>false</code> otherwise.
-   * 
+   *
    * @return A boolean.
    */
   boolean getAllowsChildren();
 
   /**
-   * Returns <code>true</code> if this node is a leaf node, and 
+   * Returns <code>true</code> if this node is a leaf node, and
    * <code>false</code> otherwise.
-   * 
+   *
    * @return A boolean.
    */
   boolean isLeaf();
 
   /**
-   * Returns an enumeration of the children of this node, or an empty 
+   * Returns an enumeration of the children of this node, or an empty
    * enumeration if this node has no children.
-   * 
+   *
    * @return An enumeration of the children of this node.
    */
   @SuppressWarnings("unchecked") // Required for API compatibility
   Enumeration children();
 
-} 
-
+}

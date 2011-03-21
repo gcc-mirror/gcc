@@ -147,9 +147,9 @@ public final class DisplayMode
   public boolean equals (DisplayMode dm)
   {
     return (width == dm.width
-	    && height == dm.height
-	    && bitDepth == dm.bitDepth
-	    && refreshRate == dm.refreshRate);
+            && height == dm.height
+            && bitDepth == dm.bitDepth
+            && refreshRate == dm.refreshRate);
   }
 
   /**

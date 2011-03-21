@@ -1,4 +1,4 @@
-/* MessageDigestAdapter.java -- 
+/* MessageDigestAdapter.java --
    Copyright (C) 2001, 2002, 2006 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -69,7 +69,7 @@ class MessageDigestAdapter
 
   /**
    * Trivial protected constructor.
-   * 
+   *
    * @param mdName the canonical name of the hash algorithm.
    */
   protected MessageDigestAdapter(String mdName)
@@ -79,7 +79,7 @@ class MessageDigestAdapter
 
   /**
    * Private constructor for cloning purposes.
-   * 
+   *
    * @param adaptee a clone of the underlying hash algorithm instance.
    */
   private MessageDigestAdapter(IMessageDigest adaptee)

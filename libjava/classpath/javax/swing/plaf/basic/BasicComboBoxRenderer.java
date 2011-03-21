@@ -51,12 +51,12 @@ import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 
 /**
- * A renderer for a {@link JComboBox}. 
+ * A renderer for a {@link JComboBox}.
  *
  * @author Olga Rodimina
  */
-public class BasicComboBoxRenderer 
-  extends JLabel 
+public class BasicComboBoxRenderer
+  extends JLabel
   implements ListCellRenderer, Serializable
 {
   /**
@@ -75,7 +75,7 @@ public class BasicComboBoxRenderer
 
   /**
    * Returns preferredSize of the renderer
-   * 
+   *
    * @return preferredSize of the renderer
    */
   public Dimension getPreferredSize()

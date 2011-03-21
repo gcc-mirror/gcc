@@ -8,7 +8,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -56,7 +56,7 @@ import java.util.Hashtable;
 import java.util.Iterator;
 
 public class UnicastConnectionManager
-	implements Runnable, ProtocolConstants {
+        implements Runnable, ProtocolConstants {
 
 private static String localhost;
 // use different maps for server/client type UnicastConnectionManager
@@ -100,8 +100,8 @@ static {
         catch (UnknownHostException _) {
                 localhost = "localhost";
         }
-        
-        
+
+
 }
 
 //Only one scavenger thread running globally
@@ -134,7 +134,7 @@ private static void startScavenger(){
                                 if (UnicastConnection.isExpired(conn, l)){
                                     conns.remove(last);
                                     conn.disconnect();
-                                    conn = null;   
+                                    conn = null;
                                 }else
                                     liveon = true; //there're still live connections
                             }
@@ -159,11 +159,11 @@ private static void startScavenger(){
   * Client UnicastConnectionManager constructor
   */
 private UnicastConnectionManager(String host, int port, RMIClientSocketFactory csf) {
-	ssock = null;
-	serverName = host;
-	serverPort = port;
-	serverFactory = null;
-	clientFactory = csf;
+        ssock = null;
+        serverName = host;
+        serverPort = port;
+        serverFactory = null;
+        clientFactory = csf;
     connections = new ArrayList();
 }
 
@@ -172,24 +172,24 @@ private UnicastConnectionManager(String host, int port, RMIClientSocketFactory c
   */
 private UnicastConnectionManager(int port, RMIServerSocketFactory ssf) throws RemoteException {
 
-	try {
-		ssock = ssf.createServerSocket(port);
-		serverPort = ssock.getLocalPort();
-	}
-	catch (IOException ioex) {
-		ssock = null;
-		serverPort = 0;
-		throw new java.rmi.server.ExportException("can not create Server Socket on port " + port,ioex);
-	}
-	// Note that for compatibility the serverName is "localhost",
-	// not UnicastConnectionManager.localhost, which is the name
-	// of the local box.  A server listening on localhost:port is
-	// listening on the loopback interface, 127.0.0.1, but
-	// UnicastConnectionManager.localhost is an externally
-	// accessible IP address.
-	serverName = "localhost";
-	serverFactory = ssf;
-	clientFactory = null;
+        try {
+                ssock = ssf.createServerSocket(port);
+                serverPort = ssock.getLocalPort();
+        }
+        catch (IOException ioex) {
+                ssock = null;
+                serverPort = 0;
+                throw new java.rmi.server.ExportException("can not create Server Socket on port " + port,ioex);
+        }
+        // Note that for compatibility the serverName is "localhost",
+        // not UnicastConnectionManager.localhost, which is the name
+        // of the local box.  A server listening on localhost:port is
+        // listening on the loopback interface, 127.0.0.1, but
+        // UnicastConnectionManager.localhost is an externally
+        // accessible IP address.
+        serverName = "localhost";
+        serverFactory = ssf;
+        clientFactory = null;
 }
 
 /**
@@ -198,31 +198,31 @@ private UnicastConnectionManager(int port, RMIServerSocketFactory ssf) throws Re
  */
 public static synchronized UnicastConnectionManager getInstance(String host, int port, RMIClientSocketFactory csf) {
 //System.out.println("getInstance: " + host + "," + port + "," + csf);
-	if (csf == null) {
+        if (csf == null) {
         csf = defaultSocketFactory;
-	}
-	// change host name to host address to avoid name resolving issues
-	try{
-    	host = InetAddress.getByName(host).getHostAddress();
+        }
+        // change host name to host address to avoid name resolving issues
+        try{
+        host = InetAddress.getByName(host).getHostAddress();
     }catch(Exception _){}
-    
-	TripleKey key = new TripleKey(host, port, csf);
-	UnicastConnectionManager man = (UnicastConnectionManager)clients.get(key);
-	if (man == null) {
-		man = new UnicastConnectionManager(host, port, csf);
+
+        TripleKey key = new TripleKey(host, port, csf);
+        UnicastConnectionManager man = (UnicastConnectionManager)clients.get(key);
+        if (man == null) {
+                man = new UnicastConnectionManager(host, port, csf);
         if (debug) {
             ncmanager++;
             System.out.println("\n\n ====== " + ncmanager + " client managers.\n\n");
         }
-		clients.put(key, man);
-        
+                clients.put(key, man);
+
         // Detect if client and server are in the same VM, i.e., their keys are equal
         UnicastConnectionManager svrman = (UnicastConnectionManager)servers.get(key);
         if(svrman != null){ // server and client are in the same VM
             man.serverobj = svrman.serverobj;
         }
-	}
-	return (man);
+        }
+        return (man);
 }
 
 /**
@@ -231,50 +231,50 @@ public static synchronized UnicastConnectionManager getInstance(String host, int
  */
 public static synchronized UnicastConnectionManager getInstance(int port, RMIServerSocketFactory ssf) throws RemoteException {
 //System.out.println("getInstance: " + port + "," + ssf);
-	if (ssf == null) {
+        if (ssf == null) {
         ssf = defaultSocketFactory;
-	}
-	TripleKey key = new TripleKey(localhost, port, ssf);
-	UnicastConnectionManager man = (UnicastConnectionManager)servers.get(key);
-	if (man == null) {
-		man = new UnicastConnectionManager(port, ssf);
+        }
+        TripleKey key = new TripleKey(localhost, port, ssf);
+        UnicastConnectionManager man = (UnicastConnectionManager)servers.get(key);
+        if (man == null) {
+                man = new UnicastConnectionManager(port, ssf);
         if (debug) {
             nsmanager++;
             System.out.println("\n\n ****** " + nsmanager + " server managers.\n\n");
         }
-		// The provided port might not be the set port.
-		key.port = man.serverPort;
-		servers.put(key, man);
-	}
-	return (man);
+                // The provided port might not be the set port.
+                key.port = man.serverPort;
+                servers.put(key, man);
+        }
+        return (man);
 }
 
 /**
  * Get a connection from this manager.
  */
 public UnicastConnection getConnection() throws IOException {
-	if (ssock == null) {
-		return (getClientConnection());
-	}
-	else {
-		return (getServerConnection());
-	}
+        if (ssock == null) {
+                return (getClientConnection());
+        }
+        else {
+                return (getServerConnection());
+        }
 }
 
 /**
  * Accept a connection to this server.
  */
 private UnicastConnection getServerConnection() throws IOException {
-	Socket sock = ssock.accept();
+        Socket sock = ssock.accept();
     sock.setTcpNoDelay(true); //??
-	UnicastConnection conn = new UnicastConnection(this, sock);
-	conn.acceptConnection();
+        UnicastConnection conn = new UnicastConnection(this, sock);
+        conn.acceptConnection();
     if (debug){
         nssock++;
         System.out.println("\n\n ****** " + nssock + " server socks.\n\n");
     }
     //System.out.println("Server connection " + sock);
-	return (conn);
+        return (conn);
 }
 
 /**
@@ -283,37 +283,37 @@ private UnicastConnection getServerConnection() throws IOException {
 private UnicastConnection getClientConnection() throws IOException {
     ArrayList conns = connections;
     UnicastConnection conn;
-    
+
     synchronized(conns) {
         int nconn = conns.size() - 1;
-    
+
         // if there're free connections in connection pool
         if(nconn >= 0) {
             conn = (UnicastConnection)conns.get(nconn);
             //Should we check if conn is alive using Ping??
             conns.remove(nconn);
-            
+
             // Check if the connection is already expired
             long l = System.currentTimeMillis();
             if (!UnicastConnection.isExpired(conn, l)){
                 return conn;
             }else {
                 conn.disconnect();
-                conn = null;   
+                conn = null;
             }
         }
     }
-    
-	Socket sock = clientFactory.createSocket(serverName, serverPort);
+
+        Socket sock = clientFactory.createSocket(serverName, serverPort);
     conn = new UnicastConnection(this, sock);
-	conn.makeConnection(DEFAULT_PROTOCOL);
-    
+        conn.makeConnection(DEFAULT_PROTOCOL);
+
     if (debug) {
         ncsock++;
         System.out.println("\n\n ====== " + ncsock + " client socks.\n\n");
     }
 
-	return (conn);
+        return (conn);
 }
 
 /**
@@ -332,13 +332,13 @@ public void discardConnection(UnicastConnection conn) {
 //System.out.println("Discarding connection " + conn);
     //conn.disconnect();
     if (ssock != null) //server connection
-	conn.disconnect();
+        conn.disconnect();
     else {
         // To client connection, we'd like to return back to pool
         UnicastConnection.resetTime(conn);
         //Ensure there're only one scavenger globally
         synchronized(GLOBAL_LOCK) {
-            connections.add(conn); //borrow this lock to garantee thread safety 
+            connections.add(conn); //borrow this lock to garantee thread safety
             if (scavenger == null)
                 startScavenger();
         }
@@ -350,15 +350,15 @@ public void discardConnection(UnicastConnection conn) {
  * already got one running.
  */
 public void startServer() {
-	synchronized(this) {
-		if (ssock == null || serverThread != null) {
-			return;
-		}
-		serverThread = new Thread(this);
+        synchronized(this) {
+                if (ssock == null || serverThread != null) {
+                        return;
+                }
+                serverThread = new Thread(this);
         // The following is not necessary when java.lang.Thread's constructor do this.
         // serverThread.setContextClassLoader(Thread.currentThread().getContextClassLoader());
-	}
-	serverThread.start();
+        }
+        serverThread.start();
 }
 
 /**
@@ -366,12 +366,12 @@ public void startServer() {
  */
 public void stopServer() {
     synchronized(this) {
-    	if(serverThread != null){
-    	    serverThread = null;
-    	    try{
-    	        ssock.close();
-    	    }catch(Exception _){}
-    	}
+        if(serverThread != null){
+            serverThread = null;
+            try{
+                ssock.close();
+            }catch(Exception _){}
+        }
     }
 }
 
@@ -379,26 +379,26 @@ public void stopServer() {
  * Server thread for connection manager.
  */
 public void run() {
-	for (;serverThread != null;) { // if serverThread==null, then exit thread
-		try {
+        for (;serverThread != null;) { // if serverThread==null, then exit thread
+                try {
 //System.out.println("Waiting for connection on " + serverPort);
-			UnicastConnection conn = getServerConnection();
+                        UnicastConnection conn = getServerConnection();
 
-			// get address of remote host for the RMIIncomingThread object
-			String remoteHost = null;
-			if (conn.sock != null) {
-				remoteHost = conn.sock.getInetAddress().getHostAddress();			
-			}
+                        // get address of remote host for the RMIIncomingThread object
+                        String remoteHost = null;
+                        if (conn.sock != null) {
+                                remoteHost = conn.sock.getInetAddress().getHostAddress();
+                        }
 
-			// use a thread pool to improve performance
+                        // use a thread pool to improve performance
             //ConnectionRunnerPool.dispatchConnection(conn);
             (new RMIIncomingThread(conn, remoteHost)).start();
-//	   (new Thread(conn)).start();
-		}
-		catch (Exception e) {
+//         (new Thread(conn)).start();
+                }
+                catch (Exception e) {
             e.printStackTrace();
-		}
-	}
+                }
+        }
 }
 
 /**
@@ -432,9 +432,9 @@ int port;
 Object other;
 
 TripleKey(String host, int port, Object other) {
-	this.host = host;
-	this.port = port;
-	this.other = other;
+        this.host = host;
+        this.port = port;
+        this.other = other;
 }
 
 /**
@@ -442,19 +442,19 @@ TripleKey(String host, int port, Object other) {
  * this has unusual matching behaviour.
  */
 public int hashCode() {
-	return (host.hashCode() ^ other.hashCode());
+        return (host.hashCode() ^ other.hashCode());
 }
 
 public boolean equals(Object obj) {
-	if (obj instanceof TripleKey) {
-		TripleKey other = (TripleKey)obj;
-		if (this.host.equals(other.host) &&
-		    this.other == other.other &&
+        if (obj instanceof TripleKey) {
+                TripleKey other = (TripleKey)obj;
+                if (this.host.equals(other.host) &&
+                    this.other == other.other &&
             (this.port == other.port /* || this.port == 0 || other.port == 0*/)) {
-			return (true);
-		}
-	}
-	return (false);
+                        return (true);
+                }
+        }
+        return (false);
 }
 
   /**

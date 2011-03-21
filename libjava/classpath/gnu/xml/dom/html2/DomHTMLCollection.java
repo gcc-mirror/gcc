@@ -1,4 +1,4 @@
-/* DomHTMLCollection.java -- 
+/* DomHTMLCollection.java --
    Copyright (C) 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -221,6 +221,5 @@ class DomHTMLCollection
       }
     return null;
   }
-  
-}
 
+}

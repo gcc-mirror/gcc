@@ -1,4 +1,4 @@
-# Copyright (C) 1997, 1998, 1999, 2001, 2002, 2005, 2007, 2010
+# Copyright (C) 1997, 1998, 1999, 2001, 2002, 2005, 2007, 2010, 2011
 # Free Software Foundation, Inc.
 #
 # This file is part of GCC.
@@ -34,7 +34,7 @@ fp-bit.c: $(srcdir)/config/fp-bit.c
 
 MULTILIB_OPTIONS = msoft-float mcpu=v8
 MULTILIB_DIRNAMES = soft v8
-MULTILIB_MATCHES = msoft-float=mno-fpu mcpu?v8=mv8
+MULTILIB_MATCHES = msoft-float=mno-fpu
 
 LIBGCC = stmp-multilib
 INSTALL_LIBGCC = install-multilib

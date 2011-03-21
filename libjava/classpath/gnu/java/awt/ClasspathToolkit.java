@@ -102,7 +102,7 @@ public abstract class ClasspathToolkit
    *
    * @param name The logical name of the font. This may be either a face
    * name or a logical font name, or may even be null. A default
-   * implementation of name decoding is provided in 
+   * implementation of name decoding is provided in
    * {@link ClasspathFontPeer}, but may be overridden in other toolkits.
    *
    * @param attrs Any extra {@link java.awt.font.TextAttribute} attributes
@@ -110,17 +110,17 @@ public abstract class ClasspathToolkit
    * transformation.
    */
   public abstract ClasspathFontPeer getClasspathFontPeer (String name,
-                                                          Map<?,?> attrs); 
+                                                          Map<?,?> attrs);
 
-  /** 
+  /**
    * Creates a {@link Font}, in a platform-specific manner.
-   * 
+   *
    * The default implementation simply constructs a {@link Font}, but some
-   * toolkits may wish to override this, to return {@link Font} subclasses 
+   * toolkits may wish to override this, to return {@link Font} subclasses
    * which implement {@link java.awt.font.OpenType} or
    * {@link java.awt.font.MultipleMaster}.
    */
-  public Font getFont (String name, Map attrs) 
+  public Font getFont (String name, Map attrs)
   {
     Font f = null;
 
@@ -170,7 +170,7 @@ public abstract class ClasspathToolkit
    *
    * @throws IllegalArgumentException if <code>format</code> is
    * not supported.
-   * 
+   *
    * @throws FontFormatException if <code>stream</code> does not
    * contain data in the expected format, or if required tables are
    * missing from a font.
@@ -211,11 +211,11 @@ public abstract class ClasspathToolkit
     * toolkit implementors should overload this method if possible.
     * @since 1.5
     */
-   public int getMouseNumberOfButtons() 
+   public int getMouseNumberOfButtons()
    {
      return -1;
    }
-   
+
    /* (non-Javadoc)
     * @see java.awt.Toolkit#createDesktopPeer(java.awt.Desktop)
     */
@@ -224,9 +224,8 @@ public abstract class ClasspathToolkit
    {
      if (GraphicsEnvironment.isHeadless())
        throw new HeadlessException();
-     
+
      return ClasspathDesktopPeer.getDesktop();
    }
 
 }
-

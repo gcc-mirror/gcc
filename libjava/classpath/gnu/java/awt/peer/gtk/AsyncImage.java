@@ -98,7 +98,7 @@ public class AsyncImage
           ic.imageComplete(ImageConsumer.SINGLEFRAMEDONE);
         }
     }
-    
+
   }
 
   /**

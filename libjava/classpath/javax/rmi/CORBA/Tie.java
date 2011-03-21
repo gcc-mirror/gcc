@@ -61,7 +61,7 @@ import org.omg.CORBA.portable.InvokeHandler;
  * <code>rmic</code> compiler using <code>-poa</code> key. Ties can be also
  * derived from {@link org.omg.CORBA_2_3.portable.ObjectImpl}.
  * </p>
- * 
+ *
  * @author Audrius Meskauskas (AudriusA@Bioinformatics.org)
  */
 public interface Tie
@@ -69,7 +69,7 @@ public interface Tie
 {
   /**
    * Get the invocation target, where all method calls should be delegated.
-   * 
+   *
    * @return the object, implementing methods, defined in the interface being
    * served by this Tie.
    */
@@ -77,12 +77,12 @@ public interface Tie
 
   /**
    * Set the invocation target, where all method calls should be delegated.
-   * 
+   *
    * @param target the object, implementing methods, defined in the interface
    * being served by this Tie. The code, produced by a typical rmic compiler
    * usually requires the target to be an instance of the implementation from
    * that the Tie was generated.
-   * 
+   *
    * @throws ClassCastException if the passed parameter is not an instance of
    * the implementation from that the Tie was generated.
    */
@@ -90,7 +90,7 @@ public interface Tie
 
   /**
    * Get the ORB to that this Tie is connected.
-   * 
+   *
    * @see org.omg.PortableServer.Servant#_orb
    */
   ORB orb();
@@ -102,7 +102,7 @@ public interface Tie
 
   /**
    * Get the object that delegates calls to this tie.
-   * 
+   *
    * @see org.omg.PortableServer.Servant#_this_object()
    */
   org.omg.CORBA.Object thisObject();
@@ -113,10 +113,10 @@ public interface Tie
    * again. The ties that are not derived from
    * {@link org.omg.PortableServer.Servant} deactivate themselves by
    * {@link ORB#disconnect}.
-   * 
+   *
    * @throws NoSuchObjectException if there are no objects served by this Tie,
    * or if the these objects are already deactivated.
-   * 
+   *
    * @see org.omg.PortableServer.POAOperations#deactivate_object
    */
   void deactivate()

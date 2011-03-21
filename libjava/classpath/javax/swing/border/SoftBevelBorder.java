@@ -1,4 +1,4 @@
-/* SoftBevelBorder.java -- 
+/* SoftBevelBorder.java --
    Copyright (C) 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -242,7 +242,7 @@ public class SoftBevelBorder extends BevelBorder
     return insets;
   }
 
-  
+
   /**
    * Determines whether this border fills every pixel in its area
    * when painting.
@@ -261,7 +261,7 @@ public class SoftBevelBorder extends BevelBorder
 
   /**
    * Paints a soft bevel in four colors.
-   * 
+   *
    * <pre>
    * +++++++++++.
    * ++.........#    + = color a

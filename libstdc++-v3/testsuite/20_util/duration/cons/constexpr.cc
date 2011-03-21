@@ -27,6 +27,7 @@ int main()
   test1.operator()<std::chrono::seconds>();
 
   __gnu_test::constexpr_single_value_constructible test2;
+  test2.operator()<std::chrono::seconds, std::chrono::seconds>();
   test2.operator()<std::chrono::seconds, std::chrono::seconds::rep>();
   test2.operator()<std::chrono::minutes, std::chrono::hours>();
   return 0;

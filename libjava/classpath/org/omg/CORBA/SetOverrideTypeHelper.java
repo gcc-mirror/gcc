@@ -77,9 +77,9 @@ public abstract class SetOverrideTypeHelper
     String[] members =
       new String[]
                  {
-                  "SET_OVERRIDE" ,"ADD_OVERRIDE" 
+                  "SET_OVERRIDE" ,"ADD_OVERRIDE"
                  };
-    
+
     return
     OrbRestricted.Singleton.create_enum_tc(id(), "SetOverrideType",
                                            members

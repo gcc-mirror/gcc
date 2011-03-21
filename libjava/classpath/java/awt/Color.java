@@ -538,7 +538,7 @@ public class Color implements Paint, Serializable
     hues[0] = (value & RED_MASK) >> 16;
     hues[1] = (value & GREEN_MASK) >> 8;
     hues[2] = value & BLUE_MASK;
-  
+
     // (0,0,0) is a special case.
     if (hues[0] == 0 && hues[1] == 0 && hues[2] ==0)
       {
@@ -547,10 +547,10 @@ public class Color implements Paint, Serializable
         hues[2] = 3;
       }
     else
-      {                    
+      {
         for (int index = 0; index < 3; index++)
           {
-            
+
             if (hues[index] > 2)
               hues[index] = (int) Math.min(255, hues[index]/0.7f);
             if (hues[index] == 1 || hues[index] == 2)

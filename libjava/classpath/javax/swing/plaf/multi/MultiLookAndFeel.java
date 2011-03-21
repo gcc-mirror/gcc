@@ -49,7 +49,7 @@ import javax.swing.plaf.ComponentUI;
  * A look and feel that provides the ability to use auxiliary look and feels
  * in addition to the primary look and feel.
  */
-public class MultiLookAndFeel extends LookAndFeel 
+public class MultiLookAndFeel extends LookAndFeel
 {
 
   /**
@@ -59,62 +59,62 @@ public class MultiLookAndFeel extends LookAndFeel
   {
     // Nothing to do here.
   }
-  
+
   /**
    * Returns the name for the look and feel.
-   * 
+   *
    * @return "Multiplexing Look and Feel".
    */
   public String getName()
   {
     return "Multiplexing Look and Feel";
   }
-  
+
   /**
    * Returns an identifier for the look and feel.
-   * 
+   *
    * @return "Multiplex".
    */
   public String getID()
   {
-    return "Multiplex"; 
+    return "Multiplex";
   }
-  
+
   /**
    * Returns a description of the look and feel.
-   * 
+   *
    * @return A description of the look and feel.
    */
   public String getDescription()
   {
-    return "Allows multiple UI instances per component instance";    
+    return "Allows multiple UI instances per component instance";
   }
-  
+
   /**
-   * Returns <code>false</code> to indicate that this look and feel is not 
+   * Returns <code>false</code> to indicate that this look and feel is not
    * native to any platform.
-   * 
+   *
    * @return <code>false</code>.
    */
   public boolean isNativeLookAndFeel()
   {
-    return false;    
+    return false;
   }
 
   /**
    * Returns <code>true</code> always, since this look and feel is supported on
    * all platforms.
-   * 
+   *
    * @return <code>true</code>.
    */
   public boolean isSupportedLookAndFeel()
   {
     return true;
   }
-  
+
   /**
    * Creates and returns the UI defaults for this look and feel.
-   * 
+   *
    * @return The UI defaults.
    */
   public UIDefaults getDefaults()
@@ -123,7 +123,7 @@ public class MultiLookAndFeel extends LookAndFeel
     defaults.put("ButtonUI", "javax.swing.plaf.multi.MultiButtonUI");
     defaults.put("CheckBoxUI", "javax.swing.plaf.multi.MultiButtonUI");
     defaults.put("CheckBoxMenuItemUI", "javax.swing.plaf.multi.MultiMenuItemUI");
-    defaults.put("ColorChooserUI", 
+    defaults.put("ColorChooserUI",
         "javax.swing.plaf.multi.MultiColorChooserUI");
     defaults.put("ComboBoxUI", "javax.swing.plaf.multi.MultiComboBoxUI");
     defaults.put("DesktopPaneUI", "javax.swing.plaf.multi.MultiDesktopPaneUI");
@@ -131,7 +131,7 @@ public class MultiLookAndFeel extends LookAndFeel
     defaults.put("EditorPaneUI", "javax.swing.plaf.multi.MultiTextUI");
     defaults.put("FileChooserUI", "javax.swing.plaf.multi.MultiFileChooserUI");
     defaults.put("FormattedTextFieldUI", "javax.swing.plaf.multi.MultiTextUI");
-    defaults.put("InternalFrameUI", 
+    defaults.put("InternalFrameUI",
         "javax.swing.plaf.multi.MultiInternalFrameUI");
     defaults.put("LabelUI", "javax.swing.plaf.multi.MultiLabelUI");
     defaults.put("ListUI", "javax.swing.plaf.multi.MultiListUI");
@@ -142,11 +142,11 @@ public class MultiLookAndFeel extends LookAndFeel
     defaults.put("PanelUI", "javax.swing.plaf.multi.MultiPanelUI");
     defaults.put("PasswordFieldUI", "javax.swing.plaf.multi.MultiTextUI");
     defaults.put("PopupMenuUI", "javax.swing.plaf.multi.MultiPopupMenuUI");
-    defaults.put("PopupMenuSeparatorUI", 
+    defaults.put("PopupMenuSeparatorUI",
         "javax.swing.plaf.multi.MultiSeparatorUI");
     defaults.put("ProgressBarUI", "javax.swing.plaf.multi.MultiProgressBarUI");
     defaults.put("RadioButtonUI", "javax.swing.plaf.multi.MultiButtonUI");
-    defaults.put("RadioButtonMenuItemUI", 
+    defaults.put("RadioButtonMenuItemUI",
         "javax.swing.plaf.multi.MultiMenuItemUI");
     defaults.put("RootPaneUI", "javax.swing.plaf.multi.MultiRootPaneUI");
     defaults.put("ScrollBarUI", "javax.swing.plaf.multi.MultiScrollBarUI");
@@ -162,43 +162,43 @@ public class MultiLookAndFeel extends LookAndFeel
     defaults.put("TextFieldUI", "javax.swing.plaf.multi.MultiTextUI");
     defaults.put("TextPaneUI", "javax.swing.plaf.multi.MultiTextUI");
     defaults.put("ToggleButtonUI", "javax.swing.plaf.multi.MultiButtonUI");
-    defaults.put("ToolBarSeparatorUI", 
+    defaults.put("ToolBarSeparatorUI",
         "javax.swing.plaf.multi.MultiSeparatorUI");
     defaults.put("ToolBarUI", "javax.swing.plaf.multi.MultiToolBarUI");
     defaults.put("ToolTipUI", "javax.swing.plaf.multi.MultiToolTipUI");
     defaults.put("ViewportUI", "javax.swing.plaf.multi.MultiViewportUI");
     return defaults;
   }
-  
+
   /**
    * Creates the UI delegates for the <code>target</code> component and
    * returns a multiplexing UI delegate (<code>mui</code>) if there are
    * multiple delegates.
-   * 
+   *
    * @param mui  a multiplexing UI delegate appropriate for the component.
    * @param uis  a vector into which the UI delegates will be added.
    * @param target  the target component.
-   * 
+   *
    * @return A UI delegate.
    */
-  public static ComponentUI createUIs(ComponentUI mui, Vector uis, 
+  public static ComponentUI createUIs(ComponentUI mui, Vector uis,
                                       JComponent target)
   {
     // get primary UI delegate for 'target', and add it to uis
     ComponentUI ui = null;
     LookAndFeel primary = UIManager.getLookAndFeel();
-    if (primary != null) 
+    if (primary != null)
     {
       ui = UIManager.getUI(target);
       uis.add(ui);
     }
-    // for any auxiliary look and feels in use, get the UI delegate and add 
+    // for any auxiliary look and feels in use, get the UI delegate and add
     // it to uis
     LookAndFeel[] auxlafs = UIManager.getAuxiliaryLookAndFeels();
     for (int i = 0; i < auxlafs.length; i++)
     {
       LookAndFeel auxlaf = auxlafs[i];
-      // FIXME: here I call getDefaults() to get the UI delegate from the 
+      // FIXME: here I call getDefaults() to get the UI delegate from the
       // auxiliary look and feel.  But getDefaults() creates a new set of
       // defaults every time it is called, which is wasteful.  Unfortunately
       // I cannot find another way to get the UI delegate, so I'm doing it
@@ -208,36 +208,36 @@ public class MultiLookAndFeel extends LookAndFeel
       if (ui != null)
         uis.add(ui);
     }
-    // if uis contains more than 1 delegate, return mui, otherwise return 
+    // if uis contains more than 1 delegate, return mui, otherwise return
     // the primary delegate
     if (uis.size() > 1)
       return mui;
     else
-      return ui;    
+      return ui;
   }
-  
+
   /**
    * Returns an array containing the same {@link ComponentUI} instances as
    * <code>uis</code>.  If <code>uis</code> is <code>null</code>, a zero-length
    * array is returned.
-   * 
-   * @param uis  a list of {@link ComponentUI} references (<code>null</code> 
+   *
+   * @param uis  a list of {@link ComponentUI} references (<code>null</code>
    *             permitted).
-   * 
+   *
    * @return An array containing the same {@link ComponentUI} instances as
    *         <code>uis</code>, or <code>null</code> if <code>uis</code> is
-   *         empty.  
+   *         empty.
    */
   protected static ComponentUI[] uisToArray(Vector uis)
   {
-    if (uis == null) 
+    if (uis == null)
       return new ComponentUI[0];
     int size = uis.size();
-    if (size == 0) 
+    if (size == 0)
       return null;
     ComponentUI[] result = new ComponentUI[size];
     uis.copyInto(result);
-    return result;    
+    return result;
   }
 
 }

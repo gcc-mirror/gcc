@@ -41,7 +41,7 @@ package gnu.java.beans.encoder.elements;
 import gnu.java.beans.encoder.Writer;
 
 /** Generates an XML element denoting a static method call.
- * 
+ *
  * @author Robert Schuster (robertschuster@fsfe.org)
  *
  */

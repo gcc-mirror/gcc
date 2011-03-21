@@ -1,4 +1,4 @@
-/* ModeFactory.java -- 
+/* ModeFactory.java --
    Copyright (C) 2001, 2002, 2004, 2006 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -65,7 +65,7 @@ public class ModeFactory
   /**
    * Returns an instance of a block cipher mode of operations given its name and
    * characteristics of the underlying block cipher.
-   * 
+   *
    * @param mode the case-insensitive name of the mode of operations.
    * @param cipher the case-insensitive name of the block cipher.
    * @param cipherBlockSize the block size, in bytes, of the underlying cipher.
@@ -126,7 +126,7 @@ public class ModeFactory
 
   /**
    * Returns a {@link Set} of names of mode supported by this <i>Factory</i>.
-   * 
+   *
    * @return a {@link Set} of mode names (Strings).
    */
   public static final Set getNames()

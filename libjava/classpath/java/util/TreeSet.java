@@ -291,7 +291,7 @@ public class TreeSet<T> extends AbstractSet<T>
    * The returned set is backed by the original, so changes
    * in one appear in the other. The subset will throw an
    * {@link IllegalArgumentException} for any attempt to access or add an
-   * element beyond the specified cutoff. 
+   * element beyond the specified cutoff.
    *
    * @param to the cutoff point
    * @param inclusive true if <code>to</code> should be included.
@@ -406,10 +406,10 @@ public class TreeSet<T> extends AbstractSet<T>
    * @throws IllegalArgumentException if from is greater than to
    */
   public NavigableSet<T> subSet(T from, boolean fromInclusive,
-				T to, boolean toInclusive)
+                                T to, boolean toInclusive)
   {
     return new TreeSet<T>(map.subMap(from, fromInclusive,
-				     to, toInclusive));
+                                     to, toInclusive));
   }
 
   /**
@@ -574,7 +574,7 @@ public class TreeSet<T> extends AbstractSet<T>
    * no such element.
    *
    * @param e the element relative to the returned element.
-   * @return the least element greater than 
+   * @return the least element greater than
    *         the given element, or <code>null</code> if there is
    *         no such element.
    * @throws ClassCastException if the specified element can not
@@ -596,7 +596,7 @@ public class TreeSet<T> extends AbstractSet<T>
    * no such element.
    *
    * @param e the element relative to the returned element.
-   * @return the greatest element less than 
+   * @return the greatest element less than
    *         the given element, or <code>null</code> if there is
    *         no such element.
    * @throws ClassCastException if the specified element can not

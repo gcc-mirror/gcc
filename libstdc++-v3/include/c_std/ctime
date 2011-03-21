@@ -56,8 +56,8 @@
 #undef localtime
 #undef strftime
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
-
+namespace std
+{
   using ::clock_t;
   using ::time_t;
   using ::tm;
@@ -71,7 +71,6 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   using ::gmtime;
   using ::localtime;
   using ::strftime;
-
-_GLIBCXX_END_NAMESPACE
+} // namespace
 
 #endif

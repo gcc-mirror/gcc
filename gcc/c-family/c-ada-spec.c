@@ -2035,6 +2035,7 @@ dump_generic_ada_node (pretty_printer *buffer, tree node, tree type,
 			      || !TYPE_FIELDS (TREE_TYPE (underlying_type))))
 		      /* Pointer to opaque structure.  */
 
+		      || underlying_type == NULL_TREE
 		      || (!typ2
 			  && !TREE_VISITED (underlying_type)
 			  && !TREE_VISITED (type_name)

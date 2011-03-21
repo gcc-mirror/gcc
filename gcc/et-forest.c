@@ -1,6 +1,6 @@
 /* ET-trees data structure implementation.
    Contributed by Pavel Nejedly
-   Copyright (C) 2002, 2003, 2004, 2005, 2007, 2008 Free Software
+   Copyright (C) 2002, 2003, 2004, 2005, 2007, 2008, 2010 Free Software
    Foundation, Inc.
 
 This file is part of the libiberty library.

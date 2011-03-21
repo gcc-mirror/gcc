@@ -1,5 +1,5 @@
 /* MethodResult.java -- class to wrap around values returned from a Method call
-   in the VM 
+   in the VM
    Copyright (C) 2005, 2007 Free Software Foundation
 
 This file is part of GNU Classpath.
@@ -44,17 +44,17 @@ import gnu.classpath.jdwp.value.Value;
 
 /**
  * A class to wrap around values returned from a Method call in the VM.
- * 
+ *
  * @author Aaron Luchko <aluchko@redhat.com>
  */
 public class MethodResult
 {
   // The Object returned by the executing method
   private Value returnedValue;
-  
+
   // Any Exception that was thrown by the executing method
   private Throwable thrownException;
-  
+
   /**
    * Constructs a new MethodResult object
    *

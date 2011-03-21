@@ -669,8 +669,8 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
             runLock.lock();
             try {
                 // If not shutting down then clear an outstanding interrupt.
-                if (runState != STOP && 
-                    Thread.interrupted() && 
+                if (runState != STOP &&
+                    Thread.interrupted() &&
                     runState == STOP) // Re-interrupt if stopped after clearing
                     thread.interrupt();
                 boolean ran = false;
@@ -911,8 +911,8 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
      */
     public void shutdown() {
         // Fail if caller doesn't have modifyThread permission.
-	SecurityManager security = System.getSecurityManager();
-	if (security != null)
+        SecurityManager security = System.getSecurityManager();
+        if (security != null)
             security.checkPermission(shutdownPerm);
 
         boolean fullyTerminated = false;
@@ -978,8 +978,8 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
      */
     public List<Runnable> shutdownNow() {
         // Almost the same code as shutdown()
-	SecurityManager security = System.getSecurityManager();
-	if (security != null)
+        SecurityManager security = System.getSecurityManager();
+        if (security != null)
             security.checkPermission(shutdownPerm);
 
         boolean fullyTerminated = false;

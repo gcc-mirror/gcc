@@ -61,7 +61,7 @@ public class DCT
   /**
    * Figure A.3.3 IDCT, Cu Cv on A-5 of the ISO DIS 10918-1. Requirements and
    * Guidelines.
-   * 
+   *
    * @param u
    * @return
    */
@@ -100,7 +100,7 @@ public class DCT
    * slow_idct - Figure A.3.3 IDCT (informative) on A-5 of the ISO DIS
    * 10918-1. Requirements and Guidelines. This is a slow IDCT, there are
    * better algorithms to use, it's fairly expensive with processor speed.
-   * 
+   *
    * @param matrix
    * @return
    */
@@ -199,7 +199,7 @@ public class DCT
    * effecient and only inaccurate at about 1/1000th of a percent of values
    * analyzed. Cannot be static because initMatrix must run before any
    * fast_idct values can be computed.
-   * 
+   *
    * @param input
    * @return
    */
@@ -255,7 +255,7 @@ public class DCT
           {
             output[i][j] = ((double) input[i][j] - (double) 128.0);
             //                        input[i][j] -= 128;
-            
+
           }
       }
 

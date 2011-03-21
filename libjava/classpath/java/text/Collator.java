@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -49,14 +49,14 @@ import java.util.ResourceBundle;
 import java.util.ServiceLoader;
 
 /**
- * This class is the abstract superclass of classes which perform 
+ * This class is the abstract superclass of classes which perform
  * locale dependent <code>String</code> comparisons.  A caller requests
  * an instance of <code>Collator</code> for a particular locale using
  * the <code>getInstance()</code> static method in this class.  That method
  * will return a locale specific subclass of <code>Collator</code> which
  * can be used to perform <code>String</code> comparisons for that locale.
  * If a subclass of <code>Collator</code> cannot be located for a particular
- * locale, a default instance for the current locale will be returned.  
+ * locale, a default instance for the current locale will be returned.
  *
  * In addition to setting the correct locale, there are two additional
  * settings that can be adjusted to affect <code>String</code> comparisons:
@@ -82,7 +82,7 @@ public abstract class Collator implements Comparator<Object>, Cloneable
    * are considered to have a primary difference.
    */
   public static final int PRIMARY = 0;
-  
+
   /**
    * This constant is a strength value which indicates that only secondary
    * or primary differences between characters will be considered
@@ -90,7 +90,7 @@ public abstract class Collator implements Comparator<Object>, Cloneable
    * are instances of the same letter with different accented forms.
    */
   public static final int SECONDARY = 1;
-  
+
   /**
    * This constant is a strength value which indicates that tertiary,
    * secondary, and primary differences will be considered during sorting.
@@ -98,13 +98,13 @@ public abstract class Collator implements Comparator<Object>, Cloneable
    * This is the default value for the strength setting.
    */
   public static final int TERTIARY = 2;
-  
+
   /**
    * This constant is a strength value which indicates that any difference
    * at all between character values are considered significant.
    */
   public static final int IDENTICAL = 3;
-  
+
   /**
    * This constant indicates that accented characters won't be decomposed
    * when performing comparisons.  This will yield the fastest results, but
@@ -112,7 +112,7 @@ public abstract class Collator implements Comparator<Object>, Cloneable
    * use accents such as English.
    */
   public static final int NO_DECOMPOSITION = 0;
-  
+
   /**
    * This constant indicates that only characters which are canonical variants
    * in Unicode 2.0 will be decomposed prior to performing comparisons.  This
@@ -120,7 +120,7 @@ public abstract class Collator implements Comparator<Object>, Cloneable
    * default decomposition value.
    */
   public static final int CANONICAL_DECOMPOSITION = 1;
-  
+
   /**
    * This constant indicates that both canonical variants and compatibility
    * variants in Unicode 2.0 will be decomposed prior to performing
@@ -131,7 +131,7 @@ public abstract class Collator implements Comparator<Object>, Cloneable
 
   /**
    * This method initializes a new instance of <code>Collator</code> to have
-   * the default strength (TERTIARY) and decomposition 
+   * the default strength (TERTIARY) and decomposition
    * (CANONICAL_DECOMPOSITION) settings.  This constructor is protected and
    * is for use by subclasses only.  Non-subclass callers should use the
    * static <code>getInstance()</code> methods of this class to instantiate
@@ -147,7 +147,7 @@ public abstract class Collator implements Comparator<Object>, Cloneable
    * This method compares the two <code>String</code>'s and returns an
    * integer indicating whether or not the first argument is less than,
    * equal to, or greater than the second argument.  The comparison is
-   * performed according to the rules of the locale for this 
+   * performed according to the rules of the locale for this
    * <code>Collator</code> and the strength and decomposition rules in
    * effect.
    *
@@ -155,7 +155,7 @@ public abstract class Collator implements Comparator<Object>, Cloneable
    * @param target The second object to compare
    *
    * @return A negative integer if str1 &lt; str2, 0 if str1 == str2, or
-   * a positive integer if str1 &gt; str2. 
+   * a positive integer if str1 &gt; str2.
    */
   public abstract int compare (String source, String target);
 
@@ -169,10 +169,10 @@ public abstract class Collator implements Comparator<Object>, Cloneable
    * @param o2 The second object to compare
    *
    * @return A negative integer if obj1 &lt; obj2, 0 if obj1 == obj2, or
-   * a positive integer if obj1 &gt; obj2. 
+   * a positive integer if obj1 &gt; obj2.
    *
    * @exception ClassCastException If the arguments are not instances
-   * of <code>String</code>. 
+   * of <code>String</code>.
    */
   public int compare (Object o1, Object o2)
   {
@@ -191,7 +191,7 @@ public abstract class Collator implements Comparator<Object>, Cloneable
    * </ul>
    *
    * @param obj The <code>Object</code> to test for equality against
-   *            this object. 
+   *            this object.
    *
    * @return <code>true</code> if the specified object is equal to
    * this one, <code>false</code> otherwise.
@@ -213,7 +213,7 @@ public abstract class Collator implements Comparator<Object>, Cloneable
    * @param target The second <code>String</code> to compare
    *
    * @return <code>true</code> if the two strings are equal,
-   * <code>false</code> otherwise. 
+   * <code>false</code> otherwise.
    */
   public boolean equals (String source, String target)
   {
@@ -229,11 +229,11 @@ public abstract class Collator implements Comparator<Object>, Cloneable
   {
     try
       {
-	return super.clone ();
+        return super.clone ();
       }
     catch (CloneNotSupportedException _)
       {
-	return null;
+        return null;
       }
   }
 
@@ -300,46 +300,46 @@ public abstract class Collator implements Comparator<Object>, Cloneable
     String pattern;
     try
       {
-	ResourceBundle res =
-	  ResourceBundle.getBundle("gnu.java.locale.LocaleInformation",
-				   loc, ClassLoader.getSystemClassLoader());
-	return new RuleBasedCollator(res.getString("collation_rules"));
+        ResourceBundle res =
+          ResourceBundle.getBundle("gnu.java.locale.LocaleInformation",
+                                   loc, ClassLoader.getSystemClassLoader());
+        return new RuleBasedCollator(res.getString("collation_rules"));
       }
     catch (MissingResourceException x)
       {
-	/* This means runtime support for the locale
-	 * is not available, so we check providers. */
+        /* This means runtime support for the locale
+         * is not available, so we check providers. */
       }
     catch (ParseException x)
       {
-	throw (InternalError)new InternalError().initCause(x);
+        throw (InternalError)new InternalError().initCause(x);
       }
     for (CollatorProvider p : ServiceLoader.load(CollatorProvider.class))
       {
-	for (Locale l : p.getAvailableLocales())
-	  {
-	    if (l.equals(loc))
-	      {
-		Collator c = p.getInstance(loc);
-		if (c != null)
-		  return c;
-		break;
-	      }
-	  }
+        for (Locale l : p.getAvailableLocales())
+          {
+            if (l.equals(loc))
+              {
+                Collator c = p.getInstance(loc);
+                if (c != null)
+                  return c;
+                break;
+              }
+          }
       }
     if (loc.equals(Locale.ROOT))
       {
-	try
-	  {
-	    return new RuleBasedCollator("<0<1<2<3<4<5<6<7<8<9<A,a<b,B<c," +
-					 "C<d,D<e,E<f,F<g,G<h,H<i,I<j,J<k,K" +
-					 "<l,L<m,M<n,N<o,O<p,P<q,Q<r,R<s,S<t,"+
-					 "T<u,U<v,V<w,W<x,X<y,Y<z,Z");
-	  }
-	catch (ParseException x)
-	  {
-	    throw (InternalError)new InternalError().initCause(x);
-	  }
+        try
+          {
+            return new RuleBasedCollator("<0<1<2<3<4<5<6<7<8<9<A,a<b,B<c," +
+                                         "C<d,D<e,E<f,F<g,G<h,H<i,I<j,J<k,K" +
+                                         "<l,L<m,M<n,N<o,O<p,P<q,Q<r,R<s,S<t,"+
+                                         "T<u,U<v,V<w,W<x,X<y,Y<z,Z");
+          }
+        catch (ParseException x)
+          {
+            throw (InternalError)new InternalError().initCause(x);
+          }
       }
     return getInstance(LocaleHelper.getFallbackLocale(loc));
   }
@@ -378,8 +378,8 @@ public abstract class Collator implements Comparator<Object>, Cloneable
   public synchronized void setDecomposition (int mode)
   {
     if (mode != NO_DECOMPOSITION
-	&& mode != CANONICAL_DECOMPOSITION
-	&& mode != FULL_DECOMPOSITION)
+        && mode != CANONICAL_DECOMPOSITION
+        && mode != FULL_DECOMPOSITION)
       throw new IllegalArgumentException ();
     decmp = mode;
   }
@@ -389,7 +389,7 @@ public abstract class Collator implements Comparator<Object>, Cloneable
    * value.  This must be one of PRIMARY, SECONDARY, TERTIARY, or IDENTICAL.
    * Otherwise an exception is thrown. See the documentation for these
    * constants for an explanation of this setting.
-   * 
+   *
    * @param strength The new strength setting.
    *
    * @exception IllegalArgumentException If the requested strength
@@ -398,7 +398,7 @@ public abstract class Collator implements Comparator<Object>, Cloneable
   public synchronized void setStrength (int strength)
   {
     if (strength != PRIMARY && strength != SECONDARY
-	&& strength != TERTIARY && strength != IDENTICAL)
+        && strength != TERTIARY && strength != IDENTICAL)
       throw new IllegalArgumentException ();
     this.strength = strength;
   }

@@ -1,6 +1,6 @@
 /* Compatibility layer for using upstream CLooG versions with
    CLooG legacy code.
-   Copyright (C) 2010 Free Software Foundation, Inc.
+   Copyright (C) 2010, 2011 Free Software Foundation, Inc.
    Contributed by Andreas Simbuerger <simbuerg@fim.uni-passau.de>.
 
 This file is part of GCC.
@@ -37,8 +37,8 @@ typedef const char *clast_name_p;
 #ifndef CLOOG_ORG
 
 /* CloogOptions compatibility.  */
-#define build_cloog_prog(SCOP, PROG, OPT, STATE)\
-  build_cloog_prog (SCOP, PROG, STATE)
+#define build_cloog_prog(SCOP, PROG, OPT)\
+  build_cloog_prog (SCOP, PROG)
 #define cloog_program_extract_scalars(PROG, SCATT, OPT)\
   cloog_program_extract_scalars (PROG, SCATT)
 #define cloog_program_scatter(PROG, SCATT, OPT)\

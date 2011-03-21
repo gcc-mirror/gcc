@@ -1,0 +1,9 @@
+
+# In a cross build, bindir contains host not target binaries, so target DLLs
+# instead go in toolexeclibdir, alongside other target binaries and static libs.
+# Note double quoting to prevent variables from being evaluated until install
+# time; we don't want to expand them during libgcc.mvars generation, and in
+# any case, $toolexeclibdir is not defined in the gcc/ subdirectory, only in
+# target lib directories.
+
+SHLIB_DLLDIR = $$(toolexeclibdir)

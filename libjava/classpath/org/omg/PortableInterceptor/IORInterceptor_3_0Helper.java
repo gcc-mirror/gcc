@@ -52,9 +52,9 @@ import org.omg.CORBA.portable.OutputStream;
 
 /**
  * The helper operations for the CORBA object {@link IORInterceptor_3_0}.
- * 
- * @since 1.5 
- * 
+ *
+ * @since 1.5
+ *
  * @author Audrius Meskauskas, Lithuania (AudriusA@Bioinformatics.org)
  */
 public abstract class IORInterceptor_3_0Helper
@@ -64,13 +64,13 @@ public abstract class IORInterceptor_3_0Helper
    */
   public static TypeCode type()
   {
-    return OrbRestricted.Singleton.create_interface_tc(id(), 
+    return OrbRestricted.Singleton.create_interface_tc(id(),
       "IORInterceptor_3_0");
   }
 
   /**
    * Insert the IORInterceptor_3_0 into the given Any.
-   * 
+   *
    * @param any the Any to insert into.
    * @param that the IORInterceptor_3_0 to insert.
    */
@@ -81,7 +81,7 @@ public abstract class IORInterceptor_3_0Helper
 
   /**
    * Extract the IORInterceptor_3_0 from given Any.
-   * 
+   *
    * @throws BAD_OPERATION if the passed Any does not contain
    * IORInterceptor_3_0.
    */
@@ -89,7 +89,7 @@ public abstract class IORInterceptor_3_0Helper
   {
     try
       {
-        IORInterceptor_3_0Holder holder = (IORInterceptor_3_0Holder) 
+        IORInterceptor_3_0Holder holder = (IORInterceptor_3_0Holder)
           any.extract_Streamable();
         return holder.value;
       }
@@ -104,7 +104,7 @@ public abstract class IORInterceptor_3_0Helper
 
   /**
    * Get the IORInterceptor_3_0 repository id.
-   * 
+   *
    * @return "IDL:omg.org/PortableInterceptor/IORInterceptor_3_0:1.0", always.
    */
   public static String id()
@@ -117,7 +117,7 @@ public abstract class IORInterceptor_3_0Helper
    * different java type, create an instance of the _IORInterceptor_3_0Stub,
    * using the same delegate, as for the passed parameter. Hence, unlike java
    * type cast, this method may return a different object, than has been passed.
-   * 
+   *
    * @param obj the object to narrow.
    * @return narrowed instance.
    * @throws BAD_PARAM if the passed object is not a IORInterceptor_3_0.
@@ -136,17 +136,17 @@ public abstract class IORInterceptor_3_0Helper
         return new _IORInterceptor_3_0Stub(delegate);
       }
   }
-  
+
   /**
    * Narrow the passed object into the IORInterceptor_3_0. No type-checking is
    * performed to verify that the object actually supports the requested type.
    * The {@link BAD_OPERATION} will be thrown if unsupported operations are
    * invoked on the new returned reference, but no failure is expected at the
-   * time of the unchecked_narrow. For instance, the narrowing of the 
+   * time of the unchecked_narrow. For instance, the narrowing of the
    * remote instance of the {@link IORInterceptor} will work as long as only the
    * methods, inherited from this parent, are invoked.
-   * 
-   * 
+   *
+   *
    * @param obj the object to narrow.
    * @return narrowed instance.
    * @throws BAD_PARAM if the passed object is not a IORInterceptor_3_0.
@@ -163,12 +163,12 @@ public abstract class IORInterceptor_3_0Helper
         return new _IORInterceptor_3_0Stub(delegate);
       }
   }
-  
+
 
   /**
    * Read the IORInterceptor_3_0 from the CDR intput stream (IOR profile
    * expected).
-   * 
+   *
    * @param input a org.omg.CORBA.portable stream to read from.
    */
   public static IORInterceptor_3_0 read(InputStream input)
@@ -178,7 +178,7 @@ public abstract class IORInterceptor_3_0Helper
 
   /**
    * Write the IORInterceptor_3_0 to the CDR output stream (as IOR profile).
-   * 
+   *
    * @param output a org.omg.CORBA.portable stream stream to write into.
    * @param value a value to write.
    */

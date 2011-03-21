@@ -38,7 +38,7 @@ import org.objectweb.asm.Opcodes;
 /**
  * An {@link MethodVisitor} that collects the {@link Constant}s of the methods
  * it visits.
- * 
+ *
  * @author Eric Bruneton
  */
 public class MethodConstantsCollector extends MethodAdapter {

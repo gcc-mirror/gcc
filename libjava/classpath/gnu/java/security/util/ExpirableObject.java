@@ -57,7 +57,7 @@ import javax.security.auth.Destroyable;
  * <p>
  * Note that if a {@link DestroyFailedException} occurs when the timeout
  * expires, it will not be reported.
- * 
+ *
  * @see Destroyable
  */
 public abstract class ExpirableObject
@@ -89,7 +89,7 @@ public abstract class ExpirableObject
 
   /**
    * Create a new expirable object that will expire after the specified timeout.
-   * 
+   *
    * @param delay The delay before expiration.
    * @throws IllegalArgumentException If <i>delay</i> is negative, or if
    *           <code>delay + System.currentTimeMillis()</code> is negative.
@@ -104,7 +104,7 @@ public abstract class ExpirableObject
    * Destroys this object. This method calls {@link #doDestroy}, then, if no
    * exception is thrown, cancels the task that would destroy this object when
    * the timeout is reached.
-   * 
+   *
    * @throws DestroyFailedException If this operation fails.
    */
   public final void destroy() throws DestroyFailedException
@@ -116,7 +116,7 @@ public abstract class ExpirableObject
   /**
    * Subclasses must implement this method instead of the {@link
    * Destroyable#destroy()} method.
-   * 
+   *
    * @throws DestroyFailedException If this operation fails.
    */
   protected abstract void doDestroy() throws DestroyFailedException;

@@ -25,7 +25,9 @@
 
 #include <ext/atomicity.h>
 
-_GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
+namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #ifdef __arch64__
   _Atomic_word
@@ -119,4 +121,5 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
   }  
 #endif /* __arch32__ */
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace

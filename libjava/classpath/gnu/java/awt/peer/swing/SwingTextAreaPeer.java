@@ -66,7 +66,7 @@ public class SwingTextAreaPeer
 {
 
   /**
-   * A spezialized Swing scroller used to hold the textarea. 
+   * A spezialized Swing scroller used to hold the textarea.
    *
    * @author Roman Kennke (kennke@aicas.com)
    */
@@ -112,7 +112,7 @@ public class SwingTextAreaPeer
       else
         {
           ev.setSource(this);
-          this.dispatchEvent(ev);        
+          this.dispatchEvent(ev);
         }
     }
 
@@ -208,7 +208,7 @@ public class SwingTextAreaPeer
         par = SwingTextAreaPeer.this.awtComponent.getParent();
       return par;
     }
-    
+
     public void requestFocus() {
         SwingTextAreaPeer.this.requestFocus(awtComponent, false, true, 0);
     }
@@ -311,7 +311,7 @@ public class SwingTextAreaPeer
                                                  true, 0);
     }
   }
-  
+
   /**
    * The actual JTextArea.
    */
@@ -349,7 +349,7 @@ public class SwingTextAreaPeer
         rows = 5;
         textArea.setRows(rows);
       }
-    
+
     jTextArea.setColumns(columns);
     jTextArea.setRows(rows);
   }

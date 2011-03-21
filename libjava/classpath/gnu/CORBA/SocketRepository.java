@@ -57,7 +57,7 @@ public class SocketRepository
    * The socket map.
    */
   private static HashMap sockets = new HashMap();
-  
+
   /**
    * Put a socket. This method also discards all not reusable sockets from
    * the map.
@@ -74,28 +74,28 @@ public class SocketRepository
         gc();
       }
   }
-  
+
   /**
    * Removes all non reusable sockets. As it is private,
-   * we know we call from the synchronized code already. 
+   * we know we call from the synchronized code already.
    */
   private static void gc()
   {
     Iterator iter = sockets.entrySet().iterator();
-    
+
     Map.Entry e;
     Socket sx;
-    
+
     while (iter.hasNext())
       {
         e = (Map.Entry) iter.next();
         sx = (Socket) e.getValue();
-        
+
         if (not_reusable(sx))
           iter.remove();
       }
   }
-  
+
   /**
    * Return true if the socket is no longer reusable.
    */
@@ -107,9 +107,9 @@ public class SocketRepository
 
   /**
    * Get a socket.
-   * 
+   *
    * @param key a socket key.
-   * 
+   *
    * @return an opened socket for reuse, null if no such available or it is
    * closed, its input or output has been shutown or otherwise the socket is not
    * reuseable.

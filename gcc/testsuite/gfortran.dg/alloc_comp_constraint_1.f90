@@ -13,7 +13,7 @@ program main
 
     type(foo) :: a
     type(bar) :: b
-    namelist /blah/ a ! { dg-error "cannot have ALLOCATABLE components" }
+    namelist /blah/ a ! { dg-error "has ALLOCATABLE or POINTER components and thus requires a defined input/output" }
 
     write (*, *) a  ! { dg-error "cannot have ALLOCATABLE components" }
 

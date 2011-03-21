@@ -44,17 +44,17 @@ import javax.swing.tree.TreeSelectionModel;
 /**
  * A listener that receives {@link TreeSelectionEvent} notifications from a
  * source (such as a {@link TreeSelectionModel}).
- * 
+ *
  * @author Andrew Selkirk
  */
-public interface TreeSelectionListener extends EventListener 
+public interface TreeSelectionListener extends EventListener
 {
 
   /**
    * Receives notification of a change to a tree selection model.
-   * 
+   *
    * @param event  information about the event.
    */
   void valueChanged(TreeSelectionEvent event);
 
-} 
+}

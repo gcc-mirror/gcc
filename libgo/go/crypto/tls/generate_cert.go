@@ -9,6 +9,7 @@ package main
 
 import (
 	"crypto/rsa"
+	"crypto/rand"
 	"crypto/x509"
 	"encoding/pem"
 	"flag"
@@ -22,13 +23,7 @@ var hostName *string = flag.String("host", "127.0.0.1", "Hostname to generate a 
 func main() {
 	flag.Parse()
 
-	urandom, err := os.Open("/dev/urandom", os.O_RDONLY, 0)
-	if err != nil {
-		log.Exitf("failed to open /dev/urandom: %s", err)
-		return
-	}
-
-	priv, err := rsa.GenerateKey(urandom, 1024)
+	priv, err := rsa.GenerateKey(rand.Reader, 1024)
 	if err != nil {
 		log.Exitf("failed to generate private key: %s", err)
 		return
@@ -40,7 +35,7 @@ func main() {
 		SerialNumber: []byte{0},
 		Subject: x509.Name{
 			CommonName:   *hostName,
-			Organization: "Acme Co",
+			Organization: []string{"Acme Co"},
 		},
 		NotBefore: time.SecondsToUTC(now - 300),
 		NotAfter:  time.SecondsToUTC(now + 60*60*24*365), // valid for 1 year.
@@ -49,7 +44,7 @@ func main() {
 		KeyUsage:     x509.KeyUsageKeyEncipherment | x509.KeyUsageDigitalSignature,
 	}
 
-	derBytes, err := x509.CreateCertificate(urandom, &template, &template, &priv.PublicKey, priv)
+	derBytes, err := x509.CreateCertificate(rand.Reader, &template, &template, &priv.PublicKey, priv)
 	if err != nil {
 		log.Exitf("Failed to create certificate: %s", err)
 		return

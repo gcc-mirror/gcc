@@ -42,7 +42,7 @@ package gnu.java.beans.encoder;
  * A <code>ScannerState</code> implementation that prints useful details
  * about its arguments. Use it when the XML encoding does not work correctly
  * and you want to find out how things relate to each other.
- * 
+ *
  * @author Robert Schuster (robertschuster@fsfe.org)
  */
 class ReportingScannerState extends ScannerState
@@ -50,12 +50,12 @@ class ReportingScannerState extends ScannerState
 
   void methodInvocation(String methodName)
   {
-	System.out.println("methodInvocation: " + methodName + "()");
+        System.out.println("methodInvocation: " + methodName + "()");
   }
 
   void staticMethodInvocation(String className, String methodName)
   {
-	System.out.println("staticMethodInvocation: " + className + "." + methodName + "()");
+        System.out.println("staticMethodInvocation: " + className + "." + methodName + "()");
   }
 
   void staticFieldAccess(String className, String fieldName)
@@ -65,17 +65,17 @@ class ReportingScannerState extends ScannerState
 
   void classResolution(String className)
   {
-	System.out.println("classResolution: " + className);
+        System.out.println("classResolution: " + className);
   }
 
   void objectInstantiation(String className, ObjectId objectId)
   {
-	System.out.println("objectInstantiation: " + className);
+        System.out.println("objectInstantiation: " + className);
   }
 
   void primitiveInstantiation(String primitiveName, String valueAsString)
   {
-	System.out.println("primitiveInstantiation: (" + primitiveName + ") " + valueAsString);
+        System.out.println("primitiveInstantiation: (" + primitiveName + ") " + valueAsString);
   }
 
   void objectArrayInstantiation(String arrayClassName, String lengthAsString, ObjectId objectId)
@@ -90,27 +90,27 @@ class ReportingScannerState extends ScannerState
 
   void arraySet(String indexAsString)
   {
-	System.out.println("arraySet: " + indexAsString);
+        System.out.println("arraySet: " + indexAsString);
   }
 
   void arrayGet(String indexAsString)
   {
-	System.out.println("arrayGet: " + indexAsString);
+        System.out.println("arrayGet: " + indexAsString);
   }
 
   void listGet()
   {
-	System.out.println("listGet");
+        System.out.println("listGet");
   }
 
   void listSet()
   {
-	System.out.println("listSet");
+        System.out.println("listSet");
   }
 
   void nullObject()
   {
-	System.out.println("nullObject");
+        System.out.println("nullObject");
   }
 
   void stringReference(String string)
@@ -125,7 +125,7 @@ class ReportingScannerState extends ScannerState
 
  void end()
  {
- 	System.out.println("-close");
+        System.out.println("-close");
  }
- 
+
 }

@@ -34,7 +34,9 @@
 #include <bits/c++config.h>
 #include <bits/cpp_type_traits.h>
 
-_GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
+namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // Define a nested type if some predicate holds.
   template<bool, typename>
@@ -199,6 +201,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       typedef __typeof__(__type1() + __type2() + __type3() + __type4()) __type;
     };
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
 
 #endif 

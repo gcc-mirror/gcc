@@ -1,4 +1,4 @@
-/* FieldView.java -- 
+/* FieldView.java --
    Copyright (C) 2004, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -56,36 +56,36 @@ import javax.swing.event.DocumentEvent;
 public class FieldView extends PlainView
 {
   BoundedRangeModel horizontalVisibility;
-  
+
   /** Caches the preferred span of the X axis. It is invalidated by
    * setting it to -1f. This is done when text in the document
    * is inserted, removed or changed. The value is corrected as
-   * soon as calculateHorizontalSpan() is called. 
+   * soon as calculateHorizontalSpan() is called.
    */
   float cachedSpan = -1f;
 
   public FieldView(Element elem)
   {
     super(elem);
-    
+
   }
-  
+
   /** Checks whether the given container is a JTextField. If so
    * it retrieves the textfield's horizontalVisibility instance.
-   * 
+   *
    * <p>This method should be only called when the view's container
    * is valid. Naturally that would be the setParent() method however
    * that method is not overridden in the RI and that is why we chose
    * paint() instead.</p>
-   */ 
+   */
   private void checkContainer()
   {
     Container c = getContainer();
-    
+
     if (c instanceof JTextField)
       {
         horizontalVisibility = ((JTextField) c).getHorizontalVisibility();
-        
+
         // Provokes a repaint when the BoundedRangeModel's values change
         // (which is what the RI does).
         horizontalVisibility.addChangeListener(new ChangeListener(){
@@ -98,25 +98,25 @@ public class FieldView extends PlainView
         // and needs to be recalculated (e.g. a different font setting is
         // not taken into account).
         calculateHorizontalSpan();
-        
+
         // Initializes the BoundedRangeModel properly.
         updateVisibility();
       }
-    
+
   }
-  
+
   private void updateVisibility()
   {
     JTextField tf = (JTextField) getContainer();
     Insets insets = tf.getInsets();
 
     int width = tf.getWidth() - insets.left - insets.right;
-        
+
     horizontalVisibility.setMaximum(Math.max((int) ((cachedSpan != -1f)
                                                  ? cachedSpan
                                                  : calculateHorizontalSpan()),
                                              width));
-        
+
     horizontalVisibility.setExtent(width - 1);
   }
 
@@ -140,7 +140,7 @@ public class FieldView extends PlainView
     // Return null when the original allocation is null (like the RI).
     if (shape == null)
       return null;
-    
+
     Rectangle rectIn = shape.getBounds();
     // vertical adjustment
     int height = (int) getPreferredSpan(Y_AXIS);
@@ -177,7 +177,7 @@ public class FieldView extends PlainView
           x = rectIn.x;
           break;
         }
-    
+
     return new Rectangle(x, y, width, height);
   }
 
@@ -192,13 +192,13 @@ public class FieldView extends PlainView
 
     if (cachedSpan != -1f)
       return cachedSpan;
-    
+
     return calculateHorizontalSpan();
   }
-  
+
   /** Calculates and sets the horizontal span and stores the value
    * in cachedSpan.
-   */ 
+   */
   private float calculateHorizontalSpan()
   {
     Segment s = getLineBuffer();
@@ -209,15 +209,15 @@ public class FieldView extends PlainView
         elem.getDocument().getText(elem.getStartOffset(),
                                           elem.getEndOffset() - 1,
                                           s);
-        
+
         return cachedSpan = Utilities.getTabbedTextWidth(s, getFontMetrics(), 0, this, s.offset);
       }
     catch (BadLocationException e)
       {
-	// Should never happen
-	AssertionError ae = new AssertionError();
-	ae.initCause(e);
-	throw ae;
+        // Should never happen
+        AssertionError ae = new AssertionError();
+        ae.initCause(e);
+        throw ae;
       }
   }
 
@@ -225,21 +225,21 @@ public class FieldView extends PlainView
   {
     return axis == X_AXIS ? 1 : 0;
   }
-  
+
   public Shape modelToView(int pos, Shape a, Position.Bias bias)
     throws BadLocationException
   {
     Shape newAlloc = adjustAllocation(a);
     return super.modelToView(pos, newAlloc, bias);
   }
-  
+
   public void paint(Graphics g, Shape s)
   {
     if (horizontalVisibility == null)
       checkContainer();
 
     Shape newAlloc = adjustAllocation(s);
-    
+
     Shape clip = g.getClip();
     if (clip != null)
       {
@@ -262,18 +262,18 @@ public class FieldView extends PlainView
 
     super.paint(g, newAlloc);
     g.setClip(clip);
-    
+
   }
 
   public void insertUpdate(DocumentEvent ev, Shape shape, ViewFactory vf)
   {
     cachedSpan = -1f;
-    
+
     if (horizontalVisibility != null)
       updateVisibility();
-    
+
     Shape newAlloc = adjustAllocation(shape);
-    
+
     super.insertUpdate(ev, newAlloc, vf);
     getContainer().repaint();
   }
@@ -281,7 +281,7 @@ public class FieldView extends PlainView
   public void removeUpdate(DocumentEvent ev, Shape shape, ViewFactory vf)
   {
     cachedSpan = -1f;
-    
+
     if (horizontalVisibility != null)
       updateVisibility();
 
@@ -293,7 +293,7 @@ public class FieldView extends PlainView
   public void changedUpdate(DocumentEvent ev, Shape shape, ViewFactory vf)
   {
     cachedSpan = -1f;
-    
+
     if (horizontalVisibility != null)
       updateVisibility();
 
@@ -306,5 +306,5 @@ public class FieldView extends PlainView
   {
     return super.viewToModel(fx, fy, adjustAllocation(a), bias);
   }
-  
+
 }

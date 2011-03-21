@@ -1,7 +1,7 @@
 /* Global common subexpression elimination/Partial redundancy elimination
    and global constant/copy propagation for GNU compiler.
    Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-   2006, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
+   2006, 2007, 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -2738,7 +2738,7 @@ do_local_cprop (rtx x, rtx insn)
           || (GET_CODE (PATTERN (insn)) != USE
 	      && asm_noperands (PATTERN (insn)) < 0)))
     {
-      cselib_val *val = cselib_lookup (x, GET_MODE (x), 0);
+      cselib_val *val = cselib_lookup (x, GET_MODE (x), 0, VOIDmode);
       struct elt_loc_list *l;
 
       if (!val)
@@ -3396,6 +3396,75 @@ prune_expressions (bool pre_p)
   sbitmap_free (prune_exprs);
 }
 
+/* It may be necessary to insert a large number of insns on edges to
+   make the existing occurrences of expressions fully redundant.  This
+   routine examines the set of insertions and deletions and if the ratio
+   of insertions to deletions is too high for a particular expression, then
+   the expression is removed from the insertion/deletion sets. 
+
+   N_ELEMS is the number of elements in the hash table.  */
+
+static void
+prune_insertions_deletions (int n_elems)
+{
+  sbitmap_iterator sbi;
+  sbitmap prune_exprs;
+
+  /* We always use I to iterate over blocks/edges and J to iterate over
+     expressions.  */
+  unsigned int i, j;
+
+  /* Counts for the number of times an expression needs to be inserted and
+     number of times an expression can be removed as a result.  */
+  int *insertions = GCNEWVEC (int, n_elems);
+  int *deletions = GCNEWVEC (int, n_elems);
+
+  /* Set of expressions which require too many insertions relative to
+     the number of deletions achieved.  We will prune these out of the
+     insertion/deletion sets.  */
+  prune_exprs = sbitmap_alloc (n_elems);
+  sbitmap_zero (prune_exprs);
+
+  /* Iterate over the edges counting the number of times each expression
+     needs to be inserted.  */
+  for (i = 0; i < (unsigned) n_edges; i++)
+    {
+      EXECUTE_IF_SET_IN_SBITMAP (pre_insert_map[i], 0, j, sbi)
+	insertions[j]++;
+    }
+
+  /* Similarly for deletions, but those occur in blocks rather than on
+     edges.  */
+  for (i = 0; i < (unsigned) last_basic_block; i++)
+    {
+      EXECUTE_IF_SET_IN_SBITMAP (pre_delete_map[i], 0, j, sbi)
+	deletions[j]++;
+    }
+
+  /* Now that we have accurate counts, iterate over the elements in the
+     hash table and see if any need too many insertions relative to the
+     number of evaluations that can be removed.  If so, mark them in
+     PRUNE_EXPRS.  */
+  for (j = 0; j < (unsigned) n_elems; j++)
+    if (deletions[j]
+	&& ((unsigned) insertions[j] / deletions[j]) > MAX_GCSE_INSERTION_RATIO)
+      SET_BIT (prune_exprs, j);
+
+  /* Now prune PRE_INSERT_MAP and PRE_DELETE_MAP based on PRUNE_EXPRS.  */
+  EXECUTE_IF_SET_IN_SBITMAP (prune_exprs, 0, j, sbi)
+    {
+      for (i = 0; i < (unsigned) n_edges; i++)
+	RESET_BIT (pre_insert_map[i], j);
+
+      for (i = 0; i < (unsigned) last_basic_block; i++)
+	RESET_BIT (pre_delete_map[i], j);
+    }
+
+  sbitmap_free (prune_exprs);
+  free (insertions);
+  free (deletions);
+}
+
 /* Top level routine to do the dataflow analysis needed by PRE.  */
 
 static void
@@ -3424,6 +3493,8 @@ compute_pre_data (void)
   antloc = NULL;
   sbitmap_vector_free (ae_kill);
   ae_kill = NULL;
+
+  prune_insertions_deletions (expr_hash_table.n_elems);
 }
 
 /* PRE utilities */
@@ -4449,9 +4520,7 @@ hoist_code (void)
 		    {
 		      /* An occurence might've been already deleted
 			 while processing a dominator of BB.  */
-		      if (occr->deleted_p)
-			gcc_assert (MAX_HOIST_DEPTH > 1);
-		      else
+		      if (!occr->deleted_p)
 			{
 			  gcc_assert (NONDEBUG_INSN_P (occr->insn));
 			  hoistable++;
@@ -4483,10 +4552,7 @@ hoist_code (void)
 		  /* An occurence might've been already deleted
 		     while processing a dominator of BB.  */
 		  if (occr->deleted_p)
-		    {
-		      gcc_assert (MAX_HOIST_DEPTH > 1);
-		      continue;
-		    }
+		    continue;
 		  gcc_assert (NONDEBUG_INSN_P (occr->insn));
 
 		  max_distance = expr->max_distance;
@@ -5368,3 +5434,4 @@ struct rtl_opt_pass pass_rtl_hoist =
 };
 
 #include "gt-gcse.h"
+

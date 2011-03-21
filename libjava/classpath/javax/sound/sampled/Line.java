@@ -94,7 +94,7 @@ public interface Line
    * @param listener the listener to notify
    */
   void addLineListener(LineListener listener);
-  
+
   /**
    * Close this line.
    */

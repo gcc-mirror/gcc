@@ -43,40 +43,40 @@ import java.util.EventObject;
 /**
  * An event that contains information about a modification to the content of
  * a list.
- * 
+ *
  * @author Andrew Selkirk
  * @author Ronald Veldema
  */
 public class ListDataEvent extends EventObject
 {
   private static final long serialVersionUID = 2510353260071004774L;
-  
+
   /** An event type indicating that the list content has been modified. */
   public static final int CONTENTS_CHANGED = 0;
-  
+
   /** An event type indicating that an interval has been added to the list. */
   public static final int INTERVAL_ADDED = 1;
-  
-  /** 
-   * An event type indicating that an interval has been removed from the 
-   * list. 
+
+  /**
+   * An event type indicating that an interval has been removed from the
+   * list.
    */
   public static final int INTERVAL_REMOVED = 2;
 
   private int type;
   private int index0;
   private int index1;
-	
+
   /**
    * Creates a <code>ListDataEvent</code> object.
-   * 
+   *
    * @param source  the source of the event (<code>null</code> not permitted).
-   * @param type  the type of the event (should be one of 
-   *     {@link #CONTENTS_CHANGED}, {@link #INTERVAL_ADDED} or 
+   * @param type  the type of the event (should be one of
+   *     {@link #CONTENTS_CHANGED}, {@link #INTERVAL_ADDED} or
    *     {@link #INTERVAL_REMOVED}, although this is not enforced).
-   * @param index0  the index for one end of the modified range of list 
+   * @param index0  the index for one end of the modified range of list
    *     elements.
-   * @param index1  the index for the other end of the modified range of list 
+   * @param index1  the index for the other end of the modified range of list
    *     elements.
    */
   public ListDataEvent(Object source, int type, int index0, int index1)
@@ -86,10 +86,10 @@ public class ListDataEvent extends EventObject
     this.index0 = Math.min(index0, index1);
     this.index1 = Math.max(index0, index1);
   }
-	
+
   /**
    * Returns the index of the first item in the range of modified list items.
-   * 
+   *
    * @return The index of the first item in the range of modified list items.
    */
   public int getIndex0()
@@ -99,7 +99,7 @@ public class ListDataEvent extends EventObject
 
   /**
    * Returns the index of the last item in the range of modified list items.
-   * 
+   *
    * @return The index of the last item in the range of modified list items.
    */
   public int getIndex1()
@@ -109,24 +109,24 @@ public class ListDataEvent extends EventObject
 
   /**
    * Returns a code representing the type of this event, which is usually one
-   * of {@link #CONTENTS_CHANGED}, {@link #INTERVAL_ADDED} or 
+   * of {@link #CONTENTS_CHANGED}, {@link #INTERVAL_ADDED} or
    * {@link #INTERVAL_REMOVED}.
-   * 
+   *
    * @return The event type.
    */
   public int getType()
   {
     return type;
   }
-  
+
   /**
    * Returns a string representing the state of this event.
-   * 
+   *
    * @return A string.
    */
   public String toString()
   {
-    return getClass().getName() + "[type=" + type + ",index0=" + index0 
+    return getClass().getName() + "[type=" + type + ",index0=" + index0
         + ",index1=" + index1 + "]";
   }
 }

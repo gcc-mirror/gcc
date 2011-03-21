@@ -47,11 +47,11 @@ import javax.swing.plaf.metal.MetalIconFactory;
 /**
  * A simple demo showing various combo boxes in different states.
  */
-public class ComboBoxDemo 
+public class ComboBoxDemo
   extends JPanel
-  implements ActionListener 
+  implements ActionListener
 {
- 
+
   class CustomCellRenderer extends DefaultListCellRenderer
   {
     public Component getListCellRendererComponent(JList list,
@@ -60,9 +60,9 @@ public class ComboBoxDemo
                                               boolean isSelected,
                                               boolean cellHasFocus)
     {
-      DefaultListCellRenderer result = (DefaultListCellRenderer) 
-          super.getListCellRendererComponent(list, value, index, isSelected, 
-	  cellHasFocus);
+      DefaultListCellRenderer result = (DefaultListCellRenderer)
+          super.getListCellRendererComponent(list, value, index, isSelected,
+          cellHasFocus);
       Icon icon = (Icon) value;
       result.setIcon(icon);
       result.setText("Index = " + index);
@@ -70,47 +70,47 @@ public class ComboBoxDemo
     }
   }
 
-  private JCheckBox comboState1;  
+  private JCheckBox comboState1;
   private JComboBox combo1;
   private JComboBox combo2;
 
-  private JCheckBox comboState2;    
+  private JCheckBox comboState2;
   private JComboBox combo3;
   private JComboBox combo4;
-    
-  private JCheckBox comboState3;    
+
+  private JCheckBox comboState3;
   private JComboBox combo5;
   private JComboBox combo6;
 
-  private JCheckBox comboState4;    
+  private JCheckBox comboState4;
   private JComboBox combo7;
   private JComboBox combo8;
 
-  private JCheckBox comboState5;    
+  private JCheckBox comboState5;
   private JComboBox combo9;
   private JComboBox combo10;
-  
+
   private JCheckBox comboState6;
   private JComboBox combo11;
   private JComboBox combo12;
-  
+
   /**
    * Creates a new demo instance.
    */
-  public ComboBoxDemo() 
+  public ComboBoxDemo()
   {
     super();
     createContent();
   }
-  
+
   /**
    * When the demo is run independently, the frame is displayed, so we should
-   * initialise the content panel (including the demo content and a close 
+   * initialise the content panel (including the demo content and a close
    * button).  But when the demo is run as part of the Swing activity board,
    * only the demo content panel is used, the frame itself is never displayed,
    * so we can avoid this step.
    */
-  void initFrameContent() 
+  void initFrameContent()
   {
     JPanel closePanel = new JPanel();
     JButton closeButton = new JButton("Close");
@@ -119,15 +119,15 @@ public class ComboBoxDemo
     closePanel.add(closeButton);
     add(closePanel, BorderLayout.SOUTH);
   }
-       
+
   /**
    * Returns a panel with the demo content.  The panel
    * uses a BorderLayout(), and the BorderLayout.SOUTH area
-   * is empty, to allow callers to add controls to the 
+   * is empty, to allow callers to add controls to the
    * bottom of the panel if they want to (a close button is
    * added if this demo is being run as a standalone demo).
-   */       
-  private void createContent() 
+   */
+  private void createContent()
   {
     setLayout(new BorderLayout());
     JPanel panel = new JPanel(new GridLayout(6, 1));
@@ -139,127 +139,127 @@ public class ComboBoxDemo
     panel.add(createPanel6());
     add(panel);
   }
-    
-  private JPanel createPanel1() 
+
+  private JPanel createPanel1()
   {
     JPanel panel = new JPanel(new BorderLayout());
     this.comboState1 = new JCheckBox("Enabled", true);
     this.comboState1.setActionCommand("COMBO_STATE1");
     this.comboState1.addActionListener(this);
     panel.add(this.comboState1, BorderLayout.EAST);
-        
+
     JPanel controlPanel = new JPanel();
     controlPanel.setBorder(BorderFactory.createTitledBorder("Regular: "));
-    this.combo1 = new JComboBox(new Object[] {"Australia", "New Zealand", 
+    this.combo1 = new JComboBox(new Object[] {"Australia", "New Zealand",
             "England"});
-        
-    this.combo2 = new JComboBox(new Object[] {"Australia", "New Zealand", 
+
+    this.combo2 = new JComboBox(new Object[] {"Australia", "New Zealand",
             "England"});
     this.combo2.setEditable(true);
-        
+
     controlPanel.add(combo1);
     controlPanel.add(combo2);
-        
+
     panel.add(controlPanel);
-     
+
     return panel;
   }
-    
-  private JPanel createPanel2() 
+
+  private JPanel createPanel2()
   {
     JPanel panel = new JPanel(new BorderLayout());
     this.comboState2 = new JCheckBox("Enabled", true);
     this.comboState2.setActionCommand("COMBO_STATE2");
     this.comboState2.addActionListener(this);
     panel.add(this.comboState2, BorderLayout.EAST);
-        
+
     JPanel controlPanel = new JPanel();
     controlPanel.setBorder(BorderFactory.createTitledBorder("Large Font: "));
-    this.combo3 = new JComboBox(new Object[] {"Australia", "New Zealand", 
+    this.combo3 = new JComboBox(new Object[] {"Australia", "New Zealand",
             "England"});
     this.combo3.setFont(new Font("Dialog", Font.PLAIN, 20));
-        
-    this.combo4 = new JComboBox(new Object[] {"Australia", "New Zealand", 
+
+    this.combo4 = new JComboBox(new Object[] {"Australia", "New Zealand",
             "England"});
     this.combo4.setEditable(true);
     this.combo4.setFont(new Font("Dialog", Font.PLAIN, 20));
-        
+
     controlPanel.add(combo3);
     controlPanel.add(combo4);
-        
+
     panel.add(controlPanel);
-     
+
     return panel;
   }
 
-  private JPanel createPanel3() 
+  private JPanel createPanel3()
   {
     JPanel panel = new JPanel(new BorderLayout());
     this.comboState3 = new JCheckBox("Enabled", true);
     this.comboState3.setActionCommand("COMBO_STATE3");
     this.comboState3.addActionListener(this);
     panel.add(this.comboState3, BorderLayout.EAST);
-        
+
     JPanel controlPanel = new JPanel();
     controlPanel.setBorder(BorderFactory.createTitledBorder("Colored Background: "));
-    this.combo5 = new JComboBox(new Object[] {"Australia", "New Zealand", 
+    this.combo5 = new JComboBox(new Object[] {"Australia", "New Zealand",
             "England"});
     this.combo5.setBackground(Color.yellow);
-    
-    this.combo6 = new JComboBox(new Object[] {"Australia", "New Zealand", 
+
+    this.combo6 = new JComboBox(new Object[] {"Australia", "New Zealand",
             "England"});
     this.combo6.setEditable(true);
     this.combo6.setBackground(Color.yellow);
-        
+
     controlPanel.add(combo5);
     controlPanel.add(combo6);
-        
+
     panel.add(controlPanel);
-     
+
     return panel;
   }
-    
+
   /**
    * This panel contains combo boxes that are empty.
-   * 
+   *
    * @return A panel.
    */
-  private JPanel createPanel4() 
+  private JPanel createPanel4()
   {
     JPanel panel = new JPanel(new BorderLayout());
     this.comboState4 = new JCheckBox("Enabled", true);
     this.comboState4.setActionCommand("COMBO_STATE4");
     this.comboState4.addActionListener(this);
     panel.add(this.comboState4, BorderLayout.EAST);
-        
+
     JPanel controlPanel = new JPanel();
     controlPanel.setBorder(BorderFactory.createTitledBorder("Empty: "));
     this.combo7 = new JComboBox();
     this.combo8 = new JComboBox();
     this.combo8.setEditable(true);
-        
+
     controlPanel.add(combo7);
     controlPanel.add(combo8);
-        
+
     panel.add(controlPanel);
-     
+
     return panel;
   }
-    
+
   /**
-   * This panel contains combo boxes that are narrow but contain long text 
+   * This panel contains combo boxes that are narrow but contain long text
    * items.
-   * 
+   *
    * @return A panel.
    */
-  private JPanel createPanel5() 
+  private JPanel createPanel5()
   {
     JPanel panel = new JPanel(new BorderLayout());
     this.comboState5 = new JCheckBox("Enabled", true);
     this.comboState5.setActionCommand("COMBO_STATE5");
     this.comboState5.addActionListener(this);
     panel.add(this.comboState5, BorderLayout.EAST);
-        
+
     JPanel controlPanel = new JPanel();
     controlPanel.setBorder(BorderFactory.createTitledBorder("Narrow: "));
     this.combo9 = new JComboBox(new Object[] {
@@ -269,28 +269,28 @@ public class ComboBoxDemo
             "A really long item that will be truncated when displayed"});
     this.combo10.setPreferredSize(new Dimension(100, 30));
     this.combo10.setEditable(true);
-        
+
     controlPanel.add(combo9);
     controlPanel.add(combo10);
-        
+
     panel.add(controlPanel);
-     
+
     return panel;
   }
 
   /**
    * This panel contains combo boxes with a custom renderer.
-   * 
+   *
    * @return A panel.
    */
-  private JPanel createPanel6() 
+  private JPanel createPanel6()
   {
     JPanel panel = new JPanel(new BorderLayout());
     this.comboState6 = new JCheckBox("Enabled", true);
     this.comboState6.setActionCommand("COMBO_STATE6");
     this.comboState6.addActionListener(this);
     panel.add(this.comboState6, BorderLayout.EAST);
-        
+
     JPanel controlPanel = new JPanel();
     controlPanel.setBorder(BorderFactory.createTitledBorder("Custom Renderer: "));
     this.combo11 = new JComboBox(new Object[] {
@@ -304,43 +304,43 @@ public class ComboBoxDemo
     this.combo12.setPreferredSize(new Dimension(100, 30));
     this.combo12.setRenderer(new CustomCellRenderer());
     this.combo12.setEditable(true);
-        
+
     controlPanel.add(combo11);
     controlPanel.add(combo12);
-        
+
     panel.add(controlPanel);
-     
+
     return panel;
   }
 
-  public void actionPerformed(ActionEvent e) 
+  public void actionPerformed(ActionEvent e)
   {
-    if (e.getActionCommand().equals("COMBO_STATE1")) 
+    if (e.getActionCommand().equals("COMBO_STATE1"))
     {
       combo1.setEnabled(comboState1.isSelected());
       combo2.setEnabled(comboState1.isSelected());
     }
-    else if (e.getActionCommand().equals("COMBO_STATE2")) 
+    else if (e.getActionCommand().equals("COMBO_STATE2"))
     {
       combo3.setEnabled(comboState2.isSelected());
       combo4.setEnabled(comboState2.isSelected());
     }
-    else if (e.getActionCommand().equals("COMBO_STATE3")) 
+    else if (e.getActionCommand().equals("COMBO_STATE3"))
     {
       combo5.setEnabled(comboState3.isSelected());
       combo6.setEnabled(comboState3.isSelected());
     }
-    else if (e.getActionCommand().equals("COMBO_STATE4")) 
+    else if (e.getActionCommand().equals("COMBO_STATE4"))
     {
       combo7.setEnabled(comboState4.isSelected());
       combo8.setEnabled(comboState4.isSelected());
     }
-    else if (e.getActionCommand().equals("COMBO_STATE5")) 
+    else if (e.getActionCommand().equals("COMBO_STATE5"))
     {
       combo9.setEnabled(comboState5.isSelected());
       combo10.setEnabled(comboState5.isSelected());
     }
-    else if (e.getActionCommand().equals("COMBO_STATE6")) 
+    else if (e.getActionCommand().equals("COMBO_STATE6"))
     {
       combo11.setEnabled(comboState6.isSelected());
       combo12.setEnabled(comboState6.isSelected());
@@ -351,7 +351,7 @@ public class ComboBoxDemo
     }
   }
 
-  public static void main(String[] args) 
+  public static void main(String[] args)
   {
     SwingUtilities.invokeLater
     (new Runnable()

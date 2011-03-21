@@ -46,7 +46,7 @@ import java.awt.image.WritableRaster;
 import java.awt.image.ColorModel;
 import java.awt.color.ColorSpace;
 
-public class PNGFile 
+public class PNGFile
 {
   /**
    * The PNG file signature.
@@ -59,7 +59,7 @@ public class PNGFile
    * 0 bytes of length, the "IEND" tag and its CRC.
    */
   private static final byte[] endChunk = new byte[]
-  { 0, 0, 0, 0, (byte)0x49, (byte)0x45, (byte)0x4E, (byte)0x44, 
+  { 0, 0, 0, 0, (byte)0x49, (byte)0x45, (byte)0x4E, (byte)0x44,
     (byte)0xAE, (byte)0x42, (byte)0x60, (byte)0x82 };
 
   /**
@@ -91,7 +91,7 @@ public class PNGFile
    * The encoder, if any. (Either this or the above must exist).
    */
   private PNGEncoder encoder;
-  
+
   /**
    * The source of this PNG (if encoding)
    */
@@ -104,7 +104,7 @@ public class PNGFile
   {
     PNGChunk chunk;
     byte[] fileHdr = new byte[8];
-    chunks = new Vector(); 
+    chunks = new Vector();
     hasPalette = false;
 
     if( in.read( fileHdr ) != 8 )
@@ -124,24 +124,24 @@ public class PNGFile
     // Read chunks.
     do
       {
-	chunk = PNGChunk.readChunk( in, false );
-	/*
-	 * We could exit here or output some kind of warning.
-	 * But in the meantime, we'll just silently drop invalid chunks.
-	 */
-	if( chunk.isValidChunk() )
-	  {
-	    if( chunk instanceof PNGData )
-	      decoder.addData( (PNGData)chunk );
-	    else // Silently ignore multiple headers, and use only the first.
-	      if( chunk.getType() != PNGChunk.TYPE_END )
-		{
-		  chunks.add( chunk ); 
-		  hasPalette |= ( chunk instanceof PNGPalette );
-		}
-	  }
-	else
-	  System.out.println("WARNING: Invalid chunk!");
+        chunk = PNGChunk.readChunk( in, false );
+        /*
+         * We could exit here or output some kind of warning.
+         * But in the meantime, we'll just silently drop invalid chunks.
+         */
+        if( chunk.isValidChunk() )
+          {
+            if( chunk instanceof PNGData )
+              decoder.addData( (PNGData)chunk );
+            else // Silently ignore multiple headers, and use only the first.
+              if( chunk.getType() != PNGChunk.TYPE_END )
+                {
+                  chunks.add( chunk );
+                  hasPalette |= ( chunk instanceof PNGPalette );
+                }
+          }
+        else
+          System.out.println("WARNING: Invalid chunk!");
       }
     while( chunk.getType() != PNGChunk.TYPE_END );
 
@@ -163,7 +163,7 @@ public class PNGFile
     chunks = new Vector();
     encoder = new PNGEncoder( bi );
     header = encoder.getHeader();
-    if( header.isIndexed() ) 
+    if( header.isIndexed() )
       chunks.add( encoder.getPalette() );
 
     // Do the compression and put the data chunks in the list.
@@ -179,8 +179,8 @@ public class PNGFile
     header.writeChunk( out );
     for( int i = 0; i < chunks.size(); i++ )
       {
-	PNGChunk chunk = ((PNGChunk)chunks.elementAt(i));
-	chunk.writeChunk( out );
+        PNGChunk chunk = ((PNGChunk)chunks.elementAt(i));
+        chunk.writeChunk( out );
       }
     out.write( endChunk );
   }
@@ -194,7 +194,7 @@ public class PNGFile
       return false;
     for( int i = 0; i < 8; i++ )
       if( signature[i] != hdr[i] )
-	return false;
+        return false;
     return true;
   }
 
@@ -210,16 +210,16 @@ public class PNGFile
     ColorModel cm;
     if( header.isIndexed() )
       {
-	PNGPalette pngp = getPalette();
-	cm = pngp.getPalette( getColorSpace() );
+        PNGPalette pngp = getPalette();
+        cm = pngp.getPalette( getColorSpace() );
       }
     else
-      cm = decoder.getColorModel( getColorSpace(), 
-				  header.getColorType(), 
-				  header.getDepth() );
-    
+      cm = decoder.getColorModel( getColorSpace(),
+                                  header.getColorType(),
+                                  header.getDepth() );
+
     return new BufferedImage(cm, r, false, null);
-  } 
+  }
 
   /**
    * Find the palette chunk and return it
@@ -228,7 +228,7 @@ public class PNGFile
   {
     for(int i = 0; i < chunks.size(); i++ )
       if( chunks.elementAt(i) instanceof PNGPalette )
-	return ((PNGPalette)chunks.elementAt(i));
+        return ((PNGPalette)chunks.elementAt(i));
     return null;
   }
 
@@ -242,10 +242,10 @@ public class PNGFile
     PNGGamma gamma = null;
     for(int i = 0; i < chunks.size(); i++ )
       {
-	if( chunks.elementAt(i) instanceof PNGICCProfile )
-	  icc = ((PNGICCProfile)chunks.elementAt(i));
-	else if(chunks.elementAt(i) instanceof PNGGamma )
-	  gamma = ((PNGGamma)chunks.elementAt(i));
+        if( chunks.elementAt(i) instanceof PNGICCProfile )
+          icc = ((PNGICCProfile)chunks.elementAt(i));
+        else if(chunks.elementAt(i) instanceof PNGGamma )
+          gamma = ((PNGGamma)chunks.elementAt(i));
       }
 
     if( icc != null )

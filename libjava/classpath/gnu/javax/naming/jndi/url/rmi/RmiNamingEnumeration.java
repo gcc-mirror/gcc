@@ -46,7 +46,7 @@ import javax.naming.NamingException;
 /**
  * Iterates over name class pairs, obtaining values first from the binding list
  * and then from the binding iterator.
- * 
+ *
  * @author Audrius Meskauskas
  */
 public abstract class RmiNamingEnumeration implements NamingEnumeration
@@ -55,7 +55,7 @@ public abstract class RmiNamingEnumeration implements NamingEnumeration
    * The array of bindings, returned at once.
    */
   String[] list;
-  
+
   /**
    * The position of the element in the binding list, that must be returned
    * during the subsequent call of the next(). If this field is grater or equal
@@ -63,15 +63,15 @@ public abstract class RmiNamingEnumeration implements NamingEnumeration
    * iterator.
    */
   int p;
-  
+
   RmiNamingEnumeration(String[] bindingList)
   {
     list = bindingList;
   }
-  
+
   /**
    * Convert from the CORBA binding into that this enumeration should return.
-   * 
+   *
    * @param binding
    *          the binding to convert
    * @return the value, that must be returned by the {@link #next()}.
@@ -80,7 +80,7 @@ public abstract class RmiNamingEnumeration implements NamingEnumeration
 
   /**
    * Checks if there are more elements to return.
-   * 
+   *
    * @throws NamingException
    *           never
    */
@@ -91,7 +91,7 @@ public abstract class RmiNamingEnumeration implements NamingEnumeration
 
   /**
    * Returns the next element.
-   * 
+   *
    * @throws NamingException
    *           never
    */
@@ -118,7 +118,7 @@ public abstract class RmiNamingEnumeration implements NamingEnumeration
     else
       throw new NoSuchElementException();
   }
-  
+
   /**
    * Nothing to do in this method.
    */

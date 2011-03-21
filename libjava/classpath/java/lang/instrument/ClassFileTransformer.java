@@ -67,9 +67,9 @@ public interface ClassFileTransformer
    * @param protectionDomain the protection domain of the class being defined or
    * redefined
    * @param classfileBuffer the input byte buffer in class file format
-   * 
+   *
    * @return a class file buffer or null when no transformation has been performed
-   * 
+   *
    * @throws IllegalClassFormatException if the byte buffer does not represent
    * a well-formed class file
    * @see Instrumentation#redefineClasses(java.lang.instrument.ClassDefinition[])
@@ -82,4 +82,3 @@ public interface ClassFileTransformer
                  byte[] classfileBuffer)
                  throws IllegalClassFormatException;
 }
-

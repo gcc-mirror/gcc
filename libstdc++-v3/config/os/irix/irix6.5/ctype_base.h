@@ -1,6 +1,7 @@
 // Locale support -*- C++ -*-
 
-// Copyright (C) 1997, 1998, 1999, 2003, 2009 Free Software Foundation, Inc.
+// Copyright (C) 1997, 1998, 1999, 2003, 2009, 2010
+// Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -33,7 +34,9 @@
 
 // Information as gleaned from /usr/include/ctype.h on irix 6.5
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /// @brief  Base class for ctype.
   struct ctype_base
@@ -57,4 +60,5 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     static const mask alnum 	= _ISalpha | _ISdigit;
   };
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace

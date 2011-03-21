@@ -50,6 +50,7 @@ type commonType struct {
 	equalfn    func(unsafe.Pointer, unsafe.Pointer, uintptr)
 	string     *string
 	*uncommonType
+	ptrToThis *runtime.Type
 }
 
 type method struct {
@@ -164,6 +165,10 @@ type SliceType struct {
 	elem       *runtime.Type
 }
 
+// arrayOrSliceType is an unexported method that guarantees only
+// arrays and slices implement ArrayOrSliceType.
+func (*SliceType) arrayOrSliceType() {}
+
 // Struct field
 type structField struct {
 	name    *string
@@ -236,11 +241,19 @@ type Type interface {
 	// Kind returns the specific kind of this type.
 	Kind() Kind
 
-	// For non-interface types, Method returns the i'th method with receiver T.
-	// For interface types, Method returns the i'th method in the interface.
-	// NumMethod returns the number of such methods.
+	// Method returns the i'th method in the type's method set.
+	//
+	// For a non-interface type T or *T, the returned Method's Type and Func
+	// fields describe a function whose first argument is the receiver.
+	//
+	// For an interface type, the returned Method's Type field gives the
+	// method signature, without a receiver, and the Func field is nil.
 	Method(int) Method
+
+	// NumMethods returns the number of methods in the type's method set.
 	NumMethod() int
+
+	common() *commonType
 	uncommon() *uncommonType
 }
 
@@ -265,10 +278,8 @@ const (
 	Uint32
 	Uint64
 	Uintptr
-	Float
 	Float32
 	Float64
-	Complex
 	Complex64
 	Complex128
 	Array
@@ -307,9 +318,10 @@ var kindNames = []string{
 	Uint32:        "uint32",
 	Uint64:        "uint64",
 	Uintptr:       "uintptr",
-	Float:         "float",
 	Float32:       "float32",
 	Float64:       "float64",
+	Complex64:     "complex64",
+	Complex128:    "complex128",
 	Array:         "array",
 	Chan:          "chan",
 	Func:          "func",
@@ -352,6 +364,8 @@ func (t *commonType) FieldAlign() int { return int(t.fieldAlign) }
 
 func (t *commonType) Kind() Kind { return Kind(t.kind & kindMask) }
 
+func (t *commonType) common() *commonType { return t }
+
 func (t *uncommonType) Method(i int) (m Method) {
 	if t == nil || i < 0 || i >= len(t.methods) {
 		return
@@ -365,7 +379,7 @@ func (t *uncommonType) Method(i int) (m Method) {
 	}
 	m.Type = runtimeToType(p.typ).(*FuncType)
 	fn := p.tfn
-	m.Func = &FuncValue{value: value{m.Type, addr(&fn), true}}
+	m.Func = &FuncValue{value: value{m.Type, addr(&fn), canSet}}
 	return
 }
 
@@ -392,6 +406,10 @@ func (t *ArrayType) Len() int { return int(t.len) }
 
 // Elem returns the type of the array's elements.
 func (t *ArrayType) Elem() Type { return runtimeToType(t.elem) }
+
+// arrayOrSliceType is an unexported method that guarantees only
+// arrays and slices implement ArrayOrSliceType.
+func (*ArrayType) arrayOrSliceType() {}
 
 // Dir returns the channel direction.
 func (t *ChanType) Dir() ChanDir { return ChanDir(t.dir) }
@@ -446,7 +464,7 @@ func (t *FuncType) Out(i int) Type {
 // NumOut returns the number of function output parameters.
 func (t *FuncType) NumOut() int { return len(t.out) }
 
-// Method returns the i'th interface method.
+// Method returns the i'th method in the type's method set.
 func (t *InterfaceType) Method(i int) (m Method) {
 	if i < 0 || i >= len(t.methods) {
 		return
@@ -460,7 +478,7 @@ func (t *InterfaceType) Method(i int) (m Method) {
 	return
 }
 
-// NumMethod returns the number of interface methods.
+// NumMethod returns the number of interface methods in the type's method set.
 func (t *InterfaceType) NumMethod() int { return len(t.methods) }
 
 // Key returns the map key type.
@@ -551,7 +569,7 @@ func (t *StructType) fieldByNameFunc(match func(string) bool, mark map[*StructTy
 	var fi int // field index
 	n := 0     // number of matching fields at depth fd
 L:
-	for i, _ := range t.fields {
+	for i := range t.fields {
 		f := t.Field(i)
 		d := inf
 		switch {
@@ -702,9 +720,9 @@ func runtimeToType(v *runtime.Type) Type {
 		r = (*IntType)(unsafe.Pointer(v))
 	case Uint, Uint8, Uint16, Uint32, Uint64, Uintptr:
 		r = (*UintType)(unsafe.Pointer(v))
-	case Float, Float32, Float64:
+	case Float32, Float64:
 		r = (*FloatType)(unsafe.Pointer(v))
-	case Complex, Complex64, Complex128:
+	case Complex64, Complex128:
 		r = (*ComplexType)(unsafe.Pointer(v))
 	case Array:
 		r = (*ArrayType)(unsafe.Pointer(v))
@@ -738,7 +756,86 @@ func runtimeToType(v *runtime.Type) Type {
 type ArrayOrSliceType interface {
 	Type
 	Elem() Type
+	arrayOrSliceType() // Guarantees only Array and Slice implement this interface.
 }
 
 // Typeof returns the reflection Type of the value in the interface{}.
 func Typeof(i interface{}) Type { return canonicalize(toType(unsafe.Typeof(i))) }
+
+// ptrMap is the cache for PtrTo.
+var ptrMap struct {
+	sync.RWMutex
+	m map[Type]*PtrType
+}
+
+// runtimePtrType is the runtime layout for a *PtrType.
+// The memory immediately before the *PtrType is always
+// the canonical runtime.Type to be used for a *runtime.Type
+// describing this PtrType.
+type runtimePtrType struct {
+	runtime.Type
+	runtime.PtrType
+}
+
+// PtrTo returns the pointer type with element t.
+// For example, if t represents type Foo, PtrTo(t) represents *Foo.
+func PtrTo(t Type) *PtrType {
+	// If t records its pointer-to type, use it.
+	ct := t.common()
+	if p := ct.ptrToThis; p != nil {
+		return runtimeToType(p).(*PtrType)
+	}
+
+	// Otherwise, synthesize one.
+	// This only happens for pointers with no methods.
+	// We keep the mapping in a map on the side, because
+	// this operation is rare and a separate map lets us keep
+	// the type structures in read-only memory.
+	ptrMap.RLock()
+	if m := ptrMap.m; m != nil {
+		if p := m[t]; p != nil {
+			ptrMap.RUnlock()
+			return p
+		}
+	}
+	ptrMap.RUnlock()
+	ptrMap.Lock()
+	if ptrMap.m == nil {
+		ptrMap.m = make(map[Type]*PtrType)
+	}
+	p := ptrMap.m[t]
+	if p != nil {
+		// some other goroutine won the race and created it
+		ptrMap.Unlock()
+		return p
+	}
+
+	rt := (*runtime.Type)(unsafe.Pointer(ct))
+
+	rp := new(runtime.PtrType)
+	
+	// initialize rp used *byte's PtrType as a prototype.
+	// have to do assignment as PtrType, not runtime.PtrType,
+	// in order to write to unexported fields.
+	p = (*PtrType)(unsafe.Pointer(rp))
+	bp := (*PtrType)(unsafe.Pointer(unsafe.Typeof((*byte)(nil)).(*runtime.PtrType)))
+	*p = *bp
+
+	s := "*" + *ct.string
+	p.string = &s
+
+	// For the type structures linked into the binary, the
+	// compiler provides a good hash of the string.
+	// Create a good hash for the new string by using
+	// the FNV-1 hash's mixing function to combine the
+	// old hash and the new "*".
+	p.hash = ct.hash*16777619 ^ '*'
+
+	p.uncommonType = nil
+	p.ptrToThis = nil
+	p.elem = rt
+
+	ptrMap.m[t] = (*PtrType)(unsafe.Pointer(rp))
+	ptrMap.Unlock()
+	return p
+}

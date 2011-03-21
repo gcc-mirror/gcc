@@ -48,14 +48,14 @@ class BRView
 {
   /**
    * Creates the new BR view.
-   * 
+   *
    * @param elem the HTML element, representing the view.
    */
   public BRView(Element elem)
   {
     super(elem);
   }
-  
+
   /**
    * Always return ForcedBreakWeight for the X_AXIS, BadBreakWeight for the
    * Y_AXIS.

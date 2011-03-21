@@ -1,3 +1,34 @@
+2011-02-13  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* configure: Regenerate.
+
+2011-02-09  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR libffi/46661
+	* testsuite/libffi.call/cls_pointer.c (main): Cast void * to
+	uintptr_t first.
+	* testsuite/libffi.call/cls_pointer_stack.c (main): Likewise.
+
+2011-02-07  Joel Sherrill <joel.sherrill@oarcorp.com>
+
+	* libffi/src/m68k/ffi.c: Add RTEMS support for cache flushing.
+	Handle case when CPU variant does not have long double support.
+	* libffi/src/m68k/sysv.S: Add support for mc68000, Coldfire,
+	and cores with soft floating point.
+
+2011-02-07  Joel Sherrill <joel.sherrill@oarcorp.com>
+
+	* configure.ac: Add mips*-*-rtems* support.
+	* configure: Regenerate.
+	* src/mips/ffitarget.h: Ensure needed constants are available
+	for targets which do not have sgidefs.h.
+
+2011-01-26  Dave Korn  <dave.korn.cygwin@gmail.com>
+
+	PR target/40125
+	* configure.ac (AM_LTLDFLAGS): Add -bindir option for windows DLLs.
+	* configure: Regenerate.
+
 2010-12-18  Iain Sandoe  <iains@gcc.gnu.org>
 
 	PR libffi/29152
@@ -9,7 +40,7 @@
 	* src/powerpc/darwin.S: Provide Darwin64 implementation,
 	update comments.
 	* src/powerpc/ffi_darwin.c: Likewise.
-	
+
 2010-12-06  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* configure.ac (libffi_cv_as_ascii_pseudo_op): Use double
@@ -218,7 +249,7 @@
 2010-01-15  Oliver Kiddle  <okiddle@yahoo.co.uk>
 
 	* src/x86/ffitarget.h (ffi_abi): Check for __i386 and __amd64 for
-	Sun Studio compiler compatibility. 
+	Sun Studio compiler compatibility.
 
 2010-01-12  Conrad Irwin <conrad.irwin@gmail.com>
 

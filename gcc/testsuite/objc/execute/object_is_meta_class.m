@@ -1,7 +1,10 @@
 /* Contributed by Nicola Pero - Tue Jul  3 10:55:21 BST 2001 */
-#import "../../objc-obj-c++-shared/Object1.h"
-#import "../../objc-obj-c++-shared/next-mapping.h"
-#include <objc/objc-api.h>
+#ifdef __NEXT_RUNTIME__
+#  include "../../objc-obj-c++-shared/next-mapping.h"
+#else
+#  include <objc/objc-api.h>
+#endif
+#include "../../objc-obj-c++-shared/Object1.h"
 
 /* This test demonstrate a failure in object_is_meta_class which was fixed */
 
@@ -38,4 +41,4 @@ int main (void)
 
   return 0;
 }
-
+#include "../../objc-obj-c++-shared/Object1-implementation.h"

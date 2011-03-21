@@ -40,22 +40,22 @@ package javax.swing.event;
 import java.util.EventListener;
 
 /**
- * A <code>ChangeListener</code> can register with an object to receive 
+ * A <code>ChangeListener</code> can register with an object to receive
  * notification of state changes (for objects that support this mechanism).
- * 
+ *
  * @author Andrew Selkirk
  * @author Ronald Veldema
  */
-public interface ChangeListener 
-  extends EventListener 
+public interface ChangeListener
+  extends EventListener
 {
 
   /**
    * Called by an object to notify the listener that the object's state has
-   * changed.  The incoming <code>event</code> identifies the 
+   * changed.  The incoming <code>event</code> identifies the
    * <code>source</code> of the event, allowing the listener to differentiate
    * when it is listening for changes in multiple sources.
-   * 
+   *
    * @param event  the change event.
    */
   void stateChanged(ChangeEvent event);

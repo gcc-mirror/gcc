@@ -41,7 +41,7 @@ package java.awt.print;
 /**
  * This class contains information about the desired page format to use for
  * printing a particular set of pages.
- * 
+ *
  * @author Aaron M. Renn (arenn@urbanophile.com)
  */
 public class PageFormat
@@ -61,9 +61,9 @@ public class PageFormat
 
   /**
    * A constant for a reversed landscaped page orientation. This is the
-   * orientation used by Macintosh's for landscape. The origin is in the 
-   * upper right hand corner instead of the upper left. The X and Y axes 
-   * are reversed. Used by <code>getOrientation</code> and 
+   * orientation used by Macintosh's for landscape. The origin is in the
+   * upper right hand corner instead of the upper left. The X and Y axes
+   * are reversed. Used by <code>getOrientation</code> and
    * <code>setOrientation</code>.
    */
   public static final int REVERSE_LANDSCAPE = 2;
@@ -87,7 +87,7 @@ public class PageFormat
   /**
    * This method returns the width of the page, in 1/72nd's of an inch. The
    * "width" measured depends on orientation.
-   * 
+   *
    * @return The width of the page.
    */
   public double getWidth()
@@ -98,7 +98,7 @@ public class PageFormat
   /**
    * This method returns the height of the page, in 1/72nd's of an inch. The
    * "height" measured depends on the orientation.
-   * 
+   *
    * @return The height of the page.
    */
   public double getHeight()
@@ -109,7 +109,7 @@ public class PageFormat
   /**
    * This method returns the X coordinate value of the upper leftmost drawable
    * area of the paper.
-   * 
+   *
    * @return The upper leftmost imageable X coordinate.
    */
   public double getImageableX()
@@ -120,7 +120,7 @@ public class PageFormat
   /**
    * This method returns the Y coordinate value of the upper leftmost drawable
    * area of the paper.
-   * 
+   *
    * @return The upper leftmost imageable Y coordinate.
    */
   public double getImageableY()
@@ -131,7 +131,7 @@ public class PageFormat
   /**
    * This method returns the imageable width of the paper, in 1/72nd's of an
    * inch.
-   * 
+   *
    * @return The imageable width of the paper.
    */
   public double getImageableWidth()
@@ -142,7 +142,7 @@ public class PageFormat
   /**
    * This method returns the imageable height of the paper, in 1/72nd's of an
    * inch.
-   * 
+   *
    * @return The imageable height of the paper.
    */
   public double getImageableHeight()
@@ -153,7 +153,7 @@ public class PageFormat
   /**
    * Returns a copy of the <code>paper</code> object being used for this page
    * format.
-   * 
+   *
    * @return A copy of the <code>Paper</code> object for this format.
    */
   public Paper getPaper()
@@ -163,7 +163,7 @@ public class PageFormat
 
   /**
    * Sets the <code>Paper</code> object to be used by this page format.
-   * 
+   *
    * @param paper The new <code>Paper</code> object for this page format.
    */
   public void setPaper(Paper paper)
@@ -174,7 +174,7 @@ public class PageFormat
   /**
    * This method returns the current page orientation. The value returned will
    * be one of the page orientation constants from this class.
-   * 
+   *
    * @return The current page orientation.
    */
   public int getOrientation()
@@ -184,11 +184,11 @@ public class PageFormat
 
   /**
    * This method sets the page orientation for this format to the specified
-   * value. It must be one of the page orientation constants from this class 
+   * value. It must be one of the page orientation constants from this class
    * or an exception will be thrown.
-   * 
+   *
    * @param orientation The new page orientation.
-   * @exception IllegalArgumentException If the specified page orientation 
+   * @exception IllegalArgumentException If the specified page orientation
    *            value is not one of the constants from this class.
    */
   public void setOrientation(int orientation) throws IllegalArgumentException
@@ -203,9 +203,9 @@ public class PageFormat
 
   /**
    * This method returns a matrix used for transforming user space coordinates
-   * to page coordinates. The value returned will be six doubles as described 
+   * to page coordinates. The value returned will be six doubles as described
    * in <code>java.awt.geom.AffineTransform</code>.
-   * 
+   *
    * @return The transformation matrix for this page format.
    */
   public double[] getMatrix()

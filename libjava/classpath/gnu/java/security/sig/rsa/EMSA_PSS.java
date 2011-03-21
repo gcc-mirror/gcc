@@ -1,4 +1,4 @@
-/* EMSA_PSS.java -- 
+/* EMSA_PSS.java --
    Copyright (C) 2001, 2002, 2003, 2006 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -83,7 +83,7 @@ public class EMSA_PSS
 
   /**
    * Trivial private constructor to enforce use through Factory method.
-   * 
+   *
    * @param hash the message digest instance to use with this scheme instance.
    */
   private EMSA_PSS(IMessageDigest hash)
@@ -97,7 +97,7 @@ public class EMSA_PSS
   /**
    * Returns an instance of this object given a designated name of a hash
    * function.
-   * 
+   *
    * @param mdName the canonical name of a hash function.
    * @return an instance of this object configured for use with the designated
    *         options.
@@ -118,7 +118,7 @@ public class EMSA_PSS
    * <code>M</code> using a hash function and maps the result to an encoded
    * message <code>EM</code> of a specified length using a mask generation
    * function.
-   * 
+   *
    * @param mHash the byte sequence resulting from applying the message digest
    *          algorithm Hash to the message <i>M</i>.
    * @param emBits the maximal bit length of the integer OS2IP(EM), at least
@@ -192,7 +192,7 @@ public class EMSA_PSS
    * The decoding operation EMSA-PSS-Decode recovers the message hash from an
    * encoded message <code>EM</code> and compares it to the hash of
    * <code>M</code>.
-   * 
+   *
    * @param mHash the byte sequence resulting from applying the message digest
    *          algorithm Hash to the message <i>M</i>.
    * @param EM the <i>encoded message</i>, an octet string of length
@@ -324,7 +324,7 @@ public class EMSA_PSS
    * the output. The provable security of RSA-PSS relies on the random nature of
    * the output of the mask generation function, which in turn relies on the
    * random nature of the underlying hash function.
-   * 
+   *
    * @param Z a seed.
    * @param l the desired output length in octets.
    * @return the mask.

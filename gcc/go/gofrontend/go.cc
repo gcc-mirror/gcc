@@ -24,10 +24,10 @@ static Gogo* gogo;
 
 GO_EXTERN_C
 void
-go_create_gogo(int int_type_size, int float_type_size, int pointer_size)
+go_create_gogo(int int_type_size, int pointer_size)
 {
   gcc_assert(::gogo == NULL);
-  ::gogo = new Gogo(int_type_size, float_type_size, pointer_size);
+  ::gogo = new Gogo(int_type_size, pointer_size);
   if (!unique_prefix.empty())
     ::gogo->set_unique_prefix(unique_prefix);
 }
@@ -117,9 +117,6 @@ go_parse_input_files(const char** filenames, unsigned int filename_count,
 
   // Export global identifiers as appropriate.
   ::gogo->do_exports();
-
-  // Build required interface method tables.
-  ::gogo->build_interface_method_tables();
 
   // Turn short-cut operators (&&, ||) into explicit if statements.
   ::gogo->remove_shortcuts();

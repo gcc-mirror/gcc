@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -56,48 +56,48 @@ import javax.security.auth.x500.X500Principal;
    time stamped entries which indicate which lists have been
    revoked. The list is signed by a Certificate Authority (CA)
    and made publically available in a repository.
-   
-   Each revoked certificate in the CRL is identified by its 
-   certificate serial number. When a piece of code uses a 
-   certificate, the certificates validity is checked by 
+
+   Each revoked certificate in the CRL is identified by its
+   certificate serial number. When a piece of code uses a
+   certificate, the certificates validity is checked by
    validating its signature and determing that it is not
    only a recently acquired CRL. The recently aquired CRL
    is depends on the local policy in affect. The CA issues
-   a new CRL periodically and entries are removed as the 
+   a new CRL periodically and entries are removed as the
    certificate expiration date is reached
-   
-   
+
+
    A description of the X.509 v2 CRL follows below from rfc2459.
-   
+
    "The X.509 v2 CRL syntax is as follows.  For signature calculation,
    the data that is to be signed is ASN.1 DER encoded.  ASN.1 DER
    encoding is a tag, length, value encoding system for each element.
-   
-	   CertificateList  ::=  SEQUENCE  {
-        	tbsCertList          TBSCertList,
-	        signatureAlgorithm   AlgorithmIdentifier,
-        	signatureValue       BIT STRING  }
-	
-	   TBSCertList  ::=  SEQUENCE  {
-        	version                 Version OPTIONAL,
+
+           CertificateList  ::=  SEQUENCE  {
+                tbsCertList          TBSCertList,
+                signatureAlgorithm   AlgorithmIdentifier,
+                signatureValue       BIT STRING  }
+
+           TBSCertList  ::=  SEQUENCE  {
+                version                 Version OPTIONAL,
                                      -- if present, shall be v2
-	        signature               AlgorithmIdentifier,
-        	issuer                  Name,
-	        thisUpdate              Time,
-	        nextUpdate              Time OPTIONAL,
-	        revokedCertificates     SEQUENCE OF SEQUENCE  {
-	             userCertificate         CertificateSerialNumber,
-	             revocationDate          Time,
-	             crlEntryExtensions      Extensions OPTIONAL
-	                                           -- if present, shall be v2
-	                                  }  OPTIONAL,
-	        crlExtensions           [0]  EXPLICIT Extensions OPTIONAL
-	                                           -- if present, shall be v2
-	                                  }"
+                signature               AlgorithmIdentifier,
+                issuer                  Name,
+                thisUpdate              Time,
+                nextUpdate              Time OPTIONAL,
+                revokedCertificates     SEQUENCE OF SEQUENCE  {
+                     userCertificate         CertificateSerialNumber,
+                     revocationDate          Time,
+                     crlEntryExtensions      Extensions OPTIONAL
+                                                   -- if present, shall be v2
+                                          }  OPTIONAL,
+                crlExtensions           [0]  EXPLICIT Extensions OPTIONAL
+                                                   -- if present, shall be v2
+                                          }"
 
-	@author Mark Benvenuto
+        @author Mark Benvenuto
 
-	@since 1.2
+        @since 1.2
 */
 public abstract class X509CRL extends CRL implements X509Extension
 {
@@ -123,19 +123,19 @@ public abstract class X509CRL extends CRL implements X509Extension
   {
     if( other instanceof X509CRL ) {
       try {
-	X509CRL x = (X509CRL) other;
-	if( getEncoded().length != x.getEncoded().length )
-	  return false;
+        X509CRL x = (X509CRL) other;
+        if( getEncoded().length != x.getEncoded().length )
+          return false;
 
-	byte[] b1 = getEncoded();
-	byte[] b2 = x.getEncoded();
+        byte[] b1 = getEncoded();
+        byte[] b2 = x.getEncoded();
 
-	for( int i = 0; i < b1.length; i++ )
-	  if( b1[i] != b2[i] )
-	    return false;
+        for( int i = 0; i < b1.length; i++ )
+          if( b1[i] != b2[i] )
+            return false;
 
-      } catch( CRLException crle ) { 
-	return false;
+      } catch( CRLException crle ) {
+        return false;
       }
       return true;
     }
@@ -164,7 +164,7 @@ public abstract class X509CRL extends CRL implements X509Extension
 
   /**
      Verifies that this CRL was properly signed with the
-     PublicKey that corresponds to its private key. 
+     PublicKey that corresponds to its private key.
 
      @param key PublicKey to verify with
 
@@ -184,7 +184,7 @@ public abstract class X509CRL extends CRL implements X509Extension
   /**
      Verifies that this CRL was properly signed with the
      PublicKey that corresponds to its private key and uses
-     the signature engine provided by the provider. 
+     the signature engine provided by the provider.
 
      @param key PublicKey to verify with
      @param sigProvider Provider to use for signature algorithm
@@ -196,7 +196,7 @@ public abstract class X509CRL extends CRL implements X509Extension
      @throws SignatureException signature error
   */
   public abstract void verify(PublicKey key,
-			      String sigProvider)
+                              String sigProvider)
     throws CRLException,
     NoSuchAlgorithmException,
     InvalidKeyException,
@@ -221,7 +221,7 @@ public abstract class X509CRL extends CRL implements X509Extension
 
   /**
      Returns the issuer (issuer distinguished name) of the CRL.
-     The issuer is the entity who signed and issued the 
+     The issuer is the entity who signed and issued the
      Certificate Revocation List.
 
      The ASN.1 DER encoding is:
@@ -307,7 +307,7 @@ public abstract class X509CRL extends CRL implements X509Extension
   public abstract Set<? extends X509CRLEntry> getRevokedCertificates();
 
   /**
-     Returns the DER ASN.1 encoded tbsCertList which is 
+     Returns the DER ASN.1 encoded tbsCertList which is
      the basic information of the list and associated certificates
      in the encoded state. See top for more information.
 
@@ -323,7 +323,7 @@ public abstract class X509CRL extends CRL implements X509Extension
 
 
   /**
-     Returns the signature for the CRL. 
+     Returns the signature for the CRL.
 
      The ASN.1 DER encoding is:
 
@@ -334,7 +334,7 @@ public abstract class X509CRL extends CRL implements X509Extension
   public abstract byte[] getSignature();
 
   /**
-     Returns the signature algorithm used to sign the CRL. 
+     Returns the signature algorithm used to sign the CRL.
      An examples is "SHA-1/DSA".
 
      The ASN.1 DER encoding is:
@@ -371,9 +371,9 @@ public abstract class X509CRL extends CRL implements X509Extension
 
   /**
      Returns the AlgorithmParameters in the encoded form
-     for the signature algorithm used. 
+     for the signature algorithm used.
 
-     If access to the parameters is need, create an 
+     If access to the parameters is need, create an
      instance of AlgorithmParameters.
 
      @return byte array containing algorithm parameters, null

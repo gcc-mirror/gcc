@@ -95,7 +95,7 @@ public class PixelGrabber implements ImageConsumer
    * pixels in the grab rectangle
    */
   public PixelGrabber(Image img, int x, int y, int w, int h,
-		      int pix[], int off, int scansize)
+                      int pix[], int off, int scansize)
   {
     this (img.getSource(), x, y, w, h, pix, off, scansize);
   }
@@ -130,7 +130,7 @@ public class PixelGrabber implements ImageConsumer
    * pixels in the grab rectangle
    */
   public PixelGrabber(ImageProducer ip, int x, int y, int w, int h,
-		      int pix[], int off, int scansize)
+                      int pix[], int off, int scansize)
   {
     this.ip = ip;
     this.x = x;
@@ -175,9 +175,9 @@ public class PixelGrabber implements ImageConsumer
    * region's pixel data to RGB
    */
   public PixelGrabber(Image img,
-		      int x, int y,
-		      int w, int h,
-		      boolean forceRGB)
+                      int x, int y,
+                      int w, int h,
+                      boolean forceRGB)
   {
     this.ip = img.getSource();
 
@@ -192,8 +192,8 @@ public class PixelGrabber implements ImageConsumer
     // initialization until setDimensions is called back by ip.
     if (width >= 0 && height >= 0)
       {
-	int_pixel_buffer = new int[width * height];
-	byte_pixel_buffer = new byte[width * height];
+        int_pixel_buffer = new int[width * height];
+        byte_pixel_buffer = new byte[width * height];
       }
     this.forceRGB = forceRGB;
   }
@@ -209,11 +209,11 @@ public class PixelGrabber implements ImageConsumer
     // Make sure we're not already grabbing.
     if (grabbing == false)
       {
-	grabbing = true;
-	grabberThread = new Thread ()
-	  {
-	    public void run ()
-	    {
+        grabbing = true;
+        grabberThread = new Thread ()
+          {
+            public void run ()
+            {
               try
                 {
                   ip.startProduction (PixelGrabber.this);
@@ -222,9 +222,9 @@ public class PixelGrabber implements ImageConsumer
                 {
                   imageComplete(ImageConsumer.IMAGEABORTED);
                 }
-	    }
-	  };
-	grabberThread.start ();
+            }
+          };
+        grabberThread.start ();
       }
   }
 
@@ -235,12 +235,12 @@ public class PixelGrabber implements ImageConsumer
   {
     if (grabbing)
       {
-	// Interrupt the grabbing thread.
+        // Interrupt the grabbing thread.
         Thread moribund = grabberThread;
         grabberThread = null;
         moribund.interrupt();
 
-	imageComplete (ImageConsumer.IMAGEABORTED);
+        imageComplete (ImageConsumer.IMAGEABORTED);
       }
   }
 
@@ -282,7 +282,7 @@ public class PixelGrabber implements ImageConsumer
   {
     if (ms < 0)
       return ((observerStatus & (ImageObserver.FRAMEBITS
-				 | ImageObserver.ALLBITS)) != 0);
+                                 | ImageObserver.ALLBITS)) != 0);
 
     // Spawn a new ImageProducer thread to send us the image data via
     // our ImageConsumer methods.
@@ -290,16 +290,16 @@ public class PixelGrabber implements ImageConsumer
 
     if (ms > 0)
       {
-	long stop_time = System.currentTimeMillis() + ms;
-	long time_remaining;
-	while (grabbing)
-	  {
-	    time_remaining = stop_time - System.currentTimeMillis();
-	    if (time_remaining <= 0)
-	      break;
-	    wait (time_remaining);
-	  }
-	abortGrabbing ();
+        long stop_time = System.currentTimeMillis() + ms;
+        long time_remaining;
+        while (grabbing)
+          {
+            time_remaining = stop_time - System.currentTimeMillis();
+            if (time_remaining <= 0)
+              break;
+            wait (time_remaining);
+          }
+        abortGrabbing ();
       }
     else
       wait ();
@@ -310,7 +310,7 @@ public class PixelGrabber implements ImageConsumer
       return setObserverStatus ();
 
     return ((observerStatus & (ImageObserver.FRAMEBITS
-			       | ImageObserver.ALLBITS)) != 0);
+                               | ImageObserver.ALLBITS)) != 0);
   }
 
   // Set observer status flags based on the current consumer status
@@ -328,14 +328,14 @@ public class PixelGrabber implements ImageConsumer
 
     if ((consumerStatus & STATICIMAGEDONE) != 0)
       {
-	observerStatus |= ImageObserver.ALLBITS;
-	retval = true;
+        observerStatus |= ImageObserver.ALLBITS;
+        retval = true;
       }
 
     if ((consumerStatus & SINGLEFRAMEDONE) != 0)
       {
-	observerStatus |= ImageObserver.FRAMEBITS;
-	retval = true;
+        observerStatus |= ImageObserver.FRAMEBITS;
+        retval = true;
       }
 
     return retval;
@@ -402,7 +402,7 @@ public class PixelGrabber implements ImageConsumer
    * ImageConsumer methods should be called by code that instantiates
    * a PixelGrabber.  They are only made public so they can be called
    * by the PixelGrabber's ImageProducer.
-   * 
+   *
    * @param width the width of the image
    * @param height the height of the image
    */
@@ -472,7 +472,7 @@ public class PixelGrabber implements ImageConsumer
    * bit mask of hints from any of <code>RANDOMPIXELORDER</code>,
    * <code>TOPDOWNLEFTRIGHT</code>, <code>COMPLETESCANLINES</code>,
    * <code>SINGLEPASS</code>, <code>SINGLEFRAME</code>.
-   * 
+   *
    * setHints is an ImageConsumer method.  None of PixelGrabber's
    * ImageConsumer methods should be called by code that instantiates
    * a PixelGrabber.  They are only made public so they can be called
@@ -505,9 +505,9 @@ public class PixelGrabber implements ImageConsumer
    * @param offset offset into pixels array
    * @param scansize width of one row in the pixel block
    */
-  public synchronized void setPixels(int x, int y, int w, int h, 
-				     ColorModel model, byte[] pixels,
-				     int offset, int scansize)
+  public synchronized void setPixels(int x, int y, int w, int h,
+                                     ColorModel model, byte[] pixels,
+                                     int offset, int scansize)
   {
     ColorModel currentModel;
     if (model != null)
@@ -517,31 +517,31 @@ public class PixelGrabber implements ImageConsumer
 
     for(int yp = y; yp < (y + h); yp++)
       {
-	for(int xp = x; xp < (x + w); xp++)
-	  {
-	    // Check if the coordinates (xp, yp) are within the
-	    // pixel block that we are grabbing.
-	    if(xp >= this.x
-	       && yp >= this.y
-	       && xp < (this.x + this.width)
-	       && yp < (this.y + this.height))
-	      {
-		int i = (yp - this.y) * this.scansize + (xp - this.x) + this.offset;
-		int p = (yp - y) * scansize + (xp - x) + offset;
-		if (forceRGB)
-		  {
-		    ints_delivered = true;
+        for(int xp = x; xp < (x + w); xp++)
+          {
+            // Check if the coordinates (xp, yp) are within the
+            // pixel block that we are grabbing.
+            if(xp >= this.x
+               && yp >= this.y
+               && xp < (this.x + this.width)
+               && yp < (this.y + this.height))
+              {
+                int i = (yp - this.y) * this.scansize + (xp - this.x) + this.offset;
+                int p = (yp - y) * scansize + (xp - x) + offset;
+                if (forceRGB)
+                  {
+                    ints_delivered = true;
 
-		    int_pixel_buffer[i] = currentModel.getRGB (pixels[p] & 0xFF);
-		  }
-		else
-		  {
-		    bytes_delivered = true;
+                    int_pixel_buffer[i] = currentModel.getRGB (pixels[p] & 0xFF);
+                  }
+                else
+                  {
+                    bytes_delivered = true;
 
-		    byte_pixel_buffer[i] = pixels[p];
-		  }
-	      }
-	  }
+                    byte_pixel_buffer[i] = pixels[p];
+                  }
+              }
+          }
       }
   }
 
@@ -565,9 +565,9 @@ public class PixelGrabber implements ImageConsumer
    * @param offset offset into pixels array
    * @param scansize width of one row in the pixel block
    */
-  public synchronized void setPixels(int x, int y, int w, int h, 
-				     ColorModel model, int[] pixels,
-				     int offset, int scansize)
+  public synchronized void setPixels(int x, int y, int w, int h,
+                                     ColorModel model, int[] pixels,
+                                     int offset, int scansize)
   {
     ColorModel currentModel;
     if (model != null)
@@ -579,23 +579,23 @@ public class PixelGrabber implements ImageConsumer
 
     for(int yp = y; yp < (y + h); yp++)
       {
-	for(int xp = x; xp < (x + w); xp++)
-	  {
-	    // Check if the coordinates (xp, yp) are within the
-	    // pixel block that we are grabbing.
-	    if(xp >= this.x
-	       && yp >= this.y
-	       && xp < (this.x + this.width)
-	       && yp < (this.y + this.height))
-	      {
-		int i = (yp - this.y) * this.scansize + (xp - this.x) + this.offset;
-		int p = (yp - y) * scansize + (xp - x) + offset;
-		if (forceRGB)
-		  int_pixel_buffer[i] = currentModel.getRGB (pixels[p]);
-		else
-		  int_pixel_buffer[i] = pixels[p];
-	      }
-	  }
+        for(int xp = x; xp < (x + w); xp++)
+          {
+            // Check if the coordinates (xp, yp) are within the
+            // pixel block that we are grabbing.
+            if(xp >= this.x
+               && yp >= this.y
+               && xp < (this.x + this.width)
+               && yp < (this.y + this.height))
+              {
+                int i = (yp - this.y) * this.scansize + (xp - this.x) + this.offset;
+                int p = (yp - y) * scansize + (xp - x) + offset;
+                if (forceRGB)
+                  int_pixel_buffer[i] = currentModel.getRGB (pixels[p]);
+                else
+                  int_pixel_buffer[i] = pixels[p];
+              }
+          }
       }
   }
 

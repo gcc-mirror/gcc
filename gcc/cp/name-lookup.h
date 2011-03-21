@@ -1,5 +1,5 @@
 /* Declarations for C++ name lookup routines.
-   Copyright (C) 2003, 2004, 2005, 2007, 2008, 2009
+   Copyright (C) 2003, 2004, 2005, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
    Contributed by Gabriel Dos Reis <gdr@integrable-solutions.net>
 
@@ -333,6 +333,7 @@ extern bool pushdecl_class_level (tree);
 extern tree pushdecl_namespace_level (tree, bool);
 extern bool push_class_level_binding (tree, tree);
 extern tree getdecls (void);
+extern int function_parm_depth (void);
 extern tree cp_namespace_decls (tree);
 extern void set_decl_namespace (tree, tree, bool);
 extern void push_decl_namespace (tree);

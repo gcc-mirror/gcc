@@ -44,7 +44,7 @@ import org.omg.CORBA.portable.ObjectImpl;
 
 /**
  * Generates the code for reading and writing data over GIOP stream.
- * 
+ *
  * @author Audrius Meskauskas, Lithuania (audriusa@Bioinformatics.org)
  */
 public class GiopIo
@@ -52,7 +52,7 @@ public class GiopIo
   /**
    * Get the statement for writing the variable of the given type to the GIOP ({@link org.omg.CORBA_2_3.portable.OutputStream) stream. The
    * stream is always named "out".
-   * 
+   *
    * @param c
    *          the class of the object being written
    * @param variable
@@ -90,7 +90,7 @@ public class GiopIo
   /**
    * Get the statement for reading the value of the given type from to the GIOP ({@link org.omg.CORBA_2_3.portable.InputStream) stream. The
    * stream is always named "in".
-   * 
+   *
    * @param c
    *          the class of the object being written
    * @param r

@@ -95,11 +95,11 @@ public class QtImage extends Image
   /*
    * The 32-bit AARRGGBB format the  uses.
    */
-  static ColorModel nativeModel = new DirectColorModel(32, 
-						       0x00FF0000,
-						       0x0000FF00,
-						       0x000000FF,
-						       0xFF000000);
+  static ColorModel nativeModel = new DirectColorModel(32,
+                                                       0x00FF0000,
+                                                       0x0000FF00,
+                                                       0x000000FF,
+                                                       0xFF000000);
   /**
    * HashMap of Graphics objects painting on this Image.
    */
@@ -126,7 +126,7 @@ public class QtImage extends Image
   private native void setPixels(int[] pixels);
 
   /**
-   * Loads an image 
+   * Loads an image
    */
   private native boolean loadImage(String name);
 
@@ -153,35 +153,35 @@ public class QtImage extends Image
   /**
    * Draws the image optionally composited.
    */
-  native void drawPixels (QtGraphics gc, 
-			  int bg_red, int bg_green, int bg_blue, 
-			  int x, int y, 
-			  boolean composite);
+  native void drawPixels (QtGraphics gc,
+                          int bg_red, int bg_green, int bg_blue,
+                          int x, int y,
+                          boolean composite);
   /**
    * Draws the image, optionally scaled and composited.
    */
-  private native void drawPixelsScaled (QtGraphics gc, 
-					int bg_red, int bg_green, int bg_blue, 
-					int x, int y, int width, int height, 
-					boolean composite);
+  private native void drawPixelsScaled (QtGraphics gc,
+                                        int bg_red, int bg_green, int bg_blue,
+                                        int x, int y, int width, int height,
+                                        boolean composite);
 
   /**
    * Draws the image transformed.
    */
   private native void drawPixelsTransformed (QtGraphics gc, QMatrix transform);
-  
+
   /**
    * Draws the image scaled flipped and optionally composited.
    */
-  native void drawPixelsScaledFlipped (QtGraphics gc, 
-				       int bg_red, int bg_green, 
-				       int bg_blue, 
-				       boolean flipX, boolean flipY,
-				       int srcX, int srcY,
-				       int srcWidth, int srcHeight,
-				       int dstX, int dstY,
-				       int dstWidth, int dstHeight,
-				       boolean composite);
+  native void drawPixelsScaledFlipped (QtGraphics gc,
+                                       int bg_red, int bg_green,
+                                       int bg_blue,
+                                       boolean flipX, boolean flipY,
+                                       int srcX, int srcY,
+                                       int srcWidth, int srcHeight,
+                                       int dstX, int dstY,
+                                       int dstWidth, int dstHeight,
+                                       boolean composite);
 
   /**
    * Creates the image from an ImageProducer. May result in an error image.
@@ -216,13 +216,13 @@ public class QtImage extends Image
         byte[] buf = new byte[5000];
         int n = 0;
 
-        while ( (n = bis.read( buf )) != -1 ) 
-	  baos.write(buf, 0, n); 
+        while ( (n = bis.read( buf )) != -1 )
+          baos.write(buf, 0, n);
         bis.close();
       }
     catch(IOException e)
       {
-	throw new IllegalArgumentException("Couldn't load image.");
+        throw new IllegalArgumentException("Couldn't load image.");
       }
     if ( loadImageFromData( baos.toByteArray() ) != true )
       throw new IllegalArgumentException("Couldn't load image.");
@@ -245,19 +245,19 @@ public class QtImage extends Image
     props = new Hashtable();
     try
       {
-	String fn = f.getCanonicalPath();
-	if (loadImage( fn ) != true)
-	  {
-	    errorLoading = true;
-	    isLoaded = false;
-	    return;
-	  }
-      } 
+        String fn = f.getCanonicalPath();
+        if (loadImage( fn ) != true)
+          {
+            errorLoading = true;
+            isLoaded = false;
+            return;
+          }
+      }
     catch(IOException e)
       {
-	errorLoading = true;
-	isLoaded = false;
-	return;
+        errorLoading = true;
+        isLoaded = false;
+        return;
       }
     errorLoading = false;
     isLoaded = true;
@@ -315,8 +315,8 @@ public class QtImage extends Image
   /**
    * Callback from the image consumer.
    */
-  public void setImage(int width, int height, 
-		       int[] pixels, Hashtable properties)
+  public void setImage(int width, int height,
+                       int[] pixels, Hashtable properties)
   {
     this.width = width;
     this.height = height;
@@ -324,8 +324,8 @@ public class QtImage extends Image
 
     if (width <= 0 || height <= 0 || pixels == null)
       {
-	errorLoading = true;
-	return;
+        errorLoading = true;
+        return;
       }
 
     isLoaded = true;
@@ -343,12 +343,12 @@ public class QtImage extends Image
 
     return width;
   }
-  
+
   public int getHeight (ImageObserver observer)
   {
     if (addObserver(observer))
       return -1;
-    
+
     return height;
   }
 
@@ -356,7 +356,7 @@ public class QtImage extends Image
   {
     if (addObserver(observer))
       return UndefinedProperty;
-    
+
     Object value = props.get (name);
     return (value == null) ? UndefinedProperty : value;
   }
@@ -368,8 +368,8 @@ public class QtImage extends Image
   {
     if (!isLoaded)
       return null;
-    return new MemoryImageSource(width, height, nativeModel, getPixels(), 
-				 0, width);
+    return new MemoryImageSource(width, height, nativeModel, getPixels(),
+                                 0, width);
   }
 
   void putPainter(QtImageGraphics g)
@@ -391,7 +391,7 @@ public class QtImage extends Image
    */
   public Graphics getGraphics ()
   {
-    if (!isLoaded || killFlag) 
+    if (!isLoaded || killFlag)
       return null;
 
     return new QtImageGraphics(this);
@@ -402,28 +402,28 @@ public class QtImage extends Image
    */
   Graphics getDirectGraphics(QtComponentPeer peer)
   {
-    if (!isLoaded) 
+    if (!isLoaded)
       return null;
 
     return new QtImageDirectGraphics(this, peer);
   }
-  
+
   /**
    * Returns a scaled instance of this image.
    */
   public Image getScaledInstance(int width,
-				 int height,
-				 int hints)
+                                 int height,
+                                 int hints)
   {
     if (width <= 0 || height <= 0)
       throw new IllegalArgumentException("Width and height of scaled bitmap"+
-					 "must be >= 0");
+                                         "must be >= 0");
 
     return new QtImage(this, width, height, hints);
   }
 
   /**
-   * If the image is loaded and comes from an ImageProducer, 
+   * If the image is loaded and comes from an ImageProducer,
    * regenerate the image from there.
    *
    * I have no idea if this is ever actually used. Since QtImage can't be
@@ -434,10 +434,10 @@ public class QtImage extends Image
   {
     if (isLoaded && source != null)
       {
-	observers = new Vector();
-	isLoaded = false;
-	freeImage();
-	source.startProduction(new QtImageConsumer(this, source));
+        observers = new Vector();
+        isLoaded = false;
+        freeImage();
+        source.startProduction(new QtImageConsumer(this, source));
       }
   }
 
@@ -450,11 +450,11 @@ public class QtImage extends Image
   {
     if (isLoaded)
       {
-	if( painters == null || painters.isEmpty() )
-	  freeImage();
-	else
-	  killFlag = true; // can't destroy image yet. 
-	// Do so when all painters are gone.
+        if( painters == null || painters.isEmpty() )
+          freeImage();
+        else
+          killFlag = true; // can't destroy image yet.
+        // Do so when all painters are gone.
       }
   }
 
@@ -465,12 +465,12 @@ public class QtImage extends Image
   {
     if (addObserver(observer))
       {
-	if (errorLoading == true)
-	  return ImageObserver.ERROR;
-	else
-	  return 0;
+        if (errorLoading == true)
+          return ImageObserver.ERROR;
+        else
+          return 0;
       }
-    
+
     return ImageObserver.ALLBITS | ImageObserver.WIDTH | ImageObserver.HEIGHT;
   }
 
@@ -480,7 +480,7 @@ public class QtImage extends Image
    * Draws an image with eventual scaling/transforming.
    */
   public boolean drawImage (QtGraphics g, QMatrix matrix,
-			    ImageObserver observer)
+                            ImageObserver observer)
   {
     if (addObserver(observer))
       return false;
@@ -495,14 +495,14 @@ public class QtImage extends Image
    * compositing with a background color.
    */
   public boolean drawImage (QtGraphics g, int x, int y,
-			    Color bgcolor, ImageObserver observer)
+                            Color bgcolor, ImageObserver observer)
   {
     if (addObserver(observer))
       return false;
 
     if(bgcolor != null)
-      drawPixels(g, bgcolor.getRed (), bgcolor.getGreen (), 
-		       bgcolor.getBlue (), x, y, true);
+      drawPixels(g, bgcolor.getRed (), bgcolor.getGreen (),
+                       bgcolor.getBlue (), x, y, true);
     else
       drawPixels(g, 0, 0, 0, x, y, false);
 
@@ -510,18 +510,18 @@ public class QtImage extends Image
   }
 
   /**
-   * Draws an image to the QtGraphics context, at (x,y) scaled to 
+   * Draws an image to the QtGraphics context, at (x,y) scaled to
    * width and height, with optional compositing with a background color.
    */
   public boolean drawImage (QtGraphics g, int x, int y, int width, int height,
-			    Color bgcolor, ImageObserver observer)
+                            Color bgcolor, ImageObserver observer)
   {
     if (addObserver(observer))
       return false;
 
     if(bgcolor != null)
-      drawPixelsScaled(g, bgcolor.getRed (), bgcolor.getGreen (), 
-		       bgcolor.getBlue (), x, y, width, height, true);
+      drawPixelsScaled(g, bgcolor.getRed (), bgcolor.getGreen (),
+                       bgcolor.getBlue (), x, y, width, height, true);
     else
       drawPixelsScaled(g, 0, 0, 0, x, y, width, height, false);
 
@@ -531,9 +531,9 @@ public class QtImage extends Image
   /**
    * Draws an image with eventual scaling/transforming.
    */
-  public boolean drawImage (QtGraphics g, int dx1, int dy1, int dx2, int dy2, 
-			    int sx1, int sy1, int sx2, int sy2, 
-			    Color bgcolor, ImageObserver observer)
+  public boolean drawImage (QtGraphics g, int dx1, int dy1, int dx2, int dy2,
+                            int sx1, int sy1, int sx2, int sy2,
+                            Color bgcolor, ImageObserver observer)
   {
     if (addObserver(observer))
       return false;
@@ -549,53 +549,53 @@ public class QtImage extends Image
     int dstX = (dx1 < dx2) ? dx1 : dx2;
     int dstY = (dy1 < dy2) ? dy1 : dy2;
 
-    // Clipping. This requires the dst to be scaled as well, 
+    // Clipping. This requires the dst to be scaled as well,
     if (srcWidth > width)
       {
-	dstWidth = (int)((double)dstWidth*((double)width/(double)srcWidth));
-	srcWidth = width - srcX;
+        dstWidth = (int)((double)dstWidth*((double)width/(double)srcWidth));
+        srcWidth = width - srcX;
       }
 
-    if (srcHeight > height) 
+    if (srcHeight > height)
       {
-	dstHeight = (int)((double)dstHeight*((double)height/(double)srcHeight));
-	srcHeight = height - srcY;
+        dstHeight = (int)((double)dstHeight*((double)height/(double)srcHeight));
+        srcHeight = height - srcY;
       }
 
     if (srcWidth + srcX > width)
       {
-	dstWidth = (int)((double)dstWidth * (double)(width - srcX)/(double)srcWidth);
-	srcWidth = width - srcX;
+        dstWidth = (int)((double)dstWidth * (double)(width - srcX)/(double)srcWidth);
+        srcWidth = width - srcX;
       }
 
     if (srcHeight + srcY > height)
       {
-	dstHeight = (int)((double)dstHeight * (double)(width - srcY)/(double)srcHeight);
-	srcHeight = height - srcY;
+        dstHeight = (int)((double)dstHeight * (double)(width - srcY)/(double)srcHeight);
+        srcHeight = height - srcY;
       }
 
     if ( srcWidth <= 0 || srcHeight <= 0 || dstWidth <= 0 || dstHeight <= 0)
       return true;
 
     if(bgcolor != null)
-      drawPixelsScaledFlipped (g, bgcolor.getRed (), bgcolor.getGreen (), 
-			       bgcolor.getBlue (), 
-			       flipX, flipY,
-			       srcX, srcY,
-			       srcWidth, srcHeight,
-			       dstX,  dstY,
-			       dstWidth, dstHeight,
-			       true);
+      drawPixelsScaledFlipped (g, bgcolor.getRed (), bgcolor.getGreen (),
+                               bgcolor.getBlue (),
+                               flipX, flipY,
+                               srcX, srcY,
+                               srcWidth, srcHeight,
+                               dstX,  dstY,
+                               dstWidth, dstHeight,
+                               true);
     else
       drawPixelsScaledFlipped (g, 0, 0, 0, flipX, flipY,
-			       srcX, srcY, srcWidth, srcHeight,
-			       dstX,  dstY, dstWidth, dstHeight,
-			       false);
+                               srcX, srcY, srcWidth, srcHeight,
+                               dstX,  dstY, dstWidth, dstHeight,
+                               false);
     return true;
   }
 
-  public native void copyArea(int x, int y, int width, int height, 
-			      int dx, int dy);
+  public native void copyArea(int x, int y, int width, int height,
+                              int dx, int dy);
 
   // Private methods ////////////////////////////////////////////////
 
@@ -604,19 +604,19 @@ public class QtImage extends Image
    */
   private void deliver()
   {
-    int flags = ImageObserver.HEIGHT | 
+    int flags = ImageObserver.HEIGHT |
       ImageObserver.WIDTH |
       ImageObserver.PROPERTIES |
       ImageObserver.ALLBITS;
 
     if (observers != null)
       for(int i=0; i < observers.size(); i++)
-	((ImageObserver)observers.elementAt(i)).
-	  imageUpdate(this, flags, 0, 0, width, height);
+        ((ImageObserver)observers.elementAt(i)).
+          imageUpdate(this, flags, 0, 0, width, height);
 
     observers = null;
   }
-  
+
   /**
    * Adds an observer, if we need to.
    * @return true if an observer was added.
@@ -625,10 +625,10 @@ public class QtImage extends Image
   {
     if (!isLoaded)
       {
-	if(observer != null)
-	  if (!observers.contains (observer))
-	    observers.addElement (observer);
-	return true;
+        if(observer != null)
+          if (!observers.contains (observer))
+            observers.addElement (observer);
+        return true;
       }
     return false;
   }

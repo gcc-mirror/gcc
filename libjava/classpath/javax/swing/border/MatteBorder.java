@@ -1,4 +1,4 @@
-/* MatteBorder.java -- 
+/* MatteBorder.java --
    Copyright (C) 2003, 2004, 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -61,8 +61,8 @@ public class MatteBorder extends EmptyBorder
    * of Apple/Sun JDK 1.3.1 on MacOS X 10.1.5.
    */
   static final long serialVersionUID = 4422248989617298224L;
-  
-  
+
+
   /**
    * The color that is used for filling the border, or
    * <code>null</code> if the border is filled with repetitions of a
@@ -71,8 +71,8 @@ public class MatteBorder extends EmptyBorder
    * @see #tileIcon
    */
   protected Color color;
-  
-  
+
+
   /**
    * The icon is used for filling the border with a tile, or
    * <code>null</code> if the border is filled with a solid
@@ -81,8 +81,8 @@ public class MatteBorder extends EmptyBorder
    * @see #color
    */
   protected Icon tileIcon;
-  
-  
+
+
   /**
    * Constructs a MatteBorder given the width on each side
    * and a fill color.
@@ -171,8 +171,8 @@ public class MatteBorder extends EmptyBorder
          borderInsets.bottom, borderInsets.right,
          tileIcon);
   }
-  
-  
+
+
   /**
    * Constructs a MatteBorder given an icon for tiling the
    * border area. The icon width is used for the border insets
@@ -188,8 +188,8 @@ public class MatteBorder extends EmptyBorder
   {
     this(-1, -1, -1, -1, tileIcon);
   }
-  
-  
+
+
   /**
    * Paints the border for a given component.
    *
@@ -215,8 +215,8 @@ public class MatteBorder extends EmptyBorder
               i.right, height - i.bottom,
               width - i.right, i.top);
   }
-  
-  
+
+
   /**
    * Measures the width of this border.
    *
@@ -236,8 +236,8 @@ public class MatteBorder extends EmptyBorder
      */
     return this.getBorderInsets(c, null);
   }
-  
-  
+
+
   /**
    * Measures the width of this border, storing the results into a
    * pre-existing Insets object.
@@ -271,8 +271,8 @@ public class MatteBorder extends EmptyBorder
      */
     return super.getBorderInsets(c, insets);
   }
-  
-  
+
+
   /**
    * Measures the width of this border.
    *
@@ -290,34 +290,34 @@ public class MatteBorder extends EmptyBorder
      */
     return this.getBorderInsets(null, null);
   }
-  
-  
+
+
   /**
    * Returns the color that is used for filling the border, or
    * <code>null</code> if the border is filled with repetitions of a
    * tile icon.
-   * 
+   *
    * @return The color (possibly <code>null</code>).
    */
   public Color getMatteColor()
   {
     return color;
   }
-  
-  
+
+
   /**
    * Returns the icon is used for tiling the border, or
    * <code>null</code> if the border is filled with a color instead of
    * an icon.
-   * 
+   *
    * @return The icon (possibly <code>null</code>).
    */
   public Icon getTileIcon()
   {
     return tileIcon;
   }
-  
-  
+
+
   /**
    * Determines whether this border fills every pixel in its area
    * when painting.
@@ -330,7 +330,7 @@ public class MatteBorder extends EmptyBorder
   {
     return (color != null) && (color.getAlpha() == 255);
   }
-  
+
 
   /**
    * Paints a rectangular area of the border. This private helper
@@ -372,7 +372,7 @@ public class MatteBorder extends EmptyBorder
       }
       return;
     }
-    
+
     // If this border has no icon end painting here.
     if (tileIcon == null)
       return;

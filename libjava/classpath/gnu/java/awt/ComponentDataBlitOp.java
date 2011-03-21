@@ -52,7 +52,7 @@ import java.awt.image.WritableRaster;
  *
  * @throws java.lang.ClassCastException if the sample models of the
  * rasters are not of type ComponentSampleModel.
- * 
+ *
  * @author Rolf W. Rasmussen (rolfwr@ii.uib.no)
  */
 public class ComponentDataBlitOp implements RasterOp
@@ -63,14 +63,14 @@ public class ComponentDataBlitOp implements RasterOp
   {
     if (dest == null)
       dest = createCompatibleDestRaster(src);
-    
+
     DataBuffer  srcDB =  src.getDataBuffer();
     DataBuffer destDB = dest.getDataBuffer();
-    
+
     ComponentSampleModel  srcSM = (ComponentSampleModel)  src.getSampleModel();
     ComponentSampleModel destSM = (ComponentSampleModel) dest.getSampleModel();
 
-    
+
     // Calculate offset to data in the underlying arrays:
 
     int  srcScanlineStride =  srcSM.getScanlineStride();
@@ -84,8 +84,8 @@ public class ComponentDataBlitOp implements RasterOp
 
     /* We can't use getOffset(x, y) from the sample model since we
        don't want the band offset added in. */
-	
-    int srcOffset = 
+
+    int srcOffset =
       numBands*srcX + srcScanlineStride*srcY +    // from sample model
       srcDB.getOffset();                          // from data buffer
 
@@ -94,44 +94,44 @@ public class ComponentDataBlitOp implements RasterOp
       destDB.getOffset();                         // from data buffer
 
     // Determine how much, and how many times to blit.
-    
+
     int rowSize = src.getWidth()*numBands;
     int h = src.getHeight();
-    
+
     if ((rowSize == srcScanlineStride) &&
-	(rowSize == destScanlineStride))
+        (rowSize == destScanlineStride))
       {
-	// collapse scan line blits to one large blit.
-	rowSize *= h;
-	h = 1;
+        // collapse scan line blits to one large blit.
+        rowSize *= h;
+        h = 1;
       }
 
-	
+
     // Do blitting
-    
+
     Object srcArray  = Buffers.getData(srcDB);
     Object destArray = Buffers.getData(destDB);
-    
+
     for (int yd = 0; yd<h; yd++)
       {
-	System.arraycopy(srcArray, srcOffset, 
-			 destArray, destOffset,
-			 rowSize);
-	srcOffset  +=  srcScanlineStride;
-	destOffset += destScanlineStride;
+        System.arraycopy(srcArray, srcOffset,
+                         destArray, destOffset,
+                         rowSize);
+        srcOffset  +=  srcScanlineStride;
+        destOffset += destScanlineStride;
       }
-    
+
 
     return dest;
   }
 
-  public Rectangle2D getBounds2D(Raster src) 
+  public Rectangle2D getBounds2D(Raster src)
   {
     return src.getBounds();
   }
 
   public WritableRaster createCompatibleDestRaster(Raster src) {
-    
+
     /* FIXME: Maybe we should explicitly create a raster with a
        tightly pixel packed sample model, rather than assuming
        that the createCompatibleWritableRaster() method in Raster
@@ -140,7 +140,7 @@ public class ComponentDataBlitOp implements RasterOp
     return src.createCompatibleWritableRaster();
   }
 
-  public Point2D getPoint2D(Point2D srcPoint, Point2D destPoint) 
+  public Point2D getPoint2D(Point2D srcPoint, Point2D destPoint)
   {
     if (destPoint == null)
       return (Point2D) srcPoint.clone();
@@ -149,7 +149,7 @@ public class ComponentDataBlitOp implements RasterOp
     return destPoint;
   }
 
-  public RenderingHints getRenderingHints() 
+  public RenderingHints getRenderingHints()
   {
     throw new UnsupportedOperationException("not implemented");
   }

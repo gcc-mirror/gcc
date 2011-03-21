@@ -73,4 +73,3 @@ public abstract ClassDoc
 exception();
 
 } // interface ThrowsTag
-

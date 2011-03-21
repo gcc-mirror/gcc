@@ -6,8 +6,6 @@
 
 package syscall
 
-const ARCH = "amd64"
-
 func (r *PtraceRegs) PC() uint64 {
 	return r.Rip;
 }

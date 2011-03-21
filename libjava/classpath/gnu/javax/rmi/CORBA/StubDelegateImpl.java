@@ -66,7 +66,7 @@ import org.omg.PortableServer.POAManagerPackage.State;
 
 /**
  * The default stub delegate.
- * 
+ *
  * @author Wu Gansha (gansha.wu@intel.com) (stub)
  * @author Audrius Meskauskas (AudriusA@Bioinformatics.org) (implementation)
  */
@@ -90,13 +90,13 @@ public class StubDelegateImpl
    * obtained CORBA object can be narrowed into stub using
    * {@link PortableRemoteObject#narrow}.
    * </p>
-   * 
+   *
    * @param orb the ORB where the Stub must be connected.
-   * 
+   *
    * @throws RemoteException if the stub is already connected to some other ORB.
    * If the stub is already connected to the ORB that was passed as parameter,
    * the method returns without action.
-   * 
+   *
    * @throws BAD_PARAM if the name of this stub does not match the stub name
    * pattern, "_*_Stub" or if the Tie class, "_*Impl_Tie", does not exists or an
    * instance of this class cannot be instantiated.
@@ -237,7 +237,7 @@ public class StubDelegateImpl
 
   /**
    * Returns the IOR reference of the connected ORB.
-   * 
+   *
    * @see ORB#object_to_string(org.omg.CORBA.Object);
    */
   public String toString(Stub self)
@@ -254,7 +254,7 @@ public class StubDelegateImpl
 
   /**
    * This should never be called. The ORB must be supplied.
-   * 
+   *
    * @see #connect
    */
   public void readObject(Stub self, ObjectInputStream input)

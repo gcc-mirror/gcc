@@ -46,7 +46,7 @@ import gnu.classpath.Configuration;
  */
 
 /**
- * Code relocated from java.lang.Double by 
+ * Code relocated from java.lang.Double by
  * @author Dave Grove (groved@us.ibm.com)
  */
 final class VMDouble
@@ -59,7 +59,7 @@ final class VMDouble
   {
     if (Configuration.INIT_LOAD_LIBRARY)
       {
-	System.loadLibrary("javalang");
+        System.loadLibrary("javalang");
       }
 
     initIDs();

@@ -3,7 +3,7 @@
 ;; expander, and the actual vector instructions will be in altivec.md and
 ;; vsx.md
 
-;; Copyright (C) 2009, 2010
+;; Copyright (C) 2009, 2010, 2011
 ;; Free Software Foundation, Inc.
 ;; Contributed by Michael Meissner <meissner@linux.vnet.ibm.com>
 
@@ -122,6 +122,43 @@
   rs6000_split_multireg_move (operands[0], operands[1]);
   DONE;
 })
+
+;; Vector floating point load/store instructions that uses the Altivec
+;; instructions even if we are compiling for VSX, since the Altivec
+;; instructions silently ignore the bottom 3 bits of the address, and VSX does
+;; not.
+(define_expand "vector_altivec_load_<mode>"
+  [(set (match_operand:VEC_M 0 "vfloat_operand" "")
+	(match_operand:VEC_M 1 "memory_operand" ""))]
+  "VECTOR_MEM_ALTIVEC_OR_VSX_P (<MODE>mode)"
+  "
+{
+  gcc_assert (VECTOR_MEM_ALTIVEC_OR_VSX_P (<MODE>mode));
+
+  if (VECTOR_MEM_VSX_P (<MODE>mode))
+    {
+      operands[1] = rs6000_address_for_altivec (operands[1]);
+      emit_insn (gen_altivec_lvx_<mode> (operands[0], operands[1]));
+      DONE;
+    }
+}")
+
+(define_expand "vector_altivec_store_<mode>"
+  [(set (match_operand:VEC_M 0 "memory_operand" "")
+	(match_operand:VEC_M 1 "vfloat_operand" ""))]
+  "VECTOR_MEM_ALTIVEC_OR_VSX_P (<MODE>mode)"
+  "
+{
+  gcc_assert (VECTOR_MEM_ALTIVEC_OR_VSX_P (<MODE>mode));
+
+  if (VECTOR_MEM_VSX_P (<MODE>mode))
+    {
+      operands[0] = rs6000_address_for_altivec (operands[0]);
+      emit_insn (gen_altivec_stvx_<mode> (operands[0], operands[1]));
+      DONE;
+    }
+}")
+
 
 
 ;; Reload patterns for vector operations.  We may need an addtional base

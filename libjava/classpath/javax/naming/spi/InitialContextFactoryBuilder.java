@@ -47,14 +47,14 @@ import javax.naming.NamingException;
  * initial naming contexts. JNDI allows to specifiy different initial contexts
  * at runtime. The user program can install its own initial context factory
  * builder.
- * 
+ *
  * @see NamingManager#setInitialContextFactoryBuilder
  */
 public interface InitialContextFactoryBuilder
 {
   /**
    * Create the new initial context factory
-   * 
+   *
    * @param environment the properties, used for creation of the initial
    * context factory. The parameter is owned by the caller: it is safe to reuse
    * the table for other purposes after the method returns.

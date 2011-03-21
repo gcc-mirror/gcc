@@ -1,4 +1,4 @@
-! { dg-do "compile" }
+! { dg-do compile }
 !
 ! Check that the VECTOR argument of the PACK intrinsic has at least
 ! as many elements as the MASK has .TRUE. values.

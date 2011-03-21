@@ -74,7 +74,7 @@ public interface QueryExp
    */
   boolean apply(ObjectName name)
     throws BadStringOperationException, BadBinaryOpValueExpException,
-	   BadAttributeValueExpException, InvalidApplicationException;
+           BadAttributeValueExpException, InvalidApplicationException;
 
   /**
    * Changes the {@link MBeanServer} on which this query is performed.
@@ -84,4 +84,3 @@ public interface QueryExp
   void setMBeanServer(MBeanServer server);
 
 }
-

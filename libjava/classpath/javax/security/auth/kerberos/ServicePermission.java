@@ -48,7 +48,7 @@ import java.util.Vector;
  * This represents permission to access to a Kerberos service principal.
  * See the Kerberos authentication RFC for more information:
  * <a href="http://www.ietf.org/rfc/rfc1510.txt">RFC 1510</a>.
- * 
+ *
  * @since 1.4
  */
 public final class ServicePermission
@@ -64,15 +64,15 @@ public final class ServicePermission
 
   /**
    * Create a new service permission with the indicated name and actions.
-   * 
+   *
    * The name is the name of the kerberos principal for the service.
-   * 
+   *
    * The actions are a comma-separated list of strings.  The recognized
    * actions are "initiate" and "accept".  The "initiate" action means
    * that the holder of the permission can access the service.  The
    * "accept" action means that the holder of the permission can operate
    * as this service.
-   * 
+   *
    * @param name the prinicpal's name
    * @param action the allowed actions
    */

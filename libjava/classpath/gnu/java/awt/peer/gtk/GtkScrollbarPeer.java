@@ -50,7 +50,7 @@ public class GtkScrollbarPeer extends GtkComponentPeer
     Scrollbar sb = (Scrollbar) awtComponent;
 
     create (sb.getOrientation (), sb.getValue (),
-            sb.getMinimum (), sb.getMaximum (), 
+            sb.getMinimum (), sb.getMaximum (),
             sb.getUnitIncrement (), sb.getBlockIncrement (),
             sb.getVisibleAmount ());
   }
@@ -85,7 +85,7 @@ public class GtkScrollbarPeer extends GtkComponentPeer
   protected void postAdjustmentEvent (int type, int value)
   {
     Scrollbar bar = (Scrollbar) awtComponent;
-    q().postEvent(new AdjustmentEvent(bar, 
+    q().postEvent(new AdjustmentEvent(bar,
                                       AdjustmentEvent.ADJUSTMENT_VALUE_CHANGED,
                                       type, value, true));
   }

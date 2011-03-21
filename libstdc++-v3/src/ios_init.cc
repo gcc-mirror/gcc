@@ -1,7 +1,7 @@
 // Iostreams base classes -*- C++ -*-
 
 // Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-// 2006, 2007, 2008, 2009, 2010
+// 2006, 2007, 2008, 2009, 2010, 2011
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -35,7 +35,7 @@
 #include <ext/stdio_filebuf.h>
 #include <ext/stdio_sync_filebuf.h>
 
-namespace __gnu_internal _GLIBCXX_VISIBILITY_ATTR(hidden)
+namespace __gnu_internal _GLIBCXX_VISIBILITY(hidden)
 {
   using namespace __gnu_cxx;
 
@@ -59,7 +59,9 @@ namespace __gnu_internal _GLIBCXX_VISIBILITY_ATTR(hidden)
 #endif
 } // namespace __gnu_internal
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   using namespace __gnu_internal;
   
@@ -199,4 +201,5 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     return __ret; 
   }
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace

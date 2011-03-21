@@ -95,9 +95,9 @@ public abstract class CompoundControl extends Control
     result.append(": ");
     for (int i = 0; i < memberControls.length; ++i)
       {
-	if (i > 0)
-	  result.append(", ");
-	result.append(memberControls[i].toString());
+        if (i > 0)
+          result.append(", ");
+        result.append(memberControls[i].toString());
       }
     return result.toString();
   }

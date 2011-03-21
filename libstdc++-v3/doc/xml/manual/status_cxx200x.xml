@@ -104,11 +104,10 @@ particular release.
       <entry/>
     </row>
     <row>
-      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>18.3.1.2</entry>
       <entry><code>numeric_limits</code> members</entry>
-      <entry>Partial</entry>
-      <entry>Missing constexpr</entry>
+      <entry>Y</entry>
+      <entry/>
     </row>
     <row>
       <?dbhtml bgcolor="#C8B0B0" ?>
@@ -391,11 +390,10 @@ particular release.
       <entry/>
     </row>
     <row>
-      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>20.3.5.2</entry>
       <entry>Class template <code>pair</code></entry>
-      <entry>Partial</entry>
-      <entry>Missing constexpr</entry>
+      <entry>Y</entry>
+      <entry/>
     </row>
     <row>
       <entry>20.3.5.3</entry>
@@ -404,17 +402,9 @@ particular release.
       <entry/>
     </row>
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
-      <entry>20.3.5.4</entry>
-      <entry><code>pair</code> range access</entry>
-      <entry>N</entry>
-      <entry/>
-    </row>
-    <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>20.3.5.5</entry>
       <entry>Piecewise construction</entry>
-      <entry>N</entry>
+      <entry>Y</entry>
       <entry/>
     </row>
     <row>
@@ -430,17 +420,16 @@ particular release.
       <entry/>
     </row>
     <row>
-      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>20.4.2</entry>
       <entry>Class template <code>tuple</code></entry>
-      <entry>Partial</entry>
-      <entry>Missing constexpr and range access</entry>
+      <entry>Y</entry>
+      <entry/>
     </row>
     <row>
       <entry>20.5</entry>
       <entry>Class template <code>bitset</code></entry>
-      <entry>Partial</entry>
-      <entry>Missing constexpr</entry>
+      <entry>Y</entry>
+      <entry/>
     </row>
     <row>
       <entry>20.6</entry>
@@ -519,7 +508,7 @@ particular release.
       <entry>20.7.4.3</entry>
       <entry>Type properties</entry>
       <entry>Partial</entry>
-      <entry>Missing is_trivially_copyable, is_literal_type, is_nothrow_constructible</entry>
+      <entry>Missing is_trivially_copyable, is_nothrow_constructible</entry>
     </row>
     <row>
       <entry>20.7.5</entry>
@@ -649,10 +638,11 @@ particular release.
       <entry/>
     </row>
     <row>
+      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>20.8.13</entry>
       <entry>Function template <code>mem_fn</code></entry>
-      <entry>Y</entry>
-      <entry/>
+      <entry>Partial</entry>
+      <entry>Missing overloads for reference-qualified member functions</entry>
     </row>
     <row>
       <entry>20.8.14</entry>
@@ -667,10 +657,11 @@ particular release.
       <entry/>
     </row>
     <row>
+      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>20.8.14.2</entry>
       <entry>Class template <code>function</code></entry>
-      <entry>Y</entry>
-      <entry/>
+      <entry>Partial</entry>
+      <entry>Missing allocator support</entry>
     </row>
     <row>
       <entry>20.8.15</entry>
@@ -685,17 +676,15 @@ particular release.
       <entry/>
     </row>
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>20.9.1</entry>
       <entry>Allocator argument tag</entry>
-      <entry>N</entry>
+      <entry>Y</entry>
       <entry/>
     </row>
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>20.9.2</entry>
       <entry><code>uses_allocator</code></entry>
-      <entry>N</entry>
+      <entry>Y</entry>
       <entry/>
     </row>
     <row>
@@ -765,10 +754,9 @@ particular release.
       <entry/>
     </row>
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>20.9.9.1</entry>
       <entry><code>addressof</code></entry>
-      <entry>N</entry>
+      <entry>Y</entry>
       <entry/>
     </row>
     <row>
@@ -890,8 +878,8 @@ particular release.
     <row>
       <entry>20.10.2.2</entry>
       <entry><code>duration_values</code></entry>
-      <entry>Partial</entry>
-      <entry>Missing constexpr</entry>
+      <entry>Y</entry>
+      <entry/>
     </row>
     <row>
       <entry>20.10.2.3</entry>
@@ -902,14 +890,14 @@ particular release.
     <row>
       <entry>20.10.3</entry>
       <entry>Class template <code>duration</code></entry>
-      <entry>Partial</entry>
-      <entry>Missing constexpr</entry>
+      <entry>Y</entry>
+      <entry/>
     </row>
     <row>
       <entry>20.10.4</entry>
       <entry>Class template <code>time_point</code></entry>
-      <entry>Partial</entry>
-      <entry>Missing constexpr</entry>
+      <entry>Y</entry>
+      <entry/>
     </row>
     <row>
       <entry>20.10.5</entry>
@@ -987,12 +975,14 @@ particular release.
       <entry/>
     </row>
     <row>
+      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>21.2.3.1</entry>
       <entry>struct <code>char_traits&lt;char&gt;</code></entry>
       <entry>Partial</entry>
       <entry>Missing constexpr</entry>
     </row>
     <row>
+      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>21.2.3.2</entry>
       <entry>struct <code>char_traits&lt;char16_t&gt;</code></entry>
       <entry>Partial</entry>
@@ -1001,14 +991,14 @@ particular release.
     <row>
       <entry>21.2.3.3</entry>
       <entry>struct <code>char_traits&lt;char32_t&gt;</code></entry>
-      <entry>Partial</entry>
-      <entry>Missing constexpr</entry>
+      <entry>Y</entry>
+      <entry/>
     </row>
     <row>
       <entry>21.2.3.4</entry>
       <entry>struct <code>char_traits&lt;wchar_t&gt;</code></entry>
-      <entry>Partial</entry>
-      <entry>Missing constexpr</entry>
+      <entry>Y</entry>
+      <entry/>
     </row>
     <row>
       <entry>21.3</entry>
@@ -1302,8 +1292,8 @@ particular release.
     <row>
       <entry>23.3.1</entry>
       <entry>Class template <code>array</code></entry>
-      <entry>Partial</entry>
-      <entry>Missing constexpr</entry>
+      <entry>Y</entry>
+      <entry/>
     </row>
     <row>
       <entry>23.3.2</entry>
@@ -2268,7 +2258,7 @@ particular release.
       <entry>30.4.1.1</entry>
       <entry>Class <code>mutex</code></entry>
       <entry>Y</entry>
-      <entry>Missing constexpr</entry>
+      <entry/>
     </row>
     <row>
       <entry>30.4.1.2</entry>
@@ -2328,7 +2318,7 @@ particular release.
       <entry>30.4.5.1</entry>
       <entry><code>once_flag</code></entry>
       <entry>Y</entry>
-      <entry>Missing constexpr</entry>
+      <entry/>
     </row>
     <row>
       <entry>30.4.5.2</entry>
@@ -2371,7 +2361,7 @@ particular release.
       <entry>30.6.2</entry>
       <entry>Error handling</entry>
       <entry>Y</entry>
-      <entry>Missing constexpr</entry>
+      <entry/>
     </row>
     <row>
       <entry>30.6.3</entry>
@@ -2390,14 +2380,14 @@ particular release.
       <entry>30.6.5</entry>
       <entry>Class template <code>promise</code></entry>
       <entry>Partial</entry>
-      <entry>Missing <code>allocator_arg_t</code> and set_*_at_thread_exit</entry>
+      <entry>Missing set_*_at_thread_exit</entry>
     </row>
     <row>
       <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>30.6.6</entry>
       <entry>Class template <code>future</code></entry>
       <entry>Partial</entry>
-      <entry>Missing future_status</entry>
+      <entry>Missing future_status and future::share()</entry>
     </row>
     <row>
       <?dbhtml bgcolor="#B0B0B0" ?>
@@ -2405,13 +2395,6 @@ particular release.
       <entry>Class template <code>shared_future</code></entry>
       <entry>Partial</entry>
       <entry>Missing future_status</entry>
-    </row>
-    <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
-      <entry>30.6.8</entry>
-      <entry>Class template <code>atomic_future</code></entry>
-      <entry>N</entry>
-      <entry/>
     </row>
     <row>
       <entry>30.6.9</entry>
@@ -2424,7 +2407,7 @@ particular release.
       <entry>30.6.10</entry>
       <entry>Class template <code>packaged_task</code></entry>
       <entry>Partial</entry>
-      <entry>Missing <code>allocator_arg_t</code> and make_ready_at_thread_exit</entry>
+      <entry>Missing make_ready_at_thread_exit</entry>
     </row>
     <row>
       <entry>

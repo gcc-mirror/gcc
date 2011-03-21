@@ -1,7 +1,8 @@
 /* Implementation of Fortran 2003 Polymorphism.
    Copyright (C) 2009, 2010
    Free Software Foundation, Inc.
-   Contributed by Paul Richard Thomas & Janus Weil
+   Contributed by Paul Richard Thomas <pault@gcc.gnu.org>
+   and Janus Weil <janus@gcc.gnu.org>
 
 This file is part of GCC.
 
@@ -82,7 +83,8 @@ gfc_add_component_ref (gfc_expr *e, const char *name)
 
 
 /* Build a NULL initializer for CLASS pointers,
-   initializing the _data and _vptr components to zero.  */
+   initializing the _data component to NULL and
+   the _vptr component to the declared type.  */
 
 gfc_expr *
 gfc_class_null_initializer (gfc_typespec *ts)
@@ -97,9 +99,10 @@ gfc_class_null_initializer (gfc_typespec *ts)
   for (comp = ts->u.derived->components; comp; comp = comp->next)
     {
       gfc_constructor *ctor = gfc_constructor_get();
-      ctor->expr = gfc_get_expr ();
-      ctor->expr->expr_type = EXPR_NULL;
-      ctor->expr->ts = comp->ts;
+      if (strcmp (comp->name, "_vptr") == 0)
+	ctor->expr = gfc_lval_expr_from_sym (gfc_find_derived_vtab (ts->u.derived));
+      else
+	ctor->expr = gfc_get_null_expr (NULL);
       gfc_constructor_append (&init->value.constructor, ctor);
     }
 
@@ -113,11 +116,57 @@ gfc_class_null_initializer (gfc_typespec *ts)
 
 static void
 get_unique_type_string (char *string, gfc_symbol *derived)
-{  
+{
+  char dt_name[GFC_MAX_SYMBOL_LEN+1];
+  sprintf (dt_name, "%s", derived->name);
+  dt_name[0] = TOUPPER (dt_name[0]);
   if (derived->module)
-    sprintf (string, "%s_%s", derived->module, derived->name);
+    sprintf (string, "%s_%s", derived->module, dt_name);
+  else if (derived->ns->proc_name)
+    sprintf (string, "%s_%s", derived->ns->proc_name->name, dt_name);
   else
-    sprintf (string, "%s_%s", derived->ns->proc_name->name, derived->name);
+    sprintf (string, "_%s", dt_name);
+}
+
+
+/* A relative of 'get_unique_type_string' which makes sure the generated
+   string will not be too long (replacing it by a hash string if needed).  */
+
+static void
+get_unique_hashed_string (char *string, gfc_symbol *derived)
+{
+  char tmp[2*GFC_MAX_SYMBOL_LEN+2];
+  get_unique_type_string (&tmp[0], derived);
+  /* If string is too long, use hash value in hex representation
+     (allow for extra decoration, cf. gfc_build_class_symbol)*/
+  if (strlen (tmp) > GFC_MAX_SYMBOL_LEN - 10)
+    {
+      int h = gfc_hash_value (derived);
+      sprintf (string, "%X", h);
+    }
+  else
+    strcpy (string, tmp);
+}
+
+
+/* Assign a hash value for a derived type. The algorithm is that of SDBM.  */
+
+unsigned int
+gfc_hash_value (gfc_symbol *sym)
+{
+  unsigned int hash = 0;
+  char c[2*(GFC_MAX_SYMBOL_LEN+1)];
+  int i, len;
+  
+  get_unique_type_string (&c[0], sym);
+  len = strlen (c);
+  
+  for (i = 0; i < len; i++)
+    hash = (hash << 6) + (hash << 16) - hash + c[i];
+
+  /* Return the hash but take the modulus for the sake of module read,
+     even though this slightly increases the chance of collision.  */
+  return (hash % 100000000);
 }
 
 
@@ -130,13 +179,29 @@ gfc_try
 gfc_build_class_symbol (gfc_typespec *ts, symbol_attribute *attr,
 			gfc_array_spec **as, bool delayed_vtab)
 {
-  char name[GFC_MAX_SYMBOL_LEN], tname[GFC_MAX_SYMBOL_LEN];
+  char name[GFC_MAX_SYMBOL_LEN+1], tname[GFC_MAX_SYMBOL_LEN+1];
   gfc_symbol *fclass;
   gfc_symbol *vtab;
   gfc_component *c;
+  
+  if (attr->class_ok)
+    /* Class container has already been built.  */
+    return SUCCESS;
+
+  attr->class_ok = attr->dummy || attr->pointer  || attr->allocatable;
+  
+  if (!attr->class_ok)
+    /* We can not build the class container yet.  */
+    return SUCCESS;
+
+  if (*as)
+    {
+      gfc_fatal_error ("Polymorphic array at %C not yet supported");
+      return FAILURE;
+    }
 
   /* Determine the name of the encapsulating type.  */
-  get_unique_type_string (tname, ts->u.derived);
+  get_unique_hashed_string (tname, ts->u.derived);
   if ((*as) && (*as)->rank && attr->allocatable)
     sprintf (name, "__class_%s_%d_a", tname, (*as)->rank);
   else if ((*as) && (*as)->rank)
@@ -343,9 +408,9 @@ gfc_find_derived_vtab (gfc_symbol *derived)
     
   if (ns)
     {
-      char name[GFC_MAX_SYMBOL_LEN], tname[GFC_MAX_SYMBOL_LEN];
+      char name[GFC_MAX_SYMBOL_LEN+1], tname[GFC_MAX_SYMBOL_LEN+1];
       
-      get_unique_type_string (tname, derived);
+      get_unique_hashed_string (tname, derived);
       sprintf (name, "__vtab_%s", tname);
 
       /* Look for the vtab symbol in various namespaces.  */
@@ -484,6 +549,8 @@ gfc_find_derived_vtab (gfc_symbol *derived)
 		  sub_ns->proc_name = copy;
 		  copy->attr.flavor = FL_PROCEDURE;
 		  copy->attr.if_source = IFSRC_DECL;
+		  if (ns->proc_name->attr.flavor == FL_MODULE)
+		    copy->module = ns->proc_name->name;
 		  gfc_set_sym_referenced (copy);
 		  /* Set up formal arguments.  */
 		  gfc_get_symbol ("src", sub_ns, &src);
@@ -504,7 +571,7 @@ gfc_find_derived_vtab (gfc_symbol *derived)
 		  copy->formal->next->sym = dst;
 		  /* Set up code.  */
 		  sub_ns->code = gfc_get_code ();
-		  sub_ns->code->op = EXEC_ASSIGN;
+		  sub_ns->code->op = EXEC_INIT_ASSIGN;
 		  sub_ns->code->expr1 = gfc_lval_expr_from_sym (dst);
 		  sub_ns->code->expr2 = gfc_lval_expr_from_sym (src);
 		  /* Set initializer.  */

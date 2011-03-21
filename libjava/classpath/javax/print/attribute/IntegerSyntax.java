@@ -1,4 +1,4 @@
-/* IntegerSyntax.java -- 
+/* IntegerSyntax.java --
    Copyright (C) 2003, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -40,9 +40,9 @@ package javax.print.attribute;
 import java.io.Serializable;
 
 /**
- * <code>IntegerSyntax</code> is the abstract base class of all attribute 
+ * <code>IntegerSyntax</code> is the abstract base class of all attribute
  * classes having an integer as value.
- * 
+ *
  * @author Michael Koch (konqueror@gmx.de)
  */
 public abstract class IntegerSyntax implements Cloneable, Serializable
@@ -94,7 +94,7 @@ public abstract class IntegerSyntax implements Cloneable, Serializable
    *
    * @param obj the object to test
    *
-   * @return <code>true</code> if both objects are equal, 
+   * @return <code>true</code> if both objects are equal,
    * <code>false</code> otherwise.
    */
   public boolean equals(Object obj)

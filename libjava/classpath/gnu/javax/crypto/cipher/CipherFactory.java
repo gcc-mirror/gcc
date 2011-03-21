@@ -1,4 +1,4 @@
-/* CipherFactory.java -- 
+/* CipherFactory.java --
    Copyright (C) 2001, 2002, 2003, 2006 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -58,7 +58,7 @@ public class CipherFactory
 
   /**
    * Returns an instance of a block cipher given its name.
-   * 
+   *
    * @param name the case-insensitive name of the symmetric-key block cipher
    *          algorithm.
    * @return an instance of the designated cipher algorithm, or
@@ -107,7 +107,7 @@ public class CipherFactory
   /**
    * Returns a {@link Set} of symmetric key block cipher implementation names
    * supported by this <i>Factory</i>.
-   * 
+   *
    * @return a {@link Set} of block cipher names (Strings).
    */
   public static final Set getNames()

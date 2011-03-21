@@ -23,8 +23,20 @@
 (define_register_constraint "a" "ADDRESS_REGS"
   "An address register.")
 
+;; This can be used for QI/HImode memory operations, and most arithmetic.
+;; AM33 supports these on all registers, where MN103 needs DATA_REGS.
+(define_register_constraint "D" "TARGET_AM33 ? GENERAL_REGS : DATA_REGS"
+  "A general register for AM33, and a data register otherwise.")
+
+;; Similarly for ADDRESS_REGS vs GENERAL_REGS.
+(define_register_constraint "A" "TARGET_AM33 ? GENERAL_REGS : ADDRESS_REGS"
+  "A general register for AM33, and an address register otherwise.")
+
 (define_register_constraint "y" "SP_REGS"
   "An SP register (if available).")
+
+(define_register_constraint "z" "MDR_REGS"
+  "The MDR register.")
 
 (define_register_constraint "x" "TARGET_AM33 ? EXTENDED_REGS : NO_REGS"
   "An extended register.")
@@ -32,36 +44,13 @@
 (define_register_constraint "f" "TARGET_AM33_2 ? FP_REGS : NO_REGS"
   "A floating point register.")
 
-(define_register_constraint "A" "TARGET_AM33_2 ? FP_ACC_REGS : NO_REGS"
+(define_register_constraint "c" "TARGET_AM33_2 ? FP_ACC_REGS : NO_REGS"
   "A floating point accumulator register.")
 
 (define_memory_constraint "Q"
   "@internal"
   (and (match_code "mem")
        (match_test "!CONSTANT_ADDRESS_P (XEXP (op, 0))")))
-
-(define_memory_constraint "R"
-  "@internal"
-  (and (match_code "mem")
-       (match_test "mode == QImode")
-       (ior (match_test "CONSTANT_ADDRESS_P (XEXP (op, 0))")
-	    (and (match_test "GET_CODE (XEXP (op, 0)) == REG")
-		 (match_test "REG_OK_FOR_BIT_BASE_P (XEXP (op, 0))")
-		 (match_test "XEXP (op, 0) != stack_pointer_rtx"))
-	    (and (match_test "GET_CODE (XEXP (op, 0)) == PLUS")
-		 (match_test "GET_CODE (XEXP (XEXP (op, 0), 0)) == REG")
-		 (match_test "REG_OK_FOR_BIT_BASE_P (XEXP (XEXP (op, 0), 0))")
-		 (match_test "XEXP (XEXP (op, 0), 0) != stack_pointer_rtx")
-		 (match_test "GET_CODE (XEXP (XEXP (op, 0), 1)) == CONST_INT")
-		 (match_test "INT_8_BITS (INTVAL (XEXP (XEXP (op, 0), 1)))")))))
-
-(define_memory_constraint "T"
-  "@internal"
-  (and (match_code "mem")
-       (match_test "mode == QImode")
-       (and (match_test "GET_CODE (XEXP (op, 0)) == REG")
-	    (match_test "REG_OK_FOR_BIT_BASE_P (XEXP (op, 0))")
-	    (match_test "XEXP (op, 0) != stack_pointer_rtx"))))
 
 (define_constraint "S"
   "@internal"
@@ -104,6 +93,12 @@
   (and (match_code "const_int")
        (ior (match_test "ival == 255")
 	    (match_test "ival == 65535"))))
+
+(define_constraint "O"
+  "An integer between -8 and +7 inclusive."
+  (and (match_code "const_int")
+       (and (match_test "ival >= -8")
+	    (match_test "ival <=  7"))))
 
 ;; Floating-point constraints
 (define_constraint "G"

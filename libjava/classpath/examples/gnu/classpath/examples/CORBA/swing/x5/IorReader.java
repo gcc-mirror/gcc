@@ -49,14 +49,14 @@ import org.omg.CORBA.BAD_PARAM;
 import org.omg.CORBA.DATA_CONVERSION;
 
 /**
- * Reads the remote URL. Following formal/04-03-12, CORBA should be able to do 
+ * Reads the remote URL. Following formal/04-03-12, CORBA should be able to do
  * this without the help of this class. However some popular class libraries
- * are written using the older CORBA specifications and may not handle 
+ * are written using the older CORBA specifications and may not handle
  * functionality, require by this game. This class substitutes the functionality,
  * ensuring that these implementations will also start and we will be able
  * to test the interoperability.
- * 
- * @author Audrius Meskauskas (AudriusA@Bioinformatics.org) 
+ *
+ * @author Audrius Meskauskas (AudriusA@Bioinformatics.org)
  */
 public class IorReader
 {
@@ -93,7 +93,7 @@ public class IorReader
         throw d;
       }
   }
-  
+
   /**
    * Read IOR from the file in the local file system.
    */
@@ -120,5 +120,5 @@ public class IorReader
         d.initCause(ex);
         throw (d);
       }
-  }  
+  }
 }

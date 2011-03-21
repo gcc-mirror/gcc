@@ -47,7 +47,7 @@ import javax.swing.event.SwingPropertyChangeSupport;
 
 /**
  * A base class for implementing the {@link Action} interface.
- * 
+ *
  * @author Andrew Selkirk
  */
 public abstract class AbstractAction
@@ -59,9 +59,9 @@ public abstract class AbstractAction
    * A flag that indicates whether or not the action is enabled.
    */
   protected boolean enabled = true;
-  
+
   /**
-   * Provides support for property change event notification. 
+   * Provides support for property change event notification.
    */
   protected SwingPropertyChangeSupport changeSupport =
     new SwingPropertyChangeSupport(this);
@@ -80,7 +80,7 @@ public abstract class AbstractAction
   }
 
   /**
-   * Creates a new action with the specified name.  The name is stored as a 
+   * Creates a new action with the specified name.  The name is stored as a
    * property with the key {@link Action#NAME}, and no other properties are
    * initialised.
    *
@@ -94,7 +94,7 @@ public abstract class AbstractAction
   /**
    * Creates a new action with the specified name and icon.  The name is stored
    * as a property with the key {@link Action#NAME}, the icon is stored as a
-   * property with the key {@link Action#SMALL_ICON}, and no other properties 
+   * property with the key {@link Action#SMALL_ICON}, and no other properties
    * are initialised.
    *
    * @param name  the name (<code>null</code> permitted).
@@ -123,12 +123,12 @@ public abstract class AbstractAction
 
   /**
    * Returns the value associated with the specified key.
-   * 
+   *
    * @param key  the key (not <code>null</code>).
-   * 
-   * @return The value associated with the specified key, or 
+   *
+   * @return The value associated with the specified key, or
    *         <code>null</code> if the key is not found.
-   *         
+   *
    * @see #putValue(String, Object)
    */
   public Object getValue(String key)
@@ -137,20 +137,20 @@ public abstract class AbstractAction
   }
 
   /**
-   * Sets the value associated with the specified key and sends a 
-   * {@link java.beans.PropertyChangeEvent} to all registered listeners.  
-   * The standard keys are: 
+   * Sets the value associated with the specified key and sends a
+   * {@link java.beans.PropertyChangeEvent} to all registered listeners.
+   * The standard keys are:
    * <ul>
    * <li>{@link #NAME}</li>
-   * <li>{@link #SHORT_DESCRIPTION}</li> 
+   * <li>{@link #SHORT_DESCRIPTION}</li>
    * <li>{@link #LONG_DESCRIPTION}</li>
-   * <li>{@link #SMALL_ICON}</li> 
+   * <li>{@link #SMALL_ICON}</li>
    * <li>{@link #ACTION_COMMAND_KEY}</li>
-   * <li>{@link #ACCELERATOR_KEY}</li> 
+   * <li>{@link #ACCELERATOR_KEY}</li>
    * <li>{@link #MNEMONIC_KEY}</li>
    * </ul>
    * Any existing value associated with the key will be overwritten.
-   * 
+   *
    * @param key  the key (not <code>null</code>).
    * @param value  the value (<code>null</code> permitted).
    */
@@ -168,7 +168,7 @@ public abstract class AbstractAction
    * Returns the flag that indicates whether or not the action is enabled.
    *
    * @return The flag.
-   * 
+   *
    * @see #setEnabled(boolean)
    */
   public boolean isEnabled()
@@ -178,12 +178,12 @@ public abstract class AbstractAction
 
   /**
    * Sets the flag that indicates whether or not the action is enabled and, if
-   * the value of the flag changed from the previous setting, sends a 
-   * {@link java.beans.PropertyChangeEvent} to all registered listeners (using 
+   * the value of the flag changed from the previous setting, sends a
+   * {@link java.beans.PropertyChangeEvent} to all registered listeners (using
    * the property name 'enabled').
    *
    * @param enabled  the new flag value.
-   * 
+   *
    * @see #isEnabled()
    */
   public void setEnabled(boolean enabled)
@@ -196,10 +196,10 @@ public abstract class AbstractAction
   }
 
   /**
-   * Returns an array of the keys for the property values that have been 
+   * Returns an array of the keys for the property values that have been
    * defined via the {@link #putValue(String, Object)} method (or the class
    * constructor).
-   * 
+   *
    * @return An array of keys.
    */
   public Object[] getKeys()
@@ -208,7 +208,7 @@ public abstract class AbstractAction
   }
 
   /**
-   * Sends a {@link PropertyChangeEvent} for the named property to all 
+   * Sends a {@link PropertyChangeEvent} for the named property to all
    * registered listeners.
    *
    * @param propertyName  the property name.
@@ -220,17 +220,17 @@ public abstract class AbstractAction
   {
     changeSupport.firePropertyChange(propertyName, oldValue, newValue);
   }
-  
+
   /**
    * Sends a {@link PropertyChangeEvent} for the named property to all
-   * registered listeners.  This private method is called by the 
+   * registered listeners.  This private method is called by the
    * {@link #setEnabled(boolean)} method.
    *
    * @param propertyName  the property name.
    * @param oldValue  the old value of the property.
    * @param newValue  the new value of the property.
    */
-  private void firePropertyChange(String propertyName, boolean oldValue, 
+  private void firePropertyChange(String propertyName, boolean oldValue,
                                   boolean newValue)
   {
     changeSupport.firePropertyChange(propertyName, oldValue, newValue);
@@ -241,7 +241,7 @@ public abstract class AbstractAction
    * from this action.
    *
    * @param listener the listener.
-   * 
+   *
    * @see #removePropertyChangeListener(PropertyChangeListener)
    */
   public void addPropertyChangeListener(PropertyChangeListener listener)
@@ -250,11 +250,11 @@ public abstract class AbstractAction
   }
 
   /**
-   * Deregisters a listener so that it no longer receives 
+   * Deregisters a listener so that it no longer receives
    * {@link PropertyChangeEvent} notifications from this action.
    *
    * @param listener the listener.
-   * 
+   *
    * @see #addPropertyChangeListener(PropertyChangeListener)
    */
   public void removePropertyChangeListener(PropertyChangeListener listener)
@@ -266,7 +266,7 @@ public abstract class AbstractAction
    * Returns all registered listeners.
    *
    * @return An array of listeners.
-   * 
+   *
    * @since 1.4
    */
   public PropertyChangeListener[] getPropertyChangeListeners()

@@ -60,13 +60,13 @@ public class MetalRadioButtonUI
 
   /** Used to draw the focus rectangle. */
   protected Color focusColor;
-  
+
   /** Used to fill the icon when the button is pressed. */
   protected Color selectColor;
-  
+
   /** Used to draw disabled text. */
   protected Color disabledTextColor;
-  
+
   /**
    * Constructs a new instance of <code>MetalRadioButtonUI</code>.
    */
@@ -86,10 +86,10 @@ public class MetalRadioButtonUI
   {
     return new MetalRadioButtonUI();
   }
-  
+
   /**
    * Sets the default values for the specified button.
-   * 
+   *
    * @param b  the button.
    */
   public void installDefaults(AbstractButton b)
@@ -100,10 +100,10 @@ public class MetalRadioButtonUI
     focusColor = UIManager.getColor(prefix + "focus");
     selectColor = UIManager.getColor(prefix + "select");
   }
-  
+
   /**
    * Clears any defaults set in the installDefaults() method.
-   * 
+   *
    * @param b  the {@link JRadioButton}.
    */
   protected void uninstallDefaults(AbstractButton b)
@@ -113,50 +113,50 @@ public class MetalRadioButtonUI
     focusColor = null;
     selectColor = null;
   }
-  
+
   /**
    * Returns the color used to fill the {@link JRadioButton}'s icon when the
-   * button is pressed.  The default color is obtained from the 
-   * {@link UIManager} defaults via an entry with the key 
+   * button is pressed.  The default color is obtained from the
+   * {@link UIManager} defaults via an entry with the key
    * <code>RadioButton.select</code>.
-   * 
+   *
    * @return The select color.
    */
   protected Color getSelectColor()
   {
-    return selectColor;    
+    return selectColor;
   }
-  
+
   /**
    * Returns the color for the {@link JRadioButton}'s text when the button is
    * disabled.  The default color is obtained from the {@link UIManager}
    * defaults via an entry with the key <code>RadioButton.disabledText</code>.
-   * 
+   *
    * @return The disabled text color.
    */
   protected Color getDisabledTextColor()
   {
     return disabledTextColor;
   }
-  
+
   /**
-   * Returns the color used to draw the focus rectangle when the 
-   * {@link JRadioButton} has the focus.  The default color is obtained from 
-   * the {@link UIManager} defaults via an entry with the key 
+   * Returns the color used to draw the focus rectangle when the
+   * {@link JRadioButton} has the focus.  The default color is obtained from
+   * the {@link UIManager} defaults via an entry with the key
    * <code>RadioButton.focus</code>.
-   * 
+   *
    * @return The color used to draw the focus rectangle.
-   * 
+   *
    * @see #paintFocus(Graphics, Rectangle, Dimension)
    */
   protected Color getFocusColor()
   {
     return focusColor;
   }
-  
+
   /**
    * Paints the {@link JRadioButton}.
-   * 
+   *
    * @param g  the graphics device.
    * @param c  the component (an instance of {@link JRadioButton}).
    */
@@ -166,10 +166,10 @@ public class MetalRadioButtonUI
     // FIXME:  disabled text isn't being drawn correctly, it's possible that
     // it could be done here...
   }
-  
+
   /**
    * Paints the focus rectangle for the {@link JRadioButton}.
-   * 
+   *
    * @param g  the graphics device.
    * @param t  the bounding rectangle for the text.
    * @param d  ???
@@ -179,5 +179,5 @@ public class MetalRadioButtonUI
     g.setColor(focusColor);
     g.drawRect(t.x - 1, t.y - 1, t.width + 1, t.height + 1);
   }
-  
+
 }

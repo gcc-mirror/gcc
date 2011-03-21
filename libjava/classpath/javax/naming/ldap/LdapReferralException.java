@@ -43,7 +43,7 @@ import java.util.Hashtable;
 import javax.naming.Context;
 import javax.naming.NamingException;
 import javax.naming.ReferralException;
- 
+
 /**
  * @author Warren Levy (warrenl@redhat.com)
  * @date June 1, 2001

@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -36,7 +36,7 @@ obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
 
-package java.io; 
+package java.io;
 
 /**
   * This interface extends the <code>DataInput</code> interface to provide a
@@ -62,9 +62,9 @@ public interface ObjectInput extends DataInput
 
   /**
     * This method reading a byte of data from a stream.  It returns that byte
-    * as an <code>int</code>.  This method blocks if no data is available 
+    * as an <code>int</code>.  This method blocks if no data is available
     * to be read.
-    * 
+    *
     * @return The byte of data read
     *
     * @exception IOException If an error occurs
@@ -73,7 +73,7 @@ public interface ObjectInput extends DataInput
 
   /**
     * This method reads raw bytes and stores them them a byte array buffer.
-    * Note that this method will block if no data is available.  However, 
+    * Note that this method will block if no data is available.  However,
     * it will not necessarily block until it fills the entire buffer.  That is,
     * a "short count" is possible.
     *
@@ -87,8 +87,8 @@ public interface ObjectInput extends DataInput
 
   /**
     * This method reads raw bytes and stores them in a byte array buffer
-    * <code>buf</code> starting at position <code>offset</code> into the 
-    * buffer.  A 
+    * <code>buf</code> starting at position <code>offset</code> into the
+    * buffer.  A
     * maximum of <code>len</code> bytes will be read.  Note that this method
     * blocks if no data is available, but will not necessarily block until
     * it can read <code>len</code> bytes of data.  That is, a "short count" is
@@ -111,11 +111,11 @@ public interface ObjectInput extends DataInput
     *
     * @return The object instance that was read
     *
-    * @exception ClassNotFoundException If a class for the object cannot be 
+    * @exception ClassNotFoundException If a class for the object cannot be
     * found
     * @exception IOException If any other error occurs
     */
-  Object readObject() 
+  Object readObject()
     throws ClassNotFoundException, IOException;
 
   /**

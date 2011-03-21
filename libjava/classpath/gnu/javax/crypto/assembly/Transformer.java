@@ -1,4 +1,4 @@
-/* Transformer.java -- 
+/* Transformer.java --
    Copyright (C) 2003, 2006 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -73,7 +73,7 @@ import java.util.Map;
  * buffering, from the previous element, is needed --which is independant of
  * buffering the input if the <code>Transformer</code> implementation itself
  * is block-based.
- * 
+ *
  * @see CascadeTransformer
  * @see PaddingTransformer
  * @see DeflateTransformer
@@ -117,7 +117,7 @@ public abstract class Transformer
 
   /**
    * Sets the operational mode of this <code>Transformer</code>.
-   * 
+   *
    * @param mode the processing mode this <code>Transformer</code> is required
    *          to operate in.
    * @throws IllegalStateException if this instance has already been assigned an
@@ -133,7 +133,7 @@ public abstract class Transformer
   /**
    * Returns <code>true</code> if this <code>Transformer</code> was wired in
    * pre-processing mode; <code>false</code> otherwise.
-   * 
+   *
    * @return <code>true</code> if this <code>Transformer</code> has been
    *         wired in pre-processing mode; <code>false</code> otherwise.
    * @throws IllegalStateException if this instance has not yet been assigned an
@@ -149,7 +149,7 @@ public abstract class Transformer
   /**
    * Returns <code>true</code> if this <code>Transformer</code> was wired in
    * post-processing mode; <code>false</code> otherwise.
-   * 
+   *
    * @return <code>true</code> if this <code>Transformer</code> has been
    *         wired in post-processing mode; <code>false</code> otherwise.
    * @throws IllegalStateException if this instance has not yet been assigned an
@@ -163,7 +163,7 @@ public abstract class Transformer
   /**
    * Initialises the <code>Transformer</code> for operation with specific
    * characteristics.
-   * 
+   *
    * @param attributes a set of name-value pairs that describes the desired
    *          future behaviour of this instance.
    * @throws IllegalStateException if the instance is already initialised.
@@ -185,7 +185,7 @@ public abstract class Transformer
   /**
    * Returns the block-size of this <code>Transformer</code>. A value of
    * <code>1</code> indicates that this instance is block-agnostic.
-   * 
+   *
    * @return the current minimal required block size.
    */
   public int currentBlockSize()
@@ -212,7 +212,7 @@ public abstract class Transformer
    * Convenience method that calls the method with same name and three
    * arguments, using a byte array of length <code>1</code> whose contents are
    * the designated byte.
-   * 
+   *
    * @param b the byte to process.
    * @return the result of transformation.
    * @throws IllegalStateException if the instance is not initialised.
@@ -229,7 +229,7 @@ public abstract class Transformer
    * Convenience method that calls the same method with three arguments. All
    * bytes in <code>in</code>, starting from index position <code>0</code>
    * are considered.
-   * 
+   *
    * @param in the input data bytes.
    * @return the result of transformation.
    * @throws IllegalStateException if the instance is not initialised.
@@ -244,7 +244,7 @@ public abstract class Transformer
 
   /**
    * Processes a designated number of bytes from a given byte array.
-   * 
+   *
    * @param in the input data bytes.
    * @param offset index of <code>in</code> from which to start considering
    *          data.
@@ -267,7 +267,7 @@ public abstract class Transformer
   /**
    * Convenience method that calls the same method with three arguments. A
    * zero-long byte array is used.
-   * 
+   *
    * @return the result of transformation.
    * @throws IllegalStateException if the instance is not initialised.
    * @throws TransformerException if a transformation-related exception occurs
@@ -287,7 +287,7 @@ public abstract class Transformer
    * Convenience method that calls the method with same name and three
    * arguments, using a byte array of length <code>1</code> whose contents are
    * the designated byte.
-   * 
+   *
    * @param b the byte to process.
    * @return the result of transformation.
    * @throws IllegalStateException if the instance is not initialised.
@@ -304,7 +304,7 @@ public abstract class Transformer
    * Convenience method that calls the same method with three arguments. All
    * bytes in <code>in</code>, starting from index position <code>0</code>
    * are considered.
-   * 
+   *
    * @param in the input data bytes.
    * @return the result of transformation.
    * @throws IllegalStateException if the instance is not initialised.
@@ -321,7 +321,7 @@ public abstract class Transformer
    * Processes a designated number of bytes from a given byte array and signals,
    * at the same time, that this is the last <i>push</i> operation on this
    * <code>Transformer</code>.
-   * 
+   *
    * @param in the input data bytes.
    * @param offset index of <code>in</code> from which to start considering
    *          data.

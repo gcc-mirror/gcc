@@ -69,7 +69,7 @@ public final class StructMember
    * The typecode of the structure member.
    */
   public TypeCode type;
-  
+
   /**
    * Creates a structure member with all fields
    * left with the default value <code>null</code>.
@@ -77,10 +77,10 @@ public final class StructMember
   public StructMember()
   {
   }
-  
+
   /**
    * Creates a structure member.
-   * 
+   *
    * @param a_name member name.
    * @param a_type member type code.
    * @param a_type_def member IDL type definition.

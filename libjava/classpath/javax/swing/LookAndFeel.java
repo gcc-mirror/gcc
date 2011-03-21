@@ -53,18 +53,18 @@ import javax.swing.plaf.metal.MetalLookAndFeel;
 import javax.swing.text.JTextComponent;
 
 /**
- * A <i>look-and-feel</i> controls most aspects of the appearance and 
- * operation of user interface components in <code>javax.swing</code>.  A 
+ * A <i>look-and-feel</i> controls most aspects of the appearance and
+ * operation of user interface components in <code>javax.swing</code>.  A
  * cross-platform look-and-feel (the {@link MetalLookAndFeel}) is provided.
- * 
+ *
  * @see UIManager#getInstalledLookAndFeels()
  * @see UIManager#setLookAndFeel(LookAndFeel)
  */
 public abstract class LookAndFeel
 {
   /**
-   * Creates and returns a look-and-feel specific defaults table.  This method 
-   * is called once by {@link UIManager#setLookAndFeel(LookAndFeel)} and 
+   * Creates and returns a look-and-feel specific defaults table.  This method
+   * is called once by {@link UIManager#setLookAndFeel(LookAndFeel)} and
    * shouldn't be called again (as it creates a large table of defaults).
    *
    * @return The UI defaults.
@@ -76,47 +76,47 @@ public abstract class LookAndFeel
 
   /**
    * Returns a description of the look and feel.
-   * 
+   *
    * @return A description of the look and feel.
    */
   public abstract String getDescription();
 
   /**
    * Returns the value of <code>Toolkit.getDefaultToolkit()
-   * .getDesktopProperty(systemPropertyName)</code>, or 
+   * .getDesktopProperty(systemPropertyName)</code>, or
    * <code>fallbackValue</code> if no such property is defined.
-   * 
+   *
    * @param systemPropertyName  the system property name.
    * @param fallbackValue  the fallback value.
-   * 
+   *
    * @return The property value or <code>fallbackValue</code>.
    */
-  public static Object getDesktopPropertyValue(String systemPropertyName, 
+  public static Object getDesktopPropertyValue(String systemPropertyName,
       Object fallbackValue)
   {
     Object value = Toolkit.getDefaultToolkit().getDesktopProperty(
         systemPropertyName);
     return value != null ? value : fallbackValue;
   }
-  
+
   /**
    * Returns an identifier for the look and feel.
-   * 
+   *
    * @return An identifier for the look and feel.
    */
   public abstract String getID();
 
   /**
    * Returns the name for the look and feel.
-   * 
+   *
    * @return The name for the look and feel.
    */
   public abstract String getName();
 
   /**
-   * Returns <code>true</code> when the look-and-feel supports window 
+   * Returns <code>true</code> when the look-and-feel supports window
    * decorations, and <code>false</code> otherwise. This default implementation
-   * always returns <code>false</code> and needs to be overridden when the 
+   * always returns <code>false</code> and needs to be overridden when the
    * derived look-and-feel supports this.
    *
    * @return <code>false</code>.
@@ -127,13 +127,13 @@ public abstract class LookAndFeel
   {
     return false;
   }
-  
+
   /**
-   * Initializes the look-and-feel.  The 
-   * {@link UIManager#setLookAndFeel(LookAndFeel)} method calls this method 
-   * before the first call (and typically the only call) to 
+   * Initializes the look-and-feel.  The
+   * {@link UIManager#setLookAndFeel(LookAndFeel)} method calls this method
+   * before the first call (and typically the only call) to
    * {@link #getDefaults()}.  This default implementation does nothing, but
-   * subclasses can override this behaviour. 
+   * subclasses can override this behaviour.
    */
   public void initialize()
   {
@@ -142,12 +142,12 @@ public abstract class LookAndFeel
   }
 
   /**
-   * Convenience method for installing a component's default {@link Border} 
-   * object on the specified component if either the border is currently 
-   * <code>null</code> or already an instance of {@link UIResource}. 
-   * 
+   * Convenience method for installing a component's default {@link Border}
+   * object on the specified component if either the border is currently
+   * <code>null</code> or already an instance of {@link UIResource}.
+   *
    * @param c  the component (<code>null</code> not permitted).
-   * @param defaultBorderName  the border name (for lookup in the UIDefaults 
+   * @param defaultBorderName  the border name (for lookup in the UIDefaults
    *     table).
    */
   public static void installBorder(JComponent c, String defaultBorderName)
@@ -160,9 +160,9 @@ public abstract class LookAndFeel
   /**
    * Convenience method for initializing a component's foreground and
    * background color properties with values from the current defaults table.
-   * 
+   *
    * @param c  the component (<code>null</code> not permitted).
-   * @param defaultBgName  the key for the background color in the UIDefaults 
+   * @param defaultBgName  the key for the background color in the UIDefaults
    *     table.
    * @param defaultFgName  the key for the foreground color in the UIDefaults
    *     table.
@@ -184,9 +184,9 @@ public abstract class LookAndFeel
   /**
    * Convenience method for initializing a component's foreground, background
    * and font properties with values from the current defaults table.
-   * 
+   *
    * @param component  the component (<code>null</code> not permitted).
-   * @param defaultBgName  the key for the background color in the UIDefaults 
+   * @param defaultBgName  the key for the background color in the UIDefaults
    *     table.
    * @param defaultFgName  the key for the foreground color in the UIDefaults
    *     table.
@@ -206,23 +206,23 @@ public abstract class LookAndFeel
   }
 
   /**
-   * Returns <code>true</code> if the look-and-feel is the "native" 
+   * Returns <code>true</code> if the look-and-feel is the "native"
    * look-and-feel for the current platform, and <code>false</code> otherwise.
-   * A native look-and-feel emulates the appearance and behaviour of the 
+   * A native look-and-feel emulates the appearance and behaviour of the
    * default windowing system on the host operating system.
-   * 
+   *
    * @return A flag indicating whether or not this is the native look and feel
    *         for the current platform.
    */
   public abstract boolean isNativeLookAndFeel();
 
   /**
-   * Returns <code>true</code> if the look-and-feel is supported on the 
-   * current operating system, and <code>false</code> otherwise.  This 
+   * Returns <code>true</code> if the look-and-feel is supported on the
+   * current operating system, and <code>false</code> otherwise.  This
    * mechanism is provided so that it is possible to prevent a look-and-feel
    * from being used on some operating systems (usually for legal, not
    * technical, reasons).
-   * 
+   *
    * @return A flag indicating whether or not the look-and-feel is supported
    *         on the current platform.
    */
@@ -232,9 +232,9 @@ public abstract class LookAndFeel
    * Loads the bindings in keys into retMap. Does not remove existing entries
    * from retMap.  <code>keys</code> describes the InputMap, every even indexed
    * item is either a KeyStroke or a String representing a KeyStroke and every
-   * odd indexed item is the Object associated with that KeyStroke in an 
+   * odd indexed item is the Object associated with that KeyStroke in an
    * ActionMap.
-   * 
+   *
    * @param retMap the InputMap into which we load bindings
    * @param keys the Object array describing the InputMap as above
    */
@@ -255,19 +255,19 @@ public abstract class LookAndFeel
   }
 
   /**
-   * Creates a ComponentInputMap from keys.  
+   * Creates a ComponentInputMap from keys.
    * <code>keys</code> describes the InputMap, every even indexed
    * item is either a KeyStroke or a String representing a KeyStroke and every
-   * odd indexed item is the Object associated with that KeyStroke in an 
+   * odd indexed item is the Object associated with that KeyStroke in an
    * ActionMap.
-   * 
+   *
    * @param c the JComponent associated with the ComponentInputMap
    * @param keys the Object array describing the InputMap as above
-   * 
+   *
    * @return A new input map.
    */
   public static ComponentInputMap makeComponentInputMap(JComponent c,
-							Object[] keys)
+                                                        Object[] keys)
   {
     ComponentInputMap retMap = new ComponentInputMapUIResource(c);
     loadKeyBindings(retMap, keys);
@@ -277,17 +277,17 @@ public abstract class LookAndFeel
   /**
    * Utility method that creates a UIDefaults.LazyValue that creates an
    * ImageIcon UIResource for the specified gifFile filename.
-   * 
+   *
    * @param baseClass  the base class for accessing the icon resource.
    * @param gifFile  the file name.
-   * 
-   * @return A {@link UIDefaults.LazyValue} that serves up an 
+   *
+   * @return A {@link UIDefaults.LazyValue} that serves up an
    *     {@link IconUIResource}.
    */
   public static Object makeIcon(Class<?> baseClass, String gifFile)
   {
     final URL file = baseClass.getResource(gifFile);
-    return new UIDefaults.LazyValue() 
+    return new UIDefaults.LazyValue()
       {
         public Object createValue(UIDefaults table)
         {
@@ -297,14 +297,14 @@ public abstract class LookAndFeel
   }
 
   /**
-   * Creates a InputMap from keys. 
+   * Creates a InputMap from keys.
    * <code>keys</code> describes the InputMap, every even indexed
    * item is either a KeyStroke or a String representing a KeyStroke and every
-   * odd indexed item is the Object associated with that KeyStroke in an 
+   * odd indexed item is the Object associated with that KeyStroke in an
    * ActionMap.
-   * 
+   *
    * @param keys the Object array describing the InputMap as above
-   * 
+   *
    * @return A new input map.
    */
   public static InputMap makeInputMap(Object[] keys)
@@ -319,14 +319,14 @@ public abstract class LookAndFeel
    * <code>keyBindingList</code> is an array of KeyStroke-Action pairs where
    * even indexed elements are KeyStrokes or Strings representing KeyStrokes
    * and odd indexed elements are the associated Actions.
-   * 
+   *
    * @param keyBindingList the array of KeyStroke-Action pairs
    * @return a JTextComponent.KeyBinding array
    */
   public static JTextComponent.KeyBinding[] makeKeyBindings(
       Object[] keyBindingList)
   {
-    JTextComponent.KeyBinding[] retBindings = 
+    JTextComponent.KeyBinding[] retBindings =
       new JTextComponent.KeyBinding[keyBindingList.length / 2];
     for (int i = 0; i < keyBindingList.length - 1; i += 2)
       {
@@ -335,15 +335,15 @@ public abstract class LookAndFeel
           stroke = (KeyStroke) keyBindingList[i];
         else
           stroke = KeyStroke.getKeyStroke((String) keyBindingList[i]);
-        retBindings[i / 2] = new JTextComponent.KeyBinding(stroke, 
+        retBindings[i / 2] = new JTextComponent.KeyBinding(stroke,
             (String) keyBindingList[i + 1]);
       }
     return retBindings;
   }
 
   /**
-   * Invoked when the user attempts an invalid operation. The default 
-   * implementation just beeps. Subclasses that wish to change this need to 
+   * Invoked when the user attempts an invalid operation. The default
+   * implementation just beeps. Subclasses that wish to change this need to
    * override this method.
    *
    * @param component the component the error occured in
@@ -365,7 +365,7 @@ public abstract class LookAndFeel
 
   /**
    * UIManager.setLookAndFeel calls this method just before we're replaced by
-   * a new default look and feel. 
+   * a new default look and feel.
    */
   public void uninitialize()
   {
@@ -376,7 +376,7 @@ public abstract class LookAndFeel
   /**
    * Convenience method for un-installing a component's default border on the
    * specified component if the border is currently an instance of UIResource.
-   * 
+   *
    * @param c  the component (<code>null</code> not permitted).
    */
   public static void uninstallBorder(JComponent c)

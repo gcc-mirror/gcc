@@ -47,15 +47,15 @@ public class QtMenuBarPeer extends QtMenuComponentPeer implements MenuBarPeer
   {
     super( kit, owner );
   }
-  
+
   protected native void init();
-  
+
   protected void setup()
   {
   }
 
-  /** 
-   * Recurses the menubar adding menus (and menu items), 
+  /**
+   * Recurses the menubar adding menus (and menu items),
    * called from the Frame peer.
    */
   void addMenus()
@@ -99,4 +99,3 @@ public class QtMenuBarPeer extends QtMenuComponentPeer implements MenuBarPeer
       delMenu( (QtMenuPeer)m.getPeer() );
   }
 }
-

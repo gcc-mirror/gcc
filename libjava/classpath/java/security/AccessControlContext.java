@@ -40,8 +40,8 @@ package java.security;
 import java.util.HashSet;
 
 /**
- * AccessControlContext makes system resource access decsion 
- * based on permission rights.  
+ * AccessControlContext makes system resource access decsion
+ * based on permission rights.
  *
  * It is used for a specific context and has only one method
  * checkPermission. It is similar to AccessController except
@@ -60,7 +60,7 @@ public final class AccessControlContext
 
   /**
    * Construct a new AccessControlContext with the specified
-   * ProtectionDomains. <code>context</code> must not be 
+   * ProtectionDomains. <code>context</code> must not be
    * null and duplicates will be removed.
    *
    * @param context The ProtectionDomains to use
@@ -87,29 +87,29 @@ public final class AccessControlContext
    * @since 1.3
    */
   public AccessControlContext(AccessControlContext acc,
-			      DomainCombiner combiner)
+                              DomainCombiner combiner)
   {
     AccessControlContext acc2 = null;
     SecurityManager sm = System.getSecurityManager ();
     if (sm != null)
       {
-	Permission perm =
-	  new SecurityPermission ("createAccessControlContext");
+        Permission perm =
+          new SecurityPermission ("createAccessControlContext");
 
-	// The default SecurityManager.checkPermission(perm) just calls 
-	// AccessController.checkPermission(perm) which in turn just
-	// calls AccessController.getContext().checkPermission(perm).
-	// This means AccessController.getContext() is called twice,
-	// once for the security check and once by us.  It's a very
-	// expensive call (on gcj at least) so if we're using the
-	// default security manager we avoid this duplication.
-	if (sm.getClass() == SecurityManager.class)
-	  {
-	    acc2 = AccessController.getContext ();
-	    acc2.checkPermission (perm);
-	  }
-	else
-	  sm.checkPermission (perm);
+        // The default SecurityManager.checkPermission(perm) just calls
+        // AccessController.checkPermission(perm) which in turn just
+        // calls AccessController.getContext().checkPermission(perm).
+        // This means AccessController.getContext() is called twice,
+        // once for the security check and once by us.  It's a very
+        // expensive call (on gcj at least) so if we're using the
+        // default security manager we avoid this duplication.
+        if (sm.getClass() == SecurityManager.class)
+          {
+            acc2 = AccessController.getContext ();
+            acc2.checkPermission (perm);
+          }
+        else
+          sm.checkPermission (perm);
       }
     if (acc2 == null)
       acc2 = AccessController.getContext ();
@@ -137,7 +137,7 @@ public final class AccessControlContext
 
   /**
    * Determines whether or not the specific permission is granted
-   * depending on the context it is within. 
+   * depending on the context it is within.
    *
    * @param perm a permission to check
    *
@@ -146,19 +146,19 @@ public final class AccessControlContext
   public void checkPermission(Permission perm) throws AccessControlException
   {
     if (protectionDomains.length == 0)
-      throw new AccessControlException ("permission " 
-					+ perm 
-					+ " not granted: no protection domains");
+      throw new AccessControlException ("permission "
+                                        + perm
+                                        + " not granted: no protection domains");
 
     for (int i = 0; i < protectionDomains.length; i++)
       {
-	final ProtectionDomain domain = protectionDomains[i];
-	if (!domain.implies(perm))
-	  throw new AccessControlException ("permission " 
-					    + perm 
-					    + " not granted: " 
-					    + domain 
-					    + " does not imply it.");
+        final ProtectionDomain domain = protectionDomains[i];
+        if (!domain.implies(perm))
+          throw new AccessControlException ("permission "
+                                            + perm
+                                            + " not granted: "
+                                            + domain
+                                            + " does not imply it.");
       }
   }
 
@@ -176,10 +176,10 @@ public final class AccessControlContext
   {
     if (obj instanceof AccessControlContext)
       {
-	AccessControlContext acc = (AccessControlContext) obj;
+        AccessControlContext acc = (AccessControlContext) obj;
 
-	if (acc.protectionDomains.length != protectionDomains.length)
-	  return false;
+        if (acc.protectionDomains.length != protectionDomains.length)
+          return false;
 
         int i, j;
         for (i = 0; i < protectionDomains.length; i++)

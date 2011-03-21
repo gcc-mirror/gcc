@@ -82,7 +82,7 @@ public class CompoundEdit
    * Indicates whether the creation of this CompoundEdit is still in
    * progress. Initially, the value of this flag is
    * <code>true</code>. The {@link #end()} method changes the flag to
-   * <code>false</code>. 
+   * <code>false</code>.
    */
   private boolean inProgress;
 
@@ -95,7 +95,7 @@ public class CompoundEdit
     edits = new Vector<UndoableEdit>();
     inProgress = true;
   }
-  
+
 
   /**
    * Undoes all edits that are part of of this
@@ -146,7 +146,7 @@ public class CompoundEdit
       edits.elementAt(i).redo();
   }
 
-  
+
   /**
    * Returns the the <code>UndoableEdit</code> that was last added to
    * this compound.
@@ -191,7 +191,7 @@ public class CompoundEdit
    * UndoableEdit#replaceEdit(UndoableEdit) replace} the last added
    * edit.  If this fails as well, <code>edit</code> gets added as a
    * new compound to {@link #edits}.
-   * 
+   *
    * @param edit the editing action being added.
    *
    * @return <code>true</code> if <code>edit</code> could somehow be
@@ -321,7 +321,7 @@ public class CompoundEdit
 
     return false;
   }
-  
+
 
   /**
    * Returns a human-readable, localized name that describes this
@@ -386,8 +386,8 @@ public class CompoundEdit
     else
       return last.getRedoPresentationName();
   }
-  
-  
+
+
   /**
    * Calculates a string that may be useful for debugging.
    */

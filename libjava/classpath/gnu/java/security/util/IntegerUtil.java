@@ -71,7 +71,7 @@ public abstract class IntegerUtil
    * This method MUST be used in the gnu.java.security and gnu.javax.crypto
    * packages to ensure they would work with a version 1.4 only of the Java
    * class library API.
-   * 
+   *
    * @param aString a string representation of an integer.
    * @return the {@link Integer} object representing the designated string.
    */
@@ -98,7 +98,7 @@ public abstract class IntegerUtil
    * This method MUST be used in the gnu.java.security and gnu.javax.crypto
    * packages to ensure they would work with a version 1.4 only of the Java
    * class library API.
-   * 
+   *
    * @param anInt a decimal integer.
    * @return the {@link Integer} object representing the designated primitive.
    */

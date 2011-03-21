@@ -35,7 +35,7 @@
 
 #ifdef _GLIBCXX_USE_WCHAR_T
 
-namespace std
+namespace std _GLIBCXX_VISIBILITY(default)
 {
 namespace tr1
 {

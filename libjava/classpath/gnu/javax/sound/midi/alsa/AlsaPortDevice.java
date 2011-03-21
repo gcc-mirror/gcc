@@ -47,7 +47,7 @@ import gnu.javax.sound.midi.alsa.AlsaMidiDeviceProvider.AlsaPortInfo;
 
 /**
  * ALSA Port Device
- * 
+ *
  * @author Anthony Green (green@redhat.com)
  *
  */
@@ -55,7 +55,7 @@ public abstract class AlsaPortDevice implements MidiDevice
 {
   /**
    * The ALSA Receiver class.
-   * 
+   *
    * @author Anthony Green (green@redhat.com)
    *
    */
@@ -82,22 +82,22 @@ public abstract class AlsaPortDevice implements MidiDevice
   }
 
   AlsaMidiDeviceProvider.AlsaPortInfo info;
-    
+
   public AlsaPortDevice (AlsaPortInfo info)
   {
     this.info = info;
   }
-    
+
   public Info getDeviceInfo()
   {
     return info;
   }
 
   native void run_receiver_thread_ (long client, long port, Receiver receiver);
-  
+
   /**
    * The ALSA Transmitter class.
-   * 
+   *
    * @author Anthony Green (green@redhat.com)
    *
    */
@@ -109,7 +109,7 @@ public abstract class AlsaPortDevice implements MidiDevice
     {
       run_receiver_thread_ (info.client, info.port, receiver);
     }
-    
+
     /* (non-Javadoc)
      * @see javax.sound.midi.Transmitter#setReceiver(javax.sound.midi.Receiver)
      */
@@ -119,7 +119,7 @@ public abstract class AlsaPortDevice implements MidiDevice
       {
         this.receiver = receiver;
       }
-      
+
       // Create the processing thread
       new Thread(this).start();
     }

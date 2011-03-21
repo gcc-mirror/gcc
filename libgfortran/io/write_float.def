@@ -1,4 +1,4 @@
-/* Copyright (C) 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
+/* Copyright (C) 2007, 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
    Contributed by Andy Vaught
    Write float code factoring to this file by Jerry DeLisle   
    F2003 I/O support contributed by Jerry DeLisle
@@ -61,7 +61,7 @@ calculate_sign (st_parameter_dt *dtp, int negative_flag)
 
 /* Output a real number according to its format which is FMT_G free.  */
 
-static void
+static try
 output_float (st_parameter_dt *dtp, const fnode *f, char *buffer, size_t size, 
 	      int sign_bit, bool zero_flag, int ndigits, int edigits)
 {
@@ -109,37 +109,7 @@ output_float (st_parameter_dt *dtp, const fnode *f, char *buffer, size_t size,
 
   /* Make sure zero comes out as 0.0e0.   */
   if (zero_flag)
-    {
-      e = 0;
-      if (compile_options.sign_zero == 1)
-	sign = calculate_sign (dtp, sign_bit);
-      else
-	sign = calculate_sign (dtp, 0);
-
-      /* Handle special cases.  */
-      if (w == 0)
-	w = d + 2;
-
-      /* For this one we choose to not output a decimal point.
-	 F95 10.5.1.2.1  */
-      if (w == 1 && ft == FMT_F)
-	{
-	  out = write_block (dtp, w);
-	  if (out == NULL)
-	    return;
-
-	  if (unlikely (is_char4_unit (dtp)))
-	    {
-	      gfc_char4_t *out4 = (gfc_char4_t *) out;
-	      *out4 = '0';
-	      return;
-	    }
-
-	  *out = '0';
-	  return;
-	}
-	      
-    }
+    e = 0;
 
   /* Normalize the fractional component.  */
   buffer[2] = buffer[1];
@@ -181,13 +151,13 @@ output_float (st_parameter_dt *dtp, const fnode *f, char *buffer, size_t size,
 	{
 	  generate_error (&dtp->common, LIBERROR_FORMAT, "Precision not "
 			  "greater than zero in format specifier 'E' or 'D'");
-	  return;
+	  return FAILURE;
 	}
       if (i <= -d || i >= d + 2)
 	{
 	  generate_error (&dtp->common, LIBERROR_FORMAT, "Scale factor "
 			  "out of range in format specifier 'E' or 'D'");
-	  return;
+	  return FAILURE;
 	}
 
       if (!zero_flag)
@@ -398,15 +368,21 @@ output_float (st_parameter_dt *dtp, const fnode *f, char *buffer, size_t size,
   else
     edigits = 0;
 
-  /* Zero values always output as positive, even if the value was negative
-     before rounding.  */
+  /* Scan the digits string and count the number of zeros.  If we make it
+     all the way through the loop, we know the value is zero after the
+     rounding completed above.  */
   for (i = 0; i < ndigits; i++)
     {
       if (digits[i] != '0')
 	break;
     }
+
+  /* To format properly, we need to know if the rounded result is zero and if
+     so, we set the zero_flag which may have been already set for
+     actual zero.  */
   if (i == ndigits)
     {
+      zero_flag = true;
       /* The output is zero, so set the sign according to the sign bit unless
 	 -fno-sign-zero was specified.  */
       if (compile_options.sign_zero == 1)
@@ -415,9 +391,18 @@ output_float (st_parameter_dt *dtp, const fnode *f, char *buffer, size_t size,
 	sign = calculate_sign (dtp, 0);
     }
 
-  /* Pick a field size if none was specified.  */
+  /* Pick a field size if none was specified, taking into account small
+     values that may have been rounded to zero.  */
   if (w <= 0)
-    w = nbefore + nzero + nafter + (sign != S_NONE ? 2 : 1);
+    {
+      if (zero_flag)
+	w = d + (sign != S_NONE ? 2 : 1) + (d == 0 ? 1 : 0);
+      else
+	{
+	  w = nbefore + nzero + nafter + (sign != S_NONE ? 2 : 1);
+	  w = w == 1 ? 2 : w;
+	}
+    }
   
   /* Work out how much padding is needed.  */
   nblanks = w - (nbefore + nzero + nafter + edigits + 1);
@@ -433,19 +418,19 @@ output_float (st_parameter_dt *dtp, const fnode *f, char *buffer, size_t size,
   /* Create the ouput buffer.  */
   out = write_block (dtp, w);
   if (out == NULL)
-    return;
+    return FAILURE;
 
   /* Check the value fits in the specified field width.  */
-  if (nblanks < 0 || edigits == -1)
+  if (nblanks < 0 || edigits == -1 || w == 1 || (w == 2 && sign != S_NONE))
     {
       if (unlikely (is_char4_unit (dtp)))
 	{
 	  gfc_char4_t *out4 = (gfc_char4_t *) out;
 	  memset4 (out4, '*', w);
-	  return;
+	  return FAILURE;
 	}
       star_fill (out, w);
-      return;
+      return FAILURE;
     }
 
   /* See if we have space for a zero before the decimal point.  */
@@ -553,7 +538,7 @@ output_float (st_parameter_dt *dtp, const fnode *f, char *buffer, size_t size,
 	  memset4 (out4, ' ' , nblanks);
 	  dtp->u.p.no_leading_blank = 0;
 	}
-      return;
+      return SUCCESS;
     } /* End of character(kind=4) internal unit code.  */
 
   /* Pad to full field width.  */
@@ -649,6 +634,7 @@ output_float (st_parameter_dt *dtp, const fnode *f, char *buffer, size_t size,
 #undef STR
 #undef STR1
 #undef MIN_FIELD_WIDTH
+  return SUCCESS;
 }
 
 
@@ -659,15 +645,26 @@ write_infnan (st_parameter_dt *dtp, const fnode *f, int isnan_flag, int sign_bit
 {
   char * p, fin;
   int nb = 0;
+  sign_t sign;
+  int mark;
 
   if (f->format != FMT_B && f->format != FMT_O && f->format != FMT_Z)
     {
+      sign = calculate_sign (dtp, sign_bit);
+      mark = (sign == S_PLUS || sign == S_MINUS) ? 8 : 7;
+
       nb =  f->u.real.w;
   
       /* If the field width is zero, the processor must select a width 
 	 not zero.  4 is chosen to allow output of '-Inf' or '+Inf' */
      
-      if (nb == 0) nb = 4;
+      if (nb == 0)
+	{
+	  if (isnan_flag)
+	    nb = 3;
+	  else
+	    nb = (sign == S_PLUS || sign == S_MINUS) ? 4 : 3;
+	}
       p = write_block (dtp, nb);
       if (p == NULL)
 	return;
@@ -719,24 +716,28 @@ write_infnan (st_parameter_dt *dtp, const fnode *f, int isnan_flag, int sign_bit
 	  if (unlikely (is_char4_unit (dtp)))
 	    {
 	      gfc_char4_t *p4 = (gfc_char4_t *) p;
-	      if (nb > 8)
+
+	      if (nb > mark)
 		/* We have room, so output 'Infinity' */
 		memcpy4 (p4 + nb - 8, "Infinity", 8);
 	      else
-		/* For the case of width equals 8, there is not enough room
+		/* For the case of width equals mark, there is not enough room
 		   for the sign and 'Infinity' so we go with 'Inf' */
 		memcpy4 (p4 + nb - 3, "Inf", 3);
 
-	      if (nb < 9 && nb > 3)
-	        /* Put the sign in front of Inf */
-		p4[nb - 4] = (gfc_char4_t) fin;
-	      else if (nb > 8)
-	        /* Put the sign in front of Infinity */
-		p4[nb - 9] = (gfc_char4_t) fin;
+	      if (sign == S_PLUS || sign == S_MINUS)
+		{
+		  if (nb < 9 && nb > 3)
+		    /* Put the sign in front of Inf */
+		    p4[nb - 4] = (gfc_char4_t) fin;
+		  else if (nb > 8)
+		    /* Put the sign in front of Infinity */
+		    p4[nb - 9] = (gfc_char4_t) fin;
+		}
 	      return;
 	    }
 
-	  if (nb > 8)
+	  if (nb > mark)
 	    /* We have room, so output 'Infinity' */
 	    memcpy(p + nb - 8, "Infinity", 8);
 	  else
@@ -744,10 +745,13 @@ write_infnan (st_parameter_dt *dtp, const fnode *f, int isnan_flag, int sign_bit
 	       for the sign and 'Infinity' so we go with 'Inf' */
 	    memcpy(p + nb - 3, "Inf", 3);
 
-	  if (nb < 9 && nb > 3)
-	    p[nb - 4] = fin;  /* Put the sign in front of Inf */
-	  else if (nb > 8)
-	    p[nb - 9] = fin;  /* Put the sign in front of Infinity */
+	  if (sign == S_PLUS || sign == S_MINUS)
+	    {
+	      if (nb < 9 && nb > 3)
+		p[nb - 4] = fin;  /* Put the sign in front of Inf */
+	      else if (nb > 8)
+		p[nb - 9] = fin;  /* Put the sign in front of Infinity */
+	    }
 	}
       else
         {
@@ -821,8 +825,9 @@ output_float_FMT_G_ ## x (st_parameter_dt *dtp, const fnode *f, \
   GFC_REAL_ ## x rexp_d;\
   int low, high, mid;\
   int ubound, lbound;\
-  char *p;\
+  char *p, pad = ' ';\
   int save_scale_factor, nb = 0;\
+  try result;\
 \
   save_scale_factor = dtp->u.p.scale_factor;\
   newf = (fnode *) get_mem (sizeof (fnode));\
@@ -876,11 +881,14 @@ output_float_FMT_G_ ## x (st_parameter_dt *dtp, const fnode *f, \
 	}\
     }\
 \
+  if (e > 4)\
+    e = 4;\
   if (e < 0)\
     nb = 4;\
   else\
     nb = e + 2;\
 \
+  nb = nb >= w ? 0 : nb;\
   newf->format = FMT_F;\
   newf->u.real.w = f->u.real.w - nb;\
 \
@@ -892,8 +900,8 @@ output_float_FMT_G_ ## x (st_parameter_dt *dtp, const fnode *f, \
   dtp->u.p.scale_factor = 0;\
 \
  finish:\
-  output_float (dtp, newf, buffer, size, sign_bit, zero_flag, ndigits, \
-		edigits);\
+  result = output_float (dtp, newf, buffer, size, sign_bit, zero_flag, \
+			 ndigits, edigits);\
   dtp->u.p.scale_factor = save_scale_factor;\
 \
   free (newf);\
@@ -903,13 +911,15 @@ output_float_FMT_G_ ## x (st_parameter_dt *dtp, const fnode *f, \
       p = write_block (dtp, nb);\
       if (p == NULL)\
 	return;\
+      if (result == FAILURE)\
+        pad = '*';\
       if (unlikely (is_char4_unit (dtp)))\
 	{\
 	  gfc_char4_t *p4 = (gfc_char4_t *) p;\
-	  memset4 (p4, ' ', nb);\
+	  memset4 (p4, pad, nb);\
 	}\
       else\
-	memset (p, ' ', nb);\
+	memset (p, pad, nb);\
     }\
 }\
 
@@ -975,7 +985,9 @@ sprintf (buffer, "%+-#" STR(MIN_FIELD_WIDTH) ".*" \
 
 #if defined(GFC_REAL_16_IS_FLOAT128)
 #define DTOAQ \
-__qmath_(quadmath_dtoaq) (buffer, size, ndigits - 1, tmp);
+__qmath_(quadmath_snprintf) (buffer, sizeof buffer, \
+			     "%+-#" STR(MIN_FIELD_WIDTH) ".*" \
+			     "Qe", ndigits - 1, tmp);
 #endif
 
 #define WRITE_FLOAT(x,y)\
@@ -1008,7 +1020,7 @@ write_float (st_parameter_dt *dtp, const fnode *f, const char *source, int len)
 {
 
 #if defined(HAVE_GFC_REAL_16) || __LDBL_DIG__ > 18
-# define MIN_FIELD_WIDTH 46
+# define MIN_FIELD_WIDTH 48
 #else
 # define MIN_FIELD_WIDTH 31
 #endif

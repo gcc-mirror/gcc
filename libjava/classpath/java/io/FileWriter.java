@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -45,7 +45,7 @@ package java.io;
 
 /**
   * This is a convenience class for writing to files.  It creates an
-  * <code>FileOutputStream</code> and initializes an 
+  * <code>FileOutputStream</code> and initializes an
   * <code>OutputStreamWriter</code> to write to it.
   *
   * @author Aaron M. Renn (arenn@urbanophile.com)
@@ -100,7 +100,7 @@ public class FileWriter extends OutputStreamWriter
   }
 
   /**
-   * This method intializes a new <code>FileWriter</code> object to 
+   * This method intializes a new <code>FileWriter</code> object to
    * write to the
    * specified named file.
    *
@@ -116,7 +116,7 @@ public class FileWriter extends OutputStreamWriter
   }
 
   /**
-   * This method intializes a new <code>FileWriter</code> object to 
+   * This method intializes a new <code>FileWriter</code> object to
    * write to the
    * specified named file.  This form of the constructor allows the caller
    * to determine whether data should be written starting at the beginning or

@@ -1,5 +1,5 @@
 /* Implement the snprintf function.
-   Copyright (C) 2003 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2011 Free Software Foundation, Inc.
    Written by Kaveh R. Ghazi <ghazi@caip.rutgers.edu>.
 
 This file is part of the libiberty library.  This library is free
@@ -25,7 +25,8 @@ the executable file might be covered by the GNU General Public License. */
 
 /*
 
-@deftypefn Supplemental int snprintf (char *@var{buf}, size_t @var{n}, const char *@var{format}, ...)
+@deftypefn Supplemental int snprintf (char *@var{buf}, size_t @var{n}, @
+  const char *@var{format}, ...)
 
 This function is similar to @code{sprintf}, but it will write to
 @var{buf} at most @code{@var{n}-1} bytes of text, followed by a

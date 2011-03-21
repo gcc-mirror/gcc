@@ -1,4 +1,4 @@
-/* ElementDeclaration.java -- 
+/* ElementDeclaration.java --
    Copyright (C) 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -58,7 +58,7 @@ class ElementDeclaration
    * The type definition corresponding to this element.
    */
   Type datatype;
-  
+
   /**
    * The scope of this schema component.
    * One of GLOBAL, LOCAL, or ABSENT.
@@ -75,7 +75,7 @@ class ElementDeclaration
    * One of NONE, DEFAULT, FIXED.
    */
   final int type;
-  
+
   /**
    * The value constraint.
    */
@@ -84,7 +84,7 @@ class ElementDeclaration
   final boolean nillable;
 
   // TODO identity-constraint definitions
-  
+
   final QName substitutionGroup;
 
   final int substitutionGroupExclusions;
@@ -120,6 +120,5 @@ class ElementDeclaration
     this.disallowedSubstitutions = disallowedSubstitutions;
     this.isAbstract = isAbstract;
   }
-  
-}
 
+}

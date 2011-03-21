@@ -120,125 +120,125 @@ public final class Translator
       return jtype;
     if (jclass.isArray())
       {
-	Class<?> ctype = jclass.getComponentType();
-	if (ctype.isPrimitive())
-	  return jtype;
-	if (OpenType.ALLOWED_CLASSNAMES_LIST.contains(ctype.getName()))
-	  return jtype;
-	Object[] elems = (Object[]) jtype;
-	Object[] celems = new Object[elems.length];
-	for (int a = 0; a < elems.length; ++a)
-	  celems[a] = fromJava(elems[a], elems[a].getClass());
-	return makeArraySpecific(celems);
+        Class<?> ctype = jclass.getComponentType();
+        if (ctype.isPrimitive())
+          return jtype;
+        if (OpenType.ALLOWED_CLASSNAMES_LIST.contains(ctype.getName()))
+          return jtype;
+        Object[] elems = (Object[]) jtype;
+        Object[] celems = new Object[elems.length];
+        for (int a = 0; a < elems.length; ++a)
+          celems[a] = fromJava(elems[a], elems[a].getClass());
+        return makeArraySpecific(celems);
       }
     String tName = getTypeName(type);
     if (jtype instanceof List || jtype instanceof Set ||
-	jtype instanceof SortedSet)
+        jtype instanceof SortedSet)
       {
-	if (jtype instanceof SortedSet)
-	  {
-	    ParameterizedType ptype = (ParameterizedType) type;
-	    Class<?> elemClass = (Class<?>) ptype.getActualTypeArguments()[0];
-	    if (!Comparable.class.isAssignableFrom(elemClass))
-	      throw new IllegalArgumentException(jtype + " has a " +
-						 "non-comparable element " +
-						 "type, " + elemClass);
-	    if (((SortedSet<?>) jtype).comparator() != null)
-	      throw new IllegalArgumentException(jtype + " does not " +
-						 "use natural ordering.");
-	  }
-	Collection<?> elems = (Collection<?>) jtype;
-	int numElems = elems.size();
-	Object[] celems = new Object[numElems];
-	Iterator<?> i = elems.iterator();
-	for (int a = 0; a < numElems; ++a)
-	  {
-	    Object elem = i.next();
-	    celems[a] = fromJava(elem, elem.getClass());
-	  }
-	return makeArraySpecific(celems);
+        if (jtype instanceof SortedSet)
+          {
+            ParameterizedType ptype = (ParameterizedType) type;
+            Class<?> elemClass = (Class<?>) ptype.getActualTypeArguments()[0];
+            if (!Comparable.class.isAssignableFrom(elemClass))
+              throw new IllegalArgumentException(jtype + " has a " +
+                                                 "non-comparable element " +
+                                                 "type, " + elemClass);
+            if (((SortedSet<?>) jtype).comparator() != null)
+              throw new IllegalArgumentException(jtype + " does not " +
+                                                 "use natural ordering.");
+          }
+        Collection<?> elems = (Collection<?>) jtype;
+        int numElems = elems.size();
+        Object[] celems = new Object[numElems];
+        Iterator<?> i = elems.iterator();
+        for (int a = 0; a < numElems; ++a)
+          {
+            Object elem = i.next();
+            celems[a] = fromJava(elem, elem.getClass());
+          }
+        return makeArraySpecific(celems);
       }
     if (jtype instanceof Enum)
       return ((Enum<?>) jtype).name();
     if (jtype instanceof Map || jtype instanceof SortedMap)
       {
-	int lparam = tName.indexOf("<");
-	int comma = tName.indexOf(",", lparam);
-	int rparam = tName.indexOf(">", comma);
-	String key = tName.substring(lparam + 1, comma).trim();
-	String value = tName.substring(comma + 1, rparam).trim();
-	String typeName = null;
-	if (jtype instanceof Map)
-	  typeName = "java.util.Map" + tName.substring(lparam);
-	else
-	  {
-	    Class<?> keyClass = Class.forName(key);
-	    if (!Comparable.class.isAssignableFrom(keyClass))
-	      throw new IllegalArgumentException(jtype + " has a " +
-						 "non-comparable element " +
-						 "type, " + keyClass);
-	    if (((SortedMap<?,?>) jtype).comparator() != null)
-	      throw new IllegalArgumentException(jtype + " does not " +
-						 "use natural ordering.");
-	    typeName = "java.util.SortedMap" + tName.substring(lparam);
-	  }
-	OpenType<?> k = translate(key).getOpenType();
-	OpenType<?> v = translate(value).getOpenType(); 
-	CompositeType rowType = new CompositeType(typeName, typeName,
-						  new String[] { "key", "value" },
-						  new String[] { "Map key", "Map value"},
-						  new OpenType[] {k,v});
-	TabularType tabType = new TabularType(typeName, typeName, rowType,
-					      new String[]{"key"});
-	TabularData data = new TabularDataSupport(tabType);
-	for (Map.Entry<?,?> entry : ((Map<?,?>) jtype).entrySet())
-	  {
-	    try 
-	      {
-		data.put(new CompositeDataSupport(rowType,
-						  new String[] { 
-						    "key", 
-						    "value" 
-						  },
-						  new Object[] { 
-						    entry.getKey(),
-						    entry.getValue()
-						  }));
-	      }
-	    catch (OpenDataException e)
-	      {
-		throw (InternalError) (new InternalError("A problem occurred " +
-							 "converting the map " +
-							 "to a composite data " +
-							 "structure.").initCause(e));
-	      }
-	  }
-	return data;
-      }	
+        int lparam = tName.indexOf("<");
+        int comma = tName.indexOf(",", lparam);
+        int rparam = tName.indexOf(">", comma);
+        String key = tName.substring(lparam + 1, comma).trim();
+        String value = tName.substring(comma + 1, rparam).trim();
+        String typeName = null;
+        if (jtype instanceof Map)
+          typeName = "java.util.Map" + tName.substring(lparam);
+        else
+          {
+            Class<?> keyClass = Class.forName(key);
+            if (!Comparable.class.isAssignableFrom(keyClass))
+              throw new IllegalArgumentException(jtype + " has a " +
+                                                 "non-comparable element " +
+                                                 "type, " + keyClass);
+            if (((SortedMap<?,?>) jtype).comparator() != null)
+              throw new IllegalArgumentException(jtype + " does not " +
+                                                 "use natural ordering.");
+            typeName = "java.util.SortedMap" + tName.substring(lparam);
+          }
+        OpenType<?> k = translate(key).getOpenType();
+        OpenType<?> v = translate(value).getOpenType();
+        CompositeType rowType = new CompositeType(typeName, typeName,
+                                                  new String[] { "key", "value" },
+                                                  new String[] { "Map key", "Map value"},
+                                                  new OpenType[] {k,v});
+        TabularType tabType = new TabularType(typeName, typeName, rowType,
+                                              new String[]{"key"});
+        TabularData data = new TabularDataSupport(tabType);
+        for (Map.Entry<?,?> entry : ((Map<?,?>) jtype).entrySet())
+          {
+            try
+              {
+                data.put(new CompositeDataSupport(rowType,
+                                                  new String[] {
+                                                    "key",
+                                                    "value"
+                                                  },
+                                                  new Object[] {
+                                                    entry.getKey(),
+                                                    entry.getValue()
+                                                  }));
+              }
+            catch (OpenDataException e)
+              {
+                throw (InternalError) (new InternalError("A problem occurred " +
+                                                         "converting the map " +
+                                                         "to a composite data " +
+                                                         "structure.").initCause(e));
+              }
+          }
+        return data;
+      }
     if (JMX.isMXBeanInterface(jclass))
       {
-	try
-	  {
-	    MBeanServerInvocationHandler ih = (MBeanServerInvocationHandler)
-	      Proxy.getInvocationHandler(jtype);
-	    return ih.getObjectName();
-	  }
-	catch (IllegalArgumentException e)
-	  {
-	    throw new IllegalArgumentException("For a MXBean to be translated " +
-					       "to an open type, it must be a " +
-					       "proxy.", e);
-	  }
-	catch (ClassCastException e)
-	  {
-	    throw new IllegalArgumentException("For a MXBean to be translated " +
-					       "to an open type, it must have a " +
-					       "MBeanServerInvocationHandler.", e);
-	  }
+        try
+          {
+            MBeanServerInvocationHandler ih = (MBeanServerInvocationHandler)
+              Proxy.getInvocationHandler(jtype);
+            return ih.getObjectName();
+          }
+        catch (IllegalArgumentException e)
+          {
+            throw new IllegalArgumentException("For a MXBean to be translated " +
+                                               "to an open type, it must be a " +
+                                               "proxy.", e);
+          }
+        catch (ClassCastException e)
+          {
+            throw new IllegalArgumentException("For a MXBean to be translated " +
+                                               "to an open type, it must have a " +
+                                               "MBeanServerInvocationHandler.", e);
+          }
       }
     /* FIXME: Handle other types */
     throw new IllegalArgumentException("The type, " + jtype +
-				       ", is not convertible.");
+                                       ", is not convertible.");
   }
 
   /**
@@ -257,42 +257,42 @@ public final class Translator
     Class<?> returnType = method.getReturnType();
     if (returnType.isEnum())
       {
-	String ename = (String) otype;
-	Enum<?>[] constants = (Enum[]) returnType.getEnumConstants();
-	for (Enum<?> c : constants)
-	  if (c.name().equals(ename))
-	    return c;
+        String ename = (String) otype;
+        Enum<?>[] constants = (Enum[]) returnType.getEnumConstants();
+        for (Enum<?> c : constants)
+          if (c.name().equals(ename))
+            return c;
       }
     if (List.class.isAssignableFrom(returnType))
       {
-	Object[] elems = (Object[]) otype;
-	List<Object> l = new ArrayList<Object>(elems.length);
-	for (Object elem : elems)
-	  l.add(elem);
-	return l;
+        Object[] elems = (Object[]) otype;
+        List<Object> l = new ArrayList<Object>(elems.length);
+        for (Object elem : elems)
+          l.add(elem);
+        return l;
       }
     if (Map.class.isAssignableFrom(returnType))
       {
-	TabularData data = (TabularData) otype;
-	Map<Object,Object> m = new HashMap<Object,Object>(data.size());
-	for (Object val : data.values())
-	  {
-	    CompositeData vals = (CompositeData) val;
-	    m.put(vals.get("key"), vals.get("value"));
-	  }
-	return m;
+        TabularData data = (TabularData) otype;
+        Map<Object,Object> m = new HashMap<Object,Object>(data.size());
+        for (Object val : data.values())
+          {
+            CompositeData vals = (CompositeData) val;
+            m.put(vals.get("key"), vals.get("value"));
+          }
+        return m;
       }
     try
       {
-	Method m = returnType.getMethod("from",
-					new Class[]
-	  { CompositeData.class });
-	return m.invoke(null, (CompositeData) otype);
+        Method m = returnType.getMethod("from",
+                                        new Class[]
+          { CompositeData.class });
+        return m.invoke(null, (CompositeData) otype);
       }
     catch (NoSuchMethodException e)
       {
-	/* Ignored; we expect this if this
-	   isn't a from(CompositeData) class */
+        /* Ignored; we expect this if this
+           isn't a from(CompositeData) class */
       }
     return otype;
   }
@@ -301,7 +301,7 @@ public final class Translator
    * Creates a new array which has the specific type
    * used by the elements of the original {@link Object}
    * array supplied.
-   * 
+   *
    * @param arr a series of elements in an {@link Object}
    *            array.
    * @return the same elements in a new array of the specific
@@ -310,7 +310,7 @@ public final class Translator
   private static final Object[] makeArraySpecific(Object[] arr)
   {
     Object[] rcelems = (Object[]) Array.newInstance(arr[0].getClass(),
-						    arr.length);
+                                                    arr.length);
     System.arraycopy(arr, 0, rcelems, 0, arr.length);
     return rcelems;
   }
@@ -331,160 +331,160 @@ public final class Translator
   {
     if (type.equals("boolean") || type.equals(Boolean.class.getName()))
       return new OpenMBeanParameterInfoSupport("TransParam",
-					       "Translated parameter",
-					       SimpleType.BOOLEAN,
-					       null,
-					       new Boolean[] {
-						 Boolean.TRUE,
-						 Boolean.FALSE
-					       });
+                                               "Translated parameter",
+                                               SimpleType.BOOLEAN,
+                                               null,
+                                               new Boolean[] {
+                                                 Boolean.TRUE,
+                                                 Boolean.FALSE
+                                               });
     if (type.equals("byte") || type.equals(Byte.class.getName()))
       return new OpenMBeanParameterInfoSupport("TransParam",
-					       "Translated parameter",
-					       SimpleType.BYTE,
-					       null,
-					       Byte.valueOf(Byte.MIN_VALUE),
-					       Byte.valueOf(Byte.MAX_VALUE));
+                                               "Translated parameter",
+                                               SimpleType.BYTE,
+                                               null,
+                                               Byte.valueOf(Byte.MIN_VALUE),
+                                               Byte.valueOf(Byte.MAX_VALUE));
     if (type.equals("char") || type.equals(Character.class.getName()))
       return new OpenMBeanParameterInfoSupport("TransParam",
-					       "Translated parameter",
-					       SimpleType.CHARACTER,
-					       null,
-					       Character.valueOf(Character.MIN_VALUE),
-					       Character.valueOf(Character.MAX_VALUE));
+                                               "Translated parameter",
+                                               SimpleType.CHARACTER,
+                                               null,
+                                               Character.valueOf(Character.MIN_VALUE),
+                                               Character.valueOf(Character.MAX_VALUE));
     if (type.equals("double") || type.equals(Double.class.getName()))
       return new OpenMBeanParameterInfoSupport("TransParam",
-					       "Translated parameter",
-					       SimpleType.DOUBLE,
-					       null,
-					       Double.valueOf(Double.MIN_VALUE),
-					       Double.valueOf(Double.MAX_VALUE));
+                                               "Translated parameter",
+                                               SimpleType.DOUBLE,
+                                               null,
+                                               Double.valueOf(Double.MIN_VALUE),
+                                               Double.valueOf(Double.MAX_VALUE));
     if (type.equals("float") || type.equals(Float.class.getName()))
       return new OpenMBeanParameterInfoSupport("TransParam",
-					       "Translated parameter",
-					       SimpleType.FLOAT,
-					       null,
-					       Float.valueOf(Float.MIN_VALUE),
-					       Float.valueOf(Float.MAX_VALUE));
+                                               "Translated parameter",
+                                               SimpleType.FLOAT,
+                                               null,
+                                               Float.valueOf(Float.MIN_VALUE),
+                                               Float.valueOf(Float.MAX_VALUE));
     if (type.equals("int") || type.equals(Integer.class.getName()))
       return new OpenMBeanParameterInfoSupport("TransParam",
-					       "Translated parameter",
-					       SimpleType.INTEGER,
-					       null,
-					       Integer.valueOf(Integer.MIN_VALUE),
-					       Integer.valueOf(Integer.MAX_VALUE));
+                                               "Translated parameter",
+                                               SimpleType.INTEGER,
+                                               null,
+                                               Integer.valueOf(Integer.MIN_VALUE),
+                                               Integer.valueOf(Integer.MAX_VALUE));
     if (type.equals("long") || type.equals(Long.class.getName()))
       return new OpenMBeanParameterInfoSupport("TransParam",
-					       "Translated parameter",
-					       SimpleType.LONG,
-					       null,
-					       Long.valueOf(Long.MIN_VALUE),
-					       Long.valueOf(Long.MAX_VALUE));
+                                               "Translated parameter",
+                                               SimpleType.LONG,
+                                               null,
+                                               Long.valueOf(Long.MIN_VALUE),
+                                               Long.valueOf(Long.MAX_VALUE));
     if (type.equals("short") || type.equals(Short.class.getName()))
       return new OpenMBeanParameterInfoSupport("TransParam",
-					       "Translated parameter",
-					       SimpleType.SHORT,
-					       null,
-					       Short.valueOf(Short.MIN_VALUE),
-					       Short.valueOf(Short.MAX_VALUE));
+                                               "Translated parameter",
+                                               SimpleType.SHORT,
+                                               null,
+                                               Short.valueOf(Short.MIN_VALUE),
+                                               Short.valueOf(Short.MAX_VALUE));
     if (type.equals(String.class.getName()))
       return new OpenMBeanParameterInfoSupport("TransParam",
-					       "Translated parameter",
-					       SimpleType.STRING);
+                                               "Translated parameter",
+                                               SimpleType.STRING);
     if (type.equals("void"))
       return new OpenMBeanParameterInfoSupport("TransParam",
-					       "Translated parameter",
-					       SimpleType.VOID);
+                                               "Translated parameter",
+                                               SimpleType.VOID);
     if (type.startsWith("java.util.Map"))
       {
-	int lparam = type.indexOf("<");
-	int comma = type.indexOf(",", lparam);
-	int rparam = type.indexOf(">", comma);
-	String key = type.substring(lparam + 1, comma).trim();
-	OpenType<?> k = translate(key).getOpenType();
-	OpenType<?> v = translate(type.substring(comma + 1, rparam).trim()).getOpenType(); 
- 	CompositeType ctype = new CompositeType(Map.class.getName(), Map.class.getName(),
-						new String[] { "key", "value" },
-						new String[] { "Map key", "Map value"},
-						new OpenType[] { k, v});
-	TabularType ttype = new TabularType(key, key, ctype,
-					    new String[] { "key" });
-	return new OpenMBeanParameterInfoSupport("TransParam",
-						 "Translated parameter",
-						 ttype);
+        int lparam = type.indexOf("<");
+        int comma = type.indexOf(",", lparam);
+        int rparam = type.indexOf(">", comma);
+        String key = type.substring(lparam + 1, comma).trim();
+        OpenType<?> k = translate(key).getOpenType();
+        OpenType<?> v = translate(type.substring(comma + 1, rparam).trim()).getOpenType();
+        CompositeType ctype = new CompositeType(Map.class.getName(), Map.class.getName(),
+                                                new String[] { "key", "value" },
+                                                new String[] { "Map key", "Map value"},
+                                                new OpenType[] { k, v});
+        TabularType ttype = new TabularType(key, key, ctype,
+                                            new String[] { "key" });
+        return new OpenMBeanParameterInfoSupport("TransParam",
+                                                 "Translated parameter",
+                                                 ttype);
       }
     if (type.startsWith("java.util.List"))
       {
-	int lparam = type.indexOf("<");
-	int rparam = type.indexOf(">");
-       	OpenType<?> e = translate(type.substring(lparam + 1, rparam).trim()).getOpenType();
-	return new OpenMBeanParameterInfoSupport("TransParam",
-						 "Translated parameter",
-						 new ArrayType<OpenType<?>>(1, e)
-						 );
-      }	
+        int lparam = type.indexOf("<");
+        int rparam = type.indexOf(">");
+        OpenType<?> e = translate(type.substring(lparam + 1, rparam).trim()).getOpenType();
+        return new OpenMBeanParameterInfoSupport("TransParam",
+                                                 "Translated parameter",
+                                                 new ArrayType<OpenType<?>>(1, e)
+                                                 );
+      }
     Class<?> c;
     try
       {
-	c = Class.forName(type);
+        c = Class.forName(type);
       }
     catch (ClassNotFoundException e)
       {
-	throw (InternalError)
-	  (new InternalError("The class for a type used in a management bean " +
-			     "could not be loaded.").initCause(e));
+        throw (InternalError)
+          (new InternalError("The class for a type used in a management bean " +
+                             "could not be loaded.").initCause(e));
       }
     if (c.isEnum())
       {
-	Object[] values = c.getEnumConstants();
-	String[] names = new String[values.length];
-	for (int a = 0; a < values.length; ++a)
-	  names[a] = values[a].toString();
-	return new OpenMBeanParameterInfoSupport("TransParam",
-						 "Translated parameter",
-						 SimpleType.STRING,
-						 null, names);
+        Object[] values = c.getEnumConstants();
+        String[] names = new String[values.length];
+        for (int a = 0; a < values.length; ++a)
+          names[a] = values[a].toString();
+        return new OpenMBeanParameterInfoSupport("TransParam",
+                                                 "Translated parameter",
+                                                 SimpleType.STRING,
+                                                 null, names);
       }
     if (c.isArray())
       {
-	int depth;
-	for (depth = 0; c.getName().charAt(depth) == '['; ++depth)
+        int depth;
+        for (depth = 0; c.getName().charAt(depth) == '['; ++depth)
           ;
-	OpenType<?> ot = getTypeFromClass(c.getComponentType());
-	return new OpenMBeanParameterInfoSupport("TransParam",
-						 "Translated parameter",
-						 new ArrayType<OpenType<?>>(depth, ot)
-						 );
+        OpenType<?> ot = getTypeFromClass(c.getComponentType());
+        return new OpenMBeanParameterInfoSupport("TransParam",
+                                                 "Translated parameter",
+                                                 new ArrayType<OpenType<?>>(depth, ot)
+                                                 );
       }
     Method[] methods = c.getDeclaredMethods();
     List<String> names = new ArrayList<String>();
     List<OpenType<?>> types = new ArrayList<OpenType<?>>();
     for (int a = 0; a < methods.length; ++a)
       {
-	String name = methods[a].getName();
-	if (Modifier.isPublic(methods[a].getModifiers()))
-	  {
-	    if (name.startsWith("get"))
-	      {
-		names.add(name.substring(3));
-		types.add(getTypeFromClass(methods[a].getReturnType()));
-	      }
-	    else if (name.startsWith("is"))
-	      {
-		names.add(name.substring(2));
-		types.add(getTypeFromClass(methods[a].getReturnType()));
-	      }
-	  }
+        String name = methods[a].getName();
+        if (Modifier.isPublic(methods[a].getModifiers()))
+          {
+            if (name.startsWith("get"))
+              {
+                names.add(name.substring(3));
+                types.add(getTypeFromClass(methods[a].getReturnType()));
+              }
+            else if (name.startsWith("is"))
+              {
+                names.add(name.substring(2));
+                types.add(getTypeFromClass(methods[a].getReturnType()));
+              }
+          }
       }
     if (names.isEmpty())
       throw new OpenDataException("The type used does not have an open type translation.");
     String[] fields = names.toArray(new String[names.size()]);
     CompositeType ctype = new CompositeType(c.getName(), c.getName(),
-					    fields, fields,
-					    types.toArray(new OpenType[types.size()]));
+                                            fields, fields,
+                                            types.toArray(new OpenType[types.size()]));
     return new OpenMBeanParameterInfoSupport("TransParam",
-					     "Translated parameter",
-					     ctype);
+                                             "Translated parameter",
+                                             ctype);
   }
 
   /**
@@ -524,25 +524,25 @@ public final class Translator
    * @return the type name computed according to the rules above.
    */
   private static final String getTypeName(Type type)
-  { 
+  {
     if (type instanceof Class)
       {
-	Class<?> c = (Class<?>) type;
-	if (c.isArray())
-	  {
-	    StringBuilder b =
-	      new StringBuilder(c.getComponentType().getName());
-	    String normName = c.getName();
-	    for (int a = 0; a < normName.length(); ++a)
-	      {
-		if (normName.charAt(a) == '[')
-		  b.append("[]");
-		else
-		  break;
-	      }
-	    return b.toString();
-	  }
-	return c.getName();
+        Class<?> c = (Class<?>) type;
+        if (c.isArray())
+          {
+            StringBuilder b =
+              new StringBuilder(c.getComponentType().getName());
+            String normName = c.getName();
+            for (int a = 0; a < normName.length(); ++a)
+              {
+                if (normName.charAt(a) == '[')
+                  b.append("[]");
+                else
+                  break;
+              }
+            return b.toString();
+          }
+        return c.getName();
       }
     return type.toString();
   }

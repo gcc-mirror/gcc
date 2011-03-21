@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// This package implements translation between
-// unsigned integer values and byte sequences.
+// Package binary implements translation between
+// unsigned integer values and byte sequences
+// and the reading and writing of fixed-size values.
 package binary
 
 import (
@@ -198,6 +199,10 @@ func sizeof(v reflect.Type) int {
 		return sum
 
 	case *reflect.UintType, *reflect.IntType, *reflect.FloatType, *reflect.ComplexType:
+		switch t := t.Kind(); t {
+		case reflect.Int, reflect.Uint, reflect.Uintptr:
+			return -1
+		}
 		return int(v.Size())
 	}
 	return -1
@@ -327,12 +332,12 @@ func (d *decoder) value(v reflect.Value) {
 	case *reflect.ComplexValue:
 		switch v.Type().Kind() {
 		case reflect.Complex64:
-			v.Set(cmplx(
+			v.Set(complex(
 				float64(math.Float32frombits(d.uint32())),
 				float64(math.Float32frombits(d.uint32())),
 			))
 		case reflect.Complex128:
-			v.Set(cmplx(
+			v.Set(complex(
 				math.Float64frombits(d.uint64()),
 				math.Float64frombits(d.uint64()),
 			))

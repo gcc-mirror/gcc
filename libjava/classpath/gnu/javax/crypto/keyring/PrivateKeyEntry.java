@@ -1,4 +1,4 @@
-/* PrivateKeyEntry.java -- 
+/* PrivateKeyEntry.java --
    Copyright (C) 2003, 2006 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -65,7 +65,7 @@ public final class PrivateKeyEntry
 
   /**
    * Creates a new key entry.
-   * 
+   *
    * @param key The key.
    * @param creationDate The entry creation date.
    * @param properties The entry properties.
@@ -143,7 +143,7 @@ public final class PrivateKeyEntry
 
   /**
    * Returns this entry's key.
-   * 
+   *
    * @return The key.
    */
   public Key getKey()

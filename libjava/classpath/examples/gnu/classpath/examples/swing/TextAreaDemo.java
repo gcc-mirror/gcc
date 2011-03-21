@@ -63,7 +63,7 @@ public class TextAreaDemo
   /**
    * A custom caret for demonstration purposes. This class is inspired by the
    * CornerCaret from the OReilly Swing book.
-   * 
+   *
    * @author Roman Kennke (kennke@aicas.com)
    */
   static class CornerCaret
@@ -491,7 +491,7 @@ public class TextAreaDemo
         return DemoHighlightPainter.INSTANCE;
       }
     });
-    
+
     innerPanel.add(new JScrollPane(textarea16));
 
     panel.add(innerPanel);

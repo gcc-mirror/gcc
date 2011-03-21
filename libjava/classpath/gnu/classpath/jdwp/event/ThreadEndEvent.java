@@ -102,4 +102,3 @@ public class ThreadEndEvent
     tid.write (outStream);
   }
 }
-

@@ -47,7 +47,7 @@ class DnDEventMulticaster extends AWTEventMulticaster
   {
     super (a, b);
   }
-  
+
   public static DragSourceListener add (DragSourceListener a,
                                         DragSourceListener b)
   {
@@ -59,7 +59,7 @@ class DnDEventMulticaster extends AWTEventMulticaster
   {
     return (DragSourceMotionListener) addInternal (a, b);
   }
-  
+
   public static DragSourceListener remove (DragSourceListener a,
                                            DragSourceListener b)
   {

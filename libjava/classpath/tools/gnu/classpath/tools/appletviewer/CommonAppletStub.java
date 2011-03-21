@@ -61,7 +61,7 @@ class CommonAppletStub
   ////////////////////////////////
   ////// AppletStub Methods //////
   ////////////////////////////////
-  
+
   /**
    * Tests whether or not this applet is currently active. An applet
    * becomes active just before the browser invokes start (), and
@@ -94,7 +94,7 @@ class CommonAppletStub
   {
     try
       {
-	return tag.prependCodeBase("");
+        return tag.prependCodeBase("");
       }
     catch (MalformedURLException e)
       {

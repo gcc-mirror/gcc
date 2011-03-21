@@ -2142,12 +2142,18 @@ ifeq ($(strip $(filter-out darwin%,$(osys))),)
     s-taprop.adb<s-taprop-posix.adb \
     s-taspri.ads<s-taspri-posix.ads \
     s-tpopsp.adb<s-tpopsp-posix-foreign.adb \
-    a-numaux.ads<a-numaux-x86.ads \
-    a-numaux.adb<a-numaux-x86.adb \
     g-trasym.ads<g-trasym-unimplemented.ads \
     g-trasym.adb<g-trasym-unimplemented.adb \
-    system.ads<system-darwin-x86_64.ads \
+    a-numaux.ads<a-numaux-x86.ads \
+    a-numaux.adb<a-numaux-x86.adb \
     $(ATOMICS_TARGET_PAIRS)
+    ifeq ($(strip $(MULTISUBDIR)),/i386)
+      LIBGNAT_TARGET_PAIRS += \
+      system.ads<system-darwin-x86.ads
+    else
+      LIBGNAT_TARGET_PAIRS += \
+      system.ads<system-darwin-x86_64.ads
+    endif
   endif
 
   ifeq ($(strip $(filter-out powerpc%,$(arch))),)

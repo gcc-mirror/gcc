@@ -1,4 +1,4 @@
-/* FilteredStreamReader.java -- 
+/* FilteredStreamReader.java --
    Copyright (C) 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -74,7 +74,7 @@ class FilteredStreamReader
     while (!filter.accept(reader));
     return ret;
   }
-  
+
   public int nextTag()
     throws XMLStreamException
   {
@@ -86,6 +86,5 @@ class FilteredStreamReader
     while (!filter.accept(reader));
     return ret;
   }
-  
-}
 
+}

@@ -22,5 +22,8 @@ void foo(void) {
   obj = [ObjectAlias2 new];
 }
 
-/* { dg-final { scan-assembler "_OBJC_CLASS_REFERENCES_0" } } */
-/* { dg-final { scan-assembler-not "_OBJC_CLASS_REFERENCES_1" } } */
+/* { dg-final { scan-assembler "_OBJC_ClassRefs_0"  { target { *-*-darwin* && { ! lp64 } } } } } */
+/* { dg-final { scan-assembler "_OBJC_ClassRef_Object"  { target { *-*-darwin* && { lp64 } } } } } */
+/* { dg-final { scan-assembler-not "_OBJC_ClassRefs_1" { target { *-*-darwin* && { ! lp64 } } } } } */
+/* { dg-final { scan-assembler-not "_OBJC_ClassRef_ObjectTypedef" { target { *-*-darwin* && { lp64 } } } } } */
+/* { dg-final { scan-assembler-not "_OBJC_ClassRef_ObjectAlias" { target { *-*-darwin* && { lp64 } } } } } */

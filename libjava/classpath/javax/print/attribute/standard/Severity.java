@@ -45,16 +45,16 @@ import javax.print.attribute.EnumSyntax;
  * The <code>Severity</code> printing attribute specifies the severity
  * for a <code>PrinterStateReason</code> attribute.
  * <p>
- * This attribute does not appear in the attribute set of a print service 
- * itself. Its used inside the <code>PrinterStateReasons</code> 
- * attribute which contains <code>PrinterStateReason</code> objects which 
+ * This attribute does not appear in the attribute set of a print service
+ * itself. Its used inside the <code>PrinterStateReasons</code>
+ * attribute which contains <code>PrinterStateReason</code> objects which
  * informs about the print service's status.
  * </p>
  * <p>
  * <b>IPP Compatibility:</b> Severity is not an IPP attribute on its own
  * but used in the PrinterStateReason attribute to indicate the severity.
  * </p>
- * 
+ *
  * @author Michael Koch (konqueror@gmx.de)
  * @author Wolfgang Baer (WBaer@gmx.de)
  */
@@ -67,21 +67,21 @@ public final class Severity extends EnumSyntax
    * Indicates that the reason is a report.
    */
   public static final Severity REPORT = new Severity(0);
-  
+
   /**
    * Indicates that the reason is a warning.
    */
   public static final Severity WARNING = new Severity(1);
-  
+
   /**
    * Indicates that the reason is an error.
    */
   public static final Severity ERROR = new Severity(2);
 
   private static final String[] stringTable = { "report", "warning", "error" };
-  
+
   private static final Severity[] enumValueTable = { REPORT, WARNING, ERROR };
-  
+
   /**
    * Constructs a <code>Severity</code> object.
    *
@@ -111,7 +111,7 @@ public final class Severity extends EnumSyntax
   {
     return "severity";
   }
-  
+
   /**
    * Returns a table with the enumeration values represented as strings
    * for this object.

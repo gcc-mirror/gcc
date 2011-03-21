@@ -1,8 +1,10 @@
 ! { dg-do run }
+! { dg-skip-if "Too big for local store" { spu-*-* } { "*" } { "" } }
 ! Tests the patch that implements F2003 automatic allocation and
 ! reallocation of allocatable arrays on assignment.  The tests
 ! below were generated in the final stages of the development of
 ! this patch.
+! test1 has been corrected for PR47051
 !
 ! Contributed by Dominique Dhumieres <dominiq@lps.ens.fr>
 !            and Tobias Burnus <burnus@gcc.gnu.org>
@@ -28,14 +30,21 @@ contains
     if (lbound (c, 1) .ne. lbound(a, 1)) call abort
     if (ubound (c, 1) .ne. ubound(a, 1)) call abort
     c=b
-    if (lbound (c, 1) .ne. lbound(b, 1)) call abort
-    if (ubound (c, 1) .ne. ubound(b, 1)) call abort
+! 7.4.1.3 "If variable is an allocated allocatable variable, it is
+! deallocated if expr is an array of different shape or any of the
+! corresponding length type parameter values of variable and expr
+! differ." Here the shape is the same so the deallocation does not
+! occur and the bounds are not recalculated. This was corrected
+! for the fix of PR47051. 
+    if (lbound (c, 1) .ne. lbound(a, 1)) call abort
+    if (ubound (c, 1) .ne. ubound(a, 1)) call abort
     d=b
     if (lbound (d, 1) .ne. lbound(b, 1)) call abort
     if (ubound (d, 1) .ne. ubound(b, 1)) call abort
     d=a
-    if (lbound (d, 1) .ne. lbound(a, 1)) call abort
-    if (ubound (d, 1) .ne. ubound(a, 1)) call abort
+! The other PR47051 correction.
+    if (lbound (d, 1) .ne. lbound(b, 1)) call abort
+    if (ubound (d, 1) .ne. ubound(b, 1)) call abort
   end subroutine
   subroutine test2
 !

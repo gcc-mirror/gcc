@@ -56,7 +56,7 @@ public class SecurityProviderInfo
    * <p>
    * Used by {@link ProviderUtil} to indicate the result of adding a provider,
    * given its class name.
-   * 
+   *
    * @param provider the possibly <code>null</code> {@link Provider}.
    * @param position the position of <code>provider</code> in the list of
    * <i>Security Providers</i> in the underlying JVM runtime. <code>-1</code>

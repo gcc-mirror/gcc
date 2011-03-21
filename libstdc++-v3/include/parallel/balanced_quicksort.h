@@ -132,7 +132,7 @@ namespace __gnu_parallel
 
       // Swap pivot value to end.
       if (__pivot_pos != (__end - 1))
-	std::swap(*__pivot_pos, *(__end - 1));
+	std::iter_swap(__pivot_pos, __end - 1);
       __pivot_pos = __end - 1;
 
       __gnu_parallel::__binder2nd<_Compare, _ValueType, _ValueType, bool>
@@ -144,7 +144,7 @@ namespace __gnu_parallel
 							 __num_threads);
 
       // Swap back pivot to middle.
-      std::swap(*(__begin + __split_pos), *__pivot_pos);
+      std::iter_swap(__begin + __split_pos, __pivot_pos);
       __pivot_pos = __begin + __split_pos;
 
 #if _GLIBCXX_ASSERTIONS
@@ -284,7 +284,7 @@ namespace __gnu_parallel
 
               // Swap __pivot_pos value to end.
               if (__pivot_pos != (__end - 1))
-        	std::swap(*__pivot_pos, *(__end - 1));
+        	std::iter_swap(__pivot_pos, __end - 1);
               __pivot_pos = __end - 1;
 
               __gnu_parallel::__binder2nd
@@ -303,7 +303,7 @@ namespace __gnu_parallel
 #endif
               // Swap pivot back to middle.
               if (__split_pos1 != __pivot_pos)
-        	std::swap(*__split_pos1, *__pivot_pos);
+        	std::iter_swap(__split_pos1, __pivot_pos);
               __pivot_pos = __split_pos1;
 
               // In case all elements are equal, __split_pos1 == 0.

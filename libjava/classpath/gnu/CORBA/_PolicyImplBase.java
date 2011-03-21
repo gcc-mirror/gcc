@@ -165,7 +165,7 @@ public abstract class _PolicyImplBase
         output.write_long(policyCode);
       }
     else
-      throw new BAD_OPERATION(method, Minor.Method, 
+      throw new BAD_OPERATION(method, Minor.Method,
         CompletionStatus.COMPLETED_MAYBE);
 
     return output;

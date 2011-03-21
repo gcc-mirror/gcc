@@ -3,7 +3,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <objc/objc.h>
-#include <objc/runtime.h>
 
 #include "load-category-2.h"
 

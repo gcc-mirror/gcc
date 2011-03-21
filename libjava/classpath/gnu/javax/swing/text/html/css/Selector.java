@@ -46,7 +46,7 @@ import java.util.StringTokenizer;
 
 /**
  * A CSS selector. This provides methods to interpret a selector and
- * query matches with an actual HTML element tree. 
+ * query matches with an actual HTML element tree.
  */
 public class Selector
 {
@@ -107,7 +107,7 @@ public class Selector
     // However, the CSS spec defines a couple of more sophisticated matches
     // which should be implemented.
     // http://www.w3.org/TR/CSS21/selector.html
-    
+
     // All parts of the selector must match at some point.
     boolean match = false;
     int numTags = tags.length;

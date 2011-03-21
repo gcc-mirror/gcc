@@ -1065,6 +1065,9 @@ parse_ssa_operands (gimple stmt)
       /* Add call-clobbered operands, if needed.  */
       if (code == GIMPLE_CALL)
 	maybe_add_call_vops (stmt);
+
+      if (code == GIMPLE_RETURN)
+	append_vuse (gimple_vop (cfun));
     }
 }
 

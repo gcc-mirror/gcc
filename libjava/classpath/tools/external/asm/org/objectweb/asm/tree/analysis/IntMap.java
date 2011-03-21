@@ -31,7 +31,7 @@ package org.objectweb.asm.tree.analysis;
 
 /**
  * A fixed size map of integer values.
- * 
+ *
  * @author Eric Bruneton
  */
 class IntMap {
@@ -50,7 +50,7 @@ class IntMap {
 
     public int get(final Object key) {
         int n = size;
-        int h = (key.hashCode() & 0x7FFFFFFF) % n; 
+        int h = (key.hashCode() & 0x7FFFFFFF) % n;
         int i = h;
         while (keys[i] != key) {
             i = (i + 1) % n;

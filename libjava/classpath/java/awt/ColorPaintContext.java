@@ -59,7 +59,7 @@ class ColorPaintContext implements PaintContext
 
   private ColorRaster cachedRaster;
 
-  
+
   /**
    * Create the context for a given color.
    *
@@ -69,11 +69,11 @@ class ColorPaintContext implements PaintContext
   {
     this(ColorModel.getRGBdefault(), colorRGB);
   }
-  
+
   /**
    * Create the context for a given color.
    *
-   * @param cm The color model of this context. 
+   * @param cm The color model of this context.
    * @param colorRGB The solid color to use.
    */
   ColorPaintContext(ColorModel cm,int colorRGB)
@@ -91,7 +91,7 @@ class ColorPaintContext implements PaintContext
   }
 
   /**
-   * Return the color model of this context. 
+   * Return the color model of this context.
    *
    * @return the context color model
    */
@@ -111,7 +111,7 @@ class ColorPaintContext implements PaintContext
    */
   public Raster getRaster(int x, int y, int width, int height)
   {
-   if(  cachedRaster == null 
+   if(  cachedRaster == null
        || cachedRaster.getWidth() < width
        || cachedRaster.getHeight() < height)
    {
@@ -119,16 +119,16 @@ class ColorPaintContext implements PaintContext
    }
    return cachedRaster.createChild(0 ,0 ,width ,height ,0 ,0 , null);
   }
-  
+
   /**
-   * A ColorRaster is a raster that is completely filled with one color. The 
+   * A ColorRaster is a raster that is completely filled with one color. The
    * data layout is taken from the color model given to the constructor.
    */
   private class ColorRaster extends Raster
   {
-    
+
     /**
-     * Create a raster that is compaltible with the given color model and 
+     * Create a raster that is compaltible with the given color model and
      * filled with the given color.
      * @param cm The color model for this raster.
      * @param x The smallest horizontal corrdinate in the raster.
@@ -146,9 +146,9 @@ class ColorPaintContext implements PaintContext
       getSampleModel().setPixels(0, 0, width, height, d,
                                  dataBuffer);
     }
-    
-    
-    
+
+
+
     private Object multiplyData(Object src, Object dest, int factor)
     {
       Object from;
@@ -156,7 +156,7 @@ class ColorPaintContext implements PaintContext
       if (src instanceof byte[])
       {
         srcLength = ((byte[])src).length;
-        
+
         if (dest == null) dest = new byte[factor * srcLength];
       }
       else if (src instanceof short[])
@@ -173,23 +173,23 @@ class ColorPaintContext implements PaintContext
       {
         throw new ClassCastException("Unknown data buffer type");
       }
-      
+
       System.arraycopy(src,0,dest,0,srcLength);
-      
+
       int count = 1;
       while(count*2 < factor)
       {
         System.arraycopy(dest, 0, dest, count * srcLength, count*srcLength);
-        count *= 2; 
+        count *= 2;
       }
-      
+
       if(factor > count)
-        System.arraycopy(dest,0, dest, count * srcLength, 
+        System.arraycopy(dest,0, dest, count * srcLength,
                          (factor - count) * srcLength );
-      
+
       return dest;
     }
-    
+
   }
-  
+
 } // class ColorPaintContext

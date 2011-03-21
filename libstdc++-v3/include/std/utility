@@ -74,7 +74,9 @@
 #include <bits/move.h>
 #include <initializer_list>
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<class _Tp>
     class tuple_size;
@@ -136,7 +138,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     get(const std::pair<_Tp1, _Tp2>& __in)
     { return __pair_get<_Int>::__const_get(__in); }
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
 
 #endif
 

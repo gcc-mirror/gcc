@@ -59,7 +59,7 @@ public abstract class ObjectReferenceTemplateHelper
 {
   /**
    * Get the type code of the {@link ObjectReferenceTemplate}.
-   * 
+   *
    * @return value type type code, named ObjectReferenceTemplate, no members,
    *         abstract.
    */

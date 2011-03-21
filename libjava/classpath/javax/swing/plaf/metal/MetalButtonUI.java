@@ -74,7 +74,7 @@ public class MetalButtonUI
    * The color used to draw the focus rectangle around the text and/or icon.
    */
   protected Color focusColor;
-    
+
   /**
    * The background color for the button when it is pressed.
    */
@@ -87,12 +87,12 @@ public class MetalButtonUI
 
   /**
    * Returns a UI delegate for the specified component.
-   * 
+   *
    * @param c  the component (should be a subclass of {@link AbstractButton}).
-   * 
+   *
    * @return A new instance of <code>MetalButtonUI</code>.
    */
-  public static ComponentUI createUI(JComponent c) 
+  public static ComponentUI createUI(JComponent c)
   {
     if (sharedUI == null)
       sharedUI = new MetalButtonUI();
@@ -143,9 +143,9 @@ public class MetalButtonUI
 
   /**
    * Installs the default settings for the specified button.
-   * 
+   *
    * @param button  the button.
-   * 
+   *
    * @see #uninstallDefaults(AbstractButton)
    */
   public void installDefaults(AbstractButton button)
@@ -157,7 +157,7 @@ public class MetalButtonUI
   /**
    * Removes the defaults added by {@link #installDefaults(AbstractButton)}.
    */
-  public void uninstallDefaults(AbstractButton button) 
+  public void uninstallDefaults(AbstractButton button)
   {
     // This is overridden to be public, for whatever reason.
     super.uninstallDefaults(button);
@@ -166,22 +166,22 @@ public class MetalButtonUI
   /**
    * Paints the background of the button to indicate that it is in the
    * "pressed" state.
-   * 
+   *
    * @param g  the graphics context.
    * @param b  the button.
    */
-  protected void paintButtonPressed(Graphics g, AbstractButton b) 
-  { 
+  protected void paintButtonPressed(Graphics g, AbstractButton b)
+  {
     if (b.isContentAreaFilled())
     {
       g.setColor(getSelectColor());
       g.fillRect(0, 0, b.getWidth(), b.getHeight());
     }
   }
-    
-  /** 
+
+  /**
    * Paints the focus rectangle around the button text and/or icon.
-   * 
+   *
    * @param g  the graphics context.
    * @param b  the button.
    * @param viewRect  the button bounds.
@@ -189,7 +189,7 @@ public class MetalButtonUI
    * @param iconRect  the icon bounds.
    */
   protected void paintFocus(Graphics g, AbstractButton b, Rectangle viewRect,
-          Rectangle textRect, Rectangle iconRect) 
+          Rectangle textRect, Rectangle iconRect)
   {
     if (b.isEnabled() && b.hasFocus() && b.isFocusPainted())
     {
@@ -201,17 +201,17 @@ public class MetalButtonUI
       g.setColor(savedColor);
     }
   }
-    
+
   /**
    * Paints the button text.
-   * 
+   *
    * @param g  the graphics context.
    * @param c  the button.
    * @param textRect  the text bounds.
    * @param text  the text to display.
    */
   protected void paintText(Graphics g, JComponent c, Rectangle textRect,
-          String text) 
+          String text)
   {
     AbstractButton b = (AbstractButton) c;
     Font f = b.getFont();
@@ -227,7 +227,7 @@ public class MetalButtonUI
       {
         g.setColor(getDisabledTextColor());
         g.drawString(text, textRect.x, textRect.y + fm.getAscent());
-      }  
+      }
   }
 
   /**

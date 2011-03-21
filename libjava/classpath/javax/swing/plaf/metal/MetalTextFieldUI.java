@@ -69,10 +69,10 @@ public class MetalTextFieldUI extends BasicTextFieldUI
   {
     return new MetalTextFieldUI();
   }
-  
+
   /**
    * This method gets called when a bound property is changed on the associated
-   * JTextComponent. This is a hook which UI implementations may change to 
+   * JTextComponent. This is a hook which UI implementations may change to
    * reflect how the UI displays bound properties of JTextComponent subclasses.
    */
   public void propertyChange(PropertyChangeEvent evt)

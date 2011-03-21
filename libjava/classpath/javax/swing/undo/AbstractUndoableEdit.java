@@ -130,8 +130,8 @@ public class AbstractUndoableEdit
       throw new CannotUndoException();
     hasBeenDone = false;
   }
-  
-  
+
+
   /**
    * Determines whether it would be possible to undo this editing
    * action.
@@ -146,8 +146,8 @@ public class AbstractUndoableEdit
   {
     return alive && hasBeenDone;
   }
-  
-  
+
+
   /**
    * Redoes this editing action.
    *
@@ -165,8 +165,8 @@ public class AbstractUndoableEdit
       throw new CannotRedoException();
     hasBeenDone = true;
   }
-  
-  
+
+
   /**
    * Determines whether it would be possible to redo this editing
    * action.
@@ -208,8 +208,8 @@ public class AbstractUndoableEdit
   {
     return false;
   }
-  
-  
+
+
   /**
    * Incorporates another editing action into this one, thus forming a
    * combined action that replaces the argument action.
@@ -223,8 +223,8 @@ public class AbstractUndoableEdit
   {
     return false;
   }
-  
-  
+
+
   /**
    * Determines whether this editing action is significant enough for
    * being seperately undoable by the user. A typical significant
@@ -242,8 +242,8 @@ public class AbstractUndoableEdit
   {
     return true;
   }
-  
-  
+
+
   /**
    * Returns a human-readable, localized name that describes this
    * editing action and can be displayed to the user.

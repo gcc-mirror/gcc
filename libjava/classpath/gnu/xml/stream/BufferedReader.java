@@ -1,4 +1,4 @@
-/* BufferedReader.java -- 
+/* BufferedReader.java --
    Copyright (C) 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -59,7 +59,7 @@ class BufferedReader
   {
     this(in, DEFAULT_BUFFER_SIZE);
   }
-         
+
   BufferedReader(Reader in, int bufferSize)
   {
     if (bufferSize < 1)
@@ -110,19 +110,19 @@ class BufferedReader
   {
     if (off < 0 || len < 0 || b.length - off < len)
       throw new IndexOutOfBoundsException();
-    
+
     if (len == 0)
       return 0;
-    
+
     if (pos >= count && !refill())
       return -1;
-                
+
     int ret = Math.min(count - pos, len);
     System.arraycopy(buf, pos, b, off, ret);
     pos += ret;
     off += ret;
     len -= ret;
-    
+
     while (len > 0 && refill())
       {
         int remain = Math.min(count - pos, len);
@@ -132,7 +132,7 @@ class BufferedReader
         len -= remain;
         ret += remain;
       }
-    
+
     return ret;
   }
 
@@ -177,7 +177,7 @@ class BufferedReader
       {
         char[] newbuf = buf;
         if (markpos < bufferSize)
-          { 
+          {
             newbuf = new char[count - markpos + bufferSize];
           }
         System.arraycopy(buf, markpos, newbuf, 0, markcount);

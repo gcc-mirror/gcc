@@ -1,4 +1,4 @@
-/* DomHTMLTableElement.java -- 
+/* DomHTMLTableElement.java --
    Copyright (C) 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -79,7 +79,7 @@ public class DomHTMLTableElement
         replaceChild(caption, ref);
       }
   }
-  
+
   public HTMLTableSectionElement getTHead()
   {
     return (HTMLTableSectionElement) getChildElement("thead");
@@ -133,7 +133,7 @@ public class DomHTMLTableElement
     ret.evaluate();
     return ret;
   }
-  
+
   public String getAlign()
   {
     return getHTMLAttribute("align");
@@ -143,7 +143,7 @@ public class DomHTMLTableElement
   {
     setHTMLAttribute("align", align);
   }
-  
+
   public String getBgColor()
   {
     return getHTMLAttribute("bgcolor");
@@ -153,7 +153,7 @@ public class DomHTMLTableElement
   {
     setHTMLAttribute("bgcolor", bgColor);
   }
-  
+
   public String getBorder()
   {
     return getHTMLAttribute("border");
@@ -163,7 +163,7 @@ public class DomHTMLTableElement
   {
     setHTMLAttribute("border", border);
   }
-  
+
   public String getCellPadding()
   {
     return getHTMLAttribute("cellpadding");
@@ -173,7 +173,7 @@ public class DomHTMLTableElement
   {
     setHTMLAttribute("cellpadding", cellPadding);
   }
-  
+
   public String getCellSpacing()
   {
     return getHTMLAttribute("cellspacing");
@@ -183,7 +183,7 @@ public class DomHTMLTableElement
   {
     setHTMLAttribute("cellspacing", cellSpacing);
   }
-  
+
   public String getFrame()
   {
     return getHTMLAttribute("frame");
@@ -193,7 +193,7 @@ public class DomHTMLTableElement
   {
     setHTMLAttribute("frame", frame);
   }
-  
+
   public String getRules()
   {
     return getHTMLAttribute("rules");
@@ -203,7 +203,7 @@ public class DomHTMLTableElement
   {
     setHTMLAttribute("rules", rules);
   }
-  
+
   public String getSummary()
   {
     return getHTMLAttribute("summary");
@@ -213,7 +213,7 @@ public class DomHTMLTableElement
   {
     setHTMLAttribute("summary", summary);
   }
-  
+
   public String getWidth()
   {
     return getHTMLAttribute("width");
@@ -320,9 +320,9 @@ public class DomHTMLTableElement
       }
     ref.getParentNode().removeChild(ref);
   }
- 
+
   Node getRow(final int index)
-  { 
+  {
     int i = 0;
     Node thead = getChildElement("thead");
     if (thead != null)
@@ -395,4 +395,3 @@ public class DomHTMLTableElement
   }
 
 }
-

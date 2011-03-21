@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -43,7 +43,7 @@ package java.text;
   * characters.  For a given range of text, a beginning and ending index,
   * as well as a current index are defined.  These values can be queried
   * by the methods in this interface.  Additionally, various methods allow
-  * the index to be set. 
+  * the index to be set.
   *
   * @author Aaron M. Renn (arenn@urbanophile.com)
   */
@@ -64,7 +64,7 @@ public interface CharacterIterator extends Cloneable
 
   /**
    * This method increments the current index and then returns the character
-   * at the new index value.  If the index is already at 
+   * at the new index value.  If the index is already at
    * <code>getEndIndex() - 1</code>, it will not be incremented.
    *
    * @return The character at the position of the incremented index value,
@@ -87,7 +87,7 @@ public interface CharacterIterator extends Cloneable
    * This method sets the index value to the beginning of the range and returns
    * the character there.
    *
-   * @return The character at the beginning of the range, or {@link #DONE} if 
+   * @return The character at the beginning of the range, or {@link #DONE} if
    *         the range is empty.
    */
   char first();
@@ -97,10 +97,10 @@ public interface CharacterIterator extends Cloneable
    * returns the character there.  If the range is empty, then the index value
    * will be set equal to the beginning index.
    *
-   * @return The character at the end of the range, or {@link #DONE} if the 
+   * @return The character at the end of the range, or {@link #DONE} if the
    *         range is empty.
    */
-  char last();  
+  char last();
 
   /**
    * This method returns the current value of the index.

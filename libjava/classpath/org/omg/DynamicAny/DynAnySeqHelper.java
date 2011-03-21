@@ -99,7 +99,7 @@ public abstract class DynAnySeqHelper
       {
         BAD_OPERATION bad = new BAD_OPERATION("DynAnySeq expected");
         bad.initCause(cex);
-        bad.minor = Minor.Any;        
+        bad.minor = Minor.Any;
         throw bad;
       }
   }

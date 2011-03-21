@@ -1,4 +1,4 @@
-/* GMonthDayType.java -- 
+/* GMonthDayType.java --
    Copyright (C) 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -88,7 +88,7 @@ final class GMonthDayType
         }
       return 0;
     }
-    
+
   }
 
   static final int[] CONSTRAINING_FACETS = {
@@ -165,7 +165,7 @@ final class GMonthDayType
         throw new DatatypeException("illegal GMonthDay type");
       }
   }
-  
+
   public Object createValue(String literal, ValidationContext context) {
     try
       {
@@ -179,6 +179,5 @@ final class GMonthDayType
         return null;
       }
   }
-  
-}
 
+}

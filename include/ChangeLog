@@ -1,3 +1,29 @@
+2011-03-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* dwarf2.h (DW_TAG_GNU_call_site, DW_TAG_GNU_call_site_parameter,
+	DW_AT_GNU_call_site_value, DW_AT_GNU_call_site_data_value,
+	DW_AT_GNU_call_site_target, DW_AT_GNU_call_site_target_clobbered,
+	DW_AT_GNU_tail_call, DW_AT_GNU_all_tail_call_sites,
+	DW_AT_GNU_all_call_sites,, DW_AT_GNU_all_source_call_sites,
+	DW_OP_GNU_entry_value): New.
+
+2011-02-28  Kai Tietz  <kai.tietz@onevision.com>
+
+	* filenames.h (filename_ncmp): New prototype.
+
+2011-02-23  Kai Tietz  <kai.tietz@onevision.com>
+
+	* dwarf2.h (_ELF_DWARF2_H): Renamed to
+	_DWARF2_H.
+	(DWARF2_External_LineInfo, DWARF2_Internal_LineInfo,
+	DWARF2_External_PubNames, DWARF2_Internal_PubNames,
+	DWARF2_External_CompUnit, DWARF2_Internal_CompUnit,
+	DWARF2_External_ARange, DWARF2_Internal_ARange): Removed.
+
+2011-01-12  Iain Sandoe  <iains@gcc.gnu.org>
+
+	* dwarf2.h: Update value for DW_AT_hi_user.
+
 2010-11-16  Ian Lance Taylor  <iant@google.com>
 
 	* simple-object.h (simple_object_attributes_merge): Declare,

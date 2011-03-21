@@ -1,4 +1,4 @@
-/* ShortBuffer.java -- 
+/* ShortBuffer.java --
    Copyright (C) 2002, 2003, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -51,8 +51,8 @@ public abstract class ShortBuffer extends Buffer
   final short[] backing_buffer;
 
   ShortBuffer (int capacity, int limit, int position,
-	       int mark, RawData address, short[] backing_buffer,
-	       int array_offset)
+               int mark, RawData address, short[] backing_buffer,
+               int array_offset)
   {
     super (capacity, limit, position, mark, address);
     this.backing_buffer = backing_buffer;
@@ -87,11 +87,11 @@ public abstract class ShortBuffer extends Buffer
   {
     return wrap (array, 0, array.length);
   }
-  
+
   /**
    * This method transfers <code>short</code>s from this buffer into the given
    * destination array. Before the transfer, it checks if there are fewer than
-   * length <code>short</code>s remaining in this buffer. 
+   * length <code>short</code>s remaining in this buffer.
    *
    * @param dst The destination array
    * @param offset The offset within the array of the first <code>short</code>
@@ -170,7 +170,7 @@ public abstract class ShortBuffer extends Buffer
    * must be non-negative and no larger than src.length.
    * @param length The number of bytes to be read from the given array;
    * must be non-negative and no larger than src.length - offset.
-   * 
+   *
    * @exception BufferOverflowException If there is insufficient space in this
    * buffer for the remaining <code>short</code>s in the source array.
    * @exception IndexOutOfBoundsException If the preconditions on the offset
@@ -193,7 +193,7 @@ public abstract class ShortBuffer extends Buffer
    * into the buffer.
    *
    * @param src The array to copy into the buffer.
-   * 
+   *
    * @exception BufferOverflowException If there is insufficient space in this
    * buffer for the remaining <code>short</code>s in the source array.
    * @exception ReadOnlyBufferException If this buffer is read-only.
@@ -226,7 +226,7 @@ public abstract class ShortBuffer extends Buffer
       throw new UnsupportedOperationException ();
 
     checkIfReadOnly();
-    
+
     return backing_buffer;
   }
 
@@ -243,7 +243,7 @@ public abstract class ShortBuffer extends Buffer
       throw new UnsupportedOperationException ();
 
     checkIfReadOnly();
-    
+
     return array_offset;
   }
 
@@ -266,8 +266,8 @@ public abstract class ShortBuffer extends Buffer
     int multiplier = 1;
     for (int i = position() + 1; i < limit(); ++i)
       {
-	  multiplier *= 31;
-	  hashCode += (get(i) + 30)*multiplier;
+          multiplier *= 31;
+          hashCode += (get(i) + 30)*multiplier;
       }
     return hashCode;
   }
@@ -296,21 +296,21 @@ public abstract class ShortBuffer extends Buffer
     int num = Math.min(remaining(), other.remaining());
     int pos_this = position();
     int pos_other = other.position();
-    
+
     for (int count = 0; count < num; count++)
       {
-	 short a = get(pos_this++);
-	 short b = other.get(pos_other++);
-      	 
-	 if (a == b)
-	   continue;
-      	   
-	 if (a < b)
-	   return -1;
-      	   
-	 return 1;
+         short a = get(pos_this++);
+         short b = other.get(pos_other++);
+
+         if (a == b)
+           continue;
+
+         if (a < b)
+           return -1;
+
+         return 1;
       }
-      
+
      return remaining() - other.remaining();
   }
 
@@ -332,7 +332,7 @@ public abstract class ShortBuffer extends Buffer
    * Writes the <code>short</code> at this buffer's current position,
    * and then increments the position.
    *
-   * @exception BufferOverflowException If there no remaining 
+   * @exception BufferOverflowException If there no remaining
    * <code>short</code>s in this buffer.
    * @exception ReadOnlyBufferException If this buffer is read-only.
    */
@@ -345,7 +345,7 @@ public abstract class ShortBuffer extends Buffer
    * than the buffer's limit.
    */
   public abstract short get (int index);
-  
+
   /**
    * Absolute put method.
    *
@@ -357,7 +357,7 @@ public abstract class ShortBuffer extends Buffer
 
   /**
    * Compacts this buffer.
-   * 
+   *
    * @exception ReadOnlyBufferException If this buffer is read-only.
    */
   public abstract ShortBuffer compact ();

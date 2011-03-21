@@ -146,6 +146,16 @@ namespace __gnu_debug
     /** Reset all member variables */
     void
     _M_reset() throw ();
+
+    /** Unlink itself */
+    void
+    _M_unlink() throw ()
+    {
+      if (_M_prior)
+	_M_prior->_M_next = _M_next;
+      if (_M_next)
+	_M_next->_M_prior = _M_prior;
+    }
   };
 
   /**

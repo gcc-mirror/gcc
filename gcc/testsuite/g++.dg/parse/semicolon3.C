@@ -1,5 +1,6 @@
 // PR c++/45331
 // { dg-do compile }
+// { dg-options -std=c++98 }
 
 struct OK1
 {
@@ -61,6 +62,48 @@ autotest (void)
 
   return ok10.a;
 }
+
+struct OK11
+{
+  int a;
+} // no complaints
+  const *ok11_var;
+
+struct OK12
+{
+  int a;
+} // no complaints
+  const &ok12_var = *(new OK12());
+
+struct OK13
+{
+  int a;
+} // no complaints
+  static *ok13_var;
+
+class OK14
+{
+  struct OK14sub
+  {
+    int a;
+  } // no complaints
+    static &ok14_var;
+};
+
+class OK15
+{
+  int a;
+} typedef tOK15;
+
+class OK16
+{
+  int a;
+} typedef *pOK16;
+
+class OK17
+{
+  int a;
+} typedef &rOK16;
 
 struct E1
 {
@@ -195,6 +238,13 @@ class E17
   class sub0 { int a; }		// { dg-error "after class definition" }
     mutable int i;
 } // { dg-error "after class definition" }
+
+class E18
+{
+  int a;
+} // { dg-error "after class definition" }
+
+typedef int E18int;
 
 /* This was the original test from the PR.  */
 

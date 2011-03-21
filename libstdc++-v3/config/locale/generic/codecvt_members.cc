@@ -34,7 +34,9 @@
 #include <climits>  // For MB_LEN_MAX
 #include <cstring>
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // Specializations.
 #ifdef _GLIBCXX_USE_WCHAR_T
@@ -214,4 +216,5 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   }
 #endif
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace

@@ -43,7 +43,7 @@ import java.util.Arrays;
 
 /**
  * A node that represents a method.
- * 
+ *
  * @author Eric Bruneton
  */
 public class MethodNode extends MemberNode implements MethodVisitor {
@@ -89,7 +89,7 @@ public class MethodNode extends MemberNode implements MethodVisitor {
     /**
      * The runtime visible parameter annotations of this method. These lists are
      * lists of {@link AnnotationNode} objects. May be <tt>null</tt>.
-     * 
+     *
      * @associates org.objectweb.asm.tree.AnnotationNode
      * @label invisible parameters
      */
@@ -98,7 +98,7 @@ public class MethodNode extends MemberNode implements MethodVisitor {
     /**
      * The runtime invisible parameter annotations of this method. These lists
      * are lists of {@link AnnotationNode} objects. May be <tt>null</tt>.
-     * 
+     *
      * @associates org.objectweb.asm.tree.AnnotationNode
      * @label visible parameters
      */
@@ -107,7 +107,7 @@ public class MethodNode extends MemberNode implements MethodVisitor {
     /**
      * The instructions of this method. This list is a list of
      * {@link AbstractInsnNode} objects.
-     * 
+     *
      * @associates org.objectweb.asm.tree.AbstractInsnNode
      * @label instructions
      */
@@ -116,7 +116,7 @@ public class MethodNode extends MemberNode implements MethodVisitor {
     /**
      * The try catch blocks of this method. This list is a list of
      * {@link TryCatchBlockNode} objects.
-     * 
+     *
      * @associates org.objectweb.asm.tree.TryCatchBlockNode
      */
     public List tryCatchBlocks;
@@ -134,7 +134,7 @@ public class MethodNode extends MemberNode implements MethodVisitor {
     /**
      * The local variables of this method. This list is a list of
      * {@link LocalVariableNode} objects. May be <tt>null</tt>
-     * 
+     *
      * @associates org.objectweb.asm.tree.LocalVariableNode
      */
     public List localVariables;
@@ -142,14 +142,14 @@ public class MethodNode extends MemberNode implements MethodVisitor {
     /**
      * The line numbers of this method. This list is a list of
      * {@link LineNumberNode} objects. May be <tt>null</tt>
-     * 
+     *
      * @associates org.objectweb.asm.tree.LineNumberNode
      */
     public List lineNumbers;
 
     /**
      * Constructs a new {@link MethodNode}.
-     * 
+     *
      * @param access the method's access flags (see {@link Opcodes}). This
      *        parameter also indicates if the method is synthetic and/or
      *        deprecated.
@@ -341,7 +341,7 @@ public class MethodNode extends MemberNode implements MethodVisitor {
 
     /**
      * Makes the given class visitor visit this method.
-     * 
+     *
      * @param cv a class visitor.
      */
     public void accept(final ClassVisitor cv) {
@@ -356,10 +356,10 @@ public class MethodNode extends MemberNode implements MethodVisitor {
             accept(mv);
         }
     }
-    
+
     /**
      * Makes the given method visitor visit this method.
-     * 
+     *
      * @param mv a method visitor.
      */
     public void accept(final MethodVisitor mv) {

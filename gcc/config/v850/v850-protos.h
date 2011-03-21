@@ -1,5 +1,5 @@
 /* Prototypes for v850.c functions used in the md file & elsewhere.
-   Copyright (C) 1999, 2000, 2002, 2004, 2005, 2007
+   Copyright (C) 1999, 2000, 2002, 2004, 2005, 2007, 2010, 2011
    Free Software Foundation, Inc.
 
    This file is part of GCC.
@@ -33,7 +33,6 @@ extern int    compute_frame_size            (int, long *);
 extern void   v850_init_expanders           (void);
 
 #ifdef RTX_CODE
-extern int    v850_output_addr_const_extra  (FILE *, rtx);
 extern rtx    v850_return_addr              (int);
 extern const char *output_move_single       (rtx *);
 extern void   notice_update_cc              (rtx, rtx);

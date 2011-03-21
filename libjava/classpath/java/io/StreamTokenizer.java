@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -41,18 +41,18 @@ import gnu.java.lang.CPStringBuilder;
 
 /**
  * This class parses streams of characters into tokens.  There are a
- * million-zillion flags that can be set to control the parsing, as 
+ * million-zillion flags that can be set to control the parsing, as
  * described under the various method headings.
  *
  * @author Warren Levy (warrenl@cygnus.com)
- * @date October 25, 1998.  
+ * @date October 25, 1998.
  */
 /* Written using "Java Class Libraries", 2nd edition, ISBN 0-201-31002-3
  * "The Java Language Specification", ISBN 0-201-63451-1
  * plus online API docs for JDK 1.2 beta from http://www.javasoft.com.
  * Status:  Believed complete and correct.
  */
- 
+
 public class StreamTokenizer
 {
   /** A constant indicating that the end of the stream has been read. */
@@ -74,7 +74,7 @@ public class StreamTokenizer
    * Contains the type of the token read resulting from a call to nextToken
    * The rules are as follows:
    * <ul>
-   * <li>For a token consisting of a single ordinary character, this is the 
+   * <li>For a token consisting of a single ordinary character, this is the
    *     value of that character.</li>
    * <li>For a quoted string, this is the value of the quote character</li>
    * <li>For a word, this is TT_WORD</li>
@@ -134,7 +134,7 @@ public class StreamTokenizer
   }
 
   /**
-   * This method initializes a new <code>StreamTokenizer</code> to read 
+   * This method initializes a new <code>StreamTokenizer</code> to read
    * characters from a <code>Reader</code> and parse them.  The char values
    * have their hight bits masked so that the value is treated a character
    * in the range of 0x0000 to 0x00FF.
@@ -178,11 +178,11 @@ public class StreamTokenizer
   {
     if (ch >= 0 && ch <= 255)
       {
-	comment[ch] = true;
-	whitespace[ch] = false;
-	alphabetic[ch] = false;
-	numeric[ch] = false;
-	quote[ch] = false;
+        comment[ch] = true;
+        whitespace[ch] = false;
+        alphabetic[ch] = false;
+        numeric[ch] = false;
+        quote[ch] = false;
       }
   }
 
@@ -199,7 +199,7 @@ public class StreamTokenizer
   }
 
   /**
-   * This method returns the current line number.  Note that if the 
+   * This method returns the current line number.  Note that if the
    * <code>pushBack()</code> method is called, it has no effect on the
    * line number returned by this method.
    *
@@ -213,7 +213,7 @@ public class StreamTokenizer
   /**
    * This method sets a flag that indicates whether or not alphabetic
    * tokens that are returned should be converted to lower case.
-   * 
+   *
    * @param flag <code>true</code> to convert to lower case,
    *             <code>false</code> otherwise
    */
@@ -248,8 +248,8 @@ public class StreamTokenizer
   }
 
   /**
-   * This method reads the next token from the stream.  It sets the 
-   * <code>ttype</code> variable to the appropriate token type and 
+   * This method reads the next token from the stream.  It sets the
+   * <code>ttype</code> variable to the appropriate token type and
    * returns it.  It also can set <code>sval</code> or <code>nval</code>
    * as described below.  The parsing strategy is as follows:
    * <ul>
@@ -266,13 +266,13 @@ public class StreamTokenizer
    * is stored in <code>sval</code>.  If lower case mode is set, the token
    * stored in <code>sval</code> is converted to lower case.  The end of line
    * sequence terminates a word only if EOL signficance has been turned on.
-   * The start of a comment also terminates a word.  Any character with a 
+   * The start of a comment also terminates a word.  Any character with a
    * non-alphabetic and non-numeric attribute (such as white space, a quote,
    * or a commet) are treated as non-alphabetic and terminate the word.</li>
    * <li>If a comment character is parsed, then all remaining characters on
    * the current line are skipped and another token is parsed.  Any EOL or
    * EOF's encountered are not discarded, but rather terminate the comment.</li>
-   * <li>If a quote character is parsed, then all characters up to the 
+   * <li>If a quote character is parsed, then all characters up to the
    * second occurrence of the same quote character are parsed into a
    * <code>String</code>.  This <code>String</code> is stored as
    * <code>sval</code>, but is not converted to lower case, even if lower case
@@ -281,7 +281,7 @@ public class StreamTokenizer
    * (\b (backspace), \t (HTAB), \n (linefeed), \f (form feed), \r
    * (carriage return), \" (double quote), \' (single quote), \\
    * (backslash), \XXX (octal esacpe)) are converted to the appropriate
-   * char values.  Invalid esacape sequences are left in untranslated.  
+   * char values.  Invalid esacape sequences are left in untranslated.
    * Unicode characters like ('\ u0000') are not recognized. </li>
    * <li>If the C++ comment sequence "//" is encountered, and the parser
    * is configured to handle that sequence, then the remainder of the line
@@ -303,9 +303,9 @@ public class StreamTokenizer
   {
     if (pushedBack)
       {
-	pushedBack = false;
-	if (ttype != TT_NONE)
-	  return ttype;
+        pushedBack = false;
+        if (ttype != TT_NONE)
+          return ttype;
       }
 
     sval = null;
@@ -314,196 +314,196 @@ public class StreamTokenizer
     // Skip whitespace.  Deal with EOL along the way.
     while (isWhitespace(ch = in.read()))
       if (ch == '\n' || ch == '\r')
-	{
-	  lineNumber++;
+        {
+          lineNumber++;
 
-	  // Throw away \n if in combination with \r.
-	  if (ch == '\r' && (ch = in.read()) != '\n')
-	    {
-	      if (ch != TT_EOF)
-		in.unread(ch);
-	    }
-	  if (eolSignificant)
-	    return (ttype = TT_EOL);
-	}
+          // Throw away \n if in combination with \r.
+          if (ch == '\r' && (ch = in.read()) != '\n')
+            {
+              if (ch != TT_EOF)
+                in.unread(ch);
+            }
+          if (eolSignificant)
+            return (ttype = TT_EOL);
+        }
 
     if (ch == '/')
       if ((ch = in.read()) == '/' && slashSlash)
-	{
-	  while ((ch = in.read()) != '\n' && ch != '\r' && ch != TT_EOF)
-	    ;
-          
-	  if (ch != TT_EOF)
-	    in.unread(ch);
-	  return nextToken(); // Recursive, but not too deep in normal cases
-	}
-      else if (ch == '*' && slashStar) 
-	{
-	  while (true)
-	    {
-	      ch = in.read();
-	      if (ch == '*')
-		{
-		  if ((ch = in.read()) == '/')
-		    break;
-		  else if (ch != TT_EOF)
-		    in.unread(ch);
-		}
-	      else if (ch == '\n' || ch == '\r')
-		{
-		  lineNumber++;
-		  if (ch == '\r' && (ch = in.read()) != '\n')
-		    {
-		      if (ch != TT_EOF)
-			in.unread(ch);
-		    }
-		}
-	      else if (ch == TT_EOF)
-		{
-		  break;
-		}
-	    }
-	  return nextToken(); // Recursive, but not too deep in normal cases
-	}
+        {
+          while ((ch = in.read()) != '\n' && ch != '\r' && ch != TT_EOF)
+            ;
+
+          if (ch != TT_EOF)
+            in.unread(ch);
+          return nextToken(); // Recursive, but not too deep in normal cases
+        }
+      else if (ch == '*' && slashStar)
+        {
+          while (true)
+            {
+              ch = in.read();
+              if (ch == '*')
+                {
+                  if ((ch = in.read()) == '/')
+                    break;
+                  else if (ch != TT_EOF)
+                    in.unread(ch);
+                }
+              else if (ch == '\n' || ch == '\r')
+                {
+                  lineNumber++;
+                  if (ch == '\r' && (ch = in.read()) != '\n')
+                    {
+                      if (ch != TT_EOF)
+                        in.unread(ch);
+                    }
+                }
+              else if (ch == TT_EOF)
+                {
+                  break;
+                }
+            }
+          return nextToken(); // Recursive, but not too deep in normal cases
+        }
       else
-	{
-	  if (ch != TT_EOF)
-	    in.unread(ch);
-	  ch = '/';
-	}
+        {
+          if (ch != TT_EOF)
+            in.unread(ch);
+          ch = '/';
+        }
 
     if (ch == TT_EOF)
       ttype = TT_EOF;
     else if (isNumeric(ch))
       {
-	boolean isNegative = false;
-	if (ch == '-')
-	  {
-	    // Read ahead to see if this is an ordinary '-' rather than numeric.
-	    ch = in.read();
-	    if (isNumeric(ch) && ch != '-')
-	      {
-		isNegative = true;
-	      }
-	    else
-	      {
-		if (ch != TT_EOF)
-		  in.unread(ch);
-		return (ttype = '-');
-	      }
-	  }
+        boolean isNegative = false;
+        if (ch == '-')
+          {
+            // Read ahead to see if this is an ordinary '-' rather than numeric.
+            ch = in.read();
+            if (isNumeric(ch) && ch != '-')
+              {
+                isNegative = true;
+              }
+            else
+              {
+                if (ch != TT_EOF)
+                  in.unread(ch);
+                return (ttype = '-');
+              }
+          }
 
-	CPStringBuilder tokbuf = new CPStringBuilder();
-	tokbuf.append((char) ch);
+        CPStringBuilder tokbuf = new CPStringBuilder();
+        tokbuf.append((char) ch);
 
-	int decCount = 0;
-	while (isNumeric(ch = in.read()) && ch != '-')
-	  if (ch == '.' && decCount++ > 0)
-	    break;
-	  else
-	    tokbuf.append((char) ch);
+        int decCount = 0;
+        while (isNumeric(ch = in.read()) && ch != '-')
+          if (ch == '.' && decCount++ > 0)
+            break;
+          else
+            tokbuf.append((char) ch);
 
-	if (ch != TT_EOF)
-	  in.unread(ch);
-	ttype = TT_NUMBER;
-	try
-	  {
-	    nval = Double.valueOf(tokbuf.toString()).doubleValue();
-	  }
-	catch (NumberFormatException _)
-	  {
-	    nval = 0.0;
-	  }
-	if (isNegative)
-	  nval = -nval;
+        if (ch != TT_EOF)
+          in.unread(ch);
+        ttype = TT_NUMBER;
+        try
+          {
+            nval = Double.valueOf(tokbuf.toString()).doubleValue();
+          }
+        catch (NumberFormatException _)
+          {
+            nval = 0.0;
+          }
+        if (isNegative)
+          nval = -nval;
       }
     else if (isAlphabetic(ch))
       {
-	CPStringBuilder tokbuf = new CPStringBuilder();
-	tokbuf.append((char) ch);
-	while (isAlphabetic(ch = in.read()) || isNumeric(ch))
-	  tokbuf.append((char) ch);
-	if (ch != TT_EOF)
-	  in.unread(ch);
-	ttype = TT_WORD;
-	sval = tokbuf.toString();
-	if (lowerCase)
-	  sval = sval.toLowerCase();
+        CPStringBuilder tokbuf = new CPStringBuilder();
+        tokbuf.append((char) ch);
+        while (isAlphabetic(ch = in.read()) || isNumeric(ch))
+          tokbuf.append((char) ch);
+        if (ch != TT_EOF)
+          in.unread(ch);
+        ttype = TT_WORD;
+        sval = tokbuf.toString();
+        if (lowerCase)
+          sval = sval.toLowerCase();
       }
     else if (isComment(ch))
       {
-	while ((ch = in.read()) != '\n' && ch != '\r' && ch != TT_EOF)
-	  ;
-        
-	if (ch != TT_EOF)
-	  in.unread(ch);
-	return nextToken();	// Recursive, but not too deep in normal cases.
+        while ((ch = in.read()) != '\n' && ch != '\r' && ch != TT_EOF)
+          ;
+
+        if (ch != TT_EOF)
+          in.unread(ch);
+        return nextToken();     // Recursive, but not too deep in normal cases.
       }
     else if (isQuote(ch))
       {
-	ttype = ch;
-	CPStringBuilder tokbuf = new CPStringBuilder();
-	while ((ch = in.read()) != ttype && ch != '\n' && ch != '\r' &&
-	       ch != TT_EOF)
-	  {
-	    if (ch == '\\')
-	      switch (ch = in.read())
-		{
-		  case 'a':	ch = 0x7;
-		    break;
-		  case 'b':	ch = '\b';
-		    break;
-		  case 'f':	ch = 0xC;
-		    break;
-		  case 'n':	ch = '\n';
-		    break;
-		  case 'r':	ch = '\r';
-		    break;
-		  case 't':	ch = '\t';
-		    break;
-		  case 'v':	ch = 0xB;
-		    break;
-		  case '\n':    ch = '\n';
-		    break;
+        ttype = ch;
+        CPStringBuilder tokbuf = new CPStringBuilder();
+        while ((ch = in.read()) != ttype && ch != '\n' && ch != '\r' &&
+               ch != TT_EOF)
+          {
+            if (ch == '\\')
+              switch (ch = in.read())
+                {
+                  case 'a':     ch = 0x7;
+                    break;
+                  case 'b':     ch = '\b';
+                    break;
+                  case 'f':     ch = 0xC;
+                    break;
+                  case 'n':     ch = '\n';
+                    break;
+                  case 'r':     ch = '\r';
+                    break;
+                  case 't':     ch = '\t';
+                    break;
+                  case 'v':     ch = 0xB;
+                    break;
+                  case '\n':    ch = '\n';
+                    break;
                   case '\r':    ch = '\r';
-		    break;
-		  case '\"':
-		  case '\'':
-		  case '\\':
-		    break;
-		  default:
-		    int ch1, nextch;
-		    if ((nextch = ch1 = ch) >= '0' && ch <= '7')
-		      {
-		        ch -= '0';
-		        if ((nextch = in.read()) >= '0' && nextch <= '7')
-			  {
-			    ch = ch * 8 + nextch - '0';
-			    if ((nextch = in.read()) >= '0' && nextch <= '7' &&
-				ch1 >= '0' && ch1 <= '3')
-			      {
-				ch = ch * 8 + nextch - '0';
-				nextch = in.read();
-			      }
-			  }
-		      }
+                    break;
+                  case '\"':
+                  case '\'':
+                  case '\\':
+                    break;
+                  default:
+                    int ch1, nextch;
+                    if ((nextch = ch1 = ch) >= '0' && ch <= '7')
+                      {
+                        ch -= '0';
+                        if ((nextch = in.read()) >= '0' && nextch <= '7')
+                          {
+                            ch = ch * 8 + nextch - '0';
+                            if ((nextch = in.read()) >= '0' && nextch <= '7' &&
+                                ch1 >= '0' && ch1 <= '3')
+                              {
+                                ch = ch * 8 + nextch - '0';
+                                nextch = in.read();
+                              }
+                          }
+                      }
 
-		    if (nextch != TT_EOF)
-		      in.unread(nextch);
-		}
+                    if (nextch != TT_EOF)
+                      in.unread(nextch);
+                }
 
-	    tokbuf.append((char) ch);
-	  }
+            tokbuf.append((char) ch);
+          }
 
-	// Throw away matching quote char.
-	if (ch != ttype && ch != TT_EOF)
-	  in.unread(ch);
+        // Throw away matching quote char.
+        if (ch != ttype && ch != TT_EOF)
+          in.unread(ch);
 
-	sval = tokbuf.toString();
+        sval = tokbuf.toString();
       }
     else
       {
-	ttype = ch;
+        ttype = ch;
       }
 
     return ttype;
@@ -591,11 +591,11 @@ public class StreamTokenizer
   {
     if (ch >= 0 && ch <= 255)
       {
-	quote[ch] = true;
-	comment[ch] = false;
-	whitespace[ch] = false;
-	alphabetic[ch] = false;
-	numeric[ch] = false;
+        quote[ch] = true;
+        comment[ch] = false;
+        whitespace[ch] = false;
+        alphabetic[ch] = false;
+        numeric[ch] = false;
       }
   }
 
@@ -692,8 +692,8 @@ public class StreamTokenizer
       hi = 255;
     for (int i = low; i <= hi; i++)
       {
-	resetChar(i);
-	whitespace[i] = true;
+        resetChar(i);
+        whitespace[i] = true;
       }
   }
 

@@ -1,7 +1,7 @@
 /* Handle the hair of processing (but not expanding) inline functions.
    Also manage function and variable name overloading.
    Copyright (C) 1987, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
@@ -259,7 +259,8 @@ make_alias_for_thunk (tree function)
 
   if (!flag_syntax_only)
     {
-      struct cgraph_node *aliasn = cgraph_same_body_alias (alias, function);
+      struct cgraph_node *aliasn = cgraph_same_body_alias (cgraph_node (function),
+							   alias, function);
       DECL_ASSEMBLER_NAME (function);
       gcc_assert (aliasn != NULL);
     }
@@ -371,12 +372,13 @@ use_thunk (tree thunk_fndecl, bool emit_p)
       DECL_CONTEXT (x) = thunk_fndecl;
       SET_DECL_RTL (x, NULL);
       DECL_HAS_VALUE_EXPR_P (x) = 0;
+      TREE_ADDRESSABLE (x) = 0;
       t = x;
     }
   a = nreverse (t);
   DECL_ARGUMENTS (thunk_fndecl) = a;
   TREE_ASM_WRITTEN (thunk_fndecl) = 1;
-  cgraph_add_thunk (thunk_fndecl, function,
+  cgraph_add_thunk (cgraph_node (function), thunk_fndecl, function,
 		    this_adjusting, fixed_offset, virtual_value,
 		    virtual_offset, alias);
 
@@ -941,8 +943,17 @@ process_subob_fn (tree fn, bool move_p, tree *spec_p, bool *trivial_p,
       goto bad;
     }
 
-  if (constexpr_p && !DECL_DECLARED_CONSTEXPR_P (fn))
-    *constexpr_p = false;
+  if (constexpr_p)
+    {
+      /* If this is a specialization of a constexpr template, we need to
+	 force the instantiation now so that we know whether or not it's
+	 really constexpr.  */
+      if (DECL_DECLARED_CONSTEXPR_P (fn) && DECL_TEMPLATE_INSTANTIATION (fn)
+	  && !DECL_TEMPLATE_INSTANTIATED (fn))
+	instantiate_decl (fn, /*defer_ok*/false, /*expl_class*/false);
+      if (!DECL_DECLARED_CONSTEXPR_P (fn))
+	*constexpr_p = false;
+    }
 
   return;
 
@@ -1069,14 +1080,9 @@ synthesized_method_walk (tree ctype, special_function_kind sfk, bool const_p,
   tsubst_flags_t complain;
   const char *msg;
   bool ctor_p;
-  tree cleanup_spec;
-  bool cleanup_trivial = true;
-  bool cleanup_deleted = false;
 
-  cleanup_spec
-    = (cxx_dialect >= cxx0x ? noexcept_true_spec : empty_except_spec);
   if (spec_p)
-    *spec_p = cleanup_spec;
+    *spec_p = (cxx_dialect >= cxx0x ? noexcept_true_spec : empty_except_spec);
 
   if (deleted_p)
     {
@@ -1153,13 +1159,15 @@ synthesized_method_walk (tree ctype, special_function_kind sfk, bool const_p,
   if (trivial_p)
     *trivial_p = expected_trivial;
 
-#ifndef ENABLE_CHECKING
   /* The TYPE_HAS_COMPLEX_* flags tell us about constraints from base
      class versions and other properties of the type.  But a subobject
      class can be trivially copyable and yet have overload resolution
      choose a template constructor for initialization, depending on
      rvalueness and cv-quals.  So we can't exit early for copy/move
-     methods in C++0x.  */
+     methods in C++0x.  The same considerations apply in C++98/03, but
+     there the definition of triviality does not consider overload
+     resolution, so a constructor can be trivial even if it would otherwise
+     call a non-trivial constructor.  */
   if (expected_trivial
       && (!copy_arg_p || cxx_dialect < cxx0x))
     {
@@ -1167,7 +1175,6 @@ synthesized_method_walk (tree ctype, special_function_kind sfk, bool const_p,
 	*constexpr_p = synthesized_default_constructor_is_constexpr (ctype);
       return;
     }
-#endif
 
   ++cp_unevaluated_operand;
   ++c_inhibit_evaluation_warnings;
@@ -1216,8 +1223,10 @@ synthesized_method_walk (tree ctype, special_function_kind sfk, bool const_p,
 	     destructors for cleanup of partially constructed objects.  */
 	  rval = locate_fn_flags (base_binfo, complete_dtor_identifier,
 				  NULL_TREE, flags, complain);
-	  process_subob_fn (rval, false, &cleanup_spec, &cleanup_trivial,
-			    &cleanup_deleted, NULL, NULL,
+	  /* Note that we don't pass down trivial_p; the subobject
+	     destructors don't affect triviality of the constructor.  */
+	  process_subob_fn (rval, false, spec_p, NULL,
+			    deleted_p, NULL, NULL,
 			    basetype);
 	}
 
@@ -1263,8 +1272,8 @@ synthesized_method_walk (tree ctype, special_function_kind sfk, bool const_p,
 	    {
 	      rval = locate_fn_flags (base_binfo, complete_dtor_identifier,
 				      NULL_TREE, flags, complain);
-	      process_subob_fn (rval, false, &cleanup_spec, &cleanup_trivial,
-				&cleanup_deleted, NULL, NULL,
+	      process_subob_fn (rval, false, spec_p, NULL,
+				deleted_p, NULL, NULL,
 				basetype);
 	    }
 	}
@@ -1283,31 +1292,14 @@ synthesized_method_walk (tree ctype, special_function_kind sfk, bool const_p,
   if (ctor_p)
     walk_field_subobs (TYPE_FIELDS (ctype), complete_dtor_identifier,
 		       sfk_destructor, TYPE_UNQUALIFIED, false,
-		       false, false, &cleanup_spec, &cleanup_trivial,
-		       &cleanup_deleted, NULL,
+		       false, false, spec_p, NULL,
+		       deleted_p, NULL,
 		       NULL, flags, complain);
 
   pop_scope (scope);
 
   --cp_unevaluated_operand;
   --c_inhibit_evaluation_warnings;
-
-  /* If the constructor isn't trivial, consider the subobject cleanups.  */
-  if (ctor_p && trivial_p && !*trivial_p)
-    {
-      if (deleted_p && cleanup_deleted)
-	*deleted_p = true;
-      if (spec_p)
-	*spec_p = merge_exception_specifiers (*spec_p, cleanup_spec);
-    }
-
-#ifdef ENABLE_CHECKING
-  /* If we expected this to be trivial but it isn't, then either we're in
-     C++0x mode and this is a copy/move ctor/op= or there's an error.  */
-  gcc_assert (!(trivial_p && expected_trivial && !*trivial_p)
-	      || (copy_arg_p && cxx_dialect >= cxx0x)
-	      || errorcount);
-#endif
 }
 
 /* DECL is a deleted function.  If it's implicitly deleted, explain why and

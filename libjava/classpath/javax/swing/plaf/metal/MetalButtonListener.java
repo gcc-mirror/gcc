@@ -45,25 +45,25 @@ import javax.swing.plaf.basic.BasicButtonListener;
 
 /**
  * A listener for buttons under the {@link MetalLookAndFeel}.
- * 
+ *
  * @see MetalButtonUI#createButtonListener
  */
-class MetalButtonListener extends BasicButtonListener 
+class MetalButtonListener extends BasicButtonListener
 {
-  
+
   /**
    * Creates a new instance.
-   * 
+   *
    * @param button  the button.
    */
   public MetalButtonListener(AbstractButton button)
   {
     super(button);
   }
-  
+
   /**
    * Handles property change events.
-   * 
+   *
    * @param e  the event.
    */
   public void propertyChange(PropertyChangeEvent e)

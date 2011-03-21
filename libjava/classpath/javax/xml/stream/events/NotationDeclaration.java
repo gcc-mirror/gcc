@@ -1,4 +1,4 @@
-/* NotationDeclaration.java -- 
+/* NotationDeclaration.java --
    Copyright (C) 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -58,6 +58,5 @@ public interface NotationDeclaration
    * Returns the system identifier of the notation.
    */
   String getSystemId();
-  
-}
 
+}

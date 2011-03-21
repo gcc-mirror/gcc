@@ -1,4 +1,4 @@
-/* FunctionAvailableFunction.java -- 
+/* FunctionAvailableFunction.java --
    Copyright (C) 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -159,7 +159,7 @@ class FunctionAvailableFunction
     // TODO extension functions
     return Boolean.FALSE;
   }
-  
+
   public Expr clone(Object context)
   {
     NamespaceContext n = nsctx;
@@ -190,4 +190,3 @@ class FunctionAvailableFunction
   }
 
 }
-

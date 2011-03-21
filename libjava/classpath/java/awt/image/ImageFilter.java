@@ -45,24 +45,24 @@ import java.util.Hashtable;
  * extended to provide different types of filters for an image.  By
  * default this class does nothing to an image passing through it.
  *
- * @author C. Brian Jones (cbj@gnu.org) 
+ * @author C. Brian Jones (cbj@gnu.org)
  */
 public class ImageFilter implements ImageConsumer, Cloneable
 {
   /**
    * The consumer this filter is filtering an image data stream for.
-   * It is initialized in the method <code>getFilterInstance</code>.  
+   * It is initialized in the method <code>getFilterInstance</code>.
    */
   protected ImageConsumer consumer = null;
 
   /**
    * The <code>ImageConsumer</code> can use this method to request
-   * the pixels be delivered in top-down, left-right order.  
-   * <br> 
-   * The filter can respond in three different ways.  
+   * the pixels be delivered in top-down, left-right order.
+   * <br>
+   * The filter can respond in three different ways.
    * <ul>
-   *   <li>The default behavior is to forward the request to the 
-   *       <code>ImageProducer</code> 
+   *   <li>The default behavior is to forward the request to the
+   *       <code>ImageProducer</code>
    *       using the method <code>requestTopDownLeftRightResend</code>
    *       and using the filter as the consumer.</li>
    *   <li>The filter has the pixels and can retransmit them in the
@@ -77,7 +77,7 @@ public class ImageFilter implements ImageConsumer, Cloneable
 
   /**
    * By default, returns a shallow copy of the object created by
-   * <code>Object.clone()</code> 
+   * <code>Object.clone()</code>
    *
    * @see java.lang.Object#clone ()
    */
@@ -98,7 +98,7 @@ public class ImageFilter implements ImageConsumer, Cloneable
   /**
    * This is the only method which can set the
    * <code>ImageConsumer</code> for this filter.  By default a clone
-   * of this filter with the appropriate consumer set is returned.  
+   * of this filter with the appropriate consumer set is returned.
    *
    * @see #clone ()
    */
@@ -111,13 +111,13 @@ public class ImageFilter implements ImageConsumer, Cloneable
 
   /**
    * An <code>ImageProducer</code> indicates the size of the image
-   * being produced using this method.  A filter can override this 
+   * being produced using this method.  A filter can override this
    * method to intercept these calls from the producer in order to
    * change either the width or the height before in turn calling
    * the consumer's <code>setDimensions</code> method.
-   * 
+   *
    * @param width the width of the image
-   * @param height the height of the image 
+   * @param height the height of the image
    */
   public void setDimensions(int width, int height)
   {
@@ -128,7 +128,7 @@ public class ImageFilter implements ImageConsumer, Cloneable
    * An <code>ImageProducer</code> can set a list of properties
    * associated with this image by using this method.
    *
-   * @param props the list of properties associated with this image 
+   * @param props the list of properties associated with this image
    */
   public void setProperties(Hashtable<?,?> props)
   {
@@ -160,9 +160,9 @@ public class ImageFilter implements ImageConsumer, Cloneable
    * The <code>ImageProducer</code> should call this method with a
    * bit mask of hints from any of <code>RANDOMPIXELORDER</code>,
    * <code>TOPDOWNLEFTRIGHT</code>, <code>COMPLETESCANLINES</code>,
-   * <code>SINGLEPASS</code>, <code>SINGLEFRAME</code> from the 
+   * <code>SINGLEPASS</code>, <code>SINGLEFRAME</code> from the
    * <code>ImageConsumer</code> interface.
-   * 
+   *
    * @param flags a bit mask of hints
    * @see ImageConsumer
    */
@@ -174,7 +174,7 @@ public class ImageFilter implements ImageConsumer, Cloneable
   /**
    * This function delivers a rectangle of pixels where any
    * pixel(m,n) is stored in the array as a <code>byte</code> at
-   * index (n * scansize + m + offset).  
+   * index (n * scansize + m + offset).
    *
    * @param x the x coordinate of the rectangle
    * @param y the y coordinate of the rectangle
@@ -185,7 +185,7 @@ public class ImageFilter implements ImageConsumer, Cloneable
    * @param offset the index of the first pixels in the <code>pixels</code> array
    * @param scansize the width to use in extracting pixels from the <code>pixels</code> array
    */
-  public void setPixels(int x, int y, int w, int h, 
+  public void setPixels(int x, int y, int w, int h,
                         ColorModel model, byte[] pixels, int offset,
                         int scansize)
   {
@@ -195,7 +195,7 @@ public class ImageFilter implements ImageConsumer, Cloneable
   /**
    * This function delivers a rectangle of pixels where any
    * pixel(m,n) is stored in the array as an <code>int</code> at
-   * index (n * scansize + m + offset).  
+   * index (n * scansize + m + offset).
    *
    * @param x the x coordinate of the rectangle
    * @param y the y coordinate of the rectangle
@@ -206,7 +206,7 @@ public class ImageFilter implements ImageConsumer, Cloneable
    * @param offset the index of the first pixels in the <code>pixels</code> array
    * @param scansize the width to use in extracting pixels from the <code>pixels</code> array
    */
-  public void setPixels(int x, int y, int w, int h, 
+  public void setPixels(int x, int y, int w, int h,
                         ColorModel model, int[] pixels, int offset,
                         int scansize)
   {
@@ -217,7 +217,7 @@ public class ImageFilter implements ImageConsumer, Cloneable
    * The <code>ImageProducer</code> calls this method to indicate a
    * single frame or the entire image is complete.  The method is
    * also used to indicate an error in loading or producing the
-   * image.  
+   * image.
    */
   public void imageComplete(int status)
   {

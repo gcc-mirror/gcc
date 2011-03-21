@@ -1,4 +1,4 @@
-/* CRLFReader.java -- 
+/* CRLFReader.java --
    Copyright (C) 2005,2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -115,7 +115,7 @@ class CRLFReader
               }
             else
               l = in.read(b, off, len); // CR(s) but no LF
-          } 
+          }
       }
     return l;
   }
@@ -178,4 +178,3 @@ class CRLFReader
   }
 
 }
-

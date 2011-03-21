@@ -57,7 +57,7 @@ import java.util.List;
 /**
  * The certificate object. This is used by both the client and the server
  * to send their certificates (if any) to one another.
- * 
+ *
  * <pre>opaque ASN.1Cert&lt;1..2^24-1&gt;;
 
 struct {

@@ -102,7 +102,7 @@ public class X509CertSelector implements CertSelector, Cloneable
     return (oid != null && oid.length > 2 &&
             (oid[0] >= 0 && oid[0] <= 2) && (oid[1] >= 0 && oid[1] <= 39));
   }
-  
+
   private static GeneralName makeName(int id, String name) throws IOException
   {
     byte[] nameBytes = null;
@@ -114,22 +114,22 @@ public class X509CertSelector implements CertSelector, Cloneable
       case uniformResourceIdentifier:
         nameBytes = name.getBytes("ASCII");
         break;
-        
+
       case iPAddress:
         InetAddress addr = InetAddress.getByName(name);
         nameBytes = addr.getAddress();
         break;
-        
+
       case registeredId:
         OID oid = new OID(name);
         nameBytes = oid.getDER();
         break;
-        
+
       case directoryName:
         X500Principal xname = new X500Principal(name);
         nameBytes = xname.getEncoded();
         break;
-        
+
       case ediPartyName:
       case x400Address:
       case otherName:
@@ -138,7 +138,7 @@ public class X509CertSelector implements CertSelector, Cloneable
     }
     return new GeneralName(kind, nameBytes);
   }
-  
+
   private int basicConstraints;
   private X509Certificate cert;
   private BigInteger serialNo;
@@ -171,7 +171,7 @@ public class X509CertSelector implements CertSelector, Cloneable
   /**
    * Add a name to match in the NameConstraints extension. The argument is
    * the DER-encoded bytes of a GeneralName structure.
-   * 
+   *
    * See the method {@link #addSubjectAlternativeName(int, byte[])} for the
    * format of the GeneralName structure.
    *
@@ -208,9 +208,9 @@ public class X509CertSelector implements CertSelector, Cloneable
   /**
    * Add a name, as DER-encoded bytes, to the subject alternative names
    * criterion.
-   * 
+   *
    * The name is a GeneralName structure, which has the ASN.1 format:
-   * 
+   *
    * <pre>
   GeneralName ::= CHOICE {
     otherName                       [0]     OtherName,
@@ -242,7 +242,7 @@ public class X509CertSelector implements CertSelector, Cloneable
    * only recognize certain types of name that have convenient string
    * encodings. For robustness, you should use the {@link
    *  #addSubjectAlternativeName(int, byte[])} method whenever possible.
-   * 
+   *
    * This method can only decode certain name kinds of names as strings.
    *
    * @param id The type of name this is. Must be in the range [0,8].
@@ -417,7 +417,7 @@ public class X509CertSelector implements CertSelector, Cloneable
             n.add(name.name());
             names.add(n);
           }
-        
+
         return names;
       }
     return null;
@@ -735,7 +735,7 @@ public class X509CertSelector implements CertSelector, Cloneable
                 // ignored
               }
           }
-        
+
         if (policies == null)
           return false;
         if (!policies.getPolicies().containsAll(policy))
@@ -766,7 +766,7 @@ public class X509CertSelector implements CertSelector, Cloneable
                   }
               }
           }
-        
+
         if (nc == null)
           return false;
 
@@ -956,18 +956,18 @@ public class X509CertSelector implements CertSelector, Cloneable
   {
     // Check if the input is well-formed...
     new NameConstraints(nameConstraints);
-    
+
     // But we just compare raw byte arrays.
     this.nameConstraints = nameConstraints != null
       ? (byte[]) nameConstraints.clone() : null;
   }
-  
+
   /**
-   * Sets the pathToNames criterion. The argument is a collection of 
+   * Sets the pathToNames criterion. The argument is a collection of
    * pairs, the first element of which is an {@link Integer} giving
    * the ID of the name, and the second element is either a {@link String}
    * or a byte array.
-   * 
+   *
    * See {@link #addPathToName(int, byte[])} and {@link #addPathToName(int, String)}
    * for how these arguments are handled.
    *
@@ -1249,7 +1249,7 @@ public class X509CertSelector implements CertSelector, Cloneable
     else
       this.sigId = null;
   }
-  
+
   public String toString()
   {
     CPStringBuilder str = new CPStringBuilder(X509CertSelector.class.getName());

@@ -49,7 +49,7 @@ public class FileCacheImageInputStream extends ImageInputStreamImpl
 {
   private InputStream stream;
   private File cacheDir;
-  
+
   public FileCacheImageInputStream(InputStream stream, File cacheDir)
     throws IOException
   {
@@ -64,8 +64,8 @@ public class FileCacheImageInputStream extends ImageInputStreamImpl
   {
     if (stream != null)
       {
-	stream.close();
-	stream = null;
+        stream.close();
+        stream = null;
       }
   }
 
@@ -85,7 +85,7 @@ public class FileCacheImageInputStream extends ImageInputStreamImpl
   {
     return true;
   }
-  
+
   public boolean isCachedMemory()
   {
     return false;

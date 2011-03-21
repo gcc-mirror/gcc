@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -151,7 +151,7 @@ public class HTTPURLConnection
       }
     final Credentials creds = (username == null) ? null :
       new Credentials (username, password);
-    
+
     if ("POST".equals(method))
       {
         String contentType = requestHeaders.getValue("Content-Type");
@@ -241,113 +241,113 @@ public class HTTPURLConnection
                 throw ioe;
               }
           }
-        
+
         if (response.isRedirect() && getInstanceFollowRedirects())
           {
-	    // Read the response body, if there is one.  If the
-	    // redirect points us back at the same server, we will use
-	    // the cached connection, so we must make sure there is no
-	    // pending data in it.
+            // Read the response body, if there is one.  If the
+            // redirect points us back at the same server, we will use
+            // the cached connection, so we must make sure there is no
+            // pending data in it.
             InputStream body = response.getBody();
-	    if (body != null)
-	      {
-		byte[] ignore = new byte[1024];
-		while (true)
-		  {
-		    int n = body.read(ignore, 0, ignore.length);
-		    if (n == -1)
-		      break;
-		  }
-	      }
+            if (body != null)
+              {
+                byte[] ignore = new byte[1024];
+                while (true)
+                  {
+                    int n = body.read(ignore, 0, ignore.length);
+                    if (n == -1)
+                      break;
+                  }
+              }
 
             // Follow redirect
             String location = response.getHeader("Location");
-	    if (location != null)
-	      {
-		String connectionUri = connection.getURI();
-		int start = connectionUri.length();
-		if (location.startsWith(connectionUri) &&
-		    location.charAt(start) == '/')
-		  {
-		    file = location.substring(start);
-		    retry = true;
-		  }
-		else if (location.startsWith("http:"))
-		  {
-		    connection.close();
-		    connection = null;
-		    secure = false;
-		    start = 7;
-		    int end = location.indexOf('/', start);
+            if (location != null)
+              {
+                String connectionUri = connection.getURI();
+                int start = connectionUri.length();
+                if (location.startsWith(connectionUri) &&
+                    location.charAt(start) == '/')
+                  {
+                    file = location.substring(start);
+                    retry = true;
+                  }
+                else if (location.startsWith("http:"))
+                  {
+                    connection.close();
+                    connection = null;
+                    secure = false;
+                    start = 7;
+                    int end = location.indexOf('/', start);
                     if (end == -1)
                       end = location.length();
-		    host = location.substring(start, end);
-		    int ci = host.lastIndexOf(':');
-		    if (ci != -1)
-		      {
-			port = Integer.parseInt(host.substring (ci + 1));
-			host = host.substring(0, ci);
-		      }
-		    else
-		      {
-			port = HTTPConnection.HTTP_PORT;
-		      }
-		    file = location.substring(end);
-		    retry = true;
-		  }
-		else if (location.startsWith("https:"))
-		  {
-		    connection.close();
-		    connection = null;
-		    secure = true;
-		    start = 8;
-		    int end = location.indexOf('/', start);
+                    host = location.substring(start, end);
+                    int ci = host.lastIndexOf(':');
+                    if (ci != -1)
+                      {
+                        port = Integer.parseInt(host.substring (ci + 1));
+                        host = host.substring(0, ci);
+                      }
+                    else
+                      {
+                        port = HTTPConnection.HTTP_PORT;
+                      }
+                    file = location.substring(end);
+                    retry = true;
+                  }
+                else if (location.startsWith("https:"))
+                  {
+                    connection.close();
+                    connection = null;
+                    secure = true;
+                    start = 8;
+                    int end = location.indexOf('/', start);
                     if (end == -1)
                       end = location.length();
-		    host = location.substring(start, end);
-		    int ci = host.lastIndexOf(':');
-		    if (ci != -1)
-		      {
-			port = Integer.parseInt(host.substring (ci + 1));
-			host = host.substring(0, ci);
-		      }
-		    else
-		      {
-			port = HTTPConnection.HTTPS_PORT;
-		      }
-		    file = location.substring(end);
-		    retry = true;
-		  }
-		else if (location.length() > 0)
-		  {
-		    // Malformed absolute URI, treat as file part of URI
-		    if (location.charAt(0) == '/')
-		      {
-			// Absolute path
-			file = location;
-		      }
-		    else
-		      {
-			// Relative path
-			int lsi = file.lastIndexOf('/');
-			file = (lsi == -1) ? "/" : file.substring(0, lsi + 1);
-		    file += location;
-		      }
-		    retry = true;
-		  }
-	      }
+                    host = location.substring(start, end);
+                    int ci = host.lastIndexOf(':');
+                    if (ci != -1)
+                      {
+                        port = Integer.parseInt(host.substring (ci + 1));
+                        host = host.substring(0, ci);
+                      }
+                    else
+                      {
+                        port = HTTPConnection.HTTPS_PORT;
+                      }
+                    file = location.substring(end);
+                    retry = true;
+                  }
+                else if (location.length() > 0)
+                  {
+                    // Malformed absolute URI, treat as file part of URI
+                    if (location.charAt(0) == '/')
+                      {
+                        // Absolute path
+                        file = location;
+                      }
+                    else
+                      {
+                        // Relative path
+                        int lsi = file.lastIndexOf('/');
+                        file = (lsi == -1) ? "/" : file.substring(0, lsi + 1);
+                    file += location;
+                      }
+                    retry = true;
+                  }
+              }
           }
         else
           {
             responseSink = response.getBody();
-            
+
             if (response.isError())
-	      errorSink = responseSink;
+              errorSink = responseSink;
           }
       }
     while (retry);
     connected = true;
-  }  
+  }
 
   /**
    * Returns a connection, from the pool if necessary.
@@ -425,7 +425,7 @@ public class HTTPURLConnection
   }
 
   public String getRequestProperty(String key)
-  {    
+  {
     return requestHeaders.getValue(key);
   }
 
@@ -433,7 +433,7 @@ public class HTTPURLConnection
   {
     if (connected)
       throw new IllegalStateException("Already connected");
-    
+
     Map<String, List<String>> m = requestHeaders.getAsMap();
     return Collections.unmodifiableMap(m);
   }
@@ -441,7 +441,7 @@ public class HTTPURLConnection
   public void setRequestProperty(String key, String value)
   {
     super.setRequestProperty(key, value);
-    
+
     requestHeaders.put(key, value);
   }
 
@@ -477,9 +477,9 @@ public class HTTPURLConnection
       }
     return requestSink;
   }
-  
+
   // -- Response --
-  
+
   public InputStream getInputStream()
     throws IOException
   {
@@ -491,17 +491,17 @@ public class HTTPURLConnection
       {
         throw new ProtocolException("doInput is false");
       }
-    
+
     if (response.isError())
       {
         int code = response.getCode();
         if (code == 404 || code == 410)
           throw new FileNotFoundException(url.toString());
-      
+
         throw new IOException("Server returned HTTP response code " + code
                               + " for URL " + url.toString());
       }
-    
+
     return responseSink;
   }
 
@@ -535,7 +535,7 @@ public class HTTPURLConnection
       " " + response.getCode() +
       " " + response.getMessage();
   }
-  
+
   public String getHeaderField(int index)
   {
     if (!connected)
@@ -641,7 +641,7 @@ public class HTTPURLConnection
       }
     return handshakeEvent.getCipherSuite();
   }
-  
+
   public Certificate[] getLocalCertificates()
   {
     if (!connected)
@@ -681,14 +681,13 @@ public class HTTPURLConnection
     super.setReadTimeout(timeout);
     if (connection == null)
       return;
-    try 
+    try
       {
-	connection.getSocket().setSoTimeout(timeout);
-      } 
+        connection.getSocket().setSoTimeout(timeout);
+      }
     catch (IOException se)
       {
-	// Ignore socket exceptions.
+        // Ignore socket exceptions.
       }
   }
 }
-

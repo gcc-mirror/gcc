@@ -1,5 +1,5 @@
-#   Copyright (C) 1997, 1999, 2000, 2003, 2004, 2005, 2007, 2008, 2009, 2010
-#   Free Software Foundation, Inc.
+#   Copyright (C) 1997, 1999, 2000, 2003, 2004, 2005, 2007, 2008, 2009, 2010,
+#   2011 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -136,6 +136,15 @@ proc dg-require-dll { args } {
 
     upvar dg-do-what dg-do-what
     set dg-do-what [list [lindex ${dg-do-what} 0] "N" "P"]
+}
+
+# If this host does not support an ASCII locale, skip this test.
+
+proc dg-require-ascii-locale { args } {
+    if { ![ check_ascii_locale_available] } {
+	upvar dg-do-what dg-do-what
+        set dg-do-what [list [lindex ${dg-do-what} 0] "N" "P"]
+    }
 }
 
 proc dg-require-iconv { args } {

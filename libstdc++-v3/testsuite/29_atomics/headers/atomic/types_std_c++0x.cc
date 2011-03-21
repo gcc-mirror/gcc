@@ -1,7 +1,7 @@
 // { dg-options "-std=gnu++0x" }
 // { dg-do compile }
 
-// Copyright (C) 2008, 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -72,6 +72,4 @@ void test01()
   using std::atomic_ptrdiff_t;
   using std::atomic_intmax_t;
   using std::atomic_uintmax_t;
-
-  using std::atomic_address;
 }

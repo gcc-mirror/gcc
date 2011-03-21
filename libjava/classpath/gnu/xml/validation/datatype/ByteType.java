@@ -1,4 +1,4 @@
-/* ByteType.java -- 
+/* ByteType.java --
    Copyright (C) 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -117,7 +117,7 @@ final class ByteType
         throw new DatatypeException(i, "invalid byte value");
       }
   }
-  
+
   public Object createValue(String literal, ValidationContext context) {
     try
       {
@@ -128,6 +128,5 @@ final class ByteType
         return null;
       }
   }
-  
-}
 
+}

@@ -1,4 +1,4 @@
-/* CertificateCallback.java -- 
+/* CertificateCallback.java --
    Copyright (C) 2006  Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -55,7 +55,7 @@ public class CertificateCallback extends ConfirmationCallback
 {
   static final long serialVersionUID = 8343869651419225634L;
   public final Certificate certificate;
-  
+
   public CertificateCallback(Certificate cert, String prompt)
   {
     super(prompt, ERROR, YES_NO_OPTION, NO);

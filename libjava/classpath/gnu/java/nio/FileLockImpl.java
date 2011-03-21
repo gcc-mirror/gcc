@@ -69,14 +69,14 @@ public final class FileLockImpl extends FileLock
   {
     try
       {
-	release();
+        release();
       }
     catch (IOException e)
       {
-	// Ignore this.
+        // Ignore this.
       }
   }
-  
+
   /**
    * Whether or not this lock is valid, false when channel is closed or
    * release has been explicitly called.
@@ -95,8 +95,8 @@ public final class FileLockImpl extends FileLock
   {
     if (isValid())
       {
-	valid = false;
-	((FileChannelImpl) channel()).unlock(position(), size());
+        valid = false;
+        ((FileChannelImpl) channel()).unlock(position(), size());
       }
   }
 }

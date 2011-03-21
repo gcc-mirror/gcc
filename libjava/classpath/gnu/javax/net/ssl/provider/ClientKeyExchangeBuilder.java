@@ -1,4 +1,4 @@
-/* ClientKeyExchangeBuilder.java -- 
+/* ClientKeyExchangeBuilder.java --
    Copyright (C) 2006  Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -42,7 +42,7 @@ import java.nio.ByteBuffer;
 
 /**
  * Builder for {@link ClientKeyExchange} objects.
- * 
+ *
  * @author Casey Marshall (csm@gnu.org)
  */
 public class ClientKeyExchangeBuilder extends ClientKeyExchange
@@ -60,11 +60,11 @@ public class ClientKeyExchangeBuilder extends ClientKeyExchange
   {
     return ((ByteBuffer) buffer.duplicate().position(0).limit(length())).slice();
   }
-  
+
   public void setExchangeKeys(ByteBuffer exchangeKeys)
   {
     // For SSLv3 and RSA key exchange, the message is sent without length.
-    // So we use the precise capacity of the buffer to signal the size of 
+    // So we use the precise capacity of the buffer to signal the size of
     // the message.
     if (buffer.capacity() < exchangeKeys.remaining()
         || (suite.keyExchangeAlgorithm() == KeyExchangeAlgorithm.RSA

@@ -1,5 +1,5 @@
 /* Basic IPA optimizations and utilities.
-   Copyright (C) 2003, 2004, 2005, 2007, 2008, 2009, 2010
+   Copyright (C) 2003, 2004, 2005, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -259,7 +259,7 @@ cgraph_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
     {
       vnode->next_needed = NULL;
       vnode->prev_needed = NULL;
-      if (vnode->analyzed
+      if ((vnode->analyzed || vnode->force_output)
 	  && !varpool_can_remove_if_no_refs (vnode))
 	{
 	  vnode->needed = false;
@@ -844,16 +844,34 @@ function_and_variable_visibility (bool whole_program)
 		IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (p->decl)),
 		IDENTIFIER_POINTER (p->target));
 		
-      if ((node = cgraph_node_for_asm (p->target)) != NULL)
+      if ((node = cgraph_node_for_asm (p->target)) != NULL
+	  && !DECL_EXTERNAL (node->decl))
         {
+	  if (!node->analyzed)
+	    continue;
+	  /* Weakrefs alias symbols from other compilation unit.  In the case
+	     the destination of weakref became available because of LTO, we must
+	     mark it as needed.  */
+	  if (in_lto_p
+	      && lookup_attribute ("weakref", DECL_ATTRIBUTES (p->decl))
+	      && !node->needed)
+	    cgraph_mark_needed_node (node);
 	  gcc_assert (node->needed);
 	  pointer_set_insert (aliased_nodes, node);
 	  if (dump_file)
 	    fprintf (dump_file, "  node %s/%i",
 		     cgraph_node_name (node), node->uid);
         }
-      else if ((vnode = varpool_node_for_asm (p->target)) != NULL)
+      else if ((vnode = varpool_node_for_asm (p->target)) != NULL
+	       && !DECL_EXTERNAL (vnode->decl))
         {
+	  /* Weakrefs alias symbols from other compilation unit.  In the case
+	     the destination of weakref became available because of LTO, we must
+	     mark it as needed.  */
+	  if (in_lto_p
+	      && lookup_attribute ("weakref", DECL_ATTRIBUTES (p->decl))
+	      && !vnode->needed)
+	    varpool_mark_needed_node (vnode);
 	  gcc_assert (vnode->needed);
 	  pointer_set_insert (aliased_vnodes, vnode);
 	  if (dump_file)
@@ -867,6 +885,8 @@ function_and_variable_visibility (bool whole_program)
   for (node = cgraph_nodes; node; node = node->next)
     {
       int flags = flags_from_decl_or_type (node->decl);
+
+      /* Optimize away PURE and CONST constructors and destructors.  */
       if (optimize
 	  && (flags & (ECF_CONST | ECF_PURE))
 	  && !(flags & ECF_LOOPING_CONST_OR_PURE))
@@ -874,6 +894,13 @@ function_and_variable_visibility (bool whole_program)
 	  DECL_STATIC_CONSTRUCTOR (node->decl) = 0;
 	  DECL_STATIC_DESTRUCTOR (node->decl) = 0;
 	}
+
+      /* Frontends and alias code marks nodes as needed before parsing is finished.
+	 We may end up marking as node external nodes where this flag is meaningless
+	 strip it.  */
+      if (node->needed
+	  && (DECL_EXTERNAL (node->decl) || !node->analyzed))
+	node->needed = 0;
 
       /* C++ FE on lack of COMDAT support create local COMDAT functions
 	 (that ought to be shared but can not due to object format

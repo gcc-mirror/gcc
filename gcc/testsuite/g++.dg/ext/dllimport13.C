@@ -1,7 +1,7 @@
 //  PR c++/34749
 //  Ensure dllimport is handled correctly for friends
 
-// { dg-do compile { target i?86-*-cygwin* i?86-*-mingw*} }
+// { dg-do compile { target i?86-*-cygwin* i?86-*-mingw* x86_64-*-mingw* } }
 
 int  __declspec (dllimport) bar();
 int  __declspec (dllimport) baz();

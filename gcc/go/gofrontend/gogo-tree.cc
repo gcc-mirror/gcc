@@ -22,7 +22,6 @@ extern "C"
 #include "convert.h"
 #include "output.h"
 #include "diagnostic.h"
-#include "rtl.h"
 
 #ifndef ENABLE_BUILD_WITH_CXX
 }
@@ -162,7 +161,7 @@ Gogo::get_init_fn_name()
   if (this->init_fn_name_.empty())
     {
       gcc_assert(this->package_ != NULL);
-      if (this->package_name() == "main")
+      if (this->is_main_package())
 	{
 	  // Use a name which the runtime knows.
 	  this->init_fn_name_ = "__go_init_main";
@@ -187,7 +186,7 @@ Gogo::get_init_fn_name()
 void
 Gogo::init_imports(tree* init_stmt_list)
 {
-  gcc_assert(this->package_name() == "main");
+  gcc_assert(this->is_main_package());
 
   if (this->imported_init_fns_.empty())
     return;
@@ -385,7 +384,7 @@ Gogo::write_initialization_function(tree fndecl, tree init_stmt_list)
 {
   // Make sure that we thought we needed an initialization function,
   // as otherwise we will not have reported it in the export data.
-  gcc_assert(this->package_name() == "main" || this->need_init_fn_);
+  gcc_assert(this->is_main_package() || this->need_init_fn_);
 
   if (fndecl == NULL_TREE)
     fndecl = this->initialization_function_decl();
@@ -641,6 +640,9 @@ sort_var_inits(Var_inits* var_inits)
 void
 Gogo::write_globals()
 {
+  this->convert_named_types();
+  this->build_interface_method_tables();
+
   Bindings* bindings = this->current_bindings();
   size_t count = bindings->size_definitions();
 
@@ -649,7 +651,7 @@ Gogo::write_globals()
   tree init_fndecl = NULL_TREE;
   tree init_stmt_list = NULL_TREE;
 
-  if (this->package_name() == "main")
+  if (this->is_main_package())
     this->init_imports(&init_stmt_list);
 
   // A list of variable initializations.
@@ -805,21 +807,10 @@ Gogo::write_globals()
   // This will be called if this package is imported.
   if (init_stmt_list != NULL_TREE
       || this->need_init_fn_
-      || this->package_name() == "main")
+      || this->is_main_package())
     this->write_initialization_function(init_fndecl, init_stmt_list);
 
   // Pass everything back to the middle-end.
-
-  if (this->imported_unsafe_)
-    {
-      // Importing the "unsafe" package automatically disables TBAA.
-      flag_strict_aliasing = false;
-
-      // This is a real hack.  init_varasm_once has already grabbed an
-      // alias set, which we don't want when we aren't going strict
-      // aliasing.  We reinitialize to make it do it again.  FIXME.
-      init_varasm_once();
-    }
 
   wrapup_global_declarations(vec, count);
 
@@ -847,19 +838,6 @@ Named_object::get_id(Gogo* gogo)
       // We don't need the package name for local variables or builtin
       // types.
       decl_name = Gogo::unpack_hidden_name(this->name_);
-    }
-  else if (this->is_function()
-	   && !this->func_value()->is_method()
-	   && this->package_ == NULL
-	   && Gogo::unpack_hidden_name(this->name_) == "init")
-    {
-      // A single package can have multiple "init" functions, which
-      // means that we need to give them different names.
-      static int init_index;
-      char buf[20];
-      snprintf(buf, sizeof buf, "%d", init_index);
-      ++init_index;
-      decl_name = gogo->package_name() + ".init." + buf;
     }
   else
     {
@@ -935,7 +913,16 @@ Named_object::get_tree(Gogo* gogo, Named_object* function)
 	  {
 	    Type* type = named_constant->type();
 	    if (type != NULL && !type->is_abstract())
-	      expr_tree = fold_convert(type->get_tree(gogo), expr_tree);
+	      {
+		if (!type->is_undefined())
+		  expr_tree = fold_convert(type->get_tree(gogo), expr_tree);
+		else
+		  {
+		    // Make sure we report the error.
+		    type->base();
+		    expr_tree = error_mark_node;
+		  }
+	      }
 	    if (expr_tree == error_mark_node)
 	      decl = error_mark_node;
 	    else if (INTEGRAL_TYPE_P(TREE_TYPE(expr_tree)))
@@ -1264,14 +1251,15 @@ Function::get_or_make_decl(Gogo* gogo, Named_object* no, tree id)
 
 	  this->fndecl_ = decl;
 
-	  gcc_assert(no->package() == NULL);
-	  if (this->enclosing_ != NULL || Gogo::is_thunk(no))
+	  if (no->package() != NULL)
+	    ;
+	  else if (this->enclosing_ != NULL || Gogo::is_thunk(no))
 	    ;
 	  else if (Gogo::unpack_hidden_name(no->name()) == "init"
 		   && !this->type_->is_method())
 	    ;
 	  else if (Gogo::unpack_hidden_name(no->name()) == "main"
-		   && gogo->package_name() == "main")
+		   && gogo->is_main_package())
 	    TREE_PUBLIC(decl) = 1;
 	  // Methods have to be public even if they are hidden because
 	  // they can be pulled into type descriptors when using
@@ -1785,8 +1773,14 @@ Function::return_value(Gogo* gogo, Named_object* named_function,
   // defer statements, the result variables may be unnamed.
   bool is_named = !results->front().name().empty();
   if (is_named)
-    gcc_assert(this->named_results_ != NULL
-	       && this->named_results_->size() == results->size());
+    {
+      gcc_assert(this->named_results_ != NULL);
+      if (this->named_results_->size() != results->size())
+	{
+	  gcc_assert(saw_errors());
+	  return error_mark_node;
+	}
+    }
 
   tree retval;
   if (results->size() == 1)
@@ -2645,25 +2639,13 @@ Gogo::build_type_descriptor_decl(const Type* type, Expression* initializer,
 
   DECL_INITIAL(decl) = constructor;
 
-  if (type_descriptor_location == TYPE_DESCRIPTOR_COMMON)
-    {
-      make_decl_one_only(decl, DECL_ASSEMBLER_NAME(decl));
-      resolve_unique_section(decl, 1, 0);
-    }
+  if (type_descriptor_location == TYPE_DESCRIPTOR_DEFINED)
+    TREE_PUBLIC(decl) = 1;
   else
     {
-#ifdef OBJECT_FORMAT_ELF
-      // Give the decl protected visibility.  This avoids out-of-range
-      // references with shared libraries with the x86_64 small model
-      // when the type descriptor gets a COPY reloc into the main
-      // executable.  There is no need to have unique pointers to type
-      // descriptors, as the runtime code compares reflection strings
-      // if necessary.
-      DECL_VISIBILITY(decl) = VISIBILITY_PROTECTED;
-      DECL_VISIBILITY_SPECIFIED(decl) = 1;
-#endif
-
-      TREE_PUBLIC(decl) = 1;
+      gcc_assert(type_descriptor_location == TYPE_DESCRIPTOR_COMMON);
+      make_decl_one_only(decl, DECL_ASSEMBLER_NAME(decl));
+      resolve_unique_section(decl, 1, 0);
     }
 
   rest_of_decl_compilation(decl, 1, 0);
@@ -2776,17 +2758,7 @@ Gogo::interface_method_table_for_type(const Interface_type* interface,
   // definition of the table.  Otherwise it is a comdat table which
   // may be defined in multiple packages.
   if (has_hidden_methods)
-    {
-#ifdef OBJECT_FORMAT_ELF
-      // Give the decl protected visibility.  This avoids out-of-range
-      // references with shared libraries with the x86_64 small model
-      // when the table gets a COPY reloc into the main executable.
-      DECL_VISIBILITY(decl) = VISIBILITY_PROTECTED;
-      DECL_VISIBILITY_SPECIFIED(decl) = 1;
-#endif
-
-      TREE_PUBLIC(decl) = 1;
-    }
+    TREE_PUBLIC(decl) = 1;
   else
     {
       make_decl_one_only(decl, DECL_ASSEMBLER_NAME(decl));
@@ -2832,7 +2804,11 @@ Gogo::call_builtin(tree* pdecl, source_location location, const char* name,
       types[i] = va_arg(ap, tree);
       args[i] = va_arg(ap, tree);
       if (types[i] == error_mark_node || args[i] == error_mark_node)
-	return error_mark_node;
+	{
+	  delete[] types;
+	  delete[] args;
+	  return error_mark_node;
+	}
     }
   va_end(ap);
 

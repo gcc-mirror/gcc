@@ -66,7 +66,7 @@ public class OptionGroup
 
   /**
    * Create a new option group with the indicated name.
-   * 
+   *
    * @param name the name
    */
   public OptionGroup(String name)
@@ -82,7 +82,7 @@ public class OptionGroup
    * <p>
    * The text to print may contain <code>\n</code> characters. This method will
    * force a line-break for each such character.
-   * 
+   *
    * @param out the {@link PrintStream} destination of the formatted text.
    * @param text the text to print.
    * @param leftMargin a positive value indicating the column position of the
@@ -107,7 +107,7 @@ public class OptionGroup
    * <p>
    * The text to print may contain <code>\n</code> characters. This method will
    * force a line-break for each such character.
-   * 
+   *
    * @param out the {@link PrintStream} destination of the formatted text.
    * @param text the text to print.
    * @param leftMargin a positive value indicating the column position of the
@@ -155,7 +155,7 @@ public class OptionGroup
 
   /**
    * Add an option to this option group.
-   * 
+   *
    * @param opt the option to add
    */
   public void add(Option opt)
@@ -165,7 +165,7 @@ public class OptionGroup
 
   /**
    * Print the help output for this option group.
-   * 
+   *
    * @param out the stream to which to print
    */
   public void printHelp(PrintStream out, boolean longOnly)

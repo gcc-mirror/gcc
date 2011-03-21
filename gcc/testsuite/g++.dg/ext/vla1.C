@@ -22,5 +22,5 @@ B::B (int i)
     int ar[1][i];  // { dg-error "array" }
   } s;
 
-  s.ar[0][0] = 0;  // { dg-error "no member" }
+  s.ar[0][0] = 0;  // { dg-prune-output "no member" }
 }

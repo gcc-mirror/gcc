@@ -14,6 +14,8 @@ type t2
 end type t2
 
 type, bind(C):: t3
-  class(t), pointer :: y ! { dg-error "may not be C interoperable|Polymorphic component y at .1. in SEQUENCE or BIND" }
+  class(t), pointer :: y
+  ! { dg-warning "may not be C interoperable" "" { target *-*-* } 17 }
+  ! { dg-error "Polymorphic component y at .1. in SEQUENCE or BIND" "" { target *-*-* } 17 }
 end type t3
 end

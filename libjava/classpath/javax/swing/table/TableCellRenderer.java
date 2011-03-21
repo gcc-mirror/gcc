@@ -46,7 +46,7 @@ import javax.swing.JTable;
  * TableCellRenderer public interface
  * @author Andrew Selkirk
  */
-public interface TableCellRenderer 
+public interface TableCellRenderer
 {
 
   /**
@@ -59,7 +59,7 @@ public interface TableCellRenderer
    * @param column Column of cell
    * @return Component
    */
-  Component getTableCellRendererComponent(JTable table, Object value, 
+  Component getTableCellRendererComponent(JTable table, Object value,
       boolean isSelected, boolean hasFocus, int row, int column);
 
 

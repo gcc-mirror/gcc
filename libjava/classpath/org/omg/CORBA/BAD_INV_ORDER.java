@@ -42,15 +42,15 @@ import java.io.Serializable;
 
 /**
  * Means that the caller has invoked operations in the wrong order.
- * 
+ *
  * @author Audrius Meskauskas (AudriusA@Bioinformatics.org)
  */
 public final class BAD_INV_ORDER
   extends SystemException
   implements Serializable
 {
-  /** 
-   * Use serialVersionUID for interoperability. 
+  /**
+   * Use serialVersionUID for interoperability.
    */
   private static final long serialVersionUID = 7273325995832240406L;
 

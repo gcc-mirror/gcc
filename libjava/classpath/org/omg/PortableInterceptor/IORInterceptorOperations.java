@@ -52,7 +52,7 @@ public interface IORInterceptorOperations extends InterceptorOperations
    * to add additional tags to the IOR being created.
    *
    * @param info the interface class providing methods to insert additional tags
-   * into IOR being constructed. 
+   * into IOR being constructed.
    */
   public void establish_components(IORInfo info);
 }

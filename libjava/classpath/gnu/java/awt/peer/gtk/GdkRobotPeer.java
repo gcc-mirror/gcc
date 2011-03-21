@@ -53,9 +53,9 @@ public class GdkRobotPeer implements RobotPeer
 {
   // gdk-pixbuf provides data in RGBA format
   static final ColorModel cm = new DirectColorModel (32, 0xff000000,
-						     0x00ff0000,
-						     0x0000ff00,
-						     0x000000ff);
+                                                     0x00ff0000,
+                                                     0x0000ff00,
+                                                     0x000000ff);
 
   public GdkRobotPeer (GraphicsDevice screen) throws AWTException
   {

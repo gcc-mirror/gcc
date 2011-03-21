@@ -31,7 +31,7 @@ package org.objectweb.asm;
 
 /**
  * A visitor to visit a Java annotation. The methods of this interface must be
- * called in the following order: (<tt>visit<tt> | <tt>visitEnum<tt> | 
+ * called in the following order: (<tt>visit<tt> | <tt>visitEnum<tt> |
  * <tt>visitAnnotation<tt> | <tt>visitArray<tt>)* <tt>visitEnd<tt>.
  *
  * @author Eric Bruneton
@@ -41,7 +41,7 @@ public interface AnnotationVisitor {
 
     /**
      * Visits a primitive value of the annotation.
-     * 
+     *
      * @param name the value name.
      * @param value the actual value, whose type must be {@link Byte},
      *        {@link Boolean}, {@link Character}, {@link Short},
@@ -52,7 +52,7 @@ public interface AnnotationVisitor {
 
     /**
      * Visits an enumeration value of the annotation.
-     * 
+     *
      * @param name the value name.
      * @param desc the class descriptor of the enumeration class.
      * @param value the actual enumeration value.
@@ -61,7 +61,7 @@ public interface AnnotationVisitor {
 
     /**
      * Visits a nested annotation value of the annotation.
-     * 
+     *
      * @param name the value name.
      * @param desc the class descriptor of the nested annotation class.
      * @return a non null visitor to visit the actual nested annotation value.
@@ -72,7 +72,7 @@ public interface AnnotationVisitor {
 
     /**
      * Visits an array value of the annotation.
-     * 
+     *
      * @param name the value name.
      * @return a non null visitor to visit the actual array value elements. The
      *         'name' parameters passed to the methods of this visitor are

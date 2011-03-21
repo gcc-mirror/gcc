@@ -53,11 +53,11 @@ import java.net.URI;
  * specified file type. For example, opening an odf file results in launching
  * OpenOffice. If an operation is not supported, or the application fails to
  * launch, an exception is generated.
- * 
+ *
  * <strong>Implementation note: </strong>As this class is used to manage Desktop
  * integration, we provide some extension to configure the behaviour of this
  * class depending on the type of dektop that is detected.<br />
- * 
+ *
  * First of all, we support 5 system properties that can be used to define
  * the application to launch in any given case. These properties are:<br />
  * <br />
@@ -91,8 +91,8 @@ import java.net.URI;
  * <br /><br />
  * <code>
  * gconftool-2 -g /apps/classpath/gnu/java/awt/peer/Desktop/html/command
- * </code> 
- * 
+ * </code>
+ *
  * @author Mario Torre <neugens@limasoftware.net>
  * @since 1.6
  */
@@ -100,11 +100,11 @@ public class Desktop
 {
   /**
    * Represents an action type supported by a platform.
-   * 
+   *
    * To determine if a given action is supported by the platform,
    * use the <code>Desktop.isSupported(java.awt.Desktop.Action)</code>
    * method.
-   * 
+   *
    * @author Mario Torre <neugens@limasoftware.net>
    */
   public enum Action
@@ -118,15 +118,15 @@ public class Desktop
   {
     /* nothing to be done */
   }
-  
+
   /**
    * Returns an instance of the Desktop Class.
-   * 
-   * If this implementation does not support Desktop, an 
+   *
+   * If this implementation does not support Desktop, an
    * UnsupportedOperationException will be thrown.
    * Also, an HeadlessException will be generated if
    * GraphicsEnvironment.isHeadless() returns true.
-   * 
+   *
    * @throws UnsupportedOperationException
    * @throws HeadlessException
    */
@@ -135,23 +135,23 @@ public class Desktop
   {
     if (GraphicsEnvironment.isHeadless())
       throw new HeadlessException();
-    
+
     if (!Desktop.isDesktopSupported())
       throw new UnsupportedOperationException();
-    
+
     Desktop desktop = new Desktop();
     desktop.peer = Toolkit.getDefaultToolkit().createDesktopPeer(desktop);
-    
+
     return desktop;
   }
 
   /**
    * Check if this implementation supports Desktop.
    * If true, use getDesktop to get an instance of this class.
-   * 
+   *
    * This implementation will return false when GraphicsEnvironment.isHeadless
    * returns true.
-   * 
+   *
    * @return true if this class is supported on the current platform;
    * false otherwise
    */
@@ -159,13 +159,13 @@ public class Desktop
   {
     if (GraphicsEnvironment.isHeadless())
       return false;
-    
+
     return true;
   }
-  
+
   /**
    * Check if the given Action is supported by this implementation.
-   * 
+   *
    * @param action
    * @return
    */
@@ -173,14 +173,14 @@ public class Desktop
   {
     return peer.isSupported(action);
   }
-  
+
   /**
    * Launches the Desktop default browser to open the given <code>uri</code>.
-   * 
+   *
    * If a security manager exists and denies
    * AWTPermission("showWindowWithoutWarningBanner"),a SecurityException will
    * be generated.
-   * 
+   *
    * @param uri
    * @throws IOException
    */
@@ -189,16 +189,16 @@ public class Desktop
   {
     peer.browse(uri);
   }
-  
+
   /**
    * Launch the edit command to edit this file.
-   * File should already exist before the editing starts. 
-   * 
+   * File should already exist before the editing starts.
+   *
    * If a security manager exists and
    * SecurityManager.checkRead(java.lang.String) method denies read access to
    * the file, or SecurityManager.checkPrintJobAccess() method denies the
    * permission to print the file, a SecurityException will be generated.
-   * 
+   *
    * @param file
    * @throws IOException
    */
@@ -207,10 +207,10 @@ public class Desktop
   {
     peer.edit(file);
   }
-  
+
   /**
    * Launches the Desktop default mailer.
-   * 
+   *
    * If a security manager exists and denies
    * AWTPermission("showWindowWithoutWarningBanner"), a SecurityException will
    * be generated.
@@ -222,16 +222,16 @@ public class Desktop
   {
     peer.mail();
   }
-  
+
   /**
    * Launches the Desktop default mailer, with the given mailtoURI
    * as agrument. The <code>mailtoURI</code> must conform to the
-   * {@link http://www.ietf.org/rfc/rfc2368.txt The mailto URL scheme (RFC 2368)} 
-   * 
+   * {@link http://www.ietf.org/rfc/rfc2368.txt The mailto URL scheme (RFC 2368)}
+   *
    * If a security manager exists and denies
    * AWTPermission("showWindowWithoutWarningBanner"), a SecurityException will
    * be generated.
-   * 
+   *
    * @param mailtoURI
    * @throws IOException
    */
@@ -240,11 +240,11 @@ public class Desktop
   {
     peer.mail(mailtoURI);
   }
-  
+
   /**
    * Launches the Desktop default application to open the given File.
    * If <code>file</code> is a directory, a file manager is launched.
-   * 
+   *
    * @param file
    * @throws IOException
    */
@@ -256,7 +256,7 @@ public class Desktop
 
   /**
    * Launch the print program to print this file.
-   * 
+   *
    * @param file
    * @throws IOException
    */

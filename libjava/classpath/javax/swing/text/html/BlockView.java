@@ -1,4 +1,4 @@
-/* BlockView.java -- 
+/* BlockView.java --
    Copyright (C) 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -159,9 +159,9 @@ public class BlockView extends BoxView
   private HashMap positionInfo;
 
   /**
-   * Creates a new view that represents an html box. 
+   * Creates a new view that represents an html box.
    * This can be used for a number of elements.
-   * 
+   *
    * @param elem - the element to create a view for
    * @param axis - either View.X_AXIS or View.Y_AXIS
    */
@@ -176,26 +176,26 @@ public class BlockView extends BoxView
    * Creates the parent view for this. It is called before
    * any other methods, if the parent view is working properly.
    * Implemented to forward to the superclass and call
-   * setPropertiesFromAttributes to set the paragraph 
+   * setPropertiesFromAttributes to set the paragraph
    * properties.
-   * 
+   *
    * @param parent - the new parent, or null if the view
-   * is being removed from a parent it was added to. 
+   * is being removed from a parent it was added to.
    */
   public void setParent(View parent)
   {
     super.setParent(parent);
-    
+
     if (parent != null)
       setPropertiesFromAttributes();
   }
-  
+
   /**
    * Calculates the requirements along the major axis.
    * This is implemented to call the superclass and then
    * adjust it if the CSS width or height attribute is specified
    * and applicable.
-   * 
+   *
    * @param axis - the axis to check the requirements for.
    * @param r - the SizeRequirements. If null, one is created.
    * @return the new SizeRequirements object.
@@ -205,7 +205,7 @@ public class BlockView extends BoxView
   {
     if (r == null)
       r = new SizeRequirements();
-    
+
     if (setCSSSpan(r, axis))
       {
         // If we have set the span from CSS, then we need to adjust
@@ -229,7 +229,7 @@ public class BlockView extends BoxView
    * This is implemented to call the superclass and then
    * adjust it if the CSS width or height attribute is specified
    * and applicable.
-   * 
+   *
    * @param axis - the axis to check the requirements for.
    * @param r - the SizeRequirements. If null, one is created.
    * @return the new SizeRequirements object.
@@ -239,7 +239,7 @@ public class BlockView extends BoxView
   {
     if (r == null)
       r = new SizeRequirements();
-    
+
     if (setCSSSpan(r, axis))
       {
         // If we have set the span from CSS, then we need to adjust
@@ -277,7 +277,7 @@ public class BlockView extends BoxView
   /**
    * Sets the span on the SizeRequirements object according to the
    * according CSS span value, when it is set.
-   * 
+   *
    * @param r the size requirements
    * @param axis the axis
    *
@@ -325,14 +325,14 @@ public class BlockView extends BoxView
    * perpendicular to the axis that it represents). The results
    * of the layout are placed in the given arrays which are
    * the allocations to the children along the minor axis.
-   * 
-   * @param targetSpan - the total span given to the view, also 
+   *
+   * @param targetSpan - the total span given to the view, also
    * used to layout the children.
    * @param axis - the minor axis
    * @param offsets - the offsets from the origin of the view for
    * all the child views. This is a return value and is filled in by this
    * function.
-   * @param spans - the span of each child view. This is a return value and is 
+   * @param spans - the span of each child view. This is a return value and is
    * filled in by this function.
    */
   protected void layoutMinorAxis(int targetSpan, int axis,
@@ -469,7 +469,7 @@ public class BlockView extends BoxView
    * Paints using the given graphics configuration and shape.
    * This delegates to the css box painter to paint the
    * border and background prior to the interior.
-   * 
+   *
    * @param g - Graphics configuration
    * @param a - the Shape to render into.
    */
@@ -487,7 +487,7 @@ public class BlockView extends BoxView
 
   /**
    * Fetches the attributes to use when painting.
-   * 
+   *
    * @return the attributes of this model.
    */
   public AttributeSet getAttributes()
@@ -496,10 +496,10 @@ public class BlockView extends BoxView
       attributes = getStyleSheet().getViewAttributes(this);
     return attributes;
   }
-  
+
   /**
    * Gets the resize weight.
-   * 
+   *
    * @param axis - the axis to get the resize weight for.
    * @return the resize weight.
    * @throws IllegalArgumentException - for an invalid axis
@@ -513,10 +513,10 @@ public class BlockView extends BoxView
       return 1;
     throw new IllegalArgumentException("Invalid Axis");
   }
-  
+
   /**
    * Gets the alignment.
-   * 
+   *
    * @param axis - the axis to get the alignment for.
    * @return the alignment.
    */
@@ -537,11 +537,11 @@ public class BlockView extends BoxView
       }
     throw new IllegalArgumentException("Invalid Axis");
   }
-  
+
   /**
    * Gives notification from the document that attributes were
    * changed in a location that this view is responsible for.
-   * 
+   *
    * @param ev - the change information
    * @param a - the current shape of the view
    * @param f - the factory to use to rebuild if the view has children.
@@ -550,7 +550,7 @@ public class BlockView extends BoxView
                             Shape a, ViewFactory f)
   {
     super.changedUpdate(ev, a, f);
-    
+
     // If more elements were added, then need to set the properties for them
     int currPos = ev.getOffset();
     if (currPos <= getStartOffset()
@@ -560,10 +560,10 @@ public class BlockView extends BoxView
 
   /**
    * Determines the preferred span along the axis.
-   * 
+   *
    * @param axis - the view to get the preferred span for.
    * @return the span the view would like to be painted into >=0/
-   * The view is usually told to paint into the span that is returned, 
+   * The view is usually told to paint into the span that is returned,
    * although the parent may choose to resize or break the view.
    * @throws IllegalArgumentException - for an invalid axis
    */
@@ -573,13 +573,13 @@ public class BlockView extends BoxView
       return super.getPreferredSpan(axis);
     throw new IllegalArgumentException("Invalid Axis");
   }
-  
+
   /**
    * Determines the minimum span along the axis.
-   * 
+   *
    * @param axis - the axis to get the minimum span for.
    * @return the span the view would like to be painted into >=0/
-   * The view is usually told to paint into the span that is returned, 
+   * The view is usually told to paint into the span that is returned,
    * although the parent may choose to resize or break the view.
    * @throws IllegalArgumentException - for an invalid axis
    */
@@ -589,13 +589,13 @@ public class BlockView extends BoxView
       return super.getMinimumSpan(axis);
     throw new IllegalArgumentException("Invalid Axis");
   }
-  
+
   /**
    * Determines the maximum span along the axis.
-   * 
+   *
    * @param axis - the axis to get the maximum span for.
    * @return the span the view would like to be painted into >=0/
-   * The view is usually told to paint into the span that is returned, 
+   * The view is usually told to paint into the span that is returned,
    * although the parent may choose to resize or break the view.
    * @throws IllegalArgumentException - for an invalid axis
    */
@@ -605,7 +605,7 @@ public class BlockView extends BoxView
       return super.getMaximumSpan(axis);
     throw new IllegalArgumentException("Invalid Axis");
   }
-  
+
   /**
    * Updates any cached values that come from attributes.
    */
@@ -640,7 +640,7 @@ public class BlockView extends BoxView
 
   /**
    * Gets the default style sheet.
-   * 
+   *
    * @return the style sheet
    */
   protected StyleSheet getStyleSheet()

@@ -42,32 +42,32 @@ import javax.swing.text.Utilities;
 
 /**
  * A demonstration of the <code>javax.swing.text.NavigationFilter</code> class.
- * 
+ *
  * <p>It shows a NavigationFilter which lets you walk word-wise
  * through a text.</p>
- * 
+ *
  * @author Robert Schuster
  */
-public class NavigationFilterDemo 
-  extends JPanel 
-  implements ActionListener 
+public class NavigationFilterDemo
+  extends JPanel
+  implements ActionListener
 {
-  
+
   JTextArea textArea;
 
   /**
    * Creates a new demo instance.
    */
-  public NavigationFilterDemo() 
+  public NavigationFilterDemo()
   {
     createContent();
-    // initFrameContent() is only called (from main) when running this app 
+    // initFrameContent() is only called (from main) when running this app
     // standalone
   }
-  
+
   /**
    * When the demo is run independently, the frame is displayed, so we should
-   * initialise the content panel (including the demo content and a close 
+   * initialise the content panel (including the demo content and a close
    * button).  But when the demo is run as part of the Swing activity board,
    * only the demo content panel is used, the frame itself is never displayed,
    * so we can avoid this step.
@@ -85,29 +85,29 @@ public class NavigationFilterDemo
   private void createContent()
   {
     setLayout(new BorderLayout());
-    
+
     add(textArea = new JTextArea(10, 20));
-    
+
     textArea.setWrapStyleWord(true);
-    
+
     textArea.setLineWrap(true);
-        
+
     textArea.setNavigationFilter(new WordFilter());
-    
+
     textArea.setText("GNU Classpath, Essential Libraries for Java, " +
                      "is a GNU project to create free core class " +
                      "libraries for use with virtual machines and " +
                      "compilers for the java programming language.");
   }
-  
-  public void actionPerformed(ActionEvent e) 
+
+  public void actionPerformed(ActionEvent e)
   {
     if (e.getActionCommand().equals("CLOSE"))
       System.exit(0);
-    
-  } 
 
-  public static void main(String[] args) 
+  }
+
+  public static void main(String[] args)
   {
     SwingUtilities.invokeLater
     (new Runnable()
@@ -140,7 +140,7 @@ public class NavigationFilterDemo
       }
     };
   }
-  
+
   class WordFilter extends NavigationFilter
   {
     public int getNextVisualPositionFrom(JTextComponent text,
@@ -151,14 +151,14 @@ public class NavigationFilterDemo
                                   throws BadLocationException
     {
       Point pt;
-      
+
       int newpos = pos;
       switch (direction)
       {
         case SwingConstants.NORTH:
           // Find out where the caret want to be positioned ideally.
           pt = text.getCaret().getMagicCaretPosition();
-          
+
           // Calculate its position above.
           newpos = Utilities.getPositionAbove(text, pos, (pt != null) ? pt.x : 0);
 
@@ -184,7 +184,7 @@ public class NavigationFilterDemo
         case SwingConstants.WEST:
           // Calculate the next word start.
           newpos = Utilities.getWordStart(text, newpos);
-          
+
           // If that means that the caret will not move, return
           // the start of the previous word.
           if (newpos != pos)
@@ -199,7 +199,7 @@ public class NavigationFilterDemo
                                                  direction, biasRet);
       }
     }
-    
+
   }
-  
+
 }

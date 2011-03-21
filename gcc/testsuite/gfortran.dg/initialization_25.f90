@@ -1,4 +1,4 @@
-! { dg-do "compile" }
+! { dg-do compile }
 !
 ! PR fortran/35779 - unrelated error message
 ! Tescase contributed by

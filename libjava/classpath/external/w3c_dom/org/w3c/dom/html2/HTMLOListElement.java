@@ -18,34 +18,34 @@ package org.w3c.dom.html2;
  */
 public interface HTMLOListElement extends HTMLElement {
     /**
-     * Reduce spacing between list items. See the compact attribute definition 
+     * Reduce spacing between list items. See the compact attribute definition
      * in HTML 4.01. This attribute is deprecated in HTML 4.01.
      */
     public boolean getCompact();
     /**
-     * Reduce spacing between list items. See the compact attribute definition 
+     * Reduce spacing between list items. See the compact attribute definition
      * in HTML 4.01. This attribute is deprecated in HTML 4.01.
      */
     public void setCompact(boolean compact);
 
     /**
-     * Starting sequence number. See the start attribute definition in HTML 
+     * Starting sequence number. See the start attribute definition in HTML
      * 4.01. This attribute is deprecated in HTML 4.01.
      */
     public int getStart();
     /**
-     * Starting sequence number. See the start attribute definition in HTML 
+     * Starting sequence number. See the start attribute definition in HTML
      * 4.01. This attribute is deprecated in HTML 4.01.
      */
     public void setStart(int start);
 
     /**
-     * Numbering style. See the type attribute definition in HTML 4.01. This 
+     * Numbering style. See the type attribute definition in HTML 4.01. This
      * attribute is deprecated in HTML 4.01.
      */
     public String getType();
     /**
-     * Numbering style. See the type attribute definition in HTML 4.01. This 
+     * Numbering style. See the type attribute definition in HTML 4.01. This
      * attribute is deprecated in HTML 4.01.
      */
     public void setType(String type);

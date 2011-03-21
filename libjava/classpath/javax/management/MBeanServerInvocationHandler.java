@@ -81,7 +81,7 @@ import java.lang.reflect.Proxy;
  * <li><code>toString()</code> returns a textual representation
  * of the proxy.</li>
  * </ul>
- * 
+ *
  * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
  * @since 1.5
  */
@@ -129,7 +129,7 @@ public class MBeanServerInvocationHandler
    *             actual calls.
    */
   public MBeanServerInvocationHandler(MBeanServerConnection conn,
-				      ObjectName name)
+                                      ObjectName name)
   {
     this(conn, name, false);
   }
@@ -143,7 +143,7 @@ public class MBeanServerInvocationHandler
    * Class<T>)} if you wish to make your own call to
    * {@link java.lang.reflect.Proxy#newInstance(ClassLoader,
    * Class[], java.lang.reflect.InvocationHandler)} with
-   * a different {@link ClassLoader}.  
+   * a different {@link ClassLoader}.
    *
    * @param conn the connection through which methods will
    *             be forwarded to the bean.
@@ -154,7 +154,7 @@ public class MBeanServerInvocationHandler
    * @since 1.6
    */
   public MBeanServerInvocationHandler(MBeanServerConnection conn,
-				      ObjectName name, boolean mxBean)
+                                      ObjectName name, boolean mxBean)
   {
     this.conn = conn;
     this.name = name;
@@ -164,7 +164,7 @@ public class MBeanServerInvocationHandler
   /**
    * Returns the connection through which the calls to the bean
    * will be made.
-   * 
+   *
    * @return the connection being used to forward the calls to
    *         the bean.
    * @since 1.6
@@ -207,77 +207,77 @@ public class MBeanServerInvocationHandler
     Class<?> proxyClass = proxy.getClass();
     if (mName.equals("toString"))
       {
-	if (inInterface(mName, proxyClass))
-	  return conn.invoke(name,mName,null,null);
-	else
-	  return proxyClass.getName() + "[name=" + name 
-	    + ", conn=" + conn + "]";
+        if (inInterface(mName, proxyClass))
+          return conn.invoke(name,mName,null,null);
+        else
+          return proxyClass.getName() + "[name=" + name
+            + ", conn=" + conn + "]";
       }
     if (mName.equals("hashCode"))
       {
-	if (inInterface(mName, proxyClass))
-	  return conn.invoke(name,mName,null,null);
-	else
-	  return conn.hashCode() + name.hashCode()
-	    + (iface == null ? 0 : iface.hashCode());
+        if (inInterface(mName, proxyClass))
+          return conn.invoke(name,mName,null,null);
+        else
+          return conn.hashCode() + name.hashCode()
+            + (iface == null ? 0 : iface.hashCode());
       }
     if (mName.equals("equals"))
       {
-	if (inInterface(mName, proxyClass, Object.class))
-	  return conn.invoke(name,mName,new Object[]{args[0]},
-			     new String[]{"java.lang.Object"});
-	else
-	  {
-	    if (args[0].getClass() != proxy.getClass())
-	      return false;
-	    InvocationHandler ih = Proxy.getInvocationHandler(args[0]);
-	    if (ih instanceof MBeanServerInvocationHandler)
-	      {
-		MBeanServerInvocationHandler h =
-		  (MBeanServerInvocationHandler) ih;
-		return conn.equals(h.getMBeanServerConnection())
-		  && name.equals(h.getObjectName())
-		  && (iface == null ? h.iface == null 
-		      : iface.equals(h.iface));
-	      }
-	    return false;
-	  }
+        if (inInterface(mName, proxyClass, Object.class))
+          return conn.invoke(name,mName,new Object[]{args[0]},
+                             new String[]{"java.lang.Object"});
+        else
+          {
+            if (args[0].getClass() != proxy.getClass())
+              return false;
+            InvocationHandler ih = Proxy.getInvocationHandler(args[0]);
+            if (ih instanceof MBeanServerInvocationHandler)
+              {
+                MBeanServerInvocationHandler h =
+                  (MBeanServerInvocationHandler) ih;
+                return conn.equals(h.getMBeanServerConnection())
+                  && name.equals(h.getObjectName())
+                  && (iface == null ? h.iface == null
+                      : iface.equals(h.iface));
+              }
+            return false;
+          }
       }
     if (NotificationEmitter.class.isAssignableFrom(proxyClass))
       {
-	if (mName.equals("addNotificationListener"))
-	  {
-	    conn.addNotificationListener(name,
-					 (NotificationListener) args[0],
-					 (NotificationFilter) args[1],
-					 args[2]);
-	    return null;
-	  }
-	if (mName.equals("getNotificationInfo"))
-	  return conn.getMBeanInfo(name).getNotifications();
-	if (mName.equals("removeNotificationListener"))
-	  {
-	    if (args.length == 1)
-	      conn.removeNotificationListener(name, 
-					      (NotificationListener)
-					      args[0]);
-	    else
-	      conn.removeNotificationListener(name, 
-					      (NotificationListener)
-					      args[0],
-					      (NotificationFilter)
-					      args[1], args[2]);
-	    return null;
-	  }
+        if (mName.equals("addNotificationListener"))
+          {
+            conn.addNotificationListener(name,
+                                         (NotificationListener) args[0],
+                                         (NotificationFilter) args[1],
+                                         args[2]);
+            return null;
+          }
+        if (mName.equals("getNotificationInfo"))
+          return conn.getMBeanInfo(name).getNotifications();
+        if (mName.equals("removeNotificationListener"))
+          {
+            if (args.length == 1)
+              conn.removeNotificationListener(name,
+                                              (NotificationListener)
+                                              args[0]);
+            else
+              conn.removeNotificationListener(name,
+                                              (NotificationListener)
+                                              args[0],
+                                              (NotificationFilter)
+                                              args[1], args[2]);
+            return null;
+          }
       }
     String[] sigs;
     if (args == null)
       sigs = null;
     else
       {
-	sigs = new String[args.length];
-	for (int a = 0; a < args.length; ++a)
-	  sigs[a] = args[a].getClass().getName();
+        sigs = new String[args.length];
+        for (int a = 0; a < args.length; ++a)
+          sigs[a] = args[a].getClass().getName();
       }
     String attrib = null;
     if (mName.startsWith("get"))
@@ -286,26 +286,26 @@ public class MBeanServerInvocationHandler
       attrib = mName.substring(2);
     if (attrib != null)
       {
-	Object val = conn.getAttribute(name, attrib);
-	if (mxBean)
-	  return Translator.toJava(val, method);
-	else
-	  return val;
+        Object val = conn.getAttribute(name, attrib);
+        if (mxBean)
+          return Translator.toJava(val, method);
+        else
+          return val;
       }
     else if (mName.startsWith("set"))
       {
-	Object arg;
-	if (mxBean)
-	  arg = Translator.fromJava(args, method)[0];
-	else
-	  arg = args[0];
-	conn.setAttribute(name, new Attribute(mName.substring(3), arg));
-	return null;
+        Object arg;
+        if (mxBean)
+          arg = Translator.fromJava(args, method)[0];
+        else
+          arg = args[0];
+        conn.setAttribute(name, new Attribute(mName.substring(3), arg));
+        return null;
       }
     if (mxBean)
-      return Translator.toJava(conn.invoke(name, mName, 
-					   Translator.fromJava(args,method),
-					   sigs), method);
+      return Translator.toJava(conn.invoke(name, mName,
+                                           Translator.fromJava(args,method),
+                                           sigs), method);
     else
       return conn.invoke(name, mName, args, sigs);
   }
@@ -332,7 +332,7 @@ public class MBeanServerInvocationHandler
    * second element of the array if <code>broadcaster</code> is true.
    * <code>handler</code> refers to the invocation handler which forwards
    * calls to the connection, which is created by a call to
-   * <code>new MBeanServerInvocationHandler(conn, name)</code>. 
+   * <code>new MBeanServerInvocationHandler(conn, name)</code>.
    * </p>
    * <p>
    * <strong>Note</strong>: use of the proxy may result in
@@ -355,18 +355,18 @@ public class MBeanServerInvocationHandler
   // Suppress warnings as we know an instance of T will be returned.
   @SuppressWarnings("unchecked")
   public static <T> T newProxyInstance(MBeanServerConnection conn,
-				       ObjectName name, Class<T> iface,
-				       boolean broadcaster)
+                                       ObjectName name, Class<T> iface,
+                                       boolean broadcaster)
   {
     if (broadcaster)
       return (T) Proxy.newProxyInstance(iface.getClassLoader(),
-					new Class[] { iface,
-						      NotificationEmitter.class },
-					new MBeanServerInvocationHandler(conn,name));
+                                        new Class[] { iface,
+                                                      NotificationEmitter.class },
+                                        new MBeanServerInvocationHandler(conn,name));
     else
       return (T) Proxy.newProxyInstance(iface.getClassLoader(),
-					new Class[] { iface },
-					new MBeanServerInvocationHandler(conn,name));
+                                        new Class[] { iface },
+                                        new MBeanServerInvocationHandler(conn,name));
   }
 
   /**
@@ -380,23 +380,22 @@ public class MBeanServerInvocationHandler
    *         given method.
    */
   private boolean inInterface(String name, Class<?> proxyClass,
-			      Class<?>... args)
+                              Class<?>... args)
   {
     for (Class<?> iface : proxyClass.getInterfaces())
       {
-	try
-	  {
-	    iface.getMethod(name, args);
-	    return true;
-	  }
-	catch (NoSuchMethodException e)
-	  {
-	    /* Ignored; this interface doesn't specify
-	       the method. */
-	  }
+        try
+          {
+            iface.getMethod(name, args);
+            return true;
+          }
+        catch (NoSuchMethodException e)
+          {
+            /* Ignored; this interface doesn't specify
+               the method. */
+          }
       }
     return false;
   }
-  
-}
 
+}

@@ -1,6 +1,6 @@
 // TR1 hashtable.h header -*- C++ -*-
 
-// Copyright (C) 2007, 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2009, 2010, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -35,10 +35,12 @@
 
 #include <tr1/hashtable_policy.h>
 
-namespace std
+namespace std _GLIBCXX_VISIBILITY(default)
 {
 namespace tr1
 {
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
   // Class template _Hashtable, class definition.
 
   // Meaning of class template _Hashtable's template parameters
@@ -1171,7 +1173,9 @@ namespace tr1
 	  __throw_exception_again;
 	}
     }
-}
-}
+
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace tr1
+} // namespace std
 
 #endif // _GLIBCXX_TR1_HASHTABLE_H

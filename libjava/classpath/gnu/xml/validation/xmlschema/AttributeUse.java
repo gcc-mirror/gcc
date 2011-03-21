@@ -1,4 +1,4 @@
-/* AttributeUse.java -- 
+/* AttributeUse.java --
    Copyright (C) 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -55,7 +55,7 @@ class AttributeUse
    * One of NONE, DEFAULT, FIXED.
    */
   final int type;
-  
+
   /**
    * The value constraint.
    */
@@ -74,6 +74,5 @@ class AttributeUse
     this.value = value;
     this.declaration = declaration;
   }
-  
-}
 
+}

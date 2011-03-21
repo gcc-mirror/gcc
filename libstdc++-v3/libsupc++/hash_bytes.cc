@@ -1,6 +1,6 @@
 // Definition of _Hash_bytes. -*- C++ -*-
 
-// Copyright (C) 2010 Free Software Foundation, Inc.
+// Copyright (C) 2010, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -32,7 +32,7 @@
 // function apears to be better in both speed and hash quality, and
 // FNV is provided primarily for backward compatibility.
 
-#include <bits/c++config.h>
+#include <bits/hash_bytes.h>
 
 namespace
 {
@@ -65,6 +65,8 @@ namespace
 
 namespace std
 {
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
 #if __SIZEOF_SIZE_T__ == 4
 
   // Implementation of Murmur hash for 32-bit size_t.
@@ -97,7 +99,7 @@ namespace std
 	hash ^= static_cast<unsigned char>(buf[1]) << 8;
       case 1:
 	hash ^= static_cast<unsigned char>(buf[0]);
-        hash *= m;
+	hash *= m;
       };
 
     // Do a few final mixes of the hash.
@@ -182,4 +184,6 @@ namespace std
   { return _Hash_bytes(ptr, len, seed); }
 
 #endif /* __SIZEOF_SIZE_T__ */
-}
+
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace

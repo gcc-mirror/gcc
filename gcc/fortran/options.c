@@ -463,9 +463,10 @@ gfc_handle_module_path_options (const char *arg)
 
   gfc_option.module_dir = (char *) gfc_getmem (strlen (arg) + 2);
   strcpy (gfc_option.module_dir, arg);
-  strcat (gfc_option.module_dir, "/");
 
   gfc_add_include_path (gfc_option.module_dir, true, false);
+
+  strcat (gfc_option.module_dir, "/");
 }
 
 

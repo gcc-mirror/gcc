@@ -1,5 +1,5 @@
 /* IEEE floating point support routines, for GDB, the GNU Debugger.
-   Copyright 1991, 1994, 1999, 2000, 2003, 2005, 2006
+   Copyright 1991, 1994, 1999, 2000, 2003, 2005, 2006, 2010
    Free Software Foundation, Inc.
 
 This file is part of GDB.

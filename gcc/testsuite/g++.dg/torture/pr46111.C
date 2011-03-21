@@ -1,4 +1,5 @@
 // { dg-do compile }
+// { dg-require-effective-target pthread }
 // { dg-options "-ftree-parallelize-loops=2 -g" }
 
 struct A

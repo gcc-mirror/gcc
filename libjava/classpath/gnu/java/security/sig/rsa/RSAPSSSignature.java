@@ -1,4 +1,4 @@
-/* RSAPSSSignature.java -- 
+/* RSAPSSSignature.java --
    Copyright (C) 2001, 2002, 2003, 2006 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -95,7 +95,7 @@ public class RSAPSSSignature
   /**
    * Constructs an instance of this object using the designated message digest
    * algorithm as its underlying hash function, and having 0-octet <i>salt</i>.
-   * 
+   *
    * @param mdName the canonical name of the underlying hash function.
    */
   public RSAPSSSignature(String mdName)
@@ -106,7 +106,7 @@ public class RSAPSSSignature
   /**
    * Constructs an instance of this object using the designated message digest
    * algorithm as its underlying hash function.
-   * 
+   *
    * @param mdName the canonical name of the underlying hash function.
    * @param sLen the desired length in octets of the salt to use for encoding /
    *          decoding signatures.

@@ -59,8 +59,8 @@ public final class BAD_PARAM
     super(message, 0, CompletionStatus.COMPLETED_NO);
   }
 
-  /** 
-   * Use serialVersionUID for interoperability. 
+  /**
+   * Use serialVersionUID for interoperability.
    */
   private static final long serialVersionUID = 1917109334939470379L;
 

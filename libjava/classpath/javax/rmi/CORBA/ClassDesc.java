@@ -49,8 +49,8 @@ import java.io.Serializable;
  */
 public class ClassDesc implements Serializable
 {
-  /** 
-   * Use serialVersionUID (V1.4) for interoperability. 
+  /**
+   * Use serialVersionUID (V1.4) for interoperability.
    */
   private static final long serialVersionUID = -3477057297839810709L;
 
@@ -58,7 +58,7 @@ public class ClassDesc implements Serializable
    * The class repository Id.
    */
   String repid;
-  
+
   /**
    * Space separeted list of URL's from where the code can be downloaded.
    */

@@ -49,7 +49,7 @@ import java.util.regex.Pattern;
 
 /**
  * <p>
- * A URI instance represents that defined by 
+ * A URI instance represents that defined by
  * <a href="http://www.ietf.org/rfc/rfc3986.txt">RFC3986</a>,
  * with some deviations.
  * </p>
@@ -157,7 +157,7 @@ import java.util.regex.Pattern;
  * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
  * @since 1.4
  */
-public final class URI 
+public final class URI
   implements Comparable<URI>, Serializable
 {
   /**
@@ -193,7 +193,7 @@ public final class URI
   private static final String RFC3986_SUBDELIMS = "!$&'()*+,;=";
   private static final String RFC3986_REG_NAME =
     RFC3986_UNRESERVED + RFC3986_SUBDELIMS + "%";
-  private static final String RFC3986_PCHAR = RFC3986_UNRESERVED + 
+  private static final String RFC3986_PCHAR = RFC3986_UNRESERVED +
     RFC3986_SUBDELIMS + ":@%";
   private static final String RFC3986_SEGMENT = RFC3986_PCHAR;
   private static final String RFC3986_PATH_SEGMENTS = RFC3986_SEGMENT + "/";
@@ -230,7 +230,7 @@ public final class URI
    * Index of fragment component in parsed URI.
    */
   private static final int FRAGMENT_GROUP = 10;
-  
+
   /**
    * Index of userinfo component in parsed authority section.
    */
@@ -294,19 +294,19 @@ public final class URI
     this.string = (String) is.readObject();
     try
       {
-	parseURI(this.string);
+        parseURI(this.string);
       }
     catch (URISyntaxException x)
       {
-	// Should not happen.
-	throw new RuntimeException(x);
+        // Should not happen.
+        throw new RuntimeException(x);
       }
   }
 
   private void writeObject(ObjectOutputStream os) throws IOException
   {
     if (string == null)
-      string = toString(); 
+      string = toString();
     os.writeObject(string);
   }
 
@@ -350,11 +350,11 @@ public final class URI
     String matched = match.group(group);
     if (matched == null || matched.length() == 0)
       {
-	String prevMatched = match.group(group -1);
-	if (prevMatched == null || prevMatched.length() == 0)
-	  return null;
-	else
-	  return "";
+        String prevMatched = match.group(group -1);
+        if (prevMatched == null || prevMatched.length() == 0)
+          return null;
+        else
+          return "";
       }
     return matched;
   }
@@ -369,23 +369,23 @@ public final class URI
   private void parseURI(String str) throws URISyntaxException
   {
     Matcher matcher = URI_PATTERN.matcher(str);
-    
+
     if (matcher.matches())
       {
-	scheme = getURIGroup(matcher, SCHEME_GROUP);
-	rawSchemeSpecificPart = matcher.group(SCHEME_SPEC_PART_GROUP);
-	schemeSpecificPart = unquote(rawSchemeSpecificPart);
-	if (!isOpaque())
-	  {
-	    rawAuthority = getURIGroup(matcher, AUTHORITY_GROUP);
-	    rawPath = matcher.group(PATH_GROUP);
-	    rawQuery = getURIGroup(matcher, QUERY_GROUP);
-	  }
-	rawFragment = getURIGroup(matcher, FRAGMENT_GROUP);
+        scheme = getURIGroup(matcher, SCHEME_GROUP);
+        rawSchemeSpecificPart = matcher.group(SCHEME_SPEC_PART_GROUP);
+        schemeSpecificPart = unquote(rawSchemeSpecificPart);
+        if (!isOpaque())
+          {
+            rawAuthority = getURIGroup(matcher, AUTHORITY_GROUP);
+            rawPath = matcher.group(PATH_GROUP);
+            rawQuery = getURIGroup(matcher, QUERY_GROUP);
+          }
+        rawFragment = getURIGroup(matcher, FRAGMENT_GROUP);
       }
     else
       throw new URISyntaxException(str,
-				   "doesn't match URI regular expression");
+                                   "doesn't match URI regular expression");
     parseServerAuthority();
 
     // We must eagerly unquote the parts, because this is the only time
@@ -416,27 +416,27 @@ public final class URI
     int pos = 0;
     for (int i = 0; i < str.length(); i++)
       {
-	char c = str.charAt(i);
-	if (c == '%')
-	  {
-	    if (i + 2 >= str.length())
-	      throw new URISyntaxException(str, "Invalid quoted character");
-	    int hi = Character.digit(str.charAt(++i), 16);
-	    int lo = Character.digit(str.charAt(++i), 16);
-	    if (lo < 0 || hi < 0)
-	      throw new URISyntaxException(str, "Invalid quoted character");
-	    buf[pos++] = (byte) (hi * 16 + lo);
-	  }
-	else
-	  buf[pos++] = (byte) c;
+        char c = str.charAt(i);
+        if (c == '%')
+          {
+            if (i + 2 >= str.length())
+              throw new URISyntaxException(str, "Invalid quoted character");
+            int hi = Character.digit(str.charAt(++i), 16);
+            int lo = Character.digit(str.charAt(++i), 16);
+            if (lo < 0 || hi < 0)
+              throw new URISyntaxException(str, "Invalid quoted character");
+            buf[pos++] = (byte) (hi * 16 + lo);
+          }
+        else
+          buf[pos++] = (byte) c;
       }
     try
       {
-	return new String(buf, 0, pos, "utf-8");
+        return new String(buf, 0, pos, "utf-8");
       }
     catch (java.io.UnsupportedEncodingException x2)
       {
-	throw (Error) new InternalError().initCause(x2);
+        throw (Error) new InternalError().initCause(x2);
       }
   }
 
@@ -488,16 +488,16 @@ public final class URI
     CPStringBuilder sb = new CPStringBuilder(str.length());
     for (int i = 0; i < str.length(); i++)
       {
-	char c = str.charAt(i);
-	if ((legalCharacters.indexOf(c) == -1)
-	    && (c <= 127))
-	  {
-	    sb.append('%');
-	    sb.append(HEX.charAt(c / 16));
-	    sb.append(HEX.charAt(c % 16));
-	  }
-      	else
-	  sb.append(c);
+        char c = str.charAt(i);
+        if ((legalCharacters.indexOf(c) == -1)
+            && (c <= 127))
+          {
+            sb.append('%');
+            sb.append(HEX.charAt(c / 16));
+            sb.append(HEX.charAt(c % 16));
+          }
+        else
+          sb.append(c);
       }
     return sb.toString();
   }
@@ -659,12 +659,12 @@ public final class URI
   {
     try
       {
-	return new URI(str);
+        return new URI(str);
       }
     catch (URISyntaxException e)
       {
-	throw (IllegalArgumentException) new IllegalArgumentException()
-	      .initCause(e);
+        throw (IllegalArgumentException) new IllegalArgumentException()
+              .initCause(e);
       }
   }
 
@@ -686,32 +686,32 @@ public final class URI
   {
     if (rawAuthority != null)
       {
-	Matcher matcher = AUTHORITY_PATTERN.matcher(rawAuthority);
+        Matcher matcher = AUTHORITY_PATTERN.matcher(rawAuthority);
 
-	if (matcher.matches())
-	  {
-	    rawUserInfo = getURIGroup(matcher, AUTHORITY_USERINFO_GROUP);
-	    rawHost = getURIGroup(matcher, AUTHORITY_HOST_GROUP);
-	    
-	    String portStr = getURIGroup(matcher, AUTHORITY_PORT_GROUP);
-	    
-	    if (portStr != null && ! portStr.isEmpty())
-	      try
-		{
-		  port = Integer.parseInt(portStr);
-		}
-	      catch (NumberFormatException e)
-		{
-		  URISyntaxException use =
-		    new URISyntaxException
-		      (string, "doesn't match URI regular expression");
-		  use.initCause(e);
-		  throw use;
-		}
-	  }
-	else
-	  throw new URISyntaxException(string,
-				       "doesn't match URI regular expression");
+        if (matcher.matches())
+          {
+            rawUserInfo = getURIGroup(matcher, AUTHORITY_USERINFO_GROUP);
+            rawHost = getURIGroup(matcher, AUTHORITY_HOST_GROUP);
+
+            String portStr = getURIGroup(matcher, AUTHORITY_PORT_GROUP);
+
+            if (portStr != null && ! portStr.isEmpty())
+              try
+                {
+                  port = Integer.parseInt(portStr);
+                }
+              catch (NumberFormatException e)
+                {
+                  URISyntaxException use =
+                    new URISyntaxException
+                      (string, "doesn't match URI regular expression");
+                  use.initCause(e);
+                  throw use;
+                }
+          }
+        else
+          throw new URISyntaxException(string,
+                                       "doesn't match URI regular expression");
       }
     return this;
   }
@@ -744,13 +744,13 @@ public final class URI
       return this;
     try
       {
-	return new URI(scheme, authority, normalizePath(path), query,
-		       fragment);
+        return new URI(scheme, authority, normalizePath(path), query,
+                       fragment);
       }
     catch (URISyntaxException e)
       {
-	throw (Error) new InternalError("Normalized URI variant could not "+
-					"be constructed").initCause(e);
+        throw (Error) new InternalError("Normalized URI variant could not "+
+                                        "be constructed").initCause(e);
       }
   }
 
@@ -770,13 +770,13 @@ public final class URI
    * The resulting URI will be free of `.' and `..' segments, barring those
    * that were prepended or which couldn't be paired, respectively.
    * </p>
-   * 
+   *
    * @param relativePath the relative path to be normalized.
    * @return the normalized path.
    */
   private String normalizePath(String relativePath)
   {
-    /* 
+    /*
        This follows the algorithm in section 5.2.4. of RFC3986,
        but doesn't modify the input buffer.
     */
@@ -785,66 +785,66 @@ public final class URI
     int start = 0;
     while (start < input.length())
       {
-	/* A */
-	if (input.indexOf("../",start) == start)
-	  {
-	    start += 3;
-	    continue;
-	  }
-	if (input.indexOf("./",start) == start)
-	  {
-	    start += 2;
-	    continue;
-	  }
-	/* B */
-	if (input.indexOf("/./",start) == start)
-	  {
-	    start += 2;
-	    continue;
-	  }
-	if (input.indexOf("/.",start) == start
-	    && input.charAt(start + 2) != '.')
-	  {
-	    start += 1;
-	    input.setCharAt(start,'/');
-	    continue;
-	  }
-	/* C */
-	if (input.indexOf("/../",start) == start)
-	  {
-	    start += 3;
-	    removeLastSegment(output);
-	    continue;
-	  }
-	if (input.indexOf("/..",start) == start)
-	  {
-	    start += 2;
-	    input.setCharAt(start,'/');
-	    removeLastSegment(output);
-	    continue;
-	  }
-	/* D */
-	if (start == input.length() - 1 && input.indexOf(".",start) == start)
-	  {
-	    input.delete(0,1);
-	    continue;
-	  }
-	if (start == input.length() - 2 && input.indexOf("..",start) == start)
-	  {
-	    input.delete(0,2);
-	    continue;
-	  }
-	/* E */
-	int indexOfSlash = input.indexOf("/",start);
-	while (indexOfSlash == start)
-	  {
-	    output.append("/");
-	    ++start;
-	    indexOfSlash = input.indexOf("/",start);
-	  }
-	if (indexOfSlash == -1)
-	  indexOfSlash = input.length();
-	output.append(input.substring(start, indexOfSlash));
+        /* A */
+        if (input.indexOf("../",start) == start)
+          {
+            start += 3;
+            continue;
+          }
+        if (input.indexOf("./",start) == start)
+          {
+            start += 2;
+            continue;
+          }
+        /* B */
+        if (input.indexOf("/./",start) == start)
+          {
+            start += 2;
+            continue;
+          }
+        if (input.indexOf("/.",start) == start
+            && input.charAt(start + 2) != '.')
+          {
+            start += 1;
+            input.setCharAt(start,'/');
+            continue;
+          }
+        /* C */
+        if (input.indexOf("/../",start) == start)
+          {
+            start += 3;
+            removeLastSegment(output);
+            continue;
+          }
+        if (input.indexOf("/..",start) == start)
+          {
+            start += 2;
+            input.setCharAt(start,'/');
+            removeLastSegment(output);
+            continue;
+          }
+        /* D */
+        if (start == input.length() - 1 && input.indexOf(".",start) == start)
+          {
+            input.delete(0,1);
+            continue;
+          }
+        if (start == input.length() - 2 && input.indexOf("..",start) == start)
+          {
+            input.delete(0,2);
+            continue;
+          }
+        /* E */
+        int indexOfSlash = input.indexOf("/",start);
+        while (indexOfSlash == start)
+          {
+            output.append("/");
+            ++start;
+            indexOfSlash = input.indexOf("/",start);
+          }
+        if (indexOfSlash == -1)
+          indexOfSlash = input.length();
+        output.append(input.substring(start, indexOfSlash));
         start = indexOfSlash;
       }
     return output.toString();
@@ -890,33 +890,33 @@ public final class URI
 
     try
       {
-	if (fragment != null && path != null && path.equals("")
-	    && scheme == null && authority == null && query == null)
-	  return new URI(this.scheme, this.schemeSpecificPart, fragment);
+        if (fragment != null && path != null && path.equals("")
+            && scheme == null && authority == null && query == null)
+          return new URI(this.scheme, this.schemeSpecificPart, fragment);
 
-	if (authority == null)
-	  {
-	    authority = this.authority;
-	    if (path == null)
-	      path = "";
-	    if (! (path.startsWith("/")))
-	      {
-		CPStringBuilder basepath = new CPStringBuilder(this.path);
-		int i = this.path.lastIndexOf('/');
+        if (authority == null)
+          {
+            authority = this.authority;
+            if (path == null)
+              path = "";
+            if (! (path.startsWith("/")))
+              {
+                CPStringBuilder basepath = new CPStringBuilder(this.path);
+                int i = this.path.lastIndexOf('/');
 
-		if (i >= 0)
-		  basepath.delete(i + 1, basepath.length());
+                if (i >= 0)
+                  basepath.delete(i + 1, basepath.length());
 
-		basepath.append(path);
-		path = normalizePath(basepath.toString());
-	      }
-	  }
-	return new URI(this.scheme, authority, path, query, fragment);
+                basepath.append(path);
+                path = normalizePath(basepath.toString());
+              }
+          }
+        return new URI(this.scheme, authority, path, query, fragment);
       }
     catch (URISyntaxException e)
       {
-	throw (Error) new InternalError("Resolved URI variant could not "+
-					"be constructed").initCause(e);
+        throw (Error) new InternalError("Resolved URI variant could not "+
+                                        "be constructed").initCause(e);
       }
   }
 
@@ -973,21 +973,21 @@ public final class URI
     String basePath = rawPath;
     if (!(uri.getRawPath().equals(rawPath)))
       {
-	if (!(basePath.endsWith("/")))
-	  basePath = basePath.concat("/");
-	if (!(uri.getRawPath().startsWith(basePath)))
-	  return uri;
+        if (!(basePath.endsWith("/")))
+          basePath = basePath.concat("/");
+        if (!(uri.getRawPath().startsWith(basePath)))
+          return uri;
       }
     try
       {
-	return new URI(null, null, 
-		       uri.getRawPath().substring(basePath.length()),
-		       uri.getRawQuery(), uri.getRawFragment());
+        return new URI(null, null,
+                       uri.getRawPath().substring(basePath.length()),
+                       uri.getRawQuery(), uri.getRawFragment());
       }
     catch (URISyntaxException e)
       {
-	throw (Error) new InternalError("Relativized URI variant could not "+
-					"be constructed").initCause(e);       
+        throw (Error) new InternalError("Relativized URI variant could not "+
+                                        "be constructed").initCause(e);
       }
   }
 
@@ -1144,7 +1144,7 @@ public final class URI
   }
 
   /**
-   * <p> 
+   * <p>
    * Compares the URI with the given object for equality.  If the
    * object is not a <code>URI</code>, then the method returns false.
    * Otherwise, the following criteria are observed:
@@ -1187,40 +1187,40 @@ public final class URI
     URI uriObj = (URI) obj;
     if (scheme == null)
       {
-	if (uriObj.getScheme() != null)
-	  return false;
+        if (uriObj.getScheme() != null)
+          return false;
       }
     else
       if (!(scheme.equalsIgnoreCase(uriObj.getScheme())))
-	return false;
+        return false;
     if (rawFragment == null)
       {
-	if (uriObj.getRawFragment() != null)
-	  return false;
+        if (uriObj.getRawFragment() != null)
+          return false;
       }
     else
       if (!(rawFragment.equalsIgnoreCase(uriObj.getRawFragment())))
-	return false;
+        return false;
     boolean opaqueThis = isOpaque();
     boolean opaqueObj = uriObj.isOpaque();
     if (opaqueThis && opaqueObj)
       return rawSchemeSpecificPart.equals(uriObj.getRawSchemeSpecificPart());
     else if (!opaqueThis && !opaqueObj)
       {
-	boolean common = rawPath.equalsIgnoreCase(uriObj.getRawPath())
-	  && ((rawQuery == null && uriObj.getRawQuery() == null)
-	      || rawQuery.equalsIgnoreCase(uriObj.getRawQuery()));
-	if (rawAuthority == null && uriObj.getRawAuthority() == null)
-	  return common;
-	if (host == null)
-	  return common 
-	    && rawAuthority.equalsIgnoreCase(uriObj.getRawAuthority());
-	return common 
-	  && host.equalsIgnoreCase(uriObj.getHost())
-	  && port == uriObj.getPort()
-	  && (rawUserInfo == null ?
-	      uriObj.getRawUserInfo() == null :
-	      rawUserInfo.equalsIgnoreCase(uriObj.getRawUserInfo()));
+        boolean common = rawPath.equalsIgnoreCase(uriObj.getRawPath())
+          && ((rawQuery == null && uriObj.getRawQuery() == null)
+              || rawQuery.equalsIgnoreCase(uriObj.getRawQuery()));
+        if (rawAuthority == null && uriObj.getRawAuthority() == null)
+          return common;
+        if (host == null)
+          return common
+            && rawAuthority.equalsIgnoreCase(uriObj.getRawAuthority());
+        return common
+          && host.equalsIgnoreCase(uriObj.getHost())
+          && port == uriObj.getPort()
+          && (rawUserInfo == null ?
+              uriObj.getRawUserInfo() == null :
+              rawUserInfo.equalsIgnoreCase(uriObj.getRawUserInfo()));
       }
     else
       return false;
@@ -1278,16 +1278,16 @@ public final class URI
    *         on whether this URI is less than, equal to or greater
    *         than that supplied, respectively.
    */
-  public int compareTo(URI uri) 
+  public int compareTo(URI uri)
     throws ClassCastException
   {
     if (scheme == null && uri.getScheme() != null)
       return -1;
     if (scheme != null)
       {
-	int sCompare = scheme.compareToIgnoreCase(uri.getScheme()); 
-	if (sCompare != 0)
-	  return sCompare;
+        int sCompare = scheme.compareToIgnoreCase(uri.getScheme());
+        if (sCompare != 0)
+          return sCompare;
       }
     boolean opaqueThis = isOpaque();
     boolean opaqueObj = uri.isOpaque();
@@ -1297,51 +1297,51 @@ public final class URI
       return -1;
     if (opaqueThis)
       {
-	int ssCompare = 
-	  rawSchemeSpecificPart.compareTo(uri.getRawSchemeSpecificPart());
-	if (ssCompare == 0)
-	  return compareFragments(uri);
-	else
-	  return ssCompare;
+        int ssCompare =
+          rawSchemeSpecificPart.compareTo(uri.getRawSchemeSpecificPart());
+        if (ssCompare == 0)
+          return compareFragments(uri);
+        else
+          return ssCompare;
       }
     if (rawAuthority == null && uri.getRawAuthority() != null)
       return -1;
     if (rawAuthority != null)
       {
-	int aCompare = rawAuthority.compareTo(uri.getRawAuthority());
-	if (aCompare != 0)
-	  {
-	    if (host == null)
-	      return aCompare;
-	    if (rawUserInfo == null && uri.getRawUserInfo() != null)
-	      return -1;
-	    int uCompare = rawUserInfo.compareTo(uri.getRawUserInfo());
-	    if (uCompare != 0)
-	      return uCompare;
-	    if (host == null && uri.getHost() != null)
-	      return -1;
-	    int hCompare = host.compareTo(uri.getHost());
-	    if (hCompare != 0)
-	      return hCompare;
-	    int uriPort = uri.getPort();
-	    return (uriPort == port) ? 0 : (uriPort > port) ? -1 : 1;
-	  }
+        int aCompare = rawAuthority.compareTo(uri.getRawAuthority());
+        if (aCompare != 0)
+          {
+            if (host == null)
+              return aCompare;
+            if (rawUserInfo == null && uri.getRawUserInfo() != null)
+              return -1;
+            int uCompare = rawUserInfo.compareTo(uri.getRawUserInfo());
+            if (uCompare != 0)
+              return uCompare;
+            if (host == null && uri.getHost() != null)
+              return -1;
+            int hCompare = host.compareTo(uri.getHost());
+            if (hCompare != 0)
+              return hCompare;
+            int uriPort = uri.getPort();
+            return (uriPort == port) ? 0 : (uriPort > port) ? -1 : 1;
+          }
       }
     if (rawPath == null && uri.getRawPath() != null)
       return -1;
     if (rawPath != null)
       {
-	int pCompare = rawPath.compareTo(uri.getRawPath()); 
-	if (pCompare != 0)
-	  return pCompare;
+        int pCompare = rawPath.compareTo(uri.getRawPath());
+        if (pCompare != 0)
+          return pCompare;
       }
     if (rawQuery == null && uri.getRawQuery() != null)
       return -1;
     if (rawQuery != null)
       {
-	int qCompare = rawQuery.compareTo(uri.getRawQuery());
-	if (qCompare != 0)
-	  return qCompare;
+        int qCompare = rawQuery.compareTo(uri.getRawQuery());
+        if (qCompare != 0)
+          return qCompare;
       }
     return compareFragments(uri);
   }
@@ -1394,25 +1394,25 @@ public final class URI
     CPStringBuilder encBuffer = null;
     for (int i = 0; i < strRep.length(); i++)
       {
-	char c = strRep.charAt(i);
-	if (c <= 127)
-	  {
-	    if (inNonAsciiBlock)
-	      {
-		buffer.append(escapeCharacters(encBuffer.toString()));
-		inNonAsciiBlock = false;
-	      }
-	    buffer.append(c);
-	  }
-	else
-	  {
-	    if (!inNonAsciiBlock)
-	      {
-		encBuffer = new CPStringBuilder();
-		inNonAsciiBlock = true;
-	      }
-	    encBuffer.append(c);
-	  }
+        char c = strRep.charAt(i);
+        if (c <= 127)
+          {
+            if (inNonAsciiBlock)
+              {
+                buffer.append(escapeCharacters(encBuffer.toString()));
+                inNonAsciiBlock = false;
+              }
+            buffer.append(c);
+          }
+        else
+          {
+            if (!inNonAsciiBlock)
+              {
+                encBuffer = new CPStringBuilder();
+                inNonAsciiBlock = true;
+              }
+            encBuffer.append(c);
+          }
       }
     return buffer.toString();
   }
@@ -1430,20 +1430,20 @@ public final class URI
   {
     try
       {
-	CPStringBuilder sb = new CPStringBuilder(); 
-	// this is far from optimal, but it works
-	byte[] utf8 = str.getBytes("utf-8");
-	for (int j = 0; j < utf8.length; j++)
-	  {
-	    sb.append('%');
-	    sb.append(HEX.charAt((utf8[j] & 0xff) / 16));
-	    sb.append(HEX.charAt((utf8[j] & 0xff) % 16));
-	  }
-	return sb.toString();
+        CPStringBuilder sb = new CPStringBuilder();
+        // this is far from optimal, but it works
+        byte[] utf8 = str.getBytes("utf-8");
+        for (int j = 0; j < utf8.length; j++)
+          {
+            sb.append('%');
+            sb.append(HEX.charAt((utf8[j] & 0xff) / 16));
+            sb.append(HEX.charAt((utf8[j] & 0xff) % 16));
+          }
+        return sb.toString();
       }
     catch (java.io.UnsupportedEncodingException x)
       {
-	throw (Error) new InternalError("Escaping error").initCause(x);
+        throw (Error) new InternalError("Escaping error").initCause(x);
       }
   }
 

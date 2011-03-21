@@ -1,4 +1,4 @@
-/* ClassObjectReferenceCommandSet.java -- class to implement the 
+/* ClassObjectReferenceCommandSet.java -- class to implement the
    ClassObjectReference Command Set
    Copyright (C) 2005 Free Software Foundation
 
@@ -52,7 +52,7 @@ import java.nio.ByteBuffer;
 
 /**
  * A class representing the ClassObjectReference Command Set.
- * 
+ *
  * @author Aaron Luchko <aluchko@redhat.com>
  */
 public class ClassObjectReferenceCommandSet

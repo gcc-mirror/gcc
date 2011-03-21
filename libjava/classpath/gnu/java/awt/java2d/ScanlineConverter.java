@@ -206,7 +206,7 @@ public final class ScanlineConverter
         // Ok, now we can perform the actual scanlining.
         int realY = Fixed.intValue(FIXED_DIGITS, y + resolution);
         boolean push = lastRealY != realY;
-        
+
         doScanline(p, y, push, haveClip);
 
         // Remove obsolete active edges.
@@ -299,7 +299,7 @@ public final class ScanlineConverter
         p.renderScanline(Fixed.intValue(FIXED_DIGITS, y), scanlineCoverage);
         scanlineCoverage.clear();
       }
-  } 
+  }
 
 
   /**

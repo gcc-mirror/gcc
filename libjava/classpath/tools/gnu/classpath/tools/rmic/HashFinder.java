@@ -45,15 +45,15 @@ import java.util.HashSet;
  * the passed array of strings). This character is used to accelerate the
  * method invocation by name.
  *
- * @author Audrius Meskauskas (AudriusA@Bioinformatics.org) 
+ * @author Audrius Meskauskas (AudriusA@Bioinformatics.org)
  */
 public class HashFinder
 {
    /**
    * Find the hash char position in the given collection of strings.
-   * 
+   *
    * @param strings the string collection
-   * 
+   *
    * @return the optimal hash character position, always less then the
    * length of the shortest string.
    */
@@ -81,10 +81,10 @@ public class HashFinder
         {
           charLists[p].add(new Integer(strings[i].charAt(p)));
         }
-    
+
     int m = 0;
     int v = charLists[0].size();
-    
+
     for (int i = 1; i < charLists.length; i++)
       {
         // Replace on equality also, seeking the hash char closer to the end

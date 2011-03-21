@@ -1,4 +1,4 @@
-/* Stage.java -- 
+/* Stage.java --
    Copyright (C) 2003, 2006 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -56,7 +56,7 @@ import java.util.Set;
  * the specification of how to wire the stage into the chain. The following
  * diagrams may help understand the paradigme. The first shows two stages
  * chained each with a {@link Direction#FORWARD} direction.
- * 
+ *
  * <pre>
  *            FORWARD         FORWARD
  *        +------+       +-------+
@@ -67,12 +67,12 @@ import java.util.Set;
  *               |       |       |      |
  *               +-------+       +------+
  * </pre>
- * 
+ *
  * <p>
  * The second diagram shows two stages, one in a {@link Direction#FORWARD}
  * direction, while the other is wired in a {@link Direction#REVERSED}
  * direction.
- * 
+ *
  * <pre>
  *            FORWARD         REVERSED
  *        +------+               +------+
@@ -83,7 +83,7 @@ import java.util.Set;
  *               |               |
  *               +---------------+
  * </pre>
- * 
+ *
  * @see ModeStage
  * @see CascadeStage
  */
@@ -118,14 +118,14 @@ public abstract class Stage
    * Returns the {@link Set} of supported block sizes for this
    * <code>Stage</code>. Each element in the returned {@link Set} is an
    * instance of {@link Integer}.
-   * 
+   *
    * @return a {@link Set} of supported block sizes.
    */
   public abstract Set blockSizes();
 
   /**
    * Initialises the stage for operation with specific characteristics.
-   * 
+   *
    * @param attributes a set of name-value pairs that describes the desired
    *          future behaviour of this instance.
    * @throws IllegalStateException if the instance is already initialised.
@@ -147,7 +147,7 @@ public abstract class Stage
 
   /**
    * Returns the currently set block size for the stage.
-   * 
+   *
    * @return the current block size for this stage.
    * @throws IllegalStateException if the instance is not initialised.
    */
@@ -167,7 +167,7 @@ public abstract class Stage
    * Processes exactly one block of <i>plaintext</i> (if initialised in the
    * {@link Direction#FORWARD} state) or <i>ciphertext</i> (if initialised in
    * the {@link Direction#REVERSED} state).
-   * 
+   *
    * @param in the plaintext.
    * @param inOffset index of <code>in</code> from which to start considering
    *          data.
@@ -187,7 +187,7 @@ public abstract class Stage
    * encryption / decryption test(s) for all supported block and key sizes of
    * underlying block cipher(s) wrapped by Mode leafs. The test also includes
    * one (1) variable key Known Answer Test (KAT) for each block cipher.
-   * 
+   *
    * @return <code>true</code> if the implementation passes simple
    *         <i>correctness</i> tests. Returns <code>false</code> otherwise.
    */

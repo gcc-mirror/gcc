@@ -1,4 +1,4 @@
-/* CharBuffer.java -- 
+/* CharBuffer.java --
    Copyright (C) 2007  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -86,7 +86,7 @@ final class CharSequenceBuffer
   public CharBuffer asReadOnlyBuffer()
   {
     return duplicate();
-  }    
+  }
 
   /**
    * This buffer class is not writable by definition and thus throws

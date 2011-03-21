@@ -73,7 +73,7 @@ public final class Alert implements Constructed
   {
     this.buffer = buffer;
   }
-  
+
   public Alert (final Level level, final Description description)
   {
     level.getClass ();
@@ -171,7 +171,7 @@ public final class Alert implements Constructed
   {
 
     WARNING (1), FATAL (2);
-    
+
     private final int value;
 
     private Level(int value)
@@ -231,7 +231,7 @@ public final class Alert implements Constructed
     BAD_CERTIFICATE_HASH_VALUE      (114),
     UNKNOWN_SRP_USERNAME            (120),
     MISSING_SRP_USERNAME            (121);
-    
+
     private final int value;
 
     private Description(int value)

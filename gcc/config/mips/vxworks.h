@@ -1,4 +1,4 @@
-/* Copyright (C) 1999, 2003, 2004, 2007, 2008, 2010
+/* Copyright (C) 1999, 2003, 2004, 2007, 2008, 2010, 2011
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -35,8 +35,7 @@ along with GCC; see the file COPYING3.  If not see
 #undef LINK_SPEC
 #define LINK_SPEC "\
 %(endian_spec) \
-%{!G:-G 0} %{G*} %{mips1} %{mips2} %{mips3} %{mips4} %{mips32} %{mips64} \
-%{bestGnum}" \
+%{!G:-G 0} %{G*} %{mips1} %{mips2} %{mips3} %{mips4} %{mips32} %{mips64} " \
 VXWORKS_LINK_SPEC
 
 #undef  LIB_SPEC

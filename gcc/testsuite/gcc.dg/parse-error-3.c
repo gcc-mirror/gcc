@@ -1,5 +1,5 @@
 /* PR c/43384 */
-/* { dg-do "compile" } */
+/* { dg-do compile } */
 
 void c_direct(par)
      void *par = &&lab; /* { dg-error "is initialized|non-standard|outside of" } */

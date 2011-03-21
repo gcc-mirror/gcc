@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -50,7 +50,7 @@ import java.rmi.server.UnicastRemoteObject;
 /**
  * The entity that receives the request to activate object and activates it.
  * Frequently there is one activation group per virtual machine.
- * 
+ *
  * @author Audrius Meskauskas (audriusa@Bioinformatics.org) (from stub)
  */
 public abstract class ActivationGroup
@@ -62,12 +62,12 @@ public abstract class ActivationGroup
    * Use the SVUID for interoperability.
    */
   static final long serialVersionUID = - 7696947875314805420L;
-  
+
   /**
    * The Id of the current group on this VM (null if none).
    */
-  static ActivationGroupID currentGroupId = null;  
-  
+  static ActivationGroupID currentGroupId = null;
+
   /**
    * The groups identifier.
    */
@@ -77,17 +77,17 @@ public abstract class ActivationGroup
    * The groups activation monitor.
    */
   ActivationMonitor monitor;
-  
+
   /**
    * The groups incarnation number.
    */
   long incarnation;
- 
+
   /**
    * The groups activation system.
    */
   static ActivationSystem system;
-  
+
   /**
    * Used during the group creation (required constructor).
    */
@@ -98,34 +98,34 @@ public abstract class ActivationGroup
                                                    };
 
   /**
-   * Create the new activation group with the given group id. 
-   * 
+   * Create the new activation group with the given group id.
+   *
    * @param aGroupId the group Id.
-   * 
+   *
    * @throws RemoteException if the group export fails.
    */
   protected ActivationGroup(ActivationGroupID aGroupId) throws RemoteException
   {
     groupId = aGroupId;
   }
-  
+
   /**
    * The method is called when the object is exported. The group must notify
    * the activation monitor, if this was not already done before.
-   *  
+   *
    * @param id the object activation id
    * @param obj the remote object implementation
-   * 
+   *
    * @throws ActivationException if the group is inactive
    * @throws UnknownObjectException if such object is not known
    * @throws RemoteException if the call to monitor fails
    */
   public abstract void activeObject(ActivationID id, Remote obj)
       throws ActivationException, UnknownObjectException, RemoteException;
-  
+
   /**
    * Notifies the monitor about the object being inactivated.
-   * 
+   *
    * @param id the object being inactivated.
    * @return true always (must be overridden to return other values).
    * @throws ActivationException never
@@ -148,7 +148,7 @@ public abstract class ActivationGroup
    * {@link MarshalledObject}. The group must be first be registered with the
    * ActivationSystem. Once a group is created, the currentGroupID method
    * returns the identifier for this group until the group becomes inactive.
-   * 
+   *
    * @param id the activation group id
    * @param desc the group descriptor, providing the information, necessary to
    *          create the group
@@ -165,7 +165,7 @@ public abstract class ActivationGroup
     // passed in the group id.
     if (system == null)
       system = id.system;
-    
+
     ActivationGroup group = null;
 
     // TODO at the moment all groups are created on the current jre and the
@@ -220,7 +220,7 @@ public abstract class ActivationGroup
 
   /**
    * Get the id of current activation group.
-   * 
+   *
    * @return the id of the current activation group or null if none exists.
    */
   public static ActivationGroupID currentGroupID()
@@ -240,16 +240,16 @@ public abstract class ActivationGroup
         ierr.initCause(e);
         throw ierr;
       }
-      
+
     return currentGroupId;
   }
 
   /**
    * Set the activation system for this virtual machine. The system can only
-   * be set if no group is active. 
-   * 
+   * be set if no group is active.
+   *
    * @param aSystem the system to set
-   *  
+   *
    * @throws ActivationException if some group is active now.
    */
   public static void setSystem(ActivationSystem aSystem)
@@ -259,7 +259,7 @@ public abstract class ActivationGroup
       throw new ActivationException("Group active");
     else
       {
-        try 
+        try
           {
             // Register the default transient activation system and group.
             system = aSystem;
@@ -277,9 +277,9 @@ public abstract class ActivationGroup
           ierr.initCause(ex);
           throw ierr;
         }
-      }  
+      }
   }
-  
+
   /**
    * Get the current activation system. If the system is not set via
    * {@link #setSystem} method, the default system for this virtual machine is
@@ -293,7 +293,7 @@ public abstract class ActivationGroup
    * transient activation system will be created and returned. This internal
    * system is highly limited in in capabilities and is not intended to be used
    * anywhere apart automated testing.
-   * 
+   *
    * @return the activation system for this virtual machine
    * @throws ActivationException
    */
@@ -306,7 +306,7 @@ public abstract class ActivationGroup
 
   /**
    * Makes the call back to the groups {@link ActivationMonitor}.
-   * 
+   *
    * @param id the id obj the object being activated
    * @param mObject the marshalled object, contains the activated remote object
    *          stub.
@@ -315,24 +315,24 @@ public abstract class ActivationGroup
    * @throws RemoteException on remote call (to monitor) error
    */
   protected void activeObject(ActivationID id,
-			      MarshalledObject<? extends Remote> mObject)
+                              MarshalledObject<? extends Remote> mObject)
       throws ActivationException, UnknownObjectException, RemoteException
   {
     if (monitor!=null)
       monitor.activeObject(id, mObject);
-    
+
     id.group = this;
   }
 
   /**
    * Makes the call back to the groups {@link ActivationMonitor} and sets
    * the current group to null.
-   */ 
+   */
   protected void inactiveGroup() throws UnknownGroupException, RemoteException
   {
     if (monitor!=null)
       monitor.inactiveGroup(groupId, incarnation);
-    
+
     if (currentGroupId!=null && currentGroupId.equals(groupId))
       currentGroupId = null;
   }

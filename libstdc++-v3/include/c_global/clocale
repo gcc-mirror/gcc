@@ -50,12 +50,11 @@
 #undef setlocale
 #undef localeconv
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
-
+namespace std
+{
   using ::lconv;
   using ::setlocale;
   using ::localeconv;
-
-_GLIBCXX_END_NAMESPACE
+} // namespace std
 
 #endif

@@ -69,12 +69,12 @@ public class InitialLdapContext
     Hashtable<Object, Object> myenv = null;
     if (connControls != null)
       {
-	if (environment == null)
-	  myenv = new Hashtable<Object, Object> ();
-	else
-	  myenv = (Hashtable<Object, Object>) environment.clone ();
-	myenv.put ("java.naming.ldap.control.connect",
-			 connControls);
+        if (environment == null)
+          myenv = new Hashtable<Object, Object> ();
+        else
+          myenv = (Hashtable<Object, Object>) environment.clone ();
+        myenv.put ("java.naming.ldap.control.connect",
+                         connControls);
       }
 
     init (myenv);

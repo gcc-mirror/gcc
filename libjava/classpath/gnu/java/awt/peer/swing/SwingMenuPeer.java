@@ -140,7 +140,7 @@ public class SwingMenuPeer
       {
         MenuItem item = awtMenu.getItem(i);
         item.addNotify();
-        SwingMenuItemPeer peer = (SwingMenuItemPeer) item.getPeer(); 
+        SwingMenuItemPeer peer = (SwingMenuItemPeer) item.getPeer();
         menu.add(peer.menuItem);
       }
   }

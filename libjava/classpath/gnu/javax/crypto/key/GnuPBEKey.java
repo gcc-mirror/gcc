@@ -43,7 +43,7 @@ import javax.crypto.spec.PBEKeySpec;
 
 /**
  * An implementation of a password-based encryption key.
- * 
+ *
  * @author Casey Marshall (csm@gnu.org)
  */
 public class GnuPBEKey

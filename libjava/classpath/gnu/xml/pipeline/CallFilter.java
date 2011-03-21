@@ -1,4 +1,4 @@
-/* CallFilter.java -- 
+/* CallFilter.java --
    Copyright (C) 1999,2000,2001 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -99,11 +99,11 @@ import gnu.xml.util.XMLWriter;
  */
 final public class CallFilter implements EventConsumer
 {
-    private Requestor			req;
-    private EventConsumer		next;
-    private URL				target;
-    private URLConnection		conn;
-    private ErrorHandler		errHandler;
+    private Requestor                   req;
+    private EventConsumer               next;
+    private URL                         target;
+    private URLConnection               conn;
+    private ErrorHandler                errHandler;
 
 
     /**
@@ -113,13 +113,13 @@ final public class CallFilter implements EventConsumer
      *
      * @exception IOException if the URI isn't accepted as a URL
      */
-	// constructor used by PipelineFactory
+        // constructor used by PipelineFactory
     public CallFilter (String uri, EventConsumer next)
     throws IOException
     {
-	this.next = next;
-	req = new Requestor ();
-	setCallTarget (uri);
+        this.next = next;
+        req = new Requestor ();
+        setCallTarget (uri);
     }
 
     /**
@@ -129,7 +129,7 @@ final public class CallFilter implements EventConsumer
     final public void setCallTarget (String uri)
     throws IOException
     {
-	target = new URL (uri);
+        target = new URL (uri);
     }
 
     /**
@@ -138,7 +138,7 @@ final public class CallFilter implements EventConsumer
      */
     public void setErrorHandler (ErrorHandler handler)
     {
-	req.setErrorHandler (handler);
+        req.setErrorHandler (handler);
     }
 
 
@@ -147,19 +147,19 @@ final public class CallFilter implements EventConsumer
      */
     final public String getCallTarget ()
     {
-	return target.toString ();
+        return target.toString ();
     }
 
     /** Returns the content handler currently in use. */
     final public org.xml.sax.ContentHandler getContentHandler ()
     {
-	return req;
+        return req;
     }
 
     /** Returns the DTD handler currently in use. */
     final public DTDHandler getDTDHandler ()
     {
-	return req;
+        return req;
     }
 
 
@@ -170,11 +170,11 @@ final public class CallFilter implements EventConsumer
     final public Object getProperty (String id)
     throws SAXNotRecognizedException
     {
-	if (EventFilter.DECL_HANDLER.equals (id))
-	    return req;
-	if (EventFilter.LEXICAL_HANDLER.equals (id))
-	    return req;
-	throw new SAXNotRecognizedException (id);
+        if (EventFilter.DECL_HANDLER.equals (id))
+            return req;
+        if (EventFilter.LEXICAL_HANDLER.equals (id))
+            return req;
+        throw new SAXNotRecognizedException (id);
     }
 
 
@@ -187,71 +187,71 @@ final public class CallFilter implements EventConsumer
     //
     final class Requestor extends XMLWriter
     {
-	Requestor ()
-	{
-	    super ((Writer)null);
-	}
+        Requestor ()
+        {
+            super ((Writer)null);
+        }
 
-	public synchronized void startDocument () throws SAXException
-	{
-	    // Connect to remote object and set up to send it XML text
-	    try {
-		if (conn != null)
-		    throw new IllegalStateException ("call is being made");
+        public synchronized void startDocument () throws SAXException
+        {
+            // Connect to remote object and set up to send it XML text
+            try {
+                if (conn != null)
+                    throw new IllegalStateException ("call is being made");
 
-		conn = target.openConnection ();
-		conn.setDoOutput (true);
-		conn.setRequestProperty ("Content-Type",
-			    "application/xml;charset=UTF-8");
+                conn = target.openConnection ();
+                conn.setDoOutput (true);
+                conn.setRequestProperty ("Content-Type",
+                            "application/xml;charset=UTF-8");
 
-		setWriter (new OutputStreamWriter (
-			conn.getOutputStream (),
-			"UTF8"), "UTF-8");
+                setWriter (new OutputStreamWriter (
+                        conn.getOutputStream (),
+                        "UTF8"), "UTF-8");
 
-	    } catch (IOException e) {
-		fatal ("can't write (POST) to URI: " + target, e);
-	    }
+            } catch (IOException e) {
+                fatal ("can't write (POST) to URI: " + target, e);
+            }
 
-	    // NOW base class can safely write that text!
-	    super.startDocument ();
-	}
+            // NOW base class can safely write that text!
+            super.startDocument ();
+        }
 
-	public void endDocument () throws SAXException
-	{
-	    //
-	    // Finish writing the request (for HTTP, a POST);
-	    // this closes the output stream.
-	    //
-	    super.endDocument ();
+        public void endDocument () throws SAXException
+        {
+            //
+            // Finish writing the request (for HTTP, a POST);
+            // this closes the output stream.
+            //
+            super.endDocument ();
 
-	    //
-	    // Receive the response.
-	    // Produce events for the next stage.
-	    //
-	    InputSource	source;
-	    XMLReader	producer;
-	    String	encoding;
+            //
+            // Receive the response.
+            // Produce events for the next stage.
+            //
+            InputSource source;
+            XMLReader   producer;
+            String      encoding;
 
-	    try {
+            try {
 
-		source = new InputSource (conn.getInputStream ());
+                source = new InputSource (conn.getInputStream ());
 
 // FIXME if status is anything but success, report it!!  It'd be good to
 // save the request data just in case we need to deal with a forward.
 
-		encoding = Resolver.getEncoding (conn.getContentType ());
-		if (encoding != null)
-		    source.setEncoding (encoding);
+                encoding = Resolver.getEncoding (conn.getContentType ());
+                if (encoding != null)
+                    source.setEncoding (encoding);
 
-		producer = XMLReaderFactory.createXMLReader ();
-		producer.setErrorHandler (getErrorHandler ());
-		EventFilter.bind (producer, next);
-		producer.parse (source);
-		conn = null;
+                producer = XMLReaderFactory.createXMLReader ();
+                producer.setErrorHandler (getErrorHandler ());
+                EventFilter.bind (producer, next);
+                producer.parse (source);
+                conn = null;
 
-	    } catch (IOException e) {
-		fatal ("I/O Exception reading response, " + e.getMessage (), e);
-	    }
-	}
+            } catch (IOException e) {
+                fatal ("I/O Exception reading response, " + e.getMessage (), e);
+            }
+        }
     }
 }

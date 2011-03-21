@@ -1,4 +1,4 @@
-/* ChoicePattern.java -- 
+/* ChoicePattern.java --
    Copyright (C) 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -50,4 +50,3 @@ class ChoicePattern
   Pattern pattern2;
 
 }
-

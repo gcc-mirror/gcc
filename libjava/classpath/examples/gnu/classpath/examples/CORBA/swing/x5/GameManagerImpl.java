@@ -44,8 +44,8 @@ import org.omg.CORBA.Object;
 
 /**
  * The manager connects two players into the game.
- * 
- * @author Audrius Meskauskas (AudriusA@Bioinformatics.org) 
+ *
+ * @author Audrius Meskauskas (AudriusA@Bioinformatics.org)
  */
 public class GameManagerImpl
   implements GameManager

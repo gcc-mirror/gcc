@@ -8,7 +8,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -75,21 +75,21 @@ public class UnicastServer
    * Mapping obj itself to server ref by identity.
    */
   static private Map refcache = Collections.synchronizedMap(new WeakIdentityHashMap());
-  
+
   /**
    * Mapping the registered activatable objects into they server references.
    */
   public static Map actIds = new Hashtable();
-  
+
   /**
-   * The reference to the local distributed garbage collector. 
+   * The reference to the local distributed garbage collector.
    */
   static private DGCImpl dgc;
-  
+
   /**
    * Connect this server reference to the server, allowing the local
    * implementation, associated with this object, to receive remote calls.
-   * 
+   *
    * @param obj the server reference, encloses the (usually local) remote
    *          object.
    */
@@ -100,7 +100,7 @@ public class UnicastServer
     refcache.put(obj.myself, obj);
     obj.manager.startServer();
   }
-  
+
   /**
    * Register the activatable object into the table of the activatable
    * objects.
@@ -109,7 +109,7 @@ public class UnicastServer
   {
     actIds.put(ref.actId, ref);
   }
-  
+
   /**
    * Export tha activatable object. The object id is placed into the map,
    * but the object itself not. This is enough to deliver call to
@@ -123,8 +123,8 @@ public class UnicastServer
     ref.manager.startServer();
     actIds.put(ref.actId, ref);
   }
-    
-  
+
+
   /**
    * Get the activatable server reference that is handling activation of the
    * given activation id.
@@ -137,15 +137,15 @@ public class UnicastServer
       throw new ActivationException(id + " was not registered with this server");
     return ref;
   }
-  
+
   /**
    * Unregister the previously registered activatable server reference.
    */
   public static void unregisterActivatable(ActivationID id)
   {
-     actIds.remove(id);    
+     actIds.remove(id);
   }
-  
+
   // FIX ME: I haven't handle force parameter
   /**
    * Remove the given server reference. The remote object, associated with
@@ -156,7 +156,7 @@ public class UnicastServer
     objects.remove(obj.objid);
     refcache.remove(obj.myself);
     obj.manager.stopServer();
-    
+
     if (obj instanceof ActivatableServerRef)
       {
         ActivationID id = ((ActivatableServerRef) obj).actId;
@@ -164,15 +164,15 @@ public class UnicastServer
       }
     return true;
   }
-  
+
   /**
    * Get the exported reference of the given Remote. The identity map is used,
    * the non-null value will only be returned if exactly the passed remote
-   * is part of the registered UnicastServerRef. 
-   * 
-   * @param remote the Remote that is connected to this server via 
+   * is part of the registered UnicastServerRef.
+   *
+   * @param remote the Remote that is connected to this server via
    * {@link UnicastServerRef}.
-   * 
+   *
    * @return the UnicastServerRef that is used to connect the passed
    * remote with this server or null, if this Remote is not connected
    * to this server.
@@ -186,7 +186,7 @@ public class UnicastServer
    * Get the server references to the object, previously exported via this
    * server. As the identity map is scanned, more than one reference may match
    * this Id.
-   * 
+   *
    * @param id the id of the exported object
    * @return the server reference to this object, null if none.
    */
@@ -244,10 +244,10 @@ public class UnicastServer
         throw new Exception("bad method type");
       }
   }
-  
+
   /**
    * This method is invoked when the remote call is received. The method
-   * dispatches the call to the responsible object, connected to this 
+   * dispatches the call to the responsible object, connected to this
    * server via UnicastServerReference.
    */
   private static void incomingMessageCall(UnicastConnection conn)
@@ -287,7 +287,7 @@ public class UnicastServer
         catch (Error e)
           {
             returnval = new ServerError(
-              "Server error, ObjID: " + objid + 
+              "Server error, ObjID: " + objid +
               ", method: " + method + ", hash: "+ hash, e);
             returncode = RETURN_NACK;
           }

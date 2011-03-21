@@ -108,7 +108,7 @@ final class ServiceProviderLoadingAction<P>
     this.loader = loader;
   }
 
-  
+
   /**
    * Loads an implementation class for a service provider, and creates
    * a new instance of the loaded class by invoking its public

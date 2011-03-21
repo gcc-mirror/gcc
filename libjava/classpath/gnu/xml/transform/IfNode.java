@@ -1,4 +1,4 @@
-/* IfNode.java -- 
+/* IfNode.java --
    Copyright (C) 2004,2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -91,14 +91,14 @@ final class IfNode
                  context, pos, len,
                  parent, nextSibling);
   }
-  
+
   public boolean references(QName var)
   {
     if (test != null && test.references(var))
       return true;
     return super.references(var);
   }
-  
+
   public String toString()
   {
     CPStringBuilder buf = new CPStringBuilder("if");
@@ -108,5 +108,5 @@ final class IfNode
     buf.append(']');
     return buf.toString();
   }
-  
+
 }

@@ -111,4 +111,3 @@ public interface InputMethodDescriptor
   InputMethod createInputMethod() throws Exception;
 
 } // interface InputMethodDescriptor
-

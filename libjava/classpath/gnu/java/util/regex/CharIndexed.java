@@ -82,7 +82,7 @@ public interface CharIndexed
      * true if the new cursor position is valid or cursor position is at
      * the end of input.
      */
-  boolean move1 (int index);	// I cannot think of a better name for this.
+  boolean move1 (int index);    // I cannot think of a better name for this.
 
     /**
      * Returns true if the most recent move() operation placed the cursor

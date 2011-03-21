@@ -69,12 +69,12 @@ public abstract class GlyphVector implements Cloneable
   public abstract Font getFont ();
 
   public abstract FontRenderContext getFontRenderContext ();
-    
+
   public int getGlyphCharIndex (int glyphIndex)
   {
     return glyphIndex;
   }
-    
+
   public int[] getGlyphCharIndices(int beginGlyphIndex, int numEntries,
                                    int[] codeReturn)
   {
@@ -85,10 +85,10 @@ public abstract class GlyphVector implements Cloneable
     int j = beginGlyphIndex;
     while (j < numEntries)
       codeReturn[i++] = getGlyphCharIndex(j++);
-    
+
     return codeReturn;
   }
-    
+
   public abstract int getGlyphCode (int glyphIndex);
 
   public abstract int[] getGlyphCodes (int beginGlyphIndex, int numEntries,
@@ -106,7 +106,7 @@ public abstract class GlyphVector implements Cloneable
   public Shape getGlyphOutline(int glyphIndex, float x, float y)
   {
     Shape s = getGlyphOutline(glyphIndex);
-    
+
     // This is the only way to translate the origin of a shape
     AffineTransform at = AffineTransform.getTranslateInstance(x, y);
     return at.createTransformedShape(s);
@@ -117,12 +117,12 @@ public abstract class GlyphVector implements Cloneable
   {
     Rectangle bounds = new Rectangle();
     Rectangle2D rect = getGlyphVisualBounds(index).getBounds2D();
-    
+
     bounds.x = (int) (rect.getX() + x);
     bounds.y = (int) (rect.getY() + y);
     bounds.width = (int) rect.getMaxX() - bounds.x;
     bounds.height = (int) rect.getMaxY() - bounds.y;
-    
+
     return bounds;
   }
 
@@ -144,7 +144,7 @@ public abstract class GlyphVector implements Cloneable
   public abstract Rectangle2D getLogicalBounds ();
 
   public abstract int getNumGlyphs ();
-  
+
   public abstract Shape getOutline ();
 
   public abstract Shape getOutline (float x, float y);
@@ -154,12 +154,12 @@ public abstract class GlyphVector implements Cloneable
   {
     Rectangle bounds = new Rectangle();
     Rectangle2D rect = getVisualBounds();
-    
+
     bounds.x = (int) (rect.getX() + x);
     bounds.y = (int) (rect.getY() + y);
     bounds.width = (int) rect.getMaxX() - bounds.x;
     bounds.height = (int) rect.getMaxY() - bounds.y;
-    
+
     return bounds;
   }
 

@@ -1,4 +1,4 @@
-/* UTF_8.java -- 
+/* UTF_8.java --
    Copyright (C) 2002, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -46,12 +46,12 @@ import java.nio.charset.CoderResult;
 
 /**
  * UTF-8 charset.
- * 
+ *
  * <p> UTF-8 references:
  * <ul>
  *   <li> <a href="http://ietf.org/rfc/rfc2279.txt">RFC 2279</a>
  *   <li> The <a href="http://www.unicode.org/unicode/standard/standard.html">
- *     Unicode standard</a> and 
+ *     Unicode standard</a> and
  *     <a href="http://www.unicode.org/versions/corrigendum1.html">
  *      Corrigendum</a>
  * </ul>
@@ -101,7 +101,7 @@ final class UTF_8 extends Charset
     protected CoderResult decodeLoop (ByteBuffer in, CharBuffer out)
     {
       // TODO: Optimize this in the case in.hasArray() / out.hasArray()
-      int inPos = in.position(); 
+      int inPos = in.position();
       try
         {
           while (in.hasRemaining ())
@@ -117,7 +117,7 @@ final class UTF_8 extends Charset
                       return CoderResult.OVERFLOW;
                     out.put ((char) b1);
                     inPos++;
-                    break;		    
+                    break;
 
                   case 0xC: case 0xD:
                     byte b2;
@@ -159,7 +159,7 @@ final class UTF_8 extends Charset
                     byte b4;
                     if (in.remaining () < 3)
                       return CoderResult.UNDERFLOW;
-		    if((b1&0x0F) > 4)
+                    if((b1&0x0F) > 4)
                       return CoderResult.malformedForLength (4);
                     if (out.remaining () < 2)
                       return CoderResult.OVERFLOW;
@@ -169,12 +169,12 @@ final class UTF_8 extends Charset
                       return CoderResult.malformedForLength (2);
                     if (!isContinuation (b4 = in.get ()))
                       return CoderResult.malformedForLength (1);
-		    int n = (((b1 & 0x3) << 18)
-			     | ((b2 & 0x3F) << 12)
-			     | ((b3 & 0x3F) << 6)
-			     | (b4 & 0x3F)) - 0x10000;
-		    char c1 = (char)(0xD800 | (n & 0xFFC00)>>10);
-		    char c2 = (char)(0xDC00 | (n & 0x003FF));
+                    int n = (((b1 & 0x3) << 18)
+                             | ((b2 & 0x3F) << 12)
+                             | ((b3 & 0x3F) << 6)
+                             | (b4 & 0x3F)) - 0x10000;
+                    char c1 = (char)(0xD800 | (n & 0xFFC00)>>10);
+                    char c2 = (char)(0xDC00 | (n & 0x003FF));
                     out.put (c1);
                     out.put (c2);
                     inPos += 4;
@@ -213,7 +213,7 @@ final class UTF_8 extends Charset
       //   Most Latin-script languages take about 1.1 bytes. Greek, Russian,
       //   Arabic and Hebrew take about 1.7 bytes, and most others (including
       //   Japanese, Chinese, Korean and Hindi) take about 3 bytes.
-      // We assume we will be dealing with latin scripts, and use 1.1 
+      // We assume we will be dealing with latin scripts, and use 1.1
       // for averageBytesPerChar.
       super (cs, 1.1f, 4.0f);
     }

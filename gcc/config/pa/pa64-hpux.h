@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler, for HPs running
    HPUX using the 64bit runtime model.
-   Copyright (C) 1999, 2000, 2001, 2002, 2004, 2005, 2007, 2008
+   Copyright (C) 1999, 2000, 2001, 2002, 2004, 2005, 2007, 2008, 2010
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -61,34 +61,40 @@ along with GCC; see the file COPYING3.  If not see
   "%{!shared:\
      %{!p:%{!pg:%{fopenmp:%{static:-a shared} -lrt %{static:-a archive}}\
 	    %{mt|pthread:-lpthread} -lc\
-	    %{static:%{!nolibdld:-a shared -ldld -a archive -lc}}}}\
+	    %{static:%{!nolibdld:-a shared -ldld -a archive -lc}\
+		%{!mt:%{!pthread:-a shared -lc -a archive}}}}}\
      %{p:%{!pg:%{static:%{!mhp-ld:-a shared}%{mhp-ld:-a archive_shared}}\
 	   -lprof %{static:-a archive}\
 	   %{fopenmp:%{static:-a shared} -lrt %{static:-a archive}}\
 	   %{mt|pthread:-lpthread} -lc\
-	   %{static:%{!nolibdld:-a shared -ldld -a archive -lc}}}}\
+	   %{static:%{!nolibdld:-a shared -ldld -a archive -lc}\
+		%{!mt:%{!pthread:-a shared -lc -a archive}}}}}\
      %{pg:%{static:%{!mhp-ld:-a shared}%{mhp-ld:-a archive_shared}}\
        -lgprof %{static:-a archive}\
        %{fopenmp:%{static:-a shared} -lrt %{static:-a archive}}\
        %{mt|pthread:-lpthread} -lc\
-       %{static:%{!nolibdld:-a shared -ldld -a archive -lc}}}}\
+       %{static:%{!nolibdld:-a shared -ldld -a archive -lc}\
+		%{!mt:%{!pthread:-a shared -lc -a archive}}}}}\
    %{shared:%{mt|pthread:-lpthread}}"
 #else
 #define LIB_SPEC \
   "%{!shared:\
      %{!p:%{!pg:%{fopenmp:%{static:-a shared} -lrt %{static:-a archive}}\
 	    %{mt|pthread:-lpthread} -lc\
-	    %{static:%{!nolibdld:-a shared -ldld -a archive -lc}}}}\
+	    %{static:%{!nolibdld:-a shared -ldld -a archive -lc}\
+		%{!mt:%{!pthread:-a shared -lc -a archive}}}}}\
      %{p:%{!pg:%{static:%{mgnu-ld:-a shared}%{!mgnu-ld:-a archive_shared}}\
 	   -lprof %{static:-a archive}\
 	   %{fopenmp:%{static:-a shared} -lrt %{static:-a archive}}\
 	   %{mt|pthread:-lpthread} -lc\
-	   %{static:%{!nolibdld:-a shared -ldld -a archive -lc}}}}\
+	   %{static:%{!nolibdld:-a shared -ldld -a archive -lc}\
+		%{!mt:%{!pthread:-a shared -lc -a archive}}}}}\
      %{pg:%{static:%{mgnu-ld:-a shared}%{!mgnu-ld:-a archive_shared}}\
        -lgprof %{static:-a archive}\
        %{fopenmp:%{static:-a shared} -lrt %{static:-a archive}}\
        %{mt|pthread:-lpthread} -lc\
-       %{static:%{!nolibdld:-a shared -ldld -a archive -lc}}}}\
+       %{static:%{!nolibdld:-a shared -ldld -a archive -lc}\
+		%{!mt:%{!pthread:-a shared -lc -a archive}}}}}\
    %{shared:%{mt|pthread:-lpthread}}"
 #endif
 

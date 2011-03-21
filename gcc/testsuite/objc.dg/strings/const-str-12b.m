@@ -5,8 +5,8 @@
 /* { dg-options "-fconstant-string-class=Foo" } */
 /* { dg-options "-mno-constant-cfstrings -fconstant-string-class=Foo" { target *-*-darwin* } } */
 
-#include "../../objc-obj-c++-shared/Object1.h"
-#import "../../objc-obj-c++-shared/next-mapping.h"
+#include <objc/Object.h>
+#include "../../objc-obj-c++-shared/objc-test-suite-types.h"
 
 @interface Foo: Object {
   char *cString;
@@ -19,11 +19,7 @@
 + (Foo *) getString: (int) which;
 @end
 
-#ifdef NEXT_OBJC_USE_NEW_INTERFACE
-struct fudge_objc_class _FooClassReference;
-#else
-struct objc_class _FooClassReference;
-#endif
+TNS_STRING_REF_T _FooClassReference;  /* Only used by NeXT.  */
 
 @implementation Bar
 + (Foo *) getString: (int) which {

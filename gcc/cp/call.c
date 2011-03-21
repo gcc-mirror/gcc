@@ -98,7 +98,9 @@ struct conversion {
   BOOL_BITFIELD base_p : 1;
   /* If KIND is ck_ref_bind, true when either an lvalue reference is
      being bound to an lvalue expression or an rvalue reference is
-     being bound to an rvalue expression. */
+     being bound to an rvalue expression.  If KIND is ck_rvalue,
+     true when we should treat an lvalue as an rvalue (12.8p33).  If
+     KIND is ck_base, always false.  */
   BOOL_BITFIELD rvaluedness_matches_p: 1;
   BOOL_BITFIELD check_narrowing: 1;
   /* The type of the expression resulting from the conversion.  */
@@ -850,6 +852,7 @@ standard_conversion (tree to, tree from, tree expr, bool c_cast_p,
   enum tree_code fcode, tcode;
   conversion *conv;
   bool fromref = false;
+  tree qualified_to;
 
   to = non_reference (to);
   if (TREE_CODE (from) == REFERENCE_TYPE)
@@ -857,6 +860,7 @@ standard_conversion (tree to, tree from, tree expr, bool c_cast_p,
       fromref = true;
       from = TREE_TYPE (from);
     }
+  qualified_to = to;
   to = strip_top_quals (to);
   from = strip_top_quals (from);
 
@@ -895,6 +899,8 @@ standard_conversion (tree to, tree from, tree expr, bool c_cast_p,
 	    }
 	}
       conv = build_conv (ck_rvalue, from, conv);
+      if (flags & LOOKUP_PREFER_RVALUE)
+	conv->rvaluedness_matches_p = true;
     }
 
    /* Allow conversion between `__complex__' data types.  */
@@ -918,7 +924,11 @@ standard_conversion (tree to, tree from, tree expr, bool c_cast_p,
     }
 
   if (same_type_p (from, to))
-    return conv;
+    {
+      if (CLASS_TYPE_P (to) && conv->kind == ck_rvalue)
+	conv->type = qualified_to;
+      return conv;
+    }
 
   /* [conv.ptr]
      A null pointer constant can be converted to a pointer type; ... A
@@ -1230,8 +1240,10 @@ convert_class_to_reference (tree reference_type, tree s, tree expr, int flags)
 	     rvalue of the right type is good enough.  */
 	  tree f = cand->fn;
 	  tree t2 = TREE_TYPE (TREE_TYPE (f));
-	  if (TREE_CODE (t2) != REFERENCE_TYPE
-	      || !reference_compatible_p (t, TREE_TYPE (t2)))
+	  if (cand->viable == 0)
+	    /* Don't bother looking more closely.  */;
+	  else if (TREE_CODE (t2) != REFERENCE_TYPE
+		   || !reference_compatible_p (t, TREE_TYPE (t2)))
 	    {
 	      /* No need to set cand->reason here; this is most likely
 		 an ambiguous match.  If it's not, either this candidate
@@ -2142,7 +2154,7 @@ add_builtin_candidate (struct z_candidate **candidates, enum tree_code code,
 	}
       return;
 
-/* 7 For every cv-qualified or cv-unqualified complete object type T, there
+/* 7 For every cv-qualified or cv-unqualified object type T, there
      exist candidate operator functions of the form
 
 	     T&      operator*(T*);
@@ -2153,7 +2165,7 @@ add_builtin_candidate (struct z_candidate **candidates, enum tree_code code,
 
     case INDIRECT_REF:
       if (TREE_CODE (type1) == POINTER_TYPE
-	  && is_complete (TREE_TYPE (type1))
+	  && !uses_template_parms (TREE_TYPE (type1))
 	  && (TYPE_PTROB_P (type1)
 	      || TREE_CODE (TREE_TYPE (type1)) == FUNCTION_TYPE))
 	break;
@@ -5481,6 +5493,8 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	   conversion (i.e. the second step of copy-initialization), so
 	   don't allow any more.  */
 	flags |= LOOKUP_NO_CONVERSION;
+      if (convs->rvaluedness_matches_p)
+	flags |= LOOKUP_PREFER_RVALUE;
       if (TREE_CODE (expr) == TARGET_EXPR
 	  && TARGET_EXPR_LIST_INIT_P (expr))
 	/* Copy-list-initialization doesn't actually involve a copy.  */
@@ -5663,6 +5677,10 @@ convert_arg_to_ellipsis (tree arg)
   arg_type = TREE_TYPE (arg);
 
   if (arg != error_mark_node
+      /* In a template (or ill-formed code), we can have an incomplete type
+	 even after require_complete_type, in which case we don't know
+	 whether it has trivial copy or not.  */
+      && COMPLETE_TYPE_P (arg_type)
       && (type_has_nontrivial_copy_init (arg_type)
 	  || TYPE_HAS_NONTRIVIAL_DESTRUCTOR (arg_type)))
     {
@@ -5738,10 +5756,17 @@ cxx_type_promotes_to (tree type)
 }
 
 /* ARG is a default argument expression being passed to a parameter of
-   the indicated TYPE, which is a parameter to FN.  Do any required
-   conversions.  Return the converted value.  */
+   the indicated TYPE, which is a parameter to FN.  PARMNUM is the
+   zero-based argument number.  Do any required conversions.  Return
+   the converted value.  */
 
 static GTY(()) VEC(tree,gc) *default_arg_context;
+void
+push_defarg_context (tree fn)
+{ VEC_safe_push (tree, gc, default_arg_context, fn); }
+void
+pop_defarg_context (void)
+{ VEC_pop (tree, default_arg_context); }
 
 tree
 convert_default_arg (tree type, tree arg, tree fn, int parmnum)
@@ -5749,15 +5774,8 @@ convert_default_arg (tree type, tree arg, tree fn, int parmnum)
   int i;
   tree t;
 
-  /* If the ARG is an unparsed default argument expression, the
-     conversion cannot be performed.  */
-  if (TREE_CODE (arg) == DEFAULT_ARG)
-    {
-      error ("the default argument for parameter %d of %qD has "
-	     "not yet been parsed",
-	     parmnum, fn);
-      return error_mark_node;
-    }
+  /* See through clones.  */
+  fn = DECL_ORIGIN (fn);
 
   /* Detect recursion.  */
   FOR_EACH_VEC_ELT (tree, default_arg_context, i, t)
@@ -5766,7 +5784,17 @@ convert_default_arg (tree type, tree arg, tree fn, int parmnum)
 	error ("recursive evaluation of default argument for %q#D", fn);
 	return error_mark_node;
       }
-  VEC_safe_push (tree, gc, default_arg_context, fn);
+
+  /* If the ARG is an unparsed default argument expression, the
+     conversion cannot be performed.  */
+  if (TREE_CODE (arg) == DEFAULT_ARG)
+    {
+      error ("call to %qD uses the default argument for parameter %P, which "
+	     "is not yet defined", fn, parmnum);
+      return error_mark_node;
+    }
+
+  push_defarg_context (fn);
 
   if (fn && DECL_TEMPLATE_INFO (fn))
     arg = tsubst_default_argument (fn, type, arg);
@@ -5785,7 +5813,7 @@ convert_default_arg (tree type, tree arg, tree fn, int parmnum)
   if (TREE_CODE (arg) == CONSTRUCTOR)
     {
       arg = digest_init (type, arg);
-      arg = convert_for_initialization (0, type, arg, LOOKUP_NORMAL,
+      arg = convert_for_initialization (0, type, arg, LOOKUP_IMPLICIT,
 					ICR_DEFAULT_ARGUMENT, fn, parmnum,
                                         tf_warning_or_error);
     }
@@ -5799,14 +5827,14 @@ convert_default_arg (tree type, tree arg, tree fn, int parmnum)
 	 are never modified in place.  */
       if (!CONSTANT_CLASS_P (arg))
 	arg = unshare_expr (arg);
-      arg = convert_for_initialization (0, type, arg, LOOKUP_NORMAL,
+      arg = convert_for_initialization (0, type, arg, LOOKUP_IMPLICIT,
 					ICR_DEFAULT_ARGUMENT, fn, parmnum,
                                         tf_warning_or_error);
       arg = convert_for_arg_passing (type, arg);
     }
   pop_deferring_access_checks();
 
-  VEC_pop (tree, default_arg_context);
+  pop_defarg_context ();
 
   return arg;
 }
@@ -5966,8 +5994,6 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 				   argarray);
       if (TREE_THIS_VOLATILE (fn) && cfun)
 	current_function_returns_abnormally = 1;
-      if (!VOID_TYPE_P (return_type))
-	require_complete_type_sfinae (return_type, complain);
       return convert_from_reference (expr);
     }
 
@@ -6141,12 +6167,6 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
       tree arg = VEC_index (tree, args, arg_index);
 
       conv = convs[i];
-
-      /* Don't make a copy here if build_call is going to.  */
-      if (conv->kind == ck_rvalue
-	  && COMPLETE_TYPE_P (complete_type (type))
-	  && !TREE_ADDRESSABLE (type))
-	conv = conv->u.next;
 
       /* Warn about initializer_list deduction that isn't currently in the
 	 working draft.  */
@@ -8147,6 +8167,7 @@ set_up_extended_ref_temp (tree decl, tree expr, tree *cleanup, tree *initp)
 	     Currently this is only useful for initializer_list temporaries,
 	     since reference vars can't appear in constant expressions.  */
 	  DECL_DECLARED_CONSTEXPR_P (var) = true;
+	  DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (var) = true;
 	  TREE_CONSTANT (var) = true;
 	}
       DECL_INITIAL (var) = init;

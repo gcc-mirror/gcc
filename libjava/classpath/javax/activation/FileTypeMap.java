@@ -49,9 +49,9 @@ public abstract class FileTypeMap
 {
 
   /* Class scope */
-  
+
   private static FileTypeMap defaultMap;
-  
+
   /**
    * Returns the system default file type map.
    * If one has not been set, this returns a MimetypesFileTypeMap.
@@ -64,7 +64,7 @@ public abstract class FileTypeMap
       }
     return defaultMap;
   }
-  
+
   /**
    * Sets the default file type map.
    * @param map the new file type map
@@ -91,13 +91,13 @@ public abstract class FileTypeMap
   }
 
   /* Instance scope */
-  
+
   /**
    * Returns the content type of the specified file.
    * @param file the file to classify
    */
   public abstract String getContentType(File file);
-  
+
   /**
    * Returns the content type of the specified file path.
    * @param filename the path of the file to classify
@@ -105,4 +105,3 @@ public abstract class FileTypeMap
   public abstract String getContentType(String filename);
 
 }
-

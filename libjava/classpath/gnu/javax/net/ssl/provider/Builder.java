@@ -46,11 +46,11 @@ import java.nio.ByteBuffer;
  * buffer that grows to fit the object being built; the allocated size of
  * this buffer may be larger than the built object needs, but the general
  * effort will be not to allocate too large a buffer.
- * 
+ *
  * <p>Once the object is built, through various <em>setters</em> for
  * the object's attributes, the final buffer may be retrieved with the
  * {@link #buffer()} method.
- * 
+ *
  * @author Casey Marshall (csm@gnu.org)
  */
 public interface Builder extends Constructed
@@ -59,7 +59,7 @@ public interface Builder extends Constructed
    * Returns the final buffer, possibly containing the built object. The
    * returned buffer will be "trimmed" to size: its position will be zero,
    * and its limit and capacity set to the length of the built object.
-   * 
+   *
    * @return The underlying buffer.
    */
   ByteBuffer buffer();

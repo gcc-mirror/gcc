@@ -9,7 +9,8 @@
   end type t0
   type t
     integer :: i
-    class(t0), allocatable :: foo(3)  ! { dg-error "deferred shape" }
+! FIXME: uncomment and dejagnuify once class arrays are enabled
+!    class(t0), allocatable :: foo(3)  ! { "deferred shape" }
   end type t
 
 ! PR41608: Would ICE on missing type decl

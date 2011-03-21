@@ -94,7 +94,7 @@ public final class RESyntax implements Serializable
 
   /**
    * Syntax bit. Repetition and alternation operators are invalid
-   * at start and end of pattern and other places. 
+   * at start and end of pattern and other places.
    * <B>Not implemented</B>.
    */
   public static final int RE_CONTEXT_INVALID_OPS = 5;
@@ -115,7 +115,7 @@ public final class RESyntax implements Serializable
   public static final int RE_INTERVALS = 8;
 
   /**
-   * Syntax bit. No alternation (|), match one-or-more (+), or 
+   * Syntax bit. No alternation (|), match one-or-more (+), or
    * match zero-or-one (?) operators.
    */
   public static final int RE_LIMITED_OPS = 9;
@@ -123,7 +123,7 @@ public final class RESyntax implements Serializable
   /**
    * Syntax bit. Newline is an alternation operator.
    */
-  public static final int RE_NEWLINE_ALT = 10;	// impl.
+  public static final int RE_NEWLINE_ALT = 10;  // impl.
 
   /**
    * Syntax bit. Intervals use { } instead of \{ \}
@@ -317,7 +317,7 @@ public final class RESyntax implements Serializable
    * Emulates regular expression support in Larry Wall's perl, version 4,
    * using single line mode (/s modifier).
    */
-  public static final RESyntax RE_SYNTAX_PERL4_S;	// single line mode (/s)
+  public static final RESyntax RE_SYNTAX_PERL4_S;       // single line mode (/s)
 
   /**
    * Predefined syntax.
@@ -403,23 +403,23 @@ public final class RESyntax implements Serializable
 
     /* There is no official Perl spec, but here's a "best guess" */
 
-      RE_SYNTAX_PERL4 = new RESyntax ().set (RE_BACKSLASH_ESCAPE_IN_LISTS).set (RE_CONTEXT_INDEP_ANCHORS).set (RE_CONTEXT_INDEP_OPS)	// except for '{', apparently
-      .set (RE_INTERVALS).set (RE_NO_BK_BRACES).set (RE_NO_BK_PARENS).set (RE_NO_BK_VBAR).set (RE_NO_EMPTY_RANGES).set (RE_CHAR_CLASS_ESCAPES)	// \d,\D,\w,\W,\s,\S
+      RE_SYNTAX_PERL4 = new RESyntax ().set (RE_BACKSLASH_ESCAPE_IN_LISTS).set (RE_CONTEXT_INDEP_ANCHORS).set (RE_CONTEXT_INDEP_OPS)    // except for '{', apparently
+      .set (RE_INTERVALS).set (RE_NO_BK_BRACES).set (RE_NO_BK_PARENS).set (RE_NO_BK_VBAR).set (RE_NO_EMPTY_RANGES).set (RE_CHAR_CLASS_ESCAPES)  // \d,\D,\w,\W,\s,\S
       .makeFinal ();
 
       RE_SYNTAX_PERL4_S =
       new RESyntax (RE_SYNTAX_PERL4).set (RE_DOT_NEWLINE).makeFinal ();
 
-      RE_SYNTAX_PERL5 = new RESyntax (RE_SYNTAX_PERL4).set (RE_PURE_GROUPING)	// (?:)
-      .set (RE_STINGY_OPS)	// *?,??,+?,{}?
-      .set (RE_LOOKAHEAD)	// (?=)(?!)
-      .set (RE_STRING_ANCHORS)	// \A,\Z
-      .set (RE_CHAR_CLASS_ESC_IN_LISTS)	// \d,\D,\w,\W,\s,\S within []
-      .set (RE_COMMENTS)	// (?#)
-      .set (RE_EMBEDDED_FLAGS)	// (?imsx-imsx)
-      .set (RE_OCTAL_CHAR)	// \0377
-      .set (RE_HEX_CHAR)	// \x1b
-      .set (RE_NAMED_PROPERTY)	// \p{prop}, \P{prop}
+      RE_SYNTAX_PERL5 = new RESyntax (RE_SYNTAX_PERL4).set (RE_PURE_GROUPING)   // (?:)
+      .set (RE_STINGY_OPS)      // *?,??,+?,{}?
+      .set (RE_LOOKAHEAD)       // (?=)(?!)
+      .set (RE_STRING_ANCHORS)  // \A,\Z
+      .set (RE_CHAR_CLASS_ESC_IN_LISTS) // \d,\D,\w,\W,\s,\S within []
+      .set (RE_COMMENTS)        // (?#)
+      .set (RE_EMBEDDED_FLAGS)  // (?imsx-imsx)
+      .set (RE_OCTAL_CHAR)      // \0377
+      .set (RE_HEX_CHAR)        // \x1b
+      .set (RE_NAMED_PROPERTY)  // \p{prop}, \P{prop}
       .makeFinal ();
 
       RE_SYNTAX_PERL5_S =
@@ -427,9 +427,9 @@ public final class RESyntax implements Serializable
 
       RE_SYNTAX_JAVA_1_4 = new RESyntax (RE_SYNTAX_PERL5)
       // XXX
-      .set (RE_POSSESSIVE_OPS)	// *+,?+,++,{}+
-      .set (RE_UNICODE_CHAR)	// \u1234
-      .set (RE_NESTED_CHARCLASS)	// [a-z&&[^p-r]]
+      .set (RE_POSSESSIVE_OPS)  // *+,?+,++,{}+
+      .set (RE_UNICODE_CHAR)    // \u1234
+      .set (RE_NESTED_CHARCLASS)        // [a-z&&[^p-r]]
       .makeFinal ();
   }
 
@@ -457,7 +457,7 @@ public final class RESyntax implements Serializable
   }
 
   /**
-   * Construct a new syntax object with all bits set the same 
+   * Construct a new syntax object with all bits set the same
    * as the other syntax.
    */
   public RESyntax (RESyntax other)
@@ -474,7 +474,7 @@ public final class RESyntax implements Serializable
   }
 
   /**
-   * Set a given bit in this syntax. 
+   * Set a given bit in this syntax.
    *
    * @param index the constant (RESyntax.RE_xxx) bit to set.
    * @return a reference to this object for easy chaining.
@@ -488,7 +488,7 @@ public final class RESyntax implements Serializable
   }
 
   /**
-   * Clear a given bit in this syntax. 
+   * Clear a given bit in this syntax.
    *
    * @param index the constant (RESyntax.RE_xxx) bit to clear.
    * @return a reference to this object for easy chaining.
@@ -516,7 +516,7 @@ public final class RESyntax implements Serializable
      * characters that have specific meaning within the current syntax
      * can cause unexpected chronosynclastic infundibula.
      *
-     * @return this object for convenient chaining 
+     * @return this object for convenient chaining
      */
   public RESyntax setLineSeparator (String aSeparator)
   {

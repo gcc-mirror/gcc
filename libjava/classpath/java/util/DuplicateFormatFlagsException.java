@@ -38,15 +38,15 @@ exception statement from your version. */
 
 package java.util;
 
-/** 
+/**
  * Thrown when the flags supplied to the {@link Formatter#format()}
  * method of a {@link Formatter} contain duplicates.
  *
  * @author Tom Tromey (tromey@redhat.com)
  * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
- * @since 1.5 
+ * @since 1.5
  */
-public class DuplicateFormatFlagsException 
+public class DuplicateFormatFlagsException
   extends IllegalFormatException
 {
   private static final long serialVersionUID = 18890531L;
@@ -72,7 +72,7 @@ public class DuplicateFormatFlagsException
     super("Duplicate flag passed in " + flags);
     if (flags == null)
       throw new
-	NullPointerException("Null flags value passed to constructor.");
+        NullPointerException("Null flags value passed to constructor.");
     this.flags = flags;
   }
 

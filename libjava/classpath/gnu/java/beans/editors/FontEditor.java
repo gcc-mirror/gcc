@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -52,26 +52,26 @@ import java.beans.PropertyEditorSupport;
  **/
 
 public class FontEditor extends PropertyEditorSupport {
-	/** setAsText for Font calls Font.decode(). **/
-	public void setAsText(String val) throws IllegalArgumentException {
-		setValue(Font.decode(val));
-	}
+        /** setAsText for Font calls Font.decode(). **/
+        public void setAsText(String val) throws IllegalArgumentException {
+                setValue(Font.decode(val));
+        }
 
-	/** getAsText for Font returns a value in the format
-	 ** expected by Font.decode().
-	 **/
-	public String getAsText() {
-		Font f = (Font)getValue();
-		if(f.isBold()) {
-			if(f.isItalic()) {
-				return f.getName()+"-bolditalic-"+f.getSize();
-			} else {
-				return f.getName()+"-bold-"+f.getSize();
-			}
-		} else if(f.isItalic()) {
-			return f.getName()+"-italic-"+f.getSize();
-		} else {
-			return f.getName()+"-"+f.getSize();
-		}
-	}
+        /** getAsText for Font returns a value in the format
+         ** expected by Font.decode().
+         **/
+        public String getAsText() {
+                Font f = (Font)getValue();
+                if(f.isBold()) {
+                        if(f.isItalic()) {
+                                return f.getName()+"-bolditalic-"+f.getSize();
+                        } else {
+                                return f.getName()+"-bold-"+f.getSize();
+                        }
+                } else if(f.isItalic()) {
+                        return f.getName()+"-italic-"+f.getSize();
+                } else {
+                        return f.getName()+"-"+f.getSize();
+                }
+        }
 }

@@ -29,7 +29,9 @@
 
 #include <istream>
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<>
     basic_istream<char>&
@@ -65,7 +67,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 			__size = __p - __sb->gptr();
 		      traits_type::copy(__s, __sb->gptr(), __size);
 		      __s += __size;
-		      __sb->gbump(__size);
+		      __sb->__safe_gbump(__size);
 		      _M_gcount += __size;
 		      __c = __sb->sgetc();
 		    }
@@ -143,7 +145,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 								   __cdelim);
 			  if (__p)
 			    __size = __p - __sb->gptr();
-			  __sb->gbump(__size);
+			  __sb->__safe_gbump(__size);
 			  _M_gcount += __size;
 			  __c = __sb->sgetc();
 			}
@@ -237,7 +239,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 				- __sb->gptr());
 		      __traits_type::copy(__s, __sb->gptr(), __size);
 		      __s += __size;
-		      __sb->gbump(__size);
+		      __sb->__safe_gbump(__size);
 		      __extracted += __size;
 		      __c = __sb->sgetc();
 		    }
@@ -316,7 +318,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 					     __sb->gptr() + __size)
 				- __sb->gptr());
 		      __str.append(__sb->gptr(), __size);
-		      __sb->gbump(__size);
+		      __sb->__safe_gbump(__size);
 		      __extracted += __size;
 		      __c = __sb->sgetc();
 		    }
@@ -395,7 +397,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 		      if (__p)
 			__size = __p - __sb->gptr();
 		      __str.append(__sb->gptr(), __size);
-		      __sb->gbump(__size);
+		      __sb->__safe_gbump(__size);
 		      __extracted += __size;
 		      __c = __sb->sgetc();
 		    }
@@ -472,7 +474,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 			__size = __p - __sb->gptr();
 		      traits_type::copy(__s, __sb->gptr(), __size);
 		      __s += __size;
-		      __sb->gbump(__size);
+		      __sb->__safe_gbump(__size);
 		      _M_gcount += __size;
 		      __c = __sb->sgetc();
 		    }
@@ -550,7 +552,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 								   __cdelim);
 			  if (__p)
 			    __size = __p - __sb->gptr();
-			  __sb->gbump(__size);
+			  __sb->__safe_gbump(__size);
 			  _M_gcount += __size;
 			  __c = __sb->sgetc();
 			}
@@ -641,7 +643,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 		      if (__p)
 			__size = __p - __sb->gptr();
 		      __str.append(__sb->gptr(), __size);
-		      __sb->gbump(__size);
+		      __sb->__safe_gbump(__size);
 		      __extracted += __size;
 		      __c = __sb->sgetc();
 		    }
@@ -684,4 +686,5 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     }
 #endif
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace

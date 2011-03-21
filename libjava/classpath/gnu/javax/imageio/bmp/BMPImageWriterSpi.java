@@ -1,4 +1,4 @@
-/* BMPImageWriterSpi.java -- 
+/* BMPImageWriterSpi.java --
    Copyright (C) 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -55,7 +55,7 @@ public class BMPImageWriterSpi
   static final String[] suffixes = { ".bmp", ".bm" };
   static final String[] MIMETypes = { "image/bmp", "image/x-windows-bmp" };
   static final String[] readerSpiNames = { "gnu.javax.imageio.bmp.BMPImageReaderSpi" };
-  
+
   static final boolean supportsStandardStreamMetadataFormat = false;
   static final String nativeStreamMetadataFormatName = null;
   static final String nativeStreamMetadataFormatClassName = null;
@@ -66,9 +66,9 @@ public class BMPImageWriterSpi
   static final String nativeImageMetadataFormatClassName = null;
   static final String[] extraImageMetadataFormatNames = null;
   static final String[] extraImageMetadataFormatClassNames = null;
-  
+
   private BMPImageWriter writerInstance;
-  
+
   public BMPImageWriterSpi()
   {
     super(vendorName, version, names, suffixes, MIMETypes, writerClassName,
@@ -79,10 +79,10 @@ public class BMPImageWriterSpi
           nativeImageMetadataFormatClassName, extraImageMetadataFormatNames,
           extraImageMetadataFormatClassNames);
   }
-  
+
   /**
    * Returns true if the image can be encoded.
-   * 
+   *
    * @param type - the image type specifier.
    * @return true if image can be encoded, otherwise false.
    */
@@ -90,7 +90,7 @@ public class BMPImageWriterSpi
   {
     if (type == null)
       return false;
-    
+
     BMPInfoHeader ih = writerInstance.infoHeader;
     if (ih != null)
       {
@@ -101,7 +101,7 @@ public class BMPImageWriterSpi
                                                              || bytes != 4
                                                              || bytes != 8
                                                              || bytes != 16
-                                                             || bytes != 24 
+                                                             || bytes != 24
                                                              || bytes != 32))))
           return false;
       }
@@ -110,7 +110,7 @@ public class BMPImageWriterSpi
 
   /**
    * Creates an instance of ImageWriter using the given extension.
-   * 
+   *
    * @param extension - the provider that is constructing this image writer, or
    *          null
    */
@@ -122,7 +122,7 @@ public class BMPImageWriterSpi
       writerInstance = new BMPImageWriter(this);
     return writerInstance;
   }
-  
+
   /**
    * Gets the instance of ImageWriter, if already created.
    */

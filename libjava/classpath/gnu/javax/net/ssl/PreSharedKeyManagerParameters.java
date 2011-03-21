@@ -1,4 +1,4 @@
-/* PreSharedKeyManagerParameters.java -- 
+/* PreSharedKeyManagerParameters.java --
    Copyright (C) 2006  Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -51,7 +51,7 @@ public class PreSharedKeyManagerParameters
   implements ManagerFactoryParameters
 {
   private final LinkedHashMap<String, SecretKey> keys;
-  
+
   public PreSharedKeyManagerParameters()
   {
     keys = new LinkedHashMap<String, SecretKey>();
@@ -62,20 +62,20 @@ public class PreSharedKeyManagerParameters
     name.getClass();
     return keys.get(name);
   }
-  
+
   public void putKey(String name, SecretKey key)
   {
     name.getClass();
     key.getClass();
     keys.put(name, key);
   }
-  
+
   public boolean removeKey(String name)
   {
     name.getClass();
     return keys.remove(name) != null;
   }
-  
+
   public Iterator<String> identities()
   {
     return keys.keySet().iterator();

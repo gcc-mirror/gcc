@@ -1,4 +1,4 @@
-/* Square.java -- 
+/* Square.java --
    Copyright (C) 2001, 2002, 2003, 2006 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -271,7 +271,7 @@ public final class Square
 
   /**
    * Left rotate a 32-bit chunk.
-   * 
+   *
    * @param x the 32-bit data to rotate
    * @param s number of places to left-rotate by
    * @return the newly permutated value.
@@ -283,7 +283,7 @@ public final class Square
 
   /**
    * Right rotate a 32-bit chunk.
-   * 
+   *
    * @param x the 32-bit data to rotate
    * @param s number of places to right-rotate by
    * @return the newly permutated value.
@@ -299,7 +299,7 @@ public final class Square
    * Field in GF(2**8).
    * <p>
    * For best performance call it with abs(b) &lt; abs(a).
-   * 
+   *
    * @param a operand for multiply.
    * @param b operand for multiply.
    * @return the result of (a * b) % ROOT.

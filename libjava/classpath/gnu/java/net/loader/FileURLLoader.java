@@ -66,7 +66,7 @@ public final class FileURLLoader extends URLLoader
   /** get resource with the name "name" in the file url */
   public Resource getResource(String name)
   {
-    try 
+    try
       {
         // Make sure that all components in name are valid by walking through
         // them
@@ -91,7 +91,7 @@ public final class FileURLLoader extends URLLoader
    * directory or a non directory component (plain file, symbolic link, ...).
    * An empty or null path is valid. Pathnames components are separated by
    * <code>File.separatorChar</code>
-   * 
+   *
    * @param resourceFileName the name to be checked for validity.
    * @return the canonical file pointed by the resourceFileName or null if the
    *         walking failed
@@ -108,30 +108,30 @@ public final class FileURLLoader extends URLLoader
     for (int i = 0; i < tokenCount - 1; i++)
       {
         String currentToken = stringTokenizer.nextToken();
-        
+
         // If we are at the root directory and trying to go up, the walking is
         // finished with an error
         if ("..".equals(currentToken) && currentFile.equals(dir))
           return null;
-        
+
         currentFile = new File(currentFile, currentToken);
 
         // If the current file doesn't exist or is not a directory, the walking is
         // finished with an error
         if (! (currentFile.exists() && currentFile.isDirectory()))
           return null;
-        
+
       }
-    
+
     // Treat the last token differently, if it exists, because it does not need
     // to be a directory
     if (tokenCount > 0)
       {
         String currentToken = stringTokenizer.nextToken();
-        
+
         if ("..".equals(currentToken) && currentFile.equals(dir))
           return null;
-        
+
         currentFile = new File(currentFile, currentToken);
 
         // If the current file doesn't exist, the walking is
@@ -139,7 +139,7 @@ public final class FileURLLoader extends URLLoader
         if (! currentFile.exists())
           return null;
     }
-    
+
     return currentFile.getCanonicalFile();
   }
 }

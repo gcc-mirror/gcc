@@ -73,7 +73,7 @@ import gnu.classpath.Pointer;
 
 public class GdkPixbufDecoder extends gnu.java.awt.image.ImageDecoder
 {
-  static 
+  static
   {
     if (true) // GCJ LOCAL
       {
@@ -82,7 +82,7 @@ public class GdkPixbufDecoder extends gnu.java.awt.image.ImageDecoder
 
     initStaticState ();
   }
-  
+
   /**
    * Lock that should be held for all gdkpixbuf operations. We don't use
    * the global gdk_threads_enter/leave functions since gdkpixbuf
@@ -124,9 +124,9 @@ public class GdkPixbufDecoder extends gnu.java.awt.image.ImageDecoder
                                  boolean hasAlpha, GdkPixbufWriter writer);
 
   // gdk-pixbuf provids data in RGBA format
-  static final ColorModel cm = new DirectColorModel (32, 0xff000000, 
-                                                     0x00ff0000, 
-                                                     0x0000ff00, 
+  static final ColorModel cm = new DirectColorModel (32, 0xff000000,
+                                                     0x00ff0000,
+                                                     0x0000ff00,
                                                      0x000000ff);
   public GdkPixbufDecoder (DataInput datainput)
   {
@@ -142,7 +142,7 @@ public class GdkPixbufDecoder extends gnu.java.awt.image.ImageDecoder
   {
     super (filename);
   }
-  
+
   public GdkPixbufDecoder (URL url)
   {
     super (url);
@@ -168,21 +168,21 @@ public class GdkPixbufDecoder extends gnu.java.awt.image.ImageDecoder
         ic.setHints (ImageConsumer.RANDOMPIXELORDER);
       }
   }
-  
+
   // called back by native side: area_updated_cb
-  void areaUpdated (int x, int y, int width, int height, 
+  void areaUpdated (int x, int y, int width, int height,
                     int pixels[], int scansize)
   {
     if (curr == null)
       return;
-    
+
     for (int i = 0; i < curr.size (); i++)
       {
         ImageConsumer ic = (ImageConsumer) curr.elementAt (i);
         ic.setPixels (x, y, width, height, cm, pixels, 0, scansize);
       }
   }
-  
+
   // called from an async image loader of one sort or another, this method
   // repeatedly reads bytes from the input stream and passes them through a
   // GdkPixbufLoader using the native method pumpBytes. pumpBytes in turn
@@ -217,7 +217,7 @@ public class GdkPixbufDecoder extends gnu.java.awt.image.ImageDecoder
       }
 
     needsClose = false;
-    
+
     for (int i = 0; i < curr.size (); i++)
       {
         ImageConsumer ic = (ImageConsumer) curr.elementAt (i);
@@ -239,7 +239,7 @@ public class GdkPixbufDecoder extends gnu.java.awt.image.ImageDecoder
   public static class ImageFormatSpec
   {
     public String name;
-    public boolean writable = false;    
+    public boolean writable = false;
     public ArrayList<String> mimeTypes = new ArrayList<String>();
     public ArrayList<String> extensions = new ArrayList<String>();
 
@@ -257,12 +257,12 @@ public class GdkPixbufDecoder extends gnu.java.awt.image.ImageDecoder
     public synchronized void addExtension(String e)
     {
       extensions.add(e);
-    }    
+    }
   }
 
   static ArrayList<ImageFormatSpec> imageFormatSpecs;
 
-  public static ImageFormatSpec registerFormat(String name, boolean writable) 
+  public static ImageFormatSpec registerFormat(String name, boolean writable)
   {
     ImageFormatSpec ifs = new ImageFormatSpec(name, writable);
     synchronized(GdkPixbufDecoder.class)
@@ -277,7 +277,7 @@ public class GdkPixbufDecoder extends gnu.java.awt.image.ImageDecoder
   static String[] getFormatNames(boolean writable)
   {
     ArrayList<String> names = new ArrayList<String>();
-    synchronized (imageFormatSpecs) 
+    synchronized (imageFormatSpecs)
       {
         Iterator<ImageFormatSpec> i = imageFormatSpecs.iterator();
         while (i.hasNext())
@@ -287,10 +287,10 @@ public class GdkPixbufDecoder extends gnu.java.awt.image.ImageDecoder
               continue;
             names.add(ifs.name);
 
-            /* 
+            /*
              * In order to make the filtering code work, we need to register
              * this type under every "format name" likely to be used as a synonym.
-             * This generally means "all the extensions people might use". 
+             * This generally means "all the extensions people might use".
              */
 
             Iterator<String> j = ifs.extensions.iterator();
@@ -304,7 +304,7 @@ public class GdkPixbufDecoder extends gnu.java.awt.image.ImageDecoder
   static String[] getFormatExtensions(boolean writable)
   {
     ArrayList<String> extensions = new ArrayList<String>();
-    synchronized (imageFormatSpecs) 
+    synchronized (imageFormatSpecs)
       {
         Iterator<ImageFormatSpec> i = imageFormatSpecs.iterator();
         while (i.hasNext())
@@ -323,7 +323,7 @@ public class GdkPixbufDecoder extends gnu.java.awt.image.ImageDecoder
   static String[] getFormatMimeTypes(boolean writable)
   {
     ArrayList<String> mimeTypes = new ArrayList<String>();
-    synchronized (imageFormatSpecs) 
+    synchronized (imageFormatSpecs)
       {
         Iterator<ImageFormatSpec> i = imageFormatSpecs.iterator();
         while (i.hasNext())
@@ -339,7 +339,7 @@ public class GdkPixbufDecoder extends gnu.java.awt.image.ImageDecoder
     return mimeTypes.toArray(new String[mimeTypes.size()]);
   }
 
-  
+
   static String findFormatName(Object ext, boolean needWritable)
   {
     if (ext == null)
@@ -361,7 +361,7 @@ public class GdkPixbufDecoder extends gnu.java.awt.image.ImageDecoder
         if (ifs.name.equals(str))
           return str;
 
-        Iterator<String> j = ifs.extensions.iterator(); 
+        Iterator<String> j = ifs.extensions.iterator();
         while (j.hasNext())
           {
             String extension = j.next();
@@ -369,14 +369,14 @@ public class GdkPixbufDecoder extends gnu.java.awt.image.ImageDecoder
               return ifs.name;
           }
 
-        j = ifs.mimeTypes.iterator(); 
+        j = ifs.mimeTypes.iterator();
         while (j.hasNext())
           {
             String mimeType = j.next();
             if (mimeType.equals(str))
               return ifs.name;
           }
-      }      
+      }
     throw new IllegalArgumentException("unknown extension '" + str + "'");
   }
 
@@ -397,7 +397,7 @@ public class GdkPixbufDecoder extends gnu.java.awt.image.ImageDecoder
     return writerSpi;
   }
 
-  public static void registerSpis(IIORegistry reg) 
+  public static void registerSpis(IIORegistry reg)
   {
     reg.registerServiceProvider(getReaderSpi(), ImageReaderSpi.class);
     reg.registerServiceProvider(getWriterSpi(), ImageWriterSpi.class);
@@ -405,11 +405,11 @@ public class GdkPixbufDecoder extends gnu.java.awt.image.ImageDecoder
 
   public static class GdkPixbufWriterSpi extends ImageWriterSpi
   {
-    public GdkPixbufWriterSpi() 
-    {      
+    public GdkPixbufWriterSpi()
+    {
       super("GdkPixbuf", "2.x",
-            GdkPixbufDecoder.getFormatNames(true), 
-            GdkPixbufDecoder.getFormatExtensions(true), 
+            GdkPixbufDecoder.getFormatNames(true),
+            GdkPixbufDecoder.getFormatExtensions(true),
             GdkPixbufDecoder.getFormatMimeTypes(true),
             "gnu.java.awt.peer.gtk.GdkPixbufDecoder$GdkPixbufWriter",
             new Class[] { ImageOutputStream.class },
@@ -437,11 +437,11 @@ public class GdkPixbufDecoder extends gnu.java.awt.image.ImageDecoder
 
   public static class GdkPixbufReaderSpi extends ImageReaderSpi
   {
-    public GdkPixbufReaderSpi() 
-    { 
+    public GdkPixbufReaderSpi()
+    {
       super("GdkPixbuf", "2.x",
-            GdkPixbufDecoder.getFormatNames(false), 
-            GdkPixbufDecoder.getFormatExtensions(false), 
+            GdkPixbufDecoder.getFormatNames(false),
+            GdkPixbufDecoder.getFormatExtensions(false),
             GdkPixbufDecoder.getFormatMimeTypes(false),
             "gnu.java.awt.peer.gtk.GdkPixbufDecoder$GdkPixbufReader",
             new Class[] { ImageInputStream.class },
@@ -450,9 +450,9 @@ public class GdkPixbufDecoder extends gnu.java.awt.image.ImageDecoder
             false, null, null, null, null);
     }
 
-    public boolean canDecodeInput(Object obj) 
-    { 
-      return true; 
+    public boolean canDecodeInput(Object obj)
+    {
+      return true;
     }
 
     public ImageReader createReaderInstance(Object ext)
@@ -489,7 +489,7 @@ public class GdkPixbufDecoder extends gnu.java.awt.image.ImageDecoder
       return null;
     }
 
-    public IIOMetadata getDefaultImageMetadata (ImageTypeSpecifier imageType, 
+    public IIOMetadata getDefaultImageMetadata (ImageTypeSpecifier imageType,
                                                 ImageWriteParam param)
     {
       return null;
@@ -509,7 +509,7 @@ public class GdkPixbufDecoder extends gnu.java.awt.image.ImageDecoder
       int height = ras.getHeight();
       ColorModel model = image.getColorModel();
       int[] pixels = CairoGraphics2D.findSimpleIntegerArray (image.getColorModel(), ras);
-      
+
       if (pixels == null)
         {
           BufferedImage img;
@@ -520,7 +520,7 @@ public class GdkPixbufDecoder extends gnu.java.awt.image.ImageDecoder
           for (int y = 0; y < height; ++y)
             for (int x = 0; x < width; ++x)
               img.setRGB(x, y, model.getRGB(ras.getPixel(x, y, pix)));
-          pixels = CairoGraphics2D.findSimpleIntegerArray (img.getColorModel(), 
+          pixels = CairoGraphics2D.findSimpleIntegerArray (img.getColorModel(),
                                                          img.getRaster());
           model = img.getColorModel();
         }
@@ -530,7 +530,7 @@ public class GdkPixbufDecoder extends gnu.java.awt.image.ImageDecoder
       processImageStarted(1);
       synchronized(pixbufLock)
         {
-          streamImage(pixels, this.ext, width, height, model.hasAlpha(), 
+          streamImage(pixels, this.ext, width, height, model.hasAlpha(),
                       this);
         }
       synchronized(data)
@@ -555,7 +555,7 @@ public class GdkPixbufDecoder extends gnu.java.awt.image.ImageDecoder
         throw exception;
 
       processImageComplete();
-    }    
+    }
 
     /**
      * Object marking end of data from native streamImage code.
@@ -627,7 +627,7 @@ public class GdkPixbufDecoder extends gnu.java.awt.image.ImageDecoder
     }
   }
 
-  private static class GdkPixbufReader 
+  private static class GdkPixbufReader
     extends ImageReader
     implements ImageConsumer
   {
@@ -638,7 +638,7 @@ public class GdkPixbufDecoder extends gnu.java.awt.image.ImageDecoder
     int width;
     int height;
     String ext;
-    
+
     public GdkPixbufReader(GdkPixbufReaderSpi ownerSpi, Object ext)
     {
       super(ownerSpi);
@@ -658,29 +658,29 @@ public class GdkPixbufDecoder extends gnu.java.awt.image.ImageDecoder
       width = w;
       height = h;
     }
-    
+
     public void setProperties(Hashtable props) {}
 
-    public void setColorModel(ColorModel model) 
+    public void setColorModel(ColorModel model)
     {
       defaultModel = model;
     }
 
     public void setHints(int flags) {}
 
-    public void setPixels(int x, int y, int w, int h, 
-                          ColorModel model, byte[] pixels, 
+    public void setPixels(int x, int y, int w, int h,
+                          ColorModel model, byte[] pixels,
                           int offset, int scansize)
     {
-    }      
+    }
 
-    public void setPixels(int x, int y, int w, int h, 
-                          ColorModel model, int[] pixels, 
+    public void setPixels(int x, int y, int w, int h,
+                          ColorModel model, int[] pixels,
                           int offset, int scansize)
     {
       if (model == null)
         model = defaultModel;
-      
+
       if (bufferedImage == null)
         {
           if(model != null && model.hasAlpha())
@@ -709,7 +709,7 @@ public class GdkPixbufDecoder extends gnu.java.awt.image.ImageDecoder
       processImageProgress(y / (height == 0 ? 1 : height));
     }
 
-    public void imageComplete(int status) 
+    public void imageComplete(int status)
     {
       processImageComplete();
     }
@@ -729,7 +729,7 @@ public class GdkPixbufDecoder extends gnu.java.awt.image.ImageDecoder
       return 1;
     }
 
-    public IIOMetadata getImageMetadata(int i) 
+    public IIOMetadata getImageMetadata(int i)
     {
       return null;
     }
@@ -748,7 +748,7 @@ public class GdkPixbufDecoder extends gnu.java.awt.image.ImageDecoder
       vec.add(new ImageTypeSpecifier(img));
       return vec.iterator();
     }
-    
+
     public int getHeight(int imageIndex)
       throws IOException
     {

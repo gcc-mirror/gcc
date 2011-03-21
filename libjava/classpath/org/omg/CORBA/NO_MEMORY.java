@@ -42,15 +42,15 @@ import java.io.Serializable;
 
 /**
  * Means that the server has runned out of memory.
- * 
+ *
  * @author Audrius Meskauskas (AudriusA@Bioinformatics.org)
  */
 public final class NO_MEMORY
   extends SystemException
   implements Serializable
 {
-  /** 
-   * Use serialVersionUID for interoperability. 
+  /**
+   * Use serialVersionUID for interoperability.
    */
   private static final long serialVersionUID = -4591569617929689285L;
 

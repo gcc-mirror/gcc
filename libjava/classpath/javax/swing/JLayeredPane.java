@@ -1,4 +1,4 @@
-/* JLayeredPane.java -- 
+/* JLayeredPane.java --
    Copyright (C) 2002, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -85,7 +85,7 @@ import javax.accessibility.AccessibleRole;
  * </p>
  *
  * <p>To change the layer of a component that is already a child of
- * a <code>JLayeredPane</code>, use the {@link #setLayer(Component, int)} 
+ * a <code>JLayeredPane</code>, use the {@link #setLayer(Component, int)}
  * method.</p>
  *
  * <p>The purpose of this class is to translate this view of "layers" into a
@@ -94,9 +94,9 @@ import javax.accessibility.AccessibleRole;
  *
  * <p>There is a precise set of words we will use to refer to numbers within
  * this class:</p>
- * 
+ *
  * <dl>
- * <dt>Component Index:</dt> 
+ * <dt>Component Index:</dt>
  * <dd>An offset into the <code>component</code> array held in our ancestor,
  * {@link java.awt.Container}, from <code>[0 .. component.length)</code>. The drawing
  * rule with indices is that 0 is drawn last.</dd>
@@ -106,7 +106,7 @@ import javax.accessibility.AccessibleRole;
  * numbers are drawn first, then layer 0, then positive numbered layers, in
  * ascending order.</dd>
  *
- * <dt>Position:</dt> 
+ * <dt>Position:</dt>
  * <dd>An offset into a layer's "logical drawing order". Layer position 0
  * is drawn last. Layer position -1 is a synonym for the first layer
  * position (the logical "bottom").</dd>
@@ -120,7 +120,7 @@ import javax.accessibility.AccessibleRole;
  */
 public class JLayeredPane extends JComponent implements Accessible
 {
-  
+
   /**
    * Provides accessibility support for <code>JLayeredPane</code>.
    */
@@ -136,7 +136,7 @@ public class JLayeredPane extends JComponent implements Accessible
 
     /**
      * Returns the accessble role of <code>JLayeredPane</code>,
-     * {@link AccessibleRole#LAYERED_PANE}. 
+     * {@link AccessibleRole#LAYERED_PANE}.
      */
     public AccessibleRole getAccessibleRole()
     {
@@ -145,7 +145,7 @@ public class JLayeredPane extends JComponent implements Accessible
   }
 
   private static final long serialVersionUID = 5534920399324590459L;
-  
+
   public static final String LAYER_PROPERTY = "layeredContainerLayer";
 
   public static final Integer FRAME_CONTENT_LAYER = new Integer(-30000);
@@ -164,7 +164,7 @@ public class JLayeredPane extends JComponent implements Accessible
     setLayout(null);
   }
 
-  /** 
+  /**
    * Looks up the layer a child component is currently assigned to.
    *
    * If <code>c</code> is an instance of {@link JComponent}, then the layer
@@ -199,7 +199,7 @@ public class JLayeredPane extends JComponent implements Accessible
    * Looks up the layer in the client property with the key
    * {@link #LAYER_PROPERTY} of <code>comp</code>. If no such property can be
    * found, we return <code>0</code> ({@link #DEFAULT_LAYER}).
-   * 
+   *
    * @param comp the component for which the layer is looked up
    *
    * @return the layer of <code>comp</code> as stored in the corresponding
@@ -313,7 +313,7 @@ public class JLayeredPane extends JComponent implements Accessible
 
   /**
    * Return the position of a component within its layer. Positions are assigned
-   * from the "front" (position 0) to the "back" (position N-1), and drawn from 
+   * from the "front" (position 0) to the "back" (position N-1), and drawn from
    * the back towards the front.
    *
    * @param c the component to get the position of
@@ -344,7 +344,7 @@ public class JLayeredPane extends JComponent implements Accessible
 
   /**
    * Change the position of a component within its layer. Positions are assigned
-   * from the "front" (position 0) to the "back" (position N-1), and drawn from 
+   * from the "front" (position 0) to the "back" (position N-1), and drawn from
    * the back towards the front.
    *
    * @param c the component to change the position of
@@ -356,7 +356,7 @@ public class JLayeredPane extends JComponent implements Accessible
   {
     setLayer(c, getLayer(c), position);
   }
-    
+
   /**
    * Return an array of all components within a layer of this
    * container. Components are ordered front-to-back, with the "front"
@@ -420,9 +420,9 @@ public class JLayeredPane extends JComponent implements Accessible
    * @param c the component to look up.
    *
    * @return the external index of the component or <code>-1</code> if
-   *         <code>c</code> is not a child of this layered pane 
+   *         <code>c</code> is not a child of this layered pane
    */
-  public int getIndexOf(Component c) 
+  public int getIndexOf(Component c)
   {
     return getComponentZOrder(c);
   }
@@ -439,28 +439,28 @@ public class JLayeredPane extends JComponent implements Accessible
   protected Integer getObjectForLayer(int layer)
   {
     switch (layer)
-	    {
-	    case -30000:
+            {
+            case -30000:
         return FRAME_CONTENT_LAYER;
 
-	    case 0:
+            case 0:
         return DEFAULT_LAYER;
 
-	    case 100:
+            case 100:
         return PALETTE_LAYER;
 
-	    case 200:
+            case 200:
         return MODAL_LAYER;
 
-	    case 300:
+            case 300:
         return POPUP_LAYER;
 
-	    case 400:
+            case 400:
         return DRAG_LAYER;
 
-	    default:
+            default:
         break;
-	    }
+            }
 
     return new Integer(layer);
   }
@@ -579,8 +579,8 @@ public class JLayeredPane extends JComponent implements Accessible
    */
   public void removeAll()
   {
-	componentToLayer.clear();
-	super.removeAll();
+        componentToLayer.clear();
+        super.removeAll();
   }
 
   /**
@@ -650,7 +650,7 @@ public class JLayeredPane extends JComponent implements Accessible
    *        component to
    * @param index the position within the layer
    */
-  protected void addImpl(Component comp, Object layerConstraint, int index) 
+  protected void addImpl(Component comp, Object layerConstraint, int index)
   {
     int layer;
     if (layerConstraint != null && layerConstraint instanceof Integer)
@@ -726,14 +726,14 @@ public class JLayeredPane extends JComponent implements Accessible
     boolean result = true;
     for (int i = 0; i < numChildren; ++i)
       {
-    	Component c1 = getComponent(i);
-    	if (! c1.isVisible())
+        Component c1 = getComponent(i);
+        if (! c1.isVisible())
           continue;
-    	Rectangle r1 = c1.getBounds();
-    	if (r1.isEmpty())
+        Rectangle r1 = c1.getBounds();
+        if (r1.isEmpty())
           continue;
 
-    	for (int j = i + 1; j < numChildren; ++j)
+        for (int j = i + 1; j < numChildren; ++j)
           {
             Component c2 = getComponent(j);
             if (! c2.isVisible())

@@ -57,7 +57,7 @@ public interface Highlighter
   {
     void paint(Graphics g, int p0, int p1, Shape bounds, JTextComponent c);
   }
-  
+
   void install(JTextComponent c);
 
   void deinstall(JTextComponent c);
@@ -76,4 +76,3 @@ public interface Highlighter
 
   void paint(Graphics g);
 }
-

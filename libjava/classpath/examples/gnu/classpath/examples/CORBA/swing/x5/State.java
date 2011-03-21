@@ -40,15 +40,15 @@ package gnu.classpath.examples.CORBA.swing.x5;
 
 /**
  * Defines the states in that the player can be.
- * 
- * @author Audrius Meskauskas (AudriusA@Bioinformatics.org) 
+ *
+ * @author Audrius Meskauskas (AudriusA@Bioinformatics.org)
  */
 public interface State {
   /**
    * The initial ("disconnected") state.
    */
   int DISCONNECTED = 0;
-  
+
   /**
    * The state, indicating that the player has been queued for the game and
    * waiting for the partner to come.
@@ -74,7 +74,7 @@ public interface State {
    * States that we have lost.
    */
   int I_HAVE_LOST = 5;
-  
+
   /**
    * The "inconsistent" state when it is not possible to continue the game.
    */

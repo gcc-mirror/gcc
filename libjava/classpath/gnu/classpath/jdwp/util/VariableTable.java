@@ -44,7 +44,7 @@ import java.io.IOException;
 
 /**
  * A class representing a Variable Table for a method.
- * 
+ *
  * @author Aaron Luchko <aluchko@redhat.com>
  */
 public class VariableTable
@@ -66,7 +66,7 @@ public class VariableTable
 
   /**
    * Make a new variable table with the given values.
-   * 
+   *
    * @param argCnt number of words used by arguments in this frame
    * @param slots number of variables
    * @param lineCI first code index of given variable (size slots)
@@ -89,7 +89,7 @@ public class VariableTable
 
   /**
    * Writes this line table to the given DataOutputStream.
-   * 
+   *
    * @param os the stream to write it to
    * @throws IOException
    */

@@ -1,7 +1,7 @@
 /* Definitions of target machine for GNU compiler,
    for ATMEL AVR at90s8515, ATmega103/103L, ATmega603/603L microcontrollers.
    Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 
-   2008, 2009, 2010
+   2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
    Contributed by Denis Chertykov (chertykov@gmail.com)
 
@@ -380,12 +380,6 @@ typedef struct avr_args {
 
 extern int avr_reg_order[];
 
-#define RET_REGISTER avr_ret_register ()
-
-#define LIBCALL_VALUE(MODE)  avr_libcall_value (MODE)
-
-#define FUNCTION_VALUE_REGNO_P(N) ((int) (N) == RET_REGISTER)
-
 #define DEFAULT_PCC_STRUCT_RETURN 0
 
 #define EPILOGUE_USES(REGNO) avr_epilogue_uses(REGNO)
@@ -446,15 +440,6 @@ do {									    \
 } while(0)
 
 #define LEGITIMATE_CONSTANT_P(X) 1
-
-#define REGISTER_MOVE_COST(MODE, FROM, TO) ((FROM) == STACK_REG ? 6 \
-					    : (TO) == STACK_REG ? 12 \
-					    : 2)
-
-#define MEMORY_MOVE_COST(MODE,CLASS,IN) ((MODE)==QImode ? 2 :	\
-					 (MODE)==HImode ? 4 :	\
-					 (MODE)==SImode ? 8 :	\
-					 (MODE)==SFmode ? 8 : 16)
 
 #define BRANCH_COST(speed_p, predictable_p) 0
 
@@ -739,9 +724,9 @@ extern const char *avr_device_to_devicelib (int argc, const char **argv);
   { "device_to_startfile", avr_device_to_startfiles }, \
   { "device_to_devicelib", avr_device_to_devicelib },
 
-#define CPP_SPEC "%{posix:-D_POSIX_SOURCE}"
+#define CPP_SPEC ""
 
-#define CC1_SPEC "%{profile:-p}"
+#define CC1_SPEC ""
 
 #define CC1PLUS_SPEC "%{!frtti:-fno-rtti} \
     %{!fenforce-eh-specs:-fno-enforce-eh-specs} \

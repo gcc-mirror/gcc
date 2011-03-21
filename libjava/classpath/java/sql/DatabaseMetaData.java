@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -37,7 +37,7 @@ exception statement from your version. */
 
 package java.sql;
 
-public interface DatabaseMetaData 
+public interface DatabaseMetaData
 {
   /**
    * It is unknown whether or not the procedure returns a result.
@@ -409,7 +409,7 @@ public interface DatabaseMetaData
    * This method tests whether or not the database uses local files to
    * store tables.
    *
-   * @return <code>true</code> if the database uses local files, 
+   * @return <code>true</code> if the database uses local files,
    * <code>false</code> otherwise.
    *
    * @exception SQLException If an error occurs.
@@ -459,7 +459,7 @@ public interface DatabaseMetaData
   boolean storesLowerCaseIdentifiers() throws SQLException;
 
   /**
-   * This method tests whether or not the database stores mixed case 
+   * This method tests whether or not the database stores mixed case
    * identifers even if it treats them as case insensitive.
    *
    * @return <code>true</code> if the database stores mixed case identifiers,
@@ -482,7 +482,7 @@ public interface DatabaseMetaData
    * This method tests whether or not the database treats mixed case
    * quoted identifiers as all upper case.
    *
-   * @return <code>true</code> if the database treats all quoted identifiers 
+   * @return <code>true</code> if the database treats all quoted identifiers
    *         as upper case, <code>false</code> otherwise.
    * @exception SQLException If an error occurs.
    */
@@ -492,17 +492,17 @@ public interface DatabaseMetaData
    * This method tests whether or not the database treats mixed case
    * quoted identifiers as all lower case.
    *
-   * @return <code>true</code> if the database treats all quoted identifiers 
+   * @return <code>true</code> if the database treats all quoted identifiers
    *         as lower case, <code>false</code> otherwise.
    * @exception SQLException If an error occurs.
    */
   boolean storesLowerCaseQuotedIdentifiers() throws SQLException;
 
   /**
-   * This method tests whether or not the database stores mixed case 
+   * This method tests whether or not the database stores mixed case
    * quoted identifers even if it treats them as case insensitive.
    *
-   * @return <code>true</code> if the database stores mixed case quoted 
+   * @return <code>true</code> if the database stores mixed case quoted
    *         identifiers, <code>false</code> otherwise.
    * @exception SQLException If an error occurs.
    */
@@ -552,7 +552,7 @@ public interface DatabaseMetaData
 
   /**
    * This method returns comma separated list of time/date functions.
-   * 
+   *
    * @return The list of time/date functions.
    * @exception SQLException If an error occurs.
    */
@@ -567,7 +567,7 @@ public interface DatabaseMetaData
   String getSearchStringEscape() throws SQLException;
 
   /**
-   * This methods returns non-standard characters that can appear in 
+   * This methods returns non-standard characters that can appear in
    * unquoted identifiers.
    *
    * @return Non-standard characters that can appear in unquoted identifiers.
@@ -638,7 +638,7 @@ public interface DatabaseMetaData
       SQLException;
 
   /**
-   * This method tests whether or not table correlation names are 
+   * This method tests whether or not table correlation names are
    * supported.  This will be always be <code>true</code> in a fully JDBC
    * compliant driver.
    *
@@ -722,7 +722,7 @@ public interface DatabaseMetaData
    * This method tests whether multiple result sets for a single statement are
    * supported.
    *
-   * @return <code>true</code> if multiple result sets are supported for a 
+   * @return <code>true</code> if multiple result sets are supported for a
    *         single statement, <code>false</code> otherwise.
    * @exception SQLException If an error occurs.
    */
@@ -789,7 +789,7 @@ public interface DatabaseMetaData
 
   /**
    * This method tests whether or not the ANSI92 intermediate SQL
-   * grammar is supported.  
+   * grammar is supported.
    *
    * @return <code>true</code> if the ANSI92 intermediate SQL grammar is
    *         supported, <code>false</code> otherwise.
@@ -799,7 +799,7 @@ public interface DatabaseMetaData
 
   /**
    * This method tests whether or not the ANSI92 full SQL
-   * grammar is supported.  
+   * grammar is supported.
    *
    * @return <code>true</code> if the ANSI92 full SQL grammar is
    *         supported, <code>false</code> otherwise.
@@ -829,7 +829,7 @@ public interface DatabaseMetaData
   /**
    * This method tests whether or not the database supports full outer joins.
    *
-   * @return <code>true</code> if full outer joins are supported, 
+   * @return <code>true</code> if full outer joins are supported,
    *         <code>false</code> otherwise.
    * @exception SQLException If an error occurs.
    */
@@ -838,7 +838,7 @@ public interface DatabaseMetaData
   /**
    * This method tests whether or not the database supports limited outer joins.
    *
-   * @return <code>true</code> if limited outer joins are supported, 
+   * @return <code>true</code> if limited outer joins are supported,
    *         <code>false</code> otherwise.
    * @exception SQLException If an error occurs.
    */
@@ -1005,7 +1005,7 @@ public interface DatabaseMetaData
    * This method tests whether or not SELECT FOR UPDATE is supported by the
    * database.
    *
-   * @return <code>true</code> if SELECT FOR UPDATE is supported 
+   * @return <code>true</code> if SELECT FOR UPDATE is supported
    *         <code>false</code> otherwise.
    * @exception SQLException If an error occurs.
    */
@@ -1036,7 +1036,7 @@ public interface DatabaseMetaData
    * expressions.  A fully JDBC compliant driver will always return
    * <code>true</code>.
    *
-   * @return <code>true</code> if subqueries are allowed in exists 
+   * @return <code>true</code> if subqueries are allowed in exists
    *         expressions, <code>false</code> otherwise.
    * @exception SQLException If an error occurs.
    */
@@ -1057,7 +1057,7 @@ public interface DatabaseMetaData
    * expressions.  A fully JDBC compliant driver will always return
    * <code>true</code>.
    *
-   * @return <code>true</code> if subqueries are allowed in quantified 
+   * @return <code>true</code> if subqueries are allowed in quantified
    *         expressions, <code>false</code> otherwise.
    * @exception SQLException If an error occurs.
    */
@@ -1143,7 +1143,7 @@ public interface DatabaseMetaData
 
   /**
    * This method returns the maximum length of a character literal.
-   * 
+   *
    * @return The maximum length of a character literal.
    * @exception SQLException If an error occurs.
    */
@@ -1338,7 +1338,7 @@ public interface DatabaseMetaData
       SQLException;
 
   /**
-   * This method tests whether or not DDL and DML statements allowed within 
+   * This method tests whether or not DDL and DML statements allowed within
    * the same transaction.
    *
    * @return <code>true</code> if DDL and DML statements are allowed in the
@@ -1385,7 +1385,7 @@ public interface DatabaseMetaData
    * a <code>ResultSet</code> with the following columns:
    * <p>
    * <ol>
-   * <li>PROCEDURE_CAT - The catalog the procedure is in, which may be 
+   * <li>PROCEDURE_CAT - The catalog the procedure is in, which may be
    * <code>null</code>.</li>
    * <li>PROCEDURE_SCHEM - The schema the procedures is in, which may be
    * <code>null</code>.</li>
@@ -1394,8 +1394,8 @@ public interface DatabaseMetaData
    * <li>Unused</li>
    * <li>Unused</li>
    * <li>REMARKS - A description of the procedure</li>
-   * <li>PROCEDURE_TYPE - Indicates the return type of the procedure, which 
-   * is one of the contstants defined in this class 
+   * <li>PROCEDURE_TYPE - Indicates the return type of the procedure, which
+   * is one of the contstants defined in this class
    * (<code>procedureResultUnknown</code>, <code>procedureNoResult</code>, or
    * <code>procedureReturnsResult</code>).</li>
    * </ol>
@@ -1417,7 +1417,7 @@ public interface DatabaseMetaData
    * <code>ResultSet</code> with the following columns:
    * <p>
    * <ol>
-   * <li>PROCEDURE_CAT - The catalog the procedure is in, which may be 
+   * <li>PROCEDURE_CAT - The catalog the procedure is in, which may be
    * <code>null</code>.</li>
    * <li>PROCEDURE_SCHEM - The schema the procedures is in, which may be
    * <code>null</code>.</li>
@@ -1455,7 +1455,7 @@ public interface DatabaseMetaData
       SQLException;
 
   /**
-   * This method returns a list of the requested table as a   
+   * This method returns a list of the requested table as a
    * <code>ResultSet</code> with the following columns:
    *
    * <ol>
@@ -1466,7 +1466,7 @@ public interface DatabaseMetaData
    * of the values returned by the <code>getTableTypes()</code> method.</li>
    * <li>REMARKS - Comments about the table.</li>
    * </ol>
-   * 
+   *
    * @param catalog The name of the catalog to return tables from,
    *        or "" to return tables from all catalogs.
    * @param schemaPattern A schema pattern for the schemas to return tables
@@ -1480,7 +1480,7 @@ public interface DatabaseMetaData
       tablePattern, String[] types) throws SQLException;
 
   /**
-   * This method returns the list of database schemas as a 
+   * This method returns the list of database schemas as a
    * <code>ResultSet</code>, with one column - TABLE_SCHEM - that is the
    * name of the schema.
    *
@@ -1515,7 +1515,7 @@ public interface DatabaseMetaData
    * <code>ResultSet</code> with the following columns:
    * <p>
    * <ol>
-   * <li>TABLE_CAT - The catalog the table is in, which may be 
+   * <li>TABLE_CAT - The catalog the table is in, which may be
    * <code>null</code>.</li>
    * <li>TABLE_SCHEM - The schema the tables is in, which may be
    * <code>null</code>.</li>
@@ -1543,7 +1543,7 @@ public interface DatabaseMetaData
    *
    * @param catalog The name of the catalog to return table from,
    * or "" to return tables from all catalogs.
-   * @param schemaPattern A schema pattern for the schemas to return 
+   * @param schemaPattern A schema pattern for the schemas to return
    * tables from, or "" to return tables from all schemas.
    * @param tablePattern The pattern of table names to return.
    * @param columnPattern The pattern of column names to return.
@@ -1559,7 +1559,7 @@ public interface DatabaseMetaData
    * with the following columns:
    *
    * <ol>
-   * <li>TABLE_CAT - The catalog the table is in, which may be 
+   * <li>TABLE_CAT - The catalog the table is in, which may be
    * <code>null</code>.</li>
    * <li>TABLE_SCHEM - The schema the tables is in, which may be
    * <code>null</code>.</li>
@@ -1591,7 +1591,7 @@ public interface DatabaseMetaData
    * with the following columns:
    *
    * <ol>
-   * <li>TABLE_CAT - The catalog the table is in, which may be 
+   * <li>TABLE_CAT - The catalog the table is in, which may be
    * <code>null</code>.</li>
    * <li>TABLE_SCHEM - The schema the tables is in, which may be
    * <code>null</code>.</li>
@@ -1608,7 +1608,7 @@ public interface DatabaseMetaData
    *        to return information from all catalogs.
    * @param schemaPattern The schema to retrieve information from, or the empty string
    *        to return entities not associated with a schema.
-   * @param tablePattern The table name pattern of tables to return 
+   * @param tablePattern The table name pattern of tables to return
    *        information for.
    * @return A <code>ResultSet</code> with all the requested privileges.
    * @exception SQLException If an error occurs.
@@ -1622,7 +1622,7 @@ public interface DatabaseMetaData
    * the following columns:
    *
    * <ol>
-   * <li>SCOPE - The scope of the results returned.  This is one of the 
+   * <li>SCOPE - The scope of the results returned.  This is one of the
    * constants defined in this class (<code>bestRowTemporary</code>,
    * <code>bestRowTransaction</code>, or <code>bestRowSession</code>).</li>
    * <li>COLUMN_NAME - The name of the column.</li>
@@ -1633,7 +1633,7 @@ public interface DatabaseMetaData
    * <li>BUFFER_LENGTH - Unused</li>
    * <li>DECIMAL_DIGITS - The scale of the column.</li>
    * <li>PSEUDO_COLUMN - Whether or not the best row identifier is a
-   * pseudo_column.  This is one of the constants defined in this class 
+   * pseudo_column.  This is one of the constants defined in this class
    * (<code>bestRowUnknown</code>, <code>bestRowNotPseudo</code>, or
    * <code>bestRowPseudo</code>).</li>
    * </ol>
@@ -1655,7 +1655,7 @@ public interface DatabaseMetaData
 
   /**
    * This method returns the set of columns that are automatically updated
-   * when the row is update. It returns this information as a 
+   * when the row is update. It returns this information as a
    * <code>ResultSet</code> with the following columns:
    *
    * <ol>
@@ -1668,7 +1668,7 @@ public interface DatabaseMetaData
    * <li>BUFFER_LENGTH - Unused</li>
    * <li>DECIMAL_DIGITS - The scale of the column.</li>
    * <li>PSEUDO_COLUMN - Whether or not the best row identifier is a
-   * pseudo_column.  This is one of the constants defined in this class 
+   * pseudo_column.  This is one of the constants defined in this class
    * (<code>versionRowUnknown</code>, <code>versionRowNotPseudo</code>, or
    * <code>versionRowPseudo</code>).</li>
    * </ol>
@@ -1725,12 +1725,12 @@ public interface DatabaseMetaData
    * <li>FKCOLUMN_NAME - The foreign key column name.</li>
    * <li>KEY_SEQ - The sequence number of the column within the foreign key.</li>
    * <li>UPDATE_RULE - How the foreign key behaves when the primary key is
-   * updated.  This is one of the constants defined in this class 
+   * updated.  This is one of the constants defined in this class
    * (<code>importedNoAction</code>, <code>importedKeyCascade</code>,
    * <code>importedKeySetNull</code>, <code>importedKeySetDefault</code>, or
    * <code>importedKeyRestrict</code>).</li>
    * <li>DELETE_RULE - How the foreign key behaves when the primary key is
-   * deleted.  This is one of the constants defined in this class 
+   * deleted.  This is one of the constants defined in this class
    * (<code>importedNoAction</code>, <code>importedKeyCascade</code>,
    * <code>importedKeySetNull</code>, or <code>importedKeySetDefault</code>)</li>
    * <li>FK_NAME - The name of the foreign key.</li>
@@ -1769,12 +1769,12 @@ public interface DatabaseMetaData
    * <li>FKCOLUMN_NAME - The foreign key column name.</li>
    * <li>KEY_SEQ - The sequence number of the column within the foreign key.</li>
    * <li>UPDATE_RULE - How the foreign key behaves when the primary key is
-   * updated.  This is one of the constants defined in this class 
+   * updated.  This is one of the constants defined in this class
    * (<code>importedNoAction</code>, <code>importedKeyCascade</code>,
    * <code>importedKeySetNull</code>, <code>importedKeySetDefault</code>, or
    * <code>importedKeyRestrict</code>).</li>
    * <li>DELETE_RULE - How the foreign key behaves when the primary key is
-   * deleted.  This is one of the constants defined in this class 
+   * deleted.  This is one of the constants defined in this class
    * (<code>importedNoAction</code>, <code>importedKeyCascade</code>,
    * <code>importedKeySetNull</code>, or <code>importedKeySetDefault</code>)</li>
    * <li>FK_NAME - The name of the foreign key.</li>
@@ -1813,12 +1813,12 @@ public interface DatabaseMetaData
    * <li>FKCOLUMN_NAME - The foreign key column name.</li>
    * <li>KEY_SEQ - The sequence number of the column within the foreign key.</li>
    * <li>UPDATE_RULE - How the foreign key behaves when the primary key is
-   * updated.  This is one of the constants defined in this class 
+   * updated.  This is one of the constants defined in this class
    * (<code>importedNoAction</code>, <code>importedKeyCascade</code>,
    * <code>importedKeySetNull</code>, <code>importedKeySetDefault</code>, or
    * <code>importedKeyRestrict</code>).</li>
    * <li>DELETE_RULE - How the foreign key behaves when the primary key is
-   * deleted.  This is one of the constants defined in this class 
+   * deleted.  This is one of the constants defined in this class
    * (<code>importedNoAction</code>, <code>importedKeyCascade</code>,
    * <code>importedKeySetNull</code>, or <code>importedKeySetDefault</code>)</li>
    * <li>FK_NAME - The name of the foreign key.</li>
@@ -1871,7 +1871,7 @@ public interface DatabaseMetaData
    * <li>CREATE_PARAMS - The parameters used to create the type, which may be
    * <code>null</code>.</li>
    * <li>NULLABLE - Whether or not this type supports NULL values.  This will
-   * be one of the constants defined in this interface 
+   * be one of the constants defined in this interface
    * (<code>typeNoNulls</code>, <code>typeNullable</code>, or
    * <code>typeNullableUnknown</code>).</li>
    * <li>CASE_SENSITIVE - Whether or not the value is case sensitive.</li>
@@ -1889,7 +1889,7 @@ public interface DatabaseMetaData
    * <li>SQL_DATETIME_SUB - Unused.</li>
    * <li>NUM_PREC_RADIX - The radix of this data type.</li>
    * </ol>
-   * 
+   *
    * @return A <code>ResultSet</code> with the list of available data types.
    * @exception SQLException If an error occurs.
    */
@@ -1925,12 +1925,12 @@ public interface DatabaseMetaData
    * </ol>
    *
    * @param catalog The catalog to retrieve information from, or the empty string
-   *        to return entities not associated with a catalog, or 
+   *        to return entities not associated with a catalog, or
    *        <code>null</code> to return information from all catalogs.
    * @param schema The schema to retrieve information from, or the empty string
    *        to return entities not associated with a schema.
    * @param tableName The table name to return information for.
-   * @param unique <code>true</code> to return only unique indexes, 
+   * @param unique <code>true</code> to return only unique indexes,
    *        <code>false</code> otherwise.
    * @param approximate <code>true</code> if data values can be approximations,
    *        <code>false</code> otherwise.
@@ -2012,7 +2012,7 @@ public interface DatabaseMetaData
   boolean ownInsertsAreVisible(int type) throws SQLException;
 
   /**
-   * This method tests whether or not the specified result set type sees 
+   * This method tests whether or not the specified result set type sees
    * updates committed by others.
    *
    * @param type The desired result type, which is one of the constants
@@ -2025,7 +2025,7 @@ public interface DatabaseMetaData
   boolean othersUpdatesAreVisible(int type) throws SQLException;
 
   /**
-   * This method tests whether or not the specified result set type sees 
+   * This method tests whether or not the specified result set type sees
    * deletes committed by others.
    *
    * @param type The desired result type, which is one of the constants
@@ -2038,7 +2038,7 @@ public interface DatabaseMetaData
   boolean othersDeletesAreVisible(int type) throws SQLException;
 
   /**
-   * This method tests whether or not the specified result set type sees 
+   * This method tests whether or not the specified result set type sees
    * inserts committed by others.
    *
    * @param type The desired result type, which is one of the constants
@@ -2075,7 +2075,7 @@ public interface DatabaseMetaData
    * @see ResultSet
    */
   boolean deletesAreDetected(int type) throws SQLException;
-  
+
   /**
    * This method tests whether or not the specified result set type can detect
    * a visible insert by calling the <code>rowUpdated</code> method.
@@ -2138,7 +2138,7 @@ public interface DatabaseMetaData
 
   /**
    * This method tests whether the databse supports savepoints.
-   * 
+   *
    * @return <code>true</code> if the database supports savepoints,
    *         <code>false</code> if it does not.
    * @exception SQLException If an error occurs.
@@ -2149,7 +2149,7 @@ public interface DatabaseMetaData
 
   /**
    * This method tests whether the database supports named parameters.
-   * 
+   *
    * @return <code>true</code> if the database supports named parameters,
    *         <code>false</code> if it does not.
    * @exception SQLException If an error occurs.
@@ -2160,7 +2160,7 @@ public interface DatabaseMetaData
   /**
    * This method tests whether the database supports returning multiple
    * <code>ResultSet</code>S from a <code>CallableStatement</code> at once.
-   * 
+   *
    * @return <code>true</code> if the database supports returnig multiple
    *         results at once, <code>false</code> if it does not.
    * @exception SQLException If an error occurs.
@@ -2195,7 +2195,7 @@ public interface DatabaseMetaData
    * This method tests if the database supports the specified holdability type.
    * Valid values for this parameter are specified in the
    * <code>ResultSet</code> class.
-   * 
+   *
    * @param holdability The holdability type to test.
    * @return <code>true</code> if the database supports the holdability type,
    *         <code>false</code> if it does not.
@@ -2210,7 +2210,7 @@ public interface DatabaseMetaData
    * This method returns the default holdability type of <code>ResultSet</code>S
    * retrieved from this database. The possible values are specified in the
    * <code>ResultSet</code> class.
-   * 
+   *
    * @return The default holdability type.
    * @exception SQLException If an error occurs.
    * @since 1.4
@@ -2219,7 +2219,7 @@ public interface DatabaseMetaData
 
   /**
    * This method returns the major version number of the database.
-   * 
+   *
    * @return The major version number of the database.
    * @exception SQLException If an error occurs.
    * @since 1.4
@@ -2228,7 +2228,7 @@ public interface DatabaseMetaData
 
   /**
    * This method returns the minor version number of the database.
-   * 
+   *
    * @return The minor version number of the database.
    * @exception SQLException If an error occurs.
    * @since 1.4
@@ -2237,7 +2237,7 @@ public interface DatabaseMetaData
 
   /**
    * This method returns the major version number of the JDBC driver.
-   * 
+   *
    * @return The major version number of the JDBC driver.
    * @exception  SQLException If an error occurs.
    * @since 1.4
@@ -2246,7 +2246,7 @@ public interface DatabaseMetaData
 
   /**
    * This method returns the minor version number of the JDBC driver.
-   * 
+   *
    * @return The minor version number of the database.
    * @exception SQLException If an error occurs.
    * @since 1.4

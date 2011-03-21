@@ -1,6 +1,6 @@
 /* A splay-tree datatype.  
    Copyright (C) 1998, 1999, 2000, 2001, 2009,
-   2010 Free Software Foundation, Inc.
+   2010, 2011 Free Software Foundation, Inc.
    Contributed by Mark Mitchell (mark@markmitchell.com).
 
 This file is part of GNU CC.
@@ -300,13 +300,13 @@ splay_tree_new_with_allocator (splay_tree_compare_fn compare_fn,
 
 /*
 
-@deftypefn Supplemental splay_tree splay_tree_new_with_typed_alloc
-(splay_tree_compare_fn @var{compare_fn},
-splay_tree_delete_key_fn @var{delete_key_fn},
-splay_tree_delete_value_fn @var{delete_value_fn},
-splay_tree_allocate_fn @var{tree_allocate_fn},
-splay_tree_allocate_fn @var{node_allocate_fn},
-splay_tree_deallocate_fn @var{deallocate_fn},
+@deftypefn Supplemental splay_tree splay_tree_new_with_typed_alloc @
+(splay_tree_compare_fn @var{compare_fn}, @
+splay_tree_delete_key_fn @var{delete_key_fn}, @
+splay_tree_delete_value_fn @var{delete_value_fn}, @
+splay_tree_allocate_fn @var{tree_allocate_fn}, @
+splay_tree_allocate_fn @var{node_allocate_fn}, @
+splay_tree_deallocate_fn @var{deallocate_fn}, @
 void * @var{allocate_data})
 
 This function creates a splay tree that uses two different allocators

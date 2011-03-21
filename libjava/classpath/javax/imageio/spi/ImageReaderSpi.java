@@ -84,7 +84,7 @@ public abstract class ImageReaderSpi extends ImageReaderWriterSpi
     if (inputTypes == null
         || inputTypes.length == 0)
       throw new IllegalArgumentException("inputTypes may not be null or empty");
-    
+
     this.inputTypes = inputTypes;
     this.writerSpiNames = writerSpiNames;
   }
@@ -115,7 +115,7 @@ public abstract class ImageReaderSpi extends ImageReaderWriterSpi
   {
     if (reader == null)
       throw new IllegalArgumentException("reader may not be null");
-    
+
     return pluginClassName.equals(reader.getClass().getName());
   }
 }

@@ -1,4 +1,4 @@
-/* DomComment.java -- 
+/* DomComment.java --
    Copyright (C) 1999,2000,2001,2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -54,7 +54,7 @@ public class DomComment
   extends DomCharacterData
   implements Comment
 {
- 
+
   /**
    * Constructs a comment node associated with the specified
    * document and holding the specified data.
@@ -67,7 +67,7 @@ public class DomComment
   {
     super(COMMENT_NODE, owner, value);
   }
-  
+
   /**
    * <b>DOM L1</b>
    * Returns the string "#comment".
@@ -78,4 +78,3 @@ public class DomComment
   }
 
 }
-

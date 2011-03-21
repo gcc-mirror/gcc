@@ -64,7 +64,7 @@ final class VMNetworkInterface
     this.name = name;
     addresses = new HashSet();
   }
-  
+
   /**
    * Creates a dummy instance which represents any network
    * interface.
@@ -81,15 +81,15 @@ final class VMNetworkInterface
         // Cannot happen.
       }
   }
-  
+
   static
   {
     if (Configuration.INIT_LOAD_LIBRARY)
       System.loadLibrary("javanet");
-    
+
     initIds();
   }
-  
+
   private static native void initIds();
 
   /**
@@ -100,7 +100,7 @@ final class VMNetworkInterface
    */
   public static native VMNetworkInterface[] getVMInterfaces()
     throws SocketException;
-  
+
   private void addAddress(ByteBuffer addr)
     throws SocketException, UnknownHostException
   {

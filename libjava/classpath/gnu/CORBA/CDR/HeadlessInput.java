@@ -71,10 +71,10 @@ import java.math.BigDecimal;
  * Substitutes the main stream in factories when the header is already behind.
  * Overrides methods that may be invoked from the factory, forcing not to read
  * the header if called first time on this stream.
- * 
+ *
  * This stream reverts to default behavior if one or more call are made (reading
  * value types that are nested fields of the value type).
- * 
+ *
  * @author Audrius Meskauskas, Lithuania (AudriusA@Bioinformatics.org)
  */
 public class HeadlessInput
@@ -103,7 +103,7 @@ public class HeadlessInput
 
   /**
    * Create an instance, reading from the given buffer.
-   * 
+   *
    * @param a_stream a stream from where the data will be read.
    * @param inheritSettings a stream from that endian and other settings are
    * inherited.

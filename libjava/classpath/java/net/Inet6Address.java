@@ -48,7 +48,7 @@ import java.io.IOException;
 /*
  * Written using on-line Java Platform 1.4 API Specification and
  * RFC 1884 (http://www.ietf.org/rfc/rfc1884.txt)
- * 
+ *
  * @author Michael Koch
  * @status Updated to 1.5. Serialization compatibility is tested.
  */
@@ -62,37 +62,37 @@ public final class Inet6Address extends InetAddress
   byte[] ipaddress;
 
   /**
-   * The scope ID, if any. 
+   * The scope ID, if any.
    * @since 1.5
-   * @serial 
+   * @serial
    */
   private int scope_id;
 
   /**
-   * The scope ID, if any. 
+   * The scope ID, if any.
    * @since 1.5
-   * @serial 
+   * @serial
    */
   private boolean scope_id_set;
 
   /**
    * Whether ifname is set or not.
    * @since 1.5
-   * @serial 
+   * @serial
    */
   private boolean scope_ifname_set;
 
   /**
    * Name of the network interface, used only by the serialization methods
    * @since 1.5
-   * @serial 
+   * @serial
    */
   private String ifname;
 
   /**
    * Scope network interface, or <code>null</code>.
    */
-  private transient NetworkInterface nif; 
+  private transient NetworkInterface nif;
 
   /**
    * The address family of these addresses (used for serialization).
@@ -250,14 +250,14 @@ public final class Inet6Address extends InetAddress
    *
    * @throws UnkownHostException if the address is an invalid number of bytes.
    * @since 1.5
-   */  
-  public static Inet6Address getByAddress(String host, byte[] addr, 
-					  int scopeId)
+   */
+  public static Inet6Address getByAddress(String host, byte[] addr,
+                                          int scopeId)
     throws UnknownHostException
   {
     if( addr.length != 16 )
       throw new UnknownHostException("Illegal address length: " + addr.length
-				     + " bytes.");
+                                     + " bytes.");
     Inet6Address ip = new Inet6Address( addr, host );
     ip.scope_id = scopeId;
     ip.scope_id_set = true;
@@ -270,14 +270,14 @@ public final class Inet6Address extends InetAddress
    *
    * @throws UnkownHostException if the address is an invalid number of bytes.
    * @since 1.5
-   */  
-  public static Inet6Address getByAddress(String host, byte[] addr, 
-					  NetworkInterface nif)
+   */
+  public static Inet6Address getByAddress(String host, byte[] addr,
+                                          NetworkInterface nif)
     throws UnknownHostException
   {
     if( addr.length != 16 )
       throw new UnknownHostException("Illegal address length: " + addr.length
-				     + " bytes.");
+                                     + " bytes.");
     Inet6Address ip = new Inet6Address( addr, host );
     ip.nif = nif;
 
@@ -287,8 +287,8 @@ public final class Inet6Address extends InetAddress
   /**
    * Returns the <code>NetworkInterface</code> of the address scope
    * if it is a scoped address and the scope is given in the form of a
-   * NetworkInterface. 
-   * (I.e. the address was created using  the 
+   * NetworkInterface.
+   * (I.e. the address was created using  the
    * getByAddress(String, byte[], NetworkInterface) method)
    * Otherwise this method returns <code>null</code>.
    * @since 1.5
@@ -310,7 +310,7 @@ public final class Inet6Address extends InetAddress
     // check scope_id_set because some JDK-serialized objects seem to have
     // scope_id set to a nonzero value even when scope_id_set == false
     if( scope_id_set )
-      return scope_id; 
+      return scope_id;
     return 0;
   }
 
@@ -323,12 +323,12 @@ public final class Inet6Address extends InetAddress
 
     for (int i = 0; i < 16; i += 2)
       {
-	int x = ((ipaddress[i] & 0xFF) << 8) | (ipaddress[i + 1] & 0xFF);
+        int x = ((ipaddress[i] & 0xFF) << 8) | (ipaddress[i + 1] & 0xFF);
 
-	if (i > 0)
-	  sbuf.append(':');
+        if (i > 0)
+          sbuf.append(':');
 
-	sbuf.append(Integer.toHexString(x));
+        sbuf.append(Integer.toHexString(x));
       }
     if( nif != null )
       sbuf.append( "%" + nif.getName() );
@@ -361,7 +361,7 @@ public final class Inet6Address extends InetAddress
 
     for (int i = 0; i < ip.ipaddress.length; i++)
       if (ipaddress[i] != ip.ipaddress[i])
-	return false;
+        return false;
 
     if( ip.nif != null && nif != null )
       return nif.equals( ip.nif );
@@ -399,16 +399,16 @@ public final class Inet6Address extends InetAddress
    */
   private void readObject(ObjectInputStream s)
     throws IOException, ClassNotFoundException
-  {  
+  {
     s.defaultReadObject();
     try
       {
-	if( scope_ifname_set )
-	  nif = NetworkInterface.getByName( ifname );
+        if( scope_ifname_set )
+          nif = NetworkInterface.getByName( ifname );
       }
     catch( SocketException se )
       {
-	// FIXME: Ignore this? or throw an IOException?
+        // FIXME: Ignore this? or throw an IOException?
       }
   }
 
@@ -421,8 +421,8 @@ public final class Inet6Address extends InetAddress
   {
     if( nif != null )
       {
-	ifname = nif.getName();
-	scope_ifname_set = true;
+        ifname = nif.getName();
+        scope_ifname_set = true;
       }
     s.defaultWriteObject();
   }

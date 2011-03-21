@@ -1,6 +1,6 @@
 // jvmti.cc - JVMTI implementation
 
-/* Copyright (C) 2006, 2007 Free Software Foundation
+/* Copyright (C) 2006, 2007, 2010 Free Software Foundation
 
    This file is part of libgcj.
 

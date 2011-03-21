@@ -1,4 +1,4 @@
-/* LangFunction.java -- 
+/* LangFunction.java --
    Copyright (C) 2004,2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -104,7 +104,7 @@ final class LangFunction
       }
     return null;
   }
-  
+
   public Expr clone(Object context)
   {
     return new IdFunction(arg.clone(context));
@@ -119,5 +119,5 @@ final class LangFunction
   {
     return "lang(" + arg + ")";
   }
-  
+
 }

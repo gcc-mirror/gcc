@@ -1,4 +1,4 @@
-! {  dg-do run )
+! {  dg-do run }
 ! PR41278 internal compiler error related to matmul and transpose
 ! Test case prepared by Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 ! Original test case by Chris <cmklaij@hetnet.nl>

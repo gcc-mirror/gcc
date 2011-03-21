@@ -46,8 +46,8 @@ import java.io.FileReader;
 
 /**
  * The main executable class of the game client.
- * 
- * @author Audrius Meskauskas (AudriusA@Bioinformatics.org) 
+ *
+ * @author Audrius Meskauskas (AudriusA@Bioinformatics.org)
  */
 public class Demo
 {

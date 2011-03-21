@@ -45,7 +45,7 @@ import java.awt.geom.Rectangle2D;
 /**
  * This is an implementation of GraphicAttribute which draws images in a
  * TextLayout.
- * 
+ *
  * @author Lillian Angel
  * @author Michael Koch
  */
@@ -58,7 +58,7 @@ public final class ImageGraphicAttribute
 
   /**
    * Constucts an instance from the specified Image. The origin is at (0, 0).
-   * 
+   *
    * @param image - image to construct from.
    * @param alignment - the alignment
    */
@@ -70,7 +70,7 @@ public final class ImageGraphicAttribute
   /**
    * Constucts an instance from the specified Image. The origin is at (originX,
    * originY).
-   * 
+   *
    * @param image - image to construct from
    * @param alignment - the alignment
    * @param originX - x point of origin
@@ -88,10 +88,10 @@ public final class ImageGraphicAttribute
   /**
    * Draws the image at the specified location, relative to the
    * origin.
-   * 
+   *
    * @param g - the graphics to use to render the image
    * @param x - the x location
-   * @param y - the y location 
+   * @param y - the y location
    */
   public void draw(Graphics2D g, float x, float y)
   {
@@ -100,7 +100,7 @@ public final class ImageGraphicAttribute
 
   /**
    * Compares this to the specified Object
-   * 
+   *
    * @param obj - the object to compare
    * @return true if the obj and this are equivalent
    */
@@ -115,7 +115,7 @@ public final class ImageGraphicAttribute
   /**
    * Compares this to the ImageGraphicAttribute given, by
    * comparing all fields and values.
-   * 
+   *
    * @param rhs - the ImageGraphicAttribute to compare
    * @return true if the object given is equivalent to this
    */
@@ -128,13 +128,13 @@ public final class ImageGraphicAttribute
                               && (this.getDescent() == rhs.getDescent())
                               && (this.hashCode() == rhs.hashCode())
                               && (this.image.equals(rhs.image))
-                              && (this.originX == rhs.originX) 
+                              && (this.originX == rhs.originX)
                               && (this.originY == rhs.originY)));
   }
 
   /**
    * Returns distance from the origin to the right edge of the image of this.
-   * 
+   *
    * @return the advance
    */
   public float getAdvance()
@@ -144,7 +144,7 @@ public final class ImageGraphicAttribute
 
   /**
    * Returns the the distance from the top of the image to the origin of this.
-   * 
+   *
    * @return the ascent.
    */
   public float getAscent()
@@ -154,7 +154,7 @@ public final class ImageGraphicAttribute
 
   /**
    * Gets the bounds of the object rendered, relative to the position.
-   * 
+   *
    * @return the bounds of the object rendered, relative to the position.
    */
   public Rectangle2D getBounds()
@@ -167,7 +167,7 @@ public final class ImageGraphicAttribute
 
   /**
    * Returns the distance from the origin to the bottom of the image.
-   * 
+   *
    * @return the descent
    */
   public float getDescent()
@@ -177,7 +177,7 @@ public final class ImageGraphicAttribute
 
   /**
    * Gets the hash code for this image.
-   * 
+   *
    * @return the hash code
    */
   public int hashCode()

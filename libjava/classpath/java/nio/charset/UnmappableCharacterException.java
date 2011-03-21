@@ -1,4 +1,4 @@
-/* UnmappableCharacterException.java -- 
+/* UnmappableCharacterException.java --
    Copyright (C) 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -45,7 +45,7 @@ public class UnmappableCharacterException extends CharacterCodingException
   private static final long serialVersionUID = - 7026962371537706123L;
 
   private int inputLength;
-  
+
   /**
    * Creates the exception
    */

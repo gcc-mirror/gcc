@@ -43,7 +43,7 @@ package gnu.CORBA;
  * Provides information and operations, related to about the 20 bit vendor minor
  * code Id. This code is included into all CORBA system exceptions and is also
  * transferred to remote side.
- * 
+ *
  * @author Audrius Meskauskas, Lithuania (AudriusA@Bioinformatics.org)
  */
 public interface Minor
@@ -257,22 +257,22 @@ public interface Minor
    * for the given policy type.
    */
   int PolicyType = 15 | vendor;
-  
+
   /* NO_RESOURCES */
-  
+
   /**
    * Unable to get a free port for a new socket. Proably too many objects under
    * unsuitable POA policy.
    */
   int Ports = 20 | vendor;
-  
+
   /**
    * Too many parallel calls (too many parallel threads). The thread control
    * prevents malicios client from knocking the server out by suddenly
    * submitting large number of requests.
    */
   int Threads = 21 | vendor;
-  
+
   /**
    * The IOR starts with file://, http:// or ftp://, but this local or remote
    * resource is not accessible.

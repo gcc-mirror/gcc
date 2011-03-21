@@ -53,14 +53,14 @@ import java.util.Vector;
  * the composite name http://www.gnu.org/software/classpath/index.html spans
  * over three namespaces (the protocol http, the web server location
  * (www.gnu.org) and the index.html location on the server).
- * 
+ *
  * @author Tom Tromey (tromey@redhat.com)
  */
 public class CompositeName implements Name, Cloneable, Serializable
 {
   private static final long serialVersionUID = 1667768148915813118L;
-  
-  private transient Vector<String> elts;  
+
+  private transient Vector<String> elts;
 
   public CompositeName ()
   {
@@ -72,8 +72,8 @@ public class CompositeName implements Name, Cloneable, Serializable
     elts = new Vector<String> ();
     try
       {
-	while (comps.hasMoreElements ())
-	  elts.add (comps.nextElement ());
+        while (comps.hasMoreElements ())
+          elts.add (comps.nextElement ());
       }
     catch (NoSuchElementException ignore)
       {
@@ -84,49 +84,49 @@ public class CompositeName implements Name, Cloneable, Serializable
   {
     elts = new Vector<String> ();
     // Parse the string into its components.
-    final char no_quote = 'x';	// Use 'x' to mean no quoting.
+    final char no_quote = 'x';  // Use 'x' to mean no quoting.
     char quote = no_quote;
     boolean escaped = false;
     StringBuilder new_element = new StringBuilder ();
     for (int i = 0; i < n.length (); ++i)
       {
-	char c = n.charAt (i);
-	if (escaped)
-	  escaped = false;
-	else if (c == '\\')
-	  {
-	    escaped = true;
-	    continue;
-	  }
-	else if (quote != no_quote)
-	  {
-	    if (quote == c)
-	      {
-		// The quotes must surround a complete component.
-		if (i + 1 < n.length () && n.charAt (i + 1) != '/')
-		  throw new InvalidNameException ("close quote before end of component");
-		elts.add (new_element.toString ());
-		new_element.setLength (0);
-		quote = no_quote;
-		continue;
-	      }
-	    // Otherwise, fall through.
-	  }
-	// Quotes are only special at the start of a component.
-	else if (new_element.length () == 0
-		 && (c == '\'' || c == '"'))
-	  {
-	    quote = c;
-	    continue;
-	  }
-	else if (c == '/')
-	  {
-	    elts.add (new_element.toString ());
-	    new_element.setLength (0);
-	    continue;
-	  }
+        char c = n.charAt (i);
+        if (escaped)
+          escaped = false;
+        else if (c == '\\')
+          {
+            escaped = true;
+            continue;
+          }
+        else if (quote != no_quote)
+          {
+            if (quote == c)
+              {
+                // The quotes must surround a complete component.
+                if (i + 1 < n.length () && n.charAt (i + 1) != '/')
+                  throw new InvalidNameException ("close quote before end of component");
+                elts.add (new_element.toString ());
+                new_element.setLength (0);
+                quote = no_quote;
+                continue;
+              }
+            // Otherwise, fall through.
+          }
+        // Quotes are only special at the start of a component.
+        else if (new_element.length () == 0
+                 && (c == '\'' || c == '"'))
+          {
+            quote = c;
+            continue;
+          }
+        else if (c == '/')
+          {
+            elts.add (new_element.toString ());
+            new_element.setLength (0);
+            continue;
+          }
 
-	new_element.append (c);
+        new_element.append (c);
       }
 
     if (new_element.length () != 0)
@@ -156,11 +156,11 @@ public class CompositeName implements Name, Cloneable, Serializable
     Enumeration<String> e = n.getAll ();
     try
       {
-	while (e.hasMoreElements ())
-	  {
-	    elts.add (posn, e.nextElement ());
-	    ++posn;
-	  }
+        while (e.hasMoreElements ())
+          {
+            elts.add (posn, e.nextElement ());
+            ++posn;
+          }
       }
     catch (NoSuchElementException ignore)
       {
@@ -173,8 +173,8 @@ public class CompositeName implements Name, Cloneable, Serializable
     Enumeration<String> e = suffix.getAll ();
     try
       {
-	while (e.hasMoreElements ())
-	  elts.add (e.nextElement ());
+        while (e.hasMoreElements ())
+          elts.add (e.nextElement ());
       }
     catch (NoSuchElementException ignore)
       {
@@ -195,10 +195,10 @@ public class CompositeName implements Name, Cloneable, Serializable
     int last = Math.min (cn.elts.size (), elts.size ());
     for (int i = 0; i < last; ++i)
       {
-	String f = elts.get (i);
-	int comp = f.compareTo (cn.elts.get (i));
-	if (comp != 0)
-	  return comp;
+        String f = elts.get (i);
+        int comp = f.compareTo (cn.elts.get (i));
+        if (comp != 0)
+          return comp;
       }
     return elts.size () - cn.elts.size ();
   }
@@ -213,8 +213,8 @@ public class CompositeName implements Name, Cloneable, Serializable
     int delta = elts.size () - cn.elts.size ();
     for (int i = 0; i < cn.elts.size (); ++i)
       {
-	if (! cn.elts.get (i).equals (elts.get (delta + i)))
-	  return false;
+        if (! cn.elts.get (i).equals (elts.get (delta + i)))
+          return false;
       }
     return true;
   }
@@ -288,8 +288,8 @@ public class CompositeName implements Name, Cloneable, Serializable
       return false;
     for (int i = 0; i < cn.elts.size (); ++i)
       {
-	if (! cn.elts.get (i).equals (elts.get (i)))
-	  return false;
+        if (! cn.elts.get (i).equals (elts.get (i)))
+          return false;
       }
     return true;
   }
@@ -299,33 +299,33 @@ public class CompositeName implements Name, Cloneable, Serializable
     CPStringBuilder result = new CPStringBuilder ();
     for (int i = 0; i < elts.size (); ++i)
       {
-	// For simplicity we choose to always quote using escapes and
-	// never quotes.
-	String elt = elts.get (i);
-	if (i > 0
-	    || (i == elts.size () - 1 && elt.equals ("")))
-	  result.append ('/');
-	for (int k = 0; k < elt.length (); ++k)
-	  {
-	    char c = elt.charAt (k);
-	    // We must quote
-	    //     ... a leading quote,
-	    if ((k == 0 && (c == '"' || c == '\''))
-		// ... an escape preceding a meta character,
-		//     or at the end of a component,
-		|| (c == '\\'
-		    && (k == elt.length () - 1
-			|| "\\'\"/".indexOf (elt.charAt (k + 1)) != -1))
-		// ... or a component separator.
-		|| c == '/')
-	      result.append ('\\');
-	    result.append (c);
-	  }
+        // For simplicity we choose to always quote using escapes and
+        // never quotes.
+        String elt = elts.get (i);
+        if (i > 0
+            || (i == elts.size () - 1 && elt.equals ("")))
+          result.append ('/');
+        for (int k = 0; k < elt.length (); ++k)
+          {
+            char c = elt.charAt (k);
+            // We must quote
+            //     ... a leading quote,
+            if ((k == 0 && (c == '"' || c == '\''))
+                // ... an escape preceding a meta character,
+                //     or at the end of a component,
+                || (c == '\\'
+                    && (k == elt.length () - 1
+                        || "\\'\"/".indexOf (elt.charAt (k + 1)) != -1))
+                // ... or a component separator.
+                || c == '/')
+              result.append ('\\');
+            result.append (c);
+          }
       }
     return result.toString ();
   }
-  
-  private void readObject(ObjectInputStream s) 
+
+  private void readObject(ObjectInputStream s)
     throws IOException, ClassNotFoundException
   {
     int size = s.readInt();

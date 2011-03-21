@@ -1,4 +1,4 @@
-/* KeyPairGeneratorAdapter.java -- 
+/* KeyPairGeneratorAdapter.java --
    Copyright 2001, 2002, 2006 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -72,7 +72,7 @@ public abstract class KeyPairGeneratorAdapter
 
   /**
    * Trivial protected constructor.
-   * 
+   *
    * @param kpgName the canonical name of the keypair generator algorithm.
    */
   protected KeyPairGeneratorAdapter(String kpgName)

@@ -1,4 +1,4 @@
-/* ClientMechanism.java -- 
+/* ClientMechanism.java --
    Copyright (C) 2003, 2005, 2006 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -235,7 +235,7 @@ public abstract class ClientMechanism
   /**
    * Initialises the mechanism with designated attributes. Permissible names and
    * values are mechanism specific.
-   * 
+   *
    * @param attributes a set of name-value pairs that describes the desired
    *          future behaviour of this instance.
    * @throws IllegalMechanismStateException if the instance is already
@@ -278,7 +278,7 @@ public abstract class ClientMechanism
   /**
    * Resets the mechanism instance for re-initialisation and use with other
    * characteristics.
-   * 
+   *
    * @throws SaslException if an exception occurs during the process.
    */
   public void reset() throws SaslException

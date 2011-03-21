@@ -1,5 +1,5 @@
 ;; Frv Machine Description
-;; Copyright (C) 1999, 2000, 2001, 2003, 2004, 2005, 2007, 2008
+;; Copyright (C) 1999, 2000, 2001, 2003, 2004, 2005, 2007, 2008, 2010
 ;; Free Software Foundation, Inc.
 ;; Contributed by Red Hat, Inc.
 
@@ -1519,6 +1519,7 @@
 ;;
 
 (include "predicates.md")
+(include "constraints.md")
 
 ;; ::::::::::::::::::::
 ;; ::

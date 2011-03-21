@@ -592,7 +592,7 @@ public class gnuRequest extends Request implements Cloneable
   {
     final gnuRequest cloned = Clone();
     cloned.oneWay = true;
-    
+
     new Thread()
       {
         public void run()
@@ -714,7 +714,7 @@ public class gnuRequest extends Request implements Cloneable
   /**
    * Do the actual invocation. This implementation requires to set the IOR
    * property ({@link #setIOR(IOR)} before calling this method.
-   * 
+   *
    * @throws BAD_INV_ORDER, minor code 0, if the IOR has not been previously set
    *           or if the direct argument addition is mixed with the direct
    *           argument writing into the output stream.
@@ -936,7 +936,7 @@ public synchronized RawReply submit()
     throws SystemException, ForwardRequest
   {
     RawReply response = submit();
-    
+
     // If this is a one way message, do not care about the response.
     if (oneWay && response == EMPTY)
       return;

@@ -66,23 +66,23 @@ public class TabStop implements Serializable
 
   /**
    * Creates a new <code>TabStop</code> for the specified tab position.
-   * 
+   *
    * @param pos  the tab position.
    */
-  public TabStop(float pos) 
+  public TabStop(float pos)
   {
     this(pos, ALIGN_LEFT, LEAD_NONE);
   }
-  
+
   /**
    * Creates a new <code>TabStop</code> with the specified attributes.
-   * 
+   *
    * @param pos  the tab position.
-   * @param align  the alignment (one of {@link #ALIGN_LEFT}, 
-   *     {@link #ALIGN_CENTER}, {@link #ALIGN_RIGHT}, {@link #ALIGN_DECIMAL} 
+   * @param align  the alignment (one of {@link #ALIGN_LEFT},
+   *     {@link #ALIGN_CENTER}, {@link #ALIGN_RIGHT}, {@link #ALIGN_DECIMAL}
    *     or {@link #ALIGN_BAR}).
-   * @param leader  the leader (one of {@link #LEAD_NONE}, {@link #LEAD_DOTS}, 
-   *     {@link #LEAD_EQUALS}, {@link #LEAD_HYPHENS}, {@link #LEAD_THICKLINE} 
+   * @param leader  the leader (one of {@link #LEAD_NONE}, {@link #LEAD_DOTS},
+   *     {@link #LEAD_EQUALS}, {@link #LEAD_HYPHENS}, {@link #LEAD_THICKLINE}
    *     or {@link #LEAD_UNDERLINE}).
    */
   public TabStop(float pos, int align, int leader)
@@ -91,16 +91,16 @@ public class TabStop implements Serializable
     this.align = align;
     this.leader = leader;
   }
-  
+
   /**
    * Tests this <code>TabStop</code> for equality with an arbitrary object.
-   * 
+   *
    * @param other  the other object (<code>null</code> permitted).
-   * 
-   * @return <code>true</code> if this <code>TabStop</code> is equal to 
+   *
+   * @return <code>true</code> if this <code>TabStop</code> is equal to
    *     the specified object, and <code>false</code> otherwise.
    */
-  public boolean equals(Object other) 
+  public boolean equals(Object other)
   {
     return (other != null)
       && (other instanceof TabStop)
@@ -110,55 +110,55 @@ public class TabStop implements Serializable
   }
 
   /**
-   * Returns the tab alignment.  This should be one of {@link #ALIGN_LEFT}, 
-   * {@link #ALIGN_CENTER}, {@link #ALIGN_RIGHT}, {@link #ALIGN_DECIMAL} or 
+   * Returns the tab alignment.  This should be one of {@link #ALIGN_LEFT},
+   * {@link #ALIGN_CENTER}, {@link #ALIGN_RIGHT}, {@link #ALIGN_DECIMAL} or
    * {@link #ALIGN_BAR}.
-   * 
+   *
    * @return The tab alignment.
    */
-  public int getAlignment() 
+  public int getAlignment()
   {
     return align;
   }
 
   /**
-   * Returns the leader type.  This should be one of {@link #LEAD_NONE}, 
-   * {@link #LEAD_DOTS}, {@link #LEAD_EQUALS}, {@link #LEAD_HYPHENS}, 
+   * Returns the leader type.  This should be one of {@link #LEAD_NONE},
+   * {@link #LEAD_DOTS}, {@link #LEAD_EQUALS}, {@link #LEAD_HYPHENS},
    * {@link #LEAD_THICKLINE} or {@link #LEAD_UNDERLINE}.
-   * 
+   *
    * @return The leader type.
    */
-  public int getLeader() 
+  public int getLeader()
   {
     return leader;
   }
 
   /**
    * Returns the tab position.
-   * 
+   *
    * @return The tab position.
    */
-  public float getPosition() 
+  public float getPosition()
   {
     return pos;
   }
 
   /**
    * Returns a hash code for this <code>TabStop</code>.
-   * 
+   *
    * @return A hash code.
    */
-  public int hashCode() 
+  public int hashCode()
   {
     return (int) pos + (int) leader + (int) align;
   }
 
   /**
    * Returns a string describing this <code>TabStop</code>.
-   * 
+   *
    * @return A string describing this <code>TabStop</code>.
    */
-  public String toString() 
+  public String toString()
   {
     String prefix = "";
     switch (align)
@@ -174,7 +174,7 @@ public class TabStop implements Serializable
       case ALIGN_DECIMAL:
         prefix = "decimal ";
         break;
-        
+
       case ALIGN_BAR:
         prefix = "bar ";
         break;
@@ -182,8 +182,8 @@ public class TabStop implements Serializable
       default:
         break;
       }
-    
-    return prefix + "tab @" + pos 
+
+    return prefix + "tab @" + pos
         + ((leader == LEAD_NONE) ? "" : " (w/leaders)");
   }
 

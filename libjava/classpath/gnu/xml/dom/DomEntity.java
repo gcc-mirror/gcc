@@ -1,4 +1,4 @@
-/* DomEntity.java -- 
+/* DomEntity.java --
    Copyright (C) 1999,2000,2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -45,17 +45,17 @@ import org.w3c.dom.Entity;
  * particularly well in this API:</p><dl>
  *
  * <dt><em>Unparsed Entities</em></dt>
- *	<dd>Since ENTITY/ENTITIES attributes, the only legal use of unparsed
- *	entities in XML, can't be detected with DOM, there isn't much point in
- *	trying to use unparsed entities in DOM applications.  (XML Linking is
- *	working to provide a better version of this functionality.) </dd>
+ *      <dd>Since ENTITY/ENTITIES attributes, the only legal use of unparsed
+ *      entities in XML, can't be detected with DOM, there isn't much point in
+ *      trying to use unparsed entities in DOM applications.  (XML Linking is
+ *      working to provide a better version of this functionality.) </dd>
  *
  * <dt><em>Parsed Entities</em></dt>
- *	<dd> While the DOM specification permits nodes for parsed entities
- *	to have a readonly set of children, this is not required and there
- *	is no portable way to provide such children.  <em>This implementation
- *	currently does not permit children to be added to Entities.</em>
- *	There are related issues with the use of EntityReference nodes.  </dd>
+ *      <dd> While the DOM specification permits nodes for parsed entities
+ *      to have a readonly set of children, this is not required and there
+ *      is no portable way to provide such children.  <em>This implementation
+ *      currently does not permit children to be added to Entities.</em>
+ *      There are related issues with the use of EntityReference nodes.  </dd>
  *
  * </dl>
  *
@@ -65,14 +65,14 @@ import org.w3c.dom.Entity;
  * @see DomEntityReference
  * @see DomNotation
  *
- * @author David Brownell 
+ * @author David Brownell
  * @author <a href='mailto:dog@gnu.org'>Chris Burdess</a>
  */
 public class DomEntity
   extends DomExtern
   implements Entity
 {
-  
+
   private String notation;
 
   /**
@@ -113,13 +113,13 @@ public class DomEntity
   }
 
   // DOM Level 3 methods
-  
+
   public String getInputEncoding()
   {
     // TODO
-    return null;    
+    return null;
   }
-  
+
   public String getXmlEncoding()
   {
     // TODO
@@ -142,6 +142,5 @@ public class DomEntity
     String systemId = getSystemId();
     return (systemId == null) ? owner.getBaseURI() : systemId;
   }
-  
-}
 
+}

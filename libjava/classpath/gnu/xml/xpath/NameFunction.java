@@ -1,4 +1,4 @@
-/* NameFunction.java -- 
+/* NameFunction.java --
    Copyright (C) 2004,2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -77,7 +77,7 @@ final class NameFunction
     this.arg = arg;
   }
 
-  @Override 
+  @Override
   public Object evaluate(Node context, int pos, int len)
   {
     /* Suppression is safe, as we know context produces Collection<Node> */
@@ -93,17 +93,17 @@ final class NameFunction
     return new NameFunction((arg == null) ? null :
                             arg.clone(context));
   }
-  
+
   @Override
   public boolean references(QName var)
   {
     return (arg == null) ? false : arg.references(var);
   }
-  
+
   @Override
   public String toString()
   {
     return (arg == null) ? "name()" : "name(" + arg + ")";
   }
-  
+
 }

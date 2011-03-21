@@ -1,6 +1,6 @@
 // <forward_list.h> -*- C++ -*-
 
-// Copyright (C) 2008, 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -35,7 +35,9 @@
 #include <memory>
 #include <initializer_list>
 
-_GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
   /**
    *  @brief  A helper basic node class for %forward_list.
@@ -1295,6 +1297,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
 	 forward_list<_Tp, _Alloc>& __ly)
     { __lx.swap(__ly); }
 
-_GLIBCXX_END_NESTED_NAMESPACE // namespace std
+_GLIBCXX_END_NAMESPACE_CONTAINER
+} // namespace std
 
 #endif // _FORWARD_LIST_H

@@ -117,7 +117,7 @@ public class JPEGImageReader extends ImageReader
 
   private void checkStream() throws IOException
   {
-    if (!(input instanceof ImageInputStream)) 
+    if (!(input instanceof ImageInputStream))
       throw new IllegalStateException("Input not an ImageInputStream.");
     if(input == null)
       throw new IllegalStateException("No input stream.");

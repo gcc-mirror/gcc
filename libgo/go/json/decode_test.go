@@ -40,6 +40,11 @@ var (
 	umtrue   = unmarshaler{true}
 )
 
+type badTag struct {
+	X string
+	Y string "y"
+	Z string "@#*%(#@"
+}
 
 type unmarshalTest struct {
 	in  string
@@ -52,7 +57,7 @@ var unmarshalTests = []unmarshalTest{
 	// basic types
 	{`true`, new(bool), true, nil},
 	{`1`, new(int), 1, nil},
-	{`1.2`, new(float), 1.2, nil},
+	{`1.2`, new(float64), 1.2, nil},
 	{`-5`, new(int16), int16(-5), nil},
 	{`"a\u1234"`, new(string), "a\u1234", nil},
 	{`"http:\/\/"`, new(string), "http://", nil},
@@ -61,6 +66,9 @@ var unmarshalTests = []unmarshalTest{
 	{"null", new(interface{}), nil, nil},
 	{`{"X": [1,2,3], "Y": 4}`, new(T), T{Y: 4}, &UnmarshalTypeError{"array", reflect.Typeof("")}},
 	{`{"x": 1}`, new(tx), tx{}, &UnmarshalFieldError{"x", txType, txType.Field(0)}},
+
+	// skip invalid tags
+	{`{"X":"a", "y":"b", "Z":"c"}`, new(badTag), badTag{"a", "b", "c"}, nil},
 
 	// syntax errors
 	{`{"X": "foo", "Y"}`, nil, nil, SyntaxError("invalid character '}' after object key")},
@@ -99,6 +107,20 @@ func TestMarshal(t *testing.T) {
 		t.Errorf("Marshal pallValueCompact")
 		diff(t, b, []byte(pallValueCompact))
 		return
+	}
+}
+
+func TestMarshalBadUTF8(t *testing.T) {
+	s := "hello\xffworld"
+	b, err := Marshal(s)
+	if err == nil {
+		t.Fatal("Marshal bad UTF8: no error")
+	}
+	if len(b) != 0 {
+		t.Fatal("Marshal returned data")
+	}
+	if _, ok := err.(*InvalidUTF8Error); !ok {
+		t.Fatalf("Marshal did not return InvalidUTF8Error: %T %v", err, err)
 	}
 }
 
@@ -147,6 +169,25 @@ func TestUnmarshalMarshal(t *testing.T) {
 		t.Errorf("Marshal jsonBig")
 		diff(t, b, jsonBig)
 		return
+	}
+}
+
+func TestLargeByteSlice(t *testing.T) {
+	s0 := make([]byte, 2000)
+	for i := range s0 {
+		s0[i] = byte(i)
+	}
+	b, err := Marshal(s0)
+	if err != nil {
+		t.Fatalf("Marshal: %v", err)
+	}
+	var s1 []byte
+	if err := Unmarshal(b, &s1); err != nil {
+		t.Fatalf("Unmarshal: %v", err)
+	}
+	if bytes.Compare(s0, s1) != 0 {
+		t.Errorf("Marshal large byte slice")
+		diff(t, s0, s1)
 	}
 }
 
@@ -206,7 +247,6 @@ type All struct {
 	Uint32  uint32
 	Uint64  uint64
 	Uintptr uintptr
-	Float   float
 	Float32 float32
 	Float64 float64
 
@@ -224,7 +264,6 @@ type All struct {
 	PUint32  *uint32
 	PUint64  *uint64
 	PUintptr *uintptr
-	PFloat   *float
 	PFloat32 *float32
 	PFloat64 *float64
 
@@ -256,6 +295,8 @@ type All struct {
 
 	Interface  interface{}
 	PInterface *interface{}
+
+	unexported int
 }
 
 type Small struct {
@@ -275,7 +316,6 @@ var allValue = All{
 	Uint32:  10,
 	Uint64:  11,
 	Uintptr: 12,
-	Float:   13.1,
 	Float32: 14.1,
 	Float64: 15.1,
 	Foo:     "foo",
@@ -296,7 +336,7 @@ var allValue = All{
 	ByteSlice:   []byte{27, 28, 29},
 	Small:       Small{Tag: "tag30"},
 	PSmall:      &Small{Tag: "tag31"},
-	Interface:   float64(5.2),
+	Interface:   5.2,
 }
 
 var pallValue = All{
@@ -312,7 +352,6 @@ var pallValue = All{
 	PUint32:    &allValue.Uint32,
 	PUint64:    &allValue.Uint64,
 	PUintptr:   &allValue.Uintptr,
-	PFloat:     &allValue.Float,
 	PFloat32:   &allValue.Float32,
 	PFloat64:   &allValue.Float64,
 	PString:    &allValue.String,
@@ -337,7 +376,6 @@ var allValueIndent = `{
 	"Uint32": 10,
 	"Uint64": 11,
 	"Uintptr": 12,
-	"Float": 13.1,
 	"Float32": 14.1,
 	"Float64": 15.1,
 	"bar": "foo",
@@ -353,7 +391,6 @@ var allValueIndent = `{
 	"PUint32": null,
 	"PUint64": null,
 	"PUintptr": null,
-	"PFloat": null,
 	"PFloat32": null,
 	"PFloat64": null,
 	"String": "16",
@@ -402,11 +439,7 @@ var allValueIndent = `{
 		"str25",
 		"str26"
 	],
-	"ByteSlice": [
-		27,
-		28,
-		29
-	],
+	"ByteSlice": "Gxwd",
 	"Small": {
 		"Tag": "tag30"
 	},
@@ -433,7 +466,6 @@ var pallValueIndent = `{
 	"Uint32": 0,
 	"Uint64": 0,
 	"Uintptr": 0,
-	"Float": 0,
 	"Float32": 0,
 	"Float64": 0,
 	"bar": "",
@@ -449,7 +481,6 @@ var pallValueIndent = `{
 	"PUint32": 10,
 	"PUint64": 11,
 	"PUintptr": 12,
-	"PFloat": 13.1,
 	"PFloat32": 14.1,
 	"PFloat64": 15.1,
 	"String": "",
@@ -494,7 +525,7 @@ var pallValueIndent = `{
 	"EmptySlice": [],
 	"NilSlice": [],
 	"StringSlice": [],
-	"ByteSlice": [],
+	"ByteSlice": "",
 	"Small": {
 		"Tag": ""
 	},

@@ -2331,7 +2331,9 @@ You should define a class for the union of two classes whenever some
 instruction allows both classes.  For example, if an instruction allows
 either a floating point (coprocessor) register or a general register for a
 certain operand, you should define a class @code{FLOAT_OR_GENERAL_REGS}
-which includes both of them.  Otherwise you will get suboptimal code.
+which includes both of them.  Otherwise you will get suboptimal code,
+or even internal compiler errors when reload cannot find a register in the
+the class computed via @code{reg_class_subunion}.
 
 You must also specify certain redundant information about the register
 classes: for each class, which classes contain it and which ones are
@@ -4283,6 +4285,8 @@ with machine mode @var{mode}.  The default version of this
 hook returns true for both @code{ptr_mode} and @code{Pmode}.
 @end deftypefn
 
+@hook TARGET_REF_MAY_ALIAS_ERRNO
+
 @hook TARGET_SCALAR_MODE_SUPPORTED_P
 Define this to return nonzero if the port is prepared to handle
 insns involving scalar mode @var{mode}.  For a scalar mode to be
@@ -4332,6 +4336,8 @@ that can be performed in some cases.  If you do not define this hook
 to return a nonzero value when it is required, the compiler will run out
 of spill registers and print a fatal error message.
 @end deftypefn
+
+@hook TARGET_FLAGS_REGNUM
 
 @node Scalar Return
 @subsection How Scalar Function Values Are Returned
@@ -6153,13 +6159,13 @@ are the same as to this target hook.
 @end deftypefn
 
 @defmac BRANCH_COST (@var{speed_p}, @var{predictable_p})
-A C expression for the cost of a branch instruction.  A value of 1 is the
-default; other values are interpreted relative to that. Parameter @var{speed_p}
-is true when the branch in question should be optimized for speed.  When
-it is false, @code{BRANCH_COST} should be returning value optimal for code size
-rather then performance considerations.  @var{predictable_p} is true for well
-predictable branches. On many architectures the @code{BRANCH_COST} can be
-reduced then.
+A C expression for the cost of a branch instruction.  A value of 1 is
+the default; other values are interpreted relative to that. Parameter
+@var{speed_p} is true when the branch in question should be optimized
+for speed.  When it is false, @code{BRANCH_COST} should return a value
+optimal for code size rather than performance.  @var{predictable_p} is
+true for well-predicted branches. On many architectures the
+@code{BRANCH_COST} can be reduced then.
 @end defmac
 
 Here are additional macros which do not specify precise relative costs,
@@ -7297,6 +7303,8 @@ at startup (from static constructors or it is @code{main()}).
 (from static destructors).
 Return NULL if function should go to default text section.
 @end deftypefn
+
+@hook TARGET_ASM_FUNCTION_SWITCHED_TEXT_SECTIONS
 
 @hook TARGET_HAVE_NAMED_SECTIONS
 This flag is true if the target supports @code{TARGET_ASM_NAMED_SECTION}.

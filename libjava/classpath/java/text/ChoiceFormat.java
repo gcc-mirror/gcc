@@ -8,7 +8,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -46,10 +46,10 @@ import java.util.Vector;
 /**
  * This class allows a format to be specified based on a range of numbers.
  * To use this class, first specify two lists of formats and range terminators.
- * These lists must be arrays of equal length.  The format of index 
- * <code>i</code> will be selected for value <code>X</code> if 
+ * These lists must be arrays of equal length.  The format of index
+ * <code>i</code> will be selected for value <code>X</code> if
  * <code>terminator[i] &lt;= X &lt; limit[i + 1]</code>.  If the value X is not
- * included in any range, then either the first or last format will be 
+ * included in any range, then either the first or last format will be
  * used depending on whether the value X falls outside the range.
  * <p>
  * This sounds complicated, but that is because I did a poor job of
@@ -85,7 +85,7 @@ public class ChoiceFormat extends NumberFormat
 {
   /**
    * This method sets new range terminators and format strings for this
-   * object based on the specified pattern. This pattern is of the form 
+   * object based on the specified pattern. This pattern is of the form
    * "term#string|term#string...".  For example "1#Sunday|2#Monday|#Tuesday".
    *
    * @param newPattern The pattern of terminators and format strings.
@@ -104,53 +104,53 @@ public class ChoiceFormat extends NumberFormat
 
     while (true)
       {
-	// Find end of double.
-	int dstart = index;
-	while (index < max)
-	  {
-	    char c = newPattern.charAt(index);
-	    if (c == '#' || c == '\u2064' || c == '<')
-	      break;
-	    ++index;
-	  }
-	
-	if (index == max)
-	  throw new IllegalArgumentException ("unexpected end of text");
-	Double d = Double.valueOf (newPattern.substring(dstart, index));
+        // Find end of double.
+        int dstart = index;
+        while (index < max)
+          {
+            char c = newPattern.charAt(index);
+            if (c == '#' || c == '\u2064' || c == '<')
+              break;
+            ++index;
+          }
 
-	if (newPattern.charAt(index) == '<')
-	  d = Double.valueOf (nextDouble (d.doubleValue()));
+        if (index == max)
+          throw new IllegalArgumentException ("unexpected end of text");
+        Double d = Double.valueOf (newPattern.substring(dstart, index));
 
-	limitVec.addElement(d);
+        if (newPattern.charAt(index) == '<')
+          d = Double.valueOf (nextDouble (d.doubleValue()));
 
-	// Scan text.
-	++index;
-	buf.setLength(0);
-	while (index < max)
-	  {
-	    char c = newPattern.charAt(index);
-	    if (c == '\'' && index < max + 1
-		&& newPattern.charAt(index + 1) == '\'')
-	      {
-		buf.append(c);
-		++index;
-	      }
-	    else if (c == '\'' && index < max + 2)
-	      {
-		buf.append(newPattern.charAt(index + 1));
-		index += 2;
-	      }
-	    else if (c == '|')
-	      break;
-	    else
-	      buf.append(c);
-	    ++index;
-	  }
+        limitVec.addElement(d);
 
-	stringVec.addElement(buf.toString());
-	if (index == max)
-	  break;
-	++index;
+        // Scan text.
+        ++index;
+        buf.setLength(0);
+        while (index < max)
+          {
+            char c = newPattern.charAt(index);
+            if (c == '\'' && index < max + 1
+                && newPattern.charAt(index + 1) == '\'')
+              {
+                buf.append(c);
+                ++index;
+              }
+            else if (c == '\'' && index < max + 2)
+              {
+                buf.append(newPattern.charAt(index + 1));
+                index += 2;
+              }
+            else if (c == '|')
+              break;
+            else
+              buf.append(c);
+            ++index;
+          }
+
+        stringVec.addElement(buf.toString());
+        if (index == max)
+          break;
+        ++index;
       }
 
     choiceFormats = new String[stringVec.size()];
@@ -159,15 +159,15 @@ public class ChoiceFormat extends NumberFormat
     choiceLimits = new double[limitVec.size()];
     for (int i = 0; i < choiceLimits.length; ++i)
       {
-	Double d = (Double) limitVec.elementAt(i);
-	choiceLimits[i] = d.doubleValue();
+        Double d = (Double) limitVec.elementAt(i);
+        choiceLimits[i] = d.doubleValue();
       }
   }
 
   /**
    * This method initializes a new instance of <code>ChoiceFormat</code> that
    * generates its range terminator and format string arrays from the
-   * specified pattern.  This pattern is of the form 
+   * specified pattern.  This pattern is of the form
    * "term#string|term#string...".  For example "1#Sunday|2#Monday|#Tuesday".
    * This is the same pattern type used by the <code>applyPattern</code>
    * method.
@@ -196,7 +196,7 @@ public class ChoiceFormat extends NumberFormat
   }
 
   /**
-   * This method tests this object for equality with the specified 
+   * This method tests this object for equality with the specified
    * object.  This will be true if and only if:
    * <ul>
    * <li>The specified object is not <code>null</code>.</li>
@@ -208,7 +208,7 @@ public class ChoiceFormat extends NumberFormat
    * @param obj The object to test for equality against.
    *
    * @return <code>true</code> if the specified object is equal to
-   * this one, <code>false</code> otherwise. 
+   * this one, <code>false</code> otherwise.
    */
   public boolean equals (Object obj)
   {
@@ -219,9 +219,9 @@ public class ChoiceFormat extends NumberFormat
       return false;
     for (int i = choiceLimits.length - 1; i >= 0; --i)
       {
-	if (choiceLimits[i] != cf.choiceLimits[i]
-	    || !choiceFormats[i].equals(cf.choiceFormats[i]))
-	  return false;
+        if (choiceLimits[i] != cf.choiceLimits[i]
+            || !choiceFormats[i].equals(cf.choiceFormats[i]))
+          return false;
       }
     return true;
   }
@@ -232,15 +232,15 @@ public class ChoiceFormat extends NumberFormat
    * argument.
    *
    * @param num The number used for determine (based on the range
-   *               terminators) which format string to append. 
-   * @param appendBuf The <code>StringBuffer</code> to append the format string 
+   *               terminators) which format string to append.
+   * @param appendBuf The <code>StringBuffer</code> to append the format string
    *                  to.
    * @param pos Unused.
    *
    * @return The <code>StringBuffer</code> with the format string appended.
    */
   public StringBuffer format (long num, StringBuffer appendBuf,
-			      FieldPosition pos)
+                              FieldPosition pos)
   {
     return format ((double) num, appendBuf, pos);
   }
@@ -251,14 +251,14 @@ public class ChoiceFormat extends NumberFormat
    * argument.
    *
    * @param num The number used for determine (based on the range
-   *               terminators) which format string to append. 
+   *               terminators) which format string to append.
    * @param appendBuf The <code>StringBuffer</code> to append the format string to.
    * @param pos Unused.
    *
    * @return The <code>StringBuffer</code> with the format string appended.
    */
   public StringBuffer format (double num, StringBuffer appendBuf,
-			      FieldPosition pos)
+                              FieldPosition pos)
   {
     if (choiceLimits.length == 0)
       return appendBuf;
@@ -266,11 +266,11 @@ public class ChoiceFormat extends NumberFormat
     int index = 0;
     if (! Double.isNaN(num) && num >= choiceLimits[0])
       {
-	for (; index < choiceLimits.length - 1; ++index)
-	  {
-	    if (choiceLimits[index] <= num && num < choiceLimits[index + 1])
-	      break;
-	  }
+        for (; index < choiceLimits.length - 1; ++index)
+          {
+            if (choiceLimits[index] <= num && num < choiceLimits[index + 1])
+              break;
+          }
       }
 
     return appendBuf.append(choiceFormats[index]);
@@ -298,7 +298,7 @@ public class ChoiceFormat extends NumberFormat
 
   /**
    * This method returns a hash value for this object
-   * 
+   *
    * @return A hash value for this object.
    */
   public int hashCode ()
@@ -306,15 +306,15 @@ public class ChoiceFormat extends NumberFormat
     int hash = 0;
     for (int i = 0; i < choiceLimits.length; ++i)
       {
-	long v = Double.doubleToLongBits(choiceLimits[i]);
-	hash ^= (v ^ (v >>> 32));
-	hash ^= choiceFormats[i].hashCode();
+        long v = Double.doubleToLongBits(choiceLimits[i]);
+        hash ^= (v ^ (v >>> 32));
+        hash ^= choiceFormats[i].hashCode();
       }
     return hash;
   }
 
   /**
-   * This method returns the lowest possible double greater than the 
+   * This method returns the lowest possible double greater than the
    * specified double.  If the specified double value is equal to
    * <code>Double.NaN</code> then that is the value returned.
    *
@@ -331,13 +331,13 @@ public class ChoiceFormat extends NumberFormat
    * This method returns a double that is either the next highest double
    * or next lowest double compared to the specified double depending on the
    * value of the passed boolean parameter.  If the boolean parameter is
-   * <code>true</code>, then the lowest possible double greater than the 
+   * <code>true</code>, then the lowest possible double greater than the
    * specified double will be returned.  Otherwise the highest possible
    * double less than the specified double will be returned.
    *
    * @param d The specified double
    * @param next <code>true</code> to return the next highest
-   *                 double, <code>false</code> otherwise. 
+   *                 double, <code>false</code> otherwise.
    *
    * @return The next highest or lowest double value.
    */
@@ -356,36 +356,36 @@ public class ChoiceFormat extends NumberFormat
 
     if (next ^ (bits < 0)) // Increment magnitude
       {
-	if (mantissa == (1L << mantissaBits) - 1)
-	  {
-	    mantissa = 0L;
-	    exponent++;
-	     
-	    // Check for absolute overflow.
-	    if (exponent >= (1L << mantissaBits))
-	      return (bits > 0) ? Double.POSITIVE_INFINITY 
-		: Double.NEGATIVE_INFINITY;		      
-	  }
-	else
-	  mantissa++;
+        if (mantissa == (1L << mantissaBits) - 1)
+          {
+            mantissa = 0L;
+            exponent++;
+
+            // Check for absolute overflow.
+            if (exponent >= (1L << mantissaBits))
+              return (bits > 0) ? Double.POSITIVE_INFINITY
+                : Double.NEGATIVE_INFINITY;
+          }
+        else
+          mantissa++;
       }
     else // Decrement magnitude
       {
-	if (exponent == 0L && mantissa == 0L)
-	  {
-	    // The only case where there is a change of sign
-	    return next ? Double.MIN_VALUE : -Double.MIN_VALUE;
-	  }
-	else
-	  {
-	    if (mantissa == 0L)
-	      {
-		mantissa = (1L << mantissaBits) - 1;
-		exponent--;
-	      }
-	    else
-	      mantissa--;
-	  }
+        if (exponent == 0L && mantissa == 0L)
+          {
+            // The only case where there is a change of sign
+            return next ? Double.MIN_VALUE : -Double.MIN_VALUE;
+          }
+        else
+          {
+            if (mantissa == 0L)
+              {
+                mantissa = (1L << mantissaBits) - 1;
+                exponent--;
+              }
+            else
+              mantissa--;
+          }
       }
 
     long result = bits < 0 ? 1 : 0;
@@ -403,18 +403,18 @@ public class ChoiceFormat extends NumberFormat
     int index = pos.getIndex();
     for (int i = 0; i < choiceLimits.length; ++i)
       {
-	if (sourceStr.startsWith(choiceFormats[i], index))
-	  {
-	    pos.setIndex(index + choiceFormats[i].length());
-	    return Double.valueOf (choiceLimits[i]);
-	  }
+        if (sourceStr.startsWith(choiceFormats[i], index))
+          {
+            pos.setIndex(index + choiceFormats[i].length());
+            return Double.valueOf (choiceLimits[i]);
+          }
       }
     pos.setErrorIndex(index);
     return Double.valueOf (Double.NaN);
   }
 
   /**
-   * This method returns the highest possible double less than the 
+   * This method returns the highest possible double less than the
    * specified double.  If the specified double value is equal to
    * <code>Double.NaN</code> then that is the value returned.
    *
@@ -449,26 +449,26 @@ public class ChoiceFormat extends NumberFormat
     int max = text.length();
     for (int i = 0; i < max; ++i)
       {
-	char c = text.charAt(i);
-	if (c == '\'')
-	  {
-	    dest.append(c);
-	    dest.append(c);
-	  }
-	else if (c == '#' || c == '|' || c == '\u2064' || c == '<')
-	  {
-	    dest.append('\'');
-	    dest.append(c);
-	    dest.append('\'');
-	  }
-	else
-	  dest.append(c);
+        char c = text.charAt(i);
+        if (c == '\'')
+          {
+            dest.append(c);
+            dest.append(c);
+          }
+        else if (c == '#' || c == '|' || c == '\u2064' || c == '<')
+          {
+            dest.append('\'');
+            dest.append(c);
+            dest.append('\'');
+          }
+        else
+          dest.append(c);
       }
   }
 
   /**
    * This method returns the range terminator list and format string list
-   * as a <code>String</code> suitable for using with the 
+   * as a <code>String</code> suitable for using with the
    * <code>applyPattern</code> method.
    *
    * @return A pattern string for this object
@@ -478,9 +478,9 @@ public class ChoiceFormat extends NumberFormat
     CPStringBuilder result = new CPStringBuilder ();
     for (int i = 0; i < choiceLimits.length; ++i)
       {
-	result.append(choiceLimits[i]);
-	result.append('#');
-	quoteString (result, choiceFormats[i]);
+        result.append(choiceLimits[i]);
+        result.append('#');
+        quoteString (result, choiceFormats[i]);
       }
     return result.toString();
   }

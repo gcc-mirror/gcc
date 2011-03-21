@@ -1,6 +1,6 @@
 // Internal policy header for unordered_set and unordered_map -*- C++ -*-
 
-// Copyright (C) 2010 Free Software Foundation, Inc.
+// Copyright (C) 2010, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -24,17 +24,19 @@
 
 /** @file bits/hashtable_policy.h
  *  This is an internal header file, included by other library headers.
- *  Do not attempt to use it directly. 
+ *  Do not attempt to use it directly.
  *  @headername{unordered_map,unordered_set}
  */
 
 #ifndef _HASHTABLE_POLICY_H
 #define _HASHTABLE_POLICY_H 1
 
-namespace std
+namespace std _GLIBCXX_VISIBILITY(default)
 {
 namespace __detail
 {
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
   // Helper function: return distance(first, last) for forward
   // iterators, or 0 for input iterators.
   template<class _Iterator>
@@ -59,7 +61,7 @@ namespace __detail
 
   // Auxiliary types used for all instantiations of _Hashtable: nodes
   // and iterators.
-  
+
   // Nodes, used to wrap elements stored in the hash table.  A policy
   // template parameter of class template _Hashtable controls whether
   // nodes also store a hash code. In some cases (e.g. strings) this
@@ -75,7 +77,7 @@ namespace __detail
       _Hash_node*  _M_next;
 
       template<typename... _Args>
-        _Hash_node(_Args&&... __args)
+	_Hash_node(_Args&&... __args)
 	: _M_v(std::forward<_Args>(__args)...),
 	  _M_hash_code(), _M_next() { }
     };
@@ -87,7 +89,7 @@ namespace __detail
       _Hash_node*  _M_next;
 
       template<typename... _Args>
-        _Hash_node(_Args&&... __args)
+	_Hash_node(_Args&&... __args)
 	: _M_v(std::forward<_Args>(__args)...),
 	  _M_next() { }
     };
@@ -99,7 +101,7 @@ namespace __detail
     {
       _Node_iterator_base(_Hash_node<_Value, __cache>* __p)
       : _M_cur(__p) { }
-      
+
       void
       _M_incr()
       { _M_cur = _M_cur->_M_next; }
@@ -126,10 +128,10 @@ namespace __detail
       typedef _Value                                   value_type;
       typedef typename std::conditional<__constant_iterators,
 					const _Value*, _Value*>::type
-                                                       pointer;
+						       pointer;
       typedef typename std::conditional<__constant_iterators,
 					const _Value&, _Value&>::type
-                                                       reference;
+						       reference;
       typedef std::ptrdiff_t                           difference_type;
       typedef std::forward_iterator_tag                iterator_category;
 
@@ -143,21 +145,21 @@ namespace __detail
       reference
       operator*() const
       { return this->_M_cur->_M_v; }
-  
+
       pointer
       operator->() const
       { return std::__addressof(this->_M_cur->_M_v); }
 
       _Node_iterator&
       operator++()
-      { 
+      {
 	this->_M_incr();
-	return *this; 
+	return *this;
       }
-  
+
       _Node_iterator
       operator++(int)
-      { 
+      {
 	_Node_iterator __tmp(*this);
 	this->_M_incr();
 	return __tmp;
@@ -188,21 +190,21 @@ namespace __detail
       reference
       operator*() const
       { return this->_M_cur->_M_v; }
-  
+
       pointer
       operator->() const
       { return std::__addressof(this->_M_cur->_M_v); }
 
       _Node_const_iterator&
       operator++()
-      { 
+      {
 	this->_M_incr();
-	return *this; 
+	return *this;
       }
-  
+
       _Node_const_iterator
       operator++(int)
-      { 
+      {
 	_Node_const_iterator __tmp(*this);
 	this->_M_incr();
 	return __tmp;
@@ -265,10 +267,10 @@ namespace __detail
       typedef _Value                                   value_type;
       typedef typename std::conditional<__constant_iterators,
 					const _Value*, _Value*>::type
-                                                       pointer;
+						       pointer;
       typedef typename std::conditional<__constant_iterators,
 					const _Value&, _Value&>::type
-                                                       reference;
+						       reference;
       typedef std::ptrdiff_t                           difference_type;
       typedef std::forward_iterator_tag                iterator_category;
 
@@ -286,21 +288,21 @@ namespace __detail
       reference
       operator*() const
       { return this->_M_cur_node->_M_v; }
-  
+
       pointer
       operator->() const
       { return std::__addressof(this->_M_cur_node->_M_v); }
 
       _Hashtable_iterator&
       operator++()
-      { 
+      {
 	this->_M_incr();
 	return *this;
       }
-  
+
       _Hashtable_iterator
       operator++(int)
-      { 
+      {
 	_Hashtable_iterator __tmp(*this);
 	this->_M_incr();
 	return __tmp;
@@ -336,21 +338,21 @@ namespace __detail
       reference
       operator*() const
       { return this->_M_cur_node->_M_v; }
-  
+
       pointer
       operator->() const
       { return std::__addressof(this->_M_cur_node->_M_v); }
 
       _Hashtable_const_iterator&
       operator++()
-      { 
+      {
 	this->_M_incr();
 	return *this;
       }
-  
+
       _Hashtable_const_iterator
       operator++(int)
-      { 
+      {
 	_Hashtable_const_iterator __tmp(*this);
 	this->_M_incr();
 	return __tmp;
@@ -390,16 +392,16 @@ namespace __detail
 
     float
     max_load_factor() const
-    { return _M_max_load_factor; }      
+    { return _M_max_load_factor; }
 
     // Return a bucket size no smaller than n.
     std::size_t
     _M_next_bkt(std::size_t __n) const;
-    
+
     // Return a bucket count appropriate for n elements
     std::size_t
     _M_bkt_for_elements(std::size_t __n) const;
-    
+
     // __n_bkt is current bucket count, __n_elt is current element count,
     // and __n_ins is number of elements to be inserted.  Do we need to
     // increase bucket count?  If so, return make_pair(true, n), where n
@@ -418,7 +420,7 @@ namespace __detail
   extern const unsigned long __prime_list[];
 
   // XXX This is a hack.  There's no good reason for any of
-  // _Prime_rehash_policy's member functions to be inline.  
+  // _Prime_rehash_policy's member functions to be inline.
 
   // Return a prime no smaller than n.
   inline std::size_t
@@ -427,7 +429,7 @@ namespace __detail
   {
     const unsigned long* __p = std::lower_bound(__prime_list, __prime_list
 						+ _S_n_primes, __n);
-    _M_next_resize = 
+    _M_next_resize =
       static_cast<std::size_t>(__builtin_ceil(*__p * _M_max_load_factor));
     return *__p;
   }
@@ -448,7 +450,7 @@ namespace __detail
 
   // Finds the smallest prime p such that alpha p > __n_elt + __n_ins.
   // If p > __n_bkt, return make_pair(true, p); otherwise return
-  // make_pair(false, 0).  In principle this isn't very different from 
+  // make_pair(false, 0).  In principle this isn't very different from
   // _M_bkt_for_elements.
 
   // The only tricky part is that we're caching the element count at
@@ -474,7 +476,7 @@ namespace __detail
 	      (__builtin_ceil(*__p * _M_max_load_factor));
 	    return std::make_pair(true, *__p);
 	  }
-	else 
+	else
 	  {
 	    _M_next_resize = static_cast<std::size_t>
 	      (__builtin_ceil(__n_bkt * _M_max_load_factor));
@@ -642,10 +644,10 @@ namespace __detail
   //       we have a dummy type as placeholder.
   //   (2) Whether or not we cache hash codes.  Caching hash codes is
   //       meaningless if we have a ranged hash function.
-  // We also put the key extraction and equality comparison function 
+  // We also put the key extraction and equality comparison function
   // objects here, for convenience.
-  
-  // Primary template: unused except as a hook for specializations.  
+
+  // Primary template: unused except as a hook for specializations.
   template<typename _Key, typename _Value,
 	   typename _ExtractKey, typename _Equal,
 	   typename _H1, typename _H2, typename _Hash,
@@ -666,11 +668,11 @@ namespace __detail
       : _M_extract(__ex), _M_eq(__eq), _M_ranged_hash(__h) { }
 
       typedef void* _Hash_code_type;
-  
+
       _Hash_code_type
       _M_hash_code(const _Key& __key) const
       { return 0; }
-  
+
       std::size_t
       _M_bucket_index(const _Key& __k, _Hash_code_type,
 		      std::size_t __n) const
@@ -680,7 +682,7 @@ namespace __detail
       _M_bucket_index(const _Hash_node<_Value, false>* __p,
 		      std::size_t __n) const
       { return _M_ranged_hash(_M_extract(__p->_M_v), __n); }
-  
+
       bool
       _M_compare(const _Key& __k, _Hash_code_type,
 		 _Hash_node<_Value, false>* __n) const
@@ -694,7 +696,7 @@ namespace __detail
       _M_copy_code(_Hash_node<_Value, false>*,
 		   const _Hash_node<_Value, false>*) const
       { }
-      
+
       void
       _M_swap(_Hash_code_base& __x)
       {
@@ -712,11 +714,11 @@ namespace __detail
 
   // No specialization for ranged hash function while caching hash codes.
   // That combination is meaningless, and trying to do it is an error.
-  
-  
+
+
   // Specialization: ranged hash function, cache hash codes.  This
   // combination is meaningless, so we provide only a declaration
-  // and no definition.  
+  // and no definition.
   template<typename _Key, typename _Value,
 	   typename _ExtractKey, typename _Equal,
 	   typename _H1, typename _H2, typename _Hash>
@@ -725,7 +727,7 @@ namespace __detail
 
   // Specialization: hash function and range-hashing function, no
   // caching of hash codes.  H is provided but ignored.  Provides
-  // typedef and accessor required by TR1.  
+  // typedef and accessor required by TR1.
   template<typename _Key, typename _Value,
 	   typename _ExtractKey, typename _Equal,
 	   typename _H1, typename _H2>
@@ -749,7 +751,7 @@ namespace __detail
       _Hash_code_type
       _M_hash_code(const _Key& __k) const
       { return _M_h1(__k); }
-      
+
       std::size_t
       _M_bucket_index(const _Key&, _Hash_code_type __c,
 		      std::size_t __n) const
@@ -790,7 +792,7 @@ namespace __detail
       _H2          _M_h2;
     };
 
-  // Specialization: hash function and range-hashing function, 
+  // Specialization: hash function and range-hashing function,
   // caching hash codes.  H is provided but ignored.  Provides
   // typedef and accessor required by TR1.
   template<typename _Key, typename _Value,
@@ -800,7 +802,7 @@ namespace __detail
 			   _Default_ranged_hash, true>
     {
       typedef _H1 hasher;
-      
+
       hasher
       hash_function() const
       { return _M_h1; }
@@ -812,11 +814,11 @@ namespace __detail
       : _M_extract(__ex), _M_eq(__eq), _M_h1(__h1), _M_h2(__h2) { }
 
       typedef std::size_t _Hash_code_type;
-  
+
       _Hash_code_type
       _M_hash_code(const _Key& __k) const
       { return _M_h1(__k); }
-  
+
       std::size_t
       _M_bucket_index(const _Key&, _Hash_code_type __c,
 		      std::size_t __n) const
@@ -849,7 +851,7 @@ namespace __detail
 	std::swap(_M_h1, __x._M_h1);
 	std::swap(_M_h2, __x._M_h2);
       }
-      
+
     protected:
       _ExtractKey  _M_extract;
       _Equal       _M_eq;
@@ -898,8 +900,8 @@ namespace __detail
 
     private:
       template<typename _Uiterator>
-        static bool
-        _S_is_permutation(_Uiterator, _Uiterator, _Uiterator);
+	static bool
+	_S_is_permutation(_Uiterator, _Uiterator, _Uiterator);
     };
 
   // See std::is_permutation in N3068.
@@ -977,7 +979,9 @@ namespace __detail
 	}
       return true;
     }
+
+_GLIBCXX_END_NAMESPACE_VERSION
 } // namespace __detail
-}
+} // namespace std
 
 #endif // _HASHTABLE_POLICY_H

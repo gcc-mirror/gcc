@@ -8,7 +8,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -51,7 +51,7 @@ import java.nio.channels.FileChannel;
  *
  * @author Aaron M. Renn (arenn@urbanophile.com)
  * @author Tom Tromey (tromey@cygnus.com)
- * @date September 24, 1998 
+ * @date September 24, 1998
  */
 public final class FileDescriptor
 {
@@ -100,7 +100,7 @@ public final class FileDescriptor
 
   /**
    * This method forces all data that has not yet been physically written to
-   * the underlying storage medium associated with this 
+   * the underlying storage medium associated with this
    * <code>FileDescriptor</code>
    * to be written out.  This method will not return until all data has
    * been fully written to the underlying device.  If the device does not
@@ -111,17 +111,17 @@ public final class FileDescriptor
   {
     if (channel instanceof FileChannel)
       {
-	try
-	  {
-	    ((FileChannel) channel).force(true); 
-	  }
-	catch (IOException ex)
-	  {
-	    if (ex instanceof SyncFailedException)
-	      throw (SyncFailedException) ex;
-	    else
-	      throw new SyncFailedException(ex.toString());
-	  }
+        try
+          {
+            ((FileChannel) channel).force(true);
+          }
+        catch (IOException ex)
+          {
+            if (ex instanceof SyncFailedException)
+              throw (SyncFailedException) ex;
+            else
+              throw new SyncFailedException(ex.toString());
+          }
       }
   }
 
@@ -129,11 +129,11 @@ public final class FileDescriptor
    * This methods tests whether or not this object represents a valid open
    * native file handle.
    *
-   * @return <code>true</code> if this object represents a valid 
+   * @return <code>true</code> if this object represents a valid
    * native file handle, <code>false</code> otherwise
    */
   public boolean valid ()
-  { 
+  {
     ByteChannel c = channel;
     return (c != null) && (c.isOpen());
   }

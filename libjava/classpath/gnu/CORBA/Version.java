@@ -99,7 +99,7 @@ public class Version
     Version that = (Version) other;
     return same(that);
   }
-  
+
   /**
    * Get the hashcode, higher 8 bits being the major version and lower 8 bits
    * the minor version.
@@ -107,7 +107,7 @@ public class Version
   public int hashCode()
   {
     return major << 8 | minor;
-  }    
+  }
 
   /**
    * Read from the input stream, major number first.
@@ -218,5 +218,5 @@ public class Version
         throw m;
       }
   }
- 
+
 }

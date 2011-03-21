@@ -142,7 +142,7 @@ public class IOR
         b.append(' ');
         return b.toString();
       }
-      
+
       /**
        * Get a better formatted multiline string representation.
        */
@@ -162,7 +162,7 @@ public class IOR
         b.append("\n");
         return b.toString();
       }
-      
+
 
       /**
        * Write into CDR stream.
@@ -613,9 +613,9 @@ public class IOR
 
     return b.toString();
   }
-  
+
   /**
-   * Returns a multiline formatted human readable string representation of 
+   * Returns a multiline formatted human readable string representation of
    * this IOR object.
    */
   public String toStringFormatted()
@@ -629,7 +629,7 @@ public class IOR
     if (Big_Endian)
       b.append("\n  Big endian encoding");
     else
-      b.append("\n  Little endian encoding.");      
+      b.append("\n  Little endian encoding.");
 
     b.append("\nObject Key\n  ");
 
@@ -645,7 +645,7 @@ public class IOR
     b.append(Internet.CodeSets.wide.toStringFormatted());
 
     return b.toString();
-  }  
+  }
 
   /**
    * Returs a stringified reference.
@@ -774,7 +774,7 @@ public class IOR
       // The future supported tagged profiles should be added here.
       throw new BAD_PARAM("Unsupported profile type " + profile.tag);
   }
-  
+
   /**
    * Checks for equality.
    */
@@ -786,10 +786,10 @@ public class IOR
         boolean hosts = true;
 
         IOR other = (IOR) x;
-        
+
         if (Internet==null || other.Internet==null)
           return Internet == other.Internet;
-        
+
         if (key != null && other.key != null)
           keys = Arrays.equals(key, other.key);
         else
@@ -804,7 +804,7 @@ public class IOR
     else
       return false;
   }
-  
+
   /**
    * Get the hashcode of this IOR.
    */

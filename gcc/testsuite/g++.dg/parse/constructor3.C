@@ -1,5 +1,5 @@
 /* PR c++/29077 */
-/* { dg-do "compile" } */
+/* { dg-do compile } */
 
 class c {
   c();

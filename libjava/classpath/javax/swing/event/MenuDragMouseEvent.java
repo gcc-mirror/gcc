@@ -48,14 +48,14 @@ import javax.swing.MenuSelectionManager;
  * MenuDragMouseEvent
  * @author Andrew Selkirk
  */
-public class MenuDragMouseEvent extends MouseEvent 
+public class MenuDragMouseEvent extends MouseEvent
 {
 
   /**
    * path
    */
   private MenuElement[] path = null;
-	
+
   /**
    * manager
    */
@@ -76,29 +76,29 @@ public class MenuDragMouseEvent extends MouseEvent
    */
   public MenuDragMouseEvent(Component source, int id, long when, int modifiers,
       int x, int y, int clickCount, boolean popupTrigger,
-      MenuElement[] path, MenuSelectionManager manager) 
+      MenuElement[] path, MenuSelectionManager manager)
   {
     super(source, id, when, modifiers, x, y, clickCount, popupTrigger);
     this.path = path;
     this.manager = manager;
-  } 
+  }
 
   /**
    * Get path
    * @return path
    */
-  public MenuElement[] getPath() 
+  public MenuElement[] getPath()
   {
     return path;
-  } 
+  }
 
   /**
    * Get menu selection manager
    * @return manager
    */
-  public MenuSelectionManager getMenuSelectionManager() 
+  public MenuSelectionManager getMenuSelectionManager()
   {
     return manager;
   }
 
-} 
+}

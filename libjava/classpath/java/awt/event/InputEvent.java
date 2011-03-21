@@ -306,7 +306,7 @@ public abstract class InputEvent extends ComponentEvent
   }
 
   /**
-   * This method returns the old-style modifiers in effect for this event. 
+   * This method returns the old-style modifiers in effect for this event.
    * Note that this is ambiguous between button2 and alt, and between
    * button3 and meta. Also, code which generated these modifiers tends to
    * only list the modifier that just changed, even if others were down at

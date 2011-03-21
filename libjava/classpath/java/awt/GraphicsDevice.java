@@ -175,7 +175,7 @@ public abstract class GraphicsDevice
     // Restore the previous window to normal mode and release the reference.
     if (full_screen != null)
       {
-	full_screen.setBounds(fullScreenOldBounds);
+        full_screen.setBounds(fullScreenOldBounds);
       }
 
     full_screen = null;
@@ -183,12 +183,12 @@ public abstract class GraphicsDevice
     // If w != null, make it full-screen.
     if (w != null)
       {
-	fullScreenOldBounds = w.getBounds();
-	full_screen = w;
-	DisplayMode dMode = getDisplayMode();
-	full_screen.setBounds(0, 0, dMode.getWidth(), dMode.getHeight());
-	full_screen.requestFocus();
-	full_screen.setLocationRelativeTo(null);
+        fullScreenOldBounds = w.getBounds();
+        full_screen = w;
+        DisplayMode dMode = getDisplayMode();
+        full_screen.setBounds(0, 0, dMode.getWidth(), dMode.getHeight());
+        full_screen.requestFocus();
+        full_screen.setLocationRelativeTo(null);
       }
   }
 

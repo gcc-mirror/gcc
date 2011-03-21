@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -48,7 +48,7 @@ final class VMMethod
   String name;
   int slot;
 
-  /** 
+  /**
    * This field allows us to refer back to the main constructor instance.
    *  It is set by the constructor of Field.
    */
@@ -129,7 +129,7 @@ final class VMMethod
    * The returned annotations are serialized.  Changing the annotations has
    * no affect on the return value of future calls to this method.
    * </p>
-   * 
+   *
    * @return an array of arrays which represents the annotations used on the
    *         parameters of this method.  The order of the array elements
    *         matches the declaration order of the parameters.
@@ -206,4 +206,3 @@ final class VMMethod
   native Annotation[] getDeclaredAnnotations();
 
 }
-

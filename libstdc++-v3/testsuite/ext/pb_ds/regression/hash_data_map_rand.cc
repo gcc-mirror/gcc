@@ -45,11 +45,21 @@
 #include <regression/common_type.hpp>
 
 #ifndef ITERATIONS
-#define ITERATIONS 5000
+# ifdef _GLIBCXX_DEBUG
+#  define ITERATIONS 100
+# else
+#  define ITERATIONS 5000
 #endif
+#endif
+
 #ifndef KEYS
-#define KEYS 10000
+# ifdef _GLIBCXX_DEBUG
+#  define KEYS 200
+# else
+#  define KEYS 10000
+# endif
 #endif
+
 int
 main(int argc, char* a_p_argv[])
 {

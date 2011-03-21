@@ -1,5 +1,5 @@
 // PR c++/16829
-// { dg-do "compile" }
+// { dg-do compile }
 
 void f1(int = 0, int);                       // { dg-error "default" }
 

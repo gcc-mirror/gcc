@@ -49,8 +49,8 @@ import javax.sound.midi.Track;
 
 /**
  * A MIDI file writer.
- * 
- * This code writes MIDI file types 0 and 1.  
+ *
+ * This code writes MIDI file types 0 and 1.
  *
  * There are many decent documents on the web describing the MIDI file
  * format.  I didn't bother looking for the official document.  If it
@@ -92,7 +92,7 @@ public class MidiFileWriter
     MidiDataOutputStream dos = new MidiDataOutputStream (out);
     Track[] tracks = in.getTracks();
     dos.writeInt(0x4d546864); // MThd
-    dos.writeInt(6);  
+    dos.writeInt(6);
     dos.writeShort(fileType);
     dos.writeShort(tracks.length);
     float divisionType = in.getDivisionType();
@@ -101,7 +101,7 @@ public class MidiFileWriter
     int division = 0;
     if (divisionType == Sequence.PPQ)
       division = resolution & 0x7fff;
-    dos.writeShort(division); 
+    dos.writeShort(division);
     int length = 14;
     for (int i = 0; i < tracks.length; i++)
       length += writeTrack(tracks[i], dos);
@@ -122,13 +122,13 @@ public class MidiFileWriter
     long ptick = 0;
     while (i < eventCount)
       {
-	MidiEvent me = track.get(i);
-	long tick = me.getTick();
-	length += dos.variableLengthIntLength((int) (tick - ptick));
-	ptick = tick;
-	length += me.getMessage().getLength();
-	i++;
-      } 
+        MidiEvent me = track.get(i);
+        long tick = me.getTick();
+        length += dos.variableLengthIntLength((int) (tick - ptick));
+        ptick = tick;
+        length += me.getMessage().getLength();
+        i++;
+      }
     return length;
   }
 
@@ -149,24 +149,24 @@ public class MidiFileWriter
     dos.writeInt(trackLength);
     while (i < elength)
       {
-	MidiEvent me = track.get(i);
-	int dtime = 0;
-	if (pme != null)
-	  dtime = (int) (me.getTick() - pme.getTick());
-	dos.writeVariableLengthInt(dtime); 
-	// FIXME: use running status byte
-	byte msg[] = me.getMessage().getMessage();
-	dos.write(msg);
-	pme = me;
-	i++;
-      } 
+        MidiEvent me = track.get(i);
+        int dtime = 0;
+        if (pme != null)
+          dtime = (int) (me.getTick() - pme.getTick());
+        dos.writeVariableLengthInt(dtime);
+        // FIXME: use running status byte
+        byte msg[] = me.getMessage().getMessage();
+        dos.write(msg);
+        pme = me;
+        i++;
+      }
 
     // We're done if the last event was an End of Track meta message.
     if (pme != null && (pme.getMessage() instanceof MetaMessage))
       {
-	MetaMessage mm = (MetaMessage) pme.getMessage();
-	if (mm.getType() == 0x2f) // End of Track message
-	  return trackLength + 8;
+        MetaMessage mm = (MetaMessage) pme.getMessage();
+        if (mm.getType() == 0x2f) // End of Track message
+          return trackLength + 8;
       }
 
     // Write End of Track meta message
@@ -186,12 +186,12 @@ public class MidiFileWriter
     OutputStream os = new FileOutputStream(out);
     try
       {
-	return write(in, fileType, os);
+        return write(in, fileType, os);
       }
     finally
       {
-	os.close();
-      } 
+        os.close();
+      }
   }
 
 }

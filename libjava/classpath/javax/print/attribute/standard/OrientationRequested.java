@@ -56,7 +56,7 @@ import javax.print.attribute.PrintRequestAttribute;
  * <p>
  * <b>IPP Compatibility:</b> OrientationRequested is an IPP 1.1 attribute.
  * </p>
- * 
+ *
  * @author Michael Koch (konqueror@gmx.de)
  * @author Wolfgang Baer (WBaer@gmx.de)
  */
@@ -65,42 +65,42 @@ public final class OrientationRequested extends EnumSyntax
 {
   private static final long serialVersionUID = -4447437289862822276L;
 
-  /** 
-   * Orientation as portrait. 
+  /**
+   * Orientation as portrait.
    */
   public static final OrientationRequested PORTRAIT =
     new OrientationRequested(3);
-  
-  /** 
-   * Orientation as landscape. 
+
+  /**
+   * Orientation as landscape.
    */
   public static final OrientationRequested LANDSCAPE =
     new OrientationRequested(4);
-  
-  /** 
-   * Orientation as reversed landscape. 
+
+  /**
+   * Orientation as reversed landscape.
    */
   public static final OrientationRequested REVERSE_LANDSCAPE =
     new OrientationRequested(5);
-  
-  /** 
-   * Orientation as reversed portrait. 
+
+  /**
+   * Orientation as reversed portrait.
    */
   public static final OrientationRequested REVERSE_PORTRAIT =
     new OrientationRequested(6);
-  
+
 
   private static final String[] stringTable = { "portrait", "landscape",
                                                 "reverse-landscape",
                                                 "reverse-portrait" };
-  
-  private static final OrientationRequested[] 
-      enumValueTable = { PORTRAIT, LANDSCAPE, 
+
+  private static final OrientationRequested[]
+      enumValueTable = { PORTRAIT, LANDSCAPE,
                          REVERSE_LANDSCAPE, REVERSE_PORTRAIT };
 
   /**
    * Constructs a <code>OrientationRequested</code> object.
-   * 
+   *
    * @param value the value
    */
   protected OrientationRequested(int value)
@@ -127,7 +127,7 @@ public final class OrientationRequested extends EnumSyntax
   {
     return "orientation-requested";
   }
-  
+
   /**
    * Returns a table with the enumeration values represented as strings
    * for this object.
@@ -148,7 +148,7 @@ public final class OrientationRequested extends EnumSyntax
   {
     return enumValueTable;
   }
-  
+
   /**
    * Returns the lowest used value by the enumerations of this class.
    * .
@@ -157,5 +157,5 @@ public final class OrientationRequested extends EnumSyntax
   protected int getOffset()
   {
     return 3;
-  }  
+  }
 }

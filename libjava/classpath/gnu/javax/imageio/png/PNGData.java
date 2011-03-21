@@ -43,8 +43,8 @@ import java.util.zip.Deflater;
 /**
  * A PNG IDAT (data) chunk.
  */
-public class PNGData extends PNGChunk 
-{ 
+public class PNGData extends PNGChunk
+{
   private int offset;
 
   protected PNGData( int type, byte[] data, int crc )
@@ -65,7 +65,7 @@ public class PNGData extends PNGChunk
    * @return true if the chunk is filled and no more data can be written,
    * false otherwise.
    */
-  public void deflateToChunk( Deflater def ) 
+  public void deflateToChunk( Deflater def )
   {
     offset += def.deflate( data, offset, data.length - offset );
   }
@@ -80,7 +80,7 @@ public class PNGData extends PNGChunk
 
   /**
    * Shrink the chunk to offset size, used for the last chunk in a stream
-   * (no trailing data!) 
+   * (no trailing data!)
    */
   public void shrink()
   {
@@ -92,7 +92,7 @@ public class PNGData extends PNGChunk
   /**
    * Feeds the data in the chunk to a ZIP inflater object.
    */
-  public void feedToInflater( Inflater inf ) 
+  public void feedToInflater( Inflater inf )
   {
     inf.setInput( data );
   }

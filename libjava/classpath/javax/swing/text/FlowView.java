@@ -216,7 +216,7 @@ public abstract class FlowView extends BoxView
      * the logical view. If the available space is exhausted,
      * {@link #adjustRow(FlowView, int, int, int)} is called to fit the row into
      * the available span.
-     * 
+     *
      * @param fv the flow view for which we perform the layout
      * @param rowIndex the index of the row
      * @param pos the model position for the beginning of the row
@@ -616,7 +616,7 @@ public abstract class FlowView extends BoxView
   {
     int axis = getAxis();
     int flowAxis;
- 
+
     if (axis == X_AXIS)
       flowAxis = Y_AXIS;
     else
@@ -697,7 +697,7 @@ public abstract class FlowView extends BoxView
   protected void layout(int width, int height)
   {
     int flowAxis = getFlowAxis();
-    int span; 
+    int span;
     if (flowAxis == X_AXIS)
       span = (int) width;
     else

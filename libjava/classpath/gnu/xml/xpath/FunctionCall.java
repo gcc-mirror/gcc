@@ -1,4 +1,4 @@
-/* FunctionCall.java -- 
+/* FunctionCall.java --
    Copyright (C) 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -83,7 +83,7 @@ public final class FunctionCall
     if (resolver != null)
       {
         QName qname = QName.valueOf(name);
-				int arity = args.size();
+                                int arity = args.size();
         XPathFunction function = resolver.resolveFunction(qname, arity);
         if (function != null)
           {
@@ -165,5 +165,5 @@ public final class FunctionCall
     buf.append(')');
     return buf.toString();
   }
-  
+
 }

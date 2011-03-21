@@ -1,4 +1,4 @@
-/* DelegatedTask.java -- 
+/* DelegatedTask.java --
    Copyright (C) 2006  Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -49,12 +49,12 @@ public abstract class DelegatedTask implements Runnable
   private static final SystemLogger logger = SystemLogger.SYSTEM;
   private boolean hasRun;
   protected Throwable thrown;
-  
+
   protected DelegatedTask()
   {
     hasRun = false;
   }
-  
+
   public final void run()
   {
     if (hasRun)
@@ -79,15 +79,15 @@ public abstract class DelegatedTask implements Runnable
       }
   }
 
-  public final boolean hasRun() 
+  public final boolean hasRun()
   {
     return hasRun;
   }
-  
+
   public final Throwable thrown()
   {
     return thrown;
   }
-  
+
   protected abstract void implRun() throws Throwable;
 }

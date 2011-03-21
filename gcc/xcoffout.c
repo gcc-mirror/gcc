@@ -1,6 +1,6 @@
 /* Output xcoff-format symbol table information from GNU compiler.
    Copyright (C) 1992, 1994, 1995, 1997, 1998, 1999, 2000, 2002, 2003, 2004,
-   2007, 2008  Free Software Foundation, Inc.
+   2007, 2008, 2010  Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -81,8 +81,15 @@ const char *xcoff_lastfile;
 #define ASM_OUTPUT_LINE(FILE,LINENUM)					   \
   do									   \
     {									   \
+      /* Make sure we're in a function and prevent output of .line 0, as   \
+	 line # 0 is meant for symbol addresses in xcoff.  Additionally,   \
+	 line numbers are 'unsigned short' in 32-bit mode.  */		   \
       if (xcoff_begin_function_line >= 0)				   \
-	fprintf (FILE, "\t.line\t%d\n", ABS_OR_RELATIVE_LINENO (LINENUM)); \
+	{								   \
+	  int lno = ABS_OR_RELATIVE_LINENO (LINENUM);			   \
+	  if (lno > 0 && (TARGET_64BIT || lno <= (int)USHRT_MAX))	   \
+	    fprintf (FILE, "\t.line\t%d\n", lno);			   \
+	}								   \
     }									   \
   while (0)
 

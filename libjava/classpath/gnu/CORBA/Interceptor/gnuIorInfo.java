@@ -137,7 +137,7 @@ public class gnuIorInfo extends LocalObject implements IORInfo
   }
 
   /**
-   * Set the object factory of the current POA. 
+   * Set the object factory of the current POA.
    */
   public void current_factory(ObjectReferenceFactory factory)
   {
@@ -145,12 +145,12 @@ public class gnuIorInfo extends LocalObject implements IORInfo
   }
 
   /**
-   * The method currently uses system identity hashcode that should be 
+   * The method currently uses system identity hashcode that should be
    * different for each object.
    */
   public int manager_id()
   {
-    // The System.identityHashCode is also called in gnuPoaManager.    
+    // The System.identityHashCode is also called in gnuPoaManager.
     return System.identityHashCode(poa.the_POAManager());
   }
 }

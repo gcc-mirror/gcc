@@ -50,8 +50,8 @@ func Setenv(key, value string) Error {
 	if len(value) > 0 {
 		v = syscall.StringToUTF16Ptr(value)
 	}
-	ok, e := syscall.SetEnvironmentVariable(syscall.StringToUTF16Ptr(key), v)
-	if !ok {
+	e := syscall.SetEnvironmentVariable(syscall.StringToUTF16Ptr(key), v)
+	if e != 0 {
 		return NewSyscallError("SetEnvironmentVariable", e)
 	}
 	return nil
@@ -110,4 +110,18 @@ func TempDir() string {
 		n--
 	}
 	return string(utf16.Decode(dirw[0:n]))
+}
+
+func init() {
+	var argc int32
+	cmd := syscall.GetCommandLine()
+	argv, e := syscall.CommandLineToArgv(cmd, &argc)
+	if e != 0 {
+		return
+	}
+	defer syscall.LocalFree(uint32(uintptr(unsafe.Pointer(argv))))
+	Args = make([]string, argc)
+	for i, v := range (*argv)[:argc] {
+		Args[i] = string(syscall.UTF16ToString((*v)[:]))
+	}
 }

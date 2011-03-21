@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -53,11 +53,11 @@ import java.util.Arrays;
  * <code>Collator</code> in a manner than is usually more efficient than
  * using the raw <code>Collator</code> compare methods.  There is overhead
  * associated with calculating this value, so it is generally not
- * advisable to compute <code>CollationKey</code>'s unless multiple 
+ * advisable to compute <code>CollationKey</code>'s unless multiple
  * comparisons against a <code>String</code> will be done.  (For example,
  * in a sort routine).
  * <p>
- * This class cannot be instantiated directly.  Instead, a 
+ * This class cannot be instantiated directly.  Instead, a
  * <code>CollationKey</code> is created by calling the
  * <code>getCollationKey</code> method on an instance of <code>Collator</code>.
  *
@@ -90,8 +90,8 @@ public class CollationKey implements Comparable<CollationKey>
   }
 
   /**
-   * This method compares the specified object to this one.  An integer is 
-   * returned which indicates whether the specified object is less than, 
+   * This method compares the specified object to this one.  An integer is
+   * returned which indicates whether the specified object is less than,
    * greater than, or equal to this object.
    *
    * @param ck The <code>CollationKey</code> to compare against this one.
@@ -104,8 +104,8 @@ public class CollationKey implements Comparable<CollationKey>
 
     for (int i = 0; i < max; ++i)
       {
-	if (key[i] != ck.key[i])
-	  return key[i] - ck.key[i];
+        if (key[i] != ck.key[i])
+          return key[i] - ck.key[i];
       }
 
     return key.length - ck.key.length;
@@ -173,7 +173,7 @@ public class CollationKey implements Comparable<CollationKey>
       h ^= key[i] * (i + 1);
     return (int) ((h >> 32) ^ h);
   }
-  
+
   /**
    * This method returns the collation bit sequence as a byte array.
    *

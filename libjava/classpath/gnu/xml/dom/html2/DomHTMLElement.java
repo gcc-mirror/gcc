@@ -1,4 +1,4 @@
-/* DomHTMLElement.java -- 
+/* DomHTMLElement.java --
    Copyright (C) 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -242,7 +242,7 @@ public abstract class DomHTMLElement
   {
     setHTMLAttribute("id", id);
   }
-  
+
   public String getTitle()
   {
     return getHTMLAttribute("title");
@@ -252,7 +252,7 @@ public abstract class DomHTMLElement
   {
     setHTMLAttribute("title", title);
   }
-  
+
   public String getLang()
   {
     return getHTMLAttribute("lang");
@@ -262,7 +262,7 @@ public abstract class DomHTMLElement
   {
     setHTMLAttribute("lang", lang);
   }
-  
+
   public String getDir()
   {
     return getHTMLAttribute("dir");
@@ -272,7 +272,7 @@ public abstract class DomHTMLElement
   {
     setHTMLAttribute("dir", dir);
   }
-  
+
   public String getClassName()
   {
     return getHTMLAttribute("class");
@@ -282,6 +282,5 @@ public abstract class DomHTMLElement
   {
     setHTMLAttribute("class", className);
   }
-  
-}
 
+}

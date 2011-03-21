@@ -104,4 +104,3 @@ public abstract Tag[]
 firstSentenceTags();
 
 } // interface Tag
-

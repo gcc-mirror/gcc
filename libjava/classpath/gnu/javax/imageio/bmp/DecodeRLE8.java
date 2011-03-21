@@ -52,7 +52,7 @@ import java.awt.Dimension;
 public class DecodeRLE8 extends BMPDecoder {
 
     public DecodeRLE8(BMPFileHeader fh, BMPInfoHeader ih){
-	super(fh, ih);
+        super(fh, ih);
     }
 
     /**
@@ -62,82 +62,81 @@ public class DecodeRLE8 extends BMPDecoder {
     private static final byte EOL = (byte)0; // end of line
     private static final byte EOB = (byte)1; // end of bitmap
     private static final byte DELTA = (byte)2; // delta
-    
+
     public BufferedImage decode(ImageInputStream in) throws IOException, BMPException {
-	IndexColorModel palette = readPalette(in);
-	skipToImage(in);
+        IndexColorModel palette = readPalette(in);
+        skipToImage(in);
 
-	Dimension d = infoHeader.getSize();
-	int h = (int)d.getHeight();
-	int w = (int)d.getWidth();
+        Dimension d = infoHeader.getSize();
+        int h = (int)d.getHeight();
+        int w = (int)d.getWidth();
 
-	byte[] data = uncompress(w, h, in);
-	SampleModel sm = new SinglePixelPackedSampleModel(DataBuffer.TYPE_BYTE, 
-							  w, h, 
-							  new int[] {0xFF});
-	DataBuffer db = new DataBufferByte(data, w*h, 0);
-	WritableRaster raster = Raster.createWritableRaster(sm, db, null);
-    
-	return new BufferedImage(palette, raster, false, null);
+        byte[] data = uncompress(w, h, in);
+        SampleModel sm = new SinglePixelPackedSampleModel(DataBuffer.TYPE_BYTE,
+                                                          w, h,
+                                                          new int[] {0xFF});
+        DataBuffer db = new DataBufferByte(data, w*h, 0);
+        WritableRaster raster = Raster.createWritableRaster(sm, db, null);
+
+        return new BufferedImage(palette, raster, false, null);
     }
-    
-    private byte[] uncompress(int w, int h, ImageInputStream in) 
-	throws BMPException, IOException {
-	byte[] cmd = new byte[2];
-	byte[] data = new byte[w*h];
-	int offIn = 0;
-	int x=0,y=0;
 
-	try {
-	    while((x + y*w) < w*h){
-		if(in.read(cmd) != 2)
-		    throw new IOException("Error reading compressed data.");
+    private byte[] uncompress(int w, int h, ImageInputStream in)
+        throws BMPException, IOException {
+        byte[] cmd = new byte[2];
+        byte[] data = new byte[w*h];
+        int offIn = 0;
+        int x=0,y=0;
 
-		if(cmd[0] == ESCAPE){
-		    switch(cmd[1]){
-		    case EOB: // end of bitmap
-			return data;
-		    case EOL: // end of line
-			x = 0;
-			y++;
-			break;
-		    case DELTA: // delta
-			if(in.read(cmd) != 2)
-			    throw new IOException("Error reading compressed data.");
-			int dx = cmd[0] & (0xFF);
-			int dy = cmd[1] & (0xFF);
-			x += dx;
-			y += dy;
-			break;
-			
-		    default:
-			// decode a literal run
-			int length = cmd[1] & (0xFF);
-			int copylength = length;
+        try {
+            while((x + y*w) < w*h){
+                if(in.read(cmd) != 2)
+                    throw new IOException("Error reading compressed data.");
 
-			// absolute mode must be word-aligned
-			length += (length & 1);
+                if(cmd[0] == ESCAPE){
+                    switch(cmd[1]){
+                    case EOB: // end of bitmap
+                        return data;
+                    case EOL: // end of line
+                        x = 0;
+                        y++;
+                        break;
+                    case DELTA: // delta
+                        if(in.read(cmd) != 2)
+                            throw new IOException("Error reading compressed data.");
+                        int dx = cmd[0] & (0xFF);
+                        int dy = cmd[1] & (0xFF);
+                        x += dx;
+                        y += dy;
+                        break;
 
-			byte[] run = new byte[length];
-			if(in.read(run) != length)
-			    throw new IOException("Error reading compressed data.");
+                    default:
+                        // decode a literal run
+                        int length = cmd[1] & (0xFF);
+                        int copylength = length;
 
-			System.arraycopy(run, 0, data, (x+w*(h-y-1)), 
-					 copylength);
-			x += copylength;
-			break;
-		    }
-		} else {
-		    // decode a byte run
-		    int length = cmd[0] & (0xFF);
-		    for(int i=0;i<length;i++)
-			data[(h-y-1)*w + x++] = cmd[1];
-		}
-	    }
-	    return data;
- 	} catch(ArrayIndexOutOfBoundsException e){
- 	    throw new BMPException("Invalid RLE data.");
- 	}
+                        // absolute mode must be word-aligned
+                        length += (length & 1);
+
+                        byte[] run = new byte[length];
+                        if(in.read(run) != length)
+                            throw new IOException("Error reading compressed data.");
+
+                        System.arraycopy(run, 0, data, (x+w*(h-y-1)),
+                                         copylength);
+                        x += copylength;
+                        break;
+                    }
+                } else {
+                    // decode a byte run
+                    int length = cmd[0] & (0xFF);
+                    for(int i=0;i<length;i++)
+                        data[(h-y-1)*w + x++] = cmd[1];
+                }
+            }
+            return data;
+        } catch(ArrayIndexOutOfBoundsException e){
+            throw new BMPException("Invalid RLE data.");
+        }
     }
 }
-

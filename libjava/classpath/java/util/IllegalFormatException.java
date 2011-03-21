@@ -38,7 +38,7 @@ exception statement from your version. */
 
 package java.util;
 
-/** 
+/**
  * A general exception thrown when a format string is supplied
  * to a {@link Formatter} that contains either invalid syntax
  * or a mismatch between the format specification and the
@@ -48,9 +48,9 @@ package java.util;
  *
  * @author Tom Tromey (tromey@redhat.com)
  * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
- * @since 1.5 
+ * @since 1.5
  */
-public class IllegalFormatException 
+public class IllegalFormatException
   extends IllegalArgumentException
 {
   private static final long serialVersionUID = 18830826L;

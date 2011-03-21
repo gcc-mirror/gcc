@@ -199,7 +199,7 @@ public abstract class FocusManager
     {
       wrapped.addKeyEventPostProcessor(p);
     }
- 
+
     /**
      * Wraps {@link KeyboardFocusManager#addPropertyChangeListener(PropertyChangeListener)}.
      *
@@ -366,7 +366,7 @@ public abstract class FocusManager
       return wrapped.getVetoableChangeListeners(n);
     }
 
-    
+
     /**
      * Wraps
      * {@link KeyboardFocusManager#removeKeyEventDispatcher(KeyEventDispatcher)}.
@@ -490,7 +490,7 @@ public abstract class FocusManager
   public static FocusManager getCurrentManager()
   {
     KeyboardFocusManager m =
-      KeyboardFocusManager.getCurrentKeyboardFocusManager(); 
+      KeyboardFocusManager.getCurrentKeyboardFocusManager();
     return new WrappingFocusManager(m);
   }
 

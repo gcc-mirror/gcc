@@ -60,11 +60,11 @@ public class gnuPOAManager
   extends LocalObject
   implements POAManager
 {
-  /** 
-   * Use serialVersionUID for interoperability. 
+  /**
+   * Use serialVersionUID for interoperability.
    */
   private static final long serialVersionUID = 1;
-  
+
   /**
    * The POAs, controlled by this manager.
    */
@@ -75,7 +75,7 @@ public class gnuPOAManager
    * in the holding state.
    */
   State state = State.HOLDING;
-  
+
   /**
    * Get the state of the POA manager.
    */
@@ -99,8 +99,8 @@ public class gnuPOAManager
       state = State.ACTIVE;
     else
       throw new AdapterInactive();
-    
-    notifyInterceptors(state.value());    
+
+    notifyInterceptors(state.value());
   }
 
   /**
@@ -120,9 +120,9 @@ public class gnuPOAManager
       state = State.HOLDING;
     else
       throw new AdapterInactive();
-    
+
     notifyInterceptors(state.value());
-    
+
     if (wait_for_completion)
       waitForIdle();
   }
@@ -154,9 +154,9 @@ public class gnuPOAManager
     if (state == State.INACTIVE)
       throw new AdapterInactive("Repetetive inactivation");
     state = State.INACTIVE;
-    
-    notifyInterceptors(state.value());    
-    
+
+    notifyInterceptors(state.value());
+
     if (wait_for_completion)
       waitForIdle();
 
@@ -191,9 +191,9 @@ public class gnuPOAManager
       state = State.DISCARDING;
     else
       throw new AdapterInactive();
-    
-    notifyInterceptors(state.value());    
-    
+
+    notifyInterceptors(state.value());
+
     if (wait_for_completion)
       waitForIdle();
   }
@@ -209,10 +209,10 @@ public class gnuPOAManager
   {
     if (state == State.ACTIVE)
       throw new BAD_INV_ORDER("The state is active");
-     
+
     gnuPOA poa;
     Iterator iter = POAs.iterator();
-    
+
     while (iter.hasNext())
       {
         poa = (gnuPOA) iter.next();
@@ -240,16 +240,16 @@ public class gnuPOAManager
   {
     POAs.remove(poa);
   }
-  
+
   /**
    * This method is called when POA is destryed. The interceptors are
    * notified.
    */
   public void poaDestroyed(gnuPOA poa)
   {
-    notifyInterceptors(NON_EXISTENT.value); 
+    notifyInterceptors(NON_EXISTENT.value);
   }
-  
+
   /**
    * Notify CORBA 3.0 interceptors about the status change.
    */

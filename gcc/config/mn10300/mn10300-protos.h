@@ -26,28 +26,31 @@
 #ifdef RTX_CODE
 extern rtx   mn10300_legitimize_pic_address (rtx, rtx);
 extern int   mn10300_legitimate_pic_operand_p (rtx);
+extern rtx   mn10300_legitimize_reload_address (rtx, Mmode, int, int, int);
 extern bool  mn10300_function_value_regno_p (const unsigned int);
-extern void  mn10300_gen_multiple_store (int);
 extern int   mn10300_get_live_callee_saved_regs (void);
 extern bool  mn10300_hard_regno_mode_ok (unsigned int, Mmode);
 extern bool  mn10300_legitimate_constant_p (rtx);
 extern bool  mn10300_modes_tieable (Mmode, Mmode);
-extern Cstar mn10300_output_cmp (rtx, rtx);
+extern Cstar mn10300_output_add (rtx[3], bool);
 extern void  mn10300_print_operand (FILE *, rtx, int);
 extern void  mn10300_print_operand_address (FILE *, rtx);
 extern void  mn10300_print_reg_list (FILE *, int);
-extern Rclas mn10300_secondary_reload_class (Rclas, Mmode, rtx);
-extern Mmode mn10300_select_cc_mode (rtx);
+extern Mmode mn10300_select_cc_mode (enum rtx_code, rtx, rtx);
 extern int   mn10300_store_multiple_operation (rtx, Mmode);
 extern int   mn10300_symbolic_operand (rtx, Mmode);
-extern bool  mn10300_wide_const_load_uses_clr (rtx operands[2]);
+extern void  mn10300_split_cbranch (Mmode, rtx, rtx);
+extern int   mn10300_split_and_operand_count (rtx);
+extern bool  mn10300_match_ccmode (rtx, Mmode);
 #endif /* RTX_CODE */
 
-extern int   mn10300_can_use_return_insn (void);
+extern bool  mn10300_regno_in_class_p (unsigned, int, bool);
+extern bool  mn10300_can_use_rets_insn (void);
+extern bool  mn10300_can_use_retf_insn (void);
 extern void  mn10300_expand_prologue (void);
 extern void  mn10300_expand_epilogue (void);
 extern int   mn10300_initial_offset (int, int);
-extern int   mn10300_mask_ok_for_mem_btst (int, int);
+extern int   mn10300_frame_size (void);
 
 #undef Mmode
 #undef Cstar

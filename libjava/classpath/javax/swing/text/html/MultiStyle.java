@@ -48,7 +48,7 @@ import javax.swing.text.Style;
 /**
  * A Style implementation that is able to multiplex between several other
  * Styles. This is used for CSS style resolving.
- * 
+ *
  * @author Roman Kennke (kennke@aicas.com)
  */
 class MultiStyle

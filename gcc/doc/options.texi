@@ -1,4 +1,4 @@
-@c Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+@c Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
 @c Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
@@ -436,4 +436,17 @@ the @option{--help} output.
 Build the @code{cl_target_option} structure to hold a copy of the
 option, add the functions @code{cl_target_option_save} and
 @code{cl_target_option_restore} to save and restore the options.
+
+@item SetByCombined
+The option may also be set by a combined option such as
+@option{-ffast-math}.  This causes the @code{gcc_options} struct to
+have a field @code{frontend_set_@var{name}}, where @code{@var{name}}
+is the name of the field holding the value of this option (without the
+leading @code{x_}).  This gives the front end a way to indicate that
+the value has been set explicitly and should not be changed by the
+combined option.  For example, some front ends use this to prevent
+@option{-ffast-math} and @option{-fno-fast-math} from changing the
+value of @option{-fmath-errno} for languages that do not use
+@code{errno}.
+
 @end table

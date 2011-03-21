@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -60,19 +60,19 @@ import java.security.BasicPermission;
 public final class SerializablePermission extends BasicPermission
 {
   static final long serialVersionUID = 8537212141160296410L;
-	
+
   /*
    * Class Variables
    */
 
   private static final String[] legal_names = { "enableSubclassImplementation",
-  					      "enableSubstitution" };
+                                              "enableSubstitution" };
   /*
    * Constructors
    */
 
   /**
-    * This method initializes a new instance of 
+    * This method initializes a new instance of
     * <code>SerializablePermission</code>
     * that has the specified name.
     *
@@ -87,7 +87,7 @@ public final class SerializablePermission extends BasicPermission
   }
 
   /**
-    * This method initializes a new instance of 
+    * This method initializes a new instance of
     * <code>SerializablePermission</code>
     * that has the specified name and action list.  Note that the action list
     * is unused in this class.
@@ -95,7 +95,7 @@ public final class SerializablePermission extends BasicPermission
     * @param name The name of the permission.
     * @param actions The action list (unused).
     *
-    * @exception IllegalArgumentException If the name is not valid for 
+    * @exception IllegalArgumentException If the name is not valid for
     * this class.
     */
   public SerializablePermission(String name, String actions)
@@ -110,4 +110,3 @@ public final class SerializablePermission extends BasicPermission
   }
 
 } // class SerializablePermission
-

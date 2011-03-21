@@ -61,7 +61,7 @@ import java.util.Vector;
  * the image consists of one large tile (0,0) with the width and
  * height of the image. This tile is always considered to be checked
  * out.
- * 
+ *
  * @author Rolf W. Rasmussen (rolfwr@ii.uib.no)
  */
 public class BufferedImage extends Image
@@ -81,12 +81,12 @@ public class BufferedImage extends Image
                           TYPE_USHORT_GRAY    = 11,
                           TYPE_BYTE_BINARY    = 12,
                           TYPE_BYTE_INDEXED   = 13;
-  
+
   /**
    * Vector of TileObservers (or null)
    */
   Vector<TileObserver> tileObservers;
-  
+
   /**
    * The image's WritableRaster
    */
@@ -115,7 +115,7 @@ public class BufferedImage extends Image
   /**
    * Creates a new <code>BufferedImage</code> with the specified width, height
    * and type.  Valid <code>type</code> values are:
-   * 
+   *
    * <ul>
    *   <li>{@link #TYPE_INT_RGB}</li>
    *   <li>{@link #TYPE_INT_ARGB}</li>
@@ -131,11 +131,11 @@ public class BufferedImage extends Image
    *   <li>{@link #TYPE_BYTE_BINARY}</li>
    *   <li>{@link #TYPE_BYTE_INDEXED}</li>
    * </ul>
-   * 
+   *
    * @param width the width (must be > 0).
    * @param height the height (must be > 0).
    * @param type  the image type (see the list of valid types above).
-   * 
+   *
    * @throws IllegalArgumentException if <code>width</code> or
    *     <code>height</code> is less than or equal to zero.
    * @throws IllegalArgumentException if <code>type</code> is not one of the
@@ -151,18 +151,18 @@ public class BufferedImage extends Image
     switch( type )
       {
       case BufferedImage.TYPE_INT_RGB:
-        sm = new SinglePixelPackedSampleModel( DataBuffer.TYPE_INT, 
+        sm = new SinglePixelPackedSampleModel( DataBuffer.TYPE_INT,
                                                width, height,
-                                               new int[]{ 0x00FF0000, 
-                                                          0x0000FF00, 
+                                               new int[]{ 0x00FF0000,
+                                                          0x0000FF00,
                                                           0x000000FF } ) ;
         cm = new DirectColorModel( 24, 0xff0000, 0xff00, 0xff );
         break;
-	
+
       case BufferedImage.TYPE_3BYTE_BGR:
         sm = new PixelInterleavedSampleModel( DataBuffer.TYPE_BYTE,
                                               width, height,
-                                              3, width * 3, 
+                                              3, width * 3,
                                               new int[]{ 2, 1, 0 } );
         cm = new ComponentColorModel(ColorSpace.getInstance(ColorSpace.CS_sRGB),
                                      false, false,
@@ -172,11 +172,11 @@ public class BufferedImage extends Image
 
       case BufferedImage.TYPE_INT_ARGB:
       case BufferedImage.TYPE_INT_ARGB_PRE:
-        sm = new SinglePixelPackedSampleModel( DataBuffer.TYPE_INT, 
+        sm = new SinglePixelPackedSampleModel( DataBuffer.TYPE_INT,
                                                width, height,
-                                               new int[]{ 0x00FF0000, 
-                                                          0x0000FF00, 
-                                                          0x000000FF, 
+                                               new int[]{ 0x00FF0000,
+                                                          0x0000FF00,
+                                                          0x000000FF,
                                                           0xFF000000 } );
         if (premultiplied)
           cm = new DirectColorModel( ColorSpace.getInstance(ColorSpace.CS_sRGB),
@@ -185,12 +185,12 @@ public class BufferedImage extends Image
                                      Buffers.smallestAppropriateTransferType(32));
         else
           cm = new DirectColorModel( 32, 0xff0000, 0xff00, 0xff, 0xff000000 );
-        
+
         break;
 
       case BufferedImage.TYPE_4BYTE_ABGR:
       case BufferedImage.TYPE_4BYTE_ABGR_PRE:
-        sm = new PixelInterleavedSampleModel(DataBuffer.TYPE_BYTE, 
+        sm = new PixelInterleavedSampleModel(DataBuffer.TYPE_BYTE,
                                              width, height,
                                              4, 4*width,
                                              new int[]{3, 2, 1, 0});
@@ -201,10 +201,10 @@ public class BufferedImage extends Image
         break;
 
       case BufferedImage.TYPE_INT_BGR:
-        sm = new SinglePixelPackedSampleModel( DataBuffer.TYPE_INT, 
+        sm = new SinglePixelPackedSampleModel( DataBuffer.TYPE_INT,
                                                width, height,
-                                               new int[]{ 0x000000FF, 
-                                                          0x0000FF00, 
+                                               new int[]{ 0x000000FF,
+                                                          0x0000FF00,
                                                           0x00FF0000 } ) ;
         cm = new DirectColorModel( 24, 0xff, 0xff00, 0xff0000 );
         break;
@@ -212,17 +212,17 @@ public class BufferedImage extends Image
       case BufferedImage.TYPE_USHORT_565_RGB:
         sm = new SinglePixelPackedSampleModel( DataBuffer.TYPE_USHORT,
                                                width, height,
-                                               new int[]{ 0xF800, 
-                                                          0x7E0, 
+                                               new int[]{ 0xF800,
+                                                          0x7E0,
                                                           0x1F } ) ;
         cm = new DirectColorModel( 16, 0xF800, 0x7E0, 0x1F );
         break;
-        
+
       case BufferedImage.TYPE_USHORT_555_RGB:
         sm = new SinglePixelPackedSampleModel( DataBuffer.TYPE_USHORT,
                                                width, height,
-                                               new int[]{ 0x7C00, 
-                                                          0x3E0, 
+                                               new int[]{ 0x7C00,
+                                                          0x3E0,
                                                           0x1F } ) ;
         cm = new DirectColorModel( 15, 0x7C00, 0x3E0, 0x1F );
         break;
@@ -244,7 +244,7 @@ public class BufferedImage extends Image
 
       case BufferedImage.TYPE_BYTE_BINARY:
         cm = createDefaultIndexedColorModel( true );
-        sm = new MultiPixelPackedSampleModel(DataBuffer.TYPE_BYTE, 
+        sm = new MultiPixelPackedSampleModel(DataBuffer.TYPE_BYTE,
                                              width, height, 1);
         break;
 
@@ -254,8 +254,8 @@ public class BufferedImage extends Image
 
     if( sm == null )
       throw new IllegalArgumentException("Unknown predefined image type.");
-    
-    if( cm == null ) // only for the grayscale types 
+
+    if( cm == null ) // only for the grayscale types
       {
         int buftype;
         int[] bits = new int[1];
@@ -270,22 +270,22 @@ public class BufferedImage extends Image
             bits[0] = 16;
           }
         ColorSpace graySpace = ColorSpace.getInstance( ColorSpace.CS_GRAY );
-        
-        cm = new ComponentColorModel( graySpace, bits, false, false, 
+
+        cm = new ComponentColorModel( graySpace, bits, false, false,
                                       Transparency.OPAQUE, buftype );
       }
 
     WritableRaster rst = null;
-    
+
     // Attempt to create an accelerated backend for this image
     GraphicsEnvironment env = GraphicsEnvironment.getLocalGraphicsEnvironment();
     if (env instanceof ClasspathGraphicsEnvironment)
       rst = ((ClasspathGraphicsEnvironment)env).createRaster(cm, sm);
-    
+
     // Default to a standard Java raster & databuffer if needed
     if (rst == null)
       rst = Raster.createWritableRaster(sm, new Point( 0, 0 ) );
-    
+
     init(cm, rst, premultiplied,
          null, // no properties
          type );
@@ -308,13 +308,13 @@ public class BufferedImage extends Image
   }
 
   public BufferedImage(ColorModel colormodel, WritableRaster writableraster,
-		       boolean premultiplied, Hashtable<?,?> properties)
+                       boolean premultiplied, Hashtable<?,?> properties)
   {
     init(colormodel, writableraster, premultiplied, properties, TYPE_CUSTOM);
   }
- 
 
-  private void init(ColorModel cm, WritableRaster writableraster, 
+
+  private void init(ColorModel cm, WritableRaster writableraster,
                     boolean premultiplied, Hashtable properties, int type)
   {
     raster = writableraster;
@@ -330,7 +330,7 @@ public class BufferedImage extends Image
    *
    * @param binary - If <code>true</code>, a black and white palette,
    * otherwise a default 256-color palette is returned.
-   */    
+   */
   private IndexColorModel createDefaultIndexedColorModel( boolean binary )
   {
     if( binary )
@@ -342,7 +342,7 @@ public class BufferedImage extends Image
     byte[] r = new byte[256];
     byte[] g = new byte[256];
     byte[] b = new byte[256];
-    
+
     int index = 0;
     for( int i = 0; i < 6; i++ )
       for( int j = 0; j < 6; j++ )
@@ -353,17 +353,17 @@ public class BufferedImage extends Image
             b[ index ] = (byte)(k * 51);
             index++;
           }
-    
+
     while( index < 256 )
       {
-        r[ index ] = g[ index ] = b[ index ] = 
+        r[ index ] = g[ index ] = b[ index ] =
           (byte)(18 + (index - 216) * 6);
         index++;
       }
-    
+
     return new IndexColorModel( 8, 256, r, g, b );
   }
-  
+
   public void coerceData(boolean premultiplied)
   {
     colorModel = colorModel.coerceData(raster, premultiplied);
@@ -380,17 +380,17 @@ public class BufferedImage extends Image
     int y = dest.getMinY();
     int w = dest.getWidth();
     int h = dest.getHeight();
-    
+
     // create a src child that has the right bounds...
     WritableRaster src =
       raster.createWritableChild(x, y, w, h, x, y,
                                  null);  // same bands
-    
+
     if (src.getSampleModel () instanceof ComponentSampleModel
         && dest.getSampleModel () instanceof ComponentSampleModel)
       // Refer to ComponentDataBlitOp for optimized data blitting:
       ComponentDataBlitOp.INSTANCE.filter(src, dest);
-    
+
     else
       {
         // slower path
@@ -410,17 +410,17 @@ public class BufferedImage extends Image
   public void flush()
   {
   }
-  
+
   public WritableRaster getAlphaRaster()
   {
     return colorModel.getAlphaRaster(raster);
   }
-  
+
   public ColorModel getColorModel()
   {
     return colorModel;
   }
-  
+
   public Raster getData()
   {
     return copyData(null);
@@ -434,7 +434,7 @@ public class BufferedImage extends Image
       raster.createCompatibleWritableRaster(rectangle);
     return copyData(dest);
   }
-  
+
   public Graphics getGraphics()
   {
     return createGraphics();
@@ -444,17 +444,17 @@ public class BufferedImage extends Image
   {
     return raster.getHeight();
   }
-  
+
   public int getHeight(ImageObserver imageobserver)
   {
     return getHeight();
   }
-    
+
   public int getMinTileX()
   {
     return 0;
   }
-  
+
   public int getMinTileY()
   {
     return 0;
@@ -462,14 +462,14 @@ public class BufferedImage extends Image
 
   public int getMinX()
   {
-    return 0; 
+    return 0;
   }
 
-  public int getMinY() 
+  public int getMinY()
   {
     return 0;
   }
-  
+
   public int getNumXTiles()
   {
     return 1;
@@ -477,17 +477,17 @@ public class BufferedImage extends Image
 
   public int getNumYTiles()
   {
-	return 1;
+        return 1;
   }
 
   /**
-   * Returns the value of the specified property, or 
+   * Returns the value of the specified property, or
    * {@link Image#UndefinedProperty} if the property is not defined.
-   * 
+   *
    * @param string  the property key (<code>null</code> not permitted).
-   * 
+   *
    * @return The property value.
-   * 
+   *
    * @throws NullPointerException if <code>string</code> is <code>null</code>.
    */
   public Object getProperty(String string)
@@ -511,7 +511,7 @@ public class BufferedImage extends Image
 
   /**
    * Returns <code>null</code> always.
-   * 
+   *
    * @return <code>null</code> always.
    */
   public String[] getPropertyNames()
@@ -526,29 +526,29 @@ public class BufferedImage extends Image
     Object rgbElem = raster.getDataElements(x, y, null);
     return colorModel.getRGB(rgbElem);
   }
-    
+
   public int[] getRGB(int startX, int startY, int w, int h, int[] rgbArray,
                       int offset, int scanlineStride)
   {
     if (rgbArray == null)
       {
         /*
-	      000000000000000000
-	      00000[#######-----   [ = start
-	      -----########-----   ] = end
-	      -----#######]00000
-	      000000000000000000 
+              000000000000000000
+              00000[#######-----   [ = start
+              -----########-----   ] = end
+              -----#######]00000
+              000000000000000000
         */
         int size = (h-1)*scanlineStride + w;
         rgbArray = new int[size];
     }
-	
+
     int endX = startX + w;
     int endY = startY + h;
-    
+
     /* *TODO*:
        Opportunity for optimization by examining color models...
-       
+
        Perhaps wrap the rgbArray up in a WritableRaster with packed
        sRGB color model and perform optimized rendering into the
        array. */
@@ -573,12 +573,12 @@ public class BufferedImage extends Image
   {
     return raster;
   }
-  
+
   public SampleModel getSampleModel()
   {
     return raster.getSampleModel();
   }
-    
+
   public ImageProducer getSource()
   {
     return new ImageProducer()
@@ -609,8 +609,8 @@ public class BufferedImage extends Image
           int height = getHeight();
           int stride = width;
           int offset = 0;
-          int[] pixels = getRGB(x, y, 
-                                width, height, 
+          int[] pixels = getRGB(x, y,
+                                width, height,
                                 (int[])null, offset, stride);
           // We already convert the color to RGB in the getRGB call, so
           // we pass a simple RGB color model to the consumers.
@@ -636,17 +636,17 @@ public class BufferedImage extends Image
 
       };
   }
-  
+
   public Vector<RenderedImage> getSources()
   {
     return null;
   }
-  
+
   public BufferedImage getSubimage(int x, int y, int w, int h)
   {
-    WritableRaster subRaster = 
+    WritableRaster subRaster =
       getRaster().createWritableChild(x, y, w, h, 0, 0, null);
-    
+
     return new BufferedImage(getColorModel(), subRaster, isPremultiplied,
                              properties);
   }
@@ -655,7 +655,7 @@ public class BufferedImage extends Image
   {
     return getWritableTile(tileX, tileY);
   }
-    
+
   public int getTileGridXOffset()
   {
     return 0; // according to javadocs
@@ -698,7 +698,7 @@ public class BufferedImage extends Image
   }
 
   private static final Point[] tileIndices = { new Point() };
-    
+
   public Point[] getWritableTileIndices()
   {
     return tileIndices;
@@ -708,7 +708,7 @@ public class BufferedImage extends Image
   {
     return true;
   }
-  
+
   public boolean isAlphaPremultiplied()
   {
     return isPremultiplied;
@@ -734,7 +734,7 @@ public class BufferedImage extends Image
     int y = src.getMinY();
     int w = src.getWidth();
     int h = src.getHeight();
-    
+
     // create a dest child that has the right bounds...
     WritableRaster dest =
       raster.createWritableChild(x, y, w, h, x, y, null);
@@ -757,13 +757,13 @@ public class BufferedImage extends Image
     Object rgbElem = colorModel.getDataElements(argb, null);
     raster.setDataElements(x, y, rgbElem);
   }
-  
+
   public void setRGB(int startX, int startY, int w, int h,
-		     int[] argbArray, int offset, int scanlineStride)
+                     int[] argbArray, int offset, int scanlineStride)
   {
     int endX = startX + w;
     int endY = startY + h;
-    
+
     Object rgbElem = null;
     for (int y=startY; y<endY; y++)
       {
@@ -774,10 +774,10 @@ public class BufferedImage extends Image
             rgbElem = colorModel.getDataElements(argb, rgbElem);
             raster.setDataElements(x, y, rgbElem);
           }
-        offset += scanlineStride;    
+        offset += scanlineStride;
       }
   }
-    
+
   public String toString()
   {
     CPStringBuilder buf;
@@ -806,10 +806,10 @@ public class BufferedImage extends Image
   {
     if (tileObservers == null)
       tileObservers = new Vector<TileObserver>();
-	
+
     tileObservers.add (to);
   }
-	
+
   /**
    * Removes a tile observer. If the observer was not registered,
    * nothing happens. If the observer was registered for multiple
@@ -821,7 +821,7 @@ public class BufferedImage extends Image
   {
     if (tileObservers == null)
       return;
-	
+
     tileObservers.remove (to);
   }
 

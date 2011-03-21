@@ -84,7 +84,7 @@ public class ButtonGroup implements Serializable
   /**
    * Adds a button to this group.  If the button is in the selected state, then:
    * <ul>
-   *   <li>if the group has no current selection, the new button becomes the 
+   *   <li>if the group has no current selection, the new button becomes the
    *     selected button for the group;</li>
    *   <li>if the group already has a selected button, the new button is set to
    *     "not selected".</li>
@@ -103,14 +103,14 @@ public class ButtonGroup implements Serializable
           sel = b.getModel();
         else
           b.setSelected(false);
-      }    
+      }
     buttons.addElement(b);
   }
 
   /**
-   * Removes the specified button from this group.  If the button is the 
-   * selected button, the current selection is set to <code>null</code>.  
-   * The group for the removed button's model is set to <code>null</code>.  
+   * Removes the specified button from this group.  If the button is the
+   * selected button, the current selection is set to <code>null</code>.
+   * The group for the removed button's model is set to <code>null</code>.
    *
    * @param b the button to remove (<code>null</code> is ignored).
    */
@@ -180,13 +180,13 @@ public class ButtonGroup implements Serializable
       {
         ButtonModel old = sel;
         sel = m;
-        
+
         if (old != null)
           old.setSelected(false);
-        
+
         if (m != null)
           sel.setSelected(true);
-        
+
         AbstractButton button = findButton(old);
         if (button != null)
           button.repaint();

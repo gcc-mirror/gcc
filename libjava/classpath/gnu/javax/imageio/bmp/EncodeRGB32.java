@@ -1,4 +1,4 @@
-/* EncodeRGB32.java -- 
+/* EncodeRGB32.java --
    Copyright (C) 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -56,7 +56,7 @@ public class EncodeRGB32
 
   /**
    * Constructs an instance of this class.
-   * 
+   *
    * @param fh - the file header to use.
    * @param ih - the info header to use.
    */
@@ -67,10 +67,10 @@ public class EncodeRGB32
     infoHeader = ih;
     offset = BMPFileHeader.SIZE + BMPInfoHeader.SIZE;
   }
-  
+
   /**
    * The image encoder.
-   * 
+   *
    * @param o - the image output stream
    * @param streamMetadata - metadata associated with this stream, or null
    * @param image - an IIOImage containing image data.
@@ -100,7 +100,7 @@ public class EncodeRGB32
                                            infoHeader.biHeight, bitmap, 0,
                                            infoHeader.biWidth);
         pg.grabPixels();
-        
+
         for (j = 0; j < size; j++)
           {
             value = bitmap[rowIndex];

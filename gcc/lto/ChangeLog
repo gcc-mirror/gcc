@@ -1,3 +1,32 @@
+2011-02-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/47807
+	* Make-lang.in (lto/lto-lang.o): Depend on $(LTO_STREAMER_H) instead
+	of lto-streamer.h.
+
+2011-02-18  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/47798
+	* lto-tree.h (lto_global_var_decls): Do not declare here.
+	* lto-lang.c: Include lto-streamer.h.
+	* Make-lang.in (lto-lang.o): Adjust dependencies.
+
+2011-02-10  Kai Tietz  <kai.tietz@onevision.com>
+
+	PR lto/47241
+	* lto.c (lto_read_section_data): Free
+	fd_name in failure case.
+	For mingw targets don't hash file-descriptor.
+	(read_cgraph_and_symbols): Close current_lto_file
+	in failure case.
+
+2011-01-11  Jan Hubicka  <jh@suse.cz>
+
+	PR lto/45721
+	PR lto/45375
+	* lto.c (partition_cgraph_node_p, partition_varpool_node_p): Weakrefs are
+	not partitioned.
+
 2010-12-22  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* lto-lang.c (handle_nonnull_attribute, handle_sentinel_attribute):

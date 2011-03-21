@@ -1,5 +1,5 @@
 /* Implement the mempcpy function.
-   Copyright (C) 2003, 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2005, 2011 Free Software Foundation, Inc.
    Written by Kaveh R. Ghazi <ghazi@caip.rutgers.edu>.
 
 This file is part of the libiberty library.
@@ -20,7 +20,8 @@ Boston, MA 02110-1301, USA.  */
 
 /*
 
-@deftypefn Supplemental void* mempcpy (void *@var{out}, const void *@var{in}, size_t @var{length})
+@deftypefn Supplemental void* mempcpy (void *@var{out}, const void *@var{in}, @
+  size_t @var{length})
 
 Copies @var{length} bytes from memory region @var{in} to region
 @var{out}.  Returns a pointer to @var{out} + @var{length}.

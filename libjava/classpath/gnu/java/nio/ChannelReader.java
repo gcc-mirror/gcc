@@ -1,4 +1,4 @@
-/* ChannelReader.java -- 
+/* ChannelReader.java --
  Copyright (C) 2005 Free Software Foundation, Inc.
 
  This file is part of GNU Classpath.
@@ -50,11 +50,11 @@ import java.nio.charset.CodingErrorAction;
 /**
  * A Reader implementation that works using a ReadableByteChannel and a
  * CharsetDecoder.
- * 
+ *
  * <p>
  * This is a bridge between NIO <-> IO character decoding.
  * </p>
- * 
+ *
  * @author Robert Schuster
  */
 public class ChannelReader extends Reader
@@ -97,36 +97,36 @@ public class ChannelReader extends Reader
         // I declared channel being null meaning that the reader is closed.
         if (!channel.isOpen())
           throw new IOException("Reader was already closed.");
-        
+
         // I declared decoder being null meaning that there is no more data to read
         // and convert.
         if (decoder == null)
           return -1;
-        
+
         // Stores the amount of character being read. It -1 so that if no conversion
         // occured the caller will see this as an 'end of file'.
         int sum = -1;
-        
+
         // Copies any characters which may be left from the last invocation into the
         // destination array.
         if (charBuffer.remaining() > 0)
           {
             sum = Math.min(count, charBuffer.remaining());
             charBuffer.get(buf, offset, sum);
-            
+
             // Updates the control variables according to the latest copy operation.
             offset += sum;
             count -= sum;
           }
-        
+
         // Copies the character which have not been put in the destination array to
         // the beginning. If data is actually copied count will be 0. If no data is
         // copied count is >0 and we can now convert some more characters.
         charBuffer.compact();
-        
+
         int converted = 0;
         boolean last = false;
-        
+
         while (count != 0)
           {
             // Tries to convert some bytes (Which will intentionally fail in the
@@ -139,7 +139,7 @@ public class ChannelReader extends Reader
                 // unmappable.
                 result.throwException();
               }
-            
+
             // Marks that we should end this loop regardless whether the caller
             // wants more chars or not, when this was the last conversion.
             if (last)
@@ -149,11 +149,11 @@ public class ChannelReader extends Reader
             else if (result.isUnderflow())
               {
                 // We need more bytes to do the conversion.
-                
+
                 // Copies the not yet converted bytes to the beginning making it
                 // being able to receive more bytes.
                 byteBuffer.compact();
-                
+
                 // Reads in another bunch of bytes for being converted.
                 if (channel.read(byteBuffer) == -1)
                   {
@@ -162,42 +162,42 @@ public class ChannelReader extends Reader
                     // done in the next loop iteration.
                     last = true;
                   }
-                
+
                 // Prepares the byteBuffer for the next character conversion run.
                 byteBuffer.flip();
               }
-            
+
             // Prepares the charBuffer for being drained.
             charBuffer.flip();
-            
+
             converted = Math.min(count, charBuffer.remaining());
             charBuffer.get(buf, offset, converted);
-            
+
             // Copies characters which have not yet being copied into the char-Array
             // to the beginning making it possible to read them later (If data is
             // really copied here, then the caller has received enough characters so
             // far.).
             charBuffer.compact();
-            
+
             // Updates the control variables according to the latest copy operation.
             offset += converted;
             count -= converted;
-            
+
             // Updates the amount of transferred characters.
             sum += converted;
-            
+
             if (decoder == null)
               {
                 break;
               }
-            
+
             // Now that more characters have been transfered we let the loop decide
             // what to do next.
           }
-        
+
         // Makes the charBuffer ready for reading on the next invocation.
         charBuffer.flip();
-        
+
         return sum;
       }
   }

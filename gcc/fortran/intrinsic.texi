@@ -992,7 +992,10 @@ scalar entities are available in Fortran 2003 and later.
 Inquiry function
 
 @item @emph{Syntax}:
-@code{RESULT = ALLOCATED(ARRAY)} or @code{RESULT = ALLOCATED(SCALAR)} 
+@multitable @columnfractions .80
+@item @code{RESULT = ALLOCATED(ARRAY)}
+@item @code{RESULT = ALLOCATED(SCALAR)} 
+@end multitable
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -1395,8 +1398,10 @@ Fortran 2008 or later
 Elemental function
 
 @item @emph{Syntax}:
-@code{RESULT = ATAN(X)}
-@code{RESULT = ATAN(Y, X)}
+@multitable @columnfractions .80
+@item @code{RESULT = ATAN(X)}
+@item @code{RESULT = ATAN(Y, X)}
+@end multitable
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -1666,8 +1671,10 @@ Elemental function, except for the transformational function
 @code{BESSEL_JN(N1, N2, X)}
 
 @item @emph{Syntax}:
-@code{RESULT = BESSEL_JN(N, X)}
-@code{RESULT = BESSEL_JN(N1, N2, X)}
+@multitable @columnfractions .80
+@item @code{RESULT = BESSEL_JN(N, X)}
+@item @code{RESULT = BESSEL_JN(N1, N2, X)}
+@end multitable
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -1826,8 +1833,10 @@ Elemental function, except for the transformational function
 @code{BESSEL_YN(N1, N2, X)}
 
 @item @emph{Syntax}:
-@code{RESULT = BESSEL_YN(N, X)}
-@code{RESULT = BESSEL_YN(N1, N2, X)}
+@multitable @columnfractions .80
+@item @code{RESULT = BESSEL_YN(N, X)}
+@item @code{RESULT = BESSEL_YN(N1, N2, X)}
+@end multitable
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -2686,7 +2695,7 @@ end program test_cmplx
 
 @table @asis
 @item @emph{Description}:
-@code{COMMAND_ARGUMENT_COUNT()} returns the number of arguments passed on the
+@code{COMMAND_ARGUMENT_COUNT} returns the number of arguments passed on the
 command line when the containing program was invoked.
 
 @item @emph{Standard}:
@@ -2730,7 +2739,7 @@ end program test_command_argument_count
 
 @table @asis
 @item @emph{Description}:
-@code{COMPILER_OPTIONS()} returns a string with the options used for
+@code{COMPILER_OPTIONS} returns a string with the options used for
 compiling.
 
 @item @emph{Standard}:
@@ -2773,7 +2782,7 @@ the @code{COMPILER_OPTIONS} intrinsic.
 
 @table @asis
 @item @emph{Description}:
-@code{COMPILER_VERSION()} returns a string with the name and the
+@code{COMPILER_VERSION} returns a string with the name and the
 version of the compiler.
 
 @item @emph{Standard}:
@@ -3209,7 +3218,10 @@ end program test_cshift
 @table @asis
 @item @emph{Description}:
 @code{CTIME} converts a system time value, such as returned by
-@code{TIME8()}, to a string of the form @samp{Sat Aug 19 18:13:14 1995}.
+@code{TIME8}, to a string. Unless the application has called
+@code{setlocale}, the output will be in the default locale, of length
+24 and of the form @samp{Sat Aug 19 18:13:14 1995}. In other locales,
+a longer string may result.
 
 This intrinsic is provided in both subroutine and function forms; however,
 only one form can be used in any given program unit.
@@ -3223,18 +3235,20 @@ Subroutine, function
 @item @emph{Syntax}:
 @multitable @columnfractions .80
 @item @code{CALL CTIME(TIME, RESULT)}.
-@item @code{RESULT = CTIME(TIME)}, (not recommended).
+@item @code{RESULT = CTIME(TIME)}.
 @end multitable
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{TIME}    @tab The type shall be of type @code{INTEGER(KIND=8)}.
+@item @var{TIME}    @tab The type shall be of type @code{INTEGER}.
 @item @var{RESULT}  @tab The type shall be of type @code{CHARACTER} and
-of default kind.
+of default kind. It is an @code{INTENT(OUT)} argument. If the length
+of this variable is too short for the time and date string to fit
+completely, it will be blank on procedure return.
 @end multitable
 
 @item @emph{Return value}:
-The converted date and time as a string.
+The converted date and time as a string. 
 
 @item @emph{Example}:
 @smallexample
@@ -3251,7 +3265,7 @@ end program test_ctime
 @end smallexample
 
 @item @emph{See Also}:
-@ref{GMTIME}, @ref{LTIME}, @ref{TIME}, @ref{TIME8}
+@ref{DATE_AND_TIME}, @ref{GMTIME}, @ref{LTIME}, @ref{TIME}, @ref{TIME8}
 @end table
 
 
@@ -4151,10 +4165,11 @@ end program test_etime
 asynchronously.
 
 The @code{COMMAND} argument is passed to the shell and executed, using
-the C library's @code{system()} call.  (The shell is @code{sh} on Unix
-systems, and @code{cmd.exe} on Windows.)  If @code{WAIT} is present and
-has the value false, the execution of the command is asynchronous if the
-system supports it; otherwise, the command is executed synchronously.
+the C library's @code{system} call.  (The shell is @code{sh} on Unix
+systems, and @code{cmd.exe} on Windows.)  If @code{WAIT} is present
+and has the value false, the execution of the command is asynchronous
+if the system supports it; otherwise, the command is executed
+synchronously.
 
 The three last arguments allow the user to get status information.  After
 synchronous execution, @code{EXITSTAT} contains the integer exit code of
@@ -4162,6 +4177,9 @@ the command, as returned by @code{system}.  @code{CMDSTAT} is set to zero
 if the command line was executed (whatever its exit status was).
 @code{CMDMSG} is assigned an error message if an error has occurred.
 
+Note that the @code{system} function need not be thread-safe. It is
+the responsibility of the user to ensure that @code{system} is not
+called concurrently.
 
 @item @emph{Standard}:
 Fortran 2008 and later
@@ -4201,7 +4219,7 @@ end program test_exec
 
 @item @emph{Note}:
 
-Because this intrinsic is implemented in terms of the @code{system()}
+Because this intrinsic is implemented in terms of the @code{system}
 function call, its behavior with respect to signaling is processor
 dependent. In particular, on POSIX-compliant systems, the SIGINT and
 SIGQUIT signals will be ignored, and the SIGCHLD will be blocked. As
@@ -4267,7 +4285,7 @@ end program test_exit
 @fnindex ZEXP
 @fnindex CDEXP
 @cindex exponential function
-@cindex logarithmic function, inverse
+@cindex logarithm function, inverse
 
 @table @asis
 @item @emph{Description}:
@@ -4407,9 +4425,6 @@ TIME())}.
 This intrinsic is provided in both subroutine and function forms; however,
 only one form can be used in any given program unit.
 
-@var{DATE} is an @code{INTENT(OUT)} @code{CHARACTER} variable of the
-default kind.
-
 @item @emph{Standard}:
 GNU extension
 
@@ -4419,17 +4434,19 @@ Subroutine, function
 @item @emph{Syntax}:
 @multitable @columnfractions .80
 @item @code{CALL FDATE(DATE)}.
-@item @code{DATE = FDATE()}, (not recommended).
+@item @code{DATE = FDATE()}.
 @end multitable
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
 @item @var{DATE}@tab The type shall be of type @code{CHARACTER} of the
-default kind
+default kind. It is an @code{INTENT(OUT)} argument.  If the length of
+this variable is too short for the date and time string to fit
+completely, it will be blank on procedure return.
 @end multitable
 
 @item @emph{Return value}:
-The current date as a string.
+The current date and time as a string.
 
 @item @emph{Example}:
 @smallexample
@@ -4445,8 +4462,10 @@ program test_fdate
     print *, 'Program ended on ', date
 end program test_fdate
 @end smallexample
-@end table
 
+@item @emph{See also}:
+@ref{DATE_AND_TIME}, @ref{CTIME}
+@end table
 
 
 @node FGET
@@ -4909,7 +4928,7 @@ end program test_fraction
 
 @table @asis
 @item @emph{Description}:
-Frees memory previously allocated by @code{MALLOC()}. The @code{FREE}
+Frees memory previously allocated by @code{MALLOC}. The @code{FREE}
 intrinsic is an extension intended to be used with Cray pointers, and is
 provided in GNU Fortran to allow user to compile legacy code. For
 new code using Fortran 95 pointers, the memory de-allocation intrinsic is
@@ -5354,11 +5373,11 @@ Subroutine
 @multitable @columnfractions .15 .70
 @item @var{NUMBER} @tab Shall be a scalar of type @code{INTEGER} and of
 default kind, @math{@var{NUMBER} \geq 0}
-@item @var{VALUE}  @tab Shall be a scalar of type @code{CHARACTER}
+@item @var{VALUE}  @tab (Optional) Shall be a scalar of type @code{CHARACTER}
 and of default kind.
-@item @var{LENGTH} @tab (Option) Shall be a scalar of type @code{INTEGER}
+@item @var{LENGTH} @tab (Optional) Shall be a scalar of type @code{INTEGER}
 and of default kind.
-@item @var{STATUS} @tab (Option) Shall be a scalar of type @code{INTEGER}
+@item @var{STATUS} @tab (Optional) Shall be a scalar of type @code{INTEGER}
 and of default kind.
 @end multitable
 
@@ -5452,10 +5471,14 @@ END PROGRAM
 @item @emph{Description}:
 Get the @var{VALUE} of the environmental variable @var{NAME}.
 
-This intrinsic routine is provided for backwards compatibility with 
-GNU Fortran 77.  In new code, programmers should consider the use of 
+This intrinsic routine is provided for backwards compatibility with
+GNU Fortran 77.  In new code, programmers should consider the use of
 the @ref{GET_ENVIRONMENT_VARIABLE} intrinsic defined by the Fortran
 2003 standard.
+
+Note that @code{GETENV} need not be thread-safe. It is the
+responsibility of the user to ensure that the environment is not being
+updated concurrently with a call to the @code{GETENV} intrinsic.
 
 @item @emph{Standard}:
 GNU extension
@@ -5501,6 +5524,11 @@ END PROGRAM
 @item @emph{Description}:
 Get the @var{VALUE} of the environmental variable @var{NAME}.
 
+Note that @code{GET_ENVIRONMENT_VARIABLE} need not be thread-safe. It
+is the responsibility of the user to ensure that the environment is
+not being updated concurrently with a call to the
+@code{GET_ENVIRONMENT_VARIABLE} intrinsic.
+
 @item @emph{Standard}:
 Fortran 2003 and later
 
@@ -5514,13 +5542,13 @@ Subroutine
 @multitable @columnfractions .15 .70
 @item @var{NAME}      @tab Shall be a scalar of type @code{CHARACTER}
 and of default kind.
-@item @var{VALUE}     @tab Shall be a scalar of type @code{CHARACTER}
+@item @var{VALUE}     @tab (Optional) Shall be a scalar of type @code{CHARACTER}
 and of default kind.
-@item @var{LENGTH}    @tab Shall be a scalar of type @code{INTEGER}
+@item @var{LENGTH}    @tab (Optional) Shall be a scalar of type @code{INTEGER}
 and of default kind.
-@item @var{STATUS}    @tab Shall be a scalar of type @code{INTEGER}
+@item @var{STATUS}    @tab (Optional) Shall be a scalar of type @code{INTEGER}
 and of default kind.
-@item @var{TRIM_NAME} @tab Shall be a scalar of type @code{LOGICAL}
+@item @var{TRIM_NAME} @tab (Optional) Shall be a scalar of type @code{LOGICAL}
 and of default kind.
 @end multitable
 
@@ -5705,7 +5733,7 @@ See @code{GETPID} for an example.
 
 @table @asis
 @item @emph{Description}:
-Given a system time value @var{TIME} (as provided by the @code{TIME8()}
+Given a system time value @var{TIME} (as provided by the @code{TIME8}
 intrinsic), fills @var{VALUES} with values extracted from it appropriate
 to the UTC time zone (Universal Coordinated Time, also known in some
 countries as GMT, Greenwich Mean Time), using @code{gmtime(3)}.
@@ -5966,7 +5994,7 @@ PROGRAM test_iall
   INTEGER(1) :: a(2)
 
   a(1) = b'00100100'
-  a(1) = b'01101010'
+  a(2) = b'01101010'
 
   ! prints 00100000
   PRINT '(b8.8)', IALL(a)
@@ -6028,7 +6056,7 @@ END PROGRAM
 
 
 @node IANY
-@section @code{IANY} --- Bitwise XOR of array elements
+@section @code{IANY} --- Bitwise OR of array elements
 @fnindex IANY
 @cindex array, OR
 @cindex bits, OR of array elements
@@ -6074,9 +6102,9 @@ PROGRAM test_iany
   INTEGER(1) :: a(2)
 
   a(1) = b'00100100'
-  a(1) = b'01101010'
+  a(2) = b'01101010'
 
-  ! prints 01111011
+  ! prints 01101110
   PRINT '(b8.8)', IANY(a)
 END PROGRAM
 @end smallexample
@@ -6096,7 +6124,7 @@ END PROGRAM
 
 @table @asis
 @item @emph{Description}:
-@code{IARGC()} returns the number of arguments passed on the
+@code{IARGC} returns the number of arguments passed on the
 command line when the containing program was invoked.
 
 This intrinsic routine is provided for backwards compatibility with 
@@ -6411,8 +6439,8 @@ the larger argument.)
 
 @table @asis
 @item @emph{Description}:
-Returns the last system error number, as given by the C @code{errno()}
-function.
+Returns the last system error number, as given by the C @code{errno}
+variable.
 
 @item @emph{Standard}:
 GNU extension
@@ -6755,9 +6783,9 @@ PROGRAM test_iparity
   INTEGER(1) :: a(2)
 
   a(1) = b'00100100'
-  a(1) = b'01101010'
+  a(2) = b'01101010'
 
-  ! prints 10111011
+  ! prints 01001110
   PRINT '(b8.8)', IPARITY(a)
 END PROGRAM
 @end smallexample
@@ -7316,7 +7344,8 @@ If all the bits of @code{I} are zero, the result value is @code{BIT_SIZE(I)}.
 @item @emph{Example}:
 @smallexample
 PROGRAM test_leadz
-  WRITE (*,*) LEADZ(1)  ! prints 8 if BITSIZE(I) has the value 32
+  WRITE (*,*) BIT_SIZE(1)  ! prints 32
+  WRITE (*,*) LEADZ(1)     ! prints 31
 END PROGRAM
 @end smallexample
 
@@ -7737,7 +7766,7 @@ end program test_loc
 
 
 @node LOG
-@section @code{LOG} --- Logarithm function
+@section @code{LOG} --- Natural logarithm function
 @fnindex LOG
 @fnindex ALOG
 @fnindex DLOG
@@ -7745,11 +7774,13 @@ end program test_loc
 @fnindex ZLOG
 @fnindex CDLOG
 @cindex exponential function, inverse
-@cindex logarithmic function
+@cindex logarithm function
+@cindex natural logarithm function
 
 @table @asis
 @item @emph{Description}:
-@code{LOG(X)} computes the logarithm of @var{X}.
+@code{LOG(X)} computes the natural logarithm of @var{X}, i.e. the
+logarithm to the base @math{e}.
 
 @item @emph{Standard}:
 Fortran 77 and later
@@ -7775,9 +7806,9 @@ If @var{X} is @code{COMPLEX}, the imaginary part @math{\omega} is in the range
 @item @emph{Example}:
 @smallexample
 program test_log
-  real(8) :: x = 1.0_8
+  real(8) :: x = 2.7182818284590451_8
   complex :: z = (1.0, 2.0)
-  x = log(x)
+  x = log(x)    ! will yield (approximately) 1
   z = log(z)
 end program test_log
 @end smallexample
@@ -7801,7 +7832,8 @@ end program test_log
 @fnindex ALOG10
 @fnindex DLOG10
 @cindex exponential function, inverse
-@cindex logarithmic function
+@cindex logarithm function with base 10
+@cindex base 10 logarithm function
 
 @table @asis
 @item @emph{Description}:
@@ -8066,7 +8098,7 @@ To stat an open file: @ref{FSTAT}, to stat a file: @ref{STAT}
 
 @table @asis
 @item @emph{Description}:
-Given a system time value @var{TIME} (as provided by the @code{TIME8()}
+Given a system time value @var{TIME} (as provided by the @code{TIME8}
 intrinsic), fills @var{VALUES} with values extracted from it appropriate
 to the local time zone using @code{localtime(3)}.
 
@@ -8545,7 +8577,7 @@ on the UNIX function @code{clock(3)}.
 
 @emph{Warning:} this intrinsic does not increase the range of the timing
 values over that returned by @code{clock(3)}. On a system with a 32-bit
-@code{clock(3)}, @code{MCLOCK8()} will return a 32-bit value, even though
+@code{clock(3)}, @code{MCLOCK8} will return a 32-bit value, even though
 it is converted to a 64-bit @code{INTEGER(8)} value. That means
 overflows of the 32-bit value can still occur. Therefore, the values
 returned by this intrinsic might be or become negative or numerically
@@ -10835,26 +10867,29 @@ END PROGRAM
 Determines the shape of an array.
 
 @item @emph{Standard}:
-Fortran 95 and later
+Fortran 95 and later, with @var{KIND} argument Fortran 2003 and later
 
 @item @emph{Class}:
 Inquiry function
 
 @item @emph{Syntax}:
-@code{RESULT = SHAPE(SOURCE)}
+@code{RESULT = SHAPE(SOURCE [, KIND])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
 @item @var{SOURCE} @tab Shall be an array or scalar of any type. 
 If @var{SOURCE} is a pointer it must be associated and allocatable 
 arrays must be allocated.
+@item @var{KIND}   @tab (Optional) An @code{INTEGER} initialization
+expression indicating the kind parameter of the result.
 @end multitable
 
 @item @emph{Return value}:
 An @code{INTEGER} array of rank one with as many elements as @var{SOURCE} 
 has dimensions. The elements of the resulting array correspond to the extend
 of @var{SOURCE} along the respective dimensions. If @var{SOURCE} is a scalar,
-the result is the rank one array of size zero.
+the result is the rank one array of size zero. If @var{KIND} is absent, the
+return value has the default integer kind otherwise the specified kind.
 
 @item @emph{Example}:
 @smallexample
@@ -11775,6 +11810,10 @@ and environment-dependent.
 This intrinsic is provided in both subroutine and function forms;
 however, only one form can be used in any given program unit.
 
+Note that the @code{system} function need not be thread-safe. It is
+the responsibility of the user to ensure that @code{system} is not
+called concurrently.
+
 @item @emph{Standard}:
 GNU extension
 
@@ -11808,14 +11847,29 @@ and should considered in new code for future portability.
 
 @table @asis
 @item @emph{Description}:
-Determines the @var{COUNT} of milliseconds of wall clock time since 
-the Epoch (00:00:00 UTC, January 1, 1970) modulo @var{COUNT_MAX}, 
-@var{COUNT_RATE} determines the number of clock ticks per second.
-@var{COUNT_RATE} and @var{COUNT_MAX} are constant and specific to 
-@command{gfortran}.
+Determines the @var{COUNT} of a processor clock since an unspecified
+time in the past modulo @var{COUNT_MAX}, @var{COUNT_RATE} determines
+the number of clock ticks per second.  If the platform supports a high
+resolution monotonic clock, that clock is used and can provide up to
+nanosecond resolution.  If a high resolution monotonic clock is not
+available, the implementation falls back to a potentially lower
+resolution realtime clock.
+
+@var{COUNT_RATE} and @var{COUNT_MAX} vary depending on the kind of the
+arguments.  For @var{kind=8} arguments, @var{COUNT} represents
+nanoseconds, and for @var{kind=4} arguments, @var{COUNT} represents
+milliseconds. Other than the kind dependency, @var{COUNT_RATE} and
+@var{COUNT_MAX} are constant, however the particular values are
+specific to @command{gfortran}.
 
 If there is no clock, @var{COUNT} is set to @code{-HUGE(COUNT)}, and
-@var{COUNT_RATE} and @var{COUNT_MAX} are set to zero 
+@var{COUNT_RATE} and @var{COUNT_MAX} are set to zero.
+
+When running on a platform using the GNU C library (glibc), or a
+derivative thereof, the high resolution monotonic clock is available
+only when linking with the @var{rt} library.  This can be done
+explicitly by adding the @code{-lrt} flag when linking the
+application, but is also done implicitly when using OpenMP.
 
 @item @emph{Standard}:
 Fortran 95 and later
@@ -11828,11 +11882,11 @@ Subroutine
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{COUNT}      @tab (Optional) shall be a scalar of type default 
+@item @var{COUNT}      @tab (Optional) shall be a scalar of type 
 @code{INTEGER} with @code{INTENT(OUT)}.
-@item @var{COUNT_RATE} @tab (Optional) shall be a scalar of type default 
+@item @var{COUNT_RATE} @tab (Optional) shall be a scalar of type 
 @code{INTEGER} with @code{INTENT(OUT)}.
-@item @var{COUNT_MAX}  @tab (Optional) shall be a scalar of type default 
+@item @var{COUNT_MAX}  @tab (Optional) shall be a scalar of type 
 @code{INTEGER} with @code{INTENT(OUT)}.
 @end multitable
 
@@ -12021,7 +12075,7 @@ END IF
 @item @emph{Description}:
 Returns the current time encoded as an integer (in the manner of the
 UNIX function @code{time(3)}). This value is suitable for passing to
-@code{CTIME()}, @code{GMTIME()}, and @code{LTIME()}.
+@code{CTIME}, @code{GMTIME}, and @code{LTIME}.
 
 This intrinsic is not fully portable, such as to systems with 32-bit
 @code{INTEGER} types but supporting times wider than 32 bits. Therefore,
@@ -12062,11 +12116,11 @@ The return value is a scalar of type @code{INTEGER(4)}.
 @item @emph{Description}:
 Returns the current time encoded as an integer (in the manner of the
 UNIX function @code{time(3)}). This value is suitable for passing to
-@code{CTIME()}, @code{GMTIME()}, and @code{LTIME()}.
+@code{CTIME}, @code{GMTIME}, and @code{LTIME}.
 
 @emph{Warning:} this intrinsic does not increase the range of the timing
 values over that returned by @code{time(3)}. On a system with a 32-bit
-@code{time(3)}, @code{TIME8()} will return a 32-bit value, even though
+@code{time(3)}, @code{TIME8} will return a 32-bit value, even though
 it is converted to a 64-bit @code{INTEGER(8)} value. That means
 overflows of the 32-bit value can still occur. Therefore, the values
 returned by this intrinsic might be or become negative or numerically
@@ -12557,19 +12611,20 @@ END PROGRAM
 
 
 @node VERIFY
-@section @code{VERIFY} --- Scan a string for the absence of a set of characters
+@section @code{VERIFY} --- Scan a string for characters not a given set
 @fnindex VERIFY
 @cindex string, find missing set
 
 @table @asis
 @item @emph{Description}:
-Verifies that all the characters in a @var{SET} are present in a @var{STRING}.
+Verifies that all the characters in @var{STRING} belong to the set of
+characters in @var{SET}.
 
 If @var{BACK} is either absent or equals @code{FALSE}, this function
 returns the position of the leftmost character of @var{STRING} that is
-not in @var{SET}. If @var{BACK} equals @code{TRUE}, the rightmost position
-is returned. If all characters of @var{SET} are found in @var{STRING}, the 
-result is zero.
+not in @var{SET}. If @var{BACK} equals @code{TRUE}, the rightmost
+position is returned. If all characters of @var{STRING} are found in
+@var{SET}, the result is zero.
 
 @item @emph{Standard}:
 Fortran 95 and later, with @var{KIND} argument Fortran 2003 and later

@@ -33,7 +33,7 @@
 
 #pragma GCC system_header
 
-namespace std
+namespace std _GLIBCXX_VISIBILITY(default)
 {
 namespace tr1
 {
@@ -50,6 +50,8 @@ namespace tr1
    */
   namespace __detail
   {
+  _GLIBCXX_BEGIN_NAMESPACE_VERSION
+
     template<typename _UIntType, int __w, 
 	     bool = __w < std::numeric_limits<_UIntType>::digits>
       struct _Shift
@@ -210,7 +212,11 @@ namespace tr1
       private:
 	_Engine* _M_g;
       };
+
+  _GLIBCXX_END_NAMESPACE_VERSION
   } // namespace __detail
+
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /**
    * Produces random numbers on a given distribution function using a
@@ -2404,6 +2410,7 @@ namespace tr1
   /* @} */ // group tr1_random_distributions_continuous
   /* @} */ // group tr1_random_distributions
   /* @} */ // group tr1_random
+_GLIBCXX_END_NAMESPACE_VERSION
 }
 }
 

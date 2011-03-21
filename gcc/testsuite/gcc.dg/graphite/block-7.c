@@ -14,6 +14,7 @@ matmult (void)
 {
   int i, j, k;
 
+  /* This should be blocked.  */
   for (i = 0; i < N; i++)
     for (j = 0; j < N; j++)
       {
@@ -52,5 +53,5 @@ main (void)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "will be loop blocked" 1 "graphite" { xfail *-*-* } } } */
+/* { dg-final { scan-tree-dump-times "will be loop blocked" 1 "graphite" } } */
 /* { dg-final { cleanup-tree-dump "graphite" } } */

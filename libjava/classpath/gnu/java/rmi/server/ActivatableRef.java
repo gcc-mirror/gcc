@@ -58,7 +58,7 @@ import java.rmi.server.RemoteRef;
  * appears to be not accessible, it tries to reactivate it before reporting
  * any errors. Apart the fields of the UnicastRef, the activatable reference
  * contains the ActivationID that is used for this activation.
- * 
+ *
  * @author Audrius Meskauskas (Audriusa@Bioinformatics.org)
  */
 public class ActivatableRef extends UnicastRef
@@ -67,12 +67,12 @@ public class ActivatableRef extends UnicastRef
    * Use serial version UID for iteroperability
    */
   private static final long serialVersionUID = 1;
-  
+
   /**
    * The activation id.
    */
   ActivationID actId;
-  
+
   /**
    * Delegate call to the superclass.
    */
@@ -128,7 +128,7 @@ public class ActivatableRef extends UnicastRef
     out.writeUTF("UnicastRef2");
     super.writeExternal(out);
   }
-  
+
   /**
    * Invoke the remote method on the given object and try to activate the object
    * if it is not reacheable with the current manager.
@@ -153,10 +153,10 @@ public class ActivatableRef extends UnicastRef
           }
         else if (Proxy.isProxyClass(reactivated.getClass()))
           {
-            RemoteObjectInvocationHandler hander = 
-              (RemoteObjectInvocationHandler) 
+            RemoteObjectInvocationHandler hander =
+              (RemoteObjectInvocationHandler)
                 Proxy.getInvocationHandler(reactivated);
-            
+
             RemoteRef ref = hander.getRef();
             manager = ((UnicastRef) ref).manager;
           }

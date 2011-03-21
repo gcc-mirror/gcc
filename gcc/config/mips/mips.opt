@@ -1,6 +1,6 @@
 ; Options for the MIPS port of the compiler
 ;
-; Copyright (C) 2005, 2007, 2008 Free Software Foundation, Inc.
+; Copyright (C) 2005, 2007, 2008, 2010, 2011 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -17,6 +17,12 @@
 ; You should have received a copy of the GNU General Public License
 ; along with GCC; see the file COPYING3.  If not see
 ; <http://www.gnu.org/licenses/>.
+
+EB
+Driver
+
+EL
+Driver
 
 mabi=
 Target RejectNegative Joined
@@ -233,7 +239,7 @@ Target RejectNegative
 Do not use a cache-flushing function before calling stack trampolines
 
 mno-mdmx
-Target Report RejectNegative InverseVar(MDMX)
+Target Report RejectNegative Var(TARGET_MDMX, 0)
 Do not use MDMX instructions
 
 mno-mips16
@@ -299,3 +305,6 @@ Perform VR4130-specific alignment optimizations
 mxgot
 Target Report Var(TARGET_XGOT)
 Lift restrictions on GOT size
+
+noasmopt
+Driver

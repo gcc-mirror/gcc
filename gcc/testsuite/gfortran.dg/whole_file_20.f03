@@ -1,4 +1,4 @@
-! { dg-do "compile" }
+! { dg-do compile }
 ! { dg-options "-fwhole-file -fcoarray=single" }
 !
 ! Procedures with dummy arguments that are coarrays or polymorphic

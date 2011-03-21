@@ -63,11 +63,9 @@ get_descriptor (int code)
       return &ptr_bool_descriptor;
     case GO_FLOAT32:
     case GO_FLOAT64:
-    case GO_FLOAT:
       return &ptr_float_descriptor;
     case GO_COMPLEX64:
     case GO_COMPLEX128:
-    case GO_COMPLEX:
       return &ptr_complex_descriptor;
     case GO_INT16:
     case GO_INT32:

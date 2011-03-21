@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -43,135 +43,135 @@ import java.util.HashMap;
 
 class MethodFinder
 {
-	/** Provides a mapping between a wrapper class and its corresponding primitive's type. */
-	private static HashMap typeMapping = new HashMap();
+        /** Provides a mapping between a wrapper class and its corresponding primitive's type. */
+        private static HashMap typeMapping = new HashMap();
 
-	static {
-		typeMapping.put(Byte.class, Byte.TYPE);
-		typeMapping.put(Short.class, Short.TYPE);
-		typeMapping.put(Integer.class, Integer.TYPE);
-		typeMapping.put(Long.class, Long.TYPE);
-		typeMapping.put(Float.class, Float.TYPE);
-		typeMapping.put(Double.class, Double.TYPE);
+        static {
+                typeMapping.put(Byte.class, Byte.TYPE);
+                typeMapping.put(Short.class, Short.TYPE);
+                typeMapping.put(Integer.class, Integer.TYPE);
+                typeMapping.put(Long.class, Long.TYPE);
+                typeMapping.put(Float.class, Float.TYPE);
+                typeMapping.put(Double.class, Double.TYPE);
 
-		typeMapping.put(Character.class, Character.TYPE);
-		typeMapping.put(Boolean.class, Boolean.TYPE);
-	}
+                typeMapping.put(Character.class, Character.TYPE);
+                typeMapping.put(Boolean.class, Boolean.TYPE);
+        }
 
-	private MethodFinder()
-	{
-	}
+        private MethodFinder()
+        {
+        }
 
-	/** Searches a Method which can accept the given arguments.
-	 *
-	 * @param klass
-	 * @param name
-	 * @param arguments
-	 * @return
-	 * @throws NoSuchMethodException
-	 */
-	static Method getMethod(Class klass, String name, Object[] arguments)
-		throws NoSuchMethodException
-	{
-		// prepares array containing the types of the arguments
-		Class[] argumentTypes = getArgumentTypes(arguments);
+        /** Searches a Method which can accept the given arguments.
+         *
+         * @param klass
+         * @param name
+         * @param arguments
+         * @return
+         * @throws NoSuchMethodException
+         */
+        static Method getMethod(Class klass, String name, Object[] arguments)
+                throws NoSuchMethodException
+        {
+                // prepares array containing the types of the arguments
+                Class[] argumentTypes = getArgumentTypes(arguments);
 
-		Method[] methods = klass.getMethods();
+                Method[] methods = klass.getMethods();
 
-		// iterates over all public methods
-		for (int i = 0; i < methods.length; i++)
-		{
-			if (methods[i].getName().equals(name))
-			{
-				if (matchingArgumentTypes(methods[i].getParameterTypes(),
-					argumentTypes))
-					return methods[i];
-			}
-		}
+                // iterates over all public methods
+                for (int i = 0; i < methods.length; i++)
+                {
+                        if (methods[i].getName().equals(name))
+                        {
+                                if (matchingArgumentTypes(methods[i].getParameterTypes(),
+                                        argumentTypes))
+                                        return methods[i];
+                        }
+                }
 
-		throw new NoSuchMethodException(
-			"Could not find a matching method named "
-				+ name
-				+ "() in class "
-				+ klass);
-	}
+                throw new NoSuchMethodException(
+                        "Could not find a matching method named "
+                                + name
+                                + "() in class "
+                                + klass);
+        }
 
-	static Constructor getConstructor(Class klass, Object[] arguments)
-		throws NoSuchMethodException
-	{
-		Class[] argumentTypes = getArgumentTypes(arguments);
-		Constructor[] constructors = klass.getConstructors();
+        static Constructor getConstructor(Class klass, Object[] arguments)
+                throws NoSuchMethodException
+        {
+                Class[] argumentTypes = getArgumentTypes(arguments);
+                Constructor[] constructors = klass.getConstructors();
 
-		// iterates over all public methods
-		for (int i = 0; i < constructors.length; i++)
-		{
-			if (matchingArgumentTypes(constructors[i].getParameterTypes(),
-				argumentTypes))
-				return constructors[i];
-		}
+                // iterates over all public methods
+                for (int i = 0; i < constructors.length; i++)
+                {
+                        if (matchingArgumentTypes(constructors[i].getParameterTypes(),
+                                argumentTypes))
+                                return constructors[i];
+                }
 
-		throw new NoSuchMethodException(
-			"Could not find a matching constructor in class " + klass);
-	}
+                throw new NoSuchMethodException(
+                        "Could not find a matching constructor in class " + klass);
+        }
 
-	/** Transforms an array of argument objects into an array of argument types.
-	 * For each argument being null the argument is null, too. An argument type
-	 * being null means: Accepts everything (although this can be ambigous).
-	 * 
-	 * @param arguments
-	 * @return
-	 */
-	private static Class[] getArgumentTypes(Object[] arguments)
-	{
-		if (arguments == null)
-			return new Class[0];
+        /** Transforms an array of argument objects into an array of argument types.
+         * For each argument being null the argument is null, too. An argument type
+         * being null means: Accepts everything (although this can be ambigous).
+         *
+         * @param arguments
+         * @return
+         */
+        private static Class[] getArgumentTypes(Object[] arguments)
+        {
+                if (arguments == null)
+                        return new Class[0];
 
-		// prepares array containing the types of the arguments
-		Class[] argumentTypes = new Class[arguments.length];
-		for (int i = 0; i < arguments.length; i++)
-			argumentTypes[i] =
-				(arguments[i] == null) ? null : arguments[i].getClass();
-		return argumentTypes;
-	}
+                // prepares array containing the types of the arguments
+                Class[] argumentTypes = new Class[arguments.length];
+                for (int i = 0; i < arguments.length; i++)
+                        argumentTypes[i] =
+                                (arguments[i] == null) ? null : arguments[i].getClass();
+                return argumentTypes;
+        }
 
-	/** Tests whether the argument types supplied to the method argument types
-	 * are assignable. In addition to the assignment specifications this method
-	 * handles the primitive's wrapper classes as if they were of their
-	 * primitive type (e.g Boolean.class equals Boolean.TYPE).
-	 * When a supplied argument type is null it is assumed that no argument
-	 * object was supplied for it and the test for this particular parameter will
-	 * pass.
-	 *
-	 * @param methodArgTypes
-	 * @param suppliedArgTypes
-	 * @return
-	 */
-	private static boolean matchingArgumentTypes(
-		Class[] methodArgTypes,
-		Class[] suppliedArgTypes)
-	{
-		if (methodArgTypes.length != suppliedArgTypes.length)
-			return false;
+        /** Tests whether the argument types supplied to the method argument types
+         * are assignable. In addition to the assignment specifications this method
+         * handles the primitive's wrapper classes as if they were of their
+         * primitive type (e.g Boolean.class equals Boolean.TYPE).
+         * When a supplied argument type is null it is assumed that no argument
+         * object was supplied for it and the test for this particular parameter will
+         * pass.
+         *
+         * @param methodArgTypes
+         * @param suppliedArgTypes
+         * @return
+         */
+        private static boolean matchingArgumentTypes(
+                Class[] methodArgTypes,
+                Class[] suppliedArgTypes)
+        {
+                if (methodArgTypes.length != suppliedArgTypes.length)
+                        return false;
 
-		for (int i = 0; i < methodArgTypes.length; i++)
-		{
-			if (suppliedArgTypes[i] == null)
-			{
-				// by definition a non-existant argument type (null) can be converted to everything
-				continue;
-			}
-			else if (typeMapping.containsKey(suppliedArgTypes[i]))
-			{
-				Class primitiveType =
-					(Class) typeMapping.get(suppliedArgTypes[i]);
-				if (!(methodArgTypes[i].isAssignableFrom(suppliedArgTypes[i])
-					|| methodArgTypes[i].isAssignableFrom(primitiveType)))
-					return false;
-			}
-			else if (!methodArgTypes[i].isAssignableFrom(suppliedArgTypes[i]))
-				return false;
-		}
+                for (int i = 0; i < methodArgTypes.length; i++)
+                {
+                        if (suppliedArgTypes[i] == null)
+                        {
+                                // by definition a non-existant argument type (null) can be converted to everything
+                                continue;
+                        }
+                        else if (typeMapping.containsKey(suppliedArgTypes[i]))
+                        {
+                                Class primitiveType =
+                                        (Class) typeMapping.get(suppliedArgTypes[i]);
+                                if (!(methodArgTypes[i].isAssignableFrom(suppliedArgTypes[i])
+                                        || methodArgTypes[i].isAssignableFrom(primitiveType)))
+                                        return false;
+                        }
+                        else if (!methodArgTypes[i].isAssignableFrom(suppliedArgTypes[i]))
+                                return false;
+                }
 
-		return true;
-	}
+                return true;
+        }
 }

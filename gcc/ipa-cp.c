@@ -1,5 +1,5 @@
 /* Interprocedural constant propagation
-   Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010
+   Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
    Contributed by Razya Ladelsky <RAZYA@il.ibm.com>
 
@@ -50,7 +50,7 @@ along with GCC; see the file COPYING3.  If not see
    with the value 3.
 
    The algorithm used is based on "Interprocedural Constant Propagation", by
-   Challahan David, Keith D Cooper, Ken Kennedy, Linda Torczon, Comp86, pg
+   David Callahan, Keith D Cooper, Ken Kennedy, Linda Torczon, Comp86, pg
    152-161
 
    The optimization is divided into three stages:
@@ -469,7 +469,7 @@ ipcp_cloning_candidate_p (struct cgraph_node *node)
   if (cgraph_function_body_availability (node) <= AVAIL_OVERWRITABLE)
     {
       if (dump_file)
-        fprintf (dump_file, "Not considering %s for cloning; body is overwrittable.\n",
+        fprintf (dump_file, "Not considering %s for cloning; body is overwritable.\n",
  	         cgraph_node_name (node));
       return false;
     }
@@ -521,7 +521,7 @@ ipcp_cloning_candidate_p (struct cgraph_node *node)
 
   /* When profile is available and function is hot, propagate into it even if
      calls seems cold; constant propagation can improve function's speed
-     significandly.  */
+     significantly.  */
   if (max_count)
     {
       if (direct_call_sum > node->count * 90 / 100)
@@ -587,8 +587,9 @@ ipcp_initialize_node_lattices (struct cgraph_node *node)
     }
 }
 
-/* build INTEGER_CST tree with type TREE_TYPE and value according to LAT.
-   Return the tree.  */
+/* Build a constant tree with type TREE_TYPE and value according to LAT.
+   Return the tree, or, if it is not possible to convert such value
+   to TREE_TYPE, NULL.  */
 static tree
 build_const_val (struct ipcp_lattice *lat, tree tree_type)
 {
@@ -601,8 +602,10 @@ build_const_val (struct ipcp_lattice *lat, tree tree_type)
     {
       if (fold_convertible_p (tree_type, val))
 	return fold_build1 (NOP_EXPR, tree_type, val);
-      else
+      else if (TYPE_SIZE (tree_type) == TYPE_SIZE (TREE_TYPE (val)))
 	return fold_build1 (VIEW_CONVERT_EXPR, tree_type, val);
+      else
+	return NULL;
     }
   return val;
 }
@@ -614,8 +617,8 @@ build_const_val (struct ipcp_lattice *lat, tree tree_type)
    FIXME: This code is wrong.  Since the callers can be also clones and
    the clones are not scaled yet, the sums gets unrealistically high.
    To properly compute the counts, we would need to do propagation across
-   callgraph (as external call to A might imply call to non-clonned B
-   if A's clone calls clonned B).  */
+   callgraph (as external call to A might imply call to non-cloned B
+   if A's clone calls cloned B).  */
 static void
 ipcp_compute_node_scale (struct cgraph_node *node)
 {
@@ -976,8 +979,20 @@ ipcp_create_replace_map (tree parm_tree, struct ipcp_lattice *lat)
   struct ipa_replace_map *replace_map;
   tree const_val;
 
-  replace_map = ggc_alloc_ipa_replace_map ();
   const_val = build_const_val (lat, TREE_TYPE (parm_tree));
+  if (const_val == NULL_TREE)
+    {
+      if (dump_file)
+	{
+	  fprintf (dump_file, "  const ");
+	  print_generic_expr (dump_file, lat->constant, 0);
+	  fprintf (dump_file, "  can't be converted to param ");
+	  print_generic_expr (dump_file, parm_tree, 0);
+	  fprintf (dump_file, "\n");
+	}
+      return NULL;
+    }
+  replace_map = ggc_alloc_ipa_replace_map ();
   if (dump_file)
     {
       fprintf (dump_file, "  replacing param ");
@@ -1040,25 +1055,29 @@ ipcp_update_callgraph (void)
   for (node = cgraph_nodes; node; node = node->next)
     if (node->analyzed && ipcp_node_is_clone (node))
       {
-	bitmap args_to_skip = BITMAP_ALLOC (NULL);
+	bitmap args_to_skip = NULL;
 	struct cgraph_node *orig_node = ipcp_get_orig_node (node);
         struct ipa_node_params *info = IPA_NODE_REF (orig_node);
         int i, count = ipa_get_param_count (info);
         struct cgraph_edge *cs, *next;
 
-	for (i = 0; i < count; i++)
+	if (node->local.can_change_signature)
 	  {
-	    struct ipcp_lattice *lat = ipcp_get_lattice (info, i);
-
-	    /* We can proactively remove obviously unused arguments.  */
-	    if (!ipa_is_param_used (info, i))
+	    args_to_skip = BITMAP_ALLOC (NULL);
+	    for (i = 0; i < count; i++)
 	      {
-		bitmap_set_bit (args_to_skip, i);
-		continue;
-	      }
+		struct ipcp_lattice *lat = ipcp_get_lattice (info, i);
 
-	    if (lat->type == IPA_CONST_VALUE)
-	      bitmap_set_bit (args_to_skip, i);
+		/* We can proactively remove obviously unused arguments.  */
+		if (!ipa_is_param_used (info, i))
+		  {
+		    bitmap_set_bit (args_to_skip, i);
+		    continue;
+		  }
+
+		if (lat->type == IPA_CONST_VALUE)
+		  bitmap_set_bit (args_to_skip, i);
+	      }
 	  }
 	for (cs = node->callers; cs; cs = next)
 	  {
@@ -1123,27 +1142,28 @@ ipcp_estimate_growth (struct cgraph_node *node)
     else
       need_original = true;
 
-  /* If we will be able to fully replace orignal node, we never increase
+  /* If we will be able to fully replace original node, we never increase
      program size.  */
   if (!need_original)
     return 0;
 
   info = IPA_NODE_REF (node);
   count = ipa_get_param_count (info);
-  for (i = 0; i < count; i++)
-    {
-      struct ipcp_lattice *lat = ipcp_get_lattice (info, i);
+  if (node->local.can_change_signature)
+    for (i = 0; i < count; i++)
+      {
+	struct ipcp_lattice *lat = ipcp_get_lattice (info, i);
 
-      /* We can proactively remove obviously unused arguments.  */
-      if (!ipa_is_param_used (info, i))
-	removable_args++;
+	/* We can proactively remove obviously unused arguments.  */
+	if (!ipa_is_param_used (info, i))
+	  removable_args++;
 
-      if (lat->type == IPA_CONST_VALUE)
-	removable_args++;
-    }
+	if (lat->type == IPA_CONST_VALUE)
+	  removable_args++;
+      }
 
   /* We make just very simple estimate of savings for removal of operand from
-     call site.  Precise cost is dificult to get, as our size metric counts
+     call site.  Precise cost is difficult to get, as our size metric counts
      constants and moves as free.  Generally we are looking for cases that
      small function is called very many times.  */
   growth = node->local.inline_summary.self_size
@@ -1373,29 +1393,25 @@ ipcp_insert_stage (void)
 	  continue;
 	}
 
-      new_size += growth;
-
-      /* Look if original function becomes dead after clonning.  */
-      for (cs = node->callers; cs != NULL; cs = cs->next_caller)
-	if (cs->caller == node || ipcp_need_redirect_p (cs))
-	  break;
-      if (!cs && cgraph_will_be_removed_from_program_if_no_direct_calls (node))
-	bitmap_set_bit (dead_nodes, node->uid);
-
       info = IPA_NODE_REF (node);
       count = ipa_get_param_count (info);
 
       replace_trees = VEC_alloc (ipa_replace_map_p, gc, 1);
-      args_to_skip = BITMAP_GGC_ALLOC ();
+
+      if (node->local.can_change_signature)
+	args_to_skip = BITMAP_GGC_ALLOC ();
+      else
+	args_to_skip = NULL;
       for (i = 0; i < count; i++)
 	{
 	  struct ipcp_lattice *lat = ipcp_get_lattice (info, i);
 	  parm_tree = ipa_get_param (info, i);
 
 	  /* We can proactively remove obviously unused arguments.  */
-          if (!ipa_is_param_used (info, i))
+	  if (!ipa_is_param_used (info, i))
 	    {
-	      bitmap_set_bit (args_to_skip, i);
+	      if (args_to_skip)
+	        bitmap_set_bit (args_to_skip, i);
 	      continue;
 	    }
 
@@ -1403,10 +1419,28 @@ ipcp_insert_stage (void)
 	    {
 	      replace_param =
 		ipcp_create_replace_map (parm_tree, lat);
+	      if (replace_param == NULL)
+		break;
 	      VEC_safe_push (ipa_replace_map_p, gc, replace_trees, replace_param);
-	      bitmap_set_bit (args_to_skip, i);
+	      if (args_to_skip)
+	        bitmap_set_bit (args_to_skip, i);
 	    }
 	}
+      if (i < count)
+	{
+	  if (dump_file)
+	    fprintf (dump_file, "Not versioning, some parameters couldn't be replaced");
+	  continue;
+	}
+
+      new_size += growth;
+
+      /* Look if original function becomes dead after cloning.  */
+      for (cs = node->callers; cs != NULL; cs = cs->next_caller)
+	if (cs->caller == node || ipcp_need_redirect_p (cs))
+	  break;
+      if (!cs && cgraph_will_be_removed_from_program_if_no_direct_calls (node))
+	bitmap_set_bit (dead_nodes, node->uid);
 
       /* Compute how many callers node has.  */
       node_callers = 0;
@@ -1544,7 +1578,7 @@ static bool
 cgraph_gate_cp (void)
 {
   /* FIXME: We should remove the optimize check after we ensure we never run
-     IPA passes when not optimizng.  */
+     IPA passes when not optimizing.  */
   return flag_ipa_cp && optimize;
 }
 

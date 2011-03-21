@@ -1,3 +1,32 @@
+2011-02-13  Joseph Myers  <joseph@codesourcery.com>
+
+	* jvspec.c (jvgenmain_spec): Remove %{a*}.
+
+2011-01-21  Kai Tietz  <kai.tietz@onevision.com>
+
+	PR bootstrap/47215
+	* decl.c (java_init_decl_processing): Remove
+	va_list_type_node related type initializations.
+
+2011-01-11  Kai Tietz  <kai.tietz@onevision.com>
+
+	PR bootstrap/47215
+	* decl.c (java_init_decl_processing): Initialize
+	long_integer_type_node.
+
+2011-01-07  Kai Tietz  <kai.tietz@onevision.com>
+
+	PR bootstrap/47215
+        * decl.c (java_init_decl_processing): Initialize unsigned_type_node.
+
+2011-01-07  Kai Tietz  <kai.tietz@onevision.com>
+
+	* decl.c (java_init_decl_processing): Setup va_list_type_node.
+
+2011-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* jcf-dump.c (version): Update copyright notice dates.
+
 2010-12-15  Dave Korn  <dave.korn.cygwin@gmail.com>
 
 	* decl.c (java_init_decl_processing): Initialise integer_three_node.

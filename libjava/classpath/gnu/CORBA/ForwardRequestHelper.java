@@ -129,9 +129,9 @@ public abstract class ForwardRequestHelper
   {
     ORB orb = OrbRestricted.Singleton;
     StructMember[] members = new StructMember[ 1 ];
-    
+
     TypeCode field;
-    
+
     field = ObjectHelper.type();
     members [ 0 ] = new StructMember("forward_reference", field, null);
     return orb.create_exception_tc(id(), "ForwardRequest", members);

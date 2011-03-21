@@ -1,4 +1,4 @@
-/* AttributeSetUtilities.java -- 
+/* AttributeSetUtilities.java --
    Copyright (C) 2003, 2004, 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -50,7 +50,7 @@ import java.io.Serializable;
  * if state changing methods are invoked.
  * </p>
  * <p>
- * Methods for getting a synchronized view of an attribute set are also 
+ * Methods for getting a synchronized view of an attribute set are also
  * available. This view provides synchronized (thread safe) access to the
  * underlying wrapped attribute set.
  * </P>
@@ -60,17 +60,17 @@ import java.io.Serializable;
  * <ul>
  * <li>the given object is an attribute of the given interface.</li>
  * <li>the category of given attribute is equals to a given category.</li>
- * <li>the given object is a <code>Class</code> that implements the given 
+ * <li>the given object is a <code>Class</code> that implements the given
  * interface name.</li>
  * </ul>
- * 
+ *
  */
 public final class AttributeSetUtilities
 {
   /**
    * This class isn't intended to be instantiated.
    */
-  private AttributeSetUtilities() 
+  private AttributeSetUtilities()
   {
     // only static methods
   }
@@ -97,7 +97,7 @@ public final class AttributeSetUtilities
     {
       throw new UnmodifiableSetException();
     }
-    
+
     public void clear()
     {
       throw new UnmodifiableSetException();
@@ -117,7 +117,7 @@ public final class AttributeSetUtilities
     {
       return attrset.equals(obj);
     }
-    
+
     public Attribute get(Class interfaceName)
     {
       return attrset.get(interfaceName);
@@ -127,7 +127,7 @@ public final class AttributeSetUtilities
     {
       return attrset.hashCode();
     }
-    
+
     public boolean isEmpty()
     {
       return attrset.isEmpty();
@@ -216,7 +216,7 @@ public final class AttributeSetUtilities
     {
       return attrset.addAll(attributes);
     }
-    
+
     public synchronized void clear()
     {
       attrset.clear();
@@ -236,7 +236,7 @@ public final class AttributeSetUtilities
     {
       return attrset.equals(obj);
     }
-    
+
     public synchronized Attribute get(Class interfaceName)
     {
       return attrset.get(interfaceName);
@@ -246,7 +246,7 @@ public final class AttributeSetUtilities
     {
       return attrset.hashCode();
     }
-    
+
     public synchronized boolean isEmpty()
     {
       return attrset.isEmpty();
@@ -334,7 +334,7 @@ public final class AttributeSetUtilities
   {
     return new SynchronizedDocAttributeSet(attributeSet);
   }
-  
+
   /**
    * Returns a synchronized view of the given attribute set.
    *
@@ -345,7 +345,7 @@ public final class AttributeSetUtilities
   {
     return new SynchronizedPrintJobAttributeSet(attributeSet);
   }
-  
+
   /**
    * Returns a synchronized view of the given attribute set.
    *
@@ -356,7 +356,7 @@ public final class AttributeSetUtilities
   {
     return new SynchronizedPrintRequestAttributeSet(attributeSet);
   }
-  
+
   /**
    * Returns a synchronized view of the given attribute set.
    *
@@ -367,7 +367,7 @@ public final class AttributeSetUtilities
   {
     return new SynchronizedPrintServiceAttributeSet(attributeSet);
   }
-  
+
   /**
    * Returns an unmodifiable view of the given attribute set.
    *
@@ -378,7 +378,7 @@ public final class AttributeSetUtilities
   {
     return new UnmodifiableAttributeSet(attributeSet);
   }
-  
+
   /**
    * Returns an unmodifiable view of the given attribute set.
    *
@@ -389,7 +389,7 @@ public final class AttributeSetUtilities
   {
     return new UnmodifiableDocAttributeSet(attributeSet);
   }
-  
+
   /**
    * Returns an unmodifiable view of the given attribute set.
    *
@@ -400,7 +400,7 @@ public final class AttributeSetUtilities
   {
     return new UnmodifiablePrintJobAttributeSet(attributeSet);
   }
-  
+
   /**
    * Returns an unmodifiable view of the given attribute set.
    *
@@ -411,7 +411,7 @@ public final class AttributeSetUtilities
   {
     return new UnmodifiablePrintRequestAttributeSet(attributeSet);
   }
-  
+
   /**
    * Returns an unmodifiable view of the given attribute set.
    *
@@ -426,7 +426,7 @@ public final class AttributeSetUtilities
   /**
    * Verifies that the given object is a <code>Class</code> that
    * implements the given interface name and returns it casted.
-   * 
+   *
    * @param object the object to test.
    * @param interfaceName the <code>Class</code> to verify against.
    * @return object casted to <code>Class</code>
@@ -448,11 +448,11 @@ public final class AttributeSetUtilities
 
     throw new ClassCastException();
   }
-  
+
   /**
    * Verifies that the given object is an attribute of the given interface.
    * and returns it casted to the interface type.
-   * 
+   *
    * @param object the object to test.
    * @param interfaceName the <code>Class</code> to verify against.
    * @return the object casted to <code>Attribute</code>
@@ -475,7 +475,7 @@ public final class AttributeSetUtilities
   /**
    * Verifies that the category of attribute is equals to the given category
    * class.
-   * 
+   *
    * @param category the category to test.
    * @param attribute the attribute to verify.
    *

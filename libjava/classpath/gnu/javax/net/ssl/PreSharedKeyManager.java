@@ -1,4 +1,4 @@
-/* PreSharedKeyManager.java -- 
+/* PreSharedKeyManager.java --
    Copyright (C) 2006  Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -49,6 +49,6 @@ import javax.net.ssl.KeyManager;
 public interface PreSharedKeyManager extends KeyManager
 {
   SecretKey getKey(String name) throws KeyManagementException;
-  
+
   String chooseIdentityHint();
 }

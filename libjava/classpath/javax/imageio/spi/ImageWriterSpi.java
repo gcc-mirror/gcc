@@ -89,9 +89,9 @@ public abstract class ImageWriterSpi extends ImageReaderWriterSpi
     if (outputTypes == null
         || outputTypes.length == 0)
       throw new IllegalArgumentException("outputTypes may not be null or empty");
-    
+
     this.outputTypes = outputTypes;
-    this.readerSpiNames = readerSpiNames;    
+    this.readerSpiNames = readerSpiNames;
   }
 
   public abstract boolean canEncodeImage(ImageTypeSpecifier type);

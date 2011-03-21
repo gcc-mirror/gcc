@@ -54,7 +54,7 @@ type Type interface {
 	// String returns the string representation of this type.
 	String() string
 	// The position where this type was defined, if any.
-	Pos() token.Position
+	Pos() token.Pos
 }
 
 type BoundedType interface {
@@ -65,7 +65,7 @@ type BoundedType interface {
 	maxVal() *big.Rat
 }
 
-var universePos = token.Position{"<universe>", 0, 0, 0}
+var universePos = token.NoPos
 
 /*
  * Type array maps.  These are used to memoize composite types.
@@ -140,7 +140,7 @@ func (commonType) isFloat() bool { return false }
 
 func (commonType) isIdeal() bool { return false }
 
-func (commonType) Pos() token.Position { return token.Position{} }
+func (commonType) Pos() token.Pos { return token.NoPos }
 
 /*
  * Bool
@@ -372,7 +372,6 @@ type floatType struct {
 var (
 	Float32Type = universe.DefineType("float32", universePos, &floatType{commonType{}, 32, "float32"})
 	Float64Type = universe.DefineType("float64", universePos, &floatType{commonType{}, 64, "float64"})
-	FloatType   = universe.DefineType("float", universePos, &floatType{commonType{}, 0, "float"})
 )
 
 func (t *floatType) compat(o Type, conv bool) bool {
@@ -394,9 +393,6 @@ func (t *floatType) Zero() Value {
 	case 64:
 		res := float64V(0)
 		return &res
-	case 0:
-		res := floatV(0)
-		return &res
 	}
 	panic("unexpected float bit count")
 }
@@ -408,9 +404,6 @@ var minFloat64Val *big.Rat
 
 func (t *floatType) minVal() *big.Rat {
 	bits := t.Bits
-	if bits == 0 {
-		bits = uint(8 * unsafe.Sizeof(float(0)))
-	}
 	switch bits {
 	case 32:
 		return minFloat32Val
@@ -423,9 +416,6 @@ func (t *floatType) minVal() *big.Rat {
 
 func (t *floatType) maxVal() *big.Rat {
 	bits := t.Bits
-	if bits == 0 {
-		bits = uint(8 * unsafe.Sizeof(float(0)))
-	}
 	switch bits {
 	case 32:
 		return maxFloat32Val
@@ -1100,8 +1090,8 @@ type Method struct {
 }
 
 type NamedType struct {
-	token.Position
-	Name string
+	NamePos token.Pos
+	Name    string
 	// Underlying type.  If incomplete is true, this will be nil.
 	// If incomplete is false and this is still nil, then this is
 	// a placeholder type representing an error.
@@ -1114,7 +1104,11 @@ type NamedType struct {
 // TODO(austin) This is temporarily needed by the debugger's remote
 // type parser.  This should only be possible with block.DefineType.
 func NewNamedType(name string) *NamedType {
-	return &NamedType{token.Position{}, name, nil, true, make(map[string]Method)}
+	return &NamedType{token.NoPos, name, nil, true, make(map[string]Method)}
+}
+
+func (t *NamedType) Pos() token.Pos {
+	return t.NamePos
 }
 
 func (t *NamedType) Complete(def Type) {

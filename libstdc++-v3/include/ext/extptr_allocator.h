@@ -40,7 +40,9 @@
 #include <limits>
 #include <ext/pointer.h>
 
-_GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
+namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /**
    * @brief An example allocator which uses a non-standard pointer type.
@@ -173,6 +175,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       __larg._M_real_alloc = __tmp;
     }
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
 
 #endif /* _EXTPTR_ALLOCATOR_H */

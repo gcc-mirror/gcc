@@ -1,5 +1,5 @@
 /* Implement the stpncpy function.
-   Copyright (C) 2003 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2011 Free Software Foundation, Inc.
    Written by Kaveh R. Ghazi <ghazi@caip.rutgers.edu>.
 
 This file is part of the libiberty library.
@@ -20,7 +20,8 @@ Boston, MA 02110-1301, USA.  */
 
 /*
 
-@deftypefn Supplemental char* stpncpy (char *@var{dst}, const char *@var{src}, size_t @var{len})
+@deftypefn Supplemental char* stpncpy (char *@var{dst}, const char *@var{src}, @
+  size_t @var{len})
 
 Copies the string @var{src} into @var{dst}, copying exactly @var{len}
 and padding with zeros if necessary.  If @var{len} < strlen(@var{src})

@@ -48,7 +48,7 @@ public class QtScrollPanePeer extends QtContainerPeer implements ScrollPanePeer
   {
     super( kit, owner );
   }
-  
+
   protected native void init();
 
   protected void setup()
@@ -73,9 +73,9 @@ public class QtScrollPanePeer extends QtContainerPeer implements ScrollPanePeer
   {
     // FIXME : more accurate?
     return new Insets(5 + getHScrollbarHeight(),  // Top
-		      5 + getVScrollbarWidth(),  // Left
-		      5,  // Bottom
-		      5); // Right
+                      5 + getVScrollbarWidth(),  // Left
+                      5,  // Bottom
+                      5); // Right
   }
 
   public void setUnitIncrement(Adjustable item, int inc)

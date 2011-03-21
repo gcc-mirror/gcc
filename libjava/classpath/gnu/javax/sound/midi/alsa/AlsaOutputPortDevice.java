@@ -46,7 +46,7 @@ import javax.sound.midi.Transmitter;
 
 /**
  * ALSA MIDI Out Device
- * 
+ *
  * @author Anthony Green (green@redhat.com)
  *
  */

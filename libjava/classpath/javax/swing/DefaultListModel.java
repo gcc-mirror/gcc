@@ -166,7 +166,7 @@ public class DefaultListModel extends AbstractListModel
   /**
    * Sets the list element at a particular index.
    *
-   * @param index The list index at which to set a value 
+   * @param index The list index at which to set a value
    * @param element The value to set at the specified index
    *
    * @return The value previously held at the specified index
@@ -253,7 +253,7 @@ public class DefaultListModel extends AbstractListModel
    * least as large as the list.
    *
    * @param array The array to copy the list into
-   * 
+   *
    * @throws IndexOutOfBoundsException if the array is too small to hold the
    *     elements of the list
    */
@@ -317,7 +317,7 @@ public class DefaultListModel extends AbstractListModel
   /**
    * Sets the capacity of the list to be equal to its size. The list's capacity
    * is the number of elements it can hold before it needs to be reallocated.
-   * The list's size is the number of elements it currently holds. 
+   * The list's size is the number of elements it currently holds.
    */
   public void trimToSize()
   {
@@ -360,7 +360,7 @@ public class DefaultListModel extends AbstractListModel
 
   /**
    * Gets the capacity of the list. The list's capacity is the number of
-   * elements it can hold before it needs to be reallocated. 
+   * elements it can hold before it needs to be reallocated.
    *
    * @return The capacity of the list
    */
@@ -393,7 +393,7 @@ public class DefaultListModel extends AbstractListModel
    * Sets the list element at a particular index.
    *
    * @param element The value to set at the specified index
-   * @param index The list index at which to set a value 
+   * @param index The list index at which to set a value
    *
    * @throws ArrayIndexOutOfBoundsException If the provided index is
    *     outside the bounds of the list <code>[0, size())</code>

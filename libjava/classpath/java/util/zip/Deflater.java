@@ -41,10 +41,10 @@ package java.util.zip;
  * This is the Deflater class.  The deflater class compresses input
  * with the deflate algorithm described in RFC 1951.  It has several
  * compression levels and three different strategies described below.
- * 
+ *
  * This class is <i>not</i> thread safe.  This is inherent in the API, due
  * to the split of deflate and setInput.
- * 
+ *
  * @author Jochen Hoenicke
  * @author Tom Tromey
  */
@@ -52,11 +52,11 @@ public class Deflater
 {
   /**
    * The best and slowest compression level.  This tries to find very
-   * long and distant string repetitions.  
+   * long and distant string repetitions.
    */
   public static final int BEST_COMPRESSION = 9;
   /**
-   * The worst but fastest compression level.  
+   * The worst but fastest compression level.
    */
   public static final int BEST_SPEED = 1;
   /**
@@ -78,10 +78,10 @@ public class Deflater
    */
   public static final int FILTERED = 1;
 
-  /** 
+  /**
    * This strategy will not look for string repetitions at all.  It
    * only encodes with Huffman trees (which means, that more common
-   * characters get a smaller encoding.  
+   * characters get a smaller encoding.
    */
   public static final int HUFFMAN_ONLY = 2;
 
@@ -123,13 +123,13 @@ public class Deflater
    * (6) FINISHED_STATE is entered, when everything has been flushed to the
    *     internal pending output buffer.
    * (7) At any time (7)
-   * 
+   *
    */
 
   private static final int IS_SETDICT              = 0x01;
   private static final int IS_FLUSHING             = 0x04;
   private static final int IS_FINISHING            = 0x08;
-  
+
   private static final int INIT_STATE              = 0x00;
   private static final int SETDICT_STATE           = 0x01;
   private static final int INIT_FINISHING_STATE    = 0x08;
@@ -151,7 +151,7 @@ public class Deflater
 
   /** The total bytes of output written. */
   private long totalOut;
- 
+
   /** The pending output. */
   private DeflaterPending pending;
 
@@ -169,7 +169,7 @@ public class Deflater
   /**
    * Creates a new deflater with given compression level.
    * @param lvl the compression level, a value between NO_COMPRESSION
-   * and BEST_COMPRESSION, or DEFAULT_COMPRESSION.  
+   * and BEST_COMPRESSION, or DEFAULT_COMPRESSION.
    * @exception IllegalArgumentException if lvl is out of range.
    */
   public Deflater(int lvl)
@@ -180,7 +180,7 @@ public class Deflater
   /**
    * Creates a new deflater with given compression level.
    * @param lvl the compression level, a value between NO_COMPRESSION
-   * and BEST_COMPRESSION.  
+   * and BEST_COMPRESSION.
    * @param nowrap true, iff we should suppress the deflate header at the
    * beginning and the adler checksum at the end of the output.  This is
    * useful for the GZIP format.
@@ -201,26 +201,26 @@ public class Deflater
     reset();
   }
 
-  /** 
+  /**
    * Resets the deflater.  The deflater acts afterwards as if it was
    * just created with the same compression level and strategy as it
-   * had before.  
+   * had before.
    */
-  public void reset() 
+  public void reset()
   {
     state = (noHeader ? BUSY_STATE : INIT_STATE);
     totalOut = 0;
     pending.reset();
     engine.reset();
   }
-  
+
   /**
    * Frees all objects allocated by the compressor.  There's no
    * reason to call this, since you can just rely on garbage
    * collection.  Exists only for compatibility against Sun's JDK,
    * where the compressor allocates native memory.
    * If you call any method (even reset) afterwards the behaviour is
-   * <i>undefined</i>.  
+   * <i>undefined</i>.
    */
   public void end()
   {
@@ -229,7 +229,7 @@ public class Deflater
     state = CLOSED_STATE;
   }
 
-  /** 
+  /**
    * Gets the current adler checksum of the data that was processed so
    * far.
    */
@@ -238,7 +238,7 @@ public class Deflater
     return engine.getAdler();
   }
 
-  /** 
+  /**
    * Gets the number of input bytes processed so far.
    */
   public int getTotalIn()
@@ -246,7 +246,7 @@ public class Deflater
     return (int) engine.getTotalIn();
   }
 
-  /** 
+  /**
    * Gets the number of input bytes processed so far.
    * @since 1.5
    */
@@ -255,7 +255,7 @@ public class Deflater
     return engine.getTotalIn();
   }
 
-  /** 
+  /**
    * Gets the number of output bytes so far.
    */
   public int getTotalOut()
@@ -263,7 +263,7 @@ public class Deflater
     return (int) totalOut;
   }
 
-  /** 
+  /**
    * Gets the number of output bytes so far.
    * @since 1.5
    */
@@ -272,7 +272,7 @@ public class Deflater
     return totalOut;
   }
 
-  /** 
+  /**
    * Finalizes this object.
    */
   protected void finalize()
@@ -280,7 +280,7 @@ public class Deflater
     /* Exists solely for compatibility.  We don't have any native state. */
   }
 
-  /** 
+  /**
    * Flushes the current input block.  Further calls to deflate() will
    * produce enough output to inflate everything in the current input
    * block.  This is not part of Sun's JDK so I have made it package
@@ -291,7 +291,7 @@ public class Deflater
     state |= IS_FLUSHING;
   }
 
-  /** 
+  /**
    * Finishes the deflater with the current input block.  It is an error
    * to give more input after this method was called.  This method must
    * be called to force all bytes to be flushed.
@@ -300,7 +300,7 @@ public class Deflater
     state |= IS_FLUSHING | IS_FINISHING;
   }
 
-  /** 
+  /**
    * Returns true iff the stream was finished and no more output bytes
    * are available.
    */
@@ -314,7 +314,7 @@ public class Deflater
    * You should then call setInput(). <br>
    *
    * <em>NOTE</em>: This method can also return true when the stream
-   * was finished.  
+   * was finished.
    */
   public boolean needsInput()
   {
@@ -344,7 +344,7 @@ public class Deflater
    * true again.
    * @param input the buffer containing the input data.
    * @param off the start of the data.
-   * @param len the length of the data.  
+   * @param len the length of the data.
    * @exception IllegalStateException if the buffer was finished() or ended()
    * or if previous input is still pending.
    */
@@ -355,11 +355,11 @@ public class Deflater
     engine.setInput(input, off, len);
   }
 
-  /** 
+  /**
    * Sets the compression level.  There is no guarantee of the exact
    * position of the change, but if you call this when needsInput is
    * true the change of compression level will occur somewhere near
-   * before the end of the so far given input.  
+   * before the end of the so far given input.
    * @param lvl the new compression level.
    */
   public void setLevel(int lvl)
@@ -372,12 +372,12 @@ public class Deflater
 
     if (level != lvl)
       {
-	level = lvl;
-	engine.setLevel(lvl);
+        level = lvl;
+        engine.setLevel(lvl);
       }
   }
 
-  /** 
+  /**
    * Sets the compression strategy. Strategy is one of
    * DEFAULT_STRATEGY, HUFFMAN_ONLY and FILTERED.  For the exact
    * position where the strategy is changed, the same as for
@@ -387,14 +387,14 @@ public class Deflater
   public void setStrategy(int stgy)
   {
     if (stgy != DEFAULT_STRATEGY && stgy != FILTERED
-	&& stgy != HUFFMAN_ONLY)
+        && stgy != HUFFMAN_ONLY)
       throw new IllegalArgumentException();
     engine.setStrategy(stgy);
   }
 
   /**
-   * Deflates the current input block to the given array.  It returns 
-   * the number of bytes compressed, or 0 if either 
+   * Deflates the current input block to the given array.  It returns
+   * the number of bytes compressed, or 0 if either
    * needsInput() or finished() returns true or length is zero.
    * @param output the buffer where to write the compressed data.
    */
@@ -404,15 +404,15 @@ public class Deflater
   }
 
   /**
-   * Deflates the current input block to the given array.  It returns 
-   * the number of bytes compressed, or 0 if either 
+   * Deflates the current input block to the given array.  It returns
+   * the number of bytes compressed, or 0 if either
    * needsInput() or finished() returns true or length is zero.
    * @param output the buffer where to write the compressed data.
    * @param offset the offset into the output array.
    * @param length the maximum number of bytes that may be written.
    * @exception IllegalStateException if end() was called.
    * @exception IndexOutOfBoundsException if offset and/or length
-   * don't match the array length.  
+   * don't match the array length.
    */
   public int deflate(byte[] output, int offset, int length)
   {
@@ -423,78 +423,78 @@ public class Deflater
 
     if (state < BUSY_STATE)
       {
-	/* output header */
-	int header = (DEFLATED + 
-		      ((DeflaterConstants.MAX_WBITS - 8) << 4)) << 8;
-	int level_flags = (level - 1) >> 1;
-	if (level_flags < 0 || level_flags > 3) 
-	  level_flags = 3;
-	header |= level_flags << 6;
-	if ((state & IS_SETDICT) != 0)
-	  /* Dictionary was set */
-	  header |= DeflaterConstants.PRESET_DICT;
-	header += 31 - (header % 31);
+        /* output header */
+        int header = (DEFLATED +
+                      ((DeflaterConstants.MAX_WBITS - 8) << 4)) << 8;
+        int level_flags = (level - 1) >> 1;
+        if (level_flags < 0 || level_flags > 3)
+          level_flags = 3;
+        header |= level_flags << 6;
+        if ((state & IS_SETDICT) != 0)
+          /* Dictionary was set */
+          header |= DeflaterConstants.PRESET_DICT;
+        header += 31 - (header % 31);
 
-	pending.writeShortMSB(header);
-	if ((state & IS_SETDICT) != 0)
-	  {
-	    int chksum = engine.getAdler();
-	    engine.resetAdler();
-	    pending.writeShortMSB(chksum >> 16);
-	    pending.writeShortMSB(chksum & 0xffff);
-	  }
+        pending.writeShortMSB(header);
+        if ((state & IS_SETDICT) != 0)
+          {
+            int chksum = engine.getAdler();
+            engine.resetAdler();
+            pending.writeShortMSB(chksum >> 16);
+            pending.writeShortMSB(chksum & 0xffff);
+          }
 
-	state = BUSY_STATE | (state & (IS_FLUSHING | IS_FINISHING));
+        state = BUSY_STATE | (state & (IS_FLUSHING | IS_FINISHING));
       }
 
     for (;;)
       {
-	int count = pending.flush(output, offset, length);
-	offset += count;
-	totalOut += count;
-	length -= count;
-	if (length == 0 || state == FINISHED_STATE)
-	  break;
+        int count = pending.flush(output, offset, length);
+        offset += count;
+        totalOut += count;
+        length -= count;
+        if (length == 0 || state == FINISHED_STATE)
+          break;
 
-	if (!engine.deflate((state & IS_FLUSHING) != 0, 
-			    (state & IS_FINISHING) != 0))
-	  {
-	    if (state == BUSY_STATE)
-	      /* We need more input now */
-	      return origLength - length;
-	    else if (state == FLUSHING_STATE)
-	      {
-		if (level != NO_COMPRESSION)
-		  {
-		    /* We have to supply some lookahead.  8 bit lookahead
-		     * are needed by the zlib inflater, and we must fill 
-		     * the next byte, so that all bits are flushed.
-		     */
-		    int neededbits = 8 + ((-pending.getBitCount()) & 7);
-		    while (neededbits > 0)
-		      {
-			/* write a static tree block consisting solely of
-			 * an EOF:
-			 */
-			pending.writeBits(2, 10);
-			neededbits -= 10;
-		      }
-		  }
-		state = BUSY_STATE;
-	      }
-	    else if (state == FINISHING_STATE)
-	      {
-		pending.alignToByte();
-		/* We have completed the stream */
-		if (!noHeader)
-		  {
-		    int adler = engine.getAdler();
-		    pending.writeShortMSB(adler >> 16);
-		    pending.writeShortMSB(adler & 0xffff);
-		  }
-		state = FINISHED_STATE;
-	      }
-	  }
+        if (!engine.deflate((state & IS_FLUSHING) != 0,
+                            (state & IS_FINISHING) != 0))
+          {
+            if (state == BUSY_STATE)
+              /* We need more input now */
+              return origLength - length;
+            else if (state == FLUSHING_STATE)
+              {
+                if (level != NO_COMPRESSION)
+                  {
+                    /* We have to supply some lookahead.  8 bit lookahead
+                     * are needed by the zlib inflater, and we must fill
+                     * the next byte, so that all bits are flushed.
+                     */
+                    int neededbits = 8 + ((-pending.getBitCount()) & 7);
+                    while (neededbits > 0)
+                      {
+                        /* write a static tree block consisting solely of
+                         * an EOF:
+                         */
+                        pending.writeBits(2, 10);
+                        neededbits -= 10;
+                      }
+                  }
+                state = BUSY_STATE;
+              }
+            else if (state == FINISHING_STATE)
+              {
+                pending.alignToByte();
+                /* We have completed the stream */
+                if (!noHeader)
+                  {
+                    int adler = engine.getAdler();
+                    pending.writeShortMSB(adler >> 16);
+                    pending.writeShortMSB(adler & 0xffff);
+                  }
+                state = FINISHED_STATE;
+              }
+          }
       }
 
     return origLength - length;
@@ -503,10 +503,10 @@ public class Deflater
   /**
    * Sets the dictionary which should be used in the deflate process.
    * This call is equivalent to <code>setDictionary(dict, 0,
-   * dict.length)</code>.  
-   * @param dict the dictionary.  
+   * dict.length)</code>.
+   * @param dict the dictionary.
    * @exception IllegalStateException if setInput () or deflate ()
-   * were already called or another dictionary was already set.  
+   * were already called or another dictionary was already set.
    */
   public void setDictionary(byte[] dict)
   {

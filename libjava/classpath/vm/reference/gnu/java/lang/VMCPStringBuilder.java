@@ -59,16 +59,16 @@ final class VMCPStringBuilder
   {
     try
       {
-	cons = String.class.getDeclaredConstructor(new Class[] { char[].class,
-								 Integer.TYPE,
-								 Integer.TYPE,
-								 Boolean.TYPE });
-	cons.setAccessible(true);
+        cons = String.class.getDeclaredConstructor(new Class[] { char[].class,
+                                                                 Integer.TYPE,
+                                                                 Integer.TYPE,
+                                                                 Boolean.TYPE });
+        cons.setAccessible(true);
       }
     catch (NoSuchMethodException e)
       {
-	throw (Error) 
-	  new InternalError("Could not get no-copy String constructor").initCause(e);
+        throw (Error)
+          new InternalError("Could not get no-copy String constructor").initCause(e);
       }
   }
 
@@ -87,25 +87,25 @@ final class VMCPStringBuilder
   {
     try
       {
-	return (String)
-	  cons.newInstance(new Object[] { value, Integer.valueOf(startIndex),
-					  Integer.valueOf(count),
-					  Boolean.valueOf(true) });
+        return (String)
+          cons.newInstance(new Object[] { value, Integer.valueOf(startIndex),
+                                          Integer.valueOf(count),
+                                          Boolean.valueOf(true) });
       }
     catch (InstantiationException e)
       {
-	throw (Error) 
-	  new InternalError("Could not instantiate no-copy String constructor").initCause(e);
+        throw (Error)
+          new InternalError("Could not instantiate no-copy String constructor").initCause(e);
       }
     catch (IllegalAccessException e)
       {
-	throw (Error) 
-	  new InternalError("Could not access no-copy String constructor").initCause(e);
+        throw (Error)
+          new InternalError("Could not access no-copy String constructor").initCause(e);
       }
     catch (InvocationTargetException e)
       {
-	throw (Error) 
-	  new InternalError("Error calling no-copy String constructor").initCause(e);
+        throw (Error)
+          new InternalError("Error calling no-copy String constructor").initCause(e);
       }
   }
 

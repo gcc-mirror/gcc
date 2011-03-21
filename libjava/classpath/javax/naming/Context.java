@@ -127,7 +127,7 @@ public interface Context
   /**
    * Give the specified name for the specified object. The passed name must not
    * be already bound to some other object.
-   * 
+   *
    * @param name the name that will be given to the object (in the scope of this
    *          context).
    * @param obj the object being named.
@@ -143,7 +143,7 @@ public interface Context
   /**
    * Give the specified name for the specified object. The passed name must not
    * be already bound to some other object.
-   * 
+   *
    * @param name the name that will be given to the object (in the scope of this
    *          context).
    * @param obj the object being named.
@@ -159,7 +159,7 @@ public interface Context
   /**
    * Gets the previously named object by name. If the passed name is empty, the
    * method should return a cloned instance of this naming context.
-   * 
+   *
    * @param name the name of the object being searched in this context
    * @return the named object
    * @throws NamingException if the naming fails.
@@ -169,7 +169,7 @@ public interface Context
   /**
    * Gets the previously named object by name. If the passed name is empty, the
    * method should return a cloned instance of this naming context.
-   * 
+   *
    * @param name the name of the object being searched in this context
    * @return the named object
    * @throws NamingException if the naming fails.
@@ -179,7 +179,7 @@ public interface Context
   /**
    * Give the specified name for the specified object. Unlike bind, this method
    * silently replaces the existing binding for this name, if one exists.
-   * 
+   *
    * @param name the name that will be given to the object (in the scope of this
    *          context).
    * @param obj the object being named.
@@ -193,7 +193,7 @@ public interface Context
   /**
    * Give the specified name for the specified object. Unlike bind, this method
    * silently replaces the existing binding for this name, if one exists.
-   * 
+   *
    * @param name the name that will be given to the object (in the scope of this
    *          context).
    * @param obj the object being named.
@@ -209,7 +209,7 @@ public interface Context
    * returns without action if the name is not bound to an object in the
    * terminal context, but throws {@link NameNotFoundException} if one of the
    * intermadiate contexts does not exist.
-   * 
+   *
    * @param name the name to be removed
    * @throws NameNotFoundException if one of the intermediate naming contexts
    *           does not exist. Will not be thrown if just the terminal binding
@@ -224,7 +224,7 @@ public interface Context
    * returns without action if the name is not bound to an object in the
    * terminal context, but throws {@link NameNotFoundException} if one of the
    * intermadiate contexts does not exist.
-   * 
+   *
    * @param name the name to be removed
    * @throws NameNotFoundException if one of the intermediate naming contexts
    *           does not exist. Will not be thrown if just the terminal binding
@@ -237,7 +237,7 @@ public interface Context
   /**
    * Renames the existing binding, removing the existing and giving the new name
    * for the same object.
-   * 
+   *
    * @param oldName the existing name of the known object
    * @param newName the new name of the same object
    * @throws NameNotFoundException if the oldName is unknown for this context
@@ -249,7 +249,7 @@ public interface Context
   /**
    * Renames the existing binding, removing the existing and giving the new name
    * for the same object.
-   * 
+   *
    * @param oldName the existing name of the known object
    * @param newName the new name of the same object
    * @throws NameNotFoundException if the oldName is unknown for this context
@@ -265,7 +265,7 @@ public interface Context
    * bound object. The behaviour in the case if the bindings are added or
    * removed later is not defined. The contents of the subcontexts are not
    * included.
-   * 
+   *
    * @param name the name of the subcontext
    * @return the enumeration over the names, known for the given subcontext.
    * @throws NamingException
@@ -279,7 +279,7 @@ public interface Context
    * bound object. The behaviour in the case if the bindings are added or
    * removed later is not defined. The contents of the subcontexts are not
    * included.
-   * 
+   *
    * @param name the name of the subcontext
    * @return the enumeration over the names, known for the given subcontext.
    * @throws NamingException
@@ -292,7 +292,7 @@ public interface Context
    * {@link Binding}, providing also information about the class of the bound
    * object. The behaviour in the case if the bindings are added or removed
    * later is not defined. The contents of the subcontexts are not included.
-   * 
+   *
    * @param name the name of the subcontext
    * @return the enumeration over the names, known for the given subcontext.
    * @throws NamingException
@@ -305,7 +305,7 @@ public interface Context
    * {@link Binding}, providing also information about the class of the bound
    * object. The behaviour in the case if the bindings are added or removed
    * later is not defined. The contents of the subcontexts are not included.
-   * 
+   *
    * @param name the name of the subcontext
    * @return the enumeration over the names, known for the given subcontext.
    * @throws NamingException
@@ -315,7 +315,7 @@ public interface Context
   /**
    * Creates the new naming subcontext and binds it to the current (this)
    * context.
-   * 
+   *
    * @param name the name of the new context being created
    * @return the newly created context, bound to the instance of the context on
    *         that the method has been called
@@ -329,7 +329,7 @@ public interface Context
   /**
    * Creates the new naming subcontext and binds it to the current (this)
    * context.
-   * 
+   *
    * @param name the name of the new context being created
    * @return the newly created context, bound to the instance of the context on
    *         that the method has been called
@@ -344,7 +344,7 @@ public interface Context
    * Removes the naming subcontext from this naming context. Returns without
    * action if such subcontext does not exist. The context being destroyed must
    * be empty.
-   * 
+   *
    * @param name the name of the subcontext beig removed.
    * @throws ContextNotEmptyException if the named context is not empty.
    * @throws NamingException
@@ -355,19 +355,19 @@ public interface Context
    * Removes the naming subcontext from this naming context. Returns without
    * action if such subcontext does not exist. The context being destroyed must
    * be empty.
-   * 
+   *
    * @param name the name of the subcontext beig removed.
    * @throws ContextNotEmptyException if the named context is not empty.
    * @throws NamingException
    */
   void destroySubcontext(String name) throws NamingException;
- 
+
   /**
    * Retrieves the named object, not following the link of the terminal atomic
    * component of the name. If the object, named by the passed name, is not a
    * link, returns that object itself. The intermediate links, if present, are
    * followed.
-   * 
+   *
    * @param name the name of the object that may be a link, leading to another
    *          object.
    * @return the named object, not following the terminal link (if present).
@@ -380,18 +380,18 @@ public interface Context
    * component of the name. If the object, named by the passed name, is not a
    * link, returns that object itself. The intermediate links, if present, are
    * followed.
-   * 
+   *
    * @param name the name of the object that may be a link, leading to another
    *          object.
    * @return the named object, not following the terminal link (if present).
    * @throws NamingException
    */
   Object lookupLink(String name) throws NamingException;
-  
+
   /**
    * Obtains the name parser for parsing the names of the given naming
    * subcontext.
-   * 
+   *
    * @param name the name of the subcontext for that the parser must be obtained
    * @return the parser to parse the names of that context
    * @throws NamingException
@@ -401,17 +401,17 @@ public interface Context
   /**
    * Obtains the name parser for parsing the names of the given naming
    * subcontext.
-   * 
+   *
    * @param name the name of the subcontext for that the parser must be obtained
    * @return the parser to parse the names of that context
    * @throws NamingException
    */
   NameParser getNameParser(String name) throws NamingException;
-  
+
   /**
    * Composes the name of this context together with another name, related to
    * this context.
-   * 
+   *
    * @param name a name, defined in the scope of this context
    * @param prefix a name of this context itself, defined in the scope of some
    *          ancestor
@@ -424,7 +424,7 @@ public interface Context
   /**
    * Composes the name of this context together with another name, related to
    * this context.
-   * 
+   *
    * @param name a name, defined in the scope of this context
    * @param prefix a name of this context itself, defined in the scope of some
    *          ancestor
@@ -433,12 +433,12 @@ public interface Context
    * @throws NamingException
    */
   String composeName(String name, String prefix) throws NamingException;
-  
+
   /**
    * Add new environment property to the environment of this context. Both name
    * and value of the new property must not be null. If the property is already
    * defined, is current value is replaced by the propVal.
-   * 
+   *
    * @param propName the name of the new property
    * @param propVal the value of the new property
    * @return the previous value of this property or null if the property has not
@@ -447,33 +447,33 @@ public interface Context
    */
   Object addToEnvironment(String propName, Object propVal)
       throws NamingException;
-  
+
   /**
    * Removes the property with the given name from the environment. Returns
    * without action if this property is not defined.
-   * 
+   *
    * @param propName the name of the property being removed.
    * @return the value of the property that has been removed or null if the
    *         property was not defined.
    * @throws NamingException
    */
   Object removeFromEnvironment(String propName) throws NamingException;
-  
+
   /**
    * Returns the environment, associated with this naming context. The returned
    * table should never be modified by the caller. Use {@link #addToEnvironment}
    * and {@link #removeFromEnvironment} to modify the environement, if needed.
-   * 
+   *
    * @return the table, representing the environment of this context
    * @throws NamingException
    */
   Hashtable<?,?> getEnvironment() throws NamingException;
-  
+
   /**
    * Releases all resources, associated with this context. The close() method
    * can be called several times, but after it has been once invoked, it is not
    * allowed to call any other method of this context,
-   * 
+   *
    * @throws NamingException
    */
   void close() throws NamingException;
@@ -482,7 +482,7 @@ public interface Context
    * Returs the full name of this naming context. The returned string is not a
    * JNDI composite name and should not be passed directly to the methods of the
    * naming context.
-   * 
+   *
    * @return the full name of this naming context, in its own namespace.
    * @throws OperationNotSupportedException if the naming system, represented by
    *           this context, does not support the notation of the full name.

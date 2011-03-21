@@ -50,14 +50,14 @@ package java.util;
  * <li>A listed class does not implement the service</li>
  * <li>A listed class can not be instantiated</li>
  * </ul>
- * 
+ *
  * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
  * @since 1.6
  */
 public class ServiceConfigurationError
   extends Error
 {
-  
+
   /**
    * Compatible with JDK 1.6
    */
@@ -86,7 +86,7 @@ public class ServiceConfigurationError
    *              or inappropriate.
    */
   public ServiceConfigurationError(String message,
-				   Throwable cause)
+                                   Throwable cause)
   {
     super(message,cause);
   }

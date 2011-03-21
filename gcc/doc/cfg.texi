@@ -559,8 +559,7 @@ rechains the remaining statements in a basic block, if any.
 In the RTL representation, the macros @code{BB_HEAD} and @code{BB_END}
 may be used to get the head and end @code{rtx} of a basic block.  No
 abstract iterators are defined for traversing the insn chain, but you
-can just use @code{NEXT_INSN} and @code{PREV_INSN} instead.  See
-@xref{Insns}.
+can just use @code{NEXT_INSN} and @code{PREV_INSN} instead.  @xref{Insns}.
 
 @findex purge_dead_edges
 Usually a code manipulating pass simplifies the instruction stream and

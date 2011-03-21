@@ -57,7 +57,7 @@ public class GtkMenuPeer extends GtkMenuItemPeer
   protected native void create (String label);
 
   private native void addItem(MenuItemPeer item, int key,
-			      boolean shiftModifier);
+                              boolean shiftModifier);
 
   /** XXX - Document this and the override in GtkPopupMenuPeer. */
   native void setupAccelGroup (GtkGenericPeer container);
@@ -75,7 +75,7 @@ public class GtkMenuPeer extends GtkMenuItemPeer
   public GtkMenuPeer (Menu menu)
   {
     super (menu);
-    
+
     if (menu.isTearOff())
       addTearOff();
 

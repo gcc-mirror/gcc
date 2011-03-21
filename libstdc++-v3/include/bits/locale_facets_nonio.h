@@ -1,6 +1,6 @@
 // Locale support -*- C++ -*-
 
-// Copyright (C) 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -38,7 +38,9 @@
 
 #include <ctime>	// For struct tm
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /**
    *  @brief  Time format ordering data.
@@ -339,12 +341,15 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 				 const tm*) const throw ();
 #endif
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
 
   // Include host and configuration specific timepunct functions.
   #include <bits/time_members.h>
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /**
    *  @brief  Primary class template time_get.
@@ -1346,7 +1351,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   template<typename _CharT, bool _Intl>
     const bool moneypunct_byname<_CharT, _Intl>::intl;
 
-_GLIBCXX_BEGIN_LDBL_NAMESPACE
+_GLIBCXX_BEGIN_NAMESPACE_LDBL
 
   /**
    *  @brief  Primary class template money_get.
@@ -1654,7 +1659,7 @@ _GLIBCXX_BEGIN_LDBL_NAMESPACE
   template<typename _CharT, typename _OutIter>
     locale::id money_put<_CharT, _OutIter>::id;
 
-_GLIBCXX_END_LDBL_NAMESPACE
+_GLIBCXX_END_NAMESPACE_LDBL
 
   /**
    *  @brief  Messages facet base class providing catalog typedef.
@@ -1919,7 +1924,8 @@ _GLIBCXX_END_LDBL_NAMESPACE
       { }
     };
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
 
 // Include host and configuration specific messages functions.
 #include <bits/messages_members.h>
@@ -1927,8 +1933,6 @@ _GLIBCXX_END_NAMESPACE
 // 22.2.1.5  Template class codecvt
 #include <bits/codecvt.h>
 
-#ifndef _GLIBCXX_EXPORT_TEMPLATE
-# include <bits/locale_facets_nonio.tcc>
-#endif
+#include <bits/locale_facets_nonio.tcc>
 
 #endif

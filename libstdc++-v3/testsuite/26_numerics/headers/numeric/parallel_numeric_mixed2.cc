@@ -37,6 +37,17 @@ void test()
   const value_type c(0);
 
   vector_type v(10);
+
   std::accumulate(v.begin(), v.end(), value_type(1));
+  std::accumulate(v.begin(), v.end(), value_type(1), std::plus<value_type>());
   __gnu_parallel::accumulate(v.begin(), v.end(), value_type(1));
+  __gnu_parallel::accumulate(v.begin(), v.end(), value_type(1),
+                                                     std::plus<value_type>());
+
+  std::inner_product(v.begin(), v.end(), v.begin(), value_type(1));
+  std::inner_product(v.begin(), v.end(), v.begin(), value_type(1),
+                     std::multiplies<value_type>(), std::plus<value_type>());
+  __gnu_parallel::inner_product(v.begin(), v.end(), v.begin(), value_type(1));
+  __gnu_parallel::inner_product(v.begin(), v.end(), v.begin(), value_type(1),
+                     std::multiplies<value_type>(), std::plus<value_type>());
 }

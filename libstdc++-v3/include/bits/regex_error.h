@@ -1,6 +1,6 @@
 // class template regex -*- C++ -*-
 
-// Copyright (C) 2010 Free Software Foundation, Inc.
+// Copyright (C) 2010, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -30,10 +30,12 @@
  *  Do not attempt to use it directly. @headername{regex}
  */
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
-
+namespace std _GLIBCXX_VISIBILITY(default)
+{
 namespace regex_constants
 {
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
   /**
    * @name 5.3 Error Types
    */
@@ -58,63 +60,66 @@ namespace regex_constants
     };
 
   /** The expression contained an invalid collating element name. */
-  static const error_type error_collate(_S_error_collate);
+  static constexpr error_type error_collate(_S_error_collate);
 
   /** The expression contained an invalid character class name. */
-  static const error_type error_ctype(_S_error_ctype);
+  static constexpr error_type error_ctype(_S_error_ctype);
 
   /**
    * The expression contained an invalid escaped character, or a trailing
    * escape.
    */
-  static const error_type error_escape(_S_error_escape);
+  static constexpr error_type error_escape(_S_error_escape);
 
   /** The expression contained an invalid back reference. */
-  static const error_type error_backref(_S_error_backref);
+  static constexpr error_type error_backref(_S_error_backref);
 
   /** The expression contained mismatched [ and ]. */
-  static const error_type error_brack(_S_error_brack);
+  static constexpr error_type error_brack(_S_error_brack);
 
   /** The expression contained mismatched ( and ). */
-  static const error_type error_paren(_S_error_paren);
+  static constexpr error_type error_paren(_S_error_paren);
 
   /** The expression contained mismatched { and } */
-  static const error_type error_brace(_S_error_brace);
+  static constexpr error_type error_brace(_S_error_brace);
 
   /** The expression contained an invalid range in a {} expression. */
-  static const error_type error_badbrace(_S_error_badbrace);
+  static constexpr error_type error_badbrace(_S_error_badbrace);
 
   /**
    * The expression contained an invalid character range,
    * such as [b-a] in most encodings.
    */
-  static const error_type error_range(_S_error_range);
+  static constexpr error_type error_range(_S_error_range);
 
   /**
    * There was insufficient memory to convert the expression into a
    * finite state machine.
    */
-  static const error_type error_space(_S_error_space);
+  static constexpr error_type error_space(_S_error_space);
 
   /**
    * One of <em>*?+{<em> was not preceded by a valid regular expression.
    */
-  static const error_type error_badrepeat(_S_error_badrepeat);
+  static constexpr error_type error_badrepeat(_S_error_badrepeat);
 
   /**
    * The complexity of an attempted match against a regular expression
    * exceeded a pre-set level.
    */
-  static const error_type error_complexity(_S_error_complexity);
+  static constexpr error_type error_complexity(_S_error_complexity);
 
   /**
    * There was insufficient memory to determine whether the
    * regular expression could match the specified character sequence.
    */
-  static const error_type error_stack(_S_error_stack);
+  static constexpr error_type error_stack(_S_error_stack);
 
   //@}
-}
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace regex_constants
+
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // [7.8] Class regex_error
   /**
@@ -123,9 +128,10 @@ namespace regex_constants
    *
    * The regular expression library throws objects of this class on error.
    */
-  class regex_error
-  : public std::runtime_error
+  class regex_error : public std::runtime_error
   {
+    regex_constants::error_type _M_code;
+
   public:
     /**
      * @brief Constructs a regex_error object.
@@ -133,9 +139,9 @@ namespace regex_constants
      * @param ecode the regex error code.
      */
     explicit
-    regex_error(regex_constants::error_type __ecode)
-    : std::runtime_error("regex_error"), _M_code(__ecode)
-    { }
+    regex_error(regex_constants::error_type __ecode);
+
+    virtual ~regex_error() throw();
 
     /**
      * @brief Gets the regex error code.
@@ -145,14 +151,11 @@ namespace regex_constants
     regex_constants::error_type
     code() const
     { return _M_code; }
-
-  protected:
-    regex_constants::error_type _M_code;
   };
 
 
-  inline void
-  __throw_regex_error(regex_constants::error_type __ecode)
-  { throw regex_error(__ecode); }
+  void
+  __throw_regex_error(regex_constants::error_type __ecode);
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace std

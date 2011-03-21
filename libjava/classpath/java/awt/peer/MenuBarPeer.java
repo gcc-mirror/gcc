@@ -45,5 +45,4 @@ public interface MenuBarPeer extends MenuComponentPeer
   void addMenu(Menu m);
   void addHelpMenu(Menu menu);
   void delMenu(int index);
-} // interface MenuBarPeer 
-
+} // interface MenuBarPeer

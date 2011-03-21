@@ -1,4 +1,4 @@
-/* CBC.java -- 
+/* CBC.java --
    Copyright (C) 2002, 2006 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -45,7 +45,7 @@ import gnu.javax.crypto.cipher.IBlockCipher;
  * The Cipher Block Chaining mode. This mode introduces feedback into the cipher
  * by XORing the previous ciphertext block with the plaintext block before
  * encipherment. That is, encrypting looks like this:
- * 
+ *
  * <pre>
  *  C<sub>i</sub> = E<sub>K</sub>(P<sub>i</sub>&circ; C<sub>i-1</sub>)
  * </pre>
@@ -66,7 +66,7 @@ public class CBC
 
   /**
    * Package-private constructor for the factory class.
-   * 
+   *
    * @param underlyingCipher The cipher implementation.
    * @param cipherBlockSize The cipher's block size.
    */

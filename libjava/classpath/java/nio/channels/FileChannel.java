@@ -71,9 +71,9 @@ public abstract class FileChannel extends AbstractInterruptibleChannel
     public String toString()
     {
       if (this == READ_ONLY)
-	return "READ_ONLY";
+        return "READ_ONLY";
       else if (this == READ_WRITE)
-	return "READ_WRITE";
+        return "READ_WRITE";
 
       return "PRIVATE";
     }

@@ -40,20 +40,20 @@ package javax.print;
 
 
 /**
- * <code>MultiDocPrintService</code> represents print services that are 
- * capable of printing multiple documents as one print job. It provides an 
+ * <code>MultiDocPrintService</code> represents print services that are
+ * capable of printing multiple documents as one print job. It provides an
  * additional method for the creation of a print job for multiple documents.
- * 
+ *
  * @see javax.print.MultiDoc
  * @see javax.print.MultiDocPrintJob
- * 
+ *
  * @author Michael Koch (konqueror@gmx.de)
  */
 public interface MultiDocPrintService extends PrintService
 {
   /**
    * Create a job that can print a <code>MultiDoc</code> object.
-   * 
+   *
    * @return The created print job.
    */
   MultiDocPrintJob createMultiDocPrintJob();

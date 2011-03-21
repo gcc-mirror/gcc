@@ -1,4 +1,4 @@
-/* GnomeTransformerFactory.java - 
+/* GnomeTransformerFactory.java -
    Copyright (C) 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -86,7 +86,7 @@ public class GnomeTransformerFactory
   {
     XMLJ.init ();
   }
-  
+
   /**
    *  URIResolver set by user, or default implementation.
    */
@@ -104,7 +104,7 @@ public class GnomeTransformerFactory
 
   //--- Implementation of javax.xml.transform.TransformerFactory
   //--- follows.
-  
+
   // -- begin getAssociatedStylesheet implementation --
 
   /**
@@ -112,7 +112,7 @@ public class GnomeTransformerFactory
    * <code>null</code> if no associated stylesheet could be found.
    */
   public Source getAssociatedStylesheet(Source source, String media,
-                                        String title, String charset) 
+                                        String title, String charset)
     throws TransformerConfigurationException
   {
     String href= null;
@@ -225,7 +225,7 @@ public class GnomeTransformerFactory
   class AssociatedStylesheetHandler
     extends DefaultHandler
   {
-    
+
     String media;
     String title;
     String href;
@@ -246,7 +246,7 @@ public class GnomeTransformerFactory
           href = parseParameter(data, "href");
         }
     }
-    
+
   }
 
   String parseParameter(String data, String name)
@@ -270,33 +270,33 @@ public class GnomeTransformerFactory
   public synchronized void setAttribute (String name, Object value)
   {
     this.attributes.put (name, value);
-  } 
+  }
 
   public synchronized Object getAttribute (String name)
   {
     return attributes.get (name);
   }
-  
+
   public void setErrorListener (ErrorListener errorListener)
   {
     this.errorListener = errorListener;
-  } 
+  }
 
   public ErrorListener getErrorListener ()
   {
     return errorListener;
   }
-  
+
   public void setURIResolver (URIResolver uriResolver)
   {
     this.uriResolver = uriResolver;
-  } 
+  }
 
   public URIResolver getURIResolver ()
   {
     return uriResolver;
   }
-  
+
   public boolean getFeature (String name)
   {
     return (StreamSource.FEATURE.equals (name) ||
@@ -335,7 +335,7 @@ public class GnomeTransformerFactory
    *  Returns a new instance of class {@link Templates} for
    *  the given souce.
    */
-  public Templates newTemplates (Source source) 
+  public Templates newTemplates (Source source)
     throws TransformerConfigurationException
   {
     return new GnomeTransformer (source, uriResolver, errorListener);

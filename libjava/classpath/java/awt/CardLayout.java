@@ -85,7 +85,7 @@ public class CardLayout implements LayoutManager2, Serializable
    *
    * @param comp The component to add
    * @param constraints The name by which the component can later be called
-   * 
+   *
    * @exception IllegalArgumentException If `constraints' is not a
    * <code>String</code>
    */
@@ -93,17 +93,17 @@ public class CardLayout implements LayoutManager2, Serializable
   {
     if (! (constraints instanceof String))
       throw new IllegalArgumentException ("Object " + constraints
-					  + " is not a string");
+                                          + " is not a string");
     addLayoutComponent ((String) constraints, comp);
   }
 
   /**
    * Add a new component to the layout.  The name can be used later
    * to refer to the component.
-   * 
+   *
    * @param name The name by which the component can later be called
    * @param comp The component to add
-   * 
+   *
    * @deprecated This method is deprecated in favor of
    * <code>addLayoutComponent(Component, Object)</code>.
    */
@@ -137,7 +137,7 @@ public class CardLayout implements LayoutManager2, Serializable
   /**
    * Return this layout manager's x alignment.  This method always
    * returns Component.CENTER_ALIGNMENT.
-   * 
+   *
    * @param parent Container using this layout manager instance
    *
    * @return the x-axis alignment
@@ -150,7 +150,7 @@ public class CardLayout implements LayoutManager2, Serializable
   /**
    * Returns this layout manager's y alignment.  This method always
    * returns Component.CENTER_ALIGNMENT.
-   * 
+   *
    * @param parent Container using this layout manager instance
    *
    * @return the y-axis alignment
@@ -180,7 +180,7 @@ public class CardLayout implements LayoutManager2, Serializable
 
   /**
    * Cause the last component in the container to be displayed.
-   * 
+   *
    * @param parent The parent container, not <code>null</code>.
    */
   public void last (Container parent)
@@ -193,32 +193,32 @@ public class CardLayout implements LayoutManager2, Serializable
    * to be the same size as the parent, less insets and gaps.
    *
    * @param parent The parent container.
-   */ 
+   */
   public void layoutContainer (Container parent)
   {
     synchronized (parent.getTreeLock ())
       {
-	int width = parent.width;
-	int height = parent.height;
+        int width = parent.width;
+        int height = parent.height;
 
-	Insets ins = parent.getInsets ();
+        Insets ins = parent.getInsets ();
 
-	int num = parent.ncomponents;
-	Component[] comps = parent.component;
+        int num = parent.ncomponents;
+        Component[] comps = parent.component;
 
-	int x = ins.left + hgap;
-	int y = ins.top + vgap;
-	width = width - 2 * hgap - ins.left - ins.right;
-	height = height - 2 * vgap - ins.top - ins.bottom;
+        int x = ins.left + hgap;
+        int y = ins.top + vgap;
+        width = width - 2 * hgap - ins.left - ins.right;
+        height = height - 2 * vgap - ins.top - ins.bottom;
 
-	for (int i = 0; i < num; ++i)
-	  comps[i].setBounds (x, y, width, height);
+        for (int i = 0; i < num; ++i)
+          comps[i].setBounds (x, y, width, height);
       }
   }
 
   /**
    * Get the maximum layout size of the container.
-   * 
+   *
    * @param target The parent container
    *
    * @return the maximum layout size
@@ -234,7 +234,7 @@ public class CardLayout implements LayoutManager2, Serializable
 
   /**
    * Get the minimum layout size of the container.
-   * 
+   *
    * @param target The parent container
    *
    * @return the minimum layout size
@@ -248,7 +248,7 @@ public class CardLayout implements LayoutManager2, Serializable
    * Cause the next component in the container to be displayed.  If
    * this current card is the  last one in the deck, the first
    * component is displayed.
-   * 
+   *
    * @param parent The parent container, not <code>null</code>.
    */
   public void next (Container parent)
@@ -258,7 +258,7 @@ public class CardLayout implements LayoutManager2, Serializable
 
   /**
    * Get the preferred layout size of the container.
-   * 
+   *
    * @param parent The parent container
    *
    * @return the preferred layout size
@@ -272,7 +272,7 @@ public class CardLayout implements LayoutManager2, Serializable
    * Cause the previous component in the container to be displayed.
    * If this current card is the first one in the deck, the last
    * component is displayed.
-   * 
+   *
    * @param parent The parent container, not <code>null</code>.
    */
   public void previous (Container parent)
@@ -282,7 +282,7 @@ public class CardLayout implements LayoutManager2, Serializable
 
   /**
    * Remove the indicated component from this layout manager.
-   * 
+   *
    * @param comp The component to remove
    */
   public void removeLayoutComponent (Component comp)
@@ -290,20 +290,20 @@ public class CardLayout implements LayoutManager2, Serializable
     Enumeration e = tab.keys ();
     while (e.hasMoreElements ())
       {
-	Object key = e.nextElement ();
-	if (tab.get (key) == comp)
-	  {
-	    tab.remove (key);
-	    Container parent = comp.getParent();
-	    next(parent);
-	    break;
-	  }
+        Object key = e.nextElement ();
+        if (tab.get (key) == comp)
+          {
+            tab.remove (key);
+            Container parent = comp.getParent();
+            next(parent);
+            break;
+          }
       }
   }
 
   /**
    * Set this layout manager's horizontal gap.
-   * 
+   *
    * @param hgap The new gap
    */
   public void setHgap (int hgap)
@@ -313,7 +313,7 @@ public class CardLayout implements LayoutManager2, Serializable
 
   /**
    * Set this layout manager's vertical gap.
-   * 
+   *
    * @param vgap The new gap
    */
   public void setVgap (int vgap)
@@ -324,34 +324,34 @@ public class CardLayout implements LayoutManager2, Serializable
   /**
    * Cause the named component to be shown.  If the component name is
    * unknown or <code>null</code>, this method does nothing.
-   * 
+   *
    * @param parent The parent container, not <code>null</code>.
-   * @param name The name of the component to show 
+   * @param name The name of the component to show
    */
   public void show (Container parent, String name)
   {
     if (name == null)
       return;
-   
+
     if (parent.getLayout() != this)
       throw new IllegalArgumentException("parent's layout is not this CardLayout");
-    
+
     Object target = tab.get (name);
     if (target != null)
       {
-	int num = parent.ncomponents;
-	// This is more efficient than calling getComponents().
-	Component[] comps = parent.component;
-	for (int i = 0; i < num; ++i)
-	  {
-	    if (comps[i].isVisible())
-	      {
-		if (target == comps[i])
-		  return;
-		comps[i].setVisible (false);
-	      }
-	  }
-	((Component) target).setVisible (true);
+        int num = parent.ncomponents;
+        // This is more efficient than calling getComponents().
+        Component[] comps = parent.component;
+        for (int i = 0; i < num; ++i)
+          {
+            if (comps[i].isVisible())
+              {
+                if (target == comps[i])
+                  return;
+                comps[i].setVisible (false);
+              }
+          }
+        ((Component) target).setVisible (true);
         parent.validate();
       }
   }
@@ -368,71 +368,71 @@ public class CardLayout implements LayoutManager2, Serializable
 
   /**
    * This implements first(), last(), next(), and previous().
-   * 
+   *
    * @param parent The parent container
    * @param what The type of goto: FIRST, LAST, NEXT or PREV
-   * 
-   * @throws IllegalArgumentException if parent has not this 
+   *
+   * @throws IllegalArgumentException if parent has not this
    * CardLayout set as its layout.
    */
   private void gotoComponent (Container parent, int what)
   {
     if (parent.getLayout() != this)
       throw new IllegalArgumentException("parent's layout is not this CardLayout");
-    
+
     synchronized (parent.getTreeLock ())
       {
-	int num = parent.ncomponents;
-	// This is more efficient than calling getComponents().
-	Component[] comps = parent.component;
+        int num = parent.ncomponents;
+        // This is more efficient than calling getComponents().
+        Component[] comps = parent.component;
 
-	if (num == 1)
-	  {
-	    comps[0].setVisible(true);
-	    return;
-	  }
+        if (num == 1)
+          {
+            comps[0].setVisible(true);
+            return;
+          }
 
-	int choice = -1;
+        int choice = -1;
 
-	if (what == FIRST)
-	  choice = 0;
-	else if (what == LAST)
-	  choice = num - 1;
+        if (what == FIRST)
+          choice = 0;
+        else if (what == LAST)
+          choice = num - 1;
 
-	for (int i = 0; i < num; ++i)
-	  {
-	    if (comps[i].isVisible ())
-	      {
-		if (choice == i)
-		  {
-		    // Do nothing if we're already looking at the right
+        for (int i = 0; i < num; ++i)
+          {
+            if (comps[i].isVisible ())
+              {
+                if (choice == i)
+                  {
+                    // Do nothing if we're already looking at the right
                     // component.
                     return;
-		  }
-		else if (what == PREV)
-		  {
-		    choice = i - 1;
-		    if (choice < 0)
-		      choice = num - 1;
-		  }
-		else if (what == NEXT)
-		  {
+                  }
+                else if (what == PREV)
+                  {
+                    choice = i - 1;
+                    if (choice < 0)
+                      choice = num - 1;
+                  }
+                else if (what == NEXT)
+                  {
                     choice = i + 1;
                     if (choice == num)
                       choice = 0;
-		  }
-		comps[i].setVisible (false);
- 
-		if (choice >= 0)
-		  break;
-	      } else 
+                  }
+                comps[i].setVisible (false);
+
+                if (choice >= 0)
+                  break;
+              } else
                 {
                   comps[i].setVisible(true);
                 }
-	  }
+          }
 
-	if (choice >= 0 && choice < num)
-	  comps[choice].setVisible (true);
+        if (choice >= 0 && choice < num)
+          comps[choice].setVisible (true);
       }
   }
 
@@ -441,35 +441,35 @@ public class CardLayout implements LayoutManager2, Serializable
   {
     synchronized (parent.getTreeLock ())
       {
-	int w = 0, h = 0, num = parent.ncomponents;
-	Component[] comps = parent.component;
+        int w = 0, h = 0, num = parent.ncomponents;
+        Component[] comps = parent.component;
 
-	for (int i = 0; i < num; ++i)
-	  {
-	    Dimension d;
+        for (int i = 0; i < num; ++i)
+          {
+            Dimension d;
 
-	    if (what == MIN)
-	      d = comps[i].getMinimumSize ();
-	    else if (what == MAX)
-	      d = comps[i].getMaximumSize ();
-	    else
-	      d = comps[i].getPreferredSize ();
+            if (what == MIN)
+              d = comps[i].getMinimumSize ();
+            else if (what == MAX)
+              d = comps[i].getMaximumSize ();
+            else
+              d = comps[i].getPreferredSize ();
 
-	    w = Math.max (d.width, w);
-	    h = Math.max (d.height, h);
-	  }
+            w = Math.max (d.width, w);
+            h = Math.max (d.height, h);
+          }
 
-	Insets i = parent.getInsets ();
-	w += 2 * hgap + i.right + i.left;
-	h += 2 * vgap + i.bottom + i.top;
+        Insets i = parent.getInsets ();
+        w += 2 * hgap + i.right + i.left;
+        h += 2 * vgap + i.bottom + i.top;
 
-	// Handle overflow.
-	if (w < 0)
-	  w = Integer.MAX_VALUE;
-	if (h < 0)
-	  h = Integer.MAX_VALUE;
+        // Handle overflow.
+        if (w < 0)
+          w = Integer.MAX_VALUE;
+        if (h < 0)
+          h = Integer.MAX_VALUE;
 
-	return new Dimension (w, h);
+        return new Dimension (w, h);
       }
   }
 

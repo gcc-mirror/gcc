@@ -60,3 +60,4 @@ int main(void) {
   foo(15, &gf1);
   return 0;
 }
+#import "../../../objc-obj-c++-shared/Object1-implementation.h"

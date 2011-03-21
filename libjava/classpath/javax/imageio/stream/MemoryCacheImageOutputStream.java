@@ -78,7 +78,7 @@ public class MemoryCacheImageOutputStream extends ImageOutputStreamImpl
   {
     return false;
   }
-  
+
   public boolean isCachedMemory()
   {
     return true;

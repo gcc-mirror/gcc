@@ -1,4 +1,4 @@
-/* IRandom.java -- 
+/* IRandom.java --
    Copyright (C) 2001, 2002, 2003, 2006 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -79,7 +79,7 @@ public interface IRandom
 {
   /**
    * Returns the canonical name of this instance.
-   * 
+   *
    * @return the canonical name of this instance.
    */
   String name();
@@ -87,7 +87,7 @@ public interface IRandom
   /**
    * Initialises the pseudo-random number generator scheme with the appropriate
    * attributes.
-   * 
+   *
    * @param attributes a set of name-value pairs that describe the desired
    *          future instance behaviour.
    * @exception IllegalArgumentException if at least one of the defined name/
@@ -97,7 +97,7 @@ public interface IRandom
 
   /**
    * Returns the next 8 bits of random data generated from this instance.
-   * 
+   *
    * @return the next 8 bits of random data generated from this instance.
    * @exception IllegalStateException if the instance is not yet initialised.
    * @exception LimitReachedException if this instance has reached its
@@ -110,7 +110,7 @@ public interface IRandom
    * Fills the designated byte array, starting from byte at index
    * <code>offset</code>, for a maximum of <code>length</code> bytes with
    * the output of this generator instance.
-   * 
+   *
    * @param out the placeholder to contain the generated random bytes.
    * @param offset the starting index in <i>out</i> to consider. This method
    *          does nothing if this parameter is not within <code>0</code> and
@@ -132,7 +132,7 @@ public interface IRandom
    * Implementations are not required to implement this method in any meaningful
    * way; this may be a no-operation, and implementations may throw an
    * {@link UnsupportedOperationException}.
-   * 
+   *
    * @param b The byte to add.
    */
   void addRandomByte(byte b);
@@ -144,7 +144,7 @@ public interface IRandom
    * Implementations are not required to implement this method in any meaningful
    * way; this may be a no-operation, and implementations may throw an
    * {@link UnsupportedOperationException}.
-   * 
+   *
    * @param in The buffer of new random bytes to add.
    */
   void addRandomBytes(byte[] in);
@@ -156,7 +156,7 @@ public interface IRandom
    * Implementations are not required to implement this method in any meaningful
    * way; this may be a no-operation, and implementations may throw an
    * {@link UnsupportedOperationException}.
-   * 
+   *
    * @param in The buffer of new random bytes to add.
    * @param offset The offset from whence to begin reading random bytes.
    * @param length The number of random bytes to add.
@@ -167,7 +167,7 @@ public interface IRandom
 
   /**
    * Returns a clone copy of this instance.
-   * 
+   *
    * @return a clone copy of this instance.
    */
   Object clone() throws CloneNotSupportedException;

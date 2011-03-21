@@ -145,7 +145,9 @@
 #define __glibcxx_max_digits10(T) \
   (2 + (T) * 643L / 2136)
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /**
    *  @brief Describes the rounding style for floating-point types.
@@ -1617,7 +1619,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 #undef __glibcxx_long_double_traps
 #undef __glibcxx_long_double_tinyness_before
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
 
 #undef __glibcxx_signed
 #undef __glibcxx_min

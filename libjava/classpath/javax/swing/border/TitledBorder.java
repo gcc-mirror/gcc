@@ -1,4 +1,4 @@
-/* TitledBorder.java -- 
+/* TitledBorder.java --
    Copyright (C) 2003, 2004, 2005, 2006,  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -241,7 +241,7 @@ public class TitledBorder extends AbstractBorder
    * on MacOS X 10.1.5.
    */
   static final long serialVersionUID = 8012999415147721601L;
-  
+
 
   /**
    * The title, or <code>null</code> to display no title.
@@ -257,7 +257,7 @@ public class TitledBorder extends AbstractBorder
    */
   protected Border border;
 
-  
+
   /**
    * The vertical position of the title text relative to the border,
    * which is one of {@link #ABOVE_TOP}, {@link #TOP}, {@link
@@ -318,7 +318,7 @@ public class TitledBorder extends AbstractBorder
     this(border, /* title */ "", LEADING, TOP,
          /* titleFont */ null, /* titleColor */ null);
   }
-  
+
 
   /**
    * Constructs a TitledBorder given its border and title text.
@@ -334,7 +334,7 @@ public class TitledBorder extends AbstractBorder
     this(border, title, LEADING, TOP,
          /* titleFont */ null, /* titleColor */ null);
   }
-  
+
 
   /**
    * Constructs a TitledBorder given its border, title text, horizontal
@@ -350,7 +350,7 @@ public class TitledBorder extends AbstractBorder
    *        text in relation to the border. The value must be one of
    *        {@link #LEFT}, {@link #CENTER}, {@link #RIGHT}, {@link #LEADING},
    *        {@link #TRAILING}, or {@link #DEFAULT_JUSTIFICATION}.
-   
+
    * @param titlePosition the vertical position of the title text
    *        in relation to the border. The value must be one of
    *        {@link #ABOVE_TOP}, {@link #TOP}, {@link #BELOW_TOP},
@@ -366,7 +366,7 @@ public class TitledBorder extends AbstractBorder
     this(border, title, titleJustification, titlePosition,
          /* titleFont */ null, /* titleColor */ null);
   }
-  
+
 
   /**
    * Constructs a TitledBorder given its border, title text, horizontal
@@ -401,7 +401,7 @@ public class TitledBorder extends AbstractBorder
     this(border, title, titleJustification, titlePosition, titleFont,
          /* titleColor */ null);
   }
-  
+
 
   /**
    * Constructs a TitledBorder given its border, title text, horizontal
@@ -448,8 +448,8 @@ public class TitledBorder extends AbstractBorder
     this.titleFont = titleFont;
     this.titleColor = titleColor;
   }
-  
-  
+
+
   /**
    * Paints the border and the title text.
    *
@@ -460,7 +460,7 @@ public class TitledBorder extends AbstractBorder
    * @param width the width of the available area for painting the border.
    * @param height the height of the available area for painting the border.
    */
-  public void paintBorder(Component c, Graphics  g, 
+  public void paintBorder(Component c, Graphics  g,
                           int x, int y, int width, int height)
   {
     Rectangle borderRect = new Rectangle(x + EDGE_SPACING, y + EDGE_SPACING,
@@ -666,7 +666,7 @@ public class TitledBorder extends AbstractBorder
                                   borderRect.width,
                                   borderRect.height);
                   }
-	                
+
               }
             else
               {
@@ -683,7 +683,7 @@ public class TitledBorder extends AbstractBorder
                                   borderRect.width,
                                   borderRect.height);
                   }
-	                
+
               }
             g.setClip(saved);
           }
@@ -710,7 +710,7 @@ public class TitledBorder extends AbstractBorder
   {
     return getBorderInsets(c, new Insets(0, 0, 0, 0));
   }
-  
+
 
   /**
    * Measures the width of this border, storing the results into a
@@ -795,8 +795,8 @@ public class TitledBorder extends AbstractBorder
       }
     return insets;
   }
-  
-  
+
+
   /**
    * Returns <code>false</code>, indicating that there are pixels inside
    * the area of this border where the background shines through.
@@ -961,7 +961,7 @@ public class TitledBorder extends AbstractBorder
   public void setTitlePosition(int titlePosition)
   {
     if ((titlePosition < DEFAULT_POSITION) || (titlePosition > BELOW_BOTTOM))
-      throw new IllegalArgumentException(titlePosition 
+      throw new IllegalArgumentException(titlePosition
           + " is not a valid title position.");
 
     // Swing borders are not JavaBeans, thus no need to fire an event.
@@ -983,7 +983,7 @@ public class TitledBorder extends AbstractBorder
   {
     if ((titleJustification < DEFAULT_JUSTIFICATION)
         || (titleJustification > TRAILING))
-      throw new IllegalArgumentException(titleJustification 
+      throw new IllegalArgumentException(titleJustification
           + " is not a valid title justification.");
 
     // Swing borders are not JavaBeans, thus no need to fire an event.
@@ -1027,7 +1027,7 @@ public class TitledBorder extends AbstractBorder
    *
    * @param c the Component for which this TitledBorder constitutes
    *        a border.
-   *        
+   *
    * @return The minimum size.
    */
   public Dimension getMinimumSize(Component c)

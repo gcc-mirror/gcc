@@ -1,5 +1,5 @@
 /* AudioSecurityManager.java -- Manages Security requests for Sound classes.
- 
+
  Copyright (C) 2007 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -42,10 +42,10 @@ import javax.sound.sampled.AudioPermission;
 
 /**
  * This class handles security requests for classes in the Sound API.
- * 
+ *
  * A class that needs to check against a particular permission type may use this
  * class to query the <code>SecurityManager</code>.
- * 
+ *
  * For example, to check for a read permission, a class can simply pass the
  * <code>Permission.READ</code> constant to
  * {@link #checkPermissions(gnu.javax.sound.AudioSecurityManager.Permission))},
@@ -54,11 +54,11 @@ import javax.sound.sampled.AudioPermission;
  * <pre>
  * AudioSecurityManager.checkPermissions(Permission.PLAY);
  * </pre>
- * 
+ *
  * If there is need to query for all the defined permissions type, the constant
  * <code>Permission.ALL</code> can be used. In alternative, the
- * {@link #checkPermissions()} is presented as a shorthand. 
- * 
+ * {@link #checkPermissions()} is presented as a shorthand.
+ *
  * @author Mario Torre <neugens@limasoftware.net>
  */
 public class AudioSecurityManager
@@ -70,19 +70,19 @@ public class AudioSecurityManager
   {
     PLAY, RECORD, ALL
   }
-  
+
   /**
-   * Shorthand to <code>checkPermissions(Permission.ALL)</code>. 
+   * Shorthand to <code>checkPermissions(Permission.ALL)</code>.
    */
   public static final void checkPermissions()
   {
     checkPermissions(Permission.ALL);
   }
-  
+
   /**
-   * Query the <code>SecurityManager</code> agains the given 
+   * Query the <code>SecurityManager</code> agains the given
    * <code>Permission</code>.
-   * 
+   *
    * @param permission
    */
   public static final void checkPermissions(Permission permission)
@@ -96,16 +96,16 @@ public class AudioSecurityManager
           case PLAY:
             perm = "play";
             break;
-            
+
           case RECORD:
             perm = "record";
             break;
-            
+
           case ALL: default:
             perm = "*";
             break;
           }
-        
+
         sm.checkPermission(new AudioPermission(perm));
       }
   }

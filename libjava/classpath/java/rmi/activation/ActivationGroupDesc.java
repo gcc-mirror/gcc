@@ -8,7 +8,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -64,7 +64,7 @@ import java.util.zip.Adler32;
  * expectes the group class to have the two parameter constructor, the first
  * parameter being the {@link ActivationGroupID} and the second the
  * {@link MarshalledObject}.
- * 
+ *
  * @author Audrius Meskauskas (audriusa@bioinformatics.org) (from stub)
  */
 public final class ActivationGroupDesc
@@ -74,7 +74,7 @@ public final class ActivationGroupDesc
    * Contains the startup options for the {@link ActivationGroup}
    * implementations. Allows to override system properties and specify other
    * options for the implementation groups.
-   * 
+   *
    * @author Audrius Meskauskas (audriusa@bioinformatics.org) (from stub)
    */
   public static class CommandEnvironment
@@ -85,7 +85,7 @@ public final class ActivationGroupDesc
      * Use the SVUID for interoperability.
      */
     static final long serialVersionUID = 6165754737887770191L;
-    
+
     /**
      * The zero size string array used as argv value when null is passed.
      */
@@ -95,15 +95,15 @@ public final class ActivationGroupDesc
      * The path to the java executable (or null for using default jre).
      */
     final String command;
-    
+
     /**
      * The extra parameters (may be empty array but never null).
      */
     final String[] options;
-    
+
     /**
      * Create the new command environment.
-     * 
+     *
      * @param commandPatch the full path (and name) to the java executable of
      *          null for using the default executable.
      * @param args extra options that will be used when creating the activation
@@ -117,10 +117,10 @@ public final class ActivationGroupDesc
       else
         options = NO_ARGS;
     }
-    
+
     /**
      * Get the path to the java executable.
-     * 
+     *
      * @return the path to the java executable or null for using the default
      * jre.
      */
@@ -128,17 +128,17 @@ public final class ActivationGroupDesc
     {
       return command;
     }
-     
+
     /**
      * Get the additional command options.
-     * 
+     *
      * @return the command options array, may be empty string
      */
     public String[] getCommandOptions()
     {
       return options;
     }
-    
+
     /**
      * Compare for content equality.
      */
@@ -179,49 +179,49 @@ public final class ActivationGroupDesc
       return h;
     }
   }
-  
+
   /**
    * Use the SVUID for interoperability.
    */
   static final long serialVersionUID = - 4936225423168276595L;
-  
+
   /**
    * The group class name or null for the default group class implementation.
    */
   final String className;
-  
+
   /**
    * The group class download location URL (codebase), ignored by the
-   * default implementation. 
+   * default implementation.
    */
   final String location;
-  
+
   /**
    * The group initialization data.
    */
   final MarshalledObject<?> data;
-  
+
   /**
    * The path to the group jre and the parameters of this jre, may be
    * null for the default jre.
    */
   final ActivationGroupDesc.CommandEnvironment env;
-  
+
   /**
    * The properties that override the system properties.
    */
   final Properties props;
-  
+
   /**
    * The cached hash code.
    */
   transient long hash;
-  
+
   /**
    * Create the new activation group descriptor that will use the default
    * activation group implementation with the given properties and
    * environment.
-   * 
+   *
    * @param aProperties the properties that override the system properties
    * @param environment the command line (and parameters), indicating, where to
    *          find the jre executable and with that parameters to call it. May
@@ -235,10 +235,10 @@ public final class ActivationGroupDesc
     this(DefaultActivationGroup.class.getName(), null, null, aProperties,
          environment);
   }
-  
+
   /**
    * Create the new activation group descriptor.
-   * 
+   *
    * @param aClassName the name of the group implementation class. The null
    *          value indicates the default implementation.
    * @param aLocation the location, from where the group implementation class
@@ -261,20 +261,20 @@ public final class ActivationGroupDesc
     props = aProperties;
     env = environment;
   }
-  
+
   /**
    * Get the activation group class name.
-   * 
+   *
    * @return the activation group class name (null for default implementation)
    */
   public String getClassName()
   {
     return className;
   }
-  
+
   /**
    * Get the location, from where the group class will be loaded
-   * 
+   *
    * @return the location, from where the implementation should be loaded (null
    *         for the default implementation)
    */
@@ -282,10 +282,10 @@ public final class ActivationGroupDesc
   {
     return location;
   }
-  
+
   /**
    * Get the group intialization data.
-   * 
+   *
    * @return the group intialization data in the marshalled form.
    */
   public MarshalledObject<?> getData()
@@ -295,18 +295,18 @@ public final class ActivationGroupDesc
 
   /**
    * Get the overridded system properties.
-   * 
+   *
    * @return the overridden group system properties.
    */
   public Properties getPropertyOverrides()
   {
     return props;
   }
-  
+
   /**
    * Get the group command environment, containing path to the jre executable
    * and startup options.
-   * 
+   *
    * @return the command environment or null if the default environment should
    *         be used.
    */
@@ -314,7 +314,7 @@ public final class ActivationGroupDesc
   {
     return env;
   }
-  
+
   /**
    * Compare for the content equality.
    */
@@ -366,7 +366,7 @@ public final class ActivationGroupDesc
     else
       return false;
   }
-  
+
   /**
    * Compare for direct equality if one or both parameters are null, otherwise
    * call .equals.
@@ -378,7 +378,7 @@ public final class ActivationGroupDesc
     else
       return a.equals(b);
   }
-  
+
   /**
    * Return the hashcode.
    */
@@ -401,11 +401,11 @@ public final class ActivationGroupDesc
         if (props!=null)
           {
             Enumeration en = props.propertyNames();
-            
+
             // Using the intermediate sorted set to ensure that the
             // properties are sorted.
             TreeSet pr = new TreeSet();
-            
+
             Object key;
             Object value;
             while (en.hasMoreElements())
@@ -414,7 +414,7 @@ public final class ActivationGroupDesc
                 if (key!=null)
                   pr.add(key);
               }
-            
+
             Iterator it = pr.iterator();
             while (it.hasNext())
               {

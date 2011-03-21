@@ -53,7 +53,7 @@ public class InvalidObjectException
   public InvalidObjectException (long id)
   {
     super (JdwpConstants.Error.INVALID_OBJECT,
-	   "invalid object id (" + id + ")");
+           "invalid object id (" + id + ")");
   }
 
   public InvalidObjectException (Throwable t)

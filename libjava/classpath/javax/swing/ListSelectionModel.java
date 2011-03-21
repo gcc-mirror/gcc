@@ -1,4 +1,4 @@
-/* ListSelectionModel.java -- 
+/* ListSelectionModel.java --
    Copyright (C) 2002, 2006, Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -42,19 +42,19 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 /**
- * A model that tracks the selection status of a list of items.  Each item in 
+ * A model that tracks the selection status of a list of items.  Each item in
  * the list is identified by a zero-based index only, so the model can be used
- * to track the selection status of any type of list.  The model 
+ * to track the selection status of any type of list.  The model
  * supports three modes:
  * <ul>
- * <li><code>SINGLE_SELECTION</code> - only one item in the list may be 
+ * <li><code>SINGLE_SELECTION</code> - only one item in the list may be
  *     selected;</li>
- * <li><code>SINGLE_INTERVAL_SELECTION</code> - only one interval in the list 
+ * <li><code>SINGLE_INTERVAL_SELECTION</code> - only one interval in the list
  *     may be selected;</li>
- * <li><code>MULTIPLE_INTERVAL_SELECTION</code> - any combination of items in 
+ * <li><code>MULTIPLE_INTERVAL_SELECTION</code> - any combination of items in
  *     the list may be selected.</li>
  * </ul>
- * The model uses an event notification mechanism to notify listeners (see 
+ * The model uses an event notification mechanism to notify listeners (see
  * {@link ListSelectionListener}) about updates to the selection model.
  * <p>
  * This model is used to track row selections in the {@link JList} component,
@@ -62,10 +62,10 @@ import javax.swing.event.ListSelectionListener;
  */
 public interface ListSelectionModel
 {
-  
+
   /**
    * A selection mode in which only one item can be selected.
-   * 
+   *
    * @see #setSelectionMode(int)
    */
   int SINGLE_SELECTION = 0;
@@ -73,14 +73,14 @@ public interface ListSelectionModel
   /**
    * A selection mode in which a single interval can be selected (an interval
    * is a range containing one or more contiguous items).
-   * 
+   *
    * @see #setSelectionMode(int)
    */
   int SINGLE_INTERVAL_SELECTION = 1;
 
   /**
    * A selection mode in which any combination of items can be selected.
-   * 
+   *
    * @see #setSelectionMode(int)
    */
   int MULTIPLE_INTERVAL_SELECTION = 2;
@@ -90,32 +90,32 @@ public interface ListSelectionModel
    * <p>
    * FIXME: The spec is silent about what happens to existing selections, for
    * example when changing from an interval selection to single selection.
-   * 
-   * @param mode  one of {@link #SINGLE_SELECTION}, 
-   *     {@link #SINGLE_INTERVAL_SELECTION} and 
+   *
+   * @param mode  one of {@link #SINGLE_SELECTION},
+   *     {@link #SINGLE_INTERVAL_SELECTION} and
    *     {@link #MULTIPLE_INTERVAL_SELECTION}.
-   *     
+   *
    * @see #getSelectionMode()
-   * 
+   *
    * @throws IllegalArgumentException if <code>mode</code> is not one of the
    *     specified values.
    */
   void setSelectionMode(int mode);
 
   /**
-   * Returns the selection mode, which is one of {@link #SINGLE_SELECTION}, 
-   * {@link #SINGLE_INTERVAL_SELECTION} and 
+   * Returns the selection mode, which is one of {@link #SINGLE_SELECTION},
+   * {@link #SINGLE_INTERVAL_SELECTION} and
    * {@link #MULTIPLE_INTERVAL_SELECTION}.
-   * 
+   *
    * @return The selection mode.
-   * 
+   *
    * @see #setSelectionMode(int)
    */
   int getSelectionMode();
 
   /**
-   * Clears the current selection from the model.  If the selection state 
-   * changes (that is, the existing selection is non-empty) a 
+   * Clears the current selection from the model.  If the selection state
+   * changes (that is, the existing selection is non-empty) a
    * {@link ListSelectionEvent} should be sent to all registered listeners.
    * <p>
    * FIXME: what happens to the anchor and lead selection indices (the spec
@@ -126,11 +126,11 @@ public interface ListSelectionModel
   void clearSelection();
 
   /**
-   * Returns the lowest selected index, or <code>-1</code> if there is no 
+   * Returns the lowest selected index, or <code>-1</code> if there is no
    * selection.
-   * 
+   *
    * @return The lowest selected index.
-   * 
+   *
    * @see #getMaxSelectionIndex()
    */
   int getMinSelectionIndex();
@@ -138,22 +138,22 @@ public interface ListSelectionModel
   /**
    * Returns the highest selected index, or <code>-1</code> if there is no
    * selection.
-   * 
+   *
    * @return The highest selected index.
-   * 
+   *
    * @see #getMinSelectionIndex()
    */
   int getMaxSelectionIndex();
 
   /**
-   * Returns <code>true</code> if the specified item is selected, and 
-   * <code>false</code> otherwise.  Special note: if <code>index</code> is 
-   * negative, this method should return <code>false</code> (no exception 
+   * Returns <code>true</code> if the specified item is selected, and
+   * <code>false</code> otherwise.  Special note: if <code>index</code> is
+   * negative, this method should return <code>false</code> (no exception
    * should be thrown).
-   * 
+   *
    * @param index  the item index (zero-based).
-   * 
-   * @return <code>true</code> if the specified item is selected, and 
+   *
+   * @return <code>true</code> if the specified item is selected, and
    *     <code>false</code> otherwise.
    */
   boolean isSelectedIndex(int index);
@@ -161,56 +161,56 @@ public interface ListSelectionModel
   /**
    * Returns <code>true</code> if there is no selection, and <code>false</code>
    * otherwise.
-   * 
-   * @return  <code>true</code> if there is no selection, and 
+   *
+   * @return  <code>true</code> if there is no selection, and
    *     <code>false</code> otherwise.
    */
   boolean isSelectionEmpty();
 
   /**
-   * Sets the selection interval to the specified range (note that 
-   * <code>anchor</code> can be less than, equal to, or greater than 
-   * <code>lead</code>).  If this results in the selection being changed, 
+   * Sets the selection interval to the specified range (note that
+   * <code>anchor</code> can be less than, equal to, or greater than
+   * <code>lead</code>).  If this results in the selection being changed,
    * a {@link ListSelectionEvent} is sent to all registered listeners.
    * <p>
-   * If the selection mode is {@link #SINGLE_SELECTION}, only the 
+   * If the selection mode is {@link #SINGLE_SELECTION}, only the
    * <code>lead</code> item is selected.
-   * 
+   *
    * @param anchor  the anchor index.
    * @param lead  the lead index.
    */
   void setSelectionInterval(int anchor, int lead);
 
   /**
-   * Marks the items in the specified interval as selected.  The behaviour of 
+   * Marks the items in the specified interval as selected.  The behaviour of
    * this method depends on the selection mode:
    * <ul>
-   * <li><code>SINGLE_SELECTION</code> - only the <code>lead</code> item is 
+   * <li><code>SINGLE_SELECTION</code> - only the <code>lead</code> item is
    *     selected;</li>
-   * <li><code>SINGLE_INTERVAL_SELECTION</code> - the existing selection 
+   * <li><code>SINGLE_INTERVAL_SELECTION</code> - the existing selection
    *     interval is replaced by the specified interval;</li>
-   * <li><code>MULTIPLE_INTERVAL_SELECTION</code> - the specified interval is 
+   * <li><code>MULTIPLE_INTERVAL_SELECTION</code> - the specified interval is
    *     merged into the currently selected intervals.</li>
    * </ul>
-   * Note that <code>anchor</code> can be less than, equal to, or greater than 
+   * Note that <code>anchor</code> can be less than, equal to, or greater than
    * <code>lead</code>.
-   * 
+   *
    * @param anchor  the index of the anchor item
    * @param lead  the index of the lead item.
    */
   void addSelectionInterval(int anchor, int lead);
 
   /**
-   * Marks the items in the specified interval as not selected.  The behaviour 
+   * Marks the items in the specified interval as not selected.  The behaviour
    * of this method depends on the selection mode:
    * <ul>
    * <li><code>SINGLE_SELECTION</code> - XXX;</li>
    * <li><code>SINGLE_INTERVAL_SELECTION</code> - XXX;</li>
    * <li><code>MULTIPLE_INTERVAL_SELECTION</code> - XXX.</li>
    * </ul>
-   * Note that <code>anchor</code> can be less than, equal to, or greater than 
+   * Note that <code>anchor</code> can be less than, equal to, or greater than
    * <code>lead</code>.
-   * 
+   *
    * @param anchor  the index of the anchor item
    * @param lead  the index of the lead item.
    */
@@ -221,67 +221,67 @@ public interface ListSelectionModel
    * specified <code>index</code> (the <code>before</code> flag indicates
    * whether the range is inserted before or after the existing item at
    * <code>index</code>).
-   * 
+   *
    * FIXME: What is the selection status of the new items? Bug 4870694.
    * FIXME: What event is generated?
-   * 
-   * @param index  the index of the item. 
+   *
+   * @param index  the index of the item.
    * @param length  the number of items in the interval to be inserted.
-   * @param before  if <code>true</code>, the interval should be inserted 
+   * @param before  if <code>true</code>, the interval should be inserted
    *     before <code>index</code>, otherwise it is inserted after.
-   *     
+   *
    * @see #removeIndexInterval(int, int)
    */
   void insertIndexInterval(int index, int length, boolean before);
 
   /**
    * Removes the items in the specified range (inclusive) from the selection
-   * model.  This method should be called when an interval is deleted from 
+   * model.  This method should be called when an interval is deleted from
    * the underlying list.
-   * 
-   * FIXME: what happens to the lead and anchor indices if they are part of 
-   * the range that is removed? 
+   *
+   * FIXME: what happens to the lead and anchor indices if they are part of
+   * the range that is removed?
    * FIXME: what event is generated
-   * 
+   *
    * @param index0  XXX
    * @param index1  XXX
-   * 
+   *
    * @see #insertIndexInterval(int, int, boolean)
    */
   void removeIndexInterval(int index0, int index1);
 
   /**
-   * Returns the index of the anchor item. 
-   * 
+   * Returns the index of the anchor item.
+   *
    * @return The index of the anchor item.
-   * 
+   *
    * @see #setAnchorSelectionIndex(int)
    */
   int getAnchorSelectionIndex();
 
   /**
    * Sets the index of the anchor item.
-   * 
+   *
    * @param index  the item index.
-   * 
+   *
    * @see #getAnchorSelectionIndex()
    */
   void setAnchorSelectionIndex(int index);
 
   /**
    * Returns the index of the lead item.
-   * 
+   *
    * @return The index of the lead item.
-   * 
+   *
    * @see #setLeadSelectionIndex(int)
    */
   int getLeadSelectionIndex();
 
   /**
    * Sets the index of the lead item.
-   * 
+   *
    * @param index  the item index.
-   * 
+   *
    * @see #getLeadSelectionIndex()
    */
   void setLeadSelectionIndex(int index);
@@ -289,21 +289,21 @@ public interface ListSelectionModel
   /**
    * Sets the flag that is passed to listeners for each change notification.
    * If a sequence of changes is made to the selection model, this flag should
-   * be set to <code>true</code> at the start of the sequence, and 
+   * be set to <code>true</code> at the start of the sequence, and
    * <code>false</code> for the last change - this gives listeners the option
    * to ignore interim changes if that is more efficient.
-   * 
+   *
    * @param valueIsAdjusting  the flag value.
-   * 
+   *
    * @see #getValueIsAdjusting()
    */
   void setValueIsAdjusting(boolean valueIsAdjusting);
 
   /**
    * Returns a flag that is passed to registered listeners when changes are
-   * made to the model.  See the description for 
+   * made to the model.  See the description for
    * {@link #setValueIsAdjusting(boolean)} for more information.
-   *  
+   *
    * @return The flag.
    */
   boolean getValueIsAdjusting();
@@ -311,9 +311,9 @@ public interface ListSelectionModel
   /**
    * Registers a listener with the model so that it receives notification
    * of changes to the model.
-   * 
+   *
    * @param listener  the listener (<code>null</code> ignored).
-   * 
+   *
    * @see #removeListSelectionListener(ListSelectionListener)
    */
   void addListSelectionListener(ListSelectionListener listener);
@@ -322,9 +322,9 @@ public interface ListSelectionModel
    * Deregisters a listener so that it no longer receives notification of
    * changes to the model.  If the specified listener is not registered with
    * the model, or is <code>null</code>, this method does nothing.
-   * 
+   *
    * @param listener  the listener (<code>null</code> ignored).
-   * 
+   *
    * @see #addListSelectionListener(ListSelectionListener)
    */
   void removeListSelectionListener(ListSelectionListener listener);

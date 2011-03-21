@@ -49,7 +49,7 @@ import java.io.RandomAccessFile;
 public class FileImageInputStream extends ImageInputStreamImpl
 {
   private RandomAccessFile file;
-  
+
   public FileImageInputStream(File file)
     throws FileNotFoundException, IOException
   {

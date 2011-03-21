@@ -84,7 +84,7 @@ public interface WildcardType extends Type
    *         the lower bounds of this type do not actually exist.
    * @throws MalformedParameterizedTypeException if any of the types
    *         refer to a type which can not be instantiated.
-   */ 
+   */
   Type[] getLowerBounds();
 
   /**
@@ -109,7 +109,7 @@ public interface WildcardType extends Type
    *         the upper bounds of this type do not actually exist.
    * @throws MalformedParameterizedTypeException if any of the types
    *         refer to a type which can not be instantiated.
-   */ 
+   */
   Type[] getUpperBounds();
 
 }

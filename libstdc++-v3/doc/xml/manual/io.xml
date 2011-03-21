@@ -227,7 +227,7 @@
 
   <section xml:id="io.streambuf.buffering" xreflabel="Buffering"><info><title>Buffering</title></info>
     
-   <para>First, are you sure that you understand buffering?  Chaptericularly
+   <para>First, are you sure that you understand buffering?  Particularly
       the fact that C++ may not, in fact, have anything to do with it?
    </para>
    <para>The rules for buffering can be a little odd, but they aren't any

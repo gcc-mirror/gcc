@@ -89,7 +89,7 @@ public class QuadSegment extends Segment
   public Object clone()
   {
     QuadSegment segment = null;
-    
+
     try
       {
         segment = (QuadSegment) super.clone();
@@ -104,7 +104,7 @@ public class QuadSegment extends Segment
         ie.initCause(cnse);
         throw ie;
       }
-    
+
     return segment;
   }
 
@@ -135,10 +135,10 @@ public class QuadSegment extends Segment
 
     return new Segment[]{s1, s2};
   }
-  
+
   private QuadSegment offsetSubdivided(QuadCurve2D curve, boolean plus)
   {
-    double[] n1 = normal(curve.getX1(), curve.getY1(), 
+    double[] n1 = normal(curve.getX1(), curve.getY1(),
                          curve.getCtrlX(), curve.getCtrlY());
     double[] n2 = normal(curve.getCtrlX(), curve.getCtrlY(),
                          curve.getX2(), curve.getY2());
@@ -152,7 +152,7 @@ public class QuadSegment extends Segment
         n2[0] = -n2[0];
         n2[1] = -n2[1];
       }
-    
+
     // Handle special cases where the control point is equal to an end point
     // or end points are equal (ie, straight lines)
     if (curve.getP1().equals(curve.getCtrlPt()))
@@ -179,7 +179,7 @@ public class QuadSegment extends Segment
         double ratio = radius / length;
         deltaX *= ratio;
         deltaY *= ratio;
-        
+
         if (plus)
           cp.setLocation(cp.getX() + deltaX, cp.getY() + deltaY);
         else
@@ -192,16 +192,16 @@ public class QuadSegment extends Segment
       }
     else
       {
-        cp = lineIntersection(curve.getX1() + n1[0], 
+        cp = lineIntersection(curve.getX1() + n1[0],
                               curve.getY1() + n1[1],
                               curve.getCtrlX() + n1[0],
                               curve.getCtrlY() + n1[1],
                               curve.getCtrlX() + n2[0],
                               curve.getCtrlY() + n2[1],
-                              curve.getX2() + n2[0], 
+                              curve.getX2() + n2[0],
                               curve.getY2() + n2[1], true);
       }
-    
+
     s = new QuadSegment(curve.getX1() + n1[0], curve.getY1() + n1[1],
                         cp.getX(), cp.getY(),
                         curve.getX2() + n2[0], curve.getY2() + n2[1]);
@@ -209,9 +209,9 @@ public class QuadSegment extends Segment
     return s;
   }
 
-  private Point2D lineIntersection(double X1, double Y1, 
-                                   double X2, double Y2, 
-                                   double X3, double Y3, 
+  private Point2D lineIntersection(double X1, double Y1,
+                                   double X2, double Y2,
+                                   double X3, double Y3,
                                    double X4, double Y4,
                                    boolean infinite)
   {
@@ -250,11 +250,11 @@ public class QuadSegment extends Segment
 
   public double[] cp1()
   {
-    return new double[]{cp.getX(), cp.getY()}; 
+    return new double[]{cp.getX(), cp.getY()};
   }
 
   public double[] cp2()
   {
-    return new double[]{cp.getX(), cp.getY()}; 
+    return new double[]{cp.getX(), cp.getY()};
   }
 }

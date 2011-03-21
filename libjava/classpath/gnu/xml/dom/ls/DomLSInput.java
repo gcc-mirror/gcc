@@ -1,4 +1,4 @@
-/* DomLSInput.java -- 
+/* DomLSInput.java --
    Copyright (C) 1999,2000,2001 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -155,6 +155,5 @@ public class DomLSInput
   {
     this.certifiedText = certifiedText;
   }
-  
-}
 
+}

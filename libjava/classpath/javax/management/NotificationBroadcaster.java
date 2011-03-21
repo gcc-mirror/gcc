@@ -55,7 +55,7 @@ package javax.management;
  */
 public interface NotificationBroadcaster
 {
-  
+
   /**
    * Registers the specified listener as a new recipient of
    * notifications from this bean.  If non-null, the filter
@@ -77,8 +77,8 @@ public interface NotificationBroadcaster
    * @see #removeNotificationListener(NotificationListener)
    */
   void addNotificationListener(NotificationListener listener,
-			       NotificationFilter filter,
-			       Object passback)
+                               NotificationFilter filter,
+                               Object passback)
     throws IllegalArgumentException;
 
   /**
@@ -109,4 +109,3 @@ public interface NotificationBroadcaster
     throws ListenerNotFoundException;
 
 }
-

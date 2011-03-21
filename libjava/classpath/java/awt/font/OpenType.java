@@ -94,18 +94,18 @@ public interface OpenType
   int TAG_VDMX = 1447316824;
   int TAG_VHEA = 1986553185;
   int TAG_VMTX = 1986884728;
-  
+
   byte[] getFontTable (int sfntTag);
-  
+
   byte[] getFontTable (int sfntTag, int offset, int count);
-  
+
   byte[] getFontTable (String strSfntTag);
-  
+
   byte[] getFontTable (String strSfntTag, int offset, int count);
-  
+
   int getFontTableSize (int sfntTag);
-  
+
   int getFontTableSize (String strSfntTag);
-  
+
   int getVersion ();
 }

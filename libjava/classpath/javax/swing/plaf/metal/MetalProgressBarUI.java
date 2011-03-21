@@ -51,7 +51,7 @@ import javax.swing.plaf.basic.BasicProgressBarUI;
  * A UI delegate for the {@link JProgressBar} component.
  */
 public class MetalProgressBarUI extends BasicProgressBarUI
-{  
+{
   /**
    * Constructs a new instance of <code>MetalProgressBarUI</code>.
    */
@@ -88,7 +88,7 @@ public class MetalProgressBarUI extends BasicProgressBarUI
     int w = progressBar.getWidth();
     int h = progressBar.getHeight();
     int orientation = progressBar.getOrientation();
-    
+
     Color shadow = MetalLookAndFeel.getControlShadow();
     g.setColor(shadow);
 

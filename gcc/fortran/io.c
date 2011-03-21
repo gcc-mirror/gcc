@@ -1,6 +1,6 @@
 /* Deal with I/O statements & related stuff.
    Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008,
-   2009, 2010
+   2009, 2010, 2011
    Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
@@ -1315,6 +1315,9 @@ match_vtag (const io_tag *tag, gfc_expr **v)
       return MATCH_ERROR;
     }
 
+  if (gfc_implicit_pure (NULL) && gfc_impure_variable (result->symtree->n.sym))
+    gfc_current_ns->proc_name->attr.implicit_pure = 0;
+
   *v = result;
   return MATCH_YES;
 }
@@ -1824,6 +1827,9 @@ gfc_match_open (void)
       goto cleanup;
     }
 
+  if (gfc_implicit_pure (NULL))
+    gfc_current_ns->proc_name->attr.implicit_pure = 0;
+
   warn = (open->err || open->iostat) ? true : false;
 
   /* Checks on NEWUNIT specifier.  */
@@ -2238,6 +2244,9 @@ gfc_match_close (void)
       goto cleanup;
     }
 
+  if (gfc_implicit_pure (NULL))
+    gfc_current_ns->proc_name->attr.implicit_pure = 0;
+
   warn = (close->iostat || close->err) ? true : false;
 
   /* Checks on the STATUS specifier.  */
@@ -2384,6 +2393,9 @@ done:
 
       goto cleanup;
     }
+
+  if (gfc_implicit_pure (NULL))
+    gfc_current_ns->proc_name->attr.implicit_pure = 0;
 
   new_st.op = op;
   new_st.ext.filepos = fp;
@@ -3079,7 +3091,8 @@ match_io_element (io_kind k, gfc_code **cpp)
   cp = gfc_get_code ();
   cp->op = EXEC_TRANSFER;
   cp->expr1 = expr;
-  cp->ext.dt = current_dt;
+  if (k != M_INQUIRE)
+    cp->ext.dt = current_dt;
 
   *cpp = cp;
   return MATCH_YES;
@@ -3223,6 +3236,10 @@ if (condition) \
 		     "IO UNIT in %s statement at %C must be "
 		     "an internal file in a PURE procedure",
 		     io_kind_name (k));
+
+      if (gfc_implicit_pure (NULL) && (k == M_READ || k == M_WRITE))
+	gfc_current_ns->proc_name->attr.implicit_pure = 0;
+
     }
 
   if (k != M_READ)
@@ -3753,6 +3770,9 @@ gfc_match_print (void)
       return MATCH_ERROR;
     }
 
+  if (gfc_implicit_pure (NULL))
+    gfc_current_ns->proc_name->attr.implicit_pure = 0;
+
   return MATCH_YES;
 }
 
@@ -3909,6 +3929,9 @@ gfc_match_inquire (void)
 	  return MATCH_ERROR;
 	}
 
+      if (gfc_implicit_pure (NULL))
+	gfc_current_ns->proc_name->attr.implicit_pure = 0;
+
       new_st.block = gfc_get_code ();
       new_st.block->op = EXEC_IOLENGTH;
       terminate_io (code);
@@ -3959,6 +3982,9 @@ gfc_match_inquire (void)
       gfc_error ("INQUIRE statement not allowed in PURE procedure at %C");
       goto cleanup;
     }
+
+  if (gfc_implicit_pure (NULL))
+    gfc_current_ns->proc_name->attr.implicit_pure = 0;
   
   if (inquire->id != NULL && inquire->pending == NULL)
     {
@@ -4141,6 +4167,9 @@ gfc_match_wait (void)
       gfc_error ("WAIT statement not allowed in PURE procedure at %C");
       goto cleanup;
     }
+
+  if (gfc_implicit_pure (NULL))
+    gfc_current_ns->proc_name->attr.implicit_pure = 0;
 
   new_st.op = EXEC_WAIT;
   new_st.ext.wait = wait;

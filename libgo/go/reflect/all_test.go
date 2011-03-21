@@ -48,7 +48,6 @@ var typeTests = []pair{
 	{struct{ x uint16 }{}, "uint16"},
 	{struct{ x uint32 }{}, "uint32"},
 	{struct{ x uint64 }{}, "uint64"},
-	{struct{ x float }{}, "float"},
 	{struct{ x float32 }{}, "float32"},
 	{struct{ x float64 }{}, "float64"},
 	{struct{ x int8 }{}, "int8"},
@@ -244,8 +243,6 @@ func TestSet(t *testing.T) {
 			}
 		case *FloatValue:
 			switch v.Type().Kind() {
-			case Float:
-				v.Set(128.5)
 			case Float32:
 				v.Set(256.25)
 			case Float64:
@@ -253,8 +250,6 @@ func TestSet(t *testing.T) {
 			}
 		case *ComplexValue:
 			switch v.Type().Kind() {
-			case Complex:
-				v.Set(53200.0 + 100i)
 			case Complex64:
 				v.Set(532.125 + 10i)
 			case Complex128:
@@ -304,17 +299,13 @@ func TestSetValue(t *testing.T) {
 			}
 		case *FloatValue:
 			switch v.Type().Kind() {
-			case Float:
-				v.SetValue(NewValue(float(128.5)))
 			case Float32:
 				v.SetValue(NewValue(float32(256.25)))
 			case Float64:
-				v.SetValue(NewValue(float64(512.125)))
+				v.SetValue(NewValue(512.125))
 			}
 		case *ComplexValue:
 			switch v.Type().Kind() {
-			case Complex:
-				v.SetValue(NewValue(complex(53200.0 + 100i)))
 			case Complex64:
 				v.SetValue(NewValue(complex64(532.125 + 10i)))
 			case Complex128:
@@ -470,7 +461,7 @@ func TestInterfaceGet(t *testing.T) {
 	assert(t, v2.Type().String(), "interface { }")
 	i2 := v2.(*InterfaceValue).Interface()
 	v3 := NewValue(i2)
-	assert(t, v3.Type().String(), "float")
+	assert(t, v3.Type().String(), "float64")
 }
 
 func TestInterfaceValue(t *testing.T) {
@@ -482,11 +473,11 @@ func TestInterfaceValue(t *testing.T) {
 	v2 := v1.(*PtrValue).Elem().(*StructValue).Field(0)
 	assert(t, v2.Type().String(), "interface { }")
 	v3 := v2.(*InterfaceValue).Elem()
-	assert(t, v3.Type().String(), "float")
+	assert(t, v3.Type().String(), "float64")
 
 	i3 := v2.Interface()
-	if _, ok := i3.(float); !ok {
-		t.Error("v2.Interface() did not return float, got ", Typeof(i3))
+	if _, ok := i3.(float64); !ok {
+		t.Error("v2.Interface() did not return float64, got ", Typeof(i3))
 	}
 }
 
@@ -498,22 +489,67 @@ func TestFunctionValue(t *testing.T) {
 	assert(t, v.Type().String(), "func()")
 }
 
-func TestCopyArray(t *testing.T) {
+var appendTests = []struct {
+	orig, extra []int
+}{
+	{make([]int, 2, 4), []int{22}},
+	{make([]int, 2, 4), []int{22, 33, 44}},
+}
+
+func TestAppend(t *testing.T) {
+	for i, test := range appendTests {
+		origLen, extraLen := len(test.orig), len(test.extra)
+		want := append(test.orig, test.extra...)
+		// Convert extra from []int to []Value.
+		e0 := make([]Value, len(test.extra))
+		for j, e := range test.extra {
+			e0[j] = NewValue(e)
+		}
+		// Convert extra from []int to *SliceValue.
+		e1 := NewValue(test.extra).(*SliceValue)
+		// Test Append.
+		a0 := NewValue(test.orig).(*SliceValue)
+		have0 := Append(a0, e0...).Interface().([]int)
+		if !DeepEqual(have0, want) {
+			t.Errorf("Append #%d: have %v, want %v", i, have0, want)
+		}
+		// Check that the orig and extra slices were not modified.
+		if len(test.orig) != origLen {
+			t.Errorf("Append #%d origLen: have %v, want %v", i, len(test.orig), origLen)
+		}
+		if len(test.extra) != extraLen {
+			t.Errorf("Append #%d extraLen: have %v, want %v", i, len(test.extra), extraLen)
+		}
+		// Test AppendSlice.
+		a1 := NewValue(test.orig).(*SliceValue)
+		have1 := AppendSlice(a1, e1).Interface().([]int)
+		if !DeepEqual(have1, want) {
+			t.Errorf("AppendSlice #%d: have %v, want %v", i, have1, want)
+		}
+		// Check that the orig and extra slices were not modified.
+		if len(test.orig) != origLen {
+			t.Errorf("AppendSlice #%d origLen: have %v, want %v", i, len(test.orig), origLen)
+		}
+		if len(test.extra) != extraLen {
+			t.Errorf("AppendSlice #%d extraLen: have %v, want %v", i, len(test.extra), extraLen)
+		}
+	}
+}
+
+func TestCopy(t *testing.T) {
 	a := []int{1, 2, 3, 4, 10, 9, 8, 7}
 	b := []int{11, 22, 33, 44, 1010, 99, 88, 77, 66, 55, 44}
 	c := []int{11, 22, 33, 44, 1010, 99, 88, 77, 66, 55, 44}
-	va := NewValue(&a)
-	vb := NewValue(&b)
 	for i := 0; i < len(b); i++ {
 		if b[i] != c[i] {
 			t.Fatalf("b != c before test")
 		}
 	}
-	aa := va.(*PtrValue).Elem().(*SliceValue)
-	ab := vb.(*PtrValue).Elem().(*SliceValue)
+	aa := NewValue(a).(*SliceValue)
+	ab := NewValue(b).(*SliceValue)
 	for tocopy := 1; tocopy <= 7; tocopy++ {
 		aa.SetLen(tocopy)
-		ArrayCopy(ab, aa)
+		Copy(ab, aa)
 		aa.SetLen(8)
 		for i := 0; i < tocopy; i++ {
 			if a[i] != b[i] {
@@ -652,11 +688,11 @@ type _Complex struct {
 	a int
 	b [3]*_Complex
 	c *string
-	d map[float]float
+	d map[float64]float64
 }
 
 func TestDeepEqualComplexStruct(t *testing.T) {
-	m := make(map[float]float)
+	m := make(map[float64]float64)
 	stra, strb := "hello", "hello"
 	a, b := new(_Complex), new(_Complex)
 	*a = _Complex{5, [3]*_Complex{a, b, a}, &stra, m}
@@ -667,7 +703,7 @@ func TestDeepEqualComplexStruct(t *testing.T) {
 }
 
 func TestDeepEqualComplexStructInequality(t *testing.T) {
-	m := make(map[float]float)
+	m := make(map[float64]float64)
 	stra, strb := "hello", "helloo" // Difference is here
 	a, b := new(_Complex), new(_Complex)
 	*a = _Complex{5, [3]*_Complex{a, b, a}, &stra, m}
@@ -873,7 +909,7 @@ func TestMap(t *testing.T) {
 		// Check that value lookup is correct.
 		vv := mv.Elem(NewValue(k))
 		if vi := vv.(*IntValue).Get(); vi != int64(v) {
-			t.Errorf("Key %q: have value %d, want %d", vi, v)
+			t.Errorf("Key %q: have value %d, want %d", k, vi, v)
 		}
 
 		// Copy into new map.
@@ -1053,6 +1089,18 @@ func TestMethod(t *testing.T) {
 
 	// Curried method of value.
 	i = NewValue(p).Method(0).Call([]Value{NewValue(10)})[0].(*IntValue).Get()
+	if i != 250 {
+		t.Errorf("Value Method returned %d; want 250", i)
+	}
+
+	// Curried method of pointer.
+	i = NewValue(&p).Method(0).Call([]Value{NewValue(10)})[0].(*IntValue).Get()
+	if i != 250 {
+		t.Errorf("Value Method returned %d; want 250", i)
+	}
+
+	// Curried method of pointer to value.
+	i = NewValue(p).Addr().Method(0).Call([]Value{NewValue(10)})[0].(*IntValue).Get()
 	if i != 250 {
 		t.Errorf("Value Method returned %d; want 250", i)
 	}
@@ -1272,12 +1320,12 @@ func TestImportPath(t *testing.T) {
 
 func TestDotDotDot(t *testing.T) {
 	// Test example from FuncType.DotDotDot documentation.
-	var f func(x int, y ...float)
+	var f func(x int, y ...float64)
 	typ := Typeof(f).(*FuncType)
 	if typ.NumIn() == 2 && typ.In(0) == Typeof(int(0)) {
 		sl, ok := typ.In(1).(*SliceType)
 		if ok {
-			if sl.Elem() == Typeof(float(0)) {
+			if sl.Elem() == Typeof(0.0) {
 				// ok
 				return
 			}
@@ -1285,7 +1333,7 @@ func TestDotDotDot(t *testing.T) {
 	}
 
 	// Failed
-	t.Errorf("want NumIn() = 2, In(0) = int, In(1) = []float")
+	t.Errorf("want NumIn() = 2, In(0) = int, In(1) = []float64")
 	s := fmt.Sprintf("have NumIn() = %d", typ.NumIn())
 	for i := 0; i < typ.NumIn(); i++ {
 		s += fmt.Sprintf(", In(%d) = %s", i, typ.In(i))
@@ -1352,5 +1400,68 @@ func TestEmbeddedMethods(t *testing.T) {
 	f := (*outerInt).m
 	if v := f(o); v != 2 {
 		t.Errorf("f(o) = %d, want 2", v)
+	}
+}
+
+func TestPtrTo(t *testing.T) {
+	var i int
+
+	typ := Typeof(i)
+	for i = 0; i < 100; i++ {
+		typ = PtrTo(typ)
+	}
+	for i = 0; i < 100; i++ {
+		typ = typ.(*PtrType).Elem()
+	}
+	if typ != Typeof(i) {
+		t.Errorf("after 100 PtrTo and Elem, have %s, want %s", typ, Typeof(i))
+	}
+}
+
+func TestAddr(t *testing.T) {
+	var p struct {
+		X, Y int
+	}
+
+	v := NewValue(&p)
+	v = v.(*PtrValue).Elem()
+	v = v.Addr()
+	v = v.(*PtrValue).Elem()
+	v = v.(*StructValue).Field(0)
+	v.(*IntValue).Set(2)
+	if p.X != 2 {
+		t.Errorf("Addr.Elem.Set failed to set value")
+	}
+
+	// Again but take address of the NewValue value.
+	// Exercises generation of PtrTypes not present in the binary.
+	v = NewValue(&p)
+	v = v.Addr()
+	v = v.(*PtrValue).Elem()
+	v = v.(*PtrValue).Elem()
+	v = v.Addr()
+	v = v.(*PtrValue).Elem()
+	v = v.(*StructValue).Field(0)
+	v.(*IntValue).Set(3)
+	if p.X != 3 {
+		t.Errorf("Addr.Elem.Set failed to set value")
+	}
+
+	// Starting without pointer we should get changed value
+	// in interface.
+	v = NewValue(p)
+	v0 := v
+	v = v.Addr()
+	v = v.(*PtrValue).Elem()
+	v = v.(*StructValue).Field(0)
+	v.(*IntValue).Set(4)
+	if p.X != 3 { // should be unchanged from last time
+		t.Errorf("somehow value Set changed original p")
+	}
+	p = v0.Interface().(struct {
+		X, Y int
+	})
+	if p.X != 4 {
+		t.Errorf("Addr.Elem.Set valued to set value in top value")
 	}
 }

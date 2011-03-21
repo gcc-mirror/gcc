@@ -53,20 +53,20 @@ import java.io.Serializable;
  * {@link IORInterceptor_3_0} methods contain the code for remote invocaton. The
  * stub is required by {@link IORInterceptor_3_0Helper} .read, .narrow and
  * .unchecked_narrow methods.
- * 
+ *
  * @specnote Being not specified in 1.5 API, this class is package private.
  * From that happened to some other stubs, it will likely to appear in the 1.6
- * or later. Because of this, it is placed here. 
- * 
+ * or later. Because of this, it is placed here.
+ *
  * @specnote The stub and the helper support the existence of the interceptor
- * on the remote side only. To support the corresponding support on the side 
+ * on the remote side only. To support the corresponding support on the side
  * where the ORB is registered with this interceptor, you also need
  * _IORInfoStub, IORInfoHelper and either servants or implementation bases
  * for both POA and IORInfo. These classes are not defined in the 1.5 API,
  * hence they are not included. You may need to generate the manually from
- * the IDL descriptions, available from 
+ * the IDL descriptions, available from
  * http://www.omg.org/docs/formal/04-03-12.pdf.
- * 
+ *
  * @author Audrius Meskauskas, Lithuania (AudriusA@Bioinformatics.org)
  */
 class _IORInterceptor_3_0Stub

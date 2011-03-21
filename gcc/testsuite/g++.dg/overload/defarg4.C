@@ -1,6 +1,6 @@
 // Contributed by Dodji Seketeli <dodji@redhat.com>
 // Origin PR c++/39987
-// { dg-do "compile" }
+// { dg-do compile }
 
 class foo
 {

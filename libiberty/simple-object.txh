@@ -1,5 +1,7 @@
 @c -*- mode: texinfo -*-
-@deftypefn Extension {simple_object_read *} simple_object_open_read (int @var{descriptor}, off_t @var{offset}, const char *{segment_name}, const char **@var{errmsg}, int *@var{err})
+@deftypefn Extension {simple_object_read *} simple_object_open_read @
+  (int @var{descriptor}, off_t @var{offset}, const char *{segment_name}, @
+  const char **@var{errmsg}, int *@var{err})
 
 Opens an object file for reading.  Creates and returns an
 @code{simple_object_read} pointer which may be passed to other
@@ -22,7 +24,10 @@ an errno value or @code{0} if there is no relevant errno.
 
 @end deftypefn
 
-@deftypefn Extension {const char *} simple_object_find_sections (simple_object_read *@var{simple_object}, int (*@var{pfn}) (void *@var{data}, const char *@var{name}, off_t @var{offset}, off_t @var{length}), void *@var{data}, int *@var{err})
+@deftypefn Extension {const char *} simple_object_find_sections @
+  (simple_object_read *@var{simple_object}, int (*@var{pfn}) (void *@var{data}, @
+  const char *@var{name}, off_t @var{offset}, off_t @var{length}), @
+  void *@var{data}, int *@var{err})
 
 This function calls @var{pfn} for each section in @var{simple_object}.
 It calls @var{pfn} with the section name, the offset within the file
@@ -41,7 +46,9 @@ or @code{0} if there is no relevant errno.
 
 @end deftypefn
 
-@deftypefn Extension {int} simple_object_find_section (simple_object_read *@var{simple_object} off_t *@var{offset}, off_t *@var{length}, const char **@var{errmsg}, int *@var{err})           
+@deftypefn Extension {int} simple_object_find_section @
+  (simple_object_read *@var{simple_object} off_t *@var{offset}, @
+  off_t *@var{length}, const char **@var{errmsg}, int *@var{err})
 
 Look for the section @var{name} in @var{simple_object}.  This returns
 information for the first section with that name.
@@ -63,14 +70,16 @@ relevant errno.
 
 @end deftypefn
 
-@deftypefn Extension {void} simple_object_release_read (simple_object_read *@var{simple_object})
+@deftypefn Extension {void} simple_object_release_read @
+  (simple_object_read *@var{simple_object})
 
 Release all resources associated with @var{simple_object}.  This does
 not close the file descriptor.
 
 @end deftypefn
 
-@deftypefn Extension {simple_object_attributes *} simple_object_fetch_attributes (simple_object_read *@var{simple_object}, const char **@var{errmsg}, int *@var{err})
+@deftypefn Extension {simple_object_attributes *} simple_object_fetch_attributes @
+  (simple_object_read *@var{simple_object}, const char **@var{errmsg}, int *@var{err})
 
 Fetch the attributes of @var{simple_object}.  The attributes are
 internal information such as the format of the object file, or the
@@ -84,7 +93,9 @@ error message, and sets @code{*@var{err}} to an errno value or
 
 @end deftypefn
 
-@deftypefn Extension {const char *} simple_object_attributes_compare (simple_object_attributes *@var{attrs1}, simple_object_attributes *@var{attrs2}, int *@var{err})
+@deftypefn Extension {const char *} simple_object_attributes_compare @
+  (simple_object_attributes *@var{attrs1}, simple_object_attributes *@var{attrs2}, @
+   int *@var{err})
 
 Compare @var{attrs1} and @var{attrs2}.  If they could be linked
 together without error, return @code{NULL}.  Otherwise, return an
@@ -93,13 +104,16 @@ if there is no relevant errno.
 
 @end deftypefn
 
-@deftypefn Extension {void} simple_object_release_attributes (simple_object_attributes *@var{attrs})
+@deftypefn Extension {void} simple_object_release_attributes @
+  (simple_object_attributes *@var{attrs})
 
 Release all resources associated with @var{attrs}.
 
 @end deftypefn
 
-@deftypefn Extension {simple_object_write *} simple_object_start_write (simple_object_attributes @var{attrs}, const char *@var{segment_name}, const char **@var{errmsg}, int *@var{err})
+@deftypefn Extension {simple_object_write *} simple_object_start_write @
+  (simple_object_attributes @var{attrs}, const char *@var{segment_name}, @
+  const char **@var{errmsg}, int *@var{err})
 
 Start creating a new object file using the object file format
 described in @var{attrs}.  You must fetch attribute information from
@@ -117,7 +131,9 @@ to an errno value or @code{0} if there is no relevant errno.
 
 @end deftypefn
 
-@deftypefn Extension {simple_object_write_section *} simple_object_write_create_section (simple_object_write *@var{simple_object}, const char *@var{name}, unsigned int @var{align}, const char **@var{errmsg}, int *@var{err})
+@deftypefn Extension {simple_object_write_section *} simple_object_write_create_section @
+  (simple_object_write *@var{simple_object}, const char *@var{name}, @
+  unsigned int @var{align}, const char **@var{errmsg}, int *@var{err})
 
 Add a section to @var{simple_object}.  @var{name} is the name of the
 new section.  @var{align} is the required alignment expressed as the
@@ -134,7 +150,10 @@ error message, and sets @code{*@var{err}} to an errno value or
 
 @end deftypefn
 
-@deftypefn Extension {const char *} simple_object_write_add_data (simple_object_write *@var{simple_object}, simple_object_write_section *@var{section}, const void *@var{buffer}, size_t @var{size}, int @var{copy}, int *@var{err})
+@deftypefn Extension {const char *} simple_object_write_add_data @
+  (simple_object_write *@var{simple_object}, @
+  simple_object_write_section *@var{section}, const void *@var{buffer}, @
+  size_t @var{size}, int @var{copy}, int *@var{err})
 
 Add data @var{buffer}/@var{size} to @var{section} in
 @var{simple_object}.  If @var{copy} is non-zero, the data will be
@@ -148,7 +167,8 @@ no relevant erro.
 
 @end deftypefn
 
-@deftypefn Extension {const char *} simple_object_write_to_file (simple_object_write *@var{simple_object}, int @var{descriptor}, int *@var{err})
+@deftypefn Extension {const char *} simple_object_write_to_file @
+  (simple_object_write *@var{simple_object}, int @var{descriptor}, int *@var{err})
 
 Write the complete object file to @var{descriptor}, an open file
 descriptor.  This writes out all the data accumulated by calls to
@@ -161,7 +181,8 @@ there is no relevant errno.
 
 @end deftypefn
 
-@deftypefn Extension {void} simple_object_release_write (simple_object_write *@var{simple_object})
+@deftypefn Extension {void} simple_object_release_write @
+  (simple_object_write *@var{simple_object})
 
 Release all resources associated with @var{simple_object}.
 

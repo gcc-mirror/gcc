@@ -1,4 +1,4 @@
-/* XPathImpl.java -- 
+/* XPathImpl.java --
    Copyright (C) 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -126,7 +126,7 @@ public class XPathImpl
         throw new XPathExpressionException(expression);
       }
   }
-  
+
   public Object evaluate(String expression,
                          Object item,
                          QName returnType)

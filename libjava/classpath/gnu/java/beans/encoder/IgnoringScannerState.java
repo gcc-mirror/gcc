@@ -40,7 +40,7 @@ package gnu.java.beans.encoder;
 
 /** A special {@link ScannerState} implementation that ignores all child
  * elements.
- * 
+ *
  * <p>Consider the call hierarchy:
  * <code>
  * methodInvocation
@@ -50,16 +50,16 @@ package gnu.java.beans.encoder;
  *         classResolution
  * </code>
  * </p>
- * 
+ *
  * <p>When the ignoring state is active one can filter the elements of
  * one level. One has to set up the state machine that a transition
  * via "class resolution" from a state that was reached via "object
  * instantation" reaches an <code>IgnoringScannerState</code>.</p>
- * 
+ *
  * <p>Setting the default successor of a <code>IgnoringScannerState</code>
  * to itself causes all elements of the call hierarchy to be skipped
- * until another state is reached by going back.</p> 
- * 
+ * until another state is reached by going back.</p>
+ *
  * @author Robert Schuster (robertschuster@fsfe.org)
  *
  */
@@ -125,9 +125,9 @@ class IgnoringScannerState extends ScannerState
   void objectReference(ObjectId id)
   {
   }
-  
+
   void end()
   {
   }
-  
+
 }

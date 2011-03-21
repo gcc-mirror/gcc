@@ -1,6 +1,6 @@
 // std::__detail definitions -*- C++ -*-
 
-// Copyright (C) 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -22,11 +22,13 @@
 // see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 // <http://www.gnu.org/licenses/>.
 
+#include <bits/c++config.h>
+
 #ifndef __GXX_EXPERIMENTAL_CXX0X__
 # error "hashtable_c++0x.cc must be compiled with -std=gnu++0x"
 #endif
 
-namespace std
+namespace std _GLIBCXX_VISIBILITY(default)
 {
 #include "hashtable-aux.cc"
-}
+} // namespace // namespace std

@@ -249,11 +249,11 @@ public class Applet extends Panel
   {
     try
       {
-	return getImage(new URL(url, name));
+        return getImage(new URL(url, name));
       }
     catch (MalformedURLException e)
       {
-	return null;
+        return null;
       }
   }
 
@@ -302,11 +302,11 @@ public class Applet extends Panel
   {
     try
       {
-	return getAudioClip(new URL(url, name));
+        return getAudioClip(new URL(url, name));
       }
     catch (MalformedURLException e)
       {
-	return null;
+        return null;
       }
   }
 
@@ -361,7 +361,7 @@ public class Applet extends Panel
     AudioClip ac = getAudioClip(url);
     try
       {
-	ac.play();
+        ac.play();
       }
     catch (Exception ignored)
       {
@@ -382,7 +382,7 @@ public class Applet extends Panel
   {
     try
       {
-	getAudioClip(url, name).play();
+        getAudioClip(url, name).play();
       }
     catch (Exception ignored)
       {
@@ -518,7 +518,7 @@ public class Applet extends Panel
     {
       AccessibleStateSet s = super.getAccessibleStateSet();
       if (isActive())
-	s.add(AccessibleState.ACTIVE);
+        s.add(AccessibleState.ACTIVE);
       return s;
     }
   } // class AccessibleApplet
@@ -534,7 +534,7 @@ public class Applet extends Panel
     // and might be null afterward if we were unable to read the URL
     // for some reason.
     private Clip clip;
-    
+
     public URLAudioClip(URL url)
     {
       this.url = url;

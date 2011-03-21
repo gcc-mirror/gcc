@@ -48,7 +48,7 @@ import java.util.Set;
  * This class contains the codes, used to identify character sets
  * in CORBA. These codes are defined in Open Software Foundation (OSF)
  * code set registry.
- * 
+ *
  * The name of this class specially sets "OSF" apart if somebody would start
  * searching Open Software Foundation abbreviation.
  *

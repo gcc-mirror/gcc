@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -16,7 +16,7 @@ General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with GNU Classpath; see the file COPYING.  If not, write to the
 Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-02111-1307 USA. 
+02111-1307 USA.
 
 Linking this library statically or dynamically with other modules is
 making a combined work based on this library.  Thus, the terms and
@@ -90,7 +90,7 @@ public class IOToolkit
     *  @param out the Writer to which to write character data
     */
    public static void copyStream(Reader in, Writer out)
-      throws IOException 
+      throws IOException
    {
       char[] buf = new char[256];
       int nread;
@@ -114,10 +114,10 @@ public class IOToolkit
     *  subdirectory of the source directory which should be excluded
     *  from recursive copying.
     */
-   public static void copyDirectory(File sourceDir, File targetDir, 
+   public static void copyDirectory(File sourceDir, File targetDir,
                                     boolean recursive,
-                                    Set excludeDirs) 
-      throws IOException 
+                                    Set excludeDirs)
+      throws IOException
    {
       if (!targetDir.exists() && !targetDir.mkdirs()) {
          throw new IOException("Cannot create directory " + targetDir);
@@ -126,9 +126,9 @@ public class IOToolkit
       File[] sourceFiles = sourceDir.listFiles();
       for (int i=0; i<sourceFiles.length; ++i) {
          if (sourceFiles[i].isDirectory()) {
-            if (recursive && (null == excludeDirs 
+            if (recursive && (null == excludeDirs
                               || !excludeDirs.contains(sourceFiles[i].getName()))) {
-               File targetSubDir = new File(targetDir, 
+               File targetSubDir = new File(targetDir,
                                             sourceFiles[i].getName());
                if (targetSubDir.exists() || targetSubDir.mkdir()) {
                   copyDirectory(sourceFiles[i], targetSubDir, recursive, null);
@@ -151,8 +151,8 @@ public class IOToolkit
     *  @param sourceFile  specifies the file to copy
     *  @param targetFile  specifies the file to create
     */
-   public static void copyFile(File sourceFile, File targetFile) 
-      throws IOException 
+   public static void copyFile(File sourceFile, File targetFile)
+      throws IOException
    {
       InputStream in = new FileInputStream(sourceFile);
       OutputStream out = new FileOutputStream(targetFile);
@@ -180,7 +180,7 @@ public class IOToolkit
       char[] chunk = new char[readBufferSize];
       int nread;
       while ((nread=reader.read(chunk))>=0) {
-	 writer.write(chunk,0,nread);
+         writer.write(chunk,0,nread);
       }
       StringBuffer buffer = writer.getBuffer();
       char[] result = new char[buffer.length()];

@@ -80,7 +80,7 @@ public class XWindowPeer
                                       | Event.KEY_RELEASE_MASK
                                       //| Event.VISIBILITY_CHANGE_MASK //
                                       ;
-  
+
   /**
    * The X window.
    */
@@ -105,10 +105,10 @@ public class XWindowPeer
     int h = Math.max(window.getHeight(), 1);
     xwindow = new Window(dev.getDisplay().default_root, x, y, w, h, 0, atts);
     xwindow.select_input(standardSelect);
-    
+
     dev.getEventPump().registerWindow(xwindow, window);
     xwindow.set_wm_delete_window();
-    
+
     boolean undecorated;
     if (awtComponent instanceof Frame)
       {
@@ -178,11 +178,11 @@ public class XWindowPeer
    */
   public Graphics getGraphics()
   {
-	XGraphics2D xg2d = new XGraphics2D(xwindow);
-	xg2d.setColor(awtComponent.getForeground());
-	xg2d.setBackground(awtComponent.getBackground());
-	xg2d.setFont(awtComponent.getFont());
-	return xg2d;
+        XGraphics2D xg2d = new XGraphics2D(xwindow);
+        xg2d.setColor(awtComponent.getForeground());
+        xg2d.setBackground(awtComponent.getBackground());
+        xg2d.setFont(awtComponent.getFont());
+        return xg2d;
   }
 
   public Image createImage(int w, int h)
@@ -226,7 +226,7 @@ public class XWindowPeer
 //    // Reset input selection.
 //    atts.set_override_redirect(false);
 //    xwindow.change_attributes(atts);
-    
+
     // Determine the frame insets.
     Atom atom = (Atom) Atom.intern(dev.getDisplay(), "_NET_FRAME_EXTENTS");
     Window.Property p = xwindow.get_property(false, atom, Atom.CARDINAL, 0,
@@ -295,7 +295,7 @@ public class XWindowPeer
     XGraphicsDevice dev = XToolkit.getDefaultDevice();
     dev.getEventPump().unregisterWindow(xwindow);
   }
-  
+
   public Window getXwindow()
   {
     return xwindow;

@@ -226,7 +226,7 @@ public final class Boolean implements Serializable, Comparable<Boolean>
    * Compares this Boolean to another.
    *
    * @param other the Boolean to compare this Boolean to
-   * @return 0 if both Booleans represent the same value, a positive number 
+   * @return 0 if both Booleans represent the same value, a positive number
    * if this Boolean represents true and the other false, and a negative
    * number otherwise.
    * @since 1.5
@@ -247,5 +247,5 @@ public final class Boolean implements Serializable, Comparable<Boolean>
   {
     return "true".equalsIgnoreCase(b) ? true : false;
   }
-  
+
 }

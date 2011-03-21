@@ -1,4 +1,4 @@
-/* IBlockCipherSpi.java -- 
+/* IBlockCipherSpi.java --
    Copyright (C) 2001, 2002, 2006 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -51,7 +51,7 @@ interface IBlockCipherSpi
   /**
    * Returns an {@link Iterator} over the supported block sizes. Each element
    * returned by this object is a {@link java.lang.Integer}.
-   * 
+   *
    * @return an <code>Iterator</code> over the supported block sizes.
    */
   Iterator blockSizes();
@@ -59,7 +59,7 @@ interface IBlockCipherSpi
   /**
    * Returns an {@link Iterator} over the supported key sizes. Each element
    * returned by this object is a {@link java.lang.Integer}.
-   * 
+   *
    * @return an <code>Iterator</code> over the supported key sizes.
    */
   Iterator keySizes();
@@ -67,7 +67,7 @@ interface IBlockCipherSpi
   /**
    * Expands a user-supplied key material into a session key for a designated
    * <i>block size</i>.
-   * 
+   *
    * @param k the user-supplied key material.
    * @param bs the desired block size in bytes.
    * @return an Object encapsulating the session key.
@@ -78,7 +78,7 @@ interface IBlockCipherSpi
 
   /**
    * Encrypts exactly one block of plaintext.
-   * 
+   *
    * @param in the plaintext.
    * @param inOffset index of <code>in</code> from which to start considering
    *          data.
@@ -96,7 +96,7 @@ interface IBlockCipherSpi
 
   /**
    * Decrypts exactly one block of ciphertext.
-   * 
+   *
    * @param in the ciphertext.
    * @param inOffset index of <code>in</code> from which to start considering
    *          data.
@@ -116,7 +116,7 @@ interface IBlockCipherSpi
    * A <i>correctness</i> test that consists of basic symmetric encryption /
    * decryption test(s) for all supported block and key sizes, as well as one
    * (1) variable key Known Answer Test (KAT).
-   * 
+   *
    * @return <code>true</code> if the implementation passes simple
    *         <i>correctness</i> tests. Returns <code>false</code> otherwise.
    */

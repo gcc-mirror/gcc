@@ -1,4 +1,4 @@
-/* ByteBufferImpl.java -- 
+/* ByteBufferImpl.java --
    Copyright (C) 2003, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -46,19 +46,19 @@ final class ByteBufferHelper
   {
     return (char) getShort (buffer, order);
   }
-  
+
   public static void putChar (ByteBuffer buffer, char value, ByteOrder order)
   {
     putShort (buffer, (short) value, order);
   }
-  
+
   public static char getChar (ByteBuffer buffer, int index, ByteOrder order)
   {
     return (char) getShort (buffer, index, order);
   }
-  
+
   public static void putChar (ByteBuffer buffer, int index,
-			      char value, ByteOrder order)
+                              char value, ByteOrder order)
   {
     putShort (buffer, index, (short) value, order);
   }
@@ -76,7 +76,7 @@ final class ByteBufferHelper
     return (short) ((buffer.get() << 8)
                     + (buffer.get() & 0xff));
   }
-  
+
   public static void putShort (ByteBuffer buffer, short value, ByteOrder order)
   {
     buffer.checkForOverflow(2);
@@ -92,9 +92,9 @@ final class ByteBufferHelper
         buffer.put ((byte) value);
       }
   }
-  
+
   public static short getShort (ByteBuffer buffer,
-				      int index, ByteOrder order)
+                                      int index, ByteOrder order)
   {
     if (order == ByteOrder.LITTLE_ENDIAN)
       {
@@ -105,9 +105,9 @@ final class ByteBufferHelper
     return (short) ((buffer.get (index) << 8)
                     + (buffer.get (++index) & 0xff));
   }
-  
+
   public static void putShort (ByteBuffer buffer, int index,
-			       short value, ByteOrder order)
+                               short value, ByteOrder order)
   {
     if (order == ByteOrder.LITTLE_ENDIAN)
       {
@@ -138,7 +138,7 @@ final class ByteBufferHelper
                   + ((buffer.get() & 0xff) << 8)
                   + (buffer.get() & 0xff));
   }
-  
+
   public static void putInt (ByteBuffer buffer, int value, ByteOrder order)
   {
     buffer.checkForOverflow(4);
@@ -158,7 +158,7 @@ final class ByteBufferHelper
         buffer.put ((byte) value);
       }
   }
-  
+
   public static int getInt (ByteBuffer buffer, int index, ByteOrder order)
   {
     if (order == ByteOrder.LITTLE_ENDIAN)
@@ -174,9 +174,9 @@ final class ByteBufferHelper
             + ((buffer.get (++index) & 0xff) << 8)
             + (buffer.get (++index) & 0xff));
   }
-  
+
   public static void putInt (ByteBuffer buffer, int index,
-				   int value, ByteOrder order)
+                                   int value, ByteOrder order)
   {
     if (order == ByteOrder.LITTLE_ENDIAN)
       {
@@ -219,7 +219,7 @@ final class ByteBufferHelper
             + ((buffer.get() & 0xff) << 8)
             + (buffer.get() & 0xff));
   }
-  
+
   public static void putLong (ByteBuffer buffer, long value, ByteOrder order)
   {
     buffer.checkForOverflow(8);
@@ -247,7 +247,7 @@ final class ByteBufferHelper
         buffer.put ((byte) value);
       }
   }
-  
+
   public static long getLong (ByteBuffer buffer, int index, ByteOrder order)
   {
     if (order == ByteOrder.LITTLE_ENDIAN)
@@ -271,9 +271,9 @@ final class ByteBufferHelper
             + ((buffer.get (++index) & 0xff) << 8)
             + (buffer.get (++index) & 0xff));
   }
-  
+
   public static void putLong (ByteBuffer buffer, int index,
-				    long value, ByteOrder order)
+                                    long value, ByteOrder order)
   {
     if (order == ByteOrder.LITTLE_ENDIAN)
       {
@@ -303,19 +303,19 @@ final class ByteBufferHelper
   {
     return Float.intBitsToFloat (getInt (buffer, order));
   }
-  
+
   public static void putFloat (ByteBuffer buffer, float value, ByteOrder order)
   {
     putInt (buffer, Float.floatToRawIntBits (value), order);
   }
-  
+
   public static float getFloat (ByteBuffer buffer, int index, ByteOrder order)
   {
     return Float.intBitsToFloat (getInt (buffer, index, order));
   }
 
   public static void putFloat (ByteBuffer buffer, int index,
-				     float value, ByteOrder order)
+                                     float value, ByteOrder order)
   {
     putInt (buffer, index, Float.floatToRawIntBits (value), order);
   }
@@ -329,16 +329,15 @@ final class ByteBufferHelper
   {
     putLong (buffer, Double.doubleToRawLongBits (value), order);
   }
-  
+
   public static double getDouble (ByteBuffer buffer, int index, ByteOrder order)
   {
     return Double.longBitsToDouble (getLong (buffer, index, order));
   }
-  
+
   public static void putDouble (ByteBuffer buffer, int index,
-				double value, ByteOrder order)
+                                double value, ByteOrder order)
   {
     putLong (buffer, index, Double.doubleToRawLongBits (value), order);
   }
 } // ByteBufferHelper
-

@@ -7,12 +7,15 @@
 package json
 
 import (
-	"os"
 	"bytes"
+	"encoding/base64"
+	"os"
 	"reflect"
 	"runtime"
 	"sort"
 	"strconv"
+	"unicode"
+	"utf8"
 )
 
 // Marshal returns the JSON encoding of v.
@@ -30,12 +33,14 @@ import (
 // String values encode as JSON strings, with each invalid UTF-8 sequence
 // replaced by the encoding of the Unicode replacement character U+FFFD.
 //
-// Array and slice values encode as JSON arrays.
+// Array and slice values encode as JSON arrays, except that
+// []byte encodes as a base64-encoded string.
 //
 // Struct values encode as JSON objects.  Each struct field becomes
 // a member of the object.  By default the object's key name is the
-// struct field name converted to lower case.  If the struct field
-// has a tag, that tag will be used as the name instead.
+// struct field name.  If the struct field has a non-empty tag consisting
+// of only Unicode letters, digits, and underscores, that tag will be used
+// as the name instead.  Only exported fields will be encoded.
 //
 // Map values encode as JSON objects.
 // The map's key type must be string; the object keys are used directly
@@ -129,6 +134,14 @@ func (e *UnsupportedTypeError) String() string {
 	return "json: unsupported type: " + e.Type.String()
 }
 
+type InvalidUTF8Error struct {
+	S string
+}
+
+func (e *InvalidUTF8Error) String() string {
+	return "json: invalid UTF-8 in string: " + strconv.Quote(e.S)
+}
+
 type MarshalerError struct {
 	Type  reflect.Type
 	Error os.Error
@@ -166,6 +179,8 @@ func (e *encodeState) marshal(v interface{}) (err os.Error) {
 func (e *encodeState) error(err os.Error) {
 	panic(err)
 }
+
+var byteSliceType = reflect.Typeof([]byte(nil))
 
 func (e *encodeState) reflectValue(v reflect.Value) {
 	if v == nil {
@@ -210,12 +225,18 @@ func (e *encodeState) reflectValue(v reflect.Value) {
 		e.WriteByte('{')
 		t := v.Type().(*reflect.StructType)
 		n := v.NumField()
+		first := true
 		for i := 0; i < n; i++ {
-			if i > 0 {
+			f := t.Field(i)
+			if f.PkgPath != "" {
+				continue
+			}
+			if first {
+				first = false
+			} else {
 				e.WriteByte(',')
 			}
-			f := t.Field(i)
-			if f.Tag != "" {
+			if isValidTag(f.Tag) {
 				e.string(f.Tag)
 			} else {
 				e.string(f.Name)
@@ -247,6 +268,24 @@ func (e *encodeState) reflectValue(v reflect.Value) {
 		e.WriteByte('}')
 
 	case reflect.ArrayOrSliceValue:
+		if v.Type() == byteSliceType {
+			e.WriteByte('"')
+			s := v.Interface().([]byte)
+			if len(s) < 1024 {
+				// for small buffers, using Encode directly is much faster.
+				dst := make([]byte, base64.StdEncoding.EncodedLen(len(s)))
+				base64.StdEncoding.Encode(dst, s)
+				e.Write(dst)
+			} else {
+				// for large buffers, avoid unnecessary extra temporary
+				// buffer space.
+				enc := base64.NewEncoder(base64.StdEncoding, e)
+				enc.Write(s)
+				enc.Close()
+			}
+			e.WriteByte('"')
+			break
+		}
 		e.WriteByte('[')
 		n := v.Len()
 		for i := 0; i < n; i++ {
@@ -270,6 +309,18 @@ func (e *encodeState) reflectValue(v reflect.Value) {
 	return
 }
 
+func isValidTag(s string) bool {
+	if s == "" {
+		return false
+	}
+	for _, c := range s {
+		if c != '_' && !unicode.IsLetter(c) && !unicode.IsDigit(c) {
+			return false
+		}
+	}
+	return true
+}
+
 // stringValues is a slice of reflect.Value holding *reflect.StringValue.
 // It implements the methods to sort by string.
 type stringValues []reflect.Value
@@ -281,18 +332,36 @@ func (sv stringValues) get(i int) string   { return sv[i].(*reflect.StringValue)
 
 func (e *encodeState) string(s string) {
 	e.WriteByte('"')
-	for _, c := range s {
-		switch {
-		case c < 0x20:
-			e.WriteString(`\u00`)
-			e.WriteByte(hex[c>>4])
-			e.WriteByte(hex[c&0xF])
-		case c == '\\' || c == '"':
-			e.WriteByte('\\')
-			fallthrough
-		default:
-			e.WriteRune(c)
+	start := 0
+	for i := 0; i < len(s); {
+		if b := s[i]; b < utf8.RuneSelf {
+			if 0x20 <= b && b != '\\' && b != '"' {
+				i++
+				continue
+			}
+			if start < i {
+				e.WriteString(s[start:i])
+			}
+			if b == '\\' || b == '"' {
+				e.WriteByte('\\')
+				e.WriteByte(b)
+			} else {
+				e.WriteString(`\u00`)
+				e.WriteByte(hex[b>>4])
+				e.WriteByte(hex[b&0xF])
+			}
+			i++
+			start = i
+			continue
 		}
+		c, size := utf8.DecodeRuneInString(s[i:])
+		if c == utf8.RuneError && size == 1 {
+			e.error(&InvalidUTF8Error{s})
+		}
+		i += size
+	}
+	if start < len(s) {
+		e.WriteString(s[start:])
 	}
 	e.WriteByte('"')
 }

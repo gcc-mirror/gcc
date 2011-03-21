@@ -103,6 +103,18 @@
 			      (plus "add")
 			      (minus "sub")])
 
+(define_code_attr sync_clobber [(ior "=&r")
+				(and "=&r")
+				(xor "X")
+				(plus "X")
+				(minus "X")])
+
+(define_code_attr sync_t2_reqd [(ior "4")
+				(and "4")
+				(xor "*")
+				(plus "*")
+				(minus "*")])
+
 (define_expand "sync_<sync_optab>si"
   [(match_operand:SI 0 "memory_operand")
    (match_operand:SI 1 "s_register_operand")
@@ -286,7 +298,6 @@
 	  VUNSPEC_SYNC_COMPARE_AND_SWAP))
    (set (match_dup 1) (unspec_volatile:SI [(match_dup 2)]
                                           VUNSPEC_SYNC_COMPARE_AND_SWAP))
-   (clobber:SI (match_scratch:SI 4 "=&r"))
    (set (reg:CC CC_REGNUM) (unspec_volatile:CC [(match_dup 1)]
                                                 VUNSPEC_SYNC_COMPARE_AND_SWAP))
    ]
@@ -299,7 +310,6 @@
    (set_attr "sync_required_value"  "2")
    (set_attr "sync_new_value"       "3")
    (set_attr "sync_t1"              "0")
-   (set_attr "sync_t2"              "4")
    (set_attr "conds" "clob")
    (set_attr "predicable" "no")])
 
@@ -313,7 +323,6 @@
 	    VUNSPEC_SYNC_COMPARE_AND_SWAP)))
    (set (match_dup 1) (unspec_volatile:NARROW [(match_dup 2)]
                                           VUNSPEC_SYNC_COMPARE_AND_SWAP))
-   (clobber:SI (match_scratch:SI 4 "=&r"))
    (set (reg:CC CC_REGNUM) (unspec_volatile:CC [(match_dup 1)]
                                                 VUNSPEC_SYNC_COMPARE_AND_SWAP))
    ]
@@ -326,7 +335,6 @@
    (set_attr "sync_required_value"  "2")
    (set_attr "sync_new_value"       "3")
    (set_attr "sync_t1"              "0")
-   (set_attr "sync_t2"              "4")
    (set_attr "conds" "clob")
    (set_attr "predicable" "no")])
 
@@ -487,7 +495,7 @@
 	                    VUNSPEC_SYNC_OLD_OP))
    (clobber (reg:CC CC_REGNUM))
    (clobber (match_scratch:SI 3 "=&r"))
-   (clobber (match_scratch:SI 4 "=&r"))]
+   (clobber (match_scratch:SI 4 "<sync_clobber>"))]
   "TARGET_HAVE_LDREX && TARGET_HAVE_MEMORY_BARRIER"
   {
     return arm_output_sync_insn (insn, operands);
@@ -496,7 +504,7 @@
    (set_attr "sync_memory"          "1")
    (set_attr "sync_new_value"       "2")
    (set_attr "sync_t1"              "3")
-   (set_attr "sync_t2"              "4")
+   (set_attr "sync_t2"              "<sync_t2_reqd>")
    (set_attr "sync_op"              "<sync_optab>")
    (set_attr "conds" "clob")
    (set_attr "predicable" "no")])
@@ -540,7 +548,7 @@
 	                    VUNSPEC_SYNC_OLD_OP))
    (clobber (reg:CC CC_REGNUM))
    (clobber (match_scratch:SI 3 "=&r"))
-   (clobber (match_scratch:SI 4 "=&r"))]
+   (clobber (match_scratch:SI 4 "<sync_clobber>"))]
   "TARGET_HAVE_LDREXBHD && TARGET_HAVE_MEMORY_BARRIER"
   {
     return arm_output_sync_insn (insn, operands);
@@ -549,7 +557,7 @@
    (set_attr "sync_memory"          "1")
    (set_attr "sync_new_value"       "2")
    (set_attr "sync_t1"              "3")
-   (set_attr "sync_t2"              "4")
+   (set_attr "sync_t2"              "<sync_t2_reqd>")
    (set_attr "sync_op"              "<sync_optab>")
    (set_attr "conds" 		    "clob")
    (set_attr "predicable" "no")])

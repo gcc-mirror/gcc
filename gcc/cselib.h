@@ -70,8 +70,10 @@ extern void (*cselib_discard_hook) (cselib_val *);
 extern void (*cselib_record_sets_hook) (rtx insn, struct cselib_set *sets,
 					int n_sets);
 
-extern cselib_val *cselib_lookup (rtx, enum machine_mode, int);
-extern cselib_val *cselib_lookup_from_insn (rtx, enum machine_mode, int, rtx);
+extern cselib_val *cselib_lookup (rtx, enum machine_mode,
+				  int, enum machine_mode);
+extern cselib_val *cselib_lookup_from_insn (rtx, enum machine_mode,
+					    int, enum machine_mode, rtx);
 extern void cselib_init (int);
 extern void cselib_clear_table (void);
 extern void cselib_finish (void);
@@ -85,7 +87,7 @@ extern rtx cselib_expand_value_rtx_cb (rtx, bitmap, int,
 				       cselib_expand_callback, void *);
 extern bool cselib_dummy_expand_value_rtx_cb (rtx, bitmap, int,
 					      cselib_expand_callback, void *);
-extern rtx cselib_subst_to_values (rtx);
+extern rtx cselib_subst_to_values (rtx, enum machine_mode);
 extern void cselib_invalidate_rtx (rtx);
 
 extern void cselib_reset_table (unsigned int);

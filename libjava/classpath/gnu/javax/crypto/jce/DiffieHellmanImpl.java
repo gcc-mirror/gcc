@@ -54,7 +54,7 @@ import javax.crypto.spec.SecretKeySpec;
 
 /**
  * The JCE implementation of a 2-party Diffie-Hellman key agreement.
- * 
+ *
  * @author Casey Marshall (csm@gnu.org)
  */
 public final class DiffieHellmanImpl

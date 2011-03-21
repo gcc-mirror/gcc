@@ -1,4 +1,4 @@
-/* ValueOfNode.java -- 
+/* ValueOfNode.java --
    Copyright (C) 2004,2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -76,7 +76,7 @@ final class ValueOfNode
       ret.next = next.clone(stylesheet);
     return ret;
   }
-  
+
   @Override
   void doApply(Stylesheet stylesheet, QName mode,
                Node context, int pos, int len,
@@ -125,7 +125,7 @@ final class ValueOfNode
       return true;
     return super.references(var);
   }
-  
+
   public String toString()
   {
     CPStringBuilder buf = new CPStringBuilder("value-of");
@@ -137,5 +137,5 @@ final class ValueOfNode
     buf.append(']');
     return buf.toString();
   }
-  
+
 }

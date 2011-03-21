@@ -56,7 +56,7 @@ public abstract class SSLCipherSuite
   private final byte[] id;
   private final SSLProtocolVersion version;
   private Provider provider;
-  
+
   protected SSLCipherSuite (final String algorithm, final byte[] id,
                             final SSLProtocolVersion version)
   {
@@ -66,20 +66,20 @@ public abstract class SSLCipherSuite
     this.id = (byte[]) id.clone ();
     this.version = version;
   }
-  
+
   public static final SSLCipherSuite getInstance (SSLProtocolVersion version, byte[] id)
     throws NoSuchAlgorithmException
   {
     return getInstance (version + "-" + ((id[0] & 0xFF) + "/" + (id[1] & 0xFF)));
   }
-  
+
   public static final SSLCipherSuite getInstance (SSLProtocolVersion version,
                                                   byte[] id, Provider provider)
     throws NoSuchAlgorithmException
   {
     return getInstance (version + "-" + (id[0] & 0xFF) + "/" + (id[1] & 0xFF), provider);
   }
-  
+
   public static final SSLCipherSuite getInstance (String name)
     throws NoSuchAlgorithmException
   {
@@ -95,10 +95,10 @@ public abstract class SSLCipherSuite
             // Ignore.
           }
       }
-      
+
     throw new NoSuchAlgorithmException (SERVICE + ": " + name);
   }
-  
+
   public static final SSLCipherSuite getInstance (String name, Provider provider)
     throws NoSuchAlgorithmException
   {
@@ -117,26 +117,26 @@ public abstract class SSLCipherSuite
       }
     return suite;
   }
-  
+
   public final String getAlgorithm ()
   {
     return algorithm;
   }
-  
+
   public final byte[] getId ()
   {
     return (byte[]) id.clone ();
   }
-  
+
   public final Provider getProvider ()
   {
     return provider;
   }
-  
+
   public final SSLProtocolVersion getProtocolVersion ()
   {
     return version;
   }
-  
+
   public abstract void encipher (ByteBuffer in, ByteBuffer out);
 }

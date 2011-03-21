@@ -92,38 +92,38 @@ final class RETokenEnd extends REToken
       return ((mymatch.eflags & RE.REG_NOTEOL) > 0) ? null : mymatch;
     if (check_java_line_terminators)
       {
-	if (ch == '\n')
-	  {
-	    char ch1 = input.charAt (mymatch.index - 1);
-	    if (ch1 == '\r')
-	      return null;
-	    return mymatch;
-	  }
-	if (ch == '\r')
-	  return mymatch;
-	if (ch == '\u0085')
-	  return mymatch;	// A next-line character
-	if (ch == '\u2028')
-	  return mymatch;	// A line-separator character
-	if (ch == '\u2029')
-	  return mymatch;	// A paragraph-separator character
-	return null;
+        if (ch == '\n')
+          {
+            char ch1 = input.charAt (mymatch.index - 1);
+            if (ch1 == '\r')
+              return null;
+            return mymatch;
+          }
+        if (ch == '\r')
+          return mymatch;
+        if (ch == '\u0085')
+          return mymatch;       // A next-line character
+        if (ch == '\u2028')
+          return mymatch;       // A line-separator character
+        if (ch == '\u2029')
+          return mymatch;       // A paragraph-separator character
+        return null;
       }
     if (newline != null)
       {
-	char z;
-	int i = 0;		// position in newline
-	do
-	  {
-	    z = newline.charAt (i);
-	    if (ch != z)
-	      return null;
-	    ++i;
-	    ch = input.charAt (mymatch.index + i);
-	  }
-	while (i < newline.length ());
+        char z;
+        int i = 0;              // position in newline
+        do
+          {
+            z = newline.charAt (i);
+            if (ch != z)
+              return null;
+            ++i;
+            ch = input.charAt (mymatch.index + i);
+          }
+        while (i < newline.length ());
 
-	return mymatch;
+        return mymatch;
       }
     return null;
   }

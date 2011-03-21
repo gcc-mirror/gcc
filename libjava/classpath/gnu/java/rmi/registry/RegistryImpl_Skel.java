@@ -44,7 +44,7 @@ public final class RegistryImpl_Skel
     implements java.rmi.server.Skeleton
 {
     private static final long interfaceHash = 4905912898345647071L;
-    
+
     private static final java.rmi.server.Operation[] operations = {
         new java.rmi.server.Operation("void bind(java.lang.String, java.rmi.Remote"),
         new java.rmi.server.Operation("java.lang.String[] list("),
@@ -52,11 +52,11 @@ public final class RegistryImpl_Skel
         new java.rmi.server.Operation("void rebind(java.lang.String, java.rmi.Remote"),
         new java.rmi.server.Operation("void unbind(java.lang.String")
     };
-    
+
     public java.rmi.server.Operation[] getOperations() {
         return ((java.rmi.server.Operation[]) operations.clone());
     }
-    
+
     public void dispatch(java.rmi.Remote obj, java.rmi.server.RemoteCall call, int opnum, long hash) throws java.lang.Exception {
         if (opnum < 0) {
             if (hash == 7583982177005850366L) {
@@ -81,7 +81,7 @@ public final class RegistryImpl_Skel
         else if (hash != interfaceHash) {
             throw new java.rmi.server.SkeletonMismatchException("interface hash mismatch");
         }
-        
+
         gnu.java.rmi.registry.RegistryImpl server = (gnu.java.rmi.registry.RegistryImpl)obj;
         switch (opnum) {
         case 0:
@@ -92,7 +92,7 @@ public final class RegistryImpl_Skel
                 java.io.ObjectInput in = call.getInputStream();
                 $param_0 = (java.lang.String)in.readObject();
                 $param_1 = (java.rmi.Remote)in.readObject();
-                
+
             }
             catch (java.io.IOException e) {
                 throw new java.rmi.UnmarshalException("error unmarshalling arguments", e);
@@ -112,12 +112,12 @@ public final class RegistryImpl_Skel
             }
             break;
         }
-        
+
         case 1:
         {
             try {
                 java.io.ObjectInput in = call.getInputStream();
-                
+
             }
             catch (java.io.IOException e) {
                 throw new java.rmi.UnmarshalException("error unmarshalling arguments", e);
@@ -135,14 +135,14 @@ public final class RegistryImpl_Skel
             }
             break;
         }
-        
+
         case 2:
         {
             java.lang.String $param_0;
             try {
                 java.io.ObjectInput in = call.getInputStream();
                 $param_0 = (java.lang.String)in.readObject();
-                
+
             }
             catch (java.io.IOException e) {
                 throw new java.rmi.UnmarshalException("error unmarshalling arguments", e);
@@ -163,7 +163,7 @@ public final class RegistryImpl_Skel
             }
             break;
         }
-        
+
         case 3:
         {
             java.lang.String $param_0;
@@ -172,7 +172,7 @@ public final class RegistryImpl_Skel
                 java.io.ObjectInput in = call.getInputStream();
                 $param_0 = (java.lang.String)in.readObject();
                 $param_1 = (java.rmi.Remote)in.readObject();
-                
+
             }
             catch (java.io.IOException e) {
                 throw new java.rmi.UnmarshalException("error unmarshalling arguments", e);
@@ -192,14 +192,14 @@ public final class RegistryImpl_Skel
             }
             break;
         }
-        
+
         case 4:
         {
             java.lang.String $param_0;
             try {
                 java.io.ObjectInput in = call.getInputStream();
                 $param_0 = (java.lang.String)in.readObject();
-                
+
             }
             catch (java.io.IOException e) {
                 throw new java.rmi.UnmarshalException("error unmarshalling arguments", e);
@@ -219,7 +219,7 @@ public final class RegistryImpl_Skel
             }
             break;
         }
-        
+
         default:
             throw new java.rmi.UnmarshalException("invalid method number");
         }

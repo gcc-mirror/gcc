@@ -180,8 +180,8 @@ public class VMMethod
   {
     if (obj instanceof VMMethod)
       {
-	VMMethod m = (VMMethod) obj;
-	return (getId() == m.getId());
+        VMMethod m = (VMMethod) obj;
+        return (getId() == m.getId());
       }
 
     return false;

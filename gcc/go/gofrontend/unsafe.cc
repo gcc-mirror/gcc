@@ -6,6 +6,7 @@
 
 #include "go-system.h"
 
+#include "go-c.h"
 #include "types.h"
 #include "gogo.h"
 
@@ -23,6 +24,13 @@ Gogo::import_unsafe(const std::string& local_name, bool is_local_name_exported,
 						is_local_name_exported,
 						"libgo_unsafe",
 						location, &add_to_globals);
+
+  if (package == NULL)
+    {
+      gcc_assert(saw_errors());
+      return;
+    }
+
   package->set_is_imported();
 
   Bindings* bindings = package->bindings();
@@ -130,5 +138,9 @@ Gogo::import_unsafe(const std::string& local_name, bool is_local_name_exported,
   if (add_to_globals)
     this->add_named_object(no);
 
-  this->imported_unsafe_ = true;
+  if (!this->imported_unsafe_)
+    {
+      go_imported_unsafe();
+      this->imported_unsafe_ = true;
+    }
 }

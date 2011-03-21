@@ -57,7 +57,7 @@ public class MidiDataInputStream
   {
     super(is);
   }
-  
+
   /**
    * Read an int encoded in the MIDI-style variable length
    * encoding format.
@@ -68,7 +68,7 @@ public class MidiDataInputStream
     throws IOException
   {
     int c, value = readByte();
-    
+
     if ((value & 0x80) != 0)
       {
          value &= 0x7F;
@@ -77,7 +77,7 @@ public class MidiDataInputStream
            value = (value << 7) + ((c = readByte()) & 0x7F);
          } while ((c & 0x80) != 0);
       }
-    
-    return value;   
+
+    return value;
   }
 }

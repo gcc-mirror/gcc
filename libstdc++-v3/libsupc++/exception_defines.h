@@ -1,6 +1,7 @@
 // -fno-exceptions Support -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2006, 2007, 2008, 2009
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2006, 2007, 2008, 2009,
+// 2011
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -23,12 +24,9 @@
 // see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 // <http://www.gnu.org/licenses/>.
 
-//
-// ISO C++ 14882: 19.1  Exception classes
-//
-
-/** @file exception_defines.h
- *  This is a Standard C++ Library header.
+/** @file bits/exception_defines.h
+ *  This is an internal header file, included by other library headers.
+ *  Do not attempt to use it directly. @headername{exception}
  */
 
 #ifndef _EXCEPTION_DEFINES_H

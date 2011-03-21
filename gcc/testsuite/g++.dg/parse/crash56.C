@@ -1,5 +1,5 @@
 /* PR c++/43081 */
-/* { dg-do "compile" } */
+/* { dg-do compile } */
 /* { dg-options "-std=c++0x" } */
 
 struct A

@@ -400,7 +400,7 @@ public class Parser
     if (start.kind == EOF)
       return;
 
-    read: 
+    read:
     while (true)
       {
         t = getTokenAhead();
@@ -446,7 +446,7 @@ public class Parser
     Token t;
     Token last;
 
-    comment: 
+    comment:
     while (true)
       {
         t = getTokenAhead();
@@ -525,7 +525,7 @@ public class Parser
     restOfTag(false, name, start);
 
     buffer.setLength(0);
- 
+
     while (!SCRIPT_CLOSE.matches(this))
       {
         append(getNextToken());
@@ -554,7 +554,7 @@ public class Parser
         mustBe(EXCLAMATION);
 
         buffer.setLength(0);
-        read: 
+        read:
         while (true)
           {
             t = getNextToken();
@@ -607,7 +607,7 @@ public class Parser
     restOfTag(false, name, start);
 
     buffer.setLength(0);
- 
+
     while (!STYLE_CLOSE.matches(this))
       {
         append(getNextToken());
@@ -944,7 +944,7 @@ public class Parser
 
     optional(WS);
 
-    attributeReading: 
+    attributeReading:
       while (getTokenAhead().kind == NUMTOKEN)
       {
         name = getNextToken();
@@ -1012,7 +1012,7 @@ public class Parser
               case SLASH:
                 value = next;
                 optional(WS);
-                
+
                 // Check maybe the opening quote is missing.
                 next = getTokenAhead();
                 if (bQUOTING.get(next.kind))
@@ -1289,7 +1289,7 @@ public class Parser
     int closeAt = 0;
     buffer.setLength(0);
 
-    ahead: 
+    ahead:
     for (int i = 1; i < 100; i++)
       {
         t = getTokenAhead(i - 1);
@@ -1356,7 +1356,7 @@ public class Parser
                        throws ParseException
   {
     buffer.setLength(0);
-    read: 
+    read:
     while (true)
       {
         t = getNextToken();

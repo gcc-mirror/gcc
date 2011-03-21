@@ -1,13 +1,13 @@
 /* ActivationDesc.java -- record with info to activate an object
    Copyright (c) 1996, 1997, 1998, 1999 Free Software Foundation, Inc.
-   
+
 This file is part of GNU Classpath.
 
 GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -51,8 +51,8 @@ import java.rmi.MarshalledObject;
  * <li>the object restart mode</li>
  * <li>the object specific intialization information</li>
  * </ul>
- * 
- * @author Audrius Meskauskas (audriusa@bioinformatics.org) (from stub) 
+ *
+ * @author Audrius Meskauskas (audriusa@bioinformatics.org) (from stub)
  */
 public final class ActivationDesc
     implements Serializable
@@ -89,8 +89,8 @@ public final class ActivationDesc
 
   /**
    * Create the new activation description, assuming the object group is the
-   * {@link ActivationGroup#currentGroupID()}. 
-   * 
+   * {@link ActivationGroup#currentGroupID()}.
+   *
    * @param className the object fully qualified class name
    * @param location the code base URL
    * @param data the object initialization data, contained in a marshalled form
@@ -103,8 +103,8 @@ public final class ActivationDesc
 
   /**
    * Create the new activation description, assuming the object group is the
-   * {@link ActivationGroup#currentGroupID()}. 
-   * 
+   * {@link ActivationGroup#currentGroupID()}.
+   *
    * @param className the object fully qualified class name
    * @param location the code base URL
    * @param data the object initialization data, contained in a marshalled form
@@ -124,7 +124,7 @@ public final class ActivationDesc
   /**
    * Create the new activation description. Under crash, the object will only
    * be reactivated on demand.
-   * 
+   *
    * @param groupID the object group id.
    * @param className the object fully qualified class name
    * @param location the code base URL
@@ -138,7 +138,7 @@ public final class ActivationDesc
 
   /**
    * Create the new activation description, providing full information.
-   * 
+   *
    * @param groupID the object group id.
    * @param className the object fully qualified class name
    * @param location the code base URL
@@ -166,7 +166,7 @@ public final class ActivationDesc
 
   /**
    * Get the class name of the object being activated
-   * 
+   *
    * @return the fully qualified class name of the object being activated
    */
   public String getClassName()
@@ -176,7 +176,7 @@ public final class ActivationDesc
 
   /**
    * Get the code location URL ("codebase") of the object being activated.
-   * 
+   *
    * @return the codebase of the object being activated.
    */
   public String getLocation()
@@ -191,7 +191,7 @@ public final class ActivationDesc
 
   /**
    * Get the object reactivation strategy after crash.
-   * 
+   *
    * @return true ir the object is activated when activator is restarted or the
    *         activation group is restarted. False if the object is only
    *         activated on demand. This flag does has no effect during the normal
@@ -201,10 +201,10 @@ public final class ActivationDesc
   {
     return restart;
   }
-  
+
   /**
    * Compare this object with another activation description for equality.
-   * 
+   *
    * @return true if all fields have the equal values, false otherwise.
    */
   public boolean equals(Object obj)
@@ -213,25 +213,25 @@ public final class ActivationDesc
       {
         ActivationDesc that = (ActivationDesc) obj;
         return eq(groupid, that.groupid) &&
-               eq(classname, that.classname) && 
-               eq(location, that.location) && 
+               eq(classname, that.classname) &&
+               eq(location, that.location) &&
                eq(data, that.data)
                && restart == that.restart;
       }
     else
       return false;
   }
-  
+
   /**
    * Get the hash code of this object (overridden to make the returned value
    * consistent with .equals(..).
    */
   public int hashCode()
   {
-    return hash(groupid) ^ hash(classname) ^ 
+    return hash(groupid) ^ hash(classname) ^
       hash(location) ^ hash(data);
   }
-  
+
   /**
    * Get the hashcode of x or 0 if x == null.
    */
@@ -239,7 +239,7 @@ public final class ActivationDesc
   {
     return x == null ? 0 : x.hashCode();
   }
-  
+
   /**
    * Compare by .equals if both a and b are not null, compare directly if at
    * least one of them is null.

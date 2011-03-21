@@ -1,3 +1,38 @@
+2011-02-14  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* gccgo.texi (Top, Import and Export): Fix a typo and a markup nit.
+
+2011-02-08  Ian Lance Taylor  <iant@google.com>
+
+	* go-lang.c (go_langhook_init_options_struct): Set
+	frontend_set_flag_errno_math.  Don't set x_flag_trapping_math.
+
+2011-01-31  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gospec.c (lang_specific_driver) [HAVE_LD_STATIC_DYNAMIC] Use
+	LD_STATIC_OPTION, LD_DYNAMIC_OPTION.
+
+2011-01-21  Ian Lance Taylor  <iant@google.com>
+
+	* go-lang.c (go_langhook_init): Omit float_type_size when calling
+	go_create_gogo.
+	* go-c.h: Update declaration of go_create_gogo.
+
+2011-01-13  Ian Lance Taylor  <iant@google.com>
+
+	* go-backend.c: Include "rtl.h" and "target.h".
+	(go_imported_unsafe): New function.
+	* go-c.h (go_imported_unsafe): Declare.
+	* Make-lang.in (go/go-backend.o): Depend on $(RTL_H).
+	(go/gogo-tree.o): Remove dependency on $(RTL_H).
+	(go/unsafe.o): Depend on $(GO_C_H).
+
+2010-12-31  Joern Rennecke  <amylaar@spamcop.net>
+
+	PR go/47113
+	* go-backend.c: (go_field_alignment): Add ATTRIBUTE_UNUSED to
+	variable ‘field’ .
+
 2010-12-21  Ian Lance Taylor  <iant@google.com>
 
 	* Make-lang.in (check-go): Remove.

@@ -43,8 +43,8 @@
 
    <para>
      To generate the API documentation from the sources you will need
-     Doxygen, see <link linkend="contrib.doc_style">Documentation
-     Style</link> in the appendix for full details.
+     Doxygen, see <link linkend="appendix.porting.doc">Documentation
+     Hacking</link> in the appendix for full details.
    </para>
 
    <para>

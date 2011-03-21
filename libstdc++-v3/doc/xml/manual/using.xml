@@ -834,7 +834,7 @@ g++ -Winvalid-pch -I. -include stdc++.h -H -g -O2 hello.cc -o test.exe
    </para>
 
     <variablelist>
-    <varlistentry><term><code>_GLIBCXX_DEPRECATED</code></term>
+    <varlistentry><term><code>_GLIBCXX_USE_DEPRECATED</code></term>
     <listitem>
       <para>
 	Defined by default. Not configurable. ABI-changing. Turning this off

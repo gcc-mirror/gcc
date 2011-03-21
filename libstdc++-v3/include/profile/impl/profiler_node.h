@@ -48,7 +48,7 @@ namespace __gnu_profile
 {
   typedef const void* __object_t;
   typedef void* __instruction_address_t;
-  typedef std::_GLIBCXX_STD_PR::vector<__instruction_address_t> __stack_npt;
+  typedef std::_GLIBCXX_STD_C::vector<__instruction_address_t> __stack_npt;
   typedef __stack_npt* __stack_t;
 
   std::size_t __stack_max_depth();

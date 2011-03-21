@@ -1,4 +1,4 @@
-/* DiffieHellmanKeyAgreement.java -- 
+/* DiffieHellmanKeyAgreement.java --
    Copyright (C) 2003, 2006 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -77,7 +77,7 @@ import javax.crypto.interfaces.DHPrivateKey;
  *  message) in order to ensure that different messages use different
  *  KEKs. Implementations MAY implement Static-Static mode.&quot;
  * </pre>
- * 
+ *
  * <p>
  * Reference:
  * <ol>

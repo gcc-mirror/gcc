@@ -1,4 +1,4 @@
-/* DomHTMLAnchorElement.java -- 
+/* DomHTMLAnchorElement.java --
    Copyright (C) 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -64,7 +64,7 @@ public class DomHTMLAnchorElement
   {
     setHTMLAttribute("accesskey", accessKey);
   }
-  
+
   public String getCharset()
   {
     return getHTMLAttribute("charset");
@@ -74,7 +74,7 @@ public class DomHTMLAnchorElement
   {
     setHTMLAttribute("charset", charset);
   }
-  
+
   public String getCoords()
   {
     return getHTMLAttribute("coords");
@@ -84,7 +84,7 @@ public class DomHTMLAnchorElement
   {
     setHTMLAttribute("coords", coords);
   }
-  
+
   public String getHref()
   {
     return getHTMLAttribute("href");
@@ -94,7 +94,7 @@ public class DomHTMLAnchorElement
   {
     setHTMLAttribute("href", href);
   }
-  
+
   public String getHreflang()
   {
     return getHTMLAttribute("hreflang");
@@ -104,7 +104,7 @@ public class DomHTMLAnchorElement
   {
     setHTMLAttribute("hreflang", hreflang);
   }
-  
+
   public String getName()
   {
     return getHTMLAttribute("name");
@@ -114,7 +114,7 @@ public class DomHTMLAnchorElement
   {
     setHTMLAttribute("name", name);
   }
-  
+
   public String getRel()
   {
     return getHTMLAttribute("rel");
@@ -124,7 +124,7 @@ public class DomHTMLAnchorElement
   {
     setHTMLAttribute("rel", rel);
   }
-  
+
   public String getRev()
   {
     return getHTMLAttribute("rev");
@@ -134,7 +134,7 @@ public class DomHTMLAnchorElement
   {
     setHTMLAttribute("rev", rev);
   }
-  
+
   public String getShape()
   {
     return getHTMLAttribute("shape");
@@ -144,7 +144,7 @@ public class DomHTMLAnchorElement
   {
     setHTMLAttribute("shape", shape);
   }
-  
+
   public int getTabIndex()
   {
     return getIntHTMLAttribute("tabindex");
@@ -154,7 +154,7 @@ public class DomHTMLAnchorElement
   {
     setIntHTMLAttribute("tabindex", tabIndex);
   }
-  
+
   public String getTarget()
   {
     return getHTMLAttribute("target");
@@ -164,7 +164,7 @@ public class DomHTMLAnchorElement
   {
     setHTMLAttribute("target", target);
   }
-  
+
   public String getType()
   {
     return getHTMLAttribute("type");
@@ -184,6 +184,5 @@ public class DomHTMLAnchorElement
   {
     dispatchUIEvent("focus");
   }
-  
-}
 
+}

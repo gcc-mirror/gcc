@@ -81,7 +81,7 @@ public interface Group extends Principal
   boolean isMember(Principal member);
 
   /**
-   * This method returns a list of all members of the group as an 
+   * This method returns a list of all members of the group as an
    * <code>Enumeration</code>.
    *
    * @return The list of all members of the group

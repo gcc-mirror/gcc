@@ -1,4 +1,4 @@
-/* MappedByteBufferImpl.java -- 
+/* MappedByteBufferImpl.java --
    Copyright (C) 2002, 2003, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -52,7 +52,7 @@ final class MappedByteBufferImpl extends MappedByteBuffer
   /** Posix uses this for the actual length passed to mmap;
    * Win32 uses it for the pointer returned by CreateFileMapping. */
   public long implLen;
-  
+
   public MappedByteBufferImpl(Pointer address, int size, boolean readOnly)
     throws IOException
   {
@@ -64,7 +64,7 @@ final class MappedByteBufferImpl extends MappedByteBuffer
   {
     return readOnly;
   }
-  
+
   public byte get()
   {
     checkForUnderflow();
@@ -121,16 +121,16 @@ final class MappedByteBufferImpl extends MappedByteBuffer
     int pos = position();
     if (pos > 0)
       {
-	int count = remaining();
-	// Call shiftDown method optimized for direct buffers.
-	VMDirectByteBuffer.shiftDown(address, 0, pos, count);
-	position(count);
-	limit(capacity());
+        int count = remaining();
+        // Call shiftDown method optimized for direct buffers.
+        VMDirectByteBuffer.shiftDown(address, 0, pos, count);
+        position(count);
+        limit(capacity());
       }
     else
       {
-	position(limit());
-	limit(capacity());
+        position(limit());
+        limit(capacity());
       }
     return this;
   }
@@ -169,9 +169,9 @@ final class MappedByteBufferImpl extends MappedByteBuffer
 
     if (mark != pos)
       {
-	result.position(mark);
-	result.mark();
-	result.position(pos);
+        result.position(mark);
+        result.mark();
+        result.position(pos);
       }
     return result;
   }
@@ -220,18 +220,18 @@ final class MappedByteBufferImpl extends MappedByteBuffer
   {
     return ByteBufferHelper.getChar(this, order());
   }
-  
+
   public ByteBuffer putChar(char value)
   {
     ByteBufferHelper.putChar(this, value, order());
     return this;
   }
-  
+
   public char getChar(int index)
   {
     return ByteBufferHelper.getChar(this, index, order());
   }
-  
+
   public ByteBuffer putChar(int index, char value)
   {
     ByteBufferHelper.putChar(this, index, value, order());
@@ -242,18 +242,18 @@ final class MappedByteBufferImpl extends MappedByteBuffer
   {
     return ByteBufferHelper.getShort(this, order());
   }
-  
+
   public ByteBuffer putShort(short value)
   {
     ByteBufferHelper.putShort(this, value, order());
     return this;
   }
-  
+
   public short getShort(int index)
   {
     return ByteBufferHelper.getShort(this, index, order());
   }
-  
+
   public ByteBuffer putShort(int index, short value)
   {
     ByteBufferHelper.putShort(this, index, value, order());
@@ -264,18 +264,18 @@ final class MappedByteBufferImpl extends MappedByteBuffer
   {
     return ByteBufferHelper.getInt(this, order());
   }
-  
+
   public ByteBuffer putInt(int value)
   {
     ByteBufferHelper.putInt(this, value, order());
     return this;
   }
-  
+
   public int getInt(int index)
   {
     return ByteBufferHelper.getInt(this, index, order());
   }
-  
+
   public ByteBuffer putInt(int index, int value)
   {
     ByteBufferHelper.putInt(this, index, value, order());
@@ -286,18 +286,18 @@ final class MappedByteBufferImpl extends MappedByteBuffer
   {
     return ByteBufferHelper.getLong(this, order());
   }
-  
+
   public ByteBuffer putLong(long value)
   {
     ByteBufferHelper.putLong(this, value, order());
     return this;
   }
-  
+
   public long getLong(int index)
   {
     return ByteBufferHelper.getLong(this, index, order());
   }
-  
+
   public ByteBuffer putLong(int index, long value)
   {
     ByteBufferHelper.putLong(this, index, value, order());
@@ -308,13 +308,13 @@ final class MappedByteBufferImpl extends MappedByteBuffer
   {
     return ByteBufferHelper.getFloat(this, order());
   }
-  
+
   public ByteBuffer putFloat(float value)
   {
     ByteBufferHelper.putFloat(this, value, order());
     return this;
   }
-  
+
   public float getFloat(int index)
   {
     return ByteBufferHelper.getFloat(this, index, order());
@@ -336,12 +336,12 @@ final class MappedByteBufferImpl extends MappedByteBuffer
     ByteBufferHelper.putDouble(this, value, order());
     return this;
   }
-  
+
   public double getDouble(int index)
   {
     return ByteBufferHelper.getDouble(this, index, order());
   }
-  
+
   public ByteBuffer putDouble(int index, double value)
   {
     ByteBufferHelper.putDouble(this, index, value, order());

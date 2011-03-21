@@ -117,8 +117,8 @@ public abstract class ContentHandler
 
     for (int i = 0; i < classes.length; i++)
       {
-	if (classes[i].isInstance(obj))
-	  return obj;
+        if (classes[i].isInstance(obj))
+          return obj;
       }
 
     return null;

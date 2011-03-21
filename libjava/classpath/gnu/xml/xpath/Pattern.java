@@ -1,4 +1,4 @@
-/* Pattern.java -- 
+/* Pattern.java --
    Copyright (C) 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -51,4 +51,3 @@ public abstract class Pattern
   public abstract boolean matches(Node context);
 
 }
-

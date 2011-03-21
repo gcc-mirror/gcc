@@ -57,7 +57,7 @@ public class QueryEval
   private static final long serialVersionUID = 2675899265640874796L;
 
   /**
-   * Stores the server used, on a 
+   * Stores the server used, on a
    * thread-by-thread basis.
    */
   private static InheritableThreadLocal<MBeanServer> server =
@@ -83,7 +83,7 @@ public class QueryEval
    * Sets the {@link MBeanServer} on which the query will be
    * performed.  This value is inherited automatically by
    * child threads.  This method is only non-static for historical
-   * reasons; it makes no use of instance-related values. 
+   * reasons; it makes no use of instance-related values.
    *
    * @param svr the server to use.
    */

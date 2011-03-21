@@ -65,13 +65,13 @@ public class QtScrollbarPeer extends QtComponentPeer implements ScrollbarPeer
   private void fireMoved(int type, int value)
   {
     AdjustmentEvent e = new AdjustmentEvent((Scrollbar)owner,
-					    AdjustmentEvent.ADJUSTMENT_VALUE_CHANGED,
-					    type, value);
+                                            AdjustmentEvent.ADJUSTMENT_VALUE_CHANGED,
+                                            type, value);
     QtToolkit.eventQueue.postEvent(e);
   }
-  
+
   // ************ Public methods *********************
-  
+
   public native void setLineIncrement(int inc);
 
   public native void setPageIncrement(int inc);

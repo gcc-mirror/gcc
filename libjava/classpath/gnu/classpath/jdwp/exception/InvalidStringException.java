@@ -52,13 +52,13 @@ public class InvalidStringException
   public InvalidStringException (String str)
   {
     super (JdwpConstants.Error.INVALID_STRING,
-	   "invalid string (" + str + ")");
+           "invalid string (" + str + ")");
   }
 
   public InvalidStringException (long id)
   {
     super (JdwpConstants.Error.INVALID_STRING,
-	   "invalid string id (" + id + ")");
+           "invalid string id (" + id + ")");
   }
 
   public InvalidStringException (Throwable t)

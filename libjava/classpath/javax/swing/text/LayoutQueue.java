@@ -67,8 +67,8 @@ public class LayoutQueue
   {
     synchronized (list)
       {
-	list.addLast(task);
-	list.notify();
+        list.addLast(task);
+        list.notify();
       }
   }
 
@@ -81,20 +81,20 @@ public class LayoutQueue
   {
     synchronized (list)
       {
-	while (list.size() == 0)
-	  {
-	    try
-	      {
-		list.wait();
-	      }
-	    catch (InterruptedException _)
-	      {
-		// This seemed like a good idea, but it has not been
-		// tested on the JDK.
-		return null;
-	      }
-	  }
-	return (Runnable) list.removeFirst();
+        while (list.size() == 0)
+          {
+            try
+              {
+                list.wait();
+              }
+            catch (InterruptedException _)
+              {
+                // This seemed like a good idea, but it has not been
+                // tested on the JDK.
+                return null;
+              }
+          }
+        return (Runnable) list.removeFirst();
       }
   }
 

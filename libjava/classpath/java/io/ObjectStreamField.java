@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -55,7 +55,7 @@ import java.security.PrivilegedAction;
  * @author Michael Koch (konqueror@gmx.de)
  * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
  */
-public class ObjectStreamField 
+public class ObjectStreamField
   implements Comparable<Object>
 {
   private String name;
@@ -74,7 +74,7 @@ public class ObjectStreamField
   }
 
   /**
-   * This constructor creates an ObjectStreamField instance 
+   * This constructor creates an ObjectStreamField instance
    * which represents a field named <code>name</code> and is
    * of the type <code>type</code>.
    *
@@ -87,7 +87,7 @@ public class ObjectStreamField
   }
 
   /**
-   * This constructor creates an ObjectStreamField instance 
+   * This constructor creates an ObjectStreamField instance
    * which represents a field named <code>name</code> and is
    * of the type <code>type</code>.
    *
@@ -105,9 +105,9 @@ public class ObjectStreamField
     this.typename = TypeSignature.getEncodingOfClass(type);
     this.unshared = unshared;
   }
- 
+
   /**
-   * There are many cases you can not get java.lang.Class from typename 
+   * There are many cases you can not get java.lang.Class from typename
    * if your context class loader cannot load it, then use typename to
    * construct the field.
    *
@@ -130,7 +130,7 @@ public class ObjectStreamField
       {
       }
   }
-  
+
   /**
    * This method returns the name of the field represented by the
    * ObjectStreamField instance.
@@ -169,7 +169,7 @@ public class ObjectStreamField
    * {@link #getTypeCode()} in the case the type is a real
    * class (and not a primitive).
    *
-   * @return The name of the type (class name) if it is not a 
+   * @return The name of the type (class name) if it is not a
    * primitive, in the other case null is returned.
    */
   public String getTypeString ()
@@ -195,7 +195,7 @@ public class ObjectStreamField
 
   /**
    * This method sets the current offset of the field.
-   * 
+   *
    * @param off The offset of the field in bytes.
    * @see #getOffset()
    */
@@ -255,7 +255,7 @@ public class ObjectStreamField
    * the field should not be changed when the stream is read (if it is not
    * explicitly specified using serialPersistentFields).
    *
-   * @param persistent True if the field is persistent, false in the 
+   * @param persistent True if the field is persistent, false in the
    * other cases.
    * @see #isPersistent()
    */
@@ -276,7 +276,7 @@ public class ObjectStreamField
   }
 
   /**
-   * This method is specific to classpath's implementation and so 
+   * This method is specific to classpath's implementation and so
    * has the default access. It changes the state of this field as
    * to be set by ObjectInputStream.
    *
@@ -312,16 +312,16 @@ public class ObjectStreamField
   void lookupField(Class clazz) throws NoSuchFieldException, SecurityException
   {
     final Field f = clazz.getDeclaredField(name);
-    
+
     AccessController.doPrivileged(new PrivilegedAction()
       {
-	public Object run()
-	{
-	  f.setAccessible(true);
-	  return null;
-	}
+        public Object run()
+        {
+          f.setAccessible(true);
+          return null;
+        }
       });
-    
+
     this.field = f;
   }
 
@@ -340,8 +340,8 @@ public class ObjectStreamField
 
     if (!ftype.isAssignableFrom(type))
       throw new InvalidClassException
-	("invalid field type for " + name +
-	 " in class " + field.getDeclaringClass());
+        ("invalid field type for " + name +
+         " in class " + field.getDeclaringClass());
   }
 
   /**
@@ -356,19 +356,19 @@ public class ObjectStreamField
 
   final void setBooleanField(Object obj, boolean val)
   {
-    VMObjectStreamClass.setBooleanNative(field, obj, val);  
+    VMObjectStreamClass.setBooleanNative(field, obj, val);
   }
 
   final void setByteField(Object obj, byte val)
   {
     VMObjectStreamClass.setByteNative(field, obj, val);
   }
-  
+
   final void setCharField(Object obj, char val)
   {
     VMObjectStreamClass.setCharNative(field, obj, val);
   }
-  
+
   final void setShortField(Object obj, short val)
   {
     VMObjectStreamClass.setShortNative(field, obj, val);
@@ -378,24 +378,24 @@ public class ObjectStreamField
   {
     VMObjectStreamClass.setIntNative(field, obj, val);
   }
-  
+
   final void setLongField(Object obj, long val)
   {
     VMObjectStreamClass.setLongNative(field, obj, val);
   }
-  
+
   final void setFloatField(Object obj, float val)
   {
     VMObjectStreamClass.setFloatNative(field, obj, val);
   }
-  
+
   final void setDoubleField(Object obj, double val)
   {
     VMObjectStreamClass.setDoubleNative(field, obj, val);
   }
-  
+
   final void setObjectField(Object obj, Object val)
-  { 
+  {
     VMObjectStreamClass.setObjectNative(field, obj, val);
   }
 }

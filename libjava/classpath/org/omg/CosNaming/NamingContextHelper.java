@@ -75,7 +75,7 @@ public abstract class NamingContextHelper
       {
         BAD_OPERATION bad = new BAD_OPERATION("Naming context expected");
         bad.initCause(ex);
-        bad.minor = Minor.Any;        
+        bad.minor = Minor.Any;
         throw bad;
       }
   }
@@ -128,16 +128,16 @@ public abstract class NamingContextHelper
     else
       throw new BAD_PARAM();
   }
-  
+
   /**
    * Narrow the given object to the NamingContext. No type-checking is performed
    * to verify that the object actually supports the requested type. The
    * {@link BAD_OPERATION} will be thrown if unsupported operations are invoked
    * on the new returned reference, but no failure is expected at the time of
    * the unchecked_narrow. See OMG issue 4158.
-   * 
+   *
    * @param obj the object to cast.
-   * 
+   *
    * @return the casted NamingContext.
    */
   public static NamingContext unchecked_narrow(org.omg.CORBA.Object obj)
@@ -151,8 +151,8 @@ public abstract class NamingContextHelper
         // Do not call the _is_a(..).
         Delegate delegate = ((ObjectImpl) obj)._get_delegate();
         return new _NamingContextStub(delegate);
-      }    
-  }  
+      }
+  }
 
   /**
    * Read the naming context from the given CDR input stream.

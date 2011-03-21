@@ -1128,10 +1128,6 @@ darwin* | rhapsody*)
   sys_lib_dlsearch_path_spec='/usr/local/lib /lib /usr/lib'
   ;;
 
-freebsd1*)
-  dynamic_linker=no
-  ;;
-
 freebsd*)
   objformat=`test -x /usr/bin/objformat && /usr/bin/objformat || echo elf`
   version_type=freebsd-$objformat

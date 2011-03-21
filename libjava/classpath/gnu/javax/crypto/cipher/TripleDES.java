@@ -1,4 +1,4 @@
-/* TripleDES.java -- 
+/* TripleDES.java --
    Copyright (C) 2002, 2006 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -96,7 +96,7 @@ public class TripleDES
   /**
    * Convenience method which calls the method with same name and three
    * arguments, passing <code>3</code> as the value of the first parameter.
-   * 
+   *
    * @param kb The key bytes to adjust.
    * @param offset The starting offset into the key bytes.
    */
@@ -108,7 +108,7 @@ public class TripleDES
   /**
    * Adjusts, in-situ, the parity of the designated bytes, so they can be used
    * as DES keys for a 3-DES 1-, 2- or 3-key cipher.
-   * 
+   *
    * @param keyCount the number of independent DES keys. Can be either
    *          <code>1</code>, <code>2</code> or <code>3</code>. Any other value
    *          will cause an {@link IllegalArgumentException} to be raised.
@@ -133,7 +133,7 @@ public class TripleDES
   /**
    * Convenience method which calls the method with same name and three
    * arguments, passing <code>3</code> as the value of the first parameter.
-   * 
+   *
    * @param kb The key bytes to test.
    * @param offset The starting offset into the key bytes.
    * @return <code>true</code> if the bytes in <i>kb</i> starting at
@@ -150,7 +150,7 @@ public class TripleDES
    * Tests if enough bytes, expected to be used as DES keys for a 3-DES 1-, 2-
    * or 3-key cipher, located in a designated byte array, has already been
    * parity adjusted.
-   * 
+   *
    * @param keyCount the number of independent DES keys. Can be either
    *          <code>1</code>, <code>2</code> or <code>3</code>. Any other value
    *          will cause an {@link IllegalArgumentException} to be raised.

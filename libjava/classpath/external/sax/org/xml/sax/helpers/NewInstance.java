@@ -54,7 +54,7 @@ class NewInstance {
     /**
      * Figure out which ClassLoader to use.  For JDK 1.2 and later use
      * the context ClassLoader.
-     */           
+     */
     static ClassLoader getClassLoader ()
     {
         Method m = null;

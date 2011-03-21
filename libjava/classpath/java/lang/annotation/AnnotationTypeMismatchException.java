@@ -44,7 +44,7 @@ import java.lang.reflect.Method;
  * which the type has changed, since compilation or serialization
  * took place.  The mismatch between the compiled or serialized
  * type and the current type causes this exception to be thrown.
- * 
+ *
  * @author Tom Tromey (tromey@redhat.com)
  * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
  * @since 1.5

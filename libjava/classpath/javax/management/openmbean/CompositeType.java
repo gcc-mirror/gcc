@@ -46,7 +46,7 @@ import java.util.TreeMap;
 /**
  * The open type descriptor for instances of the
  * {@link CompositeData} class.
- * 
+ *
  * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
  * @since 1.5
  */
@@ -109,34 +109,34 @@ public class CompositeType
    *                           before comparison.
    */
   public CompositeType(String name, String desc, String[] names,
-		       String[] descs, OpenType<?>[] types)
+                       String[] descs, OpenType<?>[] types)
     throws OpenDataException
   {
     super(CompositeData.class.getName(), name, desc);
-    if (names.length == 0 
-	|| names.length != descs.length
-	|| names.length != types.length)
+    if (names.length == 0
+        || names.length != descs.length
+        || names.length != types.length)
       throw new IllegalArgumentException("Arrays must be non-empty " +
-					 "and of equal size.");
+                                         "and of equal size.");
     nameToDescription = new TreeMap<String,String>();
     for (int a = 0; a < names.length; ++a)
       {
-	if (names[a] == null)
-	  throw new IllegalArgumentException("Name " + a + " is null.");
-	if (descs[a] == null)
-	  throw new IllegalArgumentException("Description " + a + 
-					     " is null.");
-	String fieldName = names[a].trim();
-	if (fieldName.length() == 0)
-	  throw new IllegalArgumentException("Name " + a + " is " +
-					     "the empty string.");
-	if (descs[a].length() == 0)
-	  throw new IllegalArgumentException("Description " + a + " is " +
-					     "the empty string.");
-	if (nameToDescription.containsKey(fieldName))
-	  throw new OpenDataException(fieldName + " appears more " +
-				      "than once.");
-	nameToDescription.put(fieldName, descs[a]);
+        if (names[a] == null)
+          throw new IllegalArgumentException("Name " + a + " is null.");
+        if (descs[a] == null)
+          throw new IllegalArgumentException("Description " + a +
+                                             " is null.");
+        String fieldName = names[a].trim();
+        if (fieldName.length() == 0)
+          throw new IllegalArgumentException("Name " + a + " is " +
+                                             "the empty string.");
+        if (descs[a].length() == 0)
+          throw new IllegalArgumentException("Description " + a + " is " +
+                                             "the empty string.");
+        if (nameToDescription.containsKey(fieldName))
+          throw new OpenDataException(fieldName + " appears more " +
+                                      "than once.");
+        nameToDescription.put(fieldName, descs[a]);
       }
     nameToType = new TreeMap<String,OpenType<?>>();
     for (int a = 0; a < names.length; ++a)
@@ -167,7 +167,7 @@ public class CompositeType
    * <li>The type names are equal.</li>
    * <li>The fields and their types match.</li>
    * </ul>
-   * 
+   *
    * @param obj the object to compare with.
    * @return true if the conditions above hold.
    */
@@ -184,7 +184,7 @@ public class CompositeType
     for (String key : keys)
     {
       if (!(ctype.getType(key).equals(getType(key))))
-	return false;
+        return false;
     }
     return true;
   }
@@ -222,7 +222,7 @@ public class CompositeType
   /**
    * <p>
    * Returns the hash code of the composite data type.
-   * This is computed as the sum of the hash codes of 
+   * This is computed as the sum of the hash codes of
    * each field name and its type, together with the hash
    * code of the type name.  These are the same elements
    * of the type that are compared as part of the
@@ -242,18 +242,18 @@ public class CompositeType
   {
     if (hashCode == null)
       {
-	int elementTotal = 0;
-	for (Map.Entry<String,OpenType<?>> entry : nameToType.entrySet())
-	  {
-	    elementTotal += (entry.getKey().hashCode() +
-			     entry.getValue().hashCode());
-	  }
-	hashCode = Integer.valueOf(elementTotal 
-				   + getTypeName().hashCode());
+        int elementTotal = 0;
+        for (Map.Entry<String,OpenType<?>> entry : nameToType.entrySet())
+          {
+            elementTotal += (entry.getKey().hashCode() +
+                             entry.getValue().hashCode());
+          }
+        hashCode = Integer.valueOf(elementTotal
+                                   + getTypeName().hashCode());
       }
     return hashCode.intValue();
   }
-			       
+
   /**
    * Returns true if the specified object is a member of this
    * composite type.  The object is judged to be so if it is
@@ -268,15 +268,15 @@ public class CompositeType
   {
     if (obj instanceof CompositeData)
       {
-	CompositeData data = (CompositeData) obj;
-	return equals(data.getCompositeType());
+        CompositeData data = (CompositeData) obj;
+        return equals(data.getCompositeType());
       }
     return false;
   }
 
   /**
    * Returns an unmodifiable {@link java.util.Set}-based
-   * view of the field names that form part of this 
+   * view of the field names that form part of this
    * {@link CompositeType} instance.  The names are stored
    * in ascending alphanumeric order.
    *
@@ -311,9 +311,9 @@ public class CompositeType
   {
     if (string == null)
       string = getClass().getName()
-	+ "[name=" + getTypeName()
-	+ ", fields=" + nameToType
-	+ "]";
+        + "[name=" + getTypeName()
+        + ", fields=" + nameToType
+        + "]";
     return string;
   }
 

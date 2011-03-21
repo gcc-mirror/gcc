@@ -37,7 +37,7 @@ import org.objectweb.asm.MethodVisitor;
 /**
  * A {@link MethodAdapter} that renames fields and methods, and removes debug
  * info.
- * 
+ *
  * @author Eric Bruneton
  */
 public class MethodOptimizer extends MethodAdapter {

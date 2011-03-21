@@ -96,4 +96,3 @@ validOptions(String[][] opts, DocErrorReporter logger)
 }
 
 } // class Doclet
-

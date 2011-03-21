@@ -50,7 +50,7 @@ public interface DemoFactory
 
   /**
    * Creates the component that should be as demo application.
-   * 
+   *
    * @return the component that should be as demo application
    */
   JComponent createDemo();

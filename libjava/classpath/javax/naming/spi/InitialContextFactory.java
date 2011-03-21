@@ -58,7 +58,7 @@ public interface InitialContextFactory
 {
   /**
    * Create a new initial context
-   * 
+   *
    * @param environment the properties, used when creating the context. The
    *          implementing class will not modify the table nor keep the
    *          reference to it. After the method returns, the caller can safely

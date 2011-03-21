@@ -11,6 +11,8 @@ foo (void)
 {
   int i, j, k, l;
 
+  /* Loops (L, J) are interchanged, and then loops (J and K) are
+     interchanged.  The result is a nest starting with (K, J, L).  */
   for (l = 0; l < 4; l++)
     {
       for (k = 0; k < 4; k++)
@@ -80,6 +82,5 @@ main (void)
   return 0;
 }
 
-/* Loops K and L should be interchanged.  */
-/* { dg-final { scan-tree-dump-times "will be interchanged" 1 "graphite" { xfail *-*-* } } } */
+/* { dg-final { scan-tree-dump-times "will be interchanged" 2 "graphite" } } */
 /* { dg-final { cleanup-tree-dump "graphite" } } */

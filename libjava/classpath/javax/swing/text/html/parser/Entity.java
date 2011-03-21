@@ -170,14 +170,14 @@ public final class Entity
 
     return sdata;
   }
-  
+
   /**
    * Get the entity type.
    * @return the value of the {@link #type}.
    */
-  public int getType() 
+  public int getType()
   {
     return type;
-  }  
-          
+  }
+
 }

@@ -39,7 +39,7 @@ exception statement from your version. */
 package javax.naming.directory;
 
 import java.io.Serializable;
- 
+
 /**
  * @author Warren Levy (warrenl@redhat.com)
  * @date June 5, 2001
@@ -66,7 +66,7 @@ public class SearchControls implements Serializable
   }
 
   public SearchControls(int scope, long countlim, int timelim, String[] attrs,
-  			boolean retobj, boolean deref)
+                        boolean retobj, boolean deref)
   {
     searchScope = scope;
     timeLimit = timelim;

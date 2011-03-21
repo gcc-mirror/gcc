@@ -77,9 +77,9 @@ public class SecureRandom extends Random
   private static final long serialVersionUID = 4940670005562187L;
 
   //Serialized Field
-  long counter = 0;		//Serialized
+  long counter = 0;             //Serialized
   Provider provider = null;
-  byte[] randomBytes = null;	//Always null
+  byte[] randomBytes = null;    //Always null
   int randomBytesUsed = 0;
   SecureRandomSpi secureRandomSpi = null;
   byte[] state = null;
@@ -91,9 +91,9 @@ public class SecureRandom extends Random
   // ------------------------------------------------------------------------
 
   /**
-     Default constructor for SecureRandom. It constructs a 
-     new SecureRandom by instantating the first SecureRandom 
-     algorithm in the default security provier. 
+     Default constructor for SecureRandom. It constructs a
+     new SecureRandom by instantating the first SecureRandom
+     algorithm in the default security provier.
 
      It is not seeded and should be seeded using setSeed or else
      on the first call to getnextBytes it will force a seed.
@@ -134,9 +134,9 @@ public class SecureRandom extends Random
                         throw death;
                       }
                     catch (Throwable t)
-		      {
-			// Ignore.
-		      }
+                      {
+                        // Ignore.
+                      }
                   }
               }
           }
@@ -148,9 +148,9 @@ public class SecureRandom extends Random
   }
 
   /**
-     A constructor for SecureRandom. It constructs a new 
-     SecureRandom by instantating the first SecureRandom algorithm 
-     in the default security provier. 
+     A constructor for SecureRandom. It constructs a new
+     SecureRandom by instantating the first SecureRandom algorithm
+     in the default security provier.
 
      It is seeded with the passed function and is useful if the user
      has access to hardware random device (like a radiation detector).
@@ -167,9 +167,9 @@ public class SecureRandom extends Random
   }
 
   /**
-     A constructor for SecureRandom. It constructs a new 
+     A constructor for SecureRandom. It constructs a new
      SecureRandom using the specified SecureRandomSpi from
-     the specified security provier. 
+     the specified security provier.
 
      @param secureRandomSpi A SecureRandomSpi class
      @param provider A Provider class
@@ -183,7 +183,7 @@ public class SecureRandom extends Random
    * Private constructor called from the getInstance() method.
    */
   private SecureRandom(SecureRandomSpi secureRandomSpi, Provider provider,
-		       String algorithm)
+                       String algorithm)
   {
     this.secureRandomSpi = secureRandomSpi;
     this.provider = provider;
@@ -193,7 +193,7 @@ public class SecureRandom extends Random
   /**
    * Returns an instance of a <code>SecureRandom</code> from the first provider
    * that implements it.
-   * 
+   *
    * @param algorithm The algorithm name.
    * @return A new <code>SecureRandom</code> implementing the given algorithm.
    * @throws NoSuchAlgorithmException If no installed provider implements the
@@ -223,7 +223,7 @@ public class SecureRandom extends Random
   /**
    * Returns an instance of a <code>SecureRandom</code> for the specified
    * algorithm from the named provider.
-   * 
+   *
    * @param algorithm The algorithm name.
    * @param provider The provider name.
    * @return A new <code>SecureRandom</code> implementing the chosen
@@ -252,7 +252,7 @@ public class SecureRandom extends Random
   /**
    * Returns an instance of a <code>SecureRandom</code> for the specified
    * algorithm from the given provider.
-   * 
+   *
    * @param algorithm The <code>SecureRandom</code> algorithm to create.
    * @param provider The provider to use.
    * @throws NoSuchAlgorithmException If the algorithm cannot be found, or if
@@ -313,7 +313,7 @@ public class SecureRandom extends Random
   }
 
   /**
-     Seeds the SecureRandom. The class is re-seeded for each call and 
+     Seeds the SecureRandom. The class is re-seeded for each call and
      each seed builds on the previous seed so as not to weaken security.
 
      @param seed seed bytes to seed with
@@ -325,7 +325,7 @@ public class SecureRandom extends Random
   }
 
   /**
-     Seeds the SecureRandom. The class is re-seeded for each call and 
+     Seeds the SecureRandom. The class is re-seeded for each call and
      each seed builds on the previous seed so as not to weaken security.
 
      @param seed 8 seed bytes to seed with
@@ -340,13 +340,13 @@ public class SecureRandom extends Random
     if (secureRandomSpi != null)
       {
         byte[] tmp = { (byte) (0xff & (seed >> 56)),
-		       (byte) (0xff & (seed >> 48)),
-		       (byte) (0xff & (seed >> 40)),
-		       (byte) (0xff & (seed >> 32)),
-		       (byte) (0xff & (seed >> 24)),
-		       (byte) (0xff & (seed >> 16)),
-		       (byte) (0xff & (seed >> 8)),
-		       (byte) (0xff & seed)
+                       (byte) (0xff & (seed >> 48)),
+                       (byte) (0xff & (seed >> 40)),
+                       (byte) (0xff & (seed >> 32)),
+                       (byte) (0xff & (seed >> 24)),
+                       (byte) (0xff & (seed >> 16)),
+                       (byte) (0xff & (seed >> 8)),
+                       (byte) (0xff & seed)
         };
         secureRandomSpi.engineSetSeed(tmp);
         isSeeded = true;
@@ -394,7 +394,7 @@ public class SecureRandom extends Random
 
   /**
      Returns the given number of seed bytes. This method is
-     maintained only for backwards capability. 
+     maintained only for backwards capability.
 
      @param numBytes number of seed bytes to get
 

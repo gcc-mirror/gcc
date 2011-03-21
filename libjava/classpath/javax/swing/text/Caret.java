@@ -1,4 +1,4 @@
-/* Caret.java -- 
+/* Caret.java --
    Copyright (C) 2002, 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -77,7 +77,7 @@ public interface Caret
    * @param c the text component to install this caret to
    */
   void install(JTextComponent c);
-  
+
   /**
    * Deinstalls this <code>Caret</code> from the specified text component.
    * This usually involves removing listeners from the text component.
@@ -105,7 +105,7 @@ public interface Caret
    * @param rate the new blink rate to set
    */
   void setBlinkRate(int rate);
-  
+
   /**
    * Returns the current position of this <code>Caret</code> within the
    * <code>Document</code>.
@@ -125,7 +125,7 @@ public interface Caret
    * @see #moveDot(int)
    */
   void setDot(int dot);
-  
+
   /**
    * Moves the <code>dot</code> location without touching the
    * <code>mark</code>. This is used when making a selection.
@@ -135,7 +135,7 @@ public interface Caret
    * @see #setDot(int)
    */
   void moveDot(int dot);
-  
+
   /**
    * Returns the current position of the <code>mark</code>. The
    * <code>mark</code> marks the location in the <code>Document</code> that
@@ -145,7 +145,7 @@ public interface Caret
    * @return the current position of the mark
    */
   int getMark();
-  
+
   /**
    * Returns the current visual position of this <code>Caret</code>.
    *
@@ -194,7 +194,7 @@ public interface Caret
    * <code>Caret</code>, <code>false</code> hides it.
    *
    * @param v the visibility to set
-   */  
+   */
   void setVisible(boolean v);
 
   /**
@@ -203,5 +203,5 @@ public interface Caret
    *
    * @param g the graphics context to render to
    */
-  void paint(Graphics g);  
+  void paint(Graphics g);
 }

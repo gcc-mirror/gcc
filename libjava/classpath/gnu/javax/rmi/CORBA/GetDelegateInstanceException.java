@@ -1,4 +1,4 @@
-/* GetDelegateInstanceException.java -- 
+/* GetDelegateInstanceException.java --
    Copyright (C) 2002, 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -42,12 +42,12 @@ public class GetDelegateInstanceException
   extends Exception
 {
   private Throwable next;
-  
+
   public GetDelegateInstanceException(String msg)
   {
     super(msg);
   }
-  
+
   public GetDelegateInstanceException(String msg, Throwable next)
   {
     super(msg, next);

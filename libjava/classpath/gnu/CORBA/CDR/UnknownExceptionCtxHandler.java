@@ -54,7 +54,7 @@ import javax.rmi.CORBA.Util;
 
 /**
  * Reads the data about an unknown exception from the UnknownExceptionInfo.
- * 
+ *
  * @author Audrius Meskauskas, Lithuania (AudriusA@Bioinformatics.org)
  */
 public class UnknownExceptionCtxHandler
@@ -109,16 +109,16 @@ public class UnknownExceptionCtxHandler
    * Following the documentation, this must be just value type, but it seems
    * that in Sun's implementation is is not, as starts from 0x0. For value type,
    * this would be null.
-   * 
+   *
    * TODO Implement reading and writing in Sun format, making Classpath IIOP
    * interoperable with Sun's implementation. Current inmplementation reads and
    * reproduces the exception class type only.
-   * 
+   *
    * @param input the input stream to read the context (orb and other settings
    * are inherited from the main stream that received the message).
-   * 
+   *
    * @param contexts all service contexts that were present in the message.
-   * 
+   *
    * @return the Throwable, extracted from context, on null, if this has failed.
    */
   public static Throwable read(BufferredCdrInput input, ServiceContext[] contexts)

@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -75,21 +75,21 @@ class StaticMethodContext extends AbstractCreatableObjectContext
 
     try
       {
-	Method method = MethodFinder.getMethod(klass, methodName, args);
-	return method.invoke(null, args);
+        Method method = MethodFinder.getMethod(klass, methodName, args);
+        return method.invoke(null, args);
       }
     catch (NoSuchMethodException nsme)
       {
-	throw new AssemblyException(nsme);
+        throw new AssemblyException(nsme);
       }
     catch (InvocationTargetException ite)
       {
-	// rethrows the reason for the InvocationTargetsException (ie. the exception in the called code)
-	throw new AssemblyException(ite.getCause());
+        // rethrows the reason for the InvocationTargetsException (ie. the exception in the called code)
+        throw new AssemblyException(ite.getCause());
       }
     catch (IllegalAccessException iae)
       {
-	throw new AssemblyException(iae);
+        throw new AssemblyException(iae);
       }
   }
 }

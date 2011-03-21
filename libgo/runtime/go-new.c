@@ -11,11 +11,11 @@
 void *
 __go_new (size_t size)
 {
-  return __go_alloc (size);
+  return runtime_mallocgc (size, 0, 1, 1);
 }
 
 void *
 __go_new_nopointers (size_t size)
 {
-  return runtime_mallocgc (size, RefNoPointers, 1, 1);
+  return runtime_mallocgc (size, FlagNoPointers, 1, 1);
 }

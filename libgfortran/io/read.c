@@ -165,7 +165,7 @@ convert_real (st_parameter_dt *dtp, void *dest, const char *buffer, int length)
 #if defined(HAVE_GFC_REAL_16)
 # if defined(GFC_REAL_16_IS_FLOAT128)
     case 16:
-      __qmath_(quadmath_strtopQ) (buffer, NULL, dest);
+      *((GFC_REAL_16*) dest) = __qmath_(strtoflt128) (buffer, NULL);
       break;
 # elif defined(HAVE_STRTOLD)
     case 16:
@@ -184,6 +184,75 @@ convert_real (st_parameter_dt *dtp, void *dest, const char *buffer, int length)
 		      "Error during floating point read");
       next_record (dtp, 1);
       return 1;
+    }
+
+  return 0;
+}
+
+/* convert_infnan()-- Convert character INF/NAN representation to the
+   machine number.  Note: many architectures (e.g. IA-64, HP-PA) require
+   that the storage pointed to by the dest argument is properly aligned
+   for the type in question.  */
+
+int
+convert_infnan (st_parameter_dt *dtp, void *dest, const char *buffer,
+	        int length)
+{
+  const char *s = buffer;
+  int is_inf, plus = 1;
+
+  if (*s == '+')
+    s++;
+  else if (*s == '-')
+    {
+      s++;
+      plus = 0;
+    }
+
+  is_inf = *s == 'i';
+
+  switch (length)
+    {
+    case 4:
+      if (is_inf)
+	*((GFC_REAL_4*) dest) = plus ? __builtin_inff () : -__builtin_inff ();
+      else
+	*((GFC_REAL_4*) dest) = plus ? __builtin_nanf ("") : -__builtin_nanf ("");
+      break;
+
+    case 8:
+      if (is_inf)
+	*((GFC_REAL_8*) dest) = plus ? __builtin_inf () : -__builtin_inf ();
+      else
+	*((GFC_REAL_8*) dest) = plus ? __builtin_nan ("") : -__builtin_nan ("");
+      break;
+
+#if defined(HAVE_GFC_REAL_10)
+    case 10:
+      if (is_inf)
+	*((GFC_REAL_10*) dest) = plus ? __builtin_infl () : -__builtin_infl ();
+      else
+	*((GFC_REAL_10*) dest) = plus ? __builtin_nanl ("") : -__builtin_nanl ("");
+      break;
+#endif
+
+#if defined(HAVE_GFC_REAL_16)
+# if defined(GFC_REAL_16_IS_FLOAT128)
+    case 16:
+      *((GFC_REAL_16*) dest) = __qmath_(strtoflt128) (buffer, NULL);
+      break;
+# else
+    case 16:
+      if (is_inf)
+	*((GFC_REAL_16*) dest) = plus ? __builtin_infl () : -__builtin_infl ();
+      else
+	*((GFC_REAL_16*) dest) = plus ? __builtin_nanl ("") : -__builtin_nanl ("");
+      break;
+# endif
+#endif
+
+    default:
+      internal_error (&dtp->common, "Unsupported real kind during IO");
     }
 
   return 0;
@@ -896,7 +965,7 @@ read_f (st_parameter_dt *dtp, const fnode *f, char *dest, int length)
       else if (strcmp (save, "nan") != 0)
 	goto bad_float;
 
-      convert_real (dtp, dest, buffer, length);
+      convert_infnan (dtp, dest, buffer, length);
       return;
     }
 

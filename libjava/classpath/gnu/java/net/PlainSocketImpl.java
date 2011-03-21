@@ -8,7 +8,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -93,13 +93,13 @@ public class PlainSocketImpl extends SocketImpl
    * is being invoked on this socket.
    */
   private boolean inChannelOperation;
-  
+
   /**
    * The socket channel we use for IO operation. Package-private for
    * use by inner classes.
    */
   SocketChannelImpl channel;
-  
+
   /**
    * Indicates whether we should ignore whether any associated
    * channel is set to non-blocking mode. Certain operations
@@ -111,7 +111,7 @@ public class PlainSocketImpl extends SocketImpl
   {
     return inChannelOperation;
   }
-  
+
   /**
    * Sets our indicator of whether an I/O operation is being
    * initiated by a channel.
@@ -120,7 +120,7 @@ public class PlainSocketImpl extends SocketImpl
   {
     inChannelOperation = b;
   }
- 
+
   /**
    * Default do nothing constructor.
    */
@@ -149,7 +149,7 @@ public class PlainSocketImpl extends SocketImpl
         case SO_BROADCAST:
         case SO_KEEPALIVE:
         case SO_OOBINLINE:
-        case TCP_NODELAY:          
+        case TCP_NODELAY:
         case IP_TOS:
         case SO_RCVBUF:
         case SO_SNDBUF:
@@ -188,7 +188,7 @@ public class PlainSocketImpl extends SocketImpl
             throw se;
           }
       }
-    
+
     // This filters options which are invalid for TCP.
     switch (optionId)
     {
@@ -197,7 +197,7 @@ public class PlainSocketImpl extends SocketImpl
       case SO_BROADCAST:
       case SO_KEEPALIVE:
       case SO_OOBINLINE:
-      case TCP_NODELAY:          
+      case TCP_NODELAY:
       case IP_TOS:
       case SO_RCVBUF:
       case SO_SNDBUF:
@@ -207,7 +207,7 @@ public class PlainSocketImpl extends SocketImpl
       default:
         throw new SocketException("Unrecognized TCP option: " + optionId);
     }
-    
+
   }
 
   public void shutdownInput() throws IOException
@@ -281,10 +281,10 @@ public class PlainSocketImpl extends SocketImpl
     boolean connected = channel.connect(address, timeout);
     if (!connected)
       throw new SocketTimeoutException("connect timed out");
-    
+
     // Using the given SocketAddress is important to preserve
     // hostnames given by the caller.
-    InetSocketAddress addr = (InetSocketAddress) address; 
+    InetSocketAddress addr = (InetSocketAddress) address;
     this.address = addr.getAddress();
     this.port = addr.getPort();
   }
@@ -314,7 +314,7 @@ public class PlainSocketImpl extends SocketImpl
    * number, additional connections will be refused.
    *
    * @param queuelen The length of the pending connection queue
-   * 
+   *
    * @throws IOException If an error occurs
    */
   protected synchronized void listen(int queuelen)
@@ -324,7 +324,7 @@ public class PlainSocketImpl extends SocketImpl
   }
 
   /**
-   * Accepts a new connection on this socket and returns in in the 
+   * Accepts a new connection on this socket and returns in in the
    * passed in SocketImpl.
    *
    * @param impl The SocketImpl object to accept this connection.
@@ -349,7 +349,7 @@ public class PlainSocketImpl extends SocketImpl
 
   /**
    * Returns the number of bytes that the caller can read from this socket
-   * without blocking. 
+   * without blocking.
    *
    * @return the number of readable bytes before blocking
    *
@@ -377,7 +377,7 @@ public class PlainSocketImpl extends SocketImpl
   {
     if (impl.getState().isValid())
       impl.close();
-    
+
     address = null;
     port = -1;
   }
@@ -418,7 +418,7 @@ public class PlainSocketImpl extends SocketImpl
 
     return out;
   }
-  
+
   public VMChannel getVMChannel()
   {
     if (channel == null)
@@ -433,7 +433,7 @@ public class PlainSocketImpl extends SocketImpl
   {
     if (channel == null)
       return null;
-    
+
     try
       {
         InetSocketAddress remote = channel.getVMChannel().getPeerAddress();
@@ -444,7 +444,7 @@ public class PlainSocketImpl extends SocketImpl
         // was created by the native layer (this preserves exact hostnames).
         if (address != null)
           return address;
-        
+
         return remote.getAddress();
       }
     catch (IOException ioe)
@@ -472,7 +472,7 @@ public class PlainSocketImpl extends SocketImpl
         return -1;
       }
   }
-  
+
   public InetSocketAddress getLocalAddress()
   {
     if (channel == null)
@@ -494,7 +494,7 @@ public class PlainSocketImpl extends SocketImpl
   {
     if (channel == null)
       return -1;
-    
+
     try
       {
         InetSocketAddress remote = channel.getVMChannel().getPeerAddress();
@@ -509,7 +509,7 @@ public class PlainSocketImpl extends SocketImpl
   }
 
   /**
-   * This class contains an implementation of <code>InputStream</code> for 
+   * This class contains an implementation of <code>InputStream</code> for
    * sockets.  It in an internal only class used by <code>PlainSocketImpl</code>.
    *
    * @author Nic Ferrier <nferrier@tapsellferrier.co.uk>
@@ -536,7 +536,7 @@ public class PlainSocketImpl extends SocketImpl
     }
 
     /**
-     * Reads the next byte of data and returns it as an int.  
+     * Reads the next byte of data and returns it as an int.
      *
      * @return The byte read (as an int) or -1 if end of stream);
      *
@@ -599,8 +599,8 @@ public class PlainSocketImpl extends SocketImpl
   }
 
   /**
-   * This class is used internally by <code>PlainSocketImpl</code> to be the 
-   * <code>OutputStream</code> subclass returned by its 
+   * This class is used internally by <code>PlainSocketImpl</code> to be the
+   * <code>OutputStream</code> subclass returned by its
    * <code>getOutputStream method</code>.  It expects only to  be used in that
    * context.
    *
@@ -623,7 +623,7 @@ public class PlainSocketImpl extends SocketImpl
 
     /**
      * Writes a byte (passed in as an int) to the given output stream
-     * 
+     *
      * @param b The byte to write
      *
      * @exception IOException If an error occurs

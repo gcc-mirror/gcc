@@ -41,7 +41,7 @@ package java.awt.color;
 /**
  * ICC_ProfileGray - a special case of ICC_Profiles.
  *
- * The ICC_Profile.getInstance() method will return an instance of the 
+ * The ICC_Profile.getInstance() method will return an instance of the
  * ICC_ProfileGray subclass when all the following conditions are met:
  * The device color space of the profile is TYPE_GRAY.
  * The profile contains a gray TRCTag.
@@ -52,7 +52,7 @@ package java.awt.color;
  * linearGray = grayTRC[deviceGray]
  *
  * Note that if the profile contains a CLUT for the color space conversion,
- * it should be used instead, and the TRC information ignored. 
+ * it should be used instead, and the TRC information ignored.
  *
  * @author Sven de Marothy
  * @since 1.2

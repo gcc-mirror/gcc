@@ -1,4 +1,4 @@
-/* GnuDHKey.java -- 
+/* GnuDHKey.java --
    Copyright (C) 2003, 2006 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -86,7 +86,7 @@ public abstract class GnuDHKey
 
   /**
    * Trivial protected constructor.
-   * 
+   *
    * @param defaultFormat the identifier of the encoding format to use by
    *          default when externalizing the key.
    * @param q a prime divisor of p-1.
@@ -135,7 +135,7 @@ public abstract class GnuDHKey
   /**
    * Returns <code>true</code> if the designated object is an instance of
    * {@link DHKey} and has the same Diffie-Hellman parameter values as this one.
-   * 
+   *
    * @param obj the other non-null DH key to compare to.
    * @return <code>true</code> if the designated object is of the same type
    *         and value as this one.

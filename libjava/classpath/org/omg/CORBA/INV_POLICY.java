@@ -41,18 +41,18 @@ package org.omg.CORBA;
 import java.io.Serializable;
 
 /**
- * This exception is thrown when an invocation cannot be made because of 
- * an incompatibility between Policy overrides that apply to the 
+ * This exception is thrown when an invocation cannot be made because of
+ * an incompatibility between Policy overrides that apply to the
  * particular invocation.
- * 
+ *
  * @author Audrius Meskauskas (AudriusA@Bioinformatics.org)
  */
 public final class INV_POLICY
   extends SystemException
   implements Serializable
 {
-  /** 
-   * Use serialVersionUID for interoperability. 
+  /**
+   * Use serialVersionUID for interoperability.
    */
   private static final long serialVersionUID = -7823113107689030975L;
 

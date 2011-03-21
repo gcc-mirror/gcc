@@ -92,6 +92,6 @@ public abstract class TimeZoneNameProvider
    * @see java.util.TimeZone#getDisplayName(boolean,int,java.util.Locale)
    */
   public abstract String getDisplayName(String id, boolean daylight,
-					int style, Locale locale);
+                                        int style, Locale locale);
 
 }

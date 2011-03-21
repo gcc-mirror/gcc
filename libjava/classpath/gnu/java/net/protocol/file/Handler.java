@@ -76,14 +76,14 @@ public class Handler extends URLStreamHandler
     String host = url.getHost();
     if ((host != null) && (! host.equals("")))
       {
-	// Reset the protocol (and implicitly the handler) for this URL.
-	// Then have the URL attempt the connection again, as it will
-	// get the changed handler the next time around.
-	// If the ftp protocol handler is not installed, an 
-	// exception will be thrown from the new openConnection() call.
-	setURL (url, "ftp", url.getHost(), url.getPort(), url.getFile(),
-	        url.getRef());
-	return url.openConnection();
+        // Reset the protocol (and implicitly the handler) for this URL.
+        // Then have the URL attempt the connection again, as it will
+        // get the changed handler the next time around.
+        // If the ftp protocol handler is not installed, an
+        // exception will be thrown from the new openConnection() call.
+        setURL (url, "ftp", url.getHost(), url.getPort(), url.getFile(),
+                url.getRef());
+        return url.openConnection();
       }
 
     return new Connection(url);

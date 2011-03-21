@@ -1,4 +1,4 @@
-/* TimeType.java -- 
+/* TimeType.java --
    Copyright (C) 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -86,7 +86,7 @@ final class TimeType
         }
       return 0;
     }
-    
+
   }
 
   static final int[] CONSTRAINING_FACETS = {
@@ -217,7 +217,7 @@ final class TimeType
         throw new DatatypeException(len, "invalid time value");
       }
   }
-  
+
   public Object createValue(String value, ValidationContext context) {
     int len = value.length();
     int state = 3;
@@ -298,6 +298,5 @@ final class TimeType
         return null;
       }
   }
-  
-}
 
+}

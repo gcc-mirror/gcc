@@ -58,16 +58,16 @@ public class LinearRGBConverter implements ColorSpaceConverter
     float[] out = new float[3];
     for (int i = 0; i < 3; i++)
       {
-	float n = in[i];
-	if (n < 0)
-	  n = 0f;
-	if (n > 1)
-	  n = 1f;
-	if (n <= 0.00304f)
-	  out[i] = in[0] * 12.92f;
-	else
-	  out[i] = 1.055f * ((float) Math.exp((1 / 2.4) * Math.log(n)))
-	           - 0.055f;
+        float n = in[i];
+        if (n < 0)
+          n = 0f;
+        if (n > 1)
+          n = 1f;
+        if (n <= 0.00304f)
+          out[i] = in[0] * 12.92f;
+        else
+          out[i] = 1.055f * ((float) Math.exp((1 / 2.4) * Math.log(n)))
+                   - 0.055f;
       }
     return out;
   }
@@ -84,15 +84,15 @@ public class LinearRGBConverter implements ColorSpaceConverter
     //  numbers from the w3 spec.
     for (int i = 0; i < 3; i++)
       {
-	float n = in[i];
-	if (n < 0)
-	  n = 0f;
-	if (n > 1)
-	  n = 1f;
-	if (n <= 0.03928f)
-	  out[i] = (float) (n / 12.92);
-	else
-	  out[i] = (float) (Math.exp(2.4 * Math.log((n + 0.055) / 1.055)));
+        float n = in[i];
+        if (n < 0)
+          n = 0f;
+        if (n > 1)
+          n = 1f;
+        if (n <= 0.03928f)
+          out[i] = (float) (n / 12.92);
+        else
+          out[i] = (float) (Math.exp(2.4 * Math.log((n + 0.055) / 1.055)));
       }
     return out;
   }

@@ -1,4 +1,4 @@
-/* Duration.java -- 
+/* Duration.java --
    Copyright (C) 2004, 2005, 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -91,7 +91,7 @@ public abstract class Duration
     Number val = getField(DatatypeConstants.YEARS);
     return (val == null) ? 0 : val.intValue();
   }
-  
+
   /**
    * Returns the months in this duration as an int, or 0 if not present.
    */
@@ -100,7 +100,7 @@ public abstract class Duration
     Number val = getField(DatatypeConstants.MONTHS);
     return (val == null) ? 0 : val.intValue();
   }
-  
+
   /**
    * Returns the days in this duration as an int, or 0 if not present.
    */
@@ -109,7 +109,7 @@ public abstract class Duration
     Number val = getField(DatatypeConstants.DAYS);
     return (val == null) ? 0 : val.intValue();
   }
-  
+
   /**
    * Returns the hours in this duration as an int, or 0 if not present.
    */
@@ -118,7 +118,7 @@ public abstract class Duration
     Number val = getField(DatatypeConstants.HOURS);
     return (val == null) ? 0 : val.intValue();
   }
-  
+
   /**
    * Returns the minutes in this duration as an int, or 0 if not present.
    */
@@ -127,7 +127,7 @@ public abstract class Duration
     Number val = getField(DatatypeConstants.MINUTES);
     return (val == null) ? 0 : val.intValue();
   }
-  
+
   /**
    * Returns the seconds in this duration as an int, or 0 if not present.
    */
@@ -207,7 +207,7 @@ public abstract class Duration
         calendar.add(Calendar.SECOND, getSeconds());
       }
   }*/
-  
+
   /**
    * Adds this duration to the specified date.
    */
@@ -246,7 +246,7 @@ public abstract class Duration
    * Returns the unary negative of this duration.
    */
   public abstract Duration negate();
-  
+
   /**
    * Converts the years and months fields into the days field using a
    * specific time instant as the reference point.
@@ -276,7 +276,7 @@ public abstract class Duration
     // TODO
     throw new UnsupportedOperationException();
   }
-  
+
   public abstract int hashCode();
 
   /**
@@ -287,5 +287,5 @@ public abstract class Duration
     // TODO
     throw new UnsupportedOperationException();
   }
-  
+
 }

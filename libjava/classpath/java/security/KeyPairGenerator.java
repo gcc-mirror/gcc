@@ -48,7 +48,7 @@ import java.security.spec.AlgorithmParameterSpec;
 /**
  * <code>KeyPairGenerator</code> is a class used to generate key-pairs for a
  * security algorithm.
- * 
+ *
  * <p>The <code>KeyPairGenerator</code> is created with the
  * <code>getInstance()</code> Factory methods. It is used to generate a pair of
  * public and private keys for a specific algorithm and associate this key-pair
@@ -69,7 +69,7 @@ public abstract class KeyPairGenerator extends KeyPairGeneratorSpi
 
   /**
    * Constructs a new instance of <code>KeyPairGenerator</code>.
-   * 
+   *
    * @param algorithm
    *          the algorithm to use.
    */
@@ -81,7 +81,7 @@ public abstract class KeyPairGenerator extends KeyPairGeneratorSpi
 
   /**
    * Returns the name of the algorithm used.
-   * 
+   *
    * @return the name of the algorithm used.
    */
   public String getAlgorithm()
@@ -92,7 +92,7 @@ public abstract class KeyPairGenerator extends KeyPairGeneratorSpi
   /**
    * Returns a new instance of <code>KeyPairGenerator</code> which generates
    * key-pairs for the specified algorithm.
-   * 
+   *
    * @param algorithm the name of the algorithm to use.
    * @return a new instance repesenting the desired algorithm.
    * @throws NoSuchAlgorithmException if the algorithm is not implemented by any
@@ -122,7 +122,7 @@ public abstract class KeyPairGenerator extends KeyPairGeneratorSpi
   /**
    * Returns a new instance of <code>KeyPairGenerator</code> which generates
    * key-pairs for the specified algorithm from a named provider.
-   * 
+   *
    * @param algorithm the name of the algorithm to use.
    * @param provider the name of a {@link Provider} to use.
    * @return a new instance repesenting the desired algorithm.
@@ -149,7 +149,7 @@ public abstract class KeyPairGenerator extends KeyPairGeneratorSpi
   /**
    * Returns a new instance of <code>KeyPairGenerator</code> which generates
    * key-pairs for the specified algorithm from a designated {@link Provider}.
-   * 
+   *
    * @param algorithm
    *          the name of the algorithm to use.
    * @param provider
@@ -163,8 +163,8 @@ public abstract class KeyPairGenerator extends KeyPairGeneratorSpi
    * @since 1.4
    * @see Provider
    */
-  public static KeyPairGenerator getInstance(String algorithm, 
-					     Provider provider)
+  public static KeyPairGenerator getInstance(String algorithm,
+                                             Provider provider)
     throws NoSuchAlgorithmException
   {
     CPStringBuilder sb = new CPStringBuilder("KeyPairGenerator for algorithm [")
@@ -206,7 +206,7 @@ public abstract class KeyPairGenerator extends KeyPairGeneratorSpi
 
   /**
    * Returns the {@link Provider} of this instance.
-   * 
+   *
    * @return the {@link Provider} of this instance.
    */
   public final Provider getProvider()
@@ -217,7 +217,7 @@ public abstract class KeyPairGenerator extends KeyPairGeneratorSpi
   /**
    * Initializes this instance for the specified key size. Since no source of
    * randomness is specified, a default one will be used.
-   * 
+   *
    * @param keysize
    *          the size of keys to use.
    */
@@ -229,7 +229,7 @@ public abstract class KeyPairGenerator extends KeyPairGeneratorSpi
   /**
    * Initializes this instance for the specified key size and
    * {@link SecureRandom}.
-   * 
+   *
    * @param keysize
    *          the size of keys to use.
    * @param random
@@ -244,7 +244,7 @@ public abstract class KeyPairGenerator extends KeyPairGeneratorSpi
    * Initializes this instance with the specified
    * {@link AlgorithmParameterSpec}. Since no source of randomness is specified,
    * a default one will be used.
-   * 
+   *
    * @param params
    *          the {@link AlgorithmParameterSpec} to use.
    * @throws InvalidAlgorithmParameterException
@@ -260,7 +260,7 @@ public abstract class KeyPairGenerator extends KeyPairGeneratorSpi
   /**
    * Initializes this instance with the specified {@link AlgorithmParameterSpec}
    * and {@link SecureRandom}.
-   * 
+   *
    * @param params
    *          the {@link AlgorithmParameterSpec} to use.
    * @param random
@@ -277,9 +277,9 @@ public abstract class KeyPairGenerator extends KeyPairGeneratorSpi
 
   /**
    * Generates a new "DSA" {@link KeyPair} from the "GNU" security provider.
-   * 
+   *
    * <p>This method generates a unique key-pair each time it is called.</p>
-   * 
+   *
    * @return a new unique {@link KeyPair}.
    * @see #generateKeyPair()
    * @since 1.2
@@ -300,9 +300,9 @@ public abstract class KeyPairGenerator extends KeyPairGeneratorSpi
 
   /**
    * Generates a new "DSA" {@link KeyPair} from the "GNU" security provider.
-   * 
+   *
    * <p>This method generates a unique key pair each time it is called.</p>
-   * 
+   *
    * @return a new unique {@link KeyPair}.
    * @see #genKeyPair()
    */

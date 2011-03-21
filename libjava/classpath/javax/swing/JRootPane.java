@@ -93,7 +93,7 @@ public class JRootPane extends JComponent implements Accessible
     }
   }
 
-  // Custom Layout Manager for JRootPane. It positions contentPane and 
+  // Custom Layout Manager for JRootPane. It positions contentPane and
   // menuBar withing its layeredPane.
   protected class RootLayout implements LayoutManager2, Serializable
   {
@@ -125,7 +125,7 @@ public class JRootPane extends JComponent implements Accessible
      */
     protected RootLayout()
     {
-      // Nothing to do here. 
+      // Nothing to do here.
     }
 
     /**
@@ -208,7 +208,7 @@ public class JRootPane extends JComponent implements Accessible
           // 2. the layeredPane filles entire viewable region.
           // 3. the menuBar is positioned at the upper edge of layeredPane.
           // 4. the contentPane fills viewable region minus menuBar, if present.
-      
+
 
           // +-------------------------------+
           // |  JLayeredPane                 |
@@ -237,7 +237,7 @@ public class JRootPane extends JComponent implements Accessible
           else
             contentPaneBounds = new Rectangle(0, 0, containerWidth,
                                               containerHeight);
-              
+
           glassPaneBounds = new Rectangle(i.left, i.top, containerWidth, containerHeight);
           layeredPaneBounds = new Rectangle(i.left, i.top, containerWidth, containerHeight);
         }
@@ -321,7 +321,7 @@ public class JRootPane extends JComponent implements Accessible
   public static final int FILE_CHOOSER_DIALOG = 6;
   public static final int QUESTION_DIALOG = 7;
   public static final int WARNING_DIALOG = 8;
-          
+
   /** DOCUMENT ME! */
   protected Component glassPane;
 
@@ -366,7 +366,7 @@ public class JRootPane extends JComponent implements Accessible
    * @since 1.4
    */
   private int windowDecorationStyle = NONE;
-  
+
   /**
    * DOCUMENT ME!
    *
@@ -432,7 +432,7 @@ public class JRootPane extends JComponent implements Accessible
 
   /**
    * Sets the JRootPane's content pane.  The content pane should typically be
-   * opaque for painting to work properly.  This method also 
+   * opaque for painting to work properly.  This method also
    * removes the old content pane from the layered pane.
    *
    * @param p the Container that will be the content pane
@@ -505,10 +505,10 @@ public class JRootPane extends JComponent implements Accessible
   }
 
   /**
-   * Set the layered pane for the root pane. 
+   * Set the layered pane for the root pane.
    *
    * @param f The JLayeredPane to be used.
-   * 
+   *
    * @throws IllegalComponentStateException if JLayeredPane
    * parameter is null.
    */
@@ -516,10 +516,10 @@ public class JRootPane extends JComponent implements Accessible
   {
     if (f == null)
       throw new IllegalComponentStateException();
-    
+
     if (layeredPane != null)
       remove(layeredPane);
-    
+
     layeredPane = f;
     add(f, -1);
   }
@@ -628,7 +628,7 @@ public class JRootPane extends JComponent implements Accessible
   {
     return defaultButton;
   }
-  
+
   public void setDefaultButton(JButton newButton)
   {
     // We only change the default button if the new button is defaultCapable
@@ -665,7 +665,7 @@ public class JRootPane extends JComponent implements Accessible
         && style != WARNING_DIALOG
         && style != PLAIN_DIALOG)
       throw new IllegalArgumentException("invalid style");
-    
+
     int oldStyle = windowDecorationStyle;
     windowDecorationStyle = style;
     firePropertyChange("windowDecorationStyle", oldStyle, style);

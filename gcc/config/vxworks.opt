@@ -1,6 +1,6 @@
 ; Processor-independent options for VxWorks.
 ;
-; Copyright (C) 2005, 2007 Free Software Foundation, Inc.
+; Copyright (C) 2005, 2007, 2010, 2011 Free Software Foundation, Inc.
 ; Contributed by CodeSourcery, LLC.
 ;
 ; This file is part of GCC.
@@ -19,6 +19,18 @@
 ; along with GCC; see the file COPYING3.  If not see
 ; <http://www.gnu.org/licenses/>.
 
+Bdynamic
+Driver Condition(VXWORKS_KIND == VXWORKS_KIND_NORMAL)
+
+Bstatic
+Driver Condition(VXWORKS_KIND == VXWORKS_KIND_NORMAL)
+
+Xbind-lazy
+Driver Condition(VXWORKS_KIND == VXWORKS_KIND_NORMAL)
+
+Xbind-now
+Driver Condition(VXWORKS_KIND == VXWORKS_KIND_NORMAL)
+
 mrtp
 Target Report RejectNegative Mask(VXWORKS_RTP) Condition(VXWORKS_KIND == VXWORKS_KIND_NORMAL)
 Assume the VxWorks RTP environment
@@ -29,3 +41,6 @@ Assume the VxWorks RTP environment
 mvthreads
 Target RejectNegative Condition(VXWORKS_KIND == VXWORKS_KIND_AE)
 Assume the VxWorks vThreads environment
+
+non-static
+Driver Condition(VXWORKS_KIND == VXWORKS_KIND_NORMAL)

@@ -247,7 +247,7 @@ public class ReaderTokenizer
   {
     if (numberOfTokens <= 0)
       return;
- 
+
     for (int i = 0; i < numberOfTokens; i++)
       readToken();
   }
@@ -261,7 +261,7 @@ public class ReaderTokenizer
     Token t;
     int ch;
 
-    enlarging: 
+    enlarging:
     while (true)
       {
         t = tokenMatches();

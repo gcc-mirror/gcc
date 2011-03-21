@@ -1,6 +1,6 @@
 /* Procedure integration for GCC.
    Copyright (C) 1988, 1991, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
-   2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+   2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
@@ -112,7 +112,8 @@ set_block_origin_self (tree stmt)
 	for (local_decl = BLOCK_VARS (stmt);
 	     local_decl != NULL_TREE;
 	     local_decl = DECL_CHAIN (local_decl))
-	  set_decl_origin_self (local_decl);	/* Potential recursion.  */
+	  if (! DECL_EXTERNAL (local_decl))
+	    set_decl_origin_self (local_decl);	/* Potential recursion.  */
       }
 
       {
@@ -173,7 +174,8 @@ set_block_abstract_flags (tree stmt, int setting)
   for (local_decl = BLOCK_VARS (stmt);
        local_decl != NULL_TREE;
        local_decl = DECL_CHAIN (local_decl))
-    set_decl_abstract_flags (local_decl, setting);
+    if (! DECL_EXTERNAL (local_decl))
+      set_decl_abstract_flags (local_decl, setting);
 
   for (i = 0; i < BLOCK_NUM_NONLOCALIZED_VARS (stmt); i++)
     {

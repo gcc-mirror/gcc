@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -67,12 +67,12 @@ public class RandomAccessFile implements DataOutput, DataInput, Closeable
   // The corresponding input and output streams.
   private DataOutputStream out;
   private DataInputStream in;
-  
-  
+
+
   /**
    * This method initializes a new instance of <code>RandomAccessFile</code>
-   * to read from the specified <code>File</code> object with the specified 
-   * access mode.   The access mode is either "r" for read only access or "rw" 
+   * to read from the specified <code>File</code> object with the specified
+   * access mode.   The access mode is either "r" for read only access or "rw"
    * for read-write access.
    * <p>
    * Note that a <code>SecurityManager</code> check is made prior to
@@ -82,11 +82,11 @@ public class RandomAccessFile implements DataOutput, DataInput, Closeable
    * @param file The <code>File</code> object to read and/or write.
    * @param mode "r" for read only or "rw" for read-write access to the file
    *
-   * @exception IllegalArgumentException If <code>mode</code> has an 
+   * @exception IllegalArgumentException If <code>mode</code> has an
    * illegal value
-   * @exception SecurityException If the requested access to the file 
+   * @exception SecurityException If the requested access to the file
    * is not allowed
-   * @exception FileNotFoundException If the file is a directory, or 
+   * @exception FileNotFoundException If the file is a directory, or
    * any other error occurs
    */
   public RandomAccessFile (File file, String mode)
@@ -99,13 +99,13 @@ public class RandomAccessFile implements DataOutput, DataInput, Closeable
       fdmode = FileChannelImpl.READ | FileChannelImpl.WRITE;
     else if (mode.equals("rws"))
       {
-	fdmode = (FileChannelImpl.READ | FileChannelImpl.WRITE
-		  | FileChannelImpl.SYNC);
+        fdmode = (FileChannelImpl.READ | FileChannelImpl.WRITE
+                  | FileChannelImpl.SYNC);
       }
     else if (mode.equals("rwd"))
       {
-	fdmode = (FileChannelImpl.READ | FileChannelImpl.WRITE
-		  | FileChannelImpl.DSYNC);
+        fdmode = (FileChannelImpl.READ | FileChannelImpl.WRITE
+                  | FileChannelImpl.DSYNC);
       }
     else
       throw new IllegalArgumentException ("invalid mode: " + mode);
@@ -159,11 +159,11 @@ public class RandomAccessFile implements DataOutput, DataInput, Closeable
    * @param fileName The name of the file to read and/or write
    * @param mode "r", "rw", "rws", or "rwd"
    *
-   * @exception IllegalArgumentException If <code>mode</code> has an 
+   * @exception IllegalArgumentException If <code>mode</code> has an
    * illegal value
-   * @exception SecurityException If the requested access to the file 
+   * @exception SecurityException If the requested access to the file
    * is not allowed
-   * @exception FileNotFoundException If the file is a directory or 
+   * @exception FileNotFoundException If the file is a directory or
    * any other error occurs
    */
   public RandomAccessFile (String fileName, String mode)
@@ -184,7 +184,7 @@ public class RandomAccessFile implements DataOutput, DataInput, Closeable
   }
 
   /**
-   * This method returns a <code>FileDescriptor</code> object that 
+   * This method returns a <code>FileDescriptor</code> object that
    * represents the native file handle for this file.
    *
    * @return The <code>FileDescriptor</code> object for this file
@@ -195,9 +195,9 @@ public class RandomAccessFile implements DataOutput, DataInput, Closeable
   {
     synchronized (this)
       {
-	if (fd == null)
-	  fd = new FileDescriptor (ch);
-	return fd;
+        if (fd == null)
+          fd = new FileDescriptor (ch);
+        return fd;
       }
   }
 
@@ -239,10 +239,10 @@ public class RandomAccessFile implements DataOutput, DataInput, Closeable
       ch.truncate (newLen);
     else if (newLen > length())
       {
-	long pos = getFilePointer();
-	seek(newLen - 1);
-	write(0);
-	seek(pos);
+        long pos = getFilePointer();
+        seek(newLen - 1);
+        write(0);
+        seek(pos);
       }
   }
 
@@ -273,7 +273,7 @@ public class RandomAccessFile implements DataOutput, DataInput, Closeable
 
   /**
    * This method reads bytes from the file into the specified array.  The
-   * bytes are stored starting at the beginning of the array and up to 
+   * bytes are stored starting at the beginning of the array and up to
    * <code>buf.length</code> bytes can be read.
    *
    * @param buffer The buffer to read bytes from the file into
@@ -310,14 +310,14 @@ public class RandomAccessFile implements DataOutput, DataInput, Closeable
    * value returned is <code>false</code>  If the byte is non-zero, then
    * the value returned is <code>true</code>
    * <p>
-   * This method can read a <code>boolean</code> written by an object 
+   * This method can read a <code>boolean</code> written by an object
    * implementing the
-   * <code>writeBoolean()</code> method in the <code>DataOutput</code> 
+   * <code>writeBoolean()</code> method in the <code>DataOutput</code>
    * interface.
    *
    * @return The <code>boolean</code> value read
    *
-   * @exception EOFException If end of file is reached before reading the 
+   * @exception EOFException If end of file is reached before reading the
    * boolean
    * @exception IOException If any other error occurs
    */
@@ -330,8 +330,8 @@ public class RandomAccessFile implements DataOutput, DataInput, Closeable
    * This method reads a Java byte value from an input stream.  The value
    * is in the range of -128 to 127.
    * <p>
-   * This method can read a <code>byte</code> written by an object 
-   * implementing the 
+   * This method can read a <code>byte</code> written by an object
+   * implementing the
    * <code>writeByte()</code> method in the <code>DataOutput</code> interface.
    *
    * @return The <code>byte</code> value read
@@ -347,24 +347,24 @@ public class RandomAccessFile implements DataOutput, DataInput, Closeable
   }
 
   /**
-   * This method reads a Java <code>char</code> value from an input stream.  
-   * It operates by reading two bytes from the stream and converting them to 
+   * This method reads a Java <code>char</code> value from an input stream.
+   * It operates by reading two bytes from the stream and converting them to
    * a single 16-bit Java <code>char</code>  The two bytes are stored most
    * significant byte first (i.e., "big endian") regardless of the native
-   * host byte ordering. 
+   * host byte ordering.
    * <p>
-   * As an example, if <code>byte1</code> and <code>byte2</code> represent 
+   * As an example, if <code>byte1</code> and <code>byte2</code> represent
    * the first
    * and second byte read from the stream respectively, they will be
    * transformed to a <code>char</code> in the following manner:
    * <p>
    * <code>(char)(((byte1 &amp; 0xFF) &lt;&lt; 8) | (byte2 &amp; 0xFF)</code>
    * <p>
-   * This method can read a <code>char</code> written by an object 
+   * This method can read a <code>char</code> written by an object
    * implementing the
    * <code>writeChar()</code> method in the <code>DataOutput</code> interface.
    *
-   * @return The <code>char</code> value read 
+   * @return The <code>char</code> value read
    *
    * @exception EOFException If end of file is reached before reading the char
    * @exception IOException If any other error occurs
@@ -379,19 +379,19 @@ public class RandomAccessFile implements DataOutput, DataInput, Closeable
   /**
    * This method reads a Java double value from an input stream.  It operates
    * by first reading a <code>logn</code> value from the stream by calling the
-   * <code>readLong()</code> method in this interface, then 
+   * <code>readLong()</code> method in this interface, then
    * converts that <code>long</code>
-   * to a <code>double</code> using the <code>longBitsToDouble</code> 
+   * to a <code>double</code> using the <code>longBitsToDouble</code>
    * method in the class <code>java.lang.Double</code>
    * <p>
-   * This method can read a <code>double</code> written by an object 
+   * This method can read a <code>double</code> written by an object
    * implementing the
-   * <code>writeDouble()</code> method in the <code>DataOutput</code> 
+   * <code>writeDouble()</code> method in the <code>DataOutput</code>
    * interface.
    *
    * @return The <code>double</code> value read
    *
-   * @exception EOFException If end of file is reached before reading 
+   * @exception EOFException If end of file is reached before reading
    * the double
    * @exception IOException If any other error occurs
    *
@@ -406,12 +406,12 @@ public class RandomAccessFile implements DataOutput, DataInput, Closeable
   /**
    * This method reads a Java float value from an input stream.  It operates
    * by first reading an <code>int</code> value from the stream by calling the
-   * <code>readInt()</code> method in this interface, then converts 
+   * <code>readInt()</code> method in this interface, then converts
    * that <code>int</code>
-   * to a <code>float</code> using the <code>intBitsToFloat</code> method in 
+   * to a <code>float</code> using the <code>intBitsToFloat</code> method in
    * the class <code>java.lang.Float</code>
    * <p>
-   * This method can read a <code>float</code> written by an object 
+   * This method can read a <code>float</code> written by an object
    * implementing the
    * <code>writeFloat()</code> method in the <code>DataOutput</code> interface.
    *
@@ -436,7 +436,7 @@ public class RandomAccessFile implements DataOutput, DataInput, Closeable
    *
    * @param buffer The buffer into which to read the data
    *
-   * @exception EOFException If end of file is reached before filling the 
+   * @exception EOFException If end of file is reached before filling the
    * buffer
    * @exception IOException If any other error occurs
    */
@@ -446,19 +446,19 @@ public class RandomAccessFile implements DataOutput, DataInput, Closeable
   }
 
   /**
-   * This method reads raw bytes into the passed array <code>buf</code> 
+   * This method reads raw bytes into the passed array <code>buf</code>
    * starting
-   * <code>offset</code> bytes into the buffer.  The number of bytes read 
+   * <code>offset</code> bytes into the buffer.  The number of bytes read
    * will be
-   * exactly <code>len</code>  Note that this method blocks until the data is 
-   * available and throws an exception if there is not enough data left in 
+   * exactly <code>len</code>  Note that this method blocks until the data is
+   * available and throws an exception if there is not enough data left in
    * the stream to read <code>len</code> bytes.
    *
    * @param buffer The buffer into which to read the data
    * @param offset The offset into the buffer to start storing data
    * @param count The number of bytes to read into the buffer
    *
-   * @exception EOFException If end of file is reached before filling 
+   * @exception EOFException If end of file is reached before filling
    * the buffer
    * @exception IOException If any other error occurs
    */
@@ -470,22 +470,22 @@ public class RandomAccessFile implements DataOutput, DataInput, Closeable
 
   /**
    * This method reads a Java <code>int</code> value from an input stream
-   * It operates by reading four bytes from the stream and converting them to 
+   * It operates by reading four bytes from the stream and converting them to
    * a single Java <code>int</code>  The bytes are stored most
    * significant byte first (i.e., "big endian") regardless of the native
-   * host byte ordering. 
+   * host byte ordering.
    * <p>
-   * As an example, if <code>byte1</code> through <code>byte4</code> 
+   * As an example, if <code>byte1</code> through <code>byte4</code>
    * represent the first
    * four bytes read from the stream, they will be
    * transformed to an <code>int</code> in the following manner:
    * <p>
-   * <code>(int)(((byte1 &amp; 0xFF) &lt;&lt; 24) + ((byte2 &amp; 0xFF) &lt;&lt; 16) + 
+   * <code>(int)(((byte1 &amp; 0xFF) &lt;&lt; 24) + ((byte2 &amp; 0xFF) &lt;&lt; 16) +
    * ((byte3 &amp; 0xFF) &lt;&lt; 8) + (byte4 &amp; 0xFF)))</code>
    * <p>
    * The value returned is in the range of 0 to 65535.
    * <p>
-   * This method can read an <code>int</code> written by an object 
+   * This method can read an <code>int</code> written by an object
    * implementing the
    * <code>writeInt()</code> method in the <code>DataOutput</code> interface.
    *
@@ -503,17 +503,17 @@ public class RandomAccessFile implements DataOutput, DataInput, Closeable
 
   /**
    * This method reads the next line of text data from an input stream.
-   * It operates by reading bytes and converting those bytes to 
+   * It operates by reading bytes and converting those bytes to
    * <code>char</code>
-   * values by treating the byte read as the low eight bits of the 
+   * values by treating the byte read as the low eight bits of the
    * <code>char</code>
    * and using <code>0</code> as the high eight bits.  Because of this, it does
    * not support the full 16-bit Unicode character set.
    * <p>
    * The reading of bytes ends when either the end of file or a line terminator
    * is encountered.  The bytes read are then returned as a <code>String</code>
-   * A line terminator is a byte sequence consisting of either 
-   * <code>\r</code> <code>\n</code> or <code>\r\n</code>  These 
+   * A line terminator is a byte sequence consisting of either
+   * <code>\r</code> <code>\n</code> or <code>\r\n</code>  These
    * termination charaters are
    * discarded and are not returned as part of the string.
    * <p>
@@ -533,25 +533,25 @@ public class RandomAccessFile implements DataOutput, DataInput, Closeable
 
   /**
    * This method reads a Java long value from an input stream
-   * It operates by reading eight bytes from the stream and converting them to 
+   * It operates by reading eight bytes from the stream and converting them to
    * a single Java <code>long</code>  The bytes are stored most
    * significant byte first (i.e., "big endian") regardless of the native
-   * host byte ordering. 
+   * host byte ordering.
    * <p>
-   * As an example, if <code>byte1</code> through <code>byte8</code> 
+   * As an example, if <code>byte1</code> through <code>byte8</code>
    * represent the first
    * eight bytes read from the stream, they will be
    * transformed to an <code>long</code> in the following manner:
    * <p>
    * <code>
-   * (long)((((long)byte1 &amp; 0xFF) &lt;&lt; 56) + (((long)byte2 &amp; 0xFF) &lt;&lt; 48) + 
-   * (((long)byte3 &amp; 0xFF) &lt;&lt; 40) + (((long)byte4 &amp; 0xFF) &lt;&lt; 32) + 
-   * (((long)byte5 &amp; 0xFF) &lt;&lt; 24) + (((long)byte6 &amp; 0xFF) &lt;&lt; 16) + 
+   * (long)((((long)byte1 &amp; 0xFF) &lt;&lt; 56) + (((long)byte2 &amp; 0xFF) &lt;&lt; 48) +
+   * (((long)byte3 &amp; 0xFF) &lt;&lt; 40) + (((long)byte4 &amp; 0xFF) &lt;&lt; 32) +
+   * (((long)byte5 &amp; 0xFF) &lt;&lt; 24) + (((long)byte6 &amp; 0xFF) &lt;&lt; 16) +
    * (((long)byte7 &amp; 0xFF) &lt;&lt; 8) + ((long)byte9 &amp; 0xFF)))</code>
    * <p>
    * The value returned is in the range of 0 to 65535.
    * <p>
-   * This method can read an <code>long</code> written by an object 
+   * This method can read an <code>long</code> written by an object
    * implementing the
    * <code>writeLong()</code> method in the <code>DataOutput</code> interface.
    *
@@ -569,12 +569,12 @@ public class RandomAccessFile implements DataOutput, DataInput, Closeable
 
   /**
    * This method reads a signed 16-bit value into a Java in from the stream.
-   * It operates by reading two bytes from the stream and converting them to 
+   * It operates by reading two bytes from the stream and converting them to
    * a single 16-bit Java <code>short</code>  The two bytes are stored most
    * significant byte first (i.e., "big endian") regardless of the native
-   * host byte ordering. 
+   * host byte ordering.
    * <p>
-   * As an example, if <code>byte1</code> and <code>byte2</code> 
+   * As an example, if <code>byte1</code> and <code>byte2</code>
    * represent the first
    * and second byte read from the stream respectively, they will be
    * transformed to a <code>short</code> in the following manner:
@@ -583,7 +583,7 @@ public class RandomAccessFile implements DataOutput, DataInput, Closeable
    * <p>
    * The value returned is in the range of -32768 to 32767.
    * <p>
-   * This method can read a <code>short</code> written by an object 
+   * This method can read a <code>short</code> written by an object
    * implementing the
    * <code>writeShort()</code> method in the <code>DataOutput</code> interface.
    *
@@ -600,12 +600,12 @@ public class RandomAccessFile implements DataOutput, DataInput, Closeable
   }
 
   /**
-   * This method reads 8 unsigned bits into a Java <code>int</code> value 
-   * from the 
+   * This method reads 8 unsigned bits into a Java <code>int</code> value
+   * from the
    * stream. The value returned is in the range of 0 to 255.
    * <p>
-   * This method can read an unsigned byte written by an object implementing 
-   * the <code>writeUnsignedByte()</code> method in the 
+   * This method can read an unsigned byte written by an object implementing
+   * the <code>writeUnsignedByte()</code> method in the
    * <code>DataOutput</code> interface.
    *
    * @return The unsigned bytes value read as a Java <code>int</code>
@@ -622,12 +622,12 @@ public class RandomAccessFile implements DataOutput, DataInput, Closeable
 
   /**
    * This method reads 16 unsigned bits into a Java int value from the stream.
-   * It operates by reading two bytes from the stream and converting them to 
+   * It operates by reading two bytes from the stream and converting them to
    * a single Java <code>int</code>  The two bytes are stored most
    * significant byte first (i.e., "big endian") regardless of the native
-   * host byte ordering. 
+   * host byte ordering.
    * <p>
-   * As an example, if <code>byte1</code> and <code>byte2</code> 
+   * As an example, if <code>byte1</code> and <code>byte2</code>
    * represent the first
    * and second byte read from the stream respectively, they will be
    * transformed to an <code>int</code> in the following manner:
@@ -637,7 +637,7 @@ public class RandomAccessFile implements DataOutput, DataInput, Closeable
    * The value returned is in the range of 0 to 65535.
    * <p>
    * This method can read an unsigned short written by an object implementing
-   * the <code>writeUnsignedShort()</code> method in the 
+   * the <code>writeUnsignedShort()</code> method in the
    * <code>DataOutput</code> interface.
    *
    * @return The unsigned short value read as a Java <code>int</code>
@@ -651,7 +651,7 @@ public class RandomAccessFile implements DataOutput, DataInput, Closeable
   }
 
   /**
-   * This method reads a <code>String</code> from an input stream that 
+   * This method reads a <code>String</code> from an input stream that
    * is encoded in
    * a modified UTF-8 format.  This format has a leading two byte sequence
    * that contains the remaining number of bytes to read.  This two byte
@@ -659,11 +659,11 @@ public class RandomAccessFile implements DataOutput, DataInput, Closeable
    * interface.
    * <p>
    * After the number of remaining bytes have been determined, these bytes
-   * are read an transformed into <code>char</code> values.  
+   * are read an transformed into <code>char</code> values.
    * These <code>char</code> values
    * are encoded in the stream using either a one, two, or three byte format.
    * The particular format in use can be determined by examining the first
-   * byte read.  
+   * byte read.
    * <p>
    * If the first byte has a high order bit of 0 then
    * that character consists on only one byte.  This character value consists
@@ -673,14 +673,14 @@ public class RandomAccessFile implements DataOutput, DataInput, Closeable
    * <p>
    * <code>(char)byte1</code>
    * <p>
-   * If the first byte has <code>110</code> as its high order bits, then the 
+   * If the first byte has <code>110</code> as its high order bits, then the
    * character consists of two bytes.  The bits that make up the character
    * value are in positions 0 through 4 of the first byte and bit positions
-   * 0 through 5 of the second byte.  (The second byte should have 
+   * 0 through 5 of the second byte.  (The second byte should have
    * 10 as its high order bits).  These values are in most significant
    * byte first (i.e., "big endian") order.
    * <p>
-   * As an example, if <code>byte1</code> and <code>byte2</code> 
+   * As an example, if <code>byte1</code> and <code>byte2</code>
    * are the first two bytes
    * read respectively, and the high order bits of them match the patterns
    * which indicate a two byte character encoding, then they would be
@@ -695,27 +695,27 @@ public class RandomAccessFile implements DataOutput, DataInput, Closeable
    * have <code>10</code> as their high order bits).  These values are in most
    * significant byte first (i.e., "big endian") order.
    * <p>
-   * As an example, if <code>byte1</code> <code>byte2</code> 
+   * As an example, if <code>byte1</code> <code>byte2</code>
    * and <code>byte3</code> are the
    * three bytes read, and the high order bits of them match the patterns
    * which indicate a three byte character encoding, then they would be
    * converted to a Java <code>char</code> like so:
    * <p>
-   * <code>(char)(((byte1 & 0x0F) << 12) | ((byte2 & 0x3F) << 6) | 
+   * <code>(char)(((byte1 & 0x0F) << 12) | ((byte2 & 0x3F) << 6) |
    * (byte3 & 0x3F))</code>
    * <p>
    * Note that all characters are encoded in the method that requires the
    * fewest number of bytes with the exception of the character with the
-   * value of <code>&#92;u0000</code> which is encoded as two bytes.  This is 
+   * value of <code>&#92;u0000</code> which is encoded as two bytes.  This is
    * a  modification of the UTF standard used to prevent C language style
    * <code>NUL</code> values from appearing in the byte stream.
    * <p>
    * This method can read data that was written by an object implementing the
    * <code>writeUTF()</code> method in <code>DataOutput</code>
-   * 
+   *
    * @return The <code>String</code> read
    *
-   * @exception EOFException If end of file is reached before reading the 
+   * @exception EOFException If end of file is reached before reading the
    * String
    * @exception UTFDataFormatException If the data is not in UTF-8 format
    * @exception IOException If any other error occurs
@@ -728,11 +728,11 @@ public class RandomAccessFile implements DataOutput, DataInput, Closeable
   }
 
   /**
-   * This method sets the current file position to the specified offset 
+   * This method sets the current file position to the specified offset
    * from the beginning of the file.  Note that some operating systems will
    * allow the file pointer to be set past the current end of the file.
    *
-   * @param pos The offset from the beginning of the file at which to set 
+   * @param pos The offset from the beginning of the file at which to set
    * the file pointer
    *
    * @exception IOException If an error occurs
@@ -743,8 +743,8 @@ public class RandomAccessFile implements DataOutput, DataInput, Closeable
   }
 
   /**
-   * This method attempts to skip and discard the specified number of bytes 
-   * in the input stream.  It may actually skip fewer bytes than requested. 
+   * This method attempts to skip and discard the specified number of bytes
+   * in the input stream.  It may actually skip fewer bytes than requested.
    * The actual number of bytes skipped is returned.  This method will not
    * skip any bytes if passed a negative number of bytes to skip.
    *
@@ -759,10 +759,10 @@ public class RandomAccessFile implements DataOutput, DataInput, Closeable
     if (numBytes < 0)
       throw new IllegalArgumentException ("Can't skip negative bytes: " +
                                           numBytes);
-    
+
     if (numBytes == 0)
       return 0;
-    
+
     long oldPos = ch.position();
     long newPos = oldPos + numBytes;
     long size = ch.size();
@@ -821,7 +821,7 @@ public class RandomAccessFile implements DataOutput, DataInput, Closeable
   }
 
   /**
-   * This method writes a Java <code>boolean</code> to the underlying output 
+   * This method writes a Java <code>boolean</code> to the underlying output
    * stream. For a value of <code>true</code>, 1 is written to the stream.
    * For a value of <code>false</code>, 0 is written.
    *
@@ -841,7 +841,7 @@ public class RandomAccessFile implements DataOutput, DataInput, Closeable
    * This method writes a Java <code>byte</code> value to the underlying
    * output stream.
    *
-   * @param val The <code>byte</code> to write to the stream, passed 
+   * @param val The <code>byte</code> to write to the stream, passed
    * as an <code>int</code>.
    *
    * @exception IOException If an error occurs
@@ -858,7 +858,7 @@ public class RandomAccessFile implements DataOutput, DataInput, Closeable
    * This method writes a Java <code>short</code> to the stream, high byte
    * first.  This method requires two bytes to encode the value.
    *
-   * @param val The <code>short</code> value to write to the stream, 
+   * @param val The <code>short</code> value to write to the stream,
    * passed as an <code>int</code>.
    *
    * @exception IOException If an error occurs
@@ -875,7 +875,7 @@ public class RandomAccessFile implements DataOutput, DataInput, Closeable
    * This method writes a single <code>char</code> value to the stream,
    * high byte first.
    *
-   * @param val The <code>char</code> value to write, passed as 
+   * @param val The <code>char</code> value to write, passed as
    * an <code>int</code>.
    *
    * @exception IOException If an error occurs
@@ -922,7 +922,7 @@ public class RandomAccessFile implements DataOutput, DataInput, Closeable
 
   /**
    * This method writes a Java <code>float</code> value to the stream.  This
-   * value is written by first calling the method 
+   * value is written by first calling the method
    * <code>Float.floatToIntBits</code>
    * to retrieve an <code>int</code> representing the floating point number,
    * then writing this <code>int</code> value to the stream exactly the same
@@ -944,13 +944,13 @@ public class RandomAccessFile implements DataOutput, DataInput, Closeable
 
   /**
    * This method writes a Java <code>double</code> value to the stream.  This
-   * value is written by first calling the method 
+   * value is written by first calling the method
    * <code>Double.doubleToLongBits</code>
    * to retrieve an <code>long</code> representing the floating point number,
    * then writing this <code>long</code> value to the stream exactly the same
    * as the <code>writeLong()</code> method does.
    *
-   * @param val The double precision floating point number to write to the 
+   * @param val The double precision floating point number to write to the
    * stream.
    *
    * @exception IOException If an error occurs
@@ -981,7 +981,7 @@ public class RandomAccessFile implements DataOutput, DataInput, Closeable
 
     out.writeBytes(val);
   }
-  
+
   /**
    * This method writes all the characters in a <code>String</code> to the
    * stream.  There will be two bytes for each character value.  The high
@@ -998,7 +998,7 @@ public class RandomAccessFile implements DataOutput, DataInput, Closeable
 
     out.writeChars(val);
   }
-  
+
   /**
    * This method writes a Java <code>String</code> to the stream in a modified
    * UTF-8 format.  First, two bytes are written to the stream indicating the
@@ -1006,10 +1006,10 @@ public class RandomAccessFile implements DataOutput, DataInput, Closeable
    * encoded <code>String</code> not the <code>String</code> length.  Next
    * come the encoded characters.  Each character in the <code>String</code>
    * is encoded as either one, two or three bytes.  For characters in the
-   * range of <code>&#92;u0001</code> to <code>&#92;u007F</code>, 
+   * range of <code>&#92;u0001</code> to <code>&#92;u007F</code>,
    * one byte is used.  The character
    * value goes into bits 0-7 and bit eight is 0.  For characters in the range
-   * of <code>&#92;u0080</code> to <code>&#92;u007FF</code>, two 
+   * of <code>&#92;u0080</code> to <code>&#92;u007FF</code>, two
    * bytes are used.  Bits
    * 6-10 of the character value are encoded bits 0-4 of the first byte, with
    * the high bytes having a value of "110".  Bits 0-5 of the character value
@@ -1035,7 +1035,7 @@ public class RandomAccessFile implements DataOutput, DataInput, Closeable
 
     out.writeUTF(val);
   }
-  
+
   /**
    * This method creates a java.nio.channels.FileChannel.
    * Nio does not allow one to create a file channel directly.

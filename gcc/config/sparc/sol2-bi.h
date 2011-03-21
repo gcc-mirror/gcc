@@ -1,6 +1,6 @@
 /* Definitions of target machine for GCC, for bi-arch SPARC
    running Solaris 2 using the system assembler and linker.
-   Copyright (C) 2002, 2003, 2004, 2006, 2007, 2009, 2010
+   Copyright (C) 2002, 2003, 2004, 2006, 2007, 2009, 2010, 2011
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -90,16 +90,12 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #undef CPP_CPU_SPEC
 #define CPP_CPU_SPEC "\
-%{mcypress:} \
-%{msparclite|mf930|mf934:-D__sparclite__} \
-%{mv8:" DEF_ARCH32_SPEC("-D__sparcv8") "} \
-%{msupersparc:-D__supersparc__ " DEF_ARCH32_SPEC("-D__sparcv8") "} \
 %{mcpu=sparclet|mcpu=tsc701:-D__sparclet__} \
 %{mcpu=sparclite|mcpu-f930|mcpu=f934:-D__sparclite__} \
 %{mcpu=v8:" DEF_ARCH32_SPEC("-D__sparcv8") "} \
 %{mcpu=supersparc:-D__supersparc__ " DEF_ARCH32_SPEC("-D__sparcv8") "} \
 %{mcpu=v9|mcpu=ultrasparc|mcpu=ultrasparc3|mcpu=niagara|mcpu=niagara2:" DEF_ARCH32_SPEC("-D__sparcv8") "} \
-%{!mcpu*:%{!mcypress:%{!msparclite:%{!mf930:%{!mf934:%{!mv8:%{!msupersparc:%(cpp_cpu_default)}}}}}}} \
+%{!mcpu*:%(cpp_cpu_default)} \
 "
 
 #undef ASM_CPU_SPEC
@@ -233,25 +229,17 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #undef	CC1_SPEC
 #if DEFAULT_ARCH32_P
 #define CC1_SPEC "\
-%{sun4:} %{target:} \
-%{mcypress:-mcpu=cypress} \
-%{msparclite:-mcpu=sparclite} %{mf930:-mcpu=f930} %{mf934:-mcpu=f934} \
-%{mv8:-mcpu=v8} %{msupersparc:-mcpu=supersparc} \
 %{m64:%{m32:%emay not use both -m32 and -m64}} \
 %{m64:-mptr64 -mstack-bias -mno-v8plus \
-  %{!mcpu*:%{!mcypress:%{!msparclite:%{!mf930:%{!mf934:%{!mv8*:%{!msupersparc:-mcpu=v9}}}}}}}} \
+  %{!mcpu*:-%{!mv8plus:mcpu=v9}}} \
 "
 #else
 #define CC1_SPEC "\
-%{sun4:} %{target:} \
-%{mcypress:-mcpu=cypress} \
-%{msparclite:-mcpu=sparclite} %{mf930:-mcpu=f930} %{mf934:-mcpu=f934} \
-%{mv8:-mcpu=v8} %{msupersparc:-mcpu=supersparc} \
 %{m32:%{m64:%emay not use both -m32 and -m64}} \
 %{m32:-mptr32 -mno-stack-bias \
-  %{!mcpu*:%{!mcypress:%{!msparclite:%{!mf930:%{!mf934:%{!mv8*:%{!msupersparc:-mcpu=v9}}}}}}}} \
+  %{!mcpu*:%{!mv8plus:-mcpu=v9}}} \
 %{mv8plus:-m32 -mptr32 -mno-stack-bias \
-  %{!mcpu*:%{!mcypress:%{!msparclite:%{!mf930:%{!mf934:%{!mv8:%{!msupersparc:-mcpu=v9}}}}}}}} \
+  %{!mcpu*:-mcpu=v9}} \
 "
 #endif
 
@@ -268,12 +256,12 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define OPTION_DEFAULT_SPECS \
   {"cpu", "%{!m64:%{!mcpu=*:-mcpu=%(VALUE)}}" }, \
   {"tune", "%{!mtune=*:-mtune=%(VALUE)}" }, \
-  {"float", "%{!msoft-float:%{!mhard-float:%{!fpu:%{!no-fpu:-m%(VALUE)-float}}}}" }
+  {"float", "%{!msoft-float:%{!mhard-float:%{!mfpu:%{!mno-fpu:-m%(VALUE)-float}}}}" }
 #else
 #define OPTION_DEFAULT_SPECS \
   {"cpu", "%{!m32:%{!mcpu=*:-mcpu=%(VALUE)}}" }, \
   {"tune", "%{!mtune=*:-mtune=%(VALUE)}" }, \
-  {"float", "%{!msoft-float:%{!mhard-float:%{!fpu:%{!no-fpu:-m%(VALUE)-float}}}}" }
+  {"float", "%{!msoft-float:%{!mhard-float:%{!mfpu:%{!mno-fpu:-m%(VALUE)-float}}}}" }
 #endif
 
 #if DEFAULT_ARCH32_P

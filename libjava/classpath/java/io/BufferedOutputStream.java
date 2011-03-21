@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -112,7 +112,7 @@ public class BufferedOutputStream extends FilterOutputStream
   }
 
   /**
-   * This method flushes any remaining buffered bytes then closes the 
+   * This method flushes any remaining buffered bytes then closes the
    * underlying output stream.  Any further attempts to write to this stream
    * may throw an exception
    *
@@ -124,7 +124,7 @@ public class BufferedOutputStream extends FilterOutputStream
   */
 
   /**
-   * This method runs when the object is garbage collected.  It is 
+   * This method runs when the object is garbage collected.  It is
    * responsible for ensuring that all buffered bytes are written and
    * for closing the underlying stream.
    *
@@ -156,8 +156,8 @@ public class BufferedOutputStream extends FilterOutputStream
   }
 
   /**
-   * This method writes <code>len</code> bytes from the byte array 
-   * <code>buf</code> starting at position <code>offset</code> in the buffer. 
+   * This method writes <code>len</code> bytes from the byte array
+   * <code>buf</code> starting at position <code>offset</code> in the buffer.
    * These bytes will be written to the internal buffer.  However, if this
    * write operation fills the buffer, the buffer will be flushed to the
    * underlying output stream.
@@ -168,7 +168,7 @@ public class BufferedOutputStream extends FilterOutputStream
    *
    * @exception IOException If an error occurs
    */
-  public synchronized void write(byte[] buf, int offset, int len) 
+  public synchronized void write(byte[] buf, int offset, int len)
     throws IOException
   {
     // Buffer can hold everything.  Note that the case where LEN < 0
@@ -188,5 +188,4 @@ public class BufferedOutputStream extends FilterOutputStream
       }
   }
 
-} // class BufferedOutputStream 
-
+} // class BufferedOutputStream

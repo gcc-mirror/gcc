@@ -1,4 +1,4 @@
-! { dg-do "run" }
+! { dg-do run }
 ! PR fortran/36795
 ! "(str)" (= an expression) was regarded as "str" (= a variable)
 ! and thus when yy was deallocated so was xx. Result: An invalid

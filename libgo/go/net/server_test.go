@@ -25,7 +25,7 @@ func runEcho(fd io.ReadWriter, done chan<- int) {
 
 	for {
 		n, err := fd.Read(buf[0:])
-		if err != nil || n == 0 {
+		if err != nil || n == 0 || string(buf[:n]) == "END" {
 			break
 		}
 		fd.Write(buf[0:n])
@@ -79,6 +79,13 @@ func connect(t *testing.T, network, addr string, isEmpty bool) {
 	if n != len(b) || err1 != nil {
 		t.Fatalf("fd.Read() = %d, %v (want %d, nil)", n, err1, len(b))
 	}
+
+	// Send explicit ending for unixpacket.
+	// Older Linux kernels do stop reads on close.
+	if network == "unixpacket" {
+		fd.Write([]byte("END"))
+	}
+
 	fd.Close()
 }
 
@@ -117,8 +124,11 @@ func TestUnixServer(t *testing.T) {
 	doTest(t, "unix", "/tmp/gotest.net", "/tmp/gotest.net")
 	os.Remove("/tmp/gotest.net")
 	if syscall.OS == "linux" {
+		doTest(t, "unixpacket", "/tmp/gotest.net", "/tmp/gotest.net")
+		os.Remove("/tmp/gotest.net")
 		// Test abstract unix domain socket, a Linux-ism
 		doTest(t, "unix", "@gotest/net", "@gotest/net")
+		doTest(t, "unixpacket", "@gotest/net", "@gotest/net")
 	}
 }
 
@@ -130,13 +140,16 @@ func runPacket(t *testing.T, network, addr string, listening chan<- string, done
 	listening <- c.LocalAddr().String()
 	c.SetReadTimeout(10e6) // 10ms
 	var buf [1000]byte
+Run:
 	for {
 		n, addr, err := c.ReadFrom(buf[0:])
 		if e, ok := err.(Error); ok && e.Timeout() {
-			if done <- 1 {
-				break
+			select {
+			case done <- 1:
+				break Run
+			default:
+				continue Run
 			}
-			continue
 		}
 		if err != nil {
 			break

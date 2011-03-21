@@ -45,18 +45,18 @@ import gnu.javax.sound.midi.alsa.AlsaMidiDeviceProvider.AlsaPortInfo;
 
 /**
  * ALSA MIDI In Port.
- * 
+ *
  * @author Anthony Green (green@redhat.com)
  *
  */
 public class AlsaInputPortDevice extends AlsaPortDevice
-{   
+{
 
   AlsaInputPortDevice (AlsaPortInfo info)
   {
     super(info);
   }
-    
+
   /* (non-Javadoc)
    * @see javax.sound.midi.MidiDevice#open()
    */

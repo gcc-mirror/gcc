@@ -81,4 +81,3 @@ public class QtFileDialogPeer extends QtDialogPeer implements FileDialogPeer
     // FIXME
   }
 }
-

@@ -1,4 +1,4 @@
-/* TransformerFactoryConfigurationError.java -- 
+/* TransformerFactoryConfigurationError.java --
    Copyright (C) 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -45,7 +45,7 @@ public class TransformerFactoryConfigurationError
   extends Error
 {
   private static final long serialVersionUID = -6527718720676281516L;
-  
+
   // Name is fixed by the serialization spec.
   private final Exception  exception;
 
@@ -102,5 +102,5 @@ public class TransformerFactoryConfigurationError
   {
     return exception;
   }
-  
+
 }

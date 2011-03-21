@@ -8,5 +8,5 @@ c { dg-do compile }
       CaLL foo(W)
       END
       SUBROUTINE foo(W)
-      yy(I)=A(I)Q(X) ! { dg-error "Error: Unclassifiable statement" "" }
+      yy(I)=A(I)Q(X) ! { dg-error "Unclassifiable statement" "" }
 c { dg-error "end of file" "end of file" { target *-*-* } 0 }

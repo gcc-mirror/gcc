@@ -13,9 +13,9 @@ import java.util.NoSuchElementException;
 /**
  * A list of extensions, that may appear in either the {@link ClientHello} or
  * {@link ServerHello}. The form of the extensions list is:
- * 
+ *
  * <tt>   Extension extensions_list&lt;1..2^16-1&gt;</tt>
- * 
+ *
  * @author csm
  */
 public class ExtensionList implements Builder, Iterable<Extension>
@@ -28,7 +28,7 @@ public class ExtensionList implements Builder, Iterable<Extension>
     this.buffer = buffer.duplicate().order(ByteOrder.BIG_ENDIAN);
     modCount = 0;
   }
-  
+
   public ExtensionList(List<Extension> extensions)
   {
     int length = 2;
@@ -40,7 +40,7 @@ public class ExtensionList implements Builder, Iterable<Extension>
       buffer.put(extension.buffer());
     buffer.rewind();
   }
-  
+
   public ByteBuffer buffer()
   {
     return (ByteBuffer) buffer.duplicate().limit(length());
@@ -63,10 +63,10 @@ public class ExtensionList implements Builder, Iterable<Extension>
     ByteBuffer b = (ByteBuffer) buffer.duplicate().position(i).limit(i+el+4);
     return new Extension(b.slice());
   }
-  
+
   /**
    * Returns the number of extensions this list contains.
-   * 
+   *
    * @return The number of extensions.
    */
   public int size ()
@@ -86,14 +86,14 @@ public class ExtensionList implements Builder, Iterable<Extension>
 
   /**
    * Returns the length of this extension list, in bytes.
-   * 
+   *
    * @return The length of this extension list, in bytes.
    */
   public int length ()
   {
     return (buffer.getShort (0) & 0xFFFF) + 2;
   }
-  
+
   /**
    * Sets the extension at index <i>i</i> to <i>e</i>. Note that setting an
    * element at an index <b>may</b> invalidate any other elements that come
@@ -101,10 +101,10 @@ public class ExtensionList implements Builder, Iterable<Extension>
    * move existing elements in this list, and since extensions are variable
    * length, you can <em>not</em> guarantee that extensions later in the list
    * will still be valid.
-   * 
+   *
    * <p>Thus, elements of this list <b>must</b> be set in order of increasing
    * index.
-   * 
+   *
    * @param index The index to set the extension at.
    * @param e The extension.
    * @throws java.nio.BufferOverflowException If setting the extension overflows
@@ -136,12 +136,12 @@ public class ExtensionList implements Builder, Iterable<Extension>
     ((ByteBuffer) buffer.duplicate().position(i+4)).put (e.valueBuffer());
     modCount++;
   }
-  
+
   /**
    * Reserve space for an extension at index <i>i</i> in the list. In other
    * words, this does the job of {@link #set(int, Extension)}, but does not
    * copy the extension value to the underlying buffer.
-   * 
+   *
    * @param index The index of the extension to reserve space for.
    * @param t The type of the extension.
    * @param eLength The number of bytes to reserve for this extension. The total
@@ -168,10 +168,10 @@ public class ExtensionList implements Builder, Iterable<Extension>
     buffer.putShort(i+2, (short) eLength);
     modCount++;
   }
-  
+
   /**
    * Set the total length of this list, in bytes.
-   * 
+   *
    * @param newLength The new list length.
    */
   public void setLength (final int newLength)
@@ -181,7 +181,7 @@ public class ExtensionList implements Builder, Iterable<Extension>
     buffer.putShort (0, (short) newLength);
     modCount++;
   }
-  
+
   public Iterator<Extension> iterator()
   {
     return new ExtensionsIterator();
@@ -191,7 +191,7 @@ public class ExtensionList implements Builder, Iterable<Extension>
   {
     return toString (null);
   }
-  
+
   public String toString(final String prefix)
   {
     StringWriter str = new StringWriter();
@@ -214,7 +214,7 @@ public class ExtensionList implements Builder, Iterable<Extension>
 
   /**
    * List iterator interface to an extensions list.
-   * 
+   *
    * @author csm@gnu.org
    */
   public final class ExtensionsIterator implements ListIterator<Extension>
@@ -222,7 +222,7 @@ public class ExtensionList implements Builder, Iterable<Extension>
     private final int modCount;
     private int index;
     private final int size;
-    
+
     public ExtensionsIterator ()
     {
       this.modCount = ExtensionList.this.modCount;

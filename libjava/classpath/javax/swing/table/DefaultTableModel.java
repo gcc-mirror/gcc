@@ -44,10 +44,10 @@ import java.util.Vector;
 import javax.swing.event.TableModelEvent;
 
 /**
- * A two dimensional data structure used to store <code>Object</code> 
+ * A two dimensional data structure used to store <code>Object</code>
  * instances, usually for display in a <code>JTable</code> component.
- * 
- * @author	Andrew Selkirk
+ *
+ * @author      Andrew Selkirk
  */
 public class DefaultTableModel extends AbstractTableModel
   implements Serializable
@@ -55,7 +55,7 @@ public class DefaultTableModel extends AbstractTableModel
   static final long serialVersionUID = 6680042567037222321L;
 
   /**
-   * Storage for the rows in the table (each row is itself 
+   * Storage for the rows in the table (each row is itself
    * a <code>Vector</code>).
    */
   protected Vector dataVector;
@@ -68,27 +68,27 @@ public class DefaultTableModel extends AbstractTableModel
   /**
    * Creates an empty table with zero rows and zero columns.
    */
-  public DefaultTableModel() 
+  public DefaultTableModel()
   {
     this(0, 0);
   }
-  
+
   /**
    * Creates a new table with the specified number of rows and columns.
    * All cells in the table are initially empty (set to <code>null</code>).
-   * 
+   *
    * @param numRows  the number of rows.
    * @param numColumns  the number of columns.
    */
-  public DefaultTableModel(int numRows, int numColumns) 
+  public DefaultTableModel(int numRows, int numColumns)
   {
     Vector defaultNames = new Vector(numColumns);
     Vector data = new Vector(numRows);
-    for (int i = 0; i < numColumns; i++) 
+    for (int i = 0; i < numColumns; i++)
       {
         defaultNames.add(super.getColumnName(i));
-      }          
-    for (int r = 0; r < numRows; r++) 
+      }
+    for (int r = 0; r < numRows; r++)
       {
         Vector tmp = new Vector(numColumns);
         tmp.setSize(numColumns);
@@ -96,16 +96,16 @@ public class DefaultTableModel extends AbstractTableModel
       }
     setDataVector(data, defaultNames);
   }
-  
+
   /**
    * Creates a new table with the specified column names and number of
    * rows.  The number of columns is determined by the number of column
    * names supplied.
-   *   
+   *
    * @param columnNames the column names.
    * @param numRows the number of rows.
    */
-  public DefaultTableModel(Vector columnNames, int numRows) 
+  public DefaultTableModel(Vector columnNames, int numRows)
   {
     if (numRows < 0)
       throw new IllegalArgumentException("numRows < 0");
@@ -114,8 +114,8 @@ public class DefaultTableModel extends AbstractTableModel
 
     if (columnNames != null)
       numColumns = columnNames.size();
-    
-    while (0 < numRows--) 
+
+    while (0 < numRows--)
       {
         Vector rowData = new Vector();
         rowData.setSize(numColumns);
@@ -126,43 +126,43 @@ public class DefaultTableModel extends AbstractTableModel
 
   /**
    * Creates a new table with the specified column names and row count.
-   * 
+   *
    * @param columnNames the column names.
    * @param numRows the number of rows.
    */
-  public DefaultTableModel(Object[] columnNames, int numRows) 
+  public DefaultTableModel(Object[] columnNames, int numRows)
   {
     this(convertToVector(columnNames), numRows);
   }
-  
+
   /**
    * Creates a new table with the specified data values and column names.
-   * 
+   *
    * @param data the data values.
    * @param columnNames the column names.
    */
-  public DefaultTableModel(Vector data, Vector columnNames) 
+  public DefaultTableModel(Vector data, Vector columnNames)
   {
     setDataVector(data, columnNames);
   }
 
   /**
    * Creates a new table with the specified data values and column names.
-   * 
+   *
    * @param data the data values.
    * @param columnNames the column names.
    */
-  public DefaultTableModel(Object[][] data, Object[] columnNames) 
+  public DefaultTableModel(Object[][] data, Object[] columnNames)
   {
     this(convertToVector(data), convertToVector(columnNames));
   }
 
   /**
    * Returns the vector containing the row data for the table.
-   * 
+   *
    * @return The data vector.
    */
-  public Vector getDataVector() 
+  public Vector getDataVector()
   {
     return dataVector;
   }
@@ -173,13 +173,13 @@ public class DefaultTableModel extends AbstractTableModel
    * number of objects in each row does not match the number of column
    * names specified, the row data is truncated or expanded (by adding
    * <code>null</code> values) as required.
-   * 
+   *
    * @param data the data for the table (a vector of row vectors).
    * @param columnNames the column names.
-   * 
+   *
    * @throws NullPointerException if either argument is <code>null</code>.
    */
-  public void setDataVector(Vector data, Vector columnNames) 
+  public void setDataVector(Vector data, Vector columnNames)
   {
     if (data == null)
       dataVector = new Vector();
@@ -190,87 +190,87 @@ public class DefaultTableModel extends AbstractTableModel
 
   /**
    * Sets the data and column identifiers for the table.
-   * 
+   *
    * @param data the data for the table.
    * @param columnNames the column names.
-   * 
+   *
    * @throws NullPointerException if either argument is <code>null</code>.
    */
-  public void setDataVector(Object[][] data, Object[] columnNames) 
+  public void setDataVector(Object[][] data, Object[] columnNames)
   {
-    setDataVector(convertToVector(data), 
+    setDataVector(convertToVector(data),
                   convertToVector(columnNames));
   }
-  
+
   /**
    * Sends the specified <code>event</code> to all registered listeners.
-   * This method is equivalent to 
+   * This method is equivalent to
    * {@link AbstractTableModel#fireTableChanged(TableModelEvent)}.
-   * 
+   *
    * @param event the event.
    */
-  public void newDataAvailable(TableModelEvent event) 
+  public void newDataAvailable(TableModelEvent event)
   {
     fireTableChanged(event);
   }
 
   /**
    * Sends the specified <code>event</code> to all registered listeners.
-   * This method is equivalent to 
+   * This method is equivalent to
    * {@link AbstractTableModel#fireTableChanged(TableModelEvent)}.
-   * 
+   *
    * @param event the event.
    */
-  public void newRowsAdded(TableModelEvent event) 
+  public void newRowsAdded(TableModelEvent event)
   {
     fireTableChanged(event);
   }
 
   /**
    * Sends the specified <code>event</code> to all registered listeners.
-   * This method is equivalent to 
+   * This method is equivalent to
    * {@link AbstractTableModel#fireTableChanged(TableModelEvent)}.
-   * 
+   *
    * @param event the event.
    */
-  public void rowsRemoved(TableModelEvent event) 
+  public void rowsRemoved(TableModelEvent event)
   {
     fireTableChanged(event);
   }
 
   /**
    * Sets the column identifiers, updates the data rows (truncating
-   * or padding each row with <code>null</code> values) to match the 
+   * or padding each row with <code>null</code> values) to match the
    * number of columns, and sends a {@link TableModelEvent} to all
    * registered listeners.
-   * 
+   *
    * @param columnIdentifiers the column identifiers.
    */
-  public void setColumnIdentifiers(Vector columnIdentifiers) 
+  public void setColumnIdentifiers(Vector columnIdentifiers)
   {
     this.columnIdentifiers = columnIdentifiers;
     setColumnCount(columnIdentifiers == null ? 0 : columnIdentifiers.size());
   }
-  
+
   /**
    * Sets the column identifiers, updates the data rows (truncating
-   * or padding each row with <code>null</code> values) to match the 
+   * or padding each row with <code>null</code> values) to match the
    * number of columns, and sends a {@link TableModelEvent} to all
    * registered listeners.
-   * 
+   *
    * @param columnIdentifiers the column identifiers.
    */
-  public void setColumnIdentifiers(Object[] columnIdentifiers) 
+  public void setColumnIdentifiers(Object[] columnIdentifiers)
   {
     setColumnIdentifiers(convertToVector(columnIdentifiers));
   }
 
   /**
    * This method is obsolete, use {@link #setRowCount(int)} instead.
-   * 
+   *
    * @param numRows the number of rows.
    */
-  public void setNumRows(int numRows) 
+  public void setNumRows(int numRows)
   {
     setRowCount(numRows);
   }
@@ -280,18 +280,18 @@ public class DefaultTableModel extends AbstractTableModel
    * than the current number of rows in the table, rows are discarded.
    * If <code>rowCount</code> is greater than the current number of rows in
    * the table, new (empty) rows are added.
-   * 
+   *
    * @param rowCount the row count.
    */
-  public void setRowCount(int rowCount) 
+  public void setRowCount(int rowCount)
   {
     int existingRowCount = dataVector.size();
-    if (rowCount < existingRowCount) 
+    if (rowCount < existingRowCount)
     {
       dataVector.setSize(rowCount);
-      fireTableRowsDeleted(rowCount, existingRowCount - 1);      
+      fireTableRowsDeleted(rowCount, existingRowCount - 1);
     }
-    else 
+    else
     {
       int rowsToAdd = rowCount - existingRowCount;
       addExtraRows(rowsToAdd, columnIdentifiers.size());
@@ -303,16 +303,16 @@ public class DefaultTableModel extends AbstractTableModel
    * Sets the number of columns in the table.  Existing rows are truncated
    * or padded with <code>null</code> values to match the new column count.
    * A {@link TableModelEvent} is sent to all registered listeners.
-   * 
+   *
    * @param columnCount the column count.
    */
-  public void setColumnCount(int columnCount) 
+  public void setColumnCount(int columnCount)
   {
     for (int i = 0; i < dataVector.size(); ++i)
       {
         ((Vector) dataVector.get(i)).setSize(columnCount);
       }
-    if (columnIdentifiers != null)  
+    if (columnIdentifiers != null)
       columnIdentifiers.setSize(columnCount);
     fireTableStructureChanged();
   }
@@ -320,24 +320,24 @@ public class DefaultTableModel extends AbstractTableModel
   /**
    * Adds a column with the specified name to the table.  All cell values
    * for the column are initially set to <code>null</code>.
-   * 
+   *
    * @param columnName the column name (<code>null</code> permitted).
    */
-  public void addColumn(Object columnName) 
+  public void addColumn(Object columnName)
   {
     addColumn(columnName, (Object[]) null);
   }
 
   /**
-   * Adds a column with the specified name and data values to the table.  
-   * 
+   * Adds a column with the specified name and data values to the table.
+   *
    * @param columnName the column name (<code>null</code> permitted).
    * @param columnData the column data.
    */
-  public void addColumn(Object columnName, Vector columnData) 
+  public void addColumn(Object columnName, Vector columnData)
   {
     Object[] dataArray = null;
-    if (columnData != null) 
+    if (columnData != null)
     {
       int rowCount = dataVector.size();
       if (columnData.size() < rowCount)
@@ -349,17 +349,17 @@ public class DefaultTableModel extends AbstractTableModel
 
   /**
    * Adds a column with the specified name and data values to the table.
-   * 
+   *
    * @param columnName the column name (<code>null</code> permitted).
    * @param columnData the column data.
    */
-  public void addColumn(Object columnName, Object[] columnData) 
+  public void addColumn(Object columnName, Object[] columnData)
   {
     if (columnData != null)
     {
       // check columnData array for cases where the number of items
       // doesn't match the number of rows in the existing table
-      if (columnData.length > dataVector.size()) 
+      if (columnData.length > dataVector.size())
       {
         int rowsToAdd = columnData.length - dataVector.size();
         addExtraRows(rowsToAdd, columnIdentifiers.size());
@@ -382,10 +382,10 @@ public class DefaultTableModel extends AbstractTableModel
   /**
    * Adds a new row containing the specified data to the table and sends a
    * {@link TableModelEvent} to all registered listeners.
-   * 
+   *
    * @param rowData the row data (<code>null</code> permitted).
    */
-  public void addRow(Vector rowData) 
+  public void addRow(Vector rowData)
   {
     int rowIndex = dataVector.size();
     dataVector.add(rowData);
@@ -397,21 +397,21 @@ public class DefaultTableModel extends AbstractTableModel
   /**
    * Adds a new row containing the specified data to the table and sends a
    * {@link TableModelEvent} to all registered listeners.
-   * 
+   *
    * @param rowData the row data (<code>null</code> permitted).
    */
-  public void addRow(Object[] rowData) 
+  public void addRow(Object[] rowData)
   {
     addRow(convertToVector(rowData));
   }
 
   /**
    * Inserts a new row into the table.
-   * 
+   *
    * @param row the row index.
    * @param rowData the row data.
    */
-  public void insertRow(int row, Vector rowData) 
+  public void insertRow(int row, Vector rowData)
   {
     dataVector.add(row, rowData);
     fireTableRowsInserted(row, row);
@@ -419,11 +419,11 @@ public class DefaultTableModel extends AbstractTableModel
 
   /**
    * Inserts a new row into the table.
-   * 
+   *
    * @param row the row index.
    * @param rowData the row data.
    */
-  public void insertRow(int row, Object[] rowData) 
+  public void insertRow(int row, Object[] rowData)
   {
     insertRow(row, convertToVector(rowData));
   }
@@ -431,21 +431,21 @@ public class DefaultTableModel extends AbstractTableModel
   /**
    * Moves the rows from <code>startIndex</code> to <code>endIndex</code>
    * (inclusive) to the specified row.
-   * 
+   *
    * @param startIndex the start row.
    * @param endIndex the end row.
    * @param toIndex the row to move to.
    */
-  public void moveRow(int startIndex, int endIndex, int toIndex) 
+  public void moveRow(int startIndex, int endIndex, int toIndex)
   {
     Vector removed = new Vector();
     for (int i = endIndex; i >= startIndex; i--)
     {
       removed.add(this.dataVector.remove(i));
     }
-    for (int i = 0; i <= endIndex - startIndex; i++) 
+    for (int i = 0; i <= endIndex - startIndex; i++)
     {
-      dataVector.insertElementAt(removed.get(i), toIndex);  
+      dataVector.insertElementAt(removed.get(i), toIndex);
     }
     int firstRow = Math.min(startIndex, toIndex);
     int lastRow = Math.max(endIndex, toIndex + (endIndex - startIndex));
@@ -455,10 +455,10 @@ public class DefaultTableModel extends AbstractTableModel
   /**
    * Removes a row from the table and sends a {@link TableModelEvent} to
    * all registered listeners.
-   * 
+   *
    * @param row the row index.
    */
-  public void removeRow(int row) 
+  public void removeRow(int row)
   {
     dataVector.remove(row);
     fireTableRowsDeleted(row, row);
@@ -466,20 +466,20 @@ public class DefaultTableModel extends AbstractTableModel
 
   /**
    * Returns the number of rows in the model.
-   * 
+   *
    * @return The row count.
    */
-  public int getRowCount() 
+  public int getRowCount()
   {
     return dataVector.size();
   }
 
   /**
    * Returns the number of columns in the model.
-   * 
+   *
    * @return The column count.
    */
-  public int getColumnCount() 
+  public int getColumnCount()
   {
     return columnIdentifiers == null ? 0 : columnIdentifiers.size();
   }
@@ -489,23 +489,23 @@ public class DefaultTableModel extends AbstractTableModel
    * the return value is the result of the .toString() method call on that
    * identifier. If the identifier is not explicitly set, the returned value
    * is calculated by {@link AbstractTableModel#getColumnName(int)}.
-   * 
+   *
    * @param column the column index.
-   * 
+   *
    * @return The column name.
    */
   public String getColumnName(int column)
   {
     String result = "";
-    if (columnIdentifiers == null) 
+    if (columnIdentifiers == null)
       result = super.getColumnName(column);
-    else 
+    else
     {
       if (column < getColumnCount())
       {
         checkSize();
         Object id = columnIdentifiers.get(column);
-        if (id != null) 
+        if (id != null)
           result = id.toString();
         else
           result = super.getColumnName(column);
@@ -520,40 +520,40 @@ public class DefaultTableModel extends AbstractTableModel
    * Returns <code>true</code> if the specified cell can be modified, and
    * <code>false</code> otherwise.  For this implementation, the method
    * always returns <code>true</code>.
-   * 
+   *
    * @param row the row index.
    * @param column the column index.
-   * 
+   *
    * @return <code>true</code> in all cases.
    */
-  public boolean isCellEditable(int row, int column) 
+  public boolean isCellEditable(int row, int column)
   {
     return true;
   }
 
   /**
    * Returns the value at the specified cell in the table.
-   * 
+   *
    * @param row the row index.
    * @param column the column index.
-   * 
-   * @return The value (<code>Object</code>, possibly <code>null</code>) at 
+   *
+   * @return The value (<code>Object</code>, possibly <code>null</code>) at
    *         the specified cell in the table.
    */
-  public Object getValueAt(int row, int column) 
+  public Object getValueAt(int row, int column)
   {
     return ((Vector) dataVector.get(row)).get(column);
   }
 
   /**
-   * Sets the value for the specified cell in the table and sends a 
+   * Sets the value for the specified cell in the table and sends a
    * {@link TableModelEvent} to all registered listeners.
-   * 
+   *
    * @param value the value (<code>Object</code>, <code>null</code> permitted).
    * @param row the row index.
    * @param column the column index.
    */
-  public void setValueAt(Object value, int row, int column) 
+  public void setValueAt(Object value, int row, int column)
   {
     ((Vector) dataVector.get(row)).set(column, value);
     fireTableCellUpdated(row, column);
@@ -561,31 +561,31 @@ public class DefaultTableModel extends AbstractTableModel
 
   /**
    * Converts the data array to a <code>Vector</code>.
-   * 
+   *
    * @param data the data array (<code>null</code> permitted).
-   * 
-   * @return A vector (or <code>null</code> if the data array 
+   *
+   * @return A vector (or <code>null</code> if the data array
    *         is <code>null</code>).
    */
-  protected static Vector convertToVector(Object[] data) 
+  protected static Vector convertToVector(Object[] data)
   {
     if (data == null)
       return null;
     Vector vector = new Vector(data.length);
-    for (int i = 0; i < data.length; i++) 
+    for (int i = 0; i < data.length; i++)
       vector.add(data[i]);
-    return vector;          
+    return vector;
   }
-  
+
   /**
    * Converts the data array to a <code>Vector</code> of rows.
-   * 
+   *
    * @param data the data array (<code>null</code> permitted).
-   * 
-   * @return A vector (or <code>null</code> if the data array 
+   *
+   * @return A vector (or <code>null</code> if the data array
    *         is <code>null</code>.
    */
-  protected static Vector convertToVector(Object[][] data) 
+  protected static Vector convertToVector(Object[][] data)
   {
     if (data == null)
       return null;
@@ -603,12 +603,12 @@ public class DefaultTableModel extends AbstractTableModel
    */
   private void addExtraRows(int rowsToAdd, int nbColumns)
   {
-    for (int i = 0; i < rowsToAdd; i++) 
+    for (int i = 0; i < rowsToAdd; i++)
       {
         Vector tmp = new Vector();
         tmp.setSize(columnIdentifiers.size());
         dataVector.add(tmp);
-      } 
+      }
   }
 
   /**
@@ -621,10 +621,10 @@ public class DefaultTableModel extends AbstractTableModel
   {
     int columnCount = getColumnCount();
     int rowCount = getRowCount();
-    
+
     if (columnCount > columnIdentifiers.size())
       columnIdentifiers.setSize(columnCount);
-           
+
     if (dataVector != null && rowCount > dataVector.size())
       {
         int rowsToAdd = rowCount - dataVector.size();

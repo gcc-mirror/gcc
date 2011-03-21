@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -91,34 +91,34 @@ public class Handler extends URLStreamHandler
     // strategy when we encounter an error in parsing is to return without
     // doing anything.
     String file = url.getFile();
-    
+
     if (!file.equals(""))
       { //has context url
-	url_string = url_string.substring (start, end);
+        url_string = url_string.substring (start, end);
         if (url_string.startsWith("/"))
           { //url string is an absolute path
             int idx = file.lastIndexOf ("!/");
-	    
-	    if (idx < 0)
-	      throw new URLParseError("no !/ in spec");
-	    
-	    file = file.substring (0, idx + 1) + url_string;
+
+            if (idx < 0)
+              throw new URLParseError("no !/ in spec");
+
+            file = file.substring (0, idx + 1) + url_string;
           }
         else if (url_string.length() > 0)
           {
             int idx = file.lastIndexOf ("/");
             if (idx == -1) //context path is weird
-              file = "/" + url_string; 
+              file = "/" + url_string;
             else if (idx == (file.length() - 1))
               //just concatenate two parts
               file = file + url_string;
             else
-              // according to Java API Documentation, here is a little different 
+              // according to Java API Documentation, here is a little different
               // with URLStreamHandler.parseURL
               // but JDK seems doesn't handle it well
               file = file.substring(0, idx + 1) + url_string;
           }
-        
+
         setURL (url, "jar", url.getHost(), url.getPort(), flat(file), null);
         return;
       }
@@ -130,7 +130,7 @@ public class Handler extends URLStreamHandler
       return;
     if (start > url_string.length())
       return;
-    
+
     // Skip remains of protocol
     url_string = url_string.substring (start, end);
 
@@ -140,16 +140,16 @@ public class Handler extends URLStreamHandler
 
     try
       {
-	new URL(url_string.substring (0, jar_stop));
+        new URL(url_string.substring (0, jar_stop));
       }
     catch (MalformedURLException e)
       {
-	throw new URLParseError("invalid inner URL: " + e.getMessage());
+        throw new URLParseError("invalid inner URL: " + e.getMessage());
       }
-    
+
     if (!url.getProtocol().equals ("jar") )
       throw new URLParseError("unexpected protocol " + url.getProtocol());
-        
+
     setURL (url, "jar", url.getHost(), url.getPort(), url_string, null);
   }
 
@@ -170,16 +170,16 @@ public class Handler extends URLStreamHandler
     StringTokenizer st = new StringTokenizer(jar_path, "/");
     while (st.hasMoreTokens())
       {
-	String token = st.nextToken();
+        String token = st.nextToken();
         if (token.equals("."))
           continue;
         else if (token.equals(".."))
-	  {
-	    if (! tokens.isEmpty())
-	      tokens.remove(tokens.size() - 1);
-	  }
-        else 
-	  tokens.add(token);
+          {
+            if (! tokens.isEmpty())
+              tokens.remove(tokens.size() - 1);
+          }
+        else
+          tokens.add(token);
       }
 
     CPStringBuilder path = new CPStringBuilder(url_string.length());
@@ -203,8 +203,8 @@ public class Handler extends URLStreamHandler
     String ref = url.getRef();
 
     // return "jar:" + file;
-    // Performance!!: 
-    //  Do the concatenation manually to avoid resize StringBuffer's 
+    // Performance!!:
+    //  Do the concatenation manually to avoid resize StringBuffer's
     //  internal buffer.  The length of ref is not taken into consideration
     //  as it's a rare path.
     CPStringBuilder sb = new CPStringBuilder (file.length() + 5);

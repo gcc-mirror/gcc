@@ -44,7 +44,7 @@ import java.io.IOException;
 
 /**
  * Wrapper for an byte value.
- * 
+ *
  * @author Kyle Galloway <kgallowa@redhat.com>
  */
 public final class ByteValue
@@ -55,7 +55,7 @@ public final class ByteValue
 
   /**
    * Create a new ByteValue from an byte
-   * 
+   *
    * @param value the byte to wrap
    */
   public ByteValue(byte value)
@@ -63,20 +63,20 @@ public final class ByteValue
     super(JdwpConstants.Tag.BYTE);
     _value = value;
   }
-  
+
   /**
    * Get the value held in this Value
-   * 
+   *
    * @return the value represented by this Value object
    */
   public byte getValue()
   {
     return _value;
   }
-  
+
   /**
    * Return an object representing this type
-   * 
+   *
    * @return an Object represntation of this value
    */
   @Override
@@ -87,7 +87,7 @@ public final class ByteValue
 
   /**
    * Write the wrapped byte to the given DataOutputStream.
-   * 
+   *
    * @param os the output stream to write to
    */
   @Override

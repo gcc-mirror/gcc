@@ -42,21 +42,21 @@ import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
 
 /**
- * KeyFactorySpi is the Service Provider Interface (SPI) for the 
- * KeyFactory class. This is the interface for providers to 
+ * KeyFactorySpi is the Service Provider Interface (SPI) for the
+ * KeyFactory class. This is the interface for providers to
  * supply to implement a key factory for an algorithm.
  *
- * Key factories are used to convert keys (opaque cryptographic 
- * keys of type Key) into key specifications (transparent 
+ * Key factories are used to convert keys (opaque cryptographic
+ * keys of type Key) into key specifications (transparent
  * representations of the underlying key material).
  *
- * Key factories are bi-directional. They allow a key class 
+ * Key factories are bi-directional. They allow a key class
  * to be converted into a key specification (key material) and
  * back again.
  *
- * For example DSA public keys can be specified as 
+ * For example DSA public keys can be specified as
  * DSAPublicKeySpec or X509EncodedKeySpec. The key factory
- * translate these key specifications. 
+ * translate these key specifications.
  *
  * @since JDK 1.2
  * @author Mark Benvenuto
@@ -98,19 +98,19 @@ public abstract class KeyFactorySpi
     throws InvalidKeySpecException;
 
   /**
-   * Returns a key specification for the given key. keySpec 
-   * identifies the specification class to return the key 
+   * Returns a key specification for the given key. keySpec
+   * identifies the specification class to return the key
    * material in.
    *
    * @param key the key
-   * @param keySpec the specification class to return the 
+   * @param keySpec the specification class to return the
    * key material in.
    *
    * @return the key specification in an instance of the requested
    * specification class
    *
    * @throws InvalidKeySpecException the requested key specification
-   * is inappropriate for this key or the key is 
+   * is inappropriate for this key or the key is
    * unrecognized.
    */
   protected abstract <T extends KeySpec> T engineGetKeySpec(Key key,
@@ -126,7 +126,7 @@ public abstract class KeyFactorySpi
    *
    * @return the translated key
    *
-   * @throws InvalidKeyException if the key cannot be 
+   * @throws InvalidKeyException if the key cannot be
    * processed by this key factory
    */
   protected abstract Key engineTranslateKey(Key key)

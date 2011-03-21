@@ -1,4 +1,4 @@
-/* DropTarget.java -- 
+/* DropTarget.java --
    Copyright (C) 2002, 2003, 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -164,7 +164,7 @@ public class DropTarget
   private DropTargetListener dropTargetListener;
   private DropTarget.DropTargetAutoScroller autoscroller;
   private boolean active = true;
-    
+
   /**
    * Creates a <code>DropTarget</code> object.
    *
@@ -175,7 +175,7 @@ public class DropTarget
   {
     this (null, DnDConstants.ACTION_COPY_OR_MOVE, null, true, null);
   }
-  
+
   /**
    * Creates a <code>DropTarget</code> object.
    *
@@ -186,7 +186,7 @@ public class DropTarget
   {
     this (c, DnDConstants.ACTION_COPY_OR_MOVE, dtl, true, null);
   }
-  
+
   /**
    * Creates a <code>DropTarget</code> object.
    *
@@ -197,7 +197,7 @@ public class DropTarget
   {
     this (c, i, dtl, true, null);
   }
-  
+
   /**
    * Creates a <code>DropTarget</code> object.
    *
@@ -208,7 +208,7 @@ public class DropTarget
   {
     this (c, i, dtl, b, null);
   }
-  
+
   /**
    * Creates a <code>DropTarget</code> object.
    *
@@ -224,14 +224,14 @@ public class DropTarget
     setComponent(c);
     setDefaultActions(i);
     dropTargetListener = dtl;
-    
+
     if (fm == null)
       flavorMap = SystemFlavorMap.getDefaultFlavorMap();
     else
       flavorMap = fm;
-    
+
     setActive (b);
-    
+
     if (c != null)
       c.setDropTarget(this);
   }
@@ -284,7 +284,7 @@ public class DropTarget
 
   /**
    * Adds a new <code>DropTargetListener</code>.
-   * 
+   *
    * @exception TooManyListenersException Sun's JDK does not, despite
    * documentation, throw this exception here when you install an additional
    * <code>DropTargetListener</code>.  So to be compatible, we do the same
@@ -295,13 +295,13 @@ public class DropTarget
   {
     if (dtl == null)
       return;
-    
+
     if (dtl.equals(this))
       throw new IllegalArgumentException();
-    
+
     if (dropTargetListener != null)
       throw new TooManyListenersException();
-    
+
     dropTargetListener = dtl;
   }
 
@@ -397,7 +397,7 @@ public class DropTarget
   {
     if (dropTargetContext == null)
       dropTargetContext = createDropTargetContext ();
-    
+
     return dropTargetContext;
   }
 
@@ -405,7 +405,7 @@ public class DropTarget
   {
     if (dropTargetContext == null)
       dropTargetContext = new DropTargetContext (this);
-    
+
     return dropTargetContext;
   }
 

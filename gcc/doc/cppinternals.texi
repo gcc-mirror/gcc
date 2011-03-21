@@ -67,6 +67,7 @@ into another language, under the above conditions for modified versions.
 @contents
 @page
 
+@ifnottex
 @node Top
 @top
 @chapter Cpplib---the GNU C Preprocessor
@@ -101,6 +102,7 @@ the way they have.
 * Files::               File handling.
 * Concept Index::       Index.
 @end menu
+@end ifnottex
 
 @node Conventions
 @unnumbered Conventions

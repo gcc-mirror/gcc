@@ -1171,6 +1171,13 @@
 #endif
 
 
+/* Define if your linker has buggy garbage collection of sections support when
+   .text.startup.foo like sections are used. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_LD_EH_GC_SECTIONS_BUG
+#endif
+
+
 /* Define if your PowerPC64 linker supports a large TOC. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_LD_LARGE_TOC
@@ -1209,7 +1216,7 @@
 #endif
 
 
-/* Define if your linker supports -Bstatic/-Bdynamic option. */
+/* Define if your linker supports -Bstatic/-Bdynamic or equivalent options. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_LD_STATIC_DYNAMIC
 #endif
@@ -1242,6 +1249,12 @@
 /* Define to 1 if the system has the type `long long int'. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_LONG_LONG_INT
+#endif
+
+
+/* Define to the level of your linker's plugin support. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_LTO_PLUGIN
 #endif
 
 
@@ -1394,6 +1407,9 @@
 #undef HAVE_SYS_RESOURCE_H
 #endif
 
+
+/* Define if your target C library provides sys/sdt.h */
+#undef HAVE_SYS_SDT_H
 
 /* Define to 1 if you have the <sys/stat.h> header file. */
 #ifndef USED_FOR_TARGET
@@ -1555,6 +1571,18 @@
 /* Define as const if the declaration of iconv() needs const. */
 #ifndef USED_FOR_TARGET
 #undef ICONV_CONST
+#endif
+
+
+/* Define to the linker option to enable use of shared objects. */
+#ifndef USED_FOR_TARGET
+#undef LD_DYNAMIC_OPTION
+#endif
+
+
+/* Define to the linker option to disable use of shared objects. */
+#ifndef USED_FOR_TARGET
+#undef LD_STATIC_OPTION
 #endif
 
 

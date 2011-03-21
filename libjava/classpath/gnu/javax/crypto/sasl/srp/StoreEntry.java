@@ -1,4 +1,4 @@
-/* StoreEntry.java -- 
+/* StoreEntry.java --
    Copyright (C) 2003, 2006 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -64,7 +64,7 @@ class StoreEntry
 
   /**
    * Returns <code>true</code> if the Time-To_live period has not elapsed.
-   * 
+   *
    * @return <code>true</code> if the Time-To-Live period (in seconds) has not
    *         elapsed yet; <code>false</code> otherwise.
    */

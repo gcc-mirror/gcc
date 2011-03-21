@@ -1,5 +1,5 @@
 // { dg-options "-O1 -w -fpermissive" }
-// { dg-do "run" }
+// { dg-do run }
 // Tests the fold bug described in PR 19650.
 #include <stdio.h>
 #include <stdlib.h>

@@ -1,4 +1,4 @@
-/* DomProcessingInstruction.java -- 
+/* DomProcessingInstruction.java --
    Copyright (C) 1999,2000,2001,2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -55,24 +55,24 @@ import org.w3c.dom.ProcessingInstruction;
  *
  * @see DomNotation
  *
- * @author David Brownell 
+ * @author David Brownell
  * @author <a href='mailto:dog@gnu.org'>Chris Burdess</a>
  */
 public class DomProcessingInstruction
   extends DomNode
   implements ProcessingInstruction
 {
-  
+
   private String target;
   private String data;
-  
+
   /**
    * Constructs a ProcessingInstruction node associated with the
    * specified document, with the specified data.
    *
    * <p>This constructor should only be invoked by a Document object as
    * part of its createProcessingInstruction functionality, or through
-   * a subclass which is similarly used in a "Sub-DOM" style layer. 
+   * a subclass which is similarly used in a "Sub-DOM" style layer.
    */
   protected DomProcessingInstruction(DomDocument owner,
                                      String target, String data)
@@ -129,7 +129,7 @@ public class DomProcessingInstruction
   {
     setNodeValue(data);
   }
-  
+
   /**
    * <b>DOM L1</b>
    * Assigns the data associated with the processing instruction.
@@ -142,6 +142,5 @@ public class DomProcessingInstruction
       }
     this.data = data;
   }
-  
-}
 
+}

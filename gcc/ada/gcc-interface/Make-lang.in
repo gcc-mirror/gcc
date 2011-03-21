@@ -1189,7 +1189,7 @@ ada/final.o    : ada/final.c $(CONFIG_H) $(SYSTEM_H) ada/raise.h
 ada/link.o     : ada/link.c
 
 
-ada/targext.o : ada/targext.c $(SYSTEM_H) coretypes.h $(TM_H)
+ada/targext.o : ada/targext.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H)
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ADA_CFLAGS) \
 		 $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
 

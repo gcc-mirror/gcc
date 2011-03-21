@@ -1,4 +1,3 @@
-;; -*- Mode: Scheme -*-
 ;;   Machine description for GNU compiler,
 ;;   for ATMEL AVR micro controllers.
 ;;   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004, 2005, 2006, 2007, 2008,
@@ -170,7 +169,7 @@
   emit_clobber (gen_rtx_MEM (BLKmode, hard_frame_pointer_rtx));
 
   emit_move_insn (hard_frame_pointer_rtx, r_fp);
-  emit_stack_restore (SAVE_NONLOCAL, r_sp, NULL_RTX);
+  emit_stack_restore (SAVE_NONLOCAL, r_sp);
 
   emit_use (hard_frame_pointer_rtx);
   emit_use (stack_pointer_rtx);

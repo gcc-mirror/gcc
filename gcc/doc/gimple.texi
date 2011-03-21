@@ -424,8 +424,8 @@ using @code{get_initialized_tmp_var} or @code{create_tmp_var}.
 Currently, an expression like @code{a = b + 5} is not reduced any
 further.  We tried converting it to something like
 @smallexample
-  T1 = b + 5;
-  a = T1;
+T1 = b + 5;
+a = T1;
 @end smallexample
 but this bloated the representation for minimal benefit.  However, a
 variable which must live in memory cannot appear in an expression; its
@@ -443,12 +443,12 @@ GIMPLE rvalue (@code{is_gimple_val}), i.e.@: a constant or a register
 variable.  More complex operands are factored out into temporaries, so
 that
 @smallexample
-  a = b + c + d
+a = b + c + d
 @end smallexample
 becomes
 @smallexample
-  T1 = b + c;
-  a = T1 + d;
+T1 = b + c;
+a = T1 + d;
 @end smallexample
 
 The same rule holds for arguments to a @code{GIMPLE_CALL}.
@@ -481,8 +481,8 @@ workaround for limitations in later optimizers; if we were to convert this
 to
 
 @smallexample
-  T1 = &a.b;
-  T1[2] = 42;
+T1 = &a.b;
+T1[2] = 42;
 @end smallexample
 
 alias analysis would not remember that the reference to @code{T1[2]} came
@@ -498,15 +498,15 @@ A C @code{?:} expression is converted into an @code{if} statement with
 each branch assigning to the same temporary.  So,
 
 @smallexample
-  a = b ? c : d;
+a = b ? c : d;
 @end smallexample
 becomes
 @smallexample
-  if (b == 1)
-    T1 = c;
-  else
-    T1 = d;
-  a = T1;
+if (b == 1)
+  T1 = c;
+else
+  T1 = d;
+a = T1;
 @end smallexample
 
 The GIMPLE level if-conversion pass re-introduces @code{?:}
@@ -525,10 +525,10 @@ Except when they appear in the condition operand of a
 as follows: @code{a = b && c} becomes
 
 @smallexample
-  T1 = (bool)b;
-  if (T1 == true)
-    T1 = (bool)c;
-  a = T1;
+T1 = (bool)b;
+if (T1 == true)
+  T1 = (bool)c;
+a = T1;
 @end smallexample
 
 Note that @code{T1} in this example cannot be an expression temporary,
@@ -613,7 +613,7 @@ Returns the number of operands in statement G.
 Returns operand @code{I} from statement @code{G}.
 @end deftypefn
 
-@deftypefn {GIMPLE function} tree *gimple_ops (gimple g)
+@deftypefn {GIMPLE function} {tree *} gimple_ops (gimple g)
 Returns a pointer into the operand vector for statement @code{G}.  This
 is computed using an internal table called @code{gimple_ops_offset_}[].
 This table is indexed by the gimple code of @code{G}.
@@ -638,61 +638,50 @@ vector.  These predicates are called by the
 @code{gimple_@var{name}_set_...()}.  Each tuple will use one of the
 following predicates (Note, this list is not exhaustive):
 
-@deftypefn {GIMPLE function} is_gimple_operand (tree t)
-This is the most permissive of the predicates.  It essentially
-checks whether t has a @code{gimple_rhs_class} of @code{GIMPLE_SINGLE_RHS}.
-@end deftypefn
-
-
-@deftypefn {GIMPLE function} is_gimple_val (tree t)
+@deftypefn {GIMPLE function} bool is_gimple_val (tree t)
 Returns true if t is a "GIMPLE value", which are all the
 non-addressable stack variables (variables for which
 @code{is_gimple_reg} returns true) and constants (expressions for which
 @code{is_gimple_min_invariant} returns true).
 @end deftypefn
 
-@deftypefn {GIMPLE function} is_gimple_addressable (tree t)
+@deftypefn {GIMPLE function} bool is_gimple_addressable (tree t)
 Returns true if t is a symbol or memory reference whose address
 can be taken.
 @end deftypefn
 
-@deftypefn {GIMPLE function} is_gimple_asm_val (tree t)
+@deftypefn {GIMPLE function} bool is_gimple_asm_val (tree t)
 Similar to @code{is_gimple_val} but it also accepts hard registers.
 @end deftypefn
 
-@deftypefn {GIMPLE function} is_gimple_call_addr (tree t)
+@deftypefn {GIMPLE function} bool is_gimple_call_addr (tree t)
 Return true if t is a valid expression to use as the function
 called by a @code{GIMPLE_CALL}.
 @end deftypefn
 
-@deftypefn {GIMPLE function} is_gimple_mem_ref_addr (tree t)
+@deftypefn {GIMPLE function} bool is_gimple_mem_ref_addr (tree t)
 Return true if t is a valid expression to use as first operand
 of a @code{MEM_REF} expression.
 @end deftypefn
 
-@deftypefn {GIMPLE function} is_gimple_constant (tree t)
+@deftypefn {GIMPLE function} bool is_gimple_constant (tree t)
 Return true if t is a valid gimple constant.
 @end deftypefn
 
-@deftypefn {GIMPLE function} is_gimple_min_invariant (tree t)
+@deftypefn {GIMPLE function} bool is_gimple_min_invariant (tree t)
 Return true if t is a valid minimal invariant.  This is different
 from constants, in that the specific value of t may not be known
 at compile time, but it is known that it doesn't change (e.g.,
 the address of a function local variable).
 @end deftypefn
 
-@deftypefn {GIMPLE function} is_gimple_min_invariant_address (tree t)
-Return true if t is an @code{ADDR_EXPR} that does not change once a
-function is running.
-@end deftypefn
-
-@deftypefn {GIMPLE function} is_gimple_ip_invariant (tree t)
+@deftypefn {GIMPLE function} bool is_gimple_ip_invariant (tree t)
 Return true if t is an interprocedural invariant.  This means that t
 is a valid invariant in all functions (e.g. it can be an address of a
 global variable but not of a local one).
 @end deftypefn
 
-@deftypefn {GIMPLE function} is_gimple_ip_invariant_address (tree t)
+@deftypefn {GIMPLE function} bool is_gimple_ip_invariant_address (tree t)
 Return true if t is an @code{ADDR_EXPR} that does not change once the
 program is running (and which is valid in all functions).
 @end deftypefn
@@ -700,24 +689,24 @@ program is running (and which is valid in all functions).
 
 @subsection Statement validation
 
-@deftypefn {GIMPLE function} is_gimple_assign (gimple g)
+@deftypefn {GIMPLE function} bool is_gimple_assign (gimple g)
 Return true if the code of g is @code{GIMPLE_ASSIGN}.
 @end deftypefn
  
-@deftypefn {GIMPLE function} is_gimple_call (gimple g)
+@deftypefn {GIMPLE function} bool is_gimple_call (gimple g)
 Return true if the code of g is @code{GIMPLE_CALL}.
 @end deftypefn
  
-@deftypefn {GIMPLE function} is_gimple_debug (gimple g)
+@deftypefn {GIMPLE function} bool is_gimple_debug (gimple g)
 Return true if the code of g is @code{GIMPLE_DEBUG}.
 @end deftypefn
 
-@deftypefn {GIMPLE function} gimple_assign_cast_p (gimple g)
+@deftypefn {GIMPLE function} bool gimple_assign_cast_p (gimple g)
 Return true if g is a @code{GIMPLE_ASSIGN} that performs a type cast
 operation.
 @end deftypefn
 
-@deftypefn {GIMPLE function} gimple_debug_bind_p (gimple g)
+@deftypefn {GIMPLE function} bool gimple_debug_bind_p (gimple g)
 Return true if g is a @code{GIMPLE_DEBUG} that binds the value of an
 expression to a variable.
 @end deftypefn
@@ -732,7 +721,7 @@ of the GIMPLE instructions.
 @subsection Common accessors 
 The following are common accessors for gimple statements.
 
-@deftypefn {GIMPLE function} enum gimple_code gimple_code (gimple g)
+@deftypefn {GIMPLE function} {enum gimple_code} gimple_code (gimple g)
 Return the code for statement @code{G}.
 @end deftypefn
  
@@ -752,7 +741,7 @@ something meaningful for @code{GIMPLE_ASSIGN}, @code{GIMPLE_COND} and
 @code{void_type_node}.
 @end deftypefn
 
-@deftypefn {GIMPLE function} enum tree_code gimple_expr_code (gimple stmt)
+@deftypefn {GIMPLE function} {enum tree_code} gimple_expr_code (gimple stmt)
 Return the tree code for the expression computed by @code{STMT}.  This
 is only meaningful for @code{GIMPLE_CALL}, @code{GIMPLE_ASSIGN} and
 @code{GIMPLE_COND}.  If @code{STMT} is @code{GIMPLE_CALL}, it will return @code{CALL_EXPR}.
@@ -793,7 +782,7 @@ Return the visited status on statement @code{STMT}.
 Set pass local flag @code{PLF} on statement @code{STMT} to @code{VAL_P}.
 @end deftypefn
  
-@deftypefn {GIMPLE function} unsigned int gimple_plf (gimple stmt, enum plf_mask plf)
+@deftypefn {GIMPLE function} {unsigned int} gimple_plf (gimple stmt, enum plf_mask plf)
 Return the value of pass local flag @code{PLF} on statement @code{STMT}.
 @end deftypefn
  
@@ -809,7 +798,7 @@ Return true if statement @code{G} has memory operands.
 Return the number of operands for statement @code{G}.
 @end deftypefn
  
-@deftypefn {GIMPLE function} tree *gimple_ops (gimple g)
+@deftypefn {GIMPLE function} {tree *} gimple_ops (gimple g)
 Return the array of operands for statement @code{G}.
 @end deftypefn
  
@@ -817,7 +806,7 @@ Return the array of operands for statement @code{G}.
 Return operand @code{I} for statement @code{G}.
 @end deftypefn
  
-@deftypefn {GIMPLE function} tree *gimple_op_ptr (gimple g, unsigned i)
+@deftypefn {GIMPLE function} {tree *} gimple_op_ptr (gimple g, unsigned i)
 Return a pointer to operand @code{I} for statement @code{G}.
 @end deftypefn
  
@@ -830,7 +819,7 @@ Return the set of symbols that have had their address taken by
 @code{STMT}.
 @end deftypefn
  
-@deftypefn {GIMPLE function} struct def_optype_d *gimple_def_ops (gimple g)
+@deftypefn {GIMPLE function} {struct def_optype_d *} gimple_def_ops (gimple g)
 Return the set of @code{DEF} operands for statement @code{G}.
 @end deftypefn
  
@@ -838,7 +827,7 @@ Return the set of @code{DEF} operands for statement @code{G}.
 Set @code{DEF} to be the set of @code{DEF} operands for statement @code{G}.
 @end deftypefn
  
-@deftypefn {GIMPLE function} struct use_optype_d *gimple_use_ops (gimple g)
+@deftypefn {GIMPLE function} {struct use_optype_d *} gimple_use_ops (gimple g)
 Return the set of @code{USE} operands for statement @code{G}.
 @end deftypefn
  
@@ -846,7 +835,7 @@ Return the set of @code{USE} operands for statement @code{G}.
 Set @code{USE} to be the set of @code{USE} operands for statement @code{G}.
 @end deftypefn
  
-@deftypefn {GIMPLE function} struct voptype_d *gimple_vuse_ops (gimple g)
+@deftypefn {GIMPLE function} {struct voptype_d *} gimple_vuse_ops (gimple g)
 Return the set of @code{VUSE} operands for statement @code{G}.
 @end deftypefn
  
@@ -854,7 +843,7 @@ Return the set of @code{VUSE} operands for statement @code{G}.
 Set @code{OPS} to be the set of @code{VUSE} operands for statement @code{G}.
 @end deftypefn
  
-@deftypefn {GIMPLE function} struct voptype_d *gimple_vdef_ops (gimple g)
+@deftypefn {GIMPLE function} {struct voptype_d *} gimple_vdef_ops (gimple g)
 Return the set of @code{VDEF} operands for statement @code{G}.
 @end deftypefn
  
@@ -951,15 +940,15 @@ Identical to gimple_build_asm, but the arguments are passed in
 VECs.
 @end deftypefn
 
-@deftypefn {GIMPLE function} gimple_asm_ninputs (gimple g)
+@deftypefn {GIMPLE function} unsigned gimple_asm_ninputs (gimple g)
 Return the number of input operands for @code{GIMPLE_ASM} @code{G}. 
 @end deftypefn
 
-@deftypefn {GIMPLE function} gimple_asm_noutputs (gimple g)
+@deftypefn {GIMPLE function} unsigned gimple_asm_noutputs (gimple g)
 Return the number of output operands for @code{GIMPLE_ASM} @code{G}. 
 @end deftypefn
 
-@deftypefn {GIMPLE function} gimple_asm_nclobbers (gimple g)
+@deftypefn {GIMPLE function} unsigned gimple_asm_nclobbers (gimple g)
 Return the number of clobber operands for @code{GIMPLE_ASM} @code{G}. 
 @end deftypefn
 
@@ -988,7 +977,7 @@ Return clobber operand @code{INDEX} of @code{GIMPLE_ASM} @code{G}.
 Set @code{CLOBBER_OP} to be clobber operand @code{INDEX} in @code{GIMPLE_ASM} @code{G}. 
 @end deftypefn
 
-@deftypefn {GIMPLE function} const char *gimple_asm_string (gimple g)
+@deftypefn {GIMPLE function} {const char *} gimple_asm_string (gimple g)
 Return the string representing the assembly instruction in
 @code{GIMPLE_ASM} @code{G}. 
 @end deftypefn
@@ -1047,13 +1036,13 @@ are the operands.  If op2 is null, subcode must be a @code{tree_code}
 for a unary expression.
 @end deftypefn
 
-@deftypefn {GIMPLE function} enum tree_code gimple_assign_rhs_code (gimple g)
+@deftypefn {GIMPLE function} {enum tree_code} gimple_assign_rhs_code (gimple g)
 Return the code of the expression computed on the @code{RHS} of
 assignment statement @code{G}.
 @end deftypefn
  
 
-@deftypefn {GIMPLE function} enum gimple_rhs_class gimple_assign_rhs_class (gimple g)
+@deftypefn {GIMPLE function} {enum gimple_rhs_class} gimple_assign_rhs_class (gimple g)
 Return the gimple rhs class of the code for the expression
 computed on the rhs of assignment statement @code{G}.  This will never
 return @code{GIMPLE_INVALID_RHS}.
@@ -1063,7 +1052,7 @@ return @code{GIMPLE_INVALID_RHS}.
 Return the @code{LHS} of assignment statement @code{G}.
 @end deftypefn
  
-@deftypefn {GIMPLE function} tree *gimple_assign_lhs_ptr (gimple g)
+@deftypefn {GIMPLE function} {tree *} gimple_assign_lhs_ptr (gimple g)
 Return a pointer to the @code{LHS} of assignment statement @code{G}.
 @end deftypefn
  
@@ -1071,7 +1060,7 @@ Return a pointer to the @code{LHS} of assignment statement @code{G}.
 Return the first operand on the @code{RHS} of assignment statement @code{G}.
 @end deftypefn
  
-@deftypefn {GIMPLE function} tree *gimple_assign_rhs1_ptr (gimple g)
+@deftypefn {GIMPLE function} {tree *} gimple_assign_rhs1_ptr (gimple g)
 Return the address of the first operand on the @code{RHS} of assignment
 statement @code{G}.
 @end deftypefn
@@ -1080,7 +1069,7 @@ statement @code{G}.
 Return the second operand on the @code{RHS} of assignment statement @code{G}.
 @end deftypefn
  
-@deftypefn {GIMPLE function} tree *gimple_assign_rhs2_ptr (gimple g)
+@deftypefn {GIMPLE function} {tree *} gimple_assign_rhs2_ptr (gimple g)
 Return the address of the second operand on the @code{RHS} of assignment
 statement @code{G}.
 @end deftypefn
@@ -1089,7 +1078,7 @@ statement @code{G}.
 Return the third operand on the @code{RHS} of assignment statement @code{G}.
 @end deftypefn
  
-@deftypefn {GIMPLE function} tree *gimple_assign_rhs3_ptr (gimple g)
+@deftypefn {GIMPLE function} {tree *} gimple_assign_rhs3_ptr (gimple g)
 Return the address of the third operand on the @code{RHS} of assignment
 statement @code{G}.
 @end deftypefn
@@ -1202,7 +1191,7 @@ Identical to @code{gimple_build_call} but the arguments are stored in a
 Return the @code{LHS} of call statement @code{G}.
 @end deftypefn
  
-@deftypefn {GIMPLE function} tree *gimple_call_lhs_ptr (gimple g)
+@deftypefn {GIMPLE function} {tree *} gimple_call_lhs_ptr (gimple g)
 Return a pointer to the @code{LHS} of call statement @code{G}.
 @end deftypefn
  
@@ -1243,7 +1232,7 @@ Return the static chain for call statement @code{G}.
 Set @code{CHAIN} to be the static chain for call statement @code{G}. 
 @end deftypefn
 
-@deftypefn {GIMPLE function} gimple_call_num_args (gimple g)
+@deftypefn {GIMPLE function} unsigned gimple_call_num_args (gimple g)
 Return the number of arguments used by call statement @code{G}. 
 @end deftypefn
 
@@ -1252,7 +1241,7 @@ Return the argument at position @code{INDEX} for call statement @code{G}.  The
 first argument is 0.
 @end deftypefn
  
-@deftypefn {GIMPLE function} tree *gimple_call_arg_ptr (gimple g, unsigned index)
+@deftypefn {GIMPLE function} {tree *} gimple_call_arg_ptr (gimple g, unsigned index)
 Return a pointer to the argument at position @code{INDEX} for call
 statement @code{G}. 
 @end deftypefn
@@ -1304,7 +1293,7 @@ for the handler.
 Return the types handled by @code{GIMPLE_CATCH} statement @code{G}. 
 @end deftypefn
 
-@deftypefn {GIMPLE function} tree *gimple_catch_types_ptr (gimple g)
+@deftypefn {GIMPLE function} {tree *} gimple_catch_types_ptr (gimple g)
 Return a pointer to the types handled by @code{GIMPLE_CATCH} statement
 @code{G}. 
 @end deftypefn
@@ -1341,7 +1330,7 @@ Build a @code{GIMPLE_COND} statement from the conditional expression
 tree @code{COND}.  @code{T_LABEL} and @code{F_LABEL} are as in @code{gimple_build_cond}.
 @end deftypefn
 
-@deftypefn {GIMPLE function} enum tree_code gimple_cond_code (gimple g)
+@deftypefn {GIMPLE function} {enum tree_code} gimple_cond_code (gimple g)
 Return the code of the predicate computed by conditional
 statement @code{G}. 
 @end deftypefn
@@ -1452,7 +1441,7 @@ Return the value expression that is bound to a user variable at
 @code{stmt}.
 @end deftypefn
 
-@deftypefn {GIMPLE function} tree *gimple_debug_bind_get_value_ptr (gimple stmt)
+@deftypefn {GIMPLE function} {tree *} gimple_debug_bind_get_value_ptr (gimple stmt)
 Return a pointer to the value expression that is bound to a user
 variable at @code{stmt}.
 @end deftypefn
@@ -1489,7 +1478,7 @@ types.  @code{FAILURE} is a sequence with the filter's failure action.
 Return the types handled by @code{GIMPLE_EH_FILTER} statement @code{G}. 
 @end deftypefn
 
-@deftypefn {GIMPLE function} tree *gimple_eh_filter_types_ptr (gimple g)
+@deftypefn {GIMPLE function} {tree *} gimple_eh_filter_types_ptr (gimple g)
 Return a pointer to the types handled by @code{GIMPLE_EH_FILTER}
 statement @code{G}. 
 @end deftypefn
@@ -1658,7 +1647,7 @@ optional identifier for this critical block.
 Return the name associated with @code{OMP_CRITICAL} statement @code{G}. 
 @end deftypefn
 
-@deftypefn {GIMPLE function} tree *gimple_omp_critical_name_ptr (gimple g)
+@deftypefn {GIMPLE function} {tree *} gimple_omp_critical_name_ptr (gimple g)
 Return a pointer to the name associated with @code{OMP} critical
 statement @code{G}. 
 @end deftypefn
@@ -1688,7 +1677,7 @@ compare @code{INDEX} and @code{FINAL}.  @code{INCR} is the increment expression.
 Return the clauses associated with @code{OMP_FOR} @code{G}. 
 @end deftypefn
 
-@deftypefn {GIMPLE function} tree *gimple_omp_for_clauses_ptr (gimple g)
+@deftypefn {GIMPLE function} {tree *} gimple_omp_for_clauses_ptr (gimple g)
 Return a pointer to the @code{OMP_FOR} @code{G}. 
 @end deftypefn
 
@@ -1700,7 +1689,7 @@ Set @code{CLAUSES} to be the list of clauses associated with @code{OMP_FOR} @cod
 Return the index variable for @code{OMP_FOR} @code{G}. 
 @end deftypefn
 
-@deftypefn {GIMPLE function} tree *gimple_omp_for_index_ptr (gimple g)
+@deftypefn {GIMPLE function} {tree *} gimple_omp_for_index_ptr (gimple g)
 Return a pointer to the index variable for @code{OMP_FOR} @code{G}. 
 @end deftypefn
 
@@ -1712,7 +1701,7 @@ Set @code{INDEX} to be the index variable for @code{OMP_FOR} @code{G}.
 Return the initial value for @code{OMP_FOR} @code{G}. 
 @end deftypefn
 
-@deftypefn {GIMPLE function} tree *gimple_omp_for_initial_ptr (gimple g)
+@deftypefn {GIMPLE function} {tree *} gimple_omp_for_initial_ptr (gimple g)
 Return a pointer to the initial value for @code{OMP_FOR} @code{G}. 
 @end deftypefn
 
@@ -1724,7 +1713,7 @@ Set @code{INITIAL} to be the initial value for @code{OMP_FOR} @code{G}.
 Return the final value for @code{OMP_FOR} @code{G}. 
 @end deftypefn
 
-@deftypefn {GIMPLE function} tree *gimple_omp_for_final_ptr (gimple g)
+@deftypefn {GIMPLE function} {tree *} gimple_omp_for_final_ptr (gimple g)
 turn a pointer to the final value for @code{OMP_FOR} @code{G}. 
 @end deftypefn
 
@@ -1736,7 +1725,7 @@ Set @code{FINAL} to be the final value for @code{OMP_FOR} @code{G}.
 Return the increment value for @code{OMP_FOR} @code{G}. 
 @end deftypefn
 
-@deftypefn {GIMPLE function} tree *gimple_omp_for_incr_ptr (gimple g)
+@deftypefn {GIMPLE function} {tree *} gimple_omp_for_incr_ptr (gimple g)
 Return a pointer to the increment value for @code{OMP_FOR} @code{G}. 
 @end deftypefn
 
@@ -1758,7 +1747,7 @@ the @code{OMP_FOR} statement @code{G} starts.
 Set @code{COND} to be the condition code for @code{OMP_FOR} @code{G}. 
 @end deftypefn
 
-@deftypefn {GIMPLE function} enum tree_code gimple_omp_for_cond (gimple g)
+@deftypefn {GIMPLE function} {enum tree_code} gimple_omp_for_cond (gimple g)
 Return the condition code associated with @code{OMP_FOR} @code{G}. 
 @end deftypefn
 
@@ -1789,7 +1778,8 @@ executed in sequence.
 @subsection @code{GIMPLE_OMP_PARALLEL}
 @cindex @code{GIMPLE_OMP_PARALLEL}
 
-@deftypefn {GIMPLE function} gimple gimple_build_omp_parallel (gimple_seq body, tree clauses, tree child_fn, tree data_arg)
+@deftypefn {GIMPLE function} gimple gimple_build_omp_parallel (gimple_seq @
+body, tree clauses, tree child_fn, tree data_arg)
 Build a @code{GIMPLE_OMP_PARALLEL} statement.
 @end deftypefn
 
@@ -1820,7 +1810,7 @@ Set @code{BODY} to be the body for the @code{OMP} statement @code{G}.
 Return the clauses associated with @code{OMP_PARALLEL} @code{G}. 
 @end deftypefn
 
-@deftypefn {GIMPLE function} tree *gimple_omp_parallel_clauses_ptr (gimple g)
+@deftypefn {GIMPLE function} {tree *} gimple_omp_parallel_clauses_ptr (gimple g)
 Return a pointer to the clauses associated with @code{OMP_PARALLEL} @code{G}. 
 @end deftypefn
 
@@ -1834,7 +1824,7 @@ Return the child function used to hold the body of @code{OMP_PARALLEL}
 @code{G}. 
 @end deftypefn
 
-@deftypefn {GIMPLE function} tree *gimple_omp_parallel_child_fn_ptr (gimple g)
+@deftypefn {GIMPLE function} {tree *} gimple_omp_parallel_child_fn_ptr (gimple g)
 Return a pointer to the child function used to hold the body of
 @code{OMP_PARALLEL} @code{G}. 
 @end deftypefn
@@ -1848,7 +1838,7 @@ Return the artificial argument used to send variables and values
 from the parent to the children threads in @code{OMP_PARALLEL} @code{G}. 
 @end deftypefn
 
-@deftypefn {GIMPLE function} tree *gimple_omp_parallel_data_arg_ptr (gimple g)
+@deftypefn {GIMPLE function} {tree *} gimple_omp_parallel_data_arg_ptr (gimple g)
 Return a pointer to the data argument for @code{OMP_PARALLEL} @code{G}. 
 @end deftypefn
 
@@ -1921,7 +1911,7 @@ Return the control variable associated with the
 @code{GIMPLE_OMP_SECTIONS} in @code{G}.
 @end deftypefn
  
-@deftypefn {GIMPLE function} tree *gimple_omp_sections_control_ptr (gimple g)
+@deftypefn {GIMPLE function} {tree *} gimple_omp_sections_control_ptr (gimple g)
 Return a pointer to the clauses associated with the
 @code{GIMPLE_OMP_SECTIONS} in @code{G}.
 @end deftypefn
@@ -1935,7 +1925,7 @@ Set @code{CONTROL} to be the set of clauses associated with the
 Return the clauses associated with @code{OMP_SECTIONS} @code{G}. 
 @end deftypefn
 
-@deftypefn {GIMPLE function} tree *gimple_omp_sections_clauses_ptr (gimple g)
+@deftypefn {GIMPLE function} {tree *} gimple_omp_sections_clauses_ptr (gimple g)
 Return a pointer to the clauses associated with @code{OMP_SECTIONS} @code{G}. 
 @end deftypefn
 
@@ -1960,7 +1950,7 @@ copyprivate, nowait.
 Return the clauses associated with @code{OMP_SINGLE} @code{G}. 
 @end deftypefn
 
-@deftypefn {GIMPLE function} tree *gimple_omp_single_clauses_ptr (gimple g)
+@deftypefn {GIMPLE function} {tree *} gimple_omp_single_clauses_ptr (gimple g)
 Return a pointer to the clauses associated with @code{OMP_SINGLE} @code{G}. 
 @end deftypefn
 
@@ -1991,7 +1981,7 @@ holding @code{G}.
 Return the @code{SSA} name created by @code{GIMPLE_PHI} @code{G}. 
 @end deftypefn
 
-@deftypefn {GIMPLE function} tree *gimple_phi_result_ptr (gimple g)
+@deftypefn {GIMPLE function} {tree *} gimple_phi_result_ptr (gimple g)
 Return a pointer to the @code{SSA} name created by @code{GIMPLE_PHI} @code{G}. 
 @end deftypefn
 
@@ -1999,7 +1989,7 @@ Return a pointer to the @code{SSA} name created by @code{GIMPLE_PHI} @code{G}.
 Set @code{RESULT} to be the @code{SSA} name created by @code{GIMPLE_PHI} @code{G}. 
 @end deftypefn
 
-@deftypefn {GIMPLE function} struct phi_arg_d *gimple_phi_arg (gimple g, index)
+@deftypefn {GIMPLE function} {struct phi_arg_d *} gimple_phi_arg (gimple g, index)
 Return the @code{PHI} argument corresponding to incoming edge @code{INDEX} for
 @code{GIMPLE_PHI} @code{G}. 
 @end deftypefn
@@ -2048,7 +2038,8 @@ Set @code{RETVAL} to be the return value for @code{GIMPLE_RETURN} @code{G}.
 @subsection @code{GIMPLE_SWITCH}
 @cindex @code{GIMPLE_SWITCH}
 
-@deftypefn {GIMPLE function} gimple gimple_build_switch ( nlabels, tree index, tree default_label, ...)
+@deftypefn {GIMPLE function} gimple gimple_build_switch (unsigned nlabels, @
+tree index, tree default_label, ...)
 Build a @code{GIMPLE_SWITCH} statement.  @code{NLABELS} are the number of
 labels excluding the default label.  The default label is passed
 in @code{DEFAULT_LABEL}.  The rest of the arguments are trees
@@ -2056,7 +2047,8 @@ representing the labels.  Each label is a tree of code
 @code{CASE_LABEL_EXPR}.
 @end deftypefn
 
-@deftypefn {GIMPLE function} gimple gimple_build_switch_vec (tree index, tree default_label, @code{VEC}(tree,heap) *args)
+@deftypefn {GIMPLE function} gimple gimple_build_switch_vec (tree index, tree @
+default_label, @code{VEC}(tree,heap) *args)
 This function is an alternate way of building @code{GIMPLE_SWITCH}
 statements.  @code{INDEX} and @code{DEFAULT_LABEL} are as in
 gimple_build_switch.  @code{ARGS} is a vector of @code{CASE_LABEL_EXPR} trees
@@ -2068,7 +2060,8 @@ Return the number of labels associated with the switch statement
 @code{G}. 
 @end deftypefn
 
-@deftypefn {GIMPLE function} void gimple_switch_set_num_labels (gimple g, unsigned nlabels)
+@deftypefn {GIMPLE function} void gimple_switch_set_num_labels (gimple g, @
+unsigned nlabels)
 Set @code{NLABELS} to be the number of labels for the switch statement
 @code{G}. 
 @end deftypefn
@@ -2086,7 +2079,8 @@ Return the label numbered @code{INDEX}. The default label is 0, followed
 by any labels in a switch statement. 
 @end deftypefn
 
-@deftypefn {GIMPLE function} void gimple_switch_set_label (gimple g, unsigned index, tree label)
+@deftypefn {GIMPLE function} void gimple_switch_set_label (gimple g, unsigned @
+index, tree label)
 Set the label number @code{INDEX} to @code{LABEL}. 0 is always the default
 label. 
 @end deftypefn
@@ -2095,7 +2089,8 @@ label.
 Return the default label for a switch statement. 
 @end deftypefn
 
-@deftypefn {GIMPLE function} void gimple_switch_set_default_label (gimple g, tree label)
+@deftypefn {GIMPLE function} void gimple_switch_set_default_label (gimple g, @
+tree label)
 Set the default label for a switch statement. 
 @end deftypefn
 
@@ -2104,7 +2099,8 @@ Set the default label for a switch statement.
 @subsection @code{GIMPLE_TRY}
 @cindex @code{GIMPLE_TRY}
 
-@deftypefn {GIMPLE function} gimple gimple_build_try (gimple_seq eval, gimple_seq cleanup, unsigned int kind)
+@deftypefn {GIMPLE function} gimple gimple_build_try (gimple_seq eval, @
+gimple_seq cleanup, unsigned int kind)
 Build a @code{GIMPLE_TRY} statement.  @code{EVAL} is a sequence with the
 expression to evaluate.  @code{CLEANUP} is a sequence of statements to
 run at clean-up time.  @code{KIND} is the enumeration value
@@ -2113,7 +2109,7 @@ or @code{GIMPLE_TRY_FINALLY} if this statement denotes a try/finally
 construct.
 @end deftypefn
 
-@deftypefn {GIMPLE function} enum gimple_try_flags gimple_try_kind (gimple g)
+@deftypefn {GIMPLE function} {enum gimple_try_flags} gimple_try_kind (gimple g)
 Return the kind of try block represented by @code{GIMPLE_TRY} @code{G}. This is
 either @code{GIMPLE_TRY_CATCH} or @code{GIMPLE_TRY_FINALLY}. 
 @end deftypefn
@@ -2132,7 +2128,8 @@ Return the sequence of statements used as the cleanup body for
 @code{GIMPLE_TRY} @code{G}. 
 @end deftypefn
 
-@deftypefn {GIMPLE function} void gimple_try_set_catch_is_cleanup (gimple g, bool catch_is_cleanup)
+@deftypefn {GIMPLE function} void gimple_try_set_catch_is_cleanup (gimple g, @
+bool catch_is_cleanup)
 Set the @code{GIMPLE_TRY_CATCH_IS_CLEANUP} flag. 
 @end deftypefn
 
@@ -2353,7 +2350,7 @@ Return a block statement iterator that points to the first
 non-label statement in block @code{BB}.
 @end deftypefn
 
-@deftypefn {GIMPLE function} gimple *gsi_stmt_ptr (gimple_stmt_iterator *i)
+@deftypefn {GIMPLE function} {gimple *} gsi_stmt_ptr (gimple_stmt_iterator *i)
 Return a pointer to the current stmt.
 @end deftypefn
 
@@ -2385,12 +2382,14 @@ Links statement @code{G} before the statement pointed-to by iterator @code{I}.
 Updates iterator @code{I} according to @code{MODE}.
 @end deftypefn
 
-@deftypefn {GIMPLE function} void gsi_link_seq_after (gimple_stmt_iterator *i, gimple_seq seq, enum gsi_iterator_update mode)
+@deftypefn {GIMPLE function} void gsi_link_seq_after (gimple_stmt_iterator *i, @
+gimple_seq seq, enum gsi_iterator_update mode)
 Links sequence @code{SEQ} after the statement pointed-to by iterator @code{I}.
 @code{MODE} is as in @code{gsi_insert_after}.
 @end deftypefn
 
-@deftypefn {GIMPLE function} void gsi_link_after (gimple_stmt_iterator *i, gimple g, enum gsi_iterator_update mode)
+@deftypefn {GIMPLE function} void gsi_link_after (gimple_stmt_iterator *i, @
+gimple g, enum gsi_iterator_update mode)
 Links statement @code{G} after the statement pointed-to by iterator @code{I}.
 @code{MODE} is as in @code{gsi_insert_after}.
 @end deftypefn
@@ -2405,31 +2404,36 @@ Move all statements in the sequence before @code{I} to a new sequence.
 Return this new sequence.
 @end deftypefn
 
-@deftypefn {GIMPLE function} void gsi_replace (gimple_stmt_iterator *i, gimple stmt, bool update_eh_info)
+@deftypefn {GIMPLE function} void gsi_replace (gimple_stmt_iterator *i, @
+gimple stmt, bool update_eh_info)
 Replace the statement pointed-to by @code{I} to @code{STMT}.  If @code{UPDATE_EH_INFO}
 is true, the exception handling information of the original
 statement is moved to the new statement.
 @end deftypefn
 
-@deftypefn {GIMPLE function} void gsi_insert_before (gimple_stmt_iterator *i, gimple stmt, enum gsi_iterator_update mode)
+@deftypefn {GIMPLE function} void gsi_insert_before (gimple_stmt_iterator *i, @
+gimple stmt, enum gsi_iterator_update mode)
 Insert statement @code{STMT} before the statement pointed-to by iterator
 @code{I}, update @code{STMT}'s basic block and scan it for new operands.  @code{MODE}
 specifies how to update iterator @code{I} after insertion (see enum
 @code{gsi_iterator_update}).
 @end deftypefn
 
-@deftypefn {GIMPLE function} void gsi_insert_seq_before (gimple_stmt_iterator *i, gimple_seq seq, enum gsi_iterator_update mode)
+@deftypefn {GIMPLE function} void gsi_insert_seq_before (gimple_stmt_iterator *i, @
+gimple_seq seq, enum gsi_iterator_update mode)
 Like @code{gsi_insert_before}, but for all the statements in @code{SEQ}.
 @end deftypefn
 
-@deftypefn {GIMPLE function} void gsi_insert_after (gimple_stmt_iterator *i, gimple stmt, enum gsi_iterator_update mode)
+@deftypefn {GIMPLE function} void gsi_insert_after (gimple_stmt_iterator *i, @
+gimple stmt, enum gsi_iterator_update mode)
 Insert statement @code{STMT} after the statement pointed-to by iterator
 @code{I}, update @code{STMT}'s basic block and scan it for new operands.  @code{MODE}
 specifies how to update iterator @code{I} after insertion (see enum
 @code{gsi_iterator_update}).
 @end deftypefn
 
-@deftypefn {GIMPLE function} void gsi_insert_seq_after (gimple_stmt_iterator *i, gimple_seq seq, enum gsi_iterator_update mode)
+@deftypefn {GIMPLE function} void gsi_insert_seq_after (gimple_stmt_iterator *i, @
+gimple_seq seq, enum gsi_iterator_update mode)
 Like @code{gsi_insert_after}, but for all the statements in @code{SEQ}.
 @end deftypefn
 
@@ -2437,17 +2441,20 @@ Like @code{gsi_insert_after}, but for all the statements in @code{SEQ}.
 Finds iterator for @code{STMT}.
 @end deftypefn
 
-@deftypefn {GIMPLE function} void gsi_move_after (gimple_stmt_iterator *from, gimple_stmt_iterator *to)
+@deftypefn {GIMPLE function} void gsi_move_after (gimple_stmt_iterator *from, @
+gimple_stmt_iterator *to)
 Move the statement at @code{FROM} so it comes right after the statement
 at @code{TO}.
 @end deftypefn
 
-@deftypefn {GIMPLE function} void gsi_move_before (gimple_stmt_iterator *from, gimple_stmt_iterator *to)
+@deftypefn {GIMPLE function} void gsi_move_before (gimple_stmt_iterator *from, @
+gimple_stmt_iterator *to)
 Move the statement at @code{FROM} so it comes right before the statement
 at @code{TO}.
 @end deftypefn
 
-@deftypefn {GIMPLE function} void gsi_move_to_bb_end (gimple_stmt_iterator *from, basic_block bb)
+@deftypefn {GIMPLE function} void gsi_move_to_bb_end (gimple_stmt_iterator *from, @
+basic_block bb)
 Move the statement at @code{FROM} to the end of basic block @code{BB}.
 @end deftypefn
 
@@ -2515,7 +2522,8 @@ sequences: @code{walk_gimple_stmt} and @code{walk_gimple_seq},
 accordingly, and a third function for walking the operands in a
 statement: @code{walk_gimple_op}.
 
-@deftypefn {GIMPLE function} tree walk_gimple_stmt (gimple_stmt_iterator *gsi, walk_stmt_fn callback_stmt, walk_tree_fn callback_op, struct walk_stmt_info *wi)
+@deftypefn {GIMPLE function} tree walk_gimple_stmt (gimple_stmt_iterator *gsi, @
+  walk_stmt_fn callback_stmt, walk_tree_fn callback_op, struct walk_stmt_info *wi)
 This function is used to walk the current statement in @code{GSI},
 optionally using traversal state stored in @code{WI}.  If @code{WI} is @code{NULL}, no
 state is kept during the traversal.
@@ -2535,7 +2543,8 @@ The return value is that returned by the last call to
 @end deftypefn
 
 
-@deftypefn {GIMPLE function} tree walk_gimple_op (gimple stmt, walk_tree_fn callback_op, struct walk_stmt_info *wi)
+@deftypefn {GIMPLE function} tree walk_gimple_op (gimple stmt, @
+  walk_tree_fn callback_op, struct walk_stmt_info *wi)
 Use this function to walk the operands of statement @code{STMT}.  Every
 operand is walked via @code{walk_tree} with optional state information
 in @code{WI}.
@@ -2545,7 +2554,7 @@ Additional parameters to @code{walk_tree} must be stored in @code{WI}.  For
 each operand @code{OP}, @code{walk_tree} is called as:
 
 @smallexample
-    walk_tree (&@code{OP}, @code{CALLBACK_OP}, @code{WI}, @code{WI}- @code{PSET})
+walk_tree (&@code{OP}, @code{CALLBACK_OP}, @code{WI}, @code{PSET})
 @end smallexample
 
 If @code{CALLBACK_OP} returns non-@code{NULL} for an operand, the remaining
@@ -2555,7 +2564,8 @@ specified.
 @end deftypefn
 
 
-@deftypefn {GIMPLE function} tree walk_gimple_seq (gimple_seq seq, walk_stmt_fn callback_stmt, walk_tree_fn callback_op, struct walk_stmt_info *wi)
+@deftypefn {GIMPLE function} tree walk_gimple_seq (gimple_seq seq, @
+  walk_stmt_fn callback_stmt, walk_tree_fn callback_op, struct walk_stmt_info *wi)
 This function walks all the statements in the sequence @code{SEQ}
 calling @code{walk_gimple_stmt} on each one.  @code{WI} is as in
 @code{walk_gimple_stmt}.  If @code{walk_gimple_stmt} returns non-@code{NULL}, the walk

@@ -60,8 +60,8 @@ public abstract class TabbedPaneUI extends ComponentUI
   {
     // Nothing to do here.
   }
-  
-  
+
+
   /**
    * Determines which tab lies at a given position.
    *
@@ -79,7 +79,7 @@ public abstract class TabbedPaneUI extends ComponentUI
    */
   public abstract int tabForCoordinate(JTabbedPane pane,
                                        int x, int y);
-  
+
 
   /**
    * Calculates the bounding box of a tab.
@@ -108,4 +108,3 @@ public abstract class TabbedPaneUI extends ComponentUI
    */
   public abstract int getTabRunCount(JTabbedPane pane);
 }
-                       

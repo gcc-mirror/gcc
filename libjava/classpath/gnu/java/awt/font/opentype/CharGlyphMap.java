@@ -89,7 +89,7 @@ public abstract class CharGlyphMap
   /**
    * Reads a CharGlyphMap from an OpenType or TrueType <code>cmap</code>
    * table. The current implementation works as follows:
-   * 
+   *
    * <p><ol><li>If the font has a type 4 cmap for the Unicode platform
    * (encoding 0, 1, 2, 3 or 4), or a type 4 cmap for the Microsoft
    * platform (encodings 1 or 10), that table is used to map Unicode
@@ -132,7 +132,7 @@ public abstract class CharGlyphMap
     version = buf.getChar();
     if (version != 0)
       return null;
-    
+
     numTables = buf.getChar();
     for (int i = 0; i < numTables; i++)
     {
@@ -229,8 +229,8 @@ public abstract class CharGlyphMap
       return 0;
     }
   }
-  
-  
+
+
   /**
    * A mapping from Unicode code points to glyph IDs through CMAP Type
    * 0 tables. These tables have serious limitations: Only the first
@@ -255,8 +255,8 @@ public abstract class CharGlyphMap
      * Unicode code point of glyph <code>i</code> in the font.
      */
     private char[] glyphToUCS2 = new char[256];
-    
-    
+
+
     /**
      * A String whose <code>charAt(i)</code> is the Unicode character
      * that corresponds to the codepoint <code>i + 127</code> in the
@@ -562,7 +562,7 @@ public abstract class CharGlyphMap
       /* The CMAP version must be 0. */
       if (buf.getChar() != 0)
         throw new IllegalStateException();
-    
+
       numTables = buf.getChar();
       for (int i = 0; i < numTables; i++)
       {
@@ -705,7 +705,7 @@ public abstract class CharGlyphMap
       return null;
     }
   }
-  
+
 
   /**
    * A mapping from Unicode code points to glyph IDs through CMAP Type
@@ -805,7 +805,7 @@ public abstract class CharGlyphMap
 
       buf.position(pos);
       idRangeOffset_glyphID = buf.asCharBuffer();
-      
+
       endCode.limit(segCount);
       startCode.limit(segCount);
       idDelta.limit(segCount);
@@ -856,7 +856,7 @@ public abstract class CharGlyphMap
       segStart = firstChar.get(segment);
       if ((c < segStart) || (c > lastChar.get(segment)))
         return 0;
-      
+
       /*
        *      System.out.println("seg " + segment
        *                 + ", range=" + (int) rangeID[segment]
@@ -912,8 +912,8 @@ public abstract class CharGlyphMap
   {
     int numGroups;
     IntBuffer data;
-    
-    
+
+
     /**
      * Determines whether this implementation supports a combination
      * of platform and encoding for a type 12 <code>cmap</code> table.
@@ -964,8 +964,8 @@ public abstract class CharGlyphMap
       numGroups = buf.getInt();
       data = buf.asIntBuffer();
     }
-    
-    
+
+
     /**
      * Determines the glyph index for a given Unicode codepoint.  Users
      * should be aware that the character-to-glyph mapping not not
@@ -993,7 +993,7 @@ public abstract class CharGlyphMap
         startCharCode = data.get(3 * mid);
         endCharCode = data.get(3 * mid + 1);
 
-        
+
         /*
         System.out.println("group " + mid + " (U+"
         + Integer.toHexString(startCharCode)
@@ -1005,7 +1005,7 @@ public abstract class CharGlyphMap
           return ucs4
             - startCharCode
             + /* startGlyphID */ data.get(mid * 3 + 2);
-        
+
         if (endCharCode < ucs4)
           min = mid + 1;
         else

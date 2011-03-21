@@ -152,6 +152,10 @@ static char debug;
 static char nop;
 static char *resolution_file = NULL;
 
+/* The version of gold being used, or -1 if not gold.  The number is
+   MAJOR * 100 + MINOR.  */
+static int gold_version = -1;
+
 /* Not used by default, but can be overridden at runtime
    by using -plugin-opt=-sym-style={none,win32,underscore|uscore}
    (in fact, only first letter of style arg is checked.)  */
@@ -249,10 +253,10 @@ parse_table_entry (char *p, struct ld_plugin_symbol *entry,
   entry->visibility = translate_visibility[t];
   p++;
 
-  entry->size = *(uint64_t *) p;
+  memcpy (&entry->size, p, sizeof (uint64_t));
   p += 8;
 
-  aux->slot = *(uint32_t *) p;
+  memcpy (&aux->slot, p, sizeof (uint32_t));
   p += 4;
 
   entry->resolution = LDPR_UNKNOWN;
@@ -622,7 +626,8 @@ all_symbols_read_handler (void)
 
   free (lto_argv);
 
-  if (pass_through_items)
+  /* --pass-through is not needed when using gold 1.11 or later.  */
+  if (pass_through_items && gold_version < 111)
     {
       unsigned int i;
       for (i = 0; i < num_pass_through_items; i++)
@@ -997,6 +1002,9 @@ onload (struct ld_plugin_tv *tv)
 	  break;
 	case LDPT_OPTION:
 	  process_option (p->tv_u.tv_string);
+	  break;
+	case LDPT_GOLD_VERSION:
+	  gold_version = p->tv_u.tv_val;
 	  break;
 	default:
 	  break;

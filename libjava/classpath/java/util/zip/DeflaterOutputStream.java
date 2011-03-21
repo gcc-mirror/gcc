@@ -57,21 +57,21 @@ import java.io.OutputStream;
  * finishing the stream.
  *
  * @author Tom Tromey, Jochen Hoenicke
- * @date Jan 11, 2001 
+ * @date Jan 11, 2001
  */
 public class DeflaterOutputStream extends FilterOutputStream
 {
-  /** 
+  /**
    * This buffer is used temporarily to retrieve the bytes from the
-   * deflater and write them to the underlying output stream.  
+   * deflater and write them to the underlying output stream.
    */
   protected byte[] buf;
 
-  /** 
+  /**
    * The deflater which is used to deflate the stream.
    */
   protected Deflater def;
-  
+
   /**
    * Deflates everything in the def's input buffers.  This will call
    * <code>def.deflate()</code> until all bytes from the input buffers
@@ -81,19 +81,19 @@ public class DeflaterOutputStream extends FilterOutputStream
   {
     while (! def.needsInput())
       {
-	int len = def.deflate(buf, 0, buf.length);
+        int len = def.deflate(buf, 0, buf.length);
 
-	//	System.err.println("DOS deflated " + len + " out of " + buf.length);
-	if (len <= 0)
-	  break;
-	out.write(buf, 0, len);
+        //      System.err.println("DOS deflated " + len + " out of " + buf.length);
+        if (len <= 0)
+          break;
+        out.write(buf, 0, len);
       }
 
     if (! def.needsInput())
       throw new InternalError("Can't deflate all input?");
   }
 
-  /** 
+  /**
    * Creates a new DeflaterOutputStream with a default Deflater and
    * default buffer size.
    * @param out the output stream where deflated output should be written.
@@ -103,7 +103,7 @@ public class DeflaterOutputStream extends FilterOutputStream
     this(out, new Deflater(), 4096);
   }
 
-  /** 
+  /**
    * Creates a new DeflaterOutputStream with the given Deflater and
    * default buffer size.
    * @param out the output stream where deflated output should be written.
@@ -114,7 +114,7 @@ public class DeflaterOutputStream extends FilterOutputStream
     this(out, defl, 4096);
   }
 
-  /** 
+  /**
    * Creates a new DeflaterOutputStream with the given Deflater and
    * buffer size.
    * @param out the output stream where deflated output should be written.
@@ -131,7 +131,7 @@ public class DeflaterOutputStream extends FilterOutputStream
     def = defl;
   }
 
-  /**  
+  /**
    * Flushes the stream by calling flush() on the deflater and then
    * on the underlying stream.  This ensures that all bytes are
    * flushed.  This function doesn't work in Sun's JDK, but only in
@@ -147,17 +147,17 @@ public class DeflaterOutputStream extends FilterOutputStream
   /**
    * Finishes the stream by calling finish() on the deflater.  This
    * was the only way to ensure that all bytes are flushed in Sun's
-   * JDK.  
+   * JDK.
    */
   public void finish() throws IOException
   {
     def.finish();
     while (! def.finished())
       {
-	int len = def.deflate(buf, 0, buf.length);
-	if (len <= 0)
-	  break;
-	out.write(buf, 0, len);
+        int len = def.deflate(buf, 0, buf.length);
+        if (len <= 0)
+          break;
+        out.write(buf, 0, len);
       }
     if (! def.finished())
       throw new InternalError("Can't deflate all input?");
@@ -165,7 +165,7 @@ public class DeflaterOutputStream extends FilterOutputStream
   }
 
   /**
-   * Calls finish() and closes the stream. 
+   * Calls finish() and closes the stream.
    */
   public void close() throws IOException
   {

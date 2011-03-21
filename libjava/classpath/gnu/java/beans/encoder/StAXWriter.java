@@ -45,7 +45,7 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
 /** A {@link Writer} implementation based on the StAX API.
- * 
+ *
  * @author Robert Schuster (robertschuster@fsfe.org)
  *
  */
@@ -54,7 +54,7 @@ public class StAXWriter implements Writer
   XMLStreamWriter writer;
 
   int indent = 0;
-  
+
   public StAXWriter(OutputStream os)
   {
     try
@@ -71,7 +71,7 @@ public class StAXWriter implements Writer
       }
 
   }
-  
+
   public void flush()
   {
     if (writer != null)
@@ -138,7 +138,7 @@ public class StAXWriter implements Writer
 
       }
   }
-  
+
   public void writeEndNoChildren()
   {
     try

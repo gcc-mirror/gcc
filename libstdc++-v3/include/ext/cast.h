@@ -1,6 +1,6 @@
 // <cast.h> -*- C++ -*-
 
-// Copyright (C) 2008, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2008, 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -30,7 +30,9 @@
 #ifndef _GLIBCXX_CAST_H
 #define _GLIBCXX_CAST_H 1
 
-_GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
+namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /**
    * These functions are here to allow containers to support non standard
@@ -113,6 +115,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
     { return _ToType(reinterpret_cast<typename _Caster<_ToType>::
 		     type>(__arg)); }
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
 
 #endif // __GLIBCXX_CAST_H

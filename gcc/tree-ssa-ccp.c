@@ -1,6 +1,6 @@
 /* Conditional constant propagation pass for the GNU compiler.
    Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009,
-   2010 Free Software Foundation, Inc.
+   2010, 2011 Free Software Foundation, Inc.
    Adapted from original RTL SSA-CCP by Daniel Berlin <dberlin@dberlin.org>
    Adapted to GIMPLE trees by Diego Novillo <dnovillo@redhat.com>
 
@@ -522,6 +522,10 @@ get_value_from_alignment (tree expr)
     val = bit_value_binop (PLUS_EXPR, TREE_TYPE (expr),
 			   TREE_OPERAND (base, 0), TREE_OPERAND (base, 1));
   else if (base
+	   /* ???  While function decls have DECL_ALIGN their addresses
+	      may encode extra information in the lower bits on some
+	      targets (PR47239).  Simply punt for function decls for now.  */
+	   && TREE_CODE (base) != FUNCTION_DECL
 	   && ((align = get_object_alignment (base, BIGGEST_ALIGNMENT))
 		> BITS_PER_UNIT))
     {
@@ -1178,6 +1182,17 @@ ccp_fold (gimple stmt)
 					       TREE_CODE (rhs),
 					       TREE_TYPE (rhs), val);
 		    }
+		  else if (TREE_CODE (rhs) == BIT_FIELD_REF
+			   && TREE_CODE (TREE_OPERAND (rhs, 0)) == SSA_NAME)
+		    {
+		      tree val = get_constant_value (TREE_OPERAND (rhs, 0));
+		      if (val)
+			return fold_ternary_loc (EXPR_LOCATION (rhs),
+						 TREE_CODE (rhs),
+						 TREE_TYPE (rhs), val,
+						 TREE_OPERAND (rhs, 1),
+						 TREE_OPERAND (rhs, 2));
+		    }
 		  else if (TREE_CODE (rhs) == MEM_REF
 			   && TREE_CODE (TREE_OPERAND (rhs, 0)) == SSA_NAME)
 		    {
@@ -1832,6 +1847,13 @@ bit_value_binop_1 (enum tree_code code, tree type,
 	    }
 	  else if (shift < 0)
 	    {
+	      /* ???  We can have sizetype related inconsistencies in
+		 the IL.  */
+	      if ((TREE_CODE (r1type) == INTEGER_TYPE
+		   && (TYPE_IS_SIZETYPE (r1type)
+		       ? 0 : TYPE_UNSIGNED (r1type))) != uns)
+		break;
+
 	      shift = -shift;
 	      *mask = double_int_rshift (r1mask, shift,
 					 TYPE_PRECISION (type), !uns);
@@ -1940,6 +1962,14 @@ bit_value_binop_1 (enum tree_code code, tree type,
 	int minmax, maxmin;
 	/* If the most significant bits are not known we know nothing.  */
 	if (double_int_negative_p (r1mask) || double_int_negative_p (r2mask))
+	  break;
+
+	/* For comparisons the signedness is in the comparison operands.  */
+	uns = (TREE_CODE (r1type) == INTEGER_TYPE
+	       && TYPE_IS_SIZETYPE (r1type) ? 0 : TYPE_UNSIGNED (r1type));
+	/* ???  We can have sizetype related inconsistencies in the IL.  */
+	if ((TREE_CODE (r2type) == INTEGER_TYPE
+	     && TYPE_IS_SIZETYPE (r2type) ? 0 : TYPE_UNSIGNED (r2type)) != uns)
 	  break;
 
 	/* If we know the most significant bits we know the values
@@ -2156,9 +2186,10 @@ evaluate_stmt (gimple stmt)
 	      if (INTEGRAL_TYPE_P (TREE_TYPE (rhs1))
 		  || POINTER_TYPE_P (TREE_TYPE (rhs1)))
 		{
+		  tree lhs = gimple_assign_lhs (stmt);
 		  tree rhs2 = gimple_assign_rhs2 (stmt);
 		  val = bit_value_binop (subcode,
-					 TREE_TYPE (rhs1), rhs1, rhs2);
+					 TREE_TYPE (lhs), rhs1, rhs2);
 		}
 	      break;
 

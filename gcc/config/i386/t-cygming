@@ -72,6 +72,11 @@ SHLIB_MAP = @shlib_map_file@
 SHLIB_OBJS = @shlib_objs@
 SHLIB_DIR = @multilib_dir@/shlib
 SHLIB_SLIBDIR_QUAL = @shlib_slibdir_qual@
+# SHLIB_DLLDIR is defined by including one of either t-dlldir or t-dlldir-x
+# (native/cross build respectively) in the tmake_file list in gcc/config.gcc.
+ifndef SHLIB_DLLDIR
+$(error SHLIB_DLLDIR must be defined)
+endif
 
 SHLIB_LINK = $(LN_S) -f $(SHLIB_MAP) $(SHLIB_MAP).def && \
 	if [ ! -d $(SHLIB_DIR) ]; then \
@@ -91,9 +96,10 @@ SHLIB_LINK = $(LN_S) -f $(SHLIB_MAP) $(SHLIB_MAP).def && \
 # $(slibdir) double quoted to protect it from expansion while building
 # libgcc.mk.  We want this delayed until actual install time.
 SHLIB_INSTALL = \
-	$$(mkinstalldirs) $$(DESTDIR)$$(slibdir)$(SHLIB_SLIBDIR_QUAL); \
+	$$(mkinstalldirs) $$(DESTDIR)$$(SHLIB_DLLDIR) \
+	  $$(DESTDIR)$$(slibdir)$(SHLIB_SLIBDIR_QUAL); \
 	$(INSTALL) $(SHLIB_DIR)/$(SHLIB_SONAME) \
-	  $$(DESTDIR)$$(bindir)/$(SHLIB_SONAME); \
+	  $$(DESTDIR)$$(SHLIB_DLLDIR)/$(SHLIB_SONAME); \
 	$(INSTALL_DATA) $(SHLIB_DIR)/$(SHLIB_IMPLIB) \
 	  $$(DESTDIR)$$(slibdir)$(SHLIB_SLIBDIR_QUAL)/$(SHLIB_IMPLIB)
 SHLIB_MKMAP = $(srcdir)/mkmap-flat.awk

@@ -51,7 +51,7 @@ public class MemoryCacheImageInputStream extends ImageInputStreamImpl
   private BufferedInputStream buffer;
 
   private int READLIMIT = 2048;
-  
+
   public MemoryCacheImageInputStream(InputStream stream)
   {
     this.stream = stream;
@@ -85,7 +85,7 @@ public class MemoryCacheImageInputStream extends ImageInputStreamImpl
   {
     return false;
   }
-  
+
   public boolean isCachedMemory()
   {
     return true;
@@ -96,7 +96,7 @@ public class MemoryCacheImageInputStream extends ImageInputStreamImpl
   {
     setBitOffset(0);
     int retval = buffer.read();
-    
+
     if (retval != -1)
       streamPos++;
 
@@ -114,9 +114,9 @@ public class MemoryCacheImageInputStream extends ImageInputStreamImpl
         streamPos += retval;
       }
 
-    return retval; 
+    return retval;
   }
-  
+
   public void seek(long position)
   throws IOException
   {

@@ -1,7 +1,7 @@
 // String based streams -*- C++ -*-
 
 // Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-// 2006, 2007, 2009
+// 2006, 2007, 2008, 2009, 2010, 2011
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -38,7 +38,9 @@
 
 #pragma GCC system_header
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template <class _CharT, class _Traits, class _Alloc>
     typename basic_stringbuf<_CharT, _Traits, _Alloc>::int_type
@@ -176,14 +178,15 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	      && __newoffi >= 0
 	      && this->egptr() - __beg >= __newoffi)
 	    {
-	      this->gbump((__beg + __newoffi) - this->gptr());
+	      this->setg(this->eback(), this->eback() + __newoffi,
+			 this->egptr());
 	      __ret = pos_type(__newoffi);
 	    }
 	  if ((__testout || __testboth)
 	      && __newoffo >= 0
 	      && this->egptr() - __beg >= __newoffo)
 	    {
-	      this->pbump((__beg + __newoffo) - this->pptr());
+	      _M_pbump(this->pbase(), this->epptr(), __newoffo);
 	      __ret = pos_type(__newoffo);
 	    }
 	}
@@ -210,9 +213,10 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	  if (__testpos)
 	    {
 	      if (__testin)
-		this->gbump((__beg + __pos) - this->gptr());
+		this->setg(this->eback(), this->eback() + __pos,
+			   this->egptr());
 	      if (__testout)
-                this->pbump((__beg + __pos) - this->pptr());
+		_M_pbump(this->pbase(), this->epptr(), __pos);
 	      __ret = __sp;
 	    }
 	}
@@ -241,8 +245,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	this->setg(__base, __base + __i, __endg);
       if (__testout)
 	{
-	  this->setp(__base, __endp);
-	  this->pbump(__o);
+	  _M_pbump(__base, __endp, __o);
 	  // egptr() always tracks the string end.  When !__testin,
 	  // for the correct functioning of the streambuf inlines
 	  // the other get area pointers are identical.
@@ -251,9 +254,22 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	}
     }
 
+  template <class _CharT, class _Traits, class _Alloc>
+    void
+    basic_stringbuf<_CharT, _Traits, _Alloc>::
+    _M_pbump(char_type* __pbeg, char_type* __pend, off_type __off)
+    {
+      this->setp(__pbeg, __pend);
+      while (__off > __gnu_cxx::__numeric_traits<int>::__max)
+	{
+	  this->pbump(__gnu_cxx::__numeric_traits<int>::__max);
+	  __off -= __gnu_cxx::__numeric_traits<int>::__max;
+	}
+      this->pbump(__off);
+    }
+
   // Inhibit implicit instantiations for required instantiations,
   // which are defined via explicit instantiations elsewhere.
-  // NB:  This syntax is a GNU extension.
 #if _GLIBCXX_EXTERN_TEMPLATE
   extern template class basic_stringbuf<char>;
   extern template class basic_istringstream<char>;
@@ -268,6 +284,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 #endif
 #endif
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace std
 
 #endif

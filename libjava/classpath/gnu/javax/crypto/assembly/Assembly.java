@@ -1,4 +1,4 @@
-/* Assembly.java -- 
+/* Assembly.java --
    Copyright (C) 2003, 2006 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -49,7 +49,7 @@ import java.util.Map;
  * Once constructed, and correctly initialised, the bulk of the methods
  * available on the <code>Assembly</code> are delegated to the <i>head</i> of
  * the {@link Transformer} chain of the <code>Assembly</code>.
- * 
+ *
  * @see Transformer
  */
 public class Assembly
@@ -79,7 +79,7 @@ public class Assembly
    * in pre-processing mode; i.e. it should apply its internal transformation
    * algorithm on the input data stream, <b>before</b> it passes that stream to
    * the next element in the <i>chain</i>.
-   * 
+   *
    * @param t the {@link Transformer} to add at the head of the current chain.
    * @throws IllegalArgumentException if the designated {@link Transformer} has
    *           a non-null tail; i.e. it is already an element of a chain.
@@ -94,7 +94,7 @@ public class Assembly
    * in post-processing mode; i.e. it should apply its internal transformation
    * algorithm on the input data stream, <b>after</b> it passes that stream to
    * the next element in the <i>chain</i>.
-   * 
+   *
    * @param t the {@link Transformer} to add at the head of the current chain.
    * @throws IllegalArgumentException if the designated {@link Transformer} has
    *           a non-null tail; i.e. it is already an element of a chain.
@@ -107,7 +107,7 @@ public class Assembly
   /**
    * Initialises the <code>Assembly</code> for operation with specific
    * characteristics.
-   * 
+   *
    * @param attributes a set of name-value pairs that describes the desired
    *          future behaviour of this instance.
    * @throws IllegalStateException if the instance is already initialised.
@@ -138,7 +138,7 @@ public class Assembly
    * Convenience method that calls the method with same name and three
    * arguments, using a byte array of length <code>1</code> whose contents are
    * the designated byte.
-   * 
+   *
    * @param b the byte to process.
    * @return the result of transformation.
    * @throws IllegalStateException if the instance is not initialised.
@@ -155,7 +155,7 @@ public class Assembly
    * Convenience method that calls the method with same name and three
    * arguments. All bytes in <code>in</code>, starting from index position
    * <code>0</code> are considered.
-   * 
+   *
    * @param in the input data bytes.
    * @return the result of transformation.
    * @throws IllegalStateException if the instance is not initialised.
@@ -170,7 +170,7 @@ public class Assembly
 
   /**
    * Processes a designated number of bytes from a given byte array.
-   * 
+   *
    * @param in the input data bytes.
    * @param offset index of <code>in</code> from which to start considering
    *          data.
@@ -191,7 +191,7 @@ public class Assembly
   /**
    * Convenience method that calls the method with same name and three arguments
    * using a 0-long byte array.
-   * 
+   *
    * @return the result of transformation.
    * @throws IllegalStateException if the instance is not initialised.
    * @throws TransformerException if a transformation-related exception occurs
@@ -207,7 +207,7 @@ public class Assembly
    * Convenience method that calls the method with same name and three
    * arguments, using a byte array of length <code>1</code> whose contents are
    * the designated byte.
-   * 
+   *
    * @param b the byte to process.
    * @return the result of transformation.
    * @throws IllegalStateException if the instance is not initialised.
@@ -224,7 +224,7 @@ public class Assembly
    * Convenience method that calls the method with same name and three
    * arguments. All bytes in <code>in</code>, starting from index position
    * <code>0</code> are considered.
-   * 
+   *
    * @param in the input data bytes.
    * @return the result of transformation.
    * @throws IllegalStateException if the instance is not initialised.
@@ -241,7 +241,7 @@ public class Assembly
    * Processes a designated number of bytes from a given byte array and signals,
    * at the same time, that this is the last <i>push</i> operation for this
    * <code>Assembly</code>.
-   * 
+   *
    * @param in the input data bytes.
    * @param offset index of <code>in</code> from which to start considering
    *          data.

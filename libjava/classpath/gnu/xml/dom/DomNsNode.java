@@ -1,4 +1,4 @@
-/* DomNsNode.java -- 
+/* DomNsNode.java --
    Copyright (C) 1999,2000,2001,2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -44,25 +44,25 @@ import org.w3c.dom.DOMException;
  * <p> Abstract implemention of namespace support.  This facilitates
  * sharing code for attribute and element nodes.
  *
- * @author David Brownell 
+ * @author David Brownell
  * @author <a href='mailto:dog@gnu.org'>Chris Burdess</a>
  */
 public abstract class DomNsNode
   extends DomNode
 {
-  
+
   private String name;
   private String namespace;
   private String prefix;
   private String localName;
-  
+
   /**
    * Constructs a node associated with the specified document, and
    * with the specified namespace information.
    *
    * @param owner The document with which this entity is associated
    * @param namespaceURI Combined with the local part of the name,
-   *	this identifies a type of element or attribute; may be null.
+   *    this identifies a type of element or attribute; may be null.
    *  If this is the empty string, it is reassigned as null so that
    *  applications only need to test that case.
    * @param name Name of this node, which may include a prefix
@@ -84,7 +84,7 @@ public abstract class DomNsNode
    *
    * @param owner The document with which this entity is associated
    * @param namespaceURI Combined with the local part of the name,
-   *	this identifies a type of element or attribute; may be null.
+   *    this identifies a type of element or attribute; may be null.
    *  If this is the empty string, it is reassigned as null so that
    *  applications only need to test that case.
    * @param name Name of this node, which may include a prefix
@@ -93,7 +93,7 @@ public abstract class DomNsNode
    */
   // package private
   DomNsNode(short nodeType, DomDocument owner, String namespaceURI, String name,
-	    String prefix, String localName)
+            String prefix, String localName)
   {
     super(nodeType, owner);
     this.name = name.intern();
@@ -126,7 +126,7 @@ public abstract class DomNsNode
         localName = name.substring(index + 1).intern();
       }
   }
-  
+
   /**
    * <b>DOM L2</b>
    * Returns the node's namespace URI
@@ -145,7 +145,7 @@ public abstract class DomNsNode
       }
     namespace = (namespaceURI == null) ? null : namespaceURI.intern();
   }
-  
+
   /**
    * <b>DOM L2</b>
    * Returns any prefix part of the node's name (before any colon).
@@ -222,6 +222,5 @@ public abstract class DomNsNode
   {
     return localName;
   }
-  
-}
 
+}

@@ -43,14 +43,14 @@ import java.util.Enumeration;
  * <code>IdentityScope</code> represents a scope of an identity.
  * <code>IdentityScope</code> is also an {@link Identity} and can have a name
  * and scope along with the other qualitites identities possess.
- * 
+ *
  * <p>An <code>IdentityScope</code> contains other {@link Identity} objects.
  * All {@link Identity} objects are manipulated in the scope the same way. The
  * scope is supposed to apply different scope to different type of
  * Identities.</p>
- * 
+ *
  * <p>No identity within the same scope can have the same public key.</p>
- * 
+ *
  * @author Mark Benvenuto
  * @see Identity
  * @see Signer
@@ -73,7 +73,7 @@ public abstract class IdentityScope extends Identity
   /**
    * Constructs a new instance of <code>IdentityScope</code> with the
    * specified name and no scope.
-   * 
+   *
    * @param name
    *          the name to use.
    */
@@ -85,7 +85,7 @@ public abstract class IdentityScope extends Identity
   /**
    * Constructs a new instance of <code>IdentityScope</code> with the
    * specified name and {@link IdentityScope}.
-   * 
+   *
    * @param name
    *          the name to use.
    * @param scope
@@ -101,22 +101,22 @@ public abstract class IdentityScope extends Identity
 
   /**
    * Returns the system's Scope.
-   * 
+   *
    * @return the system's Scope.
    */
   public static IdentityScope getSystemScope()
   {
     if (systemScope == null)
       {
-	//Load it
-	//systemScope;
+        //Load it
+        //systemScope;
       }
     return systemScope;
   }
 
   /**
    * Sets the scope of the system.
-   * 
+   *
    * @param scope
    *          the new system scope.
    * @throws SecurityException
@@ -134,14 +134,14 @@ public abstract class IdentityScope extends Identity
 
   /**
    * Returns the number of entries within this <code>IdentityScope</code>.
-   * 
+   *
    * @return the number of entries within this <code>IdentityScope</code>.
    */
   public abstract int size();
 
   /**
    * Returns the specified {@link Identity}, by name, within this scope.
-   * 
+   *
    * @param name
    *          name of {@link Identity} to get.
    * @return an {@link Identity} representing the name or <code>null</code> if
@@ -152,7 +152,7 @@ public abstract class IdentityScope extends Identity
   /**
    * Returns the specified {@link Identity}, by {@link Principal}, within this
    * scope.
-   * 
+   *
    * @param principal
    *          the {@link Principal} to use.
    * @return an identity representing the {@link Principal} or <code>null</code>
@@ -165,7 +165,7 @@ public abstract class IdentityScope extends Identity
 
   /**
    * Returns the specified {@link Identity}, by public key, within this scope.
-   * 
+   *
    * @param key
    *          the {@link PublicKey} to use.
    * @return an identity representing the public key or <code>null</code> if
@@ -175,7 +175,7 @@ public abstract class IdentityScope extends Identity
 
   /**
    * Adds an identity to his scope.
-   * 
+   *
    * @param identity
    *          the {@link Identity} to add.
    * @throws KeyManagementException
@@ -187,7 +187,7 @@ public abstract class IdentityScope extends Identity
 
   /**
    * Removes an identity in this scope.
-   * 
+   *
    * @param identity
    *          the {@link Identity} to remove.
    * @throws KeyManagementException
@@ -198,7 +198,7 @@ public abstract class IdentityScope extends Identity
 
   /**
    * Returns an {@link Enumeration} of identities in this scope.
-   * 
+   *
    * @return an {@link Enumeration} of the identities in this scope.
    */
   public abstract Enumeration<Identity> identities();
@@ -206,7 +206,7 @@ public abstract class IdentityScope extends Identity
   /**
    * Returns a string representing this instance. It includes the name, the
    * scope name, and number of identities.
-   * 
+   *
    * @return a string representation of this instance.
    */
   public String toString()

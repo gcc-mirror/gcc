@@ -1,6 +1,6 @@
 // -*- C++ -*- compatibility header.
 
-// Copyright (C) 2007, 2008, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -58,8 +58,8 @@
 
 #ifdef _GLIBCXX_USE_C99_STDINT_TR1
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
-
+namespace std
+{
   using ::int8_t;
   using ::int16_t;
   using ::int32_t;
@@ -95,8 +95,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
   using ::uintmax_t;
   using ::uintptr_t;
-
-_GLIBCXX_END_NAMESPACE
+} // namespace
 
 #endif // _GLIBCXX_USE_C99_STDINT_TR1
 

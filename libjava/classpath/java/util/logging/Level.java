@@ -180,12 +180,12 @@ public class Level implements Serializable
    * @param value the integer value of the level.  Please note
    *     that the Java<small><sup>TM</sup></small>
    *     Logging API does not specify integer
-   *	 values for standard levels (such as
-   *	 Level.FINE).  Therefore, a custom
-   *	 level should pass an integer value that
-   *	 is calculated at run-time, e.g.
-   *	 <code>(Level.FINE.intValue() + Level.CONFIG.intValue())
-   *	 / 2</code> for a level between FINE and CONFIG.
+   *     values for standard levels (such as
+   *     Level.FINE).  Therefore, a custom
+   *     level should pass an integer value that
+   *     is calculated at run-time, e.g.
+   *     <code>(Level.FINE.intValue() + Level.CONFIG.intValue())
+   *     / 2</code> for a level between FINE and CONFIG.
    */
   protected Level(String name, int value)
   {
@@ -205,13 +205,13 @@ public class Level implements Serializable
    *
    * @param value the integer value of the level.  Please note
    *        that the Java<small><sup>TM</sup></small>
-   *	    Logging API does not specify integer
-   *	    values for standard levels (such as
-   *	    Level.FINE).  Therefore, a custom
-   *	    level should pass an integer value that
-   *	    is calculated at run-time, e.g.
-   *	    <code>(Level.FINE.intValue() + Level.CONFIG.intValue())
-   *	    / 2</code> for a level between FINE and CONFIG.
+   *        Logging API does not specify integer
+   *        values for standard levels (such as
+   *        Level.FINE).  Therefore, a custom
+   *        level should pass an integer value that
+   *        is calculated at run-time, e.g.
+   *        <code>(Level.FINE.intValue() + Level.CONFIG.intValue())
+   *        / 2</code> for a level between FINE and CONFIG.
    *
    * @param resourceBundleName the name of a resource bundle
    *       for localizing the level name, or <code>null</code>
@@ -243,7 +243,7 @@ public class Level implements Serializable
   {
     for (int i = 0; i < knownLevels.length; i++)
       if (value == knownLevels[i].intValue())
-	return knownLevels[i];
+        return knownLevels[i];
 
     return this;
   }
@@ -286,7 +286,7 @@ public class Level implements Serializable
       try
       {
         ResourceBundle b = ResourceBundle.getBundle(resourceBundleName);
-	localizedName = b.getString(name);
+        localizedName = b.getString(name);
       }
       catch (Exception _)
       {
@@ -345,15 +345,15 @@ public class Level implements Serializable
       // standard logging levels will be returned by this method, and
       // they are all created using string literals.
       if (name == knownLevels[i].name)
-	return knownLevels[i];
+        return knownLevels[i];
     }
-    
+
     try
     {
       int num = Integer.parseInt(name);
       for (int i = 0; i < knownLevels.length; i++)
-	if (num == knownLevels[i].value)
-	  return knownLevels[i];
+        if (num == knownLevels[i].value)
+          return knownLevels[i];
     }
     catch (NumberFormatException _)
     {
@@ -369,7 +369,7 @@ public class Level implements Serializable
    * another object.
    *
    * @return <code>true</code> if <code>other</code> is an instance of
-   *	 <code>java.util.logging.Level</code> and has the same integer
+   *     <code>java.util.logging.Level</code> and has the same integer
    * value, <code>false</code> otherwise.
    */
   public boolean equals(Object other)
@@ -388,7 +388,7 @@ public class Level implements Serializable
   public int hashCode()
   {
     return value;
-  }  
+  }
 
 
   /**
@@ -409,9 +409,8 @@ public class Level implements Serializable
   {
     for (int i = 0; i < knownLevels.length; i++)
       if (knownLevels[i] == this)
-	return true;
+        return true;
 
     return false;
   }
 }
-

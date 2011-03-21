@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -111,7 +111,7 @@ public final class Bidi
   // the codes have been removed.
   private ArrayList formatterIndices;
 
-  // Indices of the starts of runs in the text. 
+  // Indices of the starts of runs in the text.
   private int[] runs;
 
   // A convenience field where we keep track of what kinds of runs
@@ -128,11 +128,11 @@ public final class Bidi
    * {@link TextAttribute#RUN_DIRECTION_RTL}.  If neither is given,
    * {@link #DIRECTION_DEFAULT_LEFT_TO_RIGHT} is assumed.
    * </li>
-   * 
+   *
    * <li> If {@link TextAttribute#NUMERIC_SHAPING} is seen, then numeric
    * shaping will be done before the Bidi algorithm is run.
    * </li>
-   * 
+   *
    * <li> If {@link TextAttribute#BIDI_EMBEDDING} is seen on a given
    * character, then the value of this attribute will be used as an
    * embedding level override.
@@ -192,12 +192,12 @@ public final class Bidi
   /**
    * Create a new Bidi object with the indicated text and, possibly, explicit
    * embedding settings.
-   * 
+   *
    * If the embeddings array is null, it is ignored.  Otherwise it is taken to
    * be explicit embedding settings corresponding to the text.  Positive values
    * from 1 to 61 are embedding levels, and negative values from -1 to -61 are
    * embedding overrides.  (FIXME: not at all clear what this really means.)
-   * 
+   *
    * @param text the text to use
    * @param offset the offset of the first character of the text
    * @param embeddings the explicit embeddings, or null if there are none
@@ -321,7 +321,7 @@ public final class Bidi
             // It isn't at all clear what we're supposed to do here.
             // What does a negative value really mean?
             // Should we push on the embedding stack here?
-            currentEmbedding = embeddings[embeddingOffset + i]; 
+            currentEmbedding = embeddings[embeddingOffset + i];
             if (currentEmbedding < 0)
               {
                 currentEmbedding = (byte) -currentEmbedding;
@@ -486,7 +486,7 @@ public final class Bidi
   private void resolveWeakTypes()
   {
     final int runCount = getRunCount();
-    
+
     int previousLevel = baseEmbedding;
     for (int run = 0; run < runCount; ++run)
       {
@@ -600,7 +600,7 @@ public final class Bidi
   {
     // This implements rules N1 and N2.
     final int runCount = getRunCount();
-    
+
     int previousLevel = baseEmbedding;
     for (int run = 0; run < runCount; ++run)
       {
@@ -644,7 +644,7 @@ public final class Bidi
               case Character.DIRECTIONALITY_OTHER_NEUTRALS:
               case Character.DIRECTIONALITY_SEGMENT_SEPARATOR:
               case Character.DIRECTIONALITY_PARAGRAPH_SEPARATOR:
-	      case Character.DIRECTIONALITY_WHITESPACE:
+              case Character.DIRECTIONALITY_WHITESPACE:
                 if (neutralStart == -1)
                   neutralStart = i;
                 break;
@@ -983,17 +983,17 @@ public final class Bidi
   {
     for (int i = start; i < end; i++)
       {
-	byte dir = Character.getDirectionality(text[i]);
-	if (dir != Character.DIRECTIONALITY_LEFT_TO_RIGHT
-	    && dir != Character.DIRECTIONALITY_EUROPEAN_NUMBER
-	    && dir != Character.DIRECTIONALITY_EUROPEAN_NUMBER_SEPARATOR
-	    && dir != Character.DIRECTIONALITY_EUROPEAN_NUMBER_TERMINATOR
-	    && dir != Character.DIRECTIONALITY_ARABIC_NUMBER
-	    && dir != Character.DIRECTIONALITY_COMMON_NUMBER_SEPARATOR
-	    && dir != Character.DIRECTIONALITY_SEGMENT_SEPARATOR
-	    && dir != Character.DIRECTIONALITY_WHITESPACE
+        byte dir = Character.getDirectionality(text[i]);
+        if (dir != Character.DIRECTIONALITY_LEFT_TO_RIGHT
+            && dir != Character.DIRECTIONALITY_EUROPEAN_NUMBER
+            && dir != Character.DIRECTIONALITY_EUROPEAN_NUMBER_SEPARATOR
+            && dir != Character.DIRECTIONALITY_EUROPEAN_NUMBER_TERMINATOR
+            && dir != Character.DIRECTIONALITY_ARABIC_NUMBER
+            && dir != Character.DIRECTIONALITY_COMMON_NUMBER_SEPARATOR
+            && dir != Character.DIRECTIONALITY_SEGMENT_SEPARATOR
+            && dir != Character.DIRECTIONALITY_WHITESPACE
             && dir != Character.DIRECTIONALITY_PARAGRAPH_SEPARATOR)
-	  return true;
+          return true;
       }
 
     return false;

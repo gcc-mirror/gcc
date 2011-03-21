@@ -75,7 +75,7 @@ public interface DocumentEvent
      * @return Element[]
      */
     Element[] getChildrenAdded();
-    
+
   }
 
   /**

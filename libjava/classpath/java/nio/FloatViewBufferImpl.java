@@ -1,4 +1,4 @@
-/* FloatViewBufferImpl.java -- 
+/* FloatViewBufferImpl.java --
    Copyright (C) 2003, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -45,7 +45,7 @@ final class FloatViewBufferImpl extends FloatBuffer
   private final ByteBuffer bb;
   private final boolean readOnly;
   private final ByteOrder endian;
-  
+
   FloatViewBufferImpl (ByteBuffer bb, int capacity)
   {
     super (capacity, capacity, 0, -1, bb.isDirect() ?
@@ -55,10 +55,10 @@ final class FloatViewBufferImpl extends FloatBuffer
     this.readOnly = bb.isReadOnly();
     this.endian = bb.order();
   }
-  
+
   public FloatViewBufferImpl (ByteBuffer bb, int offset, int capacity,
-			      int limit, int position, int mark,
-			      boolean readOnly, ByteOrder endian)
+                              int limit, int position, int mark,
+                              boolean readOnly, ByteOrder endian)
   {
     super (capacity, limit, position, mark, bb.isDirect() ?
            VMDirectByteBuffer.adjustAddress(bb.address, offset):null, null, 0);
@@ -102,7 +102,7 @@ final class FloatViewBufferImpl extends FloatBuffer
     position(p + 1);
     return this;
   }
-  
+
   public FloatBuffer put (int index, float value)
   {
     ByteBufferHelper.putFloat(bb, (index << 2) + offset, value, endian);
@@ -114,26 +114,26 @@ final class FloatViewBufferImpl extends FloatBuffer
     if (position () > 0)
       {
         int count = limit () - position ();
-	bb.shiftDown(offset, offset + 4 * position(), 4 * count);
+        bb.shiftDown(offset, offset + 4 * position(), 4 * count);
         position (count);
         limit (capacity ());
       }
     else
       {
-	position(limit());
-	limit(capacity());
+        position(limit());
+        limit(capacity());
       }
     return this;
   }
-  
+
   public FloatBuffer slice ()
   {
     // Create a sliced copy of this object that shares its content.
     return new FloatViewBufferImpl (bb, (position () << 2) + offset,
-				    remaining(), remaining(), 0, -1,
-				    readOnly, endian);
+                                    remaining(), remaining(), 0, -1,
+                                    readOnly, endian);
   }
-  
+
   FloatBuffer duplicate (boolean readOnly)
   {
     int pos = position();
@@ -141,9 +141,9 @@ final class FloatViewBufferImpl extends FloatBuffer
     int mark = position();
     position(pos);
     return new FloatViewBufferImpl (bb, offset, capacity(), limit(),
-				    pos, mark, readOnly, endian);
+                                    pos, mark, readOnly, endian);
   }
-  
+
   public FloatBuffer duplicate ()
   {
     return duplicate(readOnly);
@@ -158,12 +158,12 @@ final class FloatViewBufferImpl extends FloatBuffer
   {
     return readOnly;
   }
-  
+
   public boolean isDirect ()
   {
     return bb.isDirect ();
   }
-  
+
   public ByteOrder order ()
   {
     return endian;

@@ -7008,7 +7008,7 @@ may generally be compiled using this switch (see the description of the
 for further information).
 
 For information about the approved ``Ada Issues'' that have been incorporated
-into Ada 2012, see @url{http://www.ada-auth.org/cgi-bin/cvsweb.cgi/AIs}.
+into Ada 2012, see @url{http://www.ada-auth.org/ais.html}.
 Included with GNAT releases is a file @file{features-ada12} that describes
 the set of implemented Ada 2012 features.
 

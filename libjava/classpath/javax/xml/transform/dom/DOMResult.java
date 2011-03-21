@@ -1,4 +1,4 @@
-/* DOMResult.java -- 
+/* DOMResult.java --
    Copyright (C) 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -87,7 +87,7 @@ public class DOMResult
   {
     this(node, nextSibling, null);
   }
-  
+
   /**
    * Constructor with the node to append to and the system ID.
    */
@@ -95,7 +95,7 @@ public class DOMResult
   {
     this(node, null, systemID);
   }
-  
+
   /**
    * Constructor with the node to append to, the child node before which
    * the result should be appended, and the system ID.

@@ -42,7 +42,7 @@ import org.objectweb.asm.tree.MethodInsnNode;
 
 /**
  * An {@link Interpreter} for {@link DataflowValue} values.
- * 
+ *
  * @author Eric Bruneton
  */
 public class DataflowInterpreter implements Opcodes, Interpreter {

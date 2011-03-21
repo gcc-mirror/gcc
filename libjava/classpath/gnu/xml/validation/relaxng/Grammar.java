@@ -1,4 +1,4 @@
-/* Grammar.java -- 
+/* Grammar.java --
    Copyright (C) 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -65,6 +65,5 @@ class Grammar
     // TODO
     return null;
   }
-  
-}
 
+}

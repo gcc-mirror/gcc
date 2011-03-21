@@ -1,5 +1,5 @@
 // -*- C++ -*- Implement the members of exception_ptr.
-// Copyright (C) 2008, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2008, 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of GCC.
 //
@@ -29,7 +29,7 @@
 #define _GLIBCXX_EH_PTR_COMPAT
 
 #include <exception>
-#include <exception_ptr.h>
+#include <bits/exception_ptr.h>
 #include "unwind-cxx.h"
 
 using namespace __cxxabiv1;

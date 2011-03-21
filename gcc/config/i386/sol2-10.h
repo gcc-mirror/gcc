@@ -1,5 +1,5 @@
 /* Solaris 10 configuration.
-   Copyright (C) 2004, 2006, 2007, 2008, 2009, 2010
+   Copyright (C) 2004, 2006, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
    Contributed by CodeSourcery, LLC.
 
@@ -28,7 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 #ifdef USE_GAS
 #define ASM_SPEC "%{m32:--32} %{m64:--64} -s %(asm_cpu)"
 #else
-#define ASM_SPEC "%{v:-V} %{Qy:} %{!Qn:-Qy} %{Ym,*} %{Yd,*} " \
+#define ASM_SPEC "%{v:-V} %{Qy:} %{!Qn:-Qy} %{Ym,*} " \
 		 "%{m32:-xarch=generic} %{m64:-xarch=generic64} " \
 		 "-s %(asm_cpu)"
 #endif
@@ -58,8 +58,7 @@ along with GCC; see the file COPYING3.  If not see
     {									\
       if (TARGET_SUN_TLS						\
 	  && in_section							\
-	  && ((in_section->common.flags & (SECTION_TLS | SECTION_BSS))	\
-	      == (SECTION_TLS | SECTION_BSS)))				\
+	  && ((in_section->common.flags & SECTION_TLS) == SECTION_TLS))	\
 	switch_to_section (bss_section);				\
       x86_elf_aligned_common (FILE, NAME, SIZE, ALIGN);			\
     }									\

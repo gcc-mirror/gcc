@@ -49,10 +49,10 @@ public class Kernel implements Cloneable
 {
   /** The kernel width. */
   private final int width;
-  
+
   /** The kernel height. */
   private final int height;
-  
+
   /** Internal storage for the kernel's values. */
   private final float[] data;
 
@@ -64,10 +64,10 @@ public class Kernel implements Cloneable
    * @param width  the kernel width.
    * @param height  the kernel height.
    * @param data  the source data array (<code>null</code> not permitted).
-   * 
+   *
    * @throws IllegalArgumentException if <code>data.length</code> is less than
    *     <code>width * height</code>.
-   * @throws IllegalArgumentException if <code>width</code> or 
+   * @throws IllegalArgumentException if <code>width</code> or
    *      <code>height</code> is less than zero.
    * @throws NullPointerException if <code>data</code> is <code>null</code>.
    */
@@ -83,9 +83,9 @@ public class Kernel implements Cloneable
   }
 
   /**
-   * Returns the x-origin for the kernel, which is calculated as 
+   * Returns the x-origin for the kernel, which is calculated as
    * <code>(width - 1) / 2</code>.
-   * 
+   *
    * @return The x-origin for the kernel.
    */
   public final int getXOrigin()
@@ -96,7 +96,7 @@ public class Kernel implements Cloneable
   /**
    * Returns the y-origin for the kernel, which is calculated as
    * <code>(height - 1) / 2</code>.
-   * 
+   *
    * @return The y-origin for the kernel.
    */
   public final int getYOrigin()
@@ -106,7 +106,7 @@ public class Kernel implements Cloneable
 
   /**
    * Returns the kernel width (as supplied to the constructor).
-   * 
+   *
    * @return The kernel width.
    */
   public final int getWidth()
@@ -116,7 +116,7 @@ public class Kernel implements Cloneable
 
   /**
    * Returns the kernel height (as supplied to the constructor).
-   * 
+   *
    * @return The kernel height.
    */
   public final int getHeight()
@@ -125,18 +125,18 @@ public class Kernel implements Cloneable
   }
 
   /**
-   * Returns an array containing a copy of the kernel data.  If the 
+   * Returns an array containing a copy of the kernel data.  If the
    * <code>data</code> argument is non-<code>null</code>, the kernel values
    * are copied into it and then <code>data</code> is returned as the result.
-   * If the <code>data</code> argument is <code>null</code>, this method 
+   * If the <code>data</code> argument is <code>null</code>, this method
    * allocates a new array then populates and returns it.
    *
-   * @param data  an array to copy the return values into (if 
+   * @param data  an array to copy the return values into (if
    *     <code>null</code>, a new array is allocated).
-   *     
+   *
    * @return The array with copied values.
-   * 
-   * @throws IllegalArgumentException if <code>data.length</code> is less than 
+   *
+   * @throws IllegalArgumentException if <code>data.length</code> is less than
    *     the kernel's <code>width * height</code>.
    */
   public final float[] getKernelData(float[] data)
@@ -154,7 +154,7 @@ public class Kernel implements Cloneable
 
   /**
    * Returns a clone of this kernel.
-   * 
+   *
    * @return a clone of this Kernel.
    */
   public Object clone()

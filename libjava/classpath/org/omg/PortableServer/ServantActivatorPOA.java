@@ -58,7 +58,7 @@ import org.omg.CORBA.portable.ResponseHandler;
  * You do not need to derive your servant activator from this stub,
  * it is enough to implement the {@link ServantActivator} interface.
  * But you may choose to do this if you need the functional
- * {@link #_all_interfaces(POA, byte[])} method or want to keep default 
+ * {@link #_all_interfaces(POA, byte[])} method or want to keep default
  * behavior during the incarnation or etherialization.
  * </p>
  */

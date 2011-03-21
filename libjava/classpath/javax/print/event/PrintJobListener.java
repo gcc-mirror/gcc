@@ -1,4 +1,4 @@
-/* PrintJobListener.java -- 
+/* PrintJobListener.java --
    Copyright (C) 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -40,56 +40,56 @@ package javax.print.event;
 
 /**
  * Listener interface to receive processing events from a print job.
- * Implementations of this interface can be registered with a 
+ * Implementations of this interface can be registered with a
  * {@link javax.print.DocPrintJob} instance.
- * 
+ *
  * @see javax.print.event.PrintJobAdapter
- *  
- * @author Michael Koch (konqueror@gmx.de) 
+ *
+ * @author Michael Koch (konqueror@gmx.de)
  */
 public interface PrintJobListener
 {
   /**
    * Notifies the listener that all data has been successfully transferred
    * to the print service.
-   * 
+   *
    * @param event the event
    */
   void printDataTransferCompleted(PrintJobEvent event);
-  
+
   /**
    * Notifies the listener that a print job got canceled.
-   * 
+   *
    * @param event the event
    */
   void printJobCanceled(PrintJobEvent event);
-  
+
   /**
    * Notifies the listener that a print job has completed.
-   * 
+   *
    * @param event the event
    */
   void printJobCompleted(PrintJobEvent event);
-  
+
   /**
    * Notifies the listener that a print job has failed to complete.
-   * 
+   *
    * @param event the event.
    */
   void printJobFailed(PrintJobEvent event);
-  
+
   /**
    * Notifies the listener that no more events will be delivered.
-   * 
+   *
    * @param event the event
    */
   void printJobNoMoreEvents(PrintJobEvent event);
-  
+
   /**
    * Notifies the listener that a problem occured during printing.
-   * This event signals problems a user might be able to fix 
+   * This event signals problems a user might be able to fix
    * (e.g. out of paper or paper jam).
-   * 
+   *
    * @param event the event
    */
   void printJobRequiresAttention(PrintJobEvent event);

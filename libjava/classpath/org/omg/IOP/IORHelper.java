@@ -78,7 +78,7 @@ public abstract class IORHelper
 
   /**
    * Insert the IOR into the given Any. This method uses the IORHolder.
-   * 
+   *
    * @param any the Any to insert into.
    * @param that the IOR to insert.
    */
@@ -102,7 +102,7 @@ public abstract class IORHelper
     catch (ClassCastException cex)
       {
         BAD_OPERATION bad = new BAD_OPERATION("IOR expected");
-        bad.minor = Minor.Any;        
+        bad.minor = Minor.Any;
         bad.initCause(cex);
         throw bad;
       }

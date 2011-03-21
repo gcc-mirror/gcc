@@ -47,14 +47,14 @@ import javax.swing.plaf.ComponentUI;
  * A UI delegate for the {@link JCheckBox} component.
  */
 public class BasicCheckBoxUI extends BasicRadioButtonUI
-{  
-  
+{
+
   /**
-   * Returns a UI delegate (that is, an instance of this class) for the 
+   * Returns a UI delegate (that is, an instance of this class) for the
    * specified component.
-   * 
+   *
    * @param c  the component (this should be a {@link JCheckBox}).
-   *     
+   *
    * @return A new instance of <code>BasicCheckBoxUI</code>.
    */
   public static ComponentUI createUI(JComponent c)
@@ -63,7 +63,7 @@ public class BasicCheckBoxUI extends BasicRadioButtonUI
   }
 
   /**
-   * Returns the prefix for entries in the {@link UIManager} defaults table 
+   * Returns the prefix for entries in the {@link UIManager} defaults table
    * (<code>"CheckBox."</code> in this case).
    *
    * @return "CheckBox."
@@ -73,7 +73,3 @@ public class BasicCheckBoxUI extends BasicRadioButtonUI
     return "CheckBox.";
   }
 }
-
-
-
-

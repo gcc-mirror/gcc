@@ -151,6 +151,10 @@ fi
    echo "@set BUGURL @uref{http://gcc.gnu.org/bugs/}"
 ) > $includedir/gcc-vers.texi
 
+# Generate libquadmath-vers.texi.
+echo "@set BUGURL @uref{http://gcc.gnu.org/bugs/}" \
+  > $includedir/libquadmath-vers.texi
+
 # Now convert the relevant files from texi to HTML, PDF and PostScript.
 for file in $MANUALS; do
   filename=`find . -name ${file}.texi`

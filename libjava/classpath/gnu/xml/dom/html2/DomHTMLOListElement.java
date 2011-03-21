@@ -1,4 +1,4 @@
-/* DomHTMLOListElement.java -- 
+/* DomHTMLOListElement.java --
    Copyright (C) 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -64,7 +64,7 @@ public class DomHTMLOListElement
   {
     setBooleanHTMLAttribute("compact", compact);
   }
-  
+
   public int getStart()
   {
     return getIntHTMLAttribute("start");
@@ -74,7 +74,7 @@ public class DomHTMLOListElement
   {
     setIntHTMLAttribute("start", start);
   }
-  
+
   public String getType()
   {
     return getHTMLAttribute("type");
@@ -84,6 +84,5 @@ public class DomHTMLOListElement
   {
     setHTMLAttribute("type", type);
   }
-  
-}
 
+}

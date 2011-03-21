@@ -49,19 +49,19 @@ import java.util.Date;
 import java.util.Enumeration;
 
 /**
- * Keystore represents an in-memory collection of keys and 
+ * Keystore represents an in-memory collection of keys and
  * certificates. There are two types of entries:
  *
  * <dl>
  * <dt>Key Entry</dt>
  *
  * <dd><p>This type of keystore entry store sensitive crytographic key
- * information in a protected format.Typically this is a secret 
+ * information in a protected format.Typically this is a secret
  * key or a private key with a certificate chain.</p></dd>
  *
  * <dt>Trusted Ceritificate Entry</dt>
  *
- * <dd><p>This type of keystore entry contains a single public key 
+ * <dd><p>This type of keystore entry contains a single public key
  * certificate belonging to annother entity. It is called trusted
  * because the keystore owner trusts that the certificates
  * belongs to the subject (owner) of the certificate.</p></dd>
@@ -70,10 +70,10 @@ import java.util.Enumeration;
  * <p>Entries in a key store are referred to by their "alias": a simple
  * unique string.
  *
- * <p>The structure and persistentence of the key store is not 
- * specified. Any method could be used to protect sensitive 
- * (private or secret) keys. Smart cards or integrated 
- * cryptographic engines could be used or the keystore could 
+ * <p>The structure and persistentence of the key store is not
+ * specified. Any method could be used to protect sensitive
+ * (private or secret) keys. Smart cards or integrated
+ * cryptographic engines could be used or the keystore could
  * be simply stored in a file.</p>
  *
  * @see java.security.cert.Certificate
@@ -112,7 +112,7 @@ public class KeyStore
   /**
    * Returns an instance of a <code>KeyStore</code> representing the specified
    * type, from the first provider that implements it.
-   * 
+   *
    * @param type the type of keystore to create.
    * @return a <code>KeyStore</code> repesenting the desired type.
    * @throws KeyStoreException if the designated type of is not implemented by
@@ -141,7 +141,7 @@ public class KeyStore
   /**
    * Returns an instance of a <code>KeyStore</code> representing the specified
    * type, from the named provider.
-   * 
+   *
    * @param type the type of keystore to create.
    * @param provider the name of the provider to use.
    * @return a <code>KeyStore</code> repesenting the desired type.
@@ -168,7 +168,7 @@ public class KeyStore
   /**
    * Returns an instance of a <code>KeyStore</code> representing the specified
    * type, from the specified provider.
-   * 
+   *
    * @param type the type of keystore to create.
    * @param provider the provider to use.
    * @return a <code>KeyStore</code> repesenting the desired type.
@@ -207,13 +207,13 @@ public class KeyStore
 
   /**
    * Returns the default KeyStore type. This method looks up the
-   * type in &lt;JAVA_HOME&gt;/lib/security/java.security with the 
+   * type in &lt;JAVA_HOME&gt;/lib/security/java.security with the
    * property "keystore.type" or if that fails then "gkr" .
    */
   public static final String getDefaultType()
   {
-    // Security reads every property in java.security so it 
-    // will return this property if it exists. 
+    // Security reads every property in java.security so it
+    // will return this property if it exists.
     String tmp = Security.getProperty("keystore.type");
 
     if (tmp == null)
@@ -246,7 +246,7 @@ public class KeyStore
   }
 
   /**
-     Returns the key associated with given alias using the 
+     Returns the key associated with given alias using the
      supplied password.
 
      @param alias an alias for the key to get
@@ -271,8 +271,8 @@ public class KeyStore
 
      @param alias the alias name
 
-     @return a chain of Certificates ( ordered from the user's 
-     certificate to the Certificate Authority's ) or 
+     @return a chain of Certificates ( ordered from the user's
+     certificate to the Certificate Authority's ) or
      null if the alias does not exist or there is no
      certificate chain for the alias ( the alias refers
      to a trusted certificate entry or there is no entry).
@@ -292,7 +292,7 @@ public class KeyStore
 
      @param alias the alias name
 
-     @return a Certificate or null if the alias does not exist 
+     @return a Certificate or null if the alias does not exist
      or there is no certificate for the alias
    */
   public final java.security.cert.Certificate getCertificate(String alias)
@@ -315,8 +315,8 @@ public class KeyStore
 
   /**
      Assign the key to the alias in the keystore, protecting it
-     with the given password. It will overwrite an existing 
-     entry and if the key is a PrivateKey, also add the 
+     with the given password. It will overwrite an existing
+     entry and if the key is a PrivateKey, also add the
      certificate chain representing the corresponding public key.
 
      @param alias the alias name
@@ -328,16 +328,16 @@ public class KeyStore
      @throws KeyStoreException if it fails
    */
   public final void setKeyEntry(String alias, Key key, char[]password,
-				java.security.cert.
-				Certificate[]chain) throws KeyStoreException
+                                java.security.cert.
+                                Certificate[]chain) throws KeyStoreException
   {
     keyStoreSpi.engineSetKeyEntry(alias, key, password, chain);
   }
 
   /**
      Assign the key to the alias in the keystore. It will overwrite
-     an existing entry and if the key is a PrivateKey, also 
-     add the certificate chain representing the corresponding 
+     an existing entry and if the key is a PrivateKey, also
+     add the certificate chain representing the corresponding
      public key.
 
      @param alias the alias name
@@ -348,14 +348,14 @@ public class KeyStore
      @throws KeyStoreException if it fails
    */
   public final void setKeyEntry(String alias, byte[]key,
-				java.security.cert.
-				Certificate[]chain) throws KeyStoreException
+                                java.security.cert.
+                                Certificate[]chain) throws KeyStoreException
   {
     keyStoreSpi.engineSetKeyEntry(alias, key, chain);
   }
 
   /**
-     Assign the certificate to the alias in the keystore. It 
+     Assign the certificate to the alias in the keystore. It
      will overwrite an existing entry.
 
      @param alias the alias name
@@ -364,8 +364,8 @@ public class KeyStore
      @throws KeyStoreException if it fails
    */
   public final void setCertificateEntry(String alias,
-					java.security.cert.
-					Certificate cert) throws
+                                        java.security.cert.
+                                        Certificate cert) throws
     KeyStoreException
   {
     keyStoreSpi.engineSetCertificateEntry(alias, cert);
@@ -416,7 +416,7 @@ public class KeyStore
   }
 
   /**
-     Determines if the keystore contains a key entry for 
+     Determines if the keystore contains a key entry for
      the specified alias.
 
      @param alias the alias name
@@ -430,7 +430,7 @@ public class KeyStore
 
 
   /**
-     Determines if the keystore contains a certificate entry for 
+     Determines if the keystore contains a certificate entry for
      the specified alias.
 
      @param alias the alias name
@@ -444,7 +444,7 @@ public class KeyStore
   }
 
   /**
-     Determines if the keystore contains the specified certificate 
+     Determines if the keystore contains the specified certificate
      entry and returns the alias.
 
      It checks every entry and for a key entry checks only the
@@ -452,7 +452,7 @@ public class KeyStore
 
      @param cert Certificate to look for
 
-     @return alias of first matching certificate, null if it 
+     @return alias of first matching certificate, null if it
      does not exist.
    */
   public final String getCertificateAlias(java.security.cert.Certificate cert)
@@ -469,7 +469,7 @@ public class KeyStore
      @param password the password to protect the keystore integrity with
 
      @throws IOException if an I/O error occurs.
-     @throws NoSuchAlgorithmException the data integrity algorithm 
+     @throws NoSuchAlgorithmException the data integrity algorithm
      used cannot be found.
      @throws CertificateException if any certificates could not be
      stored in the output stream.
@@ -489,7 +489,7 @@ public class KeyStore
      @param password the password to check the keystore integrity with
 
      @throws IOException if an I/O error occurs.
-     @throws NoSuchAlgorithmException the data integrity algorithm 
+     @throws NoSuchAlgorithmException the data integrity algorithm
      used cannot be found.
      @throws CertificateException if any certificates could not be
      stored in the output stream.

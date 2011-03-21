@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -50,7 +50,7 @@ package gnu.java.io;
  * @author Fridtjof Siebert (siebert@aicas.com)
  */
 public class ObjectIdentityMap2Int
-{ 
+{
 
 
   /**
@@ -58,7 +58,7 @@ public class ObjectIdentityMap2Int
    * prime number since the delta used for conflict resulution must
    * not have any common divisors with the length.
    */
-  private static final int[] PRIMES = { 
+  private static final int[] PRIMES = {
     0x1f,
     0x3d,
     0x7f,
@@ -93,7 +93,7 @@ public class ObjectIdentityMap2Int
    */
   private static final Object NIL = new Object();
 
-  
+
   /**
    * The objects in this map:
    *
@@ -118,13 +118,13 @@ public class ObjectIdentityMap2Int
    * invariant
    *   size < limit
    */
-  private int size = 0; 
+  private int size = 0;
 
 
   /**
    * The index in primes of the size of the tables.
    */
-  private int cap = 0; 
+  private int cap = 0;
 
 
   /**
@@ -133,7 +133,7 @@ public class ObjectIdentityMap2Int
    * invariant
    *   limit = PRIMES[cap] / 4 * 3;
    */
-  private int limit = 0; 
+  private int limit = 0;
 
 
   /**
@@ -148,7 +148,7 @@ public class ObjectIdentityMap2Int
   /**
    * Helper function to alloc the object and int array for the given
    * capacity.  Set limit, reset size to 0.
-   * 
+   *
    * No elements will be stored in the newly allocated arrays.
    *
    * @param c the capacity: this is an index in PRIMES, PRIMES[c]
@@ -161,8 +161,8 @@ public class ObjectIdentityMap2Int
    */
   private void alloc(int c)
   {
-    if (c >= PRIMES.length) 
-      throw new InternalError("Hash table size overflow"); 
+    if (c >= PRIMES.length)
+      throw new InternalError("Hash table size overflow");
 
     cap = c;
     int len = PRIMES[c];
@@ -170,7 +170,7 @@ public class ObjectIdentityMap2Int
     intTable    = new int[len];
     limit = len / 4 * 3;
 
-    size = 0; 
+    size = 0;
   }
 
 
@@ -180,7 +180,7 @@ public class ObjectIdentityMap2Int
    * ensures
    *   (get(o) == i);
    *
-   * @param o object reference or null that is to be mapped. 
+   * @param o object reference or null that is to be mapped.
    *
    * @param i the integer id to be associated with o
    *
@@ -189,9 +189,9 @@ public class ObjectIdentityMap2Int
    * @throws InternalError if hash tables has grown to more then
    * 0x7fffffff entries (ie., size >= 0x7fffffff*3/4).
    */
-  public void put(Object o, int i) 
+  public void put(Object o, int i)
   {
-    if (i < 0) 
+    if (i < 0)
       throw new IllegalArgumentException("int argument must be postive: "+i);
 
     o = (o == null) ? NIL : o;
@@ -200,8 +200,8 @@ public class ObjectIdentityMap2Int
     intTable[s] = i;
     if (objectTable[s] == null)
       {
-        objectTable[s] = o; 
-        size++; 
+        objectTable[s] = o;
+        size++;
         if (size >= limit)
           {
             rehash();
@@ -219,14 +219,14 @@ public class ObjectIdentityMap2Int
    *
    * @param o an object, must not be null.
    *
-   * @return an index of o 
+   * @return an index of o
    */
   private int slot(Object o)
   {
     Object[] ot = objectTable;
     int hc     = System.identityHashCode(o);
     int len    = ot.length;
-    int result = hc % len;  
+    int result = hc % len;
     result = result < 0 ? -result : result;
     int delta  = 16 - (hc & 15);
     Object existing = ot[result];
@@ -249,9 +249,9 @@ public class ObjectIdentityMap2Int
    * ensure
    *   (cap == \old cap+1);
    */
-  private void rehash() 
+  private void rehash()
   {
-    Object[] ot = objectTable; 
+    Object[] ot = objectTable;
     int   [] it = intTable;
     alloc(cap + 1);
 
@@ -268,7 +268,7 @@ public class ObjectIdentityMap2Int
    * @return the corresponding integer id for o or -1 if o has not
    * been put into this map.
    */
-  public int get(Object o) 
+  public int get(Object o)
   {
     o = (o == null) ? NIL : o;
     int s = slot(o);
@@ -281,10 +281,10 @@ public class ObjectIdentityMap2Int
    * ensures
    *   ((size == 0) && \forall Object o: get(o) == -1)
    */
-  public void clear() 
+  public void clear()
   {
-    Object[] ot = objectTable; 
-    size = 0; 
+    Object[] ot = objectTable;
+    size = 0;
     for (int i = 0; i < ot.length; i++)
       ot[i] = null;
   }

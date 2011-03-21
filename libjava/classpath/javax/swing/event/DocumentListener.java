@@ -46,23 +46,23 @@ import java.util.EventListener;
  */
 public interface DocumentListener extends EventListener {
 
-	/**
-	 * Changed update
-	 * @param event Document Event
-	 */
-	void changedUpdate(DocumentEvent event);
+        /**
+         * Changed update
+         * @param event Document Event
+         */
+        void changedUpdate(DocumentEvent event);
 
-	/**
-	 * Insert update
-	 * @param event Document Event
-	 */
-	void insertUpdate(DocumentEvent event);
+        /**
+         * Insert update
+         * @param event Document Event
+         */
+        void insertUpdate(DocumentEvent event);
 
-	/**
-	 * Remove update
-	 * @param event Document Event
-	 */
-	void removeUpdate(DocumentEvent event);
+        /**
+         * Remove update
+         * @param event Document Event
+         */
+        void removeUpdate(DocumentEvent event);
 
 
 } // DocumentListener

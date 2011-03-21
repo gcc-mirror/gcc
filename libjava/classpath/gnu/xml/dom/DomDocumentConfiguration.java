@@ -1,4 +1,4 @@
-/* DomDocumentConfiguration.java -- 
+/* DomDocumentConfiguration.java --
    Copyright (C) 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -245,12 +245,12 @@ class DomDocumentConfiguration
         return null;
       }
   }
-  
+
   public int getLength()
   {
     return SUPPORTED_PARAMETERS.size();
   }
-  
+
   public boolean contains(String str)
   {
     str = str.toLowerCase();

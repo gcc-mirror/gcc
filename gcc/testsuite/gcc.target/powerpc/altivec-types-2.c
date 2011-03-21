@@ -1,7 +1,7 @@
 /* { dg-do compile { target powerpc*-*-linux* } } */
 /* { dg-require-effective-target ilp32 } */
 /* { dg-require-effective-target powerpc_altivec_ok } */
-/* { dg-options "-maltivec" } */
+/* { dg-options "-maltivec -mno-vsx" } */
 
 /* These should get warnings for 32-bit code.  */
 

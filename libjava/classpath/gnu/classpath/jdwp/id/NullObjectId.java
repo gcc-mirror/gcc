@@ -57,7 +57,7 @@ public class NullObjectId
    * The object class that this id represents
    */
   public static final Class typeClass = NullObject.class;
-  
+
   /**
    * Constructs a new <code>NullObjectId</code>
    */

@@ -49,8 +49,8 @@ import java.util.ArrayList;
  * This class supports the multiple class loaders to load the resources. It is
  * used for constructing proxy classes that implement interfaces, loaded by
  * the several different class loaders.
- * 
- * @author Audrius Meskauskas (AudriusA@Bioinformatics.org) 
+ *
+ * @author Audrius Meskauskas (AudriusA@Bioinformatics.org)
  */
 public class CombinedClassLoader extends ClassLoader
 {
@@ -58,20 +58,20 @@ public class CombinedClassLoader extends ClassLoader
    * The class loader array.
    */
   ClassLoader[] loaders;
-  
+
   /**
    * Create a new combined class loader that uses the given collection of
    * loaders to load the classes and resources. The loader order is equal to
    * the order, returned by the collection interator. The duplicate loaders
    * are discarded and the system class loader is added as the last loader.
-   * 
+   *
    * @param a_loaders the loadery collection (may contain duplicate instances
    * that will be discarded.
    */
   public CombinedClassLoader(Collection a_loaders)
   {
     ArrayList sLoaders = new ArrayList(a_loaders.size());
-    
+
     Iterator iter = a_loaders.iterator();
     Object cl;
     while (iter.hasNext())
@@ -80,7 +80,7 @@ public class CombinedClassLoader extends ClassLoader
         if (cl!=null && !sLoaders.contains(cl))
           sLoaders.add(cl);
       }
-    
+
     loaders = new ClassLoader[sLoaders.size()];
 
     for (int i = 0; i < loaders.length; i++)

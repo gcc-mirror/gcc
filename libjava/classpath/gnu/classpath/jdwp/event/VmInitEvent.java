@@ -50,7 +50,7 @@ import java.io.IOException;
  * "Notification of initialization of a target VM. This event is
  * received before the main thread is started and before any application
  * code has been executed." -- JDWP 1.4.2
- * 
+ *
  * @author Keith Seitz  (keiths@redhat.com)
  */
 public class VmInitEvent

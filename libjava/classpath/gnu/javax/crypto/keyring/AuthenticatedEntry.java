@@ -1,4 +1,4 @@
-/* AuthenticatedEntry.java -- 
+/* AuthenticatedEntry.java --
    Copyright (C) 2003, 2006 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -90,7 +90,7 @@ public final class AuthenticatedEntry
   /**
    * Computes the mac over this envelope's data. This method <b>must</b> be
    * called before this entry in encoded.
-   * 
+   *
    * @param key The key to authenticate with.
    * @throws IOException If encoding fails.
    * @throws InvalidKeyException If the supplied key is bad.
@@ -115,7 +115,7 @@ public final class AuthenticatedEntry
   /**
    * Verifies this entry's payload. This method will unmask this entry, thus it
    * must be called before accessing its contents.
-   * 
+   *
    * @param key The key to use to authenticate.
    * @throws InvalidKeyException If the given key is improper.
    */

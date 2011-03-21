@@ -63,8 +63,8 @@ public class ClientFrame
   /**
    * The size of the playing field.
    */
-  public final Dimension DESK_SIZE = 
-	new Dimension(624, 352-PlayingDesk.W);
+  public final Dimension DESK_SIZE =
+        new Dimension(624, 352-PlayingDesk.W);
 
   /**
    * Use serialVersionUID for interoperability.
@@ -123,7 +123,7 @@ public class ClientFrame
   JLabel lbState = new JLabel();
 
   JButton bChat = new JButton();
-  
+
   JButton bPaste = new JButton();
 
   public ClientFrame()
@@ -204,7 +204,7 @@ public class ClientFrame
         bChat_actionPerformed(e);
       }
     });
-    
+
     bPaste.setText("Paste");
     bPaste.setToolTipText("Paste, same as Ctrl-V");
     bPaste.addActionListener(new java.awt.event.ActionListener()
@@ -214,10 +214,10 @@ public class ClientFrame
         bPaste_actionPerformed(e);
       }
     });
-    
+
     desk.setMaximumSize(DESK_SIZE);
     desk.setPreferredSize(DESK_SIZE);
-    
+
     scroll.getViewport().add(desk, null);
     getContentPane().add(scroll, BorderLayout.CENTER);
     getContentPane().add(pnBottom, BorderLayout.SOUTH);
@@ -235,7 +235,7 @@ public class ClientFrame
     pnButtons.add(bLeave, null);
     pnButtons.add(bReset, null);
     pnButtons.add(bExit, null);
-    pnButtons.add(bPaste, null);    
+    pnButtons.add(bPaste, null);
 
     desk.player.set_current_state(State.DISCONNECTED);
   }
@@ -405,7 +405,7 @@ public class ClientFrame
         ex.printStackTrace();
       }
   }
-  
+
   /**
    * Work around our keyboard shortcut handling that is still not working
    * properly.
@@ -413,5 +413,5 @@ public class ClientFrame
   void bPaste_actionPerformed(ActionEvent e)
   {
     taUrl.paste();
-  }  
+  }
 }

@@ -55,7 +55,7 @@ import org.omg.CORBA.portable.RemarshalException;
  * side. It has all the same methods as the actual implementation
  * on the server side. These methods contain the code for remote
  * invocation.
- * 
+ *
  * Following CORBA standards, the name of this class must start from
  * underscore and end by the "Stub".
  *

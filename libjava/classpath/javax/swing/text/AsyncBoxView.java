@@ -160,7 +160,7 @@ public class AsyncBoxView
      *
      * @param index the index of the child view
      * @param a the current allocation of this view
-     * 
+     *
      * @return the current allocation for a child view
      */
     public synchronized Shape getChildAllocation(int index, Shape a)
@@ -216,7 +216,7 @@ public class AsyncBoxView
     /**
      * Returns the current allocation of the child view with the specified
      * index. Note that this will <em>not</em> update any location information.
-     * 
+     *
      * @param index the index of the requested child view
      *
      * @return the current allocation of the child view with the specified
@@ -428,7 +428,7 @@ public class AsyncBoxView
      * Returns the child view for which this <code>ChildState</code> represents
      * the layout state.
      *
-     * @return the child view for this child state object 
+     * @return the child view for this child state object
      */
     public View getChildView()
     {
@@ -1002,7 +1002,7 @@ public class AsyncBoxView
         replace(0, 0, added);
       }
   }
-  
+
   /**
    * Returns the span along an axis that is taken up by the insets.
    *
@@ -1355,14 +1355,14 @@ public class AsyncBoxView
                 return;
               }
           }
-        int index = getViewIndexAtPosition(view.getStartOffset(), 
+        int index = getViewIndexAtPosition(view.getStartOffset(),
                                            Position.Bias.Forward);
         ChildState cs = getChildState(index);
         cs.preferenceChanged(width, height);
         LayoutQueue q = getLayoutQueue();
         q.addTask(cs);
         q.addTask(flushTask);
-      }    
+      }
   }
 
   /**
@@ -1375,7 +1375,7 @@ public class AsyncBoxView
    * @param e the document event
    * @param a the current allocation of this view
    */
-  protected void updateLayout(DocumentEvent.ElementChange ec, 
+  protected void updateLayout(DocumentEvent.ElementChange ec,
                               DocumentEvent e, Shape a)
   {
     if (ec != null)
@@ -1385,8 +1385,8 @@ public class AsyncBoxView
         locator.childChanged(cs);
       }
   }
-  
-  
+
+
   /**
    * Returns the <code>ChildState</code> object associated with the child view
    * at the specified <code>index</code>.
@@ -1416,7 +1416,7 @@ public class AsyncBoxView
   /**
    * Returns the child view index of the view that represents the specified
    * position in the document model.
-   * 
+   *
    * @param pos the position in the model
    * @param b the bias
    *

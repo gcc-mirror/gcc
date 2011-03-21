@@ -41,7 +41,7 @@ package javax.sound.midi;
 /**
  * This interface describes the methods required by objects receiving MIDI
  * messages.
- * 
+ *
  * @author Anthony Green (green@redhat.com)
  * @since 1.3
  *
@@ -51,14 +51,14 @@ public interface Receiver
   /**
    * Send a MIDI message and timestamp.  Some receivers don't support
    * timestamps, in which case timeStamp should be -1.
-   * 
+   *
    * @param message the MIDI message to send
    * @param timeStamp time timestamp for this message in microseconds (or -1)
    * @throws IllegalStateException if the receiver is closed
    */
   public void send(MidiMessage message, long timeStamp)
     throws IllegalStateException;
-  
+
   /**
    * Close this receiver, possibly freeing system resources.
    */

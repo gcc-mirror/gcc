@@ -18,32 +18,32 @@ package org.w3c.dom.html2;
  */
 public interface HTMLLabelElement extends HTMLElement {
     /**
-     * Returns the <code>FORM</code> element containing this control. Returns 
-     * <code>null</code> if this control is not within the context of a 
-     * form. 
+     * Returns the <code>FORM</code> element containing this control. Returns
+     * <code>null</code> if this control is not within the context of a
+     * form.
      */
     public HTMLFormElement getForm();
 
     /**
-     * A single character access key to give access to the form control. See 
+     * A single character access key to give access to the form control. See
      * the accesskey attribute definition in HTML 4.01.
      */
     public String getAccessKey();
     /**
-     * A single character access key to give access to the form control. See 
+     * A single character access key to give access to the form control. See
      * the accesskey attribute definition in HTML 4.01.
      */
     public void setAccessKey(String accessKey);
 
     /**
-     * This attribute links this label with another form control by 
-     * <code>id</code> attribute. See the for attribute definition in HTML 
+     * This attribute links this label with another form control by
+     * <code>id</code> attribute. See the for attribute definition in HTML
      * 4.01.
      */
     public String getHtmlFor();
     /**
-     * This attribute links this label with another form control by 
-     * <code>id</code> attribute. See the for attribute definition in HTML 
+     * This attribute links this label with another form control by
+     * <code>id</code> attribute. See the for attribute definition in HTML
      * 4.01.
      */
     public void setHtmlFor(String htmlFor);

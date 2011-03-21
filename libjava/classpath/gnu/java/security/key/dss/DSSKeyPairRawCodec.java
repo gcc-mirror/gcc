@@ -1,4 +1,4 @@
-/* DSSKeyPairRawCodec.java -- 
+/* DSSKeyPairRawCodec.java --
    Copyright 2001, 2002, 2003, 2006 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -92,7 +92,7 @@ public class DSSKeyPairRawCodec
    * the <code>toByteArray()</code> method on the DSA parameter <code>y</code>,
    * </li>
    * </ol>
-   * 
+   *
    * @param key the key to encode.
    * @return the <i>Raw</i> format encoding of the designated key.
    * @throws IllegalArgumentException if the designated key is not a DSS
@@ -235,7 +235,7 @@ public class DSSKeyPairRawCodec
    * the <code>toByteArray()</code> method on the DSA parameter <code>x</code>,
    * </li>
    * </ol>
-   * 
+   *
    * @param key the key to encode.
    * @return the <i>Raw</i> format encoding of the designated key.
    * @throws IllegalArgumentException if the designated key is not a DSS

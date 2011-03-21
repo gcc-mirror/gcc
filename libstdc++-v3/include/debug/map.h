@@ -1,6 +1,6 @@
 // Debugging map implementation -*- C++ -*-
 
-// Copyright (C) 2003, 2004, 2005, 2006, 2007, 2009, 2010
+// Copyright (C) 2003, 2004, 2005, 2006, 2007, 2009, 2010, 2011
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -34,7 +34,7 @@
 #include <debug/safe_iterator.h>
 #include <utility>
 
-namespace std
+namespace std _GLIBCXX_VISIBILITY(default)
 {
 namespace __debug
 {
@@ -42,10 +42,10 @@ namespace __debug
   template<typename _Key, typename _Tp, typename _Compare = std::less<_Key>,
 	   typename _Allocator = std::allocator<std::pair<const _Key, _Tp> > >
     class map
-    : public _GLIBCXX_STD_D::map<_Key, _Tp, _Compare, _Allocator>,
+    : public _GLIBCXX_STD_C::map<_Key, _Tp, _Compare, _Allocator>,
       public __gnu_debug::_Safe_sequence<map<_Key, _Tp, _Compare, _Allocator> >
     {
-      typedef _GLIBCXX_STD_D::map<_Key, _Tp, _Compare, _Allocator> _Base;
+      typedef _GLIBCXX_STD_C::map<_Key, _Tp, _Compare, _Allocator> _Base;
       typedef __gnu_debug::_Safe_sequence<map> _Safe_base;
 
       typedef typename _Base::const_iterator _Base_const_iterator;
@@ -72,8 +72,6 @@ namespace __debug
       typedef typename _Base::const_pointer         const_pointer;
       typedef std::reverse_iterator<iterator>       reverse_iterator;
       typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
-
-      using _Base::value_compare;
 
       // 23.3.1.1 construct/copy/destroy:
       explicit map(const _Compare& __comp = _Compare(),

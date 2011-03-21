@@ -1,5 +1,5 @@
 /* Dialog.java -- An AWT dialog box
- Copyright (C) 1999, 2000, 2001, 2002, 2005, 2006  
+ Copyright (C) 1999, 2000, 2001, 2002, 2005, 2006
  Free Software Foundation, Inc.
 
  This file is part of GNU Classpath.
@@ -47,15 +47,15 @@ import javax.accessibility.AccessibleState;
 import javax.accessibility.AccessibleStateSet;
 
 /**
- * <code>Dialog</code> provides a top-level window normally used to receive 
+ * <code>Dialog</code> provides a top-level window normally used to receive
  * user input in applications.
  * <p>
  * A dialog always has another top-level window as owner and is only visible
- * if this owner is visible to the user. The default layout of dialogs is the 
+ * if this owner is visible to the user. The default layout of dialogs is the
  * <code>BorderLayout</code>. Dialogs can be modal (blocks user input to other
  * components) or non-modal (user input in other components are allowed).
- * </p> 
- * 
+ * </p>
+ *
  * @author Aaron M. Renn (arenn@urbanophile.com)
  * @author Tom Tromey (tromey@redhat.com)
  */
@@ -106,7 +106,7 @@ public class Dialog extends Window
   private boolean blocked = false;
 
   /**
-   * Secondary EventQueue to handle AWT events while we are blocked for 
+   * Secondary EventQueue to handle AWT events while we are blocked for
    * modality in show.
    */
   private EventQueue eq2 = null;
@@ -119,10 +119,10 @@ public class Dialog extends Window
   /**
    * Initializes a new instance of <code>Dialog</code> with the specified
    * parent, that is resizable and not modal, and which has no title.
-   * 
+   *
    * @param parent The parent frame of this dialog box.
-   * @exception IllegalArgumentException If the owner's GraphicsConfiguration 
-   * is not from a screen device, or if owner is null. This exception is 
+   * @exception IllegalArgumentException If the owner's GraphicsConfiguration
+   * is not from a screen device, or if owner is null. This exception is
    * always thrown when GraphicsEnvironment.isHeadless() returns true.
    */
   public Dialog(Frame parent)
@@ -133,13 +133,13 @@ public class Dialog extends Window
   /**
    * Initializes a new instance of <code>Dialog</code> with the specified
    * parent and modality, that is resizable and which has no title.
-   * 
+   *
    * @param parent The parent frame of this dialog box.
    * @param modal <code>true</code> if this dialog box is modal,
    * <code>false</code> otherwise.
-   * 
+   *
    * @exception IllegalArgumentException If the owner's GraphicsConfiguration
-   * is not from a screen device, or if owner is null. This exception is 
+   * is not from a screen device, or if owner is null. This exception is
    * always thrown when GraphicsEnvironment.isHeadless() returns true.
    */
   public Dialog(Frame parent, boolean modal)
@@ -149,14 +149,14 @@ public class Dialog extends Window
 
   /**
    * Initializes a new instance of <code>Dialog</code> with the specified
-   * parent, that is resizable and not modal, and which has the specified 
+   * parent, that is resizable and not modal, and which has the specified
    * title.
-   * 
+   *
    * @param parent The parent frame of this dialog box.
    * @param title The title string for this dialog box.
-   * 
+   *
    * @exception IllegalArgumentException If the owner's GraphicsConfiguration
-   * is not from a screen device, or if owner is null. This exceptionnis 
+   * is not from a screen device, or if owner is null. This exceptionnis
    * always thrown when GraphicsEnvironment.isHeadless() returns true.
    */
   public Dialog(Frame parent, String title)
@@ -167,12 +167,12 @@ public class Dialog extends Window
   /**
    * Initializes a new instance of <code>Dialog</code> with the specified,
    * parent, title, and modality, that is resizable.
-   * 
+   *
    * @param parent The parent frame of this dialog box.
    * @param title The title string for this dialog box.
    * @param modal <code>true</code> if this dialog box is modal,
    * <code>false</code> otherwise.
-   *          
+   *
    * @exception IllegalArgumentException If owner is null or
    *              GraphicsEnvironment.isHeadless() returns true.
    */
@@ -185,15 +185,15 @@ public class Dialog extends Window
    * Initializes a new instance of <code>Dialog</code> with the specified,
    * parent, title, modality and <code>GraphicsConfiguration</code>, that is
    * resizable.
-   * 
+   *
    * @param parent The parent frame of this dialog box.
    * @param title The title string for this dialog box.
    * @param modal <code>true</code> if this dialog box is modal,
    * <code>false</code> otherwise.
-   * @param gc The <code>GraphicsConfiguration</code> object to use. If 
-   * <code>null</code> the <code>GraphicsConfiguration</code> of the target 
+   * @param gc The <code>GraphicsConfiguration</code> object to use. If
+   * <code>null</code> the <code>GraphicsConfiguration</code> of the target
    * frame is used.
-   * 
+   *
    * @exception IllegalArgumentException If owner is null, the
    *              GraphicsConfiguration is not a screen device or
    *              GraphicsEnvironment.isHeadless() returns true.
@@ -216,12 +216,12 @@ public class Dialog extends Window
   /**
    * Initializes a new instance of <code>Dialog</code> with the specified,
    * parent, that is resizable.
-   * 
+   *
    * @param owner The parent frame of this dialog box.
-   * 
+   *
    * @exception IllegalArgumentException If parent is null. This exception is
    * always thrown when GraphicsEnvironment.isHeadless() returns true.
-   * 
+   *
    * @since 1.2
    */
   public Dialog(Dialog owner)
@@ -232,10 +232,10 @@ public class Dialog extends Window
   /**
    * Initializes a new instance of <code>Dialog</code> with the specified,
    * parent and title, that is resizable.
-   * 
+   *
    * @param owner The parent frame of this dialog box.
    * @param title The title string for this dialog box.
-   * 
+   *
    * @exception IllegalArgumentException If parent is null. This exception is
    *              always thrown when GraphicsEnvironment.isHeadless() returns
    *              true.
@@ -249,12 +249,12 @@ public class Dialog extends Window
   /**
    * Initializes a new instance of <code>Dialog</code> with the specified,
    * parent, title and modality, that is resizable.
-   * 
+   *
    * @param owner The parent frame of this dialog box.
    * @param title The title string for this dialog box.
    * @param modal <code>true</code> if this dialog box is modal,
    * <code>false</code> otherwise.
-   * 
+   *
    * @exception IllegalArgumentException If parent is null. This exception is
    * always thrown when GraphicsEnvironment.isHeadless() returns true.
    * @since 1.2
@@ -268,19 +268,19 @@ public class Dialog extends Window
    * Initializes a new instance of <code>Dialog</code> with the specified,
    * parent, title, modality and <code>GraphicsConfiguration</code>, that is
    * resizable.
-   * 
+   *
    * @param parent The parent frame of this dialog box.
    * @param title The title string for this dialog box.
    * @param modal <code>true</code> if this dialog box is modal,
    * <code>false</code> otherwise.
-   * @param gc The <code>GraphicsConfiguration</code> object to use. If 
-   * <code>null</code> the <code>GraphicsConfiguration</code> of the target 
+   * @param gc The <code>GraphicsConfiguration</code> object to use. If
+   * <code>null</code> the <code>GraphicsConfiguration</code> of the target
    * frame is used.
-   * 
+   *
    * @exception IllegalArgumentException If parent is null, the
-   * GraphicsConfiguration is not a screen device or 
+   * GraphicsConfiguration is not a screen device or
    * GraphicsEnvironment.isHeadless() returns true.
-   * 
+   *
    * @since 1.4
    */
   public Dialog(Dialog parent, String title, boolean modal,
@@ -299,7 +299,7 @@ public class Dialog extends Window
 
   /**
    * Returns the title of this dialog box.
-   * 
+   *
    * @return The title of this dialog box.
    */
   public String getTitle()
@@ -309,7 +309,7 @@ public class Dialog extends Window
 
   /**
    * Sets the title of this dialog box to the specified string.
-   * 
+   *
    * @param title the new title. If <code>null</code> an empty
    * title will be set.
    */
@@ -327,7 +327,7 @@ public class Dialog extends Window
 
   /**
    * Tests whether or not this dialog box is modal.
-   * 
+   *
    * @return <code>true</code> if this dialog box is modal, <code>false</code>
    * otherwise.
    */
@@ -339,9 +339,9 @@ public class Dialog extends Window
   /**
    * Changes the modality of this dialog box. This can only be done before the
    * peer is created.
-   * 
+   *
    * @param modal <code>true</code> to make this dialog box modal,
-   * <code>false</code> to make it non-modal. 
+   * <code>false</code> to make it non-modal.
    */
   public void setModal(boolean modal)
   {
@@ -350,7 +350,7 @@ public class Dialog extends Window
 
   /**
    * Tests whether or not this dialog box is resizable.
-   * 
+   *
    * @return <code>true</code> if this dialog is resizable,
    * <code>false</code> otherwise.
    */
@@ -361,7 +361,7 @@ public class Dialog extends Window
 
   /**
    * Changes the resizability of this dialog box.
-   * 
+   *
    * @param resizable <code>true</code> to make this dialog resizable,
    * <code>false</code> to make it non-resizable.
    */
@@ -391,7 +391,7 @@ public class Dialog extends Window
    * dialog is hidden by someone calling hide or dispose. If this is the event
    * dispatching thread we must ensure that another event thread runs while the
    * one which invoked this method is blocked.
-   * 
+   *
    * @deprecated Use {@link Component#setVisible(boolean)} instead.
    */
   public synchronized void show()
@@ -438,7 +438,7 @@ public class Dialog extends Window
   /**
    * Hides the Dialog and then causes show() to return if it is currently
    * blocked.
-   * 
+   *
    * @deprecated Use {@link Component#setVisible(boolean)} instead.
    */
   public synchronized void hide()
@@ -467,7 +467,7 @@ public class Dialog extends Window
 
   /**
    * Returns a debugging string for this component.
-   * 
+   *
    * @return A debugging string for this component.
    */
   protected String paramString()
@@ -478,10 +478,10 @@ public class Dialog extends Window
 
   /**
    * Returns whether this frame is undecorated or not.
-   * 
+   *
    * @return <code>true</code> if this dialog is undecorated,
    * <code>false</code> otherwise.
-   * 
+   *
    * @since 1.4
    */
   public boolean isUndecorated()
@@ -492,10 +492,10 @@ public class Dialog extends Window
   /**
    * Disables or enables decorations for this frame. This method can only be
    * called while the frame is not displayable.
-   * 
+   *
    * @param undecorated <code>true</code> to disable dialog decorations,
    * <code>false</code> otherwise.
-   * 
+   *
    * @exception IllegalComponentStateException If this frame is displayable.
    * @since 1.4
    */
@@ -517,7 +517,7 @@ public class Dialog extends Window
 
     /**
      * Gets the role of this object.
-     * @return AccessibleRole.DIALOG 
+     * @return AccessibleRole.DIALOG
      */
     public AccessibleRole getAccessibleRole()
     {
@@ -542,7 +542,7 @@ public class Dialog extends Window
   /**
    * Gets the AccessibleContext associated with this <code>Dialog</code>. The
    * context is created, if necessary.
-   * 
+   *
    * @return the associated context
    */
   public AccessibleContext getAccessibleContext()
@@ -552,7 +552,7 @@ public class Dialog extends Window
       accessibleContext = new AccessibleAWTDialog();
     return accessibleContext;
   }
-  
+
   /**
    * Generate a unique name for this <code>Dialog</code>.
    *

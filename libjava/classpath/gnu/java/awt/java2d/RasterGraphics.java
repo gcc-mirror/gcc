@@ -77,10 +77,10 @@ public class RasterGraphics
   {
     if (y >= getDeviceBounds().width)
       return;
-    
+
     super.renderScanline(y, c);
   }
-  
+
   /**
    * Returns the color model of this Graphics object.
    *

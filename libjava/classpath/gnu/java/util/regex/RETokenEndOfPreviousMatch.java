@@ -58,13 +58,13 @@ class RETokenEndOfPreviousMatch extends RETokenStart
     if (lastMatch == null)
       return super.matchThis (input, mymatch);
     if (input.getAnchor () + mymatch.index ==
-	lastMatch.anchor + lastMatch.index)
+        lastMatch.anchor + lastMatch.index)
       {
-	return mymatch;
+        return mymatch;
       }
     else
       {
-	return null;
+        return null;
       }
   }
 

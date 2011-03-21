@@ -49,7 +49,7 @@ import javax.swing.plaf.FontUIResource;
  * The base class for themes used by the {@link MetalLookAndFeel}.  A default
  * theme ({@link DefaultMetalTheme}) is provided, or you can create and use
  * your own.
- * 
+ *
  * @see MetalLookAndFeel#setCurrentTheme(MetalTheme)
  */
 public abstract class MetalTheme
@@ -67,14 +67,14 @@ public abstract class MetalTheme
 
   /**
    * Returns the name of the theme.
-   * 
+   *
    * @return The name of the theme.
    */
   public abstract String getName();
 
   /**
    * Adds custom entries to the UI defaults table.  This method is empty.
-   * 
+   *
    * @param table  the table.
    */
   public void addCustomEntriesToTable(UIDefaults table)
@@ -87,7 +87,7 @@ public abstract class MetalTheme
   /**
    * Returns the accelerator foreground color.  The default implementation
    * returns the color from {@link #getPrimary1()}.
-   * 
+   *
    * @return The accelerator foreground color.
    */
   public ColorUIResource getAcceleratorForeground()
@@ -96,20 +96,20 @@ public abstract class MetalTheme
   }
 
   /**
-   * Returns the accelerator selected foreground color.  The default 
+   * Returns the accelerator selected foreground color.  The default
    * implementation returns the color from {@link #getBlack()}.
-   * 
+   *
    * @return The accelerator selected foreground color.
    */
   public ColorUIResource getAcceleratorSelectedForeground()
   {
     return getBlack();
   }
-  
+
   /**
-   * Returns the control color.  The default implementation returns the color 
+   * Returns the control color.  The default implementation returns the color
    * from {@link #getSecondary3()}.
-   * 
+   *
    * @return The control color.
    */
   public ColorUIResource getControl()
@@ -118,9 +118,9 @@ public abstract class MetalTheme
   }
 
   /**
-   * Returns the color used for dark shadows on controls.  The default 
+   * Returns the color used for dark shadows on controls.  The default
    * implementation returns the color from  {@link #getSecondary1()}.
-   * 
+   *
    * @return The color used for dark shadows on controls.
    */
   public ColorUIResource getControlDarkShadow()
@@ -131,7 +131,7 @@ public abstract class MetalTheme
   /**
    * Returns the color used for disabled controls.  The default implementation
    * returns the color from {@link #getSecondary1()}.
-   * 
+   *
    * @return The color used for disabled controls.
    */
   public ColorUIResource getControlDisabled()
@@ -140,9 +140,9 @@ public abstract class MetalTheme
   }
 
   /**
-   * Returns the color used to draw highlights for controls.  The default 
+   * Returns the color used to draw highlights for controls.  The default
    * implementation returns the color from {@link #getWhite()}.
-   * 
+   *
    * @return The color used to draw highlights for controls.
    */
   public ColorUIResource getControlHighlight()
@@ -151,9 +151,9 @@ public abstract class MetalTheme
   }
 
   /**
-   * Returns the color used to display control info.  The default 
+   * Returns the color used to display control info.  The default
    * implementation returns the color from {@link #getBlack()}.
-   * 
+   *
    * @return The color used to display control info.
    */
   public ColorUIResource getControlInfo()
@@ -162,9 +162,9 @@ public abstract class MetalTheme
   }
 
   /**
-   * Returns the color used to draw shadows for controls.  The default 
+   * Returns the color used to draw shadows for controls.  The default
    * implementation returns the color from {@link #getSecondary2()}.
-   * 
+   *
    * @return The color used to draw shadows for controls.
    */
   public ColorUIResource getControlShadow()
@@ -175,7 +175,7 @@ public abstract class MetalTheme
   /**
    * Returns the color used for text on controls.  The default implementation
    * returns the color from {@link #getControlInfo()}.
-   * 
+   *
    * @return The color used for text on controls.
    */
   public ColorUIResource getControlTextColor()
@@ -184,9 +184,9 @@ public abstract class MetalTheme
   }
 
   /**
-   * Returns the color used for the desktop background.  The default 
+   * Returns the color used for the desktop background.  The default
    * implementation returns the color from {@link #getPrimary2()}.
-   * 
+   *
    * @return The color used for the desktop background.
    */
   public ColorUIResource getDesktopColor()
@@ -195,9 +195,9 @@ public abstract class MetalTheme
   }
 
   /**
-   * Returns the color used to draw focus highlights.  The default 
+   * Returns the color used to draw focus highlights.  The default
    * implementation returns the color from {@link #getPrimary2()}.
-   * 
+   *
    * @return The color used to draw focus highlights.
    */
   public ColorUIResource getFocusColor()
@@ -208,7 +208,7 @@ public abstract class MetalTheme
   /**
    * Returns the color used to draw highlighted text.  The default
    * implementation returns the color from {@link #getHighlightedTextColor()}.
-   * 
+   *
    * @return The color used to draw highlighted text.
    */
   public ColorUIResource getHighlightedTextColor()
@@ -219,7 +219,7 @@ public abstract class MetalTheme
   /**
    * Returns the color used to draw text on inactive controls.  The default
    * implementation returns the color from {@link #getControlDisabled()}.
-   * 
+   *
    * @return The color used to draw text on inactive controls.
    */
   public ColorUIResource getInactiveControlTextColor()
@@ -230,7 +230,7 @@ public abstract class MetalTheme
   /**
    * Returns the color used to draw inactive system text.  The default
    * implementation returns the color from {@link #getSecondary2()}.
-   * 
+   *
    * @return The color used to draw inactive system text.
    */
   public ColorUIResource getInactiveSystemTextColor()
@@ -241,9 +241,9 @@ public abstract class MetalTheme
   /**
    * Returns the background color for menu items.  The default implementation
    * returns the color from {@link #getSecondary3()}.
-   * 
+   *
    * @return The background color for menu items.
-   * 
+   *
    * @see #getMenuSelectedBackground()
    */
   public ColorUIResource getMenuBackground()
@@ -252,11 +252,11 @@ public abstract class MetalTheme
   }
 
   /**
-   * Returns the foreground color for disabled menu items.  The default 
+   * Returns the foreground color for disabled menu items.  The default
    * implementation returns the color from {@link #getSecondary2()}.
-   * 
+   *
    * @return The foreground color for disabled menu items.
-   * 
+   *
    * @see #getMenuForeground()
    */
   public ColorUIResource getMenuDisabledForeground()
@@ -267,9 +267,9 @@ public abstract class MetalTheme
   /**
    * Returns the foreground color for menu items.  The default implementation
    * returns the color from {@link #getBlack()}.
-   * 
+   *
    * @return The foreground color for menu items.
-   * 
+   *
    * @see #getMenuDisabledForeground()
    * @see #getMenuSelectedForeground()
    */
@@ -279,11 +279,11 @@ public abstract class MetalTheme
   }
 
   /**
-   * Returns the background color for selected menu items.  The default 
+   * Returns the background color for selected menu items.  The default
    * implementation returns the color from {@link #getPrimary2()}.
-   * 
+   *
    * @return The background color for selected menu items.
-   * 
+   *
    * @see #getMenuBackground()
    */
   public ColorUIResource getMenuSelectedBackground()
@@ -292,11 +292,11 @@ public abstract class MetalTheme
   }
 
   /**
-   * Returns the foreground color for selected menu items.  The default 
+   * Returns the foreground color for selected menu items.  The default
    * implementation returns the value from {@link #getBlack()}.
-   * 
+   *
    * @return The foreground color for selected menu items.
-   * 
+   *
    * @see #getMenuForeground()
    */
   public ColorUIResource getMenuSelectedForeground()
@@ -307,7 +307,7 @@ public abstract class MetalTheme
   /**
    * Returns the primary color for controls.  The default implementation
    * returns the color from {@link #getPrimary3()}.
-   * 
+   *
    * @return The primary color for controls.
    */
   public ColorUIResource getPrimaryControl()
@@ -316,9 +316,9 @@ public abstract class MetalTheme
   }
 
   /**
-   * Returns the primary color for the dark shadow on controls.  The default 
+   * Returns the primary color for the dark shadow on controls.  The default
    * implementation returns the color from {@link #getPrimary1()}.
-   * 
+   *
    * @return The primary color for the dark shadow on controls.
    */
   public ColorUIResource getPrimaryControlDarkShadow()
@@ -327,9 +327,9 @@ public abstract class MetalTheme
   }
 
   /**
-   * Returns the primary color for the highlight on controls.  The default 
+   * Returns the primary color for the highlight on controls.  The default
    * implementation returns the color from {@link #getWhite()}.
-   * 
+   *
    * @return The primary color for the highlight on controls.
    */
   public ColorUIResource getPrimaryControlHighlight()
@@ -338,9 +338,9 @@ public abstract class MetalTheme
   }
 
   /**
-   * Returns the primary color for the information on controls.  The default 
+   * Returns the primary color for the information on controls.  The default
    * implementation returns the color from {@link #getBlack()}.
-   * 
+   *
    * @return The primary color for the information on controls.
    */
   public ColorUIResource getPrimaryControlInfo()
@@ -349,9 +349,9 @@ public abstract class MetalTheme
   }
 
   /**
-   * Returns the primary color for the shadow on controls.  The default 
+   * Returns the primary color for the shadow on controls.  The default
    * implementation returns the color from {@link #getPrimary2()}.
-   * 
+   *
    * @return The primary color for the shadow on controls.
    */
   public ColorUIResource getPrimaryControlShadow()
@@ -362,7 +362,7 @@ public abstract class MetalTheme
   /**
    * Returns the background color for separators.  The default implementation
    * returns the color from {@link #getWhite()}.
-   * 
+   *
    * @return The background color for separators.
    */
   public ColorUIResource getSeparatorBackground()
@@ -373,7 +373,7 @@ public abstract class MetalTheme
   /**
    * Returns the foreground color for separators.  The default implementation
    * returns the value from {@link #getPrimary1()}.
-   * 
+   *
    * @return The foreground color for separators.
    */
   public ColorUIResource getSeparatorForeground()
@@ -382,9 +382,9 @@ public abstract class MetalTheme
   }
 
   /**
-   * Returns the color used for system text.  The default implementation 
+   * Returns the color used for system text.  The default implementation
    * returns the color from {@link #getBlack()}.
-   * 
+   *
    * @return The color used for system text.
    */
   public ColorUIResource getSystemTextColor()
@@ -395,7 +395,7 @@ public abstract class MetalTheme
   /**
    * Returns the color used to highlight text.  The default implementation
    * returns the color from {@link #getPrimary3()}.
-   * 
+   *
    * @return The color used to highlight text.
    */
   public ColorUIResource getTextHighlightColor()
@@ -406,18 +406,18 @@ public abstract class MetalTheme
   /**
    * Returns the color used to display user text.  The default implementation
    * returns the color from {@link #getBlack()}.
-   * 
+   *
    * @return The color used to display user text.
    */
   public ColorUIResource getUserTextColor()
   {
     return getBlack();
   }
-  
+
   /**
    * Returns the window background color.  The default implementation returns
    * the color from {@link #getWhite()}.
-   * 
+   *
    * @return The window background color.
    */
   public ColorUIResource getWindowBackground()
@@ -428,7 +428,7 @@ public abstract class MetalTheme
   /**
    * Returns the window title background color.  The default implementation
    * returns the color from {@link #getPrimary3()}.
-   * 
+   *
    * @return The window title background color.
    */
   public ColorUIResource getWindowTitleBackground()
@@ -439,7 +439,7 @@ public abstract class MetalTheme
   /**
    * Returns the window title foreground color.  The default implementation
    * returns the color from {@link #getBlack()}.
-   * 
+   *
    * @return The window title foreground color.
    */
   public ColorUIResource getWindowTitleForeground()
@@ -450,7 +450,7 @@ public abstract class MetalTheme
   /**
    * Returns the background color for an inactive window title.  The default
    * implementation returns the color from {@link #getSecondary3()}.
-   * 
+   *
    * @return The background color for an inactive window title.
    */
   public ColorUIResource getWindowTitleInactiveBackground()
@@ -461,7 +461,7 @@ public abstract class MetalTheme
   /**
    * Returns the foreground color for an inactive window title.  The default
    * implementation returns the color from {@link #getBlack()}.
-   * 
+   *
    * @return The foreground color for an inactive window title.
    */
   public ColorUIResource getWindowTitleInactiveForeground()
@@ -471,7 +471,7 @@ public abstract class MetalTheme
 
   /**
    * Returns the color used for black.
-   * 
+   *
    * @return The color used for black.
    */
   protected ColorUIResource getBlack()
@@ -481,7 +481,7 @@ public abstract class MetalTheme
 
   /**
    * Returns the color used for white.
-   * 
+   *
    * @return The color used for white.
    */
   protected ColorUIResource getWhite()
@@ -491,86 +491,86 @@ public abstract class MetalTheme
 
   /**
    * Returns the first primary color for this theme.
-   * 
+   *
    * @return The first primary color.
    */
   protected abstract ColorUIResource getPrimary1();
-  
+
   /**
    * Returns the second primary color for this theme.
-   * 
+   *
    * @return The second primary color.
    */
   protected abstract ColorUIResource getPrimary2();
 
   /**
    * Returns the third primary color for this theme.
-   * 
+   *
    * @return The third primary color.
    */
   protected abstract ColorUIResource getPrimary3();
-  
+
   /**
    * Returns the first secondary color for this theme.
-   * 
+   *
    * @return The first secondary color.
    */
   protected abstract ColorUIResource getSecondary1();
 
   /**
    * Returns the second secondary color for this theme.
-   * 
+   *
    * @return The second secondary color.
    */
   protected abstract ColorUIResource getSecondary2();
 
   /**
    * Returns the third secondary color for this theme.
-   * 
+   *
    * @return The third secondary color.
    */
   protected abstract ColorUIResource getSecondary3();
 
   /**
    * Returns the font used for text on controls.
-   * 
+   *
    * @return The font used for text on controls.
    */
   public abstract FontUIResource getControlTextFont();
 
   /**
    * Returns the font used for text in menus.
-   * 
+   *
    * @return The font used for text in menus.
    */
   public abstract FontUIResource getMenuTextFont();
 
   /**
    * Returns the font used for sub text.
-   * 
+   *
    * @return The font used for sub text.
    */
   public abstract FontUIResource getSubTextFont();
-  
+
   /**
    * Returns the font used for system text.
-   * 
+   *
    * @return The font used for system text.
    */
   public abstract FontUIResource getSystemTextFont();
-  
+
   /**
    * Returns the font used for user text.
-   * 
+   *
    * @return The font used for user text.
    */
   public abstract FontUIResource getUserTextFont();
 
   /**
    * Returns the font used for window titles.
-   * 
+   *
    * @return The font used for window titles.
    */
   public abstract FontUIResource getWindowTitleFont();
-  
+
 }

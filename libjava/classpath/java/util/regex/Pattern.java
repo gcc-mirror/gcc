@@ -46,14 +46,14 @@ import java.util.ArrayList;
 
 
 /**
- * Compiled regular expression ready to be applied. 
+ * Compiled regular expression ready to be applied.
  *
  * @since 1.4
  */
 public final class Pattern implements Serializable
 {
   private static final long serialVersionUID = 5073258162644648461L;
-  
+
   public static final int CANON_EQ = 128;
   public static final int CASE_INSENSITIVE = 2;
   public static final int COMMENTS = 4;
@@ -61,7 +61,7 @@ public final class Pattern implements Serializable
   public static final int MULTILINE = 8;
   public static final int UNICODE_CASE = 64;
   public static final int UNIX_LINES = 1;
-  
+
   private final String regex;
   private final int flags;
 
@@ -93,30 +93,30 @@ public final class Pattern implements Serializable
 
     if ((flags & UNIX_LINES) != 0)
       {
-	// Use a syntax set with \n for linefeeds?
-	syntax = new RESyntax(syntax);
-	syntax.setLineSeparator("\n");
+        // Use a syntax set with \n for linefeeds?
+        syntax = new RESyntax(syntax);
+        syntax.setLineSeparator("\n");
       }
 
     if ((flags & COMMENTS) != 0)
       {
-	gnuFlags |= RE.REG_X_COMMENTS;
+        gnuFlags |= RE.REG_X_COMMENTS;
       }
 
     try
       {
-	this.re = new RE(regex, gnuFlags, syntax);
+        this.re = new RE(regex, gnuFlags, syntax);
       }
     catch (REException e)
       {
-	PatternSyntaxException pse;
-	pse = new PatternSyntaxException(e.getMessage(),
-					 regex, e.getPosition());
-	pse.initCause(e);
-	throw pse;
+        PatternSyntaxException pse;
+        pse = new PatternSyntaxException(e.getMessage(),
+                                         regex, e.getPosition());
+        pse.initCause(e);
+        throw pse;
       }
   }
- 
+
   // package private accessor method
   RE getRE()
   {
@@ -133,7 +133,7 @@ public final class Pattern implements Serializable
   {
     return compile(regex, 0);
   }
-  
+
   /**
    * @param regex The regular expression
    * @param flags The match flags, a bit mask
@@ -148,26 +148,26 @@ public final class Pattern implements Serializable
     // FIXME: check which flags are really accepted
     if ((flags & ~0xEF) != 0)
       throw new IllegalArgumentException ();
-    
-    return new Pattern (regex, flags); 
+
+    return new Pattern (regex, flags);
   }
-  
+
   public int flags ()
   {
     return this.flags;
   }
-  
+
   /**
    * @param regex The regular expression
    * @param input The character sequence to be matched
    *
    * @exception PatternSyntaxException If the expression's syntax is invalid
    */
-  public static boolean matches (String regex, CharSequence input) 
+  public static boolean matches (String regex, CharSequence input)
   {
     return compile(regex).matcher(input).matches();
   }
-  
+
   /**
    * @param input The character sequence to be matched
    */
@@ -175,7 +175,7 @@ public final class Pattern implements Serializable
   {
     return new Matcher(this, input);
   }
-  
+
   /**
    * @param input The character sequence to be matched
    */
@@ -183,7 +183,7 @@ public final class Pattern implements Serializable
   {
     return split(input, 0);
   }
-  
+
   /**
    * @param input The character sequence to be matched
    * @param limit The result threshold
@@ -200,60 +200,60 @@ public final class Pattern implements Serializable
 
     while (matched && (limit <= 0 || count < limit - 1))
       {
-	++count;
-	end = matcher.start();
-	if (start == end)
-	  empties++;
-	else
-	  {
-	    while (empties > 0)
-	      {
-		list.add("");
-		empties--;
-	      }
+        ++count;
+        end = matcher.start();
+        if (start == end)
+          empties++;
+        else
+          {
+            while (empties > 0)
+              {
+                list.add("");
+                empties--;
+              }
 
-	    String text = input.subSequence(start, end).toString();
-	    list.add(text);
-	  }
-	start = matcher.end();
-	matched = matcher.find();
+            String text = input.subSequence(start, end).toString();
+            list.add(text);
+          }
+        start = matcher.end();
+        matched = matcher.find();
       }
 
     // We matched nothing.
     if (!matched && count == 0)
       return new String[] { input.toString() };
-    
+
     // Is the last token empty?
     boolean emptyLast = (start == input.length());
 
     // Can/Must we add empties or an extra last token at the end?
     if (list.size() < limit || limit < 0 || (limit == 0 && !emptyLast))
       {
-	if (limit > list.size())
-	  {
-	    int max = limit - list.size();
-	    empties = (empties > max) ? max : empties;
-	  }
-	while (empties > 0)
-	  {
-	    list.add("");
-	    empties--;
-	  }
+        if (limit > list.size())
+          {
+            int max = limit - list.size();
+            empties = (empties > max) ? max : empties;
+          }
+        while (empties > 0)
+          {
+            list.add("");
+            empties--;
+          }
       }
 
     // last token at end
     if (limit != 0 || (limit == 0 && !emptyLast))
       {
-	String t = input.subSequence(start, input.length()).toString();
-	if ("".equals(t) && limit == 0)
-	  { /* Don't add. */ }
-	else
-	  list.add(t);
+        String t = input.subSequence(start, input.length()).toString();
+        if ("".equals(t) && limit == 0)
+          { /* Don't add. */ }
+        else
+          list.add(t);
       }
 
     return list.toArray(new String[list.size()]);
   }
-  
+
   public String pattern ()
   {
     return regex;

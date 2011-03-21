@@ -1,4 +1,4 @@
-/* DropTarget.java -- 
+/* DropTarget.java --
    Copyright (C) 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -54,7 +54,7 @@ public class DropTargetEvent extends EventObject
     super (context);
     this.context = context;
   }
-  
+
   public DropTargetContext getDropTargetContext ()
   {
     return context;

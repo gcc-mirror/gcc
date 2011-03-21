@@ -9,6 +9,7 @@ import (
 	"asn1"
 	"big"
 	"container/vector"
+	"crypto"
 	"crypto/rsa"
 	"crypto/sha1"
 	"hash"
@@ -217,50 +218,40 @@ var (
 	oidPostalCode         = []int{2, 5, 4, 17}
 )
 
+// appendRDNs appends a relativeDistinguishedNameSET to the given rdnSequence
+// and returns the new value. The relativeDistinguishedNameSET contains an
+// attributeTypeAndValue for each of the given values. See RFC 5280, A.1, and
+// search for AttributeTypeAndValue.
+func appendRDNs(in rdnSequence, values []string, oid asn1.ObjectIdentifier) rdnSequence {
+	if len(values) == 0 {
+		return in
+	}
+
+	s := make([]attributeTypeAndValue, len(values))
+	for i, value := range values {
+		s[i].Type = oid
+		s[i].Value = value
+	}
+
+	return append(in, s)
+}
+
 func (n Name) toRDNSequence() (ret rdnSequence) {
-	ret = make([]relativeDistinguishedNameSET, 9 /* maximum number of elements */ )
-	i := 0
-	if len(n.Country) > 0 {
-		ret[i] = []attributeTypeAndValue{{oidCountry, n.Country}}
-		i++
-	}
-	if len(n.Organization) > 0 {
-		ret[i] = []attributeTypeAndValue{{oidOrganization, n.Organization}}
-		i++
-	}
-	if len(n.OrganizationalUnit) > 0 {
-		ret[i] = []attributeTypeAndValue{{oidOrganizationalUnit, n.OrganizationalUnit}}
-		i++
-	}
+	ret = appendRDNs(ret, n.Country, oidCountry)
+	ret = appendRDNs(ret, n.Organization, oidOrganization)
+	ret = appendRDNs(ret, n.OrganizationalUnit, oidOrganizationalUnit)
+	ret = appendRDNs(ret, n.Locality, oidLocatity)
+	ret = appendRDNs(ret, n.Province, oidProvince)
+	ret = appendRDNs(ret, n.StreetAddress, oidStreetAddress)
+	ret = appendRDNs(ret, n.PostalCode, oidPostalCode)
 	if len(n.CommonName) > 0 {
-		ret[i] = []attributeTypeAndValue{{oidCommonName, n.CommonName}}
-		i++
+		ret = appendRDNs(ret, []string{n.CommonName}, oidCommonName)
 	}
 	if len(n.SerialNumber) > 0 {
-		ret[i] = []attributeTypeAndValue{{oidSerialNumber, n.SerialNumber}}
-		i++
-	}
-	if len(n.Locality) > 0 {
-		ret[i] = []attributeTypeAndValue{{oidLocatity, n.Locality}}
-		i++
-	}
-	if len(n.Province) > 0 {
-		ret[i] = []attributeTypeAndValue{{oidProvince, n.Province}}
-		i++
-	}
-	if len(n.StreetAddress) > 0 {
-		ret[i] = []attributeTypeAndValue{{oidStreetAddress, n.StreetAddress}}
-		i++
-	}
-	if len(n.PostalCode) > 0 {
-		ret[i] = []attributeTypeAndValue{{oidPostalCode, n.PostalCode}}
-		i++
+		ret = appendRDNs(ret, []string{n.SerialNumber}, oidSerialNumber)
 	}
 
-	// Adding another RDN here? Remember to update the maximum number of
-	// elements in the make() at the top of the function.
-
-	return ret[0:i]
+	return ret
 }
 
 func getSignatureAlgorithmFromOID(oid []int) SignatureAlgorithm {
@@ -339,6 +330,12 @@ type Certificate struct {
 	// Subject Alternate Name values
 	DNSNames       []string
 	EmailAddresses []string
+
+	// Name constraints
+	PermittedDNSDomainsCritical bool // if true then the name constraints are marked critical.
+	PermittedDNSDomains         []string
+
+	PolicyIdentifiers []asn1.ObjectIdentifier
 }
 
 // UnsupportedAlgorithmError results from attempting to perform an operation
@@ -382,12 +379,12 @@ func (c *Certificate) CheckSignatureFrom(parent *Certificate) (err os.Error) {
 	// TODO(agl): don't ignore the path length constraint.
 
 	var h hash.Hash
-	var hashType rsa.PKCS1v15Hash
+	var hashType crypto.Hash
 
 	switch c.SignatureAlgorithm {
 	case SHA1WithRSA:
 		h = sha1.New()
-		hashType = rsa.HashSHA1
+		hashType = crypto.SHA1
 	default:
 		return UnsupportedAlgorithmError{}
 	}
@@ -476,6 +473,24 @@ type rsaPublicKey struct {
 	E int
 }
 
+// RFC 5280 4.2.1.4
+type policyInformation struct {
+	Policy asn1.ObjectIdentifier
+	// policyQualifiers omitted
+}
+
+// RFC 5280, 4.2.1.10
+type nameConstraints struct {
+	Permitted []generalSubtree "optional,tag:0"
+	Excluded  []generalSubtree "optional,tag:1"
+}
+
+type generalSubtree struct {
+	Name string "tag:2,optional,ia5"
+	Min  int    "optional,tag:0"
+	Max  int    "optional,tag:1"
+}
+
 func parsePublicKey(algo PublicKeyAlgorithm, asn1Data []byte) (interface{}, os.Error) {
 	switch algo {
 	case RSA:
@@ -517,7 +532,7 @@ func parseCertificate(in *certificate) (*Certificate, os.Error) {
 		return nil, err
 	}
 
-	out.Version = in.TBSCertificate.Version
+	out.Version = in.TBSCertificate.Version + 1
 	out.SerialNumber = in.TBSCertificate.SerialNumber.Bytes
 	out.Issuer.fillFromRDNSequence(&in.TBSCertificate.Issuer)
 	out.Subject.fillFromRDNSequence(&in.TBSCertificate.Subject)
@@ -604,6 +619,43 @@ func parseCertificate(in *certificate) (*Certificate, os.Error) {
 				// If we didn't parse any of the names then we
 				// fall through to the critical check below.
 
+			case 30:
+				// RFC 5280, 4.2.1.10
+
+				// NameConstraints ::= SEQUENCE {
+				//      permittedSubtrees       [0]     GeneralSubtrees OPTIONAL,
+				//      excludedSubtrees        [1]     GeneralSubtrees OPTIONAL }
+				//
+				// GeneralSubtrees ::= SEQUENCE SIZE (1..MAX) OF GeneralSubtree
+				//
+				// GeneralSubtree ::= SEQUENCE {
+				//      base                    GeneralName,
+				//      minimum         [0]     BaseDistance DEFAULT 0,
+				//      maximum         [1]     BaseDistance OPTIONAL }
+				//
+				// BaseDistance ::= INTEGER (0..MAX)
+
+				var constraints nameConstraints
+				_, err := asn1.Unmarshal(e.Value, &constraints)
+				if err != nil {
+					return nil, err
+				}
+
+				if len(constraints.Excluded) > 0 && e.Critical {
+					return out, UnhandledCriticalExtension{}
+				}
+
+				for _, subtree := range constraints.Permitted {
+					if subtree.Min > 0 || subtree.Max > 0 || len(subtree.Name) == 0 {
+						if e.Critical {
+							return out, UnhandledCriticalExtension{}
+						}
+						continue
+					}
+					out.PermittedDNSDomains = append(out.PermittedDNSDomains, subtree.Name)
+				}
+				continue
+
 			case 35:
 				// RFC 5280, 4.2.1.1
 				var a authKeyId
@@ -623,6 +675,17 @@ func parseCertificate(in *certificate) (*Certificate, os.Error) {
 				}
 				out.SubjectKeyId = keyid
 				continue
+
+			case 32:
+				// RFC 5280 4.2.1.4: Certificate Policies
+				var policies []policyInformation
+				if _, err = asn1.Unmarshal(e.Value, &policies); err != nil {
+					return nil, err
+				}
+				out.PolicyIdentifiers = make([]asn1.ObjectIdentifier, len(policies))
+				for i, policy := range policies {
+					out.PolicyIdentifiers[i] = policy.Policy
+				}
 			}
 		}
 
@@ -683,15 +746,17 @@ func reverseBitsInAByte(in byte) byte {
 }
 
 var (
-	oidExtensionSubjectKeyId     = []int{2, 5, 29, 14}
-	oidExtensionKeyUsage         = []int{2, 5, 29, 15}
-	oidExtensionAuthorityKeyId   = []int{2, 5, 29, 35}
-	oidExtensionBasicConstraints = []int{2, 5, 29, 19}
-	oidExtensionSubjectAltName   = []int{2, 5, 29, 17}
+	oidExtensionSubjectKeyId        = []int{2, 5, 29, 14}
+	oidExtensionKeyUsage            = []int{2, 5, 29, 15}
+	oidExtensionAuthorityKeyId      = []int{2, 5, 29, 35}
+	oidExtensionBasicConstraints    = []int{2, 5, 29, 19}
+	oidExtensionSubjectAltName      = []int{2, 5, 29, 17}
+	oidExtensionCertificatePolicies = []int{2, 5, 29, 32}
+	oidExtensionNameConstraints     = []int{2, 5, 29, 30}
 )
 
 func buildExtensions(template *Certificate) (ret []extension, err os.Error) {
-	ret = make([]extension, 5 /* maximum number of elements. */ )
+	ret = make([]extension, 7 /* maximum number of elements. */ )
 	n := 0
 
 	if template.KeyUsage != 0 {
@@ -755,6 +820,35 @@ func buildExtensions(template *Certificate) (ret []extension, err os.Error) {
 		n++
 	}
 
+	if len(template.PolicyIdentifiers) > 0 {
+		ret[n].Id = oidExtensionCertificatePolicies
+		policies := make([]policyInformation, len(template.PolicyIdentifiers))
+		for i, policy := range template.PolicyIdentifiers {
+			policies[i].Policy = policy
+		}
+		ret[n].Value, err = asn1.Marshal(policies)
+		if err != nil {
+			return
+		}
+		n++
+	}
+
+	if len(template.PermittedDNSDomains) > 0 {
+		ret[n].Id = oidExtensionNameConstraints
+		ret[n].Critical = template.PermittedDNSDomainsCritical
+
+		var out nameConstraints
+		out.Permitted = make([]generalSubtree, len(template.PermittedDNSDomains))
+		for i, permitted := range template.PermittedDNSDomains {
+			out.Permitted[i] = generalSubtree{Name: permitted}
+		}
+		ret[n].Value, err = asn1.Marshal(out)
+		if err != nil {
+			return
+		}
+		n++
+	}
+
 	// Adding another extension here? Remember to update the maximum number
 	// of elements in the make() at the top of the function.
 
@@ -769,7 +863,8 @@ var (
 // CreateSelfSignedCertificate creates a new certificate based on
 // a template. The following members of template are used: SerialNumber,
 // Subject, NotBefore, NotAfter, KeyUsage, BasicConstraintsValid, IsCA,
-// MaxPathLen, SubjectKeyId, DNSNames.
+// MaxPathLen, SubjectKeyId, DNSNames, PermittedDNSDomainsCritical,
+// PermittedDNSDomains.
 //
 // The certificate is signed by parent. If parent is equal to template then the
 // certificate is self-signed. The parameter pub is the public key of the
@@ -796,7 +891,7 @@ func CreateCertificate(rand io.Reader, template, parent *Certificate, pub *rsa.P
 
 	encodedPublicKey := asn1.BitString{BitLength: len(asn1PublicKey) * 8, Bytes: asn1PublicKey}
 	c := tbsCertificate{
-		Version:            3,
+		Version:            2,
 		SerialNumber:       asn1.RawValue{Bytes: template.SerialNumber, Tag: 2},
 		SignatureAlgorithm: algorithmIdentifier{oidSHA1WithRSA},
 		Issuer:             parent.Subject.toRDNSequence(),
@@ -817,7 +912,7 @@ func CreateCertificate(rand io.Reader, template, parent *Certificate, pub *rsa.P
 	h.Write(tbsCertContents)
 	digest := h.Sum()
 
-	signature, err := rsa.SignPKCS1v15(rand, priv, rsa.HashSHA1, digest)
+	signature, err := rsa.SignPKCS1v15(rand, priv, crypto.SHA1, digest)
 	if err != nil {
 		return
 	}

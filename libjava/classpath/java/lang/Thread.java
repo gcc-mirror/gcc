@@ -143,13 +143,13 @@ public class Thread implements Runnable
 
   /** This thread's ID.  */
   private final long threadId;
-  
+
   /** The park blocker.  See LockSupport.  */
   Object parkBlocker;
 
   /** The next thread number to use. */
   private static int numAnonymousThreadsCreated;
-  
+
   /** Used to generate the next thread ID to use.  */
   private static long totalThreadsCreated;
 
@@ -354,10 +354,10 @@ public class Thread implements Runnable
     Thread current = currentThread();
     if (group == null)
       {
-	if (sm != null)
-	  group = sm.getThreadGroup();
-	if (group == null)
-	  group = current.group;
+        if (sm != null)
+          group = sm.getThreadGroup();
+        if (group == null)
+          group = current.group;
       }
     if (sm != null)
       sm.checkAccess(group);
@@ -368,7 +368,7 @@ public class Thread implements Runnable
     this.runnable = target;
     this.stacksize = size;
     this.locals = new ThreadLocalMap();
-    
+
     synchronized (Thread.class)
       {
         this.threadId = ++totalThreadsCreated;
@@ -422,7 +422,7 @@ public class Thread implements Runnable
       this.threadId = ++totalThreadsCreated;
     }
   }
-  
+
   /**
    * Generate a name for an anonymous thread.
    */
@@ -510,7 +510,7 @@ public class Thread implements Runnable
   {
     throw new NoSuchMethodError();
   }
-  
+
   /**
    * Print a stack trace of the current thread to stderr using the same
    * format as Throwable's printStackTrace() method.
@@ -540,7 +540,7 @@ public class Thread implements Runnable
   {
     return currentThread().group.enumerate(array);
   }
-  
+
   /**
    * Get this Thread's name.
    *
@@ -731,7 +731,7 @@ public class Thread implements Runnable
     if (t != null)
       t.resume();
   }
-  
+
   /**
    * The method of Thread that will be run if there is no Runnable object
    * associated with the Thread. Thread's implementation does nothing at all.
@@ -788,7 +788,7 @@ public class Thread implements Runnable
     if (loader != null && sm != null)
       {
         // Get the calling classloader
-	ClassLoader cl = VMStackWalker.getCallingClassLoader();
+        ClassLoader cl = VMStackWalker.getCallingClassLoader();
         if (cl != null && !cl.isAncestorOf(loader))
           sm.checkPermission(new RuntimePermission("getClassLoader"));
       }
@@ -921,7 +921,7 @@ public class Thread implements Runnable
 
     VMThread.create(this, stacksize);
   }
-  
+
   /**
    * Cause this Thread to stop abnormally because of the throw of a ThreadDeath
    * error. If you stop a Thread that has not yet started, it will stop
@@ -992,9 +992,9 @@ public class Thread implements Runnable
       }
     VMThread vt = vmThread;
     if (vt != null)
-	vt.stop(t);
+        vt.stop(t);
     else
-	stillborn = t;
+        stillborn = t;
   }
 
   /**
@@ -1055,7 +1055,7 @@ public class Thread implements Runnable
   public String toString()
   {
     return ("Thread[" + name + "," + priority + ","
-	    + (group == null ? "" : group.getName()) + "]");
+            + (group == null ? "" : group.getName()) + "]");
   }
 
   /**
@@ -1076,7 +1076,7 @@ public class Thread implements Runnable
     return currentThread().locals;
   }
 
-  /** 
+  /**
    * Assigns the given <code>UncaughtExceptionHandler</code> to this
    * thread.  This will then be called if the thread terminates due
    * to an uncaught exception, pre-empting that of the
@@ -1084,17 +1084,17 @@ public class Thread implements Runnable
    *
    * @param h the handler to use for this thread.
    * @throws SecurityException if the current thread can't modify this thread.
-   * @since 1.5 
+   * @since 1.5
    */
   public void setUncaughtExceptionHandler(UncaughtExceptionHandler h)
   {
     SecurityManager sm = SecurityManager.current; // Be thread-safe.
     if (sm != null)
-      sm.checkAccess(this);    
+      sm.checkAccess(this);
     exceptionHandler = h;
   }
 
-  /** 
+  /**
    * <p>
    * Returns the handler used when this thread terminates due to an
    * uncaught exception.  The handler used is determined by the following:
@@ -1107,17 +1107,17 @@ public class Thread implements Runnable
    *     (which can only happen when the thread was terminated since
    *      then it won't have an associated thread group anymore).</li>
    * </ul>
-   * 
+   *
    * @return the appropriate <code>UncaughtExceptionHandler</code> or
    *         <code>null</code> if one can't be obtained.
-   * @since 1.5 
+   * @since 1.5
    */
   public UncaughtExceptionHandler getUncaughtExceptionHandler()
   {
     return exceptionHandler != null ? exceptionHandler : group;
   }
 
-  /** 
+  /**
    * <p>
    * Sets the default uncaught exception handler used when one isn't
    * provided by the thread or its associated <code>ThreadGroup</code>.
@@ -1137,36 +1137,36 @@ public class Thread implements Runnable
    * @throws SecurityException if a security manager is present and
    *                           disallows the runtime permission
    *                           "setDefaultUncaughtExceptionHandler".
-   * @since 1.5 
+   * @since 1.5
    */
-  public static void 
+  public static void
     setDefaultUncaughtExceptionHandler(UncaughtExceptionHandler h)
   {
     SecurityManager sm = SecurityManager.current; // Be thread-safe.
     if (sm != null)
-      sm.checkPermission(new RuntimePermission("setDefaultUncaughtExceptionHandler"));    
+      sm.checkPermission(new RuntimePermission("setDefaultUncaughtExceptionHandler"));
     defaultHandler = h;
   }
 
-  /** 
+  /**
    * Returns the handler used by default when a thread terminates
    * unexpectedly due to an exception, or <code>null</code> if one doesn't
    * exist.
    *
    * @return the default uncaught exception handler.
-   * @since 1.5 
+   * @since 1.5
    */
   public static UncaughtExceptionHandler getDefaultUncaughtExceptionHandler()
   {
     return defaultHandler;
   }
-  
-  /** 
+
+  /**
    * Returns the unique identifier for this thread.  This ID is generated
    * on thread creation, and may be re-used on its death.
    *
    * @return a positive long number representing the thread's ID.
-   * @since 1.5 
+   * @since 1.5
    */
   public long getId()
   {
@@ -1231,7 +1231,7 @@ public class Thread implements Runnable
     void uncaughtException(Thread thr, Throwable exc);
   }
 
-  /** 
+  /**
    * <p>
    * Represents the current state of a thread, according to the VM rather
    * than the operating system.  It can be one of the following:
@@ -1249,7 +1249,7 @@ public class Thread implements Runnable
    * <li>TERMINATED -- The thread has exited.</li>
    * </ul>
    *
-   * @since 1.5 
+   * @since 1.5
    */
   public enum State
   {
@@ -1296,7 +1296,7 @@ public class Thread implements Runnable
    * by the thread, with the most recent method forming the
    * first element in the array.  The array will be empty
    * if the virtual machine can not obtain information on the
-   * thread. 
+   * thread.
    * </p>
    * <p>
    * To execute this method, the current security manager
@@ -1304,7 +1304,7 @@ public class Thread implements Runnable
    * <code>"getStackTrace"</code> and
    * <code>"modifyThreadGroup"</code> {@link RuntimePermission}s.
    * </p>
-   * 
+   *
    * @return a map of threads to arrays of {@link StackTraceElement}s.
    * @throws SecurityException if a security manager exists, and
    *                           prevents either or both the runtime
@@ -1322,14 +1322,14 @@ public class Thread implements Runnable
     int filled = group.enumerate(threadList);
     while (filled == arraySize)
       {
-	arraySize *= 2;
-	threadList = new Thread[arraySize];
-	filled = group.enumerate(threadList);
+        arraySize *= 2;
+        threadList = new Thread[arraySize];
+        filled = group.enumerate(threadList);
       }
     Map traces = new HashMap();
     for (int a = 0; a < filled; ++a)
       traces.put(threadList[a],
-		 threadList[a].getStackTrace());
+                 threadList[a].getStackTrace());
     return traces;
   }
 

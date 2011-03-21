@@ -49,7 +49,7 @@ package java.lang.reflect;
  * @author Tom Tromey (tromey@redhat.com)
  * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
  * @since 1.5
- */ 
+ */
 public interface Type
 {
 }

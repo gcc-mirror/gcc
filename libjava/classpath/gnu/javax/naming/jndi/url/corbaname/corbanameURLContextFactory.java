@@ -43,8 +43,8 @@ import javax.naming.spi.ObjectFactory;
 
 /**
  * The GIOP URL context factory.
- * 
- * @author Audrius Meskauskas (audriusa@Bioinformatics.org) 
+ *
+ * @author Audrius Meskauskas (audriusa@Bioinformatics.org)
  */
 public class corbanameURLContextFactory extends GiopNamingServiceFactory
     implements ObjectFactory

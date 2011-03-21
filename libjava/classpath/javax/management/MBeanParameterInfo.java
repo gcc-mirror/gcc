@@ -63,7 +63,7 @@ public class MBeanParameterInfo
 
   /**
    * Constructs a new {@link MBeanParameterInfo} using the specified
-   * name, description and type.  
+   * name, description and type.
    *
    * @param name the name of the attribute.
    * @param type the type of the attribute, in the form of its class name.
@@ -89,13 +89,13 @@ public class MBeanParameterInfo
   {
     try
       {
-	return super.clone();
+        return super.clone();
       }
     catch (CloneNotSupportedException e)
       {
-	/* This shouldn't happen; we implement Cloneable */
-	throw new IllegalStateException("clone() called on " +
-					"non-cloneable object.");
+        /* This shouldn't happen; we implement Cloneable */
+        throw new IllegalStateException("clone() called on " +
+                                        "non-cloneable object.");
       }
   }
 
@@ -109,7 +109,7 @@ public class MBeanParameterInfo
    *
    * @param obj the object to compare.
    * @return true if the object is a {@link MBeanParameterInfo}
-   *         instance, 
+   *         instance,
    *         <code>name.equals(object.getName())</code>,
    *         <code>description.equals(object.getDescription())</code>,
    *         and <code>type.equals(object.getType())</code>.
@@ -165,10 +165,10 @@ public class MBeanParameterInfo
   {
     if (string == null)
       {
-	super.toString();
-	string = string.substring(0, string.length() - 1) 
-	  + ",type=" + type
-	  + "]";
+        super.toString();
+        string = string.substring(0, string.length() - 1)
+          + ",type=" + type
+          + "]";
       }
     return string;
   }

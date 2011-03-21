@@ -1,6 +1,6 @@
 # Handlers for additional dg-xxx keywords in tests.
 
-# Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010
+# Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
 # Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -100,6 +100,15 @@ proc dg-require-time { args } {
 
 proc dg-require-cstdint { args } {
     if { ![ check_v3_target_cstdint ] } {
+	upvar dg-do-what dg-do-what
+	set dg-do-what [list [lindex ${dg-do-what} 0] "N" "P"]
+	return
+    }
+    return
+}
+
+proc dg-require-cmath { args } {
+    if { ![ check_v3_target_cmath ] } {
 	upvar dg-do-what dg-do-what
 	set dg-do-what [list [lindex ${dg-do-what} 0] "N" "P"]
 	return

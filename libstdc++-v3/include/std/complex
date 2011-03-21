@@ -46,7 +46,9 @@
 #include <cmath>
 #include <sstream>
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /**
    * @defgroup complex_numbers Complex Numbers
@@ -1494,9 +1496,12 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
   // @} group complex_numbers
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
 
-_GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
+namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // See ext/type_traits.h for the primary template.
   template<typename _Tp, typename _Up>
@@ -1520,11 +1525,14 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       typedef std::complex<typename __promote_2<_Tp, _Up>::__type> __type;
     };
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // Forward declarations.
   template<typename _Tp> std::complex<_Tp> acos(const std::complex<_Tp>&);
@@ -1890,7 +1898,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     conj(_Tp __x)
     { return __x; }
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
 
 #endif  // __GXX_EXPERIMENTAL_CXX0X__
 

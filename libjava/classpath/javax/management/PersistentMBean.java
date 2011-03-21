@@ -74,7 +74,7 @@ public interface PersistentMBean
    */
   void load()
     throws MBeanException, RuntimeOperationsException,
-	   InstanceNotFoundException;
+           InstanceNotFoundException;
 
   /**
    * <p>
@@ -121,6 +121,6 @@ public interface PersistentMBean
    */
   void store()
     throws MBeanException, RuntimeOperationsException,
-	   InstanceNotFoundException;
+           InstanceNotFoundException;
 
 }

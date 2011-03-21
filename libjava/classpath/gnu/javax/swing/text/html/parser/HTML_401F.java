@@ -2499,7 +2499,7 @@ public class HTML_401F
         attr(VALUE, null, null, 0, IMPLIED)
       }
     );
-      
+
       // Headers in the paragraph are not allowed.
       defElement(P, 0, false, true, new ContentModel( 0,
        new noTagModel(new String[] { P, H1, H2, H3, H4, H5, H6 }), null),
@@ -3775,7 +3775,7 @@ public class HTML_401F
     li.type = ul.type = ol.type = '|';
     return li;
   }
-  
+
   /**
    * Get elements that are allowed in the document body, at the zero level.
    */

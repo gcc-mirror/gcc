@@ -684,7 +684,7 @@ public class LinkedList<T> extends AbstractSequentialList<T>
    * Returns an Array whose component type is the runtime component type of
    * the passed-in Array.  The returned Array is populated with all of the
    * elements in this LinkedList.  If the passed-in Array is not large enough
-   * to store all of the elements in this List, a new Array will be created 
+   * to store all of the elements in this List, a new Array will be created
    * and returned; if the passed-in Array is <i>larger</i> than the size
    * of this List, then size() index will be set to null.
    *
@@ -1081,8 +1081,8 @@ public class LinkedList<T> extends AbstractSequentialList<T>
         if (next == null)
           throw new NoSuchElementException();
         --position;
-	lastReturned = next;
-	next = lastReturned.previous;
+        lastReturned = next;
+        next = lastReturned.previous;
         return lastReturned.data;
       }
 
@@ -1101,9 +1101,9 @@ public class LinkedList<T> extends AbstractSequentialList<T>
         checkMod();
         if (lastReturned == null)
           throw new IllegalStateException();
-	removeEntry(lastReturned);
-	lastReturned = null;
-	++knownMod;
+        removeEntry(lastReturned);
+        lastReturned = null;
+        ++knownMod;
       }
     };
   }
@@ -1217,7 +1217,7 @@ public class LinkedList<T> extends AbstractSequentialList<T>
   {
     addFirst(value);
   }
-  
+
   /**
    * Removes the first occurrence of the specified element
    * from the list, when traversing the list from head to
@@ -1247,12 +1247,12 @@ public class LinkedList<T> extends AbstractSequentialList<T>
     Entry<T> e = last;
     while (e != null)
       {
-	if (equals(o, e.data))
-	  {
-	    removeEntry(e);
-	    return true;
-	  }
-	e = e.previous;
+        if (equals(o, e.data))
+          {
+            removeEntry(e);
+            return true;
+          }
+        e = e.previous;
       }
     return false;
   }

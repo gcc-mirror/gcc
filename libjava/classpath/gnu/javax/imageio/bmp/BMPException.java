@@ -42,6 +42,6 @@ import javax.imageio.IIOException;
 public class BMPException extends IIOException {
 
     public BMPException(String message){
-	super(message);
+        super(message);
     }
 }

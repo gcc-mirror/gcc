@@ -1,4 +1,4 @@
-/* TranslateFunction.java -- 
+/* TranslateFunction.java --
    Copyright (C) 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -110,8 +110,8 @@ final class TranslateFunction
         if (!replaced)
           {
             buf.append(c);
-          } 
-      } 
+          }
+      }
     return buf.toString();
   }
 
@@ -126,10 +126,10 @@ final class TranslateFunction
     return (arg1.references(var) || arg2.references(var) ||
             arg3.references(var));
   }
-  
+
   public String toString()
   {
     return "translate(" + arg1 + "," + arg2 + "," + arg3 + ")";
   }
-  
+
 }

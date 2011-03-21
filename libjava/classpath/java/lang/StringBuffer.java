@@ -691,7 +691,7 @@ public final class StringBuffer
    * @since 1.5
    */
   public synchronized StringBuffer insert(int offset, CharSequence sequence,
-					  int start, int end)
+                                          int start, int end)
   {
     super.insert(offset, sequence, start, end);
     return this;

@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -41,7 +41,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 
 /**
- * This filter stream is used to compress a stream into a "GZIP" stream. 
+ * This filter stream is used to compress a stream into a "GZIP" stream.
  * The "GZIP" format is described in RFC 1952.
  *
  * @author John Leuner
@@ -64,8 +64,8 @@ public class GZIPOutputStream extends DeflaterOutputStream
   /**
    * Creates a GZIPOutputStream with the default buffer size
    *
-   * @param out The stream to read data (to be compressed) from 
-   * 
+   * @param out The stream to read data (to be compressed) from
+   *
    */
   public GZIPOutputStream(OutputStream out) throws IOException
   {
@@ -75,8 +75,8 @@ public class GZIPOutputStream extends DeflaterOutputStream
   /**
    * Creates a GZIPOutputStream with the specified buffer size
    *
-   * @param out The stream to read compressed data from 
-   * @param size Size of the buffer to use 
+   * @param out The stream to read compressed data from
+   * @param size Size of the buffer to use
    */
   public GZIPOutputStream(OutputStream out, int size) throws IOException
   {
@@ -85,25 +85,25 @@ public class GZIPOutputStream extends DeflaterOutputStream
     int mod_time = (int) (System.currentTimeMillis() / 1000L);
     byte[] gzipHeader =
       {
-	/* The two magic bytes */
-	(byte) GZIPInputStream.GZIP_MAGIC,
-	(byte) (GZIPInputStream.GZIP_MAGIC >> 8),
-	  
-	/* The compression type */
-	(byte) Deflater.DEFLATED,
-	
-        /* The flags (not set) */
-	0,
-	
-	/* The modification time */
-	(byte) mod_time, (byte) (mod_time >> 8), 
-	(byte) (mod_time >> 16), (byte) (mod_time >> 24), 
+        /* The two magic bytes */
+        (byte) GZIPInputStream.GZIP_MAGIC,
+        (byte) (GZIPInputStream.GZIP_MAGIC >> 8),
 
-	/* The extra flags */
-	0,
-    
-	/* The OS type (unknown) */
-	(byte) 255
+        /* The compression type */
+        (byte) Deflater.DEFLATED,
+
+        /* The flags (not set) */
+        0,
+
+        /* The modification time */
+        (byte) mod_time, (byte) (mod_time >> 8),
+        (byte) (mod_time >> 16), (byte) (mod_time >> 24),
+
+        /* The extra flags */
+        0,
+
+        /* The OS type (unknown) */
+        (byte) 255
       };
 
     out.write(gzipHeader);
@@ -134,18 +134,18 @@ public class GZIPOutputStream extends DeflaterOutputStream
     int totalin = def.getTotalIn();
     int crcval = (int) (crc.getValue() & 0xffffffff);
 
-    //    System.err.println("CRC val is " + Integer.toHexString( crcval ) 		       + " and length " + Integer.toHexString(totalin));
-    
-    byte[] gzipFooter = 
-      {
-	(byte) crcval, (byte) (crcval >> 8),
-	(byte) (crcval >> 16), (byte) (crcval >> 24),
+    //    System.err.println("CRC val is " + Integer.toHexString( crcval )                     + " and length " + Integer.toHexString(totalin));
 
-	(byte) totalin, (byte) (totalin >> 8),
-	(byte) (totalin >> 16), (byte) (totalin >> 24)
+    byte[] gzipFooter =
+      {
+        (byte) crcval, (byte) (crcval >> 8),
+        (byte) (crcval >> 16), (byte) (crcval >> 24),
+
+        (byte) totalin, (byte) (totalin >> 8),
+        (byte) (totalin >> 16), (byte) (totalin >> 24)
       };
 
     out.write(gzipFooter);
-  //    System.err.println("wrote GZIP trailer (" + gzipFooter.length + " bytes )");    
+  //    System.err.println("wrote GZIP trailer (" + gzipFooter.length + " bytes )");
   }
 }

@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -49,7 +49,7 @@ import java.util.Map;
  *
  * @author Aaron M. Renn (arenn@urbanophile.com)
  */
-public interface CallableStatement extends PreparedStatement 
+public interface CallableStatement extends PreparedStatement
 {
   /**
    * This method registers the specified parameter as an output parameter
@@ -58,7 +58,7 @@ public interface CallableStatement extends PreparedStatement
    * @param index The index of the parameter to register as output.
    * @param sqlType The SQL type value from <code>Types</code>.
    * @exception SQLException If an error occurs.
-   */   
+   */
   void registerOutParameter(int index, int sqlType)
     throws SQLException;
 
@@ -70,7 +70,7 @@ public interface CallableStatement extends PreparedStatement
    * @param sqlType The SQL type value from <code>Types</code>.
    * @param scale The scale of the value that will be returned.
    * @exception SQLException If an error occurs.
-   */   
+   */
   void registerOutParameter(int index, int sqlType, int scale)
     throws SQLException;
 
@@ -271,7 +271,7 @@ public interface CallableStatement extends PreparedStatement
    * @return The parameter value as a <code>Blob</code>.
    * @exception SQLException If an error occurs.
    * @since 1.2
-   */   
+   */
   Blob getBlob(int index) throws SQLException;
 
   /**
@@ -359,7 +359,7 @@ public interface CallableStatement extends PreparedStatement
 
   /**
    * This method registers the specified parameter as an output parameter
-   * of the specified SQL type.  This version of registerOutParameter is used 
+   * of the specified SQL type.  This version of registerOutParameter is used
    * for NUMERIC or DECIMAL types.
    *
    * @param name The name of the parameter to register as output.
@@ -374,7 +374,7 @@ public interface CallableStatement extends PreparedStatement
 
   /**
    * This method registers the specified parameter as an output parameter
-   * of the specified SQL type.  This version of registerOutParameter is used 
+   * of the specified SQL type.  This version of registerOutParameter is used
    * for user-named or REF types. If the type of the output parameter does
    * not have such a type, the typeName argument is ignored.
    *
@@ -384,7 +384,7 @@ public interface CallableStatement extends PreparedStatement
    * @exception SQLException If an error occurs.
    * @since 1.4
    */
-  void registerOutParameter(String name, int sqlType, String typeName) 
+  void registerOutParameter(String name, int sqlType, String typeName)
     throws SQLException;
 
   /**
@@ -401,7 +401,7 @@ public interface CallableStatement extends PreparedStatement
   /**
    * This method sets the value of the specified parameter to the specified
    * <code>java.net.URL</code>
-   * 
+   *
    * @param name The name of the parameter to set.
    * @param value The value the parameter.
    * @since 1.4
@@ -413,7 +413,7 @@ public interface CallableStatement extends PreparedStatement
    * for the specified type.
    *
    * @param name The name of the parameter to set.
-   * @param sqlType The SQL type identifier of the parameter from 
+   * @param sqlType The SQL type identifier of the parameter from
    *                <code>Types</code>
    * @exception SQLException If an error occurs.
    * @since 1.4
@@ -597,7 +597,7 @@ public interface CallableStatement extends PreparedStatement
    *
    * @param name The name of the parameter value to set.
    * @param value The value of the parameter.
-   * @param sqlType The SQL type to use for the parameter, from 
+   * @param sqlType The SQL type to use for the parameter, from
    *                <code>Types</code>
    * @param scale The scale of the value, for numeric values only.
    * @exception SQLException If an error occurs.
@@ -613,7 +613,7 @@ public interface CallableStatement extends PreparedStatement
    *
    * @param name The name of the parameter value to set.
    * @param value The value of the parameter.
-   * @param sqlType The SQL type to use for the parameter, from 
+   * @param sqlType The SQL type to use for the parameter, from
    *                <code>Types</code>
    * @exception SQLException If an error occurs.
    * @see Types

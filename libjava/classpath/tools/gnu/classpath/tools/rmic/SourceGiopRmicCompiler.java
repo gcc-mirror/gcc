@@ -46,7 +46,7 @@ import java.util.TreeSet;
 /**
  * Provides the extended rmic functionality to generate the POA - based classes
  * for GIOP (javax.rmi.CORBA package).
- * 
+ *
  * @author Audrius Meskauskas, Lithuania (audriusa@Bioinformatics.org)
  */
 public class SourceGiopRmicCompiler
@@ -121,7 +121,7 @@ public class SourceGiopRmicCompiler
    * Verbose output
    */
   protected boolean verbose = false;
-  
+
   /**
    * Force mode - do not check the exceptions
    */
@@ -148,10 +148,10 @@ public class SourceGiopRmicCompiler
     methods.clear();
     vars.clear();
   }
-  
+
   /**
    * Set the class path (handle the -classpath key)
-   * 
+   *
    * @param classPath the class path to set.
    */
   public void setClassPath(String classPath)
@@ -196,11 +196,11 @@ public class SourceGiopRmicCompiler
       }
 
     classLoader = new URLClassLoader(u, classLoader);
-  }    
-  
+  }
+
   /**
    * Loads the class with the given name (uses class path, if applicable)
-   * 
+   *
    * @param name the name of the class.
    */
   public Class loadClass(String name)
@@ -224,7 +224,7 @@ public class SourceGiopRmicCompiler
   /**
    * Compile the given class (the instance of Remote), generating the stub and
    * tie for it.
-   * 
+   *
    * @param remote
    *          the class to compile.
    */
@@ -247,7 +247,7 @@ public class SourceGiopRmicCompiler
         packag = s.substring(0, p);
         implName = name = s.substring(p + 1);
       }
-     
+
     name = convertStubName(name);
 
     stubName = name;
@@ -297,12 +297,12 @@ public class SourceGiopRmicCompiler
                     remEx = true;
                     break;
                   }
-	      }
-	    if (! remEx && !force)
-	      throw new CompilationError(m[i].getName() + ", defined in "
-					 + c.getName()
-					 + ", does not throw "
-					 + RemoteException.class.getName());
+              }
+            if (! remEx && !force)
+              throw new CompilationError(m[i].getName() + ", defined in "
+                                         + c.getName()
+                                         + ", does not throw "
+                                         + RemoteException.class.getName());
             AbstractMethodGenerator mm = createMethodGenerator(m[i]);
             methods.add(mm);
           }
@@ -311,9 +311,9 @@ public class SourceGiopRmicCompiler
 
   /**
    * Create the method generator for the given method.
-   * 
+   *
    * @param m the method
-   * 
+   *
    * @return the created method generator
    */
   protected AbstractMethodGenerator createMethodGenerator(Method m)
@@ -324,7 +324,7 @@ public class SourceGiopRmicCompiler
   /**
    * Get the name of the given class. The class is added to imports, if not
    * already present and not from java.lang and not from the current package.
-   * 
+   *
    * @param nameIt
    *          the class to name
    * @return the name of class as it should appear in java language
@@ -369,7 +369,7 @@ public class SourceGiopRmicCompiler
 
   /**
    * Get the RMI-style repository Id for the given class.
-   * 
+   *
    * @param c
    *          the interface, for that the repository Id must be created.
    * @return the repository id
@@ -381,7 +381,7 @@ public class SourceGiopRmicCompiler
 
   /**
    * Get repository Id string array declaration.
-   * 
+   *
    * @param remotes
    *          the collection of interfaces
    * @return the fully formatted string array.
@@ -412,7 +412,7 @@ public class SourceGiopRmicCompiler
 
   /**
    * Generate stub. Can only be called from {@link #compile}.
-   * 
+   *
    * @return the string, containing the text of the generated stub.
    */
   public String generateStub()
@@ -439,7 +439,7 @@ public class SourceGiopRmicCompiler
   /**
    * Get the list of all interfaces, implemented by the class, that are
    * derived from Remote.
-   * 
+   *
    * @return the string - all interfaces.
    */
   public String getAllInterfaces()
@@ -459,7 +459,7 @@ public class SourceGiopRmicCompiler
 
   /**
    * Generate Tie. Can only be called from {@link #compile}.
-   * 
+   *
    * @return the string, containing the text of the generated Tie.
    */
   public String generateTie()
@@ -525,7 +525,7 @@ public class SourceGiopRmicCompiler
 
   /**
    * Import the extra classes, used as the method parameters and return values.
-   * 
+   *
    * @return the additional import block.
    */
   protected String getImportStatements()
@@ -561,7 +561,7 @@ public class SourceGiopRmicCompiler
 
   /**
    * Set the verbose output mode (false by default)
-   * 
+   *
    * @param isVerbose the verbose output mode
    */
   public void setVerbose(boolean isVerbose)
@@ -576,7 +576,7 @@ public class SourceGiopRmicCompiler
   {
     warnings = warn;
   }
-  
+
   /**
    * Set the error ignore mode.
    */
@@ -600,7 +600,7 @@ public class SourceGiopRmicCompiler
   {
     return stubName;
   }
-  
+
   /**
    * Additional processing of the stub name.
    */

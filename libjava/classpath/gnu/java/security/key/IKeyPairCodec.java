@@ -1,4 +1,4 @@
-/* IKeyPairCodec.java -- 
+/* IKeyPairCodec.java --
    Copyright 2001, 2002, 2006 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -69,14 +69,14 @@ public interface IKeyPairCodec
   /**
    * Returns the unique identifier (within this library) of the format used to
    * externalise public and private keys.
-   * 
+   *
    * @return the identifier of the format, the object supports.
    */
   int getFormatID();
 
   /**
    * Encodes an instance of a public key for storage or transmission purposes.
-   * 
+   *
    * @param key the non-null key to encode.
    * @return a byte sequence representing the encoding of the designated key
    *         according to the format supported by this codec.
@@ -87,7 +87,7 @@ public interface IKeyPairCodec
 
   /**
    * Encodes an instance of a private key for storage or transmission purposes.
-   * 
+   *
    * @param key the non-null key to encode.
    * @return a byte sequence representing the encoding of the designated key
    *         according to the format supported by this codec.
@@ -99,7 +99,7 @@ public interface IKeyPairCodec
   /**
    * Decodes an instance of an external public key into its native Java
    * representation.
-   * 
+   *
    * @param input the source of the externalised key to decode.
    * @return a concrete instance of a public key, reconstructed from the
    *         designated input.
@@ -112,7 +112,7 @@ public interface IKeyPairCodec
   /**
    * Decodes an instance of an external private key into its native Java
    * representation.
-   * 
+   *
    * @param input the source of the externalised key to decode.
    * @return a concrete instance of a private key, reconstructed from the
    *         designated input.

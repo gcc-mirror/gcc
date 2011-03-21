@@ -45,10 +45,10 @@ import org.xml.sax.helpers.AttributesImpl;
 /**
  * A {@link MethodVisitor} that generates SAX 2.0 events from the visited
  * method.
- * 
+ *
  * @see org.objectweb.asm.xml.SAXClassAdapter
  * @see org.objectweb.asm.xml.Processor
- * 
+ *
  * @author Eugene Kuleshov
  */
 public final class SAXCodeAdapter extends SAXAdapter implements MethodVisitor {
@@ -56,7 +56,7 @@ public final class SAXCodeAdapter extends SAXAdapter implements MethodVisitor {
 
     /**
      * Constructs a new {@link SAXCodeAdapter SAXCodeAdapter} object.
-     * 
+     *
      * @param h content handler that will be used to send SAX 2.0 events.
      * @param access
      */

@@ -1,6 +1,6 @@
 ; Options for the Solaris 2 port of the compiler
 ;
-; Copyright (C) 2010 Free Software Foundation, Inc.
+; Copyright (C) 2010, 2011 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -18,6 +18,30 @@
 ; along with GCC; see the file COPYING3.  If not see
 ; <http://www.gnu.org/licenses/>.
 
+G
+Driver
+
+YP,
+Driver Joined
+
+Ym,
+Driver Joined
+
+compat-bsd
+Driver
+
 mimpure-text
 Target Report
 Pass -z text to linker
+
+pthread
+Driver
+
+pthreads
+Driver
+
+rdynamic
+Driver
+
+threads
+Driver

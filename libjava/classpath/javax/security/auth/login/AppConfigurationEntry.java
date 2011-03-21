@@ -97,7 +97,7 @@ public class AppConfigurationEntry
 
   public String toString()
   {
-    
+
     return loginModuleName + "\t"
         + String.valueOf(controlFlag) + "\t"
         + String.valueOf(options);

@@ -182,10 +182,10 @@ public class GtkToolkit extends gnu.java.awt.ClasspathToolkit
      */
     initializeGlobalIDs();
 
-    int portableNativeSync;     
-    String portNatSyncProp = 
+    int portableNativeSync;
+    String portNatSyncProp =
       System.getProperty("gnu.classpath.awt.gtk.portable.native.sync");
-      
+
     if (portNatSyncProp == null)
       portableNativeSync = -1;  // unset
     else if (Boolean.valueOf(portNatSyncProp).booleanValue())
@@ -204,12 +204,12 @@ public class GtkToolkit extends gnu.java.awt.ClasspathToolkit
   public native void beep();
 
   private native void getScreenSizeDimensions(int[] xy);
-  
-  public int checkImage (Image image, int width, int height, 
-                         ImageObserver observer) 
+
+  public int checkImage (Image image, int width, int height,
+                         ImageObserver observer)
   {
-    int status = ImageObserver.ALLBITS 
-      | ImageObserver.WIDTH 
+    int status = ImageObserver.ALLBITS
+      | ImageObserver.WIDTH
       | ImageObserver.HEIGHT;
 
     if (image instanceof GtkImage)
@@ -223,17 +223,17 @@ public class GtkToolkit extends gnu.java.awt.ClasspathToolkit
                             -1, -1,
                             image.getWidth (observer),
                             image.getHeight (observer));
-    
+
     return status;
   }
 
-  /** 
+  /**
    * Helper to return either a Image -- the argument -- or a
    * GtkImage with the errorLoading flag set if the argument is null.
    */
   static Image imageOrError(Image b)
   {
-    if (b == null) 
+    if (b == null)
       return GtkImage.getErrorImage();
     else
       return b;
@@ -243,7 +243,7 @@ public class GtkToolkit extends gnu.java.awt.ClasspathToolkit
   {
     if (filename.length() == 0)
       return new GtkImage ();
-    
+
     Image image;
     try
       {
@@ -261,11 +261,11 @@ public class GtkToolkit extends gnu.java.awt.ClasspathToolkit
     return new AsyncImage(url);
   }
 
-  public Image createImage (ImageProducer producer) 
+  public Image createImage (ImageProducer producer)
   {
     if (producer == null)
       return null;
-      
+
     Image image;
     try
       {
@@ -279,7 +279,7 @@ public class GtkToolkit extends gnu.java.awt.ClasspathToolkit
   }
 
   public Image createImage (byte[] imagedata, int imageoffset,
-			    int imagelength)
+                            int imagelength)
   {
     Image image;
     try
@@ -294,13 +294,13 @@ public class GtkToolkit extends gnu.java.awt.ClasspathToolkit
       }
     return imageOrError(image);
   }
-  
+
   /**
    * Creates an ImageProducer from the specified URL. The image is assumed
-   * to be in a recognised format. 
+   * to be in a recognised format.
    *
    * @param url URL to read image data from.
-   */  
+   */
   public ImageProducer createImageProducer(URL url)
   {
     return createImage( url ).getSource();
@@ -308,29 +308,29 @@ public class GtkToolkit extends gnu.java.awt.ClasspathToolkit
 
   /**
    * Returns the native color model (which isn't the same as the default
-   * ARGB color model, but doesn't have to be). 
+   * ARGB color model, but doesn't have to be).
    */
-  public ColorModel getColorModel () 
+  public ColorModel getColorModel ()
   {
     /* Return the GDK-native ABGR format */
-    return new DirectColorModel(32, 
+    return new DirectColorModel(32,
                                 0x000000FF,
                                 0x0000FF00,
                                 0x00FF0000,
                                 0xFF000000);
   }
 
-  public String[] getFontList () 
+  public String[] getFontList ()
   {
-    return (new String[] { "Dialog", 
-                           "DialogInput", 
-                           "Monospaced", 
+    return (new String[] { "Dialog",
+                           "DialogInput",
+                           "Monospaced",
                            "Serif",
                            "SansSerif" });
   }
 
   static class LRUCache<K,V> extends LinkedHashMap<K,V>
-  {    
+  {
     int max_entries;
     public LRUCache(int max)
     {
@@ -347,12 +347,12 @@ public class GtkToolkit extends gnu.java.awt.ClasspathToolkit
     new LRUCache<Map,ClasspathFontPeer>(50);
   private LRUCache<Object,Image> imageCache = new LRUCache<Object,Image>(50);
 
-  public FontMetrics getFontMetrics (Font font) 
+  public FontMetrics getFontMetrics (Font font)
   {
     return ((GdkFontPeer) font.getPeer()).getFontMetrics(font);
   }
 
-  public Image getImage (String filename) 
+  public Image getImage (String filename)
   {
     if (imageCache.containsKey(filename))
       return imageCache.get(filename);
@@ -364,7 +364,7 @@ public class GtkToolkit extends gnu.java.awt.ClasspathToolkit
       }
   }
 
-  public Image getImage (URL url) 
+  public Image getImage (URL url)
   {
     if (imageCache.containsKey(url))
       return imageCache.get(url);
@@ -376,7 +376,7 @@ public class GtkToolkit extends gnu.java.awt.ClasspathToolkit
       }
   }
 
-  public PrintJob getPrintJob (Frame frame, String jobtitle, Properties props) 
+  public PrintJob getPrintJob (Frame frame, String jobtitle, Properties props)
   {
     SecurityManager sm;
     sm = System.getSecurityManager();
@@ -395,7 +395,7 @@ public class GtkToolkit extends gnu.java.awt.ClasspathToolkit
     return new Dimension(dim[0], dim[1]);
   }
 
-  public Clipboard getSystemClipboard() 
+  public Clipboard getSystemClipboard()
   {
     SecurityManager secman = System.getSecurityManager();
     if (secman != null)
@@ -409,7 +409,7 @@ public class GtkToolkit extends gnu.java.awt.ClasspathToolkit
     SecurityManager secman = System.getSecurityManager();
     if (secman != null)
       secman.checkSystemClipboardAccess();
-    
+
     return GtkClipboard.getSelectionInstance();
   }
 
@@ -417,8 +417,8 @@ public class GtkToolkit extends gnu.java.awt.ClasspathToolkit
    * Prepares a GtkImage. For every other kind of Image it just
    * assumes the image is already prepared for rendering.
    */
-  public boolean prepareImage (Image image, int width, int height, 
-                               ImageObserver observer) 
+  public boolean prepareImage (Image image, int width, int height,
+                               ImageObserver observer)
   {
     /* GtkImages are always prepared, as long as they're loaded. */
     if (image instanceof GtkImage)
@@ -446,13 +446,13 @@ public class GtkToolkit extends gnu.java.awt.ClasspathToolkit
     if (c.getBackground () == null)
       c.setBackground (cp.getBackground ());
     //        if (c.getFont () == null)
-    //  	c.setFont (cp.getFont ());
-      
+    //          c.setFont (cp.getFont ());
+
     /* Make the Peer reflect the state of the Component */
     if (! (c instanceof Window))
       {
         cp.setCursor (c.getCursor ());
-	
+
         Rectangle bounds = c.getBounds ();
         cp.setBounds (bounds.x, bounds.y, bounds.width, bounds.height);
         cp.setVisible (c.isVisible ());
@@ -465,13 +465,13 @@ public class GtkToolkit extends gnu.java.awt.ClasspathToolkit
     return new GtkButtonPeer (b);
   }
 
-  protected CanvasPeer createCanvas (Canvas c) 
+  protected CanvasPeer createCanvas (Canvas c)
   {
     checkHeadless();
     return new GtkCanvasPeer (c);
   }
 
-  protected CheckboxPeer createCheckbox (Checkbox cb) 
+  protected CheckboxPeer createCheckbox (Checkbox cb)
   {
     checkHeadless();
     return new GtkCheckboxPeer (cb);
@@ -483,7 +483,7 @@ public class GtkToolkit extends gnu.java.awt.ClasspathToolkit
     return new GtkCheckboxMenuItemPeer (cmi);
   }
 
-  protected ChoicePeer createChoice (Choice c) 
+  protected ChoicePeer createChoice (Choice c)
   {
     checkHeadless();
     return new GtkChoicePeer (c);
@@ -509,7 +509,7 @@ public class GtkToolkit extends gnu.java.awt.ClasspathToolkit
     return new GtkFramePeer (f);
   }
 
-  protected LabelPeer createLabel (Label label) 
+  protected LabelPeer createLabel (Label label)
   {
     checkHeadless();
     return new GtkLabelPeer (label);
@@ -521,55 +521,55 @@ public class GtkToolkit extends gnu.java.awt.ClasspathToolkit
     return new GtkListPeer (list);
   }
 
-  protected MenuPeer createMenu (Menu m) 
+  protected MenuPeer createMenu (Menu m)
   {
     checkHeadless();
     return new GtkMenuPeer (m);
   }
 
-  protected MenuBarPeer createMenuBar (MenuBar mb) 
+  protected MenuBarPeer createMenuBar (MenuBar mb)
   {
     checkHeadless();
     return new GtkMenuBarPeer (mb);
   }
 
-  protected MenuItemPeer createMenuItem (MenuItem mi) 
+  protected MenuItemPeer createMenuItem (MenuItem mi)
   {
     checkHeadless();
     return new GtkMenuItemPeer (mi);
   }
 
-  protected PanelPeer createPanel (Panel p) 
+  protected PanelPeer createPanel (Panel p)
   {
     checkHeadless();
     return new GtkPanelPeer (p);
   }
 
-  protected PopupMenuPeer createPopupMenu (PopupMenu target) 
+  protected PopupMenuPeer createPopupMenu (PopupMenu target)
   {
     checkHeadless();
     return new GtkPopupMenuPeer (target);
   }
 
-  protected ScrollPanePeer createScrollPane (ScrollPane sp) 
+  protected ScrollPanePeer createScrollPane (ScrollPane sp)
   {
     checkHeadless();
     return new GtkScrollPanePeer (sp);
   }
 
-  protected ScrollbarPeer createScrollbar (Scrollbar sb) 
+  protected ScrollbarPeer createScrollbar (Scrollbar sb)
   {
     checkHeadless();
     return new GtkScrollbarPeer (sb);
   }
 
-  protected TextAreaPeer createTextArea (TextArea ta) 
+  protected TextAreaPeer createTextArea (TextArea ta)
   {
     checkHeadless();
     return new GtkTextAreaPeer (ta);
   }
 
-  protected TextFieldPeer createTextField (TextField tf) 
+  protected TextFieldPeer createTextField (TextField tf)
   {
     checkHeadless();
     return new GtkTextFieldPeer (tf);
@@ -589,7 +589,7 @@ public class GtkToolkit extends gnu.java.awt.ClasspathToolkit
     return new GtkEmbeddedWindowPeer (w);
   }
 
-  /** 
+  /**
    * @deprecated part of the older "logical font" system in earlier AWT
    * implementations. Our newer Font class uses getClasspathFontPeer.
    */
@@ -601,7 +601,7 @@ public class GtkToolkit extends gnu.java.awt.ClasspathToolkit
   /**
    * Private method that allows size to be set at initialization time.
    */
-  private FontPeer getFontPeer (String name, int style, int size) 
+  private FontPeer getFontPeer (String name, int style, int size)
   {
     Map<TextAttribute,Object> attrs = new HashMap<TextAttribute,Object>();
     ClasspathFontPeer.copyStyleToAttrs (style, attrs);
@@ -612,7 +612,7 @@ public class GtkToolkit extends gnu.java.awt.ClasspathToolkit
   /**
    * Newer method to produce a peer for a Font object, even though Sun's
    * design claims Font should now be peerless, we do not agree with this
-   * model, hence "ClasspathFontPeer". 
+   * model, hence "ClasspathFontPeer".
    */
 
   public ClasspathFontPeer getClasspathFontPeer (String name,
@@ -634,7 +634,7 @@ public class GtkToolkit extends gnu.java.awt.ClasspathToolkit
       }
   }
 
-  protected EventQueue getSystemEventQueueImpl() 
+  protected EventQueue getSystemEventQueueImpl()
   {
     synchronized (GtkToolkit.class)
       {
@@ -642,7 +642,7 @@ public class GtkToolkit extends gnu.java.awt.ClasspathToolkit
           {
             q = new EventQueue();
           }
-      }    
+      }
     return q;
   }
 
@@ -659,9 +659,9 @@ public class GtkToolkit extends gnu.java.awt.ClasspathToolkit
       throw new InvalidDnDOperationException();
     return new GtkDragSourceContextPeer(e);
   }
-  
+
   public <T extends DragGestureRecognizer> T
-  createDragGestureRecognizer(Class<T> recognizer, DragSource ds, 
+  createDragGestureRecognizer(Class<T> recognizer, DragSource ds,
                               Component comp, int actions,
                               DragGestureListener l)
   {
@@ -690,7 +690,7 @@ public class GtkToolkit extends gnu.java.awt.ClasspathToolkit
     getScreenSizeDimensions(dims);
     return new Rectangle(0, 0, dims[0], dims[1]);
   }
-  
+
   // ClasspathToolkit methods
 
   public GraphicsEnvironment getLocalGraphicsEnvironment()
@@ -711,14 +711,14 @@ public class GtkToolkit extends gnu.java.awt.ClasspathToolkit
   public boolean getLockingKeyState(int keyCode)
   {
     int state = getLockState(keyCode);
-    
+
     if (state != -1)
       return state == 1;
-    
+
     if (AWTUtilities.isValidKey(keyCode))
       throw new UnsupportedOperationException
         ("cannot get locking state of key code " + keyCode);
-    
+
     throw new IllegalArgumentException("invalid key code " + keyCode);
   }
 

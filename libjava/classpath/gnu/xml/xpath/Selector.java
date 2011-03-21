@@ -1,4 +1,4 @@
-/* Selector.java -- 
+/* Selector.java --
    Copyright (C) 2004,2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -115,7 +115,7 @@ public final class Selector
                    getContextPosition(context),
                    getContextSize(context));
   }
-  
+
   boolean matches(Node context, int pos, int len)
   {
     short nodeType = context.getNodeType();
@@ -499,5 +499,5 @@ public final class Selector
       }
     return buf.toString();
   }
-  
+
 }

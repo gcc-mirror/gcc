@@ -1,5 +1,6 @@
 /* params.def - Run-time parameters.
-   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+   2011
    Free Software Foundation, Inc.
    Written by Mark Mitchell <mark@codesourcery.com>.
 
@@ -213,6 +214,13 @@ DEFPARAM(PARAM_MAX_GCSE_MEMORY,
 	 "max-gcse-memory",
 	 "The maximum amount of memory to be allocated by GCSE",
 	 50 * 1024 * 1024, 0, 0)
+
+/* The GCSE optimization of an expression will avoided if the ratio of
+   insertions to deletions is greater than this value.  */
+DEFPARAM(PARAM_MAX_GCSE_INSERTION_RATIO,
+	 "max-gcse-insertion-ratio",
+	 "The maximum ratio of insertions to deletions of expressions in GCSE",
+	 20, 0, 0)
 
 /* This is the threshold ratio when to perform partial redundancy
    elimination after reload. We perform partial redundancy elimination
@@ -475,6 +483,11 @@ DEFPARAM(PARAM_SCEV_MAX_EXPR_SIZE,
 	 "Bound on size of expressions used in the scalar evolutions analyzer",
 	 100, 0, 0)
 
+DEFPARAM(PARAM_SCEV_MAX_EXPR_COMPLEXITY,
+	 "scev-max-expr-complexity",
+	 "Bound on the complexity of the expressions in the scalar evolutions analyzer",
+	 10, 0, 0)
+
 DEFPARAM(PARAM_OMEGA_MAX_VARS,
  	 "omega-max-vars",
 	 "Bound on the number of variables in Omega constraint systems",
@@ -684,6 +697,12 @@ DEFPARAM(PARAM_MAX_SCHED_READY_INSNS,
 	 "max-sched-ready-insns",
 	 "The maximum number of instructions ready to be issued to be considered by the scheduler during the first scheduling pass",
 	 100, 0, 0)
+
+/* This is the maximum number of active local stores RTL DSE will consider.  */
+DEFPARAM (PARAM_MAX_DSE_ACTIVE_LOCAL_STORES,
+	  "max-dse-active-local-stores",
+	  "Maximum number of active local stores in RTL dead store elimination",
+	  5000, 0, 0)
 
 /* Prefetching and cache-optimizations related parameters.  Default values are
    usually set by machine description.  */

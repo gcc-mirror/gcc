@@ -1,4 +1,4 @@
-/* SimpleDoc.java -- 
+/* SimpleDoc.java --
    Copyright (C) 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -49,23 +49,23 @@ import javax.print.attribute.AttributeSetUtilities;
 import javax.print.attribute.DocAttributeSet;
 
 /**
- * Simple implementation of the <code>Doc</code> interface capable of handling 
+ * Simple implementation of the <code>Doc</code> interface capable of handling
  * the predefined document flavors of <code>DocFlavor</code>.
  * <p>
- * This implementation can construct a reader or stream for the service from 
+ * This implementation can construct a reader or stream for the service from
  * the print data and ensures that always the same object is returned on each
- * method call. It does simple checks that the supplied data matches the 
+ * method call. It does simple checks that the supplied data matches the
  * specified flavor of the doc object and supports thread safe access.
- * </p> 
- * 
+ * </p>
+ *
  * @author Wolfgang Baer (WBaer@gmx.de)
  */
 public final class SimpleDoc implements Doc
-{  
+{
   private final Object printData;
   private final DocFlavor flavor;
   private final DocAttributeSet attributes;
-  
+
   private InputStream stream;
   private Reader reader;
 
@@ -74,17 +74,17 @@ public final class SimpleDoc implements Doc
    * @param printData the object with the data to print.
    * @param flavor the document flavor of the print data.
    * @param attributes the attributes of the doc (may be <code>null</code>).
-   * 
+   *
    * @throws IllegalArgumentException if either <code>printData</code> or
    *   <code>flavor</code> are <code>null</code>, or the print data is not
    *   supplied in the document format specified by the given flavor object.
    */
-  public SimpleDoc(Object printData, DocFlavor flavor, 
+  public SimpleDoc(Object printData, DocFlavor flavor,
       DocAttributeSet attributes)
   {
     if (printData == null || flavor == null)
       throw new IllegalArgumentException("printData/flavor may not be null");
-    
+
     if (! (printData.getClass().getName().equals(
            flavor.getRepresentationClassName())
         || flavor.getRepresentationClassName().equals("java.io.Reader")
@@ -93,16 +93,16 @@ public final class SimpleDoc implements Doc
            && printData instanceof InputStream))
       {
         throw new IllegalArgumentException("data is not of declared flavor type");
-      }          
-    
+      }
+
     this.printData = printData;
     this.flavor = flavor;
-    
+
     if (attributes != null)
       this.attributes = AttributeSetUtilities.unmodifiableView(attributes);
     else
       this.attributes = null;
-    
+
     stream = null;
     reader = null;
   }
@@ -110,13 +110,13 @@ public final class SimpleDoc implements Doc
   /**
    * Returns the unmodifiable view of the attributes of this doc object.
    * <p>
-   * The attributes of this doc's attributes set overrides attributes of 
-   * the same category in the print job's attribute set. If an attribute 
+   * The attributes of this doc's attributes set overrides attributes of
+   * the same category in the print job's attribute set. If an attribute
    * is not available in this doc's attributes set or <code>null</code>
    * is returned the attributes of the same category of the print job are
-   * used. 
+   * used.
    * </p>
-   * 
+   *
    * @return The unmodifiable attributes set, or <code>null</code>.
    */
   public DocAttributeSet getAttributes()
@@ -126,7 +126,7 @@ public final class SimpleDoc implements Doc
 
   /**
    * Returns the flavor of this doc objects print data.
-   * 
+   *
    * @return The document flavor.
    */
   public DocFlavor getDocFlavor()
@@ -141,7 +141,7 @@ public final class SimpleDoc implements Doc
    * document flavor ({@link DocFlavor#getRepresentationClassName()})
    * and can be cast to this representation class.
    * </p>
-   * 
+   *
    * @return The print data in the representation class.
    * @throws IOException if representation class is a stream and I/O
    * exception occures.
@@ -162,10 +162,10 @@ public final class SimpleDoc implements Doc
    * <li><code>java.io.Reader</code></li>
    * </ul>
    * otherwise this method returns <code>null</code>.
-   * </p> 
-   * 
+   * </p>
+   *
    * @return The <code>Reader</code> object, or <code>null</code>.
-   * 
+   *
    * @throws IOException if an error occurs.
    */
   public Reader getReaderForText() throws IOException
@@ -182,9 +182,9 @@ public final class SimpleDoc implements Doc
             else if (flavor instanceof DocFlavor.READER)
               reader = (Reader) printData;
           }
-        
+
         return reader;
-      }   
+      }
   }
 
   /**
@@ -197,10 +197,10 @@ public final class SimpleDoc implements Doc
    * <li><code>java.io.InputStream</code></li>
    * </ul>
    * otherwise this method returns <code>null</code>.
-   * </p> 
-   * 
+   * </p>
+   *
    * @return The <code>InputStream</code> object, or <code>null</code>.
-   * 
+   *
    * @throws IOException if an error occurs.
    */
   public InputStream getStreamForBytes() throws IOException
@@ -215,9 +215,9 @@ public final class SimpleDoc implements Doc
             else if (flavor instanceof DocFlavor.INPUT_STREAM)
               stream = (InputStream) printData;
           }
-        
+
         return stream;
-      }    
+      }
   }
 
 }

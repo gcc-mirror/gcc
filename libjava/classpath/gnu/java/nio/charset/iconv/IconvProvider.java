@@ -72,13 +72,13 @@ public final class IconvProvider extends CharsetProvider
     Vector charsets = new Vector();
     for (int i = 0; i < names.size(); i++)
       {
-	try
-	  {
-	    charsets.add(new IconvCharset((IconvMetaData) names.elementAt(i)));
-	  }
-	catch (IllegalArgumentException e)
-	  {
-	  }
+        try
+          {
+            charsets.add(new IconvCharset((IconvMetaData) names.elementAt(i)));
+          }
+        catch (IllegalArgumentException e)
+          {
+          }
       }
     return charsets.iterator();
   }
@@ -87,17 +87,17 @@ public final class IconvProvider extends CharsetProvider
   {
     try
       {
-	IconvMetaData info = IconvMetaData.get(charsetName);
+        IconvMetaData info = IconvMetaData.get(charsetName);
 
-	// Try anyway if the set isn't found.
-	if (info == null)
-	  info = new IconvMetaData(charsetName, 2.0f, 2.0f, 2.0f, 2.0f,
-	                           new String[] {  }, charsetName);
-	return new IconvCharset(info);
+        // Try anyway if the set isn't found.
+        if (info == null)
+          info = new IconvMetaData(charsetName, 2.0f, 2.0f, 2.0f, 2.0f,
+                                   new String[] {  }, charsetName);
+        return new IconvCharset(info);
       }
     catch (IllegalArgumentException e)
       {
-	return null;
+        return null;
       }
   }
 

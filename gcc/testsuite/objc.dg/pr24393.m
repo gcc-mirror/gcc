@@ -1,4 +1,4 @@
-/* { dg-compile } */
+/* { dg-do compile } */
 #include <objc/objc.h>
 
 @interface Foo

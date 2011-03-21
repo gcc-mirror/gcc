@@ -48,7 +48,7 @@ import java.util.Arrays;
 
 /**
  * The GeneralName structure from X.509.
- * 
+ *
  * <pre>
   GeneralName ::= CHOICE {
     otherName                       [0]     OtherName,
@@ -87,12 +87,12 @@ public class GeneralName
     registeredId (8);
 
     private int tag;
-    
+
     private Kind(int tag)
     {
       this.tag = tag;
     }
-    
+
     public static Kind forTag(final int tag)
     {
       switch (tag)
@@ -107,10 +107,10 @@ public class GeneralName
         case 7: return iPAddress;
         case 8: return registeredId;
       }
-      
+
       throw new IllegalArgumentException("invalid tag: " + tag);
     }
-    
+
     public int tag()
     {
       return tag;
@@ -120,17 +120,17 @@ public class GeneralName
   private final Kind kind;
   private final byte[] name;
   private final byte[] encoded;
-  
+
   public GeneralName(byte[] encoded) throws IOException
   {
     DERReader reader = new DERReader(encoded);
     DERValue value = reader.read();
-    
+
     if (value.getTagClass() != DER.CONTEXT)
       throw new IOException("malformed GeneralName");
-    
+
     this.encoded = value.getEncoded();
-    
+
     kind = Kind.forTag(value.getTag());
     switch (kind)
     {
@@ -176,29 +176,29 @@ public class GeneralName
         name = value.getEncoded();
         name[0] = DER.OBJECT_IDENTIFIER;
         break;
-        
+
       default:
         name = null; // Not reached.
     }
   }
-  
+
   public GeneralName(Kind kind, byte[] name)
   {
     this.kind = kind;
     this.name = (byte[]) name.clone();
     this.encoded = null;
   }
-  
+
   public Kind kind()
   {
     return kind;
   }
-  
+
   public byte[] name()
   {
     return (byte[]) name.clone();
   }
-  
+
   public byte[] encoded()
   {
     try
@@ -210,7 +210,7 @@ public class GeneralName
         return null;
       }
   }
-  
+
   public boolean equals(Object o)
   {
     try
@@ -223,7 +223,7 @@ public class GeneralName
         return false;
       }
   }
-  
+
   public String toString()
   {
     return (super.toString() + " [ kind=" + kind + "; name=" +

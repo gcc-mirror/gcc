@@ -53,11 +53,11 @@ import javax.swing.event.TreeModelEvent;
 /**
  * The fixed height tree layout. This class requires the NodeDimensions to be
  * set and ignores the row height property.
- * 
+ *
  * @specnote the methods, of this class, returning TreePath, actually returns
  * the derived class GnuPath that provides additional information for optimized
  * painting. See the GnuPath code for details.
- * 
+ *
  * @author Audrius Meskauskas
  */
 public class VariableHeightLayoutCache
@@ -80,27 +80,27 @@ public class VariableHeightLayoutCache
       isExpanded = expanded.contains(aNode);
       bounds = new Rectangle(0, -1, 0, 0);
     }
-    
+
     /**
      * The row, where the tree node is displayed.
      */
-    final int row;    
-    
+    final int row;
+
     /**
      * The nesting depth
      */
     final int depth;
-    
+
     /**
      * The parent of the given node, null for the root node.
      */
     final Object parent;
-    
+
     /**
      * This node.
      */
     final Object node;
-    
+
     /**
      * True for the expanded nodes. The value is calculated in constructor.
      * Using this field saves one hashtable access operation.
@@ -111,13 +111,13 @@ public class VariableHeightLayoutCache
      * The cached bounds of the tree row.
      */
     Rectangle bounds;
-    
+
     /**
      * The path from the tree top to the given node (computed under first
      * demand)
      */
     private TreePath path;
-    
+
     /**
      * Get the path for this node. The derived class is returned, making check
      * for the last child of some parent easier.
@@ -158,41 +158,41 @@ public class VariableHeightLayoutCache
         }
       return path;
     }
-    
+
     /**
      * Get the rectangle bounds (compute, if required).
      */
     Rectangle getBounds()
     {
-      return bounds;      
+      return bounds;
     }
   }
-  
+
   /**
    * The set of all expanded tree nodes.
    */
   Set<Object> expanded = new HashSet<Object>();
-  
+
   /**
    * Maps nodes to the row numbers.
    */
   Hashtable<Object,NodeRecord> nodes = new Hashtable<Object,NodeRecord>();
-  
+
   /**
    * Maps row numbers to nodes.
    */
   ArrayList<Object> row2node = new ArrayList<Object>();
-  
+
   /**
    * If true, the row map must be recomputed before using.
    */
   boolean dirty;
-  
+
   /**
    * The cumulative height of all rows.
    */
   int totalHeight;
-  
+
   /**
    * The maximal width.
    */
@@ -206,21 +206,21 @@ public class VariableHeightLayoutCache
   public VariableHeightLayoutCache()
   {
     // Nothing to do here.
-  } 
+  }
 
   /**
    * Get the total number of rows in the tree. Every displayed node occupies the
    * single row. The root node row is included if the root node is set as
    * visible (false by default).
-   * 
+   *
    * @return int the number of the displayed rows.
    */
   public int getRowCount()
   {
     if (dirty) update();
     return row2node.size();
-  } 
-  
+  }
+
   /**
    * Refresh the row map.
    */
@@ -228,7 +228,7 @@ public class VariableHeightLayoutCache
   {
     nodes.clear();
     row2node.clear();
-    
+
     totalHeight = maximalWidth = 0;
 
     if (treeModel == null)
@@ -238,7 +238,7 @@ public class VariableHeightLayoutCache
     countRows(root, null, 0, 0);
     dirty = false;
   }
-  
+
   /**
    * Recursively counts all rows in the tree.
    */
@@ -287,7 +287,7 @@ public class VariableHeightLayoutCache
 
   /**
    * Discard the bound information for the given path.
-   * 
+   *
    * @param path the path, for that the bound information must be recomputed.
    */
   public void invalidatePathBounds(TreePath path)
@@ -295,7 +295,7 @@ public class VariableHeightLayoutCache
     NodeRecord r = nodes.get(path.getLastPathComponent());
     if (r != null)
       r.bounds = null;
-  } 
+  }
 
   /**
    * Mark all cached information as invalid.
@@ -303,11 +303,11 @@ public class VariableHeightLayoutCache
   public void invalidateSizes()
   {
     dirty = true;
-  } 
+  }
 
   /**
    * Set the expanded state of the given path. The expansion states must be
-   * always updated when expanding and colapsing the tree nodes. Otherwise 
+   * always updated when expanding and colapsing the tree nodes. Otherwise
    * other methods will not work correctly after the nodes are collapsed or
    * expanded.
    *
@@ -327,20 +327,20 @@ public class VariableHeightLayoutCache
 
     dirty = true;
   }
-  
+
   /**
    * Get the expanded state for the given tree path.
-   * 
+   *
    * @return true if the given path is expanded, false otherwise.
    */
   public boolean isExpanded(TreePath path)
   {
     return expanded.contains(path.getLastPathComponent());
-  } 
+  }
 
   /**
    * Get bounds for the given tree path.
-   * 
+   *
    * @param path the tree path
    * @param rect the rectangle that will be reused to return the result.
    * @return Rectangle the bounds of the last line, defined by the given path.
@@ -366,11 +366,11 @@ public class VariableHeightLayoutCache
           result.setBounds(r.bounds);
       }
     return result;
-  } 
+  }
 
   /**
    * Get the path, the last element of that is displayed in the given row.
-   * 
+   *
    * @param row the row
    * @return TreePath the path
    */
@@ -389,11 +389,11 @@ public class VariableHeightLayoutCache
           path = record.getPath();
       }
     return path;
-  } 
+  }
 
   /**
    * Get the row, displaying the last node of the given path.
-   * 
+   *
    * @param path the path
    * @return int the row number or -1 if the end of the path is not visible.
    */
@@ -410,11 +410,11 @@ public class VariableHeightLayoutCache
       return - 1;
     else
       return r.row;
-  } 
+  }
 
   /**
    * Get the path, closest to the given point.
-   * 
+   *
    * @param x the point x coordinate
    * @param y the point y coordinate
    * @return the tree path, closest to the the given point
@@ -428,7 +428,7 @@ public class VariableHeightLayoutCache
     NodeRecord best = null;
     NodeRecord r;
     Enumeration<NodeRecord> en = nodes.elements();
-    
+
     int dist = Integer.MAX_VALUE;
 
     while (en.hasMoreElements() && dist > 0)
@@ -454,8 +454,8 @@ public class VariableHeightLayoutCache
       return null;
     else
       return best.getPath();
-  } 
-  
+  }
+
   /**
    * Get the closest distance from this point till the given rectangle. Only
    * vertical distance is taken into consideration.
@@ -475,22 +475,22 @@ public class VariableHeightLayoutCache
    * is not expanded, 0 is returned. Otherwise, the number of children is
    * obtained from the model as the number of children for the last path
    * component.
-   * 
+   *
    * @param path the tree path
    * @return int the number of the visible childs (for row).
    */
-  public int getVisibleChildCount(TreePath path)  
+  public int getVisibleChildCount(TreePath path)
   {
     if (! isExpanded(path) || treeModel == null)
-      return 0; 
+      return 0;
     else
       return treeModel.getChildCount(path.getLastPathComponent());
-  } 
+  }
 
   /**
    * Get the enumeration over all visible paths that start from the given
    * parent path.
-   * 
+   *
    * @param parentPath the parent path
    * @return the enumeration over pathes
    */
@@ -514,9 +514,9 @@ public class VariableHeightLayoutCache
 
   /**
    * Return the expansion state of the given tree path. The expansion state
-   * must be previously set with the 
+   * must be previously set with the
    * {@link #setExpandedState(TreePath, boolean)}
-   * 
+   *
    * @param path the path being checked
    * @return true if the last node of the path is expanded, false otherwise.
    */
@@ -527,44 +527,44 @@ public class VariableHeightLayoutCache
 
   /**
    * The listener method, called when the tree nodes are changed.
-   * 
+   *
    * @param event the change event
    */
   public void treeNodesChanged(TreeModelEvent event)
   {
     dirty = true;
-  } 
+  }
 
   /**
    * The listener method, called when the tree nodes are inserted.
-   * 
+   *
    * @param event the change event
    */
   public void treeNodesInserted(TreeModelEvent event)
   {
     dirty = true;
-  } 
+  }
 
   /**
    * The listener method, called when the tree nodes are removed.
-   * 
+   *
    * @param event the change event
    */
   public void treeNodesRemoved(TreeModelEvent event)
   {
     dirty = true;
-  } 
+  }
 
   /**
-   * Called when the tree structure has been changed. 
-   * 
+   * Called when the tree structure has been changed.
+   *
    * @param event the change event
    */
   public void treeStructureChanged(TreeModelEvent event)
   {
     dirty = true;
-  } 
-  
+  }
+
   /**
    * Set the tree model that will provide the data.
    */
@@ -578,11 +578,11 @@ public class VariableHeightLayoutCache
         expanded.add(treeModel.getRoot());
       }
   }
-  
+
   /**
    * Inform the instance if the tree root node is visible. If this method
    * is not called, it is assumed that the tree root node is not visible.
-   * 
+   *
    * @param visible true if the tree root node is visible, false
    * otherwise.
    */
@@ -616,7 +616,7 @@ public class VariableHeightLayoutCache
   {
     if (dirty)
       update();
-    
+
     maximalWidth = 0;
     Enumeration<NodeRecord> en = nodes.elements();
     while (en.hasMoreElements())

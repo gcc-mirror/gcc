@@ -26,7 +26,9 @@
 #include <cstdlib>
 #include <cstring>
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // Definitions for static const data members of ctype_base.
   const ctype_base::mask ctype_base::space;
@@ -133,4 +135,5 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
 #endif
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace

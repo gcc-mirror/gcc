@@ -1,4 +1,4 @@
-/* XMLEventAllocatorImpl.java -- 
+/* XMLEventAllocatorImpl.java --
    Copyright (C) 2005,2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -188,7 +188,7 @@ public class XMLEventAllocatorImpl
   {
     return new XMLEventAllocatorImpl();
   }
-  
+
   protected boolean isWhitespace(String text)
   {
     int len = text.length();
@@ -200,6 +200,5 @@ public class XMLEventAllocatorImpl
       }
     return true;
   }
-  
-}
 
+}

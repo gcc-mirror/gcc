@@ -14,6 +14,7 @@
  * ====================================================
  */
 
+#include <errno.h>
 #include "quadmath-imp.h"
 
 __float128
@@ -21,6 +22,6 @@ ldexpq (__float128 value, int exp)
 {
   if(!finiteq(value)||value==0.0Q) return value;
   value = scalbnq(value,exp);
-  /* if(!__finitel(value)||value==0.0Q) __set_errno (ERANGE); */
+  if(!finiteq(value)||value==0.0Q) errno = ERANGE;
   return value;
 }

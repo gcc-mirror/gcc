@@ -42,7 +42,7 @@ import org.omg.CORBA.portable.Streamable;
 import org.omg.CORBA.portable.InputStream;
 import org.omg.CORBA.portable.OutputStream;
 
- 
+
 /**
  * A holder for the sequence of {@link TaggedComponent}
  * ({@link org.omg.IOP.MultipleComponentProfileHelper}).
@@ -63,8 +63,8 @@ public final class MultipleComponentProfileHolder
    */
   public MultipleComponentProfileHolder()
   {
-  }  
-  
+  }
+
   /**
    * Create the initialised instance.
    * @param initialValue the array that will be assigned to
@@ -78,7 +78,7 @@ public final class MultipleComponentProfileHolder
   /**
    * Read the {@link #value} array from the CDR stream.
    *
-   * @param input the org.omg.CORBA.portable stream to read. 
+   * @param input the org.omg.CORBA.portable stream to read.
    */
   public void _read(InputStream input)
   {
@@ -87,14 +87,14 @@ public final class MultipleComponentProfileHolder
 
   /**
    * Write the stored value into the CDR stream.
-   * 
-   * @param output the org.omg.CORBA.portable stream to write. 
+   *
+   * @param output the org.omg.CORBA.portable stream to write.
    */
   public void _write(OutputStream output)
   {
     MultipleComponentProfileHelper.write(output, value);
   }
-  
+
   /**
    * Get the typecode of the TaggedComponent.
    */

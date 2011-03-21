@@ -7,8 +7,10 @@ digraph v3conf {
     "configure" -> "configure.ac";
     "configure" -> "crossconfig.m4";
     "configure" -> "linkage.m4";
+    "[*/]Makefile" -> "[*/]Makefile.in";
     "[*/]Makefile.in" -> "Makefile.am";
     "[*/]Makefile.in" -> "configure.ac";
+    "config.h" -> "config.h.in"
     "config.h.in" -> "acconfig.h";
     "config.h.in" -> "configure.ac";
 }

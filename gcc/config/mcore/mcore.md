@@ -54,6 +54,7 @@
 			 "nothing")
 
 (include "predicates.md")
+(include "constraints.md")
 
 ;; -------------------------------------------------------------------------
 ;; Test and bit test

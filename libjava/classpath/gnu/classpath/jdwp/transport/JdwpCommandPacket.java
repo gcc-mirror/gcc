@@ -74,7 +74,7 @@ public class JdwpCommandPacket extends JdwpPacket
     // Don't assign an id. This constructor is called by
     // JdwpPacket.fromBytes, and that will assign a packet id.
   }
-  
+
   /**
    * Constructs a new <code>JdwpCommandPacket</code>
    * with the given command set and command
@@ -109,7 +109,7 @@ public class JdwpCommandPacket extends JdwpPacket
    * Sets the command set
    */
   public void setCommandSet (byte cs)
-  { 
+  {
     _commandSet = cs;
   }
 

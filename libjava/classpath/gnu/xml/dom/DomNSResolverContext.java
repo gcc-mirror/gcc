@@ -1,4 +1,4 @@
-/* DomNSResolverContext.java -- 
+/* DomNSResolverContext.java --
    Copyright (C) 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -50,41 +50,41 @@ class DomNSResolverContext
   implements NamespaceContext, Iterator
 {
 
-	final XPathNSResolver resolver;
+        final XPathNSResolver resolver;
 
-	DomNSResolverContext(XPathNSResolver resolver)
-	{
-		this.resolver = resolver;
-	}
+        DomNSResolverContext(XPathNSResolver resolver)
+        {
+                this.resolver = resolver;
+        }
 
-	public String getNamespaceURI(String prefix)
-	{
-		return resolver.lookupNamespaceURI(prefix);
-	}
+        public String getNamespaceURI(String prefix)
+        {
+                return resolver.lookupNamespaceURI(prefix);
+        }
 
-	public String getPrefix(String namespaceURI)
-	{
-		return null;
-	}
+        public String getPrefix(String namespaceURI)
+        {
+                return null;
+        }
 
-	public Iterator getPrefixes(String namespaceURI)
-	{
-		return this;
-	}
+        public Iterator getPrefixes(String namespaceURI)
+        {
+                return this;
+        }
 
-	public boolean hasNext()
-	{
-		return false;
-	}
+        public boolean hasNext()
+        {
+                return false;
+        }
 
-	public Object next()
-	{
-		return null;
-	}
+        public Object next()
+        {
+                return null;
+        }
 
-	public void remove()
-	{
-		throw new UnsupportedOperationException();
-	}
+        public void remove()
+        {
+                throw new UnsupportedOperationException();
+        }
 
 }

@@ -125,7 +125,7 @@ public class JEditorPane extends JTextComponent
      */
     public String getAccessibleDescription()
     {
-      String descr = super.getAccessibleDescription(); 
+      String descr = super.getAccessibleDescription();
       if (descr == null)
         return getContentType();
       else
@@ -183,9 +183,9 @@ public class JEditorPane extends JTextComponent
     {
       super();
     }
-    
+
     /**
-     * The accessible representation of a HTML link. 
+     * The accessible representation of a HTML link.
      *
      * @author Roman Kennke (kennke@aicas.com)
      */
@@ -230,7 +230,7 @@ public class JEditorPane extends JTextComponent
        * general, link have 1 AccessibleAction associated with them. There are
        * special cases where links can have multiple actions associated, like
        * in image maps.
-       * 
+       *
        * @return the number of AccessibleActions in this link object
        */
       public int getAccessibleActionCount()
@@ -352,7 +352,7 @@ public class JEditorPane extends JTextComponent
       {
         return element.getEndOffset();
       }
-      
+
     }
 
     /**
@@ -503,7 +503,7 @@ public class JEditorPane extends JTextComponent
 
     /**
      * Creates a new EditorKitMapping object.
-     * 
+     *
      * @param cn the classname
      * @param cl the classloader
      */
@@ -655,11 +655,11 @@ public class JEditorPane extends JTextComponent
   }
 
   private static final long serialVersionUID = 3140472492599046285L;
-  
+
   private EditorKit editorKit;
-  
+
   boolean focus_root;
-  
+
   /**
    * Maps content-types to editor kit instances.
    */
@@ -684,7 +684,7 @@ public class JEditorPane extends JTextComponent
   }
 
   // A mapping between content types and used EditorKits
-  HashMap editorMap;  
+  HashMap editorMap;
 
   /**
    * The currently loading stream, if any.
@@ -715,9 +715,9 @@ public class JEditorPane extends JTextComponent
     setEditorKit(createEditorKitForContentType("text/html"));
     setPage(url);
   }
-  
+
   /**
-   * Called by the constructors to set up the default bindings for content 
+   * Called by the constructors to set up the default bindings for content
    * types and EditorKits.
    */
   void init()
@@ -731,10 +731,10 @@ public class JEditorPane extends JTextComponent
   }
 
   /**
-   * Creates and returns an EditorKit that is appropriate for the given 
+   * Creates and returns an EditorKit that is appropriate for the given
    * content type.  This is created using the default recognized types
    * plus any EditorKit types that have been registered.
-   * 
+   *
    * @see #registerEditorKitForContentType(String, String)
    * @see #registerEditorKitForContentType(String, String, ClassLoader)
    * @param type the content type
@@ -756,7 +756,7 @@ public class JEditorPane extends JTextComponent
                 e = (EditorKit) loader.loadClass(className).newInstance();
               }
             catch (Exception e2)
-              {    
+              {
                 // The reference implementation returns null when class is not
                 // loadable or instantiatable.
               }
@@ -817,7 +817,7 @@ public class JEditorPane extends JTextComponent
   /**
    * Returns the class name of the EditorKit associated with the given
    * content type.
-   * 
+   *
    * @since 1.3
    * @param type the content type
    * @return the class name of the EditorKit associated with this content type
@@ -831,13 +831,13 @@ public class JEditorPane extends JTextComponent
 
   /**
    * Returns the EditorKit to use for the given content type.  If an
-   * EditorKit has been explicitly set via 
+   * EditorKit has been explicitly set via
    * <code>setEditorKitForContentType</code>
    * then it will be returned.  Otherwise an attempt will be made to create
    * an EditorKit from the default recognzied content types or any
    * EditorKits that have been registered.  If none can be created, a
    * PlainEditorKit is created.
-   * 
+   *
    * @see #registerEditorKitForContentType(String, String)
    * @see #registerEditorKitForContentType(String, String, ClassLoader)
    * @param type the content type
@@ -975,7 +975,7 @@ public class JEditorPane extends JTextComponent
   }
 
   /**
-   * This method initializes from a stream. 
+   * This method initializes from a stream.
    */
   public void read(InputStream in, Object desc) throws IOException
   {
@@ -1004,9 +1004,9 @@ public class JEditorPane extends JTextComponent
   /**
    * Establishes a binding between type and classname.  This enables
    * us to create an EditorKit later for the given content type.
-   * 
+   *
    * @param type the content type
-   * @param classname the name of the class that is associated with this 
+   * @param classname the name of the class that is associated with this
    * content type
    */
   public static void registerEditorKitForContentType(String type,
@@ -1055,11 +1055,11 @@ public class JEditorPane extends JTextComponent
         type = type.substring(0, paramIndex).trim();
       }
     if (editorKit != null
-	&& editorKit.getContentType().equals(type))
+        && editorKit.getContentType().equals(type))
       return;
-    	      
+
     EditorKit kit = getEditorKitForContentType(type);
-	    	
+
     if (kit != null)
       setEditorKit(kit);
   }
@@ -1068,19 +1068,19 @@ public class JEditorPane extends JTextComponent
   {
     if (editorKit == newValue)
       return;
-    	
+
     if (editorKit != null)
       editorKit.deinstall(this);
-	    	    
+
     EditorKit oldValue = editorKit;
     editorKit = newValue;
-			    	
+
     if (editorKit != null)
       {
-	editorKit.install(this);
-	setDocument(editorKit.createDefaultDocument());
+        editorKit.install(this);
+        setDocument(editorKit.createDefaultDocument());
       }
-				    	    
+
     firePropertyChange("editorKit", oldValue, newValue);
     invalidate();
     repaint();
@@ -1099,7 +1099,7 @@ public class JEditorPane extends JTextComponent
   }
 
   /**
-   * Sets the current URL being displayed.  
+   * Sets the current URL being displayed.
    */
   public void setPage(String url) throws IOException
   {
@@ -1107,7 +1107,7 @@ public class JEditorPane extends JTextComponent
   }
 
   /**
-   * Sets the current URL being displayed.  
+   * Sets the current URL being displayed.
    */
   public void setPage(URL page) throws IOException
   {
@@ -1162,7 +1162,7 @@ public class JEditorPane extends JTextComponent
    * the content of the current document and uses the EditorKit to read in the
    * new text.  This allows the EditorKit to handle the String rather than just
    * inserting in plain text.
-   * 
+   *
    * @param t the text to display in this JEditorPane
    */
   public void setText(String t)
@@ -1174,7 +1174,7 @@ public class JEditorPane extends JTextComponent
       doc.remove(0, doc.getLength());
       if (t == null || t.equals(""))
         return;
-      
+
       // Let the EditorKit read the text into the Document.
       getEditorKit().read(new StringReader(t), doc, 0);
     }

@@ -12,7 +12,7 @@
 @c man begin COPYRIGHT
 Copyright @copyright{} 1987, 1989, 1991, 1992, 1993, 1994, 1995, 1996,
 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007,
-2008, 2009, 2010
+2008, 2009, 2010, 2011
 Free Software Foundation, Inc.
 
 Permission is granted to copy, distribute and/or modify this document
@@ -2429,7 +2429,7 @@ check specifically for features you need, using a tool such as
 @subsection C++ Named Operators
 @cindex named operators
 @cindex C++ named operators
-@cindex iso646.h
+@cindex @file{iso646.h}
 
 In C++, there are eleven keywords which are simply alternate spellings
 of operators normally written with punctuation.  These keywords are
@@ -4200,9 +4200,10 @@ program will run on.  Assertions are usually predefined, but you can
 define them with preprocessing directives or command-line options.
 
 Assertions were intended to provide a more systematic way to describe
-the compiler's target system.  However, in practice they are just as
-unpredictable as the system-specific predefined macros.  In addition, they
-are not part of any standard, and only a few compilers support them.
+the compiler's target system and we added them for compatibility with
+existing compilers.  In practice they are just as unpredictable as the
+system-specific predefined macros.  In addition, they are not part of
+any standard, and only a few compilers support them.
 Therefore, the use of assertions is @strong{less} portable than the use
 of system-specific predefined macros.  We recommend you do not use them at
 all.

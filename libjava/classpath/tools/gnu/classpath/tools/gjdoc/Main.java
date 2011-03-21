@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -16,7 +16,7 @@ General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with GNU Classpath; see the file COPYING.  If not, write to the
 Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-02111-1307 USA. 
+02111-1307 USA.
 
 Linking this library statically or dynamically with other modules is
 making a combined work based on this library.  Thus, the terms and
@@ -89,7 +89,7 @@ public final class Main
   /*
    *  FIXME: This should come from a ResourceBundle
    */
-  private static final String STRING_TRY_GJDOC_HELP = 
+  private static final String STRING_TRY_GJDOC_HELP =
      "Try `gjdoc --help' for more information.";
 
   /**
@@ -239,12 +239,12 @@ public final class Main
    * true when --version has been specified on the command line.
    */
   private boolean option_showVersion;
-  
+
   /**
    * true when -bootclasspath has been specified on the command line.
    */
   private boolean option_bootclasspath_specified;
-  
+
   /**
    * true when -all has been specified on the command line.
    */
@@ -254,13 +254,13 @@ public final class Main
    * true when -reflection has been specified on the command line.
    */
   private boolean option_reflection;
-  
+
   // TODO: add the rest of the options as instance variables
-  
+
   /**
    * Parse all source files/packages and subsequentially start the Doclet given
    * on the command line.
-   * 
+   *
    * @param allOptions List of all command line tokens
    */
   private boolean startDoclet(List allOptions)
@@ -500,7 +500,7 @@ public final class Main
             if (sourceFile.exists() && !sourceFile.isDirectory()) {
               rootDoc.addSpecifiedSourceFile(sourceFile);
               foundSourceFile = true;
-            } 
+            }
           }
         }
 
@@ -672,7 +672,7 @@ public final class Main
   }
 
   private void addFoundPackages(String subpackage, Set foundPackages)
-  {        
+  {
     if (foundPackages.isEmpty()) {
       reporter.printWarning("No classes found under subpackage " + subpackage);
     }
@@ -815,8 +815,8 @@ public final class Main
    *  package specified by its name and its directory. Add the names
    *  of all valid packages to the result list.
    */
-  private void findPackages(String subpackage, 
-                            File packageDir, 
+  private void findPackages(String subpackage,
+                            File packageDir,
                             Set result)
   {
     File[] files = packageDir.listFiles();
@@ -882,7 +882,7 @@ public final class Main
   /**
    * Main entry point. This is the method called when gjdoc is invoked from the
    * command line.
-   * 
+   *
    * @param args
    *          command line arguments
    */
@@ -923,7 +923,7 @@ public final class Main
   /**
    * Parses command line arguments and subsequentially handles control to the
    * startDoclet() method
-   *   
+   *
    * @param args The command line parameters.
    */
    public static int execute(String[] args)
@@ -961,7 +961,7 @@ public final class Main
   {
     return execute(args);
   }
- 
+
   /**
    * @param programName Name of the program (for error messages).
    * @param defaultDocletClassName Fully qualified class name.
@@ -974,7 +974,7 @@ public final class Main
   {
     // not yet implemented
   }*/
- 
+
   /**
    * @param programName Name of the program (for error messages).
    * @param defaultDocletClassName Fully qualified class name.
@@ -987,7 +987,7 @@ public final class Main
   {
     // not yet implemented
   }*/
- 
+
   /**
    * @param programName Name of the program (for error messages).
    * @param errWriter PrintWriter to receive error messages.
@@ -1010,7 +1010,7 @@ public final class Main
   /**
    * Parses command line arguments and subsequentially handles control to the
    * startDoclet() method
-   * 
+   *
    * @param args
    *          Command line arguments, as passed to the main() method
    * @return {@code -1} in case of a fatal error (invalid arguments),
@@ -1160,7 +1160,7 @@ public final class Main
         option_sourcepath.add(new File("."));
 
       //--- We have all information we need to start the doclet at this time
-    
+
       if (null != option_encoding) {
         rootDoc.setSourceEncoding(option_encoding);
       }
@@ -1189,7 +1189,7 @@ public final class Main
     BufferedReader reader = new BufferedReader(new InputStreamReader(in));
     String line;
     while ((line = reader.readLine()) != null) {
-      
+
       String className = line.trim();
       if (className.length() > 0) {
         ClassDocImpl classDoc =
@@ -1217,7 +1217,7 @@ public final class Main
 
     /**
      * Initializes this instance.
-     * 
+     *
      * @param argCount
      *          number of arguments
      */
@@ -1229,7 +1229,7 @@ public final class Main
     /**
      * Overridden by derived classes with behavior to parse the arguments
      * specified with this option.
-     * 
+     *
      * @param args
      *          command line arguments
      */
@@ -1337,7 +1337,7 @@ public final class Main
           void process(String[] args)
           {
             option_source = args[0];
-            if (!"1.2".equals(option_source) 
+            if (!"1.2".equals(option_source)
                 && !"1.3".equals(option_source)
                 && !"1.4".equals(option_source)) {
 
@@ -1370,7 +1370,7 @@ public final class Main
       {
         void process(String[] args)
         {
-          StringTokenizer st = new StringTokenizer(args[0], ":"); 
+          StringTokenizer st = new StringTokenizer(args[0], ":");
           while (st.hasMoreTokens()) {
             String packageName = st.nextToken();
 
@@ -1390,7 +1390,7 @@ public final class Main
       {
         void process(String[] args)
         {
-          StringTokenizer st = new StringTokenizer(args[0], ":"); 
+          StringTokenizer st = new StringTokenizer(args[0], ":");
           while (st.hasMoreTokens()) {
             String packageName = st.nextToken();
 
@@ -1487,7 +1487,7 @@ public final class Main
           try {
             getRootDoc().setRawCommentText(RootDocImpl.readHtmlBody(new File(args[0])));
           }
-          catch (IOException e) { 
+          catch (IOException e) {
             throw new RuntimeException("Cannot read file specified in option -overview: " + e.getMessage());
           }
         }
@@ -1533,7 +1533,7 @@ public final class Main
 
   /**
    * Determine how many arguments the given option requires.
-   * 
+   *
    * @param option
    *          The name of the option without leading dash.
    */
@@ -1550,7 +1550,7 @@ public final class Main
   /**
    * Process all given options. Assumes that the options have been validated
    * before.
-   * 
+   *
    * @param optionArr
    *          Each element is a series of Strings where [0] is the name of the
    *          option and [1..n] are the arguments to the option.
@@ -1699,7 +1699,7 @@ public final class Main
 
   /**
    * The root of the gjdoc tool.
-   * 
+   *
    * @return all the options of the gjdoc application.
    */
   public static RootDocImpl getRootDoc()
@@ -1709,7 +1709,7 @@ public final class Main
 
   /**
    * Get the gjdoc singleton.
-   * 
+   *
    * @return the gjdoc instance.
    */
   public static Main getInstance()
@@ -1719,7 +1719,7 @@ public final class Main
 
   /**
    * Is this access level covered?
-   * 
+   *
    * @param accessLevel
    *          the access level we want to know if it is covered.
    * @return true if the access level is covered.
@@ -1731,7 +1731,7 @@ public final class Main
 
   /**
    * Is the doclet running?
-   * 
+   *
    * @return true if it's running
    */
   public boolean isDocletRunning()
@@ -1743,7 +1743,7 @@ public final class Main
    * Check the charset. Check that all the characters of the string 'toCheck'
    * and query if they exist in the 'charSet'. The order does not matter. The
    * number of times a character is in the variable does not matter.
-   * 
+   *
    * @param toCheck
    *          the charset to check.
    * @param charSet
@@ -1809,25 +1809,25 @@ public final class Main
           && !defaultLocale.equals(locale)) {
         this.collator = Collator.getInstance(defaultLocale);
         if (null != this.collator) {
-          reporter.printWarning("No collator found for locale " 
-                                + locale.getDisplayName() 
-                                + "; using collator for default locale " 
+          reporter.printWarning("No collator found for locale "
+                                + locale.getDisplayName()
+                                + "; using collator for default locale "
                                 + defaultLocale.getDisplayName()
                                 + ".");
         }
         else {
           this.collator = Collator.getInstance();
-          reporter.printWarning("No collator found for specified locale " 
-                                + locale.getDisplayName() 
-                                + " or default locale " 
+          reporter.printWarning("No collator found for specified locale "
+                                + locale.getDisplayName()
+                                + " or default locale "
                                 + defaultLocale.getDisplayName()
                                 + ": using default collator.");
         }
       }
       if (null == this.collator) {
         this.collator = Collator.getInstance();
-        reporter.printWarning("No collator found for locale " 
-                              + locale.getDisplayName() 
+        reporter.printWarning("No collator found for locale "
+                              + locale.getDisplayName()
                               + ": using default collator.");
       }
     }

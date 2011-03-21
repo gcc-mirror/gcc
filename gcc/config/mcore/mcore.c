@@ -61,19 +61,6 @@ const enum reg_class regno_reg_class[FIRST_PSEUDO_REGISTER] =
   GENERAL_REGS, C_REGS,       NO_REGS,      NO_REGS,
 };
 
-/* Provide reg_class from a letter such as appears in the machine
-   description.  */
-const enum reg_class reg_class_from_letter[] =
-{
-  /* a */ LRW_REGS, /* b */ ONLYR1_REGS, /* c */ C_REGS,  /* d */ NO_REGS,
-  /* e */ NO_REGS, /* f */ NO_REGS, /* g */ NO_REGS, /* h */ NO_REGS,
-  /* i */ NO_REGS, /* j */ NO_REGS, /* k */ NO_REGS, /* l */ NO_REGS,
-  /* m */ NO_REGS, /* n */ NO_REGS, /* o */ NO_REGS, /* p */ NO_REGS,
-  /* q */ NO_REGS, /* r */ GENERAL_REGS, /* s */ NO_REGS, /* t */ NO_REGS,
-  /* u */ NO_REGS, /* v */ NO_REGS, /* w */ NO_REGS, /* x */ ALL_REGS,
-  /* y */ NO_REGS, /* z */ NO_REGS
-};
-
 struct mcore_frame
 {
   int arg_size;			/* Stdarg spills (bytes).  */

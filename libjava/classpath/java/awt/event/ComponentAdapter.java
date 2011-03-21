@@ -94,4 +94,4 @@ public abstract class ComponentAdapter implements ComponentListener
   public void componentHidden(ComponentEvent event)
   {
   }
-} // class ComponentAdapter 
+} // class ComponentAdapter

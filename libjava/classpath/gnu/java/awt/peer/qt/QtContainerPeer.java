@@ -60,13 +60,13 @@ public class QtContainerPeer extends QtComponentPeer implements ContainerPeer
   // ************ Public methods *********************
   public void beginLayout()
   {
-    // FIXME 
+    // FIXME
   }
 
   public void beginValidate()
   {
   }
-   
+
   public void endLayout()
   {
     QtUpdate();
@@ -75,7 +75,7 @@ public class QtContainerPeer extends QtComponentPeer implements ContainerPeer
   public void endValidate()
   {
   }
- 
+
   public Insets getInsets()
   {
     return new Insets(0, 0, 0, 0);
@@ -101,15 +101,12 @@ public class QtContainerPeer extends QtComponentPeer implements ContainerPeer
   public void cancelPendingPaint(int x, int y, int width, int height)
   {
     // TODO Auto-generated method stub
-    
+
   }
 
   public void restack()
   {
     // TODO Auto-generated method stub
-    
+
   }
 }
-
-
-

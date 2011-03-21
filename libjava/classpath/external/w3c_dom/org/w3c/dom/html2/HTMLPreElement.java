@@ -18,12 +18,12 @@ package org.w3c.dom.html2;
  */
 public interface HTMLPreElement extends HTMLElement {
     /**
-     * Fixed width for content. See the width attribute definition in HTML 
+     * Fixed width for content. See the width attribute definition in HTML
      * 4.01. This attribute is deprecated in HTML 4.01.
      */
     public int getWidth();
     /**
-     * Fixed width for content. See the width attribute definition in HTML 
+     * Fixed width for content. See the width attribute definition in HTML
      * 4.01. This attribute is deprecated in HTML 4.01.
      */
     public void setWidth(int width);

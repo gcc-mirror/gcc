@@ -101,7 +101,7 @@ public class MBeanNotificationInfo
    * @throws IllegalArgumentException for some reason...
    */
   public MBeanNotificationInfo(String[] types, String name,
-			       String description)
+                               String description)
   {
     super(name, description);
     this.types = types;
@@ -121,13 +121,13 @@ public class MBeanNotificationInfo
   {
     try
       {
-	return super.clone();
+        return super.clone();
       }
     catch (CloneNotSupportedException e)
       {
-	/* This shouldn't happen; we implement Cloneable */
-	throw new IllegalStateException("clone() called on " +
-					"non-cloneable object.");
+        /* This shouldn't happen; we implement Cloneable */
+        throw new IllegalStateException("clone() called on " +
+                                        "non-cloneable object.");
       }
   }
 
@@ -142,7 +142,7 @@ public class MBeanNotificationInfo
    *
    * @param obj the object to compare.
    * @return true if the object is a {@link MBeanNotificationInfo}
-   *         instance, 
+   *         instance,
    *         <code>name.equals(object.getName())</code>,
    *         <code>description.equals(object.getDescription())</code>
    *         and the corresponding elements of the type arrays are
@@ -152,18 +152,18 @@ public class MBeanNotificationInfo
   {
     if (obj instanceof MBeanNotificationInfo)
       {
-	if (!(super.equals(obj)))
-	  return false;
-	MBeanNotificationInfo o = (MBeanNotificationInfo) obj;
-	String[] oTypes = o.getNotifTypes();
-	for (int a = 0; a < types.length; ++a)
-	  {
-	    if (a == oTypes.length)
-	      return true;
-	    if (!(types[a].equals(oTypes[a])))
-	      return false;
-	  }
-	return true;
+        if (!(super.equals(obj)))
+          return false;
+        MBeanNotificationInfo o = (MBeanNotificationInfo) obj;
+        String[] oTypes = o.getNotifTypes();
+        for (int a = 0; a < types.length; ++a)
+          {
+            if (a == oTypes.length)
+              return true;
+            if (!(types[a].equals(oTypes[a])))
+              return false;
+          }
+        return true;
       }
     else
       return false;
@@ -200,7 +200,7 @@ public class MBeanNotificationInfo
    * Returns a textual representation of this instance.  This
    * is constructed using the class name
    * (<code>javax.management.MBeanNotificationInfo</code>),
-   * the name and description of the notification and the 
+   * the name and description of the notification and the
    * contents of the array of types.
    * </p>
    * <p>
@@ -216,10 +216,10 @@ public class MBeanNotificationInfo
   {
     if (string == null)
       {
-	super.toString();
-	string = string.substring(0, string.length() - 1) 
-	  + ",types=" + Arrays.toString(types)
-	  + "]";
+        super.toString();
+        string = string.substring(0, string.length() - 1)
+          + ",types=" + Arrays.toString(types)
+          + "]";
       }
     return string;
   }

@@ -70,7 +70,7 @@ public class REFilterInputStream extends FilterInputStream
    *
    * @param stream The InputStream to be filtered.
    * @param expr The regular expression to search for.
-   * @param replace The text pattern to replace matches with.  
+   * @param replace The text pattern to replace matches with.
    */
   public REFilterInputStream (InputStream stream, RE expr, String replace)
   {
@@ -89,7 +89,7 @@ public class REFilterInputStream extends FilterInputStream
     // If we have buffered replace data, use it.
     if ((buffer != null) && (bufpos < buffer.length ()))
       {
-	return (int) buffer.charAt (bufpos++);
+        return (int) buffer.charAt (bufpos++);
       }
 
     // check if input is at a valid position
@@ -99,18 +99,18 @@ public class REFilterInputStream extends FilterInputStream
     REMatch mymatch = new REMatch (expr.getNumSubs (), offset, 0);
     if (expr.match (stream, mymatch))
       {
-	mymatch.end[0] = mymatch.index;
-	mymatch.finish (stream);
-	stream.move (mymatch.toString ().length ());
-	offset += mymatch.toString ().length ();
-	buffer = mymatch.substituteInto (replace);
-	bufpos = 1;
+        mymatch.end[0] = mymatch.index;
+        mymatch.finish (stream);
+        stream.move (mymatch.toString ().length ());
+        offset += mymatch.toString ().length ();
+        buffer = mymatch.substituteInto (replace);
+        bufpos = 1;
 
-	// This is prone to infinite loops if replace string turns out empty.
-	if (buffer.length () > 0)
-	  {
-	    return buffer.charAt (0);
-	  }
+        // This is prone to infinite loops if replace string turns out empty.
+        if (buffer.length () > 0)
+          {
+            return buffer.charAt (0);
+          }
       }
     char ch = stream.charAt (0);
     if (ch == CharIndexed.OUT_OF_BOUNDS)
@@ -120,9 +120,9 @@ public class REFilterInputStream extends FilterInputStream
     return ch;
   }
 
-  /** 
+  /**
    * Returns false.  REFilterInputStream does not support mark() and
-   * reset() methods. 
+   * reset() methods.
    */
   public boolean markSupported ()
   {
@@ -136,11 +136,11 @@ public class REFilterInputStream extends FilterInputStream
     int ok = 0;
     while (len-- > 0)
       {
-	i = read ();
-	if (i == -1)
-	  return (ok == 0) ? -1 : ok;
-	b[off++] = (byte) i;
-	ok++;
+        i = read ();
+        if (i == -1)
+          return (ok == 0) ? -1 : ok;
+        b[off++] = (byte) i;
+        ok++;
       }
     return ok;
   }

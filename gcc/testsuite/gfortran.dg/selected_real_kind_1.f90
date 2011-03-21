@@ -1,4 +1,4 @@
-! { dg-do "compile" }
+! { dg-do compile }
 !
 ! PR fortran/44347 - arguments of SELECTED_REAL_KIND shall be scalar
 ! Testcase contributed by Vittorio Zecca <zeccav AT gmail DOT com>

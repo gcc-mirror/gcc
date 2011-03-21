@@ -84,7 +84,7 @@ class GlyphHints
     metrics = m;
     // TODO: Copy scalerFlags.
   }
-  
+
   void reload(Zone outline)
   {
     numPoints = 0;

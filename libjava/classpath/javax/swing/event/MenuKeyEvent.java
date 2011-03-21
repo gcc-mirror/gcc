@@ -48,14 +48,14 @@ import javax.swing.MenuSelectionManager;
  * MenuKeyEvent
  * @author Andrew Selkirk
  */
-public class MenuKeyEvent extends KeyEvent 
+public class MenuKeyEvent extends KeyEvent
 {
 
   /**
    * path
    */
   private MenuElement[] path = null;
-	
+
   /**
    * manager
    */
@@ -74,18 +74,18 @@ public class MenuKeyEvent extends KeyEvent
    */
   public MenuKeyEvent(Component source, int id, long when, int modifiers,
       int keyCode, char keyChar, MenuElement[] path,
-      MenuSelectionManager manager) 
+      MenuSelectionManager manager)
   {
     super(source, id, when, modifiers, keyCode, keyChar);
     this.path = path;
     this.manager = manager;
-  } 
+  }
 
   /**
    * getPath
    * @return path
    */
-  public MenuElement[] getPath() 
+  public MenuElement[] getPath()
   {
     return path;
   }
@@ -94,9 +94,9 @@ public class MenuKeyEvent extends KeyEvent
    * getMenuSelectionManager
    * @return MenuSelectionManager
    */
-  public MenuSelectionManager getMenuSelectionManager() 
+  public MenuSelectionManager getMenuSelectionManager()
   {
     return manager;
   }
 
-} 
+}

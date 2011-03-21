@@ -122,7 +122,7 @@ public abstract class CompletionStatusHelper
   {
     String[] members =
       new String[] { "COMPLETED_YES", "COMPLETED_NO", "COMPLETED_MAYBE" };
-    
+
     return
       OrbRestricted.Singleton.create_enum_tc(id(), "CompletionStatus",
                                              members

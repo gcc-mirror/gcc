@@ -1,4 +1,4 @@
-/* GradientPaint.java -- 
+/* GradientPaint.java --
    Copyright (C) 2002, 2005, Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -45,7 +45,7 @@ import java.awt.image.ColorModel;
 import gnu.java.awt.GradientPaintContext;
 
 /**
- * A paint object that can be used to color a region by blending two colors. 
+ * A paint object that can be used to color a region by blending two colors.
  * Instances of this class are immutable.
  */
 public class GradientPaint implements Paint
@@ -60,7 +60,7 @@ public class GradientPaint implements Paint
 
   /**
    * Creates a new acyclic <code>GradientPaint</code>.
-   * 
+   *
    * @param x1  the x-coordinate of the anchor point for color 1.
    * @param y1  the y-coordinate of the anchor point for color 1.
    * @param c1  color 1 (<code>null</code> not permitted).
@@ -76,7 +76,7 @@ public class GradientPaint implements Paint
 
   /**
    * Creates a new acyclic <code>GradientPaint</code>.
-   * 
+   *
    * @param p1  anchor point 1 (<code>null</code> not permitted).
    * @param c1  color 1 (<code>null</code> not permitted).
    * @param p2  anchor point 2 (<code>null</code> not permitted).
@@ -90,7 +90,7 @@ public class GradientPaint implements Paint
 
   /**
    * Creates a new cyclic or acyclic <code>GradientPaint</code>.
-   * 
+   *
    * @param x1  the x-coordinate of the anchor point for color 1.
    * @param y1  the y-coordinate of the anchor point for color 1.
    * @param c1  color 1 (<code>null</code> not permitted).
@@ -116,7 +116,7 @@ public class GradientPaint implements Paint
 
   /**
    * Creates a new cyclic or acyclic <code>GradientPaint</code>.
-   * 
+   *
    * @param p1  anchor point 1 (<code>null</code> not permitted).
    * @param c1  color 1 (<code>null</code> not permitted).
    * @param p2  anchor point 2 (<code>null</code> not permitted).
@@ -135,7 +135,7 @@ public class GradientPaint implements Paint
    * Returns a point with the same coordinates as the anchor point for color 1.
    * Note that if you modify this point, the <code>GradientPaint</code> remains
    * unchanged.
-   * 
+   *
    * @return A point with the same coordinates as the anchor point for color 1.
    */
   public Point2D getPoint1()
@@ -145,7 +145,7 @@ public class GradientPaint implements Paint
 
   /**
    * Returns the first color.
-   * 
+   *
    * @return The color (never <code>null</code>).
    */
   public Color getColor1()
@@ -157,7 +157,7 @@ public class GradientPaint implements Paint
    * Returns a point with the same coordinates as the anchor point for color 2.
    * Note that if you modify this point, the <code>GradientPaint</code> remains
    * unchanged.
-   * 
+   *
    * @return A point with the same coordinates as the anchor point for color 2.
    */
   public Point2D getPoint2()
@@ -167,7 +167,7 @@ public class GradientPaint implements Paint
 
   /**
    * Returns the second color.
-   * 
+   *
    * @return The color (never <code>null</code>).
    */
   public Color getColor2()
@@ -178,7 +178,7 @@ public class GradientPaint implements Paint
   /**
    * Returns <code>true</code> if this <code>GradientPaint</code> instance is
    * cyclic, and <code>false</code> otherwise.
-   * 
+   *
    * @return A boolean.
    */
   public boolean isCyclic()
@@ -188,14 +188,14 @@ public class GradientPaint implements Paint
 
   /**
    * Returns the {@link PaintContext} used to generate the color pattern.
-   * 
-   * @param cm  the color model, used as a hint (ignored in this 
+   *
+   * @param cm  the color model, used as a hint (ignored in this
    *            implementation).
    * @param deviceBounds  the device space bounding box of the painted area.
    * @param userBounds  the user space bounding box of the painted area.
    * @param xform  the transformation from user space to device space.
    * @param hints  any hints for choosing between rendering alternatives.
-   * 
+   *
    * @return The context for performing the paint
    */
   public PaintContext createContext(ColorModel cm, Rectangle deviceBounds,
@@ -205,17 +205,17 @@ public class GradientPaint implements Paint
   {
     Point2D xp1 = xform.transform(getPoint1(), null);
     Point2D xp2 = xform.transform(getPoint2(), null);
-    return new GradientPaintContext((float) xp1.getX(), (float) xp1.getY(), c1, 
+    return new GradientPaintContext((float) xp1.getX(), (float) xp1.getY(), c1,
             (float) xp2.getX(), (float) xp2.getY(), c2, cyclic);
   }
 
   /**
    * Returns the transparency code for this <code>GradientPaint</code> instance.
    * This is derived from the two {@link Color} objects used in creating this
-   * object:  if both colors are opaque, this method returns 
-   * {@link Transparency#OPAQUE}, otherwise it returns 
+   * object:  if both colors are opaque, this method returns
+   * {@link Transparency#OPAQUE}, otherwise it returns
    * {@link Transparency#TRANSLUCENT}.
-   * 
+   *
    * @return {@link Transparency#OPAQUE} or {@link Transparency#TRANSLUCENT}.
    */
   public int getTransparency()
@@ -223,7 +223,7 @@ public class GradientPaint implements Paint
     if (c1.getAlpha() == 255 && c2.getAlpha() == 255)
       return Transparency.OPAQUE;
     else
-      return Transparency.TRANSLUCENT;   
+      return Transparency.TRANSLUCENT;
   }
-  
+
 } // class GradientPaint

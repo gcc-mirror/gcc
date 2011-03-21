@@ -40,7 +40,7 @@ package javax.sound.midi;
 
 /**
  * Objects of this type define the status of a Synthesizer voice.
- * 
+ *
  * @author Anthony Green (green@redhat.com)
  * @since 1.3
  *
@@ -51,27 +51,27 @@ public class VoiceStatus
    * True if this voice is processing a MIDI note.
    */
   public boolean active = false;
-  
+
   /**
    * The channel for this voice when active.
    */
   public int channel = 0;
-  
+
   /**
    * The bank of the voice when active.
    */
   public int bank = 0;
-  
+
    /**
    * The program for this voice when active.
    */
   public int program = 0;
-  
+
   /**
    * The note for this voice when active.
    */
   public int note = 0;
-  
+
   /**
    * The volume for this voice when active.
    */

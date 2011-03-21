@@ -399,8 +399,10 @@ find_tail_calls (basic_block bb, struct tailcall **ret)
     {
       stmt = gsi_stmt (gsi);
 
-      /* Ignore labels.  */
-      if (gimple_code (stmt) == GIMPLE_LABEL || is_gimple_debug (stmt))
+      /* Ignore labels, returns and debug stmts.  */
+      if (gimple_code (stmt) == GIMPLE_LABEL
+	  || gimple_code (stmt) == GIMPLE_RETURN
+	  || is_gimple_debug (stmt))
 	continue;
 
       /* Check for a call.  */
@@ -481,7 +483,7 @@ find_tail_calls (basic_block bb, struct tailcall **ret)
 
   /* Make sure the tail invocation of this function does not refer
      to local variables.  */
-  FOR_EACH_REFERENCED_VAR (var, rvi)
+  FOR_EACH_REFERENCED_VAR (cfun, var, rvi)
     {
       if (TREE_CODE (var) != PARM_DECL
 	  && auto_var_in_fn_p (var, cfun->decl)
@@ -889,7 +891,7 @@ add_virtual_phis (void)
      this, we cannot do much better than to rebuild the ssa form for
      possibly affected virtual ssa names from scratch.  */
 
-  FOR_EACH_REFERENCED_VAR (var, rvi)
+  FOR_EACH_REFERENCED_VAR (cfun, var, rvi)
     {
       if (!is_gimple_reg (var) && gimple_default_def (cfun, var) != NULL_TREE)
 	mark_sym_for_renaming (var);

@@ -54,7 +54,7 @@ import java.rmi.server.UID;
 import java.util.Vector;
 
 public class UnicastRemoteCall
-	implements RemoteCall, ProtocolConstants
+        implements RemoteCall, ProtocolConstants
 {
 
   private UnicastConnection conn;
@@ -89,12 +89,12 @@ public class UnicastRemoteCall
     this.hash = hash;
     this.objid = objid;
   }
-  
+
   UnicastConnection getConnection()
   {
     return conn;
   }
-  
+
   public ObjectOutput getOutputStream() throws IOException
   {
     if (vec == null)
@@ -106,33 +106,33 @@ public class UnicastRemoteCall
   {
     if (vec != null)
       {
-	oout = conn.getObjectOutputStream();
-	
-	for (int i = 0; i < vec.size(); i += 2)
-	  {
-	    boolean primitive = ((Boolean)vec.elementAt(i)).booleanValue();
-	    Object data = vec.elementAt(i+1);
+        oout = conn.getObjectOutputStream();
 
-	    // No type, this is
-	    if (!primitive)
-	      oout.writeObject(data);
-	    else
-	      {
-		if (data instanceof Boolean)
-		  oout.writeBoolean(((Boolean)data).booleanValue());
-		else if (data instanceof Character)
-		  oout.writeChar(((Character)data).charValue());
-		else if (data instanceof Byte)
-		  oout.writeByte(((Byte)data).byteValue());
-		else if (data instanceof Short)
-		  oout.writeShort(((Short)data).shortValue());
-		else if (data instanceof Integer)
-		  oout.writeInt(((Integer)data).intValue());
-		else if (data instanceof Long)
-		  oout.writeLong(((Long)data).longValue());
-	      }
-	  }
-	vec = null;
+        for (int i = 0; i < vec.size(); i += 2)
+          {
+            boolean primitive = ((Boolean)vec.elementAt(i)).booleanValue();
+            Object data = vec.elementAt(i+1);
+
+            // No type, this is
+            if (!primitive)
+              oout.writeObject(data);
+            else
+              {
+                if (data instanceof Boolean)
+                  oout.writeBoolean(((Boolean)data).booleanValue());
+                else if (data instanceof Character)
+                  oout.writeChar(((Character)data).charValue());
+                else if (data instanceof Byte)
+                  oout.writeByte(((Byte)data).byteValue());
+                else if (data instanceof Short)
+                  oout.writeShort(((Short)data).shortValue());
+                else if (data instanceof Integer)
+                  oout.writeInt(((Integer)data).intValue());
+                else if (data instanceof Long)
+                  oout.writeLong(((Long)data).longValue());
+              }
+          }
+        vec = null;
       }
     if(oout != null)
       oout.flush();
@@ -142,14 +142,14 @@ public class UnicastRemoteCall
   *
   * (re)starts ObjectInputStream
   *
-  */ 
+  */
   public ObjectInput startInputStream() throws IOException
   {
-	if (conn != null) {
-		return (oin = conn.startObjectInputStream());
-	} else {
-		return getInputStream(); // dummy Input Stream
-	}
+        if (conn != null) {
+                return (oin = conn.startObjectInputStream());
+        } else {
+                return getInputStream(); // dummy Input Stream
+        }
 
   }
 
@@ -157,15 +157,15 @@ public class UnicastRemoteCall
   {
     if (conn != null)
       {
-	if(oin == null)
-	  return (oin = conn.getObjectInputStream());
-	else
-	  return oin;
+        if(oin == null)
+          return (oin = conn.getObjectInputStream());
+        else
+          return oin;
       }
     else
       {
-	ptr = 0;
-	return (new DummyObjectInputStream());
+        ptr = 0;
+        return (new DummyObjectInputStream());
       }
   }
 
@@ -180,34 +180,34 @@ public class UnicastRemoteCall
     vec = new Vector();
     return new DummyObjectOutputStream();
   }
-  
+
   public void executeCall() throws Exception
   {
     byte returncode;
     ObjectInput oin;
-    
+
     // signal the call when constructing
     try
       {
-	DataOutputStream dout = conn.getDataOutputStream();
-	dout.write(MESSAGE_CALL);
-	
-	oout = conn.startObjectOutputStream(); // (re)start ObjectOutputStream
-	objid.write(oout);
-	oout.writeInt(opnum);
-	oout.writeLong(hash);
+        DataOutputStream dout = conn.getDataOutputStream();
+        dout.write(MESSAGE_CALL);
+
+        oout = conn.startObjectOutputStream(); // (re)start ObjectOutputStream
+        objid.write(oout);
+        oout.writeInt(opnum);
+        oout.writeLong(hash);
       }
     catch(IOException ex)
       {
-	throw new MarshalException("Try to write header but failed.", ex);
+        throw new MarshalException("Try to write header but failed.", ex);
       }
 
     try
       {
-	releaseOutputStream();
-	DataInputStream din = conn.getDataInputStream();
+        releaseOutputStream();
+        DataInputStream din = conn.getDataInputStream();
         if (din.readByte() != MESSAGE_CALL_ACK)
-	    throw new RemoteException("Call not acked");
+            throw new RemoteException("Call not acked");
 
         oin = startInputStream();
         returncode = oin.readByte();
@@ -217,31 +217,31 @@ public class UnicastRemoteCall
       {
         throw new UnmarshalException("Try to read header but failed:", ex);
       }
-    
+
     //check return code
     switch(returncode)
       {
       case RETURN_ACK: //it's ok
-	return;
+        return;
       case RETURN_NACK:
-	Object returnobj;
-	try
-	  {
-	    returnobj = oin.readObject();
-	  }
-	catch(Exception ex2)
-	  {
-	    throw new UnmarshalException
-	      ("Try to read exception object but failed", ex2);
-	  }
-	
-	if(!(returnobj instanceof Exception))
-	  throw new UnmarshalException("Should be Exception type here: "
-				       + returnobj);
-	throw (Exception)returnobj;
-	
+        Object returnobj;
+        try
+          {
+            returnobj = oin.readObject();
+          }
+        catch(Exception ex2)
+          {
+            throw new UnmarshalException
+              ("Try to read exception object but failed", ex2);
+          }
+
+        if(!(returnobj instanceof Exception))
+          throw new UnmarshalException("Should be Exception type here: "
+                                       + returnobj);
+        throw (Exception)returnobj;
+
       default:
-	throw new UnmarshalException("Invalid return code");
+        throw new UnmarshalException("Invalid return code");
       }
   }
 
@@ -254,7 +254,7 @@ public class UnicastRemoteCall
   {
     return vec.size() > 0;
   }
-  
+
   Object returnValue()
   {
     // This is not the first one (Boolean) but the second.

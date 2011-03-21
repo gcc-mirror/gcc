@@ -25,7 +25,7 @@
 #include <string>
 #include <tr1/functional>
 
-namespace std
+namespace std _GLIBCXX_VISIBILITY(default)
 {
   namespace tr1 
   {

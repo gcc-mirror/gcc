@@ -47,16 +47,16 @@ public class QtChoicePeer extends QtComponentPeer implements ChoicePeer
   {
     super( kit, owner );
   }
-  
+
   protected native void init();
 
   protected void setup()
   {
     super.setup();
-    
+
     Choice c = (Choice) owner;
     int n = c.getItemCount();
-    for ( int i = 0; i < n ; i++ ) 
+    for ( int i = 0; i < n ; i++ )
       add( c.getItem( i ), i );
     select( c.getSelectedIndex() );
   }
@@ -64,10 +64,10 @@ public class QtChoicePeer extends QtComponentPeer implements ChoicePeer
   private void fireChoice( int index )
   {
     ((Choice)owner).select( index );
-    ItemEvent e = new ItemEvent((Choice)owner, 
-				ItemEvent.ITEM_STATE_CHANGED, 
-				((Choice)owner).getItem(index), 
-				ItemEvent.SELECTED);
+    ItemEvent e = new ItemEvent((Choice)owner,
+                                ItemEvent.ITEM_STATE_CHANGED,
+                                ((Choice)owner).getItem(index),
+                                ItemEvent.SELECTED);
     QtToolkit.eventQueue.postEvent(e);
   }
 
@@ -91,5 +91,3 @@ public class QtChoicePeer extends QtComponentPeer implements ChoicePeer
 
   public native void select( int index );
 }
-
-

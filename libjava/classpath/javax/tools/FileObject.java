@@ -116,7 +116,7 @@ public interface FileObject
    * that cannot be decoded will be replaced by the default replacement
    * character. A diagnostic may be reported, unless
    * <code>ignoreEncodingErrors</code> is <code>true</code>.
-   * 
+   *
    * @param ignoreEncodingErrors <code>true</code> when encoding errors should be ignored
    *                             <code>false</code> otherwise
    * @return the character content, or <code>null</code> if not available

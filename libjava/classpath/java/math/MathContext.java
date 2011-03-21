@@ -1,4 +1,4 @@
-/* MathContext.java -- 
+/* MathContext.java --
    Copyright (C) 1999, 2000, 2002, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -49,58 +49,58 @@ import java.io.Serializable;
 public final class MathContext implements Serializable
 {
   /** A MathContext for unlimited precision arithmetic * */
-  public static final MathContext UNLIMITED = 
+  public static final MathContext UNLIMITED =
     new MathContext(0, RoundingMode.HALF_UP);
-  
+
   /**
    * A MathContext for the IEEE 754R Decimal32 format - 7 digit preicision and
    * HALF_EVEN rounding.
    */
-  public static final MathContext DECIMAL32 = 
+  public static final MathContext DECIMAL32 =
     new MathContext(7, RoundingMode.HALF_EVEN);
-  
+
   /**
    * A MathContext for the IEEE 754R Decimal64 format - 16 digit preicision and
    * HALF_EVEN rounding.
    */
-  public static final MathContext DECIMAL64 = 
+  public static final MathContext DECIMAL64 =
     new MathContext(16, RoundingMode.HALF_EVEN);
-  
+
   /**
    * A MathContext for the IEEE 754R Decimal128 format - 34 digit preicision and
    * HALF_EVEN rounding.
    */
-  public static final MathContext DECIMAL128 = 
+  public static final MathContext DECIMAL128 =
     new MathContext(34, RoundingMode.HALF_EVEN);
-  
+
   /**
    * This is the serialVersionUID reported here:
    * java.sun.com/j2se/1.5.0/docs/api/serialized-form.html#java.math.MathContext
    */
   private static final long serialVersionUID = 5579720004786848255L;
-  
+
   private int precision;
-  
+
   private RoundingMode roundMode;
-  
+
   /**
    * Constructs a new MathContext with the specified precision and with HALF_UP
    * rounding.
    * @param setPrecision the precision for the new MathContext
-   * 
+   *
    * @throws IllegalArgumentException if precision is < 0.
    */
   public MathContext(int setPrecision)
   {
     this(setPrecision, RoundingMode.HALF_UP);
   }
-  
+
   /**
    * Constructs a new MathContext with the specified precision and rounding
    * mode.
    * @param setPrecision the precision
    * @param setRoundingMode the rounding mode
-   * 
+   *
    * @throws IllegalArgumentException if precision is < 0.
    */
   public MathContext(int setPrecision, RoundingMode setRoundingMode)
@@ -110,12 +110,12 @@ public final class MathContext implements Serializable
     precision = setPrecision;
     roundMode = setRoundingMode;
   }
-  
+
   /**
    * Constructs a MathContext from a String that has the same form as one
    * produced by the toString() method.
    * @param val
-   * 
+   *
    * @throws IllegalArgumentException if the String is not in the correct
    * format or if the precision specified is < 0.
    */
@@ -138,11 +138,11 @@ public final class MathContext implements Serializable
     if (precision < 0)
       throw new IllegalArgumentException("Precision cannot be less than 0.");
   }
-  
+
   /**
    * Returns true if x is a MathContext and has the same precision setting
    * and rounding mode as this MathContext.
-   * 
+   *
    * @return true if the above conditions hold
    */
   public boolean equals(Object x)
@@ -153,7 +153,7 @@ public final class MathContext implements Serializable
     return mc.precision == this.precision
            && mc.roundMode.equals(this.roundMode);
   }
-  
+
   /**
    * Returns the precision setting.
    * @return the precision setting.
@@ -162,11 +162,11 @@ public final class MathContext implements Serializable
   {
     return precision;
   }
-  
+
   /**
-   * Returns the rounding mode setting.  This will be one of 
-   * RoundingMode.CEILING, RoundingMode.DOWN, RoundingMode.FLOOR, 
-   * RoundingMode.HALF_DOWN, RoundingMode.HALF_EVEN, RoundingMode.HALF_UP, 
+   * Returns the rounding mode setting.  This will be one of
+   * RoundingMode.CEILING, RoundingMode.DOWN, RoundingMode.FLOOR,
+   * RoundingMode.HALF_DOWN, RoundingMode.HALF_EVEN, RoundingMode.HALF_UP,
    * RoundingMode.UNNECESSARY, or RoundingMode.UP.
    * @return the rounding mode setting.
    */
@@ -174,19 +174,19 @@ public final class MathContext implements Serializable
   {
     return roundMode;
   }
-  
+
   /**
-   * Returns "precision=p roundingMode=MODE" where p is an int giving the 
+   * Returns "precision=p roundingMode=MODE" where p is an int giving the
    * precision and MODE is UP, DOWN, HALF_UP, HALF_DOWN, HALF_EVEN, CEILING,
    * FLOOR, or UNNECESSARY corresponding to rounding modes.
-   * 
+   *
    * @return a String describing this MathContext
    */
   public String toString()
   {
     return "precision="+precision+" roundingMode="+roundMode;
   }
-  
+
   /**
    * Returns the hashcode for this MathContext.
    * @return the hashcode for this MathContext.

@@ -1,4 +1,4 @@
-// { dg-do compile { target i?86-*-cygwin* i?86-*-mingw*} }
+// { dg-do compile { target i?86-*-cygwin* i?86-*-mingw* x86_64-*-mingw* } }
 // PR c++/9738  Dllimport attribute is overriden by later definition/redeclaration
 
 void __attribute__((dllimport)) Bar(void);

@@ -1,4 +1,4 @@
-// { dg-do "run" }
+// { dg-do run }
 // { dg-options "-std=c++0x" }
 // Contributed by Peter Dimov
 // PR c++/32597

@@ -1,5 +1,5 @@
 ;; Predicate definitions for Matsushita MN10300.
-;; Copyright (C) 2005, 2007 Free Software Foundation, Inc.
+;; Copyright (C) 2005, 2007, 2010 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -25,18 +25,6 @@
   return (op == CONST1_RTX (SFmode));
 })
 
-;; Return 1 if X is a CONST_INT that is only 8 bits wide.  This is
-;; used for the btst insn which may examine memory or a register (the
-;; memory variant only allows an unsigned 8-bit integer).
-
-(define_predicate "const_8bit_operand"
-  (match_code "const_int")
-{
-  return (GET_CODE (op) == CONST_INT
-	  && INTVAL (op) >= 0
-	  && INTVAL (op) < 256);
-})
-
 ;; Return true if OP is a valid call operand.
 
 (define_predicate "call_address_operand"
@@ -54,3 +42,28 @@
   return XEXP (op, 0) == stack_pointer_rtx
       || XEXP (op, 1) == stack_pointer_rtx;
 })
+
+(define_predicate "reg_or_am33_const_operand"
+  (ior (match_operand 0 "register_operand")
+       (and (match_test "TARGET_AM33")
+	    (match_operand 0 "immediate_operand"))))
+
+(define_predicate "label_ref_operand"
+  (match_code "label_ref"))
+
+(define_special_predicate "int_mode_flags"
+  (match_code "reg")
+{
+  if (REGNO (op) != CC_REG)
+    return false;
+  if (GET_MODE (op) == CC_FLOATmode)
+    return false;
+  return GET_MODE_CLASS (GET_MODE (op)) == MODE_CC;
+})
+
+(define_predicate "CCZN_comparison_operator"
+  (match_code "eq,ne,lt,ge"))
+
+(define_predicate "liw_operand"
+  (ior (match_operand 0 "register_operand")
+       (match_test "satisfies_constraint_O (op)")))

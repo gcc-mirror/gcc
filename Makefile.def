@@ -4,7 +4,7 @@ AutoGen definitions Makefile.tpl;
 // Makefile.in is generated from Makefile.tpl by 'autogen Makefile.def'.
 // This file was originally written by Nathanael Nerode.
 //
-//   Copyright 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+//   Copyright 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
 //   Free Software Foundation
 //
 // This file is free software; you can redistribute it and/or modify
@@ -145,7 +145,8 @@ host_modules= { module= libtermcap; no_check=true;
                 missing=maintainer-clean; };
 host_modules= { module= utils; no_check=true; };
 host_modules= { module= gnattools; };
-host_modules= { module= lto-plugin; bootstrap=true; };
+host_modules= { module= lto-plugin; bootstrap=true;
+		extra_configure_flags=--enable-shared; };
 
 target_modules = { module= libstdc++-v3;
 		   bootstrap=true;
@@ -322,6 +323,7 @@ dependencies = { module=all-build-fixincludes; on=all-build-libiberty; };
 
 // Host modules specific to gcc.
 dependencies = { module=configure-gcc; on=configure-intl; };
+dependencies = { module=configure-gcc; on=all-lto-plugin; };
 dependencies = { module=configure-gcc; on=all-binutils; };
 dependencies = { module=configure-gcc; on=all-gas; };
 dependencies = { module=configure-gcc; on=all-ld; };
@@ -345,11 +347,13 @@ dependencies = { module=all-gcc; on=all-libcpp; hard=true; };
 dependencies = { module=all-gcc; on=all-libdecnumber; hard=true; };
 dependencies = { module=all-gcc; on=all-libiberty; };
 dependencies = { module=all-gcc; on=all-fixincludes; };
+dependencies = { module=all-gcc; on=all-lto-plugin; };
 dependencies = { module=info-gcc; on=all-build-libiberty; };
 dependencies = { module=dvi-gcc; on=all-build-libiberty; };
 dependencies = { module=pdf-gcc; on=all-build-libiberty; };
 dependencies = { module=html-gcc; on=all-build-libiberty; };
 dependencies = { module=install-gcc ; on=install-fixincludes; };
+dependencies = { module=install-gcc ; on=install-lto-plugin; };
 dependencies = { module=install-strip-gcc ; on=install-strip-fixincludes; };
 
 dependencies = { module=configure-libcpp; on=configure-libiberty; hard=true; };
@@ -361,7 +365,7 @@ dependencies = { module=all-fixincludes; on=all-libiberty; };
 
 dependencies = { module=all-gnattools; on=all-target-libada; };
 
-dependencies = { module=all-lto-plugin; on=all-gcc; };
+dependencies = { module=all-lto-plugin; on=all-libiberty; };
 
 dependencies = { module=configure-mpfr; on=all-gmp; };
 dependencies = { module=configure-mpc; on=all-mpfr; };

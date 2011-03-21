@@ -1,4 +1,4 @@
-/* MaxExclusiveFacet.java -- 
+/* MaxExclusiveFacet.java --
    Copyright (C) 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -49,7 +49,7 @@ import java.util.Date;
 public final class MaxExclusiveFacet
   extends Facet
 {
-  
+
   public final Object value; // date or number
 
   public final boolean fixed;
@@ -60,7 +60,7 @@ public final class MaxExclusiveFacet
     this.value = value;
     this.fixed = fixed;
   }
-  
+
   public int hashCode()
   {
     return value.hashCode();
@@ -106,6 +106,5 @@ public final class MaxExclusiveFacet
       return false;
     return ((Number) test).doubleValue() < nvalue.doubleValue();
   }
-  
-}
 
+}

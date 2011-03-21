@@ -51,20 +51,20 @@ public class NavigationFilter
     public abstract void moveDot(int dot, Position.Bias bias);
     public abstract void setDot(int dot, Position.Bias bias);
   }
-  
+
   public NavigationFilter()
   {
     // Do nothing here.
   }
 
   public void moveDot(NavigationFilter.FilterBypass fb, int dot,
-		      Position.Bias bias)
+                      Position.Bias bias)
   {
     fb.moveDot(dot, bias);
   }
 
   public void setDot(NavigationFilter.FilterBypass fb, int dot,
-		     Position.Bias bias)
+                     Position.Bias bias)
   {
     fb.setDot(dot, bias);
   }

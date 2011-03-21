@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -16,7 +16,7 @@ General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with GNU Classpath; see the file COPYING.  If not, write to the
 Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-02111-1307 USA. 
+02111-1307 USA.
 
 Linking this library statically or dynamically with other modules is
 making a combined work based on this library.  Thus, the terms and
@@ -63,7 +63,7 @@ import com.sun.javadoc.Tag;
  *  Allows outputting an HTML document without having to build the
  *  document tree in-memory.
  */
-public class HtmlPage 
+public class HtmlPage
 {
    private File file;
    private PrintWriter out;
@@ -207,7 +207,7 @@ public class HtmlPage
       print('>');
    }
 
-   
+
    public void beginDiv(CssClass cssClass)
    {
       String[] divAttributeNames = cssClass.getAttributeNames();
@@ -221,7 +221,7 @@ public class HtmlPage
 
       String[] attributeNames = new String[1 + divAttributeNames.length];
       String[] attributeValues = new String[1 + divAttributeValues.length];
-      
+
       System.arraycopy(divAttributeNames, 0, attributeNames, 1, divAttributeNames.length);
       System.arraycopy(divAttributeValues, 0, attributeValues, 1, divAttributeNames.length);
 
@@ -261,7 +261,7 @@ public class HtmlPage
    {
       atomicElement("br");
    }
-   
+
    public void print(String text)
    {
       out.print(text);
@@ -292,7 +292,7 @@ public class HtmlPage
       beginPage(title, charset, Collections.EMPTY_SET, stylesheets);
    }
 
-   public void beginPage(String title, String charset, 
+   public void beginPage(String title, String charset,
                          Collection keywords, Map stylesheets)
       throws IOException
    {
@@ -310,25 +310,25 @@ public class HtmlPage
             url.delete(url.length() - 1, url.length());
          }
          url.append(file.getCanonicalPath().substring(rootDir.getCanonicalPath().length()));
-         atomicElement("base", 
+         atomicElement("base",
                        new String[] { "href" },
                        new String[] { url.toString() });
       }
-      beginElement("script", 
+      beginElement("script",
                     new String[] { "src", "type" },
                     new String[] { pathToRoot + "/resources/gjdoc.js", "text/javascript" });
       print("<!-- this comment required for konqueror 3.2.2 -->");
       endElement("script");
-      atomicElement("meta", 
+      atomicElement("meta",
                     new String[] { "http-equiv", "content" },
                     new String[] { "Content-Type", "text/html; charset=" + charset });
-      atomicElement("meta", 
+      atomicElement("meta",
                     new String[] { "name", "content" },
                     new String[] { "generator", "GNU Gjdoc Standard Doclet" });
       Iterator keywordIt = keywords.iterator();
       while (keywordIt.hasNext()) {
          String keyword = (String)keywordIt.next();
-         atomicElement("meta", 
+         atomicElement("meta",
                        new String[] { "name", "content" },
                        new String[] { "keywords", keyword });
       }
@@ -340,9 +340,9 @@ public class HtmlPage
 
          for (int i=0; i<sheetFiles.length; ++i) {
             String sheetFile = sheetFiles[i];
-            atomicElement("link", 
+            atomicElement("link",
                           new String[] { "rel", "type", "href", "title" },
-                          new String[] { "stylesheet", "text/css", 
+                          new String[] { "stylesheet", "text/css",
                                          pathToRoot + "/" + sheetFile, sheetName });
          }
       }
@@ -440,14 +440,14 @@ public class HtmlPage
 
    public void beginAnchor(String href, String title)
    {
-      beginElement("a", 
+      beginElement("a",
                    new String[] { "href", "title" },
                    new String[] { href, title });
    }
 
    public void beginAnchor(String href, String title, String target)
    {
-      beginElement("a", 
+      beginElement("a",
                    new String[] { "href", "title", "target" },
                    new String[] { href, title, target });
    }
@@ -482,7 +482,7 @@ public class HtmlPage
    public void beginBody(CssClass cssClass, boolean setTitle)
    {
       if (setTitle) {
-         beginElement("body", 
+         beginElement("body",
                       new String[] { "class", "onload" },
                       new String[] { cssClass.getName(), "if(parent.contentPageLoaded)parent.contentPageLoaded(document.title)" }
                       );

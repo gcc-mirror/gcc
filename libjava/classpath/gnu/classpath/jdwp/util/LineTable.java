@@ -44,7 +44,7 @@ import java.io.IOException;
 
 /**
  * A class representing a Line Table for a method.
- * 
+ *
  * @author Aaron Luchko <aluchko@redhat.com>
  */
 public class LineTable
@@ -57,7 +57,7 @@ public class LineTable
 
   /**
    * Construct a line table with the given parameters.
-   * 
+   *
    * @param start lowest code index for method, -1 if native
    * @param end highest code index for method, -1 if native
    * @param lineNum line numbers for in line tables
@@ -73,10 +73,10 @@ public class LineTable
     this.lineNum = lineNum;
     this.lineCI = lineCI;
   }
-  
+
   /**
    * Writes this line table to the given DataOutputStream.
-   * 
+   *
    * @param os the stream to write it to
    * @throws IOException
    */

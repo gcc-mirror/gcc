@@ -92,8 +92,8 @@ public final class RuntimeMXBeanImpl
       return bootClassPath;
     else
       throw
-	new UnsupportedOperationException("Retrieving the boot " +
-					  "classpath is not supported.");
+        new UnsupportedOperationException("Retrieving the boot " +
+                                          "classpath is not supported.");
   }
 
   public String getClassPath()
@@ -151,16 +151,16 @@ public final class RuntimeMXBeanImpl
     Iterator entries = props.entrySet().iterator();
     while (entries.hasNext())
       {
-	Map.Entry next = (Map.Entry) entries.next();
-	Object key = next.getKey();
-	Object value = next.getValue();
-	if (key instanceof String &&
-	    value instanceof String)
-	  map.put(key, value);
+        Map.Entry next = (Map.Entry) entries.next();
+        Object key = next.getKey();
+        Object value = next.getValue();
+        if (key instanceof String &&
+            value instanceof String)
+          map.put(key, value);
       }
     return map;
   }
-  
+
   public long getUptime()
   {
     return new Date().getTime() - getStartTime();
@@ -185,11 +185,11 @@ public final class RuntimeMXBeanImpl
   {
     if (bootClassPath == null)
       {
-	bootClassPath = SystemProperties.getProperty(JAVA_BOOT_CLASS_PATH);
-	if (bootClassPath == null)
-	  bootClassPath = SystemProperties.getProperty(SUN_BOOT_CLASS_PATH);
-	if (bootClassPath == null)
-	  bootClassPathSupported = false;
+        bootClassPath = SystemProperties.getProperty(JAVA_BOOT_CLASS_PATH);
+        if (bootClassPath == null)
+          bootClassPath = SystemProperties.getProperty(SUN_BOOT_CLASS_PATH);
+        if (bootClassPath == null)
+          bootClassPathSupported = false;
       }
     return bootClassPathSupported;
   }

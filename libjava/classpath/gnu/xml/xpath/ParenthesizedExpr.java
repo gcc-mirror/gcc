@@ -1,4 +1,4 @@
-/* ParenthesizedExpr.java -- 
+/* ParenthesizedExpr.java --
    Copyright (C) 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -60,16 +60,16 @@ final class ParenthesizedExpr
     this.expr = expr;
   }
 
-  @Override 
+  @Override
   public Object evaluate(Node context, int pos, int len)
   {
     Object ret = expr.evaluate(context, pos, len);
     if (ret instanceof Collection)
       {
-	/* Suppression is safe, as we know context produces
-	   Collection<Node> */
-	@SuppressWarnings("unchecked")
-	  Collection<Node> nodes = (Collection<Node>) ret;
+        /* Suppression is safe, as we know context produces
+           Collection<Node> */
+        @SuppressWarnings("unchecked")
+          Collection<Node> nodes = (Collection<Node>) ret;
         List<Node> list = new ArrayList<Node>(nodes);
         Collections.sort(list, documentOrderComparator);
         ret = list;
@@ -91,5 +91,5 @@ final class ParenthesizedExpr
   {
     return "(" + expr + ")";
   }
-  
+
 }

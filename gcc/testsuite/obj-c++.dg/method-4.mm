@@ -7,13 +7,13 @@
 #include <objc/objc.h>
 
 @interface Base
-- (id) meth1: (Base *)arg1; /* { dg-warning "using .\\-\\(id\\)meth1:\\(Base \\*\\)arg1." } */
-- (id) window;              /* { dg-warning "using .\\-\\(id\\)window" } */
+- (id) meth1: (Base *)arg1; /* { dg-message "using .\\-\\(id\\)meth1:\\(Base \\*\\)arg1." } */
+- (id) window;              /* { dg-message "using .\\-\\(id\\)window" } */
 @end
 
 @interface Derived: Base
-- (id) meth1: (Derived *)arg1; /* { dg-warning "also found .\\-\\(id\\)meth1:\\(Derived \\*\\)arg1." } */
-- (Base *) window;             /* { dg-warning "also found .\\-\\(Base \\*\\)window." } */
+- (id) meth1: (Derived *)arg1; /* { dg-message "also found .\\-\\(id\\)meth1:\\(Derived \\*\\)arg1." } */
+- (Base *) window;             /* { dg-message "also found .\\-\\(Base \\*\\)window." } */
 @end
 
 void foo(void) {

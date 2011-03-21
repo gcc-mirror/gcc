@@ -377,23 +377,23 @@ public class Socket
     // bind to address/port
     try
       {
-	getImpl().bind(tmp.getAddress(), tmp.getPort());
-	bound = true;
+        getImpl().bind(tmp.getAddress(), tmp.getPort());
+        bound = true;
       }
     catch (IOException exception)
       {
-	close();
-	throw exception;
+        close();
+        throw exception;
       }
     catch (RuntimeException exception)
       {
-	close();
-	throw exception;
+        close();
+        throw exception;
       }
     catch (Error error)
       {
-	close();
-	throw error;
+        close();
+        throw error;
       }
   }
 
@@ -467,11 +467,11 @@ public class Socket
 
     try
       {
-	return getImpl().getInetAddress();
+        return getImpl().getInetAddress();
       }
     catch (SocketException e)
       {
-	// This cannot happen as we are connected.
+        // This cannot happen as we are connected.
       }
 
     return null;
@@ -495,7 +495,7 @@ public class Socket
 
     if (impl instanceof PlainSocketImpl)
       addr = ((PlainSocketImpl) impl).getLocalAddress().getAddress();
-    
+
     if (addr == null)
       {
         try
@@ -536,11 +536,11 @@ public class Socket
 
     try
       {
-	return getImpl().getPort();
+        return getImpl().getPort();
       }
     catch (SocketException e)
       {
-	// This cannot happen as we are connected.
+        // This cannot happen as we are connected.
       }
 
     return 0;
@@ -559,12 +559,12 @@ public class Socket
 
     try
       {
-	if (getImpl() != null)
-	  return getImpl().getLocalPort();
+        if (getImpl() != null)
+          return getImpl().getLocalPort();
       }
     catch (SocketException e)
       {
-	// This cannot happen as we are bound.
+        // This cannot happen as we are bound.
       }
 
     return -1;
@@ -586,12 +586,12 @@ public class Socket
 
     try
       {
-	return new InetSocketAddress(addr, getImpl().getLocalPort());
+        return new InetSocketAddress(addr, getImpl().getLocalPort());
       }
     catch (SocketException e)
       {
-	// This cannot happen as we are bound.
-	return null;
+        // This cannot happen as we are bound.
+        return null;
       }
   }
 
@@ -609,13 +609,13 @@ public class Socket
 
     try
       {
-	return new InetSocketAddress(getImpl().getInetAddress(),
-	                             getImpl().getPort());
+        return new InetSocketAddress(getImpl().getInetAddress(),
+                                     getImpl().getPort());
       }
     catch (SocketException e)
       {
-	// This cannot happen as we are connected.
-	return null;
+        // This cannot happen as we are connected.
+        return null;
       }
   }
 
@@ -721,13 +721,13 @@ public class Socket
 
     if (on)
       {
-	if (linger < 0)
-	  throw new IllegalArgumentException("SO_LINGER must be >= 0");
+        if (linger < 0)
+          throw new IllegalArgumentException("SO_LINGER must be >= 0");
 
-	if (linger > 65535)
-	  linger = 65535;
+        if (linger > 65535)
+          linger = 65535;
 
-	getImpl().setOption(SocketOptions.SO_LINGER, Integer.valueOf(linger));
+        getImpl().setOption(SocketOptions.SO_LINGER, Integer.valueOf(linger));
       }
     else
       getImpl().setOption(SocketOptions.SO_LINGER, Integer.valueOf(-1));
@@ -1034,15 +1034,15 @@ public class Socket
   {
     try
       {
-	if (isConnected())
-	  return (super.toString()
+        if (isConnected())
+          return (super.toString()
                   + " [addr=" + getImpl().getInetAddress() + ",port="
-	          + getImpl().getPort() + ",localport="
-	          + getImpl().getLocalPort() + "]");
+                  + getImpl().getPort() + ",localport="
+                  + getImpl().getLocalPort() + "]");
       }
     catch (SocketException e)
       {
-	// This cannot happen as we are connected.
+        // This cannot happen as we are connected.
       }
 
     return super.toString() + " [unconnected]";
@@ -1225,7 +1225,7 @@ public class Socket
   {
     if (impl == null)
       return false;
-    
+
     return impl.getInetAddress() != null;
   }
 
@@ -1242,7 +1242,7 @@ public class Socket
       return false;
     if (impl instanceof PlainSocketImpl)
       {
-        InetSocketAddress addr = ((PlainSocketImpl) impl).getLocalAddress(); 
+        InetSocketAddress addr = ((PlainSocketImpl) impl).getLocalAddress();
         return addr != null && addr.getAddress() != null;
       }
     return bound;
@@ -1258,7 +1258,7 @@ public class Socket
   public boolean isClosed()
   {
     SocketChannel channel = getChannel();
-    
+
     return impl == null || (channel != null && ! channel.isOpen());
   }
 

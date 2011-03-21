@@ -8,7 +8,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -47,9 +47,9 @@ import gnu.java.lang.CPStringBuilder;
  */
 
 /**
- * This subclass of <code>FilterReader</code> buffers input from an 
+ * This subclass of <code>FilterReader</code> buffers input from an
  * underlying implementation to provide a possibly more efficient read
- * mechanism.  It maintains the buffer and buffer state in instance 
+ * mechanism.  It maintains the buffer and buffer state in instance
  * variables that are available to subclasses.  The default buffer size
  * of 8192 chars can be overridden by the creator of the stream.
  * <p>
@@ -91,7 +91,7 @@ public class BufferedReader extends Reader
   static final int DEFAULT_BUFFER_SIZE = 8192;
 
   /**
-    * Create a new <code>BufferedReader</code> that will read from the 
+    * Create a new <code>BufferedReader</code> that will read from the
     * specified subordinate stream with a default buffer size of 8192 chars.
     *
     * @param in The subordinate stream to read from
@@ -102,8 +102,8 @@ public class BufferedReader extends Reader
   }
 
   /**
-   * Create a new <code>BufferedReader</code> that will read from the 
-   * specified subordinate stream with a buffer size that is specified by the 
+   * Create a new <code>BufferedReader</code> that will read from the
+   * specified subordinate stream with a buffer size that is specified by the
    * caller.
    *
    * @param in The subordinate stream to read from
@@ -130,15 +130,15 @@ public class BufferedReader extends Reader
   {
     synchronized (lock)
       {
-	if (in != null)
-	  in.close();
-	in = null;
-	buffer = null;
+        if (in != null)
+          in.close();
+        in = null;
+        buffer = null;
       }
   }
 
   /**
-   * Returns <code>true</code> to indicate that this class supports mark/reset 
+   * Returns <code>true</code> to indicate that this class supports mark/reset
    * functionality.
    *
    * @return <code>true</code>
@@ -151,11 +151,11 @@ public class BufferedReader extends Reader
   /**
    * Mark a position in the input to which the stream can be
    * "reset" by calling the <code>reset()</code> method.  The parameter
-   * <code>readLimit</code> is the number of chars that can be read from the 
+   * <code>readLimit</code> is the number of chars that can be read from the
    * stream after setting the mark before the mark becomes invalid.  For
-   * example, if <code>mark()</code> is called with a read limit of 10, then 
-   * when 11 chars of data are read from the stream before the 
-   * <code>reset()</code> method is called, then the mark is invalid and the 
+   * example, if <code>mark()</code> is called with a read limit of 10, then
+   * when 11 chars of data are read from the stream before the
+   * <code>reset()</code> method is called, then the mark is invalid and the
    * stream object instance is not required to remember the mark.
    * <p>
    * Note that the number of chars that can be remembered by this method
@@ -163,7 +163,7 @@ public class BufferedReader extends Reader
    * not dependent on the subordinate stream supporting mark/reset
    * functionality.
    *
-   * @param readLimit The number of chars that can be read before the mark 
+   * @param readLimit The number of chars that can be read before the mark
    *        becomes invalid
    *
    * @exception IOException If an error occurs
@@ -176,45 +176,45 @@ public class BufferedReader extends Reader
 
     synchronized (lock)
       {
-	checkStatus();
-	// In this method we need to be aware of the special case where
-	// pos + 1 == limit.  This indicates that a '\r' was the last char
-	// in the buffer during a readLine.  We'll want to maintain that
-	// condition after we shift things around and if a larger buffer is
-	// needed to track readLimit, we'll have to make it one element
-	// larger to ensure we don't invalidate the mark too early, if the
-	// char following the '\r' is NOT a '\n'.  This is ok because, per
-	// the spec, we are not required to invalidate when passing readLimit.
-	//
-	// Note that if 'pos > limit', then doing 'limit -= pos' will cause
-	// limit to be negative.  This is the only way limit will be < 0.
+        checkStatus();
+        // In this method we need to be aware of the special case where
+        // pos + 1 == limit.  This indicates that a '\r' was the last char
+        // in the buffer during a readLine.  We'll want to maintain that
+        // condition after we shift things around and if a larger buffer is
+        // needed to track readLimit, we'll have to make it one element
+        // larger to ensure we don't invalidate the mark too early, if the
+        // char following the '\r' is NOT a '\n'.  This is ok because, per
+        // the spec, we are not required to invalidate when passing readLimit.
+        //
+        // Note that if 'pos > limit', then doing 'limit -= pos' will cause
+        // limit to be negative.  This is the only way limit will be < 0.
 
-	if (pos + readLimit > limit)
-	  {
-	    char[] old_buffer = buffer;
-	    int extraBuffSpace = 0;
-	    if (pos > limit)
-	      extraBuffSpace = 1;
-	    if (readLimit + extraBuffSpace > limit)
-	      buffer = new char[readLimit + extraBuffSpace];
-	    limit -= pos;
-	    if (limit >= 0)
-	      {
-	        System.arraycopy(old_buffer, pos, buffer, 0, limit);
-	        pos = 0;
-	      }
-	  }
+        if (pos + readLimit > limit)
+          {
+            char[] old_buffer = buffer;
+            int extraBuffSpace = 0;
+            if (pos > limit)
+              extraBuffSpace = 1;
+            if (readLimit + extraBuffSpace > limit)
+              buffer = new char[readLimit + extraBuffSpace];
+            limit -= pos;
+            if (limit >= 0)
+              {
+                System.arraycopy(old_buffer, pos, buffer, 0, limit);
+                pos = 0;
+              }
+          }
 
-	if (limit < 0)
-	  {
-	    // Maintain the relationship of 'pos > limit'.
-	    pos = 1;
-	    limit = markPos = 0;
-	  }
-	else
-	  markPos = pos;
-	// Now pos + readLimit <= buffer.length. thus if we need to read
-	// beyond buffer.length, then we are allowed to invalidate markPos.
+        if (limit < 0)
+          {
+            // Maintain the relationship of 'pos > limit'.
+            pos = 1;
+            limit = markPos = 0;
+          }
+        else
+          markPos = pos;
+        // Now pos + readLimit <= buffer.length. thus if we need to read
+        // beyond buffer.length, then we are allowed to invalidate markPos.
       }
   }
 
@@ -233,20 +233,20 @@ public class BufferedReader extends Reader
   {
     synchronized (lock)
       {
-	checkStatus();
-	if (markPos < 0)
-	  throw new IOException("mark never set or invalidated");
+        checkStatus();
+        if (markPos < 0)
+          throw new IOException("mark never set or invalidated");
 
-	// Need to handle the extremely unlikely case where a readLine was
-	// done with a '\r' as the last char in the buffer; which was then
-	// immediately followed by a mark and a reset with NO intervening
-	// read of any sort.  In that case, setting pos to markPos would
-	// lose that info and a subsequent read would thus not skip a '\n'
-	// (if one exists).  The value of limit in this rare case is zero.
-	// We can assume that if limit is zero for other reasons, then
-	// pos is already set to zero and doesn't need to be readjusted.
-	if (limit > 0)
-	  pos = markPos;
+        // Need to handle the extremely unlikely case where a readLine was
+        // done with a '\r' as the last char in the buffer; which was then
+        // immediately followed by a mark and a reset with NO intervening
+        // read of any sort.  In that case, setting pos to markPos would
+        // lose that info and a subsequent read would thus not skip a '\n'
+        // (if one exists).  The value of limit in this rare case is zero.
+        // We can assume that if limit is zero for other reasons, then
+        // pos is already set to zero and doesn't need to be readjusted.
+        if (limit > 0)
+          pos = markPos;
       }
   }
 
@@ -255,7 +255,7 @@ public class BufferedReader extends Reader
    * this method returns <code>false</code> then this stream could (but is
    * not guaranteed to) block on the next read attempt.
    *
-   * @return <code>true</code> if this stream is ready to be read, 
+   * @return <code>true</code> if this stream is ready to be read,
    * <code>false</code> otherwise
    *
    * @exception IOException If an error occurs
@@ -264,14 +264,14 @@ public class BufferedReader extends Reader
   {
     synchronized (lock)
       {
-	checkStatus();
-	return pos < limit || in.ready();
+        checkStatus();
+        return pos < limit || in.ready();
       }
   }
 
   /**
    * This method read chars from a stream and stores them into a caller
-   * supplied buffer.  It starts storing the data at index 
+   * supplied buffer.  It starts storing the data at index
    * <code>offset</code> into
    * the buffer and attempts to read <code>len</code> chars.  This method can
    * return before reading the number of chars requested.  The actual number
@@ -297,53 +297,53 @@ public class BufferedReader extends Reader
 
     synchronized (lock)
       {
-	checkStatus();
-	// Once again, we need to handle the special case of a readLine
-	// that has a '\r' at the end of the buffer.  In this case, we'll
-	// need to skip a '\n' if it is the next char to be read.
-	// This special case is indicated by 'pos > limit'.
-	boolean retAtEndOfBuffer = false;
+        checkStatus();
+        // Once again, we need to handle the special case of a readLine
+        // that has a '\r' at the end of the buffer.  In this case, we'll
+        // need to skip a '\n' if it is the next char to be read.
+        // This special case is indicated by 'pos > limit'.
+        boolean retAtEndOfBuffer = false;
 
-	int avail = limit - pos;
-	if (count > avail)
-	  {
-	    if (avail > 0)
-	      count = avail;
-	    else // pos >= limit
-	      {
-		if (limit == buffer.length)
-		  markPos = -1; // read too far - invalidate the mark.
-		if (pos > limit)
-		  {
-		    // Set a boolean and make pos == limit to simplify things.
-		    retAtEndOfBuffer = true;
-		    --pos;
-		  }
-		if (markPos < 0)
-		  {
-		    // Optimization:  can read directly into buf.
-		    if (count >= buffer.length && !retAtEndOfBuffer)
-		      return in.read(buf, offset, count);
-		    pos = limit = 0;
-		  }
-		avail = in.read(buffer, limit, buffer.length - limit);
-		if (retAtEndOfBuffer && avail > 0 && buffer[limit] == '\n')
-		  {
-		    --avail;
-		    limit++;
-		  }
-		if (avail < count)
-		  {
-		    if (avail <= 0)
-		      return avail;
-		    count = avail;
-		  }
-		limit += avail;
-	      }
-	  }
-	System.arraycopy(buffer, pos, buf, offset, count);
-	pos += count;
-	return count;
+        int avail = limit - pos;
+        if (count > avail)
+          {
+            if (avail > 0)
+              count = avail;
+            else // pos >= limit
+              {
+                if (limit == buffer.length)
+                  markPos = -1; // read too far - invalidate the mark.
+                if (pos > limit)
+                  {
+                    // Set a boolean and make pos == limit to simplify things.
+                    retAtEndOfBuffer = true;
+                    --pos;
+                  }
+                if (markPos < 0)
+                  {
+                    // Optimization:  can read directly into buf.
+                    if (count >= buffer.length && !retAtEndOfBuffer)
+                      return in.read(buf, offset, count);
+                    pos = limit = 0;
+                  }
+                avail = in.read(buffer, limit, buffer.length - limit);
+                if (retAtEndOfBuffer && avail > 0 && buffer[limit] == '\n')
+                  {
+                    --avail;
+                    limit++;
+                  }
+                if (avail < count)
+                  {
+                    if (avail <= 0)
+                      return avail;
+                    count = avail;
+                  }
+                limit += avail;
+              }
+          }
+        System.arraycopy(buffer, pos, buf, offset, count);
+        pos += count;
+        return count;
       }
   }
 
@@ -360,7 +360,7 @@ public class BufferedReader extends Reader
     if (pos > limit)
       {
         retAtEndOfBuffer = true;
-	--pos;
+        --pos;
       }
 
     if (markPos >= 0 && limit == buffer.length)
@@ -373,26 +373,26 @@ public class BufferedReader extends Reader
 
     if (retAtEndOfBuffer && buffer[pos] == '\n')
       {
-	--count;
-	// If the mark was set to the location of the \n, then we
-	// must change it to fully pretend that the \n does not
-	// exist.
-	if (markPos == pos)
-	  ++markPos;
-	++pos;
+        --count;
+        // If the mark was set to the location of the \n, then we
+        // must change it to fully pretend that the \n does not
+        // exist.
+        if (markPos == pos)
+          ++markPos;
+        ++pos;
       }
 
     return count;
   }
-  
+
   public int read() throws IOException
   {
     synchronized (lock)
       {
-	checkStatus();
-	if (pos >= limit && fill () <= 0)
-	  return -1;
-	return buffer[pos++];
+        checkStatus();
+        if (pos >= limit && fill () <= 0)
+          return -1;
+        return buffer[pos++];
       }
   }
 
@@ -405,9 +405,9 @@ public class BufferedReader extends Reader
     int i = pos;
     for (; i < limit; i++)
       {
-	char ch = buffer[i];
-	if (ch == '\n' || ch == '\r')
-	  break;
+        char ch = buffer[i];
+        if (ch == '\n' || ch == '\r')
+          break;
       }
     return i;
   }
@@ -418,9 +418,9 @@ public class BufferedReader extends Reader
    * an "\r\n" sequence.  The system dependent line separator is not used.
    * The line termination characters are not returned in the resulting
    * <code>String</code>.
-   * 
+   *
    * @return The line of text read, or <code>null</code> if end of stream.
-   * 
+   *
    * @exception IOException If an error occurs
    */
   public String readLine() throws IOException
@@ -432,25 +432,25 @@ public class BufferedReader extends Reader
     // This special case is indicated by 'pos > limit'.
     if (pos > limit)
       {
-	int ch = read();
-	if (ch < 0)
-	  return null;
-	if (ch != '\n')
-	  --pos;
+        int ch = read();
+        if (ch < 0)
+          return null;
+        if (ch != '\n')
+          --pos;
       }
     int i = lineEnd(limit);
     if (i < limit)
       {
-	String str = String.valueOf(buffer, pos, i - pos);
-	pos = i + 1;
-	// If the last char in the buffer is a '\r', we must remember
-	// to check if the next char to be read after the buffer is refilled
-	// is a '\n'.  If so, skip it.  To indicate this condition, we set pos
-	// to be limit + 1, which normally is never possible.
-	if (buffer[i] == '\r')
-	  if (pos == limit || buffer[pos] == '\n')
-	    pos++;
-	return str;
+        String str = String.valueOf(buffer, pos, i - pos);
+        pos = i + 1;
+        // If the last char in the buffer is a '\r', we must remember
+        // to check if the next char to be read after the buffer is refilled
+        // is a '\n'.  If so, skip it.  To indicate this condition, we set pos
+        // to be limit + 1, which normally is never possible.
+        if (buffer[i] == '\r')
+          if (pos == limit || buffer[pos] == '\n')
+            pos++;
+        return str;
       }
     CPStringBuilder sbuf = new CPStringBuilder(200);
     sbuf.append(buffer, pos, i - pos);
@@ -462,33 +462,33 @@ public class BufferedReader extends Reader
     boolean eof = false;
     for (;;)
       {
-	// readLine should block. So we must not return until a -1 is reached.
-	if (pos >= limit)
-	  {
-	    // here count == 0 isn't sufficient to give a failure.
-	    int count = fill();
-	    if (count < 0)
-	      {
-		eof = true;
-		break;
-	      }
-	    continue;
-	  }
-	int ch = buffer[pos++];
-	if (ch == '\n' || ch == '\r')
-	  {
-	    // Check here if a '\r' was the last char in the buffer; if so,
-	    // mark it as in the comment above to indicate future reads
-	    // should skip a newline that is the next char read after
-	    // refilling the buffer.
-	    if (ch == '\r')
-	      if (pos == limit || buffer[pos] == '\n')
-	        pos++;
-	    break;
-	  }
-	i = lineEnd(limit);
-	sbuf.append(buffer, pos - 1, i - (pos - 1));
-	pos = i;
+        // readLine should block. So we must not return until a -1 is reached.
+        if (pos >= limit)
+          {
+            // here count == 0 isn't sufficient to give a failure.
+            int count = fill();
+            if (count < 0)
+              {
+                eof = true;
+                break;
+              }
+            continue;
+          }
+        int ch = buffer[pos++];
+        if (ch == '\n' || ch == '\r')
+          {
+            // Check here if a '\r' was the last char in the buffer; if so,
+            // mark it as in the comment above to indicate future reads
+            // should skip a newline that is the next char read after
+            // refilling the buffer.
+            if (ch == '\r')
+              if (pos == limit || buffer[pos] == '\n')
+                pos++;
+            break;
+          }
+        i = lineEnd(limit);
+        sbuf.append(buffer, pos - 1, i - (pos - 1));
+        pos = i;
       }
     return (sbuf.length() == 0 && eof) ? null : sbuf.toString();
   }
@@ -499,7 +499,7 @@ public class BufferedReader extends Reader
    * requested amount.
    * <p>
    * This method first discards chars in the buffer, then calls the
-   * <code>skip</code> method on the underlying stream to skip the 
+   * <code>skip</code> method on the underlying stream to skip the
    * remaining chars.
    *
    * @param count The requested number of chars to skip
@@ -513,63 +513,63 @@ public class BufferedReader extends Reader
   {
     synchronized (lock)
       {
-	checkStatus();
-	if (count < 0)
-	  throw new IllegalArgumentException("skip value is negative");
-	if (count == 0)
-	  return 0;
-	// Yet again, we need to handle the special case of a readLine
-	// that has a '\r' at the end of the buffer.  In this case, we need
-	// to ignore a '\n' if it is the next char to be read.
-	// This special case is indicated by 'pos > limit' (i.e. avail < 0).
-	// To simplify things, if we're dealing with the special case for
-	// readLine, just read the next char (since the fill method will
-	// skip the '\n' for us).  By doing this, we'll have to back up pos.
-	// That's easier than trying to keep track of whether we've skipped
-	// one element or not.
-	if (pos > limit)
-	  {
-	    if (read() < 0)
-	      return 0;
-	    else
-	      --pos; 
-	  }
+        checkStatus();
+        if (count < 0)
+          throw new IllegalArgumentException("skip value is negative");
+        if (count == 0)
+          return 0;
+        // Yet again, we need to handle the special case of a readLine
+        // that has a '\r' at the end of the buffer.  In this case, we need
+        // to ignore a '\n' if it is the next char to be read.
+        // This special case is indicated by 'pos > limit' (i.e. avail < 0).
+        // To simplify things, if we're dealing with the special case for
+        // readLine, just read the next char (since the fill method will
+        // skip the '\n' for us).  By doing this, we'll have to back up pos.
+        // That's easier than trying to keep track of whether we've skipped
+        // one element or not.
+        if (pos > limit)
+          {
+            if (read() < 0)
+              return 0;
+            else
+              --pos;
+          }
 
-	int avail = limit - pos;
+        int avail = limit - pos;
 
-	if (count < avail)
-	  {
-	    pos += count;
-	    return count;
-	  }
+        if (count < avail)
+          {
+            pos += count;
+            return count;
+          }
 
-	pos = limit;
-	long todo = count - avail;
-	if (todo > buffer.length)
-	  {
-	    markPos = -1;
-	    todo -= in.skip(todo);
-	  }
-	else
-	  {
-	    while (todo > 0)
-	      {
-		avail = fill();
-		if (avail <= 0)
-		  break;
-		if (avail > todo)
-		  avail = (int) todo;
-		pos += avail;
-		todo -= avail;
-	      }
-	  }
-	return count - todo;
+        pos = limit;
+        long todo = count - avail;
+        if (todo > buffer.length)
+          {
+            markPos = -1;
+            todo -= in.skip(todo);
+          }
+        else
+          {
+            while (todo > 0)
+              {
+                avail = fill();
+                if (avail <= 0)
+                  break;
+                if (avail > todo)
+                  avail = (int) todo;
+                pos += avail;
+                todo -= avail;
+              }
+          }
+        return count - todo;
       }
   }
-  
+
   private void checkStatus() throws IOException
   {
     if (in == null)
       throw new IOException("Stream closed");
-  }  
+  }
 }

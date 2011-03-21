@@ -1,4 +1,4 @@
-/* ClientStore.java -- 
+/* ClientStore.java --
    Copyright (C) 2003, 2006 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -64,7 +64,7 @@ public class ClientStore
 
   /**
    * Returns the classloader Singleton.
-   * 
+   *
    * @return the classloader Singleton instance.
    */
   static synchronized final ClientStore instance()
@@ -77,7 +77,7 @@ public class ClientStore
   /**
    * Returns a boolean flag indicating if the designated client's session is
    * still alive or not.
-   * 
+   *
    * @param uid the identifier of the client whose session to check.
    * @return <code>true</code> if the designated client's session is still
    *         alive. <code>false</code> otherwise.
@@ -105,7 +105,7 @@ public class ClientStore
   /**
    * Records a mapping between a client's unique identifier and its security
    * context.
-   * 
+   *
    * @param uid the unique identifier of the SRP client for which the session is
    *          to be cached.
    * @param ttl the session's Time-To-Live indicator (in seconds).
@@ -123,7 +123,7 @@ public class ClientStore
   /**
    * Removes the mapping between the designated SRP client unique identifier and
    * the its session security context (and other timing information).
-   * 
+   *
    * @param uid the identifier of the client whose session is to invalidate.
    */
   void invalidateSession(final String uid)
@@ -138,7 +138,7 @@ public class ClientStore
   /**
    * Returns an SRP client's security context record mapped by that client's
    * unique identifier.
-   * 
+   *
    * @param uid the identifier of the client whose session is to restore.
    * @return the SRP client's security context.
    */

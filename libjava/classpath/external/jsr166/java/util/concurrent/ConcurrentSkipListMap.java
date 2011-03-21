@@ -1175,7 +1175,7 @@ public class ConcurrentSkipListMap<K,V> extends AbstractMap<K,V>
                 findFirst(); // retry
             clearIndexToFirst();
             return new AbstractMap.SimpleImmutableEntry<K,V>(n.key, (V)v);
-	}
+        }
     }
 
     /**
@@ -1852,19 +1852,19 @@ public class ConcurrentSkipListMap<K,V> extends AbstractMap<K,V>
      * @return <tt>true</tt> if the specified object is equal to this map
      */
     public boolean equals(Object o) {
-	if (o == this)
-	    return true;
-	if (!(o instanceof Map))
-	    return false;
-	Map<?,?> m = (Map<?,?>) o;
+        if (o == this)
+            return true;
+        if (!(o instanceof Map))
+            return false;
+        Map<?,?> m = (Map<?,?>) o;
         try {
-	    for (Map.Entry<K,V> e : this.entrySet())
-		if (! e.getValue().equals(m.get(e.getKey())))
+            for (Map.Entry<K,V> e : this.entrySet())
+                if (! e.getValue().equals(m.get(e.getKey())))
                     return false;
-	    for (Map.Entry<?,?> e : m.entrySet()) {
+            for (Map.Entry<?,?> e : m.entrySet()) {
                 Object k = e.getKey();
                 Object v = e.getValue();
-		if (k == null || v == null || !v.equals(get(k)))
+                if (k == null || v == null || !v.equals(get(k)))
                     return false;
             }
             return true;
@@ -2208,20 +2208,20 @@ public class ConcurrentSkipListMap<K,V> extends AbstractMap<K,V>
         Node<K,V> lastReturned;
         /** the next node to return from next(); */
         Node<K,V> next;
-	/** Cache of next value field to maintain weak consistency */
-	V nextValue;
+        /** Cache of next value field to maintain weak consistency */
+        V nextValue;
 
         /** Initializes ascending iterator for entire range. */
         Iter() {
             for (;;) {
-		next = findFirst();
+                next = findFirst();
                 if (next == null)
                     break;
                 Object x = next.value;
                 if (x != null && x != next) {
-		    nextValue = (V) x;
+                    nextValue = (V) x;
                     break;
-		}
+                }
             }
         }
 
@@ -2234,14 +2234,14 @@ public class ConcurrentSkipListMap<K,V> extends AbstractMap<K,V>
             if ((lastReturned = next) == null)
                 throw new NoSuchElementException();
             for (;;) {
-		next = next.next;
+                next = next.next;
                 if (next == null)
                     break;
                 Object x = next.value;
                 if (x != null && x != next) {
-		    nextValue = (V) x;
+                    nextValue = (V) x;
                     break;
-		}
+                }
             }
         }
 
@@ -2252,7 +2252,7 @@ public class ConcurrentSkipListMap<K,V> extends AbstractMap<K,V>
             // It would not be worth all of the overhead to directly
             // unlink from here. Using remove is fast enough.
             ConcurrentSkipListMap.this.remove(l.key);
-	    lastReturned = null;
+            lastReturned = null;
         }
 
     }
@@ -2305,11 +2305,11 @@ public class ConcurrentSkipListMap<K,V> extends AbstractMap<K,V>
      */
 
     static final <E> List<E> toList(Collection<E> c) {
-	// Using size() here would be a pessimization.
-	List<E> list = new ArrayList<E>();
-	for (E e : c)
-	    list.add(e);
-	return list;
+        // Using size() here would be a pessimization.
+        List<E> list = new ArrayList<E>();
+        for (E e : c)
+            list.add(e);
+        return list;
     }
 
     static final class KeySet<E> extends AbstractSet<E> implements NavigableSet<E> {
@@ -2355,8 +2355,8 @@ public class ConcurrentSkipListMap<K,V> extends AbstractMap<K,V>
                 return false;
             }
         }
-	public Object[] toArray()     { return toList(this).toArray();  }
-	public <T> T[] toArray(T[] a) { return toList(this).toArray(a); }
+        public Object[] toArray()     { return toList(this).toArray();  }
+        public <T> T[] toArray(T[] a) { return toList(this).toArray(a); }
         public Iterator<E> descendingIterator() {
             return descendingSet().iterator();
         }
@@ -2411,8 +2411,8 @@ public class ConcurrentSkipListMap<K,V> extends AbstractMap<K,V>
         public void clear() {
             m.clear();
         }
-	public Object[] toArray()     { return toList(this).toArray();  }
-	public <T> T[] toArray(T[] a) { return toList(this).toArray(a); }
+        public Object[] toArray()     { return toList(this).toArray();  }
+        public <T> T[] toArray(T[] a) { return toList(this).toArray(a); }
     }
 
     static final class EntrySet<K1,V1> extends AbstractSet<Map.Entry<K1,V1>> {
@@ -2465,8 +2465,8 @@ public class ConcurrentSkipListMap<K,V> extends AbstractMap<K,V>
                 return false;
             }
         }
-	public Object[] toArray()     { return toList(this).toArray();  }
-	public <T> T[] toArray(T[] a) { return toList(this).toArray(a); }
+        public Object[] toArray()     { return toList(this).toArray();  }
+        public <T> T[] toArray(T[] a) { return toList(this).toArray(a); }
     }
 
     /**
@@ -2820,10 +2820,10 @@ public class ConcurrentSkipListMap<K,V> extends AbstractMap<K,V>
 
         public Comparator<? super K> comparator() {
             Comparator<? super K> cmp = m.comparator();
-	    if (isDescending)
-		return Collections.reverseOrder(cmp);
-	    else
-		return cmp;
+            if (isDescending)
+                return Collections.reverseOrder(cmp);
+            else
+                return cmp;
         }
 
         /**
@@ -3020,12 +3020,12 @@ public class ConcurrentSkipListMap<K,V> extends AbstractMap<K,V>
                     next = isDescending ? hiNode() : loNode();
                     if (next == null)
                         break;
-		    Object x = next.value;
+                    Object x = next.value;
                     if (x != null && x != next) {
-			if (! inBounds(next.key))
+                        if (! inBounds(next.key))
                             next = null;
-			else
-			    nextValue = (V) x;
+                        else
+                            nextValue = (V) x;
                         break;
                     }
                 }
@@ -3049,12 +3049,12 @@ public class ConcurrentSkipListMap<K,V> extends AbstractMap<K,V>
                     next = next.next;
                     if (next == null)
                         break;
-		    Object x = next.value;
+                    Object x = next.value;
                     if (x != null && x != next) {
                         if (tooHigh(next.key))
                             next = null;
                         else
-			    nextValue = (V) x;
+                            nextValue = (V) x;
                         break;
                     }
                 }
@@ -3065,11 +3065,11 @@ public class ConcurrentSkipListMap<K,V> extends AbstractMap<K,V>
                     next = m.findNear(lastReturned.key, LT);
                     if (next == null)
                         break;
-		    Object x = next.value;
+                    Object x = next.value;
                     if (x != null && x != next) {
                         if (tooLow(next.key))
                             next = null;
-			else
+                        else
                             nextValue = (V) x;
                         break;
                     }
@@ -3081,7 +3081,7 @@ public class ConcurrentSkipListMap<K,V> extends AbstractMap<K,V>
                 if (l == null)
                     throw new IllegalStateException();
                 m.remove(l.key);
-		lastReturned = null;
+                lastReturned = null;
             }
 
         }

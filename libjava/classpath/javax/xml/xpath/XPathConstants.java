@@ -1,4 +1,4 @@
-/* XPathConstants.java -- 
+/* XPathConstants.java --
    Copyright (C) 2004, 2005, 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -57,25 +57,25 @@ public class XPathConstants
    */
   public static final QName NUMBER =
     new QName("http://java.sun.com/jaxp/xpath/dom#number", "");
-  
+
   /**
    * The XPath 1.0 string data type.
    */
   public static final QName STRING =
     new QName("http://java.sun.com/jaxp/xpath/dom#string", "");
-  
+
   /**
    * The XPath 1.0 boolean data type.
    */
   public static final QName BOOLEAN =
     new QName("http://java.sun.com/jaxp/xpath/dom#boolean", "");
-  
+
   /**
    * The XPath 1.0 node-set data type.
    */
   public static final QName NODESET =
     new QName("http://java.sun.com/jaxp/xpath/dom#node-set", "");
-  
+
   /**
    * The XPath 1.0 node data type.
    */
@@ -87,5 +87,5 @@ public class XPathConstants
    */
   public static final String DOM_OBJECT_MODEL =
     "http://java.sun.com/jaxp/xpath/dom";
-  
+
 }

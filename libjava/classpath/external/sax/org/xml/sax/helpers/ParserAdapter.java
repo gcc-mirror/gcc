@@ -10,7 +10,7 @@ import java.io.IOException;
 import java.util.Enumeration;
 import java.util.Vector;
 
-import org.xml.sax.Parser;	// deprecated
+import org.xml.sax.Parser;      // deprecated
 import org.xml.sax.InputSource;
 import org.xml.sax.Locator;
 import org.xml.sax.AttributeList; // deprecated
@@ -57,7 +57,7 @@ import org.xml.sax.SAXNotSupportedException;
 public class ParserAdapter implements XMLReader, DocumentHandler
 {
 
-
+
     ////////////////////////////////////////////////////////////////////
     // Constructors.
     ////////////////////////////////////////////////////////////////////
@@ -76,35 +76,35 @@ public class ParserAdapter implements XMLReader, DocumentHandler
     public ParserAdapter ()
       throws SAXException
     {
-	super();
+        super();
 
-	String driver = System.getProperty("org.xml.sax.parser");
+        String driver = System.getProperty("org.xml.sax.parser");
 
-	try {
-	    setup(ParserFactory.makeParser());
-	} catch (ClassNotFoundException e1) {
-	    throw new
-		SAXException("Cannot find SAX1 driver class " +
-			     driver, e1);
-	} catch (IllegalAccessException e2) {
-	    throw new
-		SAXException("SAX1 driver class " +
-			     driver +
-			     " found but cannot be loaded", e2);
-	} catch (InstantiationException e3) {
-	    throw new
-		SAXException("SAX1 driver class " +
-			     driver +
-			     " loaded but cannot be instantiated", e3);
-	} catch (ClassCastException e4) {
-	    throw new
-		SAXException("SAX1 driver class " +
-			     driver +
-			     " does not implement org.xml.sax.Parser");
-	} catch (NullPointerException e5) {
-	    throw new 
-		SAXException("System property org.xml.sax.parser not specified");
-	}
+        try {
+            setup(ParserFactory.makeParser());
+        } catch (ClassNotFoundException e1) {
+            throw new
+                SAXException("Cannot find SAX1 driver class " +
+                             driver, e1);
+        } catch (IllegalAccessException e2) {
+            throw new
+                SAXException("SAX1 driver class " +
+                             driver +
+                             " found but cannot be loaded", e2);
+        } catch (InstantiationException e3) {
+            throw new
+                SAXException("SAX1 driver class " +
+                             driver +
+                             " loaded but cannot be instantiated", e3);
+        } catch (ClassCastException e4) {
+            throw new
+                SAXException("SAX1 driver class " +
+                             driver +
+                             " does not implement org.xml.sax.Parser");
+        } catch (NullPointerException e5) {
+            throw new
+                SAXException("System property org.xml.sax.parser not specified");
+        }
     }
 
 
@@ -121,8 +121,8 @@ public class ParserAdapter implements XMLReader, DocumentHandler
      */
     public ParserAdapter (Parser parser)
     {
-	super();
-	setup(parser);
+        super();
+        setup(parser);
     }
 
 
@@ -135,18 +135,18 @@ public class ParserAdapter implements XMLReader, DocumentHandler
      */
     private void setup (Parser parser)
     {
-	if (parser == null) {
-	    throw new
-		NullPointerException("Parser argument must not be null");
-	}
-	this.parser = parser;
-	atts = new AttributesImpl();
-	nsSupport = new NamespaceSupport();
-	attAdapter = new AttributeListAdapter();
+        if (parser == null) {
+            throw new
+                NullPointerException("Parser argument must not be null");
+        }
+        this.parser = parser;
+        atts = new AttributesImpl();
+        nsSupport = new NamespaceSupport();
+        attAdapter = new AttributeListAdapter();
     }
 
 
-
+
     ////////////////////////////////////////////////////////////////////
     // Implementation of org.xml.sax.XMLReader.
     ////////////////////////////////////////////////////////////////////
@@ -164,7 +164,7 @@ public class ParserAdapter implements XMLReader, DocumentHandler
     /**
      * Set a feature flag for the parser.
      *
-     * <p>The only features recognized are namespaces and 
+     * <p>The only features recognized are namespaces and
      * namespace-prefixes.</p>
      *
      * @param name The feature name, as a complete URI.
@@ -176,33 +176,33 @@ public class ParserAdapter implements XMLReader, DocumentHandler
      * @see org.xml.sax.XMLReader#setFeature
      */
     public void setFeature (String name, boolean value)
-	throws SAXNotRecognizedException, SAXNotSupportedException
+        throws SAXNotRecognizedException, SAXNotSupportedException
     {
-	if (name.equals(NAMESPACES)) {
-	    checkNotParsing("feature", name);
-	    namespaces = value;
-	    if (!namespaces && !prefixes) {
-		prefixes = true;
-	    }
-	} else if (name.equals(NAMESPACE_PREFIXES)) {
-	    checkNotParsing("feature", name);
-	    prefixes = value;
-	    if (!prefixes && !namespaces) {
-		namespaces = true;
-	    }
-	} else if (name.equals(XMLNS_URIs)) {
-	    checkNotParsing("feature", name);
-	    uris = value;
-	} else {
-	    throw new SAXNotRecognizedException("Feature: " + name);
-	}
+        if (name.equals(NAMESPACES)) {
+            checkNotParsing("feature", name);
+            namespaces = value;
+            if (!namespaces && !prefixes) {
+                prefixes = true;
+            }
+        } else if (name.equals(NAMESPACE_PREFIXES)) {
+            checkNotParsing("feature", name);
+            prefixes = value;
+            if (!prefixes && !namespaces) {
+                namespaces = true;
+            }
+        } else if (name.equals(XMLNS_URIs)) {
+            checkNotParsing("feature", name);
+            uris = value;
+        } else {
+            throw new SAXNotRecognizedException("Feature: " + name);
+        }
     }
 
 
     /**
      * Check a parser feature flag.
      *
-     * <p>The only features recognized are namespaces and 
+     * <p>The only features recognized are namespaces and
      * namespace-prefixes.</p>
      *
      * @param name The feature name, as a complete URI.
@@ -214,17 +214,17 @@ public class ParserAdapter implements XMLReader, DocumentHandler
      * @see org.xml.sax.XMLReader#setFeature
      */
     public boolean getFeature (String name)
-	throws SAXNotRecognizedException, SAXNotSupportedException
+        throws SAXNotRecognizedException, SAXNotSupportedException
     {
-	if (name.equals(NAMESPACES)) {
-	    return namespaces;
-	} else if (name.equals(NAMESPACE_PREFIXES)) {
-	    return prefixes;
-	} else if (name.equals(XMLNS_URIs)) {
-	    return uris;
-	} else {
-	    throw new SAXNotRecognizedException("Feature: " + name);
-	}
+        if (name.equals(NAMESPACES)) {
+            return namespaces;
+        } else if (name.equals(NAMESPACE_PREFIXES)) {
+            return prefixes;
+        } else if (name.equals(XMLNS_URIs)) {
+            return uris;
+        } else {
+            throw new SAXNotRecognizedException("Feature: " + name);
+        }
     }
 
 
@@ -242,9 +242,9 @@ public class ParserAdapter implements XMLReader, DocumentHandler
      * @see org.xml.sax.XMLReader#setProperty
      */
     public void setProperty (String name, Object value)
-	throws SAXNotRecognizedException, SAXNotSupportedException
+        throws SAXNotRecognizedException, SAXNotSupportedException
     {
-	throw new SAXNotRecognizedException("Property: " + name);
+        throw new SAXNotRecognizedException("Property: " + name);
     }
 
 
@@ -262,9 +262,9 @@ public class ParserAdapter implements XMLReader, DocumentHandler
      * @see org.xml.sax.XMLReader#getProperty
      */
     public Object getProperty (String name)
-	throws SAXNotRecognizedException, SAXNotSupportedException
+        throws SAXNotRecognizedException, SAXNotSupportedException
     {
-	throw new SAXNotRecognizedException("Property: " + name);
+        throw new SAXNotRecognizedException("Property: " + name);
     }
 
 
@@ -276,7 +276,7 @@ public class ParserAdapter implements XMLReader, DocumentHandler
      */
     public void setEntityResolver (EntityResolver resolver)
     {
-	entityResolver = resolver;
+        entityResolver = resolver;
     }
 
 
@@ -288,7 +288,7 @@ public class ParserAdapter implements XMLReader, DocumentHandler
      */
     public EntityResolver getEntityResolver ()
     {
-	return entityResolver;
+        return entityResolver;
     }
 
 
@@ -300,7 +300,7 @@ public class ParserAdapter implements XMLReader, DocumentHandler
      */
     public void setDTDHandler (DTDHandler handler)
     {
-	dtdHandler = handler;
+        dtdHandler = handler;
     }
 
 
@@ -312,7 +312,7 @@ public class ParserAdapter implements XMLReader, DocumentHandler
      */
     public DTDHandler getDTDHandler ()
     {
-	return dtdHandler;
+        return dtdHandler;
     }
 
 
@@ -324,7 +324,7 @@ public class ParserAdapter implements XMLReader, DocumentHandler
      */
     public void setContentHandler (ContentHandler handler)
     {
-	contentHandler = handler;
+        contentHandler = handler;
     }
 
 
@@ -336,7 +336,7 @@ public class ParserAdapter implements XMLReader, DocumentHandler
      */
     public ContentHandler getContentHandler ()
     {
-	return contentHandler;
+        return contentHandler;
     }
 
 
@@ -348,7 +348,7 @@ public class ParserAdapter implements XMLReader, DocumentHandler
      */
     public void setErrorHandler (ErrorHandler handler)
     {
-	errorHandler = handler;
+        errorHandler = handler;
     }
 
 
@@ -360,7 +360,7 @@ public class ParserAdapter implements XMLReader, DocumentHandler
      */
     public ErrorHandler getErrorHandler ()
     {
-	return errorHandler;
+        return errorHandler;
     }
 
 
@@ -376,9 +376,9 @@ public class ParserAdapter implements XMLReader, DocumentHandler
      * @see org.xml.sax.Parser#parse(java.lang.String)
      */
     public void parse (String systemId)
-	throws IOException, SAXException
+        throws IOException, SAXException
     {
-	parse(new InputSource(systemId));
+        parse(new InputSource(systemId));
     }
 
 
@@ -394,19 +394,19 @@ public class ParserAdapter implements XMLReader, DocumentHandler
      * @see org.xml.sax.Parser#parse(org.xml.sax.InputSource)
      */
     public void parse (InputSource input)
-	throws IOException, SAXException
+        throws IOException, SAXException
     {
-	if (parsing) {
-	    throw new SAXException("Parser is already in use");
-	}
-	setupParser();
-	parsing = true;
-	try {
-	    parser.parse(input);
-	} finally {
-	    parsing = false;
-	}
-	parsing = false;
+        if (parsing) {
+            throw new SAXException("Parser is already in use");
+        }
+        setupParser();
+        parsing = true;
+        try {
+            parser.parse(input);
+        } finally {
+            parsing = false;
+        }
+        parsing = false;
     }
 
 
@@ -425,10 +425,10 @@ public class ParserAdapter implements XMLReader, DocumentHandler
      */
     public void setDocumentLocator (Locator locator)
     {
-	this.locator = locator;
-	if (contentHandler != null) {
-	    contentHandler.setDocumentLocator(locator);
-	}
+        this.locator = locator;
+        if (contentHandler != null) {
+            contentHandler.setDocumentLocator(locator);
+        }
     }
 
 
@@ -441,11 +441,11 @@ public class ParserAdapter implements XMLReader, DocumentHandler
      * @see org.xml.sax.DocumentHandler#startDocument
      */
     public void startDocument ()
-	throws SAXException
+        throws SAXException
     {
-	if (contentHandler != null) {
-	    contentHandler.startDocument();
-	}
+        if (contentHandler != null) {
+            contentHandler.startDocument();
+        }
     }
 
 
@@ -458,11 +458,11 @@ public class ParserAdapter implements XMLReader, DocumentHandler
      * @see org.xml.sax.DocumentHandler#endDocument
      */
     public void endDocument ()
-	throws SAXException
+        throws SAXException
     {
-	if (contentHandler != null) {
-	    contentHandler.endDocument();
-	}
+        if (contentHandler != null) {
+            contentHandler.endDocument();
+        }
     }
 
 
@@ -478,124 +478,124 @@ public class ParserAdapter implements XMLReader, DocumentHandler
      *            processing exception.
      */
     public void startElement (String qName, AttributeList qAtts)
-	throws SAXException
+        throws SAXException
     {
-				// These are exceptions from the
-				// first pass; they should be
-				// ignored if there's a second pass,
-				// but reported otherwise.
-	Vector exceptions = null;
+                                // These are exceptions from the
+                                // first pass; they should be
+                                // ignored if there's a second pass,
+                                // but reported otherwise.
+        Vector exceptions = null;
 
-				// If we're not doing Namespace
-				// processing, dispatch this quickly.
-	if (!namespaces) {
-	    if (contentHandler != null) {
-		attAdapter.setAttributeList(qAtts);
-		contentHandler.startElement("", "", qName.intern(),
-					    attAdapter);
-	    }
-	    return;
-	}
+                                // If we're not doing Namespace
+                                // processing, dispatch this quickly.
+        if (!namespaces) {
+            if (contentHandler != null) {
+                attAdapter.setAttributeList(qAtts);
+                contentHandler.startElement("", "", qName.intern(),
+                                            attAdapter);
+            }
+            return;
+        }
 
 
-				// OK, we're doing Namespace processing.
-	nsSupport.pushContext();
-	int length = qAtts.getLength();
-	
-				// First pass:  handle NS decls
-	for (int i = 0; i < length; i++) {
-	    String attQName = qAtts.getName(i);
+                                // OK, we're doing Namespace processing.
+        nsSupport.pushContext();
+        int length = qAtts.getLength();
 
-	    if (!attQName.startsWith("xmlns"))
-		continue;
-				// Could be a declaration...
-	    String prefix;
-	    int n = attQName.indexOf(':');
+                                // First pass:  handle NS decls
+        for (int i = 0; i < length; i++) {
+            String attQName = qAtts.getName(i);
 
-	    			// xmlns=...
-	    if (n == -1 && attQName.length () == 5) {
-		prefix = "";
-	    } else if (n != 5) {
-		// XML namespaces spec doesn't discuss "xmlnsf:oo"
-		// (and similarly named) attributes ... at most, warn
-		continue;
-	    } else 		// xmlns:foo=...
-		prefix = attQName.substring(n+1);
+            if (!attQName.startsWith("xmlns"))
+                continue;
+                                // Could be a declaration...
+            String prefix;
+            int n = attQName.indexOf(':');
 
-	    String value = qAtts.getValue(i);
-	    if (!nsSupport.declarePrefix(prefix, value)) {
-		reportError("Illegal Namespace prefix: " + prefix);
-		continue;
-	    }
-	    if (contentHandler != null)
-		contentHandler.startPrefixMapping(prefix, value);
-	}
-	
-				// Second pass: copy all relevant
-				// attributes into the SAX2 AttributeList
-				// using updated prefix bindings
-	atts.clear();
-	for (int i = 0; i < length; i++) {
-	    String attQName = qAtts.getName(i);
-	    String type = qAtts.getType(i);
-	    String value = qAtts.getValue(i);
+                                // xmlns=...
+            if (n == -1 && attQName.length () == 5) {
+                prefix = "";
+            } else if (n != 5) {
+                // XML namespaces spec doesn't discuss "xmlnsf:oo"
+                // (and similarly named) attributes ... at most, warn
+                continue;
+            } else              // xmlns:foo=...
+                prefix = attQName.substring(n+1);
 
-				// Declaration?
-	    if (attQName.startsWith("xmlns")) {
-		String prefix;
-		int n = attQName.indexOf(':');
+            String value = qAtts.getValue(i);
+            if (!nsSupport.declarePrefix(prefix, value)) {
+                reportError("Illegal Namespace prefix: " + prefix);
+                continue;
+            }
+            if (contentHandler != null)
+                contentHandler.startPrefixMapping(prefix, value);
+        }
 
-		if (n == -1 && attQName.length () == 5) {
-		    prefix = "";
-		} else if (n != 5) {
-		    // XML namespaces spec doesn't discuss "xmlnsf:oo"
-		    // (and similarly named) attributes ... ignore
-		    prefix = null;
-		} else {
-		    prefix = attQName.substring(6);
-		}
-				// Yes, decl:  report or prune
-		if (prefix != null) {
-		    if (prefixes) {
-			if (uris)
-			    // note funky case:  localname can be null
-			    // when declaring the default prefix, and
-			    // yet the uri isn't null.
-			    atts.addAttribute (nsSupport.XMLNS, prefix,
-				    attQName.intern(), type, value);
-			else
-			    atts.addAttribute ("", "",
-				    attQName.intern(), type, value);
-		    }
-		    continue;
-		}
-	    } 
+                                // Second pass: copy all relevant
+                                // attributes into the SAX2 AttributeList
+                                // using updated prefix bindings
+        atts.clear();
+        for (int i = 0; i < length; i++) {
+            String attQName = qAtts.getName(i);
+            String type = qAtts.getType(i);
+            String value = qAtts.getValue(i);
 
-				// Not a declaration -- report
-	    try {
-		String attName[] = processName(attQName, true, true);
-		atts.addAttribute(attName[0], attName[1], attName[2],
-				  type, value);
-	    } catch (SAXException e) {
-		if (exceptions == null)
-		    exceptions = new Vector();
-		exceptions.addElement(e);
-		atts.addAttribute("", attQName, attQName, type, value);
-	    }
-	}
-	
-	// now handle the deferred exception reports
-	if (exceptions != null && errorHandler != null) {
-	    for (int i = 0; i < exceptions.size(); i++)
-		errorHandler.error((SAXParseException)
-				(exceptions.elementAt(i)));
-	}
+                                // Declaration?
+            if (attQName.startsWith("xmlns")) {
+                String prefix;
+                int n = attQName.indexOf(':');
 
-				// OK, finally report the event.
-	if (contentHandler != null) {
-	    String name[] = processName(qName, false, false);
-	    contentHandler.startElement(name[0], name[1], name[2], atts);
-	}
+                if (n == -1 && attQName.length () == 5) {
+                    prefix = "";
+                } else if (n != 5) {
+                    // XML namespaces spec doesn't discuss "xmlnsf:oo"
+                    // (and similarly named) attributes ... ignore
+                    prefix = null;
+                } else {
+                    prefix = attQName.substring(6);
+                }
+                                // Yes, decl:  report or prune
+                if (prefix != null) {
+                    if (prefixes) {
+                        if (uris)
+                            // note funky case:  localname can be null
+                            // when declaring the default prefix, and
+                            // yet the uri isn't null.
+                            atts.addAttribute (nsSupport.XMLNS, prefix,
+                                    attQName.intern(), type, value);
+                        else
+                            atts.addAttribute ("", "",
+                                    attQName.intern(), type, value);
+                    }
+                    continue;
+                }
+            }
+
+                                // Not a declaration -- report
+            try {
+                String attName[] = processName(attQName, true, true);
+                atts.addAttribute(attName[0], attName[1], attName[2],
+                                  type, value);
+            } catch (SAXException e) {
+                if (exceptions == null)
+                    exceptions = new Vector();
+                exceptions.addElement(e);
+                atts.addAttribute("", attQName, attQName, type, value);
+            }
+        }
+
+        // now handle the deferred exception reports
+        if (exceptions != null && errorHandler != null) {
+            for (int i = 0; i < exceptions.size(); i++)
+                errorHandler.error((SAXParseException)
+                                (exceptions.elementAt(i)));
+        }
+
+                                // OK, finally report the event.
+        if (contentHandler != null) {
+            String name[] = processName(qName, false, false);
+            contentHandler.startElement(name[0], name[1], name[2], atts);
+        }
     }
 
 
@@ -609,28 +609,28 @@ public class ParserAdapter implements XMLReader, DocumentHandler
      * @see org.xml.sax.DocumentHandler#endElement
      */
     public void endElement (String qName)
-	throws SAXException
+        throws SAXException
     {
-				// If we're not doing Namespace
-				// processing, dispatch this quickly.
-	if (!namespaces) {
-	    if (contentHandler != null) {
-		contentHandler.endElement("", "", qName.intern());
-	    }
-	    return;
-	}
+                                // If we're not doing Namespace
+                                // processing, dispatch this quickly.
+        if (!namespaces) {
+            if (contentHandler != null) {
+                contentHandler.endElement("", "", qName.intern());
+            }
+            return;
+        }
 
-				// Split the name.
-	String names[] = processName(qName, false, false);
-	if (contentHandler != null) {
-	    contentHandler.endElement(names[0], names[1], names[2]);
-	    Enumeration prefixes = nsSupport.getDeclaredPrefixes();
-	    while (prefixes.hasMoreElements()) {
-		String prefix = (String)prefixes.nextElement();
-		contentHandler.endPrefixMapping(prefix);
-	    }
-	}
-	nsSupport.popContext();
+                                // Split the name.
+        String names[] = processName(qName, false, false);
+        if (contentHandler != null) {
+            contentHandler.endElement(names[0], names[1], names[2]);
+            Enumeration prefixes = nsSupport.getDeclaredPrefixes();
+            while (prefixes.hasMoreElements()) {
+                String prefix = (String)prefixes.nextElement();
+                contentHandler.endPrefixMapping(prefix);
+            }
+        }
+        nsSupport.popContext();
     }
 
 
@@ -646,11 +646,11 @@ public class ParserAdapter implements XMLReader, DocumentHandler
      * @see org.xml.sax.DocumentHandler#characters
      */
     public void characters (char ch[], int start, int length)
-	throws SAXException
+        throws SAXException
     {
-	if (contentHandler != null) {
-	    contentHandler.characters(ch, start, length);
-	}
+        if (contentHandler != null) {
+            contentHandler.characters(ch, start, length);
+        }
     }
 
 
@@ -666,11 +666,11 @@ public class ParserAdapter implements XMLReader, DocumentHandler
      * @see org.xml.sax.DocumentHandler#ignorableWhitespace
      */
     public void ignorableWhitespace (char ch[], int start, int length)
-	throws SAXException
+        throws SAXException
     {
-	if (contentHandler != null) {
-	    contentHandler.ignorableWhitespace(ch, start, length);
-	}
+        if (contentHandler != null) {
+            contentHandler.ignorableWhitespace(ch, start, length);
+        }
     }
 
 
@@ -685,15 +685,15 @@ public class ParserAdapter implements XMLReader, DocumentHandler
      * @see org.xml.sax.DocumentHandler#processingInstruction
      */
     public void processingInstruction (String target, String data)
-	throws SAXException
+        throws SAXException
     {
-	if (contentHandler != null) {
-	    contentHandler.processingInstruction(target, data);
-	}
+        if (contentHandler != null) {
+            contentHandler.processingInstruction(target, data);
+        }
     }
 
 
-
+
     ////////////////////////////////////////////////////////////////////
     // Internal utility methods.
     ////////////////////////////////////////////////////////////////////
@@ -704,25 +704,25 @@ public class ParserAdapter implements XMLReader, DocumentHandler
      */
     private void setupParser ()
     {
-	// catch an illegal "nonsense" state.
-	if (!prefixes && !namespaces)
-	    throw new IllegalStateException ();
+        // catch an illegal "nonsense" state.
+        if (!prefixes && !namespaces)
+            throw new IllegalStateException ();
 
-	nsSupport.reset();
-	if (uris)
-	    nsSupport.setNamespaceDeclUris (true);
+        nsSupport.reset();
+        if (uris)
+            nsSupport.setNamespaceDeclUris (true);
 
-	if (entityResolver != null) {
-	    parser.setEntityResolver(entityResolver);
-	}
-	if (dtdHandler != null) {
-	    parser.setDTDHandler(dtdHandler);
-	}
-	if (errorHandler != null) {
-	    parser.setErrorHandler(errorHandler);
-	}
-	parser.setDocumentHandler(this);
-	locator = null;
+        if (entityResolver != null) {
+            parser.setEntityResolver(entityResolver);
+        }
+        if (dtdHandler != null) {
+            parser.setDTDHandler(dtdHandler);
+        }
+        if (errorHandler != null) {
+            parser.setErrorHandler(errorHandler);
+        }
+        parser.setDocumentHandler(this);
+        locator = null;
     }
 
 
@@ -740,20 +740,20 @@ public class ParserAdapter implements XMLReader, DocumentHandler
      *            an exception if there is an error callback.
      */
     private String [] processName (String qName, boolean isAttribute,
-				   boolean useException)
-	throws SAXException
+                                   boolean useException)
+        throws SAXException
     {
-	String parts[] = nsSupport.processName(qName, nameParts,
-					       isAttribute);
-	if (parts == null) {
-	    if (useException)
-		throw makeException("Undeclared prefix: " + qName);
-	    reportError("Undeclared prefix: " + qName);
-	    parts = new String[3];
-	    parts[0] = parts[1] = "";
-	    parts[2] = qName.intern();
-	}
-	return parts;
+        String parts[] = nsSupport.processName(qName, nameParts,
+                                               isAttribute);
+        if (parts == null) {
+            if (useException)
+                throw makeException("Undeclared prefix: " + qName);
+            reportError("Undeclared prefix: " + qName);
+            parts = new String[3];
+            parts[0] = parts[1] = "";
+            parts[2] = qName.intern();
+        }
+        return parts;
     }
 
 
@@ -765,13 +765,13 @@ public class ParserAdapter implements XMLReader, DocumentHandler
      *            an exception.
      */
     void reportError (String message)
-	throws SAXException
+        throws SAXException
     {
-	if (errorHandler != null)
-	    errorHandler.error(makeException(message));
+        if (errorHandler != null)
+            errorHandler.error(makeException(message));
     }
 
-    
+
     /**
      * Construct an exception for the current context.
      *
@@ -779,11 +779,11 @@ public class ParserAdapter implements XMLReader, DocumentHandler
      */
     private SAXParseException makeException (String message)
     {
-	if (locator != null) {
-	    return new SAXParseException(message, locator);
-	} else {
-	    return new SAXParseException(message, null, null, -1, -1);
-	}
+        if (locator != null) {
+            return new SAXParseException(message, locator);
+        } else {
+            return new SAXParseException(message, null, null, -1, -1);
+        }
     }
 
 
@@ -799,18 +799,18 @@ public class ParserAdapter implements XMLReader, DocumentHandler
      *            document is currently being parsed.
      */
     private void checkNotParsing (String type, String name)
-	throws SAXNotSupportedException
+        throws SAXNotSupportedException
     {
-	if (parsing) {
-	    throw new SAXNotSupportedException("Cannot change " +
-					       type + ' ' +
-					       name + " while parsing");
-					       
-	}
+        if (parsing) {
+            throw new SAXNotSupportedException("Cannot change " +
+                                               type + ' ' +
+                                               name + " while parsing");
+
+        }
     }
 
 
-
+
     ////////////////////////////////////////////////////////////////////
     // Internal state.
     ////////////////////////////////////////////////////////////////////
@@ -825,14 +825,14 @@ public class ParserAdapter implements XMLReader, DocumentHandler
 
     private AttributesImpl atts = null;
 
-				// Features
+                                // Features
     private boolean namespaces = true;
     private boolean prefixes = false;
     private boolean uris = false;
 
-				// Properties
+                                // Properties
 
-				// Handlers
+                                // Handlers
     Locator locator;
 
     EntityResolver entityResolver = null;
@@ -841,7 +841,7 @@ public class ParserAdapter implements XMLReader, DocumentHandler
     ErrorHandler errorHandler = null;
 
 
-
+
     ////////////////////////////////////////////////////////////////////
     // Inner class to wrap an AttributeList when not doing NS proc.
     ////////////////////////////////////////////////////////////////////
@@ -855,191 +855,191 @@ public class ParserAdapter implements XMLReader, DocumentHandler
      *
      * <p>This wrapper class is used only when Namespace support
      * is disabled -- it provides pretty much a direct mapping
-     * from SAX1 to SAX2, except that names and types are 
+     * from SAX1 to SAX2, except that names and types are
      * interned whenever requested.</p>
      */
     final class AttributeListAdapter implements Attributes
     {
 
-	/**
-	 * Construct a new adapter.
-	 */
-	AttributeListAdapter ()
-	{
-	}
+        /**
+         * Construct a new adapter.
+         */
+        AttributeListAdapter ()
+        {
+        }
 
 
-	/**
-	 * Set the embedded AttributeList.
-	 *
-	 * <p>This method must be invoked before any of the others
-	 * can be used.</p>
-	 *
-	 * @param The SAX1 attribute list (with qnames).
-	 */
-	void setAttributeList (AttributeList qAtts)
-	{
-	    this.qAtts = qAtts;
-	}
+        /**
+         * Set the embedded AttributeList.
+         *
+         * <p>This method must be invoked before any of the others
+         * can be used.</p>
+         *
+         * @param The SAX1 attribute list (with qnames).
+         */
+        void setAttributeList (AttributeList qAtts)
+        {
+            this.qAtts = qAtts;
+        }
 
 
-	/**
-	 * Return the length of the attribute list.
-	 *
-	 * @return The number of attributes in the list.
-	 * @see org.xml.sax.Attributes#getLength
-	 */
-	public int getLength ()
-	{
-	    return qAtts.getLength();
-	}
+        /**
+         * Return the length of the attribute list.
+         *
+         * @return The number of attributes in the list.
+         * @see org.xml.sax.Attributes#getLength
+         */
+        public int getLength ()
+        {
+            return qAtts.getLength();
+        }
 
 
-	/**
-	 * Return the Namespace URI of the specified attribute.
-	 *
-	 * @param The attribute's index.
-	 * @return Always the empty string.
-	 * @see org.xml.sax.Attributes#getURI
-	 */
-	public String getURI (int i)
-	{
-	    return "";
-	}
+        /**
+         * Return the Namespace URI of the specified attribute.
+         *
+         * @param The attribute's index.
+         * @return Always the empty string.
+         * @see org.xml.sax.Attributes#getURI
+         */
+        public String getURI (int i)
+        {
+            return "";
+        }
 
 
-	/**
-	 * Return the local name of the specified attribute.
-	 *
-	 * @param The attribute's index.
-	 * @return Always the empty string.
-	 * @see org.xml.sax.Attributes#getLocalName
-	 */
-	public String getLocalName (int i)
-	{
-	    return "";
-	}
+        /**
+         * Return the local name of the specified attribute.
+         *
+         * @param The attribute's index.
+         * @return Always the empty string.
+         * @see org.xml.sax.Attributes#getLocalName
+         */
+        public String getLocalName (int i)
+        {
+            return "";
+        }
 
 
-	/**
-	 * Return the qualified (prefixed) name of the specified attribute.
-	 *
-	 * @param The attribute's index.
-	 * @return The attribute's qualified name, internalized.
-	 */
-	public String getQName (int i)
-	{
-	    return qAtts.getName(i).intern();
-	}
+        /**
+         * Return the qualified (prefixed) name of the specified attribute.
+         *
+         * @param The attribute's index.
+         * @return The attribute's qualified name, internalized.
+         */
+        public String getQName (int i)
+        {
+            return qAtts.getName(i).intern();
+        }
 
 
-	/**
-	 * Return the type of the specified attribute.
-	 *
-	 * @param The attribute's index.
-	 * @return The attribute's type as an internalized string.
-	 */
-	public String getType (int i)
-	{
-	    return qAtts.getType(i).intern();
-	}
+        /**
+         * Return the type of the specified attribute.
+         *
+         * @param The attribute's index.
+         * @return The attribute's type as an internalized string.
+         */
+        public String getType (int i)
+        {
+            return qAtts.getType(i).intern();
+        }
 
 
-	/**
-	 * Return the value of the specified attribute.
-	 *
-	 * @param The attribute's index.
-	 * @return The attribute's value.
-	 */
-	public String getValue (int i)
-	{
-	    return qAtts.getValue(i);
-	}
+        /**
+         * Return the value of the specified attribute.
+         *
+         * @param The attribute's index.
+         * @return The attribute's value.
+         */
+        public String getValue (int i)
+        {
+            return qAtts.getValue(i);
+        }
 
 
-	/**
-	 * Look up an attribute index by Namespace name.
-	 *
-	 * @param uri The Namespace URI or the empty string.
-	 * @param localName The local name.
-	 * @return The attributes index, or -1 if none was found.
-	 * @see org.xml.sax.Attributes#getIndex(java.lang.String,java.lang.String)
-	 */
-	public int getIndex (String uri, String localName)
-	{
-	    return -1;
-	}
+        /**
+         * Look up an attribute index by Namespace name.
+         *
+         * @param uri The Namespace URI or the empty string.
+         * @param localName The local name.
+         * @return The attributes index, or -1 if none was found.
+         * @see org.xml.sax.Attributes#getIndex(java.lang.String,java.lang.String)
+         */
+        public int getIndex (String uri, String localName)
+        {
+            return -1;
+        }
 
 
-	/**
-	 * Look up an attribute index by qualified (prefixed) name.
-	 *
-	 * @param qName The qualified name.
-	 * @return The attributes index, or -1 if none was found.
-	 * @see org.xml.sax.Attributes#getIndex(java.lang.String)
-	 */
-	public int getIndex (String qName)
-	{
-	    int max = atts.getLength();
-	    for (int i = 0; i < max; i++) {
-		if (qAtts.getName(i).equals(qName)) {
-		    return i;
-		}
-	    }
-	    return -1;
-	}
+        /**
+         * Look up an attribute index by qualified (prefixed) name.
+         *
+         * @param qName The qualified name.
+         * @return The attributes index, or -1 if none was found.
+         * @see org.xml.sax.Attributes#getIndex(java.lang.String)
+         */
+        public int getIndex (String qName)
+        {
+            int max = atts.getLength();
+            for (int i = 0; i < max; i++) {
+                if (qAtts.getName(i).equals(qName)) {
+                    return i;
+                }
+            }
+            return -1;
+        }
 
 
-	/**
-	 * Look up the type of an attribute by Namespace name.
-	 *
-	 * @param uri The Namespace URI
-	 * @param localName The local name.
-	 * @return The attribute's type as an internalized string.
-	 */
-	public String getType (String uri, String localName)
-	{
-	    return null;
-	}
+        /**
+         * Look up the type of an attribute by Namespace name.
+         *
+         * @param uri The Namespace URI
+         * @param localName The local name.
+         * @return The attribute's type as an internalized string.
+         */
+        public String getType (String uri, String localName)
+        {
+            return null;
+        }
 
 
-	/**
-	 * Look up the type of an attribute by qualified (prefixed) name.
-	 *
-	 * @param qName The qualified name.
-	 * @return The attribute's type as an internalized string.
-	 */
-	public String getType (String qName)
-	{
-	    return qAtts.getType(qName).intern();
-	}
+        /**
+         * Look up the type of an attribute by qualified (prefixed) name.
+         *
+         * @param qName The qualified name.
+         * @return The attribute's type as an internalized string.
+         */
+        public String getType (String qName)
+        {
+            return qAtts.getType(qName).intern();
+        }
 
 
-	/**
-	 * Look up the value of an attribute by Namespace name.
-	 *
-	 * @param uri The Namespace URI
-	 * @param localName The local name.
-	 * @return The attribute's value.
-	 */
-	public String getValue (String uri, String localName)
-	{
-	    return null;
-	}
+        /**
+         * Look up the value of an attribute by Namespace name.
+         *
+         * @param uri The Namespace URI
+         * @param localName The local name.
+         * @return The attribute's value.
+         */
+        public String getValue (String uri, String localName)
+        {
+            return null;
+        }
 
 
-	/**
-	 * Look up the value of an attribute by qualified (prefixed) name.
-	 *
-	 * @param qName The qualified name.
-	 * @return The attribute's value.
-	 */
-	public String getValue (String qName)
-	{
-	    return qAtts.getValue(qName);
-	}
+        /**
+         * Look up the value of an attribute by qualified (prefixed) name.
+         *
+         * @param qName The qualified name.
+         * @return The attribute's value.
+         */
+        public String getValue (String qName)
+        {
+            return qAtts.getValue(qName);
+        }
 
-	private AttributeList qAtts;
+        private AttributeList qAtts;
     }
 }
 

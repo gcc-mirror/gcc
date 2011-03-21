@@ -46,7 +46,7 @@ public class QtPanelPeer extends QtContainerPeer implements PanelPeer
   {
     super( kit, owner );
   }
-  
+
   protected native void init();
 
   protected void setup()

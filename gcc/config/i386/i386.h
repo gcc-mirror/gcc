@@ -1,6 +1,6 @@
 /* Definitions of target machine for GCC for IA-32.
    Copyright (C) 1988, 1992, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
-   2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+   2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -251,6 +251,7 @@ extern const struct processor_costs ix86_size_cost;
 #define TARGET_GENERIC (TARGET_GENERIC32 || TARGET_GENERIC64)
 #define TARGET_AMDFAM10 (ix86_tune == PROCESSOR_AMDFAM10)
 #define TARGET_BDVER1 (ix86_tune == PROCESSOR_BDVER1)
+#define TARGET_BTVER1 (ix86_tune == PROCESSOR_BTVER1)
 #define TARGET_ATOM (ix86_tune == PROCESSOR_ATOM)
 
 /* Feature tests against the various tunings.  */
@@ -552,17 +553,15 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 /* Specs for the compiler proper */
 
 #ifndef CC1_CPU_SPEC
-#define CC1_CPU_SPEC_1 "\
-%{msse5:-mavx \
-%n'-msse5' was removed\n}"
+#define CC1_CPU_SPEC_1 ""
 
 #ifndef HAVE_LOCAL_CPU_DETECT
 #define CC1_CPU_SPEC CC1_CPU_SPEC_1
 #else
 #define CC1_CPU_SPEC CC1_CPU_SPEC_1 \
-"%{march=native:%<march=native %:local_cpu_detect(arch) \
-  %{!mtune=*:%<mtune=native %:local_cpu_detect(tune)}} \
-%{mtune=native:%<mtune=native %:local_cpu_detect(tune)}"
+"%{march=native:%>march=native %:local_cpu_detect(arch) \
+  %{!mtune=*:%>mtune=native %:local_cpu_detect(tune)}} \
+%{mtune=native:%>mtune=native %:local_cpu_detect(tune)}"
 #endif
 #endif
 
@@ -600,6 +599,7 @@ enum target_cpu_default
   TARGET_CPU_DEFAULT_k8,
   TARGET_CPU_DEFAULT_amdfam10,
   TARGET_CPU_DEFAULT_bdver1,
+  TARGET_CPU_DEFAULT_btver1,
 
   TARGET_CPU_DEFAULT_max
 };
@@ -2064,6 +2064,7 @@ enum processor_type
   PROCESSOR_GENERIC64,
   PROCESSOR_AMDFAM10,
   PROCESSOR_BDVER1,
+  PROCESSOR_BTVER1,
   PROCESSOR_ATOM,
   PROCESSOR_max
 };

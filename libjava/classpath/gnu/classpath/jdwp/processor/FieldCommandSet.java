@@ -46,7 +46,7 @@ import java.nio.ByteBuffer;
 
 /**
  * A class representing the Field Command Set.
- * 
+ *
  * @author Aaron Luchko <aluchko@redhat.com>
  */
 public class FieldCommandSet
@@ -55,7 +55,7 @@ public class FieldCommandSet
   /**
    * There are no commands for this CommandSet at this time so we just throw a
    * NotImplementedException whenever it's called.
-   * 
+   *
    * @throws JdwpException An exception will always be thrown
    */
   public boolean runCommand(ByteBuffer bb, DataOutputStream os, byte command)

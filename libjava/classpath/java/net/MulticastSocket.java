@@ -202,7 +202,7 @@ public class MulticastSocket extends DatagramSocket
   {
     if (isClosed())
       throw new SocketException("socket is closed");
-    
+
     InetAddress address;
     if (netIf != null)
       out:
@@ -235,8 +235,8 @@ public class MulticastSocket extends DatagramSocket
       }
     else
       address = InetAddress.ANY_IF;
-    
-    
+
+
     getImpl().setOption(SocketOptions.IP_MULTICAST_IF, address);
   }
 
@@ -258,10 +258,10 @@ public class MulticastSocket extends DatagramSocket
 
     InetAddress address =
       (InetAddress) getImpl().getOption(SocketOptions.IP_MULTICAST_IF);
-    
+
     if (address.isAnyLocalAddress())
       return NetworkInterface.createAnyInterface();
-    
+
     NetworkInterface netIf = NetworkInterface.getByInetAddress(address);
 
     return netIf;
@@ -294,7 +294,7 @@ public class MulticastSocket extends DatagramSocket
    * Checks if local loopback mode is enabled
    *
    * @return true if loopback mode is enabled, false otherwise
-   * 
+   *
    * @exception SocketException If an error occurs
    *
    * @since 1.4
@@ -501,13 +501,13 @@ public class MulticastSocket extends DatagramSocket
     SecurityManager s = System.getSecurityManager();
     if (s != null)
       {
-	InetAddress addr = packet.getAddress();
-	if (addr.isMulticastAddress())
-	  s.checkPermission(new SocketPermission(addr.getHostName()
-	                                         + packet.getPort(),
-	                                         "accept,connect"));
-	else
-	  s.checkConnect(addr.getHostAddress(), packet.getPort());
+        InetAddress addr = packet.getAddress();
+        if (addr.isMulticastAddress())
+          s.checkPermission(new SocketPermission(addr.getHostName()
+                                                 + packet.getPort(),
+                                                 "accept,connect"));
+        else
+          s.checkConnect(addr.getHostAddress(), packet.getPort());
       }
 
     int oldttl = getImpl().getTimeToLive();

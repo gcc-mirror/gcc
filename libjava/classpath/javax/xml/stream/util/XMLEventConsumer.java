@@ -1,4 +1,4 @@
-/* XMLEventConsumer.java -- 
+/* XMLEventConsumer.java --
    Copyright (C) 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -51,6 +51,5 @@ public interface XMLEventConsumer
    */
   void add(XMLEvent event)
     throws XMLStreamException;
-  
-}
 
+}

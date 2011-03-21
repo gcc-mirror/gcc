@@ -49,7 +49,7 @@ import javax.print.attribute.PrintRequestAttribute;
  * should be printed in monochrome or color.
  * <p>
  * The attribute interacts with the document to be printed. If the document
- * to be printed is a monochrome document it will be printed monochrome 
+ * to be printed is a monochrome document it will be printed monochrome
  * regardless of the value of this attribute category. However if it is a
  * color document supplying the attribute value <code>MONOCHROME</code>
  * will prepare the document to be printed in monochrome instead of color.
@@ -63,20 +63,20 @@ import javax.print.attribute.PrintRequestAttribute;
  * <p>
  * <b>IPP Compatibility:</b> Chromaticity is not an IPP 1.1 attribute.
  * </p>
- *  
+ *
  * @author Michael Koch (konqueror@gmx.de)
  */
 public final class Chromaticity extends EnumSyntax
   implements DocAttribute, PrintRequestAttribute, PrintJobAttribute
 {
   private static final long serialVersionUID = 4660543931355214012L;
-  
+
   /** Specifies monochrome printing. */
   public static final Chromaticity MONOCHROME = new Chromaticity(0);
-  
+
   /** Specifies color printing. */
   public static final Chromaticity COLOR = new Chromaticity(1);
-  
+
   private static final String[] stringTable = { "monochrome", "color" };
   private static final Chromaticity[] enumValueTable = { MONOCHROME, COLOR };
 
@@ -109,7 +109,7 @@ public final class Chromaticity extends EnumSyntax
   {
     return "chromaticity";
   }
-  
+
   /**
    * Returns a table with the enumeration values represented as strings
    * for this object.
@@ -130,5 +130,5 @@ public final class Chromaticity extends EnumSyntax
   {
     return enumValueTable;
   }
-  
+
 }

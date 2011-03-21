@@ -1,4 +1,4 @@
-/* AbstractCallbackHandler.java -- 
+/* AbstractCallbackHandler.java --
    Copyright (C) 2005, 2006  Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -86,7 +86,7 @@ public abstract class AbstractCallbackHandler implements CallbackHandler
   /**
    * Create an instance of <code>CallbackHandler</code> of the designated
    * <code>type</code> from the first Security Provider which offers it.
-   * 
+   *
    * @param type the type of callback handler to create.
    * @return a newly created instance of <code>ClassbackHandler</code>.
    * @throws NoSuchAlgorithmException if no security provider is found to offer
@@ -115,7 +115,7 @@ public abstract class AbstractCallbackHandler implements CallbackHandler
   /**
    * Create an instance of <code>CallbackHandler</code> of the designated
    * <code>type</code> from the named security <code>provider</code>.
-   * 
+   *
    * @param type the type of callback handler to create.
    * @param provider a named security provider to use.
    * @return a newly created instance of <code>ClassbackHandler</code>.
@@ -140,7 +140,7 @@ public abstract class AbstractCallbackHandler implements CallbackHandler
   /**
    * Create an instance of <code>CallbackHandler</code> of the designated
    * <code>type</code> from the designated security <code>provider</code>.
-   * 
+   *
    * @param type the type of callback handler to create.
    * @param provider a security provider to use.
    * @return a newly created instance of <code>ClassbackHandler</code>.

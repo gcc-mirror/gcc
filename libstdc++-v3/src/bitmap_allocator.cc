@@ -1,6 +1,6 @@
 // Bitmap Allocator. Out of line function definitions. -*- C++ -*-
 
-// Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009
+// Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2011
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -25,10 +25,11 @@
 
 #include <ext/bitmap_allocator.h>
 
-_GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
-
+namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
+{
   namespace __detail
   {
+  _GLIBCXX_BEGIN_NAMESPACE_VERSION
     template class __mini_vector<
       std::pair<bitmap_allocator<char>::_Alloc_block*,
 		bitmap_allocator<char>::_Alloc_block*> >;
@@ -41,7 +42,10 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
     template size_t** __lower_bound(size_t**, size_t**, size_t const&, 
 				    free_list::_LT_pointer_compare);
+  _GLIBCXX_END_NAMESPACE_VERSION
   }
+
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   size_t*
   free_list::
@@ -49,6 +53,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
   {
 #if defined __GTHREADS
     __mutex_type& __bfl_mutex = _M_get_mutex();
+    __bfl_mutex.lock();
 #endif
     const vector_type& __free_list = _M_get_free_list();
     using __gnu_cxx::__detail::__lower_bound;
@@ -119,4 +124,5 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
   template class bitmap_allocator<char>;
   template class bitmap_allocator<wchar_t>;
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace

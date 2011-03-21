@@ -54,22 +54,22 @@ import java.util.prefs.BackingStoreException;
  * <br />
  * User Root:<br />
  * <br />
- * 
+ *
  * <pre>
  * gnu.java.util.prefs.gconf.user_root
  * </pre>
- * 
+ *
  * <br />
  * <br />
  * and System Root:<br />
  * <br />
- * 
+ *
  * <pre>
  * gnu.java.util.prefs.gconf.system_root
  * </pre>
- * 
+ *
  * <br />
- * 
+ *
  * @author Mario Torre <neugens@limasoftware.net>
  */
 public class GConfBasedPreferences
@@ -115,7 +115,7 @@ public class GConfBasedPreferences
    * Creates a new preference node given a parent node and a name, which has to
    * be relative to its parent. When <code>isUser</code> is true it will be user
    * node otherwise it will be a system node.
-   * 
+   *
    * @param parent The parent node of this newly created node.
    * @param name A name relative to the parent node.
    * @param isUser Set to <code>true</code> initializes this node to be
@@ -142,7 +142,7 @@ public class GConfBasedPreferences
         absolutePath = absolutePath.substring(0, index + 1);
         absolutePath = absolutePath + GConfNativePeer.escapeString(name);
       }
-    
+
     this.node = this.getRealRoot(isUser) + absolutePath;
 
     boolean nodeExist = backend.nodeExist(this.node);
@@ -153,7 +153,7 @@ public class GConfBasedPreferences
   /**
    * Returns a child node with the given name.
    * If the child node does not exists, it will be created.
-   * 
+   *
    * @param name The name of the requested node.
    * @return A new reference to the node, creating the node if it is necessary.
    */
@@ -162,10 +162,10 @@ public class GConfBasedPreferences
     // we don't check anything here, if the node is a new node this will be
     // detected in the constructor, so we simply return a new reference to
     // the requested node.
-    
+
     GConfBasedPreferences preferenceNode
       = new GConfBasedPreferences(this, name, this.isUser);
-        
+
     return preferenceNode;
   }
 
@@ -173,7 +173,7 @@ public class GConfBasedPreferences
    * Returns an array of names of the children of this preference node.
    * If the current node does not have children, the returned array will be
    * of <code>size</code> 0 (that is, not <code>null</code>).
-   * 
+   *
    * @return A <code>String</code> array of names of children of the current
    * node.
    * @throws BackingStoreException if this operation cannot be completed.
@@ -192,7 +192,7 @@ public class GConfBasedPreferences
    * GConf handles this for us asynchronously. More over, both sync and flush
    * have the same meaning in this class, so calling sync has exactly the same
    * effect.
-   * 
+   *
    * @see #sync
    * @throws BackingStoreException if this operation cannot be completed.
    */
@@ -203,7 +203,7 @@ public class GConfBasedPreferences
 
   /**
    * Request a flush.
-   * 
+   *
    * @see #flush
    * @throws BackingStoreException if this operation cannot be completed.
    */
@@ -216,7 +216,7 @@ public class GConfBasedPreferences
    * Returns all of the key in this preference node.
    * If the current node does not have preferences, the returned array will be
    * of size zero.
-   * 
+   *
    * @return A <code>String</code> array of keys stored under the current
    * node.
    * @throws BackingStoreException if this operation cannot be completed.
@@ -233,7 +233,7 @@ public class GConfBasedPreferences
   /**
    * Does a recursive postorder traversal of the preference tree, starting from
    * the given directory invalidating every preference found in the node.
-   * 
+   *
    * @param directory The name of the starting directory (node)
    */
   private void postorderRemove(String directory)
@@ -271,7 +271,7 @@ public class GConfBasedPreferences
 
   /**
    * Stores the given key-value pair into this preference node.
-   * 
+   *
    * @param key The key of this preference.
    * @param value The value of this preference.
    */
@@ -293,7 +293,7 @@ public class GConfBasedPreferences
   /**
    * Removes the given key from this preference node.
    * If the key does not exist, no operation is performed.
-   * 
+   *
    * @param key The key to remove.
    */
   protected void removeSpi(String key)
@@ -305,7 +305,7 @@ public class GConfBasedPreferences
    * Suggest a sync to the backend. Actually, this is only a suggestion as GConf
    * handles this for us asynchronously. More over, both sync and flush have the
    * same meaning in this class, so calling flush has exactly the same effect.
-   * 
+   *
    * @see #flush
    * @throws BackingStoreException if this operation cannot be completed due to
    *           a failure in the backing store, or inability to communicate with
@@ -318,7 +318,7 @@ public class GConfBasedPreferences
 
   /**
    * Request a sync.
-   * 
+   *
    * @see #sync
    * @throws BackingStoreException if this operation cannot be completed due to
    *           a failure in the backing store, or inability to communicate with
@@ -333,7 +333,7 @@ public class GConfBasedPreferences
    * Returns the value of the given key.
    * If the keys does not have a value, or there is an error in the backing
    * store, <code>null</code> is returned instead.
-   * 
+   *
    * @param key The key to retrieve.
    * @return The value associated with the given key.
    */
@@ -345,7 +345,7 @@ public class GConfBasedPreferences
   /**
    * Returns <code>true</code> if this preference node is a user node,
    * <code>false</code> if is a system preference node.
-   * 
+   *
    * @return <code>true</code> if this preference node is a user node,
    * <code>false</code> if is a system preference node.
    */
@@ -360,18 +360,18 @@ public class GConfBasedPreferences
 
   /**
    * Builds a GConf key string suitable for operations on the backend.
-   * 
+   *
    * @param key The key to convert into a valid GConf key.
    * @return A valid Gconf key.
    */
   private String getGConfKey(String key)
   {
     String nodeName = "";
-    
+
     // strip key
     // please, note that all names are unescaped into the native peer
     key = GConfNativePeer.escapeString(key);
-    
+
     if (this.node.endsWith("/"))
       {
         nodeName = this.node + key;
@@ -380,13 +380,13 @@ public class GConfBasedPreferences
       {
         nodeName = this.node + "/" + key;
       }
-    
+
     return nodeName;
   }
 
   /**
    * Builds the root node to use for this preference.
-   * 
+   *
    * @param isUser Defines if this node is a user (<code>true</code>) or system
    * (<code>false</code>) node.
    * @return The real root of this preference tree.

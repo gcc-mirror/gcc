@@ -1,7 +1,7 @@
 // vector<bool> specialization -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
-// Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+// 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -59,7 +59,9 @@
 
 #include <initializer_list>
 
-_GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
   typedef unsigned long _Bit_type;
   enum { _S_word_bit = int(__CHAR_BIT__ * sizeof(_Bit_type)) };
@@ -446,12 +448,15 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       }
     };
 
-_GLIBCXX_END_NESTED_NAMESPACE
+_GLIBCXX_END_NAMESPACE_CONTAINER
+} // namespace std
 
 // Declare a partial specialization of vector<T, Alloc>.
 #include <bits/stl_vector.h>
 
-_GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
   /**
    *  @brief  A specialization of vector for booleans which offers fixed time
@@ -1026,25 +1031,29 @@ template<typename _Alloc>
     { this->_M_impl._M_finish = __pos; }
   };
 
-_GLIBCXX_END_NESTED_NAMESPACE
+_GLIBCXX_END_NAMESPACE_CONTAINER
+} // namespace std
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
 
 #include <bits/functional_hash.h>
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // DR 1182.
   /// std::hash specialization for vector<bool>.
   template<typename _Alloc>
-    struct hash<_GLIBCXX_STD_D::vector<bool, _Alloc>>
-    : public __hash_base<size_t, _GLIBCXX_STD_D::vector<bool, _Alloc>>
+    struct hash<_GLIBCXX_STD_C::vector<bool, _Alloc>>
+    : public __hash_base<size_t, _GLIBCXX_STD_C::vector<bool, _Alloc>>
     {
       size_t
-      operator()(const _GLIBCXX_STD_D::vector<bool, _Alloc>& __b) const;
+      operator()(const _GLIBCXX_STD_C::vector<bool, _Alloc>& __b) const;
     };
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+}// namespace std
 
 #endif // __GXX_EXPERIMENTAL_CXX0X__
 

@@ -8,7 +8,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -55,7 +55,7 @@ import java.util.Vector;
   * property should be a colon separated list of fully qualified driver
   * class names.  Additional drivers can be loaded at any time by
   * simply loading the driver class with <code>class.forName(String)</code>.
-  * The driver should automatically register itself in a static 
+  * The driver should automatically register itself in a static
   * initializer.
   * <p>
   * The methods in this class are all <code>static</code>. This class
@@ -63,7 +63,7 @@ import java.util.Vector;
   *
   * @author Aaron M. Renn (arenn@urbanophile.com)
   */
-public class DriverManager 
+public class DriverManager
 {
   /**
    * This is the log stream for JDBC drivers.
@@ -95,19 +95,19 @@ public class DriverManager
     String driver_string = System.getProperty("jdbc.drivers");
     if (driver_string != null)
       {
-	StringTokenizer st = new StringTokenizer(driver_string);
-	while (st.hasMoreTokens())
+        StringTokenizer st = new StringTokenizer(driver_string);
+        while (st.hasMoreTokens())
           {
             String driver_classname = st.nextToken();
 
             try
               {
-        	Class.forName(driver_classname); // The driver registers itself
+                Class.forName(driver_classname); // The driver registers itself
               }
             catch (Exception e)
-	      {
-		// Ignore not founds
-	      }
+              {
+                // Ignore not founds
+              }
           }
       }
 
@@ -129,11 +129,11 @@ public class DriverManager
   {
     return log_writer;
   }
-  
+
   /**
    * This method sets the log writer being used by JDBC drivers.  This is a
    * system-wide parameter that affects all drivers.  Note that since there
-   * is no way to retrieve a <code>PrintStream</code> from a 
+   * is no way to retrieve a <code>PrintStream</code> from a
    * <code>PrintWriter</code>, this method cannot set the log stream in
    * use by JDBC.  Thus any older drivers may not see this setting.
    *
@@ -223,8 +223,8 @@ public class DriverManager
     Enumeration e = drivers.elements();
     while(e.hasMoreElements())
       {
-	Driver d = (Driver)e.nextElement();
-	if (d.acceptsURL(url))
+        Driver d = (Driver)e.nextElement();
+        if (d.acceptsURL(url))
           return d;
       }
 
@@ -242,7 +242,7 @@ public class DriverManager
   public static void registerDriver(Driver driver) throws SQLException
   {
     if (! drivers.contains(driver))
-      drivers.addElement(driver);  
+      drivers.addElement(driver);
   }
 
 /**
@@ -274,17 +274,17 @@ public class DriverManager
 
     while(e.hasMoreElements())
       {
-	Object obj = e.nextElement();
+        Object obj = e.nextElement();
 
-	ClassLoader loader = obj.getClass().getClassLoader();
+        ClassLoader loader = obj.getClass().getClassLoader();
 
-	if (loader == null)
-	  loader = ClassLoader.getSystemClassLoader();
-	if (! loader.equals(cl))
-	  continue;
+        if (loader == null)
+          loader = ClassLoader.getSystemClassLoader();
+        if (! loader.equals(cl))
+          continue;
 
-	v.addElement(obj);
-      } 
+        v.addElement(obj);
+      }
 
     return v.elements();
   }
@@ -297,7 +297,7 @@ public class DriverManager
    */
   public static void setLoginTimeout(int seconds)
   {
-    DriverManager.login_timeout = seconds;  
+    DriverManager.login_timeout = seconds;
   }
 
   /**

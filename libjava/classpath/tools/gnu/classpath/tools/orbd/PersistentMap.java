@@ -61,7 +61,7 @@ import org.omg.CosNaming.NamingContextPackage.InvalidName;
  * inherited (super.) naming map implementation is transient and is used as a
  * cache. During the normal work, the naming map does not read from the disk,
  * just stores the changes there. Map only reads from the disk when it starts.
- * 
+ *
  * @author Audrius Meskauskas, Lithuania (AudriusA@Bioinformatics.org)
  */
 public class PersistentMap
@@ -158,7 +158,7 @@ public class PersistentMap
 
     /**
      * Get the key value from the name component.
-     * 
+     *
      * @param id the component id
      * @param kind the component kind
      * @return the key value
@@ -176,7 +176,7 @@ public class PersistentMap
     /**
      * Append the contents of the string to this string buffer, inserting the
      * escape sequences, where required.
-     * 
+     *
      * @param b a buffer to append the contents to.
      * @param s a string to append.
      */
@@ -214,7 +214,7 @@ public class PersistentMap
    * references.
    */
   ORB orb;
-  
+
   /**
    * If true, all existing data on the file system are discarded.
    */
@@ -222,7 +222,7 @@ public class PersistentMap
 
   /**
    * Create the persistent map that stores information in the given file.
-   * 
+   *
    * @param an_orb the naming service ORB, used to obtain and produce the object
    *          stringified references.
    * @param mapFile the file, where the persistent information is stored.
@@ -264,28 +264,28 @@ public class PersistentMap
           }
       }
   }
-  
+
   /**
    * Restore object from its string description.
-   * 
+   *
    * @param description the string, describing the object
-   * 
+   *
    * @return the object.
    */
   protected org.omg.CORBA.Object string_to_object(String description)
   {
     return orb.string_to_object(description);
   }
-  
+
   /**
    * Convert the object to its string description
-   * 
+   *
    * @param object the object to convert
    * @return the string description of the object
    */
   protected String object_to_string(org.omg.CORBA .Object object)
   {
-      return orb.object_to_string(object);    
+      return orb.object_to_string(object);
   }
 
   /**
@@ -293,7 +293,7 @@ public class PersistentMap
    * with the given name already exists, or if the given object is already
    * mapped under another name, the {@link AlreadyBound} exception will be
    * thrown.
-   * 
+   *
    * @param name the name
    * @param object the object
    */
@@ -312,7 +312,7 @@ public class PersistentMap
   /**
    * Put the given CORBA object, specifying the given name as a key. Remove all
    * pre - existing mappings for the given name and object.
-   * 
+   *
    * @param name the name.
    * @param object the object
    */
@@ -324,7 +324,7 @@ public class PersistentMap
         org.omg.CORBA.Object existing = get(name);
         String ior = object_to_string(object);
         String xior = object_to_string(existing);
-        
+
         // Same name and same ior - nothing to do.
         if (ior.equals(xior))
           return;
@@ -349,7 +349,7 @@ public class PersistentMap
 
   /**
    * Removes the given name, if present.
-   * 
+   *
    * @param name a name to remove.
    */
   public void remove(NameComponent name)
@@ -360,7 +360,7 @@ public class PersistentMap
 
   /**
    * Register this name - object pair in the persistent storage.
-   * 
+   *
    * @param name the name.
    * @param object the object
    */
@@ -399,7 +399,7 @@ public class PersistentMap
 
   /**
    * Remove this name from the persistent storage.
-   * 
+   *
    * @param name the name to remove
    */
   public void unregister(NameComponent name)

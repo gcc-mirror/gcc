@@ -1,4 +1,4 @@
-/* TeeConsumer.java -- 
+/* TeeConsumer.java --
    Copyright (C) 1999,2000,2001 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -68,16 +68,16 @@ import org.xml.sax.ext.LexicalHandler;
  * @author David Brownell
  */
 final public class TeeConsumer
-	implements EventConsumer,
-		ContentHandler, DTDHandler,
-		LexicalHandler,DeclHandler
+        implements EventConsumer,
+                ContentHandler, DTDHandler,
+                LexicalHandler,DeclHandler
 {
-    private EventConsumer	first, rest;
+    private EventConsumer       first, rest;
 
     // cached to minimize time overhead
-    private ContentHandler	docFirst, docRest;
-    private DeclHandler		declFirst, declRest;
-    private LexicalHandler	lexFirst, lexRest;
+    private ContentHandler      docFirst, docRest;
+    private DeclHandler         declFirst, declRest;
+    private LexicalHandler      lexFirst, lexRest;
 
 
     /**
@@ -91,39 +91,39 @@ final public class TeeConsumer
      */
     public TeeConsumer (EventConsumer car, EventConsumer cdr)
     {
-	if (car == null || cdr == null)
-	    throw new NullPointerException ();
-	first = car;
-	rest = cdr;
+        if (car == null || cdr == null)
+            throw new NullPointerException ();
+        first = car;
+        rest = cdr;
 
-	//
-	// Cache the handlers.
-	//
-	docFirst = first.getContentHandler ();
-	docRest = rest.getContentHandler ();
-	// DTD handler isn't cached (rarely needed)
+        //
+        // Cache the handlers.
+        //
+        docFirst = first.getContentHandler ();
+        docRest = rest.getContentHandler ();
+        // DTD handler isn't cached (rarely needed)
 
-	try {
-	    declFirst = null;
-	    declFirst = (DeclHandler) first.getProperty (
-			EventFilter.DECL_HANDLER);
-	} catch (SAXException e) {}
-	try {
-	    declRest = null;
-	    declRest = (DeclHandler) rest.getProperty (
-			EventFilter.DECL_HANDLER);
-	} catch (SAXException e) {}
+        try {
+            declFirst = null;
+            declFirst = (DeclHandler) first.getProperty (
+                        EventFilter.DECL_HANDLER);
+        } catch (SAXException e) {}
+        try {
+            declRest = null;
+            declRest = (DeclHandler) rest.getProperty (
+                        EventFilter.DECL_HANDLER);
+        } catch (SAXException e) {}
 
-	try {
-	    lexFirst = null;
-	    lexFirst = (LexicalHandler) first.getProperty (
-			EventFilter.LEXICAL_HANDLER);
-	} catch (SAXException e) {}
-	try {
-	    lexRest = null;
-	    lexRest = (LexicalHandler) rest.getProperty (
-			EventFilter.LEXICAL_HANDLER);
-	} catch (SAXException e) {}
+        try {
+            lexFirst = null;
+            lexFirst = (LexicalHandler) first.getProperty (
+                        EventFilter.LEXICAL_HANDLER);
+        } catch (SAXException e) {}
+        try {
+            lexRest = null;
+            lexRest = (LexicalHandler) rest.getProperty (
+                        EventFilter.LEXICAL_HANDLER);
+        } catch (SAXException e) {}
     }
 
 /* FIXME
@@ -132,78 +132,78 @@ final public class TeeConsumer
      * two-consumer constructor for this class.
      *
      * @param first Description of the first pipeline to get events,
-     *	which will be passed to {@link PipelineFactory#createPipeline}
+     *  which will be passed to {@link PipelineFactory#createPipeline}
      * @param rest The second pipeline to get the events
      * /
-	// constructor used by PipelineFactory
+        // constructor used by PipelineFactory
     public TeeConsumer (String first, EventConsumer rest)
     throws IOException
     {
-	this (PipelineFactory.createPipeline (first), rest);
+        this (PipelineFactory.createPipeline (first), rest);
     }
 */
 
     /** Returns the first pipeline to get event calls. */
     public EventConsumer getFirst ()
-	{ return first; }
+        { return first; }
 
     /** Returns the second pipeline to get event calls. */
     public EventConsumer getRest ()
-	{ return rest; }
+        { return rest; }
 
     /** Returns the content handler being used. */
     final public ContentHandler getContentHandler ()
     {
-	if (docRest == null)
-	    return docFirst;
-	if (docFirst == null)
-	    return docRest;
-	return this;
+        if (docRest == null)
+            return docFirst;
+        if (docFirst == null)
+            return docRest;
+        return this;
     }
 
     /** Returns the dtd handler being used. */
     final public DTDHandler getDTDHandler ()
     {
-	// not cached (hardly used)
-	if (rest.getDTDHandler () == null)
-	    return first.getDTDHandler ();
-	if (first.getDTDHandler () == null)
-	    return rest.getDTDHandler ();
-	return this;
+        // not cached (hardly used)
+        if (rest.getDTDHandler () == null)
+            return first.getDTDHandler ();
+        if (first.getDTDHandler () == null)
+            return rest.getDTDHandler ();
+        return this;
     }
 
     /** Returns the declaration or lexical handler being used. */
     final public Object getProperty (String id)
     throws SAXNotRecognizedException
     {
-	//
-	// in degenerate cases, we have no work to do.
-	//
-	Object	firstProp = null, restProp = null;
+        //
+        // in degenerate cases, we have no work to do.
+        //
+        Object  firstProp = null, restProp = null;
 
-	try { firstProp = first.getProperty (id); }
-	catch (SAXNotRecognizedException e) { /* ignore */ }
-	try { restProp = rest.getProperty (id); }
-	catch (SAXNotRecognizedException e) { /* ignore */ }
+        try { firstProp = first.getProperty (id); }
+        catch (SAXNotRecognizedException e) { /* ignore */ }
+        try { restProp = rest.getProperty (id); }
+        catch (SAXNotRecognizedException e) { /* ignore */ }
 
-	if (restProp == null)
-	    return firstProp;
-	if (firstProp == null)
-	    return restProp;
+        if (restProp == null)
+            return firstProp;
+        if (firstProp == null)
+            return restProp;
 
-	//
-	// we've got work to do; handle two builtin cases.
-	//
-	if (EventFilter.DECL_HANDLER.equals (id))
-	    return this;
-	if (EventFilter.LEXICAL_HANDLER.equals (id))
-	    return this;
+        //
+        // we've got work to do; handle two builtin cases.
+        //
+        if (EventFilter.DECL_HANDLER.equals (id))
+            return this;
+        if (EventFilter.LEXICAL_HANDLER.equals (id))
+            return this;
 
-	//
-	// non-degenerate, handled by both consumers, but we don't know
-	// how to handle this.
-	//
-	throw new SAXNotRecognizedException ("can't tee: " + id);
+        //
+        // non-degenerate, handled by both consumers, but we don't know
+        // how to handle this.
+        //
+        throw new SAXNotRecognizedException ("can't tee: " + id);
     }
 
     /**
@@ -212,8 +212,8 @@ final public class TeeConsumer
      */
     public void setErrorHandler (ErrorHandler handler)
     {
-	first.setErrorHandler (handler);
-	rest.setErrorHandler (handler);
+        first.setErrorHandler (handler);
+        rest.setErrorHandler (handler);
     }
 
 
@@ -222,83 +222,83 @@ final public class TeeConsumer
     //
     public void setDocumentLocator (Locator locator)
     {
-	// this call is not made by all parsers
-	docFirst.setDocumentLocator (locator);
-	docRest.setDocumentLocator (locator);
+        // this call is not made by all parsers
+        docFirst.setDocumentLocator (locator);
+        docRest.setDocumentLocator (locator);
     }
 
     public void startDocument ()
     throws SAXException
     {
-	docFirst.startDocument ();
-	docRest.startDocument ();
+        docFirst.startDocument ();
+        docRest.startDocument ();
     }
 
     public void endDocument ()
     throws SAXException
     {
-	try {
-	    docFirst.endDocument ();
-	} finally {
-	    docRest.endDocument ();
-	}
+        try {
+            docFirst.endDocument ();
+        } finally {
+            docRest.endDocument ();
+        }
     }
 
     public void startPrefixMapping (String prefix, String uri)
     throws SAXException
     {
-	docFirst.startPrefixMapping (prefix, uri);
-	docRest.startPrefixMapping (prefix, uri);
+        docFirst.startPrefixMapping (prefix, uri);
+        docRest.startPrefixMapping (prefix, uri);
     }
 
     public void endPrefixMapping (String prefix)
     throws SAXException
     {
-	docFirst.endPrefixMapping (prefix);
-	docRest.endPrefixMapping (prefix);
+        docFirst.endPrefixMapping (prefix);
+        docRest.endPrefixMapping (prefix);
     }
 
     public void skippedEntity (String name)
     throws SAXException
     {
-	docFirst.skippedEntity (name);
-	docRest.skippedEntity (name);
+        docFirst.skippedEntity (name);
+        docRest.skippedEntity (name);
     }
 
     public void startElement (String uri, String localName,
-	    String qName, Attributes atts)
+            String qName, Attributes atts)
     throws SAXException
     {
-	docFirst.startElement (uri, localName, qName, atts);
-	docRest.startElement (uri, localName, qName, atts);
+        docFirst.startElement (uri, localName, qName, atts);
+        docRest.startElement (uri, localName, qName, atts);
     }
 
     public void endElement (String uri, String localName, String qName)
     throws SAXException
     {
-	docFirst.endElement (uri, localName, qName);
-	docRest.endElement (uri, localName, qName);
+        docFirst.endElement (uri, localName, qName);
+        docRest.endElement (uri, localName, qName);
     }
 
     public void processingInstruction (String target, String data)
     throws SAXException
     {
-	docFirst.processingInstruction (target, data);
-	docRest.processingInstruction (target, data);
+        docFirst.processingInstruction (target, data);
+        docRest.processingInstruction (target, data);
     }
 
     public void characters (char ch [], int start, int length)
     throws SAXException
     {
-	docFirst.characters (ch, start, length);
-	docRest.characters (ch, start, length);
+        docFirst.characters (ch, start, length);
+        docRest.characters (ch, start, length);
     }
 
     public void ignorableWhitespace (char ch [], int start, int length)
     throws SAXException
     {
-	docFirst.ignorableWhitespace (ch, start, length);
-	docRest.ignorableWhitespace (ch, start, length);
+        docFirst.ignorableWhitespace (ch, start, length);
+        docRest.ignorableWhitespace (ch, start, length);
     }
 
 
@@ -308,23 +308,23 @@ final public class TeeConsumer
     public void notationDecl (String name, String publicId, String systemId)
     throws SAXException
     {
-	DTDHandler	l1 = first.getDTDHandler ();
-	DTDHandler	l2 = rest.getDTDHandler ();
+        DTDHandler      l1 = first.getDTDHandler ();
+        DTDHandler      l2 = rest.getDTDHandler ();
 
-	l1.notationDecl (name, publicId, systemId);
-	l2.notationDecl (name, publicId, systemId);
+        l1.notationDecl (name, publicId, systemId);
+        l2.notationDecl (name, publicId, systemId);
     }
 
     public void unparsedEntityDecl (String name,
-	    String publicId, String systemId,
-	    String notationName
+            String publicId, String systemId,
+            String notationName
     ) throws SAXException
     {
-	DTDHandler	l1 = first.getDTDHandler ();
-	DTDHandler	l2 = rest.getDTDHandler ();
+        DTDHandler      l1 = first.getDTDHandler ();
+        DTDHandler      l2 = rest.getDTDHandler ();
 
-	l1.unparsedEntityDecl (name, publicId, systemId, notationName);
-	l2.unparsedEntityDecl (name, publicId, systemId, notationName);
+        l1.unparsedEntityDecl (name, publicId, systemId, notationName);
+        l2.unparsedEntityDecl (name, publicId, systemId, notationName);
     }
 
 
@@ -332,34 +332,34 @@ final public class TeeConsumer
     // DeclHandler
     //
     public void attributeDecl (String eName, String aName,
-	String type,
-	String mode, String value)
+        String type,
+        String mode, String value)
     throws SAXException
     {
-	declFirst.attributeDecl (eName, aName, type, mode, value);
-	declRest.attributeDecl (eName, aName, type, mode, value);
+        declFirst.attributeDecl (eName, aName, type, mode, value);
+        declRest.attributeDecl (eName, aName, type, mode, value);
     }
 
     public void elementDecl (String name, String model)
     throws SAXException
     {
-	declFirst.elementDecl (name, model);
-	declRest.elementDecl (name, model);
+        declFirst.elementDecl (name, model);
+        declRest.elementDecl (name, model);
     }
 
     public void externalEntityDecl (String name,
-	String publicId, String systemId)
+        String publicId, String systemId)
     throws SAXException
     {
-	declFirst.externalEntityDecl (name, publicId, systemId);
-	declRest.externalEntityDecl (name, publicId, systemId);
+        declFirst.externalEntityDecl (name, publicId, systemId);
+        declRest.externalEntityDecl (name, publicId, systemId);
     }
 
     public void internalEntityDecl (String name, String value)
     throws SAXException
     {
-	declFirst.internalEntityDecl (name, value);
-	declRest.internalEntityDecl (name, value);
+        declFirst.internalEntityDecl (name, value);
+        declRest.internalEntityDecl (name, value);
     }
 
 
@@ -369,49 +369,49 @@ final public class TeeConsumer
     public void comment (char ch [], int start, int length)
     throws SAXException
     {
-	lexFirst.comment (ch, start, length);
-	lexRest.comment (ch, start, length);
+        lexFirst.comment (ch, start, length);
+        lexRest.comment (ch, start, length);
     }
-    
+
     public void startCDATA ()
     throws SAXException
     {
-	lexFirst.startCDATA ();
-	lexRest.startCDATA ();
+        lexFirst.startCDATA ();
+        lexRest.startCDATA ();
     }
-    
+
     public void endCDATA ()
     throws SAXException
     {
-	lexFirst.endCDATA ();
-	lexRest.endCDATA ();
+        lexFirst.endCDATA ();
+        lexRest.endCDATA ();
     }
-    
+
     public void startEntity (String name)
     throws SAXException
     {
-	lexFirst.startEntity (name);
-	lexRest.startEntity (name);
+        lexFirst.startEntity (name);
+        lexRest.startEntity (name);
     }
-    
+
     public void endEntity (String name)
     throws SAXException
     {
-	lexFirst.endEntity (name);
-	lexRest.endEntity (name);
+        lexFirst.endEntity (name);
+        lexRest.endEntity (name);
     }
-    
+
     public void startDTD (String name, String publicId, String systemId)
     throws SAXException
     {
-	lexFirst.startDTD (name, publicId, systemId);
-	lexRest.startDTD (name, publicId, systemId);
+        lexFirst.startDTD (name, publicId, systemId);
+        lexRest.startDTD (name, publicId, systemId);
     }
-    
+
     public void endDTD ()
     throws SAXException
     {
-	lexFirst.endDTD ();
-	lexRest.endDTD ();
+        lexFirst.endDTD ();
+        lexRest.endDTD ();
     }
 }

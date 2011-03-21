@@ -48,7 +48,7 @@ public final class ISO_8859_4 extends ByteCharset
    * This is the lookup table for this encoding
    * Note: ranges 0-1F and 7f-9f aren't defined in the spec file aron used.
    */
-    private static final char[]	lookup =
+    private static final char[] lookup =
     {
       0x0000, 0x0001, 0x0002, 0x0003, 0x0004, 0x0005, 0x0006, 0x0007,
       0x0008, 0x0009, 0x000A, 0x000B, 0x000C, 0x000D, 0x000E, 0x000F,
@@ -82,28 +82,27 @@ public final class ISO_8859_4 extends ByteCharset
       0x010D, 0x00E9, 0x0119, 0x00EB, 0x0117, 0x00ED, 0x00EE, 0x012B,
       0x0111, 0x0146, 0x014D, 0x0137, 0x00F4, 0x00F5, 0x00F6, 0x00F7,
       0x00F8, 0x0173, 0x00FA, 0x00FB, 0x00FC, 0x0169, 0x016B, 0x02D9
-    }; 
+    };
 
   public ISO_8859_4()
   {
       super("ISO-8859-4", new String[] {
-	  "ISO8859_4",
-	  "8859_4",
-	  "ibm-914_P100-1995",
-	  "ibm-914",
-	  "iso_8859_4", 
-	  "iso8859_4", 
-	  "iso-8859-4",
-	  "latin4", 
-	  "csISOLatin4", 
-	  "iso-ir-110", 
-	  "ISO_8859-4:1988",
-	  "l4",
-	  "cp914",
-	  "914", 
-	  "windows-28594"
+          "ISO8859_4",
+          "8859_4",
+          "ibm-914_P100-1995",
+          "ibm-914",
+          "iso_8859_4",
+          "iso8859_4",
+          "iso-8859-4",
+          "latin4",
+          "csISOLatin4",
+          "iso-ir-110",
+          "ISO_8859-4:1988",
+          "l4",
+          "cp914",
+          "914",
+          "windows-28594"
       }, lookup);
  }
-  
-} // class ISO_8859_4
 
+} // class ISO_8859_4

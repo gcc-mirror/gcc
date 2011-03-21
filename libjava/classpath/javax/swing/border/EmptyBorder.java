@@ -1,4 +1,4 @@
-/* EmptyBorder.java -- 
+/* EmptyBorder.java --
    Copyright (C) 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -202,8 +202,8 @@ public class EmptyBorder extends AbstractBorder
   {
     return getBorderInsets(null, null);
   }
-  
-  
+
+
   /**
    * Determines whether this border fills every pixel in its area
    * when painting. Since an empty border does not paint any pixels

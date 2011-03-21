@@ -336,10 +336,10 @@ public class Frame extends Window implements MenuContainer
     this.menuBar = menuBar;
     if (menuBar != null)
       {
-	MenuContainer parent = menuBar.getParent();
-	if (parent != null)
-	  parent.remove(menuBar);
-	menuBar.setParent(this);
+        MenuContainer parent = menuBar.getParent();
+        if (parent != null)
+          parent.remove(menuBar);
+        menuBar.setParent(this);
 
         // Create local copy for thread safety.
         FramePeer p = (FramePeer) peer;
@@ -355,7 +355,7 @@ public class Frame extends Window implements MenuContainer
   }
 
   /**
-   * Tests whether or not this frame is resizable.  This will be 
+   * Tests whether or not this frame is resizable.  This will be
    * <code>true</code> by default.
    *
    * @return <code>true</code> if this frame is resizable, <code>false</code>
@@ -417,16 +417,16 @@ public class Frame extends Window implements MenuContainer
   {
     if (menu == menuBar)
       {
-	if (menuBar != null)
-	  {
-	    if (peer != null)
-	      {
-		((FramePeer) peer).setMenuBar(null);
-		menuBar.removeNotify();
-	      }
-	    menuBar.setParent(null);
-	  }
-	menuBar = null;
+        if (menuBar != null)
+          {
+            if (peer != null)
+              {
+                ((FramePeer) peer).setMenuBar(null);
+                menuBar.removeNotify();
+              }
+            menuBar.setParent(null);
+          }
+        menuBar = null;
       }
     else
       super.remove(menu);
@@ -493,7 +493,7 @@ public class Frame extends Window implements MenuContainer
 
   /**
    * The death queue for all frames.
-   */ 
+   */
   private static ReferenceQueue weakFramesQueue =
     new ReferenceQueue<Frame>();
 
@@ -560,7 +560,7 @@ public class Frame extends Window implements MenuContainer
     if (state == NORMAL
         && (current_state & ICONIFIED) != 0)
       setExtendedState(current_state | ICONIFIED);
-    
+
     if (state == ICONIFIED
         && (current_state & ~ICONIFIED) == 0)
       setExtendedState(current_state & ~ICONIFIED);
@@ -618,7 +618,7 @@ public class Frame extends Window implements MenuContainer
 
   /**
    * Returns whether this frame is undecorated or not.
-   * 
+   *
    * @since 1.4
    */
   public boolean isUndecorated()
@@ -629,9 +629,9 @@ public class Frame extends Window implements MenuContainer
   /**
    * Disables or enables decorations for this frame. This method can only be
    * called while the frame is not displayable.
-   * 
+   *
    * @throws IllegalComponentStateException if this frame is displayable
-   * 
+   *
    * @since 1.4
    */
   public void setUndecorated(boolean undecorated)
@@ -656,7 +656,7 @@ public class Frame extends Window implements MenuContainer
   {
     return next_frame_number++;
   }
-  
+
   /**
    * Accessibility support for <code>Frame</code>.
    */
@@ -672,7 +672,7 @@ public class Frame extends Window implements MenuContainer
     {
       return AccessibleRole.FRAME;
     }
-    
+
     /**
      * Gets the state set of this object.
      * @return The current state of this frame.
@@ -687,7 +687,7 @@ public class Frame extends Window implements MenuContainer
       return states;
     }
   }
-  
+
   /**
    * Gets the AccessibleContext associated with this <code>Frame</code>.
    * The context is created, if necessary.

@@ -211,7 +211,7 @@ public class ThreadInfo
    *                  lock, or <code>-1</code> if it doesn't have an owner
    *                  (only used if blocked)
    * @param lockOwnerName the name of the thread which owns the monitor
-   *                  lock, or <code>null</code> if it doesn't have an 
+   *                  lock, or <code>null</code> if it doesn't have an
    *                  owner (only used if blocked)
    * @param waitedCount the number of times the thread has been in a
    *                    waiting state.
@@ -227,16 +227,16 @@ public class ThreadInfo
    *                       by the thread.
    * @param lockedSynchronizers an array of {@link LockInfo} objects
    *                            representing locks held on ownable
-   *                            synchronizers by the thread. 
+   *                            synchronizers by the thread.
    *
    * @since 1.6
    */
   private ThreadInfo(long threadId, String threadName, Thread.State threadState,
-		     long blockedCount, long blockedTime, String lockName, 
-		     long lockOwnerId, String lockOwnerName, long waitedCount,
-		     long waitedTime, boolean isInNative, boolean isSuspended,
-		     StackTraceElement[] trace, MonitorInfo[] lockedMonitors,
-		     LockInfo[] lockedSynchronizers)
+                     long blockedCount, long blockedTime, String lockName,
+                     long lockOwnerId, String lockOwnerName, long waitedCount,
+                     long waitedTime, boolean isInNative, boolean isSuspended,
+                     StackTraceElement[] trace, MonitorInfo[] lockedMonitors,
+                     LockInfo[] lockedSynchronizers)
   {
     this.threadId = threadId;
     this.threadName = threadName;
@@ -266,16 +266,16 @@ public class ThreadInfo
    *                                  or of the wrong type.
    */
   static void checkAttribute(CompositeType ctype, String name,
-			     OpenType type)
+                             OpenType type)
     throws IllegalArgumentException
   {
     OpenType foundType = ctype.getType(name);
     if (foundType == null)
       throw new IllegalArgumentException("Could not find a field named " +
-					 name);
+                                         name);
     if (!(foundType.equals(type)))
       throw new IllegalArgumentException("Field " + name + " is not of " +
-					 "type " + type.getClassName());
+                                         "type " + type.getClassName());
   }
 
   /**
@@ -288,31 +288,31 @@ public class ThreadInfo
   {
     if (seType == null)
       try
-	{
-	  seType = new CompositeType(StackTraceElement.class.getName(),
-				     "An element of a stack trace",
-				     new String[] { "className", "methodName",
-						    "fileName", "lineNumber",
-						    "nativeMethod" 
-				     },
-				     new String[] { "Name of the class",
-						    "Name of the method",
-						    "Name of the source code file",
-						    "Line number",
-						    "True if this is a native method" 
-				     },
-				     new OpenType[] {
-				       SimpleType.STRING, SimpleType.STRING,
-				       SimpleType.STRING, SimpleType.INTEGER,
-				       SimpleType.BOOLEAN 
-				     });
-	}
+        {
+          seType = new CompositeType(StackTraceElement.class.getName(),
+                                     "An element of a stack trace",
+                                     new String[] { "className", "methodName",
+                                                    "fileName", "lineNumber",
+                                                    "nativeMethod"
+                                     },
+                                     new String[] { "Name of the class",
+                                                    "Name of the method",
+                                                    "Name of the source code file",
+                                                    "Line number",
+                                                    "True if this is a native method"
+                                     },
+                                     new OpenType[] {
+                                       SimpleType.STRING, SimpleType.STRING,
+                                       SimpleType.STRING, SimpleType.INTEGER,
+                                       SimpleType.BOOLEAN
+                                     });
+        }
       catch (OpenDataException e)
-	{
-	  throw new IllegalStateException("Something went wrong in creating " +
-					  "the composite data type for the " +
-					  "stack trace element.", e);
-	}
+        {
+          throw new IllegalStateException("Something went wrong in creating " +
+                                          "the composite data type for the " +
+                                          "stack trace element.", e);
+        }
     return seType;
   }
 
@@ -352,9 +352,9 @@ public class ThreadInfo
    * <tr><td>lineNumber</td><td>java.lang.Integer</td></tr>
    * <tr><td>nativeMethod</td><td>java.lang.Boolean</td></tr>
    * </table>
-   * 
+   *
    * @param data the composite data structure to take values from.
-   * @return a new instance containing the values from the 
+   * @return a new instance containing the values from the
    *         composite data structure, or <code>null</code>
    *         if the data structure was also <code>null</code>.
    * @throws IllegalArgumentException if the composite data structure
@@ -380,119 +380,119 @@ public class ThreadInfo
     checkAttribute(type, "LockOwnerName", SimpleType.STRING);
     try
       {
-	checkAttribute(type, "StackTrace",
-		       new ArrayType(1, getStackTraceType()));
+        checkAttribute(type, "StackTrace",
+                       new ArrayType(1, getStackTraceType()));
       }
     catch (OpenDataException e)
       {
-	throw new IllegalStateException("Something went wrong in creating " +
-					"the array for the stack trace element.",
-					e);
+        throw new IllegalStateException("Something went wrong in creating " +
+                                        "the array for the stack trace element.",
+                                        e);
       }
     OpenType foundType = type.getType("LockedMonitors");
     if (foundType != null)
       try
-	{
-	  CompositeType mType = new CompositeType(MonitorInfo.class.getName(),
-						  "Information on a object monitor lock",
-						  new String[] { "ClassName",
-								 "IdentityHashCode",
-								 "LockedStackDepth",
-								 "LockedStackFrame"
-						  },
-						  new String[] { "Name of the class",
-								 "Identity hash code " +
-								 "of the class",
-								 "Stack depth at time " +
-								 "of lock",
-								 "Stack frame at time " +
-								 "of lock",
-						  },
-						  new OpenType[] {
-						    SimpleType.STRING, SimpleType.INTEGER,
-						    SimpleType.INTEGER, getStackTraceType()
-						  });
-	  if (!(foundType.equals(new ArrayType(1, mType))))
-	    throw new IllegalArgumentException("Field LockedMonitors is not of " +
-					       "type " + mType.getClassName());
-	}
+        {
+          CompositeType mType = new CompositeType(MonitorInfo.class.getName(),
+                                                  "Information on a object monitor lock",
+                                                  new String[] { "ClassName",
+                                                                 "IdentityHashCode",
+                                                                 "LockedStackDepth",
+                                                                 "LockedStackFrame"
+                                                  },
+                                                  new String[] { "Name of the class",
+                                                                 "Identity hash code " +
+                                                                 "of the class",
+                                                                 "Stack depth at time " +
+                                                                 "of lock",
+                                                                 "Stack frame at time " +
+                                                                 "of lock",
+                                                  },
+                                                  new OpenType[] {
+                                                    SimpleType.STRING, SimpleType.INTEGER,
+                                                    SimpleType.INTEGER, getStackTraceType()
+                                                  });
+          if (!(foundType.equals(new ArrayType(1, mType))))
+            throw new IllegalArgumentException("Field LockedMonitors is not of " +
+                                               "type " + mType.getClassName());
+        }
     catch (OpenDataException e)
       {
-	throw new IllegalStateException("Something went wrong in creating " +
-					"the composite data type for the " +
-					"object monitor information array.", e);
+        throw new IllegalStateException("Something went wrong in creating " +
+                                        "the composite data type for the " +
+                                        "object monitor information array.", e);
       }
     foundType = type.getType("LockedSynchronizers");
     if (foundType != null)
       try
-	{
-	  CompositeType lType = new CompositeType(LockInfo.class.getName(),
-						  "Information on a lock",
-						  new String[] { "ClassName",
-								 "IdentityHashCode"
-						  },
-						  new String[] { "Name of the class",
-								 "Identity hash code " +
-								 "of the class"
-						  },
-						  new OpenType[] {
-						    SimpleType.STRING, SimpleType.INTEGER
-						  });
-	  if (!(foundType.equals(new ArrayType(1, lType))))
-	    throw new IllegalArgumentException("Field LockedSynchronizers is not of " +
-					       "type " + lType.getClassName());
-	}
+        {
+          CompositeType lType = new CompositeType(LockInfo.class.getName(),
+                                                  "Information on a lock",
+                                                  new String[] { "ClassName",
+                                                                 "IdentityHashCode"
+                                                  },
+                                                  new String[] { "Name of the class",
+                                                                 "Identity hash code " +
+                                                                 "of the class"
+                                                  },
+                                                  new OpenType[] {
+                                                    SimpleType.STRING, SimpleType.INTEGER
+                                                  });
+          if (!(foundType.equals(new ArrayType(1, lType))))
+            throw new IllegalArgumentException("Field LockedSynchronizers is not of " +
+                                               "type " + lType.getClassName());
+        }
     catch (OpenDataException e)
       {
-	throw new IllegalStateException("Something went wrong in creating " +
-					"the composite data type for the " +
-					"ownable synchronizerinformation array.", e);
+        throw new IllegalStateException("Something went wrong in creating " +
+                                        "the composite data type for the " +
+                                        "ownable synchronizerinformation array.", e);
       }
     CompositeData[] dTraces = (CompositeData[]) data.get("StackTrace");
     StackTraceElement[] traces = new StackTraceElement[dTraces.length];
     for (int a = 0; a < dTraces.length; ++a)
-	/* FIXME: We can't use the boolean as there is no available
-	   constructor. */
-      traces[a] = 
-	new StackTraceElement((String) dTraces[a].get("ClassName"),
-			      (String) dTraces[a].get("MethodName"),
-			      (String) dTraces[a].get("FileName"),
-			      ((Integer) 
-			       dTraces[a].get("LineNumber")).intValue());
+        /* FIXME: We can't use the boolean as there is no available
+           constructor. */
+      traces[a] =
+        new StackTraceElement((String) dTraces[a].get("ClassName"),
+                              (String) dTraces[a].get("MethodName"),
+                              (String) dTraces[a].get("FileName"),
+                              ((Integer)
+                               dTraces[a].get("LineNumber")).intValue());
     MonitorInfo[] mInfo;
     if (data.containsKey("LockedMonitors"))
       {
-	CompositeData[] dmInfos = (CompositeData[]) data.get("LockedMonitors");
-	mInfo = new MonitorInfo[dmInfos.length];
-	for (int a = 0; a < dmInfos.length; ++a)
-	  mInfo[a] = MonitorInfo.from(dmInfos[a]);
+        CompositeData[] dmInfos = (CompositeData[]) data.get("LockedMonitors");
+        mInfo = new MonitorInfo[dmInfos.length];
+        for (int a = 0; a < dmInfos.length; ++a)
+          mInfo[a] = MonitorInfo.from(dmInfos[a]);
       }
     else
       mInfo = new MonitorInfo[]{};
     LockInfo[] lInfo;
     if (data.containsKey("LockedSynchronizers"))
       {
-	CompositeData[] dlInfos = (CompositeData[]) data.get("LockedSynchronizers");
-	lInfo = new LockInfo[dlInfos.length];
-	for (int a = 0; a < dlInfos.length; ++a)
-	  lInfo[a] = new LockInfo((String) dlInfos[a].get("ClassName"),
-				  (Integer) dlInfos[a].get("IdentityHashCode"));
+        CompositeData[] dlInfos = (CompositeData[]) data.get("LockedSynchronizers");
+        lInfo = new LockInfo[dlInfos.length];
+        for (int a = 0; a < dlInfos.length; ++a)
+          lInfo[a] = new LockInfo((String) dlInfos[a].get("ClassName"),
+                                  (Integer) dlInfos[a].get("IdentityHashCode"));
       }
     else
       lInfo = new LockInfo[]{};
     return new ThreadInfo(((Long) data.get("ThreadId")).longValue(),
-			  (String) data.get("ThreadName"),
-			  Thread.State.valueOf((String) data.get("ThreadState")),
-			  ((Long) data.get("BlockedCount")).longValue(),
-			  ((Long) data.get("BlockedTime")).longValue(),
-			  (String) data.get("LockName"),
-			  ((Long) data.get("LockOwnerId")).longValue(),
-			  (String) data.get("LockOwnerName"),  
-			  ((Long) data.get("WaitedCount")).longValue(),
-			  ((Long) data.get("WaitedTime")).longValue(),
-			  ((Boolean) data.get("InNative")).booleanValue(),
-			  ((Boolean) data.get("Suspended")).booleanValue(),
-			  traces, mInfo, lInfo);
+                          (String) data.get("ThreadName"),
+                          Thread.State.valueOf((String) data.get("ThreadState")),
+                          ((Long) data.get("BlockedCount")).longValue(),
+                          ((Long) data.get("BlockedTime")).longValue(),
+                          (String) data.get("LockName"),
+                          ((Long) data.get("LockOwnerId")).longValue(),
+                          (String) data.get("LockOwnerName"),
+                          ((Long) data.get("WaitedCount")).longValue(),
+                          ((Long) data.get("WaitedTime")).longValue(),
+                          ((Boolean) data.get("InNative")).booleanValue(),
+                          ((Boolean) data.get("Suspended")).booleanValue(),
+                          traces, mInfo, lInfo);
   }
 
   /**
@@ -528,7 +528,7 @@ public class ThreadInfo
    * for thread contention monitoring and for this support
    * to be enabled.
    * </p>
-   * 
+   *
    * @return the accumulated time (in milliseconds) that this
    *         thread has spent in the blocked state, since
    *         thread contention monitoring was enabled, or -1
@@ -601,7 +601,7 @@ public class ThreadInfo
    * The lock is the return value of
    * {@link java.util.concurrent.locks.LockSupport#getBlocker()}.</li>
    * </ol>
-   * 
+   *
    * @return a {@link LockInfo} object representing the lock on
    *         which the thread is blocked, or <code>null</code> if
    *         the thread isn't blocked.
@@ -613,7 +613,7 @@ public class ThreadInfo
     String lockName = getLockName();
     int at = lockName.indexOf('@');
     return new LockInfo(lockName.substring(0, at),
-			Integer.decode(lockName.substring(at + 1)));
+                        Integer.decode(lockName.substring(at + 1)));
   }
 
   /**
@@ -655,7 +655,7 @@ public class ThreadInfo
    * monitor lock this thread is waiting for.  -1 is returned
    * if either this thread is not blocked, or the lock is
    * not held by any other thread.
-   * 
+   *
    * @return the thread identifier of thread holding the lock
    *         this thread is waiting for, or -1 if the thread
    *         is not blocked or the lock is not held by another
@@ -673,7 +673,7 @@ public class ThreadInfo
    * monitor lock this thread is waiting for.  <code>null</code>
    * is returned if either this thread is not blocked,
    * or the lock is not held by any other thread.
-   * 
+   *
    * @return the thread identifier of thread holding the lock
    *         this thread is waiting for, or <code>null</code>
    *         if the thread is not blocked or the lock is not
@@ -701,7 +701,7 @@ public class ThreadInfo
    * stack trace information for a thread.  In these
    * cases, an empty array will also be returned.
    * </p>
-   * 
+   *
    * @return an array of {@link java.lang.StackTraceElement}s
    *         representing the trace of this thread.
    */
@@ -742,16 +742,16 @@ public class ThreadInfo
   {
     return threadState;
   }
-    
+
   /**
    * Returns the number of times this thread has been
-   * in the {@link java.lang.Thread.State#WAITING} 
+   * in the {@link java.lang.Thread.State#WAITING}
    * or {@link java.lang.Thread.State#TIMED_WAITING} state.
    * A thread enters one of these states when it is waiting
    * due to a call to {@link java.lang.Object.wait()},
    * {@link java.lang.Object.join()} or
    * {@link java.lang.concurrent.locks.LockSupport.park()},
-   * either with an infinite or timed delay, respectively. 
+   * either with an infinite or timed delay, respectively.
    *
    * @return the number of times this thread has been waiting.
    */
@@ -771,14 +771,14 @@ public class ThreadInfo
    * due to a call to {@link java.lang.Object.wait()},
    * {@link java.lang.Object.join()} or
    * {@link java.lang.concurrent.locks.LockSupport.park()},
-   * either with an infinite or timed delay, respectively. 
+   * either with an infinite or timed delay, respectively.
    * </p>
    * <p>
    * Use of this method requires virtual machine support
    * for thread contention monitoring and for this support
    * to be enabled.
    * </p>
-   * 
+   *
    * @return the accumulated time (in milliseconds) that this
    *         thread has spent in one of the waiting states, since
    *         thread contention monitoring was enabled, or -1
@@ -849,14 +849,14 @@ public class ThreadInfo
   public String toString()
   {
     return getClass().getName() +
-      "[id=" + threadId + 
+      "[id=" + threadId +
       ", name=" + threadName +
       ", state=" + threadState +
       ", blockedCount=" + blockedCount +
       ", waitedCount=" + waitedCount +
-      ", isInNative=" + isInNative + 
+      ", isInNative=" + isInNative +
       ", isSuspended=" + isSuspended +
-      (isThreadBlocked() ? 
+      (isThreadBlocked() ?
        ", lockOwnerId=" + lockOwnerId +
        ", lockOwnerName=" + lockOwnerName : "") +
       ", lockedMonitors=" + Arrays.toString(lockedMonitors) +
@@ -888,8 +888,8 @@ public class ThreadInfo
   private boolean isThreadBlocked()
   {
     return (threadState == Thread.State.BLOCKED ||
-	    threadState == Thread.State.WAITING ||
-	    threadState == Thread.State.TIMED_WAITING);
+            threadState == Thread.State.WAITING ||
+            threadState == Thread.State.TIMED_WAITING);
   }
-  
+
 }

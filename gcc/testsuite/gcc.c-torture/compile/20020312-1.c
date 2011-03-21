@@ -2,6 +2,7 @@
    two 32-bit registers.  */
 /* { dg-do assemble } */
 /* { dg-xfail-if "" { m6811-*-* m6812-*-* } { "*" } { "" } } */
+/* { dg-skip-if "" { pdp11-*-* } { "-O0" } { "" } } */
 
 /* PR optimization/5892 */
 typedef struct { unsigned long a; unsigned int b, c; } A;

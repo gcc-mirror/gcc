@@ -78,8 +78,8 @@ public interface ImageTranscoder
    * is null
    */
   IIOMetadata convertImageMetadata(IIOMetadata inData,
-		                   ImageTypeSpecifier imageType,
-				   ImageWriteParam param);
+                                   ImageTypeSpecifier imageType,
+                                   ImageWriteParam param);
 
   /**
    * Converts IIOMetadata from an input stream format, returning an
@@ -98,5 +98,5 @@ public interface ImageTranscoder
    * @exception IllegalArgumentException if inData is null
    */
   IIOMetadata convertStreamMetadata(IIOMetadata inData,
-				    ImageWriteParam param);
+                                    ImageWriteParam param);
 }

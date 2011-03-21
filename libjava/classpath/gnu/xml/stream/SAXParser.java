@@ -1,4 +1,4 @@
-/* SAXParser.java -- 
+/* SAXParser.java --
    Copyright (C) 2005, 2006, 2007  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -131,13 +131,13 @@ public class SAXParser
   }
 
   // -- SAXParser --
-  
+
   public Parser getParser()
     throws SAXException
   {
     return null;
   }
-  
+
   public XMLReader getXMLReader()
     throws SAXException
   {
@@ -365,11 +365,11 @@ public class SAXParser
       }
     reader = parser;
     baseURI = systemId;
-    
+
     if (xIncludeAware)
       reader = new XIncludeFilter(parser, systemId, namespaceAware,
                                   validating, true);
-    
+
     if (contentHandler != null)
       contentHandler.setDocumentLocator(this);
     boolean startDocumentDone = false;
@@ -864,7 +864,7 @@ public class SAXParser
   }
 
   // -- Locator2 --
-  
+
   public int getColumnNumber()
   {
     Location l = reader.getLocation();
@@ -888,7 +888,7 @@ public class SAXParser
     Location l = reader.getLocation();
     return l.getSystemId();
   }
-  
+
   public String getEncoding()
   {
     return encoding;
@@ -900,7 +900,7 @@ public class SAXParser
   }
 
   // -- XMLResolver --
-  
+
   public Object resolveEntity(String publicId, String systemId,
                               String baseURI, String namespace)
     throws XMLStreamException
@@ -1037,5 +1037,5 @@ public class SAXParser
         pos++;
       }
   }
-  
+
 }

@@ -33,7 +33,9 @@
 #include <bits/c++config.h>
 #include <cerrno>
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 // Most of the commented-out error codes are socket-related and could be
 // replaced by Winsock WSA-prefixed equivalents.
@@ -119,6 +121,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
  //   wrong_protocol_type = 			EPROTOTYPE
    };
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
 
 #endif

@@ -32,12 +32,15 @@ along with GCC; see the file COPYING3.  If not see
 #include "cp-objcp-common.h"
 #include "hashtab.h"
 #include "target.h"
+#include "parser.h"
 
 enum c_language_kind c_language = clk_cxx;
 static void cp_init_ts (void);
 static const char * cxx_dwarf_name (tree t, int verbosity);
 static enum classify_record cp_classify_record (tree type);
 static tree cp_eh_personality (void);
+static tree get_template_innermost_arguments_folded (const_tree);
+static tree get_template_argument_pack_elems_folded (const_tree);
 
 /* Lang hooks common to C++ and ObjC++ are declared in cp/cp-objcp-common.h;
    consequently, there should be very few hooks below.  */
@@ -56,13 +59,13 @@ static tree cp_eh_personality (void);
 	get_primary_template_innermost_parameters
 #undef LANG_HOOKS_GET_INNERMOST_GENERIC_ARGS
 #define LANG_HOOKS_GET_INNERMOST_GENERIC_ARGS \
-	get_template_innermost_arguments
+	get_template_innermost_arguments_folded
 #undef LANG_HOOKS_FUNCTION_PARAMETER_PACK_P
 #define LANG_HOOKS_FUNCTION_PARAMETER_PACK_P \
 	function_parameter_pack_p
 #undef LANG_HOOKS_GET_ARGUMENT_PACK_ELEMS
 #define LANG_HOOKS_GET_ARGUMENT_PACK_ELEMS \
-	get_template_argument_pack_elems
+	get_template_argument_pack_elems_folded
 #undef LANG_HOOKS_GENERIC_GENERIC_PARAMETER_DECL_P
 #define LANG_HOOKS_GENERIC_GENERIC_PARAMETER_DECL_P \
 	template_template_parameter_p
@@ -163,6 +166,77 @@ cp_eh_personality (void)
     }
 
   return cp_eh_personality_decl;
+}
+
+/* This is a subroutine of fold_cplus_constants.  It returns TRUE if T
+   is a C++ specific constant that needs to be folded further before
+   being passed to the debug info emitter.  */
+
+static bool
+template_arg_needs_folding (const_tree t)
+{
+  /* For now only PTRMEM_CST nodes are to be folded further.  */
+  if (TREE_CODE (t) == PTRMEM_CST)
+    return true;
+  return false;
+}
+
+/* Fold the elements of the TREE_VEC C which are C++ specific nodes
+   that would need folding so that they can be processed by the debug
+   info emitter. This is a subroutine of
+   get_template_innermost_arguments_folded and
+   get_template_argument_pack_elems_folded.  */
+
+static tree
+fold_cplus_constants (const_tree c)
+{
+  tree folded_elems, elems = CONST_CAST_TREE (c);
+  int vec_len, i;
+
+  if (elems == NULL_TREE || elems == error_mark_node)
+    return elems;
+
+  vec_len = TREE_VEC_LENGTH (elems);
+
+  /* First check if there is at least one element that needs
+     folding. If there is none, we just return ELEMS. Otherwise create
+     and return a new tree vector that contains the folded versions of
+     ELEMS. This is to avoid allocating memory if we don't need
+     to.  */
+  for (i = 0; i < vec_len; ++i)
+    {
+      if (template_arg_needs_folding (TREE_VEC_ELT (elems, i)))
+	break;
+    }
+  if (i == vec_len)
+    return elems;
+
+  folded_elems = make_tree_vec (vec_len);
+  for (i = 0; i < vec_len; ++i)
+    {
+      tree elem = TREE_VEC_ELT (elems, i);
+      TREE_VEC_ELT (folded_elems, i) =  
+	(elem && !TYPE_P (elem)) ? cplus_expand_constant (elem) : elem;
+
+    }
+  return folded_elems;
+}
+
+/* The C++ implementation of the LANG_HOOKS_GET_INNERMOST_GENERIC_ARGS
+   hook. It returns the innermost template arguments of type T, and
+   makes sure those arguments are folded enough for the debug info
+   emitter.  */
+
+static tree
+get_template_innermost_arguments_folded (const_tree t)
+{
+  return fold_cplus_constants (get_template_innermost_arguments (t));
+}
+
+static tree
+get_template_argument_pack_elems_folded (const_tree t)
+{
+  return fold_cplus_constants (get_template_argument_pack_elems (t));
 }
 
 #include "gt-cp-cp-lang.h"

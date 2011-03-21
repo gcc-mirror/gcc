@@ -1,4 +1,4 @@
-/* HashPrintRequestAttributeSet.java -- 
+/* HashPrintRequestAttributeSet.java --
    Copyright (C) 2003, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -47,7 +47,7 @@ public class HashPrintRequestAttributeSet extends HashAttributeSet
   implements Serializable, PrintRequestAttributeSet
 {
   private static final long serialVersionUID = 2364756266107751933L;
-  
+
   /**
    * Creates an empty <code>HashPrintRequestAttributeSet</code> object.
    */
@@ -55,7 +55,7 @@ public class HashPrintRequestAttributeSet extends HashAttributeSet
   {
     super(PrintRequestAttribute.class);
   }
-  
+
   /**
    * Creates a <code>HashPrintRequestAttributeSet</code> object with the given
    * attribute in it.
@@ -68,7 +68,7 @@ public class HashPrintRequestAttributeSet extends HashAttributeSet
   {
     super(attribute, PrintRequestAttribute.class);
   }
-  
+
   /**
    * Creates a <code>HashPrintRequestAttributeSet</code> object with the given
    * attributes in it.
@@ -83,12 +83,12 @@ public class HashPrintRequestAttributeSet extends HashAttributeSet
   {
     super(attributes, PrintRequestAttribute.class);
   }
-  
+
   /**
    * Creates a <code>HashPrintRequestAttributeSet</code> object with the attributes
    * of the given attributes set in it.
    *
-   * @param attributes the attributes set to put into the set. If 
+   * @param attributes the attributes set to put into the set. If
    * <code>null</code> an empty set is created.
    * @exception ClassCastException if any element of attributes is not
    * an instance of <code>PrintRequestAttribute</code>

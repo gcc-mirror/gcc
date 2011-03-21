@@ -45,8 +45,8 @@ import java.util.Date;
 import javax.swing.event.ChangeEvent;
 
 /**
- * A date model used by the {@link JSpinner} component.  This implements a 
- * spinner model for dates, rotating a calendar field such as  month, year, 
+ * A date model used by the {@link JSpinner} component.  This implements a
+ * spinner model for dates, rotating a calendar field such as  month, year,
  * day, week, hour, minute.
  *
  * @author Sven de Marothy
@@ -57,21 +57,21 @@ public class SpinnerDateModel extends AbstractSpinnerModel
 {
   /** The current date. */
   private Calendar date;
-  
-  /** 
-   * A constraint on the start or earliest permitted date (<code>null</code> 
-   * for no minimum). 
+
+  /**
+   * A constraint on the start or earliest permitted date (<code>null</code>
+   * for no minimum).
    */
   private Comparable start;
 
-  /** 
-   * A constraint on the end or latest permitted date (<code>null</code> for no 
-   * maximum). 
+  /**
+   * A constraint on the end or latest permitted date (<code>null</code> for no
+   * maximum).
    */
   private Comparable end;
-  
+
   /**
-   * The calendar field used to calculate the previous or next date. 
+   * The calendar field used to calculate the previous or next date.
    */
   private int calendarField;
 
@@ -82,7 +82,7 @@ public class SpinnerDateModel extends AbstractSpinnerModel
 
   /**
    * Constructs a <code>SpinnerDateModel</code> using the current date,
-   * no start or end limit, and {@link Calendar#DAY_OF_MONTH} as the calendar 
+   * no start or end limit, and {@link Calendar#DAY_OF_MONTH} as the calendar
    * field.
    */
   public SpinnerDateModel()
@@ -92,15 +92,15 @@ public class SpinnerDateModel extends AbstractSpinnerModel
 
   /**
    * Constructs a <code>SpinnerDateModel</code> with the specified value, lower
-   * and upper bounds, and which spins the specified calendar field. 
+   * and upper bounds, and which spins the specified calendar field.
    * <p>
    * The <code>start</code> and <code>end</code> limits must have a
    * <code>compareTo</code> method that supports instances of {@link Date}, but
    * do not themselves need to be instances of {@link Date} (although typically
    * they are).
-   * 
+   *
    * @param value  the initial value/date (<code>null</code> not permitted).
-   * @param start  a constraint that specifies the earliest permitted date 
+   * @param start  a constraint that specifies the earliest permitted date
    *     value, or <code>null</code> for no lower limit.
    * @param end  a constraint that specifies the latest permitted date value,
    *     or <code>null</code> for no upper limit.
@@ -110,7 +110,7 @@ public class SpinnerDateModel extends AbstractSpinnerModel
   public SpinnerDateModel(Date value, Comparable start, Comparable end,
                           int calendarField)
   {
-    if (value == null) 
+    if (value == null)
       throw new IllegalArgumentException("Null 'value' argument.");
     if (start != null && start.compareTo(value) > 0)
       throw new IllegalArgumentException("Require value on or after start.");
@@ -124,9 +124,9 @@ public class SpinnerDateModel extends AbstractSpinnerModel
   }
 
   /**
-   * Returns the {@link Calendar} field used to calculate the previous and 
+   * Returns the {@link Calendar} field used to calculate the previous and
    * next dates in the sequence.
-   * 
+   *
    * @return The date field code.
    */
   public int getCalendarField()
@@ -136,9 +136,9 @@ public class SpinnerDateModel extends AbstractSpinnerModel
 
   /**
    * Returns the current date/time.
-   * 
+   *
    * @return The current date/time (never <code>null</code>).
-   * 
+   *
    * @see #getValue()
    */
   public Date getDate()
@@ -147,11 +147,11 @@ public class SpinnerDateModel extends AbstractSpinnerModel
   }
 
   /**
-   * Returns the lower limit on the date/time value, or <code>null</code> if 
+   * Returns the lower limit on the date/time value, or <code>null</code> if
    * there is no minimum date/time.
-   * 
+   *
    * @return The lower limit.
-   * 
+   *
    * @see #setStart(Comparable)
    */
   public Comparable getStart()
@@ -160,11 +160,11 @@ public class SpinnerDateModel extends AbstractSpinnerModel
   }
 
   /**
-   * Returns the upper limit on the date/time value, or <code>null</code> if 
+   * Returns the upper limit on the date/time value, or <code>null</code> if
    * there is no maximum date/time.
-   * 
+   *
    * @return The upper limit.
-   * 
+   *
    * @see #setEnd(Comparable)
    */
   public Comparable getEnd()
@@ -173,9 +173,9 @@ public class SpinnerDateModel extends AbstractSpinnerModel
   }
 
   /**
-   * Returns the current date in the sequence (this method returns the same as 
+   * Returns the current date in the sequence (this method returns the same as
    * {@link #getDate()}).
-   * 
+   *
    * @return The current date (never <code>null</code>).
    */
   public Object getValue()
@@ -185,12 +185,12 @@ public class SpinnerDateModel extends AbstractSpinnerModel
 
   /**
    * Returns the next date in the sequence, or <code>null</code> if the
-   * next date is past the upper limit (if one is specified).  The current date 
+   * next date is past the upper limit (if one is specified).  The current date
    * is not changed.
-   * 
+   *
    * @return The next date, or <code>null</code> if the current value is
    *         the latest date represented by the model.
-   *         
+   *
    * @see #getEnd()
    */
   public Object getNextValue()
@@ -207,12 +207,12 @@ public class SpinnerDateModel extends AbstractSpinnerModel
 
   /**
    * Returns the previous date in the sequence, or <code>null</code> if the
-   * previous date is prior to the lower limit (if one is specified).  The 
+   * previous date is prior to the lower limit (if one is specified).  The
    * current date is not changed.
-   * 
+   *
    * @return The previous date, or <code>null</code> if the current value is
    *         the earliest date represented by the model.
-   *         
+   *
    * @see #getStart()
    */
   public Object getPreviousValue()
@@ -228,13 +228,13 @@ public class SpinnerDateModel extends AbstractSpinnerModel
   }
 
   /**
-   * Sets the date field to change when calculating the next and previous 
-   * values. It must be a valid {@link Calendar} field, excluding 
+   * Sets the date field to change when calculating the next and previous
+   * values. It must be a valid {@link Calendar} field, excluding
    * {@link Calendar#ZONE_OFFSET} and {@link Calendar#DST_OFFSET}.
-   * 
+   *
    * @param calendarField  the calendar field to set.
-   * 
-   * @throws IllegalArgumentException if <code>calendarField</code> is not 
+   *
+   * @throws IllegalArgumentException if <code>calendarField</code> is not
    *         a valid code.
    */
   public void setCalendarField(int calendarField)
@@ -252,15 +252,15 @@ public class SpinnerDateModel extends AbstractSpinnerModel
   }
 
   /**
-   * Sets the lower limit for the date/time value and, if the new limit is 
-   * different to the old limit, sends a {@link ChangeEvent} to all registered 
-   * listeners.  A <code>null</code> value is interpreted as "no lower limit".  
-   * No check is made to ensure that the current date/time is on or after the 
-   * new lower limit - the caller is responsible for ensuring that this 
+   * Sets the lower limit for the date/time value and, if the new limit is
+   * different to the old limit, sends a {@link ChangeEvent} to all registered
+   * listeners.  A <code>null</code> value is interpreted as "no lower limit".
+   * No check is made to ensure that the current date/time is on or after the
+   * new lower limit - the caller is responsible for ensuring that this
    * relationship holds.  In addition, the caller should ensure that
    * <code>start</code> is {@link Serializable}.
-   * 
-   * @param start  the new lower limit for the date/time value 
+   *
+   * @param start  the new lower limit for the date/time value
    *     (<code>null</code> permitted).
    */
   public void setStart(Comparable start)
@@ -273,14 +273,14 @@ public class SpinnerDateModel extends AbstractSpinnerModel
   }
 
   /**
-   * Sets the upper limit for the date/time value and, if the new limit is 
-   * different to the old limit, sends a {@link ChangeEvent} to all registered 
-   * listeners.  A <code>null</code> value is interpreted as "no upper limit".  
-   * No check is made to ensure that the current date/time is on or before the 
-   * new upper limit - the caller is responsible for ensuring that this 
+   * Sets the upper limit for the date/time value and, if the new limit is
+   * different to the old limit, sends a {@link ChangeEvent} to all registered
+   * listeners.  A <code>null</code> value is interpreted as "no upper limit".
+   * No check is made to ensure that the current date/time is on or before the
+   * new upper limit - the caller is responsible for ensuring that this
    * relationship holds.  In addition, the caller should ensure that
    * <code>end</code> is {@link Serializable}.
-   * 
+   *
    * @param end  the new upper limit for the date/time value (<code>null</code>
    *     permitted).
    */
@@ -297,18 +297,18 @@ public class SpinnerDateModel extends AbstractSpinnerModel
    * Sets the current date and, if the new value is different to the old
    * value, sends a {@link ChangeEvent} to all registered listeners.
    *
-   * @param value  the new date (<code>null</code> not permitted, must be an 
+   * @param value  the new date (<code>null</code> not permitted, must be an
    *               instance of <code>Date</code>).
-   *               
-   * @throws IllegalArgumentException if <code>value</code> is not an instance 
+   *
+   * @throws IllegalArgumentException if <code>value</code> is not an instance
    *         of <code>Date</code>.
    */
   public void setValue(Object value)
   {
     if (! (value instanceof Date) || value == null)
       throw new IllegalArgumentException("Value not a date.");
-    
-    if (!date.getTime().equals(value)) 
+
+    if (!date.getTime().equals(value))
       {
         date.setTime((Date) value);
         fireStateChanged();

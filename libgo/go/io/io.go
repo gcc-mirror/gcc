@@ -150,12 +150,21 @@ type WriterAt interface {
 	WriteAt(p []byte, off int64) (n int, err os.Error)
 }
 
-// ReadByter is the interface that wraps the ReadByte method.
+// ByteReader is the interface that wraps the ReadByte method.
 //
 // ReadByte reads and returns the next byte from the input.
 // If no byte is available, err will be set.
-type ReadByter interface {
+type ByteReader interface {
 	ReadByte() (c byte, err os.Error)
+}
+
+// RuneReader is the interface that wraps the ReadRune method.
+//
+// ReadRune reads a single UTF-8 encoded Unicode character
+// and returns the rune and its size in bytes. If no character is
+// available, err will be set.
+type RuneReader interface {
+	ReadRune() (rune int, size int, err os.Error)
 }
 
 // WriteString writes the contents of the string s to w, which accepts an array of bytes.
@@ -203,10 +212,15 @@ func ReadFull(r Reader, buf []byte) (n int, err os.Error) {
 // If dst implements the ReaderFrom interface,
 // the copy is implemented by calling dst.ReadFrom(src).
 func Copyn(dst Writer, src Reader, n int64) (written int64, err os.Error) {
-	// If the writer has a ReadFrom method, use it to to do the copy.
+	// If the writer has a ReadFrom method, use it to do the copy.
 	// Avoids a buffer allocation and a copy.
 	if rt, ok := dst.(ReaderFrom); ok {
-		return rt.ReadFrom(LimitReader(src, n))
+		written, err = rt.ReadFrom(LimitReader(src, n))
+		if written < n && err == nil {
+			// rt stopped early; must have been EOF.
+			err = os.EOF
+		}
+		return
 	}
 	buf := make([]byte, 32*1024)
 	for written < n {
@@ -246,12 +260,12 @@ func Copyn(dst Writer, src Reader, n int64) (written int64, err os.Error) {
 // Otherwise, if src implements the WriterTo interface,
 // the copy is implemented by calling src.WriteTo(dst).
 func Copy(dst Writer, src Reader) (written int64, err os.Error) {
-	// If the writer has a ReadFrom method, use it to to do the copy.
+	// If the writer has a ReadFrom method, use it to do the copy.
 	// Avoids an allocation and a copy.
 	if rt, ok := dst.(ReaderFrom); ok {
 		return rt.ReadFrom(src)
 	}
-	// Similarly, if the reader has a WriteTo method, use it to to do the copy.
+	// Similarly, if the reader has a WriteTo method, use it to do the copy.
 	if wt, ok := src.(WriterTo); ok {
 		return wt.WriteTo(dst)
 	}

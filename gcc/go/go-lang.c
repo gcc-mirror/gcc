@@ -1,5 +1,5 @@
 /* go-lang.c -- Go frontend gcc interface.
-   Copyright (C) 2009, 2010 Free Software Foundation, Inc.
+   Copyright (C) 2009, 2010, 2011 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -103,7 +103,7 @@ go_langhook_init (void)
      to, e.g., unsigned_char_type_node) but before calling
      build_common_builtin_nodes (because it calls, indirectly,
      go_type_for_size).  */
-  go_create_gogo (INT_TYPE_SIZE, FLOAT_TYPE_SIZE, POINTER_SIZE);
+  go_create_gogo (INT_TYPE_SIZE, POINTER_SIZE);
 
   build_common_builtin_nodes ();
 
@@ -149,9 +149,7 @@ go_langhook_init_options_struct (struct gcc_options *opts)
 
   /* The builtin math functions should not set errno.  */
   opts->x_flag_errno_math = 0;
-
-  /* By default assume that floating point math does not trap.  */
-  opts->x_flag_trapping_math = 0;
+  opts->frontend_set_flag_errno_math = true;
 
   /* We turn on stack splitting if we can.  */
   if (targetm.supports_split_stack (false, opts))

@@ -1,4 +1,4 @@
-/* OFB.java -- 
+/* OFB.java --
    Copyright (C) 2001, 2002, 2006 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -125,7 +125,7 @@ public class OFB
 
   /**
    * Trivial package-private constructor for use by the Factory class.
-   * 
+   *
    * @param underlyingCipher the underlying cipher implementation.
    * @param cipherBlockSize the underlying cipher block size to use.
    */
@@ -136,7 +136,7 @@ public class OFB
 
   /**
    * Private constructor for cloning purposes.
-   * 
+   *
    * @param that the mode to clone.
    */
   private OFB(OFB that)

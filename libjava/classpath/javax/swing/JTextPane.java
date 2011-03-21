@@ -179,7 +179,7 @@ public class JTextPane
     catch (BadLocationException e)
       {
         throw new AssertionError
-          ("No BadLocationException should be thrown here");      
+          ("No BadLocationException should be thrown here");
       }
   }
 
@@ -326,7 +326,7 @@ public class JTextPane
       }
     else
       getStyledDocument().setCharacterAttributes(start, end - start, attribute,
-						 replace);
+                                                 replace);
   }
 
   /**

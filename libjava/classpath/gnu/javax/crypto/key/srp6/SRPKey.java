@@ -1,4 +1,4 @@
-/* SRPKey.java -- 
+/* SRPKey.java --
    Copyright (C) 2003, 2006 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -80,7 +80,7 @@ public abstract class SRPKey
 
   /**
    * Returns the standard algorithm name for this key.
-   * 
+   *
    * @return the standard algorithm name for this key.
    */
   public String getAlgorithm()
@@ -97,7 +97,7 @@ public abstract class SRPKey
   /**
    * Returns {@link Registry#RAW_ENCODING_SHORT_NAME} which is the sole format
    * supported for this type of keys.
-   * 
+   *
    * @return {@link Registry#RAW_ENCODING_SHORT_NAME} ALWAYS.
    */
   public String getFormat()
@@ -107,7 +107,7 @@ public abstract class SRPKey
 
   /**
    * Returns the public shared modulus.
-   * 
+   *
    * @return <code>N</code>.
    */
   public BigInteger getN()
@@ -117,7 +117,7 @@ public abstract class SRPKey
 
   /**
    * Returns the generator.
-   * 
+   *
    * @return <code>g</code>.
    */
   public BigInteger getG()
@@ -128,7 +128,7 @@ public abstract class SRPKey
   /**
    * Returns <code>true</code> if the designated object is an instance of
    * <code>SRPKey</code> and has the same SRP parameter values as this one.
-   * 
+   *
    * @param obj the other non-null SRP key to compare to.
    * @return <code>true</code> if the designated object is of the same type
    *         and value as this one.

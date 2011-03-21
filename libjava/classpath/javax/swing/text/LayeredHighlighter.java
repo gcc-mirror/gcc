@@ -47,10 +47,10 @@ public abstract class LayeredHighlighter
     implements Highlighter.HighlightPainter
   {
     public abstract Shape paintLayer(Graphics g, int p0, int p1,
-				     Shape viewBounds, JTextComponent editor,
-				     View view);
+                                     Shape viewBounds, JTextComponent editor,
+                                     View view);
   }
-  
+
   public abstract void paintLayeredHighlights(Graphics g, int p0, int p1,
                                               Shape viewBounds,
                                               JTextComponent editor, View view);

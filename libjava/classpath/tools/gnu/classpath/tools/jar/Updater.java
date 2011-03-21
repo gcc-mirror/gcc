@@ -72,7 +72,7 @@ public class Updater
 
     // Write all the new entries to a temporary file.
     File tmpFile = File.createTempFile("jarcopy", null,
-				       parameters.archiveFile.getParentFile());
+                                       parameters.archiveFile.getParentFile());
     OutputStream os = new BufferedOutputStream(new FileOutputStream(tmpFile));
     writeCommandLineEntries(parameters, os);
 
@@ -90,8 +90,8 @@ public class Updater
     close();
     if (!tmpFile.renameTo(parameters.archiveFile))
       {
-	  throw new IOException("Couldn't rename new JAR file " + tmpFile +
-				"to " + parameters.archiveFile);
+          throw new IOException("Couldn't rename new JAR file " + tmpFile +
+                                "to " + parameters.archiveFile);
       }
   }
 

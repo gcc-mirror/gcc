@@ -54,7 +54,7 @@ final class VMObject
    * @return the class of the Object.
    */
   static native Class getClass(Object obj);
-  
+
   /**
    * The VM is expected to make a field-for-field shallow copy of the
    * argument. Thus, the copy has the same runtime type as the argument.

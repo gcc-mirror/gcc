@@ -33,7 +33,7 @@ import org.objectweb.asm.ClassWriter;
 
 /**
  * A constant pool item.
- * 
+ *
  * @author Eric Bruneton
  */
 class Constant {
@@ -108,7 +108,7 @@ class Constant {
 
     /**
      * Sets this item to an integer item.
-     * 
+     *
      * @param intVal the value of this item.
      */
     void set(final int intVal) {
@@ -119,7 +119,7 @@ class Constant {
 
     /**
      * Sets this item to a long item.
-     * 
+     *
      * @param longVal the value of this item.
      */
     void set(final long longVal) {
@@ -130,7 +130,7 @@ class Constant {
 
     /**
      * Sets this item to a float item.
-     * 
+     *
      * @param floatVal the value of this item.
      */
     void set(final float floatVal) {
@@ -141,7 +141,7 @@ class Constant {
 
     /**
      * Sets this item to a double item.
-     * 
+     *
      * @param doubleVal the value of this item.
      */
     void set(final double doubleVal) {
@@ -152,7 +152,7 @@ class Constant {
 
     /**
      * Sets this item to an item that do not hold a primitive value.
-     * 
+     *
      * @param type the type of this item.
      * @param strVal1 first part of the value of this item.
      * @param strVal2 second part of the value of this item.

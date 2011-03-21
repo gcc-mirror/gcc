@@ -53,7 +53,7 @@ public class InvalidMethodException
   public InvalidMethodException (long id)
   {
     super (JdwpConstants.Error.INVALID_METHODID,
-	   "invalid method id (" + id + ")");
+           "invalid method id (" + id + ")");
   }
 
   public InvalidMethodException (Throwable t)

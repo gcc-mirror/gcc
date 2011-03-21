@@ -1,4 +1,4 @@
-/* DoParse.java -- 
+/* DoParse.java --
    Copyright (C) 1999,2000,2001 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -101,11 +101,11 @@ final public class DoParse
     private DoParse () { /* no instances allowed */ }
 
     // first reported nonrecoverable error
-    private static SAXParseException	fatal;
+    private static SAXParseException    fatal;
 
     // error categories
-    private static int			errorCount;
-    private static int			fatalCount;
+    private static int                  errorCount;
+    private static int                  fatalCount;
 
     /**
      * Command line invoker for this class; pass a filename or URL
@@ -121,182 +121,182 @@ final public class DoParse
     public static void main (String argv [])
     throws IOException
     {
-	int		exitStatus = 1;
+        int             exitStatus = 1;
 
-	if (argv.length != 2) {
-	    System.err.println ("Usage: DoParse [filename|URL] pipeline-spec");
-	    System.err.println ("Example pipeline specs:");
-	    System.err.println ("  'nsfix | validate'");
-	    System.err.println (
-		"       ... restore namespace syntax, validate");
-	    System.err.println ("  'nsfix | write ( stdout )'");
-	    System.err.println (
-		"       ... restore namespace syntax, write to stdout as XML"
-		);
-	    System.exit (1);
-	}
+        if (argv.length != 2) {
+            System.err.println ("Usage: DoParse [filename|URL] pipeline-spec");
+            System.err.println ("Example pipeline specs:");
+            System.err.println ("  'nsfix | validate'");
+            System.err.println (
+                "       ... restore namespace syntax, validate");
+            System.err.println ("  'nsfix | write ( stdout )'");
+            System.err.println (
+                "       ... restore namespace syntax, write to stdout as XML"
+                );
+            System.exit (1);
+        }
 
-	try {
-	    //
-	    // Get input source for specified document (or try ;-)
-	    //
-	    argv [0] = Resolver.getURL (argv [0]);
-	    InputSource input = new InputSource (argv [0]);
+        try {
+            //
+            // Get input source for specified document (or try ;-)
+            //
+            argv [0] = Resolver.getURL (argv [0]);
+            InputSource input = new InputSource (argv [0]);
 
-	    //
-	    // Get the producer, using the system default parser (which
-	    // can be overridden for this particular invocation).
-	    //
-	    // And the pipeline, using commandline options.
-	    //
-	    XMLReader		producer;
-	    EventConsumer	consumer;
+            //
+            // Get the producer, using the system default parser (which
+            // can be overridden for this particular invocation).
+            //
+            // And the pipeline, using commandline options.
+            //
+            XMLReader           producer;
+            EventConsumer       consumer;
 
-	    producer = XMLReaderFactory.createXMLReader ();
+            producer = XMLReaderFactory.createXMLReader ();
 
-	    //
-	    // XXX pipeline factory now has a pre-tokenized input
-	    // method, use it ... that way at least some params
-	    // can be written using quotes (have spaces, ...)
-	    //
-	    consumer = PipelineFactory.createPipeline (argv [1]);
+            //
+            // XXX pipeline factory now has a pre-tokenized input
+            // method, use it ... that way at least some params
+            // can be written using quotes (have spaces, ...)
+            //
+            consumer = PipelineFactory.createPipeline (argv [1]);
 
-	    //
-	    // XXX want commandline option for tweaking error handler.
-	    // Want to be able to present warnings.
-	    //
-	    producer.setErrorHandler (new MyErrorHandler ());
+            //
+            // XXX want commandline option for tweaking error handler.
+            // Want to be able to present warnings.
+            //
+            producer.setErrorHandler (new MyErrorHandler ());
 
-	    // XXX need facility enabling resolving to local DTDs
+            // XXX need facility enabling resolving to local DTDs
 
-	    //
-	    // Parse.  The pipeline may get optimized a bit, so we
-	    // can't always fail cleanly for validation without taking
-	    // a look at the filter stages.
-	    //
-	    EventFilter.bind (producer, consumer);
-	    producer.parse (input);
+            //
+            // Parse.  The pipeline may get optimized a bit, so we
+            // can't always fail cleanly for validation without taking
+            // a look at the filter stages.
+            //
+            EventFilter.bind (producer, consumer);
+            producer.parse (input);
 
-	    try {
-		if (producer.getFeature (
-			"http://org.xml/sax/features/validation"))
-		    exitStatus = ((errorCount + fatalCount) > 0) ? 1 : 0;
-		else if (fatalCount == 0)
-		    exitStatus = 0;
-	    } catch (SAXException e) {
-		if (hasValidator (consumer))
-		    exitStatus = ((errorCount + fatalCount) > 0) ? 1 : 0;
-		else if (fatalCount == 0)
-		    exitStatus = 0;
-	    }
+            try {
+                if (producer.getFeature (
+                        "http://org.xml/sax/features/validation"))
+                    exitStatus = ((errorCount + fatalCount) > 0) ? 1 : 0;
+                else if (fatalCount == 0)
+                    exitStatus = 0;
+            } catch (SAXException e) {
+                if (hasValidator (consumer))
+                    exitStatus = ((errorCount + fatalCount) > 0) ? 1 : 0;
+                else if (fatalCount == 0)
+                    exitStatus = 0;
+            }
 
-	} catch (java.net.MalformedURLException e) {
-	    System.err.println ("** Malformed URL: " + e.getMessage ());
-	    System.err.println ("Is '" + argv [0] + "' a non-existent file?");
-	    e.printStackTrace ();
-		// e.g. FNF
+        } catch (java.net.MalformedURLException e) {
+            System.err.println ("** Malformed URL: " + e.getMessage ());
+            System.err.println ("Is '" + argv [0] + "' a non-existent file?");
+            e.printStackTrace ();
+                // e.g. FNF
 
-	} catch (SAXParseException e) {
-	    if (e != fatal) {
-		System.err.print (printParseException ("Parsing Aborted", e));
-		e.printStackTrace ();
-		if (e.getException () != null) {
-		    System.err.println ("++ Wrapped exception:");
-		    e.getException ().printStackTrace ();
-		}
-	    }
+        } catch (SAXParseException e) {
+            if (e != fatal) {
+                System.err.print (printParseException ("Parsing Aborted", e));
+                e.printStackTrace ();
+                if (e.getException () != null) {
+                    System.err.println ("++ Wrapped exception:");
+                    e.getException ().printStackTrace ();
+                }
+            }
 
-	} catch (SAXException e) {
-	    Exception	x = e;
-	    if (e.getException () != null)
-		x = e.getException ();
-	    x.printStackTrace ();
+        } catch (SAXException e) {
+            Exception   x = e;
+            if (e.getException () != null)
+                x = e.getException ();
+            x.printStackTrace ();
 
-	} catch (Throwable t) {
-	    t.printStackTrace ();
-	}
+        } catch (Throwable t) {
+            t.printStackTrace ();
+        }
 
-	System.exit (exitStatus);
+        System.exit (exitStatus);
     }
 
     // returns true if saw a validator (before end or unrecognized node)
     // false otherwise
     private static boolean hasValidator (EventConsumer e)
     {
-	if (e == null)
-	    return false;
-	if (e instanceof ValidationConsumer)
-	    return true;
-	if (e instanceof TeeConsumer) {
-	    TeeConsumer	t = (TeeConsumer) e;
-	    return hasValidator (t.getFirst ())
-		|| hasValidator (t.getRest ());
-	}
-	if (e instanceof WellFormednessFilter
-		|| e instanceof NSFilter
-		)
-	    return hasValidator (((EventFilter)e).getNext ());
-	
-	// else ... gee, we can't know.  Assume not.
+        if (e == null)
+            return false;
+        if (e instanceof ValidationConsumer)
+            return true;
+        if (e instanceof TeeConsumer) {
+            TeeConsumer t = (TeeConsumer) e;
+            return hasValidator (t.getFirst ())
+                || hasValidator (t.getRest ());
+        }
+        if (e instanceof WellFormednessFilter
+                || e instanceof NSFilter
+                )
+            return hasValidator (((EventFilter)e).getNext ());
 
-	return false;
+        // else ... gee, we can't know.  Assume not.
+
+        return false;
     }
 
     static class MyErrorHandler implements ErrorHandler
     {
-	// dump validation errors, but continue
-	public void error (SAXParseException e)
-	throws SAXParseException
-	{
-	    errorCount++;
-	    System.err.print (printParseException ("Error", e));
-	}
+        // dump validation errors, but continue
+        public void error (SAXParseException e)
+        throws SAXParseException
+        {
+            errorCount++;
+            System.err.print (printParseException ("Error", e));
+        }
 
-	public void warning (SAXParseException e)
-	throws SAXParseException
-	{
-	    // System.err.print (printParseException ("Warning", e));
-	}
+        public void warning (SAXParseException e)
+        throws SAXParseException
+        {
+            // System.err.print (printParseException ("Warning", e));
+        }
 
-	// try to continue fatal errors, in case a parser reports more
-	public void fatalError (SAXParseException e)
-	throws SAXParseException
-	{
-	    fatalCount++;
-	    if (fatal == null)
-		fatal = e;
-	    System.err.print (printParseException ("Nonrecoverable Error", e));
-	}
+        // try to continue fatal errors, in case a parser reports more
+        public void fatalError (SAXParseException e)
+        throws SAXParseException
+        {
+            fatalCount++;
+            if (fatal == null)
+                fatal = e;
+            System.err.print (printParseException ("Nonrecoverable Error", e));
+        }
     }
 
     static private String printParseException (
-	String			label,
-	SAXParseException	e
+        String                  label,
+        SAXParseException       e
     ) {
-	CPStringBuilder	buf = new CPStringBuilder ();
-	int		temp;
+        CPStringBuilder buf = new CPStringBuilder ();
+        int             temp;
 
-	buf.append ("** ");
-	buf.append (label);
-	buf.append (": ");
-	buf.append (e.getMessage ());
-	buf.append ('\n');
-	if (e.getSystemId () != null) {
-	    buf.append ("   URI:  ");
-	    buf.append (e.getSystemId ());
-	    buf.append ('\n');
-	}
-	if ((temp = e.getLineNumber ()) != -1) {
-	    buf.append ("   line: ");
-	    buf.append (temp);
-	    buf.append ('\n');
-	}
-	if ((temp = e.getColumnNumber ()) != -1) {
-	    buf.append ("   char: ");
-	    buf.append (temp);
-	    buf.append ('\n');
-	}
+        buf.append ("** ");
+        buf.append (label);
+        buf.append (": ");
+        buf.append (e.getMessage ());
+        buf.append ('\n');
+        if (e.getSystemId () != null) {
+            buf.append ("   URI:  ");
+            buf.append (e.getSystemId ());
+            buf.append ('\n');
+        }
+        if ((temp = e.getLineNumber ()) != -1) {
+            buf.append ("   line: ");
+            buf.append (temp);
+            buf.append ('\n');
+        }
+        if ((temp = e.getColumnNumber ()) != -1) {
+            buf.append ("   char: ");
+            buf.append (temp);
+            buf.append ('\n');
+        }
 
-	return buf.toString ();
+        return buf.toString ();
     }
 }

@@ -1,6 +1,6 @@
 /* Main parser.
    Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008,
-   2009, 2010
+   2009, 2010, 2011
    Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
@@ -494,6 +494,9 @@ decode_omp_directive (void)
       gfc_error_recovery ();
       return ST_NONE;
     }
+
+  if (gfc_implicit_pure (NULL))
+    gfc_current_ns->proc_name->attr.implicit_pure = 0;
 
   old_locus = gfc_current_locus;
 
@@ -2263,32 +2266,16 @@ loop:
     }
 
 
-  /* Make sure that a generic interface has only subroutines or
-     functions and that the generic name has the right attribute.  */
-  if (current_interface.type == INTERFACE_GENERIC)
+  /* Make sure that the generic name has the right attribute.  */
+  if (current_interface.type == INTERFACE_GENERIC
+      && current_state == COMP_NONE)
     {
-      if (current_state == COMP_NONE)
-	{
-	  if (new_state == COMP_FUNCTION && sym)
-	    gfc_add_function (&sym->attr, sym->name, NULL);
-	  else if (new_state == COMP_SUBROUTINE && sym)
-	    gfc_add_subroutine (&sym->attr, sym->name, NULL);
+      if (new_state == COMP_FUNCTION && sym)
+	gfc_add_function (&sym->attr, sym->name, NULL);
+      else if (new_state == COMP_SUBROUTINE && sym)
+	gfc_add_subroutine (&sym->attr, sym->name, NULL);
 
-	  current_state = new_state;
-	}
-      else
-	{
-	  if (new_state != current_state)
-	    {
-	      if (new_state == COMP_SUBROUTINE)
-		gfc_error ("SUBROUTINE at %C does not belong in a "
-			   "generic function interface");
-
-	      if (new_state == COMP_FUNCTION)
-		gfc_error ("FUNCTION at %C does not belong in a "
-			   "generic subroutine interface");
-	    }
-	}
+      current_state = new_state;
     }
 
   if (current_interface.type == INTERFACE_ABSTRACT)
@@ -3167,6 +3154,7 @@ gfc_build_block_ns (gfc_namespace *parent_ns)
       t = gfc_add_flavor (&my_ns->proc_name->attr, FL_LABEL,
 			  my_ns->proc_name->name, NULL);
       gcc_assert (t == SUCCESS);
+      gfc_commit_symbol (my_ns->proc_name);
     }
 
   if (parent_ns->proc_name)
@@ -3866,6 +3854,12 @@ parse_contained (int module)
 	  sym->attr.contained = 1;
 	  sym->attr.referenced = 1;
 
+	  /* Set implicit_pure so that it can be reset if any of the
+	     tests for purity fail.  This is used for some optimisation
+	     during translation.  */
+	  if (!sym->attr.pure)
+	    sym->attr.implicit_pure = 1;
+
 	  parse_progunit (ST_NONE);
 
 	  /* Fix up any sibling functions that refer to this one.  */
@@ -4197,7 +4191,8 @@ resolve_all_program_units (gfc_namespace *gfc_global_ns_list)
   gfc_current_ns = gfc_global_ns_list;
   for (; gfc_current_ns; gfc_current_ns = gfc_current_ns->sibling)
     {
-      gfc_current_locus = gfc_current_ns->proc_name->declared_at;
+      if (gfc_current_ns->proc_name)
+	gfc_current_locus = gfc_current_ns->proc_name->declared_at;
       gfc_resolve (gfc_current_ns);
       gfc_current_ns->derived_types = gfc_derived_types;
       gfc_derived_types = NULL;

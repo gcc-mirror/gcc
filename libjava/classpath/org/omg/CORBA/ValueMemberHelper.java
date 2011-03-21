@@ -178,7 +178,7 @@ public abstract class ValueMemberHelper
     catch (UserException ex)
       {
         MARSHAL m = new MARSHAL();
-        m.minor = Minor.UserException;        
+        m.minor = Minor.UserException;
         m.initCause(ex);
         throw m;
       }
@@ -202,7 +202,7 @@ public abstract class ValueMemberHelper
     catch (UserException ex)
       {
         MARSHAL m = new MARSHAL();
-        m.minor = Minor.UserException;        
+        m.minor = Minor.UserException;
         m.initCause(ex);
         throw m;
       }

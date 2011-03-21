@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -49,24 +49,24 @@ import java.util.Arrays;
  * An identifier that is unique accross the all virtual machines. This class is
  * used by distributed garbage collector to identify the virtual machine of
  * the client, but may also be used in various other cases, when such identifier
- * is required. This class separately stores and transfers the host IP 
+ * is required. This class separately stores and transfers the host IP
  * address, but will try to do its best also for the case if it failed to
- * determine it. The alternative algorithms are used in {@link UID} that is 
+ * determine it. The alternative algorithms are used in {@link UID} that is
  * part of this class. The VMID's, created on the same host, but in the two
  * separately (parallely) running virtual machines are different.
  */
-public final class VMID	implements Serializable
+public final class VMID implements Serializable
 {
   /**
    * Use SVUID for interoperability.
    */
   static final long serialVersionUID = -538642295484486218L;
-  
+
   /**
    * If true, the IP of this host can ve reliably determined.
    */
   static boolean areWeUnique;
-  
+
   /**
    * The IP address of the local host.
    */
@@ -76,12 +76,12 @@ public final class VMID	implements Serializable
    * The IP address of the local host.
    */
   private byte[] addr;
-  
+
   /**
    * The cached hash code.
    */
   transient int hash;
-  
+
   /**
    * The UID of this VMID.
    */
@@ -89,7 +89,7 @@ public final class VMID	implements Serializable
 
   static
     {
-      // This "local host" value usually indicates that the local 
+      // This "local host" value usually indicates that the local
       // IP address cannot be reliably determined.
       byte[] localHost = new byte[] { 127, 0, 0, 1 };
 
@@ -104,10 +104,10 @@ public final class VMID	implements Serializable
           areWeUnique = false;
         }
     }
-  
+
   /**
    * Create the new VMID. All VMID's are unique accross tha all virtual
-   * machines. 
+   * machines.
    */
   public VMID()
   {
@@ -119,11 +119,11 @@ public final class VMID	implements Serializable
    * Return true if it is possible to get the accurate address of this host.
    * If false is returned, the created VMID's are less reliable, but the
    * starting time and possibly the memory allocation are also taken into
-   * consideration in the incorporated UID. Hence the VMID's, created on the 
+   * consideration in the incorporated UID. Hence the VMID's, created on the
    * different virtual machines, still should be different.
-   * 
+   *
    * @deprecated VMID's are more or less always reliable.
-   * 
+   *
    * @return false if the local host ip address is 127.0.0.1 or unknown,
    * true otherwise.
    */
@@ -131,7 +131,7 @@ public final class VMID	implements Serializable
   {
     return areWeUnique;
   }
-  
+
   /**
    * Get the hash code of this VMID.
    */
@@ -145,7 +145,7 @@ public final class VMID	implements Serializable
       }
     return hash;
   }
-  
+
   /**
    * Returns true if the passed parameter is also VMID and it is equal to this
    * VMID. The VMID should only be equal to itself (also if the passed value is
@@ -164,24 +164,24 @@ public final class VMID	implements Serializable
       return false;
 
   }
-  
+
   /**
    * Get the string representation of this VMID.
    */
   public String toString ()
   {
     CPStringBuilder buf = new CPStringBuilder ("[VMID: ");
-    
+
     for (int i = 0; i < addr.length; i++)
       {
         if (i > 0)
           {
             buf.append (".");
           }
-        
+
         buf.append (Integer.toString (addr [i]));
       }
-    
+
     buf.append (" ");
     buf.append (uid.toString ());
     buf.append ("]");

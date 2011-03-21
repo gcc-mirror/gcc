@@ -1,4 +1,4 @@
- /* SwingCallbackHandler.java -- 
+ /* SwingCallbackHandler.java --
     Copyright (C) 2006  Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -455,7 +455,7 @@ public class SwingCallbackHandler extends AbstractCallbackHandler
                                                      GridBagConstraints.NORTHWEST,
                                                      GridBagConstraints.NONE,
                                                      new Insets (10, 10, 15, 5), 0, 0));
-    
+
     final JTextArea text = new JTextArea (24, 80);
     text.setEditable (true);
     String _text;

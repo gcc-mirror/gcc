@@ -126,7 +126,7 @@ maybe_hot_frequency_p (int freq)
   if (node->frequency == NODE_FREQUENCY_EXECUTED_ONCE
       && freq <= (ENTRY_BLOCK_PTR->frequency * 2 / 3))
     return false;
-  if (freq < BB_FREQ_MAX / PARAM_VALUE (HOT_BB_FREQUENCY_FRACTION))
+  if (freq < ENTRY_BLOCK_PTR->frequency / PARAM_VALUE (HOT_BB_FREQUENCY_FRACTION))
     return false;
   return true;
 }

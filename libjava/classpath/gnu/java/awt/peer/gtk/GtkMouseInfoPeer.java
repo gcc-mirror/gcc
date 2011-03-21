@@ -49,18 +49,17 @@ import java.awt.peer.MouseInfoPeer;
 public class GtkMouseInfoPeer implements MouseInfoPeer
 {
   private static GdkGraphicsEnvironment gde = new GdkGraphicsEnvironment();
-  
+
   public int fillPointWithCoords(Point p)
   {
     int[] coords = gde.getMouseCoordinates();
-    p.x = coords[1]; 
+    p.x = coords[1];
     p.y = coords[2];
     return coords[0];
   }
-  
+
   public boolean isWindowUnderMouse(Window w)
   {
     return gde.isWindowUnderMouse((GtkWindowPeer) w.getPeer());
   }
 }
-

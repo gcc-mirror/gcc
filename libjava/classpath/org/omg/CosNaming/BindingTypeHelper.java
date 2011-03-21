@@ -71,7 +71,7 @@ public abstract class BindingTypeHelper
       {
         BAD_OPERATION bad = new BAD_OPERATION("Binding type expected");
         bad.initCause(ex);
-        bad.minor = Minor.Any;        
+        bad.minor = Minor.Any;
         throw bad;
       }
   }

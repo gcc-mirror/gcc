@@ -213,7 +213,7 @@ class DefaultSwatchChooserPanel extends AbstractColorChooserPanel
 
     /** The color (255, 153, 153). */
     public static final Color C255153153 = new Color(255, 153, 153);
-    static Color[] colors = 
+    static Color[] colors =
                             {
                               // Row 1
     Color.WHITE, new Color(204, 255, 255), C204255255, C204255255, C204255255,
@@ -224,7 +224,7 @@ class DefaultSwatchChooserPanel extends AbstractColorChooserPanel
                               C255204204, new Color(255, 255, 204), C204255204,
                               C204255204, C204255204, C204255204, C204255204,
                               C204255204, C204255204, C204255204, C204255204,
-                              
+
     // Row 2
     C204204204, new Color(153, 255, 255), new Color(153, 204, 255), C153153255,
                               C153153255, C153153255, C153153255, C153153255,
@@ -237,7 +237,7 @@ class DefaultSwatchChooserPanel extends AbstractColorChooserPanel
                               new Color(204, 255, 153), C153255153, C153255153,
                               C153255153, C153255153, C153255153, C153255153,
                               C153255153, new Color(153, 255, 204),
-                              
+
     // Row 3
     C204204204, new Color(102, 255, 255), new Color(102, 204, 255),
                               new Color(102, 153, 255), C102102255, C102102255,
@@ -256,7 +256,7 @@ class DefaultSwatchChooserPanel extends AbstractColorChooserPanel
                               C102255102, C102255102, C102255102,
                               new Color(102, 255, 153),
                               new Color(102, 255, 204),
-                              
+
     // Row 4
     new Color(153, 153, 153), new Color(51, 255, 255), new Color(51, 204, 255),
                               new Color(51, 153, 255), new Color(51, 102, 255),
@@ -272,7 +272,7 @@ class DefaultSwatchChooserPanel extends AbstractColorChooserPanel
                               C051255051, C051255051, C051255051,
                               new Color(51, 255, 102), new Color(51, 255, 153),
                               new Color(51, 255, 204),
-                              
+
     // Row 5
     new Color(153, 153, 153), new Color(0, 255, 255), new Color(0, 204, 255),
                               new Color(0, 153, 255), new Color(0, 102, 255),
@@ -289,7 +289,7 @@ class DefaultSwatchChooserPanel extends AbstractColorChooserPanel
                               new Color(51, 255, 0), new Color(0, 255, 0),
                               new Color(0, 255, 51), new Color(0, 255, 102),
                               new Color(0, 255, 153), new Color(0, 255, 204),
-                              
+
     // Row 6
     new Color(102, 102, 102), C000204204, C000204204, new Color(0, 153, 204),
                               new Color(0, 102, 204), new Color(0, 51, 204),
@@ -305,7 +305,7 @@ class DefaultSwatchChooserPanel extends AbstractColorChooserPanel
                               new Color(0, 204, 0), new Color(0, 204, 51),
                               new Color(0, 204, 102), new Color(0, 204, 153),
                               new Color(0, 204, 204),
-                              
+
     // Row 7
     new Color(102, 102, 102), C000153153, C000153153, C000153153,
                               new Color(0, 102, 153), new Color(0, 51, 153),
@@ -319,7 +319,7 @@ class DefaultSwatchChooserPanel extends AbstractColorChooserPanel
                               new Color(102, 153, 0), new Color(51, 153, 0),
                               new Color(0, 153, 0), new Color(0, 153, 51),
                               new Color(0, 153, 102), C000153153, C000153153,
-                              
+
     // Row 8
     new Color(51, 51, 51), C000102102, C000102102, C000102102, C000102102,
                               new Color(0, 51, 102), new Color(0, 0, 102),
@@ -332,7 +332,7 @@ class DefaultSwatchChooserPanel extends AbstractColorChooserPanel
                               new Color(51, 102, 0), new Color(0, 102, 0),
                               new Color(0, 102, 51), C000102102, C000102102,
                               C000102102,
-                              
+
     // Row 9.
     Color.BLACK, C000051051, C000051051, C000051051, C000051051, C000051051,
                               new Color(0, 0, 51), C051000051, C051000051,
@@ -369,8 +369,8 @@ class DefaultSwatchChooserPanel extends AbstractColorChooserPanel
     {
       if (x % (cellWidth + gap) > cellWidth
           || y % (cellHeight + gap) > cellHeight)
-	// position is located in gap.
-	return null;
+        // position is located in gap.
+        return null;
 
       int row = y / (cellHeight + gap);
       int col = x / (cellWidth + gap);
@@ -401,14 +401,14 @@ class DefaultSwatchChooserPanel extends AbstractColorChooserPanel
 
       for (int i = 0; i < numRows; i++)
         {
-	  for (int j = 0; j < numCols; j++)
-	    {
-	      graphics.setColor(colors[index++]);
-	      graphics.fill3DRect(currX, currY, cellWidth, cellHeight, true);
-	      currX += gap + cellWidth;
-	    }
-	  currX = insets.left;
-	  currY += gap + cellHeight;
+          for (int j = 0; j < numCols; j++)
+            {
+              graphics.setColor(colors[index++]);
+              graphics.fill3DRect(currX, currY, cellWidth, cellHeight, true);
+              currX += gap + cellWidth;
+            }
+          currX = insets.left;
+          currY += gap + cellHeight;
         }
       graphics.setColor(saved);
     }
@@ -424,7 +424,7 @@ class DefaultSwatchChooserPanel extends AbstractColorChooserPanel
     {
       Color c = getColorForPosition(e.getX(), e.getY());
       if (c == null)
-	return null;
+        return null;
       return (c.getRed() + "," + c.getGreen() + "," + c.getBlue());
     }
   }
@@ -467,8 +467,8 @@ class DefaultSwatchChooserPanel extends AbstractColorChooserPanel
     {
       if (x % (cellWidth + gap) > cellWidth
           || y % (cellHeight + gap) > cellHeight)
-	// position is located in gap.
-	return null;
+        // position is located in gap.
+        return null;
 
       int row = y / (cellHeight + gap);
       int col = x / (cellWidth + gap);
@@ -483,7 +483,7 @@ class DefaultSwatchChooserPanel extends AbstractColorChooserPanel
     {
       colors = new Color[numRows * numCols];
       for (int i = 0; i < colors.length; i++)
-	colors[i] = defaultColor;
+        colors[i] = defaultColor;
     }
 
     /**
@@ -508,7 +508,7 @@ class DefaultSwatchChooserPanel extends AbstractColorChooserPanel
     void addColorToQueue(Color c)
     {
       if (--start == -1)
-	start = numRows * numCols - 1;
+        start = numRows * numCols - 1;
 
       colors[start] = c;
     }
@@ -527,14 +527,14 @@ class DefaultSwatchChooserPanel extends AbstractColorChooserPanel
 
       for (int i = 0; i < numRows; i++)
         {
-	  for (int j = 0; j < numCols; j++)
-	    {
-	      g.setColor(colors[getIndexForCell(i, j)]);
-	      g.fill3DRect(currX, currY, cellWidth, cellHeight, true);
-	      currX += cellWidth + gap;
-	    }
-	  currX = insets.left;
-	  currY += cellWidth + gap;
+          for (int j = 0; j < numCols; j++)
+            {
+              g.setColor(colors[getIndexForCell(i, j)]);
+              g.fill3DRect(currX, currY, cellWidth, cellHeight, true);
+              currX += cellWidth + gap;
+            }
+          currX = insets.left;
+          currY += cellWidth + gap;
         }
     }
 
@@ -549,7 +549,7 @@ class DefaultSwatchChooserPanel extends AbstractColorChooserPanel
     {
       Color c = getColorForPosition(e.getX(), e.getY());
       if (c == null)
-	return null;
+        return null;
       return c.getRed() + "," + c.getGreen() + "," + c.getBlue();
     }
   }
@@ -609,11 +609,11 @@ class DefaultSwatchChooserPanel extends AbstractColorChooserPanel
 
       for (int i = 0; i < comps.length; i++)
         {
-	  pref[i] = comps[i].getPreferredSize();
-	  if (pref[i] == null)
-	    return;
-	  maxHeight = Math.max(maxHeight, pref[i].height);
-	  totalWidth += pref[i].width;
+          pref[i] = comps[i].getPreferredSize();
+          if (pref[i] == null)
+            return;
+          maxHeight = Math.max(maxHeight, pref[i].height);
+          totalWidth += pref[i].width;
         }
 
       ypos = (parent.getSize().height - maxHeight) / 2 + insets.top;
@@ -621,10 +621,10 @@ class DefaultSwatchChooserPanel extends AbstractColorChooserPanel
 
       for (int i = 0; i < comps.length; i++)
         {
-	  if (pref[i] == null)
-	    continue;
-	  comps[i].setBounds(xpos, ypos, pref[i].width, pref[i].height);
-	  xpos += pref[i].width;
+          if (pref[i] == null)
+            continue;
+          comps[i].setBounds(xpos, ypos, pref[i].width, pref[i].height);
+          xpos += pref[i].width;
         }
     }
 
@@ -667,11 +667,11 @@ class DefaultSwatchChooserPanel extends AbstractColorChooserPanel
 
       for (int i = 0; i < comps.length; i++)
         {
-	  pref = comps[i].getPreferredSize();
-	  if (pref == null)
-	    continue;
-	  xmax += pref.width;
-	  ymax = Math.max(ymax, pref.height);
+          pref = comps[i].getPreferredSize();
+          if (pref == null)
+            continue;
+          xmax += pref.width;
+          ymax = Math.max(ymax, pref.height);
         }
 
       Insets insets = parent.getInsets();
@@ -713,11 +713,11 @@ class DefaultSwatchChooserPanel extends AbstractColorChooserPanel
 
       for (int i = 0; i < comps.length; i++)
         {
-	  pref = comps[i].getPreferredSize();
-	  if (pref == null)
-	    continue;
-	  comps[i].setBounds(insets.left, currY, pref.width, pref.height);
-	  currY += pref.height;
+          pref = comps[i].getPreferredSize();
+          if (pref == null)
+            continue;
+          comps[i].setBounds(insets.left, currY, pref.width, pref.height);
+          currY += pref.height;
         }
     }
 
@@ -750,12 +750,12 @@ class DefaultSwatchChooserPanel extends AbstractColorChooserPanel
       Dimension pref;
       for (int i = 0; i < comps.length; i++)
         {
-	  pref = comps[i].getPreferredSize();
-	  if (pref != null)
-	    {
-	      width = Math.max(width, pref.width);
-	      height += pref.height;
-	    }
+          pref = comps[i].getPreferredSize();
+          if (pref != null)
+            {
+              width = Math.max(width, pref.width);
+              height += pref.height;
+            }
         }
 
       return new Dimension(width + insets.left + insets.right,

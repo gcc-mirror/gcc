@@ -1,4 +1,5 @@
 ! { dg-do compile }
+! { dg-timeout-factor 4 }
 ! PR20923 gfortran slow for large array constructors.
 ! Test case prepared from PR by Jerry DeLisle <jvdelisle@gcc.gnu.org>
 program sel

@@ -90,11 +90,11 @@ abstract class CommonAppletContext
 
     while (i.hasNext())
       {
-	a = (Applet) i.next();
+        a = (Applet) i.next();
 
-	appletName = a.getParameter("name");
-	if (a != null && appletName != null && appletName.equals(name))
-	  return a;
+        appletName = a.getParameter("name");
+        if (a != null && appletName != null && appletName.equals(name))
+          return a;
       }
     return null;
   }

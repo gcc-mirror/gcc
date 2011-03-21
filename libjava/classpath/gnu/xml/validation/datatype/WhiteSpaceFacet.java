@@ -1,4 +1,4 @@
-/* WhiteSpaceFacet.java -- 
+/* WhiteSpaceFacet.java --
    Copyright (C) 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -45,11 +45,11 @@ package gnu.xml.validation.datatype;
 public final class WhiteSpaceFacet
   extends Facet
 {
-  
+
   public static final int PRESERVE = 0;
   public static final int REPLACE = 1;
   public static final int COLLAPSE = 2;
-  
+
   public final int value;
   public final boolean fixed;
 
@@ -59,7 +59,7 @@ public final class WhiteSpaceFacet
     this.value = value;
     this.fixed = fixed;
   }
-  
+
   public int hashCode()
   {
     return value;
@@ -70,6 +70,5 @@ public final class WhiteSpaceFacet
     return (other instanceof WhiteSpaceFacet &&
             ((WhiteSpaceFacet) other).value == value);
   }
-  
-}
 
+}

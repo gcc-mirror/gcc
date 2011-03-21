@@ -191,14 +191,14 @@ public class GridBagConstraints implements Cloneable, Serializable
   {
     try
       {
-	GridBagConstraints g = (GridBagConstraints) super.clone ();
-	g.insets = (Insets) insets.clone ();
-	return g;
+        GridBagConstraints g = (GridBagConstraints) super.clone ();
+        g.insets = (Insets) insets.clone ();
+        return g;
       }
     catch (CloneNotSupportedException _)
       {
-	// Can't happen.
-	return null;
+        // Can't happen.
+        return null;
       }
   }
 
@@ -226,10 +226,10 @@ public class GridBagConstraints implements Cloneable, Serializable
    * parameters.
    */
   public GridBagConstraints (int gridx, int gridy,
-			     int gridwidth, int gridheight,
-			     double weightx, double weighty,
-			     int anchor, int fill,
-			     Insets insets, int ipadx, int ipady)
+                             int gridwidth, int gridheight,
+                             double weightx, double weighty,
+                             int anchor, int fill,
+                             Insets insets, int ipadx, int ipady)
   {
     this.anchor = anchor;
     this.fill = fill;

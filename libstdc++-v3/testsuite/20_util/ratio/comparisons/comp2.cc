@@ -1,7 +1,7 @@
 // { dg-options "-std=gnu++0x" }
 // { dg-require-cstdint "" }
 
-// Copyright (C) 2008, 2009, 2010 Free Software Foundation
+// Copyright (C) 2008, 2009, 2010, 2011 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -48,6 +48,9 @@ test01()
 
   VERIFY( (std::ratio_less<std::ratio<-M, M - 1>,
            std::ratio<-M, M - 2>>::value == 0) );
+
+  VERIFY( (std::ratio_less<std::ratio<M - 2, M - 1>,
+           std::ratio<M - 1, M>>::value == 1) );
 }
 
 int main()

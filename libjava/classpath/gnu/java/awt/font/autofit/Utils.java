@@ -158,7 +158,7 @@ class Utils
         return angle;
       }
 
-    
+
     angle = 0;
     if (dx < 0)
       {

@@ -73,29 +73,29 @@ final class RETokenLookBehind extends REToken
     re1.chain (stopper);
     if (re1.match (behind, trymatch))
       {
-	if (negative)
-	  return null;
-	for (int i = 0; i < trymatch.start.length; i++)
-	  {
-	    if (trymatch.start[i] != -1 && trymatch.end[i] != -1)
-	      {
-		trymatch.start[i] -= diff;
-		if (trymatch.start[i] < 0)
-		  trymatch.start[i] -= 1;
-		trymatch.end[i] -= diff;
-		if (trymatch.end[i] < 0)
-		  trymatch.end[i] -= 1;
-	      }
-	  }
-	trymatch.index = mymatch.index;
-	trymatch.offset = mymatch.offset;
-	return trymatch;
+        if (negative)
+          return null;
+        for (int i = 0; i < trymatch.start.length; i++)
+          {
+            if (trymatch.start[i] != -1 && trymatch.end[i] != -1)
+              {
+                trymatch.start[i] -= diff;
+                if (trymatch.start[i] < 0)
+                  trymatch.start[i] -= 1;
+                trymatch.end[i] -= diff;
+                if (trymatch.end[i] < 0)
+                  trymatch.end[i] -= 1;
+              }
+          }
+        trymatch.index = mymatch.index;
+        trymatch.offset = mymatch.offset;
+        return trymatch;
       }
     else
       {
-	if (negative)
-	  return mymatch;
-	return null;
+        if (negative)
+          return mymatch;
+        return null;
       }
   }
 

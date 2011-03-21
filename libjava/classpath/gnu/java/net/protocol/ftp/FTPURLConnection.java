@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -137,7 +137,7 @@ public class FTPURLConnection
         connection.setTransferMode(transferMode);
       }
   }
-  
+
   /**
    * This connection supports doInput.
    */
@@ -153,7 +153,7 @@ public class FTPURLConnection
   {
     doOutput = dooutput;
   }
-  
+
   /**
    * Returns an input stream that reads from this open connection.
    */
@@ -174,7 +174,7 @@ public class FTPURLConnection
         return this.new ClosingInputStream(connection.retrieve(path));
       }
   }
-  
+
   /**
    * Returns an output stream that writes to this connection.
    */
@@ -252,7 +252,7 @@ public class FTPURLConnection
     l.add(value);
     map.put(key, l);
   }
-  
+
   public void setRequestProperty(String key, String value)
   {
     if (connected)
@@ -351,7 +351,7 @@ public class FTPURLConnection
       super.close();
       connection.logout();
     }
-    
+
   }
 
   class ClosingOutputStream
@@ -369,8 +369,7 @@ public class FTPURLConnection
       super.close();
       connection.logout();
     }
-    
+
   }
 
 }
-

@@ -55,13 +55,13 @@ import javax.swing.event.TreeModelEvent;
  * have the same fixed height. This may be not the case, for instance, if leaves
  * and branches have different height, of if the tree rows may have arbitrary
  * variable height. This class will also work if the NodeDimensions are not
- * set.  
- * 
+ * set.
+ *
  * @author Audrius Meskauskas
- * @author Andrew Selkirk 
+ * @author Andrew Selkirk
  */
 public class FixedHeightLayoutCache
-		extends VariableHeightLayoutCache
+                extends VariableHeightLayoutCache
 {
   /**
    * The cached node record.
@@ -74,47 +74,47 @@ public class FixedHeightLayoutCache
       depth = aDepth;
       parent = aParent;
       node = aNode;
-      
-      isExpanded = expanded.contains(aNode); 
+
+      isExpanded = expanded.contains(aNode);
     }
-    
+
     /**
      * The row, where the tree node is displayed.
      */
-    final int row;    
-    
+    final int row;
+
     /**
      * The nesting depth
      */
     final int depth;
-    
+
     /**
      * The parent of the given node, null for the root node.
      */
     final Object parent;
-    
+
     /**
      * This node.
      */
     final Object node;
-    
+
     /**
      * True for the expanded nodes. The value is calculated in constructor.
      * Using this field saves one hashtable access operation.
      */
     final boolean isExpanded;
-    
+
     /**
      * The cached bounds of the tree row.
      */
     Rectangle bounds;
-    
+
     /**
      * The path from the tree top to the given node (computed under first
      * demand)
      */
     private TreePath path;
-    
+
     /**
      * Get the path for this node. The derived class is returned,
      * making check for the last child of some parent easier.
@@ -155,7 +155,7 @@ public class FixedHeightLayoutCache
         }
       return path;
     }
-    
+
     /**
      * Get the rectangle bounds (compute, if required).
      */
@@ -164,37 +164,37 @@ public class FixedHeightLayoutCache
       // This method may be called in the context when the tree rectangle is
       // not known. To work around this, it is assumed near infinitely large.
       if (bounds == null)
-        bounds = getNodeDimensions(node, row, depth, isExpanded, 
+        bounds = getNodeDimensions(node, row, depth, isExpanded,
                                    new Rectangle());
-      return bounds;      
+      return bounds;
     }
   }
-  
+
   /**
    * The set of all expanded tree nodes.
    */
   Set<Object> expanded = new HashSet<Object>();
-  
+
   /**
    * Maps nodes to the row numbers.
    */
   Hashtable<Object,NodeRecord> nodes = new Hashtable<Object,NodeRecord>();
-  
+
   /**
    * Maps row numbers to nodes.
    */
   Hashtable<Integer,Object> row2node = new Hashtable<Integer,Object>();
-  
+
   /**
    * If true, the row map must be recomputed before using.
    */
   boolean dirty;
-  
+
   /**
    * The cumulative height of all rows.
    */
   int totalHeight;
-  
+
   /**
    * The maximal width.
    */
@@ -208,21 +208,21 @@ public class FixedHeightLayoutCache
   public FixedHeightLayoutCache()
   {
     // Nothing to do here.
-  } 
+  }
 
   /**
    * Get the total number of rows in the tree. Every displayed node occupies the
    * single row. The root node row is included if the root node is set as
    * visible (false by default).
-   * 
+   *
    * @return int the number of the displayed rows.
    */
   public int getRowCount()
   {
     if (dirty) update();
     return row2node.size();
-  } 
-  
+  }
+
   /**
    * Refresh the row map.
    */
@@ -230,7 +230,7 @@ public class FixedHeightLayoutCache
   {
     nodes.clear();
     row2node.clear();
-    
+
     totalHeight = maximalWidth = 0;
 
     Object root = treeModel.getRoot();
@@ -250,7 +250,7 @@ public class FixedHeightLayoutCache
       }
     dirty = false;
   }
-  
+
   /**
    * Recursively counts all rows in the tree.
    */
@@ -258,10 +258,10 @@ public class FixedHeightLayoutCache
   {
     Integer n = new Integer(row2node.size());
     row2node.put(n, node);
-    
+
     NodeRecord nr = new NodeRecord(n.intValue(), depth, node, parent);
     nodes.put(node, nr);
-     
+
     // For expanded nodes and for the root node.
     if (expanded.contains(node))
       {
@@ -277,7 +277,7 @@ public class FixedHeightLayoutCache
 
   /**
    * Discard the bound information for the given path.
-   * 
+   *
    * @param path the path, for that the bound information must be recomputed.
    */
   public void invalidatePathBounds(TreePath path)
@@ -285,7 +285,7 @@ public class FixedHeightLayoutCache
     NodeRecord r = (NodeRecord) nodes.get(path.getLastPathComponent());
     if (r != null)
       r.bounds = null;
-  } 
+  }
 
   /**
    * Mark all cached information as invalid.
@@ -293,11 +293,11 @@ public class FixedHeightLayoutCache
   public void invalidateSizes()
   {
     dirty = true;
-  } 
+  }
 
   /**
    * Set the expanded state of the given path. The expansion states must be
-   * always updated when expanding and colapsing the tree nodes. Otherwise 
+   * always updated when expanding and colapsing the tree nodes. Otherwise
    * other methods will not work correctly after the nodes are collapsed or
    * expanded.
    *
@@ -310,23 +310,23 @@ public class FixedHeightLayoutCache
       expanded.add(path.getLastPathComponent());
     else
       expanded.remove(path.getLastPathComponent());
-    
+
     dirty = true;
   }
-  
+
   /**
    * Get the expanded state for the given tree path.
-   * 
+   *
    * @return true if the given path is expanded, false otherwise.
    */
   public boolean isExpanded(TreePath path)
   {
     return expanded.contains(path.getLastPathComponent());
-  } 
+  }
 
   /**
    * Get bounds for the given tree path.
-   * 
+   *
    * @param path the tree path
    * @param rect the rectangle that will be reused to return the result.
    * @return Rectangle the bounds of the last line, defined by the given path.
@@ -356,11 +356,11 @@ public class FixedHeightLayoutCache
         rect.setRect(r.bounds);
       }
     return rect;
-  } 
+  }
 
   /**
    * Get the path, the last element of that is displayed in the given row.
-   * 
+   *
    * @param row the row
    * @return TreePath the path
    */
@@ -376,11 +376,11 @@ public class FixedHeightLayoutCache
         NodeRecord r = nodes.get(last);
         return r.getPath();
       }
-  } 
+  }
 
   /**
    * Get the row, displaying the last node of the given path.
-   * 
+   *
    * @param path the path
    * @return int the row number or -1 if the end of the path is not visible.
    */
@@ -388,7 +388,7 @@ public class FixedHeightLayoutCache
   {
     if (path == null)
       return -1;
-    
+
     if (dirty) update();
 
     NodeRecord r = nodes.get(path.getLastPathComponent());
@@ -396,11 +396,11 @@ public class FixedHeightLayoutCache
       return - 1;
     else
       return r.row;
-  } 
+  }
 
   /**
    * Get the path, closest to the given point.
-   * 
+   *
    * @param x the point x coordinate
    * @param y the point y coordinate
    * @return the tree path, closest to the the given point
@@ -414,7 +414,7 @@ public class FixedHeightLayoutCache
     NodeRecord best = null;
     NodeRecord r;
     Enumeration<NodeRecord> en = nodes.elements();
-    
+
     int dist = Integer.MAX_VALUE;
 
     while (en.hasMoreElements() && dist > 0)
@@ -440,8 +440,8 @@ public class FixedHeightLayoutCache
       return null;
     else
       return best.getPath();
-  } 
-  
+  }
+
   /**
    * Get the closest distance from this point till the given rectangle. Only
    * vertical distance is taken into consideration.
@@ -461,22 +461,22 @@ public class FixedHeightLayoutCache
    * is not expanded, 0 is returned. Otherwise, the number of children is
    * obtained from the model as the number of children for the last path
    * component.
-   * 
+   *
    * @param path the tree path
    * @return int the number of the visible childs (for row).
    */
-  public int getVisibleChildCount(TreePath path)  
+  public int getVisibleChildCount(TreePath path)
   {
     if (isExpanded(path))
-      return 0; 
+      return 0;
     else
       return treeModel.getChildCount(path.getLastPathComponent());
-  } 
+  }
 
   /**
    * Get the enumeration over all visible paths that start from the given
    * parent path.
-   * 
+   *
    * @param parentPath the parent path
    * @return the enumeration over pathes
    */
@@ -500,9 +500,9 @@ public class FixedHeightLayoutCache
 
   /**
    * Return the expansion state of the given tree path. The expansion state
-   * must be previously set with the 
+   * must be previously set with the
    * {@link #setExpandedState(TreePath, boolean)}
-   * 
+   *
    * @param path the path being checked
    * @return true if the last node of the path is expanded, false otherwise.
    */
@@ -513,44 +513,44 @@ public class FixedHeightLayoutCache
 
   /**
    * The listener method, called when the tree nodes are changed.
-   * 
+   *
    * @param event the change event
    */
   public void treeNodesChanged(TreeModelEvent event)
   {
     dirty = true;
-  } 
+  }
 
   /**
    * The listener method, called when the tree nodes are inserted.
-   * 
+   *
    * @param event the change event
    */
   public void treeNodesInserted(TreeModelEvent event)
   {
     dirty = true;
-  } 
+  }
 
   /**
    * The listener method, called when the tree nodes are removed.
-   * 
+   *
    * @param event the change event
    */
   public void treeNodesRemoved(TreeModelEvent event)
   {
     dirty = true;
-  } 
+  }
 
   /**
-   * Called when the tree structure has been changed. 
-   * 
+   * Called when the tree structure has been changed.
+   *
    * @param event the change event
    */
   public void treeStructureChanged(TreeModelEvent event)
   {
     dirty = true;
-  } 
-  
+  }
+
   /**
    * Set the tree model that will provide the data.
    */
@@ -561,11 +561,11 @@ public class FixedHeightLayoutCache
     expanded.add(treeModel.getRoot());
     dirty = true;
   }
-  
+
   /**
    * Inform the instance if the tree root node is visible. If this method
    * is not called, it is assumed that the tree root node is not visible.
-   * 
+   *
    * @param visible true if the tree root node is visible, false
    * otherwise.
    */
@@ -600,7 +600,7 @@ public class FixedHeightLayoutCache
   {
     if (dirty)
       update();
-    
+
     maximalWidth = 0;
     Enumeration<NodeRecord> en = nodes.elements();
     while (en.hasMoreElements())
@@ -612,17 +612,17 @@ public class FixedHeightLayoutCache
       }
     return maximalWidth;
   }
-  
+
   /**
    * Returns true if this layout supposes that all rows have the fixed
    * height.
-   * 
+   *
    * @return boolean true if all rows in the tree must have the fixed
    * height (true by default).
    */
   protected boolean isFixedRowHeight()
   {
-    return true; 
+    return true;
   }
-  
+
 }

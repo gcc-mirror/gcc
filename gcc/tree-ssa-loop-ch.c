@@ -1,5 +1,6 @@
 /* Loop header copying on trees.
-   Copyright (C) 2004, 2005, 2006, 2007, 2008 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005, 2006, 2007, 2008, 2010
+   Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -275,7 +276,9 @@ struct gimple_opt_pass pass_ch =
   0,					/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
-  TODO_cleanup_cfg | TODO_dump_func
-  | TODO_verify_ssa			/* todo_flags_finish */
+  TODO_cleanup_cfg
+    | TODO_verify_ssa
+    | TODO_verify_flow
+    | TODO_dump_func			/* todo_flags_finish */
  }
 };

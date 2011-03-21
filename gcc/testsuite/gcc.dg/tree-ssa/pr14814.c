@@ -18,5 +18,5 @@ int foo(const struct XX* r) {
   return 1;
 }
 
-/* { dg-final { scan-tree-dump-times "&" 0 "forwprop2" } } */
+/* { dg-final { scan-tree-dump-times "= &" 0 "forwprop2" } } */
 /* { dg-final { cleanup-tree-dump "forwprop2" } } */

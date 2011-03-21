@@ -27,12 +27,12 @@ public interface HTMLBaseElement extends HTMLElement {
     public void setHref(String href);
 
     /**
-     * The default target frame. See the target attribute definition in HTML 
+     * The default target frame. See the target attribute definition in HTML
      * 4.01.
      */
     public String getTarget();
     /**
-     * The default target frame. See the target attribute definition in HTML 
+     * The default target frame. See the target attribute definition in HTML
      * 4.01.
      */
     public void setTarget(String target);

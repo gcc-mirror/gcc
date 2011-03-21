@@ -81,6 +81,4 @@ public class MainQtThread extends Thread
     exec(QApplicationPointer);
   }
 
-} 
-
-
+}

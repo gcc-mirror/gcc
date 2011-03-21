@@ -30,7 +30,7 @@
 # error "compatibility-c++0x.cc must be compiled with -std=gnu++0x"
 #endif
 
-namespace std
+namespace std _GLIBCXX_VISIBILITY(default)
 {
   // gcc-4.4.0
   // <mutex> exported std::lock_error

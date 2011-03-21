@@ -1,10 +1,10 @@
 /* Contributed by Nicola Pero <nicola.pero@meta-innovation.com>, November 2010.  */
-/* { dg-options "-fobjc-exceptions" } */
 
 /* FIXME: This does not test running the code, because Objective-C exceptions at the moment
    do not execute correctly in Objective-C++.  See PR objc++/23616.  Once that is fixed,
-   this test should be changed to use 'dg-run' instead of just 'dg-compile'.  */
-/* { dg-compile } */
+   this test should be changed to use 'dg-do run' instead of just 'dg-do compile'.  */
+/* { dg-do compile } */
+/* { dg-options "-fobjc-exceptions" } */
 
 /* This test checks the syntax @catch (...) which catches any
    exceptions.  Check that code using it runs correctly.  */

@@ -1,4 +1,4 @@
-/* JobImpressions.java -- 
+/* JobImpressions.java --
    Copyright (C) 2003, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -45,16 +45,16 @@ import javax.print.attribute.PrintRequestAttribute;
 /**
  * The <code>JobImpressions</code> printing attribute specifies
  * the total size in number of impressions of the documents
- * of a a print job. 
+ * of a a print job.
  * <p>
- * An impression is specified by the IPP specification as the image 
- * (possibly many print-stream pages in different configurations) 
+ * An impression is specified by the IPP specification as the image
+ * (possibly many print-stream pages in different configurations)
  * imposed onto a single media sheet. This attribute must not include
  * a multiplication factor from the number of copies which maybe specified
  * in a Copies attribute.
  * </p>
  * <p>
- * This attribute belongs to a group of job size attributes which are 
+ * This attribute belongs to a group of job size attributes which are
  * describing the size of a job to be printed. The values supplied by
  * these attributes are intended to be used for routing and scheduling
  * of jobs on the print service. A client may specify these attributes.
@@ -67,14 +67,14 @@ import javax.print.attribute.PrintRequestAttribute;
  * </p>
  * @see javax.print.attribute.standard.JobKOctets
  * @see javax.print.attribute.standard.JobMediaSheets
- * 
+ *
  * @author Michael Koch
  */
 public final class JobImpressions extends IntegerSyntax
   implements PrintJobAttribute, PrintRequestAttribute
 {
   private static final long serialVersionUID = 8225537206784322464L;
-  
+
   /**
    * Creates a <code>JobImpressions</code> object.
    *
@@ -89,13 +89,13 @@ public final class JobImpressions extends IntegerSyntax
     if (value < 0)
       throw new IllegalArgumentException("value may not be less than 0");
   }
-  
+
   /**
    * Tests if the given object is equal to this object.
    *
    * @param obj the object to test
    *
-   * @return <code>true</code> if both objects are equal, 
+   * @return <code>true</code> if both objects are equal,
    * <code>false</code> otherwise.
    */
   public boolean equals(Object obj)

@@ -39,7 +39,7 @@ import java.util.Arrays;
 
 /**
  * A node that represents a LOOKUPSWITCH instruction.
- * 
+ *
  * @author Eric Bruneton
  */
 public class LookupSwitchInsnNode extends AbstractInsnNode {
@@ -62,7 +62,7 @@ public class LookupSwitchInsnNode extends AbstractInsnNode {
 
     /**
      * Constructs a new {@link LookupSwitchInsnNode}.
-     * 
+     *
      * @param dflt beginning of the default handler block.
      * @param keys the values of the keys.
      * @param labels beginnings of the handler blocks. <tt>labels[i]</tt> is

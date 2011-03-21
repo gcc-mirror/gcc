@@ -72,10 +72,10 @@ public class RSAMultiPrimePrivateCrtKeySpec extends RSAPrivateKeySpec
   /**
    * Constructs a new instance of <code>RSAMultiPrimePrivateCrtKeySpec</code>
    * given the various PKCS#1 v2.1 parameters.
-   * 
+   *
    * <p>Note that <code>otherPrimeInfo</code> is cloned when constructing this
    * object.</p>
-   * 
+   *
    * @param modulus
    *          the modulus n.
    * @param publicExponent

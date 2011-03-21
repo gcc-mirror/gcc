@@ -40,10 +40,10 @@ import java.awt.Point;
 
 /**
  * The BufferedImageFilter class wraps BufferedImageOp objects in a Filter.
- * 
+ *
  * When pixels are pushed through the filter, we create a BufferedImage,
  * apply the BufferedImageOp, and pass the filtered pixels to the base class.
- * 
+ *
  * @author jlquinn@optonline.net
  */
 public class BufferedImageFilter extends ImageFilter implements Cloneable
@@ -51,17 +51,17 @@ public class BufferedImageFilter extends ImageFilter implements Cloneable
   private BufferedImageOp op;
 
   /**
-   * 
+   *
    */
   public BufferedImageFilter(BufferedImageOp op)
   {
     super();
     if (op == null)
       throw new NullPointerException("BufferedImageFilter null"
-				     + " op in constructor");
+                                     + " op in constructor");
     this.op = op;
   }
-  
+
   /**
    * @return Returns the contained BufferedImageOp.
    */
@@ -74,7 +74,7 @@ public class BufferedImageFilter extends ImageFilter implements Cloneable
   // create a compatible sample model that incorporates scansize != w.  I
   // asume off is handled by the db itself.
   public void setPixels(int x, int y, int w, int h, ColorModel model,
-			byte[] pixels, int off, int scansize)
+                        byte[] pixels, int off, int scansize)
   {
     // Create an input BufferedImage
     DataBufferByte db = new DataBufferByte(pixels, scansize * h + off, off);
@@ -84,16 +84,16 @@ public class BufferedImageFilter extends ImageFilter implements Cloneable
       new BufferedImage(model, wr, model.isAlphaPremultiplied(), null);
     BufferedImage out = op.createCompatibleDestImage(in, model);
     op.filter(in, out);
-    DataBuffer dbout = out.getRaster().getDataBuffer(); 
+    DataBuffer dbout = out.getRaster().getDataBuffer();
     super.setPixels(0, 0, w, h, model, ((DataBufferByte)dbout).getData(), 0,
-		    scansize);
+                    scansize);
   }
 
   // FIXME: Definitely not sure this is the right thing.  I'm not sure how
   // to create a compatible sample model that incorporates
   // scansize != w.  I asume off is handled by the db itself.
   public void setPixels(int x, int y, int w, int h, ColorModel model,
-			int[] pixels, int off, int scansize)
+                        int[] pixels, int off, int scansize)
   {
     // Create an input BufferedImage
     DataBufferInt db = new DataBufferInt(pixels, scansize * h + off, off);
@@ -103,8 +103,8 @@ public class BufferedImageFilter extends ImageFilter implements Cloneable
       new BufferedImage(model, wr, model.isAlphaPremultiplied(), null);
     BufferedImage out = op.createCompatibleDestImage(in, model);
     op.filter(in, out);
-    DataBuffer dbout = out.getRaster().getDataBuffer(); 
+    DataBuffer dbout = out.getRaster().getDataBuffer();
     super.setPixels(0, 0, w, h, model, ((DataBufferInt)dbout).getData(), 0,
-		    scansize);
+                    scansize);
   }
 }

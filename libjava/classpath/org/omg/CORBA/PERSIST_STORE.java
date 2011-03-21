@@ -49,8 +49,8 @@ public final class PERSIST_STORE
   extends SystemException
   implements Serializable
 {
-  /** 
-   * Use serialVersionUID for interoperability. 
+  /**
+   * Use serialVersionUID for interoperability.
    */
   private static final long serialVersionUID = -6835478548864681965L;
 

@@ -82,8 +82,8 @@ public class AicasGraphicsBenchmark extends Panel
                                           ;
 
   int iterations = 1;
-  private int screenWidth = DEFAULT_SCREEN_WIDTH;  
-  private int screenHeight = DEFAULT_SCREEN_HEIGHT;  
+  private int screenWidth = DEFAULT_SCREEN_WIDTH;
+  private int screenHeight = DEFAULT_SCREEN_HEIGHT;
   boolean doubleBufferFlag = true;
   private int awtTests = AWTTEST_ALL;
 
@@ -693,7 +693,7 @@ public class AicasGraphicsBenchmark extends Panel
                     "Skipping 'test_drawImage' due to missing resource.");
         return;
       }
-    
+
     int maxTests = DEFAULT_TEST_SIZE / 2;
     if(maxTests == 0)
       maxTests = 1;
@@ -726,7 +726,7 @@ public class AicasGraphicsBenchmark extends Panel
         return;
       }
 
-    
+
     int maxTests = DEFAULT_TEST_SIZE / 5;
     if(maxTests == 0)
       maxTests = 1;
@@ -757,7 +757,7 @@ public class AicasGraphicsBenchmark extends Panel
       String testString = "HelloWorld";
       int stringWidth = g.getFontMetrics().stringWidth(testString);
       int stringHeight = g.getFontMetrics().getHeight();
-      
+
       long startTime = System.currentTimeMillis();
       for(int i = 0; i < maxTests; i += 1)
         {

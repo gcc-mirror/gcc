@@ -1,4 +1,4 @@
-/* FilteredImageSource.java -- Java class for providing image data 
+/* FilteredImageSource.java -- Java class for providing image data
    Copyright (C) 1999 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -43,7 +43,7 @@ import java.util.Hashtable;
 /**
  *
  * @see ImageConsumer
- * @author C. Brian Jones (cbj@gnu.org) 
+ * @author C. Brian Jones (cbj@gnu.org)
  */
 public class FilteredImageSource implements ImageProducer
 {
@@ -53,73 +53,72 @@ public class FilteredImageSource implements ImageProducer
 
     /**
      * The given filter is applied to the given image producer
-     * to create a new image producer.  
+     * to create a new image producer.
      */
     public FilteredImageSource(ImageProducer ip, ImageFilter filter) {
-	this.ip = ip;
-	this.filter = filter;
+        this.ip = ip;
+        this.filter = filter;
     }
 
     /**
      * Used to register an <code>ImageConsumer</code> with this
-     * <code>ImageProducer</code>.  
+     * <code>ImageProducer</code>.
      */
     public synchronized void addConsumer(ImageConsumer ic) {
-	if (consumers.containsKey(ic))
-	    return;
+        if (consumers.containsKey(ic))
+            return;
 
-	ImageFilter f = filter.getFilterInstance(ic);
-	consumers.put(ic, f);
-	ip.addConsumer(f);
+        ImageFilter f = filter.getFilterInstance(ic);
+        consumers.put(ic, f);
+        ip.addConsumer(f);
     }
 
     /**
      * Used to determine if the given <code>ImageConsumer</code> is
-     * already registered with this <code>ImageProducer</code>.  
+     * already registered with this <code>ImageProducer</code>.
      */
     public synchronized boolean isConsumer(ImageConsumer ic) {
-	ImageFilter f = (ImageFilter)consumers.get(ic);
-	if (f != null)
-	    return ip.isConsumer(f);
-	return false;
+        ImageFilter f = (ImageFilter)consumers.get(ic);
+        if (f != null)
+            return ip.isConsumer(f);
+        return false;
     }
 
     /**
      * Used to remove an <code>ImageConsumer</code> from the list of
-     * registered consumers for this <code>ImageProducer</code>.  
+     * registered consumers for this <code>ImageProducer</code>.
      */
     public synchronized void removeConsumer(ImageConsumer ic) {
-	ImageFilter f = (ImageFilter)consumers.remove(ic);
-	if (f != null)
-	    ip.removeConsumer(f);
+        ImageFilter f = (ImageFilter)consumers.remove(ic);
+        if (f != null)
+            ip.removeConsumer(f);
     }
 
     /**
      * Used to register an <code>ImageConsumer</code> with this
      * <code>ImageProducer</code> and then immediately start
      * reconstruction of the image data to be delivered to all
-     * registered consumers.  
+     * registered consumers.
      */
     public void startProduction(ImageConsumer ic) {
-	ImageFilter f;
-	if (!(consumers.containsKey(ic))) {
-	    f = filter.getFilterInstance(ic);
-	    consumers.put(ic, f);
-	    ip.addConsumer(f);
-	} else { 
-	    f = (ImageFilter)consumers.get( ic );
-	}
-	ip.startProduction(f);
+        ImageFilter f;
+        if (!(consumers.containsKey(ic))) {
+            f = filter.getFilterInstance(ic);
+            consumers.put(ic, f);
+            ip.addConsumer(f);
+        } else {
+            f = (ImageFilter)consumers.get( ic );
+        }
+        ip.startProduction(f);
     }
 
     /**
      * Used to register an <code>ImageConsumer</code> with this
      * <code>ImageProducer</code> and then request that this producer
-     * resend the image data in the order top-down, left-right.  
+     * resend the image data in the order top-down, left-right.
      */
     public void requestTopDownLeftRightResend(ImageConsumer ic) {
-	ImageFilter f = (ImageFilter)consumers.get(ic);
-	ip.requestTopDownLeftRightResend(f);
+        ImageFilter f = (ImageFilter)consumers.get(ic);
+        ip.requestTopDownLeftRightResend(f);
     }
 }
-

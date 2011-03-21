@@ -39,7 +39,7 @@ import java.util.List;
 
 /**
  * A node that represents a TABLESWITCH instruction.
- * 
+ *
  * @author Eric Bruneton
  */
 public class TableSwitchInsnNode extends AbstractInsnNode {
@@ -67,7 +67,7 @@ public class TableSwitchInsnNode extends AbstractInsnNode {
 
     /**
      * Constructs a new {@link TableSwitchInsnNode}.
-     * 
+     *
      * @param min the minimum key value.
      * @param max the maximum key value.
      * @param dflt beginning of the default handler block.

@@ -24,7 +24,9 @@
 
 #include <ext/atomicity.h>
 
-_GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
+namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #if ( defined(__mc68020__) || defined(__mc68030__) \
       || defined(__mc68040__) || defined(__mc68060__) ) \
@@ -126,4 +128,5 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
     __exchange_and_add(__mem, __val);
   }
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace

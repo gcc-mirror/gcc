@@ -10,7 +10,7 @@ implicit none
 
 contains
 
-  function baz(arg) result(res) ! { dg-warning "res.yr' may be" "PR45505" { xfail ilp32 } }
+  function baz(arg) result(res) ! { dg-bogus "res.yr' may be" }
     type(bar), intent(in) :: arg
     type(bar) :: res
     logical, external:: some_func
@@ -19,7 +19,7 @@ contains
     else
       res = arg
     end if
-  end function baz ! { dg-bogus "res.yr' may be" "PR45505" { xfail ilp32 } }
+  end function baz ! { dg-warning "res.yr' may be" }
 
 end module foo
 

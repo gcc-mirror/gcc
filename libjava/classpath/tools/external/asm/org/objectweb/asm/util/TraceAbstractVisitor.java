@@ -35,7 +35,7 @@ import org.objectweb.asm.util.attrs.Traceable;
 
 /**
  * An abstract trace visitor.
- * 
+ *
  * @author Eric Bruneton
  */
 public abstract class TraceAbstractVisitor extends AbstractVisitor {
@@ -102,7 +102,7 @@ public abstract class TraceAbstractVisitor extends AbstractVisitor {
 
     /**
      * Prints a disassembled view of the given annotation.
-     * 
+     *
      * @param desc the class descriptor of the annotation class.
      * @param visible <tt>true</tt> if the annotation is visible at runtime.
      * @return a visitor to visit the annotation values.
@@ -124,7 +124,7 @@ public abstract class TraceAbstractVisitor extends AbstractVisitor {
 
     /**
      * Prints a disassembled view of the given attribute.
-     * 
+     *
      * @param attr an attribute.
      */
     public void visitAttribute(final Attribute attr) {
@@ -159,7 +159,7 @@ public abstract class TraceAbstractVisitor extends AbstractVisitor {
     /**
      * Appends an internal name, a type descriptor or a type signature to
      * {@link #buf buf}.
-     * 
+     *
      * @param type indicates if desc is an internal name, a field descriptor, a
      *        method descriptor, a class signature, ...
      * @param desc an internal name, type descriptor, or type signature. May be

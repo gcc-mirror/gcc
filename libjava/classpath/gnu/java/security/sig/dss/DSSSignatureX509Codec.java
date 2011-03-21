@@ -60,7 +60,7 @@ import java.util.ArrayList;
  * <p>
  * Digital signatures when transmitted in an X.509 certificates are encoded
  * in DER (Distinguished Encoding Rules) as a BIT STRING; i.e.
- * 
+ *
  * <pre>
  * Certificate ::= SEQUENCE {
  *   tbsCertificate       TBSCertificate,
@@ -77,7 +77,7 @@ import java.util.ArrayList;
  * generates two MPIs, commonly called <code>r</code> and <code>s</code>, as the
  * result of digitally signing a message, these two numbers will be transferred
  * as the following ASN.1 structure:
- * 
+ *
  * <pre>
  *   Dss-Sig-Value ::= SEQUENCE {
  *     r  INTEGER,
@@ -112,7 +112,7 @@ public class DSSSignatureX509Codec
    * Encodes a DSS Signature output as the <i>signature</i> raw bytes which can
    * be used to construct an ASN.1 DER-encoded BIT STRING as defined in the
    * documentation of this class.
-   * 
+   *
    * @param signature the output of the DSS signature algorithm; i.e. the value
    *          returned by the invocation of
    *          {@link gnu.java.security.sig.ISignature#sign()} method. In the
@@ -154,7 +154,7 @@ public class DSSSignatureX509Codec
 
   /**
    * Decodes a <i>signature</i> as defined in the documentation of this class.
-   * 
+   *
    * @param input the byte array to unmarshall into a valid DSS signature
    *          instance; i.e. an array of two MPIs. MUST NOT be null.
    * @return an array of two MPIs, <code>r</code> and <code>s</code> in this

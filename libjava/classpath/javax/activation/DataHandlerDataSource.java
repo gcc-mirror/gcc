@@ -52,28 +52,28 @@ final class DataHandlerDataSource
 {
 
   final DataHandler dh;
-  
+
   DataHandlerDataSource(DataHandler dh)
   {
     this.dh = dh;
   }
-  
+
   public String getContentType()
   {
     return dh.getContentType();
   }
-  
+
   public InputStream getInputStream()
     throws IOException
   {
     return dh.getInputStream();
   }
-  
+
   public String getName()
   {
     return dh.getName();
   }
-  
+
   public OutputStream getOutputStream()
     throws IOException
   {
@@ -81,4 +81,3 @@ final class DataHandlerDataSource
   }
 
 }
-

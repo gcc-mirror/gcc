@@ -1,4 +1,4 @@
-/* LanguageType.java -- 
+/* LanguageType.java --
    Copyright (C) 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -82,6 +82,5 @@ final class LanguageType
     if (!PATTERN.matcher(value).matches())
       throw new DatatypeException("invalid language value");
   }
-  
-}
 
+}

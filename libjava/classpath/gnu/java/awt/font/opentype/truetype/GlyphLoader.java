@@ -71,8 +71,8 @@ final class GlyphLoader
    * glyph.
    */
   private final GlyphMeasurer glyphMeasurer;
-  
-  
+
+
   /**
    * The virtual machine for executing TrueType bytecodes.
    */
@@ -157,7 +157,7 @@ final class GlyphLoader
     yMin = glyph.getChar();
     xMax = glyph.getChar();
     yMax = glyph.getChar();
-    
+
 
     if (numContours >= 0)
       loadSimpleGlyph(glyphIndex, pointSize, transform, antialias,
@@ -272,13 +272,13 @@ final class GlyphLoader
       if ((flags & WE_HAVE_A_SCALE) != 0)
       {
         a = d = getDouble214(glyph);
-        b = c = 0.0; 
+        b = c = 0.0;
       }
       else if ((flags & WE_HAVE_AN_X_AND_Y_SCALE) != 0)
       {
         a = getDouble214(glyph);
         d = getDouble214(glyph);
-        b = c = 0.0; 
+        b = c = 0.0;
       }
       else if ((flags & WE_HAVE_A_TWO_BY_TWO) != 0)
       {
@@ -310,7 +310,7 @@ final class GlyphLoader
 
       if (Math.abs(Math.abs(c) - Math.abs(d)) <= 33.0/65536.0)
         n = n * 2;
-      
+
       if ((flags & ARGS_ARE_XY_VALUES) != 0)
       {
         e = m * arg1;
@@ -320,14 +320,14 @@ final class GlyphLoader
         e = f = 0.0;
 
       componentTransform.setTransform(a, b, c, d, 0.0, 0.0);
-      
+
       // System.out.println("componentTransform = " + componentTransform
       //   + ", e=" + e + ", f=" + f);
       componentTransform.concatenate(transform);
 
       int pos = glyph.position();
       int lim = glyph.limit();
-      
+
       loadSubGlyph(subGlyphIndex, pointSize, componentTransform,
                    antialias, subGlyphZone,
                    Math.round((float) e + preTranslateX),
@@ -431,7 +431,7 @@ final class GlyphLoader
                    glyphMeasurer.getAdvanceWidth(glyphIndex, true));
     glyphZone.setOriginalY(numPoints + 1,
                            glyphMeasurer.getAdvanceHeight(glyphIndex, true));
-    
+
     /* Phantom point 2: Vertical origin. */
     int vertX = glyphMeasurer.getAscent(/* vertical */ false);
     int vertY = glyphMeasurer.getAscent(/* horizontal */ true);

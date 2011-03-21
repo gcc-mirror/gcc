@@ -49,7 +49,7 @@ import javax.print.attribute.PrintServiceAttribute;
  * <p>
  * <b>IPP Compatibility:</b> PDLOverrideSupported is an IPP 1.1 attribute.
  * </p>
- * 
+ *
  * @author Michael Koch (konqueror@gmx.de)
  * @author Wolfgang Baer (WBaer@gmx.de)
  */
@@ -64,22 +64,22 @@ public class PDLOverrideSupported extends EnumSyntax
    */
   public static final PDLOverrideSupported NOT_ATTEMPTED =
     new PDLOverrideSupported(0);
-  
+
   /**
    * Indicates that the print service is capable of
    * attempting to override document data instructions.
    */
   public static final PDLOverrideSupported ATTEMPTED =
     new PDLOverrideSupported(1);
-  
+
   private static final String[] stringTable = { "not-attempted", "attempted" };
-  
+
   private static final PDLOverrideSupported[] enumValueTable = { NOT_ATTEMPTED,
                                                                  ATTEMPTED};
 
   /**
    * Constructs a <code>PDLOverrideSupported</code> object.
-   * 
+   *
    * @param value the enum value
    */
   protected PDLOverrideSupported(int value)
@@ -106,7 +106,7 @@ public class PDLOverrideSupported extends EnumSyntax
   {
     return "pdl-override-supported";
   }
-  
+
   /**
    * Returns a table with the enumeration values represented as strings
    * for this object.

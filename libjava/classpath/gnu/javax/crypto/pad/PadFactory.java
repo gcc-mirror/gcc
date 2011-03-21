@@ -1,4 +1,4 @@
-/* PadFactory.java -- 
+/* PadFactory.java --
    Copyright (C) 2001, 2002, 2003, 2004, 2006 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -61,7 +61,7 @@ public class PadFactory
 
   /**
    * Returns an instance of a padding algorithm given its name.
-   * 
+   *
    * @param pad the case-insensitive name of the padding algorithm.
    * @return an instance of the padding algorithm, operating with a given block
    *         size, or <code>null</code> if none found.
@@ -98,7 +98,7 @@ public class PadFactory
   /**
    * Returns a {@link Set} of names of padding algorithms supported by this
    * <i>Factory</i>.
-   * 
+   *
    * @return a {@link Set} of padding algorithm names (Strings).
    */
   public static final Set getNames()

@@ -1,4 +1,4 @@
-/* GYearType.java -- 
+/* GYearType.java --
    Copyright (C) 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -80,7 +80,7 @@ final class GYearType
         }
       return 0;
     }
-    
+
   }
 
   static final int[] CONSTRAINING_FACETS = {
@@ -134,7 +134,7 @@ final class GYearType
         throw new DatatypeException("invalid GYear value");
       }
   }
-  
+
   public Object createValue(String literal, ValidationContext context) {
     try
       {
@@ -147,6 +147,5 @@ final class GYearType
         return null;
       }
   }
-  
-}
 
+}

@@ -1,5 +1,5 @@
 /* PR c++/38089 */
-/* { dg-do "compile" } */
+/* { dg-do compile } */
 
 struct basic_string
 {

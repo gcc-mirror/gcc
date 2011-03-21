@@ -67,7 +67,7 @@ public class MenuBar extends MenuComponent
    * The number used to generate the name returned by getName.
    */
   private static transient long next_menubar_number;
-  
+
   /**
    * @serial The menu used for providing help information
    */
@@ -110,8 +110,8 @@ public class MenuBar extends MenuComponent
 
     if (helpMenu != null)
       {
-	if (myPeer != null)
-	  helpMenu.removeNotify();
+        if (myPeer != null)
+          helpMenu.removeNotify();
         helpMenu.setParent(null);
       }
     helpMenu = menu;
@@ -234,8 +234,8 @@ public class MenuBar extends MenuComponent
     MenuBarPeer peer = (MenuBarPeer) getPeer();
     if (peer == null)
       {
-	peer = getToolkit().createMenuBar(this);
-	setPeer(peer);
+        peer = getToolkit().createMenuBar(this);
+        setPeer(peer);
       }
 
     Enumeration e = menus.elements();
@@ -243,7 +243,7 @@ public class MenuBar extends MenuComponent
       {
         Menu mi = (Menu)e.nextElement();
         mi.addNotify();
-	peer.addMenu(mi);
+        peer.addMenu(mi);
       }
 
     if (helpMenu != null)
@@ -336,7 +336,7 @@ public class MenuBar extends MenuComponent
       accessibleContext = new AccessibleAWTMenuBar();
     return accessibleContext;
   }
-  
+
   /**
    * Generate a unique name for this <code>MenuBar</code>.
    *
@@ -360,7 +360,7 @@ public class MenuBar extends MenuComponent
   protected class AccessibleAWTMenuBar
     extends AccessibleAWTMenuComponent
   {
-  
+
     /**
      * Compatible with JDK 1.4.2 revision 5
      */

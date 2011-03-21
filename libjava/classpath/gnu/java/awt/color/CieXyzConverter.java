@@ -40,7 +40,7 @@ package gnu.java.awt.color;
 
 /**
  * CieXyzConverter - converts to/from a D50-relative CIE XYZ color space.
- * 
+ *
  * The sRGB<->CIE XYZ conversions in SrgbConverter are used.
  *
  * @author Sven de Marothy

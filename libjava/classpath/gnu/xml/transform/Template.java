@@ -1,4 +1,4 @@
-/* Template.java -- 
+/* Template.java --
    Copyright (C) 2004,2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -70,7 +70,7 @@ class Template
   final QName mode;
   final boolean isAnyNode; // is the match simply "node()"?
 
-  Template(Stylesheet stylesheet, 
+  Template(Stylesheet stylesheet,
            QName name, Pattern match, TemplateNode node,
            int precedence, String priorityAttr, QName mode)
   {
@@ -80,7 +80,7 @@ class Template
     this.node = node;
     this.precedence = precedence;
     this.mode = mode;
-    
+
     double p = DEFAULT_PRIORITY;
     boolean a = false;
     if (priorityAttr != null)
@@ -126,8 +126,8 @@ class Template
     this.priority = p;
     this.isAnyNode = a;
   }
-  
-  private Template(Stylesheet stylesheet, 
+
+  private Template(Stylesheet stylesheet,
            QName name, Pattern match, TemplateNode node,
            int precedence, double priority, QName mode, boolean isAnyNode)
   {
@@ -155,7 +155,7 @@ class Template
                         mode,
                         isAnyNode);
   }
-  
+
   public int compareTo(Object other)
   {
     if (other instanceof Template)
@@ -249,7 +249,7 @@ class Template
     buf.append(node);
     buf.append(']');
     return buf.toString();
-    
+
     //return (name != null) ? name.toString() : match.toString();
   }
 

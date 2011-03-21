@@ -4,6 +4,9 @@ typedef __SIZE_TYPE__ size_t;
 
 #define TEST_ABORT if (inside_main) abort()
 
+/* LTO code is at the present to able to track that asm alias my_bcopy on builtin
+   actually refers to this function.  See PR47181. */
+__attribute__ ((used))
 void *
 my_memcpy (void *d, const void *s, size_t n)
 {
@@ -14,6 +17,9 @@ my_memcpy (void *d, const void *s, size_t n)
   return (char *) d;
 }
 
+/* LTO code is at the present to able to track that asm alias my_bcopy on builtin
+   actually refers to this function.  See PR47181. */
+__attribute__ ((used))
 void
 my_bcopy (const void *s, void *d, size_t n)
 {
@@ -31,6 +37,9 @@ my_bcopy (const void *s, void *d, size_t n)
     }
 }
 
+/* LTO code is at the present to able to track that asm alias my_bcopy on builtin
+   actually refers to this function.  See PR47181. */
+__attribute__ ((used))
 void *
 my_memset (void *d, int c, size_t n)
 {
@@ -40,6 +49,9 @@ my_memset (void *d, int c, size_t n)
   return (char *) d;
 }
 
+/* LTO code is at the present to able to track that asm alias my_bcopy on builtin
+   actually refers to this function.  See PR47181. */
+__attribute__ ((used))
 void
 my_bzero (void *d, size_t n)
 {

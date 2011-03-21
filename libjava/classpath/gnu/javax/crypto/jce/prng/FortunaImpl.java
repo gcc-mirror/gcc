@@ -62,8 +62,8 @@ public final class FortunaImpl
   {
     synchronized (adaptee)
       {
-	if (virgin)
-	  {
+        if (virgin)
+          {
             adaptee.init (Collections.singletonMap (Fortuna.SEED, seed));
             virgin = false;
           }

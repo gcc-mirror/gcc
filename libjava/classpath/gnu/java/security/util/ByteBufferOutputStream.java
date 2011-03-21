@@ -47,18 +47,18 @@ import java.nio.ByteBuffer;
 /**
  * An output stream that writes bytes to a ByteBuffer, which will be resized
  * if more space is needed.
- * 
+ *
  * @author Casey Marshall (csm@gnu.org)
  */
 public class ByteBufferOutputStream extends OutputStream
 {
   private ByteBuffer buffer;
-  
+
   public ByteBufferOutputStream()
   {
     this(256);
   }
-  
+
   public ByteBufferOutputStream(int initialCapacity)
   {
     buffer = ByteBuffer.allocate(initialCapacity);
@@ -71,16 +71,16 @@ public class ByteBufferOutputStream extends OutputStream
   {
     if (!buffer.hasRemaining())
       growBuffer();
-    buffer.put((byte) b); 
+    buffer.put((byte) b);
   }
-  
+
   public @Override synchronized void write(byte[] b, int offset, int length)
   {
     if (buffer.remaining() < length)
       growBuffer();
     buffer.put(b, offset, length);
   }
-  
+
   public @Override void write(byte[] b)
   {
     write(b, 0, b.length);
@@ -90,19 +90,19 @@ public class ByteBufferOutputStream extends OutputStream
    * Get the current state of the buffer. The returned buffer will have
    * its position set to zero, its capacity set to the current limit,
    * and its limit set to its capacity.
-   * 
+   *
    * @return The buffer.
    */
   public ByteBuffer buffer()
   {
     return ((ByteBuffer) buffer.duplicate().flip()).slice();
   }
-  
+
   public String toString()
   {
     return super.toString() + " [ buffer: " + buffer + " ]";
   }
-  
+
   private void growBuffer()
   {
     int newCapacity = buffer.capacity();

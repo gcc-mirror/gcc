@@ -162,9 +162,9 @@ public class PNGImageReader
    *
    * @see ImageReader#setInput(Object, boolean, boolean)
    */
-  public void setInput(Object input, 
-                       boolean seekForwardOnly, 
-                       boolean ignoreMetadata) 
+  public void setInput(Object input,
+                       boolean seekForwardOnly,
+                       boolean ignoreMetadata)
   {
     super.setInput(input, seekForwardOnly, ignoreMetadata);
     if (! (input instanceof InputStream || input instanceof ImageInputStream))

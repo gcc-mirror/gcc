@@ -1,4 +1,4 @@
-/* PreSharedKeyManagerFactory.java -- 
+/* PreSharedKeyManagerFactory.java --
    Copyright (C) 2006  Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -106,7 +106,7 @@ public class PreSharedKeyManagerFactoryImpl
     {
       return params.getKey(name);
     }
-    
+
     public String chooseIdentityHint()
     {
       Iterator<String> it = params.identities();

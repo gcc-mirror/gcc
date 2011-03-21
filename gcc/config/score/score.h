@@ -20,14 +20,9 @@
 
 #include "score-conv.h"
 
-#undef CPP_SPEC
-#define CPP_SPEC                 "%{mscore3:-D__score3__} %{G*}"
-
 #undef CC1_SPEC
 #define CC1_SPEC                 "%{!mel:-meb} %{mel:-mel } \
 %{!mscore*:-mscore7}    \
-%{mscore3:-mscore3}     \
-%{mscore3d:-mscore3d}   \
 %{mscore7:-mscore7}     \
 %{mscore7d:-mscore7d}   \
 %{G*}"
@@ -37,14 +32,8 @@
 %{!mscore*:-march=score7}         \
 %{mscore7:-march=score7}          \
 %{mscore7d:-march=score7}         \
-%{mscore3:-march=score3}          \
-%{mscore3d:-march=score3}         \
-%{march=score5:-march=score7}     \
-%{march=score5u:-march=score7}    \
 %{march=score7:-march=score7}     \
 %{march=score7d:-march=score7}    \
-%{march=score3:-march=score3}     \
-%{march=score3d:-march=score3}    \
 %{G*}"
 
 #undef LINK_SPEC
@@ -52,14 +41,8 @@
 %{!mscore*:-mscore7_elf}          \
 %{mscore7:-mscore7_elf}           \
 %{mscore7d:-mscore7_elf}          \
-%{mscore3:-mscore3_elf}           \
-%{mscore3d:-mscore3_elf}          \
-%{march=score5:-mscore7_elf}      \
-%{march=score5u:-mscore7_elf}     \
 %{march=score7:-mscore7_elf}      \
 %{march=score7d:-mscore7_elf}     \
-%{march=score3:-mscore3_elf}      \
-%{march=score3d:-mscore3_elf}     \
 %{G*}"
 
 /* Run-time Target Specification.  */
@@ -72,18 +55,10 @@
       builtin_define ("__scorele__");           \
     else                                        \
       builtin_define ("__scorebe__");           \
-    if (TARGET_SCORE5)                          \
-      builtin_define ("__score5__");            \
-    if (TARGET_SCORE5U)                         \
-      builtin_define ("__score5u__");           \
     if (TARGET_SCORE7)                          \
       builtin_define ("__score7__");            \
     if (TARGET_SCORE7D)                         \
       builtin_define ("__score7d__");           \
-    if (TARGET_SCORE3)                          \
-      builtin_define ("__score3__");            \
-    if (TARGET_SCORE3D)                         \
-      builtin_define ("__score3d__");           \
   } while (0)
 
 #define TARGET_DEFAULT         0
@@ -466,25 +441,6 @@ extern enum reg_class score_char_to_class[256];
   (GET_MODE_SIZE (FROM) != GET_MODE_SIZE (TO)        \
    ? reg_classes_intersect_p (HI_REG, (CLASS)) : 0)
 
-/* The letters I, J, K, L, M, N, O, and P in a register constraint
-   string can be used to stand for particular ranges of immediate
-   operands.  This macro defines what the ranges are.  C is the
-   letter, and VALUE is a constant value.  Return 1 if VALUE is
-   in the range specified by C.  */
-#define CONST_OK_FOR_LETTER_P(VALUE, C) score_const_ok_for_letter_p (VALUE, C)
-
-/* Similar, but for floating constants, and defining letters G and H.
-   Here VALUE is the CONST_DOUBLE rtx itself.  */
-
-#define CONST_DOUBLE_OK_FOR_LETTER_P(VALUE, C)        \
-  ((C) == 'G' && (VALUE) == CONST0_RTX (GET_MODE (VALUE)))
-
-/* Letters in the range `Q' through `U' may be defined in a
-   machine-dependent fashion to stand for arbitrary operand types.
-   The machine description macro `EXTRA_CONSTRAINT' is passed the
-   operand as its first argument and the constraint letter as its
-   second operand.  */
-#define EXTRA_CONSTRAINT(VALUE, C)      score_extra_constraint (VALUE, C)
 
 /* Basic Stack Layout.  */
 /* Stack layout; function entry, exit and calling.  */
@@ -514,6 +470,7 @@ extern enum reg_class score_char_to_class[256];
 
 /* The register that holds the return address in exception handlers.  */
 #define EH_RETURN_STACKADJ_RTX          gen_rtx_REG (Pmode, EH_REGNUM)
+#define EH_RETURN_HANDLER_RTX  		gen_rtx_REG (SImode, 30)
 
 /* Registers That Address the Stack Frame.  */
 /* Register to use for pushing function arguments.  */
@@ -612,14 +569,6 @@ typedef struct score_args
         fprintf (FILE, " .set r1  \n");                               \
         fprintf (FILE, " mv   r%d,r%d \n", AT_REGNUM, RA_REGNUM);     \
         fprintf (FILE, " subi r%d, %d \n", STACK_POINTER_REGNUM, 8);  \
-        fprintf (FILE, " jl   _mcount \n");                           \
-        fprintf (FILE, " .set nor1 \n");                              \
-      }                                                               \
-    else if (TARGET_SCORE3)                                           \
-      {                                                               \
-        fprintf (FILE, " .set r1  \n");                               \
-        fprintf (FILE, " mv!   r%d,r%d \n", AT_REGNUM, RA_REGNUM);    \
-        fprintf (FILE, " addi! r%d, %d \n", STACK_POINTER_REGNUM, -8);\
         fprintf (FILE, " jl   _mcount \n");                           \
         fprintf (FILE, " .set nor1 \n");                              \
       }                                                               \
@@ -825,9 +774,6 @@ typedef struct score_args
         fprintf (STREAM, "\tpush! %s,[%s]\n",        \
                  reg_names[REGNO],                   \
                  reg_names[STACK_POINTER_REGNUM]);   \
-    else if (TARGET_SCORE3)                          \
-        fprintf (STREAM, "\tpush!\t%s\n",            \
-                 reg_names[REGNO]);                  \
   } while (0)
 
 /* This is how to output an insn to pop a register from the stack.  */
@@ -837,9 +783,6 @@ typedef struct score_args
       fprintf (STREAM, "\tpop! %s,[%s]\n",           \
                reg_names[REGNO],                     \
                reg_names[STACK_POINTER_REGNUM]);     \
-    else if (TARGET_SCORE3)                          \
-      fprintf (STREAM, "\tpop!\t%s\n",               \
-               reg_names[REGNO]);                    \
   } while (0)
 
 /* Output of Dispatch Tables.  */
@@ -852,28 +795,6 @@ typedef struct score_args
         fprintf (STREAM, "\t.gpword %sL%d\n", LOCAL_LABEL_PREFIX, VALUE); \
       else                                                                \
         fprintf (STREAM, "\t.word %sL%d\n", LOCAL_LABEL_PREFIX, VALUE);   \
-    else if (TARGET_SCORE3)                                               \
-      {                                                                   \
-        switch (GET_MODE(BODY))                                           \
-          {                                                               \
-          case QImode: /* TBB */                                          \
-            asm_fprintf (STREAM, "\t.byte\t(%LL%d-%LL%d_tbb)/2\n",        \
-                         VALUE, REL);                                     \
-            break;                                                        \
-          case HImode: /* TBH */                                          \
-            asm_fprintf (STREAM, "\t.2byte\t(%LL%d-%LL%d_tbb)/2\n",       \
-                         VALUE, REL);                                     \
-            break;                                                        \
-          case SImode:                                                    \
-            if (flag_pic)                                                 \
-              fprintf (STREAM, "\t.gpword %sL%d\n", LOCAL_LABEL_PREFIX, VALUE); \
-            else                                                          \
-              fprintf (STREAM, "\t.word %sL%d\n", LOCAL_LABEL_PREFIX, VALUE);   \
-            break;                                                        \
-          default:                                                        \
-            gcc_unreachable();                                            \
-          }                                                               \
-      }                                                                   \
   } while (0)
 
 /* Jump table alignment is explicit in ASM_OUTPUT_CASE_LABEL.  */
@@ -893,13 +814,6 @@ typedef struct score_args
 /* Specify the machine mode that this machine uses
    for the index in the tablejump instruction.  */
 #define CASE_VECTOR_MODE                SImode
-
-#define CASE_VECTOR_PC_RELATIVE         (TARGET_SCORE3)
-
-#define CASE_VECTOR_SHORTEN_MODE(min, max, body)                \
-   ((min < 0 || max >= 0x2000 || TARGET_SCORE7) ? SImode        \
-   : (max >= 0x200) ? HImode                                    \
-   : QImode)
 
 /* This is how to output an element of a case-vector that is absolute.  */
 #define ASM_OUTPUT_ADDR_VEC_ELT(STREAM, VALUE) \

@@ -42,15 +42,15 @@ import java.io.Serializable;
 
 /**
  * Means that request carried an invalid transaction context.
- * 
+ *
  * @author Audrius Meskauskas (AudriusA@Bioinformatics.org)
  */
 public final class INVALID_TRANSACTION
   extends SystemException
   implements Serializable
 {
-  /** 
-   * Use serialVersionUID for interoperability. 
+  /**
+   * Use serialVersionUID for interoperability.
    */
   private static final long serialVersionUID = -4265126403821571697L;
 

@@ -76,7 +76,7 @@ class SocketTransport
 
   // Host name
   private String _host;
-   
+
   // Are we acting as a server?
   private boolean _server = false;
 
@@ -96,29 +96,29 @@ class SocketTransport
     String p = (String) properties.get(_PROPERTY_SERVER);
     if (p != null)
       {
-	if (p.toLowerCase().equals("y"))
-	  _server = true;
+        if (p.toLowerCase().equals("y"))
+          _server = true;
       }
 
     // Get address [form: "hostname:port"]
     p = (String) properties.get(_PROPERTY_ADDRESS);
     if (p != null)
       {
-	String[] s = p.split(":");
-	if (s.length == 1)
-	  {
-	    // Port number only. Assume "localhost"
-	    _port = Integer.parseInt(s[0]);
-	    _host = "localhost";
-	  }
-	else
-	  {
-	    if (s[0].length() == 0)
-	      _host = "localhost";
-	    else
-	      _host = s[0];
-	    _port = Integer.parseInt(s[1]);
-	  }
+        String[] s = p.split(":");
+        if (s.length == 1)
+          {
+            // Port number only. Assume "localhost"
+            _port = Integer.parseInt(s[0]);
+            _host = "localhost";
+          }
+        else
+          {
+            if (s[0].length() == 0)
+              _host = "localhost";
+            else
+              _host = s[0];
+            _port = Integer.parseInt(s[1]);
+          }
       }
   }
 
@@ -133,24 +133,24 @@ class SocketTransport
   {
     try
       {
-	if (_server)
-	  {
-	    // Get a server socket
-	    ServerSocketFactory ssf = ServerSocketFactory.getDefault ();
-	    ServerSocket ss = ssf.createServerSocket (_port, 1);
-	    _socket = ss.accept ();
-	  }
-	else
-	  {
-	    // Get a client socket (the factory will connect it)
-	    SocketFactory sf = SocketFactory.getDefault ();
-	    _socket = sf.createSocket (_host, _port);
-	  }
+        if (_server)
+          {
+            // Get a server socket
+            ServerSocketFactory ssf = ServerSocketFactory.getDefault ();
+            ServerSocket ss = ssf.createServerSocket (_port, 1);
+            _socket = ss.accept ();
+          }
+        else
+          {
+            // Get a client socket (the factory will connect it)
+            SocketFactory sf = SocketFactory.getDefault ();
+            _socket = sf.createSocket (_host, _port);
+          }
       }
     catch (IOException ioe)
       {
-	// This will grab UnknownHostException, too.
-	throw new TransportException (ioe);
+        // This will grab UnknownHostException, too.
+        throw new TransportException (ioe);
       }
   }
 
@@ -162,11 +162,11 @@ class SocketTransport
   {
     try
       {
-	_socket.close ();
+        _socket.close ();
       }
     catch (Throwable t)
       {
-	// We don't really care about errors at this point
+        // We don't really care about errors at this point
       }
   }
 

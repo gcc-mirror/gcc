@@ -149,22 +149,22 @@ public abstract class AbstractDocument implements Document, Serializable
    * Manages event listeners for this <code>Document</code>.
    */
   protected EventListenerList listenerList = new EventListenerList();
-  
+
   /**
    * Stores the current writer thread.  Used for locking.
-   */ 
+   */
   private Thread currentWriter = null;
-  
+
   /**
    * The number of readers.  Used for locking.
    */
   private int numReaders = 0;
-  
+
   /**
    * The number of current writers. If this is > 1 then the same thread entered
    * the write lock more than once.
    */
-  private int numWriters = 0;  
+  private int numWriters = 0;
 
   /** An instance of a DocumentFilter.FilterBypass which allows calling
    * the insert, remove and replace method without checking for an installed
@@ -234,17 +234,17 @@ public abstract class AbstractDocument implements Document, Serializable
         writeUnlock();
       }
   }
-  
+
   /** Returns the DocumentFilter.FilterBypass instance for this
    * document and create it if it does not exist yet.
-   *  
+   *
    * @return This document's DocumentFilter.FilterBypass instance.
    */
   private DocumentFilter.FilterBypass getBypass()
   {
     if (bypass == null)
       bypass = new Bypass();
-    
+
     return bypass;
   }
 
@@ -283,7 +283,7 @@ public abstract class AbstractDocument implements Document, Serializable
    * @see BranchElement
    */
   protected Element createBranchElement(Element parent,
-					AttributeSet attributes)
+                                        AttributeSet attributes)
   {
     return new BranchElement(parent, attributes);
   }
@@ -303,7 +303,7 @@ public abstract class AbstractDocument implements Document, Serializable
    * @see LeafElement
    */
   protected Element createLeafElement(Element parent, AttributeSet attributes,
-				      int start, int end)
+                                      int start, int end)
   {
     return new LeafElement(parent, attributes, start, end);
   }
@@ -413,7 +413,7 @@ public abstract class AbstractDocument implements Document, Serializable
     Object val = getProperty(AsyncLoadPriority);
     int prio = -1;
     if (val != null)
-      prio = ((Integer) val).intValue(); 
+      prio = ((Integer) val).intValue();
     return prio;
   }
 
@@ -621,13 +621,13 @@ public abstract class AbstractDocument implements Document, Serializable
   /**
    * Inserts a String into this <code>Document</code> at the specified
    * position and assigning the specified attributes to it.
-   * 
+   *
    * <p>If a {@link DocumentFilter} is installed in this document, the
    * corresponding method of the filter object is called.</p>
-   * 
+   *
    * <p>The method has no effect when <code>text</code> is <code>null</code>
    * or has a length of zero.</p>
-   * 
+   *
    *
    * @param offset the location at which the string should be inserted
    * @param text the content to be inserted
@@ -665,7 +665,7 @@ public abstract class AbstractDocument implements Document, Serializable
       return;
     DefaultDocumentEvent event =
       new DefaultDocumentEvent(offset, text.length(),
-			       DocumentEvent.EventType.INSERT);
+                               DocumentEvent.EventType.INSERT);
 
     UndoableEdit undo = content.insertString(offset, text);
     if (undo != null)
@@ -1078,14 +1078,14 @@ public abstract class AbstractDocument implements Document, Serializable
     // balance by using a finally block:
     // readLock()
     // try
-    // { 
-    //   doSomethingHere 
+    // {
+    //   doSomethingHere
     // }
     // finally
     // {
     //   readUnlock();
     // }
-    
+
     // All that the JDK seems to check for is that you don't call unlock
     // more times than you've previously called lock, but it doesn't make
     // sure that the threads calling unlock were the same ones that called lock
@@ -1096,13 +1096,13 @@ public abstract class AbstractDocument implements Document, Serializable
     if (currentWriter == Thread.currentThread())
       return;
 
-    // FIXME: the reference implementation throws a 
+    // FIXME: the reference implementation throws a
     // javax.swing.text.StateInvariantError here
     if (numReaders <= 0)
       throw new IllegalStateException("document lock failure");
-    
-    // If currentWriter is not null, the application code probably had a 
-    // writeLock and then tried to obtain a readLock, in which case 
+
+    // If currentWriter is not null, the application code probably had a
+    // writeLock and then tried to obtain a readLock, in which case
     // numReaders wasn't incremented
     numReaders--;
     notify();
@@ -1110,16 +1110,16 @@ public abstract class AbstractDocument implements Document, Serializable
 
   /**
    * Removes a piece of content from this <code>Document</code>.
-   * 
+   *
    * <p>If a {@link DocumentFilter} is installed in this document, the
    * corresponding method of the filter object is called. The
    * <code>DocumentFilter</code> is called even if <code>length</code>
    * is zero. This is different from {@link #replace}.</p>
-   * 
+   *
    * <p>Note: When <code>length</code> is zero or below the call is not
    * forwarded to the underlying {@link AbstractDocument.Content} instance
    * of this document and no exception is thrown.</p>
-   * 
+   *
    * @param offset the start offset of the fragment to be removed
    * @param length the length of the fragment to be removed
    *
@@ -1159,8 +1159,8 @@ public abstract class AbstractDocument implements Document, Serializable
         DefaultDocumentEvent event =
           new DefaultDocumentEvent(offset, length,
                                    DocumentEvent.EventType.REMOVE);
-    
-        // The order of the operations below is critical!        
+
+        // The order of the operations below is critical!
         removeUpdate(event);
         UndoableEdit temp = content.remove(offset, length);
 
@@ -1172,10 +1172,10 @@ public abstract class AbstractDocument implements Document, Serializable
   /**
    * Replaces a piece of content in this <code>Document</code> with
    * another piece of content.
-   * 
+   *
    * <p>If a {@link DocumentFilter} is installed in this document, the
    * corresponding method of the filter object is called.</p>
-   * 
+   *
    * <p>The method has no effect if <code>length</code> is zero (and
    * only zero) and, at the same time, <code>text</code> is
    * <code>null</code> or has zero length.</p>
@@ -1196,7 +1196,7 @@ public abstract class AbstractDocument implements Document, Serializable
     throws BadLocationException
   {
     // Bail out if we have a bogus replacement (Behavior observed in RI).
-    if (length == 0 
+    if (length == 0
         && (text == null || text.length() == 0))
       return;
 
@@ -1222,9 +1222,9 @@ public abstract class AbstractDocument implements Document, Serializable
         writeUnlock();
       }
   }
-  
+
   void replaceImpl(int offset, int length, String text,
-		      AttributeSet attributes)
+                      AttributeSet attributes)
     throws BadLocationException
   {
     removeImpl(offset, length);
@@ -1356,7 +1356,7 @@ public abstract class AbstractDocument implements Document, Serializable
   }
 
   /**
-   * Blocks until a write lock can be obtained.  Must wait if there are 
+   * Blocks until a write lock can be obtained.  Must wait if there are
    * readers currently reading or another thread is currently writing.
    */
   protected synchronized final void writeLock()
@@ -1882,7 +1882,7 @@ public abstract class AbstractDocument implements Document, Serializable
     /**
      * Returns the resolve parent of this element.
      * This is taken from the AttributeSet, but if this is null,
-     * this method instead returns the Element's parent's 
+     * this method instead returns the Element's parent's
      * AttributeSet
      *
      * @return the resolve parent of this element
@@ -1919,7 +1919,7 @@ public abstract class AbstractDocument implements Document, Serializable
      *         is equal to this element's <code>AttributeSet</code>,
      *         <code>false</code> otherwise
      */
-    public boolean isEqual(AttributeSet attrs) 
+    public boolean isEqual(AttributeSet attrs)
     {
       return attributes.isEqual(attrs);
     }
@@ -2066,7 +2066,7 @@ public abstract class AbstractDocument implements Document, Serializable
                                                       + "must not be thrown "
                                                       + "here.");
               err.initCause(ex);
-	      throw err;
+              throw err;
             }
           b.append("]\n");
         }
@@ -2137,7 +2137,7 @@ public abstract class AbstractDocument implements Document, Serializable
 
       for (int index = 0; index < numChildren; ++index)
         tmp.add(children[index]);
-      
+
       return tmp.elements();
     }
 
@@ -2337,11 +2337,11 @@ public abstract class AbstractDocument implements Document, Serializable
       // as beginning from first element each time.
       for (int index = 0; index < numChildren; ++index)
         {
-	  Element elem = children[index];
+          Element elem = children[index];
 
-	  if ((elem.getStartOffset() <= position)
-	      && (position < elem.getEndOffset()))
-	    return elem;
+          if ((elem.getStartOffset() <= position)
+              && (position < elem.getEndOffset()))
+            return elem;
         }
 
       return null;
@@ -2359,7 +2359,7 @@ public abstract class AbstractDocument implements Document, Serializable
       int delta = elements.length - length;
       int copyFrom = offset + length; // From where to copy.
       int copyTo = copyFrom + delta;    // Where to copy to.
-      int numMove = numChildren - copyFrom; // How many elements are moved. 
+      int numMove = numChildren - copyFrom; // How many elements are moved.
       if (numChildren + delta > children.length)
         {
           // Gotta grow the array.
@@ -2386,7 +2386,7 @@ public abstract class AbstractDocument implements Document, Serializable
     public String toString()
     {
       return ("BranchElement(" + getName() + ") "
-	      + getStartOffset() + "," + getEndOffset() + "\n");
+              + getStartOffset() + "," + getEndOffset() + "\n");
     }
   }
 
@@ -2403,7 +2403,7 @@ public abstract class AbstractDocument implements Document, Serializable
      * The threshold that indicates when we switch to using a Hashtable.
      */
     private static final int THRESHOLD = 10;
-    
+
     /** The starting offset of the change. */
     private int offset;
 
@@ -2417,7 +2417,7 @@ public abstract class AbstractDocument implements Document, Serializable
      * Maps <code>Element</code> to their change records. This is only
      * used when the changes array gets too big. We can use an
      * (unsync'ed) HashMap here, since changes to this are (should) always
-     * be performed inside a write lock. 
+     * be performed inside a write lock.
      */
     private HashMap changes;
 
@@ -2435,7 +2435,7 @@ public abstract class AbstractDocument implements Document, Serializable
      * @param type the type of change
      */
     public DefaultDocumentEvent(int offset, int length,
-				DocumentEvent.EventType type)
+                                DocumentEvent.EventType type)
     {
       this.offset = offset;
       this.length = length;
@@ -2548,7 +2548,7 @@ public abstract class AbstractDocument implements Document, Serializable
         }
       return change;
     }
-    
+
     /**
      * Returns a String description of the change event.  This returns the
      * toString method of the Vector of edits.
@@ -2558,7 +2558,7 @@ public abstract class AbstractDocument implements Document, Serializable
       return edits.toString();
     }
   }
-  
+
   /**
    * An implementation of {@link DocumentEvent.ElementChange} to be added
    * to {@link DefaultDocumentEvent}s.
@@ -2588,7 +2588,7 @@ public abstract class AbstractDocument implements Document, Serializable
      * The added elements.
      */
     private Element[] added;
-    
+
     /**
      * Creates a new <code>ElementEdit</code>.
      *
@@ -2598,7 +2598,7 @@ public abstract class AbstractDocument implements Document, Serializable
      * @param added the added elements
      */
     public ElementEdit(Element elem, int index,
-		       Element[] removed, Element[] added)
+                       Element[] removed, Element[] added)
     {
       this.elem = elem;
       this.index = index;
@@ -2811,7 +2811,7 @@ public abstract class AbstractDocument implements Document, Serializable
     public String toString()
     {
       return ("LeafElement(" + getName() + ") "
-	      + getStartOffset() + "," + getEndOffset() + "\n");
+              + getStartOffset() + "," + getEndOffset() + "\n");
     }
   }
 
@@ -2900,7 +2900,7 @@ public abstract class AbstractDocument implements Document, Serializable
     {
       AbstractDocument.this.replaceImpl(offset, length, string, attrs);
     }
-    
+
   }
-  
+
 }

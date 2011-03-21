@@ -48,25 +48,25 @@ public interface MatchResult
 {
   /** Returns the index just after the last matched character.  */
   int end();
-  
+
   /**
    * Returns the index just after the last matched character of the
    * given sub-match group.
    * @param group the sub-match group
-   */ 
+   */
   int end(int group);
 
   /** Returns the substring of the input which was matched.  */
   String group();
-  
-  /** 
+
+  /**
    * Returns the substring of the input which was matched by the
    * given sub-match group.
    * @param group the sub-match group
    */
   String group(int group);
 
-  /** Returns the number of sub-match groups in the matching pattern.  */  
+  /** Returns the number of sub-match groups in the matching pattern.  */
   int groupCount();
 
   /** Returns the index of the first character of the match.  */

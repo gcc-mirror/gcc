@@ -1456,72 +1456,79 @@ Optional Features:
   --disable-FEATURE       do not include FEATURE (same as --enable-FEATURE=no)
   --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
   --enable-gold[=ARG]     build gold [ARG={default,yes,no}]
-  --enable-ld[=ARG]     build ld [ARG={default,yes,no}]
+  --enable-ld[=ARG]       build ld [ARG={default,yes,no}]
   --disable-libquadmath   do not build libquadmath directory
   --disable-libquadmath-support
                           disable libquadmath support for Fortran
   --enable-libada         build libada directory
   --enable-libssp         build libssp directory
   --enable-build-with-cxx build with C++ compiler instead of C compiler
-  --disable-ppl-version-check    disable check for PPL version
+  --disable-ppl-version-check
+                          disable check for PPL version
   --enable-cloog-backend[=BACKEND]
                           set the CLooG BACKEND used to either isl, ppl or
                           ppl-legacy (default)
   --disable-cloog-version-check
                           disable check for CLooG version
   --enable-lto            enable link time optimization support
-  --enable-stage1-languages[=all]   choose additional languages to build during
-                          stage1.  Mostly useful for compiler development.
-  --enable-objc-gc        enable use of Boehm's garbage collector with the
-                          GNU Objective-C runtime
+  --enable-stage1-languages[=all]
+                          choose additional languages to build during stage1.
+                          Mostly useful for compiler development
+  --enable-objc-gc        enable use of Boehm's garbage collector with the GNU
+                          Objective-C runtime
   --enable-bootstrap      enable bootstrapping [yes if native build]
   --enable-serial-[{host,target,build}-]configure
-                          force sequential configuration of
-                          sub-packages for the host, target or build
-                          machine, or all sub-packages
+                          force sequential configuration of sub-packages for
+                          the host, target or build machine, or all
+                          sub-packages
   --enable-upc-link-script Enable UPC's use of a custom linker script.
   This will define the UPC shared section as a no load section on
   targets where this feature is supported.  Requires GNU LD.
-  --enable-maintainer-mode enable make rules and dependencies not useful
-                          (and sometimes confusing) to the casual installer
-  --enable-stage1-checking[=all]   choose additional checking for stage1
-                          of the compiler
+  --enable-maintainer-mode
+                          enable make rules and dependencies not useful (and
+                          sometimes confusing) to the casual installer
+  --enable-stage1-checking[=all]
+                          choose additional checking for stage1 of the
+                          compiler
   --enable-werror         enable -Werror in bootstrap stage2 and later
 
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
   --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
   --with-build-libsubdir=DIR  Directory where to find libraries for build system
-  --with-mpc=PATH        specify prefix directory for installed MPC package.
-                          Equivalent to --with-mpc-include=PATH/include
-                          plus --with-mpc-lib=PATH/lib
-  --with-mpc-include=PATH
-                          specify directory for installed MPC include files
-  --with-mpc-lib=PATH    specify directory for the installed MPC library
+  --with-mpc=PATH         specify prefix directory for installed MPC package.
+                          Equivalent to --with-mpc-include=PATH/include plus
+                          --with-mpc-lib=PATH/lib
+  --with-mpc-include=PATH specify directory for installed MPC include files
+  --with-mpc-lib=PATH     specify directory for the installed MPC library
   --with-mpfr-dir=PATH    this option has been REMOVED
   --with-mpfr=PATH        specify prefix directory for installed MPFR package.
-                          Equivalent to --with-mpfr-include=PATH/include
-                          plus --with-mpfr-lib=PATH/lib
+                          Equivalent to --with-mpfr-include=PATH/include plus
+                          --with-mpfr-lib=PATH/lib
   --with-mpfr-include=PATH
                           specify directory for installed MPFR include files
   --with-mpfr-lib=PATH    specify directory for the installed MPFR library
   --with-gmp-dir=PATH     this option has been REMOVED
-  --with-gmp=PATH         specify prefix directory for the installed GMP package.
-                          Equivalent to --with-gmp-include=PATH/include
-                          plus --with-gmp-lib=PATH/lib
+  --with-gmp=PATH         specify prefix directory for the installed GMP
+                          package. Equivalent to
+                          --with-gmp-include=PATH/include plus
+                          --with-gmp-lib=PATH/lib
   --with-gmp-include=PATH specify directory for installed GMP include files
   --with-gmp-lib=PATH     specify directory for the installed GMP library
-  --with-host-libstdcxx=L Use linker arguments L to link with libstdc++
-                          when linking with PPL
-  --with-stage1-ldflags=FLAGS Linker flags for stage1
-  -with-stage1-libs=LIBS      Libraries for stage1
-  --with-boot-libs=LIBS     Libraries for stage2 and later
-  --with-boot-ldflags=FLAGS Linker flags for stage2 and later
-  --with-ppl=PATH         Specify prefix directory for the installed PPL package
-                          Equivalent to --with-ppl-include=PATH/include
-                          plus --with-ppl-lib=PATH/lib
-  --with-ppl-include=PATH Specify directory for installed PPL include files
-  --with-ppl-lib=PATH     Specify the directory for the installed PPL library
+  --with-host-libstdcxx=L use linker arguments L to link with libstdc++ when
+                          linking with PPL
+  --with-stage1-ldflags=FLAGS
+                          linker flags for stage1
+  --with-stage1-libs=LIBS libraries for stage1
+  --with-boot-libs=LIBS   libraries for stage2 and later
+  --with-boot-ldflags=FLAGS
+                          linker flags for stage2 and later
+  --with-ppl=PATH         specify prefix directory for the installed PPL
+                          package. Equivalent to
+                          --with-ppl-include=PATH/include plus
+                          --with-ppl-lib=PATH/lib
+  --with-ppl-include=PATH specify directory for installed PPL include files
+  --with-ppl-lib=PATH     specify directory for the installed PPL library
   --with-cloog=PATH       Specify prefix directory for the installed CLooG-PPL
                           package. Equivalent to
                           --with-cloog-include=PATH/include plus
@@ -1535,9 +1542,9 @@ Optional Packages:
   --with-build-sysroot=SYSROOT
                           use sysroot as the system root during the build
   --with-debug-prefix-map='A=B C=D ...'
-                             map A to B, C to D ... in debug information
---with-build-config='NAME NAME2...'
-                          Use config/NAME.mk build configuration
+                          map A to B, C to D ... in debug information
+  --with-build-config='NAME NAME2...'
+                          use config/NAME.mk build configuration
   --with-build-time-tools=PATH
                           use given path to find target tools during the build
 
@@ -3276,7 +3283,7 @@ case "${target}" in
     ;;
   bfin-*-*)
     unsupported_languages="$unsupported_languages java"
-    noconfigdirs="$noconfigdirs target-boehm-gc gdb"
+    noconfigdirs="$noconfigdirs target-boehm-gc"
     if test x${is_cross_compiler} != xno ; then
       target_configdirs="${target_configdirs} target-bsp target-cygmon"
     fi
@@ -3369,8 +3376,8 @@ case "${target}" in
     noconfigdirs="$noconfigdirs readline mmalloc libgui itcl gdb"
     ;;
   ia64*-**-hpux*)
-    # No gdb or ld support yet.
-    noconfigdirs="$noconfigdirs ${libgcj} readline mmalloc libgui itcl gdb ld"
+    # No ld support yet.
+    noconfigdirs="$noconfigdirs ${libgcj} libgui itcl ld"
     ;;
   ia64*-*-*vms*)
     # No gdb or ld support yet.
@@ -5669,8 +5676,9 @@ fi
 
 
 # Check for PPL
-ppllibs=" -lppl_c -lppl -lgmpxx"
+ppllibs=
 pplinc=
+pwllib=
 
 
 # Check whether --with-ppl was given.
@@ -5691,52 +5699,110 @@ if test "${with_ppl_lib+set}" = set; then :
 fi
 
 
-case $with_ppl in
-  no)
-    ppllibs=
-    ;;
-  "" | yes)
-    ;;
-  *)
-    ppllibs="-L$with_ppl/lib -lppl_c -lppl -lgmpxx"
-    pplinc="-I$with_ppl/include $pplinc"
-    ;;
-esac
-if test "x$with_ppl_include" != x; then
-  pplinc="-I$with_ppl_include $pplinc"
-fi
-if test "x$with_ppl_lib" != x; then
-  ppllibs="-L$with_ppl_lib -lppl_c -lppl -lgmpxx"
-fi
-if test "x$with_ppl$with_ppl_include$with_ppl_lib" = x && test -d ${srcdir}/ppl; then
-  ppllibs='-L$$r/$(HOST_SUBDIR)/ppl/interfaces/C/'"$lt_cv_objdir"' -L$$r/$(HOST_SUBDIR)/ppl/src/'"$lt_cv_objdir"' -lppl_c -lppl -lgmpxx '
-  pplinc='-I$$r/$(HOST_SUBDIR)/ppl/src -I$$r/$(HOST_SUBDIR)/ppl/interfaces/C '
-  enable_ppl_version_check=no
-fi
-
 # Check whether --enable-ppl-version-check was given.
 if test "${enable_ppl_version_check+set}" = set; then :
-  enableval=$enable_ppl_version_check; ENABLE_PPL_CHECK=$enableval
-else
-  ENABLE_PPL_CHECK=yes
+  enableval=$enable_ppl_version_check;
 fi
 
 
-if test "x$with_ppl" != "xno" -a "${ENABLE_PPL_CHECK}" = "yes"; then
-  saved_CFLAGS="$CFLAGS"
-  CFLAGS="$CFLAGS $pplinc $gmpinc"
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for version 0.10 (or later revision) of PPL" >&5
-$as_echo_n "checking for version 0.10 (or later revision) of PPL... " >&6; }
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+case $with_ppl in
+  yes | no | "")
+    ;;
+  *)
+    ppllibs="-L$with_ppl/lib"
+    pplinc="-I$with_ppl/include $pplinc"
+    if test -d "$with_ppl/lib" && test -d "$with_ppl/include"; then
+      with_ppl=yes
+    else
+      as_fn_error "cannot find directories \"$with_ppl/lib\" or \"$with_ppl/include\"" "$LINENO" 5
+    fi
+    ;;
+esac
+
+if test x"$with_ppl_include" != x; then
+  pplinc="-I$with_ppl_include $pplinc"
+  with_ppl=yes
+fi
+
+if test "x$with_ppl_lib" != x; then
+  ppllibs="-L$with_ppl_lib"
+  with_ppl=yes
+fi
+
+if test x"$with_ppl$with_ppl_include$with_ppl_lib" = x && test -d ${srcdir}/ppl; then
+  if test x"$enable_watchdog" = xyes; then
+    pwllib="-lpwl"
+  fi
+  ppllibs='-L$$r/$(HOST_SUBDIR)/ppl/interfaces/C/'"$lt_cv_objdir"' -L$$r/$(HOST_SUBDIR)/ppl/src/'"$lt_cv_objdir"
+  pplinc='-I$$r/$(HOST_SUBDIR)/ppl/src -I$$r/$(HOST_SUBDIR)/ppl/interfaces/C '
+  enable_ppl_version_check=no
+  with_ppl=yes
+fi
+
+if test "x$with_ppl" != xno; then
+  if test "x$pwllib" = x; then
+    saved_LDFLAGS="$LDFLAGS"
+    LDFLAGS="$LDFLAGS $ppllibs"
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for PWL_handle_timeout in -lpwl" >&5
+$as_echo_n "checking for PWL_handle_timeout in -lpwl... " >&6; }
+if test "${ac_cv_lib_pwl_PWL_handle_timeout+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lpwl  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char PWL_handle_timeout ();
+int
+main ()
+{
+return PWL_handle_timeout ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_pwl_PWL_handle_timeout=yes
+else
+  ac_cv_lib_pwl_PWL_handle_timeout=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_pwl_PWL_handle_timeout" >&5
+$as_echo "$ac_cv_lib_pwl_PWL_handle_timeout" >&6; }
+if test "x$ac_cv_lib_pwl_PWL_handle_timeout" = x""yes; then :
+  pwllib="-lpwl"
+fi
+
+    LDFLAGS="$saved_LDFLAGS"
+  fi
+
+  ppllibs="$ppllibs -lppl_c -lppl $pwllib -lgmpxx"
+
+  if test "$enable_ppl_version_check" != no; then
+    saved_CFLAGS="$CFLAGS"
+    CFLAGS="$CFLAGS $pplinc $gmpinc"
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for version 0.11 (revision 0 or later) of PPL" >&5
+$as_echo_n "checking for version 0.11 (revision 0 or later) of PPL... " >&6; }
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include "ppl_c.h"
 int
 main ()
 {
 
-  #if PPL_VERSION_MAJOR != 0 || PPL_VERSION_MINOR < 10
-  choke me
-  #endif
+    #if PPL_VERSION_MAJOR != 0 || PPL_VERSION_MINOR < 11
+    choke me
+    #endif
 
   ;
   return 0;
@@ -5750,7 +5816,8 @@ else
 $as_echo "no" >&6; }; ppllibs= ; pplinc= ; with_ppl=no
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-  CFLAGS="$saved_CFLAGS"
+    CFLAGS="$saved_CFLAGS"
+  fi
 fi
 
 # Flags needed for PPL
@@ -5826,6 +5893,23 @@ fi
 
 
 if test "x$with_ppl" = "xno"; then
+
+
+
+  if test "x${with_cloog}" = xno; then
+    graphite_requested=no
+  elif test "x${with_cloog}" != x \
+    || test "x${with_cloog_include}" != x \
+    || test "x${with_cloog_lib}" != x ; then
+    graphite_requested=yes
+  else
+    graphite_requested=no
+  fi
+
+
+  if test "${graphite_requested}" = yes; then
+    as_fn_error "Unable to find a usable PPL.  See config.log for details." "$LINENO" 5
+  fi
   with_cloog=no
 fi
 if test "x${with_cloog}" = x && test "x${with_cloog_include}" = x \
@@ -5955,7 +6039,7 @@ $as_echo "$gcc_cv_cloog_type" >&6; }
       ;;
     "ISL")
       clooginc="${clooginc} ${_cloogorginc}"
-      clooglibs="${clooglibs} -lcloog-isl"
+      clooglibs="${clooglibs} -lcloog-isl -lisl"
       cloog_org=yes
       ;;
     "PPL")
@@ -5987,8 +6071,8 @@ $as_echo "$gcc_cv_cloog_type" >&6; }
     LDFLAGS="${_cloog_saved_LDFLAGS} ${clooglibs} ${ppllibs}"
 
     if test "${cloog_org}" = yes ; then
-      { $as_echo "$as_me:${as_lineno-$LINENO}: checking for version 0.14.0 of CLooG" >&5
-$as_echo_n "checking for version 0.14.0 of CLooG... " >&6; }
+      { $as_echo "$as_me:${as_lineno-$LINENO}: checking for version 0.16.1 of CLooG" >&5
+$as_echo_n "checking for version 0.16.1 of CLooG... " >&6; }
 if test "${gcc_cv_cloog_ct_0_14_0+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
@@ -5999,8 +6083,8 @@ int
 main ()
 {
 #if CLOOG_VERSION_MAJOR != 0 \
-    || CLOOG_VERSION_MINOR != 14 \
-    || CLOOG_VERSION_REVISION < 0
+    || CLOOG_VERSION_MINOR != 16 \
+    || CLOOG_VERSION_REVISION < 1
     choke me
    #endif
   ;
@@ -6078,7 +6162,9 @@ $as_echo "$gcc_cv_cloog_ct_0_15_5" >&6; }
 
 
 
-  if test "x${with_cloog}" != x \
+  if test "x${with_cloog}" = xno; then
+    graphite_requested=no
+  elif test "x${with_cloog}" != x \
     || test "x${with_cloog_include}" != x \
     || test "x${with_cloog_lib}" != x ; then
     graphite_requested=yes
@@ -6099,7 +6185,7 @@ $as_echo "$gcc_cv_cloog_ct_0_15_5" >&6; }
     && test "x${clooglibs}" = x \
     && test "x${clooginc}" = x ; then
 
-    as_fn_error "Unable to find a usable CLooG. See config.log for details." "$LINENO" 5
+    as_fn_error "Unable to find a usable CLooG.  See config.log for details." "$LINENO" 5
   fi
 
 
@@ -6136,7 +6222,7 @@ if test $target_elf = yes; then :
 else
   if test x"$default_enable_lto" = x"yes" ; then
     case $target in
-      *-apple-darwin* | *-cygwin* | *-mingw*) ;;
+      *-apple-darwin9 | *-cygwin* | *-mingw*) ;;
       # On other non-ELF platforms, LTO has yet to be validated.
       *) enable_lto=no ;;
     esac
@@ -7343,6 +7429,7 @@ serialization_dependencies=serdep.tmp
 # Also strip program-prefix, program-suffix, and program-transform-name,
 # so that we can pass down a consistent program-transform-name.
 baseargs=
+tbaseargs=
 keep_next=no
 skip_next=no
 eval "set -- $ac_configure_args"
@@ -7358,6 +7445,7 @@ do
 	ac_arg=`echo "$ac_arg" | sed "s/'/'\\\\\\\\''/g"` ;;
     esac
     baseargs="$baseargs '$ac_arg'"
+    tbaseargs="$tbaseargs '$ac_arg'"
     keep_next=no
     continue
   fi
@@ -7379,11 +7467,45 @@ do
       ;;
   esac
 
+  skip_targ=no
+  case $ac_arg in
+
+  --with-* | --without-*)
+    libopt=`echo "$ac_arg" | sed -e 's,^--[^-_]*[-_],,' -e 's,=.*$,,'`
+
+    case $libopt in
+    *[-_]include)
+      lib=`echo "$libopt" | sed 's,[-_]include$,,'`
+      ;;
+    *[-_]lib)
+      lib=`echo "$libopt" | sed 's,[-_]lib$,,'`
+      ;;
+    *)
+      lib=$libopt
+      ;;
+    esac
+
+
+    case $lib in
+    mpc | mpfr | gmp | ppl | cloog)
+      # If we're processing --with-$lib, --with-$lib-include or
+      # --with-$lib-lib, for one of the libs above, and target is
+      # different from host, don't pass the current argument to any
+      # target library's configure.
+      if test x$is_cross_compiler = xyes; then
+        skip_targ=yes
+      fi
+      ;;
+    esac
+    ;;
+  esac
+
   case "$ac_arg" in
     --cache-file=/dev/null | \
     -cache-file=/dev/null )
       # Handled here to avoid the test to skip args below.
       baseargs="$baseargs '$ac_arg'"
+      tbaseargs="$tbaseargs '$ac_arg'"
       # Assert: $separate_arg should always be no.
       keep_next=$separate_arg
       ;;
@@ -7414,6 +7536,9 @@ do
 	  ac_arg=`echo "$ac_arg" | sed "s/'/'\\\\\\\\''/g"` ;;
       esac
       baseargs="$baseargs '$ac_arg'"
+      if test X"$skip_targ" = Xno; then
+        tbaseargs="$tbaseargs '$ac_arg'"
+      fi
       keep_next=$separate_arg
       ;;
     *)
@@ -7440,10 +7565,13 @@ EOF_SED
 gcc_transform_name=`cat conftestsed.out`
 rm -f conftestsed.out
 baseargs="$baseargs --program-transform-name='${gcc_transform_name}'"
+tbaseargs="$tbaseargs --program-transform-name='${gcc_transform_name}'"
 if test "$silent" = yes; then
   baseargs="$baseargs --silent"
+  tbaseargs="$tbaseargs --silent"
 fi
 baseargs="$baseargs --disable-option-checking"
+tbaseargs="$tbaseargs --disable-option-checking"
 
 # Record and document user additions to sub configure arguments.
 
@@ -7469,7 +7597,7 @@ esac
 # This seems to be due to autoconf 2.5x stupidity.
 host_configargs="$host_configargs --cache-file=./config.cache ${extra_host_args} ${baseargs}"
 
-target_configargs="$target_configargs ${baseargs}"
+target_configargs="$target_configargs ${tbaseargs}"
 
 # Passing a --with-cross-host argument lets the target libraries know
 # whether they are being built with a cross-compiler or being built

@@ -58,7 +58,7 @@ import java.lang.reflect.Modifier;
  * @author Tom Tromey (tromey@cygnus.com)
  * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
  */
-final class VMClass 
+final class VMClass
 {
 
   // Only static methods. Cannot be instantiated.
@@ -287,11 +287,11 @@ final class VMClass
    * <code>getName()</code> which follows the last ".".  Anonymous
    * classes have no name, and so the result of calling this method is
    * "".  The simple name of an array consists of the simple name of
-   * its component type, followed by "[]".  Thus, an array with the 
+   * its component type, followed by "[]".  Thus, an array with the
    * component type of an anonymous class has a simple name of simply
    * "[]".
    *
-   * @param klass the class whose simple name should be returned. 
+   * @param klass the class whose simple name should be returned.
    * @return the simple name for this class.
    */
   static String getSimpleName(Class klass)
@@ -300,7 +300,7 @@ final class VMClass
       return "";
     if (isArray(klass))
       {
-	return getComponentType(klass).getSimpleName() + "[]";
+        return getComponentType(klass).getSimpleName() + "[]";
       }
     String fullName = getName(klass);
     int pos = fullName.lastIndexOf("$");
@@ -308,9 +308,9 @@ final class VMClass
       pos = 0;
     else
       {
-	++pos;
-	while (Character.isDigit(fullName.charAt(pos)))
-	  ++pos;
+        ++pos;
+        while (Character.isDigit(fullName.charAt(pos)))
+          ++pos;
       }
     int packagePos = fullName.lastIndexOf(".", pos);
     if (packagePos == -1)
@@ -346,7 +346,7 @@ final class VMClass
    * The canonical name for top-level classes, top-level interfaces and
    * primitive types is always the same as the fully-qualified name.
    * For array types, the canonical name is the canonical name of its
-   * component type with `[]' appended.  
+   * component type with `[]' appended.
    * </p>
    * <p>
    * The canonical name of a member class always refers to the place where
@@ -374,17 +374,17 @@ final class VMClass
       return null;
     if (isArray(klass))
       {
-	String componentName = getComponentType(klass).getCanonicalName();
-	if (componentName != null)
-	  return componentName + "[]";
+        String componentName = getComponentType(klass).getCanonicalName();
+        if (componentName != null)
+          return componentName + "[]";
       }
     if (isMemberClass(klass))
       {
-	String memberName = getDeclaringClass(klass).getCanonicalName();
-	if (memberName != null)
-	  return memberName + "." + getSimpleName(klass);
-	else
-	  return memberName;
+        String memberName = getDeclaringClass(klass).getCanonicalName();
+        if (memberName != null)
+          return memberName + "." + getSimpleName(klass);
+        else
+          return memberName;
       }
     return getName(klass);
   }
@@ -402,7 +402,7 @@ final class VMClass
 
   /**
    * Returns the constructor which immediately encloses the specified class.
-   * If the class is a top-level class, or a local or anonymous class 
+   * If the class is a top-level class, or a local or anonymous class
    * immediately enclosed by a type definition, instance initializer
    * or static initializer, then <code>null</code> is returned.
    *
@@ -416,7 +416,7 @@ final class VMClass
 
   /**
    * Returns the method which immediately encloses the specified class.  If
-   * the class is a top-level class, or a local or anonymous class 
+   * the class is a top-level class, or a local or anonymous class
    * immediately enclosed by a type definition, instance initializer
    * or static initializer, then <code>null</code> is returned.
    *
@@ -460,7 +460,7 @@ final class VMClass
   /**
    * Returns true if the specified class represents an member class.
    *
-   * @param klass the klass to test. 
+   * @param klass the klass to test.
    * @return true if the specified class represents an member class.
    * @since 1.5
    */

@@ -62,7 +62,7 @@ package java.lang;
  * or to implement some optional (and sometimes deprecated) behaviour. Default
  * implementations are provided but it is highly recommended to optimize them
  * for a specific VM.
- * 
+ *
  * @author Jeroen Frijters (jeroen@frijters.net)
  * @author Dalibor Topic (robilad@kaffe.org)
  */
@@ -93,7 +93,7 @@ final class VMThread
      */
     private VMThread(Thread thread)
     {
-	this.thread = thread;
+        this.thread = thread;
     }
 
     /**
@@ -103,48 +103,48 @@ final class VMThread
      */
     private void run()
     {
-	try
-	{
-	    try
-	    {
-		running = true;
-		synchronized(thread)
-		{
-		    Throwable t = thread.stillborn;
-		    if(t != null)
-		    {
-			thread.stillborn = null;
-			throw t;
-		    }
-		}
-		thread.run();
-	    }
-	    catch(Throwable t)
-	    {
-		try
-		{
-		  Thread.UncaughtExceptionHandler handler;
-		  handler = thread.getUncaughtExceptionHandler();
-		  handler.uncaughtException(thread, t);
-		}
-		catch(Throwable ignore)
-		{
-		}
-	    }
-	}
-	finally
-	{
-	    // Setting runnable to false is partial protection against stop
-	    // being called while we're cleaning up. To be safe all code in
-	    // VMThread be unstoppable.
-	    running = false;
-	    thread.die();
-	    synchronized(this)
-	    {
-		// release the threads waiting to join us
-		notifyAll();
-	    }
-	}
+        try
+        {
+            try
+            {
+                running = true;
+                synchronized(thread)
+                {
+                    Throwable t = thread.stillborn;
+                    if(t != null)
+                    {
+                        thread.stillborn = null;
+                        throw t;
+                    }
+                }
+                thread.run();
+            }
+            catch(Throwable t)
+            {
+                try
+                {
+                  Thread.UncaughtExceptionHandler handler;
+                  handler = thread.getUncaughtExceptionHandler();
+                  handler.uncaughtException(thread, t);
+                }
+                catch(Throwable ignore)
+                {
+                }
+            }
+        }
+        finally
+        {
+            // Setting runnable to false is partial protection against stop
+            // being called while we're cleaning up. To be safe all code in
+            // VMThread be unstoppable.
+            running = false;
+            thread.die();
+            synchronized(this)
+            {
+                // release the threads waiting to join us
+                notifyAll();
+            }
+        }
     }
 
     /**
@@ -158,9 +158,9 @@ final class VMThread
      */
     static void create(Thread thread, long stacksize)
     {
-	VMThread vmThread = new VMThread(thread);
-	vmThread.start(stacksize);
-	thread.vmThread = vmThread;
+        VMThread vmThread = new VMThread(thread);
+        vmThread.start(stacksize);
+        thread.vmThread = vmThread;
     }
 
     /**
@@ -170,7 +170,7 @@ final class VMThread
      */
     String getName()
     {
-	return thread.name;
+        return thread.name;
     }
 
     /**
@@ -181,7 +181,7 @@ final class VMThread
      */
     void setName(String name)
     {
-	thread.name = name;
+        thread.name = name;
     }
 
     /**
@@ -192,8 +192,8 @@ final class VMThread
      */
     void setPriority(int priority)
     {
-	thread.priority = priority;
-	nativeSetPriority(priority);
+        thread.priority = priority;
+        nativeSetPriority(priority);
     }
 
     /**
@@ -243,32 +243,32 @@ final class VMThread
      */
     synchronized void join(long ms, int ns) throws InterruptedException
     {
-	// Round up
-	ms += (ns != 0) ? 1 : 0;
+        // Round up
+        ms += (ns != 0) ? 1 : 0;
 
-	// Compute end time, but don't overflow
-	long now = System.currentTimeMillis();
-	long end = now + ms;
-	if (end < now)
-	    end = Long.MAX_VALUE;
+        // Compute end time, but don't overflow
+        long now = System.currentTimeMillis();
+        long end = now + ms;
+        if (end < now)
+            end = Long.MAX_VALUE;
 
-	// A VM is allowed to return from wait() without notify() having been
-	// called, so we loop to handle possible spurious wakeups.
-	while(thread.vmThread != null)
-	{
-	    // We use the VMThread object to wait on, because this is a private
-	    // object, so client code cannot call notify on us.
-	    wait(ms);
-	    if(ms != 0)
-	    {
-		now = System.currentTimeMillis();
-		ms = end - now;
-		if(ms <= 0)
-		{
-		    break;
-		}
-	    }
-	}
+        // A VM is allowed to return from wait() without notify() having been
+        // called, so we loop to handle possible spurious wakeups.
+        while(thread.vmThread != null)
+        {
+            // We use the VMThread object to wait on, because this is a private
+            // object, so client code cannot call notify on us.
+            wait(ms);
+            if(ms != 0)
+            {
+                now = System.currentTimeMillis();
+                ms = end - now;
+                if(ms <= 0)
+                {
+                    break;
+                }
+            }
+        }
     }
 
     /**
@@ -276,7 +276,7 @@ final class VMThread
      * If you stop a Thread that has not yet started, the stop is ignored
      * (contrary to what the JDK documentation says).
      * <b>WARNING</b>This bypasses Java security, and can throw a checked
-     * exception which the call stack is unprepared to handle. Do not abuse 
+     * exception which the call stack is unprepared to handle. Do not abuse
      * this power.
      *
      * <p>This is inherently unsafe, as it can interrupt synchronized blocks and
@@ -290,12 +290,12 @@ final class VMThread
      */
     void stop(Throwable t)
     {
-	// Note: we assume that we own the lock on thread
-	// (i.e. that Thread.stop() is synchronized)
-	if(running)
-	    nativeStop(t);
-	else
-	    thread.stillborn = t;
+        // Note: we assume that we own the lock on thread
+        // (i.e. that Thread.stop() is synchronized)
+        if(running)
+            nativeStop(t);
+        else
+            thread.stillborn = t;
     }
 
     /**
@@ -383,33 +383,33 @@ final class VMThread
       // It's unclear if this is a bug in the implementation or the spec.
       // See http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6213203
       if (ms == 0 && ns == 0)
-	{
-	  if (Thread.interrupted())
-	    throw new InterruptedException();
-	  return;
-	}
+        {
+          if (Thread.interrupted())
+            throw new InterruptedException();
+          return;
+        }
 
       // Compute end time, but don't overflow
       long now = System.currentTimeMillis();
       long end = now + ms;
       if (end < now)
-	  end = Long.MAX_VALUE;
+          end = Long.MAX_VALUE;
 
       // A VM is allowed to return from wait() without notify() having been
       // called, so we loop to handle possible spurious wakeups.
       VMThread vt = Thread.currentThread().vmThread;
       synchronized (vt)
-	{
-	  while (true)
-	    {
-	      vt.wait(ms, ns);
-	      now = System.currentTimeMillis();
-	      if (now >= end)
-		break;
-	      ms = end - now;
-	      ns = 0;
-	    }
-	}
+        {
+          while (true)
+            {
+              vt.wait(ms, ns);
+              now = System.currentTimeMillis();
+              if (now >= end)
+                break;
+              ms = end - now;
+              ns = 0;
+            }
+        }
     }
 
     /**
@@ -428,23 +428,23 @@ final class VMThread
      * @return true if the current thread is currently synchronized on obj
      * @throws NullPointerException if obj is null
      */
-    static boolean holdsLock(Object obj) 
+    static boolean holdsLock(Object obj)
     {
       /* Use obj.notify to check if the current thread holds
        * the monitor of the object.
        * If it doesn't, notify will throw an exception.
        */
-      try 
-	{
-	  obj.notify();
-	  // okay, current thread holds lock
-	  return true;
-	}
+      try
+        {
+          obj.notify();
+          // okay, current thread holds lock
+          return true;
+        }
       catch (IllegalMonitorStateException e)
-	{
-	  // it doesn't hold the lock
-	  return false;
-	}
+        {
+          // it doesn't hold the lock
+          return false;
+        }
     }
 
   /**
@@ -453,7 +453,7 @@ final class VMThread
    * "RUNNABLE", "TERMINATED", "TIMED_WAITING" or
    * "WAITING".
    *
-   * @return a string corresponding to one of the 
+   * @return a string corresponding to one of the
    *         thread enumeration states specified above.
    */
   native String getState();

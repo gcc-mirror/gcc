@@ -43,7 +43,7 @@ import javax.swing.event.TreeExpansionEvent;
  * ExpandVetoException
  * @author Andrew Selkirk
  */
-public class ExpandVetoException extends Exception 
+public class ExpandVetoException extends Exception
 {
 
   /**
@@ -56,21 +56,21 @@ public class ExpandVetoException extends Exception
    * Constructor ExpandVetoException
    * @param event Tree Expansion Event
    */
-  public ExpandVetoException(TreeExpansionEvent event) 
+  public ExpandVetoException(TreeExpansionEvent event)
   {
     super();
     this.event = event;
-  } 
+  }
 
   /**
    * Constructor ExpandVetoException
    * @param event Tree Expansion Event
    * @param message Message
    */
-  public ExpandVetoException(TreeExpansionEvent event, String message) 
+  public ExpandVetoException(TreeExpansionEvent event, String message)
   {
     super(message);
     this.event = event;
-  } 
+  }
 
-} 
+}

@@ -42,7 +42,7 @@ import java.io.ByteArrayOutputStream;
 
 /**
  * A CORBA output stream, writing data into the internal buffer ({@link ByteArrayOutputStream}).
- * 
+ *
  * @author Audrius Meskauskas (AudriusA@Bioinformatics.org)
  */
 public class BufferedCdrOutput
@@ -61,7 +61,7 @@ public class BufferedCdrOutput
 
   /**
    * Creates the instance with the given initial buffer size.
-   * 
+   *
    * @param bufSize the buffer size.
    */
   public BufferedCdrOutput(int bufSize)
@@ -121,7 +121,7 @@ public class BufferedCdrOutput
 
   /**
    * Get the current position in the buffer.
-   * 
+   *
    * @return The position in the buffer, taking offset into consideration.
    */
   public int getPosition()

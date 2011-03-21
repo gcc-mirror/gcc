@@ -1,4 +1,4 @@
-/* IMac.java -- 
+/* IMac.java --
    Copyright (C) 2001, 2002, 2006 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -107,14 +107,14 @@ public interface IMac
 
   /**
    * Returns the canonical name of this algorithm.
-   * 
+   *
    * @return the canonical name of this algorithm.
    */
   String name();
 
   /**
    * Returns the output length in bytes of this <i>MAC</i> algorithm.
-   * 
+   *
    * @return the output length in bytes of this <i>MAC</i> algorithm.
    */
   int macSize();
@@ -122,7 +122,7 @@ public interface IMac
   /**
    * Initialises the algorithm with designated attributes. Permissible names and
    * values are described in the class documentation above.
-   * 
+   *
    * @param attributes a set of name-value pairs that describe the desired
    *          future instance behaviour.
    * @exception InvalidKeyException if the key data is invalid.
@@ -133,7 +133,7 @@ public interface IMac
 
   /**
    * Continues a <i>MAC</i> operation using the input byte.
-   * 
+   *
    * @param b the input byte to digest.
    */
   void update(byte b);
@@ -142,7 +142,7 @@ public interface IMac
    * Continues a <i>MAC</i> operation, by filling the buffer, processing data
    * in the algorithm's MAC_SIZE-bit block(s), updating the context and count,
    * and buffering the remaining bytes in buffer for the next operation.
-   * 
+   *
    * @param in the input block.
    * @param offset start of meaningful bytes in input block.
    * @param length number of bytes, in input block, to consider.
@@ -152,7 +152,7 @@ public interface IMac
   /**
    * Completes the <i>MAC</i> by performing final operations such as padding
    * and resetting the instance.
-   * 
+   *
    * @return the array of bytes representing the <i>MAC</i> value.
    */
   byte[] digest();
@@ -166,7 +166,7 @@ public interface IMac
   /**
    * A basic test. Ensures that the MAC of a pre-determined message is equal to
    * a known pre-computed value.
-   * 
+   *
    * @return <code>true</code> if the implementation passes a basic self-test.
    *         Returns <code>false</code> otherwise.
    */
@@ -174,7 +174,7 @@ public interface IMac
 
   /**
    * Returns a clone copy of this instance.
-   * 
+   *
    * @return a clone copy of this instance.
    */
   Object clone() throws CloneNotSupportedException;

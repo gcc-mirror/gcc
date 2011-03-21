@@ -1,4 +1,4 @@
-/* GnuSecretKey.java -- 
+/* GnuSecretKey.java --
    Copyright (C) 2003, 2006 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -55,7 +55,7 @@ public class GnuSecretKey
   /**
    * Creates a new secret key. The supplied byte array is copied by this
    * constructor.
-   * 
+   *
    * @param key The raw, secret key.
    * @param algorithm The algorithm name, which can be null or empty.
    */
@@ -66,7 +66,7 @@ public class GnuSecretKey
 
   /**
    * Creates a new secret key from a portion of a byte array.
-   * 
+   *
    * @param key The raw, secret key.
    * @param offset The offset at which the key begins.
    * @param length The number of bytes that comprise the key.
@@ -81,7 +81,7 @@ public class GnuSecretKey
 
   /**
    * Returns the algorithm name, if any.
-   * 
+   *
    * @return The algorithm name.
    */
   public String getAlgorithm()
@@ -93,7 +93,7 @@ public class GnuSecretKey
    * Returns the encoded key, which is merely the byte array this class was
    * created with. A reference to the internal byte array is returned, so the
    * caller can delete this key from memory by modifying the returned array.
-   * 
+   *
    * @return The raw key.
    */
   public byte[] getEncoded()
@@ -103,7 +103,7 @@ public class GnuSecretKey
 
   /**
    * Returns the string "RAW".
-   * 
+   *
    * @return The string "RAW".
    */
   public String getFormat()

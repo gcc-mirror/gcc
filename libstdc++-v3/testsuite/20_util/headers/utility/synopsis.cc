@@ -1,6 +1,6 @@
 // { dg-do compile }
 
-// Copyright (C) 2007, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -31,15 +31,15 @@ namespace std {
   //  lib.pairs, pairs:
   template <class T1, class T2> struct pair;
   template <class T1, class T2>
-  bool operator==(const pair<T1,T2>&, const pair<T1,T2>&);
+  _GLIBCXX_CONSTEXPR bool operator==(const pair<T1,T2>&, const pair<T1,T2>&);
   template <class T1, class T2>
-  bool operator< (const pair<T1,T2>&, const pair<T1,T2>&);
+  _GLIBCXX_CONSTEXPR bool operator< (const pair<T1,T2>&, const pair<T1,T2>&);
   template <class T1, class T2>
-  bool operator!=(const pair<T1,T2>&, const pair<T1,T2>&);
+  _GLIBCXX_CONSTEXPR bool operator!=(const pair<T1,T2>&, const pair<T1,T2>&);
   template <class T1, class T2>
-  bool operator> (const pair<T1,T2>&, const pair<T1,T2>&);
+  _GLIBCXX_CONSTEXPR bool operator> (const pair<T1,T2>&, const pair<T1,T2>&);
   template <class T1, class T2>
-  bool operator>=(const pair<T1,T2>&, const pair<T1,T2>&);
+  _GLIBCXX_CONSTEXPR bool operator>=(const pair<T1,T2>&, const pair<T1,T2>&);
   template <class T1, class T2>
-  bool operator<=(const pair<T1,T2>&, const pair<T1,T2>&);
+  _GLIBCXX_CONSTEXPR bool operator<=(const pair<T1,T2>&, const pair<T1,T2>&);
 }

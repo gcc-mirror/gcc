@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -70,79 +70,79 @@ import java.util.Vector;
 
 public class BeanInfoEmbryo {
 
-	// by using a TreeMap the properties will be sorted alphabetically by name
-	// which matches the (undocumented) behavior of jdk
-	TreeMap properties = new TreeMap();
-	Hashtable events = new Hashtable();
-	Vector methods = new Vector();
+        // by using a TreeMap the properties will be sorted alphabetically by name
+        // which matches the (undocumented) behavior of jdk
+        TreeMap properties = new TreeMap();
+        Hashtable events = new Hashtable();
+        Vector methods = new Vector();
 
-	BeanDescriptor beanDescriptor;
-	BeanInfo[] additionalBeanInfo;
-	java.awt.Image[] im;
-	String defaultPropertyName;
-	String defaultEventName;
+        BeanDescriptor beanDescriptor;
+        BeanInfo[] additionalBeanInfo;
+        java.awt.Image[] im;
+        String defaultPropertyName;
+        String defaultEventName;
 
-	public BeanInfoEmbryo() {
-	}
+        public BeanInfoEmbryo() {
+        }
 
-	public BeanInfo getBeanInfo() {
-		int defaultProperty = -1;
-		int defaultEvent = -1;
+        public BeanInfo getBeanInfo() {
+                int defaultProperty = -1;
+                int defaultEvent = -1;
 
-		PropertyDescriptor[] Aproperties = new PropertyDescriptor[properties.size()];
-		int i = 0;
-		Iterator it = properties.entrySet().iterator();
-		while (it.hasNext()) {
-			Aproperties[i] = (PropertyDescriptor) (((Map.Entry)it.next()).getValue());
-			if(defaultPropertyName != null && Aproperties[i].getName().equals(defaultPropertyName)) {
-				defaultProperty = i;
-			}
-			i++;
-		}
+                PropertyDescriptor[] Aproperties = new PropertyDescriptor[properties.size()];
+                int i = 0;
+                Iterator it = properties.entrySet().iterator();
+                while (it.hasNext()) {
+                        Aproperties[i] = (PropertyDescriptor) (((Map.Entry)it.next()).getValue());
+                        if(defaultPropertyName != null && Aproperties[i].getName().equals(defaultPropertyName)) {
+                                defaultProperty = i;
+                        }
+                        i++;
+                }
 
-		EventSetDescriptor[] Aevents = new EventSetDescriptor[events.size()];
-		i = 0;
-		Enumeration e = events.elements();
-		while (e.hasMoreElements()) {
-			Aevents[i] = (EventSetDescriptor) e.nextElement();
-			if(defaultEventName != null && Aevents[i].getName().equals(defaultEventName)) {
-				defaultEvent = i;
-			}
-			i++;
-		}
+                EventSetDescriptor[] Aevents = new EventSetDescriptor[events.size()];
+                i = 0;
+                Enumeration e = events.elements();
+                while (e.hasMoreElements()) {
+                        Aevents[i] = (EventSetDescriptor) e.nextElement();
+                        if(defaultEventName != null && Aevents[i].getName().equals(defaultEventName)) {
+                                defaultEvent = i;
+                        }
+                        i++;
+                }
 
-		MethodDescriptor[] Amethods = new MethodDescriptor[methods.size()];
-		methods.copyInto(Amethods);
+                MethodDescriptor[] Amethods = new MethodDescriptor[methods.size()];
+                methods.copyInto(Amethods);
 
-		return new ExplicitBeanInfo(beanDescriptor,additionalBeanInfo,Aproperties,defaultProperty,Aevents,defaultEvent,Amethods,im);
-	}
+                return new ExplicitBeanInfo(beanDescriptor,additionalBeanInfo,Aproperties,defaultProperty,Aevents,defaultEvent,Amethods,im);
+        }
 
-	public void setBeanDescriptor(BeanDescriptor b) {
-		beanDescriptor = b;
-	}
+        public void setBeanDescriptor(BeanDescriptor b) {
+                beanDescriptor = b;
+        }
 
-	public void setAdditionalBeanInfo(BeanInfo[] b) {
-		additionalBeanInfo = b;
-	}
+        public void setAdditionalBeanInfo(BeanInfo[] b) {
+                additionalBeanInfo = b;
+        }
 
-	public boolean hasProperty(PropertyDescriptor p) {
-		return properties.get(p.getName()) != null;
-	}
-	public void addProperty(PropertyDescriptor p) {
-		properties.put(p.getName(),p);
-	}
-	public void addIndexedProperty(IndexedPropertyDescriptor p) {
-		properties.put(p.getName(),p);
-	}
+        public boolean hasProperty(PropertyDescriptor p) {
+                return properties.get(p.getName()) != null;
+        }
+        public void addProperty(PropertyDescriptor p) {
+                properties.put(p.getName(),p);
+        }
+        public void addIndexedProperty(IndexedPropertyDescriptor p) {
+                properties.put(p.getName(),p);
+        }
 
-	public boolean hasEvent(EventSetDescriptor e) {
-		return events.get(e.getName()) != null;
-	}
-	public void addEvent(EventSetDescriptor e) {
-		events.put(e.getName(),e);
-	}
+        public boolean hasEvent(EventSetDescriptor e) {
+                return events.get(e.getName()) != null;
+        }
+        public void addEvent(EventSetDescriptor e) {
+                events.put(e.getName(),e);
+        }
 
-	public boolean hasMethod(MethodDescriptor m) {
+        public boolean hasMethod(MethodDescriptor m) {
           for(int i=0;i<methods.size();i++) {
             Method thisMethod = ((MethodDescriptor)methods.elementAt(i)).getMethod();
             if(m.getMethod().getName().equals(thisMethod.getName())
@@ -152,20 +152,20 @@ public class BeanInfoEmbryo {
             }
           }
           return false;
-	}
-	public void addMethod(MethodDescriptor m) {
-		methods.addElement(m);
-	}
+        }
+        public void addMethod(MethodDescriptor m) {
+                methods.addElement(m);
+        }
 
-	public void setDefaultPropertyName(String defaultPropertyName) {
-		this.defaultPropertyName = defaultPropertyName;
-	}
+        public void setDefaultPropertyName(String defaultPropertyName) {
+                this.defaultPropertyName = defaultPropertyName;
+        }
 
-	public void setDefaultEventName(String defaultEventName) {
-		this.defaultEventName = defaultEventName;
-	}
+        public void setDefaultEventName(String defaultEventName) {
+                this.defaultEventName = defaultEventName;
+        }
 
-	public void setIcons(java.awt.Image[] im) {
-		this.im = im;
-	}
+        public void setIcons(java.awt.Image[] im) {
+                this.im = im;
+        }
 }

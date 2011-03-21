@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -90,78 +90,78 @@ public class ObjectHandler extends AbstractElementHandler
     // decides whether we are in a static (className present) or dynamic context
     if (className != null)
       {
-	try
-	  {
-	    Class klass = instantiateClass(className);
+        try
+          {
+            Class klass = instantiateClass(className);
 
-	    // class name exists which means that we are in a static context.
-	    // so we may want to ...
-	    // access a static field if the fieldName exists
-	    if (fieldName != null)
-	      {
-		try
-		  {
-		    return new ObjectContext(id,
-		                             klass.getField(fieldName).get(null));
-		  }
-		catch (NoSuchFieldException nsfe)
-		  {
-		    throw new AssemblyException(nsfe);
-		  }
-		catch (IllegalAccessException iae)
-		  {
-		    throw new AssemblyException(iae);
-		  }
-	      }
+            // class name exists which means that we are in a static context.
+            // so we may want to ...
+            // access a static field if the fieldName exists
+            if (fieldName != null)
+              {
+                try
+                  {
+                    return new ObjectContext(id,
+                                             klass.getField(fieldName).get(null));
+                  }
+                catch (NoSuchFieldException nsfe)
+                  {
+                    throw new AssemblyException(nsfe);
+                  }
+                catch (IllegalAccessException iae)
+                  {
+                    throw new AssemblyException(iae);
+                  }
+              }
 
-	    // (falling through is important!)
-	    // run a constructor if methodName is "new" or null
-	    if (methodName == null || methodName.equals("new"))
-	      return new ConstructorContext(id, klass);
+            // (falling through is important!)
+            // run a constructor if methodName is "new" or null
+            if (methodName == null || methodName.equals("new"))
+              return new ConstructorContext(id, klass);
 
-	    // (falling through is important!)
-	    // run a static method on the given class (if methodName exists, which is implied already) 
-	    return new StaticMethodContext(id, klass, methodName);
-	    // XXX: should fail if unexpected attributes are present?
-	  }
-	catch (ClassNotFoundException cnfe)
-	  {
-	    throw new AssemblyException(cnfe);
-	  }
+            // (falling through is important!)
+            // run a static method on the given class (if methodName exists, which is implied already)
+            return new StaticMethodContext(id, klass, methodName);
+            // XXX: should fail if unexpected attributes are present?
+          }
+        catch (ClassNotFoundException cnfe)
+          {
+            throw new AssemblyException(cnfe);
+          }
       }
     else
       {
-	// className does not exist which means we are in the context of
-	// some object and want to ...
-	// access the get(int index) method if index != null
-	if (index != null)
-	  {
-	    try
-	      {
-		// Note: http://java.sun.com/products/jfc/tsc/articles/persistence3/ says
-		// that <void index="4"/> will make up a get()-call. But this is wrong because
-		// <void/> tags never return values (to the surrounding context)
-		return new IndexContext(id, Integer.parseInt(index));
-	      }
-	    catch (NumberFormatException nfe)
-	      {
-		throw new AssemblyException(nfe);
-	      }
-	  }
+        // className does not exist which means we are in the context of
+        // some object and want to ...
+        // access the get(int index) method if index != null
+        if (index != null)
+          {
+            try
+              {
+                // Note: http://java.sun.com/products/jfc/tsc/articles/persistence3/ says
+                // that <void index="4"/> will make up a get()-call. But this is wrong because
+                // <void/> tags never return values (to the surrounding context)
+                return new IndexContext(id, Integer.parseInt(index));
+              }
+            catch (NumberFormatException nfe)
+              {
+                throw new AssemblyException(nfe);
+              }
+          }
 
-	// access a method if methodName exists
-	if (methodName != null)
-	  return new MethodContext(id, methodName);
+        // access a method if methodName exists
+        if (methodName != null)
+          return new MethodContext(id, methodName);
 
-	// (falling through is important!)
-	// access a property if a propertyName exists
-	if (propertyName != null && propertyName.length() > 0)
-	  // this is reported as an ordinary method access where the propertyName is
-	  // converted into a 'getter'-method name: convert first character of property name
-	  // to upper case and prepend 'get'
-	  // Note: This will be a getter-method because the <object> tag implies that a return
-	  // value is expected.
-	  return new PropertyContext(id, propertyName);
+        // (falling through is important!)
+        // access a property if a propertyName exists
+        if (propertyName != null && propertyName.length() > 0)
+          // this is reported as an ordinary method access where the propertyName is
+          // converted into a 'getter'-method name: convert first character of property name
+          // to upper case and prepend 'get'
+          // Note: This will be a getter-method because the <object> tag implies that a return
+          // value is expected.
+          return new PropertyContext(id, propertyName);
       }
 
     throw new AssemblyException(new IllegalArgumentException("Wrong or missing attributes for <object> tag."));

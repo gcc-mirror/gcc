@@ -1,5 +1,5 @@
+// { dg-do run }
 // { dg-options "-std=gnu++0x" }
-// { dg-do "run" }
 // An implementation of TR1's <tuple> using variadic teplates
 // Contributed by Douglas Gregor <doug.gregor@gmail.com>
 

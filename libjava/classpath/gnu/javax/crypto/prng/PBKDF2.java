@@ -1,4 +1,4 @@
-/* PBKDF2.java -- 
+/* PBKDF2.java --
    Copyright (C) 2003, 2006 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -84,7 +84,7 @@ public class PBKDF2
   /**
    * Creates a new PBKDF2 object. The argument is the MAC that will serve as the
    * pseudo-random function. The MAC does not need to be initialized.
-   * 
+   *
    * @param mac The pseudo-random function.
    */
   public PBKDF2(IMac mac)

@@ -1,6 +1,6 @@
 /* PR c++/30917 */
 /* This used to ICE */
-/* { dg-do "compile" } */
+/* { dg-do compile } */
 
 
 class QGList;

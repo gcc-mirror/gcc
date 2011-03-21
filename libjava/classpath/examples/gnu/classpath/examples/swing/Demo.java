@@ -76,7 +76,7 @@ public class Demo
   private JMenuBar mkMenuBar()
   {
     JMenuBar bar = new JMenuBar();
-    
+
     JMenu file = new JMenu("File");
     JMenu edit = new JMenu("Edit");
     JMenu help = new JMenu("Help");
@@ -113,9 +113,9 @@ public class Demo
 
     JMenu preferences = new JMenu("Preferences...");
     preferences.add(new JCheckBoxMenuItem("Microphone Active",
-		    stockIcon("mic")));
+                    stockIcon("mic")));
     preferences.add(new JCheckBoxMenuItem("Check Spelling",
-		    stockIcon("spell-check")));
+                    stockIcon("spell-check")));
     preferences.add(new JCheckBoxMenuItem("World Peace"));
     preferences.add(new JSeparator());
     preferences.add(new JRadioButtonMenuItem("Radio Button"));
@@ -165,7 +165,7 @@ public class Demo
 
 
     final JMenuItem vmMenu;
-    
+
     help.add(new JMenuItem("just play with the widgets"));
     help.add(new JMenuItem("and enjoy the sensation of"));
     help.add(new JMenuItem("your neural connections growing"));
@@ -182,14 +182,14 @@ public class Demo
                              + " distributed by "
                              + System.getProperty("java.vm.vendor")
                              + ".";
-                         
+
             String gnuClasspath = System.getProperty("gnu.classpath.version");
             if(gnuClasspath != null)
               message += "\nThe runtime's libraries are "
                          + "kindly provided by the "
                          + "members of GNU Classpath and are in version "
                          + gnuClasspath + ".";
-                         
+
                          JOptionPane.showMessageDialog(vmMenu, message);
             }
       });
@@ -197,7 +197,7 @@ public class Demo
     // Installs the BasicLookAndFeel.
     UIManager.installLookAndFeel("(Basic Look And Feel)",
                                  InstantiableBasicLookAndFeel.class.getName());
-    
+
     // Create L&F menu.
     JMenu lafMenu = new JMenu("Look and Feel");
     ButtonGroup lafGroup = new ButtonGroup();
@@ -211,7 +211,7 @@ public class Demo
         boolean selected = laf.getClassName().equals(currentLaf);
         lafItem.setSelected(selected);
         lafMenu.add(lafItem);
-        
+
         lafGroup.add(lafItem);
       }
 
@@ -231,7 +231,7 @@ public class Demo
       {
         // Ignore it.
       }
-    
+
     if (m != null)
       {
         JRadioButtonMenuItem ocean =
@@ -239,7 +239,7 @@ public class Demo
         ocean.setSelected(MetalLookAndFeel.getCurrentTheme() instanceof OceanTheme);
         themesMenu.add(ocean);
         themesGroup.add(ocean);
-    
+
         JRadioButtonMenuItem steel =
           new JRadioButtonMenuItem(new ChangeThemeAction(new DefaultMetalTheme()));
         ocean.setSelected(MetalLookAndFeel.getCurrentTheme()
@@ -251,7 +251,7 @@ public class Demo
       {
         themesMenu.setEnabled(false);
       }
-    
+
     bar.add(file);
     bar.add(edit);
     bar.add(examples);
@@ -267,10 +267,10 @@ public class Demo
       {
         public void actionPerformed(ActionEvent e)
         {
-          JOptionPane.showConfirmDialog(but, 
+          JOptionPane.showConfirmDialog(but,
                                         "Sure you want to go " + dir + "?",
                                         "Confirm",
-                                        JOptionPane.OK_CANCEL_OPTION, 
+                                        JOptionPane.OK_CANCEL_OPTION,
                                         JOptionPane.QUESTION_MESSAGE,
                                         bigStockIcon("warning"));
         }
@@ -310,10 +310,10 @@ public class Demo
       }
   }
 
-  private static JButton mkButton(String title, Icon icon, 
+  private static JButton mkButton(String title, Icon icon,
                                   int hAlign, int vAlign,
                                   int hPos, int vPos)
-  {    
+  {
     JButton b;
     if (icon == null)
       b = new JButton(title);
@@ -321,12 +321,12 @@ public class Demo
       b = new JButton(icon);
     else
       b = new JButton(title, icon);
-    
+
     b.setToolTipText(title);
     if (hAlign != -1) b.setHorizontalAlignment(hAlign);
     if (vAlign != -1) b.setVerticalAlignment(vAlign);
     if (hPos != -1) b.setHorizontalTextPosition(hPos);
-    if (vPos != -1) b.setVerticalTextPosition(vPos);      
+    if (vPos != -1) b.setVerticalTextPosition(vPos);
     return b;
   }
 
@@ -363,7 +363,7 @@ public class Demo
   {
     public void run()
     {
-      new Demo();      
+      new Demo();
     }
   }
 
@@ -442,7 +442,7 @@ public class Demo
   }
 
   private JPanel mkButtonBar()
-  {    
+  {
     JPanel panel = new JPanel(new GridLayout(3, 1, 5, 5));
     panel.add(new JButton(new PopupAction("Buttons",
                                           ButtonDemo.createDemoFactory())));
@@ -479,15 +479,15 @@ public class Demo
 
     JButton exitDisposer = mkDisposerButton(frame);
     panel.add(exitDisposer);
-    
-    panel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 
+
+    panel.setMaximumSize(new Dimension(Integer.MAX_VALUE,
                                        panel.getPreferredSize().height));
     exitDisposer.addActionListener(new ActionListener()
       {
-	public void actionPerformed(ActionEvent e)
-	{
-	  System.exit(1);
-	}
+        public void actionPerformed(ActionEvent e)
+        {
+          System.exit(1);
+        }
       });
     return panel;
   }
@@ -546,7 +546,7 @@ public class Demo
         }
       SwingUtilities.updateComponentTreeUI(frame);
     }
-    
+
   }
 
   /**
@@ -585,16 +585,16 @@ public class Demo
         {
           ex.printStackTrace();
         }
-      
+
       SwingUtilities.updateComponentTreeUI(frame);
       themesMenu.setEnabled(laf.getClassName()
                            .equals("javax.swing.plaf.metal.MetalLookAndFeel"));
     }
   }
-    
+
   /**
    * An implementation of BasicLookAndFeel which can be instantiated.
-   * 
+   *
    * @author Robert Schuster (robertschuster@fsfe.org)
    *
    */
@@ -604,9 +604,9 @@ public class Demo
     {
       return "An instantiable implementation of BasicLookAndFeel";
     }
-    
+
     public String getID()
-    { 
+    {
       return "instantiableBasicLookAndFeel";
     }
 
@@ -614,12 +614,12 @@ public class Demo
     {
       return "Instantiable Basic Look And Feel";
     }
-    
+
     public boolean isNativeLookAndFeel()
     {
       return false;
     }
-    
+
     public boolean isSupportedLookAndFeel()
     {
       return true;

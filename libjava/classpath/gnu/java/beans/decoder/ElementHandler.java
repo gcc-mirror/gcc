@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -72,19 +72,19 @@ interface ElementHandler
   /** Returns whether a subelement of the given name is allowed. The rules
    * for evaluating this are derived from the javabeans.dtd which can be found
    * here: <a href="http://java.sun.com/products/jfc/tsc/articles/persistence3">Java Persistence Article</a>.
-   * 
-   * @param subElementName 
+   *
+   * @param subElementName
    * @return
    */
   boolean isSubelementAllowed(String subElementName);
 
   /** Provides the same functionality as Class.forName() but allows the decoder
    * to use a different class loader.
-   * 
+   *
    * @param className
    * @return
    * @throws ClassNotFoundException
-   */ 
+   */
   Class instantiateClass(String className) throws ClassNotFoundException;
 
   /** Notifies the handler's Context that its child Context will not return
@@ -104,21 +104,21 @@ interface ElementHandler
   boolean hasFailed();
 
   /** Returns the Context instance this handler is working on.
-   * 
+   *
    * @return The handler's Context instance.
    */
   Context getContext();
 
   /** Notifies the handler that its Context failed and starts a recursive
    * invocation of the parent handler if it is affected by that failure.
-   * 
+   *
    * Although the method is a public API member it is only used internally.
    */
   void notifyContextFailed();
 
   /** Stores the object under the given id. The object is not stored if the
    * id is null.
-   * 
+   *
    * @param objectId
    * @param o
    */

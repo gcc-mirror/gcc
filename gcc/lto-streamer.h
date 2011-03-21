@@ -914,6 +914,7 @@ extern void lto_symtab_merge_cgraph_nodes (void);
 extern tree lto_symtab_prevailing_decl (tree decl);
 extern enum ld_plugin_symbol_resolution lto_symtab_get_resolution (tree decl);
 extern void lto_symtab_free (void);
+extern GTY(()) VEC(tree,gc) *lto_global_var_decls;
 
 
 /* In lto-opts.c.  */

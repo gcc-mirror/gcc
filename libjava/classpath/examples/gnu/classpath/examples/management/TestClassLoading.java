@@ -51,19 +51,19 @@ public class TestClassLoading
     System.out.println("Bean: " + classBean);
     System.out.println("Loaded classes: " + server.getAttribute(classBean, "LoadedClassCount"));
     System.out.println("Unloaded classes: " + server.getAttribute(classBean,
-								  "UnloadedClassCount"));
+                                                                  "UnloadedClassCount"));
     System.out.println("Total loaded classes: " + server.getAttribute(classBean,
-								      "TotalLoadedClassCount"));
+                                                                      "TotalLoadedClassCount"));
     verbosity = (Boolean) server.getAttribute(classBean, "Verbose");
     System.out.println("Verbose class output: " + (verbosity ? "yes" : "no"));
     System.out.println("Changing verbose setting...");
     server.setAttribute(classBean, new Attribute("Verbose", !verbosity));
     System.out.println("Verbose class output: " + ((Boolean)
-						   server.getAttribute(classBean, "Verbose") ?
-						   "yes" : "no"));
+                                                   server.getAttribute(classBean, "Verbose") ?
+                                                   "yes" : "no"));
     System.out.println("Testing via the proxy...");
     bean = ManagementFactory.newPlatformMXBeanProxy(server, CLASS_LOADING_MXBEAN_NAME,
-						    ClassLoadingMXBean.class);
+                                                    ClassLoadingMXBean.class);
     System.out.println("Bean: " + bean);
     System.out.println("Loaded classes: " + bean.getLoadedClassCount());
     System.out.println("Unloaded classes: " + bean.getUnloadedClassCount());

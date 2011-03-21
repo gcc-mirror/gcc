@@ -68,12 +68,12 @@ class PluginAppletWindow
     MouseMotionListener, InputMethodListener, HierarchyListener,
     HierarchyBoundsListener
 {
-  
+
   // This class implements various listeners because the author of an applet
-  // may attach listeners to it, unaware of the applet's parent (this class). 
+  // may attach listeners to it, unaware of the applet's parent (this class).
   // So, we must pass all listener events on this plugin applet window to the
   // actual applet.
-  
+
   private static HashMap contexts = new HashMap();
   private Applet applet;
   private TagParser parser;
@@ -89,15 +89,15 @@ class PluginAppletWindow
     addInputMethodListener(this);
     addHierarchyListener(this);
     addHierarchyBoundsListener(this);
-  }  
-  
+  }
+
   ///////////////////////////////////
   /// ContainerListener Methods /////
   ///////////////////////////////////
-  
+
   /**
    * This method is called when a component is added to the container.
-   * 
+   *
    * @param event the <code>ContainerEvent</code> indicating component
    *          addition
    */
@@ -113,7 +113,7 @@ class PluginAppletWindow
 
   /**
    * This method is called when a component is removed from the container.
-   * 
+   *
    * @param event the <code>ContainerEvent</code> indicating component removal
    */
   public void componentRemoved(ContainerEvent event)
@@ -125,11 +125,11 @@ class PluginAppletWindow
           l[i].componentRemoved(event);
       }
   }
-  
+
   ///////////////////////////////////
   /// ComponentListener Methods /////
   ///////////////////////////////////
-  
+
   /**
    * This method is called when the component is resized.
    *
@@ -189,11 +189,11 @@ class PluginAppletWindow
           l[i].componentHidden(event);
       }
   }
-     
+
   ///////////////////////////////////
   ////// MouseListener Methods //////
   ///////////////////////////////////
-  
+
   /**
    * This method is called when the mouse is clicked (pressed and released
    * in short succession) on a component.
@@ -255,7 +255,7 @@ class PluginAppletWindow
       }
   }
 
-  /** 
+  /**
    * This method is called when the mouse exits a component.
    *
    * @param event the <code>MouseEvent</code> for the exit
@@ -269,11 +269,11 @@ class PluginAppletWindow
           l[i].mouseExited(event);
       }
   }
-  
+
   ///////////////////////////////////
   /// MouseMotionListener Methods ///
   ///////////////////////////////////
-  
+
   /**
    * This method is called when the mouse is moved over a component
    * while a button has been pressed.
@@ -305,11 +305,11 @@ class PluginAppletWindow
           l[i].mouseMoved(event);
       }
   }
-  
+
   ///////////////////////////////////
   /// InputMethodListener Methods ///
   ///////////////////////////////////
-  
+
   /**
    * This method is called when the text is changed.
    *
@@ -339,11 +339,11 @@ class PluginAppletWindow
           l[i].caretPositionChanged(event);
       }
   }
-  
+
   ///////////////////////////////////
   //// HierarchyListener Methods ////
   ///////////////////////////////////
-  
+
   /**
    * Called when the hierarchy of this component changes. Use
    * <code>getChangeFlags()</code> on the event to see what exactly changed.
@@ -359,11 +359,11 @@ class PluginAppletWindow
           l[i].hierarchyChanged(event);
       }
   }
-  
+
   /////////////////////////////////////////
   //// HierarchyBoundsListener Methods ////
   /////////////////////////////////////////
-  
+
   /**
    * Called when an ancestor component of the source is moved.
    *
@@ -393,7 +393,7 @@ class PluginAppletWindow
           l[i].ancestorResized(e);
       }
   }
-  
+
   void setParser(String tag, String documentbase) throws MalformedURLException, IOException
   {
     URL documentbaseURL = TagParser.getLocationToURL(documentbase);
@@ -407,7 +407,7 @@ class PluginAppletWindow
 
   /**
    * Set the native handle of the window system to embed the window in.
-   * 
+   *
    * @param handle the native handle.
    */
   public void setHandle(long handle)
@@ -435,8 +435,8 @@ class PluginAppletWindow
         Dimension size = getSize();
         if (size.width == 0 || size.height == 0)
           size = tag.getSize();
-        applet.setSize(size);          
-        
+        applet.setSize(size);
+
         // Initialize the applet before showing this window so that
         // the applet doesn't receive events before it has been
         // initialized.

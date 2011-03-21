@@ -44,7 +44,7 @@ import java.io.IOException;
 
 /**
  * Wrapper for an int value.
- * 
+ *
  * @author Kyle Galloway <kgallowa@redhat.com>
  */
 public final class IntValue
@@ -55,7 +55,7 @@ public final class IntValue
 
   /**
    * Create a new IntValue from an int
-   * 
+   *
    * @param value the int to wrap
    */
   public IntValue(int value)
@@ -63,20 +63,20 @@ public final class IntValue
     super(JdwpConstants.Tag.INT);
     _value = value;
   }
-  
+
   /**
    * Get the value held in this Value
-   * 
+   *
    * @return the value represented by this Value object
    */
   public int getValue()
   {
     return _value;
   }
-  
+
   /**
    * Return an object representing this type
-   * 
+   *
    * @return an Object represntation of this value
    */
   @Override
@@ -87,7 +87,7 @@ public final class IntValue
 
   /**
    * Write the wrapped int to the given DataOutputStream.
-   * 
+   *
    * @param os the output stream to write to
    */
   @Override
@@ -97,4 +97,3 @@ public final class IntValue
     os.writeInt(_value);
   }
 }
-

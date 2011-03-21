@@ -1,4 +1,4 @@
-/* QueuedJobCount.java -- 
+/* QueuedJobCount.java --
    Copyright (C) 2003, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -42,22 +42,22 @@ import javax.print.attribute.IntegerSyntax;
 import javax.print.attribute.PrintServiceAttribute;
 
 /**
- * The <code>QueuedJobCount</code> printing attribute reports 
+ * The <code>QueuedJobCount</code> printing attribute reports
  * the number of jobs currently in the queue. These are jobs
  * that are in 'pending', 'processing', 'pending-held' or
- * 'processing-stopped' state. 
+ * 'processing-stopped' state.
  * <p>
  * <b>IPP Compatibility:</b> QueuedJobCount is an IPP 1.1 attribute.
  * </p>
  * @see javax.print.attribute.standard.JobState
- * 
+ *
  * @author Michael Koch
  */
 public final class QueuedJobCount extends IntegerSyntax
   implements PrintServiceAttribute
 {
   private static final long serialVersionUID = 7499723077864047742L;
-  
+
   /**
    * Creates a <code>QueuedJobCount</code> object.
    *
@@ -72,13 +72,13 @@ public final class QueuedJobCount extends IntegerSyntax
     if (value < 0)
       throw new IllegalArgumentException("value may not be less than 0");
   }
-  
+
   /**
    * Tests if the given object is equal to this object.
    *
    * @param obj the object to test
    *
-   * @return <code>true</code> if both objects are equal, 
+   * @return <code>true</code> if both objects are equal,
    * <code>false</code> otherwise.
    */
   public boolean equals(Object obj)

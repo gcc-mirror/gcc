@@ -95,7 +95,7 @@ public class GtkComponentPeer extends GtkGenericPeer
   private Rectangle currentPaintArea;
 
   /* this isEnabled differs from Component.isEnabled, in that it
-     knows if a parent is disabled.  In that case Component.isEnabled 
+     knows if a parent is disabled.  In that case Component.isEnabled
      may return true, but our isEnabled will always return false */
   native boolean isEnabled ();
   static native boolean modalHasGrab();
@@ -206,13 +206,13 @@ public class GtkComponentPeer extends GtkGenericPeer
     setEnabled (awtComponent.isEnabled ());
   }
 
-  public int checkImage (Image image, int width, int height, 
-                         ImageObserver observer) 
+  public int checkImage (Image image, int width, int height,
+                         ImageObserver observer)
   {
     return getToolkit().checkImage(image, width, height, observer);
   }
 
-  public Image createImage (ImageProducer producer) 
+  public Image createImage (ImageProducer producer)
   {
     return new GtkImage (producer);
   }
@@ -222,17 +222,17 @@ public class GtkComponentPeer extends GtkGenericPeer
     return CairoSurface.getBufferedImage(width, height);
   }
 
-  public void disable () 
+  public void disable ()
   {
     setEnabled (false);
   }
 
-  public void enable () 
+  public void enable ()
   {
     setEnabled (true);
   }
 
-  public ColorModel getColorModel () 
+  public ColorModel getColorModel ()
   {
     return ColorModel.getRGBdefault ();
   }
@@ -249,8 +249,8 @@ public class GtkComponentPeer extends GtkGenericPeer
     return ComponentGraphics.getComponentGraphics(this);
   }
 
-  public Point getLocationOnScreen () 
-  { 
+  public Point getLocationOnScreen ()
+  {
     int point[] = new int[2];
     if (Thread.currentThread() == GtkMainThread.mainThread)
         gtkWidgetGetLocationOnScreenUnlocked (point);
@@ -259,7 +259,7 @@ public class GtkComponentPeer extends GtkGenericPeer
     return new Point (point[0], point[1]);
   }
 
-  public Dimension getMinimumSize () 
+  public Dimension getMinimumSize ()
   {
     return minimumSize ();
   }
@@ -273,7 +273,7 @@ public class GtkComponentPeer extends GtkGenericPeer
   {
     return Toolkit.getDefaultToolkit();
   }
-  
+
   public void handleEvent (AWTEvent event)
   {
     int id = event.getID();
@@ -375,12 +375,12 @@ public class GtkComponentPeer extends GtkGenericPeer
     }
   }
 
-  public boolean isFocusTraversable () 
+  public boolean isFocusTraversable ()
   {
     return true;
   }
 
-  public Dimension minimumSize () 
+  public Dimension minimumSize ()
   {
     int dim[] = new int[2];
 
@@ -403,12 +403,12 @@ public class GtkComponentPeer extends GtkGenericPeer
   }
 
   public boolean prepareImage (Image image, int width, int height,
-                               ImageObserver observer) 
+                               ImageObserver observer)
   {
     return getToolkit().prepareImage(image, width, height, observer);
   }
 
-  public void print (Graphics g) 
+  public void print (Graphics g)
   {
     g.drawImage( ComponentGraphics.grab( this ), 0, 0, null );
   }
@@ -420,7 +420,7 @@ public class GtkComponentPeer extends GtkGenericPeer
 
     if (tm <= 0)
       q().postEvent(new PaintEvent(awtComponent, PaintEvent.UPDATE,
-				   new Rectangle(x, y, width, height)));
+                                   new Rectangle(x, y, width, height)));
     else
       RepaintTimerTask.schedule(tm, x, y, width, height, awtComponent);
   }
@@ -451,7 +451,7 @@ public class GtkComponentPeer extends GtkGenericPeer
     }
 
     static void schedule(long tm, int x, int y, int width, int height,
-			 Component c)
+                         Component c)
     {
       repaintTimer.schedule(new RepaintTimerTask(c, x, y, width, height), tm);
     }
@@ -462,12 +462,12 @@ public class GtkComponentPeer extends GtkGenericPeer
     assert false: "Call new requestFocus() method instead";
   }
 
-  public void reshape (int x, int y, int width, int height) 
+  public void reshape (int x, int y, int width, int height)
   {
     setBounds (x, y, width, height);
   }
 
-  public void setBackground (Color c) 
+  public void setBackground (Color c)
   {
     gtkWidgetSetBackground (c.getRed(), c.getGreen(), c.getBlue());
   }
@@ -480,7 +480,7 @@ public class GtkComponentPeer extends GtkGenericPeer
     int new_y = y;
 
     Component parent = awtComponent.getParent ();
-    
+
     // Heavyweight components that are children of one or more
     // lightweight containers have to be handled specially.  Because
     // calls to GLightweightPeer.setBounds do nothing, GTK has no
@@ -491,14 +491,14 @@ public class GtkComponentPeer extends GtkGenericPeer
     // so we need to continue adding offsets until we reach a
     // container whose position GTK knows -- that is, the first
     // non-lightweight.
-    Insets i;    
+    Insets i;
     while (parent.isLightweight())
       {
         i = ((Container) parent).getInsets();
-        
+
         new_x += parent.getX() + i.left;
         new_y += parent.getY() + i.top;
-        
+
         parent = parent.getParent();
       }
     // We only need to convert from Java to GTK coordinates if we're
@@ -515,7 +515,7 @@ public class GtkComponentPeer extends GtkGenericPeer
         int menuBarHeight = 0;
         if (peer instanceof GtkFramePeer)
           menuBarHeight = ((GtkFramePeer) peer).getMenuBarHeight ();
-        
+
         new_x -= insets.left;
         new_y -= insets.top;
         new_y += menuBarHeight;
@@ -533,7 +533,7 @@ public class GtkComponentPeer extends GtkGenericPeer
     setCursor (awtComponent.getCursor ());
   }
 
-  public void setCursor (Cursor cursor) 
+  public void setCursor (Cursor cursor)
   {
     int x, y;
     GtkImage image;
@@ -572,7 +572,7 @@ public class GtkComponentPeer extends GtkGenericPeer
     gtkWidgetModifyFont(f.getName(), f.getStyle(), f.getSize());
   }
 
-  public void setForeground (Color c) 
+  public void setForeground (Color c)
   {
     gtkWidgetSetForeground (c.getRed(), c.getGreen(), c.getBlue());
   }
@@ -618,7 +618,7 @@ public class GtkComponentPeer extends GtkGenericPeer
   }
 
   protected void postMouseEvent(int id, long when, int mods, int x, int y,
-                                int clickCount, boolean popupTrigger) 
+                                int clickCount, boolean popupTrigger)
   {
     // It is important to do the getLocationOnScreen() here, instead
     // of using the old MouseEvent constructors, because
@@ -637,7 +637,7 @@ public class GtkComponentPeer extends GtkGenericPeer
   protected void postMouseWheelEvent(int id, long when, int mods,
                                      int x, int y, int clickCount,
                                      boolean popupTrigger,
-                                     int type, int amount, int rotation) 
+                                     int type, int amount, int rotation)
   {
     q().postEvent(new MouseWheelEvent(awtComponent, id, when, mods,
                                       x, y, clickCount, popupTrigger,
@@ -692,7 +692,7 @@ public class GtkComponentPeer extends GtkGenericPeer
 
   protected void postItemEvent (Object item, int stateChange)
   {
-    q().postEvent (new ItemEvent ((ItemSelectable)awtComponent, 
+    q().postEvent (new ItemEvent ((ItemSelectable)awtComponent,
                                   ItemEvent.ITEM_STATE_CHANGED,
                                   item, stateChange));
   }
@@ -720,7 +720,7 @@ public class GtkComponentPeer extends GtkGenericPeer
     return false;
   }
 
-  public boolean requestFocus (Component request, boolean temporary, 
+  public boolean requestFocus (Component request, boolean temporary,
                                boolean allowWindowFocus, long time)
   {
     assert request == awtComponent || isLightweightDescendant(request);
@@ -840,7 +840,7 @@ public class GtkComponentPeer extends GtkGenericPeer
                                         caps.getBackBufferCapabilities());
     else
       throw new AWTException("GtkComponentPeer.createBuffers:"
-			     + " multi-buffering not supported");
+                             + " multi-buffering not supported");
     this.caps = caps;
   }
 
@@ -860,13 +860,13 @@ public class GtkComponentPeer extends GtkGenericPeer
 
     // create new back buffer and clear it to the background color.
     if (contents == BufferCapabilities.FlipContents.BACKGROUND)
-	{
-	  backBuffer = createVolatileImage(awtComponent.getWidth(),
-	                                   awtComponent.getHeight());
-	  backBuffer.getGraphics().clearRect(0, 0,
-	                                     awtComponent.getWidth(),
-	                                     awtComponent.getHeight());
-	}
+        {
+          backBuffer = createVolatileImage(awtComponent.getWidth(),
+                                           awtComponent.getHeight());
+          backBuffer.getGraphics().clearRect(0, 0,
+                                             awtComponent.getWidth(),
+                                             awtComponent.getHeight());
+        }
     // FIXME: support BufferCapabilities.FlipContents.PRIOR
   }
 
@@ -875,7 +875,7 @@ public class GtkComponentPeer extends GtkGenericPeer
   {
     backBuffer.flush();
   }
-  
+
   public String toString ()
   {
     return "peer of " + awtComponent.toString();
@@ -888,13 +888,13 @@ public class GtkComponentPeer extends GtkGenericPeer
   public void reparent(ContainerPeer parent)
   {
     // FIXME: implement
-  
+
   }
   public void setBounds(int x, int y, int width, int height, int z)
   {
     // FIXME: implement
       setBounds (x, y, width, height);
-   
+
   }
   public boolean isReparentSupported()
   {
@@ -905,7 +905,7 @@ public class GtkComponentPeer extends GtkGenericPeer
   public void layout()
   {
     // FIXME: implement
- 
+
   }
 
   public boolean requestFocus(Component lightweightChild, boolean temporary,

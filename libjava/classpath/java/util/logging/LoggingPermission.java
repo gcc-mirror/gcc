@@ -59,17 +59,17 @@ public final class LoggingPermission
   public LoggingPermission(String name, String actions)
   {
     super("control", "");
-    
+
     if (!"control".equals(name))
     {
       throw new IllegalArgumentException(
         "name of LoggingPermission must be \"control\"");
     }
-    
+
     if ((actions != null) && (actions.length() != 0))
     {
       throw new IllegalArgumentException(
-	"actions of LoggingPermissions must be null or empty");
-    }    
+        "actions of LoggingPermissions must be null or empty");
+    }
   }
 }

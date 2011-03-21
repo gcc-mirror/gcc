@@ -43,7 +43,9 @@
 
 #define _GLIBCXX_NUM_CATEGORIES 0
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   typedef int*			__c_locale;
 
@@ -85,6 +87,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     return __ret;
   }
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
 
 #endif

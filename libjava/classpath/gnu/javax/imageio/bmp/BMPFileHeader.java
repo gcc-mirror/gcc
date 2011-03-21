@@ -52,45 +52,45 @@ public class BMPFileHeader {
 
     /** Bitmap file size, in bytes. */
     protected long bfSize;
-    
+
     /** Offset from the beginning of the file to the bitmap data */
     protected long bfOffBits;
 
     /** BITMAPFILEHEADER is 14 bytes */
     public static final int SIZE = 14;
     private static final int BITMAPINFOHEADER_SIZE = 40;
-    
+
     /**
      * Creates the header from an input stream, which is not closed.
-     * 
+     *
      * @throws IOException if an I/O error occured.
      * @throws BMPException if the header was invalid
      */
     public BMPFileHeader(ImageInputStream in) throws IOException, BMPException {
         byte[] data = new byte[SIZE];
 
-	if (in.read(data) != SIZE)
-	    throw new IOException("Couldn't read header.");
-	ByteBuffer buf = ByteBuffer.wrap(data);
+        if (in.read(data) != SIZE)
+            throw new IOException("Couldn't read header.");
+        ByteBuffer buf = ByteBuffer.wrap(data);
 
-	if(buf.getShort(0) != bfType)
-	    throw new BMPException("Not a BMP file.");
+        if(buf.getShort(0) != bfType)
+            throw new BMPException("Not a BMP file.");
 
-	buf.order(ByteOrder.LITTLE_ENDIAN);
+        buf.order(ByteOrder.LITTLE_ENDIAN);
 
-	// get size (keep unsigned)
-	bfSize = ((long)buf.getInt(2) & (0xFFFFFFFF));
+        // get size (keep unsigned)
+        bfSize = ((long)buf.getInt(2) & (0xFFFFFFFF));
 
-	// Two reserved shorts are here, and should be zero,
-	// perhaps they should be tested to be zero, but I don't
-	// feel this strictness is necessary.
-	
-	bfOffBits = ((long)buf.getInt(10) & (0xFFFFFFFF));
+        // Two reserved shorts are here, and should be zero,
+        // perhaps they should be tested to be zero, but I don't
+        // feel this strictness is necessary.
+
+        bfOffBits = ((long)buf.getInt(10) & (0xFFFFFFFF));
     }
-    
+
     /**
      * Creates the header from an output stream, which is not closed.
-     * 
+     *
      * @param out - the image output stream
      * @param im - the image
      * @throws IOException if an I/O error occured.
@@ -100,7 +100,7 @@ public class BMPFileHeader {
     RenderedImage img = im.getRenderedImage();
     int w = img.getWidth();
     int h = img.getHeight();
-    
+
     bfOffBits = SIZE + BITMAPINFOHEADER_SIZE;
     bfSize = ((w * h) * 3) + ((4 - ((w * 3) % 4)) * h) + bfOffBits;
 
@@ -109,45 +109,43 @@ public class BMPFileHeader {
 
     /**
      * Writes the header to an output stream, which is not closed or flushed.
-     * 
+     *
      * @throws IOException if an I/O error occured.
      */
     public void write(ImageOutputStream out) throws IOException {
-	ByteBuffer buf = ByteBuffer.allocate(SIZE);
-	buf.putShort(0, bfType); // ID
-	buf.putInt(2, (int)(bfSize & (0xFFFFFFFF))); // size
-	buf.putInt(6, 0); // 4 reserved bytes set to zero
-	buf.putInt(7, (int)(bfOffBits & (0xFFFFFFFF))); // size
-	out.write(buf.array());
+        ByteBuffer buf = ByteBuffer.allocate(SIZE);
+        buf.putShort(0, bfType); // ID
+        buf.putInt(2, (int)(bfSize & (0xFFFFFFFF))); // size
+        buf.putInt(6, 0); // 4 reserved bytes set to zero
+        buf.putInt(7, (int)(bfOffBits & (0xFFFFFFFF))); // size
+        out.write(buf.array());
     }
-    
+
     /**
      * Sets the file size
      */
     public void setSize(long size){
-	bfSize = size;
+        bfSize = size;
     }
 
     /**
      * Sets the bitmap offset within the file
      */
     public void setOffset(long offset){
-	bfOffBits = offset;
+        bfOffBits = offset;
     }
 
     /**
      * Gets the file size
      */
     public long getSize(){
-	return bfSize;
+        return bfSize;
     }
 
     /**
      * Gets the bitmap offset within the file
      */
     public long getOffset(){
-	return bfOffBits;
+        return bfOffBits;
     }
 }
-
-

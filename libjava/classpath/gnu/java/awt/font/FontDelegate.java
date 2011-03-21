@@ -77,8 +77,8 @@ public interface FontDelegate
    * @return the face name.
    */
   public String getFullName(Locale locale);
-  
-  
+
+
   /**
    * Returns the name of the family to which this font face belongs,
    * for example <i>&#x201c;Univers&#x201d;</i>.
@@ -99,8 +99,8 @@ public interface FontDelegate
    * @return the name of the face inside its family.
    */
   public String getSubFamilyName(Locale locale);
-  
-  
+
+
   /**
    * Returns the PostScript name of this font face, for example
    * <i>&#x201c;Helvetica-Bold&#x201d;</i>.
@@ -131,7 +131,7 @@ public interface FontDelegate
    * glyph as an empty box.
    */
   public int getMissingGlyphCode();
-  
+
 
   /**
    * Creates a GlyphVector by mapping each character in a
@@ -205,7 +205,7 @@ public interface FontDelegate
                          boolean fractionalMetrics,
                          boolean horizontal,
                          Point2D advance);
-  
+
 
   /**
    * Returns the shape of a glyph.

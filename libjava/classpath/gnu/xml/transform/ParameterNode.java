@@ -1,4 +1,4 @@
-/* ParameterNode.java -- 
+/* ParameterNode.java --
    Copyright (C) 2004,2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -73,8 +73,8 @@ final class ParameterNode
   ParameterNode clone(Stylesheet stylesheet)
   {
     ParameterNode ret = new ParameterNode(name,
-					  select == null ? null : select.clone(stylesheet),
-					  type);
+                                          select == null ? null : select.clone(stylesheet),
+                                          type);
     if (children != null)
       ret.children = children.clone(stylesheet);
     if (next != null)
@@ -106,7 +106,7 @@ final class ParameterNode
     // pop the variable context
     stylesheet.bindings.pop(type);
   }
-  
+
   Object getValue(Stylesheet stylesheet, QName mode,
                   Node context, int pos, int len)
     throws TransformerException
@@ -124,7 +124,7 @@ final class ParameterNode
     else
       return null;
   }
-  
+
   public boolean references(QName var)
   {
     if (select != null && select.references(var))
@@ -144,7 +144,7 @@ final class ParameterNode
       return -1;
     return 0;
   }
-  
+
   public String toString()
   {
     CPStringBuilder buf = new CPStringBuilder();
@@ -170,4 +170,3 @@ final class ParameterNode
   }
 
 }
-

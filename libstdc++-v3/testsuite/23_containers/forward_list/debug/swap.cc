@@ -54,10 +54,8 @@ test01()
   // before-begin iterator is not transfered:
   // TODO: Validate with LWG group how before begin should be
   // treated.
-#if !_GLIBCXX_DEBUG
   VERIFY( fit == fl1_its[0] );
-#endif
-  // All others are, even paste-the-end one:
+  // All other iterators are, even paste-the-end ones:
   for (size_t i = 1; i != fl2_its.size(); ++i)
   {
     VERIFY( ++fit == fl2_its[i] );
@@ -66,9 +64,7 @@ test01()
   fit = fl2.before_begin();
   // TODO: Validate with LWG group how before begin should be
   // treated.
-#if !_GLIBCXX_DEBUG
   VERIFY( fit == fl2_its[0] );
-#endif
   for (size_t i = 1; i != fl1_its.size(); ++i)
   {
     VERIFY( ++fit == fl1_its[i] );

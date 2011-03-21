@@ -53,8 +53,8 @@ public class QMatrix extends NativeWrapper
     init( matrix[0], matrix[1], matrix[2], matrix[3], matrix[4], matrix[5] );
   }
 
-  private native void init(double m00, double m10, double m01, double m11, 
-			   double m02, double m12 );
+  private native void init(double m00, double m10, double m01, double m11,
+                           double m02, double m12 );
 
   private native double[] getMatrix();
 
@@ -64,10 +64,9 @@ public class QMatrix extends NativeWrapper
   }
 
   public native void dispose();
-  
+
   public void finalize()
   {
     dispose();
   }
 }
-

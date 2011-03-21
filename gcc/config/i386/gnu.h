@@ -2,7 +2,7 @@
 
 /*
 Copyright (C) 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004,
-2005, 2007, 2008 Free Software Foundation, Inc.
+2005, 2007, 2008, 2011 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -27,7 +27,7 @@ along with GCC.  If not, see <http://www.gnu.org/licenses/>.
 #define TARGET_VERSION fprintf (stderr, " (i386 GNU)");
 
 #undef CPP_SPEC
-#define CPP_SPEC "%{pthread:-D_REENTRANT} %{posix:-D_POSIX_SOURCE} %{bsd:-D_BSD_SOURCE}"
+#define CPP_SPEC "%{pthread:-D_REENTRANT} %{posix:-D_POSIX_SOURCE}"
 
 #undef CC1_SPEC
 #define CC1_SPEC "%(cc1_cpu)"

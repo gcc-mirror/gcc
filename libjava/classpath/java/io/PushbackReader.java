@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -39,10 +39,10 @@ exception statement from your version. */
 package java.io;
 
 /**
- * This subclass of <code>FilterReader</code> provides the ability to 
+ * This subclass of <code>FilterReader</code> provides the ability to
  * unread data from a stream.  It maintains an internal buffer of unread
  * data that is supplied to the next read operation.  This is conceptually
- * similar to mark/reset functionality, except that in this case the 
+ * similar to mark/reset functionality, except that in this case the
  * position to reset the stream to does not need to be known in advance.
  * <p>
  * The default pushback buffer size one char, but this can be overridden
@@ -66,15 +66,15 @@ public class PushbackReader extends FilterReader
   /**
    * This is the position in the buffer from which the next char will be
    * read.  Bytes are stored in reverse order in the buffer, starting from
-   * <code>buf[buf.length - 1]</code> to <code>buf[0]</code>.  Thus when 
-   * <code>pos</code> is 0 the buffer is full and <code>buf.length</code> when 
+   * <code>buf[buf.length - 1]</code> to <code>buf[0]</code>.  Thus when
+   * <code>pos</code> is 0 the buffer is full and <code>buf.length</code> when
    * it is empty
    */
   private int pos;
 
   /**
    * This method initializes a <code>PushbackReader</code> to read from the
-   * specified subordinate <code>Reader</code> with a default pushback buffer 
+   * specified subordinate <code>Reader</code> with a default pushback buffer
    * size of 1.
    *
    * @param in The subordinate stream to read from
@@ -112,8 +112,8 @@ public class PushbackReader extends FilterReader
   {
     synchronized (lock)
       {
-	buf = null;
-	super.close();
+        buf = null;
+        super.close();
       }
   }
 
@@ -134,7 +134,7 @@ public class PushbackReader extends FilterReader
    * This method returns <code>false</code> to indicate that it does not support
    * mark/reset functionality.
    *
-   * @return This method returns <code>false</code> to indicate that this 
+   * @return This method returns <code>false</code> to indicate that this
    * class does not support mark/reset functionality
    *
    */
@@ -164,7 +164,7 @@ public class PushbackReader extends FilterReader
    * read in the pushback buffer or if the underlying stream is ready to
    * be read.
    *
-   * @return <code>true</code> if this stream is ready to be read, 
+   * @return <code>true</code> if this stream is ready to be read,
    * <code>false</code> otherwise
    *
    * @exception IOException If an error occurs
@@ -173,13 +173,13 @@ public class PushbackReader extends FilterReader
   {
     synchronized (lock)
       {
-	if (buf == null)
-	  throw new IOException ("stream closed");
+        if (buf == null)
+          throw new IOException ("stream closed");
 
-	if (((buf.length - pos) > 0) || super.ready())
-	  return(true);
-	else
-	  return(false);
+        if (((buf.length - pos) > 0) || super.ready())
+          return(true);
+        else
+          return(false);
       }
   }
 
@@ -191,7 +191,7 @@ public class PushbackReader extends FilterReader
     * requested amount.
     * <p>
     * This method first discards chars from the buffer, then calls the
-    * <code>skip</code> method on the underlying <code>Reader</code> to 
+    * <code>skip</code> method on the underlying <code>Reader</code> to
     * skip additional chars if necessary.
     *
     * @param num_chars The requested number of chars to skip
@@ -204,21 +204,21 @@ public class PushbackReader extends FilterReader
   {
     synchronized (lock)
       {
-	if (num_chars <= 0)
-	  return(0);
+        if (num_chars <= 0)
+          return(0);
 
-	if ((buf.length - pos) >= num_chars)
-	  {
-	    pos += num_chars;
-	    return(num_chars);
-	  }
+        if ((buf.length - pos) >= num_chars)
+          {
+            pos += num_chars;
+            return(num_chars);
+          }
 
-	int chars_discarded = buf.length - pos;
-	pos = buf.length;
+        int chars_discarded = buf.length - pos;
+        pos = buf.length;
 
-	long chars_skipped = in.skip(num_chars - chars_discarded);
+        long chars_skipped = in.skip(num_chars - chars_discarded);
 
-	return(chars_discarded + chars_skipped);
+        return(chars_discarded + chars_skipped);
       }
   }
 
@@ -239,14 +239,14 @@ public class PushbackReader extends FilterReader
   {
     synchronized (lock)
       {
-	if (buf == null)
+        if (buf == null)
           throw new IOException("stream closed");
 
-	if (pos == buf.length)
-	  return(super.read());
+        if (pos == buf.length)
+          return(super.read());
 
-	++pos;
-	return((buf[pos - 1] & 0xFFFF));
+        ++pos;
+        return((buf[pos - 1] & 0xFFFF));
       }
   }
 
@@ -261,9 +261,9 @@ public class PushbackReader extends FilterReader
    *  <p>
    * This method will block until some data can be read.
    * <p>
-   * This method first reads chars from the pushback buffer in order to 
+   * This method first reads chars from the pushback buffer in order to
    * satisfy the read request.  If the pushback buffer cannot provide all
-   * of the chars requested, the remaining chars are read from the 
+   * of the chars requested, the remaining chars are read from the
    * underlying stream.
    *
    * @param buffer The array into which the chars read should be stored
@@ -279,21 +279,21 @@ public class PushbackReader extends FilterReader
   {
     synchronized (lock)
       {
-	if (buf == null)
+        if (buf == null)
           throw new IOException("stream closed");
 
-	if (offset < 0 || length < 0 || offset + length > buffer.length)
+        if (offset < 0 || length < 0 || offset + length > buffer.length)
           throw new ArrayIndexOutOfBoundsException();
 
-	int numBytes = Math.min(buf.length - pos, length);
-	if (numBytes > 0)
-	  {
-	    System.arraycopy (buf, pos, buffer, offset, numBytes);
-	    pos += numBytes;
-	    return numBytes;
-	  }
+        int numBytes = Math.min(buf.length - pos, length);
+        if (numBytes > 0)
+          {
+            System.arraycopy (buf, pos, buffer, offset, numBytes);
+            pos += numBytes;
+            return numBytes;
+          }
 
-	return super.read(buffer, offset, length);
+        return super.read(buffer, offset, length);
       }
   }
 
@@ -304,7 +304,7 @@ public class PushbackReader extends FilterReader
    * <p>
    * If the pushback buffer is full, this method throws an exception.
    * <p>
-   * The argument to this method is an <code>int</code>.  Only the low eight 
+   * The argument to this method is an <code>int</code>.  Only the low eight
    * bits of this value are pushed back.
    *
    * @param b The char to be pushed back, passed as an int
@@ -315,18 +315,18 @@ public class PushbackReader extends FilterReader
   {
     synchronized (lock)
       {
-	if (buf == null)
-	  throw new IOException("stream closed");
-	if (pos == 0)
-	  throw new IOException("Pushback buffer is full");
+        if (buf == null)
+          throw new IOException("stream closed");
+        if (pos == 0)
+          throw new IOException("Pushback buffer is full");
 
-	--pos;
-	buf[pos] = (char)(b & 0xFFFF);
+        --pos;
+        buf[pos] = (char)(b & 0xFFFF);
       }
   }
 
   /**
-   * This method pushes all of the chars in the passed char array into 
+   * This method pushes all of the chars in the passed char array into
    * the pushback buffer.  These chars are pushed in reverse order so that
    * the next char read from the stream after this operation will be
    * <code>buf[0]</code> followed by <code>buf[1]</code>, etc.
@@ -345,7 +345,7 @@ public class PushbackReader extends FilterReader
 
   /**
    * This method pushed back chars from the passed in array into the pushback
-   * buffer.  The chars from <code>buf[offset]</code> to 
+   * buffer.  The chars from <code>buf[offset]</code> to
    * <code>buf[offset + len]</code>
    * are pushed in reverse order so that the next char read from the stream
    * after this operation will be <code>buf[offset]</code> followed by
@@ -365,20 +365,19 @@ public class PushbackReader extends FilterReader
   {
     synchronized (lock)
       {
-	if (buf == null)
+        if (buf == null)
           throw new IOException("stream closed");
-	if (pos < length)
-	  throw new IOException("Pushback buffer is full");
+        if (pos < length)
+          throw new IOException("Pushback buffer is full");
 
-	// Note the order that these chars are being added is the opposite
-	// of what would be done if they were added to the buffer one at a time.
-	// See the Java Class Libraries book p. 1397.
-	System.arraycopy(buffer, offset, buf, pos - length, length);
+        // Note the order that these chars are being added is the opposite
+        // of what would be done if they were added to the buffer one at a time.
+        // See the Java Class Libraries book p. 1397.
+        System.arraycopy(buffer, offset, buf, pos - length, length);
 
-	// Don't put this into the arraycopy above, an exception might be thrown
-	// and in that case we don't want to modify pos.
-	pos -= length;
+        // Don't put this into the arraycopy above, an exception might be thrown
+        // and in that case we don't want to modify pos.
+        pos -= length;
       }
   }
 }
-

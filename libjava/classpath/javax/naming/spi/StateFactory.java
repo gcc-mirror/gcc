@@ -43,13 +43,13 @@ import java.util.Hashtable;
 import javax.naming.Context;
 import javax.naming.Name;
 import javax.naming.NamingException;
- 
+
 /**
  * Represents a factory, producing the object states for binding. The operation,
  * performed by this factory, is the reverse operation with related to the
  * operation, performed by the {@link ObjectFactory}. Classes, implementing
  * this interface, must be public and have public parameterless constructor.
- * 
+ *
  * @see DirStateFactory
  * @see ObjectFactory
  * @author Warren Levy (warrenl@redhat.com)
@@ -58,7 +58,7 @@ public interface StateFactory
 {
   /**
    * Get the object state for binding.
-   * 
+   *
    * @param obj the object, for that the binding state must be retrieved. Cannot
    *          be null.
    * @param name the name of this object, related to the nameCtx. Can be null if
@@ -70,10 +70,10 @@ public interface StateFactory
    * @return the object state for binding, may be null if no changes are
    *         returned by the factory
    * @throws NamingException
-   * 
+   *
    * @see NamingManager#getStateToBind
    * @see DirectoryManager#getStateToBind
    */
   Object getStateToBind(Object obj, Name name, Context nameCtx,
-  			       Hashtable<?, ?> environment) throws NamingException;
+                               Hashtable<?, ?> environment) throws NamingException;
 }

@@ -1,5 +1,5 @@
 /* AccessException.java -- thrown if the caller does not have access
-   Copyright (c) 1996, 1997, 1998, 1999, 2002, 2006 
+   Copyright (c) 1996, 1997, 1998, 1999, 2002, 2006
    Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.

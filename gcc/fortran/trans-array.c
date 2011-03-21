@@ -1,5 +1,6 @@
 /* Array translation routines
-   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+   2011
    Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
    and Steven Bosscher <s.bosscher@student.tudelft.nl>
@@ -1494,60 +1495,9 @@ gfc_trans_array_constructor_value (stmtblock_t * pblock, tree type,
 }
 
 
-/* Figure out the string length of a variable reference expression.
-   Used by get_array_ctor_strlen.  */
-
-static void
-get_array_ctor_var_strlen (gfc_expr * expr, tree * len)
-{
-  gfc_ref *ref;
-  gfc_typespec *ts;
-  mpz_t char_len;
-
-  /* Don't bother if we already know the length is a constant.  */
-  if (*len && INTEGER_CST_P (*len))
-    return;
-
-  ts = &expr->symtree->n.sym->ts;
-  for (ref = expr->ref; ref; ref = ref->next)
-    {
-      switch (ref->type)
-	{
-	case REF_ARRAY:
-	  /* Array references don't change the string length.  */
-	  break;
-
-	case REF_COMPONENT:
-	  /* Use the length of the component.  */
-	  ts = &ref->u.c.component->ts;
-	  break;
-
-	case REF_SUBSTRING:
-	  if (ref->u.ss.start->expr_type != EXPR_CONSTANT
-	      || ref->u.ss.end->expr_type != EXPR_CONSTANT)
-	    break;
-	  mpz_init_set_ui (char_len, 1);
-	  mpz_add (char_len, char_len, ref->u.ss.end->value.integer);
-	  mpz_sub (char_len, char_len, ref->u.ss.start->value.integer);
-	  *len = gfc_conv_mpz_to_tree (char_len, gfc_default_integer_kind);
-	  *len = convert (gfc_charlen_type_node, *len);
-	  mpz_clear (char_len);
-	  return;
-
-	default:
-	  /* TODO: Substrings are tricky because we can't evaluate the
-	     expression more than once.  For now we just give up, and hope
-	     we can figure it out elsewhere.  */
-	  return;
-	}
-    }
-
-  *len = ts->u.cl->backend_decl;
-}
-
-
 /* A catch-all to obtain the string length for anything that is not a
-   constant, array or variable.  */
+   a substring of non-constant length, a constant, array or variable.  */
+
 static void
 get_array_ctor_all_strlen (stmtblock_t *block, gfc_expr *e, tree *len)
 {
@@ -1586,6 +1536,59 @@ get_array_ctor_all_strlen (stmtblock_t *block, gfc_expr *e, tree *len)
 
       e->ts.u.cl->backend_decl = *len;
     }
+}
+
+
+/* Figure out the string length of a variable reference expression.
+   Used by get_array_ctor_strlen.  */
+
+static void
+get_array_ctor_var_strlen (stmtblock_t *block, gfc_expr * expr, tree * len)
+{
+  gfc_ref *ref;
+  gfc_typespec *ts;
+  mpz_t char_len;
+
+  /* Don't bother if we already know the length is a constant.  */
+  if (*len && INTEGER_CST_P (*len))
+    return;
+
+  ts = &expr->symtree->n.sym->ts;
+  for (ref = expr->ref; ref; ref = ref->next)
+    {
+      switch (ref->type)
+	{
+	case REF_ARRAY:
+	  /* Array references don't change the string length.  */
+	  break;
+
+	case REF_COMPONENT:
+	  /* Use the length of the component.  */
+	  ts = &ref->u.c.component->ts;
+	  break;
+
+	case REF_SUBSTRING:
+	  if (ref->u.ss.start->expr_type != EXPR_CONSTANT
+	      || ref->u.ss.end->expr_type != EXPR_CONSTANT)
+	    {
+	      /* Note that this might evaluate expr.  */
+	      get_array_ctor_all_strlen (block, expr, len);
+	      return;
+	    }
+	  mpz_init_set_ui (char_len, 1);
+	  mpz_add (char_len, char_len, ref->u.ss.end->value.integer);
+	  mpz_sub (char_len, char_len, ref->u.ss.start->value.integer);
+	  *len = gfc_conv_mpz_to_tree (char_len, gfc_default_integer_kind);
+	  *len = convert (gfc_charlen_type_node, *len);
+	  mpz_clear (char_len);
+	  return;
+
+	default:
+	 gcc_unreachable ();
+	}
+    }
+
+  *len = ts->u.cl->backend_decl;
 }
 
 
@@ -1632,7 +1635,7 @@ get_array_ctor_strlen (stmtblock_t *block, gfc_constructor_base base, tree * len
 	case EXPR_VARIABLE:
 	  is_const = false;
 	  if (len)
-	    get_array_ctor_var_strlen (c->expr, len);
+	    get_array_ctor_var_strlen (block, c->expr, len);
 	  break;
 
 	default:
@@ -3449,6 +3452,37 @@ gfc_conv_ss_startstride (gfc_loopinfo * loop)
     }
 }
 
+/* Return true if both symbols could refer to the same data object.  Does
+   not take account of aliasing due to equivalence statements.  */
+
+static int
+symbols_could_alias (gfc_symbol *lsym, gfc_symbol *rsym, bool lsym_pointer,
+		     bool lsym_target, bool rsym_pointer, bool rsym_target)
+{
+  /* Aliasing isn't possible if the symbols have different base types.  */
+  if (gfc_compare_types (&lsym->ts, &rsym->ts) == 0)
+    return 0;
+
+  /* Pointers can point to other pointers and target objects.  */
+
+  if ((lsym_pointer && (rsym_pointer || rsym_target))
+      || (rsym_pointer && (lsym_pointer || lsym_target)))
+    return 1;
+
+  /* Special case: Argument association, cf. F90 12.4.1.6, F2003 12.4.1.7
+     and F2008 12.5.2.13 items 3b and 4b. The pointer case (a) is already
+     checked above.  */
+  if (lsym_target && rsym_target
+      && ((lsym->attr.dummy && !lsym->attr.contiguous
+	   && (!lsym->attr.dimension || lsym->as->type == AS_ASSUMED_SHAPE))
+	  || (rsym->attr.dummy && !rsym->attr.contiguous
+	      && (!rsym->attr.dimension
+		  || rsym->as->type == AS_ASSUMED_SHAPE))))
+    return 1;
+
+  return 0;
+}
+
 
 /* Return true if the two SS could be aliased, i.e. both point to the same data
    object.  */
@@ -3461,10 +3495,18 @@ gfc_could_be_alias (gfc_ss * lss, gfc_ss * rss)
   gfc_ref *rref;
   gfc_symbol *lsym;
   gfc_symbol *rsym;
+  bool lsym_pointer, lsym_target, rsym_pointer, rsym_target;
 
   lsym = lss->expr->symtree->n.sym;
   rsym = rss->expr->symtree->n.sym;
-  if (gfc_symbols_could_alias (lsym, rsym))
+
+  lsym_pointer = lsym->attr.pointer;
+  lsym_target = lsym->attr.target;
+  rsym_pointer = rsym->attr.pointer;
+  rsym_target = rsym->attr.target;
+
+  if (symbols_could_alias (lsym, rsym, lsym_pointer, lsym_target,
+			   rsym_pointer, rsym_target))
     return 1;
 
   if (rsym->ts.type != BT_DERIVED && rsym->ts.type != BT_CLASS
@@ -3479,8 +3521,20 @@ gfc_could_be_alias (gfc_ss * lss, gfc_ss * rss)
       if (lref->type != REF_COMPONENT)
 	continue;
 
-      if (gfc_symbols_could_alias (lref->u.c.sym, rsym))
+      lsym_pointer = lsym_pointer || lref->u.c.sym->attr.pointer;
+      lsym_target  = lsym_target  || lref->u.c.sym->attr.target;
+
+      if (symbols_could_alias (lref->u.c.sym, rsym, lsym_pointer, lsym_target,
+			       rsym_pointer, rsym_target))
 	return 1;
+
+      if ((lsym_pointer && (rsym_pointer || rsym_target))
+	  || (rsym_pointer && (lsym_pointer || lsym_target)))
+	{
+	  if (gfc_compare_types (&lref->u.c.component->ts,
+				 &rsym->ts))
+	    return 1;
+	}
 
       for (rref = rss->expr->ref; rref != rss->data.info.ref;
 	   rref = rref->next)
@@ -3488,18 +3542,54 @@ gfc_could_be_alias (gfc_ss * lss, gfc_ss * rss)
 	  if (rref->type != REF_COMPONENT)
 	    continue;
 
-	  if (gfc_symbols_could_alias (lref->u.c.sym, rref->u.c.sym))
+	  rsym_pointer = rsym_pointer || rref->u.c.sym->attr.pointer;
+	  rsym_target  = lsym_target  || rref->u.c.sym->attr.target;
+
+	  if (symbols_could_alias (lref->u.c.sym, rref->u.c.sym,
+				   lsym_pointer, lsym_target,
+				   rsym_pointer, rsym_target))
 	    return 1;
+
+	  if ((lsym_pointer && (rsym_pointer || rsym_target))
+	      || (rsym_pointer && (lsym_pointer || lsym_target)))
+	    {
+	      if (gfc_compare_types (&lref->u.c.component->ts,
+				     &rref->u.c.sym->ts))
+		return 1;
+	      if (gfc_compare_types (&lref->u.c.sym->ts,
+				     &rref->u.c.component->ts))
+		return 1;
+	      if (gfc_compare_types (&lref->u.c.component->ts,
+				     &rref->u.c.component->ts))
+		return 1;
+	    }
 	}
     }
+
+  lsym_pointer = lsym->attr.pointer;
+  lsym_target = lsym->attr.target;
+  lsym_pointer = lsym->attr.pointer;
+  lsym_target = lsym->attr.target;
 
   for (rref = rss->expr->ref; rref != rss->data.info.ref; rref = rref->next)
     {
       if (rref->type != REF_COMPONENT)
 	break;
 
-      if (gfc_symbols_could_alias (rref->u.c.sym, lsym))
+      rsym_pointer = rsym_pointer || rref->u.c.sym->attr.pointer;
+      rsym_target  = lsym_target  || rref->u.c.sym->attr.target;
+
+      if (symbols_could_alias (rref->u.c.sym, lsym,
+			       lsym_pointer, lsym_target,
+			       rsym_pointer, rsym_target))
 	return 1;
+
+      if ((lsym_pointer && (rsym_pointer || rsym_target))
+	  || (rsym_pointer && (lsym_pointer || lsym_target)))
+	{
+	  if (gfc_compare_types (&lsym->ts, &rref->u.c.component->ts))
+	    return 1;
+	}
     }
 
   return 0;
@@ -6007,10 +6097,11 @@ gfc_conv_array_parameter (gfc_se * se, gfc_expr * expr, gfc_ss * ss, bool g77,
 	&& expr->ts.u.derived->attr.alloc_comp
 	&& expr->expr_type != EXPR_VARIABLE)
     {
-      tmp = build_fold_indirect_ref_loc (input_location,
-				     se->expr);
+      tmp = build_fold_indirect_ref_loc (input_location, se->expr);
       tmp = gfc_deallocate_alloc_comp (expr->ts.u.derived, tmp, expr->rank);
-      gfc_add_expr_to_block (&se->post, tmp);
+
+      /* The components shall be deallocated before their containing entity.  */
+      gfc_prepend_expr_to_block (&se->post, tmp);
     }
 
   if (g77 || (fsym && fsym->attr.contiguous
@@ -6790,6 +6881,69 @@ gfc_alloc_allocatable_for_assignment (gfc_loopinfo *loop,
   desc = lss->data.info.descriptor;
   gcc_assert (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (desc)));
   array1 = gfc_conv_descriptor_data_get (desc);
+
+  /* 7.4.1.3 "If variable is an allocated allocatable variable, it is
+     deallocated if expr is an array of different shape or any of the
+     corresponding length type parameter values of variable and expr
+     differ."  This assures F95 compatibility.  */
+  jump_label1 = gfc_build_label_decl (NULL_TREE);
+  jump_label2 = gfc_build_label_decl (NULL_TREE);
+
+  /* Allocate if data is NULL.  */
+  cond = fold_build2_loc (input_location, EQ_EXPR, boolean_type_node,
+			 array1, build_int_cst (TREE_TYPE (array1), 0));
+  tmp = build3_v (COND_EXPR, cond,
+		  build1_v (GOTO_EXPR, jump_label1),
+		  build_empty_stmt (input_location));
+  gfc_add_expr_to_block (&fblock, tmp);
+
+  /* Get arrayspec if expr is a full array.  */
+  if (expr2 && expr2->expr_type == EXPR_FUNCTION
+	&& expr2->value.function.isym
+	&& expr2->value.function.isym->conversion)
+    {
+      /* For conversion functions, take the arg.  */
+      gfc_expr *arg = expr2->value.function.actual->expr;
+      as = gfc_get_full_arrayspec_from_expr (arg);
+    }
+  else if (expr2)
+    as = gfc_get_full_arrayspec_from_expr (expr2);
+  else
+    as = NULL;
+
+  /* If the lhs shape is not the same as the rhs jump to setting the
+     bounds and doing the reallocation.......  */ 
+  for (n = 0; n < expr1->rank; n++)
+    {
+      /* Check the shape.  */
+      lbound = gfc_conv_descriptor_lbound_get (desc, gfc_rank_cst[n]);
+      ubound = gfc_conv_descriptor_ubound_get (desc, gfc_rank_cst[n]);
+      tmp = fold_build2_loc (input_location, MINUS_EXPR,
+			     gfc_array_index_type,
+			     loop->to[n], loop->from[n]);
+      tmp = fold_build2_loc (input_location, PLUS_EXPR,
+			     gfc_array_index_type,
+			     tmp, lbound);
+      tmp = fold_build2_loc (input_location, MINUS_EXPR,
+			     gfc_array_index_type,
+			     tmp, ubound);
+      cond = fold_build2_loc (input_location, NE_EXPR,
+			      boolean_type_node,
+			      tmp, gfc_index_zero_node);
+      tmp = build3_v (COND_EXPR, cond,
+		      build1_v (GOTO_EXPR, jump_label1),
+		      build_empty_stmt (input_location));
+      gfc_add_expr_to_block (&fblock, tmp);	  
+    }
+
+  /* ....else jump past the (re)alloc code.  */
+  tmp = build1_v (GOTO_EXPR, jump_label2);
+  gfc_add_expr_to_block (&fblock, tmp);
+    
+  /* Add the label to start automatic (re)allocation.  */
+  tmp = build1_v (LABEL_EXPR, jump_label1);
+  gfc_add_expr_to_block (&fblock, tmp);
+
   size1 = gfc_conv_descriptor_size (desc, expr1->rank);
 
   /* Get the rhs size.  Fix both sizes.  */
@@ -6810,98 +6964,23 @@ gfc_alloc_allocatable_for_assignment (gfc_loopinfo *loop,
 			       gfc_array_index_type,
 			       tmp, size2);
     }
+
   size1 = gfc_evaluate_now (size1, &fblock);
   size2 = gfc_evaluate_now (size2, &fblock);
+
   cond = fold_build2_loc (input_location, NE_EXPR, boolean_type_node,
 			  size1, size2);
   neq_size = gfc_evaluate_now (cond, &fblock);
 
-  /* If the lhs is allocated and the lhs and rhs are equal length, jump
-     past the realloc/malloc.  This allows F95 compliant expressions
-     to escape allocation on assignment.  */
-  jump_label1 = gfc_build_label_decl (NULL_TREE);
-  jump_label2 = gfc_build_label_decl (NULL_TREE);
-
-  /* Allocate if data is NULL.  */
-  cond = fold_build2_loc (input_location, EQ_EXPR, boolean_type_node,
-			 array1, build_int_cst (TREE_TYPE (array1), 0));
-  tmp = build3_v (COND_EXPR, cond,
-		  build1_v (GOTO_EXPR, jump_label1),
-		  build_empty_stmt (input_location));
-  gfc_add_expr_to_block (&fblock, tmp);
-
-  /* Reallocate if sizes are different.  */
-  tmp = build3_v (COND_EXPR, neq_size,
-		  build1_v (GOTO_EXPR, jump_label1),
-		  build_empty_stmt (input_location));
-  gfc_add_expr_to_block (&fblock, tmp);
-
-  if (expr2 && expr2->expr_type == EXPR_FUNCTION
-	&& expr2->value.function.isym
-	&& expr2->value.function.isym->conversion)
-    {
-      /* For conversion functions, take the arg.  */
-      gfc_expr *arg = expr2->value.function.actual->expr;
-      as = gfc_get_full_arrayspec_from_expr (arg);
-    }
-  else if (expr2)
-    as = gfc_get_full_arrayspec_from_expr (expr2);
-  else
-    as = NULL;
-
-  /* Reset the lhs bounds if any are different from the rhs.  */ 
-  if (as && expr2->expr_type == EXPR_VARIABLE)
-    {
-      for (n = 0; n < expr1->rank; n++)
-	{
-	  /* First check the lbounds.  */
-	  dim = rss->data.info.dim[n];
-	  lbd = get_std_lbound (expr2, desc2, dim,
-				as->type == AS_ASSUMED_SIZE);
-	  lbound = gfc_conv_descriptor_lbound_get (desc, gfc_rank_cst[n]);
-	  cond = fold_build2_loc (input_location, NE_EXPR,
-				  boolean_type_node, lbd, lbound);
-	  tmp = build3_v (COND_EXPR, cond,
-			  build1_v (GOTO_EXPR, jump_label1),
-			  build_empty_stmt (input_location));
-	  gfc_add_expr_to_block (&fblock, tmp);
-
-	  /* Now check the shape.  */
-	  tmp = fold_build2_loc (input_location, MINUS_EXPR,
-				 gfc_array_index_type,
-				 loop->to[n], loop->from[n]);
-	  tmp = fold_build2_loc (input_location, PLUS_EXPR,
-				 gfc_array_index_type,
-				 tmp, lbound);
-	  ubound = gfc_conv_descriptor_ubound_get (desc, gfc_rank_cst[n]);
-	  tmp = fold_build2_loc (input_location, MINUS_EXPR,
-				 gfc_array_index_type,
-				 tmp, ubound);
-	  cond = fold_build2_loc (input_location, NE_EXPR,
-				  boolean_type_node,
-				  tmp, gfc_index_zero_node);
-	  tmp = build3_v (COND_EXPR, cond,
-			  build1_v (GOTO_EXPR, jump_label1),
-			  build_empty_stmt (input_location));
-	  gfc_add_expr_to_block (&fblock, tmp);	  
-	}
-    }
-
-    /* Otherwise jump past the (re)alloc code.  */
-    tmp = build1_v (GOTO_EXPR, jump_label2);
-    gfc_add_expr_to_block (&fblock, tmp);
-    
-    /* Add the label to start automatic (re)allocation.  */
-    tmp = build1_v (LABEL_EXPR, jump_label1);
-    gfc_add_expr_to_block (&fblock, tmp);
 
   /* Now modify the lhs descriptor and the associated scalarizer
-     variables.
-     7.4.1.3: If variable is or becomes an unallocated allocatable
-     variable, then it is allocated with each deferred type parameter
-     equal to the corresponding type parameters of expr , with the
-     shape of expr , and with each lower bound equal to the
-     corresponding element of LBOUND(expr).  */
+     variables. F2003 7.4.1.3: "If variable is or becomes an
+     unallocated allocatable variable, then it is allocated with each
+     deferred type parameter equal to the corresponding type parameters
+     of expr , with the shape of expr , and with each lower bound equal
+     to the corresponding element of LBOUND(expr)."  
+     Reuse size1 to keep a dimension-by-dimension track of the
+     stride of the new array.  */
   size1 = gfc_index_one_node;
   offset = gfc_index_zero_node;
 
@@ -7078,6 +7157,8 @@ gfc_trans_deferred_array (gfc_symbol * sym, gfc_wrapped_block * block)
 		 "allocatable attribute or derived type without allocatable "
 		 "components.");
 
+  gfc_save_backend_locus (&loc);
+  gfc_set_backend_locus (&sym->declared_at);
   gfc_init_block (&init);
 
   gcc_assert (TREE_CODE (sym->backend_decl) == VAR_DECL
@@ -7094,11 +7175,10 @@ gfc_trans_deferred_array (gfc_symbol * sym, gfc_wrapped_block * block)
   if (sym->attr.dummy || sym->attr.use_assoc || sym->attr.result)
     {
       gfc_add_init_cleanup (block, gfc_finish_block (&init), NULL_TREE);
+      gfc_restore_backend_locus (&loc);
       return;
     }
 
-  gfc_save_backend_locus (&loc);
-  gfc_set_backend_locus (&sym->declared_at);
   descriptor = sym->backend_decl;
 
   /* Although static, derived types with default initializers and
@@ -7147,8 +7227,8 @@ gfc_trans_deferred_array (gfc_symbol * sym, gfc_wrapped_block * block)
   if (GFC_DESCRIPTOR_TYPE_P (type) && !sym->attr.save)
     gfc_conv_descriptor_data_set (&init, descriptor, null_pointer_node);
 
-  gfc_init_block (&cleanup);
   gfc_restore_backend_locus (&loc);
+  gfc_init_block (&cleanup);
 
   /* Allocatable arrays need to be freed when they go out of scope.
      The allocatable components of pointers must not be touched.  */

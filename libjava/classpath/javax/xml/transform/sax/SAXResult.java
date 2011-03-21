@@ -1,4 +1,4 @@
-/* SAXResult.java -- 
+/* SAXResult.java --
    Copyright (C) 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -49,7 +49,7 @@ import org.xml.sax.ext.LexicalHandler;
  */
 public class SAXResult implements Result
 {
-  
+
   /**
    * Factory feature indicating that SAX results are supported.
    */
@@ -102,7 +102,7 @@ public class SAXResult implements Result
   {
     lexicalHandler = handler;
   }
-  
+
   /**
    * Returns the lexical handler to which lexical events will be propagated.
    * If a lexical handler is not set, the transformer should attempt to cast

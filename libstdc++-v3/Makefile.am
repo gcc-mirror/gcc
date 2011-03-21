@@ -1,6 +1,6 @@
 ## Makefile for the toplevel directory of the GNU C++ Standard library.
 ##
-## Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2008, 2009
+## Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2008, 2009, 2010
 ## Free Software Foundation, Inc.
 ##
 ## This file is part of the libstdc++ version 3 distribution.
@@ -26,18 +26,104 @@ include $(top_srcdir)/fragment.am
 if GLIBCXX_HOSTED
   hosted_source = doc src po testsuite
 endif
+
 ## Keep this list sync'd with acinclude.m4:GLIBCXX_CONFIGURE.
 ## Note that python must come after src.
 SUBDIRS = include libsupc++ $(hosted_source) python
 
 ACLOCAL_AMFLAGS = -I . -I .. -I ../config
 
-# Handy forwarding targets.
+# Testsuite/check forwarding targets.
 check-%:
 	cd testsuite && $(MAKE) $@
 
+# Documentation forwarding targets.
 doc-%:
 	cd doc && $(MAKE) $@
+
+# Documentation conditionals for output.
+if BUILD_XML
+STAMP_XML = doc-xml
+STAMP_INSTALL_XML = doc-install-xml
+else
+STAMP_XML =
+STAMP_INSTALL_XML =
+endif
+
+if BUILD_HTML
+STAMP_HTML = doc-html
+STAMP_INSTALL_HTML = doc-install-html
+else
+STAMP_HTML =
+STAMP_INSTALL_HTML =
+endif
+
+if BUILD_MAN
+STAMP_MAN = doc-man
+STAMP_INSTALL_MAN = doc-install-man
+else
+STAMP_MAN =
+STAMP_INSTALL_MAN =
+endif
+
+if BUILD_PDF
+STAMP_PDF = doc-pdf
+STAMP_INSTALL_PDF = doc-install-pdf
+else
+STAMP_PDF =
+STAMP_INSTALL_PDF =
+endif
+
+if BUILD_EPUB
+STAMP_EPUB = doc-epub
+STAMP_INSTALL_EPUB = doc-install-epub
+else
+STAMP_EPUB = doc-epub
+STAMP_INSTALL_EPUB = doc-install-epub
+endif
+
+# Documentation primary rules.
+#
+# xml:
+# html:
+# pdf:
+# man:
+# info:
+# ps:
+# dvi:
+# epub:
+# install-xml:
+# install-html:
+# install-pdf:
+# install-man:
+# install-info:
+# install-ps:
+# install-dvi:
+# install-epub:
+
+xml: $(STAMP_XML)
+install-xml: $(STAMP_INSTALL_XML)
+
+html: $(STAMP_HTML)
+install-html: $(STAMP_INSTALL_HTML)
+
+man: $(STAMP_MAN)
+install-man: $(STAMP_INSTALL_MAN)
+
+pdf: $(STAMP_PDF)
+install-pdf: $(STAMP_INSTALL_PDF)
+
+epub: $(STAMP_EPUB)
+install-epub: $(STAMP_INSTALL_EPUB)
+
+info:
+install-info:
+
+ps:
+install-ps:
+
+dvi:
+install-dvi:
 
 # Multilib support.
 MAKEOVERRIDES=

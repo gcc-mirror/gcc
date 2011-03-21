@@ -48,5 +48,4 @@ public interface FileDialogPeer extends DialogPeer
 
   void setFilenameFilter (FilenameFilter ff);
 
-} // interface FileDialogPeer 
-
+} // interface FileDialogPeer

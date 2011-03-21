@@ -1,4 +1,4 @@
-/* PrintServiceAttributeListener.java -- 
+/* PrintServiceAttributeListener.java --
    Copyright (C) 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -40,16 +40,16 @@ package javax.print.event;
 
 /**
  * Listener interface to receive attribute changes from a print service.
- * Implementations of this interface can be registered with a 
+ * Implementations of this interface can be registered with a
  * {@link javax.print.PrintService} instance.
- * 
+ *
  * @author Michael Koch (konqueror@gmx.de)
  */
 public interface PrintServiceAttributeListener
 {
   /**
    * Notifies the listener that some attributes have changed.
-   * 
+   *
    * @param event the event
    */
   void attributeUpdate(PrintServiceAttributeEvent event);

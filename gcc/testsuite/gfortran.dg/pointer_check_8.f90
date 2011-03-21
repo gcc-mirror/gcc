@@ -1,4 +1,4 @@
-! { dg-do compile}
+! { dg-do compile }
 ! { dg-options "-fcheck=pointer" }
 !
 ! PR 46809: [OOP] ICE with -fcheck=pointer for CLASS IS

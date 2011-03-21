@@ -1,4 +1,4 @@
-/* CTX_RESTRICT_SCOPE.java -- 
+/* CTX_RESTRICT_SCOPE.java --
    Copyright (C) 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -41,7 +41,7 @@ package org.omg.CORBA;
  * This simple interface defines just one constant, normally used
  * to restrict the property search in the {@link Context} by
  * the current context.
- * 
+ *
  * @author Audrius Meskauskas (AudriusA@Bioinformatics.org)
  */
 public interface CTX_RESTRICT_SCOPE

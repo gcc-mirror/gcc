@@ -43,8 +43,8 @@ import java.io.IOException;
 import java.io.InputStream;
 
 /**
- * DigestInputStream is a class that ties an InputStream with a 
- * MessageDigest. The Message Digest is used by the class to 
+ * DigestInputStream is a class that ties an InputStream with a
+ * MessageDigest. The Message Digest is used by the class to
  * update it self as bytes are read from the InputStream.
  *
  * The updating to the digest depends on the on flag which is set
@@ -57,7 +57,7 @@ import java.io.InputStream;
 public class DigestInputStream extends FilterInputStream
 {
   /**
-   * The message digest for the DigestInputStream 
+   * The message digest for the DigestInputStream
    */
   protected MessageDigest digest;
 
@@ -66,7 +66,7 @@ public class DigestInputStream extends FilterInputStream
 
   /**
    * Constructs a new DigestInputStream.
-   * It associates a MessageDigest with the stream to 
+   * It associates a MessageDigest with the stream to
    * compute the stream as data is written.
    *
    * @param stream An InputStream to associate this stream with
@@ -80,7 +80,7 @@ public class DigestInputStream extends FilterInputStream
   }
 
   /**
-   * Returns the MessageDigest associated with this DigestInputStream 
+   * Returns the MessageDigest associated with this DigestInputStream
    *
    * @return The MessageDigest used to hash this stream
    */
@@ -99,12 +99,12 @@ public class DigestInputStream extends FilterInputStream
     this.digest = digest;
   }
 
-  /** 
+  /**
    * Reads a byte from the input stream and updates the digest.
-   * This method reads the underlying input stream and if the 
+   * This method reads the underlying input stream and if the
    * on flag is true then updates the message digest.
    *
-   * @return Returns a byte from the input stream, -1 is returned to indicate that 
+   * @return Returns a byte from the input stream, -1 is returned to indicate that
    * the end of stream was reached before this read call
    *
    * @throws IOException if an IO error occurs in the underlying input stream,
@@ -120,15 +120,15 @@ public class DigestInputStream extends FilterInputStream
     return temp;
   }
 
-  /** 
+  /**
    * Reads bytes from the input stream and updates the digest.
-   * This method reads the underlying input stream and if the 
+   * This method reads the underlying input stream and if the
    * on flag is true then updates the message digest.
    *
    * @param b a byte array to store the data from the input stream
    * @param off an offset to start at in the array
    * @param len length of data to read
-   * @return Returns count of bytes read, -1 is returned to indicate that 
+   * @return Returns count of bytes read, -1 is returned to indicate that
    * the end of stream was reached before this read call
    *
    * @throws IOException if an IO error occurs in the underlying input stream,

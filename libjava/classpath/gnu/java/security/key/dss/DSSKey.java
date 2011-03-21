@@ -1,4 +1,4 @@
-/* DSSKey.java -- 
+/* DSSKey.java --
    Copyright 2001, 2002, 2003, 2006 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -66,7 +66,7 @@ import java.security.spec.DSAParameterSpec;
  * <b>IMPORTANT</b>: Under certain circumstances (e.g. in an X.509 certificate
  * with inherited AlgorithmIdentifier's parameters of a SubjectPublicKeyInfo
  * element) these three MPIs may be <code>null</code>.
- * 
+ *
  * @see DSSPrivateKey#getEncoded
  * @see DSSPublicKey#getEncoded
  */
@@ -108,7 +108,7 @@ public abstract class DSSKey
 
   /**
    * Trivial protected constructor.
-   * 
+   *
    * @param defaultFormat the identifier of the encoding format to use by
    *          default when externalizing the key.
    * @param p the DSS parameter <code>p</code>.
@@ -156,7 +156,7 @@ public abstract class DSSKey
    * <i>inherited</i>. This may be the case when the key is re-constructed from
    * an X.509 certificate with absent or NULL AlgorithmIdentifier's parameters
    * field.
-   * 
+   *
    * @param obj the other non-null DSS key to compare to.
    * @return <code>true</code> if the designated object is of the same type
    *         and value as this one.

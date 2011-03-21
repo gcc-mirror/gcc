@@ -49,4 +49,3 @@ public interface CheckboxPeer extends ComponentPeer
   void setState (boolean state);
 
 } // interface CheckboxPeer
-

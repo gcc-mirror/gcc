@@ -85,8 +85,8 @@ public class Popup
     // The real stuff happens in the implementation of subclasses,
     // for instance JWindowPopup.
   }
-  
-  
+
+
   /**
    * Constructs a new <code>Popup</code>.
    */
@@ -177,8 +177,8 @@ public class Popup
       window.setSize(contents.getSize());
       window.show();
     }
-    
-    
+
+
     /**
      * Removes the popup's <code>JWindow</code> from the
      * screen.  Nothing happens if it is currently not visible.
@@ -226,12 +226,12 @@ public class Popup
      * The panel that holds the content.
      */
     private JPanel panel;
-    
+
     /**
      * The layered pane of the owner.
      */
     private JLayeredPane layeredPane;
-    
+
     /**
      * Constructs a new <code>LightweightPopup</code> given its owner,
      * contents and the screen position where the popup
@@ -259,7 +259,7 @@ public class Popup
       this.contents = contents;
       this.x = x;
       this.y = y;
-      
+
       JRootPane rootPane = SwingUtilities.getRootPane(owner);
       JLayeredPane layeredPane = rootPane.getLayeredPane();
       this.layeredPane = layeredPane;
@@ -279,7 +279,7 @@ public class Popup
           panel = new JPanel();
           panel.setLayout(new FlowLayout(0, 0, 0));
         }
-      
+
       panel.add(contents);
       panel.setSize(contents.getSize());
       Point layeredPaneLoc = layeredPane.getLocationOnScreen();

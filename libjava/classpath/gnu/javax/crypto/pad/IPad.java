@@ -1,4 +1,4 @@
-/* IPad.java -- 
+/* IPad.java --
    Copyright (C) 2001, 2002, 2006 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -53,7 +53,7 @@ public interface IPad
 {
   /**
    * Property name of the block size in which to operate the padding algorithm.
-   * The value associated with this property name is taken to be a positive 
+   * The value associated with this property name is taken to be a positive
    * {@link Integer} greater than zero.
    */
   String PADDING_BLOCK_SIZE = "gnu.crypto.pad.block.size";
@@ -63,7 +63,7 @@ public interface IPad
 
   /**
    * Initialises the padding scheme with a designated block size.
-   * 
+   *
    * @param bs the designated block size.
    * @exception IllegalStateException if the instance is already initialised.
    * @exception IllegalArgumentException if the block size value is invalid.
@@ -75,7 +75,7 @@ public interface IPad
    * recognisable by all concrete implementations are described in the class
    * documentation above. Other algorithm-specific attributes MUST be documented
    * in the implementation class of that padding algorithm.
-   * 
+   *
    * @param attributes a set of name-value pairs that describes the desired
    *          future behaviour of this instance.
    * @exception IllegalStateException if the instance is already initialised.
@@ -85,7 +85,7 @@ public interface IPad
 
   /**
    * Returns the byte sequence that should be appended to the designated input.
-   * 
+   *
    * @param in the input buffer containing the bytes to pad.
    * @param offset the starting index of meaningful data in <i>in</i>.
    * @param length the number of meaningful bytes in <i>in</i>.
@@ -96,7 +96,7 @@ public interface IPad
 
   /**
    * Returns the number of bytes to discard from a designated input buffer.
-   * 
+   *
    * @param in the input buffer containing the bytes to unpad.
    * @param offset the starting index of meaningful data in <i>in</i>.
    * @param length the number of meaningful bytes in <i>in</i>.
@@ -119,7 +119,7 @@ public interface IPad
 
   /**
    * A basic symmetric pad/unpad test.
-   * 
+   *
    * @return <code>true</code> if the implementation passes a basic symmetric
    *         self-test. Returns <code>false</code> otherwise.
    */

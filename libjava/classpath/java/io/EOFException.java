@@ -39,7 +39,7 @@ exception statement from your version. */
 package java.io;
 
 /**
- * This exception is thrown when the end of the file or stream was 
+ * This exception is thrown when the end of the file or stream was
  * encountered unexpectedly.  This is not the normal way that an EOF
  * condition is reported; such as a special value like -1 being returned.
  *  However, certain types of streams expecting certain data in a certain

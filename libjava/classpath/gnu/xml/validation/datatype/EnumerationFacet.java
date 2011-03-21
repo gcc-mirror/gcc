@@ -1,4 +1,4 @@
-/* EnumerationFacet.java -- 
+/* EnumerationFacet.java --
    Copyright (C) 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -45,7 +45,7 @@ package gnu.xml.validation.datatype;
 public final class EnumerationFacet
   extends Facet
 {
-  
+
   public final String value;
 
   public EnumerationFacet(String value, Annotation annotation)
@@ -64,6 +64,5 @@ public final class EnumerationFacet
     return (other instanceof EnumerationFacet &&
             ((EnumerationFacet) other).value.equals(value));
   }
-  
-}
 
+}

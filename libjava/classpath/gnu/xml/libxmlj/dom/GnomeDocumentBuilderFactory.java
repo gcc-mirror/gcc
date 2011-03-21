@@ -1,4 +1,4 @@
-/* GnomeDocumentBuilderFactory.java - 
+/* GnomeDocumentBuilderFactory.java -
    Copyright (C) 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -93,7 +93,7 @@ public class GnomeDocumentBuilderFactory
   {
     // TODO
   }
-  
+
   public void setFeature(String name, boolean value)
     throws ParserConfigurationException
   {
@@ -114,5 +114,5 @@ public class GnomeDocumentBuilderFactory
       return secureProcessing;
     throw new ParserConfigurationException(name);
   }
-  
+
 }

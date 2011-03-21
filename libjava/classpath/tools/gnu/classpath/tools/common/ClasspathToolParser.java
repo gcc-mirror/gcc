@@ -63,7 +63,7 @@ public class ClasspathToolParser
   private static String getVersionString(String programName)
   {
     String fmt = (Messages.getString("ClasspathToolParser.VersionFormat")); //$NON-NLS-1$
-    return MessageFormat.format(fmt, 
+    return MessageFormat.format(fmt,
                                 new Object[]
                                   {
                                     programName,
@@ -93,15 +93,15 @@ public class ClasspathToolParser
   }
 
   public void parse(String[] inArgs, FileArgumentCallback files,
-		    boolean handleFileLists)
+                    boolean handleFileLists)
   {
     FileArgumentCallback cb;
-    
+
     if (handleFileLists)
       cb = new AtFileArgumentCallback(files);
     else
       cb = files;
-    
+
     parse(inArgs, cb);
   }
 
@@ -111,22 +111,22 @@ public class ClasspathToolParser
 
     final FileArgumentCallback cb = new FileArgumentCallback()
       {
-    	public void notifyFile(String fileArgument)
-    	{
-    	  fileResult.add(fileArgument);
-    	}
+        public void notifyFile(String fileArgument)
+        {
+          fileResult.add(fileArgument);
+        }
       };
-    
+
     if (handleFileLists)
       parse(inArgs, new AtFileArgumentCallback(cb));
     else
       parse(inArgs, cb);
-    
+
     return fileResult.toArray(new String[fileResult.size()]);
   }
 
 
-  /** 
+  /**
    * Simple function that takes the given {@link Reader}, treats it like
    * a textfile and reads all the whitespace separated entries from it
    * and adds them to the @{link FileArgumentCallback} instance.
@@ -136,7 +136,7 @@ public class ClasspathToolParser
    * @throws OptionException if an error occurs reading the list.
    */
   public void parseFileList(Reader reader, FileArgumentCallback cb)
-	throws OptionException
+        throws OptionException
   {
     BufferedReader breader = new BufferedReader(reader);
     String line = null;
@@ -145,17 +145,17 @@ public class ClasspathToolParser
       {
         while ((line = breader.readLine()) != null)
           parseLine(line, cb);
-          
+
         reader.close();
       }
     catch (IOException ioe)
       {
         throw new OptionException("I/O error while reading a file list", ioe);
       }
-      
+
   }
-  
-  /** 
+
+  /**
    * Parses whitespace separated file entries.
    *
    * Note: This is not coping with whitespace in files or quoting.
@@ -172,31 +172,31 @@ public class ClasspathToolParser
     int start = 0;
     int end = 0;
 
-		// While not reached end of line ...
+                // While not reached end of line ...
     while (start < length)
       {
-	// Search for first non-whitespace character for the start of a word.
+        // Search for first non-whitespace character for the start of a word.
         while (Character.isWhitespace(line.codePointAt(start)))
           {
             start++;
-	    
+
             if (start == length)
               return;
           }
-	
+
         end = start + 1;
-	
-	// Search for first whitespace character for the end of a word.
+
+        // Search for first whitespace character for the end of a word.
         while (end < length && !Character.isWhitespace(line.codePointAt(end)))
           end++;
-	
+
         cb.notifyFile(line.substring(start, end));
-	
+
         start = end + 1;
       }
   }
 
-  /** 
+  /**
    * Implementation of {@link FileArgumentCallback} that handles
    * file arguments in {@link #notifyFile} starting with a <code>@</code>
    * through {@link ClasspathToolParser#parseFileList}.
@@ -204,7 +204,7 @@ public class ClasspathToolParser
   class AtFileArgumentCallback extends FileArgumentCallback
   {
     FileArgumentCallback cb;
-    
+
     AtFileArgumentCallback(FileArgumentCallback cb)
     {
       this.cb = cb;
@@ -215,25 +215,25 @@ public class ClasspathToolParser
       throws OptionException
     {
       if (fileArgument.codePointAt(0) == '@')
-	{
-	  FileReader fr = null;
-	  
-	  try
-	    {
-	      fr = new FileReader(fileArgument.substring(1));
-	    }
-	  catch (FileNotFoundException fnfe)
-	    {
-	      throw new OptionException("File not found: " + fileArgument.substring(1),
-					fnfe);
-	    }
-	  
-	  ClasspathToolParser.this.parseFileList(fr, cb);
-	}
+        {
+          FileReader fr = null;
+
+          try
+            {
+              fr = new FileReader(fileArgument.substring(1));
+            }
+          catch (FileNotFoundException fnfe)
+            {
+              throw new OptionException("File not found: " + fileArgument.substring(1),
+                                        fnfe);
+            }
+
+          ClasspathToolParser.this.parseFileList(fr, cb);
+        }
       else
-	cb.notifyFile(fileArgument);
+        cb.notifyFile(fileArgument);
     }
-    
+
   }
 
 }

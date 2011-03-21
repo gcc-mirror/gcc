@@ -60,10 +60,10 @@ import org.omg.CORBA_2_3.portable.ObjectImpl;
  * "javax.rmi.CORBA.StubClass" to the name of the alternative class that must
  * implement {@link StubDelegate}. Hence Stub contains two delegates, one for
  * Stub-related operations and another inherited from the ObjectImpl.
- * 
+ *
  * @specnote GNU Classpath uses separate delegate per each Stub. The delegate
  * holds information about the ORB and other data, specific for the each Stub.
- * 
+ *
  * @author Audrius Meskauskas (AudriusA@Bioinformatics.org)
  */
 public abstract class Stub
@@ -118,7 +118,7 @@ public abstract class Stub
 
   /**
    * Get the string representation of this Stub.
-   * 
+   *
    * @return the CORBA IOR reference.
    */
   public String toString()
@@ -149,13 +149,13 @@ public abstract class Stub
    * It is frequently easier to call {@link PortableRemoteObject#connect} rather
    * than this method.
    * </p>
-   * 
+   *
    * @param orb the ORB where the Stub must be connected.
-   * 
+   *
    * @throws RemoteException if the stub is already connected to some other ORB.
    * If the stub is already connected to the ORB that was passed as parameter,
    * the method returns without action.
-   * 
+   *
    * @throws BAD_PARAM if the name of this stub does not match the stub name
    * pattern, "_*_Stub" or if the Tie class, "_*Impl_Tie", does not exists or an
    * instance of this class cannot be instantiated.

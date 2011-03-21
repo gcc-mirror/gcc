@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -46,11 +46,11 @@ import java.lang.reflect.Array;
 class GrowableArrayContext extends AbstractContext
 {
     private static final int INITIAL_SIZE = 16;
-    
+
     private Class klass;
     private Object array;
     private int length;
-    
+
     GrowableArrayContext(String id, Class newClass)
     {
         setId(id);
@@ -69,7 +69,7 @@ class GrowableArrayContext extends AbstractContext
           System.arraycopy(array, 0, tmp, 0, length);
           array = tmp;
         }
-        
+
       try {
         Array.set(array, length++, o);
       } catch(IllegalArgumentException iae) {
@@ -97,7 +97,7 @@ class GrowableArrayContext extends AbstractContext
             System.arraycopy(array, 0, tmp, 0, length);
             array = tmp;
           }
-        
+
         return array;
     }
 
@@ -119,7 +119,7 @@ class GrowableArrayContext extends AbstractContext
       try {
         Array.set(array, index, o);
       } catch(IllegalArgumentException iae) {
-        throw new AssemblyException(iae);   
+        throw new AssemblyException(iae);
       }
     }
 

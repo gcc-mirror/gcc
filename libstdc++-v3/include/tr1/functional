@@ -1,6 +1,6 @@
 // TR1 functional header -*- C++ -*-
 
-// Copyright (C) 2004, 2005, 2006, 2007, 2009, 2010
+// Copyright (C) 2004, 2005, 2006, 2007, 2009, 2010, 2011
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -44,10 +44,12 @@
 #include <ext/type_traits.h>
 #include <bits/move.h> // for std::__addressof
 
-namespace std
+namespace std _GLIBCXX_VISIBILITY(default)
 {
 namespace tr1
 {
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
   template<typename _MemberPointer>
     class _Mem_fn;
 
@@ -840,6 +842,8 @@ namespace tr1
   /// The type of placeholder objects defined by libstdc++.
   template<int _Num> struct _Placeholder { };
 
+_GLIBCXX_END_NAMESPACE_VERSION
+
   /** @namespace std::placeholders
    *  @brief ISO C++ 0x entities sub namespace for functional.
    *
@@ -849,6 +853,7 @@ namespace tr1
    */
   namespace placeholders 
   { 
+  _GLIBCXX_BEGIN_NAMESPACE_VERSION
     namespace 
     {
       _Placeholder<1> _1;
@@ -881,8 +886,10 @@ namespace tr1
       _Placeholder<28> _28;
       _Placeholder<29> _29;
     } 
+  _GLIBCXX_END_NAMESPACE_VERSION
   }
 
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
   /**
    *  Partial specialization of is_placeholder that provides the placeholder
    *  number for the placeholder objects defined by libstdc++.
@@ -2134,6 +2141,8 @@ namespace tr1
     inline void
     swap(function<_Signature>& __x, function<_Signature>& __y)
     { __x.swap(__y); }
+
+_GLIBCXX_END_NAMESPACE_VERSION
 }
 }
 

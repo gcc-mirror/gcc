@@ -33,16 +33,16 @@
 #include <profile/base.h> 
 #include <profile/iterator_tracker.h> 
 
-namespace std
+namespace std _GLIBCXX_VISIBILITY(default)
 {
 namespace __profile
 {
   /** @brief List wrapper with performance instrumentation.  */
 template<typename _Tp, typename _Allocator = std::allocator<_Tp> >
     class list
-    : public _GLIBCXX_STD_D::list<_Tp, _Allocator>
+    : public _GLIBCXX_STD_C::list<_Tp, _Allocator>
     {
-      typedef _GLIBCXX_STD_D::list<_Tp, _Allocator> _Base;
+      typedef _GLIBCXX_STD_C::list<_Tp, _Allocator> _Base;
 
     public:
       typedef typename _Base::reference             reference;

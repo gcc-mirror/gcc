@@ -1,6 +1,6 @@
 ; Options for the C, ObjC, C++ and ObjC++ front ends.
-; Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
-; Free Software Foundation, Inc.
+; Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+; 2011 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -728,6 +728,10 @@ fconstant-string-class=
 ObjC ObjC++ Joined MissingArgError(no class name specified with %qs)
 -fconst-string-class=<name>	Use class <name> for constant strings
 
+fconstexpr-depth=
+C++ ObjC++ Joined RejectNegative UInteger Var(max_constexpr_depth) Init(512)
+-fconstexpr-depth=<number>	Specify maximum constexpr recursion depth
+
 fdeduce-init-list
 C++ ObjC++ Var(flag_deduce_init_list) Init(1)
 -fno-deduce-init-list	disable deduction of std::initializer_list for a template type parameter from a brace-enclosed initializer-list
@@ -822,6 +826,10 @@ ffriend-injection
 C++ ObjC++ Var(flag_friend_injection)
 Inject friend functions into enclosing namespace
 
+fkeep-inline-dllexport
+C C++ ObjC ObjC++ Var(flag_keep_inline_dllexport) Init(1) Report Condition(TARGET_DLLIMPORT_DECL_ATTRIBUTES)
+Don't emit dllexported inline functions unless needed
+
 flabels-ok
 C++ ObjC++ Ignore Warn(switch %qs is no longer supported)
 
@@ -857,6 +865,10 @@ fnothrow-opt
 C++ ObjC++ Optimization Var(flag_nothrow_opt)
 Treat a throw() exception specification as noexcept to improve code size
 
+fobjc-abi-version=
+ObjC ObjC++ Joined Report RejectNegative UInteger Var(flag_objc_abi)
+Specify which ABI to use for Objective-C family code and meta-data generation.
+
 ; Generate special '- .cxx_construct' and '- .cxx_destruct' methods
 ; to initialize any non-POD ivars in Objective-C++ classes.
 fobjc-call-cxx-cdtors
@@ -876,6 +888,10 @@ Enable Objective-C exception and synchronization syntax
 fobjc-gc
 ObjC ObjC++ Var(flag_objc_gc)
 Enable garbage collection (GC) in Objective-C/Objective-C++ programs
+
+fobjc-nilcheck
+ObjC ObjC++ Var(flag_objc_nilcheck,1)
+Enable inline checks for nil receivers with the NeXT runtime and ABI version 2.
 
 ; Nonzero means that we generate NeXT setjmp based exceptions.
 fobjc-sjlj-exceptions

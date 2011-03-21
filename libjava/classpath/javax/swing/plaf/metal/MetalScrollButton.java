@@ -47,32 +47,32 @@ import javax.swing.plaf.basic.BasicArrowButton;
 
 /**
  * A button used by the {@link MetalScrollBarUI}.  The button appearance
- * varies according to the button direction, whether or not it is part of a 
- * "free standing" scroll bar, and the current state of the button. 
+ * varies according to the button direction, whether or not it is part of a
+ * "free standing" scroll bar, and the current state of the button.
  */
-public class MetalScrollButton extends BasicArrowButton 
+public class MetalScrollButton extends BasicArrowButton
 {
-  
-  /** 
+
+  /**
    * The maximum size for buttons.
    * @see #getMaximumSize()
    */
-  private static Dimension maximumSize;     
-  
+  private static Dimension maximumSize;
+
   /** The width of the button. */
   private int buttonWidth;
-  
-  /** 
-   * A flag that indicates whether the button is part of a free standing 
+
+  /**
+   * A flag that indicates whether the button is part of a free standing
    * scroll bar.  This affects how the border is drawn.
    */
   private boolean freeStanding;
-  
+
   /**
    * Creates a new button.
-   * 
-   * @param direction  the direction (this should be one of {@link #NORTH}, 
-   *                   {@link #SOUTH}, {@link #EAST} and {@link #WEST}, but 
+   *
+   * @param direction  the direction (this should be one of {@link #NORTH},
+   *                   {@link #SOUTH}, {@link #EAST} and {@link #WEST}, but
    *                   this is not enforced).
    * @param width  the button width.
    * @param freeStanding  a flag indicating whether the scroll button is free
@@ -85,31 +85,31 @@ public class MetalScrollButton extends BasicArrowButton
     this.freeStanding = freeStanding;
     setFocusable(false);
   }
-  
+
   /**
    * Returns the button width.
-   * 
+   *
    * @return The button width.
    */
   public int getButtonWidth()
   {
-    return buttonWidth;   
+    return buttonWidth;
   }
 
   /**
    * Sets the free standing flag.  This controls how the button border is
    * drawn.
-   * 
+   *
    * @param freeStanding  the new value of the flag.
    */
   public void setFreeStanding(boolean freeStanding)
   {
     this.freeStanding = freeStanding;
   }
-  
+
   /**
    * Paints the button.
-   * 
+   *
    * @param g  the graphics device.
    */
   public void paint(Graphics g)
@@ -122,16 +122,16 @@ public class MetalScrollButton extends BasicArrowButton
     else
       g.setColor(MetalLookAndFeel.getControl());
     g.fillRect(0, 0, bounds.width, bounds.height);
-    
+
     paintArrow(g, bounds.width, bounds.height);
-    
+
     // paint a border manually - I tried using a real (custom) Border
-    // but couldn't get it to stay set for the button, something was 
+    // but couldn't get it to stay set for the button, something was
     // overwriting it...
-    if (freeStanding) 
+    if (freeStanding)
       {
         if (direction == WEST)
-          paintWestBorderFreeStanding(g, bounds.width, bounds.height);        
+          paintWestBorderFreeStanding(g, bounds.width, bounds.height);
         else if (direction == EAST)
           paintEastBorderFreeStanding(g, bounds.width, bounds.height);
         else if (direction == SOUTH)
@@ -142,7 +142,7 @@ public class MetalScrollButton extends BasicArrowButton
     else
       {
         if (direction == WEST)
-          paintWestBorder(g, bounds.width, bounds.height);        
+          paintWestBorder(g, bounds.width, bounds.height);
         else if (direction == EAST)
           paintEastBorder(g, bounds.width, bounds.height);
         else if (direction == SOUTH)
@@ -151,14 +151,14 @@ public class MetalScrollButton extends BasicArrowButton
           paintNorthBorder(g, bounds.width, bounds.height);
       }
   }
-  
+
   private void paintArrow(Graphics g, int w, int h)
   {
     if (isEnabled())
       g.setColor(MetalLookAndFeel.getBlack());
     else
       g.setColor(MetalLookAndFeel.getControlDisabled());
-    
+
     if (direction == SOUTH)
       {
         int x = w / 2;
@@ -178,7 +178,7 @@ public class MetalScrollButton extends BasicArrowButton
         int x = w / 2 - 3;
         int y = h / 2;
         for (int i = 1; i < 5; i++)
-          g.drawLine(x + i, y - i, x + i, y + i - 1);        
+          g.drawLine(x + i, y - i, x + i, y + i - 1);
       }
     else // assume NORTH
       {
@@ -191,12 +191,12 @@ public class MetalScrollButton extends BasicArrowButton
   /**
    * Paints the border for a button with a {@link #NORTH} direction that
    * belongs to a free standing scroll bar.
-   * 
+   *
    * @param g  the graphics device.
    * @param w  the button width.
    * @param h  the button height.
    */
-  private void paintNorthBorderFreeStanding(Graphics g, int w, int h) 
+  private void paintNorthBorderFreeStanding(Graphics g, int w, int h)
   {
     if (isEnabled())
       {
@@ -205,12 +205,12 @@ public class MetalScrollButton extends BasicArrowButton
         g.drawLine(0, 0, 0, h - 1);
         g.drawLine(2, h - 1, w - 2, h - 1);
         g.drawLine(w - 2, 2, w - 2, h - 1);
-        
+
         g.setColor(MetalLookAndFeel.getControlHighlight());
         g.drawLine(1, 1, 1, h - 2);
         g.drawLine(1, 1, w - 3, 1);
         g.drawLine(w - 1, 1, w - 1, h - 1);
-      
+
         g.setColor(MetalLookAndFeel.getControl());
         g.drawLine(1, h - 1, 1, h - 1);
         g.drawLine(w - 2, 1, w - 2, 1);
@@ -223,11 +223,11 @@ public class MetalScrollButton extends BasicArrowButton
         g.drawLine(0, 0, 0, h - 1);
       }
   }
-  
+
   /**
    * Paints the border for a button with a {@link #SOUTH} direction that
    * belongs to a free standing scroll bar.
-   * 
+   *
    * @param g  the graphics device.
    * @param w  the button width.
    * @param h  the button height.
@@ -241,12 +241,12 @@ public class MetalScrollButton extends BasicArrowButton
         g.drawLine(0, 0, 0, h - 1);
         g.drawLine(2, h - 1, w - 2, h - 1);
         g.drawLine(w - 2, 2, w - 2, h - 1);
-        
+
         g.setColor(MetalLookAndFeel.getControlHighlight());
         g.drawLine(1, 1, 1, h - 1);
         g.drawLine(1, 1, w - 1, 1);
         g.drawLine(w - 1, 1, w - 1, h - 1);
-      
+
         g.setColor(MetalLookAndFeel.getControl());
         g.drawLine(1, h - 1, 1, h - 1);
         g.drawLine(w - 1, 1, w - 1, 1);
@@ -259,11 +259,11 @@ public class MetalScrollButton extends BasicArrowButton
         g.drawLine(0, 0, 0, h - 1);
       }
   }
-  
+
   /**
    * Paints the border for a button with an {@link #EAST} direction that
    * belongs to a free standing scroll bar.
-   * 
+   *
    * @param g  the graphics device.
    * @param w  the button width.
    * @param h  the button height.
@@ -276,12 +276,12 @@ public class MetalScrollButton extends BasicArrowButton
         g.drawLine(0, 0, w - 2, 0);
         g.drawLine(w - 2, 0, w - 2, h - 2);
         g.drawLine(0, h - 2, w - 2, h - 2);
-        
+
         g.setColor(MetalLookAndFeel.getControlHighlight());
         g.drawLine(0, 1, w - 1, 1);
         g.drawLine(w - 1, 1, w - 1, h - 1);
         g.drawLine(0, h - 1, w - 1, h - 1);
-      
+
         g.setColor(MetalLookAndFeel.getControl());
         g.drawLine(w - 2, 1, w - 2, 1);
       }
@@ -293,11 +293,11 @@ public class MetalScrollButton extends BasicArrowButton
         g.drawLine(0, h - 1, w - 1, h - 1);
       }
   }
-  
+
   /**
    * Paints the border for a button with a {@link #WEST} direction that
    * belongs to a free standing scroll bar.
-   * 
+   *
    * @param g  the graphics device.
    * @param w  the button width.
    * @param h  the button height.
@@ -310,12 +310,12 @@ public class MetalScrollButton extends BasicArrowButton
         g.drawLine(0, 0, w - 1, 0);
         g.drawLine(0, 0, 0, h - 2);
         g.drawLine(0, h - 2, w - 1, h - 2);
-        
+
         g.setColor(MetalLookAndFeel.getControlHighlight());
         g.drawLine(1, 1, w - 1, 1);
         g.drawLine(1, 1, 1, h - 1);
         g.drawLine(1, h - 1, w - 1, h - 1);
-      
+
         g.setColor(MetalLookAndFeel.getControl());
         g.drawLine(1, h - 2, 1, h - 2);
       }
@@ -327,22 +327,22 @@ public class MetalScrollButton extends BasicArrowButton
         g.drawLine(0, h - 1, w - 1, h - 1);
       }
   }
-  
+
   /**
    * Paints the border for a button with a {@link #NORTH} direction that
    * belongs to a scroll bar that is not free standing.
-   * 
+   *
    * @param g  the graphics device.
    * @param w  the button width.
    * @param h  the button height.
    */
-  private void paintNorthBorder(Graphics g, int w, int h) 
+  private void paintNorthBorder(Graphics g, int w, int h)
   {
     if (isEnabled())
       {
         g.setColor(MetalLookAndFeel.getControlDarkShadow());
         g.drawLine(0, 0, 0, h - 1);
-         
+
         g.setColor(MetalLookAndFeel.getControlHighlight());
         g.drawLine(1, 0, 1, h - 1);
         g.drawLine(1, 0, w - 1, 0);
@@ -353,11 +353,11 @@ public class MetalScrollButton extends BasicArrowButton
         g.drawLine(0, 0, 0, h - 1);
       }
   }
-  
+
   /**
    * Paints the border for a button with a {@link #SOUTH} direction that
    * belongs to a scroll bar that is not free standing.
-   * 
+   *
    * @param g  the graphics device.
    * @param w  the button width.
    * @param h  the button height.
@@ -369,11 +369,11 @@ public class MetalScrollButton extends BasicArrowButton
         g.setColor(MetalLookAndFeel.getControlDarkShadow());
         g.drawLine(0, 0, 0, h - 1);
         g.drawLine(0, h - 1, w - 1, h - 1);
-         
+
         g.setColor(MetalLookAndFeel.getControlHighlight());
         g.drawLine(1, 0, 1, h - 1);
         g.drawLine(1, 0, w - 1, 0);
-        
+
         g.setColor(MetalLookAndFeel.getControl());
         g.drawLine(1, h - 1, 1, h - 1);
       }
@@ -387,7 +387,7 @@ public class MetalScrollButton extends BasicArrowButton
   /**
    * Paints the border for a button with an {@link #EAST} direction that
    * belongs to a scroll bar that is not free standing.
-   * 
+   *
    * @param g  the graphics device.
    * @param w  the button width.
    * @param h  the button height.
@@ -409,11 +409,11 @@ public class MetalScrollButton extends BasicArrowButton
         g.drawLine(0, 0, w - 1, 0);
       }
   }
-  
+
   /**
    * Paints the border for a button with a {@link #WEST} direction that
    * belongs to a scroll bar that is not free standing.
-   * 
+   *
    * @param g  the graphics device.
    * @param w  the button width.
    * @param h  the button height.
@@ -435,11 +435,11 @@ public class MetalScrollButton extends BasicArrowButton
         g.drawLine(0, 0, bounds.width - 1, 0);
       }
   }
-    
+
   /**
-   * Returns the preferred size for the button, which varies depending on 
+   * Returns the preferred size for the button, which varies depending on
    * the direction of the button and whether or not it is free standing.
-   * 
+   *
    * @return The preferred size.
    */
   public Dimension getPreferredSize()
@@ -447,9 +447,9 @@ public class MetalScrollButton extends BasicArrowButton
     int adj = 1;
     if (!freeStanding)
       adj = 2;
-    
+
     if (direction == EAST)
-      return new Dimension(buttonWidth - adj, buttonWidth);    
+      return new Dimension(buttonWidth - adj, buttonWidth);
     else if (direction == WEST)
       return new Dimension(buttonWidth - 2, buttonWidth);
     else if (direction == SOUTH)
@@ -457,27 +457,27 @@ public class MetalScrollButton extends BasicArrowButton
     else // assume NORTH
       return new Dimension(buttonWidth, buttonWidth - 2);
   }
-  
+
   /**
    * Returns the minimum size for the button.
-   * 
+   *
    * @return The minimum size for the button.
    */
   public Dimension getMinimumSize()
   {
     return getPreferredSize();
   }
- 
+
   /**
    * Returns the maximum size for the button.
-   * 
+   *
    * @return <code>Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE)</code>.
    */
   public Dimension getMaximumSize()
   {
     if (maximumSize == null)
       maximumSize = new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE);
-    return maximumSize; 
+    return maximumSize;
   }
-  
+
 }

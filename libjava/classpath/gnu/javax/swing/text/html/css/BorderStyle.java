@@ -59,6 +59,6 @@ public class BorderStyle
            || value.equals("solid") || value.equals("double")
            || value.equals("groove") || value.equals("ridge")
            || value.equals("inset") || value.equals("outset");
-           
+
   }
 }

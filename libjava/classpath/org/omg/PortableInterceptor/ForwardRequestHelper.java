@@ -75,7 +75,7 @@ public abstract class ForwardRequestHelper
   /**
    * Insert the ForwardRequest into the given Any. This method uses the
    * ForwardRequestHolder.
-   * 
+   *
    * @param any the Any to insert into.
    * @param that the ForwardRequest to insert.
    */
@@ -99,7 +99,7 @@ public abstract class ForwardRequestHelper
     catch (ClassCastException cex)
       {
         BAD_OPERATION bad = new BAD_OPERATION(id() + " expected");
-        bad.minor = Minor.Any;        
+        bad.minor = Minor.Any;
         bad.initCause(cex);
         throw bad;
       }

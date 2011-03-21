@@ -1,4 +1,4 @@
-/* ValidatorHandler.java -- 
+/* ValidatorHandler.java --
    Copyright (C) 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -73,7 +73,7 @@ public abstract class ValidatorHandler
   public abstract void setErrorHandler(ErrorHandler errorHandler);
 
   public abstract ErrorHandler getErrorHandler();
-  
+
   public abstract void setResourceResolver(LSResourceResolver resourceResolver);
 
   public abstract LSResourceResolver getResourceResolver();
@@ -89,7 +89,7 @@ public abstract class ValidatorHandler
       }
     throw new SAXNotRecognizedException(name);
   }
-  
+
   public void setFeature(String name, boolean value)
     throws SAXNotRecognizedException, SAXNotSupportedException
   {
@@ -99,17 +99,17 @@ public abstract class ValidatorHandler
       }
     throw new SAXNotRecognizedException(name);
   }
-  
+
   public Object getProperty(String name)
     throws SAXNotRecognizedException, SAXNotSupportedException
   {
     throw new SAXNotRecognizedException(name);
   }
-  
+
   public void setProperty(String name, Object value)
     throws SAXNotRecognizedException, SAXNotSupportedException
   {
     throw new SAXNotRecognizedException(name);
   }
-    
+
 }

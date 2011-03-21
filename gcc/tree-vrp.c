@@ -714,6 +714,8 @@ static inline bool
 vrp_bitmap_equal_p (const_bitmap b1, const_bitmap b2)
 {
   return (b1 == b2
+	  || ((!b1 || bitmap_empty_p (b1))
+	      && (!b2 || bitmap_empty_p (b2)))
 	  || (b1 && b2
 	      && bitmap_equal_p (b1, b2)));
 }
@@ -7536,12 +7538,14 @@ identify_jump_threads (void)
 	continue;
 
       /* We're basically looking for any kind of conditional with
-	 integral type arguments.  */
+	 integral or pointer type arguments.  Note the type of the second
+	 argument will be the same as the first argument, so no need to
+	 check it explicitly.  */
       if (TREE_CODE (gimple_cond_lhs (last)) == SSA_NAME
-	  && INTEGRAL_TYPE_P (TREE_TYPE (gimple_cond_lhs (last)))
+	  && (INTEGRAL_TYPE_P (TREE_TYPE (gimple_cond_lhs (last)))
+	      || POINTER_TYPE_P (TREE_TYPE (gimple_cond_lhs (last))))
 	  && (TREE_CODE (gimple_cond_rhs (last)) == SSA_NAME
-	      || is_gimple_min_invariant (gimple_cond_rhs (last)))
-	  && INTEGRAL_TYPE_P (TREE_TYPE (gimple_cond_rhs (last))))
+	      || is_gimple_min_invariant (gimple_cond_rhs (last))))
 	{
 	  edge_iterator ei;
 
@@ -7764,9 +7768,10 @@ struct gimple_opt_pass pass_vrp =
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
   TODO_cleanup_cfg
-    | TODO_ggc_collect
+    | TODO_update_ssa
     | TODO_verify_ssa
+    | TODO_verify_flow
     | TODO_dump_func
-    | TODO_update_ssa			/* todo_flags_finish */
+    | TODO_ggc_collect			/* todo_flags_finish */
  }
 };

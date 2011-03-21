@@ -18,4 +18,4 @@ struct B : public A<U>
 
 template <class U>
 B<U>::A_Type B<U>::Func() { // { dg-error "typename" } implicit typename
-}			    // { dg-error "expected" }
+}

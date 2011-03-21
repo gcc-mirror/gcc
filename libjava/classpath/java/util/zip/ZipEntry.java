@@ -46,7 +46,7 @@ import java.util.Calendar;
  * about the members in an archive.  On the other hand ZipOutputStream
  * needs an instance of this class to create a new member.
  *
- * @author Jochen Hoenicke 
+ * @author Jochen Hoenicke
  */
 public class ZipEntry implements ZipConstants, Cloneable
 {
@@ -196,7 +196,7 @@ public class ZipEntry implements ZipConstants, Cloneable
 
   /**
    * Returns the entry name.  The path components in the entry are
-   * always separated by slashes ('/').  
+   * always separated by slashes ('/').
    */
   public String getName()
   {
@@ -241,7 +241,7 @@ public class ZipEntry implements ZipConstants, Cloneable
           time = cal.getTimeInMillis();
           known |= KNOWN_TIME;
           return time;
-	 }
+         }
        catch (RuntimeException ex)
          {
           /* Ignore illegal time stamp */
@@ -260,7 +260,7 @@ public class ZipEntry implements ZipConstants, Cloneable
   public void setSize(long size)
   {
     if ((size & 0xffffffff00000000L) != 0)
-	throw new IllegalArgumentException();
+        throw new IllegalArgumentException();
     this.size = (int) size;
     this.known |= KNOWN_SIZE;
   }
@@ -298,7 +298,7 @@ public class ZipEntry implements ZipConstants, Cloneable
   public void setCrc(long crc)
   {
     if ((crc & 0xffffffff00000000L) != 0)
-	throw new IllegalArgumentException();
+        throw new IllegalArgumentException();
     this.crc = (int) crc;
     this.known |= KNOWN_CRC;
   }
@@ -317,18 +317,18 @@ public class ZipEntry implements ZipConstants, Cloneable
    * supported.
    * @exception IllegalArgumentException if method is not supported.
    * @see ZipOutputStream#DEFLATED
-   * @see ZipOutputStream#STORED 
+   * @see ZipOutputStream#STORED
    */
   public void setMethod(int method)
   {
     if (method != ZipOutputStream.STORED
-	&& method != ZipOutputStream.DEFLATED)
-	throw new IllegalArgumentException();
+        && method != ZipOutputStream.DEFLATED)
+        throw new IllegalArgumentException();
     this.method = (byte) method;
   }
 
   /**
-   * Gets the compression method.  
+   * Gets the compression method.
    * @return the compression method or -1 if unknown.
    */
   public int getMethod()
@@ -342,10 +342,10 @@ public class ZipEntry implements ZipConstants, Cloneable
    */
   public void setExtra(byte[] extra)
   {
-    if (extra == null) 
+    if (extra == null)
       {
-	this.extra = null;
-	return;
+        this.extra = null;
+        return;
       }
     if (extra.length > 0xffff)
       throw new IllegalArgumentException();
@@ -360,38 +360,38 @@ public class ZipEntry implements ZipConstants, Cloneable
 
     if (extra == null)
       {
-	known |= KNOWN_EXTRA;
-	return;
+        known |= KNOWN_EXTRA;
+        return;
       }
 
     try
       {
-	int pos = 0;
-	while (pos < extra.length) 
-	  {
-	    int sig = (extra[pos++] & 0xff)
-	      | (extra[pos++] & 0xff) << 8;
-	    int len = (extra[pos++] & 0xff)
-	      | (extra[pos++] & 0xff) << 8;
-	    if (sig == 0x5455) 
-	      {
-		/* extended time stamp */
-		int flags = extra[pos];
-		if ((flags & 1) != 0)
-		  {
-		    long time = ((extra[pos+1] & 0xff)
-			    | (extra[pos+2] & 0xff) << 8
-			    | (extra[pos+3] & 0xff) << 16
-			    | (extra[pos+4] & 0xff) << 24);
-		    setTime(time*1000);
-		  }
-	      }
-	    pos += len;
-	  }
+        int pos = 0;
+        while (pos < extra.length)
+          {
+            int sig = (extra[pos++] & 0xff)
+              | (extra[pos++] & 0xff) << 8;
+            int len = (extra[pos++] & 0xff)
+              | (extra[pos++] & 0xff) << 8;
+            if (sig == 0x5455)
+              {
+                /* extended time stamp */
+                int flags = extra[pos];
+                if ((flags & 1) != 0)
+                  {
+                    long time = ((extra[pos+1] & 0xff)
+                            | (extra[pos+2] & 0xff) << 8
+                            | (extra[pos+3] & 0xff) << 16
+                            | (extra[pos+4] & 0xff) << 24);
+                    setTime(time*1000);
+                  }
+              }
+            pos += len;
+          }
       }
     catch (ArrayIndexOutOfBoundsException ex)
       {
-	/* be lenient */
+        /* be lenient */
       }
 
     known |= KNOWN_EXTRA;
@@ -429,7 +429,7 @@ public class ZipEntry implements ZipConstants, Cloneable
 
   /**
    * Gets true, if the entry is a directory.  This is solely
-   * determined by the name, a trailing slash '/' marks a directory.  
+   * determined by the name, a trailing slash '/' marks a directory.
    */
   public boolean isDirectory()
   {

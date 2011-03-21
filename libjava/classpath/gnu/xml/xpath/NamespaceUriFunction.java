@@ -1,4 +1,4 @@
-/* NamespaceUriFunction.java -- 
+/* NamespaceUriFunction.java --
    Copyright (C) 2004,2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -63,13 +63,13 @@ final class NamespaceUriFunction
   {
     this(args.size() > 0 ? args.get(0) : null);
   }
-  
+
   NamespaceUriFunction(Expr arg)
   {
     this.arg = arg;
   }
 
-  @Override 
+  @Override
   public Object evaluate(Node context, int pos, int len)
   {
     /* Suppression is safe, as we know context produces Collection<Node> */
@@ -89,10 +89,10 @@ final class NamespaceUriFunction
   {
     return (arg == null) ? false : arg.references(var);
   }
-  
+
   public String toString()
   {
     return (arg == null) ? "namespace-uri()" : "namespace-uri(" + arg + ")";
   }
-  
+
 }

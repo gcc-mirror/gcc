@@ -1,4 +1,4 @@
-/* 
+/*
    Copyright (C) 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -153,15 +153,15 @@ public class LineEvent extends EventObject
   public String toString()
   {
     return ("type=" + type + "; framePosition=" + framePosition
-	    + "line=" + line);
+            + "line=" + line);
   }
-  
+
   private void readObject(ObjectInputStream ois)
     throws IOException
   {
     throw new NotSerializableException("LineEvent is not serializable");
   }
-  
+
   private void writeObject(ObjectOutputStream oos)
     throws IOException
   {

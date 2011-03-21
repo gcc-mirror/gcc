@@ -1,6 +1,6 @@
 // auto_ptr implementation -*- C++ -*-
 
-// Copyright (C) 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -24,7 +24,7 @@
 
 /** @file backward/auto_ptr.h
  *  This is an internal header file, included by other library headers.
- *  You should not attempt to use it directly.
+ *  Do not attempt to use it directly. @headername{memory}
  */
 
 #ifndef _BACKWARD_AUTO_PTR_H
@@ -33,7 +33,9 @@
 #include <bits/c++config.h>
 #include <debug/debug.h>
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /**
    *  A wrapper class to provide auto_ptr with reference semantics.
@@ -49,7 +51,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       
       explicit
       auto_ptr_ref(_Tp1* __p): _M_ptr(__p) { }
-    } _GLIBCXX_DEPRECATED_ATTR;
+    } _GLIBCXX_DEPRECATED;
 
 
   /**
@@ -276,7 +278,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       template<typename _Tp1>
         operator auto_ptr<_Tp1>() throw()
         { return auto_ptr<_Tp1>(this->release()); }
-    } _GLIBCXX_DEPRECATED_ATTR;
+    } _GLIBCXX_DEPRECATED;
 
   // _GLIBCXX_RESOLVE_LIB_DEFECTS
   // 541. shared_ptr template assignment and void
@@ -285,8 +287,9 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     {
     public:
       typedef void element_type;
-    } _GLIBCXX_DEPRECATED_ATTR;
+    } _GLIBCXX_DEPRECATED;
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
 
 #endif /* _BACKWARD_AUTO_PTR_H */

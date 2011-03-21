@@ -303,7 +303,7 @@ optab_for_tree_code (enum tree_code code, const_tree type,
       return TYPE_UNSIGNED (type) ? udiv_optab : sdiv_optab;
 
     case LSHIFT_EXPR:
-      if (VECTOR_MODE_P (TYPE_MODE (type)))
+      if (TREE_CODE (type) == VECTOR_TYPE)
 	{
 	  if (subtype == optab_vector)
 	    return TYPE_SATURATING (type) ? NULL : vashl_optab;
@@ -315,7 +315,7 @@ optab_for_tree_code (enum tree_code code, const_tree type,
       return ashl_optab;
 
     case RSHIFT_EXPR:
-      if (VECTOR_MODE_P (TYPE_MODE (type)))
+      if (TREE_CODE (type) == VECTOR_TYPE)
 	{
 	  if (subtype == optab_vector)
 	    return TYPE_UNSIGNED (type) ? vlshr_optab : vashr_optab;
@@ -325,7 +325,7 @@ optab_for_tree_code (enum tree_code code, const_tree type,
       return TYPE_UNSIGNED (type) ? lshr_optab : ashr_optab;
 
     case LROTATE_EXPR:
-      if (VECTOR_MODE_P (TYPE_MODE (type)))
+      if (TREE_CODE (type) == VECTOR_TYPE)
 	{
 	  if (subtype == optab_vector)
 	    return vrotl_optab;
@@ -335,7 +335,7 @@ optab_for_tree_code (enum tree_code code, const_tree type,
       return rotl_optab;
 
     case RROTATE_EXPR:
-      if (VECTOR_MODE_P (TYPE_MODE (type)))
+      if (TREE_CODE (type) == VECTOR_TYPE)
 	{
 	  if (subtype == optab_vector)
 	    return vrotr_optab;

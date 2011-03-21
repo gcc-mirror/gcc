@@ -654,11 +654,12 @@ gfc_check_operator_interface (gfc_symbol *sym, gfc_intrinsic_op op,
 
       /* Allowed are (per F2003, 12.3.2.1.2 Defined assignments):
 	 - First argument an array with different rank than second,
-	 - Types and kinds do not conform, and
+	 - First argument is a scalar and second an array,
+	 - Types and kinds do not conform, or
 	 - First argument is of derived type.  */
       if (sym->formal->sym->ts.type != BT_DERIVED
 	  && sym->formal->sym->ts.type != BT_CLASS
-	  && (r1 == 0 || r1 == r2)
+	  && (r2 == 0 || r1 == r2)
 	  && (sym->formal->sym->ts.type == sym->formal->next->sym->ts.type
 	      || (gfc_numeric_ts (&sym->formal->sym->ts)
 		  && gfc_numeric_ts (&sym->formal->next->sym->ts))))
@@ -1092,8 +1093,9 @@ gfc_compare_interfaces (gfc_symbol *s1, gfc_symbol *s2, const char *name2,
 
 
 /* Given a pointer to an interface pointer, remove duplicate
-   interfaces and make sure that all symbols are either functions or
-   subroutines.  Returns nonzero if something goes wrong.  */
+   interfaces and make sure that all symbols are either functions
+   or subroutines, and all of the same kind.  Returns nonzero if
+   something goes wrong.  */
 
 static int
 check_interface0 (gfc_interface *p, const char *interface_name)
@@ -1101,21 +1103,32 @@ check_interface0 (gfc_interface *p, const char *interface_name)
   gfc_interface *psave, *q, *qlast;
 
   psave = p;
-  /* Make sure all symbols in the interface have been defined as
-     functions or subroutines.  */
   for (; p; p = p->next)
-    if ((!p->sym->attr.function && !p->sym->attr.subroutine)
-	|| !p->sym->attr.if_source)
-      {
-	if (p->sym->attr.external)
-	  gfc_error ("Procedure '%s' in %s at %L has no explicit interface",
-		     p->sym->name, interface_name, &p->sym->declared_at);
-	else
-	  gfc_error ("Procedure '%s' in %s at %L is neither function nor "
-		     "subroutine", p->sym->name, interface_name,
-		     &p->sym->declared_at);
-	return 1;
-      }
+    {
+      /* Make sure all symbols in the interface have been defined as
+	 functions or subroutines.  */
+      if ((!p->sym->attr.function && !p->sym->attr.subroutine)
+	  || !p->sym->attr.if_source)
+	{
+	  if (p->sym->attr.external)
+	    gfc_error ("Procedure '%s' in %s at %L has no explicit interface",
+		       p->sym->name, interface_name, &p->sym->declared_at);
+	  else
+	    gfc_error ("Procedure '%s' in %s at %L is neither function nor "
+		       "subroutine", p->sym->name, interface_name,
+		      &p->sym->declared_at);
+	  return 1;
+	}
+
+      /* Verify that procedures are either all SUBROUTINEs or all FUNCTIONs.  */
+      if ((psave->sym->attr.function && !p->sym->attr.function)
+	  || (psave->sym->attr.subroutine && !p->sym->attr.subroutine))
+	{
+	  gfc_error ("In %s at %L procedures must be either all SUBROUTINEs"
+		     " or all FUNCTIONs", interface_name, &p->sym->declared_at);
+	  return 1;
+	}
+    }
   p = psave;
 
   /* Remove duplicate interfaces in this interface list.  */
@@ -1448,7 +1461,7 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
 		   int ranks_must_agree, int is_elemental, locus *where)
 {
   gfc_ref *ref;
-  bool rank_check;
+  bool rank_check, is_pointer;
 
   /* If the formal arg has type BT_VOID, it's to one of the iso_c_binding
      procs c_f_pointer or c_f_procpointer, and we need to accept most
@@ -1659,23 +1672,56 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
     return 1;
 
   /* At this point, we are considering a scalar passed to an array.   This
-     is valid (cf. F95 12.4.1.1; F2003 12.4.1.2),
+     is valid (cf. F95 12.4.1.1, F2003 12.4.1.2, and F2008 12.5.2.4),
      - if the actual argument is (a substring of) an element of a
-       non-assumed-shape/non-pointer array;
-     - (F2003) if the actual argument is of type character.  */
+       non-assumed-shape/non-pointer/non-polymorphic array; or
+     - (F2003) if the actual argument is of type character of default/c_char
+       kind.  */
+
+  is_pointer = actual->expr_type == EXPR_VARIABLE
+	       ? actual->symtree->n.sym->attr.pointer : false;
 
   for (ref = actual->ref; ref; ref = ref->next)
-    if (ref->type == REF_ARRAY && ref->u.ar.type == AR_ELEMENT
-	&& ref->u.ar.dimen > 0)
-      break;
-
-  /* Not an array element.  */
-  if (formal->ts.type == BT_CHARACTER
-      && (ref == NULL
-          || (actual->expr_type == EXPR_VARIABLE
-	      && (actual->symtree->n.sym->as->type == AS_ASSUMED_SHAPE
-		  || actual->symtree->n.sym->attr.pointer))))
     {
+      if (ref->type == REF_COMPONENT)
+	is_pointer = ref->u.c.component->attr.pointer;
+      else if (ref->type == REF_ARRAY && ref->u.ar.type == AR_ELEMENT
+	       && ref->u.ar.dimen > 0
+	       && (!ref->next 
+		   || (ref->next->type == REF_SUBSTRING && !ref->next->next)))
+        break;
+    }
+
+  if (actual->ts.type == BT_CLASS && actual->expr_type != EXPR_NULL)
+    {
+      if (where)
+	gfc_error ("Polymorphic scalar passed to array dummy argument '%s' "
+		   "at %L", formal->name, &actual->where);
+      return 0;
+    }
+
+  if (actual->expr_type != EXPR_NULL && ref && actual->ts.type != BT_CHARACTER
+      && (is_pointer || ref->u.ar.as->type == AS_ASSUMED_SHAPE))
+    {
+      if (where)
+	gfc_error ("Element of assumed-shaped or pointer "
+		   "array passed to array dummy argument '%s' at %L",
+		   formal->name, &actual->where);
+      return 0;
+    }
+
+  if (actual->ts.type == BT_CHARACTER && actual->expr_type != EXPR_NULL
+      && (!ref || is_pointer || ref->u.ar.as->type == AS_ASSUMED_SHAPE))
+    {
+      if (formal->ts.kind != 1 && (gfc_option.allow_std & GFC_STD_GNU) == 0)
+	{
+	  if (where)
+	    gfc_error ("Extension: Scalar non-default-kind, non-C_CHAR-kind "
+		       "CHARACTER actual argument with array dummy argument "
+		       "'%s' at %L", formal->name, &actual->where);
+	  return 0;
+	}
+
       if (where && (gfc_option.allow_std & GFC_STD_F2003) == 0)
 	{
 	  gfc_error ("Fortran 2003: Scalar CHARACTER actual argument with "
@@ -1688,22 +1734,12 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
       else
 	return 1;
     }
-  else if (ref == NULL && actual->expr_type != EXPR_NULL)
+
+  if (ref == NULL && actual->expr_type != EXPR_NULL)
     {
       if (where)
 	argument_rank_mismatch (formal->name, &actual->where,
 				symbol_rank (formal), actual->rank);
-      return 0;
-    }
-
-  if (actual->expr_type == EXPR_VARIABLE
-      && actual->symtree->n.sym->as
-      && (actual->symtree->n.sym->as->type == AS_ASSUMED_SHAPE
-	  || actual->symtree->n.sym->attr.pointer))
-    {
-      if (where)
-	gfc_error ("Element of assumed-shaped array passed to dummy "
-		   "argument '%s' at %L", formal->name, &actual->where);
       return 0;
     }
 
@@ -1874,7 +1910,7 @@ get_expr_storage_size (gfc_expr *e)
       else if (ref->type == REF_ARRAY && ref->u.ar.type == AR_ELEMENT
 	       && e->expr_type == EXPR_VARIABLE)
 	{
-	  if (e->symtree->n.sym->as->type == AS_ASSUMED_SHAPE
+	  if (ref->u.ar.as->type == AS_ASSUMED_SHAPE
 	      || e->symtree->n.sym->attr.pointer)
 	    {
 	      elements = 1;
@@ -1903,8 +1939,6 @@ get_expr_storage_size (gfc_expr *e)
 			- mpz_get_si (ref->u.ar.as->lower[i]->value.integer));
 	    }
         }
-      else
-	return 0;
     }
 
   if (substrlen)
@@ -2080,22 +2114,34 @@ compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 	   return 0;
 	 }
 
+      if ((f->sym->attr.pointer || f->sym->attr.allocatable)
+	    && f->sym->ts.deferred != a->expr->ts.deferred
+	    && a->expr->ts.type == BT_CHARACTER)
+	{
+	  if (where)
+	    gfc_error ("Actual argument argument at %L to allocatable or "
+		       "pointer dummy argument '%s' must have a deferred "
+		       "length type parameter if and only if the dummy has one",
+		       &a->expr->where, f->sym->name);
+	  return 0;
+	}
+
       actual_size = get_expr_storage_size (a->expr);
       formal_size = get_sym_storage_size (f->sym);
-      if (actual_size != 0
-	    && actual_size < formal_size
-	    && a->expr->ts.type != BT_PROCEDURE)
+      if (actual_size != 0 && actual_size < formal_size
+	  && a->expr->ts.type != BT_PROCEDURE
+	  && f->sym->attr.flavor != FL_PROCEDURE)
 	{
 	  if (a->expr->ts.type == BT_CHARACTER && !f->sym->as && where)
 	    gfc_warning ("Character length of actual argument shorter "
-			"than of dummy argument '%s' (%lu/%lu) at %L",
-			f->sym->name, actual_size, formal_size,
-			&a->expr->where);
+			 "than of dummy argument '%s' (%lu/%lu) at %L",
+			 f->sym->name, actual_size, formal_size,
+			 &a->expr->where);
           else if (where)
 	    gfc_warning ("Actual argument contains too few "
-			"elements for dummy argument '%s' (%lu/%lu) at %L",
-			f->sym->name, actual_size, formal_size,
-			&a->expr->where);
+			 "elements for dummy argument '%s' (%lu/%lu) at %L",
+			 f->sym->name, actual_size, formal_size,
+			 &a->expr->where);
 	  return  0;
 	}
 
@@ -2661,6 +2707,30 @@ gfc_procedure_use (gfc_symbol *sym, gfc_actual_arglist **ap, locus *where)
   if (sym->attr.if_source == IFSRC_UNKNOWN)
     {
       gfc_actual_arglist *a;
+
+      if (sym->attr.pointer)
+	{
+	  gfc_error("The pointer object '%s' at %L must have an explicit "
+		    "function interface or be declared as array",
+		    sym->name, where);
+	  return;
+	}
+
+      if (sym->attr.allocatable && !sym->attr.external)
+	{
+	  gfc_error("The allocatable object '%s' at %L must have an explicit "
+		    "function interface or be declared as array",
+		    sym->name, where);
+	  return;
+	}
+
+      if (sym->attr.allocatable)
+	{
+	  gfc_error("Allocatable function '%s' at %L must have an explicit "
+		    "function interface", sym->name, where);
+	  return;
+	}
+
       for (a = *ap; a; a = a->next)
 	{
 	  /* Skip g77 keyword extensions like %VAL, %REF, %LOC.  */
@@ -2854,7 +2924,11 @@ matching_typebound_op (gfc_expr** tb_base,
 	gfc_try result;
 
 	if (base->expr->ts.type == BT_CLASS)
-	  derived = CLASS_DATA (base->expr)->ts.u.derived;
+	  {
+	    if (!gfc_expr_attr (base->expr).class_ok)
+	      continue;
+	    derived = CLASS_DATA (base->expr)->ts.u.derived;
+	  }
 	else
 	  derived = base->expr->ts.u.derived;
 

@@ -61,14 +61,14 @@ import javax.swing.border.Border;
  * components to container, one can use add() to add menu's to the menu bar.
  * Menu's will be displayed in the menu  bar in the order they were added.
  * The JMenuBar uses selectionModel to keep track of selected menu index.
- * JMenuBar's selectionModel will fire ChangeEvents to its registered 
+ * JMenuBar's selectionModel will fire ChangeEvents to its registered
  * listeners when the selected index changes.
  */
 public class JMenuBar extends JComponent implements Accessible, MenuElement
 {
   /**
    * Provides accessibility support for <code>JMenuBar</code>.
-   * 
+   *
    * @author Roman Kennke (kennke@aicas.com)
    */
   protected class AccessibleJMenuBar extends AccessibleJComponent
@@ -289,11 +289,11 @@ public class JMenuBar extends JComponent implements Accessible, MenuElement
 
     for (int i = 0; i < comps.length; i++)
       {
-	if (comps[i].equals(c))
-	  {
-	    index = i;
-	    break;
-	  }
+        if (comps[i].equals(c))
+          {
+            index = i;
+            break;
+          }
       }
 
     return index;
@@ -306,18 +306,18 @@ public class JMenuBar extends JComponent implements Accessible, MenuElement
    */
   public JMenu getHelpMenu()
   {
-    // the following error matches the behaviour of the reference 
+    // the following error matches the behaviour of the reference
     // implementation...
     throw new Error("getHelpMenu() is not implemented");
   }
 
   /**
    * Returns the margin between the menu bar's border and its menus.  If the
-   * margin is <code>null</code>, this method returns 
+   * margin is <code>null</code>, this method returns
    * <code>new Insets(0, 0, 0, 0)</code>.
    *
    * @return The margin (never <code>null</code>).
-   * 
+   *
    * @see #setMargin(Insets)
    */
   public Insets getMargin()
@@ -508,14 +508,14 @@ public class JMenuBar extends JComponent implements Accessible, MenuElement
   }
 
   /**
-   * This method overrides JComponent.processKeyBinding to allow the 
-   * JMenuBar to check all the child components (recursiveley) to see 
+   * This method overrides JComponent.processKeyBinding to allow the
+   * JMenuBar to check all the child components (recursiveley) to see
    * if they'll consume the event.
-   * 
+   *
    * @param ks the KeyStroke for the event
    * @param e the KeyEvent for the event
    * @param condition the focus condition for the binding
-   * @param pressed true if the key is pressed 
+   * @param pressed true if the key is pressed
    */
   protected boolean processKeyBinding(KeyStroke ks, KeyEvent e, int condition,
                                       boolean pressed)
@@ -523,19 +523,19 @@ public class JMenuBar extends JComponent implements Accessible, MenuElement
     // See if the regular JComponent behavior consumes the event
     if (super.processKeyBinding(ks, e, condition, pressed))
       return true;
-    
-    // If not, have to recursively check all the child menu elements to see 
-    // if they want it    
+
+    // If not, have to recursively check all the child menu elements to see
+    // if they want it
     MenuElement[] children = getSubElements();
     for (int i = 0; i < children.length; i++)
       if (processKeyBindingHelper(children[i], ks, e, condition, pressed))
         return true;
     return false;
   }
-  
+
   /**
    * This is a helper method to recursively check the children of this
-   * JMenuBar to see if they will consume a key event via key bindings.  
+   * JMenuBar to see if they will consume a key event via key bindings.
    * This is used for menu accelerators.
    * @param menuElement the menuElement to check (and check all its children)
    * @param ks the KeyStroke for the event
@@ -558,7 +558,7 @@ public class JMenuBar extends JComponent implements Accessible, MenuElement
         && ((JComponent) menuElement).processKeyBinding(ks, e, condition,
                                                         pressed))
       return true;
-    
+
     // If that didn't consume it, check all the children recursively
     MenuElement[] children = menuElement.getSubElements();
     for (int i = 0; i < children.length; i++)
@@ -566,7 +566,7 @@ public class JMenuBar extends JComponent implements Accessible, MenuElement
         return true;
     return false;
   }
-  
+
   /**
    * Process mouse events forwarded from MenuSelectionManager. This method
    * doesn't do anything. It is here to conform to the MenuElement interface.
@@ -602,11 +602,11 @@ public class JMenuBar extends JComponent implements Accessible, MenuElement
   {
     if (b != borderPainted)
       {
-	boolean old = borderPainted;
-	borderPainted = b;
-	firePropertyChange("borderPainted", old, b);
-	revalidate();
-	repaint();
+        boolean old = borderPainted;
+        borderPainted = b;
+        firePropertyChange("borderPainted", old, b);
+        revalidate();
+        repaint();
       }
   }
 
@@ -629,7 +629,7 @@ public class JMenuBar extends JComponent implements Accessible, MenuElement
    * bound property with the name 'margin').
    *
    * @param m  the margin (<code>null</code> permitted).
-   * 
+   *
    * @see #getMargin()
    */
   public void setMargin(Insets m)
@@ -664,9 +664,9 @@ public class JMenuBar extends JComponent implements Accessible, MenuElement
   {
     if (selectionModel != model)
       {
-	SingleSelectionModel oldModel = selectionModel;
-	selectionModel = model;
-	firePropertyChange("model", oldModel, selectionModel);
+        SingleSelectionModel oldModel = selectionModel;
+        selectionModel = model;
+        firePropertyChange("model", oldModel, selectionModel);
       }
   }
 

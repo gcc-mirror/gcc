@@ -1,6 +1,6 @@
 /* Output routines for GCC for ARM.
    Copyright (C) 1991, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001,
-   2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+   2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
    Contributed by Pieter `Tiggr' Schoenmakers (rcpieter@win.tue.nl)
    and Martin Simmons (@harleqn.co.uk).
@@ -5786,7 +5786,11 @@ thumb2_legitimate_index_p (enum machine_mode mode, rtx index, int strict_p)
       && (mode == SFmode || mode == DFmode
 	  || (TARGET_MAVERICK && mode == DImode)))
     return (code == CONST_INT && INTVAL (index) < 1024
-	    && INTVAL (index) > -1024
+	    /* Thumb-2 allows only > -256 index range for it's core register
+	       load/stores. Since we allow SF/DF in core registers, we have
+	       to use the intersection between -256~4096 (core) and -1024~1024
+	       (coprocessor).  */
+	    && INTVAL (index) > -256
 	    && (INTVAL (index) & 3) == 0);
 
   if (TARGET_REALLY_IWMMXT && VALID_IWMMXT_REG_MODE (mode))
@@ -6386,6 +6390,62 @@ thumb_legitimize_address (rtx x, rtx orig_x, enum machine_mode mode)
     }
 
   return x;
+}
+
+bool
+arm_legitimize_reload_address (rtx *p,
+			       enum machine_mode mode,
+			       int opnum, int type,
+			       int ind_levels ATTRIBUTE_UNUSED)
+{
+  if (GET_CODE (*p) == PLUS
+      && GET_CODE (XEXP (*p, 0)) == REG
+      && ARM_REGNO_OK_FOR_BASE_P (REGNO (XEXP (*p, 0)))
+      && GET_CODE (XEXP (*p, 1)) == CONST_INT)
+    {
+      HOST_WIDE_INT val = INTVAL (XEXP (*p, 1));
+      HOST_WIDE_INT low, high;
+
+      if (mode == DImode || (mode == DFmode && TARGET_SOFT_FLOAT))
+	low = ((val & 0xf) ^ 0x8) - 0x8;
+      else if (TARGET_MAVERICK && TARGET_HARD_FLOAT)
+	/* Need to be careful, -256 is not a valid offset.  */
+	low = val >= 0 ? (val & 0xff) : -((-val) & 0xff);
+      else if (mode == SImode
+	       || (mode == SFmode && TARGET_SOFT_FLOAT)
+	       || ((mode == HImode || mode == QImode) && ! arm_arch4))
+	/* Need to be careful, -4096 is not a valid offset.  */
+	low = val >= 0 ? (val & 0xfff) : -((-val) & 0xfff);
+      else if ((mode == HImode || mode == QImode) && arm_arch4)
+	/* Need to be careful, -256 is not a valid offset.  */
+	low = val >= 0 ? (val & 0xff) : -((-val) & 0xff);
+      else if (GET_MODE_CLASS (mode) == MODE_FLOAT
+	       && TARGET_HARD_FLOAT && TARGET_FPA)
+	/* Need to be careful, -1024 is not a valid offset.  */
+	low = val >= 0 ? (val & 0x3ff) : -((-val) & 0x3ff);
+      else
+	return false;
+
+      high = ((((val - low) & (unsigned HOST_WIDE_INT) 0xffffffff)
+	       ^ (unsigned HOST_WIDE_INT) 0x80000000)
+	      - (unsigned HOST_WIDE_INT) 0x80000000);
+      /* Check for overflow or zero */
+      if (low == 0 || high == 0 || (high + low != val))
+	return false;
+
+      /* Reload the high part into a base reg; leave the low part
+	 in the mem.  */
+      *p = gen_rtx_PLUS (GET_MODE (*p),
+			 gen_rtx_PLUS (GET_MODE (*p), XEXP (*p, 0),
+				       GEN_INT (high)),
+			 GEN_INT (low));
+      push_reload (XEXP (*p, 0), NULL_RTX, &XEXP (*p, 0), NULL,
+		   MODE_BASE_REG_CLASS (mode), GET_MODE (*p),
+		   VOIDmode, 0, 0, opnum, (enum reload_type) type);
+      return true;
+    }
+
+  return false;
 }
 
 rtx
@@ -11962,6 +12022,16 @@ create_fix_barrier (Mfix *fix, HOST_WIDE_INT max_address)
   /* Make sure that we found a place to insert the jump.  */
   gcc_assert (selected);
 
+  /* Make sure we do not split a call and its corresponding
+     CALL_ARG_LOCATION note.  */
+  if (CALL_P (selected))
+    {
+      rtx next = NEXT_INSN (selected);
+      if (next && NOTE_P (next)
+	  && NOTE_KIND (next) == NOTE_INSN_CALL_ARG_LOCATION)
+	  selected = next;
+    }
+
   /* Create a new JUMP_INSN that branches around a barrier.  */
   from = emit_jump_insn_after (gen_jump (label), selected);
   JUMP_LABEL (from) = label;
@@ -15188,6 +15258,31 @@ thumb_force_lr_save (void)
 }
 
 
+/* Return true if r3 is used by any of the tail call insns in the
+   current function.  */
+
+static bool
+any_sibcall_uses_r3 (void)
+{
+  edge_iterator ei;
+  edge e;
+
+  if (!crtl->tail_call_emit)
+    return false;
+  FOR_EACH_EDGE (e, ei, EXIT_BLOCK_PTR->preds)
+    if (e->flags & EDGE_SIBCALL)
+      {
+	rtx call = BB_END (e->src);
+	if (!CALL_P (call))
+	  call = prev_nonnote_nondebug_insn (call);
+	gcc_assert (CALL_P (call) && SIBLING_CALL_P (call));
+	if (find_regno_fusage (call, USE, 3))
+	  return true;
+      }
+  return false;
+}
+
+
 /* Compute the distance from register FROM to register TO.
    These can be the arg pointer (26), the soft frame pointer (25),
    the stack pointer (13) or the hard frame pointer (11).
@@ -15330,7 +15425,10 @@ arm_get_frame_offsets (void)
   offsets->soft_frame = offsets->saved_regs + CALLER_INTERWORKING_SLOT_SIZE;
   /* A leaf function does not need any stack alignment if it has nothing
      on the stack.  */
-  if (leaf && frame_size == 0)
+  if (leaf && frame_size == 0
+      /* However if it calls alloca(), we have a dynamically allocated
+	 block of BIGGEST_ALIGNMENT on stack, so still do stack alignment.  */
+      && ! cfun->calls_alloca)
     {
       offsets->outgoing_args = offsets->soft_frame;
       offsets->locals_base = offsets->soft_frame;
@@ -15352,7 +15450,7 @@ arm_get_frame_offsets (void)
 	  /* If it is safe to use r3, then do so.  This sometimes 
 	     generates better code on Thumb-2 by avoiding the need to
 	     use 32-bit push/pop instructions.  */
-	  if (!crtl->tail_call_emit
+ 	  if (! any_sibcall_uses_r3 ()
 	      && arm_size_return_regs () <= 12
 	      && (offsets->saved_regs_mask & (1 << 3)) == 0)
 	    {
@@ -23266,10 +23364,46 @@ arm_output_sync_loop (emit_f emit,
       break;
     }
 
-  arm_output_strex (emit, mode, "", t2, t1, memory);
-  operands[0] = t2;
-  arm_output_asm_insn (emit, 0, operands, "teq\t%%0, #0");
-  arm_output_asm_insn (emit, 0, operands, "bne\t%sLSYT%%=", LOCAL_LABEL_PREFIX);
+  if (t2)
+    {
+       arm_output_strex (emit, mode, "", t2, t1, memory);
+       operands[0] = t2;
+       arm_output_asm_insn (emit, 0, operands, "teq\t%%0, #0");
+       arm_output_asm_insn (emit, 0, operands, "bne\t%sLSYT%%=",
+			    LOCAL_LABEL_PREFIX);
+    }
+  else
+    {
+      /* Use old_value for the return value because for some operations
+	 the old_value can easily be restored.  This saves one register.  */
+      arm_output_strex (emit, mode, "", old_value, t1, memory);
+      operands[0] = old_value;
+      arm_output_asm_insn (emit, 0, operands, "teq\t%%0, #0");
+      arm_output_asm_insn (emit, 0, operands, "bne\t%sLSYT%%=",
+			   LOCAL_LABEL_PREFIX);
+
+      switch (sync_op)
+	{
+	case SYNC_OP_ADD:
+	  arm_output_op3 (emit, "sub", old_value, t1, new_value);
+	  break;
+
+	case SYNC_OP_SUB:
+	  arm_output_op3 (emit, "add", old_value, t1, new_value);
+	  break;
+
+	case SYNC_OP_XOR:
+	  arm_output_op3 (emit, "eor", old_value, t1, new_value);
+	  break;
+
+	case SYNC_OP_NONE:
+	  arm_output_op2 (emit, "mov", old_value, required_value);
+	  break;
+
+	default:
+	  gcc_unreachable ();
+	}
+    }
 
   arm_process_output_memory_barrier (emit, NULL);
   arm_output_asm_insn (emit, 1, operands, "%sLSYB%%=:", LOCAL_LABEL_PREFIX);

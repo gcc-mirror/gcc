@@ -1,4 +1,4 @@
-/* XMLEventFactory.java -- 
+/* XMLEventFactory.java --
    Copyright (C) 2005,2006,2009  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -199,7 +199,7 @@ public abstract class XMLEventFactory
    */
   public abstract Attribute createAttribute(String prefix, String namespaceURI,
                                             String localName, String value);
-  
+
   /**
    * Create an attribute event.
    */
@@ -255,7 +255,7 @@ public abstract class XMLEventFactory
                                                   Iterator attributes,
                                                   Iterator namespaces,
                                                   NamespaceContext context);
-  
+
   /**
    * Create an end-element event.
    */
@@ -348,6 +348,5 @@ public abstract class XMLEventFactory
    * Create a DOCTYPE declaration event.
    */
   public abstract DTD createDTD(String dtd);
-  
-}
 
+}

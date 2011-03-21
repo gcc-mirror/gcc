@@ -1,6 +1,7 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2007, 2008, 2009, 2011
+// Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -40,7 +41,7 @@
 
 PB_DS_CLASS_T_DEC
 PB_DS_CLASS_C_DEC::
-hash_load_check_resize_trigger(float load_min, float load_max) 
+hash_load_check_resize_trigger(float load_min, float load_max)
 : m_load_min(load_min), m_load_max(load_max), m_next_shrink_size(0),
   m_next_grow_size(0), m_resize_needed(false)
 { _GLIBCXX_DEBUG_ONLY(assert_valid();) }
@@ -151,13 +152,13 @@ notify_resized(size_type new_size)
   m_next_shrink_size = size_type(m_load_min * new_size);
 
 #ifdef PB_DS_HT_MAP_RESIZE_TRACE_
-  std::cerr << "hlcrt::notify_resized " <<
-    static_cast<unsigned long>(new_size) << "    " <<
-    static_cast<unsigned long>(m_load_min) << "    " <<
-    static_cast<unsigned long>(m_load_max) << "    " <<
-    static_cast<unsigned long>(m_next_shrink_size) << " " <<
-    static_cast<unsigned long>(m_next_grow_size) << "    " << std::endl;
-#endif 
+  std::cerr << "hlcrt::notify_resized "  << std::endl
+	    << "1 " << new_size << std::endl
+	    << "2 " << m_load_min << std::endl
+	    << "3 " << m_load_max << std::endl
+	    << "4 " << m_next_shrink_size << std::endl
+	    << "5 " << m_next_grow_size << std::endl;
+#endif
 
   _GLIBCXX_DEBUG_ONLY(assert_valid();)
 }
@@ -170,34 +171,28 @@ notify_externally_resized(size_type new_size)
   m_resize_needed = false;
   size_type new_grow_size = size_type(m_load_max * new_size - 1);
   size_type new_shrink_size = size_type(m_load_min * new_size);
+
+#ifdef PB_DS_HT_MAP_RESIZE_TRACE_
+  std::cerr << "hlcrt::notify_externally_resized "  << std::endl
+	    << "1 " << new_size << std::endl
+	    << "2 " << m_load_min << std::endl
+	    << "3 " << m_load_max << std::endl
+	    << "4 " << m_next_shrink_size << std::endl
+	    << "5 " << m_next_grow_size << std::endl
+	    << "6 " << new_shrink_size << std::endl
+	    << "7 " << new_grow_size << std::endl;
+#endif
+
   if (new_grow_size >= m_next_grow_size)
     {
-      _GLIBCXX_DEBUG_ASSERT(new_shrink_size > m_next_shrink_size);
+      _GLIBCXX_DEBUG_ASSERT(new_shrink_size >= m_next_shrink_size);
       m_next_grow_size = new_grow_size;
-      _GLIBCXX_DEBUG_ONLY(assert_valid();)
-
-#ifdef PB_DS_HT_MAP_RESIZE_TRACE_
-	std::cerr << "hlcrt::notify_externally_resized1 " <<
-        static_cast<unsigned long>(new_size) << "    " <<
-        static_cast<unsigned long>(m_load_min) << "    " <<
-        static_cast<unsigned long>(m_load_max) << "    " <<
-        static_cast<unsigned long>(m_next_shrink_size) << " " <<
-        static_cast<unsigned long>(m_next_grow_size) << "    " << std::endl;
-#endif 
-      return;
     }
-
-  _GLIBCXX_DEBUG_ASSERT(new_shrink_size <= m_next_shrink_size);
-  m_next_shrink_size = new_shrink_size;
-
-#ifdef PB_DS_HT_MAP_RESIZE_TRACE_
-  std::cerr << "hlcrt::notify_externally_resized2 " <<
-    static_cast<unsigned long>(new_size) << "    " <<
-    static_cast<unsigned long>(m_load_min) << "    " <<
-    static_cast<unsigned long>(m_load_max) << "    " <<
-    static_cast<unsigned long>(m_next_shrink_size) << " " <<
-    static_cast<unsigned long>(m_next_grow_size) << "    " << std::endl;
-#endif 
+  else
+    {
+      _GLIBCXX_DEBUG_ASSERT(new_shrink_size <= m_next_shrink_size);
+      m_next_shrink_size = new_shrink_size;
+    }
 
   _GLIBCXX_DEBUG_ONLY(assert_valid();)
 }
@@ -220,7 +215,7 @@ swap(PB_DS_CLASS_C_DEC& other)
 {
   _GLIBCXX_DEBUG_ONLY(assert_valid();)
   _GLIBCXX_DEBUG_ONLY(other.assert_valid();)
-    
+
   size_base::swap(other);
   std::swap(m_load_min, other.m_load_min);
   std::swap(m_load_max, other.m_load_max);
@@ -285,5 +280,4 @@ assert_valid() const
   _GLIBCXX_DEBUG_ASSERT(m_load_max > m_load_min);
   _GLIBCXX_DEBUG_ASSERT(m_next_grow_size >= m_next_shrink_size);
 }
-#endif 
-
+#endif

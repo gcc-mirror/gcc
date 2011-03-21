@@ -115,7 +115,7 @@ public class RepaintManager
       super.dispatch();
     }
   }
-  
+
   /**
    * The current repaint managers, indexed by their ThreadGroups.
    */
@@ -150,7 +150,7 @@ public class RepaintManager
       live = false;
     }
 
-    public synchronized void setLive(boolean b) 
+    public synchronized void setLive(boolean b)
     {
       live = b;
     }
@@ -178,7 +178,7 @@ public class RepaintManager
 
   }
 
-  /** 
+  /**
    * A table storing the dirty regions of components.  The keys of this
    * table are components, the values are rectangles. Each component maps
    * to exactly one rectangle.  When more regions are marked as dirty on a
@@ -212,7 +212,7 @@ public class RepaintManager
    */
   private RepaintWorker repaintWorker;
 
-  /** 
+  /**
    * The set of components which need revalidation, in the "layout" sense.
    * There is no additional information about "what kind of layout" they
    * need (as there is with dirty regions), so it is just a vector rather
@@ -224,11 +224,11 @@ public class RepaintManager
    */
   private ArrayList invalidComponents;
 
-  /** 
+  /**
    * Whether or not double buffering is enabled on this repaint
    * manager. This is merely a hint to clients; the RepaintManager will
    * always return an offscreen buffer when one is requested.
-   * 
+   *
    * @see #isDoubleBufferingEnabled
    * @see #setDoubleBufferingEnabled
    */
@@ -478,7 +478,7 @@ public class RepaintManager
       dirty = new Rectangle();
     return dirty;
   }
-  
+
   /**
    * Mark a component as dirty over its entire bounds.
    *
@@ -605,7 +605,7 @@ public class RepaintManager
    * hierarchy of <code>dirty</code> to find the highest parent that is also
    * marked dirty and merges the dirty regions.
    *
-   * @param dirtyRegions the dirty regions 
+   * @param dirtyRegions the dirty regions
    * @param dirty the component for which to find the repaint root
    * @param roots the list to which new repaint roots get appended
    */
@@ -617,7 +617,7 @@ public class RepaintManager
 
     // This will contain the dirty region in the root coordinate system,
     // possibly clipped by ancestor's bounds.
-    Rectangle originalDirtyRect = (Rectangle) dirtyRegions.get(dirty); 
+    Rectangle originalDirtyRect = (Rectangle) dirtyRegions.get(dirty);
     rectCache.setBounds(originalDirtyRect);
 
     // The bounds of the current component.
@@ -631,7 +631,7 @@ public class RepaintManager
     if (rectCache.isEmpty())
       return;
 
-    // The cumulated offsets. 
+    // The cumulated offsets.
     int dx = 0;
     int dy = 0;
     // The actual offset for the found root.
@@ -652,7 +652,7 @@ public class RepaintManager
         dy += y;
         rectCache.x += x;
         rectCache.y += y;
-        
+
         x = current.getX();
         y = current.getY();
         w = current.getWidth();
@@ -705,8 +705,8 @@ public class RepaintManager
   {
     Component root = SwingUtilities.getWindowAncestor(component);
     Image buffer = (Image) offscreenBuffers.get(root);
-    if (buffer == null 
-        || buffer.getWidth(null) < proposedWidth 
+    if (buffer == null
+        || buffer.getWidth(null) < proposedWidth
         || buffer.getHeight(null) < proposedHeight)
       {
         int width = Math.max(proposedWidth, root.getWidth());
@@ -733,11 +733,11 @@ public class RepaintManager
   {
     Component root = comp;
     while (root != null
-	   && ! (root instanceof Window || root instanceof Applet))
+           && ! (root instanceof Window || root instanceof Applet))
       {
-	x += root.getX();
-	y += root.getY();
-	root = root.getParent();
+        x += root.getX();
+        y += root.getY();
+        root = root.getParent();
       }
 
     if (root != null)
@@ -774,8 +774,8 @@ public class RepaintManager
   {
     Component root = SwingUtilities.getWindowAncestor(comp);
     Image buffer = (Image) offscreenBuffers.get(root);
-    if (buffer == null 
-        || buffer.getWidth(null) < proposedWidth 
+    if (buffer == null
+        || buffer.getWidth(null) < proposedWidth
         || buffer.getHeight(null) < proposedHeight
         || !(buffer instanceof VolatileImage))
       {
@@ -789,7 +789,7 @@ public class RepaintManager
       }
     return buffer;
   }
-  
+
 
   /**
    * Get the value of the {@link #doubleBufferMaximumSize} property.
@@ -838,7 +838,7 @@ public class RepaintManager
   {
     return doubleBufferingEnabled;
   }
-  
+
   public String toString()
   {
     return "RepaintManager";

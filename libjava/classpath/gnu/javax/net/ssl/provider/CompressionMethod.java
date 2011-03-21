@@ -55,10 +55,10 @@ public enum CompressionMethod
       {
       case 0: return NULL;
       case 1: return ZLIB;
-      
+
       // Note: we can't throw an exception here, because we get these values
       // over the wire, and need to just ignore ones we don't recognize.
-      default: return null; 
+      default: return null;
       }
   }
 

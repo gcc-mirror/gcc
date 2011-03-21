@@ -144,7 +144,7 @@ public class State
 
   /**
    * Returns the State, matching the given integer constant.
-   * 
+   *
    * @param code one of _HOLDING, _ACTIVE, _DISCARDING, _INACTIVE.
    * @return one of HOLDING, ACTIVE, DISCARDING, INACTIVE.
    * @throws BAD_PARAM if the parameter is not one of the valid values.
@@ -165,7 +165,7 @@ public class State
 
   /**
    * Returns a short string representation.
-   * 
+   *
    * @return the name of the current enumeration value.
    */
   public String toString()

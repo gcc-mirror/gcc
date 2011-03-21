@@ -40,7 +40,7 @@ import java.util.Arrays;
 
 /**
  * A node that represents a class.
- * 
+ *
  * @author Eric Bruneton
  */
 public class ClassNode extends MemberNode implements ClassVisitor {
@@ -115,7 +115,7 @@ public class ClassNode extends MemberNode implements ClassVisitor {
     /**
      * Informations about the inner classes of this class. This list is a list
      * of {@link InnerClassNode} objects.
-     * 
+     *
      * @associates org.objectweb.asm.tree.InnerClassNode
      */
     public List innerClasses;
@@ -123,7 +123,7 @@ public class ClassNode extends MemberNode implements ClassVisitor {
     /**
      * The fields of this class. This list is a list of {@link FieldNode}
      * objects.
-     * 
+     *
      * @associates org.objectweb.asm.tree.FieldNode
      */
     public List fields;
@@ -131,7 +131,7 @@ public class ClassNode extends MemberNode implements ClassVisitor {
     /**
      * The methods of this class. This list is a list of {@link MethodNode}
      * objects.
-     * 
+     *
      * @associates org.objectweb.asm.tree.MethodNode
      */
     public List methods;
@@ -233,7 +233,7 @@ public class ClassNode extends MemberNode implements ClassVisitor {
 
     /**
      * Makes the given class visitor visit this class.
-     * 
+     *
      * @param cv a class visitor.
      */
     public void accept(final ClassVisitor cv) {

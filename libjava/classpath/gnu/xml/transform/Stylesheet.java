@@ -1,4 +1,4 @@
-/* Stylesheet.java -- 
+/* Stylesheet.java --
    Copyright (C) 2004,2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -91,7 +91,7 @@ class Stylesheet
   static final String XSL_NS = "http://www.w3.org/1999/XSL/Transform";
   private static final NameTest STYLESHEET_PRESERVE_TEXT =
     new NameTest(new QName(XSL_NS, "text"), false, false);
-  
+
   static final int OUTPUT_XML = 0;
   static final int OUTPUT_HTML = 1;
   static final int OUTPUT_TEXT = 2;
@@ -147,7 +147,7 @@ class Stylesheet
    * Decimal formats.
    */
   Map<String,DecimalFormat> decimalFormats;
-  
+
   /**
    * Namespace aliases.
    */
@@ -256,16 +256,16 @@ class Stylesheet
     builtInTextTemplate =
       new ValueOfNode(new Selector(Selector.SELF, tests),
                       false);
-    
+
     parse(doc.getDocumentElement(), true);
     current = doc; // Alow namespace resolution during processing
-    
+
     debug = ("yes".equals(System.getProperty("xsl.debug")));
 
     if (debug)
       {
         System.err.println("Stylesheet: " + doc.getDocumentURI());
-	for (Template t : templates)
+        for (Template t : templates)
           {
             t.list(System.err);
             System.err.println("--------------------");
@@ -280,7 +280,7 @@ class Stylesheet
       stylesheet = stylesheet.parent;
     return stylesheet;
   }
-  
+
   void initDefaultDecimalFormat()
   {
     DecimalFormat defaultDecimalFormat = new DecimalFormat();
@@ -298,7 +298,7 @@ class Stylesheet
     defaultDecimalFormat.setDecimalFormatSymbols(symbols);
     decimalFormats.put(null, defaultDecimalFormat);
   }
-  
+
   // -- Cloneable --
 
   public Object clone()
@@ -309,33 +309,33 @@ class Stylesheet
         clone.bindings = (Bindings) bindings.clone();
 
         LinkedList<Template> templates2 = new LinkedList<Template>();
-	for (Template t : templates)
+        for (Template t : templates)
           {
             templates2.add(t.clone(clone));
           }
         clone.templates = templates2;
 
         LinkedList<AttributeSet> attributeSets2 = new LinkedList<AttributeSet>();
-	for (AttributeSet as : attributeSets)
+        for (AttributeSet as : attributeSets)
           {
             attributeSets2.add(as.clone(clone));
           }
         clone.attributeSets = attributeSets2;
 
         LinkedList<ParameterNode> variables2 = new LinkedList<ParameterNode>();
-	for (ParameterNode var : variables)
+        for (ParameterNode var : variables)
           {
             variables2.add(var.clone(clone));
           }
         clone.variables = variables2;
 
         LinkedList<Key> keys2 = new LinkedList<Key>();
-	for (Key k : keys)
+        for (Key k : keys)
           {
             keys2.add(k.clone(clone));
           }
         clone.keys = keys2;
-        
+
         return clone;
       }
     catch (CloneNotSupportedException e)
@@ -395,9 +395,9 @@ class Stylesheet
       }
     return new QName(uri, localName, prefix);
   }
-  
+
   // -- Template selection --
-  
+
   TemplateNode getTemplate(QName mode, Node context, boolean applyImports)
     throws TransformerException
   {
@@ -632,7 +632,7 @@ class Stylesheet
     Node attr = attrs.getNamedItem(name);
     return (attr == null) ? def : attr.getNodeValue();
   }
-  
+
   /**
    * namespace-alias
    */
@@ -777,7 +777,7 @@ class Stylesheet
                 while (st.hasMoreTokens())
                   {
                     NameTest element = parseNameTest(st.nextToken());
-                    stripSpace.add(new StrippingInstruction(element, 
+                    stripSpace.add(new StrippingInstruction(element,
                                                             precedence));
                   }
               }
@@ -923,7 +923,7 @@ class Stylesheet
         tokens.add(value.substring(off));
         types.add(Boolean.FALSE);
       }
-    
+
     // Construct template node tree
     TemplateNode ret = null;
     Document doc = source.getOwnerDocument();
@@ -983,7 +983,7 @@ class Stylesheet
           {
             // Conflict resolution
             StrippingInstruction ssi = null, psi = null;
-	    for (StrippingInstruction si : stripSpace)
+            for (StrippingInstruction si : stripSpace)
               {
                 if (si.element.matches(ctx, 1, 1))
                   {
@@ -998,7 +998,7 @@ class Stylesheet
                     ssi = si;
                   }
               }
-	    for (StrippingInstruction si : preserveSpace)
+            for (StrippingInstruction si : preserveSpace)
               {
                 if (si.element.matches(ctx, 1, 1))
                   {
@@ -1090,7 +1090,7 @@ class Stylesheet
       }
     return null;
   }
-  
+
   // -- Parsing --
 
   /**
@@ -1126,7 +1126,7 @@ class Stylesheet
     List<WithParam> withParams = parseWithParams(children);
     return new CallTemplateNode(name, withParams);
   }
-  
+
   /**
    * value-of
    */
@@ -1140,7 +1140,7 @@ class Stylesheet
     Expr select = (Expr) xpath.compile(s);
     return new ValueOfNode(select, d);
   }
-  
+
   /**
    * for-each
    */
@@ -1156,7 +1156,7 @@ class Stylesheet
     ret.children = parse(children);
     return ret;
   }
-  
+
   /**
    * if
    */
@@ -1171,7 +1171,7 @@ class Stylesheet
     ret.children = parse(children);
     return ret;
   }
-  
+
   /**
    * when
    */
@@ -1186,7 +1186,7 @@ class Stylesheet
     ret.children = parse(children);
     return ret;
   }
-  
+
   /**
    * element
    */
@@ -1223,7 +1223,7 @@ class Stylesheet
     ret.children = parse(children);
     return ret;
   }
-  
+
   /**
    * text
    */
@@ -1238,7 +1238,7 @@ class Stylesheet
     ret.children = parse(children);
     return ret;
   }
-  
+
   /**
    * copy
    */
@@ -1252,7 +1252,7 @@ class Stylesheet
     ret.children = parse(children);
     return ret;
   }
-  
+
   /**
    * processing-instruction
    */
@@ -1266,7 +1266,7 @@ class Stylesheet
     ret.children = parse(children);
     return ret;
   }
-  
+
   /**
    * number
    */
@@ -1340,7 +1340,7 @@ class Stylesheet
     ret.children = parse(children);
     return ret;
   }
-  
+
   /**
    * copy-of
    */
@@ -1355,7 +1355,7 @@ class Stylesheet
     ret.children = parse(children);
     return ret;
   }
-  
+
   /**
    * message
    */
@@ -1370,7 +1370,7 @@ class Stylesheet
     ret.children = parse(children);
     return ret;
   }
-  
+
   /**
    * Parse template-level elements.
    */
@@ -1461,7 +1461,7 @@ class Stylesheet
                 NamedNodeMap attrs = node.getAttributes();
                 Node children = node.getFirstChild();
                 TemplateNode content = parse(children);
-                QName paramName = 
+                QName paramName =
                   getQName(getRequiredAttribute(attrs, "name", node));
                 String select = getAttribute(attrs, "select");
                 ParameterNode ret;
@@ -1770,4 +1770,3 @@ class Stylesheet
   }
 
 }
-

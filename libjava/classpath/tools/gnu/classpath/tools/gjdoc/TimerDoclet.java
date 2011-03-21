@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -16,7 +16,7 @@ General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with GNU Classpath; see the file COPYING.  If not, write to the
 Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-02111-1307 USA. 
+02111-1307 USA.
 
 Linking this library statically or dynamically with other modules is
 making a combined work based on this library.  Thus, the terms and
@@ -44,31 +44,31 @@ public class TimerDoclet {
    private static Object doclet = null;
 
    private static long maximumHeap = -1;
-   
+
    private static Thread memThread;
 
    private static boolean runMemThread = true;
 
    private static void init() throws Exception {
       if (doclet==null) {
-	 doclet=Class.forName("com.sun.tools.doclets.standard.Standard").newInstance();
-	 memThread=new Thread() {
-	       
-	       public void run() {
-		  while (runMemThread) {
-		     synchronized (TimerDoclet.class) {
-			TimerDoclet.maximumHeap=Math.max(TimerDoclet.maximumHeap,
-							 Runtime.getRuntime().totalMemory()-Runtime.getRuntime().freeMemory());
-		     }
-		     try { Thread.sleep(50); } catch (Exception e) {}
-		  }
-	       }
-	    };
-	 //memThread.start();
+         doclet=Class.forName("com.sun.tools.doclets.standard.Standard").newInstance();
+         memThread=new Thread() {
+
+               public void run() {
+                  while (runMemThread) {
+                     synchronized (TimerDoclet.class) {
+                        TimerDoclet.maximumHeap=Math.max(TimerDoclet.maximumHeap,
+                                                         Runtime.getRuntime().totalMemory()-Runtime.getRuntime().freeMemory());
+                     }
+                     try { Thread.sleep(50); } catch (Exception e) {}
+                  }
+               }
+            };
+         //memThread.start();
       }
    }
 
-   public static boolean validOptions(String[][] options, DocErrorReporter reporter)  
+   public static boolean validOptions(String[][] options, DocErrorReporter reporter)
       throws Exception {
 
       init();
@@ -84,19 +84,19 @@ public class TimerDoclet {
    public static boolean start(RootDoc root) throws Exception {
       Timer.setBeforeDocletTime();
       synchronized (TimerDoclet.class) {
-	 Timer.setMaxDriverHeap(maximumHeap);
-	 maximumHeap=-1;
+         Timer.setMaxDriverHeap(maximumHeap);
+         maximumHeap=-1;
       }
       //new com.sun.tools.doclets.standard.Standard().validOptions(root.options(), root);
       //new com.sun.tools.doclets.standard.Standard().start(root);
-      
+
       if (validOptions(root.options(), root)) {
-	 doclet.getClass().getMethod("start", new Class[]{RootDoc.class}).invoke(null, new Object[]{root});
+         doclet.getClass().getMethod("start", new Class[]{RootDoc.class}).invoke(null, new Object[]{root});
       }
       runMemThread=false;
       Timer.setStopTime();
       synchronized (TimerDoclet.class) {
-	 Timer.setMaxDocletHeap(maximumHeap);
+         Timer.setMaxDocletHeap(maximumHeap);
       }
       Timer.shutdown();
       return true;

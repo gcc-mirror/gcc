@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -41,7 +41,7 @@ import java.util.HashMap;
 
 /**
  * This class is an implementation of a FormatBuffer without attributes.
- * 
+ *
  * @author Guilhem Lavaux <guilhem@kaffe.org>
  * @date April 10, 2004
  */
@@ -64,7 +64,7 @@ public class StringFormatBuffer implements FormatBuffer
   {
     buffer.append(s);
   }
-  
+
   public void append(String s, AttributedCharacterIterator.Attribute attr)
   {
     buffer.append(s);
@@ -111,7 +111,7 @@ public class StringFormatBuffer implements FormatBuffer
   }
 
   /**
-   * This method returns the internal {@link java.lang.StringBuffer} which 
+   * This method returns the internal {@link java.lang.StringBuffer} which
    * contains the string of character.
    */
   public StringBuffer getBuffer()

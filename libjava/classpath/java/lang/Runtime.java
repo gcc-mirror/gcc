@@ -93,11 +93,11 @@ public class Runtime
   {
     if (current != null)
       throw new InternalError("Attempt to recreate Runtime");
-    
+
     // If used by underlying VM this contains the directories where Classpath's own
     // native libraries are located.
     String bootPath = SystemProperties.getProperty("gnu.classpath.boot.library.path", "");
-    
+
     // If properly set by the user this contains the directories where the application's
     // native libraries are located. On operating systems where a LD_LIBRARY_PATH environment
     // variable is available a VM should preset java.library.path with value of this
@@ -109,22 +109,22 @@ public class Runtime
     StringTokenizer t1 = new StringTokenizer(bootPath, pathSep);
     StringTokenizer t2 = new StringTokenizer(path, pathSep);
     libpath = new String[t1.countTokens() + t2.countTokens()];
-    
+
     int i = 0;
     while(t1.hasMoreTokens()) {
       String prefix = t1.nextToken();
       if (! prefix.endsWith(fileSep))
         prefix += fileSep;
-      
+
       libpath[i] = prefix;
       i++;
     }
-    
+
     while(t2.hasMoreTokens()) {
       String prefix = t2.nextToken();
       if (! prefix.endsWith(fileSep))
         prefix += fileSep;
-  
+
       libpath[i] = prefix;
       i++;
     }
@@ -185,8 +185,8 @@ public class Runtime
             // inside a join on our thread.
             exitSequence.interrupt();
             // Shutdown hooks are still running, so we clear status to
-	    // make sure we don't halt.
-	    status = 0;
+            // make sure we don't halt.
+            status = 0;
           }
       }
 
@@ -214,7 +214,7 @@ public class Runtime
    * Any subsequent invocations will simply return false.
    * Note that it is package accessible so that VMRuntime can call it
    * when VM exit is not triggered by a call to Runtime.exit().
-   * 
+   *
    * @return was the current thread the first one to call this method?
    */
   boolean runShutdownHooks()
@@ -286,8 +286,8 @@ public class Runtime
                 shutdownHooks = null;
               }
           }
-	// Run finalization on all finalizable objects (even if they are
-	// still reachable).
+        // Run finalization on all finalizable objects (even if they are
+        // still reachable).
         VMRuntime.runFinalizationForExit();
       }
     return first;
@@ -750,15 +750,15 @@ public class Runtime
     String filename;
     if (loader != null && (filename = loader.findLibrary(libname)) != null)
       {
-	if (loadLib(filename, loader) != 0)
-	  return;
+        if (loadLib(filename, loader) != 0)
+          return;
       }
     else
       {
-	filename = VMRuntime.mapLibraryName(libname);
-	for (int i = 0; i < libpath.length; i++)
-	  if (loadLib(libpath[i] + filename, loader) != 0)
-	    return;
+        filename = VMRuntime.mapLibraryName(libname);
+        for (int i = 0; i < libpath.length; i++)
+          if (loadLib(libpath[i] + filename, loader) != 0)
+            return;
       }
     throw new UnsatisfiedLinkError("Native library `" + libname
       + "' not found (as file `" + filename + "') in gnu.classpath.boot.library.path and java.library.path");

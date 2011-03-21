@@ -31,7 +31,7 @@
 
 #include <ext/type_traits.h>
 
-namespace std
+namespace std _GLIBCXX_VISIBILITY(default)
 {
 namespace __profile
 {

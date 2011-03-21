@@ -203,9 +203,9 @@ public final class URL implements Serializable
       String s = SystemProperties.getProperty("gnu.java.net.nocache_protocol_handlers");
 
       if (s == null)
-	cache_handlers = true;
+        cache_handlers = true;
       else
-	cache_handlers = false;
+        cache_handlers = false;
     }
 
   /**
@@ -276,11 +276,11 @@ public final class URL implements Serializable
 
     if (ph != null)
       {
-	SecurityManager s = System.getSecurityManager();
-	if (s != null)
-	  s.checkPermission(new NetPermission("specifyStreamHandler"));
+        SecurityManager s = System.getSecurityManager();
+        if (s != null)
+          s.checkPermission(new NetPermission("specifyStreamHandler"));
 
-	this.ph = ph;
+        this.ph = ph;
       }
     else
       this.ph = getURLStreamHandler(protocol);
@@ -293,18 +293,18 @@ public final class URL implements Serializable
     this.port = port;
     this.authority = (host != null) ? host : "";
     if (port >= 0 && host != null)
-	this.authority += ":" + port;
+        this.authority += ":" + port;
 
     int hashAt = file.indexOf('#');
     if (hashAt < 0)
       {
-	this.file = file;
-	this.ref = null;
+        this.file = file;
+        this.ref = null;
       }
     else
       {
-	this.file = file.substring(0, hashAt);
-	this.ref = file.substring(hashAt + 1);
+        this.file = file.substring(0, hashAt);
+        this.ref = file.substring(hashAt + 1);
       }
     hashCode = hashCode(); // Used for serialization.
   }
@@ -324,7 +324,7 @@ public final class URL implements Serializable
   public URL(String spec) throws MalformedURLException
   {
     this((URL) null, spec != null ? spec : "", (URLStreamHandler) null,
-	 false);
+         false);
   }
 
   /**
@@ -346,8 +346,8 @@ public final class URL implements Serializable
   public URL(URL context, String spec) throws MalformedURLException
   {
     this(context, spec,
-	 (context == null) ? (URLStreamHandler) null : context.ph,
-	 false);
+         (context == null) ? (URLStreamHandler) null : context.ph,
+         false);
   }
 
   /**
@@ -395,7 +395,7 @@ public final class URL implements Serializable
    *
    */
   private URL(URL context, String spec, URLStreamHandler ph,
-	      boolean phFromUser)
+              boolean phFromUser)
     throws MalformedURLException
   {
     /* A protocol is defined by the doc as the substring before a ':'
@@ -416,12 +416,12 @@ public final class URL implements Serializable
     int colon;
     int slash = spec.indexOf('/');
     if ((colon = spec.indexOf("://", 1)) > 0
-	&& ((colon < slash || slash < 0))
+        && ((colon < slash || slash < 0))
         && ! spec.regionMatches(colon, "://:", 0, 4))
       {
-	context = null;
-	if (! phFromUser)
-	  ph = null;
+        context = null;
+        if (! phFromUser)
+          ph = null;
       }
 
     boolean protocolSpecified = false;
@@ -429,10 +429,10 @@ public final class URL implements Serializable
     if ((colon = spec.indexOf(':')) > 0
         && (colon < slash || slash < 0))
       {
-	// Protocol may have been specified in spec string.
+        // Protocol may have been specified in spec string.
         protocolSpecified = true;
-	protocol = spec.substring(0, colon).toLowerCase();
-	if (context != null)
+        protocol = spec.substring(0, colon).toLowerCase();
+        if (context != null)
           {
             if (context.protocol.equals(protocol))
               {
@@ -482,11 +482,11 @@ public final class URL implements Serializable
 
     if (ph != null)
       {
-	SecurityManager s = System.getSecurityManager();
-	if (s != null && phFromUser)
-	  s.checkPermission(new NetPermission("specifyStreamHandler"));
+        SecurityManager s = System.getSecurityManager();
+        if (s != null && phFromUser)
+          s.checkPermission(new NetPermission("specifyStreamHandler"));
 
-	this.ph = ph;
+        this.ph = ph;
       }
     else
       this.ph = getURLStreamHandler(protocol);
@@ -502,14 +502,14 @@ public final class URL implements Serializable
 
     try
       {
-	this.ph.parseURL(this, spec, colon + 1,
-	                 hashAt < 0 ? spec.length() : hashAt);
+        this.ph.parseURL(this, spec, colon + 1,
+                         hashAt < 0 ? spec.length() : hashAt);
       }
     catch (URLParseError e)
       {
         MalformedURLException mue = new MalformedURLException(e.getMessage());
         mue.initCause(e);
-	throw mue;
+        throw mue;
       }
     catch (RuntimeException e)
       {
@@ -772,13 +772,13 @@ public final class URL implements Serializable
     protocol = protocol.toLowerCase();
     if (! this.protocol.equals(protocol))
       protocolHandler = getURLStreamHandler(protocol);
-    
+
     // It is an hidden feature of the JDK. If the protocol does not exist,
     // we keep the previously initialized protocol.
     if (protocolHandler != null)
       {
-	this.ph = protocolHandler;
-	this.protocol = protocol;
+        this.ph = protocolHandler;
+        this.protocol = protocol;
       }
     this.authority = "";
     this.port = port;
@@ -818,13 +818,13 @@ public final class URL implements Serializable
     protocol = protocol.toLowerCase();
     if (! this.protocol.equals(protocol))
       protocolHandler = getURLStreamHandler(protocol);
-    
+
     // It is an hidden feature of the JDK. If the protocol does not exist,
     // we keep the previously initialized protocol.
     if (protocolHandler != null)
       {
-	this.ph = protocolHandler;
-	this.protocol = protocol;
+        this.ph = protocolHandler;
+        this.protocol = protocol;
       }
     this.host = host;
     this.userInfo = userInfo;
@@ -902,70 +902,70 @@ public final class URL implements Serializable
     // First, see if a protocol handler is in our cache.
     if (cache_handlers)
       {
-	if ((ph = ph_cache.get(protocol)) != null)
-	  return ph;
+        if ((ph = ph_cache.get(protocol)) != null)
+          return ph;
       }
 
     // If a non-default factory has been set, use it to find the protocol.
     if (factory != null)
       {
-	ph = factory.createURLStreamHandler(protocol);
+        ph = factory.createURLStreamHandler(protocol);
       }
 
     // Non-default factory may have returned null or a factory wasn't set.
     // Use the default search algorithm to find a handler for this protocol.
     if (ph == null)
       {
-	// Get the list of packages to check and append our default handler
-	// to it, along with the JDK specified default as a last resort.
-	// Except in very unusual environments the JDK specified one shouldn't
-	// ever be needed (or available).
-	String ph_search_path =
-	  SystemProperties.getProperty("java.protocol.handler.pkgs");
+        // Get the list of packages to check and append our default handler
+        // to it, along with the JDK specified default as a last resort.
+        // Except in very unusual environments the JDK specified one shouldn't
+        // ever be needed (or available).
+        String ph_search_path =
+          SystemProperties.getProperty("java.protocol.handler.pkgs");
 
-	// Tack our default package on at the ends.
-	if (ph_search_path != null)
-	  ph_search_path += "|" + DEFAULT_SEARCH_PATH;
-	else
-	  ph_search_path = DEFAULT_SEARCH_PATH;
+        // Tack our default package on at the ends.
+        if (ph_search_path != null)
+          ph_search_path += "|" + DEFAULT_SEARCH_PATH;
+        else
+          ph_search_path = DEFAULT_SEARCH_PATH;
 
-	// Finally loop through our search path looking for a match.
-	StringTokenizer pkgPrefix = new StringTokenizer(ph_search_path, "|");
+        // Finally loop through our search path looking for a match.
+        StringTokenizer pkgPrefix = new StringTokenizer(ph_search_path, "|");
 
-	// Cache the systemClassLoader
-	if (systemClassLoader == null)
-	  {
-	    systemClassLoader = AccessController.doPrivileged
-	      (new PrivilegedAction<ClassLoader>() {
-		  public ClassLoader run()
-	          {
-		    return ClassLoader.getSystemClassLoader();
-		  }
-		});
-	  }
+        // Cache the systemClassLoader
+        if (systemClassLoader == null)
+          {
+            systemClassLoader = AccessController.doPrivileged
+              (new PrivilegedAction<ClassLoader>() {
+                  public ClassLoader run()
+                  {
+                    return ClassLoader.getSystemClassLoader();
+                  }
+                });
+          }
 
-	do
-	  {
-	    try
-	      {
-		// Try to get a class from the system/application
-		// classloader, initialize it, make an instance
-		// and try to cast it to a URLStreamHandler.
-		String clsName =
-		  (pkgPrefix.nextToken() + "." + protocol + ".Handler");
-		Class c = Class.forName(clsName, true, systemClassLoader);
-		ph = (URLStreamHandler) c.newInstance();
-	      }
+        do
+          {
+            try
+              {
+                // Try to get a class from the system/application
+                // classloader, initialize it, make an instance
+                // and try to cast it to a URLStreamHandler.
+                String clsName =
+                  (pkgPrefix.nextToken() + "." + protocol + ".Handler");
+                Class c = Class.forName(clsName, true, systemClassLoader);
+                ph = (URLStreamHandler) c.newInstance();
+              }
             catch (ThreadDeath death)
               {
                 throw death;
               }
-	    catch (Throwable t)
-	      {
-		// Ignored.
-	      }
-	  }
-	 while (ph == null && pkgPrefix.hasMoreTokens());
+            catch (Throwable t)
+              {
+                // Ignored.
+              }
+          }
+         while (ph == null && pkgPrefix.hasMoreTokens());
       }
 
     // Update the hashtable with the new protocol handler.

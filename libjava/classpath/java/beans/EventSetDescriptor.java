@@ -7,7 +7,7 @@
  it under the terms of the GNU General Public License as published by
  the Free Software Foundation; either version 2, or (at your option)
  any later version.
- 
+
  GNU Classpath is distributed in the hope that it will be useful, but
  WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -47,13 +47,13 @@ import java.util.Vector;
 /**
  * EventSetDescriptor describes the hookup between an event source class and
  * an event listener class.
- * 
+ *
  * <p>EventSets have several attributes: the listener class,
  * the events that can be fired to the listener (methods in the listener
  * class), and an add and remove listener method from the event firer's
  * class.
  * </p>
- * 
+ *
  * <p>
  * The methods have these constraints on them:
  * <ul>
@@ -62,29 +62,29 @@ import java.util.Vector;
  * package-protected. (Don't ask me why that is, I'm just following the spec.
  * The only place it is even mentioned is in the Java Beans white paper, and
  * there it is only implied.)</li>
- * 
+ *
  * <li>add listener method: must have <code>void</code> return value. Must
  * take exactly one argument, of the listener class's type. May fire either
  * zero exceptions, or one exception of type
  * <code>java.util.TooManyListenersException</code>.
  * Must be public.</li>
- * 
+ *
  * <li>remove listener method: must have <code>void</code> return value. Must
  * take exactly one argument, of the listener class's type. May not fire any
  * exceptions. Must be public.</li>
  * </ul>
- * 
+ *
  * <p>
  * A final constraint is that event listener classes must extend from
  * EventListener.
  * </p>
- * 
+ *
  * <p>
  * There are also various design patterns associated with some of the methods
  * of construction. Those are explained in more detail in the appropriate
  * constructors.
  * </p>
- * 
+ *
  * <p>
  * <strong>Documentation Convention:</strong> for proper Internalization of
  * Beans inside an RAD tool, sometimes there are two names for a property or
@@ -92,7 +92,7 @@ import java.util.Vector;
  * anywhere, and a localized, display name, for ease of use. In the
  * documentation I will specify different String values as either
  * <em>programmatic</em> or <em>localized</em> to make this distinction clear.
- * 
+ *
  * @author John Keiser
  * @author Robert Schuster (robertschuster@fsfe.org)
  * @since 1.1
@@ -118,12 +118,12 @@ public class EventSetDescriptor extends FeatureDescriptor
 
   /**
    * Creates a new <code>EventSetDescriptor</code<.
-   * 
+   *
    * <p>
    * This version of the constructor enforces the rules imposed on the methods
    * described at the top of this class, as well as searching for:
    * </p>
-   * 
+   *
    * <ol>
    * <li>
    * The event-firing method must be non-private with signature <code>void
@@ -140,7 +140,7 @@ public class EventSetDescriptor extends FeatureDescriptor
    * should be chosen (they probably weren't thinking as pathologically as I
    * was). I don't like arbitrarily choosing things. If your class has only one
    * such signature, as most do, you'll have no problems.</li>
-   * 
+   *
    * <li>The add and remove methods must be public and named <code>void
    * add&lt;eventSetName&gt;Listener(&lt;listenerType&gt;)</code> and
    * <code>void remove&lt;eventSetName&gt;Listener(&lt;listenerType&gt;)</code>
@@ -148,7 +148,7 @@ public class EventSetDescriptor extends FeatureDescriptor
    * <code>&lt;eventSetName&gt;</code> will have its first letter capitalized.
    * Standard exception rules (see class description) apply.</li>
    * </ol>
-   * 
+   *
    * @param eventSourceClass
    *          the class containing the add/remove listener methods.
    * @param eventSetName
@@ -202,12 +202,12 @@ public class EventSetDescriptor extends FeatureDescriptor
 
   /**
    * Creates a new <code>EventSetDescriptor</code>.
-   * 
+   *
    * <p>This form of the constructor allows you to specify the names of the
    * methods and adds no new constraints on top of the rules already described
    * at the top of the class.
    * </p>
-   * 
+   *
    * @param eventSourceClass
    *          the class containing the add and remove listener methods.
    * @param eventSetName
@@ -251,7 +251,7 @@ public class EventSetDescriptor extends FeatureDescriptor
 
   /**
    * Creates a new <code>EventSetDescriptor</code>.
-   * 
+   *
    * <p>
    * This variant of the constructor allows you to specify the names of the
    * methods and adds no new constraints on top of the rules already described
@@ -266,7 +266,7 @@ public class EventSetDescriptor extends FeatureDescriptor
    * Note: The validity of the return value of the GetListener method is not
    * checked.
    * </p>
-   * 
+   *
    * @param eventSourceClass
    *          the class containing the add and remove listener methods.
    * @param eventSetName
@@ -301,13 +301,13 @@ public class EventSetDescriptor extends FeatureDescriptor
 
     try
       {
-        newGetListenerMethod 
+        newGetListenerMethod
           = eventSourceClass.getMethod(getListenerMethodName,
                                        new Class[] { Class.class });
       }
     catch (NoSuchMethodException nsme)
       {
-        throw (IntrospectionException) 
+        throw (IntrospectionException)
           new IntrospectionException("No method named " + getListenerMethodName
                                       + " in class " + listenerType
                                       + " which can be used as"
@@ -323,7 +323,7 @@ public class EventSetDescriptor extends FeatureDescriptor
 
   /**
    * Creates a new <code>EventSetDescriptor.</code>
-   * 
+   *
    * <p>
    * This variant of the constructor allows you to specify the names of the
    * methods and adds no new constraints on top of the rules already described
@@ -338,7 +338,7 @@ public class EventSetDescriptor extends FeatureDescriptor
    * Note: The validity of the return value of the GetListener method is not
    * checked.
    * </p>
-   * 
+   *
    * @param eventSetName
    *          the programmatic name of the event set, generally starting with a
    *          lowercase letter (i.e. fooManChu instead of FooManChu).
@@ -381,12 +381,12 @@ public class EventSetDescriptor extends FeatureDescriptor
 
   /**
    * Creates a new <code>EventSetDescriptor</code>.
-   * 
+   *
    * <p>This form of constructor allows you to explicitly say which methods
    * do what, and no reflection is done by the <code>EventSetDescriptor</code>.
    * The methods are, however, checked to ensure that they follow the rules
    * set forth at the top of the class.
-   * 
+   *
    * @param eventSetName
    *          the programmatic name of the event set, generally starting with a
    *          lowercase letter (i.e. fooManChu instead of FooManChu).
@@ -428,12 +428,12 @@ public class EventSetDescriptor extends FeatureDescriptor
   }
 
   /** Creates a new <code>EventSetDescriptor</code>.
-   * 
+   *
    * <p>This form of constructor allows you to explicitly say which methods do
    * what, and no reflection is done by the <code>EventSetDescriptor</code>.
    * The methods are, however, checked to ensure that they follow the rules
    * set forth at the top of the class.
-   * 
+   *
    * @param eventSetName
    *          the programmatic name of the event set, generally starting with a
    *          lowercase letter (i.e. fooManChu instead of FooManChu).
@@ -504,14 +504,14 @@ public class EventSetDescriptor extends FeatureDescriptor
       {
         listenerMethodDescriptors
           = new MethodDescriptor[listenerMethods.length];
-        
+
         for (int i = 0; i < listenerMethods.length; i++)
           {
             listenerMethodDescriptors[i]
               = new MethodDescriptor(listenerMethods[i]);
           }
       }
-    
+
     return listenerMethodDescriptors;
   }
 
@@ -539,7 +539,7 @@ public class EventSetDescriptor extends FeatureDescriptor
   }
 
   /** Sets whether or not multiple listeners may be added.
-   * 
+   *
    * @param unicast
    *          whether or not multiple listeners may be added.
    */
@@ -557,7 +557,7 @@ public class EventSetDescriptor extends FeatureDescriptor
   }
 
   /** Sets whether or not this is in the default event set.
-   * 
+   *
    * @param inDefaultEventSet
    *          whether this is in the default event set.
    */
@@ -759,5 +759,5 @@ public class EventSetDescriptor extends FeatureDescriptor
         this.listenerMethods[i] = (Method) chosenMethods.elementAt(i);
       }
   }
-  
+
 }

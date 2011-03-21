@@ -54,7 +54,7 @@ public class CommandInfo
 
   private final String verb;
   private final String className;
-  
+
   /**
    * Constructor.
    * @param verb the command verb
@@ -65,7 +65,7 @@ public class CommandInfo
     this.verb = verb;
     this.className = className;
   }
-  
+
   /**
    * Returns the command verb.
    */
@@ -73,7 +73,7 @@ public class CommandInfo
   {
     return verb;
   }
-  
+
   /**
    * Returns the command class name.
    */
@@ -81,7 +81,7 @@ public class CommandInfo
   {
     return className;
   }
-  
+
   /**
    * Returns the instantiated bean.
    * If the bean implements <code>CommandObject</code>, its
@@ -112,6 +112,5 @@ public class CommandInfo
       }
     return object;
   }
-  
-}
 
+}

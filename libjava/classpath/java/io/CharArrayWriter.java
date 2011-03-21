@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -116,7 +116,7 @@ public class CharArrayWriter extends Writer
   {
     synchronized (lock)
       {
-	count = 0;
+        count = 0;
       }
   }
 
@@ -141,17 +141,17 @@ public class CharArrayWriter extends Writer
    * This method returns a char array containing the chars that have been
    * written to this stream so far.  This array is a copy of the valid
    * chars in the internal buffer and its length is equal to the number of
-   * valid chars, not necessarily to the the length of the current 
+   * valid chars, not necessarily to the the length of the current
    * internal buffer.  Note that since this method allocates a new array,
    * it should be used with caution when the internal buffer is very large.
    */
   public char[] toCharArray ()
   {
     synchronized (lock)
-      {      
-	char[] nc = new char[count];
-	System.arraycopy(buf, 0, nc, 0, count);
-	return nc;
+      {
+        char[] nc = new char[count];
+        System.arraycopy(buf, 0, nc, 0, count);
+        return nc;
       }
   }
 
@@ -168,7 +168,7 @@ public class CharArrayWriter extends Writer
   {
     synchronized (lock)
       {
-	return new String (buf, 0, count);
+        return new String (buf, 0, count);
       }
   }
 
@@ -182,13 +182,13 @@ public class CharArrayWriter extends Writer
   {
     synchronized (lock)
       {
-	resize (1);
-	buf[count++] = (char) oneChar;
+        resize (1);
+        buf[count++] = (char) oneChar;
       }
   }
 
   /**
-   * This method writes <code>len</code> chars from the passed in array 
+   * This method writes <code>len</code> chars from the passed in array
    * <code>buf</code> starting at index <code>offset</code> into that buffer
    *
    * @param buffer The char array to write data from
@@ -199,10 +199,10 @@ public class CharArrayWriter extends Writer
   {
     synchronized (lock)
       {
-	if (len >= 0)
-	  resize (len);
-	System.arraycopy(buffer, offset, buf, count, len);
-	count += len;
+        if (len >= 0)
+          resize (len);
+        System.arraycopy(buffer, offset, buf, count, len);
+        count += len;
       }
   }
 
@@ -219,10 +219,10 @@ public class CharArrayWriter extends Writer
   {
     synchronized (lock)
       {
-	if (len >= 0)
-	  resize (len);
-	str.getChars(offset, offset + len, buf, count);
-	count += len;
+        if (len >= 0)
+          resize (len);
+        str.getChars(offset, offset + len, buf, count);
+        count += len;
       }
   }
 
@@ -238,17 +238,17 @@ public class CharArrayWriter extends Writer
   {
     synchronized (lock)
       {
-	out.write(buf, 0, count);
+        out.write(buf, 0, count);
       }
   }
 
-  /** 
+  /**
    * Appends the Unicode character, <code>c</code>, to the output stream
    * underlying this writer.  This is equivalent to <code>write(c)</code>.
    *
    * @param c the character to append.
    * @return a reference to this object.
-   * @since 1.5 
+   * @since 1.5
    */
   public CharArrayWriter append(char c)
   {
@@ -256,7 +256,7 @@ public class CharArrayWriter extends Writer
     return this;
   }
 
-  /** 
+  /**
    * Appends the specified sequence of Unicode characters to the
    * output stream underlying this writer.  This is equivalent to
    * appending the results of calling <code>toString()</code> on the
@@ -271,22 +271,22 @@ public class CharArrayWriter extends Writer
    *        then the string "null" (the string representation of null)
    *        is appended.
    * @return a reference to this object.
-   * @since 1.5 
+   * @since 1.5
    */
   public CharArrayWriter append(CharSequence cs)
   {
     try
       {
-	write(cs == null ? "null" : cs.toString());
+        write(cs == null ? "null" : cs.toString());
       }
     catch (IOException _)
       {
-	// Can't happen.
+        // Can't happen.
       }
     return this;
   }
 
-  /** 
+  /**
    * Appends the specified subsequence of Unicode characters to the
    * output stream underlying this writer, starting and ending at the
    * specified positions within the sequence.  The behaviour of this
@@ -311,11 +311,11 @@ public class CharArrayWriter extends Writer
   {
     try
       {
-	write(cs == null ? "null" : cs.subSequence(start, end).toString());
+        write(cs == null ? "null" : cs.subSequence(start, end).toString());
       }
     catch (IOException _)
       {
-	// Can't happen.
+        // Can't happen.
       }
     return this;
   }
@@ -331,12 +331,12 @@ public class CharArrayWriter extends Writer
   {
     if (count + len >= buf.length)
       {
-	int newlen = buf.length * 2;
-	if (count + len > newlen)
-	  newlen = count + len;
-	char[] newbuf = new char[newlen];
-	System.arraycopy(buf, 0, newbuf, 0, count);
-	buf = newbuf;
+        int newlen = buf.length * 2;
+        if (count + len > newlen)
+          newlen = count + len;
+        char[] newbuf = new char[newlen];
+        System.arraycopy(buf, 0, newbuf, 0, count);
+        buf = newbuf;
       }
   }
 

@@ -34,21 +34,21 @@ package org.objectweb.asm.signature;
  * called in one of the three following orders (the last one is the only valid
  * order for a {@link SignatureVisitor} that is returned by a method of this
  * interface): <ul> <li><i>ClassSignature</i> = (
- * <tt>visitFormalTypeParameter</tt> 
+ * <tt>visitFormalTypeParameter</tt>
  *   <tt>visitClassBound</tt>?
- * <tt>visitInterfaceBound</tt>* )* ( <tt>visitSuperClass</tt> 
+ * <tt>visitInterfaceBound</tt>* )* ( <tt>visitSuperClass</tt>
  *   <tt>visitInterface</tt>* )</li>
- * <li><i>MethodSignature</i> = ( <tt>visitFormalTypeParameter</tt> 
+ * <li><i>MethodSignature</i> = ( <tt>visitFormalTypeParameter</tt>
  *   <tt>visitClassBound</tt>?
  * <tt>visitInterfaceBound</tt>* )* ( <tt>visitParameterType</tt>*
- * <tt>visitReturnType</tt> 
+ * <tt>visitReturnType</tt>
  *   <tt>visitExceptionType</tt>* )</li> <li><i>TypeSignature</i> =
  * <tt>visitBaseType</tt> | <tt>visitTypeVariable</tt> |
  * <tt>visitArrayType</tt> | (
  * <tt>visitClassType</tt> <tt>visitTypeArgument</tt>* (
  * <tt>visitInnerClassType</tt> <tt>visitTypeArgument</tt>* )*
  * <tt>visitEnd</tt> ) )</li> </ul>
- * 
+ *
  * @author Thomas Hallgren
  * @author Eric Bruneton
  */
@@ -71,28 +71,28 @@ public interface SignatureVisitor {
 
     /**
      * Visits a formal type parameter.
-     * 
+     *
      * @param name the name of the formal parameter.
      */
     void visitFormalTypeParameter(String name);
 
     /**
      * Visits the class bound of the last visited formal type parameter.
-     * 
+     *
      * @return a non null visitor to visit the signature of the class bound.
      */
     SignatureVisitor visitClassBound();
 
     /**
      * Visits an interface bound of the last visited formal type parameter.
-     * 
+     *
      * @return a non null visitor to visit the signature of the interface bound.
      */
     SignatureVisitor visitInterfaceBound();
 
     /**
      * Visits the type of the super class.
-     * 
+     *
      * @return a non null visitor to visit the signature of the super class
      *         type.
      */
@@ -100,35 +100,35 @@ public interface SignatureVisitor {
 
     /**
      * Visits the type of an interface implemented by the class.
-     * 
+     *
      * @return a non null visitor to visit the signature of the interface type.
      */
     SignatureVisitor visitInterface();
 
     /**
      * Visits the type of a method parameter.
-     * 
+     *
      * @return a non null visitor to visit the signature of the parameter type.
      */
     SignatureVisitor visitParameterType();
 
     /**
      * Visits the return type of the method.
-     * 
+     *
      * @return a non null visitor to visit the signature of the return type.
      */
     SignatureVisitor visitReturnType();
 
     /**
      * Visits the type of a method exception.
-     * 
+     *
      * @return a non null visitor to visit the signature of the exception type.
      */
     SignatureVisitor visitExceptionType();
 
     /**
      * Visits a signature corresponding to a primitive type.
-     * 
+     *
      * @param descriptor the descriptor of the primitive type, or 'V' for
      *        <tt>void</tt>.
      */
@@ -136,14 +136,14 @@ public interface SignatureVisitor {
 
     /**
      * Visits a signature corresponding to a type variable.
-     * 
+     *
      * @param name the name of the type variable.
      */
     void visitTypeVariable(String name);
 
     /**
      * Visits a signature corresponding to an array type.
-     * 
+     *
      * @return a non null visitor to visit the signature of the array element
      *         type.
      */
@@ -152,14 +152,14 @@ public interface SignatureVisitor {
     /**
      * Starts the visit of a signature corresponding to a class or interface
      * type.
-     * 
+     *
      * @param name the internal name of the class or interface.
      */
     void visitClassType(String name);
 
     /**
      * Visits an inner class.
-     * 
+     *
      * @param name the local name of the inner class in its enclosing class.
      */
     void visitInnerClassType(String name);
@@ -172,7 +172,7 @@ public interface SignatureVisitor {
 
     /**
      * Visits a type argument of the last visited class or inner class type.
-     * 
+     *
      * @param wildcard '+', '-' or '='.
      * @return a non null visitor to visit the signature of the type argument.
      */

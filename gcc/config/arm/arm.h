@@ -1273,53 +1273,8 @@ enum reg_class
 #define ARM_LEGITIMIZE_RELOAD_ADDRESS(X, MODE, OPNUM, TYPE, IND, WIN)	   \
   do									   \
     {									   \
-      if (GET_CODE (X) == PLUS						   \
-	  && GET_CODE (XEXP (X, 0)) == REG				   \
-	  && REGNO (XEXP (X, 0)) < FIRST_PSEUDO_REGISTER		   \
-	  && REG_MODE_OK_FOR_BASE_P (XEXP (X, 0), MODE)			   \
-	  && GET_CODE (XEXP (X, 1)) == CONST_INT)			   \
-	{								   \
-	  HOST_WIDE_INT val = INTVAL (XEXP (X, 1));			   \
-	  HOST_WIDE_INT low, high;					   \
-									   \
-	  if (MODE == DImode || (MODE == DFmode && TARGET_SOFT_FLOAT))	   \
-	    low = ((val & 0xf) ^ 0x8) - 0x8;				   \
-	  else if (TARGET_MAVERICK && TARGET_HARD_FLOAT)		   \
-	    /* Need to be careful, -256 is not a valid offset.  */	   \
-	    low = val >= 0 ? (val & 0xff) : -((-val) & 0xff);		   \
-	  else if (MODE == SImode					   \
-		   || (MODE == SFmode && TARGET_SOFT_FLOAT)		   \
-		   || ((MODE == HImode || MODE == QImode) && ! arm_arch4)) \
-	    /* Need to be careful, -4096 is not a valid offset.  */	   \
-	    low = val >= 0 ? (val & 0xfff) : -((-val) & 0xfff);		   \
-	  else if ((MODE == HImode || MODE == QImode) && arm_arch4)	   \
-	    /* Need to be careful, -256 is not a valid offset.  */	   \
-	    low = val >= 0 ? (val & 0xff) : -((-val) & 0xff);		   \
-	  else if (GET_MODE_CLASS (MODE) == MODE_FLOAT			   \
-		   && TARGET_HARD_FLOAT && TARGET_FPA)			   \
-	    /* Need to be careful, -1024 is not a valid offset.  */	   \
-	    low = val >= 0 ? (val & 0x3ff) : -((-val) & 0x3ff);		   \
-	  else								   \
-	    break;							   \
-									   \
-	  high = ((((val - low) & (unsigned HOST_WIDE_INT) 0xffffffff)	   \
-		   ^ (unsigned HOST_WIDE_INT) 0x80000000)		   \
-		  - (unsigned HOST_WIDE_INT) 0x80000000);		   \
-	  /* Check for overflow or zero */				   \
-	  if (low == 0 || high == 0 || (high + low != val))		   \
-	    break;							   \
-									   \
-	  /* Reload the high part into a base reg; leave the low part	   \
-	     in the mem.  */						   \
-	  X = gen_rtx_PLUS (GET_MODE (X),				   \
-			    gen_rtx_PLUS (GET_MODE (X), XEXP (X, 0),	   \
-					  GEN_INT (high)),		   \
-			    GEN_INT (low));				   \
-	  push_reload (XEXP (X, 0), NULL_RTX, &XEXP (X, 0), NULL,	   \
-		       MODE_BASE_REG_CLASS (MODE), GET_MODE (X), 	   \
-		       VOIDmode, 0, 0, OPNUM, TYPE);			   \
-	  goto WIN;							   \
-	}								   \
+      if (arm_legitimize_reload_address (&X, MODE, OPNUM, TYPE, IND))	   \
+	goto WIN;							   \
     }									   \
   while (0)
 

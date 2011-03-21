@@ -1,4 +1,4 @@
-/* XmlReader.java -- 
+/* XmlReader.java --
    Copyright (C) 1999,2000,2001 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -77,15 +77,15 @@ public final class XmlReader
   static class FatalErrorHandler
     extends DefaultHandler2
   {
-    
+
     public void error(SAXParseException e)
       throws SAXException
     {
       throw e;
     }
-    
+
   }
-  
+
   private SAXDriver aelfred2 = new SAXDriver();
   private EventFilter filter = new EventFilter();
   private boolean isValidating;
@@ -109,7 +109,7 @@ public final class XmlReader
         setErrorHandler(new FatalErrorHandler());
       }
   }
-  
+
   /**
    * <b>SAX2</b>: Returns the object used to report the logical
    * content of an XML document.
@@ -154,7 +154,7 @@ public final class XmlReader
       }
     filter.setDTDHandler(handler);
   }
-  
+
   /**
    * <b>SAX2</b>: Returns the object used when resolving external
    * entities during parsing (both general and parameter entities).
@@ -224,7 +224,7 @@ public final class XmlReader
       }
     throw new SAXNotRecognizedException(propertyId);
   }
-  
+
   private void forceValidating()
     throws SAXNotRecognizedException, SAXNotSupportedException
   {
@@ -371,4 +371,3 @@ public final class XmlReader
   }
 
 }
-

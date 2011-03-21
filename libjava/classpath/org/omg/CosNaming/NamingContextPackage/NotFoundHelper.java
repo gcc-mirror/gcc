@@ -118,7 +118,7 @@ public abstract class NotFoundHelper
   public static TypeCode type()
   {
     ORB orb = OrbRestricted.Singleton;
-    
+
     StructMember[] members = new StructMember[ 2 ];
     TypeCode member = null;
     member = NotFoundReasonHelper.type();

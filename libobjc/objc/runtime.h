@@ -226,14 +226,16 @@ objc_EXPORT SEL * sel_copyTypedSelectorList (const char *name,
 					     unsigned int *numberOfReturnedSelectors);
 
 /* Return a selector with name 'name' and a non-zero type encoding, if
-   any such selector is registered with the runtime.  If there is no
-   such selector, NULL is returned.  Return NULL if 'name' is NULL.
+   there is a single selector with a type, and with that name,
+   registered with the runtime.  If there is no such selector, or if
+   there are multiple selectors with the same name but conflicting
+   types, NULL is returned.  Return NULL if 'name' is NULL.
 
    This is useful if you have the name of the selector, and would
    really like to get a selector for it that includes the type
    encoding.  Unfortunately, if the program contains multiple selector
-   with the same name but different types, sel_getTypedSelector
-   returns a random one of them, which may not be the right one.
+   with the same name but different types, sel_getTypedSelector can
+   not possibly know which one you need, and so will return NULL.
 
    Compatibility Note: the Apple/NeXT runtime has untyped selectors,
    so it does not have this function, which is specific to the GNU

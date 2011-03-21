@@ -115,7 +115,7 @@ public interface Mixer extends Line
     public final String toString()
     {
       return ("name=" + name + "; description=" + description
-	      + "; vendor=" + vendor + "; version=" + version);
+              + "; vendor=" + vendor + "; version=" + version);
     }
   }
 
@@ -148,7 +148,7 @@ public interface Mixer extends Line
   /**
    * Return an array of Info objects describing all the source lines
    * available in this Mixer, which match the provided decsription.
-   * @param info the description of the source lines to find 
+   * @param info the description of the source lines to find
    */
   Line.Info[] getSourceLineInfo(Line.Info info);
 
@@ -166,7 +166,7 @@ public interface Mixer extends Line
   /**
    * Return an array of Info objects describing all the target lines
    * available in this Mixer, which match the provided decsription.
-   * @param info the description of the target lines to find 
+   * @param info the description of the target lines to find
    */
   Line.Info[] getTargetLineInfo(Line.Info info);
 

@@ -1,4 +1,4 @@
-/* TMMH16.java -- 
+/* TMMH16.java --
    Copyright (C) 2001, 2002, 2006 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -243,7 +243,7 @@ public class TMMH16
   /**
    * Similar to the same method with one argument, but uses the designated
    * random number generator to compute needed keying material.
-   * 
+   *
    * @param b the byte to process.
    * @param prng the source of randomness to use.
    */
@@ -271,7 +271,7 @@ public class TMMH16
   /**
    * Similar to the same method with three arguments, but uses the designated
    * random number generator to compute needed keying material.
-   * 
+   *
    * @param b the byte array to process.
    * @param offset the starting offset in <code>b</code> to start considering
    *          the bytes to process.
@@ -288,7 +288,7 @@ public class TMMH16
   /**
    * Similar to the same method with no arguments, but uses the designated
    * random number generator to compute needed keying material.
-   * 
+   *
    * @param prng the source of randomness to use.
    * @return the final result of the algorithm.
    */

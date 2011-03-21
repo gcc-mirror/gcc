@@ -1,4 +1,4 @@
-/* JAXPFactory.java -- 
+/* JAXPFactory.java --
    Copyright (C) 2001 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -66,20 +66,20 @@ import javax.xml.parsers.SAXParserFactory;
 public final class JAXPFactory
   extends DocumentBuilderFactory
 {
-  
-  private static final String	PROPERTY = "http://xml.org/sax/properties/";
-  private static final String	FEATURE = "http://xml.org/sax/features/";
-  
-  private SAXParserFactory	pf;
+
+  private static final String   PROPERTY = "http://xml.org/sax/properties/";
+  private static final String   FEATURE = "http://xml.org/sax/features/";
+
+  private SAXParserFactory      pf;
   private boolean secureProcessing;
-  
+
   /**
    * Default constructor.
    */
   public JAXPFactory()
   {
   }
-  
+
   /**
    * Constructs a JAXP document builder which uses the default
    * JAXP SAX2 parser and the DOM implementation in this package.
@@ -94,14 +94,14 @@ public final class JAXPFactory
         pf = new gnu.xml.aelfred2.JAXPFactory();
         // pf = SAXParserFactory.newInstance ();
       }
-    
+
     // JAXP default: false
     pf.setValidating(isValidating());
 
     // FIXME:  this namespace setup may cause errors in some
     // conformant SAX2 parsers, which we CAN patch up by
     // splicing a "NSFilter" stage up front ...
-    
+
     // JAXP default: false
     pf.setNamespaceAware(isNamespaceAware());
 
@@ -118,7 +118,7 @@ public final class JAXPFactory
         throw new ParserConfigurationException(msg);
       }
   }
-  
+
   /** There seems to be no useful specification for attribute names */
   public void setAttribute(String name, Object value)
     throws IllegalArgumentException
@@ -160,21 +160,21 @@ public final class JAXPFactory
       return secureProcessing;
     throw new ParserConfigurationException(name);
   }
-  
+
   static final class JAXPBuilder
     extends DocumentBuilder
     implements ErrorHandler
   {
 
-    private Consumer	consumer;
-    private XMLReader	producer;
-    private DomImpl		impl;
-    
+    private Consumer    consumer;
+    private XMLReader   producer;
+    private DomImpl             impl;
+
     JAXPBuilder(XMLReader parser, JAXPFactory factory)
       throws ParserConfigurationException
     {
       impl = new DomImpl();
-      
+
       // set up consumer side
       try
         {
@@ -198,8 +198,8 @@ public final class JAXPFactory
 
       try
         {
-          String	id;
-          
+          String        id;
+
           // if validating, report validity errors, and default
           // to treating them as fatal
           if (factory.isValidating ())
@@ -207,7 +207,7 @@ public final class JAXPFactory
               producer.setFeature(FEATURE + "validation", true);
               producer.setErrorHandler(this);
             }
-          
+
           // always save prefix info, maybe do namespace processing
           producer.setFeature(FEATURE + "namespace-prefixes", true);
           producer.setFeature(FEATURE + "namespaces",
@@ -219,15 +219,15 @@ public final class JAXPFactory
 
           id = PROPERTY + "declaration-handler";
           producer.setProperty(id, consumer.getProperty(id));
-          
+
         }
       catch (SAXException e)
         {
           throw new ParserConfigurationException(e.getMessage());
         }
     }
-    
-    public Document parse(InputSource source) 
+
+    public Document parse(InputSource source)
       throws SAXException, IOException
     {
       producer.parse(source);
@@ -283,27 +283,26 @@ public final class JAXPFactory
     {
       return new DomDocument();
     }
-	
+
     // implementation of error handler that's used when validating
     public void fatalError(SAXParseException e)
       throws SAXException
     {
       throw e;
     }
-    
+
     public void error(SAXParseException e)
       throws SAXException
     {
       throw e;
     }
-    
+
     public void warning(SAXParseException e)
       throws SAXException
     {
       /* ignore */
     }
- 
+
   }
 
 }
-

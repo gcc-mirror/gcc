@@ -109,8 +109,8 @@ public class Package
    *              that defines the Package.
    */
   Package(String name,
-	  String specTitle, String specVendor, String specVersion,
-	  String implTitle, String implVendor, String implVersion, URL sealed)
+          String specTitle, String specVendor, String specVersion,
+          String implTitle, String implVendor, String implVersion, URL sealed)
   {
     this(name, specTitle, specVendor, specVersion, implTitle, implVendor,
          implVersion, sealed, null);
@@ -121,7 +121,7 @@ public class Package
    * the <code>name</code> of the package may be <code>null</code>.
    * There are no public constructors defined for Package; this is a package
    * local constructor that is used by java.lang.Classloader.definePackage().
-   * 
+   *
    * @param name The name of the Package
    * @param specTitle The name of the specification
    * @param specVendor The name of the specification designer
@@ -132,8 +132,8 @@ public class Package
    * @param sealed If sealed the origin of the package classes
    */
   Package(String name,
-	  String specTitle, String specVendor, String specVersion,
-	  String implTitle, String implVendor, String implVersion, URL sealed,
+          String specTitle, String specVendor, String specVersion,
+          String implTitle, String implVendor, String implVersion, URL sealed,
           ClassLoader loader)
   {
     if (name == null)
@@ -333,7 +333,7 @@ public class Package
   public String toString()
   {
     return ("package " + name + (specTitle == null ? "" : ", " + specTitle)
-	    + (specVersion == null ? "" : ", version " + specVersion));
+            + (specVersion == null ? "" : ", version " + specVersion));
   }
 
   /**
@@ -351,7 +351,7 @@ public class Package
     Annotation[] annotations = getAnnotations();
     for (Annotation annotation : annotations)
       if (annotation.annotationType() == annotationClass)
-	foundAnnotation = (A) annotation;
+        foundAnnotation = (A) annotation;
     return foundAnnotation;
   }
 
@@ -405,8 +405,8 @@ public class Package
    * @return true if an annotation exists for the specified type.
    * @since 1.5
    */
-  public boolean isAnnotationPresent(Class<? extends Annotation> 
-				     annotationClass)
+  public boolean isAnnotationPresent(Class<? extends Annotation>
+                                     annotationClass)
   {
     return getAnnotation(annotationClass) != null;
   }

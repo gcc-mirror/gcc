@@ -676,31 +676,38 @@ extract_true_false_args_from_phi (basic_block dom, gimple phi,
      by the true edge of the predicate block and the other edge
      dominated by the false edge.  This ensures that the PHI argument
      we are going to take is completely determined by the path we
-     take from the predicate block.  */
+     take from the predicate block.
+     We can only use BB dominance checks below if the destination of
+     the true/false edges are dominated by their edge, thus only
+     have a single predecessor.  */
   extract_true_false_edges_from_block (dom, &true_edge, &false_edge);
   tem = EDGE_PRED (bb, 0);
   if (tem == true_edge
-      || tem->src == true_edge->dest
-      || dominated_by_p (CDI_DOMINATORS,
-			 tem->src, true_edge->dest))
+      || (single_pred_p (true_edge->dest)
+	  && (tem->src == true_edge->dest
+	      || dominated_by_p (CDI_DOMINATORS,
+				 tem->src, true_edge->dest))))
     arg0 = PHI_ARG_DEF (phi, tem->dest_idx);
   else if (tem == false_edge
-	   || tem->src == false_edge->dest
-	   || dominated_by_p (CDI_DOMINATORS,
-			      tem->src, false_edge->dest))
+	   || (single_pred_p (false_edge->dest)
+	       && (tem->src == false_edge->dest
+		   || dominated_by_p (CDI_DOMINATORS,
+				      tem->src, false_edge->dest))))
     arg1 = PHI_ARG_DEF (phi, tem->dest_idx);
   else
     return false;
   tem = EDGE_PRED (bb, 1);
   if (tem == true_edge
-      || tem->src == true_edge->dest
-      || dominated_by_p (CDI_DOMINATORS,
-			 tem->src, true_edge->dest))
+      || (single_pred_p (true_edge->dest)
+	  && (tem->src == true_edge->dest
+	      || dominated_by_p (CDI_DOMINATORS,
+				 tem->src, true_edge->dest))))
     arg0 = PHI_ARG_DEF (phi, tem->dest_idx);
   else if (tem == false_edge
-	   || tem->src == false_edge->dest
-	   || dominated_by_p (CDI_DOMINATORS,
-			      tem->src, false_edge->dest))
+	   || (single_pred_p (false_edge->dest)
+	       && (tem->src == false_edge->dest
+		   || dominated_by_p (CDI_DOMINATORS,
+				      tem->src, false_edge->dest))))
     arg1 = PHI_ARG_DEF (phi, tem->dest_idx);
   else
     return false;
@@ -2316,6 +2323,10 @@ can_sm_ref_p (struct loop *loop, mem_ref_p ref)
   if (!is_gimple_reg_type (TREE_TYPE (ref->mem))
       || TREE_THIS_VOLATILE (ref->mem)
       || !for_each_index (&ref->mem, may_move_till, loop))
+    return false;
+
+  /* If it can throw fail, we do not properly update EH info.  */
+  if (tree_could_throw_p (ref->mem))
     return false;
 
   /* If it can trap, it must be always executed in LOOP.

@@ -16,10 +16,8 @@ func libc_open(name *byte, mode int, perm Mode_t) int __asm__ ("open");
 func libc_close(fd int) int __asm__ ("close");
 func libc_read(fd int, buf *byte, count Size_t) Ssize_t __asm__ ("read");
 func libc_write(fd int, buf *byte, count Size_t) Ssize_t __asm__ ("write");
+func libc_fsync(fd int) int __asm__ ("fsync")
 func libc_pipe(filedes *int) int __asm__("pipe");
-func libc_stat(name *byte, buf *Stat_t) int __asm__ ("stat");
-func libc_fstat(fd int, buf *Stat_t) int __asm__ ("fstat");
-func libc_lstat(name *byte, buf *Stat_t) int __asm__ ("lstat");
 func libc_unlink(name *byte) int __asm__ ("unlink");
 func libc_rmdir(name *byte) int __asm__ ("rmdir");
 func libc_fcntl(fd int, cmd int, arg int) int __asm__ ("fcntl");
@@ -87,6 +85,13 @@ func Write(fd int, p []byte) (n int, errno int) {
   return;
 }
 
+func Fsync(fd int) (errno int) {
+	if libc_fsync(fd) < 0 {
+		errno = GetErrno()
+	}
+	return
+}
+
 func Pread(fd int, p []byte, offset int64) (n int, errno int) {
   var _p0 *byte;
   if len(p) > 0 { _p0 = &p[0]; }
@@ -106,7 +111,7 @@ func Pwrite(fd int, p []byte, offset int64) (n int, errno int) {
 }
 
 func Seek(fd int, offset int64, whence int) (off int64, errno int) {
-  r := libc_lseek64(fd, Offset_t(offset), whence);
+  r := libc_lseek(fd, Offset_t(offset), whence);
   if r == -1 { errno = GetErrno() }
   off = int64(r);
   return;
@@ -300,13 +305,13 @@ func Fchown(fd int, uid int, gid int) (errno int) {
 }
 
 func Truncate(path string, length int64) (errno int) {
-  r := libc_truncate64(StringBytePtr(path), Offset_t(length));
+  r := libc_truncate(StringBytePtr(path), Offset_t(length));
   if r < 0 { errno = GetErrno() }
   return;
 }
 
 func Ftruncate(fd int, length int64) (errno int) {
-  r := libc_ftruncate64(fd, Offset_t(length));
+  r := libc_ftruncate(fd, Offset_t(length));
   if r < 0 { errno = GetErrno() }
   return;
 }

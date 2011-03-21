@@ -9,8 +9,10 @@
  * interfere with what we are testing, which is that the `bycopy'
  * keyword generates the _F_BYCOPY qualifier for the return type.  */
 
-#include "../../objc-obj-c++-shared/next-mapping.h"
-#include "../../objc-obj-c++-shared/Protocol1.h"
+extern void exit (int) __attribute__ ((noreturn));
+extern int printf (const char *, ...);
+
+#include <objc/Protocol.h>
 
 #ifndef __NEXT_RUNTIME__
 #include <objc/encoding.h>
@@ -22,6 +24,12 @@
 
 /* This no-op class to keep it compile under broken gcc 3.x */
 @interface MyObject : Object <MyProtocol> 
+#ifdef __OBJC2__
++ (id) initialize;
++ (id) alloc;
++ new;
+- init;
+#endif
 @end
 
 @implementation MyObject
@@ -29,7 +37,18 @@
 {
   return [MyObject alloc];
 }
+#ifdef __OBJC2__
++ initialize {return self;}
++ alloc { return class_createInstance (self, 0);}
++ new { return [[self alloc] init]; }
+- init {return self;}
+#endif
 @end
+
+/* The following header, together with the implementation included below,
+   emulate functionality provided by the GNU runtime but not available from
+   the NeXT runtime.  */
+#include "../../objc-obj-c++-shared/objc-test-suite-next-encode-assist.h"
 
 int main (void)
 {
@@ -69,3 +88,28 @@ int main (void)
   /* Else, happy end */
   return 0;
 }
+
+#ifdef __NEXT_RUNTIME__
+unsigned
+objc_get_type_qualifiers (const char *type)
+{
+  unsigned res = 0;
+  BOOL flag = YES;
+
+  while (flag)
+    switch (*type++)
+      {
+      case _C_CONST:	res |= _F_CONST; break;
+      case _C_IN:	res |= _F_IN; break;
+      case _C_INOUT:	res |= _F_INOUT; break;
+      case _C_OUT:	res |= _F_OUT; break;
+      case _C_BYCOPY:	res |= _F_BYCOPY; break;
+      case _C_BYREF:  res |= _F_BYREF; break;
+      case _C_ONEWAY:	res |= _F_ONEWAY; break;
+      case _C_GCINVISIBLE: res |= _F_GCINVISIBLE; break;
+      default: flag = NO;
+    }
+
+  return res;
+}
+#endif

@@ -1,4 +1,4 @@
-/* XMLInputFactoryImpl.java -- 
+/* XMLInputFactoryImpl.java --
    Copyright (C) 2005,2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -91,7 +91,7 @@ public class XMLInputFactoryImpl
   {
     return createXMLStreamReader(null, reader);
   }
-  
+
   public XMLStreamReader createXMLStreamReader(Source source)
     throws XMLStreamException
   {
@@ -114,13 +114,13 @@ public class XMLInputFactoryImpl
                                 replacingEntityReferences);
     return ret;
   }
-  
+
   public XMLStreamReader createXMLStreamReader(InputStream in)
     throws XMLStreamException
   {
     return createXMLStreamReader(null, in);
   }
-  
+
   public XMLStreamReader createXMLStreamReader(InputStream in, String encoding)
     throws XMLStreamException
   {
@@ -175,34 +175,34 @@ public class XMLInputFactoryImpl
     XMLStreamReader sr = createXMLStreamReader(reader);
     return new XMLEventReaderImpl(sr, allocator, null);
   }
-  
+
   public XMLEventReader createXMLEventReader(String systemId, Reader reader)
     throws XMLStreamException
   {
     XMLStreamReader sr = createXMLStreamReader(systemId, reader);
     return new XMLEventReaderImpl(sr, allocator, null);
   }
-  
+
   public XMLEventReader createXMLEventReader(XMLStreamReader reader)
     throws XMLStreamException
   {
     return new XMLEventReaderImpl(reader, allocator, null);
   }
-  
+
   public XMLEventReader createXMLEventReader(Source source)
     throws XMLStreamException
   {
     XMLStreamReader sr = createXMLStreamReader(source);
     return new XMLEventReaderImpl(sr, allocator, null);
   }
-  
+
   public XMLEventReader createXMLEventReader(InputStream in)
     throws XMLStreamException
   {
     XMLStreamReader sr = createXMLStreamReader(in);
     return new XMLEventReaderImpl(sr, allocator, null);
   }
-  
+
   public XMLEventReader createXMLEventReader(InputStream in, String encoding)
     throws XMLStreamException
   {
@@ -216,7 +216,7 @@ public class XMLInputFactoryImpl
     XMLStreamReader sr = createXMLStreamReader(systemId, in);
     return new XMLEventReaderImpl(sr, allocator, null);
   }
-  
+
   public XMLStreamReader createFilteredReader(XMLStreamReader reader,
                                               StreamFilter filter)
     throws XMLStreamException
@@ -240,7 +240,7 @@ public class XMLInputFactoryImpl
   {
     this.resolver = resolver;
   }
-  
+
   public XMLReporter getXMLReporter()
   {
     return reporter;
@@ -327,7 +327,7 @@ public class XMLInputFactoryImpl
       name.equals("gnu.xml.stream.baseAware") ||
       name.equals("gnu.xml.stream.xIncludeAware");
   }
-  
+
   public void setEventAllocator(XMLEventAllocator allocator)
   {
     this.allocator = allocator;
@@ -393,6 +393,5 @@ public class XMLInputFactoryImpl
       }
     return in;
   }
-  
-}
 
+}

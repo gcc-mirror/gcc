@@ -60,7 +60,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.EventListenerList;
 
-public class StyleContext 
+public class StyleContext
   implements Serializable, AbstractDocument.AttributeContext
 {
   /** The serialization UID (compatible with JDK1.5). */
@@ -74,7 +74,7 @@ public class StyleContext
 
     protected transient ChangeEvent changeEvent;
     protected EventListenerList listenerList;
-      
+
     private transient AttributeSet attributes;
 
     public NamedStyle()
@@ -115,12 +115,12 @@ public class StyleContext
     {
       listenerList.add(ChangeListener.class, l);
     }
-      
+
     public void removeChangeListener(ChangeListener l)
     {
       listenerList.remove(ChangeListener.class, l);
     }
-      
+
     public <T extends EventListener> T[] getListeners(Class<T> listenerType)
     {
       return listenerList.getListeners(listenerType);
@@ -159,7 +159,7 @@ public class StyleContext
     {
       return attributes.containsAttribute(name, value);
     }
-      
+
     public boolean containsAttributes(AttributeSet attrs)
     {
       return attributes.containsAttributes(attrs);
@@ -172,7 +172,7 @@ public class StyleContext
       copy.attributes = attributes.copyAttributes();
       return copy;
     }
-            
+
     public Object getAttribute(Object attrName)
     {
       return attributes.getAttribute(attrName);
@@ -187,10 +187,10 @@ public class StyleContext
     {
       return attributes.getAttributeNames();
     }
-      
+
     public boolean isDefined(Object attrName)
     {
-      return attributes.isDefined(attrName);        
+      return attributes.isDefined(attrName);
     }
 
     public boolean isEqual(AttributeSet attr)
@@ -219,7 +219,7 @@ public class StyleContext
 
     public AttributeSet getResolveParent()
     {
-      return attributes.getResolveParent();        
+      return attributes.getResolveParent();
     }
 
     public void setResolveParent(AttributeSet parent)
@@ -229,7 +229,7 @@ public class StyleContext
       else
         removeAttribute(StyleConstants.ResolveAttribute);
     }
-      
+
     public String toString()
     {
       return "NamedStyle:" + getName() + " " + attributes;
@@ -250,7 +250,7 @@ public class StyleContext
       readAttributeSet(s, this);
     }
   }
-  
+
   public class SmallAttributeSet
     implements AttributeSet
   {
@@ -321,7 +321,7 @@ public class StyleContext
         }
       return eq;
     }
- 
+
     public Object getAttribute(Object key)
     {
       Object att = null;
@@ -334,7 +334,7 @@ public class StyleContext
             att = attrs[i + 1];
         }
 
-      // Check the resolve parent, unless we're looking for the 
+      // Check the resolve parent, unless we're looking for the
       // ResolveAttribute, which must not be looked up
       if (att == null)
           {
@@ -342,7 +342,7 @@ public class StyleContext
             if (parent != null)
               att = parent.getAttribute(key);
           }
-      
+
       return att;
     }
 
@@ -352,18 +352,18 @@ public class StyleContext
     }
 
     public Enumeration<?> getAttributeNames()
-    {      
-      return new Enumeration() 
+    {
+      return new Enumeration()
         {
           int i = 0;
-          public boolean hasMoreElements() 
-          { 
-            return i < attrs.length; 
+          public boolean hasMoreElements()
+          {
+            return i < attrs.length;
           }
-          public Object nextElement() 
-          { 
-            i += 2; 
-            return attrs[i-2]; 
+          public Object nextElement()
+          {
+            i += 2;
+            return attrs[i-2];
           }
         };
     }
@@ -387,7 +387,7 @@ public class StyleContext
         }
       return false;
     }
-	
+
     public boolean isEqual(AttributeSet attr)
     {
       boolean eq;
@@ -400,7 +400,7 @@ public class StyleContext
              && this.containsAttributes(attr);
       return eq;
     }
-	
+
     public String toString()
     {
       StringBuilder sb = new StringBuilder();
@@ -446,7 +446,7 @@ public class StyleContext
    * The name of the default style.
    */
   public static final String DEFAULT_STYLE = "default";
-  
+
   static Hashtable sharedAttributeSets = new Hashtable();
   static Hashtable sharedFonts = new Hashtable();
 
@@ -486,7 +486,7 @@ public class StyleContext
   {
     return new SmallAttributeSet(a);
   }
-  
+
   protected MutableAttributeSet createLargeAttributeSet(AttributeSet a)
   {
     return new SimpleAttributeSet(a);
@@ -506,7 +506,7 @@ public class StyleContext
   {
     return styles.getChangeListeners();
   }
-    
+
   public Style addStyle(String name, Style parent)
   {
     Style newStyle = new NamedStyle(name, parent);
@@ -534,7 +534,7 @@ public class StyleContext
   {
     return (Style) styles.getAttribute(name);
   }
-  
+
   /**
    * Get the names of the style. The returned enumeration always
    * contains at least one member, the default style.
@@ -572,7 +572,7 @@ public class StyleContext
   //
   // We keep a static cache mapping SimpleFontSpecs to java.awt.Fonts, so
   // that we reuse Fonts between styles and style contexts.
-  // 
+  //
 
   private static class SimpleFontSpec
   {
@@ -600,7 +600,7 @@ public class StyleContext
       return family.hashCode() + style + size;
     }
   }
-  
+
   public Font getFont(AttributeSet attr)
   {
     String family = StyleConstants.getFontFamily(attr);
@@ -608,7 +608,7 @@ public class StyleContext
     if (StyleConstants.isBold(attr))
       style += Font.BOLD;
     if (StyleConstants.isItalic(attr))
-      style += Font.ITALIC;      
+      style += Font.ITALIC;
     int size = StyleConstants.getFontSize(attr);
     return getFont(family, style, size);
   }
@@ -625,7 +625,7 @@ public class StyleContext
         return tmp;
       }
   }
-  
+
   public FontMetrics getFontMetrics(Font f)
   {
     return Toolkit.getDefaultToolkit().getFontMetrics(f);
@@ -641,7 +641,7 @@ public class StyleContext
     return StyleConstants.getBackground(a);
   }
 
-  protected int getCompressionThreshold() 
+  protected int getCompressionThreshold()
   {
     return compressionThreshold;
   }
@@ -749,7 +749,7 @@ public class StyleContext
   }
 
   public synchronized AttributeSet removeAttributes(AttributeSet old,
-						    Enumeration<?> names)
+                                                    Enumeration<?> names)
   {
     AttributeSet ret;
     if (old.getAttributeCount() <= getCompressionThreshold())
@@ -771,7 +771,7 @@ public class StyleContext
 
   /**
    * Gets the object previously registered with registerStaticAttributeKey.
-   * 
+   *
    * @param key - the key that was registered.
    * @return the object previously registered with registerStaticAttributeKey.
    */
@@ -781,11 +781,11 @@ public class StyleContext
       return null;
     return readAttributeKeys.get(key);
   }
-  
+
   /**
    * Returns the String that key will be registered with
    * registerStaticAttributeKey.
-   * 
+   *
    * @param key - the key that will be registered.
    * @return the string the key will be registered with.
    */
@@ -799,7 +799,7 @@ public class StyleContext
    * attempt to restore keys that were static objects by considering only the
    * keys that have were registered with registerStaticAttributeKey. The
    * attributes retrieved will be placed into the given set.
-   * 
+   *
    * @param in - the stream to read from
    * @param a - the set of attributes
    * @throws ClassNotFoundException - may be encountered when reading from
@@ -827,12 +827,12 @@ public class StyleContext
         a.addAttribute(key, val);
       }
   }
-  
+
   /**
    * Serialize an attribute set in a way that is compatible with it
    * being read in again by {@link #readAttributeSet(ObjectInputStream, MutableAttributeSet)}.
    * In particular registered static keys are transformed properly.
-   * 
+   *
    * @param out - stream to write to
    * @param a - the attribute set
    * @throws IOException - any I/O error
@@ -872,9 +872,9 @@ public class StyleContext
   }
 
   /**
-   * Handles reading in the attributes. 
+   * Handles reading in the attributes.
    * @see #readAttributeSet(ObjectInputStream, MutableAttributeSet)
-   * 
+   *
    * @param in - the stream to read from
    * @param a - the set of attributes
    * @throws ClassNotFoundException - may be encountered when reading from stream
@@ -889,7 +889,7 @@ public class StyleContext
   /**
    * Handles writing of the given attributes.
    * @see #writeAttributeSet(ObjectOutputStream, AttributeSet)
-   * 
+   *
    * @param out - stream to write to
    * @param a - the attribute set
    * @throws IOException - any I/O error

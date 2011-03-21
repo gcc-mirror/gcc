@@ -61,8 +61,8 @@ public final class ObjectReferenceTemplateHolder
    */
   public ObjectReferenceTemplateHolder()
   {
-  }  
-  
+  }
+
   /**
    * Create the initialised instance.
    * @param initialValue the value that will be assigned to
@@ -76,7 +76,7 @@ public final class ObjectReferenceTemplateHolder
   /**
    * Fill in the {@link #value} by data from the CDR stream.
    *
-   * @param input the org.omg.CORBA.portable stream to read. 
+   * @param input the org.omg.CORBA.portable stream to read.
    */
   public void _read(InputStream input)
   {
@@ -85,14 +85,14 @@ public final class ObjectReferenceTemplateHolder
 
   /**
    * Write the stored value into the CDR stream.
-   * 
-   * @param output the org.omg.CORBA.portable stream to write. 
+   *
+   * @param output the org.omg.CORBA.portable stream to write.
    */
   public void _write(OutputStream output)
   {
     ObjectReferenceTemplateHelper .write(output, value);
   }
-  
+
   /**
    * Get the typecode of the ObjectReferenceTemplate.
    */

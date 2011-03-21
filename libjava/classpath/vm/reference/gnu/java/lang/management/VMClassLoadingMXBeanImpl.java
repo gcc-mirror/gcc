@@ -38,7 +38,7 @@ exception statement from your version. */
 package gnu.java.lang.management;
 
 /**
- * Provides access to information about the class loading 
+ * Provides access to information about the class loading
  * behaviour of the current invocation of the virtual
  * machine.  Instances of this bean are obtained by calling
  * {@link ManagementFactory#getClassLoadingMXBean()}.

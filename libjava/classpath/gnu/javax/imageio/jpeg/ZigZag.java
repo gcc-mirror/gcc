@@ -63,7 +63,7 @@ public class ZigZag
 
   /**
    * Encodes a matrix of equal width and height to a byte array.
-   * 
+   *
    * @param matrix
    *
    * @return
@@ -114,7 +114,7 @@ public class ZigZag
 
   /**
    * Encodes a matrix of equal width and height to a double array
-   * 
+   *
    * @param matrix
    *
    * @return
@@ -165,7 +165,7 @@ public class ZigZag
 
   /**
    * Encodes a matrix of equal width and height to a float array
-   * 
+   *
    * @param matrix
    *
    * @return
@@ -216,7 +216,7 @@ public class ZigZag
 
   /**
    * Encodes a matrix of equal width and height to a float array
-   * 
+   *
    * @param matrix
    *
    * @return
@@ -268,7 +268,7 @@ public class ZigZag
   /**
    * Convert a double array into a matrix with the same amount of columns and
    * rows with length sqrt(double array length)
-   * 
+   *
    * @param data
    *
    * @return
@@ -282,7 +282,7 @@ public class ZigZag
   /**
    * Convert a byte array into a matrix with the same amount of columns and
    * rows with length sqrt(double array length)
-   * 
+   *
    * @param data
    *
    * @return
@@ -314,7 +314,7 @@ public class ZigZag
       {
         buffer[yindex][xindex] = data[dataindex];
         dataindex++;
-        
+
         if (dir == ZigZag.ZIGZAG_FORWARD)
           {
             if (yindex == 0 || xindex == (width - 1))
@@ -408,19 +408,19 @@ public class ZigZag
   public static float[][] decode(float[] data, int width, int height)
   {
     float[][] buffer = new float[height][width];
-    
+
     for (int v = 0; v < height; v++)
       for (int z = 0; z < width; z++)
         buffer[v][z] = 11;
-    
+
     boolean dir = ZigZag.ZIGZAG_FORWARD;
     int xindex = 0, yindex = 0, dataindex = 0;
-    
+
     while (xindex < width && yindex < height && dataindex < data.length)
       {
         buffer[yindex][xindex] = data[dataindex];
         dataindex++;
-        
+
         if (dir == ZigZag.ZIGZAG_FORWARD)
           {
             if (yindex == 0 || xindex == (width - 1))

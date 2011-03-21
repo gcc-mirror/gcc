@@ -1,4 +1,4 @@
-/* SortKey.java -- 
+/* SortKey.java --
    Copyright (C) 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -95,7 +95,7 @@ final class SortKey
    * @param caseOrder the treatment of case when the data type is a string.  This
    *                  may be "upper-first", "lower-first" or {@code null} if
    *                  unspecified.
-   */ 
+   */
   SortKey(Expr select, TemplateNode lang, TemplateNode dataType,
           TemplateNode order, TemplateNode caseOrder)
   {
@@ -215,10 +215,10 @@ final class SortKey
   SortKey clone(Stylesheet stylesheet)
   {
     return new SortKey(select.clone(stylesheet),
-		       langTemplate == null ? null : cloneAttributeValueTemplate(langTemplate, stylesheet),
-		       dataTypeTemplate == null ? null : cloneAttributeValueTemplate(dataTypeTemplate, stylesheet),
-		       orderTemplate == null ? null : cloneAttributeValueTemplate(orderTemplate, stylesheet),
-		       caseOrderTemplate == null ? null : cloneAttributeValueTemplate(caseOrderTemplate, stylesheet));
+                       langTemplate == null ? null : cloneAttributeValueTemplate(langTemplate, stylesheet),
+                       dataTypeTemplate == null ? null : cloneAttributeValueTemplate(dataTypeTemplate, stylesheet),
+                       orderTemplate == null ? null : cloneAttributeValueTemplate(orderTemplate, stylesheet),
+                       caseOrderTemplate == null ? null : cloneAttributeValueTemplate(caseOrderTemplate, stylesheet));
   }
 
   /**

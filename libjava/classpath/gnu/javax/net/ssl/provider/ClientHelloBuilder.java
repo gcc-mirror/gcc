@@ -1,4 +1,4 @@
-/* ClientHelloBuilder.java -- 
+/* ClientHelloBuilder.java --
    Copyright (C) 2006  Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -43,7 +43,7 @@ import java.util.List;
 
 /**
  * Builder for {@link ClientHello} objects.
- * 
+ *
  * @author Casey Marshall (csm@gnu.org)
  */
 public class ClientHelloBuilder extends ClientHello implements Builder
@@ -80,7 +80,7 @@ public class ClientHelloBuilder extends ClientHello implements Builder
     this.buffer.position (SESSID_OFFSET2);
     this.buffer.put (buffer, offset, len);
   }
-  
+
   public void setCipherSuites(List<CipherSuite> suites)
   {
     int off = getCipherSuitesOffset();
@@ -93,7 +93,7 @@ public class ClientHelloBuilder extends ClientHello implements Builder
         i += 2;
       }
   }
-  
+
   public void setCompressionMethods(List<CompressionMethod> methods)
   {
     int off = getCompressionMethodsOffset();
@@ -112,19 +112,19 @@ public class ClientHelloBuilder extends ClientHello implements Builder
       ensureCapacity(needed);
     buffer.putShort(getExtensionsOffset(), (short) length);
   }
-  
+
   public void setExtensions(ByteBuffer extensions)
   {
     int elen = extensions.getShort(0) & 0xFFFF;
     setExtensionsLength(elen);
     ((ByteBuffer) buffer.duplicate().position(getExtensionsOffset())).put(extensions);
   }
-  
+
   public void setDisableExtensions(boolean disableExtensions)
   {
     this.disableExtensions = disableExtensions;
   }
-  
+
   public void ensureCapacity(final int length)
   {
     if (buffer.capacity() >= length)

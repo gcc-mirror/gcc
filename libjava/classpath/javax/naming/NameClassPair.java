@@ -41,14 +41,14 @@ package javax.naming;
 import java.io.Serializable;
 
 /**
- * <code>NameClassPair</code> represents the name-classname mapping pair 
+ * <code>NameClassPair</code> represents the name-classname mapping pair
  * of a binding in a context.
  * <p>
  * Bindings are mappings of a name to an object and this class is used to
  * specify the mapping of the name to the class type of the bound object.
  * As classname the fully qualified classname is used.
  * </p>
- * 
+ *
  * @author Tom Tromey (tromey@redhat.com)
  * @since 1.3
  */
@@ -58,7 +58,7 @@ public class NameClassPair implements Serializable
 
   /**
    * Constructs an instance with the given name and classname.
-   * 
+   *
    * @param name the name of the binding relative to the target context
    * (may not be <code>null</code>)
    * @param className the name of the class. If <code>null</code> the bound
@@ -70,9 +70,9 @@ public class NameClassPair implements Serializable
   }
 
   /**
-   * Constructs an instance with the given name and classname and a 
+   * Constructs an instance with the given name and classname and a
    * flag indicating if the name is relative to the target context.
-   * 
+   *
    * @param name the name of the binding (may not be <code>null</code>)
    * @param className the name of the class. If <code>null</code> the bound
    * object is also <code>null</code>
@@ -87,7 +87,7 @@ public class NameClassPair implements Serializable
 
   /**
    * Returns the classname of the binding.
-   * @return The fully qualified classname or <code>null</code> if the 
+   * @return The fully qualified classname or <code>null</code> if the
    * bound object is null.
    */
   public String getClassName ()
@@ -106,7 +106,7 @@ public class NameClassPair implements Serializable
 
   /**
    * Checks whether the name is relative to the target context or not.
-   * @return <code>true</code> if the name is relative, 
+   * @return <code>true</code> if the name is relative,
    * <code>false</code> otherwise.
    */
   public boolean isRelative ()
@@ -140,43 +140,43 @@ public class NameClassPair implements Serializable
   {
     this.isRel = r;
   }
-  
+
   /**
-   * Sets the full name for this binding. Setting the full name by this 
-   * method is the only way to initialize full names of bindings if 
+   * Sets the full name for this binding. Setting the full name by this
+   * method is the only way to initialize full names of bindings if
    * supported by a specific naming system.
-   * 
-   * @param fullName the full name of this binding. If not set or set to 
+   *
+   * @param fullName the full name of this binding. If not set or set to
    * <code>null</code> the <code>getNameInNamespace()</code> method will
    * throw an exception
-   * 
+   *
    * @see #getNameInNamespace()
-   * 
+   *
    * @since 1.5
    */
-  public void setNameInNamespace(String fullName) 
+  public void setNameInNamespace(String fullName)
   {
     this.fullName = fullName;
   }
-  
+
   /**
    * Returns the full name for this binding. The full name of a binding is
-   * defined as the absolute name in its own namespace and is not valid 
+   * defined as the absolute name in its own namespace and is not valid
    * outside.
-   * 
+   *
    * @return The full name in the bindings namespace.
-   * @throws UnsupportedOperationException if no full name is applicable in 
+   * @throws UnsupportedOperationException if no full name is applicable in
    * the specific naming system.
-   * 
+   *
    * @see Context#getNameInNamespace()
-   * 
+   *
    * @since 1.5
    */
   public String getNameInNamespace()
   {
     if (this.fullName == null)
       throw new UnsupportedOperationException();
-    
+
     return this.fullName;
   }
 

@@ -44,7 +44,7 @@ import java.lang.reflect.Method;
 /** <p><code>DefaultPersistenceDelegate</code> is a {@link PersistenceDelegate}
  * implementation that can be used to serialize objects which adhere to the
  * Java Beans naming convention.</p>
- * 
+ *
  * @author Robert Schuster (robertschuster@fsfe.org)
  * @since 1.4
  */
@@ -62,11 +62,11 @@ public class DefaultPersistenceDelegate extends PersistenceDelegate
 
   /** This constructor allows to specify which Bean properties appear
    * in the constructor.
-   * 
+   *
    * <p>The implementation reads the mentioned properties from the Bean
    * instance and applies it in the given order to a corresponding
    * constructor.</p>
-   * 
+   *
    * @param constructorPropertyNames The properties the Bean's constructor
    * should be given to.
    */
@@ -167,13 +167,13 @@ public class DefaultPersistenceDelegate extends PersistenceDelegate
     // * PersistenceDelegate.initialize() is implemented in a way that it
     //   calls the initialize method of the superclass' persistence delegate.
     super.initialize(type, oldInstance, newInstance, out);
-    
+
     // Suppresses the writing of property setting statements when this delegate
     // is not used for the exact instance type. By doing so the following code
     // is called only once per object.
     if (type != oldInstance.getClass())
       return;
-    
+
     try
       {
         PropertyDescriptor[] propertyDescs = Introspector.getBeanInfo(

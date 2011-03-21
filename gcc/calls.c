@@ -1,7 +1,7 @@
 /* Convert function calls to rtl insns, for GNU C compiler.
    Copyright (C) 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
-   Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+   2011 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -39,7 +39,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "sbitmap.h"
 #include "langhooks.h"
 #include "target.h"
-#include "debug.h"
 #include "cgraph.h"
 #include "except.h"
 #include "dbgcnt.h"
@@ -256,7 +255,7 @@ emit_call_1 (rtx funexp, tree fntree ATTRIBUTE_UNUSED, tree fndecl ATTRIBUTE_UNU
 	     CUMULATIVE_ARGS *args_so_far ATTRIBUTE_UNUSED)
 {
   rtx rounded_stack_size_rtx = GEN_INT (rounded_stack_size);
-  rtx call_insn;
+  rtx call_insn, call, funmem;
   int already_popped = 0;
   HOST_WIDE_INT n_popped
     = targetm.calls.return_pops_args (fndecl, funtype, stack_size);
@@ -271,6 +270,12 @@ emit_call_1 (rtx funexp, tree fntree ATTRIBUTE_UNUSED, tree fndecl ATTRIBUTE_UNU
   if (GET_CODE (funexp) != SYMBOL_REF)
     funexp = memory_address (FUNCTION_MODE, funexp);
 
+  funmem = gen_rtx_MEM (FUNCTION_MODE, funexp);
+  if (fndecl && TREE_CODE (fndecl) == FUNCTION_DECL)
+    set_mem_expr (funmem, fndecl);
+  else if (fntree)
+    set_mem_expr (funmem, build_fold_indirect_ref (CALL_EXPR_FN (fntree)));
+
 #if defined (HAVE_sibcall_pop) && defined (HAVE_sibcall_value_pop)
   if ((ecf_flags & ECF_SIBCALL)
       && HAVE_sibcall_pop && HAVE_sibcall_value_pop
@@ -283,13 +288,11 @@ emit_call_1 (rtx funexp, tree fntree ATTRIBUTE_UNUSED, tree fndecl ATTRIBUTE_UNU
 	 if possible, for the sake of frame pointer elimination.  */
 
       if (valreg)
-	pat = GEN_SIBCALL_VALUE_POP (valreg,
-				     gen_rtx_MEM (FUNCTION_MODE, funexp),
-				     rounded_stack_size_rtx, next_arg_reg,
-				     n_pop);
+	pat = GEN_SIBCALL_VALUE_POP (valreg, funmem, rounded_stack_size_rtx,
+				     next_arg_reg, n_pop);
       else
-	pat = GEN_SIBCALL_POP (gen_rtx_MEM (FUNCTION_MODE, funexp),
-			       rounded_stack_size_rtx, next_arg_reg, n_pop);
+	pat = GEN_SIBCALL_POP (funmem, rounded_stack_size_rtx, next_arg_reg,
+			       n_pop);
 
       emit_call_insn (pat);
       already_popped = 1;
@@ -316,12 +319,11 @@ emit_call_1 (rtx funexp, tree fntree ATTRIBUTE_UNUSED, tree fndecl ATTRIBUTE_UNU
 	 if possible, for the sake of frame pointer elimination.  */
 
       if (valreg)
-	pat = GEN_CALL_VALUE_POP (valreg,
-				  gen_rtx_MEM (FUNCTION_MODE, funexp),
-				  rounded_stack_size_rtx, next_arg_reg, n_pop);
+	pat = GEN_CALL_VALUE_POP (valreg, funmem, rounded_stack_size_rtx,
+				  next_arg_reg, n_pop);
       else
-	pat = GEN_CALL_POP (gen_rtx_MEM (FUNCTION_MODE, funexp),
-			    rounded_stack_size_rtx, next_arg_reg, n_pop);
+	pat = GEN_CALL_POP (funmem, rounded_stack_size_rtx, next_arg_reg,
+			    n_pop);
 
       emit_call_insn (pat);
       already_popped = 1;
@@ -334,13 +336,12 @@ emit_call_1 (rtx funexp, tree fntree ATTRIBUTE_UNUSED, tree fndecl ATTRIBUTE_UNU
       && HAVE_sibcall && HAVE_sibcall_value)
     {
       if (valreg)
-	emit_call_insn (GEN_SIBCALL_VALUE (valreg,
-					   gen_rtx_MEM (FUNCTION_MODE, funexp),
+	emit_call_insn (GEN_SIBCALL_VALUE (valreg, funmem,
 					   rounded_stack_size_rtx,
 					   next_arg_reg, NULL_RTX));
       else
-	emit_call_insn (GEN_SIBCALL (gen_rtx_MEM (FUNCTION_MODE, funexp),
-				     rounded_stack_size_rtx, next_arg_reg,
+	emit_call_insn (GEN_SIBCALL (funmem, rounded_stack_size_rtx,
+				     next_arg_reg,
 				     GEN_INT (struct_value_size)));
     }
   else
@@ -350,13 +351,10 @@ emit_call_1 (rtx funexp, tree fntree ATTRIBUTE_UNUSED, tree fndecl ATTRIBUTE_UNU
   if (HAVE_call && HAVE_call_value)
     {
       if (valreg)
-	emit_call_insn (GEN_CALL_VALUE (valreg,
-					gen_rtx_MEM (FUNCTION_MODE, funexp),
-					rounded_stack_size_rtx, next_arg_reg,
-					NULL_RTX));
+	emit_call_insn (GEN_CALL_VALUE (valreg, funmem, rounded_stack_size_rtx,
+					next_arg_reg, NULL_RTX));
       else
-	emit_call_insn (GEN_CALL (gen_rtx_MEM (FUNCTION_MODE, funexp),
-				  rounded_stack_size_rtx, next_arg_reg,
+	emit_call_insn (GEN_CALL (funmem, rounded_stack_size_rtx, next_arg_reg,
 				  GEN_INT (struct_value_size)));
     }
   else
@@ -365,6 +363,19 @@ emit_call_1 (rtx funexp, tree fntree ATTRIBUTE_UNUSED, tree fndecl ATTRIBUTE_UNU
 
   /* Find the call we just emitted.  */
   call_insn = last_call_insn ();
+
+  /* Some target create a fresh MEM instead of reusing the one provided
+     above.  Set its MEM_EXPR.  */
+  call = PATTERN (call_insn);
+  if (GET_CODE (call) == PARALLEL)
+    call = XVECEXP (call, 0, 0);
+  if (GET_CODE (call) == SET)
+    call = SET_SRC (call);
+  if (GET_CODE (call) == CALL
+      && MEM_P (XEXP (call, 0))
+      && MEM_EXPR (XEXP (call, 0)) == NULL_TREE
+      && MEM_EXPR (funmem) != NULL_TREE)
+    set_mem_expr (XEXP (call, 0), MEM_EXPR (funmem));
 
   /* Put the register usage information there.  */
   add_function_usage_to (call_insn, call_fusage);
@@ -394,11 +405,6 @@ emit_call_1 (rtx funexp, tree fntree ATTRIBUTE_UNUSED, tree fndecl ATTRIBUTE_UNU
     }
 
   SIBLING_CALL_P (call_insn) = ((ecf_flags & ECF_SIBCALL) != 0);
-
-  /* Record debug information for virtual calls.  */
-  if (flag_enable_icf_debug && fndecl == NULL)
-    (*debug_hooks->virtual_call_token) (CALL_EXPR_FN (fntree),
-                                        INSN_UID (call_insn));
 
   /* Restore this now, so that we do defer pops for this call's args
      if the context of the call as a whole permits.  */
@@ -1092,7 +1098,7 @@ initialize_argument_information (int num_actuals ATTRIBUTE_UNUSED,
 
 		  if (*old_stack_level == 0)
 		    {
-		      emit_stack_save (SAVE_BLOCK, old_stack_level, NULL_RTX);
+		      emit_stack_save (SAVE_BLOCK, old_stack_level);
 		      *old_pending_adj = pending_stack_adjust;
 		      pending_stack_adjust = 0;
 		    }
@@ -2488,7 +2494,7 @@ expand_call (tree exp, rtx target, int ignore)
 	{
 	  if (old_stack_level == 0)
 	    {
-	      emit_stack_save (SAVE_BLOCK, &old_stack_level, NULL_RTX);
+	      emit_stack_save (SAVE_BLOCK, &old_stack_level);
 	      old_stack_pointer_delta = stack_pointer_delta;
 	      old_pending_adj = pending_stack_adjust;
 	      pending_stack_adjust = 0;
@@ -2643,8 +2649,7 @@ expand_call (tree exp, rtx target, int ignore)
 			      : reg_parm_stack_space));
 	      if (old_stack_level == 0)
 		{
-		  emit_stack_save (SAVE_BLOCK, &old_stack_level,
-				   NULL_RTX);
+		  emit_stack_save (SAVE_BLOCK, &old_stack_level);
 		  old_stack_pointer_delta = stack_pointer_delta;
 		  old_pending_adj = pending_stack_adjust;
 		  pending_stack_adjust = 0;
@@ -2785,9 +2790,7 @@ expand_call (tree exp, rtx target, int ignore)
 		sibcall_failure = 1;
 	      }
 
-	  if (((flags & ECF_CONST)
-	       || ((flags & ECF_PURE) && ACCUMULATE_OUTGOING_ARGS))
-	      && args[i].stack)
+	  if (args[i].stack)
 	    call_fusage = gen_rtx_EXPR_LIST (VOIDmode,
 					     gen_rtx_USE (VOIDmode,
 							  args[i].stack),
@@ -3101,7 +3104,7 @@ expand_call (tree exp, rtx target, int ignore)
 
       if (old_stack_level)
 	{
-	  emit_stack_restore (SAVE_BLOCK, old_stack_level, NULL_RTX);
+	  emit_stack_restore (SAVE_BLOCK, old_stack_level);
 	  stack_pointer_delta = old_stack_pointer_delta;
 	  pending_stack_adjust = old_pending_adj;
 	  old_stack_allocated = stack_pointer_delta - pending_stack_adjust;
@@ -3683,6 +3686,8 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
 
       if (! (reg != 0 && partial == 0))
 	{
+	  rtx use;
+
 	  if (ACCUMULATE_OUTGOING_ARGS)
 	    {
 	      /* If this is being stored into a pre-allocated, fixed-size,
@@ -3753,28 +3758,22 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
 
 	  NO_DEFER_POP;
 
-	  if ((flags & ECF_CONST)
-	      || ((flags & ECF_PURE) && ACCUMULATE_OUTGOING_ARGS))
-	    {
-	      rtx use;
-
-	      /* Indicate argument access so that alias.c knows that these
-		 values are live.  */
-	      if (argblock)
-		use = plus_constant (argblock,
-				     argvec[argnum].locate.offset.constant);
-	      else
-		/* When arguments are pushed, trying to tell alias.c where
-		   exactly this argument is won't work, because the
-		   auto-increment causes confusion.  So we merely indicate
-		   that we access something with a known mode somewhere on
-		   the stack.  */
-		use = gen_rtx_PLUS (Pmode, virtual_outgoing_args_rtx,
-				    gen_rtx_SCRATCH (Pmode));
-	      use = gen_rtx_MEM (argvec[argnum].mode, use);
-	      use = gen_rtx_USE (VOIDmode, use);
-	      call_fusage = gen_rtx_EXPR_LIST (VOIDmode, use, call_fusage);
-	    }
+	  /* Indicate argument access so that alias.c knows that these
+	     values are live.  */
+	  if (argblock)
+	    use = plus_constant (argblock,
+				 argvec[argnum].locate.offset.constant);
+	  else
+	    /* When arguments are pushed, trying to tell alias.c where
+	       exactly this argument is won't work, because the
+	       auto-increment causes confusion.  So we merely indicate
+	       that we access something with a known mode somewhere on
+	       the stack.  */
+	    use = gen_rtx_PLUS (Pmode, virtual_outgoing_args_rtx,
+				gen_rtx_SCRATCH (Pmode));
+	  use = gen_rtx_MEM (argvec[argnum].mode, use);
+	  use = gen_rtx_USE (VOIDmode, use);
+	  call_fusage = gen_rtx_EXPR_LIST (VOIDmode, use, call_fusage);
 	}
     }
 

@@ -5,7 +5,7 @@
 int
 foo (int i)
 {
-  int j;	/* { dg-warning "may be used uninitialized" } */
+  int j;
   switch (i)
     {
     case -__INT_MAX__ - 1 ... -1:
@@ -18,5 +18,5 @@ foo (int i)
       j = 4;
       break;
     }
-  return j;
+  return j;	/* { dg-warning "may be used uninitialized" } */
 }

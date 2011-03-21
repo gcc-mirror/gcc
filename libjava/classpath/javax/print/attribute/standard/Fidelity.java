@@ -53,20 +53,20 @@ import javax.print.attribute.PrintRequestAttribute;
  * through the client by providing this attribute to indicate the wanted
  * conflict handling mechanism:
  * <ul>
- * <li>{@link #FIDELITY_TRUE}: Reject the job since the job can not be 
+ * <li>{@link #FIDELITY_TRUE}: Reject the job since the job can not be
  * processed exactly as specified by the attributes of the client.</li>
- * <li>{@link #FIDELITY_FALSE}: The Printer may make any changes necessary 
+ * <li>{@link #FIDELITY_FALSE}: The Printer may make any changes necessary
  * to proceed with processing the Job as good as possible.</li>
  * </ul>
- * </p> 
+ * </p>
  * <p>
  * <b>IPP Compatibility:</b> Fidelity is an IPP 1.1 attribute. The IPP name
- * is "ipp-attribute-fidelity". The IPP specification treats Fidelity as a 
+ * is "ipp-attribute-fidelity". The IPP specification treats Fidelity as a
  * boolean type which is not available in the Java Print Service API. The IPP
- * boolean value "true" corresponds to <code>FIDELITY_TRUE</code> and "false" 
+ * boolean value "true" corresponds to <code>FIDELITY_TRUE</code> and "false"
  * to <code>FIDELITY_FALSE</code>.
  * </p>
- * 
+ *
  * @author Michael Koch (konqueror@gmx.de)
  * @author Wolfgang Baer (WBaer@gmx.de)
  */
@@ -75,27 +75,27 @@ public final class Fidelity extends EnumSyntax
 {
   private static final long serialVersionUID = 6320827847329172308L;
 
-  /** 
-   * Requests that the job is printed exactly as specified, 
+  /**
+   * Requests that the job is printed exactly as specified,
    * or rejected otherwise.
    */
   public static final Fidelity FIDELITY_TRUE = new Fidelity(0);
-  
-  /** 
+
+  /**
    * Requests that the job is printed as exactly as reasonable. This means
-   * that the print service may choose to substitute the default value 
-   * associated with that attribute, or use some other supported value that 
-   * is similar to the unsupported requested value. 
+   * that the print service may choose to substitute the default value
+   * associated with that attribute, or use some other supported value that
+   * is similar to the unsupported requested value.
    */
   public static final Fidelity FIDELITY_FALSE = new Fidelity(1);
-  
+
   private static final String[] stringTable = { "true", "false" };
   private static final Fidelity[] enumValueTable = { FIDELITY_TRUE,
                                                      FIDELITY_FALSE };
 
   /**
    * Constructs a <code>Fidelity</code> object.
-   * 
+   *
    * @param value the value
    */
   protected Fidelity(int value)
@@ -122,7 +122,7 @@ public final class Fidelity extends EnumSyntax
   {
     return "ipp-attribute-fidelity";
   }
-  
+
   /**
    * Returns a table with the enumeration values represented as strings
    * for this object.

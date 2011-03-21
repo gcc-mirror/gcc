@@ -143,7 +143,7 @@ namespace __gnu_parallel
       /** @brief Current iterator __position. */
       _RAIter _M_current;
       /** @brief _Compare. */
-      mutable _Compare& __comp;
+      _Compare& __comp;
 
     public:
       /** @brief Constructor. Sets iterator to beginning of sequence.

@@ -58,7 +58,7 @@ public abstract class KeyPairGeneratorSpi
      key size and source of randomness
 
      @param keysize size of the key to generate
-     @param random A SecureRandom source of randomness  
+     @param random A SecureRandom source of randomness
    */
   public abstract void initialize(int keysize, SecureRandom random);
 
@@ -72,7 +72,7 @@ public abstract class KeyPairGeneratorSpi
      method just throws UnsupportedOperationException.
 
      @param params A AlgorithmParameterSpec to intialize with
-     @param random A SecureRandom source of randomness  
+     @param random A SecureRandom source of randomness
 
      @throws InvalidAlgorithmParameterException
    */
@@ -84,7 +84,7 @@ public abstract class KeyPairGeneratorSpi
 
   /**
      Generates a KeyPair according the rules for the algorithm.
-     Unless intialized, algorithm defaults will be used. It 
+     Unless intialized, algorithm defaults will be used. It
      creates a unique key pair each time.
 
      @return a key pair

@@ -46,7 +46,7 @@ import gnu.classpath.jdwp.id.ObjectId;
 /**
  * Restricts reported events to those whose active 'this' object is the
  * given object. Match value is the null object for static methods.
- * 
+ *
  * This modifier can be used with any event kind except class prepare,
  * class unload, thread start, and thread end. Introduced in JDWP version 1.4.
  *
@@ -92,8 +92,8 @@ public class InstanceOnlyFilter
     Object eventInstance = event.getParameter (Event.EVENT_INSTANCE);
     if (eventInstance != null)
       {
-	Object myInstance = _instance.getReference().get ();
-	return ((myInstance != null) && (myInstance == eventInstance));
+        Object myInstance = _instance.getReference().get ();
+        return ((myInstance != null) && (myInstance == eventInstance));
       }
 
     return false;

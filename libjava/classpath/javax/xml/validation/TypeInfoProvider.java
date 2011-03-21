@@ -1,4 +1,4 @@
-/* TypeInfoProvider.java -- 
+/* TypeInfoProvider.java --
    Copyright (C) 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -79,5 +79,5 @@ public abstract class TypeInfoProvider
    * the startElement callback
    */
   public abstract boolean isSpecified(int index);
-  
+
 }

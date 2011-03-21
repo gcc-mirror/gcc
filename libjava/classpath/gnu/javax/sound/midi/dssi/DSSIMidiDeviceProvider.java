@@ -50,12 +50,12 @@ import javax.sound.midi.spi.MidiDeviceProvider;
 
 /**
  * A DSSI MIDI device provider.
- * 
- * DSSI (pronounced "dizzy") is an API for audio plugins, with particular 
+ *
+ * DSSI (pronounced "dizzy") is an API for audio plugins, with particular
  * application for software synthesis plugins with native user interfaces.
- * 
+ *
  * Read about DSSI at http://dssi.sourceforge.net
- * 
+ *
  * @author Anthony Green (green@redhat.com)
  *
  */
@@ -63,7 +63,7 @@ public class DSSIMidiDeviceProvider extends MidiDeviceProvider
 {
   /**
    * The MidiDevice.Info specialized for DSSI synthesizers.
-   * 
+   *
    * @author Anthony Green (green@redhat.com)
    *
    */
@@ -71,7 +71,7 @@ public class DSSIMidiDeviceProvider extends MidiDeviceProvider
   {
     String soname;
     long index;
-    
+
     public DSSIInfo(String name, String vendor, String description,
                     String version, String soname, long index)
     {
@@ -88,13 +88,13 @@ public class DSSIMidiDeviceProvider extends MidiDeviceProvider
   static native String getDSSICopyright_(long handle);
   static native String getDSSIVendor_(long handle);
   static native String getDSSILabel_(long handle);
-  
+
   private static List examineLibrary(String soname)
   {
      List list = new ArrayList();
      long index = 0;
      long handle;
-     
+
      long sohandle = dlopen_(soname);
      if (sohandle == 0)
        return list;
@@ -107,19 +107,19 @@ public class DSSIMidiDeviceProvider extends MidiDeviceProvider
        String copyright = getDSSICopyright_(handle);
        String label = getDSSIName_(handle);
        String vendor = getDSSIVendor_(handle);
-       list.add(new DSSIInfo(name, vendor, label, 
+       list.add(new DSSIInfo(name, vendor, label,
                              "DSSI-1", soname, index));
        index++;
      } while (true);
-     
+
      // Close the library and free memory
      dlclose_(sohandle);
-     
+
      return list;
   }
-  
+
   private static DSSIInfo[] infos;
-  
+
   static
   {
     if (Configuration.INIT_LOAD_LIBRARY)
@@ -131,19 +131,19 @@ public class DSSIMidiDeviceProvider extends MidiDeviceProvider
                                       public boolean accept(File dir, String n)
                                       {
                                         return n.endsWith(".so");
-                                      }   
+                                      }
                                     });
     List ilist = new ArrayList();
     for (int i = 0; i < sofiles.length; i++)
       ilist.addAll(examineLibrary(new File(dssidir, sofiles[i]).getAbsolutePath()));
     infos = (DSSIInfo[]) ilist.toArray(new DSSIInfo[ilist.size()]);
   }
-  
+
   public DSSIMidiDeviceProvider()
   {
     // Empty.
   }
-  
+
   /* Return the Info array.
    * @see javax.sound.midi.spi.MidiDeviceProvider#getDeviceInfo()
    */
@@ -162,7 +162,7 @@ public class DSSIMidiDeviceProvider extends MidiDeviceProvider
       if (info.equals(infos[i]))
       {
           return new DSSISynthesizer(infos[i],
-                                     infos[i].soname, 
+                                     infos[i].soname,
                                      infos[i].index);
       }
     }

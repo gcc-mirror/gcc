@@ -1,4 +1,4 @@
-/* SAXParserFactory.java -- 
+/* SAXParserFactory.java --
    Copyright (C) 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -92,13 +92,13 @@ public class SAXParserFactory
     features.put(name, value ? Boolean.TRUE : Boolean.FALSE);
   }
 
-  public boolean getFeature(String name) 
-    throws ParserConfigurationException, SAXNotRecognizedException, SAXNotSupportedException  
+  public boolean getFeature(String name)
+    throws ParserConfigurationException, SAXNotRecognizedException, SAXNotSupportedException
   {
     if (!FEATURE_NAMES.contains(name))
       throw new SAXNotSupportedException(name);
     Boolean value = (Boolean) features.get(name);
     return (value == null) ? false : value.booleanValue();
   }
-  
+
 }

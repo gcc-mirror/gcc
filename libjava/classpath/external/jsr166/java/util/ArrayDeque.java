@@ -479,11 +479,11 @@ public class ArrayDeque<E> extends AbstractCollection<E>
     }
 
     private void checkInvariants() {
-	assert elements[tail] == null;
-	assert head == tail ? elements[head] == null :
-	    (elements[head] != null &&
-	     elements[(tail - 1) & (elements.length - 1)] != null);
-	assert elements[(head - 1) & (elements.length - 1)] == null;
+        assert elements[tail] == null;
+        assert head == tail ? elements[head] == null :
+            (elements[head] != null &&
+             elements[(tail - 1) & (elements.length - 1)] != null);
+        assert elements[(head - 1) & (elements.length - 1)] == null;
     }
 
     /**
@@ -497,42 +497,42 @@ public class ArrayDeque<E> extends AbstractCollection<E>
      * @return true if elements moved backwards
      */
     private boolean delete(int i) {
- 	checkInvariants();
-	final E[] elements = this.elements;
-	final int mask = elements.length - 1;
-	final int h = head;
-	final int t = tail;
-	final int front = (i - h) & mask;
-	final int back  = (t - i) & mask;
+        checkInvariants();
+        final E[] elements = this.elements;
+        final int mask = elements.length - 1;
+        final int h = head;
+        final int t = tail;
+        final int front = (i - h) & mask;
+        final int back  = (t - i) & mask;
 
-	// Invariant: head <= i < tail mod circularity
-	if (front >= ((t - h) & mask))
-	    throw new ConcurrentModificationException();
+        // Invariant: head <= i < tail mod circularity
+        if (front >= ((t - h) & mask))
+            throw new ConcurrentModificationException();
 
-	// Optimize for least element motion
-	if (front < back) {
-	    if (h <= i) {
-		System.arraycopy(elements, h, elements, h + 1, front);
-	    } else { // Wrap around
-		System.arraycopy(elements, 0, elements, 1, i);
-		elements[0] = elements[mask];
-		System.arraycopy(elements, h, elements, h + 1, mask - h);
-	    }
-	    elements[h] = null;
-	    head = (h + 1) & mask;
-	    return false;
-	} else {
-	    if (i < t) { // Copy the null tail as well
-		System.arraycopy(elements, i + 1, elements, i, back);
-		tail = t - 1;
-	    } else { // Wrap around
-		System.arraycopy(elements, i + 1, elements, i, mask - i);
-		elements[mask] = elements[0];
-		System.arraycopy(elements, 1, elements, 0, t);
-		tail = (t - 1) & mask;
-	    }
-	    return true;
-	}
+        // Optimize for least element motion
+        if (front < back) {
+            if (h <= i) {
+                System.arraycopy(elements, h, elements, h + 1, front);
+            } else { // Wrap around
+                System.arraycopy(elements, 0, elements, 1, i);
+                elements[0] = elements[mask];
+                System.arraycopy(elements, h, elements, h + 1, mask - h);
+            }
+            elements[h] = null;
+            head = (h + 1) & mask;
+            return false;
+        } else {
+            if (i < t) { // Copy the null tail as well
+                System.arraycopy(elements, i + 1, elements, i, back);
+                tail = t - 1;
+            } else { // Wrap around
+                System.arraycopy(elements, i + 1, elements, i, mask - i);
+                elements[mask] = elements[0];
+                System.arraycopy(elements, 1, elements, 0, t);
+                tail = (t - 1) & mask;
+            }
+            return true;
+        }
     }
 
     // *** Collection Methods ***
@@ -611,8 +611,8 @@ public class ArrayDeque<E> extends AbstractCollection<E>
                 throw new IllegalStateException();
             if (delete(lastRet)) { // if left-shifted, undo increment in next()
                 cursor = (cursor - 1) & (elements.length - 1);
-		fence = tail;
-	    }
+                fence = tail;
+            }
             lastRet = -1;
         }
     }
@@ -635,7 +635,7 @@ public class ArrayDeque<E> extends AbstractCollection<E>
             if (cursor == fence)
                 throw new NoSuchElementException();
             cursor = (cursor - 1) & (elements.length - 1);
-	    E result = elements[cursor];
+            E result = elements[cursor];
             if (head != fence || result == null)
                 throw new ConcurrentModificationException();
             lastRet = cursor;
@@ -647,8 +647,8 @@ public class ArrayDeque<E> extends AbstractCollection<E>
                 throw new IllegalStateException();
             if (!delete(lastRet)) {
                 cursor = (cursor + 1) & (elements.length - 1);
-		fence = head;
-	    }
+                fence = head;
+            }
             lastRet = -1;
         }
     }
@@ -724,7 +724,7 @@ public class ArrayDeque<E> extends AbstractCollection<E>
      * @return an array containing all of the elements in this deque
      */
     public Object[] toArray() {
-	return copyElements(new Object[size()]);
+        return copyElements(new Object[size()]);
     }
 
     /**
@@ -769,7 +769,7 @@ public class ArrayDeque<E> extends AbstractCollection<E>
         if (a.length < size)
             a = (T[])java.lang.reflect.Array.newInstance(
                     a.getClass().getComponentType(), size);
-	copyElements(a);
+        copyElements(a);
         if (a.length > size)
             a[size] = null;
         return a;

@@ -36,7 +36,7 @@ exception statement from your version. */
 
 package java.awt.image;
 
-/** 
+/**
  * Class that manages arrays of data elements. A data buffer consists
  * of one or more banks.  A bank is a continuous region of data
  * elements.
@@ -52,31 +52,31 @@ public abstract class DataBuffer
   public static final int TYPE_BYTE      =  0;
 
   /**
-   * A constant representing a data type that uses <code>short</code> 
+   * A constant representing a data type that uses <code>short</code>
    * primitives as the storage unit.
    */
   public static final int TYPE_USHORT    =  1;
 
   /**
-   * A constant representing a data type that uses <code>short</code> 
+   * A constant representing a data type that uses <code>short</code>
    * primitives as the storage unit.
    */
   public static final int TYPE_SHORT     =  2;
 
   /**
-   * A constant representing a data type that uses <code>int</code> 
+   * A constant representing a data type that uses <code>int</code>
    * primitives as the storage unit.
    */
   public static final int TYPE_INT       =  3;
-  
+
   /**
-   * A constant representing a data type that uses <code>float</code> 
+   * A constant representing a data type that uses <code>float</code>
    * primitives as the storage unit.
    */
   public static final int TYPE_FLOAT     =  4;
 
   /**
-   * A constant representing a data type that uses <code>double</code> 
+   * A constant representing a data type that uses <code>double</code>
    * primitives as the storage unit.
    */
   public static final int TYPE_DOUBLE    =  5;
@@ -85,30 +85,30 @@ public abstract class DataBuffer
    * A constant representing an undefined data type.
    */
   public static final int TYPE_UNDEFINED = 32;
-  
+
   /** The type of the data elements stored in the data buffer.  */
   protected int dataType;
-  
+
   /** The number of banks in this buffer.  */
   protected int banks = 1;
-  
+
   /** Offset into the default (0'th) bank). */
   protected int offset; // FIXME: Is offsets[0] always mirrored in offset?
-  
+
   /** The size of the banks.  */
   protected int size;
-  
+
   /** Offset into each bank.  */
   protected int[] offsets;
-  
+
   /**
    * Creates a new <code>DataBuffer</code> with the specified data type and
-   * size.  The <code>dataType</code> should be one of the constants 
-   * {@link #TYPE_BYTE}, {@link #TYPE_SHORT}, {@link #TYPE_USHORT}, 
+   * size.  The <code>dataType</code> should be one of the constants
+   * {@link #TYPE_BYTE}, {@link #TYPE_SHORT}, {@link #TYPE_USHORT},
    * {@link #TYPE_INT}, {@link #TYPE_FLOAT} and {@link #TYPE_DOUBLE}.
    * <p>
    * The physical (array-based) storage is allocated by a subclass.
-   * 
+   *
    * @param dataType the data type.
    * @param size the number of elements in the buffer.
    */
@@ -119,13 +119,13 @@ public abstract class DataBuffer
 
   /**
    * Creates a new <code>DataBuffer</code> with the specified data type,
-   * size and number of banks.  The <code>dataType</code> should be one of 
-   * the constants {@link #TYPE_BYTE}, {@link #TYPE_SHORT}, 
-   * {@link #TYPE_USHORT}, {@link #TYPE_INT}, {@link #TYPE_FLOAT} and 
+   * size and number of banks.  The <code>dataType</code> should be one of
+   * the constants {@link #TYPE_BYTE}, {@link #TYPE_SHORT},
+   * {@link #TYPE_USHORT}, {@link #TYPE_INT}, {@link #TYPE_FLOAT} and
    * {@link #TYPE_DOUBLE}.
    * <p>
    * The physical (array-based) storage is allocated by a subclass.
-   * 
+   *
    * @param dataType the data type.
    * @param size the number of elements in the buffer.
    * @param numBanks the number of data banks.
@@ -137,13 +137,13 @@ public abstract class DataBuffer
   /**
    * Creates a new <code>DataBuffer</code> with the specified data type,
    * size and number of banks.  An offset (which applies to all banks) is
-   * also specified.  The <code>dataType</code> should be one of 
-   * the constants {@link #TYPE_BYTE}, {@link #TYPE_SHORT}, 
-   * {@link #TYPE_USHORT}, {@link #TYPE_INT}, {@link #TYPE_FLOAT} and 
+   * also specified.  The <code>dataType</code> should be one of
+   * the constants {@link #TYPE_BYTE}, {@link #TYPE_SHORT},
+   * {@link #TYPE_USHORT}, {@link #TYPE_INT}, {@link #TYPE_FLOAT} and
    * {@link #TYPE_DOUBLE}.
    * <p>
    * The physical (array-based) storage is allocated by a subclass.
-   * 
+   *
    * @param dataType the data type.
    * @param size the number of elements in the buffer.
    * @param numBanks the number of data banks.
@@ -163,42 +163,42 @@ public abstract class DataBuffer
   /**
    * Creates a new <code>DataBuffer</code> with the specified data type,
    * size and number of banks.  An offset (which applies to all banks) is
-   * also specified.  The <code>dataType</code> should be one of 
-   * the constants {@link #TYPE_BYTE}, {@link #TYPE_SHORT}, 
-   * {@link #TYPE_USHORT}, {@link #TYPE_INT}, {@link #TYPE_FLOAT} and 
+   * also specified.  The <code>dataType</code> should be one of
+   * the constants {@link #TYPE_BYTE}, {@link #TYPE_SHORT},
+   * {@link #TYPE_USHORT}, {@link #TYPE_INT}, {@link #TYPE_FLOAT} and
    * {@link #TYPE_DOUBLE}.
    * <p>
    * The physical (array-based) storage is allocated by a subclass.
-   * 
+   *
    * @param dataType the data type.
    * @param size the number of elements in the buffer.
    * @param numBanks the number of data banks.
    * @param offsets the offsets to the first element for all banks.
-   * 
-   * @throws ArrayIndexOutOfBoundsException if 
+   *
+   * @throws ArrayIndexOutOfBoundsException if
    *         <code>numBanks != offsets.length</code>.
    */
   protected DataBuffer(int dataType, int size, int numBanks, int[] offsets) {
-    if (numBanks != offsets.length) 
+    if (numBanks != offsets.length)
       throw new ArrayIndexOutOfBoundsException();
 
     this.dataType = dataType;
     this.size = size;
     banks = numBanks;
     this.offsets = offsets;
-    
+
     offset = offsets[0];
   }
-  
+
   /**
    * Returns the size (number of bits) of the specified data type. Valid types
-   * are defined by the constants {@link #TYPE_BYTE}, {@link #TYPE_SHORT}, 
-   * {@link #TYPE_USHORT}, {@link #TYPE_INT}, {@link #TYPE_FLOAT} and 
+   * are defined by the constants {@link #TYPE_BYTE}, {@link #TYPE_SHORT},
+   * {@link #TYPE_USHORT}, {@link #TYPE_INT}, {@link #TYPE_FLOAT} and
    * {@link #TYPE_DOUBLE}.
-   * 
+   *
    * @param dataType the data type.
    * @return The number of bits for the specified data type.
-   * @throws IllegalArgumentException if <code>dataType < 0</code> or 
+   * @throws IllegalArgumentException if <code>dataType < 0</code> or
    *         <code>dataType > TYPE_DOUBLE</code>.
    */
   public static int getDataTypeSize(int dataType) {
@@ -206,57 +206,57 @@ public abstract class DataBuffer
     switch (dataType)
       {
       case TYPE_BYTE:
-	return 8;
+        return 8;
       case TYPE_USHORT:
       case TYPE_SHORT:
-	return 16;
+        return 16;
       case TYPE_INT:
       case TYPE_FLOAT:
-	return 32;
+        return 32;
       case TYPE_DOUBLE:
-	return 64;
+        return 64;
       default:
-	throw new IllegalArgumentException();
+        throw new IllegalArgumentException();
       }
   }
 
   /**
    * Returns the type of the data elements in the data buffer.  Valid types
-   * are defined by the constants {@link #TYPE_BYTE}, {@link #TYPE_SHORT}, 
-   * {@link #TYPE_USHORT}, {@link #TYPE_INT}, {@link #TYPE_FLOAT} and 
+   * are defined by the constants {@link #TYPE_BYTE}, {@link #TYPE_SHORT},
+   * {@link #TYPE_USHORT}, {@link #TYPE_INT}, {@link #TYPE_FLOAT} and
    * {@link #TYPE_DOUBLE}.
-   * 
+   *
    * @return The type.
    */
   public int getDataType()
   {
     return dataType;
   }
-  
+
   /**
    * Returns the size of the data buffer.
-   * 
+   *
    * @return The size.
    */
   public int getSize()
   {
     return size;
   }
-  
+
   /**
    * Returns the element offset for the first data bank.
-   * 
+   *
    * @return The element offset.
    */
   public int getOffset()
   {
     return offset;
   }
-  
+
   /**
-   * Returns the offsets for all the data banks used by this 
+   * Returns the offsets for all the data banks used by this
    * <code>DataBuffer</code>.
-   * 
+   *
    * @return The offsets.
    */
   public int[] getOffsets()
@@ -281,9 +281,9 @@ public abstract class DataBuffer
 
   /**
    * Returns an element from the first data bank.  The offset (specified in
-   * the constructor) is added to <code>i</code> before accessing the 
+   * the constructor) is added to <code>i</code> before accessing the
    * underlying data array.
-   * 
+   *
    * @param i the element index.
    * @return The element.
    */
@@ -294,20 +294,20 @@ public abstract class DataBuffer
 
   /**
    * Returns an element from a particular data bank.  The offset (specified in
-   * the constructor) is added to <code>i</code> before accessing the 
+   * the constructor) is added to <code>i</code> before accessing the
    * underlying data array.
-   * 
+   *
    * @param bank the bank index.
    * @param i the element index.
    * @return The element.
    */
   public abstract int getElem(int bank, int i);
-  
+
   /**
    * Sets an element in the first data bank.  The offset (specified in the
    * constructor) is added to <code>i</code> before updating the underlying
    * data array.
-   * 
+   *
    * @param i the element index.
    * @param val the new element value.
    */
@@ -320,18 +320,18 @@ public abstract class DataBuffer
    * Sets an element in a particular data bank.  The offset (specified in the
    * constructor) is added to <code>i</code> before updating the underlying
    * data array.
-   * 
+   *
    * @param bank the data bank index.
    * @param i the element index.
    * @param val the new element value.
    */
   public abstract void setElem(int bank, int i, int val);
-  
+
   /**
-   * Returns an element from the first data bank, converted to a 
-   * <code>float</code>.  The offset (specified in the constructor) is added 
+   * Returns an element from the first data bank, converted to a
+   * <code>float</code>.  The offset (specified in the constructor) is added
    * to <code>i</code> before accessing the underlying data array.
-   * 
+   *
    * @param i the element index.
    * @return The element.
    */
@@ -339,12 +339,12 @@ public abstract class DataBuffer
   {
     return getElem(i);
   }
-    
+
   /**
-   * Returns an element from a particular data bank, converted to a 
-   * <code>float</code>.  The offset (specified in the constructor) is 
+   * Returns an element from a particular data bank, converted to a
+   * <code>float</code>.  The offset (specified in the constructor) is
    * added to <code>i</code> before accessing the underlying data array.
-   * 
+   *
    * @param bank the bank index.
    * @param i the element index.
    * @return The element.
@@ -357,8 +357,8 @@ public abstract class DataBuffer
   /**
    * Sets an element in the first data bank.  The offset (specified in the
    * constructor) is added to <code>i</code> before updating the underlying
-   * data array. 
-   * 
+   * data array.
+   *
    * @param i the element index.
    * @param val the new element value.
    */
@@ -371,7 +371,7 @@ public abstract class DataBuffer
    * Sets an element in a particular data bank.  The offset (specified in the
    * constructor) is added to <code>i</code> before updating the underlying
    * data array.
-   * 
+   *
    * @param bank the data bank index.
    * @param i the element index.
    * @param val the new element value.
@@ -382,10 +382,10 @@ public abstract class DataBuffer
   }
 
   /**
-   * Returns an element from the first data bank, converted to a 
+   * Returns an element from the first data bank, converted to a
    * <code>double</code>.  The offset (specified in the constructor) is added
    * to <code>i</code> before accessing the underlying data array.
-   * 
+   *
    * @param i the element index.
    * @return The element.
    */
@@ -393,12 +393,12 @@ public abstract class DataBuffer
   {
     return getElem(i);
   }
-    
+
   /**
-   * Returns an element from a particular data bank, converted to a 
-   * <code>double</code>.  The offset (specified in the constructor) is 
+   * Returns an element from a particular data bank, converted to a
+   * <code>double</code>.  The offset (specified in the constructor) is
    * added to <code>i</code> before accessing the underlying data array.
-   * 
+   *
    * @param bank the bank index.
    * @param i the element index.
    * @return The element.
@@ -411,8 +411,8 @@ public abstract class DataBuffer
   /**
    * Sets an element in the first data bank.  The offset (specified in the
    * constructor) is added to <code>i</code> before updating the underlying
-   * data array. 
-   * 
+   * data array.
+   *
    * @param i the element index.
    * @param val the new element value.
    */
@@ -425,7 +425,7 @@ public abstract class DataBuffer
    * Sets an element in a particular data bank.  The offset (specified in the
    * constructor) is added to <code>i</code> before updating the underlying
    * data array.
-   * 
+   *
    * @param bank the data bank index.
    * @param i the element index.
    * @param val the new element value.

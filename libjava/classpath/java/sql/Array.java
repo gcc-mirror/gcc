@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -44,7 +44,7 @@ import java.util.Map;
  *
  * @author Aaron M. Renn (arenn@urbanophile.com)
  */
-public interface Array 
+public interface Array
 {
   /**
    * Returns the name of the SQL type of the elements in this
@@ -57,7 +57,7 @@ public interface Array
 
   /**
    * Returns the JDBC type identifier of the elements in this
-   * array.  This will be one of the values defined in the 
+   * array.  This will be one of the values defined in the
    * <code>Types</code> class.
    *
    * @return The JDBC type of the elements in this array.
@@ -77,9 +77,9 @@ public interface Array
 
   /**
    * Returns the contents of this array.  The specified
-   * <code>Map</code> will be used to override selected mappings 
+   * <code>Map</code> will be used to override selected mappings
    * between SQL types and Java classes.
-   * 
+   *
    * @param map A mapping of SQL types to Java classes.
    * @return The contents of the array as an array of Java objects.
    * @exception SQLException If an error occurs.
@@ -162,7 +162,7 @@ public interface Array
    * @see ResultSet
    */
   ResultSet getResultSet(long start, int count) throws SQLException;
-  
+
   /**
    * This method returns a portion of the array as a <code>ResultSet</code>.
    * The returned portion will start at <code>start</code> into the
@@ -180,7 +180,7 @@ public interface Array
    * @return The requested elements of this array as a <code>ResultSet</code>.
    * @exception SQLException If an error occurs.
    * @see ResultSet
-   */  
+   */
   ResultSet getResultSet(long start, int count, Map<String, Class<?>> map)
     throws SQLException;
 }

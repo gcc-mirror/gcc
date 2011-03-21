@@ -584,8 +584,8 @@ public class LinkedBlockingQueue<E> extends AbstractQueue<E>
         fullyLock();
         try {
             head.next = null;
-	    assert head.item == null;
-	    last = head;
+            assert head.item == null;
+            last = head;
             if (count.getAndSet(0) == capacity)
                 notFull.signalAll();
         } finally {
@@ -609,8 +609,8 @@ public class LinkedBlockingQueue<E> extends AbstractQueue<E>
         try {
             first = head.next;
             head.next = null;
-	    assert head.item == null;
-	    last = head;
+            assert head.item == null;
+            last = head;
             if (count.getAndSet(0) == capacity)
                 notFull.signalAll();
         } finally {
@@ -649,9 +649,9 @@ public class LinkedBlockingQueue<E> extends AbstractQueue<E>
             }
             if (n != 0) {
                 head.next = p;
-		assert head.item == null;
-		if (p == null)
-		    last = head;
+                assert head.item == null;
+                if (p == null)
+                    last = head;
                 if (count.getAndAdd(-n) == capacity)
                     notFull.signalAll();
             }

@@ -22,7 +22,8 @@ LIB2FUNCS_EXTRA = quadlib.c
 LIBGCCSTUB_OBJS = rfi-stub.o dfi-stub.o jvrc-stub.o cxaf-stub.o \
 	pthread_default_stacksize_np-stub.o \
 	pthread_mutex_lock-stub.o \
-	pthread_mutex_unlock-stub.o
+	pthread_mutex_unlock-stub.o \
+	pthread_once-stub.o
 
 stublib.c: $(srcdir)/config/pa/stublib.c
 	rm -f stublib.c
@@ -55,6 +56,10 @@ pthread_mutex_lock-stub.o: stublib.c $(GCC_PASSES)
 pthread_mutex_unlock-stub.o: stublib.c $(GCC_PASSES)
 	$(GCC_FOR_TARGET) -c -O2 -DL_pthread_mutex_unlock stublib.c \
 	  -o pthread_mutex_unlock-stub.o
+
+pthread_once-stub.o: stublib.c $(GCC_PASSES)
+	$(GCC_FOR_TARGET) -c -O2 -DL_pthread_once stublib.c \
+	  -o pthread_once-stub.o
 
 $(T)libgcc_stub.a: $(LIBGCCSTUB_OBJS)
 	-rm -rf $(T)libgcc_stub.a

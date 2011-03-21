@@ -1,4 +1,4 @@
-/* MaskableEnvelopeEntry.java -- 
+/* MaskableEnvelopeEntry.java --
    Copyright (C) 2003, 2006 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -64,7 +64,7 @@ public abstract class MaskableEnvelopeEntry
 
   /**
    * Sets the masked state to the specified value.
-   * 
+   *
    * @param masked The new masked state.
    */
   protected final void setMasked(boolean masked)
@@ -75,7 +75,7 @@ public abstract class MaskableEnvelopeEntry
   /**
    * Gets the masked state of this object. Certain operations on this object
    * will fail if it is masked.
-   * 
+   *
    * @return The current masked state.
    */
   public boolean isMasked()

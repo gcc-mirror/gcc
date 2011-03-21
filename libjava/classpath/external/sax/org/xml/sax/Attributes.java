@@ -29,8 +29,8 @@ package org.xml.sax;
  * <p>The list will not contain attributes that were declared
  * #IMPLIED but not specified in the start tag.  It will also not
  * contain attributes used as Namespace declarations (xmlns*) unless
- * the <code>http://xml.org/sax/features/namespace-prefixes</code> 
- * feature is set to <var>true</var> (it is <var>false</var> by 
+ * the <code>http://xml.org/sax/features/namespace-prefixes</code>
+ * feature is set to <var>true</var> (it is <var>false</var> by
  * default).
  * Because SAX2 conforms to the original "Namespaces in XML"
  * recommendation, it normally does not
@@ -53,8 +53,8 @@ package org.xml.sax;
  * available.</p>
  *
  * <p>This interface replaces the now-deprecated SAX1 {@link
- * org.xml.sax.AttributeList AttributeList} interface, which does not 
- * contain Namespace support.  In addition to Namespace support, it 
+ * org.xml.sax.AttributeList AttributeList} interface, which does not
+ * contain Namespace support.  In addition to Namespace support, it
  * adds the <var>getIndex</var> methods (below).</p>
  *
  * <p>The order of attributes in the list is unspecified, and will
@@ -69,7 +69,7 @@ package org.xml.sax;
 public interface Attributes
 {
 
-
+
     ////////////////////////////////////////////////////////////////////
     // Indexed access.
     ////////////////////////////////////////////////////////////////////
@@ -166,7 +166,7 @@ public interface Attributes
     public abstract String getValue (int index);
 
 
-
+
     ////////////////////////////////////////////////////////////////////
     // Name-based query.
     ////////////////////////////////////////////////////////////////////

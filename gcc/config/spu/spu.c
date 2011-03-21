@@ -230,6 +230,7 @@ static void spu_unique_section (tree, int);
 static rtx spu_expand_load (rtx, rtx, rtx, int);
 static void spu_trampoline_init (rtx, tree, rtx);
 static void spu_conditional_register_usage (void);
+static bool spu_ref_may_alias_errno (ao_ref *);
 
 /* Which instruction set architecture to use.  */
 int spu_arch;
@@ -491,6 +492,9 @@ static const struct attribute_spec spu_attribute_table[] =
 #undef TARGET_CONDITIONAL_REGISTER_USAGE
 #define TARGET_CONDITIONAL_REGISTER_USAGE spu_conditional_register_usage
 
+#undef TARGET_REF_MAY_ALIAS_ERRNO
+#define TARGET_REF_MAY_ALIAS_ERRNO spu_ref_may_alias_errno
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 static void
@@ -516,7 +520,7 @@ spu_option_override (void)
   /* Small loops will be unpeeled at -O3.  For SPU it is more important
      to keep code small by default.  */
   if (!flag_unroll_loops && !flag_peel_loops)
-    maybe_set_param_value (PARAM_MAX_COMPLETELY_PEEL_TIMES, 1,
+    maybe_set_param_value (PARAM_MAX_COMPLETELY_PEEL_TIMES, 4,
 			   global_options.x_param_values,
 			   global_options_set.x_param_values);
 
@@ -541,7 +545,7 @@ spu_option_override (void)
       else if (strcmp (&spu_arch_string[0], "celledp") == 0)
         spu_arch = PROCESSOR_CELLEDP;
       else
-        error ("unknown architecture %qs", &spu_arch_string[0]);
+        error ("bad value (%s) for -march= switch", spu_arch_string);
     }
 
   /* Determine processor to tune for.  */
@@ -552,7 +556,7 @@ spu_option_override (void)
       else if (strcmp (&spu_tune_string[0], "celledp") == 0)
         spu_tune = PROCESSOR_CELLEDP;
       else
-        error ("unknown architecture %qs", &spu_tune_string[0]);
+        error ("bad value (%s) for -mtune= switch", spu_tune_string);
     }
 
   /* Change defaults according to the processor architecture.  */
@@ -2086,6 +2090,8 @@ spu_expand_prologue (void)
 	}
     }
 
+  if (flag_stack_usage)
+    current_function_static_stack_size = total_size;
 }
 
 void
@@ -2264,6 +2270,7 @@ emit_nop_for_insn (rtx insn)
   else
     new_insn = emit_insn_after (gen_lnop (), insn);
   recog_memoized (new_insn);
+  INSN_LOCATOR (new_insn) = INSN_LOCATOR (insn);
 }
 
 /* Insert nops in basic blocks to meet dual issue alignment
@@ -2302,6 +2309,7 @@ pad_bb(void)
 		  prev_insn = emit_insn_before (gen_lnop (), insn);
 		  PUT_MODE (prev_insn, GET_MODE (insn));
 		  PUT_MODE (insn, TImode);
+		  INSN_LOCATOR (prev_insn) = INSN_LOCATOR (insn);
 		  length += 4;
 		}
 	    }
@@ -2370,6 +2378,7 @@ spu_emit_branch_hint (rtx before, rtx branch, rtx target,
 
   hint = emit_insn_before (gen_hbr (branch_label, target), before);
   recog_memoized (hint);
+  INSN_LOCATOR (hint) = INSN_LOCATOR (branch);
   HINTED_P (branch) = 1;
 
   if (GET_CODE (target) == LABEL_REF)
@@ -2390,7 +2399,9 @@ spu_emit_branch_hint (rtx before, rtx branch, rtx target,
     {
       /* Make sure the hint isn't scheduled any earlier than this point,
          which could make it too far for the branch offest to fit */
-      recog_memoized (emit_insn_before (gen_blockage (), hint));
+      insn = emit_insn_before (gen_blockage (), hint);
+      recog_memoized (insn);
+      INSN_LOCATOR (insn) = INSN_LOCATOR (hint);
     }
   else if (distance <= 8 * 4)
     {
@@ -2402,14 +2413,21 @@ spu_emit_branch_hint (rtx before, rtx branch, rtx target,
 	  insn =
 	    emit_insn_after (gen_nopn_nv (gen_rtx_REG (SImode, 127)), hint);
 	  recog_memoized (insn);
+	  INSN_LOCATOR (insn) = INSN_LOCATOR (hint);
 	}
 
       /* Make sure any nops inserted aren't scheduled before the hint. */
-      recog_memoized (emit_insn_after (gen_blockage (), hint));
+      insn = emit_insn_after (gen_blockage (), hint);
+      recog_memoized (insn);
+      INSN_LOCATOR (insn) = INSN_LOCATOR (hint);
 
       /* Make sure any nops inserted aren't scheduled after the call. */
       if (CALL_P (branch) && distance < 8 * 4)
-	recog_memoized (emit_insn_before (gen_blockage (), branch));
+	{
+	  insn = emit_insn_before (gen_blockage (), branch);
+	  recog_memoized (insn);
+	  INSN_LOCATOR (insn) = INSN_LOCATOR (branch);
+	}
     }
 }
 
@@ -2594,6 +2612,7 @@ insert_hbrp_for_ilb_runout (rtx first)
 		insn =
 		  emit_insn_before (gen_iprefetch (GEN_INT (1)), before_4);
 		recog_memoized (insn);
+		INSN_LOCATOR (insn) = INSN_LOCATOR (before_4);
 		INSN_ADDRESSES_NEW (insn,
 				    INSN_ADDRESSES (INSN_UID (before_4)));
 		PUT_MODE (insn, GET_MODE (before_4));
@@ -2602,6 +2621,7 @@ insert_hbrp_for_ilb_runout (rtx first)
 		  {
 		    insn = emit_insn_before (gen_lnop (), before_4);
 		    recog_memoized (insn);
+		    INSN_LOCATOR (insn) = INSN_LOCATOR (before_4);
 		    INSN_ADDRESSES_NEW (insn,
 					INSN_ADDRESSES (INSN_UID (before_4)));
 		    PUT_MODE (insn, TImode);
@@ -2613,6 +2633,7 @@ insert_hbrp_for_ilb_runout (rtx first)
 		insn =
 		  emit_insn_before (gen_iprefetch (GEN_INT (2)), before_16);
 		recog_memoized (insn);
+		INSN_LOCATOR (insn) = INSN_LOCATOR (before_16);
 		INSN_ADDRESSES_NEW (insn,
 				    INSN_ADDRESSES (INSN_UID (before_16)));
 		PUT_MODE (insn, GET_MODE (before_16));
@@ -2621,6 +2642,7 @@ insert_hbrp_for_ilb_runout (rtx first)
 		  {
 		    insn = emit_insn_before (gen_lnop (), before_16);
 		    recog_memoized (insn);
+		    INSN_LOCATOR (insn) = INSN_LOCATOR (before_16);
 		    INSN_ADDRESSES_NEW (insn,
 					INSN_ADDRESSES (INSN_UID
 							(before_16)));
@@ -2863,6 +2885,7 @@ spu_machine_dependent_reorg (void)
 
   /* The hints need to be scheduled, so call it again. */
   schedule_insns ();
+  df_finish_pass (true);
 
   insert_hbrp ();
 
@@ -5618,6 +5641,19 @@ spu_init_libfuncs (void)
   set_conv_libfunc (ufloat_optab, DFmode, SImode, "__float_unssidf");
   set_conv_libfunc (ufloat_optab, DFmode, DImode, "__float_unsdidf");
 
+  set_optab_libfunc (addv_optab, SImode, "__addvsi3");
+  set_optab_libfunc (subv_optab, SImode, "__subvsi3");
+  set_optab_libfunc (smulv_optab, SImode, "__mulvsi3");
+  set_optab_libfunc (sdivv_optab, SImode, "__divvsi3");
+  set_optab_libfunc (negv_optab, SImode, "__negvsi2");
+  set_optab_libfunc (absv_optab, SImode, "__absvsi2");
+  set_optab_libfunc (addv_optab, DImode, "__addvdi3");
+  set_optab_libfunc (subv_optab, DImode, "__subvdi3");
+  set_optab_libfunc (smulv_optab, DImode, "__mulvdi3");
+  set_optab_libfunc (sdivv_optab, DImode, "__divvdi3");
+  set_optab_libfunc (negv_optab, DImode, "__negvdi2");
+  set_optab_libfunc (absv_optab, DImode, "__absvdi2");
+
   set_optab_libfunc (smul_optab, TImode, "__multi3");
   set_optab_libfunc (sdiv_optab, TImode, "__divti3");
   set_optab_libfunc (smod_optab, TImode, "__modti3");
@@ -7014,9 +7050,17 @@ static void
 asm_file_start (void)
 {
   /* Variable tracking should be run after all optimizations which
-     change order of insns.  It also needs a valid CFG. */
-  spu_flag_var_tracking = flag_var_tracking;
-  flag_var_tracking = 0;
+     change order of insns.  It also needs a valid CFG.  Therefore,
+     *if* we make nontrivial changes in machine-dependent reorg,
+     run variable tracking after those.  However, if we do not run
+     our machine-dependent reorg pass, we must still run the normal
+     variable tracking pass (or else we will ICE in final since
+     debug insns have not been removed).  */
+  if (TARGET_BRANCH_HINTS && optimize)
+    {
+      spu_flag_var_tracking = flag_var_tracking;
+      flag_var_tracking = 0;
+    }
 
   default_file_start ();
 }
@@ -7121,6 +7165,30 @@ spu_function_profiler (FILE * file, int labelno ATTRIBUTE_UNUSED)
 {
   fprintf (file, "# profile\n");
   fprintf (file, "brsl $75,  _mcount\n");
+}
+
+/* Implement targetm.ref_may_alias_errno.  */
+static bool
+spu_ref_may_alias_errno (ao_ref *ref)
+{
+  tree base = ao_ref_base (ref);
+
+  /* With SPU newlib, errno is defined as something like
+         _impure_data._errno
+     The default implementation of this target macro does not
+     recognize such expressions, so special-code for it here.  */
+
+  if (TREE_CODE (base) == VAR_DECL
+      && !TREE_STATIC (base)
+      && DECL_EXTERNAL (base)
+      && TREE_CODE (TREE_TYPE (base)) == RECORD_TYPE
+      && strcmp (IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (base)),
+		 "_impure_data") == 0
+      /* _errno is the first member of _impure_data.  */
+      && ref->offset == 0)
+    return true;
+
+  return default_ref_may_alias_errno (ref);
 }
 
 #include "gt-spu.h"

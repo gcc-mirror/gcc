@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -46,34 +46,33 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 
 /**
- * This class is only for java.rmi.MarshalledObject to serialize object and 
+ * This class is only for java.rmi.MarshalledObject to serialize object and
  * got objBytes and locBytes
  */
 public class RMIMarshalledObjectOutputStream extends RMIObjectOutputStream
 {
   private ObjectOutputStream locStream;
   private ByteArrayOutputStream locBytesStream;
-  
+
   public RMIMarshalledObjectOutputStream(OutputStream objStream) throws IOException
   {
     super(objStream);
     locBytesStream = new ByteArrayOutputStream(256);
     locStream = new ObjectOutputStream(locBytesStream);
   }
-  
+
   //This method overrides RMIObjectOutputStream's.
   protected void setAnnotation(String annotation) throws IOException{
     locStream.writeObject(annotation);
   }
-  
+
   public void flush() throws IOException {
     super.flush();
     locStream.flush();
   }
-  
+
   public byte[] getLocBytes(){
     return locBytesStream.toByteArray();
   }
-  
-} // End of RMIMarshalledObjectOutputStream
 
+} // End of RMIMarshalledObjectOutputStream

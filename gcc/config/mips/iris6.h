@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.  IRIX 6.5 version.
    Copyright (C) 1993, 1994, 1995, 1996, 1997, 1998, 2000,
-   2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+   2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -37,6 +37,9 @@ along with GCC; see the file COPYING3.  If not see
   "%{!mabi=*: -mabi=n32}", 			\
   /* Configuration-independent MIPS rules.  */	\
   BASE_DRIVER_SELF_SPECS
+
+/* IRIX 6.5 has the float and long double forms of math functions.  */
+#define TARGET_C99_FUNCTIONS 1
 
 /* MIPS specific debugging info */
 #define MIPS_DEBUGGING_INFO 1

@@ -119,7 +119,7 @@ public abstract class CannotProceedHelper
   public static TypeCode type()
   {
     ORB orb = OrbRestricted.Singleton;
-    
+
     StructMember[] members = new StructMember[ 2 ];
     TypeCode member;
     member = NamingContextHelper.type();

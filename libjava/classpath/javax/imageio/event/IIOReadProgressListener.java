@@ -46,7 +46,7 @@ public interface IIOReadProgressListener extends EventListener
 {
   /**
    * Reports that the current image read operation has completed.
-   * 
+   *
    * @param source the <code>ImageReader</code> object calling this method
    */
   void imageComplete(ImageReader source);
@@ -54,7 +54,7 @@ public interface IIOReadProgressListener extends EventListener
   /**
    * Reports the approximate percentage of completions of this image read
    * operation.
-   * 
+   *
    * @param source the <code>ImageReader</code> object calling this method
    * @param percentageDone the approximate percentage of encoding completed
    */
@@ -62,7 +62,7 @@ public interface IIOReadProgressListener extends EventListener
 
   /**
    * Reports that the current image read operation has started.
-   * 
+   *
    * @param source the <code>ImageReader</code> object calling this method
    * @param imageIndex the index of the image to read
    */
@@ -70,21 +70,21 @@ public interface IIOReadProgressListener extends EventListener
 
   /**
    * Reports that a read operation has been aborted.
-   * 
+   *
    * @param source the <code>ImageReader</code> object calling this method
    */
   void readAborted(ImageReader source);
 
   /**
    * Reports that a sequence of read operationshas completed.
-   * 
+   *
    * @param source the <code>ImageReader</code> object calling this method
    */
   void sequenceComplete(ImageReader source);
 
   /**
    * Reports that a sequence of read operations is beginning.
-   * 
+   *
    * @param source the <code>ImageReader</code> object calling this method
    * @param minIndex the index of the first image to be read
    */
@@ -92,7 +92,7 @@ public interface IIOReadProgressListener extends EventListener
 
   /**
    * Reports that a thumbnail read operation has completed.
-   * 
+   *
    * @param source the <code>ImageReader</code> object calling this method
    */
   void thumbnailComplete(ImageReader source);
@@ -100,7 +100,7 @@ public interface IIOReadProgressListener extends EventListener
   /**
    * Reports the approximate percentage of completion of a thumbnail read
    * operation.
-   * 
+   *
    * @param source the <code>ImageReader</code> object calling this method
    * @param percentageDone the approximate percentage of encoding completed
    */
@@ -108,7 +108,7 @@ public interface IIOReadProgressListener extends EventListener
 
   /**
    * Reports that a thumbnail read operation is beginning.
-   * 
+   *
    * @param source the <code>ImageReader</code> object calling this method
    * @param imageIndex the index of the image being read
    * @param thumbnailIndex the index of the thumbnail being read

@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler, for MIPS NetBSD systems.
    Copyright (C) 1993, 1995, 1996, 1997, 1999, 2000, 2001, 2002, 2003, 2004,
-   2007, 2010 Free Software Foundation, Inc.
+   2007, 2010, 2011 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -148,7 +148,6 @@ along with GCC; see the file COPYING3.  If not see
    %{EB:-m elf32bmip} \
    %(endian_spec) \
    %{G*} %{mips1} %{mips2} %{mips3} %{mips4} %{mips32} %{mips32r2} %{mips64} \
-   %{bestGnum} %{call_shared} %{no_archive} %{exact_version} \
    %(netbsd_link_spec)"
 
 #define NETBSD_ENTRY_POINT "__start"

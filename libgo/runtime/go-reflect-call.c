@@ -119,6 +119,22 @@ go_interface_to_ffi (void)
   return ret;
 }
 
+/* Return an ffi_type for a Go complex type.  */
+
+static ffi_type *
+go_complex_to_ffi (ffi_type *float_type)
+{
+  ffi_type *ret;
+
+  ret = (ffi_type *) __go_alloc (sizeof (ffi_type));
+  ret->type = FFI_TYPE_STRUCT;
+  ret->elements = (ffi_type **) __go_alloc (3 * sizeof (ffi_type *));
+  ret->elements[0] = float_type;
+  ret->elements[1] = float_type;
+  ret->elements[2] = NULL;
+  return ret;
+}
+
 /* Return an ffi_type for a type described by a
    __go_type_descriptor.  */
 
@@ -141,12 +157,13 @@ go_type_to_ffi (const struct __go_type_descriptor *descriptor)
       if (sizeof (double) == 8)
 	return &ffi_type_double;
       abort ();
-    case GO_FLOAT:
-      return &ffi_type_float;
     case GO_COMPLEX64:
+      if (sizeof (float) == 4)
+	return go_complex_to_ffi (&ffi_type_float);
+      abort ();
     case GO_COMPLEX128:
-    case GO_COMPLEX:
-      /* FIXME.  */
+      if (sizeof (double) == 8)
+	return go_complex_to_ffi (&ffi_type_double);
       abort ();
     case GO_INT16:
       return &ffi_type_sint16;

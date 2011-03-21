@@ -1,7 +1,7 @@
 /* StringReferenceCommandSet.java -- class to implement the StringReference
    Command Set
    Copyright (C) 2005 Free Software Foundation
- 
+
 This file is part of GNU Classpath.
 
 GNU Classpath is free software; you can redistribute it and/or modify
@@ -53,7 +53,7 @@ import java.nio.ByteBuffer;
 
 /**
  * A class representing the StringReference Command Set.
- * 
+ *
  * @author Aaron Luchko <aluchko@redhat.com>
  */
 public class StringReferenceCommandSet

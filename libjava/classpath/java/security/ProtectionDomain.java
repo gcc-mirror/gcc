@@ -47,7 +47,7 @@ import gnu.java.lang.CPStringBuilder;
  * class loaded from the specified {@link CodeSource} is treated as part of
  * this domain. The set of permissions is represented by an instance of
  * {@link PermissionCollection}.
- * 
+ *
  * <p>Every class in the system will belong to one and only one
  * <code>ProtectionDomain</code>.</p>
  *
@@ -77,7 +77,7 @@ public class ProtectionDomain
    * can be added later to the {@link PermissionCollection} and this contructor
    * will call the <code>setReadOnly</code> method on the specified set of
    * permissions.
-   * 
+   *
    * @param codesource
    *          The {@link CodeSource} for this domain.
    * @param permissions
@@ -93,11 +93,11 @@ public class ProtectionDomain
    * This method initializes a new instance of <code>ProtectionDomain</code>
    * given its {@link CodeSource}, granted permissions, associated
    * {@link ClassLoader} and {@link Principal}s.
-   * 
+   *
    * <p>Similar to the previous constructor, if the designated set of
    * permissions is not <code>null</code>, the <code>setReadOnly</code> method
    * is called on that set.</p>
-   * 
+   *
    * @param codesource
    *          The {@link CodeSource} for this domain.
    * @param permissions
@@ -138,7 +138,7 @@ public class ProtectionDomain
 
   /**
    * Returns the {@link CodeSource} of this domain.
-   * 
+   *
    * @return the {@link CodeSource} of this domain.
    * @since 1.2
    */
@@ -149,7 +149,7 @@ public class ProtectionDomain
 
   /**
    * Returns the {@link ClassLoader} of this domain.
-   * 
+   *
    * @return the {@link ClassLoader} of this domain.
    * @since 1.4
    */
@@ -160,7 +160,7 @@ public class ProtectionDomain
 
   /**
    * Returns a clone of the {@link Principal}s of this domain.
-   * 
+   *
    * @return a clone of the {@link Principal}s of this domain.
    * @since 1.4
    */
@@ -171,7 +171,7 @@ public class ProtectionDomain
 
   /**
    * Returns the {@link PermissionCollection} of this domain.
-   * 
+   *
    * @return The {@link PermissionCollection} of this domain.
    */
   public final PermissionCollection getPermissions()
@@ -182,7 +182,7 @@ public class ProtectionDomain
   /**
    * Tests whether or not the specified {@link Permission} is implied by the
    * set of permissions granted to this domain.
-   * 
+   *
    * @param permission
    *          the {@link Permission} to test.
    * @return <code>true</code> if the specified {@link Permission} is implied
@@ -200,7 +200,7 @@ public class ProtectionDomain
   /**
    * Returns a string representation of this object. It will include the
    * {@link CodeSource} and set of permissions associated with this domain.
-   * 
+   *
    * @return A string representation of this object.
    */
   public String toString()

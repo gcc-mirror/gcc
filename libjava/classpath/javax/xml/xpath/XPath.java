@@ -1,4 +1,4 @@
-/* XPath.java -- 
+/* XPath.java --
    Copyright (C) 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -111,5 +111,5 @@ public interface XPath
   String evaluate(String expression,
                   InputSource source)
     throws XPathExpressionException;
-  
+
 }

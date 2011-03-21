@@ -1,4 +1,4 @@
-/* PatternFacet.java -- 
+/* PatternFacet.java --
    Copyright (C) 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -66,6 +66,5 @@ public final class PatternFacet
     return (other instanceof PatternFacet &&
             ((PatternFacet) other).value.equals(value));
   }
-  
-}
 
+}

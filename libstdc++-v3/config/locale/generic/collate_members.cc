@@ -32,7 +32,9 @@
 #include <locale>
 #include <cstring>
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // These are basically extensions to char_traits, and perhaps should
   // be put there instead of here.
@@ -68,4 +70,5 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     { return wcsxfrm(__to, __from, __n); }
 #endif
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace

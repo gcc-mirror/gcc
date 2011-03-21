@@ -27,6 +27,8 @@ end do
 do r = 1, 2, -1 ! { dg-warning "must be integer|executed zero times" }
 end do
 
-do r = 1, 2, 0 ! { dg-error "must be integer|cannot be zero" }
+do r = 1, 2, 0
 end do
+! { dg-warning "must be integer" "loop var" { target *-*-* } 30 }
+! { dg-error "cannot be zero" "loop step" { target *-*-* } 30 }
 end

@@ -1,0 +1,63 @@
+// { dg-options "-O -fipa-cp -fno-early-inlining -flto" }
+// { dg-do run }
+// { dg-require-effective-target lto }
+
+extern "C" void abort ();
+
+class A
+{
+public:
+  virtual void foo () {abort();}
+};
+
+class B : public A
+{
+public:
+  int z;
+  virtual void foo () {abort();}
+};
+
+class C : public A
+{
+public:
+  void *a[32];
+  unsigned long b;
+  long c[32];
+
+  virtual void foo () {abort();}
+};
+
+class D : public C, public B
+{
+public:
+  D () : C(), B()
+  {
+    int i;
+    for (i = 0; i < 32; i++)
+      {
+	a[i] = (void *) 0;
+	c[i] = 0;
+      }
+    b = 0xaaaa;
+  }
+
+  virtual void foo ();
+};
+
+void D::foo()
+{
+  if (b != 0xaaaa)
+    abort();
+}
+
+static inline void bar (B &b)
+{
+  b.foo ();
+}
+
+int main()
+{
+  D d;
+  bar (d);
+  return 0;
+}

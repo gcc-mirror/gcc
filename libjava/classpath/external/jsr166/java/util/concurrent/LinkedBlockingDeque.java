@@ -57,7 +57,7 @@ public class LinkedBlockingDeque<E>
 
     /** Doubly-linked list node class */
     static final class Node<E> {
-	E item;
+        E item;
         Node<E> prev;
         Node<E> next;
         Node(E x, Node<E> p, Node<E> n) {
@@ -299,7 +299,7 @@ public class LinkedBlockingDeque<E>
     public boolean offerFirst(E e, long timeout, TimeUnit unit)
         throws InterruptedException {
         if (e == null) throw new NullPointerException();
-	long nanos = unit.toNanos(timeout);
+        long nanos = unit.toNanos(timeout);
         lock.lockInterruptibly();
         try {
             for (;;) {
@@ -321,7 +321,7 @@ public class LinkedBlockingDeque<E>
     public boolean offerLast(E e, long timeout, TimeUnit unit)
         throws InterruptedException {
         if (e == null) throw new NullPointerException();
-	long nanos = unit.toNanos(timeout);
+        long nanos = unit.toNanos(timeout);
         lock.lockInterruptibly();
         try {
             for (;;) {
@@ -398,7 +398,7 @@ public class LinkedBlockingDeque<E>
 
     public E pollFirst(long timeout, TimeUnit unit)
         throws InterruptedException {
-	long nanos = unit.toNanos(timeout);
+        long nanos = unit.toNanos(timeout);
         lock.lockInterruptibly();
         try {
             for (;;) {
@@ -416,7 +416,7 @@ public class LinkedBlockingDeque<E>
 
     public E pollLast(long timeout, TimeUnit unit)
         throws InterruptedException {
-	long nanos = unit.toNanos(timeout);
+        long nanos = unit.toNanos(timeout);
         lock.lockInterruptibly();
         try {
             for (;;) {
@@ -514,15 +514,15 @@ public class LinkedBlockingDeque<E>
      * @throws NullPointerException if the specified element is null
      */
     public boolean add(E e) {
-	addLast(e);
-	return true;
+        addLast(e);
+        return true;
     }
 
     /**
      * @throws NullPointerException if the specified element is null
      */
     public boolean offer(E e) {
-	return offerLast(e);
+        return offerLast(e);
     }
 
     /**
@@ -530,7 +530,7 @@ public class LinkedBlockingDeque<E>
      * @throws InterruptedException {@inheritDoc}
      */
     public void put(E e) throws InterruptedException {
-	putLast(e);
+        putLast(e);
     }
 
     /**
@@ -539,7 +539,7 @@ public class LinkedBlockingDeque<E>
      */
     public boolean offer(E e, long timeout, TimeUnit unit)
         throws InterruptedException {
-	return offerLast(e, timeout, unit);
+        return offerLast(e, timeout, unit);
     }
 
     /**
@@ -553,19 +553,19 @@ public class LinkedBlockingDeque<E>
      * @throws NoSuchElementException if this deque is empty
      */
     public E remove() {
-	return removeFirst();
+        return removeFirst();
     }
 
     public E poll() {
-	return pollFirst();
+        return pollFirst();
     }
 
     public E take() throws InterruptedException {
-	return takeFirst();
+        return takeFirst();
     }
 
     public E poll(long timeout, TimeUnit unit) throws InterruptedException {
-	return pollFirst(timeout, unit);
+        return pollFirst(timeout, unit);
     }
 
     /**
@@ -579,11 +579,11 @@ public class LinkedBlockingDeque<E>
      * @throws NoSuchElementException if this deque is empty
      */
     public E element() {
-	return getFirst();
+        return getFirst();
     }
 
     public E peek() {
-	return peekFirst();
+        return peekFirst();
     }
 
     /**
@@ -668,14 +668,14 @@ public class LinkedBlockingDeque<E>
      * @throws NullPointerException  {@inheritDoc}
      */
     public void push(E e) {
-	addFirst(e);
+        addFirst(e);
     }
 
     /**
      * @throws NoSuchElementException {@inheritDoc}
      */
     public E pop() {
-	return removeFirst();
+        return removeFirst();
     }
 
     // Collection methods
@@ -695,7 +695,7 @@ public class LinkedBlockingDeque<E>
      * @return <tt>true</tt> if this deque changed as a result of the call
      */
     public boolean remove(Object o) {
-	return removeFirstOccurrence(o);
+        return removeFirstOccurrence(o);
     }
 
     /**

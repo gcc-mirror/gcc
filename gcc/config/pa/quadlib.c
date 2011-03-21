@@ -58,6 +58,7 @@ int _U_Qford (long double, long double);
 int _U_Qfcomp (long double, long double);
 
 long double _U_Qfneg (long double);
+long double _U_Qfcopysign (long double, long double);
 
 #ifdef __LP64__
 int __U_Qfcnvfxt_quad_to_sgl (long double);
@@ -160,7 +161,6 @@ _U_Qfcomp (long double a, long double b)
   return (_U_Qfcmp (a, b, QCMP_UNORD | QCMP_EQ | QCMP_GT) != 0 ? 1 : -1);
 }
 
-
 /* Negate long double A.  */
 long double
 _U_Qfneg (long double a)
@@ -174,6 +174,23 @@ _U_Qfneg (long double a)
   u.ld = a;
   u.i[0] ^= 0x80000000;
   return u.ld;
+}
+
+/* Return long double A with sign changed to sign of long double B.  */
+long double
+_U_Qfcopysign (long double a, long double b)
+{
+  union
+   {
+     long double ld;
+     int i[4];
+   } ua, ub;
+
+  ua.ld = a;
+  ub.ld = b;
+  ua.i[0] &= 0x7fffffff;
+  ua.i[0] |= (0x80000000 & ub.i[0]);
+  return ua.ld;
 }
 
 #ifdef __LP64__

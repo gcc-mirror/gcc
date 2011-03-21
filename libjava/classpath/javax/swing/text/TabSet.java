@@ -54,28 +54,28 @@ public class TabSet implements Serializable
 
   /**
    * Creates a new <code>TabSet</code> containing the specified tab stops.
-   * 
+   *
    * @param t  the tab stops (<code>null</code> permitted).
    */
-  public TabSet(TabStop[] t) 
+  public TabSet(TabStop[] t)
   {
     if (t != null)
       tabs = (TabStop[]) t.clone();
-    else 
+    else
       tabs = new TabStop[0];
   }
- 
+
   /**
    * Returns the tab stop with the specified index.
-   * 
+   *
    * @param i  the index.
-   * 
+   *
    * @return The tab stop.
-   * 
-   * @throws IllegalArgumentException if <code>i</code> is not in the range 
+   *
+   * @throws IllegalArgumentException if <code>i</code> is not in the range
    *     <code>0</code> to <code>getTabCount() - 1</code>.
    */
-  public TabStop getTab(int i) 
+  public TabStop getTab(int i)
   {
     if (i < 0 || i >= tabs.length)
       throw new IllegalArgumentException("Index out of bounds.");
@@ -84,38 +84,38 @@ public class TabSet implements Serializable
 
   /**
    * Returns the tab following the specified location.
-   * 
+   *
    * @param location  the location.
-   * 
+   *
    * @return The tab following the specified location (or <code>null</code>).
    */
-  public TabStop getTabAfter(float location) 
+  public TabStop getTabAfter(float location)
   {
     int idx = getTabIndexAfter(location);
     if (idx == -1)
       return null;
     else
-      return tabs[idx];        
+      return tabs[idx];
   }
 
   /**
    * Returns the number of tab stops in this tab set.
-   * 
+   *
    * @return The number of tab stops in this tab set.
    */
-  public int getTabCount() 
+  public int getTabCount()
   {
     return tabs.length;
   }
 
   /**
    * Returns the index of the specified tab, or -1 if the tab is not found.
-   * 
+   *
    * @param tab  the tab (<code>null</code> permitted).
-   * 
+   *
    * @return The index of the specified tab, or -1.
    */
-  public int getTabIndex(TabStop tab) 
+  public int getTabIndex(TabStop tab)
   {
     for (int i = 0; i < tabs.length; ++i)
       if (tabs[i] == tab)
@@ -125,12 +125,12 @@ public class TabSet implements Serializable
 
   /**
    * Returns the index of the tab at or after the specified location.
-   * 
+   *
    * @param location  the tab location.
-   * 
+   *
    * @return The index of the tab stop, or -1.
    */
-  public int getTabIndexAfter(float location) 
+  public int getTabIndexAfter(float location)
   {
     for (int i = 0; i < tabs.length; i++)
       {
@@ -139,15 +139,15 @@ public class TabSet implements Serializable
       }
     return -1;
   }
-  
+
   /**
    * Tests this <code>TabSet</code> for equality with an arbitrary object.
-   * 
+   *
    * @param obj  the object (<code>null</code> permitted).
-   * 
+   *
    * @return <code>true</code> if this <code>TabSet</code> is equal to
    *     <code>obj</code>, and <code>false</code> otherwise.
-   *     
+   *
    * @since 1.5
    */
   public boolean equals(Object obj)
@@ -167,15 +167,15 @@ public class TabSet implements Serializable
       }
     return true;
   }
-  
+
   /**
    * Returns a hash code for this <code>TabSet</code>.
-   * 
+   *
    * @return A hash code.
-   * 
+   *
    * @since 1.5
    */
-  public int hashCode() 
+  public int hashCode()
   {
     // this hash code won't match Sun's, but that shouldn't matter...
     int result = 193;
@@ -191,7 +191,7 @@ public class TabSet implements Serializable
 
   /**
    * Returns a string representation of this <code>TabSet</code>.
-   * 
+   *
    * @return A string representation of this <code>TabSet</code>.
    */
   public String toString()

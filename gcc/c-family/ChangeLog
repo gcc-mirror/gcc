@@ -1,3 +1,92 @@
+2011-03-18  Jason Merrill  <jason@redhat.com>
+
+	* c.opt (fconstexpr-depth): Add Var(max_constexpr_depth).
+	* c-common.h: Don't declare it here.
+	* c-common.c: Or define it here.
+	* c-opts.c (c_common_handle_option): Or set it here.
+
+	PR c++/35315
+	* c-common.c (handle_transparent_union_attribute): Don't
+	make a duplicate type in C++.
+
+2011-03-15  Jason Merrill  <jason@redhat.com>
+
+	* c-common.c (max_constexpr_depth): New.
+	* c-common.h: Declare it.
+	* c-opts.c (c_common_handle_option): Set it.
+	* c.opt (fconstexpr-depth): New option.
+
+2011-03-11  Jason Merrill  <jason@redhat.com>
+
+	* c-common.c (attribute_takes_identifier_p): Add missing const.
+
+	PR c++/46803
+	* c-common.c (attribute_takes_identifier_p): Assume that an
+	unknown attribute takes an identifier.
+
+2011-03-07  Nathan Froyd  <froydnj@codesourcery.com>
+
+	PR c/47786
+	* c-common.c (c_type_hash): Call list_length instead of iterating
+	through DECL_CHAIN.  Rename 'i' to 'n_elements'.
+
+2011-02-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/47809
+	* c-common.c (c_fully_fold_internal): Handle VIEW_CONVERT_EXPR.
+
+2011-02-17  Iain Sandoe  <iains@gcc.gnu.org>
+
+	* c.opt (fobjc-abi-version=) New.
+	(fobjc-nilcheck): New.
+
+2011-02-03  Nathan Froyd  <froydnj@codesourcery.com>
+
+	PR c++/46890
+	* c-common.h (keyword_is_decl_specifier): Declare.
+	* c-common.c (keyword_is_decl_specifier): Define.
+	(keyword_is_function_specifier): New function.
+
+2011-01-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/47473
+	* c-lex.c (interpret_float): If CPP_N_IMAGINARY, ensure
+	EXCESS_PRECISION_EXPR is created with COMPLEX_TYPE instead of
+	REAL_TYPE.
+
+2011-01-26  Arnaud Charlet  <charlet@adacore.com>
+
+	* c-ada-spec.c (dump_generic_ada_node): Avoid dereferencing null type.
+
+2011-01-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR pch/47430
+	* c-opts.c (c_common_post_options): Call c_common_no_more_pch
+	after init_c_lex if pch_file is set.
+
+2011-01-26  Dave Korn  <dave.korn.cygwin@gmail.com>
+
+	PR c++/43601
+	* c.opt (-fkeep-inline-dllexport): New switch.
+
+2011-01-12  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/32511
+	* c-common.c (handle_weak_attribute): Warn instead of error
+	on declaring an inline function weak.
+
+2011-01-05  Tom Tromey  <tromey@redhat.com>
+
+	* c-common.h (lvalue_error): Update.
+	* c-common.c (lvalue_error): Add 'loc' argument.  Call error_at,
+	not error.
+
+2010-12-29  Nicola Pero  <nicola@nicola.brainstorm.co.uk>
+
+	PR objc/47075
+	* c-objc.h (objc_finish_message_expr): Added argument to
+	prototype.
+
 2010-12-22  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* c-common.c (handle_nonnull_attribute, handle_sentinel_attribute):

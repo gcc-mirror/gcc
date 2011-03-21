@@ -66,14 +66,14 @@ public abstract class TaggedComponentHelper
   {
     ORB orb = OrbRestricted.Singleton;
     StructMember[] members = new StructMember[2];
-    
+
     TypeCode field;
-    
+
     field = orb.create_alias_tc("IDL:omg.org/IOP/ComponentId:1.0",
                                 "ComponentId",
                                 orb.get_primitive_tc(TCKind.tk_ulong));
     members[0] = new StructMember("tag", field, null);
-    
+
     field = orb.create_sequence_tc(0, orb.get_primitive_tc(TCKind.tk_octet));
     members[1] = new StructMember("component_data", field, null);
     return orb.create_struct_tc(id(), "TaggedComponent", members);
@@ -106,7 +106,7 @@ public abstract class TaggedComponentHelper
     catch (ClassCastException cex)
       {
         BAD_OPERATION bad = new BAD_OPERATION("TaggedComponent expected");
-        bad.minor = Minor.Any;        
+        bad.minor = Minor.Any;
         bad.initCause(cex);
         throw bad;
       }

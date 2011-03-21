@@ -53,35 +53,35 @@ import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.ListUI;
 
 /**
- * A UI delegate that that coordinates multiple {@link ListUI} 
- * instances, one from the primary look and feel, and one or more from the 
+ * A UI delegate that that coordinates multiple {@link ListUI}
+ * instances, one from the primary look and feel, and one or more from the
  * auxiliary look and feel(s).
- * 
+ *
  * @see UIManager#addAuxiliaryLookAndFeel(LookAndFeel)
  */
-public class MultiListUI extends ListUI 
+public class MultiListUI extends ListUI
 {
 
   /** A list of references to the actual component UIs. */
   protected Vector uis;
-    
+
   /**
    * Creates a new <code>MultiListUI</code> instance.
-   * 
+   *
    * @see #createUI(JComponent)
    */
-  public MultiListUI() 
+  public MultiListUI()
   {
     uis = new Vector();
   }
-  
+
   /**
-   * Creates a delegate object for the specified component.  If any auxiliary 
+   * Creates a delegate object for the specified component.  If any auxiliary
    * look and feels support this component, a <code>MultiListUI</code> is
    * returned, otherwise the UI from the default look and feel is returned.
-   * 
+   *
    * @param target  the component.
-   * 
+   *
    * @see MultiLookAndFeel#createUIs(ComponentUI, Vector, JComponent)
    */
   public static ComponentUI createUI(JComponent target)
@@ -89,11 +89,11 @@ public class MultiListUI extends ListUI
     MultiListUI mui = new MultiListUI();
     return MultiLookAndFeel.createUIs(mui, mui.uis, target);
   }
-    
+
   /**
-   * Calls the {@link ComponentUI#installUI(JComponent)} method for all 
+   * Calls the {@link ComponentUI#installUI(JComponent)} method for all
    * the UI delegates managed by this <code>MultiListUI</code>.
-   * 
+   *
    * @param c  the component.
    */
   public void installUI(JComponent c)
@@ -107,9 +107,9 @@ public class MultiListUI extends ListUI
   }
 
   /**
-   * Calls the {@link ComponentUI#uninstallUI(JComponent)} method for all 
+   * Calls the {@link ComponentUI#uninstallUI(JComponent)} method for all
    * the UI delegates managed by this <code>MultiListUI</code>.
-   * 
+   *
    * @param c  the component.
    */
   public void uninstallUI(JComponent c)
@@ -121,39 +121,39 @@ public class MultiListUI extends ListUI
       ui.uninstallUI(c);
     }
   }
-  
+
   /**
    * Returns an array containing the UI delegates managed by this
-   * <code>MultiListUI</code>.  The first item in the array is always 
+   * <code>MultiListUI</code>.  The first item in the array is always
    * the UI delegate from the installed default look and feel.
-   * 
+   *
    * @return An array of UI delegates.
    */
   public ComponentUI[] getUIs()
   {
     return MultiLookAndFeel.uisToArray(uis);
   }
-  
+
   /**
-   * Calls the {@link ComponentUI#contains(JComponent, int, int)} method for all 
-   * the UI delegates managed by this <code>MultiListUI</code>, 
-   * returning the result for the UI delegate from the primary look and 
-   * feel. 
-   * 
+   * Calls the {@link ComponentUI#contains(JComponent, int, int)} method for all
+   * the UI delegates managed by this <code>MultiListUI</code>,
+   * returning the result for the UI delegate from the primary look and
+   * feel.
+   *
    * @param c  the component.
    * @param x  the x-coordinate.
    * @param y  the y-coordinate.
-   * 
+   *
    * @return <code>true</code> if the specified (x, y) coordinate falls within
    *         the bounds of the component as rendered by the UI delegate in the
-   *         primary look and feel, and <code>false</code> otherwise. 
+   *         primary look and feel, and <code>false</code> otherwise.
    */
-  public boolean contains(JComponent c, int x, int y) 
+  public boolean contains(JComponent c, int x, int y)
   {
     boolean result = false;
     Iterator iterator = uis.iterator();
     // first UI delegate provides the return value
-    if (iterator.hasNext()) 
+    if (iterator.hasNext())
       {
         ComponentUI ui = (ComponentUI) iterator.next();
         result = ui.contains(c, x, y);
@@ -166,11 +166,11 @@ public class MultiListUI extends ListUI
       }
     return result;
   }
-  
+
   /**
-   * Calls the {@link ComponentUI#update(Graphics, JComponent)} method for all 
+   * Calls the {@link ComponentUI#update(Graphics, JComponent)} method for all
    * the UI delegates managed by this <code>MultiListUI</code>.
-   * 
+   *
    * @param g  the graphics device.
    * @param c  the component.
    */
@@ -185,9 +185,9 @@ public class MultiListUI extends ListUI
   }
 
   /**
-   * Calls the <code>paint(Graphics, JComponent)</code> method for all the UI 
+   * Calls the <code>paint(Graphics, JComponent)</code> method for all the UI
    * delegates managed by this <code>MultiListUI</code>.
-   * 
+   *
    * @param g  the graphics device.
    * @param c  the component.
    */
@@ -200,24 +200,24 @@ public class MultiListUI extends ListUI
       ui.paint(g, c);
     }
   }
-  
+
   /**
    * Calls the {@link ComponentUI#getPreferredSize(JComponent)} method for all
-   * the UI delegates managed by this <code>MultiListUI</code>, 
-   * returning the preferred size for the UI delegate from the primary look and 
-   * feel. 
-   * 
+   * the UI delegates managed by this <code>MultiListUI</code>,
+   * returning the preferred size for the UI delegate from the primary look and
+   * feel.
+   *
    * @param c  the component.
-   * 
-   * @return The preferred size returned by the UI delegate from the primary 
-   *         look and feel. 
+   *
+   * @return The preferred size returned by the UI delegate from the primary
+   *         look and feel.
    */
   public Dimension getPreferredSize(JComponent c)
   {
     Dimension result = null;
     Iterator iterator = uis.iterator();
     // first UI delegate provides the return value
-    if (iterator.hasNext()) 
+    if (iterator.hasNext())
       {
         ComponentUI ui = (ComponentUI) iterator.next();
         result = ui.getPreferredSize(c);
@@ -230,24 +230,24 @@ public class MultiListUI extends ListUI
       }
     return result;
   }
-  
+
   /**
    * Calls the {@link ComponentUI#getMinimumSize(JComponent)} method for all
-   * the UI delegates managed by this <code>MultiListUI</code>, 
-   * returning the minimum size for the UI delegate from the primary look and 
-   * feel. 
-   * 
+   * the UI delegates managed by this <code>MultiListUI</code>,
+   * returning the minimum size for the UI delegate from the primary look and
+   * feel.
+   *
    * @param c  the component.
-   * 
-   * @return The minimum size returned by the UI delegate from the primary 
-   *         look and feel. 
+   *
+   * @return The minimum size returned by the UI delegate from the primary
+   *         look and feel.
    */
   public Dimension getMinimumSize(JComponent c)
   {
     Dimension result = null;
     Iterator iterator = uis.iterator();
     // first UI delegate provides the return value
-    if (iterator.hasNext()) 
+    if (iterator.hasNext())
       {
         ComponentUI ui = (ComponentUI) iterator.next();
         result = ui.getMinimumSize(c);
@@ -260,24 +260,24 @@ public class MultiListUI extends ListUI
       }
     return result;
   }
-    
+
   /**
    * Calls the {@link ComponentUI#getMaximumSize(JComponent)} method for all
-   * the UI delegates managed by this <code>MultiListUI</code>, 
-   * returning the maximum size for the UI delegate from the primary look and 
-   * feel. 
-   * 
+   * the UI delegates managed by this <code>MultiListUI</code>,
+   * returning the maximum size for the UI delegate from the primary look and
+   * feel.
+   *
    * @param c  the component.
-   * 
-   * @return The maximum size returned by the UI delegate from the primary 
-   *         look and feel. 
+   *
+   * @return The maximum size returned by the UI delegate from the primary
+   *         look and feel.
    */
   public Dimension getMaximumSize(JComponent c)
   {
     Dimension result = null;
     Iterator iterator = uis.iterator();
     // first UI delegate provides the return value
-    if (iterator.hasNext()) 
+    if (iterator.hasNext())
       {
         ComponentUI ui = (ComponentUI) iterator.next();
         result = ui.getMaximumSize(c);
@@ -290,24 +290,24 @@ public class MultiListUI extends ListUI
       }
     return result;
   }
-  
+
   /**
    * Calls the {@link ComponentUI#getAccessibleChildrenCount(JComponent)} method
-   * for all the UI delegates managed by this <code>MultiListUI</code>, 
-   * returning the count for the UI delegate from the primary look and 
-   * feel. 
-   * 
+   * for all the UI delegates managed by this <code>MultiListUI</code>,
+   * returning the count for the UI delegate from the primary look and
+   * feel.
+   *
    * @param c  the component.
-   * 
-   * @return The count returned by the UI delegate from the primary 
-   *         look and feel. 
+   *
+   * @return The count returned by the UI delegate from the primary
+   *         look and feel.
    */
   public int getAccessibleChildrenCount(JComponent c)
   {
     int result = 0;
     Iterator iterator = uis.iterator();
     // first UI delegate provides the return value
-    if (iterator.hasNext()) 
+    if (iterator.hasNext())
       {
         ComponentUI ui = (ComponentUI) iterator.next();
         result = ui.getAccessibleChildrenCount(c);
@@ -320,25 +320,25 @@ public class MultiListUI extends ListUI
       }
     return result;
   }
-  
+
   /**
    * Calls the {@link ComponentUI#getAccessibleChild(JComponent, int)} method
-   * for all the UI delegates managed by this <code>MultiListUI</code>, 
-   * returning the child for the UI delegate from the primary look and 
-   * feel. 
-   * 
+   * for all the UI delegates managed by this <code>MultiListUI</code>,
+   * returning the child for the UI delegate from the primary look and
+   * feel.
+   *
    * @param c  the component
    * @param i  the child index.
-   * 
-   * @return The child returned by the UI delegate from the primary 
-   *         look and feel. 
+   *
+   * @return The child returned by the UI delegate from the primary
+   *         look and feel.
    */
   public Accessible getAccessibleChild(JComponent c, int i)
   {
     Accessible result = null;
     Iterator iterator = uis.iterator();
     // first UI delegate provides the return value
-    if (iterator.hasNext()) 
+    if (iterator.hasNext())
       {
         ComponentUI ui = (ComponentUI) iterator.next();
         result = ui.getAccessibleChild(c, i);
@@ -351,25 +351,25 @@ public class MultiListUI extends ListUI
       }
     return result;
   }
-  
+
   /**
    * Calls the {@link ListUI#locationToIndex(JList, Point)} method for all
-   * the UI delegates managed by this <code>MultiListUI</code>, 
-   * returning the index for the UI delegate from the primary look and 
-   * feel. 
-   * 
+   * the UI delegates managed by this <code>MultiListUI</code>,
+   * returning the index for the UI delegate from the primary look and
+   * feel.
+   *
    * @param list  the list.
    * @param location  the location.
-   * 
-   * @return The index returned by the UI delegate from the primary 
-   *         look and feel. 
+   *
+   * @return The index returned by the UI delegate from the primary
+   *         look and feel.
    */
-  public int locationToIndex(JList list, Point location) 
+  public int locationToIndex(JList list, Point location)
   {
     int result = 0;
     Iterator iterator = uis.iterator();
     // first UI delegate provides the return value
-    if (iterator.hasNext()) 
+    if (iterator.hasNext())
       {
         ListUI ui = (ListUI) iterator.next();
         result = ui.locationToIndex(list, location);
@@ -385,22 +385,22 @@ public class MultiListUI extends ListUI
 
   /**
    * Calls the {@link ListUI#indexToLocation(JList, int)} method for all
-   * the UI delegates managed by this <code>MultiListUI</code>, 
-   * returning the location for the UI delegate from the primary look and 
-   * feel. 
-   * 
+   * the UI delegates managed by this <code>MultiListUI</code>,
+   * returning the location for the UI delegate from the primary look and
+   * feel.
+   *
    * @param list  the list.
    * @param index  the index.
-   * 
-   * @return The location returned by the UI delegate from the primary 
-   *         look and feel. 
+   *
+   * @return The location returned by the UI delegate from the primary
+   *         look and feel.
    */
-  public Point indexToLocation(JList list, int index) 
+  public Point indexToLocation(JList list, int index)
   {
     Point result = null;
     Iterator iterator = uis.iterator();
     // first UI delegate provides the return value
-    if (iterator.hasNext()) 
+    if (iterator.hasNext())
       {
         ListUI ui = (ListUI) iterator.next();
         result = ui.indexToLocation(list, index);
@@ -416,23 +416,23 @@ public class MultiListUI extends ListUI
 
   /**
    * Calls the {@link ListUI#getCellBounds(JList, int, int)} method for all
-   * the UI delegates managed by this <code>MultiListUI</code>, 
-   * returning the bounds for the UI delegate from the primary look and 
-   * feel. 
-   * 
+   * the UI delegates managed by this <code>MultiListUI</code>,
+   * returning the bounds for the UI delegate from the primary look and
+   * feel.
+   *
    * @param list  the list.
    * @param index1  the first index.
    * @param index2  the second index.
-   * 
-   * @return The bounds returned by the UI delegate from the primary 
-   *         look and feel. 
+   *
+   * @return The bounds returned by the UI delegate from the primary
+   *         look and feel.
    */
-  public Rectangle getCellBounds(JList list, int index1, int index2) 
+  public Rectangle getCellBounds(JList list, int index1, int index2)
   {
     Rectangle result = null;
     Iterator iterator = uis.iterator();
     // first UI delegate provides the return value
-    if (iterator.hasNext()) 
+    if (iterator.hasNext())
       {
         ListUI ui = (ListUI) iterator.next();
         result = ui.getCellBounds(list, index1, index2);

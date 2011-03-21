@@ -188,7 +188,7 @@ public final class X500PrincipalList implements Iterable<X500Principal>
   {
     return new Iterator();
   }
-  
+
   public class Iterator implements ListIterator<X500Principal>
   {
     private final int modCount;

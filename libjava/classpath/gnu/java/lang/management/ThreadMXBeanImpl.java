@@ -45,7 +45,7 @@ import java.lang.management.ThreadMXBean;
 import javax.management.NotCompliantMBeanException;
 
 /**
- * Provides access to information about the threads 
+ * Provides access to information about the threads
  * of the virtual machine.  An instance of this bean is
  * obtained by calling
  * {@link ManagementFactory#getThreadMXBean()}.
@@ -63,25 +63,25 @@ public final class ThreadMXBeanImpl
   /**
    * Constant for current thread time support.
    */
-  private static final String CURRENT_THREAD_TIME_SUPPORT = 
+  private static final String CURRENT_THREAD_TIME_SUPPORT =
     "gnu.java.lang.management.CurrentThreadTimeSupport";
 
   /**
    * Constant for thread time support.
    */
-  private static final String THREAD_TIME_SUPPORT = 
+  private static final String THREAD_TIME_SUPPORT =
     "gnu.java.lang.management.ThreadTimeSupport";
 
   /**
    * Constant for thread contention support.
    */
-  private static final String CONTENTION_SUPPORT = 
+  private static final String CONTENTION_SUPPORT =
     "gnu.java.lang.management.ThreadContentionSupport";
 
   /**
    * Constant for initial value of thread time support.
    */
-  private static final String TIME_ENABLED = 
+  private static final String TIME_ENABLED =
     "gnu.java.lang.management.ThreadTimeInitallyEnabled";
 
   /**
@@ -125,10 +125,10 @@ public final class ThreadMXBeanImpl
   }
 
   public ThreadInfo[] dumpAllThreads(boolean lockedMonitors,
-				     boolean lockedSynchronizers)
+                                     boolean lockedSynchronizers)
   {
     return getThreadInfo(getAllThreadIds(), lockedMonitors,
-			 lockedSynchronizers);
+                         lockedSynchronizers);
   }
 
   public long[] findDeadlockedThreads()
@@ -136,8 +136,8 @@ public final class ThreadMXBeanImpl
     checkMonitorPermissions();
     if (!isSynchronizerUsageSupported())
       throw new UnsupportedOperationException("Ownable synchronizer usage " +
-					      "monitoring is not provided " +
-					      "by this VM.");
+                                              "monitoring is not provided " +
+                                              "by this VM.");
     return VMThreadMXBeanImpl.findDeadlockedThreads();
   }
 
@@ -157,7 +157,7 @@ public final class ThreadMXBeanImpl
   {
     if (!isCurrentThreadCpuTimeSupported())
       throw new UnsupportedOperationException("Current thread CPU " +
-					      "time not supported.");
+                                              "time not supported.");
     if (!timeEnabled)
       return -1;
     return VMThreadMXBeanImpl.getCurrentThreadCpuTime();
@@ -167,7 +167,7 @@ public final class ThreadMXBeanImpl
   {
     if (!isCurrentThreadCpuTimeSupported())
       throw new UnsupportedOperationException("Current thread user " +
-					      "time not supported.");
+                                              "time not supported.");
     if (!timeEnabled)
       return -1;
     return VMThreadMXBeanImpl.getCurrentThreadUserTime();
@@ -192,7 +192,7 @@ public final class ThreadMXBeanImpl
   {
     if (!isThreadCpuTimeSupported())
       throw new UnsupportedOperationException("Thread CPU time not " +
-					      "supported.");
+                                              "supported.");
     if (id <= 0)
       throw new IllegalArgumentException("Invalid thread id: " + id);
     if (!timeEnabled)
@@ -228,32 +228,32 @@ public final class ThreadMXBeanImpl
     ThreadInfo[] infos = new ThreadInfo[ids.length];
     for (int a = 0; a < ids.length; ++a)
       {
-	if (ids[a] <= 0)
-	  throw new IllegalArgumentException("Invalid thread id " + a +
-					     ": " + ids[a]);
-	infos[a] = VMThreadMXBeanImpl.getThreadInfoForId(ids[a], maxDepth);
+        if (ids[a] <= 0)
+          throw new IllegalArgumentException("Invalid thread id " + a +
+                                             ": " + ids[a]);
+        infos[a] = VMThreadMXBeanImpl.getThreadInfoForId(ids[a], maxDepth);
       }
     return infos;
   }
 
   public ThreadInfo[] getThreadInfo(long[] ids, boolean lockedMonitors,
-				    boolean lockedSynchronizers)
+                                    boolean lockedSynchronizers)
   {
     checkMonitorPermissions();
     if (lockedMonitors && !isObjectMonitorUsageSupported())
       throw new UnsupportedOperationException("Monitor usage monitoring is " +
-					      "not provided by this VM.");
+                                              "not provided by this VM.");
     if (lockedSynchronizers && !isSynchronizerUsageSupported())
       throw new UnsupportedOperationException("Ownable synchronizer usage " +
-					      "monitoring is not provided " +
-					      "by this VM.");
+                                              "monitoring is not provided " +
+                                              "by this VM.");
     ThreadInfo[] infos = getThreadInfo(ids, Integer.MAX_VALUE);
     if (lockedMonitors)
       for (ThreadInfo info : infos)
-	VMThreadMXBeanImpl.getMonitorInfo(info);
+        VMThreadMXBeanImpl.getMonitorInfo(info);
     if (lockedSynchronizers)
       for (ThreadInfo info : infos)
-	VMThreadMXBeanImpl.getLockInfo(info);
+        VMThreadMXBeanImpl.getLockInfo(info);
     return infos;
   }
 
@@ -261,7 +261,7 @@ public final class ThreadMXBeanImpl
   {
     if (!isThreadCpuTimeSupported())
       throw new UnsupportedOperationException("Thread user time not " +
-					      "supported.");
+                                              "supported.");
     if (id <= 0)
       throw new IllegalArgumentException("Invalid thread id: " + id);
     if (!timeEnabled)
@@ -297,7 +297,7 @@ public final class ThreadMXBeanImpl
       return contentionEnabled;
     else
       throw new UnsupportedOperationException("Contention monitoring " +
-					      "not supported.");
+                                              "not supported.");
   }
 
   public boolean isThreadContentionMonitoringSupported()
@@ -308,13 +308,13 @@ public final class ThreadMXBeanImpl
   public boolean isThreadCpuTimeEnabled()
   {
     if (isThreadCpuTimeSupported() ||
-	isCurrentThreadCpuTimeSupported())
+        isCurrentThreadCpuTimeSupported())
       return timeEnabled;
     else
       throw new UnsupportedOperationException("Thread time not " +
-					      "supported.");
+                                              "supported.");
   }
-  
+
   public boolean isThreadCpuTimeSupported()
   {
     return SystemProperties.getProperty(THREAD_TIME_SUPPORT) != null;
@@ -325,7 +325,7 @@ public final class ThreadMXBeanImpl
     checkControlPermissions();
     VMThreadMXBeanImpl.resetPeakThreadCount();
   }
-  
+
   public void setThreadContentionMonitoringEnabled(boolean enable)
   {
     checkControlPermissions();
@@ -333,19 +333,18 @@ public final class ThreadMXBeanImpl
       contentionEnabled = enable;
     else
       throw new UnsupportedOperationException("Contention monitoring " +
-					      "not supported.");
-  }    
-  
+                                              "not supported.");
+  }
+
   public void setThreadCpuTimeEnabled(boolean enable)
   {
     checkControlPermissions();
     if (isThreadCpuTimeSupported() ||
-	isCurrentThreadCpuTimeSupported())
+        isCurrentThreadCpuTimeSupported())
       timeEnabled = enable;
     else
       throw new UnsupportedOperationException("Thread time not " +
-					      "supported.");
+                                              "supported.");
   }
 
 }
-

@@ -107,7 +107,7 @@ public final class KerberosPrincipal
    * Create a new instance with the given name and type.  The name is
    * parsed according to the rules in the RFC.  If there is no realm,
    * then the local realm is used instead.
-   * 
+   *
    * @param name the principal's name
    * @param type the principal's type
    */
@@ -202,6 +202,6 @@ public final class KerberosPrincipal
   public String toString()
   {
     // This is what came to mind.
-    return name + ":" + type; 
+    return name + ":" + type;
   }
 }

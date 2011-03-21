@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Chapter 4.  Support</title><meta name="generator" content="DocBook XSL Stylesheets V1.75.2" /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><link rel="home" href="../spine.html" title="The GNU C++ Library Documentation" /><link rel="up" href="bk01pt02.html" title="Part II.  Standard Contents" /><link rel="prev" href="bk01pt02.html" title="Part II.  Standard Contents" /><link rel="next" href="dynamic_memory.html" title="Dynamic Memory" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Chapter 4. 
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Chapter 4.  Support</title><meta name="generator" content="DocBook XSL-NS Stylesheets V1.75.2"/><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    "/><link rel="home" href="../spine.html" title="The GNU C++ Library"/><link rel="up" href="bk01pt02.html" title="Part II.  Standard Contents"/><link rel="prev" href="bk01pt02.html" title="Part II.  Standard Contents"/><link rel="next" href="dynamic_memory.html" title="Dynamic Memory"/></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Chapter 4. 
   Support
   
-</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="bk01pt02.html">Prev</a> </td><th width="60%" align="center">Part II. 
-  Standard Contents
-</th><td width="20%" align="right"> <a accesskey="n" href="dynamic_memory.html">Next</a></td></tr></table><hr /></div><div class="chapter" title="Chapter 4.  Support"><div class="titlepage"><div><div><h2 class="title"><a id="std.support"></a>Chapter 4. 
+</th></tr><tr><td align="left"><a accesskey="p" href="bk01pt02.html">Prev</a> </td><th width="60%" align="center">Part II. 
+    Standard Contents
+  </th><td align="right"> <a accesskey="n" href="dynamic_memory.html">Next</a></td></tr></table><hr/></div><div class="chapter" title="Chapter 4.  Support"><div class="titlepage"><div><div><h1 class="title"><a id="std.support"/>
   Support
-  <a id="id402698" class="indexterm"></a>
-</h2></div></div></div><div class="toc"><p><b>Table of Contents</b></p><dl><dt><span class="sect1"><a href="support.html#std.support.types">Types</a></span></dt><dd><dl><dt><span class="sect2"><a href="support.html#std.support.types.fundamental">Fundamental Types</a></span></dt><dt><span class="sect2"><a href="support.html#std.support.types.numeric_limits">Numeric Properties</a></span></dt><dt><span class="sect2"><a href="support.html#std.support.types.null">NULL</a></span></dt></dl></dd><dt><span class="sect1"><a href="dynamic_memory.html">Dynamic Memory</a></span></dt><dt><span class="sect1"><a href="termination.html">Termination</a></span></dt><dd><dl><dt><span class="sect2"><a href="termination.html#support.termination.handlers">Termination Handlers</a></span></dt><dt><span class="sect2"><a href="termination.html#support.termination.verbose">Verbose Terminate Handler</a></span></dt></dl></dd></dl></div><p>
+  <a id="id592185" class="indexterm"/>
+</h1></div></div></div><div class="toc"><p><b>Table of Contents</b></p><dl><dt><span class="section"><a href="support.html#std.support.types">Types</a></span></dt><dd><dl><dt><span class="section"><a href="support.html#std.support.types.fundamental">Fundamental Types</a></span></dt><dt><span class="section"><a href="support.html#std.support.types.numeric_limits">Numeric Properties</a></span></dt><dt><span class="section"><a href="support.html#std.support.types.null">NULL</a></span></dt></dl></dd><dt><span class="section"><a href="dynamic_memory.html">Dynamic Memory</a></span></dt><dt><span class="section"><a href="termination.html">Termination</a></span></dt><dd><dl><dt><span class="section"><a href="termination.html#support.termination.handlers">Termination Handlers</a></span></dt><dt><span class="section"><a href="termination.html#support.termination.verbose">Verbose Terminate Handler</a></span></dt></dl></dd></dl></div><p>
     This part deals with the functions called and objects created
     automatically during the course of a program's existence.
   </p><p>
@@ -16,9 +16,9 @@
     need to get your own copy from your nation's member body; see our
     homepage for help), we can mention a couple of changes in what
     kind of support a C++ program gets from the Standard Library.
-  </p><div class="sect1" title="Types"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="std.support.types"></a>Types</h2></div></div></div><div class="sect2" title="Fundamental Types"><div class="titlepage"><div><div><h3 class="title"><a id="std.support.types.fundamental"></a>Fundamental Types</h3></div></div></div><p>
+  </p><div class="section" title="Types"><div class="titlepage"><div><div><h2 class="title"><a id="std.support.types"/>Types</h2></div></div></div><div class="section" title="Fundamental Types"><div class="titlepage"><div><div><h3 class="title"><a id="std.support.types.fundamental"/>Fundamental Types</h3></div></div></div><p>
       C++ has the following builtin types:
-    </p><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p>
+    </p><div class="itemizedlist"><ul class="itemizedlist"><li class="listitem"><p>
 	char
       </p></li><li class="listitem"><p>
 	signed char
@@ -53,12 +53,12 @@
     </p><p>
       Specializing parts of the library on these types is prohibited:
       instead, use a POD.
-    </p></div><div class="sect2" title="Numeric Properties"><div class="titlepage"><div><div><h3 class="title"><a id="std.support.types.numeric_limits"></a>Numeric Properties</h3></div></div></div><p>
+    </p></div><div class="section" title="Numeric Properties"><div class="titlepage"><div><div><h3 class="title"><a id="std.support.types.numeric_limits"/>Numeric Properties</h3></div></div></div><p>
     The header <code class="filename">limits</code> defines
     traits classes to give access to various implementation
     defined-aspects of the fundamental types. The traits classes --
     fourteen in total -- are all specializations of the template class
-    <code class="classname">numeric_limits</code>, documented <a class="ulink" href="http://gcc.gnu.org/onlinedocs/libstdc++/latest-doxygen/a00593.html" target="_top">here</a>
+    <code class="classname">numeric_limits</code>, documented <a class="link" href="http://gcc.gnu.org/onlinedocs/libstdc++/latest-doxygen/a00593.html" target="">here</a>
     and defined as follows:
     </p><pre class="programlisting">
    template&lt;typename T&gt;
@@ -99,7 +99,7 @@
        static const bool tinyness_before;
        static const float_round_style round_style;
      };
-   </pre></div><div class="sect2" title="NULL"><div class="titlepage"><div><div><h3 class="title"><a id="std.support.types.null"></a>NULL</h3></div></div></div><p>
+   </pre></div><div class="section" title="NULL"><div class="titlepage"><div><div><h3 class="title"><a id="std.support.types.null"/>NULL</h3></div></div></div><p>
      The only change that might affect people is the type of
      <code class="constant">NULL</code>: while it is required to be a macro,
      the definition of that macro is <span class="emphasis"><em>not</em></span> allowed
@@ -116,15 +116,15 @@
      overloading won't do what you expect. (This is why
      <span class="command"><strong>g++</strong></span> has a magic extension, so that
      <code class="constant">NULL</code> is always a pointer.)
-    </p><p>In his book <a class="ulink" href="http://www.awprofessional.com/titles/0-201-92488-9/" target="_top"><span class="emphasis"><em>Effective
+    </p><p>In his book <a class="link" href="http://www.awprofessional.com/titles/0-201-92488-9/" target=""><span class="emphasis"><em>Effective
     C++</em></span></a>, Scott Meyers points out that the best way
     to solve this problem is to not overload on pointer-vs-integer
     types to begin with.  He also offers a way to make your own magic
     <code class="constant">NULL</code> that will match pointers before it
     matches integers.
     </p><p>See
-      <a class="ulink" href="http://www.awprofessional.com/titles/0-201-31015-5/" target="_top">the
+      <a class="link" href="http://www.awprofessional.com/titles/0-201-31015-5/" target="">the
       Effective C++ CD example</a>
-    </p></div></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="bk01pt02.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="bk01pt02.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="dynamic_memory.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Part II. 
-  Standard Contents
- </td><td width="20%" align="center"><a accesskey="h" href="../spine.html">Home</a></td><td width="40%" align="right" valign="top"> Dynamic Memory</td></tr></table></div></body></html>
+    </p></div></div></div><div class="navfooter"><hr/><table width="100%" summary="Navigation footer"><tr><td align="left"><a accesskey="p" href="bk01pt02.html">Prev</a> </td><td align="center"><a accesskey="u" href="bk01pt02.html">Up</a></td><td align="right"> <a accesskey="n" href="dynamic_memory.html">Next</a></td></tr><tr><td align="left" valign="top">Part II. 
+    Standard Contents
+   </td><td align="center"><a accesskey="h" href="../spine.html">Home</a></td><td align="right" valign="top"> Dynamic Memory</td></tr></table></div></body></html>

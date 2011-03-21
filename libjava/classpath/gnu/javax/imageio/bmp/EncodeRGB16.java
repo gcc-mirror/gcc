@@ -1,4 +1,4 @@
-/* EncodeRGB16.java -- 
+/* EncodeRGB16.java --
    Copyright (C) 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -56,7 +56,7 @@ public class EncodeRGB16
 
   /**
    * Constructs an instance of this class.
-   * 
+   *
    * @param fh - the file header to use.
    * @param ih - the info header to use.
    */
@@ -67,10 +67,10 @@ public class EncodeRGB16
     infoHeader = ih;
     offset = BMPFileHeader.SIZE + BMPInfoHeader.SIZE;
   }
-  
+
   /**
    * The image encoder.
-   * 
+   *
    * @param o - the image output stream
    * @param streamMetadata - metadata associated with this stream, or
    * null
@@ -101,14 +101,14 @@ public class EncodeRGB16
                                            infoHeader.biHeight, bitmap, 0,
                                            infoHeader.biWidth);
         pg.grabPixels();
-        
+
         for (j = 0; j < size; j++)
           {
             value = bitmap[rowIndex];
 
             rgb[0] = (byte) (value & 0xFF);
             rgb[1] = (byte) (value >> 8 & 0xFF);
-            
+
             o.write(rgb);
             if (rowCount == infoHeader.biWidth)
               {

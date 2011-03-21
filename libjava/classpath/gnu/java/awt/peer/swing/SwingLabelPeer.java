@@ -62,7 +62,7 @@ public class SwingLabelPeer
 {
 
   /**
-   * A spezialized Swing label used to paint the label for the AWT Label. 
+   * A spezialized Swing label used to paint the label for the AWT Label.
    *
    * @author Roman Kennke (kennke@aicas.com)
    */
@@ -71,13 +71,13 @@ public class SwingLabelPeer
     implements SwingComponent
   {
     Label label;
-      
-      
+
+
     SwingLabel(Label label)
     {
         this.label = label;
     }
-    
+
     /**
      * Returns this label.
      *

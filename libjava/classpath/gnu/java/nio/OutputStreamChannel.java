@@ -1,4 +1,4 @@
-/* OutputStreamChannel.java -- 
+/* OutputStreamChannel.java --
    Copyright (C) 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -51,11 +51,11 @@ public final class OutputStreamChannel implements WritableByteChannel
 {
   private boolean closed = false;
   private OutputStream out;
-  
+
   public OutputStreamChannel (OutputStream out)
   {
     super();
-    
+
     this.out = out;
   }
 
@@ -72,12 +72,12 @@ public final class OutputStreamChannel implements WritableByteChannel
   {
     return !closed;
   }
-  
+
   public int write (ByteBuffer src) throws IOException
   {
     if (!isOpen())
       throw new ClosedChannelException();
-    
+
     int len = src.remaining();
     byte[] buffer = new byte [len];
     src.get (buffer);

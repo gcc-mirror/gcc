@@ -409,8 +409,17 @@ read_profile_edge_counts (gcov_type *exec_counts)
 		e->count = exec_counts[exec_counts_pos++];
 		if (e->count > profile_info->sum_max)
 		  {
-		    error ("corrupted profile info: edge from %i to %i exceeds maximal count",
-			   bb->index, e->dest->index);
+		    if (flag_profile_correction)
+		      {
+			static bool informed = 0;
+			if (!informed)
+		          inform (input_location,
+			          "corrupted profile info: edge count exceeds maximal count");
+			informed = 1;
+		      }
+		    else
+		      error ("corrupted profile info: edge from %i to %i exceeds maximal count",
+			     bb->index, e->dest->index);
 		  }
 	      }
 	    else

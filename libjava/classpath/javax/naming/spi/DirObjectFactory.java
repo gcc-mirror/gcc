@@ -43,7 +43,7 @@ import java.util.Hashtable;
 import javax.naming.Context;
 import javax.naming.Name;
 import javax.naming.directory.Attributes;
- 
+
 /**
  * @author Warren Levy (warrenl@redhat.com)
  * @date June 1, 2001
@@ -51,6 +51,6 @@ import javax.naming.directory.Attributes;
 public interface DirObjectFactory extends ObjectFactory
 {
   Object getObjectInstance(Object obj, Name name, Context nameCtx,
-  				  Hashtable<?, ?> environment, Attributes attrs)
-				  throws Exception;
+                                  Hashtable<?, ?> environment, Attributes attrs)
+                                  throws Exception;
 }

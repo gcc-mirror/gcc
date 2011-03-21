@@ -6,6 +6,7 @@ package path
 
 import (
 	"os"
+	"runtime"
 	"testing"
 )
 
@@ -83,7 +84,18 @@ var splittests = []SplitTest{
 	{"/", "/", ""},
 }
 
+var winsplittests = []SplitTest{
+	{`C:\Windows\System32`, `C:\Windows\`, `System32`},
+	{`C:\Windows\`, `C:\Windows\`, ``},
+	{`C:\Windows`, `C:\`, `Windows`},
+	{`C:Windows`, `C:`, `Windows`},
+	{`\\?\c:\`, `\\?\c:\`, ``},
+}
+
 func TestSplit(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		splittests = append(splittests, winsplittests...)
+	}
 	for _, test := range splittests {
 		if d, f := Split(test.path); d != test.dir || f != test.file {
 			t.Errorf("Split(%q) = %q, %q, want %q, %q", test.path, d, f, test.dir, test.file)
@@ -244,8 +256,11 @@ func TestWalk(t *testing.T) {
 	// 2) handle errors, expect none
 	errors := make(chan os.Error, 64)
 	Walk(tree.name, v, errors)
-	if err, ok := <-errors; ok {
-		t.Errorf("no error expected, found: s", err)
+	select {
+	case err := <-errors:
+		t.Errorf("no error expected, found: %s", err)
+	default:
+		// ok
 	}
 	checkMarks(t)
 
@@ -264,14 +279,21 @@ func TestWalk(t *testing.T) {
 		errors = make(chan os.Error, 64)
 		os.Chmod(Join(tree.name, tree.entries[1].name), 0)
 		Walk(tree.name, v, errors)
+	Loop:
 		for i := 1; i <= 2; i++ {
-			if _, ok := <-errors; !ok {
+			select {
+			case <-errors:
+				// ok
+			default:
 				t.Errorf("%d. error expected, none found", i)
-				break
+				break Loop
 			}
 		}
-		if err, ok := <-errors; ok {
+		select {
+		case err := <-errors:
 			t.Errorf("only two errors expected, found 3rd: %v", err)
+		default:
+			// ok
 		}
 		// the inaccessible subtrees were marked manually
 		checkMarks(t)

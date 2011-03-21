@@ -1,4 +1,4 @@
-/* PrinterName.java -- 
+/* PrinterName.java --
    Copyright (C) 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -45,14 +45,14 @@ import javax.print.attribute.PrintServiceAttribute;
 import javax.print.attribute.TextSyntax;
 
 /**
- * The <code>PrinterName</code> printing attribute provides the name of a 
+ * The <code>PrinterName</code> printing attribute provides the name of a
  * print service. The name may but must not be related to parts of the
  * printer URI.
  * <p>
  * <b>IPP Compatibility:</b> PrinterName is an IPP 1.1 attribute.
  * </p>
  * @see javax.print.attribute.standard.PrinterURI
- * 
+ *
  * @author Michael Koch (konqueror@gmx.de)
  */
 public final class PrinterName extends TextSyntax
@@ -79,7 +79,7 @@ public final class PrinterName extends TextSyntax
    *
    * @param obj the object to test
    *
-   * @return <code>true</code> if both objects are equal, 
+   * @return <code>true</code> if both objects are equal,
    * <code>false</code> otherwise.
    */
   public boolean equals(Object obj)

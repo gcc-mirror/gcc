@@ -1090,13 +1090,24 @@ add_expr_to_chain (tree* chain, tree expr, bool front)
     *chain = expr;
 }
 
-/* Add a statement to a block.  */
+
+/* Add a statement at the end of a block.  */
 
 void
 gfc_add_expr_to_block (stmtblock_t * block, tree expr)
 {
   gcc_assert (block);
   add_expr_to_chain (&block->head, expr, false);
+}
+
+
+/* Add a statement at the beginning of a block.  */
+
+void
+gfc_prepend_expr_to_block (stmtblock_t * block, tree expr)
+{
+  gcc_assert (block);
+  add_expr_to_chain (&block->head, expr, true);
 }
 
 

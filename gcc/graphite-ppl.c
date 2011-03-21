@@ -502,4 +502,65 @@ ppl_build_relation (int dim, int pos1, int pos2, int c,
   return cstr;
 }
 
+/* Print to STDERR the GMP value VAL.  */
+
+DEBUG_FUNCTION void
+debug_gmp_value (mpz_t val)
+{
+  char *str = mpz_get_str (0, 10, val);
+  void (*gmp_free) (void *, size_t);
+
+  fprintf (stderr, "%s", str);
+  mp_get_memory_functions (NULL, NULL, &gmp_free);
+  (*gmp_free) (str, strlen (str) + 1);
+}
+
+/* Checks for integer feasibility: returns true when the powerset
+   polyhedron PS has no integer solutions.  */
+
+bool
+ppl_powerset_is_empty (ppl_Pointset_Powerset_C_Polyhedron_t ps)
+{
+  ppl_PIP_Problem_t pip;
+  ppl_dimension_type d;
+  ppl_const_Constraint_System_t pcs;
+  ppl_Constraint_System_const_iterator_t first, last;
+  ppl_Pointset_Powerset_C_Polyhedron_iterator_t it, end;
+  bool has_integer_solutions = false;
+
+  if (ppl_Pointset_Powerset_C_Polyhedron_is_empty (ps))
+    return true;
+
+  ppl_Pointset_Powerset_C_Polyhedron_space_dimension (ps, &d);
+  ppl_new_Constraint_System_const_iterator (&first);
+  ppl_new_Constraint_System_const_iterator (&last);
+  ppl_new_Pointset_Powerset_C_Polyhedron_iterator (&it);
+  ppl_new_Pointset_Powerset_C_Polyhedron_iterator (&end);
+
+  for (ppl_Pointset_Powerset_C_Polyhedron_iterator_begin (ps, it),
+       ppl_Pointset_Powerset_C_Polyhedron_iterator_end (ps, end);
+       !ppl_Pointset_Powerset_C_Polyhedron_iterator_equal_test (it, end);
+       ppl_Pointset_Powerset_C_Polyhedron_iterator_increment (it))
+    {
+      ppl_const_Polyhedron_t ph;
+      ppl_Pointset_Powerset_C_Polyhedron_iterator_dereference (it, &ph);
+
+      ppl_Polyhedron_get_constraints (ph, &pcs);
+      ppl_Constraint_System_begin (pcs, first);
+      ppl_Constraint_System_end (pcs, last);
+
+      ppl_new_PIP_Problem_from_constraints (&pip, d, first, last, 0, NULL);
+      has_integer_solutions |= ppl_PIP_Problem_is_satisfiable (pip);
+
+      ppl_delete_PIP_Problem (pip);
+    }
+
+  ppl_delete_Constraint_System_const_iterator (first);
+  ppl_delete_Constraint_System_const_iterator (last);
+  ppl_delete_Pointset_Powerset_C_Polyhedron_iterator (it);
+  ppl_delete_Pointset_Powerset_C_Polyhedron_iterator (end);
+
+  return !has_integer_solutions;
+}
+
 #endif

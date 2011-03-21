@@ -48,14 +48,14 @@ import java.lang.instrument.Instrumentation;
  */
 final class VMInstrumentationImpl
 {
- 
+
   /**
    * Returns if the current JVM supports class redefinition
-   * 
+   *
    * @return true if the current JVM supports class redefinition
    */
   static native boolean isRedefineClassesSupported();
-    
+
   /**
    * Redefines classes given as parameters. The method has to call
    * the callTransformers from InstrumentationImpl
@@ -63,8 +63,8 @@ final class VMInstrumentationImpl
    * @param inst an instrumentation object
    * @param definitions an array of bytecode<->class correspondance
    *
-   * @throws ClassNotFoundException if a class cannot be found 
-   * @throws UnmodifiableClassException if a class cannot be modified 
+   * @throws ClassNotFoundException if a class cannot be found
+   * @throws UnmodifiableClassException if a class cannot be modified
    * @throws UnsupportedOperationException if the JVM does not support
    * redefinition or the redefinition made unsupported changes
    * @throws ClassFormatError if a class file is not valid
@@ -74,14 +74,14 @@ final class VMInstrumentationImpl
    * are unsupported
    * @throws ClassCircularityError if circularity occured with the new
    * classes
-   * @throws LinkageError if a linkage error occurs 
+   * @throws LinkageError if a linkage error occurs
    */
   static native void redefineClasses(Instrumentation inst,
       ClassDefinition[] definitions);
- 
+
   /**
    * Get all the classes loaded by the JVM.
-   * 
+   *
    * @return an array containing all the classes loaded by the JVM. The array
    * is empty if no class is loaded.
    */
@@ -89,9 +89,9 @@ final class VMInstrumentationImpl
 
   /**
    * Get all the classes loaded by a given class loader
-   * 
+   *
    * @param loader the loader
-   * 
+   *
    * @return an array containing all the classes loaded by the given loader.
    * The array is empty if no class was loaded by the loader.
    */
@@ -99,7 +99,7 @@ final class VMInstrumentationImpl
 
   /**
    * Get the size of an object. The object is not null
-   * 
+   *
    * @param objectToSize the object
    * @return the size of the object
    */

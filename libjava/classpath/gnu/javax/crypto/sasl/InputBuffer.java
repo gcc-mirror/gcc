@@ -1,4 +1,4 @@
-/* InputBuffer.java -- 
+/* InputBuffer.java --
    Copyright (C) 2003, 2006 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -69,7 +69,7 @@ public class InputBuffer
   /**
    * Constructs a SASL buffer given the buffer's encoded form, including its
    * header bytes.
-   * 
+   *
    * @param frame the encoded form, including the header bytes, of a SASL
    *          buffer.
    * @throws SaslEncodingException if the buffer is malformed.
@@ -101,7 +101,7 @@ public class InputBuffer
    * <p>
    * Calls the method with the same name and three arguments as:
    * <code>getInstance(raw, 0, raw.length)</code>.
-   * 
+   *
    * @param raw the encoded form, excluding the header bytes, of a SASL buffer.
    * @return a new instance of {@link InputBuffer}.
    */
@@ -113,7 +113,7 @@ public class InputBuffer
   /**
    * Returns an instance of a SASL buffer given the buffer's encoded contents,
    * excluding the buffer's header bytes.
-   * 
+   *
    * @param raw the encoded form, excluding the header bytes, of a SASL buffer.
    * @param offset offset where to start using raw bytes from.
    * @param len number of bytes to use.
@@ -128,7 +128,7 @@ public class InputBuffer
 
   /**
    * Converts two octets into the number that they represent.
-   * 
+   *
    * @param b the two octets.
    * @return the length.
    */
@@ -148,7 +148,7 @@ public class InputBuffer
   /**
    * Decodes a SASL scalar quantity, <code>count</code>-octet long, from the
    * current buffer.
-   * 
+   *
    * @param count the number of octets of this scalar quantity.
    * @return a native representation of a SASL scalar (unsigned integer)
    *         quantity.
@@ -178,7 +178,7 @@ public class InputBuffer
 
   /**
    * Decodes a SASL OS from the current buffer.
-   * 
+   *
    * @return a native representation of a SASL OS.
    * @throws SaslEncodingException if an encoding exception occurs during the
    *           operation.
@@ -201,7 +201,7 @@ public class InputBuffer
 
   /**
    * Decodes a SASL EOS from the current buffer.
-   * 
+   *
    * @return a native representation of a SASL EOS.
    * @throws SaslEncodingException if an encoding exception occurs during the
    *           operation.
@@ -225,7 +225,7 @@ public class InputBuffer
 
   /**
    * Decodes a SASL MPI from the current buffer.
-   * 
+   *
    * @return a native representation of a SASL MPI.
    * @throws SaslEncodingException if an encoding exception occurs during the
    *           operation.
@@ -248,7 +248,7 @@ public class InputBuffer
 
   /**
    * Decodes a SASL Text from the current buffer.
-   * 
+   *
    * @return a native representation of a SASL Text.
    * @throws SaslEncodingException if an encoding exception occurs during the
    *           operation.

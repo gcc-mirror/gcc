@@ -51,7 +51,7 @@ import org.omg.CORBA.portable.Streamable;
 /**
  * Provides static helper methods for working with the array of object reference
  * templates.
- * 
+ *
  * @author Audrius Meskauskas (AudriusA@Bioinformatics.org)
  */
 public abstract class ObjectReferenceTemplateSeqHelper
@@ -61,11 +61,11 @@ public abstract class ObjectReferenceTemplateSeqHelper
    * {@link Any}. This implementation expects the {@link Any} to hold the
    * instance of {@link ObjectReferenceTemplateSeqHolder} that is returned by
    * {@link Any#extract_Streamable() }.
-   * 
+   *
    * @param a an Any to extract the array from.
-   * 
+   *
    * @return the extracted array.
-   * 
+   *
    * @throws BAD_OPERATION if the Any contains something other than the the
    * {@link ObjectReferenceTemplateSeqHolder}.
    */
@@ -73,7 +73,7 @@ public abstract class ObjectReferenceTemplateSeqHelper
   {
     try
       {
-        ObjectReferenceTemplateSeqHolder h = (ObjectReferenceTemplateSeqHolder) 
+        ObjectReferenceTemplateSeqHolder h = (ObjectReferenceTemplateSeqHolder)
           a.extract_Streamable();
         return h.value;
       }
@@ -89,7 +89,7 @@ public abstract class ObjectReferenceTemplateSeqHelper
 
   /**
    * Returns the object reference template sequence repository Id.
-   * 
+   *
    * @return "IDL:omg.org/PortableInterceptor/ObjectReferenceTemplateSeq:1.0",
    * always.
    */
@@ -103,13 +103,13 @@ public abstract class ObjectReferenceTemplateSeqHelper
    * given {@link Any}. This implementation first creates a
    * {@link ObjectReferenceTemplateSeqHolder} and then calls
    * {@link Any#insert_Streamable(Streamable)}.
-   * 
+   *
    * @param into the target Any.
    * @param that the array to insert.
    */
   public static void insert(Any into, ObjectReferenceTemplate[] that)
   {
-    ObjectReferenceTemplateSeqHolder holder = 
+    ObjectReferenceTemplateSeqHolder holder =
       new ObjectReferenceTemplateSeqHolder(that);
     into.insert_Streamable(holder);
   }
@@ -117,13 +117,13 @@ public abstract class ObjectReferenceTemplateSeqHelper
   /**
    * Reads the <code>ObjectReferenceTemplate[]</code> from the CORBA input
    * stream.
-   * 
+   *
    * @param input the CORBA (not java.io) stream to read from.
    * @return the value from the stream.
    */
   public static ObjectReferenceTemplate[] read(InputStream input)
   {
-    ObjectReferenceTemplate[] value = 
+    ObjectReferenceTemplate[] value =
       new ObjectReferenceTemplate[input.read_long()];
     for (int i = 0; i < value.length; i++)
       value[i] = ObjectReferenceTemplateHelper.read(input);
@@ -146,7 +146,7 @@ public abstract class ObjectReferenceTemplateSeqHelper
 
   /**
    * Writes the <code>ObjectReferenceTemplate[]</code> into the given stream.
-   * 
+   *
    * @param output the CORBA (not java.io) output stream to write.
    * @param value the value that must be written.
    */

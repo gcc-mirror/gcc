@@ -24,5 +24,19 @@ int main ()
   exit (0);
 }
 
-void __attribute__((no_instrument_function)) __cyg_profile_func_enter(void *this_fn, void *call_site) { }
-void __attribute__((no_instrument_function)) __cyg_profile_func_exit(void *this_fn, void *call_site) { } 
+/* Abort on non-NULL CALL_SITE to ensure that __builtin_return_address
+   was expanded properly.  */
+void __attribute__((no_instrument_function))
+__cyg_profile_func_enter(void *this_fn, void *call_site)
+{
+  if (call_site == (void *)0)
+    abort ();
+}
+
+void __attribute__((no_instrument_function))
+__cyg_profile_func_exit(void *this_fn, void *call_site)
+{
+  if (call_site == (void *)0)
+    abort ();
+}
+

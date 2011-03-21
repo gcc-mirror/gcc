@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Chapter 5.  Diagnostics</title><meta name="generator" content="DocBook XSL Stylesheets V1.75.2" /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><link rel="home" href="../spine.html" title="The GNU C++ Library Documentation" /><link rel="up" href="bk01pt02.html" title="Part II.  Standard Contents" /><link rel="prev" href="termination.html" title="Termination" /><link rel="next" href="bk01pt02ch05s02.html" title="Concept Checking" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Chapter 5. 
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Chapter 5.  Diagnostics</title><meta name="generator" content="DocBook XSL-NS Stylesheets V1.75.2"/><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    "/><link rel="home" href="../spine.html" title="The GNU C++ Library"/><link rel="up" href="bk01pt02.html" title="Part II.  Standard Contents"/><link rel="prev" href="termination.html" title="Termination"/><link rel="next" href="bk01pt02ch05s02.html" title="Concept Checking"/></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Chapter 5. 
   Diagnostics
   
-</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="termination.html">Prev</a> </td><th width="60%" align="center">Part II. 
-  Standard Contents
-</th><td width="20%" align="right"> <a accesskey="n" href="bk01pt02ch05s02.html">Next</a></td></tr></table><hr /></div><div class="chapter" title="Chapter 5.  Diagnostics"><div class="titlepage"><div><div><h2 class="title"><a id="std.diagnostics"></a>Chapter 5. 
+</th></tr><tr><td align="left"><a accesskey="p" href="termination.html">Prev</a> </td><th width="60%" align="center">Part II. 
+    Standard Contents
+  </th><td align="right"> <a accesskey="n" href="bk01pt02ch05s02.html">Next</a></td></tr></table><hr/></div><div class="chapter" title="Chapter 5.  Diagnostics"><div class="titlepage"><div><div><h1 class="title"><a id="std.diagnostics"/>
   Diagnostics
-  <a id="id392593" class="indexterm"></a>
-</h2></div></div></div><div class="toc"><p><b>Table of Contents</b></p><dl><dt><span class="sect1"><a href="diagnostics.html#std.diagnostics.exceptions">Exceptions</a></span></dt><dd><dl><dt><span class="sect2"><a href="diagnostics.html#std.diagnostics.exceptions.api">API Reference</a></span></dt><dt><span class="sect2"><a href="diagnostics.html#std.diagnostics.exceptions.data">Adding Data to <code class="classname">exception</code></a></span></dt></dl></dd><dt><span class="sect1"><a href="bk01pt02ch05s02.html">Concept Checking</a></span></dt></dl></div><div class="sect1" title="Exceptions"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="std.diagnostics.exceptions"></a>Exceptions</h2></div></div></div><div class="sect2" title="API Reference"><div class="titlepage"><div><div><h3 class="title"><a id="std.diagnostics.exceptions.api"></a>API Reference</h3></div></div></div><p>
+  <a id="id592934" class="indexterm"/>
+</h1></div></div></div><div class="toc"><p><b>Table of Contents</b></p><dl><dt><span class="section"><a href="diagnostics.html#std.diagnostics.exceptions">Exceptions</a></span></dt><dd><dl><dt><span class="section"><a href="diagnostics.html#std.diagnostics.exceptions.api">API Reference</a></span></dt><dt><span class="section"><a href="diagnostics.html#std.diagnostics.exceptions.data">Adding Data to <code class="classname">exception</code></a></span></dt></dl></dd><dt><span class="section"><a href="bk01pt02ch05s02.html">Concept Checking</a></span></dt></dl></div><div class="section" title="Exceptions"><div class="titlepage"><div><div><h2 class="title"><a id="std.diagnostics.exceptions"/>Exceptions</h2></div></div></div><div class="section" title="API Reference"><div class="titlepage"><div><div><h3 class="title"><a id="std.diagnostics.exceptions.api"/>API Reference</h3></div></div></div><p>
       All exception objects are defined in one of the standard header
       files: <code class="filename">exception</code>,
       <code class="filename">stdexcept</code>, <code class="filename">new</code>, and
@@ -23,7 +23,7 @@
       found in the source documentation.
     </p><p>
       Full API details.
-    </p></div><div class="sect2" title="Adding Data to exception"><div class="titlepage"><div><div><h3 class="title"><a id="std.diagnostics.exceptions.data"></a>Adding Data to <code class="classname">exception</code></h3></div></div></div><p>
+    </p></div><div class="section" title="Adding Data to exception"><div class="titlepage"><div><div><h3 class="title"><a id="std.diagnostics.exceptions.data"/>Adding Data to <code class="classname">exception</code></h3></div></div></div><p>
       The standard exception classes carry with them a single string as
       data (usually describing what went wrong or where the 'throw' took
     place).  It's good to remember that you can add your own data to
@@ -40,4 +40,4 @@
        int    e;
        DBID   id;     // some user-defined type
    };
-   </pre></div></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="termination.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="bk01pt02.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="bk01pt02ch05s02.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Termination </td><td width="20%" align="center"><a accesskey="h" href="../spine.html">Home</a></td><td width="40%" align="right" valign="top"> Concept Checking</td></tr></table></div></body></html>
+   </pre></div></div></div><div class="navfooter"><hr/><table width="100%" summary="Navigation footer"><tr><td align="left"><a accesskey="p" href="termination.html">Prev</a> </td><td align="center"><a accesskey="u" href="bk01pt02.html">Up</a></td><td align="right"> <a accesskey="n" href="bk01pt02ch05s02.html">Next</a></td></tr><tr><td align="left" valign="top">Termination </td><td align="center"><a accesskey="h" href="../spine.html">Home</a></td><td align="right" valign="top"> Concept Checking</td></tr></table></div></body></html>

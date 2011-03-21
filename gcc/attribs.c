@@ -208,7 +208,7 @@ register_attribute (const struct attribute_spec *attr)
 /* Return the spec for the attribute named NAME.  */
 
 const struct attribute_spec *
-lookup_attribute_spec (tree name)
+lookup_attribute_spec (const_tree name)
 {
   struct substring attr;
 

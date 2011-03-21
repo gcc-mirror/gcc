@@ -39,13 +39,13 @@ exception statement from your version. */
 package java.lang.reflect;
 
 /**
- * <p> 
+ * <p>
  * This is a common interface for all type variables provided by
  * the Java language.  Instances are created the first time a type
  * variable is needed by one of the reflective methods declared in
  * this package.
  * </p>
- * <p> 
+ * <p>
  * Creating a type variable requires resolving the appropriate type.
  * This may involve resolving other classes as a side effect (e.g.
  * if the type is nested inside other classes).  Creation should not
@@ -57,7 +57,7 @@ package java.lang.reflect;
  * @author Tom Tromey (tromey@redhat.com)
  * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
  * @since 1.5
- */ 
+ */
 public interface TypeVariable<T extends GenericDeclaration> extends Type
 {
 

@@ -1,5 +1,6 @@
 /* { dg-do run } */
 /* { dg-require-effective-target sync_char_short } */
+/* { dg-options "-mcpu=v9" { target sparc*-*-* } } */
 
 /* This testcase failed on s390 because no compare instruction for
    the check of FLAG was emitted.  */

@@ -1,4 +1,4 @@
-/* DomHTMLLinkElement.java -- 
+/* DomHTMLLinkElement.java --
    Copyright (C) 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -64,7 +64,7 @@ public class DomHTMLLinkElement
   {
     setBooleanHTMLAttribute("disabled", disabled);
   }
-  
+
   public String getCharset()
   {
     return getHTMLAttribute("charset");
@@ -74,7 +74,7 @@ public class DomHTMLLinkElement
   {
     setHTMLAttribute("charset", charset);
   }
-  
+
   public String getHref()
   {
     return getHTMLAttribute("href");
@@ -84,7 +84,7 @@ public class DomHTMLLinkElement
   {
     setHTMLAttribute("href", href);
   }
-  
+
   public String getHreflang()
   {
     return getHTMLAttribute("hreflang");
@@ -94,7 +94,7 @@ public class DomHTMLLinkElement
   {
     setHTMLAttribute("hreflang", hreflang);
   }
-  
+
   public String getMedia()
   {
     return getHTMLAttribute("media");
@@ -104,7 +104,7 @@ public class DomHTMLLinkElement
   {
     setHTMLAttribute("media", media);
   }
-  
+
   public String getRel()
   {
     return getHTMLAttribute("rel");
@@ -114,7 +114,7 @@ public class DomHTMLLinkElement
   {
     setHTMLAttribute("rel", rel);
   }
-  
+
   public String getRev()
   {
     return getHTMLAttribute("rev");
@@ -124,7 +124,7 @@ public class DomHTMLLinkElement
   {
     setHTMLAttribute("rev", rev);
   }
-  
+
   public String getTarget()
   {
     return getHTMLAttribute("target");
@@ -134,7 +134,7 @@ public class DomHTMLLinkElement
   {
     setHTMLAttribute("target", target);
   }
-  
+
   public String getType()
   {
     return getHTMLAttribute("type");
@@ -144,6 +144,5 @@ public class DomHTMLLinkElement
   {
     setHTMLAttribute("type", type);
   }
-  
-}
 
+}

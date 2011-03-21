@@ -84,12 +84,12 @@ public class FileCacheImageOutputStream extends ImageOutputStreamImpl
   {
     return true;
   }
-  
+
   public boolean isCachedMemory()
   {
     return false;
   }
-  
+
   public int read()
     throws IOException
   {

@@ -83,7 +83,7 @@ public class Random implements Builder, Constructed
   {
     return RANDOM_LENGTH + 4;
   }
-  
+
   public ByteBuffer buffer()
   {
     return ((ByteBuffer) buffer.duplicate().position(0).limit(length())).slice();

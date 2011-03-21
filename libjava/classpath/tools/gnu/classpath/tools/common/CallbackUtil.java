@@ -66,7 +66,7 @@ public abstract class CallbackUtil
    * <p>
    * If no <i>Security Provider</i> for this type of callback was found, this
    * method returns the default GNU implementation.
-   * 
+   *
    * @return a console {@link CallbackHandler} implementation.
    */
   public static final CallbackHandler getConsoleHandler()
@@ -89,7 +89,7 @@ public abstract class CallbackUtil
    * the handler from those providers. As soon as one provider returns a non-
    * null instance of the callback handler, the search stops and that instance
    * is returned.
-   * 
+   *
    * @return a {@link CallbackHandler} of the designated type, or
    *         <code>null</code> if no provider was found for theis type of
    *         callback.

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-require-effective-target lp64 } */
+/* { dg-require-effective-target int128 } */
 /* { dg-options "-O" } */
 
 typedef int int32_t;

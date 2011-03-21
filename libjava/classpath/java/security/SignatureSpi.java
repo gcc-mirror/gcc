@@ -65,7 +65,7 @@ public abstract class SignatureSpi
 
   /**
    * Initializes this instance with the public key for verification purposes.
-   * 
+   *
    * @param publicKey
    *          the public key to verify with.
    * @throws InvalidKeyException
@@ -76,7 +76,7 @@ public abstract class SignatureSpi
 
   /**
    * Initializes this instance with the private key for signing purposes.
-   * 
+   *
    * @param privateKey
    *          the private key to sign with.
    * @throws InvalidKeyException
@@ -88,9 +88,9 @@ public abstract class SignatureSpi
   /**
    * Initializes this instance with the private key and source of randomness for
    * signing purposes.
-   * 
+   *
    * <p>This method cannot be abstract for backward compatibility reasons.</p>
-   * 
+   *
    * @param privateKey
    *          the private key to sign with.
    * @param random
@@ -108,7 +108,7 @@ public abstract class SignatureSpi
 
   /**
    * Updates the data to be signed or verified with the specified byte.
-   * 
+   *
    * @param b
    *          byte to update with.
    * @throws SignatureException
@@ -118,7 +118,7 @@ public abstract class SignatureSpi
 
   /**
    * Updates the data to be signed or verified with the specified bytes.
-   * 
+   *
    * @param b
    *          the array of bytes to use.
    * @param off
@@ -134,7 +134,7 @@ public abstract class SignatureSpi
   /**
    * Update this signature with the {@link java.nio.Buffer#remaining()}
    * bytes of the given buffer.
-   * 
+   *
    * @param input The input buffer.
    * @throws IllegalStateException if the engine is not properly initialized.
    */
@@ -155,11 +155,11 @@ public abstract class SignatureSpi
           }
       }
   }
-  
+
   /**
    * Returns the signature bytes of all the data fed to this instance. The
    * format of the output depends on the underlying signature algorithm.
-   * 
+   *
    * @return the signature bytes.
    * @throws SignatureException
    *           if the engine is not properly initialized.
@@ -170,16 +170,16 @@ public abstract class SignatureSpi
    * Generates signature bytes of all the data fed to this instance and stores
    * the result in the designated array. The format of the output depends on
    * the underlying signature algorithm.
-   * 
+   *
    * <p>This method cannot be abstract for backward compatibility reasons.
    * After calling this method, the signature is reset to its initial state and
    * can be used to generate additional signatures.</p>
-   * 
+   *
    * <p><b>IMPLEMENTATION NOTE:</b>: Neither this method nor the GNU provider
    * will return partial digests. If <code>len</code> is less than the
    * signature length, this method will throw a {@link SignatureException}. If
    * it is greater than or equal then it is ignored.</p>
-   * 
+   *
    * @param outbuf
    *          the array of bytes to store the result in.
    * @param offset
@@ -204,7 +204,7 @@ public abstract class SignatureSpi
 
   /**
    * Verifies a designated signature.
-   * 
+   *
    * @param sigBytes
    *          the signature bytes to verify.
    * @return <code>true</code> if verified, <code>false</code> otherwise.
@@ -219,7 +219,7 @@ public abstract class SignatureSpi
    * Convenience method which calls the method with the same name and one
    * argument after copying the designated bytes into a temporary byte array.
    * Subclasses may override this method for performance reasons.
-   * 
+   *
    * @param sigBytes
    *          the array of bytes to use.
    * @param offset
@@ -240,7 +240,7 @@ public abstract class SignatureSpi
 
   /**
    * Sets the specified algorithm parameter to the specified value.
-   * 
+   *
    * @param param
    *          the parameter name.
    * @param value
@@ -255,11 +255,11 @@ public abstract class SignatureSpi
 
   /**
    * Sets the signature engine with the specified {@link AlgorithmParameterSpec}.
-   * 
+   *
    * <p>This method cannot be abstract for backward compatibility reasons. By
    * default it always throws {@link UnsupportedOperationException} unless
    * overridden.</p>
-   * 
+   *
    * @param params
    *          the parameters.
    * @throws InvalidParameterException
@@ -278,7 +278,7 @@ public abstract class SignatureSpi
    * implementations to return the appropriate {@link AlgorithmParameters} for
    * this signature engine (or <code>null</code> when that engine does not use
    * any parameters.
-   * 
+   *
    * @return the parameters used with this signature engine, or
    *         <code>null</code> if it does not use any parameters.
    * @throws UnsupportedOperationException
@@ -291,7 +291,7 @@ public abstract class SignatureSpi
 
   /**
    * Returns the value for the specified algorithm parameter.
-   * 
+   *
    * @param param
    *          the parameter name.
    * @return the parameter value.
@@ -304,7 +304,7 @@ public abstract class SignatureSpi
 
   /**
    * Returns a clone of this instance.
-   * 
+   *
    * @return a clone of this instance.
    * @throws CloneNotSupportedException
    *           if the implementation does not support cloning.

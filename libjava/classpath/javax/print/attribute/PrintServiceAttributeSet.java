@@ -1,4 +1,4 @@
-/* PrintServiceAttributeSet.java -- 
+/* PrintServiceAttributeSet.java --
    Copyright (C) 2003, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -39,28 +39,28 @@ package javax.print.attribute;
 
 /**
  * <code>PrintServiceAttributeSet</code> specifies an attribute set which only
- * allows printing attributes of type 
+ * allows printing attributes of type
  * {@link javax.print.attribute.PrintServiceAttribute}.
  * <p>
  * The methods {@link #add(Attribute)} and {@link #addAll(AttributeSet)} are
- * respecified in this interface to indicate that only 
+ * respecified in this interface to indicate that only
  * <code>PrintServiceAttribute</code> instances are allowed in this set.
  * </p>
- * 
+ *
  * @author Michael Koch (konqueror@gmx.de)
  */
 public interface PrintServiceAttributeSet extends AttributeSet
 {
   /**
-   * Adds the specified attribute value to this attribute set 
+   * Adds the specified attribute value to this attribute set
    * if it is not already present.
-   * 
-   * This operation removes any existing attribute of the same category 
-   * before adding the given attribute. 
-   * 
+   *
+   * This operation removes any existing attribute of the same category
+   * before adding the given attribute.
+   *
    * @param attribute the attribute to add.
    * @return <code>true</code> if the set is changed, false otherwise.
-   * @throws ClassCastException if attribute is not of type 
+   * @throws ClassCastException if attribute is not of type
    * <code>PrintServiceAttribute</code>.
    * @throws NullPointerException if the attribute is <code>null</code>.
    * @throws UnmodifiableSetException if the set does not support modification.
@@ -69,13 +69,13 @@ public interface PrintServiceAttributeSet extends AttributeSet
 
   /**
    * Adds all of the elements in the specified set to this attribute set.
-   * 
+   *
    * @param attributes the set of attributes to add.
    * @return <code>true</code> if the set is changed, false otherwise.
-   * @throws ClassCastException if one of the attributes is not of type 
+   * @throws ClassCastException if one of the attributes is not of type
    * <code>PrintServiceAttribute</code>.
    * @throws UnmodifiableSetException if the set does not support modification.
-   * 
+   *
    * @see #add(Attribute)
    */
   boolean addAll (AttributeSet attributes);

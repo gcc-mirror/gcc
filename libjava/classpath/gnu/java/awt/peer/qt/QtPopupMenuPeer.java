@@ -74,6 +74,3 @@ public class QtPopupMenuPeer extends QtMenuPeer implements PopupMenuPeer
     show((Component)e.target, e.x, e.y);
   }
 }
-
-
-

@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -57,7 +57,7 @@ class CompressedOutputStream
   {
     super(dtp, out);
   }
-  
+
   /**
    * Just one byte cannot be compressed.
    * It takes 5 bytes to transmit - hardly very compressed!
@@ -190,7 +190,7 @@ class CompressedOutputStream
     System.arraycopy(buf, 0, ret, 3, pos);
     return ret;
   }
-  
+
   int flush_compressed(byte[] buf, int pos, int count, byte c)
   {
     buf[pos++] = (byte) (0x80 | count);
@@ -225,4 +225,3 @@ class CompressedOutputStream
   }
 
 }
-

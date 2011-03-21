@@ -41,20 +41,20 @@ package gnu.java.beans.encoder;
 /** A <code>Contect</code> object describes the current state
  * and the call number while processing the original object
  * tree in the {@link ScanEngine}.
- * 
+ *
  * <p>The class allows to distinguish the different calling states
  * and is neccessary for the child element skipping feature of
- * the {@link GenericScannerState}.</p> 
- *  
+ * the {@link GenericScannerState}.</p>
+ *
  * @author Robert Schuster (robertschuster@fsfe.org)
  *
  */
 public class Context
 {
   private String state;
-  
+
   private int call;
-  
+
   Context(String newState, int newCall)
   {
     state = newState;
@@ -66,21 +66,21 @@ public class Context
     int hc = 7;
     hc = 31 * hc + state.hashCode();
     hc = 31 * hc + call;
-    
+
     return hc;
   }
-  
+
   public boolean equals(Object o)
   {
     if (!(o instanceof Context))
       return false;
-    
+
     Context that = (Context) o;
-    
+
     return state.equals(that.state)
       && call == that.call;
   }
-  
+
   public String toString()
   {
     return "Context [state=" + state + ", call=" + call + "]";

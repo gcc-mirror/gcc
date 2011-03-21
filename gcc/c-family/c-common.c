@@ -1,6 +1,6 @@
 /* Subroutines shared by all languages that are variants of C.
    Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
-   2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+   2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -277,12 +277,10 @@ int flag_use_repository;
 enum cxx_dialect cxx_dialect = cxx98;
 
 /* Maximum template instantiation depth.  This limit exists to limit the
-   time it takes to notice infinite template instantiations; the default
-   value of 1024 is likely to be in the next C++ standard.  */
+   time it takes to notice excessively recursive template instantiations;
+   the default value of 1024 is likely to be in the next C++ standard.  */
 
 int max_tinst_depth = 1024;
-
-
 
 /* The elements of `ridpointers' are identifier nodes for the reserved
    type names and storage classes.  It is indexed by a RID_... value.  */
@@ -1249,6 +1247,7 @@ c_fully_fold_internal (tree expr, bool in_init, bool *maybe_const_operands,
     case FIX_TRUNC_EXPR:
     case FLOAT_EXPR:
     CASE_CONVERT:
+    case VIEW_CONVERT_EXPR:
     case NON_LVALUE_EXPR:
     case NEGATE_EXPR:
     case BIT_NOT_EXPR:
@@ -4089,7 +4088,7 @@ c_apply_type_quals_to_decl (int type_quals, tree decl)
 static hashval_t
 c_type_hash (const void *p)
 {
-  int i = 0;
+  int n_elements;
   int shift, size;
   const_tree const t = (const_tree) p;
   tree t2;
@@ -4118,14 +4117,15 @@ c_type_hash (const void *p)
     default:
       gcc_unreachable ();
     }
-  for (; t2; t2 = DECL_CHAIN (t2))
-    i++;
+  /* FIXME: We want to use a DECL_CHAIN iteration method here, but
+     TYPE_VALUES of ENUMERAL_TYPEs is stored as a TREE_LIST.  */
+  n_elements = list_length (t2);
   /* We might have a VLA here.  */
   if (TREE_CODE (TYPE_SIZE (t)) != INTEGER_CST)
     size = 0;
   else
     size = TREE_INT_CST_LOW (TYPE_SIZE (t));
-  return ((size << 24) | (i << shift));
+  return ((size << 24) | (n_elements << shift));
 }
 
 static GTY((param_is (union tree_node))) htab_t type_hash_table;
@@ -5732,9 +5732,14 @@ c_init_attributes (void)
 bool
 attribute_takes_identifier_p (const_tree attr_id)
 {
-  if (is_attribute_p ("mode", attr_id)
-      || is_attribute_p ("format", attr_id)
-      || is_attribute_p ("cleanup", attr_id))
+  const struct attribute_spec *spec = lookup_attribute_spec (attr_id);
+  if (spec == NULL)
+    /* Unknown attribute that we'll end up ignoring, return true so we
+       don't complain about an identifier argument.  */
+    return true;
+  else if (!strcmp ("mode", spec->name)
+	   || !strcmp ("format", spec->name)
+	   || !strcmp ("cleanup", spec->name))
     return true;
   else
     return targetm.attribute_takes_identifier_p (attr_id);
@@ -6211,6 +6216,7 @@ handle_transparent_union_attribute (tree *node, tree name,
       if (!(flags & (int) ATTR_FLAG_TYPE_IN_PLACE))
 	{
 	  if (TYPE_FIELDS (type) == NULL_TREE
+	      || c_dialect_cxx ()
 	      || TYPE_MODE (type) != DECL_MODE (TYPE_FIELDS (type)))
 	    goto ignored;
 
@@ -6725,7 +6731,7 @@ handle_weak_attribute (tree *node, tree name,
   if (TREE_CODE (*node) == FUNCTION_DECL
       && DECL_DECLARED_INLINE_P (*node))
     {
-      error ("inline function %q+D cannot be declared weak", *node);
+      warning (OPT_Wattributes, "inline function %q+D declared weak", *node);
       *no_add_attrs = true;
     }
   else if (lookup_attribute ("ifunc", DECL_ATTRIBUTES (*node)))
@@ -8700,27 +8706,28 @@ readonly_error (tree arg, enum lvalue_use use)
 }
 
 /* Print an error message for an invalid lvalue.  USE says
-   how the lvalue is being used and so selects the error message.  */
+   how the lvalue is being used and so selects the error message.  LOC
+   is the location for the error.  */
 
 void
-lvalue_error (enum lvalue_use use)
+lvalue_error (location_t loc, enum lvalue_use use)
 {
   switch (use)
     {
     case lv_assign:
-      error ("lvalue required as left operand of assignment");
+      error_at (loc, "lvalue required as left operand of assignment");
       break;
     case lv_increment:
-      error ("lvalue required as increment operand");
+      error_at (loc, "lvalue required as increment operand");
       break;
     case lv_decrement:
-      error ("lvalue required as decrement operand");
+      error_at (loc, "lvalue required as decrement operand");
       break;
     case lv_addressof:
-      error ("lvalue required as unary %<&%> operand");
+      error_at (loc, "lvalue required as unary %<&%> operand");
       break;
     case lv_asm:
-      error ("lvalue required in asm statement");
+      error_at (loc, "lvalue required in asm statement");
       break;
     default:
       gcc_unreachable ();
@@ -9722,6 +9729,44 @@ keyword_is_storage_class_specifier (enum rid keyword)
     case RID_AUTO:
     case RID_MUTABLE:
     case RID_THREAD:
+      return true;
+    default:
+      return false;
+    }
+}
+
+/* Return true if KEYWORD names a function-specifier [dcl.fct.spec].  */
+
+static bool
+keyword_is_function_specifier (enum rid keyword)
+{
+  switch (keyword)
+    {
+    case RID_INLINE:
+    case RID_VIRTUAL:
+    case RID_EXPLICIT:
+      return true;
+    default:
+      return false;
+    }
+}
+
+/* Return true if KEYWORD names a decl-specifier [dcl.spec] or a
+   declaration-specifier (C99 6.7).  */
+
+bool
+keyword_is_decl_specifier (enum rid keyword)
+{
+  if (keyword_is_storage_class_specifier (keyword)
+      || keyword_is_type_qualifier (keyword)
+      || keyword_is_function_specifier (keyword))
+    return true;
+
+  switch (keyword)
+    {
+    case RID_TYPEDEF:
+    case RID_FRIEND:
+    case RID_CONSTEXPR:
       return true;
     default:
       return false;

@@ -76,3 +76,52 @@ filename_cmp (const char *s1, const char *s2)
 #endif
 }
 
+/*
+
+@deftypefn Extension int filename_ncmp (const char *@var{s1}, const char *@var{s2}, size_t @var{n})
+
+Return zero if the two file names @var{s1} and @var{s2} are equivalent
+in range @var{n}.
+If not equivalent, the returned value is similar to what @code{strncmp}
+would return.  In other words, it returns a negative value if @var{s1}
+is less than @var{s2}, or a positive value if @var{s2} is greater than
+@var{s2}.
+
+This function does not normalize file names.  As a result, this function
+will treat filenames that are spelled differently as different even in
+the case when the two filenames point to the same underlying file.
+However, it does handle the fact that on DOS-like file systems, forward
+and backward slashes are equal.
+
+@end deftypefn
+
+*/
+
+int
+filename_ncmp (const char *s1, const char *s2, size_t n)
+{
+#ifndef HAVE_DOS_BASED_FILE_SYSTEM
+  return strncmp(s1, s2, n);
+#else
+  if (!n)
+    return 0;
+  for (; n > 0; --n)
+  {
+      int c1 = TOLOWER (*s1);
+      int c2 = TOLOWER (*s2);
+
+      /* On DOS-based file systems, the '/' and the '\' are equivalent.  */
+      if (c1 == '/')
+        c1 = '\\';
+      if (c2 == '/')
+        c2 = '\\';
+
+      if (c1 == '\0' || c1 != c2)
+        return (c1 - c2);
+
+      s1++;
+      s2++;
+  }
+  return 0;
+#endif
+}

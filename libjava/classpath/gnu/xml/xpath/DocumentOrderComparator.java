@@ -1,4 +1,4 @@
-/* DocumentOrderComparator.java -- 
+/* DocumentOrderComparator.java --
    Copyright (C) 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -48,7 +48,7 @@ import org.w3c.dom.Node;
 public class DocumentOrderComparator
   implements Comparator<Node>
 {
-  
+
   public int compare(Node n1, Node n2)
   {
     return (int) n1.compareDocumentPosition(n2);

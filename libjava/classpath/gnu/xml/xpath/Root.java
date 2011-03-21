@@ -1,4 +1,4 @@
-/* Root.java -- 
+/* Root.java --
    Copyright (C) 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -87,5 +87,5 @@ public final class Root
   {
     return "/";
   }
-  
+
 }

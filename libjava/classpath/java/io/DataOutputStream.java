@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -66,12 +66,12 @@ public class DataOutputStream extends FilterOutputStream implements DataOutput
    * Utf8 byte buffer, used by writeUTF()
    */
   private byte[] buf;
-  
+
   /**
    * This method initializes an instance of <code>DataOutputStream</code> to
    * write its data to the specified underlying <code>OutputStream</code>
    *
-   * @param out The subordinate <code>OutputStream</code> to which this 
+   * @param out The subordinate <code>OutputStream</code> to which this
    * object will write
    */
   public DataOutputStream (OutputStream out)
@@ -127,7 +127,7 @@ public class DataOutputStream extends FilterOutputStream implements DataOutput
    *
    * @exception IOException If an error occurs.
    */
-  public synchronized void write (byte[] buf, int offset, int len) 
+  public synchronized void write (byte[] buf, int offset, int len)
      throws IOException
   {
     out.write(buf, offset, len);
@@ -162,7 +162,7 @@ public class DataOutputStream extends FilterOutputStream implements DataOutput
    * The value written can be read using the <code>readByte</code> or
    * <code>readUnsignedByte</code> methods in <code>DataInput</code>.
    *
-   * @param value The <code>byte</code> to write to the stream, passed as 
+   * @param value The <code>byte</code> to write to the stream, passed as
    * the low eight bits of an <code>int</code>.
    *
    * @exception IOException If an error occurs
@@ -215,7 +215,7 @@ public class DataOutputStream extends FilterOutputStream implements DataOutput
    * The value written can be read using the <code>readChar</code>
    * method in <code>DataInput</code>.
    *
-   * @param value The <code>char</code> value to write, 
+   * @param value The <code>char</code> value to write,
    * passed as an <code>int</code>.
    *
    * @exception IOException If an error occurs
@@ -394,18 +394,18 @@ public class DataOutputStream extends FilterOutputStream implements DataOutput
 
     for (int i = start; i < len; ++i)
       {
-	char c = value.charAt(i);
-	if (c >= '\u0001' && c <= '\u007f')
-	  sum += 1;
-	else if (c == '\u0000' || (c >= '\u0080' && c <= '\u07ff'))
-	  sum += 2;
-	else
-	  sum += 3;
+        char c = value.charAt(i);
+        if (c >= '\u0001' && c <= '\u007f')
+          sum += 1;
+        else if (c == '\u0000' || (c >= '\u0080' && c <= '\u07ff'))
+          sum += 2;
+        else
+          sum += 3;
       }
 
     return sum;
   }
-  
+
   /**
    * This method writes a Java <code>String</code> to the stream in a modified
    * UTF-8 format.  First, two bytes are written to the stream indicating the
@@ -507,34 +507,33 @@ public class DataOutputStream extends FilterOutputStream implements DataOutput
 
     if (buf == null)
       buf = new byte[512];
-    
+
     do
       {
-	while (i < len && pos < buf.length - 3)
-	  {
-	    char c = value.charAt(i++);
-	    if (c >= '\u0001' && c <= '\u007f')
+        while (i < len && pos < buf.length - 3)
+          {
+            char c = value.charAt(i++);
+            if (c >= '\u0001' && c <= '\u007f')
               buf[pos++] = (byte) c;
-	    else if (c == '\u0000' || (c >= '\u0080' && c <= '\u07ff'))
-	      {
-		buf[pos++] = (byte) (0xc0 | (0x1f & (c >> 6)));
-		buf[pos++] = (byte) (0x80 | (0x3f & c));
-	      }
-	    else
-	      {
-		// JSL says the first byte should be or'd with 0xc0, but
-		// that is a typo.  Unicode says 0xe0, and that is what is
-		// consistent with DataInputStream.
-		buf[pos++] = (byte) (0xe0 | (0x0f & (c >> 12)));
-		buf[pos++] = (byte) (0x80 | (0x3f & (c >> 6)));
-		buf[pos++] = (byte) (0x80 | (0x3f & c));
-	      }
-	  }
-	write(buf, 0, pos);
-	pos = 0;
+            else if (c == '\u0000' || (c >= '\u0080' && c <= '\u07ff'))
+              {
+                buf[pos++] = (byte) (0xc0 | (0x1f & (c >> 6)));
+                buf[pos++] = (byte) (0x80 | (0x3f & c));
+              }
+            else
+              {
+                // JSL says the first byte should be or'd with 0xc0, but
+                // that is a typo.  Unicode says 0xe0, and that is what is
+                // consistent with DataInputStream.
+                buf[pos++] = (byte) (0xe0 | (0x0f & (c >> 12)));
+                buf[pos++] = (byte) (0x80 | (0x3f & (c >> 6)));
+                buf[pos++] = (byte) (0x80 | (0x3f & c));
+              }
+          }
+        write(buf, 0, pos);
+        pos = 0;
      }
     while (i < len);
   }
 
 } // class DataOutputStream
-

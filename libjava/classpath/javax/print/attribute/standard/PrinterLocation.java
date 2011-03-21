@@ -1,4 +1,4 @@
-/* PrinterLocation.java -- 
+/* PrinterLocation.java --
    Copyright (C) 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -45,12 +45,12 @@ import javax.print.attribute.PrintServiceAttribute;
 import javax.print.attribute.TextSyntax;
 
 /**
- * The <code>PrinterLocation</code> printing attribute provides the location 
+ * The <code>PrinterLocation</code> printing attribute provides the location
  * of a printer device. This may be a room and building name for example.
  * <p>
  * <b>IPP Compatibility:</b> PrinterLocation is an IPP 1.1 attribute.
  * </p>
- * 
+ *
  * @author Michael Koch (konqueror@gmx.de)
  */
 public final class PrinterLocation extends TextSyntax
@@ -77,7 +77,7 @@ public final class PrinterLocation extends TextSyntax
    *
    * @param obj the object to test
    *
-   * @return <code>true</code> if both objects are equal, 
+   * @return <code>true</code> if both objects are equal,
    * <code>false</code> otherwise.
    */
   public boolean equals(Object obj)

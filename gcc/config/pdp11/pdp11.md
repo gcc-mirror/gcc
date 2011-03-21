@@ -321,7 +321,7 @@
 (define_expand "movmemhi"
   [(parallel [(set (match_operand:BLK 0 "general_operand" "=g,g")
 		   (match_operand:BLK 1 "general_operand" "g,g"))
-	      (use (match_operand:HI 2 "general_operand" "n,&mr"))
+	      (use (match_operand:HI 2 "general_operand" "n,mr"))
 	      (use (match_operand:HI 3 "immediate_operand" "i,i"))
 	      (clobber (match_scratch:HI 4 "=&r,X"))
 	      (clobber (match_dup 5))
@@ -342,10 +342,10 @@
 }")
 
 
-(define_insn "" ; "movmemhi"
-  [(set (mem:BLK (match_operand 0 "pmode_register_operand" "+r,r"))
-	(mem:BLK (match_operand 1 "pmode_register_operand" "+r,r")))
-   (use (match_operand:HI 2 "general_operand" "+n,&r"))
+(define_insn "movmemhi1"
+  [(set (mem:BLK (match_operand:HI 0 "register_operand" "r,r"))
+	(mem:BLK (match_operand:HI 1 "register_operand" "r,r")))
+   (use (match_operand:HI 2 "general_operand" "n,r"))
    (use (match_operand:HI 3 "immediate_operand" "i,i"))
    (clobber (match_scratch:HI 4 "=&r,X"))
    (clobber (match_dup 0))
@@ -1212,11 +1212,14 @@
   [(set_attr "length" "4")])
 
 (define_insn "tablejump"
-  [(set (pc) (match_operand:HI 0 "general_operand" "rR,Q"))
+  [(set (pc) (match_operand:HI 0 "general_operand" "r,R,Q"))
    (use (label_ref (match_operand 1 "" "")))]
   ""
-  "jmp %0"
-  [(set_attr "length" "2,4")])
+  "@
+  jmp (%0)
+  jmp %@%0
+  jmp %@%0"
+  [(set_attr "length" "2,2,4")])
 
 ;; indirect jump - let's be conservative!
 ;; allow only register_operand, even though we could also 

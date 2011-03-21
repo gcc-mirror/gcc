@@ -104,7 +104,7 @@ public class KeyAgreement
   /**
    * Get an implementation of an algorithm from the first provider that
    * implements it.
-   * 
+   *
    * @param algorithm The name of the algorithm to get.
    * @return The proper KeyAgreement instacne, if found.
    * @throws NoSuchAlgorithmException If the specified algorithm is not
@@ -133,7 +133,7 @@ public class KeyAgreement
 
   /**
    * Return an implementation of an algorithm from a named provider.
-   * 
+   *
    * @param algorithm The name of the algorithm to create.
    * @param provider The name of the provider from which to get the
    *          implementation.
@@ -158,7 +158,7 @@ public class KeyAgreement
 
   /**
    * Return an implementation of an algorithm from a specific provider.
-   * 
+   *
    * @param algorithm The name of the algorithm to get.
    * @param provider The provider from which to get the implementation.
    * @return The proper KeyAgreement instance, if found.

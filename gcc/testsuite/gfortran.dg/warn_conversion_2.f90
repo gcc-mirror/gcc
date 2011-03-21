@@ -1,4 +1,4 @@
-! { dg-do "compile" }
+! { dg-do compile }
 ! { dg-options "-Wconversion-extra" }
 
   real(8) :: sqrt2

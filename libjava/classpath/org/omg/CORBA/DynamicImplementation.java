@@ -62,9 +62,9 @@ public class DynamicImplementation
   /**
    * Invoke the method of the CORBA object. After converting the parameters,
    * this method delegates call to the {@link ObjectImpl#_invoke}.
-   * 
+   *
    * @deprecated since 1.4.
-   * 
+   *
    * @param request the container for both passing and returing the parameters,
    * also contains the method name and thrown exceptions.
    */
@@ -93,13 +93,13 @@ public class DynamicImplementation
                   out = v.value().create_output_stream();
                   v.value().write_value(out);
                   n = r.add_named_in_arg(v.name());
-                  n.read_value(out.create_input_stream(), v.value().type());                  
+                  n.read_value(out.create_input_stream(), v.value().type());
                   break;
                 case ARG_INOUT.value:
                   out = v.value().create_output_stream();
                   v.value().write_value(out);
                   n = r.add_named_inout_arg(v.name());
-                  n.read_value(out.create_input_stream(), v.value().type());                  
+                  n.read_value(out.create_input_stream(), v.value().type());
                   break;
                 case ARG_OUT.value:
                   r.add_named_out_arg(v.name());
@@ -117,10 +117,10 @@ public class DynamicImplementation
 
     // Set context.
     r.ctx(request.ctx());
-    
+
     // Set the return type (expects that the ServerRequest will initialise
     // the passed Any.
-    
+
     gnuAny g = new gnuAny();
     request.result(g);
     r.set_return_type(g.type());
@@ -135,7 +135,7 @@ public class DynamicImplementation
       {
         // API states that the ServerRequest.arguments must be called only
         // once. Hence we assume we can just modify the previously returned
-        // value <code>args</code>, and the ServerRequest will preserve the 
+        // value <code>args</code>, and the ServerRequest will preserve the
         // reference.
         for (i = 0; i < args.count(); i++)
           {

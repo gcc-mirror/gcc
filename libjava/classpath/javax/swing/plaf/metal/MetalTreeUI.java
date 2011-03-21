@@ -69,7 +69,7 @@ public class MetalTreeUI extends BasicTreeUI
       if (e.getPropertyName().equals(LINE_STYLE_PROPERTY))
         decodeLineStyle(e.getNewValue());
     }
-      
+
   }
 
   /**
@@ -137,7 +137,7 @@ public class MetalTreeUI extends BasicTreeUI
   {
     return new MetalTreeUI();
   }
-  
+
   /**
    * The horizontal element of legs between nodes starts at the right of the
    * left-hand side of the child node by default. This method makes the
@@ -150,19 +150,19 @@ public class MetalTreeUI extends BasicTreeUI
 
   /**
    * Configures the specified component appropriate for the look and feel.
-   * This method is invoked when the ComponentUI instance is being installed 
-   * as the UI delegate on the specified component. This method should completely 
+   * This method is invoked when the ComponentUI instance is being installed
+   * as the UI delegate on the specified component. This method should completely
    * configure the component for the look and feel, including the following:
-   * 1. Install any default property values for color, fonts, borders, icons, 
+   * 1. Install any default property values for color, fonts, borders, icons,
    *    opacity, etc. on the component. Whenever possible, property values
    *    initialized by the client program should not be overridden.
    * 2. Install a LayoutManager on the component if necessary.
    * 3. Create/add any required sub-components to the component.
    * 4. Create/install event listeners on the component.
-   * 5. Create/install a PropertyChangeListener on the component in order 
+   * 5. Create/install a PropertyChangeListener on the component in order
    *    to detect and respond to component property changes appropriately.
    * 6. Install keyboard UI (mnemonics, traversal, etc.) on the component.
-   * 7. Initialize any appropriate instance data. 
+   * 7. Initialize any appropriate instance data.
    */
   public void installUI(JComponent c)
   {
@@ -174,21 +174,21 @@ public class MetalTreeUI extends BasicTreeUI
       lineStyleListener = new LineStyleListener();
     c.addPropertyChangeListener(lineStyleListener);
   }
-  
+
   /**
-   * Reverses configuration which was done on the specified component during 
-   * installUI. This method is invoked when this UIComponent instance is being 
-   * removed as the UI delegate for the specified component. This method should 
-   * undo the configuration performed in installUI, being careful to leave the 
-   * JComponent instance in a clean state (no extraneous listeners, 
-   * look-and-feel-specific property objects, etc.). This should include 
+   * Reverses configuration which was done on the specified component during
+   * installUI. This method is invoked when this UIComponent instance is being
+   * removed as the UI delegate for the specified component. This method should
+   * undo the configuration performed in installUI, being careful to leave the
+   * JComponent instance in a clean state (no extraneous listeners,
+   * look-and-feel-specific property objects, etc.). This should include
    * the following:
    * 1. Remove any UI-set borders from the component.
    * 2. Remove any UI-set layout managers on the component.
    * 3. Remove any UI-added sub-components from the component.
    * 4. Remove any UI-added event/property listeners from the component.
    * 5. Remove any UI-installed keyboard UI from the component.
-   * 6. Nullify any allocated instance data objects to allow for GC. 
+   * 6. Nullify any allocated instance data objects to allow for GC.
    */
   public void uninstallUI(JComponent c)
   {
@@ -197,13 +197,13 @@ public class MetalTreeUI extends BasicTreeUI
       c.removePropertyChangeListener(lineStyleListener);
     lineStyleListener = null;
   }
-  
+
   /**
    * This function converts between the string passed into the client
    * property and the internal representation (currently an int).
-   * 
+   *
    * @param lineStyleFlag - String representation
-   */     
+   */
   protected void decodeLineStyle(Object lineStyleFlag)
   {
     if (lineStyleFlag == null || lineStyleFlag.equals(LINE_STYLE_VALUE_ANGLED))
@@ -218,7 +218,7 @@ public class MetalTreeUI extends BasicTreeUI
 
   /**
    * Checks if the location is in expand control.
-   * 
+   *
    * @param row - current row
    * @param rowLevel - current level
    * @param mouseX - current x location of the mouse click
@@ -227,33 +227,33 @@ public class MetalTreeUI extends BasicTreeUI
   protected boolean isLocationInExpandControl(int row, int rowLevel,
                                           int mouseX, int mouseY)
   {
-    return super.isLocationInExpandControl(tree.getPathForRow(row), 
+    return super.isLocationInExpandControl(tree.getPathForRow(row),
                                            mouseX, mouseY);
   }
-  
+
   /**
-   * Paints the specified component appropriate for the look and feel. 
-   * This method is invoked from the ComponentUI.update method when the 
-   * specified component is being painted. Subclasses should override this 
-   * method and use the specified Graphics object to render the content of 
+   * Paints the specified component appropriate for the look and feel.
+   * This method is invoked from the ComponentUI.update method when the
+   * specified component is being painted. Subclasses should override this
+   * method and use the specified Graphics object to render the content of
    * the component.
-   * 
+   *
    * @param g - the current graphics configuration.
    * @param c - the current component to draw
    */
   public void paint(Graphics g, JComponent c)
   {
     // Calls BasicTreeUI's paint since it takes care of painting all
-    // types of icons. 
+    // types of icons.
     super.paint(g, c);
 
     if (lineStyle == LINE_STYLE_HORIZONTAL)
       paintHorizontalSeparators(g, c);
   }
-  
+
   /**
    * Paints the horizontal separators.
-   * 
+   *
    * @param g - the current graphics configuration.
    * @param c - the current component to draw
    */
@@ -282,14 +282,14 @@ public class MetalTreeUI extends BasicTreeUI
       }
   }
 
-  
+
   /**
-   * Paints the vertical part of the leg. The receiver should NOT modify 
+   * Paints the vertical part of the leg. The receiver should NOT modify
    * clipBounds, insets.
-   * 
+   *
    * @param g - the current graphics configuration.
    * @param clipBounds -
-   * @param insets - 
+   * @param insets -
    * @param path - the current path
    */
   protected void paintVerticalPartOfLeg(Graphics g, Rectangle clipBounds,
@@ -311,7 +311,7 @@ public class MetalTreeUI extends BasicTreeUI
                                         boolean isLeaf)
   {
     if (lineStyle == LINE_STYLE_ANGLED)
-      super.paintHorizontalPartOfLeg(g, clipBounds, insets, bounds, path, row, 
+      super.paintHorizontalPartOfLeg(g, clipBounds, insets, bounds, path, row,
                                      isExpanded, hasBeenExpanded, isLeaf);
   }
 }

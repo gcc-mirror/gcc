@@ -1,5 +1,5 @@
 // PR c++/28274
-// { dg-do "compile" }
+// { dg-do compile }
 
 void f1(int, int, int, int, int = 0);
 void f1(int, int, int, int = 0, int);

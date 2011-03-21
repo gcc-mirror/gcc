@@ -1,4 +1,4 @@
-/* JobMediaSheets.java -- 
+/* JobMediaSheets.java --
    Copyright (C) 2003, 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -51,7 +51,7 @@ import javax.print.attribute.PrintRequestAttribute;
  * was specified for the job.
  * </p>
  * <p>
- * This attribute belongs to a group of job size attributes which are 
+ * This attribute belongs to a group of job size attributes which are
  * describing the size of a job to be printed. The values supplied by
  * these attributes are intended to be used for routing and scheduling
  * of jobs on the print service. A client may specify these attributes.
@@ -64,14 +64,14 @@ import javax.print.attribute.PrintRequestAttribute;
  * </p>
  * @see javax.print.attribute.standard.JobKOctets
  * @see javax.print.attribute.standard.JobImpressions
- * 
+ *
  * @author Michael Koch
  */
 public class JobMediaSheets extends IntegerSyntax
   implements PrintJobAttribute, PrintRequestAttribute
 {
   private static final long serialVersionUID = 408871131531979741L;
-  
+
   /**
    * Creates a <code>JobMediaSheets</code> object.
    *
@@ -86,13 +86,13 @@ public class JobMediaSheets extends IntegerSyntax
     if (value < 0)
       throw new IllegalArgumentException("value may not be less than 0");
   }
-  
+
   /**
    * Tests if the given object is equal to this object.
    *
    * @param obj the object to test
    *
-   * @return <code>true</code> if both objects are equal, 
+   * @return <code>true</code> if both objects are equal,
    * <code>false</code> otherwise.
    */
   public boolean equals(Object obj)

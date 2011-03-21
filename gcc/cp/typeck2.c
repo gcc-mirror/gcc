@@ -717,6 +717,9 @@ check_narrowing (tree type, tree init)
   bool ok = true;
   REAL_VALUE_TYPE d;
 
+  if (!ARITHMETIC_TYPE_P (type))
+    return;
+
   init = maybe_constant_value (init);
 
   if (TREE_CODE (type) == INTEGER_TYPE

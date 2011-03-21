@@ -1,4 +1,4 @@
-/* DefaultKeyboardFocusManager.java -- 
+/* DefaultKeyboardFocusManager.java --
    Copyright (C) 2002, 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -146,7 +146,7 @@ public class DefaultKeyboardFocusManager extends KeyboardFocusManager
    */
   private AWTKeyStroke waitForKeyStroke = null;
 
-  /** The {@link java.util.SortedSet} of current 
+  /** The {@link java.util.SortedSet} of current
    * {@link EventDelayRequest}s. */
   private SortedSet delayRequests = new TreeSet ();
 
@@ -339,9 +339,9 @@ public class DefaultKeyboardFocusManager extends KeyboardFocusManager
     Component focusOwner = getFocusOwner();
     if (focusOwner == null)
       focusOwner = getFocusedWindow();
-    
+
     if (focusOwner != null)
-      redispatchEvent(focusOwner, e);      
+      redispatchEvent(focusOwner, e);
 
     // Loop through all registered KeyEventPostProcessors, giving
     // each a chance to process this event.
@@ -358,7 +358,7 @@ public class DefaultKeyboardFocusManager extends KeyboardFocusManager
     // MenuShortcut.
     if (postProcessKeyEvent (e))
       return true;
-    
+
     // Always return true.
     return true;
   }
@@ -469,26 +469,26 @@ public class DefaultKeyboardFocusManager extends KeyboardFocusManager
 
     if (forwardKeystrokes.contains (eventKeystroke))
       {
-        waitForKeyStroke = oppositeKeystroke;        
+        waitForKeyStroke = oppositeKeystroke;
         focusNextComponent (comp);
         e.consume ();
       }
     else if (backwardKeystrokes.contains (eventKeystroke))
       {
-        waitForKeyStroke = oppositeKeystroke;        
+        waitForKeyStroke = oppositeKeystroke;
         focusPreviousComponent (comp);
         e.consume ();
       }
     else if (upKeystrokes.contains (eventKeystroke))
       {
-        waitForKeyStroke = oppositeKeystroke;        
+        waitForKeyStroke = oppositeKeystroke;
         upFocusCycle (comp);
         e.consume ();
       }
     else if (comp instanceof Container
              && downKeystrokes.contains (eventKeystroke))
       {
-        waitForKeyStroke = oppositeKeystroke;        
+        waitForKeyStroke = oppositeKeystroke;
         downFocusCycle ((Container) comp);
         e.consume ();
       }

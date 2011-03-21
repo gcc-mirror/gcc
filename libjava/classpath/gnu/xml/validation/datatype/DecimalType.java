@@ -1,4 +1,4 @@
-/* DecimalType.java -- 
+/* DecimalType.java --
    Copyright (C) 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -103,7 +103,7 @@ final class DecimalType
           throw new DatatypeException(i, "invalid decimal value");
       }
   }
-  
+
   public Object createValue(String literal, ValidationContext context) {
     try
       {
@@ -114,6 +114,5 @@ final class DecimalType
         return null;
       }
   }
-  
-}
 
+}

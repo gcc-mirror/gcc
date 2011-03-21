@@ -40,7 +40,7 @@ package javax.sound.midi;
 
 /**
  * Interface for MIDI audio synthesizer devices.
- * 
+ *
  * @author Anthony Green (green@redhat.com)
  * @since 1.3
  *
@@ -49,122 +49,122 @@ public interface Synthesizer extends MidiDevice
 {
   /**
    * Get the maximum number of notes that the synth can play at once.
-   * 
+   *
    * @return the maximum number of notes that the synth can play at once
    */
   public int getMaxPolyphony();
-  
+
   /**
    * The processing latency for this synth in microseconds.
-   * 
+   *
    * @return the processing latency for this synth in microseconds
    */
   public long getLatency();
-  
+
   /**
    * Get the set of MIDI channels controlled by this synth.
-   * 
+   *
    * @return an array of MIDI channels controlled by this synth
    */
   public MidiChannel[] getChannels();
-  
+
   /**
    * Get the current status for the voices produced by this synth.
-   * 
+   *
    * @return an array of VoiceStatus objects, getMaxPolyphony() in length
    */
   public VoiceStatus[] getVoiceStatus();
-  
+
   /**
    * Returns true is this synth is capable of loading soundbank.
-   * 
+   *
    * @param soundbank the Soundbank to examine
    * @return true if soundbank can be loaded, false otherwise
    */
   public boolean isSoundbankSupported(Soundbank soundbank);
-  
+
   /**
    * Load an instrument into this synth.  The instrument must be part of a
    * supported soundbank.
-   * 
+   *
    * @param instrument the Instrument to load
    * @return true if the instrument was loaded and false otherwise
    * @throws IllegalArgumentException if this synth doesn't support instrument
    */
   public boolean loadInstrument(Instrument instrument);
-  
+
   /**
    * Unload an instrument from this synth.
-   * 
+   *
    * @param instrument the Instrument to unload
    * @throws IllegalArgumentException if this synth doesn't support instrument
    */
   public void unloadInstrument(Instrument instrument);
-  
+
   /**
    * Move an intrument from one place to another.  The instrument at the
    * target location is unloaded.
-   * 
+   *
    * @param from the instrument source
    * @param to the instrument target
    * @return if from was remapped
    * @throws IllegalArgumentException
    */
   public boolean remapInstrument(Instrument from, Instrument to);
-  
+
   /**
    * Get the default Soundbank for this synth.  Return null if there is no
    * default.
-   * 
+   *
    * @return the default Soundbank for this synth, possibly null.
    */
   public Soundbank getDefaultSoundbank();
-  
+
   /**
    * Get an array containing all instruments in this synthesizer.
-   * 
+   *
    * @return an array containing all instruments in this synthesizer
    */
   public Instrument[] getAvailableInstruments();
-  
+
   /**
    * Get an array containing all instruments loaded in this synthesizer.
-   * 
+   *
    * @return an array containing all instruments loaded in this synthesizer
    */
   public Instrument[] getLoadedInstruments();
-  
+
   /**
    * Load all soundbank instruments into this synthesizer.
-   * 
+   *
    * @param soundbank the Soundbank from which to load instruments
    * @return true if all instruments were loaded, false othewise
    * @throws IllegalArgumentException if the soundbank isn't supported by this
    */
   public boolean loadAllInstruments(Soundbank soundbank);
-  
+
   /**
    * Unload all soundbank instruments from this synthesizer.
-   * 
+   *
    * @param soundbank the Soundbank containing the instruments to unload
    * @throws IllegalArgumentException if the soundbank isn't supported by this
    */
   public void unloadAllInstruments(Soundbank soundbank);
-  
+
   /**
-   * Load a subset of soundbank instruments into this synthesizer.  The 
+   * Load a subset of soundbank instruments into this synthesizer.  The
    * subset is defined by an array of Patch objects.
-   * 
+   *
    * @param soundbank the Soundbank from which to load instruments
    * @param patchList the array of patches identifying instruments to load
    * @return true if instruments were loaded, false otherwise
    * @throws IllegalArgumentException if the soundbank isn't supported by this
    */
   public boolean loadInstruments(Soundbank soundbank, Patch[] patchList);
-  
+
   /**
    * Unload a subset of soundbank instruments from this synthesizer.
-   * 
+   *
    * @param soundbank the Soundbank containing the instruments to unload
    * @param patchList the array of patches identifying instruments to unload
    * @throws IllegalArgumentException if the soundbank isn't supported by this

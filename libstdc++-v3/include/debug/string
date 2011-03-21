@@ -514,7 +514,8 @@ namespace __gnu_debug
     void
     insert(iterator __p, std::initializer_list<_CharT> __l)
     {
-      _Base::insert(__p, __l);
+      __glibcxx_check_insert(__p);
+      _Base::insert(__p.base(), __l);
       this->_M_invalidate_all();
     }
 #endif // __GXX_EXPERIMENTAL_CXX0X__

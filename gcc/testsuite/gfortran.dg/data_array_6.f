@@ -1,4 +1,4 @@
-! { dg-do "compile" }
+! { dg-do compile }
 !
 ! PR fortran/38404 - location marker in wrong line
 ! Testcase contributed by Steve Chapel <steve DOT chapel AT a2pg DOT com>

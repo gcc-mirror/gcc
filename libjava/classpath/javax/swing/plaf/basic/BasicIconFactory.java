@@ -53,16 +53,16 @@ public class BasicIconFactory implements Serializable
 {
   static final long serialVersionUID = 5605588811185324383L;
 
-  private static class DummyIcon 
+  private static class DummyIcon
     implements Icon
-  {    
-    public int getIconHeight() 
-    { 
-      return 10; 
+  {
+    public int getIconHeight()
+    {
+      return 10;
     }
-    public int getIconWidth() 
-    { 
-      return 10; 
+    public int getIconWidth()
+    {
+      return 10;
     }
     public void paintIcon(Component c, Graphics g, int x, int y)
     {
@@ -118,7 +118,7 @@ public class BasicIconFactory implements Serializable
   }
 
   /**
-   * The icon used for {@link JCheckBoxMenuItem}s in the 
+   * The icon used for {@link JCheckBoxMenuItem}s in the
    * {@link BasicLookAndFeel}. This icon has a size of 9x9 pixels.
    */
   static class CheckBoxMenuItemIcon
@@ -155,14 +155,14 @@ public class BasicIconFactory implements Serializable
     public void paintIcon(Component c, Graphics g, int x, int y)
     {
       JCheckBoxMenuItem item = (JCheckBoxMenuItem) c;
-      if (item.isSelected()) 
+      if (item.isSelected())
         {
           // paint the check...
           g.setColor(Color.black);
           g.drawLine(x + 1, y + 3, x + 1, y + 4);
           g.drawLine(x + 2, y + 4, x + 2, y + 5);
           for (int i = 0; i < 5; i++)
-            g.drawLine(x + 3 + i, y + 5 - i, x + 3 + i, y + 6 - i);    
+            g.drawLine(x + 3 + i, y + 5 - i, x + 3 + i, y + 6 - i);
         }
     }
   }
@@ -212,7 +212,7 @@ public class BasicIconFactory implements Serializable
   }
   /** The cached CheckBoxIcon instance. */
   private static CheckBoxIcon checkBoxIcon;
-  
+
   /** The cached RadioButtonIcon instance. */
   private static RadioButtonIcon radioButtonIcon;
 
@@ -246,34 +246,34 @@ public class BasicIconFactory implements Serializable
   {
     return new DummyIcon();
   }
-  
+
   /**
    * Returns a new instance of a 4 x 8 icon showing a small black triangle that
-   * points to the right.  This is displayed in menu items that have a 
+   * points to the right.  This is displayed in menu items that have a
    * sub menu.
-   * 
+   *
    * @return The icon.
    */
   public static Icon getMenuArrowIcon()
   {
     return new Icon()
       {
-	public int getIconHeight()
-	{
-	  return 8;
-	}
-	public int getIconWidth()
-	{
-	  return 4;
-	}
-	public void paintIcon(Component c, Graphics g, int x, int y)
-	{
-	  Color saved = g.getColor();
-	  g.setColor(Color.BLACK);
+        public int getIconHeight()
+        {
+          return 8;
+        }
+        public int getIconWidth()
+        {
+          return 4;
+        }
+        public void paintIcon(Component c, Graphics g, int x, int y)
+        {
+          Color saved = g.getColor();
+          g.setColor(Color.BLACK);
           for (int i = 0; i < 4; i++)
             g.drawLine(x + i, y + i, x + i, y + 7 - i);
-	  g.setColor(saved);
-	}
+          g.setColor(saved);
+        }
       };
   }
 
@@ -308,19 +308,19 @@ public class BasicIconFactory implements Serializable
   /**
    * Creates and returns an icon used when rendering {@link JCheckBoxMenuItem}
    * components.
-   * 
+   *
    * @return An icon.
    */
   public static Icon getCheckBoxMenuItemIcon()
   {
     return new CheckBoxMenuItemIcon();
   }
-  
+
   public static Icon getRadioButtonMenuItemIcon()
   {
     return getRadioButtonIcon();
   }
-  
+
   public static Icon createEmptyFrameIcon()
   {
     return new DummyIcon();

@@ -41,7 +41,7 @@ package javax.naming.event;
 import java.util.EventObject;
 
 import javax.naming.Binding;
- 
+
 /**
  * @author Warren Levy (warrenl@redhat.com)
  * @date June 5, 2001
@@ -62,7 +62,7 @@ public class NamingEvent extends EventObject
   protected Binding newBinding;
 
   public NamingEvent(EventContext source, int type, Binding newBd,
-  		     Binding oldBd, Object changeInfo)
+                     Binding oldBd, Object changeInfo)
   {
     super(source);
     this.type = type;
@@ -106,17 +106,17 @@ public class NamingEvent extends EventObject
     switch (type)
       {
         case OBJECT_ADDED:
-	  ((NamespaceChangeListener) listener).objectAdded(this);
-	  break;
+          ((NamespaceChangeListener) listener).objectAdded(this);
+          break;
         case OBJECT_REMOVED:
-	  ((NamespaceChangeListener) listener).objectRemoved(this);
-	  break;
+          ((NamespaceChangeListener) listener).objectRemoved(this);
+          break;
         case OBJECT_RENAMED:
-	  ((NamespaceChangeListener) listener).objectRenamed(this);
-	  break;
+          ((NamespaceChangeListener) listener).objectRenamed(this);
+          break;
         case OBJECT_CHANGED:
-	  ((ObjectChangeListener) listener).objectChanged(this);
-	  break;
+          ((ObjectChangeListener) listener).objectChanged(this);
+          break;
       }
   }
 }

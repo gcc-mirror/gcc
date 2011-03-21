@@ -69,7 +69,7 @@ final class GlyphMeasurer
    * font&#x2019;s <code>vmtx</code> table as shorts.
    */
   private final ShortBuffer verticalGlyphMetrics;
-  
+
 
   private final int numLongHorizontalMetricsEntries;
   private final int numLongVerticalMetricsEntries;
@@ -82,7 +82,7 @@ final class GlyphMeasurer
 
   private final int horizontalLineGap;
 
-  
+
   /**
    * Constructs a GlyphMeasurer from TrueType/OpenType font tables.
    *
@@ -145,7 +145,7 @@ final class GlyphMeasurer
   {
     return horizontal ? horizontalAscent : verticalAscent;
   }
-  
+
 
   /**
    * Returns the distance from the baseline to the lowest descender.
@@ -156,7 +156,7 @@ final class GlyphMeasurer
    * @return the maximal descent, in font units.
    */
   public int getDescent(boolean horizontal)
-  {    
+  {
     return horizontal ? horizontalDescent : verticalDescent;
   }
 
@@ -188,7 +188,7 @@ final class GlyphMeasurer
    * @return the advance width, in font units.
    */
   public int getAdvanceWidth(int glyphIndex, boolean horizontal)
-  {    
+  {
     if (!horizontal)
       return 0;
 

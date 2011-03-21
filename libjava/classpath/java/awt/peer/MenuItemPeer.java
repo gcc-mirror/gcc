@@ -44,5 +44,4 @@ public interface MenuItemPeer extends MenuComponentPeer
   void enable();
   void setEnabled(boolean enabled);
   void setLabel(String text);
-} // interface MenuItemPeer 
-
+} // interface MenuItemPeer

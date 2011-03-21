@@ -194,7 +194,7 @@ public final class CipherSuiteList implements Iterable<CipherSuite>
   {
     return new Iterator ();
   }
-  
+
   /**
    * An iterator for the elements in this list. The iterator supports
    * only the <code>set</code> method out of the optional methods,

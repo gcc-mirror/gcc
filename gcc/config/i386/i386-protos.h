@@ -225,6 +225,7 @@ extern void i386_pe_asm_output_aligned_decl_common (FILE *, tree,
 extern void i386_pe_file_end (void);
 extern void i386_pe_start_function (FILE *, const char *, tree);
 extern void i386_pe_end_function (FILE *, const char *, tree);
+extern void i386_pe_assemble_visibility (tree, int);
 extern tree i386_pe_mangle_decl_assembler_name (tree, tree);
 extern tree i386_pe_mangle_assembler_name (const char *);
 

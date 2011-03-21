@@ -356,7 +356,7 @@ public class UndoManager
       }
   }
 
-  
+
   /**
    * Undoes or redoes the last action. If the last action has already
    * been undone, it will be re-done, and vice versa.
@@ -598,8 +598,8 @@ public class UndoManager
     else
       return edit.getRedoPresentationName();
   }
-  
-  
+
+
   /**
    * Registers the edit action of an {@link UndoableEditEvent}
    * with this UndoManager.

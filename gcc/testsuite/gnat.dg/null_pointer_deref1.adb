@@ -1,4 +1,4 @@
--- { dg-do run { target { ! "sparc*-sun-solaris2.11" } } }
+-- { dg-do run }
 -- { dg-options "-gnatp" }
 
 -- This test requires architecture- and OS-specific support code for unwinding

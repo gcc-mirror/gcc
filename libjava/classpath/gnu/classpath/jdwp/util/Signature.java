@@ -89,17 +89,17 @@ public class Signature
   public static String computeMethodSignature (Method method)
   {
     return _computeSignature (method.getReturnType (),
-			      method.getParameterTypes ());
+                              method.getParameterTypes ());
   }
 
   private static String _computeSignature (Class returnType,
-					   Class[] paramTypes)
+                                           Class[] paramTypes)
   {
     CPStringBuilder sb = new CPStringBuilder ("(");
     if (paramTypes != null)
       {
-	for (int i = 0; i < paramTypes.length; ++i)
-	  _addToSignature (sb, paramTypes[i]);
+        for (int i = 0; i < paramTypes.length; ++i)
+          _addToSignature (sb, paramTypes[i]);
       }
     sb.append (")");
     _addToSignature (sb, returnType);
@@ -132,7 +132,7 @@ public class Signature
           sb.append('J');
         return;
       }
-    
+
     String name = k.getName ();
     int len = name.length ();
     sb.ensureCapacity (len);
@@ -140,10 +140,10 @@ public class Signature
       sb.append('L');
     for (int i = 0; i < len; ++i)
       {
-	char c = name.charAt (i);
-	if (c == '.')
-	  c = '/';
-	sb.append (c);
+        char c = name.charAt (i);
+        if (c == '.')
+          c = '/';
+        sb.append (c);
       }
     if (! k.isArray ())
       sb.append(';');

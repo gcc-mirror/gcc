@@ -67,7 +67,9 @@
 
 #endif
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // The types streamoff, streampos and wstreampos and the class
   // template fpos<> are described in clauses 21.1.2, 21.1.3, 27.1.2,
@@ -236,6 +238,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   typedef fpos<mbstate_t> u32streampos;
 #endif
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
 
 #endif

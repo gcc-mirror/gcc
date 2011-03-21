@@ -1,4 +1,4 @@
-/* Attribute.java -- 
+/* Attribute.java --
    Copyright (C) 2002, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -41,7 +41,7 @@ import java.io.Serializable;
 
 /**
  * Base interface of every printing attribute of the Java Print Service API.
- * 
+ *
  * @author Michael Koch (konqueror@gmx.de)
  */
 public interface Attribute extends Serializable
@@ -49,17 +49,17 @@ public interface Attribute extends Serializable
   /**
    * Returns the category of the printing attribute which is the specific
    * attribute class implementing this interface.
-   * 
+   *
    * @return The concrete {@link Class} instance of the attribute class.
    */
   Class< ? extends Attribute> getCategory ();
 
   /**
    * Returns the descriptive name of the attribute category.
-   * 
+   *
    * Implementations of the <code>Attribute</code> interfaces providing equal
    * category values have to return equal name values.
-   * 
+   *
    * @return The name of the attribute category.
    */
   String getName ();

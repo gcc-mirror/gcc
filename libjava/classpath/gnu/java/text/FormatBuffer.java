@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -42,14 +42,14 @@ import java.util.HashMap;
 /**
  * This interface describes a modifiable buffer which contains attributed
  * characters. The implementation may or may not implements attributes. It
- * aims to greatly simplify and clarify the implementation of java.text 
+ * aims to greatly simplify and clarify the implementation of java.text
  * formatters. The buffer may be appended or have its tail cut. It may also
  * be completely cleant up.
  *
  * @author Guilhem Lavaux <guilhem@kaffe.org>
  * @date April 10, 2004
  */
-public interface FormatBuffer 
+public interface FormatBuffer
 {
   /**
    * This method appends a simple string to the buffer. This part of
@@ -72,8 +72,8 @@ public interface FormatBuffer
   /**
    * This method appends a simple string to the buffer. This part of
    * the buffer will be attributed using the specified ranges and attributes.
-   * To have an example on how to specify ranges see {@link gnu.java.text.FormatCharacterIterator}. 
-   * 
+   * To have an example on how to specify ranges see {@link gnu.java.text.FormatCharacterIterator}.
+   *
    * @param s The string to append to the buffer.
    * @param ranges The ranges describing how the attributes should be applied
    * to the string.
@@ -121,7 +121,7 @@ public interface FormatBuffer
    * @param length Number of characters to cut at the end of the buffer.
    */
   public void cutTail(int length);
-  
+
   /**
    * This method resets completely the buffer.
    */

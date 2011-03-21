@@ -124,7 +124,7 @@ class MimeType
    * Returns the parameter for the <code>key</code>.
    *
    * @param key the parameter key
-   * 
+   *
    * @return the parameter for the <code>key</code>
    */
   String getParameter(String key)

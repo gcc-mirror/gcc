@@ -452,6 +452,10 @@ AC_DEFUN([gcc_GAS_FLAGS],
     dnl Always pass --32 to ia32 Linux assembler.
     gcc_cv_as_flags="--32"
     ;;
+  powerpc*-*-darwin*)
+    dnl Always pass -arch ppc to assembler.
+    gcc_cv_as_flags="-arch ppc"
+    ;;
   *)
     gcc_cv_as_flags=" "
     ;;

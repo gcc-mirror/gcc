@@ -1243,6 +1243,8 @@ vn_reference_lookup_1 (vn_reference_t vr, vn_reference_t *vnresult)
 }
 
 static tree *last_vuse_ptr;
+static vn_lookup_kind vn_walk_kind;
+static vn_lookup_kind default_vn_walk_kind;
 
 /* Callback for walk_non_aliased_vuses.  Adjusts the vn_reference_t VR_
    with the current VUSE and performs the expression lookup.  */
@@ -1286,7 +1288,6 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_)
 {
   vn_reference_t vr = (vn_reference_t)vr_;
   gimple def_stmt = SSA_NAME_DEF_STMT (vuse);
-  tree fndecl;
   tree base;
   HOST_WIDE_INT offset, maxsize;
   static VEC (vn_reference_op_s, heap) *lhs_ops = NULL;
@@ -1324,10 +1325,7 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_)
      from that defintion.
      1) Memset.  */
   if (is_gimple_reg_type (vr->type)
-      && is_gimple_call (def_stmt)
-      && (fndecl = gimple_call_fndecl (def_stmt))
-      && DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL
-      && DECL_FUNCTION_CODE (fndecl) == BUILT_IN_MEMSET
+      && gimple_call_builtin_p (def_stmt, BUILT_IN_MEMSET)
       && integer_zerop (gimple_call_arg (def_stmt, 1))
       && host_integerp (gimple_call_arg (def_stmt, 2), 1)
       && TREE_CODE (gimple_call_arg (def_stmt, 0)) == ADDR_EXPR)
@@ -1377,9 +1375,10 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_)
 	}
     }
 
-  /* For aggregate copies translate the reference through them if
+  /* 3) For aggregate copies translate the reference through them if
      the copy kills ref.  */
-  else if (gimple_assign_single_p (def_stmt)
+  else if (vn_walk_kind == VN_WALKREWRITE
+	   && gimple_assign_single_p (def_stmt)
 	   && (DECL_P (gimple_assign_rhs1 (def_stmt))
 	       || TREE_CODE (gimple_assign_rhs1 (def_stmt)) == MEM_REF
 	       || handled_component_p (gimple_assign_rhs1 (def_stmt))))
@@ -1461,6 +1460,147 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_)
       return NULL;
     }
 
+  /* 4) For memcpy copies translate the reference through them if
+     the copy kills ref.  */
+  else if (vn_walk_kind == VN_WALKREWRITE
+	   && is_gimple_reg_type (vr->type)
+	   /* ???  Handle BCOPY as well.  */
+	   && (gimple_call_builtin_p (def_stmt, BUILT_IN_MEMCPY)
+	       || gimple_call_builtin_p (def_stmt, BUILT_IN_MEMPCPY)
+	       || gimple_call_builtin_p (def_stmt, BUILT_IN_MEMMOVE))
+	   && (TREE_CODE (gimple_call_arg (def_stmt, 0)) == ADDR_EXPR
+	       || TREE_CODE (gimple_call_arg (def_stmt, 0)) == SSA_NAME)
+	   && (TREE_CODE (gimple_call_arg (def_stmt, 1)) == ADDR_EXPR
+	       || TREE_CODE (gimple_call_arg (def_stmt, 1)) == SSA_NAME)
+	   && host_integerp (gimple_call_arg (def_stmt, 2), 1))
+    {
+      tree lhs, rhs;
+      ao_ref r;
+      HOST_WIDE_INT rhs_offset, copy_size, lhs_offset;
+      vn_reference_op_s op;
+      HOST_WIDE_INT at;
+
+
+      /* Only handle non-variable, addressable refs.  */
+      if (ref->size != maxsize
+	  || offset % BITS_PER_UNIT != 0
+	  || ref->size % BITS_PER_UNIT != 0)
+	return (void *)-1;
+
+      /* Extract a pointer base and an offset for the destination.  */
+      lhs = gimple_call_arg (def_stmt, 0);
+      lhs_offset = 0;
+      if (TREE_CODE (lhs) == SSA_NAME)
+	lhs = SSA_VAL (lhs);
+      if (TREE_CODE (lhs) == ADDR_EXPR)
+	{
+	  tree tem = get_addr_base_and_unit_offset (TREE_OPERAND (lhs, 0),
+						    &lhs_offset);
+	  if (!tem)
+	    return (void *)-1;
+	  if (TREE_CODE (tem) == MEM_REF
+	      && host_integerp (TREE_OPERAND (tem, 1), 1))
+	    {
+	      lhs = TREE_OPERAND (tem, 0);
+	      lhs_offset += TREE_INT_CST_LOW (TREE_OPERAND (tem, 1));
+	    }
+	  else if (DECL_P (tem))
+	    lhs = build_fold_addr_expr (tem);
+	  else
+	    return (void *)-1;
+	}
+      if (TREE_CODE (lhs) != SSA_NAME
+	  && TREE_CODE (lhs) != ADDR_EXPR)
+	return (void *)-1;
+
+      /* Extract a pointer base and an offset for the source.  */
+      rhs = gimple_call_arg (def_stmt, 1);
+      rhs_offset = 0;
+      if (TREE_CODE (rhs) == SSA_NAME)
+	rhs = SSA_VAL (rhs);
+      if (TREE_CODE (rhs) == ADDR_EXPR)
+	{
+	  tree tem = get_addr_base_and_unit_offset (TREE_OPERAND (rhs, 0),
+						    &rhs_offset);
+	  if (!tem)
+	    return (void *)-1;
+	  if (TREE_CODE (tem) == MEM_REF
+	      && host_integerp (TREE_OPERAND (tem, 1), 1))
+	    {
+	      rhs = TREE_OPERAND (tem, 0);
+	      rhs_offset += TREE_INT_CST_LOW (TREE_OPERAND (tem, 1));
+	    }
+	  else if (DECL_P (tem))
+	    rhs = build_fold_addr_expr (tem);
+	  else
+	    return (void *)-1;
+	}
+      if (TREE_CODE (rhs) != SSA_NAME
+	  && TREE_CODE (rhs) != ADDR_EXPR)
+	return (void *)-1;
+
+      copy_size = TREE_INT_CST_LOW (gimple_call_arg (def_stmt, 2));
+
+      /* The bases of the destination and the references have to agree.  */
+      if ((TREE_CODE (base) != MEM_REF
+	   && !DECL_P (base))
+	  || (TREE_CODE (base) == MEM_REF
+	      && (TREE_OPERAND (base, 0) != lhs
+		  || !host_integerp (TREE_OPERAND (base, 1), 1)))
+	  || (DECL_P (base)
+	      && (TREE_CODE (lhs) != ADDR_EXPR
+		  || TREE_OPERAND (lhs, 0) != base)))
+	return (void *)-1;
+
+      /* And the access has to be contained within the memcpy destination.  */
+      at = offset / BITS_PER_UNIT;
+      if (TREE_CODE (base) == MEM_REF)
+	at += TREE_INT_CST_LOW (TREE_OPERAND (base, 1));
+      if (lhs_offset > at
+	  || lhs_offset + copy_size < at + maxsize / BITS_PER_UNIT)
+	return (void *)-1;
+
+      /* Make room for 2 operands in the new reference.  */
+      if (VEC_length (vn_reference_op_s, vr->operands) < 2)
+	{
+	  VEC (vn_reference_op_s, heap) *old = vr->operands;
+	  VEC_safe_grow (vn_reference_op_s, heap, vr->operands, 2);
+	  if (old == shared_lookup_references
+	      && vr->operands != old)
+	    shared_lookup_references = NULL;
+	}
+      else
+	VEC_truncate (vn_reference_op_s, vr->operands, 2);
+
+      /* The looked-through reference is a simple MEM_REF.  */
+      memset (&op, 0, sizeof (op));
+      op.type = vr->type;
+      op.opcode = MEM_REF;
+      op.op0 = build_int_cst (ptr_type_node, at - rhs_offset);
+      op.off = at - lhs_offset + rhs_offset;
+      VEC_replace (vn_reference_op_s, vr->operands, 0, &op);
+      op.type = TYPE_MAIN_VARIANT (TREE_TYPE (rhs));
+      op.opcode = TREE_CODE (rhs);
+      op.op0 = rhs;
+      op.off = -1;
+      VEC_replace (vn_reference_op_s, vr->operands, 1, &op);
+      vr->hashcode = vn_reference_compute_hash (vr);
+
+      /* Adjust *ref from the new operands.  */
+      if (!ao_ref_init_from_vn_reference (&r, vr->set, vr->type, vr->operands))
+	return (void *)-1;
+      /* This can happen with bitfields.  */
+      if (ref->size != r.size)
+	return (void *)-1;
+      *ref = r;
+
+      /* Do not update last seen VUSE after translating.  */
+      last_vuse_ptr = NULL;
+
+      /* Keep looking for the adjusted *REF / VR pair.  */
+      return NULL;
+    }
+
   /* Bail out and stop walking.  */
   return (void *)-1;
 }
@@ -1473,7 +1613,7 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_)
 tree
 vn_reference_lookup_pieces (tree vuse, alias_set_type set, tree type,
 			    VEC (vn_reference_op_s, heap) *operands,
-			    vn_reference_t *vnresult, bool maywalk)
+			    vn_reference_t *vnresult, vn_lookup_kind kind)
 {
   struct vn_reference_s vr1;
   vn_reference_t tmp;
@@ -1501,10 +1641,11 @@ vn_reference_lookup_pieces (tree vuse, alias_set_type set, tree type,
 
   vn_reference_lookup_1 (&vr1, vnresult);
   if (!*vnresult
-      && maywalk
+      && kind != VN_NOWALK
       && vr1.vuse)
     {
       ao_ref r;
+      vn_walk_kind = kind;
       if (ao_ref_init_from_vn_reference (&r, set, type, vr1.operands))
 	*vnresult =
 	  (vn_reference_t)walk_non_aliased_vuses (&r, vr1.vuse,
@@ -1527,7 +1668,7 @@ vn_reference_lookup_pieces (tree vuse, alias_set_type set, tree type,
    stored in the hashtable if one exists.  */
 
 tree
-vn_reference_lookup (tree op, tree vuse, bool maywalk,
+vn_reference_lookup (tree op, tree vuse, vn_lookup_kind kind,
 		     vn_reference_t *vnresult)
 {
   VEC (vn_reference_op_s, heap) *operands;
@@ -1545,12 +1686,13 @@ vn_reference_lookup (tree op, tree vuse, bool maywalk,
   if ((cst = fully_constant_vn_reference_p (&vr1)))
     return cst;
 
-  if (maywalk
+  if (kind != VN_NOWALK
       && vr1.vuse)
     {
       vn_reference_t wvnresult;
       ao_ref r;
       ao_ref_init (&r, op);
+      vn_walk_kind = kind;
       wvnresult =
 	(vn_reference_t)walk_non_aliased_vuses (&r, vr1.vuse,
 						vn_reference_lookup_2,
@@ -2257,14 +2399,15 @@ visit_reference_op_load (tree lhs, tree op, gimple stmt)
 
   last_vuse = gimple_vuse (stmt);
   last_vuse_ptr = &last_vuse;
-  result = vn_reference_lookup (op, gimple_vuse (stmt), true, NULL);
+  result = vn_reference_lookup (op, gimple_vuse (stmt),
+				default_vn_walk_kind, NULL);
   last_vuse_ptr = NULL;
 
   /* If we have a VCE, try looking up its operand as it might be stored in
      a different type.  */
   if (!result && TREE_CODE (op) == VIEW_CONVERT_EXPR)
     result = vn_reference_lookup (TREE_OPERAND (op, 0), gimple_vuse (stmt),
-    				  true, NULL);
+    				  default_vn_walk_kind, NULL);
 
   /* We handle type-punning through unions by value-numbering based
      on offset and size of the access.  Be prepared to handle a
@@ -2375,7 +2518,7 @@ visit_reference_op_store (tree lhs, tree op, gimple stmt)
      Otherwise, the vdefs for the store are used when inserting into
      the table, since the store generates a new memory state.  */
 
-  result = vn_reference_lookup (lhs, gimple_vuse (stmt), false, NULL);
+  result = vn_reference_lookup (lhs, gimple_vuse (stmt), VN_NOWALK, NULL);
 
   if (result)
     {
@@ -3459,14 +3602,17 @@ set_hashtable_value_ids (void)
 }
 
 /* Do SCCVN.  Returns true if it finished, false if we bailed out
-   due to resource constraints.  */
+   due to resource constraints.  DEFAULT_VN_WALK_KIND_ specifies
+   how we use the alias oracle walking during the VN process.  */
 
 bool
-run_scc_vn (void)
+run_scc_vn (vn_lookup_kind default_vn_walk_kind_)
 {
   size_t i;
   tree param;
   bool changed = true;
+
+  default_vn_walk_kind = default_vn_walk_kind_;
 
   init_scc_vn ();
   current_info = valid_info;

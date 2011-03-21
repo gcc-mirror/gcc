@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -40,12 +40,12 @@ package java.io;
 
 /* Written using "Java Class Libraries", 2nd edition, ISBN 0-201-31002-3
  * "The Java Language Specification", ISBN 0-201-63451-1
- * plus online API docs for JDK 1.2 beta from http://www.javasoft.com.  
+ * plus online API docs for JDK 1.2 beta from http://www.javasoft.com.
  * Status:  Believed complete and correct.  */
 
 /**
- * This interface is implemented by classes that can data from streams 
- * into Java primitive types. 
+ * This interface is implemented by classes that can data from streams
+ * into Java primitive types.
  *
  * @author Aaron M. Renn (arenn@urbanophile.com)
  * @author Warren Levy (warrenl@cygnus.com)
@@ -65,7 +65,7 @@ public interface DataInput
    *
    * @return The <code>boolean</code> value read
    *
-   * @exception EOFException If end of file is reached before 
+   * @exception EOFException If end of file is reached before
    * reading the boolean
    * @exception IOException If any other error occurs
    *
@@ -78,7 +78,7 @@ public interface DataInput
    * is in the range of -128 to 127.
    * <p>
    * This method can read a <code>byte</code> written by an object
-   * implementing the 
+   * implementing the
    * <code>writeByte()</code> method in the <code>DataOutput</code> interface.
    * <p>
    * @return The <code>byte</code> value read
@@ -94,7 +94,7 @@ public interface DataInput
    * This method reads 8 unsigned bits into a Java <code>int</code> value from
    * the stream. The value returned is in the range of 0 to 255.
    * <p>
-   * This method can read an unsigned byte written by an object 
+   * This method can read an unsigned byte written by an object
    * implementing the
    * <code>writeByte()</code> method in the <code>DataOutput</code>
    * interface.
@@ -109,11 +109,11 @@ public interface DataInput
   int readUnsignedByte() throws EOFException, IOException;
 
   /**
-   * This method reads a Java <code>char</code> value from an input stream.  
-   * It operates by reading two bytes from the stream and converting them to 
+   * This method reads a Java <code>char</code> value from an input stream.
+   * It operates by reading two bytes from the stream and converting them to
    * a single 16-bit Java <code>char</code>.  The two bytes are stored most
    * significant byte first (i.e., "big endian") regardless of the native
-   * host byte ordering. 
+   * host byte ordering.
    * <p>
    * As an example, if <code>byte1</code> and <code>byte2</code> represent the
    * first and second byte read from the stream respectively, they will be
@@ -125,7 +125,7 @@ public interface DataInput
    * the
    * <code>writeChar()</code> method in the <code>DataOutput</code> interface.
    *
-   * @return The <code>char</code> value read 
+   * @return The <code>char</code> value read
    *
    * @exception EOFException If end of file is reached before reading the char
    * @exception IOException If any other error occurs
@@ -136,10 +136,10 @@ public interface DataInput
 
   /**
    * This method reads a signed 16-bit value into a Java in from the stream.
-   * It operates by reading two bytes from the stream and converting them to 
+   * It operates by reading two bytes from the stream and converting them to
    * a single 16-bit Java <code>short</code>.  The two bytes are stored most
    * significant byte first (i.e., "big endian") regardless of the native
-   * host byte ordering. 
+   * host byte ordering.
    * <p>
    * As an example, if <code>byte1</code> and <code>byte2</code> represent the
    * first and second byte read from the stream respectively, they will be
@@ -149,7 +149,7 @@ public interface DataInput
    * <p>
    * The value returned is in the range of -32768 to 32767.
    * <p>
-   * This method can read a <code>short</code> written by an object 
+   * This method can read a <code>short</code> written by an object
    * implementing
    * the <code>writeShort()</code> method in the <code>DataOutput</code>
    * interface.
@@ -165,10 +165,10 @@ public interface DataInput
 
   /**
    * This method reads 16 unsigned bits into a Java int value from the stream.
-   * It operates by reading two bytes from the stream and converting them to 
+   * It operates by reading two bytes from the stream and converting them to
    * a single Java <code>int</code>.  The two bytes are stored most
    * significant byte first (i.e., "big endian") regardless of the native
-   * host byte ordering. 
+   * host byte ordering.
    * <p>
    * As an example, if <code>byte1</code> and <code>byte2</code> represent the
    * first and second byte read from the stream respectively, they will be
@@ -179,13 +179,13 @@ public interface DataInput
    * The value returned is in the range of 0 to 65535.
    * <p>
    * This method can read an unsigned short written by an object implementing
-   * the <code>writeShort()</code> method in the 
+   * the <code>writeShort()</code> method in the
    * <code>DataOutput</code>
    * interface.
    *
    * @return The unsigned short value read as a Java <code>int</code>.
    *
-   * @exception EOFException If end of file is reached before reading 
+   * @exception EOFException If end of file is reached before reading
    * the value
    * @exception IOException If any other error occurs
    *
@@ -195,22 +195,22 @@ public interface DataInput
 
   /**
    * This method reads a Java <code>int</code> value from an input stream
-   * It operates by reading four bytes from the stream and converting them to 
+   * It operates by reading four bytes from the stream and converting them to
    * a single Java <code>int</code>.  The bytes are stored most
    * significant byte first (i.e., "big endian") regardless of the native
-   * host byte ordering. 
+   * host byte ordering.
    * <p>
    * As an example, if <code>byte1</code> through <code>byte4</code> represent
    * the first four bytes read from the stream, they will be
    * transformed to an <code>int</code> in the following manner:
    * <p>
-   * <code>(int)(((byte1 & 0xFF) << 24) + ((byte2 & 0xFF) << 16) + 
+   * <code>(int)(((byte1 & 0xFF) << 24) + ((byte2 & 0xFF) << 16) +
    * ((byte3 & 0xFF)<< 8) + (byte4 & 0xFF)))</code>
    * <p>
    * The value returned is in the range of -2147483648 to 2147483647.
    * <p>
-   * This method can read an <code>int</code> written by an object 
-   * implementing the <code>writeInt()</code> method in the 
+   * This method can read an <code>int</code> written by an object
+   * implementing the <code>writeInt()</code> method in the
    * <code>DataOutput</code> interface.
    *
    * @return The <code>int</code> value read
@@ -224,26 +224,26 @@ public interface DataInput
 
   /**
    * This method reads a Java <code>long</code> value from an input stream
-   * It operates by reading eight bytes from the stream and converting them to 
+   * It operates by reading eight bytes from the stream and converting them to
    * a single Java <code>long</code>.  The bytes are stored most
    * significant byte first (i.e., "big endian") regardless of the native
-   * host byte ordering. 
+   * host byte ordering.
    * <p>
    * As an example, if <code>byte1</code> through <code>byte8</code> represent
    * the first eight bytes read from the stream, they will be
    * transformed to an <code>long</code> in the following manner:
    * <p>
-   * <code>(long)(((byte1 & 0xFF) << 56) + ((byte2 & 0xFF) << 48) + 
-   * ((byte3 & 0xFF) << 40) + ((byte4 & 0xFF) << 32) + 
-   * ((byte5 & 0xFF) << 24) + ((byte6 & 0xFF) << 16) + 
+   * <code>(long)(((byte1 & 0xFF) << 56) + ((byte2 & 0xFF) << 48) +
+   * ((byte3 & 0xFF) << 40) + ((byte4 & 0xFF) << 32) +
+   * ((byte5 & 0xFF) << 24) + ((byte6 & 0xFF) << 16) +
    * ((byte7 & 0xFF) << 8) + (byte8 & 0xFF)))
    * </code>
    * <p>
    * The value returned is in the range of -9223372036854775808 to
    * 9223372036854775807.
    * <p>
-   * This method can read an <code>long</code> written by an object 
-   * implementing the <code>writeLong()</code> method in the 
+   * This method can read an <code>long</code> written by an object
+   * implementing the <code>writeLong()</code> method in the
    * <code>DataOutput</code> interface.
    *
    * @return The <code>long</code> value read
@@ -263,14 +263,14 @@ public interface DataInput
    * <code>intBitsToFloat</code> method in the class
    * <code>java.lang.Float</code>.
    * <p>
-   * This method can read a <code>float</code> written by an object 
+   * This method can read a <code>float</code> written by an object
    * implementing
    * the <code>writeFloat()</code> method in the <code>DataOutput</code>
    * interface.
    *
    * @return The <code>float</code> value read
    *
-   * @exception EOFException If end of file is reached before reading the 
+   * @exception EOFException If end of file is reached before reading the
    * float
    * @exception IOException If any other error occurs
    *
@@ -293,7 +293,7 @@ public interface DataInput
    *
    * @return The <code>double</code> value read
    *
-   * @exception EOFException If end of file is reached before reading the 
+   * @exception EOFException If end of file is reached before reading the
    * double
    * @exception IOException If any other error occurs
    *
@@ -304,16 +304,16 @@ public interface DataInput
 
   /**
    * This method reads the next line of text data from an input stream.
-   * It operates by reading bytes and converting those bytes to 
+   * It operates by reading bytes and converting those bytes to
    * <code>char</code>
    * values by treating the byte read as the low eight bits of the
    * <code>char</code> and using 0 as the high eight bits.  Because of this,
    * it does not support the full 16-bit Unicode character set.
    * <P>
    * The reading of bytes ends when either the end of file or a line terminator
-   * is encountered.  The bytes read are then returned as a 
+   * is encountered.  The bytes read are then returned as a
    * <code>String</code>.
-   * A line terminator is a byte sequence consisting of either 
+   * A line terminator is a byte sequence consisting of either
    * <code>\r</code>, <code>\n</code> or <code>\r\n</code>.  These termination
    * charaters are discarded and are not returned as part of the string.
    * A line is also terminated by an end of file condition.
@@ -328,17 +328,17 @@ public interface DataInput
   /**
    * This method reads a <code>String</code> from an input stream that is
    * encoded in a modified UTF-8 format.  This format has a leading two byte
-   * sequence that contains the remaining number of bytes to read.  
+   * sequence that contains the remaining number of bytes to read.
    * This two byte
    * sequence is read using the <code>readUnsignedShort()</code> method of this
    * interface.
    *
    * After the number of remaining bytes have been determined, these bytes
    * are read an transformed into <code>char</code> values.  These
-   * <code>char</code> values are encoded in the stream using either a one, 
+   * <code>char</code> values are encoded in the stream using either a one,
    * two, or three byte format.
    * The particular format in use can be determined by examining the first
-   * byte read.  
+   * byte read.
    * <p>
    * If the first byte has a high order bit of 0, then
    * that character consists on only one byte.  This character value consists
@@ -348,10 +348,10 @@ public interface DataInput
    * <p>
    * <code>(char)byte1</code>
    * <p>
-   * If the first byte has 110 as its high order bits, then the 
+   * If the first byte has 110 as its high order bits, then the
    * character consists of two bytes.  The bits that make up the character
    * value are in positions 0 through 4 of the first byte and bit positions
-   * 0 through 5 of the second byte.  (The second byte should have 
+   * 0 through 5 of the second byte.  (The second byte should have
    * 10 as its high order bits).  These values are in most significant
    * byte first (i.e., "big endian") order.
    * <p>
@@ -380,16 +380,16 @@ public interface DataInput
    *
    * Note that all characters are encoded in the method that requires the
    * fewest number of bytes with the exception of the character with the
-   * value of <code>\&lt;llll&gt;u0000</code> which is encoded as two bytes.  
-   * This is a modification of the UTF standard used to prevent C language 
+   * value of <code>\&lt;llll&gt;u0000</code> which is encoded as two bytes.
+   * This is a modification of the UTF standard used to prevent C language
    * style <code>NUL</code> values from appearing in the byte stream.
    * <p>
    * This method can read data that was written by an object implementing the
    * <code>writeUTF()</code> method in <code>DataOutput</code>.
-   * 
+   *
    * @return The <code>String</code> read
    *
-   * @exception EOFException If end of file is reached before reading the 
+   * @exception EOFException If end of file is reached before reading the
    * String
    * @exception UTFDataFormatException If the data is not in UTF-8 format
    * @exception IOException If any other error occurs
@@ -408,19 +408,19 @@ public interface DataInput
    *
    * @param buf The buffer into which to read the data
    *
-   * @exception EOFException If end of file is reached before filling the 
+   * @exception EOFException If end of file is reached before filling the
    * buffer
    * @exception IOException If any other error occurs
    */
   void readFully(byte[] buf) throws EOFException, IOException;
 
   /**
-   * This method reads raw bytes into the passed array <code>buf</code> 
+   * This method reads raw bytes into the passed array <code>buf</code>
    * starting
-   * <code>offset</code> bytes into the buffer.  The number of bytes read 
+   * <code>offset</code> bytes into the buffer.  The number of bytes read
    * will be
-   * exactly <code>len</code>.  Note that this method blocks until the data is 
-   * available and throws an exception if there is not enough data left in 
+   * exactly <code>len</code>.  Note that this method blocks until the data is
+   * available and throws an exception if there is not enough data left in
    * the stream to read <code>len</code> bytes.  Note also that zero length
    * buffers are permitted.  In this case, the method will return immediately
    * without reading any bytes from the stream.
@@ -429,11 +429,11 @@ public interface DataInput
    * @param offset The offset into the buffer to start storing data
    * @param len The number of bytes to read into the buffer
    *
-   * @exception EOFException If end of file is reached before filling the 
+   * @exception EOFException If end of file is reached before filling the
    * buffer
    * @exception IOException If any other error occurs
    */
-  void readFully(byte[] buf, int offset, int len) 
+  void readFully(byte[] buf, int offset, int len)
     throws EOFException, IOException;
 
   /**

@@ -61,7 +61,9 @@
 #include <new>
 #include <bits/move.h>
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /**
    * Constructs an object in existing memory by invoking an allocated
@@ -151,7 +153,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       _Destroy(__first, __last);
     }
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
 
 #endif /* _STL_CONSTRUCT_H */
 

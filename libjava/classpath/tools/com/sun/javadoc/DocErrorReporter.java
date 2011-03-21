@@ -74,4 +74,3 @@ public abstract void
 printNotice(String notice);
 
 } // interface DocErrorReporter
-

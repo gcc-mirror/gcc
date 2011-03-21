@@ -40,10 +40,10 @@ package java.util;
 
 import java.io.Serializable;
 
-/** 
+/**
  * @author Tom Tromey (tromey@redhat.com)
  * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
- * @since 1.5 
+ * @since 1.5
  */
 
 public class EnumMap<K extends Enum<K>, V>
@@ -82,29 +82,29 @@ public class EnumMap<K extends Enum<K>, V>
   {
     if (map instanceof EnumMap)
       {
-	EnumMap<K, ? extends V> other = (EnumMap<K, ? extends V>) map;
-	store = (V[]) other.store.clone();
-	cardinality = other.cardinality;
-	enumClass = other.enumClass;
+        EnumMap<K, ? extends V> other = (EnumMap<K, ? extends V>) map;
+        store = (V[]) other.store.clone();
+        cardinality = other.cardinality;
+        enumClass = other.enumClass;
       }
     else
       {
-	for (K key : map.keySet())
-	  {
-	    V value = map.get(key);
-	    if (store == null)
-	      {
-		enumClass = key.getDeclaringClass();
-		store = (V[]) new Object[enumClass.getEnumConstants().length];
-	      }
-	    int o = key.ordinal();
-	    if (store[o] == emptySlot)
-	      ++cardinality;
-	    store[o] = value;
-	  }
-	// There must be a single element.
-	if (store == null)
-	  throw new IllegalArgumentException("no elements in map");
+        for (K key : map.keySet())
+          {
+            V value = map.get(key);
+            if (store == null)
+              {
+                enumClass = key.getDeclaringClass();
+                store = (V[]) new Object[enumClass.getEnumConstants().length];
+              }
+            int o = key.ordinal();
+            if (store[o] == emptySlot)
+              ++cardinality;
+            store[o] = value;
+          }
+        // There must be a single element.
+        if (store == null)
+          throw new IllegalArgumentException("no elements in map");
       }
   }
 
@@ -117,8 +117,8 @@ public class EnumMap<K extends Enum<K>, V>
   {
     for (V i : store)
       {
-	if (i != emptySlot && AbstractCollection.equals(i , value))
-	  return true;
+        if (i != emptySlot && AbstractCollection.equals(i , value))
+          return true;
       }
     return false;
   }
@@ -150,8 +150,8 @@ public class EnumMap<K extends Enum<K>, V>
     V result;
     if (store[o] == emptySlot)
       {
-	result = null;
-	++cardinality;
+        result = null;
+        ++cardinality;
       }
     else
       result = store[o];
@@ -179,12 +179,12 @@ public class EnumMap<K extends Enum<K>, V>
   {
     for (K key : map.keySet())
       {
-	V value = map.get(key);
+        V value = map.get(key);
 
-	int o = key.ordinal();
-	if (store[o] == emptySlot)
-	  ++cardinality;
-	store[o] = value;
+        int o = key.ordinal();
+        if (store[o] == emptySlot)
+          ++cardinality;
+        store[o] = value;
       }
   }
 
@@ -198,56 +198,56 @@ public class EnumMap<K extends Enum<K>, V>
   {
     if (keys == null)
       {
-	keys = new AbstractSet<K>()
-	{
-	  public int size()
-	  {
-	    return cardinality;
-	  }
+        keys = new AbstractSet<K>()
+        {
+          public int size()
+          {
+            return cardinality;
+          }
 
-	  public Iterator<K> iterator()
-	  {
-	    return new Iterator<K>()
-	    {
-	      int count = 0;
-	      int index = -1;
+          public Iterator<K> iterator()
+          {
+            return new Iterator<K>()
+            {
+              int count = 0;
+              int index = -1;
 
-	      public boolean hasNext()
-	      {
-		return count < cardinality;
-	      }
+              public boolean hasNext()
+              {
+                return count < cardinality;
+              }
 
-	      public K next()
-	      {
-		++count;
-		for (++index; store[index] == emptySlot; ++index)
-		  ;
-		return enumClass.getEnumConstants()[index];
-	      }
+              public K next()
+              {
+                ++count;
+                for (++index; store[index] == emptySlot; ++index)
+                  ;
+                return enumClass.getEnumConstants()[index];
+              }
 
-	      public void remove()
-	      {
-		--cardinality;
-		store[index] = (V) emptySlot;
-	      }
-	    };
-	  }
+              public void remove()
+              {
+                --cardinality;
+                store[index] = (V) emptySlot;
+              }
+            };
+          }
 
-	  public void clear()
-	  {
-	    EnumMap.this.clear();
-	  }
+          public void clear()
+          {
+            EnumMap.this.clear();
+          }
 
-	  public boolean contains(Object o)
-	  {
-	    return contains(o);
-	  }
+          public boolean contains(Object o)
+          {
+            return contains(o);
+          }
 
-	  public boolean remove(Object o)
-	  {
-	    return EnumMap.this.remove(o) != null;
-	  }
-	};
+          public boolean remove(Object o)
+          {
+            return EnumMap.this.remove(o) != null;
+          }
+        };
       }
     return keys;
   }
@@ -256,46 +256,46 @@ public class EnumMap<K extends Enum<K>, V>
   {
     if (values == null)
       {
-	values = new AbstractCollection<V>()
-	{
-	  public int size()
-	  {
-	    return cardinality;
-	  }
+        values = new AbstractCollection<V>()
+        {
+          public int size()
+          {
+            return cardinality;
+          }
 
-	  public Iterator<V> iterator()
-	  {
-	    return new Iterator<V>()
-	    {
-	      int count = 0;
-	      int index = -1;
+          public Iterator<V> iterator()
+          {
+            return new Iterator<V>()
+            {
+              int count = 0;
+              int index = -1;
 
-	      public boolean hasNext()
-	      {
-		return count < cardinality;
-	      }
+              public boolean hasNext()
+              {
+                return count < cardinality;
+              }
 
-	      public V next()
-	      {
-		++count;
-		for (++index; store[index] == emptySlot; ++index)
-		  ;
-		return store[index];
-	      }
+              public V next()
+              {
+                ++count;
+                for (++index; store[index] == emptySlot; ++index)
+                  ;
+                return store[index];
+              }
 
-	      public void remove()
-	      {
-		--cardinality;
-		store[index] = (V) emptySlot;
-	      }
-	    };
-	  }
+              public void remove()
+              {
+                --cardinality;
+                store[index] = (V) emptySlot;
+              }
+            };
+          }
 
-	  public void clear()
-	  {
-	    EnumMap.this.clear();
-	  }
-	};
+          public void clear()
+          {
+            EnumMap.this.clear();
+          }
+        };
       }
     return values;
   }
@@ -304,74 +304,74 @@ public class EnumMap<K extends Enum<K>, V>
   {
     if (entries == null)
       {
-	entries = new AbstractSet<Map.Entry<K, V>>()
-	{
-	  public int size()
-	  {
-	    return cardinality;
-	  }
+        entries = new AbstractSet<Map.Entry<K, V>>()
+        {
+          public int size()
+          {
+            return cardinality;
+          }
 
-	  public Iterator<Map.Entry<K, V>> iterator()
-	  {
-	    return new Iterator<Map.Entry<K, V>>()
-	    {
-	      int count = 0;
-	      int index = -1;
+          public Iterator<Map.Entry<K, V>> iterator()
+          {
+            return new Iterator<Map.Entry<K, V>>()
+            {
+              int count = 0;
+              int index = -1;
 
-	      public boolean hasNext()
-	      {
-		return count < cardinality;
-	      }
+              public boolean hasNext()
+              {
+                return count < cardinality;
+              }
 
-	      public Map.Entry<K,V> next()
-	      {
-		++count;
-		for (++index; store[index] == emptySlot; ++index)
-		  ;
-		// FIXME: we could just return something that
-		// only knows the index.  That would be cleaner.
-		return new AbstractMap.SimpleEntry<K, V>(enumClass.getEnumConstants()[index],
-							   store[index])
-		{
-		  public V setValue(V newVal)
-		  {
-		    value = newVal;
-		    return put(key, newVal);
-		  }
-		};
-	      }
+              public Map.Entry<K,V> next()
+              {
+                ++count;
+                for (++index; store[index] == emptySlot; ++index)
+                  ;
+                // FIXME: we could just return something that
+                // only knows the index.  That would be cleaner.
+                return new AbstractMap.SimpleEntry<K, V>(enumClass.getEnumConstants()[index],
+                                                           store[index])
+                {
+                  public V setValue(V newVal)
+                  {
+                    value = newVal;
+                    return put(key, newVal);
+                  }
+                };
+              }
 
-	      public void remove()
-	      {
-		--cardinality;
-		store[index] = (V) emptySlot;
-	      }
-	    };
-	  }
+              public void remove()
+              {
+                --cardinality;
+                store[index] = (V) emptySlot;
+              }
+            };
+          }
 
-	  public void clear()
-	  {
-	    EnumMap.this.clear();
-	  }
+          public void clear()
+          {
+            EnumMap.this.clear();
+          }
 
-	  public boolean contains(Object o)
-	  {
-	    if (! (o instanceof Map.Entry))
-	      return false;
-	    Map.Entry<K, V> other = (Map.Entry<K, V>) o;
-	    return (containsKey(other.getKey())
-		    && AbstractCollection.equals(get(other.getKey()),
-						 other.getValue()));
-	  }
+          public boolean contains(Object o)
+          {
+            if (! (o instanceof Map.Entry))
+              return false;
+            Map.Entry<K, V> other = (Map.Entry<K, V>) o;
+            return (containsKey(other.getKey())
+                    && AbstractCollection.equals(get(other.getKey()),
+                                                 other.getValue()));
+          }
 
-	  public boolean remove(Object o)
-	  {
-	    if (! (o instanceof Map.Entry))
-	      return false;
-	    Map.Entry<K, V> other = (Map.Entry<K, V>) o;
-	    return EnumMap.this.remove(other.getKey()) != null;
-	  }
-	};
+          public boolean remove(Object o)
+          {
+            if (! (o instanceof Map.Entry))
+              return false;
+            Map.Entry<K, V> other = (Map.Entry<K, V>) o;
+            return EnumMap.this.remove(other.getKey()) != null;
+          }
+        };
       }
     return entries;
   }
@@ -391,12 +391,12 @@ public class EnumMap<K extends Enum<K>, V>
     EnumMap<K, V> result;
     try
       {
-	result = (EnumMap<K, V>) super.clone();
+        result = (EnumMap<K, V>) super.clone();
       }
     catch (CloneNotSupportedException ignore)
       {
-	// Can't happen.
-	result = null;
+        // Can't happen.
+        result = null;
       }
     result.store = (V[]) store.clone();
     return result;

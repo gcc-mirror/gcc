@@ -1,5 +1,5 @@
 /* Library support for -fsplit-stack.  */
-/* Copyright (C) 2009, 2010 Free Software Foundation, Inc.
+/* Copyright (C) 2009, 2010, 2011 Free Software Foundation, Inc.
    Contributed by Ian Lance Taylor <iant@google.com>.
 
 This file is part of GCC.
@@ -846,20 +846,24 @@ __splitstack_find (void *segment_arg, void *sp, size_t *len,
          parameters       <- old_stack
          return in f1
 	 return in f2
-	 data pushed by __morestack
+	 registers pushed by __morestack
 
-     On x86, the data pushed by __morestack includes the saved value
-     of the ebp/rbp register.  We want our caller to be able to see
-     that value, which can not be found on any other stack.  So we
-     adjust accordingly.  This may need to be tweaked for other
-     targets.  */
+     The registers pushed by __morestack may not be visible on any
+     other stack, if we are being called by a signal handler
+     immediately after the call to __morestack_unblock_signals.  We
+     want to adjust our return value to include those registers.  This
+     is target dependent.  */
 
   nsp = (char *) segment->old_stack;
-#ifdef STACK_GROWS_DOWNWARD
-  nsp -= 3 * sizeof (void *);
+
+#if defined (__x86_64__)
+  nsp -= 12 * sizeof (void *);
+#elif defined (__i386__)
+  nsp -= 6 * sizeof (void *);
 #else
-  nsp += 3 * sizeof (void *);
+#error "unrecognized target"
 #endif
+
   *next_sp = (void *) nsp;
 
 #ifdef STACK_GROWS_DOWNWARD

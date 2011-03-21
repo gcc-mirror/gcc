@@ -1,4 +1,4 @@
-/* HashAttributeSet.java -- 
+/* HashAttributeSet.java --
    Copyright (C) 2003, 2004, 2005, 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -51,7 +51,7 @@ import java.util.Iterator;
 public class HashAttributeSet implements AttributeSet, Serializable
 {
   private static final long serialVersionUID = 5311560590283707917L;
-  
+
   private Class myInterface;
   private transient HashMap attributeMap = new HashMap();
 
@@ -95,7 +95,7 @@ public class HashAttributeSet implements AttributeSet, Serializable
    * Creates a <code>HashAttributeSet</code> object with attributes
    * of the given attributes set in it.
    *
-   * @param attributes the attributes set to put into the set. If 
+   * @param attributes the attributes set to put into the set. If
    * <code>null</code> an empty set is created.
    */
   public HashAttributeSet(AttributeSet attributes)
@@ -114,14 +114,14 @@ public class HashAttributeSet implements AttributeSet, Serializable
   {
     if (interfaceName == null)
       throw new NullPointerException("interfaceName may not be null");
-    
+
     myInterface = interfaceName;
   }
-  
+
   /**
    * Creates a <code>HashAttributeSet</code> object with the given
    * attribute in it.
-   * 
+   *
    * @param attribute the attribute to put into the set.
    * @param interfaceName the interface that all members must implement.
    *
@@ -132,10 +132,10 @@ public class HashAttributeSet implements AttributeSet, Serializable
   protected HashAttributeSet(Attribute attribute, Class<?> interfaceName)
   {
     this(interfaceName);
-    
+
     if (attribute == null)
       throw new NullPointerException();
-    
+
     addInternal(attribute, interfaceName);
   }
 
@@ -154,7 +154,7 @@ public class HashAttributeSet implements AttributeSet, Serializable
   protected HashAttributeSet(Attribute[] attributes, Class<?> interfaceName)
   {
     this(interfaceName);
-    
+
     if (attributes != null)
       {
         for (int index = 0; index < attributes.length; index++)
@@ -166,7 +166,7 @@ public class HashAttributeSet implements AttributeSet, Serializable
    * Creates a <code>HashAttributeSet</code> object with attributes
    * of the given attributes set in it.
    *
-   * @param attributes the attributes set to put into the set. If 
+   * @param attributes the attributes set to put into the set. If
    * <code>null</code> an empty set is created.
    * @param interfaceName the interface that all members must implement.
    *
@@ -176,18 +176,18 @@ public class HashAttributeSet implements AttributeSet, Serializable
   protected HashAttributeSet(AttributeSet attributes, Class<?> interfaceName)
   {
     this(interfaceName);
-    
+
     if (attributes != null)
       addAllInternal(attributes, interfaceName);
   }
 
   /**
-   * Adds the specified attribute value to this attribute set 
+   * Adds the specified attribute value to this attribute set
    * if it is not already present.
-   * 
-   * This operation removes any existing attribute of the same category 
-   * before adding the given attribute to the set. 
-   * 
+   *
+   * This operation removes any existing attribute of the same category
+   * before adding the given attribute to the set.
+   *
    * @param attribute the attribute to add.
    * @return <code>true</code> if the set is changed, false otherwise.
    * @throws NullPointerException if the attribute is <code>null</code>.
@@ -214,11 +214,11 @@ public class HashAttributeSet implements AttributeSet, Serializable
 
   /**
    * Adds all of the elements in the specified set to this attribute set.
-   * 
+   *
    * @param attributes the set of attributes to add.
    * @return <code>true</code> if the set is changed, false otherwise.
    * @throws UnmodifiableSetException if the set does not support modification.
-   * 
+   *
    * @see #add(Attribute)
    */
   public boolean addAll(AttributeSet attributes)
@@ -240,7 +240,7 @@ public class HashAttributeSet implements AttributeSet, Serializable
 
   /**
    * Removes all attributes from this attribute set.
-   * 
+   *
    * @throws UnmodifiableSetException if the set does not support modification.
    */
   public void clear()
@@ -249,9 +249,9 @@ public class HashAttributeSet implements AttributeSet, Serializable
   }
 
   /**
-   * Checks if this attributes set contains an attribute with the given 
+   * Checks if this attributes set contains an attribute with the given
    * category.
-   * 
+   *
    * @param category the category to test for.
    * @return <code>true</code> if an attribute of the category is contained
    * in the set, <code>false</code> otherwise.
@@ -263,7 +263,7 @@ public class HashAttributeSet implements AttributeSet, Serializable
 
   /**
    * Checks if this attribute set contains the given attribute.
-   * 
+   *
    * @param attribute the attribute to test for.
    * @return <code>true</code> if the attribute is contained in the set,
    * <code>false</code> otherwise.
@@ -277,7 +277,7 @@ public class HashAttributeSet implements AttributeSet, Serializable
    * Tests this set for equality with the given object. <code>true</code> is
    * returned, if the given object is also of type <code>AttributeSet</code>
    * and the contained attributes are the same as in this set.
-   * 
+   *
    * @param obj the Object to test.
    * @return <code>true</code> if equal, false otherwise.
    */
@@ -291,28 +291,28 @@ public class HashAttributeSet implements AttributeSet, Serializable
 
   /**
    * Returns the attribute object contained in this set for the given attribute
-   * category. 
-   * 
-   * @param category the category of the attribute. A <code>Class</code> 
-   * instance of a class implementing the <code>Attribute</code> interface. 
-   * @return The attribute for this category or <code>null</code> if no 
-   * attribute is contained for the given category. 
+   * category.
+   *
+   * @param category the category of the attribute. A <code>Class</code>
+   * instance of a class implementing the <code>Attribute</code> interface.
+   * @return The attribute for this category or <code>null</code> if no
+   * attribute is contained for the given category.
    * @throws NullPointerException if category is null.
-   * @throws ClassCastException if category is not implementing 
+   * @throws ClassCastException if category is not implementing
    * <code>Attribute</code>.
    */
   public Attribute get(Class<?> category)
   {
     if (category == null)
       throw new NullPointerException("category may not be null");
-    
+
     return (Attribute) attributeMap.get(category);
   }
-  
+
   /**
    * Returns the hashcode value. The hashcode value is the sum of all hashcodes
    * of the attributes contained in this set.
-   * 
+   *
    * @return The hashcode for this attribute set.
    */
   public int hashCode()
@@ -321,7 +321,7 @@ public class HashAttributeSet implements AttributeSet, Serializable
     Iterator it = attributeMap.values().iterator();
     while (it.hasNext())
       hashcode = hashcode + it.next().hashCode();
-          
+
     return hashcode;
   }
 
@@ -338,9 +338,9 @@ public class HashAttributeSet implements AttributeSet, Serializable
   /**
    * Removes the given attribute from the set. If the given attribute is <code>null</code>
    * nothing is done and <code>false</code> is returned.
-   * 
-   * @param attribute the attribute to remove.  
-   * @return <code>true</code> if removed, false in all other cases. 
+   *
+   * @param attribute the attribute to remove.
+   * @return <code>true</code> if removed, false in all other cases.
    * @throws UnmodifiableSetException if the set does not support modification.
    */
   public boolean remove(Attribute attribute)
@@ -354,9 +354,9 @@ public class HashAttributeSet implements AttributeSet, Serializable
   /**
    * Removes the attribute entry of the given category from the set. If the given
    * category is <code>null</code> nothing is done and <code>false</code> is returned.
-   * 
+   *
    * @param category the category of the entry to be removed.
-   * @return <code>true</code> if an attribute is removed, false in all other cases. 
+   * @return <code>true</code> if an attribute is removed, false in all other cases.
    * @throws UnmodifiableSetException if the set does not support modification.
    */
   public boolean remove(Class<?> category)
@@ -393,10 +393,10 @@ public class HashAttributeSet implements AttributeSet, Serializable
         array[index] = (Attribute) it.next();
         index++;
       }
-    
+
     return array;
   }
-  
+
   // Implemented as specified in serialized form
   private void readObject(ObjectInputStream s)
     throws ClassNotFoundException, IOException
@@ -407,13 +407,13 @@ public class HashAttributeSet implements AttributeSet, Serializable
     for (int i=0; i < size; i++)
       add((Attribute) s.readObject());
   }
-         
+
   private void writeObject(ObjectOutputStream s) throws IOException
   {
     s.writeObject(myInterface);
     s.writeInt(size());
     Iterator it = attributeMap.values().iterator();
     while (it.hasNext())
-      s.writeObject(it.next());    
+      s.writeObject(it.next());
   }
 }

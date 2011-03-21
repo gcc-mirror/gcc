@@ -392,6 +392,7 @@ run_gcc (unsigned argc, char *argv[])
   if (linker_output)
     {
       char *output_dir, *base, *name;
+      bool bit_bucket = strcmp (linker_output, HOST_BIT_BUCKET) == 0;
 
       output_dir = xstrdup (linker_output);
       base = output_dir;
@@ -406,8 +407,11 @@ run_gcc (unsigned argc, char *argv[])
 	  static char current_dir[] = { '.', DIR_SEPARATOR, '\0' };
 	  output_dir = current_dir;
 	}
-      *argv_ptr++ = "-dumpdir";
-      *argv_ptr++ = output_dir;
+      if (!bit_bucket)
+	{
+	  *argv_ptr++ = "-dumpdir";
+	  *argv_ptr++ = output_dir;
+	}
 
       *argv_ptr++ = "-dumpbase";
     }
@@ -422,7 +426,7 @@ run_gcc (unsigned argc, char *argv[])
       argv_ptr[1] = "-o";
       argv_ptr[2] = flto_out;
     }
-  else if (lto_mode == LTO_MODE_WHOPR)
+  else 
     {
       const char *list_option = "-fltrans-output-list=";
       size_t list_option_len = strlen (list_option);
@@ -457,8 +461,6 @@ run_gcc (unsigned argc, char *argv[])
 
       argv_ptr[2] = "-fwpa";
     }
-  else
-    fatal ("invalid LTO mode");
 
   /* Append the input objects and possible preceeding arguments.  */
   for (i = 1; i < argc; ++i)
@@ -473,7 +475,7 @@ run_gcc (unsigned argc, char *argv[])
       free (flto_out);
       flto_out = NULL;
     }
-  else if (lto_mode == LTO_MODE_WHOPR)
+  else
     {
       FILE *stream = fopen (ltrans_output_file, "r");
       FILE *mstream = NULL;
@@ -615,8 +617,6 @@ cont:
       free (input_names);
       free (list_option_full);
     }
-  else
-    fatal ("invalid LTO mode");
 
   obstack_free (&env_obstack, NULL);
 }

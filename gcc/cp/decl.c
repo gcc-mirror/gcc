@@ -1,6 +1,6 @@
 /* Process declarations and variables for C++ compiler.
    Copyright (C) 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
-   2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+   2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
@@ -178,7 +178,7 @@ tree integer_two_node;
 /* Used only for jumps to as-yet undefined labels, since jumps to
    defined labels can have their validity checked immediately.  */
 
-struct GTY(()) named_label_use_entry {
+struct GTY((chain_next ("%h.next"))) named_label_use_entry {
   struct named_label_use_entry *next;
   /* The binding level to which this entry is *currently* attached.
      This is initially the binding level in which the goto appeared,
@@ -1456,6 +1456,7 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 	      error ("declaration of C function %q#D conflicts with",
 		     newdecl);
 	      error ("previous declaration %q+#D here", olddecl);
+	      return NULL_TREE;
 	    }
 	  else if (compparms (TYPE_ARG_TYPES (TREE_TYPE (newdecl)),
 			      TYPE_ARG_TYPES (TREE_TYPE (olddecl))))
@@ -3706,7 +3707,10 @@ cp_make_fname_decl (location_t loc, tree id, int type_dep)
 		      LOOKUP_ONLYCONVERTING);
     }
   else
-    pushdecl_top_level_and_finish (decl, init);
+    {
+      DECL_THIS_STATIC (decl) = true;
+      pushdecl_top_level_and_finish (decl, init);
+    }
 
   return decl;
 }
@@ -4593,6 +4597,9 @@ check_array_designated_initializer (const constructor_elt *ce)
       if (ce->index == error_mark_node)
 	error ("name used in a GNU-style designated "
 	       "initializer for an array");
+      else if (TREE_CODE (ce->index) == INTEGER_CST)
+	/* An index added by reshape_init.  */
+	return true;
       else
 	{
 	  gcc_assert (TREE_CODE (ce->index) == IDENTIFIER_NODE);
@@ -4896,7 +4903,8 @@ reshape_init_array_1 (tree elt_type, tree max_index, reshape_iter *d)
       elt_init = reshape_init_r (elt_type, d, /*first_initializer_p=*/false);
       if (elt_init == error_mark_node)
 	return error_mark_node;
-      CONSTRUCTOR_APPEND_ELT (CONSTRUCTOR_ELTS (new_init), NULL_TREE, elt_init);
+      CONSTRUCTOR_APPEND_ELT (CONSTRUCTOR_ELTS (new_init),
+			      size_int (index), elt_init);
     }
 
   return new_init;
@@ -5821,12 +5829,10 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
   if (init && TREE_CODE (decl) == VAR_DECL)
     {
       DECL_NONTRIVIALLY_INITIALIZED_P (decl) = 1;
-      /* FIXME we rely on TREE_CONSTANT below; basing that on
-	 init_const_expr_p is probably wrong for C++0x.  */
       if (init_const_expr_p)
 	{
-	  /* Set these flags now for C++98 templates.  We'll update the
-	     flags in store_init_value for instantiations and C++0x.  */
+	  /* Set these flags now for templates.  We'll update the flags in
+	     store_init_value for instantiations.  */
 	  DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (decl) = 1;
 	  if (decl_maybe_constant_var_p (decl))
 	    TREE_CONSTANT (decl) = 1;
@@ -7519,9 +7525,14 @@ compute_array_index_type (tree name, tree size, tsubst_flags_t complain)
 	      if (size == error_mark_node)
 		return error_mark_node;
 	      type = TREE_TYPE (size);
+	      /* We didn't support this case in GCC 3.2, so don't bother
+		 trying to model it now in ABI v1.  */
+	      abi_1_itype = error_mark_node;
 	    }
 
 	  size = maybe_constant_value (size);
+	  if (!TREE_CONSTANT (size))
+	    size = osize;
 	}
 
       if (error_operand_p (size))
@@ -7561,7 +7572,8 @@ compute_array_index_type (tree name, tree size, tsubst_flags_t complain)
       return itype;
     }
   
-  if (!abi_version_at_least (2) && processing_template_decl)
+  if (!abi_version_at_least (2) && processing_template_decl
+      && abi_1_itype == NULL_TREE)
     /* For abi-1, we handled all instances in templates the same way,
        even when they were non-dependent. This affects the manglings
        produced.  So, we do the normal checking for non-dependent
@@ -7675,7 +7687,7 @@ compute_array_index_type (tree name, tree size, tsubst_flags_t complain)
     }
 
   /* Create and return the appropriate index type.  */
-  if (abi_1_itype)
+  if (abi_1_itype && abi_1_itype != error_mark_node)
     {
       tree t = build_index_type (itype);
       TYPE_CANONICAL (abi_1_itype) = TYPE_CANONICAL (t);
@@ -9212,6 +9224,12 @@ grokdeclarator (const cp_declarator *declarator,
       else if (type_quals & TYPE_QUAL_CONST)
 	{
 	  error ("const %qs cannot be declared %<mutable%>", name);
+	  storage_class = sc_none;
+	}
+      else if (TREE_CODE (type) == REFERENCE_TYPE)
+	{
+	  permerror (input_location, "reference %qs cannot be declared "
+	             "%<mutable%>", name);
 	  storage_class = sc_none;
 	}
     }
@@ -11863,7 +11881,8 @@ build_enumerator (tree name, tree value, tree enumtype, location_t loc)
 	{
 	  value = cxx_constant_value (value);
 
-	  if (TREE_CODE (value) == INTEGER_CST)
+	  if (TREE_CODE (value) == INTEGER_CST
+	      && INTEGRAL_OR_ENUMERATION_TYPE_P (TREE_TYPE (value)))
 	    {
 	      value = perform_integral_promotions (value);
 	    }
@@ -13325,10 +13344,14 @@ static_fn_type (tree memfntype)
 void
 revert_static_member_fn (tree decl)
 {
-  TREE_TYPE (decl) = static_fn_type (decl);
+  tree stype = static_fn_type (decl);
 
-  if (cp_type_quals (TREE_TYPE (decl)) != TYPE_UNQUALIFIED)
-    error ("static member function %q#D declared with type qualifiers", decl);
+  if (type_memfn_quals (stype) != TYPE_UNQUALIFIED)
+    {
+      error ("static member function %q#D declared with type qualifiers", decl);
+      stype = apply_memfn_quals (stype, TYPE_UNQUALIFIED);
+    }
+  TREE_TYPE (decl) = stype;
 
   if (DECL_ARGUMENTS (decl))
     DECL_ARGUMENTS (decl) = DECL_CHAIN (DECL_ARGUMENTS (decl));

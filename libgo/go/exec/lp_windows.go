@@ -49,7 +49,7 @@ func LookPath(file string) (string, os.Error) {
 		if f, ok := canExec(file, exts); ok {
 			return f, nil
 		}
-		return ``, os.ENOENT
+		return ``, &PathError{file}
 	}
 	if pathenv := os.Getenv(`PATH`); pathenv == `` {
 		if f, ok := canExec(`.\`+file, exts); ok {
@@ -62,5 +62,5 @@ func LookPath(file string) (string, os.Error) {
 			}
 		}
 	}
-	return ``, os.ENOENT
+	return ``, &PathError{file}
 }

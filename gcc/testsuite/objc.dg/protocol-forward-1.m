@@ -24,7 +24,3 @@
 
 @protocol MyProtocol3 <MyProtocol> /* Ok */
 @end
-
-/* TODO: I guess if MyProtocol3 is now used in an @interface, we
-   should check that all the protocols it references are defined
-   too ?  */

@@ -55,7 +55,7 @@ public class QtGraphicsEnvironment extends GraphicsEnvironment
     toolkit = tk;
     // Get the number of screens from Qt.
     int n = toolkit.numScreens();
-    
+
     /**
      * Create the screen device objects
      */
@@ -77,7 +77,7 @@ public class QtGraphicsEnvironment extends GraphicsEnvironment
   {
     return toolkit.getFontList();
   }
-  
+
   public String[] getAvailableFontFamilyNames(Locale l)
   {
     return getAvailableFontFamilyNames();
@@ -103,5 +103,3 @@ public class QtGraphicsEnvironment extends GraphicsEnvironment
     return toolkit;
   }
 }
-
-

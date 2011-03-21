@@ -1,4 +1,4 @@
-/* JobName.java -- 
+/* JobName.java --
    Copyright (C) 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -46,12 +46,12 @@ import javax.print.attribute.PrintRequestAttribute;
 import javax.print.attribute.TextSyntax;
 
 /**
- * The <code>JobName</code> printing attribute provides the name of a 
+ * The <code>JobName</code> printing attribute provides the name of a
  * print job for identification.
  * <p>
  * <b>IPP Compatibility:</b> JobName is an IPP 1.1 attribute.
  * </p>
- * 
+ *
  * @author Michael Koch (konqueror@gmx.de)
  */
 public final class JobName extends TextSyntax
@@ -78,7 +78,7 @@ public final class JobName extends TextSyntax
    *
    * @param obj the object to test
    *
-   * @return <code>true</code> if both objects are equal, 
+   * @return <code>true</code> if both objects are equal,
    * <code>false</code> otherwise.
    */
   public boolean equals(Object obj)

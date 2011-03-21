@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -43,7 +43,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 
-/** 
+/**
  * An output stream that filters LFs into CR/LF pairs.
  *
  * @author Chris Burdess (dog@gnu.org)
@@ -105,7 +105,7 @@ public class CRLFOutputStream
       }
     last = ch;
   }
-  
+
   /**
    * Writes a byte array to the underlying stream.
    * @exception IOException if an I/O error occurred
@@ -150,7 +150,7 @@ public class CRLFOutputStream
         out.write (b, d, len - d);
       }
   }
-  
+
   /**
    * Writes the specified ASCII string to the underlying stream.
    * @exception IOException if an I/O error occurred
@@ -180,4 +180,3 @@ public class CRLFOutputStream
     out.write(CRLF, 0, 2);
   }
 }
-

@@ -340,7 +340,7 @@ score7_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
   if (delta != 0)
     {
       rtx offset = GEN_INT (delta);
-      if (!CONST_OK_FOR_LETTER_P (delta, 'L'))
+      if (!(delta >= -32768 && delta <= 32767))
         {
           emit_move_insn (temp1, offset);
           offset = temp1;
@@ -638,31 +638,8 @@ void
 score7_option_override (void)
 {
   flag_pic = false;
-  if (!flag_pic)
-    score7_sdata_max = (global_options_set.x_g_switch_value
-			? g_switch_value
-			: SCORE7_DEFAULT_SDATA_MAX);
-  else
-    {
-      score7_sdata_max = 0;
-      if (global_options_set.x_g_switch_value && (g_switch_value != 0))
-        warning (0, "-fPIC and -G are incompatible");
-    }
+  score7_sdata_max = SCORE7_DEFAULT_SDATA_MAX;
 
-  score_char_to_class['d'] = G32_REGS;
-  score_char_to_class['e'] = G16_REGS;
-  score_char_to_class['t'] = T32_REGS;
-
-  score_char_to_class['h'] = HI_REG;
-  score_char_to_class['l'] = LO_REG;
-  score_char_to_class['x'] = CE_REGS;
-
-  score_char_to_class['q'] = CN_REG;
-  score_char_to_class['y'] = LC_REG;
-  score_char_to_class['z'] = SC_REG;
-  score_char_to_class['a'] = SP_REGS;
-
-  score_char_to_class['c'] = CR_REGS;
 }
 
 /* Implement REGNO_REG_CLASS macro.  */
@@ -710,42 +687,6 @@ score7_secondary_reload_class (enum reg_class rclass,
   return NO_REGS;
 }
 
-/* Implement CONST_OK_FOR_LETTER_P macro.  */
-/* imm constraints
-   I        imm16 << 16
-   J        uimm5
-   K        uimm16
-   L        simm16
-   M        uimm14
-   N        simm14  */
-int
-score7_const_ok_for_letter_p (HOST_WIDE_INT value, char c)
-{
-  switch (c)
-    {
-    case 'I': return ((value & 0xffff) == 0);
-    case 'J': return IMM_IN_RANGE (value, 5, 0);
-    case 'K': return IMM_IN_RANGE (value, 16, 0);
-    case 'L': return IMM_IN_RANGE (value, 16, 1);
-    case 'M': return IMM_IN_RANGE (value, 14, 0);
-    case 'N': return IMM_IN_RANGE (value, 14, 1);
-    default : return 0;
-    }
-}
-
-/* Implement EXTRA_CONSTRAINT macro.  */
-/* Z        symbol_ref  */
-int
-score7_extra_constraint (rtx op, char c)
-{
-  switch (c)
-    {
-    case 'Z':
-      return GET_CODE (op) == SYMBOL_REF;
-    default:
-      gcc_unreachable ();
-    }
-}
 
 /* Return truth value on whether or not a given hard register
    can support a given mode.  */
@@ -884,7 +825,6 @@ score7_asm_trampoline_template (FILE *f)
 void
 score7_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
 {
-#define FFCACHE          "_flush_cache"
 #define CODE_SIZE        (TRAMPOLINE_INSNS * UNITS_PER_WORD)
 
   rtx fnaddr = XEXP (DECL_RTL (fndecl), 0);
@@ -899,11 +839,6 @@ score7_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
   mem = adjust_address (m_tramp, SImode, CODE_SIZE + GET_MODE_SIZE (SImode));
   emit_move_insn (mem, chain_value);
 
-  emit_library_call (gen_rtx_SYMBOL_REF (Pmode, FFCACHE),
-                     LCT_NORMAL, VOIDmode, 2,
-                     addr, Pmode,
-                     GEN_INT (TRAMPOLINE_SIZE), SImode);
-#undef FFCACHE
 #undef CODE_SIZE
 }
 
@@ -1018,28 +953,28 @@ score7_rtx_costs (rtx x, int code, int outer_code, int *total,
     case CONST_INT:
       if (outer_code == SET)
         {
-          if (CONST_OK_FOR_LETTER_P (INTVAL (x), 'I')
-              || CONST_OK_FOR_LETTER_P (INTVAL (x), 'L'))
+          if (((INTVAL (x) & 0xffff) == 0) 
+              || (INTVAL (x) >= -32768 && INTVAL (x) <= 32767))
             *total = COSTS_N_INSNS (1);
           else
             *total = COSTS_N_INSNS (2);
         }
       else if (outer_code == PLUS || outer_code == MINUS)
         {
-          if (CONST_OK_FOR_LETTER_P (INTVAL (x), 'N'))
+          if (INTVAL (x) >= -8192 && INTVAL (x) <= 8191)
             *total = 0;
-          else if (CONST_OK_FOR_LETTER_P (INTVAL (x), 'I')
-                   || CONST_OK_FOR_LETTER_P (INTVAL (x), 'L'))
+          else if (((INTVAL (x) & 0xffff) == 0)
+                   || (INTVAL (x) >= -32768 && INTVAL (x) <= 32767))
             *total = 1;
           else
             *total = COSTS_N_INSNS (2);
         }
       else if (outer_code == AND || outer_code == IOR)
         {
-          if (CONST_OK_FOR_LETTER_P (INTVAL (x), 'M'))
+          if (INTVAL (x) >= 0 && INTVAL (x) <= 16383)
             *total = 0;
-          else if (CONST_OK_FOR_LETTER_P (INTVAL (x), 'I')
-                   || CONST_OK_FOR_LETTER_P (INTVAL (x), 'K'))
+          else if (((INTVAL (x) & 0xffff) == 0)
+                   || (INTVAL (x) >= 0 && INTVAL (x) <= 65535))
             *total = 1;
           else
             *total = COSTS_N_INSNS (2);
@@ -1456,7 +1391,7 @@ score7_prologue (void)
     {
       rtx insn;
 
-      if (CONST_OK_FOR_LETTER_P (-size, 'L'))
+      if (size >= -32768 && size <= 32767)
         EMIT_PL (emit_insn (gen_add3_insn (stack_pointer_rtx,
                                            stack_pointer_rtx,
                                            GEN_INT (-size))));
@@ -1511,7 +1446,7 @@ score7_epilogue (int sibcall_p)
 
   if (size)
     {
-      if (CONST_OK_FOR_LETTER_P (size, 'L'))
+      if (size >= -32768 && size <= 32767)
         emit_insn (gen_add3_insn (base, base, GEN_INT (size)));
       else
         {
@@ -1714,7 +1649,7 @@ score7_pr_addr_post (rtx *ops, int idata, int iaddr, char *ip, enum score_mem_un
         {
           HOST_WIDE_INT offset = INTVAL (ai.offset);
           if (SCORE_ALIGN_UNIT (offset, unit)
-              && CONST_OK_FOR_LETTER_P (offset >> unit, 'J'))
+              && (((offset >> unit) >= 0) && ((offset >> unit) <= 31)))
             {
               ops[iaddr] = ai.offset;
               return snprintf (ip, INS_BUF_SZ,

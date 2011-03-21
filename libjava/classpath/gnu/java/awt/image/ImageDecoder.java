@@ -48,7 +48,7 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.Vector;
 
-public abstract class ImageDecoder implements ImageProducer 
+public abstract class ImageDecoder implements ImageProducer
 {
   Vector consumers = new Vector ();
   String filename;
@@ -94,7 +94,7 @@ public abstract class ImageDecoder implements ImageProducer
     length = imagelength;
   }
 
-  public void addConsumer (ImageConsumer ic) 
+  public void addConsumer (ImageConsumer ic)
   {
     consumers.addElement (ic);
   }
@@ -103,7 +103,7 @@ public abstract class ImageDecoder implements ImageProducer
   {
     return consumers.contains (ic);
   }
-  
+
   public void removeConsumer (ImageConsumer ic)
   {
     consumers.removeElement (ic);
@@ -115,20 +115,20 @@ public abstract class ImageDecoder implements ImageProducer
       addConsumer(ic);
 
     Vector list = (Vector) consumers.clone ();
-    try 
+    try
       {
-	// Create the input stream here rather than in the
-	// ImageDecoder constructors so that exceptions cause
-	// imageComplete to be called with an appropriate error
-	// status.
+        // Create the input stream here rather than in the
+        // ImageDecoder constructors so that exceptions cause
+        // imageComplete to be called with an appropriate error
+        // status.
         if (input == null)
           {
-            try 
+            try
               {
                 if (url != null)
                   input = url.openStream();
-		else if (datainput != null)
-		  input = new DataInputStreamWrapper(datainput);
+                else if (datainput != null)
+                  input = new DataInputStreamWrapper(datainput);
                 else
                   {
                     if (filename != null)
@@ -137,8 +137,8 @@ public abstract class ImageDecoder implements ImageProducer
                       input = new ByteArrayInputStream (data, offset, length);
                   }
                 produce (list, input);
-              } 
-            finally 
+              }
+            finally
               {
                 input = null;
               }
@@ -150,16 +150,16 @@ public abstract class ImageDecoder implements ImageProducer
       }
     catch (Exception e)
       {
-	for (int i = 0; i < list.size (); i++)
-	  {
-	    ImageConsumer ic2 = (ImageConsumer) list.elementAt (i);
-	    ic2.imageComplete (ImageConsumer.IMAGEERROR);
-	  }
+        for (int i = 0; i < list.size (); i++)
+          {
+            ImageConsumer ic2 = (ImageConsumer) list.elementAt (i);
+            ic2.imageComplete (ImageConsumer.IMAGEERROR);
+          }
       }
   }
 
-  public void requestTopDownLeftRightResend (ImageConsumer ic) 
-  { 
+  public void requestTopDownLeftRightResend (ImageConsumer ic)
+  {
   }
 
   public abstract void produce (Vector v, InputStream is) throws IOException;
@@ -176,13 +176,13 @@ public abstract class ImageDecoder implements ImageProducer
     public int read() throws IOException
     {
       try
-	{
-	  return datainput.readByte() & 0xFF;
-	}
+        {
+          return datainput.readByte() & 0xFF;
+        }
       catch (EOFException eofe)
-	{
-	  return -1;
-	}
+        {
+          return -1;
+        }
     }
   }
 }

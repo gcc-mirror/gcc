@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # Tests a set of patches from a directory.
-# Copyright (C) 2007, 2008  Free Software Foundation, Inc.
+# Copyright (C) 2007, 2008, 2011  Free Software Foundation, Inc.
 # Contributed by Sebastian Pop <sebastian.pop@amd.com>
 
 # This program is free software; you can redistribute it and/or modify
@@ -36,13 +36,14 @@ standby=$default_standby
 default_watermark=0.60
 watermark=$default_watermark
 savecompilers=false
+nopristinecache=false
 nogpg=false
 stop=false
 
 usage() {
     cat <<EOF
 patch_tester.sh [-j<N>] [-standby N] [-watermark N] [-savecompilers] [-nogpg]
-                [-svnpath URL] [-stop]
+                [-svnpath URL] [-stop] [-nopristinecache]
                 <source_dir> [patches_dir [state_dir [build_dir]]]
 
     J is the flag passed to make.  Default is empty string.
@@ -55,6 +56,12 @@ patch_tester.sh [-j<N>] [-standby N] [-watermark N] [-savecompilers] [-nogpg]
 
     SAVECOMPILERS copies the compilers in the same directory as the
     test results for the non patched version.  Default is not copy.
+
+    NOPRISTINECACHE prevents use of cached test results from any earlier
+    test runs on the pristine version of the branch and revision under
+    test (the default behaviour).  This should be used when testing the
+    same revision and patch with multiple sets of configure options, as
+    these may affect the set of baseline failures.
 
     NOGPG can be used to avoid checking the GPG signature of patches.
 
@@ -102,6 +109,9 @@ while [ $# -ne 0 ]; do
 	    ;;
 	-savecompilers)
 	    savecompilers=true; shift
+	    ;;
+	-nopristinecache)
+	    nopristinecache=true; shift
 	    ;;
 	-nogpg)
 	    nogpg=true; shift
@@ -366,6 +376,9 @@ bootntest_pristine () {
     current_version=`svn info $SOURCE | grep "^Revision:" | sed -e "s/^Revision://g" -e "s/ //g"`
     PRISTINE=$STATE/$current_branch/$current_version
 
+    if [ $nopristinecache = true ]; then
+      rm -rf $PRISTINE
+    fi
     if [ -d $PRISTINE ]; then
 	ln -s $PRISTINE $TESTING/pristine
 	return 0

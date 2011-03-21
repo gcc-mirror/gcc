@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -118,7 +118,7 @@ public class StringWriter extends Writer
    * as a <code>String</code>.
    *
    * @return A <code>String</code> representing the chars written to
-   * this stream. 
+   * this stream.
    */
   public String toString ()
   {
@@ -170,7 +170,7 @@ public class StringWriter extends Writer
    * @param str The <code>String</code> to write characters from
    * @param offset The character position to start writing from
    * @param len The number of characters to write.
-   */ 
+   */
   public void write (String str, int offset, int len)
   {
 //      char[] tmpbuf = new char[len];

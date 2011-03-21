@@ -58,7 +58,7 @@ import java.util.Arrays;
 /**
  * An implementation of of the RSA signature algorithm; this is an RSA
  * encrypted MD5 hash followed by a SHA-1 hash.
- * 
+ *
  * @author Casey Marshall (csm@gnu.org)
  */
 public class SSLRSASignatureImpl extends SignatureSpi
@@ -69,7 +69,7 @@ public class SSLRSASignatureImpl extends SignatureSpi
   private final MessageDigest md5, sha;
   private boolean initSign = false;
   private boolean initVerify = false;
-  
+
   public SSLRSASignatureImpl() throws NoSuchAlgorithmException
   {
     md5 = MessageDigest.getInstance("MD5");
@@ -149,7 +149,7 @@ public class SSLRSASignatureImpl extends SignatureSpi
   @Override protected byte[] engineSign() throws SignatureException
   {
     // FIXME we need to add RSA blinding to this, somehow.
-    
+
     if (!initSign)
       throw new SignatureException("not initialized for signing");
     // Pad the hash results with RSA block type 1.

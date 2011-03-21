@@ -100,17 +100,17 @@ import javax.swing.table.DefaultTableModel;
  * A UI delegate for the {@link JFileChooser} component.  This class is only
  * partially implemented and is not usable yet.
  */
-public class MetalFileChooserUI 
+public class MetalFileChooserUI
   extends BasicFileChooserUI
 {
-  
+
   /**
    * A renderer for the files and directories in the file chooser table.
    */
   class TableFileRenderer
     extends DefaultTableCellRenderer
   {
-    
+
     /**
      * Creates a new renderer.
      */
@@ -118,17 +118,17 @@ public class MetalFileChooserUI
     {
       super();
     }
-    
+
     /**
      * Returns a component that can render the specified value.
-     * 
+     *
      * @param table  the table
      * @param value  the string value of the cell
      * @param isSelected  is the item selected?
      * @param hasFocus  does the item have the focus?
      * @param row  the row
      * @param column  the column
-     * 
+     *
      * @return The renderer.
      */
     public Component getTableCellRendererComponent(JTable table, Object value,
@@ -143,12 +143,12 @@ public class MetalFileChooserUI
         }
       else
         setIcon(null);
-      
+
       setText(value.toString());
       setOpaque(true);
       setEnabled(table.isEnabled());
       setFont(fileList.getFont());
-      
+
       if (startEditing && column == 0 || !isSelected)
         {
           setBackground(table.getBackground());
@@ -164,20 +164,20 @@ public class MetalFileChooserUI
         setBorder(UIManager.getBorder("Table.focusCellHighlightBorder"));
       else
         setBorder(noFocusBorder);
-      
+
       return this;
     }
   }
-  
+
   /**
    * ActionListener for the list view.
    */
   class ListViewActionListener implements ActionListener
   {
-    
+
     /**
      * This method is invoked when an action occurs.
-     * 
+     *
      * @param e -
      *          the <code>ActionEvent</code> that occurred
      */
@@ -195,23 +195,23 @@ public class MetalFileChooserUI
           if (index.length > 0)
               for (int i = 0; i < index.length; i++)
                 fileList.getSelectionModel().addSelectionInterval(index[i], index[i]);
-          
+
           fc.add(fileListPanel, BorderLayout.CENTER);
           fc.revalidate();
           fc.repaint();
         }
     }
   }
-  
+
   /**
    * ActionListener for the details view.
    */
   class DetailViewActionListener implements ActionListener
   {
-    
+
     /**
      * This method is invoked when an action occurs.
-     * 
+     *
      * @param e -
      *          the <code>ActionEvent</code> that occurred
      */
@@ -223,7 +223,7 @@ public class MetalFileChooserUI
           JFileChooser fc = getFileChooser();
           listView = false;
           fc.remove(fileListPanel);
-          
+
           if (fileTable == null)
             createDetailsView(fc);
           else
@@ -235,18 +235,18 @@ public class MetalFileChooserUI
               for (int i = 0; i < index.length; i++)
                 fileTable.getSelectionModel().addSelectionInterval(index[i], index[i]);
             }
-          
+
           fc.add(fileTablePanel, BorderLayout.CENTER);
           fc.revalidate();
           fc.repaint();
         }
     }
   }
-  
+
   /**
    * A property change listener.
    */
-  class MetalFileChooserPropertyChangeListener 
+  class MetalFileChooserPropertyChangeListener
     implements PropertyChangeListener
   {
     /**
@@ -255,25 +255,25 @@ public class MetalFileChooserUI
     public MetalFileChooserPropertyChangeListener()
     {
     }
-    
+
     /**
      * Handles a property change event.
-     * 
+     *
      * @param e  the event.
      */
     public void propertyChange(PropertyChangeEvent e)
     {
       JFileChooser filechooser = getFileChooser();
-      
+
       String n = e.getPropertyName();
       if (n.equals(JFileChooser.MULTI_SELECTION_ENABLED_CHANGED_PROPERTY))
         {
-          int mode = -1; 
+          int mode = -1;
           if (filechooser.isMultiSelectionEnabled())
             mode = ListSelectionModel.MULTIPLE_INTERVAL_SELECTION;
           else
             mode = ListSelectionModel.SINGLE_SELECTION;
-          
+
           if (listView)
             fileList.setSelectionMode(mode);
           else
@@ -282,7 +282,7 @@ public class MetalFileChooserUI
       else if (n.equals(JFileChooser.SELECTED_FILE_CHANGED_PROPERTY))
         {
           File file = filechooser.getSelectedFile();
-          
+
           if (file != null
               && filechooser.getDialogType() == JFileChooser.SAVE_DIALOG)
             {
@@ -301,12 +301,12 @@ public class MetalFileChooserUI
                   filechooser.setApproveButtonToolTipText(saveButtonToolTipText);
                 }
             }
-            
+
           if (file == null)
             setFileName(null);
-          else if (file.isFile() || filechooser.getFileSelectionMode() 
-		   != JFileChooser.FILES_ONLY)
-	    setFileName(file.getName());
+          else if (file.isFile() || filechooser.getFileSelectionMode()
+                   != JFileChooser.FILES_ONLY)
+            setFileName(file.getName());
           int index = -1;
           index = getModel().indexOf(file);
           if (index >= 0)
@@ -327,7 +327,7 @@ public class MetalFileChooserUI
                 }
             }
         }
-      
+
       else if (n.equals(JFileChooser.DIRECTORY_CHANGED_PROPERTY))
         {
           if (listView)
@@ -349,7 +349,7 @@ public class MetalFileChooserUI
           boolean hasParent = currentDirectory.getParentFile() != null;
           getChangeToParentDirectoryAction().setEnabled(hasParent);
         }
-      
+
       else if (n.equals(JFileChooser.CHOOSABLE_FILE_FILTER_CHANGED_PROPERTY))
         {
           filterModel.propertyChange(e);
@@ -369,14 +369,14 @@ public class MetalFileChooserUI
                   getApproveButtonToolTipText(filechooser));
           approveButton.setMnemonic(getApproveButtonMnemonic(filechooser));
         }
-      
+
       else if (n.equals(JFileChooser.APPROVE_BUTTON_TEXT_CHANGED_PROPERTY))
         approveButton.setText(getApproveButtonText(filechooser));
-      
+
       else if (n.equals(
               JFileChooser.APPROVE_BUTTON_TOOL_TIP_TEXT_CHANGED_PROPERTY))
         approveButton.setToolTipText(getApproveButtonToolTipText(filechooser));
-      
+
       else if (n.equals(JFileChooser.APPROVE_BUTTON_MNEMONIC_CHANGED_PROPERTY))
         approveButton.setMnemonic(getApproveButtonMnemonic(filechooser));
 
@@ -393,7 +393,7 @@ public class MetalFileChooserUI
           topPanel.repaint();
           topPanel.doLayout();
         }
-      
+
       else if (n.equals(
               JFileChooser.ACCEPT_ALL_FILE_FILTER_USED_CHANGED_PROPERTY))
         {
@@ -404,7 +404,7 @@ public class MetalFileChooserUI
             filechooser.removeChoosableFileFilter(
                     getAcceptAllFileFilter(filechooser));
         }
-      
+
       else if (n.equals(JFileChooser.ACCESSORY_CHANGED_PROPERTY))
         {
           JComponent old = (JComponent) e.getOldValue();
@@ -414,7 +414,7 @@ public class MetalFileChooserUI
           if (newval != null)
             getAccessoryPanel().add(newval);
         }
-      
+
       if (n.equals(JFileChooser.DIRECTORY_CHANGED_PROPERTY)
           || n.equals(JFileChooser.FILE_FILTER_CHANGED_PROPERTY)
           || n.equals(JFileChooser.FILE_HIDING_CHANGED_PROPERTY))
@@ -425,7 +425,7 @@ public class MetalFileChooserUI
           if (fileList != null)
             fileList.removeAll();
           startEditing = false;
-          
+
           // Set text on button back to original.
           if (filechooser.getDialogType() == JFileChooser.SAVE_DIALOG)
             {
@@ -434,16 +434,16 @@ public class MetalFileChooserUI
               filechooser.setApproveButtonText(saveButtonText);
               filechooser.setApproveButtonToolTipText(saveButtonToolTipText);
             }
-          
+
           rescanCurrentDirectory(filechooser);
         }
-      
+
       filechooser.revalidate();
       filechooser.repaint();
     }
   }
-  
-  /** 
+
+  /**
    * A combo box model containing the selected directory and all its parent
    * directories.
    */
@@ -453,46 +453,46 @@ public class MetalFileChooserUI
   {
     /** Storage for the items in the model. */
     private List items;
-    
+
     /** The index of the selected item. */
     private int selectedIndex;
-    
+
     /**
      * Creates a new model.
      */
-    public DirectoryComboBoxModel() 
+    public DirectoryComboBoxModel()
     {
       items = new java.util.ArrayList();
       selectedIndex = -1;
     }
-    
+
     /**
      * Returns the number of items in the model.
-     * 
+     *
      * @return The number of items in the model.
      */
     public int getSize()
     {
       return items.size();
     }
-    
+
     /**
      * Returns the item at the specified index.
-     * 
+     *
      * @param index  the item index.
-     * 
+     *
      * @return The item.
      */
     public Object getElementAt(int index)
     {
       return items.get(index);
     }
-    
+
     /**
      * Returns the depth of the item at the given <code>index</code>.
-     * 
+     *
      * @param index  the item index.
-     * 
+     *
      * @return The depth.
      */
     public int getDepth(int index)
@@ -502,22 +502,22 @@ public class MetalFileChooserUI
 
     /**
      * Returns the selected item, or <code>null</code> if no item is selected.
-     * 
+     *
      * @return The selected item, or <code>null</code>.
      */
     public Object getSelectedItem()
     {
-      if (selectedIndex >= 0) 
+      if (selectedIndex >= 0)
         return items.get(selectedIndex);
       else
         return null;
     }
-    
+
     /**
      * Sets the selected item.  This clears all the directories from the
      * existing list, and repopulates it with the new selected directory
      * and all its parent directories.
-     * 
+     *
      * @param selectedDirectory  the selected directory.
      */
     public void setSelectedItem(Object selectedDirectory)
@@ -533,7 +533,7 @@ public class MetalFileChooserUI
       selectedIndex = items.indexOf(selectedDirectory);
       fireContentsChanged(this, 0, items.size() - 1);
     }
-    
+
   }
 
   /**
@@ -549,10 +549,10 @@ public class MetalFileChooserUI
     {
       // Nothing to do here.
     }
-    
+
     /**
      * Handles the action event.
-     * 
+     *
      * @param e  the event.
      */
     public void actionPerformed(ActionEvent e)
@@ -581,17 +581,17 @@ public class MetalFileChooserUI
     {
       indentIcon = new IndentIcon();
     }
-    
+
     /**
-     * Returns a component that can be used to paint the given value within 
+     * Returns a component that can be used to paint the given value within
      * the list.
-     * 
+     *
      * @param list  the list.
      * @param value  the value (a {@link File}).
      * @param index  the item index.
      * @param isSelected  is the item selected?
      * @param cellHasFocus  does the list cell have focus?
-     * 
+     *
      * @return The list cell renderer.
      */
     public Component getListCellRendererComponent(JList list, Object value,
@@ -671,7 +671,7 @@ public class MetalFileChooserUI
     {
       icon.paintIcon(c, g, x + depth * INDENT, y);
     }
-      
+
   }
 
   /**
@@ -680,7 +680,7 @@ public class MetalFileChooserUI
   protected class FileRenderer
     extends DefaultListCellRenderer
   {
-    
+
     /**
      * Creates a new renderer.
      */
@@ -688,16 +688,16 @@ public class MetalFileChooserUI
     {
       // Nothing to do here.
     }
-    
+
     /**
      * Returns a component that can render the specified value.
-     * 
+     *
      * @param list  the list.
      * @param value  the value (a {@link File}).
      * @param index  the index.
      * @param isSelected  is the item selected?
      * @param cellHasFocus  does the item have the focus?
-     * 
+     *
      * @return The renderer.
      */
     public Component getListCellRendererComponent(JList list, Object value,
@@ -751,7 +751,7 @@ public class MetalFileChooserUI
 
     /** The index of the selected file filter. */
     private Object selected;
-    
+
     /**
      * Creates a new model.
      */
@@ -761,10 +761,10 @@ public class MetalFileChooserUI
       filters[0] = getAcceptAllFileFilter(getFileChooser());
       selected = filters[0];
     }
-    
+
     /**
      * Handles property changes.
-     * 
+     *
      * @param e  the property change event.
      */
     public void propertyChange(PropertyChangeEvent e)
@@ -788,10 +788,10 @@ public class MetalFileChooserUI
           fireContentsChanged(this, 0, filters.length);
         }
     }
-    
+
     /**
      * Sets the selected filter.
-     * 
+     *
      * @param filter  the filter (<code>null</code> ignored).
      */
     public void setSelectedItem(Object filter)
@@ -802,39 +802,39 @@ public class MetalFileChooserUI
           fireContentsChanged(this, -1, -1);
       }
     }
-    
+
     /**
      * Returns the selected file filter.
-     * 
+     *
      * @return The selected file filter.
      */
     public Object getSelectedItem()
     {
       return selected;
     }
-    
+
     /**
      * Returns the number of items in the model.
-     * 
+     *
      * @return The number of items in the model.
      */
     public int getSize()
     {
       return filters.length;
     }
-    
+
     /**
      * Returns the item at the specified index.
-     * 
+     *
      * @param index  the item index.
-     * 
+     *
      * @return The item at the specified index.
      */
     public Object getElementAt(int index)
     {
       return filters[index];
     }
-    
+
   }
 
   /**
@@ -850,23 +850,23 @@ public class MetalFileChooserUI
     {
       // Nothing to do here.
     }
-    
+
     /**
-     * Returns a component that can be used to paint the given value within 
+     * Returns a component that can be used to paint the given value within
      * the list.
-     * 
+     *
      * @param list  the list.
      * @param value  the value (a {@link FileFilter}).
      * @param index  the item index.
      * @param isSelected  is the item selected?
      * @param cellHasFocus  does the list cell have focus?
-     * 
+     *
      * @return This component as the renderer.
      */
     public Component getListCellRendererComponent(JList list, Object value,
         int index, boolean isSelected, boolean cellHasFocus)
     {
-      super.getListCellRendererComponent(list, value, index, isSelected, 
+      super.getListCellRendererComponent(list, value, index, isSelected,
                                          cellHasFocus);
       FileFilter filter = (FileFilter) value;
       setText(filter.getDescription());
@@ -876,10 +876,10 @@ public class MetalFileChooserUI
 
   /**
    * A listener for selection events in the file list.
-   * 
+   *
    * @see #createListSelectionListener(JFileChooser)
    */
-  class MetalFileChooserSelectionListener 
+  class MetalFileChooserSelectionListener
     implements ListSelectionListener
   {
     /**
@@ -916,28 +916,28 @@ public class MetalFileChooserUI
   protected class SingleClickListener
     extends MouseAdapter
   {
-    
+
     /** Stores instance of the list */
     JList list;
-    
-    /** 
+
+    /**
      * Stores the current file that is being edited.
      * It is null if nothing is currently being edited.
      */
     File editFile;
-    
+
     /** The current file chooser. */
     JFileChooser fc;
-    
+
     /** The last file selected. */
     Object lastSelected;
-    
+
     /** The textfield used for editing. */
     JTextField editField;
-    
+
     /**
      * Creates a new listener.
-     * 
+     *
      * @param list  the directory/file list.
      */
     public SingleClickListener(JList list)
@@ -948,10 +948,10 @@ public class MetalFileChooserUI
       lastSelected = null;
       startEditing = false;
     }
-    
+
     /**
      * Receives notification of a mouse click event.
-     * 
+     *
      * @param e  the event.
      */
     public void mouseClicked(MouseEvent e)
@@ -974,10 +974,10 @@ public class MetalFileChooserUI
       else
         completeEditing();
     }
-    
+
     /**
      * Sets up the text editor for the current file.
-     * 
+     *
      * @param index -
      *          the current index of the item in the list to be edited.
      */
@@ -991,7 +991,7 @@ public class MetalFileChooserUI
           startEditing = true;
           editField = new JTextField(editFile.getName());
           editField.addActionListener(new EditingActionListener());
-          
+
           Icon icon = getFileView(fc).getIcon(editFile);
           if (icon != null)
             {
@@ -1000,9 +1000,9 @@ public class MetalFileChooserUI
               bounds.width -= padding;
             }
           editField.setBounds(bounds);
-          
+
           list.add(editField);
-          
+
           editField.requestFocus();
           editField.selectAll();
         }
@@ -1010,8 +1010,8 @@ public class MetalFileChooserUI
         completeEditing();
       list.repaint();
     }
-    
-    /** 
+
+    /**
      * Completes the editing.
      */
     void completeEditing()
@@ -1020,12 +1020,12 @@ public class MetalFileChooserUI
         {
           String text = editField.getText();
           if (text != null && text != "" && !text.equals(fc.getName(editFile)))
-	    {
-	      File f = fc.getFileSystemView().
-		createFileObject(fc.getCurrentDirectory(), text);
+            {
+              File f = fc.getFileSystemView().
+                createFileObject(fc.getCurrentDirectory(), text);
               if ( editFile.renameTo(f) )
                 rescanCurrentDirectory(fc);
-	    }
+            }
           list.remove(editField);
         }
       startEditing = false;
@@ -1034,22 +1034,22 @@ public class MetalFileChooserUI
       editField = null;
       list.repaint();
     }
-    
+
     /**
      * ActionListener for the editing text field.
      */
     class EditingActionListener implements ActionListener
     {
-      
+
       /**
        * This method is invoked when an action occurs.
-       * 
+       *
        * @param e -
        *          the <code>ActionEvent</code> that occurred
        */
       public void actionPerformed(ActionEvent e)
       {
-	if (editField != null)
+        if (editField != null)
           completeEditing();
       }
     }
@@ -1070,19 +1070,19 @@ public class MetalFileChooserUI
 
     /** The last selected file. */
     Object lastSelected;
-    
-    /** 
+
+    /**
      * Stores the current file that is being edited.
      * It is null if nothing is currently being edited.
      */
     File editFile;
-    
+
     /** The textfield used for editing. */
     JTextField editField;
 
     /**
      * Creates a new listener.
-     * 
+     *
      * @param table the directory/file table
      * @param fc the JFileChooser
      */
@@ -1099,7 +1099,7 @@ public class MetalFileChooserUI
 
     /**
      * Receives notification of a mouse click event.
-     * 
+     *
      * @param e the event.
      */
     public void mouseClicked(MouseEvent e)
@@ -1167,7 +1167,7 @@ public class MetalFileChooserUI
 
     /**
      * Sets up the text editor for the current file.
-     * 
+     *
      * @param row -
      *          the current row of the item in the list to be edited.
      */
@@ -1184,9 +1184,9 @@ public class MetalFileChooserUI
           // Need to adjust y pos
           bounds.y = row * table.getRowHeight();
           editField.setBounds(bounds);
-          
+
           table.add(editField);
-          
+
           editField.requestFocus();
           editField.selectAll();
         }
@@ -1194,8 +1194,8 @@ public class MetalFileChooserUI
         completeEditing();
       table.repaint();
     }
-    
-    /** 
+
+    /**
      * Completes the editing.
      */
     void completeEditing()
@@ -1214,26 +1214,26 @@ public class MetalFileChooserUI
       editField = null;
       table.repaint();
     }
-    
+
     /**
      * ActionListener for the editing text field.
      */
     class EditingActionListener implements ActionListener
     {
-      
+
       /**
        * This method is invoked when an action occurs.
-       * 
+       *
        * @param e -
        *          the <code>ActionEvent</code> that occurred
        */
       public void actionPerformed(ActionEvent e)
       {
-	if (editField != null)
+        if (editField != null)
           completeEditing();
       }
     }
-    
+
     /**
      * Closes the dialog.
      */
@@ -1243,91 +1243,91 @@ public class MetalFileChooserUI
       if (owner instanceof JDialog)
         ((JDialog) owner).dispose();
     }
-  } 
-  
+  }
+
   /** The text for a label describing the directory combo box. */
   private String directoryLabel;
-  
+
   private JComboBox directoryComboBox;
-  
+
   /** The model for the directory combo box. */
   DirectoryComboBoxModel directoryModel;
-  
+
   /** The text for a label describing the file text field. */
   private String fileLabel;
-  
+
   /** The file name text field. */
   private JTextField fileTextField;
-  
+
   /** The text for a label describing the filter combo box. */
   private String filterLabel;
 
-  /** 
-   * The top panel (contains the directory combo box and the control buttons). 
+  /**
+   * The top panel (contains the directory combo box and the control buttons).
    */
   private JPanel topPanel;
-  
+
   /** A panel containing the control buttons ('up', 'home' etc.). */
   private JPanel controls;
 
-  /** 
-   * The panel that contains the filename field and the filter combobox. 
+  /**
+   * The panel that contains the filename field and the filter combobox.
    */
   private JPanel bottomPanel;
 
-  /** 
-   * The panel that contains the 'Open' (or 'Save') and 'Cancel' buttons. 
+  /**
+   * The panel that contains the 'Open' (or 'Save') and 'Cancel' buttons.
    */
   private JPanel buttonPanel;
-  
+
   private JButton approveButton;
-  
+
   /** The file list. */
   JList fileList;
-  
+
   /** The file table. */
   JTable fileTable;
-  
+
   /** The panel containing the file list. */
   JPanel fileListPanel;
-  
+
   /** The panel containing the file table. */
   JPanel fileTablePanel;
-  
+
   /** The filter combo box model. */
   private FilterComboBoxModel filterModel;
 
   /** The action map. */
   private ActionMap actionMap;
-  
+
   /** True if currently in list view. */
   boolean listView;
-  
+
   /** True if we can or have started editing a cell. */
   boolean startEditing;
-  
+
   /** The scrollpane used for the table and list. */
   JScrollPane scrollPane;
-  
+
   /** The text for the label when saving. */
   String save;
-  
+
   /** The text for the label when opening a directory. */
   String look;
-  
+
   /** The label for the file combo box. */
   JLabel dirLabel;
-  
+
   /** Listeners. */
   ListSelectionListener listSelList;
   MouseListener doubleClickList;
   SingleClickListener singleClickList;
   TableClickListener tableClickList;
-  
+
   /**
    * A factory method that returns a UI delegate for the specified
    * component.
-   * 
+   *
    * @param c  the component (which should be a {@link JFileChooser}).
    */
   public static ComponentUI createUI(JComponent c)
@@ -1338,7 +1338,7 @@ public class MetalFileChooserUI
 
   /**
    * Creates a new instance of this UI delegate.
-   * 
+   *
    * @param filechooser  the file chooser component.
    */
   public MetalFileChooserUI(JFileChooser filechooser)
@@ -1353,16 +1353,16 @@ public class MetalFileChooserUI
     super.installUI(c);
     actionMap = createActionMap();
   }
-  
+
   public void uninstallUI(JComponent c)
   {
     super.uninstallUI(c);
     actionMap = null;
   }
-  
+
   /**
    * Installs the sub-components of the file chooser.
-   * 
+   *
    * @param fc  the file chooser component.
    */
   public void installComponents(JFileChooser fc)
@@ -1373,7 +1373,7 @@ public class MetalFileChooserUI
     topPanel.add(dirLabel, BorderLayout.WEST);
     this.controls = new JPanel();
     addControlButtons();
-    
+
     JPanel dirPanel = new JPanel(new VerticalMidLayout());
     directoryModel = createDirectoryComboBoxModel(fc);
     directoryComboBox = new JComboBox(directoryModel);
@@ -1383,16 +1383,16 @@ public class MetalFileChooserUI
     topPanel.add(controls, BorderLayout.EAST);
     topPanel.setBorder(BorderFactory.createEmptyBorder(8, 8, 0, 8));
     fc.add(topPanel, BorderLayout.NORTH);
-    
+
     JPanel list = createList(fc);
     list.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
     fc.add(list, BorderLayout.CENTER);
-    
+
     JPanel bottomPanel = getBottomPanel();
     filterModel = createFilterComboBoxModel();
     JComboBox fileFilterCombo = new JComboBox(filterModel);
     fileFilterCombo.setRenderer(createFilterComboBoxRenderer());
-    
+
     fileTextField = new JTextField();
     JPanel fileNamePanel = new JPanel(new VerticalMidLayout());
     fileNamePanel.setBorder(BorderFactory.createEmptyBorder(0, 20, 0, 5));
@@ -1401,21 +1401,21 @@ public class MetalFileChooserUI
     row1.add(new JLabel(this.fileLabel), BorderLayout.WEST);
     row1.add(fileNamePanel);
     bottomPanel.add(row1);
-    
+
     JPanel row2 = new JPanel(new BorderLayout());
     row2.add(new JLabel(this.filterLabel), BorderLayout.WEST);
     row2.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 5));
     row2.add(fileFilterCombo);
     bottomPanel.add(row2);
     JPanel buttonPanel = new JPanel(new ButtonLayout());
-    
+
     approveButton = new JButton(getApproveSelectionAction());
     approveButton.setText(getApproveButtonText(fc));
     approveButton.setToolTipText(getApproveButtonToolTipText(fc));
     approveButton.setMnemonic(getApproveButtonMnemonic(fc));
     buttonPanel.add(approveButton);
     buttonPanel.setBorder(BorderFactory.createEmptyBorder(8, 0, 0, 0));
-    
+
     JButton cancelButton = new JButton(getCancelSelectionAction());
     cancelButton.setText(cancelButtonText);
     cancelButton.setToolTipText(cancelButtonToolTipText);
@@ -1424,14 +1424,14 @@ public class MetalFileChooserUI
     bottomPanel.add(buttonPanel, BorderLayout.SOUTH);
     bottomPanel.setBorder(BorderFactory.createEmptyBorder(0, 8, 8, 8));
     fc.add(bottomPanel, BorderLayout.SOUTH);
-    
+
     fc.add(getAccessoryPanel(), BorderLayout.EAST);
   }
-  
+
   /**
-   * Uninstalls the components added by 
+   * Uninstalls the components added by
    * {@link #installComponents(JFileChooser)}.
-   * 
+   *
    * @param fc  the file chooser.
    */
   public void uninstallComponents(JFileChooser fc)
@@ -1444,27 +1444,27 @@ public class MetalFileChooserUI
     fileListPanel = null;
     fc.remove(topPanel);
     topPanel = null;
-    
+
     directoryModel = null;
     fileTextField = null;
     directoryComboBox = null;
   }
-  
+
   /**
-   * Returns the panel that contains the 'Open' (or 'Save') and 'Cancel' 
+   * Returns the panel that contains the 'Open' (or 'Save') and 'Cancel'
    * buttons.
-   * 
+   *
    * @return The panel.
    */
   protected JPanel getButtonPanel()
   {
-    return buttonPanel;    
+    return buttonPanel;
   }
-  
+
   /**
    * Creates and returns a new panel that will be used for the controls at
    * the bottom of the file chooser.
-   * 
+   *
    * @return A new panel.
    */
   protected JPanel getBottomPanel()
@@ -1473,15 +1473,15 @@ public class MetalFileChooserUI
       bottomPanel = new JPanel(new GridLayout(3, 2));
     return bottomPanel;
   }
-  
+
   /**
    * Fetches localised strings for use by the labels and buttons on the
    * file chooser.
-   * 
+   *
    * @param fc  the file chooser.
    */
   protected void installStrings(JFileChooser fc)
-  { 
+  {
      super.installStrings(fc);
      look = "Look In: ";
      save = "Save In: ";
@@ -1489,38 +1489,38 @@ public class MetalFileChooserUI
        directoryLabel = save;
      else
        directoryLabel = look;
-     
+
      fileLabel = "File Name: ";
      filterLabel = "Files of Type: ";
-     
+
      this.cancelButtonMnemonic = 0;
      this.cancelButtonText = "Cancel";
      this.cancelButtonToolTipText = "Abort file chooser dialog";
-     
+
      this.directoryOpenButtonMnemonic = 0;
      this.directoryOpenButtonText = "Open";
      this.directoryOpenButtonToolTipText = "Open selected directory";
-     
+
      this.helpButtonMnemonic = 0;
      this.helpButtonText = "Help";
      this.helpButtonToolTipText = "Filechooser help";
-     
+
      this.openButtonMnemonic = 0;
      this.openButtonText = "Open";
      this.openButtonToolTipText = "Open selected file";
-     
+
      this.saveButtonMnemonic = 0;
      this.saveButtonText = "Save";
      this.saveButtonToolTipText = "Save selected file";
-     
+
      this.updateButtonMnemonic = 0;
      this.updateButtonText = "Update";
-     this.updateButtonToolTipText = "Update directory listing";   
+     this.updateButtonToolTipText = "Update directory listing";
   }
-  
+
   /**
    * Installs the listeners required.
-   * 
+   *
    * @param fc  the file chooser.
    */
   protected void installListeners(JFileChooser fc)
@@ -1535,8 +1535,8 @@ public class MetalFileChooserUI
     fileList.addMouseListener(singleClickList);
     super.installListeners(fc);
   }
-  
-  protected void uninstallListeners(JFileChooser fc) 
+
+  protected void uninstallListeners(JFileChooser fc)
   {
     super.uninstallListeners(fc);
     fc.removePropertyChangeListener(filterModel);
@@ -1544,21 +1544,21 @@ public class MetalFileChooserUI
     fileList.removeListSelectionListener(listSelList);
     fileList.removeMouseListener(doubleClickList);
     fileList.removeMouseListener(singleClickList);
-    
+
     if (fileTable != null)
       fileTable.removeMouseListener(tableClickList);
   }
-  
+
   protected ActionMap getActionMap()
   {
     if (actionMap == null)
       actionMap = createActionMap();
     return actionMap;
   }
-  
+
   /**
    * Creates and returns an action map.
-   * 
+   *
    * @return The action map.
    */
   protected ActionMap createActionMap()
@@ -1572,9 +1572,9 @@ public class MetalFileChooserUI
 
   /**
    * Creates a panel containing a list of files.
-   * 
+   *
    * @param fc  the file chooser.
-   * 
+   *
    * @return A panel.
    */
   protected JPanel createList(JFileChooser fc)
@@ -1600,41 +1600,41 @@ public class MetalFileChooserUI
     fileListPanel.setPreferredSize(new Dimension(405, 135));
     return fileListPanel;
   }
-  
+
   /**
    * Creates a panel containing a table within a scroll pane.
-   * 
+   *
    * @param fc  the file chooser.
-   * 
+   *
    * @return The details view.
    */
   protected JPanel createDetailsView(JFileChooser fc)
   {
     fileTablePanel = new JPanel(new BorderLayout());
-    
+
     Object[] cols = new Object[] {"Name", "Size", "Modified"};
     Object[][] rows = new Object[fileList.getModel().getSize()][3];
-    
+
     fileTable = new JTable(new DefaultTableModel(rows, cols));
-    
+
     if (fc.isMultiSelectionEnabled())
       fileTable.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
     else
       fileTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-    
+
     fileTable.setShowGrid(false);
     fileTable.setColumnSelectionAllowed(false);
     fileTable.setDefaultRenderer(Object.class, new TableFileRenderer());
 
     tableClickList = new TableClickListener(fileTable, fc);
     fileTable.addMouseListener(tableClickList);
-    
-    return updateTable();  
+
+    return updateTable();
   }
-  
+
   /**
    * Sets the values in the table, and puts it in the panel.
-   * 
+   *
    * @return the panel containing the table.
    */
   JPanel updateTable()
@@ -1671,10 +1671,10 @@ public class MetalFileChooserUI
 
     return fileTablePanel;
   }
-  
+
   /**
    * Formats bytes into the appropriate size.
-   * 
+   *
    * @param bytes the number of bytes to convert
    * @return a string representation of the size
    */
@@ -1686,7 +1686,7 @@ public class MetalFileChooserUI
     long gb = (long) Math.pow(2, 30);
     double size = 0;
     String id = "";
-    
+
     if ((bytes / gb) >= 1)
       {
         size = (double) bytes / (double) gb;
@@ -1707,27 +1707,27 @@ public class MetalFileChooserUI
         size = bytes;
         id = "Bytes";
       }
-    
+
     return nf.format(size) + " " + id;
   }
   /**
    * Creates a listener that monitors selections in the directory/file list
    * and keeps the {@link JFileChooser} component up to date.
-   * 
+   *
    * @param fc  the file chooser.
-   * 
+   *
    * @return The listener.
-   * 
+   *
    * @see #installListeners(JFileChooser)
    */
   public ListSelectionListener createListSelectionListener(JFileChooser fc)
   {
     return new MetalFileChooserSelectionListener();
   }
-  
+
   /**
    * Returns the preferred size for the file chooser component.
-   * 
+   *
    * @return The preferred size.
    */
   public Dimension getPreferredSize(JComponent c)
@@ -1740,7 +1740,7 @@ public class MetalFileChooserUI
 
   /**
    * Returns the minimum size for the file chooser component.
-   * 
+   *
    * @return The minimum size.
    */
   public Dimension getMinimumSize(JComponent c)
@@ -1750,25 +1750,25 @@ public class MetalFileChooserUI
     Dimension fl = fileListPanel.getMinimumSize();
     return new Dimension(fl.width, tp.height + bp.height + fl.height);
   }
-  
+
   /**
    * Returns the maximum size for the file chooser component.
-   * 
+   *
    * @return The maximum size.
    */
   public Dimension getMaximumSize(JComponent c)
   {
     return new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE);
   }
-  
+
   /**
    * Creates a property change listener that monitors the {@link JFileChooser}
    * for property change events and updates the component display accordingly.
-   * 
+   *
    * @param fc  the file chooser.
-   * 
+   *
    * @return The property change listener.
-   * 
+   *
    * @see #installListeners(JFileChooser)
    */
   public PropertyChangeListener createPropertyChangeListener(JFileChooser fc)
@@ -1778,10 +1778,10 @@ public class MetalFileChooserUI
 
   /**
    * Creates and returns a new instance of {@link DirectoryComboBoxModel}.
-   * 
+   *
    * @return A new instance of {@link DirectoryComboBoxModel}.
    */
-  protected MetalFileChooserUI.DirectoryComboBoxModel 
+  protected MetalFileChooserUI.DirectoryComboBoxModel
       createDirectoryComboBoxModel(JFileChooser fc)
   {
     return new DirectoryComboBoxModel();
@@ -1790,9 +1790,9 @@ public class MetalFileChooserUI
   /**
    * Creates a new instance of the renderer used in the directory
    * combo box.
-   * 
+   *
    * @param fc  the file chooser.
-   * 
+   *
    * @return The renderer.
    */
   protected DirectoryComboBoxRenderer createDirectoryComboBoxRenderer(
@@ -1803,23 +1803,23 @@ public class MetalFileChooserUI
 
   /**
    * Creates and returns a new instance of {@link FilterComboBoxModel}.
-   * 
+   *
    * @return A new instance of {@link FilterComboBoxModel}.
    */
   protected FilterComboBoxModel createFilterComboBoxModel()
   {
-    return new FilterComboBoxModel();  
+    return new FilterComboBoxModel();
   }
 
   /**
    * Creates and returns a new instance of {@link FilterComboBoxRenderer}.
-   * 
+   *
    * @return A new instance of {@link FilterComboBoxRenderer}.
    */
-  protected MetalFileChooserUI.FilterComboBoxRenderer 
+  protected MetalFileChooserUI.FilterComboBoxRenderer
       createFilterComboBoxRenderer()
   {
-    return new FilterComboBoxRenderer(); 
+    return new FilterComboBoxRenderer();
   }
 
   /**
@@ -1832,26 +1832,26 @@ public class MetalFileChooserUI
     upButton.setIcon(this.upFolderIcon);
     upButton.setMargin(new Insets(0, 0, 0, 0));
     controls.add(upButton);
-    
+
     JButton homeButton = new JButton(getGoHomeAction());
     homeButton.setText(null);
     homeButton.setIcon(this.homeFolderIcon);
     homeButton.setMargin(new Insets(0, 0, 0, 0));
     controls.add(homeButton);
-    
+
     JButton newFolderButton = new JButton(getNewFolderAction());
     newFolderButton.setText(null);
     newFolderButton.setIcon(this.newFolderIcon);
     newFolderButton.setMargin(new Insets(0, 0, 0, 0));
     controls.add(newFolderButton);
-    
+
     JToggleButton listButton = new JToggleButton(this.listViewIcon);
     listButton.setMargin(new Insets(0, 0, 0, 0));
     listButton.addActionListener(new ListViewActionListener());
     listButton.setSelected(true);
-    listView = true; 
+    listView = true;
     controls.add(listButton);
-    
+
     JToggleButton detailButton = new JToggleButton(this.detailsViewIcon);
     detailButton.setMargin(new Insets(0, 0, 0, 0));
     detailButton.addActionListener(new DetailViewActionListener());
@@ -1862,7 +1862,7 @@ public class MetalFileChooserUI
     buttonGroup.add(listButton);
     buttonGroup.add(detailButton);
   }
-  
+
   /**
    * Removes all the buttons from the control panel.
    */
@@ -1872,10 +1872,10 @@ public class MetalFileChooserUI
     controls.revalidate();
     controls.repaint();
   }
-  
+
   /**
    * Updates the current directory.
-   * 
+   *
    * @param fc  the file chooser to update.
    */
   public void rescanCurrentDirectory(JFileChooser fc)
@@ -1887,43 +1887,43 @@ public class MetalFileChooserUI
     else
       createList(fc);
   }
-  
+
   /**
    * Returns the file name in the text field.
-   * 
+   *
    * @return The file name.
    */
   public String getFileName()
   {
     String result = null;
-    if (fileTextField != null) 
+    if (fileTextField != null)
       result = fileTextField.getText();
     return result;
   }
-  
+
   /**
    * Sets the file name in the text field.
-   * 
+   *
    * @param filename  the file name.
    */
   public void setFileName(String filename)
   {
     fileTextField.setText(filename);
   }
-  
+
   /**
    * DOCUMENT ME!!
-   * 
+   *
    * @param e - DOCUMENT ME!
    */
   public void valueChanged(ListSelectionEvent e)
   {
     // FIXME: Not sure what we should be doing here, if anything.
   }
-  
+
   /**
    * Returns the approve button.
-   * 
+   *
    * @return The approve button.
    */
   protected JButton getApproveButton(JFileChooser fc)
@@ -1939,10 +1939,10 @@ public class MetalFileChooserUI
   {
     /**
      * Performs the layout.
-     * 
+     *
      * @param parent  the container.
      */
-    public void layoutContainer(Container parent) 
+    public void layoutContainer(Container parent)
     {
       int count = parent.getComponentCount();
       if (count > 0)
@@ -1952,32 +1952,32 @@ public class MetalFileChooserUI
           Dimension prefSize = c.getPreferredSize();
           int h = parent.getHeight() - insets.top - insets.bottom;
           int adj = Math.max(0, (h - prefSize.height) / 2);
-          c.setBounds(insets.left, insets.top + adj, parent.getWidth() 
-              - insets.left - insets.right, 
+          c.setBounds(insets.left, insets.top + adj, parent.getWidth()
+              - insets.left - insets.right,
               (int) Math.min(prefSize.getHeight(), h));
         }
     }
-    
+
     /**
      * Returns the minimum layout size.
-     * 
+     *
      * @param parent  the container.
-     * 
+     *
      * @return The minimum layout size.
      */
-    public Dimension minimumLayoutSize(Container parent) 
+    public Dimension minimumLayoutSize(Container parent)
     {
       return preferredLayoutSize(parent);
     }
-    
+
     /**
      * Returns the preferred layout size.
-     * 
+     *
      * @param parent  the container.
-     * 
+     *
      * @return The preferred layout size.
      */
-    public Dimension preferredLayoutSize(Container parent) 
+    public Dimension preferredLayoutSize(Container parent)
     {
       if (parent.getComponentCount() > 0)
         {
@@ -1985,26 +1985,26 @@ public class MetalFileChooserUI
         }
       else return null;
     }
-    
+
     /**
-     * This layout manager does not need to track components, so this 
+     * This layout manager does not need to track components, so this
      * method does nothing.
-     * 
+     *
      * @param name  the name the component is associated with.
      * @param component  the component.
      */
-    public void addLayoutComponent(String name, Component component) 
+    public void addLayoutComponent(String name, Component component)
     {
       // do nothing
     }
-    
+
     /**
-     * This layout manager does not need to track components, so this 
+     * This layout manager does not need to track components, so this
      * method does nothing.
-     * 
+     *
      * @param component  the component.
      */
-    public void removeLayoutComponent(Component component) 
+    public void removeLayoutComponent(Component component)
     {
       // do nothing
     }
@@ -2017,13 +2017,13 @@ public class MetalFileChooserUI
   class ButtonLayout implements LayoutManager
   {
     static final int GAP = 4;
-      
+
     /**
      * Performs the layout.
-     * 
+     *
      * @param parent  the container.
      */
-    public void layoutContainer(Container parent) 
+    public void layoutContainer(Container parent)
     {
       int count = parent.getComponentCount();
       if (count > 0)
@@ -2036,7 +2036,7 @@ public class MetalFileChooserUI
               Dimension prefSize = c.getPreferredSize();
               maxW = Math.max(prefSize.width, maxW);
             }
-  
+
           // then position the buttons
           Insets insets = parent.getInsets();
           int availableH = parent.getHeight() - insets.top - insets.bottom;
@@ -2044,42 +2044,42 @@ public class MetalFileChooserUI
           for (int i = count - 1; i >= 0; i--)
             {
               Component c = parent.getComponent(i);
-              Dimension prefSize = c.getPreferredSize();      
+              Dimension prefSize = c.getPreferredSize();
               int adj = Math.max(0, (availableH - prefSize.height) / 2);
               currentX = currentX - prefSize.width;
-              c.setBounds(currentX, insets.top + adj, prefSize.width, 
+              c.setBounds(currentX, insets.top + adj, prefSize.width,
                   (int) Math.min(prefSize.getHeight(), availableH));
               currentX = currentX - GAP;
             }
         }
     }
-    
+
     /**
      * Returns the minimum layout size.
-     * 
+     *
      * @param parent  the container.
-     * 
+     *
      * @return The minimum layout size.
      */
-    public Dimension minimumLayoutSize(Container parent) 
+    public Dimension minimumLayoutSize(Container parent)
     {
       return preferredLayoutSize(parent);
     }
-    
+
     /**
      * Returns the preferred layout size.
-     * 
+     *
      * @param parent  the container.
-     * 
+     *
      * @return The preferred layout size.
      */
-    public Dimension preferredLayoutSize(Container parent) 
+    public Dimension preferredLayoutSize(Container parent)
     {
       Insets insets = parent.getInsets();
       int maxW = 0;
       int maxH = 0;
       int count = parent.getComponentCount();
-      if (count > 0) 
+      if (count > 0)
         {
           for (int i = 0; i < count; i++)
             {
@@ -2089,29 +2089,29 @@ public class MetalFileChooserUI
               maxH = Math.max(d.height, maxH);
             }
         }
-      return new Dimension(maxW * count + GAP * (count - 1) + insets.left 
+      return new Dimension(maxW * count + GAP * (count - 1) + insets.left
               + insets.right, maxH + insets.top + insets.bottom);
     }
-    
+
     /**
-     * This layout manager does not need to track components, so this 
+     * This layout manager does not need to track components, so this
      * method does nothing.
-     * 
+     *
      * @param name  the name the component is associated with.
      * @param component  the component.
      */
-    public void addLayoutComponent(String name, Component component) 
+    public void addLayoutComponent(String name, Component component)
     {
       // do nothing
     }
-    
+
     /**
-     * This layout manager does not need to track components, so this 
+     * This layout manager does not need to track components, so this
      * method does nothing.
-     * 
+     *
      * @param component  the component.
      */
-    public void removeLayoutComponent(Component component) 
+    public void removeLayoutComponent(Component component)
     {
       // do nothing
     }

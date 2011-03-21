@@ -1,4 +1,4 @@
-/* LongViewBufferImpl.java -- 
+/* LongViewBufferImpl.java --
    Copyright (C) 2003, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -45,7 +45,7 @@ final class LongViewBufferImpl extends LongBuffer
   private final ByteBuffer bb;
   private final boolean readOnly;
   private final ByteOrder endian;
-  
+
   LongViewBufferImpl (ByteBuffer bb, int capacity)
   {
     super (capacity, capacity, 0, -1, bb.isDirect() ?
@@ -55,10 +55,10 @@ final class LongViewBufferImpl extends LongBuffer
     this.readOnly = bb.isReadOnly();
     this.endian = bb.order();
   }
-  
+
   public LongViewBufferImpl (ByteBuffer bb, int offset, int capacity,
-			     int limit, int position, int mark,
-			     boolean readOnly, ByteOrder endian)
+                             int limit, int position, int mark,
+                             boolean readOnly, ByteOrder endian)
   {
     super (capacity, limit, position, mark, bb.isDirect() ?
            VMDirectByteBuffer.adjustAddress(bb.address, offset):null, null, 0);
@@ -102,7 +102,7 @@ final class LongViewBufferImpl extends LongBuffer
     position(p + 1);
     return this;
   }
-  
+
   public LongBuffer put (int index, long value)
   {
     ByteBufferHelper.putLong(bb, (index << 3) + offset, value, endian);
@@ -114,26 +114,26 @@ final class LongViewBufferImpl extends LongBuffer
     if (position () > 0)
       {
         int count = limit () - position ();
-	bb.shiftDown(offset, offset + 8 * position(), 8 * count);
+        bb.shiftDown(offset, offset + 8 * position(), 8 * count);
         position (count);
         limit (capacity ());
       }
     else
       {
-	position(limit());
-	limit(capacity());
+        position(limit());
+        limit(capacity());
       }
     return this;
   }
-  
+
   public LongBuffer slice ()
   {
     // Create a sliced copy of this object that shares its content.
     return new LongViewBufferImpl (bb, (position () << 3) + offset,
-				   remaining(), remaining(), 0, -1,
-				   readOnly, endian);
+                                   remaining(), remaining(), 0, -1,
+                                   readOnly, endian);
   }
-  
+
   LongBuffer duplicate (boolean readOnly)
   {
     int pos = position();
@@ -141,9 +141,9 @@ final class LongViewBufferImpl extends LongBuffer
     int mark = position();
     position(pos);
     return new LongViewBufferImpl (bb, offset, capacity(), limit(),
-				   pos, mark, readOnly, endian);
+                                   pos, mark, readOnly, endian);
   }
-  
+
   public LongBuffer duplicate ()
   {
     return duplicate(readOnly);
@@ -158,12 +158,12 @@ final class LongViewBufferImpl extends LongBuffer
   {
     return readOnly;
   }
-  
+
   public boolean isDirect ()
   {
     return bb.isDirect ();
   }
-  
+
   public ByteOrder order ()
   {
     return endian;

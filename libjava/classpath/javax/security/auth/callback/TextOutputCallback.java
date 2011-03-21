@@ -133,7 +133,7 @@ public class TextOutputCallback implements Callback, Serializable
   {
     if ((message == null) || (message.length() == 0))
       {
-	throw new IllegalArgumentException("invalid message");
+        throw new IllegalArgumentException("invalid message");
       }
     this.message = message;
   }

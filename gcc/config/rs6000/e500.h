@@ -47,6 +47,8 @@
       }									\
   } while (0)
 
+/* Override rs6000.h definition.  */
+#undef HARD_REGNO_CALLER_SAVE_MODE
 /* When setting up caller-save slots (MODE == VOIDmode) ensure we
    allocate space for DFmode.  Save gprs in the correct mode too.  */
 #define HARD_REGNO_CALLER_SAVE_MODE(REGNO, NREGS, MODE) \

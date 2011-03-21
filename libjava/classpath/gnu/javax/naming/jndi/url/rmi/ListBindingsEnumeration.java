@@ -45,7 +45,7 @@ import javax.naming.NamingEnumeration;
 /**
  * Iterates over bindings, obtaining values first from the binding list and then
  * from the binding iterator.
- * 
+ *
  * @author Audrius Meskauskas
  */
 public class ListBindingsEnumeration extends RmiNamingEnumeration implements
@@ -55,10 +55,10 @@ public class ListBindingsEnumeration extends RmiNamingEnumeration implements
    * The naming service, to resolve the objects.
    */
   Registry service;
-  
+
   /**
    * Create the new enumeration
-   * 
+   *
    * @param bindings
    *          the list of the bound names
    * @param aService
@@ -70,12 +70,12 @@ public class ListBindingsEnumeration extends RmiNamingEnumeration implements
     super(bindings);
     service = aService;
   }
-  
+
   /**
    * Convert from the CORBA binding into the javax.naming binding. As the CORBA
    * naming service binding does not contain the object itself, this method
    * makes the additional calls to the naming service.
-   * 
+   *
    * @param binding
    *          the binding to convert
    * @return the value, that must be returned by the {@link #next()}.

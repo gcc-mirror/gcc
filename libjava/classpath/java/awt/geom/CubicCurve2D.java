@@ -585,26 +585,26 @@ public abstract class CubicCurve2D implements Shape, Cloneable
 
     if (left != null)
       {
-	left[leftOff] = left_P1_x;
-	left[leftOff + 1] = left_P1_y;
-	left[leftOff + 2] = left_C1_x;
-	left[leftOff + 3] = left_C1_y;
-	left[leftOff + 4] = left_C2_x;
-	left[leftOff + 5] = left_C2_y;
-	left[leftOff + 6] = Mid_x;
-	left[leftOff + 7] = Mid_y;
+        left[leftOff] = left_P1_x;
+        left[leftOff + 1] = left_P1_y;
+        left[leftOff + 2] = left_C1_x;
+        left[leftOff + 3] = left_C1_y;
+        left[leftOff + 4] = left_C2_x;
+        left[leftOff + 5] = left_C2_y;
+        left[leftOff + 6] = Mid_x;
+        left[leftOff + 7] = Mid_y;
       }
 
     if (right != null)
       {
-	right[rightOff] = Mid_x;
-	right[rightOff + 1] = Mid_y;
-	right[rightOff + 2] = right_C1_x;
-	right[rightOff + 3] = right_C1_y;
-	right[rightOff + 4] = right_C2_x;
-	right[rightOff + 5] = right_C2_y;
-	right[rightOff + 6] = right_P2_x;
-	right[rightOff + 7] = right_P2_y;
+        right[rightOff] = Mid_x;
+        right[rightOff + 1] = Mid_y;
+        right[rightOff + 2] = right_C1_x;
+        right[rightOff + 3] = right_C1_y;
+        right[rightOff + 4] = right_C2_x;
+        right[rightOff + 5] = right_C2_y;
+        right[rightOff + 6] = right_P2_x;
+        right[rightOff + 7] = right_P2_y;
       }
   }
 
@@ -710,7 +710,7 @@ public abstract class CubicCurve2D implements Shape, Cloneable
     // The Java implementation is very similar to the GSL code, but
     // not a strict one-to-one copy. For example, GSL would sort the
     // result.
-    
+
     double a;
     double b;
     double c;
@@ -749,46 +749,46 @@ public abstract class CubicCurve2D implements Shape, Cloneable
 
     if (R == 0 && Q == 0)
       {
-	// The GNU Scientific Library would return three identical
-	// solutions in this case.
-	res[0] = -a / 3;
-	return 1;
+        // The GNU Scientific Library would return three identical
+        // solutions in this case.
+        res[0] = -a / 3;
+        return 1;
       }
 
     if (CR2 == CQ3)
       {
-	/* this test is actually R2 == Q3, written in a form suitable
-	   for exact computation with integers */
-	/* Due to finite precision some double roots may be missed, and
-	   considered to be a pair of complex roots z = x +/- epsilon i
-	   close to the real axis. */
-	double sqrtQ = Math.sqrt(Q);
+        /* this test is actually R2 == Q3, written in a form suitable
+           for exact computation with integers */
+        /* Due to finite precision some double roots may be missed, and
+           considered to be a pair of complex roots z = x +/- epsilon i
+           close to the real axis. */
+        double sqrtQ = Math.sqrt(Q);
 
-	if (R > 0)
-	  {
-	    res[0] = -2 * sqrtQ - a / 3;
-	    res[1] = sqrtQ - a / 3;
-	  }
-	else
-	  {
-	    res[0] = -sqrtQ - a / 3;
-	    res[1] = 2 * sqrtQ - a / 3;
-	  }
-	return 2;
+        if (R > 0)
+          {
+            res[0] = -2 * sqrtQ - a / 3;
+            res[1] = sqrtQ - a / 3;
+          }
+        else
+          {
+            res[0] = -sqrtQ - a / 3;
+            res[1] = 2 * sqrtQ - a / 3;
+          }
+        return 2;
       }
 
     if (CR2 < CQ3) /* equivalent to R2 < Q3 */
       {
-	double sqrtQ = Math.sqrt(Q);
-	double sqrtQ3 = sqrtQ * sqrtQ * sqrtQ;
-	double theta = Math.acos(R / sqrtQ3);
-	double norm = -2 * sqrtQ;
-	res[0] = norm * Math.cos(theta / 3) - a / 3;
-	res[1] = norm * Math.cos((theta + 2.0 * Math.PI) / 3) - a / 3;
-	res[2] = norm * Math.cos((theta - 2.0 * Math.PI) / 3) - a / 3;
+        double sqrtQ = Math.sqrt(Q);
+        double sqrtQ3 = sqrtQ * sqrtQ * sqrtQ;
+        double theta = Math.acos(R / sqrtQ3);
+        double norm = -2 * sqrtQ;
+        res[0] = norm * Math.cos(theta / 3) - a / 3;
+        res[1] = norm * Math.cos((theta + 2.0 * Math.PI) / 3) - a / 3;
+        res[2] = norm * Math.cos((theta - 2.0 * Math.PI) / 3) - a / 3;
 
-	// The GNU Scientific Library sorts the results. We don't.
-	return 3;
+        // The GNU Scientific Library sorts the results. We don't.
+        return 3;
       }
 
     double sgnR = (R >= 0 ? 1 : -1);
@@ -862,7 +862,7 @@ public abstract class CubicCurve2D implements Shape, Cloneable
   }
 
   /**
-   * Determines whether any part of a Rectangle2D is inside the area bounded 
+   * Determines whether any part of a Rectangle2D is inside the area bounded
    * by the curve and the straight line connecting its end points.
    * @see #intersects(double, double, double, double)
    */
@@ -902,7 +902,7 @@ public abstract class CubicCurve2D implements Shape, Cloneable
   }
 
   /**
-   * Determine whether a Rectangle2D is entirely inside the area that is 
+   * Determine whether a Rectangle2D is entirely inside the area that is
    * bounded by the curve and the straight line connecting its end points.
    *
    * <p><img src="doc-files/CubicCurve2D-5.png" width="350" height="180"
@@ -930,77 +930,77 @@ public abstract class CubicCurve2D implements Shape, Cloneable
   {
     return new PathIterator()
       {
-	/** Current coordinate. */
-	private int current = 0;
+        /** Current coordinate. */
+        private int current = 0;
 
-	public int getWindingRule()
-	{
-	  return WIND_NON_ZERO;
-	}
+        public int getWindingRule()
+        {
+          return WIND_NON_ZERO;
+        }
 
-	public boolean isDone()
-	{
-	  return current >= 2;
-	}
+        public boolean isDone()
+        {
+          return current >= 2;
+        }
 
-	public void next()
-	{
-	  current++;
-	}
+        public void next()
+        {
+          current++;
+        }
 
-	public int currentSegment(float[] coords)
-	{
-	  int result;
-	  switch (current)
-	    {
-	    case 0:
-	      coords[0] = (float) getX1();
-	      coords[1] = (float) getY1();
-	      result = SEG_MOVETO;
-	      break;
-	    case 1:
-	      coords[0] = (float) getCtrlX1();
-	      coords[1] = (float) getCtrlY1();
-	      coords[2] = (float) getCtrlX2();
-	      coords[3] = (float) getCtrlY2();
-	      coords[4] = (float) getX2();
-	      coords[5] = (float) getY2();
-	      result = SEG_CUBICTO;
-	      break;
-	    default:
-	      throw new NoSuchElementException("cubic iterator out of bounds");
-	    }
-	  if (at != null)
-	    at.transform(coords, 0, coords, 0, 3);
-	  return result;
-	}
+        public int currentSegment(float[] coords)
+        {
+          int result;
+          switch (current)
+            {
+            case 0:
+              coords[0] = (float) getX1();
+              coords[1] = (float) getY1();
+              result = SEG_MOVETO;
+              break;
+            case 1:
+              coords[0] = (float) getCtrlX1();
+              coords[1] = (float) getCtrlY1();
+              coords[2] = (float) getCtrlX2();
+              coords[3] = (float) getCtrlY2();
+              coords[4] = (float) getX2();
+              coords[5] = (float) getY2();
+              result = SEG_CUBICTO;
+              break;
+            default:
+              throw new NoSuchElementException("cubic iterator out of bounds");
+            }
+          if (at != null)
+            at.transform(coords, 0, coords, 0, 3);
+          return result;
+        }
 
-	public int currentSegment(double[] coords)
-	{
-	  int result;
-	  switch (current)
-	    {
-	    case 0:
-	      coords[0] = getX1();
-	      coords[1] = getY1();
-	      result = SEG_MOVETO;
-	      break;
-	    case 1:
-	      coords[0] = getCtrlX1();
-	      coords[1] = getCtrlY1();
-	      coords[2] = getCtrlX2();
-	      coords[3] = getCtrlY2();
-	      coords[4] = getX2();
-	      coords[5] = getY2();
-	      result = SEG_CUBICTO;
-	      break;
-	    default:
-	      throw new NoSuchElementException("cubic iterator out of bounds");
-	    }
-	  if (at != null)
-	    at.transform(coords, 0, coords, 0, 3);
-	  return result;
-	}
+        public int currentSegment(double[] coords)
+        {
+          int result;
+          switch (current)
+            {
+            case 0:
+              coords[0] = getX1();
+              coords[1] = getY1();
+              result = SEG_MOVETO;
+              break;
+            case 1:
+              coords[0] = getCtrlX1();
+              coords[1] = getCtrlY1();
+              coords[2] = getCtrlX2();
+              coords[3] = getCtrlY2();
+              coords[4] = getX2();
+              coords[5] = getY2();
+              result = SEG_CUBICTO;
+              break;
+            default:
+              throw new NoSuchElementException("cubic iterator out of bounds");
+            }
+          if (at != null)
+            at.transform(coords, 0, coords, 0, 3);
+          return result;
+        }
       };
   }
 
@@ -1018,11 +1018,11 @@ public abstract class CubicCurve2D implements Shape, Cloneable
   {
     try
       {
-	return super.clone();
+        return super.clone();
       }
     catch (CloneNotSupportedException e)
       {
-	throw (Error) new InternalError().initCause(e); // Impossible
+        throw (Error) new InternalError().initCause(e); // Impossible
       }
   }
 
@@ -1042,7 +1042,7 @@ public abstract class CubicCurve2D implements Shape, Cloneable
    *
    * A special-case not adressed in this code is self-intersections
    * of the curve, e.g. if the axis intersects the self-itersection,
-   * the degenerate roots of the polynomial will erroneously count as 
+   * the degenerate roots of the polynomial will erroneously count as
    * a single intersection of the curve, and not two.
    */
   private int getAxisIntersections(double x, double y, boolean useYaxis,
@@ -1064,48 +1064,48 @@ public abstract class CubicCurve2D implements Shape, Cloneable
 
     if (useYaxis)
       {
-	a0 = getY1() - y;
-	a1 = getCtrlY1() - y;
-	a2 = getCtrlY2() - y;
-	a3 = getY2() - y;
-	b0 = getX1() - x;
-	b1 = getCtrlX1() - x;
-	b2 = getCtrlX2() - x;
-	b3 = getX2() - x;
+        a0 = getY1() - y;
+        a1 = getCtrlY1() - y;
+        a2 = getCtrlY2() - y;
+        a3 = getY2() - y;
+        b0 = getX1() - x;
+        b1 = getCtrlX1() - x;
+        b2 = getCtrlX2() - x;
+        b3 = getX2() - x;
       }
     else
       {
-	a0 = getX1() - x;
-	a1 = getCtrlX1() - x;
-	a2 = getCtrlX2() - x;
-	a3 = getX2() - x;
-	b0 = getY1() - y;
-	b1 = getCtrlY1() - y;
-	b2 = getCtrlY2() - y;
-	b3 = getY2() - y;
+        a0 = getX1() - x;
+        a1 = getCtrlX1() - x;
+        a2 = getCtrlX2() - x;
+        a3 = getX2() - x;
+        b0 = getY1() - y;
+        b1 = getCtrlY1() - y;
+        b2 = getCtrlY2() - y;
+        b3 = getY2() - y;
       }
 
-    /* If the axis intersects a start/endpoint, shift it up by some small 
+    /* If the axis intersects a start/endpoint, shift it up by some small
        amount to guarantee the line is 'inside'
        If this is not done, bad behaviour may result for points on that axis.*/
     if (a0 == 0.0 || a3 == 0.0)
       {
-	double small = getFlatness() * EPSILON;
-	if (a0 == 0.0)
-	  a0 -= small;
-	if (a3 == 0.0)
-	  a3 -= small;
+        double small = getFlatness() * EPSILON;
+        if (a0 == 0.0)
+          a0 -= small;
+        if (a3 == 0.0)
+          a3 -= small;
       }
 
     if (useYaxis)
       {
-	if (Line2D.linesIntersect(b0, a0, b3, a3, EPSILON, 0.0, distance, 0.0))
-	  nCrossings++;
+        if (Line2D.linesIntersect(b0, a0, b3, a3, EPSILON, 0.0, distance, 0.0))
+          nCrossings++;
       }
     else
       {
-	if (Line2D.linesIntersect(a0, b0, a3, b3, 0.0, EPSILON, 0.0, distance))
-	  nCrossings++;
+        if (Line2D.linesIntersect(a0, b0, a3, b3, 0.0, EPSILON, 0.0, distance))
+          nCrossings++;
       }
 
     r[0] = a0;
@@ -1116,15 +1116,15 @@ public abstract class CubicCurve2D implements Shape, Cloneable
     if ((nRoots = solveCubic(r)) != 0)
       for (int i = 0; i < nRoots; i++)
         {
-	  double t = r[i];
-	  if (t >= 0.0 && t <= 1.0)
-	    {
-	      double crossing = -(t * t * t) * (b0 - 3 * b1 + 3 * b2 - b3)
-	                        + 3 * t * t * (b0 - 2 * b1 + b2)
-	                        + 3 * t * (b1 - b0) + b0;
-	      if (crossing > 0.0 && crossing <= distance)
-		nCrossings++;
-	    }
+          double t = r[i];
+          if (t >= 0.0 && t <= 1.0)
+            {
+              double crossing = -(t * t * t) * (b0 - 3 * b1 + 3 * b2 - b3)
+                                + 3 * t * t * (b0 - 2 * b1 + b2)
+                                + 3 * t * (b1 - b0) + b0;
+              if (crossing > 0.0 && crossing <= distance)
+                nCrossings++;
+            }
         }
 
     return (nCrossings);

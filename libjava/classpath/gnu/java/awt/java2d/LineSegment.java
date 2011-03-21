@@ -63,7 +63,7 @@ public class LineSegment extends Segment
   public Object clone()
   {
     LineSegment segment = null;
-    
+
     try
       {
         segment = (LineSegment) super.clone();
@@ -76,7 +76,7 @@ public class LineSegment extends Segment
         ie.initCause(cnse);
         throw ie;
       }
-    
+
     return segment;
   }
 
@@ -108,11 +108,11 @@ public class LineSegment extends Segment
 
   public double[] cp1()
   {
-    return new double[]{P2.getX(), P2.getY()}; 
+    return new double[]{P2.getX(), P2.getY()};
   }
 
   public double[] cp2()
   {
-    return new double[]{P1.getX(), P1.getY()}; 
+    return new double[]{P1.getX(), P1.getY()};
   }
 } // class LineSegment

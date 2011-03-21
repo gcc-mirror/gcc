@@ -1,6 +1,6 @@
 // shared_ptr and weak_ptr implementation -*- C++ -*-
 
-// Copyright (C) 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -51,7 +51,9 @@
 
 #include <bits/shared_ptr_base.h>
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /**
    * @addtogroup pointer_abstractions
@@ -244,7 +246,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	explicit shared_ptr(const weak_ptr<_Tp1>& __r)
 	: __shared_ptr<_Tp>(__r) { }
 
-#if _GLIBCXX_DEPRECATED
+#if _GLIBCXX_USE_DEPRECATED
       template<typename _Tp1>
 	shared_ptr(std::auto_ptr<_Tp1>&& __r)
 	: __shared_ptr<_Tp>(std::move(__r)) { }
@@ -270,7 +272,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	  return *this;
 	}
 
-#if _GLIBCXX_DEPRECATED
+#if _GLIBCXX_USE_DEPRECATED
       template<typename _Tp1>
 	shared_ptr&
 	operator=(std::auto_ptr<_Tp1>&& __r)
@@ -557,6 +559,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
   // @} group pointer_abstractions
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
 
 #endif // _SHARED_PTR_H
