@@ -1,4 +1,13 @@
-2011-11-04  Eric Botcazou  <ebotcazou@adacore.com>
+2011-03-21  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR preprocessor/48192
+	Backport from trunk
+	* directives.c (do_ifdef): Do not consider conditional macros as
+	being defined.
+	(do_ifndef): Ditto.
+	* expr.c (parse_defined): Ditto.
+
+2011-01-04  Eric Botcazou  <ebotcazou@adacore.com>
             Jakub Jelinek  <jakub@redhat.com>
 
 	PR preprocessor/39213
