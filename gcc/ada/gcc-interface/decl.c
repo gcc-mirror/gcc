@@ -6004,7 +6004,7 @@ elaborate_expression_1 (tree gnu_expr, Entity_Id gnat_entity, tree gnu_name,
 			bool definition, bool need_debug)
 {
   const bool expr_global_p = Is_Public (gnat_entity) || global_bindings_p ();
-  bool expr_variable_p;
+  bool expr_variable_p, use_variable;
   tree gnu_decl;
 
   /* In most cases, we won't see a naked FIELD_DECL because a discriminant
@@ -6058,8 +6058,18 @@ elaborate_expression_1 (tree gnu_expr, Entity_Id gnat_entity, tree gnu_name,
 	    && (TREE_READONLY (inner) || DECL_READONLY_ONCE_ELAB (inner)));
     }
 
-  /* Now create the variable if we need it.  */
-  if (need_debug || (expr_variable_p && expr_global_p))
+  /* We only need to use the variable if we are in a global context since GCC
+     can do the right thing in the local case.  However, when not optimizing,
+     use it for bounds of loop iteration scheme to avoid code duplication.  */
+  use_variable = expr_variable_p
+		 && (expr_global_p
+		     || (!optimize
+			 && Is_Itype (gnat_entity)
+			 && Nkind (Associated_Node_For_Itype (gnat_entity))
+			    == N_Loop_Parameter_Specification));
+
+  /* Now create it, possibly only for debugging purposes.  */
+  if (use_variable || need_debug)
     gnu_decl
       = create_var_decl (create_concat_name (gnat_entity,
 					     IDENTIFIER_POINTER (gnu_name)),
@@ -6067,9 +6077,7 @@ elaborate_expression_1 (tree gnu_expr, Entity_Id gnat_entity, tree gnu_name,
 			 !need_debug, Is_Public (gnat_entity),
 			 !definition, expr_global_p, NULL, gnat_entity);
 
-  /* We only need to use this variable if we are in global context since GCC
-     can do the right thing in the local case.  */
-  if (expr_global_p && expr_variable_p)
+  if (use_variable)
     return gnu_decl;
 
   return expr_variable_p ? gnat_save_expr (gnu_expr) : gnu_expr;

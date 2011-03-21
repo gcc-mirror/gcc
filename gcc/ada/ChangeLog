@@ -1,8 +1,12 @@
+2011-03-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (elaborate_expression_1): When optimization is
+	disabled, use the variable for bounds of loop iteration scheme.
+
 2011-03-21  Kai Tietz  <ktietz@redhat.com>
 
 	PR target/12171
-	* gcc-interface/utils.c (gnat_internal_attribute_table):
-	Add new element.
+	* gcc-interface/utils.c (gnat_internal_attribute_table): Add new column
 
 2011-03-17  Eric Botcazou  <ebotcazou@adacore.com>
 
