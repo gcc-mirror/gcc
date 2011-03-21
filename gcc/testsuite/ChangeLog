@@ -1,3 +1,11 @@
+2011-03-21  Richard Guenther  <rguenther@suse.de>
+
+	PR c/47939
+	* gcc.dg/debug/dwarf2/pr47939-1.c: New testcase.
+	* gcc.dg/debug/dwarf2/pr47939-2.c: Likewise.
+	* gcc.dg/debug/dwarf2/pr47939-3.c: Likewise.
+	* gcc.dg/debug/dwarf2/pr47939-4.c: Likewise.
+
 2011-03-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/48213

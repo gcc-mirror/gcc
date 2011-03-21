@@ -1,5 +1,11 @@
 2011-03-21  Richard Guenther  <rguenther@suse.de>
 
+	PR c/47939
+	* c-decl.c (grokdeclarator): Drop to the main variant only
+	for array types.  Drop flag_gen_aux_info check.
+
+2011-03-21  Richard Guenther  <rguenther@suse.de>
+
 	PR translation/47911
 	* params.def (lto-partitions): Fix typo.
 	(lto-min-partition): Fix wording.
