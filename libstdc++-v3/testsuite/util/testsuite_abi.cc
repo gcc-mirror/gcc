@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010
+// Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
 // Free Software Foundation, Inc.
 
 // This library is free software; you can redistribute it and/or
@@ -217,10 +217,14 @@ check_version(symbol& test, bool added)
       else
 	test.version_status = symbol::incompatible;
       
-      // Check that added symbols aren't added in the base version.
-      if (added && test.version_name == known_versions[0])
+      // Check that added symbols aren't added in the base versions.
+      if (added
+	  && (test.version_name == known_versions[0]
+	      || test.version_name == "CXXABI_1.3"
+	      || test.version_name == "GLIBCXX_LDBL_3.4"
+	      || test.version_name == "CXXABI_LDBL_1.3"))
 	test.version_status = symbol::incompatible;
-      
+
       // Check that long double compatibility symbols demangled as
       // __float128 are put into some _LDBL_ version name.
       if (added && test.demangled_name.find("__float128") != std::string::npos)
