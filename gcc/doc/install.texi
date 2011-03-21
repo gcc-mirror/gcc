@@ -3101,7 +3101,7 @@ or applying the patch in
 the OS version used, you need a data segment size between 512 MB and
 1 GB, so simply use @command{ulimit -Sd unlimited}.
 
-As of GNU binutils 2.20.1, neither GNU @command{as} nor GNU @command{ld}
+As of GNU binutils 2.21, neither GNU @command{as} nor GNU @command{ld}
 are supported on Tru64 UNIX, so you must not configure GCC with
 @option{--with-gnu-as} or @option{--with-gnu-ld}.
 
@@ -3533,7 +3533,7 @@ The Sun assembler in Solaris 8 and 9 has several bugs and limitations.
 While GCC works around them, several features are missing, so it is
 @c FIXME: which ones?
 recommended to use the GNU assembler instead.  There is no bundled
-version, but the current version, from GNU binutils 2.20.1, is known to
+version, but the current version, from GNU binutils 2.21, is known to
 work.
 
 Solaris@tie{}2/x86 doesn't support the execution of SSE/SSE2 instructions
@@ -3559,7 +3559,7 @@ It is recommended that you configure GCC to use the GNU assembler, in
 @file{/usr/sfw/bin/gas}.  The versions included in Solaris 10, from GNU
 binutils 2.15, and Solaris 11, from GNU binutils 2.19, work fine,
 although the current version, from GNU binutils
-2.20.1, is known to work, too.  Recent versions of the Sun assembler in
+2.21, is known to work, too.  Recent versions of the Sun assembler in
 @file{/usr/ccs/bin/as} work almost as well, though.
 @c FIXME: as patch requirements?
 
@@ -3567,7 +3567,7 @@ For linking, the Sun linker, is preferred.  If you want to use the GNU
 linker instead, which is available in @file{/usr/sfw/bin/gld}, note that
 due to a packaging bug the version in Solaris 10, from GNU binutils
 2.15, cannot be used, while the version in Solaris 11, from GNU binutils
-2.19, works, as does the latest version, from GNU binutils 2.20.1.
+2.19, works, as does the latest version, from GNU binutils 2.21.
 
 To use GNU @command{as}, configure with the options
 @option{--with-gnu-as --with-as=@//usr/@/sfw/@/bin/@/gas}.  It may be necessary
@@ -3996,7 +3996,7 @@ Look for @file{/usr/lib64/libc.so.1} to see if you
 have the 64-bit libraries installed.
 
 GCC must be configured with GNU @command{as}.  The latest version, from GNU
-binutils 2.20.1, is known to work.  On the other hand, bootstrap fails
+binutils 2.21, is known to work.  On the other hand, bootstrap fails
 with GNU @command{ld} at least since GNU binutils 2.17.
 
 The @option{--enable-libgcj}
@@ -4139,8 +4139,7 @@ supported as cross-compilation target only.
 Support for Solaris 7 has been removed in GCC 4.6.
 
 Sun does not ship a C compiler with Solaris 2, though you can download
-the Sun Studio compilers for free from
-@uref{http://developers.sun.com/sunstudio/downloads/}.  Alternatively,
+the Sun Studio compilers for free.  Alternatively,
 you can install a pre-built GCC to bootstrap and install GCC.  See the
 @uref{binaries.html,,binaries page} for details.
 
@@ -4183,7 +4182,7 @@ We recommend the use of the Sun assembler or the GNU assembler, in
 conjunction with the Sun linker.  The GNU @command{as}
 versions included in Solaris 10, from GNU binutils 2.15, and Solaris 11,
 from GNU binutils 2.19, are known to work.  They can be found in
-@file{/usr/sfw/bin/gas}.  Current versions of GNU binutils (2.20.1)
+@file{/usr/sfw/bin/gas}.  Current versions of GNU binutils (2.21)
 are known to work as well.  Note that your mileage may vary
 if you use a combination of the GNU tools and the Sun tools: while the
 combination GNU @command{as} + Sun @command{ld} should reasonably work,
@@ -4192,7 +4191,7 @@ cause memory corruption at runtime in some cases for C++ programs.
 @c FIXME: still?
 GNU @command{ld} usually works as well, although the version included in
 Solaris 10 cannot be used due to several bugs.  Again, the current
-version (2.20.1) is known to work, but generally lacks platform specific
+version (2.21) is known to work, but generally lacks platform specific
 features, so better stay with Sun @command{ld}.
 
 To enable symbol versioning in @samp{libstdc++} with Sun @command{ld},
