@@ -1,3 +1,9 @@
+2011-03-21  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac (gcc_cv_lto_plugin): Fix typo.
+	Allow -fuse-linker-plugin for non-default plugin linker.
+	* configure: Regenerate.
+
 2011-03-21  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	PR bootstrap/48167
