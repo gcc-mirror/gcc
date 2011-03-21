@@ -872,7 +872,7 @@ DEFPARAM (PARAM_LTO_PARTITIONS,
 
 DEFPARAM (MIN_PARTITION_SIZE,
 	  "lto-min-partition",
-	  "Minimal size of a paritition for LTO (in estimated instructions)",
+	  "Minimal size of a partition for LTO (in estimated instructions)",
 	  1000, 0, 0)
 
 /* Diagnostic parameters.  */
