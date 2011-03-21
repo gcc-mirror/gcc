@@ -5062,6 +5062,8 @@ s390_delegitimize_address (rtx orig_x)
 
   if (GET_MODE (orig_x) != Pmode)
     {
+      if (GET_MODE (orig_x) == BLKmode)
+	return orig_x;
       y = lowpart_subreg (GET_MODE (orig_x), y, Pmode);
       if (y == NULL_RTX)
 	return orig_x;
