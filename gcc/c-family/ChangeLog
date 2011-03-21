@@ -1,6 +1,12 @@
 2011-03-17  Kai Tietz
 
 	PR target/12171
+	* c-pretty-print.c (pp_c_specifier_qualifier_list):
+	Display allowed attributes for function pointer types.
+	(pp_c_attributes_display): New function to display
+	attributes having affects_type_identity flag set to true.
+	* c-pretty-print.h (pp_c_attributes_display): New prototype.
+
 	* c-common.c (c_common_attribute_table):
 	Add new element.
 	(c_common_format_attribute_table): Likewise.

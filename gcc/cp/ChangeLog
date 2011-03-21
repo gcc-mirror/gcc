@@ -1,6 +1,10 @@
 2011-03-21  Kai Tietz  <ktietz@redhat.com>
 
 	PR target/12171
+	* cxx-pretty-print.c (pp_cxx_ptr_operator):
+	Display allowed attributes for function pointer types.
+	* error.c (dump_type_prefix): Likewise.
+
 	* tree.c (cxx_attribute_table): Adjust table.
 
 2011-03-18  Jason Merrill  <jason@redhat.com>

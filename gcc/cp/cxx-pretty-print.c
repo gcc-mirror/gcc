@@ -1323,6 +1323,8 @@ pp_cxx_ptr_operator (cxx_pretty_printer *pp, tree t)
       if (TREE_CODE (TREE_TYPE (t)) == POINTER_TYPE
 	  || TYPE_PTR_TO_MEMBER_P (TREE_TYPE (t)))
 	pp_cxx_ptr_operator (pp, TREE_TYPE (t));
+      pp_c_attributes_display (pp_c_base (pp),
+			       TYPE_ATTRIBUTES (TREE_TYPE (t)));
       if (TREE_CODE (t) == POINTER_TYPE)
 	{
 	  pp_star (pp);
