@@ -1,3 +1,9 @@
+2011-03-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/48213
+	* config/s390/s390.c (s390_delegitimize_address): Don't call
+	lowpart_subreg if orig_x has BLKmode.
+
 2011-03-20  Joseph Myers  <joseph@codesourcery.com>
 
 	* c-decl.c (diagnose_mismatched_decls): Give an error for
