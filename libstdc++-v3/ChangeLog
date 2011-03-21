@@ -1,3 +1,8 @@
+2011-03-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/abi/pre/gnu.ver (CXXABI_1.3): Don't export _ZT[IS][PK]*[no].
+	(CXXABI_1.3.5): Export _ZTI[PK]*[no].
+
 2011-03-21  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* testsuite/22_locale/num_put/put/char/14220.cc: Don't xfail on
