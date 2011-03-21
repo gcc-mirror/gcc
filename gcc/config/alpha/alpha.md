@@ -1,6 +1,6 @@
 ;; Machine description for DEC Alpha for GNU C compiler
 ;; Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
-;; 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010
+;; 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010, 2011
 ;; Free Software Foundation, Inc.
 ;; Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 ;;
@@ -24,68 +24,68 @@
 
 ;; Uses of UNSPEC in this file:
 
-(define_constants
-  [(UNSPEC_ARG_HOME	0)
-   (UNSPEC_LDGP1	1)
-   (UNSPEC_INSXH	2)
-   (UNSPEC_MSKXH	3)
-   (UNSPEC_CVTQL	4)
-   (UNSPEC_CVTLQ	5)
-   (UNSPEC_UMK_LAUM	6)
-   (UNSPEC_UMK_LALM	7)
-   (UNSPEC_UMK_LAL	8)
-   (UNSPEC_UMK_LOAD_CIW	9)
-   (UNSPEC_LDGP2	10)
-   (UNSPEC_LITERAL	11)
-   (UNSPEC_LITUSE	12)
-   (UNSPEC_SIBCALL	13)
-   (UNSPEC_SYMBOL	14)
+(define_c_enum "unspec" [
+  UNSPEC_ARG_HOME
+  UNSPEC_LDGP1
+  UNSPEC_INSXH
+  UNSPEC_MSKXH
+  UNSPEC_CVTQL
+  UNSPEC_CVTLQ
+  UNSPEC_UMK_LAUM
+  UNSPEC_UMK_LALM
+  UNSPEC_UMK_LAL
+  UNSPEC_UMK_LOAD_CIW
+  UNSPEC_LDGP2
+  UNSPEC_LITERAL
+  UNSPEC_LITUSE
+  UNSPEC_SIBCALL
+  UNSPEC_SYMBOL
 
-   ;; TLS Support
-   (UNSPEC_TLSGD_CALL	15)
-   (UNSPEC_TLSLDM_CALL	16)
-   (UNSPEC_TLSGD	17)
-   (UNSPEC_TLSLDM	18)
-   (UNSPEC_DTPREL	19)
-   (UNSPEC_TPREL	20)
-   (UNSPEC_TP		21)
+  ;; TLS Support
+  UNSPEC_TLSGD_CALL
+  UNSPEC_TLSLDM_CALL
+  UNSPEC_TLSGD
+  UNSPEC_TLSLDM
+  UNSPEC_DTPREL
+  UNSPEC_TPREL
+  UNSPEC_TP
 
-   ;; Builtins
-   (UNSPEC_CMPBGE	22)
-   (UNSPEC_ZAP		23)
-   (UNSPEC_AMASK	24)
-   (UNSPEC_IMPLVER	25)
-   (UNSPEC_PERR		26)
-   (UNSPEC_COPYSIGN     27)
+  ;; Builtins
+  UNSPEC_CMPBGE
+  UNSPEC_ZAP
+  UNSPEC_AMASK
+  UNSPEC_IMPLVER
+  UNSPEC_PERR
+  UNSPEC_COPYSIGN
 
-   ;; Atomic operations
-   (UNSPEC_MB		28)
-   (UNSPEC_ATOMIC	31)
-   (UNSPEC_CMPXCHG	32)
-   (UNSPEC_XCHG		33)
-  ])
+  ;; Atomic operations
+  UNSPEC_MB
+  UNSPEC_ATOMIC
+  UNSPEC_CMPXCHG
+  UNSPEC_XCHG
+])
 
 ;; UNSPEC_VOLATILE:
 
-(define_constants
-  [(UNSPECV_IMB		0)
-   (UNSPECV_BLOCKAGE	1)
-   (UNSPECV_SETJMPR	2)	; builtin_setjmp_receiver
-   (UNSPECV_LONGJMP	3)	; builtin_longjmp
-   (UNSPECV_TRAPB	4)
-   (UNSPECV_PSPL	5)	; prologue_stack_probe_loop
-   (UNSPECV_REALIGN	6)
-   (UNSPECV_EHR		7)	; exception_receiver
-   (UNSPECV_MCOUNT	8)
-   (UNSPECV_FORCE_MOV	9)
-   (UNSPECV_LDGP1	10)
-   (UNSPECV_PLDGP2	11)	; prologue ldgp
-   (UNSPECV_SET_TP	12)
-   (UNSPECV_RPCC	13)
-   (UNSPECV_SETJMPR_ER	14)	; builtin_setjmp_receiver fragment
-   (UNSPECV_LL		15)	; load-locked
-   (UNSPECV_SC		16)	; store-conditional
-  ])
+(define_c_enum "unspecv" [
+  UNSPECV_IMB
+  UNSPECV_BLOCKAGE
+  UNSPECV_SETJMPR	; builtin_setjmp_receiver
+  UNSPECV_LONGJMP	; builtin_longjmp
+  UNSPECV_TRAPB
+  UNSPECV_PSPL		; prologue_stack_probe_loop
+  UNSPECV_REALIGN
+  UNSPECV_EHR		; exception_receiver
+  UNSPECV_MCOUNT
+  UNSPECV_FORCE_MOV
+  UNSPECV_LDGP1
+  UNSPECV_PLDGP2	; prologue ldgp
+  UNSPECV_SET_TP
+  UNSPECV_RPCC
+  UNSPECV_SETJMPR_ER	; builtin_setjmp_receiver fragment
+  UNSPECV_LL		; load-locked
+  UNSPECV_SC		; store-conditional
+])
 
 ;; On non-BWX targets, CQImode must be handled the similarly to HImode
 ;; when generating reloads.
