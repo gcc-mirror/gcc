@@ -1,4 +1,8 @@
-2011-03-20  Jakub Jelinek  <jakub@redhat.com>
+2011-03-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gimplify.c (gimplify_vla_decl): Set TREE_THIS_NOTRAP flag.
+
+2011-03-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/42544
 	PR c/48197

@@ -1322,6 +1322,7 @@ gimplify_vla_decl (tree decl, gimple_seq *seq_p)
   addr = create_tmp_var (ptr_type, get_name (decl));
   DECL_IGNORED_P (addr) = 0;
   t = build_fold_indirect_ref (addr);
+  TREE_THIS_NOTRAP (t) = 1;
   SET_DECL_VALUE_EXPR (decl, t);
   DECL_HAS_VALUE_EXPR_P (decl) = 1;
 
