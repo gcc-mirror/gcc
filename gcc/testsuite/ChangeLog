@@ -1,3 +1,9 @@
+2011-03-20  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR rtl-optimization/47502
+	* gcc.target/i386/pr47502-1.c: New.
+	* gcc.target/i386/pr47502-2.c: Likewise.
+
 2011-03-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/48156
