@@ -74,8 +74,7 @@
 			   (V2DF  "V2DI")])
 
 ;; constants for unspec
-(define_constants
-  [(UNSPEC_PREDICATE	400)])
+(define_c_enum "unspec" [UNSPEC_PREDICATE])
 
 
 ;; Vector move instructions.

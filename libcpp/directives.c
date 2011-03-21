@@ -1819,7 +1819,12 @@ do_ifdef (cpp_reader *pfile)
 
       if (node)
 	{
-	  skip = node->type != NT_MACRO;
+	  /* Do not treat conditional macros as being defined.  This is due to
+	     the powerpc and spu ports using conditional macros for 'vector',
+	     'bool', and 'pixel' to act as conditional keywords.  This messes
+	     up tests like #ifndef bool.  */
+	  skip = (node->type != NT_MACRO
+		  || ((node->flags & NODE_CONDITIONAL) != 0));
 	  _cpp_mark_macro_used (node);
 	  if (!(node->flags & NODE_USED))
 	    {
@@ -1860,7 +1865,12 @@ do_ifndef (cpp_reader *pfile)
 
       if (node)
 	{
-	  skip = node->type == NT_MACRO;
+	  /* Do not treat conditional macros as being defined.  This is due to
+	     the powerpc and spu ports using conditional macros for 'vector',
+	     'bool', and 'pixel' to act as conditional keywords.  This messes
+	     up tests like #ifndef bool.  */
+	  skip = (node->type == NT_MACRO
+		  && ((node->flags & NODE_CONDITIONAL) == 0));
 	  _cpp_mark_macro_used (node);
 	  if (!(node->flags & NODE_USED))
 	    {

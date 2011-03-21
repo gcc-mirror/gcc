@@ -1,3 +1,12 @@
+2011-03-21  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR preprocessor/48192
+	* gcc.target/powerpc/pr48192.c: New file.
+
+	PR target/48053
+	* gcc.target/powerpc/pr48053-3.c: New file, add test case for
+	split problem of 0 being loaded in a VSX register.
+
 2011-03-21  Richard Guenther  <rguenther@suse.de>
 
 	PR c/47939
