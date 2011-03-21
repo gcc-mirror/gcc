@@ -1,3 +1,8 @@
+2011-03-21  Jack Howarth  <howarth@bromo.med.uc.edu>
+
+	* testsuite/lib/prune.exp (libstdc++-dg-prune): Prune "could not
+	create compact unwind for" warnings.
+
 2011-03-21  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/abi/post/i386-linux-gnu/baseline_symbols.txt: Update.
