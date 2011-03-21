@@ -1,5 +1,11 @@
 2011-03-21  Uros Bizjak  <ubizjak@gmail.com>
 
+	* config/alpha/alpha.md (unspec): New define_c_enum.
+	(unspecv): Ditto.
+
+2011-03-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR debug/48214
 	* config/alpha/alpha.c (alpha_pad_noreturn): Do not emit an unop
 	between a call and its CALL_ARG_LOCATION note.
 
