@@ -1,3 +1,8 @@
+2011-03-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/alpha/alpha.c (alpha_pad_noreturn): Do not emit an unop
+	between a call and its CALL_ARG_LOCATION note.
+
 2011-03-21  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gimplify.c (gimplify_vla_decl): Set TREE_THIS_NOTRAP flag.
@@ -68,13 +73,11 @@
 	* config/sol2.h (CPP_SUBTARGET_SPEC): Remove -threads support.
 	(LIB_SPEC): Likewise.
 	* config/sol2.opt (threads): Remove.
-	* config.gcc (i[34567]86-*-solaris2*): Remove solaris threads
-	support.
+	* config.gcc (i[34567]86-*-solaris2*): Remove solaris threads support.
 	(sparc*-*-solaris2*): Likewise.
 	* configure.ac (enable_threads): Enable solaris support.
 	* configure: Regenerate.
-	* doc/invoke.texi (Option Summary, Solaris 2 Options): Remove
-	-threads.
+	* doc/invoke.texi (Option Summary, Solaris 2 Options): Remove -threads.
 	* doc/install.texi (Configuration, --enable-threads=lib): Remove
 	solaris.
 
@@ -131,13 +134,10 @@
 2011-03-21  Kai Tietz  <ktietz@redhat.com>
 
 	PR target/12171
-	* doc/plugins.texi: Adjust documentation
-	for plugin register_callback.
-	* tree.h (attribute_spec): Add new member
-	affects_type_identity.
-	- Zitierten Text anzeigen -
-	* attribs.c (empty_attribute_table): Adjust
-	attribute_spec initializers.
+	* doc/plugins.texi: Adjust documentation for plugin register_callback.
+	* tree.h (attribute_spec): Add new member affects_type_identity.
+	* attribs.c (empty_attribute_table): Adjust attribute_spec
+	initializers.
 	* config/alpha/alpha.c: Likewise.
 	* config/arc/arc.c: Likewise.
 	* config/arm/arm.c: Likewise.
@@ -235,8 +235,7 @@
 2011-03-18  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* config/s390/s390.c (s390_chunkify_start): Prevent literal pool
-	splitting between a call and its corresponding CALL_ARG_LOCATION
-	note.
+	splitting between a call and its corresponding CALL_ARG_LOCATION note.
 
 2011-03-18  Maxim Kuvyrkov  <maxim@codesourcery.com>
 
@@ -974,10 +973,10 @@
 
 2011-03-08  Georg-Johann Lay  <avr@gjlay.de>
 
-       * config/avr/avr.h (REGISTER_MOVE_COST, MEMORY_MOVE_COST): Remove.
-       * config/avr/avr.c (TARGET_REGISTER_MOVE_COST,
-       TARGET_MEMORY_MOVE_COST): Define.
-       (avr_register_move_cost, avr_memory_move_cost): New Functions.
+	* config/avr/avr.h (REGISTER_MOVE_COST, MEMORY_MOVE_COST): Remove.
+	* config/avr/avr.c (TARGET_REGISTER_MOVE_COST)
+	(TARGET_MEMORY_MOVE_COST): Define.
+	(avr_register_move_cost, avr_memory_move_cost): New Functions.
 
 2011-03-08  Jakub Jelinek  <jakub@redhat.com>
 
