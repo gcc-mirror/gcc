@@ -1,3 +1,7 @@
+2011-03-21  Andreas Tobler  <andreast@fgznet.ch>
+
+	* config/rs6000/t-freebsd: Remove duplication from file.
+
 2011-03-21  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/47661
