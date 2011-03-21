@@ -4088,17 +4088,19 @@ mep_validate_vliw (tree *node, tree name, tree args ATTRIBUTE_UNUSED,
 
 static const struct attribute_spec mep_attribute_table[11] =
 {
-  /* name         min max decl   type   func   handler */
-  { "based",        0, 0, false, false, false, mep_validate_based_tiny },
-  { "tiny",         0, 0, false, false, false, mep_validate_based_tiny },
-  { "near",         0, 0, false, false, false, mep_validate_near_far },
-  { "far",          0, 0, false, false, false, mep_validate_near_far },
-  { "disinterrupt", 0, 0, false, false, false, mep_validate_disinterrupt },
-  { "interrupt",    0, 0, false, false, false, mep_validate_interrupt },
-  { "io",           0, 1, false, false, false, mep_validate_io_cb },
-  { "cb",           0, 1, false, false, false, mep_validate_io_cb },
-  { "vliw",         0, 0, false, true,  false, mep_validate_vliw },
-  { NULL,           0, 0, false, false, false, NULL }
+  /* name         min max decl   type   func   handler
+     affects_type_identity */
+  { "based",        0, 0, false, false, false, mep_validate_based_tiny, false },
+  { "tiny",         0, 0, false, false, false, mep_validate_based_tiny, false },
+  { "near",         0, 0, false, false, false, mep_validate_near_far, false },
+  { "far",          0, 0, false, false, false, mep_validate_near_far, false },
+  { "disinterrupt", 0, 0, false, false, false, mep_validate_disinterrupt,
+    false },
+  { "interrupt",    0, 0, false, false, false, mep_validate_interrupt, false },
+  { "io",           0, 1, false, false, false, mep_validate_io_cb, false },
+  { "cb",           0, 1, false, false, false, mep_validate_io_cb, false },
+  { "vliw",         0, 0, false, true,  false, mep_validate_vliw, false },
+  { NULL,           0, 0, false, false, false, NULL, false }
 };
 
 static bool

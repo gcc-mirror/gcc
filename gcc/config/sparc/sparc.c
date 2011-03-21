@@ -469,9 +469,10 @@ static enum machine_mode sparc_preferred_simd_mode (enum machine_mode);
 /* Table of valid machine attributes.  */
 static const struct attribute_spec sparc_attribute_table[] =
 {
-  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler } */
+  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler,
+       do_diagnostic } */
   SUBTARGET_ATTRIBUTE_TABLE,
-  { NULL,        0, 0, false, false, false, NULL }
+  { NULL,        0, 0, false, false, false, NULL, false }
 };
 #endif
 

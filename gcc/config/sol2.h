@@ -257,8 +257,8 @@ __enable_execute_stack (void *addr)					\
 /* #pragma init and #pragma fini are implemented on top of init and
    fini attributes.  */
 #define SOLARIS_ATTRIBUTE_TABLE						\
-  { "init",      0, 0, true,  false,  false, NULL },			\
-  { "fini",      0, 0, true,  false,  false, NULL }
+  { "init",      0, 0, true,  false,  false, NULL, false },		\
+  { "fini",      0, 0, true,  false,  false, NULL, false }
 
 /* Solaris/x86 as and gas support the common ELF .section/.pushsection
    syntax.  */

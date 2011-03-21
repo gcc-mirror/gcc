@@ -1303,16 +1303,22 @@ static const char alt_reg_names[][8] =
 
 static const struct attribute_spec rs6000_attribute_table[] =
 {
-  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler } */
-  { "altivec",   1, 1, false, true,  false, rs6000_handle_altivec_attribute },
-  { "longcall",  0, 0, false, true,  true,  rs6000_handle_longcall_attribute },
-  { "shortcall", 0, 0, false, true,  true,  rs6000_handle_longcall_attribute },
-  { "ms_struct", 0, 0, false, false, false, rs6000_handle_struct_attribute },
-  { "gcc_struct", 0, 0, false, false, false, rs6000_handle_struct_attribute },
+  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler,
+       affects_type_identity } */
+  { "altivec",   1, 1, false, true,  false, rs6000_handle_altivec_attribute,
+    false },
+  { "longcall",  0, 0, false, true,  true,  rs6000_handle_longcall_attribute,
+    false },
+  { "shortcall", 0, 0, false, true,  true,  rs6000_handle_longcall_attribute,
+    false },
+  { "ms_struct", 0, 0, false, false, false, rs6000_handle_struct_attribute,
+    false },
+  { "gcc_struct", 0, 0, false, false, false, rs6000_handle_struct_attribute,
+    false },
 #ifdef SUBTARGET_ATTRIBUTE_TABLE
   SUBTARGET_ATTRIBUTE_TABLE,
 #endif
-  { NULL,        0, 0, false, false, false, NULL }
+  { NULL,        0, 0, false, false, false, NULL, false }
 };
 
 /* Implement TARGET_OPTION_OPTIMIZATION_TABLE.  */

@@ -5367,15 +5367,23 @@ h8300_insert_attributes (tree node, tree *attributes)
 
 static const struct attribute_spec h8300_attribute_table[] =
 {
-  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler } */
-  { "interrupt_handler", 0, 0, true,  false, false, h8300_handle_fndecl_attribute },
-  { "saveall",           0, 0, true,  false, false, h8300_handle_fndecl_attribute },
-  { "OS_Task",           0, 0, true,  false, false, h8300_handle_fndecl_attribute },
-  { "monitor",           0, 0, true,  false, false, h8300_handle_fndecl_attribute },
-  { "function_vector",   0, 0, true,  false, false, h8300_handle_fndecl_attribute },
-  { "eightbit_data",     0, 0, true,  false, false, h8300_handle_eightbit_data_attribute },
-  { "tiny_data",         0, 0, true,  false, false, h8300_handle_tiny_data_attribute },
-  { NULL,                0, 0, false, false, false, NULL }
+  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler,
+       affects_type_identity } */
+  { "interrupt_handler", 0, 0, true,  false, false,
+    h8300_handle_fndecl_attribute, false },
+  { "saveall",           0, 0, true,  false, false,
+    h8300_handle_fndecl_attribute, false },
+  { "OS_Task",           0, 0, true,  false, false,
+    h8300_handle_fndecl_attribute, false },
+  { "monitor",           0, 0, true,  false, false,
+    h8300_handle_fndecl_attribute, false },
+  { "function_vector",   0, 0, true,  false, false,
+    h8300_handle_fndecl_attribute, false },
+  { "eightbit_data",     0, 0, true,  false, false,
+    h8300_handle_eightbit_data_attribute, false },
+  { "tiny_data",         0, 0, true,  false, false,
+    h8300_handle_tiny_data_attribute, false },
+  { NULL,                0, 0, false, false, false, NULL, false }
 };
 
 

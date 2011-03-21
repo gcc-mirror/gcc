@@ -231,13 +231,19 @@ static const struct processor_costs m6812_cost = {
 
 static const struct attribute_spec m68hc11_attribute_table[] =
 {
-  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler } */
-  { "interrupt", 0, 0, false, true,  true,  m68hc11_handle_fntype_attribute },
-  { "trap",      0, 0, false, true,  true,  m68hc11_handle_fntype_attribute },
-  { "far",       0, 0, false, true,  true,  m68hc11_handle_fntype_attribute },
-  { "near",      0, 0, false, true,  true,  m68hc11_handle_fntype_attribute },
-  { "page0",     0, 0, false, false, false, m68hc11_handle_page0_attribute },
-  { NULL,        0, 0, false, false, false, NULL }
+  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler,
+       affects_type_identity } */
+  { "interrupt", 0, 0, false, true,  true,  m68hc11_handle_fntype_attribute,
+    false },
+  { "trap",      0, 0, false, true,  true,  m68hc11_handle_fntype_attribute,
+    false },
+  { "far",       0, 0, false, true,  true,  m68hc11_handle_fntype_attribute,
+    false },
+  { "near",      0, 0, false, true,  true,  m68hc11_handle_fntype_attribute,
+    false },
+  { "page0",     0, 0, false, false, false, m68hc11_handle_page0_attribute,
+    false },
+  { NULL,        0, 0, false, false, false, NULL, false }
 };
 
 /* Initialize the GCC target structure.  */

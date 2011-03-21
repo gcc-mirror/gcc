@@ -3232,11 +3232,12 @@ current_function_special_page_vector (rtx x)
 #undef TARGET_ATTRIBUTE_TABLE
 #define TARGET_ATTRIBUTE_TABLE m32c_attribute_table
 static const struct attribute_spec m32c_attribute_table[] = {
-  {"interrupt", 0, 0, false, false, false, interrupt_handler},
-  {"bank_switch", 0, 0, false, false, false, interrupt_handler},
-  {"fast_interrupt", 0, 0, false, false, false, interrupt_handler},
-  {"function_vector", 1, 1, true,  false, false, function_vector_handler},
-  {0, 0, 0, 0, 0, 0, 0}
+  {"interrupt", 0, 0, false, false, false, interrupt_handler, false},
+  {"bank_switch", 0, 0, false, false, false, interrupt_handler, false},
+  {"fast_interrupt", 0, 0, false, false, false, interrupt_handler, false},
+  {"function_vector", 1, 1, true,  false, false, function_vector_handler,
+   false},
+  {0, 0, 0, 0, 0, 0, 0, false}
 };
 
 #undef TARGET_COMP_TYPE_ATTRIBUTES

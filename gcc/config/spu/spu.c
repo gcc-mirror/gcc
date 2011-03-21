@@ -293,10 +293,13 @@ spu_libgcc_shift_count_mode (void);
 /*  Table of machine attributes.  */
 static const struct attribute_spec spu_attribute_table[] =
 {
-  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler } */
-  { "naked",          0, 0, true,  false, false, spu_handle_fndecl_attribute },
-  { "spu_vector",     0, 0, false, true,  false, spu_handle_vector_attribute },
-  { NULL,             0, 0, false, false, false, NULL }
+  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler,
+       affects_type_identity } */
+  { "naked",          0, 0, true,  false, false, spu_handle_fndecl_attribute,
+    false },
+  { "spu_vector",     0, 0, false, true,  false, spu_handle_vector_attribute,
+    false },
+  { NULL,             0, 0, false, false, false, NULL, false }
 };
 
 /*  TARGET overrides.  */

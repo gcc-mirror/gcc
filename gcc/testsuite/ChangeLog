@@ -1,3 +1,8 @@
+2011-03-21  Kai Tietz  <ktietz@redhat.com>
+
+	PR target/12171
+	* g++.dg/plugin/attribute_plugin.c: Adjust test.
+
 2011-03-21  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	* gcc.target/arm/xor-and.c: New.

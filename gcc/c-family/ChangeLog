@@ -1,3 +1,10 @@
+2011-03-17  Kai Tietz
+
+	PR target/12171
+	* c-common.c (c_common_attribute_table):
+	Add new element.
+	(c_common_format_attribute_table): Likewise.
+
 2011-03-18  Jason Merrill  <jason@redhat.com>
 
 	* c.opt (fconstexpr-depth): Add Var(max_constexpr_depth).

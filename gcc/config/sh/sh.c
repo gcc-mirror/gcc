@@ -306,15 +306,24 @@ static void sh_conditional_register_usage (void);
 
 static const struct attribute_spec sh_attribute_table[] =
 {
-  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler } */
-  { "interrupt_handler", 0, 0, true,  false, false, sh_handle_interrupt_handler_attribute },
-  { "sp_switch",         1, 1, true,  false, false, sh_handle_sp_switch_attribute },
-  { "trap_exit",         1, 1, true,  false, false, sh_handle_trap_exit_attribute },
-  { "renesas",           0, 0, false, true, false, sh_handle_renesas_attribute },
-  { "trapa_handler",     0, 0, true,  false, false, sh_handle_interrupt_handler_attribute },
-  { "nosave_low_regs",   0, 0, true,  false, false, sh_handle_interrupt_handler_attribute },
-  { "resbank",           0, 0, true,  false, false, sh_handle_resbank_handler_attribute },
-  { "function_vector",   1, 1, true,  false, false, sh2a_handle_function_vector_handler_attribute },
+  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler,
+       affects_type_identity } */
+  { "interrupt_handler", 0, 0, true,  false, false,
+    sh_handle_interrupt_handler_attribute, false },
+  { "sp_switch",         1, 1, true,  false, false,
+     sh_handle_sp_switch_attribute, false },
+  { "trap_exit",         1, 1, true,  false, false,
+    sh_handle_trap_exit_attribute, false },
+  { "renesas",           0, 0, false, true, false,
+    sh_handle_renesas_attribute, false },
+  { "trapa_handler",     0, 0, true,  false, false,
+    sh_handle_interrupt_handler_attribute, false },
+  { "nosave_low_regs",   0, 0, true,  false, false,
+    sh_handle_interrupt_handler_attribute, false },
+  { "resbank",           0, 0, true,  false, false,
+    sh_handle_resbank_handler_attribute, false },
+  { "function_vector",   1, 1, true,  false, false,
+    sh2a_handle_function_vector_handler_attribute, false },
 #ifdef SYMBIAN
   /* Symbian support adds three new attributes:
      dllexport - for exporting a function/variable that will live in a dll
@@ -323,10 +332,12 @@ static const struct attribute_spec sh_attribute_table[] =
      Microsoft allows multiple declspecs in one __declspec, separating
      them with spaces.  We do NOT support this.  Instead, use __declspec
      multiple times.  */
-  { "dllimport",         0, 0, true,  false, false, sh_symbian_handle_dll_attribute },
-  { "dllexport",         0, 0, true,  false, false, sh_symbian_handle_dll_attribute },
+  { "dllimport",         0, 0, true,  false, false,
+    sh_symbian_handle_dll_attribute, false },
+  { "dllexport",         0, 0, true,  false, false,
+    sh_symbian_handle_dll_attribute, false },
 #endif
-  { NULL,                0, 0, false, false, false, NULL }
+  { NULL,                0, 0, false, false, false, NULL, false }
 };
 
 /* Set default optimization options.  */

@@ -454,8 +454,10 @@ do {						\
 #define TARGET_USE_LOCAL_THUNK_ALIAS_P(DECL) (!DECL_ONE_ONLY (DECL))
 
 #define SUBTARGET_ATTRIBUTE_TABLE \
-  { "selectany", 0, 0, true, false, false, ix86_handle_selectany_attribute }
-  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler } */
+  { "selectany", 0, 0, true, false, false, ix86_handle_selectany_attribute, \
+    false }
+  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler,
+       affects_type_identity } */
 
 /*  mcount() does not need a counter variable.  */
 #undef NO_PROFILE_COUNTERS

@@ -298,11 +298,15 @@ const char *m68k_library_id_string = "_current_shared_library_a5_offset_";
 
 static const struct attribute_spec m68k_attribute_table[] =
 {
-  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler } */
-  { "interrupt", 0, 0, true,  false, false, m68k_handle_fndecl_attribute },
-  { "interrupt_handler", 0, 0, true,  false, false, m68k_handle_fndecl_attribute },
-  { "interrupt_thread", 0, 0, true,  false, false, m68k_handle_fndecl_attribute },
-  { NULL,                0, 0, false, false, false, NULL }
+  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler,
+       affects_type_identity } */
+  { "interrupt", 0, 0, true,  false, false, m68k_handle_fndecl_attribute,
+    false },
+  { "interrupt_handler", 0, 0, true,  false, false,
+    m68k_handle_fndecl_attribute, false },
+  { "interrupt_thread", 0, 0, true,  false, false,
+    m68k_handle_fndecl_attribute, false },
+  { NULL,                0, 0, false, false, false, NULL, false }
 };
 
 struct gcc_target targetm = TARGET_INITIALIZER;

@@ -129,14 +129,21 @@ section *progmem_section;
 /* AVR attributes.  */
 static const struct attribute_spec avr_attribute_table[] =
 {
-  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler } */
-  { "progmem",   0, 0, false, false, false,  avr_handle_progmem_attribute },
-  { "signal",    0, 0, true,  false, false,  avr_handle_fndecl_attribute },
-  { "interrupt", 0, 0, true,  false, false,  avr_handle_fndecl_attribute },
-  { "naked",     0, 0, false, true,  true,   avr_handle_fntype_attribute },
-  { "OS_task",   0, 0, false, true,  true,   avr_handle_fntype_attribute },
-  { "OS_main",   0, 0, false, true,  true,   avr_handle_fntype_attribute },
-  { NULL,        0, 0, false, false, false, NULL }
+  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler,
+       affects_type_identity } */
+  { "progmem",   0, 0, false, false, false,  avr_handle_progmem_attribute,
+    false },
+  { "signal",    0, 0, true,  false, false,  avr_handle_fndecl_attribute,
+    false },
+  { "interrupt", 0, 0, true,  false, false,  avr_handle_fndecl_attribute,
+    false },
+  { "naked",     0, 0, false, true,  true,   avr_handle_fntype_attribute,
+    false },
+  { "OS_task",   0, 0, false, true,  true,   avr_handle_fntype_attribute,
+    false },
+  { "OS_main",   0, 0, false, true,  true,   avr_handle_fntype_attribute,
+    false },
+  { NULL,        0, 0, false, false, false, NULL, false }
 };
 
 /* Implement TARGET_OPTION_OPTIMIZATION_TABLE.  */

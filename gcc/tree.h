@@ -4329,6 +4329,8 @@ struct attribute_spec
      by the rest of this structure.  */
   tree (*const handler) (tree *node, tree name, tree args,
 				 int flags, bool *no_add_attrs);
+  /* Specifies if attribute affects type's identity.  */
+  const bool affects_type_identity;
 };
 
 /* Flags that may be passed in the third argument of decl_attributes, and
