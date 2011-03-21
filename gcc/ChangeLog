@@ -1,3 +1,8 @@
+2011-03-21  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* simplify-rtx.c (simplify_binary_operation_1): Handle
+	(xor (and A B) C) case when B and C are both constants.
+
 2011-03-21  Mingjie Xing  <mingjie.xing@gmail.com>
 
 	* tree-dfa.c (add_referenced_var): Fix typo in comment.
