@@ -1,3 +1,9 @@
+2011-03-21  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR bootstrap/48135
+	* configure.ac (ssp_use_symver): Handle --disable-symvers.
+	* configure: Regenerate.
+
 2011-02-13  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* Makefile.in: Regenerate.

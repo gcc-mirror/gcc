@@ -1,3 +1,9 @@
+2011-03-21  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR bootstrap/48135
+	* configure.ac (gfortran_use_symver): Handle --disable-symvers.
+	* configure: Regenerate.
+
 2011-03-19  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR fortran/35667
