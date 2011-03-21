@@ -1,5 +1,10 @@
 2011-03-21  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
+	* configure.ac (THREADS): Remove solaris.
+	* configure: Regenerate.
+
+2011-03-21  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
 	PR bootstrap/48135
 	* configure.ac (libjava_cv_anon_version_script): Handle
 	--disable-symvers.

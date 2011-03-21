@@ -248,7 +248,7 @@ AC_MSG_RESULT($THREADLIBS)
     AC_DEFINE(GC_AIX_THREADS,1)
     AC_DEFINE(_REENTRANT,1)
     ;;
- decosf1 | irix | mach | os2 | solaris | dce | vxworks)
+ decosf1 | irix | mach | os2 | dce | vxworks)
     AC_MSG_ERROR(thread package $THREADS not yet supported)
     ;;
  *)

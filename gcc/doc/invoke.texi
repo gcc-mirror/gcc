@@ -854,7 +854,7 @@ See RS/6000 and PowerPC Options.
 
 @emph{Solaris 2 Options}
 @gccoptlist{-mimpure-text  -mno-impure-text @gol
--threads -pthreads -pthread}
+-pthreads -pthread}
 
 @emph{SPARC Options}
 @gccoptlist{-mcpu=@var{cpu-type} @gol
@@ -16931,13 +16931,6 @@ using @option{-mimpure-text}, you should compile all source code with
 These switches are supported in addition to the above on Solaris 2:
 
 @table @gcctabopt
-@item -threads
-@opindex threads
-Add support for multithreading using the Solaris threads library.  This
-option sets flags for both the preprocessor and linker.  This option does
-not affect the thread safety of object code produced by the compiler or
-that of libraries supplied with it.
-
 @item -pthreads
 @opindex pthreads
 Add support for multithreading using the POSIX threads library.  This

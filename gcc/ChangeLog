@@ -1,5 +1,22 @@
 2011-03-21  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
+	* gthr-solaris.h: Remove.
+	* gthr.h (_SOLARIS_THREADS): Don't include gthr-solaris.h, remove.
+	* config/sol2.h (CPP_SUBTARGET_SPEC): Remove -threads support.
+	(LIB_SPEC): Likewise.
+	* config/sol2.opt (threads): Remove.
+	* config.gcc (i[34567]86-*-solaris2*): Remove solaris threads
+	support.
+	(sparc*-*-solaris2*): Likewise.
+	* configure.ac (enable_threads): Enable solaris support.
+	* configure: Regenerate.
+	* doc/invoke.texi (Option Summary, Solaris 2 Options): Remove
+	-threads.
+	* doc/install.texi (Configuration, --enable-threads=lib): Remove
+	solaris.
+
+2011-03-21  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
 	* config.gcc: Obsolete *-*-solaris2.8*.
 	* doc/install.texi (Specific, *-*-solaris2*): Document it.
 

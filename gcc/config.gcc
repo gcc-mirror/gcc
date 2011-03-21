@@ -1426,9 +1426,6 @@ i[34567]86-*-solaris2*)
 	  "":yes:* | yes:yes:* )
 		thread_file=posix
 		;;
-	  "":*:yes | yes:*:yes )
-		thread_file=solaris
-		;;
 	esac
 	;;
 i[4567]86-wrs-vxworks|i[4567]86-wrs-vxworksae)
@@ -2602,9 +2599,6 @@ sparc*-*-solaris2*)
 	case ${enable_threads}:${have_pthread_h}:${have_thread_h} in
 	  "":yes:* | yes:yes:* )
 		thread_file=posix
-		;;
-	  "":*:yes | yes:*:yes )
-		thread_file=solaris
 		;;
 	esac
 	;;

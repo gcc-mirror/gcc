@@ -14973,7 +14973,7 @@ $as_echo "#define DGUX_THREADS 1" >>confdefs.h
     $as_echo "#define _REENTRANT 1" >>confdefs.h
 
     ;;
- decosf1 | irix | mach | os2 | solaris | dce | vxworks)
+ decosf1 | irix | mach | os2 | dce | vxworks)
     as_fn_error "thread package $THREADS not yet supported" "$LINENO" 5
     ;;
  *)
