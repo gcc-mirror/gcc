@@ -1,6 +1,6 @@
 /* Subroutines used for code generation on the DEC Alpha.
    Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001,
-   2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+   2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
@@ -9645,9 +9645,19 @@ alpha_pad_noreturn (void)
 
   for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
     {
-      if (!CALL_P (insn)
-	  || !find_reg_note (insn, REG_NORETURN, NULL_RTX))
+      if (! (CALL_P (insn)
+	     && find_reg_note (insn, REG_NORETURN, NULL_RTX)))
         continue;
+
+      /* Make sure we do not split a call and its corresponding
+	 CALL_ARG_LOCATION note.  */
+      if (CALL_P (insn))
+	{
+	  next = NEXT_INSN (insn);
+	  if (next && NOTE_P (next)
+	      && NOTE_KIND (next) == NOTE_INSN_CALL_ARG_LOCATION)
+	    insn = next;
+	}
 
       next = next_active_insn (insn);
 
