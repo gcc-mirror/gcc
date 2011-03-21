@@ -198,7 +198,7 @@ __upc_affinity_set (upc_info_p u, int thread_id)
 	CPU_SET (sched_affinity, &set);
 	if (sched_setaffinity (0, sizeof (set), &set))
 	  {
-	    __upc_fatal (GUPCR_SCHED_ERROR_MSG);
+	    __upc_fatal ("Scheduling cannot be set");
 	  }
       }
       break;

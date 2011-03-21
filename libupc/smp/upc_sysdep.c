@@ -191,7 +191,7 @@ __upc_init_lock (lock)
   {
     upc_info_p u = __upc_info;
     if (!u)
-      __upc_fatal (GUPCR_NOT_INIT_MSG);
+      __upc_fatal ("UPC runtime not initialized");
     *lock = (os_lock_t) usnewlock ((usptr_t *) u->runtime_heap);
     if (!*lock)
       { perror ("__upc_init_lock"); abort (); }
@@ -206,13 +206,13 @@ __upc_acquire_lock (lock)
      os_lock_p lock;
 {
   if (!lock)
-    __upc_fatal (GUPCR_NULL_LOCK_MSG);
+    __upc_fatal ("NULL shared pointer passed to UPC lock operation");
 #ifdef __sgi__
   {
     int status;
     status = ussetlock(*lock);
     if (status == 0)
-      __upc_fatal (GUPCR_COULD_NOT_ACQUIRE_LOCK_MSG);
+      __upc_fatal ("upc_lock() could not acquire lock");
     else if (status < 0)
       { perror ("upc_acquire_lock"); abort (); }
   }
@@ -227,7 +227,7 @@ __upc_try_acquire_lock (lock)
 {
   int status;
   if (!lock)
-    __upc_fatal (GUPCR_NULL_LOCK_MSG);
+    __upc_fatal ("NULL shared pointer passed to UPC lock operation");
 #ifdef __sgi__
   status = uscsetlock(*lock, 0);
   if (status < 0)
@@ -243,13 +243,13 @@ __upc_release_lock (lock)
      os_lock_p lock;
 {
   if (!lock)
-    __upc_fatal (GUPCR_NULL_LOCK_MSG);
+    __upc_fatal ("NULL shared pointer passed to UPC lock operation");
 #ifdef __sgi__
   {
     int status;
     status = usunsetlock(*lock);
     if (status > 0)
-      __upc_fatal (GUPCR_COULD_NOT_RELEASE_LOCK_MSG);
+      __upc_fatal ("upc_unlock() could not release lock");
     else if (status < 0)
       { perror ("upc_unlock"); abort (); }
   }

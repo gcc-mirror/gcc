@@ -1817,10 +1817,7 @@ emit_tls_common (tree decl ATTRIBUTE_UNUSED,
 #else
   {
     char *name = IDENTIFIER_POINTER (DECL_NAME (decl));
-    char msg[512];
-    sprintf (msg, "thread-local COMMON data not implemented for %s",
-             name);
-    sorry (msg);
+    sorry ("thread-local COMMON data not implemented for %s", name);
   }
   return true;
 #endif

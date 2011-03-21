@@ -90,7 +90,7 @@ __upc_vm_get_cur_page_alloc ()
   upc_page_num_t alloc_pages, p, pt;
   upc_page_num_t  i, j;
   if (!u)
-    __upc_fatal (GUPCR_NOT_INIT_MSG);
+    __upc_fatal ("UPC runtime not initialized");
   __upc_acquire_lock (&u->lock);
   /* get the latest value */
   GUPCR_FENCE ();
@@ -283,17 +283,17 @@ __upc_vm_alloc (upc_page_num_t alloc_pages)
   off_t smem_size;
   upc_page_num_t i;
   if (!u)
-    __upc_fatal (GUPCR_NOT_INIT_MSG);
+    __upc_fatal ("UPC runtime not initialized");
   __upc_acquire_lock (&u->lock);
   GUPCR_FENCE ();
   page_alloc = u->cur_page_alloc;
   GUPCR_READ_FENCE ();
   new_page_alloc = __upc_cur_page_alloc + alloc_pages;
   if (new_page_alloc > GUPCR_VM_MAX_PAGES_PER_THREAD)
-    __upc_fatal (GUPCR_VM_MAX_EXCEEDED_MSG);
+    __upc_fatal ("Maximum shared address space size exceeded");
   smem_size = ((off_t)(new_page_alloc * THREADS)) << GUPCR_VM_OFFSET_BITS;
   if (ftruncate (u->smem_fd, smem_size))
-    { perror (GUPCR_CANT_EXTEND_SHARED_MEM_MSG ": UPC Error"); abort (); }
+    { perror ("Cannot extend shared memory file" ": UPC Error"); abort (); }
   for (i = 0; i < alloc_pages; ++i)
     {
       const upc_page_num_t p = page_alloc + i;
@@ -332,7 +332,7 @@ __upc_vm_map_addr (upc_shared_ptr_t p)
     {
       __upc_cur_page_alloc = __upc_vm_get_cur_page_alloc ();
       if (pn >= __upc_cur_page_alloc)
-        __upc_fatal (GUPCR_SHARED_VADDR_EXCEEDS_RANGE_MSG);
+        __upc_fatal ("Virtual address in shared address is out of range");
     }
   if (t == MYTHREAD)
     {

@@ -42,9 +42,9 @@ void *
 __upc_access_sptr_to_addr (upc_shared_ptr_t p)
 {
   if (GUPCR_PTS_IS_NULL (p))
-    __upc_fatal (GUPCR_NULL_ACCESS_MSG);
+    __upc_fatal ("Invalid access via null shared pointer");
   if ((int)GUPCR_PTS_THREAD(p) >= THREADS)
-    __upc_fatal (GUPCR_INVALID_THREAD_IN_ADDR_MSG);
+    __upc_fatal ("Thread number in shared address is out of range");
   return __upc_sptr_to_addr (p);
 }
 

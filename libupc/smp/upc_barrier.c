@@ -42,9 +42,9 @@ __upc_notify (int barrier_id)
   upc_barrier_info_p b;
   GUPCR_FENCE();
   if (!u)
-    __upc_fatal (GUPCR_NOT_INIT_MSG);
+    __upc_fatal ("UPC runtime not initialized");
   if (__upc_barrier_active)
-    __upc_fatal (GUPCR_NESTED_NOTIFY_MSG);
+    __upc_fatal ("Two successive upc_notify() calls without intervening call to upc_wait()");
   __upc_barrier_active = 1;
   b = &u->barrier;
   b->barrier_id[MYTHREAD] = barrier_id;
@@ -57,14 +57,14 @@ __upc_wait (int barrier_id)
   upc_barrier_info_p b;
   int i;
   if (!u)
-    __upc_fatal (GUPCR_NOT_INIT_MSG);
+    __upc_fatal ("UPC runtime not initialized");
   if (!__upc_barrier_active)
-    __upc_fatal (GUPCR_WAIT_WITHOUT_NOTIFY_MSG);
+    __upc_fatal ("Upc_wait() called without preceding call to upc_notify()");
   b = &u->barrier;
   /* A barrier id of INT_MIN is defined as matching all id's */
   if ((barrier_id != INT_MIN && b->barrier_id[MYTHREAD] != INT_MIN)
        && (b->barrier_id[MYTHREAD] != barrier_id))
-    __upc_fatal (GUPCR_BARRIER_MISMATCH_MSG);
+    __upc_fatal ("UPC barrier identifier mismatch");
   for (i = 1; i <=2; ++i)
     {
       const int child = 2 * MYTHREAD + i;
@@ -73,7 +73,7 @@ __upc_wait (int barrier_id)
 	  __upc_spin_until (__upc_atomic_get_bit (b->wait, child));
 	  if ((barrier_id != INT_MIN && b->barrier_id[child] != INT_MIN)
 	       && (b->barrier_id[child] != barrier_id))
-	    __upc_fatal (GUPCR_BARRIER_MISMATCH_MSG);
+	    __upc_fatal ("UPC barrier identifier mismatch");
 	}
     }
   if (MYTHREAD == 0)

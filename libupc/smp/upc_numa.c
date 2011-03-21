@@ -69,7 +69,7 @@ __upc_numa_sched_set (const upc_info_p u, const int thread_id)
   numa_node_to_cpus (u->thread_info[thread_id].sched_affinity, set);
   if (numa_sched_setaffinity (0, set))
     {
-      __upc_fatal (GUPCR_SCHED_ERROR_MSG);
+      __upc_fatal ("Scheduling cannot be set");
     }
 #else
   cpu_set_t set;
@@ -78,7 +78,7 @@ __upc_numa_sched_set (const upc_info_p u, const int thread_id)
 		     (unsigned long *) &set, sizeof (set));
   if (sched_setaffinity (0, sizeof (set), &set))
     {
-      __upc_fatal (GUPCR_SCHED_ERROR_MSG);
+      __upc_fatal ("Scheduling cannot be set");
     }
 #endif
 }

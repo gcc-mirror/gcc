@@ -236,44 +236,4 @@ extern void __upc_gum_init (int, int);
 
 //end lib_config_shared_section
 
-//begin lib_config_msgs
-
-/* Runtime error messages */
-#define GUPCR_NOT_INIT_MSG \
-  "UPC runtime not initialized."
-#define GUPCR_NESTED_NOTIFY_MSG \
-  "Two successive upc_notify() calls without intervening call to upc_wait()."
-#define GUPCR_BARRIER_MISMATCH_MSG \
-  "UPC barrier identifier mismatch."
-#define GUPCR_WAIT_WITHOUT_NOTIFY_MSG \
-  "Upc_wait() called without preceding call to upc_notify()."
-#define GUPCR_SHARED_CVT_NO_AFFINITY_MSG \
-  "Invalid conversion of shared address to local pointer.\n" \
-  "Thread does not have affinity to shared address."
-#define GUPCR_INVALID_THREAD_IN_ADDR_MSG \
-  "Thread number in shared address is out of range"
-#define GUPCR_NULL_ACCESS_MSG \
-  "Invalid access via null shared pointer"
-#define GUPCR_SHARED_VADDR_EXCEEDS_RANGE_MSG \
-  "Virtual address in shared address is out of range"
-#define GUPCR_RUNTIME_HEAP_EXHAUSTED_MSG \
-  "Runtime heap space exhausted"
-#define GUPCR_CANT_EXTEND_SHARED_MEM_MSG \
-  "Can't extend shared memory file"
-#define GUPCR_VM_MAX_EXCEEDED_MSG \
-  "Maximum shared address space size exceeded"
-#define GUPCR_FREE_INVALID_PTR_MSG \
-  "upc_free() called with invalid shared pointer"
-#define GUPCR_FREE_UNALLOC_PTR_MSG \
-  "upc_free() called with pointer to unallocated space"
-#define GUPCR_COULD_NOT_ACQUIRE_LOCK_MSG \
-  "upc_lock() could not acquire lock"
-#define GUPCR_COULD_NOT_RELEASE_LOCK_MSG \
-  "upc_unlock() could not release lock"
-#define GUPCR_NULL_LOCK_MSG \
-  "NULL shared pointer passed to UPC lock operation"
-#define GUPCR_SCHED_ERROR_MSG \
-  "Scheduling cannot be set"
-//end lib_config_msgs
-
 #endif /* _UPC_CONFIG_H_ */

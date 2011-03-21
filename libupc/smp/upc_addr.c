@@ -37,7 +37,7 @@ __cvtaddr (upc_shared_ptr_t p)
   upc_info_p u = __upc_info;
   void *addr;
   if (!u)
-    __upc_fatal (GUPCR_NOT_INIT_MSG);
+    __upc_fatal ("UPC runtime not initialized");
   if (GUPCR_PTS_IS_NULL (p))
     return (void *) 0;
   addr = __upc_sptr_to_addr (p);
@@ -50,11 +50,11 @@ __getaddr (upc_shared_ptr_t p)
   upc_info_p u = __upc_info;
   void *addr;
   if (!u)
-    __upc_fatal (GUPCR_NOT_INIT_MSG);
+    __upc_fatal ("UPC runtime not initialized");
   if (GUPCR_PTS_IS_NULL (p))
     return (void *) 0;
   if ((int)GUPCR_PTS_THREAD(p) != MYTHREAD)
-    __upc_fatal (GUPCR_SHARED_CVT_NO_AFFINITY_MSG);
+    __upc_fatal ("Invalid conversion of shared address to local pointer;\nthread does not have affinity to shared address");
   addr = __upc_sptr_to_addr (p);
   return addr;
 }
@@ -64,9 +64,9 @@ upc_threadof (upc_shared_ptr_t p)
 {
   upc_info_p u = __upc_info;
   if (!u)
-    __upc_fatal (GUPCR_NOT_INIT_MSG);
+    __upc_fatal ("UPC runtime not initialized");
   if ((int)GUPCR_PTS_THREAD(p) >= THREADS)
-    __upc_fatal (GUPCR_INVALID_THREAD_IN_ADDR_MSG);
+    __upc_fatal ("Thread number in shared address is out of range");
   return GUPCR_PTS_THREAD (p);
 }
 
@@ -75,9 +75,9 @@ upc_phaseof (upc_shared_ptr_t p)
 {
   upc_info_p u = __upc_info;
   if (!u)
-    __upc_fatal (GUPCR_NOT_INIT_MSG);
+    __upc_fatal ("UPC runtime not initialized");
   if ((int)GUPCR_PTS_THREAD(p) >= THREADS)
-    __upc_fatal (GUPCR_INVALID_THREAD_IN_ADDR_MSG);
+    __upc_fatal ("Thread number in shared address is out of range");
   return GUPCR_PTS_PHASE (p);
 }
 
@@ -95,9 +95,9 @@ upc_addrfield (upc_shared_ptr_t p)
 {
   upc_info_p u = __upc_info;
   if (!u)
-    __upc_fatal (GUPCR_NOT_INIT_MSG);
+    __upc_fatal ("UPC runtime not initialized");
   if ((int)GUPCR_PTS_THREAD(p) >= THREADS)
-    __upc_fatal (GUPCR_INVALID_THREAD_IN_ADDR_MSG);
+    __upc_fatal ("Thread number in shared address is out of range");
   return (size_t) GUPCR_PTS_VADDR (p);
 }
 

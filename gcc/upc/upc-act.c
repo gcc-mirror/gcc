@@ -138,10 +138,8 @@ upc_handle_option (size_t scode, const char *arg, int value, int kind,
     case OPT_fupc_pthreads_per_process_:
       if (value > UPC_MAX_THREADS)
 	{
-	  char msg[100];
-	  sprintf (msg, "THREADS value exceeds implementation limit of %d",
-		   UPC_MAX_THREADS);
-	  error (msg);
+	  error ("THREADS value exceeds implementation limit of %d",
+		 UPC_MAX_THREADS);
 	  value = 1;
 	}
       flag_upc_pthreads_per_process = value;
@@ -149,10 +147,8 @@ upc_handle_option (size_t scode, const char *arg, int value, int kind,
     case OPT_fupc_threads_:
       if (value > UPC_MAX_THREADS)
 	{
-	  char msg[100];
-	  sprintf (msg, "THREADS value exceeds implementation limit of %d",
-		   UPC_MAX_THREADS);
-	  error (msg);
+	  error ("THREADS value exceeds implementation limit of %d",
+		 UPC_MAX_THREADS);
 	  value = 1;
 	}
       flag_upc_threads = value;

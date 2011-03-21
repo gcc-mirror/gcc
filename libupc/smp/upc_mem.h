@@ -41,9 +41,9 @@ void
 __upc_memcpy (upc_shared_ptr_t dest, upc_shared_ptr_t src, size_t n)
 {
   if (GUPCR_PTS_IS_NULL (src))
-    __upc_fatal (GUPCR_NULL_ACCESS_MSG);
+    __upc_fatal ("Invalid access via null shared pointer");
   if (GUPCR_PTS_IS_NULL (dest))
-    __upc_fatal (GUPCR_NULL_ACCESS_MSG);
+    __upc_fatal ("Invalid access via null shared pointer");
   for (;;)
     {
       char *srcp = (char *)__upc_sptr_to_addr (src);
@@ -70,9 +70,9 @@ void
 __upc_memget (void *dest, upc_shared_ptr_t src, size_t n)
 {
   if (!dest)
-    __upc_fatal (GUPCR_NULL_ACCESS_MSG);
+    __upc_fatal ("Invalid access via null shared pointer");
   if (GUPCR_PTS_IS_NULL (src))
-    __upc_fatal (GUPCR_NULL_ACCESS_MSG);
+    __upc_fatal ("Invalid access via null shared pointer");
   for (;;)
     {
       char *srcp = (char *)__upc_sptr_to_addr (src);
@@ -94,9 +94,9 @@ void
 __upc_memput (upc_shared_ptr_t dest, const void *src, size_t n)
 {
   if (!src)
-    __upc_fatal (GUPCR_NULL_ACCESS_MSG);
+    __upc_fatal ("Invalid access via null shared pointer");
   if (GUPCR_PTS_IS_NULL (dest))
-    __upc_fatal (GUPCR_NULL_ACCESS_MSG);
+    __upc_fatal ("Invalid access via null shared pointer");
   for (;;)
     {
       char *destp = (char *)__upc_sptr_to_addr (dest);
@@ -118,7 +118,7 @@ void
 __upc_memset (upc_shared_ptr_t dest, int c, size_t n)
 {
   if (GUPCR_PTS_IS_NULL (dest))
-    __upc_fatal (GUPCR_NULL_ACCESS_MSG);
+    __upc_fatal ("Invalid access via null shared pointer");
   for (;;)
     {
       char *destp = (char *)__upc_sptr_to_addr (dest);

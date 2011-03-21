@@ -416,12 +416,12 @@ upc_free (shared void *ptr)
       upc_heap_p thisp;
       /* FIXME: add code to validate offset. */
       if (phase || thread >= THREADS)
-        __upc_fatal (GUPCR_FREE_INVALID_PTR_MSG);
+        __upc_fatal ("upc_free() called with invalid shared pointer");
       thisp = (upc_heap_p) __upc_alloc_ptr_add (ptr, -GUPCR_HEAP_OVERHEAD);
       if (thisp->is_global && thread)
-        __upc_fatal (GUPCR_FREE_INVALID_PTR_MSG);
+        __upc_fatal ("upc_free() called with invalid shared pointer");
       if (thisp->alloc_tag != GUPCR_HEAP_ALLOC_TAG)
-	__upc_fatal (GUPCR_FREE_UNALLOC_PTR_MSG);
+	__upc_fatal ("upc_free() called with pointer to unallocated space");
       if (thisp->is_global)
         heap_p = (shared upc_heap_p *)&__upc_global_heap;
       else

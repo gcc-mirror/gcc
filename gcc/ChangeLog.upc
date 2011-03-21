@@ -1,5 +1,11 @@
 2011-03-20  Gary Funck  <gary@intrepid.com>
 
+	* varasm.c: Call error() directly with a format specifier,
+	  rather than using sprintf() to format the message.
+	  This should make it easier to internationlize UPC's error messages.
+
+2011-03-20  Gary Funck  <gary@intrepid.com>
+
 	* configure.ac: Fix the check for gnu ld when enabling
 	  UPC link script support.
 	  configure: Regenerate (also picks up changes from previous

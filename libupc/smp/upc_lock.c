@@ -65,7 +65,7 @@ upc_all_lock_alloc ()
 {
   upc_info_p u = __upc_info;
   if (!u)
-    __upc_fatal (GUPCR_NOT_INIT_MSG);
+    __upc_fatal ("UPC runtime not initialized");
   __upc_barrier (-1);
   if (MYTHREAD == 0)
    {
@@ -97,7 +97,7 @@ upc_unlock (upc_shared_ptr_t ptr)
   upc_info_p u = __upc_info;
   upc_lock_p lock;
   if (!u)
-    __upc_fatal (GUPCR_NOT_INIT_MSG);
+    __upc_fatal ("UPC runtime not initialized");
   lock = __cvtaddr (ptr);
   __upc_release_lock (&lock->os_lock);
 }
@@ -114,7 +114,7 @@ __upc_acquire_alloc_lock ()
 {
   upc_info_p u = __upc_info;
   if (!u)
-    __upc_fatal (GUPCR_NOT_INIT_MSG);
+    __upc_fatal ("UPC runtime not initialized");
   __upc_acquire_lock (&u->alloc_lock);
 }
 
@@ -123,6 +123,6 @@ __upc_release_alloc_lock ()
 {
   upc_info_p u = __upc_info;
   if (!u)
-    __upc_fatal (GUPCR_NOT_INIT_MSG);
+    __upc_fatal ("UPC runtime not initialized");
   __upc_release_lock (&u->alloc_lock);
 }

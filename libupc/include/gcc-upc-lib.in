@@ -155,7 +155,6 @@ extern unsigned long const __upc_global_base;
 //include lib_vm_api
 //include lib_config_heap
 //include lib_heap_api
-//include lib_config_msgs
 //include lib_config_shared_section
 //include lib_pts_defs
 

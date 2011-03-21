@@ -1,5 +1,11 @@
 2011-03-20  Gary Funck  <gary@intrepid.com>
 
+	* upc-act.c: Call error() directly with a format specifier,
+	  rather than using sprintf() to format the message.
+	  This should make it easier to internationlize UPC's error messages.
+
+2011-03-20  Gary Funck  <gary@intrepid.com>
+
 	Move UPC start files, end files, and linker specs.
 	into libupc.  This reduces the impact on common GCC
 	configuration files, and ensures that these UPC-specific

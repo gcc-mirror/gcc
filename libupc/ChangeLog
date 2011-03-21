@@ -1,5 +1,25 @@
 2011-03-20  Gary Funck  <gary@intrepid.com>
 
+	Place error message strings directly into the calls to
+	__upc_fatal(), rather than listing them separately
+	as #define's.  The intent of this change is to make
+	it easier to internationalize the message text
+	using standard tools.
+
+	* include/gcc-upc-lib.in: Remove include of lib_config_msgs
+	  named code segment.
+
+	* smp/upc_config.h: Remove #define's used to provide named
+	  references to error messages.
+
+	* smp/upc_lock.c, smp/upc_numa.c, smp/upc_access.c,
+	  smp/upc_vm.c, smp/upc_main.c, smp/upc_alloc.upc,
+	  smp/upc_sysdep.c, smp/upc_affinity.c, smp/upc_addr.c,
+	  smp/upc_mem.h, smp/upc_barrier.c: Replace named references
+	  with actual error message text strings.
+
+2011-03-20  Gary Funck  <gary@intrepid.com>
+
 	Move UPC start files, end files, and linker specs.
 	into libupc.  This reduces the impact on common GCC
 	configuration files, and ensures that these UPC-specific

@@ -796,7 +796,7 @@ __upc_exit (int status)
 {
   upc_info_p u = __upc_info;
   if (!u)
-    __upc_fatal (GUPCR_NOT_INIT_MSG);
+    __upc_fatal ("UPC runtime not initialized");
   __upc_acquire_lock (&u->lock);
   fflush (0);
   fsync (1);
@@ -818,7 +818,7 @@ upc_global_exit (int status)
 {
   upc_info_p u = __upc_info;
   if (!u)
-    __upc_fatal (GUPCR_NOT_INIT_MSG);
+    __upc_fatal ("UPC runtime not initialized");
   exit ((THREADS > 1) ? ((status & 0x7f) | 0x80) : status);
 }
 
@@ -858,7 +858,7 @@ __upc_start_pthread (void *arg)
   upc_info_p u = __upc_info;
   int *status_ptr;
   if (!u)
-    __upc_fatal (GUPCR_NOT_INIT_MSG);
+    __upc_fatal ("UPC runtime not initialized");
   /* MYTHREAD is located in thread local storage */
   MYTHREAD = thread_id;
   __upc_affinity_set (u, thread_id);
@@ -983,7 +983,7 @@ __upc_exit (int status)
   int *status_ptr;
   int thread_id = MYTHREAD;
   if (!u)
-    __upc_fatal (GUPCR_NOT_INIT_MSG);
+    __upc_fatal ("UPC runtime not initialized");
   __upc_barrier (GUPCR_RUNTIME_BARRIER_ID);
   status_ptr = &u->thread_info[thread_id].exit_status;
   *status_ptr = status;
