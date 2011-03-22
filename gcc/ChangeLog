@@ -1,3 +1,8 @@
+2011-03-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* combine.c (simplify_set): Try harder to find the best CC mode when
+	simplifying a nested COMPARE on the RHS.
+
 2011-03-22  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/alpha/gnu.h: Remove.
