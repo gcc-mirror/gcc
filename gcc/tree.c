@@ -9694,6 +9694,23 @@ build_vl_exp_stat (enum tree_code code, int len MEM_STAT_DECL)
   return t;
 }
 
+/* Helper function for build_call_* functions; build a CALL_EXPR with
+   indicated RETURN_TYPE, FN, and NARGS, but do not initialize any of
+   the argument slots.  */
+
+static tree
+build_call_1 (tree return_type, tree fn, int nargs)
+{
+  tree t;
+
+  t = build_vl_exp (CALL_EXPR, nargs + 3);
+  TREE_TYPE (t) = return_type;
+  CALL_EXPR_FN (t) = fn;
+  CALL_EXPR_STATIC_CHAIN (t) = NULL;
+
+  return t;
+}
+
 /* Build a CALL_EXPR of class tcc_vl_exp with the indicated RETURN_TYPE and
    FN and a null static chain slot.  NARGS is the number of call arguments
    which are specified as "..." arguments.  */
@@ -9719,10 +9736,7 @@ build_call_valist (tree return_type, tree fn, int nargs, va_list args)
   tree t;
   int i;
 
-  t = build_vl_exp (CALL_EXPR, nargs + 3);
-  TREE_TYPE (t) = return_type;
-  CALL_EXPR_FN (t) = fn;
-  CALL_EXPR_STATIC_CHAIN (t) = NULL_TREE;
+  t = build_call_1 (return_type, fn, nargs);
   for (i = 0; i < nargs; i++)
     CALL_EXPR_ARG (t, i) = va_arg (args, tree);
   process_call_operands (t);
@@ -9740,10 +9754,7 @@ build_call_array_loc (location_t loc, tree return_type, tree fn,
   tree t;
   int i;
 
-  t = build_vl_exp (CALL_EXPR, nargs + 3);
-  TREE_TYPE (t) = return_type;
-  CALL_EXPR_FN (t) = fn;
-  CALL_EXPR_STATIC_CHAIN (t) = NULL_TREE;
+  t = build_call_1 (return_type, fn, nargs);
   for (i = 0; i < nargs; i++)
     CALL_EXPR_ARG (t, i) = args[i];
   process_call_operands (t);
@@ -9759,10 +9770,7 @@ build_call_vec (tree return_type, tree fn, VEC(tree,gc) *args)
   tree ret, t;
   unsigned int ix;
 
-  ret = build_vl_exp (CALL_EXPR, VEC_length (tree, args) + 3);
-  TREE_TYPE (ret) = return_type;
-  CALL_EXPR_FN (ret) = fn;
-  CALL_EXPR_STATIC_CHAIN (ret) = NULL_TREE;
+  ret = build_call_1 (return_type, fn, VEC_length (tree, args));
   FOR_EACH_VEC_ELT (tree, args, ix, t)
     CALL_EXPR_ARG (ret, ix) = t;
   process_call_operands (ret);
