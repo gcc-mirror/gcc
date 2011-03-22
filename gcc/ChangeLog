@@ -1,5 +1,24 @@
 2011-03-22  Joseph Myers  <joseph@codesourcery.com>
 
+	* config/m32r/m32r-opts.h: New.
+	* config/m32r/m32r.c (m32r_model, m32r_sdata): Remove.
+	(m32r_handle_option): Don't assert that global structures are in
+	use.  Access target_flags and m32r_cache_flush_func via opts
+	pointer.  Don't handle OPT_mmodel_, OPT_msdata_ or
+	OPT_mno_flush_trap here.
+	* config/m32r/m32r.h (Code Models, Small Data Area): Replace by
+	include of m32r-opts.h.
+	* config/m32r/m32r.opt (config/m32r/m32r-opts.h): New
+	HeaderInclude entry.
+	(m32r_model_selected, m32r_sdata_selected): New Variable entries.
+	(mmodel=): Use Enum and Var.
+	(m32r_model): New Enum and EnumValue entries.
+	(mno-flush-trap): Use Var.
+	(msdata=): Use Enum and Var.
+	(m32r_sdata): New Enum and EnumValue entries.
+
+2011-03-22  Joseph Myers  <joseph@codesourcery.com>
+
 	* config/m32c/m32c.c: Don't include opts.h.
 	(target_memregs, target_memregs_set, TARGET_HANDLE_OPTION,
 	m32c_handle_option): Remove.

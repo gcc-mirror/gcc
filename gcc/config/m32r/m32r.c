@@ -47,12 +47,6 @@
 /* Array of valid operand punctuation characters.  */
 static char m32r_punct_chars[256];
 
-/* Selected code model.  */
-enum m32r_model m32r_model = M32R_MODEL_DEFAULT;
-
-/* Selected SDA support.  */
-enum m32r_sdata m32r_sdata = M32R_SDATA_DEFAULT;
-
 /* Machine-specific symbol_ref flags.  */
 #define SYMBOL_FLAG_MODEL_SHIFT		SYMBOL_FLAG_MACH_DEP_SHIFT
 #define SYMBOL_REF_MODEL(X) \
@@ -225,55 +219,26 @@ struct gcc_target targetm = TARGET_INITIALIZER;
 /* Implement TARGET_HANDLE_OPTION.  */
 
 static bool
-m32r_handle_option (struct gcc_options *opts, struct gcc_options *opts_set,
+m32r_handle_option (struct gcc_options *opts,
+		    struct gcc_options *opts_set ATTRIBUTE_UNUSED,
 		    const struct cl_decoded_option *decoded,
 		    location_t loc ATTRIBUTE_UNUSED)
 {
   size_t code = decoded->opt_index;
-  const char *arg = decoded->arg;
   int value = decoded->value;
-
-  gcc_assert (opts == &global_options);
-  gcc_assert (opts_set == &global_options_set);
 
   switch (code)
     {
     case OPT_m32r:
-      target_flags &= ~(MASK_M32R2 | MASK_M32RX);
-      return true;
-
-    case OPT_mmodel_:
-      if (strcmp (arg, "small") == 0)
-	m32r_model = M32R_MODEL_SMALL;
-      else if (strcmp (arg, "medium") == 0)
-	m32r_model = M32R_MODEL_MEDIUM;
-      else if (strcmp (arg, "large") == 0)
-	m32r_model = M32R_MODEL_LARGE;
-      else
-	return false;
-      return true;
-
-    case OPT_msdata_:
-      if (strcmp (arg, "none") == 0)
-	m32r_sdata = M32R_SDATA_NONE;
-      else if (strcmp (arg, "sdata") == 0)
-	m32r_sdata = M32R_SDATA_SDATA;
-      else if (strcmp (arg, "use") == 0)
-	m32r_sdata = M32R_SDATA_USE;
-      else
-	return false;
+      opts->x_target_flags &= ~(MASK_M32R2 | MASK_M32RX);
       return true;
 
     case OPT_mno_flush_func:
-      m32r_cache_flush_func = NULL;
+      opts->x_m32r_cache_flush_func = NULL;
       return true;
 
     case OPT_mflush_trap_:
       return value <= 15;
-
-    case OPT_mno_flush_trap:
-      m32r_cache_flush_trap = -1;
-      return true;
 
     default:
       return true;
