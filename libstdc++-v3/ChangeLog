@@ -1,5 +1,12 @@
 2011-03-22  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* testsuite/21_strings/basic_string/cons/char/moveable2.cc: Tweak
+	Copyright years.
+	* testsuite/21_strings/basic_string/cons/wchar_t/moveable2.cc:
+	Likewise.
+
+2011-03-22  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* include/bits/shared_ptr.h (operator>, operator<=, operator>=): Add,
 	per DR 1401.
 	(operator==, operator!=, operator<): Fix per the letter of DR 1401.
