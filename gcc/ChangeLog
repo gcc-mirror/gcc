@@ -1,3 +1,16 @@
+2011-03-22  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/i386/i386.c (ix86_isa_flags_explicit): Remove.
+	(ix86_handle_option): Access ix86_isa_flags and
+	ix86_isa_flags_explicit via opts pointer.  Don't assert that
+	global structures are in use.
+	(ix86_function_specific_save, ix86_function_specific_restore):
+	Update ix86_isa_flags_explicit field name.
+	* config/i386/i386.opt (ix86_isa_flags_explicit): New Variable
+	entry.
+	(ix86_isa_flags_explicit): Rename TargetSave entry to
+	x_ix86_isa_flags_explicit.
+
 2011-03-22  Richard Henderson  <rth@redhat.com>
 
 	* config/alpha/alpha.c (NUM_ARGS): Don't test TARGET_ABI_UNICOSMK.

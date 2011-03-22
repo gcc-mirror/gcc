@@ -2481,10 +2481,6 @@ static enum calling_abi ix86_function_abi (const_tree);
 static int ix86_tune_defaulted;
 static int ix86_arch_specified;
 
-/* A mask of ix86_isa_flags that includes bit X if X
-   was set or cleared on the command line.  */
-static int ix86_isa_flags_explicit;
-
 /* Define a set of ISAs which are available when a given ISA is
    enabled.  MMX and SSE ISAs are handled separately.  */
 
@@ -2684,41 +2680,39 @@ ix86_using_red_zone (void)
 /* Implement TARGET_HANDLE_OPTION.  */
 
 static bool
-ix86_handle_option (struct gcc_options *opts, struct gcc_options *opts_set,
+ix86_handle_option (struct gcc_options *opts,
+		    struct gcc_options *opts_set ATTRIBUTE_UNUSED,
 		    const struct cl_decoded_option *decoded,
 		    location_t loc ATTRIBUTE_UNUSED)
 {
   size_t code = decoded->opt_index;
   int value = decoded->value;
 
-  gcc_assert (opts == &global_options);
-  gcc_assert (opts_set == &global_options_set);
-
   switch (code)
     {
     case OPT_mmmx:
       if (value)
 	{
-	  ix86_isa_flags |= OPTION_MASK_ISA_MMX_SET;
-	  ix86_isa_flags_explicit |= OPTION_MASK_ISA_MMX_SET;
+	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_MMX_SET;
+	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_MMX_SET;
 	}
       else
 	{
-	  ix86_isa_flags &= ~OPTION_MASK_ISA_MMX_UNSET;
-	  ix86_isa_flags_explicit |= OPTION_MASK_ISA_MMX_UNSET;
+	  opts->x_ix86_isa_flags &= ~OPTION_MASK_ISA_MMX_UNSET;
+	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_MMX_UNSET;
 	}
       return true;
 
     case OPT_m3dnow:
       if (value)
 	{
-	  ix86_isa_flags |= OPTION_MASK_ISA_3DNOW_SET;
-	  ix86_isa_flags_explicit |= OPTION_MASK_ISA_3DNOW_SET;
+	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_3DNOW_SET;
+	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_3DNOW_SET;
 	}
       else
 	{
-	  ix86_isa_flags &= ~OPTION_MASK_ISA_3DNOW_UNSET;
-	  ix86_isa_flags_explicit |= OPTION_MASK_ISA_3DNOW_UNSET;
+	  opts->x_ix86_isa_flags &= ~OPTION_MASK_ISA_3DNOW_UNSET;
+	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_3DNOW_UNSET;
 	}
       return true;
 
@@ -2728,335 +2722,335 @@ ix86_handle_option (struct gcc_options *opts, struct gcc_options *opts_set,
     case OPT_msse:
       if (value)
 	{
-	  ix86_isa_flags |= OPTION_MASK_ISA_SSE_SET;
-	  ix86_isa_flags_explicit |= OPTION_MASK_ISA_SSE_SET;
+	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_SSE_SET;
+	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_SSE_SET;
 	}
       else
 	{
-	  ix86_isa_flags &= ~OPTION_MASK_ISA_SSE_UNSET;
-	  ix86_isa_flags_explicit |= OPTION_MASK_ISA_SSE_UNSET;
+	  opts->x_ix86_isa_flags &= ~OPTION_MASK_ISA_SSE_UNSET;
+	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_SSE_UNSET;
 	}
       return true;
 
     case OPT_msse2:
       if (value)
 	{
-	  ix86_isa_flags |= OPTION_MASK_ISA_SSE2_SET;
-	  ix86_isa_flags_explicit |= OPTION_MASK_ISA_SSE2_SET;
+	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_SSE2_SET;
+	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_SSE2_SET;
 	}
       else
 	{
-	  ix86_isa_flags &= ~OPTION_MASK_ISA_SSE2_UNSET;
-	  ix86_isa_flags_explicit |= OPTION_MASK_ISA_SSE2_UNSET;
+	  opts->x_ix86_isa_flags &= ~OPTION_MASK_ISA_SSE2_UNSET;
+	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_SSE2_UNSET;
 	}
       return true;
 
     case OPT_msse3:
       if (value)
 	{
-	  ix86_isa_flags |= OPTION_MASK_ISA_SSE3_SET;
-	  ix86_isa_flags_explicit |= OPTION_MASK_ISA_SSE3_SET;
+	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_SSE3_SET;
+	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_SSE3_SET;
 	}
       else
 	{
-	  ix86_isa_flags &= ~OPTION_MASK_ISA_SSE3_UNSET;
-	  ix86_isa_flags_explicit |= OPTION_MASK_ISA_SSE3_UNSET;
+	  opts->x_ix86_isa_flags &= ~OPTION_MASK_ISA_SSE3_UNSET;
+	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_SSE3_UNSET;
 	}
       return true;
 
     case OPT_mssse3:
       if (value)
 	{
-	  ix86_isa_flags |= OPTION_MASK_ISA_SSSE3_SET;
-	  ix86_isa_flags_explicit |= OPTION_MASK_ISA_SSSE3_SET;
+	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_SSSE3_SET;
+	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_SSSE3_SET;
 	}
       else
 	{
-	  ix86_isa_flags &= ~OPTION_MASK_ISA_SSSE3_UNSET;
-	  ix86_isa_flags_explicit |= OPTION_MASK_ISA_SSSE3_UNSET;
+	  opts->x_ix86_isa_flags &= ~OPTION_MASK_ISA_SSSE3_UNSET;
+	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_SSSE3_UNSET;
 	}
       return true;
 
     case OPT_msse4_1:
       if (value)
 	{
-	  ix86_isa_flags |= OPTION_MASK_ISA_SSE4_1_SET;
-	  ix86_isa_flags_explicit |= OPTION_MASK_ISA_SSE4_1_SET;
+	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_SSE4_1_SET;
+	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_SSE4_1_SET;
 	}
       else
 	{
-	  ix86_isa_flags &= ~OPTION_MASK_ISA_SSE4_1_UNSET;
-	  ix86_isa_flags_explicit |= OPTION_MASK_ISA_SSE4_1_UNSET;
+	  opts->x_ix86_isa_flags &= ~OPTION_MASK_ISA_SSE4_1_UNSET;
+	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_SSE4_1_UNSET;
 	}
       return true;
 
     case OPT_msse4_2:
       if (value)
 	{
-	  ix86_isa_flags |= OPTION_MASK_ISA_SSE4_2_SET;
-	  ix86_isa_flags_explicit |= OPTION_MASK_ISA_SSE4_2_SET;
+	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_SSE4_2_SET;
+	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_SSE4_2_SET;
 	}
       else
 	{
-	  ix86_isa_flags &= ~OPTION_MASK_ISA_SSE4_2_UNSET;
-	  ix86_isa_flags_explicit |= OPTION_MASK_ISA_SSE4_2_UNSET;
+	  opts->x_ix86_isa_flags &= ~OPTION_MASK_ISA_SSE4_2_UNSET;
+	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_SSE4_2_UNSET;
 	}
       return true;
 
     case OPT_mavx:
       if (value)
 	{
-	  ix86_isa_flags |= OPTION_MASK_ISA_AVX_SET;
-	  ix86_isa_flags_explicit |= OPTION_MASK_ISA_AVX_SET;
+	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_AVX_SET;
+	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_AVX_SET;
 	}
       else
 	{
-	  ix86_isa_flags &= ~OPTION_MASK_ISA_AVX_UNSET;
-	  ix86_isa_flags_explicit |= OPTION_MASK_ISA_AVX_UNSET;
+	  opts->x_ix86_isa_flags &= ~OPTION_MASK_ISA_AVX_UNSET;
+	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_AVX_UNSET;
 	}
       return true;
 
     case OPT_mfma:
       if (value)
 	{
-	  ix86_isa_flags |= OPTION_MASK_ISA_FMA_SET;
-	  ix86_isa_flags_explicit |= OPTION_MASK_ISA_FMA_SET;
+	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_FMA_SET;
+	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_FMA_SET;
 	}
       else
 	{
-	  ix86_isa_flags &= ~OPTION_MASK_ISA_FMA_UNSET;
-	  ix86_isa_flags_explicit |= OPTION_MASK_ISA_FMA_UNSET;
+	  opts->x_ix86_isa_flags &= ~OPTION_MASK_ISA_FMA_UNSET;
+	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_FMA_UNSET;
 	}
       return true;
 
     case OPT_msse4:
-      ix86_isa_flags |= OPTION_MASK_ISA_SSE4_SET;
-      ix86_isa_flags_explicit |= OPTION_MASK_ISA_SSE4_SET;
+      opts->x_ix86_isa_flags |= OPTION_MASK_ISA_SSE4_SET;
+      opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_SSE4_SET;
       return true;
 
     case OPT_mno_sse4:
-      ix86_isa_flags &= ~OPTION_MASK_ISA_SSE4_UNSET;
-      ix86_isa_flags_explicit |= OPTION_MASK_ISA_SSE4_UNSET;
+      opts->x_ix86_isa_flags &= ~OPTION_MASK_ISA_SSE4_UNSET;
+      opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_SSE4_UNSET;
       return true;
 
     case OPT_msse4a:
       if (value)
 	{
-	  ix86_isa_flags |= OPTION_MASK_ISA_SSE4A_SET;
-	  ix86_isa_flags_explicit |= OPTION_MASK_ISA_SSE4A_SET;
+	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_SSE4A_SET;
+	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_SSE4A_SET;
 	}
       else
 	{
-	  ix86_isa_flags &= ~OPTION_MASK_ISA_SSE4A_UNSET;
-	  ix86_isa_flags_explicit |= OPTION_MASK_ISA_SSE4A_UNSET;
+	  opts->x_ix86_isa_flags &= ~OPTION_MASK_ISA_SSE4A_UNSET;
+	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_SSE4A_UNSET;
 	}
       return true;
 
     case OPT_mfma4:
       if (value)
 	{
-	  ix86_isa_flags |= OPTION_MASK_ISA_FMA4_SET;
-	  ix86_isa_flags_explicit |= OPTION_MASK_ISA_FMA4_SET;
+	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_FMA4_SET;
+	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_FMA4_SET;
 	}
       else
 	{
-	  ix86_isa_flags &= ~OPTION_MASK_ISA_FMA4_UNSET;
-	  ix86_isa_flags_explicit |= OPTION_MASK_ISA_FMA4_UNSET;
+	  opts->x_ix86_isa_flags &= ~OPTION_MASK_ISA_FMA4_UNSET;
+	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_FMA4_UNSET;
 	}
       return true;
 
    case OPT_mxop:
       if (value)
 	{
-	  ix86_isa_flags |= OPTION_MASK_ISA_XOP_SET;
-	  ix86_isa_flags_explicit |= OPTION_MASK_ISA_XOP_SET;
+	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_XOP_SET;
+	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_XOP_SET;
 	}
       else
 	{
-	  ix86_isa_flags &= ~OPTION_MASK_ISA_XOP_UNSET;
-	  ix86_isa_flags_explicit |= OPTION_MASK_ISA_XOP_UNSET;
+	  opts->x_ix86_isa_flags &= ~OPTION_MASK_ISA_XOP_UNSET;
+	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_XOP_UNSET;
 	}
       return true;
 
    case OPT_mlwp:
       if (value)
 	{
-	  ix86_isa_flags |= OPTION_MASK_ISA_LWP_SET;
-	  ix86_isa_flags_explicit |= OPTION_MASK_ISA_LWP_SET;
+	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_LWP_SET;
+	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_LWP_SET;
 	}
       else
 	{
-	  ix86_isa_flags &= ~OPTION_MASK_ISA_LWP_UNSET;
-	  ix86_isa_flags_explicit |= OPTION_MASK_ISA_LWP_UNSET;
+	  opts->x_ix86_isa_flags &= ~OPTION_MASK_ISA_LWP_UNSET;
+	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_LWP_UNSET;
 	}
       return true;
 
     case OPT_mabm:
       if (value)
 	{
-	  ix86_isa_flags |= OPTION_MASK_ISA_ABM_SET;
-	  ix86_isa_flags_explicit |= OPTION_MASK_ISA_ABM_SET;
+	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_ABM_SET;
+	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_ABM_SET;
 	}
       else
 	{
-	  ix86_isa_flags &= ~OPTION_MASK_ISA_ABM_UNSET;
-	  ix86_isa_flags_explicit |= OPTION_MASK_ISA_ABM_UNSET;
+	  opts->x_ix86_isa_flags &= ~OPTION_MASK_ISA_ABM_UNSET;
+	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_ABM_UNSET;
 	}
       return true;
 
     case OPT_mbmi:
       if (value)
 	{
-	  ix86_isa_flags |= OPTION_MASK_ISA_BMI_SET;
-	  ix86_isa_flags_explicit |= OPTION_MASK_ISA_BMI_SET;
+	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_BMI_SET;
+	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_BMI_SET;
 	}
       else
 	{
-	  ix86_isa_flags &= ~OPTION_MASK_ISA_BMI_UNSET;
-	  ix86_isa_flags_explicit |= OPTION_MASK_ISA_BMI_UNSET;
+	  opts->x_ix86_isa_flags &= ~OPTION_MASK_ISA_BMI_UNSET;
+	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_BMI_UNSET;
 	}
       return true;
 
     case OPT_mtbm:
       if (value)
 	{
-	  ix86_isa_flags |= OPTION_MASK_ISA_TBM_SET;
-	  ix86_isa_flags_explicit |= OPTION_MASK_ISA_TBM_SET;
+	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_TBM_SET;
+	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_TBM_SET;
 	}
       else
 	{
-	  ix86_isa_flags &= ~OPTION_MASK_ISA_TBM_UNSET;
-	  ix86_isa_flags_explicit |= OPTION_MASK_ISA_TBM_UNSET;
+	  opts->x_ix86_isa_flags &= ~OPTION_MASK_ISA_TBM_UNSET;
+	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_TBM_UNSET;
 	}
       return true;
 
     case OPT_mpopcnt:
       if (value)
 	{
-	  ix86_isa_flags |= OPTION_MASK_ISA_POPCNT_SET;
-	  ix86_isa_flags_explicit |= OPTION_MASK_ISA_POPCNT_SET;
+	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_POPCNT_SET;
+	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_POPCNT_SET;
 	}
       else
 	{
-	  ix86_isa_flags &= ~OPTION_MASK_ISA_POPCNT_UNSET;
-	  ix86_isa_flags_explicit |= OPTION_MASK_ISA_POPCNT_UNSET;
+	  opts->x_ix86_isa_flags &= ~OPTION_MASK_ISA_POPCNT_UNSET;
+	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_POPCNT_UNSET;
 	}
       return true;
 
     case OPT_msahf:
       if (value)
 	{
-	  ix86_isa_flags |= OPTION_MASK_ISA_SAHF_SET;
-	  ix86_isa_flags_explicit |= OPTION_MASK_ISA_SAHF_SET;
+	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_SAHF_SET;
+	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_SAHF_SET;
 	}
       else
 	{
-	  ix86_isa_flags &= ~OPTION_MASK_ISA_SAHF_UNSET;
-	  ix86_isa_flags_explicit |= OPTION_MASK_ISA_SAHF_UNSET;
+	  opts->x_ix86_isa_flags &= ~OPTION_MASK_ISA_SAHF_UNSET;
+	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_SAHF_UNSET;
 	}
       return true;
 
     case OPT_mcx16:
       if (value)
 	{
-	  ix86_isa_flags |= OPTION_MASK_ISA_CX16_SET;
-	  ix86_isa_flags_explicit |= OPTION_MASK_ISA_CX16_SET;
+	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_CX16_SET;
+	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_CX16_SET;
 	}
       else
 	{
-	  ix86_isa_flags &= ~OPTION_MASK_ISA_CX16_UNSET;
-	  ix86_isa_flags_explicit |= OPTION_MASK_ISA_CX16_UNSET;
+	  opts->x_ix86_isa_flags &= ~OPTION_MASK_ISA_CX16_UNSET;
+	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_CX16_UNSET;
 	}
       return true;
 
     case OPT_mmovbe:
       if (value)
 	{
-	  ix86_isa_flags |= OPTION_MASK_ISA_MOVBE_SET;
-	  ix86_isa_flags_explicit |= OPTION_MASK_ISA_MOVBE_SET;
+	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_MOVBE_SET;
+	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_MOVBE_SET;
 	}
       else
 	{
-	  ix86_isa_flags &= ~OPTION_MASK_ISA_MOVBE_UNSET;
-	  ix86_isa_flags_explicit |= OPTION_MASK_ISA_MOVBE_UNSET;
+	  opts->x_ix86_isa_flags &= ~OPTION_MASK_ISA_MOVBE_UNSET;
+	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_MOVBE_UNSET;
 	}
       return true;
 
     case OPT_mcrc32:
       if (value)
 	{
-	  ix86_isa_flags |= OPTION_MASK_ISA_CRC32_SET;
-	  ix86_isa_flags_explicit |= OPTION_MASK_ISA_CRC32_SET;
+	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_CRC32_SET;
+	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_CRC32_SET;
 	}
       else
 	{
-	  ix86_isa_flags &= ~OPTION_MASK_ISA_CRC32_UNSET;
-	  ix86_isa_flags_explicit |= OPTION_MASK_ISA_CRC32_UNSET;
+	  opts->x_ix86_isa_flags &= ~OPTION_MASK_ISA_CRC32_UNSET;
+	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_CRC32_UNSET;
 	}
       return true;
 
     case OPT_maes:
       if (value)
 	{
-	  ix86_isa_flags |= OPTION_MASK_ISA_AES_SET;
-	  ix86_isa_flags_explicit |= OPTION_MASK_ISA_AES_SET;
+	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_AES_SET;
+	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_AES_SET;
 	}
       else
 	{
-	  ix86_isa_flags &= ~OPTION_MASK_ISA_AES_UNSET;
-	  ix86_isa_flags_explicit |= OPTION_MASK_ISA_AES_UNSET;
+	  opts->x_ix86_isa_flags &= ~OPTION_MASK_ISA_AES_UNSET;
+	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_AES_UNSET;
 	}
       return true;
 
     case OPT_mpclmul:
       if (value)
 	{
-	  ix86_isa_flags |= OPTION_MASK_ISA_PCLMUL_SET;
-	  ix86_isa_flags_explicit |= OPTION_MASK_ISA_PCLMUL_SET;
+	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_PCLMUL_SET;
+	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_PCLMUL_SET;
 	}
       else
 	{
-	  ix86_isa_flags &= ~OPTION_MASK_ISA_PCLMUL_UNSET;
-	  ix86_isa_flags_explicit |= OPTION_MASK_ISA_PCLMUL_UNSET;
+	  opts->x_ix86_isa_flags &= ~OPTION_MASK_ISA_PCLMUL_UNSET;
+	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_PCLMUL_UNSET;
 	}
       return true;
 
     case OPT_mfsgsbase:
       if (value)
 	{
-	  ix86_isa_flags |= OPTION_MASK_ISA_FSGSBASE_SET;
-	  ix86_isa_flags_explicit |= OPTION_MASK_ISA_FSGSBASE_SET;
+	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_FSGSBASE_SET;
+	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_FSGSBASE_SET;
 	}
       else
 	{
-	  ix86_isa_flags &= ~OPTION_MASK_ISA_FSGSBASE_UNSET;
-	  ix86_isa_flags_explicit |= OPTION_MASK_ISA_FSGSBASE_UNSET;
+	  opts->x_ix86_isa_flags &= ~OPTION_MASK_ISA_FSGSBASE_UNSET;
+	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_FSGSBASE_UNSET;
 	}
       return true;
 
     case OPT_mrdrnd:
       if (value)
 	{
-	  ix86_isa_flags |= OPTION_MASK_ISA_RDRND_SET;
-	  ix86_isa_flags_explicit |= OPTION_MASK_ISA_RDRND_SET;
+	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_RDRND_SET;
+	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_RDRND_SET;
 	}
       else
 	{
-	  ix86_isa_flags &= ~OPTION_MASK_ISA_RDRND_UNSET;
-	  ix86_isa_flags_explicit |= OPTION_MASK_ISA_RDRND_UNSET;
+	  opts->x_ix86_isa_flags &= ~OPTION_MASK_ISA_RDRND_UNSET;
+	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_RDRND_UNSET;
 	}
       return true;
 
     case OPT_mf16c:
       if (value)
 	{
-	  ix86_isa_flags |= OPTION_MASK_ISA_F16C_SET;
-	  ix86_isa_flags_explicit |= OPTION_MASK_ISA_F16C_SET;
+	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_F16C_SET;
+	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_F16C_SET;
 	}
       else
 	{
-	  ix86_isa_flags &= ~OPTION_MASK_ISA_F16C_UNSET;
-	  ix86_isa_flags_explicit |= OPTION_MASK_ISA_F16C_UNSET;
+	  opts->x_ix86_isa_flags &= ~OPTION_MASK_ISA_F16C_UNSET;
+	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_F16C_UNSET;
 	}
       return true;
 
@@ -4417,7 +4411,7 @@ ix86_function_specific_save (struct cl_target_option *ptr)
   ptr->branch_cost = ix86_branch_cost;
   ptr->tune_defaulted = ix86_tune_defaulted;
   ptr->arch_specified = ix86_arch_specified;
-  ptr->ix86_isa_flags_explicit = ix86_isa_flags_explicit;
+  ptr->x_ix86_isa_flags_explicit = ix86_isa_flags_explicit;
   ptr->ix86_target_flags_explicit = target_flags_explicit;
 
   /* The fields are char but the variables are not; make sure the
@@ -4446,7 +4440,7 @@ ix86_function_specific_restore (struct cl_target_option *ptr)
   ix86_branch_cost = ptr->branch_cost;
   ix86_tune_defaulted = ptr->tune_defaulted;
   ix86_arch_specified = ptr->arch_specified;
-  ix86_isa_flags_explicit = ptr->ix86_isa_flags_explicit;
+  ix86_isa_flags_explicit = ptr->x_ix86_isa_flags_explicit;
   target_flags_explicit = ptr->ix86_target_flags_explicit;
 
   /* Recreate the arch feature tests if the arch changed */
