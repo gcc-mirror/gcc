@@ -1,5 +1,16 @@
 2011-03-22  Joseph Myers  <joseph@codesourcery.com>
 
+	* config/m32c/m32c.c: Don't include opts.h.
+	(target_memregs, target_memregs_set, TARGET_HANDLE_OPTION,
+	m32c_handle_option): Remove.
+	(m32c_option_override): Check global_options_set.x_target_memregs
+	instead of target_memregs_set.
+	* config/m32c/m32c.h (target_memregs): Remove.
+	* config/m32c/m32c.opt (memregs=): Use UInteger with integer
+	variable.
+
+2011-03-22  Joseph Myers  <joseph@codesourcery.com>
+
 	* config/iq2000/iq2000-opts.h: New.
 	* config/iq2000/iq2000.c: Don't include opts.h.
 	(iq2000_tune, iq2000_handle_option, TARGET_HANDLE_OPTION): Remove.

@@ -86,7 +86,6 @@
    beginning of the file.  This variable starts off TRUE and later
    becomes FALSE.  */
 extern int ok_to_change_target_memregs;
-extern int target_memregs;
 
 /* TARGET_CPU is a multi-way option set in m32c.opt.  While we could
    use enums or defines for this, this and m32c.opt are the only
