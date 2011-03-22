@@ -1051,40 +1051,101 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp1, typename _Tp2, _Lock_policy _Lp>
     inline bool
     operator==(const __shared_ptr<_Tp1, _Lp>& __a,
-	       const __shared_ptr<_Tp2, _Lp>& __b)
+	       const __shared_ptr<_Tp2, _Lp>& __b) noexcept
     { return __a.get() == __b.get(); }
 
   template<typename _Tp, _Lock_policy _Lp>
     inline bool
-    operator==(const __shared_ptr<_Tp, _Lp>& __a, nullptr_t)
-    { return __a.get() == nullptr; }
+    operator==(const __shared_ptr<_Tp, _Lp>& __a, nullptr_t) noexcept
+    { return !__a; }
 
   template<typename _Tp, _Lock_policy _Lp>
     inline bool
-    operator==(nullptr_t, const __shared_ptr<_Tp, _Lp>& __b)
-    { return nullptr == __b.get(); }
+    operator==(nullptr_t, const __shared_ptr<_Tp, _Lp>& __a) noexcept
+    { return !__a; }
 
   template<typename _Tp1, typename _Tp2, _Lock_policy _Lp>
     inline bool
     operator!=(const __shared_ptr<_Tp1, _Lp>& __a,
-	       const __shared_ptr<_Tp2, _Lp>& __b)
+	       const __shared_ptr<_Tp2, _Lp>& __b) noexcept
     { return __a.get() != __b.get(); }
 
   template<typename _Tp, _Lock_policy _Lp>
     inline bool
-    operator!=(const __shared_ptr<_Tp, _Lp>& __a, nullptr_t)
-    { return __a.get() != nullptr; }
+    operator!=(const __shared_ptr<_Tp, _Lp>& __a, nullptr_t) noexcept
+    { return (bool)__a; }
 
   template<typename _Tp, _Lock_policy _Lp>
     inline bool
-    operator!=(nullptr_t, const __shared_ptr<_Tp, _Lp>& __b)
-    { return nullptr != __b.get(); }
+    operator!=(nullptr_t, const __shared_ptr<_Tp, _Lp>& __a) noexcept
+    { return (bool)__a; }
 
   template<typename _Tp1, typename _Tp2, _Lock_policy _Lp>
     inline bool
     operator<(const __shared_ptr<_Tp1, _Lp>& __a,
-	      const __shared_ptr<_Tp2, _Lp>& __b)
-    { return __a.get() < __b.get(); }
+	      const __shared_ptr<_Tp2, _Lp>& __b) noexcept
+    {
+      typedef typename std::common_type<_Tp1*, _Tp2*>::type _CT;
+      return std::less<_CT>()(__a.get(), __b.get());
+    }
+
+  template<typename _Tp, _Lock_policy _Lp>
+    inline bool
+    operator<(const __shared_ptr<_Tp, _Lp>& __a, nullptr_t) noexcept
+    { return std::less<_Tp*>()(__a.get(), nullptr); }
+
+  template<typename _Tp, _Lock_policy _Lp>
+    inline bool
+    operator<(nullptr_t, const __shared_ptr<_Tp, _Lp>& __a) noexcept
+    { return std::less<_Tp*>()(nullptr, __a.get()); }
+
+  template<typename _Tp1, typename _Tp2, _Lock_policy _Lp>
+    inline bool
+    operator<=(const __shared_ptr<_Tp1, _Lp>& __a,
+	       const __shared_ptr<_Tp2, _Lp>& __b) noexcept
+    { return !(__b < __a); }
+
+  template<typename _Tp, _Lock_policy _Lp>
+    inline bool
+    operator<=(const __shared_ptr<_Tp, _Lp>& __a, nullptr_t) noexcept
+    { return !(nullptr < __a); }
+
+  template<typename _Tp, _Lock_policy _Lp>
+    inline bool
+    operator<=(nullptr_t, const __shared_ptr<_Tp, _Lp>& __a) noexcept
+    { return !(__a < nullptr); }
+
+  template<typename _Tp1, typename _Tp2, _Lock_policy _Lp>
+    inline bool
+    operator>(const __shared_ptr<_Tp1, _Lp>& __a,
+	      const __shared_ptr<_Tp2, _Lp>& __b) noexcept
+    { return (__b < __a); }
+
+  template<typename _Tp, _Lock_policy _Lp>
+    inline bool
+    operator>(const __shared_ptr<_Tp, _Lp>& __a, nullptr_t) noexcept
+    { return std::less<_Tp*>()(nullptr, __a.get()); }
+
+  template<typename _Tp, _Lock_policy _Lp>
+    inline bool
+    operator>(nullptr_t, const __shared_ptr<_Tp, _Lp>& __a) noexcept
+    { return std::less<_Tp*>()(__a.get(), nullptr); }
+
+  template<typename _Tp1, typename _Tp2, _Lock_policy _Lp>
+    inline bool
+    operator>=(const __shared_ptr<_Tp1, _Lp>& __a,
+	       const __shared_ptr<_Tp2, _Lp>& __b) noexcept
+    { return !(__a < __b); }
+
+  template<typename _Tp, _Lock_policy _Lp>
+    inline bool
+    operator>=(const __shared_ptr<_Tp, _Lp>& __a, nullptr_t) noexcept
+    { return !(__a < nullptr); }
+
+  template<typename _Tp, _Lock_policy _Lp>
+    inline bool
+    operator>=(nullptr_t, const __shared_ptr<_Tp, _Lp>& __a) noexcept
+    { return !(nullptr < __a); }
 
   template<typename _Sp>
     struct _Sp_less : public binary_function<_Sp, _Sp, bool>

@@ -435,58 +435,107 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Tp, typename _Dp>
     inline bool
-    operator==(const unique_ptr<_Tp, _Dp>& __x, nullptr_t)
-    { return __x.get() == nullptr; }
+    operator==(const unique_ptr<_Tp, _Dp>& __x, nullptr_t) noexcept
+    { return !__x; }
 
   template<typename _Tp, typename _Dp>
     inline bool
-    operator==(nullptr_t, const unique_ptr<_Tp, _Dp>& __y)
-    { return nullptr == __y.get(); }
+    operator==(nullptr_t, const unique_ptr<_Tp, _Dp>& __x) noexcept
+    { return !__x; }
 
   template<typename _Tp, typename _Dp,
 	   typename _Up, typename _Ep>
     inline bool
     operator!=(const unique_ptr<_Tp, _Dp>& __x,
 	       const unique_ptr<_Up, _Ep>& __y)
-    { return !(__x.get() == __y.get()); }
+    { return __x.get() != __y.get(); }
 
   template<typename _Tp, typename _Dp>
     inline bool
-    operator!=(const unique_ptr<_Tp, _Dp>& __x, nullptr_t)
-    { return __x.get() != nullptr; }
+    operator!=(const unique_ptr<_Tp, _Dp>& __x, nullptr_t) noexcept
+    { return (bool)__x; }
 
   template<typename _Tp, typename _Dp>
     inline bool
-    operator!=(nullptr_t, const unique_ptr<_Tp, _Dp>& __y)
-    { return nullptr != __y.get(); }
+    operator!=(nullptr_t, const unique_ptr<_Tp, _Dp>& __x) noexcept
+    { return (bool)__x; }
 
   template<typename _Tp, typename _Dp,
 	   typename _Up, typename _Ep>
     inline bool
     operator<(const unique_ptr<_Tp, _Dp>& __x,
 	      const unique_ptr<_Up, _Ep>& __y)
-    { return __x.get() < __y.get(); }
+    {
+      typedef typename
+	std::common_type<typename unique_ptr<_Tp, _Dp>::pointer,
+	                 typename unique_ptr<_Up, _Ep>::pointer>::type _CT;
+      return std::less<_CT>()(__x.get(), __y.get());
+    }
+
+  template<typename _Tp, typename _Dp>
+    inline bool
+    operator<(const unique_ptr<_Tp, _Dp>& __x, nullptr_t)
+    { return std::less<typename unique_ptr<_Tp, _Dp>::pointer>()(__x.get(),
+								 nullptr); }
+
+  template<typename _Tp, typename _Dp>
+    inline bool
+    operator<(nullptr_t, const unique_ptr<_Tp, _Dp>& __x)
+    { return std::less<typename unique_ptr<_Tp, _Dp>::pointer>()(nullptr,
+								 __x.get()); }
 
   template<typename _Tp, typename _Dp,
 	   typename _Up, typename _Ep>
     inline bool
     operator<=(const unique_ptr<_Tp, _Dp>& __x,
 	       const unique_ptr<_Up, _Ep>& __y)
-    { return !(__y.get() < __x.get()); }
+    { return !(__y < __x); }
+
+  template<typename _Tp, typename _Dp>
+    inline bool
+    operator<=(const unique_ptr<_Tp, _Dp>& __x, nullptr_t)
+    { return !(nullptr < __x); }
+
+  template<typename _Tp, typename _Dp>
+    inline bool
+    operator<=(nullptr_t, const unique_ptr<_Tp, _Dp>& __x)
+    { return !(__x < nullptr); }
 
   template<typename _Tp, typename _Dp,
 	   typename _Up, typename _Ep>
     inline bool
     operator>(const unique_ptr<_Tp, _Dp>& __x,
 	      const unique_ptr<_Up, _Ep>& __y)
-    { return __y.get() < __x.get(); }
+    { return (__y < __x); }
+
+  template<typename _Tp, typename _Dp>
+    inline bool
+    operator>(const unique_ptr<_Tp, _Dp>& __x, nullptr_t)
+    { return std::less<typename unique_ptr<_Tp, _Dp>::pointer>()(nullptr,
+								 __x.get()); }
+
+  template<typename _Tp, typename _Dp>
+    inline bool
+    operator>(nullptr_t, const unique_ptr<_Tp, _Dp>& __x)
+    { return std::less<typename unique_ptr<_Tp, _Dp>::pointer>()(__x.get(),
+								 nullptr); }
 
   template<typename _Tp, typename _Dp,
 	   typename _Up, typename _Ep>
     inline bool
     operator>=(const unique_ptr<_Tp, _Dp>& __x,
 	       const unique_ptr<_Up, _Ep>& __y)
-    { return !(__x.get() < __y.get()); }
+    { return !(__x < __y); }
+
+  template<typename _Tp, typename _Dp>
+    inline bool
+    operator>=(const unique_ptr<_Tp, _Dp>& __x, nullptr_t)
+    { return !(__x < nullptr); }
+
+  template<typename _Tp, typename _Dp>
+    inline bool
+    operator>=(nullptr_t, const unique_ptr<_Tp, _Dp>& __x)
+    { return !(nullptr < __x); }
 
   /// std::hash specialization for unique_ptr.
   template<typename _Tp, typename _Dp>
