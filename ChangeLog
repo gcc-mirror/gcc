@@ -1,5 +1,12 @@
 2011-03-22  Joseph Myers  <joseph@codesourcery.com>
 
+	* configure.ac (arm-semi-aof, crx-*-*, parisc*-*-linux*,
+	i370-*-opened*, i[[3456789]]86-moss-msdos | i[[3456789]]86-*-moss*
+	| i[[3456789]]86-*-uwin*, mcore-*-pe*): Remove empty cases.
+	* configure: Regenerate.
+
+2011-03-22  Joseph Myers  <joseph@codesourcery.com>
+
 	* MAINTAINERS (crx port, m68hc11 port): Remove.  Move maintainers
 	to Write After Approval.
 	* config-ml.in: Don't handle arc-*-elf*.
