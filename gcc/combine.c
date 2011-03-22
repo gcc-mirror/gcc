@@ -6240,10 +6240,18 @@ simplify_set (rtx x)
       enum rtx_code new_code;
       rtx op0, op1, tmp;
       int other_changed = 0;
+      rtx inner_compare = NULL_RTX;
       enum machine_mode compare_mode = GET_MODE (dest);
 
       if (GET_CODE (src) == COMPARE)
-	op0 = XEXP (src, 0), op1 = XEXP (src, 1);
+	{
+	  op0 = XEXP (src, 0), op1 = XEXP (src, 1);
+	  if (GET_CODE (op0) == COMPARE && op1 == const0_rtx)
+	    {
+	      inner_compare = op0;
+	      op0 = XEXP (inner_compare, 0), op1 = XEXP (inner_compare, 1);
+	    }
+	}
       else
 	op0 = src, op1 = CONST0_RTX (GET_MODE (src));
 
@@ -6285,6 +6293,12 @@ simplify_set (rtx x)
 	 need to use a different CC mode here.  */
       if (GET_MODE_CLASS (GET_MODE (op0)) == MODE_CC)
 	compare_mode = GET_MODE (op0);
+      else if (inner_compare
+	       && GET_MODE_CLASS (GET_MODE (inner_compare)) == MODE_CC
+	       && new_code == old_code
+	       && op0 == XEXP (inner_compare, 0)
+	       && op1 == XEXP (inner_compare, 1))
+	compare_mode = GET_MODE (inner_compare);
       else
 	compare_mode = SELECT_CC_MODE (new_code, op0, op1);
 
