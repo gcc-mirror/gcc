@@ -148,10 +148,7 @@ extern enum alpha_fp_trap_mode alpha_fptm;
 /* These are for target os support and cannot be changed at runtime.  */
 #define TARGET_ABI_WINDOWS_NT 0
 #define TARGET_ABI_OPEN_VMS 0
-#define TARGET_ABI_UNICOSMK 0
-#define TARGET_ABI_OSF (!TARGET_ABI_WINDOWS_NT	\
-			&& !TARGET_ABI_OPEN_VMS	\
-			&& !TARGET_ABI_UNICOSMK)
+#define TARGET_ABI_OSF (!TARGET_ABI_WINDOWS_NT && !TARGET_ABI_OPEN_VMS)
 
 #ifndef TARGET_AS_CAN_SUBTRACT_LABELS
 #define TARGET_AS_CAN_SUBTRACT_LABELS TARGET_GAS

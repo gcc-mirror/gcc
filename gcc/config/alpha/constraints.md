@@ -110,11 +110,6 @@
   "@internal A high-part symbol"
   (match_code "high"))
 
-(define_constraint "U"
-  "@internal A UNICOSMK symbol"
-  (and (match_test "TARGET_ABI_UNICOSMK")
-       (match_operand 0 "symbolic_operand")))
-
 (define_constraint "W"
   "A vector zero constant"
   (and (match_code "const_vector")
