@@ -1,3 +1,7 @@
+2011-03-22  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* recog.c (canonicalize_change_group): Use validate_unshare_change.
+
 2011-03-22  Richard Guenther  <rguenther@suse.de>
 
 	* gimple.c (gimple_rhs_class_table): POLYNOMIAL_CHREC is not
