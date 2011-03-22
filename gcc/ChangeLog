@@ -1,3 +1,14 @@
+2011-03-21  Nick Clifton  <nickc@redhat.com>
+
+	* doc/invoke.texi (Overall Options): Move closing brace to end of
+	options list.
+	(Optimization Options): Add missing @gol.
+	(Directory Options): Likewise.
+	(i386 and x86-64 Options): Likewise.
+	(RS6000 and PowerPC Options): Likewise.
+	(i386 and x86-64 Windows Options): Likewise.
+	(V850 Options): Add text missing from descriptions.
+
 2011-03-22  Richard Henderson  <rth@redhat.com>
 
 	* config/avr/avr.c (TARGET_EXCEPT_UNWIND_INFO): New.

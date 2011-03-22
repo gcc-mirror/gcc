@@ -165,7 +165,7 @@ in the following sections.
 -pipe  -pass-exit-codes  @gol
 -x @var{language}  -v  -###  --help@r{[}=@var{class}@r{[},@dots{}@r{]]}  --target-help  @gol
 --version -wrapper @@@var{file} -fplugin=@var{file} -fplugin-arg-@var{name}=@var{arg}  @gol
--fdump-ada-spec@r{[}-slim@r{]}} -fdump-go-spec=@var{file}
+-fdump-ada-spec@r{[}-slim@r{]} -fdump-go-spec=@var{file}}
 
 @item C Language Options
 @xref{C Dialect Options,,Options Controlling C Dialect}.
@@ -357,7 +357,7 @@ Objective-C and Objective-C++ Dialects}.
 -fno-ira-share-spill-slots -fira-verbose=@var{n} @gol
 -fivopts -fkeep-inline-functions -fkeep-static-consts @gol
 -floop-block -floop-flatten -floop-interchange -floop-strip-mine @gol
--floop-parallelize-all -flto -flto-compression-level
+-floop-parallelize-all -flto -flto-compression-level @gol
 -flto-partition=@var{alg} -flto-report -fmerge-all-constants @gol
 -fmerge-constants -fmodulo-sched -fmodulo-sched-allow-regmoves @gol
 -fmove-loop-invariants fmudflap -fmudflapir -fmudflapth -fno-branch-count-reg @gol
@@ -435,9 +435,9 @@ Objective-C and Objective-C++ Dialects}.
 
 @item Directory Options
 @xref{Directory Options,,Options for Directory Search}.
-@gccoptlist{-B@var{prefix} -I@var{dir} -iplugindir=@var{dir}}
--iquote@var{dir} -L@var{dir} -specs=@var{file} -I-
---sysroot=@var{dir}
+@gccoptlist{-B@var{prefix} -I@var{dir} -iplugindir=@var{dir} @gol
+-iquote@var{dir} -L@var{dir} -specs=@var{file} -I- @gol
+--sysroot=@var{dir}}
 
 @item Machine Dependent Options
 @xref{Submodel Options,,Hardware Models and Configurations}.
@@ -595,7 +595,7 @@ Objective-C and Objective-C++ Dialects}.
 -masm=@var{dialect}  -mno-fancy-math-387 @gol
 -mno-fp-ret-in-387  -msoft-float @gol
 -mno-wide-multiply  -mrtd  -malign-double @gol
--mpreferred-stack-boundary=@var{num}
+-mpreferred-stack-boundary=@var{num} @gol
 -mincoming-stack-boundary=@var{num} @gol
 -mcld -mcx16 -msahf -mmovbe -mcrc32 -mrecip -mvzeroupper @gol
 -mmmx  -msse  -msse2 -msse3 -mssse3 -msse4.1 -msse4.2 -msse4 -mavx @gol
@@ -740,7 +740,7 @@ Objective-C and Objective-C++ Dialects}.
 -mno-am33 -mam33 -mam33-2 -mam34 @gol
 -mtune=@var{cpu-type} @gol
 -mreturn-pointer-on-d0 @gol
--mno-crt0  -mrelax -mliw}
+-mno-crt0  -mrelax -mliw -msetlb}
 
 @emph{PDP-11 Options}
 @gccoptlist{-mfpu  -msoft-float  -mac0  -mno-ac0  -m40  -m45  -m10 @gol
@@ -802,7 +802,7 @@ See RS/6000 and PowerPC Options.
 -mprototype  -mno-prototype @gol
 -msim  -mmvme  -mads  -myellowknife  -memb  -msdata @gol
 -msdata=@var{opt}  -mvxworks  -G @var{num}  -pthread @gol
--mrecip -mrecip=@var{opt} -mno-recip -mrecip-precision
+-mrecip -mrecip=@var{opt} -mno-recip -mrecip-precision @gol
 -mno-recip-precision @gol
 -mveclibabi=@var{type} -mfriz -mno-friz}
 
@@ -906,7 +906,7 @@ See RS/6000 and PowerPC Options.
 See i386 and x86-64 Options.
 
 @emph{i386 and x86-64 Windows Options}
-@gccoptlist{-mconsole -mcygwin -mno-cygwin -mdll
+@gccoptlist{-mconsole -mcygwin -mno-cygwin -mdll @gol
 -mnop-fun-dllimport -mthread @gol
 -municode -mwin32 -mwindows -fno-set-stack-executable}
 
@@ -8548,7 +8548,7 @@ given basic block needs to have to be considered hot.
 
 @item hot-bb-frequency-fraction
 Select fraction of the entry block frequency of executions of basic block in
-function given basic block needs to have to be considered hot
+function given basic block needs to have to be considered hot.
 
 @item max-predicted-iterations
 The maximum number of loop iterations we predict statically.  This is useful
@@ -15081,6 +15081,18 @@ Do not allow the compiler to generate @emph{Long Instruction Word}
 instructions.  This option defines the preprocessor macro
 @samp{__NO_LIW__}.
 
+@item -msetlb
+@opindex msetlb
+Allow the compiler to generate the @emph{SETLB} and @emph{Lcc}
+instructions if the target is the @samp{AM33} or later.  This is the
+default.  This option defines the preprocessor macro @samp{__SETLB__}.
+
+@item -mnosetlb
+@opindex mnosetlb
+Do not allow the compiler to generate @emph{SETLB} or @emph{Lcc}
+instructions.  This option defines the preprocessor macro
+@samp{__NO_SETLB__}.
+
 @end table
 
 @node PDP-11 Options
@@ -17433,12 +17445,13 @@ this option is used.
 @item -mv850e2
 @opindex mv850e2
 Specify that the target processor is the V850E2.  The preprocessor
-constants @samp{__v850e2__} will be defined if
+constants @samp{__v850e2__} will be defined if this option is used.
 
 @item -mv850e1
 @opindex mv850e1
 Specify that the target processor is the V850E1.  The preprocessor
 constants @samp{__v850e1__} and @samp{__v850e__} will be defined if
+this option is used.
 
 @item -mv850es
 @opindex mv850es
