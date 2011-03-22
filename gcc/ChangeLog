@@ -1,3 +1,7 @@
+2011-03-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gimplify.c (gimplify_cond_expr): Gimplify COMPOUND_EXPR conditions.
+
 2011-03-22  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* config/s390/s390.c (s390_delegitimize_address): Fix offset
