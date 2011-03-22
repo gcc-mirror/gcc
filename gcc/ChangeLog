@@ -1,3 +1,8 @@
+2011-03-22  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* tree.c (build_call_1): New function.
+	(build_call_valist, build_call_array_loc, build_call_vec): Call it.
+
 2011-03-22  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/48228
