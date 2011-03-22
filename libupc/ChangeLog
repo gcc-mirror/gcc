@@ -1,3 +1,7 @@
+2011-03-22  Gary Funck  <gary@intrepid.com>
+
+	* configure.tgt: Move linker switches into libupc.spec.
+
 2011-03-20  Gary Funck  <gary@intrepid.com>
 
 	Place error message strings directly into the calls to

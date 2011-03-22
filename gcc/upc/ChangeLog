@@ -1,3 +1,9 @@
+2011-03-22  Gary Funck  <gary@intrepid.com>
+
+	* upc-cmd.c: Move linker switches into libupc/libupc.spec.
+	  (UPC_LINKER_SCRIPT, LIBNUMA, LIBUPC, LIBUPC_PT) Remove.
+	  (find_ld_script) Remove.
+
 2011-03-20  Gary Funck  <gary@intrepid.com>
 
 	* upc-act.c: Call error() directly with a format specifier,

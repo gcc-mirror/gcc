@@ -54,10 +54,6 @@ along with GCC; see the file COPYING3.  If not see
 #define MULTI_DIR_SWITCH "-print-multi-directory"
 #define FIND_LIBUPC_SWITCH "-print-file-name=libupc.a"
 
-#ifndef UPC_LINKER_SCRIPT
-# define UPC_LINKER_SCRIPT "gccupc.ld"
-#endif
-
 #define GCC_SWITCH_TAKES_ARG(CHAR) \
   ((CHAR) == 'D' || (CHAR) == 'U' || (CHAR) == 'o' \
    || (CHAR) == 'e' || (CHAR) == 'T' || (CHAR) == 'u' \
@@ -86,10 +82,6 @@ along with GCC; see the file COPYING3.  If not see
   || !strcmp (STR, "--version") \
   || !strcmp (STR, "--help") \
   || !strncmp(STR, "-print-", 7) || !strncmp(STR, "--print-", 8))
-
-#define LIBNUMA "-lnuma" 
-#define LIBUPC "-lupc" 
-#define LIBUPC_PT "-lupc_pt"
 
 #ifndef ARG_MAX
 #define ARG_MAX 4096
@@ -307,34 +299,16 @@ get_libupc_path (const char *exec_args[], int n_args)
   return libupc_path;
 }
 
-/* Search for the UPC linker script, first in the current
-   directory, and then in LIB_DIR.  */
-static
-const char *
-find_ld_script(const char *lib_dir)
-{
-  char *ld_script;
-  ld_script = concat ("./", UPC_LINKER_SCRIPT, END_ARGS);
-  if (file_exists (ld_script))
-    return ld_script;
-  ld_script = concat (lib_dir, "/", UPC_LINKER_SCRIPT, END_ARGS);
-  if (file_exists (ld_script))
-    return ld_script;
-  return NULL;
-}
-
 int
 main (int argc, char *argv[])
 {
   int i, nargs;
   int info_only = 1;
   int invoke_linker = 1;
-  int explicit_linker_script = 0;
   int no_start_files = 0;
   int no_default_libs = 0;
   int no_std_inc = 0;
   int is_x_upc_in_effect = 0;
-  int flag_upc_pthreads = 0;
   const int is_dev_compiler = !strcmp (COMPILER, "xgcc");
   const char *cp;
   const char *compiler = 0;
@@ -401,15 +375,6 @@ main (int argc, char *argv[])
 	    { 
 	       no_start_files = 1;
 	       no_default_libs = 1;
-	    }
-	  else if (!strcmp(arg, "-fupc-pthreads-model-tls"))
-	    {
-	       flag_upc_pthreads = 1;
-	    }
-	  else if (!strcmp(arg, "-Xlinker") && (i < (argc - 1))
-	            && !strncmp (argv[i+1], "-T", 2))
-	    {
-	       explicit_linker_script = 1;
 	    }
 	  invoke_linker = invoke_linker && !NO_LINK_SWITCHES (arg);
 	  info_only = info_only && GCC_INFO_ONLY_SWITCHES (arg);
@@ -572,17 +537,6 @@ main (int argc, char *argv[])
       /* The -fupc-link switch triggers per-target libupc compiler specs
          via %:include(libupc.spec). */
       exec_args[nargs++] = "-fupc-link";
-      if (!explicit_linker_script)
-        {
-	  /* Look for special linker script.  If found, add it
-	     to the argument list.  */
-	  const char *ld_script = find_ld_script (lib_dir);
-	  if (ld_script)
-	    {
-	      exec_args[nargs++] = "-Xlinker";
-	      exec_args[nargs++] = concat("-T", ld_script, END_ARGS);
-	    }
-        }
       if (!no_default_libs && lib_dir)
 	{
 	  const char *link_lib_dir = lib_dir;
@@ -594,9 +548,6 @@ main (int argc, char *argv[])
 	  /* Add the link library path where libupc.a is located.  */
           exec_args[nargs++] = concat (xstrdup ("-L"), link_lib_dir, END_ARGS);
         }
-      exec_args[nargs++] = LIBUPC;
-      if (flag_upc_pthreads)
-        exec_args[nargs++] = "-lpthread";
     }
 
   if (debug)
