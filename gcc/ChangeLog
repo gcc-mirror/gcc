@@ -1,3 +1,24 @@
+2011-03-21  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr-protos.h (expand_epilogue): Change prototype
+	* config/avr/avr.h (struct machine_function): Add field sibcall_fails.
+	* config/avr/avr.c (init_cumulative_args)
+	(avr_function_arg_advance): Use it.
+	* config/avr/avr.c (expand_epilogue): Add bool parameter. Handle
+	sibcall epilogues.
+	(TARGET_FUNCTION_OK_FOR_SIBCALL): Define to...
+	(avr_function_ok_for_sibcall): ...this new function.
+	(avr_lookup_function_attribute1): New static Function.
+	(avr_naked_function_p, interrupt_function_p)
+	(signal_function_p, avr_OS_task_function_p)
+	(avr_OS_main_function_p): Use it.
+	* config/avr/avr.md ("sibcall", "sibcall_value")
+	("sibcall_epilogue"): New expander.
+	("*call_insn", "*call_value_insn"): New insn.
+	("call_insn", "call_value_insn"): Remove
+	("call", "call_value", "epilogue"): Change expander to handle
+	sibling calls.
+
 2011-03-21  Nick Clifton  <nickc@redhat.com>
 
 	* doc/invoke.texi (Overall Options): Move closing brace to end of

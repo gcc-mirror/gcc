@@ -102,6 +102,7 @@ static rtx avr_function_arg (CUMULATIVE_ARGS *, enum machine_mode,
 static void avr_function_arg_advance (CUMULATIVE_ARGS *, enum machine_mode,
 				      const_tree, bool);
 static void avr_help (void);
+static bool avr_function_ok_for_sibcall (tree, tree);
 
 /* Allocate registers from r25 to r8 for parameters for function calls.  */
 #define FIRST_CUM_REG 26
@@ -249,6 +250,9 @@ static const struct default_options avr_option_optimization_table[] =
 #undef TARGET_EXCEPT_UNWIND_INFO
 #define TARGET_EXCEPT_UNWIND_INFO sjlj_except_unwind_info
 
+#undef TARGET_FUNCTION_OK_FOR_SIBCALL
+#define TARGET_FUNCTION_OK_FOR_SIBCALL avr_function_ok_for_sibcall
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 static void
@@ -348,17 +352,34 @@ avr_regno_reg_class (int r)
   return ALL_REGS;
 }
 
+/* A helper for the subsequent function attribute used to dig for
+   attribute 'name' in a FUNCTION_DECL or FUNCTION_TYPE */
+
+static inline int
+avr_lookup_function_attribute1 (const_tree func, const char *name)
+{
+  if (FUNCTION_DECL == TREE_CODE (func))
+    {
+      if (NULL_TREE != lookup_attribute (name, DECL_ATTRIBUTES (func)))
+        {
+          return true;
+        }
+      
+      func = TREE_TYPE (func);
+    }
+
+  gcc_assert (TREE_CODE (func) == FUNCTION_TYPE
+              || TREE_CODE (func) == METHOD_TYPE);
+  
+  return NULL_TREE != lookup_attribute (name, TYPE_ATTRIBUTES (func));
+}
+
 /* Return nonzero if FUNC is a naked function.  */
 
 static int
 avr_naked_function_p (tree func)
 {
-  tree a;
-
-  gcc_assert (TREE_CODE (func) == FUNCTION_DECL);
-  
-  a = lookup_attribute ("naked", TYPE_ATTRIBUTES (TREE_TYPE (func)));
-  return a != NULL_TREE;
+  return avr_lookup_function_attribute1 (func, "naked");
 }
 
 /* Return nonzero if FUNC is an interrupt function as specified
@@ -367,13 +388,7 @@ avr_naked_function_p (tree func)
 static int
 interrupt_function_p (tree func)
 {
-  tree a;
-
-  if (TREE_CODE (func) != FUNCTION_DECL)
-    return 0;
-
-  a = lookup_attribute ("interrupt", DECL_ATTRIBUTES (func));
-  return a != NULL_TREE;
+  return avr_lookup_function_attribute1 (func, "interrupt");
 }
 
 /* Return nonzero if FUNC is a signal function as specified
@@ -382,13 +397,7 @@ interrupt_function_p (tree func)
 static int
 signal_function_p (tree func)
 {
-  tree a;
-
-  if (TREE_CODE (func) != FUNCTION_DECL)
-    return 0;
-
-  a = lookup_attribute ("signal", DECL_ATTRIBUTES (func));
-  return a != NULL_TREE;
+  return avr_lookup_function_attribute1 (func, "signal");
 }
 
 /* Return nonzero if FUNC is a OS_task function.  */
@@ -396,12 +405,7 @@ signal_function_p (tree func)
 static int
 avr_OS_task_function_p (tree func)
 {
-  tree a;
-
-  gcc_assert (TREE_CODE (func) == FUNCTION_DECL);
-  
-  a = lookup_attribute ("OS_task", TYPE_ATTRIBUTES (TREE_TYPE (func)));
-  return a != NULL_TREE;
+  return avr_lookup_function_attribute1 (func, "OS_task");
 }
 
 /* Return nonzero if FUNC is a OS_main function.  */
@@ -409,12 +413,7 @@ avr_OS_task_function_p (tree func)
 static int
 avr_OS_main_function_p (tree func)
 {
-  tree a;
-
-  gcc_assert (TREE_CODE (func) == FUNCTION_DECL);
-  
-  a = lookup_attribute ("OS_main", TYPE_ATTRIBUTES (TREE_TYPE (func)));
-  return a != NULL_TREE;
+  return avr_lookup_function_attribute1 (func, "OS_main");
 }
 
 /* Return the number of hard registers to push/pop in the prologue/epilogue
@@ -935,7 +934,7 @@ emit_pop_byte (unsigned regno)
 /*  Output RTL epilogue.  */
 
 void
-expand_epilogue (void)
+expand_epilogue (bool sibcall_p)
 {
   int reg;
   int live_seq;
@@ -946,6 +945,8 @@ expand_epilogue (void)
   /* epilogue: naked  */
   if (cfun->machine->is_naked)
     {
+      gcc_assert (!sibcall_p);
+      
       emit_jump_insn (gen_return ());
       return;
     }
@@ -1088,7 +1089,8 @@ expand_epilogue (void)
           emit_pop_byte (ZERO_REGNO);
         }
 
-      emit_jump_insn (gen_return ());
+      if (!sibcall_p)
+        emit_jump_insn (gen_return ());
     }
 }
 
@@ -1701,6 +1703,10 @@ init_cumulative_args (CUMULATIVE_ARGS *cum, tree fntype, rtx libname,
   cum->regno = FIRST_CUM_REG;
   if (!libname && stdarg_p (fntype))
     cum->nregs = 0;
+
+  /* Assume the calle may be tail called */
+  
+  cfun->machine->sibcall_fails = 0;
 }
 
 /* Returns the number of registers to allocate for a function argument.  */
@@ -1748,11 +1754,87 @@ avr_function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
   cum->nregs -= bytes;
   cum->regno -= bytes;
 
+  /* A parameter is being passed in a call-saved register. As the original
+     contents of these regs has to be restored before leaving the function,
+     a function must not pass arguments in call-saved regs in order to get
+     tail-called. */
+  
+  if (cum->regno >= 0
+      && !call_used_regs[cum->regno])
+    {
+      /* FIXME: We ship info on failing tail-call in struct machine_function.
+         This uses internals of calls.c:expand_call() and the way args_so_far
+         is used. targetm.function_ok_for_sibcall() needs to be extended to
+         pass &args_so_far, too. At present, CUMULATIVE_ARGS is target
+         dependent so that such an extension is not wanted. */
+      
+      cfun->machine->sibcall_fails = 1;
+    }
+
   if (cum->nregs <= 0)
     {
       cum->nregs = 0;
       cum->regno = FIRST_CUM_REG;
     }
+}
+
+/* Implement `TARGET_FUNCTION_OK_FOR_SIBCALL' */
+/* Decide whether we can make a sibling call to a function.  DECL is the
+   declaration of the function being targeted by the call and EXP is the
+   CALL_EXPR representing the call. */
+
+static bool
+avr_function_ok_for_sibcall (tree decl_callee, tree exp_callee)
+{
+  tree fntype_callee;
+
+  /* Tail-calling must fail if callee-saved regs are used to pass
+     function args.  We must not tail-call when `epilogue_restores'
+     is used.  Unfortunately, we cannot tell at this point if that
+     actually will happen or not, and we cannot step back from
+     tail-calling. Thus, we inhibit tail-calling with -mcall-prologues. */
+  
+  if (cfun->machine->sibcall_fails
+      || TARGET_CALL_PROLOGUES)
+    {
+      return false;
+    }
+  
+  fntype_callee = TREE_TYPE (CALL_EXPR_FN (exp_callee));
+
+  if (decl_callee)
+    {
+      decl_callee = TREE_TYPE (decl_callee);
+    }
+  else
+    {
+      decl_callee = fntype_callee;
+      
+      while (FUNCTION_TYPE != TREE_CODE (decl_callee)
+             && METHOD_TYPE != TREE_CODE (decl_callee))
+        {
+          decl_callee = TREE_TYPE (decl_callee);
+        }
+    }
+
+  /* Ensure that caller and callee have compatible epilogues */
+  
+  if (interrupt_function_p (current_function_decl)
+      || signal_function_p (current_function_decl)
+      || avr_naked_function_p (decl_callee)
+      || avr_naked_function_p (current_function_decl)
+      /* FIXME: For OS_task and OS_main, we are over-conservative.
+         This is due to missing documentation of these attributes
+         and what they actually should do and should not do. */
+      || (avr_OS_task_function_p (decl_callee)
+          != avr_OS_task_function_p (current_function_decl))
+      || (avr_OS_main_function_p (decl_callee)
+          != avr_OS_main_function_p (current_function_decl)))
+    {
+      return false;
+    }
+ 
+  return true;
 }
 
 /***********************************************************************
