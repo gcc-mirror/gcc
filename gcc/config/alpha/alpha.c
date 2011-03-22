@@ -607,7 +607,7 @@ alpha_vector_mode_supported_p (enum machine_mode mode)
 int
 direct_return (void)
 {
-  return (!TARGET_ABI_OPEN_VMS
+  return (TARGET_ABI_OSF
 	  && reload_completed
 	  && alpha_sa_size () == 0
 	  && get_frame_size () == 0
@@ -5553,7 +5553,7 @@ alpha_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
   mem = adjust_address (m_tramp, Pmode, 24);
   emit_move_insn (mem, chain_value);
 
-  if (!TARGET_ABI_OPEN_VMS)
+  if (TARGET_ABI_OSF)
     {
       emit_insn (gen_imb ());
 #ifdef ENABLE_EXECUTE_STACK
@@ -8046,7 +8046,8 @@ alpha_start_function (FILE *file, const char *fnname,
   if (TARGET_ABI_OPEN_VMS)
     fprintf (file, "\t.base $%d\n", vms_base_regno);
 
-  if (!TARGET_ABI_OPEN_VMS && TARGET_IEEE_CONFORMANT
+  if (TARGET_ABI_OSF
+      && TARGET_IEEE_CONFORMANT
       && !flag_inhibit_size_directive)
     {
       /* Set flags in procedure descriptor to request IEEE-conformant
@@ -8176,8 +8177,9 @@ alpha_expand_epilogue (void)
   alpha_sa_mask (&imask, &fmask);
 
   fp_is_frame_pointer
-    = ((TARGET_ABI_OPEN_VMS && alpha_procedure_type == PT_STACK)
-       || (!TARGET_ABI_OPEN_VMS && frame_pointer_needed));
+    = (TARGET_ABI_OPEN_VMS
+       ? alpha_procedure_type == PT_STACK
+       : frame_pointer_needed);
   fp_offset = 0;
   sa_reg = stack_pointer_rtx;
 
@@ -8189,9 +8191,9 @@ alpha_expand_epilogue (void)
   if (sa_size)
     {
       /* If we have a frame pointer, restore SP from it.  */
-      if ((TARGET_ABI_OPEN_VMS
-	   && vms_unwind_regno == HARD_FRAME_POINTER_REGNUM)
-	  || (!TARGET_ABI_OPEN_VMS && frame_pointer_needed))
+      if (TARGET_ABI_OPEN_VMS
+	  ? vms_unwind_regno == HARD_FRAME_POINTER_REGNUM
+	  : frame_pointer_needed)
 	emit_move_insn (stack_pointer_rtx, hard_frame_pointer_rtx);
 
       /* Cope with very large offsets to the register save area.  */
@@ -9495,7 +9497,7 @@ alpha_file_start (void)
 
   fputs ("\t.set noreorder\n", asm_out_file);
   fputs ("\t.set volatile\n", asm_out_file);
-  if (!TARGET_ABI_OPEN_VMS)
+  if (TARGET_ABI_OSF)
     fputs ("\t.set noat\n", asm_out_file);
   if (TARGET_EXPLICIT_RELOCS)
     fputs ("\t.set nomacro\n", asm_out_file);
