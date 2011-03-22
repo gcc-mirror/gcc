@@ -1,5 +1,20 @@
 2011-03-22  Joseph Myers  <joseph@codesourcery.com>
 
+	* config/ia64/ia64-opts.h: New.
+	* config/ia64/ia64.c (ia64_tune): Remove.
+	(ia64_handle_option): Don't handle OPT_mfixed_range_ or OPT_mtune_
+	here.  Use error_at.
+	(ia64_option_override): Handle deferred OPT_mfixed_range_.
+	* config/ia64/ia64.h (enum processor_type, ia64_tune): Remove.
+	* config/ia64/ia64.opt (config/ia64/ia64-opts.h): New
+	HeaderInclude entry.
+	(ia64_tune): New Variable entry.
+	(mfixed-range=): Use Defer and Var.
+	(mtune=): Use Enum and Var.
+	(ia64_tune): New Enum and EnumValue entries.
+
+2011-03-22  Joseph Myers  <joseph@codesourcery.com>
+
 	* config/frv/frv-opts.h: New.
 	* config/frv/frv-protos.h (enum frv_cpu, frv_cpu_t): Move to
 	frv-opts.h.

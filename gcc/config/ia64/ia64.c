@@ -103,9 +103,6 @@ static const char * const ia64_local_reg_names[80] =
 static const char * const ia64_output_reg_names[8] =
 { "out0", "out1", "out2", "out3", "out4", "out5", "out6", "out7" };
 
-/* Which cpu are we scheduling for.  */
-enum processor_type ia64_tune = PROCESSOR_ITANIUM2;
-
 /* Determines whether we run our final scheduling pass or not.  We always
    avoid the normal second scheduling pass.  */
 static int ia64_flag_schedule_insns2;
@@ -5657,53 +5654,21 @@ fix_range (const char *const_str)
 /* Implement TARGET_HANDLE_OPTION.  */
 
 static bool
-ia64_handle_option (struct gcc_options *opts, struct gcc_options *opts_set,
+ia64_handle_option (struct gcc_options *opts ATTRIBUTE_UNUSED,
+		    struct gcc_options *opts_set ATTRIBUTE_UNUSED,
 		    const struct cl_decoded_option *decoded,
-		    location_t loc ATTRIBUTE_UNUSED)
+		    location_t loc)
 {
   size_t code = decoded->opt_index;
   const char *arg = decoded->arg;
   int value = decoded->value;
 
-  gcc_assert (opts == &global_options);
-  gcc_assert (opts_set == &global_options_set);
-
   switch (code)
     {
-    case OPT_mfixed_range_:
-      fix_range (arg);
-      return true;
-
     case OPT_mtls_size_:
       if (value != 14 && value != 22 && value != 64)
-	error ("bad value %<%s%> for -mtls-size= switch", arg);
+	error_at (loc, "bad value %<%s%> for -mtls-size= switch", arg);
       return true;
-
-    case OPT_mtune_:
-      {
-	static struct pta
-	  {
-	    const char *name;		/* processor name or nickname.  */
-	    enum processor_type processor;
-	  }
-	const processor_alias_table[] =
-	  {
-	    {"itanium2", PROCESSOR_ITANIUM2},
-	    {"mckinley", PROCESSOR_ITANIUM2},
-	  };
-	int const pta_size = ARRAY_SIZE (processor_alias_table);
-	int i;
-
-	for (i = 0; i < pta_size; i++)
-	  if (!strcmp (arg, processor_alias_table[i].name))
-	    {
-	      ia64_tune = processor_alias_table[i].processor;
-	      break;
-	    }
-	if (i == pta_size)
-	  error ("bad value %<%s%> for -mtune= switch", arg);
-	return true;
-      }
 
     default:
       return true;
@@ -5715,6 +5680,24 @@ ia64_handle_option (struct gcc_options *opts, struct gcc_options *opts_set,
 static void
 ia64_option_override (void)
 {
+  unsigned int i;
+  cl_deferred_option *opt;
+  VEC(cl_deferred_option,heap) *vec
+    = (VEC(cl_deferred_option,heap) *) ia64_deferred_options;
+
+  FOR_EACH_VEC_ELT (cl_deferred_option, vec, i, opt)
+    {
+      switch (opt->opt_index)
+	{
+	case OPT_mfixed_range_:
+	  fix_range (opt->arg);
+	  break;
+
+	default:
+	  gcc_unreachable ();
+	}
+    }
+
   if (TARGET_AUTO_PIC)
     target_flags |= MASK_CONST_GP;
 
