@@ -278,17 +278,6 @@ struct s390_address
   bool literal_pool;
 };
 
-/* Which cpu are we tuning for.  */
-enum processor_type s390_tune = PROCESSOR_max;
-int s390_tune_flags;
-/* Which instruction set architecture to use.  */
-enum processor_type s390_arch;
-int s390_arch_flags;
-
-HOST_WIDE_INT s390_warn_framesize = 0;
-HOST_WIDE_INT s390_stack_size = 0;
-HOST_WIDE_INT s390_stack_guard = 0;
-
 /* The following structure is embedded in the machine
    specific part of struct function.  */
 
@@ -1541,88 +1530,81 @@ s390_option_init_struct (struct gcc_options *opts)
   opts->x_flag_asynchronous_unwind_tables = 1;
 }
 
-/* Return true if ARG is the name of a processor.  Set *TYPE and *FLAGS
-   to the associated processor_type and processor_flags if so.  */
+/* Set *TYPE and *FLAGS to the associated processor_type and
+   processor_flags for processor ARCH.  */
 
-static bool
-s390_handle_arch_option (const char *arg,
+static void
+s390_handle_arch_option (enum s390_arch_option arch,
 			 enum processor_type *type,
 			 int *flags)
 {
+  /* This must match enum s390_arch_option in s390-opts.h.  */
   static struct pta
     {
-      const char *const name;		/* processor name or nickname.  */
       const enum processor_type processor;
       const int flags;			/* From enum processor_flags. */
     }
   const processor_alias_table[] =
     {
-      {"g5", PROCESSOR_9672_G5, PF_IEEE_FLOAT},
-      {"g6", PROCESSOR_9672_G6, PF_IEEE_FLOAT},
-      {"z900", PROCESSOR_2064_Z900, PF_IEEE_FLOAT | PF_ZARCH},
-      {"z990", PROCESSOR_2084_Z990, PF_IEEE_FLOAT | PF_ZARCH
+      {PROCESSOR_9672_G5, PF_IEEE_FLOAT},
+      {PROCESSOR_9672_G6, PF_IEEE_FLOAT},
+      {PROCESSOR_2064_Z900, PF_IEEE_FLOAT | PF_ZARCH},
+      {PROCESSOR_2084_Z990, PF_IEEE_FLOAT | PF_ZARCH
 				    | PF_LONG_DISPLACEMENT},
-      {"z9-109", PROCESSOR_2094_Z9_109, PF_IEEE_FLOAT | PF_ZARCH
+      {PROCESSOR_2094_Z9_109, PF_IEEE_FLOAT | PF_ZARCH
                                        | PF_LONG_DISPLACEMENT | PF_EXTIMM},
-      {"z9-ec", PROCESSOR_2094_Z9_109, PF_IEEE_FLOAT | PF_ZARCH
+      {PROCESSOR_2094_Z9_109, PF_IEEE_FLOAT | PF_ZARCH
                              | PF_LONG_DISPLACEMENT | PF_EXTIMM | PF_DFP },
-      {"z10", PROCESSOR_2097_Z10, PF_IEEE_FLOAT | PF_ZARCH
+      {PROCESSOR_2097_Z10, PF_IEEE_FLOAT | PF_ZARCH
        | PF_LONG_DISPLACEMENT | PF_EXTIMM | PF_DFP | PF_Z10},
-      {"z196", PROCESSOR_2817_Z196, PF_IEEE_FLOAT | PF_ZARCH
+      {PROCESSOR_2817_Z196, PF_IEEE_FLOAT | PF_ZARCH
        | PF_LONG_DISPLACEMENT | PF_EXTIMM | PF_DFP | PF_Z10 | PF_Z196 },
     };
-  size_t i;
 
-  for (i = 0; i < ARRAY_SIZE (processor_alias_table); i++)
-    if (strcmp (arg, processor_alias_table[i].name) == 0)
-      {
-	*type = processor_alias_table[i].processor;
-	*flags = processor_alias_table[i].flags;
-	return true;
-      }
-
-  *type = PROCESSOR_max;
-  *flags = 0;
-  return false;
+  *type = processor_alias_table[(int) arch].processor;
+  *flags = processor_alias_table[(int) arch].flags;
 }
 
 /* Implement TARGET_HANDLE_OPTION.  */
 
 static bool
-s390_handle_option (struct gcc_options *opts, struct gcc_options *opts_set,
+s390_handle_option (struct gcc_options *opts,
+		    struct gcc_options *opts_set ATTRIBUTE_UNUSED,
 		    const struct cl_decoded_option *decoded,
-		    location_t loc ATTRIBUTE_UNUSED)
+		    location_t loc)
 {
   size_t code = decoded->opt_index;
   const char *arg = decoded->arg;
-
-  gcc_assert (opts == &global_options);
-  gcc_assert (opts_set == &global_options_set);
+  int value = decoded->value;
 
   switch (code)
     {
     case OPT_march_:
-      return s390_handle_arch_option (arg, &s390_arch, &s390_arch_flags);
+      s390_handle_arch_option ((enum s390_arch_option) value,
+			       &opts->x_s390_arch,
+			       &opts->x_s390_arch_flags);
+      opts->x_s390_arch_string = arg;
+      return true;
 
     case OPT_mstack_guard_:
-      if (sscanf (arg, HOST_WIDE_INT_PRINT_DEC, &s390_stack_guard) != 1)
-	return false;
-      if (exact_log2 (s390_stack_guard) == -1)
-	error ("stack guard value must be an exact power of 2");
+      if (exact_log2 (value) == -1)
+	error_at (loc, "stack guard value must be an exact power of 2");
       return true;
 
     case OPT_mstack_size_:
-      if (sscanf (arg, HOST_WIDE_INT_PRINT_DEC, &s390_stack_size) != 1)
-	return false;
-      if (exact_log2 (s390_stack_size) == -1)
-	error ("stack size must be an exact power of 2");
+      if (exact_log2 (value) == -1)
+	error_at (loc, "stack size must be an exact power of 2");
       return true;
 
     case OPT_mtune_:
-      return s390_handle_arch_option (arg, &s390_tune, &s390_tune_flags);
+      s390_handle_arch_option ((enum s390_arch_option) value,
+			       &opts->x_s390_tune,
+			       &opts->x_s390_tune_flags);
+      return true;
 
     case OPT_mwarn_framesize_:
-      return sscanf (arg, HOST_WIDE_INT_PRINT_DEC, &s390_warn_framesize) == 1;
+      return sscanf (arg, HOST_WIDE_INT_PRINT_DEC,
+		     &opts->x_s390_warn_framesize) == 1;
 
     default:
       return true;
@@ -1648,7 +1630,8 @@ s390_option_override (void)
   if (!s390_arch_string)
     {
       s390_arch_string = TARGET_ZARCH? "z900" : "g5";
-      s390_handle_arch_option (s390_arch_string, &s390_arch, &s390_arch_flags);
+      s390_handle_arch_option ((TARGET_ZARCH ? s390_arch_z900 : s390_arch_g5),
+			       &s390_arch, &s390_arch_flags);
     }
 
   /* This check is triggered when the user specified a wrong -march=
@@ -8162,10 +8145,9 @@ s390_emit_prologue (void)
 
 	  if (cfun_frame_layout.frame_size >= s390_stack_size)
 	    {
-	      warning (0, "frame size of function %qs is "
-		       HOST_WIDE_INT_PRINT_DEC
+	      warning (0, "frame size of function %qs is %wd"
 		       " bytes exceeding user provided stack limit of "
-		       HOST_WIDE_INT_PRINT_DEC " bytes.  "
+		       "%d bytes.  "
 		       "An unconditional trap is added.",
 		       current_function_name(), cfun_frame_layout.frame_size,
 		       s390_stack_size);

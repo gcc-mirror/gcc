@@ -1,5 +1,31 @@
 2011-03-22  Joseph Myers  <joseph@codesourcery.com>
 
+	* config/s390/s390-opts.h: New.
+	* config/s390/s390.c (s390_tune, s390_tune_flags, s390_arch,
+	s390_arch_flags, s390_warn_framesize, s390_stack_size,
+	s390_stack_guard): Remove.
+	(s390_handle_arch_option): Return void.  Take enum
+	s390_arch_option value instead of string and searching array.
+	(s390_handle_option): Don't assert that global structures are in
+	use.  Access variables via opts pointer.  Use error_at.  Don't use
+	sscanf for -mstack-guard= or -mstack-size=.  Update call to
+	s390_handle_arch_option.
+	(s390_option_override): Update call to s390_handle_arch_option.
+	(s390_emit_prologue): Use %d format for s390_stack_size in
+	diagnostic.  Use %wd for HOST_WIDE_INT.
+	* config/s390/s390.h (enum processor_type): Move to s390-opts.h.
+	(s390_tune, s390_tune_flags, s390_arch, s390_arch_flags): Remove.
+	* config/s390/s390.opt (config/s390/s390-opts.h): New
+	HeaderInclude entry.
+	(s390_arch_string, s390_tune, s390_tune_flags, s390_arch,
+	s390_arch_flags, s390_warn_framesize): New Variable entries.
+	(s390_arch_option): New Enum and EnumValue entries.
+	(march=): Use Enum instead of Var.
+	(mstack-guard=, mstack-size=): Use UInteger and Var.
+	(mtune=): Use Enum.
+
+2011-03-22  Joseph Myers  <joseph@codesourcery.com>
+
 	* config/score/score.c (score_handle_option): Don't assert that
 	global structures are in use.  Access target_flags via opts
 	pointer.  Use value of -march= option to determine target_flags

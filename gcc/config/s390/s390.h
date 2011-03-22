@@ -24,22 +24,6 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef _S390_H
 #define _S390_H
 
-/* Which processor to generate code or schedule for. The cpu attribute
-   defines a list that mirrors this list, so changes to s390.md must be
-   made at the same time.  */
-
-enum processor_type
-{
-  PROCESSOR_9672_G5,
-  PROCESSOR_9672_G6,
-  PROCESSOR_2064_Z900,
-  PROCESSOR_2084_Z990,
-  PROCESSOR_2094_Z9_109,
-  PROCESSOR_2097_Z10,
-  PROCESSOR_2817_Z196,
-  PROCESSOR_max
-};
-
 /* Optional architectural facilities supported by the processor.  */
 
 enum processor_flags
@@ -53,15 +37,9 @@ enum processor_flags
   PF_Z196 = 64
 };
 
-extern enum processor_type s390_tune;
-extern int s390_tune_flags;
-
 /* This is necessary to avoid a warning about comparing different enum
    types.  */
 #define s390_tune_attr ((enum attr_cpu)s390_tune)
-
-extern enum processor_type s390_arch;
-extern int s390_arch_flags;
 
 /* These flags indicate that the generated code should run on a cpu
    providing the respective hardware facility regardless of the
