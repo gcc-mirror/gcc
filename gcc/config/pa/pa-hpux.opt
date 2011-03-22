@@ -18,12 +18,16 @@
 ; along with GCC; see the file COPYING3.  If not see
 ; <http://www.gnu.org/licenses/>.
 
+; The UNIX standard to use for predefines and linking.
+Variable
+int flag_pa_unix = TARGET_HPUX_11_11 ? 1998 : TARGET_HPUX_10_10 ? 1995 : 1993
+
 msio
 Target RejectNegative Mask(SIO) MaskExists
 Generate cpp defines for server IO
 
 munix=93
-Target RejectNegative
+Target RejectNegative Var(flag_pa_unix, 1993)
 Specify UNIX standard for predefines and linking
 
 mwsio

@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler, for the HP Spectrum.
    Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001,
-   2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+   2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com) of Cygnus Support
    and Tim Moore (moore@defmacro.cs.utah.edu) of the Center for
@@ -24,24 +24,6 @@ along with GCC; see the file COPYING3.  If not see
 
 /* For long call handling.  */
 extern unsigned long total_code_bytes;
-
-/* Which processor to schedule for.  */
-
-enum processor_type
-{
-  PROCESSOR_700,
-  PROCESSOR_7100,
-  PROCESSOR_7100LC,
-  PROCESSOR_7200,
-  PROCESSOR_7300,
-  PROCESSOR_8000
-};
-
-/* For -mschedule= option.  */
-extern enum processor_type pa_cpu;
-
-/* For -munix= option.  */
-extern int flag_pa_unix;
 
 #define pa_cpu_attr ((enum attr_cpu)pa_cpu)
 

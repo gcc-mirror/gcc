@@ -193,12 +193,6 @@ static GTY(()) section *som_readonly_data_section;
 static GTY(()) section *som_one_only_readonly_data_section;
 static GTY(()) section *som_one_only_data_section;
 
-/* Which cpu we are scheduling for.  */
-enum processor_type pa_cpu = TARGET_SCHED_DEFAULT;
-
-/* The UNIX standard to use for predefines and linking.  */
-int flag_pa_unix = TARGET_HPUX_11_11 ? 1998 : TARGET_HPUX_10_10 ? 1995 : 1993;
-
 /* Counts for the number of callee-saved general and floating point
    registers which were saved by the current function's prologue.  */
 static int gr_saved, fr_saved;
@@ -480,74 +474,32 @@ fix_range (const char *const_str)
 /* Implement TARGET_HANDLE_OPTION.  */
 
 static bool
-pa_handle_option (struct gcc_options *opts, struct gcc_options *opts_set,
+pa_handle_option (struct gcc_options *opts,
+		  struct gcc_options *opts_set ATTRIBUTE_UNUSED,
 		  const struct cl_decoded_option *decoded,
 		  location_t loc ATTRIBUTE_UNUSED)
 {
   size_t code = decoded->opt_index;
-  const char *arg = decoded->arg;
-
-  gcc_assert (opts == &global_options);
-  gcc_assert (opts_set == &global_options_set);
 
   switch (code)
     {
     case OPT_mnosnake:
     case OPT_mpa_risc_1_0:
     case OPT_march_1_0:
-      target_flags &= ~(MASK_PA_11 | MASK_PA_20);
+      opts->x_target_flags &= ~(MASK_PA_11 | MASK_PA_20);
       return true;
 
     case OPT_msnake:
     case OPT_mpa_risc_1_1:
     case OPT_march_1_1:
-      target_flags &= ~MASK_PA_20;
-      target_flags |= MASK_PA_11;
+      opts->x_target_flags &= ~MASK_PA_20;
+      opts->x_target_flags |= MASK_PA_11;
       return true;
 
     case OPT_mpa_risc_2_0:
     case OPT_march_2_0:
-      target_flags |= MASK_PA_11 | MASK_PA_20;
+      opts->x_target_flags |= MASK_PA_11 | MASK_PA_20;
       return true;
-
-    case OPT_mschedule_:
-      if (strcmp (arg, "8000") == 0)
-	pa_cpu = PROCESSOR_8000;
-      else if (strcmp (arg, "7100") == 0)
-	pa_cpu = PROCESSOR_7100;
-      else if (strcmp (arg, "700") == 0)
-	pa_cpu = PROCESSOR_700;
-      else if (strcmp (arg, "7100LC") == 0)
-	pa_cpu = PROCESSOR_7100LC;
-      else if (strcmp (arg, "7200") == 0)
-	pa_cpu = PROCESSOR_7200;
-      else if (strcmp (arg, "7300") == 0)
-	pa_cpu = PROCESSOR_7300;
-      else
-	return false;
-      return true;
-
-    case OPT_mfixed_range_:
-      fix_range (arg);
-      return true;
-
-#if TARGET_HPUX
-    case OPT_munix_93:
-      flag_pa_unix = 1993;
-      return true;
-#endif
-
-#if TARGET_HPUX_10_10
-    case OPT_munix_95:
-      flag_pa_unix = 1995;
-      return true;
-#endif
-
-#if TARGET_HPUX_11_11
-    case OPT_munix_98:
-      flag_pa_unix = 1998;
-      return true;
-#endif
 
     default:
       return true;
@@ -559,6 +511,24 @@ pa_handle_option (struct gcc_options *opts, struct gcc_options *opts_set,
 static void
 pa_option_override (void)
 {
+  unsigned int i;
+  cl_deferred_option *opt;
+  VEC(cl_deferred_option,heap) *vec
+    = (VEC(cl_deferred_option,heap) *) pa_deferred_options;
+
+  FOR_EACH_VEC_ELT (cl_deferred_option, vec, i, opt)
+    {
+      switch (opt->opt_index)
+	{
+	case OPT_mfixed_range_:
+	  fix_range (opt->arg);
+	  break;
+
+	default:
+	  gcc_unreachable ();
+	}
+    }
+
   /* Unconditional branches in the delay slot are not compatible with dwarf2
      call frame information.  There is no benefit in using this optimization
      on PA8000 and later processors.  */
