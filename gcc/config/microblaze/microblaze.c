@@ -48,7 +48,6 @@
 #include "df.h"
 #include "optabs.h"
 #include "diagnostic-core.h"
-#include "opts.h"
 
 #define MICROBLAZE_VERSION_COMPARE(VA,VB) strcasecmp (VA, VB)
 
@@ -1274,30 +1273,6 @@ microblaze_version_to_int (const char *version)
     return -1;
 
   return iver;
-}
-
-static bool
-microblaze_handle_option (struct gcc_options *opts,
-			  struct gcc_options *opts_set,
-			  const struct cl_decoded_option *decoded,
-			  location_t loc ATTRIBUTE_UNUSED)
-{
-  size_t code = decoded->opt_index;
-
-  gcc_assert (opts == &global_options);
-  gcc_assert (opts_set == &global_options_set);
-
-  switch (code)
-    {
-    case OPT_mno_clearbss:
-      flag_zero_initialized_in_bss = 0;
-      warning (0, "-mno-clearbss is deprecated; use -fno-zero-initialized-in-bss");
-      break;
-    case OPT_mxl_stack_check:
-      warning (0, "-mxl_stack_check is deprecated; use -fstack-check");
-      break;
-    }
-  return true;
 }
 
 
@@ -3010,9 +2985,6 @@ microblaze_adjust_cost (rtx insn ATTRIBUTE_UNUSED, rtx link,
 #undef TARGET_ASM_FUNCTION_END_PROLOGUE
 #define TARGET_ASM_FUNCTION_END_PROLOGUE \
                                         microblaze_function_end_prologue
-
-#undef TARGET_HANDLE_OPTION
-#define TARGET_HANDLE_OPTION		microblaze_handle_option
 
 #undef TARGET_DEFAULT_TARGET_FLAGS
 #define TARGET_DEFAULT_TARGET_FLAGS	TARGET_DEFAULT
