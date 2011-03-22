@@ -1,5 +1,18 @@
 2011-03-22  Joseph Myers  <joseph@codesourcery.com>
 
+	* config/frv/frv-opts.h: New.
+	* config/frv/frv-protos.h (enum frv_cpu, frv_cpu_t): Move to
+	frv-opts.h.
+	(frv_cpu_type): Remove.
+	* config/frv/frv.c: Don't include opts.h.
+	(frv_cpu_type, frv_handle_option, TARGET_HANDLE_OPTION): Remove.
+	* config/frv/frv.opt (config/frv/frv-opts.h): New HeaderInclude
+	entry.
+	(frv_cpu_type): New Variable entry.
+	(frv_cpu): New Enum and EnumValue entries.
+
+2011-03-22  Joseph Myers  <joseph@codesourcery.com>
+
 	* config/cris/cris.c (cris_handle_option): Access target_flags via
 	opts pointer.  Don't assert that global structures are in use.
 	Don't call CRIS_SUBTARGET_HANDLE_OPTION.
