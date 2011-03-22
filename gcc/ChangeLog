@@ -1,5 +1,21 @@
 2011-03-22  Joseph Myers  <joseph@codesourcery.com>
 
+	* config/mn10300/mn10300-opts.h: New.
+	* config/mn10300/mn10300.c (mn10300_processor,
+	mn10300_tune_string): Remove.
+	(mn10300_handle_option): Don't assert that global structures are
+	in use.  Access mn10300_processor via opts pointer.  Don't handle
+	OPT_mtune_ here.
+	* config/mn10300/mn10300.h (enum processor_type): Move to
+	mn10300-opts.h.
+	(mn10300_processor): Remove.
+	* config/mn10300/mn10300.opt (config/mn10300/mn10300-opts.h): New
+	HeaderInclude entry.
+	(mn10300_processor): New Variable entry.
+	(mtune=): Use Var.
+
+2011-03-22  Joseph Myers  <joseph@codesourcery.com>
+
 	* config/microblaze/microblaze.c: Don't include opts.h.
 	(microblaze_handle_option, TARGET_HANDLE_OPTION): Remove.
 	* config/microblaze/microblaze.opt (mxl-stack-check): Use Warn.
