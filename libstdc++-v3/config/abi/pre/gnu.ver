@@ -1202,6 +1202,10 @@ GLIBCXX_3.4.15 {
     _ZNSbIwSt11char_traitsIwESaIwEE4backEv;
     _ZNKSbIwSt11char_traitsIwESaIwEE4backEv;
 
+    # string|wstring move contructor.
+    _ZNSsC2EOSs;
+    _ZNSbIwSt11char_traitsIwESaIwEEC2EOS2_;
+
     # basic_filebuf::_M_get_ext_pos
     _ZNSt13basic_filebufI[cw]St11char_traitsI[cw]EE14_M_get_ext_pos*;
 
