@@ -3080,16 +3080,24 @@ save_switch (const char *opt, size_t n_args, const char *const *args,
 }
 
 /* Handle an option DECODED that is unknown to the option-processing
-   machinery, but may be known to specs.  */
+   machinery.  */
 
 static bool
 driver_unknown_option_callback (const struct cl_decoded_option *decoded)
 {
-  save_switch (decoded->canonical_option[0],
-	       decoded->canonical_option_num_elements - 1,
-	       &decoded->canonical_option[1], false);
-
-  return false;
+  const char *opt = decoded->arg;
+  if (opt[1] == 'W' && opt[2] == 'n' && opt[3] == 'o' && opt[4] == '-'
+      && !(decoded->errors & CL_ERR_NEGATIVE))
+    {
+      /* Leave unknown -Wno-* options for the compiler proper, to be
+	 diagnosed only if there are warnings.  */
+      save_switch (decoded->canonical_option[0],
+		   decoded->canonical_option_num_elements - 1,
+		   &decoded->canonical_option[1], false);
+      return false;
+    }
+  else
+    return true;
 }
 
 /* Handle an option DECODED that is not marked as CL_DRIVER.
@@ -3110,7 +3118,9 @@ driver_wrong_lang_callback (const struct cl_decoded_option *decoded,
     error ("unrecognized command line option %qs",
 	   decoded->orig_option_with_args_text);
   else
-    driver_unknown_option_callback (decoded);
+    save_switch (decoded->canonical_option[0],
+		 decoded->canonical_option_num_elements - 1,
+		 &decoded->canonical_option[1], false);
 }
 
 /* Note that an option (index OPT_INDEX, argument ARG, value VALUE)
