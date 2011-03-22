@@ -1,5 +1,12 @@
 2011-03-22  Joseph Myers  <joseph@codesourcery.com>
 
+	* config/cris/cris.c (cris_handle_option): Access target_flags via
+	opts pointer.  Don't assert that global structures are in use.
+	Don't call CRIS_SUBTARGET_HANDLE_OPTION.
+	* config/cris/cris.h (CRIS_SUBTARGET_HANDLE_OPTION): Don't define.
+
+2011-03-22  Joseph Myers  <joseph@codesourcery.com>
+
 	* config/bfin/bfin-opts.h: New.
 	* config/bfin/bfin.c (bfin_lib_id_given, bfin_cpu_type,
 	bfin_si_revision, bfin_workarounds): Remove.
