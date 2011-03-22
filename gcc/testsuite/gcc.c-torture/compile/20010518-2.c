@@ -1,10 +1,5 @@
 /* { dg-do compile } */
 
-/* This test fails on HC11/HC12 when it is compiled without -mshort because 
-   the array is too large (INT_MAX/2 > 64K).  Force to use 16-bit ints
-   for it.  */
-/* { dg-options "-w -mshort" { target m6811-*-* m6812-*-* } } */
-
 /* Large static storage.  */
 
 #include <limits.h>

@@ -1,3 +1,61 @@
+2011-03-22  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/alpha/gnu.h: Remove.
+	* config/arc: Remove directory.
+	* config/arm/netbsd.h: Remove.
+	* config/arm/t-pe: Remove.
+	* config/crx: Remove directory.
+	* config/i386/netbsd.h: Remove.
+	* config/m68hc11: Remove directory.
+	* config/m68k/uclinux-oldabi.h: Remove.
+	* config/mcore/mcore-pe.h: Remove.
+	* config/mcore/t-mcore-pe: Remove.
+	* config/netbsd-aout.h: Remove.
+	* config/rs6000/gnu.h: Remove.
+	* config/sh/sh-symbian.h: Remove.
+	* config/sh/symbian-base.c: Remove.
+	* config/sh/symbian-c.c: Remove.
+	* config/sh/symbian-cxx.c: Remove.
+	* config/sh/symbian-post.h: Remove.
+	* config/sh/symbian-pre.h: Remove.
+	* config/sh/t-symbian: Remove.
+	* config/svr3.h: Remove.
+	* config/vax/netbsd.h: Remove.
+	* config.build: Don't handle i[34567]86-*-pe.
+	* config.gcc: Remove handling of deprecations for most deprecated
+	targets.
+	(m68k-*-uclinuxoldabi*): Add to second deprecated list.
+	(alpha*-*-gnu*, arc-*-elf*, arm*-*-netbsd*, arm-*-pe*, crx-*-elf,
+	i[34567]86-*-netbsd*, i[34567]86-*-pe, m68hc11-*-*|m6811-*-*,
+	m68hc12-*-*|m6812-*-*, m68k-*-uclinuxoldabi*, mcore-*-pe*,
+	powerpc64-*-gnu*, powerpc-*-gnu-gnualtivec*, powerpc-*-gnu*,
+	sh-*-symbianelf* | sh[12346l]*-*-symbianelf*, vax-*-netbsd*):
+	Remove cases.
+	* config.host: Don't handle i[34567]86-*-pe.
+	* config/rs6000/linux64.h (LINK_OS_GNU_SPEC): Remove.
+	(ASM_SPEC32): Don't handle -mcall-gnu.
+	* config/rs6000/sysv4.h (SUBTARGET_OVERRIDE_OPTIONS): Don't handle
+	-mcall-gnu.
+	(ASM_SPEC, CC1_SPEC, LINK_START_SPEC, LINK_OS_SPEC, CPP_SPEC,
+	STARTFILE_SPEC, LIB_SPEC, ENDFILE_SPEC): Don't handle -mcall-gnu.
+	(LIB_GNU_SPEC, STARTFILE_GNU_SPEC, ENDFILE_GNU_SPEC,
+	LINK_START_GNU_SPEC, LINK_OS_GNU_SPEC, CPP_OS_GNU_SPEC): Remove.
+	(SUBTARGET_EXTRA_SPECS): Remove *_gnu specs.
+	* config/sh/sh-protos.h, config/sh/sh.c: Remove all code
+	conditional on SYMBIAN.
+	* configure.ac: Don't handle powerpc*-*-gnu*.
+	* configure: Regenerate.
+	* doc/extend.texi (interrupt attribute): Don't mention CRX.
+	* doc/install-old.texi (m6811, m6812): Don't mention.
+	* doc/install.texi (arc-*-elf*): Don't document multilib option.
+	(arc-*-elf, CRX, m6811-elf, m6812-elf): Remove.
+	(m68k-uclinuxoldabi): Don't mention.
+	* doc/invoke.texi (ARC Options, CRX Options, M68hc1x Options):
+	Remove.
+	(-mcall-gnu): Remove.
+	* doc/md.texi (CRX Architecture, Motorola 68HC11 & 68HC12
+	families): Remove constraint documentation.
+
 2011-03-22  Marius Strobl  <marius@FreeBSD.org>
 
 	* config/sparc/freebsd.h (CPP_CPU64_DEFAULT_SPEC): Replace with...

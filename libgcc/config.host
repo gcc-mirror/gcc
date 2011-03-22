@@ -182,7 +182,7 @@ case ${host} in
 	then tmake_file=${cpu_type}/t-$rest
 	fi
 	;;
-alpha*-*-linux* | alpha*-*-gnu*)
+alpha*-*-linux*)
 	tmake_file="${tmake_file} alpha/t-crtfm"
 	extra_parts="$extra_parts crtfastmath.o"
 	;;
@@ -200,15 +200,11 @@ alpha64-dec-*vms*)
 alpha*-dec-*vms*)
 	tmake_file="vms/t-vms alpha/t-vms"
 	;;
-arc-*-elf*)
-	;;
 arm-wrs-vxworks)
 	;;
 arm*-*-freebsd*)
 	;;
 arm*-*-netbsdelf*)
-	;;
-arm*-*-netbsd*)
 	;;
 arm*-*-linux*)			# ARM GNU/Linux with ELF
 	;;
@@ -223,8 +219,6 @@ arm*-*-rtems*)
 arm*-*-elf)
 	;;
 arm*-wince-pe*)
-	;;
-arm-*-pe*)
 	;;
 avr-*-rtems*)
 	;;
@@ -247,8 +241,6 @@ crisv32-*-elf | crisv32-*-none | cris-*-elf | cris-*-none)
 	extra_parts="crtbegin.o crtend.o"
 	;;
 cris-*-linux* | crisv32-*-linux*)
-	;;
-crx-*-elf)
 	;;
 fido-*-elf)
 	;;
@@ -288,8 +280,6 @@ x86_64-*-freebsd*)
 	tmake_file="${tmake_file} i386/t-freebsd"
 	;;
 i[34567]86-*-netbsdelf*)
-	;;
-i[34567]86-*-netbsd*)
 	;;
 x86_64-*-netbsd*)
 	;;
@@ -335,8 +325,6 @@ i[34567]86-*-solaris2*)
 	;;
 i[4567]86-wrs-vxworks|i[4567]86-wrs-vxworksae)
 	;;
-i[34567]86-*-pe)
-	;;
 i[34567]86-*-cygwin* | i[34567]86-*-mingw*)
 	extra_parts="crtbegin.o crtend.o crtfastmath.o"
 	tmake_file="i386/t-cygming i386/t-crtfm"
@@ -380,10 +368,6 @@ m32r-*-linux*)
  	;;
 m32rle-*-linux*)
 	;;
-m68hc11-*-*|m6811-*-*)
-        ;;
-m68hc12-*-*|m6812-*-*)
-        ;;
 m68k-*-elf*)
 	;;
 m68k*-*-netbsdelf*)
@@ -399,8 +383,6 @@ m68k-*-linux*)		# Motorola m68k's running GNU/Linux
 m68k-*-rtems*)
 	;;
 mcore-*-elf)
-	;;
-mcore-*-pe*)
 	;;
 microblaze*-*-*)
         tmake_file="microblaze/t-microblaze"
@@ -487,15 +469,6 @@ powerpc-*-rtems*)
 powerpc-*-linux* | powerpc64-*-linux*)
 	tmake_file="${tmake_file} rs6000/t-ppccomm rs6000/t-ldbl128 t-softfp"
 	;;
-powerpc64-*-gnu*)
-	tmake_file="${tmake_file} rs6000/t-ldbl128 t-softfp"
-	;;
-powerpc-*-gnu-gnualtivec*)
-	tmake_file="${tmake_file} rs6000/t-ldbl128"
-	;;
-powerpc-*-gnu*)
-	tmake_file="${tmake_file} rs6000/t-ldbl128"
-	;;
 powerpc-wrs-vxworks|powerpc-wrs-vxworksae)
 	;;
 powerpc-*-lynxos*)
@@ -528,7 +501,6 @@ s390x-ibm-tpf*)
 score-*-elf)
         ;;
 sh-*-elf* | sh[12346l]*-*-elf* | \
-sh-*-symbianelf* | sh[12346l]*-*-symbianelf* | \
   sh-*-linux* | sh[2346lbe]*-*-linux* | \
   sh-*-netbsdelf* | shl*-*-netbsdelf* | sh5-*-netbsd* | sh5l*-*-netbsd* | \
    sh64-*-netbsd* | sh64l*-*-netbsd*)
@@ -581,8 +553,6 @@ v850-*-*)
 vax-*-linux*)
 	;;
 vax-*-netbsdelf*)
-	;;
-vax-*-netbsd*)
 	;;
 vax-*-openbsd*)
 	;;

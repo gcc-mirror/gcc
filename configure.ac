@@ -670,7 +670,7 @@ case "${target}" in
     libgloss_dir=wince
     ;;
   arc-*-*)
-    noconfigdirs="$noconfigdirs target-libgloss ${libgcj}"
+    noconfigdirs="$noconfigdirs target-libgloss"
     ;;
   arm-semi-aof )
     ;;
@@ -744,7 +744,6 @@ case "${target}" in
     libgloss_dir=cris
     ;;
   crx-*-*)
-    noconfigdirs="$noconfigdirs target-libstdc++-v3 target-mudflap ${libgcj}"
     ;;
   d10v-*-*)
     noconfigdirs="$noconfigdirs target-libstdc++-v3 target-libgloss ${libgcj}"
@@ -862,7 +861,7 @@ case "${target}" in
   i[[3456789]]86-*-uwin* | i[[3456789]]86-*-interix* )
     ;;
   i[[3456789]]86-*-pe)
-    noconfigdirs="$noconfigdirs target-libstdc++-v3 target-libgloss ${libgcj}"
+    noconfigdirs="$noconfigdirs target-libgloss"
     ;;
   i[[3456789]]86-*-sco3.2v5*)
     # The linker does not yet know about weak symbols in COFF,
@@ -888,7 +887,7 @@ case "${target}" in
     noconfigdirs="$noconfigdirs ${libgcj}"
     ;;
   m68hc11-*-*|m6811-*-*|m68hc12-*-*|m6812-*-*)
-    noconfigdirs="$noconfigdirs target-libiberty target-libstdc++-v3 ${libgcj}"
+    noconfigdirs="$noconfigdirs target-libiberty"
     libgloss_dir=m68hc11
     ;;
   m68k-*-elf*)
@@ -901,9 +900,6 @@ case "${target}" in
     libgloss_dir=m68k
     ;;
   mcore-*-pe*)
-  # The EPOC C++ environment does not support exceptions or rtti,
-  # and so building libstdc++-v3 tends not to always work.
-    noconfigdirs="$noconfigdirs target-libstdc++-v3"
     ;;
   mmix-*-*)
     noconfigdirs="$noconfigdirs target-libffi target-boehm-gc gdb libgloss"

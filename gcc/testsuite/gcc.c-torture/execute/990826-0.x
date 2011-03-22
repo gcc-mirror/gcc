@@ -1,7 +1,3 @@
-# floor() is not available on m6811/m6812 target, this test will not link.
-if { [istarget "m6811-*-*"] || [istarget "m6812-*-*"]} {
-	return 1
-}
 # XFAIL this test for AIX using -msoft-float.
 # This test calls the system libm.a function floor.
 # A false failure is reported if -msoft-float is used.

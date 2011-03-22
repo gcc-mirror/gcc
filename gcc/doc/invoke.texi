@@ -445,11 +445,6 @@ Objective-C and Objective-C++ Dialects}.
 @c Try and put the significant identifier (CPU or system) first,
 @c so users have a clue at guessing where the ones they want will be.
 
-@emph{ARC Options}
-@gccoptlist{-EB  -EL @gol
--mmangle-cpu  -mcpu=@var{cpu}  -mtext=@var{text-section} @gol
--mdata=@var{data-section}  -mrodata=@var{readonly-data-section}}
-
 @emph{ARM Options}
 @gccoptlist{-mapcs-frame  -mno-apcs-frame @gol
 -mabi=@var{name} @gol
@@ -500,9 +495,6 @@ Objective-C and Objective-C++ Dialects}.
 -m32-bit  -m16-bit  -m8-bit  -mno-prologue-epilogue  -mno-gotplt @gol
 -melf  -maout  -melinux  -mlinux  -sim  -sim2 @gol
 -mmul-bug-workaround  -mno-mul-bug-workaround}
-
-@emph{CRX Options}
-@gccoptlist{-mmac -mpush-args}
 
 @emph{Darwin Options}
 @gccoptlist{-all_load  -allowable_client  -arch  -arch_errors_fatal @gol
@@ -667,11 +659,6 @@ Objective-C and Objective-C++ Dialects}.
 -malign-int  -mstrict-align  -msep-data  -mno-sep-data @gol
 -mshared-library-id=n  -mid-shared-library  -mno-id-shared-library @gol
 -mxgot -mno-xgot}
-
-@emph{M68hc1x Options}
-@gccoptlist{-m6811  -m6812  -m68hc11  -m68hc12   -m68hcs12 @gol
--mauto-incdec  -minmax  -mlong-calls  -mshort @gol
--msoft-reg-count=@var{count}}
 
 @emph{MCore Options}
 @gccoptlist{-mhardlit  -mno-hardlit  -mdiv  -mno-div  -mrelax-immediates @gol
@@ -9962,12 +9949,10 @@ platform.
 @c in Machine Dependent Options
 
 @menu
-* ARC Options::
 * ARM Options::
 * AVR Options::
 * Blackfin Options::
 * CRIS Options::
-* CRX Options::
 * Darwin Options::
 * DEC Alpha Options::
 * DEC Alpha/VMS Options::
@@ -9984,7 +9969,6 @@ platform.
 * M32C Options::
 * M32R/D Options::
 * M680x0 Options::
-* M68hc1x Options::
 * MCore Options::
 * MeP Options::
 * MicroBlaze Options::
@@ -10011,49 +9995,6 @@ platform.
 * Xtensa Options::
 * zSeries Options::
 @end menu
-
-@node ARC Options
-@subsection ARC Options
-@cindex ARC Options
-
-These options are defined for ARC implementations:
-
-@table @gcctabopt
-@item -EL
-@opindex EL
-Compile code for little endian mode.  This is the default.
-
-@item -EB
-@opindex EB
-Compile code for big endian mode.
-
-@item -mmangle-cpu
-@opindex mmangle-cpu
-Prepend the name of the CPU to all public symbol names.
-In multiple-processor systems, there are many ARC variants with different
-instruction and register set characteristics.  This flag prevents code
-compiled for one CPU to be linked with code compiled for another.
-No facility exists for handling variants that are ``almost identical''.
-This is an all or nothing option.
-
-@item -mcpu=@var{cpu}
-@opindex mcpu
-Compile code for ARC variant @var{cpu}.
-Which variants are supported depend on the configuration.
-All variants support @option{-mcpu=base}, this is the default.
-
-@item -mtext=@var{text-section}
-@itemx -mdata=@var{data-section}
-@itemx -mrodata=@var{readonly-data-section}
-@opindex mtext
-@opindex mdata
-@opindex mrodata
-Put functions, data, and readonly data in @var{text-section},
-@var{data-section}, and @var{readonly-data-section} respectively
-by default.  This can be overridden with the @code{section} attribute.
-@xref{Variable Attributes}.
-
-@end table
 
 @node ARM Options
 @subsection ARM Options
@@ -10793,24 +10734,6 @@ initialized data and zero-initialized data are allocated consecutively.
 @opindex sim2
 Like @option{-sim}, but pass linker options to locate initialized data at
 0x40000000 and zero-initialized data at 0x80000000.
-@end table
-
-@node CRX Options
-@subsection CRX Options
-@cindex CRX Options
-
-These options are defined specifically for the CRX ports.
-
-@table @gcctabopt
-
-@item -mmac
-@opindex mmac
-Enable the use of multiply-accumulate instructions. Disabled by default.
-
-@item -mpush-args
-@opindex mpush-args
-Push instructions will be used to pass outgoing arguments when functions
-are called. Enabled by default.
 @end table
 
 @node Darwin Options
@@ -13685,68 +13608,6 @@ position-independent code.
 
 @end table
 
-@node M68hc1x Options
-@subsection M68hc1x Options
-@cindex M68hc1x options
-
-These are the @samp{-m} options defined for the 68hc11 and 68hc12
-microcontrollers.  The default values for these options depends on
-which style of microcontroller was selected when the compiler was configured;
-the defaults for the most common choices are given below.
-
-@table @gcctabopt
-@item -m6811
-@itemx -m68hc11
-@opindex m6811
-@opindex m68hc11
-Generate output for a 68HC11.  This is the default
-when the compiler is configured for 68HC11-based systems.
-
-@item -m6812
-@itemx -m68hc12
-@opindex m6812
-@opindex m68hc12
-Generate output for a 68HC12.  This is the default
-when the compiler is configured for 68HC12-based systems.
-
-@item -m68S12
-@itemx -m68hcs12
-@opindex m68S12
-@opindex m68hcs12
-Generate output for a 68HCS12.
-
-@item -mauto-incdec
-@opindex mauto-incdec
-Enable the use of 68HC12 pre and post auto-increment and auto-decrement
-addressing modes.
-
-@item -minmax
-@itemx -mnominmax
-@opindex minmax
-@opindex mnominmax
-Enable the use of 68HC12 min and max instructions.
-
-@item -mlong-calls
-@itemx -mno-long-calls
-@opindex mlong-calls
-@opindex mno-long-calls
-Treat all calls as being far away (near).  If calls are assumed to be
-far away, the compiler will use the @code{call} instruction to
-call a function and the @code{rtc} instruction for returning.
-
-@item -mshort
-@opindex mshort
-Consider type @code{int} to be 16 bits wide, like @code{short int}.
-
-@item -msoft-reg-count=@var{count}
-@opindex msoft-reg-count
-Specify the number of pseudo-soft registers which are used for the
-code generation.  The maximum number is 32.  Using more pseudo-soft
-register may or may not result in better code depending on the program.
-The default is 4 for 68HC11 and 2 for 68HC12.
-
-@end table
-
 @node MCore Options
 @subsection MCore Options
 @cindex MCore options
@@ -15910,11 +15771,6 @@ operating system.
 On System V.4 and embedded PowerPC systems compile code for the
 Linux-based GNU system.
 
-@item -mcall-gnu
-@opindex mcall-gnu
-On System V.4 and embedded PowerPC systems compile code for the
-Hurd-based GNU system.
-
 @item -mcall-freebsd
 @opindex mcall-freebsd
 On System V.4 and embedded PowerPC systems compile code for the
@@ -16748,7 +16604,7 @@ Comply with the calling conventions defined by Renesas.
 @opindex mhitachi
 Comply with the calling conventions defined for GCC before the Renesas
 conventions were available.  This option is the default for all
-targets of the SH toolchain except for @samp{sh-symbianelf}.
+targets of the SH toolchain.
 
 @item -mnomacsave
 @opindex mnomacsave

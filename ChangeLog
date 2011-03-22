@@ -1,3 +1,13 @@
+2011-03-22  Joseph Myers  <joseph@codesourcery.com>
+
+	* MAINTAINERS (crx port, m68hc11 port): Remove.  Move maintainers
+	to Write After Approval.
+	* config-ml.in: Don't handle arc-*-elf*.
+	* configure.ac (arc-*-*, crx-*-*, i[[3456789]]86-*-pe,
+	m68hc11-*-*|m6811-*-*|m68hc12-*-*|m6812-*-*, mcore-*-pe*): Don't
+	handle GCC libraries.
+	* configure: Regenerate.
+
 2011-03-21  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR bootstrap/48120:

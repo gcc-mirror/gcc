@@ -324,19 +324,6 @@ static const struct attribute_spec sh_attribute_table[] =
     sh_handle_resbank_handler_attribute, false },
   { "function_vector",   1, 1, true,  false, false,
     sh2a_handle_function_vector_handler_attribute, false },
-#ifdef SYMBIAN
-  /* Symbian support adds three new attributes:
-     dllexport - for exporting a function/variable that will live in a dll
-     dllimport - for importing a function/variable from a dll
-
-     Microsoft allows multiple declspecs in one __declspec, separating
-     them with spaces.  We do NOT support this.  Instead, use __declspec
-     multiple times.  */
-  { "dllimport",         0, 0, true,  false, false,
-    sh_symbian_handle_dll_attribute, false },
-  { "dllexport",         0, 0, true,  false, false,
-    sh_symbian_handle_dll_attribute, false },
-#endif
   { NULL,                0, 0, false, false, false, NULL, false }
 };
 
@@ -591,17 +578,6 @@ static const struct default_options sh_option_optimization_table[] =
 
 #undef  TARGET_ENCODE_SECTION_INFO
 #define TARGET_ENCODE_SECTION_INFO	sh_encode_section_info
-
-#ifdef SYMBIAN
-
-#undef  TARGET_ENCODE_SECTION_INFO
-#define TARGET_ENCODE_SECTION_INFO	sh_symbian_encode_section_info
-#undef  TARGET_STRIP_NAME_ENCODING
-#define TARGET_STRIP_NAME_ENCODING	sh_symbian_strip_name_encoding
-#undef  TARGET_CXX_IMPORT_EXPORT_CLASS
-#define TARGET_CXX_IMPORT_EXPORT_CLASS  sh_symbian_import_export_class
-
-#endif /* SYMBIAN */
 
 #undef TARGET_SECONDARY_RELOAD
 #define TARGET_SECONDARY_RELOAD sh_secondary_reload
@@ -2822,12 +2798,6 @@ static void
 sh_file_start (void)
 {
   default_file_start ();
-
-#ifdef SYMBIAN
-  /* Declare the .directive section before it is used.  */
-  fputs ("\t.section .directive, \"SM\", @progbits, 1\n", asm_out_file);
-  fputs ("\t.asciz \"#<SYMEDIT>#\\n\"\n", asm_out_file);
-#endif
 
   if (TARGET_ELF)
     /* We need to show the text section with the proper

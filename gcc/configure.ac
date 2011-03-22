@@ -4421,7 +4421,6 @@ AC_MSG_RESULT($have_sys_sdt_h)
 # and later they can use TFmode.
 case "$target" in
   powerpc*-*-linux* | \
-  powerpc*-*-gnu* | \
   sparc*-*-linux* | \
   s390*-*-linux* | \
   alpha*-*-linux*)

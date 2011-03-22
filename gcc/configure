@@ -25837,7 +25837,6 @@ $as_echo "$have_sys_sdt_h" >&6; }
 # and later they can use TFmode.
 case "$target" in
   powerpc*-*-linux* | \
-  powerpc*-*-gnu* | \
   sparc*-*-linux* | \
   s390*-*-linux* | \
   alpha*-*-linux*)

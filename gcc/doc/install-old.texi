@@ -1,4 +1,5 @@
-@c Copyright (C) 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+@c Copyright (C) 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
+@c 1999, 2000, 2001, 2002, 2003, 2011 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file install.texi.
 
@@ -102,7 +103,7 @@ Here are the possible CPU types:
 @c gmicro, fx80, spur and tahoe omitted since they don't work.
 1750a, a29k, alpha, arm, avr, c@var{n}, clipper, dsp16xx, elxsi, fr30, h8300,
 hppa1.0, hppa1.1, i370, i386, i486, i586, i686, i786, i860, i960, ip2k, m32r,
-m68000, m68k, m6811, m6812, m88k, mcore, mips, mipsel, mips64, mips64el,
+m68000, m68k, m88k, mcore, mips, mipsel, mips64, mips64el,
 mn10200, mn10300, ns32k, pdp11, powerpc, powerpcle, romp, rs6000, sh, sparc,
 sparclite, sparc64, v850, vax, we32k.
 @end quotation
