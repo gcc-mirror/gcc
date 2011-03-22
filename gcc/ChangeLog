@@ -1,3 +1,10 @@
+2011-03-22  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.c (driver_unknown_option_callback): Only permit and save
+	unknown -Wno- options.
+	(driver_wrong_lang_callback): Save options directly instead of via
+	driver_unknown_option_callback.
+
 2011-03-22  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* combine.c (simplify_set): Try harder to find the best CC mode when
