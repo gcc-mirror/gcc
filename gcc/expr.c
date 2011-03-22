@@ -8259,6 +8259,36 @@ expand_expr_real_2 (sepops ops, rtx target, enum machine_mode tmode,
       mode = TYPE_MODE (TREE_TYPE (treeop0));
       goto binop;
 
+    case DOT_PROD_EXPR:
+      {
+	tree oprnd0 = treeop0;
+	tree oprnd1 = treeop1;
+	tree oprnd2 = treeop2;
+	rtx op2;
+
+	expand_operands (oprnd0, oprnd1, NULL_RTX, &op0, &op1, EXPAND_NORMAL);
+	op2 = expand_normal (oprnd2);
+	target = expand_widen_pattern_expr (ops, op0, op1, op2,
+					    target, unsignedp);
+	return target;
+      }
+
+    case REALIGN_LOAD_EXPR:
+      {
+        tree oprnd0 = treeop0;
+        tree oprnd1 = treeop1;
+        tree oprnd2 = treeop2;
+        rtx op2;
+
+        this_optab = optab_for_tree_code (code, type, optab_default);
+        expand_operands (oprnd0, oprnd1, NULL_RTX, &op0, &op1, EXPAND_NORMAL);
+        op2 = expand_normal (oprnd2);
+        temp = expand_ternary_op (mode, this_optab, op0, op1, op2,
+				  target, unsignedp);
+        gcc_assert (temp);
+        return temp;
+      }
+
     default:
       gcc_unreachable ();
     }
@@ -8288,7 +8318,6 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
   int unsignedp;
   enum machine_mode mode;
   enum tree_code code = TREE_CODE (exp);
-  optab this_optab;
   rtx subtarget, original_target;
   int ignore;
   tree context;
@@ -9696,36 +9725,6 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	 have pulled out the size to use in whatever context it needed.  */
       return expand_expr_real (treeop0, original_target, tmode,
 			       modifier, alt_rtl);
-
-    case REALIGN_LOAD_EXPR:
-      {
-        tree oprnd0 = treeop0;
-        tree oprnd1 = treeop1;
-        tree oprnd2 = treeop2;
-        rtx op2;
-
-        this_optab = optab_for_tree_code (code, type, optab_default);
-        expand_operands (oprnd0, oprnd1, NULL_RTX, &op0, &op1, EXPAND_NORMAL);
-        op2 = expand_normal (oprnd2);
-        temp = expand_ternary_op (mode, this_optab, op0, op1, op2,
-				  target, unsignedp);
-        gcc_assert (temp);
-        return temp;
-      }
-
-    case DOT_PROD_EXPR:
-      {
-	tree oprnd0 = treeop0;
-	tree oprnd1 = treeop1;
-	tree oprnd2 = treeop2;
-	rtx op2;
-
-	expand_operands (oprnd0, oprnd1, NULL_RTX, &op0, &op1, EXPAND_NORMAL);
-	op2 = expand_normal (oprnd2);
-	target = expand_widen_pattern_expr (&ops, op0, op1, op2,
-					    target, unsignedp);
-	return target;
-      }
 
     case COMPOUND_LITERAL_EXPR:
       {
