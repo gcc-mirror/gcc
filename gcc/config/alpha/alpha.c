@@ -185,7 +185,7 @@ static struct alpha_rtx_cost_data const alpha_rtx_cost_size =
 };
 
 /* Get the number of args of a function in one of two ways.  */
-#if TARGET_ABI_OPEN_VMS || TARGET_ABI_UNICOSMK
+#if TARGET_ABI_OPEN_VMS
 #define NUM_ARGS crtl->args.info.num_args
 #else
 #define NUM_ARGS crtl->args.info
@@ -202,11 +202,6 @@ static rtx alpha_emit_xfloating_compare (enum rtx_code *, rtx, rtx);
 static void alpha_write_linkage (FILE *, const char *, tree);
 static bool vms_valid_pointer_mode (enum machine_mode);
 #endif
-
-static void unicosmk_output_deferred_case_vectors (FILE *);
-static void unicosmk_gen_dsib (unsigned long *);
-static void unicosmk_output_ssib (FILE *, const char *);
-static int unicosmk_need_dex (rtx);
 
 /* Implement TARGET_OPTION_OPTIMIZATION_TABLE.  */
 static const struct default_options alpha_option_optimization_table[] =
@@ -298,50 +293,19 @@ alpha_option_override (void)
   SUBTARGET_OVERRIDE_OPTIONS;
 #endif
 
-  /* Unicos/Mk doesn't have shared libraries.  */
-  if (TARGET_ABI_UNICOSMK && flag_pic)
-    {
-      warning (0, "-f%s ignored for Unicos/Mk (not supported)",
-	       (flag_pic > 1) ? "PIC" : "pic");
-      flag_pic = 0;
-    }
-
-  /* On Unicos/Mk, the native compiler consistently generates /d suffices for
-     floating-point instructions.  Make that the default for this target.  */
-  if (TARGET_ABI_UNICOSMK)
-    alpha_fprm = ALPHA_FPRM_DYN;
-  else
-    alpha_fprm = ALPHA_FPRM_NORM;
-
+  alpha_fprm = ALPHA_FPRM_NORM;
   alpha_tp = ALPHA_TP_PROG;
   alpha_fptm = ALPHA_FPTM_N;
 
-  /* We cannot use su and sui qualifiers for conversion instructions on
-     Unicos/Mk.  I'm not sure if this is due to assembler or hardware
-     limitations.  Right now, we issue a warning if -mieee is specified
-     and then ignore it; eventually, we should either get it right or
-     disable the option altogether.  */
-
   if (TARGET_IEEE)
     {
-      if (TARGET_ABI_UNICOSMK)
-	warning (0, "-mieee not supported on Unicos/Mk");
-      else
-	{
-	  alpha_tp = ALPHA_TP_INSN;
-	  alpha_fptm = ALPHA_FPTM_SU;
-	}
+      alpha_tp = ALPHA_TP_INSN;
+      alpha_fptm = ALPHA_FPTM_SU;
     }
-
   if (TARGET_IEEE_WITH_INEXACT)
     {
-      if (TARGET_ABI_UNICOSMK)
-	warning (0, "-mieee-with-inexact not supported on Unicos/Mk");
-      else
-	{
-	  alpha_tp = ALPHA_TP_INSN;
-	  alpha_fptm = ALPHA_FPTM_SUI;
-	}
+      alpha_tp = ALPHA_TP_INSN;
+      alpha_fptm = ALPHA_FPTM_SUI;
     }
 
   if (alpha_tp_string)
@@ -412,12 +376,6 @@ alpha_option_override (void)
     }
 
   /* Do some sanity checks on the above options.  */
-
-  if (TARGET_ABI_UNICOSMK && alpha_fptm != ALPHA_FPTM_N)
-    {
-      warning (0, "trap mode not supported on Unicos/Mk");
-      alpha_fptm = ALPHA_FPTM_N;
-    }
 
   if ((alpha_fptm == ALPHA_FPTM_SU || alpha_fptm == ALPHA_FPTM_SUI)
       && alpha_tp != ALPHA_TP_INSN && alpha_cpu != PROCESSOR_EV6)
@@ -540,11 +498,6 @@ alpha_option_override (void)
   if (!(target_flags_explicit & MASK_LONG_DOUBLE_128))
     target_flags |= MASK_LONG_DOUBLE_128;
 #endif
-
-  /* If using typedef char *va_list, signal that __builtin_va_start (&ap, 0)
-     can be optimized to ap = __builtin_next_arg (0).  */
-  if (TARGET_ABI_UNICOSMK)
-    targetm.expand_builtin_va_start = NULL;
 }
 
 /* Returns 1 if VALUE is a mask that contains full bytes of zero or ones.  */
@@ -614,8 +567,7 @@ resolve_reload_operand (rtx op)
 
 /* The scalar modes supported differs from the default check-what-c-supports
    version in that sometimes TFmode is available even when long double
-   indicates only DFmode.  On unicosmk, we have the situation that HImode
-   doesn't map to any C type, but of course we still support that.  */
+   indicates only DFmode.  */
 
 static bool
 alpha_scalar_mode_supported_p (enum machine_mode mode)
@@ -657,7 +609,7 @@ alpha_vector_mode_supported_p (enum machine_mode mode)
 int
 direct_return (void)
 {
-  return (! TARGET_ABI_OPEN_VMS && ! TARGET_ABI_UNICOSMK
+  return (!TARGET_ABI_OPEN_VMS
 	  && reload_completed
 	  && alpha_sa_size () == 0
 	  && get_frame_size () == 0
@@ -4805,15 +4757,6 @@ alpha_multipass_dfa_lookahead (void)
 
 struct GTY(()) machine_function
 {
-  /* For unicosmk.  */
-  /* List of call information words for calls from this function.  */
-  struct rtx_def *first_ciw;
-  struct rtx_def *last_ciw;
-  int ciw_count;
-
-  /* List of deferred case vectors.  */
-  struct rtx_def *addr_list;
-
   /* For OSF.  */
   const char *some_ld_name;
 
@@ -5365,18 +5308,6 @@ print_operand (FILE *file, rtx x, int code)
       fprintf (file, HOST_WIDE_INT_PRINT_DEC, (64 - INTVAL (x)) / 8);
       break;
 
-    case 't':
-      {
-        /* On Unicos/Mk systems: use a DEX expression if the symbol
-	   clashes with a register name.  */
-	int dex = unicosmk_need_dex (x);
-	if (dex)
-	  fprintf (file, "DEX(%d)", dex);
-	else
-	  output_addr_const (file, x);
-      }
-      break;
-
     case 'C': case 'D': case 'c': case 'd':
       /* Write out comparison name.  */
       {
@@ -5739,8 +5670,6 @@ alpha_arg_partial_bytes (CUMULATIVE_ARGS *cum ATTRIBUTE_UNUSED,
   if (cum->num_args < 6
       && 6 < cum->num_args + ALPHA_ARG_SIZE (mode, type, named))
     words = 6 - cum->num_args;
-#elif TARGET_ABI_UNICOSMK
-  /* Never any split arguments.  */
 #elif TARGET_ABI_OSF
   if (*cum < 6 && 6 < *cum + ALPHA_ARG_SIZE (mode, type, named))
     words = 6 - *cum;
@@ -5897,7 +5826,7 @@ alpha_build_builtin_va_list (void)
 {
   tree base, ofs, space, record, type_decl;
 
-  if (TARGET_ABI_OPEN_VMS || TARGET_ABI_UNICOSMK)
+  if (TARGET_ABI_OPEN_VMS)
     return ptr_type_node;
 
   record = (*lang_hooks.types.make_type) (RECORD_TYPE);
@@ -6156,21 +6085,7 @@ alpha_setup_incoming_varargs (CUMULATIVE_ARGS *pcum, enum machine_mode mode,
   /* Skip the current argument.  */
   targetm.calls.function_arg_advance (&cum, mode, type, true);
 
-#if TARGET_ABI_UNICOSMK
-  /* On Unicos/Mk, the standard subroutine __T3E_MISMATCH stores all register
-     arguments on the stack. Unfortunately, it doesn't always store the first
-     one (i.e. the one that arrives in $16 or $f16). This is not a problem
-     with stdargs as we always have at least one named argument there.  */
-  if (cum.num_reg_words < 6)
-    {
-      if (!no_rtl)
-	{
-	  emit_insn (gen_umk_mismatch_args (GEN_INT (cum.num_reg_words)));
-	  emit_insn (gen_arg_home_umk ());
-	}
-      *pretend_size = 0;
-    }
-#elif TARGET_ABI_OPEN_VMS
+#if TARGET_ABI_OPEN_VMS
   /* For VMS, we allocate space for all 6 arg registers plus a count.
 
      However, if NO registers need to be saved, don't allocate any space.
@@ -6250,9 +6165,6 @@ alpha_va_start (tree valist, rtx nextarg ATTRIBUTE_UNUSED)
 
   if (TREE_CODE (TREE_TYPE (valist)) == ERROR_MARK)
     return;
-
-  if (TARGET_ABI_UNICOSMK)
-    std_expand_builtin_va_start (valist, nextarg);
 
   /* For Unix, TARGET_SETUP_INCOMING_VARARGS moves the starting address base
      up by 48, storing fp arg registers in the first 48 bytes, and the
@@ -6383,7 +6295,7 @@ alpha_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
   tree offset_field, base_field, offset, base, t, r;
   bool indirect;
 
-  if (TARGET_ABI_OPEN_VMS || TARGET_ABI_UNICOSMK)
+  if (TARGET_ABI_OPEN_VMS)
     return std_gimplify_va_arg_expr (valist, type, pre_p, post_p);
 
   base_field = TYPE_FIELDS (va_list_type_node);
@@ -7316,8 +7228,7 @@ alpha_sa_mask (unsigned long *imaskP, unsigned long *fmaskP)
   /* One for every register we have to save.  */
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
     if (! fixed_regs[i] && ! call_used_regs[i]
-	&& df_regs_ever_live_p (i) && i != REG_RA
-	&& (!TARGET_ABI_UNICOSMK || i != HARD_FRAME_POINTER_REGNUM))
+	&& df_regs_ever_live_p (i) && i != REG_RA)
       {
 	if (i < 32)
 	  imask |= (1UL << i);
@@ -7356,40 +7267,12 @@ alpha_sa_size (void)
 
   alpha_sa_mask (&mask[0], &mask[1]);
 
-  if (TARGET_ABI_UNICOSMK)
-    {
-      if (mask[0] || mask[1])
-	sa_size = 14;
-    }
-  else
-    {
-      for (j = 0; j < 2; ++j)
-	for (i = 0; i < 32; ++i)
-	  if ((mask[j] >> i) & 1)
-	    sa_size++;
-    }
+  for (j = 0; j < 2; ++j)
+    for (i = 0; i < 32; ++i)
+      if ((mask[j] >> i) & 1)
+	sa_size++;
 
-  if (TARGET_ABI_UNICOSMK)
-    {
-      /* We might not need to generate a frame if we don't make any calls
-	 (including calls to __T3E_MISMATCH if this is a vararg function),
-	 don't have any local variables which require stack slots, don't
-	 use alloca and have not determined that we need a frame for other
-	 reasons.  */
-
-      alpha_procedure_type
-	= (sa_size || get_frame_size() != 0
-	   || crtl->outgoing_args_size
-	   || cfun->stdarg || cfun->calls_alloca
-	   || frame_pointer_needed)
-	  ? PT_STACK : PT_REGISTER;
-
-      /* Always reserve space for saving callee-saved registers if we
-	 need a frame as required by the calling convention.  */
-      if (alpha_procedure_type == PT_STACK)
-        sa_size = 14;
-    }
-  else if (TARGET_ABI_OPEN_VMS)
+  if (TARGET_ABI_OPEN_VMS)
     {
       /* Start with a stack procedure if we make any calls (REG_RA used), or
 	 need a frame pointer, with a register procedure if we otherwise need
@@ -7764,12 +7647,6 @@ compute_frame_size (HOST_WIDE_INT size, HOST_WIDE_INT sa_size)
 			+ (alpha_procedure_type == PT_STACK ? 8 : 0)
 			+ size
 			+ crtl->args.pretend_args_size);
-  else if (TARGET_ABI_UNICOSMK)
-    /* We have to allocate space for the DSIB if we generate a frame.  */
-    return ALPHA_ROUND (sa_size
-			+ (alpha_procedure_type == PT_STACK ? 48 : 0))
-	   + ALPHA_ROUND (size
-			  + crtl->outgoing_args_size);
   else
     return ALPHA_ROUND (crtl->outgoing_args_size)
 	   + sa_size
@@ -7801,7 +7678,7 @@ alpha_expand_prologue (void)
   unsigned long imask = 0;
   unsigned long fmask = 0;
   /* Stack space needed for pushing registers clobbered by us.  */
-  HOST_WIDE_INT sa_size;
+  HOST_WIDE_INT sa_size, sa_bias;
   /* Complete stack size needed.  */
   HOST_WIDE_INT frame_size;
   /* Probed stack size; it additionally includes the size of
@@ -7840,9 +7717,6 @@ alpha_expand_prologue (void)
   if (TARGET_PROFILING_NEEDS_GP && crtl->profile)
     emit_insn (gen_prologue_mcount ());
 
-  if (TARGET_ABI_UNICOSMK)
-    unicosmk_gen_dsib (&imask);
-
   /* Adjust the stack by the frame size.  If the frame size is > 4096
      bytes, we need to be sure we probe somewhere in the first and last
      4096 bytes (we can probably get away without the latter test) and
@@ -7863,9 +7737,7 @@ alpha_expand_prologue (void)
 	  int probed;
 
 	  for (probed = 4096; probed < probed_size; probed += 8192)
-	    emit_insn (gen_probe_stack (GEN_INT (TARGET_ABI_UNICOSMK
-						 ? -probed + 64
-						 : -probed)));
+	    emit_insn (gen_probe_stack (GEN_INT (-probed)));
 
 	  /* We only have to do this probe if we aren't saving registers or
 	     if we are probing beyond the frame because of -fstack-check.  */
@@ -7876,9 +7748,7 @@ alpha_expand_prologue (void)
 
       if (frame_size != 0)
 	FRP (emit_insn (gen_adddi3 (stack_pointer_rtx, stack_pointer_rtx,
-				    GEN_INT (TARGET_ABI_UNICOSMK
-					     ? -frame_size + 64
-					     : -frame_size))));
+				    GEN_INT (-frame_size))));
     }
   else
     {
@@ -7896,8 +7766,7 @@ alpha_expand_prologue (void)
       rtx seq;
 
       emit_move_insn (count, GEN_INT (blocks));
-      emit_insn (gen_adddi3 (ptr, stack_pointer_rtx,
-			     GEN_INT (TARGET_ABI_UNICOSMK ? 4096 - 64 : 4096)));
+      emit_insn (gen_adddi3 (ptr, stack_pointer_rtx, GEN_INT (4096)));
 
       /* Because of the difficulty in emitting a new basic block this
 	 late in the compilation, generate the loop as a single insn.  */
@@ -7944,87 +7813,61 @@ alpha_expand_prologue (void)
       RTX_FRAME_RELATED_P (seq) = 1;
       add_reg_note (seq, REG_FRAME_RELATED_EXPR,
 		    gen_rtx_SET (VOIDmode, stack_pointer_rtx,
-				 gen_rtx_PLUS (Pmode, stack_pointer_rtx,
-					       GEN_INT (TARGET_ABI_UNICOSMK
-							? -frame_size + 64
-							: -frame_size))));
+				 plus_constant (stack_pointer_rtx,
+						-frame_size)));
     }
 
-  if (!TARGET_ABI_UNICOSMK)
+  /* Cope with very large offsets to the register save area.  */
+  sa_bias = 0;
+  sa_reg = stack_pointer_rtx;
+  if (reg_offset + sa_size > 0x8000)
     {
-      HOST_WIDE_INT sa_bias = 0;
+      int low = ((reg_offset & 0xffff) ^ 0x8000) - 0x8000;
+      rtx sa_bias_rtx;
 
-      /* Cope with very large offsets to the register save area.  */
-      sa_reg = stack_pointer_rtx;
-      if (reg_offset + sa_size > 0x8000)
+      if (low + sa_size <= 0x8000)
+	sa_bias = reg_offset - low, reg_offset = low;
+      else
+	sa_bias = reg_offset, reg_offset = 0;
+
+      sa_reg = gen_rtx_REG (DImode, 24);
+      sa_bias_rtx = GEN_INT (sa_bias);
+
+      if (add_operand (sa_bias_rtx, DImode))
+	emit_insn (gen_adddi3 (sa_reg, stack_pointer_rtx, sa_bias_rtx));
+      else
 	{
-	  int low = ((reg_offset & 0xffff) ^ 0x8000) - 0x8000;
-	  rtx sa_bias_rtx;
-
-	  if (low + sa_size <= 0x8000)
-	    sa_bias = reg_offset - low, reg_offset = low;
-	  else
-	    sa_bias = reg_offset, reg_offset = 0;
-
-	  sa_reg = gen_rtx_REG (DImode, 24);
-	  sa_bias_rtx = GEN_INT (sa_bias);
-
-	  if (add_operand (sa_bias_rtx, DImode))
-	    emit_insn (gen_adddi3 (sa_reg, stack_pointer_rtx, sa_bias_rtx));
-	  else
-	    {
-	      emit_move_insn (sa_reg, sa_bias_rtx);
-	      emit_insn (gen_adddi3 (sa_reg, stack_pointer_rtx, sa_reg));
-	    }
+	  emit_move_insn (sa_reg, sa_bias_rtx);
+	  emit_insn (gen_adddi3 (sa_reg, stack_pointer_rtx, sa_reg));
 	}
-
-      /* Save regs in stack order.  Beginning with VMS PV.  */
-      if (TARGET_ABI_OPEN_VMS && alpha_procedure_type == PT_STACK)
-	emit_frame_store (REG_PV, stack_pointer_rtx, 0, 0);
-
-      /* Save register RA next.  */
-      if (imask & (1UL << REG_RA))
-	{
-	  emit_frame_store (REG_RA, sa_reg, sa_bias, reg_offset);
-	  imask &= ~(1UL << REG_RA);
-	  reg_offset += 8;
-	}
-
-      /* Now save any other registers required to be saved.  */
-      for (i = 0; i < 31; i++)
-	if (imask & (1UL << i))
-	  {
-	    emit_frame_store (i, sa_reg, sa_bias, reg_offset);
-	    reg_offset += 8;
-	  }
-
-      for (i = 0; i < 31; i++)
-	if (fmask & (1UL << i))
-	  {
-	    emit_frame_store (i+32, sa_reg, sa_bias, reg_offset);
-	    reg_offset += 8;
-	  }
     }
-  else if (TARGET_ABI_UNICOSMK && alpha_procedure_type == PT_STACK)
+
+  /* Save regs in stack order.  Beginning with VMS PV.  */
+  if (TARGET_ABI_OPEN_VMS && alpha_procedure_type == PT_STACK)
+    emit_frame_store (REG_PV, stack_pointer_rtx, 0, 0);
+
+  /* Save register RA next.  */
+  if (imask & (1UL << REG_RA))
     {
-      /* The standard frame on the T3E includes space for saving registers.
-	 We just have to use it. We don't have to save the return address and
-	 the old frame pointer here - they are saved in the DSIB.  */
-
-      reg_offset = -56;
-      for (i = 9; i < 15; i++)
-	if (imask & (1UL << i))
-	  {
-	    emit_frame_store (i, hard_frame_pointer_rtx, 0, reg_offset);
-	    reg_offset -= 8;
-	  }
-      for (i = 2; i < 10; i++)
-	if (fmask & (1UL << i))
-	  {
-	    emit_frame_store (i+32, hard_frame_pointer_rtx, 0, reg_offset);
-	    reg_offset -= 8;
-	  }
+      emit_frame_store (REG_RA, sa_reg, sa_bias, reg_offset);
+      imask &= ~(1UL << REG_RA);
+      reg_offset += 8;
     }
+
+  /* Now save any other registers required to be saved.  */
+  for (i = 0; i < 31; i++)
+    if (imask & (1UL << i))
+      {
+	emit_frame_store (i, sa_reg, sa_bias, reg_offset);
+	reg_offset += 8;
+      }
+
+  for (i = 0; i < 31; i++)
+    if (fmask & (1UL << i))
+      {
+	emit_frame_store (i+32, sa_reg, sa_bias, reg_offset);
+	reg_offset += 8;
+      }
 
   if (TARGET_ABI_OPEN_VMS)
     {
@@ -8073,7 +7916,7 @@ alpha_expand_prologue (void)
 	  RTX_FRAME_RELATED_P (seq) = ! frame_pointer_needed;
 	}
     }
-  else if (!TARGET_ABI_UNICOSMK)
+  else
     {
       /* If we need a frame pointer, set it from the stack pointer.  */
       if (frame_pointer_needed)
@@ -8127,14 +7970,6 @@ alpha_start_function (FILE *file, const char *fnname,
   char *tramp_label = (char *) alloca (strlen (fnname) + 6);
   int i;
 
-  /* Don't emit an extern directive for functions defined in the same file.  */
-  if (TARGET_ABI_UNICOSMK)
-    {
-      tree name_tree;
-      name_tree = get_identifier (fnname);
-      TREE_ASM_WRITTEN (name_tree) = 1;
-    }
-
 #if TARGET_ABI_OPEN_VMS
   if (vms_debug_main
       && strncmp (vms_debug_main, fnname, strlen (vms_debug_main)) == 0)
@@ -8179,8 +8014,7 @@ alpha_start_function (FILE *file, const char *fnname,
     }
 
   /* Issue function start and label.  */
-  if (TARGET_ABI_OPEN_VMS
-      || (!TARGET_ABI_UNICOSMK && !flag_inhibit_size_directive))
+  if (TARGET_ABI_OPEN_VMS || !flag_inhibit_size_directive)
     {
       fputs ("\t.ent ", file);
       assemble_name (file, fnname);
@@ -8216,18 +8050,13 @@ alpha_start_function (FILE *file, const char *fnname,
   if (TARGET_ABI_OPEN_VMS)
     strcat (entry_label, "..en");
 
-  /* For public functions, the label must be globalized by appending an
-     additional colon.  */
-  if (TARGET_ABI_UNICOSMK && TREE_PUBLIC (decl))
-    strcat (entry_label, ":");
-
   ASM_OUTPUT_LABEL (file, entry_label);
   inside_function = TRUE;
 
   if (TARGET_ABI_OPEN_VMS)
     fprintf (file, "\t.base $%d\n", vms_base_regno);
 
-  if (!TARGET_ABI_OPEN_VMS && !TARGET_ABI_UNICOSMK && TARGET_IEEE_CONFORMANT
+  if (!TARGET_ABI_OPEN_VMS && TARGET_IEEE_CONFORMANT
       && !flag_inhibit_size_directive)
     {
       /* Set flags in procedure descriptor to request IEEE-conformant
@@ -8243,9 +8072,7 @@ alpha_start_function (FILE *file, const char *fnname,
   /* Describe our frame.  If the frame size is larger than an integer,
      print it as zero to avoid an assembler error.  We won't be
      properly describing such a frame, but that's the best we can do.  */
-  if (TARGET_ABI_UNICOSMK)
-    ;
-  else if (TARGET_ABI_OPEN_VMS)
+  if (TARGET_ABI_OPEN_VMS)
     fprintf (file, "\t.frame $%d," HOST_WIDE_INT_PRINT_DEC ",$26,"
 	     HOST_WIDE_INT_PRINT_DEC "\n",
 	     vms_unwind_regno,
@@ -8259,9 +8086,7 @@ alpha_start_function (FILE *file, const char *fnname,
 	     crtl->args.pretend_args_size);
 
   /* Describe which registers were spilled.  */
-  if (TARGET_ABI_UNICOSMK)
-    ;
-  else if (TARGET_ABI_OPEN_VMS)
+  if (TARGET_ABI_OPEN_VMS)
     {
       if (imask)
         /* ??? Does VMS care if mask contains ra?  The old code didn't
@@ -8317,9 +8142,7 @@ alpha_start_function (FILE *file, const char *fnname,
 static void
 alpha_output_function_end_prologue (FILE *file)
 {
-  if (TARGET_ABI_UNICOSMK)
-    ;
-  else if (TARGET_ABI_OPEN_VMS)
+  if (TARGET_ABI_OPEN_VMS)
     fputs ("\t.prologue\n", file);
   else if (TARGET_ABI_WINDOWS_NT)
     fputs ("\t.prologue 0\n", file);
@@ -8375,7 +8198,7 @@ alpha_expand_epilogue (void)
   else
     eh_ofs = NULL_RTX;
 
-  if (!TARGET_ABI_UNICOSMK && sa_size)
+  if (sa_size)
     {
       /* If we have a frame pointer, restore SP from it.  */
       if ((TARGET_ABI_OPEN_VMS
@@ -8440,43 +8263,6 @@ alpha_expand_epilogue (void)
 	    reg_offset += 8;
 	  }
     }
-  else if (TARGET_ABI_UNICOSMK && alpha_procedure_type == PT_STACK)
-    {
-      /* Restore callee-saved general-purpose registers.  */
-
-      reg_offset = -56;
-
-      for (i = 9; i < 15; i++)
-	if (imask & (1UL << i))
-	  {
-	    mem = gen_rtx_MEM (DImode, plus_constant(hard_frame_pointer_rtx,
-						     reg_offset));
-	    set_mem_alias_set (mem, alpha_sr_alias_set);
-	    reg = gen_rtx_REG (DImode, i);
-	    emit_move_insn (reg, mem);
-	    cfa_restores = alloc_reg_note (REG_CFA_RESTORE, reg, cfa_restores);
-	    reg_offset -= 8;
-	  }
-
-      for (i = 2; i < 10; i++)
-	if (fmask & (1UL << i))
-	  {
-	    mem = gen_rtx_MEM (DFmode, plus_constant(hard_frame_pointer_rtx,
-						     reg_offset));
-	    set_mem_alias_set (mem, alpha_sr_alias_set);
-	    reg = gen_rtx_REG (DFmode, i+32);
-	    emit_move_insn (reg, mem);
-	    cfa_restores = alloc_reg_note (REG_CFA_RESTORE, reg, cfa_restores);
-	    reg_offset -= 8;
-	  }
-
-      /* Restore the return address from the DSIB.  */
-      mem = gen_rtx_MEM (DImode, plus_constant (hard_frame_pointer_rtx, -8));
-      set_mem_alias_set (mem, alpha_sr_alias_set);
-      reg = gen_rtx_REG (DImode, REG_RA);
-      emit_move_insn (reg, mem);
-      cfa_restores = alloc_reg_note (REG_CFA_RESTORE, reg, cfa_restores);
-    }
 
   if (frame_size || eh_ofs)
     {
@@ -8492,15 +8278,8 @@ alpha_expand_epilogue (void)
       /* If the stack size is large, begin computation into a temporary
 	 register so as not to interfere with a potential fp restore,
 	 which must be consecutive with an SP restore.  */
-      if (frame_size < 32768
-	  && ! (TARGET_ABI_UNICOSMK && cfun->calls_alloca))
+      if (frame_size < 32768 && !cfun->calls_alloca)
 	sp_adj2 = GEN_INT (frame_size);
-      else if (TARGET_ABI_UNICOSMK)
-	{
-	  sp_adj1 = gen_rtx_REG (DImode, 23);
-	  emit_move_insn (sp_adj1, hard_frame_pointer_rtx);
-	  sp_adj2 = const0_rtx;
-	}
       else if (frame_size < 0x40007fffL)
 	{
 	  int low = ((frame_size & 0xffff) ^ 0x8000) - 0x8000;
@@ -8532,17 +8311,7 @@ alpha_expand_epilogue (void)
       /* From now on, things must be in order.  So emit blockages.  */
 
       /* Restore the frame pointer.  */
-      if (TARGET_ABI_UNICOSMK)
-	{
-	  emit_insn (gen_blockage ());
-	  mem = gen_rtx_MEM (DImode,
-			     plus_constant (hard_frame_pointer_rtx, -16));
-	  set_mem_alias_set (mem, alpha_sr_alias_set);
-	  emit_move_insn (hard_frame_pointer_rtx, mem);
-	  cfa_restores = alloc_reg_note (REG_CFA_RESTORE,
-					 hard_frame_pointer_rtx, cfa_restores);
-	}
-      else if (fp_is_frame_pointer)
+      if (fp_is_frame_pointer)
 	{
 	  emit_insn (gen_blockage ());
 	  mem = gen_rtx_MEM (DImode, plus_constant (sa_reg, fp_offset));
@@ -8583,14 +8352,6 @@ alpha_expand_epilogue (void)
 	  add_reg_note (insn, REG_CFA_RESTORE, hard_frame_pointer_rtx);
 	  RTX_FRAME_RELATED_P (insn) = 1;
         }
-      else if (TARGET_ABI_UNICOSMK && alpha_procedure_type != PT_STACK)
-	{
-	  /* Decrement the frame pointer if the function does not have a
-	     frame.  */
-	  emit_insn (gen_blockage ());
-	  emit_insn (gen_adddi3 (hard_frame_pointer_rtx,
-				 hard_frame_pointer_rtx, constm1_rtx));
-        }
     }
 }
 
@@ -8615,20 +8376,13 @@ alpha_end_function (FILE *file, const char *fnname, tree decl ATTRIBUTE_UNUSED)
 #endif
 
   /* End the function.  */
-  if (!TARGET_ABI_UNICOSMK && !flag_inhibit_size_directive)
+  if (!flag_inhibit_size_directive)
     {
       fputs ("\t.end ", file);
       assemble_name (file, fnname);
       putc ('\n', file);
     }
   inside_function = FALSE;
-
-  /* Output jump tables and the static subroutine information block.  */
-  if (TARGET_ABI_UNICOSMK)
-    {
-      unicosmk_output_ssib (file, fnname);
-      unicosmk_output_deferred_case_vectors (file);
-    }
 }
 
 #if TARGET_ABI_OPEN_VMS
@@ -9732,8 +9486,6 @@ alpha_reorg (void)
     }
 }
 
-#if !TARGET_ABI_UNICOSMK
-
 #ifdef HAVE_STAMP_H
 #include <stamp.h>
 #endif
@@ -9777,7 +9529,6 @@ alpha_file_start (void)
       fprintf (asm_out_file, "\t.arch %s\n", arch);
     }
 }
-#endif
 
 #ifdef OBJECT_FORMAT_ELF
 /* Since we don't have a .dynbss section, we should not allow global
@@ -10185,796 +9936,10 @@ alpha_use_linkage (rtx func ATTRIBUTE_UNUSED,
 
 #endif /* TARGET_ABI_OPEN_VMS */
 
-#if TARGET_ABI_UNICOSMK
-
-/* This evaluates to true if we do not know how to pass TYPE solely in
-   registers.  This is the case for all arguments that do not fit in two
-   registers.  */
-
-static bool
-unicosmk_must_pass_in_stack (enum machine_mode mode, const_tree type)
-{
-  if (type == NULL)
-    return false;
-
-  if (TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST)
-    return true;
-  if (TREE_ADDRESSABLE (type))
-    return true;
-
-  return ALPHA_ARG_SIZE (mode, type, 0) > 2;
-}
-
-/* Define the offset between two registers, one to be eliminated, and the
-   other its replacement, at the start of a routine.  */
-
-int
-unicosmk_initial_elimination_offset (int from, int to)
-{
-  int fixed_size;
-
-  fixed_size = alpha_sa_size();
-  if (fixed_size != 0)
-    fixed_size += 48;
-
-  if (from == FRAME_POINTER_REGNUM && to == HARD_FRAME_POINTER_REGNUM)
-    return -fixed_size;
-  else if (from == ARG_POINTER_REGNUM && to == HARD_FRAME_POINTER_REGNUM)
-    return 0;
-  else if (from == FRAME_POINTER_REGNUM && to == STACK_POINTER_REGNUM)
-    return (ALPHA_ROUND (crtl->outgoing_args_size)
-	    + ALPHA_ROUND (get_frame_size()));
-  else if (from == ARG_POINTER_REGNUM && to == STACK_POINTER_REGNUM)
-    return (ALPHA_ROUND (fixed_size)
-	    + ALPHA_ROUND (get_frame_size()
-			   + crtl->outgoing_args_size));
-  else
-    gcc_unreachable ();
-}
-
-/* Output the module name for .ident and .end directives. We have to strip
-   directories and add make sure that the module name starts with a letter
-   or '$'.  */
-
-static void
-unicosmk_output_module_name (FILE *file)
-{
-  const char *name = lbasename (main_input_filename);
-  unsigned len = strlen (name);
-  char *clean_name = alloca (len + 2);
-  char *ptr = clean_name;
-
-  /* CAM only accepts module names that start with a letter or '$'. We
-     prefix the module name with a '$' if necessary.  */
-
-  if (!ISALPHA (*name))
-    *ptr++ = '$';
-  memcpy (ptr, name, len + 1);
-  clean_symbol_name (clean_name);
-  fputs (clean_name, file);
-}
-
-/* Output the definition of a common variable.  */
-
-void
-unicosmk_output_common (FILE *file, const char *name, int size, int align)
-{
-  tree name_tree;
-  printf ("T3E__: common %s\n", name);
-
-  in_section = NULL;
-  fputs("\t.endp\n\n\t.psect ", file);
-  assemble_name(file, name);
-  fprintf(file, ",%d,common\n", floor_log2 (align / BITS_PER_UNIT));
-  fprintf(file, "\t.byte\t0:%d\n", size);
-
-  /* Mark the symbol as defined in this module.  */
-  name_tree = get_identifier (name);
-  TREE_ASM_WRITTEN (name_tree) = 1;
-}
-
-#define SECTION_PUBLIC SECTION_MACH_DEP
-#define SECTION_MAIN (SECTION_PUBLIC << 1)
-static int current_section_align;
-
-/* A get_unnamed_section callback for switching to the text section.  */
-
-static void
-unicosmk_output_text_section_asm_op (const void *data ATTRIBUTE_UNUSED)
-{
-  static int count = 0;
-  fprintf (asm_out_file, "\t.endp\n\n\t.psect\tgcc@text___%d,code\n", count++);
-}
-
-/* A get_unnamed_section callback for switching to the data section.  */
-
-static void
-unicosmk_output_data_section_asm_op (const void *data ATTRIBUTE_UNUSED)
-{
-  static int count = 1;
-  fprintf (asm_out_file, "\t.endp\n\n\t.psect\tgcc@data___%d,data\n", count++);
-}
-
-/* Implement TARGET_ASM_INIT_SECTIONS.
-
-   The Cray assembler is really weird with respect to sections. It has only
-   named sections and you can't reopen a section once it has been closed.
-   This means that we have to generate unique names whenever we want to
-   reenter the text or the data section.  */
-
-static void
-unicosmk_init_sections (void)
-{
-  text_section = get_unnamed_section (SECTION_CODE,
-				      unicosmk_output_text_section_asm_op,
-				      NULL);
-  data_section = get_unnamed_section (SECTION_WRITE,
-				      unicosmk_output_data_section_asm_op,
-				      NULL);
-  readonly_data_section = data_section;
-}
-
-static unsigned int
-unicosmk_section_type_flags (tree decl, const char *name,
-			     int reloc ATTRIBUTE_UNUSED)
-{
-  unsigned int flags = default_section_type_flags (decl, name, reloc);
-
-  if (!decl)
-    return flags;
-
-  if (TREE_CODE (decl) == FUNCTION_DECL)
-    {
-      current_section_align = floor_log2 (FUNCTION_BOUNDARY / BITS_PER_UNIT);
-      if (align_functions_log > current_section_align)
-	current_section_align = align_functions_log;
-
-      if (! strcmp (IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)), "main"))
-	flags |= SECTION_MAIN;
-    }
-  else
-    current_section_align = floor_log2 (DECL_ALIGN (decl) / BITS_PER_UNIT);
-
-  if (TREE_PUBLIC (decl))
-    flags |= SECTION_PUBLIC;
-
-  return flags;
-}
-
-/* Generate a section name for decl and associate it with the
-   declaration.  */
-
-static void
-unicosmk_unique_section (tree decl, int reloc ATTRIBUTE_UNUSED)
-{
-  const char *name;
-  int len;
-
-  gcc_assert (decl);
-
-  name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
-  name = default_strip_name_encoding (name);
-  len = strlen (name);
-
-  if (TREE_CODE (decl) == FUNCTION_DECL)
-    {
-      char *string;
-
-      /* It is essential that we prefix the section name here because
-	 otherwise the section names generated for constructors and
-	 destructors confuse collect2.  */
-
-      string = alloca (len + 6);
-      sprintf (string, "code@%s", name);
-      DECL_SECTION_NAME (decl) = build_string (len + 5, string);
-    }
-  else if (TREE_PUBLIC (decl))
-    DECL_SECTION_NAME (decl) = build_string (len, name);
-  else
-    {
-      char *string;
-
-      string = alloca (len + 6);
-      sprintf (string, "data@%s", name);
-      DECL_SECTION_NAME (decl) = build_string (len + 5, string);
-    }
-}
-
-/* Switch to an arbitrary section NAME with attributes as specified
-   by FLAGS.  ALIGN specifies any known alignment requirements for
-   the section; 0 if the default should be used.  */
-
-static void
-unicosmk_asm_named_section (const char *name, unsigned int flags, 
-			    tree decl ATTRIBUTE_UNUSED)
-{
-  const char *kind;
-
-  /* Close the previous section.  */
-
-  fputs ("\t.endp\n\n", asm_out_file);
-
-  /* Find out what kind of section we are opening.  */
-
-  if (flags & SECTION_MAIN)
-    fputs ("\t.start\tmain\n", asm_out_file);
-
-  if (flags & SECTION_CODE)
-    kind = "code";
-  else if (flags & SECTION_PUBLIC)
-    kind = "common";
-  else
-    kind = "data";
-
-  if (current_section_align != 0)
-    fprintf (asm_out_file, "\t.psect\t%s,%d,%s\n", name,
-	     current_section_align, kind);
-  else
-    fprintf (asm_out_file, "\t.psect\t%s,%s\n", name, kind);
-}
-
-static void
-unicosmk_insert_attributes (tree decl, tree *attr_ptr ATTRIBUTE_UNUSED)
-{
-  if (DECL_P (decl)
-      && (TREE_PUBLIC (decl) || TREE_CODE (decl) == FUNCTION_DECL))
-    unicosmk_unique_section (decl, 0);
-}
-
-/* Output an alignment directive. We have to use the macro 'gcc@code@align'
-   in code sections because .align fill unused space with zeroes.  */
-
-void
-unicosmk_output_align (FILE *file, int align)
-{
-  if (inside_function)
-    fprintf (file, "\tgcc@code@align\t%d\n", align);
-  else
-    fprintf (file, "\t.align\t%d\n", align);
-}
-
-/* Add a case vector to the current function's list of deferred case
-   vectors. Case vectors have to be put into a separate section because CAM
-   does not allow data definitions in code sections.  */
-
-void
-unicosmk_defer_case_vector (rtx lab, rtx vec)
-{
-  struct machine_function *machine = cfun->machine;
-
-  vec = gen_rtx_EXPR_LIST (VOIDmode, lab, vec);
-  machine->addr_list = gen_rtx_EXPR_LIST (VOIDmode, vec,
-					  machine->addr_list);
-}
-
-/* Output a case vector.  */
-
-static void
-unicosmk_output_addr_vec (FILE *file, rtx vec)
-{
-  rtx lab  = XEXP (vec, 0);
-  rtx body = XEXP (vec, 1);
-  int vlen = XVECLEN (body, 0);
-  int idx;
-
-  (*targetm.asm_out.internal_label) (file, "L", CODE_LABEL_NUMBER (lab));
-
-  for (idx = 0; idx < vlen; idx++)
-    {
-      ASM_OUTPUT_ADDR_VEC_ELT
-        (file, CODE_LABEL_NUMBER (XEXP (XVECEXP (body, 0, idx), 0)));
-    }
-}
-
-/* Output current function's deferred case vectors.  */
-
-static void
-unicosmk_output_deferred_case_vectors (FILE *file)
-{
-  struct machine_function *machine = cfun->machine;
-  rtx t;
-
-  if (machine->addr_list == NULL_RTX)
-    return;
-
-  switch_to_section (data_section);
-  for (t = machine->addr_list; t; t = XEXP (t, 1))
-    unicosmk_output_addr_vec (file, XEXP (t, 0));
-}
-
-/* Generate the name of the SSIB section for the current function.  */
-
-#define SSIB_PREFIX "__SSIB_"
-#define SSIB_PREFIX_LEN 7
-
-static const char *
-unicosmk_ssib_name (void)
-{
-  /* This is ok since CAM won't be able to deal with names longer than that
-     anyway.  */
-
-  static char name[256];
-
-  rtx x;
-  const char *fnname;
-  int len;
-
-  x = DECL_RTL (cfun->decl);
-  gcc_assert (MEM_P (x));
-  x = XEXP (x, 0);
-  gcc_assert (GET_CODE (x) == SYMBOL_REF);
-  fnname = XSTR (x, 0);
-
-  len = strlen (fnname);
-  if (len + SSIB_PREFIX_LEN > 255)
-    len = 255 - SSIB_PREFIX_LEN;
-
-  strcpy (name, SSIB_PREFIX);
-  strncpy (name + SSIB_PREFIX_LEN, fnname, len);
-  name[len + SSIB_PREFIX_LEN] = 0;
-
-  return name;
-}
-
-/* Set up the dynamic subprogram information block (DSIB) and update the
-   frame pointer register ($15) for subroutines which have a frame. If the
-   subroutine doesn't have a frame, simply increment $15.  */
-
-static void
-unicosmk_gen_dsib (unsigned long *imaskP)
-{
-  if (alpha_procedure_type == PT_STACK)
-    {
-      const char *ssib_name;
-      rtx mem;
-
-      /* Allocate 64 bytes for the DSIB.  */
-
-      FRP (emit_insn (gen_adddi3 (stack_pointer_rtx, stack_pointer_rtx,
-                                  GEN_INT (-64))));
-      emit_insn (gen_blockage ());
-
-      /* Save the return address.  */
-
-      mem = gen_rtx_MEM (DImode, plus_constant (stack_pointer_rtx, 56));
-      set_mem_alias_set (mem, alpha_sr_alias_set);
-      FRP (emit_move_insn (mem, gen_rtx_REG (DImode, REG_RA)));
-      (*imaskP) &= ~(1UL << REG_RA);
-
-      /* Save the old frame pointer.  */
-
-      mem = gen_rtx_MEM (DImode, plus_constant (stack_pointer_rtx, 48));
-      set_mem_alias_set (mem, alpha_sr_alias_set);
-      FRP (emit_move_insn (mem, hard_frame_pointer_rtx));
-      (*imaskP) &= ~(1UL << HARD_FRAME_POINTER_REGNUM);
-
-      emit_insn (gen_blockage ());
-
-      /* Store the SSIB pointer.  */
-
-      ssib_name = ggc_strdup (unicosmk_ssib_name ());
-      mem = gen_rtx_MEM (DImode, plus_constant (stack_pointer_rtx, 32));
-      set_mem_alias_set (mem, alpha_sr_alias_set);
-
-      FRP (emit_move_insn (gen_rtx_REG (DImode, 5),
-                           gen_rtx_SYMBOL_REF (Pmode, ssib_name)));
-      FRP (emit_move_insn (mem, gen_rtx_REG (DImode, 5)));
-
-      /* Save the CIW index.  */
-
-      mem = gen_rtx_MEM (DImode, plus_constant (stack_pointer_rtx, 24));
-      set_mem_alias_set (mem, alpha_sr_alias_set);
-      FRP (emit_move_insn (mem, gen_rtx_REG (DImode, 25)));
-
-      emit_insn (gen_blockage ());
-
-      /* Set the new frame pointer.  */
-      FRP (emit_insn (gen_adddi3 (hard_frame_pointer_rtx,
-                                  stack_pointer_rtx, GEN_INT (64))));
-    }
-  else
-    {
-      /* Increment the frame pointer register to indicate that we do not
-         have a frame.  */
-      emit_insn (gen_adddi3 (hard_frame_pointer_rtx,
-                             hard_frame_pointer_rtx, const1_rtx));
-    }
-}
-
-/* Output the static subroutine information block for the current
-   function.  */
-
-static void
-unicosmk_output_ssib (FILE *file, const char *fnname)
-{
-  int len;
-  int i;
-  rtx x;
-  rtx ciw;
-  struct machine_function *machine = cfun->machine;
-
-  in_section = NULL;
-  fprintf (file, "\t.endp\n\n\t.psect\t%s%s,data\n", user_label_prefix,
-	   unicosmk_ssib_name ());
-
-  /* Some required stuff and the function name length.  */
-
-  len = strlen (fnname);
-  fprintf (file, "\t.quad\t^X20008%2.2X28\n", len);
-
-  /* Saved registers
-     ??? We don't do that yet.  */
-
-  fputs ("\t.quad\t0\n", file);
-
-  /* Function address.  */
-
-  fputs ("\t.quad\t", file);
-  assemble_name (file, fnname);
-  putc ('\n', file);
-
-  fputs ("\t.quad\t0\n", file);
-  fputs ("\t.quad\t0\n", file);
-
-  /* Function name.
-     ??? We do it the same way Cray CC does it but this could be
-     simplified.  */
-
-  for( i = 0; i < len; i++ )
-    fprintf (file, "\t.byte\t%d\n", (int)(fnname[i]));
-  if( (len % 8) == 0 )
-    fputs ("\t.quad\t0\n", file);
-  else
-    fprintf (file, "\t.bits\t%d : 0\n", (8 - (len % 8))*8);
-
-  /* All call information words used in the function.  */
-
-  for (x = machine->first_ciw; x; x = XEXP (x, 1))
-    {
-      ciw = XEXP (x, 0);
-#if HOST_BITS_PER_WIDE_INT == 32
-      fprintf (file, "\t.quad\t" HOST_WIDE_INT_PRINT_DOUBLE_HEX "\n",
-	       CONST_DOUBLE_HIGH (ciw), CONST_DOUBLE_LOW (ciw));
-#else
-      fprintf (file, "\t.quad\t" HOST_WIDE_INT_PRINT_HEX "\n", INTVAL (ciw));
-#endif
-    }
-}
-
-/* Add a call information word (CIW) to the list of the current function's
-   CIWs and return its index.
-
-   X is a CONST_INT or CONST_DOUBLE representing the CIW.  */
-
-rtx
-unicosmk_add_call_info_word (rtx x)
-{
-  rtx node;
-  struct machine_function *machine = cfun->machine;
-
-  node = gen_rtx_EXPR_LIST (VOIDmode, x, NULL_RTX);
-  if (machine->first_ciw == NULL_RTX)
-    machine->first_ciw = node;
-  else
-    XEXP (machine->last_ciw, 1) = node;
-
-  machine->last_ciw = node;
-  ++machine->ciw_count;
-
-  return GEN_INT (machine->ciw_count
-		  + strlen (current_function_name ())/8 + 5);
-}
-
-/* The Cray assembler doesn't accept extern declarations for symbols which
-   are defined in the same file. We have to keep track of all global
-   symbols which are referenced and/or defined in a source file and output
-   extern declarations for those which are referenced but not defined at
-   the end of file.  */
-
-/* List of identifiers for which an extern declaration might have to be
-   emitted.  */
-/* FIXME: needs to use GC, so it can be saved and restored for PCH.  */
-
-struct unicosmk_extern_list
-{
-  struct unicosmk_extern_list *next;
-  const char *name;
-};
-
-static struct unicosmk_extern_list *unicosmk_extern_head = 0;
-
-/* Output extern declarations which are required for every asm file.  */
-
-static void
-unicosmk_output_default_externs (FILE *file)
-{
-  static const char *const externs[] =
-    { "__T3E_MISMATCH" };
-
-  int i;
-  int n;
-
-  n = ARRAY_SIZE (externs);
-
-  for (i = 0; i < n; i++)
-    fprintf (file, "\t.extern\t%s\n", externs[i]);
-}
-
-/* Output extern declarations for global symbols which are have been
-   referenced but not defined.  */
-
-static void
-unicosmk_output_externs (FILE *file)
-{
-  struct unicosmk_extern_list *p;
-  const char *real_name;
-  int len;
-  tree name_tree;
-
-  len = strlen (user_label_prefix);
-  for (p = unicosmk_extern_head; p != 0; p = p->next)
-    {
-      /* We have to strip the encoding and possibly remove user_label_prefix
-	 from the identifier in order to handle -fleading-underscore and
-	 explicit asm names correctly (cf. gcc.dg/asm-names-1.c).  */
-      real_name = default_strip_name_encoding (p->name);
-      if (len && p->name[0] == '*'
-	  && !memcmp (real_name, user_label_prefix, len))
-	real_name += len;
-
-      name_tree = get_identifier (real_name);
-      if (! TREE_ASM_WRITTEN (name_tree))
-	{
-	  TREE_ASM_WRITTEN (name_tree) = 1;
-	  fputs ("\t.extern\t", file);
-	  assemble_name (file, p->name);
-	  putc ('\n', file);
-	}
-    }
-}
-
-/* Record an extern.  */
-
-void
-unicosmk_add_extern (const char *name)
-{
-  struct unicosmk_extern_list *p;
-
-  p = (struct unicosmk_extern_list *)
-       xmalloc (sizeof (struct unicosmk_extern_list));
-  p->next = unicosmk_extern_head;
-  p->name = name;
-  unicosmk_extern_head = p;
-}
-
-/* The Cray assembler generates incorrect code if identifiers which
-   conflict with register names are used as instruction operands. We have
-   to replace such identifiers with DEX expressions.  */
-
-/* Structure to collect identifiers which have been replaced by DEX
-   expressions.  */
-/* FIXME: needs to use GC, so it can be saved and restored for PCH.  */
-
-struct unicosmk_dex {
-  struct unicosmk_dex *next;
-  const char *name;
-};
-
-/* List of identifiers which have been replaced by DEX expressions. The DEX
-   number is determined by the position in the list.  */
-
-static struct unicosmk_dex *unicosmk_dex_list = NULL;
-
-/* The number of elements in the DEX list.  */
-
-static int unicosmk_dex_count = 0;
-
-/* Check if NAME must be replaced by a DEX expression.  */
-
-static int
-unicosmk_special_name (const char *name)
-{
-  if (name[0] == '*')
-    ++name;
-
-  if (name[0] == '$')
-    ++name;
-
-  if (name[0] != 'r' && name[0] != 'f' && name[0] != 'R' && name[0] != 'F')
-    return 0;
-
-  switch (name[1])
-    {
-    case '1':  case '2':
-      return (name[2] == '\0' || (ISDIGIT (name[2]) && name[3] == '\0'));
-
-    case '3':
-      return (name[2] == '\0'
-	       || ((name[2] == '0' || name[2] == '1') && name[3] == '\0'));
-
-    default:
-      return (ISDIGIT (name[1]) && name[2] == '\0');
-    }
-}
-
-/* Return the DEX number if X must be replaced by a DEX expression and 0
-   otherwise.  */
-
-static int
-unicosmk_need_dex (rtx x)
-{
-  struct unicosmk_dex *dex;
-  const char *name;
-  int i;
-
-  if (GET_CODE (x) != SYMBOL_REF)
-    return 0;
-
-  name = XSTR (x,0);
-  if (! unicosmk_special_name (name))
-    return 0;
-
-  i = unicosmk_dex_count;
-  for (dex = unicosmk_dex_list; dex; dex = dex->next)
-    {
-      if (! strcmp (name, dex->name))
-        return i;
-      --i;
-    }
-
-  dex = (struct unicosmk_dex *) xmalloc (sizeof (struct unicosmk_dex));
-  dex->name = name;
-  dex->next = unicosmk_dex_list;
-  unicosmk_dex_list = dex;
-
-  ++unicosmk_dex_count;
-  return unicosmk_dex_count;
-}
-
-/* Output the DEX definitions for this file.  */
-
-static void
-unicosmk_output_dex (FILE *file)
-{
-  struct unicosmk_dex *dex;
-  int i;
-
-  if (unicosmk_dex_list == NULL)
-    return;
-
-  fprintf (file, "\t.dexstart\n");
-
-  i = unicosmk_dex_count;
-  for (dex = unicosmk_dex_list; dex; dex = dex->next)
-    {
-      fprintf (file, "\tDEX (%d) = ", i);
-      assemble_name (file, dex->name);
-      putc ('\n', file);
-      --i;
-    }
-
-  fprintf (file, "\t.dexend\n");
-}
-
-/* Output text that to appear at the beginning of an assembler file.  */
-
-static void
-unicosmk_file_start (void)
-{
-  int i;
-
-  fputs ("\t.ident\t", asm_out_file);
-  unicosmk_output_module_name (asm_out_file);
-  fputs ("\n\n", asm_out_file);
-
-  /* The Unicos/Mk assembler uses different register names. Instead of trying
-     to support them, we simply use micro definitions.  */
-
-  /* CAM has different register names: rN for the integer register N and fN
-     for the floating-point register N. Instead of trying to use these in
-     alpha.md, we define the symbols $N and $fN to refer to the appropriate
-     register.  */
-
-  for (i = 0; i < 32; ++i)
-    fprintf (asm_out_file, "$%d <- r%d\n", i, i);
-
-  for (i = 0; i < 32; ++i)
-    fprintf (asm_out_file, "$f%d <- f%d\n", i, i);
-
-  putc ('\n', asm_out_file);
-
-  /* The .align directive fill unused space with zeroes which does not work
-     in code sections. We define the macro 'gcc@code@align' which uses nops
-     instead. Note that it assumes that code sections always have the
-     biggest possible alignment since . refers to the current offset from
-     the beginning of the section.  */
-
-  fputs ("\t.macro gcc@code@align n\n", asm_out_file);
-  fputs ("gcc@n@bytes = 1 << n\n", asm_out_file);
-  fputs ("gcc@here = . % gcc@n@bytes\n", asm_out_file);
-  fputs ("\t.if ne, gcc@here, 0\n", asm_out_file);
-  fputs ("\t.repeat (gcc@n@bytes - gcc@here) / 4\n", asm_out_file);
-  fputs ("\tbis r31,r31,r31\n", asm_out_file);
-  fputs ("\t.endr\n", asm_out_file);
-  fputs ("\t.endif\n", asm_out_file);
-  fputs ("\t.endm gcc@code@align\n\n", asm_out_file);
-
-  /* Output extern declarations which should always be visible.  */
-  unicosmk_output_default_externs (asm_out_file);
-
-  /* Open a dummy section. We always need to be inside a section for the
-     section-switching code to work correctly.
-     ??? This should be a module id or something like that. I still have to
-     figure out what the rules for those are.  */
-  fputs ("\n\t.psect\t$SG00000,data\n", asm_out_file);
-}
-
-/* Output text to appear at the end of an assembler file. This includes all
-   pending extern declarations and DEX expressions.  */
-
-static void
-unicosmk_file_end (void)
-{
-  fputs ("\t.endp\n\n", asm_out_file);
-
-  /* Output all pending externs.  */
-
-  unicosmk_output_externs (asm_out_file);
-
-  /* Output dex definitions used for functions whose names conflict with
-     register names.  */
-
-  unicosmk_output_dex (asm_out_file);
-
-  fputs ("\t.end\t", asm_out_file);
-  unicosmk_output_module_name (asm_out_file);
-  putc ('\n', asm_out_file);
-}
-
-#else
-
-static void
-unicosmk_output_deferred_case_vectors (FILE *file ATTRIBUTE_UNUSED)
-{}
-
-static void
-unicosmk_gen_dsib (unsigned long *imaskP ATTRIBUTE_UNUSED)
-{}
-
-static void
-unicosmk_output_ssib (FILE * file ATTRIBUTE_UNUSED,
-		      const char * fnname ATTRIBUTE_UNUSED)
-{}
-
-rtx
-unicosmk_add_call_info_word (rtx x ATTRIBUTE_UNUSED)
-{
-  return NULL_RTX;
-}
-
-static int
-unicosmk_need_dex (rtx x ATTRIBUTE_UNUSED)
-{
-  return 0;
-}
-
-#endif /* TARGET_ABI_UNICOSMK */
-
 static void
 alpha_init_libfuncs (void)
 {
-  if (TARGET_ABI_UNICOSMK)
-    {
-      /* Prevent gcc from generating calls to __divsi3.  */
-      set_optab_libfunc (sdiv_optab, SImode, 0);
-      set_optab_libfunc (udiv_optab, SImode, 0);
-
-      /* Use the functions provided by the system library
-	 for DImode integer division.  */
-      set_optab_libfunc (sdiv_optab, DImode, "$sldiv");
-      set_optab_libfunc (udiv_optab, DImode, "$uldiv");
-    }
-  else if (TARGET_ABI_OPEN_VMS)
+  if (TARGET_ABI_OPEN_VMS)
     {
       /* Use the VMS runtime library functions for division and
 	 remainder.  */
@@ -11017,21 +9982,6 @@ alpha_conditional_register_usage (void)
 #undef TARGET_IN_SMALL_DATA_P
 #define TARGET_IN_SMALL_DATA_P alpha_in_small_data_p
 
-#if TARGET_ABI_UNICOSMK
-# undef TARGET_INSERT_ATTRIBUTES
-# define TARGET_INSERT_ATTRIBUTES unicosmk_insert_attributes
-# undef TARGET_SECTION_TYPE_FLAGS
-# define TARGET_SECTION_TYPE_FLAGS unicosmk_section_type_flags
-# undef TARGET_ASM_UNIQUE_SECTION
-# define TARGET_ASM_UNIQUE_SECTION unicosmk_unique_section
-#undef TARGET_ASM_FUNCTION_RODATA_SECTION
-#define TARGET_ASM_FUNCTION_RODATA_SECTION default_no_function_rodata_section
-# undef TARGET_ASM_GLOBALIZE_LABEL
-# define TARGET_ASM_GLOBALIZE_LABEL hook_void_FILEptr_constcharptr
-# undef TARGET_MUST_PASS_IN_STACK
-# define TARGET_MUST_PASS_IN_STACK unicosmk_must_pass_in_stack
-#endif
-
 #undef TARGET_ASM_ALIGNED_HI_OP
 #define TARGET_ASM_ALIGNED_HI_OP "\t.word\t"
 #undef TARGET_ASM_ALIGNED_DI_OP
@@ -11066,17 +10016,10 @@ alpha_conditional_register_usage (void)
 #undef TARGET_LEGITIMIZE_ADDRESS
 #define TARGET_LEGITIMIZE_ADDRESS alpha_legitimize_address
 
-#if TARGET_ABI_UNICOSMK
-#undef TARGET_ASM_FILE_START
-#define TARGET_ASM_FILE_START unicosmk_file_start
-#undef TARGET_ASM_FILE_END
-#define TARGET_ASM_FILE_END unicosmk_file_end
-#else
 #undef TARGET_ASM_FILE_START
 #define TARGET_ASM_FILE_START alpha_file_start
 #undef TARGET_ASM_FILE_START_FILE_DIRECTIVE
 #define TARGET_ASM_FILE_START_FILE_DIRECTIVE true
-#endif
 
 #undef TARGET_SCHED_ADJUST_COST
 #define TARGET_SCHED_ADJUST_COST alpha_adjust_cost
