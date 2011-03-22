@@ -1,5 +1,19 @@
 2011-03-22  Joseph Myers  <joseph@codesourcery.com>
 
+	* config/pa/pa-hpux.opt (flag_pa_unix): New Variable entry.
+	(munix=93): Use Var.
+	* config/pa/pa-hpux1010.opt (munix=95): Use Var.
+	* config/pa/pa-hpux1111.opt (munix=98): Use Var.
+	* config/pa/pa-opts.h: New.
+	* config/pa/pa.c (pa_cpu, flag_pa_unix): Remove.
+	(pa_handle_option): Don't assert that global structures are in
+	use.  Access target_flags via opts pointer.  Don't handle
+	OPT_mschedule_, OPT_mfixed_range_, OPT_munix_93, OPT_munix_95 or
+	OPT_munix_98 here.
+	(pa_option_override): Handle deferred OPT_mfixed_range_.
+
+2011-03-22  Joseph Myers  <joseph@codesourcery.com>
+
 	* config/mn10300/mn10300-opts.h: New.
 	* config/mn10300/mn10300.c (mn10300_processor,
 	mn10300_tune_string): Remove.

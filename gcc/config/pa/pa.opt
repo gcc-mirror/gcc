@@ -1,6 +1,6 @@
 ; Options for the HP PA-RISC port of the compiler.
 
-; Copyright (C) 2005, 2007 Free Software Foundation, Inc.
+; Copyright (C) 2005, 2007, 2011 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -17,6 +17,13 @@
 ; You should have received a copy of the GNU General Public License
 ; along with GCC; see the file COPYING3.  If not see
 ; <http://www.gnu.org/licenses/>.
+
+HeaderInclude
+config/pa/pa-opts.h
+
+; Which cpu we are scheduling for.
+Variable
+enum processor_type pa_cpu = TARGET_SCHED_DEFAULT
 
 march=1.0
 Target RejectNegative
@@ -47,7 +54,7 @@ Target Report Mask(FAST_INDIRECT_CALLS)
 Generate fast indirect calls
 
 mfixed-range=
-Target RejectNegative Joined
+Target RejectNegative Joined Var(pa_deferred_options) Defer
 Specify range of registers to make fixed
 
 mgas
@@ -96,8 +103,29 @@ Target Report Mask(PORTABLE_RUNTIME)
 Use portable calling conventions
 
 mschedule=
-Target RejectNegative Joined
+Target RejectNegative Joined Enum(pa_schedule) Var(pa_cpu)
 Specify CPU for scheduling purposes.  Valid arguments are 700, 7100, 7100LC, 7200, 7300, and 8000
+
+Enum
+Name(pa_schedule) Type(enum processor_type)
+
+EnumValue
+Enum(pa_schedule) String(8000) Value(PROCESSOR_8000)
+
+EnumValue
+Enum(pa_schedule) String(7100) Value(PROCESSOR_7100)
+
+EnumValue
+Enum(pa_schedule) String(700) Value(PROCESSOR_700)
+
+EnumValue
+Enum(pa_schedule) String(7100LC) Value(PROCESSOR_7100LC)
+
+EnumValue
+Enum(pa_schedule) String(7200) Value(PROCESSOR_7200)
+
+EnumValue
+Enum(pa_schedule) String(7300) Value(PROCESSOR_7300)
 
 msoft-float
 Target Report Mask(SOFT_FLOAT)
