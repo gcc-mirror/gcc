@@ -1,6 +1,6 @@
 ; Options for the NEC V850 port of the compiler.
 
-; Copyright (C) 2005, 2007, 2010 Free Software Foundation, Inc.
+; Copyright (C) 2005, 2007, 2010, 2011 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -17,6 +17,12 @@
 ; You should have received a copy of the GNU General Public License
 ; along with GCC; see the file COPYING3.  If not see
 ; <http://www.gnu.org/licenses/>.
+
+HeaderInclude
+config/v850/v850-opts.h
+
+Variable
+int small_memory_max[(int)SMALL_MEMORY_max] = { 0, 0, 0 }
 
 mapp-regs
 Target Report Mask(APP_REGS)
@@ -50,9 +56,12 @@ mprolog-function
 Target Report Mask(PROLOG_FUNCTION)
 Use stubs for function prologues
 
-msda
-Target RejectNegative Joined
+msda=
+Target RejectNegative Joined UInteger
 Set the max size of data eligible for the SDA area
+
+msda-
+Target RejectNegative Joined Undocumented Alias(msda=)
 
 msmall-sld
 Target Report Mask(SMALL_SLD)
@@ -62,9 +71,12 @@ mspace
 Target RejectNegative
 Same as: -mep -mprolog-function
 
-mtda
-Target RejectNegative Joined
+mtda=
+Target RejectNegative Joined UInteger
 Set the max size of data eligible for the TDA area
+
+mtda-
+Target RejectNegative Joined Undocumented Alias(mtda=)
 
 mno-strict-align
 Target Report Mask(NO_STRICT_ALIGN)
@@ -101,6 +113,9 @@ mv850e2v3
 Target Report RejectNegative Mask(V850E2V3)
 Compile for the v850e2v3 processor
 
-mzda
-Target RejectNegative Joined
+mzda=
+Target RejectNegative Joined UInteger
 Set the max size of data eligible for the ZDA area
+
+mzda-
+Target RejectNegative Joined Undocumented Alias(mzda=)
