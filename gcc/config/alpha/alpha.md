@@ -4252,9 +4252,7 @@
    (use (match_operand 3 "" ""))]
   ""
 {
-  if (TARGET_ABI_WINDOWS_NT)
-    emit_call_insn (gen_call_nt (operands[0], operands[1]));
-  else if (TARGET_ABI_OPEN_VMS)
+  if (TARGET_ABI_OPEN_VMS)
     emit_call_insn (gen_call_vms (operands[0], operands[2]));
   else
     emit_call_insn (gen_call_osf (operands[0], operands[1]));
@@ -4283,19 +4281,6 @@
   operands[0] = XEXP (operands[0], 0);
   if (! call_operand (operands[0], Pmode))
     operands[0] = copy_to_mode_reg (Pmode, operands[0]);
-})
-
-(define_expand "call_nt"
-  [(parallel [(call (mem:DI (match_operand 0 "" ""))
-		    (match_operand 1 "" ""))
-	      (clobber (reg:DI 26))])]
-  ""
-{
-  gcc_assert (MEM_P (operands[0]));
-
-  operands[0] = XEXP (operands[0], 0);
-  if (GET_CODE (operands[0]) != SYMBOL_REF && !REG_P (operands[0]))
-    operands[0] = force_reg (DImode, operands[0]);
 })
 
 ;;
@@ -4344,9 +4329,7 @@
    (use (match_operand 4 "" ""))]
   ""
 {
-  if (TARGET_ABI_WINDOWS_NT)
-    emit_call_insn (gen_call_value_nt (operands[0], operands[1], operands[2]));
-  else if (TARGET_ABI_OPEN_VMS)
+  if (TARGET_ABI_OPEN_VMS)
     emit_call_insn (gen_call_value_vms (operands[0], operands[1],
 					operands[3]));
   else
@@ -4379,20 +4362,6 @@
   operands[1] = XEXP (operands[1], 0);
   if (! call_operand (operands[1], Pmode))
     operands[1] = copy_to_mode_reg (Pmode, operands[1]);
-})
-
-(define_expand "call_value_nt"
-  [(parallel [(set (match_operand 0 "" "")
-		   (call (mem:DI (match_operand 1 "" ""))
-			 (match_operand 2 "" "")))
-	      (clobber (reg:DI 26))])]
-  ""
-{
-  gcc_assert (MEM_P (operands[1]));
-
-  operands[1] = XEXP (operands[1], 0);
-  if (GET_CODE (operands[1]) != SYMBOL_REF && !REG_P (operands[1]))
-    operands[1] = force_reg (DImode, operands[1]);
 })
 
 (define_expand "call_value_vms"
@@ -4601,18 +4570,6 @@
   [(set_attr "type" "jsr")
    (set_attr "length" "*,8")])
 
-(define_insn "*call_nt_1"
-  [(call (mem:DI (match_operand:DI 0 "call_operand" "r,R,s"))
-	 (match_operand 1 "" ""))
-   (clobber (reg:DI 26))]
-  "TARGET_ABI_WINDOWS_NT"
-  "@
-   jsr $26,(%0)
-   bsr $26,%0
-   jsr $26,%0"
-  [(set_attr "type" "jsr")
-   (set_attr "length" "*,*,12")])
-
 ; GAS relies on the order and position of instructions output below in order
 ; to generate relocs for VMS link to potentially optimize the call.
 ; Please do not molest.
@@ -4708,13 +4665,7 @@
 	      (use (label_ref:DI (match_operand 1 "" "")))])]
   ""
 {
-  if (TARGET_ABI_WINDOWS_NT)
-    {
-      rtx dest = gen_reg_rtx (DImode);
-      emit_insn (gen_extendsidi2 (dest, operands[0]));
-      operands[0] = dest;
-    }
-  else if (TARGET_ABI_OSF)
+  if (TARGET_ABI_OSF)
     {
       rtx dest = gen_reg_rtx (DImode);
       emit_insn (gen_extendsidi2 (dest, operands[0]));
@@ -4722,18 +4673,6 @@
       operands[0] = dest;
     }
 })
-
-(define_insn "*tablejump_osf_nt_internal"
-  [(set (pc)
-	(match_operand:DI 0 "register_operand" "r"))
-   (use (label_ref:DI (match_operand 1 "" "")))]
-  "(TARGET_ABI_OSF || TARGET_ABI_WINDOWS_NT)
-   && alpha_tablejump_addr_vec (insn)"
-{
-  operands[2] = alpha_tablejump_best_label (insn);
-  return "jmp $31,(%0),%2";
-}
-  [(set_attr "type" "ibr")])
 
 (define_insn "*tablejump_internal"
   [(set (pc)
@@ -4752,12 +4691,9 @@
   [(set_attr "type" "callpal")])
 
 ;; BUGCHK is documented common to OSF/1 and VMS PALcode.
-;; NT does not document anything at 0x81 -- presumably it would generate
-;; the equivalent of SIGILL, but this isn't that important.
-;; ??? Presuming unicosmk uses either OSF/1 or VMS PALcode.
 (define_insn "trap"
   [(trap_if (const_int 1) (const_int 0))]
-  "!TARGET_ABI_WINDOWS_NT"
+  ""
   "call_pal 0x81"
   [(set_attr "type" "callpal")])
 
@@ -4972,7 +4908,7 @@
 (define_insn "*movsi_nt_vms"
   [(set (match_operand:SI 0 "nonimmediate_operand" "=r,r,r,r,r,r,m")
 	(match_operand:SI 1 "input_operand" "rJ,K,L,s,n,m,rJ"))]
-  "(TARGET_ABI_WINDOWS_NT || TARGET_ABI_OPEN_VMS)
+  "TARGET_ABI_OPEN_VMS
     && (register_operand (operands[0], SImode)
         || reg_or_0_operand (operands[1], SImode))"
   "@
@@ -7669,19 +7605,6 @@
    lda $27,%1\;jmp $31,($27),%1"
   [(set_attr "type" "jsr")
    (set_attr "length" "*,8")])
-
-(define_insn "*call_value_nt_1"
-  [(set (match_operand 0 "" "")
-	(call (mem:DI (match_operand:DI 1 "call_operand" "r,R,s"))
-	      (match_operand 2 "" "")))
-   (clobber (reg:DI 26))]
-  "TARGET_ABI_WINDOWS_NT"
-  "@
-   jsr $26,(%1)
-   bsr $26,%1
-   jsr $26,%1"
-  [(set_attr "type" "jsr")
-   (set_attr "length" "*,*,12")])
 
 ; GAS relies on the order and position of instructions output below in order
 ; to generate relocs for VMS link to potentially optimize the call.

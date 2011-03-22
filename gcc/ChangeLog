@@ -1,3 +1,16 @@
+2011-03-22  Richard Henderson  <rth@redhat.com>
+
+	* config/alpha/alpha.c (alpha_expand_prologue): Don't test
+	TARGET_ABI_WINDOWS_NT.
+	(alpha_output_function_end_prologue): Likewise.
+	* config/alpha/alpha.h (TARGET_ABI_OSF): Likewise.
+	(ASM_OUTPUT_ADDR_DIFF_ELT): Likewise.
+	* config/alpha/alpha.md (call, call_value, tablejump): Likewise.
+	(trap, *movsi_nt_vms): Likewise.
+	(call_nt, call_value_nt, *call_nt_1, *call_value_nt_1): Remove.
+	(*tablejump_osf_nt_internal): Remove.
+	* config/alpha/predicates.md (input_operand): Only test Pmode.
+
 2011-03-22  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/alpha/alpha.c (alpha_handle_option): Access target_flags
