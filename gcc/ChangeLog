@@ -1,3 +1,23 @@
+2011-03-22  Richard Guenther  <rguenther@suse.de>
+
+	* gimple.c (gimple_rhs_class_table): POLYNOMIAL_CHREC is not
+	a valid RHS.  Make DOT_PROD_EXPR and REALIGN_LOAD_EXPR ternary.
+	* tree-cfg.c (verify_gimple_assign_ternary): Allow DOT_PROD_EXPR
+	and REALIGN_LOAD_EXPR.
+	(verify_gimple_assign_single): Do not allow POLYNOMIAL_CHREC,
+	DOT_PROD_EXPR or REALIGN_LOAD_EXPR.
+	* expr.c (expand_expr_real_1): Move REALIGN_LOAD_EXPR and
+	DOT_PROD_EXPR case ...
+	(expand_expr_real_2): ... here.
+	* gimple-pretty-print.c (dump_ternary_rhs): Handle DOT_PROD_EXPR
+	and REALIGN_LOAD_EXPR.
+	* tree-data-ref.c (split_constant_offset): Bail out for all CHRECs.
+	* tree-vect-loop.c (vect_model_reduction_cost): Handle ternaries.
+	(vect_create_epilog_for_reduction): Likewise.
+	(vectorizable_reduction): Likewise.
+	* tree-vect-patterns.c (vect_recog_dot_prod_pattern): Adjust.
+	* tree-vect-stmts.c (vectorizable_load): Likewise.
+
 2011-03-22  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gimplify.c (gimplify_cond_expr): Gimplify COMPOUND_EXPR conditions.

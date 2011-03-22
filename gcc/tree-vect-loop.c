@@ -2498,6 +2498,9 @@ vect_model_reduction_cost (stmt_vec_info stmt_info, enum tree_code reduc_code,
     case GIMPLE_BINARY_RHS:
       reduction_op = gimple_assign_rhs2 (stmt);
       break;
+    case GIMPLE_TERNARY_RHS:
+      reduction_op = gimple_assign_rhs3 (stmt);
+      break;
     default:
       gcc_unreachable ();
     }
@@ -3191,7 +3194,7 @@ vect_create_epilog_for_reduction (VEC (tree, heap) *vect_defs, gimple stmt,
     {
     case GIMPLE_SINGLE_RHS:
       gcc_assert (TREE_OPERAND_LENGTH (gimple_assign_rhs1 (stmt))
-                                       == ternary_op);
+		  == ternary_op);
       reduction_op = TREE_OPERAND (gimple_assign_rhs1 (stmt), reduc_index);
       break;
     case GIMPLE_UNARY_RHS:
@@ -3200,6 +3203,9 @@ vect_create_epilog_for_reduction (VEC (tree, heap) *vect_defs, gimple stmt,
     case GIMPLE_BINARY_RHS:
       reduction_op = reduc_index ?
                      gimple_assign_rhs2 (stmt) : gimple_assign_rhs1 (stmt);
+      break;
+    case GIMPLE_TERNARY_RHS:
+      reduction_op = gimple_op (stmt, reduc_index + 1);
       break;
     default:
       gcc_unreachable ();
@@ -4024,6 +4030,15 @@ vectorizable_reduction (gimple stmt, gimple_stmt_iterator *gsi,
       gcc_assert (op_type == binary_op);
       ops[0] = gimple_assign_rhs1 (stmt);
       ops[1] = gimple_assign_rhs2 (stmt);
+      break;
+
+    case GIMPLE_TERNARY_RHS:
+      code = gimple_assign_rhs_code (stmt);
+      op_type = TREE_CODE_LENGTH (code);
+      gcc_assert (op_type == ternary_op);
+      ops[0] = gimple_assign_rhs1 (stmt);
+      ops[1] = gimple_assign_rhs2 (stmt);
+      ops[2] = gimple_assign_rhs3 (stmt);
       break;
 
     case GIMPLE_UNARY_RHS:

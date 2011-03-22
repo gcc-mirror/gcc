@@ -3669,6 +3669,11 @@ verify_gimple_assign_ternary (gimple stmt)
 	}
       break;
 
+    case DOT_PROD_EXPR:
+    case REALIGN_LOAD_EXPR:
+      /* FIXME.  */
+      return false;
+
     default:
       gcc_unreachable ();
     }
@@ -3799,10 +3804,7 @@ verify_gimple_assign_single (gimple stmt)
     case OBJ_TYPE_REF:
     case ASSERT_EXPR:
     case WITH_SIZE_EXPR:
-    case POLYNOMIAL_CHREC:
-    case DOT_PROD_EXPR:
     case VEC_COND_EXPR:
-    case REALIGN_LOAD_EXPR:
       /* FIXME.  */
       return res;
 

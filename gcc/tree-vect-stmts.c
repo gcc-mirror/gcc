@@ -4236,15 +4236,13 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 	  if (alignment_support_scheme == dr_explicit_realign_optimized
 	      || alignment_support_scheme == dr_explicit_realign)
 	    {
-	      tree tmp;
-
 	      lsq = gimple_assign_lhs (new_stmt);
 	      if (!realignment_token)
 		realignment_token = dataref_ptr;
 	      vec_dest = vect_create_destination_var (scalar_dest, vectype);
-	      tmp = build3 (REALIGN_LOAD_EXPR, vectype, msq, lsq,
-			    realignment_token);
-	      new_stmt = gimple_build_assign (vec_dest, tmp);
+	      new_stmt
+		= gimple_build_assign_with_ops3 (REALIGN_LOAD_EXPR, vec_dest,
+						 msq, lsq, realignment_token);
 	      new_temp = make_ssa_name (vec_dest, new_stmt);
 	      gimple_assign_set_lhs (new_stmt, new_temp);
 	      vect_finish_stmt_generation (stmt, new_stmt, gsi);

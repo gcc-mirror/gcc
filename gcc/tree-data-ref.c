@@ -686,7 +686,7 @@ split_constant_offset (tree exp, tree *var, tree *off)
   *off = ssize_int (0);
   STRIP_NOPS (exp);
 
-  if (automatically_generated_chrec_p (exp))
+  if (tree_is_chrec (exp))
     return;
 
   otype = TREE_TYPE (exp);
