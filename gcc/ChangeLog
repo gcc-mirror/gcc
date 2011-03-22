@@ -1,5 +1,10 @@
 2011-03-22  Joseph Myers  <joseph@codesourcery.com>
 
+	* config/pdp11/pdp11.c (pdp11_handle_option): Access target_flags
+	via opts pointer.  Don't assert that global structures are in use.
+
+2011-03-22  Joseph Myers  <joseph@codesourcery.com>
+
 	* config/pa/pa-hpux.opt (flag_pa_unix): New Variable entry.
 	(munix=93): Use Var.
 	* config/pa/pa-hpux1010.opt (munix=95): Use Var.

@@ -247,19 +247,17 @@ static const struct default_options pdp11_option_optimization_table[] =
 /* Implement TARGET_HANDLE_OPTION.  */
 
 static bool
-pdp11_handle_option (struct gcc_options *opts, struct gcc_options *opts_set,
+pdp11_handle_option (struct gcc_options *opts,
+		     struct gcc_options *opts_set ATTRIBUTE_UNUSED,
 		     const struct cl_decoded_option *decoded,
 		     location_t loc ATTRIBUTE_UNUSED)
 {
   size_t code = decoded->opt_index;
 
-  gcc_assert (opts == &global_options);
-  gcc_assert (opts_set == &global_options_set);
-
   switch (code)
     {
     case OPT_m10:
-      target_flags &= ~(MASK_40 | MASK_45);
+      opts->x_target_flags &= ~(MASK_40 | MASK_45);
       return true;
 
     default:
