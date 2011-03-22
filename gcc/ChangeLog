@@ -1,5 +1,10 @@
 2011-03-22  Joseph Myers  <joseph@codesourcery.com>
 
+	* config/sh/sh.c (sh_handle_option): Access target_flags via opts
+	pointer.  Don't assert that global structures are in use.
+
+2011-03-22  Joseph Myers  <joseph@codesourcery.com>
+
 	* config/pdp11/pdp11.c (pdp11_handle_option): Access target_flags
 	via opts pointer.  Don't assert that global structures are in use.
 
