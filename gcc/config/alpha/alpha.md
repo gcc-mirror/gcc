@@ -799,7 +799,7 @@
 	      (clobber (reg:DI 28))])
    (set (match_operand:SI 0 "nonimmediate_operand" "")
 	(subreg:SI (match_dup 5) 0))]
-  "!TARGET_ABI_OPEN_VMS"
+  "TARGET_ABI_OSF"
 {
   operands[3] = gen_reg_rtx (DImode);
   operands[4] = gen_reg_rtx (DImode);
@@ -817,7 +817,7 @@
 	      (clobber (reg:DI 28))])
    (set (match_operand:SI 0 "nonimmediate_operand" "")
 	(subreg:SI (match_dup 5) 0))]
-  "!TARGET_ABI_OPEN_VMS"
+  "TARGET_ABI_OSF"
 {
   operands[3] = gen_reg_rtx (DImode);
   operands[4] = gen_reg_rtx (DImode);
@@ -835,7 +835,7 @@
 	      (clobber (reg:DI 28))])
    (set (match_operand:SI 0 "nonimmediate_operand" "")
 	(subreg:SI (match_dup 5) 0))]
-  "!TARGET_ABI_OPEN_VMS"
+  "TARGET_ABI_OSF"
 {
   operands[3] = gen_reg_rtx (DImode);
   operands[4] = gen_reg_rtx (DImode);
@@ -853,7 +853,7 @@
 	      (clobber (reg:DI 28))])
    (set (match_operand:SI 0 "nonimmediate_operand" "")
 	(subreg:SI (match_dup 5) 0))]
-  "!TARGET_ABI_OPEN_VMS"
+  "TARGET_ABI_OSF"
 {
   operands[3] = gen_reg_rtx (DImode);
   operands[4] = gen_reg_rtx (DImode);
@@ -866,7 +866,7 @@
 			   (match_operand:DI 2 "register_operand" "")))
 	      (clobber (reg:DI 23))
 	      (clobber (reg:DI 28))])]
-  "!TARGET_ABI_OPEN_VMS"
+  "TARGET_ABI_OSF"
   "")
 
 (define_expand "udivdi3"
@@ -875,7 +875,7 @@
 			    (match_operand:DI 2 "register_operand" "")))
 	      (clobber (reg:DI 23))
 	      (clobber (reg:DI 28))])]
-  "!TARGET_ABI_OPEN_VMS"
+  "TARGET_ABI_OSF"
   "")
 
 (define_expand "moddi3"
@@ -884,7 +884,7 @@
 			   (match_operand:DI 2 "register_operand" "")))
 	      (clobber (reg:DI 23))
 	      (clobber (reg:DI 28))])]
-  "!TARGET_ABI_OPEN_VMS"
+  "TARGET_ABI_OSF"
   "")
 
 (define_expand "umoddi3"
@@ -893,7 +893,7 @@
 			    (match_operand:DI 2 "register_operand" "")))
 	      (clobber (reg:DI 23))
 	      (clobber (reg:DI 28))])]
-  "!TARGET_ABI_OPEN_VMS"
+  "TARGET_ABI_OSF"
   "")
 
 ;; Lengths of 8 for ldq $t12,__divq($gp); jsr $t9,($t12),__divq as
@@ -906,7 +906,7 @@
 			 (match_operand:DI 2 "register_operand" "b")])))
    (clobber (reg:DI 23))
    (clobber (reg:DI 28))]
-  "TARGET_EXPLICIT_RELOCS && ! TARGET_ABI_OPEN_VMS"
+  "TARGET_EXPLICIT_RELOCS && TARGET_ABI_OSF"
   "#"
   "&& reload_completed"
   [(parallel [(set (match_dup 0)
@@ -951,7 +951,7 @@
    (use (match_operand 5 "const_int_operand" ""))
    (clobber (reg:DI 23))
    (clobber (reg:DI 28))]
-  "TARGET_EXPLICIT_RELOCS && !TARGET_ABI_OPEN_VMS"
+  "TARGET_EXPLICIT_RELOCS && TARGET_ABI_OSF"
   "jsr $23,($27),__%E3%j5"
   [(set_attr "type" "jsr")
    (set_attr "length" "4")])
@@ -963,7 +963,7 @@
 			 (match_operand:DI 2 "register_operand" "b")])))
    (clobber (reg:DI 23))
    (clobber (reg:DI 28))]
-  "!TARGET_ABI_OPEN_VMS"
+  "TARGET_ABI_OSF"
   "%E3 %1,%2,%0"
   [(set_attr "type" "jsr")
    (set_attr "length" "8")])
@@ -975,7 +975,7 @@
 			 (match_operand:DI 2 "register_operand" "b")]))
    (clobber (reg:DI 23))
    (clobber (reg:DI 28))]
-  "TARGET_EXPLICIT_RELOCS && ! TARGET_ABI_OPEN_VMS"
+  "TARGET_EXPLICIT_RELOCS && TARGET_ABI_OSF"
   "#"
   "&& reload_completed"
   [(parallel [(set (match_dup 0) (match_dup 3))
@@ -1019,7 +1019,7 @@
    (use (match_operand 5 "const_int_operand" ""))
    (clobber (reg:DI 23))
    (clobber (reg:DI 28))]
-  "TARGET_EXPLICIT_RELOCS && !TARGET_ABI_OPEN_VMS"
+  "TARGET_EXPLICIT_RELOCS && TARGET_ABI_OSF"
   "jsr $23,($27),__%E3%j5"
   [(set_attr "type" "jsr")
    (set_attr "length" "4")])
@@ -1031,7 +1031,7 @@
 			 (match_operand:DI 2 "register_operand" "b")]))
    (clobber (reg:DI 23))
    (clobber (reg:DI 28))]
-  "!TARGET_ABI_OPEN_VMS"
+  "TARGET_ABI_OSF"
   "%E3 %1,%2,%0"
   [(set_attr "type" "jsr")
    (set_attr "length" "8")])

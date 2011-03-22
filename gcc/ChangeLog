@@ -1,3 +1,15 @@
+2011-03-22  Richard Henderson  <rth@redhat.com>
+
+	* config/alpha/alpha.c (direct_return): Use TARGET_ABI_OSF instead
+	of !TARGET_ABI_OPEN_VMS.
+	(alpha_trampoline_init, alpha_start_function): Likewise.
+	(alpha_expand_epilogue, alpha_file_start): Likewise.
+	* config/alpha/alpha.md (divsi3, modsi3): Likewise.
+	(udivsi3, umodsi3, divdi3, moddi3, udivdi3, umoddi3): Likewise.
+	(*divmodsi_internal_er, *divmodsi_internal_er_1): Likewise.
+	(*divmodsi_internal, *divmoddi_internal_er): Likewise.
+	(*divmoddi_internal_er_1, *divmoddi_internal): Likewise.
+
 2011-03-22  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/s390/s390-opts.h: New.
