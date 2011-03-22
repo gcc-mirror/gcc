@@ -1,7 +1,7 @@
 /* Definitions of target machine for GNU compiler.
    Matsushita MN10300 series
    Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-   2007, 2008, 2009, 2010 Free Software Foundation, Inc.
+   2007, 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
    Contributed by Jeff Law (law@cygnus.com).
 
    This file is part of GCC.
@@ -57,15 +57,10 @@
     }						\
   while (0)
 
-enum processor_type
-{
-  PROCESSOR_MN10300,
-  PROCESSOR_AM33,
-  PROCESSOR_AM33_2,
-  PROCESSOR_AM34
-};
+#ifndef MN10300_OPTS_H
+#include "config/mn10300/mn10300-opts.h"
+#endif
 
-extern enum processor_type mn10300_processor;
 extern enum processor_type mn10300_tune_cpu;
 
 #define TARGET_AM33	(mn10300_processor >= PROCESSOR_AM33)

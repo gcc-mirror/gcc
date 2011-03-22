@@ -52,12 +52,6 @@
    symbol names from register names.  */
 int mn10300_protect_label;
 
-/* The selected processor.  */
-enum processor_type mn10300_processor = PROCESSOR_DEFAULT;
-
-/* Processor type to select for tuning.  */
-static const char * mn10300_tune_string = NULL;
-
 /* Selected processor type for tuning.  */
 enum processor_type mn10300_tune_cpu = PROCESSOR_DEFAULT;
 
@@ -91,35 +85,28 @@ static int cc_flags_for_code(enum rtx_code);
 /* Implement TARGET_HANDLE_OPTION.  */
 
 static bool
-mn10300_handle_option (struct gcc_options *opts, struct gcc_options *opts_set,
+mn10300_handle_option (struct gcc_options *opts,
+		       struct gcc_options *opts_set ATTRIBUTE_UNUSED,
 		       const struct cl_decoded_option *decoded,
 		       location_t loc ATTRIBUTE_UNUSED)
 {
   size_t code = decoded->opt_index;
-  const char *arg = decoded->arg;
   int value = decoded->value;
-
-  gcc_assert (opts == &global_options);
-  gcc_assert (opts_set == &global_options_set);
 
   switch (code)
     {
     case OPT_mam33:
-      mn10300_processor = value ? PROCESSOR_AM33 : PROCESSOR_MN10300;
+      opts->x_mn10300_processor = value ? PROCESSOR_AM33 : PROCESSOR_MN10300;
       return true;
 
     case OPT_mam33_2:
-      mn10300_processor = (value
-			   ? PROCESSOR_AM33_2
-			   : MIN (PROCESSOR_AM33, PROCESSOR_DEFAULT));
+      opts->x_mn10300_processor = (value
+				   ? PROCESSOR_AM33_2
+				   : MIN (PROCESSOR_AM33, PROCESSOR_DEFAULT));
       return true;
 
     case OPT_mam34:
-      mn10300_processor = (value ? PROCESSOR_AM34 : PROCESSOR_DEFAULT);
-      return true;
-
-    case OPT_mtune_:
-      mn10300_tune_string = arg;
+      opts->x_mn10300_processor = (value ? PROCESSOR_AM34 : PROCESSOR_DEFAULT);
       return true;
 
     default:
