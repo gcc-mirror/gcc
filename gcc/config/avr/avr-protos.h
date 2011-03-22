@@ -76,7 +76,7 @@ extern const char *lshrsi3_out (rtx insn, rtx operands[], int *len);
 extern bool avr_rotate_bytes (rtx operands[]);
 
 extern void expand_prologue (void);
-extern void expand_epilogue (void);
+extern void expand_epilogue (bool);
 extern int avr_epilogue_uses (int regno);
 
 extern void avr_output_bld (rtx operands[], int bit_nr);

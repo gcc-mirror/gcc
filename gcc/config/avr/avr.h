@@ -826,4 +826,7 @@ struct GTY(()) machine_function
   
   /* Current function stack size.  */
   int stack_usage;
+
+  /* 'true' if a callee might be tail called */
+  int sibcall_fails;
 };
