@@ -1,5 +1,27 @@
 2011-03-22  Joseph Myers  <joseph@codesourcery.com>
 
+	* config/v850/v850-opts.h: New.
+	* config/v850/v850.c (small_memory): Replace with
+	small_memory_physical_max array.  Make that array static const.
+	(v850_handle_memory_option): Take integer value of argument.  Take
+	gcc_options pointer, option text and location.  Return void.
+	Update for changes to small memory structures.
+	(v850_handle_option): Access target_flags via opts pointer.  Don't
+	assert that global structures are in use.  Update calls to
+	v850_handle_memory_option.
+	(v850_encode_data_area): Update references to small memory
+	settings.
+	* config/v850/v850.h (struct small_memory_info, small_memory):
+	Remove.
+	(enum small_memory_type): Move to v850-opts.h.
+	* config/v850/v850.opt (config/v850/v850-opts.h): New
+	HeaderInclude entry.
+	(small_memory_max): New Variable entry.
+	(msda): Replace by pair of options msda= and msda-.  Use UInteger.
+	(mtda, mzda): Likewise.
+
+2011-03-22  Joseph Myers  <joseph@codesourcery.com>
+
 	* config/sh/sh.c (sh_handle_option): Access target_flags via opts
 	pointer.  Don't assert that global structures are in use.
 

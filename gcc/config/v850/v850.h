@@ -123,25 +123,6 @@ extern GTY(()) rtx v850_compare_op1;
 } while(0)
 
 #define MASK_CPU (MASK_V850 | MASK_V850E)
-
-/* Information about the various small memory areas.  */
-struct small_memory_info {
-  const char *name;
-  long max;
-  long physical_max;
-};
-
-enum small_memory_type {
-  /* tiny data area, using EP as base register */
-  SMALL_MEMORY_TDA = 0,
-  /* small data area using dp as base register */
-  SMALL_MEMORY_SDA,
-  /* zero data area using r0 as base register */
-  SMALL_MEMORY_ZDA,
-  SMALL_MEMORY_max
-};
-
-extern struct small_memory_info small_memory[(int)SMALL_MEMORY_max];
 
 /* Target machine storage layout */
 
