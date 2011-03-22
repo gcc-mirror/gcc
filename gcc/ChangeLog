@@ -1,5 +1,11 @@
 2011-03-22  Joseph Myers  <joseph@codesourcery.com>
 
+	* config/alpha/alpha.c (alpha_handle_option): Access target_flags
+	via opts pointer.  Use error_at.  Don't assert that global
+	structures are in use.
+
+2011-03-22  Joseph Myers  <joseph@codesourcery.com>
+
 	* config/i386/i386.c (ix86_isa_flags_explicit): Remove.
 	(ix86_handle_option): Access ix86_isa_flags and
 	ix86_isa_flags_explicit via opts pointer.  Don't assert that
