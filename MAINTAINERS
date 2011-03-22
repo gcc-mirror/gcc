@@ -51,7 +51,6 @@ avr port		Eric Weddington		eric.weddington@atmel.com
 bfin port		Bernd Schmidt		bernds@codesourcery.com
 bfin port		Jie Zhang		jie@codesourcery.com
 cris port		Hans-Peter Nilsson	hp@axis.com
-crx port		Pompapathi V Gadad 	Pompapathi.V.Gadad@nsc.com
 fr30 port		Nick Clifton		nickc@redhat.com
 frv port		Nick Clifton		nickc@redhat.com
 frv port		Alexandre Oliva		aoliva@redhat.com
@@ -68,7 +67,6 @@ iq2000 port		Nick Clifton		nickc@redhat.com
 lm32 port		Sebastien Bourdeauducq	sebastien@milkymist.org
 m32c port		DJ Delorie		dj@redhat.com
 m32r port		Nick Clifton		nickc@redhat.com
-m68hc11 port		Stephane Carrez		stcarrez@nerim.fr
 m68k port (?)		Jeff Law		law@redhat.com
 m68k port		Andreas Schwab		schwab@linux-m68k.org
 m68k-motorola-sysv port	Philippe De Muyter	phdm@macqel.be
@@ -326,6 +324,7 @@ Julian Brown					julian@codesourcery.com
 Christian Bruel					christian.bruel@st.com
 Kevin Buettner					kevinb@redhat.com
 Andrew Cagney					cagney@redhat.com
+Stephane Carrez					stcarrez@nerim.fr
 Chandra Chavva					cchavva@redhat.com
 Fabien Chêne					fabien@gcc.gnu.org
 William Cohen					wcohen@redhat.com
@@ -357,6 +356,7 @@ John Freeman					jfreeman08@gmail.com
 Nathan Froyd					froydnj@codesourcery.com
 Chao-ying Fu					fu@mips.com
 Gary Funck					gary@intrepid.com
+Pompapathi V Gadad 				Pompapathi.V.Gadad@nsc.com
 Kaveh Ghazi					ghazi@gcc.gnu.org
 Matthew Gingell					gingell@gnat.com
 Tristan Gingold					gingold@adacore.com

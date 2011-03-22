@@ -1775,37 +1775,6 @@ Integer constant in the range @minus{}6 @dots{} 5.
 A memory address based on Y or Z pointer with displacement.
 @end table
 
-@item CRX Architecture---@file{config/crx/crx.h}
-@table @code
-
-@item b
-Registers from r0 to r14 (registers without stack pointer)
-
-@item l
-Register r16 (64-bit accumulator lo register)
-
-@item h
-Register r17 (64-bit accumulator hi register)
-
-@item k
-Register pair r16-r17. (64-bit accumulator lo-hi pair)
-
-@item I
-Constant that fits in 3 bits
-
-@item J
-Constant that fits in 4 bits
-
-@item K
-Constant that fits in 5 bits
-
-@item L
-Constant that is one of @minus{}1, 4, @minus{}4, 7, 8, 12, 16, 20, 32, 48
-
-@item G
-Floating point constant that is legal for store immediate
-@end table
-
 @item Hewlett-Packard PA-RISC---@file{config/pa/pa.h}
 @table @code
 @item a
@@ -2865,64 +2834,6 @@ push_operand
 
 @item Ac
 Non-register operands allowed in clr
-
-@end table
-
-@item Motorola 68HC11 & 68HC12 families---@file{config/m68hc11/m68hc11.h}
-@table @code
-@item a
-Register `a'
-
-@item b
-Register `b'
-
-@item d
-Register `d'
-
-@item q
-An 8-bit register
-
-@item t
-Temporary soft register _.tmp
-
-@item u
-A soft register _.d1 to _.d31
-
-@item w
-Stack pointer register
-
-@item x
-Register `x'
-
-@item y
-Register `y'
-
-@item z
-Pseudo register `z' (replaced by `x' or `y' at the end)
-
-@item A
-An address register: x, y or z
-
-@item B
-An address register: x or y
-
-@item D
-Register pair (x:d) to form a 32-bit value
-
-@item L
-Constants in the range @minus{}65536 to 65535
-
-@item M
-Constants whose 16-bit low part is zero
-
-@item N
-Constant integer 1 or @minus{}1
-
-@item O
-Constant integer 16
-
-@item P
-Constants in the range @minus{}8 to 2
 
 @end table
 

@@ -1012,9 +1012,6 @@ predefined set of them.
 Some targets provide finer-grained control over which multilibs are built
 (e.g., @option{--disable-softfloat}):
 @table @code
-@item arc-*-elf*
-biendian.
-
 @item arm-*-*
 fpu, 26bit, underscore, interwork, biendian, nofmult.
 
@@ -2940,8 +2937,6 @@ information are.
 @item
 @uref{#alpha-dec-osf51,,alpha*-dec-osf5.1}
 @item
-@uref{#arc-x-elf,,arc-*-elf}
-@item
 @uref{#arm-x-elf,,arm-*-elf}
 @item
 @uref{#avr,,avr}
@@ -2983,10 +2978,6 @@ information are.
 @uref{#m32c-x-elf,,m32c-*-elf}
 @item
 @uref{#m32r-x-elf,,m32r-*-elf}
-@item
-@uref{#m6811-elf,,m6811-elf}
-@item
-@uref{#m6812-elf,,m6812-elf}
 @item
 @uref{#m68k-x-x,,m68k-*-*}
 @item
@@ -3140,13 +3131,6 @@ provide a fix shortly.
 @html
 <hr />
 @end html
-@heading @anchor{arc-x-elf}arc-*-elf
-Argonaut ARC processor.
-This configuration is intended for embedded systems.
-
-@html
-<hr />
-@end html
 @heading @anchor{arm-x-elf}arm-*-elf
 ARM-family processors.  Subtargets that use the ELF object format
 require GNU binutils 2.13 or newer.  Such subtargets include:
@@ -3241,35 +3225,6 @@ Pre-packaged tools can be obtained from
 @uref{ftp://ftp.axis.com/@/pub/@/axis/@/tools/@/cris/@/compiler-kit/}.  More
 information about this platform is available at
 @uref{http://developer.axis.com/}.
-
-@html
-<hr />
-@end html
-@heading @anchor{crx}CRX
-
-The CRX CompactRISC architecture is a low-power 32-bit architecture with
-fast context switching and architectural extensibility features.
-
-@ifnothtml
-@xref{CRX Options,, CRX Options, gcc, Using and Porting the GNU Compiler
-Collection (GCC)},
-@end ifnothtml
-
-@ifhtml
-See ``CRX Options'' in the main manual for a list of CRX-specific options.
-@end ifhtml
-
-Use @samp{configure --target=crx-elf --enable-languages=c,c++} to configure
-GCC@ for building a CRX cross-compiler. The option @samp{--target=crx-elf}
-is also used to build the @samp{newlib} C library for CRX.
-
-It is also possible to build libstdc++-v3 for the CRX architecture. This
-needs to be done in a separate step with the following configure settings:
-
-@smallexample
-gcc/libstdc++-v3/configure --host=crx-elf --with-newlib \
-    --enable-sjlj-exceptions --enable-cxx-flags='-fexceptions -frtti'
-@end smallexample
 
 @html
 <hr />
@@ -3795,20 +3750,6 @@ This configuration is intended for embedded systems.
 @html
 <hr />
 @end html
-@heading @anchor{m6811-elf}m6811-elf
-Motorola 68HC11 family micro controllers.  These are used in embedded
-applications.  There are no standard Unix configurations.
-
-@html
-<hr />
-@end html
-@heading @anchor{m6812-elf}m6812-elf
-Motorola 68HC12 family micro controllers.  These are used in embedded
-applications.  There are no standard Unix configurations.
-
-@html
-<hr />
-@end html
 @heading @anchor{m68k-x-x}m68k-*-*
 By default,
 @samp{m68k-*-elf*}, @samp{m68k-*-rtems},  @samp{m68k-*-uclinux} and
@@ -3839,9 +3780,7 @@ be a @option{-mcpu} argument or one of the following values:
 GCC 4.3 changed the uClinux configuration so that it uses the
 @samp{m68k-linux-gnu} ABI rather than the @samp{m68k-elf} ABI.
 It also added improved support for C++ and flat shared libraries,
-both of which were ABI changes.  However, you can still use the
-original ABI by configuring for @samp{m68k-uclinuxoldabi} or
-@samp{m68k-@var{vendor}-uclinuxoldabi}.
+both of which were ABI changes.
 
 
 @html

@@ -226,32 +226,9 @@ md_file=
 
 # Obsolete configurations.
 case ${target} in
-# Avoid cases below matching.
-   alpha*-*-linux*			\
- | arm*-wince-pe*			\
- | arm*-*-netbsdelf*			\
- | i[34567]86-*-netbsdelf*		\
- | powerpc*-*-linux*			\
- | vax-*-netbsdelf*) ;;
-   arc-*				\
- | alpha*-*-gnu*			\
- | arm*-*-netbsd*			\
- | arm-*-pe*				\
- | crx-*				\
- | i[34567]86-*-interix3*		\
- | i[34567]86-*-netbsd*			\
- | i[34567]86-*-pe			\
- | m68hc11-*-*				\
- | m6811-*-*				\
- | m68hc12-*-*				\
- | m6812-*-*				\
- | m68k-*-uclinuxoldabi*		\
- | mcore-*-pe*				\
- | powerpc*-*-gnu*			\
+   i[34567]86-*-interix3*		\
  | score-*				\
- | sh*-*-symbianelf*			\
  | *-*-solaris2.8*			\
- | vax-*-netbsd*			\
  )
     if test "x$enable_obsolete" != xyes; then
       echo "*** Configuration ${target} is obsolete." >&2
@@ -268,6 +245,7 @@ esac
 case ${target} in
    i[34567]86-go32-*			\
  | i[34567]86-*-go32*			\
+ | m68k-*-uclinuxoldabi*		\
  | mips64orion*-*-rtems*		\
  | pdp11-*-bsd				\
  | sparc-hal-solaris2*			\
@@ -720,12 +698,6 @@ alpha*-*-linux*)
 	target_cpu_default="MASK_GAS"
 	tmake_file="${tmake_file} alpha/t-crtfm alpha/t-alpha alpha/t-ieee alpha/t-linux"
 	;;
-alpha*-*-gnu*)
-	tm_file="$tm_file alpha/elf.h alpha/linux.h alpha/linux-elf.h gnu.h glibc-stdint.h alpha/gnu.h"
-	extra_options="${extra_options} alpha/elf.opt"
-	target_cpu_default="MASK_GAS"
-	tmake_file="${tmake_file} alpha/t-crtfm alpha/t-alpha alpha/t-ieee"
-	;;
 alpha*-*-freebsd*)
 	tm_file="${tm_file} ${fbsd_tm_file} alpha/elf.h alpha/freebsd.h"
 	extra_options="${extra_options} alpha/elf.opt"
@@ -789,10 +761,6 @@ alpha*-dec-*vms*)
 	install_headers_dir=install-headers-cp
 	extra_options="${extra_options} vms/vms.opt"
 	;;
-arc-*-elf*)
-	tm_file="dbxelf.h elfos.h newlib-stdint.h ${tm_file}"
-	extra_parts="crtinit.o crtfini.o"
-	;;
 arm-wrs-vxworks)
 	tm_file="elfos.h arm/elf.h arm/aout.h ${tm_file} vx-common.h vxworks.h arm/vxworks.h"
 	extra_options="${extra_options} arm/vxworks.opt"
@@ -806,13 +774,6 @@ arm*-*-netbsdelf*)
 	tm_file="dbxelf.h elfos.h netbsd.h netbsd-elf.h arm/elf.h arm/aout.h arm/arm.h arm/netbsd-elf.h"
 	extra_options="${extra_options} netbsd.opt netbsd-elf.opt"
 	tmake_file="${tmake_file} arm/t-arm arm/t-netbsd"
-	;;
-arm*-*-netbsd*)
-	tm_file="arm/aout.h arm/arm.h netbsd.h netbsd-aout.h arm/netbsd.h"
-	extra_options="${extra_options} netbsd.opt"
-	tmake_file="t-netbsd arm/t-arm arm/t-netbsd"
-	extra_parts=""
-	use_collect2=yes
 	;;
 arm*-*-linux*)			# ARM GNU/Linux with ELF
 	tm_file="dbxelf.h elfos.h gnu-user.h linux.h linux-android.h glibc-stdint.h arm/elf.h arm/linux-gas.h arm/linux-elf.h"
@@ -911,13 +872,6 @@ arm*-wince-pe*)
 	extra_options="${extra_options} arm/pe.opt"
 	extra_objs="pe.o"
 	;;
-arm-*-pe*)
-	tm_file="arm/semi.h arm/aout.h arm/arm.h arm/coff.h dbxcoff.h arm/pe.h newlib-stdint.h"
-	tmake_file="arm/t-arm arm/t-pe"
-	use_gcc_stdint=wrap
-	extra_options="${extra_options} arm/pe.opt"
-	extra_objs="pe.o"
-	;;
 avr-*-rtems*)
 	tm_file="avr/avr.h dbxelf.h avr/rtems.h rtems.h newlib-stdint.h"
 	tmake_file="avr/t-avr t-rtems avr/t-rtems"
@@ -984,11 +938,6 @@ crisv32-*-linux* | cris-*-linux*)
 		target_cpu_default=32
 		;;
 	esac
-	;;
-crx-*-elf)
-	tm_file="elfos.h newlib-stdint.h ${tm_file}"
-	extra_parts="crtbegin.o crtend.o"
-	use_collect2=no
 	;;
 fr30-*-elf)
 	tm_file="dbxelf.h elfos.h newlib-stdint.h ${tm_file}"
@@ -1222,13 +1171,6 @@ i[34567]86-*-netbsdelf*)
 	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h netbsd.h netbsd-elf.h i386/netbsd-elf.h"
 	extra_options="${extra_options} netbsd.opt netbsd-elf.opt"
 	;;
-i[34567]86-*-netbsd*)
-	tm_file="${tm_file} i386/unix.h i386/bsd.h i386/gas.h i386/gstabs.h netbsd.h netbsd-aout.h i386/netbsd.h"
-	extra_options="${extra_options} netbsd.opt"
-	tmake_file="${tmake_file} t-netbsd"
-	extra_parts=""
-	use_collect2=yes
-	;;
 x86_64-*-netbsd*)
 	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h netbsd.h netbsd-elf.h i386/x86-64.h i386/netbsd64.h"
 	extra_options="${extra_options} netbsd.opt netbsd-elf.opt"
@@ -1441,7 +1383,7 @@ i[4567]86-wrs-vxworks|i[4567]86-wrs-vxworksae)
 	    ;;
 	esac
 	;;
-i[34567]86-*-pe | i[34567]86-*-cygwin*)
+i[34567]86-*-cygwin*)
 	tm_file="${tm_file} i386/unix.h i386/bsd.h i386/gas.h dbxcoff.h i386/cygming.h i386/cygwin.h i386/cygwin-stdint.h"
 	xm_file=i386/xm-cygwin.h
 	# This has to match the logic for DWARF2_UNWIND_INFO in gcc/config/i386/cygming.h
@@ -1686,24 +1628,6 @@ m32rle-*-linux*)
 		thread_file='posix'
 	fi
 	;;
-# m68hc11 and m68hc12 share the same machine description.
-m68hc11-*-*|m6811-*-*)
-	tm_file="dbxelf.h elfos.h usegas.h newlib-stdint.h m68hc11/m68hc11.h"
-	tm_p_file="m68hc11/m68hc11-protos.h"
-	md_file="m68hc11/m68hc11.md"
-	out_file="m68hc11/m68hc11.c"
-	tmake_file="m68hc11/t-m68hc11"
-	use_gcc_stdint=wrap
-        ;;
-m68hc12-*-*|m6812-*-*)
-	tm_file="m68hc11/m68hc12.h dbxelf.h elfos.h usegas.h newlib-stdint.h m68hc11/m68hc11.h"
-	tm_p_file="m68hc11/m68hc11-protos.h"
-	md_file="m68hc11/m68hc11.md"
-	out_file="m68hc11/m68hc11.c"
-	tmake_file="m68hc11/t-m68hc11"
-	extra_options="${extra_options} m68hc11/m68hc11.opt"
-	use_gcc_stdint=wrap
-        ;;
 m68k-*-elf* | fido-*-elf*)
 	case ${target} in
 	fido-*-elf*)
@@ -1754,15 +1678,6 @@ m68k*-*-openbsd*)
 	# we need collect2 until our bug is fixed...
 	use_collect2=yes
 	;;
-m68k-*-uclinuxoldabi*)		# Motorola m68k/ColdFire running uClinux
-				# with uClibc, using the original
-				# m68k-elf-based ABI
-	default_m68k_cpu=68020
-	default_cf_cpu=5206
-	tm_file="${tm_file} m68k/m68k-none.h m68k/m68kelf.h dbxelf.h elfos.h m68k/uclinux-oldabi.h glibc-stdint.h"
- 	tm_defines="${tm_defines} MOTOROLA=1"
-	tmake_file="m68k/t-floatlib m68k/t-uclinux"
-	;;
 m68k-*-uclinux*)		# Motorola m68k/ColdFire running uClinux
 				# with uClibc, using the new GNU/Linux-style
 				# ABI.
@@ -1801,12 +1716,6 @@ mcore-*-elf)
 	tm_file="dbxelf.h elfos.h newlib-stdint.h ${tm_file} mcore/mcore-elf.h"
 	tmake_file=mcore/t-mcore
 	inhibit_libc=true
-	;;
-mcore-*-pe*)
-	tm_file="svr3.h dbxcoff.h newlib-stdint.h ${tm_file} mcore/mcore-pe.h"
-	tmake_file=mcore/t-mcore-pe
-	inhibit_libc=true
-	use_gcc_stdint=wrap
 	;;
 mep-*-*)
 	tm_file="dbxelf.h elfos.h ${tm_file}"
@@ -2171,27 +2080,6 @@ powerpc-*-linux* | powerpc64-*-linux*)
 		tm_file="rs6000/secureplt.h ${tm_file}"
 	fi
 	;;
-powerpc64-*-gnu*)
-	tm_file="${tm_file} elfos.h freebsd-spec.h gnu.h rs6000/sysv4.h rs6000/default64.h rs6000/linux64.h rs6000/gnu.h glibc-stdint.h"
-	extra_options="${extra_options} rs6000/sysv4.opt rs6000/linux64.opt"
-	tmake_file="t-slibgcc-elf-ver t-slibgcc-libgcc t-gnu"
-	;;
-powerpc-*-gnu-gnualtivec*)
-	tm_file="${cpu_type}/${cpu_type}.h elfos.h freebsd-spec.h gnu.h rs6000/sysv4.h rs6000/linux.h rs6000/linuxaltivec.h rs6000/gnu.h glibc-stdint.h"
-	extra_options="${extra_options} rs6000/sysv4.opt"
-	tmake_file="rs6000/t-fprules rs6000/t-fprules-fpbit rs6000/t-ppcos t-slibgcc-elf-ver t-slibgcc-libgcc t-gnu rs6000/t-ppccomm"
-	if test x$enable_threads = xyes; then
-		thread_file='posix'
-	fi
-	;;
-powerpc-*-gnu*)
-	tm_file="${cpu_type}/${cpu_type}.h elfos.h freebsd-spec.h gnu.h rs6000/sysv4.h rs6000/linux.h rs6000/gnu.h glibc-stdint.h"
-	tmake_file="rs6000/t-fprules rs6000/t-fprules-fpbit rs6000/t-ppcos t-slibgcc-elf-ver t-slibgcc-libgcc t-gnu rs6000/t-ppccomm"
-	extra_options="${extra_options} rs6000/sysv4.opt"
-	if test x$enable_threads = xyes; then
-		thread_file='posix'
-	fi
-	;;
 powerpc-wrs-vxworks|powerpc-wrs-vxworksae)
 	tm_file="${tm_file} elfos.h freebsd-spec.h rs6000/sysv4.h"
 	tmake_file="${tmake_file} rs6000/t-fprules rs6000/t-fprules-fpbit rs6000/t-ppccomm rs6000/t-vxworks"
@@ -2313,7 +2201,6 @@ score-*-elf)
         extra_objs="score7.o"
         ;;
 sh-*-elf* | sh[12346l]*-*-elf* | \
-sh-*-symbianelf* | sh[12346l]*-*-symbianelf* | \
   sh-*-linux* | sh[2346lbe]*-*-linux* | \
   sh-*-netbsdelf* | shl*-*-netbsdelf* | sh5-*-netbsd* | sh5l*-*-netbsd* | \
    sh64-*-netbsd* | sh64l*-*-netbsd*)
@@ -2389,13 +2276,6 @@ sh-*-symbianelf* | sh[12346l]*-*-symbianelf* | \
 			tm_file="${tm_file} newlib-stdint.h"
 		fi
 		extra_headers="shmedia.h ushmedia.h sshmedia.h"
-		;;
-	*-*-symbianelf*)
-		tmake_file="sh/t-symbian"
-		tm_file="sh/symbian-pre.h sh/little.h ${tm_file} sh/symbian-post.h"
-		c_target_objs="symbian-base.o symbian-c.o"
-		cxx_target_objs="symbian-base.o symbian-cxx.o"
-		extra_parts="crt1.o crti.o crtn.o crtbegin.o crtend.o crtbeginS.o crtendS.o"
 		;;
 	*-*-elf*)
 		tm_file="${tm_file} newlib-stdint.h"
@@ -2713,13 +2593,6 @@ vax-*-linux*)
 vax-*-netbsdelf*)
 	tm_file="${tm_file} elfos.h netbsd.h netbsd-elf.h vax/elf.h vax/netbsd-elf.h"
 	extra_options="${extra_options} netbsd.opt netbsd-elf.opt vax/elf.opt"
-	;;
-vax-*-netbsd*)
-	tm_file="${tm_file} netbsd.h netbsd-aout.h vax/netbsd.h"
-	extra_options="${extra_options} netbsd.opt"
-	tmake_file=t-netbsd
-	extra_parts=""
-	use_collect2=yes
 	;;
 vax-*-openbsd*)
 	tm_file="vax/vax.h vax/openbsd1.h openbsd.h openbsd-stdint.h openbsd-pthread.h vax/openbsd.h"

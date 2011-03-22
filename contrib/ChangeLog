@@ -1,3 +1,7 @@
+2011-03-22  Joseph Myers  <joseph@codesourcery.com>
+
+	* compare-all-tests (all_targets): Remove crx and m68hc11.
+
 2011-03-21  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR bootstrap/48135

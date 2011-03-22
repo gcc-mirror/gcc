@@ -1,7 +1,6 @@
 /* The arrays are too large for the xstormy16 - won't fit in 16 bits. */
 /* { dg-do assemble } */
 /* { dg-require-effective-target size32plus } */
-/* { dg-xfail-if "The array too big" { m6811-*-* m6812-*-* } { "*" } { "" } } /*
 /* { dg-skip-if "Array too big" { "avr-*-*" } { "*" } { "" } } */ 
 /* { dg-xfail-if "The array too big" { h8300-*-* } { "-mno-h" "-mn" } { "" } } */
 

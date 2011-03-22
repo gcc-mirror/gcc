@@ -1,3 +1,25 @@
+2011-03-22  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.c-torture/execute/920501-8.x: Remove.
+	* gcc.c-torture/execute/930513-1.x: Remove.
+	* gcc.c-torture/execute/960312-1.x: Remove.
+	* gcc.c-torture/compile/20000804-1.c,
+	gcc.c-torture/compile/20001205-1.c,
+	gcc.c-torture/compile/20001226-1.c,
+	gcc.c-torture/compile/20010518-2.c,
+	gcc.c-torture/compile/20020312-1.c,
+	gcc.c-torture/compile/20020604-1.c,
+	gcc.c-torture/compile/920501-12.c,
+	gcc.c-torture/compile/920501-4.c,
+	gcc.c-torture/compile/920520-1.c,
+	gcc.c-torture/compile/980506-1.c,
+	gcc.c-torture/execute/980709-1.x,
+	gcc.c-torture/execute/990826-0.x: Don't XFAIL or use special
+	options for m68hc11.
+	* gcc.dg/cpp/assert4.c: Don't handle ARC.
+	* gcc.dg/sibcall-3.c, gcc.dg/sibcall-4.c: Don't XFAIL for arc or
+	m68hc11.
+
 2011-03-22  Nick Clifton  <nickc@redhat.com>
 
 	* lib/target-supports.exp (check_profiling_available): Add MN10300

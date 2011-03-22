@@ -308,7 +308,6 @@ GLIBCXX_ENABLE_VISIBILITY([yes])
 ac_ldbl_compat=no
 case "$target" in
   powerpc*-*-linux* | \
-  powerpc*-*-gnu* | \
   sparc*-*-linux* | \
   s390*-*-linux* | \
   alpha*-*-linux*)

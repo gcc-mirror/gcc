@@ -64486,7 +64486,6 @@ $as_echo "$as_me: visibility supported: $enable_visibility" >&6;}
 ac_ldbl_compat=no
 case "$target" in
   powerpc*-*-linux* | \
-  powerpc*-*-gnu* | \
   sparc*-*-linux* | \
   s390*-*-linux* | \
   alpha*-*-linux*)

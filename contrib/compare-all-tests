@@ -1,7 +1,7 @@
 #! /bin/bash
 
 # Compare the assembly language output for all the gcc tests.
-# Copyright (C) 2009 Free Software Foundation, Inc.
+# Copyright (C) 2009, 2011 Free Software Foundation, Inc.
 # Contributed by Paolo Bonzini.
 #
 # Invoke it as "bash compare-all-tests target1 target2 ... targetN".
@@ -36,7 +36,7 @@ sh64_opts='-m5-32media -m5-32media-nofpu -m5-64media -m5-64media-nofpu -m5-compa
 sh_opts='-m3 -m3e -m4 -m4a -m4al -m4/-mieee -m1 -m1/-mno-cbranchdi -m2a -m2a/-mieee -m2e -m2e/-mieee'
 sparc_opts='-mcpu=v8/-m32 -mcpu=v9/-m32 -m64'
 
-all_targets='alpha arm avr bfin cris crx fr30 frv h8300 ia64 iq2000 m32c m32r m68hc11 m68k mcore mips mmix mn10300 pa pdp11 picochip ppc score sh sh64 sparc spu v850 vax xstormy16 xtensa' # e500 
+all_targets='alpha arm avr bfin cris fr30 frv h8300 ia64 iq2000 m32c m32r m68k mcore mips mmix mn10300 pa pdp11 picochip ppc score sh sh64 sparc spu v850 vax xstormy16 xtensa' # e500 
 
 test_one_file ()
 {
