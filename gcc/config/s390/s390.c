@@ -5019,7 +5019,12 @@ s390_delegitimize_address (rtx orig_x)
   /* Extract the symbol ref from:
      (plus:SI (reg:SI 12 %r12)
               (const:SI (unspec:SI [(symbol_ref/f:SI ("*.LC0"))]
-	                            UNSPEC_GOTOFF)))  */
+	                            UNSPEC_GOTOFF/PLTOFF)))
+     and
+     (plus:SI (reg:SI 12 %r12)
+              (const:SI (plus:SI (unspec:SI [(symbol_ref:SI ("L"))]
+                                             UNSPEC_GOTOFF/PLTOFF)
+				 (const_int 4 [0x4]))))  */
   if (GET_CODE (x) == PLUS
       && REG_P (XEXP (x, 0))
       && REGNO (XEXP (x, 0)) == PIC_OFFSET_TABLE_REGNUM
@@ -5027,8 +5032,14 @@ s390_delegitimize_address (rtx orig_x)
     {
       /* The const operand.  */
       y = XEXP (XEXP (x, 1), 0);
+
+      if (GET_CODE (y) == PLUS
+	  && GET_CODE (XEXP (y, 1)) == CONST_INT)
+	y = XEXP (y, 0);
+
       if (GET_CODE (y) == UNSPEC
-	  && XINT (y, 1) == UNSPEC_GOTOFF)
+	  && (XINT (y, 1) == UNSPEC_GOTOFF
+	      || XINT (y, 1) == UNSPEC_PLTOFF))
 	return XVECEXP (y, 0, 0);
     }
 
@@ -5050,9 +5061,14 @@ s390_delegitimize_address (rtx orig_x)
     }
   else if (GET_CODE (x) == CONST)
     {
+      /* Extract the symbol ref from:
+	 (mem:QI (const:DI (unspec:DI [(symbol_ref:DI ("foo"))]
+	                               UNSPEC_PLT/GOTENT)))  */
+
       y = XEXP (x, 0);
       if (GET_CODE (y) == UNSPEC
-	  && XINT (y, 1) == UNSPEC_GOTENT)
+	  && (XINT (y, 1) == UNSPEC_GOTENT
+	      || XINT (y, 1) == UNSPEC_PLT))
 	y = XVECEXP (y, 0, 0);
       else
 	return orig_x;
