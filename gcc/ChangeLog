@@ -1,3 +1,8 @@
+2011-03-22  Nick Clifton  <nickc@redhat.com>
+
+	* config/i386/cygming.h (SUBTARGET_OVERRIDE_OPTIONS): Remove
+	trailing backslash from the end of the macro definition.
+
 2011-03-22  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* config/s390/s390.c (s390_delegitimize_address): Handle PLTOFF

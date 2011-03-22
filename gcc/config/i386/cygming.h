@@ -207,7 +207,7 @@ do {									\
 	       (flag_pic > 1) ? "PIC" : "pic");				\
       flag_pic = 0;							\
     }									\
-} while (0)								\
+} while (0)
 
 /* Define this macro if references to a symbol must be treated
    differently depending on something about the variable or
