@@ -1,5 +1,12 @@
 2011-03-22  Joseph Myers  <joseph@codesourcery.com>
 
+	* config/microblaze/microblaze.c: Don't include opts.h.
+	(microblaze_handle_option, TARGET_HANDLE_OPTION): Remove.
+	* config/microblaze/microblaze.opt (mxl-stack-check): Use Warn.
+	(mno-clearbss): Use Var and Warn.
+
+2011-03-22  Joseph Myers  <joseph@codesourcery.com>
+
 	* config/m32r/m32r-opts.h: New.
 	* config/m32r/m32r.c (m32r_model, m32r_sdata): Remove.
 	(m32r_handle_option): Don't assert that global structures are in
