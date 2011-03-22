@@ -1,6 +1,7 @@
 /* Subroutines for insn-output.c for SPARC.
    Copyright (C) 1987, 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+   2011
    Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
    64-bit SPARC-V9 support by Michael Tiemann, Jim Wilson, and Doug Evans,
@@ -54,6 +55,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "params.h"
 #include "df.h"
 #include "dwarf2out.h"
+#include "opts.h"
 
 /* Processor costs */
 static const
@@ -365,7 +367,8 @@ static HOST_WIDE_INT frame_base_offset;
 /* 1 if the next opcode is to be specially indented.  */
 int sparc_indent_opcode = 0;
 
-static bool sparc_handle_option (size_t, const char *, int);
+static bool sparc_handle_option (struct gcc_options *, struct gcc_options *,
+				 const struct cl_decoded_option *, location_t);
 static void sparc_option_override (void);
 static void sparc_init_modes (void);
 static void scan_record_type (const_tree, int *, int *, int *);
@@ -677,8 +680,16 @@ struct gcc_target targetm = TARGET_INITIALIZER;
 /* Implement TARGET_HANDLE_OPTION.  */
 
 static bool
-sparc_handle_option (size_t code, const char *arg, int value ATTRIBUTE_UNUSED)
+sparc_handle_option (struct gcc_options *opts, struct gcc_options *opts_set,
+		     const struct cl_decoded_option *decoded,
+		     location_t loc ATTRIBUTE_UNUSED)
 {
+  size_t code = decoded->opt_index;
+  const char *arg = decoded->arg;
+
+  gcc_assert (opts == &global_options);
+  gcc_assert (opts_set == &global_options_set);
+
   switch (code)
     {
     case OPT_mfpu:

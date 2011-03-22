@@ -1,5 +1,5 @@
 /* Default target hook functions.
-   Copyright (C) 2003, 2004, 2005, 2007, 2008, 2009, 2010
+   Copyright (C) 2003, 2004, 2005, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -1511,6 +1511,17 @@ default_pch_valid_p (const void *data_p, size_t len)
       }
 
   return NULL;
+}
+
+/* Default version of TARGET_HANDLE_OPTION.  */
+
+bool
+default_target_handle_option (struct gcc_options *opts ATTRIBUTE_UNUSED,
+			      struct gcc_options *opts_set ATTRIBUTE_UNUSED,
+			      const struct cl_decoded_option *decoded ATTRIBUTE_UNUSED,
+			      location_t loc ATTRIBUTE_UNUSED)
+{
+  return true;
 }
 
 const struct default_options empty_optimization_table[] =

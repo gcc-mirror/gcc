@@ -44,6 +44,7 @@
 #include "target.h"
 #include "target-def.h"
 #include "df.h"
+#include "opts.h"
 
 /* This is used in the am33_2.0-linux-gnu port, in which global symbol
    names are not prefixed by underscores, to tell whether to prefix a
@@ -90,10 +91,17 @@ static int cc_flags_for_code(enum rtx_code);
 /* Implement TARGET_HANDLE_OPTION.  */
 
 static bool
-mn10300_handle_option (size_t code,
-		       const char *arg ATTRIBUTE_UNUSED,
-		       int value)
+mn10300_handle_option (struct gcc_options *opts, struct gcc_options *opts_set,
+		       const struct cl_decoded_option *decoded,
+		       location_t loc ATTRIBUTE_UNUSED)
 {
+  size_t code = decoded->opt_index;
+  const char *arg = decoded->arg;
+  int value = decoded->value;
+
+  gcc_assert (opts == &global_options);
+  gcc_assert (opts_set == &global_options_set);
+
   switch (code)
     {
     case OPT_mam33:

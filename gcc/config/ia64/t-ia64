@@ -1,5 +1,5 @@
 # Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009,
-# 2010
+# 2010, 2011
 # Free Software Foundation, Inc.
 #
 # This file is part of GCC.
@@ -54,4 +54,4 @@ ia64-c.o: $(srcdir)/config/ia64/ia64-c.c $(CONFIG_H) $(SYSTEM_H) \
 # genattrtab generates very long string literals.
 insn-attrtab.o-warn = -Wno-error
 
-ia64.o: debug.h $(PARAMS_H) sel-sched.h reload.h
+ia64.o: debug.h $(PARAMS_H) sel-sched.h reload.h $(OPTS_H)

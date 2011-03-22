@@ -42,6 +42,7 @@
 #include "target.h"
 #include "target-def.h"
 #include "tm-constrs.h"
+#include "opts.h"
 
 /* Array of valid operand punctuation characters.  */
 static char m32r_punct_chars[256];
@@ -61,7 +62,8 @@ enum m32r_sdata m32r_sdata = M32R_SDATA_DEFAULT;
 #define LIT_NAME_P(NAME) ((NAME)[0] == '*' && (NAME)[1] == '.')
 
 /* Forward declaration.  */
-static bool  m32r_handle_option (size_t, const char *, int);
+static bool  m32r_handle_option (struct gcc_options *, struct gcc_options *,
+				 const struct cl_decoded_option *, location_t);
 static void  m32r_option_override (void);
 static void  init_reg_tables (void);
 static void  block_move_call (rtx, rtx, rtx);
@@ -223,8 +225,17 @@ struct gcc_target targetm = TARGET_INITIALIZER;
 /* Implement TARGET_HANDLE_OPTION.  */
 
 static bool
-m32r_handle_option (size_t code, const char *arg, int value)
+m32r_handle_option (struct gcc_options *opts, struct gcc_options *opts_set,
+		    const struct cl_decoded_option *decoded,
+		    location_t loc ATTRIBUTE_UNUSED)
 {
+  size_t code = decoded->opt_index;
+  const char *arg = decoded->arg;
+  int value = decoded->value;
+
+  gcc_assert (opts == &global_options);
+  gcc_assert (opts_set == &global_options_set);
+
   switch (code)
     {
     case OPT_m32r:

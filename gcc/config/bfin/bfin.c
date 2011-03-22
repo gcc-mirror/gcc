@@ -1,5 +1,5 @@
 /* The Blackfin code generation auxiliary output file.
-   Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010
+   Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
    Contributed by Analog Devices.
 
@@ -56,6 +56,7 @@
 #include "timevar.h"
 #include "df.h"
 #include "sel-sched.h"
+#include "opts.h"
 
 /* A C structure for machine-specific, per-function data.
    This is added to the cfun structure.  */
@@ -2558,8 +2559,17 @@ bfin_class_likely_spilled_p (reg_class_t rclass)
 /* Implement TARGET_HANDLE_OPTION.  */
 
 static bool
-bfin_handle_option (size_t code, const char *arg, int value)
+bfin_handle_option (struct gcc_options *opts, struct gcc_options *opts_set,
+		    const struct cl_decoded_option *decoded,
+		    location_t loc ATTRIBUTE_UNUSED)
 {
+  size_t code = decoded->opt_index;
+  const char *arg = decoded->arg;
+  int value = decoded->value;
+
+  gcc_assert (opts == &global_options);
+  gcc_assert (opts_set == &global_options_set);
+
   switch (code)
     {
     case OPT_mshared_library_id_:

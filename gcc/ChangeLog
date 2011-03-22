@@ -1,5 +1,75 @@
 2011-03-22  Joseph Myers  <joseph@codesourcery.com>
 
+	* target.def (handle_option): Take gcc_options and
+	cl_decoded_option pointers and location_t.
+	* doc/tm.texi.in (TARGET_HANDLE_OPTION): Update documentation.
+	* doc/tm.texi: Regenerate.
+	* hooks.c (hook_bool_size_t_constcharptr_int_true): Remove.
+	* hooks.h (hook_bool_size_t_constcharptr_int_true): Don't declare.
+	* lto-opts.c (lto_reissue_options): Generate option structure for
+	targetm.handle_option call.
+	* opts.c (target_handle_option): Update call to
+	targetm.handle_option.  Remove assertions about values now passed
+	down to hook.
+	* targhooks.c (default_target_handle_option): New.
+	* targhooks.h (default_target_handle_option): Declare.
+	* config/alpha/alpha.c: Include opts.h.
+	(alpha_handle_option): Update to new hook interface.
+	* config/arm/arm.c: Include opts.h.
+	(arm_handle_option): Update to new hook interface.
+	* config/arm/t-arm (arm.o): Update dependencies.
+	* config/bfin/bfin.c: Include opts.h.
+	(bfin_handle_option): Update to new hook interface.
+	* config/cris/cris.c: Include opts.h.
+	(cris_handle_option): Update to new hook interface.
+	* config/frv/frv.c: Include opts.h.
+	(frv_handle_option): Update to new hook interface.
+	* config/i386/i386.c: Include opts.h.
+	(ix86_handle_option): Update to new hook interface.
+	(ix86_valid_target_attribute_inner_p): Generate option structure
+	for call to ix86_handle_option.
+	* config/i386/t-i386 (i386.o): Update dependencies.
+	* config/ia64/ia64.c: Include opts.h.
+	(ia64_handle_option): Update to new hook interface.
+	* config/ia64/t-ia64 (ia64.o): Update dependencies.
+	* config/iq2000/iq2000.c: Include opts.h.
+	(iq2000_handle_option): Update to new hook interface.
+	* config/m32c/m32c.c: Include opts.h.
+	(m32c_handle_option): Update to new hook interface.
+	* config/m32r/m32r.c: Include opts.h.
+	(m32r_handle_option): Update to new hook interface.
+	* config/m68k/m68k.c: Include opts.h.
+	(m68k_handle_option): Update to new hook interface.
+	* config/mep/mep.c: Include opts.h.
+	(mep_handle_option): Update to new hook interface.
+	* config/microblaze/microblaze.c: Include opts.h.
+	(microblaze_handle_option): Update to new hook interface.
+	* config/mips/mips.c: Include opts.h.
+	(mips_handle_option): Update to new hook interface.
+	* config/mn10300/mn10300.c: Include opts.h.
+	(mn10300_handle_option): Update to new hook interface.
+	* config/pa/pa.c: Include opts.h.
+	(pa_handle_option): Update to new hook interface.
+	* config/pdp11/pdp11.c: Include opts.h.
+	(pdp11_handle_option): Update to new hook interface.
+	* config/rs6000/rs6000.c: Include opts.h.
+	(rs6000_handle_option): Update to new hook interface.
+	* config/rs6000/t-rs6000 (rs6000.o): Update dependencies.
+	* config/rx/rx.c: Include opts.h.
+	(rx_handle_option): Update to new hook interface.
+	* config/s390/s390.c: Include opts.h.
+	(s390_handle_option): Update to new hook interface.
+	* config/score/score.c: Include opts.h.
+	(score_handle_option): Update to new hook interface.
+	* config/sh/sh.c: Include opts.h.
+	(sh_handle_option): Update to new hook interface.
+	* config/sparc/sparc.c: Include opts.h.
+	(sparc_handle_option): Update to new hook interface.
+	* config/v850/v850.c: Include opts.h.
+	(v850_handle_option): Update to new hook interface.
+
+2011-03-22  Joseph Myers  <joseph@codesourcery.com>
+
 	* gcc.c (driver_unknown_option_callback): Only permit and save
 	unknown -Wno- options.
 	(driver_wrong_lang_callback): Save options directly instead of via

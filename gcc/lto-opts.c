@@ -1,6 +1,6 @@
 /* LTO IL options.
 
-   Copyright 2009, 2010 Free Software Foundation, Inc.
+   Copyright 2009, 2010, 2011 Free Software Foundation, Inc.
    Contributed by Simon Baldwin <simonb@google.com>
 
 This file is part of GCC.
@@ -413,7 +413,12 @@ lto_reissue_options (void)
 		    DK_UNSPECIFIED, UNKNOWN_LOCATION, global_dc);
 
       if (o->type == CL_TARGET)
-	targetm.handle_option (o->code, o->arg, o->value);
+	{
+	  struct cl_decoded_option decoded;
+	  generate_option (o->code, o->arg, o->value, CL_TARGET, &decoded);
+	  targetm.handle_option (&global_options, &global_options_set,
+				 &decoded, UNKNOWN_LOCATION);
+	}
       else if (o->type == CL_COMMON)
 	gcc_assert (flag_var);
       else

@@ -50,6 +50,7 @@
 #include "target.h"
 #include "target-def.h"
 #include "langhooks.h"
+#include "opts.h"
 
 static void rx_print_operand (FILE *, rtx, int);
 
@@ -2251,8 +2252,17 @@ const struct attribute_spec rx_attribute_table[] =
 /* Extra processing for target specific command line options.  */
 
 static bool
-rx_handle_option (size_t code, const char *  arg ATTRIBUTE_UNUSED, int value)
+rx_handle_option (struct gcc_options *opts, struct gcc_options *opts_set,
+		  const struct cl_decoded_option *decoded,
+		  location_t loc ATTRIBUTE_UNUSED)
 {
+  size_t code = decoded->opt_index;
+  const char *arg = decoded->arg;
+  int value = decoded->value;
+
+  gcc_assert (opts == &global_options);
+  gcc_assert (opts_set == &global_options_set);
+
   switch (code)
     {
     case OPT_mint_register_:

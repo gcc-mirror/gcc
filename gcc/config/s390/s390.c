@@ -53,6 +53,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "df.h"
 #include "params.h"
 #include "cfgloop.h"
+#include "opts.h"
 
 
 /* Define the specific costs for a given cpu.  */
@@ -1588,8 +1589,16 @@ s390_handle_arch_option (const char *arg,
 /* Implement TARGET_HANDLE_OPTION.  */
 
 static bool
-s390_handle_option (size_t code, const char *arg, int value ATTRIBUTE_UNUSED)
+s390_handle_option (struct gcc_options *opts, struct gcc_options *opts_set,
+		    const struct cl_decoded_option *decoded,
+		    location_t loc ATTRIBUTE_UNUSED)
 {
+  size_t code = decoded->opt_index;
+  const char *arg = decoded->arg;
+
+  gcc_assert (opts == &global_options);
+  gcc_assert (opts_set == &global_options_set);
+
   switch (code)
     {
     case OPT_march_:
