@@ -45,7 +45,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "target-def.h"
 #include "langhooks.h"
 #include "df.h"
-#include "opts.h"
 
 /* Enumeration for all of the relational tests, so that we can build
    arrays indexed by the test type, and not worry about the order
@@ -112,9 +111,6 @@ struct GTY(()) machine_function
 /* List of all IQ2000 punctuation characters used by iq2000_print_operand.  */
 static char iq2000_print_operand_punct[256];
 
-/* The target cpu for optimization and scheduling.  */
-enum processor_type iq2000_tune;
-
 /* Which instruction set architecture to use.  */
 int iq2000_isa;
 
@@ -146,10 +142,6 @@ static enum machine_mode gpr_mode;
 
 /* Initialize the GCC target structure.  */
 static struct machine_function* iq2000_init_machine_status (void);
-static bool iq2000_handle_option      (struct gcc_options *,
-				       struct gcc_options *,
-				       const struct cl_decoded_option *,
-				       location_t);
 static void iq2000_option_override    (void);
 static section *iq2000_select_rtx_section (enum machine_mode, rtx,
 					   unsigned HOST_WIDE_INT);
@@ -197,8 +189,6 @@ static const struct default_options iq2000_option_optimization_table[] =
 #define TARGET_EXPAND_BUILTIN 		iq2000_expand_builtin
 #undef  TARGET_ASM_SELECT_RTX_SECTION
 #define TARGET_ASM_SELECT_RTX_SECTION	iq2000_select_rtx_section
-#undef  TARGET_HANDLE_OPTION
-#define TARGET_HANDLE_OPTION		iq2000_handle_option
 #undef  TARGET_OPTION_OVERRIDE
 #define TARGET_OPTION_OVERRIDE		iq2000_option_override
 #undef  TARGET_OPTION_OPTIMIZATION_TABLE
@@ -1436,41 +1426,6 @@ static struct machine_function *
 iq2000_init_machine_status (void)
 {
   return ggc_alloc_cleared_machine_function ();
-}
-
-/* Implement TARGET_HANDLE_OPTION.  */
-
-static bool
-iq2000_handle_option (struct gcc_options *opts, struct gcc_options *opts_set,
-		      const struct cl_decoded_option *decoded,
-		      location_t loc ATTRIBUTE_UNUSED)
-{
-  size_t code = decoded->opt_index;
-  const char *arg = decoded->arg;
-
-  gcc_assert (opts == &global_options);
-  gcc_assert (opts_set == &global_options_set);
-
-  switch (code)
-    {
-    case OPT_mcpu_:
-      if (strcmp (arg, "iq10") == 0)
-	iq2000_tune = PROCESSOR_IQ10;
-      else if (strcmp (arg, "iq2000") == 0)
-	iq2000_tune = PROCESSOR_IQ2000;
-      else
-	return false;
-      return true;
-
-    case OPT_march_:
-      /* This option has no effect at the moment.  */
-      return (strcmp (arg, "default") == 0
-	      || strcmp (arg, "DEFAULT") == 0
-	      || strcmp (arg, "iq2000") == 0);
-
-    default:
-      return true;
-    }
 }
 
 /* Detect any conflicts in the switches.  */

@@ -1,6 +1,6 @@
 ; Options for the Vitesse IQ2000 port of the compiler.
 
-; Copyright (C) 2005, 2007 Free Software Foundation, Inc.
+; Copyright (C) 2005, 2007, 2011 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -18,13 +18,43 @@
 ; along with GCC; see the file COPYING3.  If not see
 ; <http://www.gnu.org/licenses/>.
 
+HeaderInclude
+config/iq2000/iq2000-opts.h
+
+; The target cpu for optimization and scheduling.
+Variable
+enum processor_type iq2000_tune
+
+; This option has no effect at the moment.
 march=
-Target RejectNegative Joined
+Target RejectNegative Joined Enum(iq2000_arch)
 Specify CPU for code generation purposes
 
+Enum
+Name(iq2000_arch) Type(int)
+
+EnumValue
+Enum(iq2000_arch) String(default) Value(0)
+
+EnumValue
+Enum(iq2000_arch) String(DEFAULT) Value(0)
+
+EnumValue
+Enum(iq2000_arch) String(iq2000) Value(0)
+
 mcpu=
-Target RejectNegative Joined
+Target RejectNegative Joined Enum(iq2000_tune) Var(iq2000_tune)
 Specify CPU for scheduling purposes
+
+Enum
+Name(iq2000_tune) Type(enum processor_type)
+Known IQ2000 CPUs (for use with the -mcpu= option):
+
+EnumValue
+Enum(iq2000_tune) String(iq10) Value(PROCESSOR_IQ10)
+
+EnumValue
+Enum(iq2000_tune) String(iq2000) Value(PROCESSOR_IQ2000)
 
 membedded-data
 Target Mask(EMBEDDED_DATA)
