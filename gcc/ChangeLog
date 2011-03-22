@@ -1,5 +1,20 @@
 2011-03-22  Joseph Myers  <joseph@codesourcery.com>
 
+	* config/iq2000/iq2000-opts.h: New.
+	* config/iq2000/iq2000.c: Don't include opts.h.
+	(iq2000_tune, iq2000_handle_option, TARGET_HANDLE_OPTION): Remove.
+	* config/iq2000/iq2000.h (enum processor_type, iq2000_tune):
+	Remove.
+	* config/iq2000/iq2000.opt (config/iq2000/iq2000-opts.h): New
+	HeaderInclude entry.
+	(iq2000_tune): New Variable entry.
+	(march=): Add comment.  Use Enum.
+	(iq2000_arch): New Enum and EnumValue entries.
+	(mcpu=): Use Enum and Var.
+	(iq2000_tune): New Enum and EnumValue entries.
+
+2011-03-22  Joseph Myers  <joseph@codesourcery.com>
+
 	* config/ia64/ia64-opts.h: New.
 	* config/ia64/ia64.c (ia64_tune): Remove.
 	(ia64_handle_option): Don't handle OPT_mfixed_range_ or OPT_mtune_
