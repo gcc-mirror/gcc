@@ -1,5 +1,5 @@
 /* General-purpose hooks.
-   Copyright (C) 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010
+   Copyright (C) 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
@@ -50,7 +50,6 @@ extern bool hook_bool_rtx_false (rtx);
 extern bool hook_bool_rtx_int_false (rtx, int);
 extern bool hook_bool_uintp_uintp_false (unsigned int *, unsigned int *);
 extern bool hook_bool_rtx_int_int_intp_bool_false (rtx, int, int, int *, bool);
-extern bool hook_bool_size_t_constcharptr_int_true (size_t, const char *, int);
 extern bool hook_bool_tree_tree_false (tree, tree);
 extern bool hook_bool_tree_tree_true (tree, tree);
 extern bool hook_bool_tree_bool_false (tree, bool);

@@ -1,6 +1,6 @@
 /* Definitions for GCC.  Part of the machine description for CRIS.
    Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007,
-   2008, 2009, 2010  Free Software Foundation, Inc.
+   2008, 2009, 2010, 2011  Free Software Foundation, Inc.
    Contributed by Axis Communications.  Written by Hans-Peter Nilsson.
 
 This file is part of GCC.
@@ -45,6 +45,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ggc.h"
 #include "optabs.h"
 #include "df.h"
+#include "opts.h"
 
 /* Usable when we have an amount to add or subtract, and want the
    optimal size of the insn.  */
@@ -136,7 +137,8 @@ static void cris_function_arg_advance (CUMULATIVE_ARGS *, enum machine_mode,
 				       const_tree, bool);
 static tree cris_md_asm_clobbers (tree, tree, tree);
 
-static bool cris_handle_option (size_t, const char *, int);
+static bool cris_handle_option (struct gcc_options *, struct gcc_options *,
+				const struct cl_decoded_option *, location_t);
 static void cris_option_override (void);
 
 static bool cris_frame_pointer_required (void);
@@ -2338,9 +2340,17 @@ cris_asm_output_case_end (FILE *stream, int num, rtx table)
    cris_option_override.  */
 
 static bool
-cris_handle_option (size_t code, const char *arg ATTRIBUTE_UNUSED,
-		    int value ATTRIBUTE_UNUSED)
+cris_handle_option (struct gcc_options *opts, struct gcc_options *opts_set,
+		    const struct cl_decoded_option *decoded,
+		    location_t loc ATTRIBUTE_UNUSED)
 {
+  size_t code = decoded->opt_index;
+  const char *arg ATTRIBUTE_UNUSED = decoded->arg;
+  int value ATTRIBUTE_UNUSED = decoded->value;
+
+  gcc_assert (opts == &global_options);
+  gcc_assert (opts_set == &global_options_set);
+
   switch (code)
     {
     case OPT_metrax100:

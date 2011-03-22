@@ -671,14 +671,11 @@ target-specific options described by the @file{.opt} definition files
 processing and should return true if the option is valid.  The default
 definition does nothing but return true.
 
-@var{code} specifies the @code{OPT_@var{name}} enumeration value
-associated with the selected option; @var{name} is just a rendering of
-the option name in which non-alphanumeric characters are replaced by
-underscores.  @var{arg} specifies the string argument and is null if
-no argument was given.  If the option is flagged as a @code{UInteger}
-(@pxref{Option properties}), @var{value} is the numeric value of the
-argument.  Otherwise @var{value} is 1 if the positive form of the
-option was used and 0 if the ``no-'' form was.
+@var{decoded} specifies the option and its arguments.  @var{opts} and
+@var{opts_set} are the @code{gcc_options} structures to be used for
+storing option state, and @var{loc} is the location at which the
+option was passed (@code{UNKNOWN_LOCATION} except for options passed
+via attributes).
 @end deftypefn
 
 @hook TARGET_HANDLE_C_OPTION

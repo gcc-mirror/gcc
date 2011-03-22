@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.
    Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008,
-   2009, 2010
+   2009, 2010, 2011
    Free Software Foundation, Inc.
    Contributed by James E. Wilson <wilson@cygnus.com> and
 		  David Mosberger <davidm@hpl.hp.com>.
@@ -61,6 +61,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "sel-sched.h"
 #include "reload.h"
 #include "dwarf2out.h"
+#include "opts.h"
 
 /* This is used for communication between ASM_OUTPUT_LABEL and
    ASM_OUTPUT_LABELREF.  */
@@ -231,7 +232,8 @@ static int ia64_memory_move_cost (enum machine_mode mode, reg_class_t,
 static bool ia64_rtx_costs (rtx, int, int, int *, bool);
 static int ia64_unspec_may_trap_p (const_rtx, unsigned);
 static void fix_range (const char *);
-static bool ia64_handle_option (size_t, const char *, int);
+static bool ia64_handle_option (struct gcc_options *, struct gcc_options *,
+				const struct cl_decoded_option *, location_t);
 static struct machine_function * ia64_init_machine_status (void);
 static void emit_insn_group_barriers (FILE *);
 static void emit_all_insn_group_barriers (FILE *);
@@ -5655,8 +5657,17 @@ fix_range (const char *const_str)
 /* Implement TARGET_HANDLE_OPTION.  */
 
 static bool
-ia64_handle_option (size_t code, const char *arg, int value)
+ia64_handle_option (struct gcc_options *opts, struct gcc_options *opts_set,
+		    const struct cl_decoded_option *decoded,
+		    location_t loc ATTRIBUTE_UNUSED)
 {
+  size_t code = decoded->opt_index;
+  const char *arg = decoded->arg;
+  int value = decoded->value;
+
+  gcc_assert (opts == &global_options);
+  gcc_assert (opts_set == &global_options_set);
+
   switch (code)
     {
     case OPT_mfixed_range_:

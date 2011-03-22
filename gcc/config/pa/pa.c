@@ -1,6 +1,6 @@
 /* Subroutines for insn-output.c for HPPA.
    Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001,
-   2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+   2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
    Contributed by Tim Moore (moore@cs.utah.edu), based on sparc.c
 
@@ -48,6 +48,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "target-def.h"
 #include "langhooks.h"
 #include "df.h"
+#include "opts.h"
 
 /* Return nonzero if there is a bypass for the output of 
    OUT_INSN and the fp store IN_INSN.  */
@@ -87,7 +88,8 @@ hppa_fpstore_bypass_p (rtx out_insn, rtx in_insn)
 static void pa_option_override (void);
 static void copy_reg_pointer (rtx, rtx);
 static void fix_range (const char *);
-static bool pa_handle_option (size_t, const char *, int);
+static bool pa_handle_option (struct gcc_options *, struct gcc_options *,
+			      const struct cl_decoded_option *, location_t);
 static int hppa_register_move_cost (enum machine_mode mode, reg_class_t,
 				    reg_class_t);
 static int hppa_address_cost (rtx, bool);
@@ -478,8 +480,16 @@ fix_range (const char *const_str)
 /* Implement TARGET_HANDLE_OPTION.  */
 
 static bool
-pa_handle_option (size_t code, const char *arg, int value ATTRIBUTE_UNUSED)
+pa_handle_option (struct gcc_options *opts, struct gcc_options *opts_set,
+		  const struct cl_decoded_option *decoded,
+		  location_t loc ATTRIBUTE_UNUSED)
 {
+  size_t code = decoded->opt_index;
+  const char *arg = decoded->arg;
+
+  gcc_assert (opts == &global_options);
+  gcc_assert (opts_set == &global_options_set);
+
   switch (code)
     {
     case OPT_mnosnake:

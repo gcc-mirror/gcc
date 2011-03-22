@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on Xilinx MicroBlaze.
-   Copyright 2009, 2010 Free Software Foundation, Inc.
+   Copyright 2009, 2010, 2011 Free Software Foundation, Inc.
 
    Contributed by Michael Eager <eager@eagercon.com>.
 
@@ -48,6 +48,7 @@
 #include "df.h"
 #include "optabs.h"
 #include "diagnostic-core.h"
+#include "opts.h"
 
 #define MICROBLAZE_VERSION_COMPARE(VA,VB) strcasecmp (VA, VB)
 
@@ -1276,10 +1277,16 @@ microblaze_version_to_int (const char *version)
 }
 
 static bool
-microblaze_handle_option (size_t code,
-			  const char *arg ATTRIBUTE_UNUSED,
-			  int value ATTRIBUTE_UNUSED)
+microblaze_handle_option (struct gcc_options *opts,
+			  struct gcc_options *opts_set,
+			  const struct cl_decoded_option *decoded,
+			  location_t loc ATTRIBUTE_UNUSED)
 {
+  size_t code = decoded->opt_index;
+
+  gcc_assert (opts == &global_options);
+  gcc_assert (opts_set == &global_options_set);
+
   switch (code)
     {
     case OPT_mno_clearbss:

@@ -1,5 +1,6 @@
 /* Target hook definitions.
-   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+   2011
    Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
@@ -1072,16 +1073,15 @@ DEFHOOK
  void, (void),
  hook_void_void)
 
-/* Handle target switch CODE (an OPT_* value).  ARG is the argument
-   passed to the switch; it is NULL if no argument was.  VALUE is the
-   value of ARG if CODE specifies a UInteger option, otherwise it is
-   1 if the positive form of the switch was used and 0 if the negative
-   form was.  Return true if the switch was valid.  */
+/* Handle target switch DECODED for options structures OPTS and
+   OPTS_SET, at location LOC.  Return true if the switch was valid.  */
 DEFHOOK
 (handle_option,
  "",
- bool, (size_t code, const char *arg, int value),
- hook_bool_size_t_constcharptr_int_true)
+ bool, (struct gcc_options *opts, struct gcc_options *opts_set,
+	const struct cl_decoded_option *decoded,
+	unsigned int /*location_t*/ loc),
+ default_target_handle_option)
 
 /* Display extra, target specific information in response to a
    --target-help switch.  */

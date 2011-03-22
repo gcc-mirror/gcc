@@ -1,5 +1,6 @@
 /* Definitions for Toshiba Media Processor
-   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+   2011
    Free Software Foundation, Inc.
    Contributed by Red Hat, Inc.
 
@@ -50,6 +51,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "df.h"
 #include "gimple.h"
+#include "opts.h"
 
 /* Structure of this file:
 
@@ -220,7 +222,8 @@ static rtx mep_function_arg (CUMULATIVE_ARGS *, enum machine_mode,
 static void mep_function_arg_advance (CUMULATIVE_ARGS *, enum machine_mode,
 				      const_tree, bool);
 static bool mep_vector_mode_supported_p (enum machine_mode);
-static bool mep_handle_option (size_t, const char *, int);
+static bool mep_handle_option (struct gcc_options *, struct gcc_options *,
+			       const struct cl_decoded_option *, location_t);
 static rtx  mep_allocate_initial_value (rtx);
 static void mep_asm_init_sections (void);
 static int mep_comp_type_attributes (const_tree, const_tree);
@@ -7257,11 +7260,15 @@ mep_address_cost (rtx addr ATTRIBUTE_UNUSED, bool ATTRIBUTE_UNUSED speed_p)
 }
 
 static bool
-mep_handle_option (size_t code,
-		   const char *arg ATTRIBUTE_UNUSED,
-		   int value ATTRIBUTE_UNUSED)
+mep_handle_option (struct gcc_options *opts, struct gcc_options *opts_set,
+		   const struct cl_decoded_option *decoded,
+		   location_t loc ATTRIBUTE_UNUSED)
 {
   int i;
+  size_t code = decoded->opt_index;
+
+  gcc_assert (opts == &global_options);
+  gcc_assert (opts_set == &global_options_set);
 
   switch (code)
     {

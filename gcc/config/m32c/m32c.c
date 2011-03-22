@@ -1,5 +1,5 @@
 /* Target Code for R8C/M16C/M32C
-   Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010
+   Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
    Contributed by Red Hat.
 
@@ -48,6 +48,7 @@
 #include "langhooks.h"
 #include "gimple.h"
 #include "df.h"
+#include "opts.h"
 
 /* Prototypes */
 
@@ -414,10 +415,16 @@ int ok_to_change_target_memregs = TRUE;
 #undef  TARGET_HANDLE_OPTION
 #define TARGET_HANDLE_OPTION m32c_handle_option
 static bool
-m32c_handle_option (size_t code,
-		    const char *arg ATTRIBUTE_UNUSED,
-		    int value ATTRIBUTE_UNUSED)
+m32c_handle_option (struct gcc_options *opts, struct gcc_options *opts_set,
+		    const struct cl_decoded_option *decoded,
+		    location_t loc ATTRIBUTE_UNUSED)
 {
+  size_t code = decoded->opt_index;
+  const char *arg = decoded->arg;
+
+  gcc_assert (opts == &global_options);
+  gcc_assert (opts_set == &global_options_set);
+
   if (code == OPT_memregs_)
     {
       target_memregs_set = TRUE;

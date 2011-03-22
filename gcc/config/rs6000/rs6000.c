@@ -58,6 +58,7 @@
 #include "intl.h"
 #include "params.h"
 #include "tm-constrs.h"
+#include "opts.h"
 #if TARGET_XCOFF
 #include "xcoffout.h"  /* get declarations of xcoff_*_section_name */
 #endif
@@ -1077,7 +1078,9 @@ static int get_element_number (tree, tree);
 static void rs6000_option_override (void);
 static void rs6000_option_init_struct (struct gcc_options *);
 static void rs6000_option_default_params (void);
-static bool rs6000_handle_option (size_t, const char *, int);
+static bool rs6000_handle_option (struct gcc_options *, struct gcc_options *,
+				  const struct cl_decoded_option *,
+				  location_t);
 static int rs6000_loop_align_max_skip (rtx);
 static void rs6000_parse_yes_no_option (const char *, const char *, int *);
 static int first_altivec_reg_to_save (void);
@@ -4208,11 +4211,19 @@ rs6000_builtin_vectorized_function (tree fndecl, tree type_out,
 /* Implement TARGET_HANDLE_OPTION.  */
 
 static bool
-rs6000_handle_option (size_t code, const char *arg, int value)
+rs6000_handle_option (struct gcc_options *opts, struct gcc_options *opts_set,
+		      const struct cl_decoded_option *decoded,
+		      location_t loc ATTRIBUTE_UNUSED)
 {
   enum fpu_type_t fpu_type = FPU_NONE;
   int isel;
   char *p, *q;
+  size_t code = decoded->opt_index;
+  const char *arg = decoded->arg;
+  int value = decoded->value;
+
+  gcc_assert (opts == &global_options);
+  gcc_assert (opts_set == &global_options_set);
 
   switch (code)
     {

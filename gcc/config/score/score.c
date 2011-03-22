@@ -1,5 +1,6 @@
 /* Output routines for Sunplus S+CORE processor
-   Copyright (C) 2005, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2007, 2008, 2009, 2010, 2011
+   Free Software Foundation, Inc.
    Contributed by Sunnorth.
 
    This file is part of GCC.
@@ -48,6 +49,7 @@
 #include "langhooks.h"
 #include "score7.h"
 #include "df.h"
+#include "opts.h"
 
 static void score_option_override (void);
 
@@ -281,8 +283,16 @@ score_asm_file_end (void)
 
 /* Implement TARGET_HANDLE_OPTION.  */
 static bool
-score_handle_option (size_t code, const char *arg, int value ATTRIBUTE_UNUSED)
+score_handle_option (struct gcc_options *opts, struct gcc_options *opts_set,
+		     const struct cl_decoded_option *decoded,
+		     location_t loc ATTRIBUTE_UNUSED)
 {
+  size_t code = decoded->opt_index;
+  const char *arg = decoded->arg;
+
+  gcc_assert (opts == &global_options);
+  gcc_assert (opts_set == &global_options_set);
+
   switch (code)
     {
     case OPT_mscore7d:

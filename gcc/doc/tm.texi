@@ -664,21 +664,18 @@ Its default setting is 0.
 @cindex optional hardware or system features
 @cindex features, optional, in system conventions
 
-@deftypefn {Target Hook} bool TARGET_HANDLE_OPTION (size_t @var{code}, const char *@var{arg}, int @var{value})
+@deftypefn {Target Hook} bool TARGET_HANDLE_OPTION (struct gcc_options *@var{opts}, struct gcc_options *@var{opts_set}, const struct cl_decoded_option *@var{decoded}, unsigned int @var{loc})
 This hook is called whenever the user specifies one of the
 target-specific options described by the @file{.opt} definition files
 (@pxref{Options}).  It has the opportunity to do some option-specific
 processing and should return true if the option is valid.  The default
 definition does nothing but return true.
 
-@var{code} specifies the @code{OPT_@var{name}} enumeration value
-associated with the selected option; @var{name} is just a rendering of
-the option name in which non-alphanumeric characters are replaced by
-underscores.  @var{arg} specifies the string argument and is null if
-no argument was given.  If the option is flagged as a @code{UInteger}
-(@pxref{Option properties}), @var{value} is the numeric value of the
-argument.  Otherwise @var{value} is 1 if the positive form of the
-option was used and 0 if the ``no-'' form was.
+@var{decoded} specifies the option and its arguments.  @var{opts} and
+@var{opts_set} are the @code{gcc_options} structures to be used for
+storing option state, and @var{loc} is the location at which the
+option was passed (@code{UNKNOWN_LOCATION} except for options passed
+via attributes).
 @end deftypefn
 
 @deftypefn {Target Hook} bool TARGET_HANDLE_C_OPTION (size_t @var{code}, const char *@var{arg}, int @var{value})

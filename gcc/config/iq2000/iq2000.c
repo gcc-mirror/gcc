@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on Vitesse IQ2000 processors
-   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -45,6 +45,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "target-def.h"
 #include "langhooks.h"
 #include "df.h"
+#include "opts.h"
 
 /* Enumeration for all of the relational tests, so that we can build
    arrays indexed by the test type, and not worry about the order
@@ -145,7 +146,10 @@ static enum machine_mode gpr_mode;
 
 /* Initialize the GCC target structure.  */
 static struct machine_function* iq2000_init_machine_status (void);
-static bool iq2000_handle_option      (size_t, const char *, int);
+static bool iq2000_handle_option      (struct gcc_options *,
+				       struct gcc_options *,
+				       const struct cl_decoded_option *,
+				       location_t);
 static void iq2000_option_override    (void);
 static section *iq2000_select_rtx_section (enum machine_mode, rtx,
 					   unsigned HOST_WIDE_INT);
@@ -1437,8 +1441,16 @@ iq2000_init_machine_status (void)
 /* Implement TARGET_HANDLE_OPTION.  */
 
 static bool
-iq2000_handle_option (size_t code, const char *arg, int value ATTRIBUTE_UNUSED)
+iq2000_handle_option (struct gcc_options *opts, struct gcc_options *opts_set,
+		      const struct cl_decoded_option *decoded,
+		      location_t loc ATTRIBUTE_UNUSED)
 {
+  size_t code = decoded->opt_index;
+  const char *arg = decoded->arg;
+
+  gcc_assert (opts == &global_options);
+  gcc_assert (opts_set == &global_options_set);
+
   switch (code)
     {
     case OPT_mcpu_:

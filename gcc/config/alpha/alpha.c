@@ -57,6 +57,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm-constrs.h"
 #include "df.h"
 #include "libfuncs.h"
+#include "opts.h"
 
 /* Specify which cpu to schedule for.  */
 enum processor_type alpha_tune;
@@ -217,8 +218,17 @@ static const struct default_options alpha_option_optimization_table[] =
 /* Implement TARGET_HANDLE_OPTION.  */
 
 static bool
-alpha_handle_option (size_t code, const char *arg, int value)
+alpha_handle_option (struct gcc_options *opts, struct gcc_options *opts_set,
+		     const struct cl_decoded_option *decoded,
+		     location_t loc ATTRIBUTE_UNUSED)
 {
+  size_t code = decoded->opt_index;
+  const char *arg = decoded->arg;
+  int value = decoded->value;
+
+  gcc_assert (opts == &global_options);
+  gcc_assert (opts_set == &global_options_set);
+
   switch (code)
     {
     case OPT_mfp_regs:

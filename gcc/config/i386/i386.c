@@ -58,6 +58,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "sched-int.h"
 #include "sbitmap.h"
 #include "fibheap.h"
+#include "opts.h"
 
 enum upper_128bits_state
 {
@@ -2683,8 +2684,16 @@ ix86_using_red_zone (void)
 /* Implement TARGET_HANDLE_OPTION.  */
 
 static bool
-ix86_handle_option (size_t code, const char *arg ATTRIBUTE_UNUSED, int value)
+ix86_handle_option (struct gcc_options *opts, struct gcc_options *opts_set,
+		    const struct cl_decoded_option *decoded,
+		    location_t loc ATTRIBUTE_UNUSED)
 {
+  size_t code = decoded->opt_index;
+  int value = decoded->value;
+
+  gcc_assert (opts == &global_options);
+  gcc_assert (opts_set == &global_options_set);
+
   switch (code)
     {
     case OPT_mmmx:
@@ -4670,7 +4679,13 @@ ix86_valid_target_attribute_inner_p (tree args, char *p_strings[])
 	}
 
       else if (type == ix86_opt_isa)
-	ix86_handle_option (opt, p, opt_set_p);
+	{
+	  struct cl_decoded_option decoded;
+
+	  generate_option (opt, NULL, opt_set_p, CL_TARGET, &decoded);
+	  ix86_handle_option (&global_options, &global_options_set,
+			      &decoded, input_location);
+	}
 
       else if (type == ix86_opt_yes || type == ix86_opt_no)
 	{

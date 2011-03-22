@@ -58,6 +58,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "bitmap.h"
 #include "diagnostic.h"
 #include "target-globals.h"
+#include "opts.h"
 
 /* True if X is an UNSPEC wrapper around a SYMBOL_REF or LABEL_REF.  */
 #define UNSPEC_ADDRESS_P(X)					\
@@ -15459,8 +15460,16 @@ mips_set_tune (const struct mips_cpu_info *info)
 /* Implement TARGET_HANDLE_OPTION.  */
 
 static bool
-mips_handle_option (size_t code, const char *arg, int value ATTRIBUTE_UNUSED)
+mips_handle_option (struct gcc_options *opts, struct gcc_options *opts_set,
+		    const struct cl_decoded_option *decoded,
+		    location_t loc ATTRIBUTE_UNUSED)
 {
+  size_t code = decoded->opt_index;
+  const char *arg = decoded->arg;
+
+  gcc_assert (opts == &global_options);
+  gcc_assert (opts_set == &global_options_set);
+
   switch (code)
     {
     case OPT_mabi_:

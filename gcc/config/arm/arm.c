@@ -56,6 +56,7 @@
 #include "intl.h"
 #include "libfuncs.h"
 #include "params.h"
+#include "opts.h"
 
 /* Forward definitions of types.  */
 typedef struct minipool_node    Mnode;
@@ -218,7 +219,8 @@ static tree arm_build_builtin_va_list (void);
 static void arm_expand_builtin_va_start (tree, rtx);
 static tree arm_gimplify_va_arg_expr (tree, tree, gimple_seq *, gimple_seq *);
 static void arm_option_override (void);
-static bool arm_handle_option (size_t, const char *, int);
+static bool arm_handle_option (struct gcc_options *, struct gcc_options *,
+			       const struct cl_decoded_option *, location_t);
 static void arm_target_help (void);
 static unsigned HOST_WIDE_INT arm_shift_truncation_mask (enum machine_mode);
 static bool arm_cannot_copy_insn_p (rtx);
@@ -1340,8 +1342,16 @@ arm_find_cpu (const char *name, const struct processors *sel, const char *desc)
 /* Implement TARGET_HANDLE_OPTION.  */
 
 static bool
-arm_handle_option (size_t code, const char *arg, int value ATTRIBUTE_UNUSED)
+arm_handle_option (struct gcc_options *opts, struct gcc_options *opts_set,
+		   const struct cl_decoded_option *decoded,
+		   location_t loc ATTRIBUTE_UNUSED)
 {
+  size_t code = decoded->opt_index;
+  const char *arg = decoded->arg;
+
+  gcc_assert (opts == &global_options);
+  gcc_assert (opts_set == &global_options_set);
+
   switch (code)
     {
     case OPT_march_:

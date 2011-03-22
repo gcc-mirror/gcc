@@ -1,5 +1,5 @@
 /* Copyright (C) 1997, 1998, 1999, 2000, 2001, 2003, 2004, 2005, 2006, 2007,
-   2008, 2009, 2010  Free Software Foundation, Inc.
+   2008, 2009, 2010, 2011  Free Software Foundation, Inc.
    Contributed by Red Hat, Inc.
 
 This file is part of GCC.
@@ -49,6 +49,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "integrate.h"
 #include "langhooks.h"
 #include "df.h"
+#include "opts.h"
 
 #ifndef FRV_INLINE
 #define FRV_INLINE inline
@@ -260,7 +261,10 @@ frv_cpu_t frv_cpu_type = CPU_TYPE;	/* value of -mcpu= */
 
 /* Forward references */
 
-static bool frv_handle_option			(size_t, const char *, int);
+static bool frv_handle_option			(struct gcc_options *,
+						 struct gcc_options *,
+						 const struct cl_decoded_option *,
+						 location_t);
 static void frv_option_override			(void);
 static bool frv_legitimate_address_p		(enum machine_mode, rtx, bool);
 static int frv_default_flags_for_cpu		(void);
@@ -630,8 +634,16 @@ frv_cannot_force_const_mem (rtx x ATTRIBUTE_UNUSED)
 /* Implement TARGET_HANDLE_OPTION.  */
 
 static bool
-frv_handle_option (size_t code, const char *arg, int value ATTRIBUTE_UNUSED)
+frv_handle_option (struct gcc_options *opts, struct gcc_options *opts_set,
+		   const struct cl_decoded_option *decoded,
+		   location_t loc ATTRIBUTE_UNUSED)
 {
+  size_t code = decoded->opt_index;
+  const char *arg = decoded->arg;
+
+  gcc_assert (opts == &global_options);
+  gcc_assert (opts_set == &global_options_set);
+
   switch (code)
     {
     case OPT_mcpu_:
