@@ -1,3 +1,15 @@
+2011-03-22  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/shared_ptr.h (operator>, operator<=, operator>=): Add,
+	per DR 1401.
+	(operator==, operator!=, operator<): Fix per the letter of DR 1401.
+	* include/bits/shared_ptr_base.h: Likewise for __shared_ptr.
+	* include/bits/unique_ptr.h (operator==, operator!=, operator<,
+	operator<=, operator>, operator>=): Fix per the letter of DR 1401.
+	* testsuite/20_util/shared_ptr/comparison/dr1401.cc: New.
+	* testsuite/20_util/unique_ptr/comparison/dr1401.cc: Likewise.
+	* testsuite/20_util/weak_ptr/comparison/cmp_neg.cc: Adjust.
+
 2011-03-22  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/abi/pre/gnu.ver (GLIBCXX_3.4.15): Export _ZNSsC2EOSs
