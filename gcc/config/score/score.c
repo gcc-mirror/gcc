@@ -283,38 +283,25 @@ score_asm_file_end (void)
 
 /* Implement TARGET_HANDLE_OPTION.  */
 static bool
-score_handle_option (struct gcc_options *opts, struct gcc_options *opts_set,
+score_handle_option (struct gcc_options *opts,
+		     struct gcc_options *opts_set ATTRIBUTE_UNUSED,
 		     const struct cl_decoded_option *decoded,
 		     location_t loc ATTRIBUTE_UNUSED)
 {
   size_t code = decoded->opt_index;
-  const char *arg = decoded->arg;
-
-  gcc_assert (opts == &global_options);
-  gcc_assert (opts_set == &global_options_set);
+  int value = decoded->value;
 
   switch (code)
     {
     case OPT_mscore7d:
-      target_flags &= ~(MASK_ALL_CPU_BITS);
-      target_flags |= MASK_SCORE7 | MASK_SCORE7D;
+      opts->x_target_flags &= ~(MASK_ALL_CPU_BITS);
+      opts->x_target_flags |= MASK_SCORE7 | MASK_SCORE7D;
       return true;
 
     case OPT_march_:
-      if (strcmp (arg, "score7") == 0)
-        {
-          target_flags &= ~(MASK_ALL_CPU_BITS);
-          target_flags |= MASK_SCORE7;
-          return true;
-        }
-      else if (strcmp (arg, "score7d") == 0)
-        {
-          target_flags &= ~(MASK_ALL_CPU_BITS);
-          target_flags |= MASK_SCORE7 | MASK_SCORE7D;
-          return true;
-        }
-      else
-        return false;
+      opts->x_target_flags &= ~(MASK_ALL_CPU_BITS);
+      opts->x_target_flags |= value;
+      return true;
 
     default:
       return true;
