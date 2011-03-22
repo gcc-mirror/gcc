@@ -1,5 +1,24 @@
 2011-03-22  Joseph Myers  <joseph@codesourcery.com>
 
+	* config/bfin/bfin-opts.h: New.
+	* config/bfin/bfin.c (bfin_lib_id_given, bfin_cpu_type,
+	bfin_si_revision, bfin_workarounds): Remove.
+	(bfin_cpus): Make static const.
+	(bfin_load_pic_reg): Check global_options_set.x_bfin_library_id
+	not bfin_lib_id_given.
+	(bfin_handle_option): Don't set bfin_lib_id_given.  Access
+	bfin_cpu_type, bfin_si_revision and bfin_workarounds via opts
+	pointer. Use error_at.  Don't assert that global structures are in
+	use.
+	* config/bfin/bfin.h: Include bfin-opts.h.
+	(enum bfin_cpu_type, bfin_cpu_t): Move to bfin-opts.h.
+	(bfin_cpu_type, bfin_si_revision, bfin_workarounds): Remove.
+	* bfin.opt (config/bfin/bfin-opts.h): New HeaderInclude entry.
+	(bfin_cpu_type, bfin_si_revision, bfin_workarounds): New Variable
+	entries.
+
+2011-03-22  Joseph Myers  <joseph@codesourcery.com>
+
 	* config/arm/arm.opt (mhard-float, msoft-float): Use Alias.
 	* config/arm/arm.c (arm_handle_option): Don't handle -mhard-float
 	or -msoft-float here.

@@ -1,6 +1,6 @@
 ; Options for the Blackfin port of the compiler
 ;
-; Copyright (C) 2005, 2007, 2008 Free Software Foundation, Inc.
+; Copyright (C) 2005, 2007, 2008, 2011 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -17,6 +17,23 @@
 ; You should have received a copy of the GNU General Public License
 ; along with GCC; see the file COPYING3.  If not see
 ; <http://www.gnu.org/licenses/>.
+
+HeaderInclude
+config/bfin/bfin-opts.h
+
+; Value of -mcpu=.
+Variable
+bfin_cpu_t bfin_cpu_type = BFIN_CPU_UNKNOWN
+
+; -msi-revision support. There are three special values:
+; -1      -msi-revision=none.
+; 0xffff  -msi-revision=any.
+Variable
+int bfin_si_revision
+
+; The workarounds enabled.
+Variable
+unsigned int bfin_workarounds = 0
 
 msim
 Target RejectNegative
