@@ -672,8 +672,6 @@ case "${target}" in
   arc-*-*)
     noconfigdirs="$noconfigdirs target-libgloss"
     ;;
-  arm-semi-aof )
-    ;;
   arm-*-coff | strongarm-*-coff | xscale-*-coff)
     noconfigdirs="$noconfigdirs ${libgcj}"
     libgloss_dir=arm
@@ -743,8 +741,6 @@ case "${target}" in
     esac
     libgloss_dir=cris
     ;;
-  crx-*-*)
-    ;;
   d10v-*-*)
     noconfigdirs="$noconfigdirs target-libstdc++-v3 target-libgloss ${libgcj}"
     ;;
@@ -778,7 +774,7 @@ case "${target}" in
     # headers, crt*.o, etc., all of which are needed by these.
     noconfigdirs="$noconfigdirs target-zlib"
     ;;
-  parisc*-*-linux* | hppa*-*-linux*)
+  hppa*-*-linux*)
     ;;
   hppa*-*-*elf* | \
   hppa*-*-lites* | \
@@ -811,8 +807,6 @@ case "${target}" in
   ia64*-*-*vms*)
     # No gdb or ld support yet.
     noconfigdirs="$noconfigdirs ${libgcj} tix readline mmalloc libgui itcl gdb ld"
-    ;;
-  i370-*-opened*)
     ;;
   i[[3456789]]86-*-coff | i[[3456789]]86-*-elf)
     noconfigdirs="$noconfigdirs ${libgcj}"
@@ -857,8 +851,7 @@ case "${target}" in
       echo "Warning: winsup/cygwin is missing so newlib can't be built."
     fi
     ;;
-  i[[3456789]]86-moss-msdos | i[[3456789]]86-*-moss* | \
-  i[[3456789]]86-*-uwin* | i[[3456789]]86-*-interix* )
+  i[[3456789]]86-*-interix* )
     ;;
   i[[3456789]]86-*-pe)
     noconfigdirs="$noconfigdirs target-libgloss"
@@ -898,8 +891,6 @@ case "${target}" in
     ;;
   m68*-*-* | fido-*-*)
     libgloss_dir=m68k
-    ;;
-  mcore-*-pe*)
     ;;
   mmix-*-*)
     noconfigdirs="$noconfigdirs target-libffi target-boehm-gc gdb libgloss"
