@@ -1,3 +1,9 @@
+2011-03-22  Nick Clifton  <nickc@redhat.com>
+
+	* lib/target-supports.exp (check_profiling_available): Add MN10300
+	to the list of targets that do not support profiling.  Restore
+	alpha sorting to this list.
+
 2011-03-22  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* gcc.dg/torture/vector-1.c: On powerpc add -fabi=altivec to avoid
