@@ -146,9 +146,8 @@ extern enum alpha_fp_trap_mode alpha_fptm;
 #define TARGET_FP	(!TARGET_SOFT_FP)
 
 /* These are for target os support and cannot be changed at runtime.  */
-#define TARGET_ABI_WINDOWS_NT 0
-#define TARGET_ABI_OPEN_VMS 0
-#define TARGET_ABI_OSF (!TARGET_ABI_WINDOWS_NT && !TARGET_ABI_OPEN_VMS)
+#define TARGET_ABI_OPEN_VMS	0
+#define TARGET_ABI_OSF		(!TARGET_ABI_OPEN_VMS)
 
 #ifndef TARGET_AS_CAN_SUBTRACT_LABELS
 #define TARGET_AS_CAN_SUBTRACT_LABELS TARGET_GAS
@@ -1123,8 +1122,7 @@ do {						\
 /* This is how to output an element of a case-vector that is relative.  */
 
 #define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, BODY, VALUE, REL) \
-  fprintf (FILE, "\t.%s $L%d\n", TARGET_ABI_WINDOWS_NT ? "long" : "gprel32", \
-	   (VALUE))
+  fprintf (FILE, "\t.gprel32 $L%d\n", (VALUE))
 
 /* This is how to output an assembler line
    that says to advance the location counter

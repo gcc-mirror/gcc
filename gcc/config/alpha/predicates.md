@@ -195,9 +195,7 @@
 		  || gotdtp_symbolic_operand (op, mode)
 		  || gottp_symbolic_operand (op, mode));
 	}
-
-      /* This handles both the Windows/NT and OSF cases.  */
-      return mode == ptr_mode || mode == DImode;
+      return mode == Pmode;
 
     case HIGH:
       return (TARGET_EXPLICIT_RELOCS

@@ -7777,19 +7777,11 @@ alpha_expand_prologue (void)
 	  emit_move_insn (last, const0_rtx);
 	}
 
-      if (TARGET_ABI_WINDOWS_NT || flag_stack_check)
+      if (flag_stack_check)
 	{
-	  /* For NT stack unwind (done by 'reverse execution'), it's
-	     not OK to take the result of a loop, even though the value
-	     is already in ptr, so we reload it via a single operation
-	     and subtract it to sp.
-
-	     Same if -fstack-check is specified, because the probed stack
-	     size is not equal to the frame size.
-
-	     Yes, that's correct -- we have to reload the whole constant
-	     into a temporary via ldah+lda then subtract from sp.  */
-
+	  /* If -fstack-check is specified we have to load the entire
+	     constant into a register and subtract from the sp in one go,
+	     because the probed stack size is not equal to the frame size.  */
 	  HOST_WIDE_INT lo, hi;
 	  lo = ((frame_size & 0xffff) ^ 0x8000) - 0x8000;
 	  hi = frame_size - lo;
@@ -8142,8 +8134,6 @@ alpha_output_function_end_prologue (FILE *file)
 {
   if (TARGET_ABI_OPEN_VMS)
     fputs ("\t.prologue\n", file);
-  else if (TARGET_ABI_WINDOWS_NT)
-    fputs ("\t.prologue 0\n", file);
   else if (!flag_inhibit_size_directive)
     fprintf (file, "\t.prologue %d\n",
 	     alpha_function_needs_gp || cfun->is_thunk);
