@@ -1,3 +1,44 @@
+2011-03-22  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/arm/arm.opt (mhard-float, msoft-float): Use Alias.
+	* config/arm/arm.c (arm_handle_option): Don't handle -mhard-float
+	or -msoft-float here.
+	* config/arm/arm.h (CPP_SPEC): Handle -mfloat-abi=*, not
+	-msoft-float and -mhard-float.
+	(OPTION_DEFAULT_SPECS): Don't handle -mhard-float and
+	-msoft-float.
+	* config/arm/coff.h (MULTILIB_DEFAULTS): Use mfloat-abi=soft, not
+	msoft-float.
+	* config/arm/elf.h (ASM_SPEC): Don't handle -mhard-float and
+	-msoft-float.
+	(MULTILIB_DEFAULTS): Use mfloat-abi=soft, not msoft-float.
+	* config/arm/linux-elf.h (MULTILIB_DEFAULTS): Use mfloat-abi=hard,
+	not mhard-float.
+	(LIBGCC_SPEC): Don't handle -msoft-float.
+	* config/arm/netbsd-elf.h (SUBTARGET_ASM_FLOAT_SPEC): Don't handle
+	-mhard-float.
+	* config/arm/pe.h (MULTILIB_DEFAULTS): Use mfloat-abi=soft, not
+	msoft-float.
+	* config/arm/rtems-elf.h (SUBTARGET_EXTRA_ASM_SPEC): Handle
+	-mfloat-abi=*, not -msoft-float and -mhard-float.
+	* config/arm/semi.h((ASM_SPEC): Don't handle -mhard-float and
+	-msoft-float.
+	* config/arm/t-arm-elf (MULTILIB_OPTIONS, MULTILIB_EXCEPTIONS):
+	Use mfloat-abi=hard and mfloat-abi=soft in comments, not
+	mhard-float and msoft-float.
+	* config/arm/t-linux (MULTILIB_OPTIONS): Use mfloat-abi=hard and
+	mfloat-abi=soft in comments, not mhard-float and msoft-float.
+	* config/arm/t-rtems (MULTILIB_OPTIONS, MULTILIB_EXCEPTIONS): Use
+	mfloat-abi=soft and mfloat-abi=hard, not msoft-float and
+	mhard-float.
+	* config/arm/t-strongarm-elf (MULTILIB_OPTIONS): Use
+	mfloat-abi=hard and mfloat-abi=soft, not mhard-float and
+	msoft-float.
+	* config/arm/t-wince-pe (MULTILIB_OPTIONS): Use mfloat-abi=hard,
+	not mhard-float.
+	* config/arm/wince-pe.h (MULTILIB_DEFAULTS): Use mfloat-abi=soft,
+	not msoft-float.
+
 2011-03-22  Richard Henderson  <rth@redhat.com>
 
 	* config/alpha/alpha.c (alpha_expand_prologue): Don't test

@@ -1,5 +1,5 @@
 # Copyright (C) 1997, 1998, 1999, 2000, 2001, 2003, 2004, 2006,
-# 2008 Free Software Foundation, Inc.
+# 2008, 2011 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -25,7 +25,7 @@ LIB1ASMSRC = arm/lib1funcs.asm
 LIB1ASMFUNCS = _udivsi3 _divsi3 _umodsi3 _modsi3 _dvmd_lnx _clzsi2 _clzdi2 \
 	_arm_addsubdf3 _arm_addsubsf3
 
-# MULTILIB_OPTIONS = mhard-float/msoft-float
+# MULTILIB_OPTIONS = mfloat-abi=hard/mfloat-abi=soft
 # MULTILIB_DIRNAMES = hard-float soft-float
 
 # EXTRA_MULTILIB_PARTS = crtbegin.o crtend.o
