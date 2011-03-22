@@ -5030,17 +5030,22 @@ s390_delegitimize_address (rtx orig_x)
       && REGNO (XEXP (x, 0)) == PIC_OFFSET_TABLE_REGNUM
       && GET_CODE (XEXP (x, 1)) == CONST)
     {
+      HOST_WIDE_INT offset = 0;
+
       /* The const operand.  */
       y = XEXP (XEXP (x, 1), 0);
 
       if (GET_CODE (y) == PLUS
 	  && GET_CODE (XEXP (y, 1)) == CONST_INT)
-	y = XEXP (y, 0);
+	{
+	  offset = INTVAL (XEXP (y, 1));
+	  y = XEXP (y, 0);
+	}
 
       if (GET_CODE (y) == UNSPEC
 	  && (XINT (y, 1) == UNSPEC_GOTOFF
 	      || XINT (y, 1) == UNSPEC_PLTOFF))
-	return XVECEXP (y, 0, 0);
+	return plus_constant (XVECEXP (y, 0, 0), offset);
     }
 
   if (GET_CODE (x) != MEM)
