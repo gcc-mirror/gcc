@@ -309,8 +309,6 @@ extern int cris_cpu_version;
 #define TARGET_HAS_SWAP (cris_cpu_version >= CRIS_CPU_SVINTO)
 #define TARGET_V32 (cris_cpu_version >= CRIS_CPU_V32)
 
-#define CRIS_SUBTARGET_HANDLE_OPTION(x, y, z)
-
 /* Node: Storage Layout */
 
 #define BITS_BIG_ENDIAN 0
