@@ -1,5 +1,14 @@
 2011-03-22  Joseph Myers  <joseph@codesourcery.com>
 
+	* config/score/score.c (score_handle_option): Don't assert that
+	global structures are in use.  Access target_flags via opts
+	pointer.  Use value of -march= option to determine target_flags
+	settings.
+	* config/score/score.opt (march=): Use Enum.
+	(score_arch): New Enum and EnumValue entries.
+
+2011-03-22  Joseph Myers  <joseph@codesourcery.com>
+
 	* config/mep/mep.c (option_mtiny_specified): Remove.
 	(mep_option_override): Move register handling for -mivc2 from
 	mep_handle_option.  Use global_options_set.x_mep_tiny_cutoff
