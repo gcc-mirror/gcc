@@ -1,3 +1,8 @@
+2011-03-22  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* config/s390/s390.c (s390_delegitimize_address): Handle PLTOFF
+	and PLT unspecs.
+
 2011-03-21  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* expr.h (prepare_operand): Move to...
