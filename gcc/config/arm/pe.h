@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for ARM with PE obj format.
-   Copyright (C) 1995, 1996, 1999, 2000, 2002, 2003, 2004, 2005, 2007
+   Copyright (C) 1995, 1996, 1999, 2000, 2002, 2003, 2004, 2005, 2007, 2011
    Free Software Foundation, Inc.
    Contributed by Doug Evans (dje@cygnus.com).
    
@@ -49,7 +49,7 @@
 
 #undef  MULTILIB_DEFAULTS
 #define MULTILIB_DEFAULTS \
-  { "marm", "mlittle-endian", "msoft-float", "mno-thumb-interwork" }  
+  { "marm", "mlittle-endian", "mfloat-abi=soft", "mno-thumb-interwork" }  
 
 #undef  WCHAR_TYPE
 #define WCHAR_TYPE 	"short unsigned int"

@@ -1362,14 +1362,6 @@ arm_handle_option (struct gcc_options *opts, struct gcc_options *opts_set,
       arm_selected_cpu = arm_find_cpu(arg, all_cores, "-mcpu");
       return true;
 
-    case OPT_mhard_float:
-      target_float_abi_name = "hard";
-      return true;
-
-    case OPT_msoft_float:
-      target_float_abi_name = "soft";
-      return true;
-
     case OPT_mtune_:
       arm_selected_tune = arm_find_cpu(arg, all_cores, "-mtune");
       return true;

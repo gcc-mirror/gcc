@@ -1,4 +1,4 @@
-# Copyright (C) 2003, 2004, 2006, 2008, 2009, 2010
+# Copyright (C) 2003, 2004, 2006, 2008, 2009, 2010, 2011
 # Free Software Foundation, Inc.
 #
 # This file is part of GCC.
@@ -43,7 +43,7 @@ pe.o: $(srcdir)/config/arm/pe.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 		$(srcdir)/config/arm/pe.c
 
-MULTILIB_OPTIONS = mhard-float
+MULTILIB_OPTIONS = mfloat-abi=hard
 MULTILIB_DIRNAMES = fpu
 # Note - Thumb multilib omitted because Thumb support for
 # arm-wince-pe target does not appear to be working in binutils
