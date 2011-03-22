@@ -213,32 +213,30 @@ static const struct default_options alpha_option_optimization_table[] =
 /* Implement TARGET_HANDLE_OPTION.  */
 
 static bool
-alpha_handle_option (struct gcc_options *opts, struct gcc_options *opts_set,
+alpha_handle_option (struct gcc_options *opts,
+		     struct gcc_options *opts_set ATTRIBUTE_UNUSED,
 		     const struct cl_decoded_option *decoded,
-		     location_t loc ATTRIBUTE_UNUSED)
+		     location_t loc)
 {
   size_t code = decoded->opt_index;
   const char *arg = decoded->arg;
   int value = decoded->value;
 
-  gcc_assert (opts == &global_options);
-  gcc_assert (opts_set == &global_options_set);
-
   switch (code)
     {
     case OPT_mfp_regs:
       if (value == 0)
-	target_flags |= MASK_SOFT_FP;
+	opts->x_target_flags |= MASK_SOFT_FP;
       break;
 
     case OPT_mieee:
     case OPT_mieee_with_inexact:
-      target_flags |= MASK_IEEE_CONFORMANT;
+      opts->x_target_flags |= MASK_IEEE_CONFORMANT;
       break;
 
     case OPT_mtls_size_:
       if (value != 16 && value != 32 && value != 64)
-	error ("bad value %qs for -mtls-size switch", arg);
+	error_at (loc, "bad value %qs for -mtls-size switch", arg);
       break;
     }
 
