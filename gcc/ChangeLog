@@ -1,3 +1,10 @@
+2011-03-22  Andrey Belevantsev  <abel@ispras.ru>
+
+	PR rtl-optimization/48143
+	* config/i386/sse.md (*sse2_cvtpd2dq): Add athlon_decode attribute.
+	(*sse2_cvttpd2dq, sse2_cvtss2sd, *sse2_cvtpd2ps,
+	sse2_cvtps2pd): Likewise.
+
 2011-03-22  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* recog.c (canonicalize_change_group): Use validate_unshare_change.
