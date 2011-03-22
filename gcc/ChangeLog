@@ -1,5 +1,17 @@
 2011-03-22  Joseph Myers  <joseph@codesourcery.com>
 
+	* config/mep/mep.c (option_mtiny_specified): Remove.
+	(mep_option_override): Move register handling for -mivc2 from
+	mep_handle_option.  Use global_options_set.x_mep_tiny_cutoff
+	instead of option_mtiny_specified.
+	(mep_handle_option): Access target_flags via opts pointer.  Don't
+	assert that global structures are in use.  Defer part of -mivc2
+	handling and move it to mep_option_override.
+	* config/mep/mep.opt (IVC2): New Mask entry.
+	(mivc2): Use Var and Defer instead of Mask.
+
+2011-03-22  Joseph Myers  <joseph@codesourcery.com>
+
 	* config/v850/v850-opts.h: New.
 	* config/v850/v850.c (small_memory): Replace with
 	small_memory_physical_max array.  Make that array static const.
