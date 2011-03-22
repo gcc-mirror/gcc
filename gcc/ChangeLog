@@ -1,3 +1,9 @@
+2011-03-22  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/48228
+	* tree-vrp.c (vrp_visit_phi_node): Do not stop propagating
+	for single-arg PHIs.
+
 2011-03-22  Andrey Belevantsev  <abel@ispras.ru>
 
 	PR rtl-optimization/48143

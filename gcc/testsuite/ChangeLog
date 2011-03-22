@@ -1,3 +1,8 @@
+2011-03-22  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/48228
+	* gcc.dg/Wstrict-overflow-23.c: New testcase.
+
 2011-03-21  Jack Howarth  <howarth@bromo.med.uc.edu>
 
 	* lib/prune.exp (prune_gcc_output): Prune "could not create
