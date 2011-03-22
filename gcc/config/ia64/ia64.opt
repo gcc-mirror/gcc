@@ -1,4 +1,5 @@
-; Copyright (C) 2005, 2006, 2008, 2009, 2010 Free Software Foundation, Inc.
+; Copyright (C) 2005, 2006, 2008, 2009, 2010, 2011
+; Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -15,6 +16,13 @@
 ; You should have received a copy of the GNU General Public License
 ; along with GCC; see the file COPYING3.  If not see
 ; <http://www.gnu.org/licenses/>.
+
+HeaderInclude
+config/ia64/ia64-opts.h
+
+; Which cpu are we scheduling for.
+Variable
+enum processor_type ia64_tune = PROCESSOR_ITANIUM2
 
 mbig-endian
 Target Report RejectNegative Mask(BIG_ENDIAN)
@@ -103,7 +111,7 @@ Target Report Mask(EARLY_STOP_BITS)
 Enable earlier placing stop bits for better scheduling
 
 mfixed-range=
-Target RejectNegative Joined
+Target RejectNegative Joined Var(ia64_deferred_options) Defer
 Specify range of registers to make fixed
 
 mtls-size=
@@ -111,8 +119,18 @@ Target RejectNegative Joined UInteger Var(ia64_tls_size) Init(22)
 Specify bit size of immediate TLS offsets
 
 mtune=
-Target RejectNegative Joined
+Target RejectNegative Joined Enum(ia64_tune) Var(ia64_tune)
 Schedule code for given CPU
+
+Enum
+Name(ia64_tune) Type(enum processor_type)
+Known Itanium CPUs (for use with the -mtune= option):
+
+EnumValue
+Enum(ia64_tune) String(itanium2) Value(PROCESSOR_ITANIUM2)
+
+EnumValue
+Enum(ia64_tune) String(mckinley) Value(PROCESSOR_ITANIUM2)
 
 msched-br-data-spec
 Target Report Var(mflag_sched_br_data_spec) Init(0)

@@ -1,6 +1,6 @@
 /* Definitions of target machine GNU compiler.  IA-64 version.
    Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008,
-   2009, 2010 Free Software Foundation, Inc.
+   2009, 2010, 2011 Free Software Foundation, Inc.
    Contributed by James E. Wilson <wilson@cygnus.com> and
    		  David Mosberger <davidm@hpl.hp.com>.
 
@@ -102,19 +102,6 @@ enum ia64_inline_type
 #ifndef TARGET_CPU_DEFAULT
 #define TARGET_CPU_DEFAULT 0
 #endif
-
-/* Which processor to schedule for. The cpu attribute defines a list
-   that mirrors this list, so changes to ia64.md must be made at the
-   same time.  */
-
-enum processor_type
-{
-  PROCESSOR_ITANIUM,			/* Original Itanium.  */
-  PROCESSOR_ITANIUM2,
-  PROCESSOR_max
-};
-
-extern enum processor_type ia64_tune;
 
 /* Driver configuration */
 
