@@ -1,3 +1,8 @@
+2011-03-23  Gary Funck  <gary@intrepid.com>
+
+	* DEV-PHASE: bump to 4.7.0-1 to reflect recent creation of
+	  the GCC 4.6 release branch.
+
 2011-03-21  Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 171202 into gupc branch.
