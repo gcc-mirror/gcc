@@ -1,3 +1,8 @@
+2011-03-23  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	PR target/47553
+	* gcc.target/arm/neon-vld-1.c: New test.
+
 2011-03-23  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/array14.ad[sb]: New test.
