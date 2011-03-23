@@ -1,3 +1,9 @@
+2010-03-23  Rafael Ávila de Espíndola <respindola@mozilla.com>
+
+	* plugin-api.h (ld_plugin_get_view): New.
+	(ld_plugin_tag): Add LDPT_GET_VIEW.
+	(ld_plugin_tv): Add tv_get_view.
+
 2011-03-16  Jakub Jelinek  <jakub@redhat.com>
 
 	* dwarf2.h (DW_TAG_GNU_call_site, DW_TAG_GNU_call_site_parameter,
