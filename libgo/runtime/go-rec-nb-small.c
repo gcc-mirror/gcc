@@ -32,16 +32,6 @@ __go_receive_nonblocking_acquire (struct __go_channel *channel)
 	  ? channel->next_store == 0
 	  : channel->next_fetch == channel->next_store))
     {
-      if (channel->saw_close)
-	{
-	  ++channel->closed_op_count;
-	  if (channel->closed_op_count >= MAX_CLOSED_OPERATIONS)
-	    {
-	      i = pthread_mutex_unlock (&channel->lock);
-	      __go_assert (i == 0);
-	      __go_panic_msg ("too many operations on closed channel");
-	    }
-	}
       channel->saw_close = 1;
       __go_unlock_and_notify_selects (channel);
       return RECEIVE_NONBLOCKING_ACQUIRE_CLOSED;

@@ -17,9 +17,8 @@ __go_send_nonblocking_big (struct __go_channel* channel, const void *val)
   alloc_size = ((channel->element_size + sizeof (uint64_t) - 1)
 		/ sizeof (uint64_t));
 
-  int data = __go_send_nonblocking_acquire (channel);
-  if (data != SEND_NONBLOCKING_ACQUIRE_SPACE)
-    return data == SEND_NONBLOCKING_ACQUIRE_CLOSED;
+  if (!__go_send_nonblocking_acquire (channel))
+    return 0;
 
   offset = channel->next_store * alloc_size;
   __builtin_memcpy (&channel->data[offset], val, channel->element_size);

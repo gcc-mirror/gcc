@@ -5,6 +5,7 @@
    license that can be found in the LICENSE file.  */
 
 #include "go-assert.h"
+#include "go-panic.h"
 #include "channel.h"
 
 /* Close a channel.  After a channel is closed, sends are no longer
@@ -22,6 +23,13 @@ __go_builtin_close (struct __go_channel *channel)
     {
       i = pthread_cond_wait (&channel->cond, &channel->lock);
       __go_assert (i == 0);
+    }
+
+  if (channel->is_closed)
+    {
+      i = pthread_mutex_unlock (&channel->lock);
+      __go_assert (i == 0);
+      __go_panic_msg ("close of closed channel");
     }
 
   channel->is_closed = 1;

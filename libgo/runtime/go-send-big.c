@@ -21,8 +21,7 @@ __go_send_big (struct __go_channel* channel, const void *val, _Bool for_select)
   alloc_size = ((channel->element_size + sizeof (uint64_t) - 1)
 		/ sizeof (uint64_t));
 
-  if (!__go_send_acquire (channel, for_select))
-    return;
+  __go_send_acquire (channel, for_select);
 
   offset = channel->next_store * alloc_size;
   __builtin_memcpy (&channel->data[offset], val, channel->element_size);
