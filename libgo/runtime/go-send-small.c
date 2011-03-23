@@ -10,12 +10,11 @@
 #include "go-panic.h"
 #include "channel.h"
 
-/* Prepare to send something on a channel.  Return true if the channel
-   is acquired, false, if it is closed.  FOR_SELECT is true if this
+/* Prepare to send something on a channel.  FOR_SELECT is true if this
    call is being made after a select statement returned with this
    channel selected.  */
 
-_Bool
+void
 __go_send_acquire (struct __go_channel *channel, _Bool for_select)
 {
   int i;
@@ -25,19 +24,13 @@ __go_send_acquire (struct __go_channel *channel, _Bool for_select)
 
   while (1)
     {
-      /* Check whether the channel is closed.  */
       if (channel->is_closed)
 	{
-	  ++channel->closed_op_count;
-	  if (channel->closed_op_count >= MAX_CLOSED_OPERATIONS)
-	    {
-	      i = pthread_mutex_unlock (&channel->lock);
-	      __go_assert (i == 0);
-	      __go_panic_msg ("too many operations on closed channel");
-	    }
-	  channel->selected_for_send = 0;
-	  __go_unlock_and_notify_selects (channel);
-	  return 0;
+	  if (for_select)
+	    channel->selected_for_send = 0;
+	  i = pthread_mutex_unlock (&channel->lock);
+	  __go_assert (i == 0);
+	  __go_panic_msg ("send on closed channel");
 	}
 
       /* If somebody else has the channel locked for sending, we have
@@ -54,7 +47,7 @@ __go_send_acquire (struct __go_channel *channel, _Bool for_select)
 	      if (!channel->waiting_to_send)
 		{
 		  __go_assert (channel->next_store == 0);
-		  return 1;
+		  return;
 		}
 	    }
 	  else
@@ -62,7 +55,7 @@ __go_send_acquire (struct __go_channel *channel, _Bool for_select)
 	      /* If there is room on the channel, we are OK.  */
 	      if ((channel->next_store + 1) % channel->num_entries
 		  != channel->next_fetch)
-		return 1;
+		return;
 	    }
 	}
 
@@ -156,8 +149,7 @@ __go_send_small (struct __go_channel *channel, uint64_t val, _Bool for_select)
 
   __go_assert (channel->element_size <= sizeof (uint64_t));
 
-  if (!__go_send_acquire (channel, for_select))
-    return;
+  __go_send_acquire (channel, for_select);
 
   channel->data[channel->next_store] = val;
 

@@ -39,7 +39,6 @@ __go_new_channel (size_t element_size, size_t entries)
   i = pthread_cond_init (&ret->cond, NULL);
   __go_assert (i == 0);
   ret->element_size = element_size;
-  ret->closed_op_count = 0;
   ret->waiting_to_send = 0;
   ret->waiting_to_receive = 0;
   ret->selected_for_send = 0;
