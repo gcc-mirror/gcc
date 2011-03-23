@@ -1,5 +1,14 @@
 2011-03-23  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/trans.c (create_temporary): New function taken from...
+	(create_init_temporary): ...here.  Call it.
+	(call_to_gnu): Create the temporary for the return value early, if any.
+	Create it for a function with copy-in/copy-out parameters if there is
+	no target; in other cases of copy-in/copy-out, use another temporary.
+	Push the new binding level lazily.  Add and rename local variables.
+
+2011-03-23  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/decl.c (validate_size): Improve comments and tweak
 	error message.
 	(set_rm_size): Likewise.
