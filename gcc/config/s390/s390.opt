@@ -25,16 +25,8 @@ config/s390/s390-opts.h
 Variable
 const char *s390_arch_string
 
-; Which cpu are we tuning for.
-Variable
-enum processor_type s390_tune = PROCESSOR_max
-
 Variable
 int s390_tune_flags
-
-; Which instruction set architecture to use.
-Variable
-enum processor_type s390_arch
 
 Variable
 int s390_arch_flags
@@ -51,35 +43,35 @@ Target Report RejectNegative Negative(m31) Mask(64BIT)
 64 bit ABI
 
 march=
-Target RejectNegative Joined Enum(s390_arch_option)
+Target RejectNegative Joined Enum(processor_type) Var(s390_arch) Init(PROCESSOR_max)
 Generate code for given CPU
 
 Enum
-Name(s390_arch_option) Type(enum s390_arch_option)
+Name(processor_type) Type(enum processor_type)
 
 EnumValue
-Enum(s390_arch_option) String(g5) Value(s390_arch_g5)
+Enum(processor_type) String(g5) Value(PROCESSOR_9672_G5)
 
 EnumValue
-Enum(s390_arch_option) String(g6) Value(s390_arch_g6)
+Enum(processor_type) String(g6) Value(PROCESSOR_9672_G6)
 
 EnumValue
-Enum(s390_arch_option) String(z900) Value(s390_arch_z900)
+Enum(processor_type) String(z900) Value(PROCESSOR_2064_Z900)
 
 EnumValue
-Enum(s390_arch_option) String(z990) Value(s390_arch_z990)
+Enum(processor_type) String(z990) Value(PROCESSOR_2084_Z990)
 
 EnumValue
-Enum(s390_arch_option) String(z9-109) Value(s390_arch_z9_109)
+Enum(processor_type) String(z9-109) Value(PROCESSOR_2094_Z9_109)
 
 EnumValue
-Enum(s390_arch_option) String(z9-ec) Value(s390_arch_z9_ec)
+Enum(processor_type) String(z9-ec) Value(PROCESSOR_2094_Z9_EC)
 
 EnumValue
-Enum(s390_arch_option) String(z10) Value(s390_arch_z10)
+Enum(processor_type) String(z10) Value(PROCESSOR_2097_Z10)
 
 EnumValue
-Enum(s390_arch_option) String(z196) Value(s390_arch_z196)
+Enum(processor_type) String(z196) Value(PROCESSOR_2817_Z196)
 
 mbackchain
 Target Report Mask(BACKCHAIN)
@@ -130,7 +122,7 @@ Target RejectNegative Joined UInteger Var(s390_stack_size)
 Emit extra code in the function prologue in order to trap if the stack size exceeds the given limit
 
 mtune=
-Target RejectNegative Joined Enum(s390_arch_option)
+Target RejectNegative Joined Enum(processor_type) Var(s390_tune) Init(PROCESSOR_max)
 Schedule code for given CPU
 
 mmvcle
