@@ -407,7 +407,7 @@ __lshrdi3 (DWtype u, shift_count_type b)
     return u;
 
   const DWunion uu = {.ll = u};
-  const shift_count_type bm = (sizeof (Wtype) * BITS_PER_UNIT) - b;
+  const shift_count_type bm = W_TYPE_SIZE - b;
   DWunion w;
 
   if (bm <= 0)
@@ -435,7 +435,7 @@ __ashldi3 (DWtype u, shift_count_type b)
     return u;
 
   const DWunion uu = {.ll = u};
-  const shift_count_type bm = (sizeof (Wtype) * BITS_PER_UNIT) - b;
+  const shift_count_type bm = W_TYPE_SIZE - b;
   DWunion w;
 
   if (bm <= 0)
@@ -463,13 +463,13 @@ __ashrdi3 (DWtype u, shift_count_type b)
     return u;
 
   const DWunion uu = {.ll = u};
-  const shift_count_type bm = (sizeof (Wtype) * BITS_PER_UNIT) - b;
+  const shift_count_type bm = W_TYPE_SIZE - b;
   DWunion w;
 
   if (bm <= 0)
     {
       /* w.s.high = 1..1 or 0..0 */
-      w.s.high = uu.s.high >> (sizeof (Wtype) * BITS_PER_UNIT - 1);
+      w.s.high = uu.s.high >> (W_TYPE_SIZE - 1);
       w.s.low = uu.s.high >> -bm;
     }
   else
@@ -534,7 +534,7 @@ __ffsDI2 (DWtype u)
   if (uu.s.low != 0)
     word = uu.s.low, add = 0;
   else if (uu.s.high != 0)
-    word = uu.s.high, add = BITS_PER_UNIT * sizeof (Wtype);
+    word = uu.s.high, add = W_TYPE_SIZE;
   else
     return 0;
 
