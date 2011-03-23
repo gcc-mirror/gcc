@@ -2701,6 +2701,19 @@ Subprogram_Body_to_gnu (Node_Id gnat_node)
   mark_out_of_scope (Defining_Unit_Name (Specification (gnat_node)));
 }
 
+/* Create a temporary variable with PREFIX and TYPE, and return it.  */
+
+static tree
+create_temporary (const char *prefix, tree type)
+{
+  tree gnu_temp = create_var_decl (create_tmp_var_name (prefix), NULL_TREE,
+				   type, NULL_TREE, false, false, false, false,
+				   NULL, Empty);
+  DECL_ARTIFICIAL (gnu_temp) = 1;
+  DECL_IGNORED_P (gnu_temp) = 1;
+
+  return gnu_temp;
+}
 
 /* Create a temporary variable with PREFIX and initialize it with GNU_INIT.
    Put the initialization statement into GNU_INIT_STMT and annotate it with
@@ -2710,11 +2723,7 @@ static tree
 create_init_temporary (const char *prefix, tree gnu_init, tree *gnu_init_stmt,
 		       Node_Id gnat_node)
 {
-  tree gnu_temp = create_var_decl (create_tmp_var_name (prefix), NULL_TREE,
-				   TREE_TYPE (gnu_init), NULL_TREE, false,
-				   false, false, false, NULL, Empty);
-  DECL_ARTIFICIAL (gnu_temp) = 1;
-  DECL_IGNORED_P (gnu_temp) = 1;
+  tree gnu_temp = create_temporary (prefix, TREE_TYPE (gnu_init));
 
   *gnu_init_stmt = build_binary_op (INIT_EXPR, NULL_TREE, gnu_temp, gnu_init);
   set_expr_location_from_node (*gnu_init_stmt, gnat_node);
@@ -2731,6 +2740,8 @@ create_init_temporary (const char *prefix, tree gnu_init, tree *gnu_init_stmt,
 static tree
 call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target)
 {
+  const bool function_call = (Nkind (gnat_node) == N_Function_Call);
+  const bool returning_value = (function_call && !gnu_target);
   /* The GCC node corresponding to the GNAT subprogram name.  This can either
      be a FUNCTION_DECL node if we are dealing with a standard subprogram call,
      or an indirect reference expression (an INDIRECT_REF node) pointing to a
@@ -2738,17 +2749,19 @@ call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target)
   tree gnu_subprog = gnat_to_gnu (Name (gnat_node));
   /* The FUNCTION_TYPE node giving the GCC type of the subprogram.  */
   tree gnu_subprog_type = TREE_TYPE (gnu_subprog);
+  /* The return type of the FUNCTION_TYPE.  */
+  tree gnu_result_type = TREE_TYPE (gnu_subprog_type);
   tree gnu_subprog_addr = build_unary_op (ADDR_EXPR, NULL_TREE, gnu_subprog);
-  Entity_Id gnat_formal;
-  Node_Id gnat_actual;
   VEC(tree,gc) *gnu_actual_vec = NULL;
   tree gnu_name_list = NULL_TREE;
-  tree gnu_before_list = NULL_TREE;
+  tree gnu_stmt_list = NULL_TREE;
   tree gnu_after_list = NULL_TREE;
+  tree gnu_retval = NULL_TREE;
   tree gnu_call, gnu_result;
-  bool returning_value = (Nkind (gnat_node) == N_Function_Call && !gnu_target);
-  bool pushed_binding_level = false;
   bool went_into_elab_proc = false;
+  bool pushed_binding_level = false;
+  Entity_Id gnat_formal;
+  Node_Id gnat_actual;
 
   gcc_assert (TREE_CODE (gnu_subprog_type) == FUNCTION_TYPE);
 
@@ -2766,8 +2779,8 @@ call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target)
 
       if (returning_value)
 	{
-	  *gnu_result_type_p = TREE_TYPE (gnu_subprog_type);
-	  return build1 (NULL_EXPR, TREE_TYPE (gnu_subprog_type), call_expr);
+	  *gnu_result_type_p = gnu_result_type;
+	  return build1 (NULL_EXPR, gnu_result_type, call_expr);
 	}
 
       return call_expr;
@@ -2785,27 +2798,27 @@ call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target)
   else
     gnat_formal = First_Formal_With_Extras (Entity (Name (gnat_node)));
 
-  /* If we are translating a statement, push a new binding level that will
-     surround it to declare the temporaries created for the call.  Likewise
-     if we'll be returning a value and also have copy-in/copy-out parameters,
-     as we need to create statements to fetch their value after the call.
-
-     ??? We could do that unconditionally, but the middle-end doesn't seem
-     to be prepared to handle the construct in nested contexts.  */
-  if (!returning_value || TYPE_CI_CO_LIST (gnu_subprog_type))
-    {
-      start_stmt_group ();
-      gnat_pushlevel ();
-      pushed_binding_level = true;
-    }
-
-  /* The lifetime of the temporaries created for the call ends with the call
-     so we can give them the scope of the elaboration routine at top level.  */
+  /* The lifetime of the temporaries created for the call ends right after the
+     return value is copied, so we can give them the scope of the elaboration
+     routine at top level.  */
   if (!current_function_decl)
     {
       current_function_decl = get_elaboration_procedure ();
       went_into_elab_proc = true;
     }
+
+  /* First, create the temporary for the return value if we need it: for a
+     variable-sized return type if there is no target or if this is slice,
+     because the gimplifier doesn't support these cases; or for a function
+     with copy-in/copy-out parameters if there is no target, because we'll
+     need to preserve the return value before copying back the parameters.
+     This must be done before we push a new binding level around the call
+     as we will pop it before copying the return value.  */
+  if (function_call
+      && ((TREE_CODE (TYPE_SIZE (gnu_result_type)) != INTEGER_CST
+	   && (!gnu_target || TREE_CODE (gnu_target) == ARRAY_RANGE_REF))
+	  || (!gnu_target && TYPE_CI_CO_LIST (gnu_subprog_type))))
+    gnu_retval = create_temporary ("R", gnu_result_type);
 
   /* Create the list of the actual parameters as GCC expects it, namely a
      chain of TREE_LIST nodes in which the TREE_VALUE field of each node
@@ -2823,7 +2836,7 @@ call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target)
 	 an lvalue but can nevertheless cause the creation of a temporary,
 	 because we need the real object in this case, either to pass its
 	 address if it's passed by reference or as target of the back copy
-	 done after the call if it uses the copy-in copy-out mechanism.
+	 done after the call if it uses the copy-in/copy-out mechanism.
 	 We do it in the In case too, except for an unchecked conversion
 	 because it alone can cause the actual to be misaligned and the
 	 addressability test is applied to the real object.  */
@@ -2916,23 +2929,30 @@ call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target)
 					       TREE_TYPE (gnu_name))))
 	    gnu_name = convert (gnu_name_type, gnu_name);
 
-	  /* If we haven't pushed a binding level and this is an In Out or Out
-	     parameter, push a new one.  This is needed to wrap the copy-back
-	     statements we'll be making below.  */
-	  if (!pushed_binding_level && !in_param)
+	  /* If this is an In Out or Out parameter and we're returning a value,
+	     we need to create a temporary for the return value because we must
+	     preserve it before copying back at the very end.  */
+	  if (!in_param && returning_value && !gnu_retval)
+	    gnu_retval = create_temporary ("R", gnu_result_type);
+
+	  /* If we haven't pushed a binding level, push a new one.  This will
+	     narrow the lifetime of the temporary we are about to make as much
+	     as possible.  The drawback is that we'd need to create a temporary
+	     for the return value, if any (see comment before the loop).  So do
+	     it only when this temporary was already created just above.  */
+	  if (!pushed_binding_level && !(in_param && returning_value))
 	    {
 	      start_stmt_group ();
 	      gnat_pushlevel ();
 	      pushed_binding_level = true;
 	    }
 
-	  /* Create an explicit temporary holding the copy.  This ensures that
-	     its lifetime is as narrow as possible around a statement.  */
+	  /* Create an explicit temporary holding the copy.  */
 	  gnu_temp
 	    = create_init_temporary ("A", gnu_name, &gnu_stmt, gnat_actual);
 
 	  /* But initialize it on the fly like for an implicit temporary as
-	     we aren't necessarily dealing with a statement.  */
+	     we aren't necessarily having a statement list.  */
 	  gnu_name = build_compound_expr (TREE_TYPE (gnu_name), gnu_stmt,
 					  gnu_temp);
 
@@ -2994,7 +3014,7 @@ call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target)
 	  if (Ekind (gnat_formal) != E_In_Parameter)
 	    {
 	      /* In Out or Out parameters passed by reference don't use the
-		 copy-in copy-out mechanism so the address of the real object
+		 copy-in/copy-out mechanism so the address of the real object
 		 must be passed to the function.  */
 	      gnu_actual = gnu_name;
 
@@ -3085,7 +3105,7 @@ call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target)
 	    {
 	      /* Make sure side-effects are evaluated before the call.  */
 	      if (TREE_SIDE_EFFECTS (gnu_name))
-		append_to_statement_list (gnu_name, &gnu_before_list);
+		append_to_statement_list (gnu_name, &gnu_stmt_list);
 	      continue;
 	    }
 
@@ -3111,9 +3131,19 @@ call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target)
       VEC_safe_push (tree, gc, gnu_actual_vec, gnu_actual);
     }
 
-  gnu_call = build_call_vec (TREE_TYPE (gnu_subprog_type), gnu_subprog_addr,
-                             gnu_actual_vec);
+  gnu_call
+    = build_call_vec (gnu_result_type, gnu_subprog_addr, gnu_actual_vec);
   set_expr_location_from_node (gnu_call, gnat_node);
+
+  /* If we have created a temporary for the return value, initialize it.  */
+  if (gnu_retval)
+    {
+      tree gnu_stmt
+	= build_binary_op (INIT_EXPR, NULL_TREE, gnu_retval, gnu_call);
+      set_expr_location_from_node (gnu_stmt, gnat_node);
+      append_to_statement_list (gnu_stmt, &gnu_stmt_list);
+      gnu_call = gnu_retval;
+    }
 
   /* If this is a subprogram with copy-in/copy-out parameters, we need to
      unpack the valued returned from the function into the In Out or Out
@@ -3130,10 +3160,22 @@ call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target)
 	 function is pure.  Save the result into a temporary if needed.  */
       if (length > 1)
 	{
-	  tree gnu_stmt;
-	  gnu_call
-	    = create_init_temporary ("R", gnu_call, &gnu_stmt, gnat_node);
-	  append_to_statement_list (gnu_stmt, &gnu_before_list);
+	  if (!gnu_retval)
+	    {
+	      tree gnu_stmt;
+	      /* If we haven't pushed a binding level, push a new one.  This
+		 will narrow the lifetime of the temporary we are about to
+		 make as much as possible.  */
+	      if (!pushed_binding_level)
+		{
+		  start_stmt_group ();
+		  gnat_pushlevel ();
+		  pushed_binding_level = true;
+	        }
+	      gnu_call
+		= create_init_temporary ("P", gnu_call, &gnu_stmt, gnat_node);
+	      append_to_statement_list (gnu_stmt, &gnu_stmt_list);
+	    }
 
 	  gnu_name_list = nreverse (gnu_name_list);
 	}
@@ -3226,7 +3268,7 @@ call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target)
 	    gnu_result = build_binary_op (MODIFY_EXPR, NULL_TREE,
 					  gnu_actual, gnu_result);
 	    set_expr_location_from_node (gnu_result, gnat_node);
-	    append_to_statement_list (gnu_result, &gnu_before_list);
+	    append_to_statement_list (gnu_result, &gnu_stmt_list);
 	    gnu_cico_list = TREE_CHAIN (gnu_cico_list);
 	    gnu_name_list = TREE_CHAIN (gnu_name_list);
 	  }
@@ -3235,10 +3277,8 @@ call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target)
   /* If this is a function call, the result is the call expression unless a
      target is specified, in which case we copy the result into the target
      and return the assignment statement.  */
-  if (Nkind (gnat_node) == N_Function_Call)
+  if (function_call)
     {
-      tree gnu_result_type = TREE_TYPE (gnu_subprog_type);
-
       /* If this is a function with copy-in/copy-out parameters, extract the
 	 return value from it and update the return type.  */
       if (TYPE_CI_CO_LIST (gnu_subprog_type))
@@ -3267,11 +3307,11 @@ call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target)
 	      = emit_range_check (gnu_call, Etype (Name (gnat_parent)),
 				  gnat_parent);
 
-	  /* ??? If the return type has non-constant size, then force the
-	     return slot optimization as we would not be able to generate
-	     a temporary.  Likewise if it was unconstrained as we would
-	     copy too much data.  That's what has been done historically.  */
-	  if (!TREE_CONSTANT (TYPE_SIZE (gnu_result_type))
+	  /* ??? If the return type has variable size, then force the return
+	     slot optimization as we would not be able to create a temporary.
+	     Likewise if it was unconstrained as we would copy too much data.
+	     That's what has been done historically.  */
+	  if (TREE_CODE (TYPE_SIZE (gnu_result_type)) != INTEGER_CST
 	      || (TYPE_IS_PADDING_P (gnu_result_type)
 		  && CONTAINS_PLACEHOLDER_P
 		     (TYPE_SIZE (TREE_TYPE (TYPE_FIELDS (gnu_result_type))))))
@@ -3282,7 +3322,7 @@ call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target)
 	  gnu_call
 	    = build_binary_op (op_code, NULL_TREE, gnu_target, gnu_call);
 	  set_expr_location_from_node (gnu_call, gnat_parent);
-	  append_to_statement_list (gnu_call, &gnu_before_list);
+	  append_to_statement_list (gnu_call, &gnu_stmt_list);
 	}
       else
 	*gnu_result_type_p = get_unpadded_type (Etype (gnat_node));
@@ -3291,36 +3331,35 @@ call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target)
   /* Otherwise, if this is a procedure call statement without copy-in/copy-out
      parameters, the result is just the call statement.  */
   else if (!TYPE_CI_CO_LIST (gnu_subprog_type))
-    append_to_statement_list (gnu_call, &gnu_before_list);
+    append_to_statement_list (gnu_call, &gnu_stmt_list);
+
+  /* Finally, add the copy back statements, if any.  */
+  append_to_statement_list (gnu_after_list, &gnu_stmt_list);
 
   if (went_into_elab_proc)
     current_function_decl = NULL_TREE;
 
-  /* If we have pushed a binding level, the result is the statement group.
-     Otherwise it's just the call expression.  */
+  /* If we have pushed a binding level, pop it and finish up the enclosing
+     statement group.  */
   if (pushed_binding_level)
     {
-      /* If we need a value and haven't created the call statement, do so.  */
-      if (returning_value && !TYPE_CI_CO_LIST (gnu_subprog_type))
-	{
-	  tree gnu_stmt;
-	  gnu_call
-	    = create_init_temporary ("R", gnu_call, &gnu_stmt, gnat_node);
-	  append_to_statement_list (gnu_stmt, &gnu_before_list);
-	}
-      append_to_statement_list (gnu_after_list, &gnu_before_list);
-      add_stmt (gnu_before_list);
+      add_stmt (gnu_stmt_list);
       gnat_poplevel ();
       gnu_result = end_stmt_group ();
     }
+
+  /* Otherwise, retrieve the statement list, if any.  */
+  else if (gnu_stmt_list)
+    gnu_result = gnu_stmt_list;
+
+  /* Otherwise, just return the call expression.  */
   else
     return gnu_call;
 
-  /* If we need a value, make a COMPOUND_EXPR to return it; otherwise,
-     return the result.  Deal specially with UNCONSTRAINED_ARRAY_REF.  */
+  /* If we nevertheless need a value, make a COMPOUND_EXPR to return it.  */
   if (returning_value)
-    gnu_result = build_compound_expr (TREE_TYPE (gnu_call), gnu_result,
-				      gnu_call);
+    gnu_result
+      = build_compound_expr (TREE_TYPE (gnu_call), gnu_result, gnu_call);
 
   return gnu_result;
 }
