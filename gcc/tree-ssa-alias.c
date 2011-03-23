@@ -40,7 +40,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pass.h"
 #include "convert.h"
 #include "params.h"
-#include "ipa-type-escape.h"
 #include "vec.h"
 #include "bitmap.h"
 #include "vecprim.h"
