@@ -1,5 +1,14 @@
 2011-03-22  Nathan Froyd  <froydnj@codesourcery.com>
 
+	* emit-rtl.c (emit_pattern_before_noloc): New function.
+	(emit_insn_before_noloc, emit_jump_insn_before_noloc): Call it.
+	(emit_call_insn_before_noloc, emit_debug_insn_before_noloc): Likewise.
+	(emit_pattern_after_noloc): New function.
+	(emit_insn_after_noloc, emit_jump_insn_after_noloc): Call it.
+	(emit_call_insn_after_noloc, emit_debug_insn_after_noloc): Likewise.
+
+2011-03-22  Nathan Froyd  <froydnj@codesourcery.com>
+
 	* libgcc2.c (__lshrdi3, __ashldi3, __ashrdi3): Use W_TYPE_SIZE.
 	(__ffsDI2): Likewise.
 
