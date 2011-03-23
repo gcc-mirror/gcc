@@ -1,5 +1,12 @@
 2011-03-23  Richard Guenther  <rguenther@suse.de>
 
+	* tree-stdarg.c (va_list_counter_bump): Handle bumps via
+	MEM_REF.
+	(check_va_list_escapes): Likewise.
+	(check_all_va_list_escapes): Likewise.
+
+2011-03-23  Richard Guenther  <rguenther@suse.de>
+
 	* Makefile.in (IPA_TYPE_ESCAPE_H): Remove.
 	(OBJS-archive): Remove ipa-struct-reorg.o and ipa-type-escape.o.
 	(tree-ssa-alias.o): Do not depend on IPA_TYPE_ESCAPE_H.
