@@ -1,3 +1,12 @@
+2011-03-23  Jeff Law  <law@redhat.com>
+
+	* cfg.c (redirect_edge_succ_nodup): Duplicate the varm map
+	before removing the edge.
+
+	* cfgrtl.c (cfg_layout_redirect_edge_and_branch): Do not use E after
+	it may have been freed by redirect_branch_edge or
+	redirect_edge_succ_nodup.
+
 2011-03-23  Richard Guenther  <rguenther@suse.de>
 
 	* tree-stdarg.c (va_list_counter_bump): Handle bumps via

@@ -2537,9 +2537,9 @@ cfg_layout_redirect_edge_and_branch (edge e, basic_block dest)
 	  e->flags &= ~EDGE_FALLTHRU;
 	  redirected = redirect_branch_edge (e, dest);
 	  gcc_assert (redirected);
-	  e->flags |= EDGE_FALLTHRU;
-	  df_set_bb_dirty (e->src);
-	  return e;
+	  redirected->flags |= EDGE_FALLTHRU;
+	  df_set_bb_dirty (redirected->src);
+	  return redirected;
 	}
       /* In case we are redirecting fallthru edge to the branch edge
 	 of conditional jump, remove it.  */
@@ -2553,10 +2553,10 @@ cfg_layout_redirect_edge_and_branch (edge e, basic_block dest)
 	      && onlyjump_p (BB_END (src)))
 	    delete_insn (BB_END (src));
 	}
-      ret = redirect_edge_succ_nodup (e, dest);
       if (dump_file)
 	fprintf (dump_file, "Fallthru edge %i->%i redirected to %i\n",
 		 e->src->index, e->dest->index, dest->index);
+      ret = redirect_edge_succ_nodup (e, dest);
     }
   else
     ret = redirect_branch_edge (e, dest);
