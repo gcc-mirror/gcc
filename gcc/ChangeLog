@@ -1,3 +1,24 @@
+2011-03-23  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* config/s390/2084.md: Enable all insn reservations also for z9_ec
+	cpu attribute value.
+	* config/s390/s390-opts.h (enum s390_arch_option): Remove.
+	(enum processor_type): Add PROCESSOR_2094_Z9_EC.
+	* config/s390/s390.c (processor_flags_table): New constant array.
+	(s390_handle_arch_option): Remove.
+	(s390_handle_option): Remove s390_handle_arch_option invocations
+	and OPT_mwarn_framesize_ handling.
+	(s390_option_override): Remove s390_handle_arch_option invocation.
+	(s390_emit_prologue): Remove use of HOST_WIDE_INT_PRINT_DEC in
+	warnings.
+	* config/s390/s390.md (cpu attribute): Add z9_ec value.
+	* config/s390/s390.opt (s390_tune, s390_arch)
+	(march=): Replace s390_arch_option enum and values with
+	processor_type.  Set variable name to s390_arch.  Set
+	initialization value.
+	(mtune=): Replace s390_arch_option with processor_type.  Set
+	variable name to s390_tune.  Set initialization value.
+
 2011-03-23  Julian Brown  <julian@codesourcery.com>
 
 	* expr.c (expand_expr_real_1): Only use BLKmode for volatile

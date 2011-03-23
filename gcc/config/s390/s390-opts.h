@@ -32,26 +32,10 @@ enum processor_type
   PROCESSOR_2064_Z900,
   PROCESSOR_2084_Z990,
   PROCESSOR_2094_Z9_109,
+  PROCESSOR_2094_Z9_EC,
   PROCESSOR_2097_Z10,
   PROCESSOR_2817_Z196,
   PROCESSOR_max
-};
-
-/* This enumeration must match processor_alias_table in
-   s390_handle_arch_option.  It is different from enum processor_type
-   because some processors differ for option handling but not for
-   scheduling.  */
-
-enum s390_arch_option
-{
-  s390_arch_g5,
-  s390_arch_g6,
-  s390_arch_z900,
-  s390_arch_z990,
-  s390_arch_z9_109,
-  s390_arch_z9_ec,
-  s390_arch_z10,
-  s390_arch_z196
 };
 
 #endif
