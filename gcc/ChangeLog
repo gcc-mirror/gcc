@@ -1,3 +1,10 @@
+2011-03-23  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR other/48179
+	PR other/48234
+	* doc/extend.texi (Alignment): Move section to match order in TOC.
+	* doc/invoke.texi (i386 and x86-64 Windows Options): Likewise.
+
 2011-03-18  H.J. Lu  <hongjiu.lu@intel.com>
 
 	Backport from mainline
