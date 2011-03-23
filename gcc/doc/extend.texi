@@ -4180,42 +4180,6 @@ machines, typically because the target assembler does not allow them.
 You can use the sequence @samp{\e} in a string or character constant to
 stand for the ASCII character @key{ESC}.
 
-@node Alignment
-@section Inquiring on Alignment of Types or Variables
-@cindex alignment
-@cindex type alignment
-@cindex variable alignment
-
-The keyword @code{__alignof__} allows you to inquire about how an object
-is aligned, or the minimum alignment usually required by a type.  Its
-syntax is just like @code{sizeof}.
-
-For example, if the target machine requires a @code{double} value to be
-aligned on an 8-byte boundary, then @code{__alignof__ (double)} is 8.
-This is true on many RISC machines.  On more traditional machine
-designs, @code{__alignof__ (double)} is 4 or even 2.
-
-Some machines never actually require alignment; they allow reference to any
-data type even at an odd address.  For these machines, @code{__alignof__}
-reports the smallest alignment that GCC will give the data type, usually as
-mandated by the target ABI.
-
-If the operand of @code{__alignof__} is an lvalue rather than a type,
-its value is the required alignment for its type, taking into account
-any minimum alignment specified with GCC's @code{__attribute__}
-extension (@pxref{Variable Attributes}).  For example, after this
-declaration:
-
-@smallexample
-struct foo @{ int x; char y; @} foo1;
-@end smallexample
-
-@noindent
-the value of @code{__alignof__ (foo1.y)} is 1, even though its actual
-alignment is probably 2 or 4, the same as @code{__alignof__ (int)}.
-
-It is an error to ask for the alignment of an incomplete type.
-
 @node Variable Attributes
 @section Specifying Attributes of Variables
 @cindex attribute of variables
@@ -5223,6 +5187,42 @@ The SPU supports the @code{spu_vector} attribute for types.  This attribute
 allows one to declare vector data types supported by the Sony/Toshiba/IBM SPU
 Language Extensions Specification.  It is intended to support the
 @code{__vector} keyword.
+
+@node Alignment
+@section Inquiring on Alignment of Types or Variables
+@cindex alignment
+@cindex type alignment
+@cindex variable alignment
+
+The keyword @code{__alignof__} allows you to inquire about how an object
+is aligned, or the minimum alignment usually required by a type.  Its
+syntax is just like @code{sizeof}.
+
+For example, if the target machine requires a @code{double} value to be
+aligned on an 8-byte boundary, then @code{__alignof__ (double)} is 8.
+This is true on many RISC machines.  On more traditional machine
+designs, @code{__alignof__ (double)} is 4 or even 2.
+
+Some machines never actually require alignment; they allow reference to any
+data type even at an odd address.  For these machines, @code{__alignof__}
+reports the smallest alignment that GCC will give the data type, usually as
+mandated by the target ABI.
+
+If the operand of @code{__alignof__} is an lvalue rather than a type,
+its value is the required alignment for its type, taking into account
+any minimum alignment specified with GCC's @code{__attribute__}
+extension (@pxref{Variable Attributes}).  For example, after this
+declaration:
+
+@smallexample
+struct foo @{ int x; char y; @} foo1;
+@end smallexample
+
+@noindent
+the value of @code{__alignof__ (foo1.y)} is 1, even though its actual
+alignment is probably 2 or 4, the same as @code{__alignof__ (int)}.
+
+It is an error to ask for the alignment of an incomplete type.
 
 
 @node Inline

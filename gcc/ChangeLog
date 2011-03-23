@@ -1,3 +1,12 @@
+2011-03-23  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR other/48179
+	PR other/48221
+	PR other/48234
+	* doc/extend.texi (Alignment): Move section to match order in TOC.
+	* doc/invoke.texi (i386 and x86-64 Windows Options): Likewise.
+	(Warning Options): Adjust -Wno-cpp summary and remove stray backslash.
+
 2011-03-23  Jeff Law  <law@redhat.com>
 
 	* cfg.c (redirect_edge_succ_nodup): Duplicate the varm map
