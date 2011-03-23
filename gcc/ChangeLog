@@ -1,3 +1,8 @@
+2011-03-23  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* dwarf2out.c (const_ok_for_output_1): Print the unspec enum name
+	if possible.
+
 2011-03-22  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* emit-rtl.c (emit_pattern_before_noloc): New function.
