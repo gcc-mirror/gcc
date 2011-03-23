@@ -1,3 +1,9 @@
+2011-03-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <object>: Create TYPE_DECL
+	for the padded type built in order to support a specified alignment.
+	Fix incorrect formatting.
+
 2011-03-21  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR bootstrap/48216

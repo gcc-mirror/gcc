@@ -687,6 +687,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	if (kind != E_Exception && Known_Alignment (gnat_entity))
 	  {
 	    gcc_assert (Present (Alignment (gnat_entity)));
+
 	    align = validate_alignment (Alignment (gnat_entity), gnat_entity,
 					TYPE_ALIGN (gnu_type));
 
@@ -695,9 +696,20 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	    if (Present (Address_Clause (gnat_entity)))
 	      align = 0;
 	    else
-	      gnu_type
-		= maybe_pad_type (gnu_type, NULL_TREE, align, gnat_entity,
-				  false, false, definition, true);
+	      {
+		tree orig_type = gnu_type;
+
+		gnu_type
+		  = maybe_pad_type (gnu_type, NULL_TREE, align, gnat_entity,
+				    false, false, definition, true);
+
+		/* If a padding record was made, declare it now since it will
+		   never be declared otherwise.  This is necessary to ensure
+		   that its subtrees are properly marked.  */
+		if (gnu_type != orig_type && !DECL_P (TYPE_NAME (gnu_type)))
+		  create_type_decl (TYPE_NAME (gnu_type), gnu_type, NULL, true,
+				    debug_info_p, gnat_entity);
+	      }
 	  }
 
 	/* If we are defining the object, see if it has a Size and validate it
@@ -865,16 +877,15 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	if (Is_Constr_Subt_For_UN_Aliased (Etype (gnat_entity))
 	    && Is_Array_Type (Etype (gnat_entity))
 	    && !type_annotate_only)
-	{
-	  tree gnu_fat
-	    = TREE_TYPE (gnat_to_gnu_type (Base_Type (Etype (gnat_entity))));
-
-	  gnu_type
-	    = build_unc_object_type_from_ptr (gnu_fat, gnu_type,
-					      concat_name (gnu_entity_name,
-							   "UNC"),
-					      debug_info_p);
-	}
+	  {
+	    tree gnu_fat
+	      = TREE_TYPE (gnat_to_gnu_type (Base_Type (Etype (gnat_entity))));
+	    gnu_type
+	      = build_unc_object_type_from_ptr (gnu_fat, gnu_type,
+						concat_name (gnu_entity_name,
+							     "UNC"),
+						debug_info_p);
+	  }
 
 #ifdef MINIMUM_ATOMIC_ALIGNMENT
 	/* If the size is a constant and no alignment is specified, force
