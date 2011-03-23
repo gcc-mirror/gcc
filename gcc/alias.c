@@ -43,7 +43,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "cgraph.h"
 #include "tree-pass.h"
-#include "ipa-type-escape.h"
 #include "df.h"
 #include "tree-ssa-alias.h"
 #include "pointer-set.h"

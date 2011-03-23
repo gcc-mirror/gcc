@@ -777,7 +777,6 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
     {
       /* These passes are not WHOPR compatible yet.  */
       opts->x_flag_ipa_pta = 0;
-      opts->x_flag_ipa_struct_reorg = 0;
     }
 
   if (opts->x_flag_lto)

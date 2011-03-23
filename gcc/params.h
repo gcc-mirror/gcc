@@ -118,8 +118,6 @@ extern int default_param_value (compiler_param num);
 extern void init_param_values (int *params);
 
 /* Macros for the various parameters.  */
-#define STRUCT_REORG_COLD_STRUCT_RATIO \
-  PARAM_VALUE (PARAM_STRUCT_REORG_COLD_STRUCT_RATIO)
 #define MAX_INLINE_INSNS_SINGLE \
   PARAM_VALUE (PARAM_MAX_INLINE_INSNS_SINGLE)
 #define MAX_INLINE_INSNS \

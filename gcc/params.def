@@ -39,16 +39,6 @@ along with GCC; see the file COPYING3.  If not see
 
    Be sure to add an entry to invoke.texi summarizing the parameter.  */
 
-/* The threshold ratio between current and hottest structure counts.
-   We say that if the ratio of the current structure count,
-   calculated by profiling, to the hottest structure count
-   in the program is less than this parameter, then structure
-   reorganization is not applied. The default is 10%.  */
-DEFPARAM (PARAM_STRUCT_REORG_COLD_STRUCT_RATIO,
-	  "struct-reorg-cold-struct-ratio",
-	  "The threshold ratio between current and hottest structure counts",
-	  10, 0, 100)
-
 /* When branch is predicted to be taken with probability lower than this
    threshold (in percent), then it is considered well predictable. */
 DEFPARAM (PARAM_PREDICTABLE_BRANCH_OUTCOME,
