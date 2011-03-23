@@ -1,3 +1,11 @@
+2011-03-23  Matthias Klose  <doko@ubuntu.com>
+
+	* config/abi/post/sparc-linux-gnu/baseline_symbols.txt: Regenerated.
+
+2011-03-23  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/abi/post/alpha-linux-gnu/baseline_symbols.txt: Regenerated.
+
 2011-03-22  Joseph Myers  <joseph@codesourcery.com>
 
 	* configure.ac: Don't handle powerpc*-*-gnu*.
