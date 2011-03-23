@@ -13616,8 +13616,15 @@ const_ok_for_output_1 (rtx *rtlp, void *data ATTRIBUTE_UNUSED)
 	inform (current_function_decl
 		? DECL_SOURCE_LOCATION (current_function_decl)
 		: UNKNOWN_LOCATION,
+#if NUM_UNSPEC_VALUES > 0
+		"non-delegitimized UNSPEC %s (%d) found in variable location",
+		((XINT (rtl, 1) >= 0 && XINT (rtl, 1) < NUM_UNSPEC_VALUES)
+		 ? unspec_strings[XINT (rtl, 1)] : "unknown"),
+		XINT (rtl, 1));
+#else
 		"non-delegitimized UNSPEC %d found in variable location",
 		XINT (rtl, 1));
+#endif
 #endif
       expansion_failed (NULL_TREE, rtl,
 			"UNSPEC hasn't been delegitimized.\n");
