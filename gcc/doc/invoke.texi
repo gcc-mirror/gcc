@@ -6538,7 +6538,7 @@ Enabled by default at @option{-O} and higher.
 @opindex fipa-struct-reorg
 Perform structure reorganization optimization, that change C-like structures
 layout in order to better utilize spatial locality.  This transformation is
-affective for programs containing arrays of structures.  Available in two
+effective for programs containing arrays of structures.  Available in two
 compilation modes: profile-based (enabled with @option{-fprofile-generate})
 or static (which uses built-in heuristics).  Require @option{-fipa-type-escape}
 to provide the safety of this transformation.  It works only in whole program

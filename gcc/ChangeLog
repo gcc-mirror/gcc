@@ -1,5 +1,10 @@
 2011-03-23  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
+	PR other/48254
+	* doc/invoke.texi (-fipa-struct-reorg): Fix typo.
+
+2011-03-23  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
 	PR other/48179
 	PR other/48234
 	* doc/extend.texi (Alignment): Move section to match order in TOC.
