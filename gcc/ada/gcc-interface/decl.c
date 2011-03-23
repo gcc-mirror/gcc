@@ -7799,14 +7799,14 @@ build_variant_list (tree qual_union_type, VEC(subst_pair,heap) *subst_list,
 }
 
 /* UINT_SIZE is a Uint giving the specified size for an object of GNU_TYPE
-   corresponding to GNAT_OBJECT.  If size is valid, return a tree corresponding
-   to its value.  Otherwise return 0.  KIND is VAR_DECL is we are specifying
-   the size for an object, TYPE_DECL for the size of a type, and FIELD_DECL
-   for the size of a field.  COMPONENT_P is true if we are being called
-   to process the Component_Size of GNAT_OBJECT.  This is used for error
-   message handling and to indicate to use the object size of GNU_TYPE.
-   ZERO_OK is true if a size of zero is permitted; if ZERO_OK is false,
-   it means that a size of zero should be treated as an unspecified size.  */
+   corresponding to GNAT_OBJECT.  If the size is valid, return an INTEGER_CST
+   corresponding to its value.  Otherwise, return NULL_TREE.  KIND is set to
+   VAR_DECL if we are specifying the size of an object, TYPE_DECL for the
+   size of a type, and FIELD_DECL for the size of a field.  COMPONENT_P is
+   true if we are being called to process the Component_Size of GNAT_OBJECT;
+   this is used only for error messages.  ZERO_OK is true if a size of zero
+   is permitted; if ZERO_OK is false, it means that a size of zero should be
+   treated as an unspecified size.  */
 
 static tree
 validate_size (Uint uint_size, tree gnu_type, Entity_Id gnat_object,
@@ -7823,7 +7823,7 @@ validate_size (Uint uint_size, tree gnu_type, Entity_Id gnat_object,
   if (UI_Lt (uint_size, Uint_0))
     return NULL_TREE;
 
-  /* Find the node to use for errors.  */
+  /* Find the node to use for error messages.  */
   if ((Ekind (gnat_object) == E_Component
        || Ekind (gnat_object) == E_Discriminant)
       && Present (Component_Clause (gnat_object)))
@@ -7833,16 +7833,16 @@ validate_size (Uint uint_size, tree gnu_type, Entity_Id gnat_object,
   else
     gnat_error_node = gnat_object;
 
-  /* Get the size as a tree.  Issue an error if a size was specified but
-     cannot be represented in sizetype.  */
+  /* Get the size as an INTEGER_CST.  Issue an error if a size was specified
+     but cannot be represented in bitsizetype.  */
   size = UI_To_gnu (uint_size, bitsizetype);
   if (TREE_OVERFLOW (size))
     {
       if (component_p)
-	post_error_ne ("component size of & is too large", gnat_error_node,
+	post_error_ne ("component size for& is too large", gnat_error_node,
 		       gnat_object);
       else
-	post_error_ne ("size of & is too large", gnat_error_node,
+	post_error_ne ("size for& is too large", gnat_error_node,
 		       gnat_object);
       return NULL_TREE;
     }
@@ -7865,15 +7865,15 @@ validate_size (Uint uint_size, tree gnu_type, Entity_Id gnat_object,
     }
 
   /* If this is an integral type or a packed array type, the front-end has
-     verified the size, so we need not do it here (which would entail
+     already verified the size, so we need not do it here (which would mean
      checking against the bounds).  However, if this is an aliased object,
      it may not be smaller than the type of the object.  */
   if ((INTEGRAL_TYPE_P (gnu_type) || TYPE_IS_PACKED_ARRAY_TYPE_P (gnu_type))
       && !(kind == VAR_DECL && Is_Aliased (gnat_object)))
     return size;
 
-  /* If the object is a record that contains a template, add the size of
-     the template to the specified size.  */
+  /* If the object is a record that contains a template, add the size of the
+     template to the specified size.  */
   if (TREE_CODE (gnu_type) == RECORD_TYPE
       && TYPE_CONTAINS_TEMPLATE_P (gnu_type))
     size = size_binop (PLUS_EXPR, DECL_SIZE (TYPE_FIELDS (gnu_type)), size);
@@ -7886,8 +7886,7 @@ validate_size (Uint uint_size, tree gnu_type, Entity_Id gnat_object,
   else
     type_size = rm_size (gnu_type);
 
-  /* Modify the size of the type to be that of the maximum size if it has a
-     discriminant.  */
+  /* Modify the size of a discriminated type to be the maximum size.  */
   if (type_size && CONTAINS_PLACEHOLDER_P (type_size))
     type_size = max_size (type_size, true);
 
@@ -7901,8 +7900,8 @@ validate_size (Uint uint_size, tree gnu_type, Entity_Id gnat_object,
       type_size = bitsize_int (GET_MODE_BITSIZE (p_mode));
     }
 
-  /* If the size of the object is a constant, the new size must not be
-     smaller.  */
+  /* Issue an error either if the default size of the object isn't a constant
+     or if the new size is smaller than it.  */
   if (TREE_CODE (type_size) != INTEGER_CST
       || TREE_OVERFLOW (type_size)
       || tree_int_cst_lt (size, type_size))
@@ -7915,15 +7914,14 @@ validate_size (Uint uint_size, tree gnu_type, Entity_Id gnat_object,
 	post_error_ne_tree
 	  ("size for& too small{, minimum allowed is ^}",
 	   gnat_error_node, gnat_object, type_size);
-
-      size = NULL_TREE;
+      return NULL_TREE;
     }
 
   return size;
 }
 
-/* Similarly, but both validate and process a value of RM size.  This
-   routine is only called for types.  */
+/* Similarly, but both validate and process a value of RM size.  This routine
+   is only called for types.  */
 
 static void
 set_rm_size (Uint uint_size, tree gnu_type, Entity_Id gnat_entity)
@@ -7944,13 +7942,13 @@ set_rm_size (Uint uint_size, tree gnu_type, Entity_Id gnat_entity)
   gnat_attr_node
     = Get_Attribute_Definition_Clause (gnat_entity, Attr_Value_Size);
 
-  /* Get the size as a tree.  Issue an error if a size was specified but
-     cannot be represented in sizetype.  */
+  /* Get the size as an INTEGER_CST.  Issue an error if a size was specified
+     but cannot be represented in bitsizetype.  */
   size = UI_To_gnu (uint_size, bitsizetype);
   if (TREE_OVERFLOW (size))
     {
       if (Present (gnat_attr_node))
-	post_error_ne ("Value_Size of & is too large", gnat_attr_node,
+	post_error_ne ("Value_Size for& is too large", gnat_attr_node,
 		       gnat_entity);
       return;
     }
@@ -7970,8 +7968,9 @@ set_rm_size (Uint uint_size, tree gnu_type, Entity_Id gnat_entity)
   if (CONTAINS_PLACEHOLDER_P (old_size))
     old_size = max_size (old_size, true);
 
-  /* If the size of the object is a constant, the new size must not be smaller
-     (the front-end has verified this for scalar and packed array types).  */
+  /* Issue an error either if the old size of the object isn't a constant or
+     if the new size is smaller than it.  The front-end has already verified
+     this for scalar and packed array types.  */
   if (TREE_CODE (old_size) != INTEGER_CST
       || TREE_OVERFLOW (old_size)
       || (AGGREGATE_TYPE_P (gnu_type)

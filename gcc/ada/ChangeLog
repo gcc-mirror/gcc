@@ -1,5 +1,11 @@
 2011-03-23  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/decl.c (validate_size): Improve comments and tweak
+	error message.
+	(set_rm_size): Likewise.
+
+2011-03-23  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/decl.c (gnat_to_gnu_entity) <object>: Create TYPE_DECL
 	for the padded type built in order to support a specified alignment.
 	Fix incorrect formatting.
