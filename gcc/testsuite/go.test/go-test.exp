@@ -51,6 +51,10 @@ proc errchk { test } {
     set fdout [open $filename w]
     fconfigure $fdout -encoding binary
     while { [gets $fdin copy_line] >= 0 } {
+	if [string match "*////*" $copy_line] {
+	    puts $fdout $copy_line
+	    continue
+	}
 	regsub "// \(GCCGO_\)?ERROR \"\(\[^\"\]*\)\".*$" $copy_line "// \{ dg-error \"\\2\" \}" out_line
 	if [string match "*dg-error*.\**" $out_line] {
 	    # I worked out the right number of backslashes by

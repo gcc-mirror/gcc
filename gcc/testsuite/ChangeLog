@@ -1,3 +1,7 @@
+2011-03-23  Ian Lance Taylor  <iant@google.com>
+
+	* go.test/go-test.exp (errchk): Ignore lines containing ////.
+
 2011-03-23  Richard Guenther  <rguenther@suse.de>
 
 	* gcc.dg/struct: Remove directory and contents.
