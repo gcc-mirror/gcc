@@ -791,8 +791,8 @@ extern rtx expand_copysign (rtx, rtx, rtx);
 
 /* Generate an instruction with a given INSN_CODE with an output and
    an input.  */
-extern void emit_unop_insn (int, rtx, rtx, enum rtx_code);
-extern bool maybe_emit_unop_insn (int, rtx, rtx, enum rtx_code);
+extern void emit_unop_insn (enum insn_code, rtx, rtx, enum rtx_code);
+extern bool maybe_emit_unop_insn (enum insn_code, rtx, rtx, enum rtx_code);
 
 /* An extra flag to control optab_for_tree_code's behavior.  This is needed to
    distinguish between machines with a vector shift that takes a scalar for the
@@ -926,6 +926,148 @@ extern rtx convert_optab_libfunc (convert_optab optab, enum machine_mode mode1,
 
 extern bool insn_operand_matches (enum insn_code icode, unsigned int opno,
 				  rtx operand);
+
+/* Describes the type of an expand_operand.  Each value is associated
+   with a create_*_operand function; see the comments above those
+   functions for details.  */
+enum expand_operand_type {
+  EXPAND_FIXED,
+  EXPAND_OUTPUT,
+  EXPAND_INPUT,
+  EXPAND_CONVERT_TO,
+  EXPAND_CONVERT_FROM,
+  EXPAND_ADDRESS,
+  EXPAND_INTEGER
+};
+
+/* Information about an operand for instruction expansion.  */
+struct expand_operand {
+  /* The type of operand.  */
+  ENUM_BITFIELD (expand_operand_type) type : 8;
+
+  /* True if any conversion should treat VALUE as being unsigned
+     rather than signed.  Only meaningful for certain types.  */
+  unsigned int unsigned_p : 1;
+
+  /* Unused; available for future use.  */
+  unsigned int unused : 7;
+
+  /* The mode passed to the convert_*_operand function.  It has a
+     type-dependent meaning.  */
+  ENUM_BITFIELD (machine_mode) mode : 16;
+
+  /* The value of the operand.  */
+  rtx value;
+};
+
+/* Initialize OP with the given fields.  Initialise the other fields
+   to their default values.  */
+
+static inline void
+create_expand_operand (struct expand_operand *op,
+		       enum expand_operand_type type,
+		       rtx value, enum machine_mode mode,
+		       bool unsigned_p)
+{
+  op->type = type;
+  op->unsigned_p = unsigned_p;
+  op->unused = 0;
+  op->mode = mode;
+  op->value = value;
+}
+
+/* Make OP describe an operand that must use rtx X, even if X is volatile.  */
+
+static inline void
+create_fixed_operand (struct expand_operand *op, rtx x)
+{
+  create_expand_operand (op, EXPAND_FIXED, x, VOIDmode, false);
+}
+
+/* Make OP describe an output operand that must have mode MODE.
+   X, if nonnull, is a suggestion for where the output should be stored.
+   It is OK for VALUE to be inconsistent with MODE, although it will just
+   be ignored in that case.  */
+
+static inline void
+create_output_operand (struct expand_operand *op, rtx x,
+		       enum machine_mode mode)
+{
+  create_expand_operand (op, EXPAND_OUTPUT, x, mode, false);
+}
+
+/* Make OP describe an input operand that must have mode MODE and
+   value VALUE; MODE cannot be VOIDmode.  The backend may request that
+   VALUE be copied into a different kind of rtx before being passed
+   as an operand.  */
+
+static inline void
+create_input_operand (struct expand_operand *op, rtx value,
+		      enum machine_mode mode)
+{
+  create_expand_operand (op, EXPAND_INPUT, value, mode, false);
+}
+
+/* Like create_input_operand, except that VALUE must first be converted
+   to mode MODE.  UNSIGNED_P says whether VALUE is unsigned.  */
+
+static inline void
+create_convert_operand_to (struct expand_operand *op, rtx value,
+			   enum machine_mode mode, bool unsigned_p)
+{
+  create_expand_operand (op, EXPAND_CONVERT_TO, value, mode, unsigned_p);
+}
+
+/* Make OP describe an input operand that should have the same value
+   as VALUE, after any mode conversion that the backend might request.
+   If VALUE is a CONST_INT, it should be treated as having mode MODE.
+   UNSIGNED_P says whether VALUE is unsigned.  */
+
+static inline void
+create_convert_operand_from (struct expand_operand *op, rtx value,
+			     enum machine_mode mode, bool unsigned_p)
+{
+  create_expand_operand (op, EXPAND_CONVERT_FROM, value, mode, unsigned_p);
+}
+
+extern void create_convert_operand_from_type (struct expand_operand *op,
+					      rtx value, tree type);
+
+/* Make OP describe an input Pmode address operand.  VALUE is the value
+   of the address, but it may need to be converted to Pmode first.  */
+
+static inline void
+create_address_operand (struct expand_operand *op, rtx value)
+{
+  create_expand_operand (op, EXPAND_ADDRESS, value, Pmode, false);
+}
+
+/* Make OP describe an input operand that has value INTVAL and that has
+   no inherent mode.  This function should only be used for operands that
+   are always expand-time constants.  The backend may request that INTVAL
+   be copied into a different kind of rtx, but it must specify the mode
+   of that rtx if so.  */
+
+static inline void
+create_integer_operand (struct expand_operand *op, HOST_WIDE_INT intval)
+{
+  create_expand_operand (op, EXPAND_INTEGER, GEN_INT (intval), VOIDmode, false);
+}
+
+extern bool maybe_legitimize_operands (enum insn_code icode,
+				       unsigned int opno, unsigned int nops,
+				       struct expand_operand *ops);
+extern rtx maybe_gen_insn (enum insn_code icode, unsigned int nops,
+			   struct expand_operand *ops);
+extern bool maybe_expand_insn (enum insn_code icode, unsigned int nops,
+			       struct expand_operand *ops);
+extern bool maybe_expand_jump_insn (enum insn_code icode, unsigned int nops,
+				    struct expand_operand *ops);
+extern void expand_insn (enum insn_code icode, unsigned int nops,
+			 struct expand_operand *ops);
+extern void expand_jump_insn (enum insn_code icode, unsigned int nops,
+			      struct expand_operand *ops);
+
 extern rtx prepare_operand (enum insn_code, rtx, int, enum machine_mode,
 			    enum machine_mode, int);
 

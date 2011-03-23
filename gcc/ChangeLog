@@ -1,3 +1,49 @@
+2011-03-23  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* optabs.h (emit_unop_insn, maybe_emit_unop_insn): Change insn code
+	parameter from "int" to "enum insn_code".
+	(expand_operand_type): New enum.
+	(expand_operand): New structure.
+	(create_expand_operand): New function.
+	(create_fixed_operand, create_output_operand): Likewise
+	(create_input_operand, create_convert_operand_to): Likewise.
+	(create_convert_operand_from, create_address_operand): Likewise.
+	(create_integer_operand): Likewise.
+	(create_convert_operand_from_type, maybe_legitimize_operands): Declare.
+	(maybe_gen_insn, maybe_expand_insn, maybe_expand_jump_insn): Likewise.
+	(expand_insn, expand_jump_insn): Likewise.
+	* builtins.c (expand_builtin_prefetch): Use the new interfaces.
+	(expand_builtin_interclass_mathfn, expand_builtin_strlen): Likewise.
+	(expand_movstr, expand_builtin___clear_cache): Likewise.
+	(expand_builtin_lock_release): Likewise.
+	* explow.c (allocate_dynamic_stack_space): Likewise.
+	(probe_stack_range): Likewise.  Allow check_stack to FAIL,
+	and use the default handling in that case.
+	* expmed.c (check_predicate_volatile_ok): Delete.
+	(store_bit_field_1, extract_bit_field_1): Use the new interfaces.
+	(emit_cstore): Likewise.
+	* expr.c (emit_block_move_via_movmem): Likewise.
+	(set_storage_via_setmem, expand_assignment): Likewise.
+	(emit_storent_insn, try_casesi): Likewise.
+	(emit_single_push_insn): Likewise.  Allow the expansion to fail.
+	* optabs.c (expand_widen_pattern_expr, expand_ternary_op): Likewise.
+	(expand_vec_shift_expr, expand_binop_directly): Likewise.
+	(expand_twoval_unop, expand_twoval_binop): Likewise.
+	(expand_unop_direct, emit_indirect_jump): Likewise.
+	(emit_conditional_move, vector_compare_rtx): Likewise.
+	(expand_vec_cond_expr, expand_val_compare_and_swap_1): Likewise.
+	(expand_sync_operation, expand_sync_fetch_operation): Likewise.
+	(expand_sync_lock_test_and_set): Likewise.
+	(maybe_emit_unop_insn): Likewise.  Change icode to an insn_code.
+	(emit_unop_insn): Likewise.
+	(expand_copysign_absneg): Change icode to an insn_code.
+	(create_convert_operand_from_type): New function.
+	(maybe_legitimize_operand, maybe_legitimize_operands): Likewise.
+	(maybe_gen_insn, maybe_expand_insn, maybe_expand_jump_insn): Likewise.
+	(expand_insn, expand_jump_insn): Likewise.
+	* config/i386/i386.md (setmem<mode>): Use nonmemory_operand rather
+	than const_int_operand for operand 2.
+
 2011-03-23  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* dwarf2out.c (const_ok_for_output_1): Print the unspec enum name

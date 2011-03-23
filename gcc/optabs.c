@@ -501,15 +501,13 @@ rtx
 expand_widen_pattern_expr (sepops ops, rtx op0, rtx op1, rtx wide_op,
 			   rtx target, int unsignedp)
 {
+  struct expand_operand eops[4];
   tree oprnd0, oprnd1, oprnd2;
   enum machine_mode wmode = VOIDmode, tmode0, tmode1 = VOIDmode;
   optab widen_pattern_optab;
-  int icode;
-  enum machine_mode xmode0, xmode1 = VOIDmode, wxmode = VOIDmode;
-  rtx temp;
-  rtx pat;
-  rtx xop0, xop1, wxop;
+  enum insn_code icode;
   int nops = TREE_CODE_LENGTH (ops->code);
+  int op;
 
   oprnd0 = ops->op0;
   tmode0 = TYPE_MODE (TREE_TYPE (oprnd0));
@@ -517,117 +515,38 @@ expand_widen_pattern_expr (sepops ops, rtx op0, rtx op1, rtx wide_op,
     optab_for_tree_code (ops->code, TREE_TYPE (oprnd0), optab_default);
   if (ops->code == WIDEN_MULT_PLUS_EXPR
       || ops->code == WIDEN_MULT_MINUS_EXPR)
-    icode = (int) optab_handler (widen_pattern_optab,
-				 TYPE_MODE (TREE_TYPE (ops->op2)));
+    icode = optab_handler (widen_pattern_optab,
+			   TYPE_MODE (TREE_TYPE (ops->op2)));
   else
-    icode = (int) optab_handler (widen_pattern_optab, tmode0);
+    icode = optab_handler (widen_pattern_optab, tmode0);
   gcc_assert (icode != CODE_FOR_nothing);
-  xmode0 = insn_data[icode].operand[1].mode;
 
   if (nops >= 2)
     {
       oprnd1 = ops->op1;
       tmode1 = TYPE_MODE (TREE_TYPE (oprnd1));
-      xmode1 = insn_data[icode].operand[2].mode;
     }
 
   /* The last operand is of a wider mode than the rest of the operands.  */
   if (nops == 2)
-    {
-      wmode = tmode1;
-      wxmode = xmode1;
-    }
+    wmode = tmode1;
   else if (nops == 3)
     {
       gcc_assert (tmode1 == tmode0);
       gcc_assert (op1);
       oprnd2 = ops->op2;
       wmode = TYPE_MODE (TREE_TYPE (oprnd2));
-      wxmode = insn_data[icode].operand[3].mode;
     }
 
-  if (!wide_op)
-    wmode = wxmode = insn_data[icode].operand[0].mode;
-
-  if (!target
-      || ! (*insn_data[icode].operand[0].predicate) (target, wmode))
-    temp = gen_reg_rtx (wmode);
-  else
-    temp = target;
-
-  xop0 = op0;
-  xop1 = op1;
-  wxop = wide_op;
-
-  /* In case the insn wants input operands in modes different from
-     those of the actual operands, convert the operands.  It would
-     seem that we don't need to convert CONST_INTs, but we do, so
-     that they're properly zero-extended, sign-extended or truncated
-     for their mode.  */
-
-  if (GET_MODE (op0) != xmode0 && xmode0 != VOIDmode)
-    xop0 = convert_modes (xmode0,
-                          GET_MODE (op0) != VOIDmode
-                          ? GET_MODE (op0)
-                          : tmode0,
-                          xop0, unsignedp);
-
+  op = 0;
+  create_output_operand (&eops[op++], target, TYPE_MODE (ops->type));
+  create_convert_operand_from (&eops[op++], op0, tmode0, unsignedp);
   if (op1)
-    if (GET_MODE (op1) != xmode1 && xmode1 != VOIDmode)
-      xop1 = convert_modes (xmode1,
-                            GET_MODE (op1) != VOIDmode
-                            ? GET_MODE (op1)
-                            : tmode1,
-                            xop1, unsignedp);
-
+    create_convert_operand_from (&eops[op++], op1, tmode1, unsignedp);
   if (wide_op)
-    if (GET_MODE (wide_op) != wxmode && wxmode != VOIDmode)
-      wxop = convert_modes (wxmode,
-                            GET_MODE (wide_op) != VOIDmode
-                            ? GET_MODE (wide_op)
-                            : wmode,
-                            wxop, unsignedp);
-
-  /* Now, if insn's predicates don't allow our operands, put them into
-     pseudo regs.  */
-
-  if (! (*insn_data[icode].operand[1].predicate) (xop0, xmode0)
-      && xmode0 != VOIDmode)
-    xop0 = copy_to_mode_reg (xmode0, xop0);
-
-  if (op1)
-    {
-      if (! (*insn_data[icode].operand[2].predicate) (xop1, xmode1)
-          && xmode1 != VOIDmode)
-        xop1 = copy_to_mode_reg (xmode1, xop1);
-
-      if (wide_op)
-        {
-          if (! (*insn_data[icode].operand[3].predicate) (wxop, wxmode)
-              && wxmode != VOIDmode)
-            wxop = copy_to_mode_reg (wxmode, wxop);
-
-          pat = GEN_FCN (icode) (temp, xop0, xop1, wxop);
-        }
-      else
-        pat = GEN_FCN (icode) (temp, xop0, xop1);
-    }
-  else
-    {
-      if (wide_op)
-        {
-          if (! (*insn_data[icode].operand[2].predicate) (wxop, wxmode)
-              && wxmode != VOIDmode)
-            wxop = copy_to_mode_reg (wxmode, wxop);
-
-          pat = GEN_FCN (icode) (temp, xop0, wxop);
-        }
-      else
-        pat = GEN_FCN (icode) (temp, xop0);
-    }
-
-  emit_insn (pat);
-  return temp;
+    create_convert_operand_from (&eops[op++], wide_op, wmode, unsignedp);
+  expand_insn (icode, op, eops);
+  return eops[0].value;
 }
 
 /* Generate code to perform an operation specified by TERNARY_OPTAB
@@ -645,67 +564,17 @@ rtx
 expand_ternary_op (enum machine_mode mode, optab ternary_optab, rtx op0,
 		   rtx op1, rtx op2, rtx target, int unsignedp)
 {
-  int icode = (int) optab_handler (ternary_optab, mode);
-  enum machine_mode mode0 = insn_data[icode].operand[1].mode;
-  enum machine_mode mode1 = insn_data[icode].operand[2].mode;
-  enum machine_mode mode2 = insn_data[icode].operand[3].mode;
-  rtx temp;
-  rtx pat;
-  rtx xop0 = op0, xop1 = op1, xop2 = op2;
+  struct expand_operand ops[4];
+  enum insn_code icode = optab_handler (ternary_optab, mode);
 
   gcc_assert (optab_handler (ternary_optab, mode) != CODE_FOR_nothing);
 
-  if (!target || !insn_data[icode].operand[0].predicate (target, mode))
-    temp = gen_reg_rtx (mode);
-  else
-    temp = target;
-
-  /* In case the insn wants input operands in modes different from
-     those of the actual operands, convert the operands.  It would
-     seem that we don't need to convert CONST_INTs, but we do, so
-     that they're properly zero-extended, sign-extended or truncated
-     for their mode.  */
-
-  if (GET_MODE (op0) != mode0 && mode0 != VOIDmode)
-    xop0 = convert_modes (mode0,
-                          GET_MODE (op0) != VOIDmode
-                          ? GET_MODE (op0)
-                          : mode,
-                          xop0, unsignedp);
-
-  if (GET_MODE (op1) != mode1 && mode1 != VOIDmode)
-    xop1 = convert_modes (mode1,
-                          GET_MODE (op1) != VOIDmode
-                          ? GET_MODE (op1)
-                          : mode,
-                          xop1, unsignedp);
-
-  if (GET_MODE (op2) != mode2 && mode2 != VOIDmode)
-    xop2 = convert_modes (mode2,
-                          GET_MODE (op2) != VOIDmode
-                          ? GET_MODE (op2)
-                          : mode,
-                          xop2, unsignedp);
-
-  /* Now, if insn's predicates don't allow our operands, put them into
-     pseudo regs.  */
-
-  if (!insn_data[icode].operand[1].predicate (xop0, mode0)
-      && mode0 != VOIDmode)
-    xop0 = copy_to_mode_reg (mode0, xop0);
-
-  if (!insn_data[icode].operand[2].predicate (xop1, mode1)
-      && mode1 != VOIDmode)
-    xop1 = copy_to_mode_reg (mode1, xop1);
-
-  if (!insn_data[icode].operand[3].predicate (xop2, mode2)
-      && mode2 != VOIDmode)
-    xop2 = copy_to_mode_reg (mode2, xop2);
-
-  pat = GEN_FCN (icode) (temp, xop0, xop1, xop2);
-
-  emit_insn (pat);
-  return temp;
+  create_output_operand (&ops[0], target, mode);
+  create_convert_operand_from (&ops[1], op0, mode, unsignedp);
+  create_convert_operand_from (&ops[2], op1, mode, unsignedp);
+  create_convert_operand_from (&ops[3], op2, mode, unsignedp);
+  expand_insn (icode, 4, ops);
+  return ops[0].value;
 }
 
 
@@ -751,15 +620,13 @@ force_expand_binop (enum machine_mode mode, optab binoptab,
 rtx
 expand_vec_shift_expr (sepops ops, rtx target)
 {
+  struct expand_operand eops[3];
   enum insn_code icode;
   rtx rtx_op1, rtx_op2;
-  enum machine_mode mode1;
-  enum machine_mode mode2;
   enum machine_mode mode = TYPE_MODE (ops->type);
   tree vec_oprnd = ops->op0;
   tree shift_oprnd = ops->op1;
   optab shift_optab;
-  rtx pat;
 
   switch (ops->code)
     {
@@ -776,29 +643,15 @@ expand_vec_shift_expr (sepops ops, rtx target)
   icode = optab_handler (shift_optab, mode);
   gcc_assert (icode != CODE_FOR_nothing);
 
-  mode1 = insn_data[icode].operand[1].mode;
-  mode2 = insn_data[icode].operand[2].mode;
-
   rtx_op1 = expand_normal (vec_oprnd);
-  if (!(*insn_data[icode].operand[1].predicate) (rtx_op1, mode1)
-      && mode1 != VOIDmode)
-    rtx_op1 = force_reg (mode1, rtx_op1);
-
   rtx_op2 = expand_normal (shift_oprnd);
-  if (!(*insn_data[icode].operand[2].predicate) (rtx_op2, mode2)
-      && mode2 != VOIDmode)
-    rtx_op2 = force_reg (mode2, rtx_op2);
 
-  if (!target
-      || ! (*insn_data[icode].operand[0].predicate) (target, mode))
-    target = gen_reg_rtx (mode);
+  create_output_operand (&eops[0], target, mode);
+  create_input_operand (&eops[1], rtx_op1, GET_MODE (rtx_op1));
+  create_convert_operand_from_type (&eops[2], rtx_op2, TREE_TYPE (shift_oprnd));
+  expand_insn (icode, 3, eops);
 
-  /* Emit instruction */
-  pat = GEN_FCN (icode) (target, rtx_op1, rtx_op2);
-  gcc_assert (pat);
-  emit_insn (pat);
-
-  return target;
+  return eops[0].value;
 }
 
 /* This subroutine of expand_doubleword_shift handles the cases in which
@@ -1389,20 +1242,15 @@ expand_binop_directly (enum machine_mode mode, optab binoptab,
 		       rtx target, int unsignedp, enum optab_methods methods,
 		       rtx last)
 {
-  int icode = (int) optab_handler (binoptab, mode);
-  enum machine_mode mode0 = insn_data[icode].operand[1].mode;
-  enum machine_mode mode1 = insn_data[icode].operand[2].mode;
+  enum insn_code icode = optab_handler (binoptab, mode);
+  enum machine_mode mode0 = insn_data[(int) icode].operand[1].mode;
+  enum machine_mode mode1 = insn_data[(int) icode].operand[2].mode;
   enum machine_mode tmp_mode;
+  struct expand_operand ops[3];
   bool commutative_p;
   rtx pat;
   rtx xop0 = op0, xop1 = op1;
-  rtx temp;
   rtx swap;
-
-  if (target)
-    temp = target;
-  else
-    temp = gen_reg_rtx (mode);
 
   /* If it is a commutative operator and the modes would match
      if we would swap the operands, we can save the conversions.  */
@@ -1421,48 +1269,8 @@ expand_binop_directly (enum machine_mode mode, optab binoptab,
   if (!shift_optab_p (binoptab))
     xop1 = avoid_expensive_constant (mode1, binoptab, xop1, unsignedp);
 
-  /* In case the insn wants input operands in modes different from
-     those of the actual operands, convert the operands.  It would
-     seem that we don't need to convert CONST_INTs, but we do, so
-     that they're properly zero-extended, sign-extended or truncated
-     for their mode.  */
-
-  if (GET_MODE (xop0) != mode0 && mode0 != VOIDmode)
-    xop0 = convert_modes (mode0,
-			  GET_MODE (xop0) != VOIDmode
-			  ? GET_MODE (xop0)
-			  : mode,
-			  xop0, unsignedp);
-
-  if (GET_MODE (xop1) != mode1 && mode1 != VOIDmode)
-    xop1 = convert_modes (mode1,
-			  GET_MODE (xop1) != VOIDmode
-			  ? GET_MODE (xop1)
-			  : mode,
-			  xop1, unsignedp);
-
-  /* If operation is commutative,
-     try to make the first operand a register.
-     Even better, try to make it the same as the target.
-     Also try to make the last operand a constant.  */
-  if (commutative_p
-      && swap_commutative_operands_with_target (target, xop0, xop1))
-    {
-      swap = xop1;
-      xop1 = xop0;
-      xop0 = swap;
-    }
-
   /* Now, if insn's predicates don't allow our operands, put them into
      pseudo regs.  */
-
-  if (!insn_data[icode].operand[1].predicate (xop0, mode0)
-      && mode0 != VOIDmode)
-    xop0 = copy_to_mode_reg (mode0, xop0);
-
-  if (!insn_data[icode].operand[2].predicate (xop1, mode1)
-      && mode1 != VOIDmode)
-    xop1 = copy_to_mode_reg (mode1, xop1);
 
   if (binoptab == vec_pack_trunc_optab
       || binoptab == vec_pack_usat_optab
@@ -1472,34 +1280,53 @@ expand_binop_directly (enum machine_mode mode, optab binoptab,
     {
       /* The mode of the result is different then the mode of the
 	 arguments.  */
-      tmp_mode = insn_data[icode].operand[0].mode;
+      tmp_mode = insn_data[(int) icode].operand[0].mode;
       if (GET_MODE_NUNITS (tmp_mode) != 2 * GET_MODE_NUNITS (mode))
-	return 0;
+	{
+	  delete_insns_since (last);
+	  return NULL_RTX;
+	}
     }
   else
     tmp_mode = mode;
 
-  if (!insn_data[icode].operand[0].predicate (temp, tmp_mode))
-    temp = gen_reg_rtx (tmp_mode);
-
-  pat = GEN_FCN (icode) (temp, xop0, xop1);
-  if (pat)
+  create_output_operand (&ops[0], target, tmp_mode);
+  create_convert_operand_from (&ops[1], xop0, mode, unsignedp);
+  create_convert_operand_from (&ops[2], xop1, mode, unsignedp);
+  if (maybe_legitimize_operands (icode, 0, 3, ops))
     {
-      /* If PAT is composed of more than one insn, try to add an appropriate
-	 REG_EQUAL note to it.  If we can't because TEMP conflicts with an
-	 operand, call expand_binop again, this time without a target.  */
-      if (INSN_P (pat) && NEXT_INSN (pat) != NULL_RTX
-	  && ! add_equal_note (pat, temp, binoptab->code, xop0, xop1))
+      /* If operation is commutative,
+	 try to make the first operand a register.
+	 Even better, try to make it the same as the target.
+	 Also try to make the last operand a constant.  */
+      if (commutative_p
+	  && swap_commutative_operands_with_target (ops[0].value, ops[1].value,
+						    ops[2].value))
 	{
-	  delete_insns_since (last);
-	  return expand_binop (mode, binoptab, op0, op1, NULL_RTX,
-			       unsignedp, methods);
+	  swap = ops[2].value;
+	  ops[2].value = ops[1].value;
+	  ops[1].value = swap;
 	}
 
-      emit_insn (pat);
-      return temp;
-    }
+      pat = GEN_FCN (icode) (ops[0].value, ops[1].value, ops[2].value);
+      if (pat)
+	{
+	  /* If PAT is composed of more than one insn, try to add an appropriate
+	     REG_EQUAL note to it.  If we can't because TEMP conflicts with an
+	     operand, call expand_binop again, this time without a target.  */
+	  if (INSN_P (pat) && NEXT_INSN (pat) != NULL_RTX
+	      && ! add_equal_note (pat, ops[0].value, binoptab->code,
+				   ops[1].value, ops[2].value))
+	    {
+	      delete_insns_since (last);
+	      return expand_binop (mode, binoptab, op0, op1, NULL_RTX,
+				   unsignedp, methods);
+	    }
 
+	  emit_insn (pat);
+	  return ops[0].value;
+	}
+    }
   delete_insns_since (last);
   return NULL_RTX;
 }
@@ -2284,32 +2111,14 @@ expand_twoval_unop (optab unoptab, rtx op0, rtx targ0, rtx targ1,
 
   if (optab_handler (unoptab, mode) != CODE_FOR_nothing)
     {
-      int icode = (int) optab_handler (unoptab, mode);
-      enum machine_mode mode0 = insn_data[icode].operand[2].mode;
-      rtx pat;
-      rtx xop0 = op0;
+      struct expand_operand ops[3];
+      enum insn_code icode = optab_handler (unoptab, mode);
 
-      if (GET_MODE (xop0) != VOIDmode
-	  && GET_MODE (xop0) != mode0)
-	xop0 = convert_to_mode (mode0, xop0, unsignedp);
-
-      /* Now, if insn doesn't accept these operands, put them into pseudos.  */
-      if (!insn_data[icode].operand[2].predicate (xop0, mode0))
-	xop0 = copy_to_mode_reg (mode0, xop0);
-
-      /* We could handle this, but we should always be called with a pseudo
-	 for our targets and all insns should take them as outputs.  */
-      gcc_assert (insn_data[icode].operand[0].predicate (targ0, mode));
-      gcc_assert (insn_data[icode].operand[1].predicate (targ1, mode));
-
-      pat = GEN_FCN (icode) (targ0, targ1, xop0);
-      if (pat)
-	{
-	  emit_insn (pat);
-	  return 1;
-	}
-      else
-	delete_insns_since (last);
+      create_fixed_operand (&ops[0], targ0);
+      create_fixed_operand (&ops[1], targ1);
+      create_convert_operand_from (&ops[2], op0, mode, unsignedp);
+      if (maybe_expand_insn (icode, 3, ops))
+	return 1;
     }
 
   /* It can't be done in this mode.  Can we do it in a wider mode?  */
@@ -2376,56 +2185,23 @@ expand_twoval_binop (optab binoptab, rtx op0, rtx op1, rtx targ0, rtx targ1,
 
   if (optab_handler (binoptab, mode) != CODE_FOR_nothing)
     {
-      int icode = (int) optab_handler (binoptab, mode);
+      struct expand_operand ops[4];
+      enum insn_code icode = optab_handler (binoptab, mode);
       enum machine_mode mode0 = insn_data[icode].operand[1].mode;
       enum machine_mode mode1 = insn_data[icode].operand[2].mode;
-      rtx pat;
       rtx xop0 = op0, xop1 = op1;
 
       /* If we are optimizing, force expensive constants into a register.  */
       xop0 = avoid_expensive_constant (mode0, binoptab, xop0, unsignedp);
       xop1 = avoid_expensive_constant (mode1, binoptab, xop1, unsignedp);
 
-      /* In case the insn wants input operands in modes different from
-	 those of the actual operands, convert the operands.  It would
-	 seem that we don't need to convert CONST_INTs, but we do, so
-	 that they're properly zero-extended, sign-extended or truncated
-	 for their mode.  */
-
-      if (GET_MODE (op0) != mode0 && mode0 != VOIDmode)
-	xop0 = convert_modes (mode0,
-			      GET_MODE (op0) != VOIDmode
-			      ? GET_MODE (op0)
-			      : mode,
-			      xop0, unsignedp);
-
-      if (GET_MODE (op1) != mode1 && mode1 != VOIDmode)
-	xop1 = convert_modes (mode1,
-			      GET_MODE (op1) != VOIDmode
-			      ? GET_MODE (op1)
-			      : mode,
-			      xop1, unsignedp);
-
-      /* Now, if insn doesn't accept these operands, put them into pseudos.  */
-      if (!insn_data[icode].operand[1].predicate (xop0, mode0))
-	xop0 = copy_to_mode_reg (mode0, xop0);
-
-      if (!insn_data[icode].operand[2].predicate (xop1, mode1))
-	xop1 = copy_to_mode_reg (mode1, xop1);
-
-      /* We could handle this, but we should always be called with a pseudo
-	 for our targets and all insns should take them as outputs.  */
-      gcc_assert (insn_data[icode].operand[0].predicate (targ0, mode));
-      gcc_assert (insn_data[icode].operand[3].predicate (targ1, mode));
-
-      pat = GEN_FCN (icode) (targ0, xop0, xop1, targ1);
-      if (pat)
-	{
-	  emit_insn (pat);
-	  return 1;
-	}
-      else
-	delete_insns_since (last);
+      create_fixed_operand (&ops[0], targ0);
+      create_convert_operand_from (&ops[1], op0, mode, unsignedp);
+      create_convert_operand_from (&ops[2], op1, mode, unsignedp);
+      create_fixed_operand (&ops[3], targ1);
+      if (maybe_expand_insn (icode, 4, ops))
+	return 1;
+      delete_insns_since (last);
     }
 
   /* It can't be done in this mode.  Can we do it in a wider mode?  */
@@ -2985,34 +2761,19 @@ expand_unop_direct (enum machine_mode mode, optab unoptab, rtx op0, rtx target,
 {
   if (optab_handler (unoptab, mode) != CODE_FOR_nothing)
     {
-      int icode = (int) optab_handler (unoptab, mode);
-      enum machine_mode mode0 = insn_data[icode].operand[1].mode;
-      rtx xop0 = op0;
+      struct expand_operand ops[2];
+      enum insn_code icode = optab_handler (unoptab, mode);
       rtx last = get_last_insn ();
-      rtx pat, temp;
+      rtx pat;
 
-      if (target)
-	temp = target;
-      else
-	temp = gen_reg_rtx (mode);
-
-      if (GET_MODE (xop0) != VOIDmode
-	  && GET_MODE (xop0) != mode0)
-	xop0 = convert_to_mode (mode0, xop0, unsignedp);
-
-      /* Now, if insn doesn't accept our operand, put it into a pseudo.  */
-
-      if (!insn_data[icode].operand[1].predicate (xop0, mode0))
-	xop0 = copy_to_mode_reg (mode0, xop0);
-
-      if (!insn_data[icode].operand[0].predicate (temp, mode))
-	temp = gen_reg_rtx (mode);
-
-      pat = GEN_FCN (icode) (temp, xop0);
+      create_output_operand (&ops[0], target, mode);
+      create_convert_operand_from (&ops[1], op0, mode, unsignedp);
+      pat = maybe_gen_insn (icode, 2, ops);
       if (pat)
 	{
 	  if (INSN_P (pat) && NEXT_INSN (pat) != NULL_RTX
-	      && ! add_equal_note (pat, temp, unoptab->code, xop0, NULL_RTX))
+	      && ! add_equal_note (pat, ops[0].value, unoptab->code,
+				   ops[1].value, NULL_RTX))
 	    {
 	      delete_insns_since (last);
 	      return expand_unop (mode, unoptab, op0, NULL_RTX, unsignedp);
@@ -3020,10 +2781,8 @@ expand_unop_direct (enum machine_mode mode, optab unoptab, rtx op0, rtx target,
 
 	  emit_insn (pat);
 
-	  return temp;
+	  return ops[0].value;
 	}
-      else
-	delete_insns_since (last);
     }
   return 0;
 }
@@ -3499,7 +3258,7 @@ expand_copysign_absneg (enum machine_mode mode, rtx op0, rtx op1, rtx target,
 		        int bitpos, bool op0_is_abs)
 {
   enum machine_mode imode;
-  int icode;
+  enum insn_code icode;
   rtx sign, label;
 
   if (target == op1)
@@ -3507,10 +3266,10 @@ expand_copysign_absneg (enum machine_mode mode, rtx op0, rtx op1, rtx target,
 
   /* Check if the back end provides an insn that handles signbit for the
      argument's mode. */
-  icode = (int) optab_handler (signbit_optab, mode);
+  icode = optab_handler (signbit_optab, mode);
   if (icode != CODE_FOR_nothing)
     {
-      imode = insn_data[icode].operand[0].mode;
+      imode = insn_data[(int) icode].operand[0].mode;
       sign = gen_reg_rtx (imode);
       emit_unop_insn (icode, sign, op1, UNKNOWN);
     }
@@ -3731,37 +3490,25 @@ expand_copysign (rtx op0, rtx op1, rtx target)
    Return false if expansion failed.  */
 
 bool
-maybe_emit_unop_insn (int icode, rtx target, rtx op0, enum rtx_code code)
+maybe_emit_unop_insn (enum insn_code icode, rtx target, rtx op0,
+		      enum rtx_code code)
 {
-  rtx temp;
-  enum machine_mode mode0 = insn_data[icode].operand[1].mode;
+  struct expand_operand ops[2];
   rtx pat;
-  rtx last = get_last_insn ();
 
-  temp = target;
-
-  /* Now, if insn does not accept our operands, put them into pseudos.  */
-
-  if (!insn_data[icode].operand[1].predicate (op0, mode0))
-    op0 = copy_to_mode_reg (mode0, op0);
-
-  if (!insn_data[icode].operand[0].predicate (temp, GET_MODE (temp)))
-    temp = gen_reg_rtx (GET_MODE (temp));
-
-  pat = GEN_FCN (icode) (temp, op0);
+  create_output_operand (&ops[0], target, GET_MODE (target));
+  create_input_operand (&ops[1], op0, GET_MODE (op0));
+  pat = maybe_gen_insn (icode, 2, ops);
   if (!pat)
-    {
-      delete_insns_since (last);
-      return false;
-    }
+    return false;
 
   if (INSN_P (pat) && NEXT_INSN (pat) != NULL_RTX && code != UNKNOWN)
-    add_equal_note (pat, temp, code, op0, NULL_RTX);
+    add_equal_note (pat, ops[0].value, code, ops[1].value, NULL_RTX);
 
   emit_insn (pat);
 
-  if (temp != target)
-    emit_move_insn (target, temp);
+  if (ops[0].value != target)
+    emit_move_insn (target, ops[0].value);
   return true;
 }
 /* Generate an instruction whose insn-code is INSN_CODE,
@@ -3771,7 +3518,7 @@ maybe_emit_unop_insn (int icode, rtx target, rtx op0, enum rtx_code code)
    the value that is stored into TARGET.  */
 
 void
-emit_unop_insn (int icode, rtx target, rtx op0, enum rtx_code code)
+emit_unop_insn (enum insn_code icode, rtx target, rtx op0, enum rtx_code code)
 {
   bool ok = maybe_emit_unop_insn (icode, target, op0, code);
   gcc_assert (ok);
@@ -4418,11 +4165,10 @@ prepare_float_lib_cmp (rtx x, rtx y, enum rtx_code comparison,
 void
 emit_indirect_jump (rtx loc)
 {
-  if (!insn_data[(int) CODE_FOR_indirect_jump].operand[0].predicate
-      (loc, Pmode))
-    loc = copy_to_mode_reg (Pmode, loc);
+  struct expand_operand ops[1];
 
-  emit_jump_insn (gen_indirect_jump (loc));
+  create_address_operand (&ops[0], loc);
+  expand_jump_insn (CODE_FOR_indirect_jump, 1, ops);
   emit_barrier ();
 }
 
@@ -4447,7 +4193,7 @@ emit_conditional_move (rtx target, enum rtx_code code, rtx op0, rtx op1,
 		       enum machine_mode cmode, rtx op2, rtx op3,
 		       enum machine_mode mode, int unsignedp)
 {
-  rtx tem, subtarget, comparison, insn;
+  rtx tem, comparison, last;
   enum insn_code icode;
   enum rtx_code reversed;
 
@@ -4494,24 +4240,6 @@ emit_conditional_move (rtx target, enum rtx_code code, rtx op0, rtx op1,
   if (!target)
     target = gen_reg_rtx (mode);
 
-  subtarget = target;
-
-  /* If the insn doesn't accept these operands, put them in pseudos.  */
-
-  if (!insn_data[icode].operand[0].predicate
-      (subtarget, insn_data[icode].operand[0].mode))
-    subtarget = gen_reg_rtx (insn_data[icode].operand[0].mode);
-
-  if (!insn_data[icode].operand[2].predicate
-      (op2, insn_data[icode].operand[2].mode))
-    op2 = copy_to_mode_reg (insn_data[icode].operand[2].mode, op2);
-
-  if (!insn_data[icode].operand[3].predicate
-      (op3, insn_data[icode].operand[3].mode))
-    op3 = copy_to_mode_reg (insn_data[icode].operand[3].mode, op3);
-
-  /* Everything should now be in the suitable form.  */
-
   code = unsignedp ? unsigned_condition (code) : code;
   comparison = simplify_gen_relational (code, VOIDmode, cmode, op0, op1);
 
@@ -4522,30 +4250,27 @@ emit_conditional_move (rtx target, enum rtx_code code, rtx op0, rtx op1,
     return NULL_RTX;
 
   do_pending_stack_adjust ();
-  start_sequence ();
+  last = get_last_insn ();
   prepare_cmp_insn (XEXP (comparison, 0), XEXP (comparison, 1),
 		    GET_CODE (comparison), NULL_RTX, unsignedp, OPTAB_WIDEN,
 		    &comparison, &cmode);
-  if (!comparison)
-    insn = NULL_RTX;
-  else
-    insn = GEN_FCN (icode) (subtarget, comparison, op2, op3);
-
-  /* If that failed, then give up.  */
-  if (insn == 0)
+  if (comparison)
     {
-      end_sequence ();
-      return 0;
+      struct expand_operand ops[4];
+
+      create_output_operand (&ops[0], target, mode);
+      create_fixed_operand (&ops[1], comparison);
+      create_input_operand (&ops[2], op2, mode);
+      create_input_operand (&ops[3], op3, mode);
+      if (maybe_expand_insn (icode, 4, ops))
+	{
+	  if (ops[0].value != target)
+	    convert_move (target, ops[0].value, false);
+	  return target;
+	}
     }
-
-  emit_insn (insn);
-  insn = get_insns ();
-  end_sequence ();
-  emit_insn (insn);
-  if (subtarget != target)
-    convert_move (target, subtarget, 0);
-
-  return target;
+  delete_insns_since (last);
+  return NULL_RTX;
 }
 
 /* Return nonzero if a conditional move of mode MODE is supported.
@@ -4586,7 +4311,7 @@ emit_conditional_add (rtx target, enum rtx_code code, rtx op0, rtx op1,
 		      enum machine_mode cmode, rtx op2, rtx op3,
 		      enum machine_mode mode, int unsignedp)
 {
-  rtx tem, subtarget, comparison, insn;
+  rtx tem, comparison, last;
   enum insn_code icode;
   enum rtx_code reversed;
 
@@ -4633,24 +4358,6 @@ emit_conditional_add (rtx target, enum rtx_code code, rtx op0, rtx op1,
   if (!target)
     target = gen_reg_rtx (mode);
 
-  /* If the insn doesn't accept these operands, put them in pseudos.  */
-
-  if (!insn_data[icode].operand[0].predicate
-      (target, insn_data[icode].operand[0].mode))
-    subtarget = gen_reg_rtx (insn_data[icode].operand[0].mode);
-  else
-    subtarget = target;
-
-  if (!insn_data[icode].operand[2].predicate
-      (op2, insn_data[icode].operand[2].mode))
-    op2 = copy_to_mode_reg (insn_data[icode].operand[2].mode, op2);
-
-  if (!insn_data[icode].operand[3].predicate
-      (op3, insn_data[icode].operand[3].mode))
-    op3 = copy_to_mode_reg (insn_data[icode].operand[3].mode, op3);
-
-  /* Everything should now be in the suitable form.  */
-
   code = unsignedp ? unsigned_condition (code) : code;
   comparison = simplify_gen_relational (code, VOIDmode, cmode, op0, op1);
 
@@ -4661,30 +4368,27 @@ emit_conditional_add (rtx target, enum rtx_code code, rtx op0, rtx op1,
     return NULL_RTX;
 
   do_pending_stack_adjust ();
-  start_sequence ();
+  last = get_last_insn ();
   prepare_cmp_insn (XEXP (comparison, 0), XEXP (comparison, 1),
                     GET_CODE (comparison), NULL_RTX, unsignedp, OPTAB_WIDEN,
                     &comparison, &cmode);
-  if (!comparison)
-    insn = NULL_RTX;
-  else
-    insn = GEN_FCN (icode) (subtarget, comparison, op2, op3);
-
-  /* If that failed, then give up.  */
-  if (insn == 0)
+  if (comparison)
     {
-      end_sequence ();
-      return 0;
+      struct expand_operand ops[4];
+
+      create_output_operand (&ops[0], target, mode);
+      create_fixed_operand (&ops[1], comparison);
+      create_input_operand (&ops[2], op2, mode);
+      create_input_operand (&ops[3], op3, mode);
+      if (maybe_expand_insn (icode, 4, ops))
+	{
+	  if (ops[0].value != target)
+	    convert_move (target, ops[0].value, false);
+	  return target;
+	}
     }
-
-  emit_insn (insn);
-  insn = get_insns ();
-  end_sequence ();
-  emit_insn (insn);
-  if (subtarget != target)
-    convert_move (target, subtarget, 0);
-
-  return target;
+  delete_insns_since (last);
+  return NULL_RTX;
 }
 
 /* These functions attempt to generate an insn body, rather than
@@ -6713,6 +6417,7 @@ get_rtx_code (enum tree_code tcode, bool unsignedp)
 static rtx
 vector_compare_rtx (tree cond, bool unsignedp, enum insn_code icode)
 {
+  struct expand_operand ops[2];
   enum rtx_code rcode;
   tree t_op0, t_op1;
   rtx rtx_op0, rtx_op1;
@@ -6731,15 +6436,11 @@ vector_compare_rtx (tree cond, bool unsignedp, enum insn_code icode)
   rtx_op1 = expand_expr (t_op1, NULL_RTX, TYPE_MODE (TREE_TYPE (t_op1)),
 			 EXPAND_STACK_PARM);
 
-  if (!insn_data[icode].operand[4].predicate (rtx_op0, GET_MODE (rtx_op0))
-      && GET_MODE (rtx_op0) != VOIDmode)
-    rtx_op0 = force_reg (GET_MODE (rtx_op0), rtx_op0);
-
-  if (!insn_data[icode].operand[5].predicate (rtx_op1, GET_MODE (rtx_op1))
-      && GET_MODE (rtx_op1) != VOIDmode)
-    rtx_op1 = force_reg (GET_MODE (rtx_op1), rtx_op1);
-
-  return gen_rtx_fmt_ee (rcode, VOIDmode, rtx_op0, rtx_op1);
+  create_input_operand (&ops[0], rtx_op0, GET_MODE (rtx_op0));
+  create_input_operand (&ops[1], rtx_op1, GET_MODE (rtx_op1));
+  if (!maybe_legitimize_operands (icode, 4, 2, ops))
+    gcc_unreachable ();
+  return gen_rtx_fmt_ee (rcode, VOIDmode, ops[0].value, ops[1].value);
 }
 
 /* Return insn code for TYPE, the type of a VEC_COND_EXPR.  */
@@ -6774,8 +6475,9 @@ rtx
 expand_vec_cond_expr (tree vec_cond_type, tree op0, tree op1, tree op2,
 		      rtx target)
 {
+  struct expand_operand ops[6];
   enum insn_code icode;
-  rtx comparison, rtx_op1, rtx_op2, cc_op0, cc_op1;
+  rtx comparison, rtx_op1, rtx_op2;
   enum machine_mode mode = TYPE_MODE (vec_cond_type);
   bool unsignedp = TYPE_UNSIGNED (vec_cond_type);
 
@@ -6783,30 +6485,18 @@ expand_vec_cond_expr (tree vec_cond_type, tree op0, tree op1, tree op2,
   if (icode == CODE_FOR_nothing)
     return 0;
 
-  if (!target || !insn_data[icode].operand[0].predicate (target, mode))
-    target = gen_reg_rtx (mode);
-
-  /* Get comparison rtx.  First expand both cond expr operands.  */
-  comparison = vector_compare_rtx (op0,
-				   unsignedp, icode);
-  cc_op0 = XEXP (comparison, 0);
-  cc_op1 = XEXP (comparison, 1);
-  /* Expand both operands and force them in reg, if required.  */
+  comparison = vector_compare_rtx (op0, unsignedp, icode);
   rtx_op1 = expand_normal (op1);
-  if (!insn_data[icode].operand[1].predicate (rtx_op1, mode)
-      && mode != VOIDmode)
-    rtx_op1 = force_reg (mode, rtx_op1);
-
   rtx_op2 = expand_normal (op2);
-  if (!insn_data[icode].operand[2].predicate (rtx_op2, mode)
-      && mode != VOIDmode)
-    rtx_op2 = force_reg (mode, rtx_op2);
 
-  /* Emit instruction! */
-  emit_insn (GEN_FCN (icode) (target, rtx_op1, rtx_op2,
-			      comparison, cc_op0,  cc_op1));
-
-  return target;
+  create_output_operand (&ops[0], target, mode);
+  create_input_operand (&ops[1], rtx_op1, mode);
+  create_input_operand (&ops[2], rtx_op2, mode);
+  create_fixed_operand (&ops[3], comparison);
+  create_fixed_operand (&ops[4], XEXP (comparison, 0));
+  create_fixed_operand (&ops[5], XEXP (comparison, 1));
+  expand_insn (icode, 6, ops);
+  return ops[0].value;
 }
 
 
@@ -6820,28 +6510,18 @@ static rtx
 expand_val_compare_and_swap_1 (rtx mem, rtx old_val, rtx new_val,
 			       rtx target, enum insn_code icode)
 {
+  struct expand_operand ops[4];
   enum machine_mode mode = GET_MODE (mem);
-  rtx insn;
 
-  if (!target || !insn_data[icode].operand[0].predicate (target, mode))
-    target = gen_reg_rtx (mode);
-
-  if (GET_MODE (old_val) != VOIDmode && GET_MODE (old_val) != mode)
-    old_val = convert_modes (mode, GET_MODE (old_val), old_val, 1);
-  if (!insn_data[icode].operand[2].predicate (old_val, mode))
-    old_val = force_reg (mode, old_val);
-
-  if (GET_MODE (new_val) != VOIDmode && GET_MODE (new_val) != mode)
-    new_val = convert_modes (mode, GET_MODE (new_val), new_val, 1);
-  if (!insn_data[icode].operand[3].predicate (new_val, mode))
-    new_val = force_reg (mode, new_val);
-
-  insn = GEN_FCN (icode) (target, mem, old_val, new_val);
-  if (insn == NULL_RTX)
-    return NULL_RTX;
-  emit_insn (insn);
-
-  return target;
+  create_output_operand (&ops[0], target, mode);
+  create_fixed_operand (&ops[1], mem);
+  /* OLD_VAL and NEW_VAL may have been promoted to a wider mode.
+     Shrink them if so.  */
+  create_convert_operand_to (&ops[2], old_val, mode, true);
+  create_convert_operand_to (&ops[3], new_val, mode, true);
+  if (maybe_expand_insn (icode, 4, ops))
+    return ops[0].value;
+  return NULL_RTX;
 }
 
 /* Expand a compare-and-swap operation and return its value.  */
@@ -7046,17 +6726,13 @@ expand_sync_operation (rtx mem, rtx val, enum rtx_code code)
   /* Generate the direct operation, if present.  */
   if (icode != CODE_FOR_nothing)
     {
-      if (GET_MODE (val) != VOIDmode && GET_MODE (val) != mode)
-	val = convert_modes (mode, GET_MODE (val), val, 1);
-      if (!insn_data[icode].operand[1].predicate (val, mode))
-	val = force_reg (mode, val);
+      struct expand_operand ops[2];
 
-      insn = GEN_FCN (icode) (mem, val);
-      if (insn)
-	{
-	  emit_insn (insn);
-	  return const0_rtx;
-	}
+      create_fixed_operand (&ops[0], mem);
+      /* VAL may have been promoted to a wider mode.  Shrink it if so.  */
+      create_convert_operand_to (&ops[1], val, mode, true);
+      if (maybe_expand_insn (icode, 2, ops))
+	return const0_rtx;
     }
 
   /* Failing that, generate a compare-and-swap loop in which we perform the
@@ -7179,19 +6855,16 @@ expand_sync_fetch_operation (rtx mem, rtx val, enum rtx_code code,
   /* If we found something supported, great.  */
   if (icode != CODE_FOR_nothing)
     {
-      if (!target || !insn_data[icode].operand[0].predicate (target, mode))
-	target = gen_reg_rtx (mode);
+      struct expand_operand ops[3];
 
-      if (GET_MODE (val) != VOIDmode && GET_MODE (val) != mode)
-	val = convert_modes (mode, GET_MODE (val), val, 1);
-      if (!insn_data[icode].operand[2].predicate (val, mode))
-	val = force_reg (mode, val);
-
-      insn = GEN_FCN (icode) (target, mem, val);
-      if (insn)
+      create_output_operand (&ops[0], target, mode);
+      create_fixed_operand (&ops[1], mem);
+      /* VAL may have been promoted to a wider mode.  Shrink it if so.  */
+      create_convert_operand_to (&ops[2], val, mode, true);
+      if (maybe_expand_insn (icode, 3, ops))
 	{
-	  emit_insn (insn);
-
+	  target = ops[0].value;
+	  val = ops[2].value;
 	  /* If we need to compensate for using an operation with the
 	     wrong return value, do so now.  */
 	  if (compensate)
@@ -7271,26 +6944,19 @@ expand_sync_lock_test_and_set (rtx mem, rtx val, rtx target)
 {
   enum machine_mode mode = GET_MODE (mem);
   enum insn_code icode;
-  rtx insn;
 
   /* If the target supports the test-and-set directly, great.  */
   icode = direct_optab_handler (sync_lock_test_and_set_optab, mode);
   if (icode != CODE_FOR_nothing)
     {
-      if (!target || !insn_data[icode].operand[0].predicate (target, mode))
-	target = gen_reg_rtx (mode);
+      struct expand_operand ops[3];
 
-      if (GET_MODE (val) != VOIDmode && GET_MODE (val) != mode)
-	val = convert_modes (mode, GET_MODE (val), val, 1);
-      if (!insn_data[icode].operand[2].predicate (val, mode))
-	val = force_reg (mode, val);
-
-      insn = GEN_FCN (icode) (target, mem, val);
-      if (insn)
-	{
-	  emit_insn (insn);
-	  return target;
-	}
+      create_output_operand (&ops[0], target, mode);
+      create_fixed_operand (&ops[1], mem);
+      /* VAL may have been promoted to a wider mode.  Shrink it if so.  */
+      create_convert_operand_to (&ops[2], val, mode, true);
+      if (maybe_expand_insn (icode, 3, ops))
+	return ops[0].value;
     }
 
   /* Otherwise, use a compare-and-swap loop for the exchange.  */
@@ -7317,6 +6983,202 @@ insn_operand_matches (enum insn_code icode, unsigned int opno, rtx operand)
   return (!insn_data[(int) icode].operand[opno].predicate
 	  || (insn_data[(int) icode].operand[opno].predicate
 	      (operand, insn_data[(int) icode].operand[opno].mode)));
+}
+
+/* Try to make OP match operand OPNO of instruction ICODE.  Return true
+   on success, storing the new operand value back in OP.  */
+
+static bool
+maybe_legitimize_operand (enum insn_code icode, unsigned int opno,
+			  struct expand_operand *op)
+{
+  enum machine_mode mode, imode;
+  bool old_volatile_ok, result;
+
+  old_volatile_ok = volatile_ok;
+  mode = op->mode;
+  result = false;
+  switch (op->type)
+    {
+    case EXPAND_FIXED:
+      volatile_ok = true;
+      break;
+
+    case EXPAND_OUTPUT:
+      gcc_assert (mode != VOIDmode);
+      if (!op->value
+	  || op->value == const0_rtx
+	  || GET_MODE (op->value) != mode
+	  || !insn_operand_matches (icode, opno, op->value))
+	op->value = gen_reg_rtx (mode);
+      break;
+
+    case EXPAND_INPUT:
+    input:
+      gcc_assert (mode != VOIDmode);
+      gcc_assert (GET_MODE (op->value) == VOIDmode
+		  || GET_MODE (op->value) == mode);
+      result = insn_operand_matches (icode, opno, op->value);
+      if (!result)
+	op->value = copy_to_mode_reg (mode, op->value);
+      break;
+
+    case EXPAND_CONVERT_TO:
+      gcc_assert (mode != VOIDmode);
+      op->value = convert_to_mode (mode, op->value, op->unsigned_p);
+      goto input;
+
+    case EXPAND_CONVERT_FROM:
+      if (GET_MODE (op->value) != VOIDmode)
+	mode = GET_MODE (op->value);
+      else
+	/* The caller must tell us what mode this value has.  */
+	gcc_assert (mode != VOIDmode);
+
+      imode = insn_data[(int) icode].operand[opno].mode;
+      if (imode != VOIDmode && imode != mode)
+	{
+	  op->value = convert_modes (imode, mode, op->value, op->unsigned_p);
+	  mode = imode;
+	}
+      goto input;
+
+    case EXPAND_ADDRESS:
+      gcc_assert (mode != VOIDmode);
+      op->value = convert_memory_address (mode, op->value);
+      goto input;
+
+    case EXPAND_INTEGER:
+      mode = insn_data[(int) icode].operand[opno].mode;
+      if (mode != VOIDmode && const_int_operand (op->value, mode))
+	goto input;
+      break;
+    }
+  if (!result)
+    result = insn_operand_matches (icode, opno, op->value);
+  volatile_ok = old_volatile_ok;
+  return result;
+}
+
+/* Make OP describe an input operand that should have the same value
+   as VALUE, after any mode conversion that the target might request.
+   TYPE is the type of VALUE.  */
+
+void
+create_convert_operand_from_type (struct expand_operand *op,
+				  rtx value, tree type)
+{
+  create_convert_operand_from (op, value, TYPE_MODE (type),
+			       TYPE_UNSIGNED (type));
+}
+
+/* Try to make operands [OPS, OPS + NOPS) match operands [OPNO, OPNO + NOPS)
+   of instruction ICODE.  Return true on success, leaving the new operand
+   values in the OPS themselves.  Emit no code on failure.  */
+
+bool
+maybe_legitimize_operands (enum insn_code icode, unsigned int opno,
+			   unsigned int nops, struct expand_operand *ops)
+{
+  rtx last;
+  unsigned int i;
+
+  last = get_last_insn ();
+  for (i = 0; i < nops; i++)
+    if (!maybe_legitimize_operand (icode, opno + i, &ops[i]))
+      {
+	delete_insns_since (last);
+	return false;
+      }
+  return true;
+}
+
+/* Try to generate instruction ICODE, using operands [OPS, OPS + NOPS)
+   as its operands.  Return the instruction pattern on success,
+   and emit any necessary set-up code.  Return null and emit no
+   code on failure.  */
+
+rtx
+maybe_gen_insn (enum insn_code icode, unsigned int nops,
+		struct expand_operand *ops)
+{
+  /* n_operands includes any automatically-generated match_scratches,
+     so we can't check for equality here.  */
+  gcc_assert (nops <= (unsigned int) insn_data[(int) icode].n_operands);
+  if (!maybe_legitimize_operands (icode, 0, nops, ops))
+    return NULL_RTX;
+
+  switch (nops)
+    {
+    case 1:
+      return GEN_FCN (icode) (ops[0].value);
+    case 2:
+      return GEN_FCN (icode) (ops[0].value, ops[1].value);
+    case 3:
+      return GEN_FCN (icode) (ops[0].value, ops[1].value, ops[2].value);
+    case 4:
+      return GEN_FCN (icode) (ops[0].value, ops[1].value, ops[2].value,
+			      ops[3].value);
+    case 5:
+      return GEN_FCN (icode) (ops[0].value, ops[1].value, ops[2].value,
+			      ops[3].value, ops[4].value);
+    case 6:
+      return GEN_FCN (icode) (ops[0].value, ops[1].value, ops[2].value,
+			      ops[3].value, ops[4].value, ops[5].value);
+    }
+  gcc_unreachable ();
+}
+
+/* Try to emit instruction ICODE, using operands [OPS, OPS + NOPS)
+   as its operands.  Return true on success and emit no code on failure.  */
+
+bool
+maybe_expand_insn (enum insn_code icode, unsigned int nops,
+		   struct expand_operand *ops)
+{
+  rtx pat = maybe_gen_insn (icode, nops, ops);
+  if (pat)
+    {
+      emit_insn (pat);
+      return true;
+    }
+  return false;
+}
+
+/* Like maybe_expand_insn, but for jumps.  */
+
+bool
+maybe_expand_jump_insn (enum insn_code icode, unsigned int nops,
+			struct expand_operand *ops)
+{
+  rtx pat = maybe_gen_insn (icode, nops, ops);
+  if (pat)
+    {
+      emit_jump_insn (pat);
+      return true;
+    }
+  return false;
+}
+
+/* Emit instruction ICODE, using operands [OPS, OPS + NOPS)
+   as its operands.  */
+
+void
+expand_insn (enum insn_code icode, unsigned int nops,
+	     struct expand_operand *ops)
+{
+  if (!maybe_expand_insn (icode, nops, ops))
+    gcc_unreachable ();
+}
+
+/* Like expand_insn, but for jumps.  */
+
+void
+expand_jump_insn (enum insn_code icode, unsigned int nops,
+		  struct expand_operand *ops)
+{
+  if (!maybe_expand_jump_insn (icode, nops, ops))
+    gcc_unreachable ();
 }
 
 #include "gt-optabs.h"
