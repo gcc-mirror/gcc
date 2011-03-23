@@ -610,7 +610,7 @@
 ;; TODO: We could check lane numbers more precisely based on the mode.
 (define_predicate "neon_lane_number"
   (and (match_code "const_int")
-       (match_test "INTVAL (op) >= 0 && INTVAL (op) <= 7")))
+       (match_test "INTVAL (op) >= 0 && INTVAL (op) <= 15")))
 ;; Predicates for named expanders that overlap multiple ISAs.
 
 (define_predicate "cmpdi_operand"

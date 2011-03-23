@@ -1,5 +1,10 @@
 2011-03-23  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	PR target/47553
+	* config/arm/predicates.md (neon_lane_number): Accept 0..15.
+
+2011-03-23  Richard Sandiford  <richard.sandiford@linaro.org>
+
 	* optabs.h (emit_unop_insn, maybe_emit_unop_insn): Change insn code
 	parameter from "int" to "enum insn_code".
 	(expand_operand_type): New enum.
