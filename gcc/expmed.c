@@ -323,22 +323,6 @@ mode_for_extraction (enum extraction_pattern pattern, int opno)
     return word_mode;
   return data->operand[opno].mode;
 }
-
-/* Return true if X, of mode MODE, matches the predicate for operand
-   OPNO of instruction ICODE.  Allow volatile memories, regardless of
-   the ambient volatile_ok setting.  */
-
-static bool
-check_predicate_volatile_ok (enum insn_code icode, int opno,
-			     rtx x, enum machine_mode mode)
-{
-  bool save_volatile_ok, result;
-
-  save_volatile_ok = volatile_ok;
-  result = insn_data[(int) icode].operand[opno].predicate (x, mode);
-  volatile_ok = save_volatile_ok;
-  return result;
-}
 
 /* A subroutine of store_bit_field, with the same arguments.  Return true
    if the operation could be implemented.
@@ -405,40 +389,17 @@ store_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
       && bitsize == GET_MODE_BITSIZE (GET_MODE_INNER (GET_MODE (op0)))
       && !(bitnum % GET_MODE_BITSIZE (GET_MODE_INNER (GET_MODE (op0)))))
     {
+      struct expand_operand ops[3];
       enum machine_mode outermode = GET_MODE (op0);
       enum machine_mode innermode = GET_MODE_INNER (outermode);
-      int icode = (int) optab_handler (vec_set_optab, outermode);
+      enum insn_code icode = optab_handler (vec_set_optab, outermode);
       int pos = bitnum / GET_MODE_BITSIZE (innermode);
-      rtx rtxpos = GEN_INT (pos);
-      rtx src = value;
-      rtx dest = op0;
-      rtx pat, seq;
-      enum machine_mode mode0 = insn_data[icode].operand[0].mode;
-      enum machine_mode mode1 = insn_data[icode].operand[1].mode;
-      enum machine_mode mode2 = insn_data[icode].operand[2].mode;
 
-      start_sequence ();
-
-      if (! (*insn_data[icode].operand[1].predicate) (src, mode1))
-	src = copy_to_mode_reg (mode1, src);
-
-      if (! (*insn_data[icode].operand[2].predicate) (rtxpos, mode2))
-	rtxpos = copy_to_mode_reg (mode1, rtxpos);
-
-      /* We could handle this, but we should always be called with a pseudo
-	 for our targets and all insns should take them as outputs.  */
-      gcc_assert ((*insn_data[icode].operand[0].predicate) (dest, mode0)
-		  && (*insn_data[icode].operand[1].predicate) (src, mode1)
-		  && (*insn_data[icode].operand[2].predicate) (rtxpos, mode2));
-      pat = GEN_FCN (icode) (dest, src, rtxpos);
-      seq = get_insns ();
-      end_sequence ();
-      if (pat)
-	{
-	  emit_insn (seq);
-	  emit_insn (pat);
-	  return true;
-	}
+      create_fixed_operand (&ops[0], op0);
+      create_input_operand (&ops[1], value, innermode);
+      create_integer_operand (&ops[2], pos);
+      if (maybe_expand_insn (icode, 3, ops))
+	return true;
     }
 
   /* If the target is a register, overwriting the entire object, or storing
@@ -515,44 +476,30 @@ store_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
       && bitsize == GET_MODE_BITSIZE (fieldmode)
       && optab_handler (movstrict_optab, fieldmode) != CODE_FOR_nothing)
     {
-      int icode = optab_handler (movstrict_optab, fieldmode);
-      rtx insn;
-      rtx start = get_last_insn ();
+      struct expand_operand ops[2];
+      enum insn_code icode = optab_handler (movstrict_optab, fieldmode);
       rtx arg0 = op0;
 
-      /* Get appropriate low part of the value being stored.  */
-      if (CONST_INT_P (value) || REG_P (value))
-	value = gen_lowpart (fieldmode, value);
-      else if (!(GET_CODE (value) == SYMBOL_REF
-		 || GET_CODE (value) == LABEL_REF
-		 || GET_CODE (value) == CONST))
-	value = convert_to_mode (fieldmode, value, 0);
-
-      if (! (*insn_data[icode].operand[1].predicate) (value, fieldmode))
-	value = copy_to_mode_reg (fieldmode, value);
-
-      if (GET_CODE (op0) == SUBREG)
+      if (GET_CODE (arg0) == SUBREG)
 	{
 	  /* Else we've got some float mode source being extracted into
 	     a different float mode destination -- this combination of
 	     subregs results in Severe Tire Damage.  */
-	  gcc_assert (GET_MODE (SUBREG_REG (op0)) == fieldmode
+	  gcc_assert (GET_MODE (SUBREG_REG (arg0)) == fieldmode
 		      || GET_MODE_CLASS (fieldmode) == MODE_INT
 		      || GET_MODE_CLASS (fieldmode) == MODE_PARTIAL_INT);
-	  arg0 = SUBREG_REG (op0);
+	  arg0 = SUBREG_REG (arg0);
 	}
 
-      insn = (GEN_FCN (icode)
-		 (gen_rtx_SUBREG (fieldmode, arg0,
-				  (bitnum % BITS_PER_WORD) / BITS_PER_UNIT
-				  + (offset * UNITS_PER_WORD)),
-				  value));
-      if (insn)
-	{
-	  emit_insn (insn);
-	  return true;
-	}
-      delete_insns_since (start);
+      arg0 = gen_rtx_SUBREG (fieldmode, arg0,
+			     (bitnum % BITS_PER_WORD) / BITS_PER_UNIT
+			     + (offset * UNITS_PER_WORD));
+
+      create_fixed_operand (&ops[0], arg0);
+      /* Shrink the source operand to FIELDMODE.  */
+      create_convert_operand_to (&ops[1], value, fieldmode, false);
+      if (maybe_expand_insn (icode, 2, ops))
+	return true;
     }
 
   /* Handle fields bigger than a word.  */
@@ -653,16 +600,13 @@ store_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
       && bitsize > 0
       && GET_MODE_BITSIZE (op_mode) >= bitsize
       && ! ((REG_P (op0) || GET_CODE (op0) == SUBREG)
-	    && (bitsize + bitpos > GET_MODE_BITSIZE (op_mode)))
-      && insn_data[CODE_FOR_insv].operand[1].predicate (GEN_INT (bitsize),
-							VOIDmode)
-      && check_predicate_volatile_ok (CODE_FOR_insv, 0, op0, VOIDmode))
+	    && (bitsize + bitpos > GET_MODE_BITSIZE (op_mode))))
     {
+      struct expand_operand ops[4];
       int xbitpos = bitpos;
       rtx value1;
       rtx xop0 = op0;
       rtx last = get_last_insn ();
-      rtx pat;
       bool copy_back = false;
 
       /* Add OFFSET into OP0's address.  */
@@ -743,17 +687,12 @@ store_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 	    gcc_assert (CONSTANT_P (value));
 	}
 
-      /* If this machine's insv insists on a register,
-	 get VALUE1 into a register.  */
-      if (! ((*insn_data[(int) CODE_FOR_insv].operand[3].predicate)
-	     (value1, op_mode)))
-	value1 = force_reg (op_mode, value1);
-
-      pat = gen_insv (xop0, GEN_INT (bitsize), GEN_INT (xbitpos), value1);
-      if (pat)
+      create_fixed_operand (&ops[0], xop0);
+      create_integer_operand (&ops[1], bitsize);
+      create_integer_operand (&ops[2], xbitpos);
+      create_input_operand (&ops[3], value1, op_mode);
+      if (maybe_expand_insn (CODE_FOR_insv, 4, ops))
 	{
-	  emit_insn (pat);
-
 	  if (copy_back)
 	    convert_move (op0, xop0, true);
 	  return true;
@@ -1235,50 +1174,21 @@ extract_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
       && ((bitnum + bitsize - 1) / GET_MODE_BITSIZE (GET_MODE_INNER (GET_MODE (op0)))
 	  == bitnum / GET_MODE_BITSIZE (GET_MODE_INNER (GET_MODE (op0)))))
     {
+      struct expand_operand ops[3];
       enum machine_mode outermode = GET_MODE (op0);
       enum machine_mode innermode = GET_MODE_INNER (outermode);
-      int icode = (int) optab_handler (vec_extract_optab, outermode);
+      enum insn_code icode = optab_handler (vec_extract_optab, outermode);
       unsigned HOST_WIDE_INT pos = bitnum / GET_MODE_BITSIZE (innermode);
-      rtx rtxpos = GEN_INT (pos);
-      rtx src = op0;
-      rtx dest = NULL, pat, seq;
-      enum machine_mode mode0 = insn_data[icode].operand[0].mode;
-      enum machine_mode mode1 = insn_data[icode].operand[1].mode;
-      enum machine_mode mode2 = insn_data[icode].operand[2].mode;
 
-      if (innermode == tmode || innermode == mode)
-	dest = target;
-
-      if (!dest)
-	dest = gen_reg_rtx (innermode);
-
-      start_sequence ();
-
-      if (! (*insn_data[icode].operand[0].predicate) (dest, mode0))
-	dest = copy_to_mode_reg (mode0, dest);
-
-      if (! (*insn_data[icode].operand[1].predicate) (src, mode1))
-	src = copy_to_mode_reg (mode1, src);
-
-      if (! (*insn_data[icode].operand[2].predicate) (rtxpos, mode2))
-	rtxpos = copy_to_mode_reg (mode1, rtxpos);
-
-      /* We could handle this, but we should always be called with a pseudo
-	 for our targets and all insns should take them as outputs.  */
-      gcc_assert ((*insn_data[icode].operand[0].predicate) (dest, mode0)
-		  && (*insn_data[icode].operand[1].predicate) (src, mode1)
-		  && (*insn_data[icode].operand[2].predicate) (rtxpos, mode2));
-
-      pat = GEN_FCN (icode) (dest, src, rtxpos);
-      seq = get_insns ();
-      end_sequence ();
-      if (pat)
+      create_output_operand (&ops[0], target, innermode);
+      create_input_operand (&ops[1], op0, outermode);
+      create_integer_operand (&ops[2], pos);
+      if (maybe_expand_insn (icode, 3, ops))
 	{
-	  emit_insn (seq);
-	  emit_insn (pat);
-      	  if (mode0 != mode)
-	    return gen_lowpart (tmode, dest);
-	  return dest;
+	  target = ops[0].value;
+      	  if (GET_MODE (target) != mode)
+	    return gen_lowpart (tmode, target);
+	  return target;
 	}
     }
 
@@ -1517,17 +1427,14 @@ extract_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 	 acceptable to the format of ext(z)v.  */
       && !(GET_CODE (op0) == SUBREG && GET_MODE (op0) != ext_mode)
       && !((REG_P (op0) || GET_CODE (op0) == SUBREG)
-	   && (bitsize + bitpos > GET_MODE_BITSIZE (ext_mode)))
-      && check_predicate_volatile_ok (icode, 1, op0, GET_MODE (op0)))
+	   && (bitsize + bitpos > GET_MODE_BITSIZE (ext_mode))))
     {
+      struct expand_operand ops[4];
       unsigned HOST_WIDE_INT xbitpos = bitpos, xoffset = offset;
-      rtx bitsize_rtx, bitpos_rtx;
-      rtx last = get_last_insn ();
       rtx xop0 = op0;
       rtx xtarget = target;
       rtx xspec_target = target;
       rtx xspec_target_subreg = 0;
-      rtx pat;
 
       /* If op0 is a register, we need it in EXT_MODE to make it
 	 acceptable to the format of ext(z)v.  */
@@ -1570,27 +1477,20 @@ extract_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 	    xtarget = gen_reg_rtx (ext_mode);
 	}
 
-      /* If this machine's ext(z)v insists on a register target,
-	 make sure we have one.  */
-      if (!insn_data[(int) icode].operand[0].predicate (xtarget, ext_mode))
-	xtarget = gen_reg_rtx (ext_mode);
-
-      bitsize_rtx = GEN_INT (bitsize);
-      bitpos_rtx = GEN_INT (xbitpos);
-
-      pat = (unsignedp
-	     ? gen_extzv (xtarget, xop0, bitsize_rtx, bitpos_rtx)
-	     : gen_extv (xtarget, xop0, bitsize_rtx, bitpos_rtx));
-      if (pat)
+      create_output_operand (&ops[0], xtarget, ext_mode);
+      create_fixed_operand (&ops[1], xop0);
+      create_integer_operand (&ops[2], bitsize);
+      create_integer_operand (&ops[3], xbitpos);
+      if (maybe_expand_insn (unsignedp ? CODE_FOR_extzv : CODE_FOR_extv,
+			     4, ops))
 	{
-	  emit_insn (pat);
+	  xtarget = ops[0].value;
 	  if (xtarget == xspec_target)
 	    return xtarget;
 	  if (xtarget == xspec_target_subreg)
 	    return xspec_target;
 	  return convert_extracted_bit_field (xtarget, mode, tmode, unsignedp);
 	}
-      delete_insns_since (last);
     }
 
   /* If OP0 is a memory, try copying it to a register and seeing if a
@@ -5101,19 +5001,14 @@ emit_cstore (rtx target, enum insn_code icode, enum rtx_code code,
 	     int unsignedp, rtx x, rtx y, int normalizep,
 	     enum machine_mode target_mode)
 {
-  rtx op0, last, comparison, subtarget, pattern;
+  struct expand_operand ops[4];
+  rtx op0, last, comparison, subtarget;
   enum machine_mode result_mode = insn_data[(int) icode].operand[0].mode;
 
   last = get_last_insn ();
   x = prepare_operand (icode, x, 2, mode, compare_mode, unsignedp);
   y = prepare_operand (icode, y, 3, mode, compare_mode, unsignedp);
-  comparison = gen_rtx_fmt_ee (code, result_mode, x, y);
-  if (!x || !y
-      || !insn_data[icode].operand[2].predicate
-	  (x, insn_data[icode].operand[2].mode)
-      || !insn_data[icode].operand[3].predicate
-	  (y, insn_data[icode].operand[3].mode)
-      || !insn_data[icode].operand[1].predicate (comparison, VOIDmode))
+  if (!x || !y)
     {
       delete_insns_since (last);
       return NULL_RTX;
@@ -5124,16 +5019,18 @@ emit_cstore (rtx target, enum insn_code icode, enum rtx_code code,
   if (!target)
     target = gen_reg_rtx (target_mode);
 
-  if (optimize
-      || !(insn_data[(int) icode].operand[0].predicate (target, result_mode)))
-    subtarget = gen_reg_rtx (result_mode);
-  else
-    subtarget = target;
+  comparison = gen_rtx_fmt_ee (code, result_mode, x, y);
 
-  pattern = GEN_FCN (icode) (subtarget, comparison, x, y);
-  if (!pattern)
-    return NULL_RTX;
-  emit_insn (pattern);
+  create_output_operand (&ops[0], optimize ? NULL_RTX : target, result_mode);
+  create_fixed_operand (&ops[1], comparison);
+  create_fixed_operand (&ops[2], x);
+  create_fixed_operand (&ops[3], y);
+  if (!maybe_expand_insn (icode, 4, ops))
+    {
+      delete_insns_since (last);
+      return NULL_RTX;
+    }
+  subtarget = ops[0].value;
 
   /* If we are converting to a wider mode, first convert to
      TARGET_MODE, then normalize.  This produces better combining

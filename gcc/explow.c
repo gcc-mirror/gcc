@@ -1379,21 +1379,13 @@ allocate_dynamic_stack_space (rtx size, unsigned size_align,
 #ifdef HAVE_allocate_stack
   if (HAVE_allocate_stack)
     {
-      enum machine_mode mode = STACK_SIZE_MODE;
-      insn_operand_predicate_fn pred;
-
+      struct expand_operand ops[2];
       /* We don't have to check against the predicate for operand 0 since
 	 TARGET is known to be a pseudo of the proper mode, which must
-	 be valid for the operand.  For operand 1, convert to the
-	 proper mode and validate.  */
-      if (mode == VOIDmode)
-	mode = insn_data[(int) CODE_FOR_allocate_stack].operand[1].mode;
-
-      pred = insn_data[(int) CODE_FOR_allocate_stack].operand[1].predicate;
-      if (pred && ! ((*pred) (size, mode)))
-	size = copy_to_mode_reg (mode, convert_to_mode (mode, size, 1));
-
-      emit_insn (gen_allocate_stack (target, size));
+	 be valid for the operand.  */
+      create_fixed_operand (&ops[0], target);
+      create_convert_operand_to (&ops[1], size, STACK_SIZE_MODE, true);
+      expand_insn (CODE_FOR_allocate_stack, 2, ops);
     }
   else
 #endif
@@ -1544,22 +1536,22 @@ probe_stack_range (HOST_WIDE_INT first, rtx size)
 					         plus_constant (size, first)));
       emit_library_call (stack_check_libfunc, LCT_NORMAL, VOIDmode, 1, addr,
 			 Pmode);
+      return;
     }
 
   /* Next see if we have an insn to check the stack.  */
 #ifdef HAVE_check_stack
-  else if (HAVE_check_stack)
+  if (HAVE_check_stack)
     {
+      struct expand_operand ops[1];
       rtx addr = memory_address (Pmode,
 				 gen_rtx_fmt_ee (STACK_GROW_OP, Pmode,
 					         stack_pointer_rtx,
 					         plus_constant (size, first)));
-      insn_operand_predicate_fn pred
-	= insn_data[(int) CODE_FOR_check_stack].operand[0].predicate;
-      if (pred && !((*pred) (addr, Pmode)))
-	addr = copy_to_mode_reg (Pmode, addr);
 
-      emit_insn (gen_check_stack (addr));
+      create_input_operand (&ops[0], addr, Pmode);
+      if (maybe_expand_insn (CODE_FOR_check_stack, 1, ops))
+	return;
     }
 #endif
 

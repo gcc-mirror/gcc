@@ -1143,15 +1143,13 @@ expand_builtin_prefetch (tree exp)
 #ifdef HAVE_prefetch
   if (HAVE_prefetch)
     {
-      if ((! (*insn_data[(int) CODE_FOR_prefetch].operand[0].predicate)
-	     (op0,
-	      insn_data[(int) CODE_FOR_prefetch].operand[0].mode))
-	  || (GET_MODE (op0) != Pmode))
-	{
-	  op0 = convert_memory_address (Pmode, op0);
-	  op0 = force_reg (Pmode, op0);
-	}
-      emit_insn (gen_prefetch (op0, op1, op2));
+      struct expand_operand ops[3];
+
+      create_address_operand (&ops[0], op0);
+      create_integer_operand (&ops[1], INTVAL (op1));
+      create_integer_operand (&ops[2], INTVAL (op2));
+      if (maybe_expand_insn (CODE_FOR_prefetch, 3, ops))
+	return;
     }
 #endif
 
@@ -2431,16 +2429,9 @@ expand_builtin_interclass_mathfn (tree exp, rtx target)
 
   if (icode != CODE_FOR_nothing)
     {
+      struct expand_operand ops[1];
       rtx last = get_last_insn ();
       tree orig_arg = arg;
-      /* Make a suitable register to place result in.  */
-      if (!target
-	  || GET_MODE (target) != TYPE_MODE (TREE_TYPE (exp))
-	  || !insn_data[icode].operand[0].predicate (target, GET_MODE (target)))
-         target = gen_reg_rtx (TYPE_MODE (TREE_TYPE (exp)));
-
-      gcc_assert (insn_data[icode].operand[0].predicate
-		  (target, GET_MODE (target)));
 
       /* Wrap the computation of the argument in a SAVE_EXPR, as we may
 	 need to expand the argument again.  This way, we will not perform
@@ -2452,10 +2443,11 @@ expand_builtin_interclass_mathfn (tree exp, rtx target)
       if (mode != GET_MODE (op0))
 	op0 = convert_to_mode (mode, op0, 0);
 
-      /* Compute into TARGET.
-	 Set TARGET to wherever the result comes back.  */
-      if (maybe_emit_unop_insn (icode, target, op0, UNKNOWN))
-	return target;
+      create_output_operand (&ops[0], target, TYPE_MODE (TREE_TYPE (exp)));
+      if (maybe_legitimize_operands (icode, 0, 1, ops)
+	  && maybe_emit_unop_insn (icode, ops[0].value, op0, UNKNOWN))
+	return ops[0].value;
+
       delete_insns_since (last);
       CALL_EXPR_ARG (exp, 0) = orig_arg;
     }
@@ -3362,11 +3354,12 @@ expand_builtin_strlen (tree exp, rtx target,
     return NULL_RTX;
   else
     {
+      struct expand_operand ops[4];
       rtx pat;
       tree len;
       tree src = CALL_EXPR_ARG (exp, 0);
-      rtx result, src_reg, char_rtx, before_strlen;
-      enum machine_mode insn_mode = target_mode, char_mode;
+      rtx src_reg, before_strlen;
+      enum machine_mode insn_mode = target_mode;
       enum insn_code icode = CODE_FOR_nothing;
       unsigned int align;
 
@@ -3405,14 +3398,6 @@ expand_builtin_strlen (tree exp, rtx target,
       if (insn_mode == VOIDmode)
 	return NULL_RTX;
 
-      /* Make a place to write the result of the instruction.  */
-      result = target;
-      if (! (result != 0
-	     && REG_P (result)
-	     && GET_MODE (result) == insn_mode
-	     && REGNO (result) >= FIRST_PSEUDO_REGISTER))
-	result = gen_reg_rtx (insn_mode);
-
       /* Make a place to hold the source address.  We will not expand
 	 the actual source until we are sure that the expansion will
 	 not fail -- there are trees that cannot be expanded twice.  */
@@ -3422,17 +3407,12 @@ expand_builtin_strlen (tree exp, rtx target,
 	 source operand later.  */
       before_strlen = get_last_insn ();
 
-      char_rtx = const0_rtx;
-      char_mode = insn_data[(int) icode].operand[2].mode;
-      if (! (*insn_data[(int) icode].operand[2].predicate) (char_rtx,
-							    char_mode))
-	char_rtx = copy_to_mode_reg (char_mode, char_rtx);
-
-      pat = GEN_FCN (icode) (result, gen_rtx_MEM (BLKmode, src_reg),
-			     char_rtx, GEN_INT (align));
-      if (! pat)
+      create_output_operand (&ops[0], target, insn_mode);
+      create_fixed_operand (&ops[1], gen_rtx_MEM (BLKmode, src_reg));
+      create_integer_operand (&ops[2], 0);
+      create_integer_operand (&ops[3], align);
+      if (!maybe_expand_insn (icode, 4, ops))
 	return NULL_RTX;
-      emit_insn (pat);
 
       /* Now that we are assured of success, expand the source.  */
       start_sequence ();
@@ -3448,12 +3428,12 @@ expand_builtin_strlen (tree exp, rtx target,
 	emit_insn_before (pat, get_insns ());
 
       /* Return the value in the proper mode for this function.  */
-      if (GET_MODE (result) == target_mode)
-	target = result;
+      if (GET_MODE (ops[0].value) == target_mode)
+	target = ops[0].value;
       else if (target != 0)
-	convert_move (target, result, 0);
+	convert_move (target, ops[0].value, 0);
       else
-	target = convert_to_mode (target_mode, result, 0);
+	target = convert_to_mode (target_mode, ops[0].value, 0);
 
       return target;
     }
@@ -3674,56 +3654,39 @@ expand_builtin_mempcpy_args (tree dest, tree src, tree len,
 static rtx
 expand_movstr (tree dest, tree src, rtx target, int endp)
 {
+  struct expand_operand ops[3];
   rtx end;
   rtx dest_mem;
   rtx src_mem;
-  rtx insn;
-  const struct insn_data_d * data;
 
   if (!HAVE_movstr)
     return NULL_RTX;
 
   dest_mem = get_memory_rtx (dest, NULL);
   src_mem = get_memory_rtx (src, NULL);
-  data = insn_data + CODE_FOR_movstr;
   if (!endp)
     {
       target = force_reg (Pmode, XEXP (dest_mem, 0));
       dest_mem = replace_equiv_address (dest_mem, target);
-      end = gen_reg_rtx (Pmode);
     }
-  else
+
+  create_output_operand (&ops[0], endp ? target : NULL_RTX, Pmode);
+  create_fixed_operand (&ops[1], dest_mem);
+  create_fixed_operand (&ops[2], src_mem);
+  expand_insn (CODE_FOR_movstr, 3, ops);
+
+  if (endp && target != const0_rtx)
     {
-      if (target == 0
-	  || target == const0_rtx
-	  || ! (*data->operand[0].predicate) (target, Pmode))
+      target = ops[0].value;
+      /* movstr is supposed to set end to the address of the NUL
+	 terminator.  If the caller requested a mempcpy-like return value,
+	 adjust it.  */
+      if (endp == 1)
 	{
-	  end = gen_reg_rtx (Pmode);
-	  if (target != const0_rtx)
-	    target = end;
+	  rtx tem = plus_constant (gen_lowpart (GET_MODE (target), end), 1);
+	  emit_move_insn (target, force_operand (tem, NULL_RTX));
 	}
-      else
-	end = target;
     }
-
-  if (data->operand[0].mode != VOIDmode)
-    end = gen_lowpart (data->operand[0].mode, end);
-
-  insn = data->genfun (end, dest_mem, src_mem);
-
-  gcc_assert (insn);
-
-  emit_insn (insn);
-
-  /* movstr is supposed to set end to the address of the NUL
-     terminator.  If the caller requested a mempcpy-like return value,
-     adjust it.  */
-  if (endp == 1 && target != const0_rtx)
-    {
-      rtx tem = plus_constant (gen_lowpart (GET_MODE (target), end), 1);
-      emit_move_insn (target, force_operand (tem, NULL_RTX));
-    }
-
   return target;
 }
 
@@ -5223,7 +5186,6 @@ expand_builtin___clear_cache (tree exp ATTRIBUTE_UNUSED)
   /* We have a "clear_cache" insn, and it will handle everything.  */
   tree begin, end;
   rtx begin_rtx, end_rtx;
-  enum insn_code icode;
 
   /* We must not expand to a library call.  If we did, any
      fallback library function in libgcc that might contain a call to
@@ -5236,21 +5198,18 @@ expand_builtin___clear_cache (tree exp ATTRIBUTE_UNUSED)
 
   if (HAVE_clear_cache)
     {
-      icode = CODE_FOR_clear_cache;
+      struct expand_operand ops[2];
 
       begin = CALL_EXPR_ARG (exp, 0);
       begin_rtx = expand_expr (begin, NULL_RTX, Pmode, EXPAND_NORMAL);
-      begin_rtx = convert_memory_address (Pmode, begin_rtx);
-      if (!insn_data[icode].operand[0].predicate (begin_rtx, Pmode))
-	begin_rtx = copy_to_mode_reg (Pmode, begin_rtx);
 
       end = CALL_EXPR_ARG (exp, 1);
       end_rtx = expand_expr (end, NULL_RTX, Pmode, EXPAND_NORMAL);
-      end_rtx = convert_memory_address (Pmode, end_rtx);
-      if (!insn_data[icode].operand[1].predicate (end_rtx, Pmode))
-	end_rtx = copy_to_mode_reg (Pmode, end_rtx);
 
-      emit_insn (gen_clear_cache (begin_rtx, end_rtx));
+      create_address_operand (&ops[0], begin_rtx);
+      create_address_operand (&ops[1], end_rtx);
+      if (maybe_expand_insn (CODE_FOR_clear_cache, 2, ops))
+	return const0_rtx;
     }
   return const0_rtx;
 #endif /* HAVE_clear_cache */
@@ -5748,9 +5707,9 @@ expand_builtin_synchronize (void)
 static void
 expand_builtin_lock_release (enum machine_mode mode, tree exp)
 {
+  struct expand_operand ops[2];
   enum insn_code icode;
-  rtx mem, insn;
-  rtx val = const0_rtx;
+  rtx mem;
 
   /* Expand the operands.  */
   mem = get_builtin_sync_mem (CALL_EXPR_ARG (exp, 0), mode);
@@ -5759,21 +5718,16 @@ expand_builtin_lock_release (enum machine_mode mode, tree exp)
   icode = direct_optab_handler (sync_lock_release_optab, mode);
   if (icode != CODE_FOR_nothing)
     {
-      if (!insn_data[icode].operand[1].predicate (val, mode))
-	val = force_reg (mode, val);
-
-      insn = GEN_FCN (icode) (mem, val);
-      if (insn)
-	{
-	  emit_insn (insn);
-	  return;
-	}
+      create_fixed_operand (&ops[0], mem);
+      create_input_operand (&ops[1], const0_rtx, mode);
+      if (maybe_expand_insn (icode, 2, ops))
+	return;
     }
 
   /* Otherwise we can implement this operation by emitting a barrier
      followed by a store of zero.  */
   expand_builtin_synchronize ();
-  emit_move_insn (mem, val);
+  emit_move_insn (mem, const0_rtx);
 }
 
 /* Expand an expression EXP that calls a built-in function,
