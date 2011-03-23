@@ -1,3 +1,10 @@
+2011-03-23  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR other/48179
+	PR other/48234
+	* doc/extend.texi (Alignment): Move section to match order in TOC.
+	* doc/invoke.texi (i386 and x86-64 Windows Options): Likewise.
+
 2011-03-03  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/sse.md (*avx_pmaddubsw128): Fix mode of VEC_SELECT RTX.
