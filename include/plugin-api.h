@@ -203,6 +203,10 @@ enum ld_plugin_status
 (*ld_plugin_get_input_file) (const void *handle,
                              struct ld_plugin_input_file *file);
 
+typedef
+enum ld_plugin_status
+(*ld_plugin_get_view) (const void *handle, const void **viewp);
+
 /* The linker's interface for releasing the input file.  */
 
 typedef
@@ -269,7 +273,8 @@ enum ld_plugin_tag
   LDPT_ADD_INPUT_LIBRARY,
   LDPT_OUTPUT_NAME,
   LDPT_SET_EXTRA_LIBRARY_PATH,
-  LDPT_GNU_LD_VERSION
+  LDPT_GNU_LD_VERSION,
+  LDPT_GET_VIEW
 };
 
 /* The plugin transfer vector.  */
@@ -289,6 +294,7 @@ struct ld_plugin_tv
     ld_plugin_add_input_file tv_add_input_file;
     ld_plugin_message tv_message;
     ld_plugin_get_input_file tv_get_input_file;
+    ld_plugin_get_view tv_get_view;
     ld_plugin_release_input_file tv_release_input_file;
     ld_plugin_add_input_library tv_add_input_library;
     ld_plugin_set_extra_library_path tv_set_extra_library_path;
