@@ -1269,6 +1269,38 @@ expand_binop_directly (enum machine_mode mode, optab binoptab,
   if (!shift_optab_p (binoptab))
     xop1 = avoid_expensive_constant (mode1, binoptab, xop1, unsignedp);
 
+  /* In case the insn wants input operands in modes different from
+     those of the actual operands, convert the operands.  It would
+     seem that we don't need to convert CONST_INTs, but we do, so
+     that they're properly zero-extended, sign-extended or truncated
+     for their mode.  */
+
+  if (GET_MODE (xop0) != mode0 && mode0 != VOIDmode)
+    xop0 = convert_modes (mode0,
+			  GET_MODE (xop0) != VOIDmode
+			  ? GET_MODE (xop0)
+			  : mode,
+			  xop0, unsignedp);
+
+  if (GET_MODE (xop1) != mode1 && mode1 != VOIDmode)
+    xop1 = convert_modes (mode1,
+			  GET_MODE (xop1) != VOIDmode
+			  ? GET_MODE (xop1)
+			  : mode,
+			  xop1, unsignedp);
+
+  /* If operation is commutative,
+     try to make the first operand a register.
+     Even better, try to make it the same as the target.
+     Also try to make the last operand a constant.  */
+  if (commutative_p
+      && swap_commutative_operands_with_target (target, xop0, xop1))
+    {
+      swap = xop1;
+      xop1 = xop0;
+      xop0 = swap;
+    }
+
   /* Now, if insn's predicates don't allow our operands, put them into
      pseudo regs.  */
 
@@ -1291,41 +1323,25 @@ expand_binop_directly (enum machine_mode mode, optab binoptab,
     tmp_mode = mode;
 
   create_output_operand (&ops[0], target, tmp_mode);
-  create_convert_operand_from (&ops[1], xop0, mode, unsignedp);
-  create_convert_operand_from (&ops[2], xop1, mode, unsignedp);
-  if (maybe_legitimize_operands (icode, 0, 3, ops))
+  create_input_operand (&ops[1], xop0, mode0);
+  create_input_operand (&ops[2], xop1, mode1);
+  pat = maybe_gen_insn (icode, 3, ops);
+  if (pat)
     {
-      /* If operation is commutative,
-	 try to make the first operand a register.
-	 Even better, try to make it the same as the target.
-	 Also try to make the last operand a constant.  */
-      if (commutative_p
-	  && swap_commutative_operands_with_target (ops[0].value, ops[1].value,
-						    ops[2].value))
+      /* If PAT is composed of more than one insn, try to add an appropriate
+	 REG_EQUAL note to it.  If we can't because TEMP conflicts with an
+	 operand, call expand_binop again, this time without a target.  */
+      if (INSN_P (pat) && NEXT_INSN (pat) != NULL_RTX
+	  && ! add_equal_note (pat, ops[0].value, binoptab->code,
+			       ops[1].value, ops[2].value))
 	{
-	  swap = ops[2].value;
-	  ops[2].value = ops[1].value;
-	  ops[1].value = swap;
+	  delete_insns_since (last);
+	  return expand_binop (mode, binoptab, op0, op1, NULL_RTX,
+			       unsignedp, methods);
 	}
 
-      pat = GEN_FCN (icode) (ops[0].value, ops[1].value, ops[2].value);
-      if (pat)
-	{
-	  /* If PAT is composed of more than one insn, try to add an appropriate
-	     REG_EQUAL note to it.  If we can't because TEMP conflicts with an
-	     operand, call expand_binop again, this time without a target.  */
-	  if (INSN_P (pat) && NEXT_INSN (pat) != NULL_RTX
-	      && ! add_equal_note (pat, ops[0].value, binoptab->code,
-				   ops[1].value, ops[2].value))
-	    {
-	      delete_insns_since (last);
-	      return expand_binop (mode, binoptab, op0, op1, NULL_RTX,
-				   unsignedp, methods);
-	    }
-
-	  emit_insn (pat);
-	  return ops[0].value;
-	}
+      emit_insn (pat);
+      return ops[0].value;
     }
   delete_insns_since (last);
   return NULL_RTX;
