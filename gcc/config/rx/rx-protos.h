@@ -26,6 +26,7 @@
 #define Fargs	CUMULATIVE_ARGS
 #define Rcode	enum rtx_code
 
+extern int		rx_align_for_label (void);
 extern void		rx_expand_prologue (void);
 extern int		rx_initial_elimination_offset (int, int);
 

@@ -413,6 +413,25 @@ typedef unsigned int CUMULATIVE_ARGS;
 #undef  USER_LABEL_PREFIX
 #define USER_LABEL_PREFIX	"_"
 
+#define LABEL_ALIGN_AFTER_BARRIER(x)		rx_align_for_label ()
+
+#define ASM_OUTPUT_MAX_SKIP_ALIGN(STREAM, LOG, MAX_SKIP)	\
+  do						\
+    {						\
+      if ((LOG) == 0 || (MAX_SKIP) == 0)	\
+        break;					\
+      if (TARGET_AS100_SYNTAX)			\
+	{					\
+	  if ((LOG) >= 2)			\
+	    fprintf (STREAM, "\t.ALIGN 4\t; %d alignment actually requested\n", 1 << (LOG)); \
+	  else					\
+	    fprintf (STREAM, "\t.ALIGN 2\n");	\
+	}					\
+      else					\
+	fprintf (STREAM, "\t.balign %d,3,%d\n", 1 << (LOG), (MAX_SKIP));	\
+    }						\
+  while (0)
+
 #define ASM_OUTPUT_ALIGN(STREAM, LOG)		\
   do						\
     {						\
