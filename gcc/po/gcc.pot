@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
-"POT-Creation-Date: 2011-03-17 19:55+0000\n"
+"POT-Creation-Date: 2011-03-24 16:45+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,7 +18,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
 
-#: c-decl.c:4664 c-typeck.c:5851 toplev.c:1013 c-family/c-pretty-print.c:423
+#: c-decl.c:4660 c-typeck.c:5851 toplev.c:1013 c-family/c-pretty-print.c:423
 #: cp/error.c:610 cp/error.c:889
 msgid "<anonymous>"
 msgstr ""
@@ -3526,82 +3526,82 @@ msgstr ""
 msgid "AltiVec argument passed to unprototyped function"
 msgstr ""
 
-#: config/s390/s390.c:5204
+#: config/s390/s390.c:5206
 #, c-format
 msgid "symbolic memory references are only supported on z10 or later"
 msgstr ""
 
-#: config/s390/s390.c:5215
+#: config/s390/s390.c:5217
 #, c-format
 msgid "cannot decompose address"
 msgstr ""
 
-#: config/s390/s390.c:5274
+#: config/s390/s390.c:5276
 #, c-format
 msgid "invalid comparison operator for 'E' output modifier"
 msgstr ""
 
-#: config/s390/s390.c:5295
+#: config/s390/s390.c:5297
 #, c-format
 msgid "invalid reference for 'J' output modifier"
 msgstr ""
 
-#: config/s390/s390.c:5309
+#: config/s390/s390.c:5311
 #, c-format
 msgid "memory reference expected for 'O' output modifier"
 msgstr ""
 
-#: config/s390/s390.c:5320
+#: config/s390/s390.c:5322
 #, c-format
 msgid "invalid address for 'O' output modifier"
 msgstr ""
 
-#: config/s390/s390.c:5338
+#: config/s390/s390.c:5340
 #, c-format
 msgid "memory reference expected for 'R' output modifier"
 msgstr ""
 
-#: config/s390/s390.c:5349
+#: config/s390/s390.c:5351
 #, c-format
 msgid "invalid address for 'R' output modifier"
 msgstr ""
 
-#: config/s390/s390.c:5367
+#: config/s390/s390.c:5369
 #, c-format
 msgid "memory reference expected for 'S' output modifier"
 msgstr ""
 
-#: config/s390/s390.c:5377
+#: config/s390/s390.c:5379
 #, c-format
 msgid "invalid address for 'S' output modifier"
 msgstr ""
 
-#: config/s390/s390.c:5397
+#: config/s390/s390.c:5399
 #, c-format
 msgid "register or memory expression expected for 'N' output modifier"
 msgstr ""
 
-#: config/s390/s390.c:5407
+#: config/s390/s390.c:5409
 #, c-format
 msgid "register or memory expression expected for 'M' output modifier"
 msgstr ""
 
-#: config/s390/s390.c:5472
+#: config/s390/s390.c:5474
 #, c-format
 msgid "invalid constant - try using an output modifier"
 msgstr ""
 
-#: config/s390/s390.c:5475
+#: config/s390/s390.c:5477
 #, c-format
 msgid "invalid constant for output modifier '%c'"
 msgstr ""
 
-#: config/s390/s390.c:5482
+#: config/s390/s390.c:5484
 #, c-format
 msgid "invalid expression - try using an output modifier"
 msgstr ""
 
-#: config/s390/s390.c:5485
+#: config/s390/s390.c:5487
 #, c-format
 msgid "invalid expression for output modifier '%c'"
 msgstr ""
@@ -12166,7 +12166,7 @@ msgstr ""
 msgid "type of array %q+D completed incompatibly with implicit initialization"
 msgstr ""
 
-#: c-decl.c:1467 c-decl.c:5784 c-decl.c:6581 c-decl.c:7286
+#: c-decl.c:1467 c-decl.c:5780 c-decl.c:6577 c-decl.c:7285
 #, gcc-internal-format
 msgid "originally defined here"
 msgstr ""
@@ -12235,7 +12235,7 @@ msgstr ""
 msgid "built-in function %q+D declared as non-function"
 msgstr ""
 
-#: c-decl.c:1679 c-decl.c:1856 c-decl.c:2546
+#: c-decl.c:1679 c-decl.c:1852 c-decl.c:2542
 #, gcc-internal-format
 msgid "declaration of %q+D shadows a built-in function"
 msgstr ""
@@ -12283,292 +12283,288 @@ msgstr ""
 msgid "redefinition of typedef %q+D with different type"
 msgstr ""
 
-#: c-decl.c:1819
+#: c-decl.c:1818
+#, gcc-internal-format
+msgid "redefinition of typedef %q+D with variably modified type"
+msgstr ""
+
+#: c-decl.c:1825
 #, gcc-internal-format
 msgid "redefinition of typedef %q+D"
 msgstr ""
 
-#. Whether there is a constraint violation for the types not
-#. being the same cannot be determined at compile time; a
-#. warning that there may be one at runtime is considered
-#. appropriate (WG14 reflector message 11743, 8 May 2009).
-#: c-decl.c:1828
-#, gcc-internal-format
-msgid "redefinition of typedef %q+D may be a constraint violation at runtime"
-msgstr ""
-
-#: c-decl.c:1882 c-decl.c:1985
+#: c-decl.c:1878 c-decl.c:1981
 #, gcc-internal-format
 msgid "redefinition of %q+D"
 msgstr ""
 
-#: c-decl.c:1917 c-decl.c:2023
+#: c-decl.c:1913 c-decl.c:2019
 #, gcc-internal-format
 msgid "static declaration of %q+D follows non-static declaration"
 msgstr ""
 
-#: c-decl.c:1927 c-decl.c:1935 c-decl.c:2013 c-decl.c:2020
+#: c-decl.c:1923 c-decl.c:1931 c-decl.c:2009 c-decl.c:2016
 #, gcc-internal-format
 msgid "non-static declaration of %q+D follows static declaration"
 msgstr ""
 
-#: c-decl.c:1951
+#: c-decl.c:1947
 #, gcc-internal-format
 msgid "%<gnu_inline%> attribute present on %q+D"
 msgstr ""
 
-#: c-decl.c:1954
+#: c-decl.c:1950
 #, gcc-internal-format
 msgid "but not here"
 msgstr ""
 
-#: c-decl.c:1972
+#: c-decl.c:1968
 #, gcc-internal-format
 msgid "thread-local declaration of %q+D follows non-thread-local declaration"
 msgstr ""
 
-#: c-decl.c:1975
+#: c-decl.c:1971
 #, gcc-internal-format
 msgid "non-thread-local declaration of %q+D follows thread-local declaration"
 msgstr ""
 
-#: c-decl.c:2005
+#: c-decl.c:2001
 #, gcc-internal-format
 msgid "extern declaration of %q+D follows declaration with no linkage"
 msgstr ""
 
-#: c-decl.c:2041
+#: c-decl.c:2037
 #, gcc-internal-format
 msgid "declaration of %q+D with no linkage follows extern declaration"
 msgstr ""
 
-#: c-decl.c:2047
+#: c-decl.c:2043
 #, gcc-internal-format
 msgid "redeclaration of %q+D with no linkage"
 msgstr ""
 
-#: c-decl.c:2073
+#: c-decl.c:2069
 #, gcc-internal-format
 msgid ""
 "redeclaration of %q+D with different visibility (old visibility preserved)"
 msgstr ""
 
-#: c-decl.c:2084
+#: c-decl.c:2080
 #, gcc-internal-format
 msgid "inline declaration of %qD follows declaration with attribute noinline"
 msgstr ""
 
-#: c-decl.c:2091
+#: c-decl.c:2087
 #, gcc-internal-format
 msgid "declaration of %q+D with attribute noinline follows inline declaration "
 msgstr ""
 
-#: c-decl.c:2109
+#: c-decl.c:2105
 #, gcc-internal-format
 msgid "redefinition of parameter %q+D"
 msgstr ""
 
-#: c-decl.c:2136
+#: c-decl.c:2132
 #, gcc-internal-format
 msgid "redundant redeclaration of %q+D"
 msgstr ""
 
-#: c-decl.c:2533
+#: c-decl.c:2529
 #, gcc-internal-format
 msgid "declaration of %q+D shadows previous non-variable"
 msgstr ""
 
-#: c-decl.c:2538
+#: c-decl.c:2534
 #, gcc-internal-format
 msgid "declaration of %q+D shadows a parameter"
 msgstr ""
 
-#: c-decl.c:2541
+#: c-decl.c:2537
 #, gcc-internal-format
 msgid "declaration of %q+D shadows a global declaration"
 msgstr ""
 
-#: c-decl.c:2551
+#: c-decl.c:2547
 #, gcc-internal-format
 msgid "declaration of %q+D shadows a previous local"
 msgstr ""
 
-#: c-decl.c:2555 cp/name-lookup.c:1089 cp/name-lookup.c:1131
+#: c-decl.c:2551 cp/name-lookup.c:1089 cp/name-lookup.c:1131
 #, gcc-internal-format
 msgid "shadowed declaration is here"
 msgstr ""
 
-#: c-decl.c:2682
+#: c-decl.c:2678
 #, gcc-internal-format
 msgid "nested extern declaration of %qD"
 msgstr ""
 
-#: c-decl.c:2850 c-decl.c:2853
+#: c-decl.c:2846 c-decl.c:2849
 #, gcc-internal-format
 msgid "implicit declaration of function %qE"
 msgstr ""
 
-#: c-decl.c:2916
+#: c-decl.c:2912
 #, gcc-internal-format
 msgid "incompatible implicit declaration of built-in function %qD"
 msgstr ""
 
-#: c-decl.c:2925
+#: c-decl.c:2921
 #, gcc-internal-format
 msgid "incompatible implicit declaration of function %qD"
 msgstr ""
 
-#: c-decl.c:2978
+#: c-decl.c:2974
 #, gcc-internal-format
 msgid "%qE undeclared here (not in a function)"
 msgstr ""
 
-#: c-decl.c:2984
+#: c-decl.c:2980
 #, gcc-internal-format
 msgid "%qE undeclared (first use in this function)"
 msgstr ""
 
-#: c-decl.c:2987
+#: c-decl.c:2983
 #, gcc-internal-format
 msgid ""
 "each undeclared identifier is reported only once for each function it "
 "appears in"
 msgstr ""
 
-#: c-decl.c:3037 cp/decl.c:2533
+#: c-decl.c:3033 cp/decl.c:2533
 #, gcc-internal-format
 msgid "label %qE referenced outside of any function"
 msgstr ""
 
-#: c-decl.c:3073
+#: c-decl.c:3069
 #, gcc-internal-format
 msgid "jump into scope of identifier with variably modified type"
 msgstr ""
 
-#: c-decl.c:3076
+#: c-decl.c:3072
 #, gcc-internal-format
 msgid "jump skips variable initialization"
 msgstr ""
 
-#: c-decl.c:3077 c-decl.c:3133 c-decl.c:3222
+#: c-decl.c:3073 c-decl.c:3129 c-decl.c:3218
 #, gcc-internal-format
 msgid "label %qD defined here"
 msgstr ""
 
-#: c-decl.c:3078 c-decl.c:3350
+#: c-decl.c:3074 c-decl.c:3346
 #, gcc-internal-format
 msgid "%qD declared here"
 msgstr ""
 
-#: c-decl.c:3132 c-decl.c:3221
+#: c-decl.c:3128 c-decl.c:3217
 #, gcc-internal-format
 msgid "jump into statement expression"
 msgstr ""
 
-#: c-decl.c:3154
+#: c-decl.c:3150
 #, gcc-internal-format
 msgid "duplicate label declaration %qE"
 msgstr ""
 
-#: c-decl.c:3252 cp/decl.c:2843
+#: c-decl.c:3248 cp/decl.c:2843
 #, gcc-internal-format
 msgid "duplicate label %qD"
 msgstr ""
 
-#: c-decl.c:3283
+#: c-decl.c:3279
 #, gcc-internal-format
 msgid ""
 "traditional C lacks a separate namespace for labels, identifier %qE conflicts"
 msgstr ""
 
-#: c-decl.c:3348
+#: c-decl.c:3344
 #, gcc-internal-format
 msgid "switch jumps over variable initialization"
 msgstr ""
 
-#: c-decl.c:3349 c-decl.c:3360
+#: c-decl.c:3345 c-decl.c:3356
 #, gcc-internal-format
 msgid "switch starts here"
 msgstr ""
 
-#: c-decl.c:3359
+#: c-decl.c:3355
 #, gcc-internal-format
 msgid "switch jumps into statement expression"
 msgstr ""
 
-#: c-decl.c:3430
+#: c-decl.c:3426
 #, gcc-internal-format
 msgid "%qE defined as wrong kind of tag"
 msgstr ""
 
-#: c-decl.c:3652 c-typeck.c:10675 c-family/c-common.c:4026
+#: c-decl.c:3648 c-typeck.c:10675 c-family/c-common.c:4026
 #, gcc-internal-format
 msgid "invalid use of %<restrict%>"
 msgstr ""
 
-#: c-decl.c:3662
+#: c-decl.c:3658
 #, gcc-internal-format
 msgid "unnamed struct/union that defines no instances"
 msgstr ""
 
-#: c-decl.c:3672
+#: c-decl.c:3668
 #, gcc-internal-format
 msgid "empty declaration with storage class specifier does not redeclare tag"
 msgstr ""
 
-#: c-decl.c:3686
+#: c-decl.c:3682
 #, gcc-internal-format
 msgid "empty declaration with type qualifier does not redeclare tag"
 msgstr ""
 
-#: c-decl.c:3708 c-decl.c:3715
+#: c-decl.c:3704 c-decl.c:3711
 #, gcc-internal-format
 msgid "useless type name in empty declaration"
 msgstr ""
 
-#: c-decl.c:3723
+#: c-decl.c:3719
 #, gcc-internal-format
 msgid "%<inline%> in empty declaration"
 msgstr ""
 
-#: c-decl.c:3729
+#: c-decl.c:3725
 #, gcc-internal-format
 msgid "%<auto%> in file-scope empty declaration"
 msgstr ""
 
-#: c-decl.c:3735
+#: c-decl.c:3731
 #, gcc-internal-format
 msgid "%<register%> in file-scope empty declaration"
 msgstr ""
 
-#: c-decl.c:3741
+#: c-decl.c:3737
 #, gcc-internal-format
 msgid "useless storage class specifier in empty declaration"
 msgstr ""
 
-#: c-decl.c:3747
+#: c-decl.c:3743
 #, gcc-internal-format
 msgid "useless %<__thread%> in empty declaration"
 msgstr ""
 
-#: c-decl.c:3756
+#: c-decl.c:3752
 #, gcc-internal-format
 msgid "useless type qualifier in empty declaration"
 msgstr ""
 
-#: c-decl.c:3763 c-parser.c:1467
+#: c-decl.c:3759 c-parser.c:1467
 #, gcc-internal-format
 msgid "empty declaration"
 msgstr ""
 
-#: c-decl.c:3834
+#: c-decl.c:3830
 #, gcc-internal-format
 msgid ""
 "ISO C90 does not support %<static%> or type qualifiers in parameter array "
 "declarators"
 msgstr ""
 
-#: c-decl.c:3838
+#: c-decl.c:3834
 #, gcc-internal-format
 msgid "ISO C90 does not support %<[*]%> array declarators"
 msgstr ""
@@ -12576,28 +12572,28 @@ msgstr ""
 #. C99 6.7.5.2p4
 #. A function definition isn't function prototype scope C99 6.2.1p4.
 #. C99 6.7.5.2p4
-#: c-decl.c:3845 c-decl.c:6152
+#: c-decl.c:3841 c-decl.c:6148
 #, gcc-internal-format
 msgid "%<[*]%> not allowed in other than function prototype scope"
 msgstr ""
 
-#: c-decl.c:3958
+#: c-decl.c:3954
 #, gcc-internal-format
 msgid "%q+D is usually a function"
 msgstr ""
 
-#: c-decl.c:3967
+#: c-decl.c:3963
 #, gcc-internal-format
 msgid "typedef %qD is initialized (use __typeof__ instead)"
 msgstr ""
 
-#: c-decl.c:3972
+#: c-decl.c:3968
 #, gcc-internal-format
 msgid "function %qD is initialized like a variable"
 msgstr ""
 
 #. DECL_INITIAL in a PARM_DECL is really DECL_ARG_TYPE.
-#: c-decl.c:3978
+#: c-decl.c:3974
 #, gcc-internal-format
 msgid "parameter %qD is initialized"
 msgstr ""
@@ -12606,272 +12602,272 @@ msgstr ""
 #. of VLAs themselves count as VLAs, it does not make
 #. sense to permit them to be initialized given that
 #. ordinary VLAs may not be initialized.
-#: c-decl.c:3997 c-decl.c:4012 c-typeck.c:6281
+#: c-decl.c:3993 c-decl.c:4008 c-typeck.c:6281
 #, gcc-internal-format
 msgid "variable-sized object may not be initialized"
 msgstr ""
 
-#: c-decl.c:4003
+#: c-decl.c:3999
 #, gcc-internal-format
 msgid "variable %qD has initializer but incomplete type"
 msgstr ""
 
-#: c-decl.c:4092 cp/decl.c:4289 cp/decl.c:12119
+#: c-decl.c:4088 cp/decl.c:4289 cp/decl.c:12119
 #, gcc-internal-format
 msgid "inline function %q+D given attribute noinline"
 msgstr ""
 
-#: c-decl.c:4143
+#: c-decl.c:4139
 #, gcc-internal-format
 msgid "uninitialized const member in %qT is invalid in C++"
 msgstr ""
 
-#: c-decl.c:4145 cp/init.c:1919 cp/init.c:1934
+#: c-decl.c:4141 cp/init.c:1919 cp/init.c:1934
 #, gcc-internal-format
 msgid "%qD should be initialized"
 msgstr ""
 
-#: c-decl.c:4223
+#: c-decl.c:4219
 #, gcc-internal-format
 msgid "initializer fails to determine size of %q+D"
 msgstr ""
 
-#: c-decl.c:4228
+#: c-decl.c:4224
 #, gcc-internal-format
 msgid "array size missing in %q+D"
 msgstr ""
 
-#: c-decl.c:4240
+#: c-decl.c:4236
 #, gcc-internal-format
 msgid "zero or negative size array %q+D"
 msgstr ""
 
-#: c-decl.c:4295 varasm.c:1964
+#: c-decl.c:4291 varasm.c:1964
 #, gcc-internal-format
 msgid "storage size of %q+D isn%'t known"
 msgstr ""
 
-#: c-decl.c:4306
+#: c-decl.c:4302
 #, gcc-internal-format
 msgid "storage size of %q+D isn%'t constant"
 msgstr ""
 
-#: c-decl.c:4356
+#: c-decl.c:4352
 #, gcc-internal-format
 msgid "ignoring asm-specifier for non-static local variable %q+D"
 msgstr ""
 
-#: c-decl.c:4384
+#: c-decl.c:4380
 #, gcc-internal-format
 msgid "cannot put object with volatile field into register"
 msgstr ""
 
-#: c-decl.c:4477
+#: c-decl.c:4473
 #, gcc-internal-format
 msgid "uninitialized const %qD is invalid in C++"
 msgstr ""
 
-#: c-decl.c:4528
+#: c-decl.c:4524
 #, gcc-internal-format
 msgid "ISO C forbids forward parameter declarations"
 msgstr ""
 
-#: c-decl.c:4618
+#: c-decl.c:4614
 #, gcc-internal-format
 msgid "defining a type in a compound literal is invalid in C++"
 msgstr ""
 
-#: c-decl.c:4670 c-decl.c:4685
+#: c-decl.c:4666 c-decl.c:4681
 #, gcc-internal-format
 msgid "bit-field %qs width not an integer constant"
 msgstr ""
 
-#: c-decl.c:4680
+#: c-decl.c:4676
 #, gcc-internal-format
 msgid "bit-field %qs width not an integer constant expression"
 msgstr ""
 
-#: c-decl.c:4691
+#: c-decl.c:4687
 #, gcc-internal-format
 msgid "negative width in bit-field %qs"
 msgstr ""
 
-#: c-decl.c:4696
+#: c-decl.c:4692
 #, gcc-internal-format
 msgid "zero width for bit-field %qs"
 msgstr ""
 
-#: c-decl.c:4706
+#: c-decl.c:4702
 #, gcc-internal-format
 msgid "bit-field %qs has invalid type"
 msgstr ""
 
-#: c-decl.c:4716
+#: c-decl.c:4712
 #, gcc-internal-format
 msgid "type of bit-field %qs is a GCC extension"
 msgstr ""
 
-#: c-decl.c:4722
+#: c-decl.c:4718
 #, gcc-internal-format
 msgid "width of %qs exceeds its type"
 msgstr ""
 
-#: c-decl.c:4735
+#: c-decl.c:4731
 #, gcc-internal-format
 msgid "%qs is narrower than values of its type"
 msgstr ""
 
-#: c-decl.c:4754
+#: c-decl.c:4750
 #, gcc-internal-format
 msgid "ISO C90 forbids array %qE whose size can%'t be evaluated"
 msgstr ""
 
-#: c-decl.c:4758
+#: c-decl.c:4754
 #, gcc-internal-format
 msgid "ISO C90 forbids array whose size can%'t be evaluated"
 msgstr ""
 
-#: c-decl.c:4765
+#: c-decl.c:4761
 #, gcc-internal-format
 msgid "ISO C90 forbids variable length array %qE"
 msgstr ""
 
-#: c-decl.c:4768
+#: c-decl.c:4764
 #, gcc-internal-format
 msgid "ISO C90 forbids variable length array"
 msgstr ""
 
-#: c-decl.c:4777
+#: c-decl.c:4773
 #, gcc-internal-format
 msgid "the size of array %qE can%'t be evaluated"
 msgstr ""
 
-#: c-decl.c:4781
+#: c-decl.c:4777
 #, gcc-internal-format
 msgid "the size of array can %'t be evaluated"
 msgstr ""
 
-#: c-decl.c:4787
+#: c-decl.c:4783
 #, gcc-internal-format
 msgid "variable length array %qE is used"
 msgstr ""
 
-#: c-decl.c:4791 cp/decl.c:7644
+#: c-decl.c:4787 cp/decl.c:7644
 #, gcc-internal-format
 msgid "variable length array is used"
 msgstr ""
 
-#: c-decl.c:4971 c-decl.c:5317 c-decl.c:5327
+#: c-decl.c:4967 c-decl.c:5313 c-decl.c:5323
 #, gcc-internal-format
 msgid "variably modified %qE at file scope"
 msgstr ""
 
-#: c-decl.c:4973
+#: c-decl.c:4969
 #, gcc-internal-format
 msgid "variably modified field at file scope"
 msgstr ""
 
-#: c-decl.c:4993
+#: c-decl.c:4989
 #, gcc-internal-format
 msgid "type defaults to %<int%> in declaration of %qE"
 msgstr ""
 
-#: c-decl.c:4997
+#: c-decl.c:4993
 #, gcc-internal-format
 msgid "type defaults to %<int%> in type name"
 msgstr ""
 
-#: c-decl.c:5030
+#: c-decl.c:5026
 #, gcc-internal-format
 msgid "duplicate %<const%>"
 msgstr ""
 
-#: c-decl.c:5032
+#: c-decl.c:5028
 #, gcc-internal-format
 msgid "duplicate %<restrict%>"
 msgstr ""
 
-#: c-decl.c:5034
+#: c-decl.c:5030
 #, gcc-internal-format
 msgid "duplicate %<volatile%>"
 msgstr ""
 
-#: c-decl.c:5038
+#: c-decl.c:5034
 #, gcc-internal-format, gfc-internal-format
 msgid "conflicting named address spaces (%s vs %s)"
 msgstr ""
 
-#: c-decl.c:5060
+#: c-decl.c:5056
 #, gcc-internal-format
 msgid "function definition declared %<auto%>"
 msgstr ""
 
-#: c-decl.c:5062
+#: c-decl.c:5058
 #, gcc-internal-format
 msgid "function definition declared %<register%>"
 msgstr ""
 
-#: c-decl.c:5064
+#: c-decl.c:5060
 #, gcc-internal-format
 msgid "function definition declared %<typedef%>"
 msgstr ""
 
-#: c-decl.c:5066
+#: c-decl.c:5062
 #, gcc-internal-format
 msgid "function definition declared %<__thread%>"
 msgstr ""
 
-#: c-decl.c:5083
+#: c-decl.c:5079
 #, gcc-internal-format
 msgid "storage class specified for structure field %qE"
 msgstr ""
 
-#: c-decl.c:5086
+#: c-decl.c:5082
 #, gcc-internal-format
 msgid "storage class specified for structure field"
 msgstr ""
 
-#: c-decl.c:5090
+#: c-decl.c:5086
 #, gcc-internal-format
 msgid "storage class specified for parameter %qE"
 msgstr ""
 
-#: c-decl.c:5093
+#: c-decl.c:5089
 #, gcc-internal-format
 msgid "storage class specified for unnamed parameter"
 msgstr ""
 
-#: c-decl.c:5096 cp/decl.c:8587
+#: c-decl.c:5092 cp/decl.c:8587
 #, gcc-internal-format
 msgid "storage class specified for typename"
 msgstr ""
 
-#: c-decl.c:5113
+#: c-decl.c:5109
 #, gcc-internal-format
 msgid "%qE initialized and declared %<extern%>"
 msgstr ""
 
-#: c-decl.c:5117
+#: c-decl.c:5113
 #, gcc-internal-format
 msgid "%qE has both %<extern%> and initializer"
 msgstr ""
 
-#: c-decl.c:5122
+#: c-decl.c:5118
 #, gcc-internal-format
 msgid "file-scope declaration of %qE specifies %<auto%>"
 msgstr ""
 
-#: c-decl.c:5126
+#: c-decl.c:5122
 #, gcc-internal-format
 msgid "file-scope declaration of %qE specifies %<register%>"
 msgstr ""
 
-#: c-decl.c:5131
+#: c-decl.c:5127
 #, gcc-internal-format
 msgid "nested function %qE declared %<extern%>"
 msgstr ""
 
-#: c-decl.c:5134
+#: c-decl.c:5130
 #, gcc-internal-format
 msgid "function-scope %qE implicitly auto and declared %<__thread%>"
 msgstr ""
@@ -12879,584 +12875,584 @@ msgstr ""
 #. Only the innermost declarator (making a parameter be of
 #. array type which is converted to pointer type)
 #. may have static or type qualifiers.
-#: c-decl.c:5181 c-decl.c:5513
+#: c-decl.c:5177 c-decl.c:5509
 #, gcc-internal-format
 msgid "static or type qualifiers in non-parameter array declarator"
 msgstr ""
 
-#: c-decl.c:5229
+#: c-decl.c:5225
 #, gcc-internal-format
 msgid "declaration of %qE as array of voids"
 msgstr ""
 
-#: c-decl.c:5231
+#: c-decl.c:5227
 #, gcc-internal-format
 msgid "declaration of type name as array of voids"
 msgstr ""
 
-#: c-decl.c:5238
+#: c-decl.c:5234
 #, gcc-internal-format
 msgid "declaration of %qE as array of functions"
 msgstr ""
 
-#: c-decl.c:5241
+#: c-decl.c:5237
 #, gcc-internal-format
 msgid "declaration of type name as array of functions"
 msgstr ""
 
-#: c-decl.c:5248 c-decl.c:7070
+#: c-decl.c:5244 c-decl.c:7069
 #, gcc-internal-format
 msgid "invalid use of structure with flexible array member"
 msgstr ""
 
-#: c-decl.c:5274
+#: c-decl.c:5270
 #, gcc-internal-format
 msgid "size of array %qE has non-integer type"
 msgstr ""
 
-#: c-decl.c:5278
+#: c-decl.c:5274
 #, gcc-internal-format
 msgid "size of unnamed array has non-integer type"
 msgstr ""
 
-#: c-decl.c:5288
+#: c-decl.c:5284
 #, gcc-internal-format
 msgid "ISO C forbids zero-size array %qE"
 msgstr ""
 
-#: c-decl.c:5291
+#: c-decl.c:5287
 #, gcc-internal-format
 msgid "ISO C forbids zero-size array"
 msgstr ""
 
-#: c-decl.c:5300
+#: c-decl.c:5296
 #, gcc-internal-format
 msgid "size of array %qE is negative"
 msgstr ""
 
-#: c-decl.c:5302
+#: c-decl.c:5298
 #, gcc-internal-format
 msgid "size of unnamed array is negative"
 msgstr ""
 
-#: c-decl.c:5378 c-decl.c:5743
+#: c-decl.c:5374 c-decl.c:5739
 #, gcc-internal-format
 msgid "size of array %qE is too large"
 msgstr ""
 
-#: c-decl.c:5381 c-decl.c:5745
+#: c-decl.c:5377 c-decl.c:5741
 #, gcc-internal-format
 msgid "size of unnamed array is too large"
 msgstr ""
 
-#: c-decl.c:5418
+#: c-decl.c:5414
 #, gcc-internal-format
 msgid "ISO C90 does not support flexible array members"
 msgstr ""
 
 #. C99 6.7.5.2p4
-#: c-decl.c:5439
+#: c-decl.c:5435
 #, gcc-internal-format
 msgid "%<[*]%> not in a declaration"
 msgstr ""
 
-#: c-decl.c:5452
+#: c-decl.c:5448
 #, gcc-internal-format
 msgid "array type has incomplete element type"
 msgstr ""
 
-#: c-decl.c:5546
+#: c-decl.c:5542
 #, gcc-internal-format
 msgid "%qE declared as function returning a function"
 msgstr ""
 
-#: c-decl.c:5549
+#: c-decl.c:5545
 #, gcc-internal-format
 msgid "type name declared as function returning a function"
 msgstr ""
 
-#: c-decl.c:5556
+#: c-decl.c:5552
 #, gcc-internal-format
 msgid "%qE declared as function returning an array"
 msgstr ""
 
-#: c-decl.c:5559
+#: c-decl.c:5555
 #, gcc-internal-format
 msgid "type name declared as function returning an array"
 msgstr ""
 
-#: c-decl.c:5589
+#: c-decl.c:5585
 #, gcc-internal-format
 msgid "function definition has qualified void return type"
 msgstr ""
 
-#: c-decl.c:5592 cp/decl.c:8693
+#: c-decl.c:5588 cp/decl.c:8693
 #, gcc-internal-format
 msgid "type qualifiers ignored on function return type"
 msgstr ""
 
-#: c-decl.c:5621 c-decl.c:5759 c-decl.c:5869 c-decl.c:5962
+#: c-decl.c:5617 c-decl.c:5755 c-decl.c:5865 c-decl.c:5958
 #, gcc-internal-format
 msgid "ISO C forbids qualified function types"
 msgstr ""
 
-#: c-decl.c:5688
+#: c-decl.c:5684
 #, gcc-internal-format
 msgid "%qs combined with %<auto%> qualifier for %qE"
 msgstr ""
 
-#: c-decl.c:5692
+#: c-decl.c:5688
 #, gcc-internal-format
 msgid "%qs combined with %<register%> qualifier for %qE"
 msgstr ""
 
-#: c-decl.c:5698
+#: c-decl.c:5694
 #, gcc-internal-format
 msgid "%qs specified for auto variable %qE"
 msgstr ""
 
-#: c-decl.c:5714
+#: c-decl.c:5710
 #, gcc-internal-format
 msgid "%qs specified for parameter %qE"
 msgstr ""
 
-#: c-decl.c:5717
+#: c-decl.c:5713
 #, gcc-internal-format
 msgid "%qs specified for unnamed parameter"
 msgstr ""
 
-#: c-decl.c:5723
+#: c-decl.c:5719
 #, gcc-internal-format
 msgid "%qs specified for structure field %qE"
 msgstr ""
 
-#: c-decl.c:5726
+#: c-decl.c:5722
 #, gcc-internal-format
 msgid "%qs specified for structure field"
 msgstr ""
 
-#: c-decl.c:5767
+#: c-decl.c:5763
 #, gcc-internal-format
 msgid "typedef %q+D declared %<inline%>"
 msgstr ""
 
-#: c-decl.c:5803
+#: c-decl.c:5799
 #, gcc-internal-format
 msgid "ISO C forbids const or volatile function types"
 msgstr ""
 
 #. C99 6.7.2.1p8
-#: c-decl.c:5813
+#: c-decl.c:5809
 #, gcc-internal-format
 msgid "a member of a structure or union cannot have a variably modified type"
 msgstr ""
 
-#: c-decl.c:5830 cp/decl.c:7866
+#: c-decl.c:5826 cp/decl.c:7866
 #, gcc-internal-format
 msgid "variable or field %qE declared void"
 msgstr ""
 
-#: c-decl.c:5861
+#: c-decl.c:5857
 #, gcc-internal-format
 msgid "attributes in parameter array declarator ignored"
 msgstr ""
 
-#: c-decl.c:5895
+#: c-decl.c:5891
 #, gcc-internal-format
 msgid "parameter %q+D declared %<inline%>"
 msgstr ""
 
-#: c-decl.c:5908
+#: c-decl.c:5904
 #, gcc-internal-format
 msgid "field %qE declared as a function"
 msgstr ""
 
-#: c-decl.c:5915
+#: c-decl.c:5911
 #, gcc-internal-format
 msgid "field %qE has incomplete type"
 msgstr ""
 
-#: c-decl.c:5917
+#: c-decl.c:5913
 #, gcc-internal-format
 msgid "unnamed field has incomplete type"
 msgstr ""
 
-#: c-decl.c:5934 c-decl.c:5945 c-decl.c:5948
+#: c-decl.c:5930 c-decl.c:5941 c-decl.c:5944
 #, gcc-internal-format
 msgid "invalid storage class for function %qE"
 msgstr ""
 
-#: c-decl.c:5998
+#: c-decl.c:5994
 #, gcc-internal-format
 msgid "cannot inline function %<main%>"
 msgstr ""
 
-#: c-decl.c:6027
+#: c-decl.c:6023
 #, gcc-internal-format
 msgid "variable previously declared %<static%> redeclared %<extern%>"
 msgstr ""
 
-#: c-decl.c:6037
+#: c-decl.c:6033
 #, gcc-internal-format
 msgid "variable %q+D declared %<inline%>"
 msgstr ""
 
-#: c-decl.c:6072
+#: c-decl.c:6068
 #, gcc-internal-format
 msgid "non-nested function with variably modified type"
 msgstr ""
 
-#: c-decl.c:6074
+#: c-decl.c:6070
 #, gcc-internal-format
 msgid "object with variably modified type must have no linkage"
 msgstr ""
 
-#: c-decl.c:6157 c-decl.c:7706
+#: c-decl.c:6153 c-decl.c:7705
 #, gcc-internal-format
 msgid "function declaration isn%'t a prototype"
 msgstr ""
 
-#: c-decl.c:6166
+#: c-decl.c:6162
 #, gcc-internal-format
 msgid "parameter names (without types) in function declaration"
 msgstr ""
 
-#: c-decl.c:6204
+#: c-decl.c:6200
 #, gcc-internal-format
 msgid "parameter %u (%q+D) has incomplete type"
 msgstr ""
 
-#: c-decl.c:6208
+#: c-decl.c:6204
 #, gcc-internal-format, gfc-internal-format
 msgid "parameter %u has incomplete type"
 msgstr ""
 
-#: c-decl.c:6219
+#: c-decl.c:6215
 #, gcc-internal-format
 msgid "parameter %u (%q+D) has void type"
 msgstr ""
 
-#: c-decl.c:6223
+#: c-decl.c:6219
 #, gcc-internal-format, gfc-internal-format
 msgid "parameter %u has void type"
 msgstr ""
 
-#: c-decl.c:6305
+#: c-decl.c:6301
 #, gcc-internal-format
 msgid "%<void%> as only parameter may not be qualified"
 msgstr ""
 
-#: c-decl.c:6309 c-decl.c:6344
+#: c-decl.c:6305 c-decl.c:6340
 #, gcc-internal-format
 msgid "%<void%> must be the only parameter"
 msgstr ""
 
-#: c-decl.c:6338
+#: c-decl.c:6334
 #, gcc-internal-format
 msgid "parameter %q+D has just a forward declaration"
 msgstr ""
 
 #. The %s will be one of 'struct', 'union', or 'enum'.
-#: c-decl.c:6383
+#: c-decl.c:6379
 #, gcc-internal-format
 msgid "%<%s %E%> declared inside parameter list"
 msgstr ""
 
 #. The %s will be one of 'struct', 'union', or 'enum'.
-#: c-decl.c:6387
+#: c-decl.c:6383
 #, gcc-internal-format, gfc-internal-format
 msgid "anonymous %s declared inside parameter list"
 msgstr ""
 
-#: c-decl.c:6392
+#: c-decl.c:6388
 #, gcc-internal-format
 msgid ""
 "its scope is only this definition or declaration, which is probably not what "
 "you want"
 msgstr ""
 
-#: c-decl.c:6492
+#: c-decl.c:6488
 #, gcc-internal-format
 msgid "enum type defined here"
 msgstr ""
 
-#: c-decl.c:6498
+#: c-decl.c:6494
 #, gcc-internal-format
 msgid "struct defined here"
 msgstr ""
 
-#: c-decl.c:6504
+#: c-decl.c:6500
 #, gcc-internal-format
 msgid "union defined here"
 msgstr ""
 
-#: c-decl.c:6577
+#: c-decl.c:6573
 #, gcc-internal-format
 msgid "redefinition of %<union %E%>"
 msgstr ""
 
-#: c-decl.c:6579
+#: c-decl.c:6575
 #, gcc-internal-format
 msgid "redefinition of %<struct %E%>"
 msgstr ""
 
-#: c-decl.c:6588
+#: c-decl.c:6584
 #, gcc-internal-format
 msgid "nested redefinition of %<union %E%>"
 msgstr ""
 
-#: c-decl.c:6590
+#: c-decl.c:6586
 #, gcc-internal-format
 msgid "nested redefinition of %<struct %E%>"
 msgstr ""
 
-#: c-decl.c:6622 c-decl.c:7304
+#: c-decl.c:6618 c-decl.c:7303
 #, gcc-internal-format
 msgid "defining type in %qs expression is invalid in C++"
 msgstr ""
 
-#: c-decl.c:6688 cp/decl.c:4027
+#: c-decl.c:6687 cp/decl.c:4027
 #, gcc-internal-format
 msgid "declaration does not declare anything"
 msgstr ""
 
-#: c-decl.c:6695
+#: c-decl.c:6694
 #, gcc-internal-format
 msgid "ISO C99 doesn%'t support unnamed structs/unions"
 msgstr ""
 
-#: c-decl.c:6698
+#: c-decl.c:6697
 #, gcc-internal-format
 msgid "ISO C90 doesn%'t support unnamed structs/unions"
 msgstr ""
 
-#: c-decl.c:6790 c-decl.c:6809 c-decl.c:6868 objcp/objcp-decl.c:91
+#: c-decl.c:6789 c-decl.c:6808 c-decl.c:6867 objcp/objcp-decl.c:91
 #, gcc-internal-format
 msgid "duplicate member %q+D"
 msgstr ""
 
-#: c-decl.c:6978
+#: c-decl.c:6977
 #, gcc-internal-format
 msgid "union has no named members"
 msgstr ""
 
-#: c-decl.c:6980
+#: c-decl.c:6979
 #, gcc-internal-format
 msgid "union has no members"
 msgstr ""
 
-#: c-decl.c:6985
+#: c-decl.c:6984
 #, gcc-internal-format
 msgid "struct has no named members"
 msgstr ""
 
-#: c-decl.c:6987
+#: c-decl.c:6986
 #, gcc-internal-format
 msgid "struct has no members"
 msgstr ""
 
-#: c-decl.c:7050
+#: c-decl.c:7049
 #, gcc-internal-format
 msgid "flexible array member in union"
 msgstr ""
 
-#: c-decl.c:7056
+#: c-decl.c:7055
 #, gcc-internal-format
 msgid "flexible array member not at end of struct"
 msgstr ""
 
-#: c-decl.c:7062
+#: c-decl.c:7061
 #, gcc-internal-format
 msgid "flexible array member in otherwise empty struct"
 msgstr ""
 
-#: c-decl.c:7181
+#: c-decl.c:7180
 #, gcc-internal-format
 msgid "union cannot be made transparent"
 msgstr ""
 
-#: c-decl.c:7277
+#: c-decl.c:7276
 #, gcc-internal-format
 msgid "nested redefinition of %<enum %E%>"
 msgstr ""
 
 #. This enum is a named one that has been declared already.
-#: c-decl.c:7284
+#: c-decl.c:7283
 #, gcc-internal-format
 msgid "redeclaration of %<enum %E%>"
 msgstr ""
 
-#: c-decl.c:7359
+#: c-decl.c:7358
 #, gcc-internal-format
 msgid "enumeration values exceed range of largest integer"
 msgstr ""
 
-#: c-decl.c:7376
+#: c-decl.c:7375
 #, gcc-internal-format
 msgid "specified mode too small for enumeral values"
 msgstr ""
 
-#: c-decl.c:7481 c-decl.c:7497
+#: c-decl.c:7480 c-decl.c:7496
 #, gcc-internal-format
 msgid "enumerator value for %qE is not an integer constant"
 msgstr ""
 
-#: c-decl.c:7492
+#: c-decl.c:7491
 #, gcc-internal-format
 msgid "enumerator value for %qE is not an integer constant expression"
 msgstr ""
 
-#: c-decl.c:7516
+#: c-decl.c:7515
 #, gcc-internal-format
 msgid "overflow in enumeration values"
 msgstr ""
 
-#: c-decl.c:7524
+#: c-decl.c:7523
 #, gcc-internal-format
 msgid "ISO C restricts enumerator values to range of %<int%>"
 msgstr ""
 
-#: c-decl.c:7608
+#: c-decl.c:7607
 #, gcc-internal-format
 msgid "inline function %qD given attribute noinline"
 msgstr ""
 
-#: c-decl.c:7626
+#: c-decl.c:7625
 #, gcc-internal-format
 msgid "return type is an incomplete type"
 msgstr ""
 
-#: c-decl.c:7636
+#: c-decl.c:7635
 #, gcc-internal-format
 msgid "return type defaults to %<int%>"
 msgstr ""
 
-#: c-decl.c:7714
+#: c-decl.c:7713
 #, gcc-internal-format
 msgid "no previous prototype for %qD"
 msgstr ""
 
-#: c-decl.c:7723
+#: c-decl.c:7722
 #, gcc-internal-format
 msgid "%qD was used with no prototype before its definition"
 msgstr ""
 
-#: c-decl.c:7730
+#: c-decl.c:7729
 #, gcc-internal-format
 msgid "no previous declaration for %qD"
 msgstr ""
 
-#: c-decl.c:7740
+#: c-decl.c:7739
 #, gcc-internal-format
 msgid "%qD was used with no declaration before its definition"
 msgstr ""
 
-#: c-decl.c:7759
+#: c-decl.c:7758
 #, gcc-internal-format
 msgid "return type of %qD is not %<int%>"
 msgstr ""
 
-#: c-decl.c:7765
+#: c-decl.c:7764
 #, gcc-internal-format
 msgid "%qD is normally a non-static function"
 msgstr ""
 
-#: c-decl.c:7802
+#: c-decl.c:7801
 #, gcc-internal-format
 msgid "old-style parameter declarations in prototyped function definition"
 msgstr ""
 
-#: c-decl.c:7816
+#: c-decl.c:7815
 #, gcc-internal-format
 msgid "traditional C rejects ISO C style function definitions"
 msgstr ""
 
-#: c-decl.c:7832
+#: c-decl.c:7831
 #, gcc-internal-format
 msgid "parameter name omitted"
 msgstr ""
 
-#: c-decl.c:7869
+#: c-decl.c:7868
 #, gcc-internal-format
 msgid "old-style function definition"
 msgstr ""
 
-#: c-decl.c:7878
+#: c-decl.c:7877
 #, gcc-internal-format
 msgid "parameter name missing from parameter list"
 msgstr ""
 
-#: c-decl.c:7893
+#: c-decl.c:7892
 #, gcc-internal-format
 msgid "%qD declared as a non-parameter"
 msgstr ""
 
-#: c-decl.c:7899
+#: c-decl.c:7898
 #, gcc-internal-format
 msgid "multiple parameters named %qD"
 msgstr ""
 
-#: c-decl.c:7908
+#: c-decl.c:7907
 #, gcc-internal-format
 msgid "parameter %qD declared with void type"
 msgstr ""
 
-#: c-decl.c:7937 c-decl.c:7941
+#: c-decl.c:7936 c-decl.c:7940
 #, gcc-internal-format
 msgid "type of %qD defaults to %<int%>"
 msgstr ""
 
-#: c-decl.c:7961
+#: c-decl.c:7960
 #, gcc-internal-format
 msgid "parameter %qD has incomplete type"
 msgstr ""
 
-#: c-decl.c:7968
+#: c-decl.c:7967
 #, gcc-internal-format
 msgid "declaration for parameter %qD but no such parameter"
 msgstr ""
 
-#: c-decl.c:8020
+#: c-decl.c:8019
 #, gcc-internal-format
 msgid "number of arguments doesn%'t match built-in prototype"
 msgstr ""
 
-#: c-decl.c:8031
+#: c-decl.c:8030
 #, gcc-internal-format
 msgid "number of arguments doesn%'t match prototype"
 msgstr ""
 
-#: c-decl.c:8034 c-decl.c:8076 c-decl.c:8090
+#: c-decl.c:8033 c-decl.c:8075 c-decl.c:8089
 #, gcc-internal-format
 msgid "prototype declaration"
 msgstr ""
 
-#: c-decl.c:8068
+#: c-decl.c:8067
 #, gcc-internal-format
 msgid "promoted argument %qD doesn%'t match built-in prototype"
 msgstr ""
 
-#: c-decl.c:8073
+#: c-decl.c:8072
 #, gcc-internal-format
 msgid "promoted argument %qD doesn%'t match prototype"
 msgstr ""
 
-#: c-decl.c:8083
+#: c-decl.c:8082
 #, gcc-internal-format
 msgid "argument %qD doesn%'t match built-in prototype"
 msgstr ""
 
-#: c-decl.c:8088
+#: c-decl.c:8087
 #, gcc-internal-format
 msgid "argument %qD doesn%'t match prototype"
 msgstr ""
 
-#: c-decl.c:8280 cp/decl.c:12996
+#: c-decl.c:8279 cp/decl.c:12996
 #, gcc-internal-format
 msgid "no return statement in function returning non-void"
 msgstr ""
 
-#: c-decl.c:8300
+#: c-decl.c:8299
 #, gcc-internal-format
 msgid "parameter %qD set but not used"
 msgstr ""
@@ -13464,173 +13460,173 @@ msgstr ""
 #. If we get here, declarations have been used in a for loop without
 #. the C99 for loop scope.  This doesn't make much sense, so don't
 #. allow it.
-#: c-decl.c:8379
+#: c-decl.c:8378
 #, gcc-internal-format
 msgid "%<for%> loop initial declarations are only allowed in C99 mode"
 msgstr ""
 
-#: c-decl.c:8384
+#: c-decl.c:8383
 #, gcc-internal-format
 msgid "use option -std=c99 or -std=gnu99 to compile your code"
 msgstr ""
 
-#: c-decl.c:8418
+#: c-decl.c:8417
 #, gcc-internal-format
 msgid "declaration of static variable %qD in %<for%> loop initial declaration"
 msgstr ""
 
-#: c-decl.c:8422
+#: c-decl.c:8421
 #, gcc-internal-format
 msgid ""
 "declaration of %<extern%> variable %qD in %<for%> loop initial declaration"
 msgstr ""
 
-#: c-decl.c:8429
+#: c-decl.c:8428
 #, gcc-internal-format
 msgid "%<struct %E%> declared in %<for%> loop initial declaration"
 msgstr ""
 
-#: c-decl.c:8434
+#: c-decl.c:8433
 #, gcc-internal-format
 msgid "%<union %E%> declared in %<for%> loop initial declaration"
 msgstr ""
 
-#: c-decl.c:8438
+#: c-decl.c:8437
 #, gcc-internal-format
 msgid "%<enum %E%> declared in %<for%> loop initial declaration"
 msgstr ""
 
-#: c-decl.c:8442
+#: c-decl.c:8441
 #, gcc-internal-format
 msgid "declaration of non-variable %qD in %<for%> loop initial declaration"
 msgstr ""
 
-#: c-decl.c:8692
+#: c-decl.c:8691
 #, gcc-internal-format
 msgid "incompatible address space qualifiers %qs and %qs"
 msgstr ""
 
-#: c-decl.c:8731 c-decl.c:9042 c-decl.c:9431
+#: c-decl.c:8730 c-decl.c:9041 c-decl.c:9430
 #, gcc-internal-format
 msgid "duplicate %qE"
 msgstr ""
 
-#: c-decl.c:8757 c-decl.c:9053 c-decl.c:9310
+#: c-decl.c:8756 c-decl.c:9052 c-decl.c:9309
 #, gcc-internal-format
 msgid "two or more data types in declaration specifiers"
 msgstr ""
 
-#: c-decl.c:8769 cp/parser.c:2461
+#: c-decl.c:8768 cp/parser.c:2461
 #, gcc-internal-format
 msgid "%<long long long%> is too long for GCC"
 msgstr ""
 
-#: c-decl.c:8782
+#: c-decl.c:8781
 #, gcc-internal-format
 msgid "ISO C90 does not support %<long long%>"
 msgstr ""
 
-#: c-decl.c:8948
+#: c-decl.c:8947
 #, gcc-internal-format
 msgid "ISO C90 does not support complex types"
 msgstr ""
 
-#: c-decl.c:8987
+#: c-decl.c:8986
 #, gcc-internal-format
 msgid "ISO C does not support saturating types"
 msgstr ""
 
-#: c-decl.c:9061
+#: c-decl.c:9060
 #, gcc-internal-format
 msgid "%<__int128%> is not supported for this target"
 msgstr ""
 
-#: c-decl.c:9066
+#: c-decl.c:9065
 #, gcc-internal-format
 msgid "ISO C does not support %<__int128%> type"
 msgstr ""
 
-#: c-decl.c:9269
+#: c-decl.c:9268
 #, gcc-internal-format
 msgid "ISO C does not support decimal floating point"
 msgstr ""
 
-#: c-decl.c:9291 c-decl.c:9496 c-parser.c:6029
+#: c-decl.c:9290 c-decl.c:9495 c-parser.c:6029
 #, gcc-internal-format
 msgid "fixed-point types not supported for this target"
 msgstr ""
 
-#: c-decl.c:9293
+#: c-decl.c:9292
 #, gcc-internal-format
 msgid "ISO C does not support fixed-point types"
 msgstr ""
 
-#: c-decl.c:9327
+#: c-decl.c:9326
 #, gcc-internal-format
 msgid "C++ lookup of %qD would return a field, not a type"
 msgstr ""
 
-#: c-decl.c:9340
+#: c-decl.c:9339
 #, gcc-internal-format
 msgid "%qE fails to be a typedef or built in type"
 msgstr ""
 
-#: c-decl.c:9382
+#: c-decl.c:9381
 #, gcc-internal-format
 msgid "%qE is not at beginning of declaration"
 msgstr ""
 
-#: c-decl.c:9396
+#: c-decl.c:9395
 #, gcc-internal-format
 msgid "%<__thread%> used with %<auto%>"
 msgstr ""
 
-#: c-decl.c:9398
+#: c-decl.c:9397
 #, gcc-internal-format
 msgid "%<__thread%> used with %<register%>"
 msgstr ""
 
-#: c-decl.c:9400
+#: c-decl.c:9399
 #, gcc-internal-format
 msgid "%<__thread%> used with %<typedef%>"
 msgstr ""
 
-#: c-decl.c:9411
+#: c-decl.c:9410
 #, gcc-internal-format
 msgid "%<__thread%> before %<extern%>"
 msgstr ""
 
-#: c-decl.c:9420
+#: c-decl.c:9419
 #, gcc-internal-format
 msgid "%<__thread%> before %<static%>"
 msgstr ""
 
-#: c-decl.c:9436
+#: c-decl.c:9435
 #, gcc-internal-format
 msgid "multiple storage classes in declaration specifiers"
 msgstr ""
 
-#: c-decl.c:9443
+#: c-decl.c:9442
 #, gcc-internal-format
 msgid "%<__thread%> used with %qE"
 msgstr ""
 
-#: c-decl.c:9494
+#: c-decl.c:9493
 #, gcc-internal-format
 msgid "%<_Sat%> is used without %<_Fract%> or %<_Accum%>"
 msgstr ""
 
-#: c-decl.c:9508
+#: c-decl.c:9507
 #, gcc-internal-format
 msgid "ISO C does not support plain %<complex%> meaning %<double complex%>"
 msgstr ""
 
-#: c-decl.c:9553 c-decl.c:9566 c-decl.c:9592
+#: c-decl.c:9552 c-decl.c:9565 c-decl.c:9591
 #, gcc-internal-format
 msgid "ISO C does not support complex integer types"
 msgstr ""
 
-#: c-decl.c:9746 toplev.c:497
+#: c-decl.c:9745 toplev.c:497
 #, gcc-internal-format
 msgid "%q+F used but never defined"
 msgstr ""
@@ -21808,8 +21804,8 @@ msgstr ""
 msgid "bad value %qs for -mmemory-latency"
 msgstr ""
 
-#: config/alpha/alpha.c:6720 config/alpha/alpha.c:6723 config/s390/s390.c:9194
-#: config/s390/s390.c:9197
+#: config/alpha/alpha.c:6720 config/alpha/alpha.c:6723 config/s390/s390.c:9196
+#: config/s390/s390.c:9199
 #, gcc-internal-format
 msgid "bad builtin fcode"
 msgstr ""
@@ -24532,22 +24528,22 @@ msgstr ""
 msgid "-mstack-guard implies use of -mstack-size"
 msgstr ""
 
-#: config/s390/s390.c:7406
+#: config/s390/s390.c:7408
 #, gcc-internal-format
 msgid "total size of local variables exceeds architecture limit"
 msgstr ""
 
-#: config/s390/s390.c:8107 config/s390/s390.c:8123
+#: config/s390/s390.c:8109 config/s390/s390.c:8125
 #, gcc-internal-format
 msgid "frame size of function %qs is "
 msgstr ""
 
-#: config/s390/s390.c:8152
+#: config/s390/s390.c:8154
 #, gcc-internal-format
 msgid "frame size of %qs is "
 msgstr ""
 
-#: config/s390/s390.c:8156
+#: config/s390/s390.c:8158
 #, gcc-internal-format
 msgid "%qs uses dynamic stack allocation"
 msgstr ""
