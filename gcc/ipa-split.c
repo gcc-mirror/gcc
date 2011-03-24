@@ -169,8 +169,9 @@ static void
 dump_split_point (FILE * file, struct split_point *current)
 {
   fprintf (file,
-	   "Split point at BB %i header time:%i header size: %i"
-	   " split time: %i split size: %i\n  bbs: ",
+	   "Split point at BB %i\n"
+	   "  header time: %i header size: %i\n"
+	   "  split time: %i split size: %i\n  bbs: ",
 	   current->entry_bb->index, current->header_time,
 	   current->header_size, current->split_time, current->split_size);
   dump_bitmap (file, current->split_bbs);
@@ -1036,12 +1037,13 @@ split_function (struct split_point *split_point)
 
   /* If RETURN_BB has virtual operand PHIs, they must be removed and the
      virtual operand marked for renaming as we change the CFG in a way that
-     tree-inline is not able to compensate for. 
+     tree-inline is not able to compensate for.
 
      Note this can happen whether or not we have a return value.  If we have
      a return value, then RETURN_BB may have PHIs for real operands too.  */
   if (return_bb != EXIT_BLOCK_PTR)
     {
+      bool phi_p = false;
       for (gsi = gsi_start_phis (return_bb); !gsi_end_p (gsi);)
 	{
 	  gimple stmt = gsi_stmt (gsi);
@@ -1052,7 +1054,28 @@ split_function (struct split_point *split_point)
 	    }
 	  mark_virtual_phi_result_for_renaming (stmt);
 	  remove_phi_node (&gsi, true);
+	  phi_p = true;
 	}
+      /* In reality we have to rename the reaching definition of the
+	 virtual operand at return_bb as we will eventually release it
+	 when we remove the code region we outlined.
+	 So we have to rename all immediate virtual uses of that region
+	 if we didn't see a PHI definition yet.  */
+      /* ???  In real reality we want to set the reaching vdef of the
+         entry of the SESE region as the vuse of the call and the reaching
+	 vdef of the exit of the SESE region as the vdef of the call.  */
+      if (!phi_p)
+	for (gsi = gsi_start_bb (return_bb); !gsi_end_p (gsi); gsi_next (&gsi))
+	  {
+	    gimple stmt = gsi_stmt (gsi);
+	    if (gimple_vuse (stmt))
+	      {
+		gimple_set_vuse (stmt, NULL_TREE);
+		update_stmt (stmt);
+	      }
+	    if (gimple_vdef (stmt))
+	      break;
+	  }
     }
 
   /* Now create the actual clone.  */
