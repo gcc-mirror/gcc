@@ -19,7 +19,7 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// 26.5.8.2.2 Class template binomial_distribution [rand.dist.bern.bin]
+// 26.5.8.4.1 Class template poisson_distribution [rand.dist.pois.poisson]
 
 #include <random>
 #include <functional>
@@ -31,18 +31,17 @@ void test01()
 
   std::mt19937 eng;
 
-  std::binomial_distribution<> bd1(5, 0.3);
-  auto bbd1 = std::bind(bd1, eng);
-  testDiscreteDist(bbd1, [](int n) { return binomial_pdf(n, 5, 0.3); } );
+  std::poisson_distribution<> pd1(3.0);
+  auto bpd1 = std::bind(pd1, eng);
+  testDiscreteDist(bpd1, [](int n) { return poisson_pdf(n, 3.0); } );
 
-  std::binomial_distribution<> bd2(55, 0.3);
-  auto bbd2 = std::bind(bd2, eng);
-  testDiscreteDist(bbd2, [](int n) { return binomial_pdf(n, 55, 0.3); } );
+  std::poisson_distribution<> pd2(15.0);
+  auto bpd2 = std::bind(pd2, eng);
+  testDiscreteDist(bpd2, [](int n) { return poisson_pdf(n, 15.0); } );
 
-  // libstdc++/48114
-  std::binomial_distribution<> bd3(10, 0.75);
-  auto bbd3 = std::bind(bd3, eng);
-  testDiscreteDist(bbd3, [](int n) { return binomial_pdf(n, 10, 0.75); } );
+  std::poisson_distribution<> pd3(30.0);
+  auto bpd3 = std::bind(pd3, eng);
+  testDiscreteDist(bpd3, [](int n) { return poisson_pdf(n, 30.0); } );
 }
 
 int main()

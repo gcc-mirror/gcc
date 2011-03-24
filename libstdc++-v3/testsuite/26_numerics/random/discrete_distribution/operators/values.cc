@@ -1,6 +1,5 @@
 // { dg-options "-std=gnu++0x" }
 // { dg-require-cstdint "" }
-// { dg-require-cmath "" }
 //
 // Copyright (C) 2011 Free Software Foundation, Inc.
 //
@@ -19,7 +18,7 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// 26.5.8.2.2 Class template binomial_distribution [rand.dist.bern.bin]
+// 26.5.8.6.1 Class template discrete_distribution [rand.dist.samp.discrete]
 
 #include <random>
 #include <functional>
@@ -31,18 +30,19 @@ void test01()
 
   std::mt19937 eng;
 
-  std::binomial_distribution<> bd1(5, 0.3);
-  auto bbd1 = std::bind(bd1, eng);
-  testDiscreteDist(bbd1, [](int n) { return binomial_pdf(n, 5, 0.3); } );
+  std::discrete_distribution<> dd1({ });
+  auto bdd1 = std::bind(dd1, eng);
+  testDiscreteDist(bdd1, [](int n) { return discrete_pdf(n, { }); } );
 
-  std::binomial_distribution<> bd2(55, 0.3);
-  auto bbd2 = std::bind(bd2, eng);
-  testDiscreteDist(bbd2, [](int n) { return binomial_pdf(n, 55, 0.3); } );
+  std::discrete_distribution<> dd2({ 1.0, 3.0, 2.0});
+  auto bdd2 = std::bind(dd2, eng);
+  testDiscreteDist(bdd2, [](int n)
+		   { return discrete_pdf(n, { 1.0, 3.0, 2.0}); } );
 
-  // libstdc++/48114
-  std::binomial_distribution<> bd3(10, 0.75);
-  auto bbd3 = std::bind(bd3, eng);
-  testDiscreteDist(bbd3, [](int n) { return binomial_pdf(n, 10, 0.75); } );
+  std::discrete_distribution<> dd3({ 2.0, 2.0, 1.0, 0.0, 4.0});
+  auto bdd3 = std::bind(dd3, eng);
+  testDiscreteDist(bdd3, [](int n)
+		   { return discrete_pdf(n, { 2.0, 2.0, 1.0, 0.0, 4.0}); } );
 }
 
 int main()
