@@ -1,3 +1,8 @@
+2011-03-24  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-sra.c (build_ref_for_offset): Strip useless type conversions
+	from the address built for a reference with variable offset.
+
 2011-03-24  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/48237

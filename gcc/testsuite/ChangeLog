@@ -1,3 +1,7 @@
+2011-03-24  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/array15.ad[sb]: New test.
+
 2011-03-24  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/48237
