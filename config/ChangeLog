@@ -1,3 +1,8 @@
+2011-03-24  Joseph Myers  <joseph@codesourcery.com>
+
+	* mh-cxux, mh-decstation, mh-dgux386, mh-lynxrs6k, mh-ncr3000,
+	mh-necv4, mh-sco, mh-sysv5: Remove.
+
 2011-03-05  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 	    Eric Blake  <eblake@redhat.com>
 

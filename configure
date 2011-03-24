@@ -2973,10 +2973,7 @@ case "${host}" in
   hppa*64*-*-*)
     noconfigdirs="$noconfigdirs byacc"
     ;;
-  i[3456789]86-*-vsta)
-    noconfigdirs="$noconfigdirs tcl expect dejagnu make texinfo bison patch flex byacc send-pr gprof uudecode dejagnu diff guile perl itcl gnuserv gettext"
-    ;;
-  i[3456789]86-*-go32* | i[3456789]86-*-msdosdjgpp*)
+  i[3456789]86-*-msdosdjgpp*)
     noconfigdirs="$noconfigdirs tcl tk expect dejagnu send-pr uudecode guile itcl gnuserv libffi"
     ;;
   x86_64-*-mingw*)
@@ -2986,17 +2983,11 @@ case "${host}" in
     # noconfigdirs="tcl tk expect dejagnu make texinfo bison patch flex byacc send-pr uudecode dejagnu diff guile perl itcl gnuserv"
     noconfigdirs="$noconfigdirs expect dejagnu autoconf automake send-pr rcs guile perl texinfo libtool newlib"
     ;;
-  i[3456789]86-*-beos*)
-    noconfigdirs="$noconfigdirs tk itcl libgui gdb"
-    ;;
   *-*-cygwin*)
     noconfigdirs="$noconfigdirs autoconf automake send-pr rcs guile perl"
     ;;
   *-*-netbsd*)
     noconfigdirs="$noconfigdirs rcs"
-    ;;
-  powerpc-*-beos*)
-    noconfigdirs="$noconfigdirs tk itcl libgui gdb dejagnu readline"
     ;;
 esac
 
@@ -3520,8 +3511,6 @@ case "${target}" in
     ;;
   sh-*-* | sh64-*-*)
     case "${host}" in
-      i[3456789]86-*-vsta) ;; # don't add gprof back in
-      i[3456789]86-*-go32*) ;; # don't add gprof back in
       i[3456789]86-*-msdosdjgpp*) ;; # don't add gprof back in
       *) skipdirs=`echo " ${skipdirs} " | sed -e 's/ gprof / /'` ;;
     esac
@@ -3603,104 +3592,6 @@ tentative_cc=""
 host_makefile_frag=/dev/null
 if test -d ${srcdir}/config ; then
 case "${host}" in
-  m68k-hp-hpux*)
-    # Avoid "too much defining" errors from HPUX compiler.
-    tentative_cc="cc -Wp,-H256000"
-    # If "ar" in $PATH is GNU ar, the symbol table may need rebuilding.
-    # If it's HP/UX ar, this should be harmless.
-    RANLIB="ar ts"
-    ;;
-  m68k-apollo-sysv*)
-    tentative_cc="cc -A ansi -A runtype,any -A systype,any -U__STDC__ -DUSG"
-    ;;
-  m68k-apollo-bsd*)
-    #None of the Apollo compilers can compile gas or binutils.  The preprocessor
-    # chokes on bfd, the compiler won't let you assign integers to enums, and
-    # other problems.  Defining CC to gcc is a questionable way to say "don't use
-    # the apollo compiler" (the preferred version of GCC could be called cc,
-    # or whatever), but I'm not sure leaving CC as cc is any better...
-    #CC=cc -A ansi -A runtype,any -A systype,any -U__STDC__ -DNO_STDARG
-    # Used to have BISON=yacc.
-    tentative_cc=gcc
-    ;;
-  m88k-dg-dgux*)
-    tentative_cc="gcc -Wall -ansi -D__using_DGUX"
-    ;;
-  m88k-harris-cxux*)
-    # Under CX/UX, we want to tell the compiler to use ANSI mode.
-    tentative_cc="cc -Xa"
-    host_makefile_frag="config/mh-cxux"
-    ;;
-  m88k-motorola-sysv*)
-    ;;
-  mips*-dec-ultrix*)
-    tentative_cc="cc -Wf,-XNg1000"
-    host_makefile_frag="config/mh-decstation"
-    ;;
-  mips*-nec-sysv4*)
-    # The C compiler on NEC MIPS SVR4 needs bigger tables.
-    tentative_cc="cc -ZXNd=5000 -ZXNg=1000"
-    host_makefile_frag="config/mh-necv4"
-    ;;
-  mips*-sgi-irix4*)
-    # Tell compiler to use K&R C.  We can't compile under the SGI Ansi
-    # environment.  Also bump switch table size so that cp-parse will
-    # compile.  Bump string length limit so linker builds.
-    tentative_cc="cc -cckr -Wf,-XNg1500 -Wf,-XNk1000 -Wf,-XNh2000 -Wf,-XNl8192"
-    ;;
-  mips*-*-sysv4*)
-    host_makefile_frag="config/mh-sysv4"
-    ;;
-  mips*-*-sysv*)
-    # This is for a MIPS running RISC/os 4.52C.
-
-    # This is needed for GDB, but needs to be in the top-level make because
-    # if a library is compiled with the bsd headers and gets linked with the
-    # sysv system libraries all hell can break loose (e.g. a jmp_buf might be
-    # a different size).
-    # ptrace(2) apparently has problems in the BSD environment.  No workaround is
-    # known except to select the sysv environment.  Could we use /proc instead?
-    # These "sysv environments" and "bsd environments" often end up being a pain.
-    #
-    # This is not part of CFLAGS because perhaps not all C compilers have this
-    # option.
-    tentative_cc="cc -systype sysv"
-    ;;
-  i370-ibm-opened*)
-    tentative_cc="c89"
-    ;;
-  i[3456789]86-*-sysv5*)
-    host_makefile_frag="config/mh-sysv5"
-    ;;
-  i[3456789]86-*-dgux*)
-    tentative_cc="gcc -Wall -ansi -D__using_DGUX"
-    host_makefile_frag="config/mh-dgux386"
-    ;;
-  i[3456789]86-ncr-sysv4.3*)
-    # The MetaWare compiler will generate a copyright message unless you
-    # turn it off by adding the -Hnocopyr flag.
-    tentative_cc="cc -Hnocopyr"
-    ;;
-  i[3456789]86-ncr-sysv4*)
-    # for an NCR 3000 (i486/SVR4) system.
-    # The NCR 3000 ships with a MetaWare compiler installed as /bin/cc.
-    # This compiler not only emits obnoxious copyright messages every time
-    # you run it, but it chokes and dies on a whole bunch of GNU source
-    # files.  Default to using the AT&T compiler installed in /usr/ccs/ATT/cc.
-    tentative_cc="/usr/ccs/ATT/cc"
-    host_makefile_frag="config/mh-ncr3000"
-    ;;
-  i[3456789]86-*-sco3.2v5*)
-    ;;
-  i[3456789]86-*-sco*)
-    # The native C compiler botches some simple uses of const.  Unfortunately,
-    # it doesn't defined anything like "__sco__" for us to test for in ansidecl.h.
-    tentative_cc="cc -Dconst="
-    host_makefile_frag="config/mh-sco"
-    ;;
-  i[3456789]86-*-udk*)
-    host_makefile_frag="config/mh-sysv5"
-    ;;
   i[3456789]86-*-solaris2*)
     host_makefile_frag="config/mh-sysv4"
     ;;
@@ -3736,36 +3627,22 @@ fi
   *-interix*)
     host_makefile_frag="config/mh-interix"
     ;;
-  vax-*-ultrix2*)
-    # The old BSD pcc isn't up to compiling parts of gdb so use gcc
-    tentative_cc=gcc
-    ;;
   *-*-solaris2*)
     host_makefile_frag="config/mh-solaris"
-    ;;
-  m68k-sun-sunos*)
-    # Sun's C compiler needs the -J flag to be able to compile cp-parse.c
-    # without overflowing the jump tables (-J says to use a 32 bit table)
-    tentative_cc="cc -J"
     ;;
   hppa*-hp-hpux10*)
     tentative_cc="cc -Wp,-H256000"
     host_makefile_frag="config/mh-pa-hpux10"
     ;;
-  hppa*-hp-hpux* | hppa*-*-hiux*)
+  hppa*-hp-hpux*)
     tentative_cc="cc -Wp,-H256000"
     host_makefile_frag="config/mh-pa"
     ;;
   hppa*-*)
     host_makefile_frag="config/mh-pa"
     ;;
-  *-hp-hpux* | *-*-hiux*)
+  *-hp-hpux*)
     tentative_cc="cc -Wp,-H256000"
-    ;;
-  rs6000-*-lynxos*)
-    # /bin/cc is less than useful for our purposes.  Always use GCC
-    tentative_cc="/usr/cygnus/progressive/bin/gcc"
-    host_makefile_frag="config/mh-lynxrs6k"
     ;;
   *-*-darwin*)
     host_makefile_frag="config/mh-darwin"
@@ -3779,9 +3656,6 @@ fi
   *-*-lynxos*)
     # /bin/cc is less than useful for our purposes.  Always use GCC
     tentative_cc="/bin/gcc"
-    ;;
-  *-*-sysv4*)
-    host_makefile_frag="config/mh-sysv4"
     ;;
   # This is placed last to prevent interfering with the cases above.
   i[3456789]86-*-*)
@@ -7076,7 +6950,7 @@ esac
 # Decide which environment variable is used to find dynamic libraries.
 case "${host}" in
   *-*-hpux*) RPATH_ENVVAR=SHLIB_PATH ;;
-  *-*-darwin* | *-*-rhapsody* ) RPATH_ENVVAR=DYLD_LIBRARY_PATH ;;
+  *-*-darwin*) RPATH_ENVVAR=DYLD_LIBRARY_PATH ;;
   *-*-mingw* | *-*-cygwin ) RPATH_ENVVAR=PATH ;;
   *) RPATH_ENVVAR=LD_LIBRARY_PATH ;;
 esac
