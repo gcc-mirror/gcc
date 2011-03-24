@@ -1,3 +1,17 @@
+2011-03-24  Nick Clifton  <nickc@redhat.com>
+
+	* config/rx/rx.h (LABEL_ALIGN_FOR_BARRIER): Define.
+	(ASM_OUTPUT_MAX_SKIP_ALIGN): Define.
+	* config/rx/rx.c (rx_option_override): Set align_jumps,
+	align_loops and align_labels if not set by the user.
+	(rx_align_for_label): New function.
+	(rx_max_skip_for_label): New function.
+	(TARGET_ASM_JUMP_ALIGN_MAX_SKIP): Define.
+	(TARGET_ASM_LOOP_ALIGN_MAX_SKIP): Define.
+	(TARGET_ASM_LABEL_ALIGN_MAX_SKIP): Define.
+	(TARGET_ASM_LABEL_ALIGN_AFTER_BARRIER_MAX_SKIP): Define.
+	* config/rx/rx-protos.h (rx_align_for_label): Add prototype.
+
 2011-03-24  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	PR rtl-optimization/48263

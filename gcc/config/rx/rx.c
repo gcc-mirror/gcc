@@ -2350,6 +2350,13 @@ rx_option_override (void)
     flag_strict_volatile_bitfields = 1;
 
   rx_override_options_after_change ();
+
+  if (align_jumps == 0 && ! optimize_size)
+    align_jumps = 3;
+  if (align_loops == 0 && ! optimize_size)
+    align_loops = 3;
+  if (align_labels == 0 && ! optimize_size)
+    align_labels = 3;
 }
 
 /* Implement TARGET_OPTION_OPTIMIZATION_TABLE.  */
@@ -2740,8 +2747,47 @@ rx_match_ccmode (rtx insn, enum machine_mode cc_mode)
 
   return true;
 }
-
 
+int
+rx_align_for_label (void)
+{
+  return optimize_size ? 1 : 3;
+}
+
+static int
+rx_max_skip_for_label (rtx lab)
+{
+  int opsize;
+  rtx op;
+
+  if (lab == NULL_RTX)
+    return 0;
+
+  op = lab;
+  do
+    {
+      op = next_nonnote_nondebug_insn (op);
+    }
+  while (op && (LABEL_P (op)
+		|| (INSN_P (op) && GET_CODE (PATTERN (op)) == USE)));
+  if (!op)
+    return 0;
+
+  opsize = get_attr_length (op);
+  if (opsize >= 0 && opsize < 8)
+    return opsize - 1;
+  return 0;
+}
+
+#undef  TARGET_ASM_JUMP_ALIGN_MAX_SKIP
+#define TARGET_ASM_JUMP_ALIGN_MAX_SKIP			rx_max_skip_for_label
+#undef  TARGET_ASM_LOOP_ALIGN_MAX_SKIP
+#define TARGET_ASM_LOOP_ALIGN_MAX_SKIP			rx_max_skip_for_label
+#undef  TARGET_LABEL_ALIGN_AFTER_BARRIER_MAX_SKIP
+#define TARGET_LABEL_ALIGN_AFTER_BARRIER_MAX_SKIP	rx_max_skip_for_label
+#undef  TARGET_ASM_LABEL_ALIGN_MAX_SKIP
+#define TARGET_ASM_LABEL_ALIGN_MAX_SKIP			rx_max_skip_for_label
+
 #undef  TARGET_FUNCTION_VALUE
 #define TARGET_FUNCTION_VALUE		rx_function_value
 
