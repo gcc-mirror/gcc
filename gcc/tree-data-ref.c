@@ -991,6 +991,48 @@ create_data_ref (loop_p nest, loop_p loop, tree memref, gimple stmt,
   return dr;
 }
 
+/* Check if OFFSET1 and OFFSET2 (DR_OFFSETs of some data-refs) are identical
+   expressions.  */
+static bool
+dr_equal_offsets_p1 (tree offset1, tree offset2)
+{
+  bool res;
+
+  STRIP_NOPS (offset1);
+  STRIP_NOPS (offset2);
+
+  if (offset1 == offset2)
+    return true;
+
+  if (TREE_CODE (offset1) != TREE_CODE (offset2)
+      || (!BINARY_CLASS_P (offset1) && !UNARY_CLASS_P (offset1)))
+    return false;
+
+  res = dr_equal_offsets_p1 (TREE_OPERAND (offset1, 0),
+                             TREE_OPERAND (offset2, 0));
+
+  if (!res || !BINARY_CLASS_P (offset1))
+    return res;
+
+  res = dr_equal_offsets_p1 (TREE_OPERAND (offset1, 1),
+                             TREE_OPERAND (offset2, 1));
+
+  return res;
+}
+
+/* Check if DRA and DRB have equal offsets.  */
+bool
+dr_equal_offsets_p (struct data_reference *dra,
+                    struct data_reference *drb)
+{
+  tree offset1, offset2;
+
+  offset1 = DR_OFFSET (dra);
+  offset2 = DR_OFFSET (drb);
+
+  return dr_equal_offsets_p1 (offset1, offset2);
+}
+
 /* Returns true if FNA == FNB.  */
 
 static bool
@@ -4294,7 +4336,7 @@ graphite_find_data_references_in_stmt (loop_p nest, loop_p loop, gimple stmt,
    DATAREFS.  Returns chrec_dont_know when failing to analyze a
    difficult case, returns NULL_TREE otherwise.  */
 
-static tree
+tree
 find_data_references_in_bb (struct loop *loop, basic_block bb,
                             VEC (data_reference_p, heap) **datarefs)
 {

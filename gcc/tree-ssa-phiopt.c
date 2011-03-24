@@ -34,6 +34,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "pointer-set.h"
 #include "domwalk.h"
+#include "cfgloop.h"
+#include "tree-data-ref.h"
 
 static unsigned int tree_ssa_phiopt (void);
 static unsigned int tree_ssa_phiopt_worker (bool);
@@ -1304,35 +1306,18 @@ cond_store_replacement (basic_block middle_bb, basic_block join_bb,
   return true;
 }
 
-/* Do the main work of conditional store replacement.  We already know
-   that the recognized pattern looks like so:
-
-   split:
-     if (cond) goto THEN_BB; else goto ELSE_BB (edge E1)
-   THEN_BB:
-     X = Y;
-     goto JOIN_BB;
-   ELSE_BB:
-     X = Z;
-     fallthrough (edge E0)
-   JOIN_BB:
-     some more
-
-   We check that THEN_BB and ELSE_BB contain only one store
-   that the stores have a "simple" RHS.  */
+/* Do the main work of conditional store replacement.  */
 
 static bool
-cond_if_else_store_replacement (basic_block then_bb, basic_block else_bb,
-				basic_block join_bb)
+cond_if_else_store_replacement_1 (basic_block then_bb, basic_block else_bb,
+				  basic_block join_bb, gimple then_assign,
+				  gimple else_assign)
 {
-  gimple then_assign = last_and_only_stmt (then_bb);
-  gimple else_assign = last_and_only_stmt (else_bb);
   tree lhs_base, lhs, then_rhs, else_rhs;
   source_location then_locus, else_locus;
   gimple_stmt_iterator gsi;
   gimple newphi, new_stmt;
 
-  /* Check if then_bb and else_bb contain only one store each.  */
   if (then_assign == NULL
       || !gimple_assign_single_p (then_assign)
       || else_assign == NULL
@@ -1395,6 +1380,186 @@ cond_if_else_store_replacement (basic_block then_bb, basic_block else_bb,
     gsi_insert_before (&gsi, new_stmt, GSI_NEW_STMT);
 
   return true;
+}
+
+/* Conditional store replacement.  We already know
+   that the recognized pattern looks like so:
+
+   split:
+     if (cond) goto THEN_BB; else goto ELSE_BB (edge E1)
+   THEN_BB:
+     ...
+     X = Y;
+     ...
+     goto JOIN_BB;
+   ELSE_BB:
+     ...
+     X = Z;
+     ...
+     fallthrough (edge E0)
+   JOIN_BB:
+     some more
+
+   We check that it is safe to sink the store to JOIN_BB by verifying that
+   there are no read-after-write or write-after-write dependencies in
+   THEN_BB and ELSE_BB.  */
+
+static bool
+cond_if_else_store_replacement (basic_block then_bb, basic_block else_bb,
+                                basic_block join_bb)
+{
+  gimple then_assign = last_and_only_stmt (then_bb);
+  gimple else_assign = last_and_only_stmt (else_bb);
+  VEC (data_reference_p, heap) *then_datarefs, *else_datarefs;
+  VEC (ddr_p, heap) *then_ddrs, *else_ddrs;
+  gimple then_store, else_store;
+  bool found, ok = false, res;
+  struct data_dependence_relation *ddr;
+  data_reference_p then_dr, else_dr;
+  int i, j;
+  tree then_lhs, else_lhs;
+  VEC (gimple, heap) *then_stores, *else_stores;
+  basic_block blocks[3];
+
+  if (MAX_STORES_TO_SINK == 0)
+    return false;
+
+  /* Handle the case with single statement in THEN_BB and ELSE_BB.  */
+  if (then_assign && else_assign)
+    return cond_if_else_store_replacement_1 (then_bb, else_bb, join_bb,
+                                             then_assign, else_assign);
+
+  /* Find data references.  */
+  then_datarefs = VEC_alloc (data_reference_p, heap, 1);
+  else_datarefs = VEC_alloc (data_reference_p, heap, 1);
+  if ((find_data_references_in_bb (NULL, then_bb, &then_datarefs)
+        == chrec_dont_know)
+      || !VEC_length (data_reference_p, then_datarefs)
+      || (find_data_references_in_bb (NULL, else_bb, &else_datarefs)
+        == chrec_dont_know)
+      || !VEC_length (data_reference_p, else_datarefs))
+    {
+      free_data_refs (then_datarefs);
+      free_data_refs (else_datarefs);
+      return false;
+    }
+
+  /* Find pairs of stores with equal LHS.  */
+  then_stores = VEC_alloc (gimple, heap, 1);
+  else_stores = VEC_alloc (gimple, heap, 1);
+  FOR_EACH_VEC_ELT (data_reference_p, then_datarefs, i, then_dr)
+    {
+      if (DR_IS_READ (then_dr))
+        continue;
+
+      then_store = DR_STMT (then_dr);
+      then_lhs = gimple_assign_lhs (then_store);
+      found = false;
+
+      FOR_EACH_VEC_ELT (data_reference_p, else_datarefs, j, else_dr)
+        {
+          if (DR_IS_READ (else_dr))
+            continue;
+
+          else_store = DR_STMT (else_dr);
+          else_lhs = gimple_assign_lhs (else_store);
+
+          if (operand_equal_p (then_lhs, else_lhs, 0))
+            {
+              found = true;
+              break;
+            }
+        }
+
+      if (!found)
+        continue;
+
+      VEC_safe_push (gimple, heap, then_stores, then_store);
+      VEC_safe_push (gimple, heap, else_stores, else_store);
+    }
+
+  /* No pairs of stores found.  */
+  if (!VEC_length (gimple, then_stores)
+      || VEC_length (gimple, then_stores) > (unsigned) MAX_STORES_TO_SINK)
+    {
+      free_data_refs (then_datarefs);
+      free_data_refs (else_datarefs);
+      VEC_free (gimple, heap, then_stores);
+      VEC_free (gimple, heap, else_stores);
+      return false;
+    }
+
+  /* Compute and check data dependencies in both basic blocks.  */
+  then_ddrs = VEC_alloc (ddr_p, heap, 1);
+  else_ddrs = VEC_alloc (ddr_p, heap, 1);
+  compute_all_dependences (then_datarefs, &then_ddrs, NULL, false);
+  compute_all_dependences (else_datarefs, &else_ddrs, NULL, false);
+  free_data_refs (then_datarefs);
+  free_data_refs (else_datarefs);
+  blocks[0] = then_bb;
+  blocks[1] = else_bb;
+  blocks[2] = join_bb;
+  renumber_gimple_stmt_uids_in_blocks (blocks, 3);
+
+  /* Check that there are no read-after-write or write-after-write dependencies
+     in THEN_BB.  */
+  FOR_EACH_VEC_ELT (ddr_p, then_ddrs, i, ddr)
+    {
+      struct data_reference *dra = DDR_A (ddr);
+      struct data_reference *drb = DDR_B (ddr);
+
+      if (DDR_ARE_DEPENDENT (ddr) != chrec_known
+          && ((DR_IS_READ (dra) && DR_IS_WRITE (drb)
+               && gimple_uid (DR_STMT (dra)) > gimple_uid (DR_STMT (drb)))
+              || (DR_IS_READ (drb) && DR_IS_WRITE (dra)
+                  && gimple_uid (DR_STMT (drb)) > gimple_uid (DR_STMT (dra)))
+              || (DR_IS_WRITE (dra) && DR_IS_WRITE (drb))))
+        {
+          free_dependence_relations (then_ddrs);
+          free_dependence_relations (else_ddrs);
+          VEC_free (gimple, heap, then_stores);
+          VEC_free (gimple, heap, else_stores);
+          return false;
+        }
+    }
+
+  /* Check that there are no read-after-write or write-after-write dependencies
+     in ELSE_BB.  */
+  FOR_EACH_VEC_ELT (ddr_p, else_ddrs, i, ddr)
+    {
+      struct data_reference *dra = DDR_A (ddr);
+      struct data_reference *drb = DDR_B (ddr);
+
+      if (DDR_ARE_DEPENDENT (ddr) != chrec_known
+          && ((DR_IS_READ (dra) && DR_IS_WRITE (drb)
+               && gimple_uid (DR_STMT (dra)) > gimple_uid (DR_STMT (drb)))
+              || (DR_IS_READ (drb) && DR_IS_WRITE (dra)
+                  && gimple_uid (DR_STMT (drb)) > gimple_uid (DR_STMT (dra)))
+              || (DR_IS_WRITE (dra) && DR_IS_WRITE (drb))))
+        {
+          free_dependence_relations (then_ddrs);
+          free_dependence_relations (else_ddrs);
+          VEC_free (gimple, heap, then_stores);
+          VEC_free (gimple, heap, else_stores);
+          return false;
+        }
+    }
+
+  /* Sink stores with same LHS.  */
+  FOR_EACH_VEC_ELT (gimple, then_stores, i, then_store)
+    {
+      else_store = VEC_index (gimple, else_stores, i);
+      res = cond_if_else_store_replacement_1 (then_bb, else_bb, join_bb,
+                                              then_store, else_store);
+      ok = ok || res;
+    }
+
+  free_dependence_relations (then_ddrs);
+  free_dependence_relations (else_ddrs);
+  VEC_free (gimple, heap, then_stores);
+  VEC_free (gimple, heap, else_stores);
+
+  return ok;
 }
 
 /* Always do these optimizations if we have SSA

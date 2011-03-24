@@ -426,10 +426,14 @@ extern bool find_loop_nest (struct loop *, VEC (loop_p, heap) **);
 extern void compute_all_dependences (VEC (data_reference_p, heap) *,
 				     VEC (ddr_p, heap) **, VEC (loop_p, heap) *,
 				     bool);
+extern tree find_data_references_in_bb (struct loop *, basic_block,
+                                        VEC (data_reference_p, heap) **);
 
 extern void create_rdg_vertices (struct graph *, VEC (gimple, heap) *);
 extern bool dr_may_alias_p (const struct data_reference *,
 			    const struct data_reference *);
+extern bool dr_equal_offsets_p (struct data_reference *,
+                                struct data_reference *);
 
 
 /* Return true when the base objects of data references A and B are
