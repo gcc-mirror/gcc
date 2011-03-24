@@ -451,9 +451,6 @@ case "${host}" in
   *-*-netbsd*)
     noconfigdirs="$noconfigdirs rcs"
     ;;
-  ppc*-*-pe)
-    noconfigdirs="$noconfigdirs patch diff make tk tcl expect dejagnu autoconf automake texinfo bison send-pr gprof rcs guile perl itcl gnuserv"
-    ;;
   powerpc-*-beos*)
     noconfigdirs="$noconfigdirs tk itcl libgui gdb dejagnu readline"
     ;;
@@ -672,11 +669,11 @@ case "${target}" in
   arc-*-*)
     noconfigdirs="$noconfigdirs target-libgloss"
     ;;
-  arm-*-coff | strongarm-*-coff | xscale-*-coff)
+  arm-*-coff)
     noconfigdirs="$noconfigdirs ${libgcj}"
     libgloss_dir=arm
     ;;
-  arm-*-elf* | strongarm-*-elf* | xscale-*-elf* | arm*-*-eabi* )
+  arm-*-elf* | arm*-*-eabi* )
     noconfigdirs="$noconfigdirs target-libffi target-qthreads"
     libgloss_dir=arm
     ;;
@@ -692,15 +689,6 @@ case "${target}" in
     libgloss_dir=arm
     ;;
   arm-*-pe*)
-    noconfigdirs="$noconfigdirs target-libgloss ${libgcj}"
-    ;;
-  thumb-*-coff)
-    noconfigdirs="$noconfigdirs target-libgloss ${libgcj}"
-    ;;
-  thumb-*-elf)
-    noconfigdirs="$noconfigdirs target-libgloss ${libgcj}"
-    ;;
-  thumb-*-pe)
     noconfigdirs="$noconfigdirs target-libgloss ${libgcj}"
     ;;
   arm-*-riscix*)
@@ -747,9 +735,6 @@ case "${target}" in
   d30v-*-*)
     noconfigdirs="$noconfigdirs ${libgcj} gdb"
     ;;
-  ep9312-*-elf | ep9312-*-coff)
-    libgloss_dir=arm
-    ;;
   fr30-*-elf*)
     noconfigdirs="$noconfigdirs ${libgcj} gdb"
     ;;
@@ -768,7 +753,7 @@ case "${target}" in
     ;;
   hppa1.1-*-osf* | hppa1.1-*-bsd* )
     ;;
-  hppa*64*-*-linux* | parisc*64*-*-linux*)
+  hppa*64*-*-linux*)
     # In this case, it's because the hppa64-linux target is for
     # the kernel only at this point and has no libc, and thus no
     # headers, crt*.o, etc., all of which are needed by these.
@@ -912,7 +897,7 @@ case "${target}" in
     # copied from rs6000-*-* entry
     noconfigdirs="$noconfigdirs gprof target-libgloss target-libssp target-newlib ${libgcj}"
     ;;
-  powerpc*-*-winnt* | powerpc*-*-pe* | ppc*-*-pe)
+  powerpc*-*-winnt* | powerpc*-*-pe*)
     target_configdirs="$target_configdirs target-winsup"
     noconfigdirs="$noconfigdirs gdb tcl tk make expect target-libgloss itcl gnuserv ${libgcj}"
     # always build newlib.
