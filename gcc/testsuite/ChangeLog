@@ -1,3 +1,9 @@
+2011-03-24  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/46562
+	* c-c++-common/pr46562-2.c: New testcase.
+	* c-c++-common/pr46562.c: Likewise.
+
 2011-03-24  Ira Rosen  <ira.rosen@linaro.org>
 
 	* gcc.dg/vect/vect-cselim-1.c: New test.

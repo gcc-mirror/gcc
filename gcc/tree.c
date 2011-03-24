@@ -4013,6 +4013,20 @@ reference_alias_ptr_type (const_tree t)
     return build_pointer_type (TYPE_MAIN_VARIANT (TREE_TYPE (base)));
 }
 
+/* Return an invariant ADDR_EXPR of type TYPE taking the address of BASE
+   offsetted by OFFSET units.  */
+
+tree
+build_invariant_address (tree type, tree base, HOST_WIDE_INT offset)
+{
+  tree ref = fold_build2 (MEM_REF, TREE_TYPE (type),
+			  build_fold_addr_expr (base),
+			  build_int_cst (ptr_type_node, offset));
+  tree addr = build1 (ADDR_EXPR, type, ref);
+  recompute_tree_invariant_for_addr_expr (addr);
+  return addr;
+}
+
 /* Similar except don't specify the TREE_TYPE
    and leave the TREE_SIDE_EFFECTS as 0.
    It is permissible for arguments to be null,

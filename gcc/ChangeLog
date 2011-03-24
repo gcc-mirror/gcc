@@ -1,3 +1,39 @@
+2011-03-24  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/46562
+	* tree.c (build_invariant_address): New function.
+	* tree.h (build_invariant_address): Declare.
+	* tree-dfa.c (get_addr_base_and_unit_offset): Wrap around
+	a renamed function moved ...
+	* tree-flow-inline.h (get_addr_base_and_unit_offset_1): ... here.
+	Take valueization callback parameter.
+	* tree-flow.h (gimple_fold_stmt_to_constant): Declare.
+	* gimple-fold.h: New file.
+	* tree-ssa-ccp.c (ccp_fold): Use gimple_fold_stmt_to_constant_1.
+	(ccp_fold, fold_const_aggregate_ref,
+	fold_ctor_reference, fold_nonarray_ctor_reference,
+	fold_array_ctor_reference, fold_string_cst_ctor_reference,
+	get_base_constructor): Move ...
+	* gimple-fold.c: ... here.
+	(gimple_fold_stmt_to_constant_1): New function
+	split out from ccp_fold.  Take a valueization callback parameter.
+	Valueize all operands.
+	(gimple_fold_stmt_to_constant): New wrapper function.
+	(fold_const_aggregate_ref_1): New function split out from
+	fold_const_aggregate_ref.  Take a valueization callback parameter.
+	(fold_const_aggregate_ref): Wrap fold_const_aggregate_ref_1.
+	* tree-ssa-sccvn.c (simplify_binary_expression): Simplify
+	invariant POINTER_PLUS_EXPRs to invariant form.
+	(vn_valueize): New function.
+	(try_to_simplify): Simplify by using gimple_fold_stmt_to_constant.
+	* tree-vrp.c (vrp_valueize): New function.
+	(vrp_visit_assignment_or_call): Use gimple_fold_stmt_to_constant
+	to fold statements to constants.
+	* tree-ssa-pre.c (eliminate): Properly guard propagation of
+	function declarations.
+	* Makefile.in (tree-ssa-sccvn.o, tree-vrp.o, gimple-fold.o,
+	tree-ssa-ccp.o): Add gimple-fold.h dependencies.
+
 2011-03-24  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* config/h8300/predicates.md (jump_address_operand): Fix register

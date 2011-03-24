@@ -44,6 +44,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "params.h"
 #include "tree-ssa-propagate.h"
 #include "tree-ssa-sccvn.h"
+#include "gimple-fold.h"
 
 /* This algorithm is based on the SCC algorithm presented by Keith
    Cooper and L. Taylor Simpson in "SCC-Based Value numbering"
@@ -2770,6 +2771,16 @@ simplify_binary_expression (gimple stmt)
 	op1 = SSA_VAL (op1);
     }
 
+  /* Pointer plus constant can be represented as invariant address.
+     Do so to allow further propatation, see also tree forwprop.  */
+  if (gimple_assign_rhs_code (stmt) == POINTER_PLUS_EXPR
+      && host_integerp (op1, 1)
+      && TREE_CODE (op0) == ADDR_EXPR
+      && is_gimple_min_invariant (op0))
+    return build_invariant_address (TREE_TYPE (op0),
+				    TREE_OPERAND (op0, 0),
+				    TREE_INT_CST_LOW (op1));
+
   /* Avoid folding if nothing changed.  */
   if (op0 == gimple_assign_rhs1 (stmt)
       && op1 == gimple_assign_rhs2 (stmt))
@@ -2849,6 +2860,19 @@ simplify_unary_expression (gimple stmt)
   return NULL_TREE;
 }
 
+/* Valueize NAME if it is an SSA name, otherwise just return it.  */
+
+static inline tree
+vn_valueize (tree name)
+{
+  if (TREE_CODE (name) == SSA_NAME)
+    {
+      tree tem = SSA_VAL (name);
+      return tem == VN_TOP ? name : tem;
+    }
+  return name;
+}
+
 /* Try to simplify RHS using equivalences and constant folding.  */
 
 static tree
@@ -2862,21 +2886,15 @@ try_to_simplify (gimple stmt)
       && TREE_CODE (gimple_assign_rhs1 (stmt)) == SSA_NAME)
     return NULL_TREE;
 
+  /* First try constant folding based on our current lattice.  */
+  tem = gimple_fold_stmt_to_constant (stmt, vn_valueize);
+  if (tem)
+    return tem;
+
+  /* If that didn't work try combining multiple statements.  */
   switch (TREE_CODE_CLASS (gimple_assign_rhs_code (stmt)))
     {
-    case tcc_declaration:
-      tem = get_symbol_constant_value (gimple_assign_rhs1 (stmt));
-      if (tem)
-	return tem;
-      break;
-
     case tcc_reference:
-      /* Do not do full-blown reference lookup here, but simplify
-	 reads from constant aggregates.  */
-      tem = fold_const_aggregate_ref (gimple_assign_rhs1 (stmt));
-      if (tem)
-	return tem;
-
       /* Fallthrough for some codes that can operate on registers.  */
       if (!(TREE_CODE (gimple_assign_rhs1 (stmt)) == REALPART_EXPR
 	    || TREE_CODE (gimple_assign_rhs1 (stmt)) == IMAGPART_EXPR
@@ -2886,11 +2904,11 @@ try_to_simplify (gimple stmt)
 	 into binary ops, but it's debatable whether it is worth it. */
     case tcc_unary:
       return simplify_unary_expression (stmt);
-      break;
+
     case tcc_comparison:
     case tcc_binary:
       return simplify_binary_expression (stmt);
-      break;
+
     default:
       break;
     }

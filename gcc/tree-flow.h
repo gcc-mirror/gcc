@@ -594,6 +594,7 @@ extern void ssanames_print_statistics (void);
 
 /* In tree-ssa-ccp.c  */
 tree fold_const_aggregate_ref (tree);
+tree gimple_fold_stmt_to_constant (gimple, tree (*)(tree));
 
 /* In tree-ssa-dom.c  */
 extern void dump_dominator_optimization_stats (FILE *);
