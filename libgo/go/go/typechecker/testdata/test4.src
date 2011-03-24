@@ -2,12 +2,10 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// const and var declarations
+// Constant declarations
 
-package P1
+package P4
 
 const (
-	c1         /* ERROR "missing initializer" */
-	c2     int = 0
-	c3, c4 = 0
+	c0 = 0
 )

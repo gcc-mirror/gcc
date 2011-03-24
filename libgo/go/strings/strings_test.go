@@ -6,6 +6,7 @@ package strings_test
 
 import (
 	"os"
+	"strconv"
 	. "strings"
 	"testing"
 	"unicode"
@@ -115,6 +116,57 @@ func TestIndex(t *testing.T)        { runIndexTests(t, Index, "Index", indexTest
 func TestLastIndex(t *testing.T)    { runIndexTests(t, LastIndex, "LastIndex", lastIndexTests) }
 func TestIndexAny(t *testing.T)     { runIndexTests(t, IndexAny, "IndexAny", indexAnyTests) }
 func TestLastIndexAny(t *testing.T) { runIndexTests(t, LastIndexAny, "LastIndexAny", lastIndexAnyTests) }
+
+type IndexRuneTest struct {
+	s    string
+	rune int
+	out  int
+}
+
+var indexRuneTests = []IndexRuneTest{
+	{"a A x", 'A', 2},
+	{"some_text=some_value", '=', 9},
+	{"☺a", 'a', 3},
+	{"a☻☺b", '☺', 4},
+}
+
+func TestIndexRune(t *testing.T) {
+	for _, test := range indexRuneTests {
+		if actual := IndexRune(test.s, test.rune); actual != test.out {
+			t.Errorf("IndexRune(%q,%d)= %v; want %v", test.s, test.rune, actual, test.out)
+		}
+	}
+}
+
+const benchmarkString = "some_text=some☺value"
+
+func BenchmarkIndexRune(b *testing.B) {
+	if got := IndexRune(benchmarkString, '☺'); got != 14 {
+		panic("wrong index: got=" + strconv.Itoa(got))
+	}
+	for i := 0; i < b.N; i++ {
+		IndexRune(benchmarkString, '☺')
+	}
+}
+
+func BenchmarkIndexRuneFastPath(b *testing.B) {
+	if got := IndexRune(benchmarkString, 'v'); got != 17 {
+		panic("wrong index: got=" + strconv.Itoa(got))
+	}
+	for i := 0; i < b.N; i++ {
+		IndexRune(benchmarkString, 'v')
+	}
+}
+
+func BenchmarkIndex(b *testing.B) {
+	if got := Index(benchmarkString, "v"); got != 17 {
+		panic("wrong index: got=" + strconv.Itoa(got))
+	}
+	for i := 0; i < b.N; i++ {
+		Index(benchmarkString, "v")
+	}
+}
+
 
 type ExplodeTest struct {
 	s string

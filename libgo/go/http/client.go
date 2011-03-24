@@ -11,6 +11,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"os"
 	"strconv"
 	"strings"
@@ -20,26 +21,28 @@ import (
 // that uses DefaultTransport.
 // Client is not yet very configurable.
 type Client struct {
-	Transport ClientTransport // if nil, DefaultTransport is used
+	Transport RoundTripper // if nil, DefaultTransport is used
 }
 
 // DefaultClient is the default Client and is used by Get, Head, and Post.
 var DefaultClient = &Client{}
 
-// ClientTransport is an interface representing the ability to execute a
+// RoundTripper is an interface representing the ability to execute a
 // single HTTP transaction, obtaining the Response for a given Request.
-type ClientTransport interface {
-	// Do executes a single HTTP transaction, returning the Response for the
-	// request req.  Do should not attempt to interpret the response.
-	// In particular, Do must return err == nil if it obtained a response,
-	// regardless of the response's HTTP status code.  A non-nil err should
-	// be reserved for failure to obtain a response.  Similarly, Do should
-	// not attempt to handle higher-level protocol details such as redirects,
+type RoundTripper interface {
+	// RoundTrip executes a single HTTP transaction, returning
+	// the Response for the request req.  RoundTrip should not
+	// attempt to interpret the response.  In particular,
+	// RoundTrip must return err == nil if it obtained a response,
+	// regardless of the response's HTTP status code.  A non-nil
+	// err should be reserved for failure to obtain a response.
+	// Similarly, RoundTrip should not attempt to handle
+	// higher-level protocol details such as redirects,
 	// authentication, or cookies.
 	//
-	// Transports may modify the request. The request Headers field is
-	// guaranteed to be initalized.
-	Do(req *Request) (resp *Response, err os.Error)
+	// RoundTrip may modify the request. The request Headers field is
+	// guaranteed to be initialized.
+	RoundTrip(req *Request) (resp *Response, err os.Error)
 }
 
 // Given a string of the form "host", "host:port", or "[ipv6::address]:port",
@@ -54,40 +57,6 @@ type readClose struct {
 	io.Closer
 }
 
-// matchNoProxy returns true if requests to addr should not use a proxy,
-// according to the NO_PROXY or no_proxy environment variable.
-func matchNoProxy(addr string) bool {
-	if len(addr) == 0 {
-		return false
-	}
-	no_proxy := os.Getenv("NO_PROXY")
-	if len(no_proxy) == 0 {
-		no_proxy = os.Getenv("no_proxy")
-	}
-	if no_proxy == "*" {
-		return true
-	}
-
-	addr = strings.ToLower(strings.TrimSpace(addr))
-	if hasPort(addr) {
-		addr = addr[:strings.LastIndex(addr, ":")]
-	}
-
-	for _, p := range strings.Split(no_proxy, ",", -1) {
-		p = strings.ToLower(strings.TrimSpace(p))
-		if len(p) == 0 {
-			continue
-		}
-		if hasPort(p) {
-			p = p[:strings.LastIndex(p, ":")]
-		}
-		if addr == p || (p[0] == '.' && (strings.HasSuffix(addr, p) || addr == p[1:])) {
-			return true
-		}
-	}
-	return false
-}
-
 // Do sends an HTTP request and returns an HTTP response, following
 // policy (e.g. redirects, cookies, auth) as configured on the client.
 //
@@ -100,11 +69,7 @@ func (c *Client) Do(req *Request) (resp *Response, err os.Error) {
 
 
 // send issues an HTTP request.  Caller should close resp.Body when done reading from it.
-//
-// TODO: support persistent connections (multiple requests on a single connection).
-// send() method is nonpublic because, when we refactor the code for persistent
-// connections, it may no longer make sense to have a method with this signature.
-func send(req *Request, t ClientTransport) (resp *Response, err os.Error) {
+func send(req *Request, t RoundTripper) (resp *Response, err os.Error) {
 	if t == nil {
 		t = DefaultTransport
 		if t == nil {
@@ -115,9 +80,9 @@ func send(req *Request, t ClientTransport) (resp *Response, err os.Error) {
 
 	// Most the callers of send (Get, Post, et al) don't need
 	// Headers, leaving it uninitialized.  We guarantee to the
-	// ClientTransport that this has been initialized, though.
+	// Transport that this has been initialized, though.
 	if req.Header == nil {
-		req.Header = Header(make(map[string][]string))
+		req.Header = make(Header)
 	}
 
 	info := req.URL.RawUserinfo
@@ -130,7 +95,7 @@ func send(req *Request, t ClientTransport) (resp *Response, err os.Error) {
 		}
 		req.Header.Set("Authorization", "Basic "+string(encoded))
 	}
-	return t.Do(req)
+	return t.RoundTrip(req)
 }
 
 // True if the specified HTTP status code is one for which the Get utility should
@@ -237,7 +202,7 @@ func (c *Client) Post(url string, bodyType string, body io.Reader) (r *Response,
 	req.ProtoMajor = 1
 	req.ProtoMinor = 1
 	req.Close = true
-	req.Body = nopCloser{body}
+	req.Body = ioutil.NopCloser(body)
 	req.Header = Header{
 		"Content-Type": {bodyType},
 	}
@@ -272,7 +237,7 @@ func (c *Client) PostForm(url string, data map[string]string) (r *Response, err 
 	req.ProtoMinor = 1
 	req.Close = true
 	body := urlencode(data)
-	req.Body = nopCloser{body}
+	req.Body = ioutil.NopCloser(body)
 	req.Header = Header{
 		"Content-Type":   {"application/x-www-form-urlencoded"},
 		"Content-Length": {strconv.Itoa(body.Len())},
@@ -312,9 +277,3 @@ func (c *Client) Head(url string) (r *Response, err os.Error) {
 	}
 	return send(&req, c.Transport)
 }
-
-type nopCloser struct {
-	io.Reader
-}
-
-func (nopCloser) Close() os.Error { return nil }

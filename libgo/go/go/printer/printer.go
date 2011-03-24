@@ -12,7 +12,7 @@ import (
 	"go/token"
 	"io"
 	"os"
-	"path"
+	"path/filepath"
 	"runtime"
 	"tabwriter"
 )
@@ -94,22 +94,23 @@ type printer struct {
 	// written using writeItem.
 	last token.Position
 
-	// HTML support
-	lastTaggedLine int // last line for which a line tag was written
-
 	// The list of all source comments, in order of appearance.
 	comments        []*ast.CommentGroup // may be nil
 	cindex          int                 // current comment index
 	useNodeComments bool                // if not set, ignore lead and line comments of nodes
+
+	// Cache of already computed node sizes.
+	nodeSizes map[ast.Node]int
 }
 
 
-func (p *printer) init(output io.Writer, cfg *Config, fset *token.FileSet) {
+func (p *printer) init(output io.Writer, cfg *Config, fset *token.FileSet, nodeSizes map[ast.Node]int) {
 	p.output = output
 	p.Config = *cfg
 	p.fset = fset
 	p.errors = make(chan os.Error)
 	p.buffer = make([]whiteSpace, 0, 16) // whitespace sequences are short
+	p.nodeSizes = nodeSizes
 }
 
 
@@ -244,7 +245,7 @@ func (p *printer) writeItem(pos token.Position, data []byte) {
 	}
 	if debug {
 		// do not update p.pos - use write0
-		_, filename := path.Split(pos.Filename)
+		_, filename := filepath.Split(pos.Filename)
 		p.write0([]byte(fmt.Sprintf("[%s:%d:%d]", filename, pos.Line, pos.Column)))
 	}
 	p.write(data)
@@ -994,13 +995,8 @@ type Config struct {
 }
 
 
-// Fprint "pretty-prints" an AST node to output and returns the number
-// of bytes written and an error (if any) for a given configuration cfg.
-// Position information is interpreted relative to the file set fset.
-// The node type must be *ast.File, or assignment-compatible to ast.Expr,
-// ast.Decl, ast.Spec, or ast.Stmt.
-//
-func (cfg *Config) Fprint(output io.Writer, fset *token.FileSet, node interface{}) (int, os.Error) {
+// fprint implements Fprint and takes a nodesSizes map for setting up the printer state.
+func (cfg *Config) fprint(output io.Writer, fset *token.FileSet, node interface{}, nodeSizes map[ast.Node]int) (int, os.Error) {
 	// redirect output through a trimmer to eliminate trailing whitespace
 	// (Input to a tabwriter must be untrimmed since trailing tabs provide
 	// formatting information. The tabwriter could provide trimming
@@ -1029,7 +1025,7 @@ func (cfg *Config) Fprint(output io.Writer, fset *token.FileSet, node interface{
 
 	// setup printer and print node
 	var p printer
-	p.init(output, cfg, fset)
+	p.init(output, cfg, fset, nodeSizes)
 	go func() {
 		switch n := node.(type) {
 		case ast.Expr:
@@ -1073,6 +1069,17 @@ func (cfg *Config) Fprint(output io.Writer, fset *token.FileSet, node interface{
 	}
 
 	return p.written, err
+}
+
+
+// Fprint "pretty-prints" an AST node to output and returns the number
+// of bytes written and an error (if any) for a given configuration cfg.
+// Position information is interpreted relative to the file set fset.
+// The node type must be *ast.File, or assignment-compatible to ast.Expr,
+// ast.Decl, ast.Spec, or ast.Stmt.
+//
+func (cfg *Config) Fprint(output io.Writer, fset *token.FileSet, node interface{}) (int, os.Error) {
+	return cfg.fprint(output, fset, node, make(map[ast.Node]int))
 }
 
 

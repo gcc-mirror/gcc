@@ -56,7 +56,7 @@
 
 		flag.Bool(...)  // global options
 		flag.Parse()  // parse leading command
-		subcmd := flag.Args(0)
+		subcmd := flag.Arg[0]
 		switch subcmd {
 			// add per-subcommand options
 		}
@@ -68,6 +68,7 @@ package flag
 import (
 	"fmt"
 	"os"
+	"sort"
 	"strconv"
 )
 
@@ -205,16 +206,34 @@ type allFlags struct {
 
 var flags *allFlags
 
-// VisitAll visits the flags, calling fn for each. It visits all flags, even those not set.
+// sortFlags returns the flags as a slice in lexicographical sorted order.
+func sortFlags(flags map[string]*Flag) []*Flag {
+	list := make(sort.StringArray, len(flags))
+	i := 0
+	for _, f := range flags {
+		list[i] = f.Name
+		i++
+	}
+	list.Sort()
+	result := make([]*Flag, len(list))
+	for i, name := range list {
+		result[i] = flags[name]
+	}
+	return result
+}
+
+// VisitAll visits the flags in lexicographical order, calling fn for each.
+// It visits all flags, even those not set.
 func VisitAll(fn func(*Flag)) {
-	for _, f := range flags.formal {
+	for _, f := range sortFlags(flags.formal) {
 		fn(f)
 	}
 }
 
-// Visit visits the flags, calling fn for each. It visits only those flags that have been set.
+// Visit visits the flags in lexicographical order, calling fn for each.
+// It visits only those flags that have been set.
 func Visit(fn func(*Flag)) {
-	for _, f := range flags.actual {
+	for _, f := range sortFlags(flags.actual) {
 		fn(f)
 	}
 }
@@ -260,7 +279,9 @@ var Usage = func() {
 
 var panicOnError = false
 
-func fail() {
+// failf prints to standard error a formatted error and Usage, and then exits the program.
+func failf(format string, a ...interface{}) {
+	fmt.Fprintf(os.Stderr, format, a...)
 	Usage()
 	if panicOnError {
 		panic("flag parse error")
@@ -268,6 +289,7 @@ func fail() {
 	os.Exit(2)
 }
 
+// NFlag returns the number of flags that have been set.
 func NFlag() int { return len(flags.actual) }
 
 // Arg returns the i'th command-line argument.  Arg(0) is the first remaining argument
@@ -415,8 +437,7 @@ func (f *allFlags) parseOne() (ok bool) {
 	}
 	name := s[num_minuses:]
 	if len(name) == 0 || name[0] == '-' || name[0] == '=' {
-		fmt.Fprintln(os.Stderr, "bad flag syntax:", s)
-		fail()
+		failf("bad flag syntax: %s\n", s)
 	}
 
 	// it's a flag. does it have an argument?
@@ -434,14 +455,12 @@ func (f *allFlags) parseOne() (ok bool) {
 	m := flags.formal
 	flag, alreadythere := m[name] // BUG
 	if !alreadythere {
-		fmt.Fprintf(os.Stderr, "flag provided but not defined: -%s\n", name)
-		fail()
+		failf("flag provided but not defined: -%s\n", name)
 	}
 	if fv, ok := flag.Value.(*boolValue); ok { // special case: doesn't need an arg
 		if has_value {
 			if !fv.Set(value) {
-				fmt.Fprintf(os.Stderr, "invalid boolean value %q for flag: -%s\n", value, name)
-				fail()
+				failf("invalid boolean value %q for flag: -%s\n", value, name)
 			}
 		} else {
 			fv.Set("true")
@@ -454,13 +473,11 @@ func (f *allFlags) parseOne() (ok bool) {
 			value, f.args = f.args[0], f.args[1:]
 		}
 		if !has_value {
-			fmt.Fprintf(os.Stderr, "flag needs an argument: -%s\n", name)
-			fail()
+			failf("flag needs an argument: -%s\n", name)
 		}
 		ok = flag.Value.Set(value)
 		if !ok {
-			fmt.Fprintf(os.Stderr, "invalid value %q for flag: -%s\n", value, name)
-			fail()
+			failf("invalid value %q for flag: -%s\n", value, name)
 		}
 	}
 	flags.actual[name] = flag

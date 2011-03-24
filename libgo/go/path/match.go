@@ -1,8 +1,11 @@
+// Copyright 2010 The Go Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
 package path
 
 import (
 	"os"
-	"sort"
 	"strings"
 	"utf8"
 )
@@ -10,7 +13,7 @@ import (
 var ErrBadPattern = os.NewError("syntax error in pattern")
 
 // Match returns true if name matches the shell file name pattern.
-// The syntax used by pattern is:
+// The pattern syntax is:
 //
 //	pattern:
 //		{ term }
@@ -75,7 +78,7 @@ Pattern:
 	return len(name) == 0, nil
 }
 
-// scanChunk gets the next section of pattern, which is a non-star string
+// scanChunk gets the next segment of pattern, which is a non-star string
 // possibly preceded by a star.
 func scanChunk(pattern string) (star bool, chunk, rest string) {
 	for len(pattern) > 0 && pattern[0] == '*' {
@@ -92,7 +95,6 @@ Scan:
 			if i+1 < len(pattern) {
 				i++
 			}
-			continue
 		case '[':
 			inrange = true
 		case ']':
@@ -202,77 +204,4 @@ func getEsc(chunk string) (r int, nchunk string, err os.Error) {
 		err = ErrBadPattern
 	}
 	return
-}
-
-// Glob returns the names of all files matching pattern or nil
-// if there is no matching file. The syntax of patterns is the same
-// as in Match. The pattern may describe hierarchical names such as
-// /usr/*/bin/ed.
-//
-func Glob(pattern string) (matches []string) {
-	if !hasMeta(pattern) {
-		if _, err := os.Stat(pattern); err == nil {
-			return []string{pattern}
-		}
-		return nil
-	}
-
-	dir, file := Split(pattern)
-	switch dir {
-	case "":
-		dir = "."
-	case "/":
-		// nothing
-	default:
-		dir = dir[0 : len(dir)-1] // chop off trailing '/'
-	}
-
-	if hasMeta(dir) {
-		for _, d := range Glob(dir) {
-			matches = glob(d, file, matches)
-		}
-	} else {
-		return glob(dir, file, nil)
-	}
-	return matches
-}
-
-// glob searches for files matching pattern in the directory dir
-// and appends them to matches.
-func glob(dir, pattern string, matches []string) []string {
-	fi, err := os.Stat(dir)
-	if err != nil {
-		return nil
-	}
-	if !fi.IsDirectory() {
-		return matches
-	}
-	d, err := os.Open(dir, os.O_RDONLY, 0666)
-	if err != nil {
-		return nil
-	}
-	defer d.Close()
-
-	names, err := d.Readdirnames(-1)
-	if err != nil {
-		return nil
-	}
-	sort.SortStrings(names)
-
-	for _, n := range names {
-		matched, err := Match(pattern, n)
-		if err != nil {
-			return matches
-		}
-		if matched {
-			matches = append(matches, Join(dir, n))
-		}
-	}
-	return matches
-}
-
-// hasMeta returns true if path contains any of the magic characters
-// recognized by Match.
-func hasMeta(path string) bool {
-	return strings.IndexAny(path, "*?[") != -1
 }

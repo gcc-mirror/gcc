@@ -9,6 +9,9 @@
 #include "go-panic.h"
 #include "channel.h"
 
+/* Returns true if a value was received, false if the channel is
+   closed.  */
+
 _Bool
 __go_receive_big (struct __go_channel *channel, void *val, _Bool for_select)
 {

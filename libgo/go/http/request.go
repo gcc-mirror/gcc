@@ -11,6 +11,7 @@ package http
 
 import (
 	"bufio"
+	"crypto/tls"
 	"container/vector"
 	"fmt"
 	"io"
@@ -92,6 +93,9 @@ type Request struct {
 	// following a hyphen uppercase and the rest lowercase.
 	Header Header
 
+	// Cookie records the HTTP cookies sent with the request.
+	Cookie []*Cookie
+
 	// The message body.
 	Body io.ReadCloser
 
@@ -134,6 +138,22 @@ type Request struct {
 	// response has multiple trailer lines with the same key, they will be
 	// concatenated, delimited by commas.
 	Trailer Header
+
+	// RemoteAddr allows HTTP servers and other software to record
+	// the network address that sent the request, usually for
+	// logging. This field is not filled in by ReadRequest and
+	// has no defined format. The HTTP server in this package
+	// sets RemoteAddr to an "IP:port" address before invoking a
+	// handler.
+	RemoteAddr string
+
+	// TLS allows HTTP servers and other software to record
+	// information about the TLS connection on which the request
+	// was received. This field is not filled in by ReadRequest.
+	// The HTTP server in this package sets the field for
+	// TLS-enabled connections before invoking a handler;
+	// otherwise it leaves the field nil.
+	TLS *tls.ConnectionState
 }
 
 // ProtoAtLeast returns whether the HTTP protocol used
@@ -190,6 +210,8 @@ func (req *Request) Write(w io.Writer) os.Error {
 // WriteProxy is like Write but writes the request in the form
 // expected by an HTTP proxy.  It includes the scheme and host
 // name in the URI instead of using a separate Host: header line.
+// If req.RawURL is non-empty, WriteProxy uses it unchanged
+// instead of URL but still omits the Host: header.
 func (req *Request) WriteProxy(w io.Writer) os.Error {
 	return req.write(w, true)
 }
@@ -206,13 +228,12 @@ func (req *Request) write(w io.Writer, usingProxy bool) os.Error {
 		if req.URL.RawQuery != "" {
 			uri += "?" + req.URL.RawQuery
 		}
-	}
-
-	if usingProxy {
-		if uri == "" || uri[0] != '/' {
-			uri = "/" + uri
+		if usingProxy {
+			if uri == "" || uri[0] != '/' {
+				uri = "/" + uri
+			}
+			uri = req.URL.Scheme + "://" + host + uri
 		}
-		uri = req.URL.Scheme + "://" + host + uri
 	}
 
 	fmt.Fprintf(w, "%s %s HTTP/1.1\r\n", valueOrDefault(req.Method, "GET"), uri)
@@ -243,8 +264,12 @@ func (req *Request) write(w io.Writer, usingProxy bool) os.Error {
 	// from Request, and introduce Request methods along the lines of
 	// Response.{GetHeader,AddHeader} and string constants for "Host",
 	// "User-Agent" and "Referer".
-	err = writeSortedKeyValue(w, req.Header, reqExcludeHeader)
+	err = writeSortedHeader(w, req.Header, reqExcludeHeader)
 	if err != nil {
+		return err
+	}
+
+	if err = writeCookies(w, req.Cookie); err != nil {
 		return err
 	}
 
@@ -483,6 +508,8 @@ func ReadRequest(b *bufio.Reader) (req *Request, err os.Error) {
 	if err != nil {
 		return nil, err
 	}
+
+	req.Cookie = readCookies(req.Header)
 
 	return req, nil
 }

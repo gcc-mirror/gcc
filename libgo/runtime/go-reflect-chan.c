@@ -27,7 +27,7 @@ extern void chansend (unsigned char *, unsigned char *, _Bool *)
   asm ("libgo_reflect.reflect.chansend");
 
 void
-chansend (unsigned char *ch, unsigned char *val, _Bool *pres)
+chansend (unsigned char *ch, unsigned char *val, _Bool *selected)
 {
   struct __go_channel *channel = (struct __go_channel *) ch;
 
@@ -46,25 +46,26 @@ chansend (unsigned char *ch, unsigned char *val, _Bool *pres)
       __builtin_memcpy (u.b + sizeof (uint64_t) - channel->element_size, val,
 			channel->element_size);
 #endif
-      if (pres == NULL)
+      if (selected == NULL)
 	__go_send_small (channel, u.v, 0);
       else
-	*pres = __go_send_nonblocking_small (channel, u.v);
+	*selected = __go_send_nonblocking_small (channel, u.v);
     }
   else
     {
-      if (pres == NULL)
+      if (selected == NULL)
 	__go_send_big (channel, val, 0);
       else
-	*pres = __go_send_nonblocking_big (channel, val);
+	*selected = __go_send_nonblocking_big (channel, val);
     }
 }
 
-extern void chanrecv (unsigned char *, unsigned char *, _Bool *)
+extern void chanrecv (unsigned char *, unsigned char *, _Bool *, _Bool *)
   asm ("libgo_reflect.reflect.chanrecv");
 
 void
-chanrecv (unsigned char *ch, unsigned char *val, _Bool *pres)
+chanrecv (unsigned char *ch, unsigned char *val, _Bool *selected,
+	  _Bool *received)
 {
   struct __go_channel *channel = (struct __go_channel *) ch;
 
@@ -76,16 +77,16 @@ chanrecv (unsigned char *ch, unsigned char *val, _Bool *pres)
 	uint64_t v;
       } u;
 
-      if (pres == NULL)
-	u.v = __go_receive_small (channel, 0);
+      if (selected == NULL)
+	u.v = __go_receive_small_closed (channel, 0, received);
       else
 	{
 	  struct __go_receive_nonblocking_small s;
 
 	  s = __go_receive_nonblocking_small (channel);
-	  *pres = s.__success;
-	  if (!s.__success)
-	    return;
+	  *selected = s.__success || s.__closed;
+	  if (received != NULL)
+	    *received = s.__success;
 	  u.v = s.__val;
 	}
 
@@ -98,10 +99,24 @@ chanrecv (unsigned char *ch, unsigned char *val, _Bool *pres)
     }
   else
     {
-      if (pres == NULL)
-	__go_receive_big (channel, val, 0);
+      if (selected == NULL)
+	{
+	  _Bool success;
+
+	  success = __go_receive_big (channel, val, 0);
+	  if (received != NULL)
+	    *received = success;
+	}
       else
-	*pres = __go_receive_nonblocking_big (channel, val);
+	{
+	  _Bool got;
+	  _Bool closed;
+
+	  got = __go_receive_nonblocking_big (channel, val, &closed);
+	  *selected = got || closed;
+	  if (received != NULL)
+	    *received = got;
+	}
     }
 }
 

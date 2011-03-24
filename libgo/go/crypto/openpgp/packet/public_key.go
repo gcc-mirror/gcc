@@ -11,6 +11,7 @@ import (
 	"crypto/rsa"
 	"crypto/sha1"
 	"encoding/binary"
+	"fmt"
 	"hash"
 	"io"
 	"os"
@@ -178,12 +179,6 @@ func (pk *PublicKey) VerifySignature(signed hash.Hash, sig *Signature) (err os.E
 		return error.InvalidArgumentError("public key cannot generate signatures")
 	}
 
-	rsaPublicKey, ok := pk.PublicKey.(*rsa.PublicKey)
-	if !ok {
-		// TODO(agl): support DSA and ECDSA keys.
-		return error.UnsupportedError("non-RSA public key")
-	}
-
 	signed.Write(sig.HashSuffix)
 	hashBytes := signed.Sum()
 
@@ -191,11 +186,28 @@ func (pk *PublicKey) VerifySignature(signed hash.Hash, sig *Signature) (err os.E
 		return error.SignatureError("hash tag doesn't match")
 	}
 
-	err = rsa.VerifyPKCS1v15(rsaPublicKey, sig.Hash, hashBytes, sig.Signature)
-	if err != nil {
-		return error.SignatureError("RSA verification failure")
+	if pk.PubKeyAlgo != sig.PubKeyAlgo {
+		return error.InvalidArgumentError("public key and signature use different algorithms")
 	}
-	return nil
+
+	switch pk.PubKeyAlgo {
+	case PubKeyAlgoRSA, PubKeyAlgoRSASignOnly:
+		rsaPublicKey, _ := pk.PublicKey.(*rsa.PublicKey)
+		err = rsa.VerifyPKCS1v15(rsaPublicKey, sig.Hash, hashBytes, sig.RSASignature)
+		if err != nil {
+			return error.SignatureError("RSA verification failure")
+		}
+		return nil
+	case PubKeyAlgoDSA:
+		dsaPublicKey, _ := pk.PublicKey.(*dsa.PublicKey)
+		if !dsa.Verify(dsaPublicKey, hashBytes, sig.DSASigR, sig.DSASigS) {
+			return error.SignatureError("DSA verification failure")
+		}
+		return nil
+	default:
+		panic("shouldn't happen")
+	}
+	panic("unreachable")
 }
 
 // VerifyKeySignature returns nil iff sig is a valid signature, make by this
@@ -239,9 +251,21 @@ func (pk *PublicKey) VerifyUserIdSignature(id string, sig *Signature) (err os.Er
 	return pk.VerifySignature(h, sig)
 }
 
+// KeyIdString returns the public key's fingerprint in capital hex
+// (e.g. "6C7EE1B8621CC013").
+func (pk *PublicKey) KeyIdString() string {
+	return fmt.Sprintf("%X", pk.Fingerprint[12:20])
+}
+
+// KeyIdShortString returns the short form of public key's fingerprint
+// in capital hex, as shown by gpg --list-keys (e.g. "621CC013").
+func (pk *PublicKey) KeyIdShortString() string {
+	return fmt.Sprintf("%X", pk.Fingerprint[16:20])
+}
+
 // A parsedMPI is used to store the contents of a big integer, along with the
 // bit length that was specified in the original input. This allows the MPI to
-// be reserialised exactly.
+// be reserialized exactly.
 type parsedMPI struct {
 	bytes     []byte
 	bitLength uint16

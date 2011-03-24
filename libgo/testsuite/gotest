@@ -276,6 +276,13 @@ if $havex; then
 fi
 
 # They all compile; now generate the code to call them.
+
+localname() {
+	# The package main has been renamed to __main__ when imported.
+	# Adjust its uses.
+	echo $1 | sed 's/^main\./__main__./'
+}
+
 {
 	# test functions are named TestFoo
 	# the grep -v eliminates methods and other special names
@@ -288,6 +295,9 @@ fi
 		echo 'gotest: warning: no tests matching '$pattern in _gotest_.o $xofile 1>&2
 		exit 2
 	fi
+	# benchmarks are named BenchmarkFoo.
+	pattern='Benchmark([^a-z].*)?'
+	benchmarks=$($NM -p -v _gotest_.o $xofile | egrep ' T .*\.'$pattern'$' | grep -v '\..*\..*\.' | sed 's/.* //' | sed 's/.*\.\(.*\.\)/\1/')
 
 	# package spec
 	echo 'package main'
@@ -299,23 +309,48 @@ fi
 	if $havex; then
 		echo 'import "./_xtest_"'
 	fi
-	if [ $package != "testing" ]; then
-		echo 'import "testing"'
-		echo 'import __regexp__ "regexp"' # rename in case tested package is called regexp
-	fi
+	echo 'import "testing"'
+	echo 'import __os__     "os"' # rename in case tested package is called os
+	echo 'import __regexp__ "regexp"' # rename in case tested package is called regexp
 	# test array
 	echo
 	echo 'var tests = []testing.InternalTest {'
 	for i in $tests
 	do
-		echo '	{ "'$i'", '$i' },'
+		j=$(localname $i)
+		echo '	{"'$i'", '$j'},'
+	done
+	echo '}'
+	# benchmark array
+	# The comment makes the multiline declaration
+	# gofmt-safe even when there are no benchmarks.
+	echo 'var benchmarks = []testing.InternalBenchmark{ //'
+	for i in $benchmarks
+	do
+		j=$(localname $i)
+		echo '	{"'$i'", '$j'},'
 	done
 	echo '}'
 	# body
-	echo
-	echo 'func main() {'
-	echo '	testing.Main(__regexp__.MatchString, tests)'
-	echo '}'
+	echo \
+'
+var matchPat string
+var matchRe *__regexp__.Regexp
+
+func matchString(pat, str string) (result bool, err __os__.Error) {
+	if matchRe == nil || matchPat != pat {
+		matchPat = pat
+		matchRe, err = __regexp__.Compile(matchPat)
+		if err != nil {
+			return
+		}
+	}
+	return matchRe.MatchString(str), nil
+}
+
+func main() {
+	testing.Main(matchString, tests, benchmarks)
+}'
 }>_testmain.go
 
 case "x$dejagnu" in

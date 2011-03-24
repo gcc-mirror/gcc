@@ -6,6 +6,7 @@ package openpgp
 
 import (
 	"crypto"
+	"crypto/dsa"
 	"crypto/openpgp/armor"
 	"crypto/openpgp/error"
 	"crypto/openpgp/packet"
@@ -39,7 +40,7 @@ func DetachSignText(w io.Writer, signer *Entity, message io.Reader) os.Error {
 // ArmoredDetachSignText signs message (after canonicalising the line endings)
 // with the private key from signer (which must already have been decrypted)
 // and writes an armored signature to w.
-func SignTextDetachedArmored(w io.Writer, signer *Entity, message io.Reader) os.Error {
+func ArmoredDetachSignText(w io.Writer, signer *Entity, message io.Reader) os.Error {
 	return armoredDetachSign(w, signer, message, packet.SigTypeText)
 }
 
@@ -80,6 +81,9 @@ func detachSign(w io.Writer, signer *Entity, message io.Reader, sigType packet.S
 	case packet.PubKeyAlgoRSA, packet.PubKeyAlgoRSASignOnly:
 		priv := signer.PrivateKey.PrivateKey.(*rsa.PrivateKey)
 		err = sig.SignRSA(h, priv)
+	case packet.PubKeyAlgoDSA:
+		priv := signer.PrivateKey.PrivateKey.(*dsa.PrivateKey)
+		err = sig.SignDSA(h, priv)
 	default:
 		err = error.UnsupportedError("public key algorithm: " + strconv.Itoa(int(sig.PubKeyAlgo)))
 	}

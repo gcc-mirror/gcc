@@ -21,6 +21,7 @@ var illegalInputs = []interface{}{
 	`package p; func f() { if /* should have condition */ {} };`,
 	`package p; func f() { if ; /* should have condition */ {} };`,
 	`package p; func f() { if f(); /* should have condition */ {} };`,
+	`package p; const c; /* should have constant value */`,
 }
 
 
@@ -73,7 +74,7 @@ var validFiles = []string{
 
 func TestParse3(t *testing.T) {
 	for _, filename := range validFiles {
-		_, err := ParseFile(fset, filename, nil, 0)
+		_, err := ParseFile(fset, filename, nil, DeclarationErrors)
 		if err != nil {
 			t.Errorf("ParseFile(%s): %v", filename, err)
 		}
