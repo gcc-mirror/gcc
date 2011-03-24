@@ -259,7 +259,7 @@
   (match_code "reg,mem")
 {
   if (GET_CODE (op) == REG)
-    return mode == Pmode;
+    return GET_MODE (op) == Pmode;
 
   if (GET_CODE (op) == MEM)
     {

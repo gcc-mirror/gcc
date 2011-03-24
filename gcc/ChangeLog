@@ -1,3 +1,8 @@
+2011-03-24  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* config/h8300/predicates.md (jump_address_operand): Fix register
+	mode check.
+
 2011-03-24  Ira Rosen  <ira.rosen@linaro.org>
 
 	* doc/invoke.texi (max-stores-to-sink): Document.
