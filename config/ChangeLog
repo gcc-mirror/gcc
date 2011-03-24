@@ -1,3 +1,7 @@
+2011-03-24  Paolo Bonzini  <bonzini@gnu.org>
+
+	* mh-sysv4: Remove AR_CFLAGS.
+
 2011-03-24  Joseph Myers  <joseph@codesourcery.com>
 
 	* mh-cxux, mh-decstation, mh-dgux386, mh-lynxrs6k, mh-ncr3000,
