@@ -1,3 +1,9 @@
+2011-03-24  Steve Ellcey  <sje@cup.hp.com>
+
+	PR target/48209
+	* gcc.c-torture/execute/pr47917.c: Move this...
+	* gcc.dg/torture/pr47917.c: to here and add xfails.
+
 2011-03-24  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/array16.ad[sb]: New test.

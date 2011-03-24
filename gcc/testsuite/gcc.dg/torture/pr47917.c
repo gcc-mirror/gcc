@@ -1,3 +1,8 @@
+/* { dg-do run } */
+/* { dg-options "-std=c99" } */
+/* { dg-xfail-if "no C99 snprintf function" { *-*-hpux10* } } */
+/* { dg-xfail-run-if "non-conforming C99 snprintf" { *-*-hpux11.[012]* } } */
+
 /* PR middle-end/47917 */
 
 extern int snprintf (char *, __SIZE_TYPE__, const char *, ...);
