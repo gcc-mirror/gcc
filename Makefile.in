@@ -100,8 +100,6 @@ TOPLEVEL_CONFIGURE_ARGUMENTS=@TOPLEVEL_CONFIGURE_ARGUMENTS@
 tooldir = @tooldir@
 build_tooldir = @build_tooldir@
 
-GDB_NLM_DEPS = 
-
 # This is the name of the environment variable used for the path to
 # the libraries.
 RPATH_ENVVAR = @RPATH_ENVVAR@
@@ -60524,6 +60522,7 @@ all-stage3-lto-plugin: maybe-all-stage3-libiberty
 all-stage4-lto-plugin: maybe-all-stage4-libiberty
 all-stageprofile-lto-plugin: maybe-all-stageprofile-libiberty
 all-stagefeedback-lto-plugin: maybe-all-stagefeedback-libiberty
+all-utils: maybe-all-libiberty
 configure-mpfr: maybe-all-gmp
 
 configure-stage1-mpfr: maybe-all-stage1-gmp

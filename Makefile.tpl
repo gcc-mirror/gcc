@@ -103,8 +103,6 @@ TOPLEVEL_CONFIGURE_ARGUMENTS=@TOPLEVEL_CONFIGURE_ARGUMENTS@
 tooldir = @tooldir@
 build_tooldir = @build_tooldir@
 
-GDB_NLM_DEPS = 
-
 # This is the name of the environment variable used for the path to
 # the libraries.
 RPATH_ENVVAR = @RPATH_ENVVAR@

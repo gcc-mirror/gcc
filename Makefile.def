@@ -366,6 +366,8 @@ dependencies = { module=all-gnattools; on=all-target-libada; };
 
 dependencies = { module=all-lto-plugin; on=all-libiberty; };
 
+dependencies = { module=all-utils; on=all-libiberty; };
+
 dependencies = { module=configure-mpfr; on=all-gmp; };
 dependencies = { module=configure-mpc; on=all-mpfr; };
 dependencies = { module=configure-ppl; on=all-gmp; };
