@@ -1,3 +1,8 @@
+2011-03-24  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* builtins.c (expand_movstr): Fix endp == 1 adjustment after
+	last commit.
+
 2011-03-24  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/48271

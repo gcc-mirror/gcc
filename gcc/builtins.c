@@ -3655,7 +3655,6 @@ static rtx
 expand_movstr (tree dest, tree src, rtx target, int endp)
 {
   struct expand_operand ops[3];
-  rtx end;
   rtx dest_mem;
   rtx src_mem;
 
@@ -3683,7 +3682,7 @@ expand_movstr (tree dest, tree src, rtx target, int endp)
 	 adjust it.  */
       if (endp == 1)
 	{
-	  rtx tem = plus_constant (gen_lowpart (GET_MODE (target), end), 1);
+	  rtx tem = plus_constant (gen_lowpart (GET_MODE (target), target), 1);
 	  emit_move_insn (target, force_operand (tem, NULL_RTX));
 	}
     }
