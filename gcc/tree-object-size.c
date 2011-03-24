@@ -348,8 +348,6 @@ addr_object_size (struct object_size_info *osi, const_tree ptr,
 	  tree bytes2 = compute_object_offset (TREE_OPERAND (ptr, 0), pt_var);
 	  if (bytes2 != error_mark_node)
 	    {
-	      bytes2 = size_binop (PLUS_EXPR, bytes2,
-				   TREE_OPERAND (pt_var, 1));
 	      if (TREE_CODE (bytes2) == INTEGER_CST
 		  && tree_int_cst_lt (pt_var_size, bytes2))
 		bytes2 = size_zero_node;
