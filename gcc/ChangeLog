@@ -1,15 +1,22 @@
+2011-03-24  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/48237
+	* config/i386/i386.md (*movdf_internal_rex64): Do not split
+	alternatives that can be handled with movq or movabsq insn.
+	(*movdf_internal): Disable for !TARGET_64BIT.
+	(*movdf_internal_nointeger): Ditto.
+	* config/i386/i386.c (ix86_print_operand): Handle DFmode immediates.
+
 2011-03-24  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* system.h (FUNCTION_ARG, FUNCTION_INCOMING_ARG): Poison.
 	(FUNCTION_ARG_ADVANCE): Likewise.
 	* tm.texi.in: Change references to them to hook references.
 	* tm.texi: Regenerate.
-	* targhooks.c (default_function_arg): Eliminate check for target
-	macro.
+	* targhooks.c (default_function_arg): Eliminate check for target macro.
 	(default_function_incoming_arg): Likewise.
 	(default_function_arg_advance): Likewise.
-	* target.def (function_arg, function_incoming_arg): Change to
-	DEFHOOK.
+	* target.def (function_arg, function_incoming_arg): Change to DEFHOOK.
 	(function_arg_advance): Likewise.
 	* target-def.h: Eliminate FUNCTION_INCOMING_ARG check.
 
@@ -22,8 +29,7 @@
 2011-03-24  Diego Novillo  <dnovillo@google.com>
 
 	* lto-opts.c (input_data_block): Move to lto-streamer-in.c.
-	* lto-streamer-in.c (input_string_internal): Add clarifying
-	comments.
+	* lto-streamer-in.c (input_string_internal): Add clarifying comments.
 	(lto_input_data_block): Move from lto-opts.c.  Make extern.
 	Update all users.
 	(lto_input_string): Rename from input_string.  Make extern.
@@ -134,8 +140,7 @@
 
 2011-03-23  Richard Guenther  <rguenther@suse.de>
 
-	* tree-stdarg.c (va_list_counter_bump): Handle bumps via
-	MEM_REF.
+	* tree-stdarg.c (va_list_counter_bump): Handle bumps via MEM_REF.
 	(check_va_list_escapes): Likewise.
 	(check_all_va_list_escapes): Likewise.
 
@@ -332,10 +337,8 @@
 	(v850_handle_option): Access target_flags via opts pointer.  Don't
 	assert that global structures are in use.  Update calls to
 	v850_handle_memory_option.
-	(v850_encode_data_area): Update references to small memory
-	settings.
-	* config/v850/v850.h (struct small_memory_info, small_memory):
-	Remove.
+	(v850_encode_data_area): Update references to small memory settings.
+	* config/v850/v850.h (struct small_memory_info, small_memory): Remove.
 	(enum small_memory_type): Move to v850-opts.h.
 	* config/v850/v850.opt (config/v850/v850-opts.h): New
 	HeaderInclude entry.
@@ -425,8 +428,7 @@
 	* config/iq2000/iq2000-opts.h: New.
 	* config/iq2000/iq2000.c: Don't include opts.h.
 	(iq2000_tune, iq2000_handle_option, TARGET_HANDLE_OPTION): Remove.
-	* config/iq2000/iq2000.h (enum processor_type, iq2000_tune):
-	Remove.
+	* config/iq2000/iq2000.h (enum processor_type, iq2000_tune): Remove.
 	* config/iq2000/iq2000.opt (config/iq2000/iq2000-opts.h): New
 	HeaderInclude entry.
 	(iq2000_tune): New Variable entry.
@@ -458,8 +460,7 @@
 	(frv_cpu_type): Remove.
 	* config/frv/frv.c: Don't include opts.h.
 	(frv_cpu_type, frv_handle_option, TARGET_HANDLE_OPTION): Remove.
-	* config/frv/frv.opt (config/frv/frv-opts.h): New HeaderInclude
-	entry.
+	* config/frv/frv.opt (config/frv/frv-opts.h): New HeaderInclude entry.
 	(frv_cpu_type): New Variable entry.
 	(frv_cpu): New Enum and EnumValue entries.
 
@@ -480,8 +481,7 @@
 	not bfin_lib_id_given.
 	(bfin_handle_option): Don't set bfin_lib_id_given.  Access
 	bfin_cpu_type, bfin_si_revision and bfin_workarounds via opts
-	pointer. Use error_at.  Don't assert that global structures are in
-	use.
+	pointer. Use error_at.  Don't assert that global structures are in use.
 	* config/bfin/bfin.h: Include bfin-opts.h.
 	(enum bfin_cpu_type, bfin_cpu_t): Move to bfin-opts.h.
 	(bfin_cpu_type, bfin_si_revision, bfin_workarounds): Remove.
@@ -496,8 +496,7 @@
 	or -msoft-float here.
 	* config/arm/arm.h (CPP_SPEC): Handle -mfloat-abi=*, not
 	-msoft-float and -mhard-float.
-	(OPTION_DEFAULT_SPECS): Don't handle -mhard-float and
-	-msoft-float.
+	(OPTION_DEFAULT_SPECS): Don't handle -mhard-float and -msoft-float.
 	* config/arm/coff.h (MULTILIB_DEFAULTS): Use mfloat-abi=soft, not
 	msoft-float.
 	* config/arm/elf.h (ASM_SPEC): Don't handle -mhard-float and
@@ -557,8 +556,7 @@
 	global structures are in use.
 	(ix86_function_specific_save, ix86_function_specific_restore):
 	Update ix86_isa_flags_explicit field name.
-	* config/i386/i386.opt (ix86_isa_flags_explicit): New Variable
-	entry.
+	* config/i386/i386.opt (ix86_isa_flags_explicit): New Variable entry.
 	(ix86_isa_flags_explicit): Rename TargetSave entry to
 	x_ix86_isa_flags_explicit.
 
@@ -813,8 +811,7 @@
 	macro.
 	(default_function_incoming_arg): Likewise.
 	(default_function_arg_advance): Likewise.
-	* target.def (function_arg, function_incoming_arg): Change to
-	DEFHOOK.
+	* target.def (function_arg, function_incoming_arg): Change to DEFHOOK.
 	(function_arg_advance): Likewise.
 	* target-def.h: Eliminate FUNCTION_INCOMING_ARG check.
 
@@ -890,7 +887,8 @@
 	* function.c (safe_insn_predicate, assign_parm_setup_reg): Likewise.
 	* optabs.c (can_compare_p, prepare_cmp_insn): Likewise.
 	(emit_cmp_and_jump_insn_1, gen_add2_insn, gen_add3_insn): Likewise.
-	(have_add2_insn, gen_sub2_insn, gen_sub3_insn, have_sub2_insn): Likewise.
+	(have_add2_insn, gen_sub2_insn, gen_sub3_insn, have_sub2_insn):
+	Likewise.
 	(gen_cond_trap): Likewise.
 	(prepare_operand): Likewise.  Change icode to an insn_code.
 	(insn_operand_matches): New function.
