@@ -154,11 +154,11 @@ destroy_output_block (struct output_block *ob)
    table in OB. The string might or might not include a trailing '\0'.
    Then put the index onto the INDEX_STREAM.  */
 
-static void
-output_string_with_length (struct output_block *ob,
-			   struct lto_output_stream *index_stream,
-			   const char *s,
-			   unsigned int len)
+void
+lto_output_string_with_length (struct output_block *ob,
+			       struct lto_output_stream *index_stream,
+			       const char *s,
+			       unsigned int len)
 {
   struct string_slot **slot;
   struct string_slot s_slot;
@@ -169,6 +169,9 @@ output_string_with_length (struct output_block *ob,
   s_slot.s = string;
   s_slot.len = len;
   s_slot.slot_num = 0;
+
+  /* Indicate that this is not a NULL string.  */
+  lto_output_uleb128_stream (index_stream, 0);
 
   slot = (struct string_slot **) htab_find_slot (ob->string_hash_table,
 						 &s_slot, INSERT);
@@ -200,16 +203,14 @@ output_string_with_length (struct output_block *ob,
 /* Output the '\0' terminated STRING to the string
    table in OB.  Then put the index onto the INDEX_STREAM.  */
 
-static void
-output_string (struct output_block *ob,
-	       struct lto_output_stream *index_stream,
-	       const char *string)
+void
+lto_output_string (struct output_block *ob,
+	           struct lto_output_stream *index_stream,
+	           const char *string)
 {
   if (string)
-    {
-      lto_output_uleb128_stream (index_stream, 0);
-      output_string_with_length (ob, index_stream, string, strlen (string) + 1);
-    }
+    lto_output_string_with_length (ob, index_stream, string,
+				   strlen (string) + 1);
   else
     lto_output_uleb128_stream (index_stream, 1);
 }
@@ -224,12 +225,9 @@ output_string_cst (struct output_block *ob,
 		   tree string)
 {
   if (string)
-    {
-      lto_output_uleb128_stream (index_stream, 0);
-      output_string_with_length (ob, index_stream,
-				 TREE_STRING_POINTER (string),
-				 TREE_STRING_LENGTH (string));
-    }
+    lto_output_string_with_length (ob, index_stream,
+				   TREE_STRING_POINTER (string),
+				   TREE_STRING_LENGTH (string ));
   else
     lto_output_uleb128_stream (index_stream, 1);
 }
@@ -244,12 +242,9 @@ output_identifier (struct output_block *ob,
 		   tree id)
 {
   if (id)
-    {
-      lto_output_uleb128_stream (index_stream, 0);
-      output_string_with_length (ob, index_stream,
-				 IDENTIFIER_POINTER (id),
-				 IDENTIFIER_LENGTH (id));
-    }
+    lto_output_string_with_length (ob, index_stream,
+				   IDENTIFIER_POINTER (id),
+				   IDENTIFIER_LENGTH (id));
   else
     lto_output_uleb128_stream (index_stream, 1);
 }
@@ -611,13 +606,13 @@ lto_output_location (struct output_block *ob, location_t loc)
 
   if (loc == UNKNOWN_LOCATION)
     {
-      output_string (ob, ob->main_stream, NULL);
+      lto_output_string (ob, ob->main_stream, NULL);
       return;
     }
 
   xloc = expand_location (loc);
 
-  output_string (ob, ob->main_stream, xloc.file);
+  lto_output_string (ob, ob->main_stream, xloc.file);
   output_sleb128 (ob, xloc.line);
   output_sleb128 (ob, xloc.column);
   output_sleb128 (ob, xloc.sysp);
@@ -1155,7 +1150,7 @@ static void
 lto_output_ts_translation_unit_decl_tree_pointers (struct output_block *ob,
 						   tree expr)
 {
-  output_string (ob, ob->main_stream, TRANSLATION_UNIT_LANGUAGE (expr));
+  lto_output_string (ob, ob->main_stream, TRANSLATION_UNIT_LANGUAGE (expr));
 }
 
 /* Helper for lto_output_tree.  Write all pointer fields in EXPR to output
@@ -1320,12 +1315,12 @@ lto_output_builtin_tree (struct output_block *ob, tree expr, int ix)
 	 reader side from adding a second '*', we omit it here.  */
       const char *str = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (expr));
       if (strlen (str) > 1 && str[0] == '*')
-	output_string (ob, ob->main_stream, &str[1]);
+	lto_output_string (ob, ob->main_stream, &str[1]);
       else
-	output_string (ob, ob->main_stream, NULL);
+	lto_output_string (ob, ob->main_stream, NULL);
     }
   else
-    output_string (ob, ob->main_stream, NULL);
+    lto_output_string (ob, ob->main_stream, NULL);
 }
 
 
@@ -1745,7 +1740,7 @@ output_gimple_stmt (struct output_block *ob, gimple stmt)
       lto_output_uleb128_stream (ob->main_stream, gimple_asm_noutputs (stmt));
       lto_output_uleb128_stream (ob->main_stream, gimple_asm_nclobbers (stmt));
       lto_output_uleb128_stream (ob->main_stream, gimple_asm_nlabels (stmt));
-      output_string (ob, ob->main_stream, gimple_asm_string (stmt));
+      lto_output_string (ob, ob->main_stream, gimple_asm_string (stmt));
       /* Fallthru  */
 
     case GIMPLE_ASSIGN:
@@ -2342,7 +2337,7 @@ write_global_references (struct output_block *ob,
 /* Write all the streams in an lto_out_decl_state STATE using
    output block OB and output stream OUT_STREAM.  */
 
-static void
+void
 lto_output_decl_state_streams (struct output_block *ob,
 			       struct lto_out_decl_state *state)
 {
@@ -2356,7 +2351,7 @@ lto_output_decl_state_streams (struct output_block *ob,
 /* Write all the references in an lto_out_decl_state STATE using
    output block OB and output stream OUT_STREAM.  */
 
-static void
+void
 lto_output_decl_state_refs (struct output_block *ob,
 			    struct lto_output_stream *out_stream,
 			    struct lto_out_decl_state *state)
