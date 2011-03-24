@@ -1,5 +1,10 @@
 2011-03-24  Paolo Bonzini  <bonzini@gnu.org>
 
+	* mh-sysv4: Remove.
+	* mh-solaris: Remove.
+
+2011-03-24  Paolo Bonzini  <bonzini@gnu.org>
+
 	* mh-sysv4: Remove AR_CFLAGS.
 
 2011-03-24  Joseph Myers  <joseph@codesourcery.com>

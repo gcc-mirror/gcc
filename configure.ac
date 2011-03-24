@@ -1037,9 +1037,6 @@ esac
 host_makefile_frag=/dev/null
 if test -d ${srcdir}/config ; then
 case "${host}" in
-  i[[3456789]]86-*-solaris2*)
-    host_makefile_frag="config/mh-sysv4"
-    ;;
   i[[3456789]]86-*-msdosdjgpp*)
     host_makefile_frag="config/mh-djgpp"
     ;;
@@ -1054,7 +1051,6 @@ case "${host}" in
     host_makefile_frag="config/mh-interix"
     ;;
   *-*-solaris2*)
-    host_makefile_frag="config/mh-solaris"
     ;;
   hppa*-hp-hpux10*)
     host_makefile_frag="config/mh-pa-hpux10"

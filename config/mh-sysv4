@@ -1,1 +1,0 @@
-X11_EXTRA_LIBS = -lnsl
