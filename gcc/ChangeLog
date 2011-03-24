@@ -1,3 +1,9 @@
+2011-03-24  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/48269
+	* tree-object-size.c (addr_object_size): Do not double-account
+	for MEM_REF offsets.
+
 2011-03-24  Diego Novillo  <dnovillo@google.com>
 
 	* lto-opts.c (input_data_block): Move to lto-streamer-in.c.
