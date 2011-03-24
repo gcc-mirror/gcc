@@ -1,3 +1,8 @@
+2011-03-24  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* fold-const.c (fold_ternary_loc): Preserve the location (if any) of
+	the argument in calls to fold_truth_not_expr.
+
 2011-03-24  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* tree.c (record_node_allocation_statistics): New function.
