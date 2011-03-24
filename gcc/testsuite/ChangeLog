@@ -1,3 +1,8 @@
+2011-03-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/48204
+	* gcc.dg/dfp/pr48204.c: New test.
+
 2011-03-24  Steve Ellcey  <sje@cup.hp.com>
 
 	PR target/48209
