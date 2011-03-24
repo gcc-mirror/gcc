@@ -19,7 +19,8 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// 26.5.8.2.2 Class template binomial_distribution [rand.dist.bern.bin]
+// 26.5.8.3.4 Class template negative_binomial_distribution
+// [rand.dist.bern.negbin]
 
 #include <random>
 #include <functional>
@@ -31,18 +32,20 @@ void test01()
 
   std::mt19937 eng;
 
-  std::binomial_distribution<> bd1(5, 0.3);
-  auto bbd1 = std::bind(bd1, eng);
-  testDiscreteDist(bbd1, [](int n) { return binomial_pdf(n, 5, 0.3); } );
+  std::negative_binomial_distribution<> nbd1(5, 0.3);
+  auto bnbd1 = std::bind(nbd1, eng);
+  testDiscreteDist(bnbd1, [](int n)
+		   { return negative_binomial_pdf(n, 5, 0.3); } );
 
-  std::binomial_distribution<> bd2(55, 0.3);
-  auto bbd2 = std::bind(bd2, eng);
-  testDiscreteDist(bbd2, [](int n) { return binomial_pdf(n, 55, 0.3); } );
+  std::negative_binomial_distribution<> nbd2(55, 0.3);
+  auto bnbd2 = std::bind(nbd2, eng);
+  testDiscreteDist(bnbd2, [](int n)
+		   { return negative_binomial_pdf(n, 55, 0.3); } );
 
-  // libstdc++/48114
-  std::binomial_distribution<> bd3(10, 0.75);
-  auto bbd3 = std::bind(bd3, eng);
-  testDiscreteDist(bbd3, [](int n) { return binomial_pdf(n, 10, 0.75); } );
+  std::negative_binomial_distribution<> nbd3(10, 0.75);
+  auto bnbd3 = std::bind(nbd3, eng);
+  testDiscreteDist(bnbd3, [](int n)
+		   { return negative_binomial_pdf(n, 10, 0.75); } );
 }
 
 int main()
