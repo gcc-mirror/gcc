@@ -1,3 +1,7 @@
+2011-03-24  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/derived_type2.adb: New test.
+
 2011-03-24  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/48271
