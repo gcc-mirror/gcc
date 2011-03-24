@@ -1,5 +1,11 @@
 2011-03-24  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/48271
+	* tree-ssa-dom.c (tree_ssa_dominator_optimize): Only cleanup
+	blocks that still exist.
+
+2011-03-24  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/48270
 	* tree-ssa-phiopt.c (cond_if_else_store_replacement): Do
 	not free datarefs before ddrs.
