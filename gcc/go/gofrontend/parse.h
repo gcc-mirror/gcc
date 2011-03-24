@@ -44,7 +44,6 @@ class Parse
     PRECEDENCE_NORMAL = 0,
     PRECEDENCE_OROR,
     PRECEDENCE_ANDAND,
-    PRECEDENCE_CHANOP,
     PRECEDENCE_RELOP,
     PRECEDENCE_ADDOP,
     PRECEDENCE_MULOP
@@ -229,6 +228,7 @@ class Parse
   void statement_list();
   bool statement_list_may_start_here();
   void expression_stat(Expression*);
+  void send_stmt(Expression*);
   void inc_dec_stat(Expression*);
   void assignment(Expression*, Range_clause*);
   void tuple_assignment(Expression_list*, Range_clause*);

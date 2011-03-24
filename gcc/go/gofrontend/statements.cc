@@ -3987,6 +3987,90 @@ Statement::make_type_switch_statement(Named_object* var, Expression* expr,
   return new Type_switch_statement(var, expr, location);
 }
 
+// Class Send_statement.
+
+// Traversal.
+
+int
+Send_statement::do_traverse(Traverse* traverse)
+{
+  if (this->traverse_expression(traverse, &this->channel_) == TRAVERSE_EXIT)
+    return TRAVERSE_EXIT;
+  return this->traverse_expression(traverse, &this->val_);
+}
+
+// Determine types.
+
+void
+Send_statement::do_determine_types()
+{
+  this->channel_->determine_type_no_context();
+  Type* type = this->channel_->type();
+  Type_context context;
+  if (type->channel_type() != NULL)
+    context.type = type->channel_type()->element_type();
+  this->val_->determine_type(&context);
+}
+
+// Check types.
+
+void
+Send_statement::do_check_types(Gogo*)
+{
+  Type* type = this->channel_->type();
+  if (type->is_error_type())
+    {
+      this->set_is_error();
+      return;
+    }
+  Channel_type* channel_type = type->channel_type();
+  if (channel_type == NULL)
+    {
+      error_at(this->location(), "left operand of %<<-%> must be channel");
+      this->set_is_error();
+      return;
+    }
+  Type* element_type = channel_type->element_type();
+  if (!Type::are_assignable(element_type, this->val_->type(), NULL))
+    {
+      this->report_error(_("incompatible types in send"));
+      return;
+    }
+  if (!channel_type->may_send())
+    {
+      this->report_error(_("invalid send on receive-only channel"));
+      return;
+    }
+}
+
+// Get a tree for a send statement.
+
+tree
+Send_statement::do_get_tree(Translate_context* context)
+{
+  tree channel = this->channel_->get_tree(context);
+  tree val = this->val_->get_tree(context);
+  if (channel == error_mark_node || val == error_mark_node)
+    return error_mark_node;
+  Channel_type* channel_type = this->channel_->type()->channel_type();
+  val = Expression::convert_for_assignment(context,
+					   channel_type->element_type(),
+					   this->val_->type(),
+					   val,
+					   this->location());
+  return Gogo::send_on_channel(channel, val, true, this->for_select_,
+			       this->location());
+}
+
+// Make a send statement.
+
+Send_statement*
+Statement::make_send_statement(Expression* channel, Expression* val,
+			       source_location location)
+{
+  return new Send_statement(channel, val, location);
+}
+
 // Class Select_clauses::Select_clause.
 
 // Traversal.
@@ -4043,7 +4127,7 @@ Select_clauses::Select_clause::lower(Block* b)
   // If this is a send clause, evaluate the value to send before the
   // select statement.
   Temporary_statement* val_temp = NULL;
-  if (this->is_send_)
+  if (this->is_send_ && !this->val_->is_constant())
     {
       val_temp = Statement::make_temporary(NULL, this->val_, loc);
       b->add_statement(val_temp);
@@ -4054,11 +4138,14 @@ Select_clauses::Select_clause::lower(Block* b)
   Expression* ref = Expression::make_temporary_reference(channel_temp, loc);
   if (this->is_send_)
     {
-      Expression* ref2 = Expression::make_temporary_reference(val_temp, loc);
-      Send_expression* send = Expression::make_send(ref, ref2, loc);
-      send->discarding_value();
+      Expression* ref2;
+      if (val_temp == NULL)
+	ref2 = this->val_;
+      else
+	ref2 = Expression::make_temporary_reference(val_temp, loc);
+      Send_statement* send = Statement::make_send_statement(ref, ref2, loc);
       send->set_for_select();
-      init->add_statement(Statement::make_statement(send));
+      init->add_statement(send);
     }
   else
     {

@@ -36,7 +36,6 @@ class Field_reference_expression;
 class Interface_field_reference_expression;
 class Type_guard_expression;
 class Receive_expression;
-class Send_expression;
 class Named_object;
 class Export;
 class Import;
@@ -89,7 +88,6 @@ class Expression
     EXPRESSION_COMPOSITE_LITERAL,
     EXPRESSION_HEAP_COMPOSITE,
     EXPRESSION_RECEIVE,
-    EXPRESSION_SEND,
     EXPRESSION_TYPE_DESCRIPTOR,
     EXPRESSION_TYPE_INFO,
     EXPRESSION_STRUCT_FIELD_OFFSET,
@@ -271,10 +269,6 @@ class Expression
   static Receive_expression*
   make_receive(Expression* channel, source_location);
 
-  // Make a send expression.
-  static Send_expression*
-  make_send(Expression* channel, Expression* val, source_location);
-
   // Make an expression which evaluates to the type descriptor of a
   // type.
   static Expression*
@@ -356,8 +350,7 @@ class Expression
 
   // This is called by the parser if the value of this expression is
   // being discarded.  This issues warnings about computed values
-  // being unused, and handles send expressions which act differently
-  // depending upon whether the value is used.
+  // being unused.
   void
   discarding_value()
   { this->do_discarding_value(); }
@@ -1807,7 +1800,7 @@ class Receive_expression : public Expression
  public:
   Receive_expression(Expression* channel, source_location location)
     : Expression(EXPRESSION_RECEIVE, location),
-      channel_(channel), is_value_discarded_(false), for_select_(false)
+      channel_(channel), for_select_(false)
   { }
 
   // Return the channel.
@@ -1827,7 +1820,7 @@ class Receive_expression : public Expression
 
   void
   do_discarding_value()
-  { this->is_value_discarded_ = true; }
+  { }
 
   Type*
   do_type();
@@ -1855,67 +1848,6 @@ class Receive_expression : public Expression
  private:
   // The channel from which we are receiving.
   Expression* channel_;
-  // Whether the value is being discarded.
-  bool is_value_discarded_;
-  // Whether this is for a select statement.
-  bool for_select_;
-};
-
-// A send expression.
-
-class Send_expression : public Expression
-{
- public:
-  Send_expression(Expression* channel, Expression* val,
-		  source_location location)
-    : Expression(EXPRESSION_SEND, location),
-      channel_(channel), val_(val), is_value_discarded_(false),
-      for_select_(false)
-  { }
-
-  // Note that this is for a select statement.
-  void
-  set_for_select()
-  { this->for_select_ = true; }
-
- protected:
-  int
-  do_traverse(Traverse* traverse);
-
-  void
-  do_discarding_value()
-  { this->is_value_discarded_ = true; }
-
-  Type*
-  do_type();
-
-  void
-  do_determine_type(const Type_context*);
-
-  void
-  do_check_types(Gogo*);
-
-  Expression*
-  do_copy()
-  {
-    return Expression::make_send(this->channel_->copy(), this->val_->copy(),
-				 this->location());
-  }
-
-  bool
-  do_must_eval_in_order() const
-  { return true; }
-
-  tree
-  do_get_tree(Translate_context*);
-
- private:
-  // The channel on which to send the value.
-  Expression* channel_;
-  // The value to send.
-  Expression* val_;
-  // Whether the value is being discarded.
-  bool is_value_discarded_;
   // Whether this is for a select statement.
   bool for_select_;
 };

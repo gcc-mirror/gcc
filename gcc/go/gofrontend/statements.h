@@ -23,6 +23,7 @@ class For_statement;
 class For_range_statement;
 class Switch_statement;
 class Type_switch_statement;
+class Send_statement;
 class Select_statement;
 class Variable;
 class Named_object;
@@ -99,6 +100,7 @@ class Statement
     STATEMENT_UNNAMED_LABEL,
     STATEMENT_IF,
     STATEMENT_CONSTANT_SWITCH,
+    STATEMENT_SEND,
     STATEMENT_SELECT,
 
     // These statements types are created by the parser, but they
@@ -235,6 +237,10 @@ class Statement
   // Make a type switch statement.
   static Type_switch_statement*
   make_type_switch_statement(Named_object* var, Expression*, source_location);
+
+  // Make a send statement.
+  static Send_statement*
+  make_send_statement(Expression* channel, Expression* val, source_location);
 
   // Make a select statement.
   static Select_statement*
@@ -590,6 +596,44 @@ class Return_statement : public Statement
   const Typed_identifier_list* results_;
   // Return values.  This may be NULL.
   Expression_list* vals_;
+};
+
+// A send statement.
+
+class Send_statement : public Statement
+{
+ public:
+  Send_statement(Expression* channel, Expression* val,
+		 source_location location)
+    : Statement(STATEMENT_SEND, location),
+      channel_(channel), val_(val), for_select_(false)
+  { }
+
+  // Note that this is for a select statement.
+  void
+  set_for_select()
+  { this->for_select_ = true; }
+
+ protected:
+  int
+  do_traverse(Traverse* traverse);
+
+  void
+  do_determine_types();
+
+  void
+  do_check_types(Gogo*);
+
+  tree
+  do_get_tree(Translate_context*);
+
+ private:
+  // The channel on which to send the value.
+  Expression* channel_;
+  // The value to send.
+  Expression* val_;
+  // Whether this is for a select statement.
+  bool for_select_;
 };
 
 // Select_clauses holds the clauses of a select statement.  This is

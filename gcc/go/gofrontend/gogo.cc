@@ -1926,14 +1926,6 @@ Order_eval::statement(Block* block, size_t* pindex, Statement* s)
     {
       Expression** pexpr = *p;
 
-      // If the last expression is a send or receive expression, we
-      // may be ignoring the value; we don't want to evaluate it
-      // early.
-      if (p + 1 == find_eval_ordering.end()
-	  && ((*pexpr)->classification() == Expression::EXPRESSION_SEND
-	      || (*pexpr)->classification() == Expression::EXPRESSION_RECEIVE))
-	break;
-
       // The last expression in a thunk will be the call passed to go
       // or defer, which we must not evaluate early.
       if (is_thunk && p + 1 == find_eval_ordering.end())
