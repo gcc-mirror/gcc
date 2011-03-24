@@ -285,7 +285,7 @@ static void find_reloads_address_part (rtx, rtx *, enum reg_class,
 				       enum machine_mode, int,
 				       enum reload_type, int);
 static rtx find_reloads_subreg_address (rtx, int, int, enum reload_type,
-					int, rtx);
+					int, rtx, int *);
 static void copy_replacements_1 (rtx *, rtx *, int);
 static int find_inc_amount (rtx, rtx);
 static int refers_to_mem_for_reload_p (rtx);
@@ -4759,7 +4759,7 @@ find_reloads_toplev (rtx x, int opnum, enum reload_type type,
 			   || ! offsettable_memref_p (reg_equiv_mem[regno])
 			   || num_not_at_initial_offset))))
 	x = find_reloads_subreg_address (x, 1, opnum, type, ind_levels,
-					 insn);
+					   insn, address_reloaded);
     }
 
   for (copied = 0, i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
@@ -5995,7 +5995,7 @@ find_reloads_address_1 (enum machine_mode mode, rtx x, int context,
 		{
 		  x = find_reloads_subreg_address (x, 0, opnum,
 						   ADDR_TYPE (type),
-						   ind_levels, insn);
+						   ind_levels, insn, NULL);
 		  push_reload (x, NULL_RTX, loc, (rtx*) 0, rclass,
 			       GET_MODE (x), VOIDmode, 0, 0, opnum, type);
 		  return 1;
@@ -6097,9 +6097,11 @@ find_reloads_address_part (rtx x, rtx *loc, enum reg_class rclass,
 
 static rtx
 find_reloads_subreg_address (rtx x, int force_replace, int opnum,
-			     enum reload_type type, int ind_levels, rtx insn)
+			     enum reload_type type, int ind_levels, rtx insn,
+			     int *address_reloaded)
 {
   int regno = REGNO (SUBREG_REG (x));
+  int reloaded = 0;
 
   if (reg_equiv_memory_loc[regno])
     {
@@ -6123,7 +6125,6 @@ find_reloads_subreg_address (rtx x, int force_replace, int opnum,
 	      unsigned inner_size = GET_MODE_SIZE (GET_MODE (SUBREG_REG (x)));
 	      int offset;
 	      rtx orig = tem;
-	      int reloaded;
 
 	      /* For big-endian paradoxical subregs, SUBREG_BYTE does not
 		 hold the correct (negative) byte offset.  */
@@ -6192,11 +6193,13 @@ find_reloads_subreg_address (rtx x, int force_replace, int opnum,
 		  && !strict_memory_address_addr_space_p
 			(GET_MODE (x), XEXP (reg_equiv_mem[regno], 0),
 			 MEM_ADDR_SPACE (reg_equiv_mem[regno])))
-		push_reload (XEXP (tem, 0), NULL_RTX, &XEXP (tem, 0), (rtx*) 0,
-			     base_reg_class (GET_MODE (tem), MEM, SCRATCH),
-			     GET_MODE (XEXP (tem, 0)), VOIDmode, 0, 0,
-			     opnum, type);
-
+		{
+		  push_reload (XEXP (tem, 0), NULL_RTX, &XEXP (tem, 0), (rtx*) 0,
+			       base_reg_class (GET_MODE (tem), MEM, SCRATCH),
+			       GET_MODE (XEXP (tem, 0)), VOIDmode, 0, 0,
+			       opnum, type);
+		  reloaded = 1;
+		}
 	      /* If this is not a toplevel operand, find_reloads doesn't see
 		 this substitution.  We have to emit a USE of the pseudo so
 		 that delete_output_reload can see it.  */
@@ -6211,6 +6214,9 @@ find_reloads_subreg_address (rtx x, int force_replace, int opnum,
 	    }
 	}
     }
+  if (reloaded && address_reloaded)
+    *address_reloaded = 1;
+
   return x;
 }
 
