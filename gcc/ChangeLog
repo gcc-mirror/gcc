@@ -1,3 +1,9 @@
+2011-03-24  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/48270
+	* tree-ssa-phiopt.c (cond_if_else_store_replacement): Do
+	not free datarefs before ddrs.
+
 2011-03-24  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree-sra.c (build_ref_for_offset): Strip useless type conversions
