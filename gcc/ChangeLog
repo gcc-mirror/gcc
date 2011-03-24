@@ -1,3 +1,27 @@
+2011-03-24  Diego Novillo  <dnovillo@google.com>
+
+	* lto-opts.c (input_data_block): Move to lto-streamer-in.c.
+	* lto-streamer-in.c (input_string_internal): Add clarifying
+	comments.
+	(lto_input_data_block): Move from lto-opts.c.  Make extern.
+	Update all users.
+	(lto_input_string): Rename from input_string.  Make extern.
+	Update all users.
+	* lto-streamer-out.c (lto_output_string_with_length): Rename from
+	output_string_with_length.
+	Output 0 to indicate a non-NULL string.  Update all callers to
+	not emit 0.
+	(lto_output_string): Rename from output_string.  Make extern.
+	Update all users.
+	(lto_output_decl_state_streams): Make extern.
+	(lto_output_decl_state_refs): Make extern.
+	* lto-streamer.h (lto_input_string): Declare.
+	(lto_input_data_block): Declare.
+	(lto_output_string): Declare.
+	(lto_output_string_with_length): Declare.
+	(lto_output_decl_state_streams): Declare.
+	(lto_output_decl_state_refs): Declare.
+
 2011-03-24  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/46562

@@ -162,18 +162,6 @@ output_string_stream (struct lto_output_stream *stream, const char *string)
     output_data_stream (stream, &flag, sizeof (flag));
 }
 
-/* Read LENGTH bytes from STREAM to ADDR.  */
-
-static void
-input_data_block (struct lto_input_block *ib, void *addr, size_t length)
-{
-  size_t i;
-  unsigned char *const buffer = (unsigned char *const) addr;
-
-  for (i = 0; i < length; i++)
-    buffer[i] = lto_input_1_unsigned (ib);
-}
-
 /* Return a string from IB.  The string is allocated, and the caller is
    responsible for freeing it.  */
 
@@ -182,15 +170,15 @@ input_string_block (struct lto_input_block *ib)
 {
   bool flag;
 
-  input_data_block (ib, &flag, sizeof (flag));
+  lto_input_data_block (ib, &flag, sizeof (flag));
   if (flag)
     {
       size_t length;
       char *string;
 
-      input_data_block (ib, &length, sizeof (length));
+      lto_input_data_block (ib, &length, sizeof (length));
       string = (char *) xcalloc (1, length + 1);
-      input_data_block (ib, string, length);
+      lto_input_data_block (ib, string, length);
 
       return string;
     }
@@ -336,16 +324,16 @@ input_options (struct lto_input_block *ib)
 {
   size_t length, i;
 
-  input_data_block (ib, &length, sizeof (length));
+  lto_input_data_block (ib, &length, sizeof (length));
 
   for (i = 0; i < length; i++)
     {
       opt_t o;
 
-      input_data_block (ib, &o.type, sizeof (o.type));
-      input_data_block (ib, &o.code, sizeof (o.code));
+      lto_input_data_block (ib, &o.type, sizeof (o.type));
+      lto_input_data_block (ib, &o.code, sizeof (o.code));
       o.arg = input_string_block (ib);
-      input_data_block (ib, &o.value, sizeof (o.value));
+      lto_input_data_block (ib, &o.value, sizeof (o.value));
       VEC_safe_push (opt_t, heap, file_options, &o);
     }
 }

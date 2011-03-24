@@ -862,6 +862,9 @@ extern struct data_in *lto_data_in_create (struct lto_file_decl_data *,
 				    const char *, unsigned,
 				    VEC(ld_plugin_symbol_resolution_t,heap) *);
 extern void lto_data_in_delete (struct data_in *);
+extern const char *lto_input_string (struct data_in *,
+				     struct lto_input_block *);
+extern void lto_input_data_block (struct lto_input_block *, void *, size_t);
 
 
 /* In lto-streamer-out.c  */
@@ -870,6 +873,18 @@ extern struct output_block *create_output_block (enum lto_section_type);
 extern void destroy_output_block (struct output_block *);
 extern void lto_output_tree (struct output_block *, tree, bool);
 extern void produce_asm (struct output_block *ob, tree fn);
+extern void lto_output_string (struct output_block *,
+			       struct lto_output_stream *,
+			       const char *);
+extern void lto_output_string_with_length (struct output_block *,
+			                   struct lto_output_stream *,
+			                   const char *,
+			                   unsigned int);
+void lto_output_decl_state_streams (struct output_block *,
+				    struct lto_out_decl_state *);
+void lto_output_decl_state_refs (struct output_block *,
+			         struct lto_output_stream *,
+			         struct lto_out_decl_state *);
 
 
 /* In lto-cgraph.c  */
