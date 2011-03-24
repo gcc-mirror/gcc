@@ -701,7 +701,8 @@ tree_ssa_dominator_optimize (void)
     gimple_stmt_iterator gsi;
     basic_block bb;
     FOR_EACH_BB (bb)
-      {for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+      {
+	for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
 	  update_stmt_if_modified (gsi_stmt (gsi));
       }
   }
@@ -734,7 +735,8 @@ tree_ssa_dominator_optimize (void)
       EXECUTE_IF_SET_IN_BITMAP (need_eh_cleanup, 0, i, bi)
 	{
 	  basic_block bb = BASIC_BLOCK (i);
-	  if (single_succ_p (bb) == 1
+	  if (bb
+	      && single_succ_p (bb)
 	      && (single_succ_edge (bb)->flags & EDGE_EH) == 0)
 	    {
 	      bitmap_clear_bit (need_eh_cleanup, i);

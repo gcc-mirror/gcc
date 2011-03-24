@@ -1,3 +1,8 @@
+2011-03-24  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/48271
+	* g++.dg/torture/pr48271.C: New testcase.
+
 2011-03-24  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/array15.ad[sb]: New test.
