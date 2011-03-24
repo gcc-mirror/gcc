@@ -1068,11 +1068,6 @@ case "${host}" in
   rs6000-*-aix*)
     host_makefile_frag="config/mh-ppc-aix"
     ;;
-  # This is placed last to prevent interfering with the cases above.
-  i[[3456789]]86-*-*)
-    # Build the stage2 and stage3 compilers with -fomit-frame-pointer.
-    host_makefile_frag="config/mh-x86omitfp"
-    ;;
 esac
 fi
 
