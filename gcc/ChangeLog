@@ -1,3 +1,9 @@
+2011-03-24  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	PR rtl-optimization/48263
+	* optabs.c (expand_binop_directly): Reinstate convert_modes code
+	and original commutative_p handling.  Use maybe_gen_insn.
+
 2011-03-24  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* reload.c (find_reloads_subreg_address): Add address_reloaded
