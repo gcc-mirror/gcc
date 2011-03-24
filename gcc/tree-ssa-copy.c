@@ -244,7 +244,6 @@ propagate_tree_value_into_stmt (gimple_stmt_iterator *gsi, tree val)
         expr = gimple_assign_rhs1 (stmt);
       propagate_tree_value (&expr, val);
       gimple_assign_set_rhs_from_tree (gsi, expr);
-      stmt = gsi_stmt (*gsi);
     }
   else if (gimple_code (stmt) == GIMPLE_COND)
     {

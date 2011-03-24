@@ -427,7 +427,6 @@ remove_unused_scope_block_p (tree scope)
 {
   tree *t, *next;
   bool unused = !TREE_USED (scope);
-  var_ann_t ann;
   int nsubblocks = 0;
 
   for (t = &BLOCK_VARS (scope); *t; t = next)
@@ -467,8 +466,7 @@ remove_unused_scope_block_p (tree scope)
 	 info about optimized-out variables in the scope blocks.
 	 Exception are the scope blocks not containing any instructions
 	 at all so user can't get into the scopes at first place.  */
-      else if ((ann = var_ann (*t)) != NULL
-	       && is_used_p (*t))
+      else if (var_ann (*t) != NULL && is_used_p (*t))
 	unused = false;
       else if (TREE_CODE (*t) == LABEL_DECL && TREE_USED (*t))
 	/* For labels that are still used in the IL, the decision to
@@ -690,7 +688,6 @@ remove_unused_locals (void)
   basic_block bb;
   tree var, t;
   referenced_var_iterator rvi;
-  var_ann_t ann;
   bitmap global_unused_vars = NULL;
   unsigned srcidx, dstidx, num;
 
@@ -766,7 +763,7 @@ remove_unused_locals (void)
     {
       var = VEC_index (tree, cfun->local_decls, srcidx);
       if (TREE_CODE (var) != FUNCTION_DECL
-	  && (!(ann = var_ann (var))
+	  && (!var_ann (var)
 	      || !is_used_p (var)))
 	{
 	  if (is_global_var (var))
@@ -798,7 +795,7 @@ remove_unused_locals (void)
       FOR_EACH_LOCAL_DECL (cfun, ix, var)
 	if (TREE_CODE (var) == VAR_DECL
 	    && is_global_var (var)
-	    && (ann = var_ann (var)) != NULL
+	    && var_ann (var) != NULL
 	    && is_used_p (var))
 	  mark_all_vars_used (&DECL_INITIAL (var), global_unused_vars);
 

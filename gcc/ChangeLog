@@ -1,3 +1,15 @@
+2011-03-24  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-live.c (remove_unused_scope_block_p): Remove set but
+	unused variable "ann".
+	(remove_unused_locals): Likewise.
+
+	* tree-ssa-copy.c (propagate_tree_value_into_stmt): Remove useless
+	statement.
+
+	* cfglayout.c (fixup_reorder_chain): Do not dereference E_FALL
+	after it is freed.
+
 2011-03-24  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* config/s390/s390.c (s390_preferred_reload_class): Return NO_REGS
