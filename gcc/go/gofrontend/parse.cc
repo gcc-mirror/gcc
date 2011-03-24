@@ -3703,8 +3703,7 @@ Parse::return_stat()
 							      location));
 }
 
-// IfStat = "if" [ [ SimpleStat ] ";" ] [ Condition ]
-//             Block [ "else" Statement ] .
+// IfStmt    = "if" [ SimpleStmt ";" ] Expression Block [ "else" Statement ] .
 
 void
 Parse::if_stat()
@@ -3728,8 +3727,7 @@ Parse::if_stat()
     {
       if (this->peek_token()->is_op(OPERATOR_SEMICOLON))
 	this->advance_token();
-      if (!this->peek_token()->is_op(OPERATOR_LCURLY))
-	cond = this->expression(PRECEDENCE_NORMAL, false, false, NULL);
+      cond = this->expression(PRECEDENCE_NORMAL, false, false, NULL);
     }
 
   this->gogo_->start_block(this->location());

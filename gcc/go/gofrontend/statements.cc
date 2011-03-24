@@ -2956,12 +2956,8 @@ class If_statement : public Statement
 int
 If_statement::do_traverse(Traverse* traverse)
 {
-  if (this->cond_ != NULL)
-    {
-      if (this->traverse_expression(traverse, &this->cond_) == TRAVERSE_EXIT)
-	return TRAVERSE_EXIT;
-    }
-  if (this->then_block_->traverse(traverse) == TRAVERSE_EXIT)
+  if (this->traverse_expression(traverse, &this->cond_) == TRAVERSE_EXIT
+      || this->then_block_->traverse(traverse) == TRAVERSE_EXIT)
     return TRAVERSE_EXIT;
   if (this->else_block_ != NULL)
     {
@@ -2974,11 +2970,8 @@ If_statement::do_traverse(Traverse* traverse)
 void
 If_statement::do_determine_types()
 {
-  if (this->cond_ != NULL)
-    {
-      Type_context context(Type::lookup_bool_type(), false);
-      this->cond_->determine_type(&context);
-    }
+  Type_context context(Type::lookup_bool_type(), false);
+  this->cond_->determine_type(&context);
   this->then_block_->determine_types();
   if (this->else_block_ != NULL)
     this->else_block_->determine_types();
@@ -2989,14 +2982,11 @@ If_statement::do_determine_types()
 void
 If_statement::do_check_types(Gogo*)
 {
-  if (this->cond_ != NULL)
-    {
-      Type* type = this->cond_->type();
-      if (type->is_error_type())
-	this->set_is_error();
-      else if (!type->is_boolean_type())
-	this->report_error(_("expected boolean expression"));
-    }
+  Type* type = this->cond_->type();
+  if (type->is_error_type())
+    this->set_is_error();
+  else if (!type->is_boolean_type())
+    this->report_error(_("expected boolean expression"));
 }
 
 // Whether the overall statement may fall through.
@@ -3014,12 +3004,9 @@ If_statement::do_may_fall_through() const
 tree
 If_statement::do_get_tree(Translate_context* context)
 {
-  gcc_assert(this->cond_ == NULL
-	     || this->cond_->type()->is_boolean_type()
+  gcc_assert(this->cond_->type()->is_boolean_type()
 	     || this->cond_->type()->is_error_type());
-  tree cond_tree = (this->cond_ == NULL
-		    ? boolean_true_node
-		    : this->cond_->get_tree(context));
+  tree cond_tree = this->cond_->get_tree(context);
   tree then_tree = this->then_block_->get_tree(context);
   tree else_tree = (this->else_block_ == NULL
 		    ? NULL_TREE
