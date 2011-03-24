@@ -1,3 +1,9 @@
+2011-03-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/48204
+	* simplify-rtx.c (simplify_const_unary_operation): Call
+	real_convert when changing mode class with FLOAT_EXTEND.
+
 2011-03-24  Nick Clifton  <nickc@redhat.com>
 
 	* config/rx/rx.h (LABEL_ALIGN_FOR_BARRIER): Define.
