@@ -586,13 +586,7 @@ default_function_arg_advance (CUMULATIVE_ARGS *ca ATTRIBUTE_UNUSED,
 			      const_tree type ATTRIBUTE_UNUSED,
 			      bool named ATTRIBUTE_UNUSED)
 {
-#ifdef FUNCTION_ARG_ADVANCE
-  CUMULATIVE_ARGS args = *ca;
-  FUNCTION_ARG_ADVANCE (args, mode, CONST_CAST_TREE (type), named);
-  *ca = args;
-#else
   gcc_unreachable ();
-#endif
 }
 
 rtx
@@ -601,11 +595,7 @@ default_function_arg (CUMULATIVE_ARGS *ca ATTRIBUTE_UNUSED,
 		      const_tree type ATTRIBUTE_UNUSED,
 		      bool named ATTRIBUTE_UNUSED)
 {
-#ifdef FUNCTION_ARG
-  return FUNCTION_ARG (*ca, mode, CONST_CAST_TREE (type), named);
-#else
   gcc_unreachable ();
-#endif
 }
 
 rtx
@@ -614,11 +604,7 @@ default_function_incoming_arg (CUMULATIVE_ARGS *ca ATTRIBUTE_UNUSED,
 			       const_tree type ATTRIBUTE_UNUSED,
 			       bool named ATTRIBUTE_UNUSED)
 {
-#ifdef FUNCTION_INCOMING_ARG
-  return FUNCTION_INCOMING_ARG (*ca, mode, CONST_CAST_TREE (type), named);
-#else
   gcc_unreachable ();
-#endif
 }
 
 unsigned int

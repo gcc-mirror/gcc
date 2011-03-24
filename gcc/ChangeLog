@@ -1,3 +1,18 @@
+2011-03-24  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* system.h (FUNCTION_ARG, FUNCTION_INCOMING_ARG): Poison.
+	(FUNCTION_ARG_ADVANCE): Likewise.
+	* tm.texi.in: Change references to them to hook references.
+	* tm.texi: Regenerate.
+	* targhooks.c (default_function_arg): Eliminate check for target
+	macro.
+	(default_function_incoming_arg): Likewise.
+	(default_function_arg_advance): Likewise.
+	* target.def (function_arg, function_incoming_arg): Change to
+	DEFHOOK.
+	(function_arg_advance): Likewise.
+	* target-def.h: Eliminate FUNCTION_INCOMING_ARG check.
+
 2011-03-24  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/48269
