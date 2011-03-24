@@ -2018,8 +2018,7 @@ DEFHOOK
 /* Update the state in CA to advance past an argument in the
    argument list.  The values MODE, TYPE, and NAMED describe that
    argument.  */
-/* ??? tm.texi still only describes the old macro.  */
-DEFHOOK_UNDOC
+DEFHOOK
 (function_arg_advance,
  "",
  void,
@@ -2030,8 +2029,7 @@ DEFHOOK_UNDOC
    be placed on a stack, or a hard register in which to store the
    argument.  The values MODE, TYPE, and NAMED describe that
    argument.  */
-/* ??? tm.texi still only describes the old macro.  */
-DEFHOOK_UNDOC
+DEFHOOK
 (function_arg,
  "",
  rtx, (CUMULATIVE_ARGS *ca, enum machine_mode mode, const_tree type,
@@ -2040,8 +2038,7 @@ DEFHOOK_UNDOC
 
 /* Likewise, but for machines with register windows.  Return the
    location where the argument will appear to the callee.  */
-/* ??? tm.texi still only describes the old macro.  */
-DEFHOOK_UNDOC
+DEFHOOK
 (function_incoming_arg,
  "",
  rtx, (CUMULATIVE_ARGS *ca, enum machine_mode mode, const_tree type,

@@ -3980,25 +3980,22 @@ This section describes the macros which let you control how various
 types of arguments are passed in registers or how they are arranged in
 the stack.
 
-@defmac FUNCTION_ARG (@var{cum}, @var{mode}, @var{type}, @var{named})
-A C expression that controls whether a function argument is passed
-in a register, and which register.
+@deftypefn {Target Hook} rtx TARGET_FUNCTION_ARG (CUMULATIVE_ARGS *@var{ca}, enum machine_mode @var{mode}, const_tree @var{type}, bool @var{named})
+Return an RTX indicating whether a function argument is passed in a
+register and if so, which register.
 
-The arguments are @var{cum}, which summarizes all the previous
+The arguments are @var{ca}, which summarizes all the previous
 arguments; @var{mode}, the machine mode of the argument; @var{type},
 the data type of the argument as a tree node or 0 if that is not known
 (which happens for C support library functions); and @var{named},
-which is 1 for an ordinary argument and 0 for nameless arguments that
-correspond to @samp{@dots{}} in the called function's prototype.
-@var{type} can be an incomplete type if a syntax error has previously
-occurred.
+which is @code{true} for an ordinary argument and @code{false} for
+nameless arguments that correspond to @samp{@dots{}} in the called
+function's prototype.  @var{type} can be an incomplete type if a
+syntax error has previously occurred.
 
-The value of the expression is usually either a @code{reg} RTX for the
-hard register in which to pass the argument, or zero to pass the
-argument on the stack.
-
-For machines like the VAX and 68000, where normally all arguments are
-pushed, zero suffices as a definition.
+The return value is usually either a @code{reg} RTX for the hard
+register in which to pass the argument, or zero to pass the argument
+on the stack.
 
 The value of the expression can also be a @code{parallel} RTX@.  This is
 used when an argument is passed in multiple locations.  The mode of the
@@ -4014,26 +4011,27 @@ As a special exception the first @code{expr_list} in the @code{parallel}
 RTX may have a first operand of zero.  This indicates that the entire
 argument is also stored on the stack.
 
-The last time this macro is called, it is called with @code{MODE ==
+The last time this hook is called, it is called with @code{MODE ==
 VOIDmode}, and its result is passed to the @code{call} or @code{call_value}
 pattern as operands 2 and 3 respectively.
 
 @cindex @file{stdarg.h} and register arguments
-The usual way to make the ISO library @file{stdarg.h} work on a machine
-where some arguments are usually passed in registers, is to cause
-nameless arguments to be passed on the stack instead.  This is done
-by making @code{FUNCTION_ARG} return 0 whenever @var{named} is 0.
+The usual way to make the ISO library @file{stdarg.h} work on a
+machine where some arguments are usually passed in registers, is to
+cause nameless arguments to be passed on the stack instead.  This is
+done by making @code{TARGET_FUNCTION_ARG} return 0 whenever
+@var{named} is @code{false}.
 
-@cindex @code{TARGET_MUST_PASS_IN_STACK}, and @code{FUNCTION_ARG}
-@cindex @code{REG_PARM_STACK_SPACE}, and @code{FUNCTION_ARG}
+@cindex @code{TARGET_MUST_PASS_IN_STACK}, and @code{TARGET_FUNCTION_ARG}
+@cindex @code{REG_PARM_STACK_SPACE}, and @code{TARGET_FUNCTION_ARG}
 You may use the hook @code{targetm.calls.must_pass_in_stack}
 in the definition of this macro to determine if this argument is of a
 type that must be passed in the stack.  If @code{REG_PARM_STACK_SPACE}
-is not defined and @code{FUNCTION_ARG} returns nonzero for such an
+is not defined and @code{TARGET_FUNCTION_ARG} returns nonzero for such an
 argument, the compiler will abort.  If @code{REG_PARM_STACK_SPACE} is
 defined, the argument will be computed in the stack and then loaded into
 a register.
-@end defmac
+@end deftypefn
 
 @deftypefn {Target Hook} bool TARGET_MUST_PASS_IN_STACK (enum machine_mode @var{mode}, const_tree @var{type})
 This target hook should return @code{true} if we should not pass @var{type}
@@ -4042,20 +4040,21 @@ definition that is usually appropriate, refer to @file{expr.h} for additional
 documentation.
 @end deftypefn
 
-@defmac FUNCTION_INCOMING_ARG (@var{cum}, @var{mode}, @var{type}, @var{named})
-Define this macro if the target machine has ``register windows'', so
+@deftypefn {Target Hook} rtx TARGET_FUNCTION_INCOMING_ARG (CUMULATIVE_ARGS *@var{ca}, enum machine_mode @var{mode}, const_tree @var{type}, bool @var{named})
+Define this hook if the target machine has ``register windows'', so
 that the register in which a function sees an arguments is not
 necessarily the same as the one in which the caller passed the
 argument.
 
-For such machines, @code{FUNCTION_ARG} computes the register in which
-the caller passes the value, and @code{FUNCTION_INCOMING_ARG} should
-be defined in a similar fashion to tell the function being called
-where the arguments will arrive.
+For such machines, @code{TARGET_FUNCTION_ARG} computes the register in
+which the caller passes the value, and
+@code{TARGET_FUNCTION_INCOMING_ARG} should be defined in a similar
+fashion to tell the function being called where the arguments will
+arrive.
 
-If @code{FUNCTION_INCOMING_ARG} is not defined, @code{FUNCTION_ARG}
-serves both purposes.
-@end defmac
+If @code{TARGET_FUNCTION_INCOMING_ARG} is not defined,
+@code{TARGET_FUNCTION_ARG} serves both purposes.
+@end deftypefn
 
 @deftypefn {Target Hook} int TARGET_ARG_PARTIAL_BYTES (CUMULATIVE_ARGS *@var{cum}, enum machine_mode @var{mode}, tree @var{type}, bool @var{named})
 This target hook returns the number of bytes at the beginning of an
@@ -4071,9 +4070,9 @@ structure) crosses that boundary, its first few words must be passed
 in registers and the rest must be pushed.  This macro tells the
 compiler when this occurs, and how many bytes should go in registers.
 
-@code{FUNCTION_ARG} for these arguments should return the first
+@code{TARGET_FUNCTION_ARG} for these arguments should return the first
 register to be used by the caller for this argument; likewise
-@code{FUNCTION_INCOMING_ARG}, for the called function.
+@code{TARGET_FUNCTION_INCOMING_ARG}, for the called function.
 @end deftypefn
 
 @deftypefn {Target Hook} bool TARGET_PASS_BY_REFERENCE (CUMULATIVE_ARGS *@var{cum}, enum machine_mode @var{mode}, const_tree @var{type}, bool @var{named})
@@ -4102,10 +4101,10 @@ The default version of this hook always returns false.
 @end deftypefn
 
 @defmac CUMULATIVE_ARGS
-A C type for declaring a variable that is used as the first argument of
-@code{FUNCTION_ARG} and other related values.  For some target machines,
-the type @code{int} suffices and can hold the number of bytes of
-argument so far.
+A C type for declaring a variable that is used as the first argument
+of @code{TARGET_FUNCTION_ARG} and other related values.  For some
+target machines, the type @code{int} suffices and can hold the number
+of bytes of argument so far.
 
 There is no need to record in @code{CUMULATIVE_ARGS} anything about the
 arguments that have been passed on the stack.  The compiler has other
@@ -4167,17 +4166,17 @@ argument @var{libname} exists for symmetry with
 @c --mew 5feb93   i switched the order of the sentences.  --mew 10feb93
 @end defmac
 
-@defmac FUNCTION_ARG_ADVANCE (@var{cum}, @var{mode}, @var{type}, @var{named})
-A C statement (sans semicolon) to update the summarizer variable
-@var{cum} to advance past an argument in the argument list.  The
-values @var{mode}, @var{type} and @var{named} describe that argument.
-Once this is done, the variable @var{cum} is suitable for analyzing
-the @emph{following} argument with @code{FUNCTION_ARG}, etc.
+@deftypefn {Target Hook} void TARGET_FUNCTION_ARG_ADVANCE (CUMULATIVE_ARGS *@var{ca}, enum machine_mode @var{mode}, const_tree @var{type}, bool @var{named})
+This hook updates the summarizer variable pointed to by @var{ca} to
+advance past an argument in the argument list.  The values @var{mode},
+@var{type} and @var{named} describe that argument.  Once this is done,
+the variable @var{cum} is suitable for analyzing the @emph{following}
+argument with @code{TARGET_FUNCTION_ARG}, etc.
 
-This macro need not do anything if the argument in question was passed
+This hook need not do anything if the argument in question was passed
 on the stack.  The compiler knows how to track the amount of stack space
 used for arguments without any special help.
-@end defmac
+@end deftypefn
 
 @defmac FUNCTION_ARG_OFFSET (@var{mode}, @var{type})
 If defined, a C expression that is the number of bytes to add to the
@@ -4377,7 +4376,7 @@ On many machines, only @code{TYPE_MODE (@var{ret_type})} is relevant.
 place regardless of mode.)  The value of the expression is usually a
 @code{reg} RTX for the hard register where the return value is stored.
 The value can also be a @code{parallel} RTX, if the return value is in
-multiple places.  See @code{FUNCTION_ARG} for an explanation of the
+multiple places.  See @code{TARGET_FUNCTION_ARG} for an explanation of the
 @code{parallel} form.   Note that the callee will populate every
 location specified in the @code{parallel}, but if the first element of
 the @code{parallel} contains the whole return value, callers will use
@@ -5068,7 +5067,7 @@ not generate any instructions in this case.
 Define this hook to return @code{true} if the location where a function
 argument is passed depends on whether or not it is a named argument.
 
-This hook controls how the @var{named} argument to @code{FUNCTION_ARG}
+This hook controls how the @var{named} argument to @code{TARGET_FUNCTION_ARG}
 is set for varargs and stdarg functions.  If this hook returns
 @code{true}, the @var{named} argument is always true for named
 arguments, and false for unnamed arguments.  If it returns @code{false},
