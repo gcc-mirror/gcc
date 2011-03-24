@@ -1,5 +1,20 @@
 2011-03-24  Joseph Myers  <joseph@codesourcery.com>
 
+	* configure.ac (i[[3456789]]86-*-vsta, i[[3456789]]86-*-go32*,
+	i[[3456789]]86-*-beos*, powerpc-*-beos*, m68k-hp-hpux*,
+	m68k-apollo-sysv*, m68k-apollo-bsd*, m88k-dg-dgux*,
+	m88k-harris-cxux*, m88k-motorola-sysv*, mips*-dec-ultrix*,
+	mips*-nec-sysv4*, mips*-sgi-irix4*, mips*-*-sysv4*, mips*-*-sysv*,
+	i370-ibm-opened*, i[[3456789]]86-*-sysv5*, i[[3456789]]86-*-dgux*,
+	i[[3456789]]86-ncr-sysv4.3*, i[[3456789]]86-ncr-sysv4*,
+	i[[3456789]]86-*-sco3.2v5*, i[[3456789]]86-*-sco*,
+	i[[3456789]]86-*-udk*, vax-*-ultrix2*, m68k-sun-sunos*,
+	hppa*-*-hiux*, *-*-hiux*, rs6000-*-lynxos*, *-*-sysv4*,
+	*-*-rhapsody*): Remove host cases.
+	* configure: Regenerate.
+
+2011-03-24  Joseph Myers  <joseph@codesourcery.com>
+
 	* configure.ac (ppc*-*-pe): Remove host case.
 	(strongarm-*-coff | xscale-*-coff, strongarm-*-elf* |
 	xscale-*-elf*, thumb-*-coff, thumb-*-elf, thumb-*-pe, ep9312-*-elf

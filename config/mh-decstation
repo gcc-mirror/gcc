@@ -1,3 +1,0 @@
-# for X11, since the native DECwindows include files are really broken when
-# it comes to function prototypes.  
-X11_EXTRA_CFLAGS = "-DNeedFunctionPrototypes=0"
