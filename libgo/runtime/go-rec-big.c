@@ -9,7 +9,7 @@
 #include "go-panic.h"
 #include "channel.h"
 
-void
+_Bool
 __go_receive_big (struct __go_channel *channel, void *val, _Bool for_select)
 {
   size_t alloc_size;
@@ -24,11 +24,13 @@ __go_receive_big (struct __go_channel *channel, void *val, _Bool for_select)
   if (!__go_receive_acquire (channel, for_select))
     {
       __builtin_memset (val, 0, channel->element_size);
-      return;
+      return 0;
     }
 
   offset = channel->next_fetch * alloc_size;
   __builtin_memcpy (val, &channel->data[offset], channel->element_size);
 
   __go_receive_release (channel);
+
+  return 1;
 }

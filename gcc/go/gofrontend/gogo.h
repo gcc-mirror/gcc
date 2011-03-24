@@ -348,6 +348,10 @@ class Gogo
   void
   lower_parse_tree();
 
+  // Lower all the statements in a block.
+  void
+  lower_block(Named_object* function, Block*);
+
   // Lower an expression.
   void
   lower_expression(Named_object* function, Expression**);

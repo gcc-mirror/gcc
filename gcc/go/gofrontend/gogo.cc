@@ -1257,7 +1257,7 @@ Lower_parse_tree::statement(Block* block, size_t* pindex, Statement* sorig)
   Statement* s = sorig;
   while (true)
     {
-      Statement* snew = s->lower(this->gogo_, block);
+      Statement* snew = s->lower(this->gogo_, this->function_, block);
       if (snew == s)
 	break;
       s = snew;
@@ -1303,6 +1303,15 @@ Gogo::lower_parse_tree()
 {
   Lower_parse_tree lower_parse_tree(this, NULL);
   this->traverse(&lower_parse_tree);
+}
+
+// Lower a block.
+
+void
+Gogo::lower_block(Named_object* function, Block* block)
+{
+  Lower_parse_tree lower_parse_tree(this, function);
+  block->traverse(&lower_parse_tree);
 }
 
 // Lower an expression.
