@@ -1050,8 +1050,6 @@ case "${host}" in
   *-interix*)
     host_makefile_frag="config/mh-interix"
     ;;
-  *-*-solaris2*)
-    ;;
   hppa*-hp-hpux10*)
     host_makefile_frag="config/mh-pa-hpux10"
     ;;
@@ -1061,8 +1059,6 @@ case "${host}" in
   hppa*-*)	
     host_makefile_frag="config/mh-pa"
     ;;
-  *-hp-hpux*)
-    ;;
   *-*-darwin*)
     host_makefile_frag="config/mh-darwin"
     ;;
@@ -1071,8 +1067,6 @@ case "${host}" in
     ;;
   rs6000-*-aix*)
     host_makefile_frag="config/mh-ppc-aix"
-    ;;
-  *-*-lynxos*)
     ;;
   # This is placed last to prevent interfering with the cases above.
   i[[3456789]]86-*-*)
