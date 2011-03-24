@@ -5879,15 +5879,11 @@ gnat_to_gnu (Node_Id gnat_node)
 	  since we need to ignore those conversions (for 'Valid).
 
        2. If we have a label (which doesn't have any well-defined type), a
-	  field or an error, return the result almost unmodified.  Also don't
-	  do the conversion if the result type involves a PLACEHOLDER_EXPR in
-	  its size since those are the cases where the front end may have the
-	  type wrong due to "instantiating" the unconstrained record with
-	  discriminant values.  Similarly, if the two types are record types
-	  with the same name don't convert.  This will be the case when we are
-	  converting from a packable version of a type to its original type and
-	  we need those conversions to be NOPs in order for assignments into
-	  these types to work properly.
+	  field or an error, return the result almost unmodified.  Similarly,
+	  if the two types are record types with the same name, don't convert.
+	  This will be the case when we are converting from a packable version
+	  of a type to its original type and we need those conversions to be
+	  NOPs in order for assignments into these types to work properly.
 
        3. If the type is void or if we have no result, return error_mark_node
 	  to show we have no result.
@@ -5933,12 +5929,8 @@ gnat_to_gnu (Node_Id gnat_node)
   else if (TREE_CODE (gnu_result) == LABEL_DECL
 	   || TREE_CODE (gnu_result) == FIELD_DECL
 	   || TREE_CODE (gnu_result) == ERROR_MARK
-	   || (TYPE_SIZE (gnu_result_type)
-	       && TREE_CODE (TYPE_SIZE (gnu_result_type)) != INTEGER_CST
-	       && TREE_CODE (gnu_result) != INDIRECT_REF
-	       && CONTAINS_PLACEHOLDER_P (TYPE_SIZE (gnu_result_type)))
-	   || ((TYPE_NAME (gnu_result_type)
-		== TYPE_NAME (TREE_TYPE (gnu_result)))
+	   || (TYPE_NAME (gnu_result_type)
+	       == TYPE_NAME (TREE_TYPE (gnu_result))
 	       && TREE_CODE (gnu_result_type) == RECORD_TYPE
 	       && TREE_CODE (TREE_TYPE (gnu_result)) == RECORD_TYPE))
     {
