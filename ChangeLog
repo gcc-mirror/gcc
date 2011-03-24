@@ -1,5 +1,10 @@
 2011-03-24  Paolo Bonzini  <bonzini@gnu.org>
 
+	* configure.ac: Remove empty cases.
+	* configure: Regenerate.
+
+2011-03-24  Paolo Bonzini  <bonzini@gnu.org>
+
 	* Makefile.def: Add dependency from termcap to gdb.
 	* Makefile.in: Regenerate.
 
