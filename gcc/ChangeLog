@@ -1,3 +1,11 @@
+2011-03-24  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* reload.c (find_reloads_subreg_address): Add address_reloaded
+	parameter and return true there if the full address has been
+	reloaded.
+	(find_reloads_toplev): Pass address_reloaded flag.
+	(find_reloads_address_1): Don't use address_reloaded parameter.
+
 2011-03-24  Jeff Law  <law@redhat.com>
 
 	* tree-ssa-live.c (remove_unused_scope_block_p): Remove set but
