@@ -1,3 +1,10 @@
+2011-03-24  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* tree.c (record_node_allocation_statistics): New function.
+	(make_node_stat, copy_node_stat, build_string): Call it.
+	(make_tree_binfo_stat, make_tree_vec_stat, tree_cons_stat): Likewise.
+	(build1_stat, build_omp_clause): Likewise.
+
 2011-03-24  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* builtins.c (expand_movstr): Fix endp == 1 adjustment after

@@ -769,20 +769,15 @@ tree_size (const_tree node)
     }
 }
 
-/* Return a newly allocated node of code CODE.  For decl and type
-   nodes, some other fields are initialized.  The rest of the node is
-   initialized to zero.  This function cannot be used for TREE_VEC or
-   OMP_CLAUSE nodes, which is enforced by asserts in tree_code_size.
+/* Record interesting allocation statistics for a tree node with CODE
+   and LENGTH.  */
 
-   Achoo!  I got a code in the node.  */
-
-tree
-make_node_stat (enum tree_code code MEM_STAT_DECL)
+static void
+record_node_allocation_statistics (enum tree_code code ATTRIBUTE_UNUSED,
+				   size_t length ATTRIBUTE_UNUSED)
 {
-  tree t;
-  enum tree_code_class type = TREE_CODE_CLASS (code);
-  size_t length = tree_code_size (code);
 #ifdef GATHER_STATISTICS
+  enum tree_code_class type = TREE_CODE_CLASS (code);
   tree_node_kind kind;
 
   switch (type)
@@ -841,10 +836,18 @@ make_node_stat (enum tree_code code MEM_STAT_DECL)
 	  kind = constr_kind;
 	  break;
 
+	case OMP_CLAUSE:
+	  kind = omp_clause_kind;
+	  break;
+
 	default:
 	  kind = x_kind;
 	  break;
 	}
+      break;
+
+    case tcc_vl_exp:
+      kind = e_kind;
       break;
 
     default:
@@ -854,6 +857,23 @@ make_node_stat (enum tree_code code MEM_STAT_DECL)
   tree_node_counts[(int) kind]++;
   tree_node_sizes[(int) kind] += length;
 #endif
+}
+
+/* Return a newly allocated node of code CODE.  For decl and type
+   nodes, some other fields are initialized.  The rest of the node is
+   initialized to zero.  This function cannot be used for TREE_VEC or
+   OMP_CLAUSE nodes, which is enforced by asserts in tree_code_size.
+
+   Achoo!  I got a code in the node.  */
+
+tree
+make_node_stat (enum tree_code code MEM_STAT_DECL)
+{
+  tree t;
+  enum tree_code_class type = TREE_CODE_CLASS (code);
+  size_t length = tree_code_size (code);
+
+  record_node_allocation_statistics (code, length);
 
   t = ggc_alloc_zone_cleared_tree_node_stat (
                (code == IDENTIFIER_NODE) ? &tree_id_zone : &tree_zone,
@@ -950,6 +970,7 @@ copy_node_stat (tree node MEM_STAT_DECL)
   gcc_assert (code != STATEMENT_LIST);
 
   length = tree_size (node);
+  record_node_allocation_statistics (code, length);
   t = ggc_alloc_zone_tree_node_stat (&tree_zone, length PASS_MEM_STAT);
   memcpy (t, node, length);
 
@@ -1540,10 +1561,7 @@ build_string (int len, const char *str)
   /* Do not waste bytes provided by padding of struct tree_string.  */
   length = len + offsetof (struct tree_string, str) + 1;
 
-#ifdef GATHER_STATISTICS
-  tree_node_counts[(int) c_kind]++;
-  tree_node_sizes[(int) c_kind] += length;
-#endif
+  record_node_allocation_statistics (STRING_CST, length);
 
   s = ggc_alloc_tree_node (length);
 
@@ -1663,10 +1681,7 @@ make_tree_binfo_stat (unsigned base_binfos MEM_STAT_DECL)
   size_t length = (offsetof (struct tree_binfo, base_binfos)
 		   + VEC_embedded_size (tree, base_binfos));
 
-#ifdef GATHER_STATISTICS
-  tree_node_counts[(int) binfo_kind]++;
-  tree_node_sizes[(int) binfo_kind] += length;
-#endif
+  record_node_allocation_statistics (TREE_BINFO, length);
 
   t = ggc_alloc_zone_tree_node_stat (&tree_zone, length PASS_MEM_STAT);
 
@@ -1688,10 +1703,7 @@ make_tree_vec_stat (int len MEM_STAT_DECL)
   tree t;
   int length = (len - 1) * sizeof (tree) + sizeof (struct tree_vec);
 
-#ifdef GATHER_STATISTICS
-  tree_node_counts[(int) vec_kind]++;
-  tree_node_sizes[(int) vec_kind] += length;
-#endif
+  record_node_allocation_statistics (TREE_VEC, length);
 
   t = ggc_alloc_zone_cleared_tree_node_stat (&tree_zone, length PASS_MEM_STAT);
 
@@ -2229,10 +2241,7 @@ tree_cons_stat (tree purpose, tree value, tree chain MEM_STAT_DECL)
                                         PASS_MEM_STAT);
   memset (node, 0, sizeof (struct tree_common));
 
-#ifdef GATHER_STATISTICS
-  tree_node_counts[(int) x_kind]++;
-  tree_node_sizes[(int) x_kind] += sizeof (struct tree_list);
-#endif
+  record_node_allocation_statistics (TREE_LIST, sizeof (struct tree_list));
 
   TREE_SET_CODE (node, TREE_LIST);
   TREE_CHAIN (node) = chain;
@@ -3689,28 +3698,9 @@ tree
 build1_stat (enum tree_code code, tree type, tree node MEM_STAT_DECL)
 {
   int length = sizeof (struct tree_exp);
-#ifdef GATHER_STATISTICS
-  tree_node_kind kind;
-#endif
   tree t;
 
-#ifdef GATHER_STATISTICS
-  switch (TREE_CODE_CLASS (code))
-    {
-    case tcc_statement:  /* an expression with side effects */
-      kind = s_kind;
-      break;
-    case tcc_reference:  /* a reference */
-      kind = r_kind;
-      break;
-    default:
-      kind = e_kind;
-      break;
-    }
-
-  tree_node_counts[(int) kind]++;
-  tree_node_sizes[(int) kind] += length;
-#endif
+  record_node_allocation_statistics (code, length);
 
   gcc_assert (TREE_CODE_LENGTH (code) == 1);
 
@@ -9664,16 +9654,13 @@ build_omp_clause (location_t loc, enum omp_clause_code code)
   length = omp_clause_num_ops[code];
   size = (sizeof (struct tree_omp_clause) + (length - 1) * sizeof (tree));
 
+  record_node_allocation_statistics (OMP_CLAUSE, size);
+
   t = ggc_alloc_tree_node (size);
   memset (t, 0, size);
   TREE_SET_CODE (t, OMP_CLAUSE);
   OMP_CLAUSE_SET_CODE (t, code);
   OMP_CLAUSE_LOCATION (t) = loc;
-
-#ifdef GATHER_STATISTICS
-  tree_node_counts[(int) omp_clause_kind]++;
-  tree_node_sizes[(int) omp_clause_kind] += size;
-#endif
 
   return t;
 }
@@ -9692,10 +9679,7 @@ build_vl_exp_stat (enum tree_code code, int len MEM_STAT_DECL)
   gcc_assert (TREE_CODE_CLASS (code) == tcc_vl_exp);
   gcc_assert (len >= 1);
 
-#ifdef GATHER_STATISTICS
-  tree_node_counts[(int) e_kind]++;
-  tree_node_sizes[(int) e_kind] += length;
-#endif
+  record_node_allocation_statistics (code, length);
 
   t = ggc_alloc_zone_cleared_tree_node_stat (&tree_zone, length PASS_MEM_STAT);
 
