@@ -119,8 +119,12 @@ extern void __go_receive_release (struct __go_channel *);
 
 struct __go_receive_nonblocking_small
 {
+  /* Value read from channel, or 0.  */
   uint64_t __val;
+  /* True if value was read from channel.  */
   _Bool __success;
+  /* True if channel is closed.  */
+  _Bool __closed;
 };
 
 extern struct __go_receive_nonblocking_small
@@ -128,7 +132,8 @@ __go_receive_nonblocking_small (struct __go_channel *);
 
 extern _Bool __go_receive_big (struct __go_channel *, void *, _Bool);
 
-extern _Bool __go_receive_nonblocking_big (struct __go_channel *, void *);
+extern _Bool __go_receive_nonblocking_big (struct __go_channel *, void *,
+					   _Bool *);
 
 extern void __go_unlock_and_notify_selects (struct __go_channel *);
 

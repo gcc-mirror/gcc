@@ -5,6 +5,7 @@
 package gob
 
 import (
+	"bufio"
 	"bytes"
 	"io"
 	"os"
@@ -21,7 +22,7 @@ type Decoder struct {
 	wireType     map[typeId]*wireType                    // map from remote ID to local description
 	decoderCache map[reflect.Type]map[typeId]**decEngine // cache of compiled engines
 	ignorerCache map[typeId]**decEngine                  // ditto for ignored objects
-	countState   *decodeState                            // reads counts from wire
+	freeList     *decoderState                           // list of free decoderStates; avoids reallocation
 	countBuf     []byte                                  // used for decoding integers while parsing messages
 	tmp          []byte                                  // temporary storage for i/o; saves reallocating
 	err          os.Error
@@ -30,7 +31,7 @@ type Decoder struct {
 // NewDecoder returns a new decoder that reads from the io.Reader.
 func NewDecoder(r io.Reader) *Decoder {
 	dec := new(Decoder)
-	dec.r = r
+	dec.r = bufio.NewReader(r)
 	dec.wireType = make(map[typeId]*wireType)
 	dec.decoderCache = make(map[reflect.Type]map[typeId]**decEngine)
 	dec.ignorerCache = make(map[typeId]**decEngine)
@@ -49,7 +50,7 @@ func (dec *Decoder) recvType(id typeId) {
 
 	// Type:
 	wire := new(wireType)
-	dec.err = dec.decodeValue(tWireType, reflect.NewValue(wire))
+	dec.decodeValue(tWireType, reflect.NewValue(wire))
 	if dec.err != nil {
 		return
 	}
@@ -184,7 +185,7 @@ func (dec *Decoder) DecodeValue(value reflect.Value) os.Error {
 	dec.err = nil
 	id := dec.decodeTypeSequence(false)
 	if dec.err == nil {
-		dec.err = dec.decodeValue(id, value)
+		dec.decodeValue(id, value)
 	}
 	return dec.err
 }

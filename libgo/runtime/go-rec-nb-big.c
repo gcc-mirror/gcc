@@ -8,8 +8,11 @@
 
 #include "channel.h"
 
+/* Return true if a value was received, false if not.  */
+
 _Bool
-__go_receive_nonblocking_big (struct __go_channel* channel, void *val)
+__go_receive_nonblocking_big (struct __go_channel* channel, void *val,
+			      _Bool *closed)
 {
   size_t alloc_size;
   size_t offset;
@@ -21,13 +24,9 @@ __go_receive_nonblocking_big (struct __go_channel* channel, void *val)
   if (data != RECEIVE_NONBLOCKING_ACQUIRE_DATA)
     {
       __builtin_memset (val, 0, channel->element_size);
-      if (data == RECEIVE_NONBLOCKING_ACQUIRE_NODATA)
-	return 0;
-      else
-	{
-	  /* Channel is closed.  */
-	  return 1;
-	}
+      if (closed != NULL)
+	*closed = data == RECEIVE_NONBLOCKING_ACQUIRE_CLOSED;
+      return 0;
     }
 
   offset = channel->next_fetch * alloc_size;

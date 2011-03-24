@@ -46,6 +46,9 @@ type Response struct {
 	// Keys in the map are canonicalized (see CanonicalHeaderKey).
 	Header Header
 
+	// SetCookie records the Set-Cookie requests sent with the response.
+	SetCookie []*Cookie
+
 	// Body represents the response body.
 	Body io.ReadCloser
 
@@ -64,10 +67,9 @@ type Response struct {
 	// ReadResponse nor Response.Write ever closes a connection.
 	Close bool
 
-	// Trailer maps trailer keys to values.  Like for Header, if the
-	// response has multiple trailer lines with the same key, they will be
-	// concatenated, delimited by commas.
-	Trailer map[string][]string
+	// Trailer maps trailer keys to values, in the same
+	// format as the header.
+	Trailer Header
 }
 
 // ReadResponse reads and returns an HTTP response from r.  The RequestMethod
@@ -123,6 +125,8 @@ func ReadResponse(r *bufio.Reader, requestMethod string) (resp *Response, err os
 	if err != nil {
 		return nil, err
 	}
+
+	resp.SetCookie = readSetCookies(resp.Header)
 
 	return resp, nil
 }
@@ -188,8 +192,12 @@ func (resp *Response) Write(w io.Writer) os.Error {
 	}
 
 	// Rest of header
-	err = writeSortedKeyValue(w, resp.Header, respExcludeHeader)
+	err = writeSortedHeader(w, resp.Header, respExcludeHeader)
 	if err != nil {
+		return err
+	}
+
+	if err = writeSetCookies(w, resp.SetCookie); err != nil {
 		return err
 	}
 
@@ -206,16 +214,22 @@ func (resp *Response) Write(w io.Writer) os.Error {
 	return nil
 }
 
-func writeSortedKeyValue(w io.Writer, kvm map[string][]string, exclude map[string]bool) os.Error {
-	keys := make([]string, 0, len(kvm))
-	for k := range kvm {
-		if !exclude[k] {
+func writeSortedHeader(w io.Writer, h Header, exclude map[string]bool) os.Error {
+	keys := make([]string, 0, len(h))
+	for k := range h {
+		if exclude == nil || !exclude[k] {
 			keys = append(keys, k)
 		}
 	}
 	sort.SortStrings(keys)
 	for _, k := range keys {
-		for _, v := range kvm[k] {
+		for _, v := range h[k] {
+			v = strings.Replace(v, "\n", " ", -1)
+			v = strings.Replace(v, "\r", " ", -1)
+			v = strings.TrimSpace(v)
+			if v == "" {
+				continue
+			}
 			if _, err := fmt.Fprintf(w, "%s: %s\r\n", k, v); err != nil {
 				return err
 			}

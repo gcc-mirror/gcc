@@ -11,8 +11,9 @@ import (
 	"go/ast"
 	"go/parser"
 	"go/token"
-	"path"
+	"path/filepath"
 	"testing"
+	"time"
 )
 
 
@@ -45,7 +46,7 @@ const (
 )
 
 
-func check(t *testing.T, source, golden string, mode checkMode) {
+func runcheck(t *testing.T, source, golden string, mode checkMode) {
 	// parse source
 	prog, err := parser.ParseFile(fset, source, nil, parser.ParseComments)
 	if err != nil {
@@ -109,6 +110,32 @@ func check(t *testing.T, source, golden string, mode checkMode) {
 }
 
 
+func check(t *testing.T, source, golden string, mode checkMode) {
+	// start a timer to produce a time-out signal
+	tc := make(chan int)
+	go func() {
+		time.Sleep(20e9) // plenty of a safety margin, even for very slow machines
+		tc <- 0
+	}()
+
+	// run the test
+	cc := make(chan int)
+	go func() {
+		runcheck(t, source, golden, mode)
+		cc <- 0
+	}()
+
+	// wait for the first finisher
+	select {
+	case <-tc:
+		// test running past time out
+		t.Errorf("%s: running too slowly", source)
+	case <-cc:
+		// test finished within alloted time margin
+	}
+}
+
+
 type entry struct {
 	source, golden string
 	mode           checkMode
@@ -124,13 +151,14 @@ var data = []entry{
 	{"expressions.input", "expressions.raw", rawFormat},
 	{"declarations.input", "declarations.golden", 0},
 	{"statements.input", "statements.golden", 0},
+	{"slow.input", "slow.golden", 0},
 }
 
 
 func TestFiles(t *testing.T) {
 	for _, e := range data {
-		source := path.Join(dataDir, e.source)
-		golden := path.Join(dataDir, e.golden)
+		source := filepath.Join(dataDir, e.source)
+		golden := filepath.Join(dataDir, e.golden)
 		check(t, source, golden, e.mode)
 		// TODO(gri) check that golden is idempotent
 		//check(t, golden, golden, e.mode);

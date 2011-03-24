@@ -5,7 +5,9 @@
 package packet
 
 import (
+	"big"
 	"crypto"
+	"crypto/dsa"
 	"crypto/openpgp/error"
 	"crypto/openpgp/s2k"
 	"crypto/rand"
@@ -29,7 +31,9 @@ type Signature struct {
 	// of bad signed data.
 	HashTag      [2]byte
 	CreationTime uint32 // Unix epoch time
-	Signature    []byte
+
+	RSASignature     []byte
+	DSASigR, DSASigS *big.Int
 
 	// The following are optional so are nil when not included in the
 	// signature.
@@ -66,7 +70,7 @@ func (sig *Signature) parse(r io.Reader) (err os.Error) {
 	sig.SigType = SignatureType(buf[0])
 	sig.PubKeyAlgo = PublicKeyAlgorithm(buf[1])
 	switch sig.PubKeyAlgo {
-	case PubKeyAlgoRSA, PubKeyAlgoRSASignOnly:
+	case PubKeyAlgoRSA, PubKeyAlgoRSASignOnly, PubKeyAlgoDSA:
 	default:
 		err = error.UnsupportedError("public key algorithm " + strconv.Itoa(int(sig.PubKeyAlgo)))
 		return
@@ -122,8 +126,20 @@ func (sig *Signature) parse(r io.Reader) (err os.Error) {
 		return
 	}
 
-	// We have already checked that the public key algorithm is RSA.
-	sig.Signature, _, err = readMPI(r)
+	switch sig.PubKeyAlgo {
+	case PubKeyAlgoRSA, PubKeyAlgoRSASignOnly:
+		sig.RSASignature, _, err = readMPI(r)
+	case PubKeyAlgoDSA:
+		var rBytes, sBytes []byte
+		rBytes, _, err = readMPI(r)
+		sig.DSASigR = new(big.Int).SetBytes(rBytes)
+		if err == nil {
+			sBytes, _, err = readMPI(r)
+			sig.DSASigS = new(big.Int).SetBytes(sBytes)
+		}
+	default:
+		panic("unreachable")
+	}
 	return
 }
 
@@ -316,8 +332,8 @@ func subpacketLengthLength(length int) int {
 	return 5
 }
 
-// serialiseSubpacketLength marshals the given length into to.
-func serialiseSubpacketLength(to []byte, length int) int {
+// serializeSubpacketLength marshals the given length into to.
+func serializeSubpacketLength(to []byte, length int) int {
 	if length < 192 {
 		to[0] = byte(length)
 		return 1
@@ -336,7 +352,7 @@ func serialiseSubpacketLength(to []byte, length int) int {
 	return 5
 }
 
-// subpacketsLength returns the serialised length, in bytes, of the given
+// subpacketsLength returns the serialized length, in bytes, of the given
 // subpackets.
 func subpacketsLength(subpackets []outputSubpacket, hashed bool) (length int) {
 	for _, subpacket := range subpackets {
@@ -349,11 +365,11 @@ func subpacketsLength(subpackets []outputSubpacket, hashed bool) (length int) {
 	return
 }
 
-// serialiseSubpackets marshals the given subpackets into to.
-func serialiseSubpackets(to []byte, subpackets []outputSubpacket, hashed bool) {
+// serializeSubpackets marshals the given subpackets into to.
+func serializeSubpackets(to []byte, subpackets []outputSubpacket, hashed bool) {
 	for _, subpacket := range subpackets {
 		if subpacket.hashed == hashed {
-			n := serialiseSubpacketLength(to, len(subpacket.contents)+1)
+			n := serializeSubpacketLength(to, len(subpacket.contents)+1)
 			to[n] = byte(subpacket.subpacketType)
 			to = to[1+n:]
 			n = copy(to, subpacket.contents)
@@ -381,7 +397,7 @@ func (sig *Signature) buildHashSuffix() (err os.Error) {
 	}
 	sig.HashSuffix[4] = byte(hashedSubpacketsLen >> 8)
 	sig.HashSuffix[5] = byte(hashedSubpacketsLen)
-	serialiseSubpackets(sig.HashSuffix[6:l], sig.outSubpackets, true)
+	serializeSubpackets(sig.HashSuffix[6:l], sig.outSubpackets, true)
 	trailer := sig.HashSuffix[l:]
 	trailer[0] = 4
 	trailer[1] = 0xff
@@ -392,32 +408,66 @@ func (sig *Signature) buildHashSuffix() (err os.Error) {
 	return
 }
 
-// SignRSA signs a message with an RSA private key. The hash, h, must contain
-// the hash of message to be signed and will be mutated by this function.
-func (sig *Signature) SignRSA(h hash.Hash, priv *rsa.PrivateKey) (err os.Error) {
+func (sig *Signature) signPrepareHash(h hash.Hash) (digest []byte, err os.Error) {
 	err = sig.buildHashSuffix()
 	if err != nil {
 		return
 	}
 
 	h.Write(sig.HashSuffix)
-	digest := h.Sum()
+	digest = h.Sum()
 	copy(sig.HashTag[:], digest)
-	sig.Signature, err = rsa.SignPKCS1v15(rand.Reader, priv, sig.Hash, digest)
 	return
 }
 
-// Serialize marshals sig to w. SignRSA must have been called first.
+// SignRSA signs a message with an RSA private key. The hash, h, must contain
+// the hash of the message to be signed and will be mutated by this function.
+// On success, the signature is stored in sig. Call Serialize to write it out.
+func (sig *Signature) SignRSA(h hash.Hash, priv *rsa.PrivateKey) (err os.Error) {
+	digest, err := sig.signPrepareHash(h)
+	if err != nil {
+		return
+	}
+	sig.RSASignature, err = rsa.SignPKCS1v15(rand.Reader, priv, sig.Hash, digest)
+	return
+}
+
+// SignDSA signs a message with a DSA private key. The hash, h, must contain
+// the hash of the message to be signed and will be mutated by this function.
+// On success, the signature is stored in sig. Call Serialize to write it out.
+func (sig *Signature) SignDSA(h hash.Hash, priv *dsa.PrivateKey) (err os.Error) {
+	digest, err := sig.signPrepareHash(h)
+	if err != nil {
+		return
+	}
+	sig.DSASigR, sig.DSASigS, err = dsa.Sign(rand.Reader, priv, digest)
+	return
+}
+
+// Serialize marshals sig to w. SignRSA or SignDSA must have been called first.
 func (sig *Signature) Serialize(w io.Writer) (err os.Error) {
-	if sig.Signature == nil {
-		return error.InvalidArgumentError("Signature: need to call SignRSA before Serialize")
+	if sig.RSASignature == nil && sig.DSASigR == nil {
+		return error.InvalidArgumentError("Signature: need to call SignRSA or SignDSA before Serialize")
+	}
+
+	sigLength := 0
+	switch sig.PubKeyAlgo {
+	case PubKeyAlgoRSA, PubKeyAlgoRSASignOnly:
+		sigLength = len(sig.RSASignature)
+	case PubKeyAlgoDSA:
+		sigLength = 2 /* MPI length */
+		sigLength += (sig.DSASigR.BitLen() + 7) / 8
+		sigLength += 2 /* MPI length */
+		sigLength += (sig.DSASigS.BitLen() + 7) / 8
+	default:
+		panic("impossible")
 	}
 
 	unhashedSubpacketsLen := subpacketsLength(sig.outSubpackets, false)
 	length := len(sig.HashSuffix) - 6 /* trailer not included */ +
 		2 /* length of unhashed subpackets */ + unhashedSubpacketsLen +
-		2 /* hash tag */ + 2 /* length of signature MPI */ + len(sig.Signature)
-	err = serialiseHeader(w, packetTypeSignature, length)
+		2 /* hash tag */ + 2 /* length of signature MPI */ + sigLength
+	err = serializeHeader(w, packetTypeSignature, length)
 	if err != nil {
 		return
 	}
@@ -430,7 +480,7 @@ func (sig *Signature) Serialize(w io.Writer) (err os.Error) {
 	unhashedSubpackets := make([]byte, 2+unhashedSubpacketsLen)
 	unhashedSubpackets[0] = byte(unhashedSubpacketsLen >> 8)
 	unhashedSubpackets[1] = byte(unhashedSubpacketsLen)
-	serialiseSubpackets(unhashedSubpackets[2:], sig.outSubpackets, false)
+	serializeSubpackets(unhashedSubpackets[2:], sig.outSubpackets, false)
 
 	_, err = w.Write(unhashedSubpackets)
 	if err != nil {
@@ -440,7 +490,19 @@ func (sig *Signature) Serialize(w io.Writer) (err os.Error) {
 	if err != nil {
 		return
 	}
-	return writeMPI(w, 8*uint16(len(sig.Signature)), sig.Signature)
+
+	switch sig.PubKeyAlgo {
+	case PubKeyAlgoRSA, PubKeyAlgoRSASignOnly:
+		err = writeMPI(w, 8*uint16(len(sig.RSASignature)), sig.RSASignature)
+	case PubKeyAlgoDSA:
+		err = writeBig(w, sig.DSASigR)
+		if err == nil {
+			err = writeBig(w, sig.DSASigS)
+		}
+	default:
+		panic("impossible")
+	}
+	return
 }
 
 // outputSubpacket represents a subpacket to be marshaled.

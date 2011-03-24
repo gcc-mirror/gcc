@@ -17,10 +17,6 @@ import (
 )
 
 
-// noPos is used when there is no corresponding source position for a token.
-var noPos token.Position
-
-
 // The mode parameter to the Parse* functions is a set of flags (or 0).
 // They control the amount of source code parsed and other optional
 // parser functionality.
@@ -30,6 +26,7 @@ const (
 	ImportsOnly                        // parsing stops after import declarations
 	ParseComments                      // parse comments and add them to AST
 	Trace                              // print a trace of parsed productions
+	DeclarationErrors                  // report declaration errors
 )
 
 
@@ -46,16 +43,26 @@ type parser struct {
 
 	// Comments
 	comments    []*ast.CommentGroup
-	leadComment *ast.CommentGroup // the last lead comment
-	lineComment *ast.CommentGroup // the last line comment
+	leadComment *ast.CommentGroup // last lead comment
+	lineComment *ast.CommentGroup // last line comment
 
 	// Next token
-	pos token.Pos   // token position
-	tok token.Token // one token look-ahead
-	lit []byte      // token literal
+	pos  token.Pos   // token position
+	tok  token.Token // one token look-ahead
+	lit_ []byte      // token literal (slice into original source, don't hold on to it)
 
 	// Non-syntactic parser control
 	exprLev int // < 0: in control clause, >= 0: in expression
+
+	// Ordinary identifer scopes
+	pkgScope   *ast.Scope   // pkgScope.Outer == nil
+	topScope   *ast.Scope   // top-most scope; may be pkgScope
+	unresolved []*ast.Ident // unresolved global identifiers
+
+	// Label scope
+	// (maintained by open/close LabelScope)
+	labelScope  *ast.Scope     // label scope for current function
+	targetStack [][]*ast.Ident // stack of unresolved labels
 }
 
 
@@ -72,9 +79,126 @@ func scannerMode(mode uint) uint {
 func (p *parser) init(fset *token.FileSet, filename string, src []byte, mode uint) {
 	p.file = fset.AddFile(filename, fset.Base(), len(src))
 	p.scanner.Init(p.file, src, p, scannerMode(mode))
+
 	p.mode = mode
 	p.trace = mode&Trace != 0 // for convenience (p.trace is used frequently)
+
 	p.next()
+
+	// set up the pkgScope here (as opposed to in parseFile) because
+	// there are other parser entry points (ParseExpr, etc.)
+	p.openScope()
+	p.pkgScope = p.topScope
+
+	// for the same reason, set up a label scope
+	p.openLabelScope()
+}
+
+
+func (p *parser) lit() []byte {
+	// make a copy of p.lit_ so that we don't hold on to
+	// a copy of the entire source indirectly in the AST
+	t := make([]byte, len(p.lit_))
+	copy(t, p.lit_)
+	return t
+}
+
+
+// ----------------------------------------------------------------------------
+// Scoping support
+
+func (p *parser) openScope() {
+	p.topScope = ast.NewScope(p.topScope)
+}
+
+
+func (p *parser) closeScope() {
+	p.topScope = p.topScope.Outer
+}
+
+
+func (p *parser) openLabelScope() {
+	p.labelScope = ast.NewScope(p.labelScope)
+	p.targetStack = append(p.targetStack, nil)
+}
+
+
+func (p *parser) closeLabelScope() {
+	// resolve labels
+	n := len(p.targetStack) - 1
+	scope := p.labelScope
+	for _, ident := range p.targetStack[n] {
+		ident.Obj = scope.Lookup(ident.Name)
+		if ident.Obj == nil && p.mode&DeclarationErrors != 0 {
+			p.error(ident.Pos(), fmt.Sprintf("label %s undefined", ident.Name))
+		}
+	}
+	// pop label scope
+	p.targetStack = p.targetStack[0:n]
+	p.labelScope = p.labelScope.Outer
+}
+
+
+func (p *parser) declare(decl interface{}, scope *ast.Scope, kind ast.ObjKind, idents ...*ast.Ident) {
+	for _, ident := range idents {
+		if ident.Name != "_" {
+			obj := ast.NewObj(kind, ident.Name)
+			// remember the corresponding declaration for redeclaration
+			// errors and global variable resolution/typechecking phase
+			obj.Decl = decl
+			alt := scope.Insert(obj)
+			if alt != obj && p.mode&DeclarationErrors != 0 {
+				prevDecl := ""
+				if pos := alt.Pos(); pos.IsValid() {
+					prevDecl = fmt.Sprintf("\n\tprevious declaration at %s", p.file.Position(pos))
+				}
+				p.error(ident.Pos(), fmt.Sprintf("%s redeclared in this block%s", ident.Name, prevDecl))
+			}
+			ident.Obj = obj
+		}
+	}
+}
+
+
+func (p *parser) shortVarDecl(idents []*ast.Ident) {
+	// Go spec: A short variable declaration may redeclare variables
+	// provided they were originally declared in the same block with
+	// the same type, and at least one of the non-blank variables is new.
+	n := 0 // number of new variables
+	for _, ident := range idents {
+		if ident.Name != "_" {
+			obj := ast.NewObj(ast.Var, ident.Name)
+			// short var declarations cannot have redeclaration errors
+			// and are not global => no need to remember the respective
+			// declaration
+			alt := p.topScope.Insert(obj)
+			if alt == obj {
+				n++ // new declaration
+			}
+			ident.Obj = alt
+		}
+	}
+	if n == 0 && p.mode&DeclarationErrors != 0 {
+		p.error(idents[0].Pos(), "no new variables on left side of :=")
+	}
+}
+
+
+func (p *parser) resolve(ident *ast.Ident) {
+	if ident.Name == "_" {
+		return
+	}
+	// try to resolve the identifier
+	for s := p.topScope; s != nil; s = s.Outer {
+		if obj := s.Lookup(ident.Name); obj != nil {
+			ident.Obj = obj
+			return
+		}
+	}
+	// collect unresolved global identifiers; ignore the others
+	if p.topScope == p.pkgScope {
+		p.unresolved = append(p.unresolved, ident)
+	}
 }
 
 
@@ -120,7 +244,7 @@ func (p *parser) next0() {
 		s := p.tok.String()
 		switch {
 		case p.tok.IsLiteral():
-			p.printTrace(s, string(p.lit))
+			p.printTrace(s, string(p.lit_))
 		case p.tok.IsOperator(), p.tok.IsKeyword():
 			p.printTrace("\"" + s + "\"")
 		default:
@@ -128,7 +252,7 @@ func (p *parser) next0() {
 		}
 	}
 
-	p.pos, p.tok, p.lit = p.scanner.Scan()
+	p.pos, p.tok, p.lit_ = p.scanner.Scan()
 }
 
 // Consume a comment and return it and the line on which it ends.
@@ -136,15 +260,15 @@ func (p *parser) consumeComment() (comment *ast.Comment, endline int) {
 	// /*-style comments may end on a different line than where they start.
 	// Scan the comment for '\n' chars and adjust endline accordingly.
 	endline = p.file.Line(p.pos)
-	if p.lit[1] == '*' {
-		for _, b := range p.lit {
+	if p.lit_[1] == '*' {
+		for _, b := range p.lit_ {
 			if b == '\n' {
 				endline++
 			}
 		}
 	}
 
-	comment = &ast.Comment{p.pos, p.lit}
+	comment = &ast.Comment{p.pos, p.lit()}
 	p.next0()
 
 	return
@@ -234,12 +358,12 @@ func (p *parser) errorExpected(pos token.Pos, msg string) {
 	if pos == p.pos {
 		// the error happened at the current position;
 		// make the error message more specific
-		if p.tok == token.SEMICOLON && p.lit[0] == '\n' {
+		if p.tok == token.SEMICOLON && p.lit_[0] == '\n' {
 			msg += ", found newline"
 		} else {
 			msg += ", found '" + p.tok.String() + "'"
 			if p.tok.IsLiteral() {
-				msg += " " + string(p.lit)
+				msg += " " + string(p.lit_)
 			}
 		}
 	}
@@ -271,7 +395,7 @@ func (p *parser) parseIdent() *ast.Ident {
 	pos := p.pos
 	name := "_"
 	if p.tok == token.IDENT {
-		name = string(p.lit)
+		name = string(p.lit_)
 		p.next()
 	} else {
 		p.expect(token.IDENT) // use expect() error handling
@@ -339,13 +463,16 @@ func (p *parser) parseQualifiedIdent() ast.Expr {
 		defer un(trace(p, "QualifiedIdent"))
 	}
 
-	var x ast.Expr = p.parseIdent()
+	ident := p.parseIdent()
+	p.resolve(ident)
+	var x ast.Expr = ident
 	if p.tok == token.PERIOD {
 		// first identifier is a package identifier
 		p.next()
 		sel := p.parseIdent()
 		x = &ast.SelectorExpr{x, sel}
 	}
+
 	return x
 }
 
@@ -407,7 +534,7 @@ func (p *parser) parseFieldDecl() *ast.Field {
 	// optional tag
 	var tag *ast.BasicLit
 	if p.tok == token.STRING {
-		tag = &ast.BasicLit{p.pos, p.tok, p.lit}
+		tag = &ast.BasicLit{p.pos, p.tok, p.lit()}
 		p.next()
 	}
 
@@ -426,7 +553,7 @@ func (p *parser) parseFieldDecl() *ast.Field {
 		}
 	}
 
-	p.expectSemi()
+	p.expectSemi() // call before accessing p.linecomment
 
 	return &ast.Field{doc, idents, typ, tag, p.lineComment}
 }
@@ -519,7 +646,7 @@ func (p *parser) parseVarList(isParam bool) (list []ast.Expr, typ ast.Expr) {
 }
 
 
-func (p *parser) parseParameterList(ellipsisOk bool) (params []*ast.Field) {
+func (p *parser) parseParameterList(scope *ast.Scope, ellipsisOk bool) (params []*ast.Field) {
 	if p.trace {
 		defer un(trace(p, "ParameterList"))
 	}
@@ -528,7 +655,11 @@ func (p *parser) parseParameterList(ellipsisOk bool) (params []*ast.Field) {
 	if typ != nil {
 		// IdentifierList Type
 		idents := p.makeIdentList(list)
-		params = append(params, &ast.Field{nil, idents, typ, nil, nil})
+		field := &ast.Field{nil, idents, typ, nil, nil}
+		params = append(params, field)
+		// Go spec: The scope of an identifier denoting a function
+		// parameter or result variable is the function body.
+		p.declare(field, scope, ast.Var, idents...)
 		if p.tok == token.COMMA {
 			p.next()
 		}
@@ -536,7 +667,11 @@ func (p *parser) parseParameterList(ellipsisOk bool) (params []*ast.Field) {
 		for p.tok != token.RPAREN && p.tok != token.EOF {
 			idents := p.parseIdentList()
 			typ := p.parseVarType(ellipsisOk)
-			params = append(params, &ast.Field{nil, idents, typ, nil, nil})
+			field := &ast.Field{nil, idents, typ, nil, nil}
+			params = append(params, field)
+			// Go spec: The scope of an identifier denoting a function
+			// parameter or result variable is the function body.
+			p.declare(field, scope, ast.Var, idents...)
 			if p.tok != token.COMMA {
 				break
 			}
@@ -555,7 +690,7 @@ func (p *parser) parseParameterList(ellipsisOk bool) (params []*ast.Field) {
 }
 
 
-func (p *parser) parseParameters(ellipsisOk bool) *ast.FieldList {
+func (p *parser) parseParameters(scope *ast.Scope, ellipsisOk bool) *ast.FieldList {
 	if p.trace {
 		defer un(trace(p, "Parameters"))
 	}
@@ -563,7 +698,7 @@ func (p *parser) parseParameters(ellipsisOk bool) *ast.FieldList {
 	var params []*ast.Field
 	lparen := p.expect(token.LPAREN)
 	if p.tok != token.RPAREN {
-		params = p.parseParameterList(ellipsisOk)
+		params = p.parseParameterList(scope, ellipsisOk)
 	}
 	rparen := p.expect(token.RPAREN)
 
@@ -571,13 +706,13 @@ func (p *parser) parseParameters(ellipsisOk bool) *ast.FieldList {
 }
 
 
-func (p *parser) parseResult() *ast.FieldList {
+func (p *parser) parseResult(scope *ast.Scope) *ast.FieldList {
 	if p.trace {
 		defer un(trace(p, "Result"))
 	}
 
 	if p.tok == token.LPAREN {
-		return p.parseParameters(false)
+		return p.parseParameters(scope, false)
 	}
 
 	typ := p.tryType()
@@ -591,27 +726,28 @@ func (p *parser) parseResult() *ast.FieldList {
 }
 
 
-func (p *parser) parseSignature() (params, results *ast.FieldList) {
+func (p *parser) parseSignature(scope *ast.Scope) (params, results *ast.FieldList) {
 	if p.trace {
 		defer un(trace(p, "Signature"))
 	}
 
-	params = p.parseParameters(true)
-	results = p.parseResult()
+	params = p.parseParameters(scope, true)
+	results = p.parseResult(scope)
 
 	return
 }
 
 
-func (p *parser) parseFuncType() *ast.FuncType {
+func (p *parser) parseFuncType() (*ast.FuncType, *ast.Scope) {
 	if p.trace {
 		defer un(trace(p, "FuncType"))
 	}
 
 	pos := p.expect(token.FUNC)
-	params, results := p.parseSignature()
+	scope := ast.NewScope(p.topScope) // function scope
+	params, results := p.parseSignature(scope)
 
-	return &ast.FuncType{pos, params, results}
+	return &ast.FuncType{pos, params, results}, scope
 }
 
 
@@ -627,13 +763,14 @@ func (p *parser) parseMethodSpec() *ast.Field {
 	if ident, isIdent := x.(*ast.Ident); isIdent && p.tok == token.LPAREN {
 		// method
 		idents = []*ast.Ident{ident}
-		params, results := p.parseSignature()
+		scope := ast.NewScope(nil) // method scope
+		params, results := p.parseSignature(scope)
 		typ = &ast.FuncType{token.NoPos, params, results}
 	} else {
 		// embedded interface
 		typ = x
 	}
-	p.expectSemi()
+	p.expectSemi() // call before accessing p.linecomment
 
 	return &ast.Field{doc, idents, typ, nil, p.lineComment}
 }
@@ -706,7 +843,8 @@ func (p *parser) tryRawType(ellipsisOk bool) ast.Expr {
 	case token.MUL:
 		return p.parsePointerType()
 	case token.FUNC:
-		return p.parseFuncType()
+		typ, _ := p.parseFuncType()
+		return typ
 	case token.INTERFACE:
 		return p.parseInterfaceType()
 	case token.MAP:
@@ -745,13 +883,17 @@ func (p *parser) parseStmtList() (list []ast.Stmt) {
 }
 
 
-func (p *parser) parseBody() *ast.BlockStmt {
+func (p *parser) parseBody(scope *ast.Scope) *ast.BlockStmt {
 	if p.trace {
 		defer un(trace(p, "Body"))
 	}
 
 	lbrace := p.expect(token.LBRACE)
+	p.topScope = scope // open function scope
+	p.openLabelScope()
 	list := p.parseStmtList()
+	p.closeLabelScope()
+	p.closeScope()
 	rbrace := p.expect(token.RBRACE)
 
 	return &ast.BlockStmt{lbrace, list, rbrace}
@@ -764,7 +906,9 @@ func (p *parser) parseBlockStmt() *ast.BlockStmt {
 	}
 
 	lbrace := p.expect(token.LBRACE)
+	p.openScope()
 	list := p.parseStmtList()
+	p.closeScope()
 	rbrace := p.expect(token.RBRACE)
 
 	return &ast.BlockStmt{lbrace, list, rbrace}
@@ -779,14 +923,14 @@ func (p *parser) parseFuncTypeOrLit() ast.Expr {
 		defer un(trace(p, "FuncTypeOrLit"))
 	}
 
-	typ := p.parseFuncType()
+	typ, scope := p.parseFuncType()
 	if p.tok != token.LBRACE {
 		// function type only
 		return typ
 	}
 
 	p.exprLev++
-	body := p.parseBody()
+	body := p.parseBody(scope)
 	p.exprLev--
 
 	return &ast.FuncLit{typ, body}
@@ -803,10 +947,12 @@ func (p *parser) parseOperand() ast.Expr {
 
 	switch p.tok {
 	case token.IDENT:
-		return p.parseIdent()
+		ident := p.parseIdent()
+		p.resolve(ident)
+		return ident
 
 	case token.INT, token.FLOAT, token.IMAG, token.CHAR, token.STRING:
-		x := &ast.BasicLit{p.pos, p.tok, p.lit}
+		x := &ast.BasicLit{p.pos, p.tok, p.lit()}
 		p.next()
 		return x
 
@@ -1202,6 +1348,9 @@ func (p *parser) parseSimpleStmt(labelOk bool) ast.Stmt {
 		pos, tok := p.pos, p.tok
 		p.next()
 		y := p.parseExprList()
+		if tok == token.DEFINE {
+			p.shortVarDecl(p.makeIdentList(x))
+		}
 		return &ast.AssignStmt{x, pos, tok, y}
 	}
 
@@ -1216,7 +1365,12 @@ func (p *parser) parseSimpleStmt(labelOk bool) ast.Stmt {
 		colon := p.pos
 		p.next()
 		if label, isIdent := x[0].(*ast.Ident); labelOk && isIdent {
-			return &ast.LabeledStmt{label, colon, p.parseStmt()}
+			// Go spec: The scope of a label is the body of the function
+			// in which it is declared and excludes the body of any nested
+			// function.
+			stmt := &ast.LabeledStmt{label, colon, p.parseStmt()}
+			p.declare(stmt, p.labelScope, ast.Lbl, label)
+			return stmt
 		}
 		p.error(x[0].Pos(), "illegal label declaration")
 		return &ast.BadStmt{x[0].Pos(), colon + 1}
@@ -1304,14 +1458,17 @@ func (p *parser) parseBranchStmt(tok token.Token) *ast.BranchStmt {
 		defer un(trace(p, "BranchStmt"))
 	}
 
-	s := &ast.BranchStmt{p.pos, tok, nil}
-	p.expect(tok)
+	pos := p.expect(tok)
+	var label *ast.Ident
 	if tok != token.FALLTHROUGH && p.tok == token.IDENT {
-		s.Label = p.parseIdent()
+		label = p.parseIdent()
+		// add to list of unresolved targets
+		n := len(p.targetStack) - 1
+		p.targetStack[n] = append(p.targetStack[n], label)
 	}
 	p.expectSemi()
 
-	return s
+	return &ast.BranchStmt{pos, tok, label}
 }
 
 
@@ -1333,6 +1490,8 @@ func (p *parser) parseIfStmt() *ast.IfStmt {
 	}
 
 	pos := p.expect(token.IF)
+	p.openScope()
+	defer p.closeScope()
 
 	var s ast.Stmt
 	var x ast.Expr
@@ -1368,28 +1527,6 @@ func (p *parser) parseIfStmt() *ast.IfStmt {
 }
 
 
-func (p *parser) parseCaseClause() *ast.CaseClause {
-	if p.trace {
-		defer un(trace(p, "CaseClause"))
-	}
-
-	// SwitchCase
-	pos := p.pos
-	var x []ast.Expr
-	if p.tok == token.CASE {
-		p.next()
-		x = p.parseExprList()
-	} else {
-		p.expect(token.DEFAULT)
-	}
-
-	colon := p.expect(token.COLON)
-	body := p.parseStmtList()
-
-	return &ast.CaseClause{pos, x, colon, body}
-}
-
-
 func (p *parser) parseTypeList() (list []ast.Expr) {
 	if p.trace {
 		defer un(trace(p, "TypeList"))
@@ -1405,25 +1542,30 @@ func (p *parser) parseTypeList() (list []ast.Expr) {
 }
 
 
-func (p *parser) parseTypeCaseClause() *ast.TypeCaseClause {
+func (p *parser) parseCaseClause(exprSwitch bool) *ast.CaseClause {
 	if p.trace {
-		defer un(trace(p, "TypeCaseClause"))
+		defer un(trace(p, "CaseClause"))
 	}
 
-	// TypeSwitchCase
 	pos := p.pos
-	var types []ast.Expr
+	var list []ast.Expr
 	if p.tok == token.CASE {
 		p.next()
-		types = p.parseTypeList()
+		if exprSwitch {
+			list = p.parseExprList()
+		} else {
+			list = p.parseTypeList()
+		}
 	} else {
 		p.expect(token.DEFAULT)
 	}
 
 	colon := p.expect(token.COLON)
+	p.openScope()
 	body := p.parseStmtList()
+	p.closeScope()
 
-	return &ast.TypeCaseClause{pos, types, colon, body}
+	return &ast.CaseClause{pos, list, colon, body}
 }
 
 
@@ -1447,6 +1589,8 @@ func (p *parser) parseSwitchStmt() ast.Stmt {
 	}
 
 	pos := p.expect(token.SWITCH)
+	p.openScope()
+	defer p.closeScope()
 
 	var s1, s2 ast.Stmt
 	if p.tok != token.LBRACE {
@@ -1466,28 +1610,21 @@ func (p *parser) parseSwitchStmt() ast.Stmt {
 		p.exprLev = prevLev
 	}
 
-	if isExprSwitch(s2) {
-		lbrace := p.expect(token.LBRACE)
-		var list []ast.Stmt
-		for p.tok == token.CASE || p.tok == token.DEFAULT {
-			list = append(list, p.parseCaseClause())
-		}
-		rbrace := p.expect(token.RBRACE)
-		body := &ast.BlockStmt{lbrace, list, rbrace}
-		p.expectSemi()
-		return &ast.SwitchStmt{pos, s1, p.makeExpr(s2), body}
-	}
-
-	// type switch
-	// TODO(gri): do all the checks!
+	exprSwitch := isExprSwitch(s2)
 	lbrace := p.expect(token.LBRACE)
 	var list []ast.Stmt
 	for p.tok == token.CASE || p.tok == token.DEFAULT {
-		list = append(list, p.parseTypeCaseClause())
+		list = append(list, p.parseCaseClause(exprSwitch))
 	}
 	rbrace := p.expect(token.RBRACE)
 	p.expectSemi()
 	body := &ast.BlockStmt{lbrace, list, rbrace}
+
+	if exprSwitch {
+		return &ast.SwitchStmt{pos, s1, p.makeExpr(s2), body}
+	}
+	// type switch
+	// TODO(gri): do all the checks!
 	return &ast.TypeSwitchStmt{pos, s1, s2, body}
 }
 
@@ -1497,7 +1634,7 @@ func (p *parser) parseCommClause() *ast.CommClause {
 		defer un(trace(p, "CommClause"))
 	}
 
-	// CommCase
+	p.openScope()
 	pos := p.pos
 	var comm ast.Stmt
 	if p.tok == token.CASE {
@@ -1518,7 +1655,7 @@ func (p *parser) parseCommClause() *ast.CommClause {
 			pos := p.pos
 			tok := p.tok
 			var rhs ast.Expr
-			if p.tok == token.ASSIGN || p.tok == token.DEFINE {
+			if tok == token.ASSIGN || tok == token.DEFINE {
 				// RecvStmt with assignment
 				if len(lhs) > 2 {
 					p.errorExpected(lhs[0].Pos(), "1 or 2 expressions")
@@ -1527,6 +1664,9 @@ func (p *parser) parseCommClause() *ast.CommClause {
 				}
 				p.next()
 				rhs = p.parseExpr()
+				if tok == token.DEFINE {
+					p.shortVarDecl(p.makeIdentList(lhs))
+				}
 			} else {
 				// rhs must be single receive operation
 				if len(lhs) > 1 {
@@ -1552,6 +1692,7 @@ func (p *parser) parseCommClause() *ast.CommClause {
 
 	colon := p.expect(token.COLON)
 	body := p.parseStmtList()
+	p.closeScope()
 
 	return &ast.CommClause{pos, comm, colon, body}
 }
@@ -1582,6 +1723,8 @@ func (p *parser) parseForStmt() ast.Stmt {
 	}
 
 	pos := p.expect(token.FOR)
+	p.openScope()
+	defer p.closeScope()
 
 	var s1, s2, s3 ast.Stmt
 	if p.tok != token.LBRACE {
@@ -1631,18 +1774,16 @@ func (p *parser) parseForStmt() ast.Stmt {
 			return &ast.BadStmt{pos, body.End()}
 		}
 		if rhs, isUnary := as.Rhs[0].(*ast.UnaryExpr); isUnary && rhs.Op == token.RANGE {
-			// rhs is range expression; check lhs
+			// rhs is range expression
+			// (any short variable declaration was handled by parseSimpleStat above)
 			return &ast.RangeStmt{pos, key, value, as.TokPos, as.Tok, rhs.X, body}
-		} else {
-			p.errorExpected(s2.Pos(), "range clause")
-			return &ast.BadStmt{pos, body.End()}
 		}
-	} else {
-		// regular for statement
-		return &ast.ForStmt{pos, s1, p.makeExpr(s2), s3, body}
+		p.errorExpected(s2.Pos(), "range clause")
+		return &ast.BadStmt{pos, body.End()}
 	}
 
-	panic("unreachable")
+	// regular for statement
+	return &ast.ForStmt{pos, s1, p.makeExpr(s2), s3, body}
 }
 
 
@@ -1706,36 +1847,37 @@ func (p *parser) parseStmt() (s ast.Stmt) {
 // ----------------------------------------------------------------------------
 // Declarations
 
-type parseSpecFunction func(p *parser, doc *ast.CommentGroup) ast.Spec
+type parseSpecFunction func(p *parser, doc *ast.CommentGroup, iota int) ast.Spec
 
 
-func parseImportSpec(p *parser, doc *ast.CommentGroup) ast.Spec {
+func parseImportSpec(p *parser, doc *ast.CommentGroup, _ int) ast.Spec {
 	if p.trace {
 		defer un(trace(p, "ImportSpec"))
 	}
 
 	var ident *ast.Ident
-	if p.tok == token.PERIOD {
+	switch p.tok {
+	case token.PERIOD:
 		ident = &ast.Ident{p.pos, ".", nil}
 		p.next()
-	} else if p.tok == token.IDENT {
+	case token.IDENT:
 		ident = p.parseIdent()
 	}
 
 	var path *ast.BasicLit
 	if p.tok == token.STRING {
-		path = &ast.BasicLit{p.pos, p.tok, p.lit}
+		path = &ast.BasicLit{p.pos, p.tok, p.lit()}
 		p.next()
 	} else {
 		p.expect(token.STRING) // use expect() error handling
 	}
-	p.expectSemi()
+	p.expectSemi() // call before accessing p.linecomment
 
 	return &ast.ImportSpec{doc, ident, path, p.lineComment}
 }
 
 
-func parseConstSpec(p *parser, doc *ast.CommentGroup) ast.Spec {
+func parseConstSpec(p *parser, doc *ast.CommentGroup, iota int) ast.Spec {
 	if p.trace {
 		defer un(trace(p, "ConstSpec"))
 	}
@@ -1743,30 +1885,44 @@ func parseConstSpec(p *parser, doc *ast.CommentGroup) ast.Spec {
 	idents := p.parseIdentList()
 	typ := p.tryType()
 	var values []ast.Expr
-	if typ != nil || p.tok == token.ASSIGN {
+	if typ != nil || p.tok == token.ASSIGN || iota == 0 {
 		p.expect(token.ASSIGN)
 		values = p.parseExprList()
 	}
-	p.expectSemi()
+	p.expectSemi() // call before accessing p.linecomment
 
-	return &ast.ValueSpec{doc, idents, typ, values, p.lineComment}
+	// Go spec: The scope of a constant or variable identifier declared inside
+	// a function begins at the end of the ConstSpec or VarSpec and ends at
+	// the end of the innermost containing block.
+	// (Global identifiers are resolved in a separate phase after parsing.)
+	spec := &ast.ValueSpec{doc, idents, typ, values, p.lineComment}
+	p.declare(spec, p.topScope, ast.Con, idents...)
+
+	return spec
 }
 
 
-func parseTypeSpec(p *parser, doc *ast.CommentGroup) ast.Spec {
+func parseTypeSpec(p *parser, doc *ast.CommentGroup, _ int) ast.Spec {
 	if p.trace {
 		defer un(trace(p, "TypeSpec"))
 	}
 
 	ident := p.parseIdent()
 	typ := p.parseType()
-	p.expectSemi()
+	p.expectSemi() // call before accessing p.linecomment
 
-	return &ast.TypeSpec{doc, ident, typ, p.lineComment}
+	// Go spec: The scope of a type identifier declared inside a function begins
+	// at the identifier in the TypeSpec and ends at the end of the innermost
+	// containing block.
+	// (Global identifiers are resolved in a separate phase after parsing.)
+	spec := &ast.TypeSpec{doc, ident, typ, p.lineComment}
+	p.declare(spec, p.topScope, ast.Typ, ident)
+
+	return spec
 }
 
 
-func parseVarSpec(p *parser, doc *ast.CommentGroup) ast.Spec {
+func parseVarSpec(p *parser, doc *ast.CommentGroup, _ int) ast.Spec {
 	if p.trace {
 		defer un(trace(p, "VarSpec"))
 	}
@@ -1778,9 +1934,16 @@ func parseVarSpec(p *parser, doc *ast.CommentGroup) ast.Spec {
 		p.expect(token.ASSIGN)
 		values = p.parseExprList()
 	}
-	p.expectSemi()
+	p.expectSemi() // call before accessing p.linecomment
 
-	return &ast.ValueSpec{doc, idents, typ, values, p.lineComment}
+	// Go spec: The scope of a constant or variable identifier declared inside
+	// a function begins at the end of the ConstSpec or VarSpec and ends at
+	// the end of the innermost containing block.
+	// (Global identifiers are resolved in a separate phase after parsing.)
+	spec := &ast.ValueSpec{doc, idents, typ, values, p.lineComment}
+	p.declare(spec, p.topScope, ast.Var, idents...)
+
+	return spec
 }
 
 
@@ -1796,26 +1959,26 @@ func (p *parser) parseGenDecl(keyword token.Token, f parseSpecFunction) *ast.Gen
 	if p.tok == token.LPAREN {
 		lparen = p.pos
 		p.next()
-		for p.tok != token.RPAREN && p.tok != token.EOF {
-			list = append(list, f(p, p.leadComment))
+		for iota := 0; p.tok != token.RPAREN && p.tok != token.EOF; iota++ {
+			list = append(list, f(p, p.leadComment, iota))
 		}
 		rparen = p.expect(token.RPAREN)
 		p.expectSemi()
 	} else {
-		list = append(list, f(p, nil))
+		list = append(list, f(p, nil, 0))
 	}
 
 	return &ast.GenDecl{doc, pos, keyword, lparen, list, rparen}
 }
 
 
-func (p *parser) parseReceiver() *ast.FieldList {
+func (p *parser) parseReceiver(scope *ast.Scope) *ast.FieldList {
 	if p.trace {
 		defer un(trace(p, "Receiver"))
 	}
 
 	pos := p.pos
-	par := p.parseParameters(false)
+	par := p.parseParameters(scope, false)
 
 	// must have exactly one receiver
 	if par.NumFields() != 1 {
@@ -1844,22 +2007,37 @@ func (p *parser) parseFuncDecl() *ast.FuncDecl {
 
 	doc := p.leadComment
 	pos := p.expect(token.FUNC)
+	scope := ast.NewScope(p.topScope) // function scope
 
 	var recv *ast.FieldList
 	if p.tok == token.LPAREN {
-		recv = p.parseReceiver()
+		recv = p.parseReceiver(scope)
 	}
 
 	ident := p.parseIdent()
-	params, results := p.parseSignature()
+
+	params, results := p.parseSignature(scope)
 
 	var body *ast.BlockStmt
 	if p.tok == token.LBRACE {
-		body = p.parseBody()
+		body = p.parseBody(scope)
 	}
 	p.expectSemi()
 
-	return &ast.FuncDecl{doc, recv, ident, &ast.FuncType{pos, params, results}, body}
+	decl := &ast.FuncDecl{doc, recv, ident, &ast.FuncType{pos, params, results}, body}
+	if recv == nil {
+		// Go spec: The scope of an identifier denoting a constant, type,
+		// variable, or function (but not method) declared at top level
+		// (outside any function) is the package block.
+		//
+		// init() functions cannot be referred to and there may
+		// be more than one - don't put them in the pkgScope
+		if ident.Name != "init" {
+			p.declare(decl, p.pkgScope, ast.Fun, ident)
+		}
+	}
+
+	return decl
 }
 
 
@@ -1918,6 +2096,8 @@ func (p *parser) parseFile() *ast.File {
 	// package clause
 	doc := p.leadComment
 	pos := p.expect(token.PACKAGE)
+	// Go spec: The package clause is not a declaration;
+	// the package name does not appear in any scope.
 	ident := p.parseIdent()
 	p.expectSemi()
 
@@ -1940,5 +2120,20 @@ func (p *parser) parseFile() *ast.File {
 		}
 	}
 
-	return &ast.File{doc, pos, ident, decls, p.comments}
+	if p.topScope != p.pkgScope {
+		panic("internal error: imbalanced scopes")
+	}
+
+	// resolve global identifiers within the same file
+	i := 0
+	for _, ident := range p.unresolved {
+		// i <= index for current ident
+		ident.Obj = p.pkgScope.Lookup(ident.Name)
+		if ident.Obj == nil {
+			p.unresolved[i] = ident
+			i++
+		}
+	}
+
+	return &ast.File{doc, pos, ident, decls, p.pkgScope, p.unresolved[0:i], p.comments}
 }

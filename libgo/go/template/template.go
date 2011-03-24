@@ -267,7 +267,6 @@ func (t *Template) nextItem() []byte {
 	}
 	leadingSpace := i > start
 	// What's left is nothing, newline, delimited string, or plain text
-Switch:
 	switch {
 	case i == len(t.buf):
 		// EOF; nothing to do
@@ -896,8 +895,8 @@ func (t *Template) executeRepeated(r *repeatedElement, st *state) {
 		}
 	} else if ch := iter(field); ch != nil {
 		for {
-			e := ch.Recv()
-			if ch.Closed() {
+			e, ok := ch.Recv()
+			if !ok {
 				break
 			}
 			loopBody(st.clone(e))

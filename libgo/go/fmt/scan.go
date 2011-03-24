@@ -35,10 +35,15 @@ type ScanState interface {
 	ReadRune() (rune int, size int, err os.Error)
 	// UnreadRune causes the next call to ReadRune to return the same rune.
 	UnreadRune() os.Error
-	// Token returns the next space-delimited token from the input. If
-	// a width has been specified, the returned token will be no longer
-	// than the width.
-	Token() (token string, err os.Error)
+	// Token skips space in the input if skipSpace is true, then returns the
+	// run of Unicode code points c satisfying f(c).  If f is nil,
+	// !unicode.IsSpace(c) is used; that is, the token will hold non-space
+	// characters.  Newlines are treated as space unless the scan operation
+	// is Scanln, Fscanln or Sscanln, in which case a newline is treated as
+	// EOF.  The returned slice points to shared data that may be overwritten
+	// by the next call to Token, a call to a Scan function using the ScanState
+	// as input, or when the calling Scan method returns.
+	Token(skipSpace bool, f func(int) bool) (token []byte, err os.Error)
 	// Width returns the value of the width option and whether it has been set.
 	// The unit is Unicode code points.
 	Width() (wid int, ok bool)
@@ -134,7 +139,7 @@ type scanError struct {
 	err os.Error
 }
 
-const EOF = -1
+const eof = -1
 
 // ss is the internal implementation of ScanState.
 type ss struct {
@@ -202,7 +207,7 @@ func (s *ss) getRune() (rune int) {
 	rune, _, err := s.ReadRune()
 	if err != nil {
 		if err == os.EOF {
-			return EOF
+			return eof
 		}
 		s.error(err)
 	}
@@ -214,7 +219,7 @@ func (s *ss) getRune() (rune int) {
 // syntax error.
 func (s *ss) mustReadRune() (rune int) {
 	rune = s.getRune()
-	if rune == EOF {
+	if rune == eof {
 		s.error(io.ErrUnexpectedEOF)
 	}
 	return
@@ -238,7 +243,7 @@ func (s *ss) errorString(err string) {
 	panic(scanError{os.ErrorString(err)})
 }
 
-func (s *ss) Token() (tok string, err os.Error) {
+func (s *ss) Token(skipSpace bool, f func(int) bool) (tok []byte, err os.Error) {
 	defer func() {
 		if e := recover(); e != nil {
 			if se, ok := e.(scanError); ok {
@@ -248,8 +253,17 @@ func (s *ss) Token() (tok string, err os.Error) {
 			}
 		}
 	}()
-	tok = s.token()
+	if f == nil {
+		f = notSpace
+	}
+	s.buf.Reset()
+	tok = s.token(skipSpace, f)
 	return
+}
+
+// notSpace is the default scanning function used in Token.
+func notSpace(r int) bool {
+	return !unicode.IsSpace(r)
 }
 
 // readRune is a structure to enable reading UTF-8 encoded code points
@@ -364,7 +378,7 @@ func (s *ss) free(old ssave) {
 func (s *ss) skipSpace(stopAtNewline bool) {
 	for {
 		rune := s.getRune()
-		if rune == EOF {
+		if rune == eof {
 			return
 		}
 		if rune == '\n' {
@@ -384,24 +398,27 @@ func (s *ss) skipSpace(stopAtNewline bool) {
 	}
 }
 
+
 // token returns the next space-delimited string from the input.  It
 // skips white space.  For Scanln, it stops at newlines.  For Scan,
 // newlines are treated as spaces.
-func (s *ss) token() string {
-	s.skipSpace(false)
+func (s *ss) token(skipSpace bool, f func(int) bool) []byte {
+	if skipSpace {
+		s.skipSpace(false)
+	}
 	// read until white space or newline
 	for {
 		rune := s.getRune()
-		if rune == EOF {
+		if rune == eof {
 			break
 		}
-		if unicode.IsSpace(rune) {
+		if !f(rune) {
 			s.UnreadRune()
 			break
 		}
 		s.buf.WriteRune(rune)
 	}
-	return s.buf.String()
+	return s.buf.Bytes()
 }
 
 // typeError indicates that the type of the operand did not match the format
@@ -416,7 +433,7 @@ var boolError = os.ErrorString("syntax error scanning boolean")
 // If accept is true, it puts the character into the input token.
 func (s *ss) consume(ok string, accept bool) bool {
 	rune := s.getRune()
-	if rune == EOF {
+	if rune == eof {
 		return false
 	}
 	if strings.IndexRune(ok, rune) >= 0 {
@@ -425,7 +442,7 @@ func (s *ss) consume(ok string, accept bool) bool {
 		}
 		return true
 	}
-	if rune != EOF && accept {
+	if rune != eof && accept {
 		s.UnreadRune()
 	}
 	return false
@@ -434,7 +451,7 @@ func (s *ss) consume(ok string, accept bool) bool {
 // peek reports whether the next character is in the ok string, without consuming it.
 func (s *ss) peek(ok string) bool {
 	rune := s.getRune()
-	if rune != EOF {
+	if rune != eof {
 		s.UnreadRune()
 	}
 	return strings.IndexRune(ok, rune) >= 0
@@ -729,7 +746,7 @@ func (s *ss) convertString(verb int) (str string) {
 	case 'x':
 		str = s.hexString()
 	default:
-		str = s.token() // %s and %v just return the next word
+		str = string(s.token(true, notSpace)) // %s and %v just return the next word
 	}
 	// Empty strings other than with %q are not OK.
 	if len(str) == 0 && verb != 'q' && s.maxWid > 0 {
@@ -797,7 +814,7 @@ func (s *ss) hexDigit(digit int) int {
 // There must be either two hexadecimal digits or a space character in the input.
 func (s *ss) hexByte() (b byte, ok bool) {
 	rune1 := s.getRune()
-	if rune1 == EOF {
+	if rune1 == eof {
 		return
 	}
 	if unicode.IsSpace(rune1) {
@@ -953,7 +970,7 @@ func (s *ss) doScan(a []interface{}) (numProcessed int, err os.Error) {
 	if !s.nlIsSpace {
 		for {
 			rune := s.getRune()
-			if rune == '\n' || rune == EOF {
+			if rune == '\n' || rune == eof {
 				break
 			}
 			if !unicode.IsSpace(rune) {
@@ -993,7 +1010,7 @@ func (s *ss) advance(format string) (i int) {
 			// There was space in the format, so there should be space (EOF)
 			// in the input.
 			inputc := s.getRune()
-			if inputc == EOF {
+			if inputc == eof {
 				return
 			}
 			if !unicode.IsSpace(inputc) {

@@ -5,10 +5,8 @@
 package time
 
 import (
-	"os"
-	"syscall"
-	"sync"
 	"container/heap"
+	"sync"
 )
 
 // The Timer type represents a single event.
@@ -45,30 +43,6 @@ var (
 
 func init() {
 	timers.Push(&Timer{t: forever}) // sentinel
-}
-
-// Sleep pauses the current goroutine for at least ns nanoseconds.
-// Higher resolution sleeping may be provided by syscall.Nanosleep 
-// on some operating systems.
-func Sleep(ns int64) os.Error {
-	_, err := sleep(Nanoseconds(), ns)
-	return err
-}
-
-// sleep takes the current time and a duration,
-// pauses for at least ns nanoseconds, and
-// returns the current time and an error.
-func sleep(t, ns int64) (int64, os.Error) {
-	// TODO(cw): use monotonic-time once it's available
-	end := t + ns
-	for t < end {
-		errno := syscall.Sleep(end - t)
-		if errno != 0 && errno != syscall.EINTR {
-			return 0, os.NewSyscallError("sleep", errno)
-		}
-		t = Nanoseconds()
-	}
-	return t, nil
 }
 
 // NewTimer creates a new Timer that will send
@@ -151,7 +125,7 @@ func sleeper(sleeperId int64) {
 				dt = maxSleepTime
 			}
 			timerMutex.Unlock()
-			syscall.Sleep(dt)
+			sysSleep(dt)
 			timerMutex.Lock()
 			if currentSleeper != sleeperId {
 				// Another sleeper has been started, making this one redundant.

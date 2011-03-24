@@ -103,7 +103,8 @@ __go_receive_nonblocking_small (struct __go_channel *channel)
   if (data != RECEIVE_NONBLOCKING_ACQUIRE_DATA)
     {
       ret.__val = 0;
-      ret.__success = data == RECEIVE_NONBLOCKING_ACQUIRE_CLOSED;
+      ret.__success = 0;
+      ret.__closed = data == RECEIVE_NONBLOCKING_ACQUIRE_CLOSED;
       return ret;
     }
 
@@ -112,6 +113,7 @@ __go_receive_nonblocking_small (struct __go_channel *channel)
   __go_receive_release (channel);
 
   ret.__success = 1;
+  ret.__closed = 0;
 
   return ret;
 }
