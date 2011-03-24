@@ -13327,7 +13327,10 @@ fold_ternary_loc (location_t loc, enum tree_code code, tree type,
 					     TREE_OPERAND (arg0, 1))
 	  && !HONOR_SIGNED_ZEROS (TYPE_MODE (TREE_TYPE (op2))))
 	{
-	  tem = fold_truth_not_expr (loc, arg0);
+	  location_t loc0 = EXPR_LOCATION (arg0);
+	  if (loc0 == UNKNOWN_LOCATION)
+	    loc0 = loc;
+	  tem = fold_truth_not_expr (loc0, arg0);
 	  if (tem && COMPARISON_CLASS_P (tem))
 	    {
 	      tem = fold_cond_expr_with_comparison (loc, type, tem, op2, op1);
@@ -13341,10 +13344,13 @@ fold_ternary_loc (location_t loc, enum tree_code code, tree type,
       if (truth_value_p (TREE_CODE (arg0))
 	  && tree_swap_operands_p (op1, op2, false))
 	{
+	  location_t loc0 = EXPR_LOCATION (arg0);
+	  if (loc0 == UNKNOWN_LOCATION)
+	    loc0 = loc;
 	  /* See if this can be inverted.  If it can't, possibly because
 	     it was a floating-point inequality comparison, don't do
 	     anything.  */
-	  tem = fold_truth_not_expr (loc, arg0);
+	  tem = fold_truth_not_expr (loc0, arg0);
 	  if (tem)
 	    return fold_build3_loc (loc, code, type, tem, op2, op1);
 	}
@@ -13489,8 +13495,11 @@ fold_ternary_loc (location_t loc, enum tree_code code, tree type,
 	  && truth_value_p (TREE_CODE (arg0))
 	  && truth_value_p (TREE_CODE (arg1)))
 	{
+	  location_t loc0 = EXPR_LOCATION (arg0);
+	  if (loc0 == UNKNOWN_LOCATION)
+	    loc0 = loc;
 	  /* Only perform transformation if ARG0 is easily inverted.  */
-	  tem = fold_truth_not_expr (loc, arg0);
+	  tem = fold_truth_not_expr (loc0, arg0);
 	  if (tem)
 	    return fold_build2_loc (loc, TRUTH_ORIF_EXPR, type,
 				fold_convert_loc (loc, type, tem),
@@ -13502,8 +13511,11 @@ fold_ternary_loc (location_t loc, enum tree_code code, tree type,
 	  && truth_value_p (TREE_CODE (arg0))
 	  && truth_value_p (TREE_CODE (op2)))
 	{
+	  location_t loc0 = EXPR_LOCATION (arg0);
+	  if (loc0 == UNKNOWN_LOCATION)
+	    loc0 = loc;
 	  /* Only perform transformation if ARG0 is easily inverted.  */
-	  tem = fold_truth_not_expr (loc, arg0);
+	  tem = fold_truth_not_expr (loc0, arg0);
 	  if (tem)
 	    return fold_build2_loc (loc, TRUTH_ANDIF_EXPR, type,
 				fold_convert_loc (loc, type, tem),
