@@ -1,3 +1,9 @@
+2011-03-23  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	PR target/46934
+	* config/arm/arm.md (casesi): Use the gen_int_mode() function
+	to subtract lower bound instead of GEN_INT().
+
 2011-03-23  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	PR other/48179
