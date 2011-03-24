@@ -289,39 +289,6 @@ vect_update_interleaving_chain (struct data_reference *drb,
     }
 }
 
-
-/* Function vect_equal_offsets.
-
-   Check if OFFSET1 and OFFSET2 are identical expressions.  */
-
-static bool
-vect_equal_offsets (tree offset1, tree offset2)
-{
-  bool res;
-
-  STRIP_NOPS (offset1);
-  STRIP_NOPS (offset2);
-
-  if (offset1 == offset2)
-    return true;
-
-  if (TREE_CODE (offset1) != TREE_CODE (offset2)
-      || (!BINARY_CLASS_P (offset1) && !UNARY_CLASS_P (offset1)))
-    return false;
-
-  res = vect_equal_offsets (TREE_OPERAND (offset1, 0),
-			    TREE_OPERAND (offset2, 0));
-
-  if (!res || !BINARY_CLASS_P (offset1))
-    return res;
-
-  res = vect_equal_offsets (TREE_OPERAND (offset1, 1),
-			    TREE_OPERAND (offset2, 1));
-
-  return res;
-}
-
-
 /* Check dependence between DRA and DRB for basic block vectorization.
    If the accesses share same bases and offsets, we can compare their initial
    constant offsets to decide whether they differ or not.  In case of a read-
@@ -352,7 +319,7 @@ vect_drs_dependent_in_basic_block (struct data_reference *dra,
            || TREE_CODE (DR_BASE_ADDRESS (drb)) != ADDR_EXPR
            || TREE_OPERAND (DR_BASE_ADDRESS (dra), 0)
            != TREE_OPERAND (DR_BASE_ADDRESS (drb),0)))
-      || !vect_equal_offsets (DR_OFFSET (dra), DR_OFFSET (drb)))
+      || !dr_equal_offsets_p (dra, drb))
     return true;
 
   /* Check the types.  */
@@ -402,7 +369,7 @@ vect_check_interleaving (struct data_reference *dra,
 	   || TREE_CODE (DR_BASE_ADDRESS (drb)) != ADDR_EXPR
 	   || TREE_OPERAND (DR_BASE_ADDRESS (dra), 0)
 	   != TREE_OPERAND (DR_BASE_ADDRESS (drb),0)))
-      || !vect_equal_offsets (DR_OFFSET (dra), DR_OFFSET (drb))
+      || !dr_equal_offsets_p (dra, drb)
       || !tree_int_cst_compare (DR_INIT (dra), DR_INIT (drb))
       || DR_IS_READ (dra) != DR_IS_READ (drb))
     return false;

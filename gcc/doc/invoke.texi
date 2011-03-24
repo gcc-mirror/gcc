@@ -8868,6 +8868,11 @@ partitions.
 The maximum number of namespaces to consult for suggestions when C++
 name lookup fails for an identifier.  The default is 1000.
 
+@item max-stores-to-sink
+The maximum number of conditional stores paires that can be sunk.  Set to 0
+if either vectorization (@option{-ftree-vectorize}) or if-conversion
+(@option{-ftree-loop-if-convert}) is disabled.  The default is 2.
+
 @end table
 @end table
 

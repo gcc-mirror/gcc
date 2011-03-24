@@ -873,6 +873,13 @@ DEFPARAM (CXX_MAX_NAMESPACES_FOR_DIAGNOSTIC_HELP,
 	  "name lookup fails",
 	  1000, 0, 0)
 
+/* Maximum number of conditional store pairs that can be sunk.  */
+DEFPARAM (PARAM_MAX_STORES_TO_SINK,
+          "max-stores-to-sink",
+          "Maximum number of conditional store pairs that can be sunk",
+          2, 0, 0)
+
+
 /*
 Local variables:
 mode:c
