@@ -2944,9 +2944,6 @@ Parse::expression(Precedence precedence, bool may_be_sink,
 	case OPERATOR_ANDAND:
 	  right_precedence = PRECEDENCE_ANDAND;
 	  break;
-	case OPERATOR_CHANOP:
-	  right_precedence = PRECEDENCE_CHANOP;
-	  break;
 	case OPERATOR_EQEQ:
 	case OPERATOR_NOTEQ:
 	case OPERATOR_LT:
@@ -2997,10 +2994,7 @@ Parse::expression(Precedence precedence, bool may_be_sink,
       Expression* right = this->expression(right_precedence, false,
 					   may_be_composite_lit,
 					   NULL);
-      if (op == OPERATOR_CHANOP)
-	left = Expression::make_send(left, right, binop_location);
-      else
-	left = Expression::make_binary(op, left, right, binop_location);
+      left = Expression::make_binary(op, left, right, binop_location);
     }
 }
 
@@ -3302,8 +3296,10 @@ Parse::labeled_stmt(const std::string& label_name, source_location location)
   this->statement(label);
 }
 
-// SimpleStat =
-//   ExpressionStat | IncDecStat | Assignment | SimpleVarDecl .
+// SimpleStmt = EmptyStmt | ExpressionStmt | SendStmt | IncDecStmt |
+//	Assignment | ShortVarDecl .
+
+// EmptyStmt was handled in Parse::statement.
 
 // In order to make this work for if and switch statements, if
 // RETURN_EXP is true, and we see an ExpressionStat, we return the
@@ -3360,7 +3356,10 @@ Parse::simple_stat(bool may_be_composite_lit, bool return_exp,
       return NULL;
     }
   token = this->peek_token();
-  if (token->is_op(OPERATOR_PLUSPLUS) || token->is_op(OPERATOR_MINUSMINUS))
+  if (token->is_op(OPERATOR_CHANOP))
+    this->send_stmt(this->verify_not_sink(exp));
+  else if (token->is_op(OPERATOR_PLUSPLUS)
+	   || token->is_op(OPERATOR_MINUSMINUS))
     this->inc_dec_stat(this->verify_not_sink(exp));
   else if (token->is_op(OPERATOR_COMMA)
 	   || token->is_op(OPERATOR_EQ))
@@ -3428,6 +3427,20 @@ Parse::expression_stat(Expression* exp)
 {
   exp->discarding_value();
   this->gogo_->add_statement(Statement::make_statement(exp));
+}
+
+// SendStmt = Channel "&lt;-" Expression .
+// Channel  = Expression .
+
+void
+Parse::send_stmt(Expression* channel)
+{
+  gcc_assert(this->peek_token()->is_op(OPERATOR_CHANOP));
+  source_location loc = this->location();
+  this->advance_token();
+  Expression* val = this->expression(PRECEDENCE_NORMAL, false, true, NULL);
+  Statement* s = Statement::make_send_statement(channel, val, loc);
+  this->gogo_->add_statement(s);
 }
 
 // IncDecStat = Expression ( "++" | "--" ) .
@@ -4159,7 +4172,7 @@ Parse::select_stat(const Label* label)
   this->gogo_->add_statement(statement);
 }
 
-// CommClause = CommCase [ StatementList ] .
+// CommClause = CommCase ":" { Statement ";" } .
 
 void
 Parse::comm_clause(Select_clauses* clauses, bool* saw_default)
@@ -4172,6 +4185,11 @@ Parse::comm_clause(Select_clauses* clauses, bool* saw_default)
   bool is_default = false;
   bool got_case = this->comm_case(&is_send, &channel, &val, &varname,
 				  &is_default);
+
+  if (this->peek_token()->is_op(OPERATOR_COLON))
+    this->advance_token();
+  else
+    error_at(this->location(), "expected colon");
 
   Block* statements = NULL;
   Named_object* var = NULL;
@@ -4214,7 +4232,7 @@ Parse::comm_clause(Select_clauses* clauses, bool* saw_default)
     }
 }
 
-// CommCase = ( "default" | ( "case" ( SendExpr | RecvExpr) ) ) ":" .
+// CommCase   = "case" ( SendStmt | RecvStmt ) | "default" .
 
 bool
 Parse::comm_case(bool* is_send, Expression** channel, Expression** val,
@@ -4240,18 +4258,9 @@ Parse::comm_case(bool* is_send, Expression** channel, Expression** val,
       return false;
     }
 
-  if (!this->peek_token()->is_op(OPERATOR_COLON))
-    {
-      error_at(this->location(), "expected colon");
-      return false;
-    }
-
-  this->advance_token();
-
   return true;
 }
 
-// SendExpr = Expression "<-" Expression .
 // RecvExpr =  [ Expression ( "=" | ":=" ) ] "<-" Expression .
 
 bool
@@ -4291,7 +4300,7 @@ Parse::send_or_recv_expr(bool* is_send, Expression** channel, Expression** val,
     }
   else
     {
-      Expression* left = this->expression(PRECEDENCE_CHANOP, true, true, NULL);
+      Expression* left = this->expression(PRECEDENCE_NORMAL, true, true, NULL);
 
       if (this->peek_token()->is_op(OPERATOR_EQ))
 	{
