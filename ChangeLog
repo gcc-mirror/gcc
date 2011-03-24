@@ -1,3 +1,12 @@
+2011-03-24  Paolo Bonzini  <pbonzini@redhat.com>
+
+	* configure.ac: Remove references to mt-mep, mt-netware,
+	mt-wince.
+	* Makefile.def: Add all-utils soft dependencies.
+	* Makefile.tpl: Remove GDB_NLM_DEPS.
+	* configure: Regenerate.
+	* Makefile.in: Regenerate.
+
 2011-03-24  Paolo Bonzini  <bonzini@gnu.org>
 
 	* configure.ac: Do not include mh-x86omitfp.

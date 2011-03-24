@@ -2233,9 +2233,6 @@ extra_nmflags_for_target=
 extra_ranlibflags_for_target=
 target_makefile_frag=/dev/null
 case "${target}" in
-  mep*-*-*)
-    target_makefile_frag="config/mt-mep"
-    ;;
   spu-*-*)
     target_makefile_frag="config/mt-spu"
     ;;
@@ -2247,9 +2244,6 @@ case "${target}" in
     ;;
   mips*-*-*linux* | mips*-*-gnu*)
     target_makefile_frag="config/mt-mips-gnu"
-    ;;
-  *-*-netware*)
-    target_makefile_frag="config/mt-netware"
     ;;
   *-*-linux* | *-*-gnu* | *-*-k*bsd*-gnu | *-*-kopensolaris*-gnu)
     target_makefile_frag="config/mt-gnu"
@@ -2264,9 +2258,6 @@ case "${target}" in
   *-*-darwin[[3-9]]*)
     # ranlib before Darwin10 requires the -c flag to look at common symbols.
     extra_ranlibflags_for_target=" -c"
-    ;;
-  mips*-*-pe | sh*-*-pe | *arm-wince-pe)
-    target_makefile_frag="config/mt-wince"
     ;;
 esac
 
