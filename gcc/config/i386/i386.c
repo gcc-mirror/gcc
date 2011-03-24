@@ -14408,12 +14408,7 @@ ix86_print_operand (FILE *file, rtx x, int code)
 
       if (ASSEMBLER_DIALECT == ASM_ATT)
 	putc ('$', file);
-      /* We can use %d if the number is <32 bits and positive.  */
-      if (l[1] || l[0] < 0)
-	fprintf (file, "0x%lx%08lx",
-		 (unsigned long) l[1], (unsigned long) l[0]);
-      else
-	fprintf (file, HOST_WIDE_INT_PRINT_DEC, l[0]);
+      fprintf (file, "0x%lx%08lx", l[1] & 0xffffffff, l[0] & 0xffffffff);
     }
 
   /* These float cases don't actually occur as immediate operands.  */
