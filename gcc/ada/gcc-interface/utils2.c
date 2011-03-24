@@ -186,7 +186,7 @@ known_alignment (tree exp)
 static tree
 find_common_type (tree t1, tree t2)
 {
-  /* ??? As of today, various constructs lead here with types of different
+  /* ??? As of today, various constructs lead to here with types of different
      sizes even when both constants (e.g. tagged types, packable vs regular
      component types, padded vs unpadded types, ...).  While some of these
      would better be handled upstream (types should be made consistent before
@@ -608,6 +608,15 @@ build_binary_op (enum tree_code op_code, tree result_type,
 			   (DECL_SIZE (TYPE_FIELDS (left_type)))))
 	       && !integer_zerop (TYPE_SIZE (right_type)))
 	operation_type = left_type;
+
+      /* If we have a call to a function that returns an unconstrained type
+	 with default discriminant on the RHS, use the RHS type (which is
+	 padded) as we cannot compute the size of the actual assignment.  */
+      else if (TREE_CODE (right_operand) == CALL_EXPR
+	       && TYPE_IS_PADDING_P (right_type)
+	       && CONTAINS_PLACEHOLDER_P
+		  (TYPE_SIZE (TREE_TYPE (TYPE_FIELDS (right_type)))))
+	operation_type = right_type;
 
       /* Find the best type to use for copying between aggregate types.  */
       else if (((TREE_CODE (left_type) == ARRAY_TYPE

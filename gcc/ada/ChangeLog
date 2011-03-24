@@ -1,5 +1,17 @@
 2011-03-24  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* einfo.ads (Size_Depends_On_Discriminant): Adjust description.
+	* layout.adb (Compute_Size_Depends_On_Discriminant): New procedure
+	to compute Set_Size_Depends_On_Discriminant.
+	(Layout_Type): Call it on array types in back-end layout mode.
+	* sem_util.adb (Requires_Transient_Scope): Return true for array
+	types only if the size depends on the value of discriminants.
+	* gcc-interface/utils2.c (build_binary_op) <MODIFY_EXPR>: Use the RHS
+	type if the RHS is a call to a function that returns an unconstrained
+	type with default discriminant.
+
+2011-03-24  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/trans.c (gnat_to_gnu): Remove obsolete case of
 	non-conversion to the nominal result type at the end.
 
