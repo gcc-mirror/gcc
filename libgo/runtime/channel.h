@@ -112,6 +112,9 @@ extern int __go_receive_nonblocking_acquire (struct __go_channel *);
 
 extern uint64_t __go_receive_small (struct __go_channel *, _Bool);
 
+extern uint64_t __go_receive_small_closed (struct __go_channel *, _Bool,
+					   _Bool *);
+
 extern void __go_receive_release (struct __go_channel *);
 
 struct __go_receive_nonblocking_small
@@ -123,7 +126,7 @@ struct __go_receive_nonblocking_small
 extern struct __go_receive_nonblocking_small
 __go_receive_nonblocking_small (struct __go_channel *);
 
-extern void __go_receive_big (struct __go_channel *, void *, _Bool);
+extern _Bool __go_receive_big (struct __go_channel *, void *, _Bool);
 
 extern _Bool __go_receive_nonblocking_big (struct __go_channel *, void *);
 

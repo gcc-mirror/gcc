@@ -263,7 +263,8 @@ __go_unlock_and_notify_selects (struct __go_channel *channel)
 /* Receive something 64 bits or smaller on a channel.  */
 
 uint64_t
-__go_receive_small (struct __go_channel *channel, _Bool for_select)
+__go_receive_small_closed (struct __go_channel *channel, _Bool for_select,
+			   _Bool *received)
 {
   uint64_t ret;
 
@@ -273,11 +274,26 @@ __go_receive_small (struct __go_channel *channel, _Bool for_select)
   __go_assert (channel->element_size <= sizeof (uint64_t));
 
   if (!__go_receive_acquire (channel, for_select))
-    return 0;
+    {
+      if (received != NULL)
+	*received = 0;
+      return 0;
+    }
 
   ret = channel->data[channel->next_fetch];
 
   __go_receive_release (channel);
 
+  if (received != NULL)
+    *received = 1;
+
   return ret;
+}
+
+/* Called by the compiler.  */
+
+uint64_t
+__go_receive_small (struct __go_channel *channel, _Bool for_select)
+{
+  return __go_receive_small_closed (channel, for_select, NULL);
 }

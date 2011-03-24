@@ -246,8 +246,10 @@ class Parse
   void type_switch_case(std::vector<Type*>*, bool*);
   void select_stat(const Label*);
   void comm_clause(Select_clauses*, bool* saw_default);
-  bool comm_case(bool*, Expression**, Expression**, std::string*, bool*);
-  bool send_or_recv_expr(bool*, Expression**, Expression**, std::string*);
+  bool comm_case(bool*, Expression**, Expression**, Expression**,
+		 std::string*, std::string*, bool*);
+  bool send_or_recv_stmt(bool*, Expression**, Expression**, Expression**,
+			 std::string*, std::string*);
   void for_stat(const Label*);
   void for_clause(Expression**, Block**);
   void range_clause_decl(const Typed_identifier_list*, Range_clause*);

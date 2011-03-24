@@ -4179,10 +4179,12 @@ Parse::comm_clause(Select_clauses* clauses, bool* saw_default)
   bool is_send = false;
   Expression* channel = NULL;
   Expression* val = NULL;
+  Expression* closed = NULL;
   std::string varname;
+  std::string closedname;
   bool is_default = false;
-  bool got_case = this->comm_case(&is_send, &channel, &val, &varname,
-				  &is_default);
+  bool got_case = this->comm_case(&is_send, &channel, &val, &closed,
+				  &varname, &closedname, &is_default);
 
   if (this->peek_token()->is_op(OPERATOR_COLON))
     this->advance_token();
@@ -4191,6 +4193,7 @@ Parse::comm_clause(Select_clauses* clauses, bool* saw_default)
 
   Block* statements = NULL;
   Named_object* var = NULL;
+  Named_object* closedvar = NULL;
   if (this->peek_token()->is_op(OPERATOR_SEMICOLON))
     this->advance_token();
   else if (this->statement_list_may_start_here())
@@ -4204,6 +4207,14 @@ Parse::comm_clause(Select_clauses* clauses, bool* saw_default)
 				     location);
 	  v->set_type_from_chan_element();
 	  var = this->gogo_->add_variable(varname, v);
+	}
+
+      if (!closedname.empty())
+	{
+	  // FIXME: LOCATION is slightly wrong here.
+	  Variable* v = new Variable(Type::lookup_bool_type(), NULL,
+				     false, false, false, location);
+	  closedvar = this->gogo_->add_variable(closedname, v);
 	}
 
       this->statement_list();
@@ -4221,7 +4232,8 @@ Parse::comm_clause(Select_clauses* clauses, bool* saw_default)
     }
 
   if (got_case)
-    clauses->add(is_send, channel, val, var, is_default, statements, location);
+    clauses->add(is_send, channel, val, closed, var, closedvar, is_default,
+		 statements, location);
   else if (statements != NULL)
     {
       // Add the statements to make sure that any names they define
@@ -4234,7 +4246,8 @@ Parse::comm_clause(Select_clauses* clauses, bool* saw_default)
 
 bool
 Parse::comm_case(bool* is_send, Expression** channel, Expression** val,
-		 std::string* varname, bool* is_default)
+		 Expression** closed, std::string* varname,
+		 std::string* closedname, bool* is_default)
 {
   const Token* token = this->peek_token();
   if (token->is_keyword(KEYWORD_DEFAULT))
@@ -4245,7 +4258,8 @@ Parse::comm_case(bool* is_send, Expression** channel, Expression** val,
   else if (token->is_keyword(KEYWORD_CASE))
     {
       this->advance_token();
-      if (!this->send_or_recv_expr(is_send, channel, val, varname))
+      if (!this->send_or_recv_stmt(is_send, channel, val, closed, varname,
+				   closedname))
 	return false;
     }
   else
@@ -4259,74 +4273,160 @@ Parse::comm_case(bool* is_send, Expression** channel, Expression** val,
   return true;
 }
 
-// RecvExpr =  [ Expression ( "=" | ":=" ) ] "<-" Expression .
+// RecvStmt   = [ Expression [ "," Expression ] ( "=" | ":=" ) ] RecvExpr .
+// RecvExpr   = Expression .
 
 bool
-Parse::send_or_recv_expr(bool* is_send, Expression** channel, Expression** val,
-			 std::string* varname)
+Parse::send_or_recv_stmt(bool* is_send, Expression** channel, Expression** val,
+			 Expression** closed, std::string* varname,
+			 std::string* closedname)
 {
   const Token* token = this->peek_token();
-  source_location location = token->location();
+  bool saw_comma = false;
+  bool closed_is_id = false;
   if (token->is_identifier())
     {
+      Gogo* gogo = this->gogo_;
       std::string recv_var = token->identifier();
-      bool is_var_exported = token->is_identifier_exported();
-      if (!this->advance_token()->is_op(OPERATOR_COLONEQ))
-	this->unget_token(Token::make_identifier_token(recv_var,
-						       is_var_exported,
-						       location));
-      else
+      bool is_rv_exported = token->is_identifier_exported();
+      source_location recv_var_loc = token->location();
+      token = this->advance_token();
+      if (token->is_op(OPERATOR_COLONEQ))
 	{
+	  // case rv := <-c:
 	  if (!this->advance_token()->is_op(OPERATOR_CHANOP))
 	    {
 	      error_at(this->location(), "expected %<<-%>");
 	      return false;
 	    }
+	  if (recv_var == "_")
+	    {
+	      error_at(recv_var_loc,
+		       "no new variables on left side of %<:=%>");
+	      recv_var = "blank";
+	    }
 	  *is_send = false;
-	  *varname = this->gogo_->pack_hidden_name(recv_var, is_var_exported);
+	  *varname = gogo->pack_hidden_name(recv_var, is_rv_exported);
 	  this->advance_token();
 	  *channel = this->expression(PRECEDENCE_NORMAL, false, true, NULL);
 	  return true;
 	}
+      else if (token->is_op(OPERATOR_COMMA))
+	{
+	  token = this->advance_token();
+	  if (token->is_identifier())
+	    {
+	      std::string recv_closed = token->identifier();
+	      bool is_rc_exported = token->is_identifier_exported();
+	      source_location recv_closed_loc = token->location();
+	      closed_is_id = true;
+
+	      token = this->advance_token();
+	      if (token->is_op(OPERATOR_COLONEQ))
+		{
+		  // case rv, rc := <-c:
+		  if (!this->advance_token()->is_op(OPERATOR_CHANOP))
+		    {
+		      error_at(this->location(), "expected %<<-%>");
+		      return false;
+		    }
+		  if (recv_var == "_" && recv_closed == "_")
+		    {
+		      error_at(recv_var_loc,
+			       "no new variables on left side of %<:=%>");
+		      recv_var = "blank";
+		    }
+		  *is_send = false;
+		  if (recv_var != "_")
+		    *varname = gogo->pack_hidden_name(recv_var,
+						      is_rv_exported);
+		  if (recv_closed != "_")
+		    *closedname = gogo->pack_hidden_name(recv_closed,
+							 is_rc_exported);
+		  this->advance_token();
+		  *channel = this->expression(PRECEDENCE_NORMAL, false, true,
+					      NULL);
+		  return true;
+		}
+
+	      this->unget_token(Token::make_identifier_token(recv_closed,
+							     is_rc_exported,
+							     recv_closed_loc));
+	    }
+
+	  *val = this->id_to_expression(gogo->pack_hidden_name(recv_var,
+							       is_rv_exported),
+					recv_var_loc);
+	  saw_comma = true;
+	}
+      else
+	this->unget_token(Token::make_identifier_token(recv_var,
+						       is_rv_exported,
+						       recv_var_loc));
+    }
+
+  // If SAW_COMMA is false, then we are looking at the start of the
+  // send or receive expression.  If SAW_COMMA is true, then *VAL is
+  // set and we just read a comma.
+
+  if (!saw_comma && this->peek_token()->is_op(OPERATOR_CHANOP))
+    {
+      // case <-c:
+      *is_send = false;
+      this->advance_token();
+      *channel = this->expression(PRECEDENCE_NORMAL, false, true, NULL);
+      return true;
+    }
+
+  Expression* e = this->expression(PRECEDENCE_NORMAL, true, true, NULL);
+
+  if (this->peek_token()->is_op(OPERATOR_EQ))
+    {
+      if (!this->advance_token()->is_op(OPERATOR_CHANOP))
+	{
+	  error_at(this->location(), "missing %<<-%>");
+	  return false;
+	}
+      *is_send = false;
+      this->advance_token();
+      *channel = this->expression(PRECEDENCE_NORMAL, false, true, NULL);
+      if (saw_comma)
+	{
+	  // case v, e = <-c:
+	  // *VAL is already set.
+	  if (!e->is_sink_expression())
+	    *closed = e;
+	}
+      else
+	{
+	  // case v = <-c:
+	  if (!e->is_sink_expression())
+	    *val = e;
+	}
+      return true;
+    }
+
+  if (saw_comma)
+    {
+      if (closed_is_id)
+	error_at(this->location(), "expected %<=%> or %<:=%>");
+      else
+	error_at(this->location(), "expected %<=%>");
+      return false;
     }
 
   if (this->peek_token()->is_op(OPERATOR_CHANOP))
     {
-      *is_send = false;
+      // case c <- v:
+      *is_send = true;
+      *channel = this->verify_not_sink(e);
       this->advance_token();
-      *channel = this->expression(PRECEDENCE_NORMAL, false, true, NULL);
-    }
-  else
-    {
-      Expression* left = this->expression(PRECEDENCE_NORMAL, true, true, NULL);
-
-      if (this->peek_token()->is_op(OPERATOR_EQ))
-	{
-	  if (!this->advance_token()->is_op(OPERATOR_CHANOP))
-	    {
-	      error_at(this->location(), "missing %<<-%>");
-	      return false;
-	    }
-	  *is_send = false;
-	  *val = left;
-	  this->advance_token();
-	  *channel = this->expression(PRECEDENCE_NORMAL, false, true, NULL);
-	}
-      else if (this->peek_token()->is_op(OPERATOR_CHANOP))
-	{
-	  *is_send = true;
-	  *channel = this->verify_not_sink(left);
-	  this->advance_token();
-	  *val = this->expression(PRECEDENCE_NORMAL, false, true, NULL);
-	}
-      else
-	{
-	  error_at(this->location(), "expected %<<-%> or %<=%>");
-	  return false;
-	}
+      *val = this->expression(PRECEDENCE_NORMAL, false, true, NULL);
+      return true;
     }
 
-  return true;
+  error_at(this->location(), "expected %<<-%> or %<=%>");
+  return false;
 }
 
 // ForStat = "for" [ Condition | ForClause | RangeClause ] Block .
