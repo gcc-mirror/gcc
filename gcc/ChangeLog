@@ -1,3 +1,11 @@
+2011-03-24  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* function.c (instantiate_virtual_regs): Use FOR_EACH_BB and
+	FOR_BB_INSNS_SAFE to iterate through insns.  Re-indent.
+	(pass_instantiate_virtual_regs): Require PROP_cfglayout.
+	* passes.c (init_optimization_passes): Move
+	pass_instantiate_virtual_regs after pass_into_cfg_layout_mode.
+
 2011-03-24  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* dojump.c (do_jump_by_parts_greater_rtx): Optimize in specific cases.
