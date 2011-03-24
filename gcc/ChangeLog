@@ -1,3 +1,7 @@
+2011-03-24  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* dojump.c (do_jump_by_parts_greater_rtx): Optimize in specific cases.
+
 2011-03-24  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (ix86_print_operand): Output DFmode const_double

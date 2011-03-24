@@ -637,14 +637,33 @@ do_jump_by_parts_greater_rtx (enum machine_mode mode, int unsignedp, rtx op0,
 {
   int nwords = (GET_MODE_SIZE (mode) / UNITS_PER_WORD);
   rtx drop_through_label = 0;
+  bool drop_through_if_true = false, drop_through_if_false = false;
+  enum rtx_code code = GT;
   int i;
 
   if (! if_true_label || ! if_false_label)
     drop_through_label = gen_label_rtx ();
   if (! if_true_label)
-    if_true_label = drop_through_label;
+    {
+      if_true_label = drop_through_label;
+      drop_through_if_true = true;
+    }
   if (! if_false_label)
-    if_false_label = drop_through_label;
+    {
+      if_false_label = drop_through_label;
+      drop_through_if_false = true;
+    }
+
+  /* Deal with the special case 0 > x: only one comparison is necessary and
+     we reverse it to avoid jumping to the drop-through label.  */
+  if (op0 == const0_rtx && drop_through_if_true && !drop_through_if_false)
+    {
+      code = LE;
+      if_true_label = if_false_label;
+      if_false_label = drop_through_label;
+      drop_through_if_true = false;
+      drop_through_if_false = true;
+    }
 
   /* Compare a word at a time, high order first.  */
   for (i = 0; i < nwords; i++)
@@ -663,17 +682,20 @@ do_jump_by_parts_greater_rtx (enum machine_mode mode, int unsignedp, rtx op0,
         }
 
       /* All but high-order word must be compared as unsigned.  */
-      do_compare_rtx_and_jump (op0_word, op1_word, GT,
-                               (unsignedp || i > 0), word_mode, NULL_RTX,
-			       NULL_RTX, if_true_label, prob);
+      do_compare_rtx_and_jump (op0_word, op1_word, code, (unsignedp || i > 0),
+			       word_mode, NULL_RTX, NULL_RTX, if_true_label,
+			       prob);
+
+      /* Emit only one comparison for 0.  Do not emit the last cond jump.  */
+      if (op0 == const0_rtx || i == nwords - 1)
+	break;
 
       /* Consider lower words only if these are equal.  */
       do_compare_rtx_and_jump (op0_word, op1_word, NE, unsignedp, word_mode,
-			       NULL_RTX, NULL_RTX, if_false_label,
-			       inv (prob));
+			       NULL_RTX, NULL_RTX, if_false_label, inv (prob));
     }
 
-  if (if_false_label)
+  if (!drop_through_if_false)
     emit_jump (if_false_label);
   if (drop_through_label)
     emit_label (drop_through_label);
