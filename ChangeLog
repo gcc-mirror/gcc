@@ -1,5 +1,10 @@
 2011-03-24  Paolo Bonzini  <bonzini@gnu.org>
 
+	* Makefile.def: Add dependency from termcap to gdb.
+	* Makefile.in: Regenerate.
+
+2011-03-24  Paolo Bonzini  <bonzini@gnu.org>
+
 	* configure.ac: Remove all mentions of mh-sysv4 and mh-solaris.
 	* configure: Regenerate.
 	* Makefile.def: Remove all mentions of X11_FLAGS_TO_PASS.

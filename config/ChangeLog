@@ -1,5 +1,9 @@
 2011-03-24  Paolo Bonzini  <bonzini@gnu.org>
 
+	* mh-cygwin: Remove obsolete variables and dependencies.
+
+2011-03-24  Paolo Bonzini  <bonzini@gnu.org>
+
 	* mh-sysv4: Remove.
 	* mh-solaris: Remove.
 
