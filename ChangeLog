@@ -1,3 +1,8 @@
+2011-03-24  Paolo Bonzini  <bonzini@gnu.org>
+
+	* configure.ac: Remove all mentions of tentative_cc.
+	* configure: Regenerate.
+
 2011-03-24  Joseph Myers  <joseph@codesourcery.com>
 
 	* configure.ac (i[[3456789]]86-*-vsta, i[[3456789]]86-*-go32*,

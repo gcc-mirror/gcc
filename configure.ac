@@ -1034,7 +1034,6 @@ case "${noconfigdirs}" in
 esac
 
 # Work in distributions that contain no compiler tools, like Autoconf.
-tentative_cc=""
 host_makefile_frag=/dev/null
 if test -d ${srcdir}/config ; then
 case "${host}" in
@@ -1058,18 +1057,15 @@ case "${host}" in
     host_makefile_frag="config/mh-solaris"
     ;;
   hppa*-hp-hpux10*)
-    tentative_cc="cc -Wp,-H256000"
     host_makefile_frag="config/mh-pa-hpux10"
     ;;
   hppa*-hp-hpux*)
-    tentative_cc="cc -Wp,-H256000"
     host_makefile_frag="config/mh-pa"
     ;;
   hppa*-*)	
     host_makefile_frag="config/mh-pa"
     ;;
   *-hp-hpux*)
-    tentative_cc="cc -Wp,-H256000"
     ;;
   *-*-darwin*)
     host_makefile_frag="config/mh-darwin"
@@ -1081,8 +1077,6 @@ case "${host}" in
     host_makefile_frag="config/mh-ppc-aix"
     ;;
   *-*-lynxos*)
-    # /bin/cc is less than useful for our purposes.  Always use GCC
-    tentative_cc="/bin/gcc"
     ;;
   # This is placed last to prevent interfering with the cases above.
   i[[3456789]]86-*-*)
@@ -1090,25 +1084,6 @@ case "${host}" in
     host_makefile_frag="config/mh-x86omitfp"
     ;;
 esac
-fi
-
-# If we aren't going to be using gcc, see if we can extract a definition
-# of CC from the fragment.
-# Actually, use the 'pre-extracted' version above.
-if test -z "${CC}" && test "${build}" = "${host}" ; then
-  IFS="${IFS= 	}"; save_ifs="$IFS"; IFS="${IFS}:"
-  found=
-  for dir in $PATH; do
-    test -z "$dir" && dir=.
-    if test -f $dir/gcc; then
-      found=yes
-      break
-    fi
-  done
-  IFS="$save_ifs"
-  if test -z "${found}" && test -n "${tentative_cc}" ; then
-    CC=$tentative_cc
-  fi
 fi
 
 if test "${build}" != "${host}" ; then
