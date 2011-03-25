@@ -2618,7 +2618,7 @@ gfc_get_function_type (gfc_symbol * sym)
 
   if (typelist)
     typelist = chainon (typelist, void_list_node);
-  else if (sym->attr.is_main_program)
+  else if (sym->attr.is_main_program || sym->attr.if_source != IFSRC_UNKNOWN)
     typelist = void_list_node;
 
   if (alternate_return)

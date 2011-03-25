@@ -1,3 +1,10 @@
+2011-03-25  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/48174
+	PR fortran/45304
+	* gfortran.dg/ishft_4.f90: Adapt scan-tree-dump-times.
+	* gfortran.dg/leadz_trailz_3.f90: Ditto
+
 2011-03-25  Martin Jambor  <mjambor@suse.cz>
 
 	* gcc.c-torture/compile/pr44686.c: Do not explicitely specify -O2.
