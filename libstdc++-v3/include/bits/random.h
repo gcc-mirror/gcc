@@ -3804,12 +3804,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       explicit
       negative_binomial_distribution(_IntType __k = 1, double __p = 0.5)
-      : _M_param(__k, __p), _M_gd(__k, 1.0)
+      : _M_param(__k, __p), _M_gd(__k, (1.0 - __p) / __p)
       { }
 
       explicit
       negative_binomial_distribution(const param_type& __p)
-      : _M_param(__p), _M_gd(__p.k(), 1.0)
+      : _M_param(__p), _M_gd(__p.k(), (1.0 - __p.p()) / __p.p())
       { }
 
       /**
