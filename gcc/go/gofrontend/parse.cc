@@ -3112,7 +3112,7 @@ Parse::unary_expr(bool may_be_sink, bool may_be_composite_lit,
 // LABEL is the label of this statement if it has one.
 
 void
-Parse::statement(const Label* label)
+Parse::statement(Label* label)
 {
   const Token* token = this->peek_token();
   switch (token->classification())
@@ -3288,6 +3288,10 @@ Parse::labeled_stmt(const std::string& label_name, source_location location)
 
   if (!this->statement_may_start_here())
     {
+      // Mark the label as used to avoid a useless error about an
+      // unused label.
+      label->set_is_used();
+
       error_at(location, "missing statement after label");
       this->unget_token(Token::make_operator_token(OPERATOR_SEMICOLON,
 						   location));
@@ -3774,7 +3778,7 @@ Parse::if_stat()
 // TypeSwitchGuard = [ identifier ":=" ] Expression "." "(" "type" ")" .
 
 void
-Parse::switch_stat(const Label* label)
+Parse::switch_stat(Label* label)
 {
   gcc_assert(this->peek_token()->is_keyword(KEYWORD_SWITCH));
   source_location location = this->location();
@@ -3873,7 +3877,7 @@ Parse::switch_stat(const Label* label)
 //   "{" { ExprCaseClause } "}"
 
 Statement*
-Parse::expr_switch_body(const Label* label, Expression* switch_val,
+Parse::expr_switch_body(Label* label, Expression* switch_val,
 			source_location location)
 {
   Switch_statement* statement = Statement::make_switch_statement(switch_val,
@@ -3983,7 +3987,7 @@ Parse::expr_switch_case(bool* is_default)
 //   "{" { TypeCaseClause } "}" .
 
 Statement*
-Parse::type_switch_body(const Label* label, const Type_switch& type_switch,
+Parse::type_switch_body(Label* label, const Type_switch& type_switch,
 			source_location location)
 {
   Named_object* switch_no = NULL;
@@ -4127,7 +4131,7 @@ Parse::type_switch_case(std::vector<Type*>* types, bool* is_default)
 // SelectStat = "select" "{" { CommClause } "}" .
 
 void
-Parse::select_stat(const Label* label)
+Parse::select_stat(Label* label)
 {
   gcc_assert(this->peek_token()->is_keyword(KEYWORD_SELECT));
   source_location location = this->location();
@@ -4435,7 +4439,7 @@ Parse::send_or_recv_stmt(bool* is_send, Expression** channel, Expression** val,
 // Condition = Expression .
 
 void
-Parse::for_stat(const Label* label)
+Parse::for_stat(Label* label)
 {
   gcc_assert(this->peek_token()->is_keyword(KEYWORD_FOR));
   source_location location = this->location();
@@ -4654,7 +4658,7 @@ Parse::range_clause_expr(const Expression_list* vals,
 // Push a statement on the break stack.
 
 void
-Parse::push_break_statement(Statement* enclosing, const Label* label)
+Parse::push_break_statement(Statement* enclosing, Label* label)
 {
   if (this->break_stack_ == NULL)
     this->break_stack_ = new Bc_stack();
@@ -4664,7 +4668,7 @@ Parse::push_break_statement(Statement* enclosing, const Label* label)
 // Push a statement on the continue stack.
 
 void
-Parse::push_continue_statement(Statement* enclosing, const Label* label)
+Parse::push_continue_statement(Statement* enclosing, Label* label)
 {
   if (this->continue_stack_ == NULL)
     this->continue_stack_ = new Bc_stack();
@@ -4697,8 +4701,13 @@ Parse::find_bc_statement(const Bc_stack* bc_stack, const std::string& label)
   for (Bc_stack::const_reverse_iterator p = bc_stack->rbegin();
        p != bc_stack->rend();
        ++p)
-    if (p->second != NULL && p->second->name() == label)
-      return p->first;
+    {
+      if (p->second != NULL && p->second->name() == label)
+	{
+	  p->second->set_is_used();
+	  return p->first;
+	}
+    }
   return NULL;
 }
 
@@ -4728,9 +4737,11 @@ Parse::break_stat()
 					  token->identifier());
       if (enclosing == NULL)
 	{
-	  error_at(token->location(),
-		   ("break label %qs not associated with "
-		    "for or switch or select"),
+	  // If there is a label with this name, mark it as used to
+	  // avoid a useless error about an unused label.
+	  this->gogo_->add_label_reference(token->identifier());
+
+	  error_at(token->location(), "invalid break label %qs",
 		   Gogo::message_name(token->identifier()).c_str());
 	  this->advance_token();
 	  return;
@@ -4781,8 +4792,11 @@ Parse::continue_stat()
 					  token->identifier());
       if (enclosing == NULL)
 	{
-	  error_at(token->location(),
-		   "continue label %qs not associated with for",
+	  // If there is a label with this name, mark it as used to
+	  // avoid a useless error about an unused label.
+	  this->gogo_->add_label_reference(token->identifier());
+
+	  error_at(token->location(), "invalid continue label %qs",
 		   Gogo::message_name(token->identifier()).c_str());
 	  this->advance_token();
 	  return;
