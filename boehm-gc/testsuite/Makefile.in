@@ -14,7 +14,6 @@
 # PARTICULAR PURPOSE.
 
 @SET_MAKE@
-
 VPATH = @srcdir@
 pkgdatadir = $(datadir)/@PACKAGE@
 pkgincludedir = $(includedir)/@PACKAGE@
@@ -35,10 +34,8 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 target_triplet = @target@
-subdir = include
-DIST_COMMON = $(noinst_HEADERS) $(srcdir)/Makefile.am \
-	$(srcdir)/Makefile.in $(srcdir)/gc_config.h.in \
-	$(srcdir)/gc_ext_config.h.in
+subdir = testsuite
+DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/../config/acx.m4 \
 	$(top_srcdir)/../config/depstand.m4 \
@@ -51,14 +48,14 @@ am__aclocal_m4_deps = $(top_srcdir)/../config/acx.m4 \
 	$(top_srcdir)/../lt~obsolete.m4 $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
-CONFIG_HEADER = gc_config.h gc_ext_config.h
+CONFIG_HEADER = $(top_builddir)/include/gc_config.h \
+	$(top_builddir)/include/gc_ext_config.h
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 SOURCES =
 DIST_SOURCES =
-HEADERS = $(noinst_HEADERS)
-ETAGS = etags
-CTAGS = ctags
+RUNTESTDEFAULTFLAGS = --tool $$tool --srcdir $$srcdir
+RUNTEST = runtest
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 ACLOCAL = @ACLOCAL@
 AMTAR = @AMTAR@
@@ -200,12 +197,13 @@ toolexeclibdir = @toolexeclibdir@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-AUTOMAKE_OPTIONS = foreign
-noinst_HEADERS = gc.h gc_backptr.h gc_local_alloc.h \
-  gc_pthread_redirects.h gc_cpp.h
+AUTOMAKE_OPTIONS = foreign dejagnu
+EXPECT = expect
 
-all: gc_config.h gc_ext_config.h
-	$(MAKE) $(AM_MAKEFLAGS) all-am
+# Override default.
+DEJATOOL = boehm-gc
+CLEANFILES = *.exe core* *.log *.sum
+all: all-am
 
 .SUFFIXES:
 $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am  $(am__configure_deps)
@@ -217,9 +215,9 @@ $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am  $(am__confi
 	      exit 1;; \
 	  esac; \
 	done; \
-	echo ' cd $(top_srcdir) && $(AUTOMAKE) --foreign include/Makefile'; \
+	echo ' cd $(top_srcdir) && $(AUTOMAKE) --foreign testsuite/Makefile'; \
 	$(am__cd) $(top_srcdir) && \
-	  $(AUTOMAKE) --foreign include/Makefile
+	  $(AUTOMAKE) --foreign testsuite/Makefile
 .PRECIOUS: Makefile
 Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	@case '$?' in \
@@ -239,90 +237,36 @@ $(ACLOCAL_M4): @MAINTAINER_MODE_TRUE@ $(am__aclocal_m4_deps)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
 $(am__aclocal_m4_deps):
 
-gc_config.h: stamp-h1
-	@if test ! -f $@; then \
-	  rm -f stamp-h1; \
-	  $(MAKE) $(AM_MAKEFLAGS) stamp-h1; \
-	else :; fi
-
-stamp-h1: $(srcdir)/gc_config.h.in $(top_builddir)/config.status
-	@rm -f stamp-h1
-	cd $(top_builddir) && $(SHELL) ./config.status include/gc_config.h
-$(srcdir)/gc_config.h.in: @MAINTAINER_MODE_TRUE@ $(am__configure_deps) 
-	($(am__cd) $(top_srcdir) && $(AUTOHEADER))
-	rm -f stamp-h1
-	touch $@
-
-gc_ext_config.h: stamp-h2
-	@if test ! -f $@; then \
-	  rm -f stamp-h2; \
-	  $(MAKE) $(AM_MAKEFLAGS) stamp-h2; \
-	else :; fi
-
-stamp-h2: $(srcdir)/gc_ext_config.h.in $(top_builddir)/config.status
-	@rm -f stamp-h2
-	cd $(top_builddir) && $(SHELL) ./config.status include/gc_ext_config.h
-
-distclean-hdr:
-	-rm -f gc_config.h stamp-h1 gc_ext_config.h stamp-h2
-
 mostlyclean-libtool:
 	-rm -f *.lo
 
 clean-libtool:
 	-rm -rf .libs _libs
-
-ID: $(HEADERS) $(SOURCES) $(LISP) $(TAGS_FILES)
-	list='$(SOURCES) $(HEADERS) $(LISP) $(TAGS_FILES)'; \
-	unique=`for i in $$list; do \
-	    if test -f "$$i"; then echo $$i; else echo $(srcdir)/$$i; fi; \
-	  done | \
-	  $(AWK) '{ files[$$0] = 1; nonempty = 1; } \
-	      END { if (nonempty) { for (i in files) print i; }; }'`; \
-	mkid -fID $$unique
 tags: TAGS
+TAGS:
 
-TAGS:  $(HEADERS) $(SOURCES) gc_config.h.in gc_ext_config.h.in $(TAGS_DEPENDENCIES) \
-		$(TAGS_FILES) $(LISP)
-	set x; \
-	here=`pwd`; \
-	list='$(SOURCES) $(HEADERS) gc_config.h.in gc_ext_config.h.in $(LISP) $(TAGS_FILES)'; \
-	unique=`for i in $$list; do \
-	    if test -f "$$i"; then echo $$i; else echo $(srcdir)/$$i; fi; \
-	  done | \
-	  $(AWK) '{ files[$$0] = 1; nonempty = 1; } \
-	      END { if (nonempty) { for (i in files) print i; }; }'`; \
-	shift; \
-	if test -z "$(ETAGS_ARGS)$$*$$unique"; then :; else \
-	  test -n "$$unique" || unique=$$empty_fix; \
-	  if test $$# -gt 0; then \
-	    $(ETAGS) $(ETAGSFLAGS) $(AM_ETAGSFLAGS) $(ETAGS_ARGS) \
-	      "$$@" $$unique; \
-	  else \
-	    $(ETAGS) $(ETAGSFLAGS) $(AM_ETAGSFLAGS) $(ETAGS_ARGS) \
-	      $$unique; \
-	  fi; \
-	fi
 ctags: CTAGS
-CTAGS:  $(HEADERS) $(SOURCES) gc_config.h.in gc_ext_config.h.in $(TAGS_DEPENDENCIES) \
-		$(TAGS_FILES) $(LISP)
-	list='$(SOURCES) $(HEADERS) gc_config.h.in gc_ext_config.h.in $(LISP) $(TAGS_FILES)'; \
-	unique=`for i in $$list; do \
-	    if test -f "$$i"; then echo $$i; else echo $(srcdir)/$$i; fi; \
-	  done | \
-	  $(AWK) '{ files[$$0] = 1; nonempty = 1; } \
-	      END { if (nonempty) { for (i in files) print i; }; }'`; \
-	test -z "$(CTAGS_ARGS)$$unique" \
-	  || $(CTAGS) $(CTAGSFLAGS) $(AM_CTAGSFLAGS) $(CTAGS_ARGS) \
-	     $$unique
+CTAGS:
 
-GTAGS:
-	here=`$(am__cd) $(top_builddir) && pwd` \
-	  && $(am__cd) $(top_srcdir) \
-	  && gtags -i $(GTAGS_ARGS) "$$here"
 
-distclean-tags:
-	-rm -f TAGS ID GTAGS GRTAGS GSYMS GPATH tags
+check-DEJAGNU: site.exp
+	srcdir=`$(am__cd) $(srcdir) && pwd`; export srcdir; \
+	EXPECT=$(EXPECT); export EXPECT; \
+	runtest=$(RUNTEST); \
+	if $(SHELL) -c "$$runtest --version" > /dev/null 2>&1; then \
+	  exit_status=0; l='$(DEJATOOL)'; for tool in $$l; do \
+	    if $$runtest $(AM_RUNTESTFLAGS) $(RUNTESTDEFAULTFLAGS) $(RUNTESTFLAGS); \
+	    then :; else exit_status=1; fi; \
+	  done; \
+	else echo "WARNING: could not find \`runtest'" 1>&2; :;\
+	fi; \
+	exit $$exit_status
+
+distclean-DEJAGNU:
+	-rm -f site.exp site.bak
+	-l='$(DEJATOOL)'; for tool in $$l; do \
+	  rm -f $$tool.sum $$tool.log; \
+	done
 
 distdir: $(DISTFILES)
 	@srcdirstrip=`echo "$(srcdir)" | sed 's/[].[^$$\\*]/\\\\&/g'`; \
@@ -355,8 +299,9 @@ distdir: $(DISTFILES)
 	  fi; \
 	done
 check-am: all-am
+	$(MAKE) $(AM_MAKEFLAGS) check-DEJAGNU
 check: check-am
-all-am: Makefile $(HEADERS) gc_config.h gc_ext_config.h
+all-am: Makefile
 installdirs:
 install: install-am
 install-exec: install-exec-am
@@ -375,6 +320,7 @@ install-strip:
 mostlyclean-generic:
 
 clean-generic:
+	-test -z "$(CLEANFILES)" || rm -f $(CLEANFILES)
 
 distclean-generic:
 	-test -z "$(CONFIG_CLEAN_FILES)" || rm -f $(CONFIG_CLEAN_FILES)
@@ -389,7 +335,7 @@ clean-am: clean-generic clean-libtool mostlyclean-am
 
 distclean: distclean-am
 	-rm -f Makefile
-distclean-am: clean-am distclean-generic distclean-hdr distclean-tags
+distclean-am: clean-am distclean-DEJAGNU distclean-generic
 
 dvi: dvi-am
 
@@ -449,21 +395,47 @@ ps-am:
 
 uninstall-am:
 
-.MAKE: all install-am install-strip
+.MAKE: check-am install-am install-strip
 
-.PHONY: CTAGS GTAGS all all-am check check-am clean clean-generic \
-	clean-libtool ctags distclean distclean-generic distclean-hdr \
-	distclean-libtool distclean-tags distdir dvi dvi-am html \
-	html-am info info-am install install-am install-data \
-	install-data-am install-dvi install-dvi-am install-exec \
-	install-exec-am install-html install-html-am install-info \
-	install-info-am install-man install-pdf install-pdf-am \
-	install-ps install-ps-am install-strip installcheck \
-	installcheck-am installdirs maintainer-clean \
-	maintainer-clean-generic mostlyclean mostlyclean-generic \
-	mostlyclean-libtool pdf pdf-am ps ps-am tags uninstall \
-	uninstall-am
+.PHONY: all all-am check check-DEJAGNU check-am clean clean-generic \
+	clean-libtool distclean distclean-DEJAGNU distclean-generic \
+	distclean-libtool distdir dvi dvi-am html html-am info info-am \
+	install install-am install-data install-data-am install-dvi \
+	install-dvi-am install-exec install-exec-am install-html \
+	install-html-am install-info install-info-am install-man \
+	install-pdf install-pdf-am install-ps install-ps-am \
+	install-strip installcheck installcheck-am installdirs \
+	maintainer-clean maintainer-clean-generic mostlyclean \
+	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
+	uninstall uninstall-am
 
+
+# We need more things in site.exp, but automake completely controls the
+# creation of that file; there's no way to append to it without messing up
+# the dependancy chains.  So we overrule automake.  This rule is exactly
+# what it would have generated, plus our own additions.
+site.exp: Makefile
+	@echo 'Making a new site.exp file...'
+	@echo '## these variables are automatically generated by make ##' >site.tmp
+	@echo '# Do not edit here.  If you wish to override these values' >>site.tmp
+	@echo '# edit the last section' >>site.tmp
+	@echo 'set srcdir $(srcdir)' >>site.tmp
+	@echo "set objdir `pwd`" >>site.tmp
+	@echo 'set build_alias "$(build_alias)"' >>site.tmp
+	@echo 'set build_triplet $(build_triplet)' >>site.tmp
+	@echo 'set host_alias "$(host_alias)"' >>site.tmp
+	@echo 'set host_triplet $(host_triplet)' >>site.tmp
+	@echo 'set target_alias "$(target_alias)"' >>site.tmp
+	@echo 'set target_triplet $(target_triplet)' >>site.tmp
+	@echo 'set threadcflags "$(THREADCFLAGS)"' >>site.tmp
+	@echo 'set threadlibs "$(THREADLIBS)"' >>site.tmp
+	@echo 'set extra_test_libs "$(EXTRA_TEST_LIBS)"' >>site.tmp
+	@echo '## All variables above are generated by configure. Do Not Edit ##' >>site.tmp
+	@test ! -f site.exp || \
+	  sed '1,/^## All variables above are.*##/ d' site.exp >> site.tmp
+	@-rm -f site.bak
+	@test ! -f site.exp || mv site.exp site.bak
+	@mv site.tmp site.exp
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

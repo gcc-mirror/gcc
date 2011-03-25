@@ -1,3 +1,5 @@
+/* { dg-skip-if "requires --enable-gc-debug" *-*-* } */
+
 #include <stdio.h>
 #define GC_DEBUG
 #include "gc.h"

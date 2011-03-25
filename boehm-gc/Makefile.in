@@ -35,14 +35,14 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 target_triplet = @target@
-check_PROGRAMS = gctest$(EXEEXT) leaktest$(EXEEXT) middletest$(EXEEXT) \
-	staticrootstest$(EXEEXT)
-TESTS = gctest$(EXEEXT) leaktest$(EXEEXT) middletest$(EXEEXT) \
-	staticrootstest$(EXEEXT)
 subdir = .
-DIST_COMMON = ChangeLog $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
-	$(top_srcdir)/configure $(am__configure_deps) \
-	$(srcdir)/../mkinstalldirs $(srcdir)/threads.mk.in
+DIST_COMMON = $(am__configure_deps) $(srcdir)/../compile \
+	$(srcdir)/../config.guess $(srcdir)/../config.sub \
+	$(srcdir)/../depcomp $(srcdir)/../install-sh \
+	$(srcdir)/../ltmain.sh $(srcdir)/../missing \
+	$(srcdir)/../mkinstalldirs $(srcdir)/Makefile.am \
+	$(srcdir)/Makefile.in $(srcdir)/threads.mk.in \
+	$(top_srcdir)/configure ChangeLog depcomp
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/../config/acx.m4 \
 	$(top_srcdir)/../config/depstand.m4 \
@@ -63,6 +63,14 @@ CONFIG_CLEAN_FILES = threads.mk
 CONFIG_CLEAN_VPATH_FILES =
 LTLIBRARIES = $(noinst_LTLIBRARIES)
 am__DEPENDENCIES_1 =
+am__libgcjgc_la_SOURCES_DIST = allchblk.c alloc.c blacklst.c \
+	checksums.c dbg_mlc.c dyn_load.c finalize.c gc_dlopen.c \
+	gcj_mlc.c headers.c malloc.c mallocx.c mark.c mark_rts.c \
+	misc.c new_hblk.c obj_map.c os_dep.c pcr_interface.c \
+	ptr_chck.c real_malloc.c reclaim.c specific.c stubborn.c \
+	typd_mlc.c backgraph.c win32_threads.c pthread_support.c \
+	pthread_stop_world.c darwin_stop_world.c \
+	powerpc_darwin_mach_dep.s
 @POWERPC_DARWIN_TRUE@am__objects_1 = powerpc_darwin_mach_dep.lo
 am_libgcjgc_la_OBJECTS = allchblk.lo alloc.lo blacklst.lo checksums.lo \
 	dbg_mlc.lo dyn_load.lo finalize.lo gc_dlopen.lo gcj_mlc.lo \
@@ -72,6 +80,14 @@ am_libgcjgc_la_OBJECTS = allchblk.lo alloc.lo blacklst.lo checksums.lo \
 	backgraph.lo win32_threads.lo pthread_support.lo \
 	pthread_stop_world.lo darwin_stop_world.lo $(am__objects_1)
 libgcjgc_la_OBJECTS = $(am_libgcjgc_la_OBJECTS)
+am__libgcjgc_convenience_la_SOURCES_DIST = allchblk.c alloc.c \
+	blacklst.c checksums.c dbg_mlc.c dyn_load.c finalize.c \
+	gc_dlopen.c gcj_mlc.c headers.c malloc.c mallocx.c mark.c \
+	mark_rts.c misc.c new_hblk.c obj_map.c os_dep.c \
+	pcr_interface.c ptr_chck.c real_malloc.c reclaim.c specific.c \
+	stubborn.c typd_mlc.c backgraph.c win32_threads.c \
+	pthread_support.c pthread_stop_world.c darwin_stop_world.c \
+	powerpc_darwin_mach_dep.s
 am__objects_2 = allchblk.lo alloc.lo blacklst.lo checksums.lo \
 	dbg_mlc.lo dyn_load.lo finalize.lo gc_dlopen.lo gcj_mlc.lo \
 	headers.lo malloc.lo mallocx.lo mark.lo mark_rts.lo misc.lo \
@@ -82,30 +98,10 @@ am__objects_2 = allchblk.lo alloc.lo blacklst.lo checksums.lo \
 am_libgcjgc_convenience_la_OBJECTS = $(am__objects_2)
 libgcjgc_convenience_la_OBJECTS =  \
 	$(am_libgcjgc_convenience_la_OBJECTS)
-am__dirstamp = $(am__leading_dot)dirstamp
-am_libstaticrootslib_la_OBJECTS = tests/staticrootslib.lo
-libstaticrootslib_la_OBJECTS = $(am_libstaticrootslib_la_OBJECTS)
-libstaticrootslib_la_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) \
-	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
-	$(libstaticrootslib_la_LDFLAGS) $(LDFLAGS) -o $@
-am_gctest_OBJECTS = tests/test.$(OBJEXT)
-gctest_OBJECTS = $(am_gctest_OBJECTS)
-am__DEPENDENCIES_2 = libgcjgc.la $(am__DEPENDENCIES_1) \
-	$(am__DEPENDENCIES_1)
-gctest_DEPENDENCIES = $(am__DEPENDENCIES_2)
-am_leaktest_OBJECTS = tests/leak_test.$(OBJEXT)
-leaktest_OBJECTS = $(am_leaktest_OBJECTS)
-leaktest_DEPENDENCIES = $(am__DEPENDENCIES_2)
-am_middletest_OBJECTS = tests/middle.$(OBJEXT)
-middletest_OBJECTS = $(am_middletest_OBJECTS)
-middletest_DEPENDENCIES = $(am__DEPENDENCIES_2)
-am_staticrootstest_OBJECTS = tests/staticrootstest.$(OBJEXT)
-staticrootstest_OBJECTS = $(am_staticrootstest_OBJECTS)
-staticrootstest_DEPENDENCIES = $(am__DEPENDENCIES_2) \
-	libstaticrootslib.la
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)/include
-depcomp =
-am__depfiles_maybe =
+depcomp = $(SHELL) $(top_srcdir)/../depcomp
+am__depfiles_maybe = depfiles
+am__mv = mv -f
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 LTCOMPILE = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
@@ -118,10 +114,9 @@ LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 CCASCOMPILE = $(CCAS) $(AM_CCASFLAGS) $(CCASFLAGS)
 LTCCASCOMPILE = $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=compile $(CCAS) $(AM_CCASFLAGS) $(CCASFLAGS)
-SOURCES = $(libgcjgc_la_SOURCES) $(libgcjgc_convenience_la_SOURCES) \
-	$(libstaticrootslib_la_SOURCES) $(gctest_SOURCES) \
-	$(leaktest_SOURCES) $(middletest_SOURCES) \
-	$(staticrootstest_SOURCES)
+SOURCES = $(libgcjgc_la_SOURCES) $(libgcjgc_convenience_la_SOURCES)
+DIST_SOURCES = $(am__libgcjgc_la_SOURCES_DIST) \
+	$(am__libgcjgc_convenience_la_SOURCES_DIST)
 MULTISRCTOP = 
 MULTIBUILDTOP = 
 MULTIDIRS = 
@@ -138,12 +133,47 @@ RECURSIVE_TARGETS = all-recursive check-recursive dvi-recursive \
 RECURSIVE_CLEAN_TARGETS = mostlyclean-recursive clean-recursive	\
   distclean-recursive maintainer-clean-recursive
 AM_RECURSIVE_TARGETS = $(RECURSIVE_TARGETS:-recursive=) \
-	$(RECURSIVE_CLEAN_TARGETS:-recursive=) tags TAGS ctags CTAGS
+	$(RECURSIVE_CLEAN_TARGETS:-recursive=) tags TAGS ctags CTAGS \
+	distdir dist dist-all distcheck
 ETAGS = etags
 CTAGS = ctags
-am__tty_colors = \
-red=; grn=; lgn=; blu=; std=
 DIST_SUBDIRS = $(SUBDIRS)
+DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
+distdir = $(PACKAGE)-$(VERSION)
+top_distdir = $(distdir)
+am__remove_distdir = \
+  { test ! -d "$(distdir)" \
+    || { find "$(distdir)" -type d ! -perm -200 -exec chmod u+w {} ';' \
+         && rm -fr "$(distdir)"; }; }
+am__relativize = \
+  dir0=`pwd`; \
+  sed_first='s,^\([^/]*\)/.*$$,\1,'; \
+  sed_rest='s,^[^/]*/*,,'; \
+  sed_last='s,^.*/\([^/]*\)$$,\1,'; \
+  sed_butlast='s,/*[^/]*$$,,'; \
+  while test -n "$$dir1"; do \
+    first=`echo "$$dir1" | sed -e "$$sed_first"`; \
+    if test "$$first" != "."; then \
+      if test "$$first" = ".."; then \
+        dir2=`echo "$$dir0" | sed -e "$$sed_last"`/"$$dir2"; \
+        dir0=`echo "$$dir0" | sed -e "$$sed_butlast"`; \
+      else \
+        first2=`echo "$$dir2" | sed -e "$$sed_first"`; \
+        if test "$$first2" = "$$first"; then \
+          dir2=`echo "$$dir2" | sed -e "$$sed_rest"`; \
+        else \
+          dir2="../$$dir2"; \
+        fi; \
+        dir0="$$dir0"/"$$first"; \
+      fi; \
+    fi; \
+    dir1=`echo "$$dir1" | sed -e "$$sed_rest"`; \
+  done; \
+  reldir="$$dir2"
+DIST_ARCHIVES = $(distdir).tar.gz
+GZIP_ENV = --best
+distuninstallcheck_listfiles = find . -type f -print
+distcleancheck_listfiles = find . -type f -print
 ACLOCAL = @ACLOCAL@
 AMTAR = @AMTAR@
 AM_CPPFLAGS = @AM_CPPFLAGS@
@@ -214,6 +244,7 @@ SED = @SED@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@
+THREADCFLAGS = @THREADCFLAGS@
 THREADLIBS = @THREADLIBS@
 VERSION = @VERSION@
 abs_builddir = @abs_builddir@
@@ -283,9 +314,9 @@ toolexeclibdir = @toolexeclibdir@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-AUTOMAKE_OPTIONS = cygnus subdir-objects
+AUTOMAKE_OPTIONS = foreign subdir-objects
 ACLOCAL_AMFLAGS = -I .. -I ../config
-SUBDIRS = include
+SUBDIRS = include testsuite
 noinst_LTLIBRARIES = libgcjgc.la libgcjgc_convenience.la
 @POWERPC_DARWIN_FALSE@asm_libgcjgc_sources = 
 @POWERPC_DARWIN_TRUE@asm_libgcjgc_sources = powerpc_darwin_mach_dep.s
@@ -307,40 +338,15 @@ sparc_sunos4_mach_dep.s ia64_save_regs_in_stack.s
 
 # Include THREADLIBS here to ensure that the correct versions of
 # linuxthread semaphore functions get linked:
-libgcjgc_la_LIBADD = $(addobjs) $(THREADLIBS) $(UNWINDLIBS)
+libgcjgc_la_LIBADD = $(addobjs) $(THREADLIBS)
 libgcjgc_la_DEPENDENCIES = $(addobjs)
 libgcjgc_la_LDFLAGS = $(extra_ldflags_libgc) -version-info 1:2:0 -rpath $(toolexeclibdir)
 libgcjgc_la_LINK = $(LINK) $(libgcjgc_la_LDFLAGS)
 libgcjgc_convenience_la_LIBADD = $(addobjs)
 libgcjgc_convenience_la_DEPENDENCIES = $(addobjs)
-AM_CXXFLAGS = $(GC_CFLAGS)
-AM_CFLAGS = $(GC_CFLAGS)
+AM_CXXFLAGS = $(GC_CFLAGS) $(THREADCFLAGS)
+AM_CFLAGS = $(GC_CFLAGS) $(THREADCFLAGS)
 AM_LDFLAGS = $(shell $(top_srcdir)/../libtool-ldflags $(LDFLAGS))
-test_ldadd = libgcjgc.la $(THREADLIBS) $(UNWINDLIBS) $(EXTRA_TEST_LIBS)
-gctest_SOURCES = tests/test.c
-gctest_LDADD = $(test_ldadd)
-gctest_LDFLAGS = -shared-libgcc
-gctest_LINK = $(LINK) $(gctest_LDFLAGS)
-TESTS_ENVIRONMENT = LD_LIBRARY_PATH=../../$(MULTIBUILDTOP)gcc
-leaktest_SOURCES = tests/leak_test.c
-leaktest_LDADD = $(test_ldadd)
-leaktest_LDFLAGS = -shared-libgcc
-leaktest_LINK = $(LINK) $(leaktest_LDFLAGS)
-middletest_SOURCES = tests/middle.c
-middletest_LDADD = $(test_ldadd)
-middletest_LDFLAGS = -shared-libgcc
-middletest_LINK = $(LINK) $(middletest_LDFLAGS)
-staticrootstest_SOURCES = tests/staticrootstest.c
-staticrootstest_LDADD = $(test_ldadd) libstaticrootslib.la
-staticrootstest_LDFLAGS = -shared-libgcc
-staticrootstest_LINK = $(LINK) $(staticrootstest_LDFLAGS)
-check_LTLIBRARIES = libstaticrootslib.la
-libstaticrootslib_la_SOURCES = tests/staticrootslib.c
-libstaticrootslib_la_LIBADD = libgcjgc_convenience.la
-libstaticrootslib_la_LDFLAGS = -version-info 1:2:0 -no-undefined \
-				-rpath /nowhere -shared-libgcc
-
-libstaticrootslib_la_DEPENDENCIES = libgcjgc_convenience.la
 
 # Work around what appears to be a GNU make bug handling MAKEFLAGS
 # values defined in terms of make variables, as is the case for CC and
@@ -426,15 +432,6 @@ $(am__aclocal_m4_deps):
 threads.mk: $(top_builddir)/config.status $(srcdir)/threads.mk.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
 
-clean-checkLTLIBRARIES:
-	-test -z "$(check_LTLIBRARIES)" || rm -f $(check_LTLIBRARIES)
-	@list='$(check_LTLIBRARIES)'; for p in $$list; do \
-	  dir="`echo $$p | sed -e 's|/[^/]*$$||'`"; \
-	  test "$$dir" != "$$p" || dir=.; \
-	  echo "rm -f \"$${dir}/so_locations\""; \
-	  rm -f "$${dir}/so_locations"; \
-	done
-
 clean-noinstLTLIBRARIES:
 	-test -z "$(noinst_LTLIBRARIES)" || rm -f $(noinst_LTLIBRARIES)
 	@list='$(noinst_LTLIBRARIES)'; for p in $$list; do \
@@ -447,58 +444,67 @@ libgcjgc.la: $(libgcjgc_la_OBJECTS) $(libgcjgc_la_DEPENDENCIES)
 	$(libgcjgc_la_LINK)  $(libgcjgc_la_OBJECTS) $(libgcjgc_la_LIBADD) $(LIBS)
 libgcjgc_convenience.la: $(libgcjgc_convenience_la_OBJECTS) $(libgcjgc_convenience_la_DEPENDENCIES) 
 	$(LINK)  $(libgcjgc_convenience_la_OBJECTS) $(libgcjgc_convenience_la_LIBADD) $(LIBS)
-tests/$(am__dirstamp):
-	@$(MKDIR_P) tests
-	@: > tests/$(am__dirstamp)
-tests/staticrootslib.lo: tests/$(am__dirstamp)
-libstaticrootslib.la: $(libstaticrootslib_la_OBJECTS) $(libstaticrootslib_la_DEPENDENCIES) 
-	$(libstaticrootslib_la_LINK)  $(libstaticrootslib_la_OBJECTS) $(libstaticrootslib_la_LIBADD) $(LIBS)
-
-clean-checkPROGRAMS:
-	@list='$(check_PROGRAMS)'; test -n "$$list" || exit 0; \
-	echo " rm -f" $$list; \
-	rm -f $$list || exit $$?; \
-	test -n "$(EXEEXT)" || exit 0; \
-	list=`for p in $$list; do echo "$$p"; done | sed 's/$(EXEEXT)$$//'`; \
-	echo " rm -f" $$list; \
-	rm -f $$list
-tests/test.$(OBJEXT): tests/$(am__dirstamp)
-gctest$(EXEEXT): $(gctest_OBJECTS) $(gctest_DEPENDENCIES) 
-	@rm -f gctest$(EXEEXT)
-	$(gctest_LINK) $(gctest_OBJECTS) $(gctest_LDADD) $(LIBS)
-tests/leak_test.$(OBJEXT): tests/$(am__dirstamp)
-leaktest$(EXEEXT): $(leaktest_OBJECTS) $(leaktest_DEPENDENCIES) 
-	@rm -f leaktest$(EXEEXT)
-	$(leaktest_LINK) $(leaktest_OBJECTS) $(leaktest_LDADD) $(LIBS)
-tests/middle.$(OBJEXT): tests/$(am__dirstamp)
-middletest$(EXEEXT): $(middletest_OBJECTS) $(middletest_DEPENDENCIES) 
-	@rm -f middletest$(EXEEXT)
-	$(middletest_LINK) $(middletest_OBJECTS) $(middletest_LDADD) $(LIBS)
-tests/staticrootstest.$(OBJEXT): tests/$(am__dirstamp)
-staticrootstest$(EXEEXT): $(staticrootstest_OBJECTS) $(staticrootstest_DEPENDENCIES) 
-	@rm -f staticrootstest$(EXEEXT)
-	$(staticrootstest_LINK) $(staticrootstest_OBJECTS) $(staticrootstest_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
-	-rm -f tests/leak_test.$(OBJEXT)
-	-rm -f tests/middle.$(OBJEXT)
-	-rm -f tests/staticrootslib.$(OBJEXT)
-	-rm -f tests/staticrootslib.lo
-	-rm -f tests/staticrootstest.$(OBJEXT)
-	-rm -f tests/test.$(OBJEXT)
 
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/allchblk.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/alloc.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/backgraph.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/blacklst.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/checksums.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/darwin_stop_world.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dbg_mlc.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dyn_load.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/finalize.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gc_dlopen.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gcj_mlc.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/headers.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/malloc.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mallocx.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mark.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mark_rts.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/misc.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/new_hblk.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/obj_map.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/os_dep.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pcr_interface.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pthread_stop_world.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pthread_support.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ptr_chck.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/real_malloc.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/reclaim.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/specific.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/stubborn.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/typd_mlc.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/win32_threads.Plo@am__quote@
+
 .c.o:
-	$(COMPILE) -c -o $@ $<
+@am__fastdepCC_TRUE@	depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.o$$||'`;\
+@am__fastdepCC_TRUE@	$(COMPILE) -MT $@ -MD -MP -MF $$depbase.Tpo -c -o $@ $< &&\
+@am__fastdepCC_TRUE@	$(am__mv) $$depbase.Tpo $$depbase.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(COMPILE) -c -o $@ $<
 
 .c.obj:
-	$(COMPILE) -c -o $@ `$(CYGPATH_W) '$<'`
+@am__fastdepCC_TRUE@	depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.obj$$||'`;\
+@am__fastdepCC_TRUE@	$(COMPILE) -MT $@ -MD -MP -MF $$depbase.Tpo -c -o $@ `$(CYGPATH_W) '$<'` &&\
+@am__fastdepCC_TRUE@	$(am__mv) $$depbase.Tpo $$depbase.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(COMPILE) -c -o $@ `$(CYGPATH_W) '$<'`
 
 .c.lo:
-	$(LTCOMPILE) -c -o $@ $<
+@am__fastdepCC_TRUE@	depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.lo$$||'`;\
+@am__fastdepCC_TRUE@	$(LTCOMPILE) -MT $@ -MD -MP -MF $$depbase.Tpo -c -o $@ $< &&\
+@am__fastdepCC_TRUE@	$(am__mv) $$depbase.Tpo $$depbase.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$<' object='$@' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LTCOMPILE) -c -o $@ $<
 
 .s.o:
 	$(CCASCOMPILE) -c -o $@ $<
@@ -511,7 +517,6 @@ mostlyclean-libtool:
 
 clean-libtool:
 	-rm -rf .libs _libs
-	-rm -rf tests/.libs tests/_libs
 
 distclean-libtool:
 	-rm -f libtool config.lt
@@ -668,99 +673,182 @@ GTAGS:
 distclean-tags:
 	-rm -f TAGS ID GTAGS GRTAGS GSYMS GPATH tags
 
-check-TESTS: $(TESTS)
-	@failed=0; all=0; xfail=0; xpass=0; skip=0; \
-	srcdir=$(srcdir); export srcdir; \
-	list=' $(TESTS) '; \
-	$(am__tty_colors); \
-	if test -n "$$list"; then \
-	  for tst in $$list; do \
-	    if test -f ./$$tst; then dir=./; \
-	    elif test -f $$tst; then dir=; \
-	    else dir="$(srcdir)/"; fi; \
-	    if $(TESTS_ENVIRONMENT) $${dir}$$tst; then \
-	      all=`expr $$all + 1`; \
-	      case " $(XFAIL_TESTS) " in \
-	      *[\ \	]$$tst[\ \	]*) \
-		xpass=`expr $$xpass + 1`; \
-		failed=`expr $$failed + 1`; \
-		col=$$red; res=XPASS; \
-	      ;; \
-	      *) \
-		col=$$grn; res=PASS; \
-	      ;; \
-	      esac; \
-	    elif test $$? -ne 77; then \
-	      all=`expr $$all + 1`; \
-	      case " $(XFAIL_TESTS) " in \
-	      *[\ \	]$$tst[\ \	]*) \
-		xfail=`expr $$xfail + 1`; \
-		col=$$lgn; res=XFAIL; \
-	      ;; \
-	      *) \
-		failed=`expr $$failed + 1`; \
-		col=$$red; res=FAIL; \
-	      ;; \
-	      esac; \
-	    else \
-	      skip=`expr $$skip + 1`; \
-	      col=$$blu; res=SKIP; \
+distdir: $(DISTFILES)
+	$(am__remove_distdir)
+	test -d "$(distdir)" || mkdir "$(distdir)"
+	@srcdirstrip=`echo "$(srcdir)" | sed 's/[].[^$$\\*]/\\\\&/g'`; \
+	topsrcdirstrip=`echo "$(top_srcdir)" | sed 's/[].[^$$\\*]/\\\\&/g'`; \
+	list='$(DISTFILES)'; \
+	  dist_files=`for file in $$list; do echo $$file; done | \
+	  sed -e "s|^$$srcdirstrip/||;t" \
+	      -e "s|^$$topsrcdirstrip/|$(top_builddir)/|;t"`; \
+	case $$dist_files in \
+	  */*) $(MKDIR_P) `echo "$$dist_files" | \
+			   sed '/\//!d;s|^|$(distdir)/|;s,/[^/]*$$,,' | \
+			   sort -u` ;; \
+	esac; \
+	for file in $$dist_files; do \
+	  if test -f $$file || test -d $$file; then d=.; else d=$(srcdir); fi; \
+	  if test -d $$d/$$file; then \
+	    dir=`echo "/$$file" | sed -e 's,/[^/]*$$,,'`; \
+	    if test -d "$(distdir)/$$file"; then \
+	      find "$(distdir)/$$file" -type d ! -perm -700 -exec chmod u+rwx {} \;; \
 	    fi; \
-	    echo "$${col}$$res$${std}: $$tst"; \
-	  done; \
-	  if test "$$all" -eq 1; then \
-	    tests="test"; \
-	    All=""; \
+	    if test -d $(srcdir)/$$file && test $$d != $(srcdir); then \
+	      cp -fpR $(srcdir)/$$file "$(distdir)$$dir" || exit 1; \
+	      find "$(distdir)/$$file" -type d ! -perm -700 -exec chmod u+rwx {} \;; \
+	    fi; \
+	    cp -fpR $$d/$$file "$(distdir)$$dir" || exit 1; \
 	  else \
-	    tests="tests"; \
-	    All="All "; \
+	    test -f "$(distdir)/$$file" \
+	    || cp -p $$d/$$file "$(distdir)/$$file" \
+	    || exit 1; \
 	  fi; \
-	  if test "$$failed" -eq 0; then \
-	    if test "$$xfail" -eq 0; then \
-	      banner="$$All$$all $$tests passed"; \
-	    else \
-	      if test "$$xfail" -eq 1; then failures=failure; else failures=failures; fi; \
-	      banner="$$All$$all $$tests behaved as expected ($$xfail expected $$failures)"; \
-	    fi; \
-	  else \
-	    if test "$$xpass" -eq 0; then \
-	      banner="$$failed of $$all $$tests failed"; \
-	    else \
-	      if test "$$xpass" -eq 1; then passes=pass; else passes=passes; fi; \
-	      banner="$$failed of $$all $$tests did not behave as expected ($$xpass unexpected $$passes)"; \
-	    fi; \
+	done
+	@list='$(DIST_SUBDIRS)'; for subdir in $$list; do \
+	  if test "$$subdir" = .; then :; else \
+	    test -d "$(distdir)/$$subdir" \
+	    || $(MKDIR_P) "$(distdir)/$$subdir" \
+	    || exit 1; \
 	  fi; \
-	  dashes="$$banner"; \
-	  skipped=""; \
-	  if test "$$skip" -ne 0; then \
-	    if test "$$skip" -eq 1; then \
-	      skipped="($$skip test was not run)"; \
-	    else \
-	      skipped="($$skip tests were not run)"; \
-	    fi; \
-	    test `echo "$$skipped" | wc -c` -le `echo "$$banner" | wc -c` || \
-	      dashes="$$skipped"; \
+	done
+	@list='$(DIST_SUBDIRS)'; for subdir in $$list; do \
+	  if test "$$subdir" = .; then :; else \
+	    dir1=$$subdir; dir2="$(distdir)/$$subdir"; \
+	    $(am__relativize); \
+	    new_distdir=$$reldir; \
+	    dir1=$$subdir; dir2="$(top_distdir)"; \
+	    $(am__relativize); \
+	    new_top_distdir=$$reldir; \
+	    echo " (cd $$subdir && $(MAKE) $(AM_MAKEFLAGS) top_distdir="$$new_top_distdir" distdir="$$new_distdir" \\"; \
+	    echo "     am__remove_distdir=: am__skip_length_check=: am__skip_mode_fix=: distdir)"; \
+	    ($(am__cd) $$subdir && \
+	      $(MAKE) $(AM_MAKEFLAGS) \
+	        top_distdir="$$new_top_distdir" \
+	        distdir="$$new_distdir" \
+		am__remove_distdir=: \
+		am__skip_length_check=: \
+		am__skip_mode_fix=: \
+	        distdir) \
+	      || exit 1; \
 	  fi; \
-	  report=""; \
-	  if test "$$failed" -ne 0 && test -n "$(PACKAGE_BUGREPORT)"; then \
-	    report="Please report to $(PACKAGE_BUGREPORT)"; \
-	    test `echo "$$report" | wc -c` -le `echo "$$banner" | wc -c` || \
-	      dashes="$$report"; \
-	  fi; \
-	  dashes=`echo "$$dashes" | sed s/./=/g`; \
-	  if test "$$failed" -eq 0; then \
-	    echo "$$grn$$dashes"; \
-	  else \
-	    echo "$$red$$dashes"; \
-	  fi; \
-	  echo "$$banner"; \
-	  test -z "$$skipped" || echo "$$skipped"; \
-	  test -z "$$report" || echo "$$report"; \
-	  echo "$$dashes$$std"; \
-	  test "$$failed" -eq 0; \
-	else :; fi
-check-am: $(check_LTLIBRARIES) $(check_PROGRAMS)
-	$(MAKE) $(AM_MAKEFLAGS) check-TESTS
+	done
+	-test -n "$(am__skip_mode_fix)" \
+	|| find "$(distdir)" -type d ! -perm -755 \
+		-exec chmod u+rwx,go+rx {} \; -o \
+	  ! -type d ! -perm -444 -links 1 -exec chmod a+r {} \; -o \
+	  ! -type d ! -perm -400 -exec chmod a+r {} \; -o \
+	  ! -type d ! -perm -444 -exec $(install_sh) -c -m a+r {} {} \; \
+	|| chmod -R a+r "$(distdir)"
+dist-gzip: distdir
+	tardir=$(distdir) && $(am__tar) | GZIP=$(GZIP_ENV) gzip -c >$(distdir).tar.gz
+	$(am__remove_distdir)
+
+dist-bzip2: distdir
+	tardir=$(distdir) && $(am__tar) | bzip2 -9 -c >$(distdir).tar.bz2
+	$(am__remove_distdir)
+
+dist-lzma: distdir
+	tardir=$(distdir) && $(am__tar) | lzma -9 -c >$(distdir).tar.lzma
+	$(am__remove_distdir)
+
+dist-xz: distdir
+	tardir=$(distdir) && $(am__tar) | xz -c >$(distdir).tar.xz
+	$(am__remove_distdir)
+
+dist-tarZ: distdir
+	tardir=$(distdir) && $(am__tar) | compress -c >$(distdir).tar.Z
+	$(am__remove_distdir)
+
+dist-shar: distdir
+	shar $(distdir) | GZIP=$(GZIP_ENV) gzip -c >$(distdir).shar.gz
+	$(am__remove_distdir)
+
+dist-zip: distdir
+	-rm -f $(distdir).zip
+	zip -rq $(distdir).zip $(distdir)
+	$(am__remove_distdir)
+
+dist dist-all: distdir
+	tardir=$(distdir) && $(am__tar) | GZIP=$(GZIP_ENV) gzip -c >$(distdir).tar.gz
+	$(am__remove_distdir)
+
+# This target untars the dist file and tries a VPATH configuration.  Then
+# it guarantees that the distribution is self-contained by making another
+# tarfile.
+distcheck: dist
+	case '$(DIST_ARCHIVES)' in \
+	*.tar.gz*) \
+	  GZIP=$(GZIP_ENV) gzip -dc $(distdir).tar.gz | $(am__untar) ;;\
+	*.tar.bz2*) \
+	  bzip2 -dc $(distdir).tar.bz2 | $(am__untar) ;;\
+	*.tar.lzma*) \
+	  lzma -dc $(distdir).tar.lzma | $(am__untar) ;;\
+	*.tar.xz*) \
+	  xz -dc $(distdir).tar.xz | $(am__untar) ;;\
+	*.tar.Z*) \
+	  uncompress -c $(distdir).tar.Z | $(am__untar) ;;\
+	*.shar.gz*) \
+	  GZIP=$(GZIP_ENV) gzip -dc $(distdir).shar.gz | unshar ;;\
+	*.zip*) \
+	  unzip $(distdir).zip ;;\
+	esac
+	chmod -R a-w $(distdir); chmod a+w $(distdir)
+	mkdir $(distdir)/_build
+	mkdir $(distdir)/_inst
+	chmod a-w $(distdir)
+	test -d $(distdir)/_build || exit 0; \
+	dc_install_base=`$(am__cd) $(distdir)/_inst && pwd | sed -e 's,^[^:\\/]:[\\/],/,'` \
+	  && dc_destdir="$${TMPDIR-/tmp}/am-dc-$$$$/" \
+	  && am__cwd=`pwd` \
+	  && $(am__cd) $(distdir)/_build \
+	  && ../configure --srcdir=.. --prefix="$$dc_install_base" \
+	    $(DISTCHECK_CONFIGURE_FLAGS) \
+	  && $(MAKE) $(AM_MAKEFLAGS) \
+	  && $(MAKE) $(AM_MAKEFLAGS) dvi \
+	  && $(MAKE) $(AM_MAKEFLAGS) check \
+	  && $(MAKE) $(AM_MAKEFLAGS) install \
+	  && $(MAKE) $(AM_MAKEFLAGS) installcheck \
+	  && $(MAKE) $(AM_MAKEFLAGS) uninstall \
+	  && $(MAKE) $(AM_MAKEFLAGS) distuninstallcheck_dir="$$dc_install_base" \
+	        distuninstallcheck \
+	  && chmod -R a-w "$$dc_install_base" \
+	  && ({ \
+	       (cd ../.. && umask 077 && mkdir "$$dc_destdir") \
+	       && $(MAKE) $(AM_MAKEFLAGS) DESTDIR="$$dc_destdir" install \
+	       && $(MAKE) $(AM_MAKEFLAGS) DESTDIR="$$dc_destdir" uninstall \
+	       && $(MAKE) $(AM_MAKEFLAGS) DESTDIR="$$dc_destdir" \
+	            distuninstallcheck_dir="$$dc_destdir" distuninstallcheck; \
+	      } || { rm -rf "$$dc_destdir"; exit 1; }) \
+	  && rm -rf "$$dc_destdir" \
+	  && $(MAKE) $(AM_MAKEFLAGS) dist \
+	  && rm -rf $(DIST_ARCHIVES) \
+	  && $(MAKE) $(AM_MAKEFLAGS) distcleancheck \
+	  && cd "$$am__cwd" \
+	  || exit 1
+	$(am__remove_distdir)
+	@(echo "$(distdir) archives ready for distribution: "; \
+	  list='$(DIST_ARCHIVES)'; for i in $$list; do echo $$i; done) | \
+	  sed -e 1h -e 1s/./=/g -e 1p -e 1x -e '$$p' -e '$$x'
+distuninstallcheck:
+	@$(am__cd) '$(distuninstallcheck_dir)' \
+	&& test `$(distuninstallcheck_listfiles) | wc -l` -le 1 \
+	   || { echo "ERROR: files left after uninstall:" ; \
+	        if test -n "$(DESTDIR)"; then \
+	          echo "  (check DESTDIR support)"; \
+	        fi ; \
+	        $(distuninstallcheck_listfiles) ; \
+	        exit 1; } >&2
+distcleancheck: distclean
+	@if test '$(srcdir)' = . ; then \
+	  echo "ERROR: distcleancheck can only run from a VPATH build" ; \
+	  exit 1 ; \
+	fi
+	@test `$(distcleancheck_listfiles) | wc -l` -eq 0 \
+	  || { echo "ERROR: files left in build directory after distclean:" ; \
+	       $(distcleancheck_listfiles) ; \
+	       exit 1; } >&2
+check-am: all-am
 check: check-recursive
 all-am: Makefile $(LTLIBRARIES) all-multi
 installdirs: installdirs-recursive
@@ -786,18 +874,18 @@ clean-generic:
 distclean-generic:
 	-test -z "$(CONFIG_CLEAN_FILES)" || rm -f $(CONFIG_CLEAN_FILES)
 	-test . = "$(srcdir)" || test -z "$(CONFIG_CLEAN_VPATH_FILES)" || rm -f $(CONFIG_CLEAN_VPATH_FILES)
-	-rm -f tests/$(am__dirstamp)
 
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
 	@echo "it deletes files that may require special tools to rebuild."
 clean: clean-multi clean-recursive
 
-clean-am: clean-checkLTLIBRARIES clean-checkPROGRAMS clean-generic \
-	clean-libtool clean-noinstLTLIBRARIES mostlyclean-am
+clean-am: clean-generic clean-libtool clean-noinstLTLIBRARIES \
+	mostlyclean-am
 
 distclean: distclean-multi distclean-recursive
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
+	-rm -rf ./$(DEPDIR)
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-libtool distclean-tags
@@ -845,6 +933,7 @@ installcheck-am:
 maintainer-clean: maintainer-clean-multi maintainer-clean-recursive
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
 	-rm -rf $(top_srcdir)/autom4te.cache
+	-rm -rf ./$(DEPDIR)
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 
@@ -864,23 +953,25 @@ ps-am:
 uninstall-am:
 
 .MAKE: $(RECURSIVE_CLEAN_TARGETS) $(RECURSIVE_TARGETS) all-multi \
-	check-am clean-multi ctags-recursive distclean-multi \
-	install-am install-multi install-strip maintainer-clean-multi \
+	clean-multi ctags-recursive distclean-multi install-am \
+	install-multi install-strip maintainer-clean-multi \
 	mostlyclean-multi tags-recursive
 
 .PHONY: $(RECURSIVE_CLEAN_TARGETS) $(RECURSIVE_TARGETS) CTAGS GTAGS \
-	all all-am all-multi am--refresh check check-TESTS check-am \
-	clean clean-checkLTLIBRARIES clean-checkPROGRAMS clean-generic \
-	clean-libtool clean-multi clean-noinstLTLIBRARIES ctags \
-	ctags-recursive distclean distclean-compile distclean-generic \
-	distclean-libtool distclean-multi distclean-tags dvi dvi-am \
-	html html-am info info-am install install-am install-data \
-	install-data-am install-dvi install-dvi-am install-exec \
-	install-exec-am install-html install-html-am install-info \
-	install-info-am install-man install-multi install-pdf \
-	install-pdf-am install-ps install-ps-am install-strip \
-	installcheck installcheck-am installdirs installdirs-am \
-	maintainer-clean maintainer-clean-generic \
+	all all-am all-multi am--refresh check check-am clean \
+	clean-generic clean-libtool clean-multi \
+	clean-noinstLTLIBRARIES ctags ctags-recursive dist dist-all \
+	dist-bzip2 dist-gzip dist-lzma dist-shar dist-tarZ dist-xz \
+	dist-zip distcheck distclean distclean-compile \
+	distclean-generic distclean-libtool distclean-multi \
+	distclean-tags distcleancheck distdir distuninstallcheck dvi \
+	dvi-am html html-am info info-am install install-am \
+	install-data install-data-am install-dvi install-dvi-am \
+	install-exec install-exec-am install-html install-html-am \
+	install-info install-info-am install-man install-multi \
+	install-pdf install-pdf-am install-ps install-ps-am \
+	install-strip installcheck installcheck-am installdirs \
+	installdirs-am maintainer-clean maintainer-clean-generic \
 	maintainer-clean-multi mostlyclean mostlyclean-compile \
 	mostlyclean-generic mostlyclean-libtool mostlyclean-multi pdf \
 	pdf-am ps ps-am tags tags-recursive uninstall uninstall-am
