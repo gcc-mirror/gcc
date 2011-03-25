@@ -84,7 +84,7 @@ along with GCC; see the file COPYING3.  If not see
   (TARGET_64BIT ? dbx64_register_map[(n)]		\
 		: svr4_dbx_register_map[(n)])
 
-/* The MS_ABI changes the set of call-used registers.  */
+/* The 64-bit MS_ABI changes the set of call-used registers.  */
 #undef DWARF_FRAME_REGISTERS
 #define DWARF_FRAME_REGISTERS (TARGET_64BIT ? 33 : 17)
 
@@ -262,7 +262,7 @@ do {						\
 #define CHECK_STACK_LIMIT 4000
 
 #undef STACK_BOUNDARY
-#define STACK_BOUNDARY	(ix86_abi == MS_ABI ? 128 : BITS_PER_WORD)
+#define STACK_BOUNDARY	(TARGET_64BIT && ix86_abi == MS_ABI ? 128 : BITS_PER_WORD)
 
 /* By default, target has a 80387, uses IEEE compatible arithmetic,
    returns float values in the 387 and needs stack probes.

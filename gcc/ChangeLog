@@ -1,3 +1,28 @@
+2011-03-25  Kai Tietz  <ktietz@redhat.com>
+
+	* config/i386/cygming.h (DWARF_FRAME_REGISTERS): Adjust comment.
+	(STACK_BOUNDARY): Check for bit-ness in case of MS_ABI.
+	* config/i386/i386.c (ix86_conditional_register_usage): Adjust
+	comment and use macro TARGET_64BIT_MS_ABI instead.
+	(ix86_keep_aggregate_return_pointer): Optimize for 64-bit case
+	and change default behavior for 32-bit MS_ABI.
+	(ix86_reg_parm_stack_space): Check additionally for bit-ness.
+	(ix86_function_type_abi): Allow check for ms_abi/sysv_abi for
+	32-bit, too.
+	(ix86_cfun_abi): Likewise.
+	(ix86_maybe_switch_abi): Adjust comment.
+	(init_cumulative_args): Check for bit-ness in MS_ABI case.
+	(ix86_gimplify_va_arg): Check just for not TARGET_64BIT_MS_ABI
+	instead of checking for SYSV_ABI.
+	(ix86_nsaved_sseregs): Likewise.
+	(ix86_compute_frame_layout): Set only for 64-bit MS_ABI alignment
+	to 16 bytes.
+	(ix86_expand_call): Use TARGET_64BIT_MS_ABI macro.
+	* config/i386.h (TARGET_32BIT_MS_ABI): New macro.
+	(ACCUMULATE_OUTGOING_ARGS): Check explicit for 64-bit MS_ABI.
+	(OUTGOING_REG_PARM_STACK_SPACE): Likewise.
+	* config/mingw32.h (DEFAULT_ABI): Change default always to MS_ABI.
+
 2011-03-25  Richard Guenther  <rguenther@suse.de>
 
 	* tree-flow.h (verify_stmts): Rename to verify_gimple_in_cfg.
