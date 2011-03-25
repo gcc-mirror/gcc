@@ -1,3 +1,16 @@
+2011-03-25  Bernd Schmidt  <bernds@codesourcery.com>
+	    Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/arm/vfp.md (arm_movdi_vfp): Enable only when not tuning
+	for Cortex-A8.
+	(arm_movdi_vfp_cortexa8): New pattern.
+	* config/arm/neon.md (adddi3_neon, subdi3_neon, anddi3_neon,
+	iordi3_neon, xordi3_neon): Add alternatives to discourage Neon
+	instructions when tuning for Cortex-A8.  Set attribute "arch".
+	* config/arm/arm.md: Move include arm-tune.md up a bit.
+	(define_attr "arch"): Add "onlya8" and "nota8" values.
+	(define_attr "arch_enabled"): Handle "onlya8" and "nota8".
+
 2011-03-25  Nathan Froyd  <froydnj@codesourcery.com>
 
 	PR bootstrap/48282
