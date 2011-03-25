@@ -1,5 +1,13 @@
 2011-02-24  Richard Henderson  <rth@redhat.com>
 
+	* config/alpha/alpha.c (alpha_expand_unaligned_load): Use extql.
+	(alpha_expand_unaligned_store): Use mskwl, mskll, mskql.
+	(alpha_expand_unaligned_load_words): Use extql.
+	(alpha_expand_unaligned_store_words): Use insqh, mskqh, mskql.
+	(emit_insxl): Handle all modes for consistency.
+
+2011-02-24  Richard Henderson  <rth@redhat.com>
+
 	* config/alpha/alpha.c (get_aligned_mem): Don't test WORDS_BIG_ENDIAN.
 	(alpha_expand_unaligned_load): Likewise.
 	(alpha_expand_unaligned_store): Likewise.

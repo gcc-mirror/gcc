@@ -3347,7 +3347,7 @@ alpha_expand_unaligned_load (rtx tgt, rtx mem, HOST_WIDE_INT size,
     {
       emit_move_insn (addr, plus_constant (mema, ofs+2));
 
-      emit_insn (gen_extxl (extl, meml, GEN_INT (64), addr));
+      emit_insn (gen_extql (extl, meml, addr));
       emit_insn (gen_extqh (exth, memh, addr));
 
       /* We must use tgt here for the target.  Alpha-vms port fails if we use
@@ -3367,17 +3367,14 @@ alpha_expand_unaligned_load (rtx tgt, rtx mem, HOST_WIDE_INT size,
 	  emit_insn (gen_extwh (exth, memh, addr));
 	  mode = HImode;
 	  break;
-
 	case 4:
 	  emit_insn (gen_extlh (exth, memh, addr));
 	  mode = SImode;
 	  break;
-
 	case 8:
 	  emit_insn (gen_extqh (exth, memh, addr));
 	  mode = DImode;
 	  break;
-
 	default:
 	  gcc_unreachable ();
 	}
@@ -3475,16 +3472,13 @@ alpha_expand_unaligned_store (rtx dst, rtx src,
   switch ((int) size)
     {
     case 2:
-      emit_insn (gen_mskxl (dstl, dstl, GEN_INT (0xffff), addr));
+      emit_insn (gen_mskwl (dstl, dstl, addr));
       break;
     case 4:
-      {
-	rtx msk = immed_double_const (0xffffffff, 0, DImode);
-	emit_insn (gen_mskxl (dstl, dstl, msk, addr));
-	break;
-      }
+      emit_insn (gen_mskll (dstl, dstl, addr));
+      break;
     case 8:
-      emit_insn (gen_mskxl (dstl, dstl, constm1_rtx, addr));
+      emit_insn (gen_mskql (dstl, dstl, addr));
       break;
     default:
       gcc_unreachable ();
@@ -3516,7 +3510,6 @@ alpha_expand_unaligned_load_words (rtx *out_regs, rtx smem,
 				   HOST_WIDE_INT words, HOST_WIDE_INT ofs)
 {
   rtx const im8 = GEN_INT (-8);
-  rtx const i64 = GEN_INT (64);
   rtx ext_tmps[MAX_MOVE_WORDS], data_regs[MAX_MOVE_WORDS+1];
   rtx sreg, areg, tmp, smema;
   HOST_WIDE_INT i;
@@ -3563,7 +3556,7 @@ alpha_expand_unaligned_load_words (rtx *out_regs, rtx smem,
 		       1, OPTAB_WIDEN);
   for (i = 0; i < words; ++i)
     {
-      emit_insn (gen_extxl (data_regs[i], data_regs[i], i64, sreg));
+      emit_insn (gen_extql (data_regs[i], data_regs[i], sreg));
       emit_insn (gen_extqh (ext_tmps[i], data_regs[i+1], sreg));
       emit_insn (gen_rtx_SET (VOIDmode, ext_tmps[i],
 			      gen_rtx_IF_THEN_ELSE (DImode,
@@ -3588,7 +3581,6 @@ alpha_expand_unaligned_store_words (rtx *data_regs, rtx dmem,
 				    HOST_WIDE_INT words, HOST_WIDE_INT ofs)
 {
   rtx const im8 = GEN_INT (-8);
-  rtx const i64 = GEN_INT (64);
   rtx ins_tmps[MAX_MOVE_WORDS];
   rtx st_tmp_1, st_tmp_2, dreg;
   rtx st_addr_1, st_addr_2, dmema;
@@ -3628,7 +3620,7 @@ alpha_expand_unaligned_store_words (rtx *data_regs, rtx dmem,
     {
       for (i = words-1; i >= 0; --i)
 	{
-	  emit_insn (gen_insxh (ins_tmps[i], data_regs[i], i64, dreg));
+	  emit_insn (gen_insqh (ins_tmps[i], data_regs[i], dreg));
 	  emit_insn (gen_insql (data_regs[i], data_regs[i], dreg));
 	}
       for (i = words-1; i > 0; --i)
@@ -3640,8 +3632,8 @@ alpha_expand_unaligned_store_words (rtx *data_regs, rtx dmem,
     }
 
   /* Split and merge the ends with the destination data.  */
-  emit_insn (gen_mskxh (st_tmp_2, st_tmp_2, i64, dreg));
-  emit_insn (gen_mskxl (st_tmp_1, st_tmp_1, constm1_rtx, dreg));
+  emit_insn (gen_mskqh (st_tmp_2, st_tmp_2, dreg));
+  emit_insn (gen_mskql (st_tmp_1, st_tmp_1, dreg));
 
   if (data_regs != NULL)
     {
@@ -4311,12 +4303,24 @@ emit_insxl (enum machine_mode mode, rtx op1, rtx op2)
   rtx ret = gen_reg_rtx (DImode);
   rtx (*fn) (rtx, rtx, rtx);
 
-  if (mode == QImode)
-    fn = gen_insbl;
-  else
-    fn = gen_inswl;
+  switch (mode)
+    {
+    case QImode:
+      fn = gen_insbl;
+      break;
+    case HImode:
+      fn = gen_inswl;
+      break;
+    case SImode:
+      fn = gen_insll;
+      break;
+    case DImode:
+      fn = gen_insql;
+      break;
+    default:
+      gcc_unreachable ();
+    }
 
-  /* The insbl and inswl patterns require a register operand.  */
   op1 = force_reg (mode, op1);
   emit_insn (fn (ret, op1, op2));
 
