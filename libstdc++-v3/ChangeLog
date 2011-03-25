@@ -1,3 +1,7 @@
+2011-03-25  Release Manager
+
+	* GCC 4.6.0 released.
+
 2011-03-24  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* config/abi/post/solaris2.8/baseline_symbols.txt: Regenerate.
