@@ -179,7 +179,9 @@
   (const_string "false"))
 
 ;; Used to control the "enabled" attribute on a per-instruction basis.
-(define_attr "isa" "base,bwx,max,fix,cix"
+;; For convenience, conflate ABI issues re loading of addresses with
+;; an "isa".
+(define_attr "isa" "base,bwx,max,fix,cix,vms"
   (const_string "base"))
 
 (define_attr "enabled" ""
@@ -187,6 +189,7 @@
 	 (eq_attr "isa" "max")	(symbol_ref "TARGET_MAX")
 	 (eq_attr "isa" "fix")	(symbol_ref "TARGET_FIX")
 	 (eq_attr "isa" "cix")	(symbol_ref "TARGET_CIX")
+         (eq_attr "isa" "vms")  (symbol_ref "TARGET_ABI_OPEN_VMS")
 	]
 	(const_int 1)))
 
@@ -4607,27 +4610,21 @@
 ;; are done via define_expand.  Start with the floating-point insns, since
 ;; they are simpler.
 
-(define_insn "*movsf_nofix"
-  [(set (match_operand:SF 0 "nonimmediate_operand" "=f,f,*r,*r,m,m")
-	(match_operand:SF 1 "input_operand" "fG,m,*rG,m,fG,*r"))]
-  "TARGET_FPREGS && ! TARGET_FIX
-   && (register_operand (operands[0], SFmode)
-       || reg_or_0_operand (operands[1], SFmode))"
-  "@
-   cpys %R1,%R1,%0
-   ld%, %0,%1
-   bis $31,%r1,%0
-   ldl %0,%1
-   st%, %R1,%0
-   stl %r1,%0"
-  [(set_attr "type" "fcpys,fld,ilog,ild,fst,ist")])
+(define_expand "movsf"
+  [(set (match_operand:SF 0 "nonimmediate_operand" "")
+	(match_operand:SF 1 "general_operand" ""))]
+  ""
+{
+  if (MEM_P (operands[0])
+      && ! reg_or_0_operand (operands[1], SFmode))
+    operands[1] = force_reg (SFmode, operands[1]);
+})
 
-(define_insn "*movsf_fix"
+(define_insn "*movsf"
   [(set (match_operand:SF 0 "nonimmediate_operand" "=f,f,*r,*r,m,m,f,*r")
 	(match_operand:SF 1 "input_operand" "fG,m,*rG,m,fG,*r,*r,f"))]
-  "TARGET_FPREGS && TARGET_FIX
-   && (register_operand (operands[0], SFmode)
-       || reg_or_0_operand (operands[1], SFmode))"
+  "register_operand (operands[0], SFmode)
+   || reg_or_0_operand (operands[1], SFmode)"
   "@
    cpys %R1,%R1,%0
    ld%, %0,%1
@@ -4637,41 +4634,24 @@
    stl %r1,%0
    itofs %1,%0
    ftois %1,%0"
-  [(set_attr "type" "fcpys,fld,ilog,ild,fst,ist,itof,ftoi")])
+  [(set_attr "type" "fcpys,fld,ilog,ild,fst,ist,itof,ftoi")
+   (set_attr "isa" "*,*,*,*,*,*,fix,fix")])
 
-(define_insn "*movsf_nofp"
-  [(set (match_operand:SF 0 "nonimmediate_operand" "=r,r,m")
-	(match_operand:SF 1 "input_operand" "rG,m,r"))]
-  "! TARGET_FPREGS
-   && (register_operand (operands[0], SFmode)
-       || reg_or_0_operand (operands[1], SFmode))"
-  "@
-   bis $31,%r1,%0
-   ldl %0,%1
-   stl %r1,%0"
-  [(set_attr "type" "ilog,ild,ist")])
+(define_expand "movdf"
+  [(set (match_operand:DF 0 "nonimmediate_operand" "")
+	(match_operand:DF 1 "general_operand" ""))]
+  ""
+{
+  if (MEM_P (operands[0])
+      && ! reg_or_0_operand (operands[1], DFmode))
+    operands[1] = force_reg (DFmode, operands[1]);
+})
 
-(define_insn "*movdf_nofix"
-  [(set (match_operand:DF 0 "nonimmediate_operand" "=f,f,*r,*r,m,m")
-	(match_operand:DF 1 "input_operand" "fG,m,*rG,m,fG,*r"))]
-  "TARGET_FPREGS && ! TARGET_FIX
-   && (register_operand (operands[0], DFmode)
-       || reg_or_0_operand (operands[1], DFmode))"
-  "@
-   cpys %R1,%R1,%0
-   ld%- %0,%1
-   bis $31,%r1,%0
-   ldq %0,%1
-   st%- %R1,%0
-   stq %r1,%0"
-  [(set_attr "type" "fcpys,fld,ilog,ild,fst,ist")])
-
-(define_insn "*movdf_fix"
+(define_insn "*movdf"
   [(set (match_operand:DF 0 "nonimmediate_operand" "=f,f,*r,*r,m,m,f,*r")
 	(match_operand:DF 1 "input_operand" "fG,m,*rG,m,fG,*r,*r,f"))]
-  "TARGET_FPREGS && TARGET_FIX
-   && (register_operand (operands[0], DFmode)
-       || reg_or_0_operand (operands[1], DFmode))"
+  "register_operand (operands[0], DFmode)
+   || reg_or_0_operand (operands[1], DFmode)"
   "@
    cpys %R1,%R1,%0
    ld%- %0,%1
@@ -4681,24 +4661,24 @@
    stq %r1,%0
    itoft %1,%0
    ftoit %1,%0"
-  [(set_attr "type" "fcpys,fld,ilog,ild,fst,ist,itof,ftoi")])
-
-(define_insn "*movdf_nofp"
-  [(set (match_operand:DF 0 "nonimmediate_operand" "=r,r,m")
-	(match_operand:DF 1 "input_operand" "rG,m,r"))]
-  "! TARGET_FPREGS
-   && (register_operand (operands[0], DFmode)
-       || reg_or_0_operand (operands[1], DFmode))"
-  "@
-   bis $31,%r1,%0
-   ldq %0,%1
-   stq %r1,%0"
-  [(set_attr "type" "ilog,ild,ist")])
+  [(set_attr "type" "fcpys,fld,ilog,ild,fst,ist,itof,ftoi")
+   (set_attr "isa" "*,*,*,*,*,*,fix,fix")])
 
 ;; Subregs suck for register allocation.  Pretend we can move TFmode
 ;; data between general registers until after reload.
+;; ??? Is this still true now that we have the lower-subreg pass?
 
-(define_insn_and_split "*movtf_internal"
+(define_expand "movtf"
+  [(set (match_operand:TF 0 "nonimmediate_operand" "")
+	(match_operand:TF 1 "general_operand" ""))]
+  ""
+{
+  if (MEM_P (operands[0])
+      && ! reg_or_0_operand (operands[1], TFmode))
+    operands[1] = force_reg (TFmode, operands[1]);
+})
+
+(define_insn_and_split "*movtf"
   [(set (match_operand:TF 0 "nonimmediate_operand" "=r,o")
 	(match_operand:TF 1 "input_operand" "roG,rG"))]
   "register_operand (operands[0], TFmode)
@@ -4711,115 +4691,6 @@
   alpha_split_tmode_pair (operands, TFmode, true); 
 })
 
-(define_expand "movsf"
-  [(set (match_operand:SF 0 "nonimmediate_operand" "")
-	(match_operand:SF 1 "general_operand" ""))]
-  ""
-{
-  if (MEM_P (operands[0])
-      && ! reg_or_0_operand (operands[1], SFmode))
-    operands[1] = force_reg (SFmode, operands[1]);
-})
-
-(define_expand "movdf"
-  [(set (match_operand:DF 0 "nonimmediate_operand" "")
-	(match_operand:DF 1 "general_operand" ""))]
-  ""
-{
-  if (MEM_P (operands[0])
-      && ! reg_or_0_operand (operands[1], DFmode))
-    operands[1] = force_reg (DFmode, operands[1]);
-})
-
-(define_expand "movtf"
-  [(set (match_operand:TF 0 "nonimmediate_operand" "")
-	(match_operand:TF 1 "general_operand" ""))]
-  ""
-{
-  if (MEM_P (operands[0])
-      && ! reg_or_0_operand (operands[1], TFmode))
-    operands[1] = force_reg (TFmode, operands[1]);
-})
-
-(define_insn "*movsi"
-  [(set (match_operand:SI 0 "nonimmediate_operand" "=r,r,r,r,r,m")
-	(match_operand:SI 1 "input_operand" "rJ,K,L,n,m,rJ"))]
-  "TARGET_ABI_OSF
-   && (register_operand (operands[0], SImode)
-       || reg_or_0_operand (operands[1], SImode))"
-  "@
-   bis $31,%r1,%0
-   lda %0,%1($31)
-   ldah %0,%h1($31)
-   #
-   ldl %0,%1
-   stl %r1,%0"
-  [(set_attr "type" "ilog,iadd,iadd,multi,ild,ist")])
-
-(define_insn "*movsi_nt_vms"
-  [(set (match_operand:SI 0 "nonimmediate_operand" "=r,r,r,r,r,r,m")
-	(match_operand:SI 1 "input_operand" "rJ,K,L,s,n,m,rJ"))]
-  "TARGET_ABI_OPEN_VMS
-    && (register_operand (operands[0], SImode)
-        || reg_or_0_operand (operands[1], SImode))"
-  "@
-   bis $31,%1,%0
-   lda %0,%1
-   ldah %0,%h1
-   lda %0,%1
-   #
-   ldl %0,%1
-   stl %r1,%0"
-  [(set_attr "type" "ilog,iadd,iadd,ldsym,multi,ild,ist")])
-
-(define_insn "*movhi_nobwx"
-  [(set (match_operand:HI 0 "register_operand" "=r,r")
-	(match_operand:HI 1 "input_operand" "rJ,n"))]
-  "! TARGET_BWX
-   && (register_operand (operands[0], HImode)
-       || register_operand (operands[1], HImode))"
-  "@
-   bis $31,%r1,%0
-   lda %0,%L1($31)"
-  [(set_attr "type" "ilog,iadd")])
-
-(define_insn "*movhi_bwx"
-  [(set (match_operand:HI 0 "nonimmediate_operand" "=r,r,r,m")
-	(match_operand:HI 1 "input_operand" "rJ,n,m,rJ"))]
-  "TARGET_BWX
-   && (register_operand (operands[0], HImode)
-       || reg_or_0_operand (operands[1], HImode))"
-  "@
-   bis $31,%r1,%0
-   lda %0,%L1($31)
-   ldwu %0,%1
-   stw %r1,%0"
-  [(set_attr "type" "ilog,iadd,ild,ist")])
-
-(define_insn "*movqi_nobwx"
-  [(set (match_operand:QI 0 "register_operand" "=r,r")
-	(match_operand:QI 1 "input_operand" "rJ,n"))]
-  "! TARGET_BWX
-   && (register_operand (operands[0], QImode)
-       || register_operand (operands[1], QImode))"
-  "@
-   bis $31,%r1,%0
-   lda %0,%L1($31)"
-  [(set_attr "type" "ilog,iadd")])
-
-(define_insn "*movqi_bwx"
-  [(set (match_operand:QI 0 "nonimmediate_operand" "=r,r,r,m")
-	(match_operand:QI 1 "input_operand" "rJ,n,m,rJ"))]
-  "TARGET_BWX
-   && (register_operand (operands[0], QImode)
-       || reg_or_0_operand (operands[1], QImode))"
-  "@
-   bis $31,%r1,%0
-   lda %0,%L1($31)
-   ldbu %0,%1
-   stb %r1,%0"
-  [(set_attr "type" "ilog,iadd,ild,ist")])
-
 ;; We do two major things here: handle mem->mem and construct long
 ;; constants.
 
@@ -4831,6 +4702,22 @@
   if (alpha_expand_mov (SImode, operands))
     DONE;
 })
+
+(define_insn "*movsi"
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=r,r,r,r,r,m,r")
+	(match_operand:SI 1 "input_operand" "rJ,K,L,n,m,rJ,s"))]
+  "register_operand (operands[0], SImode)
+   || reg_or_0_operand (operands[1], SImode)"
+  "@
+   bis $31,%r1,%0
+   lda %0,%1($31)
+   ldah %0,%h1($31)
+   #
+   ldl %0,%1
+   stl %r1,%0
+   lda %0,%1"
+  [(set_attr "type" "ilog,iadd,iadd,multi,ild,ist,ldsym")
+   (set_attr "isa" "*,*,*,*,*,*,vms")])
 
 ;; Split a load of a large constant into the appropriate two-insn
 ;; sequence.
@@ -5454,7 +5341,7 @@
 	(match_dup 4))]
   "WORDS_BIG_ENDIAN"
   "operands[5] = force_reg (DImode, operands[0]);")
-
+
 ;; Here are the define_expand's for QI and HI moves that use the above
 ;; patterns.  We have the normal sets, plus the ones that need scratch
 ;; registers for reload.
@@ -5470,6 +5357,19 @@
     DONE;
 })
 
+(define_insn "*movqi"
+  [(set (match_operand:QI 0 "nonimmediate_operand" "=r,r,r,m")
+	(match_operand:QI 1 "input_operand" "rJ,n,m,rJ"))]
+  "register_operand (operands[0], QImode)
+   || reg_or_0_operand (operands[1], QImode)"
+  "@
+   bis $31,%r1,%0
+   lda %0,%L1($31)
+   ldbu %0,%1
+   stb %r1,%0"
+  [(set_attr "type" "ilog,iadd,ild,ist")
+   (set_attr "isa" "*,*,bwx,bwx")])
+
 (define_expand "movhi"
   [(set (match_operand:HI 0 "nonimmediate_operand" "")
 	(match_operand:HI 1 "general_operand" ""))]
@@ -5480,6 +5380,19 @@
       : alpha_expand_mov_nobwx (HImode, operands))
     DONE;
 })
+
+(define_insn "*movhi"
+  [(set (match_operand:HI 0 "nonimmediate_operand" "=r,r,r,m")
+	(match_operand:HI 1 "input_operand" "rJ,n,m,rJ"))]
+  "register_operand (operands[0], HImode)
+   || reg_or_0_operand (operands[1], HImode)"
+  "@
+   bis $31,%r1,%0
+   lda %0,%L1($31)
+   ldwu %0,%1
+   stw %r1,%0"
+  [(set_attr "type" "ilog,iadd,ild,ist")
+   (set_attr "isa" "*,*,bwx,bwx")])
 
 ;; We need to hook into the extra support that we have for HImode 
 ;; reloads when BWX insns are not available.
@@ -5565,7 +5478,7 @@
   [(parallel [(match_operand:RELOAD12 0 "any_memory_operand" "=m")
 	      (match_operand:RELOAD12 1 "register_operand" "r")
 	      (match_operand:TI 2 "register_operand" "=&r")])]
-  "! TARGET_BWX"
+  "!TARGET_BWX"
 {
   unsigned regno = REGNO (operands[2]);
 
@@ -5676,9 +5589,8 @@
 (define_insn "*mov<mode>_fix"
   [(set (match_operand:VEC 0 "nonimmediate_operand" "=r,r,r,m,*f,*f,m,r,*f")
 	(match_operand:VEC 1 "input_operand" "rW,i,m,rW,*fW,m,*f,*f,r"))]
-  "TARGET_FIX
-   && (register_operand (operands[0], <MODE>mode)
-       || reg_or_0_operand (operands[1], <MODE>mode))"
+  "register_operand (operands[0], <MODE>mode)
+   || reg_or_0_operand (operands[1], <MODE>mode)"
   "@
    bis $31,%r1,%0
    #
@@ -5689,23 +5601,8 @@
    stt %R1,%0
    ftoit %1,%0
    itoft %1,%0"
-  [(set_attr "type" "ilog,multi,ild,ist,fcpys,fld,fst,ftoi,itof")])
-
-(define_insn "*mov<mode>_nofix"
-  [(set (match_operand:VEC 0 "nonimmediate_operand" "=r,r,r,m,*f,*f,m")
-	(match_operand:VEC 1 "input_operand" "rW,i,m,rW,*fW,m,*f"))]
-  "! TARGET_FIX
-   && (register_operand (operands[0], <MODE>mode)
-       || reg_or_0_operand (operands[1], <MODE>mode))"
-  "@
-   bis $31,%r1,%0
-   #
-   ldq %0,%1
-   stq %r1,%0
-   cpys %R1,%R1,%0
-   ldt %0,%1
-   stt %R1,%0"
-  [(set_attr "type" "ilog,multi,ild,ist,fcpys,fld,fst")])
+  [(set_attr "type" "ilog,multi,ild,ist,fcpys,fld,fst,ftoi,itof")
+   (set_attr "isa" "*,*,*,*,*,*,*,fix,fix")])
 
 (define_insn "uminv8qi3"
   [(set (match_operand:V8QI 0 "register_operand" "=r")

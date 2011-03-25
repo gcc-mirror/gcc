@@ -1,5 +1,18 @@
 2011-02-24  Richard Henderson  <rth@redhat.com>
 
+	* config/alpha/alpha.md (attribute isa): Add vms.
+	(attribute enabled): Handle it.
+	(*movsf): Merge *movsf_{nofix,fix,nofp}.
+	(*movdf): Merge *movdf_{nofix,fix,nofp}.
+	(*movtf): Rename from *movtf_internal for consistency.
+	(*movsi): Merge with *movsi_nt_vms.
+	(*movhi): Merge *movhi_nobwx, *movhi_bwx.
+	(*movqi): Merge *movqi_nobwx, *movqi_bwx.
+	(*mov<VEC>): Merge *mov<VEC>_fix, *mov<VEC>_nofix.
+	* config/alpha/constraint.md ("f"): Use NO_REGS when fpu is disabled.
+
+2011-02-24  Richard Henderson  <rth@redhat.com>
+
 	* config/alpha/alpha.md (extendqihi2): Implement for BWX only.
 	(extendqisi2, extendhisi2): Likewise.
 	(extendqidi2): Simplify BWX/non-BWX expansions.

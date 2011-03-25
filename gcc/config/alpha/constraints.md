@@ -32,7 +32,7 @@
 (define_register_constraint "c" "R27_REG"
  "General register 27, function call address")
 
-(define_register_constraint "f" "FLOAT_REGS"
+(define_register_constraint "f" "TARGET_FPREGS ? FLOAT_REGS : NO_REGS"
  "Any floating-point register")
 
 (define_register_constraint "v" "R0_REG"
