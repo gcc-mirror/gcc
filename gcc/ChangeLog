@@ -1,5 +1,11 @@
 2011-02-24  Richard Henderson  <rth@redhat.com>
 
+	* config/alpha/alpha.md (attribute isa): Add er, ner.
+	(attribute enabled): Handle them.
+	(*movdi): Merge *movdi_{er_nofix,nofix,er_fix,fix}.
+
+2011-02-24  Richard Henderson  <rth@redhat.com>
+
 	* config/alpha/alpha.md (attribute isa): Add vms.
 	(attribute enabled): Handle it.
 	(*movsf): Merge *movsf_{nofix,fix,nofp}.
