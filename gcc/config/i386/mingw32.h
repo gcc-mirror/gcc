@@ -26,6 +26,9 @@ along with GCC; see the file COPYING3.  If not see
 #define TARGET_VERSION fprintf (stderr," (x86 MinGW)");
 #endif
 
+#undef DEFAULT_ABI
+#define DEFAULT_ABI MS_ABI
+
 /* See i386/crtdll.h for an alternative definition. _INTEGRAL_MAX_BITS
    is for compatibility with native compiler.  */
 #define EXTRA_OS_CPP_BUILTINS()					\
