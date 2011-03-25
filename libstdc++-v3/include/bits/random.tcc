@@ -1075,7 +1075,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return __is;
     }
 
-  // This is Leger's algorithm.
+  // This is Leger's algorithm, also in Devroye, Ch. X, Example 1.5.
   template<typename _IntType>
     template<typename _UniformRandomNumberGenerator>
       typename negative_binomial_distribution<_IntType>::result_type
@@ -1085,8 +1085,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	const double __y = _M_gd(__urng);
 
 	// XXX Is the constructor too slow?
-	std::poisson_distribution<result_type> __poisson(__y * (1.0 - p())
-							 / p());
+	std::poisson_distribution<result_type> __poisson(__y);
 	return __poisson(__urng);
       }
 
@@ -1100,10 +1099,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	typedef typename std::gamma_distribution<result_type>::param_type
 	  param_type;
 	
-	const double __y = _M_gd(__urng, param_type(__p.k(), 1.0));
+	const double __y =
+	  _M_gd(__urng, param_type(__p.k(), (1.0 - __p.p()) / __p.p()));
 
-	std::poisson_distribution<result_type> __poisson(__y * (1.0 - __p.p())
-							 / __p.p() );
+	std::poisson_distribution<result_type> __poisson(__y);
 	return __poisson(__urng);
       }
 
