@@ -1,3 +1,39 @@
+2011-03-25  Kai Tietz  <ktietz@redhat.com>
+
+	* collect2.c (write_c_file_stat): Handle backslash
+	as right-hand directory separator.
+	(resolve_lib_name): Use IS_DIR_SEPARATOR instead of
+	checking just for slash.
+	* coverage.c (coverage_init): Use IS_ABSOLUTE_PATH
+	instead of checking for trailing slash.
+	* gcc.c (record_temp_file): Use filename_cmp instead
+	of strcmp.
+	(do_spec_1): Likewise.
+	(replace_outfile_spec_function): Likewise.
+	(is_directory): Use filename_ncmp instead of strncmp.
+	(print_multilib_info): Likewise.
+	* gcov.c (find_source): Use filename_cmp instead
+	instead of strcmp.
+	(make_gcov_file_name): Fix order of slash/backslash
+	checks.
+	* incpath.c (DIRS_EQ): Use filename_cmp instead of strcmp.
+	(add_standard_paths): Likewise.
+	* mips-tfile.c (saber_stop): Handle backslash.
+	* prefix.c (update_path): Use filename_ncmp instead of
+	strncmp.
+	* profile.c (output_location): Use filename_cmp instead
+	of strcmp.
+	* read-md.c (handle_toplevel_file): Handle backslash.
+	* tlink.c (frob_extension):  Likewise.
+	* tree-cfg.c (same_line_p): Use filename_cmp instead of
+	strcmp.
+	* tree-dump.c (dequeue_and_dump): Handle backslash.
+	* tree.c (get_file_function_name): Likewise.
+	* gengtype.c (read_input_list): Likewise.
+	(get_file_realbasename): Likewise.
+	(get_output_file_with_visibility): Use filename_cmp
+	instead of strcmp.
+
 2011-03-25  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* config/arm/arm.h (CANNOT_CHANGE_MODE_CLASS): Restrict FPA_REGS

@@ -1,3 +1,10 @@
+2011-03-25  Kai Tietz  <ktietz@redhat.com>
+
+	* jcf-parse.c (java_read_sourcefilenames): Use filename_cmp
+	instead of strcmp.
+	(set_source_filename): Likewise.
+	* win32-host.c (jcf_open_exact_case): Likewise.
+
 2011-03-21  Kai Tietz  <ktietz@redhat.com>
 
 	PR target/12171

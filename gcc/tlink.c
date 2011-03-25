@@ -30,6 +30,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "hashtab.h"
 #include "demangle.h"
 #include "collect2.h"
+#include "filenames.h"
 
 /* TARGET_64BIT may be defined to use driver specific functionality. */
 #undef TARGET_64BIT
@@ -293,10 +294,9 @@ tlink_execute (const char *prog, char **argv, const char *outname,
 static char *
 frob_extension (const char *s, const char *ext)
 {
-  const char *p = strrchr (s, '/');
-  if (! p)
-    p = s;
-  p = strrchr (p, '.');
+  const char *p;
+
+  p = strrchr (lbasename (s), '.');
   if (! p)
     p = s + strlen (s);
 

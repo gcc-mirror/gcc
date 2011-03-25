@@ -280,10 +280,10 @@ interface_strcmp (const char* s)
       const char *t1 = ifiles->filename;
       s1 = s;
 
-      if (*s1 != *t1 || *s1 == 0)
+      if (*s1 == 0 || filename_ncmp (s1, t1, 1) != 0)
 	continue;
 
-      while (*s1 == *t1 && *s1 != 0)
+      while (*s1 != 0 && filename_ncmp (s1, t1, 1) == 0)
 	s1++, t1++;
 
       /* A match.  */
@@ -412,7 +412,7 @@ handle_pragma_implementation (cpp_reader* dfile ATTRIBUTE_UNUSED )
 
   for (; ifiles; ifiles = ifiles->next)
     {
-      if (! strcmp (ifiles->filename, filename))
+      if (! filename_cmp (ifiles->filename, filename))
 	break;
     }
   if (ifiles == 0)
@@ -706,8 +706,8 @@ in_main_input_context (void)
   struct tinst_level *tl = outermost_tinst_level();
 
   if (tl)
-    return strcmp (main_input_filename,
-                  LOCATION_FILE (tl->locus)) == 0;
+    return filename_cmp (main_input_filename,
+			 LOCATION_FILE (tl->locus)) == 0;
   else
-    return strcmp (main_input_filename, input_filename) == 0;
+    return filename_cmp (main_input_filename, input_filename) == 0;
 }

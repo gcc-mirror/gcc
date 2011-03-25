@@ -606,6 +606,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "version.h"
 #include "intl.h"
+#include "filenames.h"
 
 #ifndef __SABER__
 #define saber_stop()
@@ -4693,12 +4694,11 @@ int
 main (int argc, char **argv)
 {
   int iflag = 0;
-  char *p = strrchr (argv[0], '/');
   char *num_end;
   int option;
   int i;
 
-  progname = (p != 0) ? p+1 : argv[0];
+  progname = lbasename (argv[0]);
 
   (void) signal (SIGSEGV, catch_signal);
   (void) signal (SIGBUS,  catch_signal);

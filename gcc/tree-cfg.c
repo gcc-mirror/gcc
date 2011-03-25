@@ -757,7 +757,7 @@ same_line_p (location_t locus1, location_t locus2)
     return true;
   return (from.file != NULL
           && to.file != NULL
-          && strcmp (from.file, to.file) == 0);
+          && filename_cmp (from.file, to.file) == 0);
 }
 
 /* Assign a unique discriminator value to block BB if it begins at the same

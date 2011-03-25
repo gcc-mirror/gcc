@@ -49,6 +49,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pass.h"
 #include "diagnostic-core.h"
 #include "intl.h"
+#include "filenames.h"
 
 #include "gcov-io.c"
 
@@ -982,7 +983,7 @@ coverage_init (const char *filename)
   /* + 1 for extra '/', in case prefix doesn't end with /.  */
   int prefix_len;
 
-  if (profile_data_prefix == 0 && filename[0] != '/')
+  if (profile_data_prefix == 0 && !IS_ABSOLUTE_PATH(&filename[0]))
     profile_data_prefix = getpwd ();
 
   prefix_len = (profile_data_prefix) ? strlen (profile_data_prefix) + 1 : 0;

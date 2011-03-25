@@ -559,7 +559,8 @@ compare_comment (const void *lp, const void *rp)
   const cpp_comment *rhs = (const cpp_comment *) rp;
 
   if (LOCATION_FILE (lhs->sloc) != LOCATION_FILE (rhs->sloc))
-    return strcmp (LOCATION_FILE (lhs->sloc), LOCATION_FILE (rhs->sloc));
+    return filename_cmp (LOCATION_FILE (lhs->sloc),
+			 LOCATION_FILE (rhs->sloc));
 
   if (LOCATION_LINE (lhs->sloc) != LOCATION_LINE (rhs->sloc))
     return LOCATION_LINE (lhs->sloc) - LOCATION_LINE (rhs->sloc);
