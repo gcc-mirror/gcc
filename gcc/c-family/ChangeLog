@@ -1,3 +1,7 @@
+2011-03-25  Jeff Law  <law@redhat.com>
+
+	* c-family/c-common.c (def_fn_type): Add missing va_end.
+
 2011-03-25  Jason Merrill  <jason@redhat.com>
 
 	* c.opt: Add -std=c++03.

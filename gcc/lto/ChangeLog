@@ -1,3 +1,7 @@
+2011-03-25  Jeff Law  <law@redhat.com>
+
+	* lto/lto-lang.c (def_fn_type): Add missing va_end.
+
 2011-03-21  Kai Tietz  <ktietz@redhat.com>
 
 	PR target/12171

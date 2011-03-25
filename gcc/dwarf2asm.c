@@ -957,6 +957,7 @@ dw2_asm_output_encoded_addr_rtx (int encoding, rtx addr, bool is_public,
     {
       assemble_align (POINTER_SIZE);
       assemble_integer (addr, size, POINTER_SIZE, 1);
+      va_end (ap);
       return;
     }
 

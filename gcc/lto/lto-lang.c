@@ -471,6 +471,7 @@ def_fn_type (builtin_type def, builtin_type ret, bool var, int n, ...)
 
  egress:
   builtin_types[def] = t;
+  va_end (list);
 }
 
 /* Used to help initialize the builtin-types.def table.  When a type of
