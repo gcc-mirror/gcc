@@ -1,3 +1,7 @@
+2011-03-25  Release Manager
+
+	* GCC 4.6.0 released.
+
 2011-02-07  Joseph Myers  <joseph@codesourcery.com>
 
 	* update_web_docs_svn: Generate libquadmath-vers.texi.
