@@ -1,3 +1,7 @@
+2011-03-25  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/move1.C: New.
+
 2011-03-21  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR preprocessor/48192
