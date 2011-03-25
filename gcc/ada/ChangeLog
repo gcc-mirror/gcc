@@ -1,3 +1,7 @@
+2011-03-25  Jeff Law  <law@redhat.com>
+
+	* ada/gcc-interface/utils.c (def_fn_type): Add missing va_end.
+
 2011-03-24  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* einfo.ads (Size_Depends_On_Discriminant): Adjust description.

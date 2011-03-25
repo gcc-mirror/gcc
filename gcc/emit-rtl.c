@@ -805,7 +805,10 @@ gen_rtvec (int n, ...)
 
   /* Don't allocate an empty rtvec...  */
   if (n == 0)
-    return NULL_RTVEC;
+    {
+      va_end (p);
+      return NULL_RTVEC;
+    }
 
   rt_val = rtvec_alloc (n);
 
