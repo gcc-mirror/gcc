@@ -1,3 +1,10 @@
+2011-03-25  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/48174
+	PR fortran/45304
+	* trans-types.c (gfc_get_function_type): Don't use varargs if the
+	procedure is known to have no arguments.
+
 2010-03-21  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/22572
