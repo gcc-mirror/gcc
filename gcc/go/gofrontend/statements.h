@@ -160,10 +160,12 @@ class Statement
 		      Expression* should_set, source_location);
 
   // Make an assignment from a nonblocking receive to a pair of
-  // variables.
+  // variables.  FOR_SELECT is true is this is being created for a
+  // case x, ok := <-c in a select statement.
   static Statement*
   make_tuple_receive_assignment(Expression* val, Expression* closed,
-				Expression* channel, source_location);
+				Expression* channel, bool for_select,
+				source_location);
 
   // Make an assignment from a type guard to a pair of variables.
   static Statement*

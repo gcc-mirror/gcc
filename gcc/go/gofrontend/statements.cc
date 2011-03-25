@@ -1148,10 +1148,10 @@ class Tuple_receive_assignment_statement : public Statement
 {
  public:
   Tuple_receive_assignment_statement(Expression* val, Expression* closed,
-				     Expression* channel,
+				     Expression* channel, bool for_select,
 				     source_location location)
     : Statement(STATEMENT_TUPLE_RECEIVE_ASSIGNMENT, location),
-      val_(val), closed_(closed), channel_(channel)
+      val_(val), closed_(closed), channel_(channel), for_select_(for_select)
   { }
 
  protected:
@@ -1176,6 +1176,8 @@ class Tuple_receive_assignment_statement : public Statement
   Expression* closed_;
   // The channel on which we receive the value.
   Expression* channel_;
+  // Whether this is for a select statement.
+  bool for_select_;
 };
 
 // Traversal.
@@ -1228,6 +1230,7 @@ Tuple_receive_assignment_statement::do_lower(Gogo*, Named_object*,
   b->add_statement(closed_temp);
 
   // func chanrecv2(c chan T, val *T) bool
+  // func chanrecv3(c chan T, val *T) bool (if for_select)
   source_location bloc = BUILTINS_LOCATION;
   Typed_identifier_list* param_types = new Typed_identifier_list();
   param_types->push_back(Typed_identifier("c", channel_type, bloc));
@@ -1239,12 +1242,22 @@ Tuple_receive_assignment_statement::do_lower(Gogo*, Named_object*,
 
   Function_type* fntype = Type::make_function_type(NULL, param_types,
 						   ret_types, bloc);
-  Named_object* chanrecv2 =
-    Named_object::make_function_declaration("chanrecv2", NULL, fntype, bloc);
-  chanrecv2->func_declaration_value()->set_asm_name("runtime.chanrecv2");
+  Named_object* chanrecv;
+  if (!this->for_select_)
+    {
+      chanrecv = Named_object::make_function_declaration("chanrecv2", NULL,
+							 fntype, bloc);
+      chanrecv->func_declaration_value()->set_asm_name("runtime.chanrecv2");
+    }
+  else
+    {
+      chanrecv = Named_object::make_function_declaration("chanrecv3", NULL,
+							 fntype, bloc);
+      chanrecv->func_declaration_value()->set_asm_name("runtime.chanrecv3");
+    }
 
-  // closed_temp = chanrecv2(channel, &val_temp)
-  Expression* func = Expression::make_func_reference(chanrecv2, NULL, loc);
+  // closed_temp = chanrecv[23](channel, &val_temp)
+  Expression* func = Expression::make_func_reference(chanrecv, NULL, loc);
   Expression_list* params = new Expression_list();
   params->push_back(this->channel_);
   Expression* ref = Expression::make_temporary_reference(val_temp, loc);
@@ -1272,10 +1285,11 @@ Tuple_receive_assignment_statement::do_lower(Gogo*, Named_object*,
 Statement*
 Statement::make_tuple_receive_assignment(Expression* val, Expression* closed,
 					 Expression* channel,
+					 bool for_select,
 					 source_location location)
 {
   return new Tuple_receive_assignment_statement(val, closed, channel,
-						location);
+						for_select, location);
 }
 
 // An assignment to a pair of values from a type guard.  This is a
@@ -4151,7 +4165,7 @@ Select_clauses::Select_clause::lower(Gogo* gogo, Named_object* function,
 	this->val_ = Expression::make_sink(loc);
       Statement* s = Statement::make_tuple_receive_assignment(this->val_,
 							      this->closed_,
-							      ref, loc);
+							      ref, true, loc);
       init->add_statement(s);
     }
   else if (this->closedvar_ != NULL)
@@ -4165,8 +4179,14 @@ Select_clauses::Select_clause::lower(Gogo* gogo, Named_object* function,
       Expression* closed = Expression::make_var_reference(this->closedvar_,
 							  loc);
       Statement* s = Statement::make_tuple_receive_assignment(val, closed, ref,
-							      loc);
-      init->add_statement(s);
+							      true, loc);
+      // We have to put S in STATEMENTS_, because that is where the
+      // variables are declared.
+      gcc_assert(this->statements_ != NULL);
+      this->statements_->add_statement_at_front(s);
+      // We have to lower STATEMENTS_ again, to lower the tuple
+      // receive assignment we just added.
+      gogo->lower_block(function, this->statements_);
     }
   else
     {
@@ -5281,7 +5301,7 @@ For_range_statement::lower_range_map(Gogo* gogo,
 // Lower a for range over a channel.
 
 void
-For_range_statement::lower_range_channel(Gogo* gogo,
+For_range_statement::lower_range_channel(Gogo*,
 					 Block*,
 					 Block* body_block,
 					 Named_object* range_object,
@@ -5299,12 +5319,11 @@ For_range_statement::lower_range_channel(Gogo* gogo,
 
   // The loop we generate:
   //   for {
-  //           index_temp = <-range
-  //           if closed(range) {
+  //           index_temp, ok_temp = <-range
+  //           if !ok_temp {
   //                   break
   //           }
   //           index = index_temp
-  //           value = value_temp
   //           original body
   //   }
 
@@ -5315,26 +5334,30 @@ For_range_statement::lower_range_channel(Gogo* gogo,
   *ppost = NULL;
 
   // Set *PITER_INIT to
-  //   index_temp = <-range
-  //   if closed(range) {
+  //   index_temp, ok_temp = <-range
+  //   if !ok_temp {
   //           break
   //   }
 
   Block* iter_init = new Block(body_block, loc);
 
-  Expression* ref = this->make_range_ref(range_object, range_temp, loc);
-  Expression* cond = this->call_builtin(gogo, "closed", ref, loc);
+  Temporary_statement* ok_temp =
+    Statement::make_temporary(Type::lookup_bool_type(), NULL, loc);
+  iter_init->add_statement(ok_temp);
 
-  ref = this->make_range_ref(range_object, range_temp, loc);
-  Expression* recv = Expression::make_receive(ref, loc);
-  ref = Expression::make_temporary_reference(index_temp, loc);
-  Statement* s = Statement::make_assignment(ref, recv, loc);
+  Expression* cref = this->make_range_ref(range_object, range_temp, loc);
+  Expression* iref = Expression::make_temporary_reference(index_temp, loc);
+  Expression* oref = Expression::make_temporary_reference(ok_temp, loc);
+  Statement* s = Statement::make_tuple_receive_assignment(iref, oref, cref,
+							  false, loc);
   iter_init->add_statement(s);
 
   Block* then_block = new Block(iter_init, loc);
   s = Statement::make_break_statement(this->break_label(), loc);
   then_block->add_statement(s);
 
+  oref = Expression::make_temporary_reference(ok_temp, loc);
+  Expression* cond = Expression::make_unary(OPERATOR_NOT, oref, loc);
   s = Statement::make_if_statement(cond, then_block, NULL, loc);
   iter_init->add_statement(s);
 

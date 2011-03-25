@@ -174,11 +174,11 @@ am__libgo_la_SOURCES_DIST = runtime/go-append.c runtime/go-assert.c \
 	runtime/go-caller.c runtime/go-can-convert-interface.c \
 	runtime/go-cgo.c runtime/go-chan-cap.c runtime/go-chan-len.c \
 	runtime/go-check-interface.c runtime/go-close.c \
-	runtime/go-closed.c runtime/go-construct-map.c \
-	runtime/go-convert-interface.c runtime/go-copy.c \
-	runtime/go-defer.c runtime/go-deferred-recover.c \
-	runtime/go-eface-compare.c runtime/go-eface-val-compare.c \
-	runtime/go-getgoroot.c runtime/go-go.c runtime/go-gomaxprocs.c \
+	runtime/go-construct-map.c runtime/go-convert-interface.c \
+	runtime/go-copy.c runtime/go-defer.c \
+	runtime/go-deferred-recover.c runtime/go-eface-compare.c \
+	runtime/go-eface-val-compare.c runtime/go-getgoroot.c \
+	runtime/go-go.c runtime/go-gomaxprocs.c \
 	runtime/go-int-array-to-string.c runtime/go-int-to-string.c \
 	runtime/go-interface-compare.c \
 	runtime/go-interface-eface-compare.c \
@@ -219,7 +219,7 @@ am__libgo_la_SOURCES_DIST = runtime/go-append.c runtime/go-assert.c \
 am__objects_3 = go-append.lo go-assert.lo go-assert-interface.lo \
 	go-byte-array-to-string.lo go-breakpoint.lo go-caller.lo \
 	go-can-convert-interface.lo go-cgo.lo go-chan-cap.lo \
-	go-chan-len.lo go-check-interface.lo go-close.lo go-closed.lo \
+	go-chan-len.lo go-check-interface.lo go-close.lo \
 	go-construct-map.lo go-convert-interface.lo go-copy.lo \
 	go-defer.lo go-deferred-recover.lo go-eface-compare.lo \
 	go-eface-val-compare.lo go-getgoroot.lo go-go.lo \
@@ -771,7 +771,6 @@ runtime_files = \
 	runtime/go-chan-len.c \
 	runtime/go-check-interface.c \
 	runtime/go-close.c \
-	runtime/go-closed.c \
 	runtime/go-construct-map.c \
 	runtime/go-convert-interface.c \
 	runtime/go-copy.c \
@@ -2177,7 +2176,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-chan-len.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-check-interface.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-close.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-closed.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-construct-map.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-convert-interface.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-copy.Plo@am__quote@
@@ -2382,13 +2380,6 @@ go-close.lo: runtime/go-close.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='runtime/go-close.c' object='go-close.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o go-close.lo `test -f 'runtime/go-close.c' || echo '$(srcdir)/'`runtime/go-close.c
-
-go-closed.lo: runtime/go-closed.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT go-closed.lo -MD -MP -MF $(DEPDIR)/go-closed.Tpo -c -o go-closed.lo `test -f 'runtime/go-closed.c' || echo '$(srcdir)/'`runtime/go-closed.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/go-closed.Tpo $(DEPDIR)/go-closed.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='runtime/go-closed.c' object='go-closed.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o go-closed.lo `test -f 'runtime/go-closed.c' || echo '$(srcdir)/'`runtime/go-closed.c
 
 go-construct-map.lo: runtime/go-construct-map.c
 @am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT go-construct-map.lo -MD -MP -MF $(DEPDIR)/go-construct-map.Tpo -c -o go-construct-map.lo `test -f 'runtime/go-construct-map.c' || echo '$(srcdir)/'`runtime/go-construct-map.c

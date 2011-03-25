@@ -173,15 +173,6 @@ Gogo::Gogo(int int_type_size, int pointer_size)
   close_type->set_is_builtin();
   this->globals_->add_function_declaration("close", NULL, close_type, loc);
 
-  Typed_identifier_list* closed_result = new Typed_identifier_list();
-  closed_result->push_back(Typed_identifier("", Type::lookup_bool_type(),
-					    loc));
-  Function_type* closed_type = Type::make_function_type(NULL, NULL,
-							closed_result, loc);
-  closed_type->set_is_varargs();
-  closed_type->set_is_builtin();
-  this->globals_->add_function_declaration("closed", NULL, closed_type, loc);
-
   Typed_identifier_list* copy_result = new Typed_identifier_list();
   copy_result->push_back(Typed_identifier("", int_type, loc));
   Function_type* copy_type = Type::make_function_type(NULL, NULL,
@@ -3506,12 +3497,15 @@ Variable::determine_type()
 					  true);
       this->init_ = NULL;
     }
+  else if (this->type_from_chan_element_)
+    {
+      Expression* init = this->init_;
+      init->determine_type_no_context();
+      this->type_ = this->type_from_chan_element(init, true);
+      this->init_ = NULL;
+    }
   else
     {
-      // type_from_chan_element_ should have been cleared during
-      // lowering.
-      gcc_assert(!this->type_from_chan_element_);
-
       Type_context context(this->type_, false);
       this->init_->determine_type(&context);
       if (this->type_ == NULL)
