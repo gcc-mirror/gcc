@@ -1294,16 +1294,20 @@ emit_block_move_via_movmem (rtx x, rtx y, rtx size, unsigned int align,
 	     that it doesn't fail the expansion because it thinks
 	     emitting the libcall would be more efficient.  */
 	  nops = insn_data[(int) code].n_operands;
+	  /* ??? n_operands includes match_scratches; find some other
+	     way to select the 6 operand variant, or force all targets
+	     to have exactly 6 operands.  */
+	  gcc_assert (nops >= 4 && nops <= 6);
+
 	  create_fixed_operand (&ops[0], x);
 	  create_fixed_operand (&ops[1], y);
 	  /* The check above guarantees that this size conversion is valid.  */
 	  create_convert_operand_to (&ops[2], size, mode, true);
 	  create_integer_operand (&ops[3], align / BITS_PER_UNIT);
-	  if (nops != 4)
+	  if (nops == 6)
 	    {
 	      create_integer_operand (&ops[4], expected_align / BITS_PER_UNIT);
 	      create_integer_operand (&ops[5], expected_size);
-	      nops = 6;
 	    }
 	  if (maybe_expand_insn (code, nops, ops))
 	    {
@@ -2716,16 +2720,20 @@ set_storage_via_setmem (rtx object, rtx size, rtx val, unsigned int align,
 	  unsigned int nops;
 
 	  nops = insn_data[(int) code].n_operands;
+	  /* ??? n_operands includes match_scratches; find some other
+	     way to select the 6 operand variant, or force all targets
+	     to have exactly 6 operands.  */
+	  gcc_assert (nops >= 4 && nops <= 6);
+
 	  create_fixed_operand (&ops[0], object);
 	  /* The check above guarantees that this size conversion is valid.  */
 	  create_convert_operand_to (&ops[1], size, mode, true);
 	  create_convert_operand_from (&ops[2], val, byte_mode, true);
 	  create_integer_operand (&ops[3], align / BITS_PER_UNIT);
-	  if (nops != 4)
+	  if (nops == 6)
 	    {
 	      create_integer_operand (&ops[4], expected_align / BITS_PER_UNIT);
 	      create_integer_operand (&ops[5], expected_size);
-	      nops = 6;
 	    }
 	  if (maybe_expand_insn (code, nops, ops))
 	    return true;
