@@ -3043,11 +3043,10 @@ static bool
 verify_gimple_call (gimple stmt)
 {
   tree fn = gimple_call_fn (stmt);
-  tree fntype;
+  tree fntype, fndecl;
   unsigned i;
 
-  if (TREE_CODE (fn) != OBJ_TYPE_REF
-      && !is_gimple_val (fn))
+  if (!is_gimple_call_addr (fn))
     {
       error ("invalid function in gimple call");
       debug_generic_stmt (fn);
@@ -3061,6 +3060,17 @@ verify_gimple_call (gimple stmt)
       error ("non-function in gimple call");
       return true;
     }
+
+   fndecl = gimple_call_fndecl (stmt);
+   if (fndecl
+       && TREE_CODE (fndecl) == FUNCTION_DECL
+       && DECL_LOOPING_CONST_OR_PURE_P (fndecl)
+       && !DECL_PURE_P (fndecl)
+       && !TREE_READONLY (fndecl))
+     {
+       error ("invalid pure const state for function");
+       return true;
+     }
 
   if (gimple_call_lhs (stmt)
       && (!is_gimple_lvalue (gimple_call_lhs (stmt))
@@ -3912,46 +3922,6 @@ verify_gimple_switch (gimple stmt)
 }
 
 
-/* Verify the contents of a GIMPLE_PHI.  Returns true if there is a problem,
-   and false otherwise.  */
-
-static bool
-verify_gimple_phi (gimple stmt)
-{
-  tree type = TREE_TYPE (gimple_phi_result (stmt));
-  unsigned i;
-
-  if (TREE_CODE (gimple_phi_result (stmt)) != SSA_NAME)
-    {
-      error ("invalid PHI result");
-      return true;
-    }
-
-  for (i = 0; i < gimple_phi_num_args (stmt); i++)
-    {
-      tree arg = gimple_phi_arg_def (stmt, i);
-      if ((is_gimple_reg (gimple_phi_result (stmt))
-	   && !is_gimple_val (arg))
-	  || (!is_gimple_reg (gimple_phi_result (stmt))
-	      && !is_gimple_addressable (arg)))
-	{
-	  error ("invalid PHI argument");
-	  debug_generic_stmt (arg);
-	  return true;
-	}
-      if (!useless_type_conversion_p (type, TREE_TYPE (arg)))
-	{
-	  error ("incompatible types in PHI argument %u", i);
-	  debug_generic_stmt (type);
-	  debug_generic_stmt (TREE_TYPE (arg));
-	  return true;
-	}
-    }
-
-  return false;
-}
-
-
 /* Verify a gimple debug statement STMT.
    Returns true if anything is wrong.  */
 
@@ -3967,12 +3937,48 @@ verify_gimple_debug (gimple stmt ATTRIBUTE_UNUSED)
   return false;
 }
 
+/* Verify a gimple label statement STMT.
+   Returns true if anything is wrong.  */
+
+static bool
+verify_gimple_label (gimple stmt)
+{
+  tree decl = gimple_label_label (stmt);
+  int uid;
+  bool err = false;
+
+  if (TREE_CODE (decl) != LABEL_DECL)
+    return true;
+
+  uid = LABEL_DECL_UID (decl);
+  if (cfun->cfg
+      && (uid == -1
+	  || VEC_index (basic_block,
+			label_to_block_map, uid) != gimple_bb (stmt)))
+    {
+      error ("incorrect entry in label_to_block_map");
+      err |= true;
+    }
+
+  uid = EH_LANDING_PAD_NR (decl);
+  if (uid)
+    {
+      eh_landing_pad lp = get_eh_landing_pad_from_number (uid);
+      if (decl != lp->post_landing_pad)
+	{
+	  error ("incorrect setting of landing pad number");
+	  err |= true;
+	}
+    }
+
+  return err;
+}
 
 /* Verify the GIMPLE statement STMT.  Returns true if there is an
    error, otherwise false.  */
 
 static bool
-verify_types_in_gimple_stmt (gimple stmt)
+verify_gimple_stmt (gimple stmt)
 {
   switch (gimple_code (stmt))
     {
@@ -3980,7 +3986,7 @@ verify_types_in_gimple_stmt (gimple stmt)
       return verify_gimple_assign (stmt);
 
     case GIMPLE_LABEL:
-      return TREE_CODE (gimple_label_label (stmt)) != LABEL_DECL;
+      return verify_gimple_label (stmt);
 
     case GIMPLE_CALL:
       return verify_gimple_call (stmt);
@@ -4016,9 +4022,6 @@ verify_types_in_gimple_stmt (gimple stmt)
     case GIMPLE_ASM:
       return false;
 
-    case GIMPLE_PHI:
-      return verify_gimple_phi (stmt);
-
     /* Tuples that do not have tree operands.  */
     case GIMPLE_NOP:
     case GIMPLE_PREDICT:
@@ -4044,10 +4047,74 @@ verify_types_in_gimple_stmt (gimple stmt)
     }
 }
 
+/* Verify the contents of a GIMPLE_PHI.  Returns true if there is a problem,
+   and false otherwise.  */
+
+static bool
+verify_gimple_phi (gimple phi)
+{
+  bool err = false;
+  unsigned i;
+  tree phi_result = gimple_phi_result (phi);
+  bool virtual_p;
+
+  if (!phi_result)
+    {
+      error ("invalid PHI result");
+      return true;
+    }
+
+  virtual_p = !is_gimple_reg (phi_result);
+  if (TREE_CODE (phi_result) != SSA_NAME
+      || (virtual_p
+	  && SSA_NAME_VAR (phi_result) != gimple_vop (cfun)))
+    {
+      error ("invalid PHI result");
+      err = true;
+    }
+
+  for (i = 0; i < gimple_phi_num_args (phi); i++)
+    {
+      tree t = gimple_phi_arg_def (phi, i);
+
+      if (!t)
+	{
+	  error ("missing PHI def");
+	  err |= true;
+	  continue;
+	}
+      /* Addressable variables do have SSA_NAMEs but they
+	 are not considered gimple values.  */
+      else if ((TREE_CODE (t) == SSA_NAME
+		&& virtual_p != !is_gimple_reg (t))
+	       || (virtual_p
+		   && (TREE_CODE (t) != SSA_NAME
+		       || SSA_NAME_VAR (t) != gimple_vop (cfun)))
+	       || (!virtual_p
+		   && !is_gimple_val (t)))
+	{
+	  error ("invalid PHI argument");
+	  debug_generic_expr (t);
+	  err |= true;
+	}
+#ifdef ENABLE_TYPES_CHECKING
+      if (!useless_type_conversion_p (TREE_TYPE (phi_result), TREE_TYPE (t)))
+	{
+	  error ("incompatible types in PHI argument %u", i);
+	  debug_generic_stmt (TREE_TYPE (phi_result));
+	  debug_generic_stmt (TREE_TYPE (t));
+	  err |= true;
+	}
+#endif
+    }
+
+  return err;
+}
+
 /* Verify the GIMPLE statements inside the sequence STMTS.  */
 
 static bool
-verify_types_in_gimple_seq_2 (gimple_seq stmts)
+verify_gimple_in_seq_2 (gimple_seq stmts)
 {
   gimple_stmt_iterator ittr;
   bool err = false;
@@ -4059,25 +4126,25 @@ verify_types_in_gimple_seq_2 (gimple_seq stmts)
       switch (gimple_code (stmt))
         {
 	case GIMPLE_BIND:
-	  err |= verify_types_in_gimple_seq_2 (gimple_bind_body (stmt));
+	  err |= verify_gimple_in_seq_2 (gimple_bind_body (stmt));
 	  break;
 
 	case GIMPLE_TRY:
-	  err |= verify_types_in_gimple_seq_2 (gimple_try_eval (stmt));
-	  err |= verify_types_in_gimple_seq_2 (gimple_try_cleanup (stmt));
+	  err |= verify_gimple_in_seq_2 (gimple_try_eval (stmt));
+	  err |= verify_gimple_in_seq_2 (gimple_try_cleanup (stmt));
 	  break;
 
 	case GIMPLE_EH_FILTER:
-	  err |= verify_types_in_gimple_seq_2 (gimple_eh_filter_failure (stmt));
+	  err |= verify_gimple_in_seq_2 (gimple_eh_filter_failure (stmt));
 	  break;
 
 	case GIMPLE_CATCH:
-	  err |= verify_types_in_gimple_seq_2 (gimple_catch_handler (stmt));
+	  err |= verify_gimple_in_seq_2 (gimple_catch_handler (stmt));
 	  break;
 
 	default:
 	  {
-	    bool err2 = verify_types_in_gimple_stmt (stmt);
+	    bool err2 = verify_gimple_stmt (stmt);
 	    if (err2)
 	      debug_gimple_stmt (stmt);
 	    err |= err2;
@@ -4091,101 +4158,14 @@ verify_types_in_gimple_seq_2 (gimple_seq stmts)
 
 /* Verify the GIMPLE statements inside the statement list STMTS.  */
 
-void
-verify_types_in_gimple_seq (gimple_seq stmts)
+DEBUG_FUNCTION void
+verify_gimple_in_seq (gimple_seq stmts)
 {
-  if (verify_types_in_gimple_seq_2 (stmts))
+  timevar_push (TV_TREE_STMT_VERIFY);
+  if (verify_gimple_in_seq_2 (stmts))
     internal_error ("verify_gimple failed");
+  timevar_pop (TV_TREE_STMT_VERIFY);
 }
-
-
-/* Verify STMT, return true if STMT is not in GIMPLE form.
-   TODO: Implement type checking.  */
-
-static bool
-verify_stmt (gimple_stmt_iterator *gsi)
-{
-  tree addr;
-  struct walk_stmt_info wi;
-  bool last_in_block = gsi_one_before_end_p (*gsi);
-  gimple stmt = gsi_stmt (*gsi);
-  int lp_nr;
-
-  if (is_gimple_omp (stmt))
-    {
-      /* OpenMP directives are validated by the FE and never operated
-	 on by the optimizers.  Furthermore, GIMPLE_OMP_FOR may contain
-	 non-gimple expressions when the main index variable has had
-	 its address taken.  This does not affect the loop itself
-	 because the header of an GIMPLE_OMP_FOR is merely used to determine
-	 how to setup the parallel iteration.  */
-      return false;
-    }
-
-  /* FIXME.  The C frontend passes unpromoted arguments in case it
-     didn't see a function declaration before the call.  */
-  if (is_gimple_call (stmt))
-    {
-      tree decl;
-
-      if (!is_gimple_call_addr (gimple_call_fn (stmt)))
-	{
-	  error ("invalid function in call statement");
-	  return true;
-	}
-
-      decl = gimple_call_fndecl (stmt);
-      if (decl
-	  && TREE_CODE (decl) == FUNCTION_DECL
-	  && DECL_LOOPING_CONST_OR_PURE_P (decl)
-	  && (!DECL_PURE_P (decl))
-	  && (!TREE_READONLY (decl)))
-	{
-	  error ("invalid pure const state for function");
-	  return true;
-	}
-    }
-
-  if (is_gimple_debug (stmt))
-    return false;
-
-  memset (&wi, 0, sizeof (wi));
-  addr = walk_gimple_op (gsi_stmt (*gsi), verify_expr, &wi);
-  if (addr)
-    {
-      debug_generic_expr (addr);
-      inform (gimple_location (gsi_stmt (*gsi)), "in statement");
-      debug_gimple_stmt (stmt);
-      return true;
-    }
-
-  /* If the statement is marked as part of an EH region, then it is
-     expected that the statement could throw.  Verify that when we
-     have optimizations that simplify statements such that we prove
-     that they cannot throw, that we update other data structures
-     to match.  */
-  lp_nr = lookup_stmt_eh_lp (stmt);
-  if (lp_nr != 0)
-    {
-      if (!stmt_could_throw_p (stmt))
-	{
-	  error ("statement marked for throw, but doesn%'t");
-	  goto fail;
-	}
-      else if (lp_nr > 0 && !last_in_block && stmt_can_throw_internal (stmt))
-	{
-	  error ("statement marked for throw in middle of block");
-	  goto fail;
-	}
-    }
-
-  return false;
-
- fail:
-  debug_gimple_stmt (stmt);
-  return true;
-}
-
 
 /* Return true when the T can be shared.  */
 
@@ -4215,7 +4195,6 @@ tree_node_can_be_shared (tree t)
   return false;
 }
 
-
 /* Called via walk_gimple_stmt.  Verify tree sharing.  */
 
 static tree
@@ -4236,7 +4215,6 @@ verify_node_sharing (tree *tp, int *walk_subtrees, void *data)
   return NULL;
 }
 
-
 static bool eh_error_found;
 static int
 verify_eh_throw_stmt_node (void **slot, void *data)
@@ -4253,147 +4231,124 @@ verify_eh_throw_stmt_node (void **slot, void *data)
   return 1;
 }
 
-
-/* Verify the GIMPLE statements in every basic block.  */
+/* Verify the GIMPLE statements in the CFG of FN.  */
 
 DEBUG_FUNCTION void
-verify_stmts (void)
+verify_gimple_in_cfg (struct function *fn)
 {
   basic_block bb;
-  gimple_stmt_iterator gsi;
   bool err = false;
   struct pointer_set_t *visited, *visited_stmts;
-  tree addr;
-  struct walk_stmt_info wi;
 
   timevar_push (TV_TREE_STMT_VERIFY);
   visited = pointer_set_create ();
   visited_stmts = pointer_set_create ();
 
-  memset (&wi, 0, sizeof (wi));
-  wi.info = (void *) visited;
-
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, fn)
     {
-      gimple phi;
-      size_t i;
+      gimple_stmt_iterator gsi;
 
       for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
 	{
-	  phi = gsi_stmt (gsi);
+	  gimple phi = gsi_stmt (gsi);
+	  bool err2 = false;
+	  unsigned i;
+
 	  pointer_set_insert (visited_stmts, phi);
+
 	  if (gimple_bb (phi) != bb)
 	    {
 	      error ("gimple_bb (phi) is set to a wrong basic block");
-	      err |= true;
+	      err2 = true;
 	    }
+
+	  err2 |= verify_gimple_phi (phi);
 
 	  for (i = 0; i < gimple_phi_num_args (phi); i++)
 	    {
-	      tree t = gimple_phi_arg_def (phi, i);
-	      tree addr;
-
-	      if (!t)
-		{
-		  error ("missing PHI def");
-		  debug_gimple_stmt (phi);
-		  err |= true;
-		  continue;
-		}
-	      /* Addressable variables do have SSA_NAMEs but they
-		 are not considered gimple values.  */
-	      else if (TREE_CODE (t) != SSA_NAME
-		       && TREE_CODE (t) != FUNCTION_DECL
-		       && !is_gimple_min_invariant (t))
-		{
-		  error ("PHI argument is not a GIMPLE value");
-		  debug_gimple_stmt (phi);
-		  debug_generic_expr (t);
-		  err |= true;
-		}
-
-	      addr = walk_tree (&t, verify_node_sharing, visited, NULL);
+	      tree arg = gimple_phi_arg_def (phi, i);
+	      tree addr = walk_tree (&arg, verify_node_sharing, visited, NULL);
 	      if (addr)
 		{
 		  error ("incorrect sharing of tree nodes");
-		  debug_gimple_stmt (phi);
 		  debug_generic_expr (addr);
-		  err |= true;
+		  err2 |= true;
 		}
 	    }
 
-#ifdef ENABLE_TYPES_CHECKING
-	  if (verify_gimple_phi (phi))
-	    {
-	      debug_gimple_stmt (phi);
-	      err |= true;
-	    }
-#endif
+	  if (err2)
+	    debug_gimple_stmt (phi);
+	  err |= err2;
 	}
 
-      for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); )
+      for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
 	{
 	  gimple stmt = gsi_stmt (gsi);
-
-	  if (gimple_code (stmt) == GIMPLE_WITH_CLEANUP_EXPR
-	      || gimple_code (stmt) == GIMPLE_BIND)
-	    {
-	      error ("invalid GIMPLE statement");
-	      debug_gimple_stmt (stmt);
-	      err |= true;
-	    }
+	  bool err2 = false;
+	  struct walk_stmt_info wi;
+	  tree addr;
+	  int lp_nr;
 
 	  pointer_set_insert (visited_stmts, stmt);
 
 	  if (gimple_bb (stmt) != bb)
 	    {
 	      error ("gimple_bb (stmt) is set to a wrong basic block");
-	      debug_gimple_stmt (stmt);
-	      err |= true;
+	      err2 = true;
 	    }
 
-	  if (gimple_code (stmt) == GIMPLE_LABEL)
-	    {
-	      tree decl = gimple_label_label (stmt);
-	      int uid = LABEL_DECL_UID (decl);
+	  err2 |= verify_gimple_stmt (stmt);
 
-	      if (uid == -1
-		  || VEC_index (basic_block, label_to_block_map, uid) != bb)
-		{
-		  error ("incorrect entry in label_to_block_map");
-		  err |= true;
-		}
-
-	      uid = EH_LANDING_PAD_NR (decl);
-	      if (uid)
-		{
-		  eh_landing_pad lp = get_eh_landing_pad_from_number (uid);
-		  if (decl != lp->post_landing_pad)
-		    {
-		      error ("incorrect setting of landing pad number");
-		      err |= true;
-		    }
-		}
-	    }
-
-	  err |= verify_stmt (&gsi);
-
-#ifdef ENABLE_TYPES_CHECKING
-	  if (verify_types_in_gimple_stmt (gsi_stmt (gsi)))
-	    {
-	      debug_gimple_stmt (stmt);
-	      err |= true;
-	    }
-#endif
-	  addr = walk_gimple_op (gsi_stmt (gsi), verify_node_sharing, &wi);
+	  memset (&wi, 0, sizeof (wi));
+	  wi.info = (void *) visited;
+	  addr = walk_gimple_op (stmt, verify_node_sharing, &wi);
 	  if (addr)
 	    {
 	      error ("incorrect sharing of tree nodes");
-	      debug_gimple_stmt (stmt);
 	      debug_generic_expr (addr);
-	      err |= true;
+	      err2 |= true;
 	    }
-	  gsi_next (&gsi);
+
+	  /* ???  Instead of not checking these stmts at all the walker
+	     should know its context via wi.  */
+	  if (!is_gimple_debug (stmt)
+	      && !is_gimple_omp (stmt))
+	    {
+	      memset (&wi, 0, sizeof (wi));
+	      addr = walk_gimple_op (stmt, verify_expr, &wi);
+	      if (addr)
+		{
+		  debug_generic_expr (addr);
+		  inform (gimple_location (stmt), "in statement");
+		  err2 |= true;
+		}
+	    }
+
+	  /* If the statement is marked as part of an EH region, then it is
+	     expected that the statement could throw.  Verify that when we
+	     have optimizations that simplify statements such that we prove
+	     that they cannot throw, that we update other data structures
+	     to match.  */
+	  lp_nr = lookup_stmt_eh_lp (stmt);
+	  if (lp_nr != 0)
+	    {
+	      if (!stmt_could_throw_p (stmt))
+		{
+		  error ("statement marked for throw, but doesn%'t");
+		  err2 |= true;
+		}
+	      else if (lp_nr > 0
+		       && !gsi_one_before_end_p (gsi)
+		       && stmt_can_throw_internal (stmt))
+		{
+		  error ("statement marked for throw in middle of block");
+		  err2 |= true;
+		}
+	    }
+
+	  if (err2)
+	    debug_gimple_stmt (stmt);
+	  err |= err2;
 	}
     }
 
@@ -4403,8 +4358,8 @@ verify_stmts (void)
 		   verify_eh_throw_stmt_node,
 		   visited_stmts);
 
-  if (err | eh_error_found)
-    internal_error ("verify_stmts failed");
+  if (err || eh_error_found)
+    internal_error ("verify_gimple failed");
 
   pointer_set_destroy (visited);
   pointer_set_destroy (visited_stmts);

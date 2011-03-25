@@ -426,9 +426,8 @@ extern basic_block label_to_block_fn (struct function *, tree);
 #define label_to_block(t) (label_to_block_fn (cfun, t))
 extern void notice_special_calls (gimple);
 extern void clear_special_calls (void);
-extern void verify_stmts (void);
-extern void verify_gimple (void);
-extern void verify_types_in_gimple_seq (gimple_seq);
+extern void verify_gimple_in_seq (gimple_seq);
+extern void verify_gimple_in_cfg (struct function *);
 extern tree gimple_block_label (basic_block);
 extern void extract_true_false_edges_from_block (basic_block, edge *, edge *);
 extern bool gimple_duplicate_sese_region (edge, edge, basic_block *, unsigned,

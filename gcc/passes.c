@@ -1240,7 +1240,7 @@ execute_function_todo (void *data)
   if (flags & TODO_verify_flow)
     verify_flow_info ();
   if (flags & TODO_verify_stmts)
-    verify_stmts ();
+    verify_gimple_in_cfg (cfun);
   if (current_loops && loops_state_satisfies_p (LOOP_CLOSED_SSA))
     verify_loop_closed_ssa (false);
   if (flags & TODO_verify_rtl_sharing)

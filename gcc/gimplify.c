@@ -7769,10 +7769,8 @@ gimplify_body (tree *body_p, tree fndecl, bool do_parms)
   pop_gimplify_context (outer_bind);
   gcc_assert (gimplify_ctxp == NULL);
 
-#ifdef ENABLE_TYPES_CHECKING
   if (!seen_error ())
-    verify_types_in_gimple_seq (gimple_bind_body (outer_bind));
-#endif
+    verify_gimple_in_seq (gimple_bind_body (outer_bind));
 
   timevar_pop (TV_TREE_GIMPLIFY);
   input_location = saved_location;
