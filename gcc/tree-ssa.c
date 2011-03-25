@@ -881,7 +881,7 @@ verify_ssa (bool check_modified_stmt)
 
   gcc_assert (!need_ssa_update_p (cfun));
 
-  verify_stmts ();
+  verify_gimple_in_cfg (cfun);
 
   timevar_push (TV_TREE_SSA_VERIFY);
 
