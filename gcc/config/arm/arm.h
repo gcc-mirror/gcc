@@ -1167,12 +1167,12 @@ enum reg_class
 }
 
 /* FPA registers can't do subreg as all values are reformatted to internal
-   precision.  VFP registers may only be accessed in the mode they
-   were set.  */
-#define CANNOT_CHANGE_MODE_CLASS(FROM, TO, CLASS)	\
-  (GET_MODE_SIZE (FROM) != GET_MODE_SIZE (TO)		\
-   ? reg_classes_intersect_p (FPA_REGS, (CLASS))	\
-     || reg_classes_intersect_p (VFP_REGS, (CLASS))	\
+   precision.  In VFPv1, VFP registers could only be accessed in the mode
+   they were set, so subregs would be invalid there too.  However, we don't
+   support VFPv1 at the moment, and the restriction was lifted in VFPv2.  */
+#define CANNOT_CHANGE_MODE_CLASS(FROM, TO, CLASS)		\
+  (GET_MODE_SIZE (FROM) != GET_MODE_SIZE (TO)			\
+   ? reg_classes_intersect_p (FPA_REGS, (CLASS))		\
    : 0)
 
 /* The class value for index registers, and the one for base regs.  */

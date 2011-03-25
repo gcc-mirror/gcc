@@ -1,3 +1,8 @@
+2011-03-25  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* config/arm/arm.h (CANNOT_CHANGE_MODE_CLASS): Restrict FPA_REGS
+	case to VFPv1.
+
 2011-03-25  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* fold-const.c (expr_location_or): New function.
