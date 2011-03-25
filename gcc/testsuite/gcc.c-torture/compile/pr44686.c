@@ -1,4 +1,4 @@
-/* { dg-options "-O2 -fipa-pta -fprofile-generate" } */
+/* { dg-options "-fipa-pta -fprofile-generate" } */
 void *
 memcpy (void *a, const void *b, __SIZE_TYPE__ len)
 {
