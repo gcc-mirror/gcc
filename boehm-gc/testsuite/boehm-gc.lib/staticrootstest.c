@@ -1,3 +1,5 @@
+/* { dg-add-shlib "staticrootslib.c" } */
+
 #include <stdio.h>
 
 #ifndef GC_DEBUG

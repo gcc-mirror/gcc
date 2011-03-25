@@ -618,6 +618,7 @@ extra_ldflags_libgc
 POWERPC_DARWIN_FALSE
 POWERPC_DARWIN_TRUE
 THREADLIBS
+THREADCFLAGS
 CXXCPP
 CPP
 OTOOL64
@@ -1943,93 +1944,6 @@ $as_echo "$ac_res" >&6; }
   eval $as_lineno_stack; test "x$as_lineno_stack" = x && { as_lineno=; unset as_lineno;}
 
 } # ac_fn_c_check_member
-
-# ac_fn_c_check_header_mongrel LINENO HEADER VAR INCLUDES
-# -------------------------------------------------------
-# Tests whether HEADER exists, giving a warning if it cannot be compiled using
-# the include files in INCLUDES and setting the cache variable VAR
-# accordingly.
-ac_fn_c_check_header_mongrel ()
-{
-  as_lineno=${as_lineno-"$1"} as_lineno_stack=as_lineno_stack=$as_lineno_stack
-  if { as_var=$3; eval "test \"\${$as_var+set}\" = set"; }; then :
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for $2" >&5
-$as_echo_n "checking for $2... " >&6; }
-if { as_var=$3; eval "test \"\${$as_var+set}\" = set"; }; then :
-  $as_echo_n "(cached) " >&6
-fi
-eval ac_res=\$$3
-	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
-$as_echo "$ac_res" >&6; }
-else
-  # Is the header compilable?
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking $2 usability" >&5
-$as_echo_n "checking $2 usability... " >&6; }
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-$4
-#include <$2>
-_ACEOF
-if ac_fn_c_try_compile "$LINENO"; then :
-  ac_header_compiler=yes
-else
-  ac_header_compiler=no
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_header_compiler" >&5
-$as_echo "$ac_header_compiler" >&6; }
-
-# Is the header present?
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking $2 presence" >&5
-$as_echo_n "checking $2 presence... " >&6; }
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-#include <$2>
-_ACEOF
-if ac_fn_c_try_cpp "$LINENO"; then :
-  ac_header_preproc=yes
-else
-  ac_header_preproc=no
-fi
-rm -f conftest.err conftest.$ac_ext
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_header_preproc" >&5
-$as_echo "$ac_header_preproc" >&6; }
-
-# So?  What about this header?
-case $ac_header_compiler:$ac_header_preproc:$ac_c_preproc_warn_flag in #((
-  yes:no: )
-    { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: $2: accepted by the compiler, rejected by the preprocessor!" >&5
-$as_echo "$as_me: WARNING: $2: accepted by the compiler, rejected by the preprocessor!" >&2;}
-    { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: $2: proceeding with the compiler's result" >&5
-$as_echo "$as_me: WARNING: $2: proceeding with the compiler's result" >&2;}
-    ;;
-  no:yes:* )
-    { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: $2: present but cannot be compiled" >&5
-$as_echo "$as_me: WARNING: $2: present but cannot be compiled" >&2;}
-    { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: $2:     check for missing prerequisite headers?" >&5
-$as_echo "$as_me: WARNING: $2:     check for missing prerequisite headers?" >&2;}
-    { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: $2: see the Autoconf documentation" >&5
-$as_echo "$as_me: WARNING: $2: see the Autoconf documentation" >&2;}
-    { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: $2:     section \"Present But Cannot Be Compiled\"" >&5
-$as_echo "$as_me: WARNING: $2:     section \"Present But Cannot Be Compiled\"" >&2;}
-    { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: $2: proceeding with the compiler's result" >&5
-$as_echo "$as_me: WARNING: $2: proceeding with the compiler's result" >&2;}
-    ;;
-esac
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for $2" >&5
-$as_echo_n "checking for $2... " >&6; }
-if { as_var=$3; eval "test \"\${$as_var+set}\" = set"; }; then :
-  $as_echo_n "(cached) " >&6
-else
-  eval "$3=\$ac_header_compiler"
-fi
-eval ac_res=\$$3
-	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
-$as_echo "$ac_res" >&6; }
-fi
-  eval $as_lineno_stack; test "x$as_lineno_stack" = x && { as_lineno=; unset as_lineno;}
-
-} # ac_fn_c_check_header_mongrel
 cat >config.log <<_ACEOF
 This file contains any messages produced by compilers while
 running configure, to aid debugging if configure makes a mistake.
@@ -11390,7 +11304,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11393 "configure"
+#line 11307 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11496,7 +11410,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11499 "configure"
+#line 11413 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -14792,6 +14706,7 @@ fi
 
 
 AM_CPPFLAGS="-I`cd $srcdir && ${PWDCMD-pwd}`/include"
+THREADCFLAGS=
 THREADLIBS=
 case "$THREADS" in
  no | none | single)
@@ -14855,11 +14770,11 @@ $as_echo "#define _REENTRANT 1" >>confdefs.h
 	{ $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: \"Only HP-UX 11 POSIX threads are supported.\"" >&5
 $as_echo "$as_me: WARNING: \"Only HP-UX 11 POSIX threads are supported.\"" >&2;}
 	;;
-      *-*-kfreebsd*-gnu)
+     *-*-kfreebsd*-gnu)
        $as_echo "#define GC_FREEBSD_THREADS 1" >>confdefs.h
 
-       INCLUDES="$INCLUDES -pthread"
-       THREADDLLIBS=-pthread
+       THREADCFLAGS=-pthread
+       THREADLIBS=-pthread
        $as_echo "#define _REENTRANT 1" >>confdefs.h
 
          if test "${enable_parallel_mark}" = yes; then
@@ -14871,14 +14786,14 @@ $as_echo "$as_me: WARNING: \"Only HP-UX 11 POSIX threads are supported.\"" >&2;}
 
 $as_echo "#define USE_COMPILER_TLS 1" >>confdefs.h
 
-               ;;
+       ;;
      *-*-freebsd*)
 	{ $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: \"FreeBSD does not yet fully support threads with Boehm GC.\"" >&5
 $as_echo "$as_me: WARNING: \"FreeBSD does not yet fully support threads with Boehm GC.\"" >&2;}
 
 $as_echo "#define GC_FREEBSD_THREADS 1" >>confdefs.h
 
-	AM_CPPFLAGS="$AM_CPPFLAGS -pthread"
+	THREADCFLAGS=-pthread
 	THREADLIBS=-pthread
       	;;
      *-*-solaris2.8*)
@@ -14935,7 +14850,7 @@ $as_echo "#define GC_OSF1_THREADS 1" >>confdefs.h
 	  # May want to enable it in other cases, too.
 	  # Measurements havent yet been done.
 	fi
-	AM_CPPFLAGS="$AM_CPPFLAGS -pthread"
+	THREADCFLAGS=-pthread
 	THREADLIBS="-lpthread -lrt"
 	;;
     esac
@@ -14944,27 +14859,6 @@ $as_echo "#define GC_OSF1_THREADS 1" >>confdefs.h
     $as_echo "#define GC_WIN32_THREADS 1" >>confdefs.h
 
             ;;
- dgux386)
-    THREADS=dgux386
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $THREADLIBS" >&5
-$as_echo "$THREADLIBS" >&6; }
-    # Use pthread GCC  switch
-    THREADLIBS=-pthread
-    if test "${enable_parallel_mark}" = yes; then
-        $as_echo "#define PARALLEL_MARK 1" >>confdefs.h
-
-    fi
-    $as_echo "#define THREAD_LOCAL_ALLOC 1" >>confdefs.h
-
-
-$as_echo "#define GC_DGUX386_THREADS 1" >>confdefs.h
-
-
-$as_echo "#define DGUX_THREADS 1" >>confdefs.h
-
-    # Enable _POSIX4A_DRAFT10_SOURCE with flag -pthread
-    AM_CPPFLAGS="-pthread $AM_CPPFLAGS"
-    ;;
  aix)
     THREADS=posix
     THREADLIBS=-lpthread
@@ -14980,6 +14874,7 @@ $as_echo "#define DGUX_THREADS 1" >>confdefs.h
     as_fn_error "$THREADS is an unknown thread package" "$LINENO" 5
     ;;
 esac
+
 
 
 case "$host" in
@@ -15322,29 +15217,6 @@ addobjs="$addobjs $machdep"
 
 
 
-#
-# Check for AViiON Machines running DGUX
-#
-ac_is_dgux=no
-ac_fn_c_check_header_mongrel "$LINENO" "sys/dg_sys_info.h" "ac_cv_header_sys_dg_sys_info_h" "$ac_includes_default"
-if test "x$ac_cv_header_sys_dg_sys_info_h" = x""yes; then :
-  ac_is_dgux=yes
-fi
-
-
-
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking if host is AViiON running DGUX" >&5
-$as_echo_n "checking if host is AViiON running DGUX... " >&6; }
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_is_dgux" >&5
-$as_echo "$ac_is_dgux" >&6; }
-    ## :GOTCHA: we do not check anything but sys/dg_sys_info.h
-if test $ac_is_dgux = yes; then
-    if test "$enable_full_debug" = "yes"; then
-        GC_CFLAGS="$GC_CFLAGS -mstandard"
-    fi
-    GC_CFLAGS="$GC_CFLAGS -DDGUX -D_DGUX_SOURCE -Di386 -mno-legend"
-fi
-
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether GCC optimization should be disabled" >&5
 $as_echo_n "checking whether GCC optimization should be disabled... " >&6; }
 O0_CFLAGS=
@@ -15407,10 +15279,6 @@ $as_echo "$as_me: WARNING: \"Client must not use -fomit-frame-pointer.\"" >&2;}
 $as_echo "#define SAVE_CALL_COUNT 8" >>confdefs.h
 
       ;;
-      i345686-*-dgux*)
-	$as_echo "#define MAKE_BACK_GRAPH 1" >>confdefs.h
-
-      ;;
     esac
   fi
 fi
@@ -15447,7 +15315,7 @@ fi
 ac_config_headers="$ac_config_headers include/gc_config.h include/gc_ext_config.h"
 
 
-ac_config_files="$ac_config_files Makefile include/Makefile threads.mk"
+ac_config_files="$ac_config_files Makefile include/Makefile testsuite/Makefile threads.mk"
 
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
@@ -16552,6 +16420,7 @@ do
     "include/gc_ext_config.h") CONFIG_HEADERS="$CONFIG_HEADERS include/gc_ext_config.h" ;;
     "Makefile") CONFIG_FILES="$CONFIG_FILES Makefile" ;;
     "include/Makefile") CONFIG_FILES="$CONFIG_FILES include/Makefile" ;;
+    "testsuite/Makefile") CONFIG_FILES="$CONFIG_FILES testsuite/Makefile" ;;
     "threads.mk") CONFIG_FILES="$CONFIG_FILES threads.mk" ;;
 
   *) as_fn_error "invalid argument: \`$ac_config_target'" "$LINENO" 5;;
