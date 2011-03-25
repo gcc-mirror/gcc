@@ -177,6 +177,18 @@
 
 (define_attr "cannot_copy" "false,true"
   (const_string "false"))
+
+;; Used to control the "enabled" attribute on a per-instruction basis.
+(define_attr "isa" "base,bwx,max,fix,cix"
+  (const_string "base"))
+
+(define_attr "enabled" ""
+  (cond [(eq_attr "isa" "bwx")	(symbol_ref "TARGET_BWX")
+	 (eq_attr "isa" "max")	(symbol_ref "TARGET_MAX")
+	 (eq_attr "isa" "fix")	(symbol_ref "TARGET_FIX")
+	 (eq_attr "isa" "cix")	(symbol_ref "TARGET_CIX")
+	]
+	(const_int 1)))
 
 ;; Include scheduling descriptions.
   
@@ -1092,130 +1104,60 @@
   operands[4] = GEN_INT (mask2);
 })
 
-(define_expand "zero_extendqihi2"
-  [(set (match_operand:HI 0 "register_operand" "")
-	(zero_extend:HI (match_operand:QI 1 "nonimmediate_operand" "")))]
-  ""
-{
-  if (! TARGET_BWX)
-    operands[1] = force_reg (QImode, operands[1]);
-})
-
-(define_insn "*zero_extendqihi2_bwx"
+(define_insn "zero_extendqihi2"
   [(set (match_operand:HI 0 "register_operand" "=r,r")
-	(zero_extend:HI (match_operand:QI 1 "nonimmediate_operand" "r,m")))]
-  "TARGET_BWX"
+	(zero_extend:HI
+	  (match_operand:QI 1 "reg_or_bwx_memory_operand" "r,m")))]
+  ""
   "@
    and %1,0xff,%0
    ldbu %0,%1"
-  [(set_attr "type" "ilog,ild")])
+  [(set_attr "type" "ilog,ild")
+   (set_attr "isa" "*,bwx")])
 
-(define_insn "*zero_extendqihi2_nobwx"
-  [(set (match_operand:HI 0 "register_operand" "=r")
-	(zero_extend:HI (match_operand:QI 1 "register_operand" "r")))]
-  "! TARGET_BWX"
-  "and %1,0xff,%0"
-  [(set_attr "type" "ilog")])
-
-(define_expand "zero_extendqisi2"
-  [(set (match_operand:SI 0 "register_operand" "")
-	(zero_extend:SI (match_operand:QI 1 "nonimmediate_operand" "")))]
-  ""
-{
-  if (! TARGET_BWX)
-    operands[1] = force_reg (QImode, operands[1]);
-})
-
-(define_insn "*zero_extendqisi2_bwx"
+(define_insn "zero_extendqisi2"
   [(set (match_operand:SI 0 "register_operand" "=r,r")
-	(zero_extend:SI (match_operand:QI 1 "nonimmediate_operand" "r,m")))]
-  "TARGET_BWX"
+	(zero_extend:SI
+	  (match_operand:QI 1 "reg_or_bwx_memory_operand" "r,m")))]
+  ""
   "@
    and %1,0xff,%0
    ldbu %0,%1"
-  [(set_attr "type" "ilog,ild")])
+  [(set_attr "type" "ilog,ild")
+   (set_attr "isa" "*,bwx")])
 
-(define_insn "*zero_extendqisi2_nobwx"
-  [(set (match_operand:SI 0 "register_operand" "=r")
-	(zero_extend:SI (match_operand:QI 1 "register_operand" "r")))]
-  "! TARGET_BWX"
-  "and %1,0xff,%0"
-  [(set_attr "type" "ilog")])
-
-(define_expand "zero_extendqidi2"
-  [(set (match_operand:DI 0 "register_operand" "")
-	(zero_extend:DI (match_operand:QI 1 "nonimmediate_operand" "")))]
-  ""
-{
-  if (! TARGET_BWX)
-    operands[1] = force_reg (QImode, operands[1]);
-})
-
-(define_insn "*zero_extendqidi2_bwx"
+(define_insn "zero_extendqidi2"
   [(set (match_operand:DI 0 "register_operand" "=r,r")
-	(zero_extend:DI (match_operand:QI 1 "nonimmediate_operand" "r,m")))]
-  "TARGET_BWX"
+	(zero_extend:DI
+	  (match_operand:QI 1 "reg_or_bwx_memory_operand" "r,m")))]
+  ""
   "@
    and %1,0xff,%0
    ldbu %0,%1"
-  [(set_attr "type" "ilog,ild")])
+  [(set_attr "type" "ilog,ild")
+   (set_attr "isa" "*,bwx")])
 
-(define_insn "*zero_extendqidi2_nobwx"
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	(zero_extend:DI (match_operand:QI 1 "register_operand" "r")))]
-  "! TARGET_BWX"
-  "and %1,0xff,%0"
-  [(set_attr "type" "ilog")])
-
-(define_expand "zero_extendhisi2"
-  [(set (match_operand:SI 0 "register_operand" "")
-	(zero_extend:SI (match_operand:HI 1 "nonimmediate_operand" "")))]
-  ""
-{
-  if (! TARGET_BWX)
-    operands[1] = force_reg (HImode, operands[1]);
-})
-
-(define_insn "*zero_extendhisi2_bwx"
+(define_insn "zero_extendhisi2"
   [(set (match_operand:SI 0 "register_operand" "=r,r")
-	(zero_extend:SI (match_operand:HI 1 "nonimmediate_operand" "r,m")))]
-  "TARGET_BWX"
+	(zero_extend:SI
+	  (match_operand:HI 1 "reg_or_bwx_memory_operand" "r,m")))]
+  ""
   "@
    zapnot %1,3,%0
    ldwu %0,%1"
-  [(set_attr "type" "shift,ild")])
+  [(set_attr "type" "shift,ild")
+   (set_attr "isa" "*,bwx")])
 
-(define_insn "*zero_extendhisi2_nobwx"
-  [(set (match_operand:SI 0 "register_operand" "=r")
-	(zero_extend:SI (match_operand:HI 1 "register_operand" "r")))]
-  "! TARGET_BWX"
-  "zapnot %1,3,%0"
-  [(set_attr "type" "shift")])
-
-(define_expand "zero_extendhidi2"
-  [(set (match_operand:DI 0 "register_operand" "")
-	(zero_extend:DI (match_operand:HI 1 "nonimmediate_operand" "")))]
-  ""
-{
-  if (! TARGET_BWX)
-    operands[1] = force_reg (HImode, operands[1]);
-})
-
-(define_insn "*zero_extendhidi2_bwx"
+(define_insn "zero_extendhidi2"
   [(set (match_operand:DI 0 "register_operand" "=r,r")
-	(zero_extend:DI (match_operand:HI 1 "nonimmediate_operand" "r,m")))]
-  "TARGET_BWX"
+	(zero_extend:DI
+	  (match_operand:HI 1 "reg_or_bwx_memory_operand" "r,m")))]
+  ""
   "@
    zapnot %1,3,%0
    ldwu %0,%1"
-  [(set_attr "type" "shift,ild")])
-
-(define_insn "*zero_extendhidi2_nobwx"
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	(zero_extend:DI (match_operand:HI 1 "register_operand" "r")))]
-  ""
-  "zapnot %1,3,%0"
-  [(set_attr "type" "shift")])
+  [(set_attr "type" "shift,ild")
+   (set_attr "isa" "*,bwx")])
 
 (define_insn "zero_extendsidi2"
   [(set (match_operand:DI 0 "register_operand" "=r")

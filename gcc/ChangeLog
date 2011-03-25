@@ -1,5 +1,14 @@
 2011-02-24  Richard Henderson  <rth@redhat.com>
 
+	* config/alpha/alpha.md (attribute isa): New.
+	(attribute enabled): New.
+	(zero_extendqihi2): Merge from *zero_extendqihi2_{bwx,nobwx}.
+	(zero_extendqisi2, zero_extendqidi2): Similarly.
+	(zero_extendhisi2, zero_extendhidi2): Similarly.
+	* config/alpha/predicates.md (reg_or_bwx_memory_operand): New.
+
+2011-02-24  Richard Henderson  <rth@redhat.com>
+
 	* config/alpha/predicates.md (input_operand): Revert last change;
 	update comment to mention 32-bit VMS rather than Windows.
 
