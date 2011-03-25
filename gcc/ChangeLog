@@ -1,3 +1,10 @@
+2011-03-25  Richard Guenther  <rguenther@suse.de>
+
+	* tree-cfg.c (verify_gimple_assign_unary): Drop special casing
+	of complex types at -O0.
+	(verify_gimple_assign_binary): Likewise.
+	(verify_gimple_assign_ternary): Likewise.
+
 2011-03-24  Mark Wielaard  <mjw@redhat.com>
 
 	* dwarf2out.c (size_of_die): Modify comment to say DW_FORM_ref_sig8.
