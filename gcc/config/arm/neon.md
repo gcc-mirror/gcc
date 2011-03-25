@@ -583,23 +583,25 @@
 )
 
 (define_insn "adddi3_neon"
-  [(set (match_operand:DI 0 "s_register_operand" "=w,?&r,?&r")
-        (plus:DI (match_operand:DI 1 "s_register_operand" "%w,0,0")
-                 (match_operand:DI 2 "s_register_operand" "w,r,0")))
+  [(set (match_operand:DI 0 "s_register_operand" "=w,?&r,?&r,?w")
+        (plus:DI (match_operand:DI 1 "s_register_operand" "%w,0,0,w")
+                 (match_operand:DI 2 "s_register_operand" "w,r,0,w")))
    (clobber (reg:CC CC_REGNUM))]
   "TARGET_NEON"
 {
   switch (which_alternative)
     {
-    case 0: return "vadd.i64\t%P0, %P1, %P2";
+    case 0: /* fall through */
+    case 3: return "vadd.i64\t%P0, %P1, %P2";
     case 1: return "#";
     case 2: return "#";
     default: gcc_unreachable ();
     }
 }
-  [(set_attr "neon_type" "neon_int_1,*,*")
-   (set_attr "conds" "*,clob,clob")
-   (set_attr "length" "*,8,8")]
+  [(set_attr "neon_type" "neon_int_1,*,*,neon_int_1")
+   (set_attr "conds" "*,clob,clob,*")
+   (set_attr "length" "*,8,8,*")
+   (set_attr "arch" "nota8,*,*,onlya8")]
 )
 
 (define_insn "*sub<mode>3_neon"
@@ -617,24 +619,26 @@
 )
 
 (define_insn "subdi3_neon"
-  [(set (match_operand:DI 0 "s_register_operand" "=w,?&r,?&r,?&r")
-        (minus:DI (match_operand:DI 1 "s_register_operand" "w,0,r,0")
-                  (match_operand:DI 2 "s_register_operand" "w,r,0,0")))
+  [(set (match_operand:DI 0 "s_register_operand" "=w,?&r,?&r,?&r,?w")
+        (minus:DI (match_operand:DI 1 "s_register_operand" "w,0,r,0,w")
+                  (match_operand:DI 2 "s_register_operand" "w,r,0,0,w")))
    (clobber (reg:CC CC_REGNUM))]
   "TARGET_NEON"
 {
   switch (which_alternative)
     {
-    case 0: return "vsub.i64\t%P0, %P1, %P2";
+    case 0: /* fall through */
+    case 4: return "vsub.i64\t%P0, %P1, %P2";
     case 1: /* fall through */ 
     case 2: /* fall through */
     case 3: return  "subs\\t%Q0, %Q1, %Q2\;sbc\\t%R0, %R1, %R2";
     default: gcc_unreachable ();
     }
 }
-  [(set_attr "neon_type" "neon_int_2,*,*,*")
-   (set_attr "conds" "*,clob,clob,clob")
-   (set_attr "length" "*,8,8,8")]
+  [(set_attr "neon_type" "neon_int_2,*,*,*,neon_int_2")
+   (set_attr "conds" "*,clob,clob,clob,*")
+   (set_attr "length" "*,8,8,8,*")
+   (set_attr "arch" "nota8,*,*,*,onlya8")]
 )
 
 (define_insn "*mul<mode>3_neon"
@@ -720,23 +724,26 @@
 )
 
 (define_insn "iordi3_neon"
-  [(set (match_operand:DI 0 "s_register_operand" "=w,w,?&r,?&r")
-        (ior:DI (match_operand:DI 1 "s_register_operand" "%w,0,0,r")
-		(match_operand:DI 2 "neon_logic_op2" "w,Dl,r,r")))]
+  [(set (match_operand:DI 0 "s_register_operand" "=w,w,?&r,?&r,?w,?w")
+        (ior:DI (match_operand:DI 1 "s_register_operand" "%w,0,0,r,w,0")
+		(match_operand:DI 2 "neon_logic_op2" "w,Dl,r,r,w,Dl")))]
   "TARGET_NEON"
 {
   switch (which_alternative)
     {
-    case 0: return "vorr\t%P0, %P1, %P2";
-    case 1: return neon_output_logic_immediate ("vorr", &operands[2],
+    case 0: /* fall through */
+    case 4: return "vorr\t%P0, %P1, %P2";
+    case 1: /* fall through */
+    case 5: return neon_output_logic_immediate ("vorr", &operands[2],
 		     DImode, 0, VALID_NEON_QREG_MODE (DImode));
     case 2: return "#";
     case 3: return "#";
     default: gcc_unreachable ();
     }
 }
-  [(set_attr "neon_type" "neon_int_1,neon_int_1,*,*")
-   (set_attr "length" "*,*,8,8")]
+  [(set_attr "neon_type" "neon_int_1,neon_int_1,*,*,neon_int_1,neon_int_1")
+   (set_attr "length" "*,*,8,8,*,*")
+   (set_attr "arch" "nota8,nota8,*,*,onlya8,onlya8")]
 )
 
 ;; The concrete forms of the Neon immediate-logic instructions are vbic and
@@ -762,23 +769,26 @@
 )
 
 (define_insn "anddi3_neon"
-  [(set (match_operand:DI 0 "s_register_operand" "=w,w,?&r,?&r")
-        (and:DI (match_operand:DI 1 "s_register_operand" "%w,0,0,r")
-		(match_operand:DI 2 "neon_inv_logic_op2" "w,DL,r,r")))]
+  [(set (match_operand:DI 0 "s_register_operand" "=w,w,?&r,?&r,?w,?w")
+        (and:DI (match_operand:DI 1 "s_register_operand" "%w,0,0,r,w,0")
+		(match_operand:DI 2 "neon_inv_logic_op2" "w,DL,r,r,w,DL")))]
   "TARGET_NEON"
 {
   switch (which_alternative)
     {
-    case 0: return "vand\t%P0, %P1, %P2";
-    case 1: return neon_output_logic_immediate ("vand", &operands[2],
+    case 0: /* fall through */
+    case 4: return "vand\t%P0, %P1, %P2";
+    case 1: /* fall through */
+    case 5: return neon_output_logic_immediate ("vand", &operands[2],
     		     DImode, 1, VALID_NEON_QREG_MODE (DImode));
     case 2: return "#";
     case 3: return "#";
     default: gcc_unreachable ();
     }
 }
-  [(set_attr "neon_type" "neon_int_1,neon_int_1,*,*")
-   (set_attr "length" "*,*,8,8")]
+  [(set_attr "neon_type" "neon_int_1,neon_int_1,*,*,neon_int_1,neon_int_1")
+   (set_attr "length" "*,*,8,8,*,*")
+   (set_attr "arch" "nota8,nota8,*,*,onlya8,onlya8")]
 )
 
 (define_insn "orn<mode>3_neon"
@@ -836,16 +846,18 @@
 )
 
 (define_insn "xordi3_neon"
-  [(set (match_operand:DI 0 "s_register_operand" "=w,?&r,?&r")
-        (xor:DI (match_operand:DI 1 "s_register_operand" "%w,0,r")
-	        (match_operand:DI 2 "s_register_operand" "w,r,r")))]
+  [(set (match_operand:DI 0 "s_register_operand" "=w,?&r,?&r,?w")
+        (xor:DI (match_operand:DI 1 "s_register_operand" "%w,0,r,w")
+	        (match_operand:DI 2 "s_register_operand" "w,r,r,w")))]
   "TARGET_NEON"
   "@
    veor\t%P0, %P1, %P2
    #
-   #"
-  [(set_attr "neon_type" "neon_int_1,*,*")
-   (set_attr "length" "*,8,8")]
+   #
+   veor\t%P0, %P1, %P2"
+  [(set_attr "neon_type" "neon_int_1,*,*,neon_int_1")
+   (set_attr "length" "*,8,8,*")
+   (set_attr "arch" "nota8,*,*,onlya8")]
 )
 
 (define_insn "one_cmpl<mode>2"

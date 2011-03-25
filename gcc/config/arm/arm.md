@@ -149,6 +149,9 @@
 ;;---------------------------------------------------------------------------
 ;; Attributes
 
+;; Processor type.  This is created automatically from arm-cores.def.
+(include "arm-tune.md")
+
 ; IS_THUMB is set to 'yes' when we are generating Thumb code, and 'no' when
 ; generating ARM code.  This is used to control the length of some insn
 ; patterns that share the same RTL in both ARM and Thumb code.
@@ -192,7 +195,7 @@
 ; for ARM or Thumb-2 with arm_arch6, and nov6 for ARM without
 ; arm_arch6.  This attribute is used to compute attribute "enabled",
 ; use type "any" to enable an alternative in all cases.
-(define_attr "arch" "any,a,t,32,t1,t2,v6,nov6"
+(define_attr "arch" "any,a,t,32,t1,t2,v6,nov6,onlya8,nota8"
   (const_string "any"))
 
 (define_attr "arch_enabled" "no,yes"
@@ -225,6 +228,14 @@
 
 	 (and (eq_attr "arch" "nov6")
 	      (ne (symbol_ref "(TARGET_32BIT && !arm_arch6)") (const_int 0)))
+	 (const_string "yes")
+
+	 (and (eq_attr "arch" "onlya8")
+	      (eq_attr "tune" "cortexa8"))
+	 (const_string "yes")
+
+	 (and (eq_attr "arch" "nota8")
+	      (not (eq_attr "tune" "cortexa8")))
 	 (const_string "yes")]
 	(const_string "no")))
 
@@ -484,9 +495,6 @@
 
 ;;---------------------------------------------------------------------------
 ;; Pipeline descriptions
-
-;; Processor type.  This is created automatically from arm-cores.def.
-(include "arm-tune.md")
 
 (define_attr "tune_cortexr4" "yes,no"
   (const (if_then_else
