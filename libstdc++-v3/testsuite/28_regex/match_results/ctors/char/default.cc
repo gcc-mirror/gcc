@@ -2,7 +2,7 @@
 
 // 2009-06-10  Stephen M. Webb  <stephen.webb@bregmasoft.com>
 //
-// Copyright (C) 2009 Free Software Foundation, Inc.
+// Copyright (C) 2009, 2010, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -29,18 +29,18 @@ void test01()
 {
   bool test __attribute__((unused)) = true;
 
-	std::cmatch cm;
+  std::cmatch cm;
   VERIFY( cm.size() == 0 );
-  VERIFY( cm.str() == std::cmatch::string_type() );
+  VERIFY( !cm.ready() );
 }
 
 void test02()
 {
   bool test __attribute__((unused)) = true;
 
-	std::smatch sm;
+  std::smatch sm;
   VERIFY( sm.size() == 0 );
-  VERIFY( sm.str() == std::smatch::string_type() );
+  VERIFY( !sm.ready() );
 }
 
 int
@@ -49,4 +49,4 @@ main()
   test01();
   test02();
   return 0;
-};
+}
