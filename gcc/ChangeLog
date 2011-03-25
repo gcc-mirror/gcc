@@ -1,6 +1,6 @@
 2011-03-25  Nathan Froyd  <froydnj@codesourcery.com>
 
-	PR bootstrap/4828
+	PR bootstrap/48282
 	Revert:
 	2011-03-24  Nathan Froyd  <froydnj@codesourcery.com>
 
