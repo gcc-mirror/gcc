@@ -1,5 +1,12 @@
 2011-02-24  Richard Henderson  <rth@redhat.com>
 
+	* config/alpha/alpha.md (extendqihi2): Implement for BWX only.
+	(extendqisi2, extendhisi2): Likewise.
+	(extendqidi2): Simplify BWX/non-BWX expansions.
+	(extendhidi2): Similarly.
+
+2011-02-24  Richard Henderson  <rth@redhat.com>
+
 	* config/alpha/alpha.md (attribute isa): New.
 	(attribute enabled): New.
 	(zero_extendqihi2): Merge from *zero_extendqihi2_{bwx,nobwx}.
