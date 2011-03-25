@@ -1,5 +1,11 @@
 2011-03-25  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
+	* gcc.dg/torture/pr47917.c: Add -D_XOPEN_SOURCE=500 to dg-options
+	for mips-sgi-irix6.5.
+	Replace snprintf prototype by <stdio.h>.
+
+2011-03-25  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
 	PR testsuite/48283
 	* gcc.dg/graphite/block-3.c: Add dg-require-effective-target
 	run_expensive_tests.
