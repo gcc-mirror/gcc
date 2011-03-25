@@ -1,3 +1,7 @@
+2011-03-25  Release Manager
+
+	* GCC 4.6.0 released.
+
 2011-02-14  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/misc.c (gnat_init_options): Do not concatenate -I and
