@@ -587,10 +587,18 @@ class Type
   has_pointer() const
   { return this->do_has_pointer(); }
 
-  // Return true if this is an error type.  An error type indicates a
-  // parsing error.
+  // Return true if this is the error type.  This returns false for a
+  // type which is not defined, as it is called by the parser before
+  // all types are defined.
   bool
   is_error_type() const;
+
+  // Return true if this is the error type or if the type is
+  // undefined.  If the type is undefined, this will give an error.
+  // This should only be called after parsing is complete.
+  bool
+  is_error() const
+  { return this->base()->is_error_type(); }
 
   // Return true if this is a void type.
   bool
