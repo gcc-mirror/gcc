@@ -914,14 +914,10 @@ Named_object::get_tree(Gogo* gogo, Named_object* function)
 	    Type* type = named_constant->type();
 	    if (type != NULL && !type->is_abstract())
 	      {
-		if (!type->is_undefined())
+		if (!type->is_error())
 		  expr_tree = fold_convert(type->get_tree(gogo), expr_tree);
 		else
-		  {
-		    // Make sure we report the error.
-		    type->base();
-		    expr_tree = error_mark_node;
-		  }
+		  expr_tree = error_mark_node;
 	      }
 	    if (expr_tree == error_mark_node)
 	      decl = error_mark_node;
@@ -1047,12 +1043,8 @@ Named_object::get_tree(Gogo* gogo, Named_object* function)
       {
 	Result_variable* result = this->u_.result_var_value;
 	Type* type = result->type();
-	if (type->is_error_type() || type->is_undefined())
-	  {
-	    // Force the error.
-	    type->base();
-	    decl = error_mark_node;
-	  }
+	if (type->is_error())
+	  decl = error_mark_node;
 	else
 	  {
 	    gcc_assert(result->function() == function->func_value());

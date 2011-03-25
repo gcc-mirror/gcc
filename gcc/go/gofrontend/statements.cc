@@ -517,7 +517,7 @@ Assignment_statement::do_check_types(Gogo*)
       && this->lhs_->map_index_expression() == NULL
       && !this->lhs_->is_sink_expression())
     {
-      if (!this->lhs_->type()->is_error_type())
+      if (!this->lhs_->type()->is_error())
 	this->report_error(_("invalid left hand side of assignment"));
       return;
     }
@@ -535,16 +535,8 @@ Assignment_statement::do_check_types(Gogo*)
       this->set_is_error();
     }
 
-  if (lhs_type->is_error_type()
-      || rhs_type->is_error_type()
-      || lhs_type->is_undefined()
-      || rhs_type->is_undefined())
-    {
-      // Make sure we get the error for an undefined type.
-      lhs_type->base();
-      rhs_type->base();
-      this->set_is_error();
-    }
+  if (lhs_type->is_error() || rhs_type->is_error())
+    this->set_is_error();
 }
 
 // Build a tree for an assignment statement.
@@ -817,9 +809,9 @@ Tuple_assignment_statement::do_lower(Gogo*, Named_object*, Block* enclosing)
       gcc_assert(prhs != this->rhs_->end());
 
       if ((*plhs)->is_error_expression()
-	  || (*plhs)->type()->is_error_type()
+	  || (*plhs)->type()->is_error()
 	  || (*prhs)->is_error_expression()
-	  || (*prhs)->type()->is_error_type())
+	  || (*prhs)->type()->is_error())
 	continue;
 
       if ((*plhs)->is_sink_expression())
@@ -843,9 +835,9 @@ Tuple_assignment_statement::do_lower(Gogo*, Named_object*, Block* enclosing)
        ++plhs, ++prhs)
     {
       if ((*plhs)->is_error_expression()
-	  || (*plhs)->type()->is_error_type()
+	  || (*plhs)->type()->is_error()
 	  || (*prhs)->is_error_expression()
-	  || (*prhs)->type()->is_error_type())
+	  || (*prhs)->type()->is_error())
 	continue;
 
       if ((*plhs)->is_sink_expression())
@@ -1363,7 +1355,7 @@ Tuple_type_guard_assignment_statement::do_lower(Gogo*, Named_object*,
   Type* expr_type = this->expr_->type();
   if (expr_type->interface_type() == NULL)
     {
-      if (!expr_type->is_error_type() && !this->type_->is_error_type())
+      if (!expr_type->is_error() && !this->type_->is_error())
 	this->report_error(_("type assertion only valid for interface types"));
       return Statement::make_error_statement(loc);
     }
@@ -2624,16 +2616,8 @@ Return_statement::do_check_types(Gogo*)
 		     i, reason.c_str());
 	  this->set_is_error();
 	}
-      else if (pt->type()->is_error_type()
-	       || (*pe)->type()->is_error_type()
-	       || pt->type()->is_undefined()
-	       || (*pe)->type()->is_undefined())
-	{
-	  // Make sure we get the error for an undefined type.
-	  pt->type()->base();
-	  (*pe)->type()->base();
-	  this->set_is_error();
-	}
+      else if (pt->type()->is_error() || (*pe)->type()->is_error())
+	this->set_is_error();
     }
 
   if (pt != results->end())
@@ -3001,7 +2985,7 @@ void
 If_statement::do_check_types(Gogo*)
 {
   Type* type = this->cond_->type();
-  if (type->is_error_type())
+  if (type->is_error())
     this->set_is_error();
   else if (!type->is_boolean_type())
     this->report_error(_("expected boolean expression"));
@@ -3023,7 +3007,7 @@ tree
 If_statement::do_get_tree(Translate_context* context)
 {
   gcc_assert(this->cond_->type()->is_boolean_type()
-	     || this->cond_->type()->is_error_type());
+	     || this->cond_->type()->is_error());
   tree cond_tree = this->cond_->get_tree(context);
   tree then_tree = this->then_block_->get_tree(context);
   tree else_tree = (this->else_block_ == NULL
@@ -3554,7 +3538,7 @@ Switch_statement::do_lower(Gogo*, Named_object*, Block* enclosing)
 
   if (this->val_ != NULL
       && (this->val_->is_error_expression()
-	  || this->val_->type()->is_error_type()))
+	  || this->val_->type()->is_error()))
     return Statement::make_error_statement(loc);
 
   if (this->val_ != NULL
@@ -4023,7 +4007,7 @@ void
 Send_statement::do_check_types(Gogo*)
 {
   Type* type = this->channel_->type();
-  if (type->is_error_type())
+  if (type->is_error())
     {
       this->set_is_error();
       return;
@@ -4739,7 +4723,7 @@ For_range_statement::do_lower(Gogo* gogo, Named_object*, Block* enclosing)
       index_type = range_type->channel_type()->element_type();
       if (this->value_var_ != NULL)
 	{
-	  if (!this->value_var_->type()->is_error_type())
+	  if (!this->value_var_->type()->is_error())
 	    this->report_error(_("too many variables for range clause "
 				 "with channel"));
 	  return Statement::make_error_statement(this->location());

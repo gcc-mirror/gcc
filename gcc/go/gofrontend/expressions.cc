@@ -205,16 +205,8 @@ Expression::convert_for_assignment(Translate_context* context, Type* lhs_type,
   if (lhs_type == rhs_type)
     return rhs_tree;
 
-  if (lhs_type->is_error_type() || rhs_type->is_error_type())
+  if (lhs_type->is_error() || rhs_type->is_error())
     return error_mark_node;
-
-  if (lhs_type->is_undefined() || rhs_type->is_undefined())
-    {
-      // Make sure we report the error.
-      lhs_type->base();
-      rhs_type->base();
-      return error_mark_node;
-    }
 
   if (rhs_tree == error_mark_node || TREE_TYPE(rhs_tree) == error_mark_node)
     return error_mark_node;
@@ -2628,7 +2620,7 @@ Const_expression::do_determine_type(const Type_context* context)
 void
 Const_expression::check_for_init_loop()
 {
-  if (this->type_ != NULL && this->type_->is_error_type())
+  if (this->type_ != NULL && this->type_->is_error())
     return;
 
   if (this->seen_)
@@ -2647,7 +2639,7 @@ Const_expression::check_for_init_loop()
 
   if (find_named_object.found())
     {
-      if (this->type_ == NULL || !this->type_->is_error_type())
+      if (this->type_ == NULL || !this->type_->is_error())
 	{
 	  this->report_error(_("constant refers to itself"));
 	  this->type_ = Type::make_error_type();
@@ -2661,7 +2653,7 @@ Const_expression::check_for_init_loop()
 void
 Const_expression::do_check_types(Gogo*)
 {
-  if (this->type_ != NULL && this->type_->is_error_type())
+  if (this->type_ != NULL && this->type_->is_error())
     return;
 
   this->check_for_init_loop();
@@ -3311,14 +3303,8 @@ Type_conversion_expression::do_check_types(Gogo*)
   Type* expr_type = this->expr_->type();
   std::string reason;
 
-  if (type->is_error_type()
-      || type->is_undefined()
-      || expr_type->is_error_type()
-      || expr_type->is_undefined())
+  if (type->is_error() || expr_type->is_error())
     {
-      // Make sure we emit an error for an undefined type.
-      type->base();
-      expr_type->base();
       this->set_is_error();
       return;
     }
@@ -4027,7 +4013,7 @@ void
 Unary_expression::do_check_types(Gogo*)
 {
   Type* type = this->expr_->type();
-  if (type->is_error_type())
+  if (type->is_error())
     {
       this->set_is_error();
       return;
@@ -5447,9 +5433,9 @@ Binary_expression::do_type()
       {
 	Type* left_type = this->left_->type();
 	Type* right_type = this->right_->type();
-	if (left_type->is_error_type())
+	if (left_type->is_error())
 	  return left_type;
-	else if (right_type->is_error_type())
+	else if (right_type->is_error())
 	  return right_type;
 	else if (!Type::are_compatible_for_binop(left_type, right_type))
 	  {
@@ -5688,7 +5674,7 @@ Binary_expression::do_check_types(Gogo*)
 
   Type* left_type = this->left_->type();
   Type* right_type = this->right_->type();
-  if (left_type->is_error_type() || right_type->is_error_type())
+  if (left_type->is_error() || right_type->is_error())
     {
       this->set_is_error();
       return;
@@ -7001,7 +6987,7 @@ Builtin_call_expression::do_integer_constant_value(bool iota_is_constant,
       if (arg == NULL)
 	return false;
       Type* arg_type = arg->type();
-      if (arg_type->is_error_type() || arg_type->is_undefined())
+      if (arg_type->is_error())
 	return false;
       if (arg_type->is_abstract())
 	return false;
@@ -7354,8 +7340,7 @@ Builtin_call_expression::check_one_arg()
       return false;
     }
   if (args->front()->is_error_expression()
-      || args->front()->type()->is_error_type()
-      || args->front()->type()->is_undefined())
+      || args->front()->type()->is_error())
     {
       this->set_is_error();
       return false;
@@ -7389,7 +7374,7 @@ Builtin_call_expression::do_check_types(Gogo*)
 	      arg_type = arg_type->points_to();
 	    if (this->code_ == BUILTIN_CAP)
 	      {
-		if (!arg_type->is_error_type()
+		if (!arg_type->is_error()
 		    && arg_type->array_type() == NULL
 		    && arg_type->channel_type() == NULL)
 		  this->report_error(_("argument must be array or slice "
@@ -7397,7 +7382,7 @@ Builtin_call_expression::do_check_types(Gogo*)
 	      }
 	    else
 	      {
-		if (!arg_type->is_error_type()
+		if (!arg_type->is_error()
 		    && !arg_type->is_string_type()
 		    && arg_type->array_type() == NULL
 		    && arg_type->map_type() == NULL
@@ -7429,7 +7414,7 @@ Builtin_call_expression::do_check_types(Gogo*)
 		 ++p)
 	      {
 		Type* type = (*p)->type();
-		if (type->is_error_type()
+		if (type->is_error()
 		    || type->is_string_type()
 		    || type->integer_type() != NULL
 		    || type->float_type() != NULL
@@ -7493,7 +7478,7 @@ Builtin_call_expression::do_check_types(Gogo*)
 	  }
 	Type* arg1_type = args->front()->type();
 	Type* arg2_type = args->back()->type();
-	if (arg1_type->is_error_type() || arg2_type->is_error_type())
+	if (arg1_type->is_error() || arg2_type->is_error())
 	  break;
 
 	Type* e1;
@@ -7568,9 +7553,9 @@ Builtin_call_expression::do_check_types(Gogo*)
 	else if (args->size() > 2)
 	  this->report_error(_("too many arguments"));
 	else if (args->front()->is_error_expression()
-		 || args->front()->type()->is_error_type()
+		 || args->front()->type()->is_error()
 		 || args->back()->is_error_expression()
-		 || args->back()->type()->is_error_type())
+		 || args->back()->type()->is_error())
 	  this->set_is_error();
 	else if (!Type::are_identical(args->front()->type(),
 				      args->back()->type(), true, NULL))
@@ -8540,7 +8525,7 @@ Call_expression::do_check_types(Gogo*)
   Function_type* fntype = this->get_function_type();
   if (fntype == NULL)
     {
-      if (!this->fn_->type()->is_error_type())
+      if (!this->fn_->type()->is_error())
 	this->report_error(_("expected function"));
       return;
     }
@@ -9060,7 +9045,7 @@ Index_expression::do_lower(Gogo*, Named_object*, int)
   Expression* end = this->end_;
 
   Type* type = left->type();
-  if (type->is_error_type())
+  if (type->is_error())
     return Expression::make_error(location);
   else if (left->is_type_expression())
     {
@@ -9236,7 +9221,7 @@ Array_index_expression::do_check_types(Gogo*)
   Array_type* array_type = this->array_->type()->array_type();
   if (array_type == NULL)
     {
-      gcc_assert(this->array_->type()->is_error_type());
+      gcc_assert(this->array_->type()->is_error());
       return;
     }
 
@@ -9318,7 +9303,7 @@ Array_index_expression::do_get_tree(Translate_context* context)
   Array_type* array_type = this->array_->type()->array_type();
   if (array_type == NULL)
     {
-      gcc_assert(this->array_->type()->is_error_type());
+      gcc_assert(this->array_->type()->is_error());
       return error_mark_node;
     }
 
@@ -9979,7 +9964,7 @@ Type*
 Field_reference_expression::do_type()
 {
   Type* type = this->expr_->type();
-  if (type->is_error_type())
+  if (type->is_error())
     return type;
   Struct_type* struct_type = type->struct_type();
   gcc_assert(struct_type != NULL);
@@ -9992,7 +9977,7 @@ void
 Field_reference_expression::do_check_types(Gogo*)
 {
   Type* type = this->expr_->type();
-  if (type->is_error_type())
+  if (type->is_error())
     return;
   Struct_type* struct_type = type->struct_type();
   gcc_assert(struct_type != NULL);
@@ -11140,7 +11125,7 @@ Open_array_construction_expression::do_get_tree(Translate_context* context)
   Array_type* array_type = this->type()->array_type();
   if (array_type == NULL)
     {
-      gcc_assert(this->type()->is_error_type());
+      gcc_assert(this->type()->is_error());
       return error_mark_node;
     }
 
@@ -11659,7 +11644,7 @@ Composite_literal_expression::do_lower(Gogo* gogo, Named_object* function, int)
 	type = type->map_type()->val_type();
       else
 	{
-	  if (!type->is_error_type())
+	  if (!type->is_error())
 	    error_at(this->location(),
 		     ("may only omit types within composite literals "
 		      "of slice, array, or map type"));
@@ -11667,7 +11652,7 @@ Composite_literal_expression::do_lower(Gogo* gogo, Named_object* function, int)
 	}
     }
 
-  if (type->is_error_type())
+  if (type->is_error())
     return Expression::make_error(this->location());
   else if (type->struct_type() != NULL)
     return this->lower_struct(gogo, type);
@@ -12132,7 +12117,7 @@ Type_guard_expression::do_check_types(Gogo*)
     }
   else if (expr_type->interface_type() == NULL)
     {
-      if (!expr_type->is_error_type() && !this->type_->is_error_type())
+      if (!expr_type->is_error() && !this->type_->is_error())
 	this->report_error(_("type assertion only valid for interface types"));
       this->set_is_error();
     }
@@ -12142,7 +12127,7 @@ Type_guard_expression::do_check_types(Gogo*)
       if (!expr_type->interface_type()->implements_interface(this->type_,
 							     &reason))
 	{
-	  if (!this->type_->is_error_type())
+	  if (!this->type_->is_error())
 	    {
 	      if (reason.empty())
 		this->report_error(_("impossible type assertion: "
@@ -12294,7 +12279,7 @@ void
 Receive_expression::do_check_types(Gogo*)
 {
   Type* type = this->channel_->type();
-  if (type->is_error_type())
+  if (type->is_error())
     {
       this->set_is_error();
       return;
@@ -12319,7 +12304,7 @@ Receive_expression::do_get_tree(Translate_context* context)
   Channel_type* channel_type = this->channel_->type()->channel_type();
   if (channel_type == NULL)
     {
-      gcc_assert(this->channel_->type()->is_error_type());
+      gcc_assert(this->channel_->type()->is_error());
       return error_mark_node;
     }
   Type* element_type = channel_type->element_type();
