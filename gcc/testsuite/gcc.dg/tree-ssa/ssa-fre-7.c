@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O -fno-tree-sra -fdump-tree-fre-details -fdump-tree-optimized" } */
+/* { dg-options "-O -fno-tree-sra -fdump-tree-fre1-details -fdump-tree-optimized" } */
 #if (__SIZEOF_INT__ == __SIZEOF_FLOAT__)
 typedef int intflt;
 #elif (__SIZEOF_LONG__ == __SIZEOF_FLOAT__)
@@ -29,10 +29,10 @@ intflt foo(intflt j)
   return a.u.k;
 }
 
-/* { dg-final { scan-tree-dump-times "Inserted pretmp" 1 "fre" } } */
-/* { dg-final { scan-tree-dump-times "Replaced a.u.f with pretmp" 3 "fre" } } */
-/* { dg-final { scan-tree-dump-times "Replaced a.u.k with j" 1 "fre" } } */
-/* { dg-final { scan-tree-dump "= VIEW_CONVERT_EXPR<float>\\\(j_" "fre" } } */
+/* { dg-final { scan-tree-dump-times "Inserted pretmp" 1 "fre1" } } */
+/* { dg-final { scan-tree-dump-times "Replaced a.u.f with pretmp" 3 "fre1" } } */
+/* { dg-final { scan-tree-dump-times "Replaced a.u.k with j" 1 "fre1" } } */
+/* { dg-final { scan-tree-dump "= VIEW_CONVERT_EXPR<float>\\\(j_" "fre1" } } */
 /* { dg-final { scan-tree-dump "return j" "optimized" } } */
-/* { dg-final { cleanup-tree-dump "fre" } } */
+/* { dg-final { cleanup-tree-dump "fre1" } } */
 /* { dg-final { cleanup-tree-dump "optimized" } } */

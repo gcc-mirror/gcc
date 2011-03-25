@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O -fno-tree-sra -fdump-tree-fre-details" } */
+/* { dg-options "-O -fno-tree-sra -fdump-tree-fre1-details" } */
 #if (__SIZEOF_INT__ == __SIZEOF_FLOAT__)
 typedef int intflt;
 #elif (__SIZEOF_LONG__ == __SIZEOF_FLOAT__)
@@ -28,6 +28,6 @@ intflt foo(int i, int b)
     }
 }
 
-/* { dg-final { scan-tree-dump-times "Replaced u.f with pretmp" 2 "fre" } } */
-/* { dg-final { scan-tree-dump-times "Inserted pretmp" 2 "fre" } } */
-/* { dg-final { cleanup-tree-dump "fre" } } */
+/* { dg-final { scan-tree-dump-times "Replaced u.f with pretmp" 2 "fre1" } } */
+/* { dg-final { scan-tree-dump-times "Inserted pretmp" 2 "fre1" } } */
+/* { dg-final { cleanup-tree-dump "fre1" } } */

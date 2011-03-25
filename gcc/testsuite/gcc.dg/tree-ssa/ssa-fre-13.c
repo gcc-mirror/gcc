@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O -fstrict-aliasing -fno-tree-sra -fdump-tree-fre-details" } */
+/* { dg-options "-O -fstrict-aliasing -fno-tree-sra -fdump-tree-fre1-details" } */
 
 /* Should be optimized, propagating &a into (*p)[i].  */
 
@@ -23,5 +23,5 @@ void foo(double (*q)[4], struct Foo *tmp1)
     }
 }
 
-/* { dg-final { scan-tree-dump "Replaced tmp1_.\\\(D\\\)->data with &a" "fre" } } */
-/* { dg-final { cleanup-tree-dump "fre" } } */
+/* { dg-final { scan-tree-dump "Replaced tmp1_.\\\(D\\\)->data with &a" "fre1" } } */
+/* { dg-final { cleanup-tree-dump "fre1" } } */

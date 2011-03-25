@@ -1,5 +1,5 @@
 /* { dg-do compile } */ 
-/* { dg-options "-O2 -fno-tree-dominator-opts -fdump-tree-fre-stats" } */
+/* { dg-options "-O2 -fno-tree-dominator-opts -fdump-tree-fre1-stats" } */
 int
 foo (unsigned long a)
 {
@@ -9,5 +9,5 @@ foo (unsigned long a)
     return 1;
   return 0;
 }
-/* { dg-final { scan-tree-dump-times "return 0;" 0 "fre"} } */
-/* { dg-final { cleanup-tree-dump "fre" } } */
+/* { dg-final { scan-tree-dump-times "return 0;" 0 "fre1"} } */
+/* { dg-final { cleanup-tree-dump "fre1" } } */

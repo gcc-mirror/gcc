@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O -fno-tree-ccp -fno-tree-forwprop -fdump-tree-fre" } */
+/* { dg-options "-O -fno-tree-ccp -fno-tree-forwprop -fdump-tree-fre1" } */
 
 static const int a[4] = {};
 int foo(void)
@@ -9,5 +9,5 @@ int foo(void)
   return *p;
 }
 
-/* { dg-final { scan-tree-dump "= 0;" "fre" } } */
-/* { dg-final { cleanup-tree-dump "fre" } } */
+/* { dg-final { scan-tree-dump "= 0;" "fre1" } } */
+/* { dg-final { cleanup-tree-dump "fre1" } } */

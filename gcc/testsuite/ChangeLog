@@ -1,3 +1,64 @@
+2011-03-25  Richard Guenther  <rguenther@suse.de>
+ 
+	* g++.dg/tree-ssa/pr41186.C: Scan the appropriate FRE dump.
+	* g++.dg/tree-ssa/pr8781.C: Likewise.
+	* gcc.dg/ipa/ipa-pta-13.c: Likewise.
+	* gcc.dg/ipa/ipa-pta-3.c: Likewise.
+	* gcc.dg/ipa/ipa-pta-4.c: Likewise.
+	* gcc.dg/tree-ssa/20041122-1.c: Likewise.
+	* gcc.dg/tree-ssa/alias-18.c: Likewise.
+	* gcc.dg/tree-ssa/foldstring-1.c: Likewise.
+	* gcc.dg/tree-ssa/forwprop-10.c: Likewise.
+	* gcc.dg/tree-ssa/forwprop-9.c: Likewise.
+	* gcc.dg/tree-ssa/fre-vce-1.c: Likewise.
+	* gcc.dg/tree-ssa/loadpre6.c: Likewise.
+	* gcc.dg/tree-ssa/pr21574.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-dom-cse-1.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-fre-1.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-fre-11.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-fre-12.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-fre-13.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-fre-14.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-fre-15.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-fre-16.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-fre-17.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-fre-18.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-fre-19.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-fre-2.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-fre-21.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-fre-22.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-fre-23.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-fre-24.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-fre-25.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-fre-26.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-fre-27.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-fre-3.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-fre-4.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-fre-5.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-fre-6.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-fre-7.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-fre-8.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-fre-9.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-pre-10.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-pre-26.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-pre-7.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-pre-8.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-pre-9.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-sccvn-1.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-sccvn-2.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-sccvn-3.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-sccvn-4.c: Likewise.
+	* gcc.dg/tree-ssa/struct-aliasing-1.c: Likewise.
+	* gcc.dg/tree-ssa/struct-aliasing-2.c: Likewise.
+	* c-c++-common/pr46562-2.c: Likewise.
+	* gfortran.dg/pr42108.f90: Likewise.
+	* gcc.dg/torture/pta-structcopy-1.c: Scan ealias dump, force
+	foo to be inlined even at -O1.
+	* gcc.dg/tree-ssa/ssa-dce-4.c: Disable FRE.
+	* gcc.dg/ipa/ipa-pta-14.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-fre-1.c: Adjust.
+	* gcc.dg/matrix/matrix.exp: Disable FRE.
+
 2011-03-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/48204

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-fre-details -fdump-tree-optimized" } */
+/* { dg-options "-O2 -fdump-tree-fre1-details -fdump-tree-optimized" } */
 
 struct A {
   int i;
@@ -76,15 +76,15 @@ int test8 (struct A *p, int *q)
   return *q;
 }
 
-/* { dg-final { scan-tree-dump "with 0" "fre" } } */
-/* { dg-final { scan-tree-dump "with 1" "fre" } } */
-/* { dg-final { scan-tree-dump "with 3" "fre" } } */
-/* { dg-final { scan-tree-dump "with 4" "fre" } } */
-/* { dg-final { scan-tree-dump "with 5" "fre" } } */
-/* { dg-final { scan-tree-dump "with 8" "fre" } } */
+/* { dg-final { scan-tree-dump "with 0" "fre1" } } */
+/* { dg-final { scan-tree-dump "with 1" "fre1" } } */
+/* { dg-final { scan-tree-dump "with 3" "fre1" } } */
+/* { dg-final { scan-tree-dump "with 4" "fre1" } } */
+/* { dg-final { scan-tree-dump "with 5" "fre1" } } */
+/* { dg-final { scan-tree-dump "with 8" "fre1" } } */
 /* { dg-final { scan-tree-dump-not "return 2;" "optimized" } } */
 /* { dg-final { scan-tree-dump-not "return 6;" "optimized" } } */
 /* { dg-final { scan-tree-dump-not "return 7;" "optimized" } } */
 /* { dg-final { scan-tree-dump-not "return -1;" "optimized" } } */
-/* { dg-final { cleanup-tree-dump "fre" } } */
+/* { dg-final { cleanup-tree-dump "fre1" } } */
 /* { dg-final { cleanup-tree-dump "optimized" } } */

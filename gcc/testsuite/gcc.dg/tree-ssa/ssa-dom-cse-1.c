@@ -1,5 +1,5 @@
 /* { dg-do compile } */ 
-/* { dg-options "-O2 -fdump-tree-fre-details" } */
+/* { dg-options "-O2 -fdump-tree-fre1-details" } */
 int t(int a) __attribute__ ((const));
 void q (void);
 void
@@ -12,5 +12,5 @@ threading(int a,int b)
 	}
 }
 /* We should thread the jump twice and eliminate it.  */
-/* { dg-final { scan-tree-dump-times "Replaced.* t " 1 "fre"} } */
-/* { dg-final { cleanup-tree-dump "fre" } } */
+/* { dg-final { scan-tree-dump-times "Replaced.* t " 1 "fre1"} } */
+/* { dg-final { cleanup-tree-dump "fre1" } } */

@@ -762,6 +762,7 @@ init_optimization_passes (void)
 	     locals into SSA form if possible.  */
 	  NEXT_PASS (pass_build_ealias);
 	  NEXT_PASS (pass_sra_early);
+	  NEXT_PASS (pass_fre);
 	  NEXT_PASS (pass_copy_prop);
 	  NEXT_PASS (pass_merge_phi);
 	  NEXT_PASS (pass_cd_dce);

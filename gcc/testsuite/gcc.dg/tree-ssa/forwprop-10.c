@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O -fdump-tree-fre-details" } */
+/* { dg-options "-O -fdump-tree-fre1-details" } */
 
 int b;
 unsigned a;
@@ -18,5 +18,5 @@ void test2(void)
    conversion to int.  FRE should then be able to replace
    the rhs of the store to b by 1.  */
 
-/* { dg-final { scan-tree-dump "Replaced\[^\\n\]*with 1" "fre" } } */
-/* { dg-final { cleanup-tree-dump "fre" } } */
+/* { dg-final { scan-tree-dump "Replaced\[^\\n\]*with 1" "fre1" } } */
+/* { dg-final { cleanup-tree-dump "fre1" } } */

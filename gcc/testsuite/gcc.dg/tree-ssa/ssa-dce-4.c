@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O -fdump-tree-cddce1" } */
+/* { dg-options "-O -fno-tree-fre -fdump-tree-cddce1" } */
 
 int foo(int b)
 {
@@ -14,5 +14,7 @@ int foo(int b)
   return a[2] + b;
 }
 
+/* Verify DCE removes all accesses to a but the last store and the
+   read from a[2].  */
 /* { dg-final { scan-tree-dump-times "a\\\[\[^\n\]\\\]" 2 "cddce1" } } */
 /* { dg-final { cleanup-tree-dump "cddce1" } } */

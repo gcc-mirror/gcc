@@ -1,5 +1,5 @@
 /* { dg-do compile } */ 
-/* { dg-options "-O2 -fdump-tree-pre-stats -fdump-tree-fre" } */
+/* { dg-options "-O2 -fdump-tree-pre-stats -fdump-tree-fre1" } */
 #include <stddef.h>
 
 union tree_node;
@@ -73,8 +73,8 @@ main (void)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-not "= unexpanded_var_list;" "fre" } } */
+/* { dg-final { scan-tree-dump-not "= unexpanded_var_list;" "fre1" } } */
 /* { dg-final { scan-tree-dump-times "Eliminated: 1" 1 "pre" } } */
 /* { dg-final { scan-tree-dump-times "Insertions: 2" 1 "pre" } } */
-/* { dg-final { cleanup-tree-dump "fre" } } */
+/* { dg-final { cleanup-tree-dump "fre1" } } */
 /* { dg-final { cleanup-tree-dump "pre" } } */

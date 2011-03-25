@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O -fdump-tree-fre" } */
+/* { dg-options "-O -fdump-tree-fre1" } */
 
 struct a
 {
@@ -24,5 +24,5 @@ int f(struct a *c)
 
 /* We should have CSEd the load from c->a.  */
 
-/* { dg-final { scan-tree-dump-times "c_.*\\\.a" 1 "fre" } } */
-/* { dg-final { cleanup-tree-dump "fre" } } */
+/* { dg-final { scan-tree-dump-times "c_.*\\\.a" 1 "fre1" } } */
+/* { dg-final { cleanup-tree-dump "fre1" } } */

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O1 -fstrict-aliasing -fdump-tree-fre" } */
+/* { dg-options "-O1 -fstrict-aliasing -fdump-tree-fre1" } */
 
 __extension__ typedef __SIZE_TYPE__ size_t;
 extern void *xmalloc (size_t) __attribute__ ((__malloc__));
@@ -34,5 +34,5 @@ find_unreachable_blocks (void)
    able to determine that modifying e->dest->flags does not
    modify e or e->dest if we can assert strict-aliasing rules.
    The net result is that we only need one load of e->dest.  */
-/* { dg-final { scan-tree-dump-times "->dest" 1 "fre" } } */
-/* { dg-final { cleanup-tree-dump "fre" } } */
+/* { dg-final { scan-tree-dump-times "->dest" 1 "fre1" } } */
+/* { dg-final { cleanup-tree-dump "fre1" } } */
