@@ -210,7 +210,7 @@ target_libraries="target-libgcc \
 # list belongs in this list.  those programs are also very likely
 # candidates for the "native_only" list which follows
 #
-target_tools="target-examples target-groff target-gperf target-rda"
+target_tools="target-examples target-gperf target-rda"
 
 ################################################################################
 
@@ -298,7 +298,7 @@ esac
 
 # Some tools are only suitable for building in a "native" situation.
 # Remove these if host!=target.  
-native_only="autoconf automake libtool fileutils find gawk gettext gzip hello indent m4 rcs recode sed shellutils tar textutils uudecode wdiff target-groff guile perl time ash bash bzip2 prms gnuserv target-gperf"
+native_only="autoconf automake libtool fileutils find gawk gettext gzip hello indent m4 rcs recode sed shellutils tar textutils uudecode wdiff guile perl time ash bash bzip2 prms gnuserv target-gperf"
 
 # Similarly, some are only suitable for cross toolchains.
 # Remove these if host=target.
@@ -426,9 +426,6 @@ unsupported_languages=
 # exist yet.
 
 case "${host}" in
-  hppa*64*-*-*)
-    noconfigdirs="$noconfigdirs byacc"
-    ;;
   i[[3456789]]86-*-msdosdjgpp*)
     noconfigdirs="$noconfigdirs tcl tk expect dejagnu send-pr uudecode guile itcl gnuserv libffi"
     ;;
@@ -436,7 +433,6 @@ case "${host}" in
     noconfigdirs="$noconfigdirs expect dejagnu autoconf automake send-pr rcs guile perl texinfo libtool newlib"
     ;;
   i[[3456789]]86-*-mingw32*)
-    # noconfigdirs="tcl tk expect dejagnu make texinfo bison patch flex byacc send-pr uudecode dejagnu diff guile perl itcl gnuserv"
     noconfigdirs="$noconfigdirs expect dejagnu autoconf automake send-pr rcs guile perl texinfo libtool newlib"
     ;;
   *-*-cygwin*)
@@ -583,8 +579,8 @@ case "${target}" in
     ;;
   *-*-kaos*)
     # Remove unsupported stuff on all kaOS configurations.
-    skipdirs="target-libiberty ${libgcj} target-libstdc++-v3 target-librx"
-    skipdirs="$skipdirs target-libobjc target-examples target-groff target-gperf"
+    skipdirs="target-libiberty ${libgcj} target-libstdc++-v3"
+    skipdirs="$skipdirs target-libobjc target-examples target-gperf"
     skipdirs="$skipdirs zlib fastjar target-libjava target-boehm-gc target-zlib"
     noconfigdirs="$noconfigdirs target-libgloss"
     ;;
@@ -602,7 +598,7 @@ case "${target}" in
     esac
     ;;
   *-*-netware*)
-    noconfigdirs="$noconfigdirs target-newlib target-libiberty target-libgloss ${libgcj} target-libmudflap"
+    noconfigdirs="$noconfigdirs target-newlib target-libiberty target-libgloss ${libgcj}"
     ;;
   *-*-rtems*)
     skipdirs="${skipdirs} target-libiberty"
@@ -610,7 +606,7 @@ case "${target}" in
     ;;
     # The tpf target doesn't support gdb yet.
   *-*-tpf*)
-    noconfigdirs="$noconfigdirs target-newlib target-libgloss target-libiberty ${libgcj} target-libmudflap gdb tcl tk libgui itcl"
+    noconfigdirs="$noconfigdirs target-newlib target-libgloss target-libiberty ${libgcj} gdb tcl tk libgui itcl"
     ;;
   *-*-uclinux*)
     noconfigdirs="$noconfigdirs target-newlib target-libgloss target-rda ${libgcj}"
@@ -650,11 +646,6 @@ case "${target}" in
     # the C++ libraries don't build on top of CE's C libraries
     noconfigdirs="$noconfigdirs target-libstdc++-v3"
     noconfigdirs="$noconfigdirs target-newlib"
-    case "${host}" in
-      *-*-cygwin*) ;; # keep gdb and readline
-      *) noconfigdirs="$noconfigdirs gdb readline"
-	 ;;
-    esac
     libgloss_dir=wince
     ;;
   arc-*-*)
@@ -782,7 +773,7 @@ case "${target}" in
     ;;
   ia64*-*-*vms*)
     # No gdb or ld support yet.
-    noconfigdirs="$noconfigdirs ${libgcj} tix readline mmalloc libgui itcl gdb ld"
+    noconfigdirs="$noconfigdirs ${libgcj} readline mmalloc libgui itcl gdb ld"
     ;;
   i[[3456789]]86-*-coff | i[[3456789]]86-*-elf)
     noconfigdirs="$noconfigdirs ${libgcj}"
@@ -956,10 +947,6 @@ case "${target}" in
     noconfigdirs="$noconfigdirs bfd binutils ld gas opcodes target-libgloss ${libgcj}"
     ;;
   sh-*-* | sh64-*-*)
-    case "${host}" in
-      i[[3456789]]86-*-msdosdjgpp*) ;; # don't add gprof back in
-      *) skipdirs=`echo " ${skipdirs} " | sed -e 's/ gprof / /'` ;;
-    esac
     case "${target}" in
       sh*-*-elf)
          noconfigdirs="$noconfigdirs ${libgcj}" ;;

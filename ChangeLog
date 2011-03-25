@@ -1,3 +1,20 @@
+2011-03-25  Joseph Myers  <joseph@codesourcery.com>
+
+	* configure.ac (target_tools): Remove target-groff.
+	(native_only): Remove target-groff.
+	(hppa*64*-*-*): Don't disable byacc.
+	(i[[3456789]]86-*-mingw32*): Remove commented-out noconfigdirs
+	setting.
+	(*-*-kaos*): Don't skip target-librx and target-groff.
+	(*-*-netware*): Don't skip target-libmudflap.
+	(*-*-tpf*): Don't skip target-libmudflap.
+	(sh*-*-pe|mips*-*-pe|*arm-wince-pe): Don't condition configured
+	directories on the host.
+	(ia64*-*-*vms*): Don't skip tix.
+	(sh-*-* | sh64-*-*): Don't condition skipped directories on the
+	host.
+	* configure: Regenerate.
+
 2011-03-24  Paolo Bonzini  <pbonzini@redhat.com>
 
 	* configure.ac: Remove references to mt-mep, mt-netware,
