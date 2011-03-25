@@ -2474,6 +2474,8 @@ check_for_override (tree decl, tree ctype)
       if (!DECL_VINDEX (decl))
 	DECL_VINDEX (decl) = error_mark_node;
       IDENTIFIER_VIRTUAL_P (DECL_NAME (decl)) = 1;
+      if (DECL_DESTRUCTOR_P (decl))
+	TYPE_HAS_NONTRIVIAL_DESTRUCTOR (ctype) = true;
     }
 }
 

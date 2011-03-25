@@ -1554,6 +1554,12 @@ defaulted_late_check (tree fn)
   if (DECL_DEFAULTED_IN_CLASS_P (fn))
     {
       tree eh_spec = TYPE_RAISES_EXCEPTIONS (TREE_TYPE (implicit_fn));
+      if (TYPE_RAISES_EXCEPTIONS (TREE_TYPE (fn))
+	  && !comp_except_specs (TYPE_RAISES_EXCEPTIONS (TREE_TYPE (fn)),
+				 eh_spec, ce_normal))
+	error ("function %q+D defaulted on its first declaration "
+	       "with an exception-specification that differs from "
+	       "the implicit declaration %q#D", fn, implicit_fn);
       TREE_TYPE (fn) = build_exception_variant (TREE_TYPE (fn), eh_spec);
       if (DECL_DECLARED_CONSTEXPR_P (implicit_fn))
 	/* Hmm...should we do this for out-of-class too? Should it be OK to
@@ -1619,14 +1625,7 @@ defaultable_fn_check (tree fn)
 	    break;
 	  }
       if (TYPE_BEING_DEFINED (DECL_CONTEXT (fn)))
-	{
-	  if (TYPE_RAISES_EXCEPTIONS (TREE_TYPE (fn)))
-	    error ("function %q+D defaulted on its first declaration "
-		   "must not have an exception-specification", fn);
-	  if (DECL_VIRTUAL_P (fn))
-	    error ("%qD declared virtual cannot be defaulted in the class "
-		   "body", fn);
-	}
+	/* Defer checking.  */;
       else if (!processing_template_decl)
 	defaulted_late_check (fn);
 

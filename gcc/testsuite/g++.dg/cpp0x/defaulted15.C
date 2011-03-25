@@ -54,5 +54,5 @@ struct G: public F
 
 struct H
 {
-  virtual ~H() = default;	// { dg-error "declared virtual" }
+  virtual ~H() = default;
 };

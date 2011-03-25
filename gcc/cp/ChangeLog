@@ -1,5 +1,10 @@
 2011-03-25  Jason Merrill  <jason@redhat.com>
 
+	Core 1135
+	* method.c (defaulted_late_check): Check for exception spec mismatch.
+	(defaultable_fn_check): Allow exception spec and virtual.
+	* class.c (check_for_override): A virtual dtor is non-trivial.
+
 	PR c++/48289
 	* pt.c (build_non_dependent_expr): Keep dereferences outside the
 	NON_DEPENDENT_EXPR.
