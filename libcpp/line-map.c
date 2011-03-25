@@ -138,7 +138,7 @@ linemap_add (struct line_maps *set, enum lc_reason reason,
       else
 	{
 	  from = INCLUDED_FROM (set, map - 1);
-	  error = to_file && strcmp (from->to_file, to_file);
+	  error = to_file && filename_cmp (from->to_file, to_file);
 	}
 
       /* Depending upon whether we are handling preprocessed input or
