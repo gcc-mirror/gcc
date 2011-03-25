@@ -28,6 +28,7 @@
 #include "xregex.h"
 #include "obstack.h"
 #include "gengtype.h"
+#include "filenames.h"
 
 /* Data types, macros, etc. used only in this file.  */
 
@@ -429,6 +430,12 @@ read_input_list (const char *listname)
 	lang_bitmap bitmap = get_lang_bitmap (gt_files[f]);
 	const char *basename = get_file_basename (gt_files[f]);
 	const char *slashpos = strchr (basename, '/');
+#ifdef HAVE_DOS_BASED_FILE_SYSTEM
+	const char *slashpos2 = strchr (basename, '\\');
+
+	if (!slashpos || (slashpos2 && slashpos2 < slashpos))
+	  slashpos = slashpos2;
+#endif
 
 	if (slashpos)
 	  {
@@ -1573,10 +1580,7 @@ open_base_files (void)
 static const char *
 get_file_realbasename (const input_file *inpf)
 {
-  const char *f = get_input_file_name (inpf);
-  const char *lastslash = strrchr (f, '/');
-
-  return (lastslash != NULL) ? lastslash + 1 : f;
+  return lbasename (get_input_file_name (inpf));
 }
 
 /* For INPF a filename, return the relative path to INPF from
@@ -2081,7 +2085,7 @@ get_output_file_with_visibility (input_file *inpf)
   /* Look through to see if we've ever seen this output filename
      before.  If found, cache the result in inpf.  */
   for (r = output_files; r; r = r->next)
-    if (strcmp (r->name, output_name) == 0)
+    if (filename_cmp (r->name, output_name) == 0)
       {
 	inpf->inpoutf = r;
 	DBGPRINTF ("found r @ %p for output_name %s for_name %s", (void*)r,
@@ -4831,7 +4835,7 @@ htab_eq_inputfile (const void *x, const void *y)
   const input_file *inpfx = (const input_file *) x;
   const input_file *inpfy = (const input_file *) y;
   gcc_assert (inpfx != NULL && inpfy != NULL);
-  return !strcmp (get_input_file_name (inpfx), get_input_file_name (inpfy));
+  return !filename_cmp (get_input_file_name (inpfx), get_input_file_name (inpfy));
 }
 
 

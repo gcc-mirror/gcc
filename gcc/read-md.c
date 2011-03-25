@@ -985,14 +985,14 @@ handle_file (directive_handler_t handle_directive)
 static void
 handle_toplevel_file (directive_handler_t handle_directive)
 {
-  char *lastsl;
+  const char *base;
 
   in_fname = read_md_filename;
-  lastsl = strrchr (in_fname, '/');
-  if (lastsl != NULL)
-    base_dir = xstrndup (in_fname, lastsl - in_fname + 1);
-  else
+  base = lbasename (in_fname);
+  if (base == in_fname)
     base_dir = NULL;
+  else
+    base_dir = xstrndup (in_fname, base - in_fname);
 
   handle_file (handle_directive);
 }

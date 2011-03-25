@@ -30,6 +30,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
+#include "filenames.h"
 
 /* TARGET_64BIT may be defined to use driver specific functionality. */
 #undef TARGET_64BIT
@@ -2314,12 +2315,8 @@ write_c_file_stat (FILE *stream, const char *name ATTRIBUTE_UNUSED)
   int frames = (frame_tables.number > 0);
 
   /* Figure out name of output_file, stripping off .so version.  */
-  p = strrchr (output_file, '/');
-  if (p == 0)
-    p = output_file;
-  else
-    p++;
-  q = p;
+  q = p = lbasename (output_file);
+
   while (q)
     {
       q = strchr (q,'.');
@@ -2330,7 +2327,7 @@ write_c_file_stat (FILE *stream, const char *name ATTRIBUTE_UNUSED)
 	}
       else
 	{
-	  if (strncmp (q, SHLIB_SUFFIX, strlen (SHLIB_SUFFIX)) == 0)
+	  if (filename_ncmp (q, SHLIB_SUFFIX, strlen (SHLIB_SUFFIX)) == 0)
 	    {
 	      q += strlen (SHLIB_SUFFIX);
 	      break;
@@ -3192,10 +3189,10 @@ resolve_lib_name (const char *name)
       for (; list; list = list->next)
 	{
 	  /* The following lines are needed because path_prefix list
-	     may contain directories both with trailing '/' and
+	     may contain directories both with trailing DIR_SEPARATOR and
 	     without it.  */
 	  const char *p = "";
-	  if (list->prefix[strlen(list->prefix)-1] != '/')
+	  if (!IS_DIR_SEPARATOR (list->prefix[strlen(list->prefix)-1]))
 	    p = "/";
 	  for (j = 0; j < 2; j++)
 	    {

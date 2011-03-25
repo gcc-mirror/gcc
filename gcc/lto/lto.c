@@ -345,7 +345,7 @@ lto_resolution_read (splay_tree file_ids, FILE *resolution, lto_file *file)
 
   fread (obj_name, sizeof (char), name_len, resolution);
   obj_name[name_len] = '\0';
-  if (strcmp (obj_name, file->filename) != 0)
+  if (filename_cmp (obj_name, file->filename) != 0)
     internal_error ("unexpected file name %s in linker resolution file. "
 		    "Expected %s", obj_name, file->filename);
   if (file->offset != 0)
@@ -582,7 +582,7 @@ lto_read_section_data (struct lto_file_decl_data *file_data,
      or rather fix function body streaming to not stream them in
      practically random order.  */
   if (fd != -1
-      && strcmp (fd_name, file_data->file_name) != 0)
+      && filename_cmp (fd_name, file_data->file_name) != 0)
     {
       free (fd_name);
       close (fd);

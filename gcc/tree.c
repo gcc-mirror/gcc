@@ -41,6 +41,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "toplev.h"
 #include "ggc.h"
 #include "hashtab.h"
+#include "filenames.h"
 #include "output.h"
 #include "target.h"
 #include "langhooks.h"
@@ -8612,12 +8613,7 @@ get_file_function_name (const char *type)
 	file = input_filename;
       /* Just use the file's basename, because the full pathname
 	 might be quite long.  */
-      p = strrchr (file, '/');
-      if (p)
-	p++;
-      else
-	p = file;
-      p = q = ASTRDUP (p);
+      p = q = ASTRDUP (lbasename (file));
     }
   else
     {
