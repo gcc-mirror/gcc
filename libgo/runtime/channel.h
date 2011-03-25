@@ -50,9 +50,6 @@ struct __go_channel
   _Bool selected_for_receive;
   /* True if this channel has been closed.  */
   _Bool is_closed;
-  /* True if at least one null value has been read from a closed
-     channel.  */
-  _Bool saw_close;
   /* The list of select statements waiting to send on a synchronous
      channel.  */
   struct __go_channel_select *select_send_queue;

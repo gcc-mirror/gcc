@@ -124,7 +124,6 @@ __go_receive_acquire (struct __go_channel *channel, _Bool for_select)
 	      ? channel->next_store == 0
 	      : channel->next_fetch == channel->next_store))
 	{
-	  channel->saw_close = 1;
 	  channel->selected_for_receive = 0;
 	  __go_unlock_and_notify_selects (channel);
 	  return 0;

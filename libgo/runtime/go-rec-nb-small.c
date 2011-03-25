@@ -32,7 +32,6 @@ __go_receive_nonblocking_acquire (struct __go_channel *channel)
 	  ? channel->next_store == 0
 	  : channel->next_fetch == channel->next_store))
     {
-      channel->saw_close = 1;
       __go_unlock_and_notify_selects (channel);
       return RECEIVE_NONBLOCKING_ACQUIRE_CLOSED;
     }

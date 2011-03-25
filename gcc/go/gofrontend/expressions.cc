@@ -6530,7 +6530,6 @@ class Builtin_call_expression : public Call_expression
       BUILTIN_APPEND,
       BUILTIN_CAP,
       BUILTIN_CLOSE,
-      BUILTIN_CLOSED,
       BUILTIN_COMPLEX,
       BUILTIN_COPY,
       BUILTIN_IMAG,
@@ -6588,8 +6587,6 @@ Builtin_call_expression::Builtin_call_expression(Gogo* gogo,
     this->code_ = BUILTIN_CAP;
   else if (name == "close")
     this->code_ = BUILTIN_CLOSE;
-  else if (name == "closed")
-    this->code_ = BUILTIN_CLOSED;
   else if (name == "complex")
     this->code_ = BUILTIN_COMPLEX;
   else if (name == "copy")
@@ -7185,9 +7182,6 @@ Builtin_call_expression::do_type()
     case BUILTIN_PRINTLN:
       return Type::make_void_type();
 
-    case BUILTIN_CLOSED:
-      return Type::lookup_bool_type();
-
     case BUILTIN_RECOVER:
       return Type::make_interface_type(NULL, BUILTINS_LOCATION);
 
@@ -7451,7 +7445,6 @@ Builtin_call_expression::do_check_types(Gogo*)
       break;
 
     case BUILTIN_CLOSE:
-    case BUILTIN_CLOSED:
       if (this->check_one_arg())
 	{
 	  if (this->one_arg()->type()->channel_type() == NULL)
@@ -7936,7 +7929,6 @@ Builtin_call_expression::do_get_tree(Translate_context* context)
       }
 
     case BUILTIN_CLOSE:
-    case BUILTIN_CLOSED:
       {
 	const Expression_list* args = this->args();
 	gcc_assert(args != NULL && args->size() == 1);
@@ -7944,28 +7936,14 @@ Builtin_call_expression::do_get_tree(Translate_context* context)
 	tree arg_tree = arg->get_tree(context);
 	if (arg_tree == error_mark_node)
 	  return error_mark_node;
-	if (this->code_ == BUILTIN_CLOSE)
-	  {
-	    static tree close_fndecl;
-	    return Gogo::call_builtin(&close_fndecl,
-				      location,
-				      "__go_builtin_close",
-				      1,
-				      void_type_node,
-				      TREE_TYPE(arg_tree),
-				      arg_tree);
-	  }
-	else
-	  {
-	    static tree closed_fndecl;
-	    return Gogo::call_builtin(&closed_fndecl,
-				      location,
-				      "__go_builtin_closed",
-				      1,
-				      boolean_type_node,
-				      TREE_TYPE(arg_tree),
-				      arg_tree);
-	  }
+	static tree close_fndecl;
+	return Gogo::call_builtin(&close_fndecl,
+				  location,
+				  "__go_builtin_close",
+				  1,
+				  void_type_node,
+				  TREE_TYPE(arg_tree),
+				  arg_tree);
       }
 
     case BUILTIN_SIZEOF:

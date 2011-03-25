@@ -358,7 +358,6 @@ runtime_files = \
 	runtime/go-chan-len.c \
 	runtime/go-check-interface.c \
 	runtime/go-close.c \
-	runtime/go-closed.c \
 	runtime/go-construct-map.c \
 	runtime/go-convert-interface.c \
 	runtime/go-copy.c \
