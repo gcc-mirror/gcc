@@ -1463,6 +1463,7 @@ class Check_types_traverse : public Traverse
   Check_types_traverse(Gogo* gogo)
     : Traverse(traverse_variables
 	       | traverse_constants
+	       | traverse_functions
 	       | traverse_statements
 	       | traverse_expressions),
       gogo_(gogo)
@@ -1473,6 +1474,9 @@ class Check_types_traverse : public Traverse
 
   int
   constant(Named_object*, bool);
+
+  int
+  function(Named_object*);
 
   int
   statement(Block*, size_t* pindex, Statement*);
@@ -1539,6 +1543,16 @@ Check_types_traverse::constant(Named_object* named_object, bool)
 	       "initialization expression has wrong type");
       constant->set_error();
     }
+  return TRAVERSE_CONTINUE;
+}
+
+// There are no types to check in a function, but this is where we
+// issue warnings about labels which are defined but not referenced.
+
+int
+Check_types_traverse::function(Named_object* no)
+{
+  no->func_value()->check_labels();
   return TRAVERSE_CONTINUE;
 }
 
@@ -2744,7 +2758,7 @@ Function::add_label_definition(const std::string& label_name,
 	}
       else
 	{
-	  error_at(location, "redefinition of label %qs",
+	  error_at(location, "label %qs already defined",
 		   Gogo::message_name(label_name).c_str());
 	  inform(label->location(), "previous definition of %qs was here",
 		 Gogo::message_name(label_name).c_str());
@@ -2764,14 +2778,33 @@ Function::add_label_reference(const std::string& label_name)
   if (!ins.second)
     {
       // The label was already in the hash table.
-      return ins.first->second;
+      Label* label = ins.first->second;
+      label->set_is_used();
+      return label;
     }
   else
     {
       gcc_assert(ins.first->second == NULL);
       Label* label = new Label(label_name);
       ins.first->second = label;
+      label->set_is_used();
       return label;
+    }
+}
+
+// Warn about labels that are defined but not used.
+
+void
+Function::check_labels() const
+{
+  for (Labels::const_iterator p = this->labels_.begin();
+       p != this->labels_.end();
+       p++)
+    {
+      Label* label = p->second;
+      if (!label->is_used())
+	error_at(label->location(), "label %qs defined and not used",
+		 Gogo::message_name(label->name()).c_str());
     }
 }
 
