@@ -130,7 +130,7 @@ apply_vpath (struct deps *d, const char *t)
       unsigned int i;
       for (i = 0; i < d->nvpaths; i++)
 	{
-	  if (!strncmp (d->vpathv[i], t, d->vpathlv[i]))
+	  if (!filename_ncmp (d->vpathv[i], t, d->vpathlv[i]))
 	    {
 	      const char *p = t + d->vpathlv[i];
 	      if (!IS_DIR_SEPARATOR (*p))
@@ -421,7 +421,7 @@ deps_restore (struct deps *deps, FILE *fd, const char *self)
       buf[num_to_read] = '\0';
 
       /* Generate makefile dependencies from .pch if -nopch-deps.  */
-      if (self != NULL && strcmp (buf, self) != 0)
+      if (self != NULL && filename_cmp (buf, self) != 0)
         deps_add_dep (deps, buf);
     }
 
