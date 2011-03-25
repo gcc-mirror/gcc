@@ -207,8 +207,7 @@ target_libraries="target-libgcc \
 # run only in the target environment
 #
 # note: any program that *uses* libraries that are in the "target_libraries"
-# list belongs in this list.  those programs are also very likely
-# candidates for the "native_only" list which follows
+# list belongs in this list.
 #
 target_tools="target-examples target-gperf target-rda"
 
@@ -296,17 +295,12 @@ case ${with_x} in
   *)  echo "*** bad value \"${with_x}\" for -with-x flag; ignored" 1>&2 ;;
 esac
 
-# Some tools are only suitable for building in a "native" situation.
-# Remove these if host!=target.  
-native_only="autoconf automake libtool fileutils find gawk gettext gzip hello indent m4 rcs recode sed shellutils tar textutils uudecode wdiff guile perl time ash bash bzip2 prms gnuserv target-gperf"
-
-# Similarly, some are only suitable for cross toolchains.
+# Some are only suitable for cross toolchains.
 # Remove these if host=target.
 cross_only="target-libgloss target-newlib target-opcodes"
 
 case $is_cross_compiler in
   no) skipdirs="${skipdirs} ${cross_only}" ;;
-  yes) skipdirs="${skipdirs} ${native_only}" ;;
 esac
 
 # If both --with-headers and --with-libs are specified, default to
@@ -427,19 +421,13 @@ unsupported_languages=
 
 case "${host}" in
   i[[3456789]]86-*-msdosdjgpp*)
-    noconfigdirs="$noconfigdirs tcl tk expect dejagnu send-pr uudecode guile itcl gnuserv libffi"
+    noconfigdirs="$noconfigdirs tcl tk itcl libffi"
     ;;
   x86_64-*-mingw*)
-    noconfigdirs="$noconfigdirs expect dejagnu autoconf automake send-pr rcs guile perl texinfo libtool newlib"
+    noconfigdirs="$noconfigdirs newlib"
     ;;
   i[[3456789]]86-*-mingw32*)
-    noconfigdirs="$noconfigdirs expect dejagnu autoconf automake send-pr rcs guile perl texinfo libtool newlib"
-    ;;
-  *-*-cygwin*)
-    noconfigdirs="$noconfigdirs autoconf automake send-pr rcs guile perl"
-    ;;
-  *-*-netbsd*)
-    noconfigdirs="$noconfigdirs rcs"
+    noconfigdirs="$noconfigdirs newlib"
     ;;
 esac
 
@@ -580,7 +568,7 @@ case "${target}" in
   *-*-kaos*)
     # Remove unsupported stuff on all kaOS configurations.
     skipdirs="target-libiberty ${libgcj} target-libstdc++-v3"
-    skipdirs="$skipdirs target-libobjc target-examples target-gperf"
+    skipdirs="$skipdirs target-libobjc"
     skipdirs="$skipdirs zlib fastjar target-libjava target-boehm-gc target-zlib"
     noconfigdirs="$noconfigdirs target-libgloss"
     ;;
@@ -616,9 +604,9 @@ case "${target}" in
     ;;
   alpha*-dec-osf*)
     # ld works, but does not support shared libraries.
-    # newlib is not 64 bit ready.  I'm not sure about fileutils.
+    # newlib is not 64 bit ready.
     # gas doesn't generate exception information.
-    noconfigdirs="$noconfigdirs gas ld fileutils target-newlib target-libgloss"
+    noconfigdirs="$noconfigdirs gas ld target-newlib target-libgloss"
     ;;
   alpha*-*-*vms*)
     noconfigdirs="$noconfigdirs gdb target-newlib target-libgloss ${libgcj}"
@@ -639,10 +627,8 @@ case "${target}" in
     ;;    
   sh*-*-pe|mips*-*-pe|*arm-wince-pe)
     noconfigdirs="$noconfigdirs ${libgcj}"
-    noconfigdirs="$noconfigdirs target-examples"
-    noconfigdirs="$noconfigdirs target-libiberty texinfo send-pr"
+    noconfigdirs="$noconfigdirs target-libiberty"
     noconfigdirs="$noconfigdirs tcl tk itcl libgui sim"
-    noconfigdirs="$noconfigdirs expect dejagnu"
     # the C++ libraries don't build on top of CE's C libraries
     noconfigdirs="$noconfigdirs target-libstdc++-v3"
     noconfigdirs="$noconfigdirs target-newlib"
@@ -656,11 +642,11 @@ case "${target}" in
     libgloss_dir=arm
     ;;
   arm-*-elf* | arm*-*-eabi* )
-    noconfigdirs="$noconfigdirs target-libffi target-qthreads"
+    noconfigdirs="$noconfigdirs target-libffi"
     libgloss_dir=arm
     ;;
   arm*-*-linux-gnueabi)
-    noconfigdirs="$noconfigdirs target-qthreads"
+    noconfigdirs="$noconfigdirs"
     case ${with_newlib} in
       no) noconfigdirs="$noconfigdirs target-newlib target-libgloss"
     esac
@@ -750,7 +736,7 @@ case "${target}" in
     noconfigdirs="$noconfigdirs ${libgcj}"
     ;;
   hppa*-hp-hpux11*)
-    noconfigdirs="$noconfigdirs ld shellutils"
+    noconfigdirs="$noconfigdirs ld"
     ;;
   hppa*-*-pro*)
     libgloss_dir=pa
@@ -758,14 +744,14 @@ case "${target}" in
   hppa*-*-*)
     # According to Alexandre Oliva <aoliva@redhat.com>, libjava won't
     # build on HP-UX 10.20.
-    noconfigdirs="$noconfigdirs ld shellutils ${libgcj}"
+    noconfigdirs="$noconfigdirs ld ${libgcj}"
     ;;
   i960-*-*)
     noconfigdirs="$noconfigdirs ${libgcj} gdb"
     ;;
   ia64*-*-elf*)
     # No gdb support yet.
-    noconfigdirs="$noconfigdirs readline mmalloc libgui itcl gdb"
+    noconfigdirs="$noconfigdirs readline libgui itcl gdb"
     ;;
   ia64*-**-hpux*)
     # No ld support yet.
@@ -773,7 +759,7 @@ case "${target}" in
     ;;
   ia64*-*-*vms*)
     # No gdb or ld support yet.
-    noconfigdirs="$noconfigdirs ${libgcj} readline mmalloc libgui itcl gdb ld"
+    noconfigdirs="$noconfigdirs ${libgcj} readline libgui itcl gdb ld"
     ;;
   i[[3456789]]86-*-coff | i[[3456789]]86-*-elf)
     noconfigdirs="$noconfigdirs ${libgcj}"
@@ -799,18 +785,18 @@ case "${target}" in
     # 'target-newlib' will appear in skipdirs.
     ;;
   i[[3456789]]86-w64-mingw*)
-    noconfigdirs="$noconfigdirs expect target-libgloss target-newlib ${libgcj}"
+    noconfigdirs="$noconfigdirs target-libgloss target-newlib ${libgcj}"
     ;;
   i[[3456789]]86-*-mingw*)
     target_configdirs="$target_configdirs target-winsup"
-    noconfigdirs="$noconfigdirs expect target-libgloss target-newlib ${libgcj}"
+    noconfigdirs="$noconfigdirs target-libgloss target-newlib ${libgcj}"
     ;;
   x86_64-*-mingw*)
-    noconfigdirs="$noconfigdirs expect target-libgloss target-newlib ${libgcj}"
+    noconfigdirs="$noconfigdirs target-libgloss target-newlib ${libgcj}"
     ;;
   *-*-cygwin*)
     target_configdirs="$target_configdirs target-libtermcap target-winsup"
-    noconfigdirs="$noconfigdirs target-gperf target-libgloss"
+    noconfigdirs="$noconfigdirs target-libgloss"
     # always build newlib if winsup directory is present.
     if test -d "$srcdir/winsup/cygwin"; then
       skipdirs=`echo " ${skipdirs} " | sed -e 's/ target-newlib / /'`
@@ -881,13 +867,13 @@ case "${target}" in
     ;;
   powerpc*-*-winnt* | powerpc*-*-pe*)
     target_configdirs="$target_configdirs target-winsup"
-    noconfigdirs="$noconfigdirs gdb tcl tk make expect target-libgloss itcl gnuserv ${libgcj}"
+    noconfigdirs="$noconfigdirs gdb tcl tk target-libgloss itcl ${libgcj}"
     # always build newlib.
     skipdirs=`echo " ${skipdirs} " | sed -e 's/ target-newlib / /'`
     ;;
     # This is temporary until we can link against shared libraries
   powerpcle-*-solaris*)
-    noconfigdirs="$noconfigdirs gdb sim make tcl tk expect itcl gnuserv ${libgcj}"
+    noconfigdirs="$noconfigdirs gdb sim tcl tk itcl ${libgcj}"
     libgloss_dir=rs6000
     ;;
   powerpc-*-beos*)
