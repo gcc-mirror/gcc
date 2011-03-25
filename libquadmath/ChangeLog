@@ -1,3 +1,8 @@
+2011-03-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* printf/printf_fp.c (__quadmath_printf_fp): Use memcpy instead of
+	mempcpy.
+
 2011-03-21  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR bootstrap/48135
