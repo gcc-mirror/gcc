@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O -fdump-tree-fre-details" } */
+/* { dg-options "-O -fdump-tree-fre1-details" } */
 
 /* From PR19792.  */
 
@@ -10,5 +10,5 @@ bar (unsigned int t)
   return a == t;
 }
 
-/* { dg-final { scan-tree-dump "Replaced \\\(unsigned int\\\) a_.*with t_" "fre" } } */
-/* { dg-final { cleanup-tree-dump "fre" } } */
+/* { dg-final { scan-tree-dump "Replaced \\\(unsigned int\\\) a_.*with t_" "fre1" } } */
+/* { dg-final { cleanup-tree-dump "fre1" } } */

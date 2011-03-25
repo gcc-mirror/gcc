@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O -fdump-tree-fre" } */
+/* { dg-options "-O -fdump-tree-fre1" } */
 
 struct f {
   float a;
@@ -22,5 +22,5 @@ void g(void)
   h(a1, b, c, d);
 }
 
-/* { dg-final { scan-tree-dump-not "a\\\.? = " "fre" } } */
-/* { dg-final { cleanup-tree-dump "fre" } } */
+/* { dg-final { scan-tree-dump-not "a\\\.? = " "fre1" } } */
+/* { dg-final { cleanup-tree-dump "fre1" } } */

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O -fno-tree-sra -fdump-tree-fre-stats" } */
+/* { dg-options "-O -fno-tree-sra -fdump-tree-fre1-stats" } */
 
 union loc {
     unsigned reg;
@@ -23,6 +23,6 @@ void __frame_state_for1 (volatile char *state_in)
     }
 }
 
-/* { dg-final { scan-tree-dump-times "Eliminated: 1" 2 "fre" } } */
-/* { dg-final { scan-tree-dump-times "Insertions: 1" 2 "fre" } } */
-/* { dg-final { cleanup-tree-dump "fre" } } */
+/* { dg-final { scan-tree-dump-times "Eliminated: 1" 2 "fre1" } } */
+/* { dg-final { scan-tree-dump-times "Insertions: 1" 2 "fre1" } } */
+/* { dg-final { cleanup-tree-dump "fre1" } } */

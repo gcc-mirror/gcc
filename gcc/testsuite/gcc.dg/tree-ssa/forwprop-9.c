@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O1 -fdump-tree-optimized -fdump-tree-fre -W -Wall -fno-early-inlining" } */
+/* { dg-options "-O1 -fdump-tree-optimized -fdump-tree-fre1 -W -Wall -fno-early-inlining" } */
 
 int b;
 unsigned a;
@@ -16,6 +16,6 @@ void f(void)
 /* We should have converted the assignments to two = 1.  FRE does this.  */
 
 /* { dg-final { scan-tree-dump-times " = 1" 2 "optimized"} } */
-/* { dg-final { scan-tree-dump-not " = a;" "fre"} } */
-/* { dg-final { cleanup-tree-dump "fre" } } */
+/* { dg-final { scan-tree-dump-not " = a;" "fre1"} } */
+/* { dg-final { cleanup-tree-dump "fre1" } } */
 /* { dg-final { cleanup-tree-dump "optimized" } } */

@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-options "-fno-tree-sra -fdump-tree-alias" } */
+/* { dg-options "-fdump-tree-ealias" } */
 /* { dg-skip-if "" { *-*-* } { "-O0" } { "" } } */
 
 struct X
@@ -12,10 +12,11 @@ struct X
     } y;
 };
 int i;
-static int
+static int __attribute__((always_inline))
 foo (struct X *x)
 {
   struct Y y = x->y;
+  /* In the inlined instance the dereferenced pointer needs to point to i.  */
   *y.p = 0;
   i = 1;
   return *y.p;
@@ -30,5 +31,5 @@ int main()
   return 0;
 }
 
-/* { dg-final { scan-tree-dump "points-to vars: { i }" "alias" } } */
-/* { dg-final { cleanup-tree-dump "alias" } } */
+/* { dg-final { scan-tree-dump "points-to vars: { i }" "ealias" } } */
+/* { dg-final { cleanup-tree-dump "ealias" } } */

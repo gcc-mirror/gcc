@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O -fno-tree-sra -fdump-tree-fre-details" } */
+/* { dg-options "-O -fno-tree-sra -fdump-tree-fre1-details" } */
 
 union U {
   float f;
@@ -15,5 +15,5 @@ int foo (union U *p)
 }
 
 /* avr has 16 bit int and 32 bit float */
-/* { dg-final { scan-tree-dump "Replaced u.i with 0 in" "fre" {xfail avr-*-* } } } */
-/* { dg-final { cleanup-tree-dump "fre" } } */
+/* { dg-final { scan-tree-dump "Replaced u.i with 0 in" "fre1" {xfail avr-*-* } } } */
+/* { dg-final { cleanup-tree-dump "fre1" } } */

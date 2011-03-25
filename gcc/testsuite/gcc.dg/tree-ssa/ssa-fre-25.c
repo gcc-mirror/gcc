@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O -fno-tree-sra -fdump-tree-fre" } */
+/* { dg-options "-O -fno-tree-sra -fdump-tree-fre1" } */
 
 struct X { int i; int j; };
 void bar (struct X *);
@@ -14,5 +14,5 @@ int foo (struct X *p)
 
 /* We should optimize this to return 0.  */
 
-/* { dg-final { scan-tree-dump "= 0;" "fre" } } */
-/* { dg-final { cleanup-tree-dump "fre" } } */
+/* { dg-final { scan-tree-dump "= 0;" "fre1" } } */
+/* { dg-final { cleanup-tree-dump "fre1" } } */

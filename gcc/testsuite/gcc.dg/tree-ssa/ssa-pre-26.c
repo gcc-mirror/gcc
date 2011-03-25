@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O -fdump-tree-fre-details" } */
+/* { dg-options "-O -fdump-tree-fre1-details" } */
 
 typedef union
 {
@@ -23,5 +23,5 @@ void foo(SA* pResult, SB* method, SC* self)
     pResult->data = pResult->data;
 }
 
-/* { dg-final { scan-tree-dump "Deleted redundant store" "fre" } } */
-/* { dg-final { cleanup-tree-dump "fre" } } */
+/* { dg-final { scan-tree-dump "Deleted redundant store" "fre1" } } */
+/* { dg-final { cleanup-tree-dump "fre1" } } */

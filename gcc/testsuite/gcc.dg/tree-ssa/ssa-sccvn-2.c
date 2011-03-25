@@ -1,5 +1,5 @@
 /* { dg-do compile } */ 
-/* { dg-options "-O2 -fdump-tree-fre-stats" } */
+/* { dg-options "-O2 -fdump-tree-fre1-stats" } */
 
 int vnum_test8(int *data) 
 { 
@@ -21,5 +21,5 @@ int vnum_test8(int *data)
 } 
 /* We should eliminate m - n, and set n = n + k into n = m, and
    set p to 0 */
-/* { dg-final { scan-tree-dump-times "Eliminated: 4" 1 "fre"} } */
-/* { dg-final { cleanup-tree-dump "fre" } } */
+/* { dg-final { scan-tree-dump-times "Eliminated: 4" 1 "fre1"} } */
+/* { dg-final { cleanup-tree-dump "fre1" } } */

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O -fno-tree-sra -fdump-tree-fre-details" } */
+/* { dg-options "-O -fno-tree-sra -fdump-tree-fre1-details" } */
 
 /* Should be optimized, propagating &a into (*p)[i].  */
 
@@ -27,5 +27,5 @@ void foo(double (*q)[4])
   bar(a);
 }
 
-/* { dg-final { scan-tree-dump "Replaced tmp1.data with &a" "fre" } } */
-/* { dg-final { cleanup-tree-dump "fre" } } */
+/* { dg-final { scan-tree-dump "Replaced tmp1.data with &a" "fre1" } } */
+/* { dg-final { cleanup-tree-dump "fre1" } } */
