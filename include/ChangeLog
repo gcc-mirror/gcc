@@ -1,3 +1,7 @@
+2011-03-24  Mark Wielaard  <mjw@redhat.com>
+
+	* dwarf2.h (dwarf_form): Remove deprecated DW_FORM_sig8 define.
+
 2010-03-23  Rafael Ávila de Espíndola <respindola@mozilla.com>
 
 	* plugin-api.h (ld_plugin_get_view): New.
