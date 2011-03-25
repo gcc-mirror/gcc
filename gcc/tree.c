@@ -4287,7 +4287,7 @@ build_type_attribute_qual_variant (tree ttype, tree attribute, int quals)
 	 its canonical type, we will need to use structural equality
 	 checks for this type. */
       if (TYPE_STRUCTURAL_EQUALITY_P (ttype)
-          || !targetm.comp_type_attributes (ntype, ttype))
+          || !comp_type_attributes (ntype, ttype))
 	SET_TYPE_STRUCTURAL_EQUALITY (ntype);
       else if (TYPE_CANONICAL (ntype) == ntype)
 	TYPE_CANONICAL (ntype) = TYPE_CANONICAL (ttype);
@@ -4300,6 +4300,75 @@ build_type_attribute_qual_variant (tree ttype, tree attribute, int quals)
   return ttype;
 }
 
+/* Compare two attributes for their value identity.  Return true if the
+   attribute values are known to be equal; otherwise return false.
+*/
+
+static bool
+attribute_value_equal (const_tree attr1, const_tree attr2)
+{
+  if (TREE_VALUE (attr1) == TREE_VALUE (attr2))
+    return true;
+
+  if (TREE_VALUE (attr1) != NULL_TREE
+      && TREE_CODE (TREE_VALUE (attr1)) == TREE_LIST
+      && TREE_VALUE (attr2) != NULL
+      && TREE_CODE (TREE_VALUE (attr2)) == TREE_LIST)
+    return (simple_cst_list_equal (TREE_VALUE (attr1),
+				   TREE_VALUE (attr2)) == 1);
+
+  return (simple_cst_equal (TREE_VALUE (attr1), TREE_VALUE (attr2)) == 1);
+}
+
+/* Return 0 if the attributes for two types are incompatible, 1 if they
+   are compatible, and 2 if they are nearly compatible (which causes a
+   warning to be generated).  */
+int
+comp_type_attributes (const_tree type1, const_tree type2)
+{
+  const_tree a1 = TYPE_ATTRIBUTES (type1);
+  const_tree a2 = TYPE_ATTRIBUTES (type2);
+  const_tree a;
+
+  if (a1 == a2)
+    return 1;
+  for (a = a1; a != NULL_TREE; a = TREE_CHAIN (a))
+    {
+      const struct attribute_spec *as;
+      const_tree attr;
+
+      as = lookup_attribute_spec (TREE_PURPOSE (a));
+      if (!as || as->affects_type_identity == false)
+        continue;
+
+      attr = lookup_attribute (as->name, CONST_CAST_TREE (a2));
+      if (!attr || !attribute_value_equal (a, attr))
+        break;
+    }
+  if (!a)
+    {
+      for (a = a2; a != NULL_TREE; a = TREE_CHAIN (a))
+	{
+	  const struct attribute_spec *as;
+
+	  as = lookup_attribute_spec (TREE_PURPOSE (a));
+	  if (!as || as->affects_type_identity == false)
+	    continue;
+
+	  if (!lookup_attribute (as->name, CONST_CAST_TREE (a1)))
+	    break;
+	  /* We don't need to compare trees again, as we did this
+	     already in first loop.  */
+	}
+      /* All types - affecting identity - are equal, so
+         there is no need to call target hook for comparison.  */
+      if (!a)
+        return 1;
+    }
+  /* As some type combinations - like default calling-convention - might
+     be compatible, we have to call the target hook to get the final result.  */
+  return targetm.comp_type_attributes (type1, type2);
+}
 
 /* Return a type like TTYPE except that its TYPE_ATTRIBUTE
    is ATTRIBUTE.
@@ -5300,23 +5369,10 @@ merge_attributes (tree a1, tree a2)
 	      tree a;
 	      for (a = lookup_attribute (IDENTIFIER_POINTER (TREE_PURPOSE (a2)),
 					 attributes);
-		   a != NULL_TREE;
+		   a != NULL_TREE && !attribute_value_equal (a, a2);
 		   a = lookup_attribute (IDENTIFIER_POINTER (TREE_PURPOSE (a2)),
 					 TREE_CHAIN (a)))
-		{
-		  if (TREE_VALUE (a) != NULL
-		      && TREE_CODE (TREE_VALUE (a)) == TREE_LIST
-		      && TREE_VALUE (a2) != NULL
-		      && TREE_CODE (TREE_VALUE (a2)) == TREE_LIST)
-		    {
-		      if (simple_cst_list_equal (TREE_VALUE (a),
-						 TREE_VALUE (a2)) == 1)
-			break;
-		    }
-		  else if (simple_cst_equal (TREE_VALUE (a),
-					     TREE_VALUE (a2)) == 1)
-		    break;
-		}
+		;
 	      if (a == NULL_TREE)
 		{
 		  a1 = copy_node (a2);
@@ -6254,24 +6310,12 @@ attribute_list_contained (const_tree l1, const_tree l2)
 	 const_tree.  */
       for (attr = lookup_attribute (IDENTIFIER_POINTER (TREE_PURPOSE (t2)),
 				    CONST_CAST_TREE(l1));
-	   attr != NULL_TREE;
+	   attr != NULL_TREE && !attribute_value_equal (t2, attr);
 	   attr = lookup_attribute (IDENTIFIER_POINTER (TREE_PURPOSE (t2)),
 				    TREE_CHAIN (attr)))
-	{
-	  if (TREE_VALUE (t2) != NULL
-	      && TREE_CODE (TREE_VALUE (t2)) == TREE_LIST
-	      && TREE_VALUE (attr) != NULL
-	      && TREE_CODE (TREE_VALUE (attr)) == TREE_LIST)
-	    {
-	      if (simple_cst_list_equal (TREE_VALUE (t2),
-					 TREE_VALUE (attr)) == 1)
-		break;
-	    }
-	  else if (simple_cst_equal (TREE_VALUE (t2), TREE_VALUE (attr)) == 1)
-	    break;
-	}
+	;
 
-      if (attr == 0)
+      if (attr == NULL_TREE)
 	return 0;
     }
 

@@ -1,3 +1,16 @@
+2011-03-25  Kai Tietz  <ktietz@redhat.com>
+
+	* c-typeck.c (comptypes_internal): Replace target
+	hook call of comp_type_attributes by version in tree.c file.
+	* gimple.c (gimple_types_compatible_p_1): Likewise.
+	* tree-ssa.c (useless_type_conversion_p): Likewise.
+	* tree.c (build_type_attribute_qual_variant): Likewise.
+	(attribute_value_equal): New static helper function.
+	(comp_type_attributes): New function.
+	(merge_attributes): Use attribute_value_equal for comparison.
+	(attribute_list_contained): Likewise.
+	* tree.h (comp_type_attributes): New prototype.
+
 2011-03-25  Richard Guenther  <rguenther@suse.de>
 
 	* tree-cfg.c (verify_gimple_assign_unary): Drop special casing

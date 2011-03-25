@@ -3615,7 +3615,7 @@ gimple_types_compatible_p_1 (tree t1, tree t2, enum gtc_mode mode,
 			 state, sccstack, sccstate, sccstate_obstack))
 	goto different_types;
 
-      if (!targetm.comp_type_attributes (t1, t2))
+      if (!comp_type_attributes (t1, t2))
 	goto different_types;
 
       if (TYPE_ARG_TYPES (t1) == TYPE_ARG_TYPES (t2))

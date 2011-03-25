@@ -1079,7 +1079,7 @@ comptypes_internal (const_tree type1, const_tree type2, bool *enum_and_int_p,
     return 1;
 
   /* 1 if no need for warning yet, 2 if warning cause has been seen.  */
-  if (!(attrval = targetm.comp_type_attributes (t1, t2)))
+  if (!(attrval = comp_type_attributes (t1, t2)))
      return 0;
 
   /* 1 if no need for warning yet, 2 if warning cause has been seen.  */
