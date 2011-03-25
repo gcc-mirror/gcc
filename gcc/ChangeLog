@@ -1,5 +1,10 @@
 2011-03-24  Mark Wielaard  <mjw@redhat.com>
 
+	* dwarf2out.c (size_of_die): Modify comment to say DW_FORM_ref_sig8.
+	(value_format): Use DW_FORM_ref_sig8, not DW_FORM_sig8.
+
+2011-03-24  Mark Wielaard  <mjw@redhat.com>
+
 	PR debug/48041
 	* dwarf2out.c (output_abbrev_section): Only write table when
 	abbrev_die_table_in_use > 1.

@@ -10729,7 +10729,7 @@ size_of_die (dw_die_ref die)
 	case dw_val_class_die_ref:
 	  if (AT_ref_external (a))
 	    {
-	      /* In DWARF4, we use DW_FORM_sig8; for earlier versions
+	      /* In DWARF4, we use DW_FORM_ref_sig8; for earlier versions
 		 we use DW_FORM_ref_addr.  In DWARF2, DW_FORM_ref_addr
 		 is sized by target address length, whereas in DWARF3
 		 it's always sized as an offset.  */
@@ -11005,7 +11005,7 @@ value_format (dw_attr_ref a)
       return DW_FORM_flag;
     case dw_val_class_die_ref:
       if (AT_ref_external (a))
-	return dwarf_version >= 4 ? DW_FORM_sig8 : DW_FORM_ref_addr;
+	return dwarf_version >= 4 ? DW_FORM_ref_sig8 : DW_FORM_ref_addr;
       else
 	return DW_FORM_ref;
     case dw_val_class_fde_ref:
