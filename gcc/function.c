@@ -1883,7 +1883,7 @@ instantiate_decls (tree fndecl)
 static unsigned int
 instantiate_virtual_regs (void)
 {
-  basic_block bb;
+  rtx insn;
 
   /* Compute the offsets to use for this function.  */
   in_arg_offset = FIRST_PARM_OFFSET (current_function_decl);
@@ -1901,40 +1901,33 @@ instantiate_virtual_regs (void)
 
   /* Scan through all the insns, instantiating every virtual register still
      present.  */
-  FOR_EACH_BB (bb)
-    {
-      rtx insn, curr;
+  for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
+    if (INSN_P (insn))
+      {
+	/* These patterns in the instruction stream can never be recognized.
+	   Fortunately, they shouldn't contain virtual registers either.  */
+	if (GET_CODE (PATTERN (insn)) == USE
+	    || GET_CODE (PATTERN (insn)) == CLOBBER
+	    || GET_CODE (PATTERN (insn)) == ADDR_VEC
+	    || GET_CODE (PATTERN (insn)) == ADDR_DIFF_VEC
+	    || GET_CODE (PATTERN (insn)) == ASM_INPUT)
+	  continue;
+	else if (DEBUG_INSN_P (insn))
+	  for_each_rtx (&INSN_VAR_LOCATION (insn),
+			instantiate_virtual_regs_in_rtx, NULL);
+	else
+	  instantiate_virtual_regs_in_insn (insn);
 
-      FOR_BB_INSNS_SAFE (bb, insn, curr)
-	{
-	  if (INSN_P (insn))
-	    {
-	      /* These patterns in the instruction stream can never be recognized.
-		 Fortunately, they shouldn't contain virtual registers either.  */
-	      if (GET_CODE (PATTERN (insn)) == USE
-		  || GET_CODE (PATTERN (insn)) == CLOBBER
-		  || GET_CODE (PATTERN (insn)) == ADDR_VEC
-		  || GET_CODE (PATTERN (insn)) == ADDR_DIFF_VEC
-		  || GET_CODE (PATTERN (insn)) == ASM_INPUT)
-		continue;
-	      else if (DEBUG_INSN_P (insn))
-		for_each_rtx (&INSN_VAR_LOCATION (insn),
-			      instantiate_virtual_regs_in_rtx, NULL);
-	      else
-		instantiate_virtual_regs_in_insn (insn);
+	if (INSN_DELETED_P (insn))
+	  continue;
 
-	      if (INSN_DELETED_P (insn))
-		continue;
+	for_each_rtx (&REG_NOTES (insn), instantiate_virtual_regs_in_rtx, NULL);
 
-	      for_each_rtx (&REG_NOTES (insn), instantiate_virtual_regs_in_rtx, NULL);
-
-	      /* Instantiate any virtual registers in CALL_INSN_FUNCTION_USAGE.  */
-	      if (CALL_P (insn))
-		for_each_rtx (&CALL_INSN_FUNCTION_USAGE (insn),
-			      instantiate_virtual_regs_in_rtx, NULL);
-	    }
-	}
-    }
+	/* Instantiate any virtual registers in CALL_INSN_FUNCTION_USAGE.  */
+	if (CALL_P (insn))
+	  for_each_rtx (&CALL_INSN_FUNCTION_USAGE (insn),
+			instantiate_virtual_regs_in_rtx, NULL);
+      }
 
   /* Instantiate the virtual registers in the DECLs for debugging purposes.  */
   instantiate_decls (current_function_decl);
@@ -1970,7 +1963,7 @@ struct rtl_opt_pass pass_instantiate_virtual_regs =
   NULL,                                 /* next */
   0,                                    /* static_pass_number */
   TV_NONE,                              /* tv_id */
-  PROP_cfglayout,                       /* properties_required */
+  0,                                    /* properties_required */
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
