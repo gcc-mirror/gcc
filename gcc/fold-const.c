@@ -141,6 +141,15 @@ static tree fold_not_const (const_tree, tree);
 static tree fold_relational_const (enum tree_code, tree, tree, tree);
 static tree fold_convert_const (enum tree_code, tree, tree);
 
+/* Return EXPR_LOCATION of T if it is not UNKNOWN_LOCATION.
+   Otherwise, return LOC.  */
+
+static location_t
+expr_location_or (tree t, location_t loc)
+{
+  location_t tloc = EXPR_LOCATION (t);
+  return tloc != UNKNOWN_LOCATION ? tloc : loc;
+}
 
 /* Similar to protected_set_expr_location, but never modify x in place,
    if location can and needs to be set, unshare it.  */
@@ -3079,23 +3088,15 @@ fold_truth_not_expr (location_t loc, tree arg)
       return constant_boolean_node (integer_zerop (arg), type);
 
     case TRUTH_AND_EXPR:
-      loc1 = EXPR_LOCATION (TREE_OPERAND (arg, 0));
-      loc2 = EXPR_LOCATION (TREE_OPERAND (arg, 1));
-      if (loc1 == UNKNOWN_LOCATION)
-	loc1 = loc;
-      if (loc2 == UNKNOWN_LOCATION)
-	loc2 = loc;
+      loc1 = expr_location_or (TREE_OPERAND (arg, 0), loc);
+      loc2 = expr_location_or (TREE_OPERAND (arg, 1), loc);
       return build2_loc (loc, TRUTH_OR_EXPR, type,
 			 invert_truthvalue_loc (loc1, TREE_OPERAND (arg, 0)),
 			 invert_truthvalue_loc (loc2, TREE_OPERAND (arg, 1)));
 
     case TRUTH_OR_EXPR:
-      loc1 = EXPR_LOCATION (TREE_OPERAND (arg, 0));
-      loc2 = EXPR_LOCATION (TREE_OPERAND (arg, 1));
-      if (loc1 == UNKNOWN_LOCATION)
-	loc1 = loc;
-      if (loc2 == UNKNOWN_LOCATION)
-	loc2 = loc;
+      loc1 = expr_location_or (TREE_OPERAND (arg, 0), loc);
+      loc2 = expr_location_or (TREE_OPERAND (arg, 1), loc);
       return build2_loc (loc, TRUTH_AND_EXPR, type,
 			 invert_truthvalue_loc (loc1, TREE_OPERAND (arg, 0)),
 			 invert_truthvalue_loc (loc2, TREE_OPERAND (arg, 1)));
@@ -3115,23 +3116,15 @@ fold_truth_not_expr (location_t loc, tree arg)
 			   TREE_OPERAND (arg, 1));
 
     case TRUTH_ANDIF_EXPR:
-      loc1 = EXPR_LOCATION (TREE_OPERAND (arg, 0));
-      loc2 = EXPR_LOCATION (TREE_OPERAND (arg, 1));
-      if (loc1 == UNKNOWN_LOCATION)
-	loc1 = loc;
-      if (loc2 == UNKNOWN_LOCATION)
-	loc2 = loc;
+      loc1 = expr_location_or (TREE_OPERAND (arg, 0), loc);
+      loc2 = expr_location_or (TREE_OPERAND (arg, 1), loc);
       return build2_loc (loc, TRUTH_ORIF_EXPR, type,
 			 invert_truthvalue_loc (loc1, TREE_OPERAND (arg, 0)),
 			 invert_truthvalue_loc (loc2, TREE_OPERAND (arg, 1)));
 
     case TRUTH_ORIF_EXPR:
-      loc1 = EXPR_LOCATION (TREE_OPERAND (arg, 0));
-      loc2 = EXPR_LOCATION (TREE_OPERAND (arg, 1));
-      if (loc1 == UNKNOWN_LOCATION)
-	loc1 = loc;
-      if (loc2 == UNKNOWN_LOCATION)
-	loc2 = loc;
+      loc1 = expr_location_or (TREE_OPERAND (arg, 0), loc);
+      loc2 = expr_location_or (TREE_OPERAND (arg, 1), loc);
       return build2_loc (loc, TRUTH_ANDIF_EXPR, type,
 			 invert_truthvalue_loc (loc1, TREE_OPERAND (arg, 0)),
 			 invert_truthvalue_loc (loc2, TREE_OPERAND (arg, 1)));
@@ -3144,12 +3137,8 @@ fold_truth_not_expr (location_t loc, tree arg)
 	tree arg1 = TREE_OPERAND (arg, 1);
 	tree arg2 = TREE_OPERAND (arg, 2);
 
-	loc1 = EXPR_LOCATION (TREE_OPERAND (arg, 1));
-	loc2 = EXPR_LOCATION (TREE_OPERAND (arg, 2));
-	if (loc1 == UNKNOWN_LOCATION)
-	  loc1 = loc;
-	if (loc2 == UNKNOWN_LOCATION)
-	  loc2 = loc;
+	loc1 = expr_location_or (TREE_OPERAND (arg, 1), loc);
+	loc2 = expr_location_or (TREE_OPERAND (arg, 2), loc);
 
 	/* A COND_EXPR may have a throw as one operand, which
 	   then has void type.  Just leave void operands
@@ -3162,17 +3151,13 @@ fold_truth_not_expr (location_t loc, tree arg)
       }
 
     case COMPOUND_EXPR:
-      loc1 = EXPR_LOCATION (TREE_OPERAND (arg, 1));
-      if (loc1 == UNKNOWN_LOCATION)
-	loc1 = loc;
+      loc1 = expr_location_or (TREE_OPERAND (arg, 1), loc);
       return build2_loc (loc, COMPOUND_EXPR, type,
 			 TREE_OPERAND (arg, 0),
 			 invert_truthvalue_loc (loc1, TREE_OPERAND (arg, 1)));
 
     case NON_LVALUE_EXPR:
-      loc1 = EXPR_LOCATION (TREE_OPERAND (arg, 0));
-      if (loc1 == UNKNOWN_LOCATION)
-	loc1 = loc;
+      loc1 = expr_location_or (TREE_OPERAND (arg, 0), loc);
       return invert_truthvalue_loc (loc1, TREE_OPERAND (arg, 0));
 
     CASE_CONVERT:
@@ -3182,9 +3167,7 @@ fold_truth_not_expr (location_t loc, tree arg)
       /* ... fall through ...  */
 
     case FLOAT_EXPR:
-      loc1 = EXPR_LOCATION (TREE_OPERAND (arg, 0));
-      if (loc1 == UNKNOWN_LOCATION)
-	loc1 = loc;
+      loc1 = expr_location_or (TREE_OPERAND (arg, 0), loc);
       return build1_loc (loc, TREE_CODE (arg), type,
 			 invert_truthvalue_loc (loc1, TREE_OPERAND (arg, 0)));
 
@@ -3197,9 +3180,7 @@ fold_truth_not_expr (location_t loc, tree arg)
       return build1_loc (loc, TRUTH_NOT_EXPR, type, arg);
 
     case CLEANUP_POINT_EXPR:
-      loc1 = EXPR_LOCATION (TREE_OPERAND (arg, 0));
-      if (loc1 == UNKNOWN_LOCATION)
-	loc1 = loc;
+      loc1 = expr_location_or (TREE_OPERAND (arg, 0), loc);
       return build1_loc (loc, CLEANUP_POINT_EXPR, type,
 			 invert_truthvalue_loc (loc1, TREE_OPERAND (arg, 0)));
 
