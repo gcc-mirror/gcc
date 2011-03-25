@@ -5747,7 +5747,13 @@ Binary_expression::do_check_types(Gogo*)
 	  if (this->right_->integer_constant_value(true, val, &type))
 	    {
 	      if (mpz_sgn(val) < 0)
-		this->report_error(_("negative shift count"));
+		{
+		  this->report_error(_("negative shift count"));
+		  mpz_set_ui(val, 0);
+		  source_location rloc = this->right_->location();
+		  this->right_ = Expression::make_integer(&val, right_type,
+							  rloc);
+		}
 	    }
 	  mpz_clear(val);
 	}
