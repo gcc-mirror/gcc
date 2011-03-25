@@ -1,3 +1,10 @@
+2011-03-25  Kai Tietz  <ktietz@redhat.com>
+
+	* decl.c (decls_match): Replace target hook
+	call of comp_type_attributes by version in tree.c file.
+	* search.c (check_final_overrider): Likewise.
+	* typeck.c (structural_comptypes): Likewise.
+
 2011-03-21  Kai Tietz  <ktietz@redhat.com>
 
 	PR target/12171
