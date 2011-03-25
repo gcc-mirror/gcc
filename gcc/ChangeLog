@@ -1,3 +1,10 @@
+2011-03-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* dwarf2out.c (mem_loc_descriptor) <case ZERO_EXTRACT>: Compare
+	mode size instead of bitsize with DWARF2_ADDR_SIZE.
+	(hash_loc_operands, compare_loc_operands): Handle
+	DW_OP_GNU_entry_value.
+
 2011-03-25  Kai Tietz  <ktietz@redhat.com>
 
 	* config/i386/cygming.h (DWARF_FRAME_REGISTERS): Adjust comment.
