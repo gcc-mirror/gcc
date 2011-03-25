@@ -181,7 +181,7 @@
 ;; Used to control the "enabled" attribute on a per-instruction basis.
 ;; For convenience, conflate ABI issues re loading of addresses with
 ;; an "isa".
-(define_attr "isa" "base,bwx,max,fix,cix,vms"
+(define_attr "isa" "base,bwx,max,fix,cix,vms,ner,er"
   (const_string "base"))
 
 (define_attr "enabled" ""
@@ -189,7 +189,9 @@
 	 (eq_attr "isa" "max")	(symbol_ref "TARGET_MAX")
 	 (eq_attr "isa" "fix")	(symbol_ref "TARGET_FIX")
 	 (eq_attr "isa" "cix")	(symbol_ref "TARGET_CIX")
-         (eq_attr "isa" "vms")  (symbol_ref "TARGET_ABI_OPEN_VMS")
+	 (eq_attr "isa" "vms")  (symbol_ref "TARGET_ABI_OPEN_VMS")
+	 (eq_attr "isa" "ner")	(symbol_ref "!TARGET_EXPLICIT_RELOCS")
+	 (eq_attr "isa" "er")	(symbol_ref "TARGET_EXPLICIT_RELOCS")
 	]
 	(const_int 1)))
 
@@ -4869,54 +4871,13 @@
   operands[2] = pic_offset_table_rtx;
 })
 
-(define_insn "*movdi_er_nofix"
-  [(set (match_operand:DI 0 "nonimmediate_operand" "=r,r,r,r,r,r,r,m,*f,*f,Q")
-	(match_operand:DI 1 "input_operand" "rJ,K,L,T,s,n,m,rJ,*fJ,Q,*f"))]
-  "TARGET_EXPLICIT_RELOCS && ! TARGET_FIX
-   && (register_operand (operands[0], DImode)
-       || reg_or_0_operand (operands[1], DImode))"
-  "@
-   mov %r1,%0
-   lda %0,%1($31)
-   ldah %0,%h1($31)
-   #
-   #
-   #
-   ldq%A1 %0,%1
-   stq%A0 %r1,%0
-   fmov %R1,%0
-   ldt %0,%1
-   stt %R1,%0"
-  [(set_attr "type" "ilog,iadd,iadd,iadd,ldsym,multi,ild,ist,fcpys,fld,fst")
-   (set_attr "usegp" "*,*,*,yes,*,*,*,*,*,*,*")])
-
-(define_insn "*movdi_nofix"
-  [(set (match_operand:DI 0 "nonimmediate_operand" "=r,r,r,r,r,r,m,*f,*f,Q")
-	(match_operand:DI 1 "input_operand" "rJ,K,L,s,n,m,rJ,*fJ,Q,*f"))]
-  "! TARGET_FIX
-   && (register_operand (operands[0], DImode)
-       || reg_or_0_operand (operands[1], DImode))"
-  "@
-   bis $31,%r1,%0
-   lda %0,%1($31)
-   ldah %0,%h1($31)
-   lda %0,%1
-   #
-   ldq%A1 %0,%1
-   stq%A0 %r1,%0
-   cpys %R1,%R1,%0
-   ldt %0,%1
-   stt %R1,%0"
-  [(set_attr "type" "ilog,iadd,iadd,ldsym,multi,ild,ist,fcpys,fld,fst")])
-
-(define_insn "*movdi_er_fix"
+(define_insn "*movdi"
   [(set (match_operand:DI 0 "nonimmediate_operand"
-				"=r,r,r,r,r,r,r, m, *f,*f, Q, r,*f")
+				"=r,r,r,r,r,r,r,r, m, *f,*f, Q, r,*f")
 	(match_operand:DI 1 "input_operand"
-				"rJ,K,L,T,s,n,m,rJ,*fJ, Q,*f,*f, r"))]
-  "TARGET_EXPLICIT_RELOCS && TARGET_FIX
-   && (register_operand (operands[0], DImode)
-       || reg_or_0_operand (operands[1], DImode))"
+				"rJ,K,L,T,s,n,s,m,rJ,*fJ, Q,*f,*f, r"))]
+  "register_operand (operands[0], DImode)
+   || reg_or_0_operand (operands[1], DImode)"
   "@
    mov %r1,%0
    lda %0,%1($31)
@@ -4924,6 +4885,7 @@
    #
    #
    #
+   lda %0,%1
    ldq%A1 %0,%1
    stq%A0 %r1,%0
    fmov %R1,%0
@@ -4931,29 +4893,9 @@
    stt %R1,%0
    ftoit %1,%0
    itoft %1,%0"
-  [(set_attr "type" "ilog,iadd,iadd,iadd,ldsym,multi,ild,ist,fcpys,fld,fst,ftoi,itof")
-   (set_attr "usegp" "*,*,*,yes,*,*,*,*,*,*,*,*,*")])
-
-(define_insn "*movdi_fix"
-  [(set (match_operand:DI 0 "nonimmediate_operand" "=r,r,r,r,r,r,m,*f,*f,Q,r,*f")
-	(match_operand:DI 1 "input_operand" "rJ,K,L,s,n,m,rJ,*fJ,Q,*f,*f,r"))]
-  "! TARGET_EXPLICIT_RELOCS && TARGET_FIX
-   && (register_operand (operands[0], DImode)
-       || reg_or_0_operand (operands[1], DImode))"
-  "@
-   bis $31,%r1,%0
-   lda %0,%1($31)
-   ldah %0,%h1($31)
-   lda %0,%1
-   #
-   ldq%A1 %0,%1
-   stq%A0 %r1,%0
-   cpys %R1,%R1,%0
-   ldt %0,%1
-   stt %R1,%0
-   ftoit %1,%0
-   itoft %1,%0"
-  [(set_attr "type" "ilog,iadd,iadd,ldsym,multi,ild,ist,fcpys,fld,fst,ftoi,itof")])
+  [(set_attr "type" "ilog,iadd,iadd,iadd,ldsym,multi,ldsym,ild,ist,fcpys,fld,fst,ftoi,itof")
+   (set_attr "isa" "*,*,*,er,er,*,ner,*,*,*,*,*,fix,fix")
+   (set_attr "usegp" "*,*,*,yes,*,*,*,*,*,*,*,*,*,*")])
 
 ;; VMS needs to set up "vms_base_regno" for unwinding.  This move
 ;; often appears dead to the life analysis code, at which point we
