@@ -1413,193 +1413,102 @@
   "sra %r1,%2,%0"
   [(set_attr "type" "shift")])
 
-(define_expand "extendqihi2"
-  [(set (match_dup 2)
-	(ashift:DI (match_operand:QI 1 "some_operand" "")
-		   (const_int 56)))
-   (set (match_operand:HI 0 "register_operand" "")
-	(ashiftrt:DI (match_dup 2)
-		     (const_int 56)))]
-  ""
-{
-  if (TARGET_BWX)
-    {
-      emit_insn (gen_extendqihi2x (operands[0],
-				   force_reg (QImode, operands[1])));
-      DONE;
-    }
-
- /* If we have an unaligned MEM, extend to DImode (which we do
-     specially) and then copy to the result.  */
-  if (unaligned_memory_operand (operands[1], HImode))
-    {
-      rtx temp = gen_reg_rtx (DImode);
-
-      emit_insn (gen_extendqidi2 (temp, operands[1]));
-      emit_move_insn (operands[0], gen_lowpart (HImode, temp));
-      DONE;
-    }
-
-  operands[0] = gen_lowpart (DImode, operands[0]);
-  operands[1] = gen_lowpart (DImode, force_reg (QImode, operands[1]));
-  operands[2] = gen_reg_rtx (DImode);
-})
-
-(define_insn "extendqidi2x"
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	(sign_extend:DI (match_operand:QI 1 "register_operand" "r")))]
-  "TARGET_BWX"
-  "sextb %1,%0"
-  [(set_attr "type" "shift")])
-
-(define_insn "extendhidi2x"
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	(sign_extend:DI (match_operand:HI 1 "register_operand" "r")))]
-  "TARGET_BWX"
-  "sextw %1,%0"
-  [(set_attr "type" "shift")])
-
-(define_insn "extendqisi2x"
-  [(set (match_operand:SI 0 "register_operand" "=r")
-	(sign_extend:SI (match_operand:QI 1 "register_operand" "r")))]
-  "TARGET_BWX"
-  "sextb %1,%0"
-  [(set_attr "type" "shift")])
-
-(define_insn "extendhisi2x"
-  [(set (match_operand:SI 0 "register_operand" "=r")
-	(sign_extend:SI (match_operand:HI 1 "register_operand" "r")))]
-  "TARGET_BWX"
-  "sextw %1,%0"
-  [(set_attr "type" "shift")])
-
-(define_insn "extendqihi2x"
+(define_insn "extendqihi2"
   [(set (match_operand:HI 0 "register_operand" "=r")
 	(sign_extend:HI (match_operand:QI 1 "register_operand" "r")))]
   "TARGET_BWX"
   "sextb %1,%0"
   [(set_attr "type" "shift")])
 
-(define_expand "extendqisi2"
-  [(set (match_dup 2)
-	(ashift:DI (match_operand:QI 1 "some_operand" "")
-		   (const_int 56)))
-   (set (match_operand:SI 0 "register_operand" "")
-	(ashiftrt:DI (match_dup 2)
-		     (const_int 56)))]
-  ""
-{
-  if (TARGET_BWX)
-    {
-      emit_insn (gen_extendqisi2x (operands[0],
-				   force_reg (QImode, operands[1])));
-      DONE;
-    }
-
-  /* If we have an unaligned MEM, extend to a DImode form of
-     the result (which we do specially).  */
-  if (unaligned_memory_operand (operands[1], QImode))
-    {
-      rtx temp = gen_reg_rtx (DImode);
-
-      emit_insn (gen_extendqidi2 (temp, operands[1]));
-      emit_move_insn (operands[0], gen_lowpart (SImode, temp));
-      DONE;
-    }
-
-  operands[0] = gen_lowpart (DImode, operands[0]);
-  operands[1] = gen_lowpart (DImode, force_reg (QImode, operands[1]));
-  operands[2] = gen_reg_rtx (DImode);
-})
+(define_insn "extendqisi2"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(sign_extend:SI (match_operand:QI 1 "register_operand" "r")))]
+  "TARGET_BWX"
+  "sextb %1,%0"
+  [(set_attr "type" "shift")])
 
 (define_expand "extendqidi2"
-  [(set (match_dup 2)
-	(ashift:DI (match_operand:QI 1 "some_operand" "")
-		   (const_int 56)))
-   (set (match_operand:DI 0 "register_operand" "")
-	(ashiftrt:DI (match_dup 2)
-		     (const_int 56)))]
+  [(set (match_operand:DI 0 "register_operand" "")
+	(sign_extend:DI (match_operand:QI 1 "some_operand" "")))]
   ""
 {
   if (TARGET_BWX)
+    operands[1] = force_reg (QImode, operands[1]);
+  else
     {
-      emit_insn (gen_extendqidi2x (operands[0],
-				   force_reg (QImode, operands[1])));
+      rtx x, t1, t2, i56;
+
+      if (unaligned_memory_operand (operands[1], QImode))
+	{
+	  x = gen_unaligned_extendqidi (operands[0], XEXP (operands[1], 0));
+	  alpha_set_memflags (x, operands[1]);
+	  emit_insn (x);
+	  DONE;
+	}
+
+      t1 = gen_reg_rtx (DImode);
+      t2 = gen_reg_rtx (DImode);
+      i56 = GEN_INT (56);
+
+      x = gen_lowpart (DImode, force_reg (QImode, operands[1]));
+      emit_move_insn (t1, x);
+      emit_insn (gen_ashldi3 (t2, t1, i56));
+      emit_insn (gen_ashrdi3 (operands[0], t2, i56));
       DONE;
     }
-
-  if (unaligned_memory_operand (operands[1], QImode))
-    {
-      rtx seq = gen_unaligned_extendqidi (operands[0], XEXP (operands[1], 0));
-      alpha_set_memflags (seq, operands[1]);
-      emit_insn (seq);
-      DONE;
-    }
-
-  operands[1] = gen_lowpart (DImode, force_reg (QImode, operands[1]));
-  operands[2] = gen_reg_rtx (DImode);
 })
 
-(define_expand "extendhisi2"
-  [(set (match_dup 2)
-	(ashift:DI (match_operand:HI 1 "some_operand" "")
-		   (const_int 48)))
-   (set (match_operand:SI 0 "register_operand" "")
-	(ashiftrt:DI (match_dup 2)
-		     (const_int 48)))]
-  ""
-{
-  if (TARGET_BWX)
-    {
-      emit_insn (gen_extendhisi2x (operands[0],
-				   force_reg (HImode, operands[1])));
-      DONE;
-    }
+(define_insn "*extendqidi2_bwx"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(sign_extend:DI (match_operand:QI 1 "register_operand" "r")))]
+  "TARGET_BWX"
+  "sextb %1,%0"
+  [(set_attr "type" "shift")])
 
-  /* If we have an unaligned MEM, extend to a DImode form of
-     the result (which we do specially).  */
-  if (unaligned_memory_operand (operands[1], HImode))
-    {
-      rtx temp = gen_reg_rtx (DImode);
-
-      emit_insn (gen_extendhidi2 (temp, operands[1]));
-      emit_move_insn (operands[0], gen_lowpart (SImode, temp));
-      DONE;
-    }
-
-  operands[0] = gen_lowpart (DImode, operands[0]);
-  operands[1] = gen_lowpart (DImode, force_reg (HImode, operands[1]));
-  operands[2] = gen_reg_rtx (DImode);
-})
+(define_insn "extendhisi2"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(sign_extend:SI (match_operand:HI 1 "register_operand" "r")))]
+  "TARGET_BWX"
+  "sextw %1,%0"
+  [(set_attr "type" "shift")])
 
 (define_expand "extendhidi2"
-  [(set (match_dup 2)
-	(ashift:DI (match_operand:HI 1 "some_operand" "")
-		   (const_int 48)))
-   (set (match_operand:DI 0 "register_operand" "")
-	(ashiftrt:DI (match_dup 2)
-		     (const_int 48)))]
+  [(set (match_operand:DI 0 "register_operand" "")
+	(sign_extend:DI (match_operand:HI 1 "some_operand" "")))]
   ""
 {
   if (TARGET_BWX)
+    operands[1] = force_reg (HImode, operands[1]);
+  else
     {
-      emit_insn (gen_extendhidi2x (operands[0],
-				   force_reg (HImode, operands[1])));
+      rtx x, t1, t2, i48;
+
+      if (unaligned_memory_operand (operands[1], HImode))
+	{
+	  x = gen_unaligned_extendhidi (operands[0], XEXP (operands[1], 0));
+	  alpha_set_memflags (x, operands[1]);
+	  emit_insn (x);
+	  DONE;
+	}
+
+      t1 = gen_reg_rtx (DImode);
+      t2 = gen_reg_rtx (DImode);
+      i48 = GEN_INT (48);
+
+      x = gen_lowpart (DImode, force_reg (HImode, operands[1]));
+      emit_move_insn (t1, x);
+      emit_insn (gen_ashldi3 (t2, t1, i48));
+      emit_insn (gen_ashrdi3 (operands[0], t2, i48));
       DONE;
     }
-
-  if (unaligned_memory_operand (operands[1], HImode))
-    {
-      rtx seq = gen_unaligned_extendhidi (operands[0], XEXP (operands[1], 0));
-
-      alpha_set_memflags (seq, operands[1]);
-      emit_insn (seq);
-      DONE;
-    }
-
-  operands[1] = gen_lowpart (DImode, force_reg (HImode, operands[1]));
-  operands[2] = gen_reg_rtx (DImode);
 })
+
+(define_insn "*extendhidi2_bwx"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(sign_extend:DI (match_operand:HI 1 "register_operand" "r")))]
+  "TARGET_BWX"
+  "sextw %1,%0"
+  [(set_attr "type" "shift")])
 
 ;; Here's how we sign extend an unaligned byte and halfword.  Doing this
 ;; as a pattern saves one instruction.  The code is similar to that for
