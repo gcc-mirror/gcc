@@ -1,3 +1,7 @@
+2011-03-25  Release Manager
+
+	* GCC 4.6.0 released.
+
 2011-03-12  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/48059
