@@ -1,3 +1,7 @@
+2011-03-25  Release Manager
+
+	* GCC 4.6.0 released.
+
 2011-03-21  David Edelsohn  <dje.gcc@gmail.com>
 
 	* config.guess: Detect AIX 7.1.
