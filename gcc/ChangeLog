@@ -1,3 +1,15 @@
+2011-03-25  Nathan Froyd  <froydnj@codesourcery.com>
+
+	PR bootstrap/4828
+	Revert:
+	2011-03-24  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* function.c (instantiate_virtual_regs): Use FOR_EACH_BB and
+	FOR_BB_INSNS_SAFE to iterate through insns.  Re-indent.
+	(pass_instantiate_virtual_regs): Require PROP_cfglayout.
+	* passes.c (init_optimization_passes): Move
+	pass_instantiate_virtual_regs after pass_into_cfg_layout_mode.
+
 2011-03-25  Kai Tietz  <ktietz@redhat.com>
 
 	* c-typeck.c (comptypes_internal): Replace target
