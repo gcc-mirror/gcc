@@ -1,3 +1,9 @@
+2011-03-25  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-copy.c (stmt_may_generate_copy): Copies from constants
+	also generate copies.
+	(fini_copy_prop): Handle constant values properly.
+
 2011-03-25  Jakub Jelinek  <jakub@redhat.com>
 
 	* dwarf2out.c (mem_loc_descriptor) <case ZERO_EXTRACT>: Compare
