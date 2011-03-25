@@ -1,5 +1,29 @@
 2011-02-24  Richard Henderson  <rth@redhat.com>
 
+	* config/alpha/alpha.c (get_aligned_mem): Don't test WORDS_BIG_ENDIAN.
+	(alpha_expand_unaligned_load): Likewise.
+	(alpha_expand_unaligned_store): Likewise.
+	(alpha_expand_unaligned_load_words): Likewise.
+	(alpha_expand_unaligned_store_words): Likewise.
+	(emit_insxl, alpha_split_compare_and_swap_12): Likewise.
+	(alpha_split_lock_test_and_set_12): Likewise.
+	(print_operand, alpha_fold_builtin_extxx): Likewise.
+	(alpha_fold_builtin_insxx, alpha_fold_builtin_mskxx): Likewise.
+	* config/alpha/alpha.md (bswapsi2, insv, extv, extzv): Likewise.
+	(builtin_extwh, builtin_extlh, builtin_extql): Likewise.
+	(unaligned_extendqidi_be, unaligned_extendhidi_be, extxl_be): Remove.
+	(*extxl_1_be, *extql_2_be, extqh_be, extlh_be, extwh_be): Remove.
+	(insbl_be, inswl_be, insll_be, insql_be, mskxl_be): Remove.
+	(unaligned_loadqi_be, unaligned_loadhi_be): Remove.
+	(unaligned_storeqi_be, unaligned_storehi_be): Remove.
+	(extbl): Rename from builtin_extbl; don't test WORDS_BIG_ENDIAN.
+	(extwl, extll, extql): Similarly.
+	(inswh, inslh, insqh): Similarly.
+	(mskbl, mskwl, mskll, mskql): Similarly.
+	(mskwh, msklh, mskqh): Similarly.
+
+2011-02-24  Richard Henderson  <rth@redhat.com>
+
 	* config/alpha/alpha.md (attribute isa): Add er, ner.
 	(attribute enabled): Handle them.
 	(*movdi): Merge *movdi_{er_nofix,nofix,er_fix,fix}.
