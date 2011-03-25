@@ -1,3 +1,12 @@
+2011-03-25  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR testsuite/48283
+	* gcc.dg/graphite/block-3.c: Add dg-require-effective-target
+	run_expensive_tests.
+	* gcc.dg/graphite/block-4.c: Likewise.
+	* gcc.dg/graphite/block-7.c: Likewise.
+	* gcc.dg/graphite/block-8.c: Likewise.
+
 2011-03-25  Richard Guenther  <rguenther@suse.de>
  
 	* g++.dg/tree-ssa/pr41186.C: Scan the appropriate FRE dump.
