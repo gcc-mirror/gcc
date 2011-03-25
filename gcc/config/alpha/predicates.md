@@ -195,7 +195,8 @@
 		  || gotdtp_symbolic_operand (op, mode)
 		  || gottp_symbolic_operand (op, mode));
 	}
-      return mode == Pmode;
+      /* VMS still has a 32-bit mode.  */
+      return mode == ptr_mode || mode == Pmode;
 
     case HIGH:
       return (TARGET_EXPLICIT_RELOCS
