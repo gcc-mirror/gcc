@@ -11056,6 +11056,9 @@ output_abbrev_section (void)
 {
   unsigned long abbrev_id;
 
+  if (abbrev_die_table_in_use == 1)
+    return;
+
   for (abbrev_id = 1; abbrev_id < abbrev_die_table_in_use; ++abbrev_id)
     {
       dw_die_ref abbrev = abbrev_die_table[abbrev_id];

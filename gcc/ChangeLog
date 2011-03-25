@@ -1,3 +1,9 @@
+2011-03-24  Mark Wielaard  <mjw@redhat.com>
+
+	PR debug/48041
+	* dwarf2out.c (output_abbrev_section): Only write table when
+	abbrev_die_table_in_use > 1.
+
 2011-02-24  Richard Henderson  <rth@redhat.com>
 
 	* config/alpha/alpha.c (alpha_expand_unaligned_load): Use extql.
