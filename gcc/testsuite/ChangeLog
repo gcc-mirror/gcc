@@ -1,3 +1,8 @@
+2011-03-25  Ira Rosen  <ira.rosen@linaro.org>
+
+	PR target/48287
+	* gcc.dg/vect/vect-cselim-1.c: Fail for vect_no_align.
+
 2011-03-25  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* gcc.dg/torture/pr47917.c: Add -D_XOPEN_SOURCE=500 to dg-options
