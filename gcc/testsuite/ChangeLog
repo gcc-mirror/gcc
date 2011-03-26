@@ -1,3 +1,8 @@
+2011-03-26  Ira Rosen  <ira.rosen@linaro.org>
+
+	* gcc.dg/vect/vect-cselim-1.c: Fail on targets that don't support
+	strided accesses.
+
 2011-03-26  Andrey Belevantsev  <abel@ispras.ru>
 
 	PR rtl-optimization/48144
