@@ -1,6 +1,12 @@
 2011-03-26  Jakub Jelinek  <jakub@redhat.com>
 
 	Backport from mainline
+	2011-03-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/48156
+	* df-core.c (df_get_bb_dirty): Use df_lr if df_live is NULL,
+	assume df and df_lr are not NULL.
+
 	2011-03-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/48141
