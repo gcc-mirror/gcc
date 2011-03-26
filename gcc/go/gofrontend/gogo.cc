@@ -1527,7 +1527,9 @@ Check_types_traverse::constant(Named_object* named_object, bool)
       && !ctype->is_boolean_type()
       && !ctype->is_string_type())
     {
-      if (!ctype->is_error())
+      if (ctype->is_nil_type())
+	error_at(constant->location(), "const initializer cannot be nil");
+      else if (!ctype->is_error())
 	error_at(constant->location(), "invalid constant type");
       constant->set_error();
     }
