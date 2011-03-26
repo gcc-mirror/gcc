@@ -721,6 +721,7 @@ reload (rtx first, int global)
   rtx insn;
   struct elim_table *ep;
   basic_block bb;
+  bool inserted;
 
   /* Make sure even insns with volatile mem refs are recognizable.  */
   init_recog ();
@@ -1299,7 +1300,21 @@ reload (rtx first, int global)
   /* Free all the insn_chain structures at once.  */
   obstack_free (&reload_obstack, reload_startobj);
   unused_insn_chains = 0;
-  fixup_abnormal_edges ();
+
+  inserted = fixup_abnormal_edges ();
+
+  /* We've possibly turned single trapping insn into multiple ones.  */
+  if (cfun->can_throw_non_call_exceptions)
+    {
+      sbitmap blocks;
+      blocks = sbitmap_alloc (last_basic_block);
+      sbitmap_ones (blocks);
+      find_many_sub_basic_blocks (blocks);
+      sbitmap_free (blocks);
+    }
+
+  if (inserted)
+    commit_edge_insertions ();
 
   /* Replacing pseudos with their memory equivalents might have
      created shared rtx.  Subsequent passes would get confused
@@ -9112,112 +9127,3 @@ add_auto_inc_notes (rtx insn, rtx x)
     }
 }
 #endif
-
-/* This is used by reload pass, that does emit some instructions after
-   abnormal calls moving basic block end, but in fact it wants to emit
-   them on the edge.  Looks for abnormal call edges, find backward the
-   proper call and fix the damage.
-
-   Similar handle instructions throwing exceptions internally.  */
-void
-fixup_abnormal_edges (void)
-{
-  bool inserted = false;
-  basic_block bb;
-
-  FOR_EACH_BB (bb)
-    {
-      edge e;
-      edge_iterator ei;
-
-      /* Look for cases we are interested in - calls or instructions causing
-         exceptions.  */
-      FOR_EACH_EDGE (e, ei, bb->succs)
-	{
-	  if (e->flags & EDGE_ABNORMAL_CALL)
-	    break;
-	  if ((e->flags & (EDGE_ABNORMAL | EDGE_EH))
-	      == (EDGE_ABNORMAL | EDGE_EH))
-	    break;
-	}
-      if (e && !CALL_P (BB_END (bb))
-	  && !can_throw_internal (BB_END (bb)))
-	{
-	  rtx insn;
-
-	  /* Get past the new insns generated.  Allow notes, as the insns
-	     may be already deleted.  */
-	  insn = BB_END (bb);
-	  while ((NONJUMP_INSN_P (insn) || NOTE_P (insn))
-		 && !can_throw_internal (insn)
-		 && insn != BB_HEAD (bb))
-	    insn = PREV_INSN (insn);
-
-	  if (CALL_P (insn) || can_throw_internal (insn))
-	    {
-	      rtx stop, next;
-
-	      stop = NEXT_INSN (BB_END (bb));
-	      BB_END (bb) = insn;
-	      insn = NEXT_INSN (insn);
-
-	      e = find_fallthru_edge (bb->succs);
-
-	      while (insn && insn != stop)
-		{
-		  next = NEXT_INSN (insn);
-		  if (INSN_P (insn))
-		    {
-		      delete_insn (insn);
-
-		      /* Sometimes there's still the return value USE.
-			 If it's placed after a trapping call (i.e. that
-			 call is the last insn anyway), we have no fallthru
-			 edge.  Simply delete this use and don't try to insert
-			 on the non-existent edge.  */
-		      if (GET_CODE (PATTERN (insn)) != USE)
-			{
-			  /* We're not deleting it, we're moving it.  */
-			  INSN_DELETED_P (insn) = 0;
-			  PREV_INSN (insn) = NULL_RTX;
-			  NEXT_INSN (insn) = NULL_RTX;
-
-			  insert_insn_on_edge (insn, e);
-			  inserted = true;
-			}
-		    }
-		  else if (!BARRIER_P (insn))
-		    set_block_for_insn (insn, NULL);
-		  insn = next;
-		}
-	    }
-
-	  /* It may be that we don't find any such trapping insn.  In this
-	     case we discovered quite late that the insn that had been
-	     marked as can_throw_internal in fact couldn't trap at all.
-	     So we should in fact delete the EH edges out of the block.  */
-	  else
-	    purge_dead_edges (bb);
-	}
-    }
-
-  /* We've possibly turned single trapping insn into multiple ones.  */
-  if (cfun->can_throw_non_call_exceptions)
-    {
-      sbitmap blocks;
-      blocks = sbitmap_alloc (last_basic_block);
-      sbitmap_ones (blocks);
-      find_many_sub_basic_blocks (blocks);
-      sbitmap_free (blocks);
-    }
-
-  if (inserted)
-    commit_edge_insertions ();
-
-#ifdef ENABLE_CHECKING
-  /* Verify that we didn't turn one trapping insn into many, and that
-     we found and corrected all of the problems wrt fixups on the
-     fallthru edge.  */
-  verify_flow_info ();
-#endif
-}
