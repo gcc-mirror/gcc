@@ -4375,16 +4375,24 @@ Parse::send_or_recv_stmt(bool* is_send, Expression** channel, Expression** val,
   // send or receive expression.  If SAW_COMMA is true, then *VAL is
   // set and we just read a comma.
 
-  if (!saw_comma && this->peek_token()->is_op(OPERATOR_CHANOP))
+  Expression* e;
+  if (saw_comma || !this->peek_token()->is_op(OPERATOR_CHANOP))
+    e = this->expression(PRECEDENCE_NORMAL, true, true, NULL);
+  else
     {
       // case <-c:
       *is_send = false;
       this->advance_token();
       *channel = this->expression(PRECEDENCE_NORMAL, false, true, NULL);
-      return true;
-    }
 
-  Expression* e = this->expression(PRECEDENCE_NORMAL, true, true, NULL);
+      // The next token should be ':'.  If it is '<-', then we have
+      // case <-c <- v:
+      // which is to say, send on a channel received from a channel.
+      if (!this->peek_token()->is_op(OPERATOR_CHANOP))
+	return true;
+
+      e = Expression::make_receive(*channel, (*channel)->location());
+    }
 
   if (this->peek_token()->is_op(OPERATOR_EQ))
     {
