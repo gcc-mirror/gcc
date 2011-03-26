@@ -3785,27 +3785,23 @@ Compilation_Unit_to_gnu (Node_Id gnat_node)
   gnat_pushlevel ();
 
   /* For a body, first process the spec if there is one.  */
-  if (Nkind (Unit (gnat_node)) == N_Package_Body
-      || (Nkind (Unit (gnat_node)) == N_Subprogram_Body
-	      && !Acts_As_Spec (gnat_node)))
-    {
-      add_stmt (gnat_to_gnu (Library_Unit (gnat_node)));
-      finalize_from_with_types ();
-    }
+  if (Nkind (gnat_unit) == N_Package_Body
+      || (Nkind (gnat_unit) == N_Subprogram_Body && !Acts_As_Spec (gnat_node)))
+    add_stmt (gnat_to_gnu (Library_Unit (gnat_node)));
 
   if (type_annotate_only && gnat_node == Cunit (Main_Unit))
     {
       elaborate_all_entities (gnat_node);
 
-      if (Nkind (Unit (gnat_node)) == N_Subprogram_Declaration
-	  || Nkind (Unit (gnat_node)) == N_Generic_Package_Declaration
-	  || Nkind (Unit (gnat_node)) == N_Generic_Subprogram_Declaration)
+      if (Nkind (gnat_unit) == N_Subprogram_Declaration
+	  || Nkind (gnat_unit) == N_Generic_Package_Declaration
+	  || Nkind (gnat_unit) == N_Generic_Subprogram_Declaration)
 	return;
     }
 
   process_decls (Declarations (Aux_Decls_Node (gnat_node)), Empty, Empty,
 		 true, true);
-  add_stmt (gnat_to_gnu (Unit (gnat_node)));
+  add_stmt (gnat_to_gnu (gnat_unit));
 
   /* If we can inline, generate code for all the inlined subprograms.  */
   if (optimize)

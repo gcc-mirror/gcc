@@ -3723,15 +3723,10 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	   save our current definition, evaluate the actual type, and replace
 	   the tentative type we made with the actual one.  If we are to defer
 	   actually looking up the actual type, make an entry in the deferred
-	   list.  If this is from a limited with, we have to defer to the end
-	   of the current spec in two cases: first if the designated type is
-	   in the current unit and second if the access type itself is.  */
+	   list.  If this is from a limited with, we may have to defer to the
+	   end of the current unit.  */
 	if ((!in_main_unit || is_from_limited_with) && made_dummy)
 	  {
-	    bool is_from_limited_with_in_main_unit
-	      = (is_from_limited_with
-		 && (in_main_unit
-		     || In_Extended_Main_Code_Unit (gnat_entity)));
 	    tree gnu_old_desig_type
 	      = TYPE_IS_FAT_POINTER_P (gnu_type)
 		? TYPE_UNCONSTRAINED_ARRAY (gnu_type) : TREE_TYPE (gnu_type);
@@ -3762,15 +3757,14 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	       Besides, variants of this non-dummy type might have been created
 	       along the way.  update_pointer_to is expected to properly take
 	       care of those situations.  */
-	    if (defer_incomplete_level == 0
-		&& !is_from_limited_with_in_main_unit)
+	    if (defer_incomplete_level == 0 && !is_from_limited_with)
 	      update_pointer_to (TYPE_MAIN_VARIANT (gnu_old_desig_type),
 				 gnat_to_gnu_type (gnat_desig_equiv));
 	    else
 	      {
 		struct incomplete *p = XNEW (struct incomplete);
 		struct incomplete **head
-		  = (is_from_limited_with_in_main_unit
+		  = (is_from_limited_with
 		     ? &defer_limited_with : &defer_incomplete_list);
 		p->old_type = gnu_old_desig_type;
 		p->full_type = gnat_desig_equiv;
@@ -4968,12 +4962,12 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
     {
       if (defer_incomplete_list)
 	{
-	  struct incomplete *incp, *next;
+	  struct incomplete *p, *next;
 
 	  /* We are back to level 0 for the deferring of incomplete types.
 	     But processing these incomplete types below may itself require
 	     deferring, so preserve what we have and restart from scratch.  */
-	  incp = defer_incomplete_list;
+	  p = defer_incomplete_list;
 	  defer_incomplete_list = NULL;
 
 	  /* For finalization, however, all types must be complete so we
@@ -4981,14 +4975,14 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	     referencing each other.  Process them all recursively first.  */
 	  defer_finalize_level++;
 
-	  for (; incp; incp = next)
+	  for (; p; p = next)
 	    {
-	      next = incp->next;
+	      next = p->next;
 
-	      if (incp->old_type)
-		update_pointer_to (TYPE_MAIN_VARIANT (incp->old_type),
-				   gnat_to_gnu_type (incp->full_type));
-	      free (incp);
+	      if (p->old_type)
+		update_pointer_to (TYPE_MAIN_VARIANT (p->old_type),
+				   gnat_to_gnu_type (p->full_type));
+	      free (p);
 	    }
 
 	  defer_finalize_level--;
@@ -5008,18 +5002,26 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	}
     }
 
-  /* If we are not defining this type, see if it's in the incomplete list.
-     If so, handle that list entry now.  */
-  else if (!definition)
+  /* If we are not defining this type, see if it's on one of the lists of
+     incomplete types.  If so, handle the list entry now.  */
+  if (is_type && !definition)
     {
-      struct incomplete *incp;
+      struct incomplete *p;
 
-      for (incp = defer_incomplete_list; incp; incp = incp->next)
-	if (incp->old_type && incp->full_type == gnat_entity)
+      for (p = defer_incomplete_list; p; p = p->next)
+	if (p->old_type && p->full_type == gnat_entity)
 	  {
-	    update_pointer_to (TYPE_MAIN_VARIANT (incp->old_type),
+	    update_pointer_to (TYPE_MAIN_VARIANT (p->old_type),
 			       TREE_TYPE (gnu_decl));
-	    incp->old_type = NULL_TREE;
+	    p->old_type = NULL_TREE;
+	  }
+
+      for (p = defer_limited_with; p; p = p->next)
+	if (p->old_type && Non_Limited_View (p->full_type) == gnat_entity)
+	  {
+	    update_pointer_to (TYPE_MAIN_VARIANT (p->old_type),
+			       TREE_TYPE (gnu_decl));
+	    p->old_type = NULL_TREE;
 	  }
     }
 
@@ -5144,24 +5146,24 @@ finish_fat_pointer_type (tree record_type, tree field_list)
   TYPE_CONTAINS_PLACEHOLDER_INTERNAL (record_type) = 2;
 }
 
-/* Finalize any From_With_Type incomplete types.  We do this after processing
-   our compilation unit and after processing its spec, if this is a body.  */
+/* Finalize the processing of From_With_Type incomplete types.  */
 
 void
 finalize_from_with_types (void)
 {
-  struct incomplete *incp = defer_limited_with;
-  struct incomplete *next;
+  struct incomplete *p, *next;
 
-  defer_limited_with = 0;
-  for (; incp; incp = next)
+  p = defer_limited_with;
+  defer_limited_with = NULL;
+
+  for (; p; p = next)
     {
-      next = incp->next;
+      next = p->next;
 
-      if (incp->old_type != 0)
-	update_pointer_to (TYPE_MAIN_VARIANT (incp->old_type),
-			   gnat_to_gnu_type (incp->full_type));
-      free (incp);
+      if (p->old_type)
+	update_pointer_to (TYPE_MAIN_VARIANT (p->old_type),
+			   gnat_to_gnu_type (p->full_type));
+      free (p);
     }
 }
 

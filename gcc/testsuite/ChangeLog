@@ -1,5 +1,11 @@
 2011-03-26  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gnat.dg/limited_with2.ad[sb]: New test.
+	* gnat.dg/limited_with2_pkg1.ads: New helper.
+	* gnat.dg/imited_with2_pkg2.ads: Likewise.
+
+2011-03-26  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gnat.dg/opt15.adb: New test.
 	* gnat.dg/opt15_pkg.ad[sb]: New helper.
 
