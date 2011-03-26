@@ -2705,6 +2705,12 @@ Parse::primary_expr(bool may_be_sink, bool may_be_composite_lit,
 	  this->advance_token();
 	  Expression* expr = this->expression(PRECEDENCE_NORMAL, false, true,
 					      NULL);
+	  if (this->peek_token()->is_op(OPERATOR_ELLIPSIS))
+	    {
+	      error_at(this->location(),
+		       "invalid use of %<...%> in type conversion");
+	      this->advance_token();
+	    }
 	  if (!this->peek_token()->is_op(OPERATOR_RPAREN))
 	    error_at(this->location(), "expected %<)%>");
 	  else
