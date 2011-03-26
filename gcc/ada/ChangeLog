@@ -1,5 +1,10 @@
 2011-03-26  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <object>: Create TYPE_DECL
+	for the padded type built to support a specified size or alignment.
+
+2011-03-26  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/gigi.h (finalize_from_with_types): Adjust comment.
 	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Access_Type>: Defer
 	unconditionally to the end of the unit when the designated type is
