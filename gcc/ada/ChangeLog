@@ -1,6 +1,16 @@
+2011-03-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* inline.adb (Back_End_Cannot_Inline): Lift restriction on calls to
+	subprograms without a previous spec declared in the same unit.
+	* gcc-interface/trans.c (Compilation_Unit_to_gnu): Process inlined
+	subprograms at the end of the unit instead of at the beginning.
+	* gcc-interface/utils.c (create_subprog_decl): Check that the entity
+	isn't public for the special handling of non-inline functions nested
+	inside inline external functions.
+
 2011-03-25  Jeff Law  <law@redhat.com>
 
-	* ada/gcc-interface/utils.c (def_fn_type): Add missing va_end.
+	* gcc-interface/utils.c (def_fn_type): Add missing va_end.
 
 2011-03-24  Eric Botcazou  <ebotcazou@adacore.com>
 

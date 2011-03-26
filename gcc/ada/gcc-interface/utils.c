@@ -1790,6 +1790,7 @@ create_subprog_decl (tree subprog_name, tree asm_name,
      We could inline the nested function as well but it's probably better
      to err on the side of too little inlining.  */
   if (!inline_flag
+      && !public_flag
       && current_function_decl
       && DECL_DECLARED_INLINE_P (current_function_decl)
       && DECL_EXTERNAL (current_function_decl))
