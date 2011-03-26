@@ -3782,7 +3782,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	explicit
 	param_type(_IntType __k = 1, double __p = 0.5)
 	: _M_k(__k), _M_p(__p)
-	{ }
+	{
+	  _GLIBCXX_DEBUG_ASSERT((_M_k > 0) && (_M_p > 0.0) && (_M_p <= 1.0));
+	}
 
 	_IntType
 	k() const
@@ -3803,12 +3805,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       explicit
       negative_binomial_distribution(_IntType __k = 1, double __p = 0.5)
-      : _M_param(__k, __p), _M_gd(__k, __p / (1.0 - __p))
+      : _M_param(__k, __p), _M_gd(__k, (1.0 - __p) / __p)
       { }
 
       explicit
       negative_binomial_distribution(const param_type& __p)
-      : _M_param(__p), _M_gd(__p.k(), __p.p() / (1.0 - __p.p()))
+      : _M_param(__p), _M_gd(__p.k(), (1.0 - __p.p()) / __p.p())
       { }
 
       /**

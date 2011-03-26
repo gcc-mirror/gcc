@@ -1100,7 +1100,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  param_type;
 	
 	const double __y =
-	  _M_gd(__urng, param_type(__p.k(), __p.p() / (1.0 - __p.p())));
+	  _M_gd(__urng, param_type(__p.k(), (1.0 - __p.p()) / __p.p()));
 
 	std::poisson_distribution<result_type> __poisson(__y);
 	return __poisson(__urng);

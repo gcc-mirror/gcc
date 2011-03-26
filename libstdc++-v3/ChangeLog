@@ -1,3 +1,13 @@
+2011-03-26  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/random.h (negative_binomial_distribution<>::
+	negative_binomial_distribution(_IntType, double),
+	negative_binomial_distribution<>::
+	negative_binomial_distribution(const param_type&)): Fix thinko
+	p / (1 - p) for (1 - p) / p.
+	* include/bits/random.tcc (negative_binomial_distribution<>::
+	operator()): Fix.
+
 2011-03-25  Release Manager
 
 	* GCC 4.6.0 released.
