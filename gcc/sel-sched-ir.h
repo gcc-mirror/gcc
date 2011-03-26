@@ -1565,7 +1565,7 @@ extern void av_set_leave_one_nonspec (av_set_t *);
 extern expr_t av_set_element (av_set_t, int);
 extern void av_set_substract_cond_branches (av_set_t *);
 extern void av_set_split_usefulness (av_set_t, int, int);
-extern void av_set_intersect (av_set_t *, av_set_t);
+extern void av_set_code_motion_filter (av_set_t *, av_set_t);
 
 extern void sel_save_haifa_priorities (void);
 

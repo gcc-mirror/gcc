@@ -1564,6 +1564,20 @@ free_history_vect (VEC (expr_history_def, heap) **pvect)
   *pvect = NULL;
 }
 
+/* Merge vector FROM to PVECT.  */
+static void
+merge_history_vect (VEC (expr_history_def, heap) **pvect,
+		    VEC (expr_history_def, heap) *from)
+{
+  expr_history_def *phist;
+  int i;
+
+  /* We keep this vector sorted.  */
+  for (i = 0; VEC_iterate (expr_history_def, from, i, phist); i++)
+    insert_in_history_vect (pvect, phist->uid, phist->type,
+                            phist->old_expr_vinsn, phist->new_expr_vinsn,
+                            phist->spec_ds);
+}
 
 /* Compare two vinsns as rhses if possible and as vinsns otherwise.  */
 bool
@@ -1796,9 +1810,6 @@ update_speculative_bits (expr_t to, expr_t from, insn_t split_point)
 void
 merge_expr_data (expr_t to, expr_t from, insn_t split_point)
 {
-  int i;
-  expr_history_def *phist;
-
   /* For now, we just set the spec of resulting expr to be minimum of the specs
      of merged exprs.  */
   if (EXPR_SPEC (to) > EXPR_SPEC (from))
@@ -1822,20 +1833,12 @@ merge_expr_data (expr_t to, expr_t from, insn_t split_point)
   EXPR_ORIG_SCHED_CYCLE (to) = MIN (EXPR_ORIG_SCHED_CYCLE (to),
                                     EXPR_ORIG_SCHED_CYCLE (from));
 
-  /* We keep this vector sorted.  */
-  for (i = 0;
-       VEC_iterate (expr_history_def, EXPR_HISTORY_OF_CHANGES (from),
-                    i, phist);
-       i++)
-    insert_in_history_vect (&EXPR_HISTORY_OF_CHANGES (to),
-                            phist->uid, phist->type,
-                            phist->old_expr_vinsn, phist->new_expr_vinsn,
-                            phist->spec_ds);
-
   EXPR_WAS_SUBSTITUTED (to) |= EXPR_WAS_SUBSTITUTED (from);
   EXPR_WAS_RENAMED (to) |= EXPR_WAS_RENAMED (from);
   EXPR_CANT_MOVE (to) |= EXPR_CANT_MOVE (from);
 
+  merge_history_vect (&EXPR_HISTORY_OF_CHANGES (to),
+		      EXPR_HISTORY_OF_CHANGES (from));
   update_target_availability (to, from, split_point);
   update_speculative_bits (to, from, split_point);
 }
@@ -2328,16 +2331,24 @@ av_set_split_usefulness (av_set_t av, int prob, int all_prob)
 }
 
 /* Leave in AVP only those expressions, which are present in AV,
-   and return it.  */
+   and return it, merging history expressions.  */
 void
-av_set_intersect (av_set_t *avp, av_set_t av)
+av_set_code_motion_filter (av_set_t *avp, av_set_t av)
 {
   av_set_iterator i;
-  expr_t expr;
+  expr_t expr, expr2;
 
   FOR_EACH_EXPR_1 (expr, i, avp)
-    if (av_set_lookup (av, EXPR_VINSN (expr)) == NULL)
+    if ((expr2 = av_set_lookup (av, EXPR_VINSN (expr))) == NULL)
       av_set_iter_remove (&i);
+    else
+      /* When updating av sets in bookkeeping blocks, we can add more insns
+	 there which will be transformed but the upper av sets will not
+	 reflect those transformations.  We then fail to undo those
+	 when searching for such insns.  So merge the history saved
+	 in the av set of the block we are processing.  */
+      merge_history_vect (&EXPR_HISTORY_OF_CHANGES (expr),
+			  EXPR_HISTORY_OF_CHANGES (expr2));
 }
 
 
