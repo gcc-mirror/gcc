@@ -3,6 +3,11 @@
 	Backport from mainline
 	2011-03-20  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c/42544
+	PR c/48197
+	* c-common.c (shorten_compare): If primopN is first sign-extended
+	to opN and then zero-extended to result type, set primopN to opN.
+
 	PR rtl-optimization/48156
 	* df-core.c (df_get_bb_dirty): Use df_lr if df_live is NULL,
 	assume df and df_lr are not NULL.

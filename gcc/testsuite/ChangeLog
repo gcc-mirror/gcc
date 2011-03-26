@@ -3,6 +3,11 @@
 	Backport from mainline
 	2011-03-20  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c/42544
+	PR c/48197
+	* gcc.c-torture/execute/pr42544.c: New test.
+	* gcc.c-torture/execute/pr48197.c: New test.
+
 	PR rtl-optimization/48156
 	* gcc.dg/pr48156.c: New test.
 
