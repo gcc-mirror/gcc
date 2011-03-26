@@ -10135,7 +10135,10 @@ Interface_field_reference_expression::do_check_types(Gogo*)
 
   Interface_type* interface_type = type->interface_type();
   if (interface_type == NULL)
-    this->report_error(_("expected interface or pointer to interface"));
+    {
+      if (!type->is_error_type())
+	this->report_error(_("expected interface or pointer to interface"));
+    }
   else
     {
       const Typed_identifier* method =
