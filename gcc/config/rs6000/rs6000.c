@@ -22061,10 +22061,11 @@ rs6000_output_function_epilogue (FILE *file,
 	 use language_string.
 	 C is 0.  Fortran is 1.  Pascal is 2.  Ada is 3.  C++ is 9.
 	 Java is 13.  Objective-C is 14.  Objective-C++ isn't assigned
-	 a number, so for now use 9.  LTO isn't assigned a number either,
-	 so for now use 0.  */
+	 a number, so for now use 9.  LTO and Go aren't assigned numbers
+	 either, so for now use 0.  */
       if (! strcmp (language_string, "GNU C")
-	  || ! strcmp (language_string, "GNU GIMPLE"))
+	  || ! strcmp (language_string, "GNU GIMPLE")
+	  || ! strcmp (language_string, "GNU Go"))
 	i = 0;
       else if (! strcmp (language_string, "GNU F77")
 	       || ! strcmp (language_string, "GNU Fortran"))
