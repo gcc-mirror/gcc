@@ -1,5 +1,15 @@
 2011-03-26  Alan Modra  <amodra@gmail.com>
 
+	* config/rs6000/predicates.md (word_offset_memref_op): Handle
+	cmodel medium addresses.
+	* config/rs6000/rs6000.c (rs6000_secondary_reload): Handle misaligned
+	64-bit gpr loads and stores.
+	(rs6000_secondary_reload_ppc64): New function.
+	* config/rs6000/rs6000-protos.h: Declare it.
+	* config/rs6000/rs6000.md (reload_di_store, reload_di_load): New.
+
+2011-03-26  Alan Modra  <amodra@gmail.com>
+
 	PR target/47487
 	* config/rs6000/rs6000.c (rs6000_output_function_epilogue): Support
 	GNU Go in traceback table.

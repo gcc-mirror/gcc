@@ -435,9 +435,12 @@
     op = XEXP (op, 0);
   else if (GET_CODE (op) == PRE_MODIFY)
     op = XEXP (op, 1);
+  else if (GET_CODE (op) == LO_SUM
+	   && GET_CODE (XEXP (op, 0)) == REG
+	   && GET_CODE (XEXP (op, 1)) == CONST)
+    op = XEXP (XEXP (op, 1), 0);
 
   return (GET_CODE (op) != PLUS
-	  || ! REG_P (XEXP (op, 0))
 	  || GET_CODE (XEXP (op, 1)) != CONST_INT
 	  || INTVAL (XEXP (op, 1)) % 4 == 0);
 })
