@@ -4,6 +4,19 @@
 	2011-03-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/48141
+	* params.def (PARAM_MAX_DSE_ACTIVE_LOCAL_STORES): New.
+	* dse.c: Include params.h.
+	(active_local_stores_len): New variable.
+	(add_wild_read, dse_step1): Clear it when setting active_local_stores
+	to NULL.
+	(record_store, check_mem_read_rtx): Decrease it when removing
+	from the chain.
+	(scan_insn): Likewise.  Increase it when adding to chain, if it
+	reaches PARAM_MAX_DSE_ACTIVE_LOCAL_STORES limit, set to 1 and
+	set active_local_stores to NULL before the addition.
+	* Makefile.in (dse.o): Depend on $(PARAMS_H).
+
+	PR rtl-optimization/48141
 	* dse.c (record_store): If no positions are needed in an insn
 	that cannot be deleted, at least unchain it from active_local_stores.
 
