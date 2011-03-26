@@ -911,9 +911,20 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	   size of the object.  */
 	gnu_object_size = gnu_size ? gnu_size : TYPE_SIZE (gnu_type);
 	if (gnu_size || align > 0)
-	  gnu_type = maybe_pad_type (gnu_type, gnu_size, align, gnat_entity,
-				     false, false, definition,
-				     gnu_size ? true : false);
+	  {
+	    tree orig_type = gnu_type;
+
+	    gnu_type = maybe_pad_type (gnu_type, gnu_size, align, gnat_entity,
+				       false, false, definition,
+				       gnu_size ? true : false);
+
+	    /* If a padding record was made, declare it now since it will
+	       never be declared otherwise.  This is necessary to ensure
+	       that its subtrees are properly marked.  */
+	    if (gnu_type != orig_type && !DECL_P (TYPE_NAME (gnu_type)))
+	      create_type_decl (TYPE_NAME (gnu_type), gnu_type, NULL, true,
+				debug_info_p, gnat_entity);
+	  }
 
 	/* If this is a renaming, avoid as much as possible to create a new
 	   object.  However, in several cases, creating it is required.
