@@ -1,6 +1,12 @@
 2011-03-26  Jakub Jelinek  <jakub@redhat.com>
 
 	Backport from mainline
+	2011-03-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/48204
+	* simplify-rtx.c (simplify_const_unary_operation): Call
+	real_convert when changing mode class with FLOAT_EXTEND.
+
 	2011-03-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/42544

@@ -1526,7 +1526,8 @@ simplify_const_unary_operation (enum rtx_code code, enum machine_mode mode,
     }
 
   else if (GET_CODE (op) == CONST_DOUBLE
-	   && SCALAR_FLOAT_MODE_P (mode))
+	   && SCALAR_FLOAT_MODE_P (mode)
+	   && SCALAR_FLOAT_MODE_P (GET_MODE (op)))
     {
       REAL_VALUE_TYPE d, t;
       REAL_VALUE_FROM_CONST_DOUBLE (d, op);
@@ -1549,7 +1550,10 @@ simplify_const_unary_operation (enum rtx_code code, enum machine_mode mode,
 	  d = real_value_truncate (mode, d);
 	  break;
 	case FLOAT_EXTEND:
-	  /* All this does is change the mode.  */
+	  /* All this does is change the mode, unless changing
+	     mode class.  */
+	  if (GET_MODE_CLASS (mode) != GET_MODE_CLASS (GET_MODE (op)))
+	    real_convert (&d, mode, &d);
 	  break;
 	case FIX:
 	  real_arithmetic (&d, FIX_TRUNC_EXPR, &d, NULL);

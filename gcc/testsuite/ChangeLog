@@ -1,6 +1,11 @@
 2011-03-26  Jakub Jelinek  <jakub@redhat.com>
 
 	Backport from mainline
+	2011-03-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/48204
+	* gcc.dg/dfp/pr48204.c: New test.
+
 	2011-03-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/42544
