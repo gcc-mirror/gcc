@@ -1,3 +1,15 @@
+2011-03-26  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline:
+	2011-03-24  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/48237
+	* config/i386/i386.md (*movdf_internal_rex64): Do not split
+	alternatives that can be handled with movq or movabsq insn.
+	(*movdf_internal): Disable for !TARGET_64BIT.
+	(*movdf_internal_nointeger): Ditto.
+	* config/i386/i386.c (ix86_print_operand): Handle DFmode immediates.
+
 2011-03-26  Jakub Jelinek  <jakub@redhat.com>
 
 	Backport from mainline
