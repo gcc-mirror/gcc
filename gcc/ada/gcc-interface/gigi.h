@@ -96,8 +96,7 @@ do {					\
     mark_visited (EXP);			\
 } while (0)
 
-/* Finalize any From_With_Type incomplete types.  We do this after processing
-   our compilation unit and after processing its spec, if this is a body.  */
+/* Finalize the processing of From_With_Type incomplete types.  */
 extern void finalize_from_with_types (void);
 
 /* Return the equivalent type to be used for GNAT_ENTITY, if it's a
