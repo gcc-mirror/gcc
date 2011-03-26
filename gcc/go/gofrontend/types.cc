@@ -3464,6 +3464,14 @@ Struct_type::do_verify()
 	      p->set_type(Type::make_error_type());
 	      return false;
 	    }
+	  if (t->points_to() != NULL
+	      && t->points_to()->interface_type() != NULL)
+	    {
+	      error_at(p->location(),
+		       "embedded type may not be pointer to interface");
+	      p->set_type(Type::make_error_type());
+	      return false;
+	    }
 	}
     }
   return ret;
