@@ -1,5 +1,5 @@
 /* RTL dead store elimination.
-   Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010
+   Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
 
    Contributed by Richard Sandiford <rsandifor@codesourcery.com>
@@ -1530,8 +1530,7 @@ record_store (rtx body, bb_info_t bb_info)
 
       /* An insn can be deleted if every position of every one of
 	 its s_infos is zero.  */
-      if (any_positions_needed_p (s_info)
-	  || ptr->cannot_delete)
+      if (any_positions_needed_p (s_info))
 	del = false;
 
       if (del)
@@ -1543,7 +1542,8 @@ record_store (rtx body, bb_info_t bb_info)
 	  else
 	    active_local_stores = ptr->next_local_store;
 
-	  delete_dead_store_insn (insn_to_delete);
+	  if (!insn_to_delete->cannot_delete)
+	    delete_dead_store_insn (insn_to_delete);
 	}
       else
 	last = ptr;
