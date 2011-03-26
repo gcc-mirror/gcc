@@ -30,6 +30,8 @@ along with GCC; see the file COPYING3.  If not see
 	 insert_insn_on_edge, commit_edge_insertions
      - CFG updating after insn simplification
 	 purge_dead_edges, purge_all_dead_edges
+     - CFG fixing after coarse manipulation
+	fixup_abnormal_edges
 
    Functions not supposed for generic use:
      - Infrastructure to determine quickly basic block for insn
@@ -2469,6 +2471,95 @@ purge_all_dead_edges (void)
     }
 
   return purged;
+}
+
+/* This is used by a few passes that emit some instructions after abnormal
+   calls, moving the basic block's end, while they in fact do want to emit
+   them on the fallthru edge.  Look for abnormal call edges, find backward
+   the call in the block and insert the instructions on the edge instead.
+
+   Similarly, handle instructions throwing exceptions internally.
+
+   Return true when instructions have been found and inserted on edges.  */
+
+bool
+fixup_abnormal_edges (void)
+{
+  bool inserted = false;
+  basic_block bb;
+
+  FOR_EACH_BB (bb)
+    {
+      edge e;
+      edge_iterator ei;
+
+      /* Look for cases we are interested in - calls or instructions causing
+         exceptions.  */
+      FOR_EACH_EDGE (e, ei, bb->succs)
+	if ((e->flags & EDGE_ABNORMAL_CALL)
+	    || ((e->flags & (EDGE_ABNORMAL | EDGE_EH))
+		== (EDGE_ABNORMAL | EDGE_EH)))
+	  break;
+
+      if (e && !CALL_P (BB_END (bb)) && !can_throw_internal (BB_END (bb)))
+	{
+	  rtx insn;
+
+	  /* Get past the new insns generated.  Allow notes, as the insns
+	     may be already deleted.  */
+	  insn = BB_END (bb);
+	  while ((NONJUMP_INSN_P (insn) || NOTE_P (insn))
+		 && !can_throw_internal (insn)
+		 && insn != BB_HEAD (bb))
+	    insn = PREV_INSN (insn);
+
+	  if (CALL_P (insn) || can_throw_internal (insn))
+	    {
+	      rtx stop, next;
+
+	      e = find_fallthru_edge (bb->succs);
+
+	      stop = NEXT_INSN (BB_END (bb));
+	      BB_END (bb) = insn;
+
+	      for (insn = NEXT_INSN (insn); insn != stop; insn = next)
+		{
+		  next = NEXT_INSN (insn);
+		  if (INSN_P (insn))
+		    {
+		      delete_insn (insn);
+
+		      /* Sometimes there's still the return value USE.
+			 If it's placed after a trapping call (i.e. that
+			 call is the last insn anyway), we have no fallthru
+			 edge.  Simply delete this use and don't try to insert
+			 on the non-existent edge.  */
+		      if (GET_CODE (PATTERN (insn)) != USE)
+			{
+			  /* We're not deleting it, we're moving it.  */
+			  INSN_DELETED_P (insn) = 0;
+			  PREV_INSN (insn) = NULL_RTX;
+			  NEXT_INSN (insn) = NULL_RTX;
+
+			  insert_insn_on_edge (insn, e);
+			  inserted = true;
+			}
+		    }
+		  else if (!BARRIER_P (insn))
+		    set_block_for_insn (insn, NULL);
+		}
+	    }
+
+	  /* It may be that we don't find any trapping insn.  In this
+	     case we discovered quite late that the insn that had been
+	     marked as can_throw_internal in fact couldn't trap at all.
+	     So we should in fact delete the EH edges out of the block.  */
+	  else
+	    purge_dead_edges (bb);
+	}
+    }
+
+  return inserted;
 }
 
 /* Same as split_block but update cfg_layout structures.  */

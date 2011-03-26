@@ -1,3 +1,14 @@
+2011-03-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* basic-block.h (fixup_abnormal_edges): Adjust prototype.
+	* reload1.c (reload): Adjust call to fixup_abnormal_edges.  Rediscover
+	basic blocks and call commit_edge_insertions directly.
+	(fixup_abnormal_edges): Move from here to...
+	* cfgrtl.c (fixup_abnormal_edges): ...here.  Only insert instructions
+	on the edges and return whether some have actually been inserted.
+	* reg-stack.c (convert_regs): Fix up abnormal edges before inserting
+	compensation code.
+
 2011-03-26  Andrey Belevantsev  <abel@ispras.ru>
 
 	PR rtl-optimization/48144
