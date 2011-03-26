@@ -1,3 +1,11 @@
+2011-03-26  Jakub Jelinek  <jakub@redhat.com>
+
+	Backport from mainline
+	2011-03-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* printf/printf_fp.c (__quadmath_printf_fp): Use memcpy instead of
+	mempcpy.
+
 2011-03-25  Release Manager
 
 	* GCC 4.6.0 released.

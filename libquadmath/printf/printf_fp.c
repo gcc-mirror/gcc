@@ -1197,7 +1197,7 @@ __quadmath_printf_fp (struct __quadmath_printf_file *fp,
 	    if (*copywc == decimalwc)
 	      memcpy (cp, decimal, decimal_len), cp += decimal_len;
 	    else if (*copywc == thousands_sepwc)
-	      mempcpy (cp, thousands_sep, thousands_sep_len), cp += thousands_sep_len;
+	      memcpy (cp, thousands_sep, thousands_sep_len), cp += thousands_sep_len;
 	    else
 	      *cp++ = (char) *copywc;
 	}
