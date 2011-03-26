@@ -79,6 +79,7 @@ extern bool (*rs6000_cannot_change_mode_class_ptr) (enum machine_mode,
 						    enum machine_mode,
 						    enum reg_class);
 extern void rs6000_secondary_reload_inner (rtx, rtx, rtx, bool);
+extern void rs6000_secondary_reload_ppc64 (rtx, rtx, rtx, bool);
 extern int paired_emit_vector_cond_expr (rtx, rtx, rtx,
                                          rtx, rtx, rtx);
 extern void paired_expand_vector_move (rtx operands[]);
