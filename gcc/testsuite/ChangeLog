@@ -1,3 +1,8 @@
+2011-03-26  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/48291
+	* gfortran.dg/class_42.f03: New.
+
 2011-03-26  Ira Rosen  <ira.rosen@linaro.org>
 
 	* gcc.dg/vect/vect-cselim-1.c: Fail on targets that don't support

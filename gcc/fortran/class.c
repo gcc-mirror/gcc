@@ -137,9 +137,9 @@ get_unique_hashed_string (char *string, gfc_symbol *derived)
 {
   char tmp[2*GFC_MAX_SYMBOL_LEN+2];
   get_unique_type_string (&tmp[0], derived);
-  /* If string is too long, use hash value in hex representation
-     (allow for extra decoration, cf. gfc_build_class_symbol)*/
-  if (strlen (tmp) > GFC_MAX_SYMBOL_LEN - 10)
+  /* If string is too long, use hash value in hex representation (allow for
+     extra decoration, cf. gfc_build_class_symbol & gfc_find_derived_vtab).  */
+  if (strlen (tmp) > GFC_MAX_SYMBOL_LEN - 11)
     {
       int h = gfc_hash_value (derived);
       sprintf (string, "%X", h);
