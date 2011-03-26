@@ -6672,6 +6672,12 @@ Find_call_expression::expression(Expression** pexpr)
 Expression*
 Builtin_call_expression::do_lower(Gogo* gogo, Named_object* function, int)
 {
+  if (this->is_varargs() && this->code_ != BUILTIN_APPEND)
+    {
+      this->report_error(_("invalid use of %<...%> with builtin function"));
+      return Expression::make_error(this->location());
+    }
+
   if (this->code_ == BUILTIN_NEW)
     {
       const Expression_list* args = this->args();
