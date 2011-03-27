@@ -2581,10 +2581,20 @@ Return_statement::do_determine_types()
 void
 Return_statement::do_check_types(Gogo*)
 {
-  if (this->vals_ == NULL)
-    return;
-
   const Typed_identifier_list* results = this->results_;
+  if (this->vals_ == NULL)
+    {
+      if (results != NULL
+	  && !results->empty()
+	  && results->front().name().empty())
+	{
+	  // The result parameters are not named, which means that we
+	  // need to supply values for them.
+	  this->report_error(_("not enough arguments to return"));
+	}
+      return;
+    }
+
   if (results == NULL)
     {
       this->report_error(_("return with value in function "
@@ -2621,7 +2631,7 @@ Return_statement::do_check_types(Gogo*)
     }
 
   if (pt != results->end())
-    this->report_error(_("not enough values in return statement"));
+    this->report_error(_("not enough arguments to return"));
 }
 
 // Build a RETURN_EXPR tree.
