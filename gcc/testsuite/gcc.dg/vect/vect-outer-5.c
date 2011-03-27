@@ -17,7 +17,7 @@ int main1 ()
   float B[N] __attribute__ ((__aligned__(__BIGGEST_ALIGNMENT__)));
   float C[N] __attribute__ ((__aligned__(__BIGGEST_ALIGNMENT__)));
   float D[N] __attribute__ ((__aligned__(__BIGGEST_ALIGNMENT__)));
-  float E[4] = {0,1,2,480};
+  float E[4] = {0,480,960,1440};
   float s;
 
   int i, j;
@@ -55,7 +55,7 @@ int main1 ()
       s = 0;
       for (j=0; j<N; j+=4)
 	s += C[j];
-      B[i+3] = B[i] + s;
+      B[i+1] = B[i] + s;
     }
 
   /* check results:  */

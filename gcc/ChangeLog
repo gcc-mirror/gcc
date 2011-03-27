@@ -1,3 +1,9 @@
+2011-03-27  Ira Rosen  <ira.rosen@linaro.org>
+
+	* config/arm/arm.c (arm_autovectorize_vector_sizes): New
+	function.
+	(TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_SIZES): Define.
+
 2011-03-26  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* basic-block.h (fixup_abnormal_edges): Adjust prototype.
