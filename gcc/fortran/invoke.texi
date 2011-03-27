@@ -166,7 +166,7 @@ and warnings}.
 -fwhole-file -fsecond-underscore @gol
 -fbounds-check -fcheck-array-temporaries  -fmax-array-constructor =@var{n} @gol
 -fcheck=@var{<all|array-temps|bounds|do|mem|pointer|recursion>} @gol
--fcoarray=@var{<none|single>} -fmax-stack-var-size=@var{n} @gol
+-fcoarray=@var{<none|single|lib>} -fmax-stack-var-size=@var{n} @gol
 -fpack-derived  -frepack-arrays  -fshort-enums  -fexternal-blas @gol
 -fblas-matmul-limit=@var{n} -frecursive -finit-local-zero @gol
 -finit-integer=@var{n} -finit-real=@var{<zero|inf|-inf|nan|snan>} @gol
@@ -1249,6 +1249,10 @@ statements will produce a compile-time error. (Default)
 
 @item @samp{single}
 Single-image mode, i.e. @code{num_images()} is always one.
+
+@item @samp{lib}
+Library-based coarray parallelization; a suitable GNU Fortran coarray
+library needs to be linked.
 @end table
 
 

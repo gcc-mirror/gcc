@@ -4591,6 +4591,9 @@ gfc_simplify_num_images (void)
       return &gfc_bad_expr;
     }
 
+  if (gfc_option.coarray != GFC_FCOARRAY_SINGLE)
+    return NULL;
+
   /* FIXME: gfc_current_locus is wrong.  */
   result = gfc_get_constant_expr (BT_INTEGER, gfc_default_integer_kind,
 				  &gfc_current_locus);
@@ -6312,6 +6315,9 @@ gfc_simplify_this_image (gfc_expr *coarray, gfc_expr *dim)
   gfc_ref *ref;
   gfc_array_spec *as;
   int d;
+
+  if (gfc_option.coarray != GFC_FCOARRAY_SINGLE)
+    return NULL;
 
   if (coarray == NULL)
     {

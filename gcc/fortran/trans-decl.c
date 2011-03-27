@@ -111,6 +111,22 @@ tree gfor_fndecl_in_unpack;
 tree gfor_fndecl_associated;
 
 
+/* Coarray run-time library function decls.  */
+tree gfor_fndecl_caf_init;
+tree gfor_fndecl_caf_finalize;
+tree gfor_fndecl_caf_critical;
+tree gfor_fndecl_caf_end_critical;
+tree gfor_fndecl_caf_sync_all;
+tree gfor_fndecl_caf_sync_images;
+tree gfor_fndecl_caf_error_stop;
+tree gfor_fndecl_caf_error_stop_str;
+
+/* Coarray global variables for num_images/this_image.  */
+
+tree gfort_gvar_caf_num_images;
+tree gfort_gvar_caf_this_image;
+
+
 /* Math functions.  Many other math functions are handled in
    trans-intrinsic.c.  */
 
@@ -3003,6 +3019,50 @@ gfc_build_builtin_function_decls (void)
   DECL_PURE_P (gfor_fndecl_associated) = 1;
   TREE_NOTHROW (gfor_fndecl_associated) = 1;
 
+  /* Coarray library calls.  */
+  if (gfc_option.coarray == GFC_FCOARRAY_LIB)
+    {
+      tree pint_type, pppchar_type;
+
+      pint_type = build_pointer_type (integer_type_node);
+      pppchar_type
+	= build_pointer_type (build_pointer_type (pchar_type_node));
+
+      gfor_fndecl_caf_init = gfc_build_library_function_decl (
+		   get_identifier (PREFIX("caf_init")),  void_type_node,
+		   4, pint_type, pppchar_type, pint_type, pint_type);
+
+      gfor_fndecl_caf_finalize = gfc_build_library_function_decl (
+	get_identifier (PREFIX("caf_finalize")), void_type_node, 0);
+
+      gfor_fndecl_caf_critical = gfc_build_library_function_decl (
+	get_identifier (PREFIX("caf_critical")), void_type_node, 0);
+
+      gfor_fndecl_caf_end_critical = gfc_build_library_function_decl (
+	get_identifier (PREFIX("caf_end_critical")), void_type_node, 0);
+
+      gfor_fndecl_caf_sync_all = gfc_build_library_function_decl_with_spec (
+	get_identifier (PREFIX("caf_sync_all")), ".W", integer_type_node,
+	2, build_pointer_type (pchar_type_node), integer_type_node);
+
+      gfor_fndecl_caf_sync_images = gfc_build_library_function_decl_with_spec (
+	get_identifier (PREFIX("caf_sync_images")), ".RRW", integer_type_node,
+	4, integer_type_node, pint_type, build_pointer_type (pchar_type_node),
+	integer_type_node);
+
+      gfor_fndecl_caf_error_stop = gfc_build_library_function_decl (
+	get_identifier (PREFIX("caf_error_stop")),
+	void_type_node, 1, gfc_int4_type_node);
+      /* CAF's ERROR STOP doesn't return.  */
+      TREE_THIS_VOLATILE (gfor_fndecl_caf_error_stop) = 1;
+
+      gfor_fndecl_caf_error_stop_str = gfc_build_library_function_decl_with_spec (
+	get_identifier (PREFIX("caf_error_stop_str")), ".R.",
+	void_type_node, 2, pchar_type_node, gfc_int4_type_node);
+      /* CAF's ERROR STOP doesn't return.  */
+      TREE_THIS_VOLATILE (gfor_fndecl_caf_error_stop_str) = 1;
+    }
+
   gfc_build_intrinsic_function_decls ();
   gfc_build_intrinsic_lib_fndecls ();
   gfc_build_io_library_fndecls ();
@@ -4405,6 +4465,40 @@ add_argument_checking (stmtblock_t *block, gfc_symbol *sym)
 }
 
 
+void
+gfc_init_coarray_decl (void)
+{
+  tree save_fn_decl = current_function_decl;
+
+  if (gfc_option.coarray != GFC_FCOARRAY_LIB)
+    return;
+
+  if (gfort_gvar_caf_this_image || gfort_gvar_caf_num_images)
+    return;
+
+  save_fn_decl = current_function_decl;
+  current_function_decl = NULL_TREE;
+  push_cfun (cfun);
+
+  gfort_gvar_caf_this_image = gfc_create_var (integer_type_node,
+					      PREFIX("caf_this_image"));
+  DECL_ARTIFICIAL (gfort_gvar_caf_this_image) = 1;
+  TREE_USED (gfort_gvar_caf_this_image) = 1;
+  TREE_PUBLIC (gfort_gvar_caf_this_image) = 1;
+  TREE_STATIC (gfort_gvar_caf_this_image) = 1;
+
+  gfort_gvar_caf_num_images = gfc_create_var (integer_type_node,
+					      PREFIX("caf_num_images"));
+  DECL_ARTIFICIAL (gfort_gvar_caf_num_images) = 1;
+  TREE_USED (gfort_gvar_caf_num_images) = 1;
+  TREE_PUBLIC (gfort_gvar_caf_num_images) = 1;
+  TREE_STATIC (gfort_gvar_caf_num_images) = 1;
+
+  pop_cfun ();
+  current_function_decl = save_fn_decl;
+}
+
+
 static void
 create_main_function (tree fndecl)
 {
@@ -4483,6 +4577,23 @@ create_main_function (tree fndecl)
   gfc_init_block (&body);
 
   /* Call some libgfortran initialization routines, call then MAIN__(). */
+
+  /* Call _gfortran_caf_init (*argc, ***argv, *this_image, *num_images).  */
+  if (gfc_option.coarray == GFC_FCOARRAY_LIB)
+    {
+      tree pint_type, pppchar_type;
+      pint_type = build_pointer_type (integer_type_node);
+      pppchar_type
+	= build_pointer_type (build_pointer_type (pchar_type_node));
+
+      gfc_init_coarray_decl ();
+      tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_init, 4,
+		gfc_build_addr_expr (pint_type, argc),
+		gfc_build_addr_expr (pppchar_type, argv),
+		gfc_build_addr_expr (pint_type, gfort_gvar_caf_this_image),
+		gfc_build_addr_expr (pint_type, gfort_gvar_caf_num_images));
+      gfc_add_expr_to_block (&body, tmp);
+    }
 
   /* Call _gfortran_set_args (argc, argv).  */
   TREE_USED (argc) = 1;
@@ -4600,6 +4711,19 @@ create_main_function (tree fndecl)
 
   /* Mark MAIN__ as used.  */
   TREE_USED (fndecl) = 1;
+
+  /* Coarray: Call _gfortran_caf_finalize(void).  */
+  if (gfc_option.coarray == GFC_FCOARRAY_LIB)
+    { 
+      /* Per F2008, 8.5.1 END of the main program implies a
+	 SYNC MEMORY.  */ 
+      tmp = built_in_decls [BUILT_IN_SYNCHRONIZE];
+      tmp = build_call_expr_loc (input_location, tmp, 0);
+      gfc_add_expr_to_block (&body, tmp);
+
+      tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_finalize, 0);
+      gfc_add_expr_to_block (&body, tmp);
+    }
 
   /* "return 0".  */
   tmp = fold_build2_loc (input_location, MODIFY_EXPR, integer_type_node,

@@ -599,11 +599,25 @@ gfc_trans_stop (gfc_code *code, bool error_stop)
   gfc_init_se (&se, NULL);
   gfc_start_block (&se.pre);
 
+  if (gfc_option.coarray == GFC_FCOARRAY_LIB && !error_stop)
+    {
+      /* Per F2008, 8.5.1 STOP implies a SYNC MEMORY.  */
+      tmp = built_in_decls [BUILT_IN_SYNCHRONIZE];
+      tmp = build_call_expr_loc (input_location, tmp, 0);
+      gfc_add_expr_to_block (&se.pre, tmp);
+
+      tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_finalize, 0);
+      gfc_add_expr_to_block (&se.pre, tmp);
+    }
+
   if (code->expr1 == NULL)
     {
       tmp = build_int_cst (gfc_int4_type_node, 0);
       tmp = build_call_expr_loc (input_location,
-				 error_stop ? gfor_fndecl_error_stop_string
+				 error_stop
+				 ? (gfc_option.coarray == GFC_FCOARRAY_LIB
+				    ? gfor_fndecl_caf_error_stop_str
+				    : gfor_fndecl_error_stop_string)
 				 : gfor_fndecl_stop_string,
 				 2, build_int_cst (pchar_type_node, 0), tmp);
     }
@@ -611,7 +625,10 @@ gfc_trans_stop (gfc_code *code, bool error_stop)
     {
       gfc_conv_expr (&se, code->expr1);
       tmp = build_call_expr_loc (input_location,
-				 error_stop ? gfor_fndecl_error_stop_numeric
+				 error_stop
+				 ? (gfc_option.coarray == GFC_FCOARRAY_LIB
+				    ? gfor_fndecl_caf_error_stop
+				    : gfor_fndecl_error_stop_numeric)
 				 : gfor_fndecl_stop_numeric_f08, 1, 
 				 fold_convert (gfc_int4_type_node, se.expr));
     }
@@ -619,7 +636,10 @@ gfc_trans_stop (gfc_code *code, bool error_stop)
     {
       gfc_conv_expr_reference (&se, code->expr1);
       tmp = build_call_expr_loc (input_location,
-				 error_stop ? gfor_fndecl_error_stop_string
+				 error_stop
+				 ? (gfc_option.coarray == GFC_FCOARRAY_LIB
+				    ? gfor_fndecl_caf_error_stop_str
+				    : gfor_fndecl_error_stop_string)
 				 : gfor_fndecl_stop_string,
 				 2, se.expr, se.string_length);
     }
@@ -633,14 +653,51 @@ gfc_trans_stop (gfc_code *code, bool error_stop)
 
 
 tree
-gfc_trans_sync (gfc_code *code, gfc_exec_op type __attribute__ ((unused)))
+gfc_trans_sync (gfc_code *code, gfc_exec_op type)
 {
-  gfc_se se;
+  gfc_se se, argse;
+  tree tmp;
+  tree images = NULL_TREE, stat = NULL_TREE,
+       errmsg = NULL_TREE, errmsglen = NULL_TREE;
 
-  if ((code->expr1 && (gfc_option.rtcheck & GFC_RTCHECK_BOUNDS)) || code->expr2)
+  /* Short cut: For single images without bound checking or without STAT=,
+     return early. (ERRMSG= is always untouched for -fcoarray=single.)  */
+  if (!code->expr2 && !(gfc_option.rtcheck & GFC_RTCHECK_BOUNDS)
+      && gfc_option.coarray != GFC_FCOARRAY_LIB)
+    return NULL_TREE; 
+
+  gfc_init_se (&se, NULL);
+  gfc_start_block (&se.pre);
+
+  if (code->expr1 && code->expr1->rank == 0)
     {
-      gfc_init_se (&se, NULL);
-      gfc_start_block (&se.pre);
+      gfc_init_se (&argse, NULL);
+      gfc_conv_expr_val (&argse, code->expr1);
+      images = argse.expr;
+    }
+
+  if (code->expr2)
+    {
+      gcc_assert (code->expr2->expr_type == EXPR_VARIABLE);
+      gfc_init_se (&argse, NULL);
+      gfc_conv_expr_val (&argse, code->expr2);
+      stat = argse.expr;
+    }
+
+  if (code->expr3 && gfc_option.coarray == GFC_FCOARRAY_LIB
+      && type != EXEC_SYNC_MEMORY)
+    {
+      gcc_assert (code->expr3->expr_type == EXPR_VARIABLE);
+      gfc_init_se (&argse, NULL);
+      gfc_conv_expr (&argse, code->expr3);
+      gfc_conv_string_parameter (&argse);
+      errmsg = argse.expr;
+      errmsglen = argse.string_length;
+    }
+  else if (gfc_option.coarray == GFC_FCOARRAY_LIB && type != EXEC_SYNC_MEMORY)
+    {
+      errmsg = null_pointer_node;
+      errmsglen = build_int_cst (integer_type_node, 0);
     }
 
   /* Check SYNC IMAGES(imageset) for valid image index.
@@ -649,27 +706,100 @@ gfc_trans_sync (gfc_code *code, gfc_exec_op type __attribute__ ((unused)))
       && code->expr1->rank == 0)
     {
       tree cond;
-      gfc_conv_expr (&se, code->expr1);
-      cond = fold_build2_loc (input_location, NE_EXPR, boolean_type_node,
-			      se.expr, build_int_cst (TREE_TYPE (se.expr), 1));
+      if (gfc_option.coarray != GFC_FCOARRAY_LIB)
+	cond = fold_build2_loc (input_location, NE_EXPR, boolean_type_node,
+				images, build_int_cst (TREE_TYPE (images), 1));
+      else
+	{
+	  tree cond2;
+	  cond = fold_build2_loc (input_location, GE_EXPR, boolean_type_node,
+				  images, gfort_gvar_caf_num_images);
+	  cond2 = fold_build2_loc (input_location, LT_EXPR, boolean_type_node,
+				   images,
+				   build_int_cst (TREE_TYPE (images), 1));
+	  cond = fold_build2_loc (input_location, TRUTH_AND_EXPR,
+				  boolean_type_node, cond, cond2);
+	}
       gfc_trans_runtime_check (true, false, cond, &se.pre,
 			       &code->expr1->where, "Invalid image number "
 			       "%d in SYNC IMAGES",
 			       fold_convert (integer_type_node, se.expr));
     }
 
-  /* If STAT is present, set it to zero.  */
-  if (code->expr2)
+   /* Per F2008, 8.5.1, a SYNC MEMORY is implied by calling the
+      image control statements SYNC IMAGES and SYNC ALL.  */
+   if (gfc_option.coarray == GFC_FCOARRAY_LIB)
+     {
+	tmp = built_in_decls [BUILT_IN_SYNCHRONIZE];
+	tmp = build_call_expr_loc (input_location, tmp, 0);
+	gfc_add_expr_to_block (&se.pre, tmp);
+     }
+
+  if (gfc_option.coarray != GFC_FCOARRAY_LIB || type == EXEC_SYNC_MEMORY)
     {
-      gcc_assert (code->expr2->expr_type == EXPR_VARIABLE);
-      gfc_conv_expr (&se, code->expr2);
-      gfc_add_modify (&se.pre, se.expr, build_int_cst (TREE_TYPE (se.expr), 0));
+      /* Set STAT to zero.  */
+      if (code->expr2)
+	gfc_add_modify (&se.pre, stat, build_int_cst (TREE_TYPE (stat), 0));
+    }
+  else if (type == EXEC_SYNC_ALL)
+    {
+      tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_sync_all,
+				 2, errmsg, errmsglen);
+      if (code->expr2)
+	gfc_add_modify (&se.pre, stat, fold_convert (TREE_TYPE (stat), tmp));
+      else
+	gfc_add_expr_to_block (&se.pre, tmp);
+    }
+  else
+    {
+      tree len;
+
+      gcc_assert (type == EXEC_SYNC_IMAGES);
+
+      if (!code->expr1)
+	{
+	  len = build_int_cst (integer_type_node, -1);
+	  images = null_pointer_node;
+	}
+      else if (code->expr1->rank == 0)
+	{
+	  len = build_int_cst (integer_type_node, 1);
+	  images = gfc_build_addr_expr (NULL_TREE, images);
+	}
+      else
+	{
+	  /* FIXME.  */
+	  if (code->expr1->ts.kind != gfc_c_int_kind)
+	    gfc_fatal_error ("Sorry, only support for integer kind %d "
+			     "implemented for image-set at %L",
+			     gfc_c_int_kind, &code->expr1->where);
+
+	  gfc_conv_array_parameter (&se, code->expr1,
+				    gfc_walk_expr (code->expr1), true, NULL,
+				    NULL, &len);
+	  images = se.expr;
+
+	  tmp = gfc_typenode_for_spec (&code->expr1->ts);
+	  if (GFC_ARRAY_TYPE_P (tmp) || GFC_DESCRIPTOR_TYPE_P (tmp))
+	    tmp = gfc_get_element_type (tmp);
+
+	  len = fold_build2_loc (input_location, TRUNC_DIV_EXPR,
+				 TREE_TYPE (len), len,
+				 fold_convert (TREE_TYPE (len),
+					       TYPE_SIZE_UNIT (tmp)));
+          len = fold_convert (integer_type_node, len);
+	}
+
+      tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_sync_images, 4,
+				 fold_convert (integer_type_node, len), images,
+				 errmsg, errmsglen);
+      if (code->expr2)
+	gfc_add_modify (&se.pre, stat, fold_convert (TREE_TYPE (stat), tmp));
+      else
+	gfc_add_expr_to_block (&se.pre, tmp);
     }
 
-  if ((code->expr1 && (gfc_option.rtcheck & GFC_RTCHECK_BOUNDS)) || code->expr2)
-    return gfc_finish_block (&se.pre);
- 
-  return NULL_TREE;
+  return gfc_finish_block (&se.pre);
 }
 
 
@@ -870,8 +1000,23 @@ gfc_trans_critical (gfc_code *code)
   tree tmp;
 
   gfc_start_block (&block);
+
+  if (gfc_option.coarray == GFC_FCOARRAY_LIB)
+    {
+      tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_critical, 0);
+      gfc_add_expr_to_block (&block, tmp);
+    }
+
   tmp = gfc_trans_code (code->block->next);
   gfc_add_expr_to_block (&block, tmp);
+
+  if (gfc_option.coarray == GFC_FCOARRAY_LIB)
+    {
+      tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_end_critical,
+				 0);
+      gfc_add_expr_to_block (&block, tmp);
+    }
+
 
   return gfc_finish_block (&block);
 }
