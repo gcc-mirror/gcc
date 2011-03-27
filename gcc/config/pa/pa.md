@@ -5686,7 +5686,7 @@
 (define_expand "iordi3"
   [(set (match_operand:DI 0 "register_operand" "")
 	(ior:DI (match_operand:DI 1 "register_operand" "")
-		(match_operand:DI 2 "ior_operand" "")))]
+		(match_operand:DI 2 "reg_or_ior_operand" "")))]
   ""
   "
 {
@@ -5726,14 +5726,9 @@
 (define_expand "iorsi3"
   [(set (match_operand:SI 0 "register_operand" "")
 	(ior:SI (match_operand:SI 1 "register_operand" "")
-		(match_operand:SI 2 "arith32_operand" "")))]
+		(match_operand:SI 2 "reg_or_ior_operand" "")))]
   ""
-  "
-{
-  if (! (ior_operand (operands[2], SImode)
-         || register_operand (operands[2], SImode)))
-    operands[2] = force_reg (SImode, operands[2]);
-}")
+  "")
 
 (define_insn ""
   [(set (match_operand:SI 0 "register_operand" "=r,r")

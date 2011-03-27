@@ -409,6 +409,15 @@
 	  || (GET_CODE (op) == CONST_INT && and_mask_p (INTVAL (op))));
 })
 
+;; True iff OP can be used to compute (reg | OP).
+
+(define_predicate "reg_or_ior_operand"
+  (match_code "subreg,reg,const_int")
+{
+  return (register_operand (op, mode)
+	  || (GET_CODE (op) == CONST_INT && ior_mask_p (INTVAL (op))));
+})
+
 ;; True iff depi can be used to compute (reg | OP).
 
 (define_predicate "ior_operand"

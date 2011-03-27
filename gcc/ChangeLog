@@ -1,3 +1,10 @@
+2011-03-27  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR target/48288
+	* config/pa/predicates.md (reg_or_ior_operand): New predicate.
+	* config/pa/pa.md (iordi3): Use new predicate in expander.
+	(iorsi3): Likewise.
+
 2011-03-27  Anatoly Sokolov  <aesok@post.ru>
 
         * config/mips/mips.h (LIBCALL_VALUE, FUNCTION_VALUE,
