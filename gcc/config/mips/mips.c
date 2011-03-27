@@ -5247,17 +5247,24 @@ mips_return_fpr_pair (enum machine_mode mode,
 
 }
 
-/* Implement FUNCTION_VALUE and LIBCALL_VALUE.  For normal calls,
-   VALTYPE is the return type and MODE is VOIDmode.  For libcalls,
-   VALTYPE is null and MODE is the mode of the return value.  */
+/* Implement TARGET_FUNCTION_VALUE and TARGET_LIBCALL_VALUE.
+   For normal calls, VALTYPE is the return type and MODE is VOIDmode.
+   For libcalls, VALTYPE is null and MODE is the mode of the return value.  */
 
-rtx
-mips_function_value (const_tree valtype, const_tree func, enum machine_mode mode)
+static rtx
+mips_function_value_1 (const_tree valtype, const_tree fn_decl_or_type,
+		       enum machine_mode mode)
 {
   if (valtype)
     {
       tree fields[2];
       int unsigned_p;
+      const_tree func;
+
+      if (fn_decl_or_type && DECL_P (fn_decl_or_type))
+	func = fn_decl_or_type;
+      else
+	func = NULL;
 
       mode = TYPE_MODE (valtype);
       unsigned_p = TYPE_UNSIGNED (valtype);
@@ -5322,6 +5329,41 @@ mips_function_value (const_tree valtype, const_tree func, enum machine_mode mode
     }
 
   return gen_rtx_REG (mode, GP_RETURN);
+}
+
+/* Implement TARGET_FUNCTION_VALUE.  */
+
+static rtx
+mips_function_value (const_tree valtype, const_tree fn_decl_or_type,
+		     bool outgoing ATTRIBUTE_UNUSED)
+{
+  return mips_function_value_1 (valtype, fn_decl_or_type, VOIDmode);
+}
+
+/* Implement TARGET_LIBCALL_VALUE.  */
+
+static rtx
+mips_libcall_value (enum machine_mode mode, const_rtx fun ATTRIBUTE_UNUSED)
+{
+  return mips_function_value_1 (NULL_TREE, NULL_TREE, mode);
+}
+
+/* Implement TARGET_FUNCTION_VALUE_REGNO_P.
+
+   On the MIPS, R2 R3 and F0 F2 are the only register thus used.
+   Currently, R2 and F0 are only implemented here (C has no complex type).  */
+
+static bool
+mips_function_value_regno_p (const unsigned int regno)
+{
+  if (regno == GP_RETURN
+      || regno == FP_RETURN
+      || (LONG_DOUBLE_TYPE_SIZE == 128
+	  && FP_RETURN != GP_RETURN
+	  && regno == FP_RETURN + 2))
+    return true;
+
+  return false;
 }
 
 /* Implement TARGET_RETURN_IN_MEMORY.  Under the o32 and o64 ABIs,
@@ -16481,6 +16523,12 @@ mips_shift_truncation_mask (enum machine_mode mode)
 #undef TARGET_PROMOTE_PROTOTYPES
 #define TARGET_PROMOTE_PROTOTYPES hook_bool_const_tree_true
 
+#undef TARGET_FUNCTION_VALUE
+#define TARGET_FUNCTION_VALUE mips_function_value
+#undef TARGET_LIBCALL_VALUE
+#define TARGET_LIBCALL_VALUE mips_libcall_value
+#undef TARGET_FUNCTION_VALUE_REGNO_P
+#define TARGET_FUNCTION_VALUE_REGNO_P mips_function_value_regno_p
 #undef TARGET_RETURN_IN_MEMORY
 #define TARGET_RETURN_IN_MEMORY mips_return_in_memory
 #undef TARGET_RETURN_IN_MSB
