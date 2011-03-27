@@ -1,3 +1,16 @@
+2011-03-27  Anatoly Sokolov  <aesok@post.ru>
+
+        * config/mips/mips.h (LIBCALL_VALUE, FUNCTION_VALUE,
+	FUNCTION_VALUE_REGNO_P): Remove macros.
+        * config/mips/mips-protos.h (mips_function_value): Remove.
+        * config/mips/mips.c (mips_function_value): Rename to...
+	(mips_function_value_1): ... this. Make static.  Handle receiving
+	the function type in 'fn_decl_or_type' argument.
+	(mips_function_value, mips_libcall_value,
+	mips_function_value_regno_p): New function.
+	(TARGET_FUNCTION_VALUE, TARGET_LIBCALL_VALUE,
+	TARGET_FUNCTION_VALUE_REGNO_P): Define.
+
 2011-03-27  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/i386.c (flag_opts): Add -mavx256-split-unaligned-load
