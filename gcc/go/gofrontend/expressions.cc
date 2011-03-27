@@ -3669,6 +3669,14 @@ Unary_expression::do_lower(Gogo*, Named_object*, int)
 	}
     }
 
+  // Catching an invalid indirection of unsafe.Pointer here avoid
+  // having to deal with TYPE_VOID in other places.
+  if (op == OPERATOR_MULT && expr->type()->is_unsafe_pointer_type())
+    {
+      error_at(this->location(), "invalid indirect of %<unsafe.Pointer%>");
+      return Expression::make_error(this->location());
+    }
+
   if (op == OPERATOR_PLUS || op == OPERATOR_MINUS
       || op == OPERATOR_NOT || op == OPERATOR_XOR)
     {
