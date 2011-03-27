@@ -423,6 +423,7 @@ runtime_files = \
 	runtime/go-unsafe-newarray.c \
 	runtime/go-unsafe-pointer.c \
 	runtime/go-unwind.c \
+	runtime/cpuprof.c \
 	runtime/mcache.c \
 	runtime/mcentral.c \
 	$(runtime_mem_file) \

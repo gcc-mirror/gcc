@@ -21,7 +21,7 @@ static pthread_cond_t note_cond = PTHREAD_COND_INITIALIZER;
    notewakeup.  */
 
 void
-noteclear (Note* n)
+runtime_noteclear (Note* n)
 {
   int32 i;
 
@@ -37,7 +37,7 @@ noteclear (Note* n)
 /* Wait until notewakeup is called.  */
 
 void
-notesleep (Note* n)
+runtime_notesleep (Note* n)
 {
   int32 i;
 
@@ -57,7 +57,7 @@ notesleep (Note* n)
 /* Wake up every thread sleeping on the note.  */
 
 void
-notewakeup (Note *n)
+runtime_notewakeup (Note *n)
 {
   int32 i;
 
