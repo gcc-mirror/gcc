@@ -203,19 +203,35 @@
       return standard_sse_constant_opcode (insn, operands[1]);
     case 1:
     case 2:
+      if (GET_MODE_ALIGNMENT (<MODE>mode) == 256
+	  && ((TARGET_AVX256_SPLIT_UNALIGNED_STORE
+	       && misaligned_operand (operands[0], <MODE>mode))
+	      || (TARGET_AVX256_SPLIT_UNALIGNED_LOAD
+		  && misaligned_operand (operands[1], <MODE>mode))))
+	gcc_unreachable ();
       switch (get_attr_mode (insn))
         {
 	case MODE_V8SF:
 	case MODE_V4SF:
-	  return "vmovaps\t{%1, %0|%0, %1}";
+	  if (misaligned_operand (operands[0], <MODE>mode)
+	      || misaligned_operand (operands[1], <MODE>mode))
+	    return "vmovups\t{%1, %0|%0, %1}";
+	  else
+	    return "vmovaps\t{%1, %0|%0, %1}";
 	case MODE_V4DF:
 	case MODE_V2DF:
-	  if (TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL)
+	  if (misaligned_operand (operands[0], <MODE>mode)
+	      || misaligned_operand (operands[1], <MODE>mode))
+	    return "vmovupd\t{%1, %0|%0, %1}";
+	  else if (TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL)
 	    return "vmovaps\t{%1, %0|%0, %1}";
 	  else
 	    return "vmovapd\t{%1, %0|%0, %1}";
 	default:
-	  if (TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL)
+	  if (misaligned_operand (operands[0], <MODE>mode)
+	      || misaligned_operand (operands[1], <MODE>mode))
+	    return "vmovdqu\t{%1, %0|%0, %1}";
+	  else if (TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL)
 	    return "vmovaps\t{%1, %0|%0, %1}";
 	  else
 	    return "vmovdqa\t{%1, %0|%0, %1}";
@@ -400,7 +416,15 @@
 	  UNSPEC_MOVU))]
   "AVX_VEC_FLOAT_MODE_P (<MODE>mode)
    && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
-  "vmovu<ssemodesuffix>\t{%1, %0|%0, %1}"
+{
+  if (GET_MODE_ALIGNMENT (<MODE>mode) == 256
+      && ((TARGET_AVX256_SPLIT_UNALIGNED_STORE
+	   && misaligned_operand (operands[0], <MODE>mode))
+	  || (TARGET_AVX256_SPLIT_UNALIGNED_LOAD
+	      && misaligned_operand (operands[1], <MODE>mode))))
+    gcc_unreachable ();
+  return "vmovu<ssemodesuffix>\t{%1, %0|%0, %1}";
+}
   [(set_attr "type" "ssemov")
    (set_attr "movu" "1")
    (set_attr "prefix" "vex")
@@ -459,7 +483,15 @@
 	  [(match_operand:AVXMODEQI 1 "nonimmediate_operand" "xm,x")]
 	  UNSPEC_MOVU))]
   "TARGET_AVX && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
-  "vmovdqu\t{%1, %0|%0, %1}"
+{
+  if (GET_MODE_ALIGNMENT (<MODE>mode) == 256
+      && ((TARGET_AVX256_SPLIT_UNALIGNED_STORE
+	   && misaligned_operand (operands[0], <MODE>mode))
+	  || (TARGET_AVX256_SPLIT_UNALIGNED_LOAD
+	      && misaligned_operand (operands[1], <MODE>mode))))
+    gcc_unreachable ();
+  return "vmovdqu\t{%1, %0|%0, %1}";
+}
   [(set_attr "type" "ssemov")
    (set_attr "movu" "1")
    (set_attr "prefix" "vex")
