@@ -13184,56 +13184,64 @@ mips_builtin_decl (unsigned int code, bool initialize_p ATTRIBUTE_UNUSED)
   return mips_builtin_decls[code];
 }
 
-/* Take argument ARGNO from EXP's argument list and convert it into a
-   form suitable for input operand OPNO of instruction ICODE.  Return the
-   value.  */
+/* Take argument ARGNO from EXP's argument list and convert it into
+   an expand operand.  Store the operand in *OP.  */
 
-static rtx
-mips_prepare_builtin_arg (enum insn_code icode,
-			  unsigned int opno, tree exp, unsigned int argno)
+static void
+mips_prepare_builtin_arg (struct expand_operand *op, tree exp,
+			  unsigned int argno)
 {
   tree arg;
   rtx value;
-  enum machine_mode mode;
 
   arg = CALL_EXPR_ARG (exp, argno);
   value = expand_normal (arg);
-  mode = insn_data[icode].operand[opno].mode;
-  if (!insn_data[icode].operand[opno].predicate (value, mode))
-    {
-      /* We need to get the mode from ARG for two reasons:
-
-	   - to cope with address operands, where MODE is the mode of the
-	     memory, rather than of VALUE itself.
-
-	   - to cope with special predicates like pmode_register_operand,
-	     where MODE is VOIDmode.  */
-      value = copy_to_mode_reg (TYPE_MODE (TREE_TYPE (arg)), value);
-
-      /* Check the predicate again.  */
-      if (!insn_data[icode].operand[opno].predicate (value, mode))
-	{
-	  error ("invalid argument to built-in function");
-	  return const0_rtx;
-	}
-    }
-
-  return value;
+  create_input_operand (op, value, TYPE_MODE (TREE_TYPE (arg)));
 }
 
-/* Return an rtx suitable for output operand OP of instruction ICODE.
-   If TARGET is non-null, try to use it where possible.  */
+/* Expand instruction ICODE as part of a built-in function sequence.
+   Use the first NOPS elements of OPS as the instruction's operands.
+   HAS_TARGET_P is true if operand 0 is a target; it is false if the
+   instruction has no target.
+
+   Return the target rtx if HAS_TARGET_P, otherwise return const0_rtx.  */
 
 static rtx
-mips_prepare_builtin_target (enum insn_code icode, unsigned int op, rtx target)
+mips_expand_builtin_insn (enum insn_code icode, unsigned int nops,
+			  struct expand_operand *ops, bool has_target_p)
 {
-  enum machine_mode mode;
+  if (!maybe_expand_insn (icode, nops, ops))
+    {
+      error ("invalid argument to built-in function");
+      return has_target_p ? gen_reg_rtx (ops[0].mode) : const0_rtx;
+    }
+  return has_target_p ? ops[0].value : const0_rtx;
+}
 
-  mode = insn_data[icode].operand[op].mode;
-  if (target == 0 || !insn_data[icode].operand[op].predicate (target, mode))
-    target = gen_reg_rtx (mode);
+/* Expand a floating-point comparison for built-in function call EXP.
+   The first NARGS arguments are the values to be compared.  ICODE is
+   the .md pattern that does the comparison and COND is the condition
+   that is being tested.  Return an rtx for the result.  */
 
-  return target;
+static rtx
+mips_expand_builtin_compare_1 (enum insn_code icode,
+			       enum mips_fp_condition cond,
+			       tree exp, int nargs)
+{
+  struct expand_operand ops[MAX_RECOG_OPERANDS];
+  int opno, argno;
+
+  /* The instruction should have a target operand, an operand for each
+     argument, and an operand for COND.  */
+  gcc_assert (nargs + 2 == insn_data[(int) icode].n_operands);
+
+  opno = 0;
+  create_output_operand (&ops[opno++], NULL_RTX,
+			 insn_data[(int) icode].operand[0].mode);
+  for (argno = 0; argno < nargs; argno++)
+    mips_prepare_builtin_arg (&ops[opno++], exp, argno);
+  create_integer_operand (&ops[opno++], (int) cond);
+  return mips_expand_builtin_insn (icode, opno, ops, true);
 }
 
 /* Expand a MIPS_BUILTIN_DIRECT or MIPS_BUILTIN_DIRECT_NO_TARGET function;
@@ -13245,44 +13253,23 @@ static rtx
 mips_expand_builtin_direct (enum insn_code icode, rtx target, tree exp,
 			    bool has_target_p)
 {
-  rtx ops[MAX_RECOG_OPERANDS];
+  struct expand_operand ops[MAX_RECOG_OPERANDS];
   int opno, argno;
 
   /* Map any target to operand 0.  */
   opno = 0;
   if (has_target_p)
-    {
-      target = mips_prepare_builtin_target (icode, opno, target);
-      ops[opno] = target;
-      opno++;
-    }
+    create_output_operand (&ops[opno++], target, TYPE_MODE (TREE_TYPE (exp)));
 
   /* Map the arguments to the other operands.  The n_operands value
      for an expander includes match_dups and match_scratches as well as
      match_operands, so n_operands is only an upper bound on the number
      of arguments to the expander function.  */
   gcc_assert (opno + call_expr_nargs (exp) <= insn_data[icode].n_operands);
-  for (argno = 0; argno < call_expr_nargs (exp); argno++, opno++)
-    ops[opno] = mips_prepare_builtin_arg (icode, opno, exp, argno);
+  for (argno = 0; argno < call_expr_nargs (exp); argno++)
+    mips_prepare_builtin_arg (&ops[opno++], exp, argno);
 
-  switch (opno)
-    {
-    case 2:
-      emit_insn (GEN_FCN (icode) (ops[0], ops[1]));
-      break;
-
-    case 3:
-      emit_insn (GEN_FCN (icode) (ops[0], ops[1], ops[2]));
-      break;
-
-    case 4:
-      emit_insn (GEN_FCN (icode) (ops[0], ops[1], ops[2], ops[3]));
-      break;
-
-    default:
-      gcc_unreachable ();
-    }
-  return target;
+  return mips_expand_builtin_insn (icode, opno, ops, has_target_p);
 }
 
 /* Expand a __builtin_mips_movt_*_ps or __builtin_mips_movf_*_ps
@@ -13296,27 +13283,24 @@ mips_expand_builtin_movtf (enum mips_builtin_type type,
 			   enum insn_code icode, enum mips_fp_condition cond,
 			   rtx target, tree exp)
 {
-  rtx cmp_result, op0, op1;
+  struct expand_operand ops[4];
+  rtx cmp_result;
 
-  cmp_result = mips_prepare_builtin_target (icode, 0, 0);
-  op0 = mips_prepare_builtin_arg (icode, 1, exp, 0);
-  op1 = mips_prepare_builtin_arg (icode, 2, exp, 1);
-  emit_insn (GEN_FCN (icode) (cmp_result, op0, op1, GEN_INT (cond)));
-
-  icode = CODE_FOR_mips_cond_move_tf_ps;
-  target = mips_prepare_builtin_target (icode, 0, target);
+  cmp_result = mips_expand_builtin_compare_1 (icode, cond, exp, 2);
+  create_output_operand (&ops[0], target, TYPE_MODE (TREE_TYPE (exp)));
   if (type == MIPS_BUILTIN_MOVT)
     {
-      op1 = mips_prepare_builtin_arg (icode, 2, exp, 2);
-      op0 = mips_prepare_builtin_arg (icode, 1, exp, 3);
+      mips_prepare_builtin_arg (&ops[2], exp, 2);
+      mips_prepare_builtin_arg (&ops[1], exp, 3);
     }
   else
     {
-      op0 = mips_prepare_builtin_arg (icode, 1, exp, 2);
-      op1 = mips_prepare_builtin_arg (icode, 2, exp, 3);
+      mips_prepare_builtin_arg (&ops[1], exp, 2);
+      mips_prepare_builtin_arg (&ops[2], exp, 3);
     }
-  emit_insn (gen_mips_cond_move_tf_ps (target, op0, op1, cmp_result));
-  return target;
+  create_fixed_operand (&ops[3], cmp_result);
+  return mips_expand_builtin_insn (CODE_FOR_mips_cond_move_tf_ps,
+				   4, ops, true);
 }
 
 /* Move VALUE_IF_TRUE into TARGET if CONDITION is true; move VALUE_IF_FALSE
@@ -13357,36 +13341,12 @@ mips_expand_builtin_compare (enum mips_builtin_type builtin_type,
 			     enum insn_code icode, enum mips_fp_condition cond,
 			     rtx target, tree exp)
 {
-  rtx offset, condition, cmp_result, args[MAX_RECOG_OPERANDS];
-  int argno;
+  rtx offset, condition, cmp_result;
 
   if (target == 0 || GET_MODE (target) != SImode)
     target = gen_reg_rtx (SImode);
-
-  /* The instruction should have a target operand, an operand for each
-     argument, and an operand for COND.  */
-  gcc_assert (call_expr_nargs (exp) + 2 == insn_data[icode].n_operands);
-
-  /* Prepare the operands to the comparison.  */
-  cmp_result = mips_prepare_builtin_target (icode, 0, 0);
-  for (argno = 0; argno < call_expr_nargs (exp); argno++)
-    args[argno] = mips_prepare_builtin_arg (icode, argno + 1, exp, argno);
-
-  switch (insn_data[icode].n_operands)
-    {
-    case 4:
-      emit_insn (GEN_FCN (icode) (cmp_result, args[0], args[1],
-				  GEN_INT (cond)));
-      break;
-
-    case 6:
-      emit_insn (GEN_FCN (icode) (cmp_result, args[0], args[1],
-				  args[2], args[3], GEN_INT (cond)));
-      break;
-
-    default:
-      gcc_unreachable ();
-    }
+  cmp_result = mips_expand_builtin_compare_1 (icode, cond, exp,
+					      call_expr_nargs (exp));
 
   /* If the comparison sets more than one register, we define the result
      to be 0 if all registers are false and -1 if all registers are true.
