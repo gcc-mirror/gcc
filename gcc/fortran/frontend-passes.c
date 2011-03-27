@@ -664,6 +664,7 @@ optimize_trim (gfc_expr *e)
   gfc_ref *ref;
   gfc_expr *fcn;
   gfc_actual_arglist *actual_arglist, *next;
+  gfc_ref **rr = NULL;
 
   /* Don't do this optimization within an argument list, because
      otherwise aliasing issues may occur.  */
@@ -681,46 +682,54 @@ optimize_trim (gfc_expr *e)
   if (a->expr_type != EXPR_VARIABLE)
     return false;
 
+  /* Follow all references to find the correct place to put the newly
+     created reference.  FIXME:  Also handle substring references and
+     array references.  Array references cause strange regressions at
+     the moment.  */
+
   if (a->ref)
     {
-      /* FIXME - also handle substring references, by modifying the
-	 reference itself.  Make sure not to evaluate functions in
-	 the references twice.  */
-      return false;
+      for (rr = &(a->ref); *rr; rr = &((*rr)->next))
+	{
+	  if ((*rr)->type == REF_SUBSTRING || (*rr)->type == REF_ARRAY)
+	    return false;
+	}
     }
-  else
-    {
-      strip_function_call (e);
 
-      /* Create the reference.  */
+  strip_function_call (e);
 
-      ref = gfc_get_ref ();
-      ref->type = REF_SUBSTRING;
+  if (e->ref == NULL)
+    rr = &(e->ref);
 
-      /* Set the start of the reference.  */
+  /* Create the reference.  */
 
-      ref->u.ss.start = gfc_get_int_expr (gfc_default_integer_kind, NULL, 1);
+  ref = gfc_get_ref ();
+  ref->type = REF_SUBSTRING;
 
-      /* Build the function call to len_trim(x, gfc_defaul_integer_kind).  */
+  /* Set the start of the reference.  */
 
-      fcn = gfc_get_expr ();
-      fcn->expr_type = EXPR_FUNCTION;
-      fcn->value.function.isym =
-	gfc_intrinsic_function_by_id (GFC_ISYM_LEN_TRIM);
-      actual_arglist = gfc_get_actual_arglist ();
-      actual_arglist->expr = gfc_copy_expr (e);
-      next = gfc_get_actual_arglist ();
-      next->expr = gfc_get_int_expr (gfc_default_integer_kind, NULL,
-				     gfc_default_integer_kind);
-      actual_arglist->next = next;
-      fcn->value.function.actual = actual_arglist;
+  ref->u.ss.start = gfc_get_int_expr (gfc_default_integer_kind, NULL, 1);
 
-      /* Set the end of the reference to the call to len_trim.  */
+  /* Build the function call to len_trim(x, gfc_defaul_integer_kind).  */
 
-      ref->u.ss.end = fcn;
-      e->ref = ref;
-      return true;
-    }
+  fcn = gfc_get_expr ();
+  fcn->expr_type = EXPR_FUNCTION;
+  fcn->value.function.isym =
+    gfc_intrinsic_function_by_id (GFC_ISYM_LEN_TRIM);
+  actual_arglist = gfc_get_actual_arglist ();
+  actual_arglist->expr = gfc_copy_expr (e);
+  next = gfc_get_actual_arglist ();
+  next->expr = gfc_get_int_expr (gfc_default_integer_kind, NULL,
+				 gfc_default_integer_kind);
+  actual_arglist->next = next;
+  fcn->value.function.actual = actual_arglist;
+
+  /* Set the end of the reference to the call to len_trim.  */
+
+  ref->u.ss.end = fcn;
+  gcc_assert (*rr == NULL);
+  *rr = ref;
+  return true;
 }
 
 #define WALK_SUBEXPR(NODE) \
