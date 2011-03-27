@@ -1992,7 +1992,7 @@ extern const char *decode_asm_operands (rtx, rtx *, rtx **, const char **,
 
 extern enum reg_class reg_preferred_class (int);
 extern enum reg_class reg_alternate_class (int);
-extern enum reg_class reg_cover_class (int);
+extern enum reg_class reg_allocno_class (int);
 extern void setup_reg_classes (int, enum reg_class, enum reg_class,
 			       enum reg_class);
 

@@ -573,11 +573,11 @@ schedule_insns (void)
    up.  */
 bool sched_pressure_p;
 
-/* Map regno -> its cover class.  The map defined only when
+/* Map regno -> its pressure class.  The map defined only when
    SCHED_PRESSURE_P is true.  */
-enum reg_class *sched_regno_cover_class;
+enum reg_class *sched_regno_pressure_class;
 
-/* The current register pressure.  Only elements corresponding cover
+/* The current register pressure.  Only elements corresponding pressure
    classes are defined.  */
 static int curr_reg_pressure[N_REG_CLASSES];
 
@@ -607,39 +607,41 @@ sched_init_region_reg_pressure_info (void)
 static void
 mark_regno_birth_or_death (int regno, bool birth_p)
 {
-  enum reg_class cover_class;
+  enum reg_class pressure_class;
 
-  cover_class = sched_regno_cover_class[regno];
+  pressure_class = sched_regno_pressure_class[regno];
   if (regno >= FIRST_PSEUDO_REGISTER)
     {
-      if (cover_class != NO_REGS)
+      if (pressure_class != NO_REGS)
 	{
 	  if (birth_p)
 	    {
 	      bitmap_set_bit (curr_reg_live, regno);
-	      curr_reg_pressure[cover_class]
-		+= ira_reg_class_nregs[cover_class][PSEUDO_REGNO_MODE (regno)];
+	      curr_reg_pressure[pressure_class]
+		+= (ira_reg_class_max_nregs
+		    [pressure_class][PSEUDO_REGNO_MODE (regno)]);
 	    }
 	  else
 	    {
 	      bitmap_clear_bit (curr_reg_live, regno);
-	      curr_reg_pressure[cover_class]
-		-= ira_reg_class_nregs[cover_class][PSEUDO_REGNO_MODE (regno)];
+	      curr_reg_pressure[pressure_class]
+		-= (ira_reg_class_max_nregs
+		    [pressure_class][PSEUDO_REGNO_MODE (regno)]);
 	    }
 	}
     }
-  else if (cover_class != NO_REGS
+  else if (pressure_class != NO_REGS
 	   && ! TEST_HARD_REG_BIT (ira_no_alloc_regs, regno))
     {
       if (birth_p)
 	{
 	  bitmap_set_bit (curr_reg_live, regno);
-	  curr_reg_pressure[cover_class]++;
+	  curr_reg_pressure[pressure_class]++;
 	}
       else
 	{
 	  bitmap_clear_bit (curr_reg_live, regno);
-	  curr_reg_pressure[cover_class]--;
+	  curr_reg_pressure[pressure_class]--;
 	}
     }
 }
@@ -653,8 +655,8 @@ initiate_reg_pressure_info (bitmap live)
   unsigned int j;
   bitmap_iterator bi;
 
-  for (i = 0; i < ira_reg_class_cover_size; i++)
-    curr_reg_pressure[ira_reg_class_cover[i]] = 0;
+  for (i = 0; i < ira_pressure_classes_num; i++)
+    curr_reg_pressure[ira_pressure_classes[i]] = 0;
   bitmap_clear (curr_reg_live);
   EXECUTE_IF_SET_IN_BITMAP (live, 0, j, bi)
     if (current_nr_blocks == 1 || bitmap_bit_p (region_ref_regs, j))
@@ -723,9 +725,9 @@ save_reg_pressure (void)
 {
   int i;
 
-  for (i = 0; i < ira_reg_class_cover_size; i++)
-    saved_reg_pressure[ira_reg_class_cover[i]]
-      = curr_reg_pressure[ira_reg_class_cover[i]];
+  for (i = 0; i < ira_pressure_classes_num; i++)
+    saved_reg_pressure[ira_pressure_classes[i]]
+      = curr_reg_pressure[ira_pressure_classes[i]];
   bitmap_copy (saved_reg_live, curr_reg_live);
 }
 
@@ -735,9 +737,9 @@ restore_reg_pressure (void)
 {
   int i;
 
-  for (i = 0; i < ira_reg_class_cover_size; i++)
-    curr_reg_pressure[ira_reg_class_cover[i]]
-      = saved_reg_pressure[ira_reg_class_cover[i]];
+  for (i = 0; i < ira_pressure_classes_num; i++)
+    curr_reg_pressure[ira_pressure_classes[i]]
+      = saved_reg_pressure[ira_pressure_classes[i]];
   bitmap_copy (curr_reg_live, saved_reg_live);
 }
 
@@ -755,7 +757,7 @@ dying_use_p (struct reg_use_data *use)
 }
 
 /* Print info about the current register pressure and its excess for
-   each cover class.  */
+   each pressure class.  */
 static void
 print_curr_reg_pressure (void)
 {
@@ -763,9 +765,9 @@ print_curr_reg_pressure (void)
   enum reg_class cl;
 
   fprintf (sched_dump, ";;\t");
-  for (i = 0; i < ira_reg_class_cover_size; i++)
+  for (i = 0; i < ira_pressure_classes_num; i++)
     {
-      cl = ira_reg_class_cover[i];
+      cl = ira_pressure_classes[i];
       gcc_assert (curr_reg_pressure[cl] >= 0);
       fprintf (sched_dump, "  %s:%d(%d)", reg_class_names[cl],
 	       curr_reg_pressure[cl],
@@ -1108,23 +1110,24 @@ setup_insn_reg_pressure_info (rtx insn)
   gcc_checking_assert (!DEBUG_INSN_P (insn));
 
   excess_cost_change = 0;
-  for (i = 0; i < ira_reg_class_cover_size; i++)
-    death[ira_reg_class_cover[i]] = 0;
+  for (i = 0; i < ira_pressure_classes_num; i++)
+    death[ira_pressure_classes[i]] = 0;
   for (use = INSN_REG_USE_LIST (insn); use != NULL; use = use->next_insn_use)
     if (dying_use_p (use))
       {
-	cl = sched_regno_cover_class[use->regno];
+	cl = sched_regno_pressure_class[use->regno];
 	if (use->regno < FIRST_PSEUDO_REGISTER)
 	  death[cl]++;
 	else
-	  death[cl] += ira_reg_class_nregs[cl][PSEUDO_REGNO_MODE (use->regno)];
+	  death[cl]
+	    += ira_reg_class_max_nregs[cl][PSEUDO_REGNO_MODE (use->regno)];
       }
   pressure_info = INSN_REG_PRESSURE (insn);
   max_reg_pressure = INSN_MAX_REG_PRESSURE (insn);
   gcc_assert (pressure_info != NULL && max_reg_pressure != NULL);
-  for (i = 0; i < ira_reg_class_cover_size; i++)
+  for (i = 0; i < ira_pressure_classes_num; i++)
     {
-      cl = ira_reg_class_cover[i];
+      cl = ira_pressure_classes[i];
       gcc_assert (curr_reg_pressure[cl] >= 0);
       change = (int) pressure_info[i].set_increase - death[cl];
       before = MAX (0, max_reg_pressure[i] - ira_available_class_regs[cl]);
@@ -1569,9 +1572,9 @@ setup_insn_max_reg_pressure (rtx after, bool update_p)
   static int max_reg_pressure[N_REG_CLASSES];
 
   save_reg_pressure ();
-  for (i = 0; i < ira_reg_class_cover_size; i++)
-    max_reg_pressure[ira_reg_class_cover[i]]
-      = curr_reg_pressure[ira_reg_class_cover[i]];
+  for (i = 0; i < ira_pressure_classes_num; i++)
+    max_reg_pressure[ira_pressure_classes[i]]
+      = curr_reg_pressure[ira_pressure_classes[i]];
   for (insn = NEXT_INSN (after);
        insn != NULL_RTX && ! BARRIER_P (insn)
 	 && BLOCK_FOR_INSN (insn) == BLOCK_FOR_INSN (after);
@@ -1579,24 +1582,24 @@ setup_insn_max_reg_pressure (rtx after, bool update_p)
     if (NONDEBUG_INSN_P (insn))
       {
 	eq_p = true;
-	for (i = 0; i < ira_reg_class_cover_size; i++)
+	for (i = 0; i < ira_pressure_classes_num; i++)
 	  {
-	    p = max_reg_pressure[ira_reg_class_cover[i]];
+	    p = max_reg_pressure[ira_pressure_classes[i]];
 	    if (INSN_MAX_REG_PRESSURE (insn)[i] != p)
 	      {
 		eq_p = false;
 		INSN_MAX_REG_PRESSURE (insn)[i]
-		  = max_reg_pressure[ira_reg_class_cover[i]];
+		  = max_reg_pressure[ira_pressure_classes[i]];
 	      }
 	  }
 	if (update_p && eq_p)
 	  break;
 	update_register_pressure (insn);
-	for (i = 0; i < ira_reg_class_cover_size; i++)
-	  if (max_reg_pressure[ira_reg_class_cover[i]]
-	      < curr_reg_pressure[ira_reg_class_cover[i]])
-	    max_reg_pressure[ira_reg_class_cover[i]]
-	      = curr_reg_pressure[ira_reg_class_cover[i]];
+	for (i = 0; i < ira_pressure_classes_num; i++)
+	  if (max_reg_pressure[ira_pressure_classes[i]]
+	      < curr_reg_pressure[ira_pressure_classes[i]])
+	    max_reg_pressure[ira_pressure_classes[i]]
+	      = curr_reg_pressure[ira_pressure_classes[i]];
       }
   restore_reg_pressure ();
 }
@@ -1610,13 +1613,13 @@ update_reg_and_insn_max_reg_pressure (rtx insn)
   int i;
   int before[N_REG_CLASSES];
 
-  for (i = 0; i < ira_reg_class_cover_size; i++)
-    before[i] = curr_reg_pressure[ira_reg_class_cover[i]];
+  for (i = 0; i < ira_pressure_classes_num; i++)
+    before[i] = curr_reg_pressure[ira_pressure_classes[i]];
   update_register_pressure (insn);
-  for (i = 0; i < ira_reg_class_cover_size; i++)
-    if (curr_reg_pressure[ira_reg_class_cover[i]] != before[i])
+  for (i = 0; i < ira_pressure_classes_num; i++)
+    if (curr_reg_pressure[ira_pressure_classes[i]] != before[i])
       break;
-  if (i < ira_reg_class_cover_size)
+  if (i < ira_pressure_classes_num)
     setup_insn_max_reg_pressure (insn, true);
 }
 
@@ -1662,9 +1665,9 @@ schedule_insn (rtx insn)
       if (pressure_info != NULL)
 	{
 	  fputc (':', sched_dump);
-	  for (i = 0; i < ira_reg_class_cover_size; i++)
+	  for (i = 0; i < ira_pressure_classes_num; i++)
 	    fprintf (sched_dump, "%s%+d(%d)",
-		     reg_class_names[ira_reg_class_cover[i]],
+		     reg_class_names[ira_pressure_classes[i]],
 		     pressure_info[i].set_increase, pressure_info[i].change);
 	}
       fputc ('\n', sched_dump);
@@ -3509,13 +3512,13 @@ sched_init (void)
       int i, max_regno = max_reg_num ();
 
       ira_set_pseudo_classes (sched_verbose ? sched_dump : NULL);
-      sched_regno_cover_class
+      sched_regno_pressure_class
 	= (enum reg_class *) xmalloc (max_regno * sizeof (enum reg_class));
       for (i = 0; i < max_regno; i++)
-	sched_regno_cover_class[i]
+	sched_regno_pressure_class[i]
 	  = (i < FIRST_PSEUDO_REGISTER
-	     ? ira_class_translate[REGNO_REG_CLASS (i)]
-	     : reg_cover_class (i));
+	     ? ira_pressure_class_translate[REGNO_REG_CLASS (i)]
+	     : ira_pressure_class_translate[reg_allocno_class (i)]);
       curr_reg_live = BITMAP_ALLOC (NULL);
       saved_reg_live = BITMAP_ALLOC (NULL);
       region_ref_regs = BITMAP_ALLOC (NULL);
@@ -3620,7 +3623,7 @@ sched_finish (void)
   haifa_finish_h_i_d ();
   if (sched_pressure_p)
     {
-      free (sched_regno_cover_class);
+      free (sched_regno_pressure_class);
       BITMAP_FREE (region_ref_regs);
       BITMAP_FREE (saved_reg_live);
       BITMAP_FREE (curr_reg_live);

@@ -324,11 +324,6 @@ enum reg_class
 
 #define N_REG_CLASSES  (int) LIM_REG_CLASSES
 
-#define IRA_COVER_CLASSES		\
-{					\
-  GENERAL_REGS, C_REGS, LIM_REG_CLASSES	\
-}
-
 
 /* Give names of register classes as strings for dump file.  */
 #define REG_CLASS_NAMES  \

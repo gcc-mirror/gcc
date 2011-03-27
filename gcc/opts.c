@@ -289,11 +289,6 @@ init_options_struct (struct gcc_options *opts, struct gcc_options *opts_set)
   opts_set->x_param_values = XCNEWVEC (int, num_params);
   init_param_values (opts->x_param_values);
 
-  /* Use priority coloring if cover classes is not defined for the
-     target.  */
-  if (targetm.ira_cover_classes == NULL)
-    opts->x_flag_ira_algorithm = IRA_ALGORITHM_PRIORITY;
-
   /* Initialize whether `char' is signed.  */
   opts->x_flag_signed_char = DEFAULT_SIGNED_CHAR;
   /* Set this to a special "uninitialized" value.  The actual default
@@ -757,14 +752,6 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
      capabilities are requested.  */
   if (!opts->x_flag_sel_sched_pipelining)
     opts->x_flag_sel_sched_pipelining_outer_loops = 0;
-
-  if (!targetm.ira_cover_classes
-      && opts->x_flag_ira_algorithm == IRA_ALGORITHM_CB)
-    {
-      inform (loc,
-	      "-fira-algorithm=CB does not work on this architecture");
-      opts->x_flag_ira_algorithm = IRA_ALGORITHM_PRIORITY;
-    }
 
   if (opts->x_flag_conserve_stack)
     {

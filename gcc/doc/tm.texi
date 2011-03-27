@@ -2854,36 +2854,6 @@ as below:
 @end smallexample
 @end defmac
 
-@deftypefn {Target Hook} {const reg_class_t *} TARGET_IRA_COVER_CLASSES (void)
-Return an array of cover classes for the Integrated Register Allocator
-(@acronym{IRA}).  Cover classes are a set of non-intersecting register
-classes covering all hard registers used for register allocation
-purposes.  If a move between two registers in the same cover class is
-possible, it should be cheaper than a load or store of the registers.
-The array is terminated by a @code{LIM_REG_CLASSES} element.
-
-The order of cover classes in the array is important.  If two classes
-have the same cost of usage for a pseudo, the class occurred first in
-the array is chosen for the pseudo.
-
-This hook is called once at compiler startup, after the command-line
-options have been processed. It is then re-examined by every call to
-@code{target_reinit}.
-
-The default implementation returns @code{IRA_COVER_CLASSES}, if defined,
-otherwise there is no default implementation.  You must define either this
-macro or @code{IRA_COVER_CLASSES} in order to use the integrated register
-allocator with Chaitin-Briggs coloring. If the macro is not defined,
-the only available coloring algorithm is Chow's priority coloring.
-
-This hook must not be modified from @code{NULL} to non-@code{NULL} or
-vice versa by command-line option processing.
-@end deftypefn
-
-@defmac IRA_COVER_CLASSES
-See the documentation for @code{TARGET_IRA_COVER_CLASSES}.
-@end defmac
-
 @node Old Constraints
 @section Obsolete Macros for Defining Constraints
 @cindex defining constraints, obsolete method

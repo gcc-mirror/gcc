@@ -3311,7 +3311,7 @@ ira-conflicts.o: ira-conflicts.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
 ira-color.o: ira-color.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(TARGET_H) $(RTL_H) $(REGS_H) hard-reg-set.h $(FLAGS_H) \
    $(EXPR_H) $(BASIC_BLOCK_H) $(DIAGNOSTIC_CORE_H) $(TM_P_H) reload.h $(PARAMS_H) \
-   $(DF_H) $(SPLAY_TREE_H) $(IRA_INT_H)
+   $(DF_H) $(IRA_INT_H)
 ira-emit.o: ira-emit.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(REGS_H) $(RTL_H) $(TM_P_H) $(TARGET_H) $(FLAGS_H) hard-reg-set.h \
    $(BASIC_BLOCK_H) $(EXPR_H) $(RECOG_H) $(PARAMS_H) $(TIMEVAR_H) \
