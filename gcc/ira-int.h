@@ -43,9 +43,9 @@ along with GCC; see the file COPYING3.  If not see
    profile driven feedback is available and the function is never
    executed, frequency is always equivalent.  Otherwise rescale the
    edge frequency.  */
-#define REG_FREQ_FROM_EDGE_FREQ(freq)					      \
-  (optimize_size || (flag_branch_probabilities && !ENTRY_BLOCK_PTR->count)    \
-   ? REG_FREQ_MAX : (freq * REG_FREQ_MAX / BB_FREQ_MAX)			      \
+#define REG_FREQ_FROM_EDGE_FREQ(freq)					   \
+  (optimize_size || (flag_branch_probabilities && !ENTRY_BLOCK_PTR->count) \
+   ? REG_FREQ_MAX : (freq * REG_FREQ_MAX / BB_FREQ_MAX)			   \
    ? (freq * REG_FREQ_MAX / BB_FREQ_MAX) : 1)
 
 /* All natural loops.  */
@@ -122,7 +122,7 @@ struct ira_loop_tree_node
   bool entered_from_non_parent_p;
 
   /* Maximal register pressure inside loop for given register class
-     (defined only for the cover classes).  */
+     (defined only for the pressure classes).  */
   int reg_pressure[N_REG_CLASSES];
 
   /* Numbers of allocnos referred or living in the loop node (except
@@ -193,11 +193,8 @@ extern ira_loop_tree_node_t ira_loop_nodes;
 
 
 /* The structure describes program points where a given allocno lives.
-   To save memory we store allocno conflicts only for the same cover
-   class allocnos which is enough to assign hard registers.  To find
-   conflicts for other allocnos (e.g. to assign stack memory slot) we
-   use the live ranges.  If the live ranges of two allocnos are
-   intersected, the allocnos are in conflict.  */
+   If the live ranges of two allocnos are intersected, the allocnos
+   are in conflict.  */
 struct live_range
 {
   /* Object whose live range is described by given structure.  */
@@ -232,8 +229,7 @@ struct ira_object
   ira_allocno_t allocno;
   /* Vector of accumulated conflicting conflict_redords with NULL end
      marker (if OBJECT_CONFLICT_VEC_P is true) or conflict bit vector
-     otherwise.  Only ira_objects belonging to allocnos with the
-     same cover class are in the vector or in the bit vector.  */
+     otherwise.  */
   void *conflicts_array;
   /* Pointer to structures describing at what program point the
      object lives.  We always maintain the list in such way that *the
@@ -256,7 +252,7 @@ struct ira_object
   int min, max;
   /* Initial and accumulated hard registers conflicting with this
      object and as a consequences can not be assigned to the allocno.
-     All non-allocatable hard regs and hard regs of cover classes
+     All non-allocatable hard regs and hard regs of register classes
      different from given allocno one are included in the sets.  */
   HARD_REG_SET conflict_hard_regs, total_conflict_hard_regs;
   /* Number of accumulated conflicts in the vector of conflicting
@@ -266,6 +262,9 @@ struct ira_object
      ira_object structures.  Otherwise, we use a bit vector indexed
      by conflict ID numbers.  */
   unsigned int conflict_vec_p : 1;
+  /* Different additional data.  It is used to decrease size of
+     allocno data footprint.  */
+  void *add_data;
 };
 
 /* A structure representing an allocno (allocation entity).  Allocno
@@ -285,16 +284,40 @@ struct ira_allocno
   int regno;
   /* Mode of the allocno which is the mode of the corresponding
      pseudo-register.  */
-  enum machine_mode mode;
+  ENUM_BITFIELD (machine_mode) mode : 8;
+  /* Register class which should be used for allocation for given
+     allocno.  NO_REGS means that we should use memory.  */
+  ENUM_BITFIELD (reg_class) aclass : 16;
+  /* During the reload, value TRUE means that we should not reassign a
+     hard register to the allocno got memory earlier.  It is set up
+     when we removed memory-memory move insn before each iteration of
+     the reload.  */
+  unsigned int dont_reassign_p : 1;
+#ifdef STACK_REGS
+  /* Set to TRUE if allocno can't be assigned to the stack hard
+     register correspondingly in this region and area including the
+     region and all its subregions recursively.  */
+  unsigned int no_stack_reg_p : 1, total_no_stack_reg_p : 1;
+#endif
+  /* TRUE value means that there is no sense to spill the allocno
+     during coloring because the spill will result in additional
+     reloads in reload pass.  */
+  unsigned int bad_spill_p : 1;
+  /* TRUE if a hard register or memory has been assigned to the
+     allocno.  */
+  unsigned int assigned_p : 1;
+  /* TRUE if conflicts for given allocno are represented by vector of
+     pointers to the conflicting allocnos.  Otherwise, we use a bit
+     vector where a bit with given index represents allocno with the
+     same number.  */
+  unsigned int conflict_vec_p : 1;
   /* Hard register assigned to given allocno.  Negative value means
      that memory was allocated to the allocno.  During the reload,
      spilled allocno has value equal to the corresponding stack slot
      number (0, ...) - 2.  Value -1 is used for allocnos spilled by the
      reload (at this point pseudo-register has only one allocno) which
      did not get stack slot yet.  */
-  int hard_regno;
-  /* Final rtx representation of the allocno.  */
-  rtx reg;
+  short int hard_regno;
   /* Allocnos with the same regno are linked by the following member.
      Allocnos corresponding to inner loops are first in the list (it
      corresponds to depth-first traverse of the loops).  */
@@ -312,12 +335,9 @@ struct ira_allocno
   int nrefs;
   /* Accumulated frequency of usage of the allocno.  */
   int freq;
-  /* Register class which should be used for allocation for given
-     allocno.  NO_REGS means that we should use memory.  */
-  enum reg_class cover_class;
   /* Minimal accumulated and updated costs of usage register of the
-     cover class for the allocno.  */
-  int cover_class_cost, updated_cover_class_cost;
+     allocno class.  */
+  int class_cost, updated_class_cost;
   /* Minimal accumulated, and updated costs of memory for the allocno.
      At the allocation start, the original and updated costs are
      equal.  The updated cost may be changed after finishing
@@ -342,11 +362,6 @@ struct ira_allocno
   /* It is a link to allocno (cap) on lower loop level represented by
      given cap.  Null if given allocno is not a cap.  */
   ira_allocno_t cap_member;
-  /* Coalesced allocnos form a cyclic list.  One allocno given by
-     FIRST_COALESCED_ALLOCNO represents all coalesced allocnos.  The
-     list is chained by NEXT_COALESCED_ALLOCNO.  */
-  ira_allocno_t first_coalesced_allocno;
-  ira_allocno_t next_coalesced_allocno;
   /* The number of objects tracked in the following array.  */
   int num_objects;
   /* An array of structures describing conflict information and live
@@ -359,85 +374,33 @@ struct ira_allocno
   int call_freq;
   /* Accumulated number of the intersected calls.  */
   int calls_crossed_num;
-  /* TRUE if the allocno assigned to memory was a destination of
-     removed move (see ira-emit.c) at loop exit because the value of
-     the corresponding pseudo-register is not changed inside the
-     loop.  */
-  unsigned int mem_optimized_dest_p : 1;
-  /* TRUE if the corresponding pseudo-register has disjoint live
-     ranges and the other allocnos of the pseudo-register except this
-     one changed REG.  */
-  unsigned int somewhere_renamed_p : 1;
-  /* TRUE if allocno with the same REGNO in a subregion has been
-     renamed, in other words, got a new pseudo-register.  */
-  unsigned int child_renamed_p : 1;
-  /* During the reload, value TRUE means that we should not reassign a
-     hard register to the allocno got memory earlier.  It is set up
-     when we removed memory-memory move insn before each iteration of
-     the reload.  */
-  unsigned int dont_reassign_p : 1;
-#ifdef STACK_REGS
-  /* Set to TRUE if allocno can't be assigned to the stack hard
-     register correspondingly in this region and area including the
-     region and all its subregions recursively.  */
-  unsigned int no_stack_reg_p : 1, total_no_stack_reg_p : 1;
-#endif
-  /* TRUE value means that there is no sense to spill the allocno
-     during coloring because the spill will result in additional
-     reloads in reload pass.  */
-  unsigned int bad_spill_p : 1;
-  /* TRUE value means that the allocno was not removed yet from the
-     conflicting graph during colouring.  */
-  unsigned int in_graph_p : 1;
-  /* TRUE if a hard register or memory has been assigned to the
-     allocno.  */
-  unsigned int assigned_p : 1;
-  /* TRUE if it is put on the stack to make other allocnos
-     colorable.  */
-  unsigned int may_be_spilled_p : 1;
-  /* TRUE if the allocno was removed from the splay tree used to
-     choose allocn for spilling (see ira-color.c::.  */
-  unsigned int splay_removed_p : 1;
-  /* Non NULL if we remove restoring value from given allocno to
-     MEM_OPTIMIZED_DEST at loop exit (see ira-emit.c) because the
-     allocno value is not changed inside the loop.  */
-  ira_allocno_t mem_optimized_dest;
   /* Array of usage costs (accumulated and the one updated during
-     coloring) for each hard register of the allocno cover class.  The
+     coloring) for each hard register of the allocno class.  The
      member value can be NULL if all costs are the same and equal to
-     COVER_CLASS_COST.  For example, the costs of two different hard
+     CLASS_COST.  For example, the costs of two different hard
      registers can be different if one hard register is callee-saved
      and another one is callee-used and the allocno lives through
      calls.  Another example can be case when for some insn the
      corresponding pseudo-register value should be put in specific
      register class (e.g. AREG for x86) which is a strict subset of
-     the allocno cover class (GENERAL_REGS for x86).  We have updated
-     costs to reflect the situation when the usage cost of a hard
-     register is decreased because the allocno is connected to another
-     allocno by a copy and the another allocno has been assigned to
-     the hard register.  */
+     the allocno class (GENERAL_REGS for x86).  We have updated costs
+     to reflect the situation when the usage cost of a hard register
+     is decreased because the allocno is connected to another allocno
+     by a copy and the another allocno has been assigned to the hard
+     register.  */
   int *hard_reg_costs, *updated_hard_reg_costs;
   /* Array of decreasing costs (accumulated and the one updated during
      coloring) for allocnos conflicting with given allocno for hard
-     regno of the allocno cover class.  The member value can be NULL
-     if all costs are the same.  These costs are used to reflect
-     preferences of other allocnos not assigned yet during assigning
-     to given allocno.  */
+     regno of the allocno class.  The member value can be NULL if all
+     costs are the same.  These costs are used to reflect preferences
+     of other allocnos not assigned yet during assigning to given
+     allocno.  */
   int *conflict_hard_reg_costs, *updated_conflict_hard_reg_costs;
-  /* Size (in hard registers) of the same cover class allocnos with
-     TRUE in_graph_p value and conflicting with given allocno during
-     each point of graph coloring.  */
-  int left_conflicts_size;
-  /* Number of hard registers of the allocno cover class really
-     available for the allocno allocation.  */
-  int available_regs_num;
-  /* Allocnos in a bucket (used in coloring) chained by the following
-     two members.  */
-  ira_allocno_t next_bucket_allocno;
-  ira_allocno_t prev_bucket_allocno;
-  /* Used for temporary purposes.  */
-  int temp;
+  /* Different additional data.  It is used to decrease size of
+     allocno data footprint.  */
+  void *add_data;
 };
+
 
 /* All members of the allocno structures should be accessed only
    through the following macros.  */
@@ -463,10 +426,7 @@ struct ira_allocno
 #define ALLOCNO_TOTAL_NO_STACK_REG_P(A) ((A)->total_no_stack_reg_p)
 #endif
 #define ALLOCNO_BAD_SPILL_P(A) ((A)->bad_spill_p)
-#define ALLOCNO_IN_GRAPH_P(A) ((A)->in_graph_p)
 #define ALLOCNO_ASSIGNED_P(A) ((A)->assigned_p)
-#define ALLOCNO_MAY_BE_SPILLED_P(A) ((A)->may_be_spilled_p)
-#define ALLOCNO_SPLAY_REMOVED_P(A) ((A)->splay_removed_p)
 #define ALLOCNO_MODE(A) ((A)->mode)
 #define ALLOCNO_COPIES(A) ((A)->allocno_copies)
 #define ALLOCNO_HARD_REG_COSTS(A) ((A)->hard_reg_costs)
@@ -475,36 +435,71 @@ struct ira_allocno
   ((A)->conflict_hard_reg_costs)
 #define ALLOCNO_UPDATED_CONFLICT_HARD_REG_COSTS(A) \
   ((A)->updated_conflict_hard_reg_costs)
-#define ALLOCNO_LEFT_CONFLICTS_SIZE(A) ((A)->left_conflicts_size)
-#define ALLOCNO_COVER_CLASS(A) ((A)->cover_class)
-#define ALLOCNO_COVER_CLASS_COST(A) ((A)->cover_class_cost)
-#define ALLOCNO_UPDATED_COVER_CLASS_COST(A) ((A)->updated_cover_class_cost)
+#define ALLOCNO_CLASS(A) ((A)->aclass)
+#define ALLOCNO_CLASS_COST(A) ((A)->class_cost)
+#define ALLOCNO_UPDATED_CLASS_COST(A) ((A)->updated_class_cost)
 #define ALLOCNO_MEMORY_COST(A) ((A)->memory_cost)
 #define ALLOCNO_UPDATED_MEMORY_COST(A) ((A)->updated_memory_cost)
-#define ALLOCNO_EXCESS_PRESSURE_POINTS_NUM(A) ((A)->excess_pressure_points_num)
-#define ALLOCNO_AVAILABLE_REGS_NUM(A) ((A)->available_regs_num)
-#define ALLOCNO_NEXT_BUCKET_ALLOCNO(A) ((A)->next_bucket_allocno)
-#define ALLOCNO_PREV_BUCKET_ALLOCNO(A) ((A)->prev_bucket_allocno)
-#define ALLOCNO_TEMP(A) ((A)->temp)
-#define ALLOCNO_FIRST_COALESCED_ALLOCNO(A) ((A)->first_coalesced_allocno)
-#define ALLOCNO_NEXT_COALESCED_ALLOCNO(A) ((A)->next_coalesced_allocno)
+#define ALLOCNO_EXCESS_PRESSURE_POINTS_NUM(A) \
+  ((A)->excess_pressure_points_num)
 #define ALLOCNO_OBJECT(A,N) ((A)->objects[N])
 #define ALLOCNO_NUM_OBJECTS(A) ((A)->num_objects)
+#define ALLOCNO_ADD_DATA(A) ((A)->add_data)
 
-#define OBJECT_ALLOCNO(C) ((C)->allocno)
-#define OBJECT_SUBWORD(C) ((C)->subword)
-#define OBJECT_CONFLICT_ARRAY(C) ((C)->conflicts_array)
-#define OBJECT_CONFLICT_VEC(C) ((ira_object_t *)(C)->conflicts_array)
-#define OBJECT_CONFLICT_BITVEC(C) ((IRA_INT_TYPE *)(C)->conflicts_array)
-#define OBJECT_CONFLICT_ARRAY_SIZE(C) ((C)->conflicts_array_size)
-#define OBJECT_CONFLICT_VEC_P(C) ((C)->conflict_vec_p)
-#define OBJECT_NUM_CONFLICTS(C) ((C)->num_accumulated_conflicts)
-#define OBJECT_CONFLICT_HARD_REGS(C) ((C)->conflict_hard_regs)
-#define OBJECT_TOTAL_CONFLICT_HARD_REGS(C) ((C)->total_conflict_hard_regs)
-#define OBJECT_MIN(C) ((C)->min)
-#define OBJECT_MAX(C) ((C)->max)
-#define OBJECT_CONFLICT_ID(C) ((C)->id)
-#define OBJECT_LIVE_RANGES(A) ((A)->live_ranges)
+/* Typedef for pointer to the subsequent structure.  */
+typedef struct ira_emit_data *ira_emit_data_t;
+
+/* Allocno bound data used for emit pseudo live range split insns and
+   to flattening IR.  */
+struct ira_emit_data
+{
+  /* TRUE if the allocno assigned to memory was a destination of
+     removed move (see ira-emit.c) at loop exit because the value of
+     the corresponding pseudo-register is not changed inside the
+     loop.  */
+  unsigned int mem_optimized_dest_p : 1;
+  /* TRUE if the corresponding pseudo-register has disjoint live
+     ranges and the other allocnos of the pseudo-register except this
+     one changed REG.  */
+  unsigned int somewhere_renamed_p : 1;
+  /* TRUE if allocno with the same REGNO in a subregion has been
+     renamed, in other words, got a new pseudo-register.  */
+  unsigned int child_renamed_p : 1;
+  /* Final rtx representation of the allocno.  */
+  rtx reg;
+  /* Non NULL if we remove restoring value from given allocno to
+     MEM_OPTIMIZED_DEST at loop exit (see ira-emit.c) because the
+     allocno value is not changed inside the loop.  */
+  ira_allocno_t mem_optimized_dest;
+};
+
+#define ALLOCNO_EMIT_DATA(a) ((ira_emit_data_t) ALLOCNO_ADD_DATA (a))
+
+/* Data used to emit live range split insns and to flattening IR.  */
+extern ira_emit_data_t ira_allocno_emit_data;
+
+/* Abbreviation for frequent emit data access.  */
+static inline rtx
+allocno_emit_reg (ira_allocno_t a)
+{
+  return ALLOCNO_EMIT_DATA (a)->reg;
+}
+
+#define OBJECT_ALLOCNO(O) ((O)->allocno)
+#define OBJECT_SUBWORD(O) ((O)->subword)
+#define OBJECT_CONFLICT_ARRAY(O) ((O)->conflicts_array)
+#define OBJECT_CONFLICT_VEC(O) ((ira_object_t *)(O)->conflicts_array)
+#define OBJECT_CONFLICT_BITVEC(O) ((IRA_INT_TYPE *)(O)->conflicts_array)
+#define OBJECT_CONFLICT_ARRAY_SIZE(O) ((O)->conflicts_array_size)
+#define OBJECT_CONFLICT_VEC_P(O) ((O)->conflict_vec_p)
+#define OBJECT_NUM_CONFLICTS(O) ((O)->num_accumulated_conflicts)
+#define OBJECT_CONFLICT_HARD_REGS(O) ((O)->conflict_hard_regs)
+#define OBJECT_TOTAL_CONFLICT_HARD_REGS(O) ((O)->total_conflict_hard_regs)
+#define OBJECT_MIN(O) ((O)->min)
+#define OBJECT_MAX(O) ((O)->max)
+#define OBJECT_CONFLICT_ID(O) ((O)->id)
+#define OBJECT_LIVE_RANGES(O) ((O)->live_ranges)
+#define OBJECT_ADD_DATA(O) ((O)->add_data)
 
 /* Map regno -> allocnos with given regno (see comments for
    allocno member `next_regno_allocno').  */
@@ -590,6 +585,7 @@ extern int ira_overall_cost;
 extern int ira_reg_cost, ira_mem_cost;
 extern int ira_load_cost, ira_store_cost, ira_shuffle_cost;
 extern int ira_move_loops_num, ira_additional_jumps_num;
+
 
 /* This page contains a bitset implementation called 'min/max sets' used to
    record conflicts in IRA.
@@ -757,11 +753,6 @@ struct target_ira_int {
   struct costs *x_op_costs[MAX_RECOG_OPERANDS];
   struct costs *x_this_op_costs[MAX_RECOG_OPERANDS];
 
-  /* Classes used for cost calculation.  They may be different on
-     different iterations of the cost calculations or in different
-     optimization modes.  */
-  enum reg_class *x_cost_classes;
-
   /* Hard registers that can not be used for the register allocator for
      all functions of the current compilation unit.  */
   HARD_REG_SET x_no_unit_alloc_regs;
@@ -776,6 +767,12 @@ struct target_ira_int {
      ira_get_may_move_cost instead.  */
   move_table *x_ira_register_move_cost[MAX_MACHINE_MODE];
 
+  /* Array analogs of the macros MEMORY_MOVE_COST and
+     REGISTER_MOVE_COST but they contain maximal cost not minimal as
+     the previous two ones do.  */
+  short int x_ira_max_memory_move_cost[MAX_MACHINE_MODE][N_REG_CLASSES][2];
+  move_table *x_ira_max_register_move_cost[MAX_MACHINE_MODE];
+
   /* Similar to may_move_in_cost but it is calculated in IRA instead of
      regclass.  Another difference we take only available hard registers
      into account to figure out that one register class is a subset of
@@ -789,6 +786,18 @@ struct target_ira_int {
      the another one.  Don't use it directly.  Use function of
      ira_get_may_move_cost instead.  */
   move_table *x_ira_may_move_out_cost[MAX_MACHINE_MODE];
+
+/* Similar to ira_may_move_in_cost and ira_may_move_out_cost but they
+   return maximal cost.  */
+  move_table *x_ira_max_may_move_in_cost[MAX_MACHINE_MODE];
+  move_table *x_ira_max_may_move_out_cost[MAX_MACHINE_MODE];
+
+  /* Map class->true if class is a possible allocno class, false
+     otherwise. */
+  bool x_ira_reg_allocno_class_p[N_REG_CLASSES];
+
+  /* Map class->true if class is a pressure class, false otherwise. */
+  bool x_ira_reg_pressure_class_p[N_REG_CLASSES];
 
   /* Register class subset relation: TRUE if the first class is a subset
      of the second one considering only hard registers available for the
@@ -809,15 +818,19 @@ struct target_ira_int {
   /* Array whose values are hard regset of hard registers available for
      the allocation of given register class whose HARD_REGNO_MODE_OK
      values for given mode are zero.  */
-  HARD_REG_SET x_prohibited_class_mode_regs[N_REG_CLASSES][NUM_MACHINE_MODES];
+  HARD_REG_SET x_ira_prohibited_class_mode_regs[N_REG_CLASSES][NUM_MACHINE_MODES];
 
   /* The value is number of elements in the subsequent array.  */
   int x_ira_important_classes_num;
 
-  /* The array containing non-empty classes (including non-empty cover
-     classes; which are subclasses of cover classes.  Such classes is
+  /* The array containing all non-empty classes.  Such classes is
      important for calculation of the hard register usage costs.  */
   enum reg_class x_ira_important_classes[N_REG_CLASSES];
+
+  /* The array containing indexes of important classes in the previous
+     array.  The array elements are defined only for important
+     classes.  */
+  int x_ira_important_class_nums[N_REG_CLASSES];
 
   /* The biggest important class inside of intersection of the two
      classes (that is calculated taking only hard registers available
@@ -837,14 +850,15 @@ struct target_ira_int {
      allocation into account.  */
   enum reg_class x_ira_reg_class_super_classes[N_REG_CLASSES][N_REG_CLASSES];
 
-  /* The biggest important class inside of union of the two classes
-     (that is calculated taking only hard registers available for
-     allocation into account;.  If the both classes contain no hard
-     registers available for allocation, the value is calculated with
-     taking all hard-registers including fixed ones into account.  In
-     other words, the value is the corresponding reg_class_subunion
-     value.  */
-  enum reg_class x_ira_reg_class_union[N_REG_CLASSES][N_REG_CLASSES];
+  /* The biggest (smallest) important class inside of (covering) union
+     of the two classes (that is calculated taking only hard registers
+     available for allocation into account).  If the both classes
+     contain no hard registers available for allocation, the value is
+     calculated with taking all hard-registers including fixed ones
+     into account.  In other words, the value is the corresponding
+     reg_class_subunion (reg_class_superunion) value.  */
+  enum reg_class x_ira_reg_class_subunion[N_REG_CLASSES][N_REG_CLASSES];
+  enum reg_class x_ira_reg_class_superunion[N_REG_CLASSES][N_REG_CLASSES];
 
   /* For each reg class, table listing all the classes contained in it
      (excluding the class itself.  Non-allocatable registers are
@@ -871,43 +885,58 @@ extern struct target_ira_int *this_target_ira_int;
   (this_target_ira_int->x_ira_reg_mode_hard_regset)
 #define ira_register_move_cost \
   (this_target_ira_int->x_ira_register_move_cost)
+#define ira_max_memory_move_cost \
+  (this_target_ira_int->x_ira_max_memory_move_cost)
+#define ira_max_register_move_cost \
+  (this_target_ira_int->x_ira_max_register_move_cost)
 #define ira_may_move_in_cost \
   (this_target_ira_int->x_ira_may_move_in_cost)
 #define ira_may_move_out_cost \
   (this_target_ira_int->x_ira_may_move_out_cost)
+#define ira_max_may_move_in_cost \
+  (this_target_ira_int->x_ira_max_may_move_in_cost)
+#define ira_max_may_move_out_cost \
+  (this_target_ira_int->x_ira_max_may_move_out_cost)
+#define ira_reg_allocno_class_p \
+  (this_target_ira_int->x_ira_reg_allocno_class_p)
+#define ira_reg_pressure_class_p \
+  (this_target_ira_int->x_ira_reg_pressure_class_p)
 #define ira_class_subset_p \
   (this_target_ira_int->x_ira_class_subset_p)
 #define ira_non_ordered_class_hard_regs \
   (this_target_ira_int->x_ira_non_ordered_class_hard_regs)
 #define ira_class_hard_reg_index \
   (this_target_ira_int->x_ira_class_hard_reg_index)
-#define prohibited_class_mode_regs \
-  (this_target_ira_int->x_prohibited_class_mode_regs)
+#define ira_prohibited_class_mode_regs \
+  (this_target_ira_int->x_ira_prohibited_class_mode_regs)
 #define ira_important_classes_num \
   (this_target_ira_int->x_ira_important_classes_num)
 #define ira_important_classes \
   (this_target_ira_int->x_ira_important_classes)
+#define ira_important_class_nums \
+  (this_target_ira_int->x_ira_important_class_nums)
 #define ira_reg_class_intersect \
   (this_target_ira_int->x_ira_reg_class_intersect)
 #define ira_reg_classes_intersect_p \
   (this_target_ira_int->x_ira_reg_classes_intersect_p)
 #define ira_reg_class_super_classes \
   (this_target_ira_int->x_ira_reg_class_super_classes)
-#define ira_reg_class_union \
-  (this_target_ira_int->x_ira_reg_class_union)
+#define ira_reg_class_subunion \
+  (this_target_ira_int->x_ira_reg_class_subunion)
+#define ira_reg_class_superunion \
+  (this_target_ira_int->x_ira_reg_class_superunion)
 #define ira_prohibited_mode_move_regs \
   (this_target_ira_int->x_ira_prohibited_mode_move_regs)
 
 /* ira.c: */
 
 extern void *ira_allocate (size_t);
-extern void *ira_reallocate (void *, size_t);
 extern void ira_free (void *addr);
 extern bitmap ira_allocate_bitmap (void);
 extern void ira_free_bitmap (bitmap);
 extern void ira_print_disposition (FILE *);
 extern void ira_debug_disposition (void);
-extern void ira_debug_class_cover (void);
+extern void ira_debug_allocno_classes (void);
 extern void ira_init_register_move_cost (enum machine_mode);
 
 /* The length of the two following arrays.  */
@@ -938,7 +967,7 @@ extern ira_allocno_t ira_parent_allocno (ira_allocno_t);
 extern ira_allocno_t ira_parent_or_cap_allocno (ira_allocno_t);
 extern ira_allocno_t ira_create_allocno (int, bool, ira_loop_tree_node_t);
 extern void ira_create_allocno_objects (ira_allocno_t);
-extern void ira_set_allocno_cover_class (ira_allocno_t, enum reg_class);
+extern void ira_set_allocno_class (ira_allocno_t, enum reg_class);
 extern bool ira_conflict_vector_profitable_p (ira_object_t, int);
 extern void ira_allocate_conflict_vec (ira_object_t, int);
 extern void ira_allocate_object_conflicts (ira_object_t, int);
@@ -972,7 +1001,7 @@ extern void ira_init_costs_once (void);
 extern void ira_init_costs (void);
 extern void ira_finish_costs_once (void);
 extern void ira_costs (void);
-extern void ira_tune_allocno_costs_and_cover_classes (void);
+extern void ira_tune_allocno_costs (void);
 
 /* ira-lives.c */
 
@@ -990,6 +1019,7 @@ extern void ira_debug_conflicts (bool);
 extern void ira_build_conflicts (void);
 
 /* ira-color.c */
+extern void ira_debug_hard_regs_forest (void);
 extern int ira_loop_edge_freq (ira_loop_tree_node_t, int, bool);
 extern void ira_reassign_conflict_allocnos (int);
 extern void ira_initiate_assign (void);
@@ -997,34 +1027,18 @@ extern void ira_finish_assign (void);
 extern void ira_color (void);
 
 /* ira-emit.c */
+extern void ira_initiate_emit_data (void);
+extern void ira_finish_emit_data (void);
 extern void ira_emit (bool);
 
 
 
-/* Return cost of moving value of MODE from register of class FROM to
-   register of class TO.  */
-static inline int
-ira_get_register_move_cost (enum machine_mode mode,
-			    enum reg_class from, enum reg_class to)
+/* Initialize register costs for MODE if necessary.  */
+static inline void
+ira_init_register_move_cost_if_necessary (enum machine_mode mode)
 {
   if (ira_register_move_cost[mode] == NULL)
     ira_init_register_move_cost (mode);
-  return ira_register_move_cost[mode][from][to];
-}
-
-/* Return cost of moving value of MODE from register of class FROM to
-   register of class TO.  Return zero if IN_P is true and FROM is
-   subset of TO or if IN_P is false and FROM is superset of TO.  */
-static inline int
-ira_get_may_move_cost (enum machine_mode mode,
-		       enum reg_class from, enum reg_class to,
-		       bool in_p)
-{
-  if (ira_register_move_cost[mode] == NULL)
-    ira_init_register_move_cost (mode);
-  return (in_p
-	  ? ira_may_move_in_cost[mode][from][to]
-	  : ira_may_move_out_cost[mode][from][to]);
 }
 
 
@@ -1237,14 +1251,17 @@ ira_object_conflict_iter_cond (ira_object_conflict_iterator *i,
 
   if (i->conflict_vec_p)
     {
-      obj = ((ira_object_t *) i->vec)[i->word_num];
+      obj = ((ira_object_t *) i->vec)[i->word_num++];
       if (obj == NULL)
 	return false;
     }
   else
     {
+      unsigned IRA_INT_TYPE word = i->word;
+      unsigned int bit_num = i->bit_num;
+
       /* Skip words that are zeros.  */
-      for (; i->word == 0; i->word = ((IRA_INT_TYPE *) i->vec)[i->word_num])
+      for (; word == 0; word = ((IRA_INT_TYPE *) i->vec)[i->word_num])
 	{
 	  i->word_num++;
 
@@ -1252,31 +1269,20 @@ ira_object_conflict_iter_cond (ira_object_conflict_iterator *i,
 	  if (i->word_num * sizeof (IRA_INT_TYPE) >= i->size)
 	    return false;
 
-	  i->bit_num = i->word_num * IRA_INT_BITS;
+	  bit_num = i->word_num * IRA_INT_BITS;
 	}
 
       /* Skip bits that are zero.  */
-      for (; (i->word & 1) == 0; i->word >>= 1)
-	i->bit_num++;
+      for (; (word & 1) == 0; word >>= 1)
+	bit_num++;
 
-      obj = ira_object_id_map[i->bit_num + i->base_conflict_id];
+      obj = ira_object_id_map[bit_num + i->base_conflict_id];
+      i->bit_num = bit_num + 1;
+      i->word = word >> 1;
     }
 
   *pobj = obj;
   return true;
-}
-
-/* Advance to the next conflicting allocno.  */
-static inline void
-ira_object_conflict_iter_next (ira_object_conflict_iterator *i)
-{
-  if (i->conflict_vec_p)
-    i->word_num++;
-  else
-    {
-      i->word >>= 1;
-      i->bit_num++;
-    }
 }
 
 /* Loop over all objects conflicting with OBJ.  In each iteration,
@@ -1284,10 +1290,37 @@ ira_object_conflict_iter_next (ira_object_conflict_iterator *i)
    of ira_object_conflict_iterator used to iterate the conflicts.  */
 #define FOR_EACH_OBJECT_CONFLICT(OBJ, CONF, ITER)			\
   for (ira_object_conflict_iter_init (&(ITER), (OBJ));			\
-       ira_object_conflict_iter_cond (&(ITER), &(CONF));		\
-       ira_object_conflict_iter_next (&(ITER)))
+       ira_object_conflict_iter_cond (&(ITER), &(CONF));)
 
 
+
+/* The function returns TRUE if at least one hard register from ones
+   starting with HARD_REGNO and containing value of MODE are in set
+   HARD_REGSET.  */
+static inline bool
+ira_hard_reg_set_intersection_p (int hard_regno, enum machine_mode mode,
+				 HARD_REG_SET hard_regset)
+{
+  int i;
+
+  gcc_assert (hard_regno >= 0);
+  for (i = hard_regno_nregs[hard_regno][mode] - 1; i >= 0; i--)
+    if (TEST_HARD_REG_BIT (hard_regset, hard_regno + i))
+      return true;
+  return false;
+}
+
+/* Return number of hard registers in hard register SET.  */
+static inline int
+hard_reg_set_size (HARD_REG_SET set)
+{
+  int i, size;
+
+  for (size = i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+    if (TEST_HARD_REG_BIT (set, i))
+      size++;
+  return size;
+}
 
 /* The function returns TRUE if hard registers starting with
    HARD_REGNO and containing value of MODE are not in set
@@ -1311,61 +1344,60 @@ ira_hard_reg_not_in_set_p (int hard_regno, enum machine_mode mode,
    initialization of the cost vectors.  We do this only when it is
    really necessary.  */
 
-/* Allocate cost vector *VEC for hard registers of COVER_CLASS and
+/* Allocate cost vector *VEC for hard registers of ACLASS and
    initialize the elements by VAL if it is necessary */
 static inline void
-ira_allocate_and_set_costs (int **vec, enum reg_class cover_class, int val)
+ira_allocate_and_set_costs (int **vec, enum reg_class aclass, int val)
 {
   int i, *reg_costs;
   int len;
 
   if (*vec != NULL)
     return;
-  *vec = reg_costs = ira_allocate_cost_vector (cover_class);
-  len = ira_class_hard_regs_num[cover_class];
+  *vec = reg_costs = ira_allocate_cost_vector (aclass);
+  len = ira_class_hard_regs_num[aclass];
   for (i = 0; i < len; i++)
     reg_costs[i] = val;
 }
 
-/* Allocate cost vector *VEC for hard registers of COVER_CLASS and
-   copy values of vector SRC into the vector if it is necessary */
+/* Allocate cost vector *VEC for hard registers of ACLASS and copy
+   values of vector SRC into the vector if it is necessary */
 static inline void
-ira_allocate_and_copy_costs (int **vec, enum reg_class cover_class, int *src)
+ira_allocate_and_copy_costs (int **vec, enum reg_class aclass, int *src)
 {
   int len;
 
   if (*vec != NULL || src == NULL)
     return;
-  *vec = ira_allocate_cost_vector (cover_class);
-  len = ira_class_hard_regs_num[cover_class];
+  *vec = ira_allocate_cost_vector (aclass);
+  len = ira_class_hard_regs_num[aclass];
   memcpy (*vec, src, sizeof (int) * len);
 }
 
-/* Allocate cost vector *VEC for hard registers of COVER_CLASS and
-   add values of vector SRC into the vector if it is necessary */
+/* Allocate cost vector *VEC for hard registers of ACLASS and add
+   values of vector SRC into the vector if it is necessary */
 static inline void
-ira_allocate_and_accumulate_costs (int **vec, enum reg_class cover_class,
-				   int *src)
+ira_allocate_and_accumulate_costs (int **vec, enum reg_class aclass, int *src)
 {
   int i, len;
 
   if (src == NULL)
     return;
-  len = ira_class_hard_regs_num[cover_class];
+  len = ira_class_hard_regs_num[aclass];
   if (*vec == NULL)
     {
-      *vec = ira_allocate_cost_vector (cover_class);
+      *vec = ira_allocate_cost_vector (aclass);
       memset (*vec, 0, sizeof (int) * len);
     }
   for (i = 0; i < len; i++)
     (*vec)[i] += src[i];
 }
 
-/* Allocate cost vector *VEC for hard registers of COVER_CLASS and
-   copy values of vector SRC into the vector or initialize it by VAL
-   (if SRC is null).  */
+/* Allocate cost vector *VEC for hard registers of ACLASS and copy
+   values of vector SRC into the vector or initialize it by VAL (if
+   SRC is null).  */
 static inline void
-ira_allocate_and_set_or_copy_costs (int **vec, enum reg_class cover_class,
+ira_allocate_and_set_or_copy_costs (int **vec, enum reg_class aclass,
 				    int val, int *src)
 {
   int i, *reg_costs;
@@ -1373,8 +1405,8 @@ ira_allocate_and_set_or_copy_costs (int **vec, enum reg_class cover_class,
 
   if (*vec != NULL)
     return;
-  *vec = reg_costs = ira_allocate_cost_vector (cover_class);
-  len = ira_class_hard_regs_num[cover_class];
+  *vec = reg_costs = ira_allocate_cost_vector (aclass);
+  len = ira_class_hard_regs_num[aclass];
   if (src != NULL)
     memcpy (reg_costs, src, sizeof (int) * len);
   else

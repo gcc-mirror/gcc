@@ -124,9 +124,6 @@ extern rtx default_static_chain (const_tree, bool);
 extern void default_trampoline_init (rtx, tree, rtx);
 extern int default_return_pops_args (tree, tree, int);
 extern reg_class_t default_branch_target_register_class (void);
-#ifdef IRA_COVER_CLASSES
-extern const reg_class_t *default_ira_cover_classes (void);
-#endif
 extern reg_class_t default_secondary_reload (bool, rtx, reg_class_t,
 					     enum machine_mode,
 					     secondary_reload_info *);

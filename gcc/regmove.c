@@ -1236,11 +1236,11 @@ regmove_optimize (void)
   df_note_add_problem ();
   df_analyze ();
 
-  if (flag_ira_loop_pressure)
-    ira_set_pseudo_classes (dump_file);
-
   regstat_init_n_sets_and_refs ();
   regstat_compute_ri ();
+
+  if (flag_ira_loop_pressure)
+    ira_set_pseudo_classes (dump_file);
 
   regno_src_regno = XNEWVEC (int, nregs);
   for (i = nregs; --i >= 0; )

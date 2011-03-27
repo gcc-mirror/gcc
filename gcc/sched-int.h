@@ -653,9 +653,9 @@ extern struct haifa_sched_info *current_sched_info;
    up.  */
 extern bool sched_pressure_p;
 
-/* Map regno -> its cover class.  The map defined only when
+/* Map regno -> its pressure class.  The map defined only when
    SCHED_PRESSURE_P is true.  */
-extern enum reg_class *sched_regno_cover_class;
+extern enum reg_class *sched_regno_pressure_class;
 
 /* Indexed by INSN_UID, the collection of all data associated with
    a single instruction.  */
@@ -707,7 +707,7 @@ struct _haifa_deps_insn_data
 #define INCREASE_BITS 8
 
 /* The structure describes how the corresponding insn increases the
-   register pressure for each cover class.  */
+   register pressure for each pressure class.  */
 struct reg_pressure_data
 {
   /* Pressure increase for given class because of clobber.  */
@@ -736,7 +736,7 @@ struct reg_use_data
 };
 
 /* The following structure describes used sets of registers by insns.
-   Registers are pseudos whose cover class is not NO_REGS or hard
+   Registers are pseudos whose pressure class is not NO_REGS or hard
    registers available for allocations.  */
 struct reg_set_data
 {
@@ -804,7 +804,7 @@ struct _haifa_insn_data
   struct reg_pressure_data *reg_pressure;
   /* The following array contains maximal reg pressure between last
      scheduled insn and given insn.  There is an element for each
-     cover class of pseudos referenced in insns.  This info updated
+     pressure class of pseudos referenced in insns.  This info updated
      after scheduling each insn for each insn between the two
      mentioned insns.  */
   int *max_reg_pressure;
