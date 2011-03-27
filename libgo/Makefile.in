@@ -207,7 +207,7 @@ am__libgo_la_SOURCES_DIST = runtime/go-append.c runtime/go-assert.c \
 	runtime/go-typestring.c runtime/go-unreflect.c \
 	runtime/go-unsafe-new.c runtime/go-unsafe-newarray.c \
 	runtime/go-unsafe-pointer.c runtime/go-unwind.c \
-	runtime/mcache.c runtime/mcentral.c \
+	runtime/cpuprof.c runtime/mcache.c runtime/mcentral.c \
 	runtime/mem_posix_memalign.c runtime/mem.c runtime/mfinal.c \
 	runtime/mfixalloc.c runtime/mgc0.c runtime/mheap.c \
 	runtime/msize.c runtime/proc.c runtime/thread.c \
@@ -240,10 +240,11 @@ am__objects_3 = go-append.lo go-assert.lo go-assert-interface.lo \
 	go-type-error.lo go-type-identity.lo go-type-interface.lo \
 	go-type-string.lo go-typedesc-equal.lo go-typestring.lo \
 	go-unreflect.lo go-unsafe-new.lo go-unsafe-newarray.lo \
-	go-unsafe-pointer.lo go-unwind.lo mcache.lo mcentral.lo \
-	$(am__objects_1) mfinal.lo mfixalloc.lo mgc0.lo mheap.lo \
-	msize.lo proc.lo thread.lo $(am__objects_2) chan.lo iface.lo \
-	malloc.lo map.lo mprof.lo reflect.lo sigqueue.lo string.lo
+	go-unsafe-pointer.lo go-unwind.lo cpuprof.lo mcache.lo \
+	mcentral.lo $(am__objects_1) mfinal.lo mfixalloc.lo mgc0.lo \
+	mheap.lo msize.lo proc.lo thread.lo $(am__objects_2) chan.lo \
+	iface.lo malloc.lo map.lo mprof.lo reflect.lo sigqueue.lo \
+	string.lo
 am_libgo_la_OBJECTS = $(am__objects_3)
 libgo_la_OBJECTS = $(am_libgo_la_OBJECTS)
 DEFAULT_INCLUDES = -I.@am__isrc@
@@ -836,6 +837,7 @@ runtime_files = \
 	runtime/go-unsafe-newarray.c \
 	runtime/go-unsafe-pointer.c \
 	runtime/go-unwind.c \
+	runtime/cpuprof.c \
 	runtime/mcache.c \
 	runtime/mcentral.c \
 	$(runtime_mem_file) \
@@ -2164,6 +2166,7 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/chan.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cpuprof.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-append.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-assert-interface.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-assert.Plo@am__quote@
@@ -2835,6 +2838,13 @@ go-unwind.lo: runtime/go-unwind.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='runtime/go-unwind.c' object='go-unwind.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o go-unwind.lo `test -f 'runtime/go-unwind.c' || echo '$(srcdir)/'`runtime/go-unwind.c
+
+cpuprof.lo: runtime/cpuprof.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT cpuprof.lo -MD -MP -MF $(DEPDIR)/cpuprof.Tpo -c -o cpuprof.lo `test -f 'runtime/cpuprof.c' || echo '$(srcdir)/'`runtime/cpuprof.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/cpuprof.Tpo $(DEPDIR)/cpuprof.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='runtime/cpuprof.c' object='cpuprof.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cpuprof.lo `test -f 'runtime/cpuprof.c' || echo '$(srcdir)/'`runtime/cpuprof.c
 
 mcache.lo: runtime/mcache.c
 @am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT mcache.lo -MD -MP -MF $(DEPDIR)/mcache.Tpo -c -o mcache.lo `test -f 'runtime/mcache.c' || echo '$(srcdir)/'`runtime/mcache.c
