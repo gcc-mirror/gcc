@@ -1,5 +1,5 @@
 /* Intrinsic translation
-   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
    and Steven Bosscher <s.bosscher@student.tudelft.nl>
@@ -916,6 +916,20 @@ gfc_conv_intrinsic_exponent (gfc_se *se, gfc_expr *expr)
 
   type = gfc_typenode_for_spec (&expr->ts);
   se->expr = fold_convert (type, res);
+}
+
+static void
+trans_this_image (gfc_se * se, gfc_expr *expr ATTRIBUTE_UNUSED)
+{
+  gfc_init_coarray_decl ();
+  se->expr = gfort_gvar_caf_this_image;
+}
+
+static void
+trans_num_images (gfc_se * se)
+{
+  gfc_init_coarray_decl ();
+  se->expr = gfort_gvar_caf_num_images;
 }
 
 /* Evaluate a single upper or lower bound.  */
@@ -6109,6 +6123,14 @@ gfc_conv_intrinsic_function (gfc_se * se, gfc_expr * expr)
 
     case GFC_ISYM_LOC:
       gfc_conv_intrinsic_loc (se, expr);
+      break;
+
+    case GFC_ISYM_THIS_IMAGE:
+      trans_this_image (se, expr);
+      break;
+
+    case GFC_ISYM_NUM_IMAGES:
+      trans_num_images (se);
       break;
 
     case GFC_ISYM_ACCESS:

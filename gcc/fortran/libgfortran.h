@@ -1,5 +1,5 @@
 /* Header file to the Fortran front-end and runtime library
-   Copyright (C) 2007, 2008, 2009, 2010
+   Copyright (C) 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -98,12 +98,13 @@ typedef enum
 }
 libgfortran_error_codes;
 
+/* Must kept in sync with libgfortrancaf.h.  */
 typedef enum
 {
   GFC_STAT_UNLOCKED = 0,
   GFC_STAT_LOCKED,
   GFC_STAT_LOCKED_OTHER_IMAGE,
-  GFC_STAT_STOPPED_IMAGE
+  GFC_STAT_STOPPED_IMAGE /* See LIBERROR_INQUIRE_INTERNAL_UNIT above. */
 }
 libgfortran_stat_codes;
 

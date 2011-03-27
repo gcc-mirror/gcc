@@ -1,5 +1,5 @@
 /* Header for code translation functions
-   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
    Contributed by Paul Brook
 
@@ -452,6 +452,9 @@ bool gfc_get_module_backend_decl (gfc_symbol *);
 /* Return the variable decl for a symbol.  */
 tree gfc_get_symbol_decl (gfc_symbol *);
 
+/* Initialize coarray global variables.  */
+void gfc_init_coarray_decl (void);
+
 /* Build a static initializer.  */
 tree gfc_conv_initializer (gfc_expr *, gfc_typespec *, tree, bool, bool, bool);
 
@@ -612,6 +615,22 @@ extern GTY(()) tree gfor_fndecl_fdate;
 extern GTY(()) tree gfor_fndecl_in_pack;
 extern GTY(()) tree gfor_fndecl_in_unpack;
 extern GTY(()) tree gfor_fndecl_associated;
+
+
+/* Coarray run-time library function decls.  */
+extern GTY(()) tree gfor_fndecl_caf_init;
+extern GTY(()) tree gfor_fndecl_caf_finalize;
+extern GTY(()) tree gfor_fndecl_caf_critical;
+extern GTY(()) tree gfor_fndecl_caf_end_critical;
+extern GTY(()) tree gfor_fndecl_caf_sync_all;
+extern GTY(()) tree gfor_fndecl_caf_sync_images;
+extern GTY(()) tree gfor_fndecl_caf_error_stop;
+extern GTY(()) tree gfor_fndecl_caf_error_stop_str;
+
+/* Coarray global variables for num_images/this_image.  */
+extern GTY(()) tree gfort_gvar_caf_num_images;
+extern GTY(()) tree gfort_gvar_caf_this_image;
+
 
 /* Math functions.  Many other math functions are handled in
    trans-intrinsic.c.  */

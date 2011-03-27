@@ -458,7 +458,7 @@ enum gfc_isym_id
   GFC_ISYM_NORM2,
   GFC_ISYM_NOT,
   GFC_ISYM_NULL,
-  GFC_ISYM_NUMIMAGES,
+  GFC_ISYM_NUM_IMAGES,
   GFC_ISYM_OR,
   GFC_ISYM_PACK,
   GFC_ISYM_PARITY,
@@ -572,7 +572,8 @@ init_local_integer;
 typedef enum
 {
   GFC_FCOARRAY_NONE = 0,
-  GFC_FCOARRAY_SINGLE
+  GFC_FCOARRAY_SINGLE,
+  GFC_FCOARRAY_LIB
 }
 gfc_fcoarray;
 

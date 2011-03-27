@@ -2358,7 +2358,8 @@ add_functions (void)
 
   make_generic ("null", GFC_ISYM_NULL, GFC_STD_F95);
 
-  add_sym_0 ("num_images", GFC_ISYM_NUMIMAGES, CLASS_INQUIRY, ACTUAL_NO, BT_INTEGER, di, GFC_STD_F2008,
+  add_sym_0 ("num_images", GFC_ISYM_NUM_IMAGES, CLASS_INQUIRY, ACTUAL_NO,
+	     BT_INTEGER, di, GFC_STD_F2008,
 	     NULL, gfc_simplify_num_images, NULL);
 
   add_sym_3 ("pack", GFC_ISYM_PACK, CLASS_TRANSFORMATIONAL, ACTUAL_NO, BT_REAL, dr, GFC_STD_F95,
