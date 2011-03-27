@@ -252,6 +252,7 @@ static bool arm_builtin_support_vector_misalignment (enum machine_mode mode,
 						     bool is_packed);
 static void arm_conditional_register_usage (void);
 static reg_class_t arm_preferred_rename_class (reg_class_t rclass);
+static unsigned int arm_autovectorize_vector_sizes (void);
 
 
 /* Table of machine attributes.  */
@@ -404,6 +405,9 @@ static const struct default_options arm_option_optimization_table[] =
 #define TARGET_VECTOR_MODE_SUPPORTED_P arm_vector_mode_supported_p
 #undef TARGET_VECTORIZE_PREFERRED_SIMD_MODE
 #define TARGET_VECTORIZE_PREFERRED_SIMD_MODE arm_preferred_simd_mode
+#undef TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_SIZES
+#define TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_SIZES \
+  arm_autovectorize_vector_sizes
 
 #undef  TARGET_MACHINE_DEPENDENT_REORG
 #define TARGET_MACHINE_DEPENDENT_REORG arm_reorg
@@ -23526,6 +23530,12 @@ arm_expand_sync (enum machine_mode mode,
       emit_insn (arm_call_generator (generator, target, memory, required_value,
 				     new_value));
     }
+}
+
+static unsigned int
+arm_autovectorize_vector_sizes (void)
+{
+  return TARGET_NEON_VECTORIZE_QUAD ? 16 | 8 : 0;
 }
 
 static bool

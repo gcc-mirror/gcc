@@ -8,7 +8,7 @@ __attribute__ ((noinline))
 void with_restrict(int * __restrict p)
 {
   int i;
-  int *q = p - 2;
+  int *q = p - 1;
 
   for (i = 0; i < 1000; ++i) {
     p[i] = q[i];
@@ -19,7 +19,7 @@ __attribute__ ((noinline))
 void without_restrict(int * p)
 {
   int i;
-  int *q = p - 2;
+  int *q = p - 1;
 
   for (i = 0; i < 1000; ++i) {
     p[i] = q[i];
@@ -38,8 +38,8 @@ int main(void)
     a[i] = b[i] = i;
   }
 
-  with_restrict(a + 2);
-  without_restrict(b + 2);
+  with_restrict(a + 1);
+  without_restrict(b + 1);
 
   for (i = 0; i < 1002; ++i) {
     if (a[i] != b[i])

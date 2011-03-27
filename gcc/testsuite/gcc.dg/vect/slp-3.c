@@ -101,7 +101,7 @@ main1 ()
     }
 
   /* SLP with unrolling by 8.  */
-  for (i = 0; i < N/2; i++)
+  for (i = 0; i < N/4; i++)
     {
       out[i*9] = in[i*9];
       out[i*9 + 1] = in[i*9 + 1];
@@ -115,7 +115,7 @@ main1 ()
     }
 
   /* check results:  */
-  for (i = 0; i < N/2; i++)
+  for (i = 0; i < N/4; i++)
     {
       if (out[i*9] !=  in[i*9]
          || out[i*9 + 1] != in[i*9 + 1]
