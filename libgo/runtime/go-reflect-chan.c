@@ -120,17 +120,6 @@ chanrecv (unsigned char *ch, unsigned char *val, _Bool *selected,
     }
 }
 
-extern _Bool chanclosed (unsigned char *)
-  asm ("libgo_reflect.reflect.chanclosed");
-
-_Bool
-chanclosed (unsigned char *ch)
-{
-  struct __go_channel *channel = (struct __go_channel *) ch;
-
-  return __go_builtin_closed (channel);
-}
-
 extern void chanclose (unsigned char *)
   asm ("libgo_reflect.reflect.chanclose");
 
