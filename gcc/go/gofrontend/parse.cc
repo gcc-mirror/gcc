@@ -656,6 +656,23 @@ Parse::channel_type()
 	  this->advance_token();
 	}
     }
+
+  // Better error messages for the common error of omitting the
+  // channel element type.
+  if (!this->type_may_start_here())
+    {
+      token = this->peek_token();
+      if (token->is_op(OPERATOR_RCURLY))
+	error_at(this->location(), "unexpected %<}%> in channel type");
+      else if (token->is_op(OPERATOR_RPAREN))
+	error_at(this->location(), "unexpected %<)%> in channel type");
+      else if (token->is_op(OPERATOR_COMMA))
+	error_at(this->location(), "unexpected comma in channel type");
+      else
+	error_at(this->location(), "expected channel element type");
+      return Type::make_error_type();
+    }
+
   Type* element_type = this->type();
   return Type::make_channel_type(send, receive, element_type);
 }
