@@ -10263,7 +10263,7 @@ Selector_expression::lower_method_expression(Gogo* gogo)
   bool is_ambiguous;
   Method* method = nt->method_function(name, &is_ambiguous);
   const Typed_identifier* imethod = NULL;
-  if (method == NULL)
+  if (method == NULL && !is_pointer)
     {
       Interface_type* it = nt->interface_type();
       if (it != NULL)
@@ -10273,12 +10273,14 @@ Selector_expression::lower_method_expression(Gogo* gogo)
   if (method == NULL && imethod == NULL)
     {
       if (!is_ambiguous)
-	error_at(location, "type %<%s%> has no method %<%s%>",
+	error_at(location, "type %<%s%s%> has no method %<%s%>",
+		 is_pointer ? "*" : "",
 		 nt->message_name().c_str(),
 		 Gogo::message_name(name).c_str());
       else
-	error_at(location, "method %<%s%> is ambiguous in type %<%s%>",
+	error_at(location, "method %<%s%s%> is ambiguous in type %<%s%>",
 		 Gogo::message_name(name).c_str(),
+		 is_pointer ? "*" : "",
 		 nt->message_name().c_str());
       return Expression::make_error(location);
     }
