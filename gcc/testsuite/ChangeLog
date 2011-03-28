@@ -1,3 +1,8 @@
+2011-03-28  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR testsuite/48276
+	* gcc.target/i386/pr47502-2.c: Add -fno-pic.
+
 2011-03-28  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.dg/slp-1.c: New test.
