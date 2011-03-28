@@ -1,3 +1,8 @@
+2011-03-28  Tristan Gingold  <gingold@adacore.com>
+
+	* config/ia64/ia64.c (ia64_promote_function_mode): Fix promotion
+	when for_return is 2.
+
 2011-03-28  Jeff Law  <law@redhat.com>
 
 	* var-tracking.c (canonicalize_values_mark): Delete unused
