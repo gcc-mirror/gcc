@@ -1,3 +1,9 @@
+2011-03-28  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+	    Iain Sandoe  <iains@gcc.gnu.org>
+
+	PR target/48245
+	* config/darwin.h (LINK_COMMAND_SPEC_A): Use LINK_PLUGIN_SPEC.
+
 2011-03-28  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree-vectorizer.h (vect_create_data_ref_ptr): Adjust prototype.
