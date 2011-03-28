@@ -1,3 +1,11 @@
+2011-03-28  Dominique d'Humieres  <dominiq@lps.ens.fr>
+
+	PR testsuite/48238
+	* gcc.dg/debug/dwarf2/pr47939-1.c: Generalize scan-assembler regex.
+	* gcc.dg/debug/dwarf2/pr47939-2.c: Likewise.
+	* gcc.dg/debug/dwarf2/pr47939-3.c: Likewise.
+	* gcc.dg/debug/dwarf2/pr47939-4.c: Likewise.
+
 2011-03-28  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/cpp0x/initlist-array2.C: New.
