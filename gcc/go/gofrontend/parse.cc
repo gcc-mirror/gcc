@@ -3779,6 +3779,12 @@ Parse::if_stat()
 	  if (!this->expression_may_start_here())
 	    cond = Expression::make_error(this->location());
 	}
+      if (cond == NULL && this->peek_token()->is_op(OPERATOR_LCURLY))
+	{
+	  error_at(this->location(),
+		   "missing condition in if statement");
+	  cond = Expression::make_error(this->location());
+	}
       if (cond == NULL)
 	cond = this->expression(PRECEDENCE_NORMAL, false, false, NULL);
     }
