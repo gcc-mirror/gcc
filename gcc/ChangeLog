@@ -1,3 +1,19 @@
+2011-03-28  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-threadupdate.c (redirect_edges): Call
+	create_edge_and_update_destination_phis as needed.
+	(create_edge_and_update_destination_phis): Accept new BB argument.
+	All callers updated.
+	(thread_block): Do not update the profile when threading around
+	intermediate blocks.
+	(thread_single_edge): Likewise.
+	(determine_bb_domination_status): If BB is not a successor of the
+	loop header, return NONDOMINATING.
+	(register_jump_thread): Note when we register a jump thread around
+	an intermediate block.
+	* tree-ssa-threadedge.c (thread_around_empty_block): New function.
+	(thread_across_edge): Use it.
+
 2011-03-28  Tristan Gingold  <gingold@adacore.com>
 
 	* config/ia64/ia64.c (ia64_promote_function_mode): Fix promotion

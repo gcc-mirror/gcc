@@ -583,6 +583,76 @@ simplify_control_stmt_condition (edge e,
   return cached_lhs;
 }
 
+/* TAKEN_EDGE represents the an edge taken as a result of jump threading.
+   See if we can thread around TAKEN_EDGE->dest as well.  If so, return
+   the edge out of TAKEN_EDGE->dest that we can statically compute will be
+   traversed.
+
+   We are much more restrictive as to the contents of TAKEN_EDGE->dest
+   as the path isolation code in tree-ssa-threadupdate.c isn't prepared
+   to handle copying intermediate blocks on a threaded path. 
+
+   Long term a more consistent and structured approach to path isolation
+   would be a huge help.   */
+static edge
+thread_around_empty_block (edge taken_edge,
+			   gimple dummy_cond,
+			   bool handle_dominating_asserts,
+			   tree (*simplify) (gimple, gimple),
+			   bitmap visited)
+{
+  basic_block bb = taken_edge->dest;
+  gimple_stmt_iterator gsi;
+  gimple stmt;
+  tree cond;
+
+  /* This block must have a single predecessor (E->dest).  */
+  if (!single_pred_p (bb))
+    return NULL;
+
+  /* This block must have more than one successor.  */
+  if (single_succ_p (bb))
+    return NULL;
+
+  /* This block can have no PHI nodes.  This is overly conservative.  */
+  if (!gsi_end_p (gsi_start_phis (bb)))
+    return NULL;
+
+  /* Skip over DEBUG statements at the start of the block.  */
+  gsi = gsi_start_nondebug_bb (bb);
+
+  if (gsi_end_p (gsi))
+    return NULL;
+
+  /* This block can have no statements other than its control altering
+     statement.  This is overly conservative.  */
+  stmt = gsi_stmt (gsi);
+  if (gimple_code (stmt) != GIMPLE_COND
+      && gimple_code (stmt) != GIMPLE_GOTO
+      && gimple_code (stmt) != GIMPLE_SWITCH)
+    return NULL;
+
+  /* Extract and simplify the condition.  */
+  cond = simplify_control_stmt_condition (taken_edge, stmt, dummy_cond,
+					  simplify, handle_dominating_asserts);
+
+  /* If the condition can be statically computed and we have not already
+     visited the destination edge, then add the taken edge to our thread
+     path.  */
+  if (cond && is_gimple_min_invariant (cond))
+    {
+      edge taken_edge = find_taken_edge (bb, cond);
+
+      if (bitmap_bit_p (visited, taken_edge->dest->index))
+	return NULL;
+      bitmap_set_bit (visited, taken_edge->dest->index);
+      return taken_edge;
+    }
+ 
+  return NULL;
+}
+      
+
 /* We are exiting E->src, see if E->dest ends with a conditional
    jump which has a known value when reached via E.
 
@@ -661,15 +731,43 @@ thread_across_edge (gimple dummy_cond,
       tree cond;
 
       /* Extract and simplify the condition.  */
-      cond = simplify_control_stmt_condition (e, stmt, dummy_cond, simplify, handle_dominating_asserts);
+      cond = simplify_control_stmt_condition (e, stmt, dummy_cond, simplify,
+					      handle_dominating_asserts);
 
       if (cond && is_gimple_min_invariant (cond))
 	{
 	  edge taken_edge = find_taken_edge (e->dest, cond);
 	  basic_block dest = (taken_edge ? taken_edge->dest : NULL);
+	  bitmap visited;
+	  edge e2;
 
 	  if (dest == e->dest)
 	    goto fail;
+
+	  /* DEST could be null for a computed jump to an absolute
+	     address.  If DEST is not null, then see if we can thread
+	     through it as well, this helps capture secondary effects
+	     of threading without having to re-run DOM or VRP.  */
+	  if (dest)
+	    {
+	      /* We don't want to thread back to a block we have already
+ 		 visited.  This may be overly conservative.  */
+	      visited = BITMAP_ALLOC (NULL);
+	      bitmap_set_bit (visited, dest->index);
+	      bitmap_set_bit (visited, e->dest->index);
+	      do
+		{
+		  e2 = thread_around_empty_block (taken_edge,
+						  dummy_cond,
+						  handle_dominating_asserts,
+						  simplify,
+						  visited);
+		  if (e2)
+		    taken_edge = e2;
+		}
+	      while (e2);
+	      BITMAP_FREE (visited);
+	    }
 
 	  remove_temporary_equivalences (stack);
 	  register_jump_thread (e, taken_edge);
