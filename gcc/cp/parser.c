@@ -1590,7 +1590,7 @@ static void cp_parser_label_for_labeled_statement
 static tree cp_parser_expression_statement
   (cp_parser *, tree);
 static tree cp_parser_compound_statement
-  (cp_parser *, tree, bool);
+  (cp_parser *, tree, bool, bool);
 static void cp_parser_statement_seq_opt
   (cp_parser *, tree);
 static tree cp_parser_selection_statement
@@ -3417,7 +3417,7 @@ cp_parser_primary_expression (cp_parser *parser,
 		/* Start the statement-expression.  */
 		expr = begin_stmt_expr ();
 		/* Parse the compound-statement.  */
-		cp_parser_compound_statement (parser, expr, false);
+		cp_parser_compound_statement (parser, expr, false, false);
 		/* Finish up.  */
 		expr = finish_stmt_expr (expr, false);
 	      }
@@ -7873,7 +7873,7 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr,
     }
   /* Anything that starts with a `{' must be a compound-statement.  */
   else if (token->type == CPP_OPEN_BRACE)
-    statement = cp_parser_compound_statement (parser, NULL, false);
+    statement = cp_parser_compound_statement (parser, NULL, false, false);
   /* CPP_PRAGMA is a #pragma inside a function body, which constitutes
      a statement all its own.  */
   else if (token->type == CPP_PRAGMA)
@@ -8105,13 +8105,17 @@ cp_parser_expression_statement (cp_parser* parser, tree in_statement_expr)
 
 static tree
 cp_parser_compound_statement (cp_parser *parser, tree in_statement_expr,
-			      bool in_try)
+			      bool in_try, bool function_body)
 {
   tree compound_stmt;
 
   /* Consume the `{'.  */
   if (!cp_parser_require (parser, CPP_OPEN_BRACE, RT_OPEN_BRACE))
     return error_mark_node;
+  if (DECL_DECLARED_CONSTEXPR_P (current_function_decl)
+      && !function_body)
+    pedwarn (input_location, OPT_pedantic,
+	     "compound-statement in constexpr function");
   /* Begin the compound-statement.  */
   compound_stmt = begin_compound_stmt (in_try ? BCS_TRY_BLOCK : 0);
   /* If the next keyword is `__label__' we have a label declaration.  */
@@ -9022,7 +9026,7 @@ cp_parser_implicitly_scoped_statement (cp_parser* parser, bool *if_p)
     }
   /* if a compound is opened, we simply parse the statement directly.  */
   else if (cp_lexer_next_token_is (parser->lexer, CPP_OPEN_BRACE))
-    statement = cp_parser_compound_statement (parser, NULL, false);
+    statement = cp_parser_compound_statement (parser, NULL, false, false);
   /* If the token is not a `{', then we must take special action.  */
   else
     {
@@ -16157,7 +16161,7 @@ cp_parser_default_argument (cp_parser *parser, bool template_parm_p)
 static void
 cp_parser_function_body (cp_parser *parser)
 {
-  cp_parser_compound_statement (parser, NULL, false);
+  cp_parser_compound_statement (parser, NULL, false, true);
 }
 
 /* Parse a ctor-initializer-opt followed by a function-body.  Return
@@ -18255,7 +18259,7 @@ cp_parser_try_block (cp_parser* parser)
 
   cp_parser_require_keyword (parser, RID_TRY, RT_TRY);
   try_block = begin_try_block ();
-  cp_parser_compound_statement (parser, NULL, true);
+  cp_parser_compound_statement (parser, NULL, true, false);
   finish_try_block (try_block);
   cp_parser_handler_seq (parser);
   finish_handler_sequence (try_block);
@@ -18332,7 +18336,7 @@ cp_parser_handler (cp_parser* parser)
   declaration = cp_parser_exception_declaration (parser);
   finish_handler_parms (declaration, handler);
   cp_parser_require (parser, CPP_CLOSE_PAREN, RT_CLOSE_PAREN);
-  cp_parser_compound_statement (parser, NULL, false);
+  cp_parser_compound_statement (parser, NULL, false, false);
   finish_handler (handler);
 }
 
@@ -22533,7 +22537,7 @@ cp_parser_objc_try_catch_finally_statement (cp_parser *parser)
   /* NB: The @try block needs to be wrapped in its own STATEMENT_LIST
      node, lest it get absorbed into the surrounding block.  */
   stmt = push_stmt_list ();
-  cp_parser_compound_statement (parser, NULL, false);
+  cp_parser_compound_statement (parser, NULL, false, false);
   objc_begin_try_stmt (location, pop_stmt_list (stmt));
 
   while (cp_lexer_next_token_is_keyword (parser->lexer, RID_AT_CATCH))
@@ -22589,7 +22593,7 @@ cp_parser_objc_try_catch_finally_statement (cp_parser *parser)
 	     forget about the closing parenthesis and keep going.  */
 	}
       objc_begin_catch_clause (parameter_declaration);
-      cp_parser_compound_statement (parser, NULL, false);
+      cp_parser_compound_statement (parser, NULL, false, false);
       objc_finish_catch_clause ();
     }
   if (cp_lexer_next_token_is_keyword (parser->lexer, RID_AT_FINALLY))
@@ -22599,7 +22603,7 @@ cp_parser_objc_try_catch_finally_statement (cp_parser *parser)
       /* NB: The @finally block needs to be wrapped in its own STATEMENT_LIST
 	 node, lest it get absorbed into the surrounding block.  */
       stmt = push_stmt_list ();
-      cp_parser_compound_statement (parser, NULL, false);
+      cp_parser_compound_statement (parser, NULL, false, false);
       objc_build_finally_clause (location, pop_stmt_list (stmt));
     }
 
@@ -22630,7 +22634,7 @@ cp_parser_objc_synchronized_statement (cp_parser *parser)
   /* NB: The @synchronized block needs to be wrapped in its own STATEMENT_LIST
      node, lest it get absorbed into the surrounding block.  */
   stmt = push_stmt_list ();
-  cp_parser_compound_statement (parser, NULL, false);
+  cp_parser_compound_statement (parser, NULL, false, false);
 
   return objc_build_synchronized (location, lock, pop_stmt_list (stmt));
 }
