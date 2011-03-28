@@ -1,3 +1,12 @@
+2011-03-28  Joseph Myers  <joseph@codesourcery.com>
+
+	* configure.ac (i[[3456789]]86-*-msdosdjgpp*): Don't disable
+	libffi on host.
+	(x86_64-*-mingw*, i[[3456789]]86-*-mingw32*): Don't disable newlib
+	on host.
+	(c54x*-*-* | tic54x-*-*): Don't disable newlib on host.
+	* configure: Regenerate.
+
 2011-03-26  John Marino  <binutils@marino.st>
 
 	* configure.ac: Add support for *-*-dragonfly*

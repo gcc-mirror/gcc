@@ -422,13 +422,7 @@ unsupported_languages=
 
 case "${host}" in
   i[[3456789]]86-*-msdosdjgpp*)
-    noconfigdirs="$noconfigdirs tcl tk itcl libffi"
-    ;;
-  x86_64-*-mingw*)
-    noconfigdirs="$noconfigdirs newlib"
-    ;;
-  i[[3456789]]86-*-mingw32*)
-    noconfigdirs="$noconfigdirs newlib"
+    noconfigdirs="$noconfigdirs tcl tk itcl"
     ;;
 esac
 
@@ -680,7 +674,7 @@ case "${target}" in
     noconfigdirs="$noconfigdirs target-libstdc++-v3 target-libgloss ${libgcj}"
     ;;
   c54x*-*-* | tic54x-*-*)
-    noconfigdirs="$noconfigdirs target-libstdc++-v3 target-libgloss ${libgcj} gcc gdb newlib"
+    noconfigdirs="$noconfigdirs target-libstdc++-v3 target-libgloss ${libgcj} gcc gdb"
     ;;
   cr16-*-*)
     noconfigdirs="$noconfigdirs ${libgcj} gdb"
