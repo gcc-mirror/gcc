@@ -3172,8 +3172,10 @@ expand_debug_expr (tree exp)
 		    rtx incoming = DECL_INCOMING_RTL (SSA_NAME_VAR (exp));
 		    if (incoming
 			&& GET_MODE (incoming) != BLKmode
-			&& (REG_P (incoming)
-			    || (MEM_P (incoming) && REG_P (XEXP (incoming, 0)))))
+			&& ((REG_P (incoming) && HARD_REGISTER_P (incoming))
+			    || (MEM_P (incoming)
+				&& REG_P (XEXP (incoming, 0))
+				&& HARD_REGISTER_P (XEXP (incoming, 0)))))
 		      {
 			op0 = gen_rtx_ENTRY_VALUE (GET_MODE (incoming));
 			ENTRY_VALUE_EXP (op0) = incoming;

@@ -13891,7 +13891,7 @@ mem_loc_descriptor (rtx rtl, enum machine_mode mode,
 	  dw_loc_descr_ref ref
 	    = mem_loc_descriptor (ENTRY_VALUE_EXP (rtl), GET_MODE (rtl),
 				  VAR_INIT_STATUS_INITIALIZED);
-	  if (ref == NULL)
+	  if (ref == NULL || ref->dw_loc_opc == DW_OP_fbreg)
 	    return NULL;
 	  mem_loc_result->dw_loc_oprnd1.v.val_loc = ref;
 	}
