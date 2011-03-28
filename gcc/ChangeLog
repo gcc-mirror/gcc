@@ -1,3 +1,23 @@
+2011-03-28  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* Makefile.in: New rule for cprop.o.
+	* gcse.c: Move constant/copy propagation to cprop.c.
+	(compute_local_properties): Only handle expression tables.
+	(hash_scan_set, compute_hash_table_work, alloc_hash_table,): Likewise.
+	(one_pre_gcse_pass, one_code_hoisting_pass): Likewise.
+	(hash_set, insert_set_in_table, gcse_constant_p, lookup_set,
+	next_set, reset_opr_set_tables, oprs_not_set_p, mark_call, mark_set,
+	mark_clobber, mark_oprs_set, alloc_cprop_mem, free_cprop_mem, 
+	compute_cprop_data, find_used_regs, try_replace_reg,
+	find_avail_set, cprop_jump, constprop_register, cprop_insn,
+	local_cprop_find_used_regs, do_local_cprop, local_cprop_pass,
+	fis_get_condition, implicit_set_cond_p, find_implicit_sets,
+	find_bypass_set, reg_killed_on_edge, bypass_block,
+	bypass_conditional_jumps, one_cprop_pass, gate_rtl_cprop,
+	execute_rtl_cprop, pass_rtl_cprop): Move to...
+	* cprop.c: ...here.  New file, constant/copy propagation for RTL
+	moved from gcse.c to here with minor cleanups in duplicated code.
+
 2011-03-28  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/i386.c (flag_opts): Fix a typo in

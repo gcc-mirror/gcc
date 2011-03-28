@@ -1,0 +1,2168 @@
+/* Global constant/copy propagation for RTL.
+   Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
+   2006, 2007, 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
+
+This file is part of GCC.
+
+GCC is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free
+Software Foundation; either version 3, or (at your option) any later
+version.
+
+GCC is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+for more details.
+
+You should have received a copy of the GNU General Public License
+along with GCC; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  */
+
+#include "config.h"
+#include "system.h"
+#include "coretypes.h"
+#include "tm.h"
+#include "diagnostic-core.h"
+#include "toplev.h"
+
+#include "rtl.h"
+#include "tree.h"
+#include "tm_p.h"
+#include "regs.h"
+#include "hard-reg-set.h"
+#include "flags.h"
+#include "insn-config.h"
+#include "recog.h"
+#include "basic-block.h"
+#include "output.h"
+#include "function.h"
+#include "expr.h"
+#include "except.h"
+#include "params.h"
+#include "cselib.h"
+#include "intl.h"
+#include "obstack.h"
+#include "timevar.h"
+#include "tree-pass.h"
+#include "hashtab.h"
+#include "df.h"
+#include "dbgcnt.h"
+#include "target.h"
+
+
+/* An obstack for our working variables.  */
+static struct obstack gcse_obstack;
+
+struct reg_use {rtx reg_rtx; };
+
+/* Hash table of expressions.  */
+
+struct expr
+{
+  /* The expression (SET_SRC for expressions, PATTERN for assignments).  */
+  rtx expr;
+  /* Index in the available expression bitmaps.  */
+  int bitmap_index;
+  /* Next entry with the same hash.  */
+  struct expr *next_same_hash;
+  /* List of available occurrence in basic blocks in the function.
+     An "available occurrence" is one that is the last occurrence in the
+     basic block and the operands are not modified by following statements in
+     the basic block [including this insn].  */
+  struct occr *avail_occr;
+};
+
+/* Occurrence of an expression.
+   There is one per basic block.  If a pattern appears more than once the
+   last appearance is used.  */
+
+struct occr
+{
+  /* Next occurrence of this expression.  */
+  struct occr *next;
+  /* The insn that computes the expression.  */
+  rtx insn;
+};
+
+typedef struct occr *occr_t;
+DEF_VEC_P (occr_t);
+DEF_VEC_ALLOC_P (occr_t, heap);
+
+/* Expression and copy propagation hash tables.
+   Each hash table is an array of buckets.
+   ??? It is known that if it were an array of entries, structure elements
+   `next_same_hash' and `bitmap_index' wouldn't be necessary.  However, it is
+   not clear whether in the final analysis a sufficient amount of memory would
+   be saved as the size of the available expression bitmaps would be larger
+   [one could build a mapping table without holes afterwards though].
+   Someday I'll perform the computation and figure it out.  */
+
+struct hash_table_d
+{
+  /* The table itself.
+     This is an array of `set_hash_table_size' elements.  */
+  struct expr **table;
+
+  /* Size of the hash table, in elements.  */
+  unsigned int size;
+
+  /* Number of hash table elements.  */
+  unsigned int n_elems;
+};
+
+/* Copy propagation hash table.  */
+static struct hash_table_d set_hash_table;
+
+/* Array of implicit set patterns indexed by basic block index.  */
+static rtx *implicit_sets;
+
+/* Bitmap containing one bit for each register in the program.
+   Used when performing GCSE to track which registers have been set since
+   the start of the basic block.  */
+static regset reg_set_bitmap;
+
+/* Various variables for statistics gathering.  */
+
+/* Memory used in a pass.
+   This isn't intended to be absolutely precise.  Its intent is only
+   to keep an eye on memory usage.  */
+static int bytes_used;
+
+/* Number of local constants propagated.  */
+static int local_const_prop_count;
+/* Number of local copies propagated.  */
+static int local_copy_prop_count;
+/* Number of global constants propagated.  */
+static int global_const_prop_count;
+/* Number of global copies propagated.  */
+static int global_copy_prop_count;
+
+
+#define GNEW(T)			((T *) gmalloc (sizeof (T)))
+
+#define GNEWVEC(T, N)		((T *) gmalloc (sizeof (T) * (N)))
+
+#define GNEWVAR(T, S)		((T *) gmalloc ((S)))
+
+#define GOBNEW(T)		((T *) gcse_alloc (sizeof (T)))
+#define GOBNEWVAR(T, S)		((T *) gcse_alloc ((S)))
+
+/* Cover function to xmalloc to record bytes allocated.  */
+
+static void *
+gmalloc (size_t size)
+{
+  bytes_used += size;
+  return xmalloc (size);
+}
+
+/* Cover function to obstack_alloc.  */
+
+static void *
+gcse_alloc (unsigned long size)
+{
+  bytes_used += size;
+  return obstack_alloc (&gcse_obstack, size);
+}
+
+/* Allocate memory for the reg/memory set tracking tables.
+   This is called at the start of each pass.  */
+
+static void
+alloc_gcse_mem (void)
+{
+  /* Allocate vars to track sets of regs.  */
+  reg_set_bitmap = ALLOC_REG_SET (NULL);
+}
+
+/* Free memory allocated by alloc_gcse_mem.  */
+
+static void
+free_gcse_mem (void)
+{
+  FREE_REG_SET (reg_set_bitmap);
+}
+
+struct reg_avail_info
+{
+  basic_block last_bb;
+  int last_set;
+};
+
+static struct reg_avail_info *reg_avail_info;
+static basic_block current_bb;
+
+/* Return nonzero if the operands of expression X are unchanged from
+   INSN to the end of INSN's basic block.  */
+
+static int
+oprs_available_p (const_rtx x, const_rtx insn)
+{
+  int i, j;
+  enum rtx_code code;
+  const char *fmt;
+
+  if (x == 0)
+    return 1;
+
+  code = GET_CODE (x);
+  switch (code)
+    {
+    case REG:
+      {
+	struct reg_avail_info *info = &reg_avail_info[REGNO (x)];
+
+	if (info->last_bb != current_bb)
+	  return 1;
+	return info->last_set < DF_INSN_LUID (insn);
+      }
+
+    case PRE_DEC:
+    case PRE_INC:
+    case POST_DEC:
+    case POST_INC:
+    case PRE_MODIFY:
+    case POST_MODIFY:
+      return 0;
+
+    case PC:
+    case CC0: /*FIXME*/
+    case CONST:
+    case CONST_INT:
+    case CONST_DOUBLE:
+    case CONST_FIXED:
+    case CONST_VECTOR:
+    case SYMBOL_REF:
+    case LABEL_REF:
+    case ADDR_VEC:
+    case ADDR_DIFF_VEC:
+      return 1;
+
+    default:
+      break;
+    }
+
+  for (i = GET_RTX_LENGTH (code) - 1, fmt = GET_RTX_FORMAT (code); i >= 0; i--)
+    {
+      if (fmt[i] == 'e')
+	{
+	  if (! oprs_available_p (XEXP (x, i), insn))
+	    return 0;
+	}
+      else if (fmt[i] == 'E')
+	for (j = 0; j < XVECLEN (x, i); j++)
+	  if (! oprs_available_p (XVECEXP (x, i, j), insn))
+	    return 0;
+    }
+
+  return 1;
+}
+
+/* Hash a set of register REGNO.
+
+   Sets are hashed on the register that is set.  This simplifies the PRE copy
+   propagation code.
+
+   ??? May need to make things more elaborate.  Later, as necessary.  */
+
+static unsigned int
+hash_set (int regno, int hash_table_size)
+{
+  unsigned int hash;
+
+  hash = regno;
+  return hash % hash_table_size;
+}
+
+/* Return nonzero if exp1 is equivalent to exp2.  */
+
+static int
+expr_equiv_p (const_rtx x, const_rtx y)
+{
+  return exp_equiv_p (x, y, 0, true);
+}
+
+/* Insert pattern X in INSN in the hash table.
+   X is a SET of a reg to either another reg or a constant.
+   If it is already present, record it as the last occurrence in INSN's
+   basic block.  */
+
+static void
+insert_set_in_table (rtx x, rtx insn, struct hash_table_d *table)
+{
+  int found;
+  unsigned int hash;
+  struct expr *cur_expr, *last_expr = NULL;
+  struct occr *cur_occr;
+
+  gcc_assert (GET_CODE (x) == SET && REG_P (SET_DEST (x)));
+
+  hash = hash_set (REGNO (SET_DEST (x)), table->size);
+
+  cur_expr = table->table[hash];
+  found = 0;
+
+  while (cur_expr && 0 == (found = expr_equiv_p (cur_expr->expr, x)))
+    {
+      /* If the expression isn't found, save a pointer to the end of
+	 the list.  */
+      last_expr = cur_expr;
+      cur_expr = cur_expr->next_same_hash;
+    }
+
+  if (! found)
+    {
+      cur_expr = GOBNEW (struct expr);
+      bytes_used += sizeof (struct expr);
+      if (table->table[hash] == NULL)
+	/* This is the first pattern that hashed to this index.  */
+	table->table[hash] = cur_expr;
+      else
+	/* Add EXPR to end of this hash chain.  */
+	last_expr->next_same_hash = cur_expr;
+
+      /* Set the fields of the expr element.
+	 We must copy X because it can be modified when copy propagation is
+	 performed on its operands.  */
+      cur_expr->expr = copy_rtx (x);
+      cur_expr->bitmap_index = table->n_elems++;
+      cur_expr->next_same_hash = NULL;
+      cur_expr->avail_occr = NULL;
+    }
+
+  /* Now record the occurrence.  */
+  cur_occr = cur_expr->avail_occr;
+
+  if (cur_occr
+      && BLOCK_FOR_INSN (cur_occr->insn) == BLOCK_FOR_INSN (insn))
+    {
+      /* Found another instance of the expression in the same basic block.
+	 Prefer this occurrence to the currently recorded one.  We want
+	 the last one in the block and the block is scanned from start
+	 to end.  */
+      cur_occr->insn = insn;
+    }
+  else
+    {
+      /* First occurrence of this expression in this basic block.  */
+      cur_occr = GOBNEW (struct occr);
+      bytes_used += sizeof (struct occr);
+      cur_occr->insn = insn;
+      cur_occr->next = cur_expr->avail_occr;
+      cur_expr->avail_occr = cur_occr;
+    }
+}
+
+/* Determine whether the rtx X should be treated as a constant for
+   the purposes of GCSE's constant propagation.  */
+
+static bool
+gcse_constant_p (const_rtx x)
+{
+  /* Consider a COMPARE of two integers constant.  */
+  if (GET_CODE (x) == COMPARE
+      && CONST_INT_P (XEXP (x, 0))
+      && CONST_INT_P (XEXP (x, 1)))
+    return true;
+
+  /* Consider a COMPARE of the same registers is a constant
+     if they are not floating point registers.  */
+  if (GET_CODE(x) == COMPARE
+      && REG_P (XEXP (x, 0)) && REG_P (XEXP (x, 1))
+      && REGNO (XEXP (x, 0)) == REGNO (XEXP (x, 1))
+      && ! FLOAT_MODE_P (GET_MODE (XEXP (x, 0)))
+      && ! FLOAT_MODE_P (GET_MODE (XEXP (x, 1))))
+    return true;
+
+  /* Since X might be inserted more than once we have to take care that it
+     is sharable.  */
+  return CONSTANT_P (x) && (GET_CODE (x) != CONST || shared_const_p (x));
+}
+
+/* Scan pattern PAT of INSN and add an entry to the hash TABLE (set or
+   expression one).  */
+
+static void
+hash_scan_set (rtx pat, rtx insn, struct hash_table_d *table)
+{
+  rtx src = SET_SRC (pat);
+  rtx dest = SET_DEST (pat);
+  rtx note;
+
+  if (REG_P (dest))
+    {
+      unsigned int regno = REGNO (dest);
+      rtx tmp;
+
+      /* See if a REG_EQUAL note shows this equivalent to a simpler expression.
+
+	 This allows us to do a single GCSE pass and still eliminate
+	 redundant constants, addresses or other expressions that are
+	 constructed with multiple instructions.
+
+	 However, keep the original SRC if INSN is a simple reg-reg move.  In
+	 In this case, there will almost always be a REG_EQUAL note on the
+	 insn that sets SRC.  By recording the REG_EQUAL value here as SRC
+	 for INSN, we miss copy propagation opportunities and we perform the
+	 same PRE GCSE operation repeatedly on the same REG_EQUAL value if we
+	 do more than one PRE GCSE pass.
+
+	 Note that this does not impede profitable constant propagations.  We
+	 "look through" reg-reg sets in lookup_avail_set.  */
+      note = find_reg_equal_equiv_note (insn);
+      if (note != 0
+	  && REG_NOTE_KIND (note) == REG_EQUAL
+	  && !REG_P (src)
+	  && gcse_constant_p (XEXP (note, 0)))
+	src = XEXP (note, 0), pat = gen_rtx_SET (VOIDmode, dest, src);
+
+      /* Record sets for constant/copy propagation.  */
+      if (regno >= FIRST_PSEUDO_REGISTER
+	  && ((REG_P (src)
+	       && REGNO (src) >= FIRST_PSEUDO_REGISTER
+	       && can_copy_p (GET_MODE (dest))
+	       && REGNO (src) != regno)
+	      || gcse_constant_p (src))
+	  /* A copy is not available if its src or dest is subsequently
+	     modified.  Here we want to search from INSN+1 on, but
+	     oprs_available_p searches from INSN on.  */
+	  && (insn == BB_END (BLOCK_FOR_INSN (insn))
+	      || (tmp = next_nonnote_nondebug_insn (insn)) == NULL_RTX
+	      || BLOCK_FOR_INSN (tmp) != BLOCK_FOR_INSN (insn)
+	      || oprs_available_p (pat, tmp)))
+	insert_set_in_table (pat, insn, table);
+    }
+}
+
+/* Process INSN and add hash table entries as appropriate.
+
+   Only available expressions that set a single pseudo-reg are recorded.
+
+   Single sets in a PARALLEL could be handled, but it's an extra complication
+   that isn't dealt with right now.  The trick is handling the CLOBBERs that
+   are also in the PARALLEL.  Later.
+
+   If SET_P is nonzero, this is for the assignment hash table,
+   otherwise it is for the expression hash table.  */
+
+static void
+hash_scan_insn (rtx insn, struct hash_table_d *table)
+{
+  rtx pat = PATTERN (insn);
+  int i;
+
+  /* Pick out the sets of INSN and for other forms of instructions record
+     what's been modified.  */
+
+  if (GET_CODE (pat) == SET)
+    hash_scan_set (pat, insn, table);
+  else if (GET_CODE (pat) == PARALLEL)
+    for (i = 0; i < XVECLEN (pat, 0); i++)
+      {
+	rtx x = XVECEXP (pat, 0, i);
+
+	if (GET_CODE (x) == SET)
+	  hash_scan_set (x, insn, table);
+      }
+}
+
+static void
+dump_hash_table (FILE *file, const char *name, struct hash_table_d *table)
+{
+  int i;
+  /* Flattened out table, so it's printed in proper order.  */
+  struct expr **flat_table;
+  unsigned int *hash_val;
+  struct expr *expr;
+
+  flat_table = XCNEWVEC (struct expr *, table->n_elems);
+  hash_val = XNEWVEC (unsigned int, table->n_elems);
+
+  for (i = 0; i < (int) table->size; i++)
+    for (expr = table->table[i]; expr != NULL; expr = expr->next_same_hash)
+      {
+	flat_table[expr->bitmap_index] = expr;
+	hash_val[expr->bitmap_index] = i;
+      }
+
+  fprintf (file, "%s hash table (%d buckets, %d entries)\n",
+	   name, table->size, table->n_elems);
+
+  for (i = 0; i < (int) table->n_elems; i++)
+    if (flat_table[i] != 0)
+      {
+	expr = flat_table[i];
+	fprintf (file, "Index %d (hash value %d)\n  ",
+		 expr->bitmap_index, hash_val[i]);
+	print_rtl (file, expr->expr);
+	fprintf (file, "\n");
+      }
+
+  fprintf (file, "\n");
+
+  free (flat_table);
+  free (hash_val);
+}
+
+/* Record register first/last/block set information for REGNO in INSN.
+
+   last_set records the last place in the block where the register
+   is set and is used to compute "availability".
+
+   last_bb records the block for which last_set is valid, as a quick
+   test to invalidate it.  */
+
+static void
+record_last_reg_set_info (rtx insn, int regno)
+{
+  struct reg_avail_info *info = &reg_avail_info[regno];
+  int luid = DF_INSN_LUID (insn);
+
+  info->last_set = luid;
+  if (info->last_bb != current_bb)
+    info->last_bb = current_bb;
+}
+
+/* Called from compute_hash_table via note_stores to handle one
+   SET or CLOBBER in an insn.  DATA is really the instruction in which
+   the SET is taking place.  */
+
+static void
+record_last_set_info (rtx dest, const_rtx setter ATTRIBUTE_UNUSED, void *data)
+{
+  rtx last_set_insn = (rtx) data;
+
+  if (GET_CODE (dest) == SUBREG)
+    dest = SUBREG_REG (dest);
+
+  if (REG_P (dest))
+    record_last_reg_set_info (last_set_insn, REGNO (dest));
+}
+
+/* Top level function to create an assignments hash table.
+
+   Assignment entries are placed in the hash table if
+   - they are of the form (set (pseudo-reg) src),
+   - src is something we want to perform const/copy propagation on,
+   - none of the operands or target are subsequently modified in the block
+
+   Currently src must be a pseudo-reg or a const_int.
+
+   TABLE is the table computed.  */
+
+static void
+compute_hash_table_work (struct hash_table_d *table)
+{
+  int i;
+
+  /* Some working arrays used to track first and last set in each block.  */
+  reg_avail_info = GNEWVEC (struct reg_avail_info, max_reg_num ());
+
+  for (i = 0; i < max_reg_num (); ++i)
+    reg_avail_info[i].last_bb = NULL;
+
+  FOR_EACH_BB (current_bb)
+    {
+      rtx insn;
+      unsigned int regno;
+
+      /* First pass over the instructions records information used to
+	 determine when registers and memory are first and last set.  */
+      FOR_BB_INSNS (current_bb, insn)
+	{
+	  if (!NONDEBUG_INSN_P (insn))
+	    continue;
+
+	  if (CALL_P (insn))
+	    {
+	      for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
+		if (TEST_HARD_REG_BIT (regs_invalidated_by_call, regno))
+		  record_last_reg_set_info (insn, regno);
+	    }
+
+	  note_stores (PATTERN (insn), record_last_set_info, insn);
+	}
+
+      /* Insert implicit sets in the hash table.  */
+      if (implicit_sets[current_bb->index] != NULL_RTX)
+	hash_scan_set (implicit_sets[current_bb->index],
+		       BB_HEAD (current_bb), table);
+
+      /* The next pass builds the hash table.  */
+      FOR_BB_INSNS (current_bb, insn)
+	if (NONDEBUG_INSN_P (insn))
+	  hash_scan_insn (insn, table);
+    }
+
+  free (reg_avail_info);
+  reg_avail_info = NULL;
+}
+
+/* Allocate space for the set/expr hash TABLE.
+   It is used to determine the number of buckets to use.  */
+
+static void
+alloc_hash_table (struct hash_table_d *table)
+{
+  int n;
+
+  n = get_max_insn_count ();
+
+  table->size = n / 4;
+  if (table->size < 11)
+    table->size = 11;
+
+  /* Attempt to maintain efficient use of hash table.
+     Making it an odd number is simplest for now.
+     ??? Later take some measurements.  */
+  table->size |= 1;
+  n = table->size * sizeof (struct expr *);
+  table->table = GNEWVAR (struct expr *, n);
+}
+
+/* Free things allocated by alloc_hash_table.  */
+
+static void
+free_hash_table (struct hash_table_d *table)
+{
+  free (table->table);
+}
+
+/* Compute the hash TABLE for doing copy/const propagation or
+   expression hash table.  */
+
+static void
+compute_hash_table (struct hash_table_d *table)
+{
+  /* Initialize count of number of entries in hash table.  */
+  table->n_elems = 0;
+  memset (table->table, 0, table->size * sizeof (struct expr *));
+
+  compute_hash_table_work (table);
+}
+
+/* Expression tracking support.  */
+
+/* Lookup REGNO in the set TABLE.  The result is a pointer to the
+   table entry, or NULL if not found.  */
+
+static struct expr *
+lookup_set (unsigned int regno, struct hash_table_d *table)
+{
+  unsigned int hash = hash_set (regno, table->size);
+  struct expr *expr;
+
+  expr = table->table[hash];
+
+  while (expr && REGNO (SET_DEST (expr->expr)) != regno)
+    expr = expr->next_same_hash;
+
+  return expr;
+}
+
+/* Return the next entry for REGNO in list EXPR.  */
+
+static struct expr *
+next_set (unsigned int regno, struct expr *expr)
+{
+  do
+    expr = expr->next_same_hash;
+  while (expr && REGNO (SET_DEST (expr->expr)) != regno);
+
+  return expr;
+}
+
+/* Reset tables used to keep track of what's still available [since the
+   start of the block].  */
+
+static void
+reset_opr_set_tables (void)
+{
+  /* Maintain a bitmap of which regs have been set since beginning of
+     the block.  */
+  CLEAR_REG_SET (reg_set_bitmap);
+}
+
+/* Return nonzero if the operands of X are not set before INSN in
+   INSN's basic block.  */
+
+static int
+oprs_not_set_p (const_rtx x, const_rtx insn)
+{
+  int i, j;
+  enum rtx_code code;
+  const char *fmt;
+
+  if (x == 0)
+    return 1;
+
+  code = GET_CODE (x);
+  switch (code)
+    {
+    case PC:
+    case CC0:
+    case CONST:
+    case CONST_INT:
+    case CONST_DOUBLE:
+    case CONST_FIXED:
+    case CONST_VECTOR:
+    case SYMBOL_REF:
+    case LABEL_REF:
+    case ADDR_VEC:
+    case ADDR_DIFF_VEC:
+      return 1;
+
+    case REG:
+      return ! REGNO_REG_SET_P (reg_set_bitmap, REGNO (x));
+
+    default:
+      break;
+    }
+
+  for (i = GET_RTX_LENGTH (code) - 1, fmt = GET_RTX_FORMAT (code); i >= 0; i--)
+    {
+      if (fmt[i] == 'e')
+	{
+	  /* If we are about to do the last recursive call
+	     needed at this level, change it into iteration.
+	     This function is called enough to be worth it.  */
+	  if (i == 0)
+	    return oprs_not_set_p (XEXP (x, i), insn);
+
+	  if (! oprs_not_set_p (XEXP (x, i), insn))
+	    return 0;
+	}
+      else if (fmt[i] == 'E')
+	for (j = 0; j < XVECLEN (x, i); j++)
+	  if (! oprs_not_set_p (XVECEXP (x, i, j), insn))
+	    return 0;
+    }
+
+  return 1;
+}
+
+/* Mark things set by a SET.  */
+
+static void
+mark_set (rtx pat, rtx insn ATTRIBUTE_UNUSED)
+{
+  rtx dest = SET_DEST (pat);
+
+  while (GET_CODE (dest) == SUBREG
+	 || GET_CODE (dest) == ZERO_EXTRACT
+	 || GET_CODE (dest) == STRICT_LOW_PART)
+    dest = XEXP (dest, 0);
+
+  if (REG_P (dest))
+    SET_REGNO_REG_SET (reg_set_bitmap, REGNO (dest));
+}
+
+/* Record things set by a CLOBBER.  */
+
+static void
+mark_clobber (rtx pat, rtx insn ATTRIBUTE_UNUSED)
+{
+  rtx clob = XEXP (pat, 0);
+
+  while (GET_CODE (clob) == SUBREG || GET_CODE (clob) == STRICT_LOW_PART)
+    clob = XEXP (clob, 0);
+
+  if (REG_P (clob))
+    SET_REGNO_REG_SET (reg_set_bitmap, REGNO (clob));
+}
+
+/* Record things set by INSN.
+   This data is used by oprs_not_set_p.  */
+
+static void
+mark_oprs_set (rtx insn)
+{
+  rtx pat = PATTERN (insn);
+  int i;
+
+  if (GET_CODE (pat) == SET)
+    mark_set (pat, insn);
+  else if (GET_CODE (pat) == PARALLEL)
+    for (i = 0; i < XVECLEN (pat, 0); i++)
+      {
+	rtx x = XVECEXP (pat, 0, i);
+
+	if (GET_CODE (x) == SET)
+	  mark_set (x, insn);
+	else if (GET_CODE (x) == CLOBBER)
+	  mark_clobber (x, insn);
+      }
+
+  else if (GET_CODE (pat) == CLOBBER)
+    mark_clobber (pat, insn);
+}
+
+
+/* Compute copy/constant propagation working variables.  */
+
+/* Local properties of assignments.  */
+static sbitmap *cprop_pavloc;
+static sbitmap *cprop_absaltered;
+
+/* Global properties of assignments (computed from the local properties).  */
+static sbitmap *cprop_avin;
+static sbitmap *cprop_avout;
+
+/* Allocate vars used for copy/const propagation.  N_BLOCKS is the number of
+   basic blocks.  N_SETS is the number of sets.  */
+
+static void
+alloc_cprop_mem (int n_blocks, int n_sets)
+{
+  cprop_pavloc = sbitmap_vector_alloc (n_blocks, n_sets);
+  cprop_absaltered = sbitmap_vector_alloc (n_blocks, n_sets);
+
+  cprop_avin = sbitmap_vector_alloc (n_blocks, n_sets);
+  cprop_avout = sbitmap_vector_alloc (n_blocks, n_sets);
+}
+
+/* Free vars used by copy/const propagation.  */
+
+static void
+free_cprop_mem (void)
+{
+  sbitmap_vector_free (cprop_pavloc);
+  sbitmap_vector_free (cprop_absaltered);
+  sbitmap_vector_free (cprop_avin);
+  sbitmap_vector_free (cprop_avout);
+}
+
+/* For each block, compute whether X is transparent.  X is either an
+   expression or an assignment [though we don't care which, for this context
+   an assignment is treated as an expression].  For each block where an
+   element of X is modified, set the INDX bit in BMAP.  */
+
+static void
+compute_transp (const_rtx x, int indx, sbitmap *bmap)
+{
+  int i, j;
+  enum rtx_code code;
+  const char *fmt;
+
+  /* repeat is used to turn tail-recursion into iteration since GCC
+     can't do it when there's no return value.  */
+ repeat:
+
+  if (x == 0)
+    return;
+
+  code = GET_CODE (x);
+  switch (code)
+    {
+    case REG:
+	{
+	  df_ref def;
+	  for (def = DF_REG_DEF_CHAIN (REGNO (x));
+	       def;
+	       def = DF_REF_NEXT_REG (def))
+	    SET_BIT (bmap[DF_REF_BB (def)->index], indx);
+	}
+      return;
+
+    case PC:
+    case CC0: /*FIXME*/
+    case CONST:
+    case CONST_INT:
+    case CONST_DOUBLE:
+    case CONST_FIXED:
+    case CONST_VECTOR:
+    case SYMBOL_REF:
+    case LABEL_REF:
+    case ADDR_VEC:
+    case ADDR_DIFF_VEC:
+      return;
+
+    default:
+      break;
+    }
+
+  for (i = GET_RTX_LENGTH (code) - 1, fmt = GET_RTX_FORMAT (code); i >= 0; i--)
+    {
+      if (fmt[i] == 'e')
+	{
+	  /* If we are about to do the last recursive call
+	     needed at this level, change it into iteration.
+	     This function is called enough to be worth it.  */
+	  if (i == 0)
+	    {
+	      x = XEXP (x, i);
+	      goto repeat;
+	    }
+
+	  compute_transp (XEXP (x, i), indx, bmap);
+	}
+      else if (fmt[i] == 'E')
+	for (j = 0; j < XVECLEN (x, i); j++)
+	  compute_transp (XVECEXP (x, i, j), indx, bmap);
+    }
+}
+
+/* Compute the local properties of each recorded expression.
+
+   Local properties are those that are defined by the block, irrespective of
+   other blocks.
+
+   An expression is transparent in a block if its operands are not modified
+   in the block.
+
+   An expression is computed (locally available) in a block if it is computed
+   at least once and expression would contain the same value if the
+   computation was moved to the end of the block.
+
+   TRANSP and COMP are destination sbitmaps for recording local properties.
+   If NULL, then it is not necessary to compute or record that particular
+   property.
+
+   TRANSP is computed as ~TRANSP, since this is really cprop's ABSALTERED.  */
+
+static void
+compute_local_properties (sbitmap *transp, sbitmap *comp,
+			  struct hash_table_d *table)
+{
+  unsigned int i;
+
+  /* Initialize any bitmaps that were passed in.  */
+  if (transp)
+    {
+      sbitmap_vector_zero (transp, last_basic_block);
+    }
+
+  if (comp)
+    sbitmap_vector_zero (comp, last_basic_block);
+
+  for (i = 0; i < table->size; i++)
+    {
+      struct expr *expr;
+
+      for (expr = table->table[i]; expr != NULL; expr = expr->next_same_hash)
+	{
+	  int indx = expr->bitmap_index;
+	  struct occr *occr;
+
+	  /* The expression is transparent in this block if it is not killed.
+	     We start by assuming all are transparent [none are killed], and
+	     then reset the bits for those that are.  */
+	  if (transp)
+	    compute_transp (expr->expr, indx, transp);
+
+	  /* The occurrences recorded in avail_occr are exactly those that
+	     we want to set to nonzero in COMP.  */
+	  if (comp)
+	    for (occr = expr->avail_occr; occr != NULL; occr = occr->next)
+	      {
+		SET_BIT (comp[BLOCK_FOR_INSN (occr->insn)->index], indx);
+	      }
+	}
+    }
+}
+
+/* Hash table support.  */
+
+/* Top level routine to do the dataflow analysis needed by copy/const
+   propagation.  */
+
+static void
+compute_cprop_data (void)
+{
+  compute_local_properties (cprop_absaltered, cprop_pavloc, &set_hash_table);
+  compute_available (cprop_pavloc, cprop_absaltered,
+		     cprop_avout, cprop_avin);
+}
+
+/* Copy/constant propagation.  */
+
+/* Maximum number of register uses in an insn that we handle.  */
+#define MAX_USES 8
+
+/* Table of uses found in an insn.
+   Allocated statically to avoid alloc/free complexity and overhead.  */
+static struct reg_use reg_use_table[MAX_USES];
+
+/* Index into `reg_use_table' while building it.  */
+static int reg_use_count;
+
+/* Set up a list of register numbers used in INSN.  The found uses are stored
+   in `reg_use_table'.  `reg_use_count' is initialized to zero before entry,
+   and contains the number of uses in the table upon exit.
+
+   ??? If a register appears multiple times we will record it multiple times.
+   This doesn't hurt anything but it will slow things down.  */
+
+static void
+find_used_regs (rtx *xptr, void *data ATTRIBUTE_UNUSED)
+{
+  int i, j;
+  enum rtx_code code;
+  const char *fmt;
+  rtx x = *xptr;
+
+  /* repeat is used to turn tail-recursion into iteration since GCC
+     can't do it when there's no return value.  */
+ repeat:
+  if (x == 0)
+    return;
+
+  code = GET_CODE (x);
+  if (REG_P (x))
+    {
+      if (reg_use_count == MAX_USES)
+	return;
+
+      reg_use_table[reg_use_count].reg_rtx = x;
+      reg_use_count++;
+    }
+
+  /* Recursively scan the operands of this expression.  */
+
+  for (i = GET_RTX_LENGTH (code) - 1, fmt = GET_RTX_FORMAT (code); i >= 0; i--)
+    {
+      if (fmt[i] == 'e')
+	{
+	  /* If we are about to do the last recursive call
+	     needed at this level, change it into iteration.
+	     This function is called enough to be worth it.  */
+	  if (i == 0)
+	    {
+	      x = XEXP (x, 0);
+	      goto repeat;
+	    }
+
+	  find_used_regs (&XEXP (x, i), data);
+	}
+      else if (fmt[i] == 'E')
+	for (j = 0; j < XVECLEN (x, i); j++)
+	  find_used_regs (&XVECEXP (x, i, j), data);
+    }
+}
+
+/* Try to replace all non-SET_DEST occurrences of FROM in INSN with TO.
+   Returns nonzero is successful.  */
+
+static int
+try_replace_reg (rtx from, rtx to, rtx insn)
+{
+  rtx note = find_reg_equal_equiv_note (insn);
+  rtx src = 0;
+  int success = 0;
+  rtx set = single_set (insn);
+
+  /* Usually we substitute easy stuff, so we won't copy everything.
+     We however need to take care to not duplicate non-trivial CONST
+     expressions.  */
+  to = copy_rtx (to);
+
+  validate_replace_src_group (from, to, insn);
+  if (num_changes_pending () && apply_change_group ())
+    success = 1;
+
+  /* Try to simplify SET_SRC if we have substituted a constant.  */
+  if (success && set && CONSTANT_P (to))
+    {
+      src = simplify_rtx (SET_SRC (set));
+
+      if (src)
+	validate_change (insn, &SET_SRC (set), src, 0);
+    }
+
+  /* If there is already a REG_EQUAL note, update the expression in it
+     with our replacement.  */
+  if (note != 0 && REG_NOTE_KIND (note) == REG_EQUAL)
+    set_unique_reg_note (insn, REG_EQUAL,
+			 simplify_replace_rtx (XEXP (note, 0), from, to));
+  if (!success && set && reg_mentioned_p (from, SET_SRC (set)))
+    {
+      /* If above failed and this is a single set, try to simplify the source of
+	 the set given our substitution.  We could perhaps try this for multiple
+	 SETs, but it probably won't buy us anything.  */
+      src = simplify_replace_rtx (SET_SRC (set), from, to);
+
+      if (!rtx_equal_p (src, SET_SRC (set))
+	  && validate_change (insn, &SET_SRC (set), src, 0))
+	success = 1;
+
+      /* If we've failed perform the replacement, have a single SET to
+	 a REG destination and don't yet have a note, add a REG_EQUAL note
+	 to not lose information.  */
+      if (!success && note == 0 && set != 0 && REG_P (SET_DEST (set)))
+	note = set_unique_reg_note (insn, REG_EQUAL, copy_rtx (src));
+    }
+
+  /* REG_EQUAL may get simplified into register.
+     We don't allow that. Remove that note. This code ought
+     not to happen, because previous code ought to synthesize
+     reg-reg move, but be on the safe side.  */
+  if (note && REG_NOTE_KIND (note) == REG_EQUAL && REG_P (XEXP (note, 0)))
+    remove_note (insn, note);
+
+  return success;
+}
+
+/* Find a set of REGNOs that are available on entry to INSN's block.  Returns
+   NULL no such set is found.  */
+
+static struct expr *
+find_avail_set (int regno, rtx insn)
+{
+  /* SET1 contains the last set found that can be returned to the caller for
+     use in a substitution.  */
+  struct expr *set1 = 0;
+
+  /* Loops are not possible here.  To get a loop we would need two sets
+     available at the start of the block containing INSN.  i.e. we would
+     need two sets like this available at the start of the block:
+
+       (set (reg X) (reg Y))
+       (set (reg Y) (reg X))
+
+     This can not happen since the set of (reg Y) would have killed the
+     set of (reg X) making it unavailable at the start of this block.  */
+  while (1)
+    {
+      rtx src;
+      struct expr *set = lookup_set (regno, &set_hash_table);
+
+      /* Find a set that is available at the start of the block
+	 which contains INSN.  */
+      while (set)
+	{
+	  if (TEST_BIT (cprop_avin[BLOCK_FOR_INSN (insn)->index],
+			set->bitmap_index))
+	    break;
+	  set = next_set (regno, set);
+	}
+
+      /* If no available set was found we've reached the end of the
+	 (possibly empty) copy chain.  */
+      if (set == 0)
+	break;
+
+      gcc_assert (GET_CODE (set->expr) == SET);
+
+      src = SET_SRC (set->expr);
+
+      /* We know the set is available.
+	 Now check that SRC is locally anticipatable (i.e. none of the
+	 source operands have changed since the start of the block).
+
+         If the source operand changed, we may still use it for the next
+         iteration of this loop, but we may not use it for substitutions.  */
+
+      if (gcse_constant_p (src) || oprs_not_set_p (src, insn))
+	set1 = set;
+
+      /* If the source of the set is anything except a register, then
+	 we have reached the end of the copy chain.  */
+      if (! REG_P (src))
+	break;
+
+      /* Follow the copy chain, i.e. start another iteration of the loop
+	 and see if we have an available copy into SRC.  */
+      regno = REGNO (src);
+    }
+
+  /* SET1 holds the last set that was available and anticipatable at
+     INSN.  */
+  return set1;
+}
+
+/* Subroutine of cprop_insn that tries to propagate constants into
+   JUMP_INSNS.  JUMP must be a conditional jump.  If SETCC is non-NULL
+   it is the instruction that immediately precedes JUMP, and must be a
+   single SET of a register.  FROM is what we will try to replace,
+   SRC is the constant we will try to substitute for it.  Returns nonzero
+   if a change was made.  */
+
+static int
+cprop_jump (basic_block bb, rtx setcc, rtx jump, rtx from, rtx src)
+{
+  rtx new_rtx, set_src, note_src;
+  rtx set = pc_set (jump);
+  rtx note = find_reg_equal_equiv_note (jump);
+
+  if (note)
+    {
+      note_src = XEXP (note, 0);
+      if (GET_CODE (note_src) == EXPR_LIST)
+	note_src = NULL_RTX;
+    }
+  else note_src = NULL_RTX;
+
+  /* Prefer REG_EQUAL notes except those containing EXPR_LISTs.  */
+  set_src = note_src ? note_src : SET_SRC (set);
+
+  /* First substitute the SETCC condition into the JUMP instruction,
+     then substitute that given values into this expanded JUMP.  */
+  if (setcc != NULL_RTX
+      && !modified_between_p (from, setcc, jump)
+      && !modified_between_p (src, setcc, jump))
+    {
+      rtx setcc_src;
+      rtx setcc_set = single_set (setcc);
+      rtx setcc_note = find_reg_equal_equiv_note (setcc);
+      setcc_src = (setcc_note && GET_CODE (XEXP (setcc_note, 0)) != EXPR_LIST)
+		? XEXP (setcc_note, 0) : SET_SRC (setcc_set);
+      set_src = simplify_replace_rtx (set_src, SET_DEST (setcc_set),
+				      setcc_src);
+    }
+  else
+    setcc = NULL_RTX;
+
+  new_rtx = simplify_replace_rtx (set_src, from, src);
+
+  /* If no simplification can be made, then try the next register.  */
+  if (rtx_equal_p (new_rtx, SET_SRC (set)))
+    return 0;
+
+  /* If this is now a no-op delete it, otherwise this must be a valid insn.  */
+  if (new_rtx == pc_rtx)
+    delete_insn (jump);
+  else
+    {
+      /* Ensure the value computed inside the jump insn to be equivalent
+         to one computed by setcc.  */
+      if (setcc && modified_in_p (new_rtx, setcc))
+	return 0;
+      if (! validate_unshare_change (jump, &SET_SRC (set), new_rtx, 0))
+	{
+	  /* When (some) constants are not valid in a comparison, and there
+	     are two registers to be replaced by constants before the entire
+	     comparison can be folded into a constant, we need to keep
+	     intermediate information in REG_EQUAL notes.  For targets with
+	     separate compare insns, such notes are added by try_replace_reg.
+	     When we have a combined compare-and-branch instruction, however,
+	     we need to attach a note to the branch itself to make this
+	     optimization work.  */
+
+	  if (!rtx_equal_p (new_rtx, note_src))
+	    set_unique_reg_note (jump, REG_EQUAL, copy_rtx (new_rtx));
+	  return 0;
+	}
+
+      /* Remove REG_EQUAL note after simplification.  */
+      if (note_src)
+	remove_note (jump, note);
+     }
+
+#ifdef HAVE_cc0
+  /* Delete the cc0 setter.  */
+  if (setcc != NULL && CC0_P (SET_DEST (single_set (setcc))))
+    delete_insn (setcc);
+#endif
+
+  global_const_prop_count++;
+  if (dump_file != NULL)
+    {
+      fprintf (dump_file,
+	       "GLOBAL CONST-PROP: Replacing reg %d in jump_insn %d with constant ",
+	       REGNO (from), INSN_UID (jump));
+      print_rtl (dump_file, src);
+      fprintf (dump_file, "\n");
+    }
+  purge_dead_edges (bb);
+
+  /* If a conditional jump has been changed into unconditional jump, remove
+     the jump and make the edge fallthru - this is always called in
+     cfglayout mode.  */
+  if (new_rtx != pc_rtx && simplejump_p (jump))
+    {
+      edge e;
+      edge_iterator ei;
+
+      for (ei = ei_start (bb->succs); (e = ei_safe_edge (ei)); ei_next (&ei))
+	if (e->dest != EXIT_BLOCK_PTR
+	    && BB_HEAD (e->dest) == JUMP_LABEL (jump))
+	  {
+	    e->flags |= EDGE_FALLTHRU;
+	    break;
+	  }
+      delete_insn (jump);
+    }
+
+  return 1;
+}
+
+static bool
+constprop_register (rtx insn, rtx from, rtx to)
+{
+  rtx sset;
+
+  /* Check for reg or cc0 setting instructions followed by
+     conditional branch instructions first.  */
+  if ((sset = single_set (insn)) != NULL
+      && NEXT_INSN (insn)
+      && any_condjump_p (NEXT_INSN (insn)) && onlyjump_p (NEXT_INSN (insn)))
+    {
+      rtx dest = SET_DEST (sset);
+      if ((REG_P (dest) || CC0_P (dest))
+	  && cprop_jump (BLOCK_FOR_INSN (insn), insn, NEXT_INSN (insn), from, to))
+	return 1;
+    }
+
+  /* Handle normal insns next.  */
+  if (NONJUMP_INSN_P (insn)
+      && try_replace_reg (from, to, insn))
+    return 1;
+
+  /* Try to propagate a CONST_INT into a conditional jump.
+     We're pretty specific about what we will handle in this
+     code, we can extend this as necessary over time.
+
+     Right now the insn in question must look like
+     (set (pc) (if_then_else ...))  */
+  else if (any_condjump_p (insn) && onlyjump_p (insn))
+    return cprop_jump (BLOCK_FOR_INSN (insn), NULL, insn, from, to);
+  return 0;
+}
+
+/* Perform constant and copy propagation on INSN.
+   The result is nonzero if a change was made.  */
+
+static int
+cprop_insn (rtx insn)
+{
+  struct reg_use *reg_used;
+  int changed = 0;
+  rtx note;
+
+  if (!INSN_P (insn))
+    return 0;
+
+  reg_use_count = 0;
+  note_uses (&PATTERN (insn), find_used_regs, NULL);
+
+  note = find_reg_equal_equiv_note (insn);
+
+  /* We may win even when propagating constants into notes.  */
+  if (note)
+    find_used_regs (&XEXP (note, 0), NULL);
+
+  for (reg_used = &reg_use_table[0]; reg_use_count > 0;
+       reg_used++, reg_use_count--)
+    {
+      unsigned int regno = REGNO (reg_used->reg_rtx);
+      rtx pat, src;
+      struct expr *set;
+
+      /* If the register has already been set in this block, there's
+	 nothing we can do.  */
+      if (! oprs_not_set_p (reg_used->reg_rtx, insn))
+	continue;
+
+      /* Find an assignment that sets reg_used and is available
+	 at the start of the block.  */
+      set = find_avail_set (regno, insn);
+      if (! set)
+	continue;
+
+      pat = set->expr;
+      /* ??? We might be able to handle PARALLELs.  Later.  */
+      gcc_assert (GET_CODE (pat) == SET);
+
+      src = SET_SRC (pat);
+
+      /* Constant propagation.  */
+      if (gcse_constant_p (src))
+	{
+          if (constprop_register (insn, reg_used->reg_rtx, src))
+	    {
+	      changed = 1;
+	      global_const_prop_count++;
+	      if (dump_file != NULL)
+		{
+		  fprintf (dump_file, "GLOBAL CONST-PROP: Replacing reg %d in ", regno);
+		  fprintf (dump_file, "insn %d with constant ", INSN_UID (insn));
+		  print_rtl (dump_file, src);
+		  fprintf (dump_file, "\n");
+		}
+	      if (INSN_DELETED_P (insn))
+		return 1;
+	    }
+	}
+      else if (REG_P (src)
+	       && REGNO (src) >= FIRST_PSEUDO_REGISTER
+	       && REGNO (src) != regno)
+	{
+	  if (try_replace_reg (reg_used->reg_rtx, src, insn))
+	    {
+	      changed = 1;
+	      global_copy_prop_count++;
+	      if (dump_file != NULL)
+		{
+		  fprintf (dump_file, "GLOBAL COPY-PROP: Replacing reg %d in insn %d",
+			   regno, INSN_UID (insn));
+		  fprintf (dump_file, " with reg %d\n", REGNO (src));
+		}
+
+	      /* The original insn setting reg_used may or may not now be
+		 deletable.  We leave the deletion to flow.  */
+	      /* FIXME: If it turns out that the insn isn't deletable,
+		 then we may have unnecessarily extended register lifetimes
+		 and made things worse.  */
+	    }
+	}
+    }
+
+  if (changed && DEBUG_INSN_P (insn))
+    return 0;
+
+  return changed;
+}
+
+/* Like find_used_regs, but avoid recording uses that appear in
+   input-output contexts such as zero_extract or pre_dec.  This
+   restricts the cases we consider to those for which local cprop
+   can legitimately make replacements.  */
+
+static void
+local_cprop_find_used_regs (rtx *xptr, void *data)
+{
+  rtx x = *xptr;
+
+  if (x == 0)
+    return;
+
+  switch (GET_CODE (x))
+    {
+    case ZERO_EXTRACT:
+    case SIGN_EXTRACT:
+    case STRICT_LOW_PART:
+      return;
+
+    case PRE_DEC:
+    case PRE_INC:
+    case POST_DEC:
+    case POST_INC:
+    case PRE_MODIFY:
+    case POST_MODIFY:
+      /* Can only legitimately appear this early in the context of
+	 stack pushes for function arguments, but handle all of the
+	 codes nonetheless.  */
+      return;
+
+    case SUBREG:
+      /* Setting a subreg of a register larger than word_mode leaves
+	 the non-written words unchanged.  */
+      if (GET_MODE_BITSIZE (GET_MODE (SUBREG_REG (x))) > BITS_PER_WORD)
+	return;
+      break;
+
+    default:
+      break;
+    }
+
+  find_used_regs (xptr, data);
+}
+
+/* Try to perform local const/copy propagation on X in INSN.  */
+
+static bool
+do_local_cprop (rtx x, rtx insn)
+{
+  rtx newreg = NULL, newcnst = NULL;
+
+  /* Rule out USE instructions and ASM statements as we don't want to
+     change the hard registers mentioned.  */
+  if (REG_P (x)
+      && (REGNO (x) >= FIRST_PSEUDO_REGISTER
+          || (GET_CODE (PATTERN (insn)) != USE
+	      && asm_noperands (PATTERN (insn)) < 0)))
+    {
+      cselib_val *val = cselib_lookup (x, GET_MODE (x), 0, VOIDmode);
+      struct elt_loc_list *l;
+
+      if (!val)
+	return false;
+      for (l = val->locs; l; l = l->next)
+	{
+	  rtx this_rtx = l->loc;
+	  rtx note;
+
+	  if (gcse_constant_p (this_rtx))
+	    newcnst = this_rtx;
+	  if (REG_P (this_rtx) && REGNO (this_rtx) >= FIRST_PSEUDO_REGISTER
+	      /* Don't copy propagate if it has attached REG_EQUIV note.
+		 At this point this only function parameters should have
+		 REG_EQUIV notes and if the argument slot is used somewhere
+		 explicitly, it means address of parameter has been taken,
+		 so we should not extend the lifetime of the pseudo.  */
+	      && (!(note = find_reg_note (l->setting_insn, REG_EQUIV, NULL_RTX))
+		  || ! MEM_P (XEXP (note, 0))))
+	    newreg = this_rtx;
+	}
+      if (newcnst && constprop_register (insn, x, newcnst))
+	{
+	  if (dump_file != NULL)
+	    {
+	      fprintf (dump_file, "LOCAL CONST-PROP: Replacing reg %d in ",
+		       REGNO (x));
+	      fprintf (dump_file, "insn %d with constant ",
+		       INSN_UID (insn));
+	      print_rtl (dump_file, newcnst);
+	      fprintf (dump_file, "\n");
+	    }
+	  local_const_prop_count++;
+	  return true;
+	}
+      else if (newreg && newreg != x && try_replace_reg (x, newreg, insn))
+	{
+	  if (dump_file != NULL)
+	    {
+	      fprintf (dump_file,
+		       "LOCAL COPY-PROP: Replacing reg %d in insn %d",
+		       REGNO (x), INSN_UID (insn));
+	      fprintf (dump_file, " with reg %d\n", REGNO (newreg));
+	    }
+	  local_copy_prop_count++;
+	  return true;
+	}
+    }
+  return false;
+}
+
+/* Do local const/copy propagation (i.e. within each basic block).  */
+
+static int
+local_cprop_pass (void)
+{
+  basic_block bb;
+  rtx insn;
+  struct reg_use *reg_used;
+  bool changed = false;
+
+  cselib_init (0);
+  FOR_EACH_BB (bb)
+    {
+      FOR_BB_INSNS (bb, insn)
+	{
+	  if (INSN_P (insn))
+	    {
+	      rtx note = find_reg_equal_equiv_note (insn);
+	      do
+		{
+		  reg_use_count = 0;
+		  note_uses (&PATTERN (insn), local_cprop_find_used_regs,
+			     NULL);
+		  if (note)
+		    local_cprop_find_used_regs (&XEXP (note, 0), NULL);
+
+		  for (reg_used = &reg_use_table[0]; reg_use_count > 0;
+		       reg_used++, reg_use_count--)
+		    {
+		      if (do_local_cprop (reg_used->reg_rtx, insn))
+			{
+			  changed = true;
+			  break;
+			}
+		    }
+		  if (INSN_DELETED_P (insn))
+		    break;
+		}
+	      while (reg_use_count);
+	    }
+	  cselib_process_insn (insn);
+	}
+
+      /* Forget everything at the end of a basic block.  */
+      cselib_clear_table ();
+    }
+
+  cselib_finish ();
+
+  return changed;
+}
+
+/* Similar to get_condition, only the resulting condition must be
+   valid at JUMP, instead of at EARLIEST.
+
+   This differs from noce_get_condition in ifcvt.c in that we prefer not to
+   settle for the condition variable in the jump instruction being integral.
+   We prefer to be able to record the value of a user variable, rather than
+   the value of a temporary used in a condition.  This could be solved by
+   recording the value of *every* register scanned by canonicalize_condition,
+   but this would require some code reorganization.  */
+
+rtx
+fis_get_condition (rtx jump)
+{
+  return get_condition (jump, NULL, false, true);
+}
+
+/* Check the comparison COND to see if we can safely form an implicit set from
+   it.  COND is either an EQ or NE comparison.  */
+
+static bool
+implicit_set_cond_p (const_rtx cond)
+{
+  const enum machine_mode mode = GET_MODE (XEXP (cond, 0));
+  const_rtx cst = XEXP (cond, 1);
+
+  /* We can't perform this optimization if either operand might be or might
+     contain a signed zero.  */
+  if (HONOR_SIGNED_ZEROS (mode))
+    {
+      /* It is sufficient to check if CST is or contains a zero.  We must
+	 handle float, complex, and vector.  If any subpart is a zero, then
+	 the optimization can't be performed.  */
+      /* ??? The complex and vector checks are not implemented yet.  We just
+	 always return zero for them.  */
+      if (GET_CODE (cst) == CONST_DOUBLE)
+	{
+	  REAL_VALUE_TYPE d;
+	  REAL_VALUE_FROM_CONST_DOUBLE (d, cst);
+	  if (REAL_VALUES_EQUAL (d, dconst0))
+	    return 0;
+	}
+      else
+	return 0;
+    }
+
+  return gcse_constant_p (cst);
+}
+
+/* Find the implicit sets of a function.  An "implicit set" is a constraint
+   on the value of a variable, implied by a conditional jump.  For example,
+   following "if (x == 2)", the then branch may be optimized as though the
+   conditional performed an "explicit set", in this example, "x = 2".  This
+   function records the set patterns that are implicit at the start of each
+   basic block.
+
+   FIXME: This would be more effective if critical edges are pre-split.  As
+	  it is now, we can't record implicit sets for blocks that have
+	  critical successor edges.  This results in missed optimizations
+	  and in more (unnecessary) work in cfgcleanup.c:thread_jump().  */
+
+static void
+find_implicit_sets (void)
+{
+  basic_block bb, dest;
+  unsigned int count;
+  rtx cond, new_rtx;
+
+  count = 0;
+  FOR_EACH_BB (bb)
+    /* Check for more than one successor.  */
+    if (EDGE_COUNT (bb->succs) > 1)
+      {
+	cond = fis_get_condition (BB_END (bb));
+
+	if (cond
+	    && (GET_CODE (cond) == EQ || GET_CODE (cond) == NE)
+	    && REG_P (XEXP (cond, 0))
+	    && REGNO (XEXP (cond, 0)) >= FIRST_PSEUDO_REGISTER
+	    && implicit_set_cond_p (cond))
+	  {
+	    dest = GET_CODE (cond) == EQ ? BRANCH_EDGE (bb)->dest
+					 : FALLTHRU_EDGE (bb)->dest;
+
+	    if (dest
+		/* Record nothing for a critical edge.  */
+		&& single_pred_p (dest)
+		&& dest != EXIT_BLOCK_PTR)
+	      {
+		new_rtx = gen_rtx_SET (VOIDmode, XEXP (cond, 0),
+					     XEXP (cond, 1));
+		implicit_sets[dest->index] = new_rtx;
+		if (dump_file)
+		  {
+		    fprintf(dump_file, "Implicit set of reg %d in ",
+			    REGNO (XEXP (cond, 0)));
+		    fprintf(dump_file, "basic block %d\n", dest->index);
+		  }
+		count++;
+	      }
+	  }
+      }
+
+  if (dump_file)
+    fprintf (dump_file, "Found %d implicit sets\n", count);
+}
+
+/* Bypass conditional jumps.  */
+
+/* The value of last_basic_block at the beginning of the jump_bypass
+   pass.  The use of redirect_edge_and_branch_force may introduce new
+   basic blocks, but the data flow analysis is only valid for basic
+   block indices less than bypass_last_basic_block.  */
+
+static int bypass_last_basic_block;
+
+/* Find a set of REGNO to a constant that is available at the end of basic
+   block BB.  Returns NULL if no such set is found.  Based heavily upon
+   find_avail_set.  */
+
+static struct expr *
+find_bypass_set (int regno, int bb)
+{
+  struct expr *result = 0;
+
+  for (;;)
+    {
+      rtx src;
+      struct expr *set = lookup_set (regno, &set_hash_table);
+
+      while (set)
+	{
+	  if (TEST_BIT (cprop_avout[bb], set->bitmap_index))
+	    break;
+	  set = next_set (regno, set);
+	}
+
+      if (set == 0)
+	break;
+
+      gcc_assert (GET_CODE (set->expr) == SET);
+
+      src = SET_SRC (set->expr);
+      if (gcse_constant_p (src))
+	result = set;
+
+      if (! REG_P (src))
+	break;
+
+      regno = REGNO (src);
+    }
+  return result;
+}
+
+
+/* Subroutine of bypass_block that checks whether a pseudo is killed by
+   any of the instructions inserted on an edge.  Jump bypassing places
+   condition code setters on CFG edges using insert_insn_on_edge.  This
+   function is required to check that our data flow analysis is still
+   valid prior to commit_edge_insertions.  */
+
+static bool
+reg_killed_on_edge (const_rtx reg, const_edge e)
+{
+  rtx insn;
+
+  for (insn = e->insns.r; insn; insn = NEXT_INSN (insn))
+    if (INSN_P (insn) && reg_set_p (reg, insn))
+      return true;
+
+  return false;
+}
+
+/* Subroutine of bypass_conditional_jumps that attempts to bypass the given
+   basic block BB which has more than one predecessor.  If not NULL, SETCC
+   is the first instruction of BB, which is immediately followed by JUMP_INSN
+   JUMP.  Otherwise, SETCC is NULL, and JUMP is the first insn of BB.
+   Returns nonzero if a change was made.
+
+   During the jump bypassing pass, we may place copies of SETCC instructions
+   on CFG edges.  The following routine must be careful to pay attention to
+   these inserted insns when performing its transformations.  */
+
+static int
+bypass_block (basic_block bb, rtx setcc, rtx jump)
+{
+  rtx insn, note;
+  edge e, edest;
+  int i, change;
+  int may_be_loop_header;
+  unsigned removed_p;
+  edge_iterator ei;
+
+  insn = (setcc != NULL) ? setcc : jump;
+
+  /* Determine set of register uses in INSN.  */
+  reg_use_count = 0;
+  note_uses (&PATTERN (insn), find_used_regs, NULL);
+  note = find_reg_equal_equiv_note (insn);
+  if (note)
+    find_used_regs (&XEXP (note, 0), NULL);
+
+  may_be_loop_header = false;
+  FOR_EACH_EDGE (e, ei, bb->preds)
+    if (e->flags & EDGE_DFS_BACK)
+      {
+	may_be_loop_header = true;
+	break;
+      }
+
+  change = 0;
+  for (ei = ei_start (bb->preds); (e = ei_safe_edge (ei)); )
+    {
+      removed_p = 0;
+
+      if (e->flags & EDGE_COMPLEX)
+	{
+	  ei_next (&ei);
+	  continue;
+	}
+
+      /* We can't redirect edges from new basic blocks.  */
+      if (e->src->index >= bypass_last_basic_block)
+	{
+	  ei_next (&ei);
+	  continue;
+	}
+
+      /* The irreducible loops created by redirecting of edges entering the
+	 loop from outside would decrease effectiveness of some of the following
+	 optimizations, so prevent this.  */
+      if (may_be_loop_header
+	  && !(e->flags & EDGE_DFS_BACK))
+	{
+	  ei_next (&ei);
+	  continue;
+	}
+
+      for (i = 0; i < reg_use_count; i++)
+	{
+	  struct reg_use *reg_used = &reg_use_table[i];
+	  unsigned int regno = REGNO (reg_used->reg_rtx);
+	  basic_block dest, old_dest;
+	  struct expr *set;
+	  rtx src, new_rtx;
+
+	  set = find_bypass_set (regno, e->src->index);
+
+	  if (! set)
+	    continue;
+
+	  /* Check the data flow is valid after edge insertions.  */
+	  if (e->insns.r && reg_killed_on_edge (reg_used->reg_rtx, e))
+	    continue;
+
+	  src = SET_SRC (pc_set (jump));
+
+	  if (setcc != NULL)
+	    src = simplify_replace_rtx (src,
+					SET_DEST (PATTERN (setcc)),
+					SET_SRC (PATTERN (setcc)));
+
+	  new_rtx = simplify_replace_rtx (src, reg_used->reg_rtx,
+					  SET_SRC (set->expr));
+
+	  /* Jump bypassing may have already placed instructions on
+	     edges of the CFG.  We can't bypass an outgoing edge that
+	     has instructions associated with it, as these insns won't
+	     get executed if the incoming edge is redirected.  */
+
+	  if (new_rtx == pc_rtx)
+	    {
+	      edest = FALLTHRU_EDGE (bb);
+	      dest = edest->insns.r ? NULL : edest->dest;
+	    }
+	  else if (GET_CODE (new_rtx) == LABEL_REF)
+	    {
+	      dest = BLOCK_FOR_INSN (XEXP (new_rtx, 0));
+	      /* Don't bypass edges containing instructions.  */
+	      edest = find_edge (bb, dest);
+	      if (edest && edest->insns.r)
+		dest = NULL;
+	    }
+	  else
+	    dest = NULL;
+
+	  /* Avoid unification of the edge with other edges from original
+	     branch.  We would end up emitting the instruction on "both"
+	     edges.  */
+
+	  if (dest && setcc && !CC0_P (SET_DEST (PATTERN (setcc)))
+	      && find_edge (e->src, dest))
+	    dest = NULL;
+
+	  old_dest = e->dest;
+	  if (dest != NULL
+	      && dest != old_dest
+	      && dest != EXIT_BLOCK_PTR)
+            {
+	      redirect_edge_and_branch_force (e, dest);
+
+	      /* Copy the register setter to the redirected edge.
+		 Don't copy CC0 setters, as CC0 is dead after jump.  */
+	      if (setcc)
+		{
+		  rtx pat = PATTERN (setcc);
+		  if (!CC0_P (SET_DEST (pat)))
+		    insert_insn_on_edge (copy_insn (pat), e);
+		}
+
+	      if (dump_file != NULL)
+		{
+		  fprintf (dump_file, "JUMP-BYPASS: Proved reg %d "
+				      "in jump_insn %d equals constant ",
+			   regno, INSN_UID (jump));
+		  print_rtl (dump_file, SET_SRC (set->expr));
+		  fprintf (dump_file, "\nBypass edge from %d->%d to %d\n",
+			   e->src->index, old_dest->index, dest->index);
+		}
+	      change = 1;
+	      removed_p = 1;
+	      break;
+	    }
+	}
+      if (!removed_p)
+	ei_next (&ei);
+    }
+  return change;
+}
+
+/* Find basic blocks with more than one predecessor that only contain a
+   single conditional jump.  If the result of the comparison is known at
+   compile-time from any incoming edge, redirect that edge to the
+   appropriate target.  Returns nonzero if a change was made.
+
+   This function is now mis-named, because we also handle indirect jumps.  */
+
+static int
+bypass_conditional_jumps (void)
+{
+  basic_block bb;
+  int changed;
+  rtx setcc;
+  rtx insn;
+  rtx dest;
+
+  /* Note we start at block 1.  */
+  if (ENTRY_BLOCK_PTR->next_bb == EXIT_BLOCK_PTR)
+    return 0;
+
+  bypass_last_basic_block = last_basic_block;
+  mark_dfs_back_edges ();
+
+  changed = 0;
+  FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR->next_bb->next_bb,
+		  EXIT_BLOCK_PTR, next_bb)
+    {
+      /* Check for more than one predecessor.  */
+      if (!single_pred_p (bb))
+	{
+	  setcc = NULL_RTX;
+	  FOR_BB_INSNS (bb, insn)
+	    if (DEBUG_INSN_P (insn))
+	      continue;
+	    else if (NONJUMP_INSN_P (insn))
+	      {
+		if (setcc)
+		  break;
+		if (GET_CODE (PATTERN (insn)) != SET)
+		  break;
+
+		dest = SET_DEST (PATTERN (insn));
+		if (REG_P (dest) || CC0_P (dest))
+		  setcc = insn;
+		else
+		  break;
+	      }
+	    else if (JUMP_P (insn))
+	      {
+		if ((any_condjump_p (insn) || computed_jump_p (insn))
+		    && onlyjump_p (insn))
+		  changed |= bypass_block (bb, setcc, insn);
+		break;
+	      }
+	    else if (INSN_P (insn))
+	      break;
+	}
+    }
+
+  /* If we bypassed any register setting insns, we inserted a
+     copy on the redirected edge.  These need to be committed.  */
+  if (changed)
+    commit_edge_insertions ();
+
+  return changed;
+}
+
+/* Return true if the graph is too expensive to optimize. PASS is the
+   optimization about to be performed.  */
+
+static bool
+is_too_expensive (const char *pass)
+{
+  /* Trying to perform global optimizations on flow graphs which have
+     a high connectivity will take a long time and is unlikely to be
+     particularly useful.
+
+     In normal circumstances a cfg should have about twice as many
+     edges as blocks.  But we do not want to punish small functions
+     which have a couple switch statements.  Rather than simply
+     threshold the number of blocks, uses something with a more
+     graceful degradation.  */
+  if (n_edges > 20000 + n_basic_blocks * 4)
+    {
+      warning (OPT_Wdisabled_optimization,
+	       "%s: %d basic blocks and %d edges/basic block",
+	       pass, n_basic_blocks, n_edges / n_basic_blocks);
+
+      return true;
+    }
+
+  /* If allocating memory for the cprop bitmap would take up too much
+     storage it's better just to disable the optimization.  */
+  if ((n_basic_blocks
+       * SBITMAP_SET_SIZE (max_reg_num ())
+       * sizeof (SBITMAP_ELT_TYPE)) > MAX_GCSE_MEMORY)
+    {
+      warning (OPT_Wdisabled_optimization,
+	       "%s: %d basic blocks and %d registers",
+	       pass, n_basic_blocks, max_reg_num ());
+
+      return true;
+    }
+
+  return false;
+}
+
+
+/* Main function for the CPROP pass.  */
+
+static int
+one_cprop_pass (void)
+{
+  int changed = 0;
+
+  /* Return if there's nothing to do, or it is too expensive.  */
+  if (n_basic_blocks <= NUM_FIXED_BLOCKS + 1
+      || is_too_expensive (_ ("const/copy propagation disabled")))
+    return 0;
+
+  global_const_prop_count = local_const_prop_count = 0;
+  global_copy_prop_count = local_copy_prop_count = 0;
+
+  bytes_used = 0;
+  gcc_obstack_init (&gcse_obstack);
+  alloc_gcse_mem ();
+
+  /* Do a local const/copy propagation pass first.  The global pass
+     only handles global opportunities.
+     If the local pass changes something, remove any unreachable blocks
+     because the CPROP global dataflow analysis may get into infinite
+     loops for CFGs with unreachable blocks.
+
+     FIXME: This local pass should not be necessary after CSE (but for
+	    some reason it still is).  It is also (proven) not necessary
+	    to run the local pass right after FWPWOP.
+
+     FIXME: The global analysis would not get into infinite loops if it
+	    would use the DF solver (via df_simple_dataflow) instead of
+	    the solver implemented in this file.  */
+  if (local_cprop_pass ())
+    {
+      delete_unreachable_blocks ();
+      df_analyze ();
+    }
+
+  /* Determine implicit sets.  */
+  implicit_sets = XCNEWVEC (rtx, last_basic_block);
+  find_implicit_sets ();
+
+  alloc_hash_table (&set_hash_table);
+  compute_hash_table (&set_hash_table);
+
+  /* Free implicit_sets before peak usage.  */
+  free (implicit_sets);
+  implicit_sets = NULL;
+
+  if (dump_file)
+    dump_hash_table (dump_file, "SET", &set_hash_table);
+  if (set_hash_table.n_elems > 0)
+    {
+      basic_block bb;
+      rtx insn;
+
+      alloc_cprop_mem (last_basic_block, set_hash_table.n_elems);
+      compute_cprop_data ();
+
+      FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR->next_bb->next_bb, EXIT_BLOCK_PTR, next_bb)
+	{
+	  /* Reset tables used to keep track of what's still valid [since
+	     the start of the block].  */
+	  reset_opr_set_tables ();
+
+	  FOR_BB_INSNS (bb, insn)
+	    if (INSN_P (insn))
+	      {
+		changed |= cprop_insn (insn);
+
+		/* Keep track of everything modified by this insn.  */
+		/* ??? Need to be careful w.r.t. mods done to INSN.
+		       Don't call mark_oprs_set if we turned the
+		       insn into a NOTE.  */
+		if (! NOTE_P (insn))
+		  mark_oprs_set (insn);
+	      }
+	}
+
+      changed |= bypass_conditional_jumps ();
+      free_cprop_mem ();
+    }
+
+  free_hash_table (&set_hash_table);
+  free_gcse_mem ();
+  obstack_free (&gcse_obstack, NULL);
+
+  if (dump_file)
+    {
+      fprintf (dump_file, "CPROP of %s, %d basic blocks, %d bytes needed, ",
+	       current_function_name (), n_basic_blocks, bytes_used);
+      fprintf (dump_file, "%d local const props, %d local copy props, ",
+	       local_const_prop_count, local_copy_prop_count);
+      fprintf (dump_file, "%d global const props, %d global copy props\n\n",
+	       global_const_prop_count, global_copy_prop_count);
+    }
+
+  return changed;
+}
+
+
+/* All the passes implemented in this file.  Each pass has its
+   own gate and execute function, and at the end of the file a
+   pass definition for passes.c.
+
+   We do not construct an accurate cfg in functions which call
+   setjmp, so none of these passes runs if the function calls
+   setjmp.
+   FIXME: Should just handle setjmp via REG_SETJMP notes.  */
+
+static bool
+gate_rtl_cprop (void)
+{
+  return optimize > 0 && flag_gcse
+    && !cfun->calls_setjmp
+    && dbg_cnt (cprop);
+}
+
+static unsigned int
+execute_rtl_cprop (void)
+{
+  int changed;
+  delete_unreachable_blocks ();
+  df_set_flags (DF_LR_RUN_DCE);
+  df_analyze ();
+  changed = one_cprop_pass ();
+  flag_rerun_cse_after_global_opts |= changed;
+  if (changed)
+    cleanup_cfg (0);
+  return 0;
+}
+
+struct rtl_opt_pass pass_rtl_cprop =
+{
+ {
+  RTL_PASS,
+  "cprop",                              /* name */
+  gate_rtl_cprop,                       /* gate */
+  execute_rtl_cprop,  			/* execute */
+  NULL,                                 /* sub */
+  NULL,                                 /* next */
+  0,                                    /* static_pass_number */
+  TV_CPROP,                             /* tv_id */
+  PROP_cfglayout,                       /* properties_required */
+  0,                                    /* properties_provided */
+  0,                                    /* properties_destroyed */
+  0,                                    /* todo_flags_start */
+  TODO_df_finish | TODO_verify_rtl_sharing |
+  TODO_dump_func |
+  TODO_verify_flow | TODO_ggc_collect   /* todo_flags_finish */
+ }
+};
+
