@@ -1,5 +1,14 @@
 2011-03-28  Anatoly Sokolov  <aesok@post.ru>
 
+	* config/h8300/h8300.h (FUNCTION_VALUE_REGNO_P, FUNCTION_VALUE,
+	LIBCALL_VALUE): Remove macros.
+	* config/h8300/h8300.c (TARGET_FUNCTION_VALUE, TARGET_LIBCALL_VALUE,
+	TARGET_FUNCTION_VALUE_REGNO_P): Define.
+	(h8300_function_value, h8300_libcall_value,
+	h8300_function_value_regno_p): New functions.
+
+2011-03-28  Anatoly Sokolov  <aesok@post.ru>
+
 	* config/h8300/h8300.h (ASM_OUTPUT_BSS): Remove macro.
 
 2011-03-28  Jeff Law  <law@redhat.com>
