@@ -3117,8 +3117,8 @@ canonicalize_values_mark (void **slot, void *data)
 	    decl_or_value odv = dv_from_value (node->loc);
 	    void **oslot = shared_hash_find_slot_noinsert (set->vars, odv);
 
-	    oslot = set_slot_part (set, val, oslot, odv, 0,
-				   node->init, NULL_RTX);
+	    set_slot_part (set, val, oslot, odv, 0,
+			   node->init, NULL_RTX);
 
 	    VALUE_RECURSED_INTO (node->loc) = true;
 	  }
@@ -3329,8 +3329,8 @@ canonicalize_values_star (void **slot, void *data)
       }
 
   if (val)
-    cslot = set_slot_part (set, val, cslot, cdv, 0,
-			   VAR_INIT_STATUS_INITIALIZED, NULL_RTX);
+    set_slot_part (set, val, cslot, cdv, 0,
+		   VAR_INIT_STATUS_INITIALIZED, NULL_RTX);
 
   slot = clobber_slot_part (set, cval, slot, 0, NULL);
 
@@ -3401,7 +3401,7 @@ canonicalize_vars_star (void **slot, void *data)
 
   slot = set_slot_part (set, cval, slot, dv, 0,
 			node->init, node->set_src);
-  slot = clobber_slot_part (set, cval, slot, 0, node->set_src);
+  clobber_slot_part (set, cval, slot, 0, node->set_src);
 
   return 1;
 }
@@ -7038,7 +7038,7 @@ set_variable_part (dataflow_set *set, rtx loc,
       if (!slot)
 	slot = shared_hash_find_slot_unshare (&set->vars, dv, iopt);
     }
-  slot = set_slot_part (set, loc, slot, dv, offset, initialized, set_src);
+  set_slot_part (set, loc, slot, dv, offset, initialized, set_src);
 }
 
 /* Remove all recorded register locations for the given variable part
@@ -7119,7 +7119,7 @@ clobber_variable_part (dataflow_set *set, rtx loc, decl_or_value dv,
   if (!slot)
     return;
 
-  slot = clobber_slot_part (set, loc, slot, offset, set_src);
+  clobber_slot_part (set, loc, slot, offset, set_src);
 }
 
 /* Delete the part of variable's location from dataflow set SET.  The
@@ -7218,7 +7218,7 @@ delete_variable_part (dataflow_set *set, rtx loc, decl_or_value dv,
   if (!slot)
     return;
 
-  slot = delete_slot_part (set, loc, slot, offset);
+  delete_slot_part (set, loc, slot, offset);
 }
 
 /* Structure for passing some other parameters to function

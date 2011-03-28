@@ -1,3 +1,10 @@
+2011-03-28  Jeff Law  <law@redhat.com>
+
+	* var-tracking.c (canonicalize_values_mark): Delete unused
+	lhs assignment.
+	(canonicalize_values_star, set_variable_part): Likewise.
+	(clobber_variable_part, delete_variable_part): Likewise.
+
 2011-03-28  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* gcse.c (free_gcse_mem): Free reg_set_bitmap.
