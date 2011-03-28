@@ -184,8 +184,9 @@ extern GTY(()) int darwin_ms_struct;
 
 #define LINK_COMMAND_SPEC_A \
    "%{!fdump=*:%{!fsyntax-only:%{!c:%{!M:%{!MM:%{!E:%{!S:\
-    %(linker) \
-    %{flto*:%<fcompare-debug*} \
+    %(linker)" \
+    LINK_PLUGIN_SPEC \
+    "%{flto*:%<fcompare-debug*} \
     %{flto*} \
     %l %X %{s} %{t} %{Z} %{u*} \
     %{e*} %{r} \
