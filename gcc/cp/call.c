@@ -1429,7 +1429,9 @@ reference_binding (tree rto, tree rfrom, tree expr, bool c_cast_p, int flags)
 	  || (((CP_TYPE_CONST_NON_VOLATILE_P (to)
 		&& !(flags & LOOKUP_NO_TEMP_BIND))
 	       || TYPE_REF_IS_RVALUE (rto))
-	      && (CLASS_TYPE_P (from) || (expr && lvalue_p (expr))))))
+	      && (CLASS_TYPE_P (from)
+		  || TREE_CODE (from) == ARRAY_TYPE
+		  || (expr && lvalue_p (expr))))))
     {
       /* [dcl.init.ref]
 
