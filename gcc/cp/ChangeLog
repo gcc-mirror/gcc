@@ -1,3 +1,8 @@
+2011-03-28  Jason Merrill  <jason@redhat.com>
+
+	* except.c (build_noexcept_spec): Call cxx_constant_value after
+	converting to bool.
+
 2011-03-25  Kai Tietz  <ktietz@redhat.com>
 
 	* lex.c (interface_strcmp): Handle dos-paths.
