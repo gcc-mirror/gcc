@@ -290,6 +290,11 @@ enum reg_class
 #define GENERAL_REGS 	REAL_REGS
 #define N_REG_CLASSES 	((int) LIM_REG_CLASSES)
 
+#define IRA_COVER_CLASSES				\
+{							\
+  REAL_REGS, MULTIPLY_64_REG, LIM_REG_CLASSES		\
+}
+
 /* An initializer containing the names of the register classes as C string
    constants.  These names are used in writing some of the debugging dumps.  */
 #define REG_CLASS_NAMES \

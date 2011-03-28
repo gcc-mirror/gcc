@@ -1,5 +1,10 @@
 2011-03-27  Vladimir Makarov  <vmakarov@redhat.com>
 
+	PR bootstrap/48307
+	Revert the previous patch.
+
+2011-03-27  Vladimir Makarov  <vmakarov@redhat.com>
+
 	* regmove.c (regmove_optimize): Move ira_set_pseudo_classes call
 	after regstat_init_n_sets_and_refs.
 
