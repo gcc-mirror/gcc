@@ -1,3 +1,30 @@
+2011-03-28  Richard Guenther  <rguenther@suse.de>
+
+	Backport from mainline
+	2011-03-24  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/48269
+	* tree-object-size.c (addr_object_size): Do not double-account
+	for MEM_REF offsets.
+
+	2011-03-22  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/48228
+	* tree-vrp.c (vrp_visit_phi_node): Do not stop propagating
+	for single-arg PHIs.
+
+	2011-03-17  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/48134
+	* tree-ssa.c (insert_debug_temp_for_var_def): If we propagated
+	a value make sure to fold the statement.
+
+	2011-03-15  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/48031
+	* fold-const.c (fold_indirect_ref_1): Do not create new variable-sized
+	or variable-indexed array accesses when in gimple form.
+
 2011-03-27  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	PR other/48179

@@ -455,13 +455,19 @@ insert_debug_temp_for_var_def (gimple_stmt_iterator *gsi, tree var)
 	continue;
 
       if (value)
-	FOR_EACH_IMM_USE_ON_STMT (use_p, imm_iter)
-	  /* unshare_expr is not needed here.  vexpr is either a
-	     SINGLE_RHS, that can be safely shared, some other RHS
-	     that was unshared when we found it had a single debug
-	     use, or a DEBUG_EXPR_DECL, that can be safely
-	     shared.  */
-	  SET_USE (use_p, value);
+	{
+	  FOR_EACH_IMM_USE_ON_STMT (use_p, imm_iter)
+	    /* unshare_expr is not needed here.  vexpr is either a
+	       SINGLE_RHS, that can be safely shared, some other RHS
+	       that was unshared when we found it had a single debug
+	       use, or a DEBUG_EXPR_DECL, that can be safely
+	       shared.  */
+	    SET_USE (use_p, value);
+	  /* If we didn't replace uses with a debug decl fold the
+	     resulting expression.  Otherwise we end up with invalid IL.  */
+	  if (TREE_CODE (value) != DEBUG_EXPR_DECL)
+	    fold_stmt_inplace (stmt);
+	}
       else
 	gimple_debug_bind_reset_value (stmt);
 

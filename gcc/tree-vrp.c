@@ -6619,6 +6619,7 @@ vrp_visit_phi_node (gimple phi)
      edge; this helps us avoid an overflow infinity for conditionals
      which are not in a loop.  */
   if (edges > 0
+      && gimple_phi_num_args (phi) > 1
       && edges == old_edges)
     {
       int cmp_min = compare_values (lhs_vr->min, vr_result.min);

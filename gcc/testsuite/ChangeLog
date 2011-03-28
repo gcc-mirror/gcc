@@ -1,3 +1,21 @@
+2011-03-28  Richard Guenther  <rguenther@suse.de>
+
+	Backport from mainline
+	2011-03-24  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/48269
+	* gcc.dg/builtin-object-size-10.c: New testcase.
+
+	2011-03-22  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/48228
+	* gcc.dg/Wstrict-overflow-23.c: New testcase.
+
+	2011-03-17  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/48134
+	* gcc.dg/pr48134.c: New testcase.
+
 2011-03-26  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline:
