@@ -1,3 +1,8 @@
+2011-03-28  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	PR target/47553
+	* config/arm/predicates.md (neon_lane_number): Accept 0..15.
+
 2011-03-28  Richard Guenther  <rguenther@suse.de>
 
 	Backport from mainline
