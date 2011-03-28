@@ -1,3 +1,10 @@
+2011-03-27  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/sse.md (*avx_mov<mode>_internal): Don't assert
+	unaligned 256bit load/store.
+	(*avx_movu<ssemodesuffix><avxmodesuffix>): Likewise.
+	(*avx_movdqu<avxmodesuffix>): Likewise.
+
 2011-03-27  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR bootstrap/48307
