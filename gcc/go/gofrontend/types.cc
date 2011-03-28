@@ -7029,9 +7029,8 @@ Named_type::do_verify()
   if (this->local_methods_ != NULL)
     {
       Struct_type* st = this->type_->struct_type();
-      Interface_type* it = this->type_->interface_type();
       bool found_dup = false;
-      if (st != NULL || it != NULL)
+      if (st != NULL)
 	{
 	  for (Bindings::const_declarations_iterator p =
 		 this->local_methods_->begin_declarations();
@@ -7043,13 +7042,6 @@ Named_type::do_verify()
 		{
 		  error_at(p->second->location(),
 			   "method %qs redeclares struct field name",
-			   Gogo::message_name(name).c_str());
-		  found_dup = true;
-		}
-	      if (it != NULL && it->find_method(name) != NULL)
-		{
-		  error_at(p->second->location(),
-			   "method %qs redeclares interface method name",
 			   Gogo::message_name(name).c_str());
 		  found_dup = true;
 		}
