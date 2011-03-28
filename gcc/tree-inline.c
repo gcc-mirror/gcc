@@ -3766,11 +3766,6 @@ expand_call_inline (basic_block bb, gimple stmt, copy_body_data *id)
   if (gimple_code (stmt) != GIMPLE_CALL)
     goto egress;
 
-  /* Objective C and fortran still calls tree_rest_of_compilation directly.
-     Kill this check once this is fixed.  */
-  if (!id->dst_node->analyzed)
-    goto egress;
-
   cg_edge = cgraph_edge (id->dst_node, stmt);
   gcc_checking_assert (cg_edge);
   /* First, see if we can figure out what function is being called.
@@ -4203,6 +4198,7 @@ optimize_inline_calls (tree fn)
   memset (&id, 0, sizeof (id));
 
   id.src_node = id.dst_node = cgraph_node (fn);
+  gcc_assert (id.dst_node->analyzed);
   id.dst_fn = fn;
   /* Or any functions that aren't finished yet.  */
   if (current_function_decl)

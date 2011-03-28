@@ -143,7 +143,6 @@ static void cgraph_expand_all_functions (void);
 static void cgraph_mark_functions_to_output (void);
 static void cgraph_expand_function (struct cgraph_node *);
 static void cgraph_output_pending_asms (void);
-static void cgraph_analyze_function (struct cgraph_node *);
 
 FILE *cgraph_dump_file;
 
@@ -773,7 +772,7 @@ cgraph_output_pending_asms (void)
 }
 
 /* Analyze the function scheduled to be output.  */
-static void
+void
 cgraph_analyze_function (struct cgraph_node *node)
 {
   tree save = current_function_decl;
