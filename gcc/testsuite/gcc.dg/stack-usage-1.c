@@ -30,9 +30,15 @@
 #  else
 #    define SIZE 248
 #  endif
+#elif defined (__powerpc64__) || defined (__PPC64__)
+#  define SIZE 180
 #elif defined (__powerpc__) || defined (__PPC__) || defined (__ppc__) \
       || defined (__POWERPC__) || defined (PPC) || defined (_IBMR2)
-#  define SIZE 240
+#  if defined (__ALTIVEC__)
+#    define SIZE 220
+#  else
+#    define SIZE 240
+#  endif
 #elif defined (__AVR__)
 #  define SIZE 254
 #elif defined (__s390x__)

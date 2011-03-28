@@ -1,3 +1,8 @@
+2011-03-28  Peter Bergner  <bergner@vnet.ibm.com>
+
+	* gcc.dg/stack-usage-1.c (SIZE): Provide proper values for __PPC64__
+	and __PPC__ && __ALTIVEC__.
+
 2011-03-28  Dominique d'Humieres  <dominiq@lps.ens.fr>
 
 	PR testsuite/48238
