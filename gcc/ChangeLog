@@ -1,3 +1,10 @@
+2011-03-28  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/alpha/alpha.md (addtf3): Change mode of operands to TFmode.
+	(divtf3): Ditto.
+	(multf3): Ditto.
+	(subtf3): Ditto.
+
 2011-03-27  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/sse.md (*avx_mov<mode>_internal): Don't assert
@@ -612,10 +619,10 @@
 
 2011-03-27  Anatoly Sokolov  <aesok@post.ru>
 
-        * config/mips/mips.h (LIBCALL_VALUE, FUNCTION_VALUE,
+	* config/mips/mips.h (LIBCALL_VALUE, FUNCTION_VALUE,
 	FUNCTION_VALUE_REGNO_P): Remove macros.
-        * config/mips/mips-protos.h (mips_function_value): Remove.
-        * config/mips/mips.c (mips_function_value): Rename to...
+	* config/mips/mips-protos.h (mips_function_value): Remove.
+	* config/mips/mips.c (mips_function_value): Rename to...
 	(mips_function_value_1): ... this. Make static.  Handle receiving
 	the function type in 'fn_decl_or_type' argument.
 	(mips_function_value, mips_libcall_value,
