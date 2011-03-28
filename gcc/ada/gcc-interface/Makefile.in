@@ -1634,21 +1634,26 @@ ifeq ($(strip $(filter-out cygwin32% mingw32% pe,$(osys))),)
     s-osprim.adb<s-osprim-mingw.adb \
     s-taprop.adb<s-taprop-mingw.adb
 
+    EH_MECHANISM=-gcc
     ifeq ($(strip $(filter-out x86_64%,$(arch))),)
       ifeq ($(strip $(MULTISUBDIR)),/32)
 	LIBGNAT_TARGET_PAIRS += \
 	  system.ads<system-mingw.ads
+	SO_OPTS= -m32 -Wl,-soname,
       else
 	LIBGNAT_TARGET_PAIRS += \
 	  system.ads<system-mingw-x86_64.ads
+	SO_OPTS = -m64 -Wl,-soname,
       endif
     else
       ifeq ($(strip $(MULTISUBDIR)),/64)
 	LIBGNAT_TARGET_PAIRS += \
 	  system.ads<system-mingw-x86_64.ads
+	SO_OPTS = -m64 -Wl,-soname,
       else
 	LIBGNAT_TARGET_PAIRS += \
 	  system.ads<system-mingw.ads
+	SO_OPTS = -m32 -Wl,-soname,
       endif
     endif
 
