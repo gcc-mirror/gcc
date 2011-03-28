@@ -475,11 +475,14 @@ Type::are_compatible_for_binop(const Type* lhs, const Type* rhs)
 }
 
 // Return true if a value with type RHS may be assigned to a variable
-// with type LHS.  If REASON is not NULL, set *REASON to the reason
-// the types are not assignable.
+// with type LHS.  If CHECK_HIDDEN_FIELDS is true, check whether any
+// hidden fields are modified.  If REASON is not NULL, set *REASON to
+// the reason the types are not assignable.
 
 bool
-Type::are_assignable(const Type* lhs, const Type* rhs, std::string* reason)
+Type::are_assignable_check_hidden(const Type* lhs, const Type* rhs,
+				  bool check_hidden_fields,
+				  std::string* reason)
 {
   // Do some checks first.  Make sure the types are defined.
   if (rhs != NULL
@@ -499,7 +502,9 @@ Type::are_assignable(const Type* lhs, const Type* rhs, std::string* reason)
 
       // All fields of a struct must be exported, or the assignment
       // must be in the same package.
-      if (rhs != NULL && rhs->forwarded()->forward_declaration_type() == NULL)
+      if (check_hidden_fields
+	  && rhs != NULL
+	  && rhs->forwarded()->forward_declaration_type() == NULL)
 	{
 	  if (lhs->has_hidden_fields(NULL, reason)
 	      || rhs->has_hidden_fields(NULL, reason))
@@ -591,6 +596,25 @@ Type::are_assignable(const Type* lhs, const Type* rhs, std::string* reason)
     }
 
   return false;
+}
+
+// Return true if a value with type RHS may be assigned to a variable
+// with type LHS.  If REASON is not NULL, set *REASON to the reason
+// the types are not assignable.
+
+bool
+Type::are_assignable(const Type* lhs, const Type* rhs, std::string* reason)
+{
+  return Type::are_assignable_check_hidden(lhs, rhs, true, reason);
+}
+
+// Like are_assignable but don't check for hidden fields.
+
+bool
+Type::are_assignable_hidden_ok(const Type* lhs, const Type* rhs,
+			       std::string* reason)
+{
+  return Type::are_assignable_check_hidden(lhs, rhs, false, reason);
 }
 
 // Return true if a value with type RHS may be converted to type LHS.
