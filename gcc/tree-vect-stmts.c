@@ -3582,7 +3582,7 @@ vectorizable_store (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 	  gcc_assert (useless_type_conversion_p (vectype,
 						 TREE_TYPE (vec_oprnd)));
 	  dataref_ptr = vect_create_data_ref_ptr (first_stmt, NULL, NULL_TREE,
-						  &dummy, &ptr_incr, false,
+						  &dummy, gsi, &ptr_incr, false,
 						  &inv_p);
 	  gcc_assert (bb_vinfo || !inv_p);
 	}
@@ -4109,9 +4109,8 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
     {
       /* 1. Create the vector pointer update chain.  */
       if (j == 0)
-        dataref_ptr = vect_create_data_ref_ptr (first_stmt,
-					        at_loop, offset,
-						&dummy, &ptr_incr, false,
+        dataref_ptr = vect_create_data_ref_ptr (first_stmt, at_loop, offset,
+						&dummy, gsi, &ptr_incr, false,
 						&inv_p);
       else
         dataref_ptr =

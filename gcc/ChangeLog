@@ -1,3 +1,12 @@
+2011-03-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-vectorizer.h (vect_create_data_ref_ptr): Adjust prototype.
+	* tree-vect-data-refs.c (vect_create_data_ref_ptr): Add GSI parameter.
+	Insert new statements at it in lieu of STMT.
+	(vect_setup_realignment): Adjust call to vect_create_data_ref_ptr.
+	* tree-vect-stmts.c (vectorizable_store): Likewise.
+	(vectorizable_load): Likewise.
+
 2011-03-28  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/alpha/alpha.md (addtf3): Change mode of operands to TFmode.
