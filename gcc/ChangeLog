@@ -1,3 +1,8 @@
+2011-03-28  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* builtins.c (expand_builtin_memset_args): Use gen_int_mode
+	instead of GEN_INT.
+
 2011-03-28  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* cfgexpand.c (expand_gimple_cond): Always set the source location and
