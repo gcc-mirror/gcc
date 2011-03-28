@@ -657,6 +657,8 @@ alloc_gcse_mem (void)
 static void
 free_gcse_mem (void)
 {
+  FREE_REG_SET (reg_set_bitmap);
+
   free_modify_mem_tables ();
   BITMAP_FREE (modify_mem_list_set);
   BITMAP_FREE (blocks_with_calls);
