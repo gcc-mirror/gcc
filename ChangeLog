@@ -1,3 +1,8 @@
+2011-03-26  John Marino  <binutils@marino.st>
+
+	* configure.ac: Add support for *-*-dragonfly*
+	* configure: Regenerate.
+
 2011-03-25  Joseph Myers  <joseph@codesourcery.com>
 
 	* configure.ac (native_only): Remove.
