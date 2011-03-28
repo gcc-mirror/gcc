@@ -1,3 +1,7 @@
+2011-03-28  Anatoly Sokolov  <aesok@post.ru>
+
+	* config/h8300/h8300.h (ASM_OUTPUT_BSS): Remove macro.
+
 2011-03-28  Jeff Law  <law@redhat.com>
 
 	* tree-ssa-threadupdate.c (redirect_edges): Call

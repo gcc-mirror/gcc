@@ -1,7 +1,7 @@
 /* Definitions of target machine for GNU compiler.
    Renesas H8/300 (generic)
    Copyright (C) 1992, 1993, 1994, 1995, 1996, 1996, 1997, 1998, 1999,
-   2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010
+   2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
    Contributed by Steve Chamberlain (sac@cygnus.com),
    Jim Wilson (wilson@cygnus.com), and Doug Evans (dje@cygnus.com).
@@ -1014,13 +1014,6 @@ struct cum_arg
 ( fputs ("\t.comm ", (FILE)),				\
   assemble_name ((FILE), (NAME)),			\
   fprintf ((FILE), ",%lu\n", (unsigned long)(SIZE)))
-
-/* This says how to output the assembler to define a global
-   uninitialized but not common symbol.
-   Try to use asm_output_bss to implement this macro.  */
-
-#define ASM_OUTPUT_BSS(FILE, DECL, NAME, SIZE, ROUNDED)		\
-  asm_output_bss ((FILE), (DECL), (NAME), (SIZE), (ROUNDED))
 
 #define ASM_OUTPUT_ALIGNED_BSS(FILE, DECL, NAME, SIZE, ALIGN) \
   asm_output_aligned_bss (FILE, DECL, NAME, SIZE, ALIGN)
