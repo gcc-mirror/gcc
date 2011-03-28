@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2" } */
+/* { dg-options "-O2 -fno-pic" } */
 
 int
 foo (int how, const void *set, void *oset)
