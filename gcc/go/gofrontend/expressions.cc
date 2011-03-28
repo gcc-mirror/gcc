@@ -10262,7 +10262,15 @@ Selector_expression::lower_method_expression(Gogo* gogo)
 
   bool is_ambiguous;
   Method* method = nt->method_function(name, &is_ambiguous);
+  const Typed_identifier* imethod = NULL;
   if (method == NULL)
+    {
+      Interface_type* it = nt->interface_type();
+      if (it != NULL)
+	imethod = it->find_method(name);
+    }
+
+  if (method == NULL && imethod == NULL)
     {
       if (!is_ambiguous)
 	error_at(location, "type %<%s%> has no method %<%s%>",
@@ -10275,7 +10283,7 @@ Selector_expression::lower_method_expression(Gogo* gogo)
       return Expression::make_error(location);
     }
 
-  if (!is_pointer && !method->is_value_method())
+  if (method != NULL && !is_pointer && !method->is_value_method())
     {
       error_at(location, "method requires pointer (use %<(*%s).%s)%>",
 	       nt->message_name().c_str(),
@@ -10285,8 +10293,17 @@ Selector_expression::lower_method_expression(Gogo* gogo)
 
   // Build a new function type in which the receiver becomes the first
   // argument.
-  Function_type* method_type = method->type();
-  gcc_assert(method_type->is_method());
+  Function_type* method_type;
+  if (method != NULL)
+    {
+      method_type = method->type();
+      gcc_assert(method_type->is_method());
+    }
+  else
+    {
+      method_type = imethod->type()->function_type();
+      gcc_assert(method_type != NULL && !method_type->is_method());
+    }
 
   const char* const receiver_name = "$this";
   Typed_identifier_list* parameters = new Typed_identifier_list();
@@ -10325,7 +10342,7 @@ Selector_expression::lower_method_expression(Gogo* gogo)
   // simply reuse the existing function.  We use an internal hack to
   // get the right type.
 
-  if (is_pointer)
+  if (method != NULL && is_pointer)
     {
       Named_object* mno = (method->needs_stub_method()
 			   ? method->stub_object()
@@ -10344,7 +10361,11 @@ Selector_expression::lower_method_expression(Gogo* gogo)
   Named_object* vno = gogo->lookup(receiver_name, NULL);
   gcc_assert(vno != NULL);
   Expression* ve = Expression::make_var_reference(vno, location);
-  Expression* bm = Type::bind_field_or_method(gogo, nt, ve, name, location);
+  Expression* bm;
+  if (method != NULL)
+    bm = Type::bind_field_or_method(gogo, nt, ve, name, location);
+  else
+    bm = Expression::make_interface_field_reference(ve, name, location);
 
   // Even though we found the method above, if it has an error type we
   // may see an error here.
