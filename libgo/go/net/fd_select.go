@@ -32,7 +32,9 @@ func newpollster() (p *pollster, err os.Error) {
 	return p, nil
 }
 
-func (p *pollster) AddFD(fd int, mode int, repeat bool) os.Error {
+func (p *pollster) AddFD(fd int, mode int, repeat bool) (bool, os.Error) {
+	// pollServer is locked.
+
 	if mode == 'r' {
 		syscall.FDSet(fd, p.readFds)
 	} else {
@@ -47,10 +49,12 @@ func (p *pollster) AddFD(fd int, mode int, repeat bool) os.Error {
 		p.maxFd = fd
 	}
 
-	return nil
+	return true, nil
 }
 
 func (p *pollster) DelFD(fd int, mode int) {
+	// pollServer is locked.
+
 	if mode == 'r' {
 		if !syscall.FDIsSet(fd, p.readFds) {
 			print("Select unexpected fd=", fd, " for read\n")
@@ -71,7 +75,7 @@ func (p *pollster) DelFD(fd int, mode int) {
 	// We don't worry about maxFd here.
 }
 
-func (p *pollster) WaitFD(nsec int64) (fd int, mode int, err os.Error) {
+func (p *pollster) WaitFD(s *pollServer, nsec int64) (fd int, mode int, err os.Error) {
 	if p.nReady == 0 {
 		var timeout *syscall.Timeval
 		var tv syscall.Timeval
@@ -89,7 +93,10 @@ func (p *pollster) WaitFD(nsec int64) (fd int, mode int, err os.Error) {
 			tmpReadFds = *p.readFds
 			tmpWriteFds = *p.writeFds
 
+			s.Unlock()
 			n, e = syscall.Select(p.maxFd + 1, &tmpReadFds, &tmpWriteFds, nil, timeout)
+			s.Lock()
+
 			if e != syscall.EINTR {
 				break
 			}
