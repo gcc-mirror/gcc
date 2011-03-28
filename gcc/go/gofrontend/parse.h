@@ -223,7 +223,7 @@ class Parse
   void statement(Label*);
   bool statement_may_start_here();
   void labeled_stmt(const std::string&, source_location);
-  Expression* simple_stat(bool, bool, Range_clause*, Type_switch*);
+  Expression* simple_stat(bool, bool*, Range_clause*, Type_switch*);
   bool simple_stat_may_start_here();
   void statement_list();
   bool statement_list_may_start_here();
