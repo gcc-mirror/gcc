@@ -513,31 +513,6 @@ extern enum cmodel sparc_cmodel;
    -mno-app-regs).  */
 #define TARGET_DEFAULT (MASK_APP_REGS + MASK_FPU)
 
-/* Processor type.
-   These must match the values for the cpu attribute in sparc.md.  */
-enum processor_type {
-  PROCESSOR_V7,
-  PROCESSOR_CYPRESS,
-  PROCESSOR_V8,
-  PROCESSOR_SUPERSPARC,
-  PROCESSOR_HYPERSPARC,
-  PROCESSOR_LEON,
-  PROCESSOR_SPARCLITE,
-  PROCESSOR_F930,
-  PROCESSOR_F934,
-  PROCESSOR_SPARCLITE86X,
-  PROCESSOR_SPARCLET,
-  PROCESSOR_TSC701,
-  PROCESSOR_V9,
-  PROCESSOR_ULTRASPARC,
-  PROCESSOR_ULTRASPARC3,
-  PROCESSOR_NIAGARA,
-  PROCESSOR_NIAGARA2
-};
-
-/* This is set from -m{cpu,tune}=xxx.  */
-extern enum processor_type sparc_cpu;
-
 /* Recast the cpu class to be the cpu attribute.
    Every file includes us, but not every file includes insn-attr.h.  */
 #define sparc_cpu_attr ((enum attr_cpu) sparc_cpu)
@@ -551,17 +526,6 @@ extern enum processor_type sparc_cpu;
   {"cpu", "%{!mcpu=*:-mcpu=%(VALUE)}" }, \
   {"tune", "%{!mtune=*:-mtune=%(VALUE)}" }, \
   {"float", "%{!msoft-float:%{!mhard-float:%{!mfpu:%{!mno-fpu:-m%(VALUE)-float}}}}" }
-
-/* sparc_select[0] is reserved for the default cpu.  */
-struct sparc_cpu_select
-{
-  const char *string;
-  const char *const name;
-  const int set_tune_p;
-  const int set_arch_p;
-};
-
-extern struct sparc_cpu_select sparc_select[];
 
 /* target machine storage layout */
 

@@ -367,8 +367,6 @@ static HOST_WIDE_INT frame_base_offset;
 /* 1 if the next opcode is to be specially indented.  */
 int sparc_indent_opcode = 0;
 
-static bool sparc_handle_option (struct gcc_options *, struct gcc_options *,
-				 const struct cl_decoded_option *, location_t);
 static void sparc_option_override (void);
 static void sparc_init_modes (void);
 static void scan_record_type (const_tree, int *, int *, int *);
@@ -485,21 +483,6 @@ static const struct attribute_spec sparc_attribute_table[] =
 enum cmodel sparc_cmodel;
 
 char sparc_hard_reg_printed[8];
-
-struct sparc_cpu_select sparc_select[] =
-{
-  /* switch	name,		tune	arch */
-  { (char *)0,	"default",	1,	1 },
-  { (char *)0,	"-mcpu=",	1,	1 },
-  { (char *)0,	"-mtune=",	1,	0 },
-  { 0, 0, 0, 0 }
-};
-
-/* CPU type.  This is set from TARGET_CPU_DEFAULT and -m{cpu,tune}=xxx.  */
-enum processor_type sparc_cpu;
-
-/* Whetheran FPU option was specified.  */
-static bool fpu_option_set = false;
 
 /* Implement TARGET_OPTION_OPTIMIZATION_TABLE.  */
 static const struct default_options sparc_option_optimization_table[] =
@@ -640,8 +623,6 @@ static const struct default_options sparc_option_optimization_table[] =
 
 #undef TARGET_DEFAULT_TARGET_FLAGS
 #define TARGET_DEFAULT_TARGET_FLAGS TARGET_DEFAULT
-#undef TARGET_HANDLE_OPTION
-#define TARGET_HANDLE_OPTION sparc_handle_option
 #undef TARGET_OPTION_OVERRIDE
 #define TARGET_OPTION_OVERRIDE sparc_option_override
 #undef TARGET_OPTION_OPTIMIZATION_TABLE
@@ -677,39 +658,6 @@ static const struct default_options sparc_option_optimization_table[] =
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
-/* Implement TARGET_HANDLE_OPTION.  */
-
-static bool
-sparc_handle_option (struct gcc_options *opts, struct gcc_options *opts_set,
-		     const struct cl_decoded_option *decoded,
-		     location_t loc ATTRIBUTE_UNUSED)
-{
-  size_t code = decoded->opt_index;
-  const char *arg = decoded->arg;
-
-  gcc_assert (opts == &global_options);
-  gcc_assert (opts_set == &global_options_set);
-
-  switch (code)
-    {
-    case OPT_mfpu:
-    case OPT_mhard_float:
-    case OPT_msoft_float:
-      fpu_option_set = true;
-      break;
-
-    case OPT_mcpu_:
-      sparc_select[1].string = arg;
-      break;
-
-    case OPT_mtune_:
-      sparc_select[2].string = arg;
-      break;
-    }
-
-  return true;
-}
-
 /* Validate and override various options, and do some machine dependent
    initialization.  */
 
@@ -731,68 +679,64 @@ sparc_option_override (void)
   /* Map TARGET_CPU_DEFAULT to value for -m{cpu,tune}=.  */
   static struct cpu_default {
     const int cpu;
-    const char *const name;
+    const enum processor_type processor;
   } const cpu_default[] = {
     /* There must be one entry here for each TARGET_CPU value.  */
-    { TARGET_CPU_sparc, "cypress" },
-    { TARGET_CPU_v8, "v8" },
-    { TARGET_CPU_supersparc, "supersparc" },
-    { TARGET_CPU_hypersparc, "hypersparc" },
-    { TARGET_CPU_leon, "leon" },
-    { TARGET_CPU_sparclite, "f930" },
-    { TARGET_CPU_sparclite86x, "sparclite86x" },
-    { TARGET_CPU_sparclet, "tsc701" },
-    { TARGET_CPU_v9, "v9" },
-    { TARGET_CPU_ultrasparc, "ultrasparc" },
-    { TARGET_CPU_ultrasparc3, "ultrasparc3" },
-    { TARGET_CPU_niagara, "niagara" },
-    { TARGET_CPU_niagara2, "niagara2" },
-    { 0, 0 }
+    { TARGET_CPU_sparc, PROCESSOR_CYPRESS },
+    { TARGET_CPU_v8, PROCESSOR_V8 },
+    { TARGET_CPU_supersparc, PROCESSOR_SUPERSPARC },
+    { TARGET_CPU_hypersparc, PROCESSOR_HYPERSPARC },
+    { TARGET_CPU_leon, PROCESSOR_LEON },
+    { TARGET_CPU_sparclite, PROCESSOR_F930 },
+    { TARGET_CPU_sparclite86x, PROCESSOR_SPARCLITE86X },
+    { TARGET_CPU_sparclet, PROCESSOR_TSC701 },
+    { TARGET_CPU_v9, PROCESSOR_V9 },
+    { TARGET_CPU_ultrasparc, PROCESSOR_ULTRASPARC },
+    { TARGET_CPU_ultrasparc3, PROCESSOR_ULTRASPARC3 },
+    { TARGET_CPU_niagara, PROCESSOR_NIAGARA },
+    { TARGET_CPU_niagara2, PROCESSOR_NIAGARA2 },
+    { -1, 0 }
   };
   const struct cpu_default *def;
-  /* Table of values for -m{cpu,tune}=.  */
+  /* Table of values for -m{cpu,tune}=.  This must match the order of
+     the PROCESSOR_* enumeration.  */
   static struct cpu_table {
-    const char *const name;
-    const enum processor_type processor;
     const int disable;
     const int enable;
   } const cpu_table[] = {
-    { "v7",         PROCESSOR_V7, MASK_ISA, 0 },
-    { "cypress",    PROCESSOR_CYPRESS, MASK_ISA, 0 },
-    { "v8",         PROCESSOR_V8, MASK_ISA, MASK_V8 },
+    { MASK_ISA, 0 },
+    { MASK_ISA, 0 },
+    { MASK_ISA, MASK_V8 },
     /* TI TMS390Z55 supersparc */
-    { "supersparc", PROCESSOR_SUPERSPARC, MASK_ISA, MASK_V8 },
-    { "hypersparc", PROCESSOR_HYPERSPARC, MASK_ISA, MASK_V8|MASK_FPU },
+    { MASK_ISA, MASK_V8 },
+    { MASK_ISA, MASK_V8|MASK_FPU },
     /* LEON */
-    { "leon",       PROCESSOR_LEON, MASK_ISA, MASK_V8|MASK_FPU },
-    { "sparclite",  PROCESSOR_SPARCLITE, MASK_ISA, MASK_SPARCLITE },
+    { MASK_ISA, MASK_V8|MASK_FPU },
+    { MASK_ISA, MASK_SPARCLITE },
     /* The Fujitsu MB86930 is the original sparclite chip, with no FPU.  */
-    { "f930",       PROCESSOR_F930, MASK_ISA|MASK_FPU, MASK_SPARCLITE },
+    { MASK_ISA|MASK_FPU, MASK_SPARCLITE },
     /* The Fujitsu MB86934 is the recent sparclite chip, with an FPU.  */
-    { "f934",       PROCESSOR_F934, MASK_ISA, MASK_SPARCLITE|MASK_FPU },
-    { "sparclite86x",  PROCESSOR_SPARCLITE86X, MASK_ISA|MASK_FPU,
-      MASK_SPARCLITE },
-    { "sparclet",   PROCESSOR_SPARCLET, MASK_ISA, MASK_SPARCLET },
+    { MASK_ISA, MASK_SPARCLITE|MASK_FPU },
+    { MASK_ISA|MASK_FPU, MASK_SPARCLITE },
+    { MASK_ISA, MASK_SPARCLET },
     /* TEMIC sparclet */
-    { "tsc701",     PROCESSOR_TSC701, MASK_ISA, MASK_SPARCLET },
-    { "v9",         PROCESSOR_V9, MASK_ISA, MASK_V9 },
+    { MASK_ISA, MASK_SPARCLET },
+    { MASK_ISA, MASK_V9 },
     /* UltraSPARC I, II, IIi */
-    { "ultrasparc", PROCESSOR_ULTRASPARC, MASK_ISA,
+    { MASK_ISA,
     /* Although insns using %y are deprecated, it is a clear win.  */
       MASK_V9|MASK_DEPRECATED_V8_INSNS},
     /* UltraSPARC III */
     /* ??? Check if %y issue still holds true.  */
-    { "ultrasparc3", PROCESSOR_ULTRASPARC3, MASK_ISA,
+    { MASK_ISA,
       MASK_V9|MASK_DEPRECATED_V8_INSNS},
     /* UltraSPARC T1 */
-    { "niagara", PROCESSOR_NIAGARA, MASK_ISA,
+    { MASK_ISA,
       MASK_V9|MASK_DEPRECATED_V8_INSNS},
     /* UltraSPARC T2 */
-    { "niagara2", PROCESSOR_NIAGARA2, MASK_ISA, MASK_V9},
-    { 0, (enum processor_type) 0, 0, 0 }
+    { MASK_ISA, MASK_V9},
   };
   const struct cpu_table *cpu;
-  const struct sparc_cpu_select *sel;
   int fpu;
 
 #ifdef SUBTARGET_OVERRIDE_OPTIONS
@@ -840,38 +784,24 @@ sparc_option_override (void)
   fpu = target_flags & MASK_FPU; /* save current -mfpu status */
 
   /* Set the default CPU.  */
-  for (def = &cpu_default[0]; def->name; ++def)
-    if (def->cpu == TARGET_CPU_DEFAULT)
-      break;
-  gcc_assert (def->name);
-  sparc_select[0].string = def->name;
-
-  for (sel = &sparc_select[0]; sel->name; ++sel)
+  if (!global_options_set.x_sparc_cpu_and_features)
     {
-      if (sel->string)
-	{
-	  for (cpu = &cpu_table[0]; cpu->name; ++cpu)
-	    if (! strcmp (sel->string, cpu->name))
-	      {
-		if (sel->set_tune_p)
-		  sparc_cpu = cpu->processor;
-
-		if (sel->set_arch_p)
-		  {
-		    target_flags &= ~cpu->disable;
-		    target_flags |= cpu->enable;
-		  }
-		break;
-	      }
-
-	  if (! cpu->name)
-	    error ("bad value (%s) for %s switch", sel->string, sel->name);
-	}
+      for (def = &cpu_default[0]; def->cpu != -1; ++def)
+	if (def->cpu == TARGET_CPU_DEFAULT)
+	  break;
+      gcc_assert (def->cpu != -1);
+      sparc_cpu_and_features = def->processor;
     }
+  if (!global_options_set.x_sparc_cpu)
+    sparc_cpu = sparc_cpu_and_features;
+
+  cpu = &cpu_table[(int) sparc_cpu_and_features];
+  target_flags &= ~cpu->disable;
+  target_flags |= cpu->enable;
 
   /* If -mfpu or -mno-fpu was explicitly used, don't override with
      the processor default.  */
-  if (fpu_option_set)
+  if (target_flags_explicit & MASK_FPU)
     target_flags = (target_flags & ~MASK_FPU) | fpu;
 
   /* Don't allow -mvis if FPU is disabled.  */

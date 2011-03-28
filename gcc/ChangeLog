@@ -1,3 +1,21 @@
+2011-03-28  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/sparc/sparc-opts.h: New.
+	* config/sparc/sparc.c (sparc_handle_option, sparc_select,
+	sparc_cpu, fpu_option_set, TARGET_HANDLE_OPTION): Remove.
+	(sparc_option_override): Store processor_type enumeration rather
+	than string in cpu_default.  Remove name and enumeration from
+	cpu_table.  Directly default -mcpu then default -mtune from -mcpu
+	without using sparc_select.  Use target_flags_explicit instead of
+	fpu_option_set.
+	* config/sparc/sparc.h (enum processor_type): Move to
+	sparc-opts.h.
+	(sparc_cpu, struct sparc_cpu_select, sparc_select): Remove.
+	* config/sparc/sparc.opt (config/sparc/sparc-opts.h): New
+	HeaderInclude entry.
+	(mcpu=, mtune=): Use Var and Enum.
+	(sparc_processor_type): New Enum and EnumValue entries.
+
 2011-03-28  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 	    Iain Sandoe  <iains@gcc.gnu.org>
 

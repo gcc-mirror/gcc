@@ -1,6 +1,6 @@
 ; Options for the SPARC port of the compiler
 ;
-; Copyright (C) 2005, 2007, 2010 Free Software Foundation, Inc.
+; Copyright (C) 2005, 2007, 2010, 2011 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -17,6 +17,9 @@
 ; You should have received a copy of the GNU General Public License
 ; along with GCC; see the file COPYING3.  If not see
 ; <http://www.gnu.org/licenses/>.
+
+HeaderInclude
+config/sparc/sparc-opts.h
 
 mfpu
 Target Report Mask(FPU)
@@ -83,12 +86,66 @@ Target
 Optimize tail call instructions in assembler and linker
 
 mcpu=
-Target RejectNegative Joined
+Target RejectNegative Joined Var(sparc_cpu_and_features) Enum(sparc_processor_type)
 Use features of and schedule code for given CPU
 
 mtune=
-Target RejectNegative Joined
+Target RejectNegative Joined Var(sparc_cpu) Enum(sparc_processor_type)
 Schedule code for given CPU
+
+Enum
+Name(sparc_processor_type) Type(enum processor_type)
+
+EnumValue
+Enum(sparc_processor_type) String(v7) Value(PROCESSOR_V7)
+
+EnumValue
+Enum(sparc_processor_type) String(cypress) Value(PROCESSOR_CYPRESS)
+
+EnumValue
+Enum(sparc_processor_type) String(v8) Value(PROCESSOR_V8)
+
+EnumValue
+Enum(sparc_processor_type) String(supersparc) Value(PROCESSOR_SUPERSPARC)
+
+EnumValue
+Enum(sparc_processor_type) String(hypersparc) Value(PROCESSOR_HYPERSPARC)
+
+EnumValue
+Enum(sparc_processor_type) String(leon) Value(PROCESSOR_LEON)
+
+EnumValue
+Enum(sparc_processor_type) String(sparclite) Value(PROCESSOR_SPARCLITE)
+
+EnumValue
+Enum(sparc_processor_type) String(f930) Value(PROCESSOR_F930)
+
+EnumValue
+Enum(sparc_processor_type) String(f934) Value(PROCESSOR_F934)
+
+EnumValue
+Enum(sparc_processor_type) String(sparclite86x) Value(PROCESSOR_SPARCLITE86X)
+
+EnumValue
+Enum(sparc_processor_type) String(sparclet) Value(PROCESSOR_SPARCLET)
+
+EnumValue
+Enum(sparc_processor_type) String(tsc701) Value(PROCESSOR_TSC701)
+
+EnumValue
+Enum(sparc_processor_type) String(v9) Value(PROCESSOR_V9)
+
+EnumValue
+Enum(sparc_processor_type) String(ultrasparc) Value(PROCESSOR_ULTRASPARC)
+
+EnumValue
+Enum(sparc_processor_type) String(ultrasparc3) Value(PROCESSOR_ULTRASPARC3)
+
+EnumValue
+Enum(sparc_processor_type) String(niagara) Value(PROCESSOR_NIAGARA)
+
+EnumValue
+Enum(sparc_processor_type) String(niagara2) Value(PROCESSOR_NIAGARA2)
 
 mcmodel=
 Target RejectNegative Joined Var(sparc_cmodel_string)
