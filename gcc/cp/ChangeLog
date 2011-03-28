@@ -1,5 +1,8 @@
 2011-03-28  Jason Merrill  <jason@redhat.com>
 
+	* call.c (reference_binding): Allow direct binding to an array
+	rvalue.
+
 	Core 898
 	* parser.c (cp_parser_compound_statement): Add function_body parm.
 	Complain about non-body compound-stmt in constexpr fn.
