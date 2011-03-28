@@ -3919,6 +3919,19 @@ Parse::switch_stat(Label* label)
       if (this->peek_token()->is_op(OPERATOR_SEMICOLON)
 	  && this->advance_token()->is_op(OPERATOR_LCURLY))
 	error_at(token_loc, "unexpected semicolon or newline before %<{%>");
+      else if (this->peek_token()->is_op(OPERATOR_COLONEQ))
+	{
+	  error_at(token_loc, "invalid variable name");
+	  this->advance_token();
+	  this->expression(PRECEDENCE_NORMAL, false, false,
+			   &type_switch.found);
+	  if (this->peek_token()->is_op(OPERATOR_SEMICOLON))
+	    this->advance_token();
+	  if (!this->peek_token()->is_op(OPERATOR_LCURLY))
+	    return;
+	  if (type_switch.found)
+	    type_switch.expr = Expression::make_error(location);
+	}
       else
 	{
 	  error_at(this->location(), "expected %<{%>");
