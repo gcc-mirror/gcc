@@ -304,14 +304,15 @@ lookup_redirection_data (edge e, edge incoming_edge, enum insert_option insert)
    destination.  */
 
 static void
-create_edge_and_update_destination_phis (struct redirection_data *rd)
+create_edge_and_update_destination_phis (struct redirection_data *rd,
+					 basic_block bb)
 {
-  edge e = make_edge (rd->dup_block, rd->outgoing_edge->dest, EDGE_FALLTHRU);
+  edge e = make_edge (bb, rd->outgoing_edge->dest, EDGE_FALLTHRU);
   gimple_stmt_iterator gsi;
 
   rescan_loop_exit (e, true, false);
   e->probability = REG_BR_PROB_BASE;
-  e->count = rd->dup_block->count;
+  e->count = bb->count;
   e->aux = rd->outgoing_edge->aux;
 
   /* If there are any PHI nodes at the destination of the outgoing edge
@@ -359,7 +360,7 @@ create_duplicates (void **slot, void *data)
 
       /* Go ahead and wire up outgoing edges and update PHIs for the duplicate
          block.  */
-      create_edge_and_update_destination_phis (rd);
+      create_edge_and_update_destination_phis (rd, rd->dup_block);
     }
 
   /* Keep walking the hash table.  */
@@ -380,7 +381,7 @@ fixup_template_block (void **slot, void *data)
      and halt the hash table traversal.  */
   if (rd->dup_block && rd->dup_block == local_info->template_block)
     {
-      create_edge_and_update_destination_phis (rd);
+      create_edge_and_update_destination_phis (rd, rd->dup_block);
       return 0;
     }
 
@@ -442,6 +443,11 @@ redirect_edges (void **slot, void *data)
 	     outgoing edges and statements from BB.  */
 	  remove_ctrl_stmt_and_useless_edges (local_info->bb,
 					      rd->outgoing_edge->dest);
+
+	  /* If we are threading beyond the immediate successors of
+	     the duplicate, then BB will have no edges, create one.  */
+	  if (EDGE_COUNT (local_info->bb->succs) == 0)
+	    create_edge_and_update_destination_phis (rd, local_info->bb);
 
 	  /* Fixup the flags on the single remaining edge.  */
 	  single_succ_edge (local_info->bb)->flags
@@ -565,8 +571,9 @@ thread_block (basic_block bb, bool noloop_only)
 	  continue;
 	}
 
-      update_bb_profile_for_threading (e->dest, EDGE_FREQUENCY (e),
-				       e->count, (edge) e->aux);
+      if (e->dest == e2->src)
+	update_bb_profile_for_threading (e->dest, EDGE_FREQUENCY (e),
+				         e->count, (edge) e->aux);
 
       /* Insert the outgoing edge into the hash table if it is not
 	 already in the hash table.  */
@@ -650,12 +657,13 @@ thread_single_edge (edge e)
     }
 
   /* Otherwise, we need to create a copy.  */
-  update_bb_profile_for_threading (bb, EDGE_FREQUENCY (e), e->count, eto);
+  if (e->dest == eto->src)
+    update_bb_profile_for_threading (bb, EDGE_FREQUENCY (e), e->count, eto);
 
   rd.outgoing_edge = eto;
 
   create_block_for_threading (bb, &rd);
-  create_edge_and_update_destination_phis (&rd);
+  create_edge_and_update_destination_phis (&rd, rd.dup_block);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, "  Threaded jump %d --> %d to %d\n",
@@ -704,7 +712,9 @@ determine_bb_domination_status (struct loop *loop, basic_block bb)
   edge e;
 
 #ifdef ENABLE_CHECKING
-  /* This function assumes BB is a successor of LOOP->header.  */
+  /* This function assumes BB is a successor of LOOP->header.
+     If that is not the case return DOMST_NONDOMINATING which
+     is always safe.  */
     {
       bool ok = false;
 
@@ -717,7 +727,8 @@ determine_bb_domination_status (struct loop *loop, basic_block bb)
 	    }
 	}
 
-      gcc_assert (ok);
+      if (!ok)
+	return DOMST_NONDOMINATING;
     }
 #endif
 
@@ -1098,6 +1109,11 @@ register_jump_thread (edge e, edge e2)
 {
   if (threaded_edges == NULL)
     threaded_edges = VEC_alloc (edge, heap, 10);
+
+  if (dump_file && (dump_flags & TDF_DETAILS)
+      && e->dest != e2->src)
+    fprintf (dump_file,
+	     "  Registering jump thread around one or more intermediate blocks\n");
 
   VEC_safe_push (edge, heap, threaded_edges, e);
   VEC_safe_push (edge, heap, threaded_edges, e2);
