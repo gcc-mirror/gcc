@@ -1,6 +1,15 @@
 2011-03-28  Jason Merrill  <jason@redhat.com>
 
 	Core 898
+	* parser.c (cp_parser_compound_statement): Add function_body parm.
+	Complain about non-body compound-stmt in constexpr fn.
+	(cp_parser_primary_expression, cp_parser_statement): Adjust.
+	(cp_parser_implicitly_scoped_statement): Adjust.
+	(cp_parser_function_body, cp_parser_try_block): Adjust.
+	(cp_parser_handler, cp_parser_objc_synchronized_statement): Adjust.
+	(cp_parser_objc_try_catch_finally_statement): Adjust.
+
+	Core 898
 	* semantics.c (constexpr_fn_retval): New.  Allow using-declaration
 	and using-definition.
 	(register_constexpr_fundef): Call it.
