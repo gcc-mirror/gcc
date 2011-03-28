@@ -11001,7 +11001,7 @@ ia64_promote_function_mode (const_tree type,
      For all other types passed in the general registers, unused bits are
      undefined."  */
 
-  if (!AGGREGATE_TYPE_P (type)
+  if (for_return != 2
       && GET_MODE_CLASS (mode) == MODE_INT
       && GET_MODE_SIZE (mode) < UNITS_PER_WORD)
     {
