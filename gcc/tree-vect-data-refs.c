@@ -2922,9 +2922,10 @@ vect_create_addr_base_for_vector_ref (gimple stmt,
    2. AT_LOOP: the loop where the vector memref is to be created.
    3. OFFSET (optional): an offset to be added to the initial address accessed
         by the data-ref in STMT.
-   4. ONLY_INIT: indicate if vp is to be updated in the loop, or remain
+   4. BSI: location where the new stmts are to be placed if there is no loop
+   5. ONLY_INIT: indicate if vp is to be updated in the loop, or remain
         pointing to the initial address.
-   5. TYPE: if not NULL indicates the required type of the data-ref.
+   6. TYPE: if not NULL indicates the required type of the data-ref.
 
    Output:
    1. Declare a new ptr to vector_type, and have it point to the base of the
@@ -2952,9 +2953,9 @@ vect_create_addr_base_for_vector_ref (gimple stmt,
    4. Return the pointer.  */
 
 tree
-vect_create_data_ref_ptr (gimple stmt, struct loop *at_loop,
-			  tree offset, tree *initial_address, gimple *ptr_incr,
-			  bool only_init, bool *inv_p)
+vect_create_data_ref_ptr (gimple stmt, struct loop *at_loop, tree offset,
+			  tree *initial_address, gimple_stmt_iterator *gsi,
+			  gimple *ptr_incr, bool only_init, bool *inv_p)
 {
   tree base_name;
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
@@ -2980,7 +2981,6 @@ vect_create_data_ref_ptr (gimple stmt, struct loop *at_loop,
   gimple incr;
   tree step;
   bb_vec_info bb_vinfo = STMT_VINFO_BB_VINFO (stmt_info);
-  gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
   tree base;
 
   if (loop_vinfo)
@@ -3125,7 +3125,7 @@ vect_create_data_ref_ptr (gimple stmt, struct loop *at_loop,
           gcc_assert (!new_bb);
         }
       else
-        gsi_insert_seq_before (&gsi, new_stmt_list, GSI_SAME_STMT);
+        gsi_insert_seq_before (gsi, new_stmt_list, GSI_SAME_STMT);
     }
 
   *initial_address = new_temp;
@@ -3147,7 +3147,7 @@ vect_create_data_ref_ptr (gimple stmt, struct loop *at_loop,
 	  gcc_assert (!new_bb);
 	}
       else
-	gsi_insert_before (&gsi, vec_stmt, GSI_SAME_STMT);
+	gsi_insert_before (gsi, vec_stmt, GSI_SAME_STMT);
     }
   else
     vect_ptr_init = new_temp;
@@ -3672,7 +3672,7 @@ vect_setup_realignment (gimple stmt, gimple_stmt_iterator *gsi,
       gcc_assert (!compute_in_loop);
       vec_dest = vect_create_destination_var (scalar_dest, vectype);
       ptr = vect_create_data_ref_ptr (stmt, loop_for_initial_load, NULL_TREE,
-				      &init_addr, &inc, true, &inv_p);
+				      &init_addr, NULL, &inc, true, &inv_p);
       new_stmt = gimple_build_assign_with_ops
 		   (BIT_AND_EXPR, NULL_TREE, ptr,
 		    build_int_cst (TREE_TYPE (ptr),
