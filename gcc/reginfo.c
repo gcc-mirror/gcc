@@ -890,9 +890,9 @@ struct reg_pref
      union of most major pair of classes, that generality is not required.  */
   char altclass;
 
-  /* allocnoclass is a register class that IRA uses for allocating
+  /* coverclass is a register class that IRA uses for allocating
      the pseudo.  */
-  char allocnoclass;
+  char coverclass;
 };
 
 /* Record preferences of each pseudo.  This is available after RA is
@@ -925,12 +925,12 @@ reg_alternate_class (int regno)
 
 /* Return the reg_class which is used by IRA for its allocation.  */
 enum reg_class
-reg_allocno_class (int regno)
+reg_cover_class (int regno)
 {
   if (reg_pref == 0)
     return NO_REGS;
 
-  return (enum reg_class) reg_pref[regno].allocnoclass;
+  return (enum reg_class) reg_pref[regno].coverclass;
 }
 
 
@@ -1027,18 +1027,18 @@ struct rtl_opt_pass pass_reginfo_init =
 
 
 /* Set up preferred, alternate, and cover classes for REGNO as
-   PREFCLASS, ALTCLASS, and ALLOCNOCLASS.  */
+   PREFCLASS, ALTCLASS, and COVERCLASS.  */
 void
 setup_reg_classes (int regno,
 		   enum reg_class prefclass, enum reg_class altclass,
-		   enum reg_class allocnoclass)
+		   enum reg_class coverclass)
 {
   if (reg_pref == NULL)
     return;
   gcc_assert (reg_info_size == max_reg_num ());
   reg_pref[regno].prefclass = prefclass;
   reg_pref[regno].altclass = altclass;
-  reg_pref[regno].allocnoclass = allocnoclass;
+  reg_pref[regno].coverclass = coverclass;
 }
 
 

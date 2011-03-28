@@ -1208,6 +1208,8 @@ static reg_class_t rs6000_secondary_reload (bool, rtx, reg_class_t,
 					    enum machine_mode,
 					    struct secondary_reload_info *);
 
+static const reg_class_t *rs6000_ira_cover_classes (void);
+
 const int INSN_NOT_AVAILABLE = -1;
 static enum machine_mode rs6000_eh_return_filter_mode (void);
 static bool rs6000_can_eliminate (const int, const int);
@@ -1633,6 +1635,9 @@ static const struct default_options rs6000_option_optimization_table[] =
 
 #undef TARGET_SECONDARY_RELOAD
 #define TARGET_SECONDARY_RELOAD rs6000_secondary_reload
+
+#undef TARGET_IRA_COVER_CLASSES
+#define TARGET_IRA_COVER_CLASSES rs6000_ira_cover_classes
 
 #undef TARGET_LEGITIMATE_ADDRESS_P
 #define TARGET_LEGITIMATE_ADDRESS_P rs6000_legitimate_address_p
@@ -15281,6 +15286,26 @@ rs6000_secondary_reload_ppc64 (rtx reg, rtx mem, rtx scratch, bool store_p)
     emit_insn (gen_rtx_SET (VOIDmode, reg, mem));
 
   return;
+}
+
+/* Target hook to return the cover classes for Integrated Register Allocator.
+   Cover classes is a set of non-intersected register classes covering all hard
+   registers used for register allocation purpose.  Any move between two
+   registers of a cover class should be cheaper than load or store of the
+   registers.  The value is array of register classes with LIM_REG_CLASSES used
+   as the end marker.
+
+   We need two IRA_COVER_CLASSES, one for pre-VSX, and the other for VSX to
+   account for the Altivec and Floating registers being subsets of the VSX
+   register set under VSX, but distinct register sets on pre-VSX machines.  */
+
+static const reg_class_t *
+rs6000_ira_cover_classes (void)
+{
+  static const reg_class_t cover_pre_vsx[] = IRA_COVER_CLASSES_PRE_VSX;
+  static const reg_class_t cover_vsx[]     = IRA_COVER_CLASSES_VSX;
+
+  return (TARGET_VSX) ? cover_vsx : cover_pre_vsx;
 }
 
 /* Allocate a 64-bit stack slot to be used for copying SDmode
