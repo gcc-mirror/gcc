@@ -1,5 +1,12 @@
 2011-03-28  Kai Tietz  <ktietz@redhat.com>
 
+	* gcc-interface/Makefile.in (SO_LIB): Handle multilib build for native
+	windows targets.
+	(EH_MECHANISM): Make sure we use gcc's exception mechanism for all
+	native windows target.
+	* system-mingw.ads (System): Change ZCX_By_Default default to
+	True.
+
 	* raise-gcc.c (PERSONALITY_FUNCTION): Add prototype to
 	prevent warning.
 

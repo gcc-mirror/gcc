@@ -139,7 +139,7 @@ private
    Always_Compatible_Rep     : constant Boolean := False;
    Suppress_Standard_Library : constant Boolean := False;
    Use_Ada_Main_Program_Name : constant Boolean := False;
-   ZCX_By_Default            : constant Boolean := False;
+   ZCX_By_Default            : constant Boolean := True;
    GCC_ZCX_Support           : constant Boolean := True;
 
    ---------------------------
