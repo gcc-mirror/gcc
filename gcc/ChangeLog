@@ -1,3 +1,8 @@
+2011-03-28  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386.c (flag_opts): Fix a typo in
+	-mavx256-split-unaligned-store.
+
 2011-03-28  Anatoly Sokolov  <aesok@post.ru>
 
 	* config/h8300/h8300.h (FUNCTION_VALUE_REGNO_P, FUNCTION_VALUE,
