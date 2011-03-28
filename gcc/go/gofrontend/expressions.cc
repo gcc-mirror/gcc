@@ -8558,10 +8558,11 @@ Call_expression::do_check_types(Gogo*)
       if (first_arg_type->points_to() == NULL)
 	{
 	  // When passing a value, we need to check that we are
-	  // permitted to copy it.
+	  // permitted to copy it.  The language permits copying
+	  // hidden fields for a method receiver.
 	  std::string reason;
-	  if (!Type::are_assignable(fntype->receiver()->type(),
-				    first_arg_type, &reason))
+	  if (!Type::are_assignable_hidden_ok(fntype->receiver()->type(),
+					      first_arg_type, &reason))
 	    {
 	      if (reason.empty())
 		this->report_error(_("incompatible type for receiver"));
