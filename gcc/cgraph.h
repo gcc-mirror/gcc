@@ -618,6 +618,7 @@ bool varpool_used_from_object_file_p (struct varpool_node *node);
 extern FILE *cgraph_dump_file;
 void cgraph_finalize_function (tree, bool);
 void cgraph_mark_if_needed (tree);
+void cgraph_analyze_function (struct cgraph_node *);
 void cgraph_finalize_compilation_unit (void);
 void cgraph_optimize (void);
 void cgraph_mark_needed_node (struct cgraph_node *);

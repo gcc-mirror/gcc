@@ -2495,11 +2495,13 @@ cgraph_add_new_function (tree fndecl, bool lowered)
       case CGRAPH_STATE_FINISHED:
 	/* At the very end of compilation we have to do all the work up
 	   to expansion.  */
+	node = cgraph_node (fndecl);
+	if (lowered)
+	  node->lowered = true;
+	cgraph_analyze_function (node);
 	push_cfun (DECL_STRUCT_FUNCTION (fndecl));
 	current_function_decl = fndecl;
 	gimple_register_cfg_hooks ();
-	if (!lowered)
-          tree_lowering_passes (fndecl);
 	bitmap_obstack_initialize (NULL);
 	if (!gimple_in_ssa_p (DECL_STRUCT_FUNCTION (fndecl)))
 	  execute_pass_list (pass_early_local_passes.pass.sub);
