@@ -3153,7 +3153,7 @@ Parse::statement(Label* label)
 	  case KEYWORD_MAP:
 	  case KEYWORD_STRUCT:
 	  case KEYWORD_INTERFACE:
-	    this->simple_stat(true, false, NULL, NULL);
+	    this->simple_stat(true, NULL, NULL, NULL);
 	    break;
 	  case KEYWORD_GO:
 	  case KEYWORD_DEFER:
@@ -3206,7 +3206,7 @@ Parse::statement(Label* label)
 	    this->unget_token(Token::make_identifier_token(identifier,
 							   is_exported,
 							   location));
-	    this->simple_stat(true, false, NULL, NULL);
+	    this->simple_stat(true, NULL, NULL, NULL);
 	  }
       }
       break;
@@ -3221,14 +3221,14 @@ Parse::statement(Label* label)
 				 location);
 	}
       else if (!token->is_op(OPERATOR_SEMICOLON))
-	this->simple_stat(true, false, NULL, NULL);
+	this->simple_stat(true, NULL, NULL, NULL);
       break;
 
     case Token::TOKEN_STRING:
     case Token::TOKEN_INTEGER:
     case Token::TOKEN_FLOAT:
     case Token::TOKEN_IMAGINARY:
-      this->simple_stat(true, false, NULL, NULL);
+      this->simple_stat(true, NULL, NULL, NULL);
       break;
 
     default:
@@ -3330,10 +3330,12 @@ Parse::labeled_stmt(const std::string& label_name, source_location location)
 // EmptyStmt was handled in Parse::statement.
 
 // In order to make this work for if and switch statements, if
-// RETURN_EXP is true, and we see an ExpressionStat, we return the
+// RETURN_EXP is not NULL, and we see an ExpressionStat, we return the
 // expression rather than adding an expression statement to the
 // current block.  If we see something other than an ExpressionStat,
-// we add the statement and return NULL.
+// we add the statement, set *RETURN_EXP to true if we saw a send
+// statement, and return NULL.  The handling of send statements is for
+// better error messages.
 
 // If P_RANGE_CLAUSE is not NULL, then this will recognize a
 // RangeClause.
@@ -3342,7 +3344,7 @@ Parse::labeled_stmt(const std::string& label_name, source_location location)
 // guard (var := expr.("type") using the literal keyword "type").
 
 Expression*
-Parse::simple_stat(bool may_be_composite_lit, bool return_exp,
+Parse::simple_stat(bool may_be_composite_lit, bool* return_exp,
 		   Range_clause* p_range_clause, Type_switch* p_type_switch)
 {
   const Token* token = this->peek_token();
@@ -3385,7 +3387,11 @@ Parse::simple_stat(bool may_be_composite_lit, bool return_exp,
     }
   token = this->peek_token();
   if (token->is_op(OPERATOR_CHANOP))
-    this->send_stmt(this->verify_not_sink(exp));
+    {
+      this->send_stmt(this->verify_not_sink(exp));
+      if (return_exp != NULL)
+	*return_exp = true;
+    }
   else if (token->is_op(OPERATOR_PLUSPLUS)
 	   || token->is_op(OPERATOR_MINUSMINUS))
     this->inc_dec_stat(this->verify_not_sink(exp));
@@ -3404,7 +3410,7 @@ Parse::simple_stat(bool may_be_composite_lit, bool return_exp,
 	   || token->is_op(OPERATOR_ANDEQ)
 	   || token->is_op(OPERATOR_BITCLEAREQ))
     this->assignment(this->verify_not_sink(exp), p_range_clause);
-  else if (return_exp)
+  else if (return_exp != NULL)
     return this->verify_not_sink(exp);
   else
     this->expression_stat(this->verify_not_sink(exp));
@@ -3743,9 +3749,14 @@ Parse::if_stat()
 
   this->gogo_->start_block(location);
 
+  bool saw_simple_stat = false;
   Expression* cond = NULL;
+  bool saw_send_stmt;
   if (this->simple_stat_may_start_here())
-    cond = this->simple_stat(false, true, NULL, NULL);
+    {
+      cond = this->simple_stat(false, &saw_send_stmt, NULL, NULL);
+      saw_simple_stat = true;
+    }
   if (cond != NULL && this->peek_token()->is_op(OPERATOR_SEMICOLON))
     {
       // The SimpleStat is an expression statement.
@@ -3756,7 +3767,20 @@ Parse::if_stat()
     {
       if (this->peek_token()->is_op(OPERATOR_SEMICOLON))
 	this->advance_token();
-      cond = this->expression(PRECEDENCE_NORMAL, false, false, NULL);
+      else if (saw_simple_stat)
+	{
+	  if (saw_send_stmt)
+	    error_at(this->location(),
+		     ("send statement used as value; "
+		      "use select for non-blocking send"));
+	  else
+	    error_at(this->location(),
+		     "expected %<;%> after statement in if expression");
+	  if (!this->expression_may_start_here())
+	    cond = Expression::make_error(this->location());
+	}
+      if (cond == NULL)
+	cond = this->expression(PRECEDENCE_NORMAL, false, false, NULL);
     }
 
   this->gogo_->start_block(this->location());
@@ -3809,10 +3833,16 @@ Parse::switch_stat(Label* label)
 
   this->gogo_->start_block(location);
 
+  bool saw_simple_stat = false;
   Expression* switch_val = NULL;
+  bool saw_send_stmt;
   Type_switch type_switch;
   if (this->simple_stat_may_start_here())
-    switch_val = this->simple_stat(false, true, NULL, &type_switch);
+    {
+      switch_val = this->simple_stat(false, &saw_send_stmt, NULL,
+				     &type_switch);
+      saw_simple_stat = true;
+    }
   if (switch_val != NULL && this->peek_token()->is_op(OPERATOR_SEMICOLON))
     {
       // The SimpleStat is an expression statement.
@@ -3823,6 +3853,16 @@ Parse::switch_stat(Label* label)
     {
       if (this->peek_token()->is_op(OPERATOR_SEMICOLON))
 	this->advance_token();
+      else if (saw_simple_stat)
+	{
+	  if (saw_send_stmt)
+	    error_at(this->location(),
+		     ("send statement used as value; "
+		      "use select for non-blocking send"));
+	  else
+	    error_at(this->location(),
+		     "expected %<;%> after statement in switch expression");
+	}
       if (!this->peek_token()->is_op(OPERATOR_LCURLY))
 	{
 	  if (this->peek_token()->is_identifier())
@@ -3840,7 +3880,7 @@ Parse::switch_stat(Label* label)
 	      if (is_coloneq)
 		{
 		  // This must be a TypeSwitchGuard.
-		  switch_val = this->simple_stat(false, true, NULL,
+		  switch_val = this->simple_stat(false, &saw_send_stmt, NULL,
 						 &type_switch);
 		  if (!type_switch.found)
 		    {
@@ -4500,11 +4540,19 @@ Parse::for_stat(Label* label)
 	{
 	  // We might be looking at a Condition, an InitStat, or a
 	  // RangeClause.
-	  cond = this->simple_stat(false, true, &range_clause, NULL);
+	  bool saw_send_stmt;
+	  cond = this->simple_stat(false, &saw_send_stmt, &range_clause, NULL);
 	  if (!this->peek_token()->is_op(OPERATOR_SEMICOLON))
 	    {
 	      if (cond == NULL && !range_clause.found)
-		error_at(this->location(), "parse error in for statement");
+		{
+		  if (saw_send_stmt)
+		    error_at(this->location(),
+			     ("send statement used as value; "
+			      "use select for non-blocking send"));
+		  else
+		    error_at(this->location(), "parse error in for statement");
+		}
 	    }
 	  else
 	    {
@@ -4608,7 +4656,7 @@ Parse::for_clause(Expression** cond, Block** post)
   else
     {
       this->gogo_->start_block(this->location());
-      this->simple_stat(false, false, NULL, NULL);
+      this->simple_stat(false, NULL, NULL, NULL);
       *post = this->gogo_->finish_block(this->location());
     }
 }
@@ -4992,8 +5040,13 @@ Parse::program()
 	token = this->advance_token();
       else if (!token->is_eof() || !saw_errors())
 	{
-	  error_at(this->location(),
-		   "expected %<;%> or newline after top level declaration");
+	  if (token->is_op(OPERATOR_CHANOP))
+	    error_at(this->location(),
+		     ("send statement used as value; "
+		      "use select for non-blocking send"));
+	  else
+	    error_at(this->location(),
+		     "expected %<;%> or newline after top level declaration");
 	  this->skip_past_error(OPERATOR_INVALID);
 	}
     }
