@@ -1,3 +1,8 @@
+2011-03-28  Jason Merrill  <jason@redhat.com>
+
+	Revert:
+	* g++.dg/cpp0x/move1.C: New.
+
 2011-03-28  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	PR target/47553
