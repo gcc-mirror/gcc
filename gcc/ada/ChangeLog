@@ -1,3 +1,19 @@
+2011-03-28  Tristan Gingold  <gingold@adacore.com>
+
+	PR ada/44431
+	* gcc-interface/Make-lang.in (ada/b_gnat1.adb):  Replaces
+	ada/b_gnat1.c. Use ada output of gnatbind.
+	(ada/b_gnatb.adb): Ditto.
+	(ada/b_gnat1.o, ada/b_gnatb.o): New rules.
+	(ada.mostlyclean, ada.stage1)
+	(ada.stage2, ada.stage3, ada.stage4, ada.stageprofile)
+	(ada.stagefeedback): Adjust.
+
+	* gcc-interface/Makefile.in (b_gnatl.adb): Replaces b_gnatl.c
+	Use ada output of gnatbind.
+	(b_gnatm.adb): Ditto.
+	(b_gnatl.o, b_gnatm.o): New rules.
+
 2011-03-26  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/decl.c (gnat_to_gnu_entity) <object>: Create TYPE_DECL
