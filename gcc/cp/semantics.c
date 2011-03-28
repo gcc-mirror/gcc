@@ -5585,6 +5585,52 @@ build_constexpr_constructor_member_initializers (tree type, tree body)
     return error_mark_node;
 }
 
+/* Subroutine of register_constexpr_fundef.  BODY is the body of a function
+   declared to be constexpr, or a sub-statement thereof.  Returns the
+   return value if suitable, error_mark_node for a statement not allowed in
+   a constexpr function, or NULL_TREE if no return value was found.  */
+
+static tree
+constexpr_fn_retval (tree body)
+{
+  switch (TREE_CODE (body))
+    {
+    case STATEMENT_LIST:
+      {
+	tree_stmt_iterator i;
+	tree expr = NULL_TREE;
+	for (i = tsi_start (body); !tsi_end_p (i); tsi_next (&i))
+	  {
+	    tree s = constexpr_fn_retval (tsi_stmt (i));
+	    if (s == error_mark_node)
+	      return error_mark_node;
+	    else if (s == NULL_TREE)
+	      /* Keep iterating.  */;
+	    else if (expr)
+	      /* Multiple return statements.  */
+	      return error_mark_node;
+	    else
+	      expr = s;
+	  }
+	return expr;
+      }
+
+    case RETURN_EXPR:
+      return unshare_expr (TREE_OPERAND (body, 0));
+
+    case DECL_EXPR:
+      if (TREE_CODE (DECL_EXPR_DECL (body)) == USING_DECL)
+	return NULL_TREE;
+      return error_mark_node;
+
+    case USING_STMT:
+      return NULL_TREE;
+
+    default:
+      return error_mark_node;
+    }
+}
+
 /* We are processing the definition of the constexpr function FUN.
    Check that its BODY fulfills the propriate requirements and
    enter it in the constexpr function definition table.
@@ -5610,13 +5656,13 @@ register_constexpr_fundef (tree fun, tree body)
 	body = TREE_OPERAND (body, 0);
       if (TREE_CODE (body) == CLEANUP_POINT_EXPR)
         body = TREE_OPERAND (body, 0);
-      if (TREE_CODE (body) != RETURN_EXPR)
+      body = constexpr_fn_retval (body);
+      if (body == NULL_TREE || body == error_mark_node)
         {
           error ("body of constexpr function %qD not a return-statement", fun);
           DECL_DECLARED_CONSTEXPR_P (fun) = false;
           return NULL;
         }
-      body = unshare_expr (TREE_OPERAND (body, 0));
     }
 
   if (!potential_rvalue_constant_expression (body))

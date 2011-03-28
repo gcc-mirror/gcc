@@ -1,5 +1,7 @@
 2011-03-28  Jason Merrill  <jason@redhat.com>
 
+	* g++.dg/cpp0x/constexpr-using.C: New.
+
 	* g++.dg/cpp0x/constexpr-noexcept.C: New.
 
 2011-03-28  H.J. Lu  <hongjiu.lu@intel.com>
