@@ -1,3 +1,8 @@
+2011-03-28  Kai Tietz  <ktietz@redhat.com>
+
+	* raise-gcc.c (PERSONALITY_FUNCTION): Add prototype to
+	prevent warning.
+
 2011-03-28  Tristan Gingold  <gingold@adacore.com>
 
 	PR ada/44431
