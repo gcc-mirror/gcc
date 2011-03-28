@@ -642,7 +642,7 @@ go_mime_files = \
 	go/mime/type.go
 
 if LIBGO_IS_RTEMS
-go_net_fd_os_file = go/net/fd_rtems.go
+go_net_fd_os_file = go/net/fd_select.go
 go_net_newpollserver_file = go/net/newpollserver_rtems.go
 else # !LIBGO_IS_RTEMS
 if LIBGO_IS_LINUX
@@ -651,7 +651,7 @@ go_net_newpollserver_file = go/net/newpollserver.go
 else # !LIBGO_IS_LINUX && !LIBGO_IS_RTEMS
 # By default use select with pipes.  Most systems should have
 # something better.
-go_net_fd_os_file = go/net/fd_rtems.go
+go_net_fd_os_file = go/net/fd_select.go
 go_net_newpollserver_file = go/net/newpollserver.go
 endif # !LIBGO_IS_LINUX
 endif # !LIBGO_IS_RTEMS

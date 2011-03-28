@@ -1032,9 +1032,9 @@ go_mime_files = \
 
 # By default use select with pipes.  Most systems should have
 # something better.
-@LIBGO_IS_LINUX_FALSE@@LIBGO_IS_RTEMS_FALSE@go_net_fd_os_file = go/net/fd_rtems.go
+@LIBGO_IS_LINUX_FALSE@@LIBGO_IS_RTEMS_FALSE@go_net_fd_os_file = go/net/fd_select.go
 @LIBGO_IS_LINUX_TRUE@@LIBGO_IS_RTEMS_FALSE@go_net_fd_os_file = go/net/fd_linux.go
-@LIBGO_IS_RTEMS_TRUE@go_net_fd_os_file = go/net/fd_rtems.go
+@LIBGO_IS_RTEMS_TRUE@go_net_fd_os_file = go/net/fd_select.go
 @LIBGO_IS_LINUX_FALSE@@LIBGO_IS_RTEMS_FALSE@go_net_newpollserver_file = go/net/newpollserver.go
 @LIBGO_IS_LINUX_TRUE@@LIBGO_IS_RTEMS_FALSE@go_net_newpollserver_file = go/net/newpollserver.go
 @LIBGO_IS_RTEMS_TRUE@go_net_newpollserver_file = go/net/newpollserver_rtems.go
