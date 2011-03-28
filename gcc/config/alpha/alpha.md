@@ -2018,9 +2018,9 @@
    (set_attr "trap_suffix" "u_su_sui")])
 
 (define_expand "addtf3"
-  [(use (match_operand 0 "register_operand" ""))
-   (use (match_operand 1 "general_operand" ""))
-   (use (match_operand 2 "general_operand" ""))]
+  [(use (match_operand:TF 0 "register_operand" ""))
+   (use (match_operand:TF 1 "general_operand" ""))
+   (use (match_operand:TF 2 "general_operand" ""))]
   "TARGET_HAS_XFLOATING_LIBS"
   "alpha_emit_xfloating_arith (PLUS, operands); DONE;")
 
@@ -2510,9 +2510,9 @@
    (set_attr "trap_suffix" "u_su_sui")])
 
 (define_expand "divtf3"
-  [(use (match_operand 0 "register_operand" ""))
-   (use (match_operand 1 "general_operand" ""))
-   (use (match_operand 2 "general_operand" ""))]
+  [(use (match_operand:TF 0 "register_operand" ""))
+   (use (match_operand:TF 1 "general_operand" ""))
+   (use (match_operand:TF 2 "general_operand" ""))]
   "TARGET_HAS_XFLOATING_LIBS"
   "alpha_emit_xfloating_arith (DIV, operands); DONE;")
 
@@ -2586,9 +2586,9 @@
    (set_attr "trap_suffix" "u_su_sui")])
 
 (define_expand "multf3"
-  [(use (match_operand 0 "register_operand" ""))
-   (use (match_operand 1 "general_operand" ""))
-   (use (match_operand 2 "general_operand" ""))]
+  [(use (match_operand:TF 0 "register_operand" ""))
+   (use (match_operand:TF 1 "general_operand" ""))
+   (use (match_operand:TF 2 "general_operand" ""))]
   "TARGET_HAS_XFLOATING_LIBS"
   "alpha_emit_xfloating_arith (MULT, operands); DONE;")
 
@@ -2674,9 +2674,9 @@
    (set_attr "trap_suffix" "u_su_sui")])
 
 (define_expand "subtf3"
-  [(use (match_operand 0 "register_operand" ""))
-   (use (match_operand 1 "general_operand" ""))
-   (use (match_operand 2 "general_operand" ""))]
+  [(use (match_operand:TF 0 "register_operand" ""))
+   (use (match_operand:TF 1 "general_operand" ""))
+   (use (match_operand:TF 2 "general_operand" ""))]
   "TARGET_HAS_XFLOATING_LIBS"
   "alpha_emit_xfloating_arith (MINUS, operands); DONE;")
 
