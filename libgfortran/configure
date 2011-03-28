@@ -757,6 +757,7 @@ enable_intermodule
 enable_maintainer_mode
 enable_multilib
 enable_dependency_tracking
+enable_symvers
 enable_shared
 enable_static
 with_pic
@@ -1406,6 +1407,7 @@ Optional Features:
   --enable-multilib       build many library versions (default)
   --disable-dependency-tracking  speeds up one-time build
   --enable-dependency-tracking   do not reject slow dependency extractors
+  --disable-symvers       disable symbol versioning for libgfortran
   --enable-shared[=PKGS]  build shared libraries [default=yes]
   --enable-static[=PKGS]  build static libraries [default=yes]
   --enable-fast-install[=PKGS]
@@ -5564,14 +5566,22 @@ fi
 # Check for symbol versioning (copied from libssp).
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether symbol versioning is supported" >&5
 $as_echo_n "checking whether symbol versioning is supported... " >&6; }
-save_LDFLAGS="$LDFLAGS"
-LDFLAGS="$LDFLAGS -fPIC -shared -Wl,--version-script,./conftest.map"
-cat > conftest.map <<EOF
+# Check whether --enable-symvers was given.
+if test "${enable_symvers+set}" = set; then :
+  enableval=$enable_symvers; gfortran_use_symver=$enableval
+else
+  gfortran_use_symver=yes
+fi
+
+if test "x$gfortran_use_symver" = xyes; then
+  save_LDFLAGS="$LDFLAGS"
+  LDFLAGS="$LDFLAGS -fPIC -shared -Wl,--version-script,./conftest.map"
+  cat > conftest.map <<EOF
 FOO_1.0 {
   global: *foo*; bar; local: *;
 };
 EOF
-if test x$gcc_no_link = xyes; then
+  if test x$gcc_no_link = xyes; then
   as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
 fi
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
@@ -5592,18 +5602,18 @@ else
 fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
-if test x$gfortran_use_symver = xno; then
-  case "$target_os" in
-    solaris2*)
-      LDFLAGS="$save_LDFLAGS"
-      LDFLAGS="$LDFLAGS -fPIC -shared -Wl,-M,./conftest.map"
-      # Sun ld cannot handle wildcards and treats all entries as undefined.
-      cat > conftest.map <<EOF
+  if test x$gfortran_use_symver = xno; then
+    case "$target_os" in
+      solaris2*)
+        LDFLAGS="$save_LDFLAGS"
+        LDFLAGS="$LDFLAGS -fPIC -shared -Wl,-M,./conftest.map"
+        # Sun ld cannot handle wildcards and treats all entries as undefined.
+        cat > conftest.map <<EOF
 FOO_1.0 {
   global: foo; local: *;
 };
 EOF
-      if test x$gcc_no_link = xyes; then
+        if test x$gcc_no_link = xyes; then
   as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
 fi
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
@@ -5624,10 +5634,11 @@ else
 fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
-      ;;
-  esac
+        ;;
+    esac
+  fi
+  LDFLAGS="$save_LDFLAGS"
 fi
-LDFLAGS="$save_LDFLAGS"
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $gfortran_use_symver" >&5
 $as_echo "$gfortran_use_symver" >&6; }
  if test "x$gfortran_use_symver" != xno; then
@@ -12101,7 +12112,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12104 "configure"
+#line 12115 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -12207,7 +12218,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12210 "configure"
+#line 12221 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H

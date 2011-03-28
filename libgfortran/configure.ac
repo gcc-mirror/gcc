@@ -144,30 +144,37 @@ AC_SUBST(CFLAGS)
 
 # Check for symbol versioning (copied from libssp).
 AC_MSG_CHECKING([whether symbol versioning is supported])
-save_LDFLAGS="$LDFLAGS"
-LDFLAGS="$LDFLAGS -fPIC -shared -Wl,--version-script,./conftest.map"
-cat > conftest.map <<EOF
+AC_ARG_ENABLE(symvers,
+AS_HELP_STRING([--disable-symvers],
+  [disable symbol versioning for libgfortran]),
+gfortran_use_symver=$enableval,
+gfortran_use_symver=yes)
+if test "x$gfortran_use_symver" = xyes; then
+  save_LDFLAGS="$LDFLAGS"
+  LDFLAGS="$LDFLAGS -fPIC -shared -Wl,--version-script,./conftest.map"
+  cat > conftest.map <<EOF
 FOO_1.0 {
   global: *foo*; bar; local: *;
 };
 EOF
-AC_TRY_LINK([int foo;],[],[gfortran_use_symver=gnu],[gfortran_use_symver=no])
-if test x$gfortran_use_symver = xno; then
-  case "$target_os" in
-    solaris2*)
-      LDFLAGS="$save_LDFLAGS"
-      LDFLAGS="$LDFLAGS -fPIC -shared -Wl,-M,./conftest.map"
-      # Sun ld cannot handle wildcards and treats all entries as undefined.
-      cat > conftest.map <<EOF
+  AC_TRY_LINK([int foo;],[],[gfortran_use_symver=gnu],[gfortran_use_symver=no])
+  if test x$gfortran_use_symver = xno; then
+    case "$target_os" in
+      solaris2*)
+        LDFLAGS="$save_LDFLAGS"
+        LDFLAGS="$LDFLAGS -fPIC -shared -Wl,-M,./conftest.map"
+        # Sun ld cannot handle wildcards and treats all entries as undefined.
+        cat > conftest.map <<EOF
 FOO_1.0 {
   global: foo; local: *;
 };
 EOF
-      AC_TRY_LINK([int foo;],[],[gfortran_use_symver=sun],[gfortran_use_symver=no])
-      ;;
-  esac
+        AC_TRY_LINK([int foo;],[],[gfortran_use_symver=sun],[gfortran_use_symver=no])
+        ;;
+    esac
+  fi
+  LDFLAGS="$save_LDFLAGS"
 fi
-LDFLAGS="$save_LDFLAGS"
 AC_MSG_RESULT($gfortran_use_symver)
 AM_CONDITIONAL(LIBGFOR_USE_SYMVER, [test "x$gfortran_use_symver" != xno])
 AM_CONDITIONAL(LIBGFOR_USE_SYMVER_GNU, [test "x$gfortran_use_symver" = xgnu])

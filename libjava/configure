@@ -959,6 +959,7 @@ enable_rpath
 with_libiconv_prefix
 enable_tls
 with_system_libunwind
+enable_symvers
 with_python_dir
 enable_aot_compile_rpm
 enable_java_home
@@ -1648,6 +1649,7 @@ Optional Features:
   --enable-java-gc=TYPE   choose garbage collector (default is boehm)
   --disable-rpath         do not hardcode runtime library paths
   --enable-tls            Use thread-local storage [default=yes]
+  --disable-symvers       disable symbol versioning for libjava
   --enable-aot-compile-rpm
                           enable installation of aot-compile-rpm [default=no]
   --enable-java-home      create a standard JDK-style directory layout in the
@@ -13344,7 +13346,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 13347 "configure"
+#line 13349 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -13450,7 +13452,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 13453 "configure"
+#line 13455 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -19443,7 +19445,7 @@ if test "${enable_sjlj_exceptions+set}" = set; then :
   enableval=$enable_sjlj_exceptions; :
 else
   cat > conftest.$ac_ext << EOF
-#line 19446 "configure"
+#line 19448 "configure"
 struct S { ~S(); };
 void bar();
 void foo()
@@ -24530,12 +24532,24 @@ $as_echo_n "checking whether ld supports anonymous version scripts... " >&6; }
 if test "${libjava_cv_anon_version_script+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  save_CFLAGS="$CFLAGS"; save_LDFLAGS="$LDFLAGS"
-   libjava_cv_anon_version_script=no
-   CFLAGS="$CFLAGS -fPIC";
-   LDFLAGS="$LDFLAGS -shared -Wl,--version-script,conftest.map"
-   echo '{ global: globalsymb*; local: *; };' > conftest.map
-   if test x$gcc_no_link = xyes; then
+  # Check whether --enable-symvers was given.
+if test "${enable_symvers+set}" = set; then :
+  enableval=$enable_symvers; case "$enableval" in
+         yes) libjava_cv_anon_version_script=yes ;;
+         no)  libjava_cv_anon_version_script=no ;;
+         *)   as_fn_error "Unknown argument to enable/disable symvers" "$LINENO" 5;;
+        esac
+else
+  libjava_cv_anon_version_script=yes
+
+fi
+
+   if test x$libjava_cv_anon_version_script = xyes; then
+     save_CFLAGS="$CFLAGS"; save_LDFLAGS="$LDFLAGS"
+     CFLAGS="$CFLAGS -fPIC";
+     LDFLAGS="$LDFLAGS -shared -Wl,--version-script,conftest.map"
+     echo '{ global: globalsymb*; local: *; };' > conftest.map
+     if test x$gcc_no_link = xyes; then
   as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
 fi
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
@@ -24551,17 +24565,19 @@ main ()
 _ACEOF
 if ac_fn_c_try_link "$LINENO"; then :
   libjava_cv_anon_version_script=gnu
+else
+  libjava_cv_anon_version_script=no
 fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
-   if test x$libjava_cv_anon_version_script = xno; then
-     case "$target_os" in
-       solaris2*)
-         LDFLAGS="$save_LDFLAGS"
-         LDFLAGS="$LDFLAGS -shared -Wl,-M,conftest.map"
-         # Sun ld doesn't understand wildcards here.
-         echo '{ global: globalsymbol; local: *; };' > conftest.map
-         if test x$gcc_no_link = xyes; then
+     if test x$libjava_cv_anon_version_script = xno; then
+       case "$target_os" in
+         solaris2*)
+           LDFLAGS="$save_LDFLAGS"
+           LDFLAGS="$LDFLAGS -shared -Wl,-M,conftest.map"
+           # Sun ld doesn't understand wildcards here.
+           echo '{ global: globalsymbol; local: *; };' > conftest.map
+           if test x$gcc_no_link = xyes; then
   as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
 fi
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
@@ -24580,10 +24596,11 @@ if ac_fn_c_try_link "$LINENO"; then :
 fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
-         ;;
-     esac
+           ;;
+       esac
+     fi
+     CFLAGS="$save_CFLAGS"; LDFLAGS="$save_LDFLAGS"
    fi
-   CFLAGS="$save_CFLAGS"; LDFLAGS="$save_LDFLAGS"
 
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $libjava_cv_anon_version_script" >&5
