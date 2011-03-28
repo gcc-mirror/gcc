@@ -323,7 +323,7 @@ get_curr_insn_block (void)
 int
 curr_insn_locator (void)
 {
-  if (curr_rtl_loc == -1)
+  if (curr_rtl_loc == -1 || curr_location == UNKNOWN_LOCATION)
     return 0;
   if (last_block != curr_block)
     {

@@ -1,3 +1,12 @@
+2011-03-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* cfgexpand.c (expand_gimple_cond): Always set the source location and
+	block before expanding the statement.
+	(expand_gimple_stmt_1): Likewise.  Set them here...
+	(expand_gimple_stmt): ...and not here.  Tidy.
+	* cfglayout.c (curr_insn_locator): Return 0 if the current location is
+	unknown.
+
 2011-03-28  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* Makefile.in: New rule for cprop.o.
