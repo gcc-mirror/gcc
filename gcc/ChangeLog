@@ -1,3 +1,22 @@
+2011-03-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/48203
+	* cfgexpand.c (expand_debug_expr) <case SSA_NAME>: Only
+	create ENTRY_VALUE if incoming or address of incoming's MEM
+	is a hard REG.
+	* dwarf2out.c (mem_loc_descriptor): Don't emit
+	DW_OP_GNU_entry_value of DW_OP_fbreg.
+	* var-tracking.c (vt_add_function_parameter): Ensure cselib_lookup
+	on ENTRY_VALUE is able to find the canonical parameter VALUE.
+	* cselib.c (rtx_equal_for_cselib_1) <case ENTRY_VALUE>: Use
+	rtx_equal_p instead of rtx_equal_for_cselib_1 to compare
+	ENTRY_VALUE_EXPs.
+	(cselib_hash_rtx) <case ENTRY_VALUE>: If ENTRY_VALUE_EXP
+	is a REG_P or MEM_P with REG_P address, compute hash directly
+	instead of calling cselib_hash_rtx on ENTRY_VALUE_EXP.
+	(preserve_only_constants): Don't clear VALUES forwaring
+	ENTRY_VALUE to some other VALUE.
+
 2011-03-28  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* builtins.c (expand_builtin_memset_args): Use gen_int_mode

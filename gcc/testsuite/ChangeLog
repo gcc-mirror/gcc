@@ -1,3 +1,8 @@
+2011-03-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/48203
+	* gcc.dg/pr48203.c: New test.
+
 2011-03-28  Jeff Law <law@redhat.com>
 
 	* gcc.dg/tree-ssa/ssa-dom-thread-3.c: New test.

@@ -8472,7 +8472,7 @@ vt_add_function_parameter (tree parm)
 			 VAR_INIT_STATUS_INITIALIZED, NULL, INSERT);
       if (dv_is_value_p (dv))
 	{
-	  cselib_val *val = CSELIB_VAL_PTR (dv_as_value (dv));
+	  cselib_val *val = CSELIB_VAL_PTR (dv_as_value (dv)), *val2;
 	  struct elt_loc_list *el;
 	  el = (struct elt_loc_list *)
 	    ggc_alloc_cleared_atomic (sizeof (*el));
@@ -8481,6 +8481,23 @@ vt_add_function_parameter (tree parm)
 	  ENTRY_VALUE_EXP (el->loc) = incoming;
 	  el->setting_insn = get_insns ();
 	  val->locs = el;
+	  val2 = cselib_lookup_from_insn (el->loc, GET_MODE (incoming),
+					  true, VOIDmode, get_insns ());
+	  if (val2
+	      && val2 != val
+	      && val2->locs
+	      && rtx_equal_p (val2->locs->loc, el->loc))
+	    {
+	      struct elt_loc_list *el2;
+
+	      preserve_value (val2);
+	      el2 = (struct elt_loc_list *)
+		ggc_alloc_cleared_atomic (sizeof (*el2));
+	      el2->next = val2->locs;
+	      el2->loc = dv_as_value (dv);
+	      el2->setting_insn = get_insns ();
+	      val2->locs = el2;
+	    }
 	  if (TREE_CODE (TREE_TYPE (parm)) == REFERENCE_TYPE
 	      && INTEGRAL_TYPE_P (TREE_TYPE (TREE_TYPE (parm))))
 	    {
@@ -8499,6 +8516,24 @@ vt_add_function_parameter (tree parm)
 		  ENTRY_VALUE_EXP (el->loc) = mem;
 		  el->setting_insn = get_insns ();
 		  val->locs = el;
+		  val2 = cselib_lookup_from_insn (el->loc, GET_MODE (mem),
+						  true, VOIDmode,
+						  get_insns ());
+		  if (val2
+		      && val2 != val
+		      && val2->locs
+		      && rtx_equal_p (val2->locs->loc, el->loc))
+		    {
+		      struct elt_loc_list *el2;
+
+		      preserve_value (val2);
+		      el2 = (struct elt_loc_list *)
+			ggc_alloc_cleared_atomic (sizeof (*el2));
+		      el2->next = val2->locs;
+		      el2->loc = val->val_rtx;
+		      el2->setting_insn = get_insns ();
+		      val2->locs = el2;
+		    }
 		}
 	    }
 	}
