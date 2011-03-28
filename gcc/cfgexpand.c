@@ -1745,11 +1745,8 @@ expand_gimple_cond (basic_block bb, gimple stmt)
   last2 = last = get_last_insn ();
 
   extract_true_false_edges_from_block (bb, &true_edge, &false_edge);
-  if (gimple_has_location (stmt))
-    {
-      set_curr_insn_source_location (gimple_location (stmt));
-      set_curr_insn_block (gimple_block (stmt));
-    }
+  set_curr_insn_source_location (gimple_location (stmt));
+  set_curr_insn_block (gimple_block (stmt));
 
   /* These flags have no purpose in RTL land.  */
   true_edge->flags &= ~EDGE_TRUE_VALUE;
@@ -1896,6 +1893,10 @@ static void
 expand_gimple_stmt_1 (gimple stmt)
 {
   tree op0;
+
+  set_curr_insn_source_location (gimple_location (stmt));
+  set_curr_insn_block (gimple_block (stmt));
+
   switch (gimple_code (stmt))
     {
     case GIMPLE_GOTO:
@@ -2052,32 +2053,21 @@ expand_gimple_stmt_1 (gimple stmt)
 static rtx
 expand_gimple_stmt (gimple stmt)
 {
-  int lp_nr = 0;
-  rtx last = NULL;
   location_t saved_location = input_location;
+  rtx last = get_last_insn ();
+  int lp_nr;
 
-  last = get_last_insn ();
-
-  /* If this is an expression of some kind and it has an associated line
-     number, then emit the line number before expanding the expression.
-
-     We need to save and restore the file and line information so that
-     errors discovered during expansion are emitted with the right
-     information.  It would be better of the diagnostic routines
-     used the file/line information embedded in the tree nodes rather
-     than globals.  */
   gcc_assert (cfun);
 
+  /* We need to save and restore the current source location so that errors
+     discovered during expansion are emitted with the right location.  But
+     it would be better if the diagnostic routines used the source location
+     embedded in the tree nodes rather than globals.  */
   if (gimple_has_location (stmt))
-    {
-      input_location = gimple_location (stmt);
-      set_curr_insn_source_location (input_location);
-
-      /* Record where the insns produced belong.  */
-      set_curr_insn_block (gimple_block (stmt));
-    }
+    input_location = gimple_location (stmt);
 
   expand_gimple_stmt_1 (stmt);
+
   /* Free any temporaries used to evaluate this statement.  */
   free_temp_slots ();
 
