@@ -1,5 +1,7 @@
 2011-03-29  Jason Merrill  <jason@redhat.com>
 
+	* g++.dg/cpp0x/initlist-array2.C: New.
+
 	* g++.dg/cpp0x/initlist-array1.C: New.
 
 	* g++.dg/cpp0x/move1.C: New.

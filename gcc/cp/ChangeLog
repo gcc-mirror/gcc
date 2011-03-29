@@ -1,5 +1,9 @@
 2011-03-29  Jason Merrill  <jason@redhat.com>
 
+	Core 1232
+	* call.c (build_array_conv): New.
+	(implicit_conversion): Use it.
+
 	* call.c (reference_binding): Allow direct binding to an array
 	rvalue.
 
