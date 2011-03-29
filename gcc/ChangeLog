@@ -1,3 +1,10 @@
+2011-03-29  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* config/s390/s390.c (s390_preferred_reload_class): Return NO_REGS
+	for invalid symbolic addresses.
+	(s390_secondary_reload): Don't use s390_check_symref_alignment for
+	larl operands.
+
 2011-03-28  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	PR target/47553
