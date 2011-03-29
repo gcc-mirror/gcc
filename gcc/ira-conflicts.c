@@ -612,7 +612,7 @@ build_object_conflicts (ira_object_t obj)
   ira_allocno_t a = OBJECT_ALLOCNO (obj);
   IRA_INT_TYPE *object_conflicts;
   minmax_set_iterator asi;
-  int parent_min, parent_max;
+  int parent_min, parent_max ATTRIBUTE_UNUSED;
 
   object_conflicts = conflicts[OBJECT_CONFLICT_ID (obj)];
   px = 0;

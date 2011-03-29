@@ -1,3 +1,8 @@
+2011-03-29  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* ira-conflicts.c (build_object_conflicts): Add unused attribute
+	to parent_max.
+
 2011-03-29  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/alpha/alpha.c (alpha_sr_alias_set): Don't define.
