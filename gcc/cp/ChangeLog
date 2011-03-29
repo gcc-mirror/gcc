@@ -1,3 +1,8 @@
+2011-03-29  Rodrigo Rivas Costa  <rodrigorivascosta@gmail.com>
+
+	* decl2.c (cp_check_const_attributes): New.
+	(cplus_decl_attributes): Call cp_check_const_attributes.
+
 2011-03-29  Jason Merrill  <jason@redhat.com>
 
 	* semantics.c (push_cx_call_context): Return bool.
