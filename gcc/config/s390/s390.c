@@ -2830,12 +2830,16 @@ s390_preferred_reload_class (rtx op, enum reg_class rclass)
 	 it is most likely being used as an address, so
 	 prefer ADDR_REGS.  If 'class' is not a superset
 	 of ADDR_REGS, e.g. FP_REGS, reject this reload.  */
-      case PLUS:
       case LABEL_REF:
       case SYMBOL_REF:
       case CONST:
+	if (!legitimate_reload_constant_p (op))
+          return NO_REGS;
+	/* fallthrough */
+      case PLUS:
+	/* load address will be used.  */
 	if (reg_class_subset_p (ADDR_REGS, rclass))
-          return ADDR_REGS;
+	  return ADDR_REGS;
 	else
 	  return NO_REGS;
 
@@ -2951,12 +2955,16 @@ s390_secondary_reload (bool in_p, rtx x, enum reg_class rclass,
 
   if (TARGET_Z10)
     {
+      HOST_WIDE_INT offset;
+      rtx symref;
+
       /* On z10 several optimizer steps may generate larl operands with
 	 an odd addend.  */
       if (in_p
-	  && s390_symref_operand_p (x, NULL, NULL)
+	  && s390_symref_operand_p (x, &symref, &offset)
 	  && mode == Pmode
-	  && !s390_check_symref_alignment (x, 2))
+	  && !SYMBOL_REF_ALIGN1_P (symref)
+	  && (offset & 1) == 1)
 	sri->icode = ((mode == DImode) ? CODE_FOR_reloaddi_larl_odd_addend_z10
 		      : CODE_FOR_reloadsi_larl_odd_addend_z10);
 
