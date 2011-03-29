@@ -13936,7 +13936,10 @@ maybe_adjust_types_for_deduction (unification_kind_t strict,
       && TYPE_REF_IS_RVALUE (*parm)
       && TREE_CODE (TREE_TYPE (*parm)) == TEMPLATE_TYPE_PARM
       && cp_type_quals (TREE_TYPE (*parm)) == TYPE_UNQUALIFIED
-      && arg_expr && real_lvalue_p (arg_expr))
+      && (arg_expr ? real_lvalue_p (arg_expr)
+	  /* try_one_overload doesn't provide an arg_expr, but
+	     functions are always lvalues.  */
+	  : TREE_CODE (*arg) == FUNCTION_TYPE))
     *arg = build_reference_type (*arg);
 
   /* [temp.deduct.call]

@@ -1,5 +1,9 @@
 2011-03-29  Jason Merrill  <jason@redhat.com>
 
+	PR c++/48313
+	* pt.c (maybe_adjust_types_for_deduction): Handle T&& deduction
+	from overloaded function.
+
 	Core 1148
 	* typeck.c (check_return_expr): Fix conditions for setting
 	LOOKUP_PREFER_RVALUE.
