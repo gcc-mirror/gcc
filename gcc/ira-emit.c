@@ -1,5 +1,5 @@
 /* Integrated Register Allocator.  Changing code and generating moves.
-   Copyright (C) 2006, 2007, 2008, 2009, 2010
+   Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
    Contributed by Vladimir Makarov <vmakarov@redhat.com>.
 
@@ -19,6 +19,52 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+/* When we have more one region, we need to change the original RTL
+   code after coloring.  Let us consider two allocnos representing the
+   same pseudo-register outside and inside a region respectively.
+   They can get different hard-registers.  The reload pass works on
+   pseudo registers basis and there is no way to say the reload that
+   pseudo could be in different registers and it is even more
+   difficult to say in what places of the code the pseudo should have
+   particular hard-registers.  So in this case IRA has to create and
+   use a new pseudo-register inside the region and adds code to move
+   allocno values on the region's borders.  This is done by the code
+   in this file.
+
+   The code makes top-down traversal of the regions and generate new
+   pseudos and the move code on the region borders.  In some
+   complicated cases IRA can create a new pseudo used temporarily to
+   move allocno values when a swap of values stored in two
+   hard-registers is needed (e.g. two allocnos representing different
+   pseudos outside region got respectively hard registers 1 and 2 and
+   the corresponding allocnos inside the region got respectively hard
+   registers 2 and 1).  At this stage, the new pseudo is marked as
+   spilled.
+
+   IRA still creates the pseudo-register and the moves on the region
+   borders even when the both corresponding allocnos were assigned to
+   the same hard-register.  It is done because, if the reload pass for
+   some reason spills a pseudo-register representing the original
+   pseudo outside or inside the region, the effect will be smaller
+   because another pseudo will still be in the hard-register.  In most
+   cases, this is better then spilling the original pseudo in its
+   whole live-range.  If reload does not change the allocation for the
+   two pseudo-registers, the trivial move will be removed by
+   post-reload optimizations.
+
+   IRA does not generate a new pseudo and moves for the allocno values
+   if the both allocnos representing an original pseudo inside and
+   outside region assigned to the same hard register when the register
+   pressure in the region for the corresponding pressure class is less
+   than number of available hard registers for given pressure class.
+
+   IRA also does some optimizations to remove redundant moves which is
+   transformed into stores by the reload pass on CFG edges
+   representing exits from the region.
+
+   IRA tries to reduce duplication of code generated on CFG edges
+   which are enters and exits to/from regions by moving some code to
+   the edge sources or destinations when it is possible.  */
 
 #include "config.h"
 #include "system.h"
@@ -44,6 +90,73 @@ along with GCC; see the file COPYING3.  If not see
 #include "ira-int.h"
 
 
+/* Data used to emit live range split insns and to flattening IR.  */
+ira_emit_data_t ira_allocno_emit_data;
+
+/* Definitions for vectors of pointers.  */
+typedef void *void_p;
+DEF_VEC_P (void_p);
+DEF_VEC_ALLOC_P (void_p,heap);
+
+/* Pointers to data allocated for allocnos being created during
+   emitting.  Usually there are quite few such allocnos because they
+   are created only for resolving loop in register shuffling.  */
+static VEC(void_p, heap) *new_allocno_emit_data_vec;
+
+/* Allocate and initiate the emit data.  */
+void
+ira_initiate_emit_data (void)
+{
+  ira_allocno_t a;
+  ira_allocno_iterator ai;
+
+  ira_allocno_emit_data
+    = (ira_emit_data_t) ira_allocate (ira_allocnos_num
+				      * sizeof (struct ira_emit_data));
+  memset (ira_allocno_emit_data, 0,
+	  ira_allocnos_num * sizeof (struct ira_emit_data));
+  FOR_EACH_ALLOCNO (a, ai)
+    ALLOCNO_ADD_DATA (a) = ira_allocno_emit_data + ALLOCNO_NUM (a);
+  new_allocno_emit_data_vec = VEC_alloc (void_p, heap, 50);
+
+}
+
+/* Free the emit data.  */
+void
+ira_finish_emit_data (void)
+{
+  void_p p;
+  ira_allocno_t a;
+  ira_allocno_iterator ai;
+
+  ira_free (ira_allocno_emit_data);
+  FOR_EACH_ALLOCNO (a, ai)
+    ALLOCNO_ADD_DATA (a) = NULL;
+  for (;VEC_length (void_p, new_allocno_emit_data_vec) != 0;)
+    {
+      p = VEC_pop (void_p, new_allocno_emit_data_vec);
+      ira_free (p);
+    }
+  VEC_free (void_p, heap, new_allocno_emit_data_vec);
+}
+
+/* Create and return a new allocno with given REGNO and
+   LOOP_TREE_NODE.  Allocate emit data for it.  */
+static ira_allocno_t
+create_new_allocno (int regno, ira_loop_tree_node_t loop_tree_node)
+{
+  ira_allocno_t a;
+
+  a = ira_create_allocno (regno, false, loop_tree_node);
+  ALLOCNO_ADD_DATA (a) = ira_allocate (sizeof (struct ira_emit_data));
+  memset (ALLOCNO_ADD_DATA (a), 0, sizeof (struct ira_emit_data));
+  VEC_safe_push (void_p, heap, new_allocno_emit_data_vec, ALLOCNO_ADD_DATA (a));
+  return a;
+}
+
+
+
+/* See comments below.  */
 typedef struct move *move_t;
 
 /* The structure represents an allocno move.  Both allocnos have the
@@ -171,7 +284,7 @@ change_regs (rtx *loc)
 	return false;
       if (ira_curr_regno_allocno_map[regno] == NULL)
 	return false;
-      reg = ALLOCNO_REG (ira_curr_regno_allocno_map[regno]);
+      reg = allocno_emit_reg (ira_curr_regno_allocno_map[regno]);
       if (reg == *loc)
 	return false;
       *loc = reg;
@@ -258,9 +371,9 @@ set_allocno_reg (ira_allocno_t allocno, rtx reg)
        a != NULL;
        a = ALLOCNO_NEXT_REGNO_ALLOCNO (a))
     if (subloop_tree_node_p (ALLOCNO_LOOP_TREE_NODE (a), node))
-      ALLOCNO_REG (a) = reg;
+      ALLOCNO_EMIT_DATA (a)->reg = reg;
   for (a = ALLOCNO_CAP (allocno); a != NULL; a = ALLOCNO_CAP (a))
-    ALLOCNO_REG (a) = reg;
+    ALLOCNO_EMIT_DATA (a)->reg = reg;
   regno = ALLOCNO_REGNO (allocno);
   for (a = allocno;;)
     {
@@ -273,9 +386,9 @@ set_allocno_reg (ira_allocno_t allocno, rtx reg)
 	}
       if (a == NULL)
 	continue;
-      if (ALLOCNO_CHILD_RENAMED_P (a))
+      if (ALLOCNO_EMIT_DATA (a)->child_renamed_p)
 	break;
-      ALLOCNO_CHILD_RENAMED_P (a) = true;
+      ALLOCNO_EMIT_DATA (a)->child_renamed_p = true;
     }
 }
 
@@ -289,7 +402,9 @@ entered_from_non_parent_p (ira_loop_tree_node_t loop_node)
   edge e;
   edge_iterator ei;
 
-  for (bb_node = loop_node->children; bb_node != NULL; bb_node = bb_node->next)
+  for (bb_node = loop_node->children;
+       bb_node != NULL;
+       bb_node = bb_node->next)
     if (bb_node->bb != NULL)
       {
 	FOR_EACH_EDGE (e, ei, bb_node->bb->preds)
@@ -344,14 +459,14 @@ store_can_be_removed_p (ira_allocno_t src_allocno, ira_allocno_t dest_allocno)
   ira_assert (ALLOCNO_CAP_MEMBER (src_allocno) == NULL
 	      && ALLOCNO_CAP_MEMBER (dest_allocno) == NULL);
   orig_regno = ALLOCNO_REGNO (src_allocno);
-  regno = REGNO (ALLOCNO_REG (dest_allocno));
+  regno = REGNO (allocno_emit_reg (dest_allocno));
   for (node = ALLOCNO_LOOP_TREE_NODE (src_allocno);
        node != NULL;
        node = node->parent)
     {
       a = node->regno_allocno_map[orig_regno];
       ira_assert (a != NULL);
-      if (REGNO (ALLOCNO_REG (a)) == (unsigned) regno)
+      if (REGNO (allocno_emit_reg (a)) == (unsigned) regno)
 	/* We achieved the destination and everything is ok.  */
 	return true;
       else if (bitmap_bit_p (node->modified_regnos, orig_regno))
@@ -396,8 +511,8 @@ generate_edge_moves (edge e)
       {
 	src_allocno = src_map[regno];
 	dest_allocno = dest_map[regno];
-	if (REGNO (ALLOCNO_REG (src_allocno))
-	    == REGNO (ALLOCNO_REG (dest_allocno)))
+	if (REGNO (allocno_emit_reg (src_allocno))
+	    == REGNO (allocno_emit_reg (dest_allocno)))
 	  continue;
 	/* Remove unnecessary stores at the region exit.  We should do
 	   this for readonly memory for sure and this is guaranteed by
@@ -408,8 +523,8 @@ generate_edge_moves (edge e)
 	    && ALLOCNO_HARD_REGNO (src_allocno) >= 0
 	    && store_can_be_removed_p (src_allocno, dest_allocno))
 	  {
-	    ALLOCNO_MEM_OPTIMIZED_DEST (src_allocno) = dest_allocno;
-	    ALLOCNO_MEM_OPTIMIZED_DEST_P (dest_allocno) = true;
+	    ALLOCNO_EMIT_DATA (src_allocno)->mem_optimized_dest = dest_allocno;
+	    ALLOCNO_EMIT_DATA (dest_allocno)->mem_optimized_dest_p = true;
 	    if (internal_flag_ira_verbose > 3 && ira_dump_file != NULL)
 	      fprintf (ira_dump_file, "      Remove r%d:a%d->a%d(mem)\n",
 		       regno, ALLOCNO_NUM (src_allocno),
@@ -445,7 +560,7 @@ change_loop (ira_loop_tree_node_t node)
   bool used_p;
   ira_allocno_t allocno, parent_allocno, *map;
   rtx insn, original_reg;
-  enum reg_class cover_class;
+  enum reg_class aclass, pclass;
   ira_loop_tree_node_t parent;
 
   if (node != ira_loop_tree_root)
@@ -474,7 +589,8 @@ change_loop (ira_loop_tree_node_t node)
 	{
 	  allocno = ira_allocnos[i];
 	  regno = ALLOCNO_REGNO (allocno);
-	  cover_class = ALLOCNO_COVER_CLASS (allocno);
+	  aclass = ALLOCNO_CLASS (allocno);
+	  pclass = ira_pressure_class_translate[aclass];
 	  parent_allocno = map[regno];
 	  ira_assert (regno < ira_reg_equiv_len);
 	  /* We generate the same hard register move because the
@@ -487,8 +603,8 @@ change_loop (ira_loop_tree_node_t node)
 	      && (ALLOCNO_HARD_REGNO (allocno)
 		  == ALLOCNO_HARD_REGNO (parent_allocno))
 	      && (ALLOCNO_HARD_REGNO (allocno) < 0
-		  || (parent->reg_pressure[cover_class] + 1
-		      <= ira_available_class_regs[cover_class])
+		  || (parent->reg_pressure[pclass] + 1
+		      <= ira_available_class_regs[pclass])
 		  || TEST_HARD_REG_BIT (ira_prohibited_mode_move_regs
 					[ALLOCNO_MODE (allocno)],
 					ALLOCNO_HARD_REGNO (allocno))
@@ -498,9 +614,10 @@ change_loop (ira_loop_tree_node_t node)
 		  || ira_reg_equiv_invariant_p[regno]
 		  || ira_reg_equiv_const[regno] != NULL_RTX))
 	    continue;
-	  original_reg = ALLOCNO_REG (allocno);
+	  original_reg = allocno_emit_reg (allocno);
 	  if (parent_allocno == NULL
-	      || REGNO (ALLOCNO_REG (parent_allocno)) == REGNO (original_reg))
+	      || (REGNO (allocno_emit_reg (parent_allocno))
+		  == REGNO (original_reg)))
 	    {
 	      if (internal_flag_ira_verbose > 3 && ira_dump_file)
 		fprintf (ira_dump_file, "  %i vs parent %i:",
@@ -523,11 +640,11 @@ change_loop (ira_loop_tree_node_t node)
       if (ALLOCNO_CAP_MEMBER (allocno) != NULL)
 	continue;
       used_p = !bitmap_set_bit (used_regno_bitmap, regno);
-      ALLOCNO_SOMEWHERE_RENAMED_P (allocno) = true;
+      ALLOCNO_EMIT_DATA (allocno)->somewhere_renamed_p = true;
       if (! used_p)
 	continue;
       bitmap_set_bit (renamed_regno_bitmap, regno);
-      set_allocno_reg (allocno, create_new_reg (ALLOCNO_REG (allocno)));
+      set_allocno_reg (allocno, create_new_reg (allocno_emit_reg (allocno)));
     }
 }
 
@@ -543,8 +660,8 @@ set_allocno_somewhere_renamed_p (void)
     {
       regno = ALLOCNO_REGNO (allocno);
       if (bitmap_bit_p (renamed_regno_bitmap, regno)
-	  && REGNO (ALLOCNO_REG (allocno)) == regno)
-	ALLOCNO_SOMEWHERE_RENAMED_P (allocno) = true;
+	  && REGNO (allocno_emit_reg (allocno)) == regno)
+	ALLOCNO_EMIT_DATA (allocno)->somewhere_renamed_p = true;
     }
 }
 
@@ -724,16 +841,16 @@ modify_move_list (move_t list)
 		   subsequent IRA internal representation
 		   flattening.  */
 		new_allocno
-		  = ira_create_allocno (ALLOCNO_REGNO (set_move->to), false,
+		  = create_new_allocno (ALLOCNO_REGNO (set_move->to),
 					ALLOCNO_LOOP_TREE_NODE (set_move->to));
 		ALLOCNO_MODE (new_allocno) = ALLOCNO_MODE (set_move->to);
-		ira_set_allocno_cover_class
-		  (new_allocno, ALLOCNO_COVER_CLASS (set_move->to));
+		ira_set_allocno_class (new_allocno,
+				       ALLOCNO_CLASS (set_move->to));
 		ira_create_allocno_objects (new_allocno);
 		ALLOCNO_ASSIGNED_P (new_allocno) = true;
 		ALLOCNO_HARD_REGNO (new_allocno) = -1;
-		ALLOCNO_REG (new_allocno)
-		  = create_new_reg (ALLOCNO_REG (set_move->to));
+		ALLOCNO_EMIT_DATA (new_allocno)->reg
+		  = create_new_reg (allocno_emit_reg (set_move->to));
 
 		/* Make it possibly conflicting with all earlier
 		   created allocnos.  Cases where temporary allocnos
@@ -756,7 +873,7 @@ modify_move_list (move_t list)
 		  fprintf (ira_dump_file,
 			   "    Creating temporary allocno a%dr%d\n",
 			   ALLOCNO_NUM (new_allocno),
-			   REGNO (ALLOCNO_REG (new_allocno)));
+			   REGNO (allocno_emit_reg (new_allocno)));
 	      }
 	}
       if ((hard_regno = ALLOCNO_HARD_REGNO (to)) < 0)
@@ -786,13 +903,14 @@ emit_move_list (move_t list, int freq)
   int cost;
   rtx result, insn;
   enum machine_mode mode;
-  enum reg_class cover_class;
+  enum reg_class aclass;
 
   start_sequence ();
   for (; list != NULL; list = list->next)
     {
       start_sequence ();
-      emit_move_insn (ALLOCNO_REG (list->to), ALLOCNO_REG (list->from));
+      emit_move_insn (allocno_emit_reg (list->to),
+		      allocno_emit_reg (list->from));
       list->insn = get_insns ();
       end_sequence ();
       /* The reload needs to have set up insn codes.  If the reload
@@ -803,13 +921,13 @@ emit_move_list (move_t list, int freq)
 	recog_memoized (insn);
       emit_insn (list->insn);
       mode = ALLOCNO_MODE (list->to);
-      cover_class = ALLOCNO_COVER_CLASS (list->to);
+      aclass = ALLOCNO_CLASS (list->to);
       cost = 0;
       if (ALLOCNO_HARD_REGNO (list->to) < 0)
 	{
 	  if (ALLOCNO_HARD_REGNO (list->from) >= 0)
 	    {
-	      cost = ira_memory_move_cost[mode][cover_class][0] * freq;
+	      cost = ira_memory_move_cost[mode][aclass][0] * freq;
 	      ira_store_cost += cost;
 	    }
 	}
@@ -817,14 +935,14 @@ emit_move_list (move_t list, int freq)
 	{
 	  if (ALLOCNO_HARD_REGNO (list->to) >= 0)
 	    {
-	      cost = ira_memory_move_cost[mode][cover_class][0] * freq;
+	      cost = ira_memory_move_cost[mode][aclass][0] * freq;
 	      ira_load_cost += cost;
 	    }
 	}
       else
 	{
-	  cost = (ira_get_register_move_cost (mode, cover_class, cover_class)
-		  * freq);
+	  ira_init_register_move_cost_if_necessary (mode);
+	  cost = ira_register_move_cost[mode][aclass][aclass] * freq;
 	  ira_shuffle_cost += cost;
 	}
       ira_overall_cost += cost;
@@ -902,7 +1020,7 @@ update_costs (ira_allocno_t a, bool read_p, int freq)
       ALLOCNO_NREFS (a)++;
       ALLOCNO_FREQ (a) += freq;
       ALLOCNO_MEMORY_COST (a)
-	+= (ira_memory_move_cost[ALLOCNO_MODE (a)][ALLOCNO_COVER_CLASS (a)]
+	+= (ira_memory_move_cost[ALLOCNO_MODE (a)][ALLOCNO_CLASS (a)]
 	    [read_p ? 1 : 0] * freq);
       if (ALLOCNO_CAP (a) != NULL)
 	a = ALLOCNO_CAP (a);
@@ -956,7 +1074,7 @@ add_range_and_copies_from_move_list (move_t list, ira_loop_tree_node_t node,
 	    {
 	      if (internal_flag_ira_verbose > 2 && ira_dump_file != NULL)
 		fprintf (ira_dump_file, "    Allocate conflicts for a%dr%d\n",
-			 ALLOCNO_NUM (to), REGNO (ALLOCNO_REG (to)));
+			 ALLOCNO_NUM (to), REGNO (allocno_emit_reg (to)));
 	      ira_allocate_object_conflicts (to_obj, n);
 	    }
 	}
@@ -969,8 +1087,9 @@ add_range_and_copies_from_move_list (move_t list, ira_loop_tree_node_t node,
       if (internal_flag_ira_verbose > 2 && ira_dump_file != NULL)
 	fprintf (ira_dump_file, "    Adding cp%d:a%dr%d-a%dr%d\n",
 		 cp->num, ALLOCNO_NUM (cp->first),
-		 REGNO (ALLOCNO_REG (cp->first)), ALLOCNO_NUM (cp->second),
-		 REGNO (ALLOCNO_REG (cp->second)));
+		 REGNO (allocno_emit_reg (cp->first)),
+		 ALLOCNO_NUM (cp->second),
+		 REGNO (allocno_emit_reg (cp->second)));
 
       nr = ALLOCNO_NUM_OBJECTS (from);
       for (i = 0; i < nr; i++)
@@ -984,7 +1103,7 @@ add_range_and_copies_from_move_list (move_t list, ira_loop_tree_node_t node,
 		fprintf (ira_dump_file,
 			 "    Adding range [%d..%d] to allocno a%dr%d\n",
 			 start, ira_max_point, ALLOCNO_NUM (from),
-			 REGNO (ALLOCNO_REG (from)));
+			 REGNO (allocno_emit_reg (from)));
 	    }
 	  else
 	    {
@@ -993,7 +1112,7 @@ add_range_and_copies_from_move_list (move_t list, ira_loop_tree_node_t node,
 		fprintf (ira_dump_file,
 			 "    Adding range [%d..%d] to allocno a%dr%d\n",
 			 r->start, ira_max_point, ALLOCNO_NUM (from),
-			 REGNO (ALLOCNO_REG (from)));
+			 REGNO (allocno_emit_reg (from)));
 	    }
 	}
       ira_max_point++;
@@ -1020,7 +1139,7 @@ add_range_and_copies_from_move_list (move_t list, ira_loop_tree_node_t node,
 		fprintf (ira_dump_file,
 			 "    Adding range [%d..%d] to allocno a%dr%d\n",
 			 r->start, r->finish, ALLOCNO_NUM (move->to),
-			 REGNO (ALLOCNO_REG (move->to)));
+			 REGNO (allocno_emit_reg (move->to)));
 	    }
 	}
     }
@@ -1030,7 +1149,7 @@ add_range_and_copies_from_move_list (move_t list, ira_loop_tree_node_t node,
       int nr, i;
 
       a = node->regno_allocno_map[regno];
-      if ((to = ALLOCNO_MEM_OPTIMIZED_DEST (a)) != NULL)
+      if ((to = ALLOCNO_EMIT_DATA (a)->mem_optimized_dest) != NULL)
 	a = to;
       nr = ALLOCNO_NUM_OBJECTS (a);
       for (i = 0; i < nr; i++)
@@ -1044,7 +1163,7 @@ add_range_and_copies_from_move_list (move_t list, ira_loop_tree_node_t node,
 	   "    Adding range [%d..%d] to live through %s allocno a%dr%d\n",
 	   start, ira_max_point - 1,
 	   to != NULL ? "upper level" : "",
-	   ALLOCNO_NUM (a), REGNO (ALLOCNO_REG (a)));
+	   ALLOCNO_NUM (a), REGNO (allocno_emit_reg (a)));
     }
 }
 
@@ -1097,7 +1216,7 @@ ira_emit (bool loops_p)
   ira_allocno_iterator ai;
 
   FOR_EACH_ALLOCNO (a, ai)
-    ALLOCNO_REG (a) = regno_reg_rtx[ALLOCNO_REGNO (a)];
+    ALLOCNO_EMIT_DATA (a)->reg = regno_reg_rtx[ALLOCNO_REGNO (a)];
   if (! loops_p)
     return;
   at_bb_start = (move_t *) ira_allocate (sizeof (move_t) * last_basic_block);

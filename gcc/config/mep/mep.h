@@ -407,8 +407,6 @@ enum reg_class
 
 #define REGNO_REG_CLASS(REGNO) (enum reg_class) mep_regno_reg_class (REGNO)
 
-#define IRA_COVER_CLASSES { GENERAL_REGS, CONTROL_REGS, CR_REGS, CCR_REGS, LIM_REG_CLASSES }
-
 #define BASE_REG_CLASS GENERAL_REGS
 #define INDEX_REG_CLASS GENERAL_REGS
 

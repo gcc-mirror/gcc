@@ -841,15 +841,6 @@ default_branch_target_register_class (void)
   return NO_REGS;
 }
 
-#ifdef IRA_COVER_CLASSES
-const reg_class_t *
-default_ira_cover_classes (void)
-{
-  static reg_class_t classes[] = IRA_COVER_CLASSES;
-  return classes;
-}
-#endif
-
 reg_class_t
 default_secondary_reload (bool in_p ATTRIBUTE_UNUSED, rtx x ATTRIBUTE_UNUSED,
 			  reg_class_t reload_class_i ATTRIBUTE_UNUSED,

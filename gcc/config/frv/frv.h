@@ -970,21 +970,6 @@ enum reg_class
   { 0xffffffff,0xffffffff,0xffffffff,0xffffffff,0xffffffff,0x1fff}, /* ALL_REGS */\
 }
 
-/* The following macro defines cover classes for Integrated Register
-   Allocator.  Cover classes is a set of non-intersected register
-   classes covering all hard registers used for register allocation
-   purpose.  Any move between two registers of a cover class should be
-   cheaper than load or store of the registers.  The macro value is
-   array of register classes with LIM_REG_CLASSES used as the end
-   marker.  */
-
-#define IRA_COVER_CLASSES						\
-{									\
-  GPR_REGS, FPR_REGS, ACC_REGS, ICR_REGS, FCR_REGS, ICC_REGS, FCC_REGS, \
-  ACCG_REGS, SPR_REGS,							\
-  LIM_REG_CLASSES							\
-}
-
 /* A C expression whose value is a register class containing hard register
    REGNO.  In general there is more than one such class; choose a class which
    is "minimal", meaning that no smaller class also contains the register.  */
