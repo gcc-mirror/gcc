@@ -1,5 +1,6 @@
 2011-03-29  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	PR debug/48190
 	* dwarf2out.c (dw_loc_list_node): Add resolved_addr and replaced.
 	(cached_dw_loc_list_def): New structure.
 	(cached_dw_loc_list): New typedef.
