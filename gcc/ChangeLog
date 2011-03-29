@@ -1,3 +1,26 @@
+2011-03-29  Nick Clifton  <nickc@redhat.com>
+
+	* config/rx/rx.h (LABEL_ALIGN_AFTER_BARRIER): Define.
+	(ASM_OUTPUT_MAX_SKIP): Define.
+	* config/rx/predicates.md (rx_zs_comparison_operator): Do not
+	allow LT aor GE comparisons.
+	* config/rx/rx-protos.h (rx_align_for_label): Prototype.
+	* config/rx/rx.md: Add peepholes and patterns to combine extending
+	loads with simple arithmetic instructions.
+	* config/rx/rx.c (rx_is_legitimate_address): Allow QI and HI modes
+	to use pre-decrement and post-increment addressing.
+	(rx_is_restricted_memory_address): For REG+INT addressing, ensure
+	that the INT is a valid offset.
+	(rx_print_operand): Handle %R.
+	Fix %Q's handling of MEMs.
+	(rx_option_override): Set alignments.
+	(rx_align_for_label): New function.
+	(rx_max_skip_for_label): New function.
+	(TARGET_ASM_JUMP_ALIGN_MAX_SKIP): Define.
+	(TARGET_ASM_LOOP_ALIGN_MAX_SKIP): Define.
+	(TARGET_ASM_LABEL_ALIGN_MAX_SKIP): Define.
+	(TARGET_ASM_LABEL_ALIGN_AFTER_BARRIER_MAX_SKIP): Define.
+
 2011-03-29  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* config/s390/s390.c (s390_preferred_reload_class): Return NO_REGS

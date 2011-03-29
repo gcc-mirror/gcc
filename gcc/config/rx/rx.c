@@ -57,7 +57,7 @@ static void rx_print_operand (FILE *, rtx, int);
 #define CC_FLAG_Z	(1 << 1)
 #define CC_FLAG_O	(1 << 2)
 #define CC_FLAG_C	(1 << 3)
-#define CC_FLAG_FP	(1 << 4)	/* fake, to differentiate CC_Fmode */
+#define CC_FLAG_FP	(1 << 4)	/* Fake, to differentiate CC_Fmode.  */
 
 static unsigned int flags_from_mode (enum machine_mode mode);
 static unsigned int flags_from_code (enum rtx_code code);
@@ -85,7 +85,9 @@ rx_is_legitimate_address (Mmode mode, rtx x, bool strict ATTRIBUTE_UNUSED)
     /* Register Indirect.  */
     return true;
 
-  if (GET_MODE_SIZE (mode) == 4
+  if ((GET_MODE_SIZE (mode) == 4
+       || GET_MODE_SIZE (mode) == 2
+       || GET_MODE_SIZE (mode) == 1)
       && (GET_CODE (x) == PRE_DEC || GET_CODE (x) == POST_INC))
     /* Pre-decrement Register Indirect or
        Post-increment Register Indirect.  */
@@ -187,7 +189,10 @@ rx_is_restricted_memory_address (rtx mem, enum machine_mode mode)
       base = XEXP (mem, 0);
       index = XEXP (mem, 1);
 
-      return RX_REG_P (base) && CONST_INT_P (index);
+      if (! RX_REG_P (base) || ! CONST_INT_P (index))
+	  return false;
+
+      return IN_RANGE (INTVAL (index), 0, (0x10000 * GET_MODE_SIZE (mode)) - 1);
 
     case SYMBOL_REF:
       /* Can happen when small data is being supported.
@@ -386,11 +391,14 @@ rx_assemble_integer (rtx x, unsigned int size, int is_aligned)
      %L  Print low part of a DImode register, integer or address.
      %N  Print the negation of the immediate value.
      %Q  If the operand is a MEM, then correctly generate
-         register indirect or register relative addressing.  */
+         register indirect or register relative addressing.
+     %R  Like %Q but for zero-extending loads.  */
 
 static void
 rx_print_operand (FILE * file, rtx op, int letter)
 {
+  bool unsigned_load = false;
+
   switch (letter)
     {
     case 'A':
@@ -450,6 +458,7 @@ rx_print_operand (FILE * file, rtx op, int letter)
 	else
 	  {
 	    unsigned int flags = flags_from_mode (mode);
+
 	    switch (code)
 	      {
 	      case LT:
@@ -588,10 +597,15 @@ rx_print_operand (FILE * file, rtx op, int letter)
       rx_print_integer (file, - INTVAL (op));
       break;
 
+    case 'R':
+      gcc_assert (GET_MODE_SIZE (GET_MODE (op)) < 4);
+      unsigned_load = true;
+      /* Fall through.  */
     case 'Q':
       if (MEM_P (op))
 	{
 	  HOST_WIDE_INT offset;
+	  rtx mem = op;
 
 	  op = XEXP (op, 0);
 
@@ -626,22 +640,24 @@ rx_print_operand (FILE * file, rtx op, int letter)
 	  rx_print_operand (file, op, 0);
 	  fprintf (file, "].");
 
-	  switch (GET_MODE_SIZE (GET_MODE (op)))
+	  switch (GET_MODE_SIZE (GET_MODE (mem)))
 	    {
 	    case 1:
-	      gcc_assert (offset < 65535 * 1);
-	      fprintf (file, "B");
+	      gcc_assert (offset <= 65535 * 1);
+	      fprintf (file, unsigned_load ? "UB" : "B");
 	      break;
 	    case 2:
 	      gcc_assert (offset % 2 == 0);
-	      gcc_assert (offset < 65535 * 2);
-	      fprintf (file, "W");
+	      gcc_assert (offset <= 65535 * 2);
+	      fprintf (file, unsigned_load ? "UW" : "W");
 	      break;
-	    default:
+	    case 4:
 	      gcc_assert (offset % 4 == 0);
-	      gcc_assert (offset < 65535 * 4);
+	      gcc_assert (offset <= 65535 * 4);
 	      fprintf (file, "L");
 	      break;
+	    default:
+	      gcc_unreachable ();
 	    }
 	  break;
 	}
@@ -2336,6 +2352,13 @@ rx_option_override (void)
     flag_strict_volatile_bitfields = 1;
 
   rx_override_options_after_change ();
+
+  if (align_jumps == 0 && ! optimize_size)
+    align_jumps = 3;
+  if (align_loops == 0 && ! optimize_size)
+    align_loops = 3;
+  if (align_labels == 0 && ! optimize_size)
+    align_labels = 3;
 }
 
 /* Implement TARGET_OPTION_OPTIMIZATION_TABLE.  */
@@ -2728,6 +2751,45 @@ rx_match_ccmode (rtx insn, enum machine_mode cc_mode)
 }
 
 
+int
+rx_align_for_label (void)
+{
+  return optimize_size ? 1 : 3;
+}
+
+static int
+rx_max_skip_for_label (rtx lab)
+{
+  int opsize;
+  rtx op;
+
+  if (lab == NULL_RTX)
+    return 0;
+  op = lab;
+  do
+    {
+      op = next_nonnote_insn (op);
+    }
+  while (op && (LABEL_P (op)
+		|| (INSN_P (op) && GET_CODE (PATTERN (op)) == USE)));
+  if (!op)
+    return 0;
+
+  opsize = get_attr_length (op);
+  if (opsize >= 0 && opsize < 8)
+    return opsize - 1;
+  return 0;
+}
+
+#undef  TARGET_ASM_JUMP_ALIGN_MAX_SKIP
+#define TARGET_ASM_JUMP_ALIGN_MAX_SKIP			rx_max_skip_for_label
+#undef  TARGET_ASM_LOOP_ALIGN_MAX_SKIP
+#define TARGET_ASM_LOOP_ALIGN_MAX_SKIP			rx_max_skip_for_label
+#undef  TARGET_LABEL_ALIGN_AFTER_BARRIER_MAX_SKIP
+#define TARGET_LABEL_ALIGN_AFTER_BARRIER_MAX_SKIP	rx_max_skip_for_label
+#undef  TARGET_ASM_LABEL_ALIGN_MAX_SKIP
+#define TARGET_ASM_LABEL_ALIGN_MAX_SKIP			rx_max_skip_for_label
+
 #undef  TARGET_FUNCTION_VALUE
 #define TARGET_FUNCTION_VALUE		rx_function_value
 
