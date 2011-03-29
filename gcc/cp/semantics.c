@@ -6896,7 +6896,13 @@ cxx_eval_constant_expression (const constexpr_call *call, tree t,
 	  r = cxx_eval_constant_expression (call, op0, allow_non_constant,
 					    addr, non_constant_p);
 	else
-	  goto binary;
+	  {
+	    /* Check that the LHS is constant and then discard it.  */
+	    cxx_eval_constant_expression (call, op0, allow_non_constant,
+					  false, non_constant_p);
+	    r = cxx_eval_constant_expression (call, op1, allow_non_constant,
+					      addr, non_constant_p);
+	  }
       }
       break;
 
@@ -6938,7 +6944,6 @@ cxx_eval_constant_expression (const constexpr_call *call, tree t,
     case UNEQ_EXPR:
     case RANGE_EXPR:
     case COMPLEX_EXPR:
-    binary:
       r = cxx_eval_binary_expression (call, t, allow_non_constant, addr,
 				      non_constant_p);
       break;
