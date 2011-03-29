@@ -719,6 +719,10 @@ fconstant-string-class=
 ObjC ObjC++ Joined MissingArgError(no class name specified with %qs)
 -fconst-string-class=<name>	Use class <name> for constant strings
 
+fconstexpr-depth=
+C++ ObjC++ Joined RejectNegative UInteger Var(max_constexpr_depth) Init(512)
+-fconstexpr-depth=<number>	Specify maximum constexpr recursion depth
+
 fdeduce-init-list
 C++ ObjC++ Var(flag_deduce_init_list) Init(1)
 -fno-deduce-init-list	disable deduction of std::initializer_list for a template type parameter from a brace-enclosed initializer-list

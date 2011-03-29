@@ -1,5 +1,7 @@
 2011-03-29  Jason Merrill  <jason@redhat.com>
 
+	* c.opt (fconstexpr-depth): New option.
+
 	* c.opt: Add -std=c++03.
 
 2011-03-25  Release Manager
