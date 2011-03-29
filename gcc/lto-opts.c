@@ -194,7 +194,7 @@ input_string_block (struct lto_input_block *ib)
    Among others, optimization options may well be appropriate here.  */
 
 static bool
-register_user_option_p (size_t code, int type)
+register_user_option_p (size_t code, unsigned int type)
 {
   if (type == CL_TARGET)
     return true;
@@ -215,7 +215,8 @@ register_user_option_p (size_t code, int type)
    If relevant to LTO, save it in the user options vector.  */
 
 void
-lto_register_user_option (size_t code, const char *arg, int value, int type)
+lto_register_user_option (size_t code, const char *arg, int value,
+			  unsigned int type)
 {
   if (register_user_option_p (code, type))
     {

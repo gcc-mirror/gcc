@@ -1,5 +1,5 @@
 /* Command line option handling.
-   Copyright (C) 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010
+   Copyright (C) 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -83,12 +83,12 @@ extern const unsigned int cl_options_count;
 extern const char *const lang_names[];
 extern const unsigned int cl_lang_count;
 
-#define CL_PARAMS               (1 << 11) /* Fake entry.  Used to display --param info with --help.  */
-#define CL_WARNING		(1 << 12) /* Enables an (optional) warning message.  */
-#define CL_OPTIMIZATION		(1 << 13) /* Enables an (optional) optimization.  */
-#define CL_DRIVER		(1 << 14) /* Driver option.  */
-#define CL_TARGET		(1 << 15) /* Target-specific option.  */
-#define CL_COMMON		(1 << 16) /* Language-independent.  */
+#define CL_PARAMS               (1U << 11) /* Fake entry.  Used to display --param info with --help.  */
+#define CL_WARNING		(1U << 12) /* Enables an (optional) warning message.  */
+#define CL_OPTIMIZATION		(1U << 13) /* Enables an (optional) optimization.  */
+#define CL_DRIVER		(1U << 14) /* Driver option.  */
+#define CL_TARGET		(1U << 15) /* Target-specific option.  */
+#define CL_COMMON		(1U << 16) /* Language-independent.  */
 
 #define CL_MIN_OPTION_CLASS	CL_PARAMS
 #define CL_MAX_OPTION_CLASS	CL_COMMON
@@ -101,20 +101,20 @@ extern const unsigned int cl_lang_count;
 /* Options marked with CL_SEPARATE take a number of separate arguments
    (1 to 4) that is one more than the number in this bit-field.  */
 #define CL_SEPARATE_NARGS_SHIFT	17
-#define CL_SEPARATE_NARGS_MASK	(3 << CL_SEPARATE_NARGS_SHIFT)
+#define CL_SEPARATE_NARGS_MASK	(3U << CL_SEPARATE_NARGS_SHIFT)
 
-#define CL_SEPARATE_ALIAS	(1 << 19) /* Option is an alias when used with separate argument.  */
-#define CL_NO_DRIVER_ARG	(1 << 20) /* Option takes no argument in the driver.  */
-#define CL_REJECT_DRIVER	(1 << 21) /* Reject this option in the driver.  */
-#define CL_SAVE			(1 << 22) /* Target-specific option for attribute.  */
-#define CL_DISABLED		(1 << 23) /* Disabled in this configuration.  */
-#define CL_REPORT		(1 << 24) /* Report argument with -fverbose-asm  */
-#define CL_JOINED		(1 << 25) /* If takes joined argument.  */
-#define CL_SEPARATE		(1 << 26) /* If takes a separate argument.  */
-#define CL_REJECT_NEGATIVE	(1 << 27) /* Reject no- form.  */
-#define CL_MISSING_OK		(1 << 28) /* Missing argument OK (joined).  */
-#define CL_UINTEGER		(1 << 29) /* Argument is an integer >=0.  */
-#define CL_UNDOCUMENTED		(1 << 30) /* Do not output with --help.  */
+#define CL_SEPARATE_ALIAS	(1U << 19) /* Option is an alias when used with separate argument.  */
+#define CL_NO_DRIVER_ARG	(1U << 20) /* Option takes no argument in the driver.  */
+#define CL_REJECT_DRIVER	(1U << 21) /* Reject this option in the driver.  */
+#define CL_SAVE			(1U << 22) /* Target-specific option for attribute.  */
+#define CL_DISABLED		(1U << 23) /* Disabled in this configuration.  */
+#define CL_REPORT		(1U << 24) /* Report argument with -fverbose-asm  */
+#define CL_JOINED		(1U << 25) /* If takes joined argument.  */
+#define CL_SEPARATE		(1U << 26) /* If takes a separate argument.  */
+#define CL_REJECT_NEGATIVE	(1U << 27) /* Reject no- form.  */
+#define CL_MISSING_OK		(1U << 28) /* Missing argument OK (joined).  */
+#define CL_UINTEGER		(1U << 29) /* Argument is an integer >=0.  */
+#define CL_UNDOCUMENTED		(1U << 30) /* Do not output with --help.  */
 
 /* Flags for an enumerated option argument.  */
 #define CL_ENUM_CANONICAL	(1 << 0) /* Canonical for this value.  */
@@ -280,7 +280,7 @@ extern const char **in_fnames;
 
 extern unsigned num_in_fnames;
 
-size_t find_opt (const char *input, int lang_mask);
+size_t find_opt (const char *input, unsigned int lang_mask);
 extern int integral_argument (const char *arg);
 extern bool enum_value_to_arg (const struct cl_enum_arg *enum_args,
 			       const char **argp, int value,

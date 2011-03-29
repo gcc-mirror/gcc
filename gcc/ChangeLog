@@ -1,3 +1,18 @@
+2011-03-29  Joseph Myers  <joseph@codesourcery.com>
+
+	* lto-opts.c (register_user_option_p, lto_register_user_option):
+	Make type argument unsigned.
+	* lto-streamer.h (lto_register_user_option): Make type argument
+	unsigned.
+	* opth-gen.awk: Make CL_* macros unsigned.
+	* opts-common.c (find_opt): Make lang_mask argument unsigned.
+	* opts.h (CL_PARAMS, CL_WARNING, CL_OPTIMIZATION, CL_DRIVER,
+	CL_TARGET, CL_COMMON, CL_SEPARATE_NARGS_MASK, CL_SEPARATE_ALIAS,
+	CL_NO_DRIVER_ARG, CL_REJECT_DRIVER, CL_SAVE, CL_DISABLED,
+	CL_REPORT, CL_JOINED, CL_SEPARATE, CL_REJECT_NEGATIVE,
+	CL_MISSING_OK, CL_UINTEGER, CL_UNDOCUMENTED): Make unsigned.
+	(find_opt): Make lang_mask argument unsigned.
+
 2011-03-29  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/48331
