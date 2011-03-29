@@ -95,10 +95,6 @@ int alpha_memory_latency = 3;
 
 static int alpha_function_needs_gp;
 
-/* The alias set for prologue/epilogue register save/restore.  */
-
-static GTY(()) alias_set_type alpha_sr_alias_set;
-
 /* The assembler name of the current function.  */
 
 static const char *alpha_fnname;
@@ -475,9 +471,6 @@ alpha_option_override (void)
     }
   if (align_functions <= 0)
     align_functions = 16;
-
-  /* Acquire a unique set number for our register saves and restores.  */
-  alpha_sr_alias_set = new_alias_set ();
 
   /* Register variables and functions with the garbage collector.  */
 
@@ -7448,8 +7441,7 @@ emit_frame_store_1 (rtx value, rtx base_reg, HOST_WIDE_INT frame_bias,
   rtx addr, mem, insn;
 
   addr = plus_constant (base_reg, base_ofs);
-  mem = gen_rtx_MEM (DImode, addr);
-  set_mem_alias_set (mem, alpha_sr_alias_set);
+  mem = gen_frame_mem (DImode, addr);
 
   insn = emit_move_insn (mem, value);
   RTX_FRAME_RELATED_P (insn) = 1;
@@ -8056,9 +8048,7 @@ alpha_expand_epilogue (void)
 
       /* Restore registers in order, excepting a true frame pointer.  */
 
-      mem = gen_rtx_MEM (DImode, plus_constant (sa_reg, reg_offset));
-      if (! eh_ofs)
-        set_mem_alias_set (mem, alpha_sr_alias_set);
+      mem = gen_frame_mem (DImode, plus_constant (sa_reg, reg_offset));
       reg = gen_rtx_REG (DImode, REG_RA);
       emit_move_insn (reg, mem);
       cfa_restores = alloc_reg_note (REG_CFA_RESTORE, reg, cfa_restores);
@@ -8073,8 +8063,8 @@ alpha_expand_epilogue (void)
 	      fp_offset = reg_offset;
 	    else
 	      {
-		mem = gen_rtx_MEM (DImode, plus_constant(sa_reg, reg_offset));
-		set_mem_alias_set (mem, alpha_sr_alias_set);
+		mem = gen_frame_mem (DImode,
+				     plus_constant (sa_reg, reg_offset));
 		reg = gen_rtx_REG (DImode, i);
 		emit_move_insn (reg, mem);
 		cfa_restores = alloc_reg_note (REG_CFA_RESTORE, reg,
@@ -8086,8 +8076,7 @@ alpha_expand_epilogue (void)
       for (i = 0; i < 31; ++i)
 	if (fmask & (1UL << i))
 	  {
-	    mem = gen_rtx_MEM (DFmode, plus_constant(sa_reg, reg_offset));
-	    set_mem_alias_set (mem, alpha_sr_alias_set);
+	    mem = gen_frame_mem (DFmode, plus_constant (sa_reg, reg_offset));
 	    reg = gen_rtx_REG (DFmode, i+32);
 	    emit_move_insn (reg, mem);
 	    cfa_restores = alloc_reg_note (REG_CFA_RESTORE, reg, cfa_restores);
@@ -8145,8 +8134,7 @@ alpha_expand_epilogue (void)
       if (fp_is_frame_pointer)
 	{
 	  emit_insn (gen_blockage ());
-	  mem = gen_rtx_MEM (DImode, plus_constant (sa_reg, fp_offset));
-	  set_mem_alias_set (mem, alpha_sr_alias_set);
+	  mem = gen_frame_mem (DImode, plus_constant (sa_reg, fp_offset));
 	  emit_move_insn (hard_frame_pointer_rtx, mem);
 	  cfa_restores = alloc_reg_note (REG_CFA_RESTORE,
 					 hard_frame_pointer_rtx, cfa_restores);
