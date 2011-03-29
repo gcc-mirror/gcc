@@ -5390,8 +5390,8 @@ is_valid_constexpr_fn (tree fun, bool complain)
       {
 	ret = false;
 	if (complain)
-	  error ("invalid type for parameter %q#D of constexpr function",
-		 parm);
+	  error ("invalid type for parameter %d of constexpr "
+		 "function %q+#D", DECL_PARM_INDEX (parm), fun);
       }
 
   if (!DECL_CONSTRUCTOR_P (fun))
@@ -5401,7 +5401,7 @@ is_valid_constexpr_fn (tree fun, bool complain)
 	{
 	  ret = false;
 	  if (complain)
-	    error ("invalid return type %qT of constexpr function %qD",
+	    error ("invalid return type %qT of constexpr function %q+D",
 		   rettype, fun);
 	}
 
@@ -5411,7 +5411,7 @@ is_valid_constexpr_fn (tree fun, bool complain)
 	{
 	  ret = false;
 	  if (complain)
-	    error ("enclosing class of %q#D is not a literal type", fun);
+	    error ("enclosing class of %q+#D is not a literal type", fun);
 	}
     }
 

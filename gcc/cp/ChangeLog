@@ -1,5 +1,7 @@
 2011-03-29  Jason Merrill  <jason@redhat.com>
 
+	* semantics.c (is_valid_constexpr_fn): Specify input location.
+
 	Core 1232
 	* call.c (build_array_conv): New.
 	(implicit_conversion): Use it.
