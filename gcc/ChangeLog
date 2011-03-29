@@ -1,3 +1,10 @@
+2011-03-29  Ira Rosen  <ira.rosen@linaro.org>
+
+	PR tree-optimization/48290
+	* tree-vect-loop.c (vect_analyze_loop_operations): In outer loop
+	vectorization, check that relevant phis in the basic block after
+	the inner loop are really inner loop's exit phis.
+
 2011-03-29  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	PR debug/48190
