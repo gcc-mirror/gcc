@@ -1,3 +1,12 @@
+2011-03-29  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/alpha/alpha.c (alpha_sr_alias_set): Don't define.
+	(alpha_option_override): Don't set alpha_sr_alias_set.
+	(emit_frame_store_1): Use gen_frame_mem rather than calling
+	set_mem_alias_set.
+	(alpha_expand_epilogue): Ditto.
+	(unicosmk_gen_dsib): Ditto.
+
 2011-03-29  Nick Clifton  <nickc@redhat.com>
 
 	* config/rx/rx.h (LABEL_ALIGN_AFTER_BARRIER): Define.
