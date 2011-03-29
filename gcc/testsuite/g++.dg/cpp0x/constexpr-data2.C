@@ -44,5 +44,4 @@ extern template struct A3<int, 510>;
 
 // Use.
 A3<int, 1111> a31;
-// FIXME should this be an error?
 A3<char, 9999> a32;		// { dg-warning "overflow" }

@@ -1,5 +1,9 @@
 2011-03-29  Jason Merrill  <jason@redhat.com>
 
+	PR c++/47504
+	* semantics.c (cxx_eval_constant_expression) [NOP_EXPR]: Don't let
+	the conversion set TREE_OVERFLOW.
+
 	PR c++/47570
 	* semantics.c (cxx_eval_constant_expression) [COMPOUND_EXPR]: Don't
 	use the generic binary expression handling.

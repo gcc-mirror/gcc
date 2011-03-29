@@ -7030,6 +7030,11 @@ cxx_eval_constant_expression (const constexpr_call *call, tree t,
 	     conversion.  */
 	  return fold (t);
 	r = fold_build1 (TREE_CODE (t), to, op);
+	/* Conversion of an out-of-range value has implementation-defined
+	   behavior; the language considers it different from arithmetic
+	   overflow, which is undefined.  */
+	if (TREE_OVERFLOW_P (r) && !TREE_OVERFLOW_P (op))
+	  TREE_OVERFLOW (r) = false;
       }
       break;
 
