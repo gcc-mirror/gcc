@@ -1,5 +1,7 @@
 2011-03-29  Jason Merrill  <jason@redhat.com>
 
+	* g++.dg/cpp0x/move1.C: New.
+
 	* g++.dg/cpp0x/auto22.C: New.
 
 	* g++.dg/cpp0x/rv-deduce2.C: New.

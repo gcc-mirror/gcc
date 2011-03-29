@@ -1,5 +1,8 @@
 2011-03-29  Jason Merrill  <jason@redhat.com>
 
+	* pt.c (build_non_dependent_expr): Keep dereferences outside the
+	NON_DEPENDENT_EXPR.
+
 	PR c++/47999
 	* semantics.c (finish_call_expr): Preserve reference semantics
 	in templates.
