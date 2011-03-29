@@ -1,5 +1,5 @@
 /* Command line option handling.
-   Copyright (C) 2006, 2007, 2008, 2010 Free Software Foundation, Inc.
+   Copyright (C) 2006, 2007, 2008, 2010, 2011 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -52,7 +52,7 @@ static void prune_options (struct cl_decoded_option **, unsigned int *);
    front end, the longest match for a different front end is returned
    (or N_OPTS if none) and the caller emits an error message.  */
 size_t
-find_opt (const char *input, int lang_mask)
+find_opt (const char *input, unsigned int lang_mask)
 {
   size_t mn, mn_orig, mx, md, opt_len;
   size_t match_wrong_lang;

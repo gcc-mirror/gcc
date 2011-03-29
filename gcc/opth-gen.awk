@@ -451,9 +451,9 @@ for (i = 0; i < n_langs; i++) {
 	macros[i] = "CL_" langs[i]
 	gsub( "[^" alnum "_]", "X", macros[i] )
 	s = substr("            ", length (macros[i]))
-	print "#define " macros[i] s " (1 << " i ")"
+	print "#define " macros[i] s " (1U << " i ")"
     }
-print "#define CL_LANG_ALL   ((1 << " n_langs ") - 1)"
+print "#define CL_LANG_ALL   ((1U << " n_langs ") - 1)"
 
 print ""
 print "enum opt_code"
