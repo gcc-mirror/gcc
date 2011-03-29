@@ -1184,11 +1184,11 @@ vect_analyze_loop_operations (loop_vec_info loop_vinfo)
               print_gimple_stmt (vect_dump, phi, 0, TDF_SLIM);
             }
 
+          /* Inner-loop loop-closed exit phi in outer-loop vectorization
+             (i.e., a phi in the tail of the outer-loop).  */
           if (! is_loop_header_bb_p (bb))
             {
-              /* inner-loop loop-closed exit phi in outer-loop vectorization
-                 (i.e. a phi in the tail of the outer-loop).
-                 FORNOW: we currently don't support the case that these phis
+              /* FORNOW: we currently don't support the case that these phis
                  are not used in the outerloop (unless it is double reduction,
                  i.e., this phi is vect_reduction_def), cause this case
                  requires to actually do something here.  */
@@ -1202,6 +1202,32 @@ vect_analyze_loop_operations (loop_vec_info loop_vinfo)
                              "Unsupported loop-closed phi in outer-loop.");
                   return false;
                 }
+
+              /* If PHI is used in the outer loop, we check that its operand
+                 is defined in the inner loop.  */
+              if (STMT_VINFO_RELEVANT_P (stmt_info))
+                {
+                  tree phi_op;
+                  gimple op_def_stmt;
+
+                  if (gimple_phi_num_args (phi) != 1)
+                    return false;
+
+                  phi_op = PHI_ARG_DEF (phi, 0);
+                  if (TREE_CODE (phi_op) != SSA_NAME)
+                    return false;
+
+                  op_def_stmt = SSA_NAME_DEF_STMT (phi_op);
+                  if (!op_def_stmt || !vinfo_for_stmt (op_def_stmt))
+                    return false;
+
+                  if (STMT_VINFO_RELEVANT (vinfo_for_stmt (op_def_stmt))
+                        != vect_used_in_outer
+                      && STMT_VINFO_RELEVANT (vinfo_for_stmt (op_def_stmt))
+                           != vect_used_in_outer_by_reduction)
+                    return false;
+                }
+
               continue;
             }
 
