@@ -1,5 +1,9 @@
 2011-03-29  Jason Merrill  <jason@redhat.com>
 
+	PR c++/48089
+	* semantics.c (potential_constant_expression_1): Change error about
+	use of *this in constructor into sorry.
+
 	PR c++/48296
 	* decl.c (cp_finish_decl): Defer validation of constexpr member
 	functions.
