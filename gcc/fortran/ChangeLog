@@ -1,7 +1,12 @@
+2011-03-29  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* frontend-passes.c (create_var):  Warn about creating an
+	array temporary if requested.
+
 2011-03-27  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/47065
-	* frontend-passes (optimize_trim): Also follow references, except
+	* frontend-passes.c (optimize_trim): Also follow references, except
 	when they are substring references or array references.
 
 2011-03-27  Tobias Burnus  <burnus@net-b.de>
