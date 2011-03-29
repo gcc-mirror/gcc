@@ -7495,8 +7495,8 @@ potential_constant_expression_1 (tree t, bool want_rval, tsubst_flags_t flags)
 	    if (DECL_CONSTRUCTOR_P (DECL_CONTEXT (x)) && want_rval)
 	      {
 		if (flags & tf_error)
-		  error ("the value of the object being constructed is "
-			 "not a constant expression");
+		  sorry ("use of the value of the object being constructed "
+			 "in a constant expression");
 		return false;
 	      }
 	    return true;
