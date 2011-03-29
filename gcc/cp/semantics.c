@@ -2150,11 +2150,14 @@ finish_call_expr (tree fn, VEC(tree,gc) **args, bool disallow_virtual,
     /* A call where the function is unknown.  */
     result = cp_build_function_call_vec (fn, args, complain);
 
-  if (processing_template_decl)
+  if (processing_template_decl && result != error_mark_node)
     {
+      if (TREE_CODE (result) == INDIRECT_REF)
+	result = TREE_OPERAND (result, 0);
       result = build_call_vec (TREE_TYPE (result), orig_fn, orig_args);
       KOENIG_LOOKUP_P (result) = koenig_p;
       release_tree_vector (orig_args);
+      result = convert_from_reference (result);
     }
 
   return result;

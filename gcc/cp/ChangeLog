@@ -1,5 +1,9 @@
 2011-03-29  Jason Merrill  <jason@redhat.com>
 
+	PR c++/47999
+	* semantics.c (finish_call_expr): Preserve reference semantics
+	in templates.
+
 	PR c++/48313
 	* pt.c (maybe_adjust_types_for_deduction): Handle T&& deduction
 	from overloaded function.
