@@ -209,11 +209,6 @@ enum reg_class
 
 #define N_REG_CLASSES (int) LIM_REG_CLASSES
 
-#define IRA_COVER_CLASSES	\
-{				\
-  GR_REGS, LIM_REG_CLASSES	\
-}
-
 #define REG_CLASS_NAMES						\
 {								\
   "NO_REGS",							\

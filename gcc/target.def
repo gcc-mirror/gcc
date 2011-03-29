@@ -2224,13 +2224,6 @@ DEFHOOK
  tree, (tree type, tree expr),
  hook_tree_tree_tree_null)
 
-/* Return the array of IRA cover classes for the current target.  */
-DEFHOOK
-(ira_cover_classes,
- "",
- const reg_class_t *, (void),
- default_ira_cover_classes)
-
 /* Return the class for a secondary reload, and fill in extra information.  */
 DEFHOOK
 (secondary_reload,
