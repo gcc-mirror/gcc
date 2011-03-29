@@ -1,3 +1,7 @@
+2011-03-28  Mike Frysinger  <vapier@gentoo.org>
+
+	* .gitignore: New file.
+
 2010-11-24  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* dconfig.h (LIBGCC2_FLOAT_WORDS_BIG_ENDIAN): Delete.
