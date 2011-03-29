@@ -1,3 +1,7 @@
+2011-03-29  Jason Merrill  <jason@redhat.com>
+
+	* semantics.c (is_valid_constexpr_fn): Specify input location.
+
 2011-03-28  Jason Merrill  <jason@redhat.com>
 
 	PR c++/48313
