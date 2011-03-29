@@ -1,5 +1,7 @@
 2011-03-29  Jason Merrill  <jason@redhat.com>
 
+	* g++.dg/cpp0x/constexpr-noexcept.C: New.
+
 	* g++.dg/cpp0x/constexpr-overflow2.C: New.
 	* g++.dg/cpp0x/constexpr-data2.C: Remove FIXME.
 
