@@ -1,6 +1,7 @@
 /* { dg-do run } */
 /* { dg-options "-std=c99" } */
 /* { dg-options "-std=c99 -D_XOPEN_SOURCE=500" { target mips-sgi-irix6.5 } } */
+/* { dg-options "-std=gnu99" { target *-*-hpux* } } */
 /* { dg-xfail-if "no C99 snprintf function" { *-*-hpux10* } } */
 /* { dg-xfail-run-if "non-conforming C99 snprintf" { *-*-hpux11.[012]* } } */
 
