@@ -1,5 +1,10 @@
 2011-03-29  Jason Merrill  <jason@redhat.com>
 
+	PR c++/48319
+	* pt.c (value_dependent_expression_p): Handle TEMPLATE_ID_EXPR.
+
+2011-03-29  Jason Merrill  <jason@redhat.com>
+
 	PR c++/48166
 	* decl.c (revert_static_member_fn): Strip function-cv-quals.
 

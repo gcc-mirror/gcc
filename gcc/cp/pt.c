@@ -18220,6 +18220,11 @@ value_dependent_expression_p (tree expression)
 	return false;
       }
 
+    case TEMPLATE_ID_EXPR:
+      /* If a TEMPLATE_ID_EXPR involves a dependent name, it will be
+	 type-dependent.  */
+      return type_dependent_expression_p (expression);
+
     default:
       /* A constant expression is value-dependent if any subexpression is
 	 value-dependent.  */
