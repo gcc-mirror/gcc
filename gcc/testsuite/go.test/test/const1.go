@@ -78,3 +78,5 @@ func main() {
 	f(String)           // ERROR "convert|wrong type|cannot|incompatible"
 	f(Bool)             // ERROR "convert|wrong type|cannot|incompatible"
 }
+
+const ptr = nil // ERROR "const.*nil"

@@ -14,7 +14,7 @@ X386)
 	;;
 Xarm)
 	export A=5
-	export E=${GORUN:-qemu-arm -cpu cortex-a8}
+	export E="$GORUN"
 	;;
 *)
 	echo 1>&2 run: unsupported '$GOARCH'
@@ -49,15 +49,25 @@ ulimit -c 0
 
 true >pass.out >times.out
 
+exclude=false	# exclude nothing
+golden=golden.out
+
+filterout() {
+	grep '^'"$2"'$' $1 >/dev/null
+}
+
 for dir in . ken chan interface nilptr syntax fixedbugs bugs
 do
 	echo
 	echo '==' $dir'/'
 	for i in $(ls $dir/*.go 2>/dev/null)
-	do
+	do (
+		if $exclude $i; then
+			exit 0  # continues for loop
+		fi
 		export F=$(basename $i .go)
 		export D=$dir
-		sed '/^\/\//!q' $i | sed 's@//@@; $d' |sed 's|./\$A.out|$E &|' >$RUNFILE
+		sed '/^\/\//!q' $i | sed 's@//@@; $d' |sed 's|./\$A.out|$E &|g' >$RUNFILE
 		if ! { time -p bash -c "bash $RUNFILE >$TMP1FILE 2>&1" ; } 2>$TMP2FILE
 		then
 			echo
@@ -87,7 +97,7 @@ do
 			echo $i >>pass.out
 		fi
 		echo $(awk 'NR==1{print $2}' $TMP2FILE) $D/$F >>times.out
-	done
+	) done
 done | # clean up some stack noise
 	egrep -v '^(r[0-9a-z]+|[cfg]s)  +0x'  |
 	sed '/tmp.*Bus error/s/.*Bus/Bus/; /tmp.*Trace.BPT/s/.*Trace/Trace/
@@ -99,12 +109,13 @@ done | # clean up some stack noise
 		/^Trace\/BPT trap/d
 		/RUNFILE/ s/line 1: *[0-9]*/line 1: PID/
 		/^\$RUNFILE: line 1: PID Trace\/breakpoint trap/d
+		/Fault in NaCl untrusted code/d
 		/Segmentation fault/d
 		/^qemu: uncaught target signal 11 (Segmentation fault) - exiting/d' > run.out
 
-rm  -f $RUNFILE $TMP1FILE $TMP2FILE *.$A *.a $A.out
+rm -f $RUNFILE $TMP1FILE $TMP2FILE *.$A *.a $A.out
 diffmsg=""
-if ! diff golden.out run.out
+if ! diff $golden run.out
 then
 	diffmsg="; test output differs"
 	failed=1
