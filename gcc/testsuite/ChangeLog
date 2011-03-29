@@ -1,5 +1,12 @@
+2011-03-29  Ian Lance Taylor  <iant@google.com>
+
+	* go.test/go-test.exp: Handle the test lines used in several new
+	tests.
+	(errchk): Add opts parameter.  Change all callers.  Handle parens
+	in regexps.
+
 2011-03-29  Peter Bergner <bergner@vnet.ibm.com>
-	    Dominique d'Humieres  <dominiq@lps.ens.fr>	
+	    Dominique d'Humieres  <dominiq@lps.ens.fr>
 
 	* gcc.dg/stack-usage-1.c (SIZE): Provide proper values for __ppc64__
 	and __APPLE__ && __PPC__ && __ALTIVEC__.
