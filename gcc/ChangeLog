@@ -1,3 +1,54 @@
+2011-03-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/48253
+	* dwarf2out.c (struct dw_fde_struct): Remove dw_fde_hot_section_label,
+	dw_fde_hot_section_end_label, dw_fde_unlikely_section_label,
+	dw_fde_unlikely_section_end_label, cold_in_std_section,
+	dw_fde_switched_sections and dw_fde_switched_cold_to_hot fields.
+	Add dw_fde_second_begin, dw_fde_second_end and second_in_std_section
+	fields.
+	(output_fde): Use dw_fde_second_{begin,end} if second is
+	true, otherwise dw_fde_{begin,end}.
+	(output_call_frame_info): Test dw_fde_second_begin != NULL
+	instead of dw_fde_switched_sections.
+	(dwarf2out_begin_prologue): Stop initializing removed dw_fde_struct
+	fields, initialize new fields.  Initialize in_std_section
+	unconditionally from the first partition.
+	(dwarf2out_end_epilogue): Don't override dw_fde_end when
+	dw_fde_second_begin is non-NULL.
+	(dwarf2out_switch_text_section): Stop initializing removed
+	dw_fde_struct fields, initialize new fields, initialize
+	also dw_fde_end here.  Set dw_fde_switch_cfi even when
+	dwarf2out_do_cfi_asm ().  Call var_location_switch_text_section.
+	(struct var_loc_list_def): Add last_before_switch field.
+	(arange_table, arange_table_allocated, arange_table_in_use,
+	ARANGE_TABLE_INCREMENT, add_arange): Removed.
+	(size_of_aranges): Count !in_std_section and !second_in_std_section
+	hunks in fdes, instead of looking at arange_table_in_use.
+	(output_aranges): Add aranges_length argument, don't call
+	size_of_aranges here.  Instead of using aranges_table*
+	emit ranges for fdes when !in_std_section resp.
+	!second_in_std_section.
+	(dw_loc_list): Break ranges crossing section switch.
+	(convert_cfa_to_fb_loc_list): Likewise.  If switched sections,
+	use dw_fde_second_end instead of dw_fde_end as end of last
+	range.
+	(gen_subprogram_die): Don't call add_arange.  Use
+	dw_fde_{begin,end} for first partition and if switched
+	section dw_fde_second_{begin,end} for the second.
+	(var_location_switch_text_section_1,
+	var_location_switch_text_section): New functions.
+	(dwarf2out_begin_function): Initialize cold_text_section even
+	when function_section () isn't text_section.
+	(prune_unused_types): Don't walk arange_table.
+	(dwarf2out_finish): Don't needlessly test
+	flag_reorder_blocks_and_partition when testing cold_text_section_used.
+	If info_section_emitted, call size_of_aranges and if it indicates
+	non-empty .debug_aranges, call output_aranges with the computed
+	size.  Stop using removed dw_fde_struct fields, use
+	dw_fde_{begin,end} for first partition and dw_fde_second_{begin,end}
+	for second.
+
 2011-03-29  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/alpha/alpha.c (alpha_sr_alias_set): Don't define.
