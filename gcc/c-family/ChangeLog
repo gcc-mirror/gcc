@@ -1,3 +1,12 @@
+2011-03-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/48248
+	* c-ppoutput.c (print): Add src_file field.
+	(init_pp_output): Initialize it.
+	(maybe_print_line): Don't optimize by adding up to 8 newlines
+	if map->to_file and print.src_file are different file.
+	(print_line): Update print.src_file.
+
 2011-03-29  Jason Merrill  <jason@redhat.com>
 
 	* c.opt (fconstexpr-depth): New option.
