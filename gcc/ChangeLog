@@ -1,3 +1,14 @@
+2011-03-29  Jeff Law  <law@redhat.com>
+
+	PR bootstrap/48327
+	* tree-ssa-threadupdate.c (struct redirection_data): Remove
+	do_not_duplicate field.
+	(lookup_redirection_data): Corresponding changes.
+	(create_duplicates): Always create a template block.
+	(redirect_edges): Remove code which reused the original block
+	when it was going to become unreachable code.
+	(thread_block): Don't set do_not_duplicate field.
+
 2011-03-29  Joseph Myers  <joseph@codesourcery.com>
 
 	* lto-opts.c (register_user_option_p, lto_register_user_option):
