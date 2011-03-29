@@ -1,5 +1,8 @@
 2011-03-29  Jason Merrill  <jason@redhat.com>
 
+	PR c++/48166
+	* decl.c (revert_static_member_fn): Strip function-cv-quals.
+
 	PR c++/48296
 	* decl.c (cp_finish_decl): Defer validation of constexpr member
 	functions.

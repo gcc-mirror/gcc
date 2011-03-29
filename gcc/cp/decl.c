@@ -13342,10 +13342,14 @@ static_fn_type (tree memfntype)
 void
 revert_static_member_fn (tree decl)
 {
-  TREE_TYPE (decl) = static_fn_type (decl);
+  tree stype = static_fn_type (decl);
 
-  if (cp_type_quals (TREE_TYPE (decl)) != TYPE_UNQUALIFIED)
-    error ("static member function %q#D declared with type qualifiers", decl);
+  if (type_memfn_quals (stype) != TYPE_UNQUALIFIED)
+    {
+      error ("static member function %q#D declared with type qualifiers", decl);
+      stype = apply_memfn_quals (stype, TYPE_UNQUALIFIED);
+    }
+  TREE_TYPE (decl) = stype;
 
   if (DECL_ARGUMENTS (decl))
     DECL_ARGUMENTS (decl) = DECL_CHAIN (DECL_ARGUMENTS (decl));
