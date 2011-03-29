@@ -1133,7 +1133,11 @@ Remap file names when including files
 
 std=c++98
 C++ ObjC++
-Conform to the ISO 1998 C++ standard
+Conform to the ISO 1998 C++ standard revised by the 2003 technical corrigendum
+
+std=c++03
+C++ ObjC++ Alias(std=c++98)
+Conform to the ISO 1998 C++ standard revised by the 2003 technical corrigendum
 
 std=c++0x
 C++ ObjC++
