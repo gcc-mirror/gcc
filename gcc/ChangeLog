@@ -1,5 +1,12 @@
 2011-03-29  Vladimir Makarov  <vmakarov@redhat.com>
 
+	PR rtl-optimization/48331
+	PR rtl-optimization/48334
+	* ira-color.c (color_allocnos): Call setup_profitable_hard_regs
+	for any used algorithm.
+
+2011-03-29  Vladimir Makarov  <vmakarov@redhat.com>
+
 	* ira-conflicts.c (build_object_conflicts): Add unused attribute
 	to parent_max.
 

@@ -2590,6 +2590,7 @@ color_allocnos (void)
   bitmap_iterator bi;
   ira_allocno_t a;
 
+  setup_profitable_hard_regs ();
   if (flag_ira_algorithm == IRA_ALGORITHM_PRIORITY)
     {
       n = 0;
@@ -2642,7 +2643,6 @@ color_allocnos (void)
     }
   else
     {
-      setup_profitable_hard_regs ();
       form_object_hard_regs_nodes_forest ();
       if (internal_flag_ira_verbose > 2 && ira_dump_file != NULL)
 	print_hard_regs_forest (ira_dump_file);
