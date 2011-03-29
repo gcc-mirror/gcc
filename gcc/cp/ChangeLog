@@ -1,3 +1,9 @@
+2011-03-29  Jason Merrill  <jason@redhat.com>
+
+	Core 1148
+	* typeck.c (check_return_expr): Fix conditions for setting
+	LOOKUP_PREFER_RVALUE.
+
 2011-03-29  Rodrigo Rivas Costa  <rodrigorivascosta@gmail.com>
 
 	* decl2.c (cp_check_const_attributes): New.
