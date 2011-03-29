@@ -1,5 +1,9 @@
 2011-03-28  Jason Merrill  <jason@redhat.com>
 
+	PR c++/48313
+	* pt.c (maybe_adjust_types_for_deduction): Handle T&& deduction
+	from overloaded function.
+
 	Core 1232
 	* call.c (build_array_conv): New.
 	(implicit_conversion): Use it.

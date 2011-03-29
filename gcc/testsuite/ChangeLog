@@ -1,3 +1,7 @@
+2011-03-28  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/rv-deduce2.C: New.
+
 2011-03-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/48203
