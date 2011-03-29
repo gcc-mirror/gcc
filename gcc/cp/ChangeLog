@@ -1,5 +1,11 @@
 2011-03-29  Jason Merrill  <jason@redhat.com>
 
+	PR c++/48296
+	* decl.c (cp_finish_decl): Defer validation of constexpr member
+	functions.
+	* class.c (finalize_literal_type_property): Validate them here.
+	* semantics.c (is_valid_constexpr_fn): Don't check completeness.
+
 	* semantics.c (is_valid_constexpr_fn): Specify input location.
 
 	Core 1232

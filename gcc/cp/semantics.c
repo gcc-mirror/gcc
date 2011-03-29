@@ -5406,8 +5406,7 @@ is_valid_constexpr_fn (tree fun, bool complain)
 	}
 
       if (DECL_NONSTATIC_MEMBER_FUNCTION_P (fun)
-	  && COMPLETE_TYPE_P (DECL_CONTEXT (fun))
-	  && !valid_type_in_constexpr_fundecl_p (DECL_CONTEXT (fun)))
+	  && !CLASSTYPE_LITERAL_P (DECL_CONTEXT (fun)))
 	{
 	  ret = false;
 	  if (complain)
