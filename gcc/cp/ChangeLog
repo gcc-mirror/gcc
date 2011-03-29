@@ -18,6 +18,7 @@
 	* call.c (reference_binding): Allow direct binding to an array
 	rvalue.
 
+	PR c++/48289
 	* pt.c (build_non_dependent_expr): Keep dereferences outside the
 	NON_DEPENDENT_EXPR.
 
