@@ -1,3 +1,9 @@
+2011-03-29  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/48095
+	* gfortran.dg/module_md5_1.f90: Modified MD5 sum.
+	* gfortran.dg/proc_ptr_comp_32.f90: New.
+
 2011-03-29  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	* gfortran.dg/function_optimize_1.f90:  Add -Warray-temporaries,

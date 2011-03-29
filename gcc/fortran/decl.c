@@ -4737,8 +4737,9 @@ match_procedure_decl (void)
 	    return MATCH_ERROR;
 	  sym->ts.interface = gfc_new_symbol ("", gfc_current_ns);
 	  sym->ts.interface->ts = current_ts;
+	  sym->ts.interface->attr.flavor = FL_PROCEDURE;
 	  sym->ts.interface->attr.function = 1;
-	  sym->attr.function = sym->ts.interface->attr.function;
+	  sym->attr.function = 1;
 	  sym->attr.if_source = IFSRC_UNKNOWN;
 	}
 
@@ -4871,8 +4872,9 @@ match_ppc_decl (void)
 	  c->ts = ts;
 	  c->ts.interface = gfc_new_symbol ("", gfc_current_ns);
 	  c->ts.interface->ts = ts;
+	  c->ts.interface->attr.flavor = FL_PROCEDURE;
 	  c->ts.interface->attr.function = 1;
-	  c->attr.function = c->ts.interface->attr.function;
+	  c->attr.function = 1;
 	  c->attr.if_source = IFSRC_UNKNOWN;
 	}
 

@@ -1,3 +1,13 @@
+2011-03-29  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/48095
+	* decl.c (match_procedure_decl,match_ppc_decl): Set flavor of interface.
+	* module.c (MOD_VERSION): Bump.
+	(mio_typespec): Read/write 'interface' field.
+	* primary.c (match_string_constant,match_logical_constant): Remove
+	unneeded code.
+	(match_complex_constant): Make sure to clear the typespec.
+
 2011-03-29  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	* frontend-passes.c (create_var):  Warn about creating an

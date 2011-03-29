@@ -80,7 +80,7 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Don't put any single quote (') in MOD_VERSION, 
    if yout want it to be recognized.  */
-#define MOD_VERSION "6"
+#define MOD_VERSION "7"
 
 
 /* Structure that describes a position within a module file.  */
@@ -2123,6 +2123,8 @@ mio_typespec (gfc_typespec *ts)
     mio_integer (&ts->kind);
   else
     mio_symbol_ref (&ts->u.derived);
+
+  mio_symbol_ref (&ts->interface);
 
   /* Add info for C interop and is_iso_c.  */
   mio_integer (&ts->is_c_interop);
