@@ -1,5 +1,5 @@
 ! { dg-do compile }
-! { dg-options "-O -fdump-tree-original" }
+! { dg-options "-O -fdump-tree-original -Warray-temporaries" }
 program main
   implicit none
   real, dimension(2,2) :: a, b, c, d
@@ -24,7 +24,8 @@ program main
 
   data a /2., 3., 5., 7./
   data b /11., 13., 17., 23./
-  write (unit=line, fmt='(4F7.2)') matmul(a,b) + matmul(a,b)
+  write (unit=line, fmt='(4F7.2)') matmul(a,b)  &
+       & + matmul(a,b)    ! { dg-warning "Creating array temporary" }
   z = sin(x) + cos(x) + sin(x) + cos(x)
   print *,z
   x = ext_func(a) + 23 + ext_func(a)

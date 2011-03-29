@@ -256,6 +256,8 @@ create_var (gfc_expr * e)
       result->ref->u.ar.type = AR_FULL;
       result->ref->u.ar.where = e->where;
       result->ref->u.ar.as = symbol->as;
+      if (gfc_option.warn_array_temp)
+	gfc_warning ("Creating array temporary at %L", &(e->where));
     }
 
   /* Generate the new assignment.  */
