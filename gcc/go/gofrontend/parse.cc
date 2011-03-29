@@ -4274,40 +4274,42 @@ Parse::comm_clause(Select_clauses* clauses, bool* saw_default)
   bool got_case = this->comm_case(&is_send, &channel, &val, &closed,
 				  &varname, &closedname, &is_default);
 
+  if (!is_send
+      && varname.empty()
+      && closedname.empty()
+      && val != NULL
+      && val->index_expression() != NULL)
+    val->index_expression()->set_is_lvalue();
+
   if (this->peek_token()->is_op(OPERATOR_COLON))
     this->advance_token();
   else
     error_at(this->location(), "expected colon");
 
-  Block* statements = NULL;
+  this->gogo_->start_block(this->location());
+
   Named_object* var = NULL;
-  Named_object* closedvar = NULL;
-  if (this->peek_token()->is_op(OPERATOR_SEMICOLON))
-    this->advance_token();
-  else if (this->statement_list_may_start_here())
+  if (!varname.empty())
     {
-      this->gogo_->start_block(this->location());
-
-      if (!varname.empty())
-	{
-	  // FIXME: LOCATION is slightly wrong here.
-	  Variable* v = new Variable(NULL, channel, false, false, false,
-				     location);
-	  v->set_type_from_chan_element();
-	  var = this->gogo_->add_variable(varname, v);
-	}
-
-      if (!closedname.empty())
-	{
-	  // FIXME: LOCATION is slightly wrong here.
-	  Variable* v = new Variable(Type::lookup_bool_type(), NULL,
-				     false, false, false, location);
-	  closedvar = this->gogo_->add_variable(closedname, v);
-	}
-
-      this->statement_list();
-      statements = this->gogo_->finish_block(this->location());
+      // FIXME: LOCATION is slightly wrong here.
+      Variable* v = new Variable(NULL, channel, false, false, false,
+				 location);
+      v->set_type_from_chan_element();
+      var = this->gogo_->add_variable(varname, v);
     }
+
+  Named_object* closedvar = NULL;
+  if (!closedname.empty())
+    {
+      // FIXME: LOCATION is slightly wrong here.
+      Variable* v = new Variable(Type::lookup_bool_type(), NULL,
+				 false, false, false, location);
+      closedvar = this->gogo_->add_variable(closedname, v);
+    }
+
+  this->statement_list();
+
+  Block* statements = this->gogo_->finish_block(this->location());
 
   if (is_default)
     {
