@@ -1,3 +1,12 @@
+2011-03-29  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/48336
+	PR middle-end/48342
+	PR rtl-optimization/48345
+	* ira-color.c (setup_conflict_profitable_regs): Exclude prohibited
+	hard regs for given mode from profitable regs when doing secondary
+	allocation.
+
 2011-03-29  Jeff Law  <law@redhat.com>
 
 	PR bootstrap/48327
