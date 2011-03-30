@@ -1,3 +1,8 @@
+2011-03-30  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* go.test/go-test.exp (go-set-goarch): Use sparc64 for 64-bit
+	SPARC.
+
 2011-03-30  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/cpp0x/regress/error-recovery1.C: New.
