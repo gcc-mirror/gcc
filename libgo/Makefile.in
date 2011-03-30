@@ -1638,13 +1638,14 @@ go_testing_script_files = \
 
 # Define Sleep.
 @LIBGO_IS_RTEMS_TRUE@syscall_sleep_file = syscalls/sleep_rtems.go
-@LIBGO_IS_RTEMS_FALSE@syscall_errstr_file = syscalls/errstr.go
+@HAVE_STRERROR_R_FALSE@@LIBGO_IS_RTEMS_FALSE@syscall_errstr_file = syscalls/errstr_nor.go
+@HAVE_STRERROR_R_TRUE@@LIBGO_IS_RTEMS_FALSE@syscall_errstr_file = syscalls/errstr.go
 
 # Define Errstr.
 @LIBGO_IS_RTEMS_TRUE@syscall_errstr_file = syscalls/errstr_rtems.go
 # On other systems we hope strerror_r is just strerror_r.
 @LIBGO_IS_LINUX_FALSE@@LIBGO_IS_RTEMS_FALSE@syscall_errstr_decl_file = syscalls/errstr_decl.go
-# In Linux the POSIX strerror_r is called __xpg_strerror_r.
+# On GNU/Linux the POSIX strerror_r is called __xpg_strerror_r.
 @LIBGO_IS_LINUX_TRUE@@LIBGO_IS_RTEMS_FALSE@syscall_errstr_decl_file = syscalls/errstr_decl_linux.go
 
 # Declare libc_strerror_r which is the Go name for strerror_r.

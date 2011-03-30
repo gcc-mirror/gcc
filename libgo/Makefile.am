@@ -1264,7 +1264,11 @@ endif
 if LIBGO_IS_RTEMS
 syscall_errstr_file = syscalls/errstr_rtems.go
 else
+if HAVE_STRERROR_R
 syscall_errstr_file = syscalls/errstr.go
+else
+syscall_errstr_file = syscalls/errstr_nor.go
+endif
 endif
 
 # Declare libc_strerror_r which is the Go name for strerror_r.
@@ -1273,7 +1277,7 @@ if LIBGO_IS_RTEMS
 syscall_errstr_decl_file = syscalls/errstr_decl_rtems.go
 else
 if LIBGO_IS_LINUX
-# In Linux the POSIX strerror_r is called __xpg_strerror_r.
+# On GNU/Linux the POSIX strerror_r is called __xpg_strerror_r.
 syscall_errstr_decl_file = syscalls/errstr_decl_linux.go
 else
 # On other systems we hope strerror_r is just strerror_r.
