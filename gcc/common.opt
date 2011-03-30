@@ -1012,6 +1012,10 @@ femit-class-debug-always
 Common Report Var(flag_emit_class_debug_always) Init(0)
 Do not suppress C++ class debug information.
 
+fdebug-types-section
+Common Report Var(flag_debug_types_section) Init(1)
+Output .debug_types section when using DWARF v4 debuginfo.
+
 fexceptions
 Common Report Var(flag_exceptions) Optimization
 Enable exception handling

@@ -312,7 +312,8 @@ Objective-C and Objective-C++ Dialects}.
 -fdump-final-insns=@var{file} @gol
 -fcompare-debug@r{[}=@var{opts}@r{]}  -fcompare-debug-second @gol
 -feliminate-dwarf2-dups -feliminate-unused-debug-types @gol
--feliminate-unused-debug-symbols -femit-class-debug-always @gol
+-feliminate-unused-debug-symbols -femit-class-debug-always
+-fdebug-types-section @gol
 -fmem-report -fpre-ipa-mem-report -fpost-ipa-mem-report -fprofile-arcs @gol
 -frandom-seed=@var{string} -fsched-verbose=@var{n} @gol
 -fsel-sched-verbose -fsel-sched-dump-cfg -fsel-sched-pipelining-verbose @gol
@@ -4584,6 +4585,15 @@ should be used only with debuggers that are unable to handle the way GCC
 normally emits debugging information for classes because using this
 option will increase the size of debugging information by as much as a
 factor of two.
+
+@item -fno-debug-types-section
+@opindex fno-types-section
+@opindex ftypes-section
+By default when using Dwarf v4 or higher type DIEs will be put into
+their own .debug_types section instead of making them part of the
+.debug_info section.  It is more efficient to put them in a separate
+comdat sections since the linker will then be able to remove duplicates.
+But not all dwarf consumers support .debug_types sections yet.
 
 @item -gstabs+
 @opindex gstabs+
