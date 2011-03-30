@@ -657,6 +657,7 @@ endif # !LIBGO_IS_LINUX
 endif # !LIBGO_IS_RTEMS
 
 go_net_files = \
+	go/net/cgo_stub.go \
 	go/net/dial.go \
 	go/net/dnsclient.go \
 	go/net/dnsconfig.go \
@@ -664,10 +665,12 @@ go_net_files = \
 	$(go_net_newpollserver_file) \
 	go/net/fd.go \
 	$(go_net_fd_os_file) \
+	go/net/file.go \
 	go/net/hosts.go \
 	go/net/ip.go \
 	go/net/iprawsock.go \
 	go/net/ipsock.go \
+	go/net/lookup.go \
 	go/net/net.go \
 	go/net/parse.go \
 	go/net/pipe.go \
@@ -1095,6 +1098,7 @@ go_go_ast_files = \
 	go/go/ast/ast.go \
 	go/go/ast/filter.go \
 	go/go/ast/print.go \
+	go/go/ast/resolve.go \
 	go/go/ast/scope.go \
 	go/go/ast/walk.go
 go_go_doc_files = \
@@ -2327,8 +2331,8 @@ exp/eval/check: $(CHECK_DEPS)
 	$(CHECK)
 .PHONY: exp/eval/check
 
-go/ast.lo: $(go_go_ast_files) bytes.gox fmt.gox go/token.gox io.gox os.gox \
-		reflect.gox unicode.gox utf8.gox
+go/ast.lo: $(go_go_ast_files) bytes.gox fmt.gox go/scanner.gox go/token.gox \
+		io.gox os.gox reflect.gox unicode.gox utf8.gox
 	$(BUILDPACKAGE)
 go/ast/check: $(CHECK_DEPS)
 	@$(MKDIR_P) go/ast

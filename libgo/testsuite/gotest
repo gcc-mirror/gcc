@@ -357,7 +357,7 @@ case "x$dejagnu" in
 xno)
 	${GC} -g -c _testmain.go
 	${GL} *.o ${GOLIBS}
-	./a.out "$@"
+	./a.out -test.short "$@"
 	;;
 xyes)
 	rm -rf ../testsuite/*.o

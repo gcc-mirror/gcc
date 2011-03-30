@@ -208,6 +208,13 @@ func Listen(fd int, n int) (errno int) {
   return;
 }
 
+func GetsockoptInt(fd, level, opt int) (value, errno int) {
+	var n int32
+	vallen := Socklen_t(4)
+	errno = libc_getsockopt(fd, level, opt, (*byte)(unsafe.Pointer(&n)), &vallen)
+	return int(n), errno
+}
+
 func setsockopt(fd, level, opt int, valueptr uintptr, length Socklen_t) (errno int) {
   r := libc_setsockopt(fd, level, opt, (*byte)(unsafe.Pointer(valueptr)),
 		       length);
@@ -383,5 +390,3 @@ func Shutdown(fd int, how int) (errno int) {
 	if r < 0 { errno = GetErrno() }
 	return;
 }
-
-// FIXME: No getsockopt.

@@ -69,7 +69,7 @@ func ParseExpr(fset *token.FileSet, filename string, src interface{}) (ast.Expr,
 
 	var p parser
 	p.init(fset, filename, data, 0)
-	x := p.parseExpr()
+	x := p.parseRhs()
 	if p.tok == token.SEMICOLON {
 		p.next() // consume automatically inserted semicolon, if any
 	}
@@ -159,7 +159,8 @@ func ParseFiles(fset *token.FileSet, filenames []string, mode uint) (pkgs map[st
 			name := src.Name.Name
 			pkg, found := pkgs[name]
 			if !found {
-				pkg = &ast.Package{name, nil, make(map[string]*ast.File)}
+				// TODO(gri) Use NewPackage here; reconsider ParseFiles API.
+				pkg = &ast.Package{name, nil, nil, make(map[string]*ast.File)}
 				pkgs[name] = pkg
 			}
 			pkg.Files[filename] = src

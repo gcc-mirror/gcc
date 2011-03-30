@@ -6,10 +6,12 @@ package strings_test
 
 import (
 	"os"
+	"reflect"
 	"strconv"
 	. "strings"
 	"testing"
 	"unicode"
+	"unsafe"
 	"utf8"
 )
 
@@ -429,11 +431,31 @@ func TestMap(t *testing.T) {
 	if m != expect {
 		t.Errorf("drop: expected %q got %q", expect, m)
 	}
+
+	// 6. Identity
+	identity := func(rune int) int {
+		return rune
+	}
+	orig := "Input string that we expect not to be copied."
+	m = Map(identity, orig)
+	if (*reflect.StringHeader)(unsafe.Pointer(&orig)).Data !=
+		(*reflect.StringHeader)(unsafe.Pointer(&m)).Data {
+		t.Error("unexpected copy during identity map")
+	}
 }
 
 func TestToUpper(t *testing.T) { runStringTests(t, ToUpper, "ToUpper", upperTests) }
 
 func TestToLower(t *testing.T) { runStringTests(t, ToLower, "ToLower", lowerTests) }
+
+func BenchmarkMapNoChanges(b *testing.B) {
+	identity := func(rune int) int {
+		return rune
+	}
+	for i := 0; i < b.N; i++ {
+		Map(identity, "Some string that won't be modified.")
+	}
+}
 
 func TestSpecialCase(t *testing.T) {
 	lower := "abcçdefgğhıijklmnoöprsştuüvyz"
@@ -617,7 +639,11 @@ func equal(m string, s1, s2 string, t *testing.T) bool {
 
 func TestCaseConsistency(t *testing.T) {
 	// Make a string of all the runes.
-	a := make([]int, unicode.MaxRune+1)
+	numRunes := unicode.MaxRune + 1
+	if testing.Short() {
+		numRunes = 1000
+	}
+	a := make([]int, numRunes)
 	for i := range a {
 		a[i] = i
 	}
@@ -627,10 +653,10 @@ func TestCaseConsistency(t *testing.T) {
 	lower := ToLower(s)
 
 	// Consistency checks
-	if n := utf8.RuneCountInString(upper); n != unicode.MaxRune+1 {
+	if n := utf8.RuneCountInString(upper); n != numRunes {
 		t.Error("rune count wrong in upper:", n)
 	}
-	if n := utf8.RuneCountInString(lower); n != unicode.MaxRune+1 {
+	if n := utf8.RuneCountInString(lower); n != numRunes {
 		t.Error("rune count wrong in lower:", n)
 	}
 	if !equal("ToUpper(upper)", ToUpper(upper), upper, t) {
