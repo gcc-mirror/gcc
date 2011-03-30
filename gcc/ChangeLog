@@ -1,3 +1,18 @@
+2011-03-30  Nick Clifton  <nickc@redhat.com>
+
+	* config/rx/rx.md: Add peepholes and patterns to combine
+	extending loads and simple arithmetic instructions.
+	* config/rx/rx.h (ADJUST_INSN_LENGTH): Define.
+        * config/rx/rx-protos.h (rx_adjust_insn_length): Prototype.
+        * config/rx/rx.c (rx_is_legitimate_address): Allow QI and HI
+	modes to use pre-decrement and post-increment addressing.
+        (rx_is_restricted_memory_address): Add range checking of REG+INT
+	addresses.
+        (rx_print_operand): Add support for %Q.
+        Fix handling of %Q.
+        (rx_memory_move_cost): Adjust cost of stores.
+        (rx_adjust_insn_length): New function.
+
 2011-03-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/48305
