@@ -1,3 +1,13 @@
+2011-03-30  Joseph Myers  <joseph@codesourcery.com>
+	    Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR bootstrap/48337
+	* config/sparc/sparc.opt (sparc_cpu_and_features): Add
+	Init(PROCESSOR_V7).
+	(sparc_cpu): Likewise.
+	* config/sparc/sparc.c (sparc_option_override): Replace 0 by
+	PROCESSOR_V7.
+
 2011-03-29  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR target/48336

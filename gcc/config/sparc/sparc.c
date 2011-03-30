@@ -695,7 +695,7 @@ sparc_option_override (void)
     { TARGET_CPU_ultrasparc3, PROCESSOR_ULTRASPARC3 },
     { TARGET_CPU_niagara, PROCESSOR_NIAGARA },
     { TARGET_CPU_niagara2, PROCESSOR_NIAGARA2 },
-    { -1, 0 }
+    { -1, PROCESSOR_V7 }
   };
   const struct cpu_default *def;
   /* Table of values for -m{cpu,tune}=.  This must match the order of

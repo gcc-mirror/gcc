@@ -86,11 +86,11 @@ Target
 Optimize tail call instructions in assembler and linker
 
 mcpu=
-Target RejectNegative Joined Var(sparc_cpu_and_features) Enum(sparc_processor_type)
+Target RejectNegative Joined Var(sparc_cpu_and_features) Enum(sparc_processor_type) Init(PROCESSOR_V7)
 Use features of and schedule code for given CPU
 
 mtune=
-Target RejectNegative Joined Var(sparc_cpu) Enum(sparc_processor_type)
+Target RejectNegative Joined Var(sparc_cpu) Enum(sparc_processor_type) Init(PROCESSOR_V7)
 Schedule code for given CPU
 
 Enum
