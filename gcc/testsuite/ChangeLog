@@ -1,5 +1,7 @@
 2011-03-29  Jason Merrill  <jason@redhat.com>
 
+	* g++.dg/cpp0x/regress/value-dep1.C: New.
+
 	* g++.dg/cpp0x/dependent1.C: New.
 
 2011-03-29  Jason Merrill  <jason@redhat.com>

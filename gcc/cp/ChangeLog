@@ -1,5 +1,9 @@
 2011-03-29  Jason Merrill  <jason@redhat.com>
 
+	PR c++/48265
+	* pt.c (value_dependent_expression_p) [VAR_DECL]: Make sure
+	the variable is constant before looking at its initializer.
+
 	PR c++/48319
 	* pt.c (value_dependent_expression_p): Handle TEMPLATE_ID_EXPR.
 
