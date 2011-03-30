@@ -1,3 +1,8 @@
+2011-03-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/48305
+	* gcc.c-torture/compile/pr48305.c: New test.
+
 2011-03-29  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/cpp0x/regress/value-dep1.C: New.

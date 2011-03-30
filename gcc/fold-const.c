@@ -12606,13 +12606,21 @@ fold_binary_loc (location_t loc,
 	     operand_equal_p guarantees no side-effects so we don't need
 	     to use omit_one_operand on Z.  */
 	  if (operand_equal_p (arg01, arg11, 0))
-	    return fold_build2_loc (loc, code, type, arg00, arg10);
+	    return fold_build2_loc (loc, code, type, arg00,
+				    fold_convert_loc (loc, TREE_TYPE (arg00),
+						      arg10));
 	  if (operand_equal_p (arg01, arg10, 0))
-	    return fold_build2_loc (loc, code, type, arg00, arg11);
+	    return fold_build2_loc (loc, code, type, arg00,
+				    fold_convert_loc (loc, TREE_TYPE (arg00),
+						      arg11));
 	  if (operand_equal_p (arg00, arg11, 0))
-	    return fold_build2_loc (loc, code, type, arg01, arg10);
+	    return fold_build2_loc (loc, code, type, arg01,
+				    fold_convert_loc (loc, TREE_TYPE (arg01),
+						      arg10));
 	  if (operand_equal_p (arg00, arg10, 0))
-	    return fold_build2_loc (loc, code, type, arg01, arg11);
+	    return fold_build2_loc (loc, code, type, arg01,
+				    fold_convert_loc (loc, TREE_TYPE (arg01),
+						      arg11));
 
 	  /* Optimize (X ^ C1) op (Y ^ C2) as (X ^ (C1 ^ C2)) op Y.  */
 	  if (TREE_CODE (arg01) == INTEGER_CST
