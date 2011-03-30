@@ -1,3 +1,25 @@
+2011-03-29  Mark Wielaard  <mjw@redhat.com>
+
+	* common.opt (fdebug-types-section): New flag.
+	* doc/invoke.texi: Document new -fno-debug-types-section flag.
+	* dwarf2out.c (use_debug_types): New define.
+	(struct die_struct): Mark die_id with GTY desc use_debug_types.
+	(print_die): Guard output of type unit signatures using
+	use_debug_types.
+	(build_abbrev_table): Replace assert of dwarf_version >= 4
+	with assert on use_debug_types.
+	(size_of_die): Likewise.
+	(unmark_dies): Likewise.
+	(value_format): Decide AT_ref_external form on use_debug_types.
+	(output_die): Replace dwarf_version version check guard with
+	use_debug_types where appropriate.
+	(modified_type_die): Likewise.
+	(gen_reference_type_die): Likewise.
+	(dwarf2out_start_source_file): Likewise.
+	(dwarf2out_end_source_file): Likewise.
+	(prune_unused_types_walk_attribs): Likewise.
+	(dwarf2out_finish): Likewise.
+
 2011-03-30  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* ira-color.c (ira_assign_hard_reg): Use only one variable 'mode'.

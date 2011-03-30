@@ -5800,6 +5800,16 @@ const struct gcc_debug_hooks dwarf2_debug_hooks =
    representation is done after the entire program has been compiled.
    The types below are used to describe the internal representation.  */
 
+/* Whether to put type DIEs into their own section .debug_types instead
+   of making them part of the .debug_info section.  Only supported for
+   Dwarf V4 or higher and the user didn't disable them through
+   -fno-debug-types-section.  It is more efficient to put them in a
+   separate comdat sections since the linker will then be able to
+   remove duplicates.  But not all tools support .debug_types sections
+   yet.  */
+
+#define use_debug_types (dwarf_version >= 4 && flag_debug_types_section)
+
 /* Various DIE's use offsets relative to the beginning of the
    .debug_info section to refer to each other.  */
 
@@ -5858,7 +5868,7 @@ typedef struct GTY((chain_circular ("%h.die_sib"))) die_struct {
       char * GTY ((tag ("0"))) die_symbol;
       comdat_type_node_ref GTY ((tag ("1"))) die_type_node;
     }
-  GTY ((desc ("dwarf_version >= 4"))) die_id;
+  GTY ((desc ("use_debug_types"))) die_id;
   VEC(dw_attr_node,gc) * die_attr;
   dw_die_ref die_parent;
   dw_die_ref die_child;
@@ -8560,7 +8570,7 @@ print_die (dw_die_ref die, FILE *outfile)
   fprintf (outfile, " offset: %ld", die->die_offset);
   fprintf (outfile, " mark: %d\n", die->die_mark);
 
-  if (dwarf_version >= 4 && die->die_id.die_type_node)
+  if (use_debug_types && die->die_id.die_type_node)
     {
       print_spaces (outfile);
       fprintf (outfile, "  signature: ");
@@ -8612,13 +8622,13 @@ print_die (dw_die_ref die, FILE *outfile)
 	case dw_val_class_die_ref:
 	  if (AT_ref (a) != NULL)
 	    {
-	      if (dwarf_version >= 4 && AT_ref (a)->die_id.die_type_node)
+	      if (use_debug_types && AT_ref (a)->die_id.die_type_node)
 	        {
 		  fprintf (outfile, "die -> signature: ");
 		  print_signature (outfile,
 		  		   AT_ref (a)->die_id.die_type_node->signature);
                 }
-	      else if (dwarf_version < 4 && AT_ref (a)->die_id.die_symbol)
+	      else if (! use_debug_types && AT_ref (a)->die_id.die_symbol)
 		fprintf (outfile, "die -> label: %s",
 		         AT_ref (a)->die_id.die_symbol);
 	      else
@@ -10575,7 +10585,7 @@ build_abbrev_table (dw_die_ref die)
     if (AT_class (a) == dw_val_class_die_ref
 	&& AT_ref (a)->die_mark == 0)
       {
-	gcc_assert (dwarf_version >= 4 || AT_ref (a)->die_id.die_symbol);
+	gcc_assert (use_debug_types || AT_ref (a)->die_id.die_symbol);
 	set_AT_ref_external (a, 1);
       }
 
@@ -10723,7 +10733,7 @@ size_of_die (dw_die_ref die)
 		 we use DW_FORM_ref_addr.  In DWARF2, DW_FORM_ref_addr
 		 is sized by target address length, whereas in DWARF3
 		 it's always sized as an offset.  */
-	      if (dwarf_version >= 4)
+	      if (use_debug_types)
 		size += DWARF_TYPE_SIGNATURE_SIZE;
 	      else if (dwarf_version == 2)
 		size += DWARF2_ADDR_SIZE;
@@ -10809,7 +10819,7 @@ unmark_dies (dw_die_ref die)
 {
   dw_die_ref c;
 
-  if (dwarf_version < 4)
+  if (! use_debug_types)
     gcc_assert (die->die_mark);
 
   die->die_mark = 0;
@@ -11008,7 +11018,7 @@ value_format (dw_attr_ref a)
       return DW_FORM_flag;
     case dw_val_class_die_ref:
       if (AT_ref_external (a))
-	return dwarf_version >= 4 ? DW_FORM_ref_sig8 : DW_FORM_ref_addr;
+	return use_debug_types ? DW_FORM_ref_sig8 : DW_FORM_ref_addr;
       else
 	return DW_FORM_ref;
     case dw_val_class_fde_ref:
@@ -11218,7 +11228,7 @@ output_die (dw_die_ref die)
 
   /* If someone in another CU might refer to us, set up a symbol for
      them to point to.  */
-  if (dwarf_version < 4 && die->die_id.die_symbol)
+  if (! use_debug_types && die->die_id.die_symbol)
     output_die_symbol (die);
 
   dw2_asm_output_data_uleb128 (die->die_abbrev, "(DIE (%#lx) %s)",
@@ -11357,7 +11367,7 @@ output_die (dw_die_ref die)
 	case dw_val_class_die_ref:
 	  if (AT_ref_external (a))
 	    {
-	      if (dwarf_version >= 4)
+	      if (use_debug_types)
 	        {
 	          comdat_type_node_ref type_node =
 	            AT_ref (a)->die_id.die_type_node;
@@ -12898,7 +12908,7 @@ modified_type_die (tree type, int is_const_type, int is_volatile_type,
     }
   else if (code == REFERENCE_TYPE)
     {
-      if (TYPE_REF_IS_RVALUE (type) && dwarf_version >= 4)
+      if (TYPE_REF_IS_RVALUE (type) && use_debug_types)
 	mod_type_die = new_die (DW_TAG_rvalue_reference_type, comp_unit_die (),
 				type);
       else
@@ -20139,7 +20149,7 @@ gen_reference_type_die (tree type, dw_die_ref context_die)
 {
   dw_die_ref ref_die, scope_die = scope_die_for (type, context_die);
 
-  if (TYPE_REF_IS_RVALUE (type) && dwarf_version >= 4)
+  if (TYPE_REF_IS_RVALUE (type) && use_debug_types)
     ref_die = new_die (DW_TAG_rvalue_reference_type, scope_die, type);
   else
     ref_die = new_die (DW_TAG_reference_type, scope_die, type);
@@ -22226,7 +22236,7 @@ dwarf2out_source_line (unsigned int line, const char *filename,
 static void
 dwarf2out_start_source_file (unsigned int lineno, const char *filename)
 {
-  if (flag_eliminate_dwarf2_dups && dwarf_version < 4)
+  if (flag_eliminate_dwarf2_dups && ! use_debug_types)
     {
       /* Record the beginning of the file for break_out_includes.  */
       dw_die_ref bincl_die;
@@ -22250,7 +22260,7 @@ dwarf2out_start_source_file (unsigned int lineno, const char *filename)
 static void
 dwarf2out_end_source_file (unsigned int lineno ATTRIBUTE_UNUSED)
 {
-  if (flag_eliminate_dwarf2_dups && dwarf_version < 4)
+  if (flag_eliminate_dwarf2_dups && ! use_debug_types)
     /* Record the end of the file for break_out_includes.  */
     new_die (DW_TAG_GNU_EINCL, comp_unit_die (), NULL);
 
@@ -22515,7 +22525,7 @@ prune_unused_types_walk_attribs (dw_die_ref die)
 	  /* A reference to another DIE.
 	     Make sure that it will get emitted.
 	     If it was broken out into a comdat group, don't follow it.  */
-          if (dwarf_version < 4
+          if (! use_debug_types
               || a->dw_attr == DW_AT_specification
               || a->dw_attr_val.v.val_die_ref.die->die_id.die_type_node == NULL)
 	    prune_unused_types_mark (a->dw_attr_val.v.val_die_ref.die, 1);
@@ -22596,7 +22606,7 @@ prune_unused_types_mark (dw_die_ref die, int dokids)
 	 breaking out types into comdat sections, do this
 	 for all type definitions.  */
       if (die->die_tag == DW_TAG_array_type
-          || (dwarf_version >= 4
+          || (use_debug_types
               && is_type_die (die) && ! is_declaration_die (die)))
 	FOR_EACH_CHILD (die, c, prune_unused_types_mark (c, 1));
       else
@@ -23589,11 +23599,11 @@ dwarf2out_finish (const char *filename)
 
   /* Generate separate CUs for each of the include files we've seen.
      They will go into limbo_die_list.  */
-  if (flag_eliminate_dwarf2_dups && dwarf_version < 4)
+  if (flag_eliminate_dwarf2_dups && ! use_debug_types)
     break_out_includes (comp_unit_die ());
 
   /* Generate separate COMDAT sections for type DIEs. */
-  if (dwarf_version >= 4)
+  if (use_debug_types)
     {
       break_out_comdat_types (comp_unit_die ());
 
