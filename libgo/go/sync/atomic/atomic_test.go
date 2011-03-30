@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package atomic
+package atomic_test
 
 import (
 	"runtime"
+	. "sync/atomic"
 	"testing"
 	"unsafe"
 )
@@ -26,6 +27,16 @@ const (
 	magic32 = 0xdedbeef
 	magic64 = 0xdeddeadbeefbeef
 )
+
+// Do the 64-bit functions panic?  If so, don't bother testing.
+var test64err = func() (err interface{}) {
+	defer func() {
+		err = recover()
+	}()
+	var x int64
+	AddInt64(&x, 1)
+	return nil
+}()
 
 func TestAddInt32(t *testing.T) {
 	var x struct {
@@ -70,6 +81,10 @@ func TestAddUint32(t *testing.T) {
 }
 
 func TestAddInt64(t *testing.T) {
+	if test64err != nil {
+		t.Logf("Skipping 64-bit tests: %v", test64err)
+		return
+	}
 	var x struct {
 		before int64
 		i      int64
@@ -91,6 +106,10 @@ func TestAddInt64(t *testing.T) {
 }
 
 func TestAddUint64(t *testing.T) {
+	if test64err != nil {
+		t.Logf("Skipping 64-bit tests: %v", test64err)
+		return
+	}
 	var x struct {
 		before uint64
 		i      uint64
@@ -193,6 +212,10 @@ func TestCompareAndSwapUint32(t *testing.T) {
 }
 
 func TestCompareAndSwapInt64(t *testing.T) {
+	if test64err != nil {
+		t.Logf("Skipping 64-bit tests: %v", test64err)
+		return
+	}
 	var x struct {
 		before int64
 		i      int64
@@ -222,6 +245,10 @@ func TestCompareAndSwapInt64(t *testing.T) {
 }
 
 func TestCompareAndSwapUint64(t *testing.T) {
+	if test64err != nil {
+		t.Logf("Skipping 64-bit tests: %v", test64err)
+		return
+	}
 	var x struct {
 		before uint64
 		i      uint64
@@ -370,10 +397,11 @@ func hammerCompareAndSwapUintptr32(uval *uint32, count int) {
 }
 
 func TestHammer32(t *testing.T) {
-	const (
-		n = 100000
-		p = 4
-	)
+	const p = 4
+	n := 100000
+	if testing.Short() {
+		n = 1000
+	}
 	defer runtime.GOMAXPROCS(runtime.GOMAXPROCS(p))
 
 	for _, tt := range hammer32 {
@@ -391,7 +419,7 @@ func TestHammer32(t *testing.T) {
 		for i := 0; i < p; i++ {
 			<-c
 		}
-		if val != n*p {
+		if val != uint32(n)*p {
 			t.Errorf("%s: val=%d want %d", tt.name, val, n*p)
 		}
 	}
@@ -478,10 +506,15 @@ func hammerCompareAndSwapUintptr64(uval *uint64, count int) {
 }
 
 func TestHammer64(t *testing.T) {
-	const (
-		n = 100000
-		p = 4
-	)
+	if test64err != nil {
+		t.Logf("Skipping 64-bit tests: %v", test64err)
+		return
+	}
+	const p = 4
+	n := 100000
+	if testing.Short() {
+		n = 1000
+	}
 	defer runtime.GOMAXPROCS(runtime.GOMAXPROCS(p))
 
 	for _, tt := range hammer64 {
@@ -499,7 +532,7 @@ func TestHammer64(t *testing.T) {
 		for i := 0; i < p; i++ {
 			<-c
 		}
-		if val != n*p {
+		if val != uint64(n)*p {
 			t.Errorf("%s: val=%d want %d", tt.name, val, n*p)
 		}
 	}

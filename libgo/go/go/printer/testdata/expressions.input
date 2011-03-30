@@ -256,7 +256,7 @@ var _ =
 var _ =
 	`foo`
 var _ =
-	// the next line should not be indented
+	// the next line should remain indented
 	`foo
 bar`
 
@@ -266,7 +266,7 @@ bar`
 	var _ = // comment
 		`foo`
 	var _ = // comment
-		// the next line should not be indented
+		// the next line should remain indented
 		`foo
 bar`
 
@@ -282,7 +282,7 @@ bar`
 	var _ = /* comment */
 		`foo`
 	var _ = /* comment */
-		// the next line should not be indented
+		// the next line should remain indented
 		`foo
 bar`
 
@@ -304,7 +304,7 @@ var board = []int(
 
 	var state = S{
 		"foo",
-		// the next line should not be indented
+		// the next line should remain indented
 		`...........
 ...........
 ....●●●....
@@ -624,4 +624,14 @@ baz()
 	b.
 	(T).
 	c
+}
+
+
+// Don't introduce extra newlines in strangely formatted expression lists.
+func f() {
+	// os.Open parameters should remain on two lines
+	if writer, err = os.Open(outfile, s.O_WRONLY|os.O_CREATE|
+		os.O_TRUNC, 0666); err != nil {
+	    log.Fatal(err)
+	}
 }

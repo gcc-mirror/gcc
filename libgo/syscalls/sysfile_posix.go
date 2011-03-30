@@ -209,7 +209,7 @@ func FDZero(set *FdSet_t) {
 
 func Select(nfds int, r *FdSet_t, w *FdSet_t, e *FdSet_t, timeout *Timeval) (n int, errno int) {
   n = libc_select(nfds, (*byte)(unsafe.Pointer(r)),
-		  (*byte)(unsafe.Pointer(e)),
+		  (*byte)(unsafe.Pointer(w)),
 		  (*byte)(unsafe.Pointer(e)), timeout);
   if n < 0 { errno = GetErrno() }
   return;
