@@ -1,5 +1,9 @@
 2011-03-30  Jason Merrill  <jason@redhat.com>
 
+	PR c++/48212
+	* semantics.c (non_const_var_error): Just return if DECL_INITIAL
+	is error_mark_node.
+
 	PR c++/48369
 	* semantics.c (potential_constant_expression_1): Handle
 	UNORDERED_EXPR and ORDERED_EXPR.
