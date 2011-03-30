@@ -377,6 +377,8 @@ if test "$rusage" != ""; then
     nrusage="$nrusage $field;"
   done
   echo "type Rusage struct {$nrusage }" >> ${OUT}
+else
+  echo "type Rusage struct {}" >> ${OUT}
 fi
 
 # The utsname struct.

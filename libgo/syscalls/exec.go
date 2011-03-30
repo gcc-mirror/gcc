@@ -17,7 +17,6 @@ func libc_chdir(name *byte) int __asm__ ("chdir")
 func libc_dup2(int, int) int __asm__ ("dup2")
 func libc_execve(*byte, **byte, **byte) int __asm__ ("execve")
 func libc_sysexit(int) __asm__ ("_exit")
-func libc_wait4(Pid_t, *int, int, *Rusage) Pid_t __asm__ ("wait4")
 
 // Fork, dup fd onto 0..len(fd), and exec(argv0, argvv, envv) in child.
 // If a dup or exec fails, write the errno int to pipe.
@@ -262,17 +261,4 @@ func Exec(argv0 string, argv []string, envv []string) (err int) {
 	envv_arg := StringArrayPtr(envv)
 	libc_execve(StringBytePtr(argv0), &argv_arg[0], &envv_arg[0])
 	return GetErrno()
-}
-
-func Wait4(pid int, wstatus *WaitStatus, options int, rusage *Rusage) (wpid int, errno int) {
-	var status int
-	r := libc_wait4(Pid_t(pid), &status, options, rusage)
-	wpid = int(r)
-	if r < 0 {
-		errno = GetErrno()
-	}
-	if wstatus != nil {
-		*wstatus = WaitStatus(status)
-	}
-	return
 }

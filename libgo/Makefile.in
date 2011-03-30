@@ -1632,8 +1632,12 @@ go_testing_script_files = \
 @LIBGO_IS_LINUX_TRUE@syscall_stat_file = syscalls/sysfile_stat_largefile.go
 @LIBGO_IS_RTEMS_FALSE@syscall_exec_os_file = syscalls/exec.go
 
-# Define ForkExec, PtraceForkExec, Exec, and Wait4.
+# Define ForkExec, PtraceForkExec, and Exec.
 @LIBGO_IS_RTEMS_TRUE@syscall_exec_os_file = syscalls/exec_stubs.go
+@HAVE_WAIT4_FALSE@syscall_wait_file = syscalls/waitpid.go
+
+# Define Wait4.
+@HAVE_WAIT4_TRUE@syscall_wait_file = syscalls/wait4.go
 @LIBGO_IS_RTEMS_FALSE@syscall_sleep_file = syscalls/sleep_select.go
 
 # Define Sleep.
@@ -1671,6 +1675,7 @@ go_syscall_files = \
 	$(syscall_errstr_decl_file) \
 	syscalls/exec_helpers.go \
 	$(syscall_exec_os_file) \
+	$(syscall_wait_file) \
 	$(syscall_filesize_file) \
 	$(syscall_stat_file) \
 	$(syscall_sleep_file) \
