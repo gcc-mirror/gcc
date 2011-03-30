@@ -630,3 +630,10 @@ typedef unsigned int CUMULATIVE_ARGS;
 #define REGISTER_MOVE_COST(MODE,FROM,TO) 2
 
 #define SELECT_CC_MODE(OP,X,Y)  rx_select_cc_mode(OP, X, Y)
+
+#define ADJUST_INSN_LENGTH(INSN,LENGTH)				\
+  do								\
+    {								\
+      (LENGTH) = rx_adjust_insn_length ((INSN), (LENGTH));	\
+    }								\
+  while (0)
