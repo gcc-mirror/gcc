@@ -1,4 +1,4 @@
-#  Copyright (C) 2003, 2004, 2007, 2008, 2009, 2010
+#  Copyright (C) 2003, 2004, 2007, 2008, 2009, 2010, 2011
 #  Free Software Foundation, Inc.
 #  Contributed by Kelley Cook, June 2004.
 #  Original code from Neil Booth, May 2003.
@@ -90,6 +90,7 @@ function switch_flags (flags)
 	  test_flag("RejectDriver", flags, " | CL_REJECT_DRIVER") \
 	  test_flag("NoDriverArg", flags, " | CL_NO_DRIVER_ARG") \
 	  test_flag("SeparateAlias", flags, " | CL_SEPARATE_ALIAS") \
+	  test_flag("NegativeAlias", flags, " | CL_NEGATIVE_ALIAS") \
 	  test_flag("Save", flags, " | CL_SAVE") \
 	  test_flag("Joined", flags, " | CL_JOINED") \
 	  test_flag("JoinedOrMissing", flags, " | CL_JOINED | CL_MISSING_OK") \

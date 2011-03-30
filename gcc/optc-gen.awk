@@ -362,6 +362,11 @@ for (i = 0; i < n_opts; i++) {
 				print "#error Alias with single argument " \
 					"allowing negative form"
 		}
+		if (alias_posarg != "" \
+		    && flag_set_p("NegativeAlias", flags[i])) {
+			print "#error Alias with multiple arguments " \
+				"used with NegativeAlias"
+		}
 
 		alias_opt = opt_enum(alias_opt)
 		if (alias_posarg == "")

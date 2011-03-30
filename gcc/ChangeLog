@@ -1,3 +1,20 @@
+2011-03-30  Joseph Myers  <joseph@codesourcery.com>
+
+	* doc/options.texi (NegativeAlias): Document.
+	(Alias): Mention NegativeAlias.
+	* opt-functions.awk: Handle NegativeAlias.
+	* optc-gen.awk: Disallow NegativeAlias with multiple Alias
+	arguments.
+	* opts-common.c (decode_cmdline_option): Handle CL_NEGATIVE_ALIAS.
+	* opts.h (CL_NEGATIVE_ALIAS): Define.
+	* config/rs6000/rs6000.c (rs6000_parse_yes_no_option): Remove.
+	(rs6000_handle_option): Don't handle OPT_mvrsave_, OPT_misel_ and
+	OPT_mspe_.
+	* config/rs6000/rs6000.opt (mvrsave=, misel=, mspe=): Replace with
+	Alias entries.
+	* config/rs6000/t-spe (MULTILIB_OPTIONS, MULTILIB_EXCEPTIONS): Use
+	mno-spe and mno-isel instead of mspe=no and -misel=no.
+
 2011-03-29  Mark Wielaard  <mjw@redhat.com>
 
 	* common.opt (fdebug-types-section): New flag.
