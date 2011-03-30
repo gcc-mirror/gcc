@@ -454,7 +454,7 @@ Objective-C and Objective-C++ Dialects}.
 -mapcs-reentrant  -mno-apcs-reentrant @gol
 -msched-prolog  -mno-sched-prolog @gol
 -mlittle-endian  -mbig-endian  -mwords-little-endian @gol
--mfloat-abi=@var{name}  -msoft-float  -mhard-float  -mfpe @gol
+-mfloat-abi=@var{name}  -mfpe @gol
 -mfp16-format=@var{name}
 -mthumb-interwork  -mno-thumb-interwork @gol
 -mcpu=@var{name}  -march=@var{name}  -mfpu=@var{name}  @gol
@@ -10078,14 +10078,6 @@ The default depends on the specific target configuration.  Note that
 the hard-float and soft-float ABIs are not link-compatible; you must
 compile your entire program with the same ABI, and link with a
 compatible set of libraries.
-
-@item -mhard-float
-@opindex mhard-float
-Equivalent to @option{-mfloat-abi=hard}.
-
-@item -msoft-float
-@opindex msoft-float
-Equivalent to @option{-mfloat-abi=soft}.
 
 @item -mlittle-endian
 @opindex mlittle-endian
