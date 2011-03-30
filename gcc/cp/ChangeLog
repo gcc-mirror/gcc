@@ -1,5 +1,9 @@
 2011-03-30  Jason Merrill  <jason@redhat.com>
 
+	* call.c (convert_like_real) [ck_list]: Build up the
+	initializer_list object directly.
+	* decl.c (build_init_list_var_init): Adjust.
+
 	* call.c (convert_like_real): Correct TREE_CONSTANT on CONSTRUCTOR.
 	* decl.c (reshape_init_array_1): Likewise.
 
