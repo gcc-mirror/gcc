@@ -364,7 +364,8 @@ for later processing.
 @item Alias(@var{opt})
 @itemx Alias(@var{opt}, @var{arg})
 @itemx Alias(@var{opt}, @var{posarg}, @var{negarg})
-The option is an alias for @option{-@var{opt}}.  In the first form,
+The option is an alias for @option{-@var{opt}} (or the negative form
+of that option, depending on @code{NegativeAlias}).  In the first form,
 any argument passed to the alias is considered to be passed to
 @option{-@var{opt}}, and @option{-@var{opt}} is considered to be
 negated if the alias is used in negated form.  In the second form, the
@@ -386,6 +387,13 @@ When an @code{Alias} definition is used for an option, driver specs do
 not need to handle it and no @samp{OPT_} enumeration value is defined
 for it; only the canonical form of the option will be seen in those
 places.
+
+@item NegativeAlias
+For an option marked with @code{Alias(@var{opt})}, the option is
+considered to be an alias for the positive form of @option{-@var{opt}}
+if negated and for the negative form of @option{-@var{opt}} if not
+negated.  @code{NegativeAlias} may not be used with the forms of
+@code{Alias} taking more than one argument.
 
 @item Ignore
 This option is ignored apart from printing any warning specified using

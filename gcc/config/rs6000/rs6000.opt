@@ -1,6 +1,6 @@
 ; Options for the rs6000 port of the compiler
 ;
-; Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010 Free Software
+; Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011 Free Software
 ; Foundation, Inc.
 ; Contributed by Aldy Hernandez <aldy@quesejoda.com>.
 ;
@@ -353,9 +353,13 @@ mvrsave
 Target Report Var(TARGET_ALTIVEC_VRSAVE) Save
 Generate VRSAVE instructions when generating AltiVec code
 
-mvrsave=
-Target RejectNegative Joined
--mvrsave=yes/no	Deprecated option.  Use -mvrsave/-mno-vrsave instead
+mvrsave=no
+Target RejectNegative Alias(mvrsave) NegativeAlias
+Deprecated option.  Use -mno-vrsave instead
+
+mvrsave=yes
+Target RejectNegative Alias(mvrsave)
+Deprecated option.  Use -mvrsave instead
 
 mblock-move-inline-limit=
 Target Report Var(rs6000_block_move_inline_limit) Init(0) RejectNegative Joined UInteger Save
@@ -365,9 +369,13 @@ misel
 Target Report Mask(ISEL) Save
 Generate isel instructions
 
-misel=
-Target RejectNegative Joined
--misel=yes/no	Deprecated option.  Use -misel/-mno-isel instead
+misel=no
+Target RejectNegative Alias(misel) NegativeAlias
+Deprecated option.  Use -mno-isel instead
+
+misel=yes
+Target RejectNegative Alias(misel)
+Deprecated option.  Use -misel instead
 
 mspe
 Target
@@ -377,9 +385,13 @@ mpaired
 Target Var(rs6000_paired_float) Save
 Generate PPC750CL paired-single instructions
 
-mspe=
-Target RejectNegative Joined
--mspe=yes/no	Deprecated option.  Use -mspe/-mno-spe instead
+mspe=no
+Target RejectNegative Alias(mspe) NegativeAlias
+Deprecated option.  Use -mno-spe instead
+
+mspe=yes
+Target RejectNegative Alias(mspe)
+Deprecated option.  Use -mspe instead
 
 mdebug=
 Target RejectNegative Joined

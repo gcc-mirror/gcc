@@ -1082,7 +1082,6 @@ static bool rs6000_handle_option (struct gcc_options *, struct gcc_options *,
 				  const struct cl_decoded_option *,
 				  location_t);
 static int rs6000_loop_align_max_skip (rtx);
-static void rs6000_parse_yes_no_option (const char *, const char *, int *);
 static int first_altivec_reg_to_save (void);
 static unsigned int compute_vrsave_mask (void);
 static void compute_save_world_info (rs6000_stack_t *info_ptr);
@@ -3820,24 +3819,6 @@ rs6000_preferred_simd_mode (enum machine_mode mode)
   return word_mode;
 }
 
-/* Handle generic options of the form -mfoo=yes/no.
-   NAME is the option name.
-   VALUE is the option value.
-   FLAG is the pointer to the flag where to store a 1 or 0, depending on
-   whether the option value is 'yes' or 'no' respectively.  */
-static void
-rs6000_parse_yes_no_option (const char *name, const char *value, int *flag)
-{
-  if (value == 0)
-    return;
-  else if (!strcmp (value, "yes"))
-    *flag = 1;
-  else if (!strcmp (value, "no"))
-    *flag = 0;
-  else
-    error ("unknown -m%s= option specified: '%s'", name, value);
-}
-
 /* Implement TARGET_OPTION_INIT_STRUCT.  */
 
 static void
@@ -4337,29 +4318,9 @@ rs6000_handle_option (struct gcc_options *opts, struct gcc_options *opts_set,
       TARGET_ALTIVEC_VRSAVE = value;
       break;
 
-    case OPT_mvrsave_:
-      rs6000_explicit_options.vrsave = true;
-      rs6000_parse_yes_no_option ("vrsave", arg, &(TARGET_ALTIVEC_VRSAVE));
-      break;
-
-    case OPT_misel_:
-      target_flags_explicit |= MASK_ISEL;
-      isel = 0;
-      rs6000_parse_yes_no_option ("isel", arg, &isel);
-      if (isel)
-	target_flags |= MASK_ISEL;
-      else
-	target_flags &= ~MASK_ISEL;
-      break;
-
     case OPT_mspe:
       rs6000_explicit_options.spe = true;
       rs6000_spe = value;
-      break;
-
-    case OPT_mspe_:
-      rs6000_explicit_options.spe = true;
-      rs6000_parse_yes_no_option ("spe", arg, &(rs6000_spe));
       break;
 
     case OPT_mdebug_:

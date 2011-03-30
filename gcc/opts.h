@@ -115,6 +115,7 @@ extern const unsigned int cl_lang_count;
 #define CL_MISSING_OK		(1U << 28) /* Missing argument OK (joined).  */
 #define CL_UINTEGER		(1U << 29) /* Argument is an integer >=0.  */
 #define CL_UNDOCUMENTED		(1U << 30) /* Do not output with --help.  */
+#define CL_NEGATIVE_ALIAS	(1U << 31) /* Alias to negative form of option.  */
 
 /* Flags for an enumerated option argument.  */
 #define CL_ENUM_CANONICAL	(1 << 0) /* Canonical for this value.  */

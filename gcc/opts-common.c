@@ -507,6 +507,7 @@ decode_cmdline_option (const char **argv, unsigned int lang_mask,
 	    {
 	      gcc_assert (option->alias_arg != NULL);
 	      gcc_assert (arg == NULL);
+	      gcc_assert (!(option->flags & CL_NEGATIVE_ALIAS));
 	      if (value)
 		arg = option->alias_arg;
 	      else
@@ -517,8 +518,12 @@ decode_cmdline_option (const char **argv, unsigned int lang_mask,
 	    {
 	      gcc_assert (value == 1);
 	      gcc_assert (arg == NULL);
+	      gcc_assert (!(option->flags & CL_NEGATIVE_ALIAS));
 	      arg = option->alias_arg;
 	    }
+
+	  if (option->flags & CL_NEGATIVE_ALIAS)
+	    value = !value;
 
 	  opt_index = new_opt_index;
 	  option = new_option;
