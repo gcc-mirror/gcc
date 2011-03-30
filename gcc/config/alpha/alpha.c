@@ -548,7 +548,7 @@ resolve_reload_operand (rtx op)
       if (REG_P (tmp)
 	  && REGNO (tmp) >= FIRST_PSEUDO_REGISTER)
 	{
-	  op = reg_equiv_memory_loc[REGNO (tmp)];
+	  op = reg_equiv_memory_loc (REGNO (tmp));
 	  if (op == 0)
 	    return 0;
 	}

@@ -10897,14 +10897,14 @@ arm_reload_in_hi (rtx *operands)
 	 are two cases here: the first where there is a simple
 	 stack-slot replacement and a second where the stack-slot is
 	 out of range, or is used as a subreg.  */
-      if (reg_equiv_mem[REGNO (ref)])
+      if (reg_equiv_mem (REGNO (ref)))
 	{
-	  ref = reg_equiv_mem[REGNO (ref)];
+	  ref = reg_equiv_mem (REGNO (ref));
 	  base = find_replacement (&XEXP (ref, 0));
 	}
       else
 	/* The slot is out of range, or was dressed up in a SUBREG.  */
-	base = reg_equiv_address[REGNO (ref)];
+	base = reg_equiv_address (REGNO (ref));
     }
   else
     base = find_replacement (&XEXP (ref, 0));
@@ -11014,14 +11014,14 @@ arm_reload_out_hi (rtx *operands)
 	 are two cases here: the first where there is a simple
 	 stack-slot replacement and a second where the stack-slot is
 	 out of range, or is used as a subreg.  */
-      if (reg_equiv_mem[REGNO (ref)])
+      if (reg_equiv_mem (REGNO (ref)))
 	{
-	  ref = reg_equiv_mem[REGNO (ref)];
+	  ref = reg_equiv_mem (REGNO (ref));
 	  base = find_replacement (&XEXP (ref, 0));
 	}
       else
 	/* The slot is out of range, or was dressed up in a SUBREG.  */
-	base = reg_equiv_address[REGNO (ref)];
+	base = reg_equiv_address (REGNO (ref));
     }
   else
     base = find_replacement (&XEXP (ref, 0));

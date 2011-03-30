@@ -1027,10 +1027,10 @@ mark_referenced_regs (rtx *loc, refmarker_fn *mark, void *arg)
       /* If this is a pseudo that did not get a hard register, scan its
 	 memory location, since it might involve the use of another
 	 register, which might be saved.  */
-      else if (reg_equiv_mem[regno] != 0)
-	mark_referenced_regs (&XEXP (reg_equiv_mem[regno], 0), mark, arg);
-      else if (reg_equiv_address[regno] != 0)
-	mark_referenced_regs (&reg_equiv_address[regno], mark, arg);
+      else if (reg_equiv_mem (regno) != 0)
+	mark_referenced_regs (&XEXP (reg_equiv_mem (regno), 0), mark, arg);
+      else if (reg_equiv_address (regno) != 0)
+	mark_referenced_regs (&reg_equiv_address (regno), mark, arg);
       return;
     }
 

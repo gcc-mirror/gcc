@@ -35,6 +35,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "expr.h"
 #include "output.h"
 #include "recog.h"
+/* For reg_equivs.  */
+#include "reload.h"
 #include "integrate.h"
 #include "except.h"
 #include "function.h"
@@ -330,7 +332,7 @@ struct rtl_opt_pass pass_initial_value_sets =
 /* If the backend knows where to allocate pseudos for hard
    register initial values, register these allocations now.  */
 void
-allocate_initial_values (rtx *reg_equiv_memory_loc)
+allocate_initial_values (VEC (reg_equivs_t, gc) *reg_equivs)
 {
   if (targetm.allocate_initial_value)
     {
@@ -348,7 +350,7 @@ allocate_initial_values (rtx *reg_equiv_memory_loc)
 	  if (x && REG_N_SETS (REGNO (ivs->entries[i].pseudo)) <= 1)
 	    {
 	      if (MEM_P (x))
-		reg_equiv_memory_loc[regno] = x;
+		reg_equiv_memory_loc (regno) = x;
 	      else
 		{
 		  basic_block bb;
