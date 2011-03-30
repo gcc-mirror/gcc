@@ -689,7 +689,11 @@ if LIBGO_IS_SOLARIS
 if LIBGO_IS_386
 go_os_dir_file = go/os/dir_largefile.go
 else
+if LIBGO_IS_SPARC
+go_os_dir_file = go/os/dir_largefile.go
+else
 go_os_dir_file = go/os/dir_regfile.go
+endif
 endif
 else
 if LIBGO_IS_LINUX
@@ -1219,16 +1223,21 @@ syscall_filesize_file = syscalls/sysfile_largefile.go
 syscall_stat_file = syscalls/sysfile_stat_largefile.go
 else # !LIBGO_IS_LINUX
 if LIBGO_IS_SOLARIS
-# FIXME: Same for sparc vs. sparc64.  Introduce new/additional conditional?
 if LIBGO_IS_386
-# Use lseek64 on 386 Solaris.
+# Use lseek64 on 32-bit Solaris/x86.
 syscall_filesize_file = syscalls/sysfile_largefile.go
 syscall_stat_file = syscalls/sysfile_stat_largefile.go
-else # !LIBGO_IS_LINUX && LIBGO_IS_SOLARIS && !LIBGO_IS_386
-# Use lseek on amd64 Solaris.
+else # !LIBGO_IS_386
+if LIBGO_IS_SPARC
+# Use lseek64 on 32-bit Solaris/SPARC.
+syscall_filesize_file = syscalls/sysfile_largefile.go
+syscall_stat_file = syscalls/sysfile_stat_largefile.go
+else # !LIBGO_IS_386 && !LIBGO_IS_SPARC
+# Use lseek on 64-bit Solaris.
 syscall_filesize_file = syscalls/sysfile_regfile.go
 syscall_stat_file = syscalls/sysfile_stat_regfile.go
-endif # !LIBGO_IS_386
+endif # !LIBGO_IS_386 && !LIBGO_IS_SPARC
+endif # !LIBGO_IS_SOLARIS
 else # !LIBGO_IS_LINUX && !LIBGO_IS_SOLARIS
 # Use lseek by default.
 syscall_filesize_file = syscalls/sysfile_regfile.go
