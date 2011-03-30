@@ -1,5 +1,9 @@
 2011-03-30  Jason Merrill  <jason@redhat.com>
 
+	PR c++/48369
+	* semantics.c (potential_constant_expression_1): Handle
+	UNORDERED_EXPR and ORDERED_EXPR.
+
 	PR c++/48281
 	* semantics.c (finish_compound_literal): Do put static/constant
 	arrays in static variables.
