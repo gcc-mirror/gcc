@@ -1,3 +1,7 @@
+2011-03-30  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/initlist46.C: New.
+
 2011-03-29  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/cpp0x/regress/value-dep1.C: New.

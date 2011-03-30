@@ -1,3 +1,9 @@
+2011-03-30  Jason Merrill  <jason@redhat.com>
+
+	PR c++/48281
+	* semantics.c (finish_compound_literal): Do put static/constant
+	arrays in static variables.
+
 2011-03-29  Jason Merrill  <jason@redhat.com>
 
 	PR c++/48265
