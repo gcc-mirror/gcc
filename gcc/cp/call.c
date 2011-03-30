@@ -5467,8 +5467,8 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	tree elttype = TREE_VEC_ELT (CLASSTYPE_TI_ARGS (totype), 0);
 	tree new_ctor = build_constructor (init_list_type_node, NULL);
 	unsigned len = CONSTRUCTOR_NELTS (expr);
-	tree array, val;
-	VEC(tree,gc) *parms;
+	tree array, val, field;
+	VEC(constructor_elt,gc) *vec = NULL;
 	unsigned ix;
 
 	/* Convert all the elements.  */
@@ -5490,16 +5490,14 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	array = build_array_of_n_type (elttype, len);
 	array = finish_compound_literal (array, new_ctor);
 
-	parms = make_tree_vector ();
-	VEC_safe_push (tree, gc, parms, decay_conversion (array));
-	VEC_safe_push (tree, gc, parms, size_int (len));
-	/* Call the private constructor.  */
-	push_deferring_access_checks (dk_no_check);
-	new_ctor = build_special_member_call
-	  (NULL_TREE, complete_ctor_identifier, &parms, totype, 0, complain);
-	release_tree_vector (parms);
-	pop_deferring_access_checks ();
-	return build_cplus_new (totype, new_ctor);
+	/* Build up the initializer_list object.  */
+	totype = complete_type (totype);
+	field = next_initializable_field (TYPE_FIELDS (totype));
+	CONSTRUCTOR_APPEND_ELT (vec, field, decay_conversion (array));
+	field = next_initializable_field (DECL_CHAIN (field));
+	CONSTRUCTOR_APPEND_ELT (vec, field, size_int (len));
+	new_ctor = build_constructor (totype, vec);
+	return get_target_expr (new_ctor);
       }
 
     case ck_aggr:
