@@ -1622,10 +1622,11 @@ assign_hard_reg (ira_allocno_t a, bool retry_p)
 	      if (hard_regno >= 0
 		  && ira_class_hard_reg_index[aclass][hard_regno] >= 0)
 		{
-		  enum machine_mode mode = ALLOCNO_MODE (conflict_a);
-		  int conflict_nregs = hard_regno_nregs[hard_regno][mode];
 		  int n_objects = ALLOCNO_NUM_OBJECTS (conflict_a);
+		  int conflict_nregs;
 
+		  mode = ALLOCNO_MODE (conflict_a);
+		  conflict_nregs = hard_regno_nregs[hard_regno][mode];
 		  if (conflict_nregs == n_objects && conflict_nregs > 1)
 		    {
 		      int num = OBJECT_SUBWORD (conflict_obj);
