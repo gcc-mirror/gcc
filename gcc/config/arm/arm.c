@@ -9152,11 +9152,14 @@ coproc_secondary_reload_class (enum machine_mode mode, rtx x, bool wb)
       return GENERAL_REGS;
     }
 
+  /* The neon move patterns handle all legitimate vector and struct
+     addresses.  */
   if (TARGET_NEON
+      && MEM_P (x)
       && (GET_MODE_CLASS (mode) == MODE_VECTOR_INT
-          || GET_MODE_CLASS (mode) == MODE_VECTOR_FLOAT)
-      && neon_vector_mem_operand (x, 0))
-     return NO_REGS;
+	  || GET_MODE_CLASS (mode) == MODE_VECTOR_FLOAT
+	  || VALID_NEON_STRUCT_MODE (mode)))
+    return NO_REGS;
 
   if (arm_coproc_mem_operand (x, wb) || s_register_operand (x, mode))
     return NO_REGS;
