@@ -161,6 +161,15 @@ darwin_driver_init (unsigned int *decoded_options_count,
 	continue;
       switch ((*decoded_options)[i].opt_index)
 	{
+#if DARWIN_X86
+	case OPT_arch:
+	  if (!strcmp ((*decoded_options)[i].arg, "i386"))
+	    generate_option (OPT_m32, NULL, 1, CL_DRIVER, &(*decoded_options)[i]);
+	  else if (!strcmp ((*decoded_options)[i].arg, "x86_64"))
+	    generate_option (OPT_m64, NULL, 1, CL_DRIVER, &(*decoded_options)[i]);
+	  break;
+#endif
+
 	case OPT_filelist:
 	case OPT_framework:
 	  ++*decoded_options_count;

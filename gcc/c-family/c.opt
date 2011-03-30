@@ -201,7 +201,7 @@ E
 C ObjC C++ ObjC++ Undocumented Var(flag_preprocess_only)
 
 F
-C ObjC C++ ObjC++ Joined Separate MissingArgError(missing path after %qs)
+Driver C ObjC C++ ObjC++ Joined Separate MissingArgError(missing path after %qs)
 -F <dir>	Add <dir> to the end of the main framework include path
 
 H
