@@ -1,3 +1,8 @@
+2011-03-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* cfglayout.c (insn_locators_alloc): Initialize curr_location and
+	last_location to UNKNOWN_LOCATION.
+
 2011-03-30  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/48349
