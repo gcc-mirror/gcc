@@ -1,8 +1,8 @@
 2011-03-30  Christian Schüler  <cschueler@gmx.de>
 
-	PR/driver 48208
+	PR driver/48208
 	* config/c.opt (F): Added 'Driver' to -F option.
-	PR/driver 48260
+	PR driver/48260
 	* config/darwin-driver.c (darwin_driver_init): Add '-arch' to
 	  handler function.
 	* config/darwin.opt: Added '-arch' option.
