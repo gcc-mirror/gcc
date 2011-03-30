@@ -253,8 +253,8 @@ insn_locators_alloc (void)
   locations_locators_locs = VEC_alloc (int, heap, 32);
   locations_locators_vals = VEC_alloc (location_t, heap, 32);
 
-  last_location = -1;
-  curr_location = -1;
+  curr_location = UNKNOWN_LOCATION;
+  last_location = UNKNOWN_LOCATION;
   curr_block = NULL;
   last_block = NULL;
   curr_rtl_loc = 0;
