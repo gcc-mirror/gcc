@@ -1,5 +1,12 @@
 2011-03-30  Joseph Myers  <joseph@codesourcery.com>
 
+	* config/arm/arm.opt (mhard-float, msoft-float): Mark
+	Undocumented.  Remove help text.
+	* doc/invoke.texi (ARM Options): Don't document -msoft-float and
+	-mhard-float.
+
+2011-03-30  Joseph Myers  <joseph@codesourcery.com>
+
 	* doc/options.texi (NegativeAlias): Document.
 	(Alias): Mention NegativeAlias.
 	* opt-functions.awk: Handle NegativeAlias.

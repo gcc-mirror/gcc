@@ -94,8 +94,7 @@ Target RejectNegative Joined Var(target_fpu_name)
 Specify the name of the target floating point hardware/format
 
 mhard-float
-Target RejectNegative Alias(mfloat-abi=, hard)
-Alias for -mfloat-abi=hard
+Target RejectNegative Alias(mfloat-abi=, hard) Undocumented
 
 mlittle-endian
 Target Report RejectNegative InverseMask(BIG_END)
@@ -122,8 +121,7 @@ Target Report Mask(SINGLE_PIC_BASE)
 Do not load the PIC register in function prologues
 
 msoft-float
-Target RejectNegative Alias(mfloat-abi=, soft)
-Alias for -mfloat-abi=soft
+Target RejectNegative Alias(mfloat-abi=, soft) Undocumented
 
 mstructure-size-boundary=
 Target RejectNegative Joined Var(structure_size_string)
