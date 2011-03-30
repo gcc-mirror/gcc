@@ -4125,8 +4125,9 @@ mime/check: $(CHECK_DEPS)
 	$(CHECK)
 .PHONY: mime/check
 
-net/net.lo: $(go_net_files) bytes.gox fmt.gox io.gox os.gox reflect.gox \
-		strconv.gox strings.gox sync.gox syscall.gox
+net/net.lo: $(go_net_files) bytes.gox fmt.gox io.gox os.gox rand.gox \
+		reflect.gox strconv.gox strings.gox sync.gox syscall.gox \
+		time.gox
 	$(BUILDPACKAGE)
 net/check: $(CHECK_DEPS)
 	$(CHECK)
