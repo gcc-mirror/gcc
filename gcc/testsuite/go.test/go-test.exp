@@ -141,7 +141,7 @@ proc go-set-goarch { } {
 	    if [check_effective_target_ilp32] {
 		set goarch "sparc"
 	    } else {
-		set goarch "sparcv9"
+		set goarch "sparc64"
 	    }
 	}
 	default {
