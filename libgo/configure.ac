@@ -381,8 +381,9 @@ esac
 AC_CHECK_HEADERS(sys/mman.h syscall.h sys/epoll.h sys/ptrace.h sys/syscall.h sys/user.h sys/utsname.h)
 AM_CONDITIONAL(HAVE_SYS_MMAN_H, test "$ac_cv_header_sys_mman_h" = yes)
 
-AC_CHECK_FUNCS(srandom random strerror_r strsignal)
+AC_CHECK_FUNCS(srandom random strerror_r strsignal wait4)
 AM_CONDITIONAL(HAVE_STRERROR_R, test "$ac_cv_func_strerror_r" = yes)
+AM_CONDITIONAL(HAVE_WAIT4, test "$ac_cv_func_wait4" = yes)
 
 AC_CACHE_CHECK([for __sync_bool_compare_and_swap_4],
 [libgo_cv_func___sync_bool_compare_and_swap_4],

@@ -1246,11 +1246,18 @@ endif # !LIBGO_IS_SOLARIS
 endif # !LIBGO_IS_LINUX
 
 
-# Define ForkExec, PtraceForkExec, Exec, and Wait4.
+# Define ForkExec, PtraceForkExec, and Exec.
 if LIBGO_IS_RTEMS
 syscall_exec_os_file = syscalls/exec_stubs.go
 else
 syscall_exec_os_file = syscalls/exec.go
+endif
+
+# Define Wait4.
+if HAVE_WAIT4
+syscall_wait_file = syscalls/wait4.go
+else
+syscall_wait_file = syscalls/waitpid.go
 endif
 
 # Define Sleep.
@@ -1329,6 +1336,7 @@ go_syscall_files = \
 	$(syscall_errstr_decl_file) \
 	syscalls/exec_helpers.go \
 	$(syscall_exec_os_file) \
+	$(syscall_wait_file) \
 	$(syscall_filesize_file) \
 	$(syscall_stat_file) \
 	$(syscall_sleep_file) \
