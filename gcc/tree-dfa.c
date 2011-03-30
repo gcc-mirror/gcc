@@ -151,6 +151,11 @@ renumber_gimple_stmt_uids (void)
   FOR_ALL_BB (bb)
     {
       gimple_stmt_iterator bsi;
+      for (bsi = gsi_start_phis (bb); !gsi_end_p (bsi); gsi_next (&bsi))
+	{
+	  gimple stmt = gsi_stmt (bsi);
+	  gimple_set_uid (stmt, inc_gimple_stmt_max_uid (cfun));
+	}
       for (bsi = gsi_start_bb (bb); !gsi_end_p (bsi); gsi_next (&bsi))
 	{
 	  gimple stmt = gsi_stmt (bsi);

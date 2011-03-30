@@ -1981,8 +1981,19 @@ output_function (struct cgraph_node *node)
   /* We will renumber the statements.  The code that does this uses
      the same ordering that we use for serializing them so we can use
      the same code on the other end and not have to write out the
-     statement numbers.  */
-  renumber_gimple_stmt_uids ();
+     statement numbers.  We do not assign UIDs to PHIs here because
+     virtual PHIs get re-computed on-the-fly which would make numbers
+     inconsistent.  */
+  set_gimple_stmt_max_uid (cfun, 0);
+  FOR_ALL_BB (bb)
+    {
+      gimple_stmt_iterator gsi;
+      for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+	{
+	  gimple stmt = gsi_stmt (gsi);
+	  gimple_set_uid (stmt, inc_gimple_stmt_max_uid (cfun));
+	}
+    }
 
   /* Output the code for the function.  */
   FOR_ALL_BB_FN (bb, fn)
