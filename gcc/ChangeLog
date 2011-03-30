@@ -1,3 +1,10 @@
+2011-03-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/48305
+	* fold-const.c (fold_binary_loc) <case EQ_EXPR, NE_EXPR>: Make sure
+	arg10/arg11 in (X ^ Y) == (Z ^ W) are always fold converted to
+	matching arg00/arg01 types.
+
 2011-03-30  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* cfglayout.c (insn_locators_alloc): Initialize curr_location and
