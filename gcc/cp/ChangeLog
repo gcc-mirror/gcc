@@ -1,3 +1,8 @@
+2011-03-30  Jason Merrill  <jason@redhat.com>
+
+	* call.c (convert_like_real): Correct TREE_CONSTANT on CONSTRUCTOR.
+	* decl.c (reshape_init_array_1): Likewise.
+
 2011-03-29  Jason Merrill  <jason@redhat.com>
 
 	PR c++/48265
