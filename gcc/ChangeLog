@@ -1,3 +1,11 @@
+2011-03-30  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
+
+	PR target/43590
+	* config/arm/neon.md (neon_vld3qa<mode>, neon_vld4qa<mode>): Remove
+	operand 1 and reshuffle the operands to match.
+	(neon_vld3<mode>, neon_vld4<mode>): Update accordingly.
+
 2011-03-30  Christian Schüler  <cschueler@gmx.de>
 
 	PR driver/48208

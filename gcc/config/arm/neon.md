@@ -4617,8 +4617,7 @@
    (unspec:VQ [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
   "TARGET_NEON"
 {
-  emit_insn (gen_neon_vld3qa<mode> (operands[0], operands[0],
-                                    operands[1], operands[1]));
+  emit_insn (gen_neon_vld3qa<mode> (operands[0], operands[1], operands[1]));
   emit_insn (gen_neon_vld3qb<mode> (operands[0], operands[0],
                                     operands[1], operands[1]));
   DONE;
@@ -4626,12 +4625,11 @@
 
 (define_insn "neon_vld3qa<mode>"
   [(set (match_operand:CI 0 "s_register_operand" "=w")
-        (unspec:CI [(mem:CI (match_operand:SI 3 "s_register_operand" "2"))
-                    (match_operand:CI 1 "s_register_operand" "0")
+        (unspec:CI [(mem:CI (match_operand:SI 2 "s_register_operand" "1"))
                     (unspec:VQ [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
                    UNSPEC_VLD3A))
-   (set (match_operand:SI 2 "s_register_operand" "=r")
-        (plus:SI (match_dup 3)
+   (set (match_operand:SI 1 "s_register_operand" "=r")
+        (plus:SI (match_dup 2)
 		 (const_int 24)))]
   "TARGET_NEON"
 {
@@ -4640,7 +4638,7 @@
   ops[0] = gen_rtx_REG (DImode, regno);
   ops[1] = gen_rtx_REG (DImode, regno + 4);
   ops[2] = gen_rtx_REG (DImode, regno + 8);
-  ops[3] = operands[2];
+  ops[3] = operands[1];
   output_asm_insn ("vld3.<V_sz_elem>\t{%P0, %P1, %P2}, [%3]!", ops);
   return "";
 }
@@ -4909,8 +4907,7 @@
    (unspec:VQ [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
   "TARGET_NEON"
 {
-  emit_insn (gen_neon_vld4qa<mode> (operands[0], operands[0],
-                                    operands[1], operands[1]));
+  emit_insn (gen_neon_vld4qa<mode> (operands[0], operands[1], operands[1]));
   emit_insn (gen_neon_vld4qb<mode> (operands[0], operands[0],
                                     operands[1], operands[1]));
   DONE;
@@ -4918,12 +4915,11 @@
 
 (define_insn "neon_vld4qa<mode>"
   [(set (match_operand:XI 0 "s_register_operand" "=w")
-        (unspec:XI [(mem:XI (match_operand:SI 3 "s_register_operand" "2"))
-                    (match_operand:XI 1 "s_register_operand" "0")
+        (unspec:XI [(mem:XI (match_operand:SI 2 "s_register_operand" "1"))
                     (unspec:VQ [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
                    UNSPEC_VLD4A))
-   (set (match_operand:SI 2 "s_register_operand" "=r")
-        (plus:SI (match_dup 3)
+   (set (match_operand:SI 1 "s_register_operand" "=r")
+        (plus:SI (match_dup 2)
 		 (const_int 32)))]
   "TARGET_NEON"
 {
@@ -4933,7 +4929,7 @@
   ops[1] = gen_rtx_REG (DImode, regno + 4);
   ops[2] = gen_rtx_REG (DImode, regno + 8);
   ops[3] = gen_rtx_REG (DImode, regno + 12);
-  ops[4] = operands[2];
+  ops[4] = operands[1];
   output_asm_insn ("vld4.<V_sz_elem>\t{%P0, %P1, %P2, %P3}, [%4]!", ops);
   return "";
 }
