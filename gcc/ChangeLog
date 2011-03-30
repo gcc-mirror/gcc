@@ -1,3 +1,52 @@
+2011-03-30  Jeff Law  <law@redhat.com>
+
+	* reload.h (reg_equiv_constant): Move into new structure reg_equivs,
+	define accessor macro.
+	(reg_equiv_invariant, reg_equiv_memory_loc): Likewise.
+	(reg_equiv_address, reg_equiv_mem, reg_equiv_alt_mem_list): Likewise.
+	(reg_equiv_init): Likewise.
+	(reg_equivs_size): New variable.
+	(reg_equiv_init_size): Remove.
+	(allocate_initial_values): Move prototype to here from....
+	* integrate.h (allocate_initial_values): Remove prototype.
+	* integrate.c: Include reload.h.
+	(allocate_initial_values): Corresponding changes.
+	* ira.c (find_reg_equiv_invariant_cost): Corresponding changes.
+	(fix_reg_equiv_init, no_equiv): Corresponding changes.
+	(update_equiv_regs): Corresponding changes.
+	(ira): Corresponding changes.
+	* reload.c (push_reg_equiv_alt_mem): Corresponding changes.
+	(push_secondary_reload): Corresponding changes.
+	(push_reload, find_reloads, find_reloads_toplev): Corresponding changes.
+	(make_memloc, find_reloads_address): Corresponding changes.
+	(subst_reg_equivs, subst_indexed_address): Corresponding changes.
+	(find_reloads_address_1): Corresponding changes.
+	(find_reloads_subreg_address, subst_reloads): Corresponding changes.
+	(refers_to_regno_for_reload_p): Corresponding changes.
+	(reg_overlap_mentioned_for_reload_p): Corresponding changes.
+	(refers_to_mem_for_reload_p, find_equiv_reg): Corresponding changes.
+	* reload1.c: Include ggc.h.
+	(grow_reg_equivs): New function.
+	(replace_pseudos_in, reload): Corresponding changes.
+	(calculate_needs_all_insns, alter_regs): Corresponding changes.
+	(eliminate_regs_1, elimination_effects): Corresponding changes.
+	(emit_input_reload_insns, emit_output_reload_insns): Likewise.
+	(delete_output_reload): Likewise.
+	* caller-save.c (mark_referenced_regs): Corresponding changes.
+	* alpha/alpha.c (resolve_reload_operand): Corresponding changes.
+	* frv/predicates.md (frv_load_operand): Corresponding changes.
+	* microblaze/microblaze.c (double_memory_operand): Corresponding
+	changes.
+	* avr/avr.h (LEGITIMIZE_RELOAD_ADDRESS): Corresponding changes.
+	* xtensa/xtensa.c (fixup_subreg_mem): Corresponding changes.
+	* mn10300/mn10300.c (mn10300_secondary_reload): Corresponding
+	changes.
+	* m68k/m68k.c (emit_move_sequence): Corresponding changes.
+	* arm/arm.c (arm_reload_in_hi, arm_reload_out_hi): Corresponding
+	changes.
+	* pa/pa.c (emit_move_sequence): Corresponding changes.
+	* vax/vax.c (nonindexed_address_p): Corresponding changes.
+
 2011-03-30  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	PR target/47551

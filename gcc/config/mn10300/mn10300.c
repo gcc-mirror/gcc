@@ -1430,7 +1430,7 @@ mn10300_secondary_reload (bool in_p, rtx x, reg_class_t rclass_i,
 
       if (xregno >= FIRST_PSEUDO_REGISTER && xregno != INVALID_REGNUM)
 	{
-	  addr = reg_equiv_mem [xregno];
+	  addr = reg_equiv_mem (xregno);
 	  if (addr)
 	    addr = XEXP (addr, 0);
 	}

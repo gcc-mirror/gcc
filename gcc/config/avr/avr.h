@@ -393,14 +393,14 @@ do {									    \
     }									    \
   if (GET_CODE (X) == PLUS						    \
       && REG_P (XEXP (X, 0))						    \
-      && reg_equiv_constant[REGNO (XEXP (X, 0))] == 0			    \
+      && (reg_equiv_constant (REGNO (XEXP (X, 0))) == 0)		    \
       && GET_CODE (XEXP (X, 1)) == CONST_INT				    \
       && INTVAL (XEXP (X, 1)) >= 1)					    \
     {									    \
       int fit = INTVAL (XEXP (X, 1)) <= (64 - GET_MODE_SIZE (MODE));	    \
       if (fit)								    \
 	{								    \
-          if (reg_equiv_address[REGNO (XEXP (X, 0))] != 0)		    \
+          if (reg_equiv_address (REGNO (XEXP (X, 0))) != 0)		    \
 	    {								    \
 	      int regno = REGNO (XEXP (X, 0));				    \
 	      rtx mem = make_memloc (X, regno);				    \

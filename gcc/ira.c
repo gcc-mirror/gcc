@@ -1836,15 +1836,15 @@ rtx *ira_reg_equiv_const;
 static void
 find_reg_equiv_invariant_const (void)
 {
-  int i;
+  unsigned int i;
   bool invariant_p;
   rtx list, insn, note, constant, x;
 
-  for (i = FIRST_PSEUDO_REGISTER; i < reg_equiv_init_size; i++)
+  for (i = FIRST_PSEUDO_REGISTER; i < VEC_length (reg_equivs_t, reg_equivs); i++)
     {
       constant = NULL_RTX;
       invariant_p = false;
-      for (list = reg_equiv_init[i]; list != NULL_RTX; list = XEXP (list, 1))
+      for (list = reg_equiv_init (i); list != NULL_RTX; list = XEXP (list, 1))
 	{
 	  insn = XEXP (list, 0);
 	  note = find_reg_note (insn, REG_EQUIV, NULL_RTX);
@@ -2104,17 +2104,18 @@ check_allocation (void)
 static void
 fix_reg_equiv_init (void)
 {
-  int max_regno = max_reg_num ();
-  int i, new_regno;
+  unsigned int max_regno = max_reg_num ();
+  int i, new_regno, max;
   rtx x, prev, next, insn, set;
 
-  if (reg_equiv_init_size < max_regno)
+  if (VEC_length (reg_equivs_t, reg_equivs) < max_regno)
     {
-      reg_equiv_init = GGC_RESIZEVEC (rtx, reg_equiv_init, max_regno);
-      while (reg_equiv_init_size < max_regno)
-	reg_equiv_init[reg_equiv_init_size++] = NULL_RTX;
-      for (i = FIRST_PSEUDO_REGISTER; i < reg_equiv_init_size; i++)
-	for (prev = NULL_RTX, x = reg_equiv_init[i]; x != NULL_RTX; x = next)
+      max = VEC_length (reg_equivs_t, reg_equivs);
+      grow_reg_equivs ();
+      for (i = FIRST_PSEUDO_REGISTER; i < max; i++)
+	for (prev = NULL_RTX, x = reg_equiv_init (i);
+	     x != NULL_RTX;
+	     x = next)
 	  {
 	    next = XEXP (x, 1);
 	    insn = XEXP (x, 0);
@@ -2136,11 +2137,11 @@ fix_reg_equiv_init (void)
 	    else
 	      {
 		if (prev == NULL_RTX)
-		  reg_equiv_init[i] = next;
+		  reg_equiv_init (i) = next;
 		else
 		  XEXP (prev, 1) = next;
-		XEXP (x, 1) = reg_equiv_init[new_regno];
-		reg_equiv_init[new_regno] = x;
+		XEXP (x, 1) = reg_equiv_init (new_regno);
+		reg_equiv_init (new_regno) = x;
 	      }
 	  }
     }
@@ -2645,7 +2646,7 @@ no_equiv (rtx reg, const_rtx store ATTRIBUTE_UNUSED,
      should keep their initialization insns.  */
   if (reg_equiv[regno].is_arg_equivalence)
     return;
-  reg_equiv_init[regno] = NULL_RTX;
+  reg_equiv_init (regno) = NULL_RTX;
   for (; list; list =  XEXP (list, 1))
     {
       rtx insn = XEXP (list, 0);
@@ -2697,8 +2698,7 @@ update_equiv_regs (void)
   recorded_label_ref = 0;
 
   reg_equiv = XCNEWVEC (struct equivalence, max_regno);
-  reg_equiv_init = ggc_alloc_cleared_vec_rtx (max_regno);
-  reg_equiv_init_size = max_regno;
+  grow_reg_equivs ();
 
   init_alias_analysis ();
 
@@ -2763,8 +2763,8 @@ update_equiv_regs (void)
 
 	      /* Record for reload that this is an equivalencing insn.  */
 	      if (rtx_equal_p (src, XEXP (note, 0)))
-		reg_equiv_init[regno]
-		  = gen_rtx_INSN_LIST (VOIDmode, insn, reg_equiv_init[regno]);
+		reg_equiv_init (regno)
+		  = gen_rtx_INSN_LIST (VOIDmode, insn, reg_equiv_init (regno));
 
 	      /* Continue normally in case this is a candidate for
 		 replacements.  */
@@ -2864,8 +2864,8 @@ update_equiv_regs (void)
 	      /* If we haven't done so, record for reload that this is an
 		 equivalencing insn.  */
 	      if (!reg_equiv[regno].is_arg_equivalence)
-		reg_equiv_init[regno]
-		  = gen_rtx_INSN_LIST (VOIDmode, insn, reg_equiv_init[regno]);
+		reg_equiv_init (regno)
+		  = gen_rtx_INSN_LIST (VOIDmode, insn, reg_equiv_init (regno));
 
 	      /* Record whether or not we created a REG_EQUIV note for a LABEL_REF.
 		 We might end up substituting the LABEL_REF for uses of the
@@ -2965,7 +2965,7 @@ update_equiv_regs (void)
 	    {
 	      /* This insn makes the equivalence, not the one initializing
 		 the register.  */
-	      reg_equiv_init[regno]
+	      reg_equiv_init (regno)
 		= gen_rtx_INSN_LIST (VOIDmode, insn, NULL_RTX);
 	      df_notes_rescan (init_insn);
 	    }
@@ -3068,7 +3068,7 @@ update_equiv_regs (void)
 		      reg_equiv[regno].init_insns
 			= XEXP (reg_equiv[regno].init_insns, 1);
 
-		      reg_equiv_init[regno] = NULL_RTX;
+		      reg_equiv_init (regno) = NULL_RTX;
 		      bitmap_set_bit (cleared_regs, regno);
 		    }
 		  /* Move the initialization of the register to just before
@@ -3101,7 +3101,7 @@ update_equiv_regs (void)
 		      if (insn == BB_HEAD (bb))
 			BB_HEAD (bb) = PREV_INSN (insn);
 
-		      reg_equiv_init[regno]
+		      reg_equiv_init (regno)
 			= gen_rtx_INSN_LIST (VOIDmode, new_insn, NULL_RTX);
 		      bitmap_set_bit (cleared_regs, regno);
 		    }
@@ -3481,19 +3481,8 @@ build_insn_chain (void)
   if (dump_file)
     print_insn_chains (dump_file);
 }
-
-/* Allocate memory for reg_equiv_memory_loc.  */
-static void
-init_reg_equiv_memory_loc (void)
-{
-  max_regno = max_reg_num ();
 
-  /* And the reg_equiv_memory_loc array.  */
-  VEC_safe_grow (rtx, gc, reg_equiv_memory_loc_vec, max_regno);
-  memset (VEC_address (rtx, reg_equiv_memory_loc_vec), 0,
-	  sizeof (rtx) * max_regno);
-  reg_equiv_memory_loc = VEC_address (rtx, reg_equiv_memory_loc_vec);
-}
+
 
 /* All natural loops.  */
 struct loops ira_loops;
@@ -3599,8 +3588,6 @@ ira (FILE *f)
   record_loop_exits ();
   current_loops = &ira_loops;
 
-  init_reg_equiv_memory_loc ();
-
   if (internal_flag_ira_verbose > 0 && ira_dump_file != NULL)
     fprintf (ira_dump_file, "Building IRA IR\n");
   loops_p = ira_build (optimize
@@ -3670,7 +3657,7 @@ ira (FILE *f)
   if (delete_trivially_dead_insns (get_insns (), max_reg_num ()))
     df_analyze ();
 
-  init_reg_equiv_memory_loc ();
+  grow_reg_equivs ();
 
   if (max_regno != max_regno_before_ira)
     {
@@ -3680,7 +3667,7 @@ ira (FILE *f)
       regstat_compute_ri ();
     }
 
-  allocate_initial_values (reg_equiv_memory_loc);
+  allocate_initial_values (reg_equivs);
 
   overall_cost_before = ira_overall_cost;
   if (ira_conflicts_p)

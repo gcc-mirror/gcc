@@ -326,8 +326,8 @@ double_memory_operand (rtx op, enum machine_mode mode)
 	  && GET_CODE (op) == REG
 	  && REGNO (op) >= FIRST_PSEUDO_REGISTER
 	  && reg_renumber[REGNO (op)] < 0
-	  && reg_equiv_mem[REGNO (op)] != 0
-	  && double_memory_operand (reg_equiv_mem[REGNO (op)], mode))
+	  && reg_equiv_mem (REGNO (op)) != 0
+	  && double_memory_operand (reg_equiv_mem (REGNO (op)), mode))
 	return 1;
       return 0;
     }

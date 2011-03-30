@@ -1676,10 +1676,9 @@ nonindexed_address_p (rtx x, bool strict)
   rtx xfoo0;
   if (REG_P (x))
     {
-      extern rtx *reg_equiv_mem;
       if (! reload_in_progress
-	  || reg_equiv_mem[REGNO (x)] == 0
-	  || indirectable_address_p (reg_equiv_mem[REGNO (x)], strict, false))
+	  || reg_equiv_mem (REGNO (x)) == 0
+	  || indirectable_address_p (reg_equiv_mem (REGNO (x)), strict, false))
 	return true;
     }
   if (indirectable_constant_address_p (x, false))
