@@ -1272,7 +1272,7 @@ enum reg_class
 { 0xe0000000,    0x1f },		/* MMX_REGS */			\
 { 0x1fe00100,0x1fe000 },		/* FP_TOP_SSE_REG */		\
 { 0x1fe00200,0x1fe000 },		/* FP_SECOND_SSE_REG */		\
-{ 0x1fe0ff00,0x3fe000 },		/* FLOAT_SSE_REGS */		\
+{ 0x1fe0ff00,0x1fe000 },		/* FLOAT_SSE_REGS */		\
    { 0x1ffff,  0x1fe0 },		/* FLOAT_INT_REGS */		\
 { 0x1fe100ff,0x1fffe0 },		/* INT_SSE_REGS */		\
 { 0x1fe1ffff,0x1fffe0 },		/* FLOAT_INT_SSE_REGS */	\
