@@ -1243,9 +1243,9 @@ expand_binop_directly (enum machine_mode mode, optab binoptab,
 		       rtx last)
 {
   enum insn_code icode = optab_handler (binoptab, mode);
-  enum machine_mode mode0 = insn_data[(int) icode].operand[1].mode;
-  enum machine_mode mode1 = insn_data[(int) icode].operand[2].mode;
-  enum machine_mode tmp_mode;
+  enum machine_mode xmode0 = insn_data[(int) icode].operand[1].mode;
+  enum machine_mode xmode1 = insn_data[(int) icode].operand[2].mode;
+  enum machine_mode mode0, mode1, tmp_mode;
   struct expand_operand ops[3];
   bool commutative_p;
   rtx pat;
@@ -1256,8 +1256,8 @@ expand_binop_directly (enum machine_mode mode, optab binoptab,
      if we would swap the operands, we can save the conversions.  */
   commutative_p = commutative_optab_p (binoptab);
   if (commutative_p
-      && GET_MODE (xop0) != mode0 && GET_MODE (xop1) != mode1
-      && GET_MODE (xop0) == mode1 && GET_MODE (xop1) == mode1)
+      && GET_MODE (xop0) != xmode0 && GET_MODE (xop1) != xmode1
+      && GET_MODE (xop0) == xmode1 && GET_MODE (xop1) == xmode1)
     {
       swap = xop0;
       xop0 = xop1;
@@ -1265,9 +1265,9 @@ expand_binop_directly (enum machine_mode mode, optab binoptab,
     }
 
   /* If we are optimizing, force expensive constants into a register.  */
-  xop0 = avoid_expensive_constant (mode0, binoptab, xop0, unsignedp);
+  xop0 = avoid_expensive_constant (xmode0, binoptab, xop0, unsignedp);
   if (!shift_optab_p (binoptab))
-    xop1 = avoid_expensive_constant (mode1, binoptab, xop1, unsignedp);
+    xop1 = avoid_expensive_constant (xmode1, binoptab, xop1, unsignedp);
 
   /* In case the insn wants input operands in modes different from
      those of the actual operands, convert the operands.  It would
@@ -1275,19 +1275,19 @@ expand_binop_directly (enum machine_mode mode, optab binoptab,
      that they're properly zero-extended, sign-extended or truncated
      for their mode.  */
 
-  if (GET_MODE (xop0) != mode0 && mode0 != VOIDmode)
-    xop0 = convert_modes (mode0,
-			  GET_MODE (xop0) != VOIDmode
-			  ? GET_MODE (xop0)
-			  : mode,
-			  xop0, unsignedp);
+  mode0 = GET_MODE (xop0) != VOIDmode ? GET_MODE (xop0) : mode;
+  if (xmode0 != VOIDmode && xmode0 != mode0)
+    {
+      xop0 = convert_modes (xmode0, mode0, xop0, unsignedp);
+      mode0 = xmode0;
+    }
 
-  if (GET_MODE (xop1) != mode1 && mode1 != VOIDmode)
-    xop1 = convert_modes (mode1,
-			  GET_MODE (xop1) != VOIDmode
-			  ? GET_MODE (xop1)
-			  : mode,
-			  xop1, unsignedp);
+  mode1 = GET_MODE (xop1) != VOIDmode ? GET_MODE (xop1) : mode;
+  if (xmode1 != VOIDmode && xmode1 != mode1)
+    {
+      xop1 = convert_modes (xmode1, mode1, xop1, unsignedp);
+      mode1 = xmode1;
+    }
 
   /* If operation is commutative,
      try to make the first operand a register.

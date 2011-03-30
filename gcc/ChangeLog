@@ -1,3 +1,9 @@
+2011-03-30  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	PR rtl-optimization/48332
+	* optabs.c (expand_binop_directly): Set xmodeN to the target-mandated
+	mode of input operand N and modeN to its actual mode.
+
 2011-03-30  Jeff Law  <law@redhat.com>
 
 	* reload.h (reg_equiv_constant): Move into new structure reg_equivs,
