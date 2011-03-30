@@ -1,4 +1,11 @@
 2011-03-30  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	PR target/47551
+	* config/arm/arm.c (coproc_secondary_reload_class): Handle
+	structure modes.  Don't check neon_vector_mem_operand for
+	vector or structure modes.
+
+2011-03-30  Richard Sandiford  <richard.sandiford@linaro.org>
 	    Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
 
 	PR target/43590
