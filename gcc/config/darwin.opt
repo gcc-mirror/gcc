@@ -31,6 +31,9 @@ Driver Alias(Zall_load)
 allowable_client
 Driver Separate Alias(Zallowable_client)
 
+arch
+Driver RejectNegative Separate
+
 arch_errors_fatal
 Driver Alias(Zarch_errors_fatal)
 
