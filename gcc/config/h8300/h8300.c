@@ -113,6 +113,7 @@ static unsigned int  h8300_binary_length          (rtx, const h8300_length_table
 static bool          h8300_short_move_mem_p       (rtx, enum rtx_code);
 static unsigned int  h8300_move_length            (rtx *, const h8300_length_table *);
 static bool	     h8300_hard_regno_scratch_ok  (unsigned int);
+static rtx	     h8300_get_index (rtx, enum machine_mode mode, int *);
 
 /* CPU_TYPE, says what cpu we're compiling for.  */
 int cpu_type;
@@ -2094,7 +2095,7 @@ notice_update_cc (rtx body, rtx insn)
    MODE is the mode of the value being accessed.  It can be VOIDmode
    if the address is known to be valid, but its mode is unknown.  */
 
-rtx
+static rtx
 h8300_get_index (rtx x, enum machine_mode mode, int *size)
 {
   int dummy, factor;
@@ -2154,6 +2155,21 @@ h8300_get_index (rtx x, enum machine_mode mode, int *size)
     }
   *size = 0;
   return x;
+}
+
+/* Worker function for TARGET_MODE_DEPENDENT_ADDRESS_P.
+
+   On the H8/300, the predecrement and postincrement address depend thus
+   (the amount of decrement or increment being the length of the operand).  */
+
+static bool
+h8300_mode_dependent_address_p (const_rtx addr)
+{
+  if (GET_CODE (addr) == PLUS
+      && h8300_get_index (XEXP (addr, 0), VOIDmode, 0) != XEXP (addr, 0))
+    return true;
+
+  return false;
 }
 
 static const h8300_length_table addb_length_table =
@@ -6025,5 +6041,8 @@ h8300_trampoline_init (rtx m_tramp, tree fndecl, rtx cxt)
 
 #undef TARGET_EXCEPT_UNWIND_INFO
 #define TARGET_EXCEPT_UNWIND_INFO sjlj_except_unwind_info
+
+#undef TARGET_MODE_DEPENDENT_ADDRESS_P
+#define TARGET_MODE_DEPENDENT_ADDRESS_P h8300_mode_dependent_address_p
 
 struct gcc_target targetm = TARGET_INITIALIZER;

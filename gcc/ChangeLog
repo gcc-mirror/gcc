@@ -1,3 +1,11 @@
+2011-03-31  Anatoly Sokolov  <aesok@post.ru>
+
+	* config/h8300/h8300.h (GO_IF_MODE_DEPENDENT_ADDRESS): Remove macro.
+	* config/h8300/h8300-protos.h (h8300_get_index): Remove.
+	* config/h8300/h8300.c (TARGET_MODE_DEPENDENT_ADDRESS_P): Define.
+	(h8300_mode_dependent_address_p): New function.
+	(h8300_get_index): Make static.
+
 2011-03-31  Jeff Law  <law@redhat.com>
 
 	* tree-ssa-forwprop.c (forward_propagate_into_cond): Avoid 
