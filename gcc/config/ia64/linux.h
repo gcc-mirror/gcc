@@ -1,7 +1,7 @@
 /* Definitions for ia64-linux target.
 
 Copyright (C) 2000, 2001, 2002, 2003, 2004, 2006,
-2009, 2010 Free Software Foundation, Inc.
+2009, 2010, 2011 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -23,11 +23,6 @@ You should have received a copy of the GNU General Public License and
 a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
-
-/* This macro is a C statement to print on `stderr' a string describing the
-   particular machine description choice.  */
-
-#define TARGET_VERSION fprintf (stderr, " (IA-64) Linux");
 
 /* This is for -profile to use -lc_p instead of -lc.  */
 #undef CC1_SPEC

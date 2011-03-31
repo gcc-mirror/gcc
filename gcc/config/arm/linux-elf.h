@@ -24,9 +24,6 @@
    any conflicting definitions and add any extras.  */
 
 /* Run-time Target Specification.  */
-#undef  TARGET_VERSION
-#define TARGET_VERSION  fputs (" (ARM GNU/Linux with ELF)", stderr);
-
 #undef  TARGET_DEFAULT_FLOAT_ABI
 #define TARGET_DEFAULT_FLOAT_ABI ARM_FLOAT_ABI_HARD
 

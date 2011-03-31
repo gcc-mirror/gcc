@@ -129,13 +129,6 @@ enum processor_flags
   "%{!march=*:%{mesa:-march=g5}%{mzarch:-march=z900}}"
 #endif
 
-/* Target version string.  Overridden by the OS header.  */
-#ifdef DEFAULT_TARGET_64BIT
-#define TARGET_VERSION fprintf (stderr, " (zSeries)");
-#else
-#define TARGET_VERSION fprintf (stderr, " (S/390)");
-#endif
-
 /* Constants needed to control the TEST DATA CLASS (TDC) instruction.  */
 #define S390_TDC_POSITIVE_ZERO                     (1 << 11)
 #define S390_TDC_NEGATIVE_ZERO                     (1 << 10)

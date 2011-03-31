@@ -1,6 +1,6 @@
 /* Definitions for embedded ia64-elf target.
 
-Copyright (C) 2000, 2001, 2002, 2003, 2010 Free Software Foundation, Inc.
+Copyright (C) 2000, 2001, 2002, 2003, 2010, 2011 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -22,11 +22,6 @@ You should have received a copy of the GNU General Public License and
 a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
-
-/* This macro is a C statement to print on `stderr' a string describing the
-   particular machine description choice.  */
-
-#define TARGET_VERSION fprintf (stderr, " (IA-64) ELF");
 
 /* A C string constant that tells the GCC driver program options to pass to
    the assembler.  It can also specify how to translate options you give to GNU

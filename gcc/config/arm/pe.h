@@ -34,8 +34,6 @@
 
 
 /* Run-time Target Specification.  */
-#undef  TARGET_VERSION
-#define TARGET_VERSION fputs (" (ARM/pe)", stderr)
 
 /* Get tree.c to declare a target-specific specialization of
    merge_decl_attributes.  */

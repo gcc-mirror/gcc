@@ -1,5 +1,5 @@
 /* Definitions for Toshiba Media Processor
-   Copyright (C) 2001, 2003, 2004, 2005, 2007, 2008, 2009, 2010
+   Copyright (C) 2001, 2003, 2004, 2005, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
    Contributed by Red Hat, Inc.
 
@@ -129,8 +129,6 @@ crtbegin.o%s"
 #define TARGET_BIG_ENDIAN	(! (target_flags & MASK_LITTLE_ENDIAN))
 
 #define TARGET_COPRO_MULT	0
-
-#define TARGET_VERSION fprintf (stderr, " (Toshiba Media Processor (MeP))");
 
 /* The MeP config tool will replace this as appropriate.  */
 #define DEFAULT_ENDIAN_SPEC "%{!meb: -mel}"

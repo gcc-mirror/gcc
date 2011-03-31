@@ -31,9 +31,6 @@
 #define BRT 1
 #define BRF 0
 
-/* Print subsidiary information on the compiler version in use.  */
-#define TARGET_VERSION fprintf (stderr, " (BlackFin bfin)")
-
 /* Predefinition in the preprocessor for this target machine */
 #ifndef TARGET_CPU_CPP_BUILTINS
 #define TARGET_CPU_CPP_BUILTINS()		\

@@ -698,22 +698,6 @@ should use @code{TARGET_HANDLE_C_OPTION} instead.
 
 @hook TARGET_CHECK_STRING_OBJECT_FORMAT_ARG
 
-@defmac TARGET_VERSION
-This macro is a C statement to print on @code{stderr} a string
-describing the particular machine description choice.  Every machine
-description should define @code{TARGET_VERSION}.  For example:
-
-@smallexample
-#ifdef MOTOROLA
-#define TARGET_VERSION \
-  fprintf (stderr, " (68k, Motorola syntax)");
-#else
-#define TARGET_VERSION \
-  fprintf (stderr, " (68k, MIT syntax)");
-#endif
-@end smallexample
-@end defmac
-
 @hook TARGET_OVERRIDE_OPTIONS_AFTER_CHANGE
 This target function is similar to the hook @code{TARGET_OPTION_OVERRIDE}
 but is called when the optimize level is changed via an attribute or

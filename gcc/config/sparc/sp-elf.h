@@ -18,9 +18,6 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#undef TARGET_VERSION
-#define TARGET_VERSION fprintf (stderr, " (sparc-elf)")
-
 /* Don't assume anything about the header files.  */
 #define NO_IMPLICIT_EXTERN_C
 

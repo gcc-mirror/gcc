@@ -1,6 +1,6 @@
 /* Target definitions for GCC for Intel 80386 running Interix
    Parts Copyright (C) 1991, 1999, 2000, 2002, 2003, 2004, 2007, 2008, 2009,
-   2010 Free Software Foundation, Inc.
+   2010, 2011 Free Software Foundation, Inc.
 
    Parts:
      by Douglas B. Rupp (drupp@cs.washington.edu).
@@ -84,8 +84,6 @@ along with GCC; see the file COPYING3.  If not see
    */
 #define CPP_SPEC "-remap %{posix:-D_POSIX_SOURCE} \
 -isystem %$INTERIX_ROOT/usr/include"
-
-#define TARGET_VERSION fprintf (stderr, " (i386 Interix)");
 
 /* The global __fltused is necessary to cause the printf/scanf routines
    for outputting/inputting floating point numbers to be loaded.  Since this

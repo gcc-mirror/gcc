@@ -33,10 +33,6 @@
 #define LINK_SPEC "%{mbig-endian:-EB} -X"
 #endif
 
-#ifndef TARGET_VERSION
-#define TARGET_VERSION fputs (" (ARM/semi-hosted)", stderr);
-#endif
-
 #ifndef TARGET_DEFAULT_FLOAT_ABI
 #define TARGET_DEFAULT_FLOAT_ABI ARM_FLOAT_ABI_HARD
 #endif

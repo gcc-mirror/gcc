@@ -24,9 +24,6 @@ along with GCC; see the file COPYING3.  If not see
 #undef SUBTARGET_CPP_SPEC
 #define SUBTARGET_CPP_SPEC "%{posix:-D_POSIX_SOURCE} %{pthread:-D_REENTRANT}"
 
-#undef TARGET_VERSION
-#define TARGET_VERSION fputs (" (Xtensa GNU/Linux with ELF)", stderr);
-
 #undef SIZE_TYPE
 #define SIZE_TYPE "unsigned int"
 

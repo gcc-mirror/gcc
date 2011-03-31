@@ -1,6 +1,6 @@
 /* Definitions of target machine for GCC for Motorola 680x0/ColdFire.
    Copyright (C) 1987, 1988, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
-   2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+   2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -24,10 +24,8 @@ along with GCC; see the file COPYING3.  If not see
    for both the MOTOROLA and MIT code paths.  We do rely on the host compiler
    to optimize away all constant tests.  */
 #if MOTOROLA  /* Use the Motorola assembly syntax.  */
-# define TARGET_VERSION fprintf (stderr, " (68k, Motorola syntax)")
 #else
 # define MOTOROLA 0  /* Use the MIT assembly syntax.  */
-# define TARGET_VERSION fprintf (stderr, " (68k, MIT syntax)")
 #endif
 
 /* Handle --with-cpu default option from configure script.  */

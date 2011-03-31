@@ -122,8 +122,6 @@ extern GTY(()) section *progmem_section;
 #define AVR_2_BYTE_PC (!AVR_HAVE_EIJMP_EICALL)
 #define AVR_3_BYTE_PC (AVR_HAVE_EIJMP_EICALL)
 
-#define TARGET_VERSION fprintf (stderr, " (GNU assembler syntax)");
-
 #define BITS_BIG_ENDIAN 0
 #define BYTES_BIG_ENDIAN 0
 #define WORDS_BIG_ENDIAN 0

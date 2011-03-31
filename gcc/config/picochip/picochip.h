@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler for picoChip
-   Copyright (C) 2001, 2008, 2009, 2010 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
 
    Contributed by Picochip Ltd. (http://www.picochip.com)
    Maintained by Daniel Towner (daniel.towner@picochip.com) and
@@ -83,8 +83,6 @@ extern enum picochip_dfa_type picochip_schedule_type;
 #define TARGET_HAS_MUL_UNIT (picochip_has_mul_unit)
 #define TARGET_HAS_MAC_UNIT (picochip_has_mac_unit)
 #define TARGET_HAS_MULTIPLY (picochip_has_mac_unit || picochip_has_mul_unit)
-
-#define TARGET_VERSION fprintf(stderr, "(picoChip)");
 
 /* Storage Layout */
 

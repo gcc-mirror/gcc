@@ -26,7 +26,6 @@
 #undef PTRDIFF_TYPE
 #undef WCHAR_TYPE
 #undef WCHAR_TYPE_SIZE
-#undef TARGET_VERSION
 #undef CPP_SPEC
 #undef ASM_SPEC
 #undef LINK_SPEC
@@ -38,8 +37,6 @@
 
 
 /* M32R/X overrides.  */
-/* Print subsidiary information on the compiler version in use.  */
-#define TARGET_VERSION fprintf (stderr, " (m32r/x/2)");
 
 /* Additional flags for the preprocessor.  */
 #define CPP_CPU_SPEC "%{m32rx:-D__M32RX__ -D__m32rx__ -U__M32R2__ -U__m32r2__} \
@@ -85,11 +82,6 @@
 /* Define additional register names.  */
 #define SUBTARGET_REGISTER_NAMES , "a1"
 /* end M32R/X overrides.  */
-
-/* Print subsidiary information on the compiler version in use.  */
-#ifndef	TARGET_VERSION
-#define TARGET_VERSION fprintf (stderr, " (m32r)")
-#endif
 
 /* Names to predefine in the preprocessor for this target machine.  */
 /* __M32R__ is defined by the existing compiler so we use that.  */

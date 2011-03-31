@@ -55,8 +55,6 @@
       builtin_assert ("cpu=xstormy16");		\
     }						\
   while (0)
-
-#define TARGET_VERSION fprintf (stderr, " (xstormy16 cpu core)");
 
 /* Storage Layout.  */
 

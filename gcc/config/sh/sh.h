@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler for Renesas / SuperH SH.
    Copyright (C) 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002,
-   2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+   2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
    Contributed by Steve Chamberlain (sac@cygnus.com).
    Improved by Jim Wilson (wilson@cygnus.com).
@@ -25,9 +25,6 @@ along with GCC; see the file COPYING3.  If not see
 #define GCC_SH_H
 
 #include "config/vxworks-dummy.h"
-
-#define TARGET_VERSION \
-  fputs (" (Hitachi SH)", stderr);
 
 /* Unfortunately, insn-attrtab.c doesn't include insn-codes.h.  We can't
    include it here, because bconfig.h is also included by gencodes.c .  */

@@ -1,5 +1,5 @@
 /* Target definitions for x86_64 running Darwin.
-   Copyright (C) 2006, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2006, 2007, 2011 Free Software Foundation, Inc.
    Contributed by Apple Computer Inc.
 
 This file is part of GCC.
@@ -17,9 +17,6 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
-
-#undef TARGET_VERSION
-#define TARGET_VERSION fprintf (stderr, " (x86_64 Darwin)");
 
 #undef  DARWIN_ARCH_SPEC
 #define DARWIN_ARCH_SPEC "%{m32:i386;:x86_64}"

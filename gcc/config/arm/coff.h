@@ -26,9 +26,6 @@
 
 
 /* Run-time Target Specification.  */
-#undef  TARGET_VERSION
-#define TARGET_VERSION fputs (" (ARM/coff)", stderr)
-
 #undef  TARGET_DEFAULT_FLOAT_ABI
 #define TARGET_DEFAULT_FLOAT_ABI ARM_FLOAT_ABI_SOFT
 

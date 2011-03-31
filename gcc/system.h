@@ -1,7 +1,7 @@
 /* Get common system includes and various definitions and declarations based
    on autoconf macros.
    Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008,
-   2009, 2010
+   2009, 2010, 2011
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -829,7 +829,8 @@ extern void fancy_abort (const char *, int, const char *) ATTRIBUTE_NORETURN;
 	HANDLE_SYSV_PRAGMA HANDLE_PRAGMA_WEAK CONDITIONAL_REGISTER_USAGE   \
 	FUNCTION_ARG_BOUNDARY MUST_USE_SJLJ_EXCEPTIONS US_SOFTWARE_GOFAST  \
 	USING_SVR4_H SVR4_ASM_SPEC FUNCTION_ARG FUNCTION_ARG_ADVANCE	   \
-	FUNCTION_INCOMING_ARG IRA_COVER_CLASSES
+	FUNCTION_INCOMING_ARG IRA_COVER_CLASSES TARGET_VERSION		   \
+	MACHINE_TYPE
 
 /* Hooks that are no longer used.  */
  #pragma GCC poison LANG_HOOKS_FUNCTION_MARK LANG_HOOKS_FUNCTION_FREE	\

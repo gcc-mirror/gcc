@@ -1425,13 +1425,7 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
     errors++;
 
   if (verbose || errors)
-    {
-      fprintf (stderr, "mips-tdump (GCC) %s", version_string);
-#ifdef TARGET_VERSION
-      TARGET_VERSION;
-#endif
-      fputc ('\n', stderr);
-    }
+    fprintf (stderr, "mips-tdump (GCC) %s\n", version_string);
 
   if (errors)
     {

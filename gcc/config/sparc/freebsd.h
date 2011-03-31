@@ -82,9 +82,6 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Definitions for 64-bit SPARC running systems with ELF. */
 
-#undef  TARGET_VERSION
-#define TARGET_VERSION fprintf (stderr, " (FreeBSD/sparc64 ELF)");
-
 #define TARGET_ELF		1
 
 /* XXX */

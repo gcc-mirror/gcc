@@ -205,10 +205,6 @@ extern void (*arm_lang_output_object_attributes_hook)(void);
 #endif
 
 /* Run-time Target Specification.  */
-#ifndef TARGET_VERSION
-#define TARGET_VERSION fputs (" (ARM/generic)", stderr);
-#endif
-
 #define TARGET_SOFT_FLOAT		(arm_float_abi == ARM_FLOAT_ABI_SOFT)
 /* Use hardware floating point instructions. */
 #define TARGET_HARD_FLOAT		(arm_float_abi != ARM_FLOAT_ABI_SOFT)

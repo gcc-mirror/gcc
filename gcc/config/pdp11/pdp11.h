@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler, for the pdp-11
    Copyright (C) 1994, 1995, 1996, 1998, 1999, 2000, 2001, 2002, 2004, 2005,
-   2006, 2007, 2008, 2010 Free Software Foundation, Inc.
+   2006, 2007, 2008, 2010, 2011 Free Software Foundation, Inc.
    Contributed by Michael K. Gschwind (mike@vlsivie.tuwien.ac.at).
 
 This file is part of GCC.
@@ -35,9 +35,6 @@ along with GCC; see the file COPYING3.  If not see
       builtin_define_std ("pdp11");		\
     }						\
   while (0)
-
-/* Print subsidiary information on the compiler version in use.  */
-#define TARGET_VERSION fprintf (stderr, " (pdp11)");
 
 
 /* Generate DBX debugging information.  */

@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.  VAX version.
    Copyright (C) 1987, 1988, 1991, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -50,13 +50,6 @@ along with GCC; see the file COPYING3.  If not see
   %{p:%eprofiling not supported with -mg\n}\
   %{pg:%eprofiling not supported with -mg\n}}\
  %{!mg:%{!p:%{!pg:-lc}}%{p:-lc_p}%{pg:-lc_p}}"
-
-/* Print subsidiary information on the compiler version in use.  */
-
-#ifndef TARGET_NAME	/* A more specific value might be supplied via -D.  */
-#define TARGET_NAME "vax"
-#endif
-#define TARGET_VERSION fprintf (stderr, " (%s)", TARGET_NAME)
 
 /* Run-time compilation parameters selecting different hardware subsets.  */
 

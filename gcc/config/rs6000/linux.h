@@ -88,9 +88,6 @@
 #define USE_LD_AS_NEEDED 1
 #endif
 
-#undef  TARGET_VERSION
-#define TARGET_VERSION fprintf (stderr, " (PowerPC GNU/Linux)");
-
 /* Override rs6000.h definition.  */
 #undef  ASM_APP_ON
 #define ASM_APP_ON "#APP\n"

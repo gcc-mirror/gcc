@@ -60,9 +60,6 @@
 #undef  WCHAR_TYPE_SIZE
 #define WCHAR_TYPE_SIZE 32
 
-#undef  TARGET_VERSION
-#define TARGET_VERSION fprintf (stderr, " (FreeBSD/PowerPC ELF)");
-
 /* Override rs6000.h definition.  */
 #undef  ASM_APP_ON
 #define ASM_APP_ON "#APP\n"

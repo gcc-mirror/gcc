@@ -71,10 +71,6 @@ extern enum processor_type mn10300_tune_cpu;
 #define PROCESSOR_DEFAULT PROCESSOR_MN10300
 #endif
 
-/* Print subsidiary information on the compiler version in use.  */
-
-#define TARGET_VERSION fprintf (stderr, " (MN10300)");
-
 
 /* Target machine storage layout */
 

@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler,
    for PowerPC e500 machines running GNU/Linux.
-   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008
+   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2011
    Free Software Foundation, Inc.
    Contributed by Aldy Hernandez (aldy@quesejoda.com).
 
@@ -19,9 +19,6 @@
    You should have received a copy of the GNU General Public License
    along with GCC; see the file COPYING3.  If not see
    <http://www.gnu.org/licenses/>.  */
-
-#undef  TARGET_VERSION
-#define TARGET_VERSION fprintf (stderr, " (PowerPC E500 GNU/Linux)");
 
 /* Override rs6000.h and sysv4.h definition.  */
 #undef	TARGET_DEFAULT

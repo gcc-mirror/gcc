@@ -1,6 +1,6 @@
 /* Definitions of target machine for GCC,
    for ARM with targetting the VXWorks run time environment. 
-   Copyright (C) 1999, 2000, 2003, 2004, 2007, 2008, 2009, 2010
+   Copyright (C) 1999, 2000, 2003, 2004, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
 
    Contributed by: Mike Stump <mrs@wrs.com>
@@ -84,9 +84,6 @@ along with GCC; see the file COPYING3.  If not see
 
 #undef ENDFILE_SPEC
 #define ENDFILE_SPEC VXWORKS_ENDFILE_SPEC
-
-#undef TARGET_VERSION
-#define TARGET_VERSION fputs (" (ARM/VxWorks)", stderr);
 
 /* There is no default multilib.  */
 #undef MULTILIB_DEFAULTS

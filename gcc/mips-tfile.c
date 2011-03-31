@@ -4810,13 +4810,7 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
     had_errors++;
 
   if (verbose || had_errors)
-    {
-      fprintf (stderr, _("mips-tfile (GCC) %s"), version_string);
-#ifdef TARGET_VERSION
-      TARGET_VERSION;
-#endif
-      fputc ('\n', stderr);
-    }
+    fprintf (stderr, _("mips-tfile (GCC) %s\n"), version_string);
 
   if (object_name == (char *) 0 || had_errors)
     {

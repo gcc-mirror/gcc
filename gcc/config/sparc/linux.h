@@ -44,9 +44,6 @@ along with GCC; see the file COPYING3.  If not see
 #define	CC1_SPEC "%{profile:-p} \
 "
 
-#undef TARGET_VERSION
-#define TARGET_VERSION fprintf (stderr, " (sparc GNU/Linux with ELF)");
-
 #undef SIZE_TYPE
 #define SIZE_TYPE "unsigned int"
  

@@ -1,5 +1,5 @@
 /* Definitions of MCore target. 
-   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004, 2007
+   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004, 2007, 2011
    Free Software Foundation, Inc.
    Contributed by Cygnus Solutions.
 
@@ -21,9 +21,6 @@ along with GCC; see the file COPYING3.  If not see
 
 #ifndef __MCORE_ELF_H__
 #define __MCORE_ELF_H__
-
-/* Run-time Target Specification.  */
-#define TARGET_VERSION fputs (" (Motorola MCORE/elf)", stderr)
 
 /* Use DWARF2 debugging info.  */
 #define DWARF2_DEBUGGING_INFO 1

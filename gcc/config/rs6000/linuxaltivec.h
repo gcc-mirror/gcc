@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler,
    for AltiVec enhanced PowerPC machines running GNU/Linux.
-   Copyright (C) 2001, 2003, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2003, 2007, 2011 Free Software Foundation, Inc.
    Contributed by Aldy Hernandez (aldyh@redhat.com).
 
    This file is part of GCC.
@@ -18,9 +18,6 @@
    You should have received a copy of the GNU General Public License
    along with GCC; see the file COPYING3.  If not see
    <http://www.gnu.org/licenses/>.  */
-
-#undef  TARGET_VERSION
-#define TARGET_VERSION fprintf (stderr, " (PowerPC AltiVec GNU/Linux)");
 
 /* Override rs6000.h and sysv4.h definition.  */
 #undef	TARGET_DEFAULT

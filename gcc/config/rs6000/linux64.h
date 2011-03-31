@@ -406,9 +406,6 @@ extern int dot_symbols;
       ? "\t.section\t\".got2\",\"aw\""			\
       : "\t.section\t\".got1\",\"aw\""))
 
-#undef  TARGET_VERSION
-#define TARGET_VERSION fprintf (stderr, " (PowerPC64 GNU/Linux)");
-
 /* Must be at least as big as our pointer type.  */
 #undef	SIZE_TYPE
 #define	SIZE_TYPE (TARGET_64BIT ? "long unsigned int" : "unsigned int")

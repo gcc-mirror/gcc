@@ -77,9 +77,6 @@ along with GCC; see the file COPYING3.  If not see
 /* Attempt to enable execute permissions on the stack.  */
 #define ENABLE_EXECUTE_STACK NETBSD_ENABLE_EXECUTE_STACK
 
-#undef TARGET_VERSION
-#define TARGET_VERSION fprintf (stderr, " (%s)", TARGET_NAME);
-
 /* Below here exists the merged NetBSD/sparc & NetBSD/sparc64 compiler
    description, allowing one to build 32-bit or 64-bit applications
    on either.  We define the sparc & sparc64 versions of things,
@@ -90,10 +87,6 @@ along with GCC; see the file COPYING3.  If not see
 /* We use the default NetBSD ELF STARTFILE_SPEC and ENDFILE_SPEC
    definitions, even for the SPARC_BI_ARCH compiler, because NetBSD does
    not have a default place to find these libraries..  */
-
-/* Name the port(s).  */
-#define TARGET_NAME64     "NetBSD/sparc64 ELF"
-#define TARGET_NAME32     "NetBSD/sparc ELF"
 
 /* TARGET_CPU_DEFAULT is set in Makefile.in.  We test for 64-bit default
    platform here.  */
@@ -197,10 +190,6 @@ along with GCC; see the file COPYING3.  If not see
 #define MULTILIB_DEFAULTS { "m64" }
 #endif
 
-/* Name the port.  */
-#undef TARGET_NAME
-#define TARGET_NAME     (DEFAULT_ARCH32_P ? TARGET_NAME32 : TARGET_NAME64)
-
 #else	/* SPARC_BI_ARCH */
 
 #if TARGET_CPU_DEFAULT == TARGET_CPU_v9 \
@@ -214,9 +203,6 @@ along with GCC; see the file COPYING3.  If not see
 
 #undef  CC1_SPEC
 #define CC1_SPEC CC1_SPEC64
-
-#undef TARGET_NAME
-#define TARGET_NAME     TARGET_NAME64
 
 #else	/* TARGET_CPU_DEFAULT == TARGET_CPU_v9 \
 	|| TARGET_CPU_DEFAULT == TARGET_CPU_ultrasparc */
@@ -232,9 +218,6 @@ along with GCC; see the file COPYING3.  If not see
 
 #undef  CC1_SPEC
 #define CC1_SPEC CC1_SPEC32
-
-#undef TARGET_NAME
-#define TARGET_NAME     TARGET_NAME32
 
 #endif	/* TARGET_CPU_DEFAULT == TARGET_CPU_v9 \
 	|| TARGET_CPU_DEFAULT == TARGET_CPU_ultrasparc */
