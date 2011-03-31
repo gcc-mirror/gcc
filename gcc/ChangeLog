@@ -1,3 +1,26 @@
+2011-03-31  Joseph Myers  <joseph@codesourcery.com>
+
+	* opts.h (cl_option): Add comments to fields.  Add bit-fields for
+	various flags.
+	(CL_SEPARATE_NARGS_SHIFT, CL_SEPARATE_NARGS_MASK,
+	CL_SEPARATE_ALIAS, CL_NO_DRIVER_ARG, CL_REJECT_DRIVER, CL_SAVE,
+	CL_DISABLED, CL_REPOR, CL_REJECT_NEGATIVE, CL_MISSING_OK,
+	CL_UINTEGER, CL_NEGATIVE_ALIAS): Remove.
+	(CL_JOINED, CL_SEPARATE, CL_UNDOCUMENTED): Update bit positions.
+	* opt-functions.awk (flag_init, switch_bit_fields): New.
+	(switch_flags): Don't handle flags moved to bit-fields.  Don't
+	generate CL_MISSING_OK or CL_SAVE.
+	* optc-gen.awk: Update to generate bit-field output as well as
+	flags field.
+	* gcc.c (driver_wrong_lang_callback): Use cl_reject_driver
+	bit-field instead of CL_REJECT_DRIVER flag.
+	* opts-common.c (generate_canonical_option,
+	decode_cmdline_option): Use bit-fields instead of CL_* flags.
+	* opts.c (maybe_default_option): Use cl_reject_negative bit-field
+	instead of CL_REJECT_NEGATIVE flag.
+	* toplev.c (print_switch_values): Use cl_report bit-field instead
+	of CL_REPORT flag.
+
 2011-03-31  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree-ssa-pre.c (create_component_ref_by_pieces_1) <ARRAY_REF>: Drop

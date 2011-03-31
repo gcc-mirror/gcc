@@ -3115,7 +3115,7 @@ driver_wrong_lang_callback (const struct cl_decoded_option *decoded,
      options.  */
   const struct cl_option *option = &cl_options[decoded->opt_index];
 
-  if (option->flags & CL_REJECT_DRIVER)
+  if (option->cl_reject_driver)
     error ("unrecognized command line option %qs",
 	   decoded->orig_option_with_args_text);
   else
