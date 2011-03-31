@@ -27,10 +27,6 @@ extern unsigned long total_code_bytes;
 
 #define pa_cpu_attr ((enum attr_cpu)pa_cpu)
 
-/* Print subsidiary information on the compiler version in use.  */
-
-#define TARGET_VERSION fputs (" (hppa)", stderr);
-
 #define TARGET_PA_10 (!TARGET_PA_11 && !TARGET_PA_20)
 
 /* Generate code for the HPPA 2.0 architecture in 64bit mode.  */

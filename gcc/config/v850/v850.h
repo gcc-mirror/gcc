@@ -47,7 +47,6 @@ extern GTY(()) rtx v850_compare_op1;
 #define MASK_DEFAULT            MASK_V850
 #define SUBTARGET_ASM_SPEC 	"%{!mv*:-mv850}"
 #define SUBTARGET_CPP_SPEC 	"%{!mv*:-D__v850__}"
-#define TARGET_VERSION 		fprintf (stderr, " (NEC V850)");
 
 /* Choose which processor will be the default.
    We must pass a -mv850xx option to the assembler if no explicit -mv* option
@@ -59,8 +58,6 @@ extern GTY(()) rtx v850_compare_op1;
 #define SUBTARGET_ASM_SPEC 	"%{!mv*:-mv850e}"
 #undef  SUBTARGET_CPP_SPEC
 #define SUBTARGET_CPP_SPEC 	"%{!mv*:-D__v850e__}"
-#undef  TARGET_VERSION
-#define TARGET_VERSION 		fprintf (stderr, " (NEC V850E)");
 #endif
 
 #if TARGET_CPU_DEFAULT == TARGET_CPU_v850e1
@@ -70,8 +67,6 @@ extern GTY(()) rtx v850_compare_op1;
 #define SUBTARGET_ASM_SPEC	"%{!mv*:-mv850e1}"
 #undef  SUBTARGET_CPP_SPEC
 #define SUBTARGET_CPP_SPEC	"%{!mv*:-D__v850e1__} %{mv850e1:-D__v850e1__}"
-#undef  TARGET_VERSION
-#define TARGET_VERSION		fprintf (stderr, " (NEC V850E1)");
 #endif
 
 #if TARGET_CPU_DEFAULT == TARGET_CPU_v850e2
@@ -81,8 +76,6 @@ extern GTY(()) rtx v850_compare_op1;
 #define SUBTARGET_ASM_SPEC 	"%{!mv*:-mv850e2}"
 #undef  SUBTARGET_CPP_SPEC
 #define SUBTARGET_CPP_SPEC 	"%{!mv*:-D__v850e2__} %{mv850e2:-D__v850e2__}"
-#undef  TARGET_VERSION
-#define TARGET_VERSION 		fprintf (stderr, " (NEC V850E2)");
 #endif
 
 #if TARGET_CPU_DEFAULT == TARGET_CPU_v850e2v3
@@ -92,8 +85,6 @@ extern GTY(()) rtx v850_compare_op1;
 #define SUBTARGET_ASM_SPEC	"%{!mv*:-mv850e2v3}"
 #undef  SUBTARGET_CPP_SPEC
 #define SUBTARGET_CPP_SPEC	"%{!mv*:-D__v850e2v3__} %{mv850e2v3:-D__v850e2v3__}"
-#undef  TARGET_VERSION
-#define TARGET_VERSION		fprintf (stderr, " (NEC V850E2V3)");
 #endif
 
 #define TARGET_V850E2_ALL      (TARGET_V850E2 || TARGET_V850E2V3) 

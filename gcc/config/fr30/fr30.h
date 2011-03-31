@@ -1,8 +1,8 @@
 /*{{{  Comment.  */ 
 
 /* Definitions of FR30 target. 
-   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004, 2007, 2008, 2009, 2010
-   Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004, 2007, 2008, 2009, 2010,
+   2011 Free Software Foundation, Inc.
    Contributed by Cygnus Solutions.
 
 This file is part of GCC.
@@ -38,8 +38,6 @@ along with GCC; see the file COPYING3.  If not see
       builtin_assert ("machine=fr30");		\
     }						\
    while (0)
-
-#define TARGET_VERSION fprintf (stderr, " (fr30)");
 
 #undef  STARTFILE_SPEC
 #define STARTFILE_SPEC "crt0.o%s crti.o%s crtbegin.o%s"

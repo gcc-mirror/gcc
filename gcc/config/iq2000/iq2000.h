@@ -57,21 +57,6 @@
 #ifndef IQ2000_ISA_DEFAULT
 #define IQ2000_ISA_DEFAULT 1
 #endif
-
-#define IQ2000_VERSION "[1.0]"
-
-#ifndef MACHINE_TYPE
-#define MACHINE_TYPE "IQ2000"
-#endif
-
-#ifndef TARGET_VERSION_INTERNAL
-#define TARGET_VERSION_INTERNAL(STREAM)					\
-  fprintf (STREAM, " %s %s", IQ2000_VERSION, MACHINE_TYPE)
-#endif
-
-#ifndef TARGET_VERSION
-#define TARGET_VERSION TARGET_VERSION_INTERNAL (stderr)
-#endif
 
 /* Storage Layout.  */
 

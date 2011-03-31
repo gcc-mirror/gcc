@@ -1,5 +1,5 @@
 /* Definitions of target machine for gcc for Super-H using sh-superh-elf.
-   Copyright (C) 2001, 2006, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2006, 2007, 2011 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -34,9 +34,6 @@ along with GCC; see the file COPYING3.  If not see
 #define _SUPERH_H
 #endif
 
-
-#undef TARGET_VERSION
-#define TARGET_VERSION fprintf (stderr, " (SuperH SH special %s)", __DATE__);
 
 /* Override the linker spec strings to use the new emulation
    The specstrings are concatenated as follows

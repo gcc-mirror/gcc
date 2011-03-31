@@ -20,8 +20,6 @@
    <http://www.gnu.org/licenses/>.  */
 
 /* Run-time Target Specification.  */
-#undef TARGET_VERSION
-#define TARGET_VERSION fputs (" (NetBSD/arm ELF)", stderr);
 
 /* arm.h defaults to ARM6 CPU.  */
 

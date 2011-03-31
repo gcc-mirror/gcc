@@ -513,10 +513,6 @@ extern int fixuplabelno;
 #define	DBX_FUNCTION_FIRST
 
 /* This is the end of what might become sysv4dbx.h.  */
-
-#ifndef	TARGET_VERSION
-#define	TARGET_VERSION fprintf (stderr, " (PowerPC System V.4)");
-#endif
 
 #define TARGET_OS_SYSV_CPP_BUILTINS()		\
   do						\

@@ -1,5 +1,5 @@
 /* Definitions for Intel 386 running QNX/Neutrino.
-   Copyright (C) 2002, 2003, 2007, 2010 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003, 2007, 2010, 2011 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -19,9 +19,6 @@ along with GCC; see the file COPYING3.  If not see
 
 #undef  DEFAULT_PCC_STRUCT_RETURN
 #define DEFAULT_PCC_STRUCT_RETURN 1
-
-#undef TARGET_VERSION
-#define TARGET_VERSION	fprintf (stderr, " (QNX/Neutrino/i386 ELF)");
 
 #undef TARGET_OS_CPP_BUILTINS
 #define TARGET_OS_CPP_BUILTINS()		\

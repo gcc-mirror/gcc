@@ -1,5 +1,5 @@
 /* Definitions for LynxOS on i386.
-   Copyright (C) 1993, 1995, 1996, 2002, 2004, 2005, 2007, 2010
+   Copyright (C) 1993, 1995, 1996, 2002, 2004, 2005, 2007, 2010, 2011
    Free Software Foundation, Inc. 
 
 This file is part of GCC.
@@ -17,8 +17,6 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
-
-#define TARGET_VERSION fputs (" (i386/LynxOS)", stderr);
 
 #define TARGET_OS_CPP_BUILTINS()		\
   do						\

@@ -1,5 +1,5 @@
 /* Definitions of target machine GNU compiler. IA64-VMS version.
-   Copyright (C) 2003-2010 Free Software Foundation, Inc.
+   Copyright (C) 2003-2011 Free Software Foundation, Inc.
    Contributed by Douglas B Rupp (rupp@gnat.com).
 
 This file is part of GCC.
@@ -37,11 +37,6 @@ along with GCC; see the file COPYING3.  If not see
 
 #undef TARGET_ABI_OPEN_VMS
 #define TARGET_ABI_OPEN_VMS 1
-
-#undef TARGET_NAME   
-#define TARGET_NAME "OpenVMS/IA64"
-#undef TARGET_VERSION
-#define TARGET_VERSION fprintf (stderr, " (%s)", TARGET_NAME);           
 
 /* Need .debug_line info generated from gcc and gas.  */
 #undef TARGET_DEFAULT

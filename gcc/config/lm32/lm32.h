@@ -23,11 +23,6 @@
 /* Run-time Target Specification */
 /*-------------------------------*/
 
-/* Print subsidiary information on the compiler version in use.  */
-#ifndef TARGET_VERSION
-#define TARGET_VERSION fprintf (stderr, " (LatticeMico32)")
-#endif
-
 /* Target CPU builtins.  */
 #define TARGET_CPU_CPP_BUILTINS()                       \
   do                                                    \

@@ -1,7 +1,7 @@
 /* Definitions of target machine for GNU compiler,
    for m68k (including m68010) NetBSD platforms using the
    ELF object format.
-   Copyright (C) 2002, 2003, 2004, 2006, 2007, 2009, 2010
+   Copyright (C) 2002, 2003, 2004, 2006, 2007, 2009, 2010, 2011
    Free Software Foundation, Inc.
    Contributed by Wasabi Systems. Inc.
 
@@ -50,14 +50,6 @@ along with GCC; see the file COPYING3.  If not see
 #undef SUBTARGET_EXTRA_SPECS
 #define SUBTARGET_EXTRA_SPECS \
   { "netbsd_entry_point",   NETBSD_ENTRY_POINT },
-
-
-#undef TARGET_VERSION
-#define TARGET_VERSION			\
-  fprintf (stderr,			\
-	   TARGET_68010			\
-	   ? " (NetBSD/68010 ELF)"	\
-	   : " (NetBSD/m68k ELF)");
 
 
 /* Provide a CPP_SPEC appropriate for NetBSD m68k targets.  Currently we

@@ -1,6 +1,6 @@
 /* Output variables, constants and external declarations, for GNU compiler.
    Copyright (C) 1996, 1997, 1998, 2000, 2001, 2002, 2004, 2005, 2007, 2008,
-   2009, 2010
+   2009, 2010, 2011
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -49,11 +49,6 @@ along with GCC; see the file COPYING3.  If not see
 #define TARGET_DEFAULT (MASK_FPREGS|MASK_GAS)
 #undef TARGET_ABI_OPEN_VMS
 #define TARGET_ABI_OPEN_VMS 1
-
-#undef TARGET_NAME   
-#define TARGET_NAME "OpenVMS/Alpha"
-#undef TARGET_VERSION
-#define TARGET_VERSION fprintf (stderr, " (%s)", TARGET_NAME);           
 
 #define VMS_DEBUG_MAIN_POINTER "TRANSFER$BREAK$GO"
 

@@ -1,6 +1,6 @@
 /* Definitions for non-Linux based ARM systems using ELF
-   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2007, 2008, 2010
-   Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2007, 2008, 2010,
+   2011 Free Software Foundation, Inc.
    Contributed by Catherine Moore <clm@cygnus.com>
 
    This file is part of GCC.
@@ -23,9 +23,6 @@
    any conflicting definitions and add any extras.  */
 
 /* Run-time Target Specification.  */
-#ifndef TARGET_VERSION
-#define TARGET_VERSION	fputs (" (ARM/ELF)", stderr);
-#endif
 
 /* Default to using software floating point.  */
 #ifndef TARGET_DEFAULT

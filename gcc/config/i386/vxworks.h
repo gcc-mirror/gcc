@@ -1,5 +1,6 @@
 /* IA32 VxWorks target definitions for GNU compiler.
-   Copyright (C) 2003, 2004, 2005, 2007, 2010 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2005, 2007, 2010, 2011
+   Free Software Foundation, Inc.
    Updated by CodeSourcery, LLC.
 
 This file is part of GCC.
@@ -17,9 +18,6 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
-
-#undef  TARGET_VERSION
-#define TARGET_VERSION fprintf (stderr, " (80586, VxWorks syntax)");
 
 #undef  ASM_SPEC
 #define ASM_SPEC ""

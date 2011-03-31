@@ -108,10 +108,6 @@
 #endif
   
 /* Run-time Target Specification.  */
-#ifndef TARGET_VERSION
-#define TARGET_VERSION fputs (" (ARM/elf)", stderr)
-#endif
-
 #ifndef TARGET_DEFAULT
 #define TARGET_DEFAULT (MASK_APCS_FRAME)
 #endif

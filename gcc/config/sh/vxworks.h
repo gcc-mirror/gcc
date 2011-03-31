@@ -1,6 +1,6 @@
 /* Definitions of target machine for GCC,
    for SuperH with targeting the VXWorks run time environment. 
-   Copyright (C) 2003, 2004, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2007, 2011 Free Software Foundation, Inc.
    Contributed by CodeSourcery, LLC.
    
 This file is part of GCC.
@@ -58,9 +58,6 @@ along with GCC; see the file COPYING3.  If not see
 #define STARTFILE_SPEC VXWORKS_STARTFILE_SPEC
 #undef ENDFILE_SPEC
 #define ENDFILE_SPEC VXWORKS_ENDFILE_SPEC
-
-#undef TARGET_VERSION
-#define TARGET_VERSION	fputs (" (SH/VxWorks)", stderr);
 
 /* There is no default multilib.  */
 #undef MULTILIB_DEFAULTS

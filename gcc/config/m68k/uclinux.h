@@ -2,7 +2,7 @@
    using ELF objects with special linker post-processing to produce FLAT
    executables.
 
-   Copyright (C) 2003, 2007, 2010 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2007, 2010, 2011 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -19,9 +19,6 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
-
-#undef TARGET_VERSION
-#define TARGET_VERSION fprintf (stderr, " (68k uClinux)");
 
 #undef STARTFILE_SPEC
 #define STARTFILE_SPEC \

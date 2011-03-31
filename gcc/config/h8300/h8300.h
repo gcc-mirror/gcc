@@ -82,10 +82,6 @@ extern const char * const *h8_reg_names;
 
 #define LIB_SPEC "%{mrelax:-relax} %{g:-lg} %{!p:%{!pg:-lc}}%{p:-lc_p}%{pg:-lc_p}"
 
-/* Print subsidiary information on the compiler version in use.  */
-
-#define TARGET_VERSION fprintf (stderr, " (Renesas H8/300)");
-
 /* Macros used in the machine description to test the flags.  */
 
 /* Select between the H8/300 and H8/300H CPUs.  */

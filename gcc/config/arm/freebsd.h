@@ -1,5 +1,5 @@
 /* Definitions for StrongARM running FreeBSD using the ELF format
-   Copyright (C) 2001, 2004, 2007, 2010 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2004, 2007, 2010, 2011 Free Software Foundation, Inc.
    Contributed by David E. O'Brien <obrien@FreeBSD.org> and BSDi.
 
    This file is part of GCC.
@@ -62,6 +62,3 @@
 
 #undef  SUBTARGET_CPU_DEFAULT
 #define SUBTARGET_CPU_DEFAULT	TARGET_CPU_strongarm
-
-#undef  TARGET_VERSION
-#define TARGET_VERSION fprintf (stderr, " (FreeBSD/StrongARM ELF)");

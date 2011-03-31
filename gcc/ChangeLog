@@ -1,3 +1,132 @@
+2011-03-31  Joseph Myers  <joseph@codesourcery.com>
+
+	PR target/47109
+	* doc/tm.texi.in (TARGET_VERSION): Remove.
+	* doc/tm.texi: Regenerate.
+	* system.h (TARGET_VERSION, MACHINE_TYPE): Poison.
+	* collect2.c (main): Don't use TARGET_VERSION.
+	* mips-tdump.c (main): Don't use TARGET_VERSION.
+	* mips-tfile.c (main): Don't use TARGET_VERSION.
+	* config.gcc (powerpc-wrs-vxworksae): Don't use
+	rs6000/vxworksae.h.
+	* config/rs6000/vxworksae.h: Remove.
+	* config/alpha/alpha.h (TARGET_VERSION): Remove.
+	* config/alpha/freebsd.h (TARGET_VERSION): Remove.
+	* config/alpha/linux-elf.h (TARGET_VERSION): Remove.
+	* config/alpha/netbsd.h (TARGET_VERSION): Remove.
+	* config/alpha/vms.h (TARGET_NAME, TARGET_VERSION): Remove.
+	* config/arm/arm.h (TARGET_VERSION): Remove.
+	* config/arm/coff.h (TARGET_VERSION): Remove.
+	* config/arm/ecos-elf.h (TARGET_VERSION): Remove.
+	* config/arm/elf.h (TARGET_VERSION): Remove.
+	* config/arm/freebsd.h (TARGET_VERSION): Remove.
+	* config/arm/linux-elf.h (TARGET_VERSION): Remove.
+	* config/arm/netbsd-elf.h (TARGET_VERSION): Remove.
+	* config/arm/pe.h (TARGET_VERSION): Remove.
+	* config/arm/rtems-elf.h (TARGET_VERSION): Remove.
+	* config/arm/semi.h (TARGET_VERSION): Remove.
+	* config/arm/uclinux-elf.h (TARGET_VERSION): Remove.
+	* config/arm/unknown-elf.h (TARGET_VERSION): Remove.
+	* config/arm/vxworks.h (TARGET_VERSION): Remove.
+	* config/avr/avr.h (TARGET_VERSION): Remove.
+	* config/bfin/bfin.h (TARGET_VERSION): Remove.
+	* config/fr30/fr30.h (TARGET_VERSION): Remove.
+	* config/frv/frv.h (TARGET_VERSION): Remove.
+	* config/h8300/h8300.h (TARGET_VERSION): Remove.
+	* config/i386/cygwin.h (TARGET_VERSION): Remove.
+	* config/i386/darwin.h (TARGET_VERSION): Remove.
+	* config/i386/darwin64.h (TARGET_VERSION): Remove.
+	* config/i386/djgpp.h (TARGET_VERSION): Remove.
+	* config/i386/freebsd.h (TARGET_VERSION): Remove.
+	* config/i386/freebsd64.h (TARGET_VERSION): Remove.
+	* config/i386/gnu.h (TARGET_VERSION): Remove.
+	* config/i386/i386-interix.h (TARGET_VERSION): Remove.
+	* config/i386/i386elf.h (TARGET_VERSION): Remove.
+	* config/i386/linux.h (TARGET_VERSION): Remove.
+	* config/i386/linux64.h (TARGET_VERSION): Remove.
+	* config/i386/lynx.h (TARGET_VERSION): Remove.
+	* config/i386/mingw32.h (TARGET_VERSION): Remove.
+	* config/i386/netbsd-elf.h (TARGET_VERSION): Remove.
+	* config/i386/netbsd64.h (TARGET_VERSION): Remove.
+	* config/i386/netware.h (TARGET_VERSION): Remove.
+	* config/i386/nto.h (TARGET_VERSION): Remove.
+	* config/i386/openbsd.h (TARGET_VERSION): Remove.
+	* config/i386/vxworks.h (TARGET_VERSION): Remove.
+	* config/ia64/elf.h (TARGET_VERSION): Remove.
+	* config/ia64/freebsd.h (TARGET_VERSION): Remove.
+	* config/ia64/hpux.h (TARGET_VERSION): Remove.
+	* config/ia64/linux.h (TARGET_VERSION): Remove.
+	* config/ia64/vms.h (TARGET_NAME, TARGET_VERSION): Remove.
+	* config/iq2000/iq2000.h (IQ2000_VERSION, MACHINE_TYPE,
+	TARGET_VERSION_INTERNAL, TARGET_VERSION): Remove.
+	* config/lm32/lm32.h (TARGET_VERSION): Remove.
+	* config/lm32/uclinux-elf.h (TARGET_VERSION): Remove.
+	* config/m32c/m32c.h (TARGET_VERSION): Remove.
+	* config/m32r/linux.h (LINUX_DEFAULT_ELF, TARGET_VERSION): Remove.
+	* config/m32r/m32r.h (TARGET_VERSION): Remove.
+	* config/m68k/linux.h (TARGET_VERSION): Remove.
+	* config/m68k/m68k.h (TARGET_VERSION): Remove.
+	* config/m68k/netbsd-elf.h (TARGET_VERSION): Remove.
+	* config/m68k/uclinux.h (TARGET_VERSION): Remove.
+	* config/mcore/mcore-elf.h (TARGET_VERSION): Remove.
+	* config/mep/mep.h (TARGET_VERSION): Remove.
+	* config/microblaze/microblaze.h (MICROBLAZE_VERSION,
+	MACHINE_TYPE, TARGET_VERSION_INTERNAL, TARGET_VERSION): Remove.
+	* config/mips/iris6.h (MACHINE_TYPE): Remove.
+	* config/mips/linux.h (TARGET_VERSION): Remove.
+	* config/mips/netbsd.h (MACHINE_TYPE): Remove.
+	* config/mips/vxworks.h (TARGET_VERSION): Remove.
+	* config/mmix/mmix.h (TARGET_VERSION): Remove.
+	* config/mn10300/linux.h (TARGET_VERSION): Remove.
+	* config/mn10300/mn10300.h (TARGET_VERSION): Remove.
+	* config/pa/pa.h (TARGET_VERSION): Remove.
+	* config/pdp11/pdp11.h (TARGET_VERSION): Remove.
+	* config/picochip/picochip.h (TARGET_VERSION): Remove.
+	* config/rs6000/aix.h (TARGET_VERSION): Remove.
+	* config/rs6000/darwin.h (TARGET_VERSION): Remove.
+	* config/rs6000/darwin64.h (TARGET_VERSION): Remove.
+	* config/rs6000/eabi.h (TARGET_VERSION): Remove.
+	* config/rs6000/eabialtivec.h (TARGET_VERSION): Remove.
+	* config/rs6000/eabisim.h (TARGET_VERSION): Remove.
+	* config/rs6000/eabispe.h (TARGET_VERSION): Remove.
+	* config/rs6000/freebsd.h (TARGET_VERSION): Remove.
+	* config/rs6000/linux.h (TARGET_VERSION): Remove.
+	* config/rs6000/linux64.h (TARGET_VERSION): Remove.
+	* config/rs6000/linuxaltivec.h (TARGET_VERSION): Remove.
+	* config/rs6000/linuxspe.h (TARGET_VERSION): Remove.
+	* config/rs6000/lynx.h (TARGET_VERSION): Remove.
+	* config/rs6000/netbsd.h (TARGET_VERSION): Remove.
+	* config/rs6000/sysv4.h (TARGET_VERSION): Remove.
+	* config/rs6000/vxworks.h (TARGET_VERSION): Remove.
+	* config/s390/linux.h (TARGET_VERSION): Remove.
+	* config/s390/s390.h (TARGET_VERSION): Remove.
+	* config/s390/tpf.h (TARGET_VERSION): Remove.
+	* config/score/score.h (TARGET_VERSION): Remove.
+	* config/sh/linux.h (TARGET_VERSION): Remove.
+	* config/sh/netbsd-elf.h (TARGET_VERSION_ENDIAN,
+	TARGET_VERSION_CPU, TARGET_VERSION): Remove.
+	* config/sh/sh.h (TARGET_VERSION): Remove.
+	* config/sh/sh64.h (TARGET_VERSION): Remove.
+	* config/sh/superh.h (TARGET_VERSION): Remove.
+	* config/sh/vxworks.h (TARGET_VERSION): Remove.
+	* config/sparc/freebsd.h (TARGET_VERSION): Remove.
+	* config/sparc/linux.h (TARGET_VERSION): Remove.
+	* config/sparc/linux64.h (TARGET_VERSION): Remove.
+	* config/sparc/netbsd-elf.h (TARGET_VERSION, TARGET_NAME64,
+	TARGET_NAME32, TARGET_NAME): Remove.
+	* config/sparc/openbsd64.h (TARGET_VERSION): Remove.
+	* config/sparc/sp-elf.h (TARGET_VERSION): Remove.
+	* config/sparc/sp64-elf.h (TARGET_VERSION): Remove.
+	* config/sparc/sysv4.h (TARGET_VERSION): Remove.
+	* config/sparc/vxworks.h (TARGET_VERSION): Remove.
+	* config/spu/spu.h (TARGET_VERSION): Remove.
+	* config/stormy16/stormy16.h (TARGET_VERSION): Remove.
+	* config/v850/v850.h (TARGET_VERSION): Remove.
+	* config/vax/linux.h (TARGET_VERSION): Remove.
+	* config/vax/vax.h (TARGET_NAME, TARGET_VERSION): Remove.
+	* config/xtensa/elf.h (TARGET_VERSION): Remove.
+	* config/xtensa/linux.h (TARGET_VERSION): Remove.
+
 2011-03-31  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR target/48142

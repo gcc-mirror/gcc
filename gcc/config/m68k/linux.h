@@ -19,9 +19,6 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#undef TARGET_VERSION
-#define TARGET_VERSION fprintf (stderr, " (68k GNU/Linux with ELF)");
-
 /* Add %(asm_cpu_spec) to a generic definition of ASM_SPEC.  */
 #undef ASM_SPEC
 #define ASM_SPEC "%(asm_cpu_spec) %(asm_pcrel_spec)"

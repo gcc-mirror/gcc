@@ -100,8 +100,6 @@ extern int ok_to_change_target_memregs;
 #define TARGET_A16	(TARGET_R8C || TARGET_M16C)
 #define TARGET_A24	(TARGET_M32CM || TARGET_M32C)
 
-#define TARGET_VERSION fprintf (stderr, " (m32c)");
-
 /* Defining data structures for per-function information */
 
 typedef struct GTY (()) machine_function

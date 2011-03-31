@@ -1,5 +1,6 @@
 /* score.h for Sunplus S+CORE processor
-   Copyright (C) 2005, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2007, 2008, 2009, 2010, 2011
+   Free Software Foundation, Inc.
    Contributed by Sunnorth.
 
    This file is part of GCC.
@@ -64,9 +65,6 @@
 #define TARGET_DEFAULT         0
 
 #define SCORE_GCC_VERSION      "1.6"
-
-#define TARGET_VERSION \
-      fprintf (stderr, "Sunplus S+core rev=%s", SCORE_GCC_VERSION);
 
 /* Target machine storage layout.  */
 #define BITS_BIG_ENDIAN        0
