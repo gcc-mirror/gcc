@@ -33,6 +33,7 @@ keep=false
 prefix=
 dejagnu=no
 timeout=60
+testname=""
 while $loop; do
 	case "x$1" in
         x--srcdir)
@@ -91,6 +92,15 @@ while $loop; do
 		;;
 	x--timeout=*)
 		timeout=`echo $1 | sed -e 's/^--timeout=//'`
+		shift
+		;;
+	x--testname)
+		testname=$2
+		shift
+		shift
+		;;
+	x--testname=*)
+		testname=`echo $1 | sed -e 's/^--testname=//'`
 		shift
 		;;
 	x-*)
@@ -386,6 +396,10 @@ xyes)
 	cd ../testsuite
 	rm -rf _obj _test
 	mkdir _obj _test
+	if test "$testname" != ""; then
+	    GOTESTNAME="$testname"
+	    export GOTESTNAME
+	fi
 	$MAKE check RUNTESTFLAGS="$RUNTESTFLAGS GOTEST_TMPDIR=$DIR"
 	# Useful when using make check-target-libgo
 	cat libgo.log >> libgo-all.log
