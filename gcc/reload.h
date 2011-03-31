@@ -100,7 +100,7 @@ struct reload
   int inc;
   /* A reg for which reload_in is the equivalent.
      If reload_in is a symbol_ref which came from
-     reg_equiv_consant, then this is the pseudo
+     reg_equiv_constant, then this is the pseudo
      which has that symbol_ref as equivalent.  */
   rtx in_reg;
   rtx out_reg;
