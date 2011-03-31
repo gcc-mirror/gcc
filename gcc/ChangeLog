@@ -8,6 +8,8 @@
 
 2011-03-31  Jeff Law  <law@redhat.com>
 
+	* reload1.c (elimination_effects): Fix typo in recent change.
+
 	* tree-ssa-forwprop.c (forward_propagate_into_cond): Avoid 
 	typo potentially leading to null pointer dereference.
 
