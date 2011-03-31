@@ -1,8 +1,6 @@
 // Locale support -*- C++ -*-
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-// 2006, 2007, 2009, 2010
-// Free Software Foundation, Inc.
+// Copyright (C) 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -24,14 +22,19 @@
 // see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 // <http://www.gnu.org/licenses/>.
 
-/** @file bits/ctype_noninline.h
- *  This is an internal header file, included by other library headers.
- *  Do not attempt to use it directly. @headername{locale}
- */
+/** @file ctype_configure_char.cc */
 
 //
 // ISO C++ 14882: 22.1  Locales
 //
+
+#include <locale>
+#include <cstdlib>
+#include <cstring>
+
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 // Information as gleaned from /usr/include/ctype.h
 
@@ -188,3 +191,6 @@
       }
     return __high;
   }
+
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace

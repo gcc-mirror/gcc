@@ -1,3 +1,47 @@
+2011-03-31  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/48382
+	* src/ctype.cc: Do not include <bits/ctype_noninline.h>.
+	* src/Makefile.am: Add ctype_configure_char.cc to host_sources.
+	* src/Makefile.in: Regenerate.
+	* include/Makefile.am: Remove ctype_noninline.h from host_headers.
+	* include/Makefile.in: Regenerate.
+	* doc/xml/manual/internals.xml: Update.
+	* config/os/newlib/ctype_noninline.h: Fixup and rename to...
+	* config/os/newlib/ctype_configure_char.cc: ... this.
+	* config/os/aix/ctype_noninline.h: Likewise.
+	* config/os/aix/ctype_configure_char.cc: Likewise.
+	* config/os/vxworks/ctype_noninline.h: Likewise.
+	* config/os/vxworks/ctype_configure_char.cc
+	* config/os/hpux/ctype_noninline.h: Likewise.
+	* config/os/hpux/ctype_configure_char.cc: Likewise.
+	* config/os/gnu-linux/ctype_noninline.h: Likewise.
+	* config/os/gnu-linux/ctype_configure_char.cc: Likewise.
+	* config/os/mingw32/ctype_noninline.h: Likewise.
+	* config/os/mingw32/ctype_configure_char.cc: Likewise.
+	* config/os/tpf/ctype_noninline.h: Likewise.
+	* config/os/tpf/ctype_configure_char.cc: Likewise.
+	* config/os/uclibc/ctype_noninline.h: Likewise.
+	* config/os/uclibc/ctype_configure_char.cc: Likewise.
+	* config/os/bionic/ctype_noninline.h: Likewise.
+	* config/os/bionic/ctype_configure_char.cc: Likewise.
+	* config/os/djgpp/ctype_noninline.h: Likewise.
+	* config/os/djgpp/ctype_configure_char.cc: Likewise.
+	* config/os/qnx/qnx6.1/ctype_noninline.h: Likewise.
+	* config/os/qnx/qnx6.1/ctype_configure_char.cc: Likewise.
+	* config/os/bsd/netbsd/ctype_noninline.h: Likewise.
+	* config/os/bsd/netbsd/ctype_configure_char.cc: Likewise.
+	* config/os/bsd/darwin/ctype_noninline.h: Likewise.
+	* config/os/bsd/darwin/ctype_configure_char.cc: Likewise.
+	* config/os/bsd/freebsd/ctype_noninline.h: Likewise.
+	* config/os/bsd/freebsd/ctype_configure_char.cc: Likewise.
+	* config/os/irix/irix6.5/ctype_noninline.h: Likewise.
+	* config/os/irix/irix6.5/ctype_configure_char.cc: Likewise.
+	* config/os/generic/ctype_noninline.h: Likewise.
+	* config/os/generic/ctype_configure_char.cc: Likewise.
+	* config/os/solaris/solaris2.7/ctype_noninline.h: Likewise.
+	* config/os/solaris/solaris2.7/ctype_configure_char.cc: Likewise.
+
 2011-03-25  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* testsuite/28_regex/match_results/ctors/char/default.cc: Do not call
