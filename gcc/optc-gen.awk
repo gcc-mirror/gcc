@@ -401,15 +401,21 @@ for (i = 0; i < n_opts; i++) {
 	printf(" %d,\n", idx)
 	condition = opt_args("Condition", flags[i])
 	cl_flags = switch_flags(flags[i])
+	cl_bit_fields = switch_bit_fields(flags[i])
+	cl_zero_bit_fields = switch_bit_fields("")
 	if (condition != "")
 		printf("#if %s\n" \
 		       "    %s,\n" \
+		       "    0, %s,\n" \
 		       "#else\n" \
-		       "    CL_DISABLED,\n" \
+		       "    0,\n" \
+		       "    1 /* Disabled.  */, %s,\n" \
 		       "#endif\n",
-		       condition, cl_flags, cl_flags)
+		       condition, cl_flags, cl_bit_fields, cl_zero_bit_fields)
 	else
-		printf("    %s,\n", cl_flags)
+		printf("    %s,\n" \
+		       "    0, %s,\n",
+		       cl_flags, cl_bit_fields)
 	printf("    %s, %s }%s\n", var_ref(opts[i], flags[i]),
 	       var_set(flags[i]), comma)
 }
