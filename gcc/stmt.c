@@ -1455,7 +1455,7 @@ expand_expr_stmt (tree exp)
       if (TYPE_MODE (type) == VOIDmode)
 	;
       else if (TYPE_MODE (type) != BLKmode)
-	value = copy_to_reg (value);
+	copy_to_reg (value);
       else
 	{
 	  rtx lab = gen_label_rtx ();

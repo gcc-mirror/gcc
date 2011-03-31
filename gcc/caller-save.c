@@ -82,7 +82,7 @@ static int reg_restore_code (int, enum machine_mode);
 
 struct saved_hard_reg;
 static void initiate_saved_hard_regs (void);
-static struct saved_hard_reg *new_saved_hard_reg (int, int);
+static void new_saved_hard_reg (int, int);
 static void finish_saved_hard_regs (void);
 static int saved_hard_reg_compare_func (const void *, const void *);
 
@@ -346,7 +346,7 @@ initiate_saved_hard_regs (void)
 
 /* Allocate and return new saved hard register with given REGNO and
    CALL_FREQ.  */
-static struct saved_hard_reg *
+static void
 new_saved_hard_reg (int regno, int call_freq)
 {
   struct saved_hard_reg *saved_reg;
@@ -359,7 +359,6 @@ new_saved_hard_reg (int regno, int call_freq)
   saved_reg->call_freq = call_freq;
   saved_reg->first_p = FALSE;
   saved_reg->next = -1;
-  return saved_reg;
 }
 
 /* Free memory allocated for the saved hard registers.  */
@@ -463,7 +462,7 @@ setup_save_areas (void)
 	    if (hard_reg_map[regno] != NULL)
 	      hard_reg_map[regno]->call_freq += freq;
 	    else
-	      saved_reg = new_saved_hard_reg (regno, freq);
+	      new_saved_hard_reg (regno, freq);
 	    SET_HARD_REG_BIT (hard_regs_used, regno);
 	  }
       /* Look through all live pseudos, mark their hard registers.  */
@@ -483,7 +482,7 @@ setup_save_areas (void)
 		if (hard_reg_map[r] != NULL)
 		  hard_reg_map[r]->call_freq += freq;
 		else
-		  saved_reg = new_saved_hard_reg (r, freq);
+		  new_saved_hard_reg (r, freq);
 		 SET_HARD_REG_BIT (hard_regs_to_save, r);
 		 SET_HARD_REG_BIT (hard_regs_used, r);
 	      }

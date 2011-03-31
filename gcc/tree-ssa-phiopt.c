@@ -695,7 +695,6 @@ minmax_replacement (basic_block cond_bb, basic_block middle_bb,
 
   cond = last_stmt (cond_bb);
   cmp = gimple_cond_code (cond);
-  result = PHI_RESULT (phi);
 
   /* This transformation is only valid for order comparisons.  Record which
      operand is smaller/larger if the result of the comparison is true.  */

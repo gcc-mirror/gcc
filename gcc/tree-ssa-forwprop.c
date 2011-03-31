@@ -553,7 +553,7 @@ forward_propagate_into_cond (gimple_stmt_iterator *gsi_p)
       {
 	name = cond;
 	def_stmt = get_prop_source_stmt (name, true, NULL);
-	if (def_stmt || !can_propagate_from (def_stmt))
+	if (!def_stmt || !can_propagate_from (def_stmt))
 	  return did_something;
 
 	rhs0 = gimple_assign_rhs1 (def_stmt);
