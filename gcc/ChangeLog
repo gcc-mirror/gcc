@@ -1,3 +1,8 @@
+2011-03-31  Jakub Jelinek  <jakub@redhat.com>
+
+	* common.opt (fdebug-types-section): Move earlier.
+	* doc/invoke.texi: Fix up -fno-debug-types-section documentation.
+
 2011-03-31  Andreas Tobler  <andreast@fgznet.ch>
 
 	* config/rs6000/rs6000.c (rs6000_handle_option): Remove unused isel
