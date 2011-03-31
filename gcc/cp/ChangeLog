@@ -1,5 +1,8 @@
 2011-03-31  Jason Merrill  <jason@redhat.com>
 
+	PR c++/48277
+	* semantics.c (finish_call_expr): Remove assert.
+
 	PR c++/48280
 	* method.c (defaultable_fn_check): Templates are not defaultable.
 
