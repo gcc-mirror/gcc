@@ -1,3 +1,18 @@
+2011-03-31  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* cprop.c: Clean up hash table building.
+	(reg_avail_info): Remove.
+	(oprs_available_p): Remove.
+	(record_last_reg_set_info): Remove.
+	(record_last_set_info): Remove.
+	(reg_available_p): New function.
+	(gcse_constant_p): Do not treat unfolded conditions as constants.
+	(make_set_regs_unavailable): New function.
+	(hash_scan_set): Simplify with new reg_available_p.
+	(compute_hash_table_work): Traverse insns stream only once.
+	Do not compute reg_avail_info. Traverse insns in reverse order.
+	Record implicit sets after recording explicit sets from the block.
+
 2011-03-31  Michael Matz  <matz@suse.de>
 
 	* builtins.c (build_va_arg_indirect_ref): Use

@@ -118,7 +118,7 @@ static rtx *implicit_sets;
 
 /* Bitmap containing one bit for each register in the program.
    Used when performing GCSE to track which registers have been set since
-   the start of the basic block.  */
+   the start or end of the basic block while traversing that block.  */
 static regset reg_set_bitmap;
 
 /* Various variables for statistics gathering.  */
@@ -183,79 +183,13 @@ free_gcse_mem (void)
   FREE_REG_SET (reg_set_bitmap);
 }
 
-struct reg_avail_info
-{
-  basic_block last_bb;
-  int last_set;
-};
-
-static struct reg_avail_info *reg_avail_info;
-static basic_block current_bb;
-
-/* Return nonzero if the operands of expression X are unchanged from
-   INSN to the end of INSN's basic block.  */
+/* Return nonzero if register X is unchanged from INSN to the end
+   of INSN's basic block.  */
 
 static int
-oprs_available_p (const_rtx x, const_rtx insn)
+reg_available_p (const_rtx x, const_rtx insn ATTRIBUTE_UNUSED)
 {
-  int i, j;
-  enum rtx_code code;
-  const char *fmt;
-
-  if (x == 0)
-    return 1;
-
-  code = GET_CODE (x);
-  switch (code)
-    {
-    case REG:
-      {
-	struct reg_avail_info *info = &reg_avail_info[REGNO (x)];
-
-	if (info->last_bb != current_bb)
-	  return 1;
-	return info->last_set < DF_INSN_LUID (insn);
-      }
-
-    case PRE_DEC:
-    case PRE_INC:
-    case POST_DEC:
-    case POST_INC:
-    case PRE_MODIFY:
-    case POST_MODIFY:
-      return 0;
-
-    case PC:
-    case CC0: /*FIXME*/
-    case CONST:
-    case CONST_INT:
-    case CONST_DOUBLE:
-    case CONST_FIXED:
-    case CONST_VECTOR:
-    case SYMBOL_REF:
-    case LABEL_REF:
-    case ADDR_VEC:
-    case ADDR_DIFF_VEC:
-      return 1;
-
-    default:
-      break;
-    }
-
-  for (i = GET_RTX_LENGTH (code) - 1, fmt = GET_RTX_FORMAT (code); i >= 0; i--)
-    {
-      if (fmt[i] == 'e')
-	{
-	  if (! oprs_available_p (XEXP (x, i), insn))
-	    return 0;
-	}
-      else if (fmt[i] == 'E')
-	for (j = 0; j < XVECLEN (x, i); j++)
-	  if (! oprs_available_p (XVECEXP (x, i, j), insn))
-	    return 0;
-    }
-
-  return 1;
+  return ! REGNO_REG_SET_P (reg_set_bitmap, REGNO (x));
 }
 
 /* Hash a set of register REGNO.
@@ -353,29 +287,13 @@ insert_set_in_table (rtx x, rtx insn, struct hash_table_d *table)
     }
 }
 
-/* Determine whether the rtx X should be treated as a constant for
-   the purposes of GCSE's constant propagation.  */
+/* Determine whether the rtx X should be treated as a constant for CPROP.
+   Since X might be inserted more than once we have to take care that it
+   is sharable.  */
 
 static bool
 gcse_constant_p (const_rtx x)
 {
-  /* Consider a COMPARE of two integers constant.  */
-  if (GET_CODE (x) == COMPARE
-      && CONST_INT_P (XEXP (x, 0))
-      && CONST_INT_P (XEXP (x, 1)))
-    return true;
-
-  /* Consider a COMPARE of the same registers is a constant
-     if they are not floating point registers.  */
-  if (GET_CODE(x) == COMPARE
-      && REG_P (XEXP (x, 0)) && REG_P (XEXP (x, 1))
-      && REGNO (XEXP (x, 0)) == REGNO (XEXP (x, 1))
-      && ! FLOAT_MODE_P (GET_MODE (XEXP (x, 0)))
-      && ! FLOAT_MODE_P (GET_MODE (XEXP (x, 1))))
-    return true;
-
-  /* Since X might be inserted more than once we have to take care that it
-     is sharable.  */
   return CONSTANT_P (x) && (GET_CODE (x) != CONST || shared_const_p (x));
 }
 
@@ -387,29 +305,26 @@ hash_scan_set (rtx pat, rtx insn, struct hash_table_d *table)
 {
   rtx src = SET_SRC (pat);
   rtx dest = SET_DEST (pat);
-  rtx note;
 
-  if (REG_P (dest))
+  if (REG_P (dest)
+      && ! HARD_REGISTER_P (dest)
+      && reg_available_p (dest, insn)
+      && can_copy_p (GET_MODE (dest)))
     {
-      unsigned int regno = REGNO (dest);
-      rtx tmp;
-
       /* See if a REG_EQUAL note shows this equivalent to a simpler expression.
 
-	 This allows us to do a single GCSE pass and still eliminate
+	 This allows us to do a single CPROP pass and still eliminate
 	 redundant constants, addresses or other expressions that are
 	 constructed with multiple instructions.
 
 	 However, keep the original SRC if INSN is a simple reg-reg move.  In
 	 In this case, there will almost always be a REG_EQUAL note on the
 	 insn that sets SRC.  By recording the REG_EQUAL value here as SRC
-	 for INSN, we miss copy propagation opportunities and we perform the
-	 same PRE GCSE operation repeatedly on the same REG_EQUAL value if we
-	 do more than one PRE GCSE pass.
+	 for INSN, we miss copy propagation opportunities.
 
 	 Note that this does not impede profitable constant propagations.  We
 	 "look through" reg-reg sets in lookup_avail_set.  */
-      note = find_reg_equal_equiv_note (insn);
+      rtx note = find_reg_equal_equiv_note (insn);
       if (note != 0
 	  && REG_NOTE_KIND (note) == REG_EQUAL
 	  && !REG_P (src)
@@ -417,19 +332,11 @@ hash_scan_set (rtx pat, rtx insn, struct hash_table_d *table)
 	src = XEXP (note, 0), pat = gen_rtx_SET (VOIDmode, dest, src);
 
       /* Record sets for constant/copy propagation.  */
-      if (regno >= FIRST_PSEUDO_REGISTER
-	  && ((REG_P (src)
-	       && REGNO (src) >= FIRST_PSEUDO_REGISTER
-	       && can_copy_p (GET_MODE (dest))
-	       && REGNO (src) != regno)
-	      || gcse_constant_p (src))
-	  /* A copy is not available if its src or dest is subsequently
-	     modified.  Here we want to search from INSN+1 on, but
-	     oprs_available_p searches from INSN on.  */
-	  && (insn == BB_END (BLOCK_FOR_INSN (insn))
-	      || (tmp = next_nonnote_nondebug_insn (insn)) == NULL_RTX
-	      || BLOCK_FOR_INSN (tmp) != BLOCK_FOR_INSN (insn)
-	      || oprs_available_p (pat, tmp)))
+      if ((REG_P (src)
+	   && src != dest
+	   && ! HARD_REGISTER_P (src)
+	   && reg_available_p (src, insn))
+	  || gcse_constant_p (src))
 	insert_set_in_table (pat, insn, table);
     }
 }
@@ -504,39 +411,15 @@ dump_hash_table (FILE *file, const char *name, struct hash_table_d *table)
   free (hash_val);
 }
 
-/* Record register first/last/block set information for REGNO in INSN.
-
-   last_set records the last place in the block where the register
-   is set and is used to compute "availability".
-
-   last_bb records the block for which last_set is valid, as a quick
-   test to invalidate it.  */
-
+/* Record as unavailable all registers that are DEF operands of INSN.  */
 static void
-record_last_reg_set_info (rtx insn, int regno)
+make_set_regs_unavailable (rtx insn)
 {
-  struct reg_avail_info *info = &reg_avail_info[regno];
-  int luid = DF_INSN_LUID (insn);
+  struct df_insn_info *insn_info = DF_INSN_INFO_GET (insn);
+  df_ref *def_rec;
 
-  info->last_set = luid;
-  if (info->last_bb != current_bb)
-    info->last_bb = current_bb;
-}
-
-/* Called from compute_hash_table via note_stores to handle one
-   SET or CLOBBER in an insn.  DATA is really the instruction in which
-   the SET is taking place.  */
-
-static void
-record_last_set_info (rtx dest, const_rtx setter ATTRIBUTE_UNUSED, void *data)
-{
-  rtx last_set_insn = (rtx) data;
-
-  if (GET_CODE (dest) == SUBREG)
-    dest = SUBREG_REG (dest);
-
-  if (REG_P (dest))
-    record_last_reg_set_info (last_set_insn, REGNO (dest));
+  for (def_rec = DF_INSN_INFO_DEFS (insn_info); *def_rec; def_rec++)
+    SET_REGNO_REG_SET (reg_set_bitmap, DF_REF_REGNO (*def_rec));
 }
 
 /* Top level function to create an assignments hash table.
@@ -553,49 +436,37 @@ record_last_set_info (rtx dest, const_rtx setter ATTRIBUTE_UNUSED, void *data)
 static void
 compute_hash_table_work (struct hash_table_d *table)
 {
-  int i;
+  basic_block bb;
 
-  /* Some working arrays used to track first and last set in each block.  */
-  reg_avail_info = GNEWVEC (struct reg_avail_info, max_reg_num ());
-
-  for (i = 0; i < max_reg_num (); ++i)
-    reg_avail_info[i].last_bb = NULL;
-
-  FOR_EACH_BB (current_bb)
+  FOR_EACH_BB (bb)
     {
       rtx insn;
-      unsigned int regno;
 
-      /* First pass over the instructions records information used to
-	 determine when registers and memory are first and last set.  */
-      FOR_BB_INSNS (current_bb, insn)
-	{
+      /* Reset tables used to keep track of what's not yet invalid [since
+	 the end of the block].  */
+      CLEAR_REG_SET (reg_set_bitmap);
+
+      /* Go over all insns from the last to the first.  This is convenient
+	 for tracking available registers, i.e. not set between INSN and
+	 the end of the basic block BB.  */
+      FOR_BB_INSNS_REVERSE (bb, insn)
+        {
+	  /* Only real insns are interesting.  */
 	  if (!NONDEBUG_INSN_P (insn))
 	    continue;
 
-	  if (CALL_P (insn))
-	    {
-	      for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
-		if (TEST_HARD_REG_BIT (regs_invalidated_by_call, regno))
-		  record_last_reg_set_info (insn, regno);
-	    }
+	  /* Record interesting sets from INSN in the hash table.  */
+	  hash_scan_insn (insn, table);
 
-	  note_stores (PATTERN (insn), record_last_set_info, insn);
+	  /* Any registers set in INSN will make SETs above it not AVAIL.  */
+	  make_set_regs_unavailable (insn);
 	}
 
-      /* Insert implicit sets in the hash table.  */
-      if (implicit_sets[current_bb->index] != NULL_RTX)
-	hash_scan_set (implicit_sets[current_bb->index],
-		       BB_HEAD (current_bb), table);
-
-      /* The next pass builds the hash table.  */
-      FOR_BB_INSNS (current_bb, insn)
-	if (NONDEBUG_INSN_P (insn))
-	  hash_scan_insn (insn, table);
+      /* Insert implicit sets in the hash table, pretending they appear as
+	 insns at the head of the basic block.  */
+      if (implicit_sets[bb->index] != NULL_RTX)
+	hash_scan_set (implicit_sets[bb->index], BB_HEAD (bb), table);
     }
-
-  free (reg_avail_info);
-  reg_avail_info = NULL;
 }
 
 /* Allocate space for the set/expr hash TABLE.
