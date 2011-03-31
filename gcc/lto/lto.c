@@ -1514,8 +1514,8 @@ lto_wpa_write_files (void)
 	  fprintf (cgraph_dump_file, "varpool nodes:");
 	  dump_varpool_node_set (cgraph_dump_file, vset);
 	}
-      gcc_assert (cgraph_node_set_nonempty_p (set)
-		  || varpool_node_set_nonempty_p (vset) || !i);
+      gcc_checking_assert (cgraph_node_set_nonempty_p (set)
+			   || varpool_node_set_nonempty_p (vset) || !i);
 
       lto_set_current_out_file (file);
 

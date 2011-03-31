@@ -1,3 +1,9 @@
+2011-03-31  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/48246
+	* lto.c (lto_wpa_write_files): Disable assert for non-empty
+	partitions when checking is not enabled.
+
 2011-03-25  Release Manager
 
 	* GCC 4.6.0 released.
