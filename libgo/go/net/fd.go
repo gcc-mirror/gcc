@@ -376,7 +376,7 @@ func (fd *netFD) Read(p []byte) (n int, err os.Error) {
 	for {
 		var errno int
 		n, errno = syscall.Read(fd.sysfile.Fd(), p)
-		if (errno == syscall.EAGAIN || errno == syscall.EINTR) && fd.rdeadline >= 0 {
+		if errno == syscall.EAGAIN && fd.rdeadline >= 0 {
 			pollserver.WaitRead(fd)
 			continue
 		}
@@ -411,7 +411,7 @@ func (fd *netFD) ReadFrom(p []byte) (n int, sa syscall.Sockaddr, err os.Error) {
 	for {
 		var errno int
 		n, sa, errno = syscall.Recvfrom(fd.sysfd, p, 0)
-		if (errno == syscall.EAGAIN || errno == syscall.EINTR) && fd.rdeadline >= 0 {
+		if errno == syscall.EAGAIN && fd.rdeadline >= 0 {
 			pollserver.WaitRead(fd)
 			continue
 		}
@@ -444,7 +444,7 @@ func (fd *netFD) ReadMsg(p []byte, oob []byte) (n, oobn, flags int, sa syscall.S
 	for {
 		var errno int
 		n, oobn, flags, sa, errno = syscall.Recvmsg(fd.sysfd, p, oob, 0)
-		if (errno == syscall.EAGAIN || errno == syscall.EINTR) && fd.rdeadline >= 0 {
+		if errno == syscall.EAGAIN && fd.rdeadline >= 0 {
 			pollserver.WaitRead(fd)
 			continue
 		}
@@ -490,7 +490,7 @@ func (fd *netFD) Write(p []byte) (n int, err os.Error) {
 		if nn == len(p) {
 			break
 		}
-		if (errno == syscall.EAGAIN || errno == syscall.EINTR) && fd.wdeadline >= 0 {
+		if errno == syscall.EAGAIN && fd.wdeadline >= 0 {
 			pollserver.WaitWrite(fd)
 			continue
 		}
@@ -526,7 +526,7 @@ func (fd *netFD) WriteTo(p []byte, sa syscall.Sockaddr) (n int, err os.Error) {
 	var oserr os.Error
 	for {
 		errno := syscall.Sendto(fd.sysfd, p, 0, sa)
-		if (errno == syscall.EAGAIN || errno == syscall.EINTR) && fd.wdeadline >= 0 {
+		if errno == syscall.EAGAIN && fd.wdeadline >= 0 {
 			pollserver.WaitWrite(fd)
 			continue
 		}
@@ -560,7 +560,7 @@ func (fd *netFD) WriteMsg(p []byte, oob []byte, sa syscall.Sockaddr) (n int, oob
 	for {
 		var errno int
 		errno = syscall.Sendmsg(fd.sysfd, p, oob, sa, 0)
-		if (errno == syscall.EAGAIN || errno == syscall.EINTR) && fd.wdeadline >= 0 {
+		if errno == syscall.EAGAIN && fd.wdeadline >= 0 {
 			pollserver.WaitWrite(fd)
 			continue
 		}
@@ -598,7 +598,7 @@ func (fd *netFD) accept(toAddr func(syscall.Sockaddr) Addr) (nfd *netFD, err os.
 			return nil, os.EINVAL
 		}
 		s, sa, e = syscall.Accept(fd.sysfd)
-		if e != syscall.EAGAIN && e != syscall.EINTR {
+		if e != syscall.EAGAIN {
 			break
 		}
 		syscall.ForkLock.RUnlock()
