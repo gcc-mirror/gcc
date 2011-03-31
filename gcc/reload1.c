@@ -2997,7 +2997,7 @@ elimination_effects (rtx x, enum machine_mode mem_mode)
 
 	}
       else if (reg_renumber[regno] < 0
-	       && reg_equiv_constant (0)
+	       && reg_equivs != 0
 	       && reg_equiv_constant (regno)
 	       && ! function_invariant_p (reg_equiv_constant (regno)))
 	elimination_effects (reg_equiv_constant (regno), mem_mode);
