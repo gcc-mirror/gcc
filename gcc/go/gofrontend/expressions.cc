@@ -9283,10 +9283,13 @@ Array_index_expression::do_check_types(Gogo*)
 
   // A slice of an array requires an addressable array.  A slice of a
   // slice is always possible.
-  if (this->end_ != NULL
-      && !array_type->is_open_array_type()
-      && !this->array_->is_addressable())
-    this->report_error(_("array is not addressable"));
+  if (this->end_ != NULL && !array_type->is_open_array_type())
+    {
+      if (!this->array_->is_addressable())
+	this->report_error(_("array is not addressable"));
+      else
+	this->array_->address_taken(true);
+    }
 }
 
 // Return whether this expression is addressable.
