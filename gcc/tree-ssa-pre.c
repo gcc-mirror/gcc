@@ -2874,8 +2874,11 @@ create_component_ref_by_pieces_1 (basic_block block, vn_reference_t ref,
 	  return NULL_TREE;
 	if (genop2)
 	  {
-	    /* Drop zero minimum index.  */
-	    if (tree_int_cst_equal (genop2, integer_zero_node))
+	    tree domain_type = TYPE_DOMAIN (TREE_TYPE (genop0));
+	    /* Drop zero minimum index if redundant.  */
+	    if (integer_zerop (genop2)
+		&& (!domain_type
+		    || integer_zerop (TYPE_MIN_VALUE (domain_type))))
 	      genop2 = NULL_TREE;
 	    else
 	      {
