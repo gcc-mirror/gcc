@@ -762,17 +762,6 @@ struct cum_arg
   ((C) == 'W')
 
 
-/* Go to LABEL if ADDR (a legitimate address expression)
-   has an effect that depends on the machine mode it is used for.
-
-   On the H8/300, the predecrement and postincrement address depend thus
-   (the amount of decrement or increment being the length of the operand).  */
-
-#define GO_IF_MODE_DEPENDENT_ADDRESS(ADDR, LABEL) \
-  if (GET_CODE (ADDR) == PLUS \
-      && h8300_get_index (XEXP (ADDR, 0), VOIDmode, 0) != XEXP (ADDR, 0)) \
-    goto LABEL;
-
 /* Specify the machine mode that this machine uses
    for the index in the tablejump instruction.  */
 #define CASE_VECTOR_MODE Pmode
