@@ -1,3 +1,9 @@
+2011-03-30  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* tree.h (CASE_CHAIN): Define.
+	* tree-cfg.c (edge_to_cases_cleanup, get_cases_for_edge): Use it.
+	(gimple_redirect_edge_and_branch): Likewise.
+
 2011-03-30  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR middle-end/48367
