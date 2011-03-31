@@ -1,5 +1,6 @@
 2011-03-30  Jeff Law  <law@redhat.com>
 
+	* PR bootstrap/48371
 	* reload1.c (reload): Fix botch in last change.
 
 	* reload.h (struct reload): Fix typo introduced in last change.
