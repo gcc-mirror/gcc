@@ -1594,6 +1594,12 @@ defaultable_fn_check (tree fn)
 {
   special_function_kind kind = sfk_none;
 
+  if (template_parm_scope_p ())
+    {
+      error ("a template cannot be defaulted");
+      return false;
+    }
+
   if (DECL_CONSTRUCTOR_P (fn))
     {
       if (FUNCTION_FIRST_USER_PARMTYPE (fn) == void_list_node)
