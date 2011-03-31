@@ -1620,7 +1620,9 @@ assign_hard_reg (ira_allocno_t a, bool retry_p)
 	    {
 	      hard_regno = ALLOCNO_HARD_REGNO (conflict_a);
 	      if (hard_regno >= 0
-		  && ira_class_hard_reg_index[aclass][hard_regno] >= 0)
+		  && (ira_hard_reg_set_intersection_p
+		      (hard_regno, ALLOCNO_MODE (conflict_a),
+		       reg_class_contents[aclass])))
 		{
 		  int n_objects = ALLOCNO_NUM_OBJECTS (conflict_a);
 		  int conflict_nregs;
