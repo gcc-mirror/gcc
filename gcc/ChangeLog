@@ -1,3 +1,9 @@
+2011-03-30  Jeff Law  <law@redhat.com>
+
+	* reload1.c (reload): Fix botch in last change.
+
+	* reload.h (struct reload): Fix typo introduced in last change.
+
 2011-03-30  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/arm/arm.opt (mhard-float, msoft-float): Mark
