@@ -4192,7 +4192,6 @@ rs6000_handle_option (struct gcc_options *opts, struct gcc_options *opts_set,
 		      location_t loc ATTRIBUTE_UNUSED)
 {
   enum fpu_type_t fpu_type = FPU_NONE;
-  int isel;
   char *p, *q;
   size_t code = decoded->opt_index;
   const char *arg = decoded->arg;
