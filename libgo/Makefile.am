@@ -1547,40 +1547,51 @@ CHECK = \
 	export RUNTESTFLAGS; \
 	MAKE="$(MAKE)"; \
 	export MAKE; \
-	rm -f $@-log; \
+	rm -f $@-testlog; \
 	prefix=`if test "$(@D)" = "regexp"; then echo regexp-test; else dirname $(@D); fi`; \
 	test "$${prefix}" != "." || prefix="$(@D)"; \
 	if test "$(use_dejagnu)" = "yes"; then \
 	  $(SHELL) $(srcdir)/testsuite/gotest --dejagnu=yes --basedir=$(srcdir) --srcdir=$(srcdir)/go/$(@D) --prefix="libgo_$${prefix}" --pkgfiles="$(go_$(subst /,_,$(@D))_files)" $(GOTESTFLAGS); \
 	else \
-	  if $(SHELL) $(srcdir)/testsuite/gotest --basedir=$(srcdir) --srcdir=$(srcdir)/go/$(@D) --prefix="libgo_$${prefix}" --pkgfiles="$(go_$(subst /,_,$(@D))_files)" $(GOTESTFLAGS) >>$@-log 2>&1; then \
+	  if $(SHELL) $(srcdir)/testsuite/gotest --basedir=$(srcdir) --srcdir=$(srcdir)/go/$(@D) --prefix="libgo_$${prefix}" --pkgfiles="$(go_$(subst /,_,$(@D))_files)" $(GOTESTFLAGS) >>$@-testlog 2>&1; then \
 	    echo "PASS: $(@D)"; \
+	    echo "PASS: $(@D)" >> libgo.sum; \
+	    echo "PASS: $(@D)" >> $@-testlog; \
+	    cat $@-testlog >> libgo.log; \
 	  else \
-	    echo "FAIL: $(@D)"; \
-	    cat $@-log; \
+	    echo "FAIL: $(@D)" >> $@-testlog; \
+	    cat $@-testlog; \
+	    echo "FAIL: $(@D)" >> libgo.sum; \
+	    cat $@-testlog >> libgo.log; \
 	    exit 1; \
 	  fi; \
 	fi
 
 # Build all packages before checking any.
 CHECK_DEPS = libgo.la libgobegin.a \
-	$(toolexeclib_DATA) \
-	$(toolexeclibarchive_DATA) \
-	$(toolexeclibcompress_DATA) \
-	$(toolexeclibcontainer_DATA) \
-	$(toolexeclibcrypto_DATA) \
-	$(toolexeclibdebug_DATA) \
-	$(toolexeclibencoding_DATA) \
-	$(toolexeclibexp_DATA) \
 	$(toolexeclibgo_DATA) \
-	$(toolexeclibhash_DATA) \
-	$(toolexeclibhttp_DATA) \
-	$(toolexeclibimage_DATA) \
-	$(toolexeclibio_DATA) \
-	$(toolexeclibos_DATA) \
-	$(toolexeclibrpc_DATA) \
-	$(toolexeclibruntime_DATA) \
-	$(toolexeclibtesting_DATA)
+	$(toolexeclibgoarchive_DATA) \
+	$(toolexeclibgocompress_DATA) \
+	$(toolexeclibgocontainer_DATA) \
+	$(toolexeclibgocrypto_DATA) \
+	$(toolexeclibgocryptoopenpgp_DATA) \
+	$(toolexeclibgodebug_DATA) \
+	$(toolexeclibgoencoding_DATA) \
+	$(toolexeclibgoexp_DATA) \
+	$(toolexeclibgogo_DATA) \
+	$(toolexeclibgohash_DATA) \
+	$(toolexeclibgohttp_DATA) \
+	$(toolexeclibgoimage_DATA) \
+	$(toolexeclibgoindex_DATA) \
+	$(toolexeclibgoio_DATA) \
+	$(toolexeclibgomime_DATA) \
+	$(toolexeclibgonet_DATA) \
+	$(toolexeclibgoos_DATA) \
+	$(toolexeclibgopath_DATA) \
+	$(toolexeclibgorpc_DATA) \
+	$(toolexeclibgoruntime_DATA) \
+	$(toolexeclibgosync_DATA) \
+	$(toolexeclibgotesting_DATA)
 
 asn1/asn1.lo: $(go_asn1_files) bytes.gox fmt.gox io.gox os.gox reflect.gox \
 		strconv.gox strings.gox time.gox
@@ -3040,14 +3051,49 @@ TEST_PACKAGES = \
 	testing/quick/check \
 	testing/script/check
 
-check-recursive: $(TEST_PACKAGES)
+check-am:
+	@rm -f libgo.sum libgo.log
+	@echo "Test Run By $${USER} on `date`" > libgo.sum
+	@echo "Native configuration is $(host_triplet)" >> libgo.sum
+	@echo >> libgo.sum
+	@echo "		=== libgo tests ===" >> libgo.sum
+	@echo >> libgo.sum
+	@echo "Schedule of variations:" >> libgo.sum
+	@echo "    unix" >> libgo.sum
+	@echo >> libgo.sum
+	@echo "Running target unix" >> libgo.sum
+	@echo "Running $(srcdir)/libgo.exp ..." >> libgo.sum
+	@cp libgo.sum libgo.log
+	@rm -f libgo.tail
+	@$(MAKE) -k $(TEST_PACKAGES); \
+	status=$$?; \
+	echo > libgo.tail; \
+	echo "		=== libgo summary ===" >> libgo.tail; \
+	echo >> libgo.tail; \
+	p=`grep -c PASS libgo.sum`; \
+	if test "$$p" != "0"; then \
+	  echo "# of expected passes		$$p" >> libgo.tail; \
+	fi; \
+	p=`grep -c FAIL libgo.sum`; \
+	if test "$$p" != "0"; then \
+	  echo "# of unexpected failures	$$p" >> libgo.tail; \
+	fi; \
+	cat libgo.tail >> libgo.sum; \
+	cat libgo.tail >> libgo.log; \
+	echo `echo $(GOC) | sed -e 's/ .*//'`  `$(GOC) -v 2>&1 | grep " version" | sed -n -e 's/.* \(version.*$$\)/\1/p'` >> libgo.sum; \
+	echo >> libgo.log; \
+	echo "runtest completed at `date`" >> libgo.log; \
+	exit $$status
+
+MOSTLYCLEAN_FILES = libgo.tail
 
 mostlyclean-local:
 	find . -name '*.lo' -print | xargs $(LIBTOOL) --mode=clean rm -f
 	find . -name '*.$(OBJEXT)' -print | xargs rm -f
+	find . -name '*-testlog' -print | xargs rm -f
+
+CLEANFILES = *.go *.gox goc2c *.c s-version libgo.sum libgo.log
 
 clean-local:
 	find . -name '*.la' -print | xargs $(LIBTOOL) --mode=clean rm -f
 	find . -name '*.a' -print | xargs rm -f
-
-CLEANFILES = *.go *.gox goc2c *.c s-version
