@@ -646,6 +646,8 @@ LIBGO_IS_RTEMS_FALSE
 LIBGO_IS_RTEMS_TRUE
 LIBGO_IS_LINUX_FALSE
 LIBGO_IS_LINUX_TRUE
+LIBGO_IS_IRIX_FALSE
+LIBGO_IS_IRIX_TRUE
 LIBGO_IS_FREEBSD_FALSE
 LIBGO_IS_FREEBSD_TRUE
 LIBGO_IS_DARWIN_FALSE
@@ -10902,7 +10904,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 10905 "configure"
+#line 10907 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11008,7 +11010,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11011 "configure"
+#line 11013 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -13217,6 +13219,7 @@ fi
 
 is_darwin=no
 is_freebsd=no
+is_irix=no
 is_linux=no
 is_rtems=no
 is_solaris=no
@@ -13224,6 +13227,7 @@ GOOS=unknown
 case ${host} in
   *-*-darwin*)   is_darwin=yes;  GOOS=darwin ;;
   *-*-freebsd*)  is_freebsd=yes; GOOS=freebsd ;;
+  *-*-irix6*)    is_irix=yes;    GOOS=irix ;;
   *-*-linux*)    is_linux=yes;   GOOS=linux ;;
   *-*-rtems*)    is_rtems=yes;   GOOS=rtems ;;
   *-*-solaris2*) is_solaris=yes; GOOS=solaris ;;
@@ -13242,6 +13246,14 @@ fi
 else
   LIBGO_IS_FREEBSD_TRUE='#'
   LIBGO_IS_FREEBSD_FALSE=
+fi
+
+ if test $is_irix = yes; then
+  LIBGO_IS_IRIX_TRUE=
+  LIBGO_IS_IRIX_FALSE='#'
+else
+  LIBGO_IS_IRIX_TRUE='#'
+  LIBGO_IS_IRIX_FALSE=
 fi
 
  if test $is_linux = yes; then
@@ -14495,6 +14507,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${LIBGO_IS_FREEBSD_TRUE}" && test -z "${LIBGO_IS_FREEBSD_FALSE}"; then
   as_fn_error "conditional \"LIBGO_IS_FREEBSD\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${LIBGO_IS_IRIX_TRUE}" && test -z "${LIBGO_IS_IRIX_FALSE}"; then
+  as_fn_error "conditional \"LIBGO_IS_IRIX\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${LIBGO_IS_LINUX_TRUE}" && test -z "${LIBGO_IS_LINUX_FALSE}"; then

@@ -114,6 +114,7 @@ AC_SUBST(LIBFFIINCS)
 
 is_darwin=no
 is_freebsd=no
+is_irix=no
 is_linux=no
 is_rtems=no
 is_solaris=no
@@ -121,12 +122,14 @@ GOOS=unknown
 case ${host} in
   *-*-darwin*)   is_darwin=yes;  GOOS=darwin ;;
   *-*-freebsd*)  is_freebsd=yes; GOOS=freebsd ;;
+  *-*-irix6*)    is_irix=yes;    GOOS=irix ;;
   *-*-linux*)    is_linux=yes;   GOOS=linux ;;
   *-*-rtems*)    is_rtems=yes;   GOOS=rtems ;;
   *-*-solaris2*) is_solaris=yes; GOOS=solaris ;;
 esac
 AM_CONDITIONAL(LIBGO_IS_DARWIN, test $is_darwin = yes)
 AM_CONDITIONAL(LIBGO_IS_FREEBSD, test $is_freebsd = yes)
+AM_CONDITIONAL(LIBGO_IS_IRIX, test $is_irix = yes)
 AM_CONDITIONAL(LIBGO_IS_LINUX, test $is_linux = yes)
 AM_CONDITIONAL(LIBGO_IS_RTEMS, test $is_rtems = yes)
 AM_CONDITIONAL(LIBGO_IS_SOLARIS, test $is_solaris = yes)
