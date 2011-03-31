@@ -2154,12 +2154,6 @@ finish_call_expr (tree fn, VEC(tree,gc) **args, bool disallow_virtual,
     {
       if (TREE_CODE (result) == INDIRECT_REF)
 	result = TREE_OPERAND (result, 0);
-      gcc_assert (TREE_CODE (result) == CALL_EXPR
-		  /* FIXME cp_build_function_call_vec should avoid argument
-		     and return transformations like build_over_call does.  */
-		  || TREE_CODE (result) == TARGET_EXPR
-		  || TREE_CODE (fn) == PSEUDO_DTOR_EXPR
-		  || errorcount);
       result = build_call_vec (TREE_TYPE (result), orig_fn, orig_args);
       KOENIG_LOOKUP_P (result) = koenig_p;
       release_tree_vector (orig_args);
