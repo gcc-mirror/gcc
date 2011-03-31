@@ -1,7 +1,10 @@
+2011-03-31  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* g++.dg/other/i386-9.C: New test.
+
 2011-03-30  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
-	* go.test/go-test.exp (go-set-goarch): Use sparc64 for 64-bit
-	SPARC.
+	* go.test/go-test.exp (go-set-goarch): Use sparc64 for 64-bit SPARC.
 
 2011-03-30  Jason Merrill  <jason@redhat.com>
 
