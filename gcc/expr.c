@@ -4124,7 +4124,7 @@ expand_assignment (tree to, tree from, bool nontemporal)
   /* Don't crash if the lhs of the assignment was erroneous.  */
   if (TREE_CODE (to) == ERROR_MARK)
     {
-      result = expand_normal (from);
+      expand_normal (from);
       return;
     }
 
@@ -8170,7 +8170,6 @@ expand_expr_real_2 (sepops ops, rtx target, enum machine_mode tmode,
     case VEC_UNPACK_LO_EXPR:
       {
 	op0 = expand_normal (treeop0);
-	this_optab = optab_for_tree_code (code, type, optab_default);
 	temp = expand_widen_pattern_expr (ops, op0, NULL_RTX, NULL_RTX,
 					  target, unsignedp);
 	gcc_assert (temp);
@@ -8182,9 +8181,6 @@ expand_expr_real_2 (sepops ops, rtx target, enum machine_mode tmode,
       {
 	op0 = expand_normal (treeop0);
 	/* The signedness is determined from input operand.  */
-	this_optab = optab_for_tree_code (code,
-					  TREE_TYPE (treeop0),
-					  optab_default);
 	temp = expand_widen_pattern_expr
 	  (ops, op0, NULL_RTX, NULL_RTX,
 	   target, TYPE_UNSIGNED (TREE_TYPE (treeop0)));
@@ -8334,7 +8330,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	{
 	  temp = expand_expr (exp, NULL_RTX, VOIDmode, modifier);
 	  if (MEM_P (temp))
-	    temp = copy_to_reg (temp);
+	    copy_to_reg (temp);
 	  return const0_rtx;
 	}
 

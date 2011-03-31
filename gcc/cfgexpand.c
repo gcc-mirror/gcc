@@ -3576,7 +3576,7 @@ expand_gimple_basic_block (basic_block bb)
 	      val = gen_rtx_VAR_LOCATION
 		(mode, var, (rtx)value, VAR_INIT_STATUS_INITIALIZED);
 
-	      val = emit_debug_insn (val);
+	      emit_debug_insn (val);
 
 	      if (dump_file && (dump_flags & TDF_DETAILS))
 		{

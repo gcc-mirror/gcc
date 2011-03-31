@@ -308,8 +308,9 @@ reversed_comparison_code_parts (enum rtx_code code, const_rtx arg0,
     {
 #ifdef REVERSE_CONDITION
       return REVERSE_CONDITION (code, mode);
-#endif
+#else
       return reverse_condition (code);
+#endif
     }
 
   /* Try a few special cases based on the comparison code.  */
