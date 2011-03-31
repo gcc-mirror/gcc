@@ -838,8 +838,8 @@ edge_to_cases_cleanup (const void *key ATTRIBUTE_UNUSED, void **value,
 
   for (t = (tree) *value; t; t = next)
     {
-      next = TREE_CHAIN (t);
-      TREE_CHAIN (t) = NULL;
+      next = CASE_CHAIN (t);
+      CASE_CHAIN (t) = NULL;
     }
 
   *value = NULL;
@@ -922,7 +922,7 @@ get_cases_for_edge (edge e, gimple t)
       /* Add it to the chain of CASE_LABEL_EXPRs referencing E, or create
 	 a new chain.  */
       slot = pointer_map_insert (edge_to_cases, this_edge);
-      TREE_CHAIN (elt) = (tree) *slot;
+      CASE_CHAIN (elt) = (tree) *slot;
       *slot = elt;
     }
 
@@ -4851,7 +4851,7 @@ gimple_redirect_edge_and_branch (edge e, basic_block dest)
 	      {
 		last = cases;
 		CASE_LABEL (cases) = label;
-		cases = TREE_CHAIN (cases);
+		cases = CASE_CHAIN (cases);
 	      }
 
 	    /* If there was already an edge in the CFG, then we need
@@ -4860,8 +4860,8 @@ gimple_redirect_edge_and_branch (edge e, basic_block dest)
 	      {
 		tree cases2 = get_cases_for_edge (e2, stmt);
 
-		TREE_CHAIN (last) = TREE_CHAIN (cases2);
-		TREE_CHAIN (cases2) = first;
+		CASE_CHAIN (last) = CASE_CHAIN (cases2);
+		CASE_CHAIN (cases2) = first;
 	      }
 	    bitmap_set_bit (touched_switch_bbs, gimple_bb (stmt)->index);
 	  }

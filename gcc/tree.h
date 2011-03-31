@@ -1636,6 +1636,7 @@ extern void protected_set_expr_location (tree, location_t);
 #define CASE_LOW(NODE)          	TREE_OPERAND (CASE_LABEL_EXPR_CHECK (NODE), 0)
 #define CASE_HIGH(NODE)         	TREE_OPERAND (CASE_LABEL_EXPR_CHECK (NODE), 1)
 #define CASE_LABEL(NODE)		TREE_OPERAND (CASE_LABEL_EXPR_CHECK (NODE), 2)
+#define CASE_CHAIN(NODE)		TREE_CHAIN (CASE_LABEL_EXPR_CHECK (NODE))
 
 /* The operands of a TARGET_MEM_REF.  Operands 0 and 1 have to match
    corresponding MEM_REF operands.  */
