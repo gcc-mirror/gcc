@@ -1,3 +1,8 @@
+2011-03-31  Michael Matz  <matz@suse.de>
+
+	* builtins.c (build_va_arg_indirect_ref): Use
+	build_simple_mem_ref_loc.
+
 2011-03-31  Anatoly Sokolov  <aesok@post.ru>
 
 	* config/h8300/h8300.h (GO_IF_MODE_DEPENDENT_ADDRESS): Remove macro.
