@@ -1652,7 +1652,7 @@ find_costs_and_classes (FILE *dump_file)
 			i_costs[k] += add_cost;
 		    }
 		  add_cost = COSTS (costs, a_num)->mem_cost;
-		  if (add_cost && INT_MAX - add_cost < i_mem_cost)
+		  if (add_cost > 0 && INT_MAX - add_cost < i_mem_cost)
 		    i_mem_cost = INT_MAX;
 		  else
 		    i_mem_cost += add_cost;
@@ -1887,7 +1887,7 @@ process_bb_node_for_hard_reg_moves (ira_loop_tree_node_t loop_tree_node)
       ALLOCNO_HARD_REG_COSTS (a)[i] -= cost;
       ALLOCNO_CONFLICT_HARD_REG_COSTS (a)[i] -= cost;
       ALLOCNO_CLASS_COST (a) = MIN (ALLOCNO_CLASS_COST (a),
-					  ALLOCNO_HARD_REG_COSTS (a)[i]);
+				    ALLOCNO_HARD_REG_COSTS (a)[i]);
     }
 }
 
