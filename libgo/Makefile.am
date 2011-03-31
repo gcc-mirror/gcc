@@ -709,10 +709,14 @@ else
 if LIBGO_IS_SOLARIS
 go_os_sys_file = go/os/sys_uname.go
 else
+if LIBGO_IS_IRIX
+go_os_sys_file = go/os/sys_uname.go
+else
 if LIBGO_IS_RTEMS
 go_os_sys_file = go/os/sys_uname.go
 else
 go_os_sys_file = go/os/sys_bsd.go
+endif
 endif
 endif
 endif
