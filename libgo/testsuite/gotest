@@ -32,6 +32,7 @@ loop=true
 keep=false
 prefix=
 dejagnu=no
+timeout=60
 while $loop; do
 	case "x$1" in
         x--srcdir)
@@ -81,6 +82,15 @@ while $loop; do
 		;;
 	x--dejagnu=*)
 		dejagnu=`echo $1 | sed -e 's/^--dejagnu=//'`
+		shift
+		;;
+	x--timeout)
+		timeout=$2
+		shift
+		shift
+		;;
+	x--timeout=*)
+		timeout=`echo $1 | sed -e 's/^--timeout=//'`
 		shift
 		;;
 	x-*)
@@ -357,7 +367,7 @@ case "x$dejagnu" in
 xno)
 	${GC} -g -c _testmain.go
 	${GL} *.o ${GOLIBS}
-	./a.out -test.short "$@"
+	./a.out -test.short -test.timeout=$timeout "$@"
 	;;
 xyes)
 	rm -rf ../testsuite/*.o
