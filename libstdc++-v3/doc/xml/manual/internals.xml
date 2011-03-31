@@ -254,11 +254,8 @@ not have to include <code>&lt;ctype.h&gt;</code> in this header; it will always 
 included before <code>ctype_base.h</code> is included.
    </para>
 
-   <para>The next file to write is <code>ctype_noninline.h</code>, which also does
-not require include guards.  This file defines a few member functions
-that will be included in <code>include/bits/locale_facets.h</code>.  The first
-function that must be written is the <code>ctype&lt;char&gt;::ctype</code>
-constructor.  Here is the IRIX example:
+   <para>The next file to write is <code>ctype_configure_char.cc</code>.
+The first function that must be written is the <code>ctype&lt;char&gt;::ctype</code> constructor.  Here is the IRIX example:
    </para>
 
 <programlisting>

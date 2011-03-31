@@ -89,8 +89,8 @@ am__installdirs = "$(DESTDIR)$(toolexeclibdir)"
 LTLIBRARIES = $(toolexeclib_LTLIBRARIES)
 am__DEPENDENCIES_1 =
 am__objects_1 = atomicity.lo codecvt_members.lo collate_members.lo \
-	ctype_members.lo messages_members.lo monetary_members.lo \
-	numeric_members.lo time_members.lo
+	ctype_configure_char.lo ctype_members.lo messages_members.lo \
+	monetary_members.lo numeric_members.lo time_members.lo
 @ENABLE_EXTERN_TEMPLATE_TRUE@am__objects_2 = allocator-inst.lo \
 @ENABLE_EXTERN_TEMPLATE_TRUE@	concept-inst.lo ext-inst.lo \
 @ENABLE_EXTERN_TEMPLATE_TRUE@	fstream-inst.lo ios-inst.lo \
@@ -361,6 +361,7 @@ host_sources = \
 	atomicity.cc \
 	codecvt_members.cc \
 	collate_members.cc \
+	ctype_configure_char.cc \
 	ctype_members.cc \
 	messages_members.cc \
 	monetary_members.cc \
@@ -828,6 +829,9 @@ codecvt_members.cc: ${glibcxx_srcdir}/$(CCODECVT_CC)
 
 collate_members.cc: ${glibcxx_srcdir}/$(CCOLLATE_CC)
 	$(LN_S) ${glibcxx_srcdir}/$(CCOLLATE_CC) . || true
+
+ctype_configure_char.cc: ${glibcxx_srcdir}/$(OS_INC_SRCDIR)/ctype_configure_char.cc
+	$(LN_S) ${glibcxx_srcdir}/$(OS_INC_SRCDIR)/ctype_configure_char.cc . || true
 
 ctype_members.cc: ${glibcxx_srcdir}/$(CCTYPE_CC)
 	$(LN_S) ${glibcxx_srcdir}/$(CCTYPE_CC) . || true
