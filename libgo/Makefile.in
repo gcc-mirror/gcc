@@ -4435,7 +4435,7 @@ crypto/blowfish/check: $(CHECK_DEPS)
 
 crypto/cast5.lo: $(go_crypto_cast5_files) os.gox
 	$(BUILDPACKAGE)
-crypt/cast5/check: $(CHECK_DEPS)
+crypto/cast5/check: $(CHECK_DEPS)
 	@$(MKDIR_P) crypto/cast5
 	$(CHECK)
 .PHONY: crypto/cast5/check
