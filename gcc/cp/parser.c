@@ -14501,9 +14501,9 @@ cp_parser_init_declarator (cp_parser* parser,
 	cp_parser_save_default_args (parser, decl);
     }
 
-  /* Finish processing the declaration.  But, skip friend
+  /* Finish processing the declaration.  But, skip member
      declarations.  */
-  if (!friend_p && decl && decl != error_mark_node && !range_for_decl_p)
+  if (!member_p && decl && decl != error_mark_node && !range_for_decl_p)
     {
       cp_finish_decl (decl,
 		      initializer, !is_non_constant_init,
