@@ -123,6 +123,9 @@ proc go-set-goarch { } {
     global target_triplet
 
     switch -glob $target_triplet {
+	"alpha*-*-*" {
+	    set goarch "alpha"
+	}
 	"arm*-*-*" -
 	"ep9312*-*-*" -
 	"strongarm*-*-*" -
