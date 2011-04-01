@@ -1,5 +1,6 @@
 /* If-conversion support.
-   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2010
+   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2010,
+   2011
    Free Software Foundation, Inc.
 
    This file is part of GCC.
@@ -304,6 +305,10 @@ cond_exec_process_insns (ce_if_block_t *ce_info ATTRIBUTE_UNUSED,
 
   for (insn = start; ; insn = NEXT_INSN (insn))
     {
+      /* dwarf2out can't cope with conditional prologues.  */
+      if (NOTE_P (insn) && NOTE_KIND (insn) == NOTE_INSN_PROLOGUE_END)
+	return FALSE;
+
       if (NOTE_P (insn) || DEBUG_INSN_P (insn))
 	goto insn_done;
 

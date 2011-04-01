@@ -7,6 +7,9 @@
 	* final.c (final_start_function): Call the new function rather
 	than using a NULL argument for dwarf2out_frame_debug.
 
+	* ifcvt.c (cond_exec_process_insns): Disallow converting a block
+	that contains the prologue.
+
 2011-04-01  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	* config/spu/t-spu-elf (dp-bit.c): Use > instead of >>.
