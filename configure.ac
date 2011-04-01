@@ -89,42 +89,6 @@ AC_PROG_LN_S
 AC_PROG_SED
 AC_PROG_AWK
 
-### we might need to use some other shell than /bin/sh for running subshells
-### If we are on Windows, search for the shell.  This will permit people
-### to not have /bin/sh, but to be able to see /SOME/PATH/sh configure
-### without also having to set CONFIG_SHELL.  This code will work when
-### using bash, which sets OSTYPE.
-case "${OSTYPE}" in
-*win32*)
-  if test x${CONFIG_SHELL} = x ; then
-    if test ! -f /bin/sh ; then
-      if test x${SHELL} != x && test -f ${SHELL} ; then
-	CONFIG_SHELL=${SHELL}
-	export CONFIG_SHELL
-      else
-	for prog in sh sh.exe bash bash.exe; do
-	  IFS="${IFS=	}"; save_ifs="$IFS"; IFS="${IFS}:"
-	  for dir in $PATH; do
-	    test -z "$dir" && dir=.
-	    if test -f $dir/$prog; then
-	      CONFIG_SHELL=$dir/$prog
-	      export CONFIG_SHELL
-	      break
-	    fi
-	  done
-	  IFS="$save_ifs"
-	  test -n "${CONFIG_SHELL}" && break
-	done
-      fi
-    fi
-  fi
-  ;;
-esac
-
-config_shell=${CONFIG_SHELL-/bin/sh}
-
-moveifchange=${srcdir}/move-if-change
-
 srcpwd=`cd ${srcdir} ; ${PWDCMD-pwd}`
 
 # We pass INSTALL explicitly to sub-makes.  Make sure that it is not
@@ -2985,7 +2949,6 @@ AC_SUBST(NM_FOR_BUILD)
 AC_SUBST(RANLIB_FOR_BUILD)
 AC_SUBST(WINDMC_FOR_BUILD)
 AC_SUBST(WINDRES_FOR_BUILD)
-AC_SUBST(config_shell)
 
 # Generate default definitions for YACC, M4, LEX and other programs that run
 # on the build machine.  These are used if the Makefile can't locate these

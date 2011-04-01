@@ -1,5 +1,13 @@
 2011-04-01  Joseph Myers  <joseph@codesourcery.com>
 
+	* configure.ac: Remove code setting CONFIG_SHELL, config_shell and
+	moveifchange.
+	* configure: Regenerate.
+	* Makefile.tpl: Use @SHELL@ not @config_shell@.
+	* Makefile.in: Regenerate.
+
+2011-04-01  Joseph Myers  <joseph@codesourcery.com>
+
 	* configure.ac (*-*-sysv4*): Don't enable libgomp.
 	(alpha*-*-*vms*, i[[34567]]86-*-sco3.2v5*, mn10300-*-*,
 	powerpc-*-chorusos*, powerpc*-*-eabi*, powerpc*-*-sysv*,
