@@ -2613,8 +2613,8 @@ max_issue (struct ready_list *ready, int privileged_n, state_t state,
 	    {
 	      if (state_dead_lock_p (state)
 		  || insn_finishes_cycle_p (insn))
- 		/* We won't issue any more instructions in the next
- 		   choice_state.  */
+		/* We won't issue any more instructions in the next
+		   choice_state.  */
 		top->rest = 0;
 	      else
 		top->rest--;
@@ -2862,6 +2862,52 @@ commit_schedule (rtx prev_head, rtx tail, basic_block *target_bb)
   VEC_truncate (rtx, scheduled_insns, 0);
 }
 
+/* Examine all insns on the ready list and queue those which can't be
+   issued in this cycle.  TEMP_STATE is temporary scheduler state we
+   can use as scratch space.  If FIRST_CYCLE_INSN_P is true, no insns
+   have been issued for the current cycle, which means it is valid to
+   issue an asm statement.  */
+
+static void
+prune_ready_list (state_t temp_state, bool first_cycle_insn_p)
+{
+  int i;
+
+ restart:
+  for (i = 0; i < ready.n_ready; i++)
+    {
+      rtx insn = ready_element (&ready, i);
+      int cost = 0;
+      const char *reason = "resource conflict";
+
+      if (recog_memoized (insn) < 0)
+	{
+	  if (!first_cycle_insn_p
+	      && (GET_CODE (PATTERN (insn)) == ASM_INPUT
+		  || asm_noperands (PATTERN (insn)) >= 0))
+	    cost = 1;
+	  reason = "asm";
+	}
+      else if (flag_sched_pressure)
+	cost = 0;
+      else
+	{
+	  memcpy (temp_state, curr_state, dfa_state_size);
+	  cost = state_transition (temp_state, insn);
+	  if (cost < 0)
+	    cost = 0;
+	  else if (cost == 0)
+	    cost = 1;
+	}
+      if (cost >= 1)
+	{
+	  ready_remove (&ready, i);
+	  queue_insn (insn, cost, reason);
+	  goto restart;
+	}
+    }
+}
+
 /* Use forward list scheduling to rearrange insns of block pointed to by
    TARGET_BB, possibly bringing insns from subsequent blocks in the same
    region.  */
@@ -3013,6 +3059,10 @@ schedule_block (basic_block *target_bb)
 	}
       while (advance > 0);
 
+      prune_ready_list (temp_state, true);
+      if (ready.n_ready == 0)
+        continue;
+
       if (sort_p)
 	{
 	  /* Sort the ready list based on priority.  */
@@ -3143,44 +3193,6 @@ schedule_block (basic_block *target_bb)
 	    }
 
 	  sort_p = TRUE;
-	  memcpy (temp_state, curr_state, dfa_state_size);
-	  if (recog_memoized (insn) < 0)
-	    {
-	      asm_p = (GET_CODE (PATTERN (insn)) == ASM_INPUT
-		       || asm_noperands (PATTERN (insn)) >= 0);
-	      if (!first_cycle_insn_p && asm_p)
-		/* This is asm insn which is tried to be issued on the
-		   cycle not first.  Issue it on the next cycle.  */
-		cost = 1;
-	      else
-		/* A USE insn, or something else we don't need to
-		   understand.  We can't pass these directly to
-		   state_transition because it will trigger a
-		   fatal error for unrecognizable insns.  */
-		cost = 0;
-	    }
-	  else if (sched_pressure_p)
-	    cost = 0;
-	  else
-	    {
-	      cost = state_transition (temp_state, insn);
-	      if (cost < 0)
-		cost = 0;
-	      else if (cost == 0)
-		cost = 1;
-	    }
-
-	  if (cost >= 1)
-	    {
-	      queue_insn (insn, cost, "resource conflict");
- 	      if (SCHED_GROUP_P (insn))
- 		{
- 		  advance = cost;
- 		  break;
- 		}
-
-	      continue;
-	    }
 
 	  if (current_sched_info->can_schedule_ready_p
 	      && ! (*current_sched_info->can_schedule_ready_p) (insn))
@@ -3201,14 +3213,20 @@ schedule_block (basic_block *target_bb)
 
 	  /* Update counters, etc in the scheduler's front end.  */
 	  (*current_sched_info->begin_schedule_ready) (insn);
- 	  VEC_safe_push (rtx, heap, scheduled_insns, insn);
+	  VEC_safe_push (rtx, heap, scheduled_insns, insn);
 	  last_scheduled_insn = insn;
 
-	  if (memcmp (curr_state, temp_state, dfa_state_size) != 0)
-            {
-              cycle_issued_insns++;
-              memcpy (curr_state, temp_state, dfa_state_size);
-            }
+	  if (recog_memoized (insn) >= 0)
+	    {
+	      cost = state_transition (curr_state, insn);
+	      if (!flag_sched_pressure)
+		gcc_assert (cost < 0);
+	      cycle_issued_insns++;
+	      asm_p = false;
+	    }
+	  else
+	    asm_p = (GET_CODE (PATTERN (insn)) == ASM_INPUT
+		     || asm_noperands (PATTERN (insn)) >= 0);
 
 	  if (targetm.sched.variable_issue)
 	    can_issue_more =
@@ -3229,6 +3247,9 @@ schedule_block (basic_block *target_bb)
 
 	  first_cycle_insn_p = false;
 
+	  if (ready.n_ready > 0)
+            prune_ready_list (temp_state, false);
+
 	  /* Sort the ready list based on priority.  This must be
 	     redone here, as schedule_insn may have readied additional
 	     insns that will not be sorted correctly.  */
@@ -3240,7 +3261,7 @@ schedule_block (basic_block *target_bb)
 	  if (ready.n_ready && DEBUG_INSN_P (ready_element (&ready, 0))
 	      && (*current_sched_info->schedule_more_p) ())
 	    {
- 	      while (ready.n_ready && DEBUG_INSN_P (ready_element (&ready, 0)))
+	      while (ready.n_ready && DEBUG_INSN_P (ready_element (&ready, 0)))
 		{
 		  insn = ready_remove_first (&ready);
 		  gcc_assert (DEBUG_INSN_P (insn));

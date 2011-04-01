@@ -32,6 +32,10 @@
 	* sched-rgn.c (begin_schedule_ready): Remove second argument.
 	(rgn_const_sched_info): Add NULL entry for the begin_move_insn field.
 
+	* haifa-sched.c (prune_ready_list): New function, broken out of
+	schedule_block.
+	(schedule_block): Use it.
+
 2011-04-01  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	* config/spu/t-spu-elf (dp-bit.c): Use > instead of >>.
