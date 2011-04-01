@@ -1,3 +1,17 @@
+2011-04-01  Olivier Hainque  <hainque@adacore.com>
+            Nicolas Setton  <setton@adacore.com>
+            Eric Botcazou  <ebotcazou@adacore.com>
+
+	* dwarf2out.c (dwarf_attr_name): Map DW_AT_GNAT_descriptive_type.
+	(add_gnat_descriptive_type_attribute): New function.
+	(gen_array_type_die): Call it.
+	(gen_enumeration_type_die): Likewise.
+	(gen_struct_or_union_type_die): Likewise.
+	(modified_type_die): Likewise.
+	* langhooks.h (lang_hooks_for_types): New descriptive_type hook.
+	* langhooks-def.h (LANG_HOOKS_DESCRIPTIVE_TYPE): Default to NULL.
+	(LANG_HOOKS_FOR_TYPES_INITIALIZER): Add LANG_HOOKS_DESCRIPTIVE_TYPE.
+
 2011-04-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR bootstrap/48148

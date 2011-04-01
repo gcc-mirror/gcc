@@ -1,3 +1,10 @@
+2011-04-01  Olivier Hainque  <hainque@adacore.com>
+            Nicolas Setton  <setton@adacore.com>
+            Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/misc.c (gnat_descriptive_type): New function.
+	(LANG_HOOKS_DESCRIPTIVE_TYPE): Redefine to gnat_descriptive_type.
+
 2011-03-28  Kai Tietz  <ktietz@redhat.com>
 
 	* gcc-interface/Makefile.in (SO_LIB): Handle multilib build for native

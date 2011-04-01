@@ -1,6 +1,6 @@
 /* The lang_hooks data structure.
-   Copyright 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
-   Free Software Foundation, Inc.
+   Copyright 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+   2011 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -131,6 +131,11 @@ struct lang_hooks_for_types
 
   /* Fill in information for the debugger about the bounds of TYPE.  */
   void (*get_subrange_bounds) (const_tree, tree *, tree *);
+
+  /* A type descriptive of TYPE's complex layout generated to help the
+     debugger to decode variable-length or self-referential constructs.
+     This is only used for the AT_GNAT_descriptive_type DWARF attribute.  */
+  tree (*descriptive_type) (const_tree);
 
   /* If we requested a pointer to a vector, build up the pointers that
      we stripped off while looking for the inner type.  Similarly for
