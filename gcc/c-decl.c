@@ -6186,10 +6186,11 @@ grokdeclarator (const struct c_declarator *declarator,
 	  }
 
 	type = c_build_qualified_type (type, type_quals);
-       /* block sizes don't make much sense for scalar variables,
-          but UPC permits them. */
-       if (layout_qualifier)
-         type = upc_set_block_factor (VAR_DECL, type, layout_qualifier);
+
+	/* Block sizes don't make much sense for scalar variables,
+           but UPC permits them. */
+	if (layout_qualifier)
+	  type = upc_set_block_factor (VAR_DECL, type, layout_qualifier);
 
 	/* C99 6.2.2p7: It is invalid (compile-time undefined
 	   behavior) to create an 'extern' declaration for a

@@ -1,5 +1,10 @@
 2011-04-01  Gary Funck  <gary@intrepid.com>
 
+	* c-decl.c (grokdeclarator): Fix formatting of
+	  code that sets UPC block size on scalars.
+
+2011-04-01  Gary Funck  <gary@intrepid.com>
+
 	* c-decl.c (grokdeclarator): Revert use of white space
 	  to match the trunk (to rationalize diffs).
 	* c-typeck.c (convert_for_assignment): Ditto.
