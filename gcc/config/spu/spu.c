@@ -6545,9 +6545,7 @@ expand_builtin_args (struct spu_builtin_description *d, tree exp,
       ops[i] = expand_expr (arg, NULL_RTX, VOIDmode, EXPAND_NORMAL);
     }
 
-  /* The insn pattern may have additional operands (SCRATCH).
-     Return the number of actual non-SCRATCH operands.  */
-  gcc_assert (i <= insn_data[icode].n_operands);
+  gcc_assert (i == insn_data[icode].n_generator_args);
   return i;
 }
 

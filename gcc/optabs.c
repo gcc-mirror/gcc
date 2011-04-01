@@ -7118,9 +7118,7 @@ rtx
 maybe_gen_insn (enum insn_code icode, unsigned int nops,
 		struct expand_operand *ops)
 {
-  /* n_operands includes any automatically-generated match_scratches,
-     so we can't check for equality here.  */
-  gcc_assert (nops <= (unsigned int) insn_data[(int) icode].n_operands);
+  gcc_assert (nops == (unsigned int) insn_data[(int) icode].n_generator_args);
   if (!maybe_legitimize_operands (icode, 0, nops, ops))
     return NULL_RTX;
 
