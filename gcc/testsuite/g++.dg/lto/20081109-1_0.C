@@ -1,4 +1,5 @@
 // { dg-lto-do link }
+// { dg-require-effective-target fpic }
 // { dg-lto-options {{-fPIC -flto -flto-partition=1to1}} }
 // { dg-extra-ld-options "-fPIC -flto -flto-partition=1to1 -r -nostdlib -fno-exceptions" }
 void func(); class Foo { };
