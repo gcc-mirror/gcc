@@ -13,6 +13,8 @@
 	* haifa-sched.c (queue_insn): New arg REASON.  All callers
 	changed.  Print it in debugging output.
 
+	* sched-ebb.c (schedule_ebbs): Honor the BB_DISABLE_SCHEDULE flag.
+
 2011-04-01  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	* config/spu/t-spu-elf (dp-bit.c): Use > instead of >>.
