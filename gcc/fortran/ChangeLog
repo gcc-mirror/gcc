@@ -1,4 +1,10 @@
-2011-03-30  Michael Matz  matz@suse.de>
+2011-04-01  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/48352
+	* frontend-passes (cfe_register_funcs):  Don't
+	register functions if they appear as iterators in DO loops.
+
+2011-03-30  Michael Matz  <matz@suse.de>
 
 	PR fortran/47516
 	* trans-expr.c (realloc_lhs_loop_for_fcn_call): Take loop as parameter,
