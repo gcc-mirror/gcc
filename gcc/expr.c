@@ -1293,11 +1293,8 @@ emit_block_move_via_movmem (rtx x, rtx y, rtx size, unsigned int align,
 	     nice if there were some way to inform the backend, so
 	     that it doesn't fail the expansion because it thinks
 	     emitting the libcall would be more efficient.  */
-	  nops = insn_data[(int) code].n_operands;
-	  /* ??? n_operands includes match_scratches; find some other
-	     way to select the 6 operand variant, or force all targets
-	     to have exactly 6 operands.  */
-	  gcc_assert (nops >= 4 && nops <= 6);
+	  nops = insn_data[(int) code].n_generator_args;
+	  gcc_assert (nops == 4 || nops == 6);
 
 	  create_fixed_operand (&ops[0], x);
 	  create_fixed_operand (&ops[1], y);
@@ -2719,11 +2716,8 @@ set_storage_via_setmem (rtx object, rtx size, rtx val, unsigned int align,
 	  struct expand_operand ops[6];
 	  unsigned int nops;
 
-	  nops = insn_data[(int) code].n_operands;
-	  /* ??? n_operands includes match_scratches; find some other
-	     way to select the 6 operand variant, or force all targets
-	     to have exactly 6 operands.  */
-	  gcc_assert (nops >= 4 && nops <= 6);
+	  nops = insn_data[(int) code].n_generator_args;
+	  gcc_assert (nops == 4 || nops == 6);
 
 	  create_fixed_operand (&ops[0], object);
 	  /* The check above guarantees that this size conversion is valid.  */

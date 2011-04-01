@@ -13252,7 +13252,7 @@ mips_expand_builtin_compare_1 (enum insn_code icode,
 
   /* The instruction should have a target operand, an operand for each
      argument, and an operand for COND.  */
-  gcc_assert (nargs + 2 == insn_data[(int) icode].n_operands);
+  gcc_assert (nargs + 2 == insn_data[(int) icode].n_generator_args);
 
   opno = 0;
   create_output_operand (&ops[opno++], NULL_RTX,
@@ -13280,11 +13280,9 @@ mips_expand_builtin_direct (enum insn_code icode, rtx target, tree exp,
   if (has_target_p)
     create_output_operand (&ops[opno++], target, TYPE_MODE (TREE_TYPE (exp)));
 
-  /* Map the arguments to the other operands.  The n_operands value
-     for an expander includes match_dups and match_scratches as well as
-     match_operands, so n_operands is only an upper bound on the number
-     of arguments to the expander function.  */
-  gcc_assert (opno + call_expr_nargs (exp) <= insn_data[icode].n_operands);
+  /* Map the arguments to the other operands.  */
+  gcc_assert (opno + call_expr_nargs (exp)
+	      == insn_data[icode].n_generator_args);
   for (argno = 0; argno < call_expr_nargs (exp); argno++)
     mips_prepare_builtin_arg (&ops[opno++], exp, argno);
 

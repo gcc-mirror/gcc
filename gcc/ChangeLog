@@ -1,5 +1,16 @@
 2011-04-01  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	* expr.c (emit_block_move_via_movmem): Use n_generator_args
+	instead of n_operands.
+	(set_storage_via_setmem): Likewise.
+	* optabs.c (maybe_gen_insn): Likewise.
+	* config/arm/arm.c (arm_init_neon_builtins): Likewise.
+	* config/mips/mips.c (mips_expand_builtin_compare_1): Likewise.
+	(mips_expand_builtin_direct): Likewise.
+	* config/spu/spu.c (expand_builtin_args): Likewise.
+
+2011-04-01  Richard Sandiford  <richard.sandiford@linaro.org>
+
 	* recog.h (insn_data_d): Add n_generator_args.
 	* genoutput.c (data): Likewise.
 	(output_insn_data): Print it.

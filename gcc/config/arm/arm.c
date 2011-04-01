@@ -18944,7 +18944,7 @@ arm_init_neon_builtins (void)
 		/* Build a function type directly from the insn_data for this
 		   builtin.  The build_function_type() function takes care of
 		   removing duplicates for us.  */
-		for (k = insn_data[icode].n_operands - 1; k >= 0; k--)
+		for (k = insn_data[icode].n_generator_args - 1; k >= 0; k--)
 		  {
 		    tree eltype;
 
