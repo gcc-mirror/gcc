@@ -15,6 +15,23 @@
 
 	* sched-ebb.c (schedule_ebbs): Honor the BB_DISABLE_SCHEDULE flag.
 
+	* sched-ebb.c (begin_schedule_ready): Remove second argument.
+	Split most of the code into...
+	(begin_move_insn): ... here.  New function.
+	(ebb_sched_info): Add a pointer to it.
+	* haifa-sched.c (scheduled_insns): New static variable.
+	(sched_extend_ready_list): Allocate it.
+	(schedule_block): Use it to record the order of scheduled insns.
+	Perform RTL changes to move insns only after all scheduling
+	decisions have been made.
+	* modulo-sched.c (sms_sched_haifa_sched_info): Add NULL entry for the
+	begin_move_insn field.
+	* sel-sched-ir.c (sched_sel_haifa_sched_info): Likewise.
+	* sched-int.h (struct haifa_sched_info): Remove second argument
+	from begin_schedule_ready hook.  Add new member begin_move_insn.
+	* sched-rgn.c (begin_schedule_ready): Remove second argument.
+	(rgn_const_sched_info): Add NULL entry for the begin_move_insn field.
+
 2011-04-01  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	* config/spu/t-spu-elf (dp-bit.c): Use > instead of >>.

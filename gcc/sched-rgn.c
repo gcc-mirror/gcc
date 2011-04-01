@@ -2057,7 +2057,7 @@ static int sched_n_insns;
 /* Implementations of the sched_info functions for region scheduling.  */
 static void init_ready_list (void);
 static int can_schedule_ready_p (rtx);
-static void begin_schedule_ready (rtx, rtx);
+static void begin_schedule_ready (rtx);
 static ds_t new_ready (rtx, ds_t);
 static int schedule_more_p (void);
 static const char *rgn_print_insn (const_rtx, int);
@@ -2152,7 +2152,7 @@ can_schedule_ready_p (rtx insn)
    can_schedule_ready_p () differs from the one passed to
    begin_schedule_ready ().  */
 static void
-begin_schedule_ready (rtx insn, rtx last ATTRIBUTE_UNUSED)
+begin_schedule_ready (rtx insn)
 {
   /* An interblock motion?  */
   if (INSN_BB (insn) != target_bb)
@@ -2369,6 +2369,7 @@ static const struct haifa_sched_info rgn_const_sched_info =
 
   rgn_add_remove_insn,
   begin_schedule_ready,
+  NULL,
   advance_target_bb,
   SCHED_RGN
 };

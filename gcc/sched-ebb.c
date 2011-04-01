@@ -59,7 +59,7 @@ static basic_block last_bb;
 
 /* Implementations of the sched_info functions for region scheduling.  */
 static void init_ready_list (void);
-static void begin_schedule_ready (rtx, rtx);
+static void begin_schedule_ready (rtx);
 static int schedule_more_p (void);
 static const char *ebb_print_insn (const_rtx, int);
 static int rank (rtx, rtx);
@@ -125,10 +125,15 @@ init_ready_list (void)
 
 /* INSN is being scheduled after LAST.  Update counters.  */
 static void
-begin_schedule_ready (rtx insn, rtx last)
+begin_schedule_ready (rtx insn ATTRIBUTE_UNUSED)
 {
   sched_rgn_n_insns++;
+}
 
+/* INSN is being moved to its place in the schedule, after LAST.  */
+static void
+begin_move_insn (rtx insn, rtx last)
+{
   if (BLOCK_FOR_INSN (insn) == last_bb
       /* INSN is a jump in the last block, ...  */
       && control_flow_insn_p (insn)
@@ -288,6 +293,7 @@ static struct haifa_sched_info ebb_sched_info =
 
   ebb_add_remove_insn,
   begin_schedule_ready,
+  begin_move_insn,
   advance_target_bb,
   SCHED_EBB
   /* We can create new blocks in begin_schedule_ready ().  */

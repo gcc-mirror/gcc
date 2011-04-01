@@ -302,6 +302,10 @@ static struct ready_list *readyp = &ready;
 /* Scheduling clock.  */
 static int clock_var;
 
+/* This records the actual schedule.  It is built up during the main phase
+   of schedule_block, and afterwards used to reorder the insns in the RTL.  */
+static VEC(rtx, heap) *scheduled_insns;
+
 static int may_trap_exp (const_rtx, int);
 
 /* Nonzero iff the address is comprised from at most 1 register.  */
@@ -2813,6 +2817,51 @@ choose_ready (struct ready_list *ready, bool first_cycle_insn_p,
     }
 }
 
+/* This function is called when we have successfully scheduled a
+   block.  It uses the schedule stored in the scheduled_insns vector
+   to rearrange the RTL.  PREV_HEAD is used as the anchor to which we
+   append the scheduled insns; TAIL is the insn after the scheduled
+   block.  TARGET_BB is the argument passed to schedule_block.  */
+
+static void
+commit_schedule (rtx prev_head, rtx tail, basic_block *target_bb)
+{
+  int i;
+
+  last_scheduled_insn = prev_head;
+  for (i = 0; i < (int)VEC_length (rtx, scheduled_insns); i++)
+    {
+      rtx insn = VEC_index (rtx, scheduled_insns, i);
+
+      if (control_flow_insn_p (last_scheduled_insn)
+	  || current_sched_info->advance_target_bb (*target_bb, insn))
+	{
+	  *target_bb = current_sched_info->advance_target_bb (*target_bb, 0);
+
+	  if (sched_verbose)
+	    {
+	      rtx x;
+
+	      x = next_real_insn (last_scheduled_insn);
+	      gcc_assert (x);
+	      dump_new_block_header (1, *target_bb, x, tail);
+	    }
+
+	  last_scheduled_insn = bb_note (*target_bb);
+	}
+
+      if (current_sched_info->begin_move_insn)
+	(*current_sched_info->begin_move_insn) (insn, last_scheduled_insn);
+      move_insn (insn, last_scheduled_insn,
+		 current_sched_info->next_tail);
+      if (!DEBUG_INSN_P (insn))
+	reemit_notes (insn);
+      last_scheduled_insn = insn;
+    }
+
+  VEC_truncate (rtx, scheduled_insns, 0);
+}
+
 /* Use forward list scheduling to rearrange insns of block pointed to by
    TARGET_BB, possibly bringing insns from subsequent blocks in the same
    region.  */
@@ -2934,6 +2983,7 @@ schedule_block (basic_block *target_bb)
 
   advance = 0;
 
+  gcc_assert (VEC_length (rtx, scheduled_insns) == 0);
   sort_p = TRUE;
   /* Loop until all the insns in BB are scheduled.  */
   while ((*current_sched_info->schedule_more_p) ())
@@ -2979,31 +3029,12 @@ schedule_block (basic_block *target_bb)
 	 them out right away.  */
       if (ready.n_ready && DEBUG_INSN_P (ready_element (&ready, 0)))
 	{
-	  if (control_flow_insn_p (last_scheduled_insn))
-	    {
-	      *target_bb = current_sched_info->advance_target_bb
-		(*target_bb, 0);
-
-	      if (sched_verbose)
-		{
-		  rtx x;
-
-		  x = next_real_insn (last_scheduled_insn);
-		  gcc_assert (x);
-		  dump_new_block_header (1, *target_bb, x, tail);
-		}
-
-	      last_scheduled_insn = bb_note (*target_bb);
-	    }
-
 	  while (ready.n_ready && DEBUG_INSN_P (ready_element (&ready, 0)))
 	    {
 	      rtx insn = ready_remove_first (&ready);
 	      gcc_assert (DEBUG_INSN_P (insn));
-	      (*current_sched_info->begin_schedule_ready) (insn,
-							   last_scheduled_insn);
-	      move_insn (insn, last_scheduled_insn,
-			 current_sched_info->next_tail);
+	      (*current_sched_info->begin_schedule_ready) (insn);
+	      VEC_safe_push (rtx, heap, scheduled_insns, insn);
 	      last_scheduled_insn = insn;
 	      advance = schedule_insn (insn);
 	      gcc_assert (advance == 0);
@@ -3165,39 +3196,12 @@ schedule_block (basic_block *target_bb)
           if (TODO_SPEC (insn) & SPECULATIVE)
             generate_recovery_code (insn);
 
-	  if (control_flow_insn_p (last_scheduled_insn)
-	      /* This is used to switch basic blocks by request
-		 from scheduler front-end (actually, sched-ebb.c only).
-		 This is used to process blocks with single fallthru
-		 edge.  If succeeding block has jump, it [jump] will try
-		 move at the end of current bb, thus corrupting CFG.  */
-	      || current_sched_info->advance_target_bb (*target_bb, insn))
-	    {
-	      *target_bb = current_sched_info->advance_target_bb
-		(*target_bb, 0);
-
-	      if (sched_verbose)
-		{
-		  rtx x;
-
-		  x = next_real_insn (last_scheduled_insn);
-		  gcc_assert (x);
-		  dump_new_block_header (1, *target_bb, x, tail);
-		}
-
-	      last_scheduled_insn = bb_note (*target_bb);
-	    }
-
-	  /* Update counters, etc in the scheduler's front end.  */
-	  (*current_sched_info->begin_schedule_ready) (insn,
-						       last_scheduled_insn);
-
-	  move_insn (insn, last_scheduled_insn, current_sched_info->next_tail);
-
 	  if (targetm.sched.dispatch (NULL_RTX, IS_DISPATCH_ON))
 	    targetm.sched.dispatch_do (insn, ADD_TO_DISPATCH_WINDOW);
 
-	  reemit_notes (insn);
+	  /* Update counters, etc in the scheduler's front end.  */
+	  (*current_sched_info->begin_schedule_ready) (insn);
+ 	  VEC_safe_push (rtx, heap, scheduled_insns, insn);
 	  last_scheduled_insn = insn;
 
 	  if (memcmp (curr_state, temp_state, dfa_state_size) != 0)
@@ -3236,31 +3240,12 @@ schedule_block (basic_block *target_bb)
 	  if (ready.n_ready && DEBUG_INSN_P (ready_element (&ready, 0))
 	      && (*current_sched_info->schedule_more_p) ())
 	    {
-	      if (control_flow_insn_p (last_scheduled_insn))
-		{
-		  *target_bb = current_sched_info->advance_target_bb
-		    (*target_bb, 0);
-
-		  if (sched_verbose)
-		    {
-		      rtx x;
-
-		      x = next_real_insn (last_scheduled_insn);
-		      gcc_assert (x);
-		      dump_new_block_header (1, *target_bb, x, tail);
-		    }
-
-		  last_scheduled_insn = bb_note (*target_bb);
-		}
-
  	      while (ready.n_ready && DEBUG_INSN_P (ready_element (&ready, 0)))
 		{
 		  insn = ready_remove_first (&ready);
 		  gcc_assert (DEBUG_INSN_P (insn));
-		  (*current_sched_info->begin_schedule_ready)
-		    (insn, last_scheduled_insn);
-		  move_insn (insn, last_scheduled_insn,
-			     current_sched_info->next_tail);
+		  (*current_sched_info->begin_schedule_ready) (insn);
+		  VEC_safe_push (rtx, heap, scheduled_insns, insn);
 		  advance = schedule_insn (insn);
 		  last_scheduled_insn = insn;
 		  gcc_assert (advance == 0);
@@ -3321,6 +3306,7 @@ schedule_block (basic_block *target_bb)
 	  }
     }
 
+  commit_schedule (prev_head, tail, target_bb);
   if (sched_verbose)
     fprintf (sched_dump, ";;   total time = %d\n", clock_var);
 
@@ -4001,6 +3987,7 @@ sched_extend_ready_list (int new_sched_ready_n_insns)
     {
       i = 0;
       sched_ready_n_insns = 0;
+      scheduled_insns = VEC_alloc (rtx, heap, new_sched_ready_n_insns);
     }
   else
     i = sched_ready_n_insns + 1;
