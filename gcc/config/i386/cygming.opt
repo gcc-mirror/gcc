@@ -52,3 +52,5 @@ Compile code that relies on Cygwin DLL wrappers to support C++ operator new/dele
 
 posix
 Driver
+
+; Retain blank line above
