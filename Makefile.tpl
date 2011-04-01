@@ -323,7 +323,7 @@ HOST_LIBELFINC = @libelfinc@
 # Programs producing files for the BUILD machine
 # ----------------------------------------------
 
-SHELL = @config_shell@
+SHELL = @SHELL@
 
 # pwd command to use.  Allow user to override default by setting PWDCMD in
 # the environment to account for automounters.  The make variable must not
