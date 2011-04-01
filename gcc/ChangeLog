@@ -1,3 +1,27 @@
+2011-04-01  Kai Tietz  <ktietz@redhat.com>
+
+	* config.gcc (*-*-mingw*): Allow as option the
+	posix threading model.
+	* config/i386/mingw32.h ( SPEC_PTHREAD1,  SPEC_PTHREAD2):
+	New macros defined dependent to TARGET_USE_PTHREAD_BY_DEFAULT
+	definition.
+	(CPP_SPEC): Add pthread/no-pthread handling.
+	(LIB_SPEC): Likewise.
+	* config/i386/mingw-w64.h (CPP_SPEC):Likewise.
+	(LIB_SPEC): Likewise.
+	* config/i386/t-cygming (SHLIB_PTHREAD_CFLAG): New
+	flag to pass -pthread option for shared libgcc build.
+	(SHLIB_PTHREAD_LDFLAG): New option to pass -lpthread
+	for shared libgcc build.
+	* config/i386/t-mingw-pthread: New file.
+	* config/i386/mingw-pthread.h (TARGET_USE_PTHREAD_BY_DEFAULT):
+	New define to enable use of library pthread by default.
+	* config/i386/mingw.opt (pthread): New driver option.
+	(no-pthread): New driver option.
+	* config/i386/cygming.opt: Make sure trailing empty line
+	is retained.
+	* config/i386/mingw-w64.opt: Likewise.
+
 2011-04-01  Gary Funck <gary@intrepid.com>
 
 	* c-decl.c (grokdeclarator): Fix formatting.
