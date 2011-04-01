@@ -1,3 +1,7 @@
+2011-04-01  Uros Bizjak  <ubizjak@gmail.com>
+
+	* go.test/go-test.exp (go-set-goarch): Recognize alpha*-*-*.
+
 2011-04-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/48335
