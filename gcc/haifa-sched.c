@@ -489,7 +489,7 @@ haifa_classify_insn (const_rtx insn)
 static int priority (rtx);
 static int rank_for_schedule (const void *, const void *);
 static void swap_sort (rtx *, int);
-static void queue_insn (rtx, int);
+static void queue_insn (rtx, int, const char *);
 static int schedule_insn (rtx);
 static void adjust_priority (rtx);
 static void advance_one_cycle (void);
@@ -1313,10 +1313,11 @@ swap_sort (rtx *a, int n)
 
 /* Add INSN to the insn queue so that it can be executed at least
    N_CYCLES after the currently executing insn.  Preserve insns
-   chain for debugging purposes.  */
+   chain for debugging purposes.  REASON will be printed in debugging
+   output.  */
 
 HAIFA_INLINE static void
-queue_insn (rtx insn, int n_cycles)
+queue_insn (rtx insn, int n_cycles, const char *reason)
 {
   int next_q = NEXT_Q_AFTER (q_ptr, n_cycles);
   rtx link = alloc_INSN_LIST (insn, insn_queue[next_q]);
@@ -1332,7 +1333,7 @@ queue_insn (rtx insn, int n_cycles)
       fprintf (sched_dump, ";;\t\tReady-->Q: insn %s: ",
 	       (*current_sched_info->print_insn) (insn, 0));
 
-      fprintf (sched_dump, "queued for %d cycles.\n", n_cycles);
+      fprintf (sched_dump, "queued for %d cycles (%s).\n", n_cycles, reason);
     }
 
   QUEUE_INDEX (insn) = next_q;
@@ -2062,11 +2063,7 @@ queue_to_ready (struct ready_list *ready)
 	  && ready->n_ready - ready->n_debug > MAX_SCHED_READY_INSNS
 	  && !SCHED_GROUP_P (insn)
 	  && insn != skip_insn)
-	{
-	  if (sched_verbose >= 2)
-	    fprintf (sched_dump, "requeued because ready full\n");
-	  queue_insn (insn, 1);
-	}
+	queue_insn (insn, 1, "ready full");
       else
 	{
 	  ready_add (ready, insn, false);
@@ -2925,7 +2922,7 @@ schedule_block (basic_block *target_bb)
 	    insn = ready_remove (&ready, i);
 
 	    if (insn != skip_insn)
-	      queue_insn (insn, 1);
+	      queue_insn (insn, 1, "list truncated");
 	  }
       }
     }
@@ -3144,7 +3141,7 @@ schedule_block (basic_block *target_bb)
 
 	  if (cost >= 1)
 	    {
-	      queue_insn (insn, cost);
+	      queue_insn (insn, cost, "resource conflict");
  	      if (SCHED_GROUP_P (insn))
  		{
  		  advance = cost;
@@ -3974,7 +3971,7 @@ change_queue_index (rtx next, int delay)
   if (delay == QUEUE_READY)
     ready_add (readyp, next, false);
   else if (delay >= 1)
-    queue_insn (next, delay);
+    queue_insn (next, delay, "change queue index");
 
   if (sched_verbose >= 2)
     {
