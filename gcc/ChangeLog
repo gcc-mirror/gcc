@@ -1,3 +1,11 @@
+2011-04-01  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* gensupport.h (pattern_stats): New structure.
+	* gensupport.c (get_pattern_stats_1, get_pattern_stats): New functions.
+	* genemit.c (max_opno, max_dupno, max_scratch_opno): Delete.
+	(max_operand_1, max_operand_vec): Delete.
+	(gen_insn, gen_expand, gen_split): Use get_pattern_stats.
+
 2011-03-31  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* emit-rtl.c (emit_pattern_after_setloc): New function.
