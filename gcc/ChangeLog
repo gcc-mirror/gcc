@@ -1,3 +1,29 @@
+2011-04-01  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* config/h8300/constraints.md: New file.
+	* config/h8300/h8300.md: Include it.  Use satisfies_constraint_J,
+	satisfies_constraint_L, and satisfies_constraint_N for peephole2s.
+	(*tst_extzv_1_n, *tstsi_variable_bit_qi): Use satisfies_constraint_U.
+	* config/h8300/predicates.md (bit_operand): Likewise.
+	(incdec_operand): Use satisfies_constraint_M and
+	satisfies_constraint_O.  Don't use C code block.
+	* config/h8300/h8300-protos.h (h8300_reg_class_from_letter): Delete.
+	* config/h8300/h8300.c (h8300_reg_class_from_letter): Delete.
+	(compute_mov_length): Use satisfies_constraint_G.
+	(fix_bit_operand): Use satisfies_constraint_U.
+	* config/h8300/h8300.h (REG_CLASS_FROM_LETTER): Delete.
+	(CONST_OK_FOR_I, CONST_OK_FOR_J, CONST_OK_FOR_L): Delete.
+	(CONST_OK_FOR_M, CONST_OK_FOR_N, CONST_OK_FOR_O): Delete.
+	(CONST_OK_FOR_Ppositive, CONST_OK_FOR_Pnegative): Delete.
+	(CONST_OK_FOR_P, CONSTRAINT_LEN_FOR_P): Delete.
+	(CONST_OK_FOR_CONSTRAINT_P, CONST_OK_FOR_LETTER_P): Delete.
+	(CONST_DOUBLE_OK_FOR_LETTER_P): Delete.
+	(OK_FOR_Q, OK_FOR_R, OK_FOR_S, OK_FOR_T, OK_FOR_U, OK_FOR_WU): Delete.
+	(OK_FOR_W, CONSTRAINT_LEN_FOR_W, OK_FOR_Y2, OK_FOR_Y0): Delete.
+	(OK_FOR_Y, CONSTRAINT_LEN_FOR_Y, OK_FOR_Z): Delete.
+	(EXTRA_CONSTRAINT_STR, CONSTRAINT_LEN): Delete.
+	(EXTRA_MEMORY_CONSTRAINT): Delete.
+
 2011-04-01  Andrew Pinski  <pinskia@gmail.com>
 	    Michael Meissner  <meissner@linux.vnet.ibm.com>
 

@@ -41,6 +41,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-core.h"
 #include "c-family/c-pragma.h"	/* ??? */
 #include "tm_p.h"
+#include "tm-constrs.h"
 #include "ggc.h"
 #include "target.h"
 #include "target-def.h"
@@ -419,71 +420,6 @@ h8300_option_override (void)
   /* This target defaults to strict volatile bitfields.  */
   if (flag_strict_volatile_bitfields < 0)
     flag_strict_volatile_bitfields = 1;
-}
-
-/* Implement REG_CLASS_FROM_LETTER.
-
-   Some patterns need to use er6 as a scratch register.  This is
-   difficult to arrange since er6 is the frame pointer and usually
-   can't be spilled.
-
-   Such patterns should define two alternatives, one which allows only
-   er6 and one which allows any general register.  The former alternative
-   should have a 'd' constraint while the latter should be disparaged and
-   use 'D'.
-
-   Normally, 'd' maps to DESTINATION_REGS and 'D' maps to GENERAL_REGS.
-   However, there are cases where they should be NO_REGS:
-
-     - 'd' should be NO_REGS when reloading a function that uses the
-       frame pointer.  In this case, DESTINATION_REGS won't contain any
-       spillable registers, so the first alternative can't be used.
-
-     - -fno-omit-frame-pointer means that the frame pointer will
-       always be in use.  It's therefore better to map 'd' to NO_REGS
-       before reload so that register allocator will pick the second
-       alternative.
-
-     - we would like 'D' to be be NO_REGS when the frame pointer isn't
-       live, but we the frame pointer may turn out to be needed after
-       we start reload, and then we may have already decided we don't
-       have a choice, so we can't do that.  Forcing the register
-       allocator to use er6 if possible might produce better code for
-       small functions: it's more efficient to save and restore er6 in
-       the prologue & epilogue than to do it in a define_split.
-       Hopefully disparaging 'D' will have a similar effect, without
-       forcing a reload failure if the frame pointer is found to be
-       needed too late.  */
-
-enum reg_class
-h8300_reg_class_from_letter (int c)
-{
-  switch (c)
-    {
-    case 'a':
-      return MAC_REGS;
-
-    case 'c':
-      return COUNTER_REGS;
-
-    case 'd':
-      if (!flag_omit_frame_pointer && !reload_completed)
-	return NO_REGS;
-      if (frame_pointer_needed && reload_in_progress)
-	return NO_REGS;
-      return DESTINATION_REGS;
-
-    case 'D':
-      /* The meaning of a constraint shouldn't change dynamically, so
-	 we can't make this NO_REGS.  */
-      return GENERAL_REGS;
-
-    case 'f':
-      return SOURCE_REGS;
-
-    default:
-      return NO_REGS;
-    }
 }
 
 /* Return the byte register name for a register rtx X.  B should be 0
@@ -2827,7 +2763,7 @@ compute_mov_length (rtx *operands)
 	      if (REG_P (src))
 		return 4;
 
-	      if (CONST_DOUBLE_OK_FOR_LETTER_P (src, 'G'))
+	      if (satisfies_constraint_G (src))
 		return 4;
 
 	      return 8;
@@ -2947,7 +2883,7 @@ compute_mov_length (rtx *operands)
 	      if (REG_P (src))
 		return 2;
 
-	      if (CONST_DOUBLE_OK_FOR_LETTER_P (src, 'G'))
+	      if (satisfies_constraint_G (src))
 		return 2;
 
 	      return 6;
@@ -5186,7 +5122,7 @@ fix_bit_operand (rtx *operands, enum rtx_code code)
     {
       /* OK to have a memory dest.  */
       if (GET_CODE (operands[0]) == MEM
-	  && !OK_FOR_U (operands[0]))
+	  && !satisfies_constraint_U (operands[0]))
 	{
 	  rtx mem = gen_rtx_MEM (GET_MODE (operands[0]),
 				 copy_to_mode_reg (Pmode,
@@ -5196,7 +5132,7 @@ fix_bit_operand (rtx *operands, enum rtx_code code)
 	}
 
       if (GET_CODE (operands[1]) == MEM
-	  && !OK_FOR_U (operands[1]))
+	  && !satisfies_constraint_U (operands[1]))
 	{
 	  rtx mem = gen_rtx_MEM (GET_MODE (operands[1]),
 				 copy_to_mode_reg (Pmode,
