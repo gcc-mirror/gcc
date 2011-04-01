@@ -1,4 +1,5 @@
-#  Copyright (C) 2006, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
+#  Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011
+#  Free Software Foundation, Inc.
 #
 #  This file is free software; you can redistribute it and/or modify it under
 #  the terms of the GNU General Public License as published by the Free
@@ -55,7 +56,7 @@ FPBIT = fp-bit.c
 DPBIT = dp-bit.c
 
 dp-bit.c: $(srcdir)/config/fp-bit.c $(srcdir)/config/spu/t-spu-elf
-	cat $(srcdir)/config/fp-bit.c >> dp-bit.c
+	cat $(srcdir)/config/fp-bit.c > dp-bit.c
 
 fp-bit.c: $(srcdir)/config/fp-bit.c $(srcdir)/config/spu/t-spu-elf
 	echo '#define FLOAT' > fp-bit.c
