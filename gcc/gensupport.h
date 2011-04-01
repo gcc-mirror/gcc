@@ -83,4 +83,32 @@ extern void add_predicate (struct pred_data *);
 
 #define FOR_ALL_PREDICATES(p) for (p = first_predicate; p; p = p->next)
 
+struct pattern_stats
+{
+  /* The largest match_operand, match_operator or match_parallel
+     number found.  */
+  int max_opno;
+
+  /* The largest match_dup, match_op_dup or match_par_dup number found.  */
+  int max_dup_opno;
+
+  /* The largest match_scratch number found.  */
+  int max_scratch_opno;
+
+  /* The number of times match_dup, match_op_dup or match_par_dup appears
+     in the pattern.  */
+  int num_dups;
+
+  /* The number of rtx arguments to the generator function.  */
+  int num_generator_args;
+
+  /* The number of rtx operands in an insn.  */
+  int num_insn_operands;
+
+  /* The number of operand variables that are needed.  */
+  int num_operand_vars;
+};
+
+extern void get_pattern_stats (struct pattern_stats *ranges, rtvec vec);
+
 #endif /* GCC_GENSUPPORT_H */

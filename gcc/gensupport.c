@@ -1367,3 +1367,80 @@ record_insn_name (int code, const char *name)
 
   insn_name_ptr[code] = new_name;
 }
+
+/* Make STATS describe the operands that appear in rtx X.  */
+
+static void
+get_pattern_stats_1 (struct pattern_stats *stats, rtx x)
+{
+  RTX_CODE code;
+  int i;
+  int len;
+  const char *fmt;
+
+  if (x == NULL_RTX)
+    return;
+
+  code = GET_CODE (x);
+  switch (code)
+    {
+    case MATCH_OPERAND:
+    case MATCH_OPERATOR:
+    case MATCH_PARALLEL:
+      stats->max_opno = MAX (stats->max_opno, XINT (x, 0));
+      break;
+
+    case MATCH_DUP:
+    case MATCH_OP_DUP:
+    case MATCH_PAR_DUP:
+      stats->num_dups++;
+      stats->max_dup_opno = MAX (stats->max_dup_opno, XINT (x, 0));
+      break;
+
+    case MATCH_SCRATCH:
+      stats->max_scratch_opno = MAX (stats->max_scratch_opno, XINT (x, 0));
+      break;
+
+    default:
+      break;
+    }
+
+  fmt = GET_RTX_FORMAT (code);
+  len = GET_RTX_LENGTH (code);
+  for (i = 0; i < len; i++)
+    {
+      if (fmt[i] == 'e' || fmt[i] == 'u')
+	get_pattern_stats_1 (stats, XEXP (x, i));
+      else if (fmt[i] == 'E')
+	{
+	  int j;
+	  for (j = 0; j < XVECLEN (x, i); j++)
+	    get_pattern_stats_1 (stats, XVECEXP (x, i, j));
+	}
+    }
+}
+
+/* Make STATS describe the operands that appear in instruction pattern
+   PATTERN.  */
+
+void
+get_pattern_stats (struct pattern_stats *stats, rtvec pattern)
+{
+  int i, len;
+
+  stats->max_opno = -1;
+  stats->max_dup_opno = -1;
+  stats->max_scratch_opno = -1;
+  stats->num_dups = 0;
+
+  len = GET_NUM_ELEM (pattern);
+  for (i = 0; i < len; i++)
+    get_pattern_stats_1 (stats, RTVEC_ELT (pattern, i));
+
+  stats->num_generator_args = stats->max_opno + 1;
+  stats->num_insn_operands = MAX (stats->max_opno,
+				  stats->max_scratch_opno) + 1;
+  stats->num_operand_vars = MAX (stats->max_opno,
+				  MAX (stats->max_dup_opno,
+				       stats->max_scratch_opno)) + 1;
+}
