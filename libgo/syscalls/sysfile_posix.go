@@ -181,10 +181,10 @@ func Gettimeofday(tv *Timeval) (errno int) {
   return;
 }
 
-const nfdbits = unsafe.Sizeof(_C_long) * 8
+const nfdbits = unsafe.Sizeof(fds_bits_type) * 8
 
 type FdSet_t struct {
-	Fds_bits [(FD_SETSIZE + nfdbits - 1) / nfdbits]_C_long
+	Fds_bits [(FD_SETSIZE + nfdbits - 1) / nfdbits]fds_bits_type
 }
 
 func FDSet(fd int, set *FdSet_t) {
