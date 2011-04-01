@@ -34,8 +34,6 @@ extern unsigned int compute_a_shift_length (rtx, rtx *);
 extern const char *output_a_rotate (enum rtx_code, rtx *);
 extern unsigned int compute_a_rotate_length (rtx *);
 extern const char *output_simode_bld (int, rtx[]);
-extern void print_operand_address (FILE *, rtx);
-extern void print_operand (FILE *, rtx, int);
 extern void final_prescan_insn (rtx, rtx *, int);
 extern int h8300_expand_movsi (rtx[]);
 extern void notice_update_cc (rtx, rtx);

@@ -365,13 +365,6 @@ enum reg_class {
 #define CLASS_MAX_NREGS(CLASS, MODE)	\
   ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
 
-/* Any SI register-to-register move may need to be reloaded,
-   so define REGISTER_MOVE_COST to be > 2 so that reload never
-   shortcuts.  */
-
-#define REGISTER_MOVE_COST(MODE, CLASS1, CLASS2)  \
-  (CLASS1 == MAC_REGS || CLASS2 == MAC_REGS ? 6 : 3)
-
 /* Stack layout; function entry, exit and calling.  */
 
 /* Define this if pushing a word on the stack
@@ -790,19 +783,6 @@ struct cum_arg
   fprintf ((FILE), ",%d\n", (int)(SIZE)))
 
 #define ASM_PN_FORMAT "%s___%lu"
-
-/* Print an instruction operand X on file FILE.
-   Look in h8300.c for details.  */
-
-#define PRINT_OPERAND_PUNCT_VALID_P(CODE) \
-  ((CODE) == '#')
-
-#define PRINT_OPERAND(FILE, X, CODE) print_operand (FILE, X, CODE)
-
-/* Print a memory operand whose address is X, on file FILE.
-   This uses a function in h8300.c.  */
-
-#define PRINT_OPERAND_ADDRESS(FILE, ADDR) print_operand_address (FILE, ADDR)
 
 /* H8300 specific pragmas.  */
 #define REGISTER_TARGET_PRAGMAS()				\

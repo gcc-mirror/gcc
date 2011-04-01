@@ -1,3 +1,21 @@
+2011-04-01  Naveen H.S  <naveen.S@kpitcummins.com>
+
+	* config/h8300/h8300.c (print_operand_address): Rename to...
+	(h8300_print_operand_address): ...this. Make static. Adjust comments.
+	Call h8300_print_operand and h8300_print_operand_address instead of
+	print_operand and print_operand_address. Declare.
+	(print_operand): Renake to...
+	(h8300_print_operand): ...this. Make static. Adjust comments.
+	Call h8300_print_operand instead of print_operand. Declare.
+	(h8300_print_operand_punct_valid_p): Moved from h8300.h file.
+	(h8300_register_move_cost): Likewise.
+	(TARGET_PRINT_OPERAND_PUNCT_VALID_P, TARGET_PRINT_OPERAND
+	TARGET_PRINT_OPERAND_ADDRESS, TARGET_REGISTER_MOVE_COST): Define.
+	* config/h8300/h8300.h (PRINT_OPERAND_ADDRESS, PRINT_OPERAND
+	PRINT_OPERAND_PUNCT_VALID_P, REGISTER_MOVE_COST): Delete.
+	* config/h8300/h8300-protos.h (print_operand): Delete.
+	(print_operand_address): Delete.
+
 2011-04-01  Richard Henderson  <rth@redhat.com>
 
 	PR 48400
