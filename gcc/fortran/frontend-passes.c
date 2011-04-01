@@ -137,6 +137,13 @@ static int
 cfe_register_funcs (gfc_expr **e, int *walk_subtrees ATTRIBUTE_UNUSED,
 	  void *data ATTRIBUTE_UNUSED)
 {
+
+  /* FIXME - there is a bug in the insertion code for DO loops.  Bail
+     out here.  */
+
+  if ((*current_code)->op == EXEC_DO)
+    return 0;
+
   if ((*e)->expr_type != EXPR_FUNCTION)
     return 0;
 
