@@ -139,8 +139,7 @@ dnl N.B. Keep in sync with gcc/testsuite/go.test/go-test.exp (go-set-goarch).
 is_386=no
 is_arm=no
 is_m68k=no
-is_mips=no
-is_mips64=no
+mips_abi=""
 is_ppc=no
 is_ppc64=no
 is_sparc=no
@@ -172,15 +171,33 @@ changequote([,])dnl
     ;;
   mips*-*-*)
     AC_COMPILE_IFELSE([
-#ifdef __mips64
-#error 64-bit
+#if _MIPS_SIM != _ABIO32
+#error not o32
 #endif],
-[is_mips=yes], [is_mips64=yes])
-    if test "$is_mips" = "yes"; then
-      GOARCH=mips
-    else
-      GOARCH=mips64
-    fi
+[mips_abi="o32"],
+	[AC_COMPILE_IFELSE([
+#if _MIPS_SIM != _ABIN32
+#error not n32
+#endif],
+[mips_abi="n32"],
+	[AC_COMPILE_IFELSE([
+#if _MIPS_SIM != _ABI64
+#error not n64
+#endif],
+[mips_abi="n64"],
+	[AC_COMPILE_IFELSE([
+#if _MIPS_SIM != _ABIO64
+#error not o64
+#endif],
+[mips_abi="o64"],
+	[AC_MSG_ERROR([unknown MIPS ABI])
+[mips_abi="n32"]])])])])
+    case "$mips_abi" in
+    "o32") GOARCH=mipso32 ;;
+    "n32") GOARCH=mipsn32 ;;
+    "n64") GOARCH=mipsn64 ;;
+    "o64") GOARCH=mipso64 ;;
+    esac
     ;;
   rs6000*-*-* | powerpc*-*-*)
     AC_COMPILE_IFELSE([
@@ -210,8 +227,11 @@ esac
 AM_CONDITIONAL(LIBGO_IS_386, test $is_386 = yes)
 AM_CONDITIONAL(LIBGO_IS_ARM, test $is_arm = yes)
 AM_CONDITIONAL(LIBGO_IS_M68K, test $is_m68k = yes)
-AM_CONDITIONAL(LIBGO_IS_MIPS, test $is_mips = yes)
-AM_CONDITIONAL(LIBGO_IS_MIPS64, test $is_mips64 = yes)
+AM_CONDITIONAL(LIBGO_IS_MIPS, test $mips_abi != "")
+AM_CONDITIONAL(LIBGO_IS_MIPSO32, test $mips_abi = o32)
+AM_CONDITIONAL(LIBGO_IS_MIPSN32, test $mips_abi = n32)
+AM_CONDITIONAL(LIBGO_IS_MIPSN64, test $mips_abi = n64)
+AM_CONDITIONAL(LIBGO_IS_MIPSO64, test $mips_abi = o64)
 AM_CONDITIONAL(LIBGO_IS_PPC, test $is_ppc = yes)
 AM_CONDITIONAL(LIBGO_IS_PPC64, test $is_ppc64 = yes)
 AM_CONDITIONAL(LIBGO_IS_SPARC, test $is_sparc = yes)

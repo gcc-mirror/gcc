@@ -629,8 +629,14 @@ LIBGO_IS_PPC64_FALSE
 LIBGO_IS_PPC64_TRUE
 LIBGO_IS_PPC_FALSE
 LIBGO_IS_PPC_TRUE
-LIBGO_IS_MIPS64_FALSE
-LIBGO_IS_MIPS64_TRUE
+LIBGO_IS_MIPSO64_FALSE
+LIBGO_IS_MIPSO64_TRUE
+LIBGO_IS_MIPSN64_FALSE
+LIBGO_IS_MIPSN64_TRUE
+LIBGO_IS_MIPSN32_FALSE
+LIBGO_IS_MIPSN32_TRUE
+LIBGO_IS_MIPSO32_FALSE
+LIBGO_IS_MIPSO32_TRUE
 LIBGO_IS_MIPS_FALSE
 LIBGO_IS_MIPS_TRUE
 LIBGO_IS_M68K_FALSE
@@ -10904,7 +10910,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 10907 "configure"
+#line 10913 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11010,7 +11016,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11013 "configure"
+#line 11019 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -13285,8 +13291,7 @@ fi
 is_386=no
 is_arm=no
 is_m68k=no
-is_mips=no
-is_mips64=no
+mips_abi=""
 is_ppc=no
 is_ppc64=no
 is_sparc=no
@@ -13326,21 +13331,59 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
     cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
-#ifdef __mips64
-#error 64-bit
+#if _MIPS_SIM != _ABIO32
+#error not o32
 #endif
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-  is_mips=yes
+  mips_abi="o32"
 else
-  is_mips64=yes
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#if _MIPS_SIM != _ABIN32
+#error not n32
+#endif
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  mips_abi="n32"
+else
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#if _MIPS_SIM != _ABI64
+#error not n64
+#endif
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  mips_abi="n64"
+else
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#if _MIPS_SIM != _ABIO64
+#error not o64
+#endif
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  mips_abi="o64"
+else
+  as_fn_error "unknown MIPS ABI" "$LINENO" 5
+mips_abi="n32"
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-    if test "$is_mips" = "yes"; then
-      GOARCH=mips
-    else
-      GOARCH=mips64
-    fi
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+    case "$mips_abi" in
+    "o32") GOARCH=mipso32 ;;
+    "n32") GOARCH=mipsn32 ;;
+    "n64") GOARCH=mipsn64 ;;
+    "o64") GOARCH=mipso64 ;;
+    esac
     ;;
   rs6000*-*-* | powerpc*-*-*)
     cat confdefs.h - <<_ACEOF >conftest.$ac_ext
@@ -13407,7 +13450,7 @@ else
   LIBGO_IS_M68K_FALSE=
 fi
 
- if test $is_mips = yes; then
+ if test $mips_abi != ""; then
   LIBGO_IS_MIPS_TRUE=
   LIBGO_IS_MIPS_FALSE='#'
 else
@@ -13415,12 +13458,36 @@ else
   LIBGO_IS_MIPS_FALSE=
 fi
 
- if test $is_mips64 = yes; then
-  LIBGO_IS_MIPS64_TRUE=
-  LIBGO_IS_MIPS64_FALSE='#'
+ if test $mips_abi = o32; then
+  LIBGO_IS_MIPSO32_TRUE=
+  LIBGO_IS_MIPSO32_FALSE='#'
 else
-  LIBGO_IS_MIPS64_TRUE='#'
-  LIBGO_IS_MIPS64_FALSE=
+  LIBGO_IS_MIPSO32_TRUE='#'
+  LIBGO_IS_MIPSO32_FALSE=
+fi
+
+ if test $mips_abi = n32; then
+  LIBGO_IS_MIPSN32_TRUE=
+  LIBGO_IS_MIPSN32_FALSE='#'
+else
+  LIBGO_IS_MIPSN32_TRUE='#'
+  LIBGO_IS_MIPSN32_FALSE=
+fi
+
+ if test $mips_abi = n64; then
+  LIBGO_IS_MIPSN64_TRUE=
+  LIBGO_IS_MIPSN64_FALSE='#'
+else
+  LIBGO_IS_MIPSN64_TRUE='#'
+  LIBGO_IS_MIPSN64_FALSE=
+fi
+
+ if test $mips_abi = o64; then
+  LIBGO_IS_MIPSO64_TRUE=
+  LIBGO_IS_MIPSO64_FALSE='#'
+else
+  LIBGO_IS_MIPSO64_TRUE='#'
+  LIBGO_IS_MIPSO64_FALSE=
 fi
 
  if test $is_ppc = yes; then
@@ -14541,8 +14608,20 @@ if test -z "${LIBGO_IS_MIPS_TRUE}" && test -z "${LIBGO_IS_MIPS_FALSE}"; then
   as_fn_error "conditional \"LIBGO_IS_MIPS\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
-if test -z "${LIBGO_IS_MIPS64_TRUE}" && test -z "${LIBGO_IS_MIPS64_FALSE}"; then
-  as_fn_error "conditional \"LIBGO_IS_MIPS64\" was never defined.
+if test -z "${LIBGO_IS_MIPSO32_TRUE}" && test -z "${LIBGO_IS_MIPSO32_FALSE}"; then
+  as_fn_error "conditional \"LIBGO_IS_MIPSO32\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${LIBGO_IS_MIPSN32_TRUE}" && test -z "${LIBGO_IS_MIPSN32_FALSE}"; then
+  as_fn_error "conditional \"LIBGO_IS_MIPSN32\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${LIBGO_IS_MIPSN64_TRUE}" && test -z "${LIBGO_IS_MIPSN64_FALSE}"; then
+  as_fn_error "conditional \"LIBGO_IS_MIPSN64\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${LIBGO_IS_MIPSO64_TRUE}" && test -z "${LIBGO_IS_MIPSO64_FALSE}"; then
+  as_fn_error "conditional \"LIBGO_IS_MIPSO64\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${LIBGO_IS_PPC_TRUE}" && test -z "${LIBGO_IS_PPC_FALSE}"; then
