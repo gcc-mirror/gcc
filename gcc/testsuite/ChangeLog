@@ -1,3 +1,7 @@
+2011-04-01  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* gcc.c-torture/compile/20110401-1.c: New test.
+
 2011-03-31  Ian Lance Taylor  <iant@google.com>
 
 	* go.test/go-test.exp (go-set-goarch): Recognize MIPS ABIs.
