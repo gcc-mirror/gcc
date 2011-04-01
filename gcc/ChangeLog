@@ -1,3 +1,19 @@
+2011-03-31  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* emit-rtl.c (emit_pattern_after_setloc): New function.
+	(emit_insn_after_setloc, emit_jump_insn_after_setloc): Call it.
+	(emit_call_insn_after_setloc, emit_debug_insn_after_setloc): Likewise.
+	(emit_pattern_after): New function.
+	(emit_insn_after, emit_jump_insn_after): Call it.
+	(emit_call_insn_after, emit_debug_insn_after): Likewise.
+	(emit_pattern_before_setloc): New function.
+	(emit_insn_before_setloc, emit_jump_insn_before_setloc): Call it.
+	(emit_call_insn_before_setloc, emit_debug_insn_before_setloc):
+	Likewise.
+	(emit_pattern_before): New function.
+	(emit_insn_before, emit_jump_insn_before): Call it.
+	(emit_call_insn_before, emit_debug_insn_before): Likewise.
+
 2011-03-31  Richard Henderson  <rth@redhat.com>
 
 	* dwarf2out.c (dw_separate_line_info_ref): Remove.
