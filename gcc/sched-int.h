@@ -605,10 +605,15 @@ struct haifa_sched_info
      parameter == 0) or removed (second parameter == 1).  */
   void (*add_remove_insn) (rtx, int);
 
-  /* Called to notify frontend that instruction is being scheduled.
-     The first parameter - instruction to scheduled, the second parameter -
-     last scheduled instruction.  */
-  void (*begin_schedule_ready) (rtx, rtx);
+  /* Called to notify the frontend that instruction INSN is being
+     scheduled.  */
+  void (*begin_schedule_ready) (rtx insn);
+
+  /* Called to notify the frontend that an instruction INSN is about to be
+     moved to its correct place in the final schedule.  This is done for all
+     insns in order of the schedule.  LAST indicates the last scheduled
+     instruction.  */
+  void (*begin_move_insn) (rtx insn, rtx last);
 
   /* If the second parameter is not NULL, return nonnull value, if the
      basic block should be advanced.

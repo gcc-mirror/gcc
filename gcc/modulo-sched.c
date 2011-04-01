@@ -1,5 +1,5 @@
 /* Swing Modulo Scheduling implementation.
-   Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010
+   Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
    Contributed by Ayal Zaks and Mustafa Hagog <zaks,mustafa@il.ibm.com>
 
@@ -275,7 +275,7 @@ static struct haifa_sched_info sms_sched_info =
   NULL, NULL,
   0, 0,
 
-  NULL, NULL, NULL,
+  NULL, NULL, NULL, NULL,
   0
 };
 

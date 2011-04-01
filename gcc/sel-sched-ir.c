@@ -1,5 +1,6 @@
 /* Instruction scheduling pass.  Selective scheduler and pipeliner.
-   Copyright (C) 2006, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
+   Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011
+   Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -5649,6 +5650,7 @@ static struct haifa_sched_info sched_sel_haifa_sched_info =
 
   NULL, /* add_remove_insn */
   NULL, /* begin_schedule_ready */
+  NULL, /* begin_move_insn */
   NULL, /* advance_target_bb */
   SEL_SCHED | NEW_BBS
 };
