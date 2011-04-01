@@ -1,0 +1,2 @@
+SHLIB_PTHREAD_CFLAG = -pthread
+SHLIB_PTHREAD_LDFLAG = -Wl,-lpthread
