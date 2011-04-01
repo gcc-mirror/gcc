@@ -22132,20 +22132,39 @@ dwarf2out_source_line (unsigned int line, const char *filename,
   if (debug_info_level < DINFO_LEVEL_NORMAL || line == 0)
     return;
 
-  switch_to_section (current_function_section ());
-
-  /* If requested, emit something human-readable.  */
-  if (flag_debug_asm)
-    fprintf (asm_out_file, "\t%s %s:%d\n", ASM_COMMENT_START, filename, line);
+  /* The discriminator column was added in dwarf4.  Simplify the below
+     by simply removing it if we're not supposed to output it.  */
+  if (dwarf_version < 4 && dwarf_strict)
+    discriminator = 0;
 
   table = cur_line_info_table;
   file_num = maybe_emit_file (lookup_filename (filename));
+
+  /* ??? TODO: Elide duplicate line number entries.  Traditionally,
+     the debugger has used the second (possibly duplicate) line number
+     at the beginning of the function to mark the end of the prologue.
+     We could eliminate any other duplicates within the function.  For
+     Dwarf3, we ought to include the DW_LNS_set_prologue_end mark in
+     that second line number entry.  */
+  /* Recall that this end-of-prologue indication is *not* the same thing
+     as the end_prologue debug hook.  The NOTE_INSN_PROLOGUE_END note,
+     to which the hook corresponds, follows the last insn that was 
+     emitted by gen_prologue.  What we need is to preceed the first insn
+     that had been emitted after NOTE_INSN_FUNCTION_BEG, i.e. the first
+     insn that corresponds to something the user wrote.  These may be
+     very different locations once scheduling is enabled.  */
 
   if (0 && file_num == table->file_num
       && line == table->line_num
       && discriminator == table->discrim_num
       && is_stmt == table->is_stmt)
     return;
+
+  switch_to_section (current_function_section ());
+
+  /* If requested, emit something human-readable.  */
+  if (flag_debug_asm)
+    fprintf (asm_out_file, "\t%s %s:%d\n", ASM_COMMENT_START, filename, line);
 
   if (DWARF2_ASM_LINE_DEBUG_INFO)
     {
