@@ -1,4 +1,5 @@
 /* { dg-lto-do link } */
+/* { dg-require-effective-target fpic } */
 /* { dg-lto-options {{-fPIC -r -nostdlib -O2 -flto}} } */
 
 typedef struct VEC_constructor_elt_gc { } VEC_constructor_elt_gc;
