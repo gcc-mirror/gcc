@@ -5560,7 +5560,7 @@ grokdeclarator (const struct c_declarator *declarator,
 		  }
 	      }
 
-	    /* Complain about arrays of incomplete types.  */
+	     /* Complain about arrays of incomplete types.  */
 	    if (!COMPLETE_TYPE_P (type))
 	      {
 		error_at (loc, "array type has incomplete element type");
@@ -6102,7 +6102,7 @@ grokdeclarator (const struct c_declarator *declarator,
 	if (storage_class == csc_register || threadp)
 	  {
 	    error_at (loc, "invalid storage class for function %qE", name);
-	  }
+	   }
 	else if (current_scope != file_scope)
 	  {
 	    /* Function declaration not at file scope.  Storage
@@ -6185,7 +6185,7 @@ grokdeclarator (const struct c_declarator *declarator,
 	    error_at (loc, "UPC does not support shared auto variables.");
 	  }
 
-       type = c_build_qualified_type (type, type_quals);
+	type = c_build_qualified_type (type, type_quals);
        /* block sizes don't make much sense for scalar variables,
           but UPC permits them. */
        if (layout_qualifier)

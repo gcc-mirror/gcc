@@ -5826,7 +5826,7 @@ convert_for_assignment (location_t location, tree type, tree rhs,
 		   && TREE_CODE (ttl) != FUNCTION_TYPE)
 	    {
 	      if (TYPE_QUALS_NO_ADDR_SPACE (ttr)
-	          & ~TYPE_QUALS_NO_ADDR_SPACE (ttl))
+		  & ~TYPE_QUALS_NO_ADDR_SPACE (ttl))
 		{
 		  WARN_FOR_QUALIFIERS (location, 0,
 				       G_("passing argument %d of %qE discards "

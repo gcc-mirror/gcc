@@ -1262,7 +1262,7 @@ useless_type_conversion_p (tree outer_type, tree inner_type)
 		  == TREE_CODE (TREE_TYPE (inner_type)))
 	      && !prototype_p (TREE_TYPE (outer_type))
 	      && useless_type_conversion_p (TREE_TYPE (TREE_TYPE (outer_type)),
-				    TREE_TYPE (TREE_TYPE (inner_type)))))
+					    TREE_TYPE (TREE_TYPE (inner_type)))))
 	return true;
     }
 
