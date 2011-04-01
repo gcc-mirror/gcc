@@ -10,6 +10,9 @@
 	* ifcvt.c (cond_exec_process_insns): Disallow converting a block
 	that contains the prologue.
 
+	* haifa-sched.c (queue_insn): New arg REASON.  All callers
+	changed.  Print it in debugging output.
+
 2011-04-01  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	* config/spu/t-spu-elf (dp-bit.c): Use > instead of >>.
