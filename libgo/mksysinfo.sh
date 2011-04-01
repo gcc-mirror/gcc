@@ -73,6 +73,9 @@ cat > sysinfo.c <<EOF
 #if defined(HAVE_SYS_UTSNAME_H)
 #include <sys/utsname.h>
 #endif
+#if defined(HAVE_SYS_SELECT_H)
+#include <sys/select.h>
+#endif
 #include <unistd.h>
 EOF
 
@@ -437,5 +440,13 @@ grep '^type _ip_mreq ' gen-sysinfo.go | \
       -e 's/imr_interface/Interface/' \
       -e 's/_in_addr/[4]byte/g' \
     >> ${OUT}
+
+# Try to guess the type to use for fd_set.
+fd_set=`grep '^type _fd_set ' gen-sysinfo.go || true`
+fds_bits_type="_C_long"
+if test "$fd_set" != ""; then
+    fds_bits_type=`echo $fd_set | sed -e 's/.*[]]\([^;]*\); }$/\1/'`
+fi
+echo "type fds_bits_type $fds_bits_type" >> ${OUT}
 
 exit $?
