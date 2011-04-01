@@ -252,6 +252,22 @@ if test -f ${srcdir}/go/debug/proc/regs_${GOOS}_${GOARCH}.go; then
 fi
 AC_SUBST(GO_DEBUG_PROC_REGS_OS_ARCH_FILE)
 
+dnl Some targets need special flags to build sysinfo.go.
+case "$target" in
+    *-*-solaris2.[[89]])
+	# Solaris 8/9 need this so struct msghdr gets the msg_control
+	# etc. fields in <sys/socket.h> (_XPG4_2).
+	OSCFLAGS='-D_XOPEN_SOURCE=500 -D_XOPEN_SOURCE_EXTENDED -D__EXTENSIONS__'
+	;;
+    *-*-solaris2.1[[01]])
+	# Solaris 10+ needs this so struct msghdr gets the msg_control
+	# etc. fields in <sys/socket.h> (_XPG4_2).  _XOPEN_SOURCE=500 as
+	# above doesn't work with C99.
+	OSCFLAGS='-D_XOPEN_SOURCE=600 -D__EXTENSIONS__'
+	;;
+esac
+AC_SUBST(OSCFLAGS)
+
 dnl Use -fsplit-stack when compiling C code if available.
 AC_CACHE_CHECK([whether -fsplit-stack is supported],
 [libgo_cv_c_split_stack_supported],
