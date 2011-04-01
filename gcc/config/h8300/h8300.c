@@ -94,9 +94,13 @@ static unsigned int h8300_asm_insn_count (const char *);
 static tree h8300_handle_fndecl_attribute (tree *, tree, tree, int, bool *);
 static tree h8300_handle_eightbit_data_attribute (tree *, tree, tree, int, bool *);
 static tree h8300_handle_tiny_data_attribute (tree *, tree, tree, int, bool *);
+static void h8300_print_operand_address (FILE *, rtx);
+static void h8300_print_operand (FILE *, rtx, int);
+static bool h8300_print_operand_punct_valid_p (unsigned char code);
 #ifndef OBJECT_FORMAT_ELF
 static void h8300_asm_named_section (const char *, unsigned int, tree);
 #endif
+static int h8300_register_move_cost (enum machine_mode, reg_class_t, reg_class_t);
 static int h8300_and_costs (rtx);
 static int h8300_shift_costs (rtx);
 static void          h8300_push_pop               (int, int, bool, bool);
@@ -1118,6 +1122,22 @@ h8300_function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 }
 
 
+/* Implements TARGET_REGISTER_MOVE_COST.
+
+   Any SI register-to-register move may need to be reloaded,
+   so inmplement h8300_register_move_cost to return > 2 so that reload never
+   shortcuts.  */
+
+static int
+h8300_register_move_cost (enum machine_mode mode ATTRIBUTE_UNUSED,
+                         reg_class_t from, reg_class_t to)
+{
+  if (from == MAC_REGS || to == MAC_REG)
+    return 6;
+  else
+    return 3;
+}
+
 /* Compute the cost of an and insn.  */
 
 static int
@@ -1386,8 +1406,8 @@ cond_string (enum rtx_code code)
 /* Print operand X using operand code CODE to assembly language output file
    FILE.  */
 
-void
-print_operand (FILE *file, rtx x, int code)
+static void
+h8300_print_operand (FILE *file, rtx x, int code)
 {
   /* This is used for communication between codes V,W,Z and Y.  */
   static int bitint;
@@ -1466,7 +1486,7 @@ print_operand (FILE *file, rtx x, int code)
       if (GET_CODE (x) == REG)
 	fprintf (file, "%s%c", names_big[REGNO (x)], bitint > 7 ? 'h' : 'l');
       else
-	print_operand (file, x, 'R');
+	h8300_print_operand (file, x, 'R');
       bitint = -1;
       break;
     case 'Z':
@@ -1499,7 +1519,7 @@ print_operand (FILE *file, rtx x, int code)
 	    fprintf (file, "%s", names_upper_extended[REGNO (x)]);
 	  break;
 	case MEM:
-	  print_operand (file, x, 0);
+	  h8300_print_operand (file, x, 0);
 	  break;
 	case CONST_INT:
 	  fprintf (file, "#%ld", ((INTVAL (x) >> 16) & 0xffff));
@@ -1529,7 +1549,7 @@ print_operand (FILE *file, rtx x, int code)
 	  break;
 	case MEM:
 	  x = adjust_address (x, HImode, 2);
-	  print_operand (file, x, 0);
+	  h8300_print_operand (file, x, 0);
 	  break;
 	case CONST_INT:
 	  fprintf (file, "#%ld", INTVAL (x) & 0xffff);
@@ -1574,7 +1594,7 @@ print_operand (FILE *file, rtx x, int code)
 	}
       break;
     case 'o':
-      print_operand_address (file, x);
+      h8300_print_operand_address (file, x);
       break;
     case 's':
       if (GET_CODE (x) == CONST_INT)
@@ -1691,7 +1711,7 @@ print_operand (FILE *file, rtx x, int code)
 	case CONST:
 	case LABEL_REF:
 	  fprintf (file, "#");
-	  print_operand_address (file, x);
+	  h8300_print_operand_address (file, x);
 	  break;
 	case CONST_DOUBLE:
 	  {
@@ -1708,10 +1728,18 @@ print_operand (FILE *file, rtx x, int code)
     }
 }
 
+/* Implements TARGET_PRINT_OPERAND_PUNCT_VALID_P.  */
+
+static bool
+h8300_print_operand_punct_valid_p (unsigned char code)
+{
+  return (code == '#');
+}
+
 /* Output assembly language output for the address ADDR to FILE.  */
 
-void
-print_operand_address (FILE *file, rtx addr)
+static void
+h8300_print_operand_address (FILE *file, rtx addr)
 {
   rtx index;
   int size;
@@ -1745,37 +1773,37 @@ print_operand_address (FILE *file, rtx addr)
       if (GET_CODE (index) == REG)
 	{
 	  /* reg,foo */
-	  print_operand_address (file, XEXP (addr, 1));
+	  h8300_print_operand_address (file, XEXP (addr, 1));
 	  fprintf (file, ",");
 	  switch (size)
 	    {
 	    case 0:
-	      print_operand_address (file, index);
+	      h8300_print_operand_address (file, index);
 	      break;
 
 	    case 1:
-	      print_operand (file, index, 'X');
+	      h8300_print_operand (file, index, 'X');
 	      fputs (".b", file);
 	      break;
 
 	    case 2:
-	      print_operand (file, index, 'T');
+	      h8300_print_operand (file, index, 'T');
 	      fputs (".w", file);
 	      break;
 
 	    case 4:
-	      print_operand (file, index, 'S');
+	      h8300_print_operand (file, index, 'S');
 	      fputs (".l", file);
 	      break;
 	    }
-	  /* print_operand_address (file, XEXP (addr, 0)); */
+	  /* h8300_print_operand_address (file, XEXP (addr, 0)); */
 	}
       else
 	{
 	  /* foo+k */
-	  print_operand_address (file, XEXP (addr, 0));
+	  h8300_print_operand_address (file, XEXP (addr, 0));
 	  fprintf (file, "+");
-	  print_operand_address (file, XEXP (addr, 1));
+	  h8300_print_operand_address (file, XEXP (addr, 1));
 	}
       fprintf (file, ")");
       break;
@@ -3683,7 +3711,7 @@ h8sx_classify_shift (enum machine_mode mode, enum rtx_code code, rtx op)
 /* Return the asm template for a single h8sx shift instruction.
    OPERANDS[0] and OPERANDS[1] are the destination, OPERANDS[2]
    is the source and OPERANDS[3] is the shift.  SUFFIX is the
-   size suffix ('b', 'w' or 'l') and OPTYPE is the print_operand
+   size suffix ('b', 'w' or 'l') and OPTYPE is the h8300_print_operand
    prefix for the destination operand.  */
 
 const char *
@@ -5918,11 +5946,21 @@ h8300_trampoline_init (rtx m_tramp, tree fndecl, rtx cxt)
 #undef TARGET_ASM_FILE_END
 #define TARGET_ASM_FILE_END h8300_file_end
 
+#undef TARGET_PRINT_OPERAND
+#define TARGET_PRINT_OPERAND h8300_print_operand
+#undef TARGET_PRINT_OPERAND_ADDRESS
+#define TARGET_PRINT_OPERAND_ADDRESS h8300_print_operand_address
+#undef TARGET_PRINT_OPERAND_PUNCT_VALID_P
+#define TARGET_PRINT_OPERAND_PUNCT_VALID_P h8300_print_operand_punct_valid_p
+
 #undef TARGET_ENCODE_SECTION_INFO
 #define TARGET_ENCODE_SECTION_INFO h8300_encode_section_info
 
 #undef TARGET_INSERT_ATTRIBUTES
 #define TARGET_INSERT_ATTRIBUTES h8300_insert_attributes
+
+#undef TARGET_REGISTER_MOVE_COST
+#define TARGET_REGISTER_MOVE_COST h8300_register_move_cost
 
 #undef TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS h8300_rtx_costs
