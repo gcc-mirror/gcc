@@ -3036,12 +3036,10 @@ fi
 # Disable libssp for some systems.
 case "${target}" in
   avr-*-*)
+    # No hosted I/O support.
     noconfigdirs="$noconfigdirs target-libssp"
     ;;
   powerpc-*-aix* | rs6000-*-aix*)
-    noconfigdirs="$noconfigdirs target-libssp"
-    ;;
-  microblaze*)
     noconfigdirs="$noconfigdirs target-libssp"
     ;;
 esac
