@@ -23044,7 +23044,9 @@ resolve_addr (dw_die_ref die)
 	  {
 	    tree tdecl = SYMBOL_REF_DECL (a->dw_attr_val.v.val_addr);
 	    dw_die_ref tdie = lookup_decl_die (tdecl);
-	    if (tdie == NULL && DECL_EXTERNAL (tdecl))
+	    if (tdie == NULL
+		&& DECL_EXTERNAL (tdecl)
+		&& DECL_ABSTRACT_ORIGIN (tdecl) == NULL_TREE)
 	      {
 		force_decl_die (tdecl);
 		tdie = lookup_decl_die (tdecl);
