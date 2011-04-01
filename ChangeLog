@@ -1,5 +1,12 @@
 2011-04-01  Joseph Myers  <joseph@codesourcery.com>
 
+	* configure.ac: Separate cases disabling target-libssp,
+	target-libiberty, target-libstdc++-v3 and Fortran from general
+	case over targets.
+	* configure: Regenerate.
+
+2011-04-01  Joseph Myers  <joseph@codesourcery.com>
+
 	* configure.ac (*-*-chorusos): Don't disable libgcj.
 	(*-*-freebsd[[12]] | *-*-freebsd[[12]].* | *-*-freebsd*aout*):
 	Remove case.
