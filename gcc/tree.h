@@ -376,12 +376,6 @@ struct GTY(()) tree_base {
   unsigned asm_written_flag: 1;
   unsigned nowarning_flag : 1;
 
-  /* UPC flags */
-  unsigned shared_flag : 1;		/* UPC: shared  qualified */
-  unsigned strict_flag : 1;		/* UPC: strict  qualified */
-  unsigned relaxed_flag : 1;		/* UPC: relaxed qualified */
-  unsigned upc_unused : 5;		/* UPC: unused bits  */
-
   unsigned used_flag : 1;
   unsigned nothrow_flag : 1;
   unsigned static_flag : 1;
@@ -404,8 +398,11 @@ struct GTY(()) tree_base {
   unsigned packed_flag : 1;
   unsigned user_align : 1;
   unsigned nameless_flag : 1;
+  unsigned upc_shared_flag : 1;
+  unsigned upc_strict_flag : 1;
+  unsigned upc_relaxed_flag : 1;
 
-  unsigned spare : 12;
+  unsigned spare : 9;
 
   /* This field is only used with type nodes; the only reason it is present
      in tree_base instead of tree_type is to save space.  The size of the
@@ -1383,9 +1380,9 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
   (IDENTIFIER_NODE_CHECK (NODE)->base.deprecated_flag)
 
 /* UPC common tree flags */
-#define TREE_SHARED(NODE) ((NODE)->base.shared_flag)
-#define TREE_STRICT(NODE) ((NODE)->base.strict_flag)
-#define TREE_RELAXED(NODE) ((NODE)->base.relaxed_flag)
+#define TREE_SHARED(NODE) ((NODE)->base.upc_shared_flag)
+#define TREE_STRICT(NODE) ((NODE)->base.upc_strict_flag)
+#define TREE_RELAXED(NODE) ((NODE)->base.upc_relaxed_flag)
 
 /* In fixed-point types, means a saturating type.  */
 #define TYPE_SATURATING(NODE) ((NODE)->base.saturating_flag)
@@ -2211,13 +2208,13 @@ extern enum machine_mode vector_type_mode (const_tree);
 #define TYPE_RESTRICT(NODE) (TYPE_CHECK (NODE)->type.restrict_flag)
 
 /* If nonzero, this type is `shared'-qualified, in the UPC dialect */
-#define TYPE_SHARED(NODE) (TYPE_CHECK (NODE)->base.shared_flag)
+#define TYPE_SHARED(NODE) (TYPE_CHECK (NODE)->base.upc_shared_flag)
 
 /* If nonzero, this type is `strict'-qualified, in the UPC dialect  */
-#define TYPE_STRICT(NODE) (TYPE_CHECK (NODE)->base.strict_flag)
+#define TYPE_STRICT(NODE) (TYPE_CHECK (NODE)->base.upc_strict_flag)
 
 /* If nonzero, this type is `relaxed'-qualified, in the UPC dialect  */
-#define TYPE_RELAXED(NODE) (TYPE_CHECK (NODE)->base.relaxed_flag)
+#define TYPE_RELAXED(NODE) (TYPE_CHECK (NODE)->base.upc_relaxed_flag)
 
 /* If nonzero, type's name shouldn't be emitted into debug info.  */
 #define TYPE_NAMELESS(NODE) (TYPE_CHECK (NODE)->base.nameless_flag)

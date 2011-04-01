@@ -1,5 +1,14 @@
 2011-04-01  Gary Funck  <gary@intrepid.com>
 
+	* tree.h (tree_base): Move UPC flag bits into bit fields
+	  located just before spare bits.  Decrement spare bits.
+	  Rename 'shared_flag' -> 'upc_shared_flag',
+	  'relaxed_flag' -> 'upc_relaxed_flag',
+	  'strict_flag' -> 'upc_strict_flag, and adjust macros
+	  that reference them accordingly.
+
+2011-04-01  Gary Funck  <gary@intrepid.com>
+
 	* c-decl.c (grokdeclarator): Fix formatting of
 	  code that sets UPC block size on scalars.
 
