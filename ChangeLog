@@ -1,5 +1,11 @@
 2011-04-01  Joseph Myers  <joseph@codesourcery.com>
 
+	* configure.ac (avr-*-*): Add comment about why libssp is disabled.
+	(microblaze*): Don't disable libssp.
+	* configure: Regenerate.
+
+2011-04-01  Joseph Myers  <joseph@codesourcery.com>
+
 	* configure.ac: Remove code setting CONFIG_SHELL, config_shell and
 	moveifchange.
 	* configure: Regenerate.
