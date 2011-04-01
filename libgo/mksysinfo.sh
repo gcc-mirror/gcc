@@ -29,12 +29,6 @@ cat > sysinfo.c <<EOF
 #define _LARGEFILE_SOURCE
 #define _FILE_OFFSET_BITS 64
 
-#if defined(__sun__) && defined(__svr4__)
-/* Needed by Solaris header files.  */
-#define _XOPEN_SOURCE 600
-#define __EXTENSIONS__
-#endif
-
 #ifdef __sgi__
 /* IRIX 6 needs _XOPEN_SOURCE=500 for the XPG5 version of struct msghdr in
    <sys/socket.h>.  */
@@ -108,7 +102,7 @@ grep '^const _E' gen-sysinfo.go | \
   sed -e 's/^\(const \)_\(E[^= ]*\)\(.*\)$/\1\2 = _\2/' >> ${OUT}
 
 # The O_xxx flags.
-grep '^const _\(O\|F\|FD\)_' gen-sysinfo.go | \
+egrep '^const _(O|F|FD)_' gen-sysinfo.go | \
   sed -e 's/^\(const \)_\([^= ]*\)\(.*\)$/\1\2 = _\2/' >> ${OUT}
 if ! grep '^const O_ASYNC' ${OUT} >/dev/null 2>&1; then
   echo "const O_ASYNC = 0" >> ${OUT}
@@ -151,7 +145,7 @@ if grep '^const ___WALL = ' gen-sysinfo.go >/dev/null 2>&1 \
 fi
 
 # Networking constants.
-grep '^const _\(AF\|SOCK\|SOL\|SO\|IPPROTO\|TCP\|IP\|IPV6\)_' gen-sysinfo.go |
+egrep '^const _(AF|SOCK|SOL|SO|IPPROTO|TCP|IP|IPV6)_' gen-sysinfo.go |
   sed -e 's/^\(const \)_\([^= ]*\)\(.*\)$/\1\2 = _\2/' >> ${OUT}
 grep '^const _SOMAXCONN' gen-sysinfo.go |
   sed -e 's/^\(const \)_\(SOMAXCONN[^= ]*\)\(.*\)$/\1\2 = _\2/' \
@@ -334,7 +328,8 @@ if test "$stat" != ""; then
   grep '^type _stat64 ' gen-sysinfo.go
 else
   grep '^type _stat ' gen-sysinfo.go
-fi | sed -e 's/type _stat\(64\)\?/type Stat_t/' \
+fi | sed -e 's/type _stat64/type Stat_t/' \
+         -e 's/type _stat/type Stat_t/' \
          -e 's/st_dev/Dev/' \
          -e 's/st_ino/Ino/g' \
          -e 's/st_nlink/Nlink/' \
@@ -360,7 +355,8 @@ if test "$dirent" != ""; then
   grep '^type _dirent64 ' gen-sysinfo.go
 else
   grep '^type _dirent ' gen-sysinfo.go
-fi | sed -e 's/type _dirent\(64\)\?/type Dirent/' \
+fi | sed -e 's/type _dirent64/type Dirent/' \
+         -e 's/type _dirent/type Dirent/' \
          -e 's/d_name \[0+1\]/d_name [0+256]/' \
          -e 's/d_name/Name/' \
          -e 's/]int8/]byte/' \

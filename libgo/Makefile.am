@@ -1511,6 +1511,8 @@ libgo_go_objs = \
 
 libgo_la_SOURCES = $(runtime_files)
 
+libgo_la_LDFLAGS = $(PTHREAD_CFLAGS)
+
 libgo_la_LIBADD = \
 	$(libgo_go_objs) $(LIBFFI) $(PTHREAD_LIBS) $(MATH_LIBS) $(NET_LIBS)
 
@@ -2615,7 +2617,7 @@ testing/script/check: $(CHECK_DEPS)
 
 sysinfo.go: s-sysinfo; @true
 s-sysinfo: $(srcdir)/mksysinfo.sh config.h
-	CC="$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS)" $(SHELL) $(srcdir)/mksysinfo.sh
+	CC="$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(OSCFLAGS)" $(SHELL) $(srcdir)/mksysinfo.sh
 	$(SHELL) $(srcdir)/../move-if-change tmp-sysinfo.go sysinfo.go
 	$(STAMP) $@
 
