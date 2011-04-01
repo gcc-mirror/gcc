@@ -1,3 +1,8 @@
+2011-04-01  Vincent Lefevre  <vincent+gcc@vinc17.org>
+
+	PR c/36299
+	* gcc.dg/Waddress.c: New test.
+
 2011-04-01  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/48352
