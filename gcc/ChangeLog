@@ -1,3 +1,7 @@
+2011-04-01  Gary Funck <gary@intrepid.com>
+
+	* c-decl.c (grokdeclarator): Fix formatting.
+
 2011-04-01  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* expr.c (emit_block_move_via_movmem): Use n_generator_args

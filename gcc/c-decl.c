@@ -5450,7 +5450,7 @@ grokdeclarator (const struct c_declarator *declarator,
 		  }
 	      }
 
-	     /* Complain about arrays of incomplete types.  */
+	    /* Complain about arrays of incomplete types.  */
 	    if (!COMPLETE_TYPE_P (type))
 	      {
 		error_at (loc, "array type has incomplete element type");
@@ -5936,7 +5936,7 @@ grokdeclarator (const struct c_declarator *declarator,
 	if (storage_class == csc_register || threadp)
 	  {
 	    error_at (loc, "invalid storage class for function %qE", name);
-	   }
+	  }
 	else if (current_scope != file_scope)
 	  {
 	    /* Function declaration not at file scope.  Storage
