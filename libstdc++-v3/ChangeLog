@@ -1,3 +1,9 @@
+2011-03-31  Jeffrey Yasskin  <jyasskin@google.com>
+
+	* libsupc++/exception_ptr.h: Forward-declare std::type_info.
+	* libsupc++/nested_exception.h (__throw_with_nested): Remove a
+	redundant default argument from std::__throw_with_nested.
+
 2011-03-26  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/bits/random.h (negative_binomial_distribution<>::
