@@ -6499,6 +6499,7 @@ static bool add_location_or_const_value_attribute (dw_die_ref, tree, bool,
 static bool tree_add_const_value_attribute (dw_die_ref, tree);
 static bool tree_add_const_value_attribute_for_decl (dw_die_ref, tree);
 static void add_name_attribute (dw_die_ref, const char *);
+static void add_gnat_descriptive_type_attribute (dw_die_ref, tree, dw_die_ref);
 static void add_comp_dir_attribute (dw_die_ref);
 static void add_bound_info (dw_die_ref, enum dwarf_attribute, tree);
 static void add_subscript_info (dw_die_ref, tree, bool);
@@ -7141,6 +7142,7 @@ dwarf_attr_name (unsigned int attr)
       return "DW_AT_body_begin";
     case DW_AT_body_end:
       return "DW_AT_body_end";
+
     case DW_AT_GNU_vector:
       return "DW_AT_GNU_vector";
     case DW_AT_GNU_guarded_by:
@@ -7177,6 +7179,9 @@ dwarf_attr_name (unsigned int attr)
       return "DW_AT_GNU_all_call_sites";
     case DW_AT_GNU_all_source_call_sites:
       return "DW_AT_GNU_all_source_call_sites";
+
+    case DW_AT_GNAT_descriptive_type:
+      return "DW_AT_GNAT_descriptive_type";
 
     case DW_AT_VMS_rtnbeg_pd_address:
       return "DW_AT_VMS_rtnbeg_pd_address";
@@ -12859,6 +12864,7 @@ modified_type_die (tree type, int is_const_type, int is_volatile_type,
 	   useful source coordinates anyway.  */
 	name = DECL_NAME (name);
       add_name_attribute (mod_type_die, IDENTIFIER_POINTER (name));
+      add_gnat_descriptive_type_attribute (mod_type_die, type, context_die);
     }
   /* This probably indicates a bug.  */
   else if (mod_type_die && mod_type_die->die_tag == DW_TAG_base_type)
@@ -17306,6 +17312,38 @@ add_name_attribute (dw_die_ref die, const char *name_string)
     }
 }
 
+/* Retrieve the descriptive type of TYPE, if any, make sure it has a
+   DIE and attach a DW_AT_GNAT_descriptive_type attribute to the DIE
+   of TYPE accordingly.
+
+   ??? This is a temporary measure until after we're able to generate
+   regular DWARF for the complex Ada type system.  */
+
+static void 
+add_gnat_descriptive_type_attribute (dw_die_ref die, tree type,
+				     dw_die_ref context_die)
+{
+  tree dtype;
+  dw_die_ref dtype_die;
+
+  if (!lang_hooks.types.descriptive_type)
+    return;
+
+  dtype = lang_hooks.types.descriptive_type (type);
+  if (!dtype)
+    return;
+
+  dtype_die = lookup_type_die (dtype);
+  if (!dtype_die)
+    {
+      gen_type_die (dtype, context_die);
+      dtype_die = lookup_type_die (dtype);
+      gcc_assert (dtype_die);
+    }
+
+  add_AT_die_ref (die, DW_AT_GNAT_descriptive_type, dtype_die);
+}
+
 /* Generate a DW_AT_comp_dir attribute for DIE.  */
 
 static void
@@ -18185,6 +18223,7 @@ gen_array_type_die (tree type, dw_die_ref context_die)
 
   array_die = new_die (DW_TAG_array_type, scope_die, type);
   add_name_attribute (array_die, type_tag (type));
+  add_gnat_descriptive_type_attribute (array_die, type, context_die);
   equate_type_number_to_die (type, array_die);
 
   if (TREE_CODE (type) == VECTOR_TYPE)
@@ -18487,6 +18526,7 @@ gen_enumeration_type_die (tree type, dw_die_ref context_die)
 			  scope_die_for (type, context_die), type);
       equate_type_number_to_die (type, type_die);
       add_name_attribute (type_die, type_tag (type));
+      add_gnat_descriptive_type_attribute (type_die, type, context_die);
       if (dwarf_version >= 4 || !dwarf_strict)
 	{
 	  if (ENUM_IS_SCOPED (type))
@@ -20306,7 +20346,10 @@ gen_struct_or_union_type_die (tree type, dw_die_ref context_die,
       if (old_die)
 	add_AT_specification (type_die, old_die);
       else
-	add_name_attribute (type_die, type_tag (type));
+	{
+	  add_name_attribute (type_die, type_tag (type));
+	  add_gnat_descriptive_type_attribute (type_die, type, context_die);
+	}
     }
   else
     remove_AT (type_die, DW_AT_declaration);

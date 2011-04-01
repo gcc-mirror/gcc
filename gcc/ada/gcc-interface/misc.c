@@ -6,7 +6,7 @@
  *                                                                          *
  *                           C Implementation File                          *
  *                                                                          *
- *          Copyright (C) 1992-2010, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2011, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -521,6 +521,17 @@ gnat_dwarf_name (tree decl, int verbosity ATTRIBUTE_UNUSED)
   return (const char *) IDENTIFIER_POINTER (DECL_NAME (decl));
 }
 
+/* Return the descriptive type associated with TYPE, if any.  */
+
+static tree
+gnat_descriptive_type (const_tree type)
+{
+  if (TYPE_STUB_DECL (type))
+    return DECL_PARALLEL_TYPE (TYPE_STUB_DECL (type));
+  else
+    return NULL_TREE;
+}
+
 /* Return true if types T1 and T2 are identical for type hashing purposes.
    Called only after doing all language independent checks.  At present,
    this function is only called when both types are FUNCTION_TYPE.  */
@@ -746,6 +757,8 @@ gnat_eh_personality (void)
 #define LANG_HOOKS_TYPES_COMPATIBLE_P	gnat_types_compatible_p
 #undef  LANG_HOOKS_GET_SUBRANGE_BOUNDS
 #define LANG_HOOKS_GET_SUBRANGE_BOUNDS  gnat_get_subrange_bounds
+#undef  LANG_HOOKS_DESCRIPTIVE_TYPE
+#define LANG_HOOKS_DESCRIPTIVE_TYPE	gnat_descriptive_type
 #undef  LANG_HOOKS_ATTRIBUTE_TABLE
 #define LANG_HOOKS_ATTRIBUTE_TABLE	gnat_internal_attribute_table
 #undef  LANG_HOOKS_BUILTIN_FUNCTION
