@@ -43,6 +43,14 @@ along with GCC; see the file COPYING3.  If not see
     }								\
   while (0)
 
+#ifndef TARGET_USE_PTHREAD_BY_DEFAULT
+#define SPEC_PTHREAD1 "pthread"
+#define SPEC_PTHREAD2 "!no-pthread"
+#else
+#define SPEC_PTHREAD1 "!no-pthread"
+#define SPEC_PTHREAD2 "pthread"
+#endif
+
 #undef SUB_LINK_ENTRY32
 #undef SUB_LINK_ENTRY64
 #define SUB_LINK_ENTRY32 "-e _DllMainCRTStartup@12"
@@ -67,13 +75,17 @@ along with GCC; see the file COPYING3.  If not see
 #define STANDARD_INCLUDE_COMPONENT "MINGW"
 
 #undef CPP_SPEC
-#define CPP_SPEC "%{posix:-D_POSIX_SOURCE} %{mthreads:-D_MT}"
+#define CPP_SPEC "%{posix:-D_POSIX_SOURCE} %{mthreads:-D_MT} " \
+		 "%{" SPEC_PTHREAD1 ":-D_REENTRANCE} " \
+		 "%{" SPEC_PTHREAD2 ": } "
 
 /* For Windows applications, include more libraries, but always include
    kernel32.  */
 #undef LIB_SPEC
-#define LIB_SPEC "%{pg:-lgmon} %{mwindows:-lgdi32 -lcomdlg32} \
-                  -ladvapi32 -lshell32 -luser32 -lkernel32"
+#define LIB_SPEC "%{pg:-lgmon} %{" SPEC_PTHREAD1 ":-lpthread} " \
+		 "%{" SPEC_PTHREAD2 ": } " \
+		 "%{mwindows:-lgdi32 -lcomdlg32} " \
+                 "-ladvapi32 -lshell32 -luser32 -lkernel32"
 
 /* Weak symbols do not get resolved if using a Windows dll import lib.
    Make the unwind registration references strong undefs.  */
