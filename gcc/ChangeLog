@@ -1,3 +1,12 @@
+2011-04-01  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* dwarf2out.h (dwarf2out_frame_debug_init): Declare.
+	* dwarf2out.c (dwarf2out_frame_debug_init): New function, broken
+	out of ...
+	(dwarf2out_frame_debug): ... here. Don't handle a NULL argument.
+	* final.c (final_start_function): Call the new function rather
+	than using a NULL argument for dwarf2out_frame_debug.
+
 2011-04-01  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	* config/spu/t-spu-elf (dp-bit.c): Use > instead of >>.

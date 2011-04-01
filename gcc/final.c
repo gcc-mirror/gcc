@@ -1561,7 +1561,7 @@ final_start_function (rtx first ATTRIBUTE_UNUSED, FILE *file,
 
 #if defined (HAVE_prologue)
   if (dwarf2out_do_frame ())
-    dwarf2out_frame_debug (NULL_RTX, false);
+    dwarf2out_frame_debug_init ();
 #endif
 
   /* If debugging, assign block numbers to all of the blocks in this

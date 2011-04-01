@@ -1,5 +1,5 @@
 /* dwarf2out.h - Various declarations for functions found in dwarf2out.c
-   Copyright (C) 1998, 1999, 2000, 2003, 2007, 2010
+   Copyright (C) 1998, 1999, 2000, 2003, 2007, 2010, 2011
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -20,6 +20,7 @@ along with GCC; see the file COPYING3.  If not see
 
 extern void dwarf2out_decl (tree);
 extern void dwarf2out_frame_debug (rtx, bool);
+extern void dwarf2out_frame_debug_init (void);
 extern void dwarf2out_cfi_begin_epilogue (rtx);
 extern void dwarf2out_frame_debug_restore_state (void);
 extern void dwarf2out_flush_queued_reg_saves (void);

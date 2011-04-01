@@ -2788,38 +2788,6 @@ dwarf2out_frame_debug (rtx insn, bool after_p)
   rtx note, n;
   bool handled_one = false;
 
-  if (insn == NULL_RTX)
-    {
-      size_t i;
-
-      /* Flush any queued register saves.  */
-      dwarf2out_flush_queued_reg_saves ();
-
-      /* Set up state for generating call frame debug info.  */
-      lookup_cfa (&cfa);
-      gcc_assert (cfa.reg
-		  == (unsigned long)DWARF_FRAME_REGNUM (STACK_POINTER_REGNUM));
-
-      cfa.reg = STACK_POINTER_REGNUM;
-      cfa_store = cfa;
-      cfa_temp.reg = -1;
-      cfa_temp.offset = 0;
-
-      for (i = 0; i < num_regs_saved_in_regs; i++)
-	{
-	  regs_saved_in_regs[i].orig_reg = NULL_RTX;
-	  regs_saved_in_regs[i].saved_in_reg = NULL_RTX;
-	}
-      num_regs_saved_in_regs = 0;
-
-      if (barrier_args_size)
-	{
-	  XDELETEVEC (barrier_args_size);
-	  barrier_args_size = NULL;
-	}
-      return;
-    }
-
   if (!NONJUMP_INSN_P (insn) || clobbers_queued_reg_save (insn))
     dwarf2out_flush_queued_reg_saves ();
 
@@ -2935,6 +2903,40 @@ dwarf2out_frame_debug (rtx insn, bool after_p)
      removing the check above.  */
   if (any_cfis_emitted || clobbers_queued_reg_save (insn))
     dwarf2out_flush_queued_reg_saves ();
+}
+
+/* Called once at the start of final to initialize some data for the
+   current function.  */
+void
+dwarf2out_frame_debug_init (void)
+{
+  size_t i;
+
+  /* Flush any queued register saves.  */
+  dwarf2out_flush_queued_reg_saves ();
+
+  /* Set up state for generating call frame debug info.  */
+  lookup_cfa (&cfa);
+  gcc_assert (cfa.reg
+	      == (unsigned long)DWARF_FRAME_REGNUM (STACK_POINTER_REGNUM));
+
+  cfa.reg = STACK_POINTER_REGNUM;
+  cfa_store = cfa;
+  cfa_temp.reg = -1;
+  cfa_temp.offset = 0;
+
+  for (i = 0; i < num_regs_saved_in_regs; i++)
+    {
+      regs_saved_in_regs[i].orig_reg = NULL_RTX;
+      regs_saved_in_regs[i].saved_in_reg = NULL_RTX;
+    }
+  num_regs_saved_in_regs = 0;
+
+  if (barrier_args_size)
+    {
+      XDELETEVEC (barrier_args_size);
+      barrier_args_size = NULL;
+    }
 }
 
 /* Determine if we need to save and restore CFI information around this
