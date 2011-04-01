@@ -23588,22 +23588,17 @@ dwarf2out_finish (const char *filename)
   if (!have_multiple_function_sections 
       || (dwarf_version < 3 && dwarf_strict))
     {
-      add_AT_lbl_id (comp_unit_die (), DW_AT_low_pc, text_section_label);
-      add_AT_lbl_id (comp_unit_die (), DW_AT_high_pc, text_end_label);
+      /* Don't add if the CU has no associated code.  */
+      if (text_section_used)
+	{
+	  add_AT_lbl_id (comp_unit_die (), DW_AT_low_pc, text_section_label);
+	  add_AT_lbl_id (comp_unit_die (), DW_AT_high_pc, text_end_label);
+	}
     }
-
   else
     {
       unsigned fde_idx = 0;
       bool range_list_added = false;
-
-      /* We need to give .debug_loc and .debug_ranges an appropriate
-	 "base address".  Use zero so that these addresses become
-	 absolute.  Historically, we've emitted the unexpected
-	 DW_AT_entry_pc instead of DW_AT_low_pc for this purpose.
-	 Emit both to give time for other tools to adapt.  */
-      add_AT_addr (comp_unit_die (), DW_AT_low_pc, const0_rtx);
-      add_AT_addr (comp_unit_die (), DW_AT_entry_pc, const0_rtx);
 
       if (text_section_used)
 	add_ranges_by_labels (comp_unit_die (), text_section_label,
@@ -23625,7 +23620,18 @@ dwarf2out_finish (const char *filename)
 	}
 
       if (range_list_added)
-	add_ranges (NULL);
+	{
+	  /* We need to give .debug_loc and .debug_ranges an appropriate
+	     "base address".  Use zero so that these addresses become
+	     absolute.  Historically, we've emitted the unexpected
+	     DW_AT_entry_pc instead of DW_AT_low_pc for this purpose.
+	     Emit both to give time for other tools to adapt.  */
+	  add_AT_addr (comp_unit_die (), DW_AT_low_pc, const0_rtx);
+	  if (! dwarf_strict && dwarf_version < 4)
+	    add_AT_addr (comp_unit_die (), DW_AT_entry_pc, const0_rtx);
+
+	  add_ranges (NULL);
+	}
     }
 
   if (debug_info_level >= DINFO_LEVEL_NORMAL)
