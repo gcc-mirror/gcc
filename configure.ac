@@ -506,7 +506,7 @@ if test x$enable_libgomp = x ; then
 	;;
     *-*-netbsd* | *-*-freebsd* | *-*-openbsd* | *-*-dragonfly*)
 	;;
-    *-*-solaris2* | *-*-sysv4* | *-*-irix6* | *-*-osf* | *-*-hpux11*)
+    *-*-solaris2* | *-*-irix6* | *-*-osf* | *-*-hpux11*)
 	;;
     *-*-darwin* | *-*-aix*)
 	;;
@@ -2174,46 +2174,12 @@ done
 # the *-*-osname triplets last.
 md_exec_prefix=
 case "${target}" in
-  alpha*-*-*vms*)
-    md_exec_prefix=/gnu/lib/gcc-lib
-    ;;
   i[[34567]]86-pc-msdosdjgpp*)
     md_exec_prefix=/dev/env/DJDIR/bin
     ;;
-  i[[34567]]86-*-sco3.2v5*)
-    if test $with_gnu_as = yes; then
-      md_exec_prefix=/usr/gnu/bin
-    else
-      md_exec_prefix=/usr/ccs/bin/elf
-    fi
-    ;;
-
-  mn10300-*-* | \
-  powerpc-*-chorusos* | \
-  powerpc*-*-eabi* | \
-  powerpc*-*-sysv* | \
-  powerpc*-*-kaos* | \
-  s390x-ibm-tpf*)
-    md_exec_prefix=/usr/ccs/bin
-    ;;
-  sparc64-*-elf*)
-    ;;
-  v850*-*-*)
-    md_exec_prefix=/usr/ccs/bin
-    ;;
-  xtensa*-*-elf*)
-    ;;
-
-  *-*-beos* | \
-  *-*-elf* | \
   *-*-hpux* | \
-  *-*-netware* | \
   *-*-nto-qnx* | \
-  *-*-rtems* | \
-  *-*-solaris2* | \
-  *-*-sysv[[45]]* | \
-  *-*-vxworks* | \
-  *-wrs-windiss)
+  *-*-solaris2*)
     md_exec_prefix=/usr/ccs/bin
     ;;
 esac
