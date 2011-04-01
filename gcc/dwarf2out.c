@@ -4242,6 +4242,7 @@ dwarf2out_note_section_used (void)
 }
 
 static void var_location_switch_text_section (void);
+static void set_cur_line_info_table (section *);
 
 void
 dwarf2out_switch_text_section (void)
@@ -4298,6 +4299,8 @@ dwarf2out_switch_text_section (void)
       cfi = cfi->dw_cfi_next;
   fde->dw_fde_switch_cfi = cfi;
   var_location_switch_text_section ();
+
+  set_cur_line_info_table (sect);
 }
 
 /* And now, the subset of the debugging information support code necessary
@@ -5819,31 +5822,70 @@ typedef long int dw_offset;
 
 typedef struct dw_attr_struct *dw_attr_ref;
 typedef struct dw_line_info_struct *dw_line_info_ref;
-typedef struct dw_separate_line_info_struct *dw_separate_line_info_ref;
 typedef struct pubname_struct *pubname_ref;
 typedef struct dw_ranges_struct *dw_ranges_ref;
 typedef struct dw_ranges_by_label_struct *dw_ranges_by_label_ref;
 typedef struct comdat_type_struct *comdat_type_node_ref;
 
-/* Each entry in the line_info_table maintains the file and
-   line number associated with the label generated for that
-   entry.  The label gives the PC value associated with
-   the line number entry.  */
+/* The entries in the line_info table more-or-less mirror the opcodes
+   that are used in the real dwarf line table.  Arrays of these entries
+   are collected per section when DWARF2_ASM_LINE_DEBUG_INFO is not
+   supported.  */
+
+enum dw_line_info_opcode {
+  /* Emit DW_LNE_set_address; the operand is the label index.  */
+  LI_set_address,
+
+  /* Emit a row to the matrix with the given line.  This may be done
+     via any combination of DW_LNS_copy, DW_LNS_advance_line, and
+     special opcodes.  */
+  LI_set_line,
+
+  /* Emit a DW_LNS_set_file.  */
+  LI_set_file,
+
+  /* Emit a DW_LNS_set_column.  */
+  LI_set_column,
+
+  /* Emit a DW_LNS_negate_stmt; the operand is ignored.  */
+  LI_negate_stmt,
+
+  /* Emit a DW_LNS_set_prologue_end/epilogue_begin; the operand is ignored.  */
+  LI_set_prologue_end,
+  LI_set_epilogue_begin,
+
+  /* Emit a DW_LNE_set_discriminator.  */
+  LI_set_discriminator
+};
 
 typedef struct GTY(()) dw_line_info_struct {
-  unsigned long dw_file_num;
-  unsigned long dw_line_num;
-}
-dw_line_info_entry;
+  enum dw_line_info_opcode opcode;
+  unsigned int val;
+} dw_line_info_entry;
 
-/* Line information for functions in separate sections; each one gets its
-   own sequence.  */
-typedef struct GTY(()) dw_separate_line_info_struct {
-  unsigned long dw_file_num;
-  unsigned long dw_line_num;
-  unsigned long function;
-}
-dw_separate_line_info_entry;
+DEF_VEC_O(dw_line_info_entry);
+DEF_VEC_ALLOC_O(dw_line_info_entry, gc);
+
+typedef struct GTY(()) dw_line_info_table_struct {
+  /* The label that marks the end of this section.  */
+  const char *end_label;
+
+  /* The values for the last row of the matrix, as collected in the table.
+     These are used to minimize the changes to the next row.  */
+  unsigned int file_num;
+  unsigned int line_num;
+  unsigned int column_num;
+  int discrim_num;
+  bool is_stmt;
+  bool in_use;
+
+  VEC(dw_line_info_entry, gc) *entries;
+} dw_line_info_table;
+
+typedef dw_line_info_table *dw_line_info_table_p;
+
+DEF_VEC_P(dw_line_info_table_p);
+DEF_VEC_ALLOC_P(dw_line_info_table_p, gc);
 
 /* Each DIE attribute has a field specifying the attribute kind,
    a link to the next attribute in the chain, and an attribute value.
@@ -6021,7 +6063,7 @@ skeleton_chain_node;
 #define DWARF_LINE_BASE  -10
 
 /* First special line opcode - leave room for the standard opcodes.  */
-#define DWARF_LINE_OPCODE_BASE  10
+#define DWARF_LINE_OPCODE_BASE  ((int)DW_LNS_set_isa + 1)
 
 /* Range of line offsets in a special line info. opcode.  */
 #define DWARF_LINE_RANGE  (254-DWARF_LINE_OPCODE_BASE+1)
@@ -6166,31 +6208,20 @@ static GTY(()) unsigned abbrev_die_table_in_use;
    abbrev_die_table.  */
 #define ABBREV_DIE_TABLE_INCREMENT 256
 
-/* A pointer to the base of a table that contains line information
-   for each source code line in .text in the compilation unit.  */
-static GTY((length ("line_info_table_allocated")))
-     dw_line_info_ref line_info_table;
+/* A global counter for generating labels for line number data.  */
+static unsigned int line_info_label_num;
 
-/* Number of elements currently allocated for line_info_table.  */
-static GTY(()) unsigned line_info_table_allocated;
+/* The current table to which we should emit line number information
+   for the current function.  This will be set up at the beginning of
+   assembly for the function.  */
+static dw_line_info_table *cur_line_info_table;
 
-/* Number of elements in line_info_table currently in use.  */
-static GTY(()) unsigned line_info_table_in_use;
+/* The two default tables of line number info.  */
+static GTY(()) dw_line_info_table *text_section_line_info;
+static GTY(()) dw_line_info_table *cold_text_section_line_info;
 
-/* A pointer to the base of a table that contains line information
-   for each source code line outside of .text in the compilation unit.  */
-static GTY ((length ("separate_line_info_table_allocated")))
-     dw_separate_line_info_ref separate_line_info_table;
-
-/* Number of elements currently allocated for separate_line_info_table.  */
-static GTY(()) unsigned separate_line_info_table_allocated;
-
-/* Number of elements in separate_line_info_table currently in use.  */
-static GTY(()) unsigned separate_line_info_table_in_use;
-
-/* Size (in elements) of increments by which we may expand the
-   line_info_table.  */
-#define LINE_INFO_TABLE_INCREMENT 1024
+/* The set of all non-default tables of line number info.  */
+static GTY(()) VEC (dw_line_info_table_p, gc) *separate_line_info;
 
 /* A flag to tell pubnames/types export if there is an info section to
    refer to.  */
@@ -6343,7 +6374,6 @@ static void equate_decl_number_to_die (tree, dw_die_ref);
 static struct var_loc_node *add_var_loc_to_decl (tree, rtx, const char *);
 static void print_spaces (FILE *);
 static void print_die (dw_die_ref, FILE *);
-static void print_dwarf_line_table (FILE *);
 static dw_die_ref push_new_compile_unit (dw_die_ref, dw_die_ref);
 static dw_die_ref pop_compile_unit (dw_die_ref);
 static void loc_checksum (dw_loc_descr_ref, struct md5_ctx *);
@@ -6421,6 +6451,7 @@ static unsigned int add_ranges (const_tree);
 static void add_ranges_by_labels (dw_die_ref, const char *, const char *,
 				  bool *);
 static void output_ranges (void);
+static dw_line_info_table *new_line_info_table (void);
 static void output_line_info (void);
 static void output_file_names (void);
 static dw_die_ref base_type_die (tree);
@@ -6661,9 +6692,6 @@ static char ranges_section_label[2 * MAX_ARTIFICIAL_LABEL_BYTES];
 #endif
 #ifndef LINE_CODE_LABEL
 #define LINE_CODE_LABEL		"LM"
-#endif
-#ifndef SEPARATE_LINE_CODE_LABEL
-#define SEPARATE_LINE_CODE_LABEL	"LSM"
 #endif
 
 
@@ -8682,27 +8710,6 @@ print_die (dw_die_ref die, FILE *outfile)
     fprintf (outfile, "\n");
 }
 
-/* Print the contents of the source code line number correspondence table.
-   This routine is a debugging aid only.  */
-
-static void
-print_dwarf_line_table (FILE *outfile)
-{
-  unsigned i;
-  dw_line_info_ref line_info;
-
-  fprintf (outfile, "\n\nDWARF source line information\n");
-  for (i = 1; i < line_info_table_in_use; i++)
-    {
-      line_info = &line_info_table[i];
-      fprintf (outfile, "%5d: %4ld %6ld\n", i,
-	       line_info->dw_file_num,
-	       line_info->dw_line_num);
-    }
-
-  fprintf (outfile, "\n\n");
-}
-
 /* Print the information collected for a given DIE.  */
 
 DEBUG_FUNCTION void
@@ -8719,8 +8726,6 @@ debug_dwarf (void)
 {
   print_indent = 0;
   print_die (comp_unit_die (), stderr);
-  if (! DWARF2_ASM_LINE_DEBUG_INFO)
-    print_dwarf_line_table (stderr);
 }
 
 /* Start a new compilation unit DIE for an include file.  OLD_UNIT is the CU
@@ -12289,6 +12294,117 @@ output_file_names (void)
 }
 
 
+/* Output one line number table into the .debug_line section.  */
+
+static void
+output_one_line_info_table (dw_line_info_table *table)
+{
+  char line_label[MAX_ARTIFICIAL_LABEL_BYTES];
+  unsigned int current_line = 1;
+  bool current_is_stmt = DWARF_LINE_DEFAULT_IS_STMT_START;
+  dw_line_info_entry *ent;
+  size_t i;
+
+  FOR_EACH_VEC_ELT (dw_line_info_entry, table->entries, i, ent)
+    {
+      switch (ent->opcode)
+	{
+	case LI_set_address:
+	  /* ??? Unfortunately, we have little choice here currently, and
+	     must always use the most general form.  GCC does not know the
+	     address delta itself, so we can't use DW_LNS_advance_pc.  Many
+	     ports do have length attributes which will give an upper bound
+	     on the address range.  We could perhaps use length attributes
+	     to determine when it is safe to use DW_LNS_fixed_advance_pc.  */
+	  ASM_GENERATE_INTERNAL_LABEL (line_label, LINE_CODE_LABEL, ent->val);
+
+	  /* This can handle any delta.  This takes
+	     4+DWARF2_ADDR_SIZE bytes.  */
+	  dw2_asm_output_data (1, 0, "set address %s", line_label);
+	  dw2_asm_output_data_uleb128 (1 + DWARF2_ADDR_SIZE, NULL);
+	  dw2_asm_output_data (1, DW_LNE_set_address, NULL);
+	  dw2_asm_output_addr (DWARF2_ADDR_SIZE, line_label, NULL);
+	  break;
+
+	case LI_set_line:
+	  if (ent->val == current_line)
+	    {
+	      /* We still need to start a new row, so output a copy insn.  */
+	      dw2_asm_output_data (1, DW_LNS_copy,
+				   "copy line %u", current_line);
+	    }
+	  else
+	    {
+	      int line_offset = ent->val - current_line;
+	      int line_delta = line_offset - DWARF_LINE_BASE;
+
+	      current_line = ent->val;
+	      if (line_delta >= 0 && line_delta < (DWARF_LINE_RANGE - 1))
+		{
+		  /* This can handle deltas from -10 to 234, using the current
+		     definitions of DWARF_LINE_BASE and DWARF_LINE_RANGE.
+		     This takes 1 byte.  */
+		  dw2_asm_output_data (1, DWARF_LINE_OPCODE_BASE + line_delta,
+				       "line %u", current_line);
+		}
+	      else
+		{
+		  /* This can handle any delta.  This takes at least 4 bytes,
+		     depending on the value being encoded.  */
+		  dw2_asm_output_data (1, DW_LNS_advance_line,
+				       "advance to line %u", current_line);
+		  dw2_asm_output_data_sleb128 (line_offset, NULL);
+		  dw2_asm_output_data (1, DW_LNS_copy, NULL);
+		}
+	    }
+	  break;
+
+	case LI_set_file:
+	  dw2_asm_output_data (1, DW_LNS_set_file, "set file %u", ent->val);
+	  dw2_asm_output_data_uleb128 (ent->val, "%u", ent->val);
+	  break;
+
+	case LI_set_column:
+	  dw2_asm_output_data (1, DW_LNS_set_column, "column %u", ent->val);
+	  dw2_asm_output_data_uleb128 (ent->val, "%u", ent->val);
+	  break;
+
+	case LI_negate_stmt:
+	  current_is_stmt = !current_is_stmt;
+	  dw2_asm_output_data (1, DW_LNS_negate_stmt,
+			       "is_stmt %d", current_is_stmt);
+	  break;
+
+	case LI_set_prologue_end:
+	  dw2_asm_output_data (1, DW_LNS_set_prologue_end,
+			       "set prologue end");
+	  break;
+	  
+	case LI_set_epilogue_begin:
+	  dw2_asm_output_data (1, DW_LNS_set_epilogue_begin,
+			       "set epilogue begin");
+	  break;
+
+	case LI_set_discriminator:
+	  dw2_asm_output_data (1, 0, "discriminator %u", ent->val);
+	  dw2_asm_output_data_uleb128 (1 + size_of_uleb128 (ent->val), NULL);
+	  dw2_asm_output_data (1, DW_LNE_set_discriminator, NULL);
+	  dw2_asm_output_data_uleb128 (ent->val, NULL);
+	  break;
+	}
+    }
+
+  /* Emit debug info for the address of the end of the table.  */
+  dw2_asm_output_data (1, 0, "set address %s", table->end_label);
+  dw2_asm_output_data_uleb128 (1 + DWARF2_ADDR_SIZE, NULL);
+  dw2_asm_output_data (1, DW_LNE_set_address, NULL);
+  dw2_asm_output_addr (DWARF2_ADDR_SIZE, table->end_label, NULL);
+
+  dw2_asm_output_data (1, 0, "end sequence");
+  dw2_asm_output_data_uleb128 (1, NULL);
+  dw2_asm_output_data (1, DW_LNE_end_sequence, NULL);
+}
+
 /* Output the source line number correspondence information.  This
    information goes into the .debug_line section.  */
 
@@ -12296,17 +12412,8 @@ static void
 output_line_info (void)
 {
   char l1[20], l2[20], p1[20], p2[20];
-  char line_label[MAX_ARTIFICIAL_LABEL_BYTES];
-  char prev_line_label[MAX_ARTIFICIAL_LABEL_BYTES];
-  unsigned opc;
-  unsigned n_op_args;
-  unsigned long lt_index;
-  unsigned long current_line;
-  long line_offset;
-  long line_delta;
-  unsigned long current_file;
-  unsigned long function;
   int ver = dwarf_version;
+  int opc;
 
   ASM_GENERATE_INTERNAL_LABEL (l1, LINE_NUMBER_BEGIN_LABEL, 0);
   ASM_GENERATE_INTERNAL_LABEL (l2, LINE_NUMBER_END_LABEL, 0);
@@ -12324,16 +12431,15 @@ output_line_info (void)
   dw2_asm_output_delta (DWARF_OFFSET_SIZE, p2, p1, "Prolog Length");
   ASM_OUTPUT_LABEL (asm_out_file, p1);
 
-  /* Define the architecture-dependent minimum instruction length (in
-   bytes).  In this implementation of DWARF, this field is used for
-   information purposes only.  Since GCC generates assembly language,
-   we have no a priori knowledge of how many instruction bytes are
-   generated for each source line, and therefore can use only the
-   DW_LNE_set_address and DW_LNS_fixed_advance_pc line information
-   commands.  Accordingly, we fix this as `1', which is "correct
-   enough" for all architectures, and don't let the target override.  */
-  dw2_asm_output_data (1, 1,
-		       "Minimum Instruction Length");
+  /* Define the architecture-dependent minimum instruction length (in bytes).
+     In this implementation of DWARF, this field is used for information
+     purposes only.  Since GCC generates assembly language, we have no
+     a priori knowledge of how many instruction bytes are generated for each
+     source line, and therefore can use only the DW_LNE_set_address and
+     DW_LNS_fixed_advance_pc line information commands.  Accordingly, we fix
+     this as '1', which is "correct enough" for all architectures,
+     and don't let the target override.  */
+  dw2_asm_output_data (1, 1, "Minimum Instruction Length");
 
   if (ver >= 4)
     dw2_asm_output_data (1, DWARF_LINE_DEFAULT_MAX_OPS_PER_INSN,
@@ -12349,6 +12455,7 @@ output_line_info (void)
 
   for (opc = 1; opc < DWARF_LINE_OPCODE_BASE; opc++)
     {
+      int n_op_args;
       switch (opc)
 	{
 	case DW_LNS_advance_pc:
@@ -12356,6 +12463,7 @@ output_line_info (void)
 	case DW_LNS_set_file:
 	case DW_LNS_set_column:
 	case DW_LNS_fixed_advance_pc:
+	case DW_LNS_set_isa:
 	  n_op_args = 1;
 	  break;
 	default:
@@ -12371,236 +12479,19 @@ output_line_info (void)
   output_file_names ();
   ASM_OUTPUT_LABEL (asm_out_file, p2);
 
-  /* We used to set the address register to the first location in the text
-     section here, but that didn't accomplish anything since we already
-     have a line note for the opening brace of the first function.  */
+  if (text_section_line_info && text_section_line_info->in_use)
+    output_one_line_info_table (text_section_line_info);
+  if (cold_text_section_line_info && cold_text_section_line_info->in_use)
+    output_one_line_info_table (cold_text_section_line_info);
 
-  /* Generate the line number to PC correspondence table, encoded as
-     a series of state machine operations.  */
-  current_file = 1;
-  current_line = 1;
-
-  if (cfun && in_cold_section_p)
-    strcpy (prev_line_label, crtl->subsections.cold_section_label);
-  else
-    strcpy (prev_line_label, text_section_label);
-  for (lt_index = 1; lt_index < line_info_table_in_use; ++lt_index)
+  if (separate_line_info)
     {
-      dw_line_info_ref line_info = &line_info_table[lt_index];
+      dw_line_info_table *table;
+      size_t i;
 
-#if 0
-      /* Disable this optimization for now; GDB wants to see two line notes
-	 at the beginning of a function so it can find the end of the
-	 prologue.  */
-
-      /* Don't emit anything for redundant notes.  Just updating the
-	 address doesn't accomplish anything, because we already assume
-	 that anything after the last address is this line.  */
-      if (line_info->dw_line_num == current_line
-	  && line_info->dw_file_num == current_file)
-	continue;
-#endif
-
-      /* Emit debug info for the address of the current line.
-
-	 Unfortunately, we have little choice here currently, and must always
-	 use the most general form.  GCC does not know the address delta
-	 itself, so we can't use DW_LNS_advance_pc.  Many ports do have length
-	 attributes which will give an upper bound on the address range.  We
-	 could perhaps use length attributes to determine when it is safe to
-	 use DW_LNS_fixed_advance_pc.  */
-
-      ASM_GENERATE_INTERNAL_LABEL (line_label, LINE_CODE_LABEL, lt_index);
-      if (0)
-	{
-	  /* This can handle deltas up to 0xffff.  This takes 3 bytes.  */
-	  dw2_asm_output_data (1, DW_LNS_fixed_advance_pc,
-			       "DW_LNS_fixed_advance_pc");
-	  dw2_asm_output_delta (2, line_label, prev_line_label, NULL);
-	}
-      else
-	{
-	  /* This can handle any delta.  This takes
-	     4+DWARF2_ADDR_SIZE bytes.  */
-	  dw2_asm_output_data (1, 0, "DW_LNE_set_address");
-	  dw2_asm_output_data_uleb128 (1 + DWARF2_ADDR_SIZE, NULL);
-	  dw2_asm_output_data (1, DW_LNE_set_address, NULL);
-	  dw2_asm_output_addr (DWARF2_ADDR_SIZE, line_label, NULL);
-	}
-
-      strcpy (prev_line_label, line_label);
-
-      /* Emit debug info for the source file of the current line, if
-	 different from the previous line.  */
-      if (line_info->dw_file_num != current_file)
-	{
-	  current_file = line_info->dw_file_num;
-	  dw2_asm_output_data (1, DW_LNS_set_file, "DW_LNS_set_file");
-	  dw2_asm_output_data_uleb128 (current_file, "%lu", current_file);
-	}
-
-      /* Emit debug info for the current line number, choosing the encoding
-	 that uses the least amount of space.  */
-      if (line_info->dw_line_num != current_line)
-	{
-	  line_offset = line_info->dw_line_num - current_line;
-	  line_delta = line_offset - DWARF_LINE_BASE;
-	  current_line = line_info->dw_line_num;
-	  if (line_delta >= 0 && line_delta < (DWARF_LINE_RANGE - 1))
-	    /* This can handle deltas from -10 to 234, using the current
-	       definitions of DWARF_LINE_BASE and DWARF_LINE_RANGE.  This
-	       takes 1 byte.  */
-	    dw2_asm_output_data (1, DWARF_LINE_OPCODE_BASE + line_delta,
-				 "line %lu", current_line);
-	  else
-	    {
-	      /* This can handle any delta.  This takes at least 4 bytes,
-		 depending on the value being encoded.  */
-	      dw2_asm_output_data (1, DW_LNS_advance_line,
-				   "advance to line %lu", current_line);
-	      dw2_asm_output_data_sleb128 (line_offset, NULL);
-	      dw2_asm_output_data (1, DW_LNS_copy, "DW_LNS_copy");
-	    }
-	}
-      else
-	/* We still need to start a new row, so output a copy insn.  */
-	dw2_asm_output_data (1, DW_LNS_copy, "DW_LNS_copy");
-    }
-
-  /* Emit debug info for the address of the end of the function.  */
-  if (0)
-    {
-      dw2_asm_output_data (1, DW_LNS_fixed_advance_pc,
-			   "DW_LNS_fixed_advance_pc");
-      dw2_asm_output_delta (2, text_end_label, prev_line_label, NULL);
-    }
-  else
-    {
-      dw2_asm_output_data (1, 0, "DW_LNE_set_address");
-      dw2_asm_output_data_uleb128 (1 + DWARF2_ADDR_SIZE, NULL);
-      dw2_asm_output_data (1, DW_LNE_set_address, NULL);
-      dw2_asm_output_addr (DWARF2_ADDR_SIZE, text_end_label, NULL);
-    }
-
-  dw2_asm_output_data (1, 0, "DW_LNE_end_sequence");
-  dw2_asm_output_data_uleb128 (1, NULL);
-  dw2_asm_output_data (1, DW_LNE_end_sequence, NULL);
-
-  function = 0;
-  current_file = 1;
-  current_line = 1;
-  for (lt_index = 0; lt_index < separate_line_info_table_in_use;)
-    {
-      dw_separate_line_info_ref line_info
-	= &separate_line_info_table[lt_index];
-
-#if 0
-      /* Don't emit anything for redundant notes.  */
-      if (line_info->dw_line_num == current_line
-	  && line_info->dw_file_num == current_file
-	  && line_info->function == function)
-	goto cont;
-#endif
-
-      /* Emit debug info for the address of the current line.  If this is
-	 a new function, or the first line of a function, then we need
-	 to handle it differently.  */
-      ASM_GENERATE_INTERNAL_LABEL (line_label, SEPARATE_LINE_CODE_LABEL,
-				   lt_index);
-      if (function != line_info->function)
-	{
-	  function = line_info->function;
-
-	  /* Set the address register to the first line in the function.  */
-	  dw2_asm_output_data (1, 0, "DW_LNE_set_address");
-	  dw2_asm_output_data_uleb128 (1 + DWARF2_ADDR_SIZE, NULL);
-	  dw2_asm_output_data (1, DW_LNE_set_address, NULL);
-	  dw2_asm_output_addr (DWARF2_ADDR_SIZE, line_label, NULL);
-	}
-      else
-	{
-	  /* ??? See the DW_LNS_advance_pc comment above.  */
-	  if (0)
-	    {
-	      dw2_asm_output_data (1, DW_LNS_fixed_advance_pc,
-				   "DW_LNS_fixed_advance_pc");
-	      dw2_asm_output_delta (2, line_label, prev_line_label, NULL);
-	    }
-	  else
-	    {
-	      dw2_asm_output_data (1, 0, "DW_LNE_set_address");
-	      dw2_asm_output_data_uleb128 (1 + DWARF2_ADDR_SIZE, NULL);
-	      dw2_asm_output_data (1, DW_LNE_set_address, NULL);
-	      dw2_asm_output_addr (DWARF2_ADDR_SIZE, line_label, NULL);
-	    }
-	}
-
-      strcpy (prev_line_label, line_label);
-
-      /* Emit debug info for the source file of the current line, if
-	 different from the previous line.  */
-      if (line_info->dw_file_num != current_file)
-	{
-	  current_file = line_info->dw_file_num;
-	  dw2_asm_output_data (1, DW_LNS_set_file, "DW_LNS_set_file");
-	  dw2_asm_output_data_uleb128 (current_file, "%lu", current_file);
-	}
-
-      /* Emit debug info for the current line number, choosing the encoding
-	 that uses the least amount of space.  */
-      if (line_info->dw_line_num != current_line)
-	{
-	  line_offset = line_info->dw_line_num - current_line;
-	  line_delta = line_offset - DWARF_LINE_BASE;
-	  current_line = line_info->dw_line_num;
-	  if (line_delta >= 0 && line_delta < (DWARF_LINE_RANGE - 1))
-	    dw2_asm_output_data (1, DWARF_LINE_OPCODE_BASE + line_delta,
-				 "line %lu", current_line);
-	  else
-	    {
-	      dw2_asm_output_data (1, DW_LNS_advance_line,
-				   "advance to line %lu", current_line);
-	      dw2_asm_output_data_sleb128 (line_offset, NULL);
-	      dw2_asm_output_data (1, DW_LNS_copy, "DW_LNS_copy");
-	    }
-	}
-      else
-	dw2_asm_output_data (1, DW_LNS_copy, "DW_LNS_copy");
-
-#if 0
-    cont:
-#endif
-
-      lt_index++;
-
-      /* If we're done with a function, end its sequence.  */
-      if (lt_index == separate_line_info_table_in_use
-	  || separate_line_info_table[lt_index].function != function)
-	{
-	  current_file = 1;
-	  current_line = 1;
-
-	  /* Emit debug info for the address of the end of the function.  */
-	  ASM_GENERATE_INTERNAL_LABEL (line_label, FUNC_END_LABEL, function);
-	  if (0)
-	    {
-	      dw2_asm_output_data (1, DW_LNS_fixed_advance_pc,
-				   "DW_LNS_fixed_advance_pc");
-	      dw2_asm_output_delta (2, line_label, prev_line_label, NULL);
-	    }
-	  else
-	    {
-	      dw2_asm_output_data (1, 0, "DW_LNE_set_address");
-	      dw2_asm_output_data_uleb128 (1 + DWARF2_ADDR_SIZE, NULL);
-	      dw2_asm_output_data (1, DW_LNE_set_address, NULL);
-	      dw2_asm_output_addr (DWARF2_ADDR_SIZE, line_label, NULL);
-	    }
-
-	  /* Output the marker for the end of this sequence.  */
-	  dw2_asm_output_data (1, 0, "DW_LNE_end_sequence");
-	  dw2_asm_output_data_uleb128 (1, NULL);
-	  dw2_asm_output_data (1, DW_LNE_end_sequence, NULL);
-	}
+      FOR_EACH_VEC_ELT (dw_line_info_table_p, separate_line_info, i, table)
+	if (table->in_use)
+	  output_one_line_info_table (table);
     }
 
   /* Output the marker for the end of the line number info.  */
@@ -22113,6 +22004,76 @@ var_location_switch_text_section (void)
   htab_traverse (decl_loc_table, var_location_switch_text_section_1, NULL);
 }
 
+/* Create a new line number table.  */
+
+static dw_line_info_table *
+new_line_info_table (void)
+{
+  dw_line_info_table *table;
+
+  table = ggc_alloc_cleared_dw_line_info_table_struct ();
+  table->file_num = 1;
+  table->line_num = 1;
+  table->is_stmt = DWARF_LINE_DEFAULT_IS_STMT_START;
+
+  return table;
+}
+
+/* Lookup the "current" table into which we emit line info, so
+   that we don't have to do it for every source line.  */
+
+static void
+set_cur_line_info_table (section *sec)
+{
+  dw_line_info_table *table;
+
+  if (sec == text_section)
+    {
+      table = text_section_line_info;
+      if (!table)
+	{
+	  text_section_line_info = table = new_line_info_table ();
+	  table->end_label = text_end_label;
+	}
+    }
+  else if (sec == cold_text_section)
+    {
+      table = cold_text_section_line_info;
+      if (!table)
+	{
+	  cold_text_section_line_info = table = new_line_info_table ();
+	  table->end_label = cold_end_label;
+	}
+    }
+  else
+    {
+      const char *end_label;
+
+      if (flag_reorder_blocks_and_partition)
+	{
+	  if (in_cold_section_p)
+	    end_label = crtl->subsections.cold_section_end_label;
+	  else
+	    end_label = crtl->subsections.hot_section_end_label;
+	}
+      else
+	{
+	  char label[MAX_ARTIFICIAL_LABEL_BYTES];
+	  ASM_GENERATE_INTERNAL_LABEL (label, FUNC_END_LABEL,
+				       current_function_funcdef_no);
+	  end_label = ggc_strdup (label);
+	}
+
+      table = new_line_info_table ();
+      table->end_label = end_label;
+
+      VEC_safe_push (dw_line_info_table_p, gc, separate_line_info, table);
+    }
+
+  cur_line_info_table = table;
+}
+
+
 /* We need to reset the locations at the beginning of each
    function. We can't do this in the end_function hook, because the
    declarations that use the locations won't have been output when
@@ -22121,114 +22082,100 @@ var_location_switch_text_section (void)
 static void
 dwarf2out_begin_function (tree fun)
 {
-  if (function_section (fun) != text_section)
+  section *sec = function_section (fun);
+
+  if (sec != text_section)
     have_multiple_function_sections = true;
+
   if (flag_reorder_blocks_and_partition && !cold_text_section)
     {
       gcc_assert (current_function_decl == fun);
       cold_text_section = unlikely_text_section ();
       switch_to_section (cold_text_section);
       ASM_OUTPUT_LABEL (asm_out_file, cold_text_section_label);
-      switch_to_section (current_function_section ());
+      switch_to_section (sec);
     }
 
   dwarf2out_note_section_used ();
   call_site_count = 0;
   tail_call_site_count = 0;
+
+  set_cur_line_info_table (sec);
+}
+
+/* Add OPCODE+VAL as an entry at the end of the opcode array in TABLE.  */
+
+static void
+push_dw_line_info_entry (dw_line_info_table *table,
+			 enum dw_line_info_opcode opcode, unsigned int val)
+{
+  dw_line_info_entry e;
+  e.opcode = opcode;
+  e.val = val;
+  VEC_safe_push (dw_line_info_entry, gc, table->entries, &e);
 }
 
 /* Output a label to mark the beginning of a source code line entry
    and record information relating to this source line, in
    'line_info_table' for later output of the .debug_line section.  */
+/* ??? The discriminator parameter ought to be unsigned.  */
 
 static void
 dwarf2out_source_line (unsigned int line, const char *filename,
                        int discriminator, bool is_stmt)
 {
-  static bool last_is_stmt = true;
+  unsigned int file_num;
+  dw_line_info_table *table;
 
-  if (debug_info_level >= DINFO_LEVEL_NORMAL
-      && line != 0)
+  if (debug_info_level < DINFO_LEVEL_NORMAL || line == 0)
+    return;
+
+  switch_to_section (current_function_section ());
+
+  /* If requested, emit something human-readable.  */
+  if (flag_debug_asm)
+    fprintf (asm_out_file, "\t%s %s:%d\n", ASM_COMMENT_START, filename, line);
+
+  table = cur_line_info_table;
+  file_num = maybe_emit_file (lookup_filename (filename));
+
+  if (0 && file_num == table->file_num
+      && line == table->line_num
+      && discriminator == table->discrim_num
+      && is_stmt == table->is_stmt)
+    return;
+
+  if (DWARF2_ASM_LINE_DEBUG_INFO)
     {
-      int file_num = maybe_emit_file (lookup_filename (filename));
-
-      switch_to_section (current_function_section ());
-
-      /* If requested, emit something human-readable.  */
-      if (flag_debug_asm)
-	fprintf (asm_out_file, "\t%s %s:%d\n", ASM_COMMENT_START,
-		 filename, line);
-
-      if (DWARF2_ASM_LINE_DEBUG_INFO)
-	{
-	  /* Emit the .loc directive understood by GNU as.  */
-	  fprintf (asm_out_file, "\t.loc %d %d 0", file_num, line);
-	  if (is_stmt != last_is_stmt)
-	    {
-	      fprintf (asm_out_file, " is_stmt %d", is_stmt ? 1 : 0);
-	      last_is_stmt = is_stmt;
-	    }
-	  if (SUPPORTS_DISCRIMINATOR && discriminator != 0)
-	    fprintf (asm_out_file, " discriminator %d", discriminator);
-	  fputc ('\n', asm_out_file);
-
-	  /* Indicate that line number info exists.  */
-	  line_info_table_in_use++;
-	}
-      else if (function_section (current_function_decl) != text_section)
-	{
-	  dw_separate_line_info_ref line_info;
-	  targetm.asm_out.internal_label (asm_out_file,
-					  SEPARATE_LINE_CODE_LABEL,
-					  separate_line_info_table_in_use);
-
-	  /* Expand the line info table if necessary.  */
-	  if (separate_line_info_table_in_use
-	      == separate_line_info_table_allocated)
-	    {
-	      separate_line_info_table_allocated += LINE_INFO_TABLE_INCREMENT;
-	      separate_line_info_table
-		= GGC_RESIZEVEC (dw_separate_line_info_entry,
-				 separate_line_info_table,
-				 separate_line_info_table_allocated);
-	      memset (separate_line_info_table
-		       + separate_line_info_table_in_use,
-		      0,
-		      (LINE_INFO_TABLE_INCREMENT
-		       * sizeof (dw_separate_line_info_entry)));
-	    }
-
-	  /* Add the new entry at the end of the line_info_table.  */
-	  line_info
-	    = &separate_line_info_table[separate_line_info_table_in_use++];
-	  line_info->dw_file_num = file_num;
-	  line_info->dw_line_num = line;
-	  line_info->function = current_function_funcdef_no;
-	}
-      else
-	{
-	  dw_line_info_ref line_info;
-
-	  targetm.asm_out.internal_label (asm_out_file, LINE_CODE_LABEL,
-				     line_info_table_in_use);
-
-	  /* Expand the line info table if necessary.  */
-	  if (line_info_table_in_use == line_info_table_allocated)
-	    {
-	      line_info_table_allocated += LINE_INFO_TABLE_INCREMENT;
-	      line_info_table
-		= GGC_RESIZEVEC (dw_line_info_entry, line_info_table,
-				 line_info_table_allocated);
-	      memset (line_info_table + line_info_table_in_use, 0,
-		      LINE_INFO_TABLE_INCREMENT * sizeof (dw_line_info_entry));
-	    }
-
-	  /* Add the new entry at the end of the line_info_table.  */
-	  line_info = &line_info_table[line_info_table_in_use++];
-	  line_info->dw_file_num = file_num;
-	  line_info->dw_line_num = line;
-	}
+      /* Emit the .loc directive understood by GNU as.  */
+      fprintf (asm_out_file, "\t.loc %d %d 0", file_num, line);
+      if (is_stmt != table->is_stmt)
+	fprintf (asm_out_file, " is_stmt %d", is_stmt ? 1 : 0);
+      if (SUPPORTS_DISCRIMINATOR && discriminator != 0)
+	fprintf (asm_out_file, " discriminator %d", discriminator);
+      fputc ('\n', asm_out_file);
     }
+  else
+    {
+      unsigned int label_num = ++line_info_label_num;
+
+      targetm.asm_out.internal_label (asm_out_file, LINE_CODE_LABEL, label_num);
+
+      push_dw_line_info_entry (table, LI_set_address, label_num);
+      if (file_num != table->file_num)
+	push_dw_line_info_entry (table, LI_set_file, file_num);
+      if (discriminator != table->discrim_num)
+	push_dw_line_info_entry (table, LI_set_discriminator, discriminator);
+      if (is_stmt != table->is_stmt)
+	push_dw_line_info_entry (table, LI_negate_stmt, 0);
+      push_dw_line_info_entry (table, LI_set_line, line);
+    }
+
+  table->file_num = file_num;
+  table->line_num = line;
+  table->discrim_num = discriminator;
+  table->is_stmt = is_stmt;
+  table->in_use = true;
 }
 
 /* Record the beginning of a new source file.  */
@@ -22388,14 +22335,6 @@ dwarf2out_init (const char *filename ATTRIBUTE_UNUSED)
   abbrev_die_table_allocated = ABBREV_DIE_TABLE_INCREMENT;
   /* Zero-th entry is allocated, but unused.  */
   abbrev_die_table_in_use = 1;
-
-  /* Allocate the initial hunk of the line_info_table.  */
-  line_info_table = ggc_alloc_cleared_vec_dw_line_info_entry
-    (LINE_INFO_TABLE_INCREMENT);
-  line_info_table_allocated = LINE_INFO_TABLE_INCREMENT;
-
-  /* Zero-th entry is allocated, but unused.  */
-  line_info_table_in_use = 1;
 
   /* Allocate the pubtypes and pubnames vectors.  */
   pubname_table = VEC_alloc (pubname_entry, gc, 32);

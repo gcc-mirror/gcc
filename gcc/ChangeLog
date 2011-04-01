@@ -1,3 +1,34 @@
+2011-03-31  Richard Henderson  <rth@redhat.com>
+
+	* dwarf2out.c (dw_separate_line_info_ref): Remove.
+	(dw_separate_line_info_entry): Remove.
+	(enum dw_line_info_opcode): New.
+	(dw_line_info_entry): Use it.
+	(dw_line_info_table, dw_line_info_table_p): New.
+	(DWARF_LINE_OPCODE_BASE): Include dwarf3 opcodes.
+	(line_info_table, line_info_label_num): Remove.
+	(line_info_table_in_use): Remove.
+	(separate_line_info_table): Remove.
+	(separate_line_info_table_allocated): Remove.
+	(separate_line_info_table_in_use): Remove.
+	(LINE_INFO_TABLE_INCREMENT): Remove.
+	(line_info_label_num): New.
+	(cur_line_info_table): New.
+	(text_section_line_info, cold_text_section_line_info): New.
+	(separate_line_info): New.
+	(SEPARATE_LINE_CODE_LABEL): Remove.
+	(print_dwarf_line_table): Remove.
+	(debug_dwarf): Don't dump it.
+	(output_one_line_info_table): New.
+	(output_line_info): Use it.
+	(new_line_info_table): New.
+	(set_cur_line_info_table): New.
+	(dwarf2out_switch_text_section): Use it.
+	(dwarf2out_begin_function): Likewise.
+	(push_dw_line_info_entry): New.
+	(dwarf2out_source_line): Rewrite for new line info tables.
+	(dwarf2out_init): Remove dead initailizations.
+
 2011-03-31  Joseph Myers  <joseph@codesourcery.com>
 
 	* opts.h (cl_option): Add comments to fields.  Add bit-fields for
