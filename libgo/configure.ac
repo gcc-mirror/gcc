@@ -137,6 +137,7 @@ AC_SUBST(GOOS)
 
 dnl N.B. Keep in sync with gcc/testsuite/go.test/go-test.exp (go-set-goarch).
 is_386=no
+is_alpha=no
 is_arm=no
 is_m68k=no
 mips_abi=""
@@ -147,6 +148,10 @@ is_sparc64=no
 is_x86_64=no
 GOARCH=unknown
 case ${host} in
+  alpha*-*-*)
+    is_alpha=yes
+    GOARCH=alpha
+    ;;
   arm*-*-* | strongarm*-*-* | ep9312*-*-* | xscale-*-*)
     is_arm=yes
     GOARCH=arm
@@ -225,6 +230,7 @@ changequote([,])dnl
     ;;
 esac
 AM_CONDITIONAL(LIBGO_IS_386, test $is_386 = yes)
+AM_CONDITIONAL(LIBGO_IS_ALPHA, test $is_alpha = yes)
 AM_CONDITIONAL(LIBGO_IS_ARM, test $is_arm = yes)
 AM_CONDITIONAL(LIBGO_IS_M68K, test $is_m68k = yes)
 AM_CONDITIONAL(LIBGO_IS_MIPS, test $mips_abi != "")
