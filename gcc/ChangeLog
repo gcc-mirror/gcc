@@ -1,5 +1,14 @@
 2011-04-01  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	* recog.h (insn_data_d): Add n_generator_args.
+	* genoutput.c (data): Likewise.
+	(output_insn_data): Print it.
+	(max_opno, num_dups): Delete.
+	(scan_operands): Just fill in "d->operand[...]".
+	(gen_insn, gen_peephole, gen_expand, gen_split): Use get_pattern_stats.
+
+2011-04-01  Richard Sandiford  <richard.sandiford@linaro.org>
+
 	* gensupport.h (pattern_stats): New structure.
 	* gensupport.c (get_pattern_stats_1, get_pattern_stats): New functions.
 	* genemit.c (max_opno, max_dupno, max_scratch_opno): Delete.
