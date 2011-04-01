@@ -300,6 +300,7 @@ struct insn_data_d
   const insn_gen_fn genfun;
   const struct insn_operand_data *const operand;
 
+  const char n_generator_args;
   const char n_operands;
   const char n_dups;
   const char n_alternatives;
