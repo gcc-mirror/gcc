@@ -1,3 +1,10 @@
+2011-04-01  Richard Henderson  <rth@redhat.com>
+
+	PR 48400
+	* dwarf2out.c (dwarf2out_source_line): Disable discriminators
+	in strict mode before dwarf4.  Re-order tests to early out
+	before switching sections.
+
 2011-04-01  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* config/h8300/constraints.md: New file.
