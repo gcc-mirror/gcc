@@ -1,3 +1,15 @@
+2011-04-02  Kai Tietz  <ktietz@redhat.com>
+
+	* i386.c (ix86_is_msabi_thiscall): New helper function.
+	(ix86_is_type_thiscall): New helper function.
+	(ix86_comp_type_attributes): Handle thiscall for method-functions
+	special.
+	(init_cumulative_args): Likewise.
+	(find_drap_reg): Likewise.
+	(ix86_static_chain): Likewise.
+	(x86_this_parameter): Likewise.
+	(x86_output_mi_thunk): Likewise.
+
 2011-04-01  Olivier Hainque  <hainque@adacore.com>
             Nicolas Setton  <setton@adacore.com>
             Eric Botcazou  <ebotcazou@adacore.com>
