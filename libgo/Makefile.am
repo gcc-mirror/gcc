@@ -1547,30 +1547,40 @@ GOTESTFLAGS =
 
 # Check a package.
 CHECK = \
-	@GC="$(GOC) -L `${PWD_COMMAND}` -L `${PWD_COMMAND}`/.libs -Wl,-R,`${PWD_COMMAND}`/.libs"; \
+	GC="$(GOC) -L `${PWD_COMMAND}` -L `${PWD_COMMAND}`/.libs -Wl,-R,`${PWD_COMMAND}`/.libs"; \
 	export GC; \
 	RUNTESTFLAGS="$(RUNTESTFLAGS)"; \
 	export RUNTESTFLAGS; \
 	MAKE="$(MAKE)"; \
 	export MAKE; \
-	rm -f $@-testlog; \
+	rm -f $@-testsum $@-testlog; \
 	prefix=`if test "$(@D)" = "regexp"; then echo regexp-test; else dirname $(@D); fi`; \
 	test "$${prefix}" != "." || prefix="$(@D)"; \
 	if test "$(use_dejagnu)" = "yes"; then \
 	  $(SHELL) $(srcdir)/testsuite/gotest --dejagnu=yes --basedir=$(srcdir) --srcdir=$(srcdir)/go/$(@D) --prefix="libgo_$${prefix}" --pkgfiles="$(go_$(subst /,_,$(@D))_files)" --testname="$(@D)" $(GOTESTFLAGS); \
 	else \
 	  if $(SHELL) $(srcdir)/testsuite/gotest --basedir=$(srcdir) --srcdir=$(srcdir)/go/$(@D) --prefix="libgo_$${prefix}" --pkgfiles="$(go_$(subst /,_,$(@D))_files)" $(GOTESTFLAGS) >>$@-testlog 2>&1; then \
-	    echo "PASS: $(@D)"; \
-	    echo "PASS: $(@D)" >> libgo.sum; \
 	    echo "PASS: $(@D)" >> $@-testlog; \
-	    cat $@-testlog >> libgo.log; \
+	    echo "PASS: $(@D)"; \
+	    echo "PASS: $(@D)" > $@-testsum; \
 	  else \
 	    echo "FAIL: $(@D)" >> $@-testlog; \
 	    cat $@-testlog; \
-	    echo "FAIL: $(@D)" >> libgo.sum; \
-	    cat $@-testlog >> libgo.log; \
+	    echo "FAIL: $(@D)" > $@-testsum; \
 	    exit 1; \
 	  fi; \
+	fi
+
+# Check a package that is only tested if GCCGO_RUN_ALL_TESTS is set.
+CHECK_ON_REQUEST = \
+	if test "$$GCCGO_RUN_ALL_TESTS" != ""; then \
+	  $(CHECK); \
+	else \
+	  rm -f $@-testsum $@-testlog; \
+	  echo "Set GCCGO_RUN_ALL_TESTS in environment to run $(@D) test" > $@-testlog; \
+	  echo "UNTESTED: $(@D)" >> $@-testlog; \
+	  echo "UNTESTED: $(@D)"; \
+	  echo "UNTESTED: $(@D)" > $@-testsum; \
 	fi
 
 # Build all packages before checking any.
@@ -1603,19 +1613,19 @@ asn1/asn1.lo: $(go_asn1_files) bytes.gox fmt.gox io.gox os.gox reflect.gox \
 		strconv.gox strings.gox time.gox
 	$(BUILDPACKAGE)
 asn1/check: $(CHECK_DEPS)
-	$(CHECK)
+	@$(CHECK)
 .PHONY: asn1/check
 
 big/big.lo: $(go_big_files) fmt.gox rand.gox strings.gox os.gox
 	$(BUILDPACKAGE)
 big/check: $(CHECK_DEPS)
-	$(CHECK)
+	@$(CHECK)
 .PHONY: big/check
 
 bufio/bufio.lo: $(go_bufio_files) bytes.gox io.gox os.gox strconv.gox utf8.gox
 	$(BUILDPACKAGE)
 bufio/check: $(CHECK_DEPS)
-	$(CHECK)
+	@$(CHECK)
 .PHONY: bufio/check
 
 bytes/bytes.lo: $(go_bytes_files) io.gox os.gox unicode.gox utf8.gox
@@ -1623,52 +1633,52 @@ bytes/bytes.lo: $(go_bytes_files) io.gox os.gox unicode.gox utf8.gox
 bytes/index.lo: $(go_bytes_c_files) bytes/bytes.lo
 	$(LTCOMPILE) -c -o bytes/index.lo $(srcdir)/go/bytes/indexbyte.c
 bytes/check: $(CHECK_DEPS)
-	$(CHECK)
+	@$(CHECK)
 .PHONY: bytes/check
 
 cmath/cmath.lo: $(go_cmath_files) math.gox
 	$(BUILDPACKAGE)
 cmath/check: $(CHECK_DEPS)
-	$(CHECK)
+	@$(CHECK)
 .PHONY: cmath/check
 
 crypto/crypto.lo: $(go_crypto_files) hash.gox
 	$(BUILDPACKAGE)
 crypto/check: $(CHECK_DEPS)
-	$(CHECK)
+	@$(CHECK)
 .PHONY: crypto/check
 
 ebnf/ebnf.lo: $(go_ebnf_files) container/vector.gox go/scanner.gox \
 		go/token.gox os.gox strconv.gox unicode.gox utf8.gox
 	$(BUILDPACKAGE)
 ebnf/check: $(CHECK_DEPS)
-	$(CHECK)
+	@$(CHECK)
 .PHONY: ebnf/check
 
 exec/exec.lo: $(go_exec_files) os.gox strconv.gox strings.gox
 	$(BUILDPACKAGE)
 exec/check: $(CHECK_DEPS)
-	$(CHECK)
+	@$(CHECK)
 .PHONY: exec/check
 
 expvar/expvar.lo: $(go_expvar_files) bytes.gox fmt.gox http.gox json.gox \
 		log.gox os.gox runtime.gox strconv.gox sync.gox
 	$(BUILDPACKAGE)
 expvar/check: $(CHECK_DEPS)
-	$(CHECK)
+	@$(CHECK)
 .PHONY: expvar/check
 
 flag/flag.lo: $(go_flag_files) fmt.gox os.gox strconv.gox
 	$(BUILDPACKAGE)
 flag/check: $(CHECK_DEPS)
-	$(CHECK)
+	@$(CHECK)
 .PHONY: flag/check
 
 fmt/fmt.lo: $(go_fmt_files) bytes.gox io.gox math.gox os.gox reflect.gox \
 		strconv.gox strings.gox unicode.gox utf8.gox
 	$(BUILDPACKAGE)
 fmt/check: $(CHECK_DEPS)
-	$(CHECK)
+	@$(CHECK)
 .PHONY: fmt/check
 
 gob/gob.lo: $(go_gob_files) bufio.gox bytes.gox fmt.gox io.gox math.gox \
@@ -1676,20 +1686,20 @@ gob/gob.lo: $(go_gob_files) bufio.gox bytes.gox fmt.gox io.gox math.gox \
 		unicode.gox utf8.gox
 	$(BUILDPACKAGE)
 gob/check: $(CHECK_DEPS)
-	$(CHECK)
+	@$(CHECK)
 .PHONY: gob/check
 
 hash/hash.lo: $(go_hash_files) io.gox
 	$(BUILDPACKAGE)
 hash/check: $(CHECK_DEPS)
-	$(CHECK)
+	@$(CHECK)
 .PHONY: hash/check
 
 html/html.lo: $(go_html_files) bytes.gox io.gox os.gox strconv.gox strings.gox \
 		utf8.gox
 	$(BUILDPACKAGE)
 html/check: $(CHECK_DEPS)
-	$(CHECK)
+	@$(CHECK)
 .PHONY: html/check
 
 http/http.lo: $(go_http_files) bufio.gox bytes.gox container/vector.gox \
@@ -1699,19 +1709,19 @@ http/http.lo: $(go_http_files) bufio.gox bytes.gox container/vector.gox \
 		sort.gox strconv.gox strings.gox sync.gox time.gox utf8.gox
 	$(BUILDPACKAGE)
 http/check: $(CHECK_DEPS)
-	$(CHECK)
+	@$(CHECK)
 .PHONY: http/check
 
 image/image.lo: $(go_image_files) bufio.gox io.gox os.gox strconv.gox
 	$(BUILDPACKAGE)
 image/check: $(CHECK_DEPS)
-	$(CHECK)
+	@$(CHECK)
 .PHONY: image/check
 
 io/io.lo: $(go_io_files) os.gox sync.gox
 	$(BUILDPACKAGE)
 io/check: $(CHECK_DEPS)
-	$(CHECK)
+	@$(CHECK)
 .PHONY: io/check
 
 json/json.lo: $(go_json_files) bytes.gox container/vector.gox \
@@ -1720,27 +1730,27 @@ json/json.lo: $(go_json_files) bytes.gox container/vector.gox \
 		utf16.gox utf8.gox
 	$(BUILDPACKAGE)
 json/check: $(CHECK_DEPS)
-	$(CHECK)
+	@$(CHECK)
 .PHONY: json/check
 
 log/log.lo: $(go_log_files) bytes.gox fmt.gox io.gox runtime.gox os.gox \
 		sync.gox time.gox
 	$(BUILDPACKAGE)
 log/check: $(CHECK_DEPS)
-	$(CHECK)
+	@$(CHECK)
 .PHONY: log/check
 
 math/math.lo: $(go_math_files)
 	$(BUILDPACKAGE)
 math/check: $(CHECK_DEPS)
-	$(CHECK)
+	@$(CHECK)
 .PHONY: math/check
 
 mime/mime.lo: $(go_mime_files) bufio.gox bytes.gox os.gox strings.gox \
 		sync.gox unicode.gox
 	$(BUILDPACKAGE)
 mime/check: $(CHECK_DEPS)
-	$(CHECK)
+	@$(CHECK)
 .PHONY: mime/check
 
 net/net.lo: $(go_net_files) bytes.gox fmt.gox io.gox os.gox rand.gox \
@@ -1748,20 +1758,20 @@ net/net.lo: $(go_net_files) bytes.gox fmt.gox io.gox os.gox rand.gox \
 		time.gox
 	$(BUILDPACKAGE)
 net/check: $(CHECK_DEPS)
-	$(CHECK)
+	@$(CHECK_ON_REQUEST)
 .PHONY: net/check
 
 netchan/netchan.lo: $(go_netchan_files) gob.gox io.gox log.gox net.gox os.gox \
 		reflect.gox strconv.gox sync.gox time.gox
 	$(BUILDPACKAGE)
 netchan/check: $(CHECK_DEPS)
-	$(CHECK)
+	@$(CHECK)
 .PHONY: netchan/check
 
 os/os.lo: $(go_os_files) runtime.gox sync.gox syscall.gox
 	$(BUILDPACKAGE)
 os/check: $(CHECK_DEPS)
-	$(CHECK)
+	@$(CHECK)
 .PHONY: os/check
 
 patch/patch.lo: $(go_patch_files) bytes.gox compress/zlib.gox \
@@ -1769,33 +1779,33 @@ patch/patch.lo: $(go_patch_files) bytes.gox compress/zlib.gox \
 		path.gox strings.gox
 	$(BUILDPACKAGE)
 patch/check: $(CHECK_DEPS)
-	$(CHECK)
+	@$(CHECK)
 .PHONY: patch/check
 
 path/path.lo: $(go_path_files) os.gox strings.gox utf8.gox
 	$(BUILDPACKAGE)
 path/check: $(CHECK_DEPS)
-	$(CHECK)
+	@$(CHECK)
 .PHONY: path/check
 
 rand/rand.lo: $(go_rand_files) math.gox sync.gox
 	$(BUILDPACKAGE)
 rand/check: $(CHECK_DEPS)
-	$(CHECK)
+	@$(CHECK)
 .PHONY: rand/check
 
 reflect/reflect.lo: $(go_reflect_files) math.gox runtime.gox strconv.gox \
 		sync.gox
 	$(BUILDPACKAGE)
 reflect/check: $(CHECK_DEPS)
-	$(CHECK)
+	@$(CHECK)
 .PHONY: reflect/check
 
 regexp/regexp.lo: $(go_regexp_files) bytes.gox io.gox os.gox strings.gox \
 		utf8.gox
 	$(BUILDPACKAGE)
 regexp/check: $(CHECK_DEPS)
-	$(CHECK)
+	@$(CHECK)
 .PHONY: regexp/check
 
 rpc/rpc.lo: $(go_rpc_files) bufio.gox fmt.gox gob.gox http.gox io.gox log.gox \
@@ -1803,52 +1813,52 @@ rpc/rpc.lo: $(go_rpc_files) bufio.gox fmt.gox gob.gox http.gox io.gox log.gox \
 		sync.gox template.gox unicode.gox utf8.gox
 	$(BUILDPACKAGE)
 rpc/check: $(CHECK_DEPS)
-	$(CHECK)
+	@$(CHECK)
 .PHONY: rpc/check
 
 runtime/runtime.lo: $(go_runtime_files)
 	$(BUILDPACKAGE)
 runtime/check: $(CHECK_DEPS)
-	$(CHECK)
+	@$(CHECK)
 .PHONY: runtime/check
 
 scanner/scanner.lo: $(go_scanner_files) bytes.gox fmt.gox io.gox os.gox \
 		unicode.gox utf8.gox
 	$(BUILDPACKAGE)
 scanner/check: $(CHECK_DEPS)
-	$(CHECK)
+	@$(CHECK)
 .PHONY: scanner/check
 
 smtp/smtp.lo: $(go_smtp_files) crypto/tls.gox encoding/base64.gox io.gox \
 		net.gox net/textproto.gox os.gox strings.gox
 	$(BUILDPACKAGE)
 smtp/check: $(CHECK_DEPS)
-	$(CHECK)
+	@$(CHECK)
 .PHONY: smtp/check
 
 sort/sort.lo: $(go_sort_files)
 	$(BUILDPACKAGE)
 sort/check: $(CHECK_DEPS)
-	$(CHECK)
+	@$(CHECK)
 .PHONY: sort/check
 
 strconv/strconv.lo: $(go_strconv_files) bytes.gox math.gox os.gox strings.gox \
 		unicode.gox utf8.gox
 	$(BUILDPACKAGE)
 strconv/check: $(CHECK_DEPS)
-	$(CHECK)
+	@$(CHECK)
 .PHONY: strconv/check
 
 strings/strings.lo: $(go_strings_files) os.gox unicode.gox utf8.gox
 	$(BUILDPACKAGE)
 strings/check: $(CHECK_DEPS)
-	$(CHECK)
+	@$(CHECK)
 .PHONY: strings/check
 
 sync/sync.lo: $(go_sync_files) runtime.gox sync/atomic.gox
 	$(BUILDPACKAGE)
 sync/check: $(CHECK_DEPS)
-	$(CHECK)
+	@$(CHECK)
 .PHONY: sync/check
 
 syslog/syslog.lo: $(go_syslog_files) fmt.gox log.gox net.gox os.gox syscall.gox
@@ -1856,58 +1866,58 @@ syslog/syslog.lo: $(go_syslog_files) fmt.gox log.gox net.gox os.gox syscall.gox
 syslog/syslog_c.lo: $(go_syslog_c_files) syslog/syslog.lo
 	$(LTCOMPILE) -c -o $@ $(srcdir)/go/syslog/syslog_c.c
 syslog/check: $(CHECK_DEPS)
-	$(CHECK)
+	@$(CHECK_ON_REQUEST)
 .PHONY: syslog/check
 
 tabwriter/tabwriter.lo: $(go_tabwriter_files) bytes.gox io.gox os.gox utf8.gox
 	$(BUILDPACKAGE)
 tabwriter/check: $(CHECK_DEPS)
-	$(CHECK)
+	@$(CHECK)
 .PHONY: tabwriter/check
 
 template/template.lo: $(go_template_files) bytes.gox fmt.gox io.gox os.gox \
 		reflect.gox runtime.gox strings.gox container/vector.gox
 	$(BUILDPACKAGE)
 template/check: $(CHECK_DEPS)
-	$(CHECK)
+	@$(CHECK)
 .PHONY: template/check
 
 testing/testing.lo: $(go_testing_files) flag.gox fmt.gox os.gox regexp.gox \
 		runtime.gox runtime/pprof.gox time.gox
 	$(BUILDPACKAGE)
 testing/check: $(CHECK_DEPS)
-	$(CHECK)
+	@$(CHECK)
 .PHONY: testing/check
 
 time/time.lo: $(go_time_files) bytes.gox container/heap.gox io/ioutil.gox \
 		os.gox strconv.gox sync.gox syscall.gox
 	$(BUILDPACKAGE)
 time/check: $(CHECK_DEPS)
-	$(CHECK)
+	@$(CHECK)
 .PHONY: time/check
 
 try/try.lo: $(go_try_files) fmt.gox io.gox os.gox reflect.gox unicode.gox
 	$(BUILDPACKAGE)
 try/check: $(CHECK_DEPS)
-	$(CHECK)
+	@$(CHECK)
 .PHONY: try/check
 
 unicode/unicode.lo: $(go_unicode_files)
 	$(BUILDPACKAGE)
 unicode/check: $(CHECK_DEPS)
-	$(CHECK)
+	@$(CHECK)
 .PHONY: unicode/check
 
 utf16/utf16.lo: $(go_utf16_files) unicode.gox
 	$(BUILDPACKAGE)
 utf16/check: $(CHECK_DEPS)
-	$(CHECK)
+	@$(CHECK)
 .PHONY: utf16/check
 
 utf8/utf8.lo: $(go_utf8_files) unicode.gox
 	$(BUILDPACKAGE)
 utf8/check: $(CHECK_DEPS)
-	$(CHECK)
+	@$(CHECK)
 .PHONY: utf8/check
 
 websocket/websocket.lo: $(go_websocket_files) bufio.gox bytes.gox \
@@ -1916,14 +1926,14 @@ websocket/websocket.lo: $(go_websocket_files) bufio.gox bytes.gox \
 		rand.gox strings.gox
 	$(BUILDPACKAGE)
 websocket/check: $(CHECK_DEPS)
-	$(CHECK)
+	@$(CHECK)
 .PHONY: websocket/check
 
 xml/xml.lo: $(go_xml_files) bufio.gox bytes.gox fmt.gox io.gox os.gox \
 		reflect.gox strconv.gox strings.gox unicode.gox utf8.gox
 	$(BUILDPACKAGE)
 xml/check: $(CHECK_DEPS)
-	$(CHECK)
+	@$(CHECK)
 .PHONY: xml/check
 
 archive/tar.lo: $(go_archive_tar_files) bytes.gox io.gox os.gox strconv.gox \
@@ -1931,7 +1941,7 @@ archive/tar.lo: $(go_archive_tar_files) bytes.gox io.gox os.gox strconv.gox \
 	$(BUILDPACKAGE)
 archive/tar/check: $(CHECK_DEPS)
 	@$(MKDIR_P) archive/tar
-	$(CHECK)
+	@$(CHECK)
 .PHONY: archive/tar/check
 
 archive/zip.lo: $(go_archive_zip_files) bufio.gox bytes.gox \
@@ -1940,14 +1950,14 @@ archive/zip.lo: $(go_archive_zip_files) bufio.gox bytes.gox \
 	$(BUILDPACKAGE)
 archive/zip/check: $(CHECK_DEPS)
 	@$(MKDIR_P) archive/zip
-	$(CHECK)
+	@$(CHECK)
 .PHONY: archive/zip/check
 
 compress/bzip2.lo: $(go_compress_bzip2_files) bufio.gox io.gox os.gox sort.gox
 	$(BUILDPACKAGE)
 compress/bzip2/check: $(CHECK_DEPS)
 	@$(MKDIR_P) compress/bzip2
-	$(CHECK)
+	@$(CHECK)
 .PHONY: compress/bzip2/check
 
 compress/flate.lo: $(go_compress_flate_files) bufio.gox io.gox math.gox \
@@ -1955,7 +1965,7 @@ compress/flate.lo: $(go_compress_flate_files) bufio.gox io.gox math.gox \
 	$(BUILDPACKAGE)
 compress/flate/check: $(CHECK_DEPS)
 	@$(MKDIR_P) compress/flate
-	$(CHECK)
+	@$(CHECK)
 .PHONY: compress/flate/check
 
 compress/gzip.lo: $(go_compress_gzip_files) bufio.gox compress/flate.gox \
@@ -1963,14 +1973,14 @@ compress/gzip.lo: $(go_compress_gzip_files) bufio.gox compress/flate.gox \
 	$(BUILDPACKAGE)
 compress/gzip/check: $(CHECK_DEPS)
 	@$(MKDIR_P) compress/gzip
-	$(CHECK)
+	@$(CHECK)
 .PHONY: compress/gzip/check
 
 compress/lzw.lo: $(go_compress_lzw_files) bufio.gox fmt.gox io.gox os.gox
 	$(BUILDPACKAGE)
 compress/lzw/check: $(CHECK_DEPS)
 	@$(MKDIR_P) compress/lzw
-	$(CHECK)
+	@$(CHECK)
 .PHONY: compress/lzw/check
 
 compress/zlib.lo: $(go_compress_zlib_files) bufio.gox compress/flate.gox \
@@ -1978,77 +1988,77 @@ compress/zlib.lo: $(go_compress_zlib_files) bufio.gox compress/flate.gox \
 	$(BUILDPACKAGE)
 compress/zlib/check: $(CHECK_DEPS)
 	@$(MKDIR_P) compress/zlib
-	$(CHECK)
+	@$(CHECK)
 .PHONY: compress/zlib/check
 
 container/heap.lo: $(go_container_heap_files) sort.gox
 	$(BUILDPACKAGE)
 container/heap/check: $(CHECK_DEPS)
 	@$(MKDIR_P) container/heap
-	$(CHECK)
+	@$(CHECK)
 .PHONY: container/heap/check
 
 container/list.lo: $(go_container_list_files)
 	$(BUILDPACKAGE)
 container/list/check: $(CHECK_DEPS)
 	@$(MKDIR_P) container/list
-	$(CHECK)
+	@$(CHECK)
 .PHONY: container/list/check
 
 container/ring.lo: $(go_container_ring_files)
 	$(BUILDPACKAGE)
 container/ring/check: $(CHECK_DEPS)
 	@$(MKDIR_P) container/ring
-	$(CHECK)
+	@$(CHECK)
 .PHONY: container/ring/check
 
 container/vector.lo: $(go_container_vector_files)
 	$(BUILDPACKAGE)
 container/vector/check: $(CHECK_DEPS)
 	@$(MKDIR_P) container/vector
-	$(CHECK)
+	@$(CHECK)
 .PHONY: container/vector/check
 
 crypto/aes.lo: $(go_crypto_aes_files) os.gox strconv.gox
 	$(BUILDPACKAGE)
 crypto/aes/check: $(CHECK_DEPS)
 	@$(MKDIR_P) crypto/aes
-	$(CHECK)
+	@$(CHECK)
 .PHONY: crypto/aes/check
 
 crypto/block.lo: $(go_crypto_block_files) fmt.gox io.gox os.gox strconv.gox
 	$(BUILDPACKAGE)
 crypto/block/check: $(CHECK_DEPS)
 	@$(MKDIR_P) crypto/block
-	$(CHECK)
+	@$(CHECK)
 .PHONY: crypto/block/check
 
 crypto/blowfish.lo: $(go_crypto_blowfish_files) os.gox strconv.gox
 	$(BUILDPACKAGE)
 crypto/blowfish/check: $(CHECK_DEPS)
 	@$(MKDIR_P) crypto/blowfish
-	$(CHECK)
+	@$(CHECK)
 .PHONY: crypto/blowfish/check
 
 crypto/cast5.lo: $(go_crypto_cast5_files) os.gox
 	$(BUILDPACKAGE)
 crypto/cast5/check: $(CHECK_DEPS)
 	@$(MKDIR_P) crypto/cast5
-	$(CHECK)
+	@$(CHECK)
 .PHONY: crypto/cast5/check
 
 crypto/cipher.lo: $(go_crypto_cipher_files) io.gox os.gox
 	$(BUILDPACKAGE)
 crypto/cipher/check: $(CHECK_DEPS)
 	@$(MKDIR_P) crypto/cipher
-	$(CHECK)
+	@$(CHECK)
 .PHONY: crypto/cipher/check
 
 crypto/dsa.lo: $(go_crypto_dsa_files) big.gox io.gox os.gox
 	$(BUILDPACKAGE)
 crypto/dsa/check: $(CHECK_DEPS)
 	@$(MKDIR_P) crypto/dsa
-	$(CHECK)
+	@$(CHECK)
 .PHONY: crypto/dsa/check
 
 crypto/ecdsa.lo: $(go_crypto_ecdsa_files) big.gox crypto/elliptic.gox io.gox \
@@ -2056,14 +2066,14 @@ crypto/ecdsa.lo: $(go_crypto_ecdsa_files) big.gox crypto/elliptic.gox io.gox \
 	$(BUILDPACKAGE)
 crypto/ecdsa/check: $(CHECK_DEPS)
 	@$(MKDIR_P) crypto/ecdsa
-	$(CHECK)
+	@$(CHECK)
 .PHONY: crypto/ecdsa/check
 
 crypto/elliptic.lo: $(go_crypto_elliptic_files) big.gox io.gox os.gox sync.gox
 	$(BUILDPACKAGE)
 crypto/elliptic/check: $(CHECK_DEPS)
 	@$(MKDIR_P) crypto/elliptic
-	$(CHECK)
+	@$(CHECK)
 .PHONY: crypto/elliptic/check
 
 crypto/hmac.lo: $(go_crypto_hmac_files) crypto/md5.gox crypto/sha1.gox \
@@ -2071,21 +2081,21 @@ crypto/hmac.lo: $(go_crypto_hmac_files) crypto/md5.gox crypto/sha1.gox \
 	$(BUILDPACKAGE)
 crypto/hmac/check: $(CHECK_DEPS)
 	@$(MKDIR_P) crypto/hmac
-	$(CHECK)
+	@$(CHECK)
 .PHONY: crypto/hmac/check
 
 crypto/md4.lo: $(go_crypto_md4_files) crypto.gox hash.gox os.gox
 	$(BUILDPACKAGE)
 crypto/md4/check: $(CHECK_DEPS)
 	@$(MKDIR_P) crypto/md4
-	$(CHECK)
+	@$(CHECK)
 .PHONY: crypto/md4/check
 
 crypto/md5.lo: $(go_crypto_md5_files) crypto.gox hash.gox os.gox
 	$(BUILDPACKAGE)
 crypto/md5/check: $(CHECK_DEPS)
 	@$(MKDIR_P) crypto/md5
-	$(CHECK)
+	@$(CHECK)
 .PHONY: crypto/md5/check
 
 crypto/ocsp.lo: $(go_crypto_ocsp_files) asn1.gox crypto.gox crypto/rsa.gox \
@@ -2093,7 +2103,7 @@ crypto/ocsp.lo: $(go_crypto_ocsp_files) asn1.gox crypto.gox crypto/rsa.gox \
 	$(BUILDPACKAGE)
 crypto/ocsp/check: $(CHECK_DEPS)
 	@$(MKDIR_P) crypto/ocsp
-	$(CHECK)
+	@$(CHECK)
 .PHONY: crypto/ocsp/check
 
 crypto/openpgp.lo: $(go_crypto_openpgp_files) crypto.gox crypto/dsa.gox \
@@ -2103,7 +2113,7 @@ crypto/openpgp.lo: $(go_crypto_openpgp_files) crypto.gox crypto/dsa.gox \
 	$(BUILDPACKAGE)
 crypto/openpgp/check: $(CHECK_DEPS)
 	@$(MKDIR_P) crypto/openpgp
-	$(CHECK)
+	@$(CHECK)
 .PHONY: crypto/openpgp/check
 
 crypto/rand.lo: $(go_crypto_rand_files) bufio.gox crypto/aes.gox io.gox \
@@ -2111,21 +2121,21 @@ crypto/rand.lo: $(go_crypto_rand_files) bufio.gox crypto/aes.gox io.gox \
 	$(BUILDPACKAGE)
 crypto/rand/check: $(CHECK_DEPS)
 	@$(MKDIR_P) crypto/rand
-	$(CHECK)
+	@$(CHECK)
 .PHONY: crypto/rand/check
 
 crypto/rc4.lo: $(go_crypto_rc4_files) os.gox strconv.gox
 	$(BUILDPACKAGE)
 crypto/rc4/check: $(CHECK_DEPS)
 	@$(MKDIR_P) crypto/rc4
-	$(CHECK)
+	@$(CHECK)
 .PHONY: crypto/rc4/check
 
 crypto/ripemd160.lo: $(go_crypto_ripemd160_files) crypto.gox hash.gox os.gox
 	$(BUILDPACKAGE)
 crypto/ripemd160/check: $(CHECK_DEPS)
 	@$(MKDIR_P) crypto/ripemd160
-	$(CHECK)
+	@$(CHECK)
 .PHONY: crypto/ripemd160/check
 
 crypto/rsa.lo: $(go_crypto_rsa_files) big.gox crypto.gox crypto/sha1.gox \
@@ -2133,35 +2143,35 @@ crypto/rsa.lo: $(go_crypto_rsa_files) big.gox crypto.gox crypto/sha1.gox \
 	$(BUILDPACKAGE)
 crypto/rsa/check: $(CHECK_DEPS)
 	@$(MKDIR_P) crypto/rsa
-	$(CHECK)
+	@$(CHECK)
 .PHONY: crypto/rsa/check
 
 crypto/sha1.lo: $(go_crypto_sha1_files) crypto.gox hash.gox os.gox
 	$(BUILDPACKAGE)
 crypto/sha1/check: $(CHECK_DEPS)
 	@$(MKDIR_P) crypto/sha1
-	$(CHECK)
+	@$(CHECK)
 .PHONY: crypto/sha1/check
 
 crypto/sha256.lo: $(go_crypto_sha256_files) crypto.gox hash.gox os.gox
 	$(BUILDPACKAGE)
 crypto/sha256/check: $(CHECK_DEPS)
 	@$(MKDIR_P) crypto/sha256
-	$(CHECK)
+	@$(CHECK)
 .PHONY: crypto/sha256/check
 
 crypto/sha512.lo: $(go_crypto_sha512_files) crypto.gox hash.gox os.gox
 	$(BUILDPACKAGE)
 crypto/sha512/check: $(CHECK_DEPS)
 	@$(MKDIR_P) crypto/sha512
-	$(CHECK)
+	@$(CHECK)
 .PHONY: crypto/sha512/check
 
 crypto/subtle.lo: $(go_crypto_subtle_files)
 	$(BUILDPACKAGE)
 crypto/subtle/check: $(CHECK_DEPS)
 	@$(MKDIR_P) crypto/subtle
-	$(CHECK)
+	@$(CHECK)
 .PHONY: crypto/subtle/check
 
 crypto/tls.lo: $(go_crypto_tls_files) big.gox bufio.gox bytes.gox \
@@ -2174,14 +2184,14 @@ crypto/tls.lo: $(go_crypto_tls_files) big.gox bufio.gox bytes.gox \
 	$(BUILDPACKAGE)
 crypto/tls/check: $(CHECK_DEPS)
 	@$(MKDIR_P) crypto/tls
-	$(CHECK)
+	@$(CHECK)
 .PHONY: crypto/tls/check
 
 crypto/twofish.lo: $(go_crypto_twofish_files) os.gox strconv.gox
 	$(BUILDPACKAGE)
 crypto/twofish/check: $(CHECK_DEPS)
 	@$(MKDIR_P) crypto/twofish
-	$(CHECK)
+	@$(CHECK)
 .PHONY: crypto/twofish/check
 
 crypto/x509.lo: $(go_crypto_x509_files) asn1.gox big.gox container/vector.gox \
@@ -2190,14 +2200,14 @@ crypto/x509.lo: $(go_crypto_x509_files) asn1.gox big.gox container/vector.gox \
 	$(BUILDPACKAGE)
 crypto/x509/check: $(CHECK_DEPS)
 	@$(MKDIR_P) crypto/x509
-	$(CHECK)
+	@$(CHECK)
 .PHONY: crypto/x509/check
 
 crypto/xtea.lo: $(go_crypto_xtea_files) os.gox strconv.gox
 	$(BUILDPACKAGE)
 crypto/xtea/check: $(CHECK_DEPS)
 	@$(MKDIR_P) crypto/xtea
-	$(CHECK)
+	@$(CHECK)
 .PHONY: crypto/xtea/check
 
 crypto/openpgp/armor.lo: $(go_crypto_openpgp_armor_files) bytes.gox \
@@ -2206,14 +2216,14 @@ crypto/openpgp/armor.lo: $(go_crypto_openpgp_armor_files) bytes.gox \
 	$(BUILDPACKAGE)
 crypto/openpgp/armor/check: $(CHECK_DEPS)
 	@$(MKDIR_P) crypto/openpgp/armor
-	$(CHECK)
+	@$(CHECK)
 .PHONY: crypto/openpgp/armor/check
 
 crypto/openpgp/error.lo: $(go_crypto_openpgp_error_files) strconv.gox
 	$(BUILDPACKAGE)
 crypto/openpgp/error/check: $(CHECK_DEPS)
 	@$(MKDIR_P) crypto/openpgp/error
-	$(CHECK)
+	@$(CHECK)
 .PHONY: crypto/openpgp/error/check
 
 crypto/openpgp/packet.lo: $(go_crypto_openpgp_packet_files) big.gox bytes.gox \
@@ -2226,7 +2236,7 @@ crypto/openpgp/packet.lo: $(go_crypto_openpgp_packet_files) big.gox bytes.gox \
 	$(BUILDPACKAGE)
 crypto/openpgp/packet/check: $(CHECK_DEPS)
 	@$(MKDIR_P) crypto/openpgp/packet
-	$(CHECK)
+	@$(CHECK)
 .PHONY: crypto/openpgp/packet/check
 
 crypto/openpgp/s2k.lo: $(go_crypto_openpgp_s2k_files) crypto.gox \
@@ -2236,14 +2246,14 @@ crypto/openpgp/s2k.lo: $(go_crypto_openpgp_s2k_files) crypto.gox \
 	$(BUILDPACKAGE)
 crypto/openpgp/s2k/check: $(CHECK_DEPS)
 	@$(MKDIR_P) crypto/openpgp/s2k
-	$(CHECK)
+	@$(CHECK)
 .PHONY: crypto/openpgp/s2k/check
 
 debug/dwarf.lo: $(go_debug_dwarf_files) encoding/binary.gox os.gox strconv.gox
 	$(BUILDPACKAGE)
 debug/dwarf/check: $(CHECK_DEPS)
 	@$(MKDIR_P) debug/dwarf
-	$(CHECK)
+	@$(CHECK)
 .PHONY: debug/dwarf/check
 
 debug/elf.lo: $(go_debug_elf_files) bytes.gox debug/dwarf.gox \
@@ -2251,7 +2261,7 @@ debug/elf.lo: $(go_debug_elf_files) bytes.gox debug/dwarf.gox \
 	$(BUILDPACKAGE)
 debug/elf/check: $(CHECK_DEPS)
 	@$(MKDIR_P) debug/elf
-	$(CHECK)
+	@$(CHECK)
 .PHONY: debug/elf/check
 
 debug/gosym.lo: $(go_debug_gosym_files) encoding/binary.gox fmt.gox os.gox \
@@ -2259,7 +2269,7 @@ debug/gosym.lo: $(go_debug_gosym_files) encoding/binary.gox fmt.gox os.gox \
 	$(BUILDPACKAGE)
 debug/gosym/check: $(CHECK_DEPS)
 	@$(MKDIR_P) debug/gosym
-	$(CHECK)
+	@$(CHECK)
 .PHONY: debug/gosym/check
 
 debug/macho.lo: $(go_debug_macho_files) bytes.gox debug/dwarf.gox \
@@ -2267,7 +2277,7 @@ debug/macho.lo: $(go_debug_macho_files) bytes.gox debug/dwarf.gox \
 	$(BUILDPACKAGE)
 debug/macho/check: $(CHECK_DEPS)
 	@$(MKDIR_P) debug/macho
-	$(CHECK)
+	@$(CHECK)
 .PHONY: debug/macho/check
 
 debug/pe.lo: $(go_debug_pe_files) debug/dwarf.gox \
@@ -2275,7 +2285,7 @@ debug/pe.lo: $(go_debug_pe_files) debug/dwarf.gox \
 	$(BUILDPACKAGE)
 debug/pe/check: $(CHECK_DEPS)
 	@$(MKDIR_P) debug/pe
-	$(CHECK)
+	@$(CHECK)
 .PHONY: debug/pe/check
 
 debug/proc.lo: $(go_debug_proc_files) container/vector.gox fmt.gox \
@@ -2284,28 +2294,28 @@ debug/proc.lo: $(go_debug_proc_files) container/vector.gox fmt.gox \
 	$(BUILDPACKAGE)
 debug/proc/check: $(CHECK_DEPS)
 	@$(MKDIR_P) debug/proc
-	$(CHECK)
+	@$(CHECK)
 .PHONY: debug/proc/check
 
 encoding/ascii85.lo: $(go_encoding_ascii85_files) io.gox os.gox strconv.gox
 	$(BUILDPACKAGE)
 encoding/ascii85/check: $(CHECK_DEPS)
 	@$(MKDIR_P) encoding/ascii85
-	$(CHECK)
+	@$(CHECK)
 .PHONY: encoding/ascii85/check
 
 encoding/base32.lo: $(go_encoding_base32_files) io.gox os.gox strconv.gox
 	$(BUILDPACKAGE)
 encoding/base32/check: $(CHECK_DEPS)
 	@$(MKDIR_P) encoding/base32
-	$(CHECK)
+	@$(CHECK)
 .PHONY: encoding/base32/check
 
 encoding/base64.lo: $(go_encoding_base64_files) io.gox os.gox strconv.gox
 	$(BUILDPACKAGE)
 encoding/base64/check: $(CHECK_DEPS)
 	@$(MKDIR_P) encoding/base64
-	$(CHECK)
+	@$(CHECK)
 .PHONY: encoding/base64/check
 
 encoding/binary.lo: $(go_encoding_binary_files) io.gox math.gox os.gox \
@@ -2313,7 +2323,7 @@ encoding/binary.lo: $(go_encoding_binary_files) io.gox math.gox os.gox \
 	$(BUILDPACKAGE)
 encoding/binary/check: $(CHECK_DEPS)
 	@$(MKDIR_P) encoding/binary
-	$(CHECK)
+	@$(CHECK)
 .PHONY: encoding/binary/check
 
 encoding/git85.lo: $(go_encoding_git85_files) bytes.gox io.gox os.gox \
@@ -2321,28 +2331,28 @@ encoding/git85.lo: $(go_encoding_git85_files) bytes.gox io.gox os.gox \
 	$(BUILDPACKAGE)
 encoding/git85/check: $(CHECK_DEPS)
 	@$(MKDIR_P) encoding/git85
-	$(CHECK)
+	@$(CHECK)
 .PHONY: encoding/git85/check
 
 encoding/hex.lo: $(go_encoding_hex_files) os.gox strconv.gox
 	$(BUILDPACKAGE)
 encoding/hex/check: $(CHECK_DEPS)
 	@$(MKDIR_P) encoding/hex
-	$(CHECK)
+	@$(CHECK)
 .PHONY: encoding/hex/check
 
 encoding/line.lo: $(go_encoding_line_files) io.gox os.gox
 	$(BUILDPACKAGE)
 encoding/line/check: $(CHECK_DEPS)
 	@$(MKDIR_P) encoding/line
-	$(CHECK)
+	@$(CHECK)
 .PHONY: encoding/line/check
 
 encoding/pem.lo: $(go_encoding_pem_files) bytes.gox encoding/base64.gox
 	$(BUILDPACKAGE)
 encoding/pem/check: $(CHECK_DEPS)
 	@$(MKDIR_P) encoding/pem
-	$(CHECK)
+	@$(CHECK)
 .PHONY: encoding/pem/check
 
 exp/datafmt.lo: $(go_exp_datafmt_files) bytes.gox container/vector.gox \
@@ -2351,14 +2361,14 @@ exp/datafmt.lo: $(go_exp_datafmt_files) bytes.gox container/vector.gox \
 	$(BUILDPACKAGE)
 exp/datafmt/check: $(CHECK_DEPS)
 	@$(MKDIR_P) exp/datafmt
-	$(CHECK)
+	@$(CHECK)
 .PHONY: exp/datafmt/check
 
 exp/draw.lo: $(go_exp_draw_files) image.gox os.gox
 	$(BUILDPACKAGE)
 exp/draw/check: $(CHECK_DEPS)
 	@$(MKDIR_P) exp/draw
-	$(CHECK)
+	@$(CHECK)
 .PHONY: exp/draw/check
 
 exp/eval.lo: $(go_exp_eval_files) big.gox go/ast.gox go/parser.gox \
@@ -2367,7 +2377,7 @@ exp/eval.lo: $(go_exp_eval_files) big.gox go/ast.gox go/parser.gox \
 	$(BUILDPACKAGE)
 exp/eval/check: $(CHECK_DEPS)
 	@$(MKDIR_P) exp/eval
-	$(CHECK)
+	@$(CHECK)
 .PHONY: exp/eval/check
 
 go/ast.lo: $(go_go_ast_files) bytes.gox fmt.gox go/scanner.gox go/token.gox \
@@ -2375,7 +2385,7 @@ go/ast.lo: $(go_go_ast_files) bytes.gox fmt.gox go/scanner.gox go/token.gox \
 	$(BUILDPACKAGE)
 go/ast/check: $(CHECK_DEPS)
 	@$(MKDIR_P) go/ast
-	$(CHECK)
+	@$(CHECK)
 .PHONY: go/ast/check
 
 go/doc.lo: $(go_go_doc_files) go/ast.gox go/token.gox io.gox regexp.gox \
@@ -2383,7 +2393,7 @@ go/doc.lo: $(go_go_doc_files) go/ast.gox go/token.gox io.gox regexp.gox \
 	$(BUILDPACKAGE)
 go/doc/check: $(CHECK_DEPS)
 	@$(MKDIR_P) go/doc
-	$(CHECK)
+	@$(CHECK)
 .PHONY: go/doc/check
 
 go/parser.lo: $(go_go_parser_files) bytes.gox fmt.gox go/ast.gox \
@@ -2392,7 +2402,7 @@ go/parser.lo: $(go_go_parser_files) bytes.gox fmt.gox go/ast.gox \
 	$(BUILDPACKAGE)
 go/parser/check: $(CHECK_DEPS)
 	@$(MKDIR_P) go/parser
-	$(CHECK)
+	@$(CHECK)
 .PHONY: go/parser/check
 
 go/printer.lo: $(go_go_printer_files) bytes.gox fmt.gox go/ast.gox \
@@ -2401,7 +2411,7 @@ go/printer.lo: $(go_go_printer_files) bytes.gox fmt.gox go/ast.gox \
 	$(BUILDPACKAGE)
 go/printer/check: $(CHECK_DEPS)
 	@$(MKDIR_P) go/printer
-	$(CHECK)
+	@$(CHECK)
 .PHONY: go/printer/check
 
 go/scanner.lo: $(go_go_scanner_files) bytes.gox container/vector.gox fmt.gox \
@@ -2410,14 +2420,14 @@ go/scanner.lo: $(go_go_scanner_files) bytes.gox container/vector.gox fmt.gox \
 	$(BUILDPACKAGE)
 go/scanner/check: $(CHECK_DEPS)
 	@$(MKDIR_P) go/scanner
-	$(CHECK)
+	@$(CHECK)
 .PHONY: go/scanner/check
 
 go/token.lo: $(go_go_token_files) fmt.gox strconv.gox
 	$(BUILDPACKAGE)
 go/token/check: $(CHECK_DEPS)
 	@$(MKDIR_P) go/token
-	$(CHECK)
+	@$(CHECK)
 .PHONY: go/token/check
 
 go/typechecker.lo: $(go_go_typechecker_files) fmt.gox go/ast.gox go/token.gox \
@@ -2425,35 +2435,35 @@ go/typechecker.lo: $(go_go_typechecker_files) fmt.gox go/ast.gox go/token.gox \
 	$(BUILDPACKAGE)
 go/typechecker/check: $(CHECK_DEPS)
 	@$(MKDIR_P) go/typechecker
-	$(CHECK)
+	@$(CHECK)
 .PHONY: go/typechecker/check
 
 hash/adler32.lo: $(go_hash_adler32_files) hash.gox os.gox
 	$(BUILDPACKAGE)
 hash/adler32/check: $(CHECK_DEPS)
 	@$(MKDIR_P) hash/adler32
-	$(CHECK)
+	@$(CHECK)
 .PHONY: hash/adler32/check
 
 hash/crc32.lo: $(go_hash_crc32_files) hash.gox os.gox
 	$(BUILDPACKAGE)
 hash/crc32/check: $(CHECK_DEPS)
 	@$(MKDIR_P) hash/crc32
-	$(CHECK)
+	@$(CHECK)
 .PHONY: hash/crc32/check
 
 hash/crc64.lo: $(go_hash_crc64_files) hash.gox os.gox
 	$(BUILDPACKAGE)
 hash/crc64/check: $(CHECK_DEPS)
 	@$(MKDIR_P) hash/crc64
-	$(CHECK)
+	@$(CHECK)
 .PHONY: hash/crc64/check
 
 hash/fnv.lo: $(go_hash_fnv_files) encoding/binary.gox hash.gox os.gox
 	$(BUILDPACKAGE)
 hash/fnv/check: $(CHECK_DEPS)
 	@$(MKDIR_P) hash/fnv
-	$(CHECK)
+	@$(CHECK)
 .PHONY: hash/fnv/check
 
 http/cgi.lo: $(go_http_cgi_files) bufio.gox bytes.gox encoding/line.gox \
@@ -2462,7 +2472,7 @@ http/cgi.lo: $(go_http_cgi_files) bufio.gox bytes.gox encoding/line.gox \
 	$(BUILDPACKAGE)
 http/cgi/check: $(CHECK_DEPS)
 	@$(MKDIR_P) http/cgi
-	$(CHECK)
+	@$(CHECK)
 .PHONY: http/cgi/check
 
 http/httptest.lo: $(go_http_httptest_files) bytes.gox fmt.gox http.gox \
@@ -2470,7 +2480,7 @@ http/httptest.lo: $(go_http_httptest_files) bytes.gox fmt.gox http.gox \
 	$(BUILDPACKAGE)
 http/httptest/check: $(CHECK_DEPS)
 	@$(MKDIR_P) http/httptest
-	$(CHECK)
+	@$(CHECK)
 .PHONY: http/httptest/check
 
 http/pprof.lo: $(go_http_pprof_files) bufio.gox fmt.gox http.gox os.gox \
@@ -2478,14 +2488,14 @@ http/pprof.lo: $(go_http_pprof_files) bufio.gox fmt.gox http.gox os.gox \
 	$(BUILDPACKAGE)
 http/pprof/check: $(CHECK_DEPS)
 	@$(MKDIR_P) http/pprof
-	$(CHECK)
+	@$(CHECK)
 .PHONY: http/pprof/check
 
 image/jpeg.lo: $(go_image_jpeg_files) bufio.gox image.gox io.gox os.gox
 	$(BUILDPACKAGE)
 image/jpeg/check: $(CHECK_DEPS)
 	@$(MKDIR_P) image/jpeg
-	$(CHECK)
+	@$(CHECK)
 .PHONY: image/jpeg/check
 
 image/png.lo: $(go_image_png_files) bufio.gox compress/zlib.gox fmt.gox \
@@ -2493,7 +2503,7 @@ image/png.lo: $(go_image_png_files) bufio.gox compress/zlib.gox fmt.gox \
 	$(BUILDPACKAGE)
 image/png/check: $(CHECK_DEPS)
 	@$(MKDIR_P) image/png
-	$(CHECK)
+	@$(CHECK)
 .PHONY: image/png/check
 
 index/suffixarray.lo: $(go_index_suffixarray_files) bytes.gox regexp.gox \
@@ -2501,7 +2511,7 @@ index/suffixarray.lo: $(go_index_suffixarray_files) bytes.gox regexp.gox \
 	$(BUILDPACKAGE)
 index/suffixarray/check: $(CHECK_DEPS)
 	@$(MKDIR_P) index/suffixarray
-	$(CHECK)
+	@$(CHECK)
 .PHONY: index/suffixarray/check
 
 io/ioutil.lo: $(go_io_ioutil_files) bytes.gox io.gox os.gox path/filepath.gox \
@@ -2509,7 +2519,7 @@ io/ioutil.lo: $(go_io_ioutil_files) bytes.gox io.gox os.gox path/filepath.gox \
 	$(BUILDPACKAGE)
 io/ioutil/check: $(CHECK_DEPS)
 	@$(MKDIR_P) io/ioutil
-	$(CHECK)
+	@$(CHECK)
 .PHONY: io/ioutil/check
 
 mime/multipart.lo: $(go_mime_multipart_files) bufio.gox bytes.gox io.gox \
@@ -2517,7 +2527,7 @@ mime/multipart.lo: $(go_mime_multipart_files) bufio.gox bytes.gox io.gox \
 	$(BUILDPACKAGE)
 mime/multipart/check: $(CHECK_DEPS)
 	@$(MKDIR_P) mime/multipart
-	$(CHECK)
+	@$(CHECK)
 .PHONY: mime/multipart/check
 
 net/dict.lo: $(go_net_dict_files) container/vector.gox net/textproto.gox \
@@ -2530,21 +2540,21 @@ net/textproto.lo: $(go_net_textproto_files) bufio.gox bytes.gox \
 	$(BUILDPACKAGE)
 net/textproto/check: $(CHECK_DEPS)
 	@$(MKDIR_P) net/textproto
-	$(CHECK)
+	@$(CHECK)
 .PHONY: net/textproto/check
 
 os/inotify.lo: $(go_os_inotify_files) fmt.gox os.gox strings.gox syscall.gox
 	$(BUILDPACKAGE)
 os/inotify/check: $(CHECK_DEPS)
 	@$(MKDIR_P) os/inotify
-	$(CHECK)
+	@$(CHECK)
 .PHONY: os/inotify/check
 
 os/signal.lo: $(go_os_signal_files) runtime.gox strconv.gox
 	$(BUILDPACKAGE)
 os/signal/check: $(CHECK_DEPS)
 	@$(MKDIR_P) os/signal
-	$(CHECK)
+	@$(CHECK)
 .PHONY: os/signal/check
 
 unix.go: $(srcdir)/go/os/signal/mkunix.sh sysinfo.go
@@ -2556,7 +2566,7 @@ path/filepath.lo: $(go_path_filepath_files) bytes.gox os.gox sort.gox \
 	$(BUILDPACKAGE)
 path/filepath/check: $(CHECK_DEPS)
 	@$(MKDIR_P) path/filepath
-	$(CHECK)
+	@$(CHECK)
 .PHONY: path/filepath/check
 
 rpc/jsonrpc.lo: $(go_rpc_jsonrpc_files) fmt.gox io.gox json.gox net.gox \
@@ -2564,7 +2574,7 @@ rpc/jsonrpc.lo: $(go_rpc_jsonrpc_files) fmt.gox io.gox json.gox net.gox \
 	$(BUILDPACKAGE)
 rpc/jsonrpc/check: $(CHECK_DEPS)
 	@$(MKDIR_P) rpc/jsonrpc
-	$(CHECK)
+	@$(CHECK)
 .PHONY: rpc/jsonrpc/check
 
 runtime/debug.lo: $(go_runtime_debug_files) bytes.gox fmt.gox io/ioutil.gox \
@@ -2572,7 +2582,7 @@ runtime/debug.lo: $(go_runtime_debug_files) bytes.gox fmt.gox io/ioutil.gox \
 	$(BUILDPACKAGE)
 runtime/debug/check: $(CHECK_DEPS)
 	@$(MKDIR_P) runtime/debug
-	$(CHECK)
+	@$(CHECK)
 .PHONY: runtime/debug/check
 
 runtime/pprof.lo: $(go_runtime_pprof_files) bufio.gox fmt.gox io.gox os.gox \
@@ -2580,7 +2590,7 @@ runtime/pprof.lo: $(go_runtime_pprof_files) bufio.gox fmt.gox io.gox os.gox \
 	$(BUILDPACKAGE)
 runtime/pprof/check: $(CHECK_DEPS)
 	@$(MKDIR_P) runtime/pprof
-	$(CHECK)
+	@$(CHECK)
 .PHONY: runtime/pprof/check
 
 sync/atomic.lo: $(go_sync_atomic_files)
@@ -2589,14 +2599,14 @@ sync/atomic_c.lo: $(go_sync_atomic_c_files) sync/atomic.lo
 	$(LTCOMPILE) -c -o $@ $(srcdir)/go/sync/atomic/atomic.c
 sync/atomic/check: $(CHECK_DEPS)
 	@$(MKDIR_P) sync/atomic
-	$(CHECK)
+	@$(CHECK)
 .PHONY: sync/atomic/check
 
 testing/iotest.lo: $(go_testing_iotest_files) io.gox log.gox os.gox
 	$(BUILDPACKAGE)
 testing/iotest/check: $(CHECK_DEPS)
 	@$(MKDIR_P) testing/iotest
-	$(CHECK)
+	@$(CHECK)
 .PHONY: testing/iotest/check
 
 testing/quick.lo: $(go_testing_quick_files) flag.gox fmt.gox math.gox os.gox \
@@ -2604,7 +2614,7 @@ testing/quick.lo: $(go_testing_quick_files) flag.gox fmt.gox math.gox os.gox \
 	$(BUILDPACKAGE)
 testing/quick/check: $(CHECK_DEPS)
 	@$(MKDIR_P) testing/quick
-	$(CHECK)
+	@$(CHECK)
 .PHONY: testing/quick/check
 
 testing/script.lo: $(go_testing_script_files) fmt.gox os.gox rand.gox \
@@ -2612,7 +2622,7 @@ testing/script.lo: $(go_testing_script_files) fmt.gox os.gox rand.gox \
 	$(BUILDPACKAGE)
 testing/script/check: $(CHECK_DEPS)
 	@$(MKDIR_P) testing/script
-	$(CHECK)
+	@$(CHECK)
 .PHONY: testing/script/check
 
 sysinfo.go: s-sysinfo; @true
@@ -2954,7 +2964,7 @@ TEST_PACKAGES = \
 	log/check \
 	math/check \
 	mime/check \
-	$(if $(GCCGO_RUN_ALL_TESTS),net/check) \
+	net/check \
 	netchan/check \
 	os/check \
 	patch/check \
@@ -2970,7 +2980,7 @@ TEST_PACKAGES = \
 	strconv/check \
 	strings/check \
 	sync/check \
-	$(if $(GCCGO_RUN_ALL_TESTS),syslog/check) \
+	syslog/check \
 	tabwriter/check \
 	template/check \
 	time/check \
@@ -3058,7 +3068,7 @@ TEST_PACKAGES = \
 	testing/script/check
 
 check-am:
-	@rm -f libgo.sum libgo.log
+	@rm -f libgo.sum libgo.log libgo.tail
 	@echo "Test Run By $${USER} on `date`" > libgo.sum
 	@echo "Native configuration is $(host_triplet)" >> libgo.sum
 	@echo >> libgo.sum
@@ -3070,12 +3080,22 @@ check-am:
 	@echo "Running target unix" >> libgo.sum
 	@echo "Running $(srcdir)/libgo.exp ..." >> libgo.sum
 	@cp libgo.sum libgo.log
-	@rm -f libgo.tail
+	@echo > libgo.tail
+	@echo "		=== libgo summary ===" >> libgo.tail
+	@echo >> libgo.tail
+	@for f in $(TEST_PACKAGES); do \
+	   rm -f $$f-testsum $$f-testlog; \
+	 done
 	@$(MAKE) -k $(TEST_PACKAGES); \
 	status=$$?; \
-	echo > libgo.tail; \
-	echo "		=== libgo summary ===" >> libgo.tail; \
-	echo >> libgo.tail; \
+	for f in $(TEST_PACKAGES); do \
+	  if test -f $$f-testsum; then \
+	    cat $$f-testsum >> libgo.sum; \
+	  fi; \
+	  if test -f $$f-testlog; then \
+	    cat $$f-testlog >> libgo.log; \
+	  fi; \
+	done; \
 	p=`grep -c PASS libgo.sum`; \
 	if test "$$p" != "0"; then \
 	  echo "# of expected passes		$$p" >> libgo.tail; \
@@ -3083,6 +3103,10 @@ check-am:
 	p=`grep -c FAIL libgo.sum`; \
 	if test "$$p" != "0"; then \
 	  echo "# of unexpected failures	$$p" >> libgo.tail; \
+	fi; \
+	p=`grep -c UNTESTED libgo.sum`; \
+	if test "$$p" != "0"; then \
+	  echo "# of untested testcases		$$p" >> libgo.tail; \
 	fi; \
 	cat libgo.tail >> libgo.sum; \
 	cat libgo.tail >> libgo.log; \
@@ -3096,6 +3120,7 @@ MOSTLYCLEAN_FILES = libgo.tail
 mostlyclean-local:
 	find . -name '*.lo' -print | xargs $(LIBTOOL) --mode=clean rm -f
 	find . -name '*.$(OBJEXT)' -print | xargs rm -f
+	find . -name '*-testsum' -print | xargs rm -f
 	find . -name '*-testlog' -print | xargs rm -f
 
 CLEANFILES = *.go *.gox goc2c *.c s-version libgo.sum libgo.log
