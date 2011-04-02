@@ -2135,17 +2135,9 @@ build_allocator (tree type, tree init, tree result_type, Entity_Id gnat_proc,
 					  gnat_proc, gnat_pool, gnat_node);
       storage = convert (storage_ptr_type, gnat_protect_expr (storage));
 
-      if (TYPE_IS_PADDING_P (type))
-	{
-	  type = TREE_TYPE (TYPE_FIELDS (type));
-	  if (init)
-	    init = convert (type, init);
-	}
-
-      /* If there is an initializing expression, make a constructor for
-	 the entire object including the bounds and copy it into the
-	 object.  If there is no initializing expression, just set the
-	 bounds.  */
+      /* If there is an initializing expression, then make a constructor for
+	 the entire object including the bounds and copy it into the object.
+	 If there is no initializing expression, just set the bounds.  */
       if (init)
 	{
 	  VEC(constructor_elt,gc) *v = VEC_alloc (constructor_elt, gc, 2);
@@ -2154,7 +2146,6 @@ build_allocator (tree type, tree init, tree result_type, Entity_Id gnat_proc,
 				  build_template (template_type, type, init));
 	  CONSTRUCTOR_APPEND_ELT (v, DECL_CHAIN (TYPE_FIELDS (storage_type)),
 				  init);
-
 	  return convert
 	    (result_type,
 	     build2 (COMPOUND_EXPR, storage_ptr_type,
