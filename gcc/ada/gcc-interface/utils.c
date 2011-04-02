@@ -313,6 +313,57 @@ make_dummy_type (Entity_Id gnat_type)
 
   return gnu_type;
 }
+
+/* Return the dummy type that was made for GNAT_TYPE, if any.  */
+
+tree
+get_dummy_type (Entity_Id gnat_type)
+{
+  return GET_DUMMY_NODE (gnat_type);
+}
+
+/* Build dummy fat and thin pointer types whose designated type is specified
+   by GNAT_DESIG_TYPE/GNU_DESIG_TYPE and attach them to the latter.  */
+
+void
+build_dummy_unc_pointer_types (Entity_Id gnat_desig_type, tree gnu_desig_type)
+{
+  tree gnu_template_type, gnu_ptr_template, gnu_array_type, gnu_ptr_array;
+  tree gnu_fat_type, fields, gnu_object_type;
+
+  gnu_template_type = make_node (RECORD_TYPE);
+  TYPE_NAME (gnu_template_type) = create_concat_name (gnat_desig_type, "XUB");
+  TYPE_DUMMY_P (gnu_template_type) = 1;
+  gnu_ptr_template = build_pointer_type (gnu_template_type);
+
+  gnu_array_type = make_node (ENUMERAL_TYPE);
+  TYPE_NAME (gnu_array_type) = create_concat_name (gnat_desig_type, "XUA");
+  TYPE_DUMMY_P (gnu_array_type) = 1;
+  gnu_ptr_array = build_pointer_type (gnu_array_type);
+
+  gnu_fat_type = make_node (RECORD_TYPE);
+  /* Build a stub DECL to trigger the special processing for fat pointer types
+     in gnat_pushdecl.  */
+  TYPE_NAME (gnu_fat_type)
+    = create_type_stub_decl (create_concat_name (gnat_desig_type, "XUP"),
+			     gnu_fat_type);
+  fields = create_field_decl (get_identifier ("P_ARRAY"), gnu_ptr_array,
+			      gnu_fat_type, NULL_TREE, NULL_TREE, 0, 0);
+  DECL_CHAIN (fields)
+    = create_field_decl (get_identifier ("P_BOUNDS"), gnu_ptr_template,
+			 gnu_fat_type, NULL_TREE, NULL_TREE, 0, 0);
+  finish_fat_pointer_type (gnu_fat_type, fields);
+  SET_TYPE_UNCONSTRAINED_ARRAY (gnu_fat_type, gnu_desig_type);
+  /* Suppress debug info until after the type is completed.  */
+  TYPE_DECL_SUPPRESS_DEBUG (TYPE_STUB_DECL (gnu_fat_type)) = 1;
+
+  gnu_object_type = make_node (RECORD_TYPE);
+  TYPE_NAME (gnu_object_type) = create_concat_name (gnat_desig_type, "XUT");
+  TYPE_DUMMY_P (gnu_object_type) = 1;
+
+  TYPE_POINTER_TO (gnu_desig_type) = gnu_fat_type;
+  TYPE_OBJECT_RECORD_TYPE (gnu_desig_type) = gnu_object_type;
+}
 
 /* Return nonzero if we are currently in the global binding level.  */
 
@@ -522,6 +573,7 @@ gnat_pushdecl (tree decl, Node_Id gnat_node)
 	}
       else if (TYPE_IS_FAT_POINTER_P (t))
 	{
+	  /* We need a variant for the placeholder machinery to work.  */
 	  tree tt = build_variant_type_copy (t);
 	  TYPE_NAME (tt) = decl;
 	  TREE_USED (tt) = TREE_USED (t);
@@ -530,19 +582,20 @@ gnat_pushdecl (tree decl, Node_Id gnat_node)
 	    DECL_ORIGINAL_TYPE (decl) = DECL_ORIGINAL_TYPE (TYPE_NAME (t));
 	  else
 	    DECL_ORIGINAL_TYPE (decl) = t;
-	  t = NULL_TREE;
 	  DECL_ARTIFICIAL (decl) = 0;
+	  t = NULL_TREE;
 	}
       else if (DECL_ARTIFICIAL (TYPE_NAME (t)) && !DECL_ARTIFICIAL (decl))
 	;
       else
 	t = NULL_TREE;
 
-      /* Propagate the name to all the variants.  This is needed for
-	 the type qualifiers machinery to work properly.  */
+      /* Propagate the name to all the anonymous variants.  This is needed
+	 for the type qualifiers machinery to work properly.  */
       if (t)
 	for (t = TYPE_MAIN_VARIANT (t); t; t = TYPE_NEXT_VARIANT (t))
-	  TYPE_NAME (t) = decl;
+	  if (!(TYPE_NAME (t) && TREE_CODE (TYPE_NAME (t)) == TYPE_DECL))
+	    TYPE_NAME (t) = decl;
     }
 }
 
@@ -561,6 +614,28 @@ record_builtin_type (const char *name, tree type, bool artificial_p)
     debug_hooks->type_decl (type_decl, false);
 }
 
+/* Given a record type RECORD_TYPE and a list of FIELD_DECL nodes FIELD_LIST,
+   finish constructing the record type as a fat pointer type.  */
+
+void
+finish_fat_pointer_type (tree record_type, tree field_list)
+{
+  /* Make sure we can put it into a register.  */
+  TYPE_ALIGN (record_type) = MIN (BIGGEST_ALIGNMENT, 2 * POINTER_SIZE);
+
+  /* Show what it really is.  */
+  TYPE_FAT_POINTER_P (record_type) = 1;
+
+  /* Do not emit debug info for it since the types of its fields may still be
+     incomplete at this point.  */
+  finish_record_type (record_type, field_list, 0, false);
+
+  /* Force type_contains_placeholder_p to return true on it.  Although the
+     PLACEHOLDER_EXPRs are referenced only indirectly, this isn't a pointer
+     type but the representation of the unconstrained array.  */
+  TYPE_CONTAINS_PLACEHOLDER_INTERNAL (record_type) = 2;
+}
+
 /* Given a record type RECORD_TYPE and a list of FIELD_DECL nodes FIELD_LIST,
    finish constructing the record or union type.  If REP_LEVEL is zero, this
    record has no representation clause and so will be entirely laid out here.
@@ -3502,90 +3577,32 @@ update_pointer_to (tree old_type, tree new_type)
 
   /* Now deal with the unconstrained array case.  In this case the pointer
      is actually a record where both fields are pointers to dummy nodes.
-     Turn them into pointers to the correct types using update_pointer_to.  */
+     Turn them into pointers to the correct types using update_pointer_to.
+     Likewise for the pointer to the object record (thin pointer).  */
   else
     {
-      tree new_ptr = TYPE_MAIN_VARIANT (TYPE_POINTER_TO (new_type));
-      tree new_obj_rec = TYPE_OBJECT_RECORD_TYPE (new_type);
-      tree array_field, bounds_field, new_ref, last = NULL_TREE;
+      tree new_ptr = TYPE_POINTER_TO (new_type);
 
       gcc_assert (TYPE_IS_FAT_POINTER_P (ptr));
 
-      /* If PTR already points to new type, nothing to do.  This can happen
+      /* If PTR already points to NEW_TYPE, nothing to do.  This can happen
 	 since update_pointer_to can be invoked multiple times on the same
 	 couple of types because of the type variants.  */
       if (TYPE_UNCONSTRAINED_ARRAY (ptr) == new_type)
 	return;
 
-      array_field = TYPE_FIELDS (ptr);
-      bounds_field = DECL_CHAIN (array_field);
-
-      /* Make pointers to the dummy template point to the real template.  */
       update_pointer_to
-	(TREE_TYPE (TREE_TYPE (bounds_field)),
+	(TREE_TYPE (TREE_TYPE (TYPE_FIELDS (ptr))),
+	 TREE_TYPE (TREE_TYPE (TYPE_FIELDS (new_ptr))));
+
+      update_pointer_to
+	(TREE_TYPE (TREE_TYPE (DECL_CHAIN (TYPE_FIELDS (ptr)))),
 	 TREE_TYPE (TREE_TYPE (DECL_CHAIN (TYPE_FIELDS (new_ptr)))));
 
-      /* The references to the template bounds present in the array type use
-	 the bounds field of NEW_PTR through a PLACEHOLDER_EXPR.  Since we
-	 are going to merge PTR in NEW_PTR, we must rework these references
-	 to use the bounds field of PTR instead.  */
-      new_ref = build3 (COMPONENT_REF, TREE_TYPE (bounds_field),
-			build0 (PLACEHOLDER_EXPR, new_ptr),
-			bounds_field, NULL_TREE);
+      update_pointer_to (TYPE_OBJECT_RECORD_TYPE (old_type),
+			 TYPE_OBJECT_RECORD_TYPE (new_type));
 
-      /* Create the new array for the new PLACEHOLDER_EXPR and make pointers
-	 to the dummy array point to it.  */
-      update_pointer_to
-	(TREE_TYPE (TREE_TYPE (array_field)),
-	 substitute_in_type (TREE_TYPE (TREE_TYPE (TYPE_FIELDS (new_ptr))),
-			     DECL_CHAIN (TYPE_FIELDS (new_ptr)), new_ref));
-
-      /* Merge PTR in NEW_PTR.  */
-      DECL_FIELD_CONTEXT (array_field) = new_ptr;
-      DECL_FIELD_CONTEXT (bounds_field) = new_ptr;
-      for (t = new_ptr; t; last = t, t = TYPE_NEXT_VARIANT (t))
-	TYPE_FIELDS (t) = TYPE_FIELDS (ptr);
-      TYPE_ALIAS_SET (new_ptr) = TYPE_ALIAS_SET (ptr);
-
-      /* Chain PTR and its variants at the end.  */
-      TYPE_NEXT_VARIANT (last) = TYPE_MAIN_VARIANT (ptr);
-
-      /* Now adjust them.  */
-      for (t = TYPE_MAIN_VARIANT (ptr); t; t = TYPE_NEXT_VARIANT (t))
-	{
-	  TYPE_MAIN_VARIANT (t) = new_ptr;
-	  SET_TYPE_UNCONSTRAINED_ARRAY (t, new_type);
-
-	  /* And show the original pointer NEW_PTR to the debugger.  This is
-	     the counterpart of the special processing for fat pointer types
-	     in gnat_pushdecl, but when the unconstrained array type is only
-	     frozen after access types to it.  */
-	  if (TYPE_NAME (t) && TREE_CODE (TYPE_NAME (t)) == TYPE_DECL)
-	    {
-	      DECL_ORIGINAL_TYPE (TYPE_NAME (t)) = new_ptr;
-	      DECL_ARTIFICIAL (TYPE_NAME (t)) = 0;
-	    }
-	}
-
-      /* Now handle updating the allocation record, what the thin pointer
-	 points to.  Update all pointers from the old record into the new
-	 one, update the type of the array field, and recompute the size.  */
-      update_pointer_to (TYPE_OBJECT_RECORD_TYPE (old_type), new_obj_rec);
-      TREE_TYPE (DECL_CHAIN (TYPE_FIELDS (new_obj_rec)))
-	= TREE_TYPE (TREE_TYPE (array_field));
-
-      /* The size recomputation needs to account for alignment constraints, so
-	 we let layout_type work it out.  This will reset the field offsets to
-	 what they would be in a regular record, so we shift them back to what
-	 we want them to be for a thin pointer designated type afterwards.  */
-      DECL_SIZE (TYPE_FIELDS (new_obj_rec)) = NULL_TREE;
-      DECL_SIZE (DECL_CHAIN (TYPE_FIELDS (new_obj_rec))) = NULL_TREE;
-      TYPE_SIZE (new_obj_rec) = NULL_TREE;
-      layout_type (new_obj_rec);
-      shift_unc_components_for_thin_pointers (new_obj_rec);
-
-      /* We are done, at last.  */
-      rest_of_record_type_compilation (ptr);
+      TYPE_POINTER_TO (old_type) = NULL_TREE;
     }
 }
 
