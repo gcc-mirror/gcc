@@ -1,8 +1,13 @@
 2011-04-02  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/utils.c (update_pointer_to): Finalize named pointer
+	types.
+
+2011-04-02  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/lang.opt (feliminate-unused-debug-types): Delete.
 	* gcc-interface/misc.c (gnat_handle_option): Remove special handling
-	code for -feliminate-unused-debug-types
+	code for -feliminate-unused-debug-types.
 	(gnat_post_options): Likewise.
 
 2011-04-02  Eric Botcazou  <ebotcazou@adacore.com>
