@@ -4960,9 +4960,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	  SET_TYPE_RM_MIN_VALUE (gnu_scalar_type, gnu_low_bound);
 	  SET_TYPE_RM_MAX_VALUE (gnu_scalar_type, gnu_high_bound);
 
-	  /* Write full debugging information.  Since this has both a
-	     typedef and a tag, avoid outputting the name twice.  */
-	  DECL_ARTIFICIAL (gnu_decl) = 1;
+	  /* Write full debugging information.  */
 	  rest_of_type_decl_compilation (gnu_decl);
 	}
 
