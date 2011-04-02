@@ -3769,8 +3769,12 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	       along the way.  update_pointer_to is expected to properly take
 	       care of those situations.  */
 	    if (defer_incomplete_level == 0 && !is_from_limited_with)
-	      update_pointer_to (TYPE_MAIN_VARIANT (gnu_old_desig_type),
-				 gnat_to_gnu_type (gnat_desig_equiv));
+	      {
+		defer_finalize_level++;
+		update_pointer_to (TYPE_MAIN_VARIANT (gnu_old_desig_type),
+				   gnat_to_gnu_type (gnat_desig_equiv));
+		defer_finalize_level--;
+	      }
 	    else
 	      {
 		struct incomplete *p = XNEW (struct incomplete);
@@ -4968,49 +4972,50 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
     }
 
   /* If we deferred processing of incomplete types, re-enable it.  If there
-     were no other disables and we have some to process, do so.  */
-  if (this_deferred && --defer_incomplete_level == 0)
+     were no other disables and we have deferred types to process, do so.  */
+  if (this_deferred
+      && --defer_incomplete_level == 0
+      && defer_incomplete_list)
     {
-      if (defer_incomplete_list)
+      struct incomplete *p, *next;
+
+      /* We are back to level 0 for the deferring of incomplete types.
+	 But processing these incomplete types below may itself require
+	 deferring, so preserve what we have and restart from scratch.  */
+      p = defer_incomplete_list;
+      defer_incomplete_list = NULL;
+
+      /* For finalization, however, all types must be complete so we
+	 cannot do the same because deferred incomplete types may end up
+	 referencing each other.  Process them all recursively first.  */
+      defer_finalize_level++;
+
+      for (; p; p = next)
 	{
-	  struct incomplete *p, *next;
+	  next = p->next;
 
-	  /* We are back to level 0 for the deferring of incomplete types.
-	     But processing these incomplete types below may itself require
-	     deferring, so preserve what we have and restart from scratch.  */
-	  p = defer_incomplete_list;
-	  defer_incomplete_list = NULL;
-
-	  /* For finalization, however, all types must be complete so we
-	     cannot do the same because deferred incomplete types may end up
-	     referencing each other.  Process them all recursively first.  */
-	  defer_finalize_level++;
-
-	  for (; p; p = next)
-	    {
-	      next = p->next;
-
-	      if (p->old_type)
-		update_pointer_to (TYPE_MAIN_VARIANT (p->old_type),
-				   gnat_to_gnu_type (p->full_type));
-	      free (p);
-	    }
-
-	  defer_finalize_level--;
+	  if (p->old_type)
+	    update_pointer_to (TYPE_MAIN_VARIANT (p->old_type),
+			       gnat_to_gnu_type (p->full_type));
+	  free (p);
 	}
 
-      /* All the deferred incomplete types have been processed so we can
-	 now proceed with the finalization of the deferred types.  */
-      if (defer_finalize_level == 0 && defer_finalize_list)
-	{
-	  unsigned int i;
-	  tree t;
+      defer_finalize_level--;
+    }
 
-	  FOR_EACH_VEC_ELT (tree, defer_finalize_list, i, t)
-	    rest_of_type_decl_compilation_no_defer (t);
+  /* If all the deferred incomplete types have been processed, we can proceed
+     with the finalization of the deferred types.  */
+  if (defer_incomplete_level == 0
+      && defer_finalize_level == 0
+      && defer_finalize_list)
+    {
+      unsigned int i;
+      tree t;
 
-	  VEC_free (tree, heap, defer_finalize_list);
-	}
+      FOR_EACH_VEC_ELT (tree, defer_finalize_list, i, t)
+	rest_of_type_decl_compilation_no_defer (t);
+
+      VEC_free (tree, heap, defer_finalize_list);
     }
 
   /* If we are not defining this type, see if it's on one of the lists of

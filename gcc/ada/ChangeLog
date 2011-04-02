@@ -1,3 +1,10 @@
+2011-04-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Access_Type>: Defer
+	finalizing types when updating the pointers to the designated type.
+	<all>: Finalize the deferred types even if we didn't defer processing
+	of incomplete types in this invocation.
+
 2011-04-01  Olivier Hainque  <hainque@adacore.com>
             Nicolas Setton  <setton@adacore.com>
             Eric Botcazou  <ebotcazou@adacore.com>
@@ -8,27 +15,23 @@
 2011-03-28  Kai Tietz  <ktietz@redhat.com>
 
 	* gcc-interface/Makefile.in (SO_LIB): Handle multilib build for native
-	windows targets.
-	(EH_MECHANISM): Make sure we use gcc's exception mechanism for all
-	native windows target.
-	* system-mingw.ads (System): Change ZCX_By_Default default to
-	True.
+	Windows targets.
+	(EH_MECHANISM): Use GCC exception mechanism for native Windows targets.
+	* system-mingw.ads (System): Change ZCX_By_Default default to True.
 
-	* raise-gcc.c (PERSONALITY_FUNCTION): Add prototype to
-	prevent warning.
+	* raise-gcc.c (PERSONALITY_FUNCTION): Add prototype.
 
 2011-03-28  Tristan Gingold  <gingold@adacore.com>
 
 	PR ada/44431
-	* gcc-interface/Make-lang.in (ada/b_gnat1.adb):  Replaces
-	ada/b_gnat1.c. Use ada output of gnatbind.
+	* gcc-interface/Make-lang.in (ada/b_gnat1.adb): Replace ada/b_gnat1.c.
+	Use ada output of gnatbind.
 	(ada/b_gnatb.adb): Ditto.
 	(ada/b_gnat1.o, ada/b_gnatb.o): New rules.
 	(ada.mostlyclean, ada.stage1)
 	(ada.stage2, ada.stage3, ada.stage4, ada.stageprofile)
 	(ada.stagefeedback): Adjust.
-
-	* gcc-interface/Makefile.in (b_gnatl.adb): Replaces b_gnatl.c
+	* gcc-interface/Makefile.in (b_gnatl.adb): Replace b_gnatl.c.
 	Use ada output of gnatbind.
 	(b_gnatm.adb): Ditto.
 	(b_gnatl.o, b_gnatm.o): New rules.
