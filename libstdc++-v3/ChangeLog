@@ -1,3 +1,11 @@
+2011-04-02  Jonathan Wakely  <redi@gcc.gnu.org>
+
+	PR libstdc++/48398
+	* include/bits/unique_ptr.h (__tuple_type): Store pointer type.
+	* testsuite/20_util/unique_ptr/modifiers/48398.cc: New.
+	* testsuite/20_util/unique_ptr/requirements/pointer_type.cc: Remove
+	unused parameter name.
+
 2011-03-31  Jeffrey Yasskin  <jyasskin@google.com>
 
 	* libsupc++/exception_ptr.h: Forward-declare std::type_info.
