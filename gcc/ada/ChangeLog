@@ -1,5 +1,11 @@
 2011-04-02  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/utils.c (gnat_pushdecl): If this is a non-artificial
+	declaration of a pointer type, then set DECL_ORIGINAL_TYPE to a
+	distinct copy.
+
+2011-04-02  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/decl.c (gnat_to_gnu_entity): Do not force the
 	DECL_ARTIFICIAL flag on enumeration types.
 

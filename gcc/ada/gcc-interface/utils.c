@@ -560,12 +560,16 @@ gnat_pushdecl (tree decl, Node_Id gnat_node)
 
       if (!(TYPE_NAME (t) && TREE_CODE (TYPE_NAME (t)) == TYPE_DECL))
 	{
-	  /* Array types aren't tagged types in the C sense so we force the
+	  /* Array and pointer types aren't "tagged" types so we force the
 	     type to be associated with its typedef in the DWARF back-end,
 	     in order to make sure that the latter is always preserved.  */
-	  if (!DECL_ARTIFICIAL (decl) && TREE_CODE (t) == ARRAY_TYPE)
+	  if (!DECL_ARTIFICIAL (decl)
+	      && (TREE_CODE (t) == ARRAY_TYPE
+		  || TREE_CODE (t) == POINTER_TYPE))
 	    {
 	      tree tt = build_distinct_type_copy (t);
+	      if (TREE_CODE (t) == POINTER_TYPE)
+		TYPE_NEXT_PTR_TO (t) = tt;
 	      TYPE_NAME (tt) = DECL_NAME (decl);
 	      TYPE_STUB_DECL (tt) = TYPE_STUB_DECL (t);
 	      DECL_ORIGINAL_TYPE (decl) = tt;
