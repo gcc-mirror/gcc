@@ -100,11 +100,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	typedef decltype( __test<_Del>(0)) type;
       };
 
-      typedef std::tuple<_Tp*, _Dp>  	__tuple_type;
-      __tuple_type 			_M_t;
+      typedef std::tuple<typename _Pointer::type, _Dp>  __tuple_type;
+      __tuple_type                                      _M_t;
 
     public:
-      typedef typename _Pointer::type	pointer;
+      typedef typename _Pointer::type   pointer;
       typedef _Tp                       element_type;
       typedef _Dp                       deleter_type;
 
