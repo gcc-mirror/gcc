@@ -5436,6 +5436,40 @@ ix86_handle_cconv_attribute (tree *node, tree name,
   return NULL_TREE;
 }
 
+/* This function checks if the method-function has default __thiscall
+   calling-convention for 32-bit msabi.
+   It returns true if TYPE is of kind METHOD_TYPE, no stdarg function,
+   and the MS_ABI 32-bit is used.  Otherwise it returns false.  */
+
+static bool
+ix86_is_msabi_thiscall (const_tree type)
+{
+  if (TARGET_64BIT || ix86_function_type_abi (type) != MS_ABI
+      || TREE_CODE (type) != METHOD_TYPE || stdarg_p (type))
+    return false;
+  /* Check for different calling-conventions.  */
+  if (lookup_attribute ("cdecl", TYPE_ATTRIBUTES (type))
+      || lookup_attribute ("stdcall", TYPE_ATTRIBUTES (type))
+      || lookup_attribute ("fastcall", TYPE_ATTRIBUTES (type))
+      || lookup_attribute ("regparm", TYPE_ATTRIBUTES (type))
+      || lookup_attribute ("sseregparm", TYPE_ATTRIBUTES (type)))
+    return false;
+  return true;
+}
+
+/* This function checks if the thiscall attribute is set for the TYPE,
+   or if it is an method-type with default thiscall convention.
+   It returns true if function match, otherwise false is returned.  */
+
+static bool
+ix86_is_type_thiscall (const_tree type)
+{
+  if (lookup_attribute ("thiscall", TYPE_ATTRIBUTES (type))
+      || ix86_is_msabi_thiscall (type))
+    return true;
+  return false;
+}
+
 /* Return 0 if the attributes for two types are incompatible, 1 if they
    are compatible, and 2 if they are nearly compatible (which causes a
    warning to be generated).  */
@@ -5444,7 +5478,8 @@ static int
 ix86_comp_type_attributes (const_tree type1, const_tree type2)
 {
   /* Check for mismatch of non-default calling convention.  */
-  const char *const rtdstr = TARGET_RTD ? "cdecl" : "stdcall";
+  bool is_thiscall = ix86_is_msabi_thiscall (type1);
+  const char *const rtdstr = TARGET_RTD ? (is_thiscall ? "thiscall" : "cdecl") : "stdcall";
 
   if (TREE_CODE (type1) != FUNCTION_TYPE
       && TREE_CODE (type1) != METHOD_TYPE)
@@ -5463,9 +5498,18 @@ ix86_comp_type_attributes (const_tree type1, const_tree type2)
     return 0;
 
   /* Check for mismatched thiscall types.  */
-  if (!lookup_attribute ("thiscall", TYPE_ATTRIBUTES (type1))
-      != !lookup_attribute ("thiscall", TYPE_ATTRIBUTES (type2)))
-    return 0;
+  if (is_thiscall && !TARGET_RTD)
+    {
+      if (!lookup_attribute ("cdecl", TYPE_ATTRIBUTES (type1))
+	  != !lookup_attribute ("cdecl", TYPE_ATTRIBUTES (type2)))
+	return 0;
+    }
+  else if (!is_thiscall || TARGET_RTD)
+    {
+      if (!lookup_attribute ("thiscall", TYPE_ATTRIBUTES (type1))
+	  != !lookup_attribute ("thiscall", TYPE_ATTRIBUTES (type2)))
+	return 0;
+    }
 
   /* Check for mismatched return types (cdecl vs stdcall).  */
   if (!lookup_attribute (rtdstr, TYPE_ATTRIBUTES (type1))
@@ -5500,7 +5544,7 @@ ix86_function_regparm (const_tree type, const_tree decl)
   if (lookup_attribute ("fastcall", TYPE_ATTRIBUTES (type)))
     return 2;
 
-  if (lookup_attribute ("thiscall", TYPE_ATTRIBUTES (type)))
+  if (ix86_is_type_thiscall (type))
     return 1;
 
   /* Use register calling convention for local functions when possible.  */
@@ -5666,7 +5710,7 @@ ix86_return_pops_args (tree fundecl, tree funtype, int size)
          variable args.  */
       if (lookup_attribute ("stdcall", TYPE_ATTRIBUTES (funtype))
 	  || lookup_attribute ("fastcall", TYPE_ATTRIBUTES (funtype))
-          || lookup_attribute ("thiscall", TYPE_ATTRIBUTES (funtype)))
+          || ix86_is_type_thiscall (funtype))
 	rtd = 1;
 
       if (rtd && ! stdarg_p (funtype))
@@ -6004,7 +6048,7 @@ init_cumulative_args (CUMULATIVE_ARGS *cum,  /* Argument info to initialize */
 	 else look for regparm information.  */
       if (fntype)
 	{
-	  if (lookup_attribute ("thiscall", TYPE_ATTRIBUTES (fntype)))
+	  if (ix86_is_type_thiscall (fntype))
 	    {
 	      cum->nregs = 1;
 	      cum->fastcall = 1; /* Same first register as in fastcall.  */
@@ -7441,8 +7485,10 @@ ix86_function_arg_boundary (enum machine_mode mode, const_tree type)
 	  warned = true;
 	  inform (input_location,
 		  "The ABI for passing parameters with %d-byte"
-		  " alignment has changed in GCC 4.6",
-		  align / BITS_PER_UNIT);
+		  " alignment has changed in GCC 4.6 (mode:%u, %d saved",
+		  align / BITS_PER_UNIT,
+		  ix86_compat_function_arg_boundary (mode, type, saved_align),
+		  mode, saved_align);
 	}
     }
 
@@ -9798,8 +9844,7 @@ find_drap_reg (void)
       if (ix86_function_regparm (TREE_TYPE (decl), decl) <= 2
 	  && !lookup_attribute ("fastcall",
     				TYPE_ATTRIBUTES (TREE_TYPE (decl)))
-	  && !lookup_attribute ("thiscall",
-    				TYPE_ATTRIBUTES (TREE_TYPE (decl))))
+	  && !ix86_is_type_thiscall (TREE_TYPE (decl)))
 	return CX_REG;
       else
 	return DI_REG;
@@ -23249,7 +23294,7 @@ ix86_static_chain (const_tree fndecl, bool incoming_p)
 	     us with EAX for the static chain.  */
 	  regno = AX_REG;
 	}
-      else if (lookup_attribute ("thiscall", TYPE_ATTRIBUTES (fntype)))
+      else if (ix86_is_type_thiscall (fntype))
 	{
 	  /* Thiscall functions use ecx for arguments, which leaves
 	     us with EAX for the static chain.  */
@@ -29806,7 +29851,7 @@ x86_this_parameter (tree function)
 
       if (lookup_attribute ("fastcall", TYPE_ATTRIBUTES (type)))
 	regno = aggr ? DX_REG : CX_REG;
-      else if (lookup_attribute ("thiscall", TYPE_ATTRIBUTES (type)))
+      else if (ix86_is_type_thiscall (type))
         {
 	  regno = CX_REG;
 	  if (aggr)
@@ -29925,8 +29970,7 @@ x86_output_mi_thunk (FILE *file,
 	  int tmp_regno = CX_REG;
 	  if (lookup_attribute ("fastcall",
 				TYPE_ATTRIBUTES (TREE_TYPE (function)))
-	      || lookup_attribute ("thiscall",
-				   TYPE_ATTRIBUTES (TREE_TYPE (function))))
+	      || ix86_is_type_thiscall (TREE_TYPE (function)))
 	    tmp_regno = AX_REG;
 	  tmp = gen_rtx_REG (SImode, tmp_regno);
 	}
