@@ -7486,9 +7486,7 @@ ix86_function_arg_boundary (enum machine_mode mode, const_tree type)
 	  inform (input_location,
 		  "The ABI for passing parameters with %d-byte"
 		  " alignment has changed in GCC 4.6 (mode:%u, %d saved",
-		  align / BITS_PER_UNIT,
-		  ix86_compat_function_arg_boundary (mode, type, saved_align),
-		  mode, saved_align);
+		  align / BITS_PER_UNIT);
 	}
     }
 
