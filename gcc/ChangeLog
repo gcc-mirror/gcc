@@ -1,5 +1,8 @@
 2011-04-02  Kai Tietz  <ktietz@redhat.com>
 
+	PR target/48416
+	* i386.c (ix86_function_arg_boundary): Fix printf formatter.
+
 	* i386.c (ix86_is_msabi_thiscall): New helper function.
 	(ix86_is_type_thiscall): New helper function.
 	(ix86_comp_type_attributes): Handle thiscall for method-functions
