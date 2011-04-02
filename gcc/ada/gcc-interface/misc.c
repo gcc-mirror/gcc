@@ -125,14 +125,6 @@ gnat_handle_option (size_t scode, const char *arg ATTRIBUTE_UNUSED, int value,
       /* These are used in the GCC Makefile.  */
       break;
 
-    case OPT_feliminate_unused_debug_types:
-      /* We arrange for post_option to be able to only set the corresponding
-	 flag to 1 when explicitly requested by the user.  We expect the
-	 default flag value to be either 0 or positive, and expose a positive
-	 -f as a negative value to post_option.  */
-      flag_eliminate_unused_debug_types = -value;
-      break;
-
     case OPT_gant:
       warning (0, "%<-gnat%> misspelled as %<-gant%>");
 
@@ -232,8 +224,7 @@ enum stack_check_type flag_stack_check = NO_STACK_CHECK;
 static bool
 gnat_post_options (const char **pfilename ATTRIBUTE_UNUSED)
 {
-  /* Excess precision other than "fast" requires front-end
-     support.  */
+  /* Excess precision other than "fast" requires front-end support.  */
   if (flag_excess_precision_cmdline == EXCESS_PRECISION_STANDARD
       && TARGET_FLT_EVAL_METHOD_NON_DEFAULT)
     sorry ("-fexcess-precision=standard for Ada");
@@ -244,14 +235,6 @@ gnat_post_options (const char **pfilename ATTRIBUTE_UNUSED)
 
   /* No psABI change warnings for Ada.  */
   warn_psabi = 0;
-
-  /* Force eliminate_unused_debug_types to 0 unless an explicit positive
-     -f has been passed.  This forces the default to 0 for Ada, which might
-     differ from the common default.  */
-  if (flag_eliminate_unused_debug_types < 0)
-    flag_eliminate_unused_debug_types = 1;
-  else
-    flag_eliminate_unused_debug_types = 0;
 
   optimize = global_options.x_optimize;
   optimize_size = global_options.x_optimize_size;

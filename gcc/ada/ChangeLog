@@ -1,5 +1,12 @@
 2011-04-02  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/lang.opt (feliminate-unused-debug-types): Delete.
+	* gcc-interface/misc.c (gnat_handle_option): Remove special handling
+	code for -feliminate-unused-debug-types
+	(gnat_post_options): Likewise.
+
+2011-04-02  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/utils.c (gnat_pushdecl): If this is a non-artificial
 	declaration of a pointer type, then set DECL_ORIGINAL_TYPE to a
 	distinct copy.
