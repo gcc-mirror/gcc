@@ -182,7 +182,6 @@ static tree create_variant_part_from (tree, VEC(variant_desc,heap) *, tree,
 				      tree, VEC(subst_pair,heap) *);
 static void copy_and_substitute_in_size (tree, tree, VEC(subst_pair,heap) *);
 static void rest_of_type_decl_compilation_no_defer (tree);
-static void finish_fat_pointer_type (tree, tree);
 
 /* The relevant constituents of a subprogram binding to a GCC builtin.  Used
    to pass around calls performing profile compatibility checks.  */
@@ -1912,22 +1911,32 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
     case E_String_Type:
     case E_Array_Type:
       {
-	Entity_Id gnat_index, gnat_name;
 	const bool convention_fortran_p
 	  = (Convention (gnat_entity) == Convention_Fortran);
 	const int ndim = Number_Dimensions (gnat_entity);
-	tree gnu_template_fields = NULL_TREE;
 	tree gnu_template_type = make_node (RECORD_TYPE);
-	tree gnu_template_reference;
 	tree gnu_ptr_template = build_pointer_type (gnu_template_type);
-	tree gnu_fat_type = make_node (RECORD_TYPE);
+	tree gnu_template_reference, gnu_template_fields, gnu_fat_type;
 	tree *gnu_index_types = XALLOCAVEC (tree, ndim);
 	tree *gnu_temp_fields = XALLOCAVEC (tree, ndim);
-	tree gnu_max_size = size_one_node, gnu_max_size_unit, tem;
+	tree gnu_max_size = size_one_node, gnu_max_size_unit, tem, t;
+	Entity_Id gnat_index, gnat_name;
 	int index;
 
-	TYPE_NAME (gnu_template_type)
-	  = create_concat_name (gnat_entity, "XUB");
+	/* We complete an existing dummy fat pointer type in place.  This both
+	   avoids further complex adjustments in update_pointer_to and yields
+	   better debugging information in DWARF by leveraging the support for
+	   incomplete declarations of "tagged" types in the DWARF back-end.  */
+	gnu_type = get_dummy_type (gnat_entity);
+	if (gnu_type && TYPE_POINTER_TO (gnu_type))
+	  {
+	    gnu_fat_type = TYPE_MAIN_VARIANT (TYPE_POINTER_TO (gnu_type));
+	    TYPE_NAME (gnu_fat_type) = NULL_TREE;
+	    /* Save the contents of the dummy type for update_pointer_to.  */
+	    TYPE_POINTER_TO (gnu_type) = copy_type (gnu_fat_type);
+	  }
+	else
+	  gnu_fat_type = make_node (RECORD_TYPE);
 
 	/* Make a node for the array.  If we are not defining the array
 	   suppress expanding incomplete types.  */
@@ -1945,10 +1954,28 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	tem
 	  = create_field_decl (get_identifier ("P_ARRAY"), ptr_void_type_node,
 			       gnu_fat_type, NULL_TREE, NULL_TREE, 0, 0);
-	TREE_CHAIN (tem)
+	DECL_CHAIN (tem)
 	  = create_field_decl (get_identifier ("P_BOUNDS"), gnu_ptr_template,
 			       gnu_fat_type, NULL_TREE, NULL_TREE, 0, 0);
-	finish_fat_pointer_type (gnu_fat_type, tem);
+
+	if (COMPLETE_TYPE_P (gnu_fat_type))
+	  {
+	    /* We are going to lay it out again so reset the alias set.  */
+	    alias_set_type alias_set = TYPE_ALIAS_SET (gnu_fat_type);
+	    TYPE_ALIAS_SET (gnu_fat_type) = -1;
+	    finish_fat_pointer_type (gnu_fat_type, tem);
+	    TYPE_ALIAS_SET (gnu_fat_type) = alias_set;
+	    for (t = gnu_fat_type; t; t = TYPE_NEXT_VARIANT (t))
+	      {
+		TYPE_FIELDS (t) = tem;
+		SET_TYPE_UNCONSTRAINED_ARRAY (t, gnu_type);
+	      }
+	  }
+	else
+	  {
+	    finish_fat_pointer_type (gnu_fat_type, tem);
+	    SET_TYPE_UNCONSTRAINED_ARRAY (gnu_fat_type, gnu_type);
+	  }
 
 	/* Build a reference to the template from a PLACEHOLDER_EXPR that
 	   is the fat pointer.  This will be used to access the individual
@@ -2053,19 +2080,21 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	      = create_concat_name (gnat_entity, field_name);
 	  }
 
+	/* Install all the fields into the template.  */
+	TYPE_NAME (gnu_template_type)
+	  = create_concat_name (gnat_entity, "XUB");
+	gnu_template_fields = NULL_TREE;
 	for (index = 0; index < ndim; index++)
 	  gnu_template_fields
 	    = chainon (gnu_template_fields, gnu_temp_fields[index]);
-
-	/* Install all the fields into the template.  */
 	finish_record_type (gnu_template_type, gnu_template_fields, 0,
 			    debug_info_p);
 	TYPE_READONLY (gnu_template_type) = 1;
 
 	/* Now make the array of arrays and update the pointer to the array
 	   in the fat pointer.  Note that it is the first field.  */
-	tem = gnat_to_gnu_component_type (gnat_entity, definition,
-					  debug_info_p);
+	tem
+	  = gnat_to_gnu_component_type (gnat_entity, definition, debug_info_p);
 
 	/* If Component_Size is not already specified, annotate it with the
 	   size of the component.  */
@@ -2107,15 +2136,20 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	  }
 
 	TYPE_CONVENTION_FORTRAN_P (tem) = convention_fortran_p;
+
+	/* Adjust the type of the pointer-to-array field of the fat pointer
+	   and record the aliasing relationships if necessary.  */
 	TREE_TYPE (TYPE_FIELDS (gnu_fat_type)) = build_pointer_type (tem);
+	if (TYPE_ALIAS_SET_KNOWN_P (gnu_fat_type))
+	  record_component_aliases (gnu_fat_type);
 
 	/* The result type is an UNCONSTRAINED_ARRAY_TYPE that indicates the
 	   corresponding fat pointer.  */
-	TREE_TYPE (gnu_type) = TYPE_POINTER_TO (gnu_type)
-	  = TYPE_REFERENCE_TO (gnu_type) = gnu_fat_type;
+	TREE_TYPE (gnu_type) = gnu_fat_type;
+	TYPE_POINTER_TO (gnu_type) = gnu_fat_type;
+	TYPE_REFERENCE_TO (gnu_type) = gnu_fat_type;
 	SET_TYPE_MODE (gnu_type, BLKmode);
 	TYPE_ALIGN (gnu_type) = TYPE_ALIGN (tem);
-	SET_TYPE_UNCONSTRAINED_ARRAY (gnu_fat_type, gnu_type);
 
 	/* If the maximum size doesn't overflow, use it.  */
 	if (gnu_max_size
@@ -3301,8 +3335,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		       _Parent field.  */
 		    else if (gnat_name == Name_uController && gnu_last)
 		      {
-			TREE_CHAIN (gnu_field) = TREE_CHAIN (gnu_last);
-			TREE_CHAIN (gnu_last) = gnu_field;
+			DECL_CHAIN (gnu_field) = DECL_CHAIN (gnu_last);
+			DECL_CHAIN (gnu_last) = gnu_field;
 		      }
 
 		    /* Otherwise, if this is a regular field, put it after
@@ -3512,8 +3546,6 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	     : In_Extended_Main_Code_Unit (gnat_desig_type));
 	/* True if we make a dummy type here.  */
 	bool made_dummy = false;
-	/* True if the dummy type is a fat pointer.  */
-	bool got_fat_p = false;
 	/* The mode to be used for the pointer type.  */
 	enum machine_mode p_mode = mode_for_size (esize, MODE_INT, 0);
 	/* The GCC type used for the designated type.  */
@@ -3547,11 +3579,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	  = Is_Array_Type (gnat_desig_rep) && !Is_Constrained (gnat_desig_rep);
 
 	/* If we are pointing to an incomplete type whose completion is an
-	   unconstrained array, make a fat pointer type.  The two types in our
-	   fields will be pointers to dummy nodes and will be replaced in
-	   update_pointer_to.  Similarly, if the type itself is a dummy type or
-	   an unconstrained array.  Also make a dummy TYPE_OBJECT_RECORD_TYPE
-	   in case we have any thin pointers to it.  */
+	   unconstrained array, make dummy fat and thin pointer types to it.
+	   Likewise if the type itself is dummy or an unconstrained array.  */
 	if (is_unconstrained_array
 	    && (Present (gnat_desig_full)
 		|| (present_gnu_tree (gnat_desig_equiv)
@@ -3569,55 +3598,15 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	    else
 	      {
 		gnu_desig_type = make_dummy_type (gnat_desig_rep);
-		/* Show the dummy we get will be a fat pointer.  */
-		got_fat_p = made_dummy = true;
+		made_dummy = true;
 	      }
 
 	    /* If the call above got something that has a pointer, the pointer
 	       is our type.  This could have happened either because the type
 	       was elaborated or because somebody else executed the code.  */
+	    if (!TYPE_POINTER_TO (gnu_desig_type))
+	      build_dummy_unc_pointer_types (gnat_desig_equiv, gnu_desig_type);
 	    gnu_type = TYPE_POINTER_TO (gnu_desig_type);
-	    if (!gnu_type)
-	      {
-		tree gnu_template_type = make_node (RECORD_TYPE);
-		tree gnu_ptr_template = build_pointer_type (gnu_template_type);
-		tree gnu_array_type = make_node (ENUMERAL_TYPE);
-		tree gnu_ptr_array = build_pointer_type (gnu_array_type);
-		tree fields;
-
-		TYPE_NAME (gnu_template_type)
-		  = create_concat_name (gnat_desig_equiv, "XUB");
-		TYPE_DUMMY_P (gnu_template_type) = 1;
-
-		TYPE_NAME (gnu_array_type)
-		  = create_concat_name (gnat_desig_equiv, "XUA");
-		TYPE_DUMMY_P (gnu_array_type) = 1;
-
-		gnu_type = make_node (RECORD_TYPE);
-		/* Build a stub DECL to trigger the special processing for fat
-		   pointer types in gnat_pushdecl.  */
-		TYPE_NAME (gnu_type)
-		  = create_type_stub_decl
-		    (create_concat_name (gnat_desig_equiv, "XUP"), gnu_type);
-		SET_TYPE_UNCONSTRAINED_ARRAY (gnu_type, gnu_desig_type);
-		TYPE_POINTER_TO (gnu_desig_type) = gnu_type;
-
-		fields
-		  = create_field_decl (get_identifier ("P_ARRAY"),
-				       gnu_ptr_array, gnu_type,
-				       NULL_TREE, NULL_TREE, 0, 0);
-		DECL_CHAIN (fields)
-		  = create_field_decl (get_identifier ("P_BOUNDS"),
-				       gnu_ptr_template, gnu_type,
-				       NULL_TREE, NULL_TREE, 0, 0);
-		finish_fat_pointer_type (gnu_type, fields);
-
-		TYPE_OBJECT_RECORD_TYPE (gnu_desig_type)
-		  = make_node (RECORD_TYPE);
-		TYPE_NAME (TYPE_OBJECT_RECORD_TYPE (gnu_desig_type))
-		  = create_concat_name (gnat_desig_equiv, "XUT");
-		TYPE_DUMMY_P (TYPE_OBJECT_RECORD_TYPE (gnu_desig_type)) = 1;
-	      }
 	  }
 
 	/* If we already know what the full type is, use it.  */
@@ -3738,16 +3727,17 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	   end of the current unit.  */
 	if ((!in_main_unit || is_from_limited_with) && made_dummy)
 	  {
-	    tree gnu_old_desig_type
-	      = TYPE_IS_FAT_POINTER_P (gnu_type)
-		? TYPE_UNCONSTRAINED_ARRAY (gnu_type) : TREE_TYPE (gnu_type);
+	    tree gnu_old_desig_type;
 
-	    if (esize == POINTER_SIZE
-		&& (got_fat_p || TYPE_IS_FAT_POINTER_P (gnu_type)))
-	      gnu_type
-		= build_pointer_type
-		  (TYPE_OBJECT_RECORD_TYPE
-		   (TYPE_UNCONSTRAINED_ARRAY (gnu_type)));
+	    if (TYPE_IS_FAT_POINTER_P (gnu_type))
+	      {
+		gnu_old_desig_type = TYPE_UNCONSTRAINED_ARRAY (gnu_type);
+		if (esize == POINTER_SIZE)
+		  gnu_type = build_pointer_type
+			     (TYPE_OBJECT_RECORD_TYPE (gnu_old_desig_type));
+	      }
+	    else
+	      gnu_old_desig_type = TREE_TYPE (gnu_type);
 
 	    gnu_decl = create_type_decl (gnu_entity_name, gnu_type, attr_list,
 					 !Comes_From_Source (gnat_entity),
@@ -3905,7 +3895,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	Entity_Id gnat_return_type = Etype (gnat_entity);
 	tree gnu_return_type;
 	/* The first GCC parameter declaration (a PARM_DECL node).  The
-	   PARM_DECL nodes are chained through the TREE_CHAIN field, so this
+	   PARM_DECL nodes are chained through the DECL_CHAIN field, so this
 	   actually is the head of this parameter list.  */
 	tree gnu_param_list = NULL_TREE;
 	/* Likewise for the stub associated with an exported procedure.  */
@@ -5140,28 +5130,6 @@ rest_of_type_decl_compilation_no_defer (tree decl)
 
       rest_of_type_compilation (t, toplev);
     }
-}
-
-/* Given a record type RECORD_TYPE and a list of FIELD_DECL nodes FIELD_LIST,
-   finish constructing the record type as a fat pointer type.  */
-
-static void
-finish_fat_pointer_type (tree record_type, tree field_list)
-{
-  /* Make sure we can put it into a register.  */
-  TYPE_ALIGN (record_type) = MIN (BIGGEST_ALIGNMENT, 2 * POINTER_SIZE);
-
-  /* Show what it really is.  */
-  TYPE_FAT_POINTER_P (record_type) = 1;
-
-  /* Do not emit debug info for it since the types of its fields may still be
-     incomplete at this point.  */
-  finish_record_type (record_type, field_list, 0, false);
-
-  /* Force type_contains_placeholder_p to return true on it.  Although the
-     PLACEHOLDER_EXPRs are referenced only indirectly, this isn't a pointer
-     type but the representation of the unconstrained array.  */
-  TYPE_CONTAINS_PLACEHOLDER_INTERNAL (record_type) = 2;
 }
 
 /* Finalize the processing of From_With_Type incomplete types.  */

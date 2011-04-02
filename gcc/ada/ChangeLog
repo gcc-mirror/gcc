@@ -1,5 +1,22 @@
 2011-04-02  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/gigi.h (get_dummy_type): Declare.
+	(build_dummy_unc_pointer_types): Likewise.
+	(finish_fat_pointer_type): Likewise.
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Array_Type>: If a dummy
+	fat pointer type has been built, complete it in place.
+	<E_Access_Type>: Call build_dummy_unc_pointer_types to build dummy fat
+	and thin pointers.  Remove useless variable.
+	(finish_fat_pointer_type): Make global and move to...
+	* gcc-interface/utils.c (finish_fat_pointer_type): ...here.
+	(get_dummy_type): New function.
+	(build_dummy_unc_pointer_types): Likewise.
+	(gnat_pushdecl): Propage the name to the anonymous variants only.
+	(update_pointer_to): Only adjust the pointer types in the unconstrained
+	array case.
+
+2011-04-02  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/ada-tree.h (DECL_TAFT_TYPE_P): New flag.
 	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Incomplete_Type>: Set it
 	if this is a Taft amendment type and the full declaration is available.
