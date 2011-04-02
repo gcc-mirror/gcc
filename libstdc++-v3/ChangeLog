@@ -50,6 +50,15 @@
 
 2011-03-25  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
+	* include/std/future (future::share): Add.
+	(packaged_task::result_type): Remove as per LWG 2030.
+	(packaged_task::packaged_task): Remove redundant constructors, as per
+	LWG 1514.
+	* testsuite/30_threads/future/members/share.cc: New.
+	* testsuite/30_threads/packaged_task/requirements/typedefs.cc: Remove.
+
+2011-03-25  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
 	* testsuite/28_regex/match_results/ctors/char/default.cc: Do not call
 	members which require a fully established result state.
 	* testsuite/28_regex/match_results/ctors/wchar_t/default.cc: Likewise.
