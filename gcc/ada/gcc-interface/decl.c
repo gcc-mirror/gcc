@@ -2175,7 +2175,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	else
 	  gnat_name = gnat_entity;
 	create_type_decl (create_concat_name (gnat_name, "XUP"),
-			  gnu_fat_type, NULL, true,
+			  gnu_fat_type, NULL, !Comes_From_Source (gnat_entity),
 			  debug_info_p, gnat_entity);
 
 	/* Create the type to be used as what a thin pointer designates:
@@ -2537,14 +2537,25 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	      add_parallel_type (TYPE_STUB_DECL (gnu_type), gnu_bound_rec);
 	    }
 
-	  /* Otherwise, for a packed array, make the original array type a
-	     parallel type.  */
-	  else if (debug_info_p
-		   && Is_Packed_Array_Type (gnat_entity)
-		   && present_gnu_tree (Original_Array_Type (gnat_entity)))
-	    add_parallel_type (TYPE_STUB_DECL (gnu_type),
-			       gnat_to_gnu_type
-			       (Original_Array_Type (gnat_entity)));
+	  /* If this is a packed array type, make the original array type a
+	     parallel type.  Otherwise, do it for the base array type if it
+	     isn't artificial to make sure it is kept in the debug info.  */
+	  if (debug_info_p)
+	    {
+	      if (Is_Packed_Array_Type (gnat_entity)
+		  && present_gnu_tree (Original_Array_Type (gnat_entity)))
+		add_parallel_type (TYPE_STUB_DECL (gnu_type),
+				   gnat_to_gnu_type
+				   (Original_Array_Type (gnat_entity)));
+	      else
+		{
+		  tree gnu_base_decl
+		    = gnat_to_gnu_entity (Etype (gnat_entity), NULL_TREE, 0);
+		  if (!DECL_ARTIFICIAL (gnu_base_decl))
+		    add_parallel_type (TYPE_STUB_DECL (gnu_type),
+				       TREE_TYPE (TREE_TYPE (gnu_base_decl)));
+		}
+	    }
 
 	  TYPE_CONVENTION_FORTRAN_P (gnu_type) = convention_fortran_p;
 	  TYPE_PACKED_ARRAY_TYPE_P (gnu_type)
