@@ -4469,6 +4469,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	   we can do any needed updates when we see it.  */
 	gnu_type = make_dummy_type (gnat_entity);
 	gnu_decl = TYPE_STUB_DECL (gnu_type);
+	if (Has_Completion_In_Body (gnat_entity))
+	  DECL_TAFT_TYPE_P (gnu_decl) = 1;
 	save_gnu_tree (full_view, gnu_decl, 0);
 	break;
       }

@@ -4736,9 +4736,28 @@ smaller_form_type_p (tree type, tree orig_type)
 
 /* Perform final processing on global variables.  */
 
+static GTY (()) tree dummy_global;
+
 void
 gnat_write_global_declarations (void)
 {
+  /* If we have declared types as used at the global level, insert them in
+     the global hash table.  We use a dummy variable for this purpose.  */
+  if (!VEC_empty (tree, types_used_by_cur_var_decl))
+    {
+      dummy_global
+	= build_decl (BUILTINS_LOCATION, VAR_DECL, NULL_TREE, void_type_node);
+      TREE_STATIC (dummy_global) = 1;
+      TREE_ASM_WRITTEN (dummy_global) = 1;
+      varpool_mark_needed_node (varpool_node (dummy_global));
+
+      while (!VEC_empty (tree, types_used_by_cur_var_decl))
+	{
+	  tree t = VEC_pop (tree, types_used_by_cur_var_decl);
+	  types_used_by_var_decl_insert (t, dummy_global);
+	}
+    }
+
   /* Proceed to optimize and emit assembly.
      FIXME: shouldn't be the front end's responsibility to call this.  */
   cgraph_finalize_compilation_unit ();
