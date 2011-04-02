@@ -1,5 +1,10 @@
 2011-04-02  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/utils2.c (build_allocator): In the unconstrained array
+	type case, do not strip a padding type around the array type.
+
+2011-04-02  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/utils.c (update_pointer_to): Finalize named pointer
 	types.
 
