@@ -1,5 +1,11 @@
 2011-04-03  Michael Matz  <matz@suse.de>
 
+	* tree.c (free_lang_data_in_decl): Zero DECL_VINDEX if it's not
+	an integer.
+	* tree.h (tree_decl_non_common.vindex): Adjust comment.
+
+2011-04-03  Michael Matz  <matz@suse.de>
+
 	* cgraphbuild.c (record_reference): Canonicalize constructor
 	values.
 	* gimple-fold.c (canonicalize_constructor_val): Accept being called

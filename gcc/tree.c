@@ -4647,6 +4647,13 @@ free_lang_data_in_decl (tree decl)
 	  && RECORD_OR_UNION_TYPE_P
 	       (DECL_CONTEXT (DECL_ABSTRACT_ORIGIN (decl))))
 	DECL_ABSTRACT_ORIGIN (decl) = NULL_TREE;
+
+      /* Sometimes the C++ frontend doesn't manage to transform a temporary
+         DECL_VINDEX referring to itself into a vtable slot number as it
+	 should.  Happens with functions that are copied and then forgotten
+	 about.  Just clear it, it won't matter anymore.  */
+      if (DECL_VINDEX (decl) && !host_integerp (DECL_VINDEX (decl), 0))
+	DECL_VINDEX (decl) = NULL_TREE;
     }
   else if (TREE_CODE (decl) == VAR_DECL)
     {
