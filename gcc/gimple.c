@@ -3242,8 +3242,8 @@ typedef struct GTY(()) gimple_type_leader_entry_s {
 } gimple_type_leader_entry;
 
 #define GIMPLE_TYPE_LEADER_SIZE 16381
-static GTY((length("GIMPLE_TYPE_LEADER_SIZE"))) gimple_type_leader_entry
-  *gimple_type_leader;
+static GTY((deletable, length("GIMPLE_TYPE_LEADER_SIZE")))
+  gimple_type_leader_entry *gimple_type_leader;
 
 /* Lookup an existing leader for T and return it or NULL_TREE, if
    there is none in the cache.  */

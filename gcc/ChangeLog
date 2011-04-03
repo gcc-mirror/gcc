@@ -1,3 +1,55 @@
+2011-04-03  Michael Matz  <matz@suse.de>
+
+	* lto-streamer.h (struct lto_streamer_cache_d): Remove offsets
+	and next_slot members.
+	(lto_streamer_cache_insert, lto_streamer_cache_insert_at,
+	lto_streamer_cache_lookup, lto_streamer_cache_get): Adjust prototypes.
+	(lto_streamer_cache_append): Declare.
+	* lto-streamer.c (lto_streamer_cache_add_to_node_array): Use
+	unsigned index, remove offset parameter, ensure that we append
+	or update existing entries.
+	(lto_streamer_cache_insert_1): Use unsigned index, remove offset_p
+	parameter, update next_slot for append.
+	(lto_streamer_cache_insert): Use unsigned index, remove offset_p
+	parameter.
+	(lto_streamer_cache_insert_at): Likewise.
+	(lto_streamer_cache_append): New function.
+	(lto_streamer_cache_lookup): Use unsigned index.
+	(lto_streamer_cache_get): Likewise.
+	(lto_record_common_node): Don't test tree_node_can_be_shared.
+	(preload_common_node): Adjust call to lto_streamer_cache_insert.
+	(lto_streamer_cache_delete): Don't free offsets member.
+	* lto-streamer-out.c (eq_string_slot_node): Use memcmp.
+	(lto_output_string_with_length): Use lto_output_data_stream.
+	(lto_output_tree_header): Remove ix parameter, don't write it.
+	(lto_output_builtin_tree): Likewise.
+	(lto_write_tree): Adjust callers to above, don't track and write
+	offset, write unsigned index.
+	(output_unreferenced_globals): Don't emit all global vars.
+	(write_global_references): Use unsigned indices.
+	(lto_output_decl_state_refs): Likewise.
+	(write_symbol): Likewise.
+	* lto-streamer-in.c (lto_input_chain): Move earlier.
+	(input_function): Use unsigned index.
+	(input_alias_pairs): Don't read and then ignore all global vars.
+	(lto_materialize_tree): Remove ix_p parameter, don't read index,
+	don't pass it back, use lto_streamer_cache_append.
+	(lto_register_var_decl_in_symtab): Use unsigned index.
+	(lto_register_function_decl_in_symtab): Likewise.
+	(lto_get_pickled_tree): Don't read in or handle offset, read unsigned
+	index.
+	(lto_get_builtin_tree): Don't read index, use
+	lto_streamer_cache_append.
+	(lto_read_tree): Adjust call to lto_materialize_tree.
+
+	* ipa-inline.c (cgraph_edge_badness): Move growth calculaton,
+	don't use function calls in arguments to MIN.
+
+	* varasm.c (decl_binds_to_current_def_p): Don't check TREE_PUBLIC
+	twice.
+
+	* gimple.c (gimple_type_leader_entry): Mark deletable.
+
 2011-04-03  Alan Modra  <amodra@gmail.com>
 
 	* dwarf2out.c (mem_loc_descriptor): Recurse on LO_SUM.
