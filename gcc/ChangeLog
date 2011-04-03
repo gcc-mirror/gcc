@@ -1,3 +1,7 @@
+2011-04-03  Alan Modra  <amodra@gmail.com>
+
+	* dwarf2out.c (mem_loc_descriptor): Recurse on LO_SUM.
+
 2011-04-03  Michael Matz  <matz@suse.de>
 
 	* tree.c (free_lang_data_in_decl): Zero DECL_VINDEX if it's not

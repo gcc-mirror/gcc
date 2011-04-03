@@ -13706,9 +13706,7 @@ mem_loc_descriptor (rtx rtl, enum machine_mode mode,
       break;
 
     case LO_SUM:
-	 rtl = XEXP (rtl, 1);
-
-      /* ... fall through ...  */
+      return mem_loc_descriptor (XEXP (rtl, 1), mode, initialized);
 
     case LABEL_REF:
       /* Some ports can transform a symbol ref into a label ref, because
