@@ -50,6 +50,7 @@ GO_OBJS = \
 	go/expressions.o \
 	go/go-backend.o \
 	go/go-dump.o \
+	go/go-gcc.o \
 	go/go-lang.o \
 	go/go.o \
 	go/gogo-tree.o \
@@ -235,6 +236,9 @@ go/go-lang.o: go/go-lang.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(OPTS_H) \
 
 GOINCLUDES = -I $(srcdir)/go -I $(srcdir)/go/gofrontend
 
+go/go-gcc.o: go/go-gcc.cc $(GO_SYSTEM_H) $(TREE_H) go/gofrontend/backend.h
+	$(CXX) -c $(GOINCLUDES) $(ALL_CPPFLAGS) $(ALL_CXXFLAGS) $< $(OUTPUT_OPTION)
+
 go/%.o: go/gofrontend/%.cc
 	$(CXX) -c $(GOINCLUDES) $(ALL_CPPFLAGS) $(ALL_CXXFLAGS) $< $(OUTPUT_OPTION)
 
@@ -249,7 +253,7 @@ go/expressions.o: go/gofrontend/expressions.cc $(GO_SYSTEM_H) $(TOPLEV_H) \
 	go/gofrontend/export.h $(GO_IMPORT_H) $(GO_STATEMENTS_H) $(GO_LEX_H) \
 	$(GO_EXPRESSIONS_H)
 go/go.o: go/gofrontend/go.cc $(GO_SYSTEM_H) $(GO_C_H) $(GO_LEX_H) \
-	$(GO_PARSE_H) $(GO_GOGO_H)
+	$(GO_PARSE_H) go/gofrontend/backend.h $(GO_GOGO_H)
 go/go-dump.o: go/gofrontend/go-dump.cc $(GO_SYSTEM_H) $(GO_C_H) \
 	go/gofrontend/go-dump.h
 go/gogo-tree.o: go/gofrontend/gogo-tree.cc $(GO_SYSTEM_H) $(TOPLEV_H) \
@@ -272,7 +276,7 @@ go/parse.o: go/gofrontend/parse.cc $(GO_SYSTEM_H) $(GO_LEX_H) $(GO_GOGO_H) \
 go/statements.o: go/gofrontend/statements.cc $(GO_SYSTEM_H) intl.h $(TREE_H) \
 	$(GIMPLE_H) convert.h tree-iterator.h $(TREE_FLOW_H) $(REAL_H) \
 	$(GO_C_H) $(GO_TYPES_H) $(GO_EXPRESSIONS_H) $(GO_GOGO_H) \
-	$(GO_STATEMENTS_H)
+	go/gofrontend/backend.h $(GO_STATEMENTS_H)
 go/types.o: go/gofrontend/types.cc $(GO_SYSTEM_H) $(TOPLEV_H) intl.h $(TREE_H) \
 	$(GIMPLE_H) $(REAL_H) convert.h $(GO_C_H) $(GO_GOGO_H) \
 	go/gofrontend/operator.h $(GO_EXPRESSIONS_H) $(GO_STATEMENTS_H) \

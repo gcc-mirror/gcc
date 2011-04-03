@@ -37,6 +37,7 @@ class Methods;
 class Named_object;
 class Label;
 class Translate_context;
+class Backend;
 class Export;
 class Import;
 
@@ -102,7 +103,12 @@ class Gogo
  public:
   // Create the IR, passing in the sizes of the types "int" and
   // "uintptr" in bits.
-  Gogo(int int_type_size, int pointer_size);
+  Gogo(Backend* backend, int int_type_size, int pointer_size);
+
+  // Get the backend generator.
+  Backend*
+  backend()
+  { return this->backend_; }
 
   // Get the package name.
   const std::string&
@@ -647,6 +653,8 @@ class Gogo
   typedef Unordered_map_hash(const Type*, tree, Type_hash_identical,
 			     Type_identical) Type_descriptor_decls;
 
+  // The backend generator.
+  Backend* backend_;
   // The package we are compiling.
   Package* package_;
   // The list of currently open functions during parsing.
@@ -2451,16 +2459,16 @@ class Traverse
   Expressions_seen* expressions_seen_;
 };
 
-// When translating the gogo IR into trees, this is the context we
-// pass down the blocks and statements.
+// When translating the gogo IR into the backend data structure, this
+// is the context we pass down the blocks and statements.
 
 class Translate_context
 {
  public:
   Translate_context(Gogo* gogo, Named_object* function, Block* block,
 		    tree block_tree)
-    : gogo_(gogo), function_(function), block_(block), block_tree_(block_tree),
-      is_const_(false)
+    : gogo_(gogo), backend_(gogo->backend()), function_(function),
+      block_(block), block_tree_(block_tree), is_const_(false)
   { }
 
   // Accessors.
@@ -2468,6 +2476,10 @@ class Translate_context
   Gogo*
   gogo()
   { return this->gogo_; }
+
+  Backend*
+  backend()
+  { return this->backend_; }
 
   Named_object*
   function()
@@ -2493,6 +2505,8 @@ class Translate_context
  private:
   // The IR for the entire compilation unit.
   Gogo* gogo_;
+  // The generator for the backend data structures.
+  Backend* backend_;
   // The function we are currently translating.
   Named_object* function_;
   // The block we are currently translating.

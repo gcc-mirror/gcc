@@ -19,8 +19,9 @@
 
 // Class Gogo.
 
-Gogo::Gogo(int int_type_size, int pointer_size)
-  : package_(NULL),
+Gogo::Gogo(Backend* backend, int int_type_size, int pointer_size)
+  : backend_(backend),
+    package_(NULL),
     functions_(),
     globals_(new Bindings(NULL)),
     imports_(),

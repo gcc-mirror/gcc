@@ -10,6 +10,7 @@
 
 #include "lex.h"
 #include "parse.h"
+#include "backend.h"
 #include "gogo.h"
 
 // The unique prefix to use for exported symbols.  This is set during
@@ -27,7 +28,7 @@ void
 go_create_gogo(int int_type_size, int pointer_size)
 {
   gcc_assert(::gogo == NULL);
-  ::gogo = new Gogo(int_type_size, pointer_size);
+  ::gogo = new Gogo(go_get_backend(), int_type_size, pointer_size);
   if (!unique_prefix.empty())
     ::gogo->set_unique_prefix(unique_prefix);
 }

@@ -29,6 +29,7 @@ extern "C"
 #include "types.h"
 #include "expressions.h"
 #include "gogo.h"
+#include "backend.h"
 #include "statements.h"
 
 // Class Statement.
@@ -560,8 +561,10 @@ Assignment_statement::do_get_tree(Translate_context* context)
   if (rhs_tree == error_mark_node)
     return error_mark_node;
 
-  return fold_build2_loc(this->location(), MODIFY_EXPR, void_type_node,
-			 lhs_tree, rhs_tree);
+  Bstatement* ret = context->backend()->assignment(tree_to_expr(lhs_tree),
+						   tree_to_expr(rhs_tree),
+						   this->location());
+  return statement_to_tree(ret);
 }
 
 // Make an assignment statement.
