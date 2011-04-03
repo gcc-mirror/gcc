@@ -1,3 +1,8 @@
+2011-04-03  Kai Tietz  <ktietz@redhat.com>
+
+	PR middle-end/48422
+	* Make-lang.in (f95-lang.o): Add some missing dependencies.
+
 2011-04-01  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/48352
