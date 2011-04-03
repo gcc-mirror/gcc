@@ -5228,9 +5228,6 @@ extern bool subrange_type_for_debug_p (const_tree, tree *, tree *);
 extern HOST_WIDE_INT int_cst_value (const_tree);
 extern HOST_WIDEST_INT widest_int_cst_value (const_tree);
 
-extern bool fields_compatible_p (const_tree, const_tree);
-extern tree find_compatible_field (tree, tree);
-
 extern tree *tree_block (tree);
 extern location_t *block_nonartificial_location (tree);
 extern location_t tree_nonartificial_location (tree);
