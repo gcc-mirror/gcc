@@ -3974,7 +3974,6 @@ try_combine (rtx i3, rtx i2, rtx i1, rtx i0, int *new_direct_jump_p)
     rtx i3links, i2links, i1links = 0, i0links = 0;
     rtx midnotes = 0;
     int from_luid;
-    unsigned int regno;
     /* Compute which registers we expect to eliminate.  newi2pat may be setting
        either i3dest or i2dest, so we must check it.  Also, i1dest may be the
        same as i3dest, in which case newi2pat may be setting i1dest.  */
@@ -4232,8 +4231,7 @@ try_combine (rtx i3, rtx i2, rtx i1, rtx i0, int *new_direct_jump_p)
 
     if (REG_P (i2dest))
       {
-	rtx link;
-	rtx i2_insn = 0, i2_val = 0, set;
+	rtx link, i2_insn = 0, i2_val = 0, set;
 
 	/* The insn that used to set this register doesn't exist, and
 	   this life of the register may not exist either.  See if one of
@@ -4242,7 +4240,6 @@ try_combine (rtx i3, rtx i2, rtx i1, rtx i0, int *new_direct_jump_p)
 	   this and I2 set the register to a value that depended on its old
 	   contents, we will get confused.  If this insn is used, thing
 	   will be set correctly in combine_instructions.  */
-
 	for (link = LOG_LINKS (i3); link; link = XEXP (link, 1))
 	  if ((set = single_set (XEXP (link, 0))) != 0
 	      && rtx_equal_p (i2dest, SET_DEST (set)))
@@ -4255,16 +4252,12 @@ try_combine (rtx i3, rtx i2, rtx i1, rtx i0, int *new_direct_jump_p)
 	if (! added_sets_2
 	    && (newi2pat == 0 || ! reg_mentioned_p (i2dest, newi2pat))
 	    && ! i2dest_in_i2src)
-	  {
-	    regno = REGNO (i2dest);
-	    INC_REG_N_SETS (regno, -1);
-	  }
+	  INC_REG_N_SETS (REGNO (i2dest), -1);
       }
 
     if (i1 && REG_P (i1dest))
       {
-	rtx link;
-	rtx i1_insn = 0, i1_val = 0, set;
+	rtx link, i1_insn = 0, i1_val = 0, set;
 
 	for (link = LOG_LINKS (i3); link; link = XEXP (link, 1))
 	  if ((set = single_set (XEXP (link, 0))) != 0
@@ -4273,15 +4266,13 @@ try_combine (rtx i3, rtx i2, rtx i1, rtx i0, int *new_direct_jump_p)
 
 	record_value_for_reg (i1dest, i1_insn, i1_val);
 
-	regno = REGNO (i1dest);
 	if (! added_sets_1 && ! i1dest_in_i1src)
-	  INC_REG_N_SETS (regno, -1);
+	  INC_REG_N_SETS (REGNO (i1dest), -1);
       }
 
     if (i0 && REG_P (i0dest))
       {
-	rtx link;
-	rtx i0_insn = 0, i0_val = 0, set;
+	rtx link, i0_insn = 0, i0_val = 0, set;
 
 	for (link = LOG_LINKS (i3); link; link = XEXP (link, 1))
 	  if ((set = single_set (XEXP (link, 0))) != 0
@@ -4290,9 +4281,8 @@ try_combine (rtx i3, rtx i2, rtx i1, rtx i0, int *new_direct_jump_p)
 
 	record_value_for_reg (i0dest, i0_insn, i0_val);
 
-	regno = REGNO (i0dest);
 	if (! added_sets_0 && ! i0dest_in_i0src)
-	  INC_REG_N_SETS (regno, -1);
+	  INC_REG_N_SETS (REGNO (i0dest), -1);
       }
 
     /* Update reg_stat[].nonzero_bits et al for any changes that may have
