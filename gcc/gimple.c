@@ -3306,8 +3306,7 @@ compare_type_names_p (tree t1, tree t2, bool for_completion_p)
 
 /* Return true if the field decls F1 and F2 are at the same offset.
 
-   This is intended to be used on GIMPLE types only.  In order to
-   compare GENERIC types, use fields_compatible_p instead.  */
+   This is intended to be used on GIMPLE types only.  */
 
 bool
 gimple_compare_field_offset (tree f1, tree f2)
