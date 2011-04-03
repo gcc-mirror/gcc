@@ -1,3 +1,9 @@
+2011-04-03  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/48311
+	* libquadmath.texi (strtoflt128): Fix typo.
+	(quadmath_snprintf): Move note up, make @item.
+
 2011-03-25  Jakub Jelinek  <jakub@redhat.com>
 
 	* printf/printf_fp.c (__quadmath_printf_fp): Use memcpy instead of
