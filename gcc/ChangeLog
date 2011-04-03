@@ -1,5 +1,14 @@
 2011-04-03  Michael Matz  <matz@suse.de>
 
+	* cgraphbuild.c (record_reference): Canonicalize constructor
+	values.
+	* gimple-fold.c (canonicalize_constructor_val): Accept being called
+	without function context.
+	* cgraphunit.c (cgraph_finalize_compilation_unit): Clear
+	current_function_decl and cfun.
+
+2011-04-03  Michael Matz  <matz@suse.de>
+
 	* tree.c (decl_init_priority_insert): Don't create entry for
 	default priority.
 	(decl_fini_priority_insert): Ditto.

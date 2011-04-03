@@ -106,7 +106,7 @@ can_refer_decl_in_current_unit_p (tree decl)
   return true;
 }
 
-/* CVAL is value taken from DECL_INITIAL of variable.  Try to transorm it into
+/* CVAL is value taken from DECL_INITIAL of variable.  Try to transform it into
    acceptable form for is_gimple_min_invariant.   */
 
 tree
@@ -131,10 +131,9 @@ canonicalize_constructor_val (tree cval)
 	      || TREE_CODE (base) == FUNCTION_DECL)
 	  && !can_refer_decl_in_current_unit_p (base))
 	return NULL_TREE;
-      if (base && TREE_CODE (base) == VAR_DECL)
+      if (cfun && base && TREE_CODE (base) == VAR_DECL)
 	add_referenced_var (base);
-      /* We never have the chance to fixup types in global initializers
-         during gimplification.  Do so here.  */
+      /* Fixup types in global initializers.  */
       if (TREE_TYPE (TREE_TYPE (cval)) != TREE_TYPE (TREE_OPERAND (cval, 0)))
 	cval = build_fold_addr_expr (TREE_OPERAND (cval, 0));
     }
