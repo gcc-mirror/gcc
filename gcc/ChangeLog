@@ -1,3 +1,7 @@
+2011-04-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* combine.c (try_combine): Remove useless local variable.
+
 2011-04-03  Richard Guenther  <rguenther@suse.de>
             Ira Rosen  <ira.rosen@linaro.org>
 
