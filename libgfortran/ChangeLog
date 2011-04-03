@@ -1,3 +1,10 @@
+2011-04-04  Tobias Burnus  <burnus@net-b.de>
+
+	* unix.c: Adapt stat DEFINEs since MinGW64 supports LFS.
+	(fallback_access, open_internal4, compare_file_filename,
+	find_file, file_size, inquire_sequential, inquire_direct,
+	inquire_formatted): Use "struct stat" instead of gfstat_t.
+
 2011-03-27  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/18918
