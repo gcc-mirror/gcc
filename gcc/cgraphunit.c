@@ -1066,6 +1066,11 @@ cgraph_finalize_compilation_unit (void)
 {
   timevar_push (TV_CGRAPH);
 
+  /* If we're here there's no current function anymore.  Some frontends
+     are lazy in clearing these.  */
+  current_function_decl = NULL;
+  set_cfun (NULL);
+
   /* Do not skip analyzing the functions if there were errors, we
      miss diagnostics for following functions otherwise.  */
 
