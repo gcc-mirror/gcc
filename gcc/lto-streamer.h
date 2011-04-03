@@ -350,14 +350,8 @@ struct lto_streamer_cache_d
   /* Node map to store entries into.  */
   alloc_pool node_map_entries;
 
-  /* Next available slot in the nodes and offsets arrays.  */
-  unsigned next_slot;
-
   /* The nodes pickled so far.  */
   VEC(tree,heap) *nodes;
-
-  /* Offset into the stream where the nodes have been written.  */
-  VEC(unsigned,heap) *offsets;
 };
 
 
@@ -831,12 +825,13 @@ extern void lto_bitmap_free (bitmap);
 extern char *lto_get_section_name (int, const char *, struct lto_file_decl_data *);
 extern void print_lto_report (void);
 extern bool lto_streamer_cache_insert (struct lto_streamer_cache_d *, tree,
-				       int *, unsigned *);
+				       unsigned *);
 extern bool lto_streamer_cache_insert_at (struct lto_streamer_cache_d *, tree,
-					  int);
+					  unsigned);
+extern void lto_streamer_cache_append (struct lto_streamer_cache_d *, tree);
 extern bool lto_streamer_cache_lookup (struct lto_streamer_cache_d *, tree,
-				       int *);
-extern tree lto_streamer_cache_get (struct lto_streamer_cache_d *, int);
+				       unsigned *);
+extern tree lto_streamer_cache_get (struct lto_streamer_cache_d *, unsigned);
 extern struct lto_streamer_cache_d *lto_streamer_cache_create (void);
 extern void lto_streamer_cache_delete (struct lto_streamer_cache_d *);
 extern void lto_streamer_init (void);

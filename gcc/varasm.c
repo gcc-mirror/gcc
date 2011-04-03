@@ -6798,7 +6798,7 @@ default_binds_local_p_1 (const_tree exp, int shlib)
    current module (shared library or executable), that is to binds_local_p.
    We use this fact to avoid need for another target hook and implement
    the logic using binds_local_p and just special cases where
-   decl_binds_to_current_def_p is stronger than binds local_p.  In particular
+   decl_binds_to_current_def_p is stronger than binds_local_p.  In particular
    the weak definitions (that can be overwritten at linktime by other
    definition from different object file) and when resolution info is available
    we simply use the knowledge passed to us by linker plugin.  */
@@ -6811,7 +6811,7 @@ decl_binds_to_current_def_p (tree decl)
   if (!targetm.binds_local_p (decl))
     return false;
   /* When resolution is available, just use it.  */
-  if (TREE_CODE (decl) == VAR_DECL && TREE_PUBLIC (decl)
+  if (TREE_CODE (decl) == VAR_DECL
       && (TREE_STATIC (decl) || DECL_EXTERNAL (decl)))
     {
       struct varpool_node *vnode = varpool_get_node (decl);
@@ -6819,7 +6819,7 @@ decl_binds_to_current_def_p (tree decl)
 	  && vnode->resolution != LDPR_UNKNOWN)
 	return resolution_to_local_definition_p (vnode->resolution);
     }
-  else if (TREE_CODE (decl) == FUNCTION_DECL && TREE_PUBLIC (decl))
+  else if (TREE_CODE (decl) == FUNCTION_DECL)
     {
       struct cgraph_node *node = cgraph_get_node_or_alias (decl);
       if (node

@@ -615,11 +615,6 @@ lto_define_builtins (tree va_list_ref_type_node ATTRIBUTE_UNUSED,
 
 static GTY(()) tree registered_builtin_types;
 
-/* A chain of builtin functions that we need to recognize.  We will
-   assume that all other function names we see will be defined by the
-   user's program.  */
-static GTY(()) tree registered_builtin_fndecls;
-
 /* Language hooks.  */
 
 static unsigned int
@@ -994,7 +989,10 @@ lto_pushdecl (tree t ATTRIBUTE_UNUSED)
 static tree
 lto_getdecls (void)
 {
-  return registered_builtin_fndecls;
+  /* We have our own write_globals langhook, hence the getdecls
+     langhook shouldn't be used, except by dbxout.c, so we can't
+     just abort here.  */
+  return NULL_TREE;
 }
 
 static void
@@ -1010,10 +1008,6 @@ lto_write_globals (void)
 static tree
 lto_builtin_function (tree decl)
 {
-  /* Record it.  */
-  TREE_CHAIN (decl) = registered_builtin_fndecls;
-  registered_builtin_fndecls = decl;
-
   return decl;
 }
 
