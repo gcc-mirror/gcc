@@ -7,10 +7,11 @@ msgid ""
 msgstr ""
 "Project-Id-Version: cpplib 4.5-b20100204\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
-"POT-Creation-Date: 2010-12-18 16:00+0000\n"
+"POT-Creation-Date: 2011-03-24 16:45+0000\n"
 "PO-Revision-Date: 2010-02-05 19:00+0700\n"
 "Last-Translator: Arif E. Nugroho <arif_endro@yahoo.com>\n"
 "Language-Team: Indonesian <translation-team-id@lists.sourceforge.net>\n"
+"Language: id\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=ISO-8859-1\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -154,244 +155,244 @@ msgstr "gagal untuk mengubah %s ke %s"
 msgid "extra tokens at end of #%s directive"
 msgstr "ekstra token di akhir dari #%s direktif"
 
-#: directives.c:355
+#: directives.c:356
 #, c-format
 msgid "#%s is a GCC extension"
 msgstr "#%s adalah sebuah ekstensi GCC"
 
-#: directives.c:360
+#: directives.c:361
 #, c-format
 msgid "#%s is a deprecated GCC extension"
 msgstr "#%s adalah sebuah ekstensi GCC yang sudah ditinggalkan"
 
-#: directives.c:373
+#: directives.c:374
 msgid "suggest not using #elif in traditional C"
 msgstr "disarankan tidak menggunakan #elif dalam tradisional C"
 
-#: directives.c:376
+#: directives.c:377
 #, c-format
 msgid "traditional C ignores #%s with the # indented"
 msgstr "tradisional C mengabaikan #%s dengan # terindentasi"
 
-#: directives.c:380
+#: directives.c:381
 #, c-format
 msgid "suggest hiding #%s from traditional C with an indented #"
 msgstr "disarankan menyembunyikan #%s dari tradisional C dengan sebuah indentasi #"
 
-#: directives.c:406
+#: directives.c:407
 msgid "embedding a directive within macro arguments is not portable"
 msgstr "embedding sebuah direktif didalam argumen makro yang bukan portabel"
 
-#: directives.c:426
+#: directives.c:427
 msgid "style of line directive is a GCC extension"
 msgstr "gaya dari baris direktif bukan sebuah ekstensi GCC"
 
-#: directives.c:481
+#: directives.c:482
 #, c-format
 msgid "invalid preprocessing directive #%s"
 msgstr "preprosesing direktif #%s tidak valid"
 
-#: directives.c:549
+#: directives.c:550
 msgid "\"defined\" cannot be used as a macro name"
 msgstr "\"defined\" tidak dapat digunakan sebagai sebuah nama makro"
 
-#: directives.c:555
+#: directives.c:556
 #, c-format
 msgid "\"%s\" cannot be used as a macro name as it is an operator in C++"
 msgstr "\"%s\" tidak dapat digunakan sebagai sebuah nama makro karena ini adalah sebuah operator dalam C++"
 
-#: directives.c:558
+#: directives.c:559
 #, c-format
 msgid "no macro name given in #%s directive"
 msgstr "tidak ada nama makro yang diberikan dalam direktif #%s"
 
-#: directives.c:561
+#: directives.c:562
 msgid "macro names must be identifiers"
 msgstr "nama makro harus berupa pengidentifikasi"
 
-#: directives.c:610
+#: directives.c:611
 #, c-format
 msgid "undefining \"%s\""
 msgstr "tidak terdefinisi \"%s\""
 
-#: directives.c:665
+#: directives.c:666
 msgid "missing terminating > character"
 msgstr "hilang karakter pengakhir >"
 
-#: directives.c:724
+#: directives.c:725
 #, c-format
 msgid "#%s expects \"FILENAME\" or <FILENAME>"
 msgstr "#%s diduga \"NAMA BERKAS\" atau <NAMA BERKAS>"
 
-#: directives.c:770
+#: directives.c:771
 #, c-format
 msgid "empty filename in #%s"
 msgstr "nama berkas kosong dalam #%s"
 
-#: directives.c:780
+#: directives.c:781
 msgid "#include nested too deeply"
 msgstr "#include nested terlalu dalam"
 
-#: directives.c:821
+#: directives.c:822
 msgid "#include_next in primary source file"
 msgstr "#include_next dalam berkas kode program utama"
 
-#: directives.c:847
+#: directives.c:848
 #, c-format
 msgid "invalid flag \"%s\" in line directive"
 msgstr "tanda \"%s\" tidak valid dalam baris direktif"
 
-#: directives.c:907
+#: directives.c:908
 msgid "unexpected end of file after #line"
 msgstr "tidak terduga akhir dari berkas setelah #line"
 
-#: directives.c:910
+#: directives.c:911
 #, c-format
 msgid "\"%s\" after #line is not a positive integer"
 msgstr "\"%s\" setelah #line bukan sebuah integer positif"
 
-#: directives.c:916 directives.c:918
+#: directives.c:917 directives.c:919
 msgid "line number out of range"
 msgstr "nomor baris diluar dari jangkauan"
 
-#: directives.c:931 directives.c:1011
+#: directives.c:932 directives.c:1012
 #, c-format
 msgid "\"%s\" is not a valid filename"
 msgstr "\"%s\" bukan sebuah nama berkas yang valid"
 
-#: directives.c:971
+#: directives.c:972
 #, c-format
 msgid "\"%s\" after # is not a positive integer"
 msgstr "\"%s\" setelah # bukan sebuah integer positif"
 
-#: directives.c:1064 directives.c:1066 directives.c:1068
+#: directives.c:1065 directives.c:1067 directives.c:1069
 #, c-format
 msgid "%s"
 msgstr "%s"
 
-#: directives.c:1092
+#: directives.c:1093
 #, c-format
 msgid "invalid #%s directive"
 msgstr "direktif #%s tidak valid"
 
-#: directives.c:1155
+#: directives.c:1156
 #, c-format
 msgid "registering pragmas in namespace \"%s\" with mismatched name expansion"
 msgstr "mendaftarkan pragma dalam ruang-nama \"%s\" dengan ekspansi nama yang tidak cocok"
 
-#: directives.c:1164
+#: directives.c:1165
 #, c-format
 msgid "registering pragma \"%s\" with name expansion and no namespace"
 msgstr "mendaftarkan pragma \"%s\" dengan ekspansi nama dan tidak ada ruang-nama"
 
-#: directives.c:1182
+#: directives.c:1183
 #, c-format
 msgid "registering \"%s\" as both a pragma and a pragma namespace"
 msgstr "mendaftarkan \"%s\" sebagai baik sebuah pragma dan sebuah ruang-nama"
 
-#: directives.c:1185
+#: directives.c:1186
 #, c-format
 msgid "#pragma %s %s is already registered"
 msgstr "#pragma %s %s telah terdaftar"
 
-#: directives.c:1188
+#: directives.c:1189
 #, c-format
 msgid "#pragma %s is already registered"
 msgstr "#pragma %s telah terdaftar"
 
-#: directives.c:1218
+#: directives.c:1219
 msgid "registering pragma with NULL handler"
 msgstr "mendaftarkan pragma dengan penanganan KOSONG"
 
-#: directives.c:1430
+#: directives.c:1431
 msgid "#pragma once in main file"
 msgstr "#pragma sekali dalam berkas utama"
 
-#: directives.c:1453
+#: directives.c:1454
 msgid "invalid #pragma push_macro directive"
 msgstr "#pragma push_macro direktif tidak valid"
 
-#: directives.c:1508
+#: directives.c:1509
 msgid "invalid #pragma pop_macro directive"
 msgstr "#pragma pop_macro direktif tidak valid"
 
-#: directives.c:1563
+#: directives.c:1564
 msgid "invalid #pragma GCC poison directive"
 msgstr "#pragma GCC tidak valid merusak direktif"
 
-#: directives.c:1572
+#: directives.c:1573
 #, c-format
 msgid "poisoning existing macro \"%s\""
 msgstr "merusak makro \"%s\" yang sudah ada"
 
-#: directives.c:1591
+#: directives.c:1592
 msgid "#pragma system_header ignored outside include file"
 msgstr "#pragma system_header diabaikan diluar berkas include"
 
-#: directives.c:1616
+#: directives.c:1617
 #, c-format
 msgid "cannot find source file %s"
 msgstr "tidak dapat menemukan berkas sumber %s"
 
-#: directives.c:1620
+#: directives.c:1621
 #, c-format
 msgid "current file is older than %s"
 msgstr "berkas ini lebih lama daripada %s"
 
-#: directives.c:1805
+#: directives.c:1806
 msgid "_Pragma takes a parenthesized string literal"
 msgstr "_Pragma mengambil sebuah string literal tanda kurung"
 
-#: directives.c:1916
+#: directives.c:1917
 msgid "#else without #if"
 msgstr "#else tanpa #if"
 
-#: directives.c:1921
+#: directives.c:1922
 msgid "#else after #else"
 msgstr "#else setelah #else"
 
-#: directives.c:1923 directives.c:1956
+#: directives.c:1924 directives.c:1957
 msgid "the conditional began here"
 msgstr "kondisional berawal disini"
 
-#: directives.c:1949
+#: directives.c:1950
 msgid "#elif without #if"
 msgstr "#elif tanpa #if"
 
-#: directives.c:1954
+#: directives.c:1955
 msgid "#elif after #else"
 msgstr "#elif setelah #else"
 
-#: directives.c:1992
+#: directives.c:1993
 msgid "#endif without #if"
 msgstr "#endif tanpa #if"
 
-#: directives.c:2072
+#: directives.c:2073
 msgid "missing '(' after predicate"
 msgstr "hilang '(' setelah predikat"
 
-#: directives.c:2087
+#: directives.c:2088
 msgid "missing ')' to complete answer"
 msgstr "hilang ')' untuk melengkapi jawaban"
 
-#: directives.c:2107
+#: directives.c:2108
 msgid "predicate's answer is empty"
 msgstr "jawaban predikat kosong"
 
-#: directives.c:2134
+#: directives.c:2135
 msgid "assertion without predicate"
 msgstr "assertion tanpa predikat"
 
-#: directives.c:2137
+#: directives.c:2138
 msgid "predicate must be an identifier"
 msgstr "predikat harus berupa sebuah pengidentifikasi"
 
-#: directives.c:2223
+#: directives.c:2224
 #, c-format
 msgid "\"%s\" re-asserted"
 msgstr "\"%s\" re-asserted"
 
-#: directives.c:2514
+#: directives.c:2515
 #, c-format
 msgid "unterminated #%s"
 msgstr "tidak terakhiri #%s"

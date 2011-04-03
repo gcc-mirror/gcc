@@ -7,10 +7,11 @@ msgid ""
 msgstr ""
 "Project-Id-Version: cpplib 4.5-b20100204\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
-"POT-Creation-Date: 2010-12-18 16:00+0000\n"
+"POT-Creation-Date: 2011-03-24 16:45+0000\n"
 "PO-Revision-Date: 2010-02-06 14:43+0100\n"
 "Last-Translator: Tim Van Holder <tim.van.holder@telenet.be>\n"
 "Language-Team: Dutch <vertaling@vrijschrift.org>\n"
+"Language: nl\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -157,256 +158,256 @@ msgstr "fout bij omzetten van %s naar %s"
 msgid "extra tokens at end of #%s directive"
 msgstr "overbodige tokens aan einde van #%s commando"
 
-#: directives.c:355
+#: directives.c:356
 #, c-format
 msgid "#%s is a GCC extension"
 msgstr "#%s is een uitbreiding van GCC"
 
-#: directives.c:360
+#: directives.c:361
 #, c-format
 msgid "#%s is a deprecated GCC extension"
 msgstr "#%s is een afgekeurde uitbreiding van GCC"
 
-#: directives.c:373
+#: directives.c:374
 msgid "suggest not using #elif in traditional C"
 msgstr "gebruik liefst geen #elif in traditionele C"
 
-#: directives.c:376
+#: directives.c:377
 #, c-format
 msgid "traditional C ignores #%s with the # indented"
 msgstr "traditionele C negeert #%s wanneer de # geïndenteerd is"
 
-#: directives.c:380
+#: directives.c:381
 #, c-format
 msgid "suggest hiding #%s from traditional C with an indented #"
 msgstr "verberg #%s liefst van traditionele C via een geïndenteerde #"
 
-#: directives.c:406
+#: directives.c:407
 msgid "embedding a directive within macro arguments is not portable"
 msgstr "het plaatsen van een commando binnen macro-argumenten is niet portabel"
 
-#: directives.c:426
+#: directives.c:427
 msgid "style of line directive is a GCC extension"
 msgstr "dit soort line commando is een uitbreiding van GCC"
 
-#: directives.c:481
+#: directives.c:482
 #, c-format
 msgid "invalid preprocessing directive #%s"
 msgstr "ongeldig preprocessing-commando #%s"
 
-#: directives.c:549
+#: directives.c:550
 msgid "\"defined\" cannot be used as a macro name"
 msgstr "\"defined\" kan niet als macronaam gebruikt worden"
 
-#: directives.c:555
+#: directives.c:556
 #, c-format
 msgid "\"%s\" cannot be used as a macro name as it is an operator in C++"
 msgstr "\"%s\" kan niet als macronaam gebruikt worden omdat het een operator is in C++"
 
-#: directives.c:558
+#: directives.c:559
 #, c-format
 msgid "no macro name given in #%s directive"
 msgstr "geen macronaam opgegeven in #%s commando"
 
 # lap! hier heb ik het zitten... wat is verdorie een betere vertaling voor identifier?
 # Dit is wel langer maar zegt denk ik wel waar het om gaat.
-#: directives.c:561
+#: directives.c:562
 msgid "macro names must be identifiers"
 msgstr "macronamen moeten voldoen aan de regels voor namen in C/C++"
 
 # niet perfect, maar beter dan "wordt ongedefinieerd", "wordt geondefinieerd" of iets dergelijks...
-#: directives.c:610
+#: directives.c:611
 #, c-format
 msgid "undefining \"%s\""
 msgstr "definitie van \"%s\" wordt ongedaan gemaakt"
 
-#: directives.c:665
+#: directives.c:666
 msgid "missing terminating > character"
 msgstr "sluitend > teken ontbreekt"
 
-#: directives.c:724
+#: directives.c:725
 #, c-format
 msgid "#%s expects \"FILENAME\" or <FILENAME>"
 msgstr "#%s verwacht \"BESTAND\" of <BESTAND>"
 
-#: directives.c:770
+#: directives.c:771
 #, c-format
 msgid "empty filename in #%s"
 msgstr "lege bestandsnaam in #%s"
 
-#: directives.c:780
+#: directives.c:781
 msgid "#include nested too deeply"
 msgstr "#include te diep genest"
 
-#: directives.c:821
+#: directives.c:822
 msgid "#include_next in primary source file"
 msgstr "#include_next in primair bronbestand"
 
-#: directives.c:847
+#: directives.c:848
 #, c-format
 msgid "invalid flag \"%s\" in line directive"
 msgstr "ongeldige vlag \"%s\" in #line commando"
 
-#: directives.c:907
+#: directives.c:908
 msgid "unexpected end of file after #line"
 msgstr "onverwacht einde van bestand na #line"
 
-#: directives.c:910
+#: directives.c:911
 #, c-format
 msgid "\"%s\" after #line is not a positive integer"
 msgstr "\"%s\" (na #line) is geen positieve integer"
 
-#: directives.c:916 directives.c:918
+#: directives.c:917 directives.c:919
 msgid "line number out of range"
 msgstr "regelnummer buiten bereik"
 
-#: directives.c:931 directives.c:1011
+#: directives.c:932 directives.c:1012
 #, c-format
 msgid "\"%s\" is not a valid filename"
 msgstr "\"%s\" is geen geldige bestandsnaam"
 
-#: directives.c:971
+#: directives.c:972
 #, c-format
 msgid "\"%s\" after # is not a positive integer"
 msgstr "\"%s\" (na #) is geen positieve integer"
 
 # Shouldn't have been marked as translatable I think
-#: directives.c:1064 directives.c:1066 directives.c:1068
+#: directives.c:1065 directives.c:1067 directives.c:1069
 #, c-format
 msgid "%s"
 msgstr "%s"
 
-#: directives.c:1092
+#: directives.c:1093
 #, c-format
 msgid "invalid #%s directive"
 msgstr "ongeldig #%s commando"
 
 # goede vertaling voor 'mismatched'?
-#: directives.c:1155
+#: directives.c:1156
 #, c-format
 msgid "registering pragmas in namespace \"%s\" with mismatched name expansion"
 msgstr "registratie van pragmas in namespace \"%s\" met niet-overeenkomstige naamexpansie"
 
 # moet namespace hier ook vertaald worden?
-#: directives.c:1164
+#: directives.c:1165
 #, c-format
 msgid "registering pragma \"%s\" with name expansion and no namespace"
 msgstr "registratie van pragma \"%s\" met naamexpansie maar geen namespace"
 
 # moet namespace hier ook vertaald worden?
-#: directives.c:1182
+#: directives.c:1183
 #, c-format
 msgid "registering \"%s\" as both a pragma and a pragma namespace"
 msgstr "registratie van \"%s\" zowel als pragma en als pragma-namespace"
 
-#: directives.c:1185
+#: directives.c:1186
 #, c-format
 msgid "#pragma %s %s is already registered"
 msgstr "#pragma %s %s is reeds geregistreerd"
 
-#: directives.c:1188
+#: directives.c:1189
 #, c-format
 msgid "#pragma %s is already registered"
 msgstr "#pragma %s is reeds geregistreerd"
 
 # betere vertaling voor 'handler'?
-#: directives.c:1218
+#: directives.c:1219
 msgid "registering pragma with NULL handler"
 msgstr "registratie van pragma met NULL als afhandelingsroutine"
 
-#: directives.c:1430
+#: directives.c:1431
 msgid "#pragma once in main file"
 msgstr "#pragma once in hoofdbestand"
 
-#: directives.c:1453
+#: directives.c:1454
 msgid "invalid #pragma push_macro directive"
 msgstr "ongeldig #pragma push_macro commando"
 
-#: directives.c:1508
+#: directives.c:1509
 msgid "invalid #pragma pop_macro directive"
 msgstr "ongeldig #pragma pop_macro commando"
 
-#: directives.c:1563
+#: directives.c:1564
 msgid "invalid #pragma GCC poison directive"
 msgstr "ongeldig #pragma GCC poison commando"
 
-#: directives.c:1572
+#: directives.c:1573
 #, c-format
 msgid "poisoning existing macro \"%s\""
 msgstr "bestaande macro \"%s\" wordt 'vergiftigd'"
 
-#: directives.c:1591
+#: directives.c:1592
 msgid "#pragma system_header ignored outside include file"
 msgstr "#pragma system_header wordt genegeerd buiten een invoegbestand"
 
-#: directives.c:1616
+#: directives.c:1617
 #, c-format
 msgid "cannot find source file %s"
 msgstr "kan bronbestand %s niet vinden"
 
-#: directives.c:1620
+#: directives.c:1621
 #, c-format
 msgid "current file is older than %s"
 msgstr "huidig bestand is ouder dan %s"
 
-#: directives.c:1805
+#: directives.c:1806
 msgid "_Pragma takes a parenthesized string literal"
 msgstr "_Pragma verwacht een stringconstante tussen haakjes als argument"
 
-#: directives.c:1916
+#: directives.c:1917
 msgid "#else without #if"
 msgstr "#else zonder #if"
 
-#: directives.c:1921
+#: directives.c:1922
 msgid "#else after #else"
 msgstr "#else na #else"
 
 # of gewoon "de conditie"?
-#: directives.c:1923 directives.c:1956
+#: directives.c:1924 directives.c:1957
 msgid "the conditional began here"
 msgstr "het conditionele blok begon hier"
 
-#: directives.c:1949
+#: directives.c:1950
 msgid "#elif without #if"
 msgstr "#elif zonder #if"
 
-#: directives.c:1954
+#: directives.c:1955
 msgid "#elif after #else"
 msgstr "#elif na #else"
 
-#: directives.c:1992
+#: directives.c:1993
 msgid "#endif without #if"
 msgstr "#endif zonder #if"
 
-#: directives.c:2072
+#: directives.c:2073
 msgid "missing '(' after predicate"
 msgstr "'(' ontbreekt na predicaat"
 
-#: directives.c:2087
+#: directives.c:2088
 msgid "missing ')' to complete answer"
 msgstr "')' ontbreekt als afronding van het antwoord"
 
-#: directives.c:2107
+#: directives.c:2108
 msgid "predicate's answer is empty"
 msgstr "antwoord van het predicaat is leeg"
 
 # dit moet beter kunnen...
-#: directives.c:2134
+#: directives.c:2135
 msgid "assertion without predicate"
 msgstr "assertie zonder predicaat"
 
 # ... dit klinkt echt niet - maar wat is hier een beter vertaling voor identifier?
-#: directives.c:2137
+#: directives.c:2138
 msgid "predicate must be an identifier"
 msgstr "predicaat moet een naam zijn"
 
 # is "asserteren" wel een echt woord?
-#: directives.c:2223
+#: directives.c:2224
 #, c-format
 msgid "\"%s\" re-asserted"
 msgstr "\"%s\" opnieuw geasserteerd"
 
-#: directives.c:2514
+#: directives.c:2515
 #, c-format
 msgid "unterminated #%s"
 msgstr "niet-beëindigde #%s"
