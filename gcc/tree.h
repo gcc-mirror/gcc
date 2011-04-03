@@ -3229,7 +3229,7 @@ struct GTY(())
   tree arguments;
   /* Almost all FE's use this.  */
   tree result;
-  /* C++ uses this in namespaces.  */
+  /* C++ uses this in namespaces and function_decls.  */
   tree vindex;
 };
 
