@@ -474,8 +474,8 @@ do {									   \
      fprintf ((STREAM), ",%lu,1\n", (unsigned long)(SIZE));		   \
 } while (0)
 
-#define ASM_OUTPUT_BSS(FILE, DECL, NAME, SIZE, ROUNDED)			\
-  asm_output_bss ((FILE), (DECL), (NAME), (SIZE), (ROUNDED))
+#define ASM_OUTPUT_ALIGNED_BSS(FILE, DECL, NAME, SIZE, ALIGN) \
+  asm_output_aligned_bss (FILE, DECL, NAME, SIZE, ALIGN)
 
 #define ASM_OUTPUT_LOCAL(STREAM, NAME, SIZE, ROUNDED)			\
 do {									\
