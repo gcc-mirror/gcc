@@ -1,3 +1,11 @@
+2011-04-03  Ian Lance Taylor  <iant@google.com>
+
+	* go-gcc.cc: New file.
+	* Make-lang.in (GO_OBJS): Add go/go-gcc.o.
+	(go/go-gcc.o): New target.
+	(go/go.o): Depend on go/gofrontend/backend.h.
+	(go/statements.o): Likewise.
+
 2011-02-14  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* gccgo.texi (Top, Import and Export): Fix a typo and a markup nit.
