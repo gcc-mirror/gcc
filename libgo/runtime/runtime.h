@@ -189,6 +189,7 @@ void	runtime_walkfintab(void (*fn)(void*), void (*scan)(byte *, int64));
 #define runtime_casp(pval, old, new) __sync_bool_compare_and_swap (pval, old, new)
 
 void	runtime_sigprof(uint8 *pc, uint8 *sp, uint8 *lr);
+void	runtime_cpuprofinit(void);
 void	runtime_resetcpuprofiler(int32);
 void	runtime_setcpuprofilerate(void(*)(uintptr*, int32), int32);
 
