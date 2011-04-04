@@ -295,16 +295,16 @@ cfe_expr_0 (gfc_expr **e, int *walk_subtrees,
 
   gfc_expr_walker (e, cfe_register_funcs, NULL);
 
-  /* Walk backwards through all the functions to make sure we
-     catch the leaf functions first.  */
-  for (i=expr_count-1; i>=1; i--)
+  /* Walk through all the functions.  */
+
+  for (i=1; i<expr_count; i++)
     {
       /* Skip if the function has been replaced by a variable already.  */
       if ((*(expr_array[i]))->expr_type == EXPR_VARIABLE)
 	continue;
 
       newvar = NULL;
-      for (j=i-1; j>=0; j--)
+      for (j=0; j<i; j++)
 	{
 	  if (gfc_dep_compare_functions(*(expr_array[i]),
 					*(expr_array[j]), true)	== 0)

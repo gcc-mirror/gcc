@@ -1,3 +1,8 @@
+2011-04-04  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/48412
+	* function_optimize_4.f90:  New test.
+
 2011-04-04  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/18918
