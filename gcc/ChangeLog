@@ -1,3 +1,20 @@
+2011-04-04  Bernd Schmidt  <bernds@codesourcery.com>
+
+	PR bootstrap/48403
+	* haifa-sched.c (nonscheduled_insns_begin): New static variable.
+	(rank_for_schedule): Use scheduled_insns vector instead of
+	last_scheduled_insn.
+	(ok_for_early_queue_removal): Likewise.
+	(queue_to_ready): Search forward in nonscheduled_insns_begin if
+	we have a dbg_cnt.
+	(choose_ready): Likewise.
+	(commit_schedule): Use VEC_iterate.
+	(schedule_block): Initialize nonscheduled_insns_begin.  If we have
+	a dbg_cnt, use it and ensure the first insn is in the ready list.
+	(haifa_sched_init): Allocate scheduled_insns.
+	(sched_extend_ready_list): Don't allocate it; reserve space.
+	(haifa_sched_finish): Free it.
+
 2011-04-04  Joseph Myers  <joseph@codesourcery.com>
 
 	* optc-gen.awk: Always remove type from Variable entry before

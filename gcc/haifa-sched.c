@@ -780,11 +780,13 @@ print_curr_reg_pressure (void)
   fprintf (sched_dump, "\n");
 }
 
-/* Pointer to the last instruction scheduled.  Used by rank_for_schedule,
-   so that insns independent of the last scheduled insn will be preferred
-   over dependent instructions.  */
-
+/* Pointer to the last instruction scheduled.  */
 static rtx last_scheduled_insn;
+
+/* Pointer that iterates through the list of unscheduled insns if we
+   have a dbg_cnt enabled.  It always points at an insn prior to the
+   first unscheduled one.  */
+static rtx nonscheduled_insns_begin;
 
 /* Cached cost of the instruction.  Use below function to get cost of the
    insn.  -1 here means that the field is not initialized.  */
@@ -1239,18 +1241,19 @@ rank_for_schedule (const void *x, const void *y)
 
   if (flag_sched_last_insn_heuristic)
     {
-      last = last_scheduled_insn;
-
-      if (DEBUG_INSN_P (last) && last != current_sched_info->prev_head)
-	do
-	  last = PREV_INSN (last);
-	while (!NONDEBUG_INSN_P (last)
-	       && last != current_sched_info->prev_head);
+      int i = VEC_length (rtx, scheduled_insns);
+      last = NULL_RTX;
+      while (i-- > 0)
+	{
+	  last = VEC_index (rtx, scheduled_insns, i);
+	  if (NONDEBUG_INSN_P (last))
+	    break;
+	}
     }
 
   /* Compare insns based on their relation to the last scheduled
      non-debug insn.  */
-  if (flag_sched_last_insn_heuristic && NONDEBUG_INSN_P (last))
+  if (flag_sched_last_insn_heuristic && last && NONDEBUG_INSN_P (last))
     {
       dep_t dep1;
       dep_t dep2;
@@ -2044,9 +2047,16 @@ queue_to_ready (struct ready_list *ready)
   q_ptr = NEXT_Q (q_ptr);
 
   if (dbg_cnt (sched_insn) == false)
-    /* If debug counter is activated do not requeue insn next after
-       last_scheduled_insn.  */
-    skip_insn = next_nonnote_nondebug_insn (last_scheduled_insn);
+    {
+      /* If debug counter is activated do not requeue the first
+	 nonscheduled insn.  */
+      skip_insn = nonscheduled_insns_begin;
+      do
+	{
+	  skip_insn = next_nonnote_nondebug_insn (skip_insn);
+	}
+      while (QUEUE_INDEX (skip_insn) == QUEUE_SCHEDULED);
+    }
   else
     skip_insn = NULL_RTX;
 
@@ -2129,22 +2139,18 @@ queue_to_ready (struct ready_list *ready)
 static bool
 ok_for_early_queue_removal (rtx insn)
 {
-  int n_cycles;
-  rtx prev_insn = last_scheduled_insn;
-
   if (targetm.sched.is_costly_dependence)
     {
+      rtx prev_insn;
+      int n_cycles;
+      int i = VEC_length (rtx, scheduled_insns);
       for (n_cycles = flag_sched_stalled_insns_dep; n_cycles; n_cycles--)
 	{
-	  for ( ; prev_insn; prev_insn = PREV_INSN (prev_insn))
+	  while (i-- > 0)
 	    {
 	      int cost;
 
-	      if (prev_insn == current_sched_info->prev_head)
-		{
-		  prev_insn = NULL;
-		  break;
-		}
+	      prev_insn = VEC_index (rtx, scheduled_insns, i);
 
 	      if (!NOTE_P (prev_insn))
 		{
@@ -2166,9 +2172,8 @@ ok_for_early_queue_removal (rtx insn)
 		break;
 	    }
 
-	  if (!prev_insn)
+	  if (i == 0)
 	    break;
-	  prev_insn = PREV_INSN (prev_insn);
 	}
     }
 
@@ -2673,13 +2678,17 @@ choose_ready (struct ready_list *ready, bool first_cycle_insn_p,
 
   if (dbg_cnt (sched_insn) == false)
     {
-      rtx insn;
-
-      insn = next_nonnote_insn (last_scheduled_insn);
+      rtx insn = nonscheduled_insns_begin;
+      do
+	{
+	  insn = next_nonnote_insn (insn);
+	}
+      while (QUEUE_INDEX (insn) == QUEUE_SCHEDULED);
 
       if (QUEUE_INDEX (insn) == QUEUE_READY)
 	/* INSN is in the ready_list.  */
 	{
+	  nonscheduled_insns_begin = insn;
 	  ready_remove_insn (insn);
 	  *insn_ptr = insn;
 	  return 0;
@@ -2826,13 +2835,14 @@ choose_ready (struct ready_list *ready, bool first_cycle_insn_p,
 static void
 commit_schedule (rtx prev_head, rtx tail, basic_block *target_bb)
 {
-  int i;
+  unsigned int i;
+  rtx insn;
 
   last_scheduled_insn = prev_head;
-  for (i = 0; i < (int)VEC_length (rtx, scheduled_insns); i++)
+  for (i = 0;
+       VEC_iterate (rtx, scheduled_insns, i, insn);
+       i++)
     {
-      rtx insn = VEC_index (rtx, scheduled_insns, i);
-
       if (control_flow_insn_p (last_scheduled_insn)
 	  || current_sched_info->advance_target_bb (*target_bb, insn))
 	{
@@ -2956,7 +2966,7 @@ schedule_block (basic_block *target_bb)
     targetm.sched.init (sched_dump, sched_verbose, ready.veclen);
 
   /* We start inserting insns after PREV_HEAD.  */
-  last_scheduled_insn = prev_head;
+  last_scheduled_insn = nonscheduled_insns_begin = prev_head;
 
   gcc_assert ((NOTE_P (last_scheduled_insn)
 	       || DEBUG_INSN_P (last_scheduled_insn))
@@ -3001,12 +3011,12 @@ schedule_block (basic_block *target_bb)
 
       /* Delay all insns past it for 1 cycle.  If debug counter is
 	 activated make an exception for the insn right after
-	 last_scheduled_insn.  */
+	 nonscheduled_insns_begin.  */
       {
 	rtx skip_insn;
 
 	if (dbg_cnt (sched_insn) == false)
-	  skip_insn = next_nonnote_insn (last_scheduled_insn);
+	  skip_insn = next_nonnote_insn (nonscheduled_insns_begin);
 	else
 	  skip_insn = NULL_RTX;
 
@@ -3019,6 +3029,8 @@ schedule_block (basic_block *target_bb)
 	    if (insn != skip_insn)
 	      queue_insn (insn, 1, "list truncated");
 	  }
+	if (skip_insn)
+	  ready_add (&ready, skip_insn, true);
       }
     }
 
@@ -3540,6 +3552,8 @@ haifa_sched_init (void)
   setup_sched_dump ();
   sched_init ();
 
+  scheduled_insns = VEC_alloc (rtx, heap, 0);
+
   if (spec_info != NULL)
     {
       sched_deps_info->use_deps_list = 1;
@@ -3609,6 +3623,8 @@ haifa_sched_finish (void)
                ";; Procedure %cr-be-in-control-spec motions == %d\n",
                c, nr_be_in_control);
     }
+
+  VEC_free (rtx, heap, scheduled_insns);
 
   /* Finalize h_i_d, dependency caches, and luids for the whole
      function.  Target will be finalized in md_global_finish ().  */
@@ -4008,7 +4024,7 @@ sched_extend_ready_list (int new_sched_ready_n_insns)
     {
       i = 0;
       sched_ready_n_insns = 0;
-      scheduled_insns = VEC_alloc (rtx, heap, new_sched_ready_n_insns);
+      VEC_reserve (rtx, heap, scheduled_insns, new_sched_ready_n_insns);
     }
   else
     i = sched_ready_n_insns + 1;
