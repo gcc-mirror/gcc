@@ -1,3 +1,8 @@
+2011-04-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/47163
+	* s-oscons-tmplt.c (MSG_WAITALL): Fix thinko in previous change.
+
 2011-04-04  Kai Tietz  <ktietz@redhat.com>
 
 	PR ada/47163
