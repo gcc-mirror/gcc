@@ -4129,7 +4129,12 @@ gfc_is_coindexed (gfc_expr *e)
 
   for (ref = e->ref; ref; ref = ref->next)
     if (ref->type == REF_ARRAY && ref->u.ar.codimen > 0)
-      return true;
+      {
+	int n;
+	for (n = ref->u.ar.dimen; n < ref->u.ar.dimen + ref->u.ar.codimen; n++)
+	  if (ref->u.ar.dimen_type[n] != DIMEN_THIS_IMAGE)
+	    return true;
+      }
 
   return false;
 }

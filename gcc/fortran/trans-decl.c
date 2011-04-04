@@ -767,6 +767,22 @@ gfc_build_qualified_array (tree decl, gfc_symbol * sym)
 	  TREE_NO_WARNING (GFC_TYPE_ARRAY_STRIDE (type, dim)) = 1;
 	}
     }
+  for (dim = GFC_TYPE_ARRAY_RANK (type);
+       dim < GFC_TYPE_ARRAY_RANK (type) + GFC_TYPE_ARRAY_CORANK (type); dim++)
+    {
+      if (GFC_TYPE_ARRAY_LBOUND (type, dim) == NULL_TREE)
+	{
+	  GFC_TYPE_ARRAY_LBOUND (type, dim) = create_index_var ("lbound", nest);
+	  TREE_NO_WARNING (GFC_TYPE_ARRAY_LBOUND (type, dim)) = 1;
+	}
+      /* Don't try to use the unknown ubound for the last coarray dimension.  */
+      if (GFC_TYPE_ARRAY_UBOUND (type, dim) == NULL_TREE
+          && dim < GFC_TYPE_ARRAY_RANK (type) + GFC_TYPE_ARRAY_CORANK (type) - 1)
+	{
+	  GFC_TYPE_ARRAY_UBOUND (type, dim) = create_index_var ("ubound", nest);
+	  TREE_NO_WARNING (GFC_TYPE_ARRAY_UBOUND (type, dim)) = 1;
+	}
+    }
   if (GFC_TYPE_ARRAY_OFFSET (type) == NULL_TREE)
     {
       GFC_TYPE_ARRAY_OFFSET (type) = gfc_create_var_np (gfc_array_index_type,

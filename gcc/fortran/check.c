@@ -219,9 +219,15 @@ is_coarray (gfc_expr *e)
     {
       if (ref->type == REF_COMPONENT)
 	coarray = ref->u.c.component->attr.codimension;
-      else if (ref->type != REF_ARRAY || ref->u.ar.dimen != 0
-	       || ref->u.ar.codimen != 0) 
+      else if (ref->type != REF_ARRAY || ref->u.ar.dimen != 0)
 	coarray = false;
+      else if (ref->type == REF_ARRAY && ref->u.ar.codimen != 0) 
+	{
+	  int n;
+	  for (n = 0; n < ref->u.ar.codimen; n++)
+	    if (ref->u.ar.dimen_type[n] != DIMEN_THIS_IMAGE)
+	      coarray = false;
+	}
     }
 
   return coarray;

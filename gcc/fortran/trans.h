@@ -104,7 +104,7 @@ gfc_se;
 
 typedef struct gfc_ss_info
 {
-  int dimen;
+  int dimen, codimen;
   /* The ref that holds information on this section.  */
   gfc_ref *ref;
   /* The descriptor of this array.  */
@@ -198,7 +198,7 @@ typedef struct gfc_ss
     {
       /* The rank of the temporary.  May be less than the rank of the
          assigned expression.  */
-      int dimen;
+      int dimen, codimen;
       tree type;
     }
     temp;
@@ -231,7 +231,7 @@ typedef struct gfc_loopinfo
   stmtblock_t pre;
   stmtblock_t post;
 
-  int dimen;
+  int dimen, codimen;
 
   /* All the SS involved with this loop.  */
   gfc_ss *ss;
@@ -713,7 +713,7 @@ enum gfc_array_kind
    variable-sized in some other frontends.  Due to gengtype deficiency the GTY
    options of such types have to agree across all frontends. */
 struct GTY((variable_size))	lang_type	 {
-  int rank;
+  int rank, corank;
   enum gfc_array_kind akind;
   tree lbound[GFC_MAX_DIMENSIONS];
   tree ubound[GFC_MAX_DIMENSIONS];
@@ -768,6 +768,7 @@ struct GTY((variable_size)) lang_decl {
 #define GFC_TYPE_ARRAY_STRIDE(node, dim) \
   (TYPE_LANG_SPECIFIC(node)->stride[dim])
 #define GFC_TYPE_ARRAY_RANK(node) (TYPE_LANG_SPECIFIC(node)->rank)
+#define GFC_TYPE_ARRAY_CORANK(node) (TYPE_LANG_SPECIFIC(node)->corank)
 #define GFC_TYPE_ARRAY_SIZE(node) (TYPE_LANG_SPECIFIC(node)->size)
 #define GFC_TYPE_ARRAY_OFFSET(node) (TYPE_LANG_SPECIFIC(node)->offset)
 #define GFC_TYPE_ARRAY_AKIND(node) (TYPE_LANG_SPECIFIC(node)->akind)
