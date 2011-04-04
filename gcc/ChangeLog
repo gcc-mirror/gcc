@@ -1,3 +1,11 @@
+2011-04-04  Richard Henderson  <rth@redhat.com>
+
+	PR 48400
+	* dwarf2out.c (output_line_info): Always emit line info from
+	at least one section.
+	(dwarf2out_init): Create text_section_line_info here ...
+	(set_cur_line_info_table): ... not here.
+
 2011-04-01  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR target/48380
