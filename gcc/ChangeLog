@@ -1,5 +1,9 @@
 2011-04-04  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	* config/pdp11/pdp11.h (IRA_COVER_CLASSES): Delete.
+
+2011-04-04  Richard Sandiford  <richard.sandiford@linaro.org>
+
 	* config/vax/vax.c: Include reload.h.
 
 2011-04-04  Anatoly Sokolov  <aesok@post.ru>
