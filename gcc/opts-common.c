@@ -567,6 +567,19 @@ decode_cmdline_option (const char **argv, unsigned int lang_mask,
   if (!option_ok_for_language (option, lang_mask))
     errors |= CL_ERR_WRONG_LANG;
 
+  /* Convert the argument to lowercase if appropriate.  */
+  if (arg && option->cl_tolower)
+    {
+      size_t j;
+      size_t len = strlen (arg);
+      char *arg_lower = XNEWVEC (char, len + 1);
+
+      for (j = 0; j < len; j++)
+	arg_lower[j] = TOLOWER ((unsigned char) arg[j]);
+      arg_lower[len] = 0;
+      arg = arg_lower;
+    }
+
   /* If the switch takes an integer, convert it.  */
   if (arg && option->cl_uinteger)
     {

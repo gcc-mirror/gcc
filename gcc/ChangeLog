@@ -1,3 +1,16 @@
+2011-04-04  Joseph Myers  <joseph@codesourcery.com>
+
+	* doc/options.texi (ToLower): Document.
+	* opt-functions.awk (switch_bit_fields): Initialize cl_tolower
+	field.
+	* opts-common.c (decode_cmdline_option): Handle cl_tolower.
+	* opts.h (cl_option): Add cl_tolower field.
+	* config/rx/rx.c (rx_handle_option): Use strcmp of -mcpu=
+	arguments with lowercase strings.
+	* config/rx/rx.opt (mcpu=): Add ToLower.
+	* config/rx/t-rx (MULTILIB_MATCHES): Don't handle uppercase -mcpu=
+	argument.
+
 2011-04-04  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* config/pdp11/pdp11.h (IRA_COVER_CLASSES): Delete.

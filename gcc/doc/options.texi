@@ -257,6 +257,11 @@ option handler.  @code{UInteger} should also be used on options like
 @code{-falign-loops}=@var{n} are supported to make sure the saved
 options are given a full integer.
 
+@item ToLower
+The option's argument should be converted to lowercase as part of
+putting it in canonical form, and before comparing with the strings
+indicated by any @code{Enum} property.
+
 @item NoDriverArg
 For an option marked @code{Separate}, the option only takes an
 argument in the compiler proper, not in the driver.  This is for
