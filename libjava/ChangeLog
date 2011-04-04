@@ -1,3 +1,8 @@
+2011-04-04  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac: Redirect $JAR -cf@ output to /dev/null.
+	* configure: Regenerate.
+
 2011-03-21  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* configure.ac (THREADS): Remove solaris.
