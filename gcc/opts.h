@@ -96,6 +96,8 @@ struct cl_option
   BOOL_BITFIELD cl_missing_ok : 1;
   /* Argument is an integer >=0.  */
   BOOL_BITFIELD cl_uinteger : 1;
+  /* Argument should be converted to lowercase.  */
+  BOOL_BITFIELD cl_tolower : 1;
   /* Report argument with -fverbose-asm  */
   BOOL_BITFIELD cl_report : 1;
   /* Offset of field for this option in struct gcc_options, or

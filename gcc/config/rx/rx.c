@@ -2308,14 +2308,14 @@ rx_handle_option (struct gcc_options *opts, struct gcc_options *opts_set,
       return value >= 0 && value <= 4;
 
     case OPT_mcpu_:
-      if (strcasecmp (arg, "RX610") == 0)
+      if (strcmp (arg, "rx610") == 0)
 	rx_cpu_type = RX610;
-      else if (strcasecmp (arg, "RX200") == 0)
+      else if (strcmp (arg, "rx200") == 0)
 	{
 	  target_flags |= MASK_NO_USE_FPU;
 	  rx_cpu_type = RX200;
 	}
-      else if (strcasecmp (arg, "RX600") != 0)
+      else if (strcmp (arg, "rx600") != 0)
 	warning (0, "unrecognized argument '%s' to -mcpu= option", arg);
       break;
       

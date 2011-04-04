@@ -126,6 +126,7 @@ function switch_bit_fields (flags)
 	  flag_init("RejectNegative", flags) \
 	  flag_init("JoinedOrMissing", flags) \
 	  flag_init("UInteger", flags) \
+	  flag_init("ToLower", flags) \
 	  flag_init("Report", flags)
 
 	sub(", $", "", result)
