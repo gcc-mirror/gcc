@@ -30,11 +30,14 @@ extern "C"
 #endif
 
 #include "tree.h"
+#include "tree-iterator.h"
+#include "gimple.h"
 
 #ifndef ENABLE_BUILD_WITH_CXX
 }
 #endif
 
+#include "gogo.h"
 #include "backend.h"
 
 // A class wrapping a tree.
@@ -75,6 +78,14 @@ class Bstatement : public Gcc_tree
 {
  public:
   Bstatement(tree t)
+    : Gcc_tree(t)
+  { }
+};
+
+class Bfunction : public Gcc_tree
+{
+ public:
+  Bfunction(tree t)
     : Gcc_tree(t)
   { }
 };
@@ -149,8 +160,12 @@ class Gcc_backend : public Backend
 
   // Create an assignment statement.
   Bstatement*
-  assignment(Bexpression* lhs, Bexpression* rhs,
-	     source_location location);
+  assignment_statement(Bexpression* lhs, Bexpression* rhs, source_location);
+
+  // Create a return statement.
+  Bstatement*
+  return_statement(Bfunction*, const std::vector<Bexpression*>&,
+		   source_location);
 
  private:
   // Make a Bstatement from a tree.
@@ -162,13 +177,76 @@ class Gcc_backend : public Backend
 // Assignment.
 
 Bstatement*
-Gcc_backend::assignment(Bexpression* lhs, Bexpression* rhs,
-			source_location location)
+Gcc_backend::assignment_statement(Bexpression* lhs, Bexpression* rhs,
+				  source_location location)
 {
+  tree lhs_tree = lhs->get_tree();
+  tree rhs_tree = rhs->get_tree();
+  if (lhs_tree == error_mark_node || rhs_tree == error_mark_node)
+    return this->make_statement(error_mark_node);
   return this->make_statement(fold_build2_loc(location, MODIFY_EXPR,
 					      void_type_node,
-					      lhs->get_tree(),
-					      rhs->get_tree()));
+					      lhs_tree, rhs_tree));
+}
+
+// Return.
+
+Bstatement*
+Gcc_backend::return_statement(Bfunction* bfunction,
+			      const std::vector<Bexpression*>& vals,
+			      source_location location)
+{
+  tree fntree = bfunction->get_tree();
+  if (fntree == error_mark_node)
+    return this->make_statement(error_mark_node);
+  tree result = DECL_RESULT(fntree);
+  if (result == error_mark_node)
+    return this->make_statement(error_mark_node);
+  tree ret;
+  if (vals.empty())
+    ret = fold_build1_loc(location, RETURN_EXPR, void_type_node, NULL_TREE);
+  else if (vals.size() == 1)
+    {
+      tree val = vals.front()->get_tree();
+      if (val == error_mark_node)
+	return this->make_statement(error_mark_node);
+      tree set = fold_build2_loc(location, MODIFY_EXPR, void_type_node,
+				 result, vals.front()->get_tree());
+      ret = fold_build1_loc(location, RETURN_EXPR, void_type_node, set);
+    }
+  else
+    {
+      // To return multiple values, copy the values into a temporary
+      // variable of the right structure type, and then assign the
+      // temporary variable to the DECL_RESULT in the return
+      // statement.
+      tree stmt_list = NULL_TREE;
+      tree rettype = TREE_TYPE(result);
+      tree rettmp = create_tmp_var(rettype, "RESULT");
+      tree field = TYPE_FIELDS(rettype);
+      for (std::vector<Bexpression*>::const_iterator p = vals.begin();
+	   p != vals.end();
+	   p++, field = DECL_CHAIN(field))
+	{
+	  gcc_assert(field != NULL_TREE);
+	  tree ref = fold_build3_loc(location, COMPONENT_REF, TREE_TYPE(field),
+				     rettmp, field, NULL_TREE);
+	  tree val = (*p)->get_tree();
+	  if (val == error_mark_node)
+	    return this->make_statement(error_mark_node);
+	  tree set = fold_build2_loc(location, MODIFY_EXPR, void_type_node,
+				     ref, (*p)->get_tree());
+	  append_to_statement_list(set, &stmt_list);
+	}
+      gcc_assert(field == NULL_TREE);
+      tree set = fold_build2_loc(location, MODIFY_EXPR, void_type_node,
+				 result, rettmp);
+      tree ret_expr = fold_build1_loc(location, RETURN_EXPR, void_type_node,
+				      set);
+      append_to_statement_list(ret_expr, &stmt_list);
+      ret = stmt_list;
+    }
+  return this->make_statement(ret);
 }
 
 // The single backend.
@@ -190,6 +268,12 @@ Bexpression*
 tree_to_expr(tree t)
 {
   return new Bexpression(t);
+}
+
+Bfunction*
+tree_to_function(tree t)
+{
+  return new Bfunction(t);
 }
 
 tree

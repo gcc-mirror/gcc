@@ -24,6 +24,9 @@ class Bexpression;
 // The backend representation of a statement.
 class Bstatement;
 
+// The backend representation of a function definition.
+class Bfunction;
+
 // A list of backend types.
 typedef std::vector<Btype*> Btypes;
 
@@ -103,7 +106,14 @@ class Backend
 
   // Create an assignment statement.
   virtual Bstatement*
-  assignment(Bexpression* lhs, Bexpression* rhs, source_location location) = 0;
+  assignment_statement(Bexpression* lhs, Bexpression* rhs,
+		       source_location) = 0;
+
+  // Create a return statement, passing the representation of the
+  // function and the list of values to return.
+  virtual Bstatement*
+  return_statement(Bfunction*, const std::vector<Bexpression*>&,
+		   source_location) = 0;
 };
 
 // The backend interface has to define this function.
@@ -114,6 +124,7 @@ extern Backend* go_get_backend();
 // interface.
 
 extern Bexpression* tree_to_expr(tree);
+extern Bfunction* tree_to_function(tree);
 extern tree statement_to_tree(Bstatement*);
 
 #endif // !defined(GO_BACKEND_H)

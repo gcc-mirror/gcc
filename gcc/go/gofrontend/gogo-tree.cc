@@ -1761,27 +1761,16 @@ Function::return_value(Gogo* gogo, Named_object* named_function,
   if (results == NULL || results->empty())
     return NULL_TREE;
 
-  // In the case of an exception handler created for functions with
-  // defer statements, the result variables may be unnamed.
-  bool is_named = !results->front().name().empty();
-  if (is_named)
+  gcc_assert(this->results_ != NULL);
+  if (this->results_->size() != results->size())
     {
-      gcc_assert(this->named_results_ != NULL);
-      if (this->named_results_->size() != results->size())
-	{
-	  gcc_assert(saw_errors());
-	  return error_mark_node;
-	}
+      gcc_assert(saw_errors());
+      return error_mark_node;
     }
 
   tree retval;
   if (results->size() == 1)
-    {
-      if (is_named)
-	return this->named_results_->front()->get_tree(gogo, named_function);
-      else
-	return results->front().type()->get_init_tree(gogo, false);
-    }
+    return this->results_->front()->get_tree(gogo, named_function);
   else
     {
       tree rettype = TREE_TYPE(DECL_RESULT(this->fndecl_));
@@ -1794,11 +1783,7 @@ Function::return_value(Gogo* gogo, Named_object* named_function,
 	{
 	  gcc_assert(field != NULL);
 	  tree val;
-	  if (is_named)
-	    val = (*this->named_results_)[index]->get_tree(gogo,
-							   named_function);
-	  else
-	    val = pr->type()->get_init_tree(gogo, false);
+	  val = (*this->results_)[index]->get_tree(gogo, named_function);
 	  tree set = fold_build2_loc(location, MODIFY_EXPR, void_type_node,
 				     build3(COMPONENT_REF, TREE_TYPE(field),
 					    retval, field, NULL_TREE),

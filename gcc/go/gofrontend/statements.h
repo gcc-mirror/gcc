@@ -200,8 +200,7 @@ class Statement
 
   // Make a return statement.
   static Statement*
-  make_return_statement(const Typed_identifier_list*, Expression_list*,
-			source_location);
+  make_return_statement(Expression_list*, source_location);
 
   // Make a break statement.
   static Statement*
@@ -556,10 +555,9 @@ class Variable_declaration_statement : public Statement
 class Return_statement : public Statement
 {
  public:
-  Return_statement(const Typed_identifier_list* results, Expression_list* vals,
-		   source_location location)
+  Return_statement(Expression_list* vals, source_location location)
     : Statement(STATEMENT_RETURN, location),
-      results_(results), vals_(vals)
+      vals_(vals), is_lowered_(false)
   { }
 
   // The list of values being returned.  This may be NULL.
@@ -578,12 +576,6 @@ class Return_statement : public Statement
   Statement*
   do_lower(Gogo*, Named_object*, Block*);
 
-  void
-  do_determine_types();
-
-  void
-  do_check_types(Gogo*);
-
   bool
   do_may_fall_through() const
   { return false; }
@@ -592,12 +584,10 @@ class Return_statement : public Statement
   do_get_tree(Translate_context*);
 
  private:
-  // The result types of the function we are returning from.  This is
-  // here because in some of the traversals it is inconvenient to get
-  // it.
-  const Typed_identifier_list* results_;
   // Return values.  This may be NULL.
   Expression_list* vals_;
+  // True if this statement has been lowered.
+  bool is_lowered_;
 };
 
 // A send statement.

@@ -822,14 +822,27 @@ class Function
     this->enclosing_ = enclosing;
   }
 
-  // Create the named result variables in the outer block.
+  // The result variables.
+  typedef std::vector<Named_object*> Results;
+
+  // Create the result variables in the outer block.
   void
-  create_named_result_variables(Gogo*);
+  create_result_variables(Gogo*);
 
   // Update the named result variables when cloning a function which
   // calls recover.
   void
-  update_named_result_variables();
+  update_result_variables();
+
+  // Return the result variables.
+  Results*
+  result_variables()
+  { return this->results_; }
+
+  // Whether the result variables have names.
+  bool
+  results_are_named() const
+  { return this->results_are_named_; }
 
   // Add a new field to the closure variable.
   void
@@ -992,8 +1005,6 @@ class Function
   void
   build_defer_wrapper(Gogo*, Named_object*, tree*, tree*);
 
-  typedef std::vector<Named_object*> Named_results;
-
   typedef std::vector<std::pair<Named_object*,
 				source_location> > Closure_fields;
 
@@ -1002,8 +1013,8 @@ class Function
   // The enclosing function.  This is NULL when there isn't one, which
   // is the normal case.
   Function* enclosing_;
-  // The named result variables, if any.
-  Named_results* named_results_;
+  // The result variables, if any.
+  Results* results_;
   // If there is a closure, this is the list of variables which appear
   // in the closure.  This is created by the parser, and then resolved
   // to a real type when we lower parse trees.
@@ -1022,6 +1033,8 @@ class Function
   // A variable holding the defer stack variable.  This is NULL unless
   // we actually need a defer stack.
   tree defer_stack_;
+  // True if the result variables are named.
+  bool results_are_named_;
   // True if this function calls the predeclared recover function.
   bool calls_recover_;
   // True if this a thunk built for a function which calls recover.
