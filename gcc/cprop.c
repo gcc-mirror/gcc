@@ -55,23 +55,6 @@ static struct obstack cprop_obstack;
 
 struct reg_use {rtx reg_rtx; };
 
-/* Hash table of expressions.  */
-
-struct expr
-{
-  /* The expression (SET_SRC for expressions, PATTERN for assignments).  */
-  rtx expr;
-  /* Index in the available expression bitmaps.  */
-  int bitmap_index;
-  /* Next entry with the same hash.  */
-  struct expr *next_same_hash;
-  /* List of available occurrence in basic blocks in the function.
-     An "available occurrence" is one that is the last occurrence in the
-     basic block and the operands are not modified by following statements in
-     the basic block [including this insn].  */
-  struct occr *avail_occr;
-};
-
 /* Occurrence of an expression.
    There is one per basic block.  If a pattern appears more than once the
    last appearance is used.  */
@@ -88,7 +71,26 @@ typedef struct occr *occr_t;
 DEF_VEC_P (occr_t);
 DEF_VEC_ALLOC_P (occr_t, heap);
 
-/* Expression and copy propagation hash tables.
+/* Hash table entry for an assignment expressions.  */
+
+struct expr
+{
+  /* The expression (DEST := SRC).  */
+  rtx dest;
+  rtx src;
+
+  /* Index in the available expression bitmaps.  */
+  int bitmap_index;
+  /* Next entry with the same hash.  */
+  struct expr *next_same_hash;
+  /* List of available occurrence in basic blocks in the function.
+     An "available occurrence" is one that is the last occurrence in the
+     basic block and the operands are not modified by following statements in
+     the basic block [including this insn].  */
+  struct occr *avail_occr;
+};
+
+/* Hash table for copy propagation expressions.
    Each hash table is an array of buckets.
    ??? It is known that if it were an array of entries, structure elements
    `next_same_hash' and `bitmap_index' wouldn't be necessary.  However, it is
@@ -175,40 +177,31 @@ hash_set (int regno, int hash_table_size)
   return hash % hash_table_size;
 }
 
-/* Return nonzero if exp1 is equivalent to exp2.  */
-
-static int
-expr_equiv_p (const_rtx x, const_rtx y)
-{
-  return exp_equiv_p (x, y, 0, true);
-}
-
-/* Insert pattern X in INSN in the hash table.
-   X is a SET of a reg to either another reg or a constant.
-   If it is already present, record it as the last occurrence in INSN's
-   basic block.  */
+/* Insert assignment DEST:=SET from INSN in the hash table.
+   DEST is a register and SET is a register or a suitable constant.
+   If the assignment is already present in the table, record it as
+   the last occurrence in INSN's basic block.  */
 
 static void
-insert_set_in_table (rtx x, rtx insn, struct hash_table_d *table)
+insert_set_in_table (rtx dest, rtx src, rtx insn, struct hash_table_d *table)
 {
-  int found;
+  bool found = false;
   unsigned int hash;
   struct expr *cur_expr, *last_expr = NULL;
   struct occr *cur_occr;
 
-  gcc_assert (GET_CODE (x) == SET && REG_P (SET_DEST (x)));
+  hash = hash_set (REGNO (dest), table->size);
 
-  hash = hash_set (REGNO (SET_DEST (x)), table->size);
-
-  cur_expr = table->table[hash];
-  found = 0;
-
-  while (cur_expr && 0 == (found = expr_equiv_p (cur_expr->expr, x)))
+  for (cur_expr = table->table[hash]; cur_expr;
+       cur_expr = cur_expr->next_same_hash)
     {
-      /* If the expression isn't found, save a pointer to the end of
-	 the list.  */
+      if (dest == cur_expr->dest
+	  && src == cur_expr->src)
+	{
+	  found = true;
+	  break;
+	}
       last_expr = cur_expr;
-      cur_expr = cur_expr->next_same_hash;
     }
 
   if (! found)
@@ -225,7 +218,8 @@ insert_set_in_table (rtx x, rtx insn, struct hash_table_d *table)
       /* Set the fields of the expr element.
 	 We must copy X because it can be modified when copy propagation is
 	 performed on its operands.  */
-      cur_expr->expr = copy_rtx (x);
+      cur_expr->dest = copy_rtx (dest);
+      cur_expr->src = copy_rtx (src);
       cur_expr->bitmap_index = table->n_elems++;
       cur_expr->next_same_hash = NULL;
       cur_expr->avail_occr = NULL;
@@ -290,7 +284,7 @@ hash_scan_set (rtx pat, rtx insn, struct hash_table_d *table)
 	 for INSN, we miss copy propagation opportunities.
 
 	 Note that this does not impede profitable constant propagations.  We
-	 "look through" reg-reg sets in lookup_avail_set.  */
+	 "look through" reg-reg sets in lookup_set.  */
       rtx note = find_reg_equal_equiv_note (insn);
       if (note != 0
 	  && REG_NOTE_KIND (note) == REG_EQUAL
@@ -304,7 +298,7 @@ hash_scan_set (rtx pat, rtx insn, struct hash_table_d *table)
 	   && ! HARD_REGISTER_P (src)
 	   && reg_available_p (src, insn))
 	  || cprop_constant_p (src))
-	insert_set_in_table (pat, insn, table);
+	insert_set_in_table (dest, src, insn, table);
     }
 }
 
@@ -368,7 +362,9 @@ dump_hash_table (FILE *file, const char *name, struct hash_table_d *table)
 	expr = flat_table[i];
 	fprintf (file, "Index %d (hash value %d)\n  ",
 		 expr->bitmap_index, hash_val[i]);
-	print_rtl (file, expr->expr);
+	print_rtl (file, expr->dest);
+	fprintf (file, " := ");
+	print_rtl (file, expr->src);
 	fprintf (file, "\n");
       }
 
@@ -497,7 +493,7 @@ lookup_set (unsigned int regno, struct hash_table_d *table)
 
   expr = table->table[hash];
 
-  while (expr && REGNO (SET_DEST (expr->expr)) != regno)
+  while (expr && REGNO (expr->dest) != regno)
     expr = expr->next_same_hash;
 
   return expr;
@@ -510,7 +506,7 @@ next_set (unsigned int regno, struct expr *expr)
 {
   do
     expr = expr->next_same_hash;
-  while (expr && REGNO (SET_DEST (expr->expr)) != regno);
+  while (expr && REGNO (expr->dest) != regno);
 
   return expr;
 }
@@ -583,76 +579,6 @@ free_cprop_mem (void)
   sbitmap_vector_free (cprop_avout);
 }
 
-/* For each block, compute whether X is transparent.  X is either an
-   expression or an assignment [though we don't care which, for this context
-   an assignment is treated as an expression].  For each block where an
-   element of X is modified, set the INDX bit in BMAP.  */
-
-static void
-compute_transp (const_rtx x, int indx, sbitmap *bmap)
-{
-  int i, j;
-  enum rtx_code code;
-  const char *fmt;
-
-  /* repeat is used to turn tail-recursion into iteration since GCC
-     can't do it when there's no return value.  */
- repeat:
-
-  if (x == 0)
-    return;
-
-  code = GET_CODE (x);
-  switch (code)
-    {
-    case REG:
-	{
-	  df_ref def;
-	  for (def = DF_REG_DEF_CHAIN (REGNO (x));
-	       def;
-	       def = DF_REF_NEXT_REG (def))
-	    SET_BIT (bmap[DF_REF_BB (def)->index], indx);
-	}
-      return;
-
-    case PC:
-    case CC0: /*FIXME*/
-    case CONST:
-    case CONST_INT:
-    case CONST_DOUBLE:
-    case CONST_FIXED:
-    case CONST_VECTOR:
-    case SYMBOL_REF:
-    case LABEL_REF:
-    case ADDR_VEC:
-    case ADDR_DIFF_VEC:
-      return;
-
-    default:
-      break;
-    }
-
-  for (i = GET_RTX_LENGTH (code) - 1, fmt = GET_RTX_FORMAT (code); i >= 0; i--)
-    {
-      if (fmt[i] == 'e')
-	{
-	  /* If we are about to do the last recursive call
-	     needed at this level, change it into iteration.
-	     This function is called enough to be worth it.  */
-	  if (i == 0)
-	    {
-	      x = XEXP (x, i);
-	      goto repeat;
-	    }
-
-	  compute_transp (XEXP (x, i), indx, bmap);
-	}
-      else if (fmt[i] == 'E')
-	for (j = 0; j < XVECLEN (x, i); j++)
-	  compute_transp (XVECEXP (x, i, j), indx, bmap);
-    }
-}
-
 /* Compute the local properties of each recorded expression.
 
    Local properties are those that are defined by the block, irrespective of
@@ -665,11 +591,7 @@ compute_transp (const_rtx x, int indx, sbitmap *bmap)
    at least once and expression would contain the same value if the
    computation was moved to the end of the block.
 
-   TRANSP and COMP are destination sbitmaps for recording local properties.
-   If NULL, then it is not necessary to compute or record that particular
-   property.
-
-   TRANSP is computed as ~TRANSP, since this is really cprop's ABSALTERED.  */
+   TRANSP and COMP are destination sbitmaps for recording local properties.  */
 
 static void
 compute_local_properties (sbitmap *transp, sbitmap *comp,
@@ -677,14 +599,9 @@ compute_local_properties (sbitmap *transp, sbitmap *comp,
 {
   unsigned int i;
 
-  /* Initialize any bitmaps that were passed in.  */
-  if (transp)
-    {
-      sbitmap_vector_zero (transp, last_basic_block);
-    }
-
-  if (comp)
-    sbitmap_vector_zero (comp, last_basic_block);
+  /* Initialize the bitmaps that were passed in.  */
+  sbitmap_vector_zero (transp, last_basic_block);
+  sbitmap_vector_zero (comp, last_basic_block);
 
   for (i = 0; i < table->size; i++)
     {
@@ -693,21 +610,27 @@ compute_local_properties (sbitmap *transp, sbitmap *comp,
       for (expr = table->table[i]; expr != NULL; expr = expr->next_same_hash)
 	{
 	  int indx = expr->bitmap_index;
+	  df_ref def;
 	  struct occr *occr;
 
-	  /* The expression is transparent in this block if it is not killed.
-	     We start by assuming all are transparent [none are killed], and
-	     then reset the bits for those that are.  */
-	  if (transp)
-	    compute_transp (expr->expr, indx, transp);
+	  /* The expression is transparent in a block if it is not killed,
+	     i.e. DEST and SRC are not set or clobbered in the block.
+	     We start by assuming all are transparent [none are killed],
+	     and then set the bits for those that are.  */
+	  for (def = DF_REG_DEF_CHAIN (REGNO (expr->dest));
+	       def; def = DF_REF_NEXT_REG (def))
+	    SET_BIT (transp[DF_REF_BB (def)->index], indx);
+	  if (REG_P (expr->src))
+	    for (def = DF_REG_DEF_CHAIN (REGNO (expr->src));
+		 def; def = DF_REF_NEXT_REG (def))
+	      SET_BIT (transp[DF_REF_BB (def)->index], indx);
 
 	  /* The occurrences recorded in avail_occr are exactly those that
 	     we want to set to nonzero in COMP.  */
-	  if (comp)
-	    for (occr = expr->avail_occr; occr != NULL; occr = occr->next)
-	      {
-		SET_BIT (comp[BLOCK_FOR_INSN (occr->insn)->index], indx);
-	      }
+	  for (occr = expr->avail_occr; occr != NULL; occr = occr->next)
+	    {
+	      SET_BIT (comp[BLOCK_FOR_INSN (occr->insn)->index], indx);
+	    }
 	}
     }
 }
@@ -892,9 +815,7 @@ find_avail_set (int regno, rtx insn)
       if (set == 0)
 	break;
 
-      gcc_assert (GET_CODE (set->expr) == SET);
-
-      src = SET_SRC (set->expr);
+      src = set->src;
 
       /* We know the set is available.
 	 Now check that SRC is locally anticipatable (i.e. none of the
@@ -1080,15 +1001,11 @@ cprop_insn (rtx insn)
   int changed = 0;
   rtx note;
 
-  if (!INSN_P (insn))
-    return 0;
-
   reg_use_count = 0;
   note_uses (&PATTERN (insn), find_used_regs, NULL);
 
-  note = find_reg_equal_equiv_note (insn);
-
   /* We may win even when propagating constants into notes.  */
+  note = find_reg_equal_equiv_note (insn);
   if (note)
     find_used_regs (&XEXP (note, 0), NULL);
 
@@ -1096,7 +1013,7 @@ cprop_insn (rtx insn)
        reg_used++, reg_use_count--)
     {
       unsigned int regno = REGNO (reg_used->reg_rtx);
-      rtx pat, src;
+      rtx src;
       struct expr *set;
 
       /* If the register has already been set in this block, there's
@@ -1110,11 +1027,7 @@ cprop_insn (rtx insn)
       if (! set)
 	continue;
 
-      pat = set->expr;
-      /* ??? We might be able to handle PARALLELs.  Later.  */
-      gcc_assert (GET_CODE (pat) == SET);
-
-      src = SET_SRC (pat);
+      src = set->src;
 
       /* Constant propagation.  */
       if (cprop_constant_p (src))
@@ -1150,7 +1063,7 @@ cprop_insn (rtx insn)
 		}
 
 	      /* The original insn setting reg_used may or may not now be
-		 deletable.  We leave the deletion to flow.  */
+		 deletable.  We leave the deletion to DCE.  */
 	      /* FIXME: If it turns out that the insn isn't deletable,
 		 then we may have unnecessarily extended register lifetimes
 		 and made things worse.  */
@@ -1502,9 +1415,7 @@ find_bypass_set (int regno, int bb)
       if (set == 0)
 	break;
 
-      gcc_assert (GET_CODE (set->expr) == SET);
-
-      src = SET_SRC (set->expr);
+      src = set->src;
       if (cprop_constant_p (src))
 	result = set;
 
@@ -1625,7 +1536,7 @@ bypass_block (basic_block bb, rtx setcc, rtx jump)
 					SET_SRC (PATTERN (setcc)));
 
 	  new_rtx = simplify_replace_rtx (src, reg_used->reg_rtx,
-					  SET_SRC (set->expr));
+					  set->src);
 
 	  /* Jump bypassing may have already placed instructions on
 	     edges of the CFG.  We can't bypass an outgoing edge that
@@ -1677,7 +1588,7 @@ bypass_block (basic_block bb, rtx setcc, rtx jump)
 		  fprintf (dump_file, "JUMP-BYPASS: Proved reg %d "
 				      "in jump_insn %d equals constant ",
 			   regno, INSN_UID (jump));
-		  print_rtl (dump_file, SET_SRC (set->expr));
+		  print_rtl (dump_file, set->src);
 		  fprintf (dump_file, "\nBypass edge from %d->%d to %d\n",
 			   e->src->index, old_dest->index, dest->index);
 		}
