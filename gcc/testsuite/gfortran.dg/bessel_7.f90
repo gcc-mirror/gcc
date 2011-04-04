@@ -1,4 +1,5 @@
 ! { dg-do run { xfail *-*-mingw* spu-*-* } }
+! { dg-add-options ieee }
 !
 ! PR fortran/36158
 ! PR fortran/33197
