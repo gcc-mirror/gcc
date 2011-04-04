@@ -439,6 +439,7 @@ initialize_tree_contains_struct (void)
 	  break;
 
 	case TS_DECL_WRTL:
+	case TS_CONST_DECL:
 	  MARK_TS_DECL_COMMON (code);
 	  break;
 
@@ -450,7 +451,6 @@ initialize_tree_contains_struct (void)
 	case TS_PARM_DECL:
 	case TS_LABEL_DECL:
 	case TS_RESULT_DECL:
-	case TS_CONST_DECL:
 	  MARK_TS_DECL_WRTL (code);
 	  break;
 
@@ -488,7 +488,6 @@ initialize_tree_contains_struct (void)
   gcc_assert (tree_contains_struct[TRANSLATION_UNIT_DECL][TS_DECL_COMMON]);
   gcc_assert (tree_contains_struct[LABEL_DECL][TS_DECL_COMMON]);
   gcc_assert (tree_contains_struct[FIELD_DECL][TS_DECL_COMMON]);
-  gcc_assert (tree_contains_struct[CONST_DECL][TS_DECL_WRTL]);
   gcc_assert (tree_contains_struct[VAR_DECL][TS_DECL_WRTL]);
   gcc_assert (tree_contains_struct[PARM_DECL][TS_DECL_WRTL]);
   gcc_assert (tree_contains_struct[RESULT_DECL][TS_DECL_WRTL]);

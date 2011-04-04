@@ -2963,7 +2963,7 @@ struct GTY(()) tree_result_decl {
 };
 
 struct GTY(()) tree_const_decl {
-  struct tree_decl_with_rtl common;
+  struct tree_decl_common common;
 };
 
 /* For a PARM_DECL, records the data type used to pass the argument,
