@@ -14,7 +14,7 @@
 
 2011-04-04  Jakub Jelinek  <jakub@redhat.com>
 
-	PR debug/48404
+	PR debug/48401
 	* cfgexpand.c (expand_gimple_basic_block): Avoid useless assignment.
 	Use PAT_VAR_LOCATION_LOC instead of INSN_VAR_LOCATION_LOC.
 
