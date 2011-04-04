@@ -202,14 +202,15 @@ for (i = 0; i < n_extra_vars; i++) {
 	init = extra_vars[i]
 	if (var ~ "=" ) {
 		sub(".*= *", "", init)
-		sub(" *=.*", "", var)
-		sub("^.*[ *]", "", var)
-		sub("\\[.*\\]$", "", var)
 	} else {
 		init = "0"
 	}
-	var_seen[var] = 1
-	print "  " init ", /* " var " */"
+	sub(" *=.*", "", var)
+	name = var
+	sub("^.*[ *]", "", name)
+	sub("\\[.*\\]$", "", name)
+	var_seen[name] = 1
+	print "  " init ", /* " name " */"
 }
 for (i = 0; i < n_opts; i++) {
 	if (flag_set_p("Save", flags[i]))
