@@ -1343,14 +1343,27 @@ fis_get_condition (rtx jump)
   return get_condition (jump, NULL, false, true);
 }
 
-/* Check the comparison COND to see if we can safely form an implicit set from
-   it.  COND is either an EQ or NE comparison.  */
+/* Check the comparison COND to see if we can safely form an implicit
+   set from it.  */
 
 static bool
 implicit_set_cond_p (const_rtx cond)
 {
-  const enum machine_mode mode = GET_MODE (XEXP (cond, 0));
-  const_rtx cst = XEXP (cond, 1);
+  enum machine_mode mode;
+  rtx cst;
+
+  /* COND must be either an EQ or NE comparison.  */
+  if (GET_CODE (cond) != EQ && GET_CODE (cond) != NE)
+    return false;
+
+  /* The first operand of COND must be a pseudo-reg.  */
+  if (! REG_P (XEXP (cond, 0))
+      || HARD_REGISTER_P (XEXP (cond, 0)))
+    return false;
+
+  /* The second operand of COND must be a suitable constant.  */
+  mode = GET_MODE (XEXP (cond, 0));
+  cst = XEXP (cond, 1);
 
   /* We can't perform this optimization if either operand might be or might
      contain a signed zero.  */
@@ -1382,55 +1395,78 @@ implicit_set_cond_p (const_rtx cond)
    function records the set patterns that are implicit at the start of each
    basic block.
 
-   FIXME: This would be more effective if critical edges are pre-split.  As
-	  it is now, we can't record implicit sets for blocks that have
-	  critical successor edges.  This results in missed optimizations
-	  and in more (unnecessary) work in cfgcleanup.c:thread_jump().  */
+   If an implicit set is found but the set is implicit on a critical edge,
+   this critical edge is split.
 
-static void
+   Return true if the CFG was modified, false otherwise.  */
+
+static bool
 find_implicit_sets (void)
 {
   basic_block bb, dest;
-  unsigned int count;
   rtx cond, new_rtx;
+  unsigned int count = 0;
+  bool edges_split = false;
+  size_t implicit_sets_size = last_basic_block + 10;
 
-  count = 0;
+  implicit_sets = XCNEWVEC (rtx, implicit_sets_size);
+
   FOR_EACH_BB (bb)
-    /* Check for more than one successor.  */
-    if (EDGE_COUNT (bb->succs) > 1)
+    {
+      /* Check for more than one successor.  */
+      if (! EDGE_COUNT (bb->succs) > 1)
+	continue;
+
+      cond = fis_get_condition (BB_END (bb));
+
+      /* If no condition is found or if it isn't of a suitable form,
+	 ignore it.  */
+      if (! cond || ! implicit_set_cond_p (cond))
+	continue;
+
+      dest = GET_CODE (cond) == EQ
+	? BRANCH_EDGE (bb)->dest : FALLTHRU_EDGE (bb)->dest;
+
+      /* If DEST doesn't go anywhere, ignore it.  */
+      if (! dest || dest == EXIT_BLOCK_PTR)
+	continue;
+
+      /* We have found a suitable implicit set.  Try to record it now as
+	 a SET in DEST.  If DEST has more than one predecessor, the edge
+	 between BB and DEST is a critical edge and we must split it,
+	 because we can only record one implicit set per DEST basic block.  */
+      if (! single_pred_p (dest))
+        {
+	  dest = split_edge (find_edge (bb, dest));
+	  edges_split = true;
+	}
+
+      if (implicit_sets_size <= (size_t) dest->index)
       {
-	cond = fis_get_condition (BB_END (bb));
-
-	if (cond
-	    && (GET_CODE (cond) == EQ || GET_CODE (cond) == NE)
-	    && REG_P (XEXP (cond, 0))
-	    && REGNO (XEXP (cond, 0)) >= FIRST_PSEUDO_REGISTER
-	    && implicit_set_cond_p (cond))
-	  {
-	    dest = GET_CODE (cond) == EQ ? BRANCH_EDGE (bb)->dest
-					 : FALLTHRU_EDGE (bb)->dest;
-
-	    if (dest
-		/* Record nothing for a critical edge.  */
-		&& single_pred_p (dest)
-		&& dest != EXIT_BLOCK_PTR)
-	      {
-		new_rtx = gen_rtx_SET (VOIDmode, XEXP (cond, 0),
-					     XEXP (cond, 1));
-		implicit_sets[dest->index] = new_rtx;
-		if (dump_file)
-		  {
-		    fprintf(dump_file, "Implicit set of reg %d in ",
-			    REGNO (XEXP (cond, 0)));
-		    fprintf(dump_file, "basic block %d\n", dest->index);
-		  }
-		count++;
-	      }
-	  }
+        size_t old_implicit_sets_size = implicit_sets_size;
+	implicit_sets_size *= 2;
+	implicit_sets = XRESIZEVEC (rtx, implicit_sets, implicit_sets_size);
+	memset (implicit_sets + old_implicit_sets_size, 0,
+		(implicit_sets_size - old_implicit_sets_size) * sizeof (rtx));
       }
+
+      new_rtx = gen_rtx_SET (VOIDmode, XEXP (cond, 0),
+			     XEXP (cond, 1));
+      implicit_sets[dest->index] = new_rtx;
+      if (dump_file)
+	{
+	  fprintf(dump_file, "Implicit set of reg %d in ",
+		  REGNO (XEXP (cond, 0)));
+	  fprintf(dump_file, "basic block %d\n", dest->index);
+	}
+      count++;
+    }
 
   if (dump_file)
     fprintf (dump_file, "Found %d implicit sets\n", count);
+
+  /* Confess our sins.  */
+  return edges_split;
 }
 
 /* Bypass conditional jumps.  */
@@ -1797,14 +1833,24 @@ one_cprop_pass (void)
 	    the solver implemented in this file.  */
   changed |= local_cprop_pass ();
   if (changed)
-    {
-      delete_unreachable_blocks ();
-      df_analyze ();
-    }
+    delete_unreachable_blocks ();
 
-  /* Determine implicit sets.  */
-  implicit_sets = XCNEWVEC (rtx, last_basic_block);
-  find_implicit_sets ();
+  /* Determine implicit sets.  This may change the CFG (split critical
+     edges if that exposes an implicit set).
+     Note that find_implicit_sets() does not rely on up-to-date DF caches
+     so that we do not have to re-run df_analyze() even if local CPROP
+     changed something.
+     ??? This could run earlier so that any uncovered implicit sets
+	 sets could be exploited in local_cprop_pass() also.  Later.  */
+  changed |= find_implicit_sets ();
+
+  /* If local_cprop_pass() or find_implicit_sets() changed something,
+     run df_analyze() to bring all insn caches up-to-date, and to take
+     new basic blocks from edge splitting on the DF radar.
+     NB: This also runs the fast DCE pass, because execute_rtl_cprop
+     sets DF_LR_RUN_DCE.  */
+  if (changed)
+    df_analyze ();
 
   alloc_hash_table (&set_hash_table);
   compute_hash_table (&set_hash_table);

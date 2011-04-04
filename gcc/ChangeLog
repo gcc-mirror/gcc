@@ -1,5 +1,14 @@
 2011-04-04  Steven Bosscher  <steven@gcc.gnu.org>
 
+	* cprop.c (implicit_set_cond_p): Assume nothing about COND, move
+	checks on form of COND from find_implicit_sets to here.
+	(find_implicit_sets): Cleanup control flow. Split critical edges
+	if it exposes implicit sets.  Allocate/resize implicit_sets as
+	necessary.
+	(one_cprop_pass): Only delete unreachable blocks if local_cprop_pass
+	changed something.  Run df_analyze after find_implicit_sets if any
+	edges were split.  Do not allocate implicit_sets here.
+
 	* cprop.c: s/gcse/cprop/ everywhere except for flag_gcse.
 	(gcse_obstack): Renamed to cprop_obstack.
 	(GNEW, GNEWVEC, GNEWVAR): Remove.
