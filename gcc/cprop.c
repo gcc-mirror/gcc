@@ -554,118 +554,26 @@ reset_opr_set_tables (void)
   CLEAR_REG_SET (reg_set_bitmap);
 }
 
-/* Return nonzero if the operands of X are not set before INSN in
-   INSN's basic block.  */
+/* Return nonzero if the register X has not been set yet [since the
+   start of the basic block containing INSN].  */
 
 static int
-oprs_not_set_p (const_rtx x, const_rtx insn)
+reg_not_set_p (const_rtx x, const_rtx insn ATTRIBUTE_UNUSED)
 {
-  int i, j;
-  enum rtx_code code;
-  const char *fmt;
-
-  if (x == 0)
-    return 1;
-
-  code = GET_CODE (x);
-  switch (code)
-    {
-    case PC:
-    case CC0:
-    case CONST:
-    case CONST_INT:
-    case CONST_DOUBLE:
-    case CONST_FIXED:
-    case CONST_VECTOR:
-    case SYMBOL_REF:
-    case LABEL_REF:
-    case ADDR_VEC:
-    case ADDR_DIFF_VEC:
-      return 1;
-
-    case REG:
-      return ! REGNO_REG_SET_P (reg_set_bitmap, REGNO (x));
-
-    default:
-      break;
-    }
-
-  for (i = GET_RTX_LENGTH (code) - 1, fmt = GET_RTX_FORMAT (code); i >= 0; i--)
-    {
-      if (fmt[i] == 'e')
-	{
-	  /* If we are about to do the last recursive call
-	     needed at this level, change it into iteration.
-	     This function is called enough to be worth it.  */
-	  if (i == 0)
-	    return oprs_not_set_p (XEXP (x, i), insn);
-
-	  if (! oprs_not_set_p (XEXP (x, i), insn))
-	    return 0;
-	}
-      else if (fmt[i] == 'E')
-	for (j = 0; j < XVECLEN (x, i); j++)
-	  if (! oprs_not_set_p (XVECEXP (x, i, j), insn))
-	    return 0;
-    }
-
-  return 1;
-}
-
-/* Mark things set by a SET.  */
-
-static void
-mark_set (rtx pat, rtx insn ATTRIBUTE_UNUSED)
-{
-  rtx dest = SET_DEST (pat);
-
-  while (GET_CODE (dest) == SUBREG
-	 || GET_CODE (dest) == ZERO_EXTRACT
-	 || GET_CODE (dest) == STRICT_LOW_PART)
-    dest = XEXP (dest, 0);
-
-  if (REG_P (dest))
-    SET_REGNO_REG_SET (reg_set_bitmap, REGNO (dest));
-}
-
-/* Record things set by a CLOBBER.  */
-
-static void
-mark_clobber (rtx pat, rtx insn ATTRIBUTE_UNUSED)
-{
-  rtx clob = XEXP (pat, 0);
-
-  while (GET_CODE (clob) == SUBREG || GET_CODE (clob) == STRICT_LOW_PART)
-    clob = XEXP (clob, 0);
-
-  if (REG_P (clob))
-    SET_REGNO_REG_SET (reg_set_bitmap, REGNO (clob));
+  return ! REGNO_REG_SET_P (reg_set_bitmap, REGNO (x));
 }
 
 /* Record things set by INSN.
-   This data is used by oprs_not_set_p.  */
+   This data is used by reg_not_set_p.  */
 
 static void
 mark_oprs_set (rtx insn)
 {
-  rtx pat = PATTERN (insn);
-  int i;
+  struct df_insn_info *insn_info = DF_INSN_INFO_GET (insn);
+  df_ref *def_rec;
 
-  if (GET_CODE (pat) == SET)
-    mark_set (pat, insn);
-  else if (GET_CODE (pat) == PARALLEL)
-    for (i = 0; i < XVECLEN (pat, 0); i++)
-      {
-	rtx x = XVECEXP (pat, 0, i);
-
-	if (GET_CODE (x) == SET)
-	  mark_set (x, insn);
-	else if (GET_CODE (x) == CLOBBER)
-	  mark_clobber (x, insn);
-      }
-
-  else if (GET_CODE (pat) == CLOBBER)
-    mark_clobber (pat, insn);
+  for (def_rec = DF_INSN_INFO_DEFS (insn_info); *def_rec; def_rec++)
+    SET_REGNO_REG_SET (reg_set_bitmap, DF_REF_REGNO (*def_rec));
 }
 
 
@@ -1023,7 +931,7 @@ find_avail_set (int regno, rtx insn)
          If the source operand changed, we may still use it for the next
          iteration of this loop, but we may not use it for substitutions.  */
 
-      if (gcse_constant_p (src) || oprs_not_set_p (src, insn))
+      if (gcse_constant_p (src) || reg_not_set_p (src, insn))
 	set1 = set;
 
       /* If the source of the set is anything except a register, then
@@ -1144,7 +1052,7 @@ cprop_jump (basic_block bb, rtx setcc, rtx jump, rtx from, rtx src)
       edge e;
       edge_iterator ei;
 
-      for (ei = ei_start (bb->succs); (e = ei_safe_edge (ei)); ei_next (&ei))
+      FOR_EACH_EDGE (e, ei, bb->succs)
 	if (e->dest != EXIT_BLOCK_PTR
 	    && BB_HEAD (e->dest) == JUMP_LABEL (jump))
 	  {
@@ -1221,7 +1129,7 @@ cprop_insn (rtx insn)
 
       /* If the register has already been set in this block, there's
 	 nothing we can do.  */
-      if (! oprs_not_set_p (reg_used->reg_rtx, insn))
+      if (! reg_not_set_p (reg_used->reg_rtx, insn))
 	continue;
 
       /* Find an assignment that sets reg_used and is available

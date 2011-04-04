@@ -1,3 +1,13 @@
+2011-04-04  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* cprop.c (oprs_not_set_p): Remove.
+	(mark_set, mark_clobber): Remove.
+	(mark_oprs_set): Rewrite using DF_INSN_INFO_DEFS cache.
+	(reg_not_set_p): New function.
+	(find_avail_set): Use reg_not_set_p instead of oprs_not_set_p.
+	(cprop_insn): Likewise.
+	(cprop_jump): Use FOR_EACH_EDGE.
+
 2011-04-04  Bernd Schmidt  <bernds@codesourcery.com>
 
 	PR bootstrap/48403
