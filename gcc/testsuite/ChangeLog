@@ -1,3 +1,8 @@
+2011-04-04  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/48291
+	* gfortran.dg/class_42.f03: New.
+
 2011-04-04  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* gfortran.dg/bessel_6.f90: Use dg-add-options ieee.

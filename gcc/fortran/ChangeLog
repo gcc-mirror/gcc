@@ -1,3 +1,9 @@
+2011-04-04  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/48291
+	* class.c (get_unique_hashed_string): Adjust maximum allowable length
+	for unique type string.
+
 2011-03-25  Release Manager
 
 	* GCC 4.6.0 released.
