@@ -1091,6 +1091,7 @@ CND(MSG_EOR, "Send end of record")
 #else
 # define MSG_WAITALL -1
 #endif
+#endif
 CND(MSG_WAITALL, "Wait for full reception")
 
 #ifndef MSG_NOSIGNAL
