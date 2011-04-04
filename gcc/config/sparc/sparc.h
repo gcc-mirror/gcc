@@ -1104,34 +1104,6 @@ extern char leaf_reg_remap[];
 #define SPARC_SETHI32_P(X) \
   (SPARC_SETHI_P ((unsigned HOST_WIDE_INT) (X) & GET_MODE_MASK (SImode)))
 
-/* Given an rtx X being reloaded into a reg required to be
-   in class CLASS, return the class of reg to actually use.
-   In general this is just CLASS; but on some machines
-   in some cases it is preferable to use a more restrictive class.  */
-/* - We can't load constants into FP registers.
-   - We can't load FP constants into integer registers when soft-float,
-     because there is no soft-float pattern with a r/F constraint.
-   - We can't load FP constants into integer registers for TFmode unless
-     it is 0.0L, because there is no movtf pattern with a r/F constraint.
-   - Try and reload integer constants (symbolic or otherwise) back into
-     registers directly, rather than having them dumped to memory.  */
-
-#define PREFERRED_RELOAD_CLASS(X,CLASS)			\
-  (CONSTANT_P (X)					\
-   ? ((FP_REG_CLASS_P (CLASS)				\
-       || (CLASS) == GENERAL_OR_FP_REGS			\
-       || (CLASS) == GENERAL_OR_EXTRA_FP_REGS		\
-       || (GET_MODE_CLASS (GET_MODE (X)) == MODE_FLOAT	\
-	   && ! TARGET_FPU)				\
-       || (GET_MODE (X) == TFmode			\
-	   && ! const_zero_operand (X, TFmode)))	\
-      ? NO_REGS						\
-      : (!FP_REG_CLASS_P (CLASS)			\
-         && GET_MODE_CLASS (GET_MODE (X)) == MODE_INT)	\
-      ? GENERAL_REGS					\
-      : (CLASS))					\
-   : (CLASS))
-
 /* Return the register class of a scratch register needed to load IN into
    a register of class CLASS in MODE.
 
