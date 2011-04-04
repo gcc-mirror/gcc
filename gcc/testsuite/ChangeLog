@@ -319,7 +319,7 @@
 	* gcc.dg/graphite/block-8.c: Likewise.
 
 2011-03-25  Richard Guenther  <rguenther@suse.de>
- 
+
 	* g++.dg/tree-ssa/pr41186.C: Scan the appropriate FRE dump.
 	* g++.dg/tree-ssa/pr8781.C: Likewise.
 	* gcc.dg/ipa/ipa-pta-13.c: Likewise.

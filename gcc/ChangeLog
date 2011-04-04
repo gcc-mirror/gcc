@@ -84,8 +84,7 @@
 
 2011-04-03  Michael Matz  <matz@suse.de>
 
-	* cgraphbuild.c (record_reference): Canonicalize constructor
-	values.
+	* cgraphbuild.c (record_reference): Canonicalize constructor values.
 	* gimple-fold.c (canonicalize_constructor_val): Accept being called
 	without function context.
 	* cgraphunit.c (cgraph_finalize_compilation_unit): Clear
@@ -159,8 +158,7 @@
 	PR middle-end/48335
 	* expr.c (expand_assignment): Handle all possibilities
 	if TO_RTX is CONCAT.
-	* expmed.c (store_bit_field_1): Avoid trying to create
-	invalid SUBREGs.
+	* expmed.c (store_bit_field_1): Avoid trying to create invalid SUBREGs.
 	(store_split_bit_field): If SUBREG_REG (op0) or
 	op0 itself has smaller mode than word, return it
 	for offset 0 and const0_rtx for out-of-bounds stores.
@@ -299,8 +297,7 @@
 	New define to enable use of library pthread by default.
 	* config/i386/mingw.opt (pthread): New driver option.
 	(no-pthread): New driver option.
-	* config/i386/cygming.opt: Make sure trailing empty line
-	is retained.
+	* config/i386/cygming.opt: Make sure trailing empty line is retained.
 	* config/i386/mingw-w64.opt: Likewise.
 
 2011-04-01  Gary Funck <gary@intrepid.com>
@@ -434,8 +431,7 @@
 
 2011-03-31  Michael Matz  <matz@suse.de>
 
-	* builtins.c (build_va_arg_indirect_ref): Use
-	build_simple_mem_ref_loc.
+	* builtins.c (build_va_arg_indirect_ref): Use build_simple_mem_ref_loc.
 
 2011-03-31  Anatoly Sokolov  <aesok@post.ru>
 
@@ -449,7 +445,7 @@
 
 	* reload1.c (elimination_effects): Fix typo in recent change.
 
-	* tree-ssa-forwprop.c (forward_propagate_into_cond): Avoid 
+	* tree-ssa-forwprop.c (forward_propagate_into_cond): Avoid
 	typo potentially leading to null pointer dereference.
 
 	* caller-save.c (new_saved_hard_reg): Eliminate return value.
@@ -481,8 +477,7 @@
 	* collect2.c (main): Don't use TARGET_VERSION.
 	* mips-tdump.c (main): Don't use TARGET_VERSION.
 	* mips-tfile.c (main): Don't use TARGET_VERSION.
-	* config.gcc (powerpc-wrs-vxworksae): Don't use
-	rs6000/vxworksae.h.
+	* config.gcc (powerpc-wrs-vxworksae): Don't use rs6000/vxworksae.h.
 	* config/rs6000/vxworksae.h: Remove.
 	* config/alpha/alpha.h (TARGET_VERSION): Remove.
 	* config/alpha/freebsd.h (TARGET_VERSION): Remove.
@@ -648,8 +643,7 @@
 	* doc/options.texi (NegativeAlias): Document.
 	(Alias): Mention NegativeAlias.
 	* opt-functions.awk: Handle NegativeAlias.
-	* optc-gen.awk: Disallow NegativeAlias with multiple Alias
-	arguments.
+	* optc-gen.awk: Disallow NegativeAlias with multiple Alias arguments.
 	* opts-common.c (decode_cmdline_option): Handle CL_NEGATIVE_ALIAS.
 	* opts.h (CL_NEGATIVE_ALIAS): Define.
 	* config/rs6000/rs6000.c (rs6000_parse_yes_no_option): Remove.
@@ -733,8 +727,7 @@
 	changes.
 	* avr/avr.h (LEGITIMIZE_RELOAD_ADDRESS): Corresponding changes.
 	* xtensa/xtensa.c (fixup_subreg_mem): Corresponding changes.
-	* mn10300/mn10300.c (mn10300_secondary_reload): Corresponding
-	changes.
+	* mn10300/mn10300.c (mn10300_secondary_reload): Corresponding changes.
 	* m68k/m68k.c (emit_move_sequence): Corresponding changes.
 	* arm/arm.c (arm_reload_in_hi, arm_reload_out_hi): Corresponding
 	changes.
@@ -760,6 +753,7 @@
 
 	PR driver/48208
 	* config/c.opt (F): Added 'Driver' to -F option.
+
 	PR driver/48260
 	* config/darwin-driver.c (darwin_driver_init): Add '-arch' to
 	  handler function.
@@ -770,15 +764,14 @@
 	* config/rx/rx.md: Add peepholes and patterns to combine
 	extending loads and simple arithmetic instructions.
 	* config/rx/rx.h (ADJUST_INSN_LENGTH): Define.
-        * config/rx/rx-protos.h (rx_adjust_insn_length): Prototype.
-        * config/rx/rx.c (rx_is_legitimate_address): Allow QI and HI
+	* config/rx/rx-protos.h (rx_adjust_insn_length): Prototype.
+	* config/rx/rx.c (rx_is_legitimate_address): Allow QI and HI
 	modes to use pre-decrement and post-increment addressing.
-        (rx_is_restricted_memory_address): Add range checking of REG+INT
+	(rx_is_restricted_memory_address): Add range checking of REG+INT
 	addresses.
-        (rx_print_operand): Add support for %Q.
-        Fix handling of %Q.
-        (rx_memory_move_cost): Adjust cost of stores.
-        (rx_adjust_insn_length): New function.
+	(rx_print_operand): Add support for %Q.  Fix handling of %Q.
+	(rx_memory_move_cost): Adjust cost of stores.
+	(rx_adjust_insn_length): New function.
 
 2011-03-30  Jakub Jelinek  <jakub@redhat.com>
 
