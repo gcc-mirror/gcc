@@ -1,5 +1,17 @@
 2011-04-04  Steven Bosscher  <steven@gcc.gnu.org>
 
+	* cprop.c: s/gcse/cprop/ everywhere except for flag_gcse.
+	(gcse_obstack): Renamed to cprop_obstack.
+	(GNEW, GNEWVEC, GNEWVAR): Remove.
+	(gmalloc): Remove.
+	(alloc_hash_table): Use XNEWVAR instead of GNEWVAR.
+	(GOBNEW, GOBNEWVAR): Adjust for gcse_obstack renaming.
+	(gcse_alloc): Likewise, and rename to cprop_alloc.
+	(alloc_gcse_men, free_gcse_mem): Remove.
+	(gcse_constant_p): Rename to cprop_constant_p, and adjust all callers.
+	(compute_hash_table_work): Allocate and free reg_set_bitmap here.
+	(one_cprop_pass): Likewise. Adjust for gcse_obstack renaming.
+
 	* cprop.c (oprs_not_set_p): Remove.
 	(mark_set, mark_clobber): Remove.
 	(mark_oprs_set): Rewrite using DF_INSN_INFO_DEFS cache.

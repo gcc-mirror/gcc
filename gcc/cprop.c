@@ -51,7 +51,7 @@ along with GCC; see the file COPYING3.  If not see
 
 
 /* An obstack for our working variables.  */
-static struct obstack gcse_obstack;
+static struct obstack cprop_obstack;
 
 struct reg_use {rtx reg_rtx; };
 
@@ -138,49 +138,16 @@ static int global_const_prop_count;
 static int global_copy_prop_count;
 
 
-#define GNEW(T)			((T *) gmalloc (sizeof (T)))
-
-#define GNEWVEC(T, N)		((T *) gmalloc (sizeof (T) * (N)))
-
-#define GNEWVAR(T, S)		((T *) gmalloc ((S)))
-
-#define GOBNEW(T)		((T *) gcse_alloc (sizeof (T)))
-#define GOBNEWVAR(T, S)		((T *) gcse_alloc ((S)))
-
-/* Cover function to xmalloc to record bytes allocated.  */
-
-static void *
-gmalloc (size_t size)
-{
-  bytes_used += size;
-  return xmalloc (size);
-}
+#define GOBNEW(T)		((T *) cprop_alloc (sizeof (T)))
+#define GOBNEWVAR(T, S)		((T *) cprop_alloc ((S)))
 
 /* Cover function to obstack_alloc.  */
 
 static void *
-gcse_alloc (unsigned long size)
+cprop_alloc (unsigned long size)
 {
   bytes_used += size;
-  return obstack_alloc (&gcse_obstack, size);
-}
-
-/* Allocate memory for the reg/memory set tracking tables.
-   This is called at the start of each pass.  */
-
-static void
-alloc_gcse_mem (void)
-{
-  /* Allocate vars to track sets of regs.  */
-  reg_set_bitmap = ALLOC_REG_SET (NULL);
-}
-
-/* Free memory allocated by alloc_gcse_mem.  */
-
-static void
-free_gcse_mem (void)
-{
-  FREE_REG_SET (reg_set_bitmap);
+  return obstack_alloc (&cprop_obstack, size);
 }
 
 /* Return nonzero if register X is unchanged from INSN to the end
@@ -292,7 +259,7 @@ insert_set_in_table (rtx x, rtx insn, struct hash_table_d *table)
    is sharable.  */
 
 static bool
-gcse_constant_p (const_rtx x)
+cprop_constant_p (const_rtx x)
 {
   return CONSTANT_P (x) && (GET_CODE (x) != CONST || shared_const_p (x));
 }
@@ -328,7 +295,7 @@ hash_scan_set (rtx pat, rtx insn, struct hash_table_d *table)
       if (note != 0
 	  && REG_NOTE_KIND (note) == REG_EQUAL
 	  && !REG_P (src)
-	  && gcse_constant_p (XEXP (note, 0)))
+	  && cprop_constant_p (XEXP (note, 0)))
 	src = XEXP (note, 0), pat = gen_rtx_SET (VOIDmode, dest, src);
 
       /* Record sets for constant/copy propagation.  */
@@ -336,7 +303,7 @@ hash_scan_set (rtx pat, rtx insn, struct hash_table_d *table)
 	   && src != dest
 	   && ! HARD_REGISTER_P (src)
 	   && reg_available_p (src, insn))
-	  || gcse_constant_p (src))
+	  || cprop_constant_p (src))
 	insert_set_in_table (pat, insn, table);
     }
 }
@@ -438,6 +405,9 @@ compute_hash_table_work (struct hash_table_d *table)
 {
   basic_block bb;
 
+  /* Allocate vars to track sets of regs.  */
+  reg_set_bitmap = ALLOC_REG_SET (NULL);
+
   FOR_EACH_BB (bb)
     {
       rtx insn;
@@ -467,6 +437,8 @@ compute_hash_table_work (struct hash_table_d *table)
       if (implicit_sets[bb->index] != NULL_RTX)
 	hash_scan_set (implicit_sets[bb->index], BB_HEAD (bb), table);
     }
+
+  FREE_REG_SET (reg_set_bitmap);
 }
 
 /* Allocate space for the set/expr hash TABLE.
@@ -488,7 +460,7 @@ alloc_hash_table (struct hash_table_d *table)
      ??? Later take some measurements.  */
   table->size |= 1;
   n = table->size * sizeof (struct expr *);
-  table->table = GNEWVAR (struct expr *, n);
+  table->table = XNEWVAR (struct expr *, n);
 }
 
 /* Free things allocated by alloc_hash_table.  */
@@ -931,7 +903,7 @@ find_avail_set (int regno, rtx insn)
          If the source operand changed, we may still use it for the next
          iteration of this loop, but we may not use it for substitutions.  */
 
-      if (gcse_constant_p (src) || reg_not_set_p (src, insn))
+      if (cprop_constant_p (src) || reg_not_set_p (src, insn))
 	set1 = set;
 
       /* If the source of the set is anything except a register, then
@@ -1145,7 +1117,7 @@ cprop_insn (rtx insn)
       src = SET_SRC (pat);
 
       /* Constant propagation.  */
-      if (gcse_constant_p (src))
+      if (cprop_constant_p (src))
 	{
           if (constprop_register (insn, reg_used->reg_rtx, src))
 	    {
@@ -1261,7 +1233,7 @@ do_local_cprop (rtx x, rtx insn)
 	  rtx this_rtx = l->loc;
 	  rtx note;
 
-	  if (gcse_constant_p (this_rtx))
+	  if (cprop_constant_p (this_rtx))
 	    newcnst = this_rtx;
 	  if (REG_P (this_rtx) && REGNO (this_rtx) >= FIRST_PSEUDO_REGISTER
 	      /* Don't copy propagate if it has attached REG_EQUIV note.
@@ -1400,7 +1372,7 @@ implicit_set_cond_p (const_rtx cond)
 	return 0;
     }
 
-  return gcse_constant_p (cst);
+  return cprop_constant_p (cst);
 }
 
 /* Find the implicit sets of a function.  An "implicit set" is a constraint
@@ -1497,7 +1469,7 @@ find_bypass_set (int regno, int bb)
       gcc_assert (GET_CODE (set->expr) == SET);
 
       src = SET_SRC (set->expr);
-      if (gcse_constant_p (src))
+      if (cprop_constant_p (src))
 	result = set;
 
       if (! REG_P (src))
@@ -1808,8 +1780,7 @@ one_cprop_pass (void)
   global_copy_prop_count = local_copy_prop_count = 0;
 
   bytes_used = 0;
-  gcc_obstack_init (&gcse_obstack);
-  alloc_gcse_mem ();
+  gcc_obstack_init (&cprop_obstack);
 
   /* Do a local const/copy propagation pass first.  The global pass
      only handles global opportunities.
@@ -1824,7 +1795,8 @@ one_cprop_pass (void)
      FIXME: The global analysis would not get into infinite loops if it
 	    would use the DF solver (via df_simple_dataflow) instead of
 	    the solver implemented in this file.  */
-  if (local_cprop_pass ())
+  changed |= local_cprop_pass ();
+  if (changed)
     {
       delete_unreachable_blocks ();
       df_analyze ();
@@ -1851,6 +1823,9 @@ one_cprop_pass (void)
       alloc_cprop_mem (last_basic_block, set_hash_table.n_elems);
       compute_cprop_data ();
 
+      /* Allocate vars to track sets of regs.  */
+      reg_set_bitmap = ALLOC_REG_SET (NULL);
+
       FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR->next_bb->next_bb, EXIT_BLOCK_PTR, next_bb)
 	{
 	  /* Reset tables used to keep track of what's still valid [since
@@ -1872,12 +1847,13 @@ one_cprop_pass (void)
 	}
 
       changed |= bypass_conditional_jumps ();
+
+      FREE_REG_SET (reg_set_bitmap);
       free_cprop_mem ();
     }
 
   free_hash_table (&set_hash_table);
-  free_gcse_mem ();
-  obstack_free (&gcse_obstack, NULL);
+  obstack_free (&cprop_obstack, NULL);
 
   if (dump_file)
     {
