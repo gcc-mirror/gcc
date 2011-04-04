@@ -1,3 +1,9 @@
+2011-04-04  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/48412
+	* frontend-passes (cfe_expr_0):  Reverse the order of going
+	through the loops.
+
 2011-04-04  Tobias Burnus  <burnus@net-b.de>
 	    Mikael Morin  <mikael.morin@sfr.fr>
 
