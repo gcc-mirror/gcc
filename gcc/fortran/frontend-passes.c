@@ -35,6 +35,7 @@ static void optimize_assignment (gfc_code *);
 static bool optimize_op (gfc_expr *);
 static bool optimize_comparison (gfc_expr *, gfc_intrinsic_op);
 static bool optimize_trim (gfc_expr *);
+static bool optimize_lexical_comparison (gfc_expr *);
 
 /* How deep we are inside an argument list.  */
 
@@ -117,6 +118,9 @@ optimize_expr (gfc_expr **e, int *walk_subtrees ATTRIBUTE_UNUSED,
     function_expr = false;
 
   if (optimize_trim (*e))
+    gfc_simplify_expr (*e, 0);
+
+  if (optimize_lexical_comparison (*e))
     gfc_simplify_expr (*e, 0);
 
   if ((*e)->expr_type == EXPR_OP && optimize_op (*e))
@@ -483,6 +487,34 @@ strip_function_call (gfc_expr *e)
 
 }
 
+/* Optimization of lexical comparison functions.  */
+
+static bool
+optimize_lexical_comparison (gfc_expr *e)
+{
+  if (e->expr_type != EXPR_FUNCTION || e->value.function.isym == NULL)
+    return false;
+
+  switch (e->value.function.isym->id)
+    {
+    case GFC_ISYM_LLE:
+      return optimize_comparison (e, INTRINSIC_LE);
+
+    case GFC_ISYM_LGE:
+      return optimize_comparison (e, INTRINSIC_GE);
+
+    case GFC_ISYM_LGT:
+      return optimize_comparison (e, INTRINSIC_GT);
+
+    case GFC_ISYM_LLT:
+      return optimize_comparison (e, INTRINSIC_LT);
+
+    default:
+      break;
+    }
+  return false;
+}
+
 /* Recursive optimization of operators.  */
 
 static bool
@@ -522,9 +554,25 @@ optimize_comparison (gfc_expr *e, gfc_intrinsic_op op)
   bool change;
   int eq;
   bool result;
+  gfc_actual_arglist *firstarg, *secondarg;
 
-  op1 = e->value.op.op1;
-  op2 = e->value.op.op2;
+  if (e->expr_type == EXPR_OP)
+    {
+      firstarg = NULL;
+      secondarg = NULL;
+      op1 = e->value.op.op1;
+      op2 = e->value.op.op2;
+    }
+  else if (e->expr_type == EXPR_FUNCTION)
+    {
+      /* One of the lexical comparision functions.  */
+      firstarg = e->value.function.actual;
+      secondarg = firstarg->next;
+      op1 = firstarg->expr;
+      op2 = secondarg->expr;
+    }
+  else
+    gcc_unreachable ();
 
   /* Strip off unneeded TRIM calls from string comparisons.  */
 
@@ -587,13 +635,21 @@ optimize_comparison (gfc_expr *e, gfc_intrinsic_op op)
 			&& op2_left->expr_type == EXPR_CONSTANT
 			&& op1_left->value.character.length
 			   != op2_left->value.character.length)
-		    return -2;
+		    return false;
 		  else
 		    {
 		      gfc_free (op1_left);
 		      gfc_free (op2_left);
-		      e->value.op.op1 = op1_right;
-		      e->value.op.op2 = op2_right;
+		      if (firstarg)
+			{
+			  firstarg->expr = op1_right;
+			  secondarg->expr = op2_right;
+			}
+		      else
+			{
+			  e->value.op.op1 = op1_right;
+			  e->value.op.op2 = op2_right;
+			}
 		      optimize_comparison (e, op);
 		      return true;
 		    }
@@ -602,8 +658,17 @@ optimize_comparison (gfc_expr *e, gfc_intrinsic_op op)
 		{
 		  gfc_free (op1_right);
 		  gfc_free (op2_right);
-		  e->value.op.op1 = op1_left;
-		  e->value.op.op2 = op2_left;
+		  if (firstarg)
+		    {
+		      firstarg->expr = op1_left;
+		      secondarg->expr = op2_left;
+		    }
+		  else
+		    {
+		      e->value.op.op1 = op1_left;
+		      e->value.op.op2 = op2_left;
+		    }
+
 		  optimize_comparison (e, op);
 		  return true;
 		}

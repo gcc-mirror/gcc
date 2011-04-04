@@ -1,3 +1,14 @@
+2010-04-04  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* gfortran.dg/character_comparison_8.f90:  New test.
+
+2010-04-04  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* frontend-passes: (optimize_lexical_comparison): New function.
+	(optimize_expr): Call it.
+	(optimize_comparison): Also handle lexical comparison functions.
+	Return false instad of -2 for unequal comparison.
+
 2011-04-04  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/48412
