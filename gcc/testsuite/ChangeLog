@@ -1,3 +1,9 @@
+2011-04-04  Yufeng Zhang  <yufeng.zhang@arm.com>
+
+        * g++.dg/abi/arm_cxa_vec1.C (__ARM_EABI__): Fix typo.
+	(cctor): Actually return the value.
+	(main): Cast return values.
+
 2010-04-04  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	* gfortran.dg/character_comparison_8.f90:  New test.
