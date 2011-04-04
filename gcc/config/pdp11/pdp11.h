@@ -271,16 +271,6 @@ enum reg_class { NO_REGS, MUL_REGS, GENERAL_REGS, LOAD_FPU_REGS, NO_LOAD_FPU_REG
 #define INDEX_REG_CLASS GENERAL_REGS
 #define BASE_REG_CLASS GENERAL_REGS
 
-/* The following macro defines cover classes for Integrated Register
-   Allocator.  Cover classes is a set of non-intersected register
-   classes covering all hard registers used for register allocation
-   purpose.  Any move between two registers of a cover class should be
-   cheaper than load or store of the registers.  The macro value is
-   array of register classes with LIM_REG_CLASSES used as the end
-   marker.  */
-
-#define IRA_COVER_CLASSES { GENERAL_REGS, FPU_REGS, LIM_REG_CLASSES }
-
 /* Hook for testing if memory is needed for moving between registers.  */
 #define SECONDARY_MEMORY_NEEDED(class1, class2, m) \
   pdp11_secondary_memory_needed (class1, class2, m)
