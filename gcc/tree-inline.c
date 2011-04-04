@@ -4964,8 +4964,6 @@ delete_unreachable_blocks_update_callgraph (copy_body_data *id)
 	}
     }
 
-  if (changed)
-    tidy_fallthru_edges ();
   return changed;
 }
 

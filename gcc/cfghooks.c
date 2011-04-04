@@ -830,7 +830,9 @@ tidy_fallthru_edge (edge e)
 /* Fix up edges that now fall through, or rather should now fall through
    but previously required a jump around now deleted blocks.  Simplify
    the search by only examining blocks numerically adjacent, since this
-   is how they were created.  */
+   is how they were created.
+
+   ??? This routine is currently RTL specific.  */
 
 void
 tidy_fallthru_edges (void)
