@@ -1,3 +1,9 @@
+2011-04-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* cfghooks.c (tidy_fallthru_edges): Add ??? comment.
+	* tree-inline.c (delete_unreachable_blocks_update_callgraph): Remove
+	call to tidy_fallthru_edges.
+
 2011-04-04  Joseph Myers  <joseph@codesourcery.com>
 
 	* doc/options.texi (ToLower): Document.
