@@ -1,16 +1,16 @@
-# Mensajes en español para gcc-4.6-b20101218.
-# Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
+# Mensajes en español para gcc-4.6.0.
+# Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
 # This file is distributed under the same license as the gcc package.
-# Cristian Othón Martínez Vera <cfuga@itam.mx>, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+# Cristian Othón Martínez Vera <cfuga@itam.mx>, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
 #
 # Agradezco a Juan Cuquejo Mira por sus comentarios sobre esta traducción
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gcc 4.6-b20101218\n"
+"Project-Id-Version: gcc 4.6.0\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2011-03-24 16:45+0000\n"
-"PO-Revision-Date: 2010-12-21 07:58-0600\n"
+"PO-Revision-Date: 2011-04-04 16:04-0500\n"
 "Last-Translator: Cristian Othón Martínez Vera <cfuga@itam.mx>\n"
 "Language-Team: Spanish <es@li.org>\n"
 "Language: es\n"
@@ -1800,9 +1800,8 @@ msgid "The maximum amount of memory to be allocated by GCSE"
 msgstr "La cantidad máxima de memoria a ser asignada por GCSE"
 
 #: params.def:222
-#, fuzzy
 msgid "The maximum ratio of insertions to deletions of expressions in GCSE"
-msgstr "El número máximo de instrucciones para considerar el desenrollo en un bucle"
+msgstr "La tasa máxima de inserciones para borrados de expresiones en GCSE"
 
 #: params.def:233
 msgid "The threshold ratio for performing partial redundancy elimination after reload"
@@ -1978,9 +1977,8 @@ msgid "Bound on size of expressions used in the scalar evolutions analyzer"
 msgstr "Límite en el tamaño de expresiones usadas en el analizador escalar de evoluciones"
 
 #: params.def:488
-#, fuzzy
 msgid "Bound on the complexity of the expressions in the scalar evolutions analyzer"
-msgstr "Límite en el tamaño de expresiones usadas en el analizador escalar de evoluciones"
+msgstr "Límite en la complejidad de expresiones en el analizador escalar de evoluciones"
 
 #: params.def:493
 msgid "Bound on the number of variables in Omega constraint systems"
@@ -5541,9 +5539,8 @@ msgid "Return pointers in both a0 and d0"
 msgstr "Devuelve punteros tanto en a0 como en d0"
 
 #: config/mn10300/mn10300.opt:56
-#, fuzzy
 msgid "Allow gcc to generate LIW instructions"
-msgstr "Permite a gcc usar las instrucciones repeat/erepeat"
+msgstr "Permite a gcc generar instrucciones LIW"
 
 #: config/s390/tpf.opt:23
 msgid "Enable TPF-OS tracing code"
@@ -6307,7 +6304,7 @@ msgstr "Despacha al calendarizador si el procesador es bdver1 y la calendarizaci
 
 #: config/i386/i386.opt:271
 msgid "Use 128-bit AVX instructions instead of 256-bit AVX instructions in the auto-vectorizer."
-msgstr ""
+msgstr "Usa instrucciones AVX de 128-bit en lugar de instrucciones AVX de 256-bit en el auto-vectorizador."
 
 #: config/i386/i386.opt:277
 msgid "Generate 32bit i386 code"
@@ -6358,9 +6355,8 @@ msgid "Do not support SSE4.1 and SSE4.2 built-in functions and code generation"
 msgstr "No admite funciones internas y generación de código SSE4.1 y SSE4.2"
 
 #: config/i386/i386.opt:328
-#, fuzzy
 msgid "%<-msse5%> was removed"
-msgstr "se eliminó '-msse5'"
+msgstr "se eliminó %<-msse5%>"
 
 #: config/i386/i386.opt:333
 msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2 and AVX built-in functions and code generation"
@@ -8172,13 +8168,12 @@ msgid "Set the max size of data eligible for the TDA area"
 msgstr "Establece el tamaño máximo de datos elegibles para el área TDA"
 
 #: config/v850/v850.opt:71
-#, fuzzy
 msgid "Do not enforce strict alignment"
-msgstr "Refuerza la alineación estricta"
+msgstr "No refuerza la alineación estricta"
 
 #: config/v850/v850.opt:75
 msgid "Put jump tables for switch statements into the .data section rather than the .code section"
-msgstr ""
+msgstr "Coloca las tablas de salto para las declaraciones switch en la sección .data en lugar de la sección .code"
 
 #: config/v850/v850.opt:82
 msgid "Compile for the v850 processor"
@@ -8193,9 +8188,8 @@ msgid "Compile for the v850e1 processor"
 msgstr "Compila para el procesador v850e1"
 
 #: config/v850/v850.opt:94
-#, fuzzy
 msgid "Compile for the v850es variant of the v850e1"
-msgstr "Compila para el procesador v850e"
+msgstr "Compila para la variante v850es del procesador v850e1"
 
 #: config/v850/v850.opt:98
 msgid "Compile for the v850e2 processor"
@@ -8719,7 +8713,6 @@ msgid "Use multiply high instructions for high part of 32x32 multiply"
 msgstr "Usa instrucciones high de multiplicación para la parte high de la multiplicación 32x32"
 
 #: config/microblaze/microblaze.opt:92
-#, fuzzy
 msgid "Use hardware floating point conversion instructions"
 msgstr "Usa instrucciones de conversión de coma flotante de hardware"
 
@@ -9385,7 +9378,7 @@ msgstr "Inyecta las funciones friend dentro de espacios de nombres cerrados"
 
 #: c-family/c.opt:819
 msgid "Don't emit dllexported inline functions unless needed"
-msgstr ""
+msgstr "No emite funciones en línea exportadas en dll a menos que sea necesario"
 
 #: c-family/c.opt:826
 msgid "Allow implicit conversions between vectors with differing numbers of subparts and/or differing element types."
@@ -9409,7 +9402,7 @@ msgstr "Trata una especificación de excepción throw() como noexcept para mejorar
 
 #: c-family/c.opt:858
 msgid "Specify which ABI to use for Objective-C family code and meta-data generation."
-msgstr ""
+msgstr "Especifica cuál ABI usar para el código de la familia Objective-C y la generación de metadatos."
 
 #: c-family/c.opt:864
 msgid "Generate special Objective-C methods to initialize/destroy non-POD C++ ivars, if needed"
@@ -9429,7 +9422,7 @@ msgstr "Activa la recolección de basura (GC) en programas Objective-C/Objective-
 
 #: c-family/c.opt:882
 msgid "Enable inline checks for nil receivers with the NeXT runtime and ABI version 2."
-msgstr ""
+msgstr "Activa las revisiones en línea para los receptores nil con el tiempo de ejecución NeXT y la ABI versión 2."
 
 #: c-family/c.opt:887
 msgid "Enable Objective-C setjmp exception handling runtime"
@@ -10028,9 +10021,8 @@ msgid "Run only the second compilation of -fcompare-debug"
 msgstr "Ejecuta sólo la segunda compilación de -fcompare-debug"
 
 #: common.opt:875
-#, fuzzy
 msgid "Perform comparison elimination after register allocation has finished"
-msgstr "Realiza la eliminación de subexpresiones comunes globales despúes del alojamiento de registros"
+msgstr "Realiza la eliminación de comparaciones después de terminar el alojamiento de registros"
 
 #: common.opt:879
 msgid "Do not perform optimizations increasing noticeably stack usage"
@@ -10085,9 +10077,8 @@ msgid "Delete useless null pointer checks"
 msgstr "Borra las revisiones de punteros nulos sin uso"
 
 #: common.opt:937
-#, fuzzy
 msgid "Try to convert virtual calls to direct ones."
-msgstr "Trata de permitir que el enlazador convierta las llamadas PIC a llamadas directas"
+msgstr "Trata de convertir las llamadas virtuales a llamadas directas."
 
 #: common.opt:941
 msgid "-fdiagnostics-show-location=[once|every-line]\tHow often to emit source location at the beginning of line-wrapped diagnostics"
@@ -10217,7 +10208,7 @@ msgstr "Realiza la carga redundante después de la eliminación de almacenamiento 
 
 #: common.opt:1110
 msgid "Perform global common subexpression elimination after register allocation"
-msgstr "Realiza la eliminación de subexpresiones comunes globales despúes del alojamiento de registros"
+msgstr "Realiza la eliminación de subexpresiones comunes globales después del alojamiento de registros"
 
 #: common.opt:1116
 msgid "Enable in and out of Graphite representation"
@@ -10923,9 +10914,8 @@ msgid "Enable loop invariant motion on trees"
 msgstr "Permite el movimiento invariante de bucles en árboles"
 
 #: common.opt:1924
-#, fuzzy
 msgid "Enable loop interchange transforms.  Same as -floop-interchange"
-msgstr "Activa la transformación Loop Interchange"
+msgstr "Activa las transformaciones de intercambio de bucle.  Igual que -floop-interchange"
 
 #: common.opt:1928
 msgid "Create canonical induction variables in loops"
@@ -11291,14 +11281,12 @@ msgid "argument must have complex type"
 msgstr "el argumento debe tener tipo complejo"
 
 #: go/gofrontend/expressions.cc:7578
-#, fuzzy
 msgid "complex arguments must have identical types"
-msgstr "los argumentos cmplx deben tener tipos idénticos"
+msgstr "los argumentos complejos deben tener tipos idénticos"
 
 #: go/gofrontend/expressions.cc:7580
-#, fuzzy
 msgid "complex arguments must have floating-point type"
-msgstr "los argumentos cmplx deben tener tipo de coma flotante"
+msgstr "los argumentos complejos deben tener tipo de coma flotante"
 
 #: go/gofrontend/expressions.cc:8560
 msgid "expected function"
@@ -11914,9 +11902,9 @@ msgid "redefinition of typedef %q+D with different type"
 msgstr "redefinición de la definición de tipo %q+D con un tipo diferente"
 
 #: c-decl.c:1818
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "redefinition of typedef %q+D with variably modified type"
-msgstr "redefinición de la definición de tipo %q+D con un tipo diferente"
+msgstr "redefinición de la definición de tipo %q+D con un tipo modificado variablemente"
 
 #: c-decl.c:1825
 #, gcc-internal-format
@@ -13293,9 +13281,9 @@ msgid "prefix attributes are ignored for implementations"
 msgstr "se descartan los atributos de prefijo para las implementaciones"
 
 #: c-parser.c:1554
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "unexpected attribute"
-msgstr "Se esperaba un nombre de atributo de bit"
+msgstr "atributo inesperado"
 
 #: c-parser.c:1596
 #, gcc-internal-format
@@ -13644,14 +13632,14 @@ msgid "unknown property attribute"
 msgstr "atributo de propiedad desconocido"
 
 #: c-parser.c:7964 cp/parser.c:23157
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "missing %<=%> (after %<getter%> attribute)"
-msgstr "falta un %<(%> después de %<#pragma pack%> - se descarta"
+msgstr "falta un %<=%> (después del atributo %<getter%>)"
 
 #: c-parser.c:7967 cp/parser.c:23160
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "missing %<=%> (after %<setter%> attribute)"
-msgstr "falta un %<(%> después de %<#pragma pack%> - se descarta"
+msgstr "falta un %<=%> (después del atributo %<setter%>)"
 
 #: c-parser.c:7981 cp/parser.c:23174
 #, gcc-internal-format
@@ -15393,7 +15381,7 @@ msgid "caller edge frequency is too large"
 msgstr "la frecuencia de borde llamador es demasiado grande"
 
 #: cgraphunit.c:435
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "caller edge frequency %i does not match BB frequency %i"
 msgstr "la frecuencia de borde llamador %i no coincide con la frecuencia BB %i"
 
@@ -15520,7 +15508,7 @@ msgstr "puntos de borde para una declaración errónea:"
 #: cgraphunit.c:685
 #, gcc-internal-format
 msgid "a call to thunk improperly represented in the call graph:"
-msgstr ""
+msgstr "una llamada a thunk representada impropiamente en el grafo de llamada:"
 
 #: cgraphunit.c:693
 #, gcc-internal-format
@@ -15548,9 +15536,9 @@ msgid "verify_cgraph_node failed"
 msgstr "falló verify_cgraph_node"
 
 #: cgraphunit.c:817
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%<weakref%> attribute should be accompanied with an %<alias%> attribute"
-msgstr "el atributo %<assign%> genera un conflicto con el atributo %<retain%>"
+msgstr "el atributo %<weakref%> se debe acompañar con un atributo %<alias%>"
 
 #: cgraphunit.c:872 cgraphunit.c:909
 #, gcc-internal-format
@@ -15558,14 +15546,14 @@ msgid "%<externally_visible%> attribute have effect only on public objects"
 msgstr "el atributo %<externally_visible%> sólo tiene efecto en objetos públicos"
 
 #: cgraphunit.c:881
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%<weakref%> attribute ignored because function is defined"
-msgstr "se descarta el atributo %qE porque %qT ya está definido"
+msgstr "se descarta el atributo %<weakref%> porque ya se definió la función"
 
 #: cgraphunit.c:919
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%<weakref%> attribute ignored because variable is initialized"
-msgstr "se descarta el atributo %qE porque %qT ya está definido"
+msgstr "se descarta el atributo %<weakref%> porque ya se inicializó la variable"
 
 #: cgraphunit.c:1167 cgraphunit.c:1193
 #, gcc-internal-format
@@ -17114,9 +17102,9 @@ msgid "-iplugindir <dir> option not passed from the gcc driver"
 msgstr "no se pasó la opción -iplugindir <dir> del controlador de gcc"
 
 #: profile.c:417
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "corrupted profile info: edge count exceeds maximal count"
-msgstr "información de análisis de perfil corrupta: el borde de %i a %i excede la cuenta maximal"
+msgstr "información de análisis de perfil corrupta: la cuenta de borde excede la cuenta maximal"
 
 #: profile.c:421
 #, gcc-internal-format, gfc-internal-format
@@ -17598,7 +17586,7 @@ msgstr "este objetivo no admite %qs"
 #: toplev.c:1323
 #, gcc-internal-format
 msgid "Graphite loop optimizations cannot be used (-fgraphite, -fgraphite-identity, -floop-block, -floop-flatten, -floop-interchange, -floop-strip-mine, -floop-parallelize-all, and -ftree-loop-linear)"
-msgstr ""
+msgstr "No se pueden usar las optimizaciones de bucle Graphite (-fgraphite, -fgraphite-identity, -floop-block, -floop-flatten, -floop-interchange, -floop-strip-mine, -floop-parallelize-all, y -ftree-loop-linear)"
 
 #: toplev.c:1352
 #, gcc-internal-format
@@ -18835,9 +18823,9 @@ msgid "correcting inconsistent value profile: %s profiler overall count (%d) doe
 msgstr "se corrige el valor de perfil inconsistente: %s la cuenta general del perfilador (%d) no coincide con la cuenta BB (%d)"
 
 #: value-prof.c:476
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "corrupted value profile: %s profile counter (%d out of %d) inconsistent with basic-block count (%d)"
-msgstr "valor de perfil corrupto: %s la cuenta general del perfilador (%d) no coincide con la cuenta BB (%d)"
+msgstr "valor de perfil corrupto: la cuenta del perfilador %s (%d de %d) es inconsistente con la cuenta bloque-básico (%d)"
 
 #: var-tracking.c:6159
 #, gcc-internal-format
@@ -19479,9 +19467,9 @@ msgid "alignment for %q+D must be at least %d"
 msgstr "la alineación para %q+D debe ser por lo menos %d"
 
 #: c-family/c-common.c:6666
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "inline function %q+D declared weak"
-msgstr "la función inline %q+D no se puede declarar weak"
+msgstr "la función inline %q+D se declaró weak"
 
 #: c-family/c-common.c:6671
 #, gcc-internal-format
@@ -21039,7 +21027,7 @@ msgstr "no se puede entender kern.osversion %q.*s"
 #: config/darwin.c:1608
 #, gcc-internal-format
 msgid "the use of _OBJC_-prefixed variable names to select meta-data sections is deprecated at 4.6 and will be removed in 4.7"
-msgstr ""
+msgstr "el uso de nombre de variables con prefijo _OBJC_ para seleccionar secciones de metadatos es obsoleto en 4.6 y se eliminará en 4.7"
 
 #: config/darwin.c:1782
 #, gcc-internal-format, gfc-internal-format
@@ -21171,7 +21159,7 @@ msgstr "PIC sólo se admite para RTPs"
 #: config/darwin.h:150
 #, gcc-internal-format
 msgid "%<-fobjc-abi-version%> >= 2 is only supported on %<-m64%> targets for %<-fnext-runtime%>"
-msgstr ""
+msgstr "%<-fobjc-abi-version%> >= 2 sólo se admite en objetivos %<-m64%> para %<-fnext-runtime%>"
 
 #. Mach-O supports 'weak imports', and 'weak definitions' in coalesced
 #. sections.  machopic_select_section ensures that weak variables go in
@@ -21537,14 +21525,14 @@ msgid "static variable %q+D is marked dllimport"
 msgstr "la variable estática %q+D se marcó como dllimport"
 
 #: config/avr/avr.c:249
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "unrecognized argument to -mmcu= option: %qs"
-msgstr "no se reconoce el argumento para la opción --help=: %q.*s"
+msgstr "no se reconoce el argumento para la opción -mmcu=: %qs"
 
 #: config/avr/avr.c:250
 #, gcc-internal-format
 msgid "See --target-help for supported MCUs"
-msgstr ""
+msgstr "Vea --target-help para MCUs permitidos"
 
 #: config/avr/avr.c:497
 #, gcc-internal-format
@@ -24116,14 +24104,14 @@ msgid "parameter list does not match a valid signature for %s()"
 msgstr "la lista de parámetros no ofrece una firma válida para %s()"
 
 #: config/spu/spu.c:548
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "bad value (%s) for -march= switch"
-msgstr "valor erróneo (%s) para el interruptor -masm="
+msgstr "valor erróneo (%s) para la opción -march="
 
 #: config/spu/spu.c:559
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "bad value (%s) for -mtune= switch"
-msgstr "valor erróneo %qs para la opción -mtune"
+msgstr "valor erróneo (%s) para la opción -mtune="
 
 #: config/spu/spu.c:5388 config/spu/spu.c:5391
 #, gcc-internal-format
@@ -27003,9 +26991,9 @@ msgid "const %qs cannot be declared %<mutable%>"
 msgstr "const %qs no se puede declarar %<mutable%>"
 
 #: cp/decl.c:9226
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "reference %qs cannot be declared %<mutable%>"
-msgstr "la función %qs no se puede declarar %<mutable%>"
+msgstr "la referencia %qs no se puede declarar %<mutable%>"
 
 #: cp/decl.c:9265
 #, gcc-internal-format
@@ -28431,7 +28419,7 @@ msgstr "se omitió el operando de enmedio de %<?%>: no se puede revolver el opera
 #: cp/mangle.c:2768
 #, gcc-internal-format
 msgid "string literal in function template signature"
-msgstr ""
+msgstr "literal de cadena en la firma de plantilla de función"
 
 #: cp/mangle.c:3040
 #, gcc-internal-format
@@ -29173,9 +29161,9 @@ msgid "non-scalar type"
 msgstr "tipo que no es escalar"
 
 #: cp/parser.c:5957
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "ISO C++ does not allow %<alignof%> with a non-type"
-msgstr "ISO C++ no permite inicializadores designados"
+msgstr "ISO C++ no permite %<alignof%> con algo que no es tipo"
 
 #: cp/parser.c:6016
 #, gcc-internal-format
@@ -29283,9 +29271,9 @@ msgid "expected iteration-statement"
 msgstr "se esperaba una declaración de iteración"
 
 #: cp/parser.c:9091
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "range-based-for loops are not allowed in C++98 mode"
-msgstr "no se permiten las conversiones estándar en este contexto"
+msgstr "no se permiten los bucles for basados en rango en el modo C++98"
 
 #. Issue a warning about this use of a GNU extension.
 #: cp/parser.c:9213
@@ -29679,9 +29667,9 @@ msgid "invalid use of %<auto%>"
 msgstr "uso inválido de %<auto%>"
 
 #: cp/parser.c:15691
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "types may not be defined in template arguments"
-msgstr "no se pueden definir tipos en tipos de parámetro"
+msgstr "no se pueden definir tipos en argumentos de plantilla"
 
 #: cp/parser.c:15772
 #, gcc-internal-format
@@ -30573,9 +30561,9 @@ msgid "%qE is not a valid template argument for type %qT because string literals
 msgstr "%qE no es un argumento válido de plantilla para el tipo %qT porque las literales de cadena nunca se pueden usar en este contexto"
 
 #: cp/pt.c:5403
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "in template argument for type %qT "
-msgstr "%qE no es un argumento de plantilla válido para el tipo %qT"
+msgstr "en el argumento de plantilla para el tipo %qT "
 
 #: cp/pt.c:5443
 #, gcc-internal-format
@@ -31491,9 +31479,9 @@ msgid "the value of %qD is not usable in a constant expression"
 msgstr "el valor de %qD no se puede usar en una expresión constante"
 
 #: cp/semantics.c:6722
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qD used in its own initializer"
-msgstr "se usó la variable %q#D con tipo %<auto%> en su propio inicializador"
+msgstr "se usó %qD en su propio inicializador"
 
 #: cp/semantics.c:6727
 #, gcc-internal-format
@@ -31586,14 +31574,14 @@ msgid "pointer comparison expression is not a constant expression"
 msgstr "la expresión de comparación de punteros no es una expresión constante"
 
 #: cp/semantics.c:7636
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "division by zero is not a constant-expression"
-msgstr "la expresión %qE no es una expresión constante"
+msgstr "la división entre cero no es una expresión constante"
 
 #: cp/semantics.c:7739
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "non-constant array initialization"
-msgstr "el índice de matriz no es una constante en el inicializador"
+msgstr "inicialización de una matriz que no es constante"
 
 #: cp/semantics.c:7745
 #, gcc-internal-format, gfc-internal-format
@@ -33394,9 +33382,9 @@ msgid "'%s' argument of '%s' intrinsic at %L must be INTEGER or LOGICAL"
 msgstr "El argumento '%s' del intrínseco '%s' en %L debe ser INTEGER o LOGICAL"
 
 #: fortran/class.c:199
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "Polymorphic array at %C not yet supported"
-msgstr "Aún no se admite un parámetro de tipo diferido"
+msgstr "Aún no se admite la matriz polimórfica en %C"
 
 #. Since the extension field is 8 bit wide, we can only have
 #. up to 255 extension levels.
@@ -33789,7 +33777,7 @@ msgstr "Extensión: DOUBLE COMPLEX en %C"
 #: fortran/decl.c:2620
 #, gcc-internal-format, gfc-internal-format
 msgid "Unlimited polymorphism at %C not yet supported"
-msgstr ""
+msgstr "Aún no se admite polimorfismo ilimitado en %C"
 
 #: fortran/decl.c:2629
 #, gcc-internal-format, gfc-internal-format
@@ -35105,9 +35093,9 @@ msgid "Fortran 2008: Rank remapping target is not rank 1 at %L"
 msgstr "Fortran 2008: El objetivo de remapeo de rango no es rango 1 en %L"
 
 #: fortran/expr.c:3515
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "Target expression in pointer assignment at %L must deliver a pointer result"
-msgstr "La expresión de selección en una declaración GOTO computada en %L debe ser una expresión entera escalar"
+msgstr "La expresión objetivo en la asignación de puntero en %L debe entregar un resultado puntero"
 
 #: fortran/expr.c:3523
 #, gcc-internal-format, gfc-internal-format
@@ -35150,9 +35138,9 @@ msgid "Pointer initialization target at %C must have the SAVE attribute"
 msgstr "El objetivo de inicialización de puntero en %C debe tener el atributo SAVE"
 
 #: fortran/expr.c:3633
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "Procedure pointer initialization target at %L may not be a procedure pointer"
-msgstr "El objetivo de inicialización de puntero en %L no debe ser ALLOCATABLE"
+msgstr "El objetivo de inicialización de puntero a procedimiento en %L tal vez no es un puntero a procedimiento"
 
 #: fortran/expr.c:4383
 #, gcc-internal-format, gfc-internal-format
@@ -35362,7 +35350,7 @@ msgstr "El procedimiento '%s' en %s en %L no es ni función ni subrutina"
 #: fortran/interface.c:1127
 #, gcc-internal-format, gfc-internal-format
 msgid "In %s at %L procedures must be either all SUBROUTINEs or all FUNCTIONs"
-msgstr ""
+msgstr "En %s en %L los procedimientos deben ser o todos SUBROUTINE o todos FUNCTION"
 
 #: fortran/interface.c:1182 fortran/interface.c:1186
 #, gcc-internal-format, gfc-internal-format
@@ -35455,19 +35443,19 @@ msgid "Dummy argument '%s' has to be a pointer or assumed-shape array without CO
 msgstr "El argumento dummy '%s' tiene que ser un puntero o una matriz de tamaño asumida sin atributo CONTIGUOUS - porque el argumento actual en %L no es simplemente contiguo y ambos son ASYNCHRONOUS o VOLATILE"
 
 #: fortran/interface.c:1698
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "Polymorphic scalar passed to array dummy argument '%s' at %L"
-msgstr "Argumento dummy pasado como objeto no polimórfico de '%s' en %L"
+msgstr "Se pasó un escalar polimórfico al argumento dummy de matriz '%s' en %L"
 
 #: fortran/interface.c:1707
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "Element of assumed-shaped or pointer array passed to array dummy argument '%s' at %L"
-msgstr "Un elemento de la matriz de forma asumida se pasa al argumento dummy '%s' en %L"
+msgstr "Se pasó un elemento de forma asumida o puntero a matriz al argumento dummy de matriz '%s' en %L"
 
 #: fortran/interface.c:1719
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "Extension: Scalar non-default-kind, non-C_CHAR-kind CHARACTER actual argument with array dummy argument '%s' at %L"
-msgstr "Fortran 2003: Argumento actual CHARACTER escalar con argumento dummy de matriz '%s' en %L"
+msgstr "Extensión: Argumento actual CHARACTER de género diferente a C_CHAR, sin género por defecto escalar con argumento dummy de matriz '%s' en %L"
 
 #: fortran/interface.c:1727
 #, gcc-internal-format, gfc-internal-format
@@ -35522,7 +35510,7 @@ msgstr "No coincide la longitud de carácter (%ld/%ld) entre el argumento actual 
 #: fortran/interface.c:2122
 #, gcc-internal-format, gfc-internal-format
 msgid "Actual argument argument at %L to allocatable or pointer dummy argument '%s' must have a deferred length type parameter if and only if the dummy has one"
-msgstr ""
+msgstr "El argumento actual del argumento en %L para el argumento alojable o dummy puntero '%s' debe tener un parámetro de tipo de longitud diferido si y sólo si el dummy tiene uno"
 
 #: fortran/interface.c:2136
 #, gcc-internal-format, gfc-internal-format
@@ -35660,19 +35648,19 @@ msgid "Procedure '%s' called at %L is not explicitly declared"
 msgstr "El procedimiento '%s' que se llama en %L no tiene una interfaz explícita"
 
 #: fortran/interface.c:2713
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "The pointer object '%s' at %L must have an explicit function interface or be declared as array"
-msgstr "El procedimiento ELEMENTAL '%s' en %L debe tener una interfaz explícita"
+msgstr "El objeto puntero '%s' en %L debe tener una interfaz de función explícita o declrararse como matriz"
 
 #: fortran/interface.c:2721
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "The allocatable object '%s' at %L must have an explicit function interface or be declared as array"
-msgstr "El procedimiento ELEMENTAL '%s' en %L debe tener una interfaz explícita"
+msgstr "El objeto allocatable '%s' en %L debe tener una interfaz de función explícita o declararse como matriz"
 
 #: fortran/interface.c:2729
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "Allocatable function '%s' at %L must have an explicit function interface"
-msgstr "La función de longitud de carácter automática '%s' que no es constante en %L debe una interfaz explícita"
+msgstr "La función allocatable '%s' en %L debe tener una interfaz de función explícita"
 
 #: fortran/interface.c:2739
 #, gcc-internal-format, gfc-internal-format
@@ -36656,9 +36644,9 @@ msgid "MOLD tag at %L conflicts with SOURCE tag at %L"
 msgstr "La etiqueta MOLD en %L tiene conflictos con la etiqueta SOURCE en %L"
 
 #: fortran/match.c:3139
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "Allocate-object at %L with a deferred type parameter requires either a type-spec or SOURCE tag or a MOLD tag"
-msgstr "El objeto de alojamiento en %L con un parámetro de tipo diferido requiere una especificación de tipo o una etiqueta SOURCE"
+msgstr "El objeto de alojamiento en %L con un parámetro de tipo diferido requiere una especificación de tipo o una etiqueta SOURCE o una etiqueta MOLD"
 
 #: fortran/match.c:3276
 #, gcc-internal-format, gfc-internal-format
@@ -38146,24 +38134,24 @@ msgid "Unable to find a specific INTRINSIC procedure for the reference '%s' at %
 msgstr "No se puede encontrar un procedimiento INTRINSIC específico para la referencia '%s' en %L"
 
 #: fortran/resolve.c:347
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "Fortran 2008: Argument '%s' of pure function '%s' at %L with VALUE attribute but without INTENT(IN)"
-msgstr "El argumento '%s' de la función pure '%s' en %L debe ser INTENT(IN)"
+msgstr "Fortran 2008: El argumento '%s' de la función pure '%s' en %L debe tener el atributo VALUE pero sin INTENT(IN)"
 
 #: fortran/resolve.c:352
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "Argument '%s' of pure function '%s' at %L must be INTENT(IN) or VALUE"
-msgstr "El argumento '%s' de la función pure '%s' en %L debe ser INTENT(IN)"
+msgstr "El argumento '%s' de la función pure '%s' en %L debe ser INTENT(IN) o VALUE"
 
 #: fortran/resolve.c:360
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "Fortran 2008: Argument '%s' of pure subroutine '%s' at %L with VALUE attribute but without INTENT"
-msgstr "El argumento '%s' de la función pure '%s' en %L debe tener especificado su INTENT"
+msgstr "Fortran 2008: El argumento '%s' de la subrutina pure '%s' en %L debe tener atributo VALUE pero sin INTENT"
 
 #: fortran/resolve.c:365
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "Argument '%s' of pure subroutine '%s' at %L must have its INTENT specified or have the VALUE attribute"
-msgstr "El argumento '%s' de la función pure '%s' en %L debe tener especificado su INTENT"
+msgstr "El argumento '%s' de la subrutina pure '%s' en %L debe tener especificado su INTENT o tener el atributo VALUE"
 
 #: fortran/resolve.c:386
 #, gcc-internal-format, gfc-internal-format
@@ -38551,19 +38539,19 @@ msgid "Parameter '%s' to '%s' at %L must be either a TARGET or an associated poi
 msgstr "El parámetro '%s' para '%s' en %L debe ser un TARGET o un puntero asociado"
 
 #: fortran/resolve.c:2736
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "Coindexed argument not permitted in '%s' call at %L"
-msgstr "no se permite usar punteros como valores case"
+msgstr "No se permite un argumento coindizado en la llamada '%s' en %L"
 
 #: fortran/resolve.c:2759
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "Array section not permitted in '%s' call at %L"
-msgstr "Más argumentos actuales que formales en la llamada '%s' en %L"
+msgstr "No se permite una sección de matriz en la llamada '%s' en %L"
 
 #: fortran/resolve.c:2770
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "Array section in '%s' call at %L"
-msgstr "No se permite el nombre de función '%s' en %C"
+msgstr "Sección de matriz en la llamada '%s' en %L"
 
 #: fortran/resolve.c:2789
 #, gcc-internal-format, gfc-internal-format
@@ -39077,9 +39065,9 @@ msgid "Allocate-object at %L also appears at %L"
 msgstr "El objeto de alojamiento en %L también aparece en %L"
 
 #: fortran/resolve.c:7064 fortran/resolve.c:7070
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "Allocate-object at %L is subobject of object at %L"
-msgstr "El objeto de alojamiento en %L también aparece en %L"
+msgstr "El objeto de alojamiento en %L es un subobjeto del objeto en %L"
 
 #. The cases overlap, or they are the same
 #. element in the list.  Either way, we must
@@ -39179,7 +39167,7 @@ msgstr "Bloque CLASS IS doble en la declaración SELECT TYPE  en %L"
 #: fortran/resolve.c:8077
 #, gcc-internal-format, gfc-internal-format
 msgid "Data transfer element at %L cannot be polymorphic unless it is processed by a defined input/output procedure"
-msgstr "El elemento de transferencia de datos en %L no puede ser polimórfico a menso que se procese con un procedimiento de entrada/salida definido"
+msgstr "El elemento de transferencia de datos en %L no puede ser polimórfico a menos que se procese con un procedimiento de entrada/salida definido"
 
 #: fortran/resolve.c:8089
 #, gcc-internal-format, gfc-internal-format
@@ -39187,9 +39175,9 @@ msgid "Data transfer element at %L cannot have POINTER components"
 msgstr "El elemento de transferencia de datos en %L no puede tener componentes POINTER"
 
 #: fortran/resolve.c:8097
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "Data transfer element at %L cannot have procedure pointer components"
-msgstr "El elemento de transferencia de datos en %L no puede tener componentes POINTER"
+msgstr "El elemento de transferencia de datos en %L no puede tener componentes de puntero a procedimiento"
 
 #: fortran/resolve.c:8104
 #, gcc-internal-format, gfc-internal-format
@@ -39522,9 +39510,9 @@ msgid "ELEMENTAL function '%s' at %L must have a scalar result"
 msgstr "La función ELEMENTAL '%s' en %L debe tener un resultado escalar"
 
 #: fortran/resolve.c:10258
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "Statement function '%s' at %L may not have pointer or allocatable attribute"
-msgstr "La función de declaración '%s' en %L no se permite como un argumento actual"
+msgstr "La función de declaración '%s' en %L no debe tener atributo puntero o alojable"
 
 #: fortran/resolve.c:10277
 #, gcc-internal-format, gfc-internal-format
@@ -39880,7 +39868,7 @@ msgstr "La longitud de carácter del componente '%s' necesita ser una expresión d
 #: fortran/resolve.c:11655
 #, gcc-internal-format, gfc-internal-format
 msgid "Character component '%s' of '%s' at %L with deferred length must be a POINTER or ALLOCATABLE"
-msgstr ""
+msgstr "El componente de carácter '%s' de '%s' en %L con longitud diferida debe ser POINTER o ALLOCATABLE"
 
 #: fortran/resolve.c:11667
 #, gcc-internal-format, gfc-internal-format
@@ -39908,41 +39896,41 @@ msgid "Component '%s' with CLASS at %L must be allocatable or pointer"
 msgstr "El componente '%s' con CLASS en %L debe ser allocatable o pointer"
 
 #: fortran/resolve.c:11771
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "Assumed size array '%s' in namelist '%s' at %L is not allowed"
-msgstr "No se permite la matriz de tamaño asumido '%s' en la lista de nombres '%s' en %C"
+msgstr "No se permite la matriz de tamaño asumido '%s' en la lista de nombres '%s' en %L"
 
 #: fortran/resolve.c:11777
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "Fortran 2003: NAMELIST array object '%s' with assumed shape in namelist '%s' at %L"
-msgstr "El objeto de matriz NAMELIST '%s' no debe tener forma asumida en la lista de nombres '%s' en %L"
+msgstr "Fortran 2003: Objeto de matriz NAMELIST '%s' con forma asumida en la lista de nombres '%s' en %L"
 
 #: fortran/resolve.c:11784
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "Fortran 2003: NAMELIST array object '%s' with nonconstant shape in namelist '%s' at %L"
-msgstr "El objeto de matriz NAMELIST '%s' debe tener forma constante en la lista de nombres '%s' en %L"
+msgstr "Fortran 2003: El objeto de matriz NAMELIST '%s' con forma que no es constante en la lista de nombres '%s' en %L"
 
 #: fortran/resolve.c:11793
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "Fortran 2003: NAMELIST object '%s' with nonconstant character length in namelist '%s' at %L"
-msgstr "El objeto de matriz NAMELIST '%s' debe tener forma constante en la lista de nombres '%s' en %L"
+msgstr "Fortran 2003: El objeto de matriz NAMELIST '%s' con longitud de carácter que no es constante en la lista de nombres '%s' en %L"
 
 #: fortran/resolve.c:11803
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "NAMELIST object '%s' in namelist '%s' at %L is polymorphic and requires a defined input/output procedure"
-msgstr "El elemento de transferencia de datos en %L no puede ser polimórfico a menso que se procese con un procedimiento de entrada/salida definido"
+msgstr "El objeto NAMELIST '%s' en la lista de nombres '%s' en %L es polimórfico y requiere un procedimiento de entrada/salida definido"
 
 #: fortran/resolve.c:11813
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "Fortran 2003: NAMELIST object '%s' in namelist '%s' at %L with ALLOCATABLE or POINTER components"
-msgstr "El objeto NAMELIST '%s' en la lista de nombres '%s' en %L no puede tener componentes ALLOCATABLE"
+msgstr "Fortran 2003: El objeto NAMELIST '%s' en la lista de nombres '%s' en %L con componentes ALLOCATABLE o POINTER"
 
 #. FIXME: Once UDDTIO is implemented, the following can be
 #. removed.
 #: fortran/resolve.c:11821
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "NAMELIST object '%s' in namelist '%s' at %L has ALLOCATABLE or POINTER components and thus requires a defined input/output procedure"
-msgstr "El objeto NAMELIST '%s' en la lista de nombres '%s' en %L no puede tener componentes ALLOCATABLE"
+msgstr "El objeto NAMELIST '%s' en la lista de nombres '%s' en %L tiene componentes ALLOCATABLE o POINTER y por lo tanto requere un procedimiento de entrada/salida definido"
 
 #: fortran/resolve.c:11838
 #, gcc-internal-format, gfc-internal-format
@@ -41617,7 +41605,7 @@ msgstr "las extensiones de clase no están disponibles en Objective-C 1.0"
 #: objc/objc-act.c:632
 #, gcc-internal-format
 msgid "class extension for class %qE declared after its %<@implementation%>"
-msgstr ""
+msgstr "la extensión de clase para la clase %qE se declaró después de su %<@implementation%>"
 
 #: objc/objc-act.c:647
 #, gcc-internal-format
@@ -41640,24 +41628,24 @@ msgid "%<@package%> presently has the same effect as %<@public%>"
 msgstr "%<@package%> en este momento tiene el mismo efecto que %<@public%>"
 
 #: objc/objc-act.c:734
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%<@optional%> is not available in Objective-C 1.0"
-msgstr "%<@property%> no está disponible en Objective-C 1.0"
+msgstr "%<@optional%> no está disponible en Objective-C 1.0"
 
 #: objc/objc-act.c:736
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%<@required%> is not available in Objective-C 1.0"
-msgstr "%<@property%> no está disponible en Objective-C 1.0"
+msgstr "%<@required%> no está disponible en Objective-C 1.0"
 
 #: objc/objc-act.c:744
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%<@optional%> is allowed in @protocol context only"
-msgstr "@optional/@required sólo se permiten en el contexto de @protocol"
+msgstr "%<@optional%> sólo se permite en el contexto de @protocol"
 
 #: objc/objc-act.c:746
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%<@required%> is allowed in @protocol context only"
-msgstr "@optional/@required sólo se permiten en el contexto de @protocol"
+msgstr "%<@required%> sólo se permite en el contexto de @protocol"
 
 #: objc/objc-act.c:853
 #, gcc-internal-format
@@ -42013,14 +42001,14 @@ msgid "%<@throw%> argument is not an object"
 msgstr "el argumento %<@throw%> no es un objeto"
 
 #: objc/objc-act.c:4138
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%<@synchronized%> argument is not an object"
-msgstr "el argumento %<@throw%> no es un objeto"
+msgstr "el argumento %<@synchronized%> no es un objeto"
 
 #: objc/objc-act.c:4273
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "type %qT does not have a known size"
-msgstr "el tipo %q+D no tiene un tamaño conocido"
+msgstr "el tipo %qT no tiene un tamaño conocido"
 
 #: objc/objc-act.c:4450
 #, gcc-internal-format
@@ -42134,27 +42122,27 @@ msgstr "la variable de instancia %qE se accedió en el método de la clase"
 #: objc/objc-act.c:5764 objc/objc-act.c:5784
 #, gcc-internal-format
 msgid "method %<%c%E%> declared %<@optional%> and %<@required%> at the same time"
-msgstr ""
+msgstr "se declaró el método %<%c%E%> como %<@optional%> y %<@required%> al mismo tiempo"
 
 #: objc/objc-act.c:5768
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "previous declaration of %<%c%E%> as %<@required%>"
-msgstr "declaración previa de %<%c%s%>"
+msgstr "declaración previa de %<%c%E%> como %<@required%>"
 
 #: objc/objc-act.c:5788
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "previous declaration of %<%c%E%> as %<@optional%>"
-msgstr "declaración previa de %<%c%s%>"
+msgstr "declaración previa de %<%c%E%> como %<@optional%>"
 
 #: objc/objc-act.c:5848
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "duplicate declaration of method %<%c%E%> with conflicting types"
-msgstr "declaración duplicada del método %<%c%E%>"
+msgstr "declaración duplicada del método %<%c%E%> con tipos en conflicto"
 
 #: objc/objc-act.c:5852
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "previous declaration of %<%c%E%>"
-msgstr "declaración previa de %<%c%s%>"
+msgstr "declaración previa de %<%c%E%>"
 
 #: objc/objc-act.c:5914
 #, gcc-internal-format
@@ -42172,9 +42160,9 @@ msgid "instance variable %qs has unknown size"
 msgstr "la variable de instancia %qs es de tamaño desconocido"
 
 #: objc/objc-act.c:6025
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "instance variable %qs uses flexible array member"
-msgstr "uso inválido de un miembro de matriz flexible"
+msgstr "la variable de instancia %qs usa un miembro de matriz flexible"
 
 #: objc/objc-act.c:6051
 #, gcc-internal-format
@@ -42373,9 +42361,9 @@ msgid "%<@dynamic%> requires the @interface of the class to be available"
 msgstr "%<@dynamic%> requiere que @interface de la clase esté disponible"
 
 #: objc/objc-act.c:7807
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "definition of protocol %qE not found"
-msgstr "no se encontró la definición de método para %<%c%E%>"
+msgstr "no se encontró la definición del protocolo %qE"
 
 #. It would be nice to use warn_deprecated_use() here, but
 #. we are using TREE_CHAIN (which is supposed to be the
@@ -42465,25 +42453,25 @@ msgid "%<-fobjc-gc%> is ignored for %<-fgnu-runtime%>"
 msgstr "se descarta %<-fobjc-gc%> por %<-fgnu-runtime%>"
 
 #: objc/objc-gnu-runtime-abi-01.c:137
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%<-fobjc-sjlj-exceptions%> is ignored for %<-fgnu-runtime%>"
-msgstr "se descarta %<-fobjc-gc%> por %<-fgnu-runtime%>"
+msgstr "se descarta %<-fobjc-sjlj-exceptions%> por %<-fgnu-runtime%>"
 
 #: objc/objc-gnu-runtime-abi-01.c:2168 objc/objc-next-runtime-abi-01.c:2848
 #: objc/objc-next-runtime-abi-02.c:3636
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "non-objective-c type '%T' cannot be caught"
-msgstr "el miembro que no es objeto %qs no se puede declarar %<mutable%>"
+msgstr "no se puede atrapar el tipo '%T' que no es de objective-c"
 
 #: objc/objc-next-runtime-abi-01.c:150
 #, gcc-internal-format
 msgid "%<-fobjc-sjlj-exceptions%> is the only supported exceptions system for %<-fnext-runtime%> with %<-fobjc-abi-version%> < 2"
-msgstr ""
+msgstr "%<-fobjc-sjlj-exceptions%> es la única excepción a sistema admitida para %<-fnext-runtime%> con %<-fobjc-abi-version%> < 2"
 
 #: objc/objc-next-runtime-abi-02.c:247
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%<-fobjc-sjlj-exceptions%> is ignored for %<-fnext-runtime%> when %<-fobjc-abi-version%> >= 2"
-msgstr "se descarta %<-fobjc-gc%> por %<-fgnu-runtime%>"
+msgstr "se descarta %<-fobjc-sjlj-exceptions%> por %<-fnext-runtime%> cuando %<-fobjc-abi-version%> >= 2"
 
 #: objc/objc-runtime-shared-support.c:431
 #, gcc-internal-format
