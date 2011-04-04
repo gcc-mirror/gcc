@@ -1,3 +1,9 @@
+2011-04-04  Kai Tietz  <ktietz@redhat.com>
+
+	PR ada/47163
+	* s-oscons-tmplt.c (MSG_WAITALL): Define it for native windows
+	targets to flag value.
+
 2011-04-02  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/utils2.c (build_allocator): In the unconstrained array
