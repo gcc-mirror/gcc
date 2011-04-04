@@ -1,5 +1,19 @@
 2011-04-04  Steven Bosscher  <steven@gcc.gnu.org>
 
+	* cprop.c (struct expr): Split 'expr' field in 'dest' and 'src'.
+	(expr_equiv_p): Remove.
+	(insert_set_in_table): Look at <dest, src> pair instead of expr.
+	(hash_scan_set): Update call to insert_set_in_table.
+	(dump_hash_table): Dump <dest, src> pair.
+	(lookup_set): Simplify.  Lookup <dest, src> pair.
+	(compute_transp): Remove, fold heavily simplified code into...
+	(compute_local_properties): ...here.  Expect COMP and TRANSP
+	unconditionally.
+	(find_avail_set): Take set directly from struct expr.
+	(find_bypass-set): Likewise.
+	(bypass_block): Likewise.
+	(cprop_insn): Likewise.  Remove redundant INSN_P test.
+
 	* cprop.c (implicit_set_cond_p): Assume nothing about COND, move
 	checks on form of COND from find_implicit_sets to here.
 	(find_implicit_sets): Cleanup control flow. Split critical edges
