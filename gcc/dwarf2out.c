@@ -12420,6 +12420,7 @@ output_line_info (void)
 {
   char l1[20], l2[20], p1[20], p2[20];
   int ver = dwarf_version;
+  bool saw_one = false;
   int opc;
 
   ASM_GENERATE_INTERNAL_LABEL (l1, LINE_NUMBER_BEGIN_LABEL, 0);
@@ -12486,11 +12487,6 @@ output_line_info (void)
   output_file_names ();
   ASM_OUTPUT_LABEL (asm_out_file, p2);
 
-  if (text_section_line_info && text_section_line_info->in_use)
-    output_one_line_info_table (text_section_line_info);
-  if (cold_text_section_line_info && cold_text_section_line_info->in_use)
-    output_one_line_info_table (cold_text_section_line_info);
-
   if (separate_line_info)
     {
       dw_line_info_table *table;
@@ -12498,8 +12494,24 @@ output_line_info (void)
 
       FOR_EACH_VEC_ELT (dw_line_info_table_p, separate_line_info, i, table)
 	if (table->in_use)
-	  output_one_line_info_table (table);
+	  {
+	    output_one_line_info_table (table);
+	    saw_one = true;
+	  }
     }
+  if (cold_text_section_line_info && cold_text_section_line_info->in_use)
+    {
+      output_one_line_info_table (cold_text_section_line_info);
+      saw_one = true;
+    }
+
+  /* ??? Some Darwin linkers crash on a .debug_line section with no
+     sequences.  Further, merely a DW_LNE_end_sequence entry is not
+     sufficient -- the address column must also be initialized.
+     Make sure to output at least one set_address/end_sequence pair,
+     choosing .text since that section is always present.  */
+  if (text_section_line_info->in_use || !saw_one)
+    output_one_line_info_table (text_section_line_info);
 
   /* Output the marker for the end of the line number info.  */
   ASM_OUTPUT_LABEL (asm_out_file, l2);
@@ -22071,14 +22083,7 @@ set_cur_line_info_table (section *sec)
   dw_line_info_table *table;
 
   if (sec == text_section)
-    {
-      table = text_section_line_info;
-      if (!table)
-	{
-	  text_section_line_info = table = new_line_info_table ();
-	  table->end_label = text_end_label;
-	}
-    }
+    table = text_section_line_info;
   else if (sec == cold_text_section)
     {
       table = cold_text_section_line_info;
@@ -22451,6 +22456,10 @@ dwarf2out_init (const char *filename ATTRIBUTE_UNUSED)
 
   switch_to_section (text_section);
   ASM_OUTPUT_LABEL (asm_out_file, text_section_label);
+
+  /* Make sure the line number table for .text always exists.  */
+  text_section_line_info = new_line_info_table ();
+  text_section_line_info->end_label = text_end_label;
 }
 
 /* Called before cgraph_optimize starts outputtting functions, variables
