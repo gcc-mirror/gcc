@@ -1,3 +1,9 @@
+2011-04-04  Anatoly Sokolov  <aesok@post.ru>
+
+	* config/sparc/sparc.h (PREFERRED_RELOAD_CLASS): Remove.
+	* config/sparc/sparc.c (TARGET_PREFERRED_RELOAD_CLASS): Define.
+	(sparc_preferred_reload_class): New function.
+
 2011-04-04  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/48404
