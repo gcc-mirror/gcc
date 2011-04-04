@@ -44,3 +44,9 @@ subroutine rank_mismatch()
   A(1)[1,1] = 1         ! { dg-error "Too few codimensions" }
   A(1)[1,1:1] = 1       ! { dg-error "Too few codimensions" }
 end subroutine rank_mismatch
+
+subroutine rank_mismatch2()
+  implicit none
+  integer, allocatable:: A(:)[:,:,:]
+  allocate(A(1)[7:8,4:*]) ! { dg-error "Unexpected .*. for codimension 2 of 3" }
+end subroutine rank_mismatch2

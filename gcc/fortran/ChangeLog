@@ -1,3 +1,39 @@
+2011-04-04  Tobias Burnus  <burnus@net-b.de>
+	    Mikael Morin  <mikael.morin@sfr.fr>
+
+	PR fortran/18918
+	* check.c (is_coarray): Update - because of DIMEN_THIS_IMAGE.
+	* expr.c (gfc_is_coindexed): Ditto.
+	* gfortran.h (gfc_array_ref_dimen_type): Add DIMEN_THIS_IMAGE.
+	* interface.c (compare_parameter): Use gfc_expr_attr and
+	gfc_is_coindexed.
+	* resolve.c (check_dimension, compare_spec_to_ref,
+	resolve_allocate_expr, check_data_variable): Update for
+	DIMEN_THIS_IMAGE.
+	* simplify.c (gfc_simplify_lcobound, gfc_simplify_this_image,
+	gfc_simplify_ucobound): Allow non-constant bounds.
+	* trans-array.c (gfc_set_loop_bounds_from_array_spec,
+	gfc_trans_create_temp_array, gfc_trans_constant_array_constructor,
+	gfc_set_vector_loop_bounds, gfc_conv_array_index_offset,
+	gfc_start_scalarized_body, gfc_trans_scalarizing_loops,
+	gfc_trans_scalarized_loop_boundary, gfc_conv_section_startstride,
+	gfc_conv_ss_startstride, gfc_conv_loop_setup,
+	gfc_trans_array_bounds, gfc_conv_expr_descriptor,
+	gfc_walk_variable_expr): Handle codimen.
+	* trans-decl.c (gfc_build_qualified_array): Save cobounds.
+	* trans-intrinsic.c (gfc_conv_intrinsic_bound): Use arg2.
+	(conv_intrinsic_cobound): New function.
+	(gfc_conv_intrinsic_function): Call it.
+	(gfc_walk_intrinsic_function, gfc_add_intrinsic_ss_code): Handle
+	ucobound, lcobound, this_image.
+	* fortran/trans-types.c (gfc_build_array_type): Save cobounds.
+	(gfc_get_dtype): Honour corank.
+	(gfc_get_nodesc_array_type): Save corank and codimensions.
+	(gfc_get_array_type_bounds): Save cobound.
+	* fortran/trans.h (gfc_ss_info,gfc_loopinfo): Add codimen item.
+	(gfc_array_kind): Add corank item.
+	(GFC_TYPE_ARRAY_CORANK): New macro.
+
 2011-04-03  Kai Tietz  <ktietz@redhat.com>
 
 	PR middle-end/48422
