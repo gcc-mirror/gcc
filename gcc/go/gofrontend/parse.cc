@@ -3732,10 +3732,7 @@ Parse::return_stat()
   Expression_list* vals = NULL;
   if (this->expression_may_start_here())
     vals = this->expression_list(NULL, false);
-  const Function* function = this->gogo_->current_function()->func_value();
-  const Typed_identifier_list* results = function->type()->results();
-  this->gogo_->add_statement(Statement::make_return_statement(results, vals,
-							      location));
+  this->gogo_->add_statement(Statement::make_return_statement(vals, location));
 }
 
 // IfStmt    = "if" [ SimpleStmt ";" ] Expression Block [ "else" Statement ] .

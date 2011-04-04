@@ -1,3 +1,14 @@
+2011-04-04  Ian Lance Taylor  <iant@google.com>
+
+	* go-gcc.cc: #include "tree-iterator.h", "gimple.h", and "gogo.h".
+	(class Bfunction): Define.
+	(Gcc_backend::assignment_statement): Rename from assignment.
+	Check for errors.
+	(Gcc_backend::return_statement): New function.
+	(tree_to_function): New function.
+	* Make-lang.in (go/go-gcc.o): Depend on tree-iterator.h,
+	$(GIMPLE_H), and $(GO_GOGO_H).
+
 2011-04-03  Ian Lance Taylor  <iant@google.com>
 
 	* go-gcc.cc: New file.

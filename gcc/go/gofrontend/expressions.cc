@@ -10415,8 +10415,7 @@ Selector_expression::lower_method_expression(Gogo* gogo)
 	  for (size_t i = 0; i < count; ++i)
 	    retvals->push_back(Expression::make_call_result(call, i));
 	}
-      s = Statement::make_return_statement(no->func_value()->type()->results(),
-					   retvals, location);
+      s = Statement::make_return_statement(retvals, location);
     }
   gogo->add_statement(s);
 

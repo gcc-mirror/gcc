@@ -642,7 +642,7 @@ Gogo::start_function(const std::string& name, Function_type* type,
 	}
     }
 
-  function->create_named_result_variables(this);
+  function->create_result_variables(this);
 
   const std::string* pname;
   std::string nested_name;
@@ -2195,8 +2195,7 @@ Build_recover_thunks::function(Named_object* orig_no)
 	  for (size_t i = 0; i < rc; ++i)
 	    vals->push_back(Expression::make_call_result(call, i));
 	}
-      s = Statement::make_return_statement(new_func->type()->results(),
-					   vals, location);
+      s = Statement::make_return_statement(vals, location);
     }
   s->determine_types();
   gogo->add_statement(s);
@@ -2252,8 +2251,8 @@ Build_recover_thunks::function(Named_object* orig_no)
   new_func->traverse(&convert_recover);
 
   // Update the function pointers in any named results.
-  new_func->update_named_result_variables();
-  orig_func->update_named_result_variables();
+  new_func->update_result_variables();
+  orig_func->update_result_variables();
 
   return TRAVERSE_CONTINUE;
 }
@@ -2619,26 +2618,27 @@ Gogo::convert_named_types_in_bindings(Bindings* bindings)
 
 Function::Function(Function_type* type, Function* enclosing, Block* block,
 		   source_location location)
-  : type_(type), enclosing_(enclosing), named_results_(NULL),
+  : type_(type), enclosing_(enclosing), results_(NULL),
     closure_var_(NULL), block_(block), location_(location), fndecl_(NULL),
-    defer_stack_(NULL), calls_recover_(false), is_recover_thunk_(false),
-    has_recover_thunk_(false)
+    defer_stack_(NULL), results_are_named_(false), calls_recover_(false),
+    is_recover_thunk_(false), has_recover_thunk_(false)
 {
 }
 
 // Create the named result variables.
 
 void
-Function::create_named_result_variables(Gogo* gogo)
+Function::create_result_variables(Gogo* gogo)
 {
   const Typed_identifier_list* results = this->type_->results();
-  if (results == NULL
-      || results->empty()
-      || results->front().name().empty())
+  if (results == NULL || results->empty())
     return;
 
-  this->named_results_ = new Named_results();
-  this->named_results_->reserve(results->size());
+  if (!results->front().name().empty())
+    this->results_are_named_ = true;
+
+  this->results_ = new Results();
+  this->results_->reserve(results->size());
 
   Block* block = this->block_;
   int index = 0;
@@ -2647,18 +2647,29 @@ Function::create_named_result_variables(Gogo* gogo)
        ++p, ++index)
     {
       std::string name = p->name();
-      if (Gogo::is_sink_name(name))
+      if (name.empty() || Gogo::is_sink_name(name))
 	{
-	  static int unnamed_result_counter;
+	  static int result_counter;
 	  char buf[100];
-	  snprintf(buf, sizeof buf, "_$%d", unnamed_result_counter);
-	  ++unnamed_result_counter;
+	  snprintf(buf, sizeof buf, "$ret%d", result_counter);
+	  ++result_counter;
 	  name = gogo->pack_hidden_name(buf, false);
 	}
       Result_variable* result = new Result_variable(p->type(), this, index);
       Named_object* no = block->bindings()->add_result_variable(name, result);
       if (no->is_result_variable())
-	this->named_results_->push_back(no);
+	this->results_->push_back(no);
+      else
+	{
+	  static int dummy_result_count;
+	  char buf[100];
+	  snprintf(buf, sizeof buf, "$dret%d", dummy_result_count);
+	  ++dummy_result_count;
+	  name = gogo->pack_hidden_name(buf, false);
+	  no = block->bindings()->add_result_variable(name, result);
+	  gcc_assert(no->is_result_variable());
+	  this->results_->push_back(no);
+	}
     }
 }
 
@@ -2666,13 +2677,13 @@ Function::create_named_result_variables(Gogo* gogo)
 // calls recover.
 
 void
-Function::update_named_result_variables()
+Function::update_result_variables()
 {
-  if (this->named_results_ == NULL)
+  if (this->results_ == NULL)
     return;
 
-  for (Named_results::iterator p = this->named_results_->begin();
-       p != this->named_results_->end();
+  for (Results::iterator p = this->results_->begin();
+       p != this->results_->end();
        ++p)
     (*p)->result_var_value()->set_function(this);
 }
@@ -2819,7 +2830,7 @@ void
 Function::swap_for_recover(Function *x)
 {
   gcc_assert(this->enclosing_ == x->enclosing_);
-  std::swap(this->named_results_, x->named_results_);
+  std::swap(this->results_, x->results_);
   std::swap(this->closure_var_, x->closure_var_);
   std::swap(this->block_, x->block_);
   gcc_assert(this->location_ == x->location_);
