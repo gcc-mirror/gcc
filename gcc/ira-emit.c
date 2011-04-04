@@ -900,8 +900,8 @@ modify_move_list (move_t list)
 static rtx
 emit_move_list (move_t list, int freq)
 {
-  int cost;
-  rtx result, insn;
+  int cost, regno;
+  rtx result, insn, set, to;
   enum machine_mode mode;
   enum reg_class aclass;
 
@@ -913,12 +913,34 @@ emit_move_list (move_t list, int freq)
 		      allocno_emit_reg (list->from));
       list->insn = get_insns ();
       end_sequence ();
-      /* The reload needs to have set up insn codes.  If the reload
-	 sets up insn codes by itself, it may fail because insns will
-	 have hard registers instead of pseudos and there may be no
-	 machine insn with given hard registers.  */
       for (insn = list->insn; insn != NULL_RTX; insn = NEXT_INSN (insn))
-	recog_memoized (insn);
+	{
+	  /* The reload needs to have set up insn codes.  If the
+	     reload sets up insn codes by itself, it may fail because
+	     insns will have hard registers instead of pseudos and
+	     there may be no machine insn with given hard
+	     registers.  */
+	  recog_memoized (insn);
+	  /* Add insn to equiv init insn list if it is necessary.
+	     Otherwise reload will not remove this insn if it decides
+	     to use the equivalence.  */
+	  if ((set = single_set (insn)) != NULL_RTX)
+	    {
+	      to = SET_DEST (set);
+	      if (GET_CODE (to) == SUBREG)
+		to = SUBREG_REG (to);
+	      ira_assert (REG_P (to));
+	      regno = REGNO (to);
+	      if (regno >= ira_reg_equiv_len
+		  || (! ira_reg_equiv_invariant_p[regno]
+		      && ira_reg_equiv_const[regno] == NULL_RTX))
+		continue; /* regno has no equivalence.  */
+	      ira_assert ((int) VEC_length (reg_equivs_t, reg_equivs)
+			  >= ira_reg_equiv_len);
+	      reg_equiv_init (regno)
+		= gen_rtx_INSN_LIST (VOIDmode, insn, reg_equiv_init (regno));
+	    }
+	}
       emit_insn (list->insn);
       mode = ALLOCNO_MODE (list->to);
       aclass = ALLOCNO_CLASS (list->to);

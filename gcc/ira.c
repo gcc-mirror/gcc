@@ -3657,8 +3657,6 @@ ira (FILE *f)
   if (delete_trivially_dead_insns (get_insns (), max_reg_num ()))
     df_analyze ();
 
-  grow_reg_equivs ();
-
   if (max_regno != max_regno_before_ira)
     {
       regstat_free_n_sets_and_refs ();
@@ -3667,10 +3665,10 @@ ira (FILE *f)
       regstat_compute_ri ();
     }
 
-  allocate_initial_values (reg_equivs);
-
   overall_cost_before = ira_overall_cost;
-  if (ira_conflicts_p)
+  if (! ira_conflicts_p)
+    grow_reg_equivs ();
+  else
     {
       fix_reg_equiv_init ();
 
@@ -3686,6 +3684,7 @@ ira (FILE *f)
       memset (ira_spilled_reg_stack_slots, 0,
 	      max_regno * sizeof (struct ira_spilled_reg_stack_slot));
     }
+  allocate_initial_values (reg_equivs);
 
   timevar_pop (TV_IRA);
 

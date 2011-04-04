@@ -1,3 +1,11 @@
+2011-04-01  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/48380
+	* ira.c (ira): Call grow_reg_equivs when fix_reg_equiv_init is
+          not called.
+
+	* ira-emit.c (emit_move_list): Update reg equiv init insn list.
+
 2011-04-04  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* cprop.c (struct expr): Split 'expr' field in 'dest' and 'src'.
