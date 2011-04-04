@@ -166,7 +166,7 @@ AC_PATH_PROG([UNZIP], [unzip], unzip)
 # We need a jar that supports -@.  This is a GNU extension.
 if test "$JAR" != no; then
    rm -f config-test.jar
-   echo $srcdir/configure.ac | $JAR -cf@ config-test.jar
+   echo $srcdir/configure.ac | $JAR -cf@ config-test.jar >/dev/null 2>&1
    if test -f config-test.jar; then
      rm -f config-test.jar
    else
