@@ -3247,7 +3247,8 @@ combine.o : combine.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
    $(FLAGS_H) $(FUNCTION_H) insn-config.h $(INSN_ATTR_H) $(REGS_H) $(EXPR_H) \
    rtlhooks-def.h $(BASIC_BLOCK_H) $(RECOG_H) hard-reg-set.h \
    $(DIAGNOSTIC_CORE_H) $(TM_P_H) $(TREE_H) $(TARGET_H) output.h $(PARAMS_H) $(OPTABS_H) \
-   insn-codes.h $(TIMEVAR_H) $(TREE_PASS_H) $(DF_H) vecprim.h $(CGRAPH_H)
+   insn-codes.h $(TIMEVAR_H) $(TREE_PASS_H) $(DF_H) vecprim.h $(CGRAPH_H) \
+   $(OBSTACK_H)
 reginfo.o : reginfo.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
    hard-reg-set.h $(FLAGS_H) $(BASIC_BLOCK_H) addresses.h $(REGS_H) \
    insn-config.h $(RECOG_H) reload.h $(DIAGNOSTIC_CORE_H) \
