@@ -1797,8 +1797,8 @@ one_cprop_pass (void)
 		/* Keep track of everything modified by this insn.  */
 		/* ??? Need to be careful w.r.t. mods done to INSN.
 		       Don't call mark_oprs_set if we turned the
-		       insn into a NOTE.  */
-		if (! NOTE_P (insn))
+		       insn into a NOTE, or deleted the insn.  */
+		if (! NOTE_P (insn) && ! INSN_DELETED_P (insn))
 		  mark_oprs_set (insn);
 	      }
 	}
