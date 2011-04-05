@@ -1,5 +1,11 @@
 2011-04-05  Tom de Vries  <tom@codesourcery.com>
 
+	PR target/43920
+	* cfgcleanup.c (flow_find_cross_jump): Don't count USE or CLOBBER as
+	insn.
+
+2011-04-05  Tom de Vries  <tom@codesourcery.com>
+
 	* cfgcleanup.c (try_crossjump_bb): Remove 2 superfluous variables.
 
 2011-04-05  Yufeng Zhang  <yufeng.zhang@arm.com>
