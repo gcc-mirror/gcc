@@ -377,7 +377,20 @@ case "x$dejagnu" in
 xno)
 	${GC} -g -c _testmain.go
 	${GL} *.o ${GOLIBS}
-	./a.out -test.short -test.timeout=$timeout "$@"
+
+	./a.out -test.short -test.timeout=$timeout "$@" &
+	pid=$!
+	(sleep `expr $timeout + 10`
+	    echo > gotest-timeout
+	    echo "timed out in gotest" 1>&2
+	    kill -9 $pid) &
+	alarmpid=$!
+	wait $pid
+	status=$?
+	if ! test -f gotest-timeout; then
+	    kill $alarmpid
+	fi
+	exit $status
 	;;
 xyes)
 	rm -rf ../testsuite/*.o
