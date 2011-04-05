@@ -1,3 +1,9 @@
+2011-04-05  Tom de Vries  <tom@codesourcery.com>
+
+	PR middle-end/48461
+	* function.c (emit_use_return_register_into_block): Only define if
+	HAVE_return.
+
 2011-04-05  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* stor-layout.c (self_referential_size): Fix 2010-07-13 commit.
