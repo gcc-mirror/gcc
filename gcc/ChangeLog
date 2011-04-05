@@ -1,6 +1,13 @@
 2011-04-05  Tom de Vries  <tom@codesourcery.com>
 
 	PR target/43920
+	* function.c (emit_use_return_register_into_block): New function.
+	(thread_prologue_and_epilogue_insns): Use
+	emit_use_return_register_into_block.
+
+2011-04-05  Tom de Vries  <tom@codesourcery.com>
+
+	PR target/43920
 	* cfgcleanup.c (flow_find_cross_jump): Don't count USE or CLOBBER as
 	insn.
 
