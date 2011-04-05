@@ -6,10 +6,10 @@
 # Roland Stigge <stigge@antcom.de>, 2003, 2004, 2005, 2006, 2007, 2008, 2010, 2011.
 msgid ""
 msgstr ""
-"Project-Id-Version: gcc 4.6-b20101218\n"
+"Project-Id-Version: gcc 4.6.0\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2011-03-24 16:45+0000\n"
-"PO-Revision-Date: 2011-03-05 19:50+0100\n"
+"PO-Revision-Date: 2011-04-05 19:50+0100\n"
 "Last-Translator: Roland Stigge <stigge@antcom.de>\n"
 "Language-Team: German <translation-team-de@lists.sourceforge.net>\n"
 "Language: de\n"
@@ -1815,9 +1815,8 @@ msgid "The maximum amount of memory to be allocated by GCSE"
 msgstr "Maximalbetrag des von GCSE zu belegenden Speichers"
 
 #: params.def:222
-#, fuzzy
 msgid "The maximum ratio of insertions to deletions of expressions in GCSE"
-msgstr "Die Höchstzahl der zum Abrollen von Schleifen zu betrachtenden Anweisungen"
+msgstr "Das größte Verhältnis von Einfügungen zu Löschungen von Ausdrücken in GCSE"
 
 #: params.def:233
 msgid "The threshold ratio for performing partial redundancy elimination after reload"
@@ -1992,9 +1991,8 @@ msgid "Bound on size of expressions used in the scalar evolutions analyzer"
 msgstr "Schranke für Größe von Ausdrücken im skalaren Evolutions-Analysierer verwendet"
 
 #: params.def:488
-#, fuzzy
 msgid "Bound on the complexity of the expressions in the scalar evolutions analyzer"
-msgstr "Schranke für Größe von Ausdrücken im skalaren Evolutions-Analysierer verwendet"
+msgstr "Schranke für die Komplexität von Ausdrücken im skalaren Evolutions-Analysierer"
 
 #: params.def:493
 msgid "Bound on the number of variables in Omega constraint systems"
@@ -3442,7 +3440,7 @@ msgstr "AltiVec-Argument an Funktion ohne Prototyp übergeben"
 #: config/s390/s390.c:5206
 #, c-format
 msgid "symbolic memory references are only supported on z10 or later"
-msgstr ""
+msgstr "symbolische Speicherreferenzen werden nur auf z10 oder neuer unterstützt"
 
 #: config/s390/s390.c:5217
 #, c-format
@@ -3450,74 +3448,74 @@ msgid "cannot decompose address"
 msgstr "Adresse kann nicht zerlegt werden"
 
 #: config/s390/s390.c:5276
-#, fuzzy, c-format
+#, c-format
 msgid "invalid comparison operator for 'E' output modifier"
-msgstr "ungültiger Operand für Modifizierer »b«"
+msgstr "ungültiger Vergleichsoperator für Ausgabemodifizierer »E«"
 
 #: config/s390/s390.c:5297
-#, fuzzy, c-format
+#, c-format
 msgid "invalid reference for 'J' output modifier"
-msgstr "ungültiger Operand für Modifizierer »b«"
+msgstr "ungültige Referenz für Ausgabemodifizierer »J«"
 
 #: config/s390/s390.c:5311
 #, c-format
 msgid "memory reference expected for 'O' output modifier"
-msgstr ""
+msgstr "Speicherreferenz für Ausgabemodifizierer »O« erwartet"
 
 #: config/s390/s390.c:5322
-#, fuzzy, c-format
+#, c-format
 msgid "invalid address for 'O' output modifier"
-msgstr "ungültiger Operand für Modifizierer »O«"
+msgstr "ungültige Adresse für Ausgabemodifizierer »O«"
 
 #: config/s390/s390.c:5340
 #, c-format
 msgid "memory reference expected for 'R' output modifier"
-msgstr ""
+msgstr "Speicherreferenz für Ausgabemodifizierer »R« erwartet"
 
 #: config/s390/s390.c:5351
-#, fuzzy, c-format
+#, c-format
 msgid "invalid address for 'R' output modifier"
-msgstr "ungültiger Operand für Modifizierer »b«"
+msgstr "ungültige Adresse für Ausgabemodifizierer »R«"
 
 #: config/s390/s390.c:5369
 #, c-format
 msgid "memory reference expected for 'S' output modifier"
-msgstr ""
+msgstr "Speicherreferenz für Ausgabemodifizierer »S« erwartet"
 
 #: config/s390/s390.c:5379
-#, fuzzy, c-format
+#, c-format
 msgid "invalid address for 'S' output modifier"
-msgstr "ungültiger Operand für Modifizierer »b«"
+msgstr "ungültige Adresse für Ausgabemodifizierer »S«"
 
 #: config/s390/s390.c:5399
 #, c-format
 msgid "register or memory expression expected for 'N' output modifier"
-msgstr ""
+msgstr "Register oder Speicherausdruck für Ausgabemodifizierer »N« erwartet"
 
 #: config/s390/s390.c:5409
 #, c-format
 msgid "register or memory expression expected for 'M' output modifier"
-msgstr ""
+msgstr "Register oder Speicherausdruck für Ausgabemodifizierer »M« erwartet"
 
 #: config/s390/s390.c:5474
-#, fuzzy, c-format
+#, c-format
 msgid "invalid constant - try using an output modifier"
-msgstr "Ungültiger Operanden-Ausgabecode"
+msgstr "Ungültige Konstante - anderen Ausgabemodifizierer probieren"
 
 #: config/s390/s390.c:5477
-#, fuzzy, c-format
+#, c-format
 msgid "invalid constant for output modifier '%c'"
-msgstr "ungültiger Operand für Modifizierer »o«"
+msgstr "ungültige Konstante für Ausgabemodifizierer »%c«"
 
 #: config/s390/s390.c:5484
-#, fuzzy, c-format
+#, c-format
 msgid "invalid expression - try using an output modifier"
-msgstr "ungültiger Ausdruck für Min-L-Wert"
+msgstr "ungültiger Ausdruck - anderen Ausgabemodifizierer probieren"
 
 #: config/s390/s390.c:5487
-#, fuzzy, c-format
+#, c-format
 msgid "invalid expression for output modifier '%c'"
-msgstr "ungültiger Operand für Modifizierer »o«"
+msgstr "ungültiger Ausdruck für Ausgabemodifizierer »%c«"
 
 #: config/score/score7.c:1207
 #, c-format
@@ -5556,9 +5554,8 @@ msgid "Return pointers in both a0 and d0"
 msgstr "Zeiger sowohl in a0 als auch in d0 zurück geben"
 
 #: config/mn10300/mn10300.opt:56
-#, fuzzy
 msgid "Allow gcc to generate LIW instructions"
-msgstr "GCC erlauben, den repeat/erepeat-Befehl zu verwenden"
+msgstr "GCC erlauben, LIW-Befehle zu verwenden"
 
 #: config/s390/tpf.opt:23
 msgid "Enable TPF-OS tracing code"
@@ -6372,9 +6369,8 @@ msgid "Do not support SSE4.1 and SSE4.2 built-in functions and code generation"
 msgstr "Eingebaute SSE4.1- und SSE4.2-Funktionen und Codeerzeugung nicht unterstützen"
 
 #: config/i386/i386.opt:328
-#, fuzzy
 msgid "%<-msse5%> was removed"
-msgstr "»-msse5« wurde entfernt"
+msgstr "%<-msse5%> wurde entfernt"
 
 #: config/i386/i386.opt:333
 msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2 and AVX built-in functions and code generation"
@@ -8180,13 +8176,12 @@ msgid "Set the max size of data eligible for the TDA area"
 msgstr "Maximalgröße der für den TDA-Bereich geeigneten Daten setzen"
 
 #: config/v850/v850.opt:71
-#, fuzzy
 msgid "Do not enforce strict alignment"
-msgstr "Genaue Ausrichtung erzwingen"
+msgstr "Genaue Ausrichtung nicht erzwingen"
 
 #: config/v850/v850.opt:75
 msgid "Put jump tables for switch statements into the .data section rather than the .code section"
-msgstr ""
+msgstr "Sprungtabellen für »switch«-Anweisungen in den .data-Abschnitt statt in den .code-Abschnitt einfügen"
 
 #: config/v850/v850.opt:82
 msgid "Compile for the v850 processor"
@@ -8201,9 +8196,8 @@ msgid "Compile for the v850e1 processor"
 msgstr "Für v850e1-Prozessor übersetzen"
 
 #: config/v850/v850.opt:94
-#, fuzzy
 msgid "Compile for the v850es variant of the v850e1"
-msgstr "Für v850e-Prozessor übersetzen"
+msgstr "Für die v850es-Variante des v850e1 übersetzen"
 
 #: config/v850/v850.opt:98
 msgid "Compile for the v850e2 processor"
@@ -8726,13 +8720,12 @@ msgid "Use multiply high instructions for high part of 32x32 multiply"
 msgstr "Verwendet »multiply high«-Befehle für den oberen Teil einer 32x32 Multiplikation"
 
 #: config/microblaze/microblaze.opt:92
-#, fuzzy
 msgid "Use hardware floating point conversion instructions"
-msgstr "Hardware-Fließkommakonvertierungbefehle verwenden"
+msgstr "Hardware-Gleitkommakonvertierungbefehle verwenden"
 
 #: config/microblaze/microblaze.opt:96
 msgid "Use hardware floating point square root instruction"
-msgstr "Verwendet Hardware Fließkomma Wurzel-Instruktion"
+msgstr "Verwendet Hardware-Gleitkomma-Wurzel-Instruktion"
 
 #: config/microblaze/microblaze.opt:100
 msgid "Description for mxl-mode-executable"
@@ -22953,17 +22946,17 @@ msgstr "inkonsistente Aufrufe von %qs können nicht behandelt werden"
 #: config/mips/mips.c:9227
 #, gcc-internal-format
 msgid "the %<interrupt%> attribute requires a MIPS32r2 processor"
-msgstr ""
+msgstr "das %<interrupt%>-Attribut erfordert einen MIPS32r2-Prozessor"
 
 #: config/mips/mips.c:9229
 #, gcc-internal-format
 msgid "the %<interrupt%> attribute requires %<-msoft-float%>"
-msgstr ""
+msgstr "das %<interrupt%>-Attribut erfordert %<-msoft-float%>"
 
 #: config/mips/mips.c:9231
 #, gcc-internal-format
 msgid "interrupt handlers cannot be MIPS16 functions"
-msgstr ""
+msgstr "Interrupthandler können keine MIPS16-Funktionen sein"
 
 #: config/mips/mips.c:13214
 #, gcc-internal-format
@@ -22971,24 +22964,24 @@ msgid "invalid argument to built-in function"
 msgstr "ungültiges Argument für eingebaute Funktion"
 
 #: config/mips/mips.c:13455
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "built-in function %qE not supported for MIPS16"
-msgstr "eingebaute Funktion %qs nicht für MIPS16 unterstützt"
+msgstr "eingebaute Funktion %qE nicht für MIPS16 unterstützt"
 
 #: config/mips/mips.c:14045
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qs does not support MIPS16 code"
-msgstr "%s unterstützt nicht %s"
+msgstr "%qs unterstützt keinen MIPS16-Code"
 
 #: config/mips/mips.c:15266
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "MIPS16 PIC for ABIs other than o32 and o64"
-msgstr "Hardware-Fließkommacode für MIPS16 für ABIs außer o32 und o64"
+msgstr "MIPS16 PIC für ABIs außer o32 und o64"
 
 #: config/mips/mips.c:15269
 #, gcc-internal-format
 msgid "MIPS16 -mxgot code"
-msgstr ""
+msgstr "MIPS16 -mxgot Code"
 
 #: config/mips/mips.c:15272
 #, gcc-internal-format
@@ -23073,17 +23066,17 @@ msgstr "die Architektur %qs unterstützt keine paarweisen Einzel-Befehle"
 #: config/mips/mips.c:15762
 #, gcc-internal-format
 msgid "%qs requires a target that provides the %qs instruction"
-msgstr ""
+msgstr "%qs erfordert ein Ziel, das den %qs-Befehl unterstützt"
 
 #: config/mips/mips.c:15867
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qs requires branch-likely instructions"
-msgstr "die Architektur %qs unterstützt keine Befehle mit Sprungwahrscheinlichkeit"
+msgstr "%qs erfordert sprungwahrscheinliche Befehle"
 
 #: config/mips/mips.c:15871
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "the %qs architecture does not support the synci instruction"
-msgstr "die Architektur %qs unterstützt keine Befehle mit Sprungwahrscheinlichkeit"
+msgstr "die Architektur %qs unterstützt nicht den synci-Befehl"
 
 #: config/mips/mips.c:16343
 #, gcc-internal-format
@@ -23177,100 +23170,100 @@ msgid "-munix=98 option required for C89 Amendment 1 features.\n"
 msgstr "Option -munix=98 für Eigenschaften des C89 Amendment 1 erforderlich.\n"
 
 #: config/picochip/picochip.c:438
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "invalid AE type specified (%s)"
-msgstr "falsches Typ-Argument von %qs"
+msgstr "ungültiger AE-Typ angegeben (%s)"
 
 #: config/picochip/picochip.c:461
 #, gcc-internal-format, gfc-internal-format
 msgid "invalid mul type specified (%s) - expected mac, mul or none"
-msgstr ""
+msgstr "ungültiger mul-Typ angegeben (%s) - mac, mul oder none erwartet"
 
 #: config/picochip/picochip.c:756
 #, gcc-internal-format, gfc-internal-format
 msgid "unexpected mode %s encountered in picochip_emit_save_register"
-msgstr ""
+msgstr "unerwarteter Modus %s in picochip_emit_save_register gefunden"
 
 #: config/picochip/picochip.c:923
 #, gcc-internal-format, gfc-internal-format
 msgid "defaulting to stack for %s register creation"
-msgstr ""
+msgstr "Erzeugung von Register %s erfolgt auf Stack"
 
 #: config/picochip/picochip.c:1607
 #, gcc-internal-format
 msgid "LCFI labels have already been deferred"
-msgstr ""
+msgstr " LCFI-Marken wurden bereits zurückgestellt"
 
 #: config/picochip/picochip.c:1670
 #, gcc-internal-format
 msgid "LM label has already been deferred"
-msgstr ""
+msgstr "LM-Marke wurde bereits zurückgestellt"
 
 #: config/picochip/picochip.c:1680
 #, gcc-internal-format
 msgid "LCFI labels have already been deferred."
-msgstr ""
+msgstr "LCFI-Marken wurden bereits zurückgestellt."
 
 #: config/picochip/picochip.c:1962
 #, gcc-internal-format, gfc-internal-format
 msgid "picochip_asm_output_opcode - Found multiple lines in VLIW packet %s"
-msgstr ""
+msgstr "picochip_asm_output_opcode - Mehrere Zeilen in VLIW-Paket %s gefunden"
 
 #: config/picochip/picochip.c:2065
 #, gcc-internal-format
 msgid "picochip_asm_output_opcode - can%'t output unknown operator %c"
-msgstr ""
+msgstr "picochip_asm_output_opcode - unbekannter Operator %c kann nicht ausgegeben werden"
 
 #: config/picochip/picochip.c:2316 config/picochip/picochip.c:2376
 #, gcc-internal-format
 msgid "%s: at least one operand can%'t be handled"
-msgstr ""
+msgstr "%s: mindestens ein Operand kann nicht behandelt werden"
 
 #: config/picochip/picochip.c:2457
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "unknown short branch in %s (type %d)"
-msgstr "Unbekanntes Zeichenketten-Token %s\n"
+msgstr "unbekannter kurzer Sprung in %s (Typ %d)"
 
 #: config/picochip/picochip.c:2494
 #, gcc-internal-format, gfc-internal-format
 msgid "unknown long branch in %s (type %d)"
-msgstr ""
+msgstr "unbekannter weiter Sprung in %s (Typ %d)"
 
 #: config/picochip/picochip.c:2534 config/picochip/picochip.c:2602
 #, gcc-internal-format, gfc-internal-format
 msgid "PUT uses port array index %d, which is out of range [%d..%d)"
-msgstr ""
+msgstr "PUT verwendet Port-Feldindex %d, was außerhalb des Wertebereiches [%d..%d) liegt"
 
 #: config/picochip/picochip.c:2568
 #, gcc-internal-format, gfc-internal-format
 msgid "GET uses port array index %d, which is out of range [%d..%d)"
-msgstr ""
+msgstr "GET verwendet Port-Feldindex %d, was außerhalb des Wertebereiches [%d..%d) liegt"
 
 #: config/picochip/picochip.c:3439
 #, gcc-internal-format, gfc-internal-format
 msgid "too many ALU instructions emitted (%d)"
-msgstr ""
+msgstr "zu viele ALU-Befehle ausgegeben (%d)"
 
 #: config/picochip/picochip.c:4071 config/picochip/picochip.c:4164
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "%s: Second source operand is not a constant"
-msgstr "»o«-Operand ist nicht konstant"
+msgstr "%s: Zweiter Quelloperand ist keine Konstante"
 
 #: config/picochip/picochip.c:4074 config/picochip/picochip.c:4125
 #: config/picochip/picochip.c:4167
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "%s: Third source operand is not a constant"
-msgstr "»o«-Operand ist nicht konstant"
+msgstr "%s: Dritter Quelloperand ist keine Konstante"
 
 #: config/picochip/picochip.c:4128
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "%s: Fourth source operand is not a constant"
-msgstr "»o«-Operand ist nicht konstant"
+msgstr "%s: Vierter Quelloperand ist keine Konstante"
 
 #: config/picochip/picochip.c:4423
 #, gcc-internal-format, gfc-internal-format
 msgid "%s (disable warning using -mno-inefficient-warnings)"
-msgstr ""
+msgstr "%s (Warnung kann mit -mno-inefficient-warnings ausgeschaltet werden)"
 
 #: config/rs6000/host-darwin.c:60
 #, gcc-internal-format
@@ -23332,29 +23325,29 @@ msgid "junk at end of #pragma longcall"
 msgstr "Ausschuss am Ende von #pragma longcall"
 
 #: config/rs6000/rs6000-c.c:3473
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "%s only accepts %d arguments"
-msgstr "unpassende Argumente"
+msgstr "%s akzeptiert nur %d Argumente"
 
 #: config/rs6000/rs6000-c.c:3478
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "%s only accepts 1 argument"
-msgstr "-split hat kein Argument."
+msgstr "%s akzeptiert nur 1 Argument"
 
 #: config/rs6000/rs6000-c.c:3483
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "%s only accepts 2 arguments"
-msgstr "%q+D benötigt entweder null oder zwei Argumente"
+msgstr "%s akzeptiert nur 2 Argumente"
 
 #: config/rs6000/rs6000-c.c:3548
 #, gcc-internal-format
 msgid "vec_extract only accepts 2 arguments"
-msgstr ""
+msgstr "vec_extract akzeptiert nur 2 Argumente"
 
 #: config/rs6000/rs6000-c.c:3624
 #, gcc-internal-format
 msgid "vec_insert only accepts 3 arguments"
-msgstr ""
+msgstr "vec_insert akzeptiert nur 3 Argumente"
 
 #: config/rs6000/rs6000-c.c:3727
 #, gcc-internal-format
@@ -23369,17 +23362,17 @@ msgstr "ungültige Parameterkombination für intrinsisches AltiVec"
 #: config/rs6000/rs6000.c:2524
 #, gcc-internal-format
 msgid "-mrecip requires -ffinite-math or -ffast-math"
-msgstr ""
+msgstr "-mrecip erfordert -ffinite-math oder -ffast-math"
 
 #: config/rs6000/rs6000.c:2526
 #, gcc-internal-format
 msgid "-mrecip requires -fno-trapping-math or -ffast-math"
-msgstr ""
+msgstr "-mrecip erfordert -fno-trapping-math oder -ffast-math"
 
 #: config/rs6000/rs6000.c:2528
 #, gcc-internal-format
 msgid "-mrecip requires -freciprocal-math or -ffast-math"
-msgstr ""
+msgstr "-mrecip erfordert -freciprocal-math oder -ffast-math"
 
 #: config/rs6000/rs6000.c:2622
 #, gcc-internal-format
@@ -23387,14 +23380,14 @@ msgid "-m64 requires PowerPC64 architecture, enabling"
 msgstr "-m64 erfordert PowerPC64-Architektur voraus, eingeschaltet"
 
 #: config/rs6000/rs6000.c:2747
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "AltiVec not supported in this target"
-msgstr "Kellergrenzen nicht für dieses Ziel unterstützt"
+msgstr "AltiVec wird für dieses Ziel nicht unterstützt"
 
 #: config/rs6000/rs6000.c:2749
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "SPE not supported in this target"
-msgstr "Kellergrenzen nicht für dieses Ziel unterstützt"
+msgstr "SPE wird für dieses Ziel nicht unterstützt"
 
 #: config/rs6000/rs6000.c:2776
 #, gcc-internal-format
@@ -23414,37 +23407,37 @@ msgstr "unbekannte ABI-Typ (%s) für Vektorisierungsbibliothek bei Schalter -mve
 #: config/rs6000/rs6000.c:2901
 #, gcc-internal-format
 msgid "target attribute or pragma changes long double size"
-msgstr ""
+msgstr "Ziel-Attribut oder Pragma ändert Größe von long double"
 
 #: config/rs6000/rs6000.c:2922 config/rs6000/rs6000.c:2937
 #, gcc-internal-format
 msgid "target attribute or pragma changes AltiVec ABI"
-msgstr ""
+msgstr "Ziel-Attribut oder Pragma ändert AltiVec ABI"
 
 #: config/rs6000/rs6000.c:2954
 #, gcc-internal-format
 msgid "target attribute or pragma changes darwin64 ABI"
-msgstr ""
+msgstr "Ziel-Attribut oder Pragma ändert darwin64 ABI"
 
 #: config/rs6000/rs6000.c:2995
 #, gcc-internal-format
 msgid "target attribute or pragma changes SPE ABI"
-msgstr ""
+msgstr "Ziel-Attribut oder Pragma ändert SPE ABI"
 
 #: config/rs6000/rs6000.c:3317
 #, gcc-internal-format
 msgid "target attribute or pragma changes single precision floating point"
-msgstr ""
+msgstr "Ziel-Attribut oder Pragma ändert Gleitkomma mit einfacher Genauigkeit"
 
 #: config/rs6000/rs6000.c:3320
 #, gcc-internal-format
 msgid "target attribute or pragma changes double precision floating point"
-msgstr ""
+msgstr "Ziel-Attribut oder Pragma ändert Gleitkomma mit doppelter Genauigkeit"
 
 #: config/rs6000/rs6000.c:3367
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "unknown option for -mrecip=%s"
-msgstr "Unbekannte CPU: -mcpu=%s"
+msgstr "unbekannte Option für -mrecip=%s"
 
 #: config/rs6000/rs6000.c:3834
 #, gcc-internal-format, gfc-internal-format
@@ -23452,14 +23445,14 @@ msgid "unknown -m%s= option specified: '%s'"
 msgstr "unbekannte Option für -m%s= angegeben: »%s«"
 
 #: config/rs6000/rs6000.c:3869
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "unknown value %s for -mfpu"
-msgstr "Falscher Wert %qs für Schalter -mcpu"
+msgstr "unbekannter Wert %s für -mfpu"
 
 #: config/rs6000/rs6000.c:4256
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "invalid option for -mcmodel: '%s'"
-msgstr "ungültige Option für -mfloat-gprs: »%s«"
+msgstr "ungültige Option für -mcmodel: »%s«"
 
 #: config/rs6000/rs6000.c:4386
 #, gcc-internal-format, gfc-internal-format
@@ -23472,24 +23465,24 @@ msgid "not configured for ABI: '%s'"
 msgstr "nicht für ABI konfiguriert: »%s«"
 
 #: config/rs6000/rs6000.c:4472
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "using darwin64 ABI"
 msgstr "darwin64-ABI wird verwendet"
 
 #: config/rs6000/rs6000.c:4477
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "using old darwin ABI"
 msgstr "Altes darwin-ABI wird verwendet"
 
 #: config/rs6000/rs6000.c:4484
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "using IBM extended precision long double"
-msgstr "IBM long doubles mit erweiterter Genauigkeit werden verwendet"
+msgstr "IBM long double mit erweiterter Genauigkeit wird verwendet"
 
 #: config/rs6000/rs6000.c:4490
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "using IEEE extended precision long double"
-msgstr "IEEE long doubles mit erweiterter Genauigkeit werden verwendet"
+msgstr "IEEE long double mit erweiterter Genauigkeit wird verwendet"
 
 #: config/rs6000/rs6000.c:4495
 #, gcc-internal-format, gfc-internal-format
@@ -23497,14 +23490,14 @@ msgid "unknown ABI specified: '%s'"
 msgstr "unbekanntes ABI angegeben: »%s«"
 
 #: config/rs6000/rs6000.c:4504
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "bad value (%s) for -mcpu"
-msgstr "Falscher Wert (%s) für Schalter -mcpu"
+msgstr "falscher Wert (%s) für -mcpu"
 
 #: config/rs6000/rs6000.c:4511
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "bad value (%s) for -mtune"
-msgstr "Falscher Wert (%s) für Schalter -mtune="
+msgstr "falscher Wert (%s) für -mtune"
 
 #: config/rs6000/rs6000.c:4522
 #, gcc-internal-format
@@ -23517,9 +23510,9 @@ msgid "invalid option for -mfloat-gprs: '%s'"
 msgstr "ungültige Option für -mfloat-gprs: »%s«"
 
 #: config/rs6000/rs6000.c:4546
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "unknown switch -mlong-double-%s"
-msgstr "Unbekannter Schalter -mlong-double-%s"
+msgstr "unbekannter Schalter -mlong-double-%s"
 
 #: config/rs6000/rs6000.c:4567
 #, gcc-internal-format
@@ -23534,12 +23527,12 @@ msgstr "unbekannte Option -malign-XXXXX angegeben: »%s«"
 #: config/rs6000/rs6000.c:4582
 #, gcc-internal-format
 msgid "-msingle-float option equivalent to -mhard-float"
-msgstr ""
+msgstr "Option -msingle-float ist äquivalent zu -mhard-float"
 
 #: config/rs6000/rs6000.c:4598
 #, gcc-internal-format
 msgid "-msimple-fpu option ignored"
-msgstr ""
+msgstr "Option -msimple-fpu ignoriert"
 
 #: config/rs6000/rs6000.c:7966
 #, gcc-internal-format
@@ -23562,9 +23555,9 @@ msgid "GCC vector passed by reference: non-standard ABI extension with no compat
 msgstr "GCC-Vektor per Referenz übergegeben: Nicht-Standard-ABI-Erweiterung ohne Kompatibilitätsgarantie"
 
 #: config/rs6000/rs6000.c:10003
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "internal error: builtin function to %s already processed"
-msgstr "Die Eingabedatei als bereits vorverarbeitet behandeln"
+msgstr "interner Fehler: Eingebaute Funktion auf %s bereits verarbeitet"
 
 #: config/rs6000/rs6000.c:10950
 #, gcc-internal-format
@@ -23592,14 +23585,14 @@ msgid "argument 3 must be a 4-bit unsigned literal"
 msgstr "Argument 3 muss ein vorzeichenloses 4-Bit-Symbol sein"
 
 #: config/rs6000/rs6000.c:11419
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "argument 3 must be a 2-bit unsigned literal"
-msgstr "Argument 3 muss ein vorzeichenloses 4-Bit-Symbol sein"
+msgstr "Argument 3 muss ein vorzeichenloses 2-Bit-Symbol sein"
 
 #: config/rs6000/rs6000.c:11431
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "argument 3 must be a 1-bit unsigned literal"
-msgstr "Argument 3 muss ein vorzeichenloses 4-Bit-Symbol sein"
+msgstr "Argument 3 muss ein vorzeichenloses 1-Bit-Symbol sein"
 
 #: config/rs6000/rs6000.c:11614
 #, gcc-internal-format
@@ -23637,14 +23630,14 @@ msgid "argument 1 of __builtin_spe_predicate is out of range"
 msgstr "Argument 1 von __builtin_spe_predicate ist außerhalb des Wertebereiches"
 
 #: config/rs6000/rs6000.c:13716
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "internal error: builtin function %s had no type"
-msgstr "interner Fehler - zu viele Schnittstellentypen"
+msgstr "interner Fehler: eingebaute Funktion %s hatte keinen Typ"
 
 #: config/rs6000/rs6000.c:13723
 #, gcc-internal-format, gfc-internal-format
 msgid "internal error: builtin function %s had an unexpected return type %s"
-msgstr ""
+msgstr "interner Fehler: eingebaute Funktion %s hatte unerwarteten Rückgabetyp %s"
 
 #: config/rs6000/rs6000.c:13736
 #, gcc-internal-format, gfc-internal-format
