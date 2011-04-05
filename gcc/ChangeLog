@@ -1,3 +1,8 @@
+2011-04-05  Steven Bosscher  <steven@gcc.gnu.org>
+
+	PR middle-end/48441
+	* cprop.c (one_cprop_pass): Do not mark_oprs_set of deleted insns.
+
 2011-04-05  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* combine.c: Include obstack.h.
