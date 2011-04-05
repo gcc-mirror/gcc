@@ -5262,6 +5262,19 @@ prologue_epilogue_contains (const_rtx insn)
   return 0;
 }
 
+/* Insert use of return register before the end of BB.  */
+
+static void
+emit_use_return_register_into_block (basic_block bb)
+{
+  rtx seq;
+  start_sequence ();
+  use_return_register ();
+  seq = get_insns ();
+  end_sequence ();
+  emit_insn_before (seq, BB_END (bb));
+}
+
 #ifdef HAVE_return
 /* Insert gen_return at the end of block BB.  This also means updating
    block_for_insn appropriately.  */
@@ -5416,6 +5429,15 @@ thread_prologue_and_epilogue_insns (void)
 		 with a simple return instruction.  */
 	      if (simplejump_p (jump))
 		{
+		  /* The use of the return register might be present in the exit
+		     fallthru block.  Either:
+		     - removing the use is safe, and we should remove the use in
+		       the exit fallthru block, or
+		     - removing the use is not safe, and we should add it here.
+		     For now, we conservatively choose the latter.  Either of the
+		     2 helps in crossjumping.  */
+		  emit_use_return_register_into_block (bb);
+
 		  emit_return_into_block (bb);
 		  delete_insn (jump);
 		}
@@ -5429,6 +5451,9 @@ thread_prologue_and_epilogue_insns (void)
 		      ei_next (&ei2);
 		      continue;
 		    }
+
+		  /* See comment in simple_jump_p case above.  */
+		  emit_use_return_register_into_block (bb);
 
 		  /* If this block has only one successor, it both jumps
 		     and falls through to the fallthru block, so we can't
