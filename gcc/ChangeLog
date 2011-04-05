@@ -1,3 +1,14 @@
+2011-04-05  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/m68k/m68k.c (m68k_handle_option): Don't handle OPT_m5200,
+	OPT_m5206e, OPT_m528x, OPT_m5307, OPT_m5407 and OPT_mcfv4e.
+	* config/m68k/m68k.h (OPTION_DEFAULT_SPECS, ASM_CPU_SPEC): Don't
+	handle -m5200, -m5206e, -m528x, -m5307, -m5407 and -mcfv4e.
+	* config/m68k/m68k.opt (m5200, m5206e, m528x, m5307, m5407,
+	mcfv4e): Use Alias.
+	* config/m68k/t-mlibs (MULTILIB_MATCHES): Don't map legacy
+	ColdFire options to -mcpu= options.
+
 2011-04-05  Jeff Law  <law@redhat.com>
 
 	* tree-ssa-threadupdate.c (determine_bb_domination_status): Always

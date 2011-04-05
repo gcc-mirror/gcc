@@ -1,6 +1,6 @@
 # multilibs  -*- mode:Makefile -*-
 #
-# Copyright (C) 2007 Free Software Foundation, Inc.
+# Copyright (C) 2007, 2011 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -73,11 +73,6 @@ MULTILIB_MATCHES += m68000=mcpu?68000 m68000=march?68000 m68000=mc68000 \
 endif
 
 ifneq ($(M68K_ARCH),m68k)
-# Map the legacy ColdFire options to the new ones.
-MULTILIB_MATCHES += mcpu?5206=m5200 mcpu?5206e=m5206e mcpu?5208=m528x \
-		    mcpu?5307=m5300 mcpu?5307=m5307 \
-		    mcpu?5407=m5400 mcpu?5407=m5407 \
-		    mcpu?5475=mcfv4e
 # Map -march=* options to the representative -mcpu=* option.
 MULTILIB_MATCHES += mcpu?5206e=march?isaa mcpu?5208=march?isaaplus \
 		    mcpu?5407=march?isab

@@ -499,24 +499,6 @@ m68k_handle_option (struct gcc_options *opts, struct gcc_options *opts_set,
     case OPT_mtune_:
       return m68k_find_selection (&m68k_tune_entry, all_microarchs, arg);
 
-    case OPT_m5200:
-      return m68k_find_selection (&m68k_cpu_entry, all_devices, "5206");
-
-    case OPT_m5206e:
-      return m68k_find_selection (&m68k_cpu_entry, all_devices, "5206e");
-
-    case OPT_m528x:
-      return m68k_find_selection (&m68k_cpu_entry, all_devices, "528x");
-
-    case OPT_m5307:
-      return m68k_find_selection (&m68k_cpu_entry, all_devices, "5307");
-
-    case OPT_m5407:
-      return m68k_find_selection (&m68k_cpu_entry, all_devices, "5407");
-
-    case OPT_mcfv4e:
-      return m68k_find_selection (&m68k_cpu_entry, all_devices, "547x");
-
     case OPT_m68000:
     case OPT_mc68000:
       return m68k_find_selection (&m68k_cpu_entry, all_devices, "68000");
