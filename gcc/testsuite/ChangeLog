@@ -1,3 +1,8 @@
+2011-04-05  Tom de Vries  <tom@codesourcery.com>
+
+	PR target/43920
+	* gcc.target/arm/pr43920-1.c: New test.
+
 2011-04-04  Yufeng Zhang  <yufeng.zhang@arm.com>
 
         * g++.dg/abi/arm_cxa_vec1.C (__ARM_EABI__): Fix typo.
