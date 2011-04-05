@@ -646,19 +646,20 @@ build_builtin_fntypes (tree *fntype, tree type)
   /* type (*) (type, type) */
   tmp = tree_cons (NULL_TREE, type, tmp);
   fntype[1] = build_function_type (type, tmp);
-  /* type (*) (int, type) */
+  /* type (*) (type, int) */
   tmp = tree_cons (NULL_TREE, integer_type_node, void_list_node);
   tmp = tree_cons (NULL_TREE, type, tmp);
   fntype[2] = build_function_type (type, tmp);
   /* type (*) (void) */
   fntype[3] = build_function_type (type, void_list_node);
   /* type (*) (type, &int) */
-  tmp = tree_cons (NULL_TREE, type, void_list_node);
-  tmp = tree_cons (NULL_TREE, build_pointer_type (integer_type_node), tmp);
+  tmp = tree_cons (NULL_TREE, build_pointer_type (integer_type_node),
+                   void_list_node);
+  tmp = tree_cons (NULL_TREE, type, tmp);
   fntype[4] = build_function_type (type, tmp);
   /* type (*) (type, int) */
-  tmp = tree_cons (NULL_TREE, type, void_list_node);
-  tmp = tree_cons (NULL_TREE, integer_type_node, tmp);
+  tmp = tree_cons (NULL_TREE, integer_type_node, void_list_node);
+  tmp = tree_cons (NULL_TREE, type, tmp);
   fntype[5] = build_function_type (type, tmp);
 }
 
