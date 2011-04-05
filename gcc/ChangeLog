@@ -1,3 +1,12 @@
+2011-04-05  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* cprop.c (struct reg_use): Remove.
+	(reg_use_table): Make an array of RTX.
+	(find_used_regs, constprop_register, local_cprop_pass,
+	bypass_block): Simplify users of reg_use_table.
+	(cprop_insn): Likewise.  Iterate if copy propagation succeeded
+	on one of the uses found by find_used_regs.
+
 2011-04-05  Nathan Froyd  <froydnj@codesourcery.com>
 
 	PR bootstrap/48469
