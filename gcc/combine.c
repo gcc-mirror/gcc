@@ -1139,7 +1139,9 @@ combine_instructions (rtx f, unsigned int nregs)
       FOR_BB_INSNS (this_basic_block, insn)
         if (INSN_P (insn) && BLOCK_FOR_INSN (insn))
 	  {
+#ifdef AUTO_INC_DEC
             rtx links;
+#endif
 
             subst_low_luid = DF_INSN_LUID (insn);
             subst_insn = insn;

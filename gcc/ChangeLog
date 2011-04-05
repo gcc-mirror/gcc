@@ -1,5 +1,11 @@
 2011-04-05  Nathan Froyd  <froydnj@codesourcery.com>
 
+	PR bootstrap/48469
+	* combine.c (combine_instructions): #ifdef AUTO_INC_DEC links
+	declaration.
+
+2011-04-05  Nathan Froyd  <froydnj@codesourcery.com>
+
 	* combine.c (combine_instructions) [AUTO_INC_DEC]: Declare links
 	as an rtx.
 	(try_combine) [AUTO_INC_DEC]: Declare a local link rtx.
