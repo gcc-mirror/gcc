@@ -382,7 +382,7 @@ static regset reg_set_bitmap;
 
 /* Array, indexed by basic block number for a list of insns which modify
    memory within that block.  */
-static rtx * modify_mem_list;
+static VEC (rtx,heap) **modify_mem_list;
 static bitmap modify_mem_list_set;
 
 typedef struct modify_pair_s
@@ -396,7 +396,7 @@ DEF_VEC_ALLOC_O(modify_pair,heap);
 
 /* This array parallels modify_mem_list, except that it stores MEMs
    being set and their canonicalized memory addresses.  */
-static VEC(modify_pair,heap) **canon_modify_mem_list;
+static VEC (modify_pair,heap) **canon_modify_mem_list;
 
 /* Bitmap indexed by block numbers to record which blocks contain
    function calls.  */
@@ -595,8 +595,8 @@ alloc_gcse_mem (void)
 
   /* Allocate array to keep a list of insns which modify memory in each
      basic block.  */
-  modify_mem_list = GCNEWVEC (rtx, last_basic_block);
-  canon_modify_mem_list = GCNEWVEC (VEC(modify_pair,heap) *,
+  modify_mem_list = GCNEWVEC (VEC (rtx,heap) *, last_basic_block);
+  canon_modify_mem_list = GCNEWVEC (VEC (modify_pair,heap) *,
 				    last_basic_block);
   modify_mem_list_set = BITMAP_ALLOC (NULL);
   blocks_with_calls = BITMAP_ALLOC (NULL);
@@ -991,26 +991,22 @@ mems_conflict_for_gcse_p (rtx dest, const_rtx setter ATTRIBUTE_UNUSED,
 static int
 load_killed_in_block_p (const_basic_block bb, int uid_limit, const_rtx x, int avail_p)
 {
-  rtx list_entry = modify_mem_list[bb->index];
+  VEC (rtx,heap) *list = modify_mem_list[bb->index];
+  rtx setter;
+  unsigned ix;
 
   /* If this is a readonly then we aren't going to be changing it.  */
   if (MEM_READONLY_P (x))
     return 0;
 
-  while (list_entry)
+  FOR_EACH_VEC_ELT_REVERSE (rtx, list, ix, setter)
     {
-      rtx setter;
       /* Ignore entries in the list that do not apply.  */
       if ((avail_p
-	   && DF_INSN_LUID (XEXP (list_entry, 0)) < uid_limit)
+	   && DF_INSN_LUID (setter) < uid_limit)
 	  || (! avail_p
-	      && DF_INSN_LUID (XEXP (list_entry, 0)) > uid_limit))
-	{
-	  list_entry = XEXP (list_entry, 1);
-	  continue;
-	}
-
-      setter = XEXP (list_entry, 0);
+	      && DF_INSN_LUID (setter) > uid_limit))
+	continue;
 
       /* If SETTER is a call everything is clobbered.  Note that calls
 	 to pure functions are never put on the list, so we need not
@@ -1028,7 +1024,6 @@ load_killed_in_block_p (const_basic_block bb, int uid_limit, const_rtx x, int av
       note_stores (PATTERN (setter), mems_conflict_for_gcse_p, NULL);
       if (gcse_mems_conflict_p)
 	return 1;
-      list_entry = XEXP (list_entry, 1);
     }
   return 0;
 }
@@ -1480,7 +1475,7 @@ record_last_mem_set_info (rtx insn)
 
   /* load_killed_in_block_p will handle the case of calls clobbering
      everything.  */
-  modify_mem_list[bb] = alloc_INSN_LIST (insn, modify_mem_list[bb]);
+  VEC_safe_push (rtx, heap, modify_mem_list[bb], insn);
   bitmap_set_bit (modify_mem_list_set, bb);
 
   if (CALL_P (insn))
@@ -1621,7 +1616,7 @@ clear_modify_mem_tables (void)
 
   EXECUTE_IF_SET_IN_BITMAP (modify_mem_list_set, 0, i, bi)
     {
-      free_INSN_LIST_list (modify_mem_list + i);
+      VEC_free (rtx, heap, modify_mem_list[i]);
       VEC_free (modify_pair, heap, canon_modify_mem_list[i]);
     }
   bitmap_clear (modify_mem_list_set);
@@ -1693,7 +1688,7 @@ compute_transp (const_rtx x, int indx, sbitmap *bmap)
 					    blocks_with_calls,
 					    0, bb_index, bi)
 	      {
-		VEC(modify_pair,heap) *list
+		VEC (modify_pair,heap) *list
 		  = canon_modify_mem_list[bb_index];
 		modify_pair *pair;
 		unsigned ix;
