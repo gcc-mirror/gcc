@@ -1,6 +1,12 @@
 2011-04-05  Tom de Vries  <tom@codesourcery.com>
 
 	PR target/43920
+	* config/arm/arm.h (BRANCH_COST): Set to 1 for Thumb-2 when optimizing
+	for size.
+
+2011-04-05  Tom de Vries  <tom@codesourcery.com>
+
+	PR target/43920
 	* function.c (emit_use_return_register_into_block): New function.
 	(thread_prologue_and_epilogue_insns): Use
 	emit_use_return_register_into_block.
