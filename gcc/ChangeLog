@@ -1,3 +1,13 @@
+2011-04-05  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* gcse.c (modify_pair): Define.  Define a VEC of it.
+	(canon_modify_mem_list): Convert to an array of VECs.
+	(free_insn_expr_list_list): Delete.
+	(clear_modify_mem_tables): Call VEC_free instead.
+	(record_last_mem_set_info): Don't modify canon_modify_mem_list.
+	(alloc_gcse_mem): Adjust for canon_modify_mem_list change.
+	(canon_list_insert, compute_transp): Likewise.
+
 2011-04-05  Tom de Vries  <tom@codesourcery.com>
 
 	PR target/43920

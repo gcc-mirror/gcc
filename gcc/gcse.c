@@ -385,8 +385,18 @@ static regset reg_set_bitmap;
 static rtx * modify_mem_list;
 static bitmap modify_mem_list_set;
 
-/* This array parallels modify_mem_list, but is kept canonicalized.  */
-static rtx * canon_modify_mem_list;
+typedef struct modify_pair_s
+{
+  rtx dest;			/* A MEM.  */
+  rtx dest_addr;		/* The canonical address of `dest'.  */
+} modify_pair;
+
+DEF_VEC_O(modify_pair);
+DEF_VEC_ALLOC_O(modify_pair,heap);
+
+/* This array parallels modify_mem_list, except that it stores MEMs
+   being set and their canonicalized memory addresses.  */
+static VEC(modify_pair,heap) **canon_modify_mem_list;
 
 /* Bitmap indexed by block numbers to record which blocks contain
    function calls.  */
@@ -478,7 +488,6 @@ static void invalidate_any_buried_refs (rtx);
 static void compute_ld_motion_mems (void);
 static void trim_ld_motion_mems (void);
 static void update_ld_motion_stores (struct expr *);
-static void free_insn_expr_list_list (rtx *);
 static void clear_modify_mem_tables (void);
 static void free_modify_mem_tables (void);
 static rtx gcse_emit_move_after (rtx, rtx, rtx);
@@ -587,7 +596,8 @@ alloc_gcse_mem (void)
   /* Allocate array to keep a list of insns which modify memory in each
      basic block.  */
   modify_mem_list = GCNEWVEC (rtx, last_basic_block);
-  canon_modify_mem_list = GCNEWVEC (rtx, last_basic_block);
+  canon_modify_mem_list = GCNEWVEC (VEC(modify_pair,heap) *,
+				    last_basic_block);
   modify_mem_list_set = BITMAP_ALLOC (NULL);
   blocks_with_calls = BITMAP_ALLOC (NULL);
 }
@@ -1435,6 +1445,7 @@ canon_list_insert (rtx dest ATTRIBUTE_UNUSED, const_rtx unused1 ATTRIBUTE_UNUSED
 {
   rtx dest_addr, insn;
   int bb;
+  modify_pair *pair;
 
   while (GET_CODE (dest) == SUBREG
       || GET_CODE (dest) == ZERO_EXTRACT
@@ -1453,10 +1464,9 @@ canon_list_insert (rtx dest ATTRIBUTE_UNUSED, const_rtx unused1 ATTRIBUTE_UNUSED
   insn = (rtx) v_insn;
   bb = BLOCK_FOR_INSN (insn)->index;
 
-  canon_modify_mem_list[bb] =
-    alloc_EXPR_LIST (VOIDmode, dest_addr, canon_modify_mem_list[bb]);
-  canon_modify_mem_list[bb] =
-    alloc_EXPR_LIST (VOIDmode, dest, canon_modify_mem_list[bb]);
+  pair = VEC_safe_push (modify_pair, heap, canon_modify_mem_list[bb], NULL);
+  pair->dest = dest;
+  pair->dest_addr = dest_addr;
 }
 
 /* Record memory modification information for INSN.  We do not actually care
@@ -1474,14 +1484,7 @@ record_last_mem_set_info (rtx insn)
   bitmap_set_bit (modify_mem_list_set, bb);
 
   if (CALL_P (insn))
-    {
-      /* Note that traversals of this loop (other than for free-ing)
-	 will break after encountering a CALL_INSN.  So, there's no
-	 need to insert a pair of items, as canon_list_insert does.  */
-      canon_modify_mem_list[bb] =
-	alloc_INSN_LIST (insn, canon_modify_mem_list[bb]);
-      bitmap_set_bit (blocks_with_calls, bb);
-    }
+    bitmap_set_bit (blocks_with_calls, bb);
   else
     note_stores (PATTERN (insn), canon_list_insert, (void*) insn);
 }
@@ -1609,26 +1612,6 @@ compute_hash_table (struct hash_table_d *table)
 
 /* Expression tracking support.  */
 
-/* Like free_INSN_LIST_list or free_EXPR_LIST_list, except that the node
-   types may be mixed.  */
-
-static void
-free_insn_expr_list_list (rtx *listp)
-{
-  rtx list, next;
-
-  for (list = *listp; list ; list = next)
-    {
-      next = XEXP (list, 1);
-      if (GET_CODE (list) == EXPR_LIST)
-	free_EXPR_LIST_node (list);
-      else
-	free_INSN_LIST_node (list);
-    }
-
-  *listp = NULL;
-}
-
 /* Clear canon_modify_mem_list and modify_mem_list tables.  */
 static void
 clear_modify_mem_tables (void)
@@ -1639,7 +1622,7 @@ clear_modify_mem_tables (void)
   EXECUTE_IF_SET_IN_BITMAP (modify_mem_list_set, 0, i, bi)
     {
       free_INSN_LIST_list (modify_mem_list + i);
-      free_insn_expr_list_list (canon_modify_mem_list + i);
+      VEC_free (modify_pair, heap, canon_modify_mem_list[i]);
     }
   bitmap_clear (modify_mem_list_set);
   bitmap_clear (blocks_with_calls);
@@ -1710,25 +1693,19 @@ compute_transp (const_rtx x, int indx, sbitmap *bmap)
 					    blocks_with_calls,
 					    0, bb_index, bi)
 	      {
-		rtx list_entry = canon_modify_mem_list[bb_index];
+		VEC(modify_pair,heap) *list
+		  = canon_modify_mem_list[bb_index];
+		modify_pair *pair;
+		unsigned ix;
 
-		while (list_entry)
+		FOR_EACH_VEC_ELT_REVERSE (modify_pair, list, ix, pair)
 		  {
-		    rtx dest, dest_addr;
-
-		    /* LIST_ENTRY must be an INSN of some kind that sets memory.
-		       Examine each hunk of memory that is modified.  */
-
-		    dest = XEXP (list_entry, 0);
-		    list_entry = XEXP (list_entry, 1);
-		    dest_addr = XEXP (list_entry, 0);
+		    rtx dest = pair->dest;
+		    rtx dest_addr = pair->dest_addr;
 
 		    if (canon_true_dependence (dest, GET_MODE (dest), dest_addr,
 					       x, NULL_RTX, rtx_addr_varies_p))
-		      {
-			RESET_BIT (bmap[bb_index], indx);
-		      }
-		    list_entry = XEXP (list_entry, 1);
+		      RESET_BIT (bmap[bb_index], indx);
 	          }
 	      }
 	}
