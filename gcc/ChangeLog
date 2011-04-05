@@ -1,5 +1,22 @@
 2011-04-05  Nathan Froyd  <froydnj@codesourcery.com>
 
+	* combine.c: Include obstack.h.
+	(struct insn_link): Define.
+	(uid_log_links): Adjust type.
+	(FOR_EACH_LOG_LINK): New macro.
+	(insn_link_obstack): Declare.
+	(alloc_insn_link): Define.
+	(create_log_links): Call it.  Use FOR_EACH_LOG_LINK and adjust
+	type of link variables.
+	(find_single_use, insn_a_feeds_b, combine_instructions): Likewise.
+	(try_combine, record_promoted_values, distribute_notes): Likewise.
+	(distribute_links): Likewise.  Tweak prototype.
+	(clear_log_links): Delete.
+	(adjust_for_new_dest): Call alloc_insn_link.
+	* Makefile.in (combine.o): Depend on $(OBSTACK_H).
+
+2011-04-05  Nathan Froyd  <froydnj@codesourcery.com>
+
 	* gcse.c (modify_mem_list): Convert to an array of VECs.
 	(canon_modify_mem_list, compute_transp): Tweak formatting.
 	(alloc_gcse_mem): Likewise.  Adjust for modify_mem_list change.
