@@ -1070,6 +1070,7 @@ flow_find_cross_jump (basic_block bb1, basic_block bb2, rtx *f1, rtx *f2)
 {
   rtx i1, i2, last1, last2, afterlast1, afterlast2;
   int ninsns = 0;
+  rtx p1;
 
   /* Skip simple jumps at the end of the blocks.  Complex jumps still
      need to be compared for equivalence, which we'll do below.  */
@@ -1118,7 +1119,9 @@ flow_find_cross_jump (basic_block bb1, basic_block bb2, rtx *f1, rtx *f2)
 
 	  afterlast1 = last1, afterlast2 = last2;
 	  last1 = i1, last2 = i2;
-	  ninsns++;
+	  p1 = PATTERN (i1);
+	  if (!(GET_CODE (p1) == USE || GET_CODE (p1) == CLOBBER))
+	    ninsns++;
 	}
 
       i1 = PREV_INSN (i1);
