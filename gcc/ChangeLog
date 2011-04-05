@@ -1,5 +1,15 @@
 2011-04-05  Nathan Froyd  <froydnj@codesourcery.com>
 
+	* debug.h (debug_flush_symbol_queue, debug_queue_symbol): Delete.
+	(debug_free_queue, debug_nesting, symbol_queue_index): Delete.
+	* final.c (debug_flush_symbol_queue, debug_queue_symbol):
+	Move these...
+	(debug_free_queue, debug_nesting, symbol_queue_index):
+	...and these...
+	* dbxout.c: ...to here.  Make static.
+
+2011-04-05  Nathan Froyd  <froydnj@codesourcery.com>
+
 	* gcse.c (modify_pair): Define.  Define a VEC of it.
 	(canon_modify_mem_list): Convert to an array of VECs.
 	(free_insn_expr_list_list): Delete.

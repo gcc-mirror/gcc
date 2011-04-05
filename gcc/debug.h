@@ -186,12 +186,6 @@ extern int dwarf2out_do_frame (void);
 extern int dwarf2out_do_cfi_asm (void);
 extern void dwarf2out_switch_text_section (void);
 
-extern void debug_flush_symbol_queue (void);
-extern void debug_queue_symbol (tree);
-extern void debug_free_queue (void);
-extern int debug_nesting;
-extern int symbol_queue_index;
-
 const char *remap_debug_filename (const char *);
 void add_debug_prefix_map (const char *);
 
