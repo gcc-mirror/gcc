@@ -1,3 +1,7 @@
+2011-04-05  Duncan Sands  <baldrick@free.fr>
+
+	* f95-lang.c (build_builtin_fntypes): Swap frexp parameter types.
+
 2010-04-04  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	* frontend-passes: (optimize_lexical_comparison): New function.
