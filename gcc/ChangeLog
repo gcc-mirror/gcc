@@ -1,3 +1,7 @@
+2011-04-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* stor-layout.c (self_referential_size): Fix 2010-07-13 commit.
+
 2011-04-05  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/rx/rx-opts.h: New.
