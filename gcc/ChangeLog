@@ -1,3 +1,12 @@
+2011-04-05  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* gcse.c (modify_mem_list): Convert to an array of VECs.
+	(canon_modify_mem_list, compute_transp): Tweak formatting.
+	(alloc_gcse_mem): Likewise.  Adjust for modify_mem_list change.
+	(load_killed_in_block_p): Likewise.
+	(record_last_mem_set_info): Likewise.
+	(clear_modify_mem_tables): Likewise.
+
 2011-04-05  Tom de Vries  <tom@codesourcery.com>
 
 	PR middle-end/48461
