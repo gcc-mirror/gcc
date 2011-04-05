@@ -1,3 +1,7 @@
+2011-04-05  Sterling Augustine <augustine.sterling@gmail.com>
+
+	* MAINTAINERS: Update my email address as Xtensa maintainer.
+
 2011-04-05  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* config.sub: Sync from upstream.
