@@ -90,6 +90,14 @@ class Bfunction : public Gcc_tree
   { }
 };
 
+class Blabel : public Gcc_tree
+{
+ public:
+  Blabel(tree t)
+    : Gcc_tree(t)
+  { }
+};
+
 // This file implements the interface between the Go frontend proper
 // and the gcc IR.  This implements specific instantiations of
 // abstract classes defined by the Go frontend proper.  The Go
@@ -158,22 +166,46 @@ class Gcc_backend : public Backend
 
   // Statements.
 
-  // Create an assignment statement.
   Bstatement*
   assignment_statement(Bexpression* lhs, Bexpression* rhs, source_location);
 
-  // Create a return statement.
   Bstatement*
   return_statement(Bfunction*, const std::vector<Bexpression*>&,
 		   source_location);
 
+  // Labels.
+
+  Blabel*
+  label(Bfunction*, const std::string& name, source_location);
+
+  Bstatement*
+  label_definition_statement(Blabel*);
+
+  Bstatement*
+  goto_statement(Blabel*, source_location);
+
+  Bexpression*
+  label_address(Blabel*, source_location);
+
  private:
+  // Make a Bexpression from a tree.
+  Bexpression*
+  make_expression(tree t)
+  { return new Bexpression(t); }
+
   // Make a Bstatement from a tree.
   Bstatement*
   make_statement(tree t)
   { return new Bstatement(t); }
 };
 
+// A helper function.
+
+static inline tree
+get_identifier_from_string(const std::string& str)
+{
+  return get_identifier_with_length(str.data(), str.length());
+}
 // Assignment.
 
 Bstatement*
@@ -249,6 +281,58 @@ Gcc_backend::return_statement(Bfunction* bfunction,
   return this->make_statement(ret);
 }
 
+// Make a label.
+
+Blabel*
+Gcc_backend::label(Bfunction* function, const std::string& name,
+		   source_location location)
+{
+  tree decl;
+  if (name.empty())
+    decl = create_artificial_label(location);
+  else
+    {
+      tree id = get_identifier_from_string(name);
+      decl = build_decl(location, LABEL_DECL, id, void_type_node);
+      DECL_CONTEXT(decl) = function->get_tree();
+    }
+  return new Blabel(decl);
+}
+
+// Make a statement which defines a label.
+
+Bstatement*
+Gcc_backend::label_definition_statement(Blabel* label)
+{
+  tree lab = label->get_tree();
+  tree ret = fold_build1_loc(DECL_SOURCE_LOCATION(lab), LABEL_EXPR,
+			     void_type_node, lab);
+  return this->make_statement(ret);
+}
+
+// Make a goto statement.
+
+Bstatement*
+Gcc_backend::goto_statement(Blabel* label, source_location location)
+{
+  tree lab = label->get_tree();
+  tree ret = fold_build1_loc(location, GOTO_EXPR, void_type_node, lab);
+  return this->make_statement(ret);
+}
+
+// Get the address of a label.
+
+Bexpression*
+Gcc_backend::label_address(Blabel* label, source_location location)
+{
+  tree lab = label->get_tree();
+  TREE_USED(lab) = 1;
+  TREE_ADDRESSABLE(lab) = 1;
+  tree ret = fold_convert_loc(location, ptr_type_node,
+			      build_fold_addr_expr_loc(location, lab));
+  return this->make_expression(ret);
+}
+
 // The single backend.
 
 static Gcc_backend gcc_backend;
@@ -274,6 +358,12 @@ Bfunction*
 tree_to_function(tree t)
 {
   return new Bfunction(t);
+}
+
+tree
+expression_to_tree(Bexpression* be)
+{
+  return be->get_tree();
 }
 
 tree
