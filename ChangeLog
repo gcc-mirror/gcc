@@ -1,3 +1,7 @@
+2011-04-05  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* config.sub: Sync from upstream.
+
 2011-04-01  Joseph Myers  <joseph@codesourcery.com>
 
 	* configure.ac (avr-*-*): Add comment about why libssp is disabled.
