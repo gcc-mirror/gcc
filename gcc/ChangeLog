@@ -1,3 +1,9 @@
+2011-04-05  Bernd Schmidt  <bernds@codesourcery.com>
+
+	PR bootstrap/48403
+	* haifa-sched.c (schedule_block): Increment cycle_issued_insns only
+	if old and new states differ.
+
 2011-04-05  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/m68k/m68k.c (m68k_handle_option): Don't handle OPT_m5200,
