@@ -1,3 +1,7 @@
+2011-04-05  Tom de Vries  <tom@codesourcery.com>
+
+	* cfgcleanup.c (try_crossjump_bb): Remove 2 superfluous variables.
+
 2011-04-05  Yufeng Zhang  <yufeng.zhang@arm.com>
 
         * config/arm/arm.md (define_constants for unspec): Replace with

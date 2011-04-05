@@ -1808,7 +1808,6 @@ try_crossjump_bb (int mode, basic_block bb)
   edge e, e2, fallthru;
   bool changed;
   unsigned max, ix, ix2;
-  basic_block ev, ev2;
 
   /* Nothing to do if there is not at least two incoming edges.  */
   if (EDGE_COUNT (bb->preds) < 2)
@@ -1848,9 +1847,9 @@ try_crossjump_bb (int mode, basic_block bb)
   fallthru = find_fallthru_edge (bb->preds);
 
   changed = false;
-  for (ix = 0, ev = bb; ix < EDGE_COUNT (ev->preds); )
+  for (ix = 0; ix < EDGE_COUNT (bb->preds);)
     {
-      e = EDGE_PRED (ev, ix);
+      e = EDGE_PRED (bb, ix);
       ix++;
 
       /* As noted above, first try with the fallthru predecessor (or, a
@@ -1872,7 +1871,6 @@ try_crossjump_bb (int mode, basic_block bb)
 	    {
 	      changed = true;
 	      ix = 0;
-	      ev = bb;
 	      continue;
 	    }
 	}
@@ -1892,10 +1890,9 @@ try_crossjump_bb (int mode, basic_block bb)
       if (EDGE_SUCC (e->src, 0) != e)
 	continue;
 
-      for (ix2 = 0, ev2 = bb; ix2 < EDGE_COUNT (ev2->preds); )
+      for (ix2 = 0; ix2 < EDGE_COUNT (bb->preds); ix2++)
 	{
-	  e2 = EDGE_PRED (ev2, ix2);
-	  ix2++;
+	  e2 = EDGE_PRED (bb, ix2);
 
 	  if (e2 == e)
 	    continue;
@@ -1921,7 +1918,6 @@ try_crossjump_bb (int mode, basic_block bb)
 	  if (try_crossjump_to_edge (mode, e, e2))
 	    {
 	      changed = true;
-	      ev2 = bb;
 	      ix = 0;
 	      break;
 	    }
