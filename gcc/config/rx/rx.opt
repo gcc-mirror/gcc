@@ -19,6 +19,9 @@
 ; <http://www.gnu.org/licenses/>.
 ;---------------------------------------------------
 
+HeaderInclude
+config/rx/rx-opts.h
+
 ; The default is -fpu -m32bit-doubles.
 
 m64bit-doubles
@@ -43,8 +46,20 @@ Enable the use of RX FPU instructions.  This is the default.
 ;---------------------------------------------------
 
 mcpu=
-Target RejectNegative Joined Var(rx_cpu_name) Report ToLower
+Target RejectNegative Joined Var(rx_cpu_type) Report ToLower Enum(rx_cpu_types) Init(RX600)
 Specify the target RX cpu type.
+
+Enum
+Name(rx_cpu_types) Type(enum rx_cpu_types)
+
+EnumValue
+Name(rx_cpu_types) String(rx610) Value(RX610)
+
+EnumValue
+Name(rx_cpu_types) String(rx200) Value(RX200)
+
+EnumValue
+Name(rx_cpu_types) String(rx600) Value(RX600)
 
 ;---------------------------------------------------
 
@@ -89,7 +104,7 @@ Maximum size in bytes of constant values allowed as operands.
 ;---------------------------------------------------
 
 mint-register=
-Target RejectNegative Joined UInteger Var(rx_interrupt_registers) Init(0)
+Target RejectNegative Joined UInteger Var(rx_deferred_options) Defer
 Specifies the number of registers to reserve for interrupt handlers.
 
 ;---------------------------------------------------
