@@ -27,6 +27,9 @@ class Bstatement;
 // The backend representation of a function definition.
 class Bfunction;
 
+// The backend representation of a label.
+class Blabel;
+
 // A list of backend types.
 typedef std::vector<Btype*> Btypes;
 
@@ -114,6 +117,30 @@ class Backend
   virtual Bstatement*
   return_statement(Bfunction*, const std::vector<Bexpression*>&,
 		   source_location) = 0;
+
+  // Labels.
+  
+  // Create a new label.  NAME will be empty if this is a label
+  // created by the frontend for a loop construct.  The location is
+  // where the the label is defined.
+  virtual Blabel*
+  label(Bfunction*, const std::string& name, source_location) = 0;
+
+  // Create a statement which defines a label.  This statement will be
+  // put into the codestream at the point where the label should be
+  // defined.
+  virtual Bstatement*
+  label_definition_statement(Blabel*) = 0;
+
+  // Create a goto statement to a label.
+  virtual Bstatement*
+  goto_statement(Blabel*, source_location) = 0;
+
+  // Create an expression for the address of a label.  This is used to
+  // get the return address of a deferred function which may call
+  // recover.
+  virtual Bexpression*
+  label_address(Blabel*, source_location) = 0;
 };
 
 // The backend interface has to define this function.
@@ -125,6 +152,7 @@ extern Backend* go_get_backend();
 
 extern Bexpression* tree_to_expr(tree);
 extern Bfunction* tree_to_function(tree);
+extern tree expression_to_tree(Bexpression*);
 extern tree statement_to_tree(Bstatement*);
 
 #endif // !defined(GO_BACKEND_H)

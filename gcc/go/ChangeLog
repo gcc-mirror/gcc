@@ -1,5 +1,19 @@
 2011-04-04  Ian Lance Taylor  <iant@google.com>
 
+	* go-gcc.c (class Blabel): Define.
+	(Gcc_backend::make_expression): New function.
+	(get_identifier_from_string): New function.
+	(Gcc_backend::label): New function.
+	(Gcc_backend::label_definition_statement): New function.
+	(Gcc_backend::goto_statement): New function.
+	(Gcc_backend::label_address): New function.
+	(expression_to_tree): New function.
+	* Make-lang.in (go/expressions.o): Depend on
+	go/gofrontend/backend.h.
+	(go/gogo.o): Likewise.
+
+2011-04-04  Ian Lance Taylor  <iant@google.com>
+
 	* go-gcc.cc: #include "tree-iterator.h", "gimple.h", and "gogo.h".
 	(class Bfunction): Define.
 	(Gcc_backend::assignment_statement): Rename from assignment.

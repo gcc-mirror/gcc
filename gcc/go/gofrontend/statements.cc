@@ -2619,8 +2619,11 @@ class Bc_statement : public Statement
   { return false; }
 
   tree
-  do_get_tree(Translate_context*)
-  { return this->label_->get_goto(this->location()); }
+  do_get_tree(Translate_context* context)
+  {
+    return statement_to_tree(this->label_->get_goto(context,
+						    this->location()));
+  }
 
  private:
   // The label that this branches to.
@@ -2692,9 +2695,12 @@ Goto_statement::do_check_types(Gogo*)
 // Return the tree for the goto statement.
 
 tree
-Goto_statement::do_get_tree(Translate_context*)
+Goto_statement::do_get_tree(Translate_context* context)
 {
-  return this->build_stmt_1(GOTO_EXPR, this->label_->get_decl());
+  Blabel* blabel = this->label_->get_backend_label(context);
+  Bstatement* statement = context->backend()->goto_statement(blabel,
+							     this->location());
+  return statement_to_tree(statement);
 }
 
 // Make a goto statement.
@@ -2725,8 +2731,11 @@ class Goto_unnamed_statement : public Statement
   { return false; }
 
   tree
-  do_get_tree(Translate_context*)
-  { return this->label_->get_goto(this->location()); }
+  do_get_tree(Translate_context* context)
+  {
+    return statement_to_tree(this->label_->get_goto(context,
+						    this->location()));
+  }
 
  private:
   Unnamed_label* label_;
@@ -2754,9 +2763,12 @@ Label_statement::do_traverse(Traverse*)
 // Return a tree defining this label.
 
 tree
-Label_statement::do_get_tree(Translate_context*)
+Label_statement::do_get_tree(Translate_context* context)
 {
-  return this->build_stmt_1(LABEL_EXPR, this->label_->get_decl());
+  Blabel* blabel = this->label_->get_backend_label(context);
+  Bstatement* statement;
+  statement = context->backend()->label_definition_statement(blabel);
+  return statement_to_tree(statement);
 }
 
 // Make a label statement.
@@ -2783,8 +2795,8 @@ class Unnamed_label_statement : public Statement
   { return TRAVERSE_CONTINUE; }
 
   tree
-  do_get_tree(Translate_context*)
-  { return this->label_->get_definition(); }
+  do_get_tree(Translate_context* context)
+  { return statement_to_tree(this->label_->get_definition(context)); }
 
  private:
   // The label.
@@ -3134,7 +3146,10 @@ Case_clauses::Case_clause::get_constant_tree(Translate_context* context,
     }
 
   if (!this->is_fallthrough_)
-    append_to_statement_list(break_label->get_goto(this->location_), stmt_list);
+    {
+      Bstatement* g = break_label->get_goto(context, this->location_);
+      append_to_statement_list(statement_to_tree(g), stmt_list);
+    }
 }
 
 // Class Case_clauses.
@@ -3387,7 +3402,8 @@ Constant_switch_statement::do_get_tree(Translate_context* context)
   SET_EXPR_LOCATION(s, this->location());
   append_to_statement_list(s, &stmt_list);
 
-  append_to_statement_list(break_label->get_definition(), &stmt_list);
+  Bstatement* ldef = break_label->get_definition(context);
+  append_to_statement_list(statement_to_tree(ldef), &stmt_list);
 
   return stmt_list;
 }
@@ -4245,7 +4261,8 @@ Select_clauses::get_tree(Translate_context* context,
       tree stmt_list = NULL_TREE;
       append_to_statement_list(default_clause->get_statements_tree(context),
 			       &stmt_list);
-      append_to_statement_list(break_label->get_definition(), &stmt_list);
+      Bstatement* ldef = break_label->get_definition(context);
+      append_to_statement_list(statement_to_tree(ldef), &stmt_list);
       return stmt_list;
     }
 
@@ -4336,7 +4353,8 @@ Select_clauses::get_tree(Translate_context* context,
 	}
     }
 
-  append_to_statement_list(break_label->get_definition(), &stmt_list);
+  Bstatement* ldef = break_label->get_definition(context);
+  append_to_statement_list(statement_to_tree(ldef), &stmt_list);
 
   tree switch_stmt = build3(SWITCH_EXPR, sizetype, call, stmt_list, NULL_TREE);
   SET_EXPR_LOCATION(switch_stmt, location);
@@ -4358,10 +4376,11 @@ Select_clauses::add_clause_tree(Translate_context* context, int case_index,
 				  NULL_TREE, label),
 			   stmt_list);
   append_to_statement_list(clause->get_statements_tree(context), stmt_list);
-  tree g = bottom_label->get_goto(clause->statements() == NULL
-				  ? clause->location()
-				  : clause->statements()->end_location());
-  append_to_statement_list(g, stmt_list);
+  source_location gloc = (clause->statements() == NULL
+			  ? clause->location()
+			  : clause->statements()->end_location());
+  Bstatement* g = bottom_label->get_goto(context, gloc);
+  append_to_statement_list(statement_to_tree(g), stmt_list);
 }
 
 // Class Select_statement.

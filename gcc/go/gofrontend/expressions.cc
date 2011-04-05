@@ -33,6 +33,7 @@ extern "C"
 #include "import.h"
 #include "statements.h"
 #include "lex.h"
+#include "backend.h"
 #include "expressions.h"
 
 // Class Expression.
@@ -12595,8 +12596,11 @@ class Label_addr_expression : public Expression
   { return new Label_addr_expression(this->label_, this->location()); }
 
   tree
-  do_get_tree(Translate_context*)
-  { return this->label_->get_addr(this->location()); }
+  do_get_tree(Translate_context* context)
+  {
+    return expression_to_tree(this->label_->get_addr(context,
+						     this->location()));
+  }
 
  private:
   // The label whose address we are taking.
