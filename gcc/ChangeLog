@@ -1,3 +1,17 @@
+2011-04-05  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/rx/rx-opts.h: New.
+	* config/rx/rx.c (rx_cpu_type): Remove.
+	(rx_handle_option): Don't assert that global structures are in
+	use.  Access variables via opts pointer.  Defer most handling of
+	OPT_mint_register_.  Use error_at.
+	(rx_option_override): Handle deferred OPT_mint_register_ here.
+	* config/rx/rx.h (enum rx_cpu_types): Move to rx-opts.h.
+	* config/rx/rx.opt (config/rx/rx-opts.h: New HeaderInclude.
+	(mcpu=): Use Enum and specifiy rx_cpu_type with Var.
+	(rx_cpu_types): New Enum and EnumValue entries.
+	(mint-register=): Use Defer and use Var accordingly.
+
 2011-04-05  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* debug.h (debug_flush_symbol_queue, debug_queue_symbol): Delete.
