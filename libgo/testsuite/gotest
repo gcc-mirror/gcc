@@ -231,7 +231,7 @@ mkdir _test
 
 case "x$gofiles" in
 x)
-	gofiles=$(echo -n $(ls *_test.go 2>/dev/null))
+	gofiles=`ls *_test.go 2>/dev/null`
 esac
 
 case "x$gofiles" in
@@ -250,7 +250,7 @@ GC="$holdGC"
 
 case "x$pkgfiles" in
 x)
-	pkgbasefiles=$(echo -n $(ls *.go | grep -v _test.go 2>/dev/null))
+	pkgbasefiles=`ls *.go | grep -v _test.go 2>/dev/null`
 	;;
 *)
 	for f in $pkgfiles; do
