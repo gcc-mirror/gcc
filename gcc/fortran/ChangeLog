@@ -1,3 +1,7 @@
+2011-04-05  Duncan Sands  <baldrick@free.fr>
+
+	* f95-lang.c (build_builtin_fntypes): Swap frexp parameter types.
+
 2011-04-04  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/48291

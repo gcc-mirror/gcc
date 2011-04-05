@@ -695,10 +695,9 @@ build_builtin_fntypes (tree *fntype, tree type)
                                         type, integer_type_node, NULL_TREE);
   /* type (*) (void) */
   fntype[3] = build_function_type_list (type, NULL_TREE);
-  /* type (*) (&int, type) */
-  fntype[4] = build_function_type_list (type,
+  /* type (*) (type, &int) */
+  fntype[4] = build_function_type_list (type, type,
                                         build_pointer_type (integer_type_node),
-                                        type,
                                         NULL_TREE);
   /* type (*) (int, type) */
   fntype[5] = build_function_type_list (type,
