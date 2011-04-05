@@ -14266,7 +14266,7 @@ else
 fi
 
 
-for ac_func in srandom random strerror_r strsignal wait4
+for ac_func in srandom random strerror_r strsignal wait4 mincore
 do :
   as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
 ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
