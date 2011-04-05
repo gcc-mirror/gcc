@@ -5262,6 +5262,7 @@ prologue_epilogue_contains (const_rtx insn)
   return 0;
 }
 
+#ifdef HAVE_return
 /* Insert use of return register before the end of BB.  */
 
 static void
@@ -5275,7 +5276,6 @@ emit_use_return_register_into_block (basic_block bb)
   emit_insn_before (seq, BB_END (bb));
 }
 
-#ifdef HAVE_return
 /* Insert gen_return at the end of block BB.  This also means updating
    block_for_insn appropriately.  */
 
