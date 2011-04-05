@@ -1,3 +1,9 @@
+2011-04-05  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-threadupdate.c (determine_bb_domination_status): Always
+	check if BB is a successor of LOOP->header and return
+	NONDOMINATING if it is not, regardless of ENABLE_CHECKING.
+
 2011-04-05  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* cprop.c (struct reg_use): Remove.
