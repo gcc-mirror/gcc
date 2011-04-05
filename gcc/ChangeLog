@@ -1,3 +1,9 @@
+2011-04-05  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* combine.c (combine_instructions) [AUTO_INC_DEC]: Declare links
+	as an rtx.
+	(try_combine) [AUTO_INC_DEC]: Declare a local link rtx.
+
 2011-04-05  Steven Bosscher  <steven@gcc.gnu.org>
 
 	PR middle-end/48441
