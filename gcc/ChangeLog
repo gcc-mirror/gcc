@@ -1,3 +1,14 @@
+2011-04-06  Richard Guenther  <rguenther@suse.de>
+ 
+	* ipa-inline.c (enum inlining_mode): Remove.
+	(cgraph_flatten): Use some other token.
+	(cgraph_edge_early_inlinable_p): New function, split out from ...
+	(cgraph_perform_always_inlining): New function, split out from ...
+	(cgraph_decide_inlining_incrementally): ... here.
+	(cgraph_mark_inline_edge): Adjust.
+	(cgraph_early_inlining): Re-structure.
+	(pass_early_inline): Require SSA form.
+
 2011-03-06  Andrew Stubbs  <ams@codesourcery.com>
 	    Julian Brown  <julian@codesourcery.com>
 	    Mark Shinwell  <shinwell@codesourcery.com>
