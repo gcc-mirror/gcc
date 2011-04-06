@@ -2934,6 +2934,55 @@ Statement::make_if_statement(Expression* cond, Block* then_block,
   return new If_statement(cond, then_block, else_block, location);
 }
 
+// Class Case_clauses::Hash_integer_value.
+
+class Case_clauses::Hash_integer_value
+{
+ public:
+  size_t
+  operator()(Expression*) const;
+};
+
+size_t
+Case_clauses::Hash_integer_value::operator()(Expression* pe) const
+{
+  Type* itype;
+  mpz_t ival;
+  mpz_init(ival);
+  if (!pe->integer_constant_value(true, ival, &itype))
+    gcc_unreachable();
+  size_t ret = mpz_get_ui(ival);
+  mpz_clear(ival);
+  return ret;
+}
+
+// Class Case_clauses::Eq_integer_value.
+
+class Case_clauses::Eq_integer_value
+{
+ public:
+  bool
+  operator()(Expression*, Expression*) const;
+};
+
+bool
+Case_clauses::Eq_integer_value::operator()(Expression* a, Expression* b) const
+{
+  Type* atype;
+  Type* btype;
+  mpz_t aval;
+  mpz_t bval;
+  mpz_init(aval);
+  mpz_init(bval);
+  if (!a->integer_constant_value(true, aval, &atype)
+      || !b->integer_constant_value(true, bval, &btype))
+    gcc_unreachable();
+  bool ret = mpz_cmp(aval, bval) == 0;
+  mpz_clear(aval);
+  mpz_clear(bval);
+  return ret;
+}
+
 // Class Case_clauses::Case_clause.
 
 // Traversal.
@@ -3090,76 +3139,82 @@ Case_clauses::Case_clause::may_fall_through() const
   return this->statements_->may_fall_through();
 }
 
-// Build up the body of a SWITCH_EXPR.
+// Convert the case values and statements to the backend
+// representation.  BREAK_LABEL is the label which break statements
+// should branch to.  CASE_CONSTANTS is used to detect duplicate
+// constants.  *CASES should be passed as an empty vector; the values
+// for this case will be added to it.  If this is the default case,
+// *CASES will remain empty.  This returns the statement to execute if
+// one of these cases is selected.
 
-void
-Case_clauses::Case_clause::get_constant_tree(Translate_context* context,
-					     Unnamed_label* break_label,
-					     Case_constants* case_constants,
-					     tree* stmt_list) const
+Bstatement*
+Case_clauses::Case_clause::get_backend(Translate_context* context,
+				       Unnamed_label* break_label,
+				       Case_constants* case_constants,
+				       std::vector<Bexpression*>* cases) const
 {
   if (this->cases_ != NULL)
     {
+      gcc_assert(!this->is_default_);
       for (Expression_list::const_iterator p = this->cases_->begin();
 	   p != this->cases_->end();
 	   ++p)
 	{
-	  Type* itype;
-	  mpz_t ival;
-	  mpz_init(ival);
-	  if (!(*p)->integer_constant_value(true, ival, &itype))
+	  Expression* e = *p;
+	  if (e->classification() != Expression::EXPRESSION_INTEGER)
 	    {
-	      // Something went wrong.  This can happen with a
-	      // negative constant and an unsigned switch value.
-	      gcc_assert(saw_errors());
-	      continue;
-	    }
-	  gcc_assert(itype != NULL);
-	  tree type_tree = itype->get_tree(context->gogo());
-	  tree val = Expression::integer_constant_tree(ival, type_tree);
-	  mpz_clear(ival);
-
-	  if (val != error_mark_node)
-	    {
-	      gcc_assert(TREE_CODE(val) == INTEGER_CST);
-
-	      std::pair<Case_constants::iterator, bool> ins =
-		case_constants->insert(val);
-	      if (!ins.second)
+	      Type* itype;
+	      mpz_t ival;
+	      mpz_init(ival);
+	      if (!(*p)->integer_constant_value(true, ival, &itype))
 		{
-		  // Value was already present.
-		  warning_at(this->location_, 0,
-			     "duplicate case value will never match");
+		  // Something went wrong.  This can happen with a
+		  // negative constant and an unsigned switch value.
+		  gcc_assert(saw_errors());
 		  continue;
 		}
-
-	      tree label = create_artificial_label(this->location_);
-	      append_to_statement_list(build3(CASE_LABEL_EXPR, void_type_node,
-					      val, NULL_TREE, label),
-				       stmt_list);
+	      gcc_assert(itype != NULL);
+	      e = Expression::make_integer(&ival, itype, e->location());
+	      mpz_clear(ival);
 	    }
+
+	  std::pair<Case_constants::iterator, bool> ins =
+	    case_constants->insert(e);
+	  if (!ins.second)
+	    {
+	      // Value was already present.
+	      error_at(this->location_, "duplicate case in switch");
+	      continue;
+	    }
+
+	  tree case_tree = e->get_tree(context);
+	  Bexpression* case_expr = tree_to_expr(case_tree);
+	  cases->push_back(case_expr);
 	}
     }
 
-  if (this->is_default_)
-    {
-      tree label = create_artificial_label(this->location_);
-      append_to_statement_list(build3(CASE_LABEL_EXPR, void_type_node,
-				      NULL_TREE, NULL_TREE, label),
-			       stmt_list);
-    }
+  Bstatement* statements;
+  if (this->statements_ == NULL)
+    statements = NULL;
+  else
+    statements = tree_to_stat(this->statements_->get_tree(context));
 
-  if (this->statements_ != NULL)
-    {
-      tree block_tree = this->statements_->get_tree(context);
-      if (block_tree != error_mark_node)
-	append_to_statement_list(block_tree, stmt_list);
-    }
+  Bstatement* break_stat;
+  if (this->is_fallthrough_)
+    break_stat = NULL;
+  else
+    break_stat = break_label->get_goto(context, this->location_);
 
-  if (!this->is_fallthrough_)
+  if (statements == NULL)
+    return break_stat;
+  else if (break_stat == NULL)
+    return statements;
+  else
     {
-      Bstatement* g = break_label->get_goto(context, this->location_);
-      append_to_statement_list(stat_to_tree(g), stmt_list);
+      std::vector<Bstatement*> list(2);
+      list[0] = statements;
+      list[1] = break_stat;
+      return context->backend()->statement_list(list);
     }
 }
 
@@ -3297,20 +3352,32 @@ Case_clauses::may_fall_through() const
   return !found_default;
 }
 
-// Return a tree when all case expressions are constants.
+// Convert the cases to the backend representation.  This sets
+// *ALL_CASES and *ALL_STATEMENTS.
 
-tree
-Case_clauses::get_constant_tree(Translate_context* context,
-				Unnamed_label* break_label) const
+void
+Case_clauses::get_backend(Translate_context* context,
+			  Unnamed_label* break_label,
+			  std::vector<std::vector<Bexpression*> >* all_cases,
+			  std::vector<Bstatement*>* all_statements) const
 {
   Case_constants case_constants;
-  tree stmt_list = NULL_TREE;
+
+  size_t c = this->clauses_.size();
+  all_cases->resize(c);
+  all_statements->resize(c);
+
+  size_t i = 0;
   for (Clauses::const_iterator p = this->clauses_.begin();
        p != this->clauses_.end();
-       ++p)
-    p->get_constant_tree(context, break_label, &case_constants,
-			 &stmt_list);
-  return stmt_list;
+       ++p, ++i)
+    {
+      std::vector<Bexpression*> cases;
+      Bstatement* stat = p->get_backend(context, break_label, &case_constants,
+					&cases);
+      (*all_cases)[i].swap(cases);
+      (*all_statements)[i] = stat;
+    }
 }
 
 // A constant switch statement.  A Switch_statement is lowered to this
@@ -3401,22 +3468,28 @@ tree
 Constant_switch_statement::do_get_tree(Translate_context* context)
 {
   tree switch_val_tree = this->val_->get_tree(context);
+  Bexpression* switch_val_expr = tree_to_expr(switch_val_tree);
 
   Unnamed_label* break_label = this->break_label_;
   if (break_label == NULL)
     break_label = new Unnamed_label(this->location());
 
-  tree stmt_list = NULL_TREE;
-  tree s = build3(SWITCH_EXPR, void_type_node, switch_val_tree,
-		  this->clauses_->get_constant_tree(context, break_label),
-		  NULL_TREE);
-  SET_EXPR_LOCATION(s, this->location());
-  append_to_statement_list(s, &stmt_list);
+  std::vector<std::vector<Bexpression*> > all_cases;
+  std::vector<Bstatement*> all_statements;
+  this->clauses_->get_backend(context, break_label, &all_cases,
+			      &all_statements);
 
-  Bstatement* ldef = break_label->get_definition(context);
-  append_to_statement_list(stat_to_tree(ldef), &stmt_list);
+  Bstatement* switch_statement;
+  switch_statement = context->backend()->switch_statement(switch_val_expr,
+							  all_cases,
+							  all_statements,
+							  this->location());
 
-  return stmt_list;
+  std::vector<Bstatement*> stats(2);
+  stats[0] = switch_statement;
+  stats[1] = break_label->get_definition(context);
+  Bstatement* ret = context->backend()->statement_list(stats);
+  return stat_to_tree(ret);
 }
 
 // Class Switch_statement.

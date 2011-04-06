@@ -127,6 +127,23 @@ class Backend
   if_statement(Bexpression* condition, Bstatement* then_block,
 	       Bstatement* else_block, source_location) = 0;
 
+  // Create a switch statement where the case values are constants.
+  // CASES and STATEMENTS must have the same number of entries.  If
+  // VALUE matches any of the list in CASES[i], which will all be
+  // integers, then STATEMENTS[i] is executed.  STATEMENTS[i] will
+  // either end with a goto statement or will fall through into
+  // STATEMENTS[i + 1].  CASES[i] is empty for the default clause,
+  // which need not be last.
+  virtual Bstatement*
+  switch_statement(Bexpression* value,
+		   const std::vector<std::vector<Bexpression*> >& cases,
+		   const std::vector<Bstatement*>& statements,
+		   source_location) = 0;
+
+  // Create a single statement from a list of statements.
+  virtual Bstatement*
+  statement_list(const std::vector<Bstatement*>&) = 0;
+
   // Labels.
   
   // Create a new label.  NAME will be empty if this is a label

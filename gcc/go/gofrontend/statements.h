@@ -39,6 +39,8 @@ class Case_clauses;
 class Type_case_clauses;
 class Select_clauses;
 class Typed_identifier_list;
+class Bexpression;
+class Bstatement;
 
 // This class is used to traverse assignments made by a statement
 // which makes assignments.
@@ -1162,13 +1164,18 @@ class Case_clauses
 
   // Return the body of a SWITCH_EXPR when all the clauses are
   // constants.
-  tree
-  get_constant_tree(Translate_context*, Unnamed_label* break_label) const;
+  void
+  get_backend(Translate_context*, Unnamed_label* break_label,
+	      std::vector<std::vector<Bexpression*> >* all_cases,
+	      std::vector<Bstatement*>* all_statements) const;
 
  private:
   // For a constant tree we need to keep a record of constants we have
   // already seen.  Note that INTEGER_CST trees are interned.
-  typedef Unordered_set(tree) Case_constants;
+  class Hash_integer_value;
+  class Eq_integer_value;
+  typedef Unordered_set_hash(Expression*, Hash_integer_value,
+			     Eq_integer_value) Case_constants;
 
   // One case clause.
   class Case_clause
@@ -1226,11 +1233,11 @@ class Case_clauses
     bool
     may_fall_through() const;
 
-    // Build up the body of a SWITCH_EXPR when the case expressions
-    // are constant.
-    void
-    get_constant_tree(Translate_context*, Unnamed_label* break_label,
-		      Case_constants* case_constants, tree* stmt_list) const;
+    // Convert the case values and statements to the backend
+    // representation.
+    Bstatement*
+    get_backend(Translate_context*, Unnamed_label* break_label,
+		Case_constants*, std::vector<Bexpression*>* cases) const;
 
    private:
     // The list of case expressions.
