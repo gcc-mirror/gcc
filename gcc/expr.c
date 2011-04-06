@@ -4292,16 +4292,47 @@ expand_assignment (tree to, tree from, bool nontemporal)
       /* Handle expand_expr of a complex value returning a CONCAT.  */
       else if (GET_CODE (to_rtx) == CONCAT)
 	{
-	  if (COMPLEX_MODE_P (TYPE_MODE (TREE_TYPE (from))))
+	  unsigned short mode_bitsize = GET_MODE_BITSIZE (GET_MODE (to_rtx));
+	  if (COMPLEX_MODE_P (TYPE_MODE (TREE_TYPE (from)))
+	      && bitpos == 0
+	      && bitsize == mode_bitsize)
+	    result = store_expr (from, to_rtx, false, nontemporal);
+	  else if (bitsize == mode_bitsize / 2
+		   && (bitpos == 0 || bitpos == mode_bitsize / 2))
+	    result = store_expr (from, XEXP (to_rtx, bitpos != 0), false,
+				 nontemporal);
+	  else if (bitpos + bitsize <= mode_bitsize / 2)
+	    result = store_field (XEXP (to_rtx, 0), bitsize, bitpos,
+				  mode1, from, TREE_TYPE (tem),
+				  get_alias_set (to), nontemporal);
+	  else if (bitpos >= mode_bitsize / 2)
+	    result = store_field (XEXP (to_rtx, 1), bitsize,
+				  bitpos - mode_bitsize / 2, mode1, from,
+				  TREE_TYPE (tem), get_alias_set (to),
+				  nontemporal);
+	  else if (bitpos == 0 && bitsize == mode_bitsize)
 	    {
-	      gcc_assert (bitpos == 0);
-	      result = store_expr (from, to_rtx, false, nontemporal);
+	      rtx from_rtx;
+	      result = expand_normal (from);
+	      from_rtx = simplify_gen_subreg (GET_MODE (to_rtx), result,
+					      TYPE_MODE (TREE_TYPE (from)), 0);
+	      emit_move_insn (XEXP (to_rtx, 0),
+			      read_complex_part (from_rtx, false));
+	      emit_move_insn (XEXP (to_rtx, 1),
+			      read_complex_part (from_rtx, true));
 	    }
 	  else
 	    {
-	      gcc_assert (bitpos == 0 || bitpos == GET_MODE_BITSIZE (mode1));
-	      result = store_expr (from, XEXP (to_rtx, bitpos != 0), false,
-				   nontemporal);
+	      rtx temp = assign_stack_temp (GET_MODE (to_rtx),
+					    GET_MODE_SIZE (GET_MODE (to_rtx)),
+					    0);
+	      write_complex_part (temp, XEXP (to_rtx, 0), false);
+	      write_complex_part (temp, XEXP (to_rtx, 1), true);
+	      result = store_field (temp, bitsize, bitpos, mode1, from,
+				    TREE_TYPE (tem), get_alias_set (to),
+				    nontemporal);
+	      emit_move_insn (XEXP (to_rtx, 0), read_complex_part (temp, false));
+	      emit_move_insn (XEXP (to_rtx, 1), read_complex_part (temp, true));
 	    }
 	}
       else

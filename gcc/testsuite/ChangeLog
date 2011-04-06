@@ -1,3 +1,20 @@
+2011-04-06  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2011-04-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/48335
+	* gcc.c-torture/compile/pr48335-1.c: New test.
+	* gcc.dg/pr48335-1.c: New test.
+	* gcc.dg/pr48335-2.c: New test.
+	* gcc.dg/pr48335-3.c: New test.
+	* gcc.dg/pr48335-4.c: New test.
+	* gcc.dg/pr48335-5.c: New test.
+	* gcc.dg/pr48335-6.c: New test.
+	* gcc.dg/pr48335-7.c: New test.
+	* gcc.dg/pr48335-8.c: New test.
+	* gcc.target/i386/pr48335-1.c: New test.
+
 2011-04-04  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/48291

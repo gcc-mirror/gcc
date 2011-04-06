@@ -1,3 +1,18 @@
+2011-04-06  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2011-04-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/48335
+	* expr.c (expand_assignment): Handle all possibilities
+	if TO_RTX is CONCAT.
+	* expmed.c (store_bit_field_1): Avoid trying to create
+	invalid SUBREGs.
+	(store_split_bit_field): If SUBREG_REG (op0) or
+	op0 itself has smaller mode than word, return it
+	for offset 0 and const0_rtx for out-of-bounds stores.
+	If word is const0_rtx, skip it.
+
 2011-04-06  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcov-io.c: Use GCC Runtime Library Exception.

@@ -457,8 +457,10 @@ store_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
       && bitsize == GET_MODE_BITSIZE (fieldmode)
       && (!MEM_P (op0)
 	  ? ((GET_MODE_SIZE (fieldmode) >= UNITS_PER_WORD
-	     || GET_MODE_SIZE (GET_MODE (op0)) == GET_MODE_SIZE (fieldmode))
-	     && byte_offset % GET_MODE_SIZE (fieldmode) == 0)
+	      || GET_MODE_SIZE (GET_MODE (op0)) == GET_MODE_SIZE (fieldmode))
+	     && ((GET_MODE (op0) == fieldmode && byte_offset == 0)
+		 || validate_subreg (fieldmode, GET_MODE (op0), op0,
+				     byte_offset)))
 	  : (! SLOW_UNALIGNED_ACCESS (fieldmode, MEM_ALIGN (op0))
 	     || (offset * BITS_PER_UNIT % bitsize == 0
 		 && MEM_ALIGN (op0) % GET_MODE_BITSIZE (fieldmode) == 0))))
@@ -519,6 +521,7 @@ store_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
       rtx insn;
       rtx start = get_last_insn ();
       rtx arg0 = op0;
+      unsigned HOST_WIDE_INT subreg_off;
 
       /* Get appropriate low part of the value being stored.  */
       if (CONST_INT_P (value) || REG_P (value))
@@ -542,15 +545,17 @@ store_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 	  arg0 = SUBREG_REG (op0);
 	}
 
-      insn = (GEN_FCN (icode)
-		 (gen_rtx_SUBREG (fieldmode, arg0,
-				  (bitnum % BITS_PER_WORD) / BITS_PER_UNIT
-				  + (offset * UNITS_PER_WORD)),
-				  value));
-      if (insn)
+      subreg_off = (bitnum % BITS_PER_WORD) / BITS_PER_UNIT
+		   + (offset * UNITS_PER_WORD);
+      if (validate_subreg (fieldmode, GET_MODE (arg0), arg0, subreg_off))
 	{
-	  emit_insn (insn);
-	  return true;
+	  insn = (GEN_FCN (icode) (gen_rtx_SUBREG (fieldmode, arg0,
+						   subreg_off), value));
+	  if (insn)
+	    {
+	      emit_insn (insn);
+	      return true;
+	    }
 	}
       delete_insns_since (start);
     }
@@ -1106,22 +1111,32 @@ store_split_bit_field (rtx op0, unsigned HOST_WIDE_INT bitsize,
       if (GET_CODE (op0) == SUBREG)
 	{
 	  int word_offset = (SUBREG_BYTE (op0) / UNITS_PER_WORD) + offset;
-	  word = operand_subword_force (SUBREG_REG (op0), word_offset,
-					GET_MODE (SUBREG_REG (op0)));
+	  enum machine_mode sub_mode = GET_MODE (SUBREG_REG (op0));
+	  if (sub_mode != BLKmode && GET_MODE_SIZE (sub_mode) < UNITS_PER_WORD)
+	    word = word_offset ? const0_rtx : op0;
+	  else
+	    word = operand_subword_force (SUBREG_REG (op0), word_offset,
+					  GET_MODE (SUBREG_REG (op0)));
 	  offset = 0;
 	}
       else if (REG_P (op0))
 	{
-	  word = operand_subword_force (op0, offset, GET_MODE (op0));
+	  enum machine_mode op0_mode = GET_MODE (op0);
+	  if (op0_mode != BLKmode && GET_MODE_SIZE (op0_mode) < UNITS_PER_WORD)
+	    word = offset ? const0_rtx : op0;
+	  else
+	    word = operand_subword_force (op0, offset, GET_MODE (op0));
 	  offset = 0;
 	}
       else
 	word = op0;
 
       /* OFFSET is in UNITs, and UNIT is in bits.
-         store_fixed_bit_field wants offset in bytes.  */
-      store_fixed_bit_field (word, offset * unit / BITS_PER_UNIT, thissize,
-			     thispos, part);
+	 store_fixed_bit_field wants offset in bytes.  If WORD is const0_rtx,
+	 it is just an out-of-bounds access.  Ignore it.  */
+      if (word != const0_rtx)
+	store_fixed_bit_field (word, offset * unit / BITS_PER_UNIT, thissize,
+			       thispos, part);
       bitsdone += thissize;
     }
 }
