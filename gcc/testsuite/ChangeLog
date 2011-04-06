@@ -1,3 +1,7 @@
+2011-04-06  Steve Ellcey  <sje@cup.hp.com>
+
+	* gcc.dg/mtune.c: Prune note from output.
+
 2011-04-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/48466
