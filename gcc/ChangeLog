@@ -1,3 +1,9 @@
+2011-04-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* profile.c (branch_prob): Move declaration of local variable.  Remove
+	obsolete ??? comment.  Expand the location explicitly instead of using
+	the LOCATION_FILE and LOCATION_LINE macros.
+
 2011-04-06  Wei Guozhi  <carrot@google.com>
 
 	PR target/47855

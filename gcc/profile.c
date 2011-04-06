@@ -1123,16 +1123,13 @@ branch_prob (void)
   /* Line numbers.  */
   if (coverage_begin_output ())
     {
-      gcov_position_t offset;
-
       /* Initialize the output.  */
       output_location (NULL, 0, NULL, NULL);
 
       FOR_EACH_BB (bb)
 	{
 	  gimple_stmt_iterator gsi;
-
-	  offset = 0;
+	  gcov_position_t offset = 0;
 
 	  if (bb == ENTRY_BLOCK_PTR->next_bb)
 	    {
@@ -1150,15 +1147,14 @@ branch_prob (void)
 				 &offset, bb);
 	    }
 
-	  /* Notice GOTO expressions we eliminated while constructing the
-	     CFG.  */
+	  /* Notice GOTO expressions eliminated while constructing the CFG.  */
 	  if (single_succ_p (bb)
 	      && single_succ_edge (bb)->goto_locus != UNKNOWN_LOCATION)
 	    {
-	      location_t curr_location = single_succ_edge (bb)->goto_locus;
-	      /* ??? The FILE/LINE API is inconsistent for these cases.  */
-	      output_location (LOCATION_FILE (curr_location),
-			       LOCATION_LINE (curr_location), &offset, bb);
+	      expanded_location curr_location
+		= expand_location (single_succ_edge (bb)->goto_locus);
+	      output_location (curr_location.file, curr_location.line,
+			       &offset, bb);
 	    }
 
 	  if (offset)
