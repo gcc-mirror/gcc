@@ -1,3 +1,10 @@
+2011-04-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/48466
+	* dwarf2out.c (based_loc_descr): If drap_reg is INVALID_REGNUM, use
+	as base_reg whatever register reg has been eliminated to, instead
+	of hardcoding STACK_POINTER_REGNUM.
+
 2011-04-06  Joseph Myers  <joseph@codesourcery.com>
 
 	* doc/tm.texi.in: Document C target hooks as separate from general
