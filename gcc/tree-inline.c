@@ -3514,7 +3514,8 @@ estimate_num_insns (gimple stmt, eni_weights *weights)
 	if (decl)
 	  funtype = TREE_TYPE (decl);
 
-	if (!VOID_TYPE_P (TREE_TYPE (funtype)))
+	if (!VOID_TYPE_P (TREE_TYPE (funtype))
+	    && gimple_call_lhs (stmt))
 	  cost += estimate_move_cost (TREE_TYPE (funtype));
 
 	if (funtype)
@@ -3812,6 +3813,8 @@ expand_call_inline (basic_block bb, gimple stmt, copy_body_data *id)
 	       && !DECL_IN_SYSTEM_HEADER (fn)
 	       && reason != CIF_UNSPECIFIED
 	       && !lookup_attribute ("noinline", DECL_ATTRIBUTES (fn))
+	       /* Do not warn about not inlined recursive calls.  */
+	       && !cgraph_edge_recursive_p (cg_edge)
 	       /* Avoid warnings during early inline pass. */
 	       && cgraph_global_info_ready)
 	{

@@ -1,3 +1,42 @@
+2011-04-06  Richard Guenther  <rguenther@suse.de>
+ 
+	PR tree-optimization/47663
+	* cgraph.h (struct cgraph_edge): Add call_stmt_size and
+	call_stmt_time fields.
+	(cgraph_edge_inlinable_p): Declare.
+	(cgraph_edge_recursive_p): New inline function.
+	* cgraph.c (cgraph_create_edge_1): Initialize call_stmt_size.
+	(cgraph_clone_edge): Copy it.
+	* ipa-inline.c (cgraph_estimate_edge_time): New function.
+	Account for call stmt time.
+	(cgraph_estimate_time_after_inlining): Take edge argument.
+	(cgraph_estimate_edge_growth): Account call stmt size.
+	(cgraph_estimate_size_after_inlining): Take edge argument.
+	(cgraph_mark_inline_edge): Adjust.
+	(cgraph_check_inline_limits): Likewise.
+	(cgraph_recursive_inlining_p): Remove.
+	(cgraph_edge_badness): Use cgraph_edge_recursive_p.
+	(cgraph_decide_recursive_inlining): Take edge argument and
+	adjust.
+	(cgraph_decide_inlining_of_small_functions): Do not avoid
+	diags for recursive inlining here.
+	(cgraph_flatten): Adjust.
+	(cgraph_decide_inlining_incrementally): Likewise.
+	(estimate_function_body_sizes): Remove call cost handling.
+	(compute_inline_parameters): Initialize caller edge call costs.
+	(cgraph_estimate_edge_growth): New function.
+	(cgraph_estimate_growth): Use it.
+	(cgraph_edge_badness): Likewise.
+	(cgraph_check_inline_limits): Take an edge argument.
+	(cgraph_decide_inlining_of_small_functions): Adjust.
+	(cgraph_decide_inlining): Likewise.
+	* tree-inline.c (estimate_num_insns): Only account for call
+	return value if it is used.
+	(expand_call_inline): Avoid diagnostics on recursive inline
+	functions here.
+	* lto-cgraph.c (lto_output_edge): Output edge call costs.
+	(input_edge): Input edge call costs.
+
 2011-04-06  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* config/alpha/osf5.h (MAX_OFILE_ALIGNMENT): Define.
