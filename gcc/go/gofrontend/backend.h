@@ -122,6 +122,11 @@ class Backend
   return_statement(Bfunction*, const std::vector<Bexpression*>&,
 		   source_location) = 0;
 
+  // Create an if statement.  ELSE_BLOCK may be NULL.
+  virtual Bstatement*
+  if_statement(Bexpression* condition, Bstatement* then_block,
+	       Bstatement* else_block, source_location) = 0;
+
   // Labels.
   
   // Create a new label.  NAME will be empty if this is a label
@@ -155,8 +160,9 @@ extern Backend* go_get_backend();
 // interface.
 
 extern Bexpression* tree_to_expr(tree);
+extern Bstatement* tree_to_stat(tree);
 extern Bfunction* tree_to_function(tree);
-extern tree expression_to_tree(Bexpression*);
-extern tree statement_to_tree(Bstatement*);
+extern tree expr_to_tree(Bexpression*);
+extern tree stat_to_tree(Bstatement*);
 
 #endif // !defined(GO_BACKEND_H)

@@ -1,5 +1,12 @@
 2011-04-06  Ian Lance Taylor  <iant@google.com>
 
+	* go-gcc.cc (Gcc_backend::if_statement): New function.
+	(tree_to_stat): New function.
+	(expr_to_tree): Renamed from expression_to_tree.
+	(stat_to_tree): Renamed from statement_to_tree.
+
+2011-04-06  Ian Lance Taylor  <iant@google.com>
+
 	* go-gcc.cc (Gcc_backend::expression_statement): New function.
 
 2011-04-04  Ian Lance Taylor  <iant@google.com>
