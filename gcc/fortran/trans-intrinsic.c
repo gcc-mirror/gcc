@@ -6260,7 +6260,7 @@ gfc_conv_intrinsic_function (gfc_se * se, gfc_expr * expr)
       break;
 
     case GFC_ISYM_THIS_IMAGE:
-      if (expr->value.function.actual)
+      if (expr->value.function.actual->expr)
 	conv_intrinsic_cobound (se, expr);
       else
 	trans_this_image (se, expr);
