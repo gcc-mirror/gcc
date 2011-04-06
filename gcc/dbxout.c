@@ -903,7 +903,7 @@ dbxout_finish_complex_stabs (tree sym, stab_code_type code,
   obstack_free (&stabstr_ob, str);
 }
 
-#if defined (DBX_DEBUGGING_INFO)
+#if defined (DBX_DEBUGGING_INFO) || defined (XCOFF_DEBUGGING_INFO)
 
 /* When -gused is used, emit debug info for only used symbols. But in
    addition to the standard intercepted debug_hooks there are some
@@ -925,6 +925,10 @@ static int symbol_queue_size = 0;
 
 #define DBXOUT_DECR_NESTING_AND_RETURN(x) \
   do {--debug_nesting; return (x);} while (0)
+
+#endif /* DBX_DEBUGGING_INFO || XCOFF_DEBUGGING_INFO */
+
+#if defined (DBX_DEBUGGING_INFO)
 
 static void
 dbxout_function_end (tree decl ATTRIBUTE_UNUSED)
