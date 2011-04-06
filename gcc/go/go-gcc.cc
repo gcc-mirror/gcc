@@ -176,6 +176,10 @@ class Gcc_backend : public Backend
   return_statement(Bfunction*, const std::vector<Bexpression*>&,
 		   source_location);
 
+  Bstatement*
+  if_statement(Bexpression* condition, Bstatement* then_block,
+	       Bstatement* else_block, source_location);
+
   // Labels.
 
   Blabel*
@@ -293,6 +297,25 @@ Gcc_backend::return_statement(Bfunction* bfunction,
   return this->make_statement(ret);
 }
 
+// If.
+
+Bstatement*
+Gcc_backend::if_statement(Bexpression* condition, Bstatement* then_block,
+			  Bstatement* else_block, source_location location)
+{
+  tree cond_tree = condition->get_tree();
+  tree then_tree = then_block->get_tree();
+  tree else_tree = else_block == NULL ? NULL_TREE : else_block->get_tree();
+  if (cond_tree == error_mark_node
+      || then_tree == error_mark_node
+      || else_tree == error_mark_node)
+    return this->make_statement(error_mark_node);
+  tree ret = build3(COND_EXPR, void_type_node, cond_tree, then_tree,
+		    else_tree);
+  SET_EXPR_LOCATION(ret, location);
+  return this->make_statement(ret);
+}
+
 // Make a label.
 
 Blabel*
@@ -366,6 +389,12 @@ tree_to_expr(tree t)
   return new Bexpression(t);
 }
 
+Bstatement*
+tree_to_stat(tree t)
+{
+  return new Bstatement(t);
+}
+
 Bfunction*
 tree_to_function(tree t)
 {
@@ -373,13 +402,13 @@ tree_to_function(tree t)
 }
 
 tree
-expression_to_tree(Bexpression* be)
+expr_to_tree(Bexpression* be)
 {
   return be->get_tree();
 }
 
 tree
-statement_to_tree(Bstatement* bs)
+stat_to_tree(Bstatement* bs)
 {
   return bs->get_tree();
 }

@@ -12598,8 +12598,7 @@ class Label_addr_expression : public Expression
   tree
   do_get_tree(Translate_context* context)
   {
-    return expression_to_tree(this->label_->get_addr(context,
-						     this->location()));
+    return expr_to_tree(this->label_->get_addr(context, this->location()));
   }
 
  private:
