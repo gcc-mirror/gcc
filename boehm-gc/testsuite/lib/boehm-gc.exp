@@ -233,7 +233,7 @@ proc boehm-gc-dg-prune { system text } {
     set text [prune_gcc_output $text]
 
     # Ignore harmless Darwin ranlib warnings.
-    regsub -all "(^|\n)(ranlib: file: \[^\n\]* has no symbols\n?)+" $text "\\1" text
+    regsub -all "(^|\n)(\[^\n\]*ranlib: file: \[^\n\]* has no symbols\n?)+" $text "\\1" text
 
     return $text
 }
