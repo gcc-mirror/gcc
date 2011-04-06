@@ -1,3 +1,37 @@
+2011-04-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sse.md (AVXMODEDCVTDQ2PS): Remove.
+	(AVXMODEDCVTPS2DQ): Ditto.
+	(VEC_FLOAT_MODE): Ditto.
+	(<sse>_andnot<mode>3): Merge with avx_andnot<mode>3.  Use VF mode
+	iterator.  Handle TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL target flag.
+	(<any_logic:code><mode>3): Use VF mode iterator.
+	(*<any_logic:code><mode>3): Merge with *avx_<any_logic:code><mode>3.
+	Use VF mode iterator.
+	(copysign<mode>3): Use VF mode iterator.
+	(*andnot<MODEF:mode>3): Merge with *avx_andnot<MODEF:mode>3.  Handle
+	TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL target flag.
+	(*<any_logic:code><MODEF:mode>3): Merge with
+	*avx_<any_logic:code><MODEF:mode>3.
+	(sse_cvtsi2ss): Merge with *avx_cvtsi2ss.
+	(sse_cvtsi2ssq): Merge with *avx_cvtsi2ssq.
+	(avx_cvtdq2ps256): Split from avx_cvtdq2ps<avxmodesuffix>.
+	(avx_cvtdq2ps<avxmodesuffix>): Remove.
+	(sse2_cvtdq2ps): Use %v modifier.
+	(avx_cvtps2dq256): Split from avx_cvtps2dq<avxmodesuffix>.
+	(avx_cvtps2dq<avxmodesuffix>): Remove.
+	(sse2_cvtps2dq): Use %v modifier.
+	(avx_cvttps2dq256): Split from avx_cvttps2dq<avxmodesuffix>.
+	(avx_cvttps2dq<avxmodesuffix>): Remove.
+	(sse2_cvttps2dq): Use %v modifier.
+	(sse2_cvtsi2sd): Merge with *avx_cvtsi2sd.
+	(sse2_cvtsi2sdq): Merge with *avx_cvtsi2sdq.
+	(sse2_cvtsd2siq): Fix insn template.
+	(sse2_cvtsd2siq_2): Ditto.
+	(sse2_cvttsd2siq): Ditto.
+	(sse2_cvtsd2ss): Merge with *avx_cvtsd2ss.
+	(sse2_cvtss2sd): Merge with *avx_cvtss2sd.
+
 2011-04-06  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcov-io.c: Use GCC Runtime Library Exception.
@@ -48,8 +82,7 @@
 	declare.
 	* config/darwin.h (TARGET_OBJC_CONSTRUCT_STRING_OBJECT,
 	TARGET_STRING_OBJECT_REF_TYPE_P,
-	TARGET_CHECK_STRING_OBJECT_FORMAT_ARG, TARGET_HAS_TARGETCM):
-	Remove.
+	TARGET_CHECK_STRING_OBJECT_FORMAT_ARG, TARGET_HAS_TARGETCM): Remove.
 	* config/t-darwin (darwin-c.o): Update dependencies.
 	* system.h (TARGET_HAS_TARGETCM): Poison.
 	* Makefile.in (TARGET_H): Update.
@@ -57,14 +90,13 @@
 	(c-family/c-format.o, c-family/c-opts.o): Update dependencies.
 	(default-c.o): New target.
 	(s-target-hooks-def-h): Pass "Target Hook" string to genhooks.
-	(c-family/c-target-hooks-def.h, s-c-target-hooks-def-h): New
-	targets.
+	(c-family/c-target-hooks-def.h, s-c-target-hooks-def-h): New targets.
 	(s-tm-texi): Pass -d option to genhooks.  Also test timestamp on
 	c-target.def.
 	(build/genhooks.o): Update dependencies.
 
 2011-04-06  Richard Guenther  <rguenther@suse.de>
- 
+
 	* ipa-inline.c (enum inlining_mode): Remove.
 	(cgraph_flatten): Use some other token.
 	(cgraph_edge_early_inlinable_p): New function, split out from ...
