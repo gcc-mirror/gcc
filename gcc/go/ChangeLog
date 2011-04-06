@@ -1,5 +1,11 @@
 2011-04-06  Ian Lance Taylor  <iant@google.com>
 
+	* go-gcc.cc (if_statement): Use build3_loc.
+	(Gcc_backend::switch_statement): New function.
+	(Gcc_backend::statement_list): New function.
+
+2011-04-06  Ian Lance Taylor  <iant@google.com>
+
 	* go-gcc.cc (Gcc_backend::if_statement): New function.
 	(tree_to_stat): New function.
 	(expr_to_tree): Renamed from expression_to_tree.

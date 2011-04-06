@@ -180,6 +180,15 @@ class Gcc_backend : public Backend
   if_statement(Bexpression* condition, Bstatement* then_block,
 	       Bstatement* else_block, source_location);
 
+  Bstatement*
+  switch_statement(Bexpression* value,
+		   const std::vector<std::vector<Bexpression*> >& cases,
+		   const std::vector<Bstatement*>& statements,
+		   source_location);
+
+  Bstatement*
+  statement_list(const std::vector<Bstatement*>&);
+
   // Labels.
 
   Blabel*
@@ -310,10 +319,88 @@ Gcc_backend::if_statement(Bexpression* condition, Bstatement* then_block,
       || then_tree == error_mark_node
       || else_tree == error_mark_node)
     return this->make_statement(error_mark_node);
-  tree ret = build3(COND_EXPR, void_type_node, cond_tree, then_tree,
-		    else_tree);
-  SET_EXPR_LOCATION(ret, location);
+  tree ret = build3_loc(location, COND_EXPR, void_type_node, cond_tree,
+			then_tree, else_tree);
   return this->make_statement(ret);
+}
+
+// Switch.
+
+Bstatement*
+Gcc_backend::switch_statement(
+    Bexpression* value,
+    const std::vector<std::vector<Bexpression*> >& cases,
+    const std::vector<Bstatement*>& statements,
+    source_location switch_location)
+{
+  gcc_assert(cases.size() == statements.size());
+
+  tree stmt_list = NULL_TREE;
+  std::vector<std::vector<Bexpression*> >::const_iterator pc = cases.begin();
+  for (std::vector<Bstatement*>::const_iterator ps = statements.begin();
+       ps != statements.end();
+       ++ps, ++pc)
+    {
+      if (pc->empty())
+	{
+	  source_location loc = (*ps != NULL
+				 ? EXPR_LOCATION((*ps)->get_tree())
+				 : UNKNOWN_LOCATION);
+	  tree label = create_artificial_label(loc);
+	  tree c = build3_loc(loc, CASE_LABEL_EXPR, void_type_node, NULL_TREE,
+			      NULL_TREE, label);
+	  append_to_statement_list(c, &stmt_list);
+	}
+      else
+	{
+	  for (std::vector<Bexpression*>::const_iterator pcv = pc->begin();
+	       pcv != pc->end();
+	       ++pcv)
+	    {
+	      tree t = (*pcv)->get_tree();
+	      if (t == error_mark_node)
+		return this->make_statement(error_mark_node);
+	      source_location loc = EXPR_LOCATION(t);
+	      tree label = create_artificial_label(loc);
+	      tree c = build3_loc(loc, CASE_LABEL_EXPR, void_type_node,
+				  (*pcv)->get_tree(), NULL_TREE, label);
+	      append_to_statement_list(c, &stmt_list);
+	    }
+	}
+
+      if (*ps != NULL)
+	{
+	  tree t = (*ps)->get_tree();
+	  if (t == error_mark_node)
+	    return this->make_statement(error_mark_node);
+	  append_to_statement_list(t, &stmt_list);
+	}
+    }
+
+  tree tv = value->get_tree();
+  if (tv == error_mark_node)
+    return this->make_statement(error_mark_node);
+  tree t = build3_loc(switch_location, SWITCH_EXPR, void_type_node,
+		      tv, stmt_list, NULL_TREE);
+  return this->make_statement(t);
+}
+
+// List of statements.
+
+Bstatement*
+Gcc_backend::statement_list(const std::vector<Bstatement*>& statements)
+{
+  tree stmt_list = NULL_TREE;
+  for (std::vector<Bstatement*>::const_iterator p = statements.begin();
+       p != statements.end();
+       ++p)
+    {
+      tree t = (*p)->get_tree();
+      if (t == error_mark_node)
+	return this->make_statement(error_mark_node);
+      append_to_statement_list(t, &stmt_list);
+    }
+  return this->make_statement(stmt_list);
 }
 
 // Make a label.
