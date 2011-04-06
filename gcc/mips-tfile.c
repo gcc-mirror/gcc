@@ -606,6 +606,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "version.h"
 #include "intl.h"
+#include "filenames.h"
 
 #ifndef __SABER__
 #define saber_stop()
@@ -4693,12 +4694,11 @@ int
 main (int argc, char **argv)
 {
   int iflag = 0;
-  char *p = strrchr (argv[0], '/');
   char *num_end;
   int option;
   int i;
 
-  progname = (p != 0) ? p+1 : argv[0];
+  progname = lbasename (argv[0]);
 
   (void) signal (SIGSEGV, catch_signal);
   (void) signal (SIGBUS,  catch_signal);
@@ -4810,13 +4810,7 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
     had_errors++;
 
   if (verbose || had_errors)
-    {
-      fprintf (stderr, _("mips-tfile (GCC) %s"), version_string);
-#ifdef TARGET_VERSION
-      TARGET_VERSION;
-#endif
-      fputc ('\n', stderr);
-    }
+    fprintf (stderr, _("mips-tfile (GCC) %s\n"), version_string);
 
   if (object_name == (char *) 0 || had_errors)
     {

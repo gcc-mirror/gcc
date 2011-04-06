@@ -1,3 +1,7 @@
+2011-03-22  Joseph Myers  <joseph@codesourcery.com>
+
+	* mkfixinc.sh: Don't handle i?86-moss-msdos* or i?86-*-pe.
+
 2010-11-20  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	PR other/46202

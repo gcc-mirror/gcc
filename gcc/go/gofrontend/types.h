@@ -521,6 +521,14 @@ class Type
   static bool
   are_assignable(const Type* lhs, const Type* rhs, std::string* reason);
 
+  // Return true if a value with type RHS is assignable to a variable
+  // with type LHS, ignoring any assignment of hidden fields
+  // (unexported fields of a type imported from another package).
+  // This is like the are_assignable method.
+  static bool
+  are_assignable_hidden_ok(const Type* lhs, const Type* rhs,
+			   std::string* reason);
+
   // Return true if a value with type RHS may be converted to type
   // LHS.  If this returns false, and REASON is not NULL, it sets
   // *REASON.
@@ -587,10 +595,18 @@ class Type
   has_pointer() const
   { return this->do_has_pointer(); }
 
-  // Return true if this is an error type.  An error type indicates a
-  // parsing error.
+  // Return true if this is the error type.  This returns false for a
+  // type which is not defined, as it is called by the parser before
+  // all types are defined.
   bool
   is_error_type() const;
+
+  // Return true if this is the error type or if the type is
+  // undefined.  If the type is undefined, this will give an error.
+  // This should only be called after parsing is complete.
+  bool
+  is_error() const
+  { return this->base()->is_error_type(); }
 
   // Return true if this is a void type.
   bool
@@ -1002,6 +1018,11 @@ class Type
 	    ? static_cast<Type_class*>(this)
 	    : NULL);
   }
+
+  // Support for are_assignable and are_assignable_hidden_ok.
+  static bool
+  are_assignable_check_hidden(const Type* lhs, const Type* rhs,
+			      bool check_hidden_fields, std::string* reason);
 
   // Get the hash and equality functions for a type.
   void

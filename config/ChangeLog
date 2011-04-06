@@ -1,3 +1,32 @@
+2011-03-24  Paolo Bonzini  <pbonzini@redhat.com>
+
+	* mt-mep: Remove, obsolete.
+	* mt-netware: Remove, obsolete.
+	* mt-wince: Remove, obsolete.
+	* mt-v810: Remove, unused.
+
+2011-03-24  Paolo Bonzini  <bonzini@gnu.org>
+
+	* mh-x86omitfp: Remove.
+
+2011-03-24  Paolo Bonzini  <bonzini@gnu.org>
+
+	* mh-cygwin: Remove obsolete variables and dependencies.
+
+2011-03-24  Paolo Bonzini  <bonzini@gnu.org>
+
+	* mh-sysv4: Remove.
+	* mh-solaris: Remove.
+
+2011-03-24  Paolo Bonzini  <bonzini@gnu.org>
+
+	* mh-sysv4: Remove AR_CFLAGS.
+
+2011-03-24  Joseph Myers  <joseph@codesourcery.com>
+
+	* mh-cxux, mh-decstation, mh-dgux386, mh-lynxrs6k, mh-ncr3000,
+	mh-necv4, mh-sco, mh-sysv5: Remove.
+
 2011-03-05  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 	    Eric Blake  <eblake@redhat.com>
 

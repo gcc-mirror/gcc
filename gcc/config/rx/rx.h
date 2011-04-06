@@ -187,11 +187,6 @@ enum reg_class
   { 0x0000ffff }	/* All registers.  */		\
 }
 
-#define IRA_COVER_CLASSES				\
-  {							\
-    GR_REGS, LIM_REG_CLASSES				\
-  }
-
 #define SMALL_REGISTER_CLASSES 		0
 #define N_REG_CLASSES			(int) LIM_REG_CLASSES
 #define CLASS_MAX_NREGS(CLASS, MODE)    ((GET_MODE_SIZE (MODE) \
@@ -413,6 +408,25 @@ typedef unsigned int CUMULATIVE_ARGS;
 #undef  USER_LABEL_PREFIX
 #define USER_LABEL_PREFIX	"_"
 
+#define LABEL_ALIGN_AFTER_BARRIER(x)		rx_align_for_label ()
+
+#define ASM_OUTPUT_MAX_SKIP_ALIGN(STREAM, LOG, MAX_SKIP)	\
+  do						\
+    {						\
+      if ((LOG) == 0 || (MAX_SKIP) == 0)	\
+        break;					\
+      if (TARGET_AS100_SYNTAX)			\
+	{					\
+	  if ((LOG) >= 2)			\
+	    fprintf (STREAM, "\t.ALIGN 4\t; %d alignment actually requested\n", 1 << (LOG)); \
+	  else					\
+	    fprintf (STREAM, "\t.ALIGN 2\n");	\
+	}					\
+      else					\
+	fprintf (STREAM, "\t.balign %d,3,%d\n", 1 << (LOG), (MAX_SKIP));	\
+    }						\
+  while (0)
+
 #define ASM_OUTPUT_ALIGN(STREAM, LOG)		\
   do						\
     {						\
@@ -616,3 +630,10 @@ typedef unsigned int CUMULATIVE_ARGS;
 #define REGISTER_MOVE_COST(MODE,FROM,TO) 2
 
 #define SELECT_CC_MODE(OP,X,Y)  rx_select_cc_mode(OP, X, Y)
+
+#define ADJUST_INSN_LENGTH(INSN,LENGTH)				\
+  do								\
+    {								\
+      (LENGTH) = rx_adjust_insn_length ((INSN), (LENGTH));	\
+    }								\
+  while (0)

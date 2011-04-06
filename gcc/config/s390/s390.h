@@ -24,22 +24,6 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef _S390_H
 #define _S390_H
 
-/* Which processor to generate code or schedule for. The cpu attribute
-   defines a list that mirrors this list, so changes to s390.md must be
-   made at the same time.  */
-
-enum processor_type
-{
-  PROCESSOR_9672_G5,
-  PROCESSOR_9672_G6,
-  PROCESSOR_2064_Z900,
-  PROCESSOR_2084_Z990,
-  PROCESSOR_2094_Z9_109,
-  PROCESSOR_2097_Z10,
-  PROCESSOR_2817_Z196,
-  PROCESSOR_max
-};
-
 /* Optional architectural facilities supported by the processor.  */
 
 enum processor_flags
@@ -53,15 +37,9 @@ enum processor_flags
   PF_Z196 = 64
 };
 
-extern enum processor_type s390_tune;
-extern int s390_tune_flags;
-
 /* This is necessary to avoid a warning about comparing different enum
    types.  */
 #define s390_tune_attr ((enum attr_cpu)s390_tune)
-
-extern enum processor_type s390_arch;
-extern int s390_arch_flags;
 
 /* These flags indicate that the generated code should run on a cpu
    providing the respective hardware facility regardless of the
@@ -149,13 +127,6 @@ extern int s390_arch_flags;
   "%{!m31:%{!m64:-m31}}",					\
   "%{!mesa:%{!mzarch:%{m31:-mesa}%{m64:-mzarch}}}",		\
   "%{!march=*:%{mesa:-march=g5}%{mzarch:-march=z900}}"
-#endif
-
-/* Target version string.  Overridden by the OS header.  */
-#ifdef DEFAULT_TARGET_64BIT
-#define TARGET_VERSION fprintf (stderr, " (zSeries)");
-#else
-#define TARGET_VERSION fprintf (stderr, " (S/390)");
 #endif
 
 /* Constants needed to control the TEST DATA CLASS (TDC) instruction.  */
@@ -488,19 +459,6 @@ enum reg_class
   { 0xfffffffe, 0x0000000d },	/* ADDR_FP_REGS */	\
   { 0xffffffff, 0x0000000d },	/* GENERAL_FP_REGS */	\
   { 0xffffffff, 0x0000003f },	/* ALL_REGS */		\
-}
-
-/* The following macro defines cover classes for Integrated Register
-   Allocator.  Cover classes is a set of non-intersected register
-   classes covering all hard registers used for register allocation
-   purpose.  Any move between two registers of a cover class should be
-   cheaper than load or store of the registers.  The macro value is
-   array of register classes with LIM_REG_CLASSES used as the end
-   marker.  */
-
-#define IRA_COVER_CLASSES						     \
-{									     \
-  GENERAL_REGS, FP_REGS, CC_REGS, ACCESS_REGS, LIM_REG_CLASSES		     \
 }
 
 /* In some case register allocation order is not enough for IRA to

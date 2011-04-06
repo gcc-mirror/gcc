@@ -728,7 +728,7 @@ find_source (const char *file_name)
     file_name = "<unknown>";
 
   for (src = sources; src; src = src->next)
-    if (!strcmp (file_name, src->name))
+    if (!filename_cmp (file_name, src->name))
       break;
 
   if (!src)
@@ -1527,7 +1527,7 @@ make_gcov_file_name (const char *input_name, const char *src_name)
 
   if (flag_preserve_paths)
     {
-      /* Convert '/' and '\' to '#', remove '/./', convert '/../' to '/^/',
+      /* Convert '/' and '\' to '#', remove '/./', convert '/../' to '#^#',
 	 convert ':' to '~' on DOS based file system.  */
       char *pnew = name, *pold = name;
 
@@ -1535,32 +1535,41 @@ make_gcov_file_name (const char *input_name, const char *src_name)
 
       while (*pold != '\0')
 	{
-	  if (*pold == '/' || *pold == '\\')
-	    {
-	      *pnew++ = '#';
-	      pold++;
-	    }
 #if defined (HAVE_DOS_BASED_FILE_SYSTEM)
-	  else if (*pold == ':')
+	  if (*pold == ':')
 	    {
 	      *pnew++ = '~';
 	      pold++;
 	    }
+	  else
 #endif
-	  else if ((*pold == '/' && strstr (pold, "/./") == pold)
-		   || (*pold == '\\' && strstr (pold, "\\.\\") == pold))
+	  if ((*pold == '/'
+		    && (strstr (pold, "/./") == pold
+		        || strstr (pold, "/.\\") == pold))
+		   || (*pold == '\\'
+		       && (strstr (pold, "\\.\\") == pold
+		           || strstr (pold, "\\./") == pold)))
 	      pold += 3;
-	  else if (*pold == '/' && strstr (pold, "/../") == pold)
+	  else if (*pold == '/'
+		   && (strstr (pold, "/../") == pold
+		       || strstr (pold, "/..\\") == pold))
 	    {
-	      strcpy (pnew, "/^/");
+	      strcpy (pnew, "#^#");
 	      pnew += 3;
 	      pold += 4;
 	    }
-	  else if (*pold == '\\' && strstr (pold, "\\..\\") == pold)
+	  else if (*pold == '\\'
+		   && (strstr (pold, "\\..\\") == pold
+		       || strstr (pold, "\\../") == pold))
 	    {
-	      strcpy (pnew, "\\^\\");
+	      strcpy (pnew, "#^#");
 	      pnew += 3;
 	      pold += 4;
+	    }
+	  else if (*pold == '/' || *pold == '\\')
+	    {
+	      *pnew++ = '#';
+	      pold++;
 	    }
 	  else
 	    *pnew++ = *pold++;

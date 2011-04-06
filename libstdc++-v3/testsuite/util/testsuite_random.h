@@ -25,6 +25,7 @@
 #define _GLIBCXX_TESTSUITE_RANDOM_H
 
 #include <cmath>
+#include <initializer_list>
 #include <testsuite_hooks.h>
 
 namespace __gnu_test
@@ -79,27 +80,27 @@ namespace __gnu_test
     else if (k == 1)
       return p;
     else
-      return 0;
+      return 0.0;
   }
 
 #ifdef _GLIBCXX_USE_C99_MATH_TR1
   inline double
-  binomial_pdf(int k, double p, int n)
+  binomial_pdf(int k, int n, double p)
   {
     if (k < 0 || k > n)
-      return 0;
+      return 0.0;
     else
       {
 	double q;
 
-	if (p == 0) 
-	  q = (k == 0) ? 1 : 0;
-	else if (p == 1)
-	  q = (k == n) ? 1 : 0;
+	if (p == 0.0)
+	  q = (k == 0) ? 1.0 : 0.0;
+	else if (p == 1.0)
+	  q = (k == n) ? 1.0 : 0.0;
 	else
 	  {
-	    double ln_Cnk = (std::lgamma(n + 1) - std::lgamma(k + 1)
-			     - std::lgamma(n - k + 1));
+	    double ln_Cnk = (std::lgamma(n + 1.0) - std::lgamma(k + 1.0)
+			     - std::lgamma(n - k + 1.0));
 	    q = ln_Cnk + k * std::log(p) + (n - k) * std::log1p(-p);
 	    q = std::exp(q);
 	  }
@@ -110,15 +111,71 @@ namespace __gnu_test
 #endif
 
   inline double
+  discrete_pdf(int k, std::initializer_list<double> wl)
+  {
+    if (!wl.size())
+      wl = { 1.0 };
+
+    if (k < 0 || k >= wl.size())
+      return 0.0;
+    else
+      {
+	double sum = 0.0;
+	for (auto it = wl.begin(); it != wl.end(); ++it)
+	  sum += *it;
+	return wl.begin()[k] / sum;
+      }
+  }
+
+  inline double
   geometric_pdf(int k, double p)
   {
     if (k < 0)
-      return 0;
+      return 0.0;
     else if (k == 0)
       return p;
     else
       return p * std::pow(1 - p, k);
   }
+
+#ifdef _GLIBCXX_USE_C99_MATH_TR1
+  inline double
+  negative_binomial_pdf(int k, int n, double p)
+  {
+    if (k < 0)
+      return 0.0;
+    else
+      {
+	double f = std::lgamma(k + (double)n);
+	double a = std::lgamma(n);
+	double b = std::lgamma(k + 1.0);
+ 
+	return std::exp(f - a - b) * std::pow(p, n) * std::pow(1 - p, k);
+      }
+  }
+
+  inline double
+  poisson_pdf(int k, double mu)
+  {
+    if (k < 0)
+      return 0.0;
+    else
+      {
+	double lf = std::lgamma(k + 1.0); 
+	return std::exp(std::log(mu) * k - lf - mu);
+      }
+  }
+#endif
+
+  inline double
+  uniform_int_pdf(int k, int a, int b)
+  {
+    if (k < 0 || k < a || k > b)
+      return 0.0;
+    else
+      return 1.0 / (b - a + 1.0);
+  }
+
 } // namespace __gnu_test
 
 #endif // #ifndef _GLIBCXX_TESTSUITE_RANDOM_H

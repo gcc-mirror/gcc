@@ -2874,8 +2874,11 @@ create_component_ref_by_pieces_1 (basic_block block, vn_reference_t ref,
 	  return NULL_TREE;
 	if (genop2)
 	  {
-	    /* Drop zero minimum index.  */
-	    if (tree_int_cst_equal (genop2, integer_zero_node))
+	    tree domain_type = TYPE_DOMAIN (TREE_TYPE (genop0));
+	    /* Drop zero minimum index if redundant.  */
+	    if (integer_zerop (genop2)
+		&& (!domain_type
+		    || integer_zerop (TYPE_MIN_VALUE (domain_type))))
 	      genop2 = NULL_TREE;
 	    else
 	      {
@@ -4380,9 +4383,12 @@ eliminate (void)
 	  if (is_gimple_call (stmt)
 	      && TREE_CODE (gimple_call_fn (stmt)) == SSA_NAME)
 	    {
-	      tree fn = VN_INFO (gimple_call_fn (stmt))->valnum;
+	      tree orig_fn = gimple_call_fn (stmt);
+	      tree fn = VN_INFO (orig_fn)->valnum;
 	      if (TREE_CODE (fn) == ADDR_EXPR
-		  && TREE_CODE (TREE_OPERAND (fn, 0)) == FUNCTION_DECL)
+		  && TREE_CODE (TREE_OPERAND (fn, 0)) == FUNCTION_DECL
+		  && useless_type_conversion_p (TREE_TYPE (orig_fn),
+						TREE_TYPE (fn)))
 		{
 		  bool can_make_abnormal_goto
 		    = stmt_can_make_abnormal_goto (stmt);

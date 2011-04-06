@@ -69,9 +69,16 @@ along with GCC; see the file COPYING3.  If not see
 
    Note that block duplication can be minimized by first collecting the
    set of unique destination blocks that the incoming edges should
-   be threaded to.  Block duplication can be further minimized by using
-   B instead of creating B' for one destination if all edges into B are
-   going to be threaded to a successor of B.
+   be threaded to.
+
+   Block duplication can be further minimized by using B instead of 
+   creating B' for one destination if all edges into B are going to be
+   threaded to a successor of B.  We had code to do this at one time, but
+   I'm not convinced it is correct with the changes to avoid mucking up
+   the loop structure (which may cancel threading requests, thus a block
+   which we thought was going to become unreachable may still be reachable).
+   This code was also going to get ugly with the introduction of the ability
+   for a single jump thread request to bypass multiple blocks. 
 
    We further reduce the number of edges and statements we create by
    not copying all the outgoing edges and the control statement in
@@ -117,11 +124,6 @@ struct redirection_data
   /* A list of incoming edges which we want to thread to
      OUTGOING_EDGE->dest.  */
   struct el *incoming_edges;
-
-  /* Flag indicating whether or not we should create a duplicate block
-     for this thread destination.  This is only true if we are threading
-     all incoming edges and thus are using BB itself as a duplicate block.  */
-  bool do_not_duplicate;
 };
 
 /* Main data structure to hold information for duplicates of BB.  */
@@ -249,7 +251,6 @@ lookup_redirection_data (edge e, edge incoming_edge, enum insert_option insert)
   elt = XNEW (struct redirection_data);
   elt->outgoing_edge = e;
   elt->dup_block = NULL;
-  elt->do_not_duplicate = false;
   elt->incoming_edges = NULL;
 
   slot = htab_find_slot (redirection_data, elt, insert);
@@ -304,14 +305,15 @@ lookup_redirection_data (edge e, edge incoming_edge, enum insert_option insert)
    destination.  */
 
 static void
-create_edge_and_update_destination_phis (struct redirection_data *rd)
+create_edge_and_update_destination_phis (struct redirection_data *rd,
+					 basic_block bb)
 {
-  edge e = make_edge (rd->dup_block, rd->outgoing_edge->dest, EDGE_FALLTHRU);
+  edge e = make_edge (bb, rd->outgoing_edge->dest, EDGE_FALLTHRU);
   gimple_stmt_iterator gsi;
 
   rescan_loop_exit (e, true, false);
   e->probability = REG_BR_PROB_BASE;
-  e->count = rd->dup_block->count;
+  e->count = bb->count;
   e->aux = rd->outgoing_edge->aux;
 
   /* If there are any PHI nodes at the destination of the outgoing edge
@@ -337,11 +339,6 @@ create_duplicates (void **slot, void *data)
   struct redirection_data *rd = (struct redirection_data *) *slot;
   struct local_info *local_info = (struct local_info *)data;
 
-  /* If this entry should not have a duplicate created, then there's
-     nothing to do.  */
-  if (rd->do_not_duplicate)
-    return 1;
-
   /* Create a template block if we have not done so already.  Otherwise
      use the template to create a new block.  */
   if (local_info->template_block == NULL)
@@ -359,7 +356,7 @@ create_duplicates (void **slot, void *data)
 
       /* Go ahead and wire up outgoing edges and update PHIs for the duplicate
          block.  */
-      create_edge_and_update_destination_phis (rd);
+      create_edge_and_update_destination_phis (rd, rd->dup_block);
     }
 
   /* Keep walking the hash table.  */
@@ -380,7 +377,7 @@ fixup_template_block (void **slot, void *data)
      and halt the hash table traversal.  */
   if (rd->dup_block && rd->dup_block == local_info->template_block)
     {
-      create_edge_and_update_destination_phis (rd);
+      create_edge_and_update_destination_phis (rd, rd->dup_block);
       return 0;
     }
 
@@ -431,26 +428,6 @@ redirect_edges (void **slot, void *data)
 	  e2 = redirect_edge_and_branch (e, rd->dup_block);
 	  gcc_assert (e == e2);
 	  flush_pending_stmts (e2);
-	}
-      else
-	{
-	  if (dump_file && (dump_flags & TDF_DETAILS))
-	    fprintf (dump_file, "  Threaded jump %d --> %d to %d\n",
-		     e->src->index, e->dest->index, local_info->bb->index);
-
-	  /* We are using BB as the duplicate.  Remove the unnecessary
-	     outgoing edges and statements from BB.  */
-	  remove_ctrl_stmt_and_useless_edges (local_info->bb,
-					      rd->outgoing_edge->dest);
-
-	  /* Fixup the flags on the single remaining edge.  */
-	  single_succ_edge (local_info->bb)->flags
-	    &= ~(EDGE_TRUE_VALUE | EDGE_FALSE_VALUE | EDGE_ABNORMAL);
-	  single_succ_edge (local_info->bb)->flags |= EDGE_FALLTHRU;
-
-	  /* And adjust count and frequency on BB.  */
-	  local_info->bb->count = e->count;
-	  local_info->bb->frequency = EDGE_FREQUENCY (e);
 	}
     }
 
@@ -520,10 +497,6 @@ thread_block (basic_block bb, bool noloop_only)
   struct local_info local_info;
   struct loop *loop = bb->loop_father;
 
-  /* ALL indicates whether or not all incoming edges into BB should
-     be threaded to a duplicate of BB.  */
-  bool all = true;
-
   /* To avoid scanning a linear array for the element we need we instead
      use a hash table.  For normal code there should be no noticeable
      difference.  However, if we have a block with a large number of
@@ -560,27 +533,15 @@ thread_block (basic_block bb, bool noloop_only)
 	  || (noloop_only
 	      && bb == bb->loop_father->header
 	      && !loop_exit_edge_p (bb->loop_father, e2)))
-	{
-	  all = false;
-	  continue;
-	}
+	continue;
 
-      update_bb_profile_for_threading (e->dest, EDGE_FREQUENCY (e),
-				       e->count, (edge) e->aux);
+      if (e->dest == e2->src)
+	update_bb_profile_for_threading (e->dest, EDGE_FREQUENCY (e),
+				         e->count, (edge) e->aux);
 
       /* Insert the outgoing edge into the hash table if it is not
 	 already in the hash table.  */
       lookup_redirection_data (e2, e, INSERT);
-    }
-
-  /* If we are going to thread all incoming edges to an outgoing edge, then
-     BB will become unreachable.  Rather than just throwing it away, use
-     it for one of the duplicates.  Mark the first incoming edge with the
-     DO_NOT_DUPLICATE attribute.  */
-  if (all)
-    {
-      edge e = (edge) EDGE_PRED (bb, 0)->aux;
-      lookup_redirection_data (e, NULL, NO_INSERT)->do_not_duplicate = true;
     }
 
   /* We do not update dominance info.  */
@@ -650,12 +611,13 @@ thread_single_edge (edge e)
     }
 
   /* Otherwise, we need to create a copy.  */
-  update_bb_profile_for_threading (bb, EDGE_FREQUENCY (e), e->count, eto);
+  if (e->dest == eto->src)
+    update_bb_profile_for_threading (bb, EDGE_FREQUENCY (e), e->count, eto);
 
   rd.outgoing_edge = eto;
 
   create_block_for_threading (bb, &rd);
-  create_edge_and_update_destination_phis (&rd);
+  create_edge_and_update_destination_phis (&rd, rd.dup_block);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, "  Threaded jump %d --> %d to %d\n",
@@ -704,7 +666,9 @@ determine_bb_domination_status (struct loop *loop, basic_block bb)
   edge e;
 
 #ifdef ENABLE_CHECKING
-  /* This function assumes BB is a successor of LOOP->header.  */
+  /* This function assumes BB is a successor of LOOP->header.
+     If that is not the case return DOMST_NONDOMINATING which
+     is always safe.  */
     {
       bool ok = false;
 
@@ -717,7 +681,8 @@ determine_bb_domination_status (struct loop *loop, basic_block bb)
 	    }
 	}
 
-      gcc_assert (ok);
+      if (!ok)
+	return DOMST_NONDOMINATING;
     }
 #endif
 
@@ -1098,6 +1063,11 @@ register_jump_thread (edge e, edge e2)
 {
   if (threaded_edges == NULL)
     threaded_edges = VEC_alloc (edge, heap, 10);
+
+  if (dump_file && (dump_flags & TDF_DETAILS)
+      && e->dest != e2->src)
+    fprintf (dump_file,
+	     "  Registering jump thread around one or more intermediate blocks\n");
 
   VEC_safe_push (edge, heap, threaded_edges, e);
   VEC_safe_push (edge, heap, threaded_edges, e2);

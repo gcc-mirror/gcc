@@ -205,7 +205,7 @@ E
 C UPC ObjC C++ ObjC++ Undocumented Var(flag_preprocess_only)
 
 F
-C UPC ObjC C++ ObjC++ Joined Separate MissingArgError(missing path after %qs)
+Driver C UPC ObjC C++ ObjC++ Joined Separate MissingArgError(missing path after %qs)
 -F <dir>	Add <dir> to the end of the main framework include path
 
 H
@@ -1183,7 +1183,11 @@ Remap file names when including files
 
 std=c++98
 C++ ObjC++
-Conform to the ISO 1998 C++ standard
+Conform to the ISO 1998 C++ standard revised by the 2003 technical corrigendum
+
+std=c++03
+C++ ObjC++ Alias(std=c++98)
+Conform to the ISO 1998 C++ standard revised by the 2003 technical corrigendum
 
 std=c++0x
 C++ ObjC++

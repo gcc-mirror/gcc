@@ -3582,7 +3582,7 @@ vectorizable_store (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 	  gcc_assert (useless_type_conversion_p (vectype,
 						 TREE_TYPE (vec_oprnd)));
 	  dataref_ptr = vect_create_data_ref_ptr (first_stmt, NULL, NULL_TREE,
-						  &dummy, &ptr_incr, false,
+						  &dummy, gsi, &ptr_incr, false,
 						  &inv_p);
 	  gcc_assert (bb_vinfo || !inv_p);
 	}
@@ -4109,9 +4109,8 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
     {
       /* 1. Create the vector pointer update chain.  */
       if (j == 0)
-        dataref_ptr = vect_create_data_ref_ptr (first_stmt,
-					        at_loop, offset,
-						&dummy, &ptr_incr, false,
+        dataref_ptr = vect_create_data_ref_ptr (first_stmt, at_loop, offset,
+						&dummy, gsi, &ptr_incr, false,
 						&inv_p);
       else
         dataref_ptr =
@@ -4236,15 +4235,13 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 	  if (alignment_support_scheme == dr_explicit_realign_optimized
 	      || alignment_support_scheme == dr_explicit_realign)
 	    {
-	      tree tmp;
-
 	      lsq = gimple_assign_lhs (new_stmt);
 	      if (!realignment_token)
 		realignment_token = dataref_ptr;
 	      vec_dest = vect_create_destination_var (scalar_dest, vectype);
-	      tmp = build3 (REALIGN_LOAD_EXPR, vectype, msq, lsq,
-			    realignment_token);
-	      new_stmt = gimple_build_assign (vec_dest, tmp);
+	      new_stmt
+		= gimple_build_assign_with_ops3 (REALIGN_LOAD_EXPR, vec_dest,
+						 msq, lsq, realignment_token);
 	      new_temp = make_ssa_name (vec_dest, new_stmt);
 	      gimple_assign_set_lhs (new_stmt, new_temp);
 	      vect_finish_stmt_generation (stmt, new_stmt, gsi);

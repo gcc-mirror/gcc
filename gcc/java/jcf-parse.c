@@ -176,9 +176,9 @@ java_read_sourcefilenames (const char *fsource_filename)
   if (fsource_filename 
       && filenames == 0
       && strlen (fsource_filename) > strlen (".java")
-      && strcmp ((fsource_filename 
-		  + strlen (fsource_filename)
-		  - strlen (".java")),
+      && filename_cmp ((fsource_filename
+		       + strlen (fsource_filename)
+		       - strlen (".java")),
 		 ".java") != 0)
     {
 /*       fsource_filename isn't a .java file but a list of filenames
@@ -322,7 +322,7 @@ set_source_filename (JCF *jcf, int index)
       /* Use the current input_filename (derived from the class name)
 	 if it has a directory prefix, but otherwise matches sfname. */
       if (old_len > new_len
-	  && strcmp (sfname, old_filename + old_len - new_len) == 0
+	  && filename_cmp (sfname, old_filename + old_len - new_len) == 0
 	  && (old_filename[old_len - new_len - 1] == '/'
 	      || old_filename[old_len - new_len - 1] == '\\'))
 	return;

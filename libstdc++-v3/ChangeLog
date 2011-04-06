@@ -1,3 +1,211 @@
+2011-04-02  Jonathan Wakely  <redi@gcc.gnu.org>
+
+	PR libstdc++/48398
+	* include/bits/unique_ptr.h (__tuple_type): Store pointer type.
+	* testsuite/20_util/unique_ptr/modifiers/48398.cc: New.
+	* testsuite/20_util/unique_ptr/requirements/pointer_type.cc: Remove
+	unused parameter name.
+
+2011-03-31  Jeffrey Yasskin  <jyasskin@google.com>
+
+        * libsupc++/exception_ptr.h: Forward-declare std::type_info.
+        * libsupc++/nested_exception.h (__throw_with_nested): Remove a
+	redundant default argument from std::__throw_with_nested.
+
+2011-03-31  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/48382
+	* src/ctype.cc: Do not include <bits/ctype_noninline.h>.
+	* src/Makefile.am: Add ctype_configure_char.cc to host_sources.
+	* src/Makefile.in: Regenerate.
+	* include/Makefile.am: Remove ctype_noninline.h from host_headers.
+	* include/Makefile.in: Regenerate.
+	* doc/xml/manual/internals.xml: Update.
+	* config/os/newlib/ctype_noninline.h: Fixup and rename to...
+	* config/os/newlib/ctype_configure_char.cc: ... this.
+	* config/os/aix/ctype_noninline.h: Likewise.
+	* config/os/aix/ctype_configure_char.cc: Likewise.
+	* config/os/vxworks/ctype_noninline.h: Likewise.
+	* config/os/vxworks/ctype_configure_char.cc
+	* config/os/hpux/ctype_noninline.h: Likewise.
+	* config/os/hpux/ctype_configure_char.cc: Likewise.
+	* config/os/gnu-linux/ctype_noninline.h: Likewise.
+	* config/os/gnu-linux/ctype_configure_char.cc: Likewise.
+	* config/os/mingw32/ctype_noninline.h: Likewise.
+	* config/os/mingw32/ctype_configure_char.cc: Likewise.
+	* config/os/tpf/ctype_noninline.h: Likewise.
+	* config/os/tpf/ctype_configure_char.cc: Likewise.
+	* config/os/uclibc/ctype_noninline.h: Likewise.
+	* config/os/uclibc/ctype_configure_char.cc: Likewise.
+	* config/os/bionic/ctype_noninline.h: Likewise.
+	* config/os/bionic/ctype_configure_char.cc: Likewise.
+	* config/os/djgpp/ctype_noninline.h: Likewise.
+	* config/os/djgpp/ctype_configure_char.cc: Likewise.
+	* config/os/qnx/qnx6.1/ctype_noninline.h: Likewise.
+	* config/os/qnx/qnx6.1/ctype_configure_char.cc: Likewise.
+	* config/os/bsd/netbsd/ctype_noninline.h: Likewise.
+	* config/os/bsd/netbsd/ctype_configure_char.cc: Likewise.
+	* config/os/bsd/darwin/ctype_noninline.h: Likewise.
+	* config/os/bsd/darwin/ctype_configure_char.cc: Likewise.
+	* config/os/bsd/freebsd/ctype_noninline.h: Likewise.
+	* config/os/bsd/freebsd/ctype_configure_char.cc: Likewise.
+	* config/os/irix/irix6.5/ctype_noninline.h: Likewise.
+	* config/os/irix/irix6.5/ctype_configure_char.cc: Likewise.
+	* config/os/generic/ctype_noninline.h: Likewise.
+	* config/os/generic/ctype_configure_char.cc: Likewise.
+	* config/os/solaris/solaris2.7/ctype_noninline.h: Likewise.
+	* config/os/solaris/solaris2.7/ctype_configure_char.cc: Likewise.
+
+2011-03-25  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/std/future (future::share): Add.
+	(packaged_task::result_type): Remove as per LWG 2030.
+	(packaged_task::packaged_task): Remove redundant constructors, as per
+	LWG 1514.
+	* testsuite/30_threads/future/members/share.cc: New.
+	* testsuite/30_threads/packaged_task/requirements/typedefs.cc: Remove.
+
+2011-03-25  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* testsuite/28_regex/match_results/ctors/char/default.cc: Do not call
+	members which require a fully established result state.
+	* testsuite/28_regex/match_results/ctors/wchar_t/default.cc: Likewise.
+
+2011-03-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/random.h (negative_binomial_distribution<>::
+	negative_binomial_distribution(_IntType, double),
+	negative_binomial_distribution<>::
+	negative_binomial_distribution(const param_type&)): Tweak
+	construction of _M_gd.
+	* include/bits/random.tcc (negative_binomial_distribution<>::
+	operator()): Adjust.
+
+2011-03-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/random.h (negative_binomial_distribution<>::
+	negative_binomial_distribution(_IntType, double),
+	negative_binomial_distribution<>::
+	negative_binomial_distribution(const param_type&)): Fix
+	construction of _M_gd.
+	* include/bits/random.tcc (negative_binomial_distribution<>::
+	operator()): Fix computation, per Leger's algorithm.
+	* testsuite/util/testsuite_random.h (discrete_pdf,
+	negative_binomial_pdf, poisson_pdf, uniform_int_pdf): New.
+	(binomial_pdf): Swap last two parameters.
+	* testsuite/26_numerics/random/discrete_distribution/
+	operators/values.cc: New.
+	* testsuite/26_numerics/random/negative_binomial_distribution/
+	operators/values.cc: Likewise.
+	* testsuite/26_numerics/random/poisson_distribution/
+	operators/values.cc: Likewise.
+	* testsuite/26_numerics/random/uniform_int_distribution/
+	operators/values.cc: Likewise.
+	* testsuite/26_numerics/random/binomial_distribution/
+	operators/values.cc: Adjust.
+
+2011-03-24  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/abi/post/solaris2.8/baseline_symbols.txt: Regenerate.
+	* config/abi/post/solaris2.8/sparcv9/baseline_symbols.txt: Likewise.
+	* config/abi/post/solaris2.10/baseline_symbols.txt: Likewise.
+	* config/abi/post/solaris2.10/amd64/baseline_symbols.txt: Likewise.
+	* config/abi/post/solaris2.10/sparcv9/baseline_symbols.txt: Likewise.
+
+2011-03-23  Matthias Klose  <doko@ubuntu.com>
+
+	* config/abi/post/sparc-linux-gnu/baseline_symbols.txt: Regenerated.
+
+2011-03-23  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/abi/post/alpha-linux-gnu/baseline_symbols.txt: Regenerated.
+
+2011-03-22  Joseph Myers  <joseph@codesourcery.com>
+
+	* configure.ac: Don't handle powerpc*-*-gnu*.
+	* configure: Regenerate.
+
+2011-03-22  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* testsuite/21_strings/basic_string/cons/char/moveable2.cc: Tweak
+	Copyright years.
+	* testsuite/21_strings/basic_string/cons/wchar_t/moveable2.cc:
+	Likewise.
+
+2011-03-22  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/shared_ptr.h (operator>, operator<=, operator>=): Add,
+	per DR 1401.
+	(operator==, operator!=, operator<): Fix per the letter of DR 1401.
+	* include/bits/shared_ptr_base.h: Likewise for __shared_ptr.
+	* include/bits/unique_ptr.h (operator==, operator!=, operator<,
+	operator<=, operator>, operator>=): Fix per the letter of DR 1401.
+	* testsuite/20_util/shared_ptr/comparison/dr1401.cc: New.
+	* testsuite/20_util/unique_ptr/comparison/dr1401.cc: Likewise.
+	* testsuite/20_util/weak_ptr/comparison/cmp_neg.cc: Adjust.
+
+2011-03-22  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/abi/pre/gnu.ver (GLIBCXX_3.4.15): Export _ZNSsC2EOSs
+	and _ZNSbIwSt11char_traitsIwESaIwEEC2EOS2_.
+	* config/abi/post/solaris2.8/baseline_symbols.txt: Regenerated.
+	* config/abi/post/solaris2.8/sparcv9/baseline_symbols.txt: Likewise.
+	* config/abi/post/s390x-linux-gnu/baseline_symbols.txt: Likewise.
+	* config/abi/post/x86_64-linux-gnu/baseline_symbols.txt: Likewise.
+	* config/abi/post/x86_64-linux-gnu/32/baseline_symbols.txt: Likewise.
+	* config/abi/post/powerpc-linux-gnu/baseline_symbols.txt: Likewise.
+	* config/abi/post/powerpc64-linux-gnu/baseline_symbols.txt: Likewise.
+	* config/abi/post/powerpc64-linux-gnu/32/baseline_symbols.txt:
+	Likewise.
+	* config/abi/post/solaris2.10/baseline_symbols.txt: Likewise.
+	* config/abi/post/solaris2.10/amd64/baseline_symbols.txt: Likewise.
+	* config/abi/post/solaris2.10/sparcv9/baseline_symbols.txt: Likewise.
+	* config/abi/post/i486-linux-gnu/baseline_symbols.txt: Likewise.
+	* config/abi/post/i386-linux-gnu/baseline_symbols.txt: Likewise.
+	* config/abi/post/s390-linux-gnu/baseline_symbols.txt: Likewise.
+	* testsuite/21_strings/basic_string/cons/char/moveable2.cc: New test.
+	* testsuite/21_strings/basic_string/cons/wchar_t/moveable2.cc: New
+	test.
+
+2011-03-21  Jack Howarth  <howarth@bromo.med.uc.edu>
+
+	* testsuite/lib/prune.exp (libstdc++-dg-prune): Prune "could not
+	create compact unwind for" warnings.
+
+2011-03-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/abi/post/i386-linux-gnu/baseline_symbols.txt: Update.
+	* config/abi/post/i486-linux-gnu/baseline_symbols.txt: Likewise.
+	* config/abi/post/powerpc64-linux-gnu/32/baseline_symbols.txt:
+	Likewise.
+	* config/abi/post/powerpc64-linux-gnu/baseline_symbols.txt: Likewise.
+	* config/abi/post/powerpc-linux-gnu/baseline_symbols.txt: Likewise.
+	* config/abi/post/s390-linux-gnu/baseline_symbols.txt: Likewise.
+	* config/abi/post/s390x-linux-gnu/baseline_symbols.txt: Likewise.
+	* config/abi/post/x86_64-linux-gnu/32/baseline_symbols.txt: Likewise.
+	* config/abi/post/x86_64-linux-gnu/baseline_symbols.txt: Likewise.
+	* config/abi/post/solaris2.8/sparcv9/baseline_symbols.txt: Likewise.
+	* config/abi/post/solaris2.10/amd64/baseline_symbols.txt: Likewise.
+	* config/abi/post/solaris2.10/sparcv9/baseline_symbols.txt: Likewise.
+
+	* testsuite/util/testsuite_abi.cc (check_version): Set incompatible
+	even when adding symbols to CXXABI_1.3, GLIBCXX_LDBL_3.4 and
+	CXXABI_LDBL_1.3 versions.
+
+2011-03-21  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* config/abi/pre/gnu.ver: Remove typeinfo name exports for C++0x types.
+
+2011-03-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/abi/pre/gnu.ver (CXXABI_1.3): Don't export _ZT[IS][PK]*[no].
+	(CXXABI_1.3.5): Export _ZTI[PK]*[no].
+
+2011-03-21  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* testsuite/22_locale/num_put/put/char/14220.cc: Don't xfail on
+	sparc*-sun-solaris2.10 && lp64.
+
 2011-03-19  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* testsuite/lib/libstdc++.exp (check_v3_target_c99_math): Rename

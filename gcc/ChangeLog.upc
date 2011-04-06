@@ -1,3 +1,7 @@
+2011-04-06  Gary Funck  <gary@intrepid.com>
+
+	Merge trunk version 171966 into gupc branch.
+
 2011-04-01  Gary Funck  <gary@intrepid.com>
 
 	* tree.h (tree_base): Move UPC flag bits into bit fields

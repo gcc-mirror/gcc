@@ -61,9 +61,6 @@ along with GCC; see the file COPYING3.  If not see
   "%{shared|pie:crtendS.o%s;:crtend.o%s} crtn.o%s\
    %{ffast-math|funsafe-math-optimizations:crtfastmath.o%s}"
 
-#undef TARGET_VERSION
-#define TARGET_VERSION fprintf (stderr, " (sparc64 GNU/Linux with ELF)");
-
 /* The default code model.  */
 #undef SPARC_DEFAULT_CMODEL
 #define SPARC_DEFAULT_CMODEL CM_MEDLOW

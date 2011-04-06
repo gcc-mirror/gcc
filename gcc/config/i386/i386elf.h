@@ -1,5 +1,5 @@
 /* Target definitions for GCC for Intel 80386 using ELF
-   Copyright (C) 1988, 1991, 1995, 2000, 2001, 2002, 2007, 2008, 2010
+   Copyright (C) 1988, 1991, 1995, 2000, 2001, 2002, 2007, 2008, 2010, 2011
    Free Software Foundation, Inc.
 
    Derived from sysv4.h written by Ron Guilmette (rfg@netcom.com).
@@ -23,8 +23,6 @@ along with GCC; see the file COPYING3.  If not see
 /* Use stabs instead of DWARF debug format.  */
 #undef  PREFERRED_DEBUGGING_TYPE
 #define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
-
-#define TARGET_VERSION fprintf (stderr, " (i386 bare ELF target)");
 
 /* The ELF ABI for the i386 says that records and unions are returned
    in memory.  */

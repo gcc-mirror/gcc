@@ -86,7 +86,6 @@
    beginning of the file.  This variable starts off TRUE and later
    becomes FALSE.  */
 extern int ok_to_change_target_memregs;
-extern int target_memregs;
 
 /* TARGET_CPU is a multi-way option set in m32c.opt.  While we could
    use enums or defines for this, this and m32c.opt are the only
@@ -100,8 +99,6 @@ extern int target_memregs;
    to select between the two CPU families in general.  */
 #define TARGET_A16	(TARGET_R8C || TARGET_M16C)
 #define TARGET_A24	(TARGET_M32CM || TARGET_M32C)
-
-#define TARGET_VERSION fprintf (stderr, " (m32c)");
 
 /* Defining data structures for per-function information */
 

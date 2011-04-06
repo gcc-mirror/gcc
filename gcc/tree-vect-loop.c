@@ -1184,11 +1184,11 @@ vect_analyze_loop_operations (loop_vec_info loop_vinfo)
               print_gimple_stmt (vect_dump, phi, 0, TDF_SLIM);
             }
 
+          /* Inner-loop loop-closed exit phi in outer-loop vectorization
+             (i.e., a phi in the tail of the outer-loop).  */
           if (! is_loop_header_bb_p (bb))
             {
-              /* inner-loop loop-closed exit phi in outer-loop vectorization
-                 (i.e. a phi in the tail of the outer-loop).
-                 FORNOW: we currently don't support the case that these phis
+              /* FORNOW: we currently don't support the case that these phis
                  are not used in the outerloop (unless it is double reduction,
                  i.e., this phi is vect_reduction_def), cause this case
                  requires to actually do something here.  */
@@ -1202,6 +1202,32 @@ vect_analyze_loop_operations (loop_vec_info loop_vinfo)
                              "Unsupported loop-closed phi in outer-loop.");
                   return false;
                 }
+
+              /* If PHI is used in the outer loop, we check that its operand
+                 is defined in the inner loop.  */
+              if (STMT_VINFO_RELEVANT_P (stmt_info))
+                {
+                  tree phi_op;
+                  gimple op_def_stmt;
+
+                  if (gimple_phi_num_args (phi) != 1)
+                    return false;
+
+                  phi_op = PHI_ARG_DEF (phi, 0);
+                  if (TREE_CODE (phi_op) != SSA_NAME)
+                    return false;
+
+                  op_def_stmt = SSA_NAME_DEF_STMT (phi_op);
+                  if (!op_def_stmt || !vinfo_for_stmt (op_def_stmt))
+                    return false;
+
+                  if (STMT_VINFO_RELEVANT (vinfo_for_stmt (op_def_stmt))
+                        != vect_used_in_outer
+                      && STMT_VINFO_RELEVANT (vinfo_for_stmt (op_def_stmt))
+                           != vect_used_in_outer_by_reduction)
+                    return false;
+                }
+
               continue;
             }
 
@@ -2498,6 +2524,9 @@ vect_model_reduction_cost (stmt_vec_info stmt_info, enum tree_code reduc_code,
     case GIMPLE_BINARY_RHS:
       reduction_op = gimple_assign_rhs2 (stmt);
       break;
+    case GIMPLE_TERNARY_RHS:
+      reduction_op = gimple_assign_rhs3 (stmt);
+      break;
     default:
       gcc_unreachable ();
     }
@@ -3191,7 +3220,7 @@ vect_create_epilog_for_reduction (VEC (tree, heap) *vect_defs, gimple stmt,
     {
     case GIMPLE_SINGLE_RHS:
       gcc_assert (TREE_OPERAND_LENGTH (gimple_assign_rhs1 (stmt))
-                                       == ternary_op);
+		  == ternary_op);
       reduction_op = TREE_OPERAND (gimple_assign_rhs1 (stmt), reduc_index);
       break;
     case GIMPLE_UNARY_RHS:
@@ -3200,6 +3229,9 @@ vect_create_epilog_for_reduction (VEC (tree, heap) *vect_defs, gimple stmt,
     case GIMPLE_BINARY_RHS:
       reduction_op = reduc_index ?
                      gimple_assign_rhs2 (stmt) : gimple_assign_rhs1 (stmt);
+      break;
+    case GIMPLE_TERNARY_RHS:
+      reduction_op = gimple_op (stmt, reduc_index + 1);
       break;
     default:
       gcc_unreachable ();
@@ -4024,6 +4056,15 @@ vectorizable_reduction (gimple stmt, gimple_stmt_iterator *gsi,
       gcc_assert (op_type == binary_op);
       ops[0] = gimple_assign_rhs1 (stmt);
       ops[1] = gimple_assign_rhs2 (stmt);
+      break;
+
+    case GIMPLE_TERNARY_RHS:
+      code = gimple_assign_rhs_code (stmt);
+      op_type = TREE_CODE_LENGTH (code);
+      gcc_assert (op_type == ternary_op);
+      ops[0] = gimple_assign_rhs1 (stmt);
+      ops[1] = gimple_assign_rhs2 (stmt);
+      ops[2] = gimple_assign_rhs3 (stmt);
       break;
 
     case GIMPLE_UNARY_RHS:

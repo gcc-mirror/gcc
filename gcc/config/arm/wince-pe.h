@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for ARM with WINCE-PE obj format.
-   Copyright (C) 2003, 2004, 2005, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2005, 2007, 2011 Free Software Foundation, Inc.
    Contributed by Nick Clifton <nickc@redhat.com>
    
    This file is part of GCC.
@@ -23,4 +23,4 @@
 
 #undef  MULTILIB_DEFAULTS
 #define MULTILIB_DEFAULTS \
-  { "marm", "mlittle-endian", "msoft-float", "mno-thumb-interwork" }  
+  { "marm", "mlittle-endian", "mfloat-abi=soft", "mno-thumb-interwork" }  

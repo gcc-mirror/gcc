@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -10473,11 +10473,11 @@ package body Sem_Util is
          if Requires_Transient_Scope (Component_Type (Typ)) then
             return True;
 
-         --  Otherwise, we only need a transient scope if the size is not
-         --  known at compile time.
+         --  Otherwise, we only need a transient scope if the size depends on
+         --  the value of one or more discriminants.
 
          else
-            return not Size_Known_At_Compile_Time (Typ);
+            return Size_Depends_On_Discriminant (Typ);
          end if;
 
       --  All other cases do not require a transient scope

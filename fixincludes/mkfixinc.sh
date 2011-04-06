@@ -12,8 +12,6 @@ target=fixinc.sh
 # Check for special fix rules for particular targets
 case $machine in
     alpha*-dec-*vms* | \
-    i?86-moss-msdos* | \
-    i?86-*-pe | \
     i?86-*-cygwin* | \
     i?86-*-mingw32* | \
     x86_64-*-mingw32* | \

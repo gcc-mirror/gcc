@@ -5510,20 +5510,20 @@ arrayfunc_assign_needs_temporary (gfc_expr * expr1, gfc_expr * expr2)
    reallocatable assignments from extrinsic function calls.  */
 
 static void
-realloc_lhs_loop_for_fcn_call (gfc_se *se, locus *where, gfc_ss **ss)
+realloc_lhs_loop_for_fcn_call (gfc_se *se, locus *where, gfc_ss **ss,
+			       gfc_loopinfo *loop)
 {
-  gfc_loopinfo loop;
   /* Signal that the function call should not be made by
      gfc_conv_loop_setup. */
   se->ss->is_alloc_lhs = 1;
-  gfc_init_loopinfo (&loop);
-  gfc_add_ss_to_loop (&loop, *ss);
-  gfc_add_ss_to_loop (&loop, se->ss);
-  gfc_conv_ss_startstride (&loop);
-  gfc_conv_loop_setup (&loop, where);
-  gfc_copy_loopinfo_to_se (se, &loop);
-  gfc_add_block_to_block (&se->pre, &loop.pre);
-  gfc_add_block_to_block (&se->pre, &loop.post);
+  gfc_init_loopinfo (loop);
+  gfc_add_ss_to_loop (loop, *ss);
+  gfc_add_ss_to_loop (loop, se->ss);
+  gfc_conv_ss_startstride (loop);
+  gfc_conv_loop_setup (loop, where);
+  gfc_copy_loopinfo_to_se (se, loop);
+  gfc_add_block_to_block (&se->pre, &loop->pre);
+  gfc_add_block_to_block (&se->pre, &loop->post);
   se->ss->is_alloc_lhs = 0;
 }
 
@@ -5591,6 +5591,7 @@ gfc_trans_arrayfunc_assign (gfc_expr * expr1, gfc_expr * expr2)
   gfc_se se;
   gfc_ss *ss;
   gfc_component *comp = NULL;
+  gfc_loopinfo loop;
 
   if (arrayfunc_assign_needs_temporary (expr1, expr2))
     return NULL;
@@ -5641,7 +5642,7 @@ gfc_trans_arrayfunc_assign (gfc_expr * expr1, gfc_expr * expr2)
     {
       if (!expr2->value.function.isym)
 	{
-	  realloc_lhs_loop_for_fcn_call (&se, &expr1->where, &ss);
+	  realloc_lhs_loop_for_fcn_call (&se, &expr1->where, &ss, &loop);
 	  ss->is_alloc_lhs = 1;
 	}
       else

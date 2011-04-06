@@ -30,6 +30,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm_p.h"
 #include "obstack.h"
 #include "insn-config.h"
+#include "ggc.h"
 #include "flags.h"
 #include "function.h"
 #include "expr.h"
@@ -101,47 +102,8 @@ static regset_head reg_has_output_reload;
    in the current insn.  */
 static HARD_REG_SET reg_is_output_reload;
 
-/* Element N is the constant value to which pseudo reg N is equivalent,
-   or zero if pseudo reg N is not equivalent to a constant.
-   find_reloads looks at this in order to replace pseudo reg N
-   with the constant it stands for.  */
-rtx *reg_equiv_constant;
-
-/* Element N is an invariant value to which pseudo reg N is equivalent.
-   eliminate_regs_in_insn uses this to replace pseudos in particular
-   contexts.  */
-rtx *reg_equiv_invariant;
-
-/* Element N is a memory location to which pseudo reg N is equivalent,
-   prior to any register elimination (such as frame pointer to stack
-   pointer).  Depending on whether or not it is a valid address, this value
-   is transferred to either reg_equiv_address or reg_equiv_mem.  */
-rtx *reg_equiv_memory_loc;
-
-/* We allocate reg_equiv_memory_loc inside a varray so that the garbage
-   collector can keep track of what is inside.  */
-VEC(rtx,gc) *reg_equiv_memory_loc_vec;
-
-/* Element N is the address of stack slot to which pseudo reg N is equivalent.
-   This is used when the address is not valid as a memory address
-   (because its displacement is too big for the machine.)  */
-rtx *reg_equiv_address;
-
-/* Element N is the memory slot to which pseudo reg N is equivalent,
-   or zero if pseudo reg N is not equivalent to a memory slot.  */
-rtx *reg_equiv_mem;
-
-/* Element N is an EXPR_LIST of REG_EQUIVs containing MEMs with
-   alternate representations of the location of pseudo reg N.  */
-rtx *reg_equiv_alt_mem_list;
-
 /* Widest width in which each pseudo reg is referred to (via subreg).  */
 static unsigned int *reg_max_ref_width;
-
-/* Element N is the list of insns that initialized reg N from its equivalent
-   constant or memory slot.  */
-rtx *reg_equiv_init;
-int reg_equiv_init_size;
 
 /* Vector to remember old contents of reg_renumber before spilling.  */
 static short *reg_old_renumber;
@@ -361,6 +323,8 @@ static int num_eliminable_invariants;
 static int first_label_num;
 static char *offsets_known_at;
 static HOST_WIDE_INT (*offsets_at)[NUM_ELIMINABLE_REGS];
+
+VEC(reg_equivs_t,gc) *reg_equivs;
 
 /* Stack of addresses where an rtx has been changed.  We can undo the 
    changes by popping items off the stack and restoring the original
@@ -596,14 +560,14 @@ replace_pseudos_in (rtx *loc, enum machine_mode mem_mode, rtx usage)
 	  return;
 	}
 
-      if (reg_equiv_constant[regno])
-	*loc = reg_equiv_constant[regno];
-      else if (reg_equiv_invariant[regno])
-	*loc = reg_equiv_invariant[regno];
-      else if (reg_equiv_mem[regno])
-	*loc = reg_equiv_mem[regno];
-      else if (reg_equiv_address[regno])
-	*loc = gen_rtx_MEM (GET_MODE (x), reg_equiv_address[regno]);
+      if (reg_equiv_constant (regno))
+	*loc = reg_equiv_constant (regno);
+      else if (reg_equiv_invariant (regno))
+	*loc = reg_equiv_invariant (regno);
+      else if (reg_equiv_mem (regno))
+	*loc = reg_equiv_mem (regno);
+      else if (reg_equiv_address (regno))
+	*loc = gen_rtx_MEM (GET_MODE (x), reg_equiv_address (regno));
       else
 	{
 	  gcc_assert (!REG_P (regno_reg_rtx[regno])
@@ -682,6 +646,26 @@ has_nonexceptional_receiver (void)
   return false;
 }
 
+/* Grow (or allocate) the REG_EQUIVS array from its current size (which may be
+   zero elements) to MAX_REG_NUM elements.
+
+   Initialize all new fields to NULL and update REG_EQUIVS_SIZE.  */
+void
+grow_reg_equivs (void)
+{
+  int old_size = VEC_length (reg_equivs_t, reg_equivs);
+  int max_regno = max_reg_num ();
+  int i;
+
+  VEC_reserve (reg_equivs_t, gc, reg_equivs, max_regno);
+  for (i = old_size; i < max_regno; i++)
+    {
+      VEC_quick_insert (reg_equivs_t, reg_equivs, i, 0);
+      memset (VEC_index (reg_equivs_t, reg_equivs, i), 0, sizeof (reg_equivs_t));
+    }
+    
+}
+
 
 /* Global variables used by reload and its subroutines.  */
 
@@ -721,6 +705,7 @@ reload (rtx first, int global)
   rtx insn;
   struct elim_table *ep;
   basic_block bb;
+  bool inserted;
 
   /* Make sure even insns with volatile mem refs are recognizable.  */
   init_recog ();
@@ -768,6 +753,18 @@ reload (rtx first, int global)
       if (! call_used_regs[i] && ! fixed_regs[i] && ! LOCAL_REGNO (i))
 	df_set_regs_ever_live (i, true);
 
+  /* Find all the pseudo registers that didn't get hard regs
+     but do have known equivalent constants or memory slots.
+     These include parameters (known equivalent to parameter slots)
+     and cse'd or loop-moved constant memory addresses.
+
+     Record constant equivalents in reg_equiv_constant
+     so they will be substituted by find_reloads.
+     Record memory equivalents in reg_mem_equiv so they can
+     be substituted eventually by altering the REG-rtx's.  */
+
+  grow_reg_equivs ();
+  reg_max_ref_width = XCNEWVEC (unsigned int, max_regno);
   reg_old_renumber = XCNEWVEC (short, max_regno);
   memcpy (reg_old_renumber, reg_renumber, max_regno * sizeof (short));
   pseudo_forbidden_regs = XNEWVEC (HARD_REG_SET, max_regno);
@@ -881,15 +878,15 @@ reload (rtx first, int global)
 	 so this problem goes away.  But that's very hairy.  */
 
       for (i = FIRST_PSEUDO_REGISTER; i < max_regno; i++)
-	if (reg_renumber[i] < 0 && reg_equiv_memory_loc[i])
+	if (reg_renumber[i] < 0 && reg_equiv_memory_loc (i))
 	  {
-	    rtx x = eliminate_regs (reg_equiv_memory_loc[i], VOIDmode,
+	    rtx x = eliminate_regs (reg_equiv_memory_loc (i), VOIDmode,
 				    NULL_RTX);
 
 	    if (strict_memory_address_addr_space_p
 		  (GET_MODE (regno_reg_rtx[i]), XEXP (x, 0),
 		   MEM_ADDR_SPACE (x)))
-	      reg_equiv_mem[i] = x, reg_equiv_address[i] = 0;
+	      reg_equiv_mem (i) = x, reg_equiv_address (i) = 0;
 	    else if (CONSTANT_P (XEXP (x, 0))
 		     || (REG_P (XEXP (x, 0))
 			 && REGNO (XEXP (x, 0)) < FIRST_PSEUDO_REGISTER)
@@ -898,7 +895,7 @@ reload (rtx first, int global)
 			 && (REGNO (XEXP (XEXP (x, 0), 0))
 			     < FIRST_PSEUDO_REGISTER)
 			 && CONSTANT_P (XEXP (XEXP (x, 0), 1))))
-	      reg_equiv_address[i] = XEXP (x, 0), reg_equiv_mem[i] = 0;
+	      reg_equiv_address (i) = XEXP (x, 0), reg_equiv_mem (i) = 0;
 	    else
 	      {
 		/* Make a new stack slot.  Then indicate that something
@@ -907,8 +904,8 @@ reload (rtx first, int global)
 		   below might change some offset.  reg_equiv_{mem,address}
 		   will be set up for this pseudo on the next pass around
 		   the loop.  */
-		reg_equiv_memory_loc[i] = 0;
-		reg_equiv_init[i] = 0;
+		reg_equiv_memory_loc (i) = 0;
+		reg_equiv_init (i) = 0;
 		alter_reg (i, -1, true);
 	      }
 	  }
@@ -1022,10 +1019,10 @@ reload (rtx first, int global)
 
   for (i = FIRST_PSEUDO_REGISTER; i < max_regno; i++)
     {
-      if (reg_renumber[i] < 0 && reg_equiv_init[i] != 0)
+      if (reg_renumber[i] < 0 && reg_equiv_init (i) != 0)
 	{
 	  rtx list;
-	  for (list = reg_equiv_init[i]; list; list = XEXP (list, 1))
+	  for (list = reg_equiv_init (i); list; list = XEXP (list, 1))
 	    {
 	      rtx equiv_insn = XEXP (list, 0);
 
@@ -1093,11 +1090,11 @@ reload (rtx first, int global)
     {
       rtx addr = 0;
 
-      if (reg_equiv_mem[i])
-	addr = XEXP (reg_equiv_mem[i], 0);
+      if (reg_equiv_mem (i))
+	addr = XEXP (reg_equiv_mem (i), 0);
 
-      if (reg_equiv_address[i])
-	addr = reg_equiv_address[i];
+      if (reg_equiv_address (i))
+	addr = reg_equiv_address (i);
 
       if (addr)
 	{
@@ -1108,8 +1105,8 @@ reload (rtx first, int global)
 	      REG_USERVAR_P (reg) = 0;
 	      PUT_CODE (reg, MEM);
 	      XEXP (reg, 0) = addr;
-	      if (reg_equiv_memory_loc[i])
-		MEM_COPY_ATTRIBUTES (reg, reg_equiv_memory_loc[i]);
+	      if (reg_equiv_memory_loc (i))
+		MEM_COPY_ATTRIBUTES (reg, reg_equiv_memory_loc (i));
 	      else
 		{
 		  MEM_IN_STRUCT_P (reg) = MEM_SCALAR_P (reg) = 0;
@@ -1117,8 +1114,8 @@ reload (rtx first, int global)
 		}
 	      MEM_NOTRAP_P (reg) = 1;
 	    }
-	  else if (reg_equiv_mem[i])
-	    XEXP (reg_equiv_mem[i], 0) = addr;
+	  else if (reg_equiv_mem (i))
+	    XEXP (reg_equiv_mem (i), 0) = addr;
 	}
 
       /* We don't want complex addressing modes in debug insns
@@ -1130,10 +1127,10 @@ reload (rtx first, int global)
 	  rtx equiv = 0;
 	  df_ref use, next;
 
-	  if (reg_equiv_constant[i])
-	    equiv = reg_equiv_constant[i];
-	  else if (reg_equiv_invariant[i])
-	    equiv = reg_equiv_invariant[i];
+	  if (reg_equiv_constant (i))
+	    equiv = reg_equiv_constant (i);
+	  else if (reg_equiv_invariant (i))
+	    equiv = reg_equiv_invariant (i);
 	  else if (reg && MEM_P (reg))
 	    equiv = targetm.delegitimize_address (reg);
 	  else if (reg && REG_P (reg) && (int)REGNO (reg) != i)
@@ -1286,7 +1283,7 @@ reload (rtx first, int global)
 
   /* Indicate that we no longer have known memory locations or constants.  */
   free_reg_equiv ();
-  reg_equiv_init = 0;
+
   free (reg_max_ref_width);
   free (reg_old_renumber);
   free (pseudo_previous_regs);
@@ -1299,7 +1296,21 @@ reload (rtx first, int global)
   /* Free all the insn_chain structures at once.  */
   obstack_free (&reload_obstack, reload_startobj);
   unused_insn_chains = 0;
-  fixup_abnormal_edges ();
+
+  inserted = fixup_abnormal_edges ();
+
+  /* We've possibly turned single trapping insn into multiple ones.  */
+  if (cfun->can_throw_non_call_exceptions)
+    {
+      sbitmap blocks;
+      blocks = sbitmap_alloc (last_basic_block);
+      sbitmap_ones (blocks);
+      find_many_sub_basic_blocks (blocks);
+      sbitmap_free (blocks);
+    }
+
+  if (inserted)
+    commit_edge_insertions ();
 
   /* Replacing pseudos with their memory equivalents might have
      created shared rtx.  Subsequent passes would get confused
@@ -1494,9 +1505,9 @@ calculate_needs_all_insns (int global)
 	  /* Skip insns that only set an equivalence.  */
 	  if (set && REG_P (SET_DEST (set))
 	      && reg_renumber[REGNO (SET_DEST (set))] < 0
-	      && (reg_equiv_constant[REGNO (SET_DEST (set))]
-		  || (reg_equiv_invariant[REGNO (SET_DEST (set))]))
-		      && reg_equiv_init[REGNO (SET_DEST (set))])
+	      && (reg_equiv_constant (REGNO (SET_DEST (set)))
+		  || (reg_equiv_invariant (REGNO (SET_DEST (set)))))
+		      && reg_equiv_init (REGNO (SET_DEST (set))))
 	    continue;
 
 	  /* If needed, eliminate any eliminable registers.  */
@@ -1525,12 +1536,10 @@ calculate_needs_all_insns (int global)
 		   || (REG_P (SET_SRC (set)) && REG_P (SET_DEST (set))
 		       && reg_renumber[REGNO (SET_SRC (set))] < 0
 		       && reg_renumber[REGNO (SET_DEST (set))] < 0
-		       && reg_equiv_memory_loc[REGNO (SET_SRC (set))] != NULL
-		       && reg_equiv_memory_loc[REGNO (SET_DEST (set))] != NULL
-		       && rtx_equal_p (reg_equiv_memory_loc
-				       [REGNO (SET_SRC (set))],
-				       reg_equiv_memory_loc
-				       [REGNO (SET_DEST (set))]))))
+		       && reg_equiv_memory_loc (REGNO (SET_SRC (set))) != NULL
+		       && reg_equiv_memory_loc (REGNO (SET_DEST (set))) != NULL
+		       && rtx_equal_p (reg_equiv_memory_loc (REGNO (SET_SRC (set))),
+				       reg_equiv_memory_loc (REGNO (SET_DEST (set)))))))
 		{
 		  if (ira_conflicts_p)
 		    /* Inform IRA about the insn deletion.  */
@@ -1621,11 +1630,11 @@ calculate_elim_costs_all_insns (void)
 	      /* Skip insns that only set an equivalence.  */
 	      if (set && REG_P (SET_DEST (set))
 		  && reg_renumber[REGNO (SET_DEST (set))] < 0
-		  && (reg_equiv_constant[REGNO (SET_DEST (set))]
-		      || (reg_equiv_invariant[REGNO (SET_DEST (set))])))
+		  && (reg_equiv_constant (REGNO (SET_DEST (set)))
+		      || reg_equiv_invariant (REGNO (SET_DEST (set)))))
 		{
 		  unsigned regno = REGNO (SET_DEST (set));
-		  rtx init = reg_equiv_init[regno];
+		  rtx init = reg_equiv_init (regno);
 		  if (init)
 		    {
 		      rtx t = eliminate_regs_1 (SET_SRC (set), VOIDmode, insn,
@@ -1649,9 +1658,9 @@ calculate_elim_costs_all_insns (void)
     }
   for (i = FIRST_PSEUDO_REGISTER; i < max_regno; i++)
     {
-      if (reg_equiv_invariant[i])
+      if (reg_equiv_invariant (i))
 	{
-	  if (reg_equiv_init[i])
+	  if (reg_equiv_init (i))
 	    {
 	      int cost = reg_equiv_init_cost[i];
 	      if (dump_file)
@@ -1671,7 +1680,6 @@ calculate_elim_costs_all_insns (void)
 	}
     }
 
-  free_reg_equiv ();
   free (reg_equiv_init_cost);
 }
 
@@ -2158,9 +2166,10 @@ alter_reg (int i, int from_reg, bool dont_share_p)
 
   if (reg_renumber[i] < 0
       && REG_N_REFS (i) > 0
-      && reg_equiv_constant[i] == 0
-      && (reg_equiv_invariant[i] == 0 || reg_equiv_init[i] == 0)
-      && reg_equiv_memory_loc[i] == 0)
+      && reg_equiv_constant (i) == 0
+      && (reg_equiv_invariant (i) == 0
+	  || reg_equiv_init (i) == 0)
+      && reg_equiv_memory_loc (i) == 0)
     {
       rtx x = NULL_RTX;
       enum machine_mode mode = GET_MODE (regno_reg_rtx[i]);
@@ -2284,7 +2293,7 @@ alter_reg (int i, int from_reg, bool dont_share_p)
       set_mem_attrs_for_spill (x);
 
       /* Save the stack slot for later.  */
-      reg_equiv_memory_loc[i] = x;
+      reg_equiv_memory_loc (i) = x;
     }
 }
 
@@ -2479,10 +2488,10 @@ note_reg_elim_costly (rtx *px, void *data)
 
   if (REG_P (x)
       && REGNO (x) >= FIRST_PSEUDO_REGISTER
-      && reg_equiv_init[REGNO (x)]
-      && reg_equiv_invariant[REGNO (x)])
+      && reg_equiv_init (REGNO (x))
+      && reg_equiv_invariant (REGNO (x)))
     {
-      rtx t = reg_equiv_invariant[REGNO (x)];
+      rtx t = reg_equiv_invariant (REGNO (x));
       rtx new_rtx = eliminate_regs_1 (t, Pmode, insn, true, true);
       int cost = rtx_cost (new_rtx, SET, optimize_bb_for_speed_p (elim_bb));
       int freq = REG_FREQ_FROM_BB (elim_bb);
@@ -2567,14 +2576,15 @@ eliminate_regs_1 (rtx x, enum machine_mode mem_mode, rtx insn,
 
 	}
       else if (reg_renumber && reg_renumber[regno] < 0
-	       && reg_equiv_invariant && reg_equiv_invariant[regno])
+	       && reg_equivs
+	       && reg_equiv_invariant (regno))
 	{
 	  if (may_use_invariant || (insn && DEBUG_INSN_P (insn)))
-	    return eliminate_regs_1 (copy_rtx (reg_equiv_invariant[regno]),
+	    return eliminate_regs_1 (copy_rtx (reg_equiv_invariant (regno)),
 			             mem_mode, insn, true, for_costs);
 	  /* There exists at least one use of REGNO that cannot be
 	     eliminated.  Prevent the defining insn from being deleted.  */
-	  reg_equiv_init[regno] = NULL_RTX;
+	  reg_equiv_init (regno) = NULL_RTX;
 	  if (!for_costs)
 	    alter_reg (regno, -1, true);
 	}
@@ -2651,14 +2661,14 @@ eliminate_regs_1 (rtx x, enum machine_mode mem_mode, rtx insn,
 	    if (GET_CODE (new0) == PLUS && REG_P (new1)
 		&& REGNO (new1) >= FIRST_PSEUDO_REGISTER
 		&& reg_renumber[REGNO (new1)] < 0
-		&& reg_equiv_constant != 0
-		&& reg_equiv_constant[REGNO (new1)] != 0)
-	      new1 = reg_equiv_constant[REGNO (new1)];
+		&& reg_equivs
+		&& reg_equiv_constant (REGNO (new1)) != 0)
+	      new1 = reg_equiv_constant (REGNO (new1));
 	    else if (GET_CODE (new1) == PLUS && REG_P (new0)
 		     && REGNO (new0) >= FIRST_PSEUDO_REGISTER
 		     && reg_renumber[REGNO (new0)] < 0
-		     && reg_equiv_constant[REGNO (new0)] != 0)
-	      new0 = reg_equiv_constant[REGNO (new0)];
+		     && reg_equiv_constant (REGNO (new0)) != 0)
+	      new0 = reg_equiv_constant (REGNO (new0));
 
 	    new_rtx = form_sum (GET_MODE (x), new0, new1);
 
@@ -2820,14 +2830,13 @@ eliminate_regs_1 (rtx x, enum machine_mode mem_mode, rtx insn,
       if (REG_P (SUBREG_REG (x))
 	  && (GET_MODE_SIZE (GET_MODE (x))
 	      <= GET_MODE_SIZE (GET_MODE (SUBREG_REG (x))))
-	  && reg_equiv_memory_loc != 0
-	  && reg_equiv_memory_loc[REGNO (SUBREG_REG (x))] != 0)
+	  && reg_equivs
+	  && reg_equiv_memory_loc (REGNO (SUBREG_REG (x))) != 0)
 	{
 	  new_rtx = SUBREG_REG (x);
 	}
       else
-	new_rtx = eliminate_regs_1 (SUBREG_REG (x), mem_mode, insn, false,
-				    for_costs);
+	new_rtx = eliminate_regs_1 (SUBREG_REG (x), mem_mode, insn, false, for_costs);
 
       if (new_rtx != SUBREG_REG (x))
 	{
@@ -2987,10 +2996,11 @@ elimination_effects (rtx x, enum machine_mode mem_mode)
 	      }
 
 	}
-      else if (reg_renumber[regno] < 0 && reg_equiv_constant
-	       && reg_equiv_constant[regno]
-	       && ! function_invariant_p (reg_equiv_constant[regno]))
-	elimination_effects (reg_equiv_constant[regno], mem_mode);
+      else if (reg_renumber[regno] < 0
+	       && reg_equivs != 0
+	       && reg_equiv_constant (regno)
+	       && ! function_invariant_p (reg_equiv_constant (regno)))
+	elimination_effects (reg_equiv_constant (regno), mem_mode);
       return;
 
     case PRE_INC:
@@ -3058,8 +3068,8 @@ elimination_effects (rtx x, enum machine_mode mem_mode)
       if (REG_P (SUBREG_REG (x))
 	  && (GET_MODE_SIZE (GET_MODE (x))
 	      <= GET_MODE_SIZE (GET_MODE (SUBREG_REG (x))))
-	  && reg_equiv_memory_loc != 0
-	  && reg_equiv_memory_loc[REGNO (SUBREG_REG (x))] != 0)
+	  && reg_equivs != 0
+	  && reg_equiv_memory_loc (REGNO (SUBREG_REG (x))) != 0)
 	return;
 
       elimination_effects (SUBREG_REG (x), mem_mode);
@@ -4085,11 +4095,7 @@ init_eliminable_invariants (rtx first, bool do_subregs)
   int i;
   rtx insn;
 
-  reg_equiv_constant = XCNEWVEC (rtx, max_regno);
-  reg_equiv_invariant = XCNEWVEC (rtx, max_regno);
-  reg_equiv_mem = XCNEWVEC (rtx, max_regno);
-  reg_equiv_alt_mem_list = XCNEWVEC (rtx, max_regno);
-  reg_equiv_address = XCNEWVEC (rtx, max_regno);
+  grow_reg_equivs ();
   if (do_subregs)
     reg_max_ref_width = XCNEWVEC (unsigned int, max_regno);
   else
@@ -4151,7 +4157,7 @@ init_eliminable_invariants (rtx first, bool do_subregs)
 		  /* Always unshare the equivalence, so we can
 		     substitute into this insn without touching the
 		       equivalence.  */
-		  reg_equiv_memory_loc[i] = copy_rtx (x);
+		  reg_equiv_memory_loc (i) = copy_rtx (x);
 		}
 	      else if (function_invariant_p (x))
 		{
@@ -4159,41 +4165,41 @@ init_eliminable_invariants (rtx first, bool do_subregs)
 		    {
 		      /* This is PLUS of frame pointer and a constant,
 			 and might be shared.  Unshare it.  */
-		      reg_equiv_invariant[i] = copy_rtx (x);
+		      reg_equiv_invariant (i) = copy_rtx (x);
 		      num_eliminable_invariants++;
 		    }
 		  else if (x == frame_pointer_rtx || x == arg_pointer_rtx)
 		    {
-		      reg_equiv_invariant[i] = x;
+		      reg_equiv_invariant (i) = x;
 		      num_eliminable_invariants++;
 		    }
 		  else if (LEGITIMATE_CONSTANT_P (x))
-		    reg_equiv_constant[i] = x;
+		    reg_equiv_constant (i) = x;
 		  else
 		    {
-		      reg_equiv_memory_loc[i]
+		      reg_equiv_memory_loc (i)
 			= force_const_mem (GET_MODE (SET_DEST (set)), x);
-		      if (! reg_equiv_memory_loc[i])
-			reg_equiv_init[i] = NULL_RTX;
+		      if (! reg_equiv_memory_loc (i))
+			reg_equiv_init (i) = NULL_RTX;
 		    }
 		}
 	      else
 		{
-		  reg_equiv_init[i] = NULL_RTX;
+		  reg_equiv_init (i) = NULL_RTX;
 		  continue;
 		}
 	    }
 	  else
-	    reg_equiv_init[i] = NULL_RTX;
+	    reg_equiv_init (i) = NULL_RTX;
 	}
     }
 
   if (dump_file)
     for (i = FIRST_PSEUDO_REGISTER; i < max_regno; i++)
-      if (reg_equiv_init[i])
+      if (reg_equiv_init (i))
 	{
 	  fprintf (dump_file, "init_insns for %u: ", i);
-	  print_inline_rtx (dump_file, reg_equiv_init[i], 20);
+	  print_inline_rtx (dump_file, reg_equiv_init (i), 20);
 	  fprintf (dump_file, "\n");
 	}
 }
@@ -4206,14 +4212,6 @@ free_reg_equiv (void)
 {
   int i;
 
-  if (reg_equiv_constant)
-    free (reg_equiv_constant);
-  if (reg_equiv_invariant)
-    free (reg_equiv_invariant);
-  reg_equiv_constant = 0;
-  reg_equiv_invariant = 0;
-  VEC_free (rtx, gc, reg_equiv_memory_loc_vec);
-  reg_equiv_memory_loc = 0;
 
   if (offsets_known_at)
     free (offsets_known_at);
@@ -4223,12 +4221,11 @@ free_reg_equiv (void)
   offsets_known_at = 0;
 
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-    if (reg_equiv_alt_mem_list[i])
-      free_EXPR_LIST_list (&reg_equiv_alt_mem_list[i]);
-  free (reg_equiv_alt_mem_list);
+    if (reg_equiv_alt_mem_list (i))
+      free_EXPR_LIST_list (&reg_equiv_alt_mem_list (i));
+  VEC_free (reg_equivs_t, gc, reg_equivs);
+  reg_equivs = NULL;
 
-  free (reg_equiv_mem);
-  free (reg_equiv_address);
 }
 
 /* Kick all pseudos out of hard register REGNO.
@@ -7284,15 +7281,15 @@ emit_input_reload_insns (struct insn_chain *chain, struct reload *rl,
 	tmp = SUBREG_REG (tmp);
       if (REG_P (tmp)
 	  && REGNO (tmp) >= FIRST_PSEUDO_REGISTER
-	  && (reg_equiv_memory_loc[REGNO (tmp)] != 0
-	      || reg_equiv_constant[REGNO (tmp)] != 0))
+	  && (reg_equiv_memory_loc (REGNO (tmp)) != 0
+	      || reg_equiv_constant (REGNO (tmp)) != 0))
 	{
-	  if (! reg_equiv_mem[REGNO (tmp)]
+	  if (! reg_equiv_mem (REGNO (tmp))
 	      || num_not_at_initial_offset
 	      || GET_CODE (oldequiv) == SUBREG)
 	    real_oldequiv = rl->in;
 	  else
-	    real_oldequiv = reg_equiv_mem[REGNO (tmp)];
+	    real_oldequiv = reg_equiv_mem (REGNO (tmp));
 	}
 
       tmp = old;
@@ -7300,15 +7297,15 @@ emit_input_reload_insns (struct insn_chain *chain, struct reload *rl,
 	tmp = SUBREG_REG (tmp);
       if (REG_P (tmp)
 	  && REGNO (tmp) >= FIRST_PSEUDO_REGISTER
-	  && (reg_equiv_memory_loc[REGNO (tmp)] != 0
-	      || reg_equiv_constant[REGNO (tmp)] != 0))
+	  && (reg_equiv_memory_loc (REGNO (tmp)) != 0
+	      || reg_equiv_constant (REGNO (tmp)) != 0))
 	{
-	  if (! reg_equiv_mem[REGNO (tmp)]
+	  if (! reg_equiv_mem (REGNO (tmp))
 	      || num_not_at_initial_offset
 	      || GET_CODE (old) == SUBREG)
 	    real_old = rl->in;
 	  else
-	    real_old = reg_equiv_mem[REGNO (tmp)];
+	    real_old = reg_equiv_mem (REGNO (tmp));
 	}
 
       second_reload_reg = rld[secondary_reload].reg_rtx;
@@ -7478,16 +7475,14 @@ emit_input_reload_insns (struct insn_chain *chain, struct reload *rl,
 
       if ((REG_P (oldequiv)
 	   && REGNO (oldequiv) >= FIRST_PSEUDO_REGISTER
-	   && (reg_equiv_memory_loc[REGNO (oldequiv)] != 0
-	       || reg_equiv_constant[REGNO (oldequiv)] != 0))
+	   && (reg_equiv_memory_loc (REGNO (oldequiv)) != 0
+	       || reg_equiv_constant (REGNO (oldequiv)) != 0))
 	  || (GET_CODE (oldequiv) == SUBREG
 	      && REG_P (SUBREG_REG (oldequiv))
 	      && (REGNO (SUBREG_REG (oldequiv))
 		  >= FIRST_PSEUDO_REGISTER)
-	      && ((reg_equiv_memory_loc
-		   [REGNO (SUBREG_REG (oldequiv))] != 0)
-		  || (reg_equiv_constant
-		      [REGNO (SUBREG_REG (oldequiv))] != 0)))
+	      && ((reg_equiv_memory_loc (REGNO (SUBREG_REG (oldequiv))) != 0)
+		  || (reg_equiv_constant (REGNO (SUBREG_REG (oldequiv))) != 0)))
 	  || (CONSTANT_P (oldequiv)
 	      && (targetm.preferred_reload_class (oldequiv,
 						  REGNO_REG_CLASS (REGNO (reloadreg)))
@@ -7545,8 +7540,8 @@ emit_output_reload_insns (struct insn_chain *chain, struct reload *rl,
       int tertiary_reload = rld[secondary_reload].secondary_out_reload;
 
       if (REG_P (old) && REGNO (old) >= FIRST_PSEUDO_REGISTER
-	  && reg_equiv_mem[REGNO (old)] != 0)
-	real_old = reg_equiv_mem[REGNO (old)];
+	  && reg_equiv_mem (REGNO (old)) != 0)
+	real_old = reg_equiv_mem (REGNO (old));
 
       if (secondary_reload_class (0, rl->rclass, mode, real_old) != NO_REGS)
 	{
@@ -8479,7 +8474,7 @@ gen_reload (rtx out, rtx in, int opnum, enum reload_type type)
 	 not valid than to dummy things up.  */
 
       rtx op0, op1, tem, insn;
-      int code;
+      enum insn_code code;
 
       op0 = find_replacement (&XEXP (in, 0));
       op1 = find_replacement (&XEXP (in, 1));
@@ -8517,14 +8512,13 @@ gen_reload (rtx out, rtx in, int opnum, enum reload_type type)
 	 DEFINE_PEEPHOLE should be specified that recognizes the sequence
 	 we emit below.  */
 
-      code = (int) optab_handler (add_optab, GET_MODE (out));
+      code = optab_handler (add_optab, GET_MODE (out));
 
       if (CONSTANT_P (op1) || MEM_P (op1) || GET_CODE (op1) == SUBREG
 	  || (REG_P (op1)
 	      && REGNO (op1) >= FIRST_PSEUDO_REGISTER)
 	  || (code != CODE_FOR_nothing
-	      && ! ((*insn_data[code].operand[2].predicate)
-		    (op1, insn_data[code].operand[2].mode))))
+	      && !insn_operand_matches (code, 2, op1)))
 	tem = op0, op0 = op1, op1 = tem;
 
       gen_reload (out, op0, opnum, type);
@@ -8676,7 +8670,7 @@ delete_output_reload (rtx insn, int j, int last_reload_reg, rtx new_reload_reg)
 
   while (GET_CODE (reg) == SUBREG)
     reg = SUBREG_REG (reg);
-  substed = reg_equiv_memory_loc[REGNO (reg)];
+  substed = reg_equiv_memory_loc (REGNO (reg));
 
   /* This is unsafe if the operand occurs more often in the current
      insn than it is inherited.  */
@@ -8709,7 +8703,7 @@ delete_output_reload (rtx insn, int j, int last_reload_reg, rtx new_reload_reg)
     n_occurrences += count_occurrences (PATTERN (insn),
 					eliminate_regs (substed, VOIDmode,
 							NULL_RTX), 0);
-  for (i1 = reg_equiv_alt_mem_list[REGNO (reg)]; i1; i1 = XEXP (i1, 1))
+  for (i1 = reg_equiv_alt_mem_list (REGNO (reg)); i1; i1 = XEXP (i1, 1))
     {
       gcc_assert (!rtx_equal_p (XEXP (i1, 0), substed));
       n_occurrences += count_occurrences (PATTERN (insn), XEXP (i1, 0), 0);
@@ -9113,112 +9107,3 @@ add_auto_inc_notes (rtx insn, rtx x)
     }
 }
 #endif
-
-/* This is used by reload pass, that does emit some instructions after
-   abnormal calls moving basic block end, but in fact it wants to emit
-   them on the edge.  Looks for abnormal call edges, find backward the
-   proper call and fix the damage.
-
-   Similar handle instructions throwing exceptions internally.  */
-void
-fixup_abnormal_edges (void)
-{
-  bool inserted = false;
-  basic_block bb;
-
-  FOR_EACH_BB (bb)
-    {
-      edge e;
-      edge_iterator ei;
-
-      /* Look for cases we are interested in - calls or instructions causing
-         exceptions.  */
-      FOR_EACH_EDGE (e, ei, bb->succs)
-	{
-	  if (e->flags & EDGE_ABNORMAL_CALL)
-	    break;
-	  if ((e->flags & (EDGE_ABNORMAL | EDGE_EH))
-	      == (EDGE_ABNORMAL | EDGE_EH))
-	    break;
-	}
-      if (e && !CALL_P (BB_END (bb))
-	  && !can_throw_internal (BB_END (bb)))
-	{
-	  rtx insn;
-
-	  /* Get past the new insns generated.  Allow notes, as the insns
-	     may be already deleted.  */
-	  insn = BB_END (bb);
-	  while ((NONJUMP_INSN_P (insn) || NOTE_P (insn))
-		 && !can_throw_internal (insn)
-		 && insn != BB_HEAD (bb))
-	    insn = PREV_INSN (insn);
-
-	  if (CALL_P (insn) || can_throw_internal (insn))
-	    {
-	      rtx stop, next;
-
-	      stop = NEXT_INSN (BB_END (bb));
-	      BB_END (bb) = insn;
-	      insn = NEXT_INSN (insn);
-
-	      e = find_fallthru_edge (bb->succs);
-
-	      while (insn && insn != stop)
-		{
-		  next = NEXT_INSN (insn);
-		  if (INSN_P (insn))
-		    {
-		      delete_insn (insn);
-
-		      /* Sometimes there's still the return value USE.
-			 If it's placed after a trapping call (i.e. that
-			 call is the last insn anyway), we have no fallthru
-			 edge.  Simply delete this use and don't try to insert
-			 on the non-existent edge.  */
-		      if (GET_CODE (PATTERN (insn)) != USE)
-			{
-			  /* We're not deleting it, we're moving it.  */
-			  INSN_DELETED_P (insn) = 0;
-			  PREV_INSN (insn) = NULL_RTX;
-			  NEXT_INSN (insn) = NULL_RTX;
-
-			  insert_insn_on_edge (insn, e);
-			  inserted = true;
-			}
-		    }
-		  else if (!BARRIER_P (insn))
-		    set_block_for_insn (insn, NULL);
-		  insn = next;
-		}
-	    }
-
-	  /* It may be that we don't find any such trapping insn.  In this
-	     case we discovered quite late that the insn that had been
-	     marked as can_throw_internal in fact couldn't trap at all.
-	     So we should in fact delete the EH edges out of the block.  */
-	  else
-	    purge_dead_edges (bb);
-	}
-    }
-
-  /* We've possibly turned single trapping insn into multiple ones.  */
-  if (cfun->can_throw_non_call_exceptions)
-    {
-      sbitmap blocks;
-      blocks = sbitmap_alloc (last_basic_block);
-      sbitmap_ones (blocks);
-      find_many_sub_basic_blocks (blocks);
-      sbitmap_free (blocks);
-    }
-
-  if (inserted)
-    commit_edge_insertions ();
-
-#ifdef ENABLE_CHECKING
-  /* Verify that we didn't turn one trapping insn into many, and that
-     we found and corrected all of the problems wrt fixups on the
-     fallthru edge.  */
-  verify_flow_info ();
-#endif
-}

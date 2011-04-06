@@ -271,8 +271,6 @@ mark_operand_necessary (tree op)
 static void
 mark_stmt_if_obviously_necessary (gimple stmt, bool aggressive)
 {
-  tree lhs = NULL_TREE;
-
   /* With non-call exceptions, we have to assume that all statements could
      throw.  If a statement may throw, it is inherently necessary.  */
   if (cfun->can_throw_non_call_exceptions && stmt_could_throw_p (stmt))
@@ -311,12 +309,6 @@ mark_stmt_if_obviously_necessary (gimple stmt, bool aggressive)
 	}
       if (!gimple_call_lhs (stmt))
         return;
-      lhs = gimple_call_lhs (stmt);
-      /* Fall through */
-
-    case GIMPLE_ASSIGN:
-      if (!lhs)
-        lhs = gimple_assign_lhs (stmt);
       break;
 
     case GIMPLE_DEBUG:

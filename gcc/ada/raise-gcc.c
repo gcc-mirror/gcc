@@ -1065,6 +1065,11 @@ typedef _Unwind_Action phases_arg_t;
 #endif
 
 _Unwind_Reason_Code
+PERSONALITY_FUNCTION (version_arg_t, phases_arg_t,
+                      _Unwind_Exception_Class, _Unwind_Exception *,
+                      _Unwind_Context *);
+
+_Unwind_Reason_Code
 PERSONALITY_FUNCTION (version_arg_t version_arg,
                       phases_arg_t phases_arg,
                       _Unwind_Exception_Class uw_exception_class,

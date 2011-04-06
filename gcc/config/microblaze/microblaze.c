@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on Xilinx MicroBlaze.
-   Copyright 2009, 2010 Free Software Foundation, Inc.
+   Copyright 2009, 2010, 2011 Free Software Foundation, Inc.
 
    Contributed by Michael Eager <eager@eagercon.com>.
 
@@ -195,10 +195,14 @@ int interrupt_handler;
 int save_volatiles;
 
 const struct attribute_spec microblaze_attribute_table[] = {
-  /* name         min_len, max_len, decl_req, type_req, fn_type, req_handler */
-  {"interrupt_handler", 0,       0,     true,    false,   false,        NULL},
-  {"save_volatiles"   , 0,       0,     true,    false,   false,        NULL},
-  { NULL,        	0,       0,    false,    false,   false,        NULL}
+  /* name         min_len, max_len, decl_req, type_req, fn_type, req_handler,
+     affects_type_identity */
+  {"interrupt_handler", 0,       0,     true,    false,   false,        NULL,
+    false },
+  {"save_volatiles"   , 0,       0,     true,    false,   false,        NULL,
+    false },
+  { NULL,        	0,       0,    false,    false,   false,        NULL,
+    false }
 };
 
 static int microblaze_interrupt_function_p (tree);
@@ -322,8 +326,8 @@ double_memory_operand (rtx op, enum machine_mode mode)
 	  && GET_CODE (op) == REG
 	  && REGNO (op) >= FIRST_PSEUDO_REGISTER
 	  && reg_renumber[REGNO (op)] < 0
-	  && reg_equiv_mem[REGNO (op)] != 0
-	  && double_memory_operand (reg_equiv_mem[REGNO (op)], mode))
+	  && reg_equiv_mem (REGNO (op)) != 0
+	  && double_memory_operand (reg_equiv_mem (REGNO (op)), mode))
 	return 1;
       return 0;
     }
@@ -1269,24 +1273,6 @@ microblaze_version_to_int (const char *version)
     return -1;
 
   return iver;
-}
-
-static bool
-microblaze_handle_option (size_t code,
-			  const char *arg ATTRIBUTE_UNUSED,
-			  int value ATTRIBUTE_UNUSED)
-{
-  switch (code)
-    {
-    case OPT_mno_clearbss:
-      flag_zero_initialized_in_bss = 0;
-      warning (0, "-mno-clearbss is deprecated; use -fno-zero-initialized-in-bss");
-      break;
-    case OPT_mxl_stack_check:
-      warning (0, "-mxl_stack_check is deprecated; use -fstack-check");
-      break;
-    }
-  return true;
 }
 
 
@@ -2999,9 +2985,6 @@ microblaze_adjust_cost (rtx insn ATTRIBUTE_UNUSED, rtx link,
 #undef TARGET_ASM_FUNCTION_END_PROLOGUE
 #define TARGET_ASM_FUNCTION_END_PROLOGUE \
                                         microblaze_function_end_prologue
-
-#undef TARGET_HANDLE_OPTION
-#define TARGET_HANDLE_OPTION		microblaze_handle_option
 
 #undef TARGET_DEFAULT_TARGET_FLAGS
 #define TARGET_DEFAULT_TARGET_FLAGS	TARGET_DEFAULT

@@ -177,6 +177,49 @@ gfc_are_identical_variables (gfc_expr *e1, gfc_expr *e2)
   return true;
 }
 
+/* Compare two functions for equality.  Returns 0 if e1==e2, -2 otherwise.  If
+   impure_ok is false, only return 0 for pure functions.  */
+
+int
+gfc_dep_compare_functions (gfc_expr *e1, gfc_expr *e2, bool impure_ok)
+{
+
+  gfc_actual_arglist *args1;
+  gfc_actual_arglist *args2;
+  
+  if (e1->expr_type != EXPR_FUNCTION || e2->expr_type != EXPR_FUNCTION)
+    return -2;
+
+  if ((e1->value.function.esym && e2->value.function.esym
+       && e1->value.function.esym == e2->value.function.esym
+       && (e1->value.function.esym->result->attr.pure || impure_ok))
+       || (e1->value.function.isym && e2->value.function.isym
+	   && e1->value.function.isym == e2->value.function.isym
+	   && (e1->value.function.isym->pure || impure_ok)))
+    {
+      args1 = e1->value.function.actual;
+      args2 = e2->value.function.actual;
+
+      /* Compare the argument lists for equality.  */
+      while (args1 && args2)
+	{
+	  /*  Bitwise xor, since C has no non-bitwise xor operator.  */
+	  if ((args1->expr == NULL) ^ (args2->expr == NULL))
+	    return -2;
+	  
+	  if (args1->expr != NULL && args2->expr != NULL
+	      && gfc_dep_compare_expr (args1->expr, args2->expr) != 0)
+	    return -2;
+	  
+	  args1 = args1->next;
+	  args2 = args2->next;
+	}
+      return (args1 || args2) ? -2 : 0;
+    }
+      else
+	return -2;      
+}
+
 /* Compare two values.  Returns 0 if e1 == e2, -1 if e1 < e2, +1 if e1 > e2,
    and -2 if the relationship could not be determined.  */
 
@@ -399,36 +442,7 @@ gfc_dep_compare_expr (gfc_expr *e1, gfc_expr *e2)
       return -2;
 
     case EXPR_FUNCTION:
-
-      /* PURE functions can be compared for argument equality.  */
-      if ((e1->value.function.esym && e2->value.function.esym
-	   && e1->value.function.esym == e2->value.function.esym
-	   && e1->value.function.esym->result->attr.pure)
-	  || (e1->value.function.isym && e2->value.function.isym
-	      && e1->value.function.isym == e2->value.function.isym
-	      && e1->value.function.isym->pure))
-	{
-	  args1 = e1->value.function.actual;
-	  args2 = e2->value.function.actual;
-
-	  /* Compare the argument lists for equality.  */
-	  while (args1 && args2)
-	    {
-	      /*  Bitwise xor, since C has no non-bitwise xor operator.  */
-	      if ((args1->expr == NULL) ^ (args2->expr == NULL))
-		return -2;
-
-	      if (args1->expr != NULL && args2->expr != NULL
-		  && gfc_dep_compare_expr (args1->expr, args2->expr) != 0)
-		return -2;
-
-	      args1 = args1->next;
-	      args2 = args2->next;
-	    }
-	  return (args1 || args2) ? -2 : 0;
-	}
-      else
-	return -2;
+      return gfc_dep_compare_functions (e1, e2, false);
       break;
 
     default:

@@ -304,7 +304,7 @@ const (
 // separator is an empty //-style comment that is interspersed between
 // different comment groups when they are concatenated into a single group
 //
-var separator = &Comment{noPos, []byte("//")}
+var separator = &Comment{noPos, "//"}
 
 
 // MergePackageFiles creates a file AST by merging the ASTs of the
@@ -425,5 +425,7 @@ func MergePackageFiles(pkg *Package, mode MergeMode) *File {
 		}
 	}
 
-	return &File{doc, pos, NewIdent(pkg.Name), decls, comments}
+	// TODO(gri) need to compute pkgScope and unresolved identifiers!
+	// TODO(gri) need to compute imports!
+	return &File{doc, pos, NewIdent(pkg.Name), decls, nil, nil, nil, comments}
 }

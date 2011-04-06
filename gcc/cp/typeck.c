@@ -1338,7 +1338,7 @@ structural_comptypes (tree t1, tree t2, int strict)
   /* If we get here, we know that from a target independent POV the
      types are the same.  Make sure the target attributes are also
      the same.  */
-  return targetm.comp_type_attributes (t1, t2);
+  return comp_type_attributes (t1, t2);
 }
 
 /* Return true if T1 and T2 are related as allowed by STRICT.  STRICT

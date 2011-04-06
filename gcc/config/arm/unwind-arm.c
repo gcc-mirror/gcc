@@ -1196,8 +1196,6 @@ __gnu_unwind_pr_common (_Unwind_State state,
 		  ucbp->barrier_cache.bitpattern[4] = (_uw) &data[1];
 
 		  if (data[0] & uint32_highbit)
-		    phase2_call_unexpected_after_unwind = 1;
-		  else
 		    {
 		      data += rtti_count + 1;
 		      /* Setup for entry to the handler.  */
@@ -1207,6 +1205,8 @@ __gnu_unwind_pr_common (_Unwind_State state,
 		      _Unwind_SetGR (context, 0, (_uw) ucbp);
 		      return _URC_INSTALL_CONTEXT;
 		    }
+		  else
+		    phase2_call_unexpected_after_unwind = 1;
 		}
 	      if (data[0] & uint32_highbit)
 		data++;

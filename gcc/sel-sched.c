@@ -6481,7 +6481,7 @@ code_motion_path_driver (insn_t insn, av_set_t orig_ops, ilist_t path,
 
   /* Filter the orig_ops set.  */
   if (AV_SET_VALID_P (insn))
-    av_set_intersect (&orig_ops, AV_SET (insn));
+    av_set_code_motion_filter (&orig_ops, AV_SET (insn));
 
   /* If no more original ops, return immediately.  */
   if (!orig_ops)

@@ -1,6 +1,7 @@
 /* Xtensa/Elf configuration.
    Derived from the configuration for GCC for Intel i386 running Linux.
-   Copyright (C) 2001, 2003, 2006, 2007, 2010 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2003, 2006, 2007, 2010, 2011
+   Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -28,9 +29,6 @@ along with GCC; see the file COPYING3.  If not see
 
 #undef ASM_APP_OFF
 #define ASM_APP_OFF "#NO_APP\n"
-
-#undef TARGET_VERSION
-#define TARGET_VERSION fputs (" (Xtensa/ELF)", stderr);
 
 #undef SIZE_TYPE
 #define SIZE_TYPE "unsigned int"

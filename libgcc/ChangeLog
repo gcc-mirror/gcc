@@ -1,3 +1,12 @@
+2011-03-22  Joseph Myers  <joseph@codesourcery.com>
+
+	* config.host (alpha*-*-gnu*, arc-*-elf*, arm*-*-netbsd*,
+	arm-*-pe*, crx-*-elf, i[34567]86-*-netbsd*, i[34567]86-*-pe,
+	m68hc11-*-*|m6811-*-*, m68hc12-*-*|m6812-*-*, mcore-*-pe*,
+	powerpc64-*-gnu*, powerpc-*-gnu-gnualtivec*, powerpc-*-gnu*,
+	sh-*-symbianelf* | sh[12346l]*-*-symbianelf*, vax-*-netbsd*):
+	Remove cases.
+
 2011-03-14  Andreas Tobler  <andreast@fgznet.ch>
 
 	* config.host (cpu_type): Add FreeBSD PowerPC specific parts.

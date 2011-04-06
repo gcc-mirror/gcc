@@ -88,14 +88,15 @@ type FloatTest struct {
 type Xs string
 
 func (x *Xs) Scan(state ScanState, verb int) os.Error {
-	tok, err := state.Token()
+	tok, err := state.Token(true, func(r int) bool { return r == verb })
 	if err != nil {
 		return err
 	}
-	if !regexp.MustCompile("^" + string(verb) + "+$").MatchString(tok) {
+	s := string(tok)
+	if !regexp.MustCompile("^" + string(verb) + "+$").MatchString(s) {
 		return os.ErrorString("syntax error for xs")
 	}
-	*x = Xs(tok)
+	*x = Xs(s)
 	return nil
 }
 
@@ -113,9 +114,11 @@ func (s *IntString) Scan(state ScanState, verb int) os.Error {
 		return err
 	}
 
-	if _, err := Fscan(state, &s.s); err != nil {
+	tok, err := state.Token(true, nil)
+	if err != nil {
 		return err
 	}
+	s.s = string(tok)
 	return nil
 }
 
@@ -331,7 +334,7 @@ var multiTests = []ScanfMultiTest{
 	{"%c%c%c", "2\u50c2X", args(&i, &j, &k), args('2', '\u50c2', 'X'), ""},
 
 	// Custom scanners.
-	{"%2e%f", "eefffff", args(&x, &y), args(Xs("ee"), Xs("fffff")), ""},
+	{"%e%f", "eefffff", args(&x, &y), args(Xs("ee"), Xs("fffff")), ""},
 	{"%4v%s", "12abcd", args(&z, &s), args(IntString{12, "ab"}, "cd"), ""},
 
 	// Errors
@@ -476,20 +479,10 @@ func verifyInf(str string, t *testing.T) {
 	}
 }
 
-
 func TestInf(t *testing.T) {
 	for _, s := range []string{"inf", "+inf", "-inf", "INF", "-INF", "+INF", "Inf", "-Inf", "+Inf"} {
 		verifyInf(s, t)
 	}
-}
-
-// TODO: there's no conversion from []T to ...T, but we can fake it.  These
-// functions do the faking.  We index the table by the length of the param list.
-var fscanf = []func(io.Reader, string, []interface{}) (int, os.Error){
-	0: func(r io.Reader, f string, i []interface{}) (int, os.Error) { return Fscanf(r, f) },
-	1: func(r io.Reader, f string, i []interface{}) (int, os.Error) { return Fscanf(r, f, i[0]) },
-	2: func(r io.Reader, f string, i []interface{}) (int, os.Error) { return Fscanf(r, f, i[0], i[1]) },
-	3: func(r io.Reader, f string, i []interface{}) (int, os.Error) { return Fscanf(r, f, i[0], i[1], i[2]) },
 }
 
 func testScanfMulti(name string, t *testing.T) {
@@ -501,7 +494,7 @@ func testScanfMulti(name string, t *testing.T) {
 		} else {
 			r = newReader(test.text)
 		}
-		n, err := fscanf[len(test.in)](r, test.format, test.in)
+		n, err := Fscanf(r, test.format, test.in...)
 		if err != nil {
 			if test.err == "" {
 				t.Errorf("got error scanning (%q, %q): %q", test.format, test.text, err)
@@ -830,12 +823,12 @@ func testScanInts(t *testing.T, scan func(*RecursiveInt, *bytes.Buffer) os.Error
 	i := 1
 	for ; r != nil; r = r.next {
 		if r.i != i {
-			t.Fatal("bad scan: expected %d got %d", i, r.i)
+			t.Fatalf("bad scan: expected %d got %d", i, r.i)
 		}
 		i++
 	}
 	if i-1 != intCount {
-		t.Fatal("bad scan count: expected %d got %d", intCount, i-1)
+		t.Fatalf("bad scan count: expected %d got %d", intCount, i-1)
 	}
 }
 

@@ -798,6 +798,7 @@ extern basic_block force_nonfallthru (edge);
 extern rtx block_label (basic_block);
 extern bool purge_all_dead_edges (void);
 extern bool purge_dead_edges (basic_block);
+extern bool fixup_abnormal_edges (void);
 
 /* In cfgbuild.c.  */
 extern void find_many_sub_basic_blocks (sbitmap);
@@ -814,7 +815,6 @@ extern bool delete_unreachable_blocks (void);
 extern bool mark_dfs_back_edges (void);
 extern void set_edge_can_fallthru_flag (void);
 extern void update_br_prob_note (basic_block);
-extern void fixup_abnormal_edges (void);
 extern bool inside_basic_block_p (const_rtx);
 extern bool control_flow_insn_p (const_rtx);
 extern rtx get_last_bb_insn (basic_block);

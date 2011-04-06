@@ -3117,8 +3117,8 @@ canonicalize_values_mark (void **slot, void *data)
 	    decl_or_value odv = dv_from_value (node->loc);
 	    void **oslot = shared_hash_find_slot_noinsert (set->vars, odv);
 
-	    oslot = set_slot_part (set, val, oslot, odv, 0,
-				   node->init, NULL_RTX);
+	    set_slot_part (set, val, oslot, odv, 0,
+			   node->init, NULL_RTX);
 
 	    VALUE_RECURSED_INTO (node->loc) = true;
 	  }
@@ -3329,8 +3329,8 @@ canonicalize_values_star (void **slot, void *data)
       }
 
   if (val)
-    cslot = set_slot_part (set, val, cslot, cdv, 0,
-			   VAR_INIT_STATUS_INITIALIZED, NULL_RTX);
+    set_slot_part (set, val, cslot, cdv, 0,
+		   VAR_INIT_STATUS_INITIALIZED, NULL_RTX);
 
   slot = clobber_slot_part (set, cval, slot, 0, NULL);
 
@@ -3401,7 +3401,7 @@ canonicalize_vars_star (void **slot, void *data)
 
   slot = set_slot_part (set, cval, slot, dv, 0,
 			node->init, node->set_src);
-  slot = clobber_slot_part (set, cval, slot, 0, node->set_src);
+  clobber_slot_part (set, cval, slot, 0, node->set_src);
 
   return 1;
 }
@@ -7038,7 +7038,7 @@ set_variable_part (dataflow_set *set, rtx loc,
       if (!slot)
 	slot = shared_hash_find_slot_unshare (&set->vars, dv, iopt);
     }
-  slot = set_slot_part (set, loc, slot, dv, offset, initialized, set_src);
+  set_slot_part (set, loc, slot, dv, offset, initialized, set_src);
 }
 
 /* Remove all recorded register locations for the given variable part
@@ -7119,7 +7119,7 @@ clobber_variable_part (dataflow_set *set, rtx loc, decl_or_value dv,
   if (!slot)
     return;
 
-  slot = clobber_slot_part (set, loc, slot, offset, set_src);
+  clobber_slot_part (set, loc, slot, offset, set_src);
 }
 
 /* Delete the part of variable's location from dataflow set SET.  The
@@ -7218,7 +7218,7 @@ delete_variable_part (dataflow_set *set, rtx loc, decl_or_value dv,
   if (!slot)
     return;
 
-  slot = delete_slot_part (set, loc, slot, offset);
+  delete_slot_part (set, loc, slot, offset);
 }
 
 /* Structure for passing some other parameters to function
@@ -8472,7 +8472,7 @@ vt_add_function_parameter (tree parm)
 			 VAR_INIT_STATUS_INITIALIZED, NULL, INSERT);
       if (dv_is_value_p (dv))
 	{
-	  cselib_val *val = CSELIB_VAL_PTR (dv_as_value (dv));
+	  cselib_val *val = CSELIB_VAL_PTR (dv_as_value (dv)), *val2;
 	  struct elt_loc_list *el;
 	  el = (struct elt_loc_list *)
 	    ggc_alloc_cleared_atomic (sizeof (*el));
@@ -8481,6 +8481,23 @@ vt_add_function_parameter (tree parm)
 	  ENTRY_VALUE_EXP (el->loc) = incoming;
 	  el->setting_insn = get_insns ();
 	  val->locs = el;
+	  val2 = cselib_lookup_from_insn (el->loc, GET_MODE (incoming),
+					  true, VOIDmode, get_insns ());
+	  if (val2
+	      && val2 != val
+	      && val2->locs
+	      && rtx_equal_p (val2->locs->loc, el->loc))
+	    {
+	      struct elt_loc_list *el2;
+
+	      preserve_value (val2);
+	      el2 = (struct elt_loc_list *)
+		ggc_alloc_cleared_atomic (sizeof (*el2));
+	      el2->next = val2->locs;
+	      el2->loc = dv_as_value (dv);
+	      el2->setting_insn = get_insns ();
+	      val2->locs = el2;
+	    }
 	  if (TREE_CODE (TREE_TYPE (parm)) == REFERENCE_TYPE
 	      && INTEGRAL_TYPE_P (TREE_TYPE (TREE_TYPE (parm))))
 	    {
@@ -8499,6 +8516,24 @@ vt_add_function_parameter (tree parm)
 		  ENTRY_VALUE_EXP (el->loc) = mem;
 		  el->setting_insn = get_insns ();
 		  val->locs = el;
+		  val2 = cselib_lookup_from_insn (el->loc, GET_MODE (mem),
+						  true, VOIDmode,
+						  get_insns ());
+		  if (val2
+		      && val2 != val
+		      && val2->locs
+		      && rtx_equal_p (val2->locs->loc, el->loc))
+		    {
+		      struct elt_loc_list *el2;
+
+		      preserve_value (val2);
+		      el2 = (struct elt_loc_list *)
+			ggc_alloc_cleared_atomic (sizeof (*el2));
+		      el2->next = val2->locs;
+		      el2->loc = val->val_rtx;
+		      el2->setting_insn = get_insns ();
+		      val2->locs = el2;
+		    }
 		}
 	    }
 	}

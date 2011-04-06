@@ -277,8 +277,8 @@ canonicalize_change_group (rtx insn, rtx x)
       /* Oops, the caller has made X no longer canonical.
 	 Let's redo the changes in the correct order.  */
       rtx tem = XEXP (x, 0);
-      validate_change (insn, &XEXP (x, 0), XEXP (x, 1), 1);
-      validate_change (insn, &XEXP (x, 1), tem, 1);
+      validate_unshare_change (insn, &XEXP (x, 0), XEXP (x, 1), 1);
+      validate_unshare_change (insn, &XEXP (x, 1), tem, 1);
       return true;
     }
   else

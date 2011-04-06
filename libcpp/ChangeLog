@@ -1,3 +1,30 @@
+2011-03-25  Kai Tietz  <ktietz@redhat.com>
+
+	* files.c (file_hash_eq): Use filename_cmp
+	instead of strcmp.
+	(nonexistent_file_hash_eq): Likewise.
+	(remap_filename): Likewise.
+	Handle absolute DOS-path,
+	(append_file_to_dir): Check for IS_DIR_SEPARATOR
+	instead of slash.
+	(read_name_map): Likewise.
+	* linemap.c (linemap_add): Use filename_cmp
+	instead of strcmp.
+	* mkdeps.c (apply_vpath): Use filename_ncmp
+	instead of strncmp.
+	(deps_restore): Use filename_cmp instead of
+	strcmp.
+	* init.c (read_original_directory): Use
+	IS_DIR_SEPARATOR instead of checking for slash.
+
+2011-03-21  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR preprocessor/48192
+	* directives.c (do_ifdef): Do not consider conditional macros as
+	being defined.
+	(do_ifndef): Ditto.
+	* expr.c (parse_defined): Ditto.
+
 2011-03-18  Richard Henderson  <rth@redhat.com>
 
 	PR bootstrap/45381

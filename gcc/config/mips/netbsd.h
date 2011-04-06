@@ -21,13 +21,6 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Define default target values.  */
 
-#undef MACHINE_TYPE
-#if TARGET_ENDIAN_DEFAULT != 0
-#define MACHINE_TYPE "NetBSD/mipseb ELF"
-#else
-#define MACHINE_TYPE "NetBSD/mipsel ELF"
-#endif
-
 #define TARGET_OS_CPP_BUILTINS()			\
   do							\
     {							\

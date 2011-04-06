@@ -801,6 +801,53 @@ build_aggr_conv (tree type, tree ctor, int flags)
   return c;
 }
 
+/* Represent a conversion from CTOR, a braced-init-list, to TYPE, an
+   array type, if such a conversion is possible.  */
+
+static conversion *
+build_array_conv (tree type, tree ctor, int flags)
+{
+  conversion *c;
+  unsigned HOST_WIDE_INT len = CONSTRUCTOR_NELTS (ctor);
+  tree elttype = TREE_TYPE (type);
+  unsigned i;
+  tree val;
+  bool bad = false;
+  bool user = false;
+  enum conversion_rank rank = cr_exact;
+
+  if (TYPE_DOMAIN (type))
+    {
+      unsigned HOST_WIDE_INT alen = tree_low_cst (array_type_nelts_top (type), 1);
+      if (alen < len)
+	return NULL;
+    }
+
+  FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (ctor), i, val)
+    {
+      conversion *sub
+	= implicit_conversion (elttype, TREE_TYPE (val), val,
+			       false, flags);
+      if (sub == NULL)
+	return NULL;
+
+      if (sub->rank > rank)
+	rank = sub->rank;
+      if (sub->user_conv_p)
+	user = true;
+      if (sub->bad_p)
+	bad = true;
+    }
+
+  c = alloc_conversion (ck_aggr);
+  c->type = type;
+  c->rank = rank;
+  c->user_conv_p = user;
+  c->bad_p = bad;
+  c->u.next = NULL;
+  return c;
+}
+
 /* Build a representation of the identity conversion from EXPR to
    itself.  The TYPE should match the type of EXPR, if EXPR is non-NULL.  */
 
@@ -1429,7 +1476,9 @@ reference_binding (tree rto, tree rfrom, tree expr, bool c_cast_p, int flags)
 	  || (((CP_TYPE_CONST_NON_VOLATILE_P (to)
 		&& !(flags & LOOKUP_NO_TEMP_BIND))
 	       || TYPE_REF_IS_RVALUE (rto))
-	      && (CLASS_TYPE_P (from) || (expr && lvalue_p (expr))))))
+	      && (CLASS_TYPE_P (from)
+		  || TREE_CODE (from) == ARRAY_TYPE
+		  || (expr && lvalue_p (expr))))))
     {
       /* [dcl.init.ref]
 
@@ -1621,6 +1670,8 @@ implicit_conversion (tree to, tree from, tree expr, bool c_cast_p,
 	      return conv;
 	    }
 	}
+      else if (TREE_CODE (to) == ARRAY_TYPE)
+	return build_array_conv (to, expr, flags);
     }
 
   if (expr != NULL_TREE
@@ -5416,8 +5467,8 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	tree elttype = TREE_VEC_ELT (CLASSTYPE_TI_ARGS (totype), 0);
 	tree new_ctor = build_constructor (init_list_type_node, NULL);
 	unsigned len = CONSTRUCTOR_NELTS (expr);
-	tree array, val;
-	VEC(tree,gc) *parms;
+	tree array, val, field;
+	VEC(constructor_elt,gc) *vec = NULL;
 	unsigned ix;
 
 	/* Convert all the elements.  */
@@ -5430,6 +5481,8 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	    if (!BRACE_ENCLOSED_INITIALIZER_P (val))
 	      check_narrowing (TREE_TYPE (sub), val);
 	    CONSTRUCTOR_APPEND_ELT (CONSTRUCTOR_ELTS (new_ctor), NULL_TREE, sub);
+	    if (!TREE_CONSTANT (sub))
+	      TREE_CONSTANT (new_ctor) = false;
 	  }
 	/* Build up the array.  */
 	elttype = cp_build_qualified_type
@@ -5437,16 +5490,14 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	array = build_array_of_n_type (elttype, len);
 	array = finish_compound_literal (array, new_ctor);
 
-	parms = make_tree_vector ();
-	VEC_safe_push (tree, gc, parms, decay_conversion (array));
-	VEC_safe_push (tree, gc, parms, size_int (len));
-	/* Call the private constructor.  */
-	push_deferring_access_checks (dk_no_check);
-	new_ctor = build_special_member_call
-	  (NULL_TREE, complete_ctor_identifier, &parms, totype, 0, complain);
-	release_tree_vector (parms);
-	pop_deferring_access_checks ();
-	return build_cplus_new (totype, new_ctor);
+	/* Build up the initializer_list object.  */
+	totype = complete_type (totype);
+	field = next_initializable_field (TYPE_FIELDS (totype));
+	CONSTRUCTOR_APPEND_ELT (vec, field, decay_conversion (array));
+	field = next_initializable_field (DECL_CHAIN (field));
+	CONSTRUCTOR_APPEND_ELT (vec, field, size_int (len));
+	new_ctor = build_constructor (totype, vec);
+	return get_target_expr (new_ctor);
       }
 
     case ck_aggr:

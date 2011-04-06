@@ -305,7 +305,8 @@ cselib_clear_table (void)
   cselib_reset_table (1);
 }
 
-/* Remove from hash table all VALUEs except constants.  */
+/* Remove from hash table all VALUEs except constants
+   and function invariants.  */
 
 static int
 preserve_only_constants (void **x, void *info ATTRIBUTE_UNUSED)
@@ -329,6 +330,14 @@ preserve_only_constants (void **x, void *info ATTRIBUTE_UNUSED)
 	    return 1;
 	}
     }
+  /* Keep around VALUEs that forward function invariant ENTRY_VALUEs
+     to corresponding parameter VALUEs.  */
+  if (v->locs != NULL
+      && v->locs->next != NULL
+      && v->locs->next->next == NULL
+      && GET_CODE (v->locs->next->loc) == ENTRY_VALUE
+      && GET_CODE (v->locs->loc) == VALUE)
+    return 1;
 
   htab_clear_slot (cselib_hash_table, x);
   return 1;
@@ -804,8 +813,9 @@ rtx_equal_for_cselib_1 (rtx x, rtx y, enum machine_mode memmode)
 	     == DEBUG_IMPLICIT_PTR_DECL (y);
 
     case ENTRY_VALUE:
-      return rtx_equal_for_cselib_1 (ENTRY_VALUE_EXP (x), ENTRY_VALUE_EXP (y),
-				     memmode);
+      /* ENTRY_VALUEs are function invariant, it is thus undesirable to
+	 use rtx_equal_for_cselib_1 to compare the operands.  */
+      return rtx_equal_p (ENTRY_VALUE_EXP (x), ENTRY_VALUE_EXP (y));
 
     case LABEL_REF:
       return XEXP (x, 0) == XEXP (y, 0);
@@ -954,7 +964,22 @@ cselib_hash_rtx (rtx x, int create, enum machine_mode memmode)
       return hash ? hash : (unsigned int) DEBUG_IMPLICIT_PTR;
 
     case ENTRY_VALUE:
-      hash += cselib_hash_rtx (ENTRY_VALUE_EXP (x), create, memmode);
+      /* ENTRY_VALUEs are function invariant, thus try to avoid
+	 recursing on argument if ENTRY_VALUE is one of the
+	 forms emitted by expand_debug_expr, otherwise
+	 ENTRY_VALUE hash would depend on the current value
+	 in some register or memory.  */
+      if (REG_P (ENTRY_VALUE_EXP (x)))
+	hash += (unsigned int) REG
+		+ (unsigned int) GET_MODE (ENTRY_VALUE_EXP (x))
+		+ (unsigned int) REGNO (ENTRY_VALUE_EXP (x));
+      else if (MEM_P (ENTRY_VALUE_EXP (x))
+	       && REG_P (XEXP (ENTRY_VALUE_EXP (x), 0)))
+	hash += (unsigned int) MEM
+		+ (unsigned int) GET_MODE (XEXP (ENTRY_VALUE_EXP (x), 0))
+		+ (unsigned int) REGNO (XEXP (ENTRY_VALUE_EXP (x), 0));
+      else
+	hash += cselib_hash_rtx (ENTRY_VALUE_EXP (x), create, memmode);
       return hash ? hash : (unsigned int) ENTRY_VALUE;
 
     case CONST_INT:

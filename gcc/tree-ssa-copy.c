@@ -244,7 +244,6 @@ propagate_tree_value_into_stmt (gimple_stmt_iterator *gsi, tree val)
         expr = gimple_assign_rhs1 (stmt);
       propagate_tree_value (&expr, val);
       gimple_assign_set_rhs_from_tree (gsi, expr);
-      stmt = gsi_stmt (*gsi);
     }
   else if (gimple_code (stmt) == GIMPLE_COND)
     {
@@ -316,8 +315,9 @@ stmt_may_generate_copy (gimple stmt)
   /* Otherwise, the only statements that generate useful copies are
      assignments whose RHS is just an SSA name that doesn't flow
      through abnormal edges.  */
-  return (gimple_assign_rhs_code (stmt) == SSA_NAME
-	  && !SSA_NAME_OCCURS_IN_ABNORMAL_PHI (gimple_assign_rhs1 (stmt)));
+  return ((gimple_assign_rhs_code (stmt) == SSA_NAME
+	   && !SSA_NAME_OCCURS_IN_ABNORMAL_PHI (gimple_assign_rhs1 (stmt)))
+	  || is_gimple_min_invariant (gimple_assign_rhs1 (stmt)));
 }
 
 
@@ -772,6 +772,7 @@ fini_copy_prop (void)
 	 of the representative to the first solution we find if
 	 it doesn't have one already.  */
       if (copy_of[i].value != var
+	  && TREE_CODE (copy_of[i].value) == SSA_NAME
 	  && POINTER_TYPE_P (TREE_TYPE (var))
 	  && SSA_NAME_PTR_INFO (var)
 	  && !SSA_NAME_PTR_INFO (copy_of[i].value))

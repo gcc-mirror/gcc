@@ -1,3 +1,12 @@
+2011-03-21  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	PR bootstrap/48167
+	* Make-lang.in (START_HDRS): Added CXX_PARSER_H and
+	CXX_PRETTY_PRINT_H.
+	* config-lang.in (gtfiles): Added cp/parser.h and reorganized list
+	so that it is more obvious that it is identical to the C++ one
+	with the addition of some files at the end.
+	
 2011-03-06  Joseph Myers  <joseph@codesourcery.com>
 
 	* lang-specs.h: Match -save-temps* instead of -save-temps.

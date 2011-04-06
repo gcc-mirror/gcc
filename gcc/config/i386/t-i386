@@ -1,4 +1,4 @@
-# Copyright (C) 2008, 2009, 2010 Free Software Foundation, Inc.
+# Copyright (C) 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -23,7 +23,8 @@ i386.o: $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
   $(RECOG_H) $(EXPR_H) $(OPTABS_H) toplev.h $(BASIC_BLOCK_H) \
   $(GGC_H) $(TARGET_H) $(TARGET_DEF_H) langhooks.h $(CGRAPH_H) \
   $(TREE_GIMPLE_H) $(DWARF2_H) $(DF_H) tm-constrs.h $(PARAMS_H) \
-  i386-builtin-types.inc debug.h dwarf2out.h sbitmap.h $(FIBHEAP_H)
+  i386-builtin-types.inc debug.h dwarf2out.h sbitmap.h $(FIBHEAP_H) \
+  $(OPTS_H)
 
 i386-c.o: $(srcdir)/config/i386/i386-c.c \
   $(srcdir)/config/i386/i386-protos.h $(CONFIG_H) $(SYSTEM_H) coretypes.h \

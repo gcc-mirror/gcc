@@ -1,7 +1,4 @@
-/* This does not compile on HC11/HC12 due to the asm which requires
-   two 32-bit registers.  */
 /* { dg-do assemble } */
-/* { dg-xfail-if "" { m6811-*-* m6812-*-* } { "*" } { "" } } */
 /* { dg-skip-if "" { pdp11-*-* } { "-O0" } { "" } } */
 
 /* PR optimization/5892 */

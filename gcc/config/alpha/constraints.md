@@ -32,7 +32,7 @@
 (define_register_constraint "c" "R27_REG"
  "General register 27, function call address")
 
-(define_register_constraint "f" "FLOAT_REGS"
+(define_register_constraint "f" "TARGET_FPREGS ? FLOAT_REGS : NO_REGS"
  "Any floating-point register")
 
 (define_register_constraint "v" "R0_REG"
@@ -109,11 +109,6 @@
 (define_constraint "T"
   "@internal A high-part symbol"
   (match_code "high"))
-
-(define_constraint "U"
-  "@internal A UNICOSMK symbol"
-  (and (match_test "TARGET_ABI_UNICOSMK")
-       (match_operand 0 "symbolic_operand")))
 
 (define_constraint "W"
   "A vector zero constant"

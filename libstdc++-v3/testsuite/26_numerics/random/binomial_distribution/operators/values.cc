@@ -33,16 +33,16 @@ void test01()
 
   std::binomial_distribution<> bd1(5, 0.3);
   auto bbd1 = std::bind(bd1, eng);
-  testDiscreteDist(bbd1, [](int n) { return binomial_pdf(n, 0.3, 5); } );
+  testDiscreteDist(bbd1, [](int n) { return binomial_pdf(n, 5, 0.3); } );
 
   std::binomial_distribution<> bd2(55, 0.3);
   auto bbd2 = std::bind(bd2, eng);
-  testDiscreteDist(bbd2, [](int n) { return binomial_pdf(n, 0.3, 55); } );
+  testDiscreteDist(bbd2, [](int n) { return binomial_pdf(n, 55, 0.3); } );
 
   // libstdc++/48114
   std::binomial_distribution<> bd3(10, 0.75);
   auto bbd3 = std::bind(bd3, eng);
-  testDiscreteDist(bbd3, [](int n) { return binomial_pdf(n, 0.75, 10); } );
+  testDiscreteDist(bbd3, [](int n) { return binomial_pdf(n, 10, 0.75); } );
 }
 
 int main()

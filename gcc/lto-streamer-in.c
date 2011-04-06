@@ -140,7 +140,10 @@ input_string_internal (struct data_in *data_in, struct lto_input_block *ib,
   unsigned int loc;
   const char *result;
 
+  /* Read the location of the string from IB.  */
   loc = lto_input_uleb128 (ib);
+
+  /* Get the string stored at location LOC in DATA_IN->STRINGS.  */
   LTO_INIT_INPUT_BLOCK (str_tab, data_in->strings, loc, data_in->strings_len);
   len = lto_input_uleb128 (&str_tab);
   *rlen = len;
@@ -191,10 +194,24 @@ input_identifier (struct data_in *data_in, struct lto_input_block *ib)
   return get_identifier_with_length (ptr, len);
 }
 
+
+/* Read LENGTH bytes from STREAM to ADDR.  */
+
+void
+lto_input_data_block (struct lto_input_block *ib, void *addr, size_t length)
+{
+  size_t i;
+  unsigned char *const buffer = (unsigned char *const) addr;
+
+  for (i = 0; i < length; i++)
+    buffer[i] = lto_input_1_unsigned (ib);
+}
+
+
 /* Read a NULL terminated string from the string table in DATA_IN.  */
 
-static const char *
-input_string (struct data_in *data_in, struct lto_input_block *ib)
+const char *
+lto_input_string (struct data_in *data_in, struct lto_input_block *ib)
 {
   unsigned int len;
   const char *ptr;
@@ -275,7 +292,7 @@ lto_input_location (struct lto_input_block *ib, struct data_in *data_in)
 {
   expanded_location xloc;
 
-  xloc.file = input_string (data_in, ib);
+  xloc.file = lto_input_string (data_in, ib);
   if (xloc.file == NULL)
     return UNKNOWN_LOCATION;
 
@@ -367,6 +384,33 @@ lto_input_tree_ref (struct lto_input_block *ib, struct data_in *data_in,
   gcc_assert (result);
 
   return result;
+}
+
+
+/* Read a chain of tree nodes from input block IB. DATA_IN contains
+   tables and descriptors for the file being read.  */
+
+static tree
+lto_input_chain (struct lto_input_block *ib, struct data_in *data_in)
+{
+  int i, count;
+  tree first, prev, curr;
+
+  first = prev = NULL_TREE;
+  count = lto_input_sleb128 (ib);
+  for (i = 0; i < count; i++)
+    {
+      curr = lto_input_tree (ib, data_in);
+      if (prev)
+	TREE_CHAIN (prev) = curr;
+      else
+	first = curr;
+
+      TREE_CHAIN (curr) = NULL_TREE;
+      prev = curr;
+    }
+
+  return first;
 }
 
 
@@ -1238,7 +1282,7 @@ input_function (tree fn_decl, struct data_in *data_in,
        oarg && narg;
        oarg = TREE_CHAIN (oarg), narg = TREE_CHAIN (narg))
     {
-      int ix;
+      unsigned ix;
       bool res;
       res = lto_streamer_cache_lookup (data_in->reader_cache, oarg, &ix);
       gcc_assert (res);
@@ -1270,7 +1314,16 @@ input_function (tree fn_decl, struct data_in *data_in,
 
   /* Fix up the call statements that are mentioned in the callgraph
      edges.  */
-  renumber_gimple_stmt_uids ();
+  set_gimple_stmt_max_uid (cfun, 0);
+  FOR_ALL_BB (bb)
+    {
+      gimple_stmt_iterator gsi;
+      for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+	{
+	  gimple stmt = gsi_stmt (gsi);
+	  gimple_set_uid (stmt, inc_gimple_stmt_max_uid (cfun));
+	}
+    }
   stmts = (gimple *) xcalloc (gimple_stmt_max_uid (fn), sizeof (gimple));
   FOR_ALL_BB (bb)
     {
@@ -1325,11 +1378,6 @@ input_alias_pairs (struct lto_input_block *ib, struct data_in *data_in)
   tree var;
 
   clear_line_info (data_in);
-
-  /* Skip over all the unreferenced globals.  */
-  do
-    var = lto_input_tree (ib, data_in);
-  while (var);
 
   var = lto_input_tree (ib, data_in);
   while (var)
@@ -1802,7 +1850,7 @@ unpack_value_fields (struct bitpack_d *bp, tree expr)
 
 static tree
 lto_materialize_tree (struct lto_input_block *ib, struct data_in *data_in,
-		      enum LTO_tags tag, int *ix_p)
+		      enum LTO_tags tag)
 {
   struct bitpack_d bp;
   enum tree_code code;
@@ -1810,14 +1858,8 @@ lto_materialize_tree (struct lto_input_block *ib, struct data_in *data_in,
 #ifdef LTO_STREAMER_DEBUG
   HOST_WIDEST_INT orig_address_in_writer;
 #endif
-  HOST_WIDE_INT ix;
 
   result = NULL_TREE;
-
-  /* Read the header of the node we are about to create.  */
-  ix = lto_input_sleb128 (ib);
-  gcc_assert ((int) ix == ix);
-  *ix_p = (int) ix;
 
 #ifdef LTO_STREAMER_DEBUG
   /* Read the word representing the memory address for the tree
@@ -1850,8 +1892,7 @@ lto_materialize_tree (struct lto_input_block *ib, struct data_in *data_in,
     }
   else
     {
-      /* All other nodes can be materialized with a raw make_node
-	 call.  */
+      /* All other nodes can be materialized with a raw make_node call.  */
       result = make_node (code);
     }
 
@@ -1878,36 +1919,9 @@ lto_materialize_tree (struct lto_input_block *ib, struct data_in *data_in,
   /* Enter RESULT in the reader cache.  This will make RESULT
      available so that circular references in the rest of the tree
      structure can be resolved in subsequent calls to lto_input_tree.  */
-  lto_streamer_cache_insert_at (data_in->reader_cache, result, ix);
+  lto_streamer_cache_append (data_in->reader_cache, result);
 
   return result;
-}
-
-
-/* Read a chain of tree nodes from input block IB. DATA_IN contains
-   tables and descriptors for the file being read.  */
-
-static tree
-lto_input_chain (struct lto_input_block *ib, struct data_in *data_in)
-{
-  int i, count;
-  tree first, prev, curr;
-
-  first = prev = NULL_TREE;
-  count = lto_input_sleb128 (ib);
-  for (i = 0; i < count; i++)
-    {
-      curr = lto_input_tree (ib, data_in);
-      if (prev)
-	TREE_CHAIN (prev) = curr;
-      else
-	first = curr;
-
-      TREE_CHAIN (curr) = NULL_TREE;
-      prev = curr;
-    }
-
-  return first;
 }
 
 
@@ -2307,7 +2321,7 @@ lto_input_ts_translation_unit_decl_tree_pointers (struct lto_input_block *ib,
 						  struct data_in *data_in,
 						  tree expr)
 {
-  TRANSLATION_UNIT_LANGUAGE (expr) = xstrdup (input_string (data_in, ib));
+  TRANSLATION_UNIT_LANGUAGE (expr) = xstrdup (lto_input_string (data_in, ib));
   VEC_safe_push (tree, gc, all_translation_units, expr);
 }
 
@@ -2437,7 +2451,7 @@ lto_register_var_decl_in_symtab (struct data_in *data_in, tree decl)
      declaration for merging.  */
   if (TREE_PUBLIC (decl))
     {
-      int ix;
+      unsigned ix;
       if (!lto_streamer_cache_lookup (data_in->reader_cache, decl, &ix))
 	gcc_unreachable ();
       lto_symtab_register_decl (decl, get_resolution (data_in, ix),
@@ -2504,7 +2518,7 @@ lto_register_function_decl_in_symtab (struct data_in *data_in, tree decl)
      declaration for merging.  */
   if (TREE_PUBLIC (decl) && !DECL_ABSTRACT (decl))
     {
-      int ix;
+      unsigned ix;
       if (!lto_streamer_cache_lookup (data_in->reader_cache, decl, &ix))
 	gcc_unreachable ();
       lto_symtab_register_decl (decl, get_resolution (data_in, ix),
@@ -2519,35 +2533,14 @@ lto_register_function_decl_in_symtab (struct data_in *data_in, tree decl)
 static tree
 lto_get_pickled_tree (struct lto_input_block *ib, struct data_in *data_in)
 {
-  HOST_WIDE_INT ix;
+  unsigned HOST_WIDE_INT ix;
   tree result;
   enum LTO_tags expected_tag;
-  unsigned HOST_WIDE_INT orig_offset;
 
-  ix = lto_input_sleb128 (ib);
+  ix = lto_input_uleb128 (ib);
   expected_tag = (enum LTO_tags) lto_input_uleb128 (ib);
 
-  orig_offset = lto_input_uleb128 (ib);
-  gcc_assert (orig_offset == (unsigned) orig_offset);
-
   result = lto_streamer_cache_get (data_in->reader_cache, ix);
-  if (result == NULL_TREE)
-    {
-      /* We have not yet read the cache slot IX.  Go to the offset
-	 in the stream where the physical tree node is, and materialize
-	 it from there.  */
-      struct lto_input_block fwd_ib;
-
-      /* If we are trying to go back in the stream, something is wrong.
-	 We should've read the node at the earlier position already.  */
-      if (ib->p >= orig_offset)
-	internal_error ("bytecode stream: tried to jump backwards in the "
-		        "stream");
-
-      LTO_INIT_INPUT_BLOCK (fwd_ib, ib->data, orig_offset, ib->len);
-      result = lto_input_tree (&fwd_ib, data_in);
-    }
-
   gcc_assert (result
               && TREE_CODE (result) == lto_tag_to_tree_code (expected_tag));
 
@@ -2565,15 +2558,11 @@ lto_get_builtin_tree (struct lto_input_block *ib, struct data_in *data_in)
   enum built_in_function fcode;
   const char *asmname;
   tree result;
-  int ix;
 
   fclass = (enum built_in_class) lto_input_uleb128 (ib);
   gcc_assert (fclass == BUILT_IN_NORMAL || fclass == BUILT_IN_MD);
 
   fcode = (enum built_in_function) lto_input_uleb128 (ib);
-
-  ix = lto_input_sleb128 (ib);
-  gcc_assert (ix == (int) ix);
 
   if (fclass == BUILT_IN_NORMAL)
     {
@@ -2590,11 +2579,11 @@ lto_get_builtin_tree (struct lto_input_block *ib, struct data_in *data_in)
   else
     gcc_unreachable ();
 
-  asmname = input_string (data_in, ib);
+  asmname = lto_input_string (data_in, ib);
   if (asmname)
     set_builtin_user_assembler_name (result, asmname);
 
-  lto_streamer_cache_insert_at (data_in->reader_cache, result, ix);
+  lto_streamer_cache_append (data_in->reader_cache, result);
 
   return result;
 }
@@ -2608,9 +2597,8 @@ lto_read_tree (struct lto_input_block *ib, struct data_in *data_in,
 	       enum LTO_tags tag)
 {
   tree result;
-  int ix;
 
-  result = lto_materialize_tree (ib, data_in, tag, &ix);
+  result = lto_materialize_tree (ib, data_in, tag);
 
   /* Read all the pointer fields in RESULT.  */
   lto_input_tree_pointers (ib, data_in, result);

@@ -881,7 +881,7 @@ verify_ssa (bool check_modified_stmt)
 
   gcc_assert (!need_ssa_update_p (cfun));
 
-  verify_stmts ();
+  verify_gimple_in_cfg (cfun);
 
   timevar_push (TV_TREE_SSA_VERIFY);
 
@@ -1451,7 +1451,7 @@ useless_type_conversion_p (tree outer_type, tree inner_type)
 
       /* Defer to the target if necessary.  */
       if (TYPE_ATTRIBUTES (inner_type) || TYPE_ATTRIBUTES (outer_type))
-	return targetm.comp_type_attributes (outer_type, inner_type) != 0;
+	return comp_type_attributes (outer_type, inner_type) != 0;
 
       return true;
     }

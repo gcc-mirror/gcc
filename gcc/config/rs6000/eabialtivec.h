@@ -1,6 +1,6 @@
 /* Core target definitions for GNU compiler
    for PowerPC targeted systems with AltiVec support.
-   Copyright (C) 2001, 2003, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2003, 2007, 2011 Free Software Foundation, Inc.
    Contributed by Aldy Hernandez (aldyh@redhat.com).
 
    This file is part of GCC.
@@ -22,9 +22,6 @@
 /* Add -meabi and -maltivec to target flags.  */
 #undef  TARGET_DEFAULT
 #define TARGET_DEFAULT (MASK_POWERPC | MASK_NEW_MNEMONICS | MASK_EABI | MASK_ALTIVEC)
-
-#undef  TARGET_VERSION
-#define TARGET_VERSION fprintf (stderr, " (PowerPC Embedded with AltiVec)");
 
 #undef  SUBSUBTARGET_OVERRIDE_OPTIONS
 #define SUBSUBTARGET_OVERRIDE_OPTIONS	rs6000_altivec_abi = 1

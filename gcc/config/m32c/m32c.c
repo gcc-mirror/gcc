@@ -1,5 +1,5 @@
 /* Target Code for R8C/M16C/M32C
-   Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010
+   Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
    Contributed by Red Hat.
 
@@ -407,24 +407,7 @@ class_can_hold_mode (reg_class_t rclass, enum machine_mode mode)
    Memregs are provided by m32c-lib1.S.
 */
 
-int target_memregs = 16;
-static bool target_memregs_set = FALSE;
 int ok_to_change_target_memregs = TRUE;
-
-#undef  TARGET_HANDLE_OPTION
-#define TARGET_HANDLE_OPTION m32c_handle_option
-static bool
-m32c_handle_option (size_t code,
-		    const char *arg ATTRIBUTE_UNUSED,
-		    int value ATTRIBUTE_UNUSED)
-{
-  if (code == OPT_memregs_)
-    {
-      target_memregs_set = TRUE;
-      target_memregs = atoi (arg);
-    }
-  return TRUE;
-}
 
 /* Implements TARGET_OPTION_OVERRIDE.  */
 
@@ -435,7 +418,7 @@ static void
 m32c_option_override (void)
 {
   /* We limit memregs to 0..16, and provide a default.  */
-  if (target_memregs_set)
+  if (global_options_set.x_target_memregs)
     {
       if (target_memregs < 0 || target_memregs > 16)
 	error ("invalid target memregs value '%d'", target_memregs);
@@ -3232,11 +3215,12 @@ current_function_special_page_vector (rtx x)
 #undef TARGET_ATTRIBUTE_TABLE
 #define TARGET_ATTRIBUTE_TABLE m32c_attribute_table
 static const struct attribute_spec m32c_attribute_table[] = {
-  {"interrupt", 0, 0, false, false, false, interrupt_handler},
-  {"bank_switch", 0, 0, false, false, false, interrupt_handler},
-  {"fast_interrupt", 0, 0, false, false, false, interrupt_handler},
-  {"function_vector", 1, 1, true,  false, false, function_vector_handler},
-  {0, 0, 0, 0, 0, 0, 0}
+  {"interrupt", 0, 0, false, false, false, interrupt_handler, false},
+  {"bank_switch", 0, 0, false, false, false, interrupt_handler, false},
+  {"fast_interrupt", 0, 0, false, false, false, interrupt_handler, false},
+  {"function_vector", 1, 1, true,  false, false, function_vector_handler,
+   false},
+  {0, 0, 0, 0, 0, 0, 0, false}
 };
 
 #undef TARGET_COMP_TYPE_ATTRIBUTES

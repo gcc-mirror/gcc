@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.  
    Vitesse IQ2000 processors
-   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
 
    This file is part of GCC.
@@ -56,21 +56,6 @@
 
 #ifndef IQ2000_ISA_DEFAULT
 #define IQ2000_ISA_DEFAULT 1
-#endif
-
-#define IQ2000_VERSION "[1.0]"
-
-#ifndef MACHINE_TYPE
-#define MACHINE_TYPE "IQ2000"
-#endif
-
-#ifndef TARGET_VERSION_INTERNAL
-#define TARGET_VERSION_INTERNAL(STREAM)					\
-  fprintf (STREAM, " %s %s", IQ2000_VERSION, MACHINE_TYPE)
-#endif
-
-#ifndef TARGET_VERSION
-#define TARGET_VERSION TARGET_VERSION_INTERNAL (stderr)
 #endif
 
 /* Storage Layout.  */
@@ -208,11 +193,6 @@ enum reg_class
 #define GENERAL_REGS GR_REGS
 
 #define N_REG_CLASSES (int) LIM_REG_CLASSES
-
-#define IRA_COVER_CLASSES	\
-{				\
-  GR_REGS, LIM_REG_CLASSES	\
-}
 
 #define REG_CLASS_NAMES						\
 {								\
@@ -609,15 +589,6 @@ enum delay_type
   DELAY_FCMP				/* Delay after doing c.<xx>.{d,s}.  */
 };
 
-/* Which processor to schedule for.  */
-
-enum processor_type
-{
-  PROCESSOR_DEFAULT,
-  PROCESSOR_IQ2000,
-  PROCESSOR_IQ10
-};
-
 /* Recast the cpu class to be the cpu attribute.  */
 #define iq2000_cpu_attr ((enum attr_cpu) iq2000_tune)
 
@@ -850,9 +821,6 @@ enum processor_type
 #define SDATA_SECTION_ASM_OP	"\t.sdata"	/* Small data.  */
 
 
-/* The target cpu for optimization and scheduling.  */
-extern enum processor_type iq2000_tune;
-
 /* Which instruction set architecture to use.  */
 extern int iq2000_isa;
 

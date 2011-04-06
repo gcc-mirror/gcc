@@ -1,5 +1,5 @@
 /* { dg-do compile } */ 
-/* { dg-options "-O2 -fno-tree-dominator-opts -fdump-tree-fre-stats" } */
+/* { dg-options "-O2 -fno-tree-dominator-opts -fdump-tree-fre1-stats" } */
 struct s {
       int *n;
 };
@@ -19,5 +19,5 @@ foo (__SIZE_TYPE__ i, struct s *array)
 /* We should eliminate two address calculations, and one load.  */
 /* We used to eliminate a cast but that was before POINTER_PLUS_EXPR
    was added.  */
-/* { dg-final { scan-tree-dump-times "Eliminated: 3" 1 "fre"} } */
-/* { dg-final { cleanup-tree-dump "fre" } } */
+/* { dg-final { scan-tree-dump-times "Eliminated: 3" 1 "fre1"} } */
+/* { dg-final { cleanup-tree-dump "fre1" } } */

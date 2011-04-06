@@ -278,6 +278,10 @@ d
 Fortran Joined
 ; Documented in common.opt
 
+faggressive-function-elimination
+Fortran
+Eliminate multiple function invokations also for impure functions
+
 falign-commons
 Fortran
 Enable alignment of COMMON blocks

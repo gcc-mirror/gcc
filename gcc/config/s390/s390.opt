@@ -1,6 +1,6 @@
 ; Options for the S/390 / zSeries port of the compiler.
 
-; Copyright (C) 2005, 2006, 2007, 2010 Free Software Foundation, Inc.
+; Copyright (C) 2005, 2006, 2007, 2010, 2011 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -18,6 +18,22 @@
 ; along with GCC; see the file COPYING3.  If not see
 ; <http://www.gnu.org/licenses/>.
 
+HeaderInclude
+config/s390/s390-opts.h
+
+; The architecture name to use in diagnostics.
+Variable
+const char *s390_arch_string
+
+Variable
+int s390_tune_flags
+
+Variable
+int s390_arch_flags
+
+Variable
+HOST_WIDE_INT s390_warn_framesize = 0
+
 m31
 Target Report RejectNegative Negative(m64) InverseMask(64BIT)
 31 bit ABI
@@ -27,8 +43,35 @@ Target Report RejectNegative Negative(m31) Mask(64BIT)
 64 bit ABI
 
 march=
-Target RejectNegative Joined Var(s390_arch_string)
+Target RejectNegative Joined Enum(processor_type) Var(s390_arch) Init(PROCESSOR_max)
 Generate code for given CPU
+
+Enum
+Name(processor_type) Type(enum processor_type)
+
+EnumValue
+Enum(processor_type) String(g5) Value(PROCESSOR_9672_G5)
+
+EnumValue
+Enum(processor_type) String(g6) Value(PROCESSOR_9672_G6)
+
+EnumValue
+Enum(processor_type) String(z900) Value(PROCESSOR_2064_Z900)
+
+EnumValue
+Enum(processor_type) String(z990) Value(PROCESSOR_2084_Z990)
+
+EnumValue
+Enum(processor_type) String(z9-109) Value(PROCESSOR_2094_Z9_109)
+
+EnumValue
+Enum(processor_type) String(z9-ec) Value(PROCESSOR_2094_Z9_EC)
+
+EnumValue
+Enum(processor_type) String(z10) Value(PROCESSOR_2097_Z10)
+
+EnumValue
+Enum(processor_type) String(z196) Value(PROCESSOR_2817_Z196)
 
 mbackchain
 Target Report Mask(BACKCHAIN)
@@ -71,15 +114,15 @@ Target Report RejectNegative Negative(mhard-float) Mask(SOFT_FLOAT)
 Disable hardware floating point
 
 mstack-guard=
-Target RejectNegative Joined
+Target RejectNegative Joined UInteger Var(s390_stack_guard)
 Set the max. number of bytes which has to be left to stack size before a trap instruction is triggered
 
 mstack-size=
-Target RejectNegative Joined
+Target RejectNegative Joined UInteger Var(s390_stack_size)
 Emit extra code in the function prologue in order to trap if the stack size exceeds the given limit
 
 mtune=
-Target RejectNegative Joined
+Target RejectNegative Joined Enum(processor_type) Var(s390_tune) Init(PROCESSOR_max)
 Schedule code for given CPU
 
 mmvcle

@@ -6,7 +6,7 @@
  *                                                                          *
  *                           C Implementation File                          *
  *                                                                          *
- *          Copyright (C) 1992-2010, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2011, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -125,14 +125,6 @@ gnat_handle_option (size_t scode, const char *arg ATTRIBUTE_UNUSED, int value,
       /* These are used in the GCC Makefile.  */
       break;
 
-    case OPT_feliminate_unused_debug_types:
-      /* We arrange for post_option to be able to only set the corresponding
-	 flag to 1 when explicitly requested by the user.  We expect the
-	 default flag value to be either 0 or positive, and expose a positive
-	 -f as a negative value to post_option.  */
-      flag_eliminate_unused_debug_types = -value;
-      break;
-
     case OPT_gant:
       warning (0, "%<-gnat%> misspelled as %<-gant%>");
 
@@ -232,8 +224,7 @@ enum stack_check_type flag_stack_check = NO_STACK_CHECK;
 static bool
 gnat_post_options (const char **pfilename ATTRIBUTE_UNUSED)
 {
-  /* Excess precision other than "fast" requires front-end
-     support.  */
+  /* Excess precision other than "fast" requires front-end support.  */
   if (flag_excess_precision_cmdline == EXCESS_PRECISION_STANDARD
       && TARGET_FLT_EVAL_METHOD_NON_DEFAULT)
     sorry ("-fexcess-precision=standard for Ada");
@@ -244,14 +235,6 @@ gnat_post_options (const char **pfilename ATTRIBUTE_UNUSED)
 
   /* No psABI change warnings for Ada.  */
   warn_psabi = 0;
-
-  /* Force eliminate_unused_debug_types to 0 unless an explicit positive
-     -f has been passed.  This forces the default to 0 for Ada, which might
-     differ from the common default.  */
-  if (flag_eliminate_unused_debug_types < 0)
-    flag_eliminate_unused_debug_types = 1;
-  else
-    flag_eliminate_unused_debug_types = 0;
 
   optimize = global_options.x_optimize;
   optimize_size = global_options.x_optimize_size;
@@ -521,6 +504,17 @@ gnat_dwarf_name (tree decl, int verbosity ATTRIBUTE_UNUSED)
   return (const char *) IDENTIFIER_POINTER (DECL_NAME (decl));
 }
 
+/* Return the descriptive type associated with TYPE, if any.  */
+
+static tree
+gnat_descriptive_type (const_tree type)
+{
+  if (TYPE_STUB_DECL (type))
+    return DECL_PARALLEL_TYPE (TYPE_STUB_DECL (type));
+  else
+    return NULL_TREE;
+}
+
 /* Return true if types T1 and T2 are identical for type hashing purposes.
    Called only after doing all language independent checks.  At present,
    this function is only called when both types are FUNCTION_TYPE.  */
@@ -746,6 +740,8 @@ gnat_eh_personality (void)
 #define LANG_HOOKS_TYPES_COMPATIBLE_P	gnat_types_compatible_p
 #undef  LANG_HOOKS_GET_SUBRANGE_BOUNDS
 #define LANG_HOOKS_GET_SUBRANGE_BOUNDS  gnat_get_subrange_bounds
+#undef  LANG_HOOKS_DESCRIPTIVE_TYPE
+#define LANG_HOOKS_DESCRIPTIVE_TYPE	gnat_descriptive_type
 #undef  LANG_HOOKS_ATTRIBUTE_TABLE
 #define LANG_HOOKS_ATTRIBUTE_TABLE	gnat_internal_attribute_table
 #undef  LANG_HOOKS_BUILTIN_FUNCTION

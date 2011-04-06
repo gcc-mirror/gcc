@@ -114,6 +114,7 @@ AC_SUBST(LIBFFIINCS)
 
 is_darwin=no
 is_freebsd=no
+is_irix=no
 is_linux=no
 is_rtems=no
 is_solaris=no
@@ -121,12 +122,14 @@ GOOS=unknown
 case ${host} in
   *-*-darwin*)   is_darwin=yes;  GOOS=darwin ;;
   *-*-freebsd*)  is_freebsd=yes; GOOS=freebsd ;;
+  *-*-irix6*)    is_irix=yes;    GOOS=irix ;;
   *-*-linux*)    is_linux=yes;   GOOS=linux ;;
   *-*-rtems*)    is_rtems=yes;   GOOS=rtems ;;
   *-*-solaris2*) is_solaris=yes; GOOS=solaris ;;
 esac
 AM_CONDITIONAL(LIBGO_IS_DARWIN, test $is_darwin = yes)
 AM_CONDITIONAL(LIBGO_IS_FREEBSD, test $is_freebsd = yes)
+AM_CONDITIONAL(LIBGO_IS_IRIX, test $is_irix = yes)
 AM_CONDITIONAL(LIBGO_IS_LINUX, test $is_linux = yes)
 AM_CONDITIONAL(LIBGO_IS_RTEMS, test $is_rtems = yes)
 AM_CONDITIONAL(LIBGO_IS_SOLARIS, test $is_solaris = yes)
@@ -134,10 +137,10 @@ AC_SUBST(GOOS)
 
 dnl N.B. Keep in sync with gcc/testsuite/go.test/go-test.exp (go-set-goarch).
 is_386=no
+is_alpha=no
 is_arm=no
 is_m68k=no
-is_mips=no
-is_mips64=no
+mips_abi=""
 is_ppc=no
 is_ppc64=no
 is_sparc=no
@@ -145,6 +148,10 @@ is_sparc64=no
 is_x86_64=no
 GOARCH=unknown
 case ${host} in
+  alpha*-*-*)
+    is_alpha=yes
+    GOARCH=alpha
+    ;;
   arm*-*-* | strongarm*-*-* | ep9312*-*-* | xscale-*-*)
     is_arm=yes
     GOARCH=arm
@@ -169,15 +176,33 @@ changequote([,])dnl
     ;;
   mips*-*-*)
     AC_COMPILE_IFELSE([
-#ifdef __mips64
-#error 64-bit
+#if _MIPS_SIM != _ABIO32
+#error not o32
 #endif],
-[is_mips=yes], [is_mips64=yes])
-    if test "$is_mips" = "yes"; then
-      GOARCH=mips
-    else
-      GOARCH=mips64
-    fi
+[mips_abi="o32"],
+	[AC_COMPILE_IFELSE([
+#if _MIPS_SIM != _ABIN32
+#error not n32
+#endif],
+[mips_abi="n32"],
+	[AC_COMPILE_IFELSE([
+#if _MIPS_SIM != _ABI64
+#error not n64
+#endif],
+[mips_abi="n64"],
+	[AC_COMPILE_IFELSE([
+#if _MIPS_SIM != _ABIO64
+#error not o64
+#endif],
+[mips_abi="o64"],
+	[AC_MSG_ERROR([unknown MIPS ABI])
+[mips_abi="n32"]])])])])
+    case "$mips_abi" in
+    "o32") GOARCH=mipso32 ;;
+    "n32") GOARCH=mipsn32 ;;
+    "n64") GOARCH=mipsn64 ;;
+    "o64") GOARCH=mipso64 ;;
+    esac
     ;;
   rs6000*-*-* | powerpc*-*-*)
     AC_COMPILE_IFELSE([
@@ -205,10 +230,14 @@ changequote([,])dnl
     ;;
 esac
 AM_CONDITIONAL(LIBGO_IS_386, test $is_386 = yes)
+AM_CONDITIONAL(LIBGO_IS_ALPHA, test $is_alpha = yes)
 AM_CONDITIONAL(LIBGO_IS_ARM, test $is_arm = yes)
 AM_CONDITIONAL(LIBGO_IS_M68K, test $is_m68k = yes)
-AM_CONDITIONAL(LIBGO_IS_MIPS, test $is_mips = yes)
-AM_CONDITIONAL(LIBGO_IS_MIPS64, test $is_mips64 = yes)
+AM_CONDITIONAL(LIBGO_IS_MIPS, test $mips_abi != "")
+AM_CONDITIONAL(LIBGO_IS_MIPSO32, test $mips_abi = o32)
+AM_CONDITIONAL(LIBGO_IS_MIPSN32, test $mips_abi = n32)
+AM_CONDITIONAL(LIBGO_IS_MIPSN64, test $mips_abi = n64)
+AM_CONDITIONAL(LIBGO_IS_MIPSO64, test $mips_abi = o64)
 AM_CONDITIONAL(LIBGO_IS_PPC, test $is_ppc = yes)
 AM_CONDITIONAL(LIBGO_IS_PPC64, test $is_ppc64 = yes)
 AM_CONDITIONAL(LIBGO_IS_SPARC, test $is_sparc = yes)
@@ -228,6 +257,22 @@ if test -f ${srcdir}/go/debug/proc/regs_${GOOS}_${GOARCH}.go; then
   GO_DEBUG_PROC_REGS_OS_ARCH_FILE=go/debug/proc/regs_${GOOS}_${GOARCH}.go
 fi
 AC_SUBST(GO_DEBUG_PROC_REGS_OS_ARCH_FILE)
+
+dnl Some targets need special flags to build sysinfo.go.
+case "$target" in
+    *-*-solaris2.[[89]])
+	# Solaris 8/9 need this so struct msghdr gets the msg_control
+	# etc. fields in <sys/socket.h> (_XPG4_2).
+	OSCFLAGS='-D_XOPEN_SOURCE=500 -D_XOPEN_SOURCE_EXTENDED -D__EXTENSIONS__'
+	;;
+    *-*-solaris2.1[[01]])
+	# Solaris 10+ needs this so struct msghdr gets the msg_control
+	# etc. fields in <sys/socket.h> (_XPG4_2).  _XOPEN_SOURCE=500 as
+	# above doesn't work with C99.
+	OSCFLAGS='-D_XOPEN_SOURCE=600 -D__EXTENSIONS__'
+	;;
+esac
+AC_SUBST(OSCFLAGS)
 
 dnl Use -fsplit-stack when compiling C code if available.
 AC_CACHE_CHECK([whether -fsplit-stack is supported],
@@ -378,9 +423,12 @@ no)
   ;;
 esac
 
-AC_CHECK_HEADERS(sys/mman.h syscall.h sys/epoll.h sys/ptrace.h sys/syscall.h sys/user.h sys/utsname.h)
+AC_CHECK_HEADERS(sys/mman.h syscall.h sys/epoll.h sys/ptrace.h sys/syscall.h sys/user.h sys/utsname.h sys/select.h)
 AM_CONDITIONAL(HAVE_SYS_MMAN_H, test "$ac_cv_header_sys_mman_h" = yes)
-AC_CHECK_FUNCS(srandom random strsignal)
+
+AC_CHECK_FUNCS(srandom random strerror_r strsignal wait4 mincore)
+AM_CONDITIONAL(HAVE_STRERROR_R, test "$ac_cv_func_strerror_r" = yes)
+AM_CONDITIONAL(HAVE_WAIT4, test "$ac_cv_func_wait4" = yes)
 
 AC_CACHE_CHECK([for __sync_bool_compare_and_swap_4],
 [libgo_cv_func___sync_bool_compare_and_swap_4],

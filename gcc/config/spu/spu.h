@@ -1,4 +1,5 @@
-/* Copyright (C) 2006, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
+/* Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011
+   Free Software Foundation, Inc.
 
    This file is free software; you can redistribute it and/or modify it under
    the terms of the GNU General Public License as published by the Free
@@ -17,8 +18,6 @@
 
 /* Run-time Target */
 #define TARGET_CPU_CPP_BUILTINS()	spu_cpu_cpp_builtins(pfile)
-
-#define TARGET_VERSION fprintf (stderr, " (spu %s)", __DATE__);
 
 #define C_COMMON_OVERRIDE_OPTIONS spu_c_common_override_options()
 
@@ -195,9 +194,6 @@ enum reg_class {
    ALL_REGS,
    LIM_REG_CLASSES 
 };
-
-/* SPU is simple, it really only has one class of registers.  */
-#define IRA_COVER_CLASSES { GENERAL_REGS, LIM_REG_CLASSES }
 
 #define N_REG_CLASSES (int) LIM_REG_CLASSES
 

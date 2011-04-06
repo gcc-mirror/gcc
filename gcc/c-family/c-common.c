@@ -619,123 +619,125 @@ const unsigned int num_c_common_reswords =
 /* Table of machine-independent attributes common to all C-like languages.  */
 const struct attribute_spec c_common_attribute_table[] =
 {
-  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler } */
+  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler,
+       affects_type_identity } */
   { "packed",                 0, 0, false, false, false,
-			      handle_packed_attribute },
+			      handle_packed_attribute , false},
   { "nocommon",               0, 0, true,  false, false,
-			      handle_nocommon_attribute },
+			      handle_nocommon_attribute, false},
   { "common",                 0, 0, true,  false, false,
-			      handle_common_attribute },
+			      handle_common_attribute, false },
   /* FIXME: logically, noreturn attributes should be listed as
      "false, true, true" and apply to function types.  But implementing this
      would require all the places in the compiler that use TREE_THIS_VOLATILE
      on a decl to identify non-returning functions to be located and fixed
      to check the function type instead.  */
   { "noreturn",               0, 0, true,  false, false,
-			      handle_noreturn_attribute },
+			      handle_noreturn_attribute, false },
   { "volatile",               0, 0, true,  false, false,
-			      handle_noreturn_attribute },
+			      handle_noreturn_attribute, false },
   { "noinline",               0, 0, true,  false, false,
-			      handle_noinline_attribute },
+			      handle_noinline_attribute, false },
   { "noclone",                0, 0, true,  false, false,
-			      handle_noclone_attribute },
+			      handle_noclone_attribute, false },
   { "leaf",                   0, 0, true,  false, false,
-			      handle_leaf_attribute },
+			      handle_leaf_attribute, false },
   { "always_inline",          0, 0, true,  false, false,
-			      handle_always_inline_attribute },
+			      handle_always_inline_attribute, false },
   { "gnu_inline",             0, 0, true,  false, false,
-			      handle_gnu_inline_attribute },
+			      handle_gnu_inline_attribute, false },
   { "artificial",             0, 0, true,  false, false,
-			      handle_artificial_attribute },
+			      handle_artificial_attribute, false },
   { "flatten",                0, 0, true,  false, false,
-			      handle_flatten_attribute },
+			      handle_flatten_attribute, false },
   { "used",                   0, 0, true,  false, false,
-			      handle_used_attribute },
+			      handle_used_attribute, false },
   { "unused",                 0, 0, false, false, false,
-			      handle_unused_attribute },
+			      handle_unused_attribute, false },
   { "externally_visible",     0, 0, true,  false, false,
-			      handle_externally_visible_attribute },
+			      handle_externally_visible_attribute, false },
   /* The same comments as for noreturn attributes apply to const ones.  */
   { "const",                  0, 0, true,  false, false,
-			      handle_const_attribute },
+			      handle_const_attribute, false },
   { "transparent_union",      0, 0, false, false, false,
-			      handle_transparent_union_attribute },
+			      handle_transparent_union_attribute, false },
   { "constructor",            0, 1, true,  false, false,
-			      handle_constructor_attribute },
+			      handle_constructor_attribute, false },
   { "destructor",             0, 1, true,  false, false,
-			      handle_destructor_attribute },
+			      handle_destructor_attribute, false },
   { "mode",                   1, 1, false,  true, false,
-			      handle_mode_attribute },
+			      handle_mode_attribute, false },
   { "section",                1, 1, true,  false, false,
-			      handle_section_attribute },
+			      handle_section_attribute, false },
   { "aligned",                0, 1, false, false, false,
-			      handle_aligned_attribute },
+			      handle_aligned_attribute, false },
   { "weak",                   0, 0, true,  false, false,
-			      handle_weak_attribute },
+			      handle_weak_attribute, false },
   { "ifunc",                  1, 1, true,  false, false,
-			      handle_ifunc_attribute },
+			      handle_ifunc_attribute, false },
   { "alias",                  1, 1, true,  false, false,
-			      handle_alias_attribute },
+			      handle_alias_attribute, false },
   { "weakref",                0, 1, true,  false, false,
-			      handle_weakref_attribute },
+			      handle_weakref_attribute, false },
   { "no_instrument_function", 0, 0, true,  false, false,
-			      handle_no_instrument_function_attribute },
+			      handle_no_instrument_function_attribute,
+			      false },
   { "malloc",                 0, 0, true,  false, false,
-			      handle_malloc_attribute },
+			      handle_malloc_attribute, false },
   { "returns_twice",          0, 0, true,  false, false,
-			      handle_returns_twice_attribute },
+			      handle_returns_twice_attribute, false },
   { "no_stack_limit",         0, 0, true,  false, false,
-			      handle_no_limit_stack_attribute },
+			      handle_no_limit_stack_attribute, false },
   { "pure",                   0, 0, true,  false, false,
-			      handle_pure_attribute },
+			      handle_pure_attribute, false },
   /* For internal use (marking of builtins) only.  The name contains space
      to prevent its usage in source code.  */
   { "no vops",                0, 0, true,  false, false,
-			      handle_novops_attribute },
+			      handle_novops_attribute, false },
   { "deprecated",             0, 1, false, false, false,
-			      handle_deprecated_attribute },
+			      handle_deprecated_attribute, false },
   { "vector_size",	      1, 1, false, true, false,
-			      handle_vector_size_attribute },
+			      handle_vector_size_attribute, false },
   { "visibility",	      1, 1, false, false, false,
-			      handle_visibility_attribute },
+			      handle_visibility_attribute, false },
   { "tls_model",	      1, 1, true,  false, false,
-			      handle_tls_model_attribute },
+			      handle_tls_model_attribute, false },
   { "nonnull",                0, -1, false, true, true,
-			      handle_nonnull_attribute },
+			      handle_nonnull_attribute, false },
   { "nothrow",                0, 0, true,  false, false,
-			      handle_nothrow_attribute },
-  { "may_alias",	      0, 0, false, true, false, NULL },
+			      handle_nothrow_attribute, false },
+  { "may_alias",	      0, 0, false, true, false, NULL, false },
   { "cleanup",		      1, 1, true, false, false,
-			      handle_cleanup_attribute },
+			      handle_cleanup_attribute, false },
   { "warn_unused_result",     0, 0, false, true, true,
-			      handle_warn_unused_result_attribute },
+			      handle_warn_unused_result_attribute, false },
   { "sentinel",               0, 1, false, true, true,
-			      handle_sentinel_attribute },
+			      handle_sentinel_attribute, false },
   /* For internal use (marking of builtins) only.  The name contains space
      to prevent its usage in source code.  */
   { "type generic",           0, 0, false, true, true,
-			      handle_type_generic_attribute },
+			      handle_type_generic_attribute, false },
   { "alloc_size",	      1, 2, false, true, true,
-			      handle_alloc_size_attribute },
+			      handle_alloc_size_attribute, false },
   { "cold",                   0, 0, true,  false, false,
-			      handle_cold_attribute },
+			      handle_cold_attribute, false },
   { "hot",                    0, 0, true,  false, false,
-			      handle_hot_attribute },
+			      handle_hot_attribute, false },
   { "warning",		      1, 1, true,  false, false,
-			      handle_error_attribute },
+			      handle_error_attribute, false },
   { "error",		      1, 1, true,  false, false,
-			      handle_error_attribute },
+			      handle_error_attribute, false },
   { "target",                 1, -1, true, false, false,
-			      handle_target_attribute },
+			      handle_target_attribute, false },
   { "optimize",               1, -1, true, false, false,
-			      handle_optimize_attribute },
+			      handle_optimize_attribute, false },
   { "no_split_stack",	      0, 0, true,  false, false,
-			      handle_no_split_stack_attribute },
+			      handle_no_split_stack_attribute, false },
   /* For internal use (marking of builtins and runtime functions) only.
      The name contains space to prevent its usage in source code.  */
   { "fn spec",	 	      1, 1, false, true, true,
-			      handle_fnspec_attribute },
-  { NULL,                     0, 0, false, false, false, NULL }
+			      handle_fnspec_attribute, false },
+  { NULL,                     0, 0, false, false, false, NULL, false }
 };
 
 /* Give the specifications for the format attributes, used by C and all
@@ -743,12 +745,13 @@ const struct attribute_spec c_common_attribute_table[] =
 
 const struct attribute_spec c_common_format_attribute_table[] =
 {
-  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler } */
+  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler,
+       affects_type_identity } */
   { "format",                 3, 3, false, true,  true,
-			      handle_format_attribute },
+			      handle_format_attribute, false },
   { "format_arg",             1, 1, false, true,  true,
-			      handle_format_arg_attribute },
-  { NULL,                     0, 0, false, false, false, NULL }
+			      handle_format_arg_attribute, false },
+  { NULL,                     0, 0, false, false, false, NULL, false }
 };
 
 /* Return identifier for address space AS.  */
@@ -3334,6 +3337,20 @@ shorten_compare (tree *op0_ptr, tree *op1_ptr, tree *restype_ptr,
   primop0 = get_narrower (op0, &unsignedp0);
   primop1 = get_narrower (op1, &unsignedp1);
 
+  /* If primopN is first sign-extended from primopN's precision to opN's
+     precision, then zero-extended from opN's precision to
+     *restype_ptr precision, shortenings might be invalid.  */
+  if (TYPE_PRECISION (TREE_TYPE (primop0)) < TYPE_PRECISION (TREE_TYPE (op0))
+      && TYPE_PRECISION (TREE_TYPE (op0)) < TYPE_PRECISION (*restype_ptr)
+      && !unsignedp0
+      && TYPE_UNSIGNED (TREE_TYPE (op0)))
+    primop0 = op0;
+  if (TYPE_PRECISION (TREE_TYPE (primop1)) < TYPE_PRECISION (TREE_TYPE (op1))
+      && TYPE_PRECISION (TREE_TYPE (op1)) < TYPE_PRECISION (*restype_ptr)
+      && !unsignedp1
+      && TYPE_UNSIGNED (TREE_TYPE (op1)))
+    primop1 = op1;
+
   /* Handle the case that OP0 does not *contain* a conversion
      but it *requires* conversion to FINAL_TYPE.  */
 
@@ -4480,6 +4497,7 @@ def_fn_type (builtin_type def, builtin_type ret, bool var, int n, ...)
 
  egress:
   builtin_types[def] = t;
+  va_end (list);
 }
 
 /* Build builtin functions common to both C and C++ language

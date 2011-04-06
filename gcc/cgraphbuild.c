@@ -53,6 +53,12 @@ record_reference (tree *tp, int *walk_subtrees, void *data)
   tree decl;
   struct record_reference_ctx *ctx = (struct record_reference_ctx *)data;
 
+  t = canonicalize_constructor_val (t);
+  if (!t)
+    t = *tp;
+  else if (t != *tp)
+    *tp = t;
+
   switch (TREE_CODE (t))
     {
     case VAR_DECL:

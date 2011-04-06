@@ -1,7 +1,7 @@
 /* Operating system specific defines to be used when targeting GCC for
    hosting on Windows32, using GNU tools and the Windows32 API Library.
    Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2007, 2008,
-   2009, 2010 Free Software Foundation, Inc.
+   2009, 2010, 2011 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -19,12 +19,8 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#undef TARGET_VERSION
-#if TARGET_64BIT_DEFAULT
-#define TARGET_VERSION fprintf (stderr,"(x86_64 MinGW");
-#else
-#define TARGET_VERSION fprintf (stderr," (x86 MinGW)");
-#endif
+#undef DEFAULT_ABI
+#define DEFAULT_ABI MS_ABI
 
 /* See i386/crtdll.h for an alternative definition. _INTEGRAL_MAX_BITS
    is for compatibility with native compiler.  */
@@ -46,6 +42,14 @@ along with GCC; see the file COPYING3.  If not see
 	}							\
     }								\
   while (0)
+
+#ifndef TARGET_USE_PTHREAD_BY_DEFAULT
+#define SPEC_PTHREAD1 "pthread"
+#define SPEC_PTHREAD2 "!no-pthread"
+#else
+#define SPEC_PTHREAD1 "!no-pthread"
+#define SPEC_PTHREAD2 "pthread"
+#endif
 
 #undef SUB_LINK_ENTRY32
 #undef SUB_LINK_ENTRY64
@@ -71,13 +75,17 @@ along with GCC; see the file COPYING3.  If not see
 #define STANDARD_INCLUDE_COMPONENT "MINGW"
 
 #undef CPP_SPEC
-#define CPP_SPEC "%{posix:-D_POSIX_SOURCE} %{mthreads:-D_MT}"
+#define CPP_SPEC "%{posix:-D_POSIX_SOURCE} %{mthreads:-D_MT} " \
+		 "%{" SPEC_PTHREAD1 ":-D_REENTRANCE} " \
+		 "%{" SPEC_PTHREAD2 ": } "
 
 /* For Windows applications, include more libraries, but always include
    kernel32.  */
 #undef LIB_SPEC
-#define LIB_SPEC "%{pg:-lgmon} %{mwindows:-lgdi32 -lcomdlg32} \
-                  -ladvapi32 -lshell32 -luser32 -lkernel32"
+#define LIB_SPEC "%{pg:-lgmon} %{" SPEC_PTHREAD1 ":-lpthread} " \
+		 "%{" SPEC_PTHREAD2 ": } " \
+		 "%{mwindows:-lgdi32 -lcomdlg32} " \
+                 "-ladvapi32 -lshell32 -luser32 -lkernel32"
 
 /* Weak symbols do not get resolved if using a Windows dll import lib.
    Make the unwind registration references strong undefs.  */

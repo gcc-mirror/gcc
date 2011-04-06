@@ -1084,7 +1084,13 @@ CND(MSG_PEEK, "Peek at incoming data")
 CND(MSG_EOR, "Send end of record")
 
 #ifndef MSG_WAITALL
+#ifdef __MINWGW32__
+/* The value of MSG_WAITALL is 8.  Nevertheless winsock.h doesn't
+   define it, but it is still usable as we link to winsock2 API.  */
+# define MSG_WAITALL (1 << 3)
+#else
 # define MSG_WAITALL -1
+#endif
 #endif
 CND(MSG_WAITALL, "Wait for full reception")
 

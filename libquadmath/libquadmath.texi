@@ -256,7 +256,7 @@ The following mathematical functions are available:
 @node strtoflt128
 @section @code{strtoflt128} --- Convert from string
 
-The function @code{dmath_strtopQ} converts a string into a
+The function @code{strtoflt128} converts a string into a
 @code{__float128} number.
 
 @table @asis
@@ -310,6 +310,11 @@ the format.
 @item @var{format} @tab conversion specifier string
 @end multitable
 
+@item Note
+On some targets when supported by the C library hooks are installed
+for @code{printf} family of functions, so that @code{printf ("%Qe", 1.2Q);}
+etc.@: works too.
+
 @item Example
 @smallexample
 #include <quadmath.h>
@@ -350,10 +355,6 @@ int main ()
 @end smallexample
 
 @end table
-
-On some targets when supported by the C library hooks are installed
-for @code{printf} family of functions, so that @code{printf ("%Qe", 1.2Q);}
-etc.@: works too.
 
 
 @c ---------------------------------------------------------------------

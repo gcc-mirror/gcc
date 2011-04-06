@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O -fdump-tree-fre-details -fno-tree-sra" } */
+/* { dg-options "-O -fdump-tree-fre1-details -fno-tree-sra" } */
 
 struct Bar {
   int dom;
@@ -18,6 +18,6 @@ int foo(int i, int j, int k)
   return f.doms[0LL].dom;
 }
 
-/* { dg-final { scan-tree-dump "Replaced f.doms\\\[0\\\].dom with i_" "fre" } } */
-/* { dg-final { cleanup-tree-dump "fre" } } */
+/* { dg-final { scan-tree-dump "Replaced f.doms\\\[0\\\].dom with i_" "fre1" } } */
+/* { dg-final { cleanup-tree-dump "fre1" } } */
 

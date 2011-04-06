@@ -207,15 +207,25 @@
         {
 	case MODE_V8SF:
 	case MODE_V4SF:
-	  return "vmovaps\t{%1, %0|%0, %1}";
+	  if (misaligned_operand (operands[0], <MODE>mode)
+	      || misaligned_operand (operands[1], <MODE>mode))
+	    return "vmovups\t{%1, %0|%0, %1}";
+	  else
+	    return "vmovaps\t{%1, %0|%0, %1}";
 	case MODE_V4DF:
 	case MODE_V2DF:
-	  if (TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL)
+	  if (misaligned_operand (operands[0], <MODE>mode)
+	      || misaligned_operand (operands[1], <MODE>mode))
+	    return "vmovupd\t{%1, %0|%0, %1}";
+	  else if (TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL)
 	    return "vmovaps\t{%1, %0|%0, %1}";
 	  else
 	    return "vmovapd\t{%1, %0|%0, %1}";
 	default:
-	  if (TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL)
+	  if (misaligned_operand (operands[0], <MODE>mode)
+	      || misaligned_operand (operands[1], <MODE>mode))
+	    return "vmovdqu\t{%1, %0|%0, %1}";
+	  else if (TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL)
 	    return "vmovaps\t{%1, %0|%0, %1}";
 	  else
 	    return "vmovdqa\t{%1, %0|%0, %1}";
@@ -2715,6 +2725,7 @@
    (set_attr "prefix" "maybe_vex")
    (set_attr "mode" "TI")
    (set_attr "amdfam10_decode" "double")
+   (set_attr "athlon_decode" "vector")
    (set_attr "bdver1_decode" "double")])
 
 (define_insn "avx_cvttpd2dq256"
@@ -2746,6 +2757,7 @@
    (set_attr "prefix" "maybe_vex")
    (set_attr "mode" "TI")
    (set_attr "amdfam10_decode" "double")
+   (set_attr "athlon_decode" "vector")
    (set_attr "bdver1_decode" "double")])
 
 (define_insn "*avx_cvtsd2ss"
@@ -2806,6 +2818,7 @@
   "cvtss2sd\t{%2, %0|%0, %2}"
   [(set_attr "type" "ssecvt")
    (set_attr "amdfam10_decode" "vector,double")
+   (set_attr "athlon_decode" "direct,direct")
    (set_attr "bdver1_decode" "direct,direct")
    (set_attr "mode" "DF")])
 
@@ -2842,6 +2855,7 @@
    (set_attr "prefix" "maybe_vex")
    (set_attr "mode" "V4SF")
    (set_attr "amdfam10_decode" "double")
+   (set_attr "athlon_decode" "vector")
    (set_attr "bdver1_decode" "double")])
 
 (define_insn "avx_cvtps2pd256"
@@ -2879,6 +2893,7 @@
    (set_attr "mode" "V2DF")
    (set_attr "prefix_data16" "0")
    (set_attr "amdfam10_decode" "direct")
+   (set_attr "athlon_decode" "double")
    (set_attr "bdver1_decode" "double")])
 
 (define_expand "vec_unpacks_hi_v4sf"

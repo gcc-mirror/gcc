@@ -1,7 +1,7 @@
 /* Definitions of target machine for GNU compiler.
    Matsushita MN10300 series
    Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-   2007, 2008, 2009, 2010 Free Software Foundation, Inc.
+   2007, 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
    Contributed by Jeff Law (law@cygnus.com).
 
    This file is part of GCC.
@@ -57,15 +57,10 @@
     }						\
   while (0)
 
-enum processor_type
-{
-  PROCESSOR_MN10300,
-  PROCESSOR_AM33,
-  PROCESSOR_AM33_2,
-  PROCESSOR_AM34
-};
+#ifndef MN10300_OPTS_H
+#include "config/mn10300/mn10300-opts.h"
+#endif
 
-extern enum processor_type mn10300_processor;
 extern enum processor_type mn10300_tune_cpu;
 
 #define TARGET_AM33	(mn10300_processor >= PROCESSOR_AM33)
@@ -75,10 +70,6 @@ extern enum processor_type mn10300_tune_cpu;
 #ifndef PROCESSOR_DEFAULT
 #define PROCESSOR_DEFAULT PROCESSOR_MN10300
 #endif
-
-/* Print subsidiary information on the compiler version in use.  */
-
-#define TARGET_VERSION fprintf (stderr, " (MN10300)");
 
 
 /* Target machine storage layout */
@@ -312,19 +303,6 @@ enum reg_class
   { 0x0003fdff, 0 }, 	  /* GENERAL_REGS */			\
   { 0x0003ffff, 0 },      /* SP_OR_GENERAL_REGS */		\
   { 0xffffffff, 0xfffff } /* ALL_REGS */			\
-}
-
-/* The following macro defines cover classes for Integrated Register
-   Allocator.  Cover classes is a set of non-intersected register
-   classes covering all hard registers used for register allocation
-   purpose.  Any move between two registers of a cover class should be
-   cheaper than load or store of the registers.  The macro value is
-   array of register classes with LIM_REG_CLASSES used as the end
-   marker.  */
-
-#define IRA_COVER_CLASSES					\
-{								\
-  GENERAL_REGS, FP_REGS, MDR_REGS, LIM_REG_CLASSES		\
 }
 
 /* The same information, inverted:

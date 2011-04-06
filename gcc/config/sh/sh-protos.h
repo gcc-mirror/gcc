@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler for Renesas / SuperH SH.
    Copyright (C) 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2003,
-   2004, 2005, 2006, 2007, 2008, 2009, 2010
+   2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
    Contributed by Steve Chamberlain (sac@cygnus.com).
    Improved by Jim Wilson (wilson@cygnus.com).
@@ -170,17 +170,3 @@ extern int sh2a_is_function_vector_call (rtx);
 extern void sh_fix_range (const char *);
 extern bool sh_hard_regno_mode_ok (unsigned int, enum machine_mode);
 #endif /* ! GCC_SH_PROTOS_H */
-
-#ifdef SYMBIAN
-extern const char * sh_symbian_strip_name_encoding    (const char *);
-extern bool         sh_symbian_is_dllexported_name    (const char *);
-#ifdef TREE_CODE
-extern bool         sh_symbian_is_dllexported         (tree);
-extern int          sh_symbian_import_export_class    (tree, int);
-extern tree         sh_symbian_handle_dll_attribute   (tree *, tree, tree, int, bool *);
-#ifdef RTX_CODE
-extern void         sh_symbian_encode_section_info    (tree, rtx, int);
-#endif
-#endif
-#endif /* SYMBIAN */
-

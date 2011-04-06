@@ -1,6 +1,6 @@
 /* Definitions for target OS TPF for GNU compiler, for IBM S/390 hardware
    Copyright (C) 2003, 2004, 2005, 2007, 2009,
-   2010 Free Software Foundation, Inc.
+   2010, 2011 Free Software Foundation, Inc.
    Contributed by P.J. Darcy (darcypj@us.ibm.com),
                   Hartmut Penner (hpenner@de.ibm.com), and
                   Ulrich Weigand (uweigand@de.ibm.com).
@@ -43,10 +43,6 @@ along with GCC; see the file COPYING3.  If not see
 #undef  WCHAR_TYPE_SIZE
 #define WCHAR_TYPE_SIZE 32
 
-
-/* Basic record keeping for the TPF OS name.  */
-#undef  TARGET_VERSION
-#define TARGET_VERSION fprintf (stderr, " (TPF: zSeries)");
 
 /* TPF OS specific stack-pointer offset.  */
 #undef STACK_POINTER_OFFSET

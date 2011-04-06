@@ -1,3 +1,43 @@
+2011-03-25  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR boehm-gc/11412
+	* configure.ac (THREADCFLAGS): New variable.
+	Use it instead of INCLUDES, AM_CPPFLAGS.
+	<*-*-kfreebsd*-gnu> (THREADDLLIBS): Rename to THREADLIBS.
+	Remove DG/UX support.
+	(AC_CONFIG_FILES): Add testsuite/Makefile.
+	* Makefile.am (AUTOMAKE_OPTIONS): Use foreign instead of cygnus.
+	(SUBDIRS): Add testsuite.
+	(libgcjgc_la_LIBADD): Remove $(UNWINDLIBS).
+	(AM_CXXFLAGS): Add $(THREADCFLAGS).
+	(AM_CFLAGS): Likewise.
+	Remove TESTS related variables.
+	* Makefile.in: Regenerate.
+	* configure: Regenerate.
+	* testsuite/Makefile.am: New file.
+	* testsuite/Makefile.in: New file.
+	* testsuite/lib/boehm-gc.exp: New file.
+	* testsuite/config/default.exp: New file.
+	* testsuite/boehm-gc.c/c.exp: New file.
+	* testsuite/boehm-gc.lib/lib.exp: New file.
+	* tests/test.c: Move ...
+	* testsuite/boehm-gc.c/gctest.c: ... here.
+	* tests/leak_test.c, tests/middle.c, tests/thread_leak_test.c,
+	tests/trace_test.c: Move ...
+	* testsuite/boehm-gc.c: ... here.
+	* testsuite/boehm-gc.c/trace_test.c: Skip everywhere.
+	* tests/staticrootslib.c, tests/staticrootstest.c: Move ...
+	* testsuite/boehm-gc.lib: ... here.
+	* testsuite/boehm-gc.lib/staticrootstest.c: Use dg-add-shlib
+	staticrootslib.c.
+	* tests/test_cpp.cc: Move ...
+	* testsuite/boehm-gc.c++: ... here.
+
+2011-03-21  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac (THREADS): Remove solaris.
+	* configure: Regenerate.
+
 2011-02-13  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* configure: Regenerate.

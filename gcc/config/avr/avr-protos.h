@@ -76,7 +76,7 @@ extern const char *lshrsi3_out (rtx insn, rtx operands[], int *len);
 extern bool avr_rotate_bytes (rtx operands[]);
 
 extern void expand_prologue (void);
-extern void expand_epilogue (void);
+extern void expand_epilogue (bool);
 extern int avr_epilogue_uses (int regno);
 
 extern void avr_output_bld (rtx operands[], int bit_nr);
@@ -108,6 +108,7 @@ extern RTX_CODE avr_normalize_condition (RTX_CODE condition);
 extern int compare_eq_p (rtx insn);
 extern void out_shift_with_cnt (const char *templ, rtx insn,
 				rtx operands[], int *len, int t_len);
+extern rtx avr_incoming_return_addr_rtx (void);
 #endif /* RTX_CODE */
 
 #ifdef HAVE_MACHINE_MODES

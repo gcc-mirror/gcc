@@ -181,20 +181,22 @@ func Gettimeofday(tv *Timeval) (errno int) {
   return;
 }
 
+const nfdbits = unsafe.Sizeof(fds_bits_type) * 8
+
 type FdSet_t struct {
-	Fds_bits [(FD_SETSIZE + 63) / 64]int64;
+	Fds_bits [(FD_SETSIZE + nfdbits - 1) / nfdbits]fds_bits_type
 }
 
 func FDSet(fd int, set *FdSet_t) {
-	set.Fds_bits[fd / 64] |= (1 << (uint)(fd % 64))
+	set.Fds_bits[fd / nfdbits] |= (1 << (uint)(fd % nfdbits))
 }
 
 func FDClr(fd int, set *FdSet_t) {
-	set.Fds_bits[fd / 64] &= ^(1 << (uint)(fd % 64))
+	set.Fds_bits[fd / nfdbits] &^= (1 << (uint)(fd % nfdbits))
 }
 
 func FDIsSet(fd int, set *FdSet_t) bool {
-	if set.Fds_bits[fd / 64] & (1 << (uint)(fd % 64)) != 0 {
+	if set.Fds_bits[fd / nfdbits] & (1 << (uint)(fd % nfdbits)) != 0 {
 		return true
 	} else {
 		return false
@@ -202,14 +204,14 @@ func FDIsSet(fd int, set *FdSet_t) bool {
 }
 
 func FDZero(set *FdSet_t) {
-	for i := 0; i < ((FD_SETSIZE + 63) / 64); i++ {
+	for i := range set.Fds_bits {
 		set.Fds_bits[i] = 0
 	}
 }
 
 func Select(nfds int, r *FdSet_t, w *FdSet_t, e *FdSet_t, timeout *Timeval) (n int, errno int) {
   n = libc_select(nfds, (*byte)(unsafe.Pointer(r)),
-		  (*byte)(unsafe.Pointer(e)),
+		  (*byte)(unsafe.Pointer(w)),
 		  (*byte)(unsafe.Pointer(e)), timeout);
   if n < 0 { errno = GetErrno() }
   return;

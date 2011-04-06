@@ -4157,6 +4157,7 @@ check_dimension (int i, gfc_array_ref *ar, gfc_array_spec *as)
   switch (ar->dimen_type[i])
     {
     case DIMEN_VECTOR:
+    case DIMEN_THIS_IMAGE:
       break;
 
     case DIMEN_STAR:
@@ -4324,7 +4325,8 @@ compare_spec_to_ref (gfc_array_ref *ar)
   if (ar->codimen != 0)
     for (i = as->rank; i < as->rank + as->corank; i++)
       {
-	if (ar->dimen_type[i] != DIMEN_ELEMENT && !ar->in_allocate)
+	if (ar->dimen_type[i] != DIMEN_ELEMENT && !ar->in_allocate
+	    && ar->dimen_type[i] != DIMEN_THIS_IMAGE)
 	  {
 	    gfc_error ("Coindex of codimension %d must be a scalar at %L",
 		       i + 1 - as->rank, &ar->where);
@@ -4333,6 +4335,14 @@ compare_spec_to_ref (gfc_array_ref *ar)
 	if (check_dimension (i, ar, as) == FAILURE)
 	  return FAILURE;
       }
+
+  if (as->corank && ar->codimen == 0)
+    {
+      int n;
+      ar->codimen = as->corank;
+      for (n = ar->dimen; n < ar->dimen + ar->codimen; n++)
+	ar->dimen_type[n] = DIMEN_THIS_IMAGE;
+    }
 
   return SUCCESS;
 }
@@ -6848,12 +6858,14 @@ resolve_allocate_expr (gfc_expr *e, gfc_code *code)
 
   ar = &ref2->u.ar;
 
-  if (codimension && ar->codimen == 0)
-    {
-      gfc_error ("Coarray specification required in ALLOCATE statement "
-		 "at %L", &e->where);
-      goto failure;
-    }
+  if (codimension)
+    for (i = ar->dimen; i < ar->dimen + ar->codimen; i++)
+      if (ar->dimen_type[i] == DIMEN_THIS_IMAGE)
+	{
+	  gfc_error ("Coarray specification required in ALLOCATE statement "
+		     "at %L", &e->where);
+	  goto failure;
+	}
 
   for (i = 0; i < ar->dimen; i++)
     {
@@ -6876,6 +6888,7 @@ resolve_allocate_expr (gfc_expr *e, gfc_code *code)
 	case DIMEN_UNKNOWN:
 	case DIMEN_VECTOR:
 	case DIMEN_STAR:
+	case DIMEN_THIS_IMAGE:
 	  gfc_error ("Bad array specification in ALLOCATE statement at %L",
 		     &e->where);
 	  goto failure;
@@ -12501,17 +12514,17 @@ check_data_variable (gfc_data_variable *var, locus *where)
 
   has_pointer = sym->attr.pointer;
 
+  if (gfc_is_coindexed (e))
+    {
+      gfc_error ("DATA element '%s' at %L cannot have a coindex", sym->name,
+		 where);
+      return FAILURE;
+    }
+
   for (ref = e->ref; ref; ref = ref->next)
     {
       if (ref->type == REF_COMPONENT && ref->u.c.component->attr.pointer)
 	has_pointer = 1;
-
-      if (ref->type == REF_ARRAY && ref->u.ar.codimen)
-	{
-	  gfc_error ("DATA element '%s' at %L cannot have a coindex",
-		     sym->name, where);
-	  return FAILURE;
-	}
 
       if (has_pointer
 	    && ref->type == REF_ARRAY

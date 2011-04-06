@@ -72,7 +72,7 @@ jcf_open_exact_case (const char *filename, int oflag)
      all directory components would be tedious and time-consuming
      and it's a pretty safe assumption that mixed-case package
      names are a fringe case.... */
-  if (strcmp (filename + filename_len - found_file_len, fd.cFileName))
+  if (filename_cmp (filename + filename_len - found_file_len, fd.cFileName))
     {
       /* Reject this because it is not a perfect-case match. */
       /* printf("************\nRejected:\n%s\n%s\n************\n\n", filename, fd.cFileName); */

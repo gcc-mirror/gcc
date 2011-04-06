@@ -18,6 +18,13 @@
 ; along with GCC; see the file COPYING3.  If not see
 ; <http://www.gnu.org/licenses/>.
 
+HeaderInclude
+config/mn10300/mn10300-opts.h
+
+; The selected processor.
+Variable
+enum processor_type mn10300_processor = PROCESSOR_DEFAULT
+
 mam33
 Target
 Target the AM33 processor
@@ -31,7 +38,7 @@ Target Report
 Target the AM34 processor
 
 mtune=
-Target RejectNegative Joined
+Target RejectNegative Joined Var(mn10300_tune_string)
 Tune code for the given processor
 
 mmult-bug

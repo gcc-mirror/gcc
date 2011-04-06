@@ -2514,6 +2514,8 @@ get_gimple_rhs_num_ops (enum tree_code code)
    : (SYM) == TRUTH_NOT_EXPR ? GIMPLE_UNARY_RHS				    \
    : ((SYM) == WIDEN_MULT_PLUS_EXPR					    \
       || (SYM) == WIDEN_MULT_MINUS_EXPR					    \
+      || (SYM) == DOT_PROD_EXPR						    \
+      || (SYM) == REALIGN_LOAD_EXPR					    \
       || (SYM) == FMA_EXPR) ? GIMPLE_TERNARY_RHS			    \
    : ((SYM) == COND_EXPR						    \
       || (SYM) == CONSTRUCTOR						    \
@@ -2522,10 +2524,7 @@ get_gimple_rhs_num_ops (enum tree_code code)
       || (SYM) == ADDR_EXPR						    \
       || (SYM) == WITH_SIZE_EXPR					    \
       || (SYM) == SSA_NAME						    \
-      || (SYM) == POLYNOMIAL_CHREC					    \
-      || (SYM) == DOT_PROD_EXPR						    \
-      || (SYM) == VEC_COND_EXPR						    \
-      || (SYM) == REALIGN_LOAD_EXPR) ? GIMPLE_SINGLE_RHS		    \
+      || (SYM) == VEC_COND_EXPR) ? GIMPLE_SINGLE_RHS			    \
    : GIMPLE_INVALID_RHS),
 #define END_OF_BASE_TREE_CODES (unsigned char) GIMPLE_INVALID_RHS,
 
@@ -2581,7 +2580,7 @@ bool
 is_gimple_condexpr (tree t)
 {
   return (is_gimple_val (t) || (COMPARISON_CLASS_P (t)
-				&& !tree_could_trap_p (t)
+				&& !tree_could_throw_p (t)
 				&& is_gimple_val (TREE_OPERAND (t, 0))
 				&& is_gimple_val (TREE_OPERAND (t, 1))));
 }
@@ -3243,8 +3242,8 @@ typedef struct GTY(()) gimple_type_leader_entry_s {
 } gimple_type_leader_entry;
 
 #define GIMPLE_TYPE_LEADER_SIZE 16381
-static GTY((length("GIMPLE_TYPE_LEADER_SIZE"))) gimple_type_leader_entry
-  *gimple_type_leader;
+static GTY((deletable, length("GIMPLE_TYPE_LEADER_SIZE")))
+  gimple_type_leader_entry *gimple_type_leader;
 
 /* Lookup an existing leader for T and return it or NULL_TREE, if
    there is none in the cache.  */
@@ -3307,8 +3306,7 @@ compare_type_names_p (tree t1, tree t2, bool for_completion_p)
 
 /* Return true if the field decls F1 and F2 are at the same offset.
 
-   This is intended to be used on GIMPLE types only.  In order to
-   compare GENERIC types, use fields_compatible_p instead.  */
+   This is intended to be used on GIMPLE types only.  */
 
 bool
 gimple_compare_field_offset (tree f1, tree f2)
@@ -3616,7 +3614,7 @@ gimple_types_compatible_p_1 (tree t1, tree t2, enum gtc_mode mode,
 			 state, sccstack, sccstate, sccstate_obstack))
 	goto different_types;
 
-      if (!targetm.comp_type_attributes (t1, t2))
+      if (!comp_type_attributes (t1, t2))
 	goto different_types;
 
       if (TYPE_ARG_TYPES (t1) == TYPE_ARG_TYPES (t2))

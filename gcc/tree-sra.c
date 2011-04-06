@@ -1376,6 +1376,7 @@ build_ref_for_offset (location_t loc, tree base, HOST_WIDE_INT offset,
       add_referenced_var (tmp);
       tmp = make_ssa_name (tmp, NULL);
       addr = build_fold_addr_expr (unshare_expr (prev_base));
+      STRIP_USELESS_TYPE_CONVERSION (addr);
       stmt = gimple_build_assign (tmp, addr);
       gimple_set_location (stmt, loc);
       SSA_NAME_DEF_STMT (tmp) = stmt;

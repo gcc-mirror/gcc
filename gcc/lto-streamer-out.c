@@ -70,13 +70,7 @@ eq_string_slot_node (const void *p1, const void *p2)
   const struct string_slot *ds2 = (const struct string_slot *) p2;
 
   if (ds1->len == ds2->len)
-    {
-      int i;
-      for (i = 0; i < ds1->len; i++)
-	if (ds1->s[i] != ds2->s[i])
-	  return 0;
-      return 1;
-    }
+    return memcmp (ds1->s, ds2->s, ds1->len) == 0;
 
   return 0;
 }
@@ -154,11 +148,11 @@ destroy_output_block (struct output_block *ob)
    table in OB. The string might or might not include a trailing '\0'.
    Then put the index onto the INDEX_STREAM.  */
 
-static void
-output_string_with_length (struct output_block *ob,
-			   struct lto_output_stream *index_stream,
-			   const char *s,
-			   unsigned int len)
+void
+lto_output_string_with_length (struct output_block *ob,
+			       struct lto_output_stream *index_stream,
+			       const char *s,
+			       unsigned int len)
 {
   struct string_slot **slot;
   struct string_slot s_slot;
@@ -170,6 +164,9 @@ output_string_with_length (struct output_block *ob,
   s_slot.len = len;
   s_slot.slot_num = 0;
 
+  /* Indicate that this is not a NULL string.  */
+  lto_output_uleb128_stream (index_stream, 0);
+
   slot = (struct string_slot **) htab_find_slot (ob->string_hash_table,
 						 &s_slot, INSERT);
   if (*slot == NULL)
@@ -178,7 +175,6 @@ output_string_with_length (struct output_block *ob,
       unsigned int start = string_stream->total_size;
       struct string_slot *new_slot
 	= (struct string_slot *) xmalloc (sizeof (struct string_slot));
-      unsigned int i;
 
       new_slot->s = string;
       new_slot->len = len;
@@ -186,12 +182,11 @@ output_string_with_length (struct output_block *ob,
       *slot = new_slot;
       lto_output_uleb128_stream (index_stream, start);
       lto_output_uleb128_stream (string_stream, len);
-      for (i = 0; i < len; i++)
-	lto_output_1_stream (string_stream, string[i]);
+      lto_output_data_stream (string_stream, string, len);
     }
   else
     {
-      struct string_slot *old_slot = (struct string_slot *)*slot;
+      struct string_slot *old_slot = *slot;
       lto_output_uleb128_stream (index_stream, old_slot->slot_num);
       free (string);
     }
@@ -200,16 +195,14 @@ output_string_with_length (struct output_block *ob,
 /* Output the '\0' terminated STRING to the string
    table in OB.  Then put the index onto the INDEX_STREAM.  */
 
-static void
-output_string (struct output_block *ob,
-	       struct lto_output_stream *index_stream,
-	       const char *string)
+void
+lto_output_string (struct output_block *ob,
+	           struct lto_output_stream *index_stream,
+	           const char *string)
 {
   if (string)
-    {
-      lto_output_uleb128_stream (index_stream, 0);
-      output_string_with_length (ob, index_stream, string, strlen (string) + 1);
-    }
+    lto_output_string_with_length (ob, index_stream, string,
+				   strlen (string) + 1);
   else
     lto_output_uleb128_stream (index_stream, 1);
 }
@@ -224,12 +217,9 @@ output_string_cst (struct output_block *ob,
 		   tree string)
 {
   if (string)
-    {
-      lto_output_uleb128_stream (index_stream, 0);
-      output_string_with_length (ob, index_stream,
-				 TREE_STRING_POINTER (string),
-				 TREE_STRING_LENGTH (string));
-    }
+    lto_output_string_with_length (ob, index_stream,
+				   TREE_STRING_POINTER (string),
+				   TREE_STRING_LENGTH (string ));
   else
     lto_output_uleb128_stream (index_stream, 1);
 }
@@ -244,12 +234,9 @@ output_identifier (struct output_block *ob,
 		   tree id)
 {
   if (id)
-    {
-      lto_output_uleb128_stream (index_stream, 0);
-      output_string_with_length (ob, index_stream,
-				 IDENTIFIER_POINTER (id),
-				 IDENTIFIER_LENGTH (id));
-    }
+    lto_output_string_with_length (ob, index_stream,
+				   IDENTIFIER_POINTER (id),
+				   IDENTIFIER_LENGTH (id));
   else
     lto_output_uleb128_stream (index_stream, 1);
 }
@@ -611,13 +598,13 @@ lto_output_location (struct output_block *ob, location_t loc)
 
   if (loc == UNKNOWN_LOCATION)
     {
-      output_string (ob, ob->main_stream, NULL);
+      lto_output_string (ob, ob->main_stream, NULL);
       return;
     }
 
   xloc = expand_location (loc);
 
-  output_string (ob, ob->main_stream, xloc.file);
+  lto_output_string (ob, ob->main_stream, xloc.file);
   output_sleb128 (ob, xloc.line);
   output_sleb128 (ob, xloc.column);
   output_sleb128 (ob, xloc.sysp);
@@ -1155,7 +1142,7 @@ static void
 lto_output_ts_translation_unit_decl_tree_pointers (struct output_block *ob,
 						   tree expr)
 {
-  output_string (ob, ob->main_stream, TRANSLATION_UNIT_LANGUAGE (expr));
+  lto_output_string (ob, ob->main_stream, TRANSLATION_UNIT_LANGUAGE (expr));
 }
 
 /* Helper for lto_output_tree.  Write all pointer fields in EXPR to output
@@ -1252,7 +1239,7 @@ lto_output_tree_pointers (struct output_block *ob, tree expr, bool ref_p)
    where EXPR is stored.  REF_P is as in lto_output_tree.  */
 
 static void
-lto_output_tree_header (struct output_block *ob, tree expr, int ix)
+lto_output_tree_header (struct output_block *ob, tree expr)
 {
   enum LTO_tags tag;
   enum tree_code code;
@@ -1269,7 +1256,6 @@ lto_output_tree_header (struct output_block *ob, tree expr, int ix)
      variable sized nodes).  */
   tag = lto_tree_code_to_tag (code);
   output_record_start (ob, tag);
-  output_sleb128 (ob, ix);
 
   /* The following will cause bootstrap miscomparisons.  Enable with care.  */
 #ifdef LTO_STREAMER_DEBUG
@@ -1298,7 +1284,7 @@ lto_output_tree_header (struct output_block *ob, tree expr, int ix)
    the index into the streamer cache where EXPR is stored.*/
 
 static void
-lto_output_builtin_tree (struct output_block *ob, tree expr, int ix)
+lto_output_builtin_tree (struct output_block *ob, tree expr)
 {
   gcc_assert (lto_stream_as_builtin_p (expr));
 
@@ -1310,7 +1296,6 @@ lto_output_builtin_tree (struct output_block *ob, tree expr, int ix)
   output_record_start (ob, LTO_builtin_decl);
   output_uleb128 (ob, DECL_BUILT_IN_CLASS (expr));
   output_uleb128 (ob, DECL_FUNCTION_CODE (expr));
-  output_sleb128 (ob, ix);
 
   if (DECL_ASSEMBLER_NAME_SET_P (expr))
     {
@@ -1320,12 +1305,12 @@ lto_output_builtin_tree (struct output_block *ob, tree expr, int ix)
 	 reader side from adding a second '*', we omit it here.  */
       const char *str = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (expr));
       if (strlen (str) > 1 && str[0] == '*')
-	output_string (ob, ob->main_stream, &str[1]);
+	lto_output_string (ob, ob->main_stream, &str[1]);
       else
-	output_string (ob, ob->main_stream, NULL);
+	lto_output_string (ob, ob->main_stream, NULL);
     }
   else
-    output_string (ob, ob->main_stream, NULL);
+    lto_output_string (ob, ob->main_stream, NULL);
 }
 
 
@@ -1335,13 +1320,13 @@ lto_output_builtin_tree (struct output_block *ob, tree expr, int ix)
    where EXPR is stored.  */
 
 static void
-lto_write_tree (struct output_block *ob, tree expr, bool ref_p, int ix)
+lto_write_tree (struct output_block *ob, tree expr, bool ref_p)
 {
   struct bitpack_d bp;
 
   /* Write the header, containing everything needed to materialize
      EXPR on the reading side.  */
-  lto_output_tree_header (ob, expr, ix);
+  lto_output_tree_header (ob, expr);
 
   /* Pack all the non-pointer fields in EXPR into a bitpack and write
      the resulting bitpack.  */
@@ -1378,9 +1363,8 @@ lto_output_integer_cst (struct output_block *ob, tree cst, bool ref_p)
 void
 lto_output_tree (struct output_block *ob, tree expr, bool ref_p)
 {
-  int ix;
+  unsigned ix;
   bool existed_p;
-  unsigned offset;
 
   if (expr == NULL_TREE)
     {
@@ -1396,22 +1380,15 @@ lto_output_tree (struct output_block *ob, tree expr, bool ref_p)
       return;
     }
 
-  /* Determine the offset in the stream where EXPR will be written.
-     This is used when emitting pickle references so the reader knows
-     where to reconstruct the pickled object from.  This allows
-     circular and forward references within the same stream.  */
-  offset = ob->main_stream->total_size;
-
-  existed_p = lto_streamer_cache_insert (ob->writer_cache, expr, &ix, &offset);
+  existed_p = lto_streamer_cache_insert (ob->writer_cache, expr, &ix);
   if (existed_p)
     {
       /* If a node has already been streamed out, make sure that
 	 we don't write it more than once.  Otherwise, the reader
 	 will instantiate two different nodes for the same object.  */
       output_record_start (ob, LTO_tree_pickle_reference);
-      output_sleb128 (ob, ix);
+      output_uleb128 (ob, ix);
       output_uleb128 (ob, lto_tree_code_to_tag (TREE_CODE (expr)));
-      output_uleb128 (ob, offset);
     }
   else if (lto_stream_as_builtin_p (expr))
     {
@@ -1420,13 +1397,13 @@ lto_output_tree (struct output_block *ob, tree expr, bool ref_p)
 	 compiler on startup.  The only builtins that need to
 	 be written out are BUILT_IN_FRONTEND.  For all other
 	 builtins, we simply write the class and code.  */
-      lto_output_builtin_tree (ob, expr, ix);
+      lto_output_builtin_tree (ob, expr);
     }
   else
     {
       /* This is the first time we see EXPR, write its fields
 	 to OB.  */
-      lto_write_tree (ob, expr, ref_p, ix);
+      lto_write_tree (ob, expr, ref_p);
     }
 }
 
@@ -1745,7 +1722,7 @@ output_gimple_stmt (struct output_block *ob, gimple stmt)
       lto_output_uleb128_stream (ob->main_stream, gimple_asm_noutputs (stmt));
       lto_output_uleb128_stream (ob->main_stream, gimple_asm_nclobbers (stmt));
       lto_output_uleb128_stream (ob->main_stream, gimple_asm_nlabels (stmt));
-      output_string (ob, ob->main_stream, gimple_asm_string (stmt));
+      lto_output_string (ob, ob->main_stream, gimple_asm_string (stmt));
       /* Fallthru  */
 
     case GIMPLE_ASSIGN:
@@ -1986,8 +1963,19 @@ output_function (struct cgraph_node *node)
   /* We will renumber the statements.  The code that does this uses
      the same ordering that we use for serializing them so we can use
      the same code on the other end and not have to write out the
-     statement numbers.  */
-  renumber_gimple_stmt_uids ();
+     statement numbers.  We do not assign UIDs to PHIs here because
+     virtual PHIs get re-computed on-the-fly which would make numbers
+     inconsistent.  */
+  set_gimple_stmt_max_uid (cfun, 0);
+  FOR_ALL_BB (bb)
+    {
+      gimple_stmt_iterator gsi;
+      for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+	{
+	  gimple stmt = gsi_stmt (gsi);
+	  gimple_set_uid (stmt, inc_gimple_stmt_max_uid (cfun));
+	}
+    }
 
   /* Output the code for the function.  */
   FOR_ALL_BB_FN (bb, fn)
@@ -2079,7 +2067,6 @@ output_unreferenced_globals (cgraph_node_set set, varpool_node_set vset)
   struct output_block *ob;
   alias_pair *p;
   unsigned i;
-  struct varpool_node *vnode;
   symbol_alias_set_t *defined;
   struct sets setdata;
 
@@ -2093,30 +2080,6 @@ output_unreferenced_globals (cgraph_node_set set, varpool_node_set vset)
 
   /* Make string 0 be a NULL string.  */
   lto_output_1_stream (ob->string_stream, 0);
-
-  /* Emit references for all the global symbols.  If a global symbol
-     was never referenced in any of the functions of this file, it
-     would not be emitted otherwise.  This will result in unreferenced
-     symbols at link time if a file defines a global symbol but
-     never references it.  */
-  FOR_EACH_STATIC_VARIABLE (vnode)
-   if (vnode->needed && varpool_node_in_set_p (vnode, vset))
-      {
-	tree var = vnode->decl;
-
-	if (TREE_CODE (var) == VAR_DECL)
-	  {
-	    /* Output the object in order to output references used in the
-	       initialization. */
-	    lto_output_tree (ob, var, true);
-
-	    /* If it is public we also need a reference to the object itself. */
-	    if (TREE_PUBLIC (var))
-	      lto_output_tree_ref (ob, var);
-	  }
-      }
-
-  output_zero (ob);
 
   /* We really need to propagate in both directoins:
      for normal aliases we propagate from first defined alias to
@@ -2321,19 +2284,19 @@ write_global_references (struct output_block *ob,
  			 struct lto_tree_ref_encoder *encoder)
 {
   tree t;
-  int32_t index;
-  const int32_t size = lto_tree_ref_encoder_size (encoder);
+  uint32_t index;
+  const uint32_t size = lto_tree_ref_encoder_size (encoder);
 
   /* Write size as 32-bit unsigned. */
   lto_output_data_stream (ref_stream, &size, sizeof (int32_t));
 
   for (index = 0; index < size; index++)
     {
-      int32_t slot_num;
+      uint32_t slot_num;
 
       t = lto_tree_ref_encoder_get_tree (encoder, index);
       lto_streamer_cache_lookup (ob->writer_cache, t, &slot_num);
-      gcc_assert (slot_num >= 0);
+      gcc_assert (slot_num != (unsigned)-1);
       lto_output_data_stream (ref_stream, &slot_num, sizeof slot_num);
     }
 }
@@ -2342,7 +2305,7 @@ write_global_references (struct output_block *ob,
 /* Write all the streams in an lto_out_decl_state STATE using
    output block OB and output stream OUT_STREAM.  */
 
-static void
+void
 lto_output_decl_state_streams (struct output_block *ob,
 			       struct lto_out_decl_state *state)
 {
@@ -2356,21 +2319,21 @@ lto_output_decl_state_streams (struct output_block *ob,
 /* Write all the references in an lto_out_decl_state STATE using
    output block OB and output stream OUT_STREAM.  */
 
-static void
+void
 lto_output_decl_state_refs (struct output_block *ob,
 			    struct lto_output_stream *out_stream,
 			    struct lto_out_decl_state *state)
 {
   unsigned i;
-  int32_t ref;
+  uint32_t ref;
   tree decl;
 
   /* Write reference to FUNCTION_DECL.  If there is not function,
      write reference to void_type_node. */
   decl = (state->fn_decl) ? state->fn_decl : void_type_node;
   lto_streamer_cache_lookup (ob->writer_cache, decl, &ref);
-  gcc_assert (ref >= 0);
-  lto_output_data_stream (out_stream, &ref, sizeof (int32_t));
+  gcc_assert (ref != (unsigned)-1);
+  lto_output_data_stream (out_stream, &ref, sizeof (uint32_t));
 
   for (i = 0;  i < LTO_N_DECL_STREAMS; i++)
     write_global_references (ob, out_stream, &state->streams[i]);
@@ -2407,7 +2370,7 @@ write_symbol (struct lto_streamer_cache_d *cache,
   const char *name;
   enum gcc_plugin_symbol_kind kind;
   enum gcc_plugin_symbol_visibility visibility;
-  int slot_num;
+  unsigned slot_num;
   uint64_t size;
   const char *comdat;
   unsigned char c;
@@ -2434,7 +2397,7 @@ write_symbol (struct lto_streamer_cache_d *cache,
   pointer_set_insert (seen, name);
 
   lto_streamer_cache_lookup (cache, t, &slot_num);
-  gcc_assert (slot_num >= 0);
+  gcc_assert (slot_num != (unsigned)-1);
 
   if (DECL_EXTERNAL (t))
     {
@@ -2545,7 +2508,7 @@ produce_symtab (struct output_block *ob,
   memset (&stream, 0, sizeof (stream));
 
   /* Write all functions. 
-     First write all defined functions and the write all used functions.
+     First write all defined functions and then write all used functions.
      This is done so only to handle duplicated symbols in cgraph.  */
   for (i = 0; i < lto_cgraph_encoder_size (encoder); i++)
     {

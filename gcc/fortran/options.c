@@ -1,6 +1,6 @@
 /* Parse and display command line options.
    Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008,
-   2009, 2010
+   2009, 2010, 2011
    Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
@@ -150,6 +150,7 @@ gfc_init_options (unsigned int decoded_options_count,
   gfc_option.flag_align_commons = 1;
   gfc_option.flag_protect_parens = 1;
   gfc_option.flag_realloc_lhs = -1;
+  gfc_option.flag_aggressive_function_elimination = 0;
   
   gfc_option.fpe = 0;
   gfc_option.rtcheck = 0;
@@ -515,6 +516,8 @@ gfc_handle_coarray_option (const char *arg)
     gfc_option.coarray = GFC_FCOARRAY_NONE;
   else if (strcmp (arg, "single") == 0)
     gfc_option.coarray = GFC_FCOARRAY_SINGLE;
+  else if (strcmp (arg, "lib") == 0)
+    gfc_option.coarray = GFC_FCOARRAY_LIB;
   else
     gfc_fatal_error ("Argument to -fcoarray is not valid: %s", arg);
 }
@@ -970,6 +973,10 @@ gfc_handle_option (size_t scode, const char *arg, int value,
 
     case OPT_falign_commons:
       gfc_option.flag_align_commons = value;
+      break;
+
+    case  OPT_faggressive_function_elimination:
+      gfc_option.flag_aggressive_function_elimination = value;
       break;
 
     case OPT_fprotect_parens:

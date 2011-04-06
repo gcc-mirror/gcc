@@ -21,3 +21,5 @@
 municode
 Target
 Use unicode startup and define UNICODE macro
+
+; Retain blank line above.

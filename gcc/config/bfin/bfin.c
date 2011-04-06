@@ -1,5 +1,5 @@
 /* The Blackfin code generation auxiliary output file.
-   Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010
+   Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
    Contributed by Analog Devices.
 
@@ -56,6 +56,7 @@
 #include "timevar.h"
 #include "df.h"
 #include "sel-sched.h"
+#include "opts.h"
 
 /* A C structure for machine-specific, per-function data.
    This is added to the cfun structure.  */
@@ -85,9 +86,6 @@ const char *byte_reg_names[]   =  BYTE_REGISTER_NAMES;
 static int arg_regs[] = FUNCTION_ARG_REGISTERS;
 static int ret_regs[] = FUNCTION_RETURN_REGISTERS;
 
-/* Nonzero if -mshared-library-id was given.  */
-static int bfin_lib_id_given;
-
 /* Nonzero if -fschedule-insns2 was given.  We override it and
    call the scheduler ourselves during reorg.  */
 static int bfin_flag_schedule_insns2;
@@ -95,17 +93,6 @@ static int bfin_flag_schedule_insns2;
 /* Determines whether we run variable tracking in machine dependent
    reorganization.  */
 static int bfin_flag_var_tracking;
-
-/* -mcpu support */
-bfin_cpu_t bfin_cpu_type = BFIN_CPU_UNKNOWN;
-
-/* -msi-revision support. There are three special values:
-   -1      -msi-revision=none.
-   0xffff  -msi-revision=any.  */
-int bfin_si_revision;
-
-/* The workarounds enabled */
-unsigned int bfin_workarounds = 0;
 
 struct bfin_cpu
 {
@@ -115,7 +102,7 @@ struct bfin_cpu
   unsigned int workarounds;
 };
 
-struct bfin_cpu bfin_cpus[] =
+static const struct bfin_cpu bfin_cpus[] =
 {
   {"bf512", BFIN_CPU_BF512, 0x0000,
    WA_SPECULATIVE_LOADS | WA_05000074},
@@ -1308,7 +1295,7 @@ bfin_load_pic_reg (rtx dest)
   if (i && i->local)
     return pic_offset_table_rtx;
       
-  if (bfin_lib_id_given)
+  if (global_options_set.x_bfin_library_id)
     addr = plus_constant (pic_offset_table_rtx, -4 - bfin_library_id * 4);
   else
     addr = gen_rtx_PLUS (Pmode, pic_offset_table_rtx,
@@ -2558,15 +2545,21 @@ bfin_class_likely_spilled_p (reg_class_t rclass)
 /* Implement TARGET_HANDLE_OPTION.  */
 
 static bool
-bfin_handle_option (size_t code, const char *arg, int value)
+bfin_handle_option (struct gcc_options *opts,
+		    struct gcc_options *opts_set ATTRIBUTE_UNUSED,
+		    const struct cl_decoded_option *decoded,
+		    location_t loc)
 {
+  size_t code = decoded->opt_index;
+  const char *arg = decoded->arg;
+  int value = decoded->value;
+
   switch (code)
     {
     case OPT_mshared_library_id_:
       if (value > MAX_LIBRARY_ID)
-	error ("-mshared-library-id=%s is not between 0 and %d",
-	       arg, MAX_LIBRARY_ID);
-      bfin_lib_id_given = 1;
+	error_at (loc, "-mshared-library-id=%s is not between 0 and %d",
+		  arg, MAX_LIBRARY_ID);
       return true;
 
     case OPT_mcpu_:
@@ -2584,27 +2577,27 @@ bfin_handle_option (size_t code, const char *arg, int value)
 
 	if (p == NULL)
 	  {
-	    error ("-mcpu=%s is not valid", arg);
+	    error_at (loc, "-mcpu=%s is not valid", arg);
 	    return false;
 	  }
 
-	bfin_cpu_type = bfin_cpus[i].type;
+	opts->x_bfin_cpu_type = bfin_cpus[i].type;
 
 	q = arg + strlen (p);
 
 	if (*q == '\0')
 	  {
-	    bfin_si_revision = bfin_cpus[i].si_revision;
-	    bfin_workarounds |= bfin_cpus[i].workarounds;
+	    opts->x_bfin_si_revision = bfin_cpus[i].si_revision;
+	    opts->x_bfin_workarounds |= bfin_cpus[i].workarounds;
 	  }
 	else if (strcmp (q, "-none") == 0)
-	  bfin_si_revision = -1;
+	  opts->x_bfin_si_revision = -1;
       	else if (strcmp (q, "-any") == 0)
 	  {
-	    bfin_si_revision = 0xffff;
-	    while (bfin_cpus[i].type == bfin_cpu_type)
+	    opts->x_bfin_si_revision = 0xffff;
+	    while (bfin_cpus[i].type == opts->x_bfin_cpu_type)
 	      {
-		bfin_workarounds |= bfin_cpus[i].workarounds;
+		opts->x_bfin_workarounds |= bfin_cpus[i].workarounds;
 		i++;
 	      }
 	  }
@@ -2620,20 +2613,20 @@ bfin_handle_option (size_t code, const char *arg, int value)
 		|| si_major > 0xff || si_minor > 0xff)
 	      {
 	      invalid_silicon_revision:
-		error ("-mcpu=%s has invalid silicon revision", arg);
+		error_at (loc, "-mcpu=%s has invalid silicon revision", arg);
 		return false;
 	      }
 
-	    bfin_si_revision = (si_major << 8) | si_minor;
+	    opts->x_bfin_si_revision = (si_major << 8) | si_minor;
 
-	    while (bfin_cpus[i].type == bfin_cpu_type
-		   && bfin_cpus[i].si_revision != bfin_si_revision)
+	    while (bfin_cpus[i].type == opts->x_bfin_cpu_type
+		   && bfin_cpus[i].si_revision != opts->x_bfin_si_revision)
 	      i++;
 
-	    if (bfin_cpus[i].type != bfin_cpu_type)
+	    if (bfin_cpus[i].type != opts->x_bfin_cpu_type)
 	      goto invalid_silicon_revision;
 
-	    bfin_workarounds |= bfin_cpus[i].workarounds;
+	    opts->x_bfin_workarounds |= bfin_cpus[i].workarounds;
 	  }
 
 	return true;
@@ -2680,7 +2673,7 @@ bfin_option_override (void)
     flag_omit_frame_pointer = 1;
 
   /* Library identification */
-  if (bfin_lib_id_given && ! TARGET_ID_SHARED_LIBRARY)
+  if (global_options_set.x_bfin_library_id && ! TARGET_ID_SHARED_LIBRARY)
     error ("-mshared-library-id= specified without -mid-shared-library");
 
   if (stack_limit_rtx && TARGET_STACK_CHECK_L1)
@@ -5765,21 +5758,30 @@ bfin_handle_l2_attribute (tree *node, tree ARG_UNUSED (name),
 /* Table of valid machine attributes.  */
 static const struct attribute_spec bfin_attribute_table[] =
 {
-  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler } */
-  { "interrupt_handler", 0, 0, false, true,  true, handle_int_attribute },
-  { "exception_handler", 0, 0, false, true,  true, handle_int_attribute },
-  { "nmi_handler", 0, 0, false, true,  true, handle_int_attribute },
-  { "nesting", 0, 0, false, true,  true, NULL },
-  { "kspisusp", 0, 0, false, true,  true, NULL },
-  { "saveall", 0, 0, false, true,  true, NULL },
-  { "longcall",  0, 0, false, true,  true,  bfin_handle_longcall_attribute },
-  { "shortcall", 0, 0, false, true,  true,  bfin_handle_longcall_attribute },
-  { "l1_text", 0, 0, true, false, false,  bfin_handle_l1_text_attribute },
-  { "l1_data", 0, 0, true, false, false,  bfin_handle_l1_data_attribute },
-  { "l1_data_A", 0, 0, true, false, false, bfin_handle_l1_data_attribute },
-  { "l1_data_B", 0, 0, true, false, false,  bfin_handle_l1_data_attribute },
-  { "l2", 0, 0, true, false, false,  bfin_handle_l2_attribute },
-  { NULL, 0, 0, false, false, false, NULL }
+  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler,
+       affects_type_identity } */
+  { "interrupt_handler", 0, 0, false, true,  true, handle_int_attribute,
+    false },
+  { "exception_handler", 0, 0, false, true,  true, handle_int_attribute,
+    false },
+  { "nmi_handler", 0, 0, false, true,  true, handle_int_attribute, false },
+  { "nesting", 0, 0, false, true,  true, NULL, false },
+  { "kspisusp", 0, 0, false, true,  true, NULL, false },
+  { "saveall", 0, 0, false, true,  true, NULL, false },
+  { "longcall",  0, 0, false, true,  true,  bfin_handle_longcall_attribute,
+    false },
+  { "shortcall", 0, 0, false, true,  true,  bfin_handle_longcall_attribute,
+    false },
+  { "l1_text", 0, 0, true, false, false,  bfin_handle_l1_text_attribute,
+    false },
+  { "l1_data", 0, 0, true, false, false,  bfin_handle_l1_data_attribute,
+    false },
+  { "l1_data_A", 0, 0, true, false, false, bfin_handle_l1_data_attribute,
+    false },
+  { "l1_data_B", 0, 0, true, false, false,  bfin_handle_l1_data_attribute,
+    false },
+  { "l2", 0, 0, true, false, false,  bfin_handle_l2_attribute, false },
+  { NULL, 0, 0, false, false, false, NULL, false }
 };
 
 /* Implementation of TARGET_ASM_INTEGER.  When using FD-PIC, we need to

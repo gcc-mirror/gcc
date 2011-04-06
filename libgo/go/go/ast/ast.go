@@ -66,7 +66,7 @@ type Decl interface {
 // A Comment node represents a single //-style or /*-style comment.
 type Comment struct {
 	Slash token.Pos // position of "/" starting the comment
-	Text  []byte    // comment text (excluding '\n' for //-style comments)
+	Text  string    // comment text (excluding '\n' for //-style comments)
 }
 
 
@@ -199,7 +199,7 @@ type (
 	BasicLit struct {
 		ValuePos token.Pos   // literal position
 		Kind     token.Token // token.INT, token.FLOAT, token.IMAG, token.CHAR, or token.STRING
-		Value    []byte      // literal string; e.g. 42, 0x7f, 3.14, 1e-9, 2.4i, 'a', '\x7f', "foo" or `\m\n\o`
+		Value    string      // literal string; e.g. 42, 0x7f, 3.14, 1e-9, 2.4i, 'a', '\x7f', "foo" or `\m\n\o`
 	}
 
 	// A FuncLit node represents a function literal.
@@ -602,12 +602,12 @@ type (
 		Else Stmt // else branch; or nil
 	}
 
-	// A CaseClause represents a case of an expression switch statement.
+	// A CaseClause represents a case of an expression or type switch statement.
 	CaseClause struct {
-		Case   token.Pos // position of "case" or "default" keyword
-		Values []Expr    // nil means default case
-		Colon  token.Pos // position of ":"
-		Body   []Stmt    // statement list; or nil
+		Case  token.Pos // position of "case" or "default" keyword
+		List  []Expr    // list of expressions or types; nil means default case
+		Colon token.Pos // position of ":"
+		Body  []Stmt    // statement list; or nil
 	}
 
 	// A SwitchStmt node represents an expression switch statement.
@@ -618,20 +618,12 @@ type (
 		Body   *BlockStmt // CaseClauses only
 	}
 
-	// A TypeCaseClause represents a case of a type switch statement.
-	TypeCaseClause struct {
-		Case  token.Pos // position of "case" or "default" keyword
-		Types []Expr    // nil means default case
-		Colon token.Pos // position of ":"
-		Body  []Stmt    // statement list; or nil
-	}
-
 	// An TypeSwitchStmt node represents a type switch statement.
 	TypeSwitchStmt struct {
 		Switch token.Pos  // position of "switch" keyword
 		Init   Stmt       // initalization statement; or nil
-		Assign Stmt       // x := y.(type)
-		Body   *BlockStmt // TypeCaseClauses only
+		Assign Stmt       // x := y.(type) or y.(type)
+		Body   *BlockStmt // CaseClauses only
 	}
 
 	// A CommClause node represents a case of a select statement.
@@ -687,7 +679,6 @@ func (s *BlockStmt) Pos() token.Pos      { return s.Lbrace }
 func (s *IfStmt) Pos() token.Pos         { return s.If }
 func (s *CaseClause) Pos() token.Pos     { return s.Case }
 func (s *SwitchStmt) Pos() token.Pos     { return s.Switch }
-func (s *TypeCaseClause) Pos() token.Pos { return s.Case }
 func (s *TypeSwitchStmt) Pos() token.Pos { return s.Switch }
 func (s *CommClause) Pos() token.Pos     { return s.Case }
 func (s *SelectStmt) Pos() token.Pos     { return s.Select }
@@ -734,13 +725,7 @@ func (s *CaseClause) End() token.Pos {
 	}
 	return s.Colon + 1
 }
-func (s *SwitchStmt) End() token.Pos { return s.Body.End() }
-func (s *TypeCaseClause) End() token.Pos {
-	if n := len(s.Body); n > 0 {
-		return s.Body[n-1].End()
-	}
-	return s.Colon + 1
-}
+func (s *SwitchStmt) End() token.Pos     { return s.Body.End() }
 func (s *TypeSwitchStmt) End() token.Pos { return s.Body.End() }
 func (s *CommClause) End() token.Pos {
 	if n := len(s.Body); n > 0 {
@@ -772,7 +757,6 @@ func (s *BlockStmt) stmtNode()      {}
 func (s *IfStmt) stmtNode()         {}
 func (s *CaseClause) stmtNode()     {}
 func (s *SwitchStmt) stmtNode()     {}
-func (s *TypeCaseClause) stmtNode() {}
 func (s *TypeSwitchStmt) stmtNode() {}
 func (s *CommClause) stmtNode()     {}
 func (s *SelectStmt) stmtNode()     {}
@@ -797,7 +781,7 @@ type (
 	ImportSpec struct {
 		Doc     *CommentGroup // associated documentation; or nil
 		Name    *Ident        // local package name (including "."); or nil
-		Path    *BasicLit     // package path
+		Path    *BasicLit     // import path
 		Comment *CommentGroup // line comments; or nil
 	}
 
@@ -937,11 +921,14 @@ func (d *FuncDecl) declNode() {}
 // via Doc and Comment fields.
 //
 type File struct {
-	Doc      *CommentGroup   // associated documentation; or nil
-	Package  token.Pos       // position of "package" keyword
-	Name     *Ident          // package name
-	Decls    []Decl          // top-level declarations; or nil
-	Comments []*CommentGroup // list of all comments in the source file
+	Doc        *CommentGroup   // associated documentation; or nil
+	Package    token.Pos       // position of "package" keyword
+	Name       *Ident          // package name
+	Decls      []Decl          // top-level declarations; or nil
+	Scope      *Scope          // package scope (this file only)
+	Imports    []*ImportSpec   // imports in this file
+	Unresolved []*Ident        // unresolved identifiers in this file
+	Comments   []*CommentGroup // list of all comments in the source file
 }
 
 
@@ -958,9 +945,10 @@ func (f *File) End() token.Pos {
 // collectively building a Go package.
 //
 type Package struct {
-	Name  string           // package name
-	Scope *Scope           // package scope; or nil
-	Files map[string]*File // Go source files by filename
+	Name    string            // package name
+	Scope   *Scope            // package scope
+	Imports map[string]*Scope // map of import path -> package scope across all files
+	Files   map[string]*File  // Go source files by filename
 }
 
 

@@ -1,5 +1,5 @@
 /* Definitions for Linux for S/390.
-   Copyright (C) 1999, 2000, 2001, 2002, 2004, 2005, 2006, 2007, 2010
+   Copyright (C) 1999, 2000, 2001, 2002, 2004, 2005, 2006, 2007, 2010, 2011
    Free Software Foundation, Inc.
    Contributed by Hartmut Penner (hpenner@de.ibm.com) and
                   Ulrich Weigand (uweigand@de.ibm.com).
@@ -22,17 +22,6 @@ along with GCC; see the file COPYING3.  If not see
 
 #ifndef _LINUX_H
 #define _LINUX_H
-
-/* Target specific version string.  */
-
-#ifdef DEFAULT_TARGET_64BIT
-#undef  TARGET_VERSION
-#define TARGET_VERSION fprintf (stderr, " (Linux for zSeries)");
-#else
-#undef  TARGET_VERSION
-#define TARGET_VERSION fprintf (stderr, " (Linux for S/390)");
-#endif
-
 
 /* Target specific type definitions.  */
 

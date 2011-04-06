@@ -195,9 +195,8 @@
 		  || gotdtp_symbolic_operand (op, mode)
 		  || gottp_symbolic_operand (op, mode));
 	}
-
-      /* This handles both the Windows/NT and OSF cases.  */
-      return mode == ptr_mode || mode == DImode;
+      /* VMS still has a 32-bit mode.  */
+      return mode == ptr_mode || mode == Pmode;
 
     case HIGH:
       return (TARGET_EXPLICIT_RELOCS
@@ -295,14 +294,13 @@
 ;; Return 1 if OP is a valid operand for the MEM of a CALL insn.
 ;;
 ;; For TARGET_ABI_OSF, we want to restrict to R27 or a pseudo.
-;; For TARGET_ABI_UNICOSMK, we want to restrict to registers.
 
 (define_predicate "call_operand"
-  (if_then_else (match_code "reg")
-    (match_test "!TARGET_ABI_OSF
-		 || REGNO (op) == 27 || REGNO (op) > LAST_VIRTUAL_REGISTER")
-    (and (match_test "!TARGET_ABI_UNICOSMK")
-	 (match_code "symbol_ref"))))
+  (ior (match_code "symbol_ref")
+       (and (match_code "reg")
+	    (ior (match_test "!TARGET_ABI_OSF")
+		 (match_test "!HARD_REGISTER_P (op)")
+		 (match_test "REGNO (op) == R27_REG")))))
 
 ;; Return true if OP is a LABEL_REF, or SYMBOL_REF or CONST referencing
 ;; a (non-tls) variable known to be defined in this file.
@@ -619,3 +617,9 @@
     return false;
   return for_each_rtx (&op, some_small_symbolic_operand_int, NULL);
 })
+
+;; Accept a register, or a memory if BWX is enabled.
+(define_predicate "reg_or_bwx_memory_operand"
+  (ior (match_operand 0 "register_operand")
+       (and (match_test "TARGET_BWX")
+	    (match_operand 0 "memory_operand"))))

@@ -22,10 +22,6 @@
 /* elfos.h should have already been included.  Now just override
    any conflicting definitions and add any extras.  */
 
-/* Run-time Target Specification.  */
-#undef  TARGET_VERSION
-#define TARGET_VERSION  fputs (" (LM32 GNU/Linux with ELF)", stderr);
-
 /* Do not assume anything about header files.  */
 #undef NO_IMPLICIT_EXTERN_C
 #define NO_IMPLICIT_EXTERN_C

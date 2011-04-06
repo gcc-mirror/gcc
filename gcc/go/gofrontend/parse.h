@@ -44,7 +44,6 @@ class Parse
     PRECEDENCE_NORMAL = 0,
     PRECEDENCE_OROR,
     PRECEDENCE_ANDAND,
-    PRECEDENCE_CHANOP,
     PRECEDENCE_RELOP,
     PRECEDENCE_ADDOP,
     PRECEDENCE_MULOP
@@ -151,7 +150,7 @@ class Parse
   // For break and continue we keep a stack of statements with
   // associated labels (if any).  The top of the stack is used for a
   // break or continue statement with no label.
-  typedef std::vector<std::pair<Statement*, const Label*> > Bc_stack;
+  typedef std::vector<std::pair<Statement*, Label*> > Bc_stack;
 
   // Parser nonterminals.
   void identifier_list(Typed_identifier_list*);
@@ -221,14 +220,15 @@ class Parse
 			 bool* is_type_switch);
   Expression* qualified_expr(Expression*, source_location);
   Expression* id_to_expression(const std::string&, source_location);
-  void statement(const Label*);
+  void statement(Label*);
   bool statement_may_start_here();
   void labeled_stmt(const std::string&, source_location);
-  Expression* simple_stat(bool, bool, Range_clause*, Type_switch*);
+  Expression* simple_stat(bool, bool*, Range_clause*, Type_switch*);
   bool simple_stat_may_start_here();
   void statement_list();
   bool statement_list_may_start_here();
   void expression_stat(Expression*);
+  void send_stmt(Expression*);
   void inc_dec_stat(Expression*);
   void assignment(Expression*, Range_clause*);
   void tuple_assignment(Expression_list*, Range_clause*);
@@ -236,24 +236,25 @@ class Parse
   void go_or_defer_stat();
   void return_stat();
   void if_stat();
-  void switch_stat(const Label*);
-  Statement* expr_switch_body(const Label*, Expression*, source_location);
+  void switch_stat(Label*);
+  Statement* expr_switch_body(Label*, Expression*, source_location);
   void expr_case_clause(Case_clauses*, bool* saw_default);
   Expression_list* expr_switch_case(bool*);
-  Statement* type_switch_body(const Label*, const Type_switch&,
-			      source_location);
+  Statement* type_switch_body(Label*, const Type_switch&, source_location);
   void type_case_clause(Named_object*, Type_case_clauses*, bool* saw_default);
   void type_switch_case(std::vector<Type*>*, bool*);
-  void select_stat(const Label*);
+  void select_stat(Label*);
   void comm_clause(Select_clauses*, bool* saw_default);
-  bool comm_case(bool*, Expression**, Expression**, std::string*, bool*);
-  bool send_or_recv_expr(bool*, Expression**, Expression**, std::string*);
-  void for_stat(const Label*);
+  bool comm_case(bool*, Expression**, Expression**, Expression**,
+		 std::string*, std::string*, bool*);
+  bool send_or_recv_stmt(bool*, Expression**, Expression**, Expression**,
+			 std::string*, std::string*);
+  void for_stat(Label*);
   void for_clause(Expression**, Block**);
   void range_clause_decl(const Typed_identifier_list*, Range_clause*);
   void range_clause_expr(const Expression_list*, Range_clause*);
-  void push_break_statement(Statement*, const Label*);
-  void push_continue_statement(Statement*, const Label*);
+  void push_break_statement(Statement*, Label*);
+  void push_continue_statement(Statement*, Label*);
   void pop_break_statement();
   void pop_continue_statement();
   Statement* find_bc_statement(const Bc_stack*, const std::string&);

@@ -118,14 +118,6 @@ extern HOST_WIDE_INT alpha_vms_initial_elimination_offset (unsigned int,
 
 extern rtx unicosmk_add_call_info_word (rtx);
 
-#if TARGET_ABI_UNICOSMK
-extern void unicosmk_defer_case_vector (rtx, rtx);
-extern void unicosmk_add_extern (const char *);
-extern void unicosmk_output_align (FILE *, int);
-extern void unicosmk_output_common (FILE *, const char *, int, int);
-extern int unicosmk_initial_elimination_offset (int, int);
-#endif
-
 extern int some_small_symbolic_operand_int (rtx *, void *);
 extern int tls_symbolic_operand_1 (rtx, int, int);
 extern rtx resolve_reload_operand (rtx);

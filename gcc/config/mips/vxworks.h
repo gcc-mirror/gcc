@@ -17,9 +17,6 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#undef  TARGET_VERSION
-#define TARGET_VERSION fprintf (stderr, " (MIPS, VxWorks syntax)");
-
 #undef  ASM_SPEC
 #define ASM_SPEC "\
 %{!G:-G 0} %{G*} %(endian_spec) %{mips1} %{mips2} %{mips3} %{mips4} \

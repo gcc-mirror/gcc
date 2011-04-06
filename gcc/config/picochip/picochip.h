@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler for picoChip
-   Copyright (C) 2001, 2008, 2009, 2010 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
 
    Contributed by Picochip Ltd. (http://www.picochip.com)
    Maintained by Daniel Towner (daniel.towner@picochip.com) and
@@ -83,8 +83,6 @@ extern enum picochip_dfa_type picochip_schedule_type;
 #define TARGET_HAS_MUL_UNIT (picochip_has_mul_unit)
 #define TARGET_HAS_MAC_UNIT (picochip_has_mac_unit)
 #define TARGET_HAS_MULTIPLY (picochip_has_mac_unit || picochip_has_mul_unit)
-
-#define TARGET_VERSION fprintf(stderr, "(picoChip)");
 
 /* Storage Layout */
 
@@ -291,19 +289,6 @@ enum reg_class
 };
 
 #define N_REG_CLASSES (int) LIM_REG_CLASSES
-
-/* The following macro defines cover classes for Integrated Register
-   Allocator.  Cover classes is a set of non-intersected register
-   classes covering all hard registers used for register allocation
-   purpose.  Any move between two registers of a cover class should be
-   cheaper than load or store of the registers.  The macro value is
-   array of register classes with LIM_REG_CLASSES used as the end
-   marker.  */
-
-#define IRA_COVER_CLASSES 						\
-{									\
-  GR_REGS, LIM_REG_CLASSES						\
-}
 
 
 /* The names of the register classes  */

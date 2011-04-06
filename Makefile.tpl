@@ -103,8 +103,6 @@ TOPLEVEL_CONFIGURE_ARGUMENTS=@TOPLEVEL_CONFIGURE_ARGUMENTS@
 tooldir = @tooldir@
 build_tooldir = @build_tooldir@
 
-GDB_NLM_DEPS = 
-
 # This is the name of the environment variable used for the path to
 # the libraries.
 RPATH_ENVVAR = @RPATH_ENVVAR@
@@ -325,7 +323,7 @@ HOST_LIBELFINC = @libelfinc@
 # Programs producing files for the BUILD machine
 # ----------------------------------------------
 
-SHELL = @config_shell@
+SHELL = @SHELL@
 
 # pwd command to use.  Allow user to override default by setting PWDCMD in
 # the environment to account for automounters.  The make variable must not
@@ -607,18 +605,6 @@ EXTRA_HOST_FLAGS = \
 	'WINDMC=$(WINDMC)'
 
 FLAGS_TO_PASS = $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS)
-
-# Flags that are concerned with the location of the X11 include files
-# and library files
-#
-# NOTE: until the top-level is getting the values via autoconf, it only
-# causes problems to have this top-level Makefile overriding the autoconf-set
-# values in child directories.  Only variables that don't conflict with
-# autoconf'ed ones should be passed by X11_FLAGS_TO_PASS for now.
-#
-X11_FLAGS_TO_PASS = \
-	'X11_EXTRA_CFLAGS=$(X11_EXTRA_CFLAGS)' \
-	'X11_EXTRA_LIBS=$(X11_EXTRA_LIBS)'
 
 # Flags to pass to stage2 and later makes.
 

@@ -1,5 +1,6 @@
 /* Configuration for an OpenBSD i386 target.
-   Copyright (C) 1999, 2000, 2002, 2004, 2007 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2002, 2004, 2007, 2011
+   Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -17,8 +18,6 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-
-#define TARGET_VERSION fprintf (stderr, " (OpenBSD/i386)");
 
 /* This goes away when the math-emulator is fixed */
 #undef TARGET_SUBTARGET_DEFAULT

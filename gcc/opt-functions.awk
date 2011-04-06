@@ -1,4 +1,4 @@
-#  Copyright (C) 2003, 2004, 2007, 2008, 2009, 2010
+#  Copyright (C) 2003, 2004, 2007, 2008, 2009, 2010, 2011
 #  Free Software Foundation, Inc.
 #  Contributed by Kelley Cook, June 2004.
 #  Original code from Neil Booth, May 2003.
@@ -40,6 +40,16 @@ function test_flag(regex, flags, string)
 	if (flag_set_p(regex, flags))
 		return string
 	return ""
+}
+
+# Return a field initializer, with trailing comma, for a field that is
+# 1 if FLAGS contains a flag matching REGEX and 0 otherwise.
+function flag_init(regex, flags)
+{
+	if (flag_set_p(regex, flags))
+		return "1 /* " regex " */, "
+	else
+		return "0, "
 }
 
 # If FLAGS contains a "NAME(...argument...)" flag, return the value
@@ -87,26 +97,39 @@ function switch_flags (flags)
 	  test_flag("Common", flags, " | CL_COMMON") \
 	  test_flag("Target", flags, " | CL_TARGET") \
 	  test_flag("Driver", flags, " | CL_DRIVER") \
-	  test_flag("RejectDriver", flags, " | CL_REJECT_DRIVER") \
-	  test_flag("NoDriverArg", flags, " | CL_NO_DRIVER_ARG") \
-	  test_flag("SeparateAlias", flags, " | CL_SEPARATE_ALIAS") \
-	  test_flag("Save", flags, " | CL_SAVE") \
 	  test_flag("Joined", flags, " | CL_JOINED") \
-	  test_flag("JoinedOrMissing", flags, " | CL_JOINED | CL_MISSING_OK") \
+	  test_flag("JoinedOrMissing", flags, " | CL_JOINED") \
 	  test_flag("Separate", flags, " | CL_SEPARATE") \
-	  test_flag("RejectNegative", flags, " | CL_REJECT_NEGATIVE") \
-	  test_flag("UInteger", flags, " | CL_UINTEGER") \
 	  test_flag("Undocumented", flags,  " | CL_UNDOCUMENTED") \
 	  test_flag("Warning", flags,  " | CL_WARNING") \
-	  test_flag("Optimization", flags,  " | CL_OPTIMIZATION") \
-	  test_flag("Report", flags, " | CL_REPORT")
-	sep_args = opt_args("Args", flags)
-	if (sep_args != "") {
-		sep_args--
-		result = result " | (" sep_args \
-		    " << CL_SEPARATE_NARGS_SHIFT)"
-	}
+	  test_flag("Optimization", flags,  " | CL_OPTIMIZATION")
 	sub( "^0 \\| ", "", result )
+	return result
+}
+
+# Return bit-field initializers for option flags FLAGS.
+function switch_bit_fields (flags)
+{
+	result = ""
+	sep_args = opt_args("Args", flags)
+	if (sep_args == "")
+		sep_args = 0
+	else
+		sep_args--
+	result = result sep_args ", "
+
+	result = result \
+	  flag_init("SeparateAlias", flags) \
+	  flag_init("NegativeAlias", flags) \
+	  flag_init("NoDriverArg", flags) \
+	  flag_init("RejectDriver", flags) \
+	  flag_init("RejectNegative", flags) \
+	  flag_init("JoinedOrMissing", flags) \
+	  flag_init("UInteger", flags) \
+	  flag_init("ToLower", flags) \
+	  flag_init("Report", flags)
+
+	sub(", $", "", result)
 	return result
 }
 

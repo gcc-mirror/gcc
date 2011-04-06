@@ -1,8 +1,8 @@
 /*{{{  Comment.  */ 
 
 /* Definitions of FR30 target. 
-   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004, 2007, 2008, 2009, 2010
-   Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004, 2007, 2008, 2009, 2010,
+   2011 Free Software Foundation, Inc.
    Contributed by Cygnus Solutions.
 
 This file is part of GCC.
@@ -38,8 +38,6 @@ along with GCC; see the file COPYING3.  If not see
       builtin_assert ("machine=fr30");		\
     }						\
    while (0)
-
-#define TARGET_VERSION fprintf (stderr, " (fr30)");
 
 #undef  STARTFILE_SPEC
 #define STARTFILE_SPEC "crt0.o%s crti.o%s crtbegin.o%s"
@@ -289,11 +287,6 @@ enum reg_class
 
 #define GENERAL_REGS 	REAL_REGS
 #define N_REG_CLASSES 	((int) LIM_REG_CLASSES)
-
-#define IRA_COVER_CLASSES				\
-{							\
-  REAL_REGS, MULTIPLY_64_REG, LIM_REG_CLASSES		\
-}
 
 /* An initializer containing the names of the register classes as C string
    constants.  These names are used in writing some of the debugging dumps.  */

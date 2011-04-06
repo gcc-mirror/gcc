@@ -1,7 +1,7 @@
 /* Definitions of target machine for GNU compiler.
    For ARM with COFF object format.
    Copyright (C) 1995, 1996, 1997, 1998, 1999, 2000, 2002, 2003, 2004, 2005,
-   2007 Free Software Foundation, Inc.
+   2007, 2009, 2011 Free Software Foundation, Inc.
    Contributed by Doug Evans (devans@cygnus.com).
    
    This file is part of GCC.
@@ -26,9 +26,6 @@
 
 
 /* Run-time Target Specification.  */
-#undef  TARGET_VERSION
-#define TARGET_VERSION fputs (" (ARM/coff)", stderr)
-
 #undef  TARGET_DEFAULT_FLOAT_ABI
 #define TARGET_DEFAULT_FLOAT_ABI ARM_FLOAT_ABI_SOFT
 
@@ -37,7 +34,7 @@
 
 #ifndef MULTILIB_DEFAULTS
 #define MULTILIB_DEFAULTS \
-  { "marm", "mlittle-endian", "msoft-float", "mno-thumb-interwork" }
+  { "marm", "mlittle-endian", "mfloat-abi=soft", "mno-thumb-interwork" }
 #endif
 
 /* This is COFF, but prefer stabs.  */

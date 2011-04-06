@@ -50,6 +50,7 @@
 #include "target.h"
 #include "target-def.h"
 #include "langhooks.h"
+#include "opts.h"
 
 static void rx_print_operand (FILE *, rtx, int);
 
@@ -85,7 +86,7 @@ rx_is_legitimate_address (Mmode mode, rtx x, bool strict ATTRIBUTE_UNUSED)
     /* Register Indirect.  */
     return true;
 
-  if (GET_MODE_SIZE (mode) == 4
+  if (GET_MODE_SIZE (mode) <= 4
       && (GET_CODE (x) == PRE_DEC || GET_CODE (x) == POST_INC))
     /* Pre-decrement Register Indirect or
        Post-increment Register Indirect.  */
@@ -116,7 +117,7 @@ rx_is_legitimate_address (Mmode mode, rtx x, bool strict ATTRIBUTE_UNUSED)
 
 	    if (val < 0)
 	      return false;
-	    
+
 	    switch (GET_MODE_SIZE (mode))
 	      {
 	      default: 
@@ -125,7 +126,7 @@ rx_is_legitimate_address (Mmode mode, rtx x, bool strict ATTRIBUTE_UNUSED)
 	      case 1: factor = 1; break;
 	      }
 
-	    if (val > (65535 * factor))
+	    if (val >= (0x10000 * factor))
 	      return false;
 	    return (val % factor) == 0;
 	  }
@@ -166,8 +167,6 @@ rx_is_legitimate_address (Mmode mode, rtx x, bool strict ATTRIBUTE_UNUSED)
 bool
 rx_is_restricted_memory_address (rtx mem, enum machine_mode mode)
 {
-  rtx base, index;
-
   if (! rx_is_legitimate_address
       (mode, mem, reload_in_progress || reload_completed))
     return false;
@@ -183,11 +182,18 @@ rx_is_restricted_memory_address (rtx mem, enum machine_mode mode)
       return false;
 
     case PLUS:
-      /* Only allow REG+INT addressing.  */
-      base = XEXP (mem, 0);
-      index = XEXP (mem, 1);
+      {
+	rtx base, index;
+	
+	/* Only allow REG+INT addressing.  */
+	base = XEXP (mem, 0);
+	index = XEXP (mem, 1);
 
-      return RX_REG_P (base) && CONST_INT_P (index);
+	if (! RX_REG_P (base) || ! CONST_INT_P (index))
+	  return false;
+
+	return IN_RANGE (INTVAL (index), 0, (0x10000 * GET_MODE_SIZE (mode)) - 1);
+      }
 
     case SYMBOL_REF:
       /* Can happen when small data is being supported.
@@ -386,11 +392,14 @@ rx_assemble_integer (rtx x, unsigned int size, int is_aligned)
      %L  Print low part of a DImode register, integer or address.
      %N  Print the negation of the immediate value.
      %Q  If the operand is a MEM, then correctly generate
-         register indirect or register relative addressing.  */
+         register indirect or register relative addressing.
+     %R  Like %Q but for zero-extending loads.  */
 
 static void
 rx_print_operand (FILE * file, rtx op, int letter)
 {
+  bool unsigned_load = false;
+
   switch (letter)
     {
     case 'A':
@@ -450,6 +459,7 @@ rx_print_operand (FILE * file, rtx op, int letter)
 	else
 	  {
 	    unsigned int flags = flags_from_mode (mode);
+
 	    switch (code)
 	      {
 	      case LT:
@@ -588,10 +598,15 @@ rx_print_operand (FILE * file, rtx op, int letter)
       rx_print_integer (file, - INTVAL (op));
       break;
 
+    case 'R':
+      gcc_assert (GET_MODE_SIZE (GET_MODE (op)) < 4);
+      unsigned_load = true;
+      /* Fall through.  */
     case 'Q':
       if (MEM_P (op))
 	{
 	  HOST_WIDE_INT offset;
+	  rtx mem = op;
 
 	  op = XEXP (op, 0);
 
@@ -626,22 +641,24 @@ rx_print_operand (FILE * file, rtx op, int letter)
 	  rx_print_operand (file, op, 0);
 	  fprintf (file, "].");
 
-	  switch (GET_MODE_SIZE (GET_MODE (op)))
+	  switch (GET_MODE_SIZE (GET_MODE (mem)))
 	    {
 	    case 1:
-	      gcc_assert (offset < 65535 * 1);
-	      fprintf (file, "B");
+	      gcc_assert (offset <= 65535 * 1);
+	      fprintf (file, unsigned_load ? "UB" : "B");
 	      break;
 	    case 2:
 	      gcc_assert (offset % 2 == 0);
-	      gcc_assert (offset < 65535 * 2);
-	      fprintf (file, "W");
+	      gcc_assert (offset <= 65535 * 2);
+	      fprintf (file, unsigned_load ? "UW" : "W");
 	      break;
-	    default:
+	    case 4:
 	      gcc_assert (offset % 4 == 0);
-	      gcc_assert (offset < 65535 * 4);
+	      gcc_assert (offset <= 65535 * 4);
 	      fprintf (file, "L");
 	      break;
+	    default:
+	      gcc_unreachable ();
 	    }
 	  break;
 	}
@@ -2237,18 +2254,31 @@ rx_handle_func_attribute (tree * node,
 /* Table of RX specific attributes.  */
 const struct attribute_spec rx_attribute_table[] =
 {
-  /* Name, min_len, max_len, decl_req, type_req, fn_type_req, handler.  */
-  { "fast_interrupt", 0, 0, true, false, false, rx_handle_func_attribute },
-  { "interrupt",      0, 0, true, false, false, rx_handle_func_attribute },
-  { "naked",          0, 0, true, false, false, rx_handle_func_attribute },
-  { NULL,             0, 0, false, false, false, NULL }
+  /* Name, min_len, max_len, decl_req, type_req, fn_type_req, handler,
+     affects_type_identity.  */
+  { "fast_interrupt", 0, 0, true, false, false, rx_handle_func_attribute,
+    false },
+  { "interrupt",      0, 0, true, false, false, rx_handle_func_attribute,
+    false },
+  { "naked",          0, 0, true, false, false, rx_handle_func_attribute,
+    false },
+  { NULL,             0, 0, false, false, false, NULL, false }
 };
 
 /* Extra processing for target specific command line options.  */
 
 static bool
-rx_handle_option (size_t code, const char *  arg ATTRIBUTE_UNUSED, int value)
+rx_handle_option (struct gcc_options *opts, struct gcc_options *opts_set,
+		  const struct cl_decoded_option *decoded,
+		  location_t loc ATTRIBUTE_UNUSED)
 {
+  size_t code = decoded->opt_index;
+  const char *arg = decoded->arg;
+  int value = decoded->value;
+
+  gcc_assert (opts == &global_options);
+  gcc_assert (opts_set == &global_options_set);
+
   switch (code)
     {
     case OPT_mint_register_:
@@ -2278,14 +2308,14 @@ rx_handle_option (size_t code, const char *  arg ATTRIBUTE_UNUSED, int value)
       return value >= 0 && value <= 4;
 
     case OPT_mcpu_:
-      if (strcasecmp (arg, "RX610") == 0)
+      if (strcmp (arg, "rx610") == 0)
 	rx_cpu_type = RX610;
-      else if (strcasecmp (arg, "RX200") == 0)
+      else if (strcmp (arg, "rx200") == 0)
 	{
 	  target_flags |= MASK_NO_USE_FPU;
 	  rx_cpu_type = RX200;
 	}
-      else if (strcasecmp (arg, "RX600") != 0)
+      else if (strcmp (arg, "rx600") != 0)
 	warning (0, "unrecognized argument '%s' to -mcpu= option", arg);
       break;
       
@@ -2336,6 +2366,13 @@ rx_option_override (void)
     flag_strict_volatile_bitfields = 1;
 
   rx_override_options_after_change ();
+
+  if (align_jumps == 0 && ! optimize_size)
+    align_jumps = 3;
+  if (align_loops == 0 && ! optimize_size)
+    align_loops = 3;
+  if (align_labels == 0 && ! optimize_size)
+    align_labels = 3;
 }
 
 /* Implement TARGET_OPTION_OPTIMIZATION_TABLE.  */
@@ -2428,8 +2465,7 @@ rx_is_legitimate_constant (rtx x)
 
 	default:
 	  /* FIXME: Can this ever happen ?  */
-	  abort ();
-	  return false;
+	  gcc_unreachable ();
 	}
       break;
       
@@ -2572,7 +2608,7 @@ rx_trampoline_init (rtx tramp, tree fndecl, rtx chain)
 static int
 rx_memory_move_cost (enum machine_mode mode, reg_class_t regclass, bool in)
 {
-  return 2 + memory_move_secondary_cost (mode, regclass, in);
+  return (in ? 2 : 0) + memory_move_secondary_cost (mode, regclass, in);
 }
 
 /* Convert a CC_MODE to the set of flags that it represents.  */
@@ -2726,8 +2762,154 @@ rx_match_ccmode (rtx insn, enum machine_mode cc_mode)
 
   return true;
 }
-
 
+int
+rx_align_for_label (void)
+{
+  return optimize_size ? 1 : 3;
+}
+
+static int
+rx_max_skip_for_label (rtx lab)
+{
+  int opsize;
+  rtx op;
+
+  if (lab == NULL_RTX)
+    return 0;
+
+  op = lab;
+  do
+    {
+      op = next_nonnote_nondebug_insn (op);
+    }
+  while (op && (LABEL_P (op)
+		|| (INSN_P (op) && GET_CODE (PATTERN (op)) == USE)));
+  if (!op)
+    return 0;
+
+  opsize = get_attr_length (op);
+  if (opsize >= 0 && opsize < 8)
+    return opsize - 1;
+  return 0;
+}
+
+/* Compute the real length of the extending load-and-op instructions.  */
+
+int
+rx_adjust_insn_length (rtx insn, int current_length)
+{
+  rtx extend, mem, offset;
+  bool zero;
+  int factor;
+
+  switch (INSN_CODE (insn))
+    {
+    default:
+      return current_length;
+
+    case CODE_FOR_plussi3_zero_extendhi:
+    case CODE_FOR_andsi3_zero_extendhi:
+    case CODE_FOR_iorsi3_zero_extendhi:
+    case CODE_FOR_xorsi3_zero_extendhi:
+    case CODE_FOR_divsi3_zero_extendhi:
+    case CODE_FOR_udivsi3_zero_extendhi:
+    case CODE_FOR_minussi3_zero_extendhi:
+    case CODE_FOR_smaxsi3_zero_extendhi:
+    case CODE_FOR_sminsi3_zero_extendhi:
+    case CODE_FOR_multsi3_zero_extendhi:
+    case CODE_FOR_comparesi3_zero_extendqi:
+      zero = true;
+      factor = 2;
+      break;
+
+    case CODE_FOR_plussi3_sign_extendhi:
+    case CODE_FOR_andsi3_sign_extendhi:
+    case CODE_FOR_iorsi3_sign_extendhi:
+    case CODE_FOR_xorsi3_sign_extendhi:
+    case CODE_FOR_divsi3_sign_extendhi:
+    case CODE_FOR_udivsi3_sign_extendhi:
+    case CODE_FOR_minussi3_sign_extendhi:
+    case CODE_FOR_smaxsi3_sign_extendhi:
+    case CODE_FOR_sminsi3_sign_extendhi:
+    case CODE_FOR_multsi3_sign_extendhi:
+    case CODE_FOR_comparesi3_zero_extendhi:
+      zero = false;
+      factor = 2;
+      break;
+      
+    case CODE_FOR_plussi3_zero_extendqi:
+    case CODE_FOR_andsi3_zero_extendqi:
+    case CODE_FOR_iorsi3_zero_extendqi:
+    case CODE_FOR_xorsi3_zero_extendqi:
+    case CODE_FOR_divsi3_zero_extendqi:
+    case CODE_FOR_udivsi3_zero_extendqi:
+    case CODE_FOR_minussi3_zero_extendqi:
+    case CODE_FOR_smaxsi3_zero_extendqi:
+    case CODE_FOR_sminsi3_zero_extendqi:
+    case CODE_FOR_multsi3_zero_extendqi:
+    case CODE_FOR_comparesi3_sign_extendqi:
+      zero = true;
+      factor = 1;
+      break;
+      
+    case CODE_FOR_plussi3_sign_extendqi:
+    case CODE_FOR_andsi3_sign_extendqi:
+    case CODE_FOR_iorsi3_sign_extendqi:
+    case CODE_FOR_xorsi3_sign_extendqi:
+    case CODE_FOR_divsi3_sign_extendqi:
+    case CODE_FOR_udivsi3_sign_extendqi:
+    case CODE_FOR_minussi3_sign_extendqi:
+    case CODE_FOR_smaxsi3_sign_extendqi:
+    case CODE_FOR_sminsi3_sign_extendqi:
+    case CODE_FOR_multsi3_sign_extendqi:
+    case CODE_FOR_comparesi3_sign_extendhi:
+      zero = false;
+      factor = 1;
+      break;
+    }      
+
+  /* We are expecting: (SET (REG) (<OP> (REG) (<EXTEND> (MEM)))).  */
+  extend = single_set (insn);
+  gcc_assert (extend != NULL_RTX);
+
+  extend = SET_SRC (extend);
+  if (GET_CODE (XEXP (extend, 0)) == ZERO_EXTEND
+      || GET_CODE (XEXP (extend, 0)) == SIGN_EXTEND)
+    extend = XEXP (extend, 0);
+  else
+    extend = XEXP (extend, 1);
+
+  gcc_assert ((zero && (GET_CODE (extend) == ZERO_EXTEND))
+	      || (! zero && (GET_CODE (extend) == SIGN_EXTEND)));
+    
+  mem = XEXP (extend, 0);
+  gcc_checking_assert (MEM_P (mem));
+  if (REG_P (XEXP (mem, 0)))
+    return (zero && factor == 1) ? 2 : 3;
+
+  /* We are expecting: (MEM (PLUS (REG) (CONST_INT))).  */
+  gcc_checking_assert (GET_CODE (XEXP (mem, 0)) == PLUS);
+  gcc_checking_assert (REG_P (XEXP (XEXP (mem, 0), 0)));
+
+  offset = XEXP (XEXP (mem, 0), 1);
+  gcc_checking_assert (GET_CODE (offset) == CONST_INT);
+
+  if (IN_RANGE (INTVAL (offset), 0, 255 * factor))
+    return (zero && factor == 1) ? 3 : 4;
+
+  return (zero && factor == 1) ? 4 : 5;
+}
+
+#undef  TARGET_ASM_JUMP_ALIGN_MAX_SKIP
+#define TARGET_ASM_JUMP_ALIGN_MAX_SKIP			rx_max_skip_for_label
+#undef  TARGET_ASM_LOOP_ALIGN_MAX_SKIP
+#define TARGET_ASM_LOOP_ALIGN_MAX_SKIP			rx_max_skip_for_label
+#undef  TARGET_LABEL_ALIGN_AFTER_BARRIER_MAX_SKIP
+#define TARGET_LABEL_ALIGN_AFTER_BARRIER_MAX_SKIP	rx_max_skip_for_label
+#undef  TARGET_ASM_LABEL_ALIGN_MAX_SKIP
+#define TARGET_ASM_LABEL_ALIGN_MAX_SKIP			rx_max_skip_for_label
+
 #undef  TARGET_FUNCTION_VALUE
 #define TARGET_FUNCTION_VALUE		rx_function_value
 

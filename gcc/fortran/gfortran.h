@@ -458,7 +458,7 @@ enum gfc_isym_id
   GFC_ISYM_NORM2,
   GFC_ISYM_NOT,
   GFC_ISYM_NULL,
-  GFC_ISYM_NUMIMAGES,
+  GFC_ISYM_NUM_IMAGES,
   GFC_ISYM_OR,
   GFC_ISYM_PACK,
   GFC_ISYM_PARITY,
@@ -572,7 +572,8 @@ init_local_integer;
 typedef enum
 {
   GFC_FCOARRAY_NONE = 0,
-  GFC_FCOARRAY_SINGLE
+  GFC_FCOARRAY_SINGLE,
+  GFC_FCOARRAY_LIB
 }
 gfc_fcoarray;
 
@@ -1485,7 +1486,7 @@ extern gfc_interface_info current_interface;
 
 enum gfc_array_ref_dimen_type
 {
-  DIMEN_ELEMENT = 1, DIMEN_RANGE, DIMEN_VECTOR, DIMEN_STAR, DIMEN_UNKNOWN
+  DIMEN_ELEMENT = 1, DIMEN_RANGE, DIMEN_VECTOR, DIMEN_STAR, DIMEN_THIS_IMAGE, DIMEN_UNKNOWN
 };
 
 typedef struct gfc_array_ref
@@ -2232,6 +2233,7 @@ typedef struct
   int flag_whole_file;
   int flag_protect_parens;
   int flag_realloc_lhs;
+  int flag_aggressive_function_elimination;
 
   int fpe;
   int rtcheck;
@@ -2865,6 +2867,7 @@ void gfc_global_used (gfc_gsymbol *, locus *);
 gfc_namespace* gfc_build_block_ns (gfc_namespace *);
 
 /* dependency.c */
+int gfc_dep_compare_functions (gfc_expr *, gfc_expr *, bool);
 int gfc_dep_compare_expr (gfc_expr *, gfc_expr *);
 
 /* check.c */

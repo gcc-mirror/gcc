@@ -938,7 +938,7 @@ ada.uninstall:
 # We just have to delete files specific to us.
 
 ada.mostlyclean:
-	-$(RM) ada/*$(objext) ada/*.ali ada/b_*.c
+	-$(RM) ada/*$(objext) ada/*.ali ada/b_gnat*.ads ada/b_gnat*.adb
 	-$(RM) ada/*$(coverageexts)
 	-$(RM) ada/sdefault.adb ada/stamp-sdefault ada/stamp-snames
 	-$(RMDIR) ada/tools
@@ -974,22 +974,22 @@ ada.maintainer-clean:
 # The main makefile has already created stage?/ada
 
 ada.stage1: stage1-start
-	-$(MV) ada/*$(objext) ada/*.ali ada/b_*.c stage1/ada
+	-$(MV) ada/*$(objext) ada/*.ali ada/b_gnat*.ad* stage1/ada
 	-$(MV) ada/stamp-* stage1/ada
 ada.stage2: stage2-start
-	-$(MV) ada/*$(objext) ada/*.ali ada/b_*.c stage2/ada
+	-$(MV) ada/*$(objext) ada/*.ali ada/b_gnat*.ad* stage2/ada
 	-$(MV) ada/stamp-* stage2/ada
 ada.stage3: stage3-start
-	-$(MV) ada/*$(objext) ada/*.ali ada/b_*.c stage3/ada
+	-$(MV) ada/*$(objext) ada/*.ali ada/b_gnat*.ad* stage3/ada
 	-$(MV) ada/stamp-* stage3/ada
 ada.stage4: stage4-start
-	-$(MV) ada/*$(objext) ada/*.ali ada/b_*.c stage4/ada
+	-$(MV) ada/*$(objext) ada/*.ali ada/b_gnat*.ad* stage4/ada
 	-$(MV) ada/stamp-* stage4/ada
 ada.stageprofile: stageprofile-start
-	-$(MV) ada/*$(objext) ada/*.ali ada/b_*.c stageprofile/ada
+	-$(MV) ada/*$(objext) ada/*.ali ada/b_gnat*.ad* stageprofile/ada
 	-$(MV) ada/stamp-* stageprofile/ada
 ada.stagefeedback: stagefeedback-start
-	-$(MV) ada/*$(objext) ada/*.ali ada/b_*.c stagefeedback/ada
+	-$(MV) ada/*$(objext) ada/*.ali ada/b_gnat*.ad* stagefeedback/ada
 	-$(MV) ada/stamp-* stagefeedback/ada
 
 lang_checks += check-gnat
@@ -1086,19 +1086,28 @@ gnatstage2: force
 
 # Note that dependencies on obstack.h are not written
 # because that file is not part of GCC.
-# Dependencies on gvarargs.h are not written
-# because all that file does, when not compiling with GCC,
-# is include the system varargs.h.
 
 # Ada language specific files.
 
-ada/b_gnat1.c : $(GNAT1_ADA_OBJS)
-	$(GNATBIND) -C $(ADA_INCLUDES) -o ada/b_gnat1.c -n ada/gnat1drv.ali
-ada/b_gnat1.o : ada/b_gnat1.c
+ada/b_gnat1.adb : $(GNAT1_ADA_OBJS)
+        # Old gnatbind do not allow a path for -o.
+	$(GNATBIND) $(ADA_INCLUDES) -o b_gnat1.adb -n ada/gnat1drv.ali
+	$(MV) b_gnat1.adb b_gnat1.ads ada/
 
-ada/b_gnatb.c : $(GNATBIND_OBJS) ada/gnatbind.o ada/interfac.o
-	$(GNATBIND) -C $(ADA_INCLUDES) -o ada/b_gnatb.c ada/gnatbind.ali
-ada/b_gnatb.o : ada/b_gnatb.c
+ada/b_gnat1.o : ada/b_gnat1.adb
+        # Do not use ADAFLAGS to get rid of -gnatg which generates a lot
+        # of style messages.
+	$(CC) -c $(CFLAGS) $(ADA_CFLAGS) -gnatp -gnatws $(ADA_INCLUDES) \
+	    $< $(OUTPUT_OPTION)
+
+ada/b_gnatb.adb : $(GNATBIND_OBJS) ada/gnatbind.o ada/interfac.o
+        # Old gnatbind do not allow a path for -o.
+	$(GNATBIND) $(ADA_INCLUDES) -o b_gnatb.adb ada/gnatbind.ali
+	$(MV) b_gnatb.adb b_gnatb.ads ada/
+
+ada/b_gnatb.o : ada/b_gnatb.adb
+	$(CC) -c $(CFLAGS) $(ADA_CFLAGS) -gnatp -gnatws $(ADA_INCLUDES) \
+	    $< $(OUTPUT_OPTION)
 
 include $(srcdir)/ada/Make-generated.in
 

@@ -1,5 +1,5 @@
 /* Default target hook functions.
-   Copyright (C) 2003, 2004, 2005, 2007, 2008, 2009, 2010
+   Copyright (C) 2003, 2004, 2005, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -124,9 +124,6 @@ extern rtx default_static_chain (const_tree, bool);
 extern void default_trampoline_init (rtx, tree, rtx);
 extern int default_return_pops_args (tree, tree, int);
 extern reg_class_t default_branch_target_register_class (void);
-#ifdef IRA_COVER_CLASSES
-extern const reg_class_t *default_ira_cover_classes (void);
-#endif
 extern reg_class_t default_secondary_reload (bool, rtx, reg_class_t,
 					     enum machine_mode,
 					     secondary_reload_info *);
@@ -180,6 +177,11 @@ extern section * default_function_section(tree decl, enum node_frequency freq,
 extern enum machine_mode default_get_reg_raw_mode(int);
 
 extern const struct default_options empty_optimization_table[];
+
+extern bool default_target_handle_option (struct gcc_options *,
+					  struct gcc_options *,
+					  const struct cl_decoded_option *,
+					  location_t);
 
 extern void *default_get_pch_validity (size_t *);
 extern const char *default_pch_valid_p (const void *, size_t);

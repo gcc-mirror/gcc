@@ -42,12 +42,18 @@ main()
   return 0;
 }
 
-// { dg-warning "note" "" { target *-*-* } 354 }
+// { dg-warning "note" "" { target *-*-* } 370 }
+// { dg-warning "note" "" { target *-*-* } 365 }
+// { dg-warning "note" "" { target *-*-* } 357 }
+// { dg-warning "note" "" { target *-*-* } 1099 }
+// { dg-warning "note" "" { target *-*-* } 1094 }
 // { dg-warning "note" "" { target *-*-* } 1086 }
+// { dg-warning "note" "" { target *-*-* } 483 }
+// { dg-warning "note" "" { target *-*-* } 477 }
 // { dg-warning "note" "" { target *-*-* } 467 }
 // { dg-warning "note" "" { target *-*-* } 587 }
-// { dg-warning "note" "" { target *-*-* } 1050 }
 // { dg-warning "note" "" { target *-*-* } 1056 }
+// { dg-warning "note" "" { target *-*-* } 1050 }
 // { dg-warning "note" "" { target *-*-* } 342 }
 // { dg-warning "note" "" { target *-*-* } 292 }
 // { dg-warning "note" "" { target *-*-* } 207 }

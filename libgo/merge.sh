@@ -146,7 +146,7 @@ done
   done
 done
 
-runtime="goc2c.c mcache.c mcentral.c mfinal.c mfixalloc.c mgc0.c mheap.c mheapmap32.c mheapmap64.c msize.c malloc.h mheapmap32.h mheapmap64.h malloc.goc mprof.goc"
+runtime="goc2c.c mcache.c mcentral.c mfinal.c mfixalloc.c mgc0.c mheap.c msize.c malloc.h malloc.goc mprof.goc"
 for f in $runtime; do
   oldfile=${OLDDIR}/src/pkg/runtime/$f
   newfile=${NEWDIR}/src/pkg/runtime/$f

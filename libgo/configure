@@ -603,6 +603,10 @@ am__EXEEXT_TRUE
 LTLIBOBJS
 LIBOBJS
 STRINGOPS_FLAG
+HAVE_WAIT4_FALSE
+HAVE_WAIT4_TRUE
+HAVE_STRERROR_R_FALSE
+HAVE_STRERROR_R_TRUE
 HAVE_SYS_MMAN_H_FALSE
 HAVE_SYS_MMAN_H_TRUE
 PTHREAD_LIBS
@@ -612,6 +616,7 @@ MATH_LIBS
 USING_SPLIT_STACK_FALSE
 USING_SPLIT_STACK_TRUE
 SPLIT_STACK
+OSCFLAGS
 GO_DEBUG_PROC_REGS_OS_ARCH_FILE
 GO_SYSCALLS_SYSCALL_OS_ARCH_FILE
 GOARCH
@@ -625,14 +630,22 @@ LIBGO_IS_PPC64_FALSE
 LIBGO_IS_PPC64_TRUE
 LIBGO_IS_PPC_FALSE
 LIBGO_IS_PPC_TRUE
-LIBGO_IS_MIPS64_FALSE
-LIBGO_IS_MIPS64_TRUE
+LIBGO_IS_MIPSO64_FALSE
+LIBGO_IS_MIPSO64_TRUE
+LIBGO_IS_MIPSN64_FALSE
+LIBGO_IS_MIPSN64_TRUE
+LIBGO_IS_MIPSN32_FALSE
+LIBGO_IS_MIPSN32_TRUE
+LIBGO_IS_MIPSO32_FALSE
+LIBGO_IS_MIPSO32_TRUE
 LIBGO_IS_MIPS_FALSE
 LIBGO_IS_MIPS_TRUE
 LIBGO_IS_M68K_FALSE
 LIBGO_IS_M68K_TRUE
 LIBGO_IS_ARM_FALSE
 LIBGO_IS_ARM_TRUE
+LIBGO_IS_ALPHA_FALSE
+LIBGO_IS_ALPHA_TRUE
 LIBGO_IS_386_FALSE
 LIBGO_IS_386_TRUE
 GOOS
@@ -642,6 +655,8 @@ LIBGO_IS_RTEMS_FALSE
 LIBGO_IS_RTEMS_TRUE
 LIBGO_IS_LINUX_FALSE
 LIBGO_IS_LINUX_TRUE
+LIBGO_IS_IRIX_FALSE
+LIBGO_IS_IRIX_TRUE
 LIBGO_IS_FREEBSD_FALSE
 LIBGO_IS_FREEBSD_TRUE
 LIBGO_IS_DARWIN_FALSE
@@ -10898,7 +10913,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 10901 "configure"
+#line 10916 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11004,7 +11019,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11007 "configure"
+#line 11022 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -13213,6 +13228,7 @@ fi
 
 is_darwin=no
 is_freebsd=no
+is_irix=no
 is_linux=no
 is_rtems=no
 is_solaris=no
@@ -13220,6 +13236,7 @@ GOOS=unknown
 case ${host} in
   *-*-darwin*)   is_darwin=yes;  GOOS=darwin ;;
   *-*-freebsd*)  is_freebsd=yes; GOOS=freebsd ;;
+  *-*-irix6*)    is_irix=yes;    GOOS=irix ;;
   *-*-linux*)    is_linux=yes;   GOOS=linux ;;
   *-*-rtems*)    is_rtems=yes;   GOOS=rtems ;;
   *-*-solaris2*) is_solaris=yes; GOOS=solaris ;;
@@ -13238,6 +13255,14 @@ fi
 else
   LIBGO_IS_FREEBSD_TRUE='#'
   LIBGO_IS_FREEBSD_FALSE=
+fi
+
+ if test $is_irix = yes; then
+  LIBGO_IS_IRIX_TRUE=
+  LIBGO_IS_IRIX_FALSE='#'
+else
+  LIBGO_IS_IRIX_TRUE='#'
+  LIBGO_IS_IRIX_FALSE=
 fi
 
  if test $is_linux = yes; then
@@ -13267,10 +13292,10 @@ fi
 
 
 is_386=no
+is_alpha=no
 is_arm=no
 is_m68k=no
-is_mips=no
-is_mips64=no
+mips_abi=""
 is_ppc=no
 is_ppc64=no
 is_sparc=no
@@ -13278,6 +13303,10 @@ is_sparc64=no
 is_x86_64=no
 GOARCH=unknown
 case ${host} in
+  alpha*-*-*)
+    is_alpha=yes
+    GOARCH=alpha
+    ;;
   arm*-*-* | strongarm*-*-* | ep9312*-*-* | xscale-*-*)
     is_arm=yes
     GOARCH=arm
@@ -13310,21 +13339,59 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
     cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
-#ifdef __mips64
-#error 64-bit
+#if _MIPS_SIM != _ABIO32
+#error not o32
 #endif
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-  is_mips=yes
+  mips_abi="o32"
 else
-  is_mips64=yes
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#if _MIPS_SIM != _ABIN32
+#error not n32
+#endif
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  mips_abi="n32"
+else
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#if _MIPS_SIM != _ABI64
+#error not n64
+#endif
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  mips_abi="n64"
+else
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#if _MIPS_SIM != _ABIO64
+#error not o64
+#endif
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  mips_abi="o64"
+else
+  as_fn_error "unknown MIPS ABI" "$LINENO" 5
+mips_abi="n32"
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-    if test "$is_mips" = "yes"; then
-      GOARCH=mips
-    else
-      GOARCH=mips64
-    fi
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+    case "$mips_abi" in
+    "o32") GOARCH=mipso32 ;;
+    "n32") GOARCH=mipsn32 ;;
+    "n64") GOARCH=mipsn64 ;;
+    "o64") GOARCH=mipso64 ;;
+    esac
     ;;
   rs6000*-*-* | powerpc*-*-*)
     cat confdefs.h - <<_ACEOF >conftest.$ac_ext
@@ -13375,6 +13442,14 @@ else
   LIBGO_IS_386_FALSE=
 fi
 
+ if test $is_alpha = yes; then
+  LIBGO_IS_ALPHA_TRUE=
+  LIBGO_IS_ALPHA_FALSE='#'
+else
+  LIBGO_IS_ALPHA_TRUE='#'
+  LIBGO_IS_ALPHA_FALSE=
+fi
+
  if test $is_arm = yes; then
   LIBGO_IS_ARM_TRUE=
   LIBGO_IS_ARM_FALSE='#'
@@ -13391,7 +13466,7 @@ else
   LIBGO_IS_M68K_FALSE=
 fi
 
- if test $is_mips = yes; then
+ if test $mips_abi != ""; then
   LIBGO_IS_MIPS_TRUE=
   LIBGO_IS_MIPS_FALSE='#'
 else
@@ -13399,12 +13474,36 @@ else
   LIBGO_IS_MIPS_FALSE=
 fi
 
- if test $is_mips64 = yes; then
-  LIBGO_IS_MIPS64_TRUE=
-  LIBGO_IS_MIPS64_FALSE='#'
+ if test $mips_abi = o32; then
+  LIBGO_IS_MIPSO32_TRUE=
+  LIBGO_IS_MIPSO32_FALSE='#'
 else
-  LIBGO_IS_MIPS64_TRUE='#'
-  LIBGO_IS_MIPS64_FALSE=
+  LIBGO_IS_MIPSO32_TRUE='#'
+  LIBGO_IS_MIPSO32_FALSE=
+fi
+
+ if test $mips_abi = n32; then
+  LIBGO_IS_MIPSN32_TRUE=
+  LIBGO_IS_MIPSN32_FALSE='#'
+else
+  LIBGO_IS_MIPSN32_TRUE='#'
+  LIBGO_IS_MIPSN32_FALSE=
+fi
+
+ if test $mips_abi = n64; then
+  LIBGO_IS_MIPSN64_TRUE=
+  LIBGO_IS_MIPSN64_FALSE='#'
+else
+  LIBGO_IS_MIPSN64_TRUE='#'
+  LIBGO_IS_MIPSN64_FALSE=
+fi
+
+ if test $mips_abi = o64; then
+  LIBGO_IS_MIPSO64_TRUE=
+  LIBGO_IS_MIPSO64_FALSE='#'
+else
+  LIBGO_IS_MIPSO64_TRUE='#'
+  LIBGO_IS_MIPSO64_FALSE=
 fi
 
  if test $is_ppc = yes; then
@@ -13459,6 +13558,21 @@ GO_DEBUG_PROC_REGS_OS_ARCH_FILE=
 if test -f ${srcdir}/go/debug/proc/regs_${GOOS}_${GOARCH}.go; then
   GO_DEBUG_PROC_REGS_OS_ARCH_FILE=go/debug/proc/regs_${GOOS}_${GOARCH}.go
 fi
+
+
+case "$target" in
+    *-*-solaris2.[89])
+	# Solaris 8/9 need this so struct msghdr gets the msg_control
+	# etc. fields in <sys/socket.h> (_XPG4_2).
+	OSCFLAGS='-D_XOPEN_SOURCE=500 -D_XOPEN_SOURCE_EXTENDED -D__EXTENSIONS__'
+	;;
+    *-*-solaris2.1[01])
+	# Solaris 10+ needs this so struct msghdr gets the msg_control
+	# etc. fields in <sys/socket.h> (_XPG4_2).  _XOPEN_SOURCE=500 as
+	# above doesn't work with C99.
+	OSCFLAGS='-D_XOPEN_SOURCE=600 -D__EXTENSIONS__'
+	;;
+esac
 
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether -fsplit-stack is supported" >&5
@@ -14129,7 +14243,7 @@ no)
   ;;
 esac
 
-for ac_header in sys/mman.h syscall.h sys/epoll.h sys/ptrace.h sys/syscall.h sys/user.h sys/utsname.h
+for ac_header in sys/mman.h syscall.h sys/epoll.h sys/ptrace.h sys/syscall.h sys/user.h sys/utsname.h sys/select.h
 do :
   as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
 ac_fn_c_check_header_mongrel "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
@@ -14151,7 +14265,8 @@ else
   HAVE_SYS_MMAN_H_FALSE=
 fi
 
-for ac_func in srandom random strsignal
+
+for ac_func in srandom random strerror_r strsignal wait4 mincore
 do :
   as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
 ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
@@ -14163,6 +14278,22 @@ _ACEOF
 
 fi
 done
+
+ if test "$ac_cv_func_strerror_r" = yes; then
+  HAVE_STRERROR_R_TRUE=
+  HAVE_STRERROR_R_FALSE='#'
+else
+  HAVE_STRERROR_R_TRUE='#'
+  HAVE_STRERROR_R_FALSE=
+fi
+
+ if test "$ac_cv_func_wait4" = yes; then
+  HAVE_WAIT4_TRUE=
+  HAVE_WAIT4_FALSE='#'
+else
+  HAVE_WAIT4_TRUE='#'
+  HAVE_WAIT4_FALSE=
+fi
 
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for __sync_bool_compare_and_swap_4" >&5
@@ -14476,6 +14607,10 @@ if test -z "${LIBGO_IS_FREEBSD_TRUE}" && test -z "${LIBGO_IS_FREEBSD_FALSE}"; th
   as_fn_error "conditional \"LIBGO_IS_FREEBSD\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
+if test -z "${LIBGO_IS_IRIX_TRUE}" && test -z "${LIBGO_IS_IRIX_FALSE}"; then
+  as_fn_error "conditional \"LIBGO_IS_IRIX\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
 if test -z "${LIBGO_IS_LINUX_TRUE}" && test -z "${LIBGO_IS_LINUX_FALSE}"; then
   as_fn_error "conditional \"LIBGO_IS_LINUX\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
@@ -14492,6 +14627,10 @@ if test -z "${LIBGO_IS_386_TRUE}" && test -z "${LIBGO_IS_386_FALSE}"; then
   as_fn_error "conditional \"LIBGO_IS_386\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
+if test -z "${LIBGO_IS_ALPHA_TRUE}" && test -z "${LIBGO_IS_ALPHA_FALSE}"; then
+  as_fn_error "conditional \"LIBGO_IS_ALPHA\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
 if test -z "${LIBGO_IS_ARM_TRUE}" && test -z "${LIBGO_IS_ARM_FALSE}"; then
   as_fn_error "conditional \"LIBGO_IS_ARM\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
@@ -14504,8 +14643,20 @@ if test -z "${LIBGO_IS_MIPS_TRUE}" && test -z "${LIBGO_IS_MIPS_FALSE}"; then
   as_fn_error "conditional \"LIBGO_IS_MIPS\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
-if test -z "${LIBGO_IS_MIPS64_TRUE}" && test -z "${LIBGO_IS_MIPS64_FALSE}"; then
-  as_fn_error "conditional \"LIBGO_IS_MIPS64\" was never defined.
+if test -z "${LIBGO_IS_MIPSO32_TRUE}" && test -z "${LIBGO_IS_MIPSO32_FALSE}"; then
+  as_fn_error "conditional \"LIBGO_IS_MIPSO32\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${LIBGO_IS_MIPSN32_TRUE}" && test -z "${LIBGO_IS_MIPSN32_FALSE}"; then
+  as_fn_error "conditional \"LIBGO_IS_MIPSN32\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${LIBGO_IS_MIPSN64_TRUE}" && test -z "${LIBGO_IS_MIPSN64_FALSE}"; then
+  as_fn_error "conditional \"LIBGO_IS_MIPSN64\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${LIBGO_IS_MIPSO64_TRUE}" && test -z "${LIBGO_IS_MIPSO64_FALSE}"; then
+  as_fn_error "conditional \"LIBGO_IS_MIPSO64\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${LIBGO_IS_PPC_TRUE}" && test -z "${LIBGO_IS_PPC_FALSE}"; then
@@ -14535,6 +14686,14 @@ fi
 
 if test -z "${HAVE_SYS_MMAN_H_TRUE}" && test -z "${HAVE_SYS_MMAN_H_FALSE}"; then
   as_fn_error "conditional \"HAVE_SYS_MMAN_H\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${HAVE_STRERROR_R_TRUE}" && test -z "${HAVE_STRERROR_R_FALSE}"; then
+  as_fn_error "conditional \"HAVE_STRERROR_R\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${HAVE_WAIT4_TRUE}" && test -z "${HAVE_WAIT4_FALSE}"; then
+  as_fn_error "conditional \"HAVE_WAIT4\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 

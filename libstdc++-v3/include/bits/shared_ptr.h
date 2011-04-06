@@ -321,38 +321,102 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // 20.8.13.2.7 shared_ptr comparisons
   template<typename _Tp1, typename _Tp2>
     inline bool
-    operator==(const shared_ptr<_Tp1>& __a, const shared_ptr<_Tp2>& __b)
+    operator==(const shared_ptr<_Tp1>& __a,
+	       const shared_ptr<_Tp2>& __b) noexcept
     { return __a.get() == __b.get(); }
 
   template<typename _Tp>
     inline bool
-    operator==(const shared_ptr<_Tp>& __a, nullptr_t)
-    { return __a.get() == nullptr; }
+    operator==(const shared_ptr<_Tp>& __a, nullptr_t) noexcept
+    { return !__a; }
 
   template<typename _Tp>
     inline bool
-    operator==(nullptr_t, const shared_ptr<_Tp>& __b)
-    { return nullptr == __b.get(); }
+    operator==(nullptr_t, const shared_ptr<_Tp>& __a) noexcept
+    { return !__a; }
 
   template<typename _Tp1, typename _Tp2>
     inline bool
-    operator!=(const shared_ptr<_Tp1>& __a, const shared_ptr<_Tp2>& __b)
+    operator!=(const shared_ptr<_Tp1>& __a,
+	       const shared_ptr<_Tp2>& __b) noexcept
     { return __a.get() != __b.get(); }
 
   template<typename _Tp>
     inline bool
-    operator!=(const shared_ptr<_Tp>& __a, nullptr_t)
-    { return __a.get() != nullptr; }
+    operator!=(const shared_ptr<_Tp>& __a, nullptr_t) noexcept
+    { return (bool)__a; }
 
   template<typename _Tp>
     inline bool
-    operator!=(nullptr_t, const shared_ptr<_Tp>& __b)
-    { return nullptr != __b.get(); }
+    operator!=(nullptr_t, const shared_ptr<_Tp>& __a) noexcept
+    { return (bool)__a; }
 
   template<typename _Tp1, typename _Tp2>
     inline bool
-    operator<(const shared_ptr<_Tp1>& __a, const shared_ptr<_Tp2>& __b)
-    { return __a.get() < __b.get(); }
+    operator<(const shared_ptr<_Tp1>& __a,
+	      const shared_ptr<_Tp2>& __b) noexcept
+    {
+      typedef typename std::common_type<_Tp1*, _Tp2*>::type _CT;
+      return std::less<_CT>()(__a.get(), __b.get());
+    }
+
+  template<typename _Tp>
+    inline bool
+    operator<(const shared_ptr<_Tp>& __a, nullptr_t) noexcept
+    { return std::less<_Tp*>()(__a.get(), nullptr); }
+
+  template<typename _Tp>
+    inline bool
+    operator<(nullptr_t, const shared_ptr<_Tp>& __a) noexcept
+    { return std::less<_Tp*>()(nullptr, __a.get()); }
+
+  template<typename _Tp1, typename _Tp2>
+    inline bool
+    operator<=(const shared_ptr<_Tp1>& __a,
+	       const shared_ptr<_Tp2>& __b) noexcept
+    { return !(__b < __a); }
+
+  template<typename _Tp>
+    inline bool
+    operator<=(const shared_ptr<_Tp>& __a, nullptr_t) noexcept
+    { return !(nullptr < __a); }
+
+  template<typename _Tp>
+    inline bool
+    operator<=(nullptr_t, const shared_ptr<_Tp>& __a) noexcept
+    { return !(__a < nullptr); }
+
+  template<typename _Tp1, typename _Tp2>
+    inline bool
+    operator>(const shared_ptr<_Tp1>& __a,
+	      const shared_ptr<_Tp2>& __b) noexcept
+    { return (__b < __a); }
+
+  template<typename _Tp>
+    inline bool
+    operator>(const shared_ptr<_Tp>& __a, nullptr_t) noexcept
+    { return std::less<_Tp*>()(nullptr, __a.get()); }
+
+  template<typename _Tp>
+    inline bool
+    operator>(nullptr_t, const shared_ptr<_Tp>& __a) noexcept
+    { return std::less<_Tp*>()(__a.get(), nullptr); }
+
+  template<typename _Tp1, typename _Tp2>
+    inline bool
+    operator>=(const shared_ptr<_Tp1>& __a,
+	       const shared_ptr<_Tp2>& __b) noexcept
+    { return !(__a < __b); }
+
+  template<typename _Tp>
+    inline bool
+    operator>=(const shared_ptr<_Tp>& __a, nullptr_t) noexcept
+    { return !(__a < nullptr); }
+
+  template<typename _Tp>
+    inline bool
+    operator>=(nullptr_t, const shared_ptr<_Tp>& __a) noexcept
+    { return !(nullptr < __a); }
 
   template<typename _Tp>
     struct less<shared_ptr<_Tp>> : public _Sp_less<shared_ptr<_Tp>>

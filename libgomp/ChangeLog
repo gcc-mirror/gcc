@@ -1,3 +1,9 @@
+2011-03-21  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR bootstrap/48135
+	* acinclude.m4 (enable_symvers): Handle --disable-symvers.
+	* configure: Regenerate.
+
 2011-02-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/47886

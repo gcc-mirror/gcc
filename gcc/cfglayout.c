@@ -253,8 +253,8 @@ insn_locators_alloc (void)
   locations_locators_locs = VEC_alloc (int, heap, 32);
   locations_locators_vals = VEC_alloc (location_t, heap, 32);
 
-  last_location = -1;
-  curr_location = -1;
+  curr_location = UNKNOWN_LOCATION;
+  last_location = UNKNOWN_LOCATION;
   curr_block = NULL;
   last_block = NULL;
   curr_rtl_loc = 0;
@@ -323,7 +323,7 @@ get_curr_insn_block (void)
 int
 curr_insn_locator (void)
 {
-  if (curr_rtl_loc == -1)
+  if (curr_rtl_loc == -1 || curr_location == UNKNOWN_LOCATION)
     return 0;
   if (last_block != curr_block)
     {
@@ -766,7 +766,7 @@ fixup_reorder_chain (void)
     {
       edge e_fall, e_taken, e;
       rtx bb_end_insn;
-      basic_block nb;
+      basic_block nb, src_bb;
       edge_iterator ei;
 
       if (EDGE_COUNT (bb->succs) == 0)
@@ -894,7 +894,10 @@ fixup_reorder_chain (void)
 	    continue;
 	}
 
-      /* We got here if we need to add a new jump insn.  */
+      /* We got here if we need to add a new jump insn. 
+	 Note force_nonfallthru can delete E_FALL and thus we have to
+	 save E_FALL->src prior to the call to force_nonfallthru.  */
+      src_bb = e_fall->src;
       nb = force_nonfallthru (e_fall);
       if (nb)
 	{
@@ -905,9 +908,9 @@ fixup_reorder_chain (void)
 	  bb = nb;
 
 	  /* Make sure new bb is tagged for correct section (same as
-	     fall-thru source, since you cannot fall-throu across
+	     fall-thru source, since you cannot fall-thru across
 	     section boundaries).  */
-	  BB_COPY_PARTITION (e_fall->src, single_pred (bb));
+	  BB_COPY_PARTITION (src_bb, single_pred (bb));
 	  if (flag_reorder_blocks_and_partition
 	      && targetm.have_named_sections
 	      && JUMP_P (BB_END (bb))

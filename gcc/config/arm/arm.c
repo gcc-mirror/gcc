@@ -56,6 +56,7 @@
 #include "intl.h"
 #include "libfuncs.h"
 #include "params.h"
+#include "opts.h"
 
 /* Forward definitions of types.  */
 typedef struct minipool_node    Mnode;
@@ -218,7 +219,8 @@ static tree arm_build_builtin_va_list (void);
 static void arm_expand_builtin_va_start (tree, rtx);
 static tree arm_gimplify_va_arg_expr (tree, tree, gimple_seq *, gimple_seq *);
 static void arm_option_override (void);
-static bool arm_handle_option (size_t, const char *, int);
+static bool arm_handle_option (struct gcc_options *, struct gcc_options *,
+			       const struct cl_decoded_option *, location_t);
 static void arm_target_help (void);
 static unsigned HOST_WIDE_INT arm_shift_truncation_mask (enum machine_mode);
 static bool arm_cannot_copy_insn_p (rtx);
@@ -250,25 +252,31 @@ static bool arm_builtin_support_vector_misalignment (enum machine_mode mode,
 						     bool is_packed);
 static void arm_conditional_register_usage (void);
 static reg_class_t arm_preferred_rename_class (reg_class_t rclass);
+static unsigned int arm_autovectorize_vector_sizes (void);
 
 
 /* Table of machine attributes.  */
 static const struct attribute_spec arm_attribute_table[] =
 {
-  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler } */
+  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler,
+       affects_type_identity } */
   /* Function calls made to this symbol must be done indirectly, because
      it may lie outside of the 26 bit addressing range of a normal function
      call.  */
-  { "long_call",    0, 0, false, true,  true,  NULL },
+  { "long_call",    0, 0, false, true,  true,  NULL, false },
   /* Whereas these functions are always known to reside within the 26 bit
      addressing range.  */
-  { "short_call",   0, 0, false, true,  true,  NULL },
+  { "short_call",   0, 0, false, true,  true,  NULL, false },
   /* Specify the procedure call conventions for a function.  */
-  { "pcs",          1, 1, false, true,  true,  arm_handle_pcs_attribute },
+  { "pcs",          1, 1, false, true,  true,  arm_handle_pcs_attribute,
+    false },
   /* Interrupt Service Routines have special prologue and epilogue requirements.  */
-  { "isr",          0, 1, false, false, false, arm_handle_isr_attribute },
-  { "interrupt",    0, 1, false, false, false, arm_handle_isr_attribute },
-  { "naked",        0, 0, true,  false, false, arm_handle_fndecl_attribute },
+  { "isr",          0, 1, false, false, false, arm_handle_isr_attribute,
+    false },
+  { "interrupt",    0, 1, false, false, false, arm_handle_isr_attribute,
+    false },
+  { "naked",        0, 0, true,  false, false, arm_handle_fndecl_attribute,
+    false },
 #ifdef ARM_PE
   /* ARM/PE has three new attributes:
      interfacearm - ?
@@ -279,15 +287,17 @@ static const struct attribute_spec arm_attribute_table[] =
      them with spaces.  We do NOT support this.  Instead, use __declspec
      multiple times.
   */
-  { "dllimport",    0, 0, true,  false, false, NULL },
-  { "dllexport",    0, 0, true,  false, false, NULL },
-  { "interfacearm", 0, 0, true,  false, false, arm_handle_fndecl_attribute },
+  { "dllimport",    0, 0, true,  false, false, NULL, false },
+  { "dllexport",    0, 0, true,  false, false, NULL, false },
+  { "interfacearm", 0, 0, true,  false, false, arm_handle_fndecl_attribute,
+    false },
 #elif TARGET_DLLIMPORT_DECL_ATTRIBUTES
-  { "dllimport",    0, 0, false, false, false, handle_dll_attribute },
-  { "dllexport",    0, 0, false, false, false, handle_dll_attribute },
-  { "notshared",    0, 0, false, true, false, arm_handle_notshared_attribute },
+  { "dllimport",    0, 0, false, false, false, handle_dll_attribute, false },
+  { "dllexport",    0, 0, false, false, false, handle_dll_attribute, false },
+  { "notshared",    0, 0, false, true, false, arm_handle_notshared_attribute,
+    false },
 #endif
-  { NULL,           0, 0, false, false, false, NULL }
+  { NULL,           0, 0, false, false, false, NULL, false }
 };
 
 /* Set default optimization options.  */
@@ -395,6 +405,9 @@ static const struct default_options arm_option_optimization_table[] =
 #define TARGET_VECTOR_MODE_SUPPORTED_P arm_vector_mode_supported_p
 #undef TARGET_VECTORIZE_PREFERRED_SIMD_MODE
 #define TARGET_VECTORIZE_PREFERRED_SIMD_MODE arm_preferred_simd_mode
+#undef TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_SIZES
+#define TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_SIZES \
+  arm_autovectorize_vector_sizes
 
 #undef  TARGET_MACHINE_DEPENDENT_REORG
 #define TARGET_MACHINE_DEPENDENT_REORG arm_reorg
@@ -1333,8 +1346,16 @@ arm_find_cpu (const char *name, const struct processors *sel, const char *desc)
 /* Implement TARGET_HANDLE_OPTION.  */
 
 static bool
-arm_handle_option (size_t code, const char *arg, int value ATTRIBUTE_UNUSED)
+arm_handle_option (struct gcc_options *opts, struct gcc_options *opts_set,
+		   const struct cl_decoded_option *decoded,
+		   location_t loc ATTRIBUTE_UNUSED)
 {
+  size_t code = decoded->opt_index;
+  const char *arg = decoded->arg;
+
+  gcc_assert (opts == &global_options);
+  gcc_assert (opts_set == &global_options_set);
+
   switch (code)
     {
     case OPT_march_:
@@ -1343,14 +1364,6 @@ arm_handle_option (size_t code, const char *arg, int value ATTRIBUTE_UNUSED)
 
     case OPT_mcpu_:
       arm_selected_cpu = arm_find_cpu(arg, all_cores, "-mcpu");
-      return true;
-
-    case OPT_mhard_float:
-      target_float_abi_name = "hard";
-      return true;
-
-    case OPT_msoft_float:
-      target_float_abi_name = "soft";
       return true;
 
     case OPT_mtune_:
@@ -9139,11 +9152,14 @@ coproc_secondary_reload_class (enum machine_mode mode, rtx x, bool wb)
       return GENERAL_REGS;
     }
 
+  /* The neon move patterns handle all legitimate vector and struct
+     addresses.  */
   if (TARGET_NEON
+      && MEM_P (x)
       && (GET_MODE_CLASS (mode) == MODE_VECTOR_INT
-          || GET_MODE_CLASS (mode) == MODE_VECTOR_FLOAT)
-      && neon_vector_mem_operand (x, 0))
-     return NO_REGS;
+	  || GET_MODE_CLASS (mode) == MODE_VECTOR_FLOAT
+	  || VALID_NEON_STRUCT_MODE (mode)))
+    return NO_REGS;
 
   if (arm_coproc_mem_operand (x, wb) || s_register_operand (x, mode))
     return NO_REGS;
@@ -10881,14 +10897,14 @@ arm_reload_in_hi (rtx *operands)
 	 are two cases here: the first where there is a simple
 	 stack-slot replacement and a second where the stack-slot is
 	 out of range, or is used as a subreg.  */
-      if (reg_equiv_mem[REGNO (ref)])
+      if (reg_equiv_mem (REGNO (ref)))
 	{
-	  ref = reg_equiv_mem[REGNO (ref)];
+	  ref = reg_equiv_mem (REGNO (ref));
 	  base = find_replacement (&XEXP (ref, 0));
 	}
       else
 	/* The slot is out of range, or was dressed up in a SUBREG.  */
-	base = reg_equiv_address[REGNO (ref)];
+	base = reg_equiv_address (REGNO (ref));
     }
   else
     base = find_replacement (&XEXP (ref, 0));
@@ -10998,14 +11014,14 @@ arm_reload_out_hi (rtx *operands)
 	 are two cases here: the first where there is a simple
 	 stack-slot replacement and a second where the stack-slot is
 	 out of range, or is used as a subreg.  */
-      if (reg_equiv_mem[REGNO (ref)])
+      if (reg_equiv_mem (REGNO (ref)))
 	{
-	  ref = reg_equiv_mem[REGNO (ref)];
+	  ref = reg_equiv_mem (REGNO (ref));
 	  base = find_replacement (&XEXP (ref, 0));
 	}
       else
 	/* The slot is out of range, or was dressed up in a SUBREG.  */
-	base = reg_equiv_address[REGNO (ref)];
+	base = reg_equiv_address (REGNO (ref));
     }
   else
     base = find_replacement (&XEXP (ref, 0));
@@ -18928,7 +18944,7 @@ arm_init_neon_builtins (void)
 		/* Build a function type directly from the insn_data for this
 		   builtin.  The build_function_type() function takes care of
 		   removing duplicates for us.  */
-		for (k = insn_data[icode].n_operands - 1; k >= 0; k--)
+		for (k = insn_data[icode].n_generator_args - 1; k >= 0; k--)
 		  {
 		    tree eltype;
 
@@ -23517,6 +23533,12 @@ arm_expand_sync (enum machine_mode mode,
       emit_insn (arm_call_generator (generator, target, memory, required_value,
 				     new_value));
     }
+}
+
+static unsigned int
+arm_autovectorize_vector_sizes (void)
+{
+  return TARGET_NEON_VECTORIZE_QUAD ? 16 | 8 : 0;
 }
 
 static bool

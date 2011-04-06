@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O -fdump-tree-fre" } */
+/* { dg-options "-O -fdump-tree-fre1" } */
 
 /* FRE should be able to combine i and j and perform simplification
    on the condition.  */
@@ -14,5 +14,5 @@ int foo(int b, int c)
     link_error ();
 }
 
-/* { dg-final { scan-tree-dump-not "link_error" "fre" } } */
-/* { dg-final { cleanup-tree-dump "fre" } } */
+/* { dg-final { scan-tree-dump-not "link_error" "fre1" } } */
+/* { dg-final { cleanup-tree-dump "fre1" } } */

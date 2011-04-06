@@ -1,5 +1,6 @@
 /* Definitions for SH running NetBSD using ELF
-   Copyright (C) 2002, 2003, 2004, 2005, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003, 2004, 2005, 2007, 2011
+   Free Software Foundation, Inc.
    Contributed by Wasabi Systems, Inc.
 
 This file is part of GCC.
@@ -19,26 +20,6 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 /* Run-time Target Specification.  */
-#if TARGET_ENDIAN_DEFAULT == MASK_LITTLE_ENDIAN
-#define TARGET_VERSION_ENDIAN "le"
-#else
-#define TARGET_VERSION_ENDIAN ""
-#endif
-
-#if TARGET_CPU_DEFAULT & MASK_SH5
-#if TARGET_CPU_DEFAULT & MASK_SH_E
-#define TARGET_VERSION_CPU "sh5"
-#else
-#define TARGET_VERSION_CPU "sh64"
-#endif /* MASK_SH_E */
-#else
-#define TARGET_VERSION_CPU "sh"
-#endif /* MASK_SH5 */
-
-#undef TARGET_VERSION
-#define TARGET_VERSION	fprintf (stderr, " (NetBSD/%s%s ELF)",		\
-                                 TARGET_VERSION_CPU, TARGET_VERSION_ENDIAN)
-
 
 /* Extra specs needed for NetBSD SuperH ELF targets.  */
 

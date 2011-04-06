@@ -1,3 +1,28 @@
+2011-04-04  Tobias Burnus  <burnus@net-b.de>
+
+	* unix.c: Adapt stat DEFINEs since MinGW64 supports LFS.
+	(fallback_access, open_internal4, compare_file_filename,
+	find_file, file_size, inquire_sequential, inquire_direct,
+	inquire_formatted): Use "struct stat" instead of gfstat_t.
+
+2011-03-27  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/18918
+	* caf/libcaf.h: New - coarray communication library.
+	* caf/mpi.c: New.
+	* caf/single.c: New.
+
+2011-03-23  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/48030
+	* io/read.c (read_x): Re-implement using fbuf_getc.
+
+2011-03-21  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR bootstrap/48135
+	* configure.ac (gfortran_use_symver): Handle --disable-symvers.
+	* configure: Regenerate.
+
 2011-03-19  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR fortran/35667

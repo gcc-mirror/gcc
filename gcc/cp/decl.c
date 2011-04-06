@@ -1012,8 +1012,8 @@ decls_match (tree newdecl, tree olddecl)
 	    types_match =
 	      compparms (p1, p2)
 	      && (TYPE_ATTRIBUTES (TREE_TYPE (newdecl)) == NULL_TREE
-	          || targetm.comp_type_attributes (TREE_TYPE (newdecl),
-						   TREE_TYPE (olddecl)) != 0);
+	          || comp_type_attributes (TREE_TYPE (newdecl),
+					   TREE_TYPE (olddecl)) != 0);
 	}
       else
 	types_match = 0;
@@ -4562,7 +4562,7 @@ build_init_list_var_init (tree decl, tree type, tree init, tree *array_init,
     return error_mark_node;
 
   aggr_init = TARGET_EXPR_INITIAL (init);
-  array = AGGR_INIT_EXPR_ARG (aggr_init, 1);
+  array = CONSTRUCTOR_ELT (aggr_init, 0)->value;
   arrtype = TREE_TYPE (array);
   STRIP_NOPS (array);
   gcc_assert (TREE_CODE (array) == ADDR_EXPR);
@@ -4574,7 +4574,7 @@ build_init_list_var_init (tree decl, tree type, tree init, tree *array_init,
       tree var = set_up_extended_ref_temp (decl, array, cleanup, array_init);
       var = build_address (var);
       var = convert (arrtype, var);
-      AGGR_INIT_EXPR_ARG (aggr_init, 1) = var;
+      CONSTRUCTOR_ELT (aggr_init, 0)->value = var;
     }
   return init;
 }
@@ -4905,6 +4905,8 @@ reshape_init_array_1 (tree elt_type, tree max_index, reshape_iter *d)
 	return error_mark_node;
       CONSTRUCTOR_APPEND_ELT (CONSTRUCTOR_ELTS (new_init),
 			      size_int (index), elt_init);
+      if (!TREE_CONSTANT (elt_init))
+	TREE_CONSTANT (new_init) = false;
     }
 
   return new_init;
@@ -5794,7 +5796,10 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 	}
     }
 
-  if (TREE_CODE (decl) == FUNCTION_DECL)
+  if (TREE_CODE (decl) == FUNCTION_DECL
+      /* For members, defer until finalize_literal_type_property.  */
+      && (!DECL_CLASS_SCOPE_P (decl)
+	  || !TYPE_BEING_DEFINED (DECL_CONTEXT (decl))))
     validate_constexpr_fundecl (decl);
 
   else if (!ensure_literal_type_for_constexpr_object (decl))

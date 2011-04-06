@@ -134,10 +134,10 @@ host_modules= { module= uudecode; };
 host_modules= { module= wdiff; };
 host_modules= { module= zip; no_check_cross=true; };
 host_modules= { module= zlib; no_install=true; no_check=true; bootstrap=true; };
-host_modules= { module= gdb; extra_make_flags="$(X11_FLAGS_TO_PASS)"; };
-host_modules= { module= expect; extra_make_flags="$(X11_FLAGS_TO_PASS)"; };
-host_modules= { module= guile; extra_make_flags="$(X11_FLAGS_TO_PASS)"; };
-host_modules= { module= tk; extra_make_flags="$(X11_FLAGS_TO_PASS)"; };
+host_modules= { module= gdb; };
+host_modules= { module= expect; };
+host_modules= { module= guile; };
+host_modules= { module= tk; };
 host_modules= { module= libtermcap; no_check=true; 
                 missing=mostlyclean;
                 missing=clean;
@@ -367,6 +367,8 @@ dependencies = { module=all-gnattools; on=all-target-libada; };
 
 dependencies = { module=all-lto-plugin; on=all-libiberty; };
 
+dependencies = { module=all-utils; on=all-libiberty; };
+
 dependencies = { module=configure-mpfr; on=all-gmp; };
 dependencies = { module=configure-mpc; on=all-mpfr; };
 dependencies = { module=configure-ppl; on=all-gmp; };
@@ -388,6 +390,7 @@ dependencies = { module=all-gdb; on=all-build-bison; };
 dependencies = { module=all-gdb; on=all-build-byacc; };
 dependencies = { module=all-gdb; on=all-sim; };
 dependencies = { module=all-gdb; on=all-libdecnumber; };
+dependencies = { module=all-gdb; on=all-libtermcap; };
 
 dependencies = { module=configure-libgui; on=configure-tcl; };
 dependencies = { module=configure-libgui; on=configure-tk; };

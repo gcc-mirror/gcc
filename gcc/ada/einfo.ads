@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                         --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -3573,8 +3573,8 @@ package Einfo is
 --    Size_Depends_On_Discriminant (Flag177)
 --       Present in all entities for types and subtypes. Indicates that the
 --       size of the type depends on the value of one or more discriminants.
---       Currently, this flag is only set in front end layout mode for arrays
---       which have one or more bounds depending on a discriminant value.
+--       Currently, this flag is only set for arrays which have one or more
+--       bounds depending on a discriminant value.
 
 --    Size_Known_At_Compile_Time (Flag92)
 --       Present in all entities for types and subtypes. Indicates that the

@@ -1,7 +1,7 @@
 /* Definitions of target machine for GNU compiler,
    for IBM RS/6000 POWER running AIX.
-   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2010
-   Free Software Foundation, Inc.
+   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2010,
+   2011 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -244,9 +244,6 @@
 #endif
 
 #define PROFILE_HOOK(LABEL)   output_profile_hook (LABEL)
-
-/* Print subsidiary information on the compiler version in use.  */
-#define TARGET_VERSION ;
 
 /* No version of AIX fully supports AltiVec or 64-bit instructions in
    32-bit mode.  */

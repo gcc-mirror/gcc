@@ -1564,8 +1564,7 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
       gfc_ref *last = NULL;
 
       if (actual->expr_type != EXPR_VARIABLE
-	  || (actual->ref == NULL
-	      && !actual->symtree->n.sym->attr.codimension))
+	  || !gfc_expr_attr (actual).codimension)
 	{
 	  if (where)
 	    gfc_error ("Actual argument to '%s' at %L must be a coarray",
@@ -1573,15 +1572,16 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
 	  return 0;
 	}
 
+      if (gfc_is_coindexed (actual))
+	{
+	  if (where)
+	    gfc_error ("Actual argument to '%s' at %L must be a coarray "
+		       "and not coindexed", formal->name, &actual->where);
+	  return 0;
+	}
+
       for (ref = actual->ref; ref; ref = ref->next)
 	{
-	  if (ref->type == REF_ARRAY && ref->u.ar.codimen != 0)
-	    {
-	      if (where)
-		gfc_error ("Actual argument to '%s' at %L must be a coarray "
-			   "and not coindexed", formal->name, &ref->u.ar.where);
-	      return 0;
-	    }
 	  if (ref->type == REF_ARRAY && ref->u.ar.as->corank
 	      && ref->u.ar.type != AR_FULL && ref->u.ar.dimen != 0)
 	    {
@@ -1593,14 +1593,6 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
 	    }
 	  if (ref->type == REF_COMPONENT)
 	    last = ref;
-	}
-
-      if (last && !last->u.c.component->attr.codimension)
-      	{
-	  if (where)
-	    gfc_error ("Actual argument to '%s' at %L must be a coarray",
-		       formal->name, &actual->where);
-	  return 0;
 	}
 
       /* F2008, 12.5.2.6.  */

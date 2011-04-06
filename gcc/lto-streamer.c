@@ -314,29 +314,25 @@ check_handled_ts_structures (void)
 
 
 /* Helper for lto_streamer_cache_insert_1.  Add T to CACHE->NODES at
-   slot IX.  Add OFFSET to CACHE->OFFSETS at slot IX.  */
+   slot IX.  */
 
 static void
 lto_streamer_cache_add_to_node_array (struct lto_streamer_cache_d *cache,
-				      int ix, tree t, unsigned offset)
+				      unsigned ix, tree t)
 {
-  gcc_assert (ix >= 0);
+  /* Make sure we're either replacing an old element or
+     appending consecutively.  */
+  gcc_assert (ix <= VEC_length (tree, cache->nodes));
 
-  /* Grow the array of nodes and offsets to accomodate T at IX.  */
-  if (ix >= (int) VEC_length (tree, cache->nodes))
-    {
-      size_t sz = ix + (20 + ix) / 4;
-      VEC_safe_grow_cleared (tree, heap, cache->nodes, sz);
-      VEC_safe_grow_cleared (unsigned, heap, cache->offsets, sz);
-    }
-
-  VEC_replace (tree, cache->nodes, ix, t);
-  VEC_replace (unsigned, cache->offsets, ix, offset);
+  if (ix == VEC_length (tree, cache->nodes))
+    VEC_safe_push (tree, heap, cache->nodes, t);
+  else
+    VEC_replace (tree, cache->nodes, ix, t);
 }
 
 
 /* Helper for lto_streamer_cache_insert and lto_streamer_cache_insert_at.
-   CACHE, T, IX_P and OFFSET_P are as in lto_streamer_cache_insert.
+   CACHE, T, and IX_P are as in lto_streamer_cache_insert.
 
    If INSERT_AT_NEXT_SLOT_P is true, T is inserted at the next available
    slot in the cache.  Otherwise, T is inserted at the position indicated
@@ -347,13 +343,12 @@ lto_streamer_cache_add_to_node_array (struct lto_streamer_cache_d *cache,
 
 static bool
 lto_streamer_cache_insert_1 (struct lto_streamer_cache_d *cache,
-			     tree t, int *ix_p, unsigned *offset_p,
+			     tree t, unsigned *ix_p,
 			     bool insert_at_next_slot_p)
 {
   void **slot;
   struct tree_int_map d_entry, *entry;
-  int ix;
-  unsigned offset;
+  unsigned ix;
   bool existed_p;
 
   gcc_assert (t);
@@ -364,19 +359,16 @@ lto_streamer_cache_insert_1 (struct lto_streamer_cache_d *cache,
     {
       /* Determine the next slot to use in the cache.  */
       if (insert_at_next_slot_p)
-	ix = cache->next_slot++;
+	ix = VEC_length (tree, cache->nodes);
       else
 	ix = *ix_p;
 
       entry = (struct tree_int_map *)pool_alloc (cache->node_map_entries);
       entry->base.from = t;
-      entry->to = (unsigned) ix;
+      entry->to = ix;
       *slot = entry;
 
-      /* If no offset was given, store the invalid offset -1.  */
-      offset = (offset_p) ? *offset_p : (unsigned) -1;
-
-      lto_streamer_cache_add_to_node_array (cache, ix, t, offset);
+      lto_streamer_cache_add_to_node_array (cache, ix, t);
 
       /* Indicate that the item was not present in the cache.  */
       existed_p = false;
@@ -384,8 +376,7 @@ lto_streamer_cache_insert_1 (struct lto_streamer_cache_d *cache,
   else
     {
       entry = (struct tree_int_map *) *slot;
-      ix = (int) entry->to;
-      offset = VEC_index (unsigned, cache->offsets, ix);
+      ix = entry->to;
 
       if (!insert_at_next_slot_p && ix != *ix_p)
 	{
@@ -404,10 +395,7 @@ lto_streamer_cache_insert_1 (struct lto_streamer_cache_d *cache,
 	  gcc_assert (lto_stream_as_builtin_p (t));
 	  ix = *ix_p;
 
-	  /* Since we are storing a builtin, the offset into the
-	     stream is not necessary as we will not need to read
-	     forward in the stream.  */
-	  lto_streamer_cache_add_to_node_array (cache, ix, t, -1);
+	  lto_streamer_cache_add_to_node_array (cache, ix, t);
 	}
 
       /* Indicate that T was already in the cache.  */
@@ -417,9 +405,6 @@ lto_streamer_cache_insert_1 (struct lto_streamer_cache_d *cache,
   if (ix_p)
     *ix_p = ix;
 
-  if (offset_p)
-    *offset_p = offset;
-
   return existed_p;
 }
 
@@ -428,21 +413,13 @@ lto_streamer_cache_insert_1 (struct lto_streamer_cache_d *cache,
    return true.  Otherwise, return false.
 
    If IX_P is non-null, update it with the index into the cache where
-   T has been stored.
-
-   *OFFSET_P represents the offset in the stream where T is physically
-   written out.  The first time T is added to the cache, *OFFSET_P is
-   recorded in the cache together with T.  But if T already existed
-   in the cache, *OFFSET_P is updated with the value that was recorded
-   the first time T was added to the cache.
-
-   If OFFSET_P is NULL, it is ignored.  */
+   T has been stored.  */
 
 bool
 lto_streamer_cache_insert (struct lto_streamer_cache_d *cache, tree t,
-			   int *ix_p, unsigned *offset_p)
+			   unsigned *ix_p)
 {
-  return lto_streamer_cache_insert_1 (cache, t, ix_p, offset_p, true);
+  return lto_streamer_cache_insert_1 (cache, t, ix_p, true);
 }
 
 
@@ -451,24 +428,33 @@ lto_streamer_cache_insert (struct lto_streamer_cache_d *cache, tree t,
 
 bool
 lto_streamer_cache_insert_at (struct lto_streamer_cache_d *cache,
-			      tree t, int ix)
+			      tree t, unsigned ix)
 {
-  return lto_streamer_cache_insert_1 (cache, t, &ix, NULL, false);
+  return lto_streamer_cache_insert_1 (cache, t, &ix, false);
 }
 
 
-/* Return true if tree node T exists in CACHE.  If IX_P is
+/* Appends tree node T to CACHE, even if T already existed in it.  */
+
+void
+lto_streamer_cache_append (struct lto_streamer_cache_d *cache, tree t)
+{
+  unsigned ix = VEC_length (tree, cache->nodes);
+  lto_streamer_cache_insert_1 (cache, t, &ix, false);
+}
+
+/* Return true if tree node T exists in CACHE, otherwise false.  If IX_P is
    not NULL, write to *IX_P the index into the cache where T is stored
-   (-1 if T is not found).  */
+   ((unsigned)-1 if T is not found).  */
 
 bool
 lto_streamer_cache_lookup (struct lto_streamer_cache_d *cache, tree t,
-			   int *ix_p)
+			   unsigned *ix_p)
 {
   void **slot;
   struct tree_int_map d_slot;
   bool retval;
-  int ix;
+  unsigned ix;
 
   gcc_assert (t);
 
@@ -482,7 +468,7 @@ lto_streamer_cache_lookup (struct lto_streamer_cache_d *cache, tree t,
   else
     {
       retval = true;
-      ix = (int) ((struct tree_int_map *) *slot)->to;
+      ix = ((struct tree_int_map *) *slot)->to;
     }
 
   if (ix_p)
@@ -495,17 +481,14 @@ lto_streamer_cache_lookup (struct lto_streamer_cache_d *cache, tree t,
 /* Return the tree node at slot IX in CACHE.  */
 
 tree
-lto_streamer_cache_get (struct lto_streamer_cache_d *cache, int ix)
+lto_streamer_cache_get (struct lto_streamer_cache_d *cache, unsigned ix)
 {
   gcc_assert (cache);
 
-  /* If the reader is requesting an index beyond the length of the
-     cache, it will need to read ahead.  Return NULL_TREE to indicate
-     that.  */
-  if ((unsigned) ix >= VEC_length (tree, cache->nodes))
-    return NULL_TREE;
+  /* Make sure we're not requesting something we don't have.  */
+  gcc_assert (ix < VEC_length (tree, cache->nodes));
 
-  return VEC_index (tree, cache->nodes, (unsigned) ix);
+  return VEC_index (tree, cache->nodes, ix);
 }
 
 
@@ -538,13 +521,10 @@ lto_record_common_node (tree *nodep, VEC(tree, heap) **common_nodes,
 
   VEC_safe_push (tree, heap, *common_nodes, node);
 
-  if (tree_node_can_be_shared (node))
-    {
-      if (POINTER_TYPE_P (node)
-	  || TREE_CODE (node) == COMPLEX_TYPE
-	  || TREE_CODE (node) == ARRAY_TYPE)
-	lto_record_common_node (&TREE_TYPE (node), common_nodes, seen_nodes);
-    }
+  if (POINTER_TYPE_P (node)
+      || TREE_CODE (node) == COMPLEX_TYPE
+      || TREE_CODE (node) == ARRAY_TYPE)
+    lto_record_common_node (&TREE_TYPE (node), common_nodes, seen_nodes);
 }
 
 
@@ -607,7 +587,7 @@ preload_common_node (struct lto_streamer_cache_d *cache, tree t)
 {
   gcc_assert (t);
 
-  lto_streamer_cache_insert (cache, t, NULL, NULL);
+  lto_streamer_cache_insert (cache, t, NULL);
 
  /* The FIELD_DECLs of structures should be shared, so that every
     COMPONENT_REF uses the same tree node when referencing a field.
@@ -667,7 +647,6 @@ lto_streamer_cache_delete (struct lto_streamer_cache_d *c)
   htab_delete (c->node_map);
   free_alloc_pool (c->node_map_entries);
   VEC_free (tree, heap, c->nodes);
-  VEC_free (unsigned, heap, c->offsets);
   free (c);
 }
 

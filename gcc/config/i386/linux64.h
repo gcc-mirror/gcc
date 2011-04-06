@@ -24,12 +24,6 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
-#if TARGET_64BIT_DEFAULT
-#define TARGET_VERSION fprintf (stderr, " (x86-64 Linux/ELF)");
-#else
-#define TARGET_VERSION fprintf (stderr, " (i386 Linux/ELF)");
-#endif
-
 #define TARGET_OS_CPP_BUILTINS()				\
   do								\
     {								\

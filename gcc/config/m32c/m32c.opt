@@ -1,5 +1,5 @@
 ; Target Options for R8C/M16C/M32C
-; Copyright (C) 2005 2007
+; Copyright (C) 2005, 2007, 2011
 ; Free Software Foundation, Inc.
 ; Contributed by Red Hat.
 ;
@@ -40,5 +40,5 @@ Target RejectNegative Var(target_cpu,'3')
 -mcpu=m32c	Compile code for M32C variants
 
 memregs=
-Target RejectNegative Joined Var(target_memregs_string)
+Target RejectNegative Joined UInteger Var(target_memregs) Init(16)
 -memregs=	Number of memreg bytes (default: 16, range: 0..16)

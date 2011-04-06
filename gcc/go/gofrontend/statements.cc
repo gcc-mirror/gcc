@@ -29,6 +29,7 @@ extern "C"
 #include "types.h"
 #include "expressions.h"
 #include "gogo.h"
+#include "backend.h"
 #include "statements.h"
 
 // Class Statement.
@@ -517,7 +518,7 @@ Assignment_statement::do_check_types(Gogo*)
       && this->lhs_->map_index_expression() == NULL
       && !this->lhs_->is_sink_expression())
     {
-      if (!this->lhs_->type()->is_error_type())
+      if (!this->lhs_->type()->is_error())
 	this->report_error(_("invalid left hand side of assignment"));
       return;
     }
@@ -535,16 +536,8 @@ Assignment_statement::do_check_types(Gogo*)
       this->set_is_error();
     }
 
-  if (lhs_type->is_error_type()
-      || rhs_type->is_error_type()
-      || lhs_type->is_undefined()
-      || rhs_type->is_undefined())
-    {
-      // Make sure we get the error for an undefined type.
-      lhs_type->base();
-      rhs_type->base();
-      this->set_is_error();
-    }
+  if (lhs_type->is_error() || rhs_type->is_error())
+    this->set_is_error();
 }
 
 // Build a tree for an assignment statement.
@@ -568,8 +561,11 @@ Assignment_statement::do_get_tree(Translate_context* context)
   if (rhs_tree == error_mark_node)
     return error_mark_node;
 
-  return fold_build2_loc(this->location(), MODIFY_EXPR, void_type_node,
-			 lhs_tree, rhs_tree);
+  Bstatement* ret;
+  ret = context->backend()->assignment_statement(tree_to_expr(lhs_tree),
+						 tree_to_expr(rhs_tree),
+						 this->location());
+  return statement_to_tree(ret);
 }
 
 // Make an assignment statement.
@@ -638,7 +634,7 @@ class Assignment_operation_statement : public Statement
   { gcc_unreachable(); }
 
   Statement*
-  do_lower(Gogo*, Block*);
+  do_lower(Gogo*, Named_object*, Block*);
 
   tree
   do_get_tree(Translate_context*)
@@ -667,7 +663,8 @@ Assignment_operation_statement::do_traverse(Traverse* traverse)
 // statement.
 
 Statement*
-Assignment_operation_statement::do_lower(Gogo*, Block* enclosing)
+Assignment_operation_statement::do_lower(Gogo*, Named_object*,
+					 Block* enclosing)
 {
   source_location loc = this->location();
 
@@ -764,7 +761,7 @@ class Tuple_assignment_statement : public Statement
   { gcc_unreachable(); }
 
   Statement*
-  do_lower(Gogo*, Block*);
+  do_lower(Gogo*, Named_object*, Block*);
 
   tree
   do_get_tree(Translate_context*)
@@ -791,7 +788,7 @@ Tuple_assignment_statement::do_traverse(Traverse* traverse)
 // up into a set of single assignments.
 
 Statement*
-Tuple_assignment_statement::do_lower(Gogo*, Block* enclosing)
+Tuple_assignment_statement::do_lower(Gogo*, Named_object*, Block* enclosing)
 {
   source_location loc = this->location();
 
@@ -816,9 +813,9 @@ Tuple_assignment_statement::do_lower(Gogo*, Block* enclosing)
       gcc_assert(prhs != this->rhs_->end());
 
       if ((*plhs)->is_error_expression()
-	  || (*plhs)->type()->is_error_type()
+	  || (*plhs)->type()->is_error()
 	  || (*prhs)->is_error_expression()
-	  || (*prhs)->type()->is_error_type())
+	  || (*prhs)->type()->is_error())
 	continue;
 
       if ((*plhs)->is_sink_expression())
@@ -842,9 +839,9 @@ Tuple_assignment_statement::do_lower(Gogo*, Block* enclosing)
        ++plhs, ++prhs)
     {
       if ((*plhs)->is_error_expression()
-	  || (*plhs)->type()->is_error_type()
+	  || (*plhs)->type()->is_error()
 	  || (*prhs)->is_error_expression()
-	  || (*prhs)->type()->is_error_type())
+	  || (*prhs)->type()->is_error())
 	continue;
 
       if ((*plhs)->is_sink_expression())
@@ -891,7 +888,7 @@ public:
   { gcc_unreachable(); }
 
   Statement*
-  do_lower(Gogo*, Block*);
+  do_lower(Gogo*, Named_object*, Block*);
 
   tree
   do_get_tree(Translate_context*)
@@ -920,7 +917,8 @@ Tuple_map_assignment_statement::do_traverse(Traverse* traverse)
 // Lower a tuple map assignment.
 
 Statement*
-Tuple_map_assignment_statement::do_lower(Gogo*, Block* enclosing)
+Tuple_map_assignment_statement::do_lower(Gogo*, Named_object*,
+					 Block* enclosing)
 {
   source_location loc = this->location();
 
@@ -1037,7 +1035,7 @@ class Map_assignment_statement : public Statement
   { gcc_unreachable(); }
 
   Statement*
-  do_lower(Gogo*, Block*);
+  do_lower(Gogo*, Named_object*, Block*);
 
   tree
   do_get_tree(Translate_context*)
@@ -1066,7 +1064,7 @@ Map_assignment_statement::do_traverse(Traverse* traverse)
 // Lower a map assignment to a function call.
 
 Statement*
-Map_assignment_statement::do_lower(Gogo*, Block* enclosing)
+Map_assignment_statement::do_lower(Gogo*, Named_object*, Block* enclosing)
 {
   source_location loc = this->location();
 
@@ -1145,11 +1143,11 @@ Statement::make_map_assignment(Expression* map_index,
 class Tuple_receive_assignment_statement : public Statement
 {
  public:
-  Tuple_receive_assignment_statement(Expression* val, Expression* success,
-				     Expression* channel,
+  Tuple_receive_assignment_statement(Expression* val, Expression* closed,
+				     Expression* channel, bool for_select,
 				     source_location location)
     : Statement(STATEMENT_TUPLE_RECEIVE_ASSIGNMENT, location),
-      val_(val), success_(success), channel_(channel)
+      val_(val), closed_(closed), channel_(channel), for_select_(for_select)
   { }
 
  protected:
@@ -1161,7 +1159,7 @@ class Tuple_receive_assignment_statement : public Statement
   { gcc_unreachable(); }
 
   Statement*
-  do_lower(Gogo*, Block*);
+  do_lower(Gogo*, Named_object*, Block*);
 
   tree
   do_get_tree(Translate_context*)
@@ -1170,10 +1168,12 @@ class Tuple_receive_assignment_statement : public Statement
  private:
   // Lvalue which receives the value from the channel.
   Expression* val_;
-  // Lvalue which receives whether the read succeeded or failed.
-  Expression* success_;
+  // Lvalue which receives whether the channel is closed.
+  Expression* closed_;
   // The channel on which we receive the value.
   Expression* channel_;
+  // Whether this is for a select statement.
+  bool for_select_;
 };
 
 // Traversal.
@@ -1182,7 +1182,7 @@ int
 Tuple_receive_assignment_statement::do_traverse(Traverse* traverse)
 {
   if (this->traverse_expression(traverse, &this->val_) == TRAVERSE_EXIT
-      || this->traverse_expression(traverse, &this->success_) == TRAVERSE_EXIT)
+      || this->traverse_expression(traverse, &this->closed_) == TRAVERSE_EXIT)
     return TRAVERSE_EXIT;
   return this->traverse_expression(traverse, &this->channel_);
 }
@@ -1190,7 +1190,8 @@ Tuple_receive_assignment_statement::do_traverse(Traverse* traverse)
 // Lower to a function call.
 
 Statement*
-Tuple_receive_assignment_statement::do_lower(Gogo*, Block* enclosing)
+Tuple_receive_assignment_statement::do_lower(Gogo*, Named_object*,
+					     Block* enclosing)
 {
   source_location loc = this->location();
 
@@ -1212,19 +1213,20 @@ Tuple_receive_assignment_statement::do_lower(Gogo*, Block* enclosing)
   // evaluated in the right order.
   Move_ordered_evals moe(b);
   this->val_->traverse_subexpressions(&moe);
-  this->success_->traverse_subexpressions(&moe);
+  this->closed_->traverse_subexpressions(&moe);
 
   // var val_temp ELEMENT_TYPE
   Temporary_statement* val_temp =
     Statement::make_temporary(channel_type->element_type(), NULL, loc);
   b->add_statement(val_temp);
 
-  // var success_temp bool
-  Temporary_statement* success_temp =
+  // var closed_temp bool
+  Temporary_statement* closed_temp =
     Statement::make_temporary(Type::lookup_bool_type(), NULL, loc);
-  b->add_statement(success_temp);
+  b->add_statement(closed_temp);
 
   // func chanrecv2(c chan T, val *T) bool
+  // func chanrecv3(c chan T, val *T) bool (if for_select)
   source_location bloc = BUILTINS_LOCATION;
   Typed_identifier_list* param_types = new Typed_identifier_list();
   param_types->push_back(Typed_identifier("c", channel_type, bloc));
@@ -1236,18 +1238,28 @@ Tuple_receive_assignment_statement::do_lower(Gogo*, Block* enclosing)
 
   Function_type* fntype = Type::make_function_type(NULL, param_types,
 						   ret_types, bloc);
-  Named_object* chanrecv2 =
-    Named_object::make_function_declaration("chanrecv2", NULL, fntype, bloc);
-  chanrecv2->func_declaration_value()->set_asm_name("runtime.chanrecv2");
+  Named_object* chanrecv;
+  if (!this->for_select_)
+    {
+      chanrecv = Named_object::make_function_declaration("chanrecv2", NULL,
+							 fntype, bloc);
+      chanrecv->func_declaration_value()->set_asm_name("runtime.chanrecv2");
+    }
+  else
+    {
+      chanrecv = Named_object::make_function_declaration("chanrecv3", NULL,
+							 fntype, bloc);
+      chanrecv->func_declaration_value()->set_asm_name("runtime.chanrecv3");
+    }
 
-  // success_temp = chanrecv2(channel, &val_temp)
-  Expression* func = Expression::make_func_reference(chanrecv2, NULL, loc);
+  // closed_temp = chanrecv[23](channel, &val_temp)
+  Expression* func = Expression::make_func_reference(chanrecv, NULL, loc);
   Expression_list* params = new Expression_list();
   params->push_back(this->channel_);
   Expression* ref = Expression::make_temporary_reference(val_temp, loc);
   params->push_back(Expression::make_unary(OPERATOR_AND, ref, loc));
   Expression* call = Expression::make_call(func, params, false, loc);
-  ref = Expression::make_temporary_reference(success_temp, loc);
+  ref = Expression::make_temporary_reference(closed_temp, loc);
   Statement* s = Statement::make_assignment(ref, call, loc);
   b->add_statement(s);
 
@@ -1256,9 +1268,9 @@ Tuple_receive_assignment_statement::do_lower(Gogo*, Block* enclosing)
   s = Statement::make_assignment(this->val_, ref, loc);
   b->add_statement(s);
 
-  // success = success_temp
-  ref = Expression::make_temporary_reference(success_temp, loc);
-  s = Statement::make_assignment(this->success_, ref, loc);
+  // closed = closed_temp
+  ref = Expression::make_temporary_reference(closed_temp, loc);
+  s = Statement::make_assignment(this->closed_, ref, loc);
   b->add_statement(s);
 
   return Statement::make_block_statement(b, loc);
@@ -1267,12 +1279,13 @@ Tuple_receive_assignment_statement::do_lower(Gogo*, Block* enclosing)
 // Make a nonblocking receive statement.
 
 Statement*
-Statement::make_tuple_receive_assignment(Expression* val, Expression* success,
+Statement::make_tuple_receive_assignment(Expression* val, Expression* closed,
 					 Expression* channel,
+					 bool for_select,
 					 source_location location)
 {
-  return new Tuple_receive_assignment_statement(val, success, channel,
-						location);
+  return new Tuple_receive_assignment_statement(val, closed, channel,
+						for_select, location);
 }
 
 // An assignment to a pair of values from a type guard.  This is a
@@ -1297,7 +1310,7 @@ class Tuple_type_guard_assignment_statement : public Statement
   { gcc_unreachable(); }
 
   Statement*
-  do_lower(Gogo*, Block*);
+  do_lower(Gogo*, Named_object*, Block*);
 
   tree
   do_get_tree(Translate_context*)
@@ -1338,14 +1351,15 @@ Tuple_type_guard_assignment_statement::do_traverse(Traverse* traverse)
 // Lower to a function call.
 
 Statement*
-Tuple_type_guard_assignment_statement::do_lower(Gogo*, Block* enclosing)
+Tuple_type_guard_assignment_statement::do_lower(Gogo*, Named_object*,
+						Block* enclosing)
 {
   source_location loc = this->location();
 
   Type* expr_type = this->expr_->type();
   if (expr_type->interface_type() == NULL)
     {
-      if (!expr_type->is_error_type() && !this->type_->is_error_type())
+      if (!expr_type->is_error() && !this->type_->is_error())
 	this->report_error(_("type assertion only valid for interface types"));
       return Statement::make_error_statement(loc);
     }
@@ -1643,7 +1657,7 @@ class Inc_dec_statement : public Statement
   { gcc_unreachable(); }
 
   Statement*
-  do_lower(Gogo*, Block*);
+  do_lower(Gogo*, Named_object*, Block*);
 
   tree
   do_get_tree(Translate_context*)
@@ -1659,7 +1673,7 @@ class Inc_dec_statement : public Statement
 // Lower to += or -=.
 
 Statement*
-Inc_dec_statement::do_lower(Gogo*, Block*)
+Inc_dec_statement::do_lower(Gogo*, Named_object*, Block*)
 {
   source_location loc = this->location();
 
@@ -2276,10 +2290,7 @@ Thunk_statement::build_thunk(Gogo* gogo, const std::string& thunk_name,
 
       Expression_list* vals = new Expression_list();
       vals->push_back(Expression::make_boolean(false, location));
-      const Typed_identifier_list* results =
-	function->func_value()->type()->results();
-      gogo->add_statement(Statement::make_return_statement(results, vals,
-							  location));
+      gogo->add_statement(Statement::make_return_statement(vals, location));
     }
 
   // That is all the thunk has to do.
@@ -2429,69 +2440,76 @@ Return_statement::do_traverse_assignments(Traverse_assignments* tassign)
 // panic/recover work correctly.
 
 Statement*
-Return_statement::do_lower(Gogo*, Block* enclosing)
+Return_statement::do_lower(Gogo*, Named_object* function, Block* enclosing)
 {
-  if (this->vals_ == NULL)
+  if (this->is_lowered_)
     return this;
 
-  const Typed_identifier_list* results = this->results_;
-  if (results == NULL || results->empty())
-    return this;
+  Expression_list* vals = this->vals_;
+  this->vals_ = NULL;
+  this->is_lowered_ = true;
 
-  // If the current function has multiple return values, and we are
-  // returning a single call expression, split up the call expression.
-  size_t results_count = results->size();
-  if (results_count > 1
-      && this->vals_->size() == 1
-      && this->vals_->front()->call_expression() != NULL)
+  source_location loc = this->location();
+
+  size_t vals_count = vals == NULL ? 0 : vals->size();
+  Function::Results* results = function->func_value()->result_variables();
+  size_t results_count = results == NULL ? 0 : results->size();
+
+  if (vals_count == 0)
     {
-      Call_expression* call = this->vals_->front()->call_expression();
-      size_t count = results->size();
-      Expression_list* vals = new Expression_list;
-      for (size_t i = 0; i < count; ++i)
-	vals->push_back(Expression::make_call_result(call, i));
-      delete this->vals_;
-      this->vals_ = vals;
-    }
-
-  if (results->front().name().empty())
-    return this;
-
-  if (results_count != this->vals_->size())
-    {
-      // Presumably an error which will be reported in check_types.
+      if (results_count > 0 && !function->func_value()->results_are_named())
+	{
+	  this->report_error(_("not enough arguments to return"));
+	  return this;
+	}
       return this;
     }
 
-  // Assign to named return values and then return them.
+  if (results_count == 0)
+    {
+      this->report_error(_("return with value in function "
+			   "with no return type"));
+      return this;
+    }
 
-  source_location loc = this->location();
-  const Block* top = enclosing;
-  while (top->enclosing() != NULL)
-    top = top->enclosing();
+  // If the current function has multiple return values, and we are
+  // returning a single call expression, split up the call expression.
+  if (results_count > 1
+      && vals->size() == 1
+      && vals->front()->call_expression() != NULL)
+    {
+      Call_expression* call = vals->front()->call_expression();
+      delete vals;
+      vals = new Expression_list;
+      for (size_t i = 0; i < results_count; ++i)
+	vals->push_back(Expression::make_call_result(call, i));
+      vals_count = results_count;
+    }
 
-  const Bindings *bindings = top->bindings();
+  if (vals_count < results_count)
+    {
+      this->report_error(_("not enough arguments to return"));
+      return this;
+    }
+
+  if (vals_count > results_count)
+    {
+      this->report_error(_("too many values in return statement"));
+      return this;
+    }
+
   Block* b = new Block(enclosing, loc);
 
   Expression_list* lhs = new Expression_list();
   Expression_list* rhs = new Expression_list();
 
-  Expression_list::const_iterator pe = this->vals_->begin();
+  Expression_list::const_iterator pe = vals->begin();
   int i = 1;
-  for (Typed_identifier_list::const_iterator pr = results->begin();
+  for (Function::Results::const_iterator pr = results->begin();
        pr != results->end();
        ++pr, ++pe, ++i)
     {
-      Named_object* rv = bindings->lookup_local(pr->name());
-      if (rv == NULL || !rv->is_result_variable())
-	{
-	  // Presumably an error.
-	  delete b;
-	  delete lhs;
-	  delete rhs;
-	  return this;
-	}
-
+      Named_object* rv = *pr;
       Expression* e = *pe;
 
       // Check types now so that we give a good error message.  The
@@ -2533,185 +2551,48 @@ Return_statement::do_lower(Gogo*, Block* enclosing)
   else
     b->add_statement(Statement::make_tuple_assignment(lhs, rhs, loc));
 
-  b->add_statement(Statement::make_return_statement(this->results_, NULL,
-						    loc));
+  b->add_statement(this);
+
+  delete vals;
 
   return Statement::make_block_statement(b, loc);
 }
 
-// Determine types.
-
-void
-Return_statement::do_determine_types()
-{
-  if (this->vals_ == NULL)
-    return;
-  const Typed_identifier_list* results = this->results_;
-
-  Typed_identifier_list::const_iterator pt;
-  if (results != NULL)
-    pt = results->begin();
-  for (Expression_list::iterator pe = this->vals_->begin();
-       pe != this->vals_->end();
-       ++pe)
-    {
-      if (results == NULL || pt == results->end())
-	(*pe)->determine_type_no_context();
-      else
-	{
-	  Type_context context(pt->type(), false);
-	  (*pe)->determine_type(&context);
-	  ++pt;
-	}
-    }
-}
-
-// Check types.
-
-void
-Return_statement::do_check_types(Gogo*)
-{
-  if (this->vals_ == NULL)
-    return;
-
-  const Typed_identifier_list* results = this->results_;
-  if (results == NULL)
-    {
-      this->report_error(_("return with value in function "
-			   "with no return type"));
-      return;
-    }
-
-  int i = 1;
-  Typed_identifier_list::const_iterator pt = results->begin();
-  for (Expression_list::const_iterator pe = this->vals_->begin();
-       pe != this->vals_->end();
-       ++pe, ++pt, ++i)
-    {
-      if (pt == results->end())
-	{
-	  this->report_error(_("too many values in return statement"));
-	  return;
-	}
-      std::string reason;
-      if (!Type::are_assignable(pt->type(), (*pe)->type(), &reason))
-	{
-	  if (reason.empty())
-	    error_at(this->location(),
-		     "incompatible type for return value %d",
-		     i);
-	  else
-	    error_at(this->location(),
-		     "incompatible type for return value %d (%s)",
-		     i, reason.c_str());
-	  this->set_is_error();
-	}
-      else if (pt->type()->is_error_type()
-	       || (*pe)->type()->is_error_type()
-	       || pt->type()->is_undefined()
-	       || (*pe)->type()->is_undefined())
-	{
-	  // Make sure we get the error for an undefined type.
-	  pt->type()->base();
-	  (*pe)->type()->base();
-	  this->set_is_error();
-	}
-    }
-
-  if (pt != results->end())
-    this->report_error(_("not enough values in return statement"));
-}
-
-// Build a RETURN_EXPR tree.
+// Convert a return statement to the backend representation.
 
 tree
 Return_statement::do_get_tree(Translate_context* context)
 {
   Function* function = context->function()->func_value();
   tree fndecl = function->get_decl();
-  if (fndecl == error_mark_node || DECL_RESULT(fndecl) == error_mark_node)
-    return error_mark_node;
 
-  const Typed_identifier_list* results = this->results_;
-
-  if (this->vals_ == NULL)
+  Function::Results* results = function->result_variables();
+  std::vector<Bexpression*> retvals;
+  if (results != NULL && !results->empty())
     {
-      tree stmt_list = NULL_TREE;
-      tree retval = function->return_value(context->gogo(),
-					   context->function(),
-					   this->location(),
-					   &stmt_list);
-      tree set;
-      if (retval == NULL_TREE)
-	set = NULL_TREE;
-      else if (retval == error_mark_node)
-	return error_mark_node;
-      else
-	set = fold_build2_loc(this->location(), MODIFY_EXPR, void_type_node,
-			      DECL_RESULT(fndecl), retval);
-      append_to_statement_list(this->build_stmt_1(RETURN_EXPR, set),
-			       &stmt_list);
-      return stmt_list;
-    }
-  else if (this->vals_->size() == 1)
-    {
-      gcc_assert(!VOID_TYPE_P(TREE_TYPE(TREE_TYPE(fndecl))));
-      tree val = (*this->vals_->begin())->get_tree(context);
-      gcc_assert(results != NULL && results->size() == 1);
-      val = Expression::convert_for_assignment(context,
-					       results->begin()->type(),
-					       (*this->vals_->begin())->type(),
-					       val, this->location());
-      if (val == error_mark_node)
-	return error_mark_node;
-      tree set = build2(MODIFY_EXPR, void_type_node,
-			DECL_RESULT(fndecl), val);
-      SET_EXPR_LOCATION(set, this->location());
-      return this->build_stmt_1(RETURN_EXPR, set);
-    }
-  else
-    {
-      gcc_assert(!VOID_TYPE_P(TREE_TYPE(TREE_TYPE(fndecl))));
-      tree stmt_list = NULL_TREE;
-      tree rettype = TREE_TYPE(DECL_RESULT(fndecl));
-      tree retvar = create_tmp_var(rettype, "RESULT");
-      gcc_assert(results != NULL && results->size() == this->vals_->size());
-      Expression_list::const_iterator pv = this->vals_->begin();
-      Typed_identifier_list::const_iterator pr = results->begin();
-      for (tree field = TYPE_FIELDS(rettype);
-	   field != NULL_TREE;
-	   ++pv, ++pr, field = DECL_CHAIN(field))
+      retvals.reserve(results->size());
+      for (Function::Results::const_iterator p = results->begin();
+	   p != results->end();
+	   p++)
 	{
-	  gcc_assert(pv != this->vals_->end());
-	  tree val = (*pv)->get_tree(context);
-	  val = Expression::convert_for_assignment(context, pr->type(),
-						   (*pv)->type(), val,
-						   this->location());
-	  if (val == error_mark_node)
-	    return error_mark_node;
-	  tree set = build2(MODIFY_EXPR, void_type_node,
-			    build3(COMPONENT_REF, TREE_TYPE(field),
-				   retvar, field, NULL_TREE),
-			    val);
-	  SET_EXPR_LOCATION(set, this->location());
-	  append_to_statement_list(set, &stmt_list);
+	  tree rv = (*p)->get_tree(context->gogo(), context->function());
+	  retvals.push_back(tree_to_expr(rv));
 	}
-      tree set = build2(MODIFY_EXPR, void_type_node, DECL_RESULT(fndecl),
-			retvar);
-      append_to_statement_list(this->build_stmt_1(RETURN_EXPR, set),
-			       &stmt_list);
-      return stmt_list;
     }
+
+  Bstatement* ret;
+  ret = context->backend()->return_statement(tree_to_function(fndecl),
+					     retvals, this->location());
+  return statement_to_tree(ret);
 }
 
 // Make a return statement.
 
 Statement*
-Statement::make_return_statement(const Typed_identifier_list* results,
-				 Expression_list* vals,
+Statement::make_return_statement(Expression_list* vals,
 				 source_location location)
 {
-  return new Return_statement(results, vals, location);
+  return new Return_statement(vals, location);
 }
 
 // A break or continue statement.
@@ -2956,12 +2837,8 @@ class If_statement : public Statement
 int
 If_statement::do_traverse(Traverse* traverse)
 {
-  if (this->cond_ != NULL)
-    {
-      if (this->traverse_expression(traverse, &this->cond_) == TRAVERSE_EXIT)
-	return TRAVERSE_EXIT;
-    }
-  if (this->then_block_->traverse(traverse) == TRAVERSE_EXIT)
+  if (this->traverse_expression(traverse, &this->cond_) == TRAVERSE_EXIT
+      || this->then_block_->traverse(traverse) == TRAVERSE_EXIT)
     return TRAVERSE_EXIT;
   if (this->else_block_ != NULL)
     {
@@ -2974,11 +2851,8 @@ If_statement::do_traverse(Traverse* traverse)
 void
 If_statement::do_determine_types()
 {
-  if (this->cond_ != NULL)
-    {
-      Type_context context(Type::lookup_bool_type(), false);
-      this->cond_->determine_type(&context);
-    }
+  Type_context context(Type::lookup_bool_type(), false);
+  this->cond_->determine_type(&context);
   this->then_block_->determine_types();
   if (this->else_block_ != NULL)
     this->else_block_->determine_types();
@@ -2989,14 +2863,11 @@ If_statement::do_determine_types()
 void
 If_statement::do_check_types(Gogo*)
 {
-  if (this->cond_ != NULL)
-    {
-      Type* type = this->cond_->type();
-      if (type->is_error_type())
-	this->set_is_error();
-      else if (!type->is_boolean_type())
-	this->report_error(_("expected boolean expression"));
-    }
+  Type* type = this->cond_->type();
+  if (type->is_error())
+    this->set_is_error();
+  else if (!type->is_boolean_type())
+    this->report_error(_("expected boolean expression"));
 }
 
 // Whether the overall statement may fall through.
@@ -3014,12 +2885,9 @@ If_statement::do_may_fall_through() const
 tree
 If_statement::do_get_tree(Translate_context* context)
 {
-  gcc_assert(this->cond_ == NULL
-	     || this->cond_->type()->is_boolean_type()
-	     || this->cond_->type()->is_error_type());
-  tree cond_tree = (this->cond_ == NULL
-		    ? boolean_true_node
-		    : this->cond_->get_tree(context));
+  gcc_assert(this->cond_->type()->is_boolean_type()
+	     || this->cond_->type()->is_error());
+  tree cond_tree = this->cond_->get_tree(context);
   tree then_tree = this->then_block_->get_tree(context);
   tree else_tree = (this->else_block_ == NULL
 		    ? NULL_TREE
@@ -3543,13 +3411,13 @@ Switch_statement::do_traverse(Traverse* traverse)
 // of if statements.
 
 Statement*
-Switch_statement::do_lower(Gogo*, Block* enclosing)
+Switch_statement::do_lower(Gogo*, Named_object*, Block* enclosing)
 {
   source_location loc = this->location();
 
   if (this->val_ != NULL
       && (this->val_->is_error_expression()
-	  || this->val_->type()->is_error_type()))
+	  || this->val_->type()->is_error()))
     return Statement::make_error_statement(loc);
 
   if (this->val_ != NULL
@@ -3884,7 +3752,7 @@ Type_switch_statement::do_traverse(Traverse* traverse)
 // equality testing.
 
 Statement*
-Type_switch_statement::do_lower(Gogo*, Block* enclosing)
+Type_switch_statement::do_lower(Gogo*, Named_object*, Block* enclosing)
 {
   const source_location loc = this->location();
 
@@ -3987,6 +3855,90 @@ Statement::make_type_switch_statement(Named_object* var, Expression* expr,
   return new Type_switch_statement(var, expr, location);
 }
 
+// Class Send_statement.
+
+// Traversal.
+
+int
+Send_statement::do_traverse(Traverse* traverse)
+{
+  if (this->traverse_expression(traverse, &this->channel_) == TRAVERSE_EXIT)
+    return TRAVERSE_EXIT;
+  return this->traverse_expression(traverse, &this->val_);
+}
+
+// Determine types.
+
+void
+Send_statement::do_determine_types()
+{
+  this->channel_->determine_type_no_context();
+  Type* type = this->channel_->type();
+  Type_context context;
+  if (type->channel_type() != NULL)
+    context.type = type->channel_type()->element_type();
+  this->val_->determine_type(&context);
+}
+
+// Check types.
+
+void
+Send_statement::do_check_types(Gogo*)
+{
+  Type* type = this->channel_->type();
+  if (type->is_error())
+    {
+      this->set_is_error();
+      return;
+    }
+  Channel_type* channel_type = type->channel_type();
+  if (channel_type == NULL)
+    {
+      error_at(this->location(), "left operand of %<<-%> must be channel");
+      this->set_is_error();
+      return;
+    }
+  Type* element_type = channel_type->element_type();
+  if (!Type::are_assignable(element_type, this->val_->type(), NULL))
+    {
+      this->report_error(_("incompatible types in send"));
+      return;
+    }
+  if (!channel_type->may_send())
+    {
+      this->report_error(_("invalid send on receive-only channel"));
+      return;
+    }
+}
+
+// Get a tree for a send statement.
+
+tree
+Send_statement::do_get_tree(Translate_context* context)
+{
+  tree channel = this->channel_->get_tree(context);
+  tree val = this->val_->get_tree(context);
+  if (channel == error_mark_node || val == error_mark_node)
+    return error_mark_node;
+  Channel_type* channel_type = this->channel_->type()->channel_type();
+  val = Expression::convert_for_assignment(context,
+					   channel_type->element_type(),
+					   this->val_->type(),
+					   val,
+					   this->location());
+  return Gogo::send_on_channel(channel, val, true, this->for_select_,
+			       this->location());
+}
+
+// Make a send statement.
+
+Send_statement*
+Statement::make_send_statement(Expression* channel, Expression* val,
+			       source_location location)
+{
+  return new Send_statement(channel, val, location);
+}
+
 // Class Select_clauses::Select_clause.
 
 // Traversal.
@@ -4008,6 +3960,11 @@ Select_clauses::Select_clause::traverse(Traverse* traverse)
 	  if (Expression::traverse(&this->val_, traverse) == TRAVERSE_EXIT)
 	    return TRAVERSE_EXIT;
 	}
+      if (this->closed_ != NULL)
+	{
+	  if (Expression::traverse(&this->closed_, traverse) == TRAVERSE_EXIT)
+	    return TRAVERSE_EXIT;
+	}
     }
   if (this->statements_ != NULL)
     {
@@ -4022,7 +3979,8 @@ Select_clauses::Select_clause::traverse(Traverse* traverse)
 // receive statements to the clauses.
 
 void
-Select_clauses::Select_clause::lower(Block* b)
+Select_clauses::Select_clause::lower(Gogo* gogo, Named_object* function,
+				     Block* b)
 {
   if (this->is_default_)
     {
@@ -4043,7 +4001,7 @@ Select_clauses::Select_clause::lower(Block* b)
   // If this is a send clause, evaluate the value to send before the
   // select statement.
   Temporary_statement* val_temp = NULL;
-  if (this->is_send_)
+  if (this->is_send_ && !this->val_->is_constant())
     {
       val_temp = Statement::make_temporary(NULL, this->val_, loc);
       b->add_statement(val_temp);
@@ -4054,11 +4012,44 @@ Select_clauses::Select_clause::lower(Block* b)
   Expression* ref = Expression::make_temporary_reference(channel_temp, loc);
   if (this->is_send_)
     {
-      Expression* ref2 = Expression::make_temporary_reference(val_temp, loc);
-      Send_expression* send = Expression::make_send(ref, ref2, loc);
-      send->discarding_value();
+      Expression* ref2;
+      if (val_temp == NULL)
+	ref2 = this->val_;
+      else
+	ref2 = Expression::make_temporary_reference(val_temp, loc);
+      Send_statement* send = Statement::make_send_statement(ref, ref2, loc);
       send->set_for_select();
-      init->add_statement(Statement::make_statement(send));
+      init->add_statement(send);
+    }
+  else if (this->closed_ != NULL && !this->closed_->is_sink_expression())
+    {
+      gcc_assert(this->var_ == NULL && this->closedvar_ == NULL);
+      if (this->val_ == NULL)
+	this->val_ = Expression::make_sink(loc);
+      Statement* s = Statement::make_tuple_receive_assignment(this->val_,
+							      this->closed_,
+							      ref, true, loc);
+      init->add_statement(s);
+    }
+  else if (this->closedvar_ != NULL)
+    {
+      gcc_assert(this->val_ == NULL);
+      Expression* val;
+      if (this->var_ == NULL)
+	val = Expression::make_sink(loc);
+      else
+	val = Expression::make_var_reference(this->var_, loc);
+      Expression* closed = Expression::make_var_reference(this->closedvar_,
+							  loc);
+      Statement* s = Statement::make_tuple_receive_assignment(val, closed, ref,
+							      true, loc);
+      // We have to put S in STATEMENTS_, because that is where the
+      // variables are declared.
+      gcc_assert(this->statements_ != NULL);
+      this->statements_->add_statement_at_front(s);
+      // We have to lower STATEMENTS_ again, to lower the tuple
+      // receive assignment we just added.
+      gogo->lower_block(function, this->statements_);
     }
   else
     {
@@ -4077,10 +4068,12 @@ Select_clauses::Select_clause::lower(Block* b)
 	}
       else
 	{
-	  recv->discarding_value();
 	  init->add_statement(Statement::make_statement(recv));
 	}
     }
+
+  // Lower any statements we just created.
+  gogo->lower_block(function, init);
 
   if (this->statements_ != NULL)
     init->add_statement(Statement::make_block_statement(this->statements_,
@@ -4148,12 +4141,12 @@ Select_clauses::traverse(Traverse* traverse)
 // receive statements to the clauses.
 
 void
-Select_clauses::lower(Block* b)
+Select_clauses::lower(Gogo* gogo, Named_object* function, Block* b)
 {
   for (Clauses::iterator p = this->clauses_.begin();
        p != this->clauses_.end();
        ++p)
-    p->lower(b);
+    p->lower(gogo, function, b);
 }
 
 // Determine types.
@@ -4390,12 +4383,13 @@ Select_statement::break_label()
 // explicit statements in the clauses.
 
 Statement*
-Select_statement::do_lower(Gogo*, Block* enclosing)
+Select_statement::do_lower(Gogo* gogo, Named_object* function,
+			   Block* enclosing)
 {
   if (this->is_lowered_)
     return this;
   Block* b = new Block(enclosing, this->location());
-  this->clauses_->lower(b);
+  this->clauses_->lower(gogo, function, b);
   this->is_lowered_ = true;
   b->add_statement(this);
   return Statement::make_block_statement(b, this->location());
@@ -4447,7 +4441,7 @@ For_statement::do_traverse(Traverse* traverse)
 // complex statements make it easier to handle garbage collection.
 
 Statement*
-For_statement::do_lower(Gogo*, Block* enclosing)
+For_statement::do_lower(Gogo*, Named_object*, Block* enclosing)
 {
   Statement* s;
   source_location loc = this->location();
@@ -4578,7 +4572,7 @@ For_range_statement::do_traverse(Traverse* traverse)
 // statements.
 
 Statement*
-For_range_statement::do_lower(Gogo* gogo, Block* enclosing)
+For_range_statement::do_lower(Gogo* gogo, Named_object*, Block* enclosing)
 {
   Type* range_type = this->range_->type();
   if (range_type->points_to() != NULL
@@ -4608,7 +4602,7 @@ For_range_statement::do_lower(Gogo* gogo, Block* enclosing)
       index_type = range_type->channel_type()->element_type();
       if (this->value_var_ != NULL)
 	{
-	  if (!this->value_var_->type()->is_error_type())
+	  if (!this->value_var_->type()->is_error())
 	    this->report_error(_("too many variables for range clause "
 				 "with channel"));
 	  return Statement::make_error_statement(this->location());
@@ -5170,7 +5164,7 @@ For_range_statement::lower_range_map(Gogo* gogo,
 // Lower a for range over a channel.
 
 void
-For_range_statement::lower_range_channel(Gogo* gogo,
+For_range_statement::lower_range_channel(Gogo*,
 					 Block*,
 					 Block* body_block,
 					 Named_object* range_object,
@@ -5188,12 +5182,11 @@ For_range_statement::lower_range_channel(Gogo* gogo,
 
   // The loop we generate:
   //   for {
-  //           index_temp = <-range
-  //           if closed(range) {
+  //           index_temp, ok_temp = <-range
+  //           if !ok_temp {
   //                   break
   //           }
   //           index = index_temp
-  //           value = value_temp
   //           original body
   //   }
 
@@ -5204,26 +5197,30 @@ For_range_statement::lower_range_channel(Gogo* gogo,
   *ppost = NULL;
 
   // Set *PITER_INIT to
-  //   index_temp = <-range
-  //   if closed(range) {
+  //   index_temp, ok_temp = <-range
+  //   if !ok_temp {
   //           break
   //   }
 
   Block* iter_init = new Block(body_block, loc);
 
-  Expression* ref = this->make_range_ref(range_object, range_temp, loc);
-  Expression* cond = this->call_builtin(gogo, "closed", ref, loc);
+  Temporary_statement* ok_temp =
+    Statement::make_temporary(Type::lookup_bool_type(), NULL, loc);
+  iter_init->add_statement(ok_temp);
 
-  ref = this->make_range_ref(range_object, range_temp, loc);
-  Expression* recv = Expression::make_receive(ref, loc);
-  ref = Expression::make_temporary_reference(index_temp, loc);
-  Statement* s = Statement::make_assignment(ref, recv, loc);
+  Expression* cref = this->make_range_ref(range_object, range_temp, loc);
+  Expression* iref = Expression::make_temporary_reference(index_temp, loc);
+  Expression* oref = Expression::make_temporary_reference(ok_temp, loc);
+  Statement* s = Statement::make_tuple_receive_assignment(iref, oref, cref,
+							  false, loc);
   iter_init->add_statement(s);
 
   Block* then_block = new Block(iter_init, loc);
   s = Statement::make_break_statement(this->break_label(), loc);
   then_block->add_statement(s);
 
+  oref = Expression::make_temporary_reference(ok_temp, loc);
+  Expression* cond = Expression::make_unary(OPERATOR_NOT, oref, loc);
   s = Statement::make_if_statement(cond, then_block, NULL, loc);
   iter_init->add_statement(s);
 

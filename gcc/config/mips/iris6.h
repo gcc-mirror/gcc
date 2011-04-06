@@ -23,9 +23,6 @@ along with GCC; see the file COPYING3.  If not see
 #undef TARGET_IRIX6
 #define TARGET_IRIX6 1
 
-#undef MACHINE_TYPE
-#define MACHINE_TYPE "SGI running IRIX 6.5"
-
 /* Default to -mabi=n32 and -mips3.  */
 #undef MULTILIB_DEFAULTS
 #define MULTILIB_DEFAULTS { "mabi=n32" }

@@ -1,5 +1,5 @@
 ; Options for the Ada front end.
-; Copyright (C) 2003, 2007, 2008, 2010 Free Software Foundation, Inc.
+; Copyright (C) 2003, 2007, 2008, 2010, 2011 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -93,12 +93,6 @@ Ada RejectNegative
 nostdlib
 Ada
 ; Don't look for object files
-
-feliminate-unused-debug-types
-Ada
-; Effect documented for C - intercepted for Ada to force the associated flag
-; not to be set by default, as it currently eliminates unreferenced parallel
-; types we need for encoding descriptions to the debugger.
 
 fRTS=
 Ada Joined RejectNegative

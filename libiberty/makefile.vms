@@ -9,7 +9,7 @@
 
 OBJS=getopt.obj,obstack.obj,xexit.obj,xmalloc.obj,hex.obj,\
     getopt1.obj,cplus-dem.obj,cp-demangle.obj,cp-demint.obj,\
-    asprintf.obj vasprintf.obj,mkstemps.obj,\
+    asprintf.obj vasprintf.obj,mkstemps.obj,filename_cmp.obj,\
     concat.obj,getruntime.obj,getpagesize.obj,getpwd.obj,xstrerror.obj,\
     xmemdup.obj,xstrdup.obj,xatexit.obj,choose-temp.obj,fnmatch.obj,\
     objalloc.obj,safe-ctype.obj,hashtab.obj,lbasename.obj,argv.obj,\

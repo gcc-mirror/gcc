@@ -10,30 +10,46 @@ typedef _Bool bool;
 typedef unsigned char byte;
 typedef struct __go_channel chan;
 
-/* Do a nonblocking channel receive.  */
+/* Do a channel receive with closed status.  */
 
-func chanrecv2(c *chan, val *byte) (pres bool) {
+func chanrecv2(c *chan, val *byte) (received bool) {
 	if (c->element_size > 8) {
-		return __go_receive_nonblocking_big(c, val);
+		return __go_receive_big(c, val, 0);
 	} else {
-		struct __go_receive_nonblocking_small rs;
 		union {
 			char b[8];
 			uint64_t v;
 		} u;
 
-		rs = __go_receive_nonblocking_small (c);
-		if (!rs.__success) {
-			__builtin_memset(val, 0, c->element_size);
-			return 0;
-		}
-		u.v = rs.__val;
+		u.v = __go_receive_small_closed(c, 0, &received);
 #ifndef WORDS_BIGENDIAN
 		__builtin_memcpy(val, u.b, c->element_size);
 #else
 		__builtin_memcpy(val, u.b + 8 - c->element_size,
 				 c->element_size);
 #endif
-		return 1;
+		return received;
+	}
+}
+
+/* Do a channel receive with closed status for a select statement.  */
+
+func chanrecv3(c *chan, val *byte) (received bool) {
+	if (c->element_size > 8) {
+		return __go_receive_big(c, val, 1);
+	} else {
+		union {
+			char b[8];
+			uint64_t v;
+		} u;
+
+		u.v = __go_receive_small_closed(c, 1, &received);
+#ifndef WORDS_BIGENDIAN
+		__builtin_memcpy(val, u.b, c->element_size);
+#else
+		__builtin_memcpy(val, u.b + 8 - c->element_size,
+				 c->element_size);
+#endif
+		return received;
 	}
 }

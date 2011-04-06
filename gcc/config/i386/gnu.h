@@ -23,9 +23,6 @@ along with GCC.  If not, see <http://www.gnu.org/licenses/>.
 #undef GLIBC_DYNAMIC_LINKER
 #define GLIBC_DYNAMIC_LINKER "/lib/ld.so"
 
-#undef TARGET_VERSION
-#define TARGET_VERSION fprintf (stderr, " (i386 GNU)");
-
 #undef CPP_SPEC
 #define CPP_SPEC "%{pthread:-D_REENTRANT} %{posix:-D_POSIX_SOURCE}"
 

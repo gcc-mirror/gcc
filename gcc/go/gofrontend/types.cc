@@ -475,11 +475,14 @@ Type::are_compatible_for_binop(const Type* lhs, const Type* rhs)
 }
 
 // Return true if a value with type RHS may be assigned to a variable
-// with type LHS.  If REASON is not NULL, set *REASON to the reason
-// the types are not assignable.
+// with type LHS.  If CHECK_HIDDEN_FIELDS is true, check whether any
+// hidden fields are modified.  If REASON is not NULL, set *REASON to
+// the reason the types are not assignable.
 
 bool
-Type::are_assignable(const Type* lhs, const Type* rhs, std::string* reason)
+Type::are_assignable_check_hidden(const Type* lhs, const Type* rhs,
+				  bool check_hidden_fields,
+				  std::string* reason)
 {
   // Do some checks first.  Make sure the types are defined.
   if (rhs != NULL
@@ -499,7 +502,9 @@ Type::are_assignable(const Type* lhs, const Type* rhs, std::string* reason)
 
       // All fields of a struct must be exported, or the assignment
       // must be in the same package.
-      if (rhs != NULL && rhs->forwarded()->forward_declaration_type() == NULL)
+      if (check_hidden_fields
+	  && rhs != NULL
+	  && rhs->forwarded()->forward_declaration_type() == NULL)
 	{
 	  if (lhs->has_hidden_fields(NULL, reason)
 	      || rhs->has_hidden_fields(NULL, reason))
@@ -591,6 +596,25 @@ Type::are_assignable(const Type* lhs, const Type* rhs, std::string* reason)
     }
 
   return false;
+}
+
+// Return true if a value with type RHS may be assigned to a variable
+// with type LHS.  If REASON is not NULL, set *REASON to the reason
+// the types are not assignable.
+
+bool
+Type::are_assignable(const Type* lhs, const Type* rhs, std::string* reason)
+{
+  return Type::are_assignable_check_hidden(lhs, rhs, true, reason);
+}
+
+// Like are_assignable but don't check for hidden fields.
+
+bool
+Type::are_assignable_hidden_ok(const Type* lhs, const Type* rhs,
+			       std::string* reason)
+{
+  return Type::are_assignable_check_hidden(lhs, rhs, false, reason);
 }
 
 // Return true if a value with type RHS may be converted to type LHS.
@@ -3461,6 +3485,14 @@ Struct_type::do_verify()
 	  if (t->named_type() != NULL && t->points_to() != NULL)
 	    {
 	      error_at(p->location(), "embedded type may not be a pointer");
+	      p->set_type(Type::make_error_type());
+	      return false;
+	    }
+	  if (t->points_to() != NULL
+	      && t->points_to()->interface_type() != NULL)
+	    {
+	      error_at(p->location(),
+		       "embedded type may not be pointer to interface");
 	      p->set_type(Type::make_error_type());
 	      return false;
 	    }
@@ -7021,9 +7053,8 @@ Named_type::do_verify()
   if (this->local_methods_ != NULL)
     {
       Struct_type* st = this->type_->struct_type();
-      Interface_type* it = this->type_->interface_type();
       bool found_dup = false;
-      if (st != NULL || it != NULL)
+      if (st != NULL)
 	{
 	  for (Bindings::const_declarations_iterator p =
 		 this->local_methods_->begin_declarations();
@@ -7035,13 +7066,6 @@ Named_type::do_verify()
 		{
 		  error_at(p->second->location(),
 			   "method %qs redeclares struct field name",
-			   Gogo::message_name(name).c_str());
-		  found_dup = true;
-		}
-	      if (it != NULL && it->find_method(name) != NULL)
-		{
-		  error_at(p->second->location(),
-			   "method %qs redeclares interface method name",
 			   Gogo::message_name(name).c_str());
 		  found_dup = true;
 		}
@@ -7900,10 +7924,7 @@ Type::build_one_stub_method(Gogo* gogo, Method* method,
 	  for (size_t i = 0; i < count; ++i)
 	    retvals->push_back(Expression::make_call_result(call, i));
 	}
-      const Function* function = gogo->current_function()->func_value();
-      const Typed_identifier_list* results = function->type()->results();
-      Statement* retstat = Statement::make_return_statement(results, retvals,
-							    location);
+      Statement* retstat = Statement::make_return_statement(retvals, location);
       gogo->add_statement(retstat);
     }
 }
@@ -7987,7 +8008,7 @@ Type::bind_field_or_method(Gogo* gogo, const Type* type, Expression* expr,
 
   const Named_type* nt = type->deref()->named_type();
   const Struct_type* st = type->deref()->struct_type();
-  const Interface_type* it = type->deref()->interface_type();
+  const Interface_type* it = type->interface_type();
 
   // If this is a pointer to a pointer, then it is possible that the
   // pointed-to type has methods.
@@ -8003,7 +8024,6 @@ Type::bind_field_or_method(Gogo* gogo, const Type* type, Expression* expr,
 	return Expression::make_error(location);
       nt = type->points_to()->named_type();
       st = type->points_to()->struct_type();
-      it = type->points_to()->interface_type();
     }
 
   bool receiver_can_be_pointer = (expr->type()->points_to() != NULL
@@ -8156,7 +8176,7 @@ Type::find_field_or_method(const Type* type,
     }
 
   // Interface types can have methods.
-  const Interface_type* it = type->deref()->interface_type();
+  const Interface_type* it = type->interface_type();
   if (it != NULL && it->find_method(name) != NULL)
     {
       *is_method = true;
@@ -8318,11 +8338,11 @@ Type::is_unexported_field_or_method(Gogo* gogo, const Type* type,
 	}
     }
 
-  type = type->deref();
-
   const Interface_type* it = type->interface_type();
   if (it != NULL && it->is_unexported_method(gogo, name))
     return true;
+
+  type = type->deref();
 
   const Struct_type* st = type->struct_type();
   if (st != NULL && st->is_unexported_local_field(gogo, name))

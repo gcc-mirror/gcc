@@ -1,7 +1,7 @@
 // { dg-do compile }
 // { dg-options "-std=gnu++0x" }
 
-// Copyright (C) 2010 Free Software Foundation
+// Copyright (C) 2010, 2011 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -25,13 +25,13 @@
 
 struct A
 {
-  void operator()(void* p) const { }
+  void operator()(void*) const { }
 };
 
 struct B
 {
   typedef char* pointer;
-  void operator()(pointer p) const { }
+  void operator()(pointer) const { }
 };
 
 int main()

@@ -166,7 +166,7 @@ and warnings}.
 -fwhole-file -fsecond-underscore @gol
 -fbounds-check -fcheck-array-temporaries  -fmax-array-constructor =@var{n} @gol
 -fcheck=@var{<all|array-temps|bounds|do|mem|pointer|recursion>} @gol
--fcoarray=@var{<none|single>} -fmax-stack-var-size=@var{n} @gol
+-fcoarray=@var{<none|single|lib>} -fmax-stack-var-size=@var{n} @gol
 -fpack-derived  -frepack-arrays  -fshort-enums  -fexternal-blas @gol
 -fblas-matmul-limit=@var{n} -frecursive -finit-local-zero @gol
 -finit-integer=@var{n} -finit-real=@var{<zero|inf|-inf|nan|snan>} @gol
@@ -1249,6 +1249,10 @@ statements will produce a compile-time error. (Default)
 
 @item @samp{single}
 Single-image mode, i.e. @code{num_images()} is always one.
+
+@item @samp{lib}
+Library-based coarray parallelization; a suitable GNU Fortran coarray
+library needs to be linked.
 @end table
 
 
@@ -1468,13 +1472,24 @@ need to be in effect.
 An allocatable left-hand side of an intrinsic assignment is automatically
 (re)allocated if it is either unallocated or has a different shape. The
 option is enabled by default except when @option{-std=f95} is given.
+
+@item -faggressive-function-elimination
+@opindex @code{faggressive-function-elimination}
+@cindex Elimination of functions with identical argument lists
+Functions with identical argument lists are eliminated within
+statements, regardless of whether these functions are marked
+@code{PURE} or not. For example, in
+@smallexample
+  a = f(b,c) + f(b,c)
+@end smallexample
+there will only be a single call to @code{f}.
+
 @end table
 
 @xref{Code Gen Options,,Options for Code Generation Conventions,
 gcc,Using the GNU Compiler Collection (GCC)}, for information on more options
 offered by the GBE
 shared by @command{gfortran}, @command{gcc}, and other GNU compilers.
-
 
 @c man end
 

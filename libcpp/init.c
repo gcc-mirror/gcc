@@ -26,6 +26,7 @@ along with this program; see the file COPYING3.  If not see
 #include "internal.h"
 #include "mkdeps.h"
 #include "localedir.h"
+#include "filenames.h"
 
 static void init_library (void);
 static void mark_named_operators (cpp_reader *, int);
@@ -640,8 +641,8 @@ read_original_directory (cpp_reader *pfile)
 
   if (token->type != CPP_STRING
       || ! (token->val.str.len >= 5
-	    && token->val.str.text[token->val.str.len-2] == '/'
-	    && token->val.str.text[token->val.str.len-3] == '/'))
+	    && IS_DIR_SEPARATOR (token->val.str.text[token->val.str.len-2])
+	    && IS_DIR_SEPARATOR (token->val.str.text[token->val.str.len-3])))
     {
       _cpp_backup_tokens (pfile, 3);
       return;

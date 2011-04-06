@@ -1634,21 +1634,26 @@ ifeq ($(strip $(filter-out cygwin32% mingw32% pe,$(osys))),)
     s-osprim.adb<s-osprim-mingw.adb \
     s-taprop.adb<s-taprop-mingw.adb
 
+    EH_MECHANISM=-gcc
     ifeq ($(strip $(filter-out x86_64%,$(arch))),)
       ifeq ($(strip $(MULTISUBDIR)),/32)
 	LIBGNAT_TARGET_PAIRS += \
 	  system.ads<system-mingw.ads
+	SO_OPTS= -m32 -Wl,-soname,
       else
 	LIBGNAT_TARGET_PAIRS += \
 	  system.ads<system-mingw-x86_64.ads
+	SO_OPTS = -m64 -Wl,-soname,
       endif
     else
       ifeq ($(strip $(MULTISUBDIR)),/64)
 	LIBGNAT_TARGET_PAIRS += \
 	  system.ads<system-mingw-x86_64.ads
+	SO_OPTS = -m64 -Wl,-soname,
       else
 	LIBGNAT_TARGET_PAIRS += \
 	  system.ads<system-mingw.ads
+	SO_OPTS = -m32 -Wl,-soname,
       endif
     endif
 
@@ -2687,13 +2692,19 @@ gnat-cross: force
 # because all that file does, when not compiling with GCC,
 # is include the system varargs.h.
 
-b_gnatl.c : $(GNATLINK_OBJS)
-	$(GNATBIND) -C $(ADA_INCLUDES) -o b_gnatl.c gnatlink.ali
-b_gnatl.o : b_gnatl.c
+b_gnatl.adb : $(GNATLINK_OBJS)
+	$(GNATBIND) $(ADA_INCLUDES) -o b_gnatl.adb gnatlink.ali
 
-b_gnatm.c : $(GNATMAKE_OBJS)
-	$(GNATBIND) -C $(ADA_INCLUDES) -o b_gnatm.c gnatmake.ali
-b_gnatm.o : b_gnatm.c
+b_gnatl.o : b_gnatl.adb
+	$(CC) -c $(ALL_ADAFLAGS) $(ADA_INCLUDES) -gnatws -gnatyN \
+	    $< $(OUTPUT_OPTION)
+
+b_gnatm.adb : $(GNATMAKE_OBJS)
+	$(GNATBIND) $(ADA_INCLUDES) -o b_gnatm.adb gnatmake.ali
+
+b_gnatm.o : b_gnatm.adb
+	$(CC) -c $(ALL_ADAFLAGS) $(ADA_INCLUDES) -gnatws -gnatyN \
+	    $< $(OUTPUT_OPTION)
 
 ADA_INCLUDE_DIR = $(libsubdir)/adainclude
 ADA_RTL_OBJ_DIR = $(libsubdir)/adalib

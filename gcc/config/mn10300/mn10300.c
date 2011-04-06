@@ -44,18 +44,13 @@
 #include "target.h"
 #include "target-def.h"
 #include "df.h"
+#include "opts.h"
 
 /* This is used in the am33_2.0-linux-gnu port, in which global symbol
    names are not prefixed by underscores, to tell whether to prefix a
    label with a plus sign or not, so that the assembler can tell
    symbol names from register names.  */
 int mn10300_protect_label;
-
-/* The selected processor.  */
-enum processor_type mn10300_processor = PROCESSOR_DEFAULT;
-
-/* Processor type to select for tuning.  */
-static const char * mn10300_tune_string = NULL;
 
 /* Selected processor type for tuning.  */
 enum processor_type mn10300_tune_cpu = PROCESSOR_DEFAULT;
@@ -90,28 +85,28 @@ static int cc_flags_for_code(enum rtx_code);
 /* Implement TARGET_HANDLE_OPTION.  */
 
 static bool
-mn10300_handle_option (size_t code,
-		       const char *arg ATTRIBUTE_UNUSED,
-		       int value)
+mn10300_handle_option (struct gcc_options *opts,
+		       struct gcc_options *opts_set ATTRIBUTE_UNUSED,
+		       const struct cl_decoded_option *decoded,
+		       location_t loc ATTRIBUTE_UNUSED)
 {
+  size_t code = decoded->opt_index;
+  int value = decoded->value;
+
   switch (code)
     {
     case OPT_mam33:
-      mn10300_processor = value ? PROCESSOR_AM33 : PROCESSOR_MN10300;
+      opts->x_mn10300_processor = value ? PROCESSOR_AM33 : PROCESSOR_MN10300;
       return true;
 
     case OPT_mam33_2:
-      mn10300_processor = (value
-			   ? PROCESSOR_AM33_2
-			   : MIN (PROCESSOR_AM33, PROCESSOR_DEFAULT));
+      opts->x_mn10300_processor = (value
+				   ? PROCESSOR_AM33_2
+				   : MIN (PROCESSOR_AM33, PROCESSOR_DEFAULT));
       return true;
 
     case OPT_mam34:
-      mn10300_processor = (value ? PROCESSOR_AM34 : PROCESSOR_DEFAULT);
-      return true;
-
-    case OPT_mtune_:
-      mn10300_tune_string = arg;
+      opts->x_mn10300_processor = (value ? PROCESSOR_AM34 : PROCESSOR_DEFAULT);
       return true;
 
     default:
@@ -1435,7 +1430,7 @@ mn10300_secondary_reload (bool in_p, rtx x, reg_class_t rclass_i,
 
       if (xregno >= FIRST_PSEUDO_REGISTER && xregno != INVALID_REGNUM)
 	{
-	  addr = reg_equiv_mem [xregno];
+	  addr = reg_equiv_mem (xregno);
 	  if (addr)
 	    addr = XEXP (addr, 0);
 	}

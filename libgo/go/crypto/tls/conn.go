@@ -35,7 +35,8 @@ type Conn struct {
 	ocspResponse      []byte // stapled OCSP response
 	peerCertificates  []*x509.Certificate
 
-	clientProtocol string
+	clientProtocol         string
+	clientProtocolFallback bool
 
 	// first permanent error
 	errMutex sync.Mutex
@@ -761,7 +762,9 @@ func (c *Conn) ConnectionState() ConnectionState {
 	state.HandshakeComplete = c.handshakeComplete
 	if c.handshakeComplete {
 		state.NegotiatedProtocol = c.clientProtocol
+		state.NegotiatedProtocolIsMutual = !c.clientProtocolFallback
 		state.CipherSuite = c.cipherSuite
+		state.PeerCertificates = c.peerCertificates
 	}
 
 	return state
@@ -774,15 +777,6 @@ func (c *Conn) OCSPResponse() []byte {
 	defer c.handshakeMutex.Unlock()
 
 	return c.ocspResponse
-}
-
-// PeerCertificates returns the certificate chain that was presented by the
-// other side.
-func (c *Conn) PeerCertificates() []*x509.Certificate {
-	c.handshakeMutex.Lock()
-	defer c.handshakeMutex.Unlock()
-
-	return c.peerCertificates
 }
 
 // VerifyHostname checks that the peer certificate chain is valid for

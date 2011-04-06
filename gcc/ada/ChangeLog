@@ -1,3 +1,219 @@
+2011-04-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/47163
+	* s-oscons-tmplt.c (MSG_WAITALL): Fix thinko in previous change.
+
+2011-04-04  Kai Tietz  <ktietz@redhat.com>
+
+	PR ada/47163
+	* s-oscons-tmplt.c (MSG_WAITALL): Define it for native windows
+	targets to flag value.
+
+2011-04-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/utils2.c (build_allocator): In the unconstrained array
+	type case, do not strip a padding type around the array type.
+
+2011-04-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/utils.c (update_pointer_to): Finalize named pointer
+	types.
+
+2011-04-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/lang.opt (feliminate-unused-debug-types): Delete.
+	* gcc-interface/misc.c (gnat_handle_option): Remove special handling
+	code for -feliminate-unused-debug-types.
+	(gnat_post_options): Likewise.
+
+2011-04-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/utils.c (gnat_pushdecl): If this is a non-artificial
+	declaration of a pointer type, then set DECL_ORIGINAL_TYPE to a
+	distinct copy.
+
+2011-04-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_entity): Do not force the
+	DECL_ARTIFICIAL flag on enumeration types.
+
+2011-04-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Array_Type>: Do not make
+	fat pointer types artificial unconditionally.
+	<E_Array_Subtype>: Attach the base array type as a parallel type if it
+	isn't artificial.
+
+2011-04-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/gigi.h (get_dummy_type): Declare.
+	(build_dummy_unc_pointer_types): Likewise.
+	(finish_fat_pointer_type): Likewise.
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Array_Type>: If a dummy
+	fat pointer type has been built, complete it in place.
+	<E_Access_Type>: Call build_dummy_unc_pointer_types to build dummy fat
+	and thin pointers.  Remove useless variable.
+	(finish_fat_pointer_type): Make global and move to...
+	* gcc-interface/utils.c (finish_fat_pointer_type): ...here.
+	(get_dummy_type): New function.
+	(build_dummy_unc_pointer_types): Likewise.
+	(gnat_pushdecl): Propage the name to the anonymous variants only.
+	(update_pointer_to): Only adjust the pointer types in the unconstrained
+	array case.
+
+2011-04-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/ada-tree.h (DECL_TAFT_TYPE_P): New flag.
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Incomplete_Type>: Set it
+	if this is a Taft amendment type and the full declaration is available.
+	* gcc-interface/trans.c (process_type): Likewise.
+	If there is an old type, mark the new one as used if DECL_TAFT_TYPE_P.
+	(process_freeze_entity): Likewise.
+	* gcc-interface/utils.c (dummy_global): New static variable.
+	(gnat_write_global_declarations): If there are types declared as used
+	at the global level, insert them in the global hash table.
+
+2011-04-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/gigi.h (record_builtin_type): Add ARTIFICIAL_P param.
+	* gcc-interface/utils.c (gnat_pushdecl): If this is a non-artificial
+	declaration of an array type, then set DECL_ORIGINAL_TYPE to a distinct
+	copy.
+	(record_builtin_type): Add ARTIFICIAL_P parameter.  Set DECL_ARTIFICIAL
+	flag of the type accordingly.
+	* gcc-interface/trans.c (gigi): Adjust calls to record_builtin_type.
+
+2011-04-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Access_Type>: Defer
+	finalizing types when updating the pointers to the designated type.
+	<all>: Finalize the deferred types even if we didn't defer processing
+	of incomplete types in this invocation.
+
+2011-04-01  Olivier Hainque  <hainque@adacore.com>
+            Nicolas Setton  <setton@adacore.com>
+            Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/misc.c (gnat_descriptive_type): New function.
+	(LANG_HOOKS_DESCRIPTIVE_TYPE): Redefine to gnat_descriptive_type.
+
+2011-03-28  Kai Tietz  <ktietz@redhat.com>
+
+	* gcc-interface/Makefile.in (SO_LIB): Handle multilib build for native
+	Windows targets.
+	(EH_MECHANISM): Use GCC exception mechanism for native Windows targets.
+	* system-mingw.ads (System): Change ZCX_By_Default default to True.
+
+	* raise-gcc.c (PERSONALITY_FUNCTION): Add prototype.
+
+2011-03-28  Tristan Gingold  <gingold@adacore.com>
+
+	PR ada/44431
+	* gcc-interface/Make-lang.in (ada/b_gnat1.adb): Replace ada/b_gnat1.c.
+	Use ada output of gnatbind.
+	(ada/b_gnatb.adb): Ditto.
+	(ada/b_gnat1.o, ada/b_gnatb.o): New rules.
+	(ada.mostlyclean, ada.stage1)
+	(ada.stage2, ada.stage3, ada.stage4, ada.stageprofile)
+	(ada.stagefeedback): Adjust.
+	* gcc-interface/Makefile.in (b_gnatl.adb): Replace b_gnatl.c.
+	Use ada output of gnatbind.
+	(b_gnatm.adb): Ditto.
+	(b_gnatl.o, b_gnatm.o): New rules.
+
+2011-03-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <object>: Create TYPE_DECL
+	for the padded type built to support a specified size or alignment.
+
+2011-03-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/gigi.h (finalize_from_with_types): Adjust comment.
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Access_Type>: Defer
+	unconditionally to the end of the unit when the designated type is
+	limited_with'ed.
+	<all>: Rename local variable.  Attempt to un-defer types only and do it
+	for limited_with'ed types as well.
+	(finalize_from_with_types): Adjust comment.  Rename variable and tidy.
+	* gcc-interface/trans.c (Compilation_Unit_to_gnu): Use GNAT_UNIT
+	consistently and remove redundant call to finalize_from_with_types.
+
+2011-03-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* inline.adb (Back_End_Cannot_Inline): Lift restriction on calls to
+	subprograms without a previous spec declared in the same unit.
+	* gcc-interface/trans.c (Compilation_Unit_to_gnu): Process inlined
+	subprograms at the end of the unit instead of at the beginning.
+	* gcc-interface/utils.c (create_subprog_decl): Check that the entity
+	isn't public for the special handling of non-inline functions nested
+	inside inline external functions.
+
+2011-03-25  Jeff Law  <law@redhat.com>
+
+	* gcc-interface/utils.c (def_fn_type): Add missing va_end.
+
+2011-03-24  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* einfo.ads (Size_Depends_On_Discriminant): Adjust description.
+	* layout.adb (Compute_Size_Depends_On_Discriminant): New procedure
+	to compute Set_Size_Depends_On_Discriminant.
+	(Layout_Type): Call it on array types in back-end layout mode.
+	* sem_util.adb (Requires_Transient_Scope): Return true for array
+	types only if the size depends on the value of discriminants.
+	* gcc-interface/utils2.c (build_binary_op) <MODIFY_EXPR>: Use the RHS
+	type if the RHS is a call to a function that returns an unconstrained
+	type with default discriminant.
+
+2011-03-24  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (gnat_to_gnu): Remove obsolete case of
+	non-conversion to the nominal result type at the end.
+
+2011-03-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (create_temporary): New function taken from...
+	(create_init_temporary): ...here.  Call it.
+	(call_to_gnu): Create the temporary for the return value early, if any.
+	Create it for a function with copy-in/copy-out parameters if there is
+	no target; in other cases of copy-in/copy-out, use another temporary.
+	Push the new binding level lazily.  Add and rename local variables.
+
+2011-03-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (validate_size): Improve comments and tweak
+	error message.
+	(set_rm_size): Likewise.
+
+2011-03-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <object>: Create TYPE_DECL
+	for the padded type built in order to support a specified alignment.
+	Fix incorrect formatting.
+
+2011-03-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR bootstrap/48216
+	* gcc-interface/decl.c (elaborate_expression_1): Localize GNU_DECL.
+
+2011-03-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (components_to_record): Add REORDER parameter,
+	rename DEBUG_INFO_P into DEBUG_INFO and move P_GNU_REP_LIST parameter
+	to the end of the list.  Adjust recursive call.  Rename local variable.
+	If REORDER is true, reorder components of the record type.
+	(gnat_to_gnu_entity): Pass OK_To_Reorder_Components flag as argument to
+	components_to_record and adjust the parameter list.
+
+2011-03-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (elaborate_expression_1): When optimization is
+	disabled, use the variable for bounds of loop iteration scheme.
+
+2011-03-21  Kai Tietz  <ktietz@redhat.com>
+
+	PR target/12171
+	* gcc-interface/utils.c (gnat_internal_attribute_table): Add new column
+
 2011-03-17  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/decl.c (elaborate_expression_1): Try harder to find

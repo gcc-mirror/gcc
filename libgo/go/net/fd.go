@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// TODO(rsc): All the prints in this file should go to standard error.
-
 package net
 
 import (
@@ -85,11 +83,12 @@ func (e *InvalidConnError) Timeout() bool   { return false }
 // will the fd be closed.
 
 type pollServer struct {
-	cr, cw   chan *netFD // buffered >= 1
-	pr, pw   *os.File
-	pending  map[int]*netFD
-	poll     *pollster // low-level OS hooks
-	deadline int64     // next deadline (nsec since 1970)
+	cr, cw     chan *netFD // buffered >= 1
+	pr, pw     *os.File
+	poll       *pollster // low-level OS hooks
+	sync.Mutex           // controls pending and deadline
+	pending    map[int]*netFD
+	deadline   int64 // next deadline (nsec since 1970)
 }
 
 func (s *pollServer) AddFD(fd *netFD, mode int) {
@@ -103,10 +102,8 @@ func (s *pollServer) AddFD(fd *netFD, mode int) {
 		}
 		return
 	}
-	if err := s.poll.AddFD(intfd, mode, false); err != nil {
-		panic("pollServer AddFD " + err.String())
-		return
-	}
+
+	s.Lock()
 
 	var t int64
 	key := intfd << 1
@@ -119,10 +116,30 @@ func (s *pollServer) AddFD(fd *netFD, mode int) {
 		t = fd.wdeadline
 	}
 	s.pending[key] = fd
+	doWakeup := false
 	if t > 0 && (s.deadline == 0 || t < s.deadline) {
 		s.deadline = t
+		doWakeup = true
+	}
+
+	wake, err := s.poll.AddFD(intfd, mode, false)
+	if err != nil {
+		panic("pollServer AddFD " + err.String())
+	}
+	if wake {
+		doWakeup = true
+	}
+
+	s.Unlock()
+
+	if doWakeup {
+		s.Wakeup()
 	}
 }
+
+var wakeupbuf [1]byte
+
+func (s *pollServer) Wakeup() { s.pw.Write(wakeupbuf[0:]) }
 
 func (s *pollServer) LookupFD(fd int, mode int) *netFD {
 	key := fd << 1
@@ -195,6 +212,8 @@ func (s *pollServer) CheckDeadlines() {
 
 func (s *pollServer) Run() {
 	var scratch [100]byte
+	s.Lock()
+	defer s.Unlock()
 	for {
 		var t = s.deadline
 		if t > 0 {
@@ -204,7 +223,7 @@ func (s *pollServer) Run() {
 				continue
 			}
 		}
-		fd, mode, err := s.poll.WaitFD(t)
+		fd, mode, err := s.poll.WaitFD(s, t)
 		if err != nil {
 			print("pollServer WaitFD: ", err.String(), "\n")
 			return
@@ -215,22 +234,11 @@ func (s *pollServer) Run() {
 			continue
 		}
 		if fd == s.pr.Fd() {
-			// Drain our wakeup pipe.
-			for nn, _ := s.pr.Read(scratch[0:]); nn > 0; {
-				nn, _ = s.pr.Read(scratch[0:])
-			}
-			// Read from channels
-		Update:
-			for {
-				select {
-				case fd := <-s.cr:
-					s.AddFD(fd, 'r')
-				case fd := <-s.cw:
-					s.AddFD(fd, 'w')
-				default:
-					break Update
-				}
-			}
+			// Drain our wakeup pipe (we could loop here,
+			// but it's unlikely that there are more than
+			// len(scratch) wakeup calls).
+			s.pr.Read(scratch[0:])
+			s.CheckDeadlines()
 		} else {
 			netfd := s.LookupFD(fd, mode)
 			if netfd == nil {
@@ -242,19 +250,13 @@ func (s *pollServer) Run() {
 	}
 }
 
-var wakeupbuf [1]byte
-
-func (s *pollServer) Wakeup() { s.pw.Write(wakeupbuf[0:]) }
-
 func (s *pollServer) WaitRead(fd *netFD) {
-	s.cr <- fd
-	s.Wakeup()
+	s.AddFD(fd, 'r')
 	<-fd.cr
 }
 
 func (s *pollServer) WaitWrite(fd *netFD) {
-	s.cw <- fd
-	s.Wakeup()
+	s.AddFD(fd, 'w')
 	<-fd.cw
 }
 
@@ -272,19 +274,25 @@ func startServer() {
 	pollserver = p
 }
 
-func newFD(fd, family, proto int, net string, laddr, raddr Addr) (f *netFD, err os.Error) {
+func newFD(fd, family, proto int, net string) (f *netFD, err os.Error) {
 	onceStartServer.Do(startServer)
 	if e := syscall.SetNonblock(fd, true); e != 0 {
-		return nil, &OpError{"setnonblock", net, laddr, os.Errno(e)}
+		return nil, os.Errno(e)
 	}
 	f = &netFD{
 		sysfd:  fd,
 		family: family,
 		proto:  proto,
 		net:    net,
-		laddr:  laddr,
-		raddr:  raddr,
 	}
+	f.cr = make(chan bool, 1)
+	f.cw = make(chan bool, 1)
+	return f, nil
+}
+
+func (fd *netFD) setAddr(laddr, raddr Addr) {
+	fd.laddr = laddr
+	fd.raddr = raddr
 	var ls, rs string
 	if laddr != nil {
 		ls = laddr.String()
@@ -292,10 +300,23 @@ func newFD(fd, family, proto int, net string, laddr, raddr Addr) (f *netFD, err 
 	if raddr != nil {
 		rs = raddr.String()
 	}
-	f.sysfile = os.NewFile(fd, net+":"+ls+"->"+rs)
-	f.cr = make(chan bool, 1)
-	f.cw = make(chan bool, 1)
-	return f, nil
+	fd.sysfile = os.NewFile(fd.sysfd, fd.net+":"+ls+"->"+rs)
+}
+
+func (fd *netFD) connect(ra syscall.Sockaddr) (err os.Error) {
+	e := syscall.Connect(fd.sysfd, ra)
+	if e == syscall.EINPROGRESS {
+		var errno int
+		pollserver.WaitWrite(fd)
+		e, errno = syscall.GetsockoptInt(fd.sysfd, syscall.SOL_SOCKET, syscall.SO_ERROR)
+		if errno != 0 {
+			return os.NewSyscallError("getsockopt", errno)
+		}
+	}
+	if e != 0 {
+		return os.Errno(e)
+	}
+	return nil
 }
 
 // Add a reference to this fd.
@@ -355,7 +376,7 @@ func (fd *netFD) Read(p []byte) (n int, err os.Error) {
 	for {
 		var errno int
 		n, errno = syscall.Read(fd.sysfile.Fd(), p)
-		if (errno == syscall.EAGAIN || errno == syscall.EINTR) && fd.rdeadline >= 0 {
+		if errno == syscall.EAGAIN && fd.rdeadline >= 0 {
 			pollserver.WaitRead(fd)
 			continue
 		}
@@ -390,7 +411,7 @@ func (fd *netFD) ReadFrom(p []byte) (n int, sa syscall.Sockaddr, err os.Error) {
 	for {
 		var errno int
 		n, sa, errno = syscall.Recvfrom(fd.sysfd, p, 0)
-		if (errno == syscall.EAGAIN || errno == syscall.EINTR) && fd.rdeadline >= 0 {
+		if errno == syscall.EAGAIN && fd.rdeadline >= 0 {
 			pollserver.WaitRead(fd)
 			continue
 		}
@@ -423,7 +444,7 @@ func (fd *netFD) ReadMsg(p []byte, oob []byte) (n, oobn, flags int, sa syscall.S
 	for {
 		var errno int
 		n, oobn, flags, sa, errno = syscall.Recvmsg(fd.sysfd, p, oob, 0)
-		if (errno == syscall.EAGAIN || errno == syscall.EINTR) && fd.rdeadline >= 0 {
+		if errno == syscall.EAGAIN && fd.rdeadline >= 0 {
 			pollserver.WaitRead(fd)
 			continue
 		}
@@ -469,7 +490,7 @@ func (fd *netFD) Write(p []byte) (n int, err os.Error) {
 		if nn == len(p) {
 			break
 		}
-		if (errno == syscall.EAGAIN || errno == syscall.EINTR) && fd.wdeadline >= 0 {
+		if errno == syscall.EAGAIN && fd.wdeadline >= 0 {
 			pollserver.WaitWrite(fd)
 			continue
 		}
@@ -505,7 +526,7 @@ func (fd *netFD) WriteTo(p []byte, sa syscall.Sockaddr) (n int, err os.Error) {
 	var oserr os.Error
 	for {
 		errno := syscall.Sendto(fd.sysfd, p, 0, sa)
-		if (errno == syscall.EAGAIN || errno == syscall.EINTR) && fd.wdeadline >= 0 {
+		if errno == syscall.EAGAIN && fd.wdeadline >= 0 {
 			pollserver.WaitWrite(fd)
 			continue
 		}
@@ -539,7 +560,7 @@ func (fd *netFD) WriteMsg(p []byte, oob []byte, sa syscall.Sockaddr) (n int, oob
 	for {
 		var errno int
 		errno = syscall.Sendmsg(fd.sysfd, p, oob, sa, 0)
-		if (errno == syscall.EAGAIN || errno == syscall.EINTR) && fd.wdeadline >= 0 {
+		if errno == syscall.EAGAIN && fd.wdeadline >= 0 {
 			pollserver.WaitWrite(fd)
 			continue
 		}
@@ -577,7 +598,7 @@ func (fd *netFD) accept(toAddr func(syscall.Sockaddr) Addr) (nfd *netFD, err os.
 			return nil, os.EINVAL
 		}
 		s, sa, e = syscall.Accept(fd.sysfd)
-		if e != syscall.EAGAIN && e != syscall.EINTR {
+		if e != syscall.EAGAIN {
 			break
 		}
 		syscall.ForkLock.RUnlock()
@@ -591,10 +612,11 @@ func (fd *netFD) accept(toAddr func(syscall.Sockaddr) Addr) (nfd *netFD, err os.
 	syscall.CloseOnExec(s)
 	syscall.ForkLock.RUnlock()
 
-	if nfd, err = newFD(s, fd.family, fd.proto, fd.net, fd.laddr, toAddr(sa)); err != nil {
+	if nfd, err = newFD(s, fd.family, fd.proto, fd.net); err != nil {
 		syscall.Close(s)
 		return nil, err
 	}
+	nfd.setAddr(fd.laddr, toAddr(sa))
 	return nfd, nil
 }
 

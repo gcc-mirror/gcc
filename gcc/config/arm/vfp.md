@@ -134,9 +134,51 @@
 ;; DImode moves
 
 (define_insn "*arm_movdi_vfp"
-  [(set (match_operand:DI 0 "nonimmediate_di_operand" "=r, r,m,w,r,w,w, Uv")
+  [(set (match_operand:DI 0 "nonimmediate_di_operand" "=r, r, m,w,r,w,w, Uv")
 	(match_operand:DI 1 "di_operand"              "rIK,mi,r,r,w,w,Uvi,w"))]
-  "TARGET_ARM && TARGET_HARD_FLOAT && TARGET_VFP
+  "TARGET_ARM && TARGET_HARD_FLOAT && TARGET_VFP && arm_tune != cortexa8
+   && (   register_operand (operands[0], DImode)
+       || register_operand (operands[1], DImode))"
+  "*
+  switch (which_alternative)
+    {
+    case 0: 
+      return \"#\";
+    case 1:
+    case 2:
+      return output_move_double (operands);
+    case 3:
+      return \"fmdrr%?\\t%P0, %Q1, %R1\\t%@ int\";
+    case 4:
+      return \"fmrrd%?\\t%Q0, %R0, %P1\\t%@ int\";
+    case 5:
+      if (TARGET_VFP_SINGLE)
+	return \"fcpys%?\\t%0, %1\\t%@ int\;fcpys%?\\t%p0, %p1\\t%@ int\";
+      else
+	return \"fcpyd%?\\t%P0, %P1\\t%@ int\";
+    case 6: case 7:
+      return output_move_vfp (operands);
+    default:
+      gcc_unreachable ();
+    }
+  "
+  [(set_attr "type" "*,load2,store2,r_2_f,f_2_r,ffarithd,f_loadd,f_stored")
+   (set_attr "neon_type" "*,*,*,neon_mcr_2_mcrr,neon_mrrc,neon_vmov,*,*")
+   (set (attr "length") (cond [(eq_attr "alternative" "0,1,2") (const_int 8)
+			       (eq_attr "alternative" "5")
+				(if_then_else
+				 (eq (symbol_ref "TARGET_VFP_SINGLE") (const_int 1))
+				 (const_int 8)
+				 (const_int 4))]
+			      (const_int 4)))
+   (set_attr "pool_range"     "*,1020,*,*,*,*,1020,*")
+   (set_attr "neg_pool_range" "*,1008,*,*,*,*,1008,*")]
+)
+
+(define_insn "*arm_movdi_vfp_cortexa8"
+  [(set (match_operand:DI 0 "nonimmediate_di_operand" "=r, r,m,w,!r,w,w, Uv")
+	(match_operand:DI 1 "di_operand"              "rIK,mi,r,r,w,w,Uvi,w"))]
+  "TARGET_ARM && TARGET_HARD_FLOAT && TARGET_VFP && arm_tune == cortexa8
    && (   register_operand (operands[0], DImode)
        || register_operand (operands[1], DImode))"
   "*

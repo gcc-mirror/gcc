@@ -1,6 +1,6 @@
 ;; Machine description for DEC Alpha for GNU C compiler
 ;; Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
-;; 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010
+;; 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010, 2011
 ;; Free Software Foundation, Inc.
 ;; Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 ;;
@@ -24,68 +24,64 @@
 
 ;; Uses of UNSPEC in this file:
 
-(define_constants
-  [(UNSPEC_ARG_HOME	0)
-   (UNSPEC_LDGP1	1)
-   (UNSPEC_INSXH	2)
-   (UNSPEC_MSKXH	3)
-   (UNSPEC_CVTQL	4)
-   (UNSPEC_CVTLQ	5)
-   (UNSPEC_UMK_LAUM	6)
-   (UNSPEC_UMK_LALM	7)
-   (UNSPEC_UMK_LAL	8)
-   (UNSPEC_UMK_LOAD_CIW	9)
-   (UNSPEC_LDGP2	10)
-   (UNSPEC_LITERAL	11)
-   (UNSPEC_LITUSE	12)
-   (UNSPEC_SIBCALL	13)
-   (UNSPEC_SYMBOL	14)
+(define_c_enum "unspec" [
+  UNSPEC_ARG_HOME
+  UNSPEC_LDGP1
+  UNSPEC_INSXH
+  UNSPEC_MSKXH
+  UNSPEC_CVTQL
+  UNSPEC_CVTLQ
+  UNSPEC_LDGP2
+  UNSPEC_LITERAL
+  UNSPEC_LITUSE
+  UNSPEC_SIBCALL
+  UNSPEC_SYMBOL
 
-   ;; TLS Support
-   (UNSPEC_TLSGD_CALL	15)
-   (UNSPEC_TLSLDM_CALL	16)
-   (UNSPEC_TLSGD	17)
-   (UNSPEC_TLSLDM	18)
-   (UNSPEC_DTPREL	19)
-   (UNSPEC_TPREL	20)
-   (UNSPEC_TP		21)
+  ;; TLS Support
+  UNSPEC_TLSGD_CALL
+  UNSPEC_TLSLDM_CALL
+  UNSPEC_TLSGD
+  UNSPEC_TLSLDM
+  UNSPEC_DTPREL
+  UNSPEC_TPREL
+  UNSPEC_TP
 
-   ;; Builtins
-   (UNSPEC_CMPBGE	22)
-   (UNSPEC_ZAP		23)
-   (UNSPEC_AMASK	24)
-   (UNSPEC_IMPLVER	25)
-   (UNSPEC_PERR		26)
-   (UNSPEC_COPYSIGN     27)
+  ;; Builtins
+  UNSPEC_CMPBGE
+  UNSPEC_ZAP
+  UNSPEC_AMASK
+  UNSPEC_IMPLVER
+  UNSPEC_PERR
+  UNSPEC_COPYSIGN
 
-   ;; Atomic operations
-   (UNSPEC_MB		28)
-   (UNSPEC_ATOMIC	31)
-   (UNSPEC_CMPXCHG	32)
-   (UNSPEC_XCHG		33)
-  ])
+  ;; Atomic operations
+  UNSPEC_MB
+  UNSPEC_ATOMIC
+  UNSPEC_CMPXCHG
+  UNSPEC_XCHG
+])
 
 ;; UNSPEC_VOLATILE:
 
-(define_constants
-  [(UNSPECV_IMB		0)
-   (UNSPECV_BLOCKAGE	1)
-   (UNSPECV_SETJMPR	2)	; builtin_setjmp_receiver
-   (UNSPECV_LONGJMP	3)	; builtin_longjmp
-   (UNSPECV_TRAPB	4)
-   (UNSPECV_PSPL	5)	; prologue_stack_probe_loop
-   (UNSPECV_REALIGN	6)
-   (UNSPECV_EHR		7)	; exception_receiver
-   (UNSPECV_MCOUNT	8)
-   (UNSPECV_FORCE_MOV	9)
-   (UNSPECV_LDGP1	10)
-   (UNSPECV_PLDGP2	11)	; prologue ldgp
-   (UNSPECV_SET_TP	12)
-   (UNSPECV_RPCC	13)
-   (UNSPECV_SETJMPR_ER	14)	; builtin_setjmp_receiver fragment
-   (UNSPECV_LL		15)	; load-locked
-   (UNSPECV_SC		16)	; store-conditional
-  ])
+(define_c_enum "unspecv" [
+  UNSPECV_IMB
+  UNSPECV_BLOCKAGE
+  UNSPECV_SETJMPR	; builtin_setjmp_receiver
+  UNSPECV_LONGJMP	; builtin_longjmp
+  UNSPECV_TRAPB
+  UNSPECV_PSPL		; prologue_stack_probe_loop
+  UNSPECV_REALIGN
+  UNSPECV_EHR		; exception_receiver
+  UNSPECV_MCOUNT
+  UNSPECV_FORCE_MOV
+  UNSPECV_LDGP1
+  UNSPECV_PLDGP2	; prologue ldgp
+  UNSPECV_SET_TP
+  UNSPECV_RPCC
+  UNSPECV_SETJMPR_ER	; builtin_setjmp_receiver fragment
+  UNSPECV_LL		; load-locked
+  UNSPECV_SC		; store-conditional
+])
 
 ;; On non-BWX targets, CQImode must be handled the similarly to HImode
 ;; when generating reloads.
@@ -181,6 +177,23 @@
 
 (define_attr "cannot_copy" "false,true"
   (const_string "false"))
+
+;; Used to control the "enabled" attribute on a per-instruction basis.
+;; For convenience, conflate ABI issues re loading of addresses with
+;; an "isa".
+(define_attr "isa" "base,bwx,max,fix,cix,vms,ner,er"
+  (const_string "base"))
+
+(define_attr "enabled" ""
+  (cond [(eq_attr "isa" "bwx")	(symbol_ref "TARGET_BWX")
+	 (eq_attr "isa" "max")	(symbol_ref "TARGET_MAX")
+	 (eq_attr "isa" "fix")	(symbol_ref "TARGET_FIX")
+	 (eq_attr "isa" "cix")	(symbol_ref "TARGET_CIX")
+	 (eq_attr "isa" "vms")  (symbol_ref "TARGET_ABI_OPEN_VMS")
+	 (eq_attr "isa" "ner")	(symbol_ref "!TARGET_EXPLICIT_RELOCS")
+	 (eq_attr "isa" "er")	(symbol_ref "TARGET_EXPLICIT_RELOCS")
+	]
+	(const_int 1)))
 
 ;; Include scheduling descriptions.
   
@@ -689,13 +702,11 @@
   ""
   "subqv %r1,%2,%0")
 
-;; The Unicos/Mk assembler doesn't support mull.
-
 (define_insn "mulsi3"
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(mult:SI (match_operand:SI 1 "reg_or_0_operand" "%rJ")
 		 (match_operand:SI 2 "reg_or_8bit_operand" "rI")))]
-  "!TARGET_ABI_UNICOSMK"
+  ""
   "mull %r1,%2,%0"
   [(set_attr "type" "imul")
    (set_attr "opsize" "si")])
@@ -705,7 +716,7 @@
 	(sign_extend:DI
 	  (mult:SI (match_operand:SI 1 "reg_or_0_operand" "%rJ")
 		   (match_operand:SI 2 "reg_or_8bit_operand" "rI"))))]
-  "!TARGET_ABI_UNICOSMK"
+  ""
   "mull %r1,%2,%0"
   [(set_attr "type" "imul")
    (set_attr "opsize" "si")])
@@ -719,7 +730,7 @@
 		(sign_extend:DI (mult:SI (match_dup 1)
 					 (match_dup 2))))
 	    (const_int 0))]
-  "!TARGET_ABI_UNICOSMK"
+  ""
   "mullv %r1,%2,%0"
   [(set_attr "type" "imul")
    (set_attr "opsize" "si")])
@@ -786,11 +797,8 @@
    (set_attr "opsize" "udi")])
 
 ;; The divide and remainder operations take their inputs from r24 and
-;; r25, put their output in r27, and clobber r23 and r28 on all
-;; systems except Unicos/Mk. On Unicos, the standard library provides
-;; subroutines which use the standard calling convention and work on
-;; DImode operands.
-
+;; r25, put their output in r27, and clobber r23 and r28 on all systems.
+;;
 ;; ??? Force sign-extension here because some versions of OSF/1 and
 ;; Interix/NT don't do the right thing if the inputs are not properly
 ;; sign-extended.  But Linux, for instance, does not have this
@@ -808,7 +816,7 @@
 	      (clobber (reg:DI 28))])
    (set (match_operand:SI 0 "nonimmediate_operand" "")
 	(subreg:SI (match_dup 5) 0))]
-  "! TARGET_ABI_OPEN_VMS && ! TARGET_ABI_UNICOSMK"
+  "TARGET_ABI_OSF"
 {
   operands[3] = gen_reg_rtx (DImode);
   operands[4] = gen_reg_rtx (DImode);
@@ -826,7 +834,7 @@
 	      (clobber (reg:DI 28))])
    (set (match_operand:SI 0 "nonimmediate_operand" "")
 	(subreg:SI (match_dup 5) 0))]
-  "! TARGET_ABI_OPEN_VMS && ! TARGET_ABI_UNICOSMK"
+  "TARGET_ABI_OSF"
 {
   operands[3] = gen_reg_rtx (DImode);
   operands[4] = gen_reg_rtx (DImode);
@@ -844,7 +852,7 @@
 	      (clobber (reg:DI 28))])
    (set (match_operand:SI 0 "nonimmediate_operand" "")
 	(subreg:SI (match_dup 5) 0))]
-  "! TARGET_ABI_OPEN_VMS && ! TARGET_ABI_UNICOSMK"
+  "TARGET_ABI_OSF"
 {
   operands[3] = gen_reg_rtx (DImode);
   operands[4] = gen_reg_rtx (DImode);
@@ -862,7 +870,7 @@
 	      (clobber (reg:DI 28))])
    (set (match_operand:SI 0 "nonimmediate_operand" "")
 	(subreg:SI (match_dup 5) 0))]
-  "! TARGET_ABI_OPEN_VMS && ! TARGET_ABI_UNICOSMK"
+  "TARGET_ABI_OSF"
 {
   operands[3] = gen_reg_rtx (DImode);
   operands[4] = gen_reg_rtx (DImode);
@@ -875,7 +883,7 @@
 			   (match_operand:DI 2 "register_operand" "")))
 	      (clobber (reg:DI 23))
 	      (clobber (reg:DI 28))])]
-  "! TARGET_ABI_OPEN_VMS && ! TARGET_ABI_UNICOSMK"
+  "TARGET_ABI_OSF"
   "")
 
 (define_expand "udivdi3"
@@ -884,87 +892,26 @@
 			    (match_operand:DI 2 "register_operand" "")))
 	      (clobber (reg:DI 23))
 	      (clobber (reg:DI 28))])]
-  "! TARGET_ABI_OPEN_VMS && ! TARGET_ABI_UNICOSMK"
+  "TARGET_ABI_OSF"
   "")
 
 (define_expand "moddi3"
-  [(use (match_operand:DI 0 "register_operand" ""))
-   (use (match_operand:DI 1 "register_operand" ""))
-   (use (match_operand:DI 2 "register_operand" ""))]
-  "!TARGET_ABI_OPEN_VMS"
-{
-  if (TARGET_ABI_UNICOSMK)
-    emit_insn (gen_moddi3_umk (operands[0], operands[1], operands[2]));
-  else
-    emit_insn (gen_moddi3_dft (operands[0], operands[1], operands[2]));
-  DONE;
-})
-
-(define_expand "moddi3_dft"
   [(parallel [(set (match_operand:DI 0 "register_operand" "")
 		   (mod:DI (match_operand:DI 1 "register_operand" "")
 			   (match_operand:DI 2 "register_operand" "")))
 	      (clobber (reg:DI 23))
 	      (clobber (reg:DI 28))])]
-  "! TARGET_ABI_OPEN_VMS && ! TARGET_ABI_UNICOSMK"
+  "TARGET_ABI_OSF"
   "")
 
-;; On Unicos/Mk, we do as the system's C compiler does:
-;; compute the quotient, multiply and subtract.
-
-(define_expand "moddi3_umk"
-  [(use (match_operand:DI 0 "register_operand" ""))
-   (use (match_operand:DI 1 "register_operand" ""))
-   (use (match_operand:DI 2 "register_operand" ""))]
-  "TARGET_ABI_UNICOSMK"
-{
-  rtx div, mul = gen_reg_rtx (DImode);
-
-  div = expand_binop (DImode, sdiv_optab, operands[1], operands[2],
-		      NULL_RTX, 0, OPTAB_LIB);
-  div = force_reg (DImode, div);
-  emit_insn (gen_muldi3 (mul, operands[2], div));
-  emit_insn (gen_subdi3 (operands[0], operands[1], mul));
-  DONE;
-})
-
 (define_expand "umoddi3"
-  [(use (match_operand:DI 0 "register_operand" ""))
-   (use (match_operand:DI 1 "register_operand" ""))
-   (use (match_operand:DI 2 "register_operand" ""))]
-  "! TARGET_ABI_OPEN_VMS"
-{
-  if (TARGET_ABI_UNICOSMK)
-    emit_insn (gen_umoddi3_umk (operands[0], operands[1], operands[2]));
-  else
-    emit_insn (gen_umoddi3_dft (operands[0], operands[1], operands[2]));
-  DONE;
-})
-
-(define_expand "umoddi3_dft"
   [(parallel [(set (match_operand:DI 0 "register_operand" "")
 		   (umod:DI (match_operand:DI 1 "register_operand" "")
 			    (match_operand:DI 2 "register_operand" "")))
 	      (clobber (reg:DI 23))
 	      (clobber (reg:DI 28))])]
-  "! TARGET_ABI_OPEN_VMS && ! TARGET_ABI_UNICOSMK"
+  "TARGET_ABI_OSF"
   "")
-
-(define_expand "umoddi3_umk"
-  [(use (match_operand:DI 0 "register_operand" ""))
-   (use (match_operand:DI 1 "register_operand" ""))
-   (use (match_operand:DI 2 "register_operand" ""))]
-  "TARGET_ABI_UNICOSMK"
-{
-  rtx div, mul = gen_reg_rtx (DImode);
-
-  div = expand_binop (DImode, udiv_optab, operands[1], operands[2],
-		      NULL_RTX, 1, OPTAB_LIB);
-  div = force_reg (DImode, div);
-  emit_insn (gen_muldi3 (mul, operands[2], div));
-  emit_insn (gen_subdi3 (operands[0], operands[1], mul));
-  DONE;
-})
 
 ;; Lengths of 8 for ldq $t12,__divq($gp); jsr $t9,($t12),__divq as
 ;; expanded by the assembler.
@@ -976,7 +923,7 @@
 			 (match_operand:DI 2 "register_operand" "b")])))
    (clobber (reg:DI 23))
    (clobber (reg:DI 28))]
-  "TARGET_EXPLICIT_RELOCS && ! TARGET_ABI_OPEN_VMS"
+  "TARGET_EXPLICIT_RELOCS && TARGET_ABI_OSF"
   "#"
   "&& reload_completed"
   [(parallel [(set (match_dup 0)
@@ -1021,7 +968,7 @@
    (use (match_operand 5 "const_int_operand" ""))
    (clobber (reg:DI 23))
    (clobber (reg:DI 28))]
-  "TARGET_EXPLICIT_RELOCS && ! TARGET_ABI_OPEN_VMS"
+  "TARGET_EXPLICIT_RELOCS && TARGET_ABI_OSF"
   "jsr $23,($27),__%E3%j5"
   [(set_attr "type" "jsr")
    (set_attr "length" "4")])
@@ -1033,7 +980,7 @@
 			 (match_operand:DI 2 "register_operand" "b")])))
    (clobber (reg:DI 23))
    (clobber (reg:DI 28))]
-  "! TARGET_ABI_OPEN_VMS && ! TARGET_ABI_UNICOSMK"
+  "TARGET_ABI_OSF"
   "%E3 %1,%2,%0"
   [(set_attr "type" "jsr")
    (set_attr "length" "8")])
@@ -1045,7 +992,7 @@
 			 (match_operand:DI 2 "register_operand" "b")]))
    (clobber (reg:DI 23))
    (clobber (reg:DI 28))]
-  "TARGET_EXPLICIT_RELOCS && ! TARGET_ABI_OPEN_VMS"
+  "TARGET_EXPLICIT_RELOCS && TARGET_ABI_OSF"
   "#"
   "&& reload_completed"
   [(parallel [(set (match_dup 0) (match_dup 3))
@@ -1089,7 +1036,7 @@
    (use (match_operand 5 "const_int_operand" ""))
    (clobber (reg:DI 23))
    (clobber (reg:DI 28))]
-  "TARGET_EXPLICIT_RELOCS && ! TARGET_ABI_OPEN_VMS"
+  "TARGET_EXPLICIT_RELOCS && TARGET_ABI_OSF"
   "jsr $23,($27),__%E3%j5"
   [(set_attr "type" "jsr")
    (set_attr "length" "4")])
@@ -1101,7 +1048,7 @@
 			 (match_operand:DI 2 "register_operand" "b")]))
    (clobber (reg:DI 23))
    (clobber (reg:DI 28))]
-  "! TARGET_ABI_OPEN_VMS && ! TARGET_ABI_UNICOSMK"
+  "TARGET_ABI_OSF"
   "%E3 %1,%2,%0"
   [(set_attr "type" "jsr")
    (set_attr "length" "8")])
@@ -1162,130 +1109,60 @@
   operands[4] = GEN_INT (mask2);
 })
 
-(define_expand "zero_extendqihi2"
-  [(set (match_operand:HI 0 "register_operand" "")
-	(zero_extend:HI (match_operand:QI 1 "nonimmediate_operand" "")))]
-  ""
-{
-  if (! TARGET_BWX)
-    operands[1] = force_reg (QImode, operands[1]);
-})
-
-(define_insn "*zero_extendqihi2_bwx"
+(define_insn "zero_extendqihi2"
   [(set (match_operand:HI 0 "register_operand" "=r,r")
-	(zero_extend:HI (match_operand:QI 1 "nonimmediate_operand" "r,m")))]
-  "TARGET_BWX"
+	(zero_extend:HI
+	  (match_operand:QI 1 "reg_or_bwx_memory_operand" "r,m")))]
+  ""
   "@
    and %1,0xff,%0
    ldbu %0,%1"
-  [(set_attr "type" "ilog,ild")])
+  [(set_attr "type" "ilog,ild")
+   (set_attr "isa" "*,bwx")])
 
-(define_insn "*zero_extendqihi2_nobwx"
-  [(set (match_operand:HI 0 "register_operand" "=r")
-	(zero_extend:HI (match_operand:QI 1 "register_operand" "r")))]
-  "! TARGET_BWX"
-  "and %1,0xff,%0"
-  [(set_attr "type" "ilog")])
-
-(define_expand "zero_extendqisi2"
-  [(set (match_operand:SI 0 "register_operand" "")
-	(zero_extend:SI (match_operand:QI 1 "nonimmediate_operand" "")))]
-  ""
-{
-  if (! TARGET_BWX)
-    operands[1] = force_reg (QImode, operands[1]);
-})
-
-(define_insn "*zero_extendqisi2_bwx"
+(define_insn "zero_extendqisi2"
   [(set (match_operand:SI 0 "register_operand" "=r,r")
-	(zero_extend:SI (match_operand:QI 1 "nonimmediate_operand" "r,m")))]
-  "TARGET_BWX"
+	(zero_extend:SI
+	  (match_operand:QI 1 "reg_or_bwx_memory_operand" "r,m")))]
+  ""
   "@
    and %1,0xff,%0
    ldbu %0,%1"
-  [(set_attr "type" "ilog,ild")])
+  [(set_attr "type" "ilog,ild")
+   (set_attr "isa" "*,bwx")])
 
-(define_insn "*zero_extendqisi2_nobwx"
-  [(set (match_operand:SI 0 "register_operand" "=r")
-	(zero_extend:SI (match_operand:QI 1 "register_operand" "r")))]
-  "! TARGET_BWX"
-  "and %1,0xff,%0"
-  [(set_attr "type" "ilog")])
-
-(define_expand "zero_extendqidi2"
-  [(set (match_operand:DI 0 "register_operand" "")
-	(zero_extend:DI (match_operand:QI 1 "nonimmediate_operand" "")))]
-  ""
-{
-  if (! TARGET_BWX)
-    operands[1] = force_reg (QImode, operands[1]);
-})
-
-(define_insn "*zero_extendqidi2_bwx"
+(define_insn "zero_extendqidi2"
   [(set (match_operand:DI 0 "register_operand" "=r,r")
-	(zero_extend:DI (match_operand:QI 1 "nonimmediate_operand" "r,m")))]
-  "TARGET_BWX"
+	(zero_extend:DI
+	  (match_operand:QI 1 "reg_or_bwx_memory_operand" "r,m")))]
+  ""
   "@
    and %1,0xff,%0
    ldbu %0,%1"
-  [(set_attr "type" "ilog,ild")])
+  [(set_attr "type" "ilog,ild")
+   (set_attr "isa" "*,bwx")])
 
-(define_insn "*zero_extendqidi2_nobwx"
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	(zero_extend:DI (match_operand:QI 1 "register_operand" "r")))]
-  "! TARGET_BWX"
-  "and %1,0xff,%0"
-  [(set_attr "type" "ilog")])
-
-(define_expand "zero_extendhisi2"
-  [(set (match_operand:SI 0 "register_operand" "")
-	(zero_extend:SI (match_operand:HI 1 "nonimmediate_operand" "")))]
-  ""
-{
-  if (! TARGET_BWX)
-    operands[1] = force_reg (HImode, operands[1]);
-})
-
-(define_insn "*zero_extendhisi2_bwx"
+(define_insn "zero_extendhisi2"
   [(set (match_operand:SI 0 "register_operand" "=r,r")
-	(zero_extend:SI (match_operand:HI 1 "nonimmediate_operand" "r,m")))]
-  "TARGET_BWX"
+	(zero_extend:SI
+	  (match_operand:HI 1 "reg_or_bwx_memory_operand" "r,m")))]
+  ""
   "@
    zapnot %1,3,%0
    ldwu %0,%1"
-  [(set_attr "type" "shift,ild")])
+  [(set_attr "type" "shift,ild")
+   (set_attr "isa" "*,bwx")])
 
-(define_insn "*zero_extendhisi2_nobwx"
-  [(set (match_operand:SI 0 "register_operand" "=r")
-	(zero_extend:SI (match_operand:HI 1 "register_operand" "r")))]
-  "! TARGET_BWX"
-  "zapnot %1,3,%0"
-  [(set_attr "type" "shift")])
-
-(define_expand "zero_extendhidi2"
-  [(set (match_operand:DI 0 "register_operand" "")
-	(zero_extend:DI (match_operand:HI 1 "nonimmediate_operand" "")))]
-  ""
-{
-  if (! TARGET_BWX)
-    operands[1] = force_reg (HImode, operands[1]);
-})
-
-(define_insn "*zero_extendhidi2_bwx"
+(define_insn "zero_extendhidi2"
   [(set (match_operand:DI 0 "register_operand" "=r,r")
-	(zero_extend:DI (match_operand:HI 1 "nonimmediate_operand" "r,m")))]
-  "TARGET_BWX"
+	(zero_extend:DI
+	  (match_operand:HI 1 "reg_or_bwx_memory_operand" "r,m")))]
+  ""
   "@
    zapnot %1,3,%0
    ldwu %0,%1"
-  [(set_attr "type" "shift,ild")])
-
-(define_insn "*zero_extendhidi2_nobwx"
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	(zero_extend:DI (match_operand:HI 1 "register_operand" "r")))]
-  ""
-  "zapnot %1,3,%0"
-  [(set_attr "type" "shift")])
+  [(set_attr "type" "shift,ild")
+   (set_attr "isa" "*,bwx")])
 
 (define_insn "zero_extendsidi2"
   [(set (match_operand:DI 0 "register_operand" "=r")
@@ -1443,8 +1320,7 @@
   t0 = gen_reg_rtx (DImode);
   t1 = gen_reg_rtx (DImode);
 
-  emit_insn (gen_insxh (t0, gen_lowpart (DImode, operands[1]),
-			GEN_INT (32), GEN_INT (WORDS_BIG_ENDIAN ? 0 : 7)));
+  emit_insn (gen_inslh (t0, gen_lowpart (DImode, operands[1]), GEN_INT (7)));
   emit_insn (gen_inswl_const (t1, gen_lowpart (HImode, operands[1]),
 			      GEN_INT (24)));
   emit_insn (gen_iordi3 (t1, t0, t1));
@@ -1541,295 +1417,143 @@
   "sra %r1,%2,%0"
   [(set_attr "type" "shift")])
 
-(define_expand "extendqihi2"
-  [(set (match_dup 2)
-	(ashift:DI (match_operand:QI 1 "some_operand" "")
-		   (const_int 56)))
-   (set (match_operand:HI 0 "register_operand" "")
-	(ashiftrt:DI (match_dup 2)
-		     (const_int 56)))]
-  ""
-{
-  if (TARGET_BWX)
-    {
-      emit_insn (gen_extendqihi2x (operands[0],
-				   force_reg (QImode, operands[1])));
-      DONE;
-    }
-
- /* If we have an unaligned MEM, extend to DImode (which we do
-     specially) and then copy to the result.  */
-  if (unaligned_memory_operand (operands[1], HImode))
-    {
-      rtx temp = gen_reg_rtx (DImode);
-
-      emit_insn (gen_extendqidi2 (temp, operands[1]));
-      emit_move_insn (operands[0], gen_lowpart (HImode, temp));
-      DONE;
-    }
-
-  operands[0] = gen_lowpart (DImode, operands[0]);
-  operands[1] = gen_lowpart (DImode, force_reg (QImode, operands[1]));
-  operands[2] = gen_reg_rtx (DImode);
-})
-
-(define_insn "extendqidi2x"
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	(sign_extend:DI (match_operand:QI 1 "register_operand" "r")))]
-  "TARGET_BWX"
-  "sextb %1,%0"
-  [(set_attr "type" "shift")])
-
-(define_insn "extendhidi2x"
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	(sign_extend:DI (match_operand:HI 1 "register_operand" "r")))]
-  "TARGET_BWX"
-  "sextw %1,%0"
-  [(set_attr "type" "shift")])
-
-(define_insn "extendqisi2x"
-  [(set (match_operand:SI 0 "register_operand" "=r")
-	(sign_extend:SI (match_operand:QI 1 "register_operand" "r")))]
-  "TARGET_BWX"
-  "sextb %1,%0"
-  [(set_attr "type" "shift")])
-
-(define_insn "extendhisi2x"
-  [(set (match_operand:SI 0 "register_operand" "=r")
-	(sign_extend:SI (match_operand:HI 1 "register_operand" "r")))]
-  "TARGET_BWX"
-  "sextw %1,%0"
-  [(set_attr "type" "shift")])
-
-(define_insn "extendqihi2x"
+(define_insn "extendqihi2"
   [(set (match_operand:HI 0 "register_operand" "=r")
 	(sign_extend:HI (match_operand:QI 1 "register_operand" "r")))]
   "TARGET_BWX"
   "sextb %1,%0"
   [(set_attr "type" "shift")])
 
-(define_expand "extendqisi2"
-  [(set (match_dup 2)
-	(ashift:DI (match_operand:QI 1 "some_operand" "")
-		   (const_int 56)))
-   (set (match_operand:SI 0 "register_operand" "")
-	(ashiftrt:DI (match_dup 2)
-		     (const_int 56)))]
-  ""
-{
-  if (TARGET_BWX)
-    {
-      emit_insn (gen_extendqisi2x (operands[0],
-				   force_reg (QImode, operands[1])));
-      DONE;
-    }
-
-  /* If we have an unaligned MEM, extend to a DImode form of
-     the result (which we do specially).  */
-  if (unaligned_memory_operand (operands[1], QImode))
-    {
-      rtx temp = gen_reg_rtx (DImode);
-
-      emit_insn (gen_extendqidi2 (temp, operands[1]));
-      emit_move_insn (operands[0], gen_lowpart (SImode, temp));
-      DONE;
-    }
-
-  operands[0] = gen_lowpart (DImode, operands[0]);
-  operands[1] = gen_lowpart (DImode, force_reg (QImode, operands[1]));
-  operands[2] = gen_reg_rtx (DImode);
-})
+(define_insn "extendqisi2"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(sign_extend:SI (match_operand:QI 1 "register_operand" "r")))]
+  "TARGET_BWX"
+  "sextb %1,%0"
+  [(set_attr "type" "shift")])
 
 (define_expand "extendqidi2"
-  [(set (match_dup 2)
-	(ashift:DI (match_operand:QI 1 "some_operand" "")
-		   (const_int 56)))
-   (set (match_operand:DI 0 "register_operand" "")
-	(ashiftrt:DI (match_dup 2)
-		     (const_int 56)))]
+  [(set (match_operand:DI 0 "register_operand" "")
+	(sign_extend:DI (match_operand:QI 1 "some_operand" "")))]
   ""
 {
   if (TARGET_BWX)
+    operands[1] = force_reg (QImode, operands[1]);
+  else
     {
-      emit_insn (gen_extendqidi2x (operands[0],
-				   force_reg (QImode, operands[1])));
+      rtx x, t1, t2, i56;
+
+      if (unaligned_memory_operand (operands[1], QImode))
+	{
+	  x = gen_unaligned_extendqidi (operands[0], XEXP (operands[1], 0));
+	  alpha_set_memflags (x, operands[1]);
+	  emit_insn (x);
+	  DONE;
+	}
+
+      t1 = gen_reg_rtx (DImode);
+      t2 = gen_reg_rtx (DImode);
+      i56 = GEN_INT (56);
+
+      x = gen_lowpart (DImode, force_reg (QImode, operands[1]));
+      emit_move_insn (t1, x);
+      emit_insn (gen_ashldi3 (t2, t1, i56));
+      emit_insn (gen_ashrdi3 (operands[0], t2, i56));
       DONE;
     }
-
-  if (unaligned_memory_operand (operands[1], QImode))
-    {
-      rtx seq = gen_unaligned_extendqidi (operands[0], XEXP (operands[1], 0));
-      alpha_set_memflags (seq, operands[1]);
-      emit_insn (seq);
-      DONE;
-    }
-
-  operands[1] = gen_lowpart (DImode, force_reg (QImode, operands[1]));
-  operands[2] = gen_reg_rtx (DImode);
 })
 
-(define_expand "extendhisi2"
-  [(set (match_dup 2)
-	(ashift:DI (match_operand:HI 1 "some_operand" "")
-		   (const_int 48)))
-   (set (match_operand:SI 0 "register_operand" "")
-	(ashiftrt:DI (match_dup 2)
-		     (const_int 48)))]
-  ""
-{
-  if (TARGET_BWX)
-    {
-      emit_insn (gen_extendhisi2x (operands[0],
-				   force_reg (HImode, operands[1])));
-      DONE;
-    }
+(define_insn "*extendqidi2_bwx"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(sign_extend:DI (match_operand:QI 1 "register_operand" "r")))]
+  "TARGET_BWX"
+  "sextb %1,%0"
+  [(set_attr "type" "shift")])
 
-  /* If we have an unaligned MEM, extend to a DImode form of
-     the result (which we do specially).  */
-  if (unaligned_memory_operand (operands[1], HImode))
-    {
-      rtx temp = gen_reg_rtx (DImode);
-
-      emit_insn (gen_extendhidi2 (temp, operands[1]));
-      emit_move_insn (operands[0], gen_lowpart (SImode, temp));
-      DONE;
-    }
-
-  operands[0] = gen_lowpart (DImode, operands[0]);
-  operands[1] = gen_lowpart (DImode, force_reg (HImode, operands[1]));
-  operands[2] = gen_reg_rtx (DImode);
-})
+(define_insn "extendhisi2"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(sign_extend:SI (match_operand:HI 1 "register_operand" "r")))]
+  "TARGET_BWX"
+  "sextw %1,%0"
+  [(set_attr "type" "shift")])
 
 (define_expand "extendhidi2"
-  [(set (match_dup 2)
-	(ashift:DI (match_operand:HI 1 "some_operand" "")
-		   (const_int 48)))
-   (set (match_operand:DI 0 "register_operand" "")
-	(ashiftrt:DI (match_dup 2)
-		     (const_int 48)))]
+  [(set (match_operand:DI 0 "register_operand" "")
+	(sign_extend:DI (match_operand:HI 1 "some_operand" "")))]
   ""
 {
   if (TARGET_BWX)
+    operands[1] = force_reg (HImode, operands[1]);
+  else
     {
-      emit_insn (gen_extendhidi2x (operands[0],
-				   force_reg (HImode, operands[1])));
+      rtx x, t1, t2, i48;
+
+      if (unaligned_memory_operand (operands[1], HImode))
+	{
+	  x = gen_unaligned_extendhidi (operands[0], XEXP (operands[1], 0));
+	  alpha_set_memflags (x, operands[1]);
+	  emit_insn (x);
+	  DONE;
+	}
+
+      t1 = gen_reg_rtx (DImode);
+      t2 = gen_reg_rtx (DImode);
+      i48 = GEN_INT (48);
+
+      x = gen_lowpart (DImode, force_reg (HImode, operands[1]));
+      emit_move_insn (t1, x);
+      emit_insn (gen_ashldi3 (t2, t1, i48));
+      emit_insn (gen_ashrdi3 (operands[0], t2, i48));
       DONE;
     }
-
-  if (unaligned_memory_operand (operands[1], HImode))
-    {
-      rtx seq = gen_unaligned_extendhidi (operands[0], XEXP (operands[1], 0));
-
-      alpha_set_memflags (seq, operands[1]);
-      emit_insn (seq);
-      DONE;
-    }
-
-  operands[1] = gen_lowpart (DImode, force_reg (HImode, operands[1]));
-  operands[2] = gen_reg_rtx (DImode);
 })
+
+(define_insn "*extendhidi2_bwx"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(sign_extend:DI (match_operand:HI 1 "register_operand" "r")))]
+  "TARGET_BWX"
+  "sextw %1,%0"
+  [(set_attr "type" "shift")])
 
 ;; Here's how we sign extend an unaligned byte and halfword.  Doing this
 ;; as a pattern saves one instruction.  The code is similar to that for
 ;; the unaligned loads (see below).
 ;;
 ;; Operand 1 is the address, operand 0 is the result.
-(define_expand "unaligned_extendqidi"
-  [(use (match_operand:QI 0 "register_operand" ""))
-   (use (match_operand:DI 1 "address_operand" ""))]
-  ""
-{
-  operands[0] = gen_lowpart (DImode, operands[0]);
-  if (WORDS_BIG_ENDIAN)
-    emit_insn (gen_unaligned_extendqidi_be (operands[0], operands[1]));
-  else
-    emit_insn (gen_unaligned_extendqidi_le (operands[0], operands[1]));
-  DONE;
-})
 
-(define_expand "unaligned_extendqidi_le"
+(define_expand "unaligned_extendqidi"
   [(set (match_dup 3)
-	(mem:DI (and:DI (match_operand:DI 1 "" "") (const_int -8))))
+	(mem:DI (and:DI (match_operand:DI 1 "address_operand" "") (const_int -8))))
    (set (match_dup 4)
 	(ashift:DI (match_dup 3)
 		   (minus:DI (const_int 64)
 			     (ashift:DI
 			      (and:DI (match_dup 2) (const_int 7))
 			      (const_int 3)))))
-   (set (match_operand:DI 0 "register_operand" "")
+   (set (match_operand:QI 0 "register_operand" "")
 	(ashiftrt:DI (match_dup 4) (const_int 56)))]
-  "! WORDS_BIG_ENDIAN"
+  ""
 {
+  operands[0] = gen_lowpart (DImode, operands[0]);
   operands[2] = get_unaligned_offset (operands[1], 1);
   operands[3] = gen_reg_rtx (DImode);
   operands[4] = gen_reg_rtx (DImode);
 })
 
-(define_expand "unaligned_extendqidi_be"
-  [(set (match_dup 3)
-	(mem:DI (and:DI (match_operand:DI 1 "" "") (const_int -8))))
-   (set (match_dup 4)
-	(ashift:DI (match_dup 3)
-		   (ashift:DI
-		     (and:DI
-		       (plus:DI (match_dup 2) (const_int 1))
-		       (const_int 7))
-		     (const_int 3))))
-   (set (match_operand:DI 0 "register_operand" "")
-	(ashiftrt:DI (match_dup 4) (const_int 56)))]
-  "WORDS_BIG_ENDIAN"
-{
-  operands[2] = get_unaligned_offset (operands[1], -1);
-  operands[3] = gen_reg_rtx (DImode);
-  operands[4] = gen_reg_rtx (DImode);
-})
-
 (define_expand "unaligned_extendhidi"
-  [(use (match_operand:QI 0 "register_operand" ""))
-   (use (match_operand:DI 1 "address_operand" ""))]
-  ""
-{
-  operands[0] = gen_lowpart (DImode, operands[0]);
-  if (WORDS_BIG_ENDIAN)
-    emit_insn (gen_unaligned_extendhidi_be (operands[0], operands[1]));
-  else
-    emit_insn (gen_unaligned_extendhidi_le (operands[0], operands[1]));
-  DONE;
-})
-
-(define_expand "unaligned_extendhidi_le"
   [(set (match_dup 3)
-	(mem:DI (and:DI (match_operand:DI 1 "" "") (const_int -8))))
+	(mem:DI (and:DI (match_operand:DI 1 "address_operand" "") (const_int -8))))
    (set (match_dup 4)
 	(ashift:DI (match_dup 3)
 		   (minus:DI (const_int 64)
 			     (ashift:DI
 			      (and:DI (match_dup 2) (const_int 7))
 			      (const_int 3)))))
-   (set (match_operand:DI 0 "register_operand" "")
+   (set (match_operand:HI 0 "register_operand" "")
 	(ashiftrt:DI (match_dup 4) (const_int 48)))]
-  "! WORDS_BIG_ENDIAN"
+  ""
 {
+  operands[0] = gen_lowpart (DImode, operands[0]);
   operands[2] = get_unaligned_offset (operands[1], 2);
-  operands[3] = gen_reg_rtx (DImode);
-  operands[4] = gen_reg_rtx (DImode);
-})
-
-(define_expand "unaligned_extendhidi_be"
-  [(set (match_dup 3)
-	(mem:DI (and:DI (match_operand:DI 1 "" "") (const_int -8))))
-   (set (match_dup 4)
-	(ashift:DI (match_dup 3)
-		   (ashift:DI
-		     (and:DI
-		       (plus:DI (match_dup 2) (const_int 1))
-		       (const_int 7))
-		     (const_int 3))))
-   (set (match_operand:DI 0 "register_operand" "")
-	(ashiftrt:DI (match_dup 4) (const_int 48)))]
-  "WORDS_BIG_ENDIAN"
-{
-  operands[2] = get_unaligned_offset (operands[1], -1);
   operands[3] = gen_reg_rtx (DImode);
   operands[4] = gen_reg_rtx (DImode);
 })
@@ -1843,26 +1567,13 @@
   "ext%M2l %r1,%s3,%0"
   [(set_attr "type" "shift")])
 
-(define_insn "extxl_le"
+(define_insn "extxl"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(zero_extract:DI (match_operand:DI 1 "reg_or_0_operand" "rJ")
 			 (match_operand:DI 2 "mode_width_operand" "n")
 			 (ashift:DI (match_operand:DI 3 "reg_or_8bit_operand" "rI")
 				    (const_int 3))))]
-  "! WORDS_BIG_ENDIAN"
-  "ext%M2l %r1,%3,%0"
-  [(set_attr "type" "shift")])
-
-(define_insn "extxl_be"
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	(zero_extract:DI (match_operand:DI 1 "reg_or_0_operand" "rJ")
-			 (match_operand:DI 2 "mode_width_operand" "n")
-			 (minus:DI
-			   (const_int 56)
-			   (ashift:DI
-			     (match_operand:DI 3 "reg_or_8bit_operand" "rI")
-			     (const_int 3)))))]
-  "WORDS_BIG_ENDIAN"
+  ""
   "ext%M2l %r1,%3,%0"
   [(set_attr "type" "shift")])
 
@@ -1870,50 +1581,26 @@
 ;; in shifts larger than a word size.  So capture these patterns that it
 ;; should have turned into zero_extracts.
 
-(define_insn "*extxl_1_le"
+(define_insn "*extxl_1"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(and:DI (lshiftrt:DI (match_operand:DI 1 "reg_or_0_operand" "rJ")
 		  (ashift:DI (match_operand:DI 2 "reg_or_8bit_operand" "rI")
 			     (const_int 3)))
 	     (match_operand:DI 3 "mode_mask_operand" "n")))]
-  "! WORDS_BIG_ENDIAN"
+  ""
   "ext%U3l %1,%2,%0"
   [(set_attr "type" "shift")])
 
-(define_insn "*extxl_1_be"
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	(and:DI (lshiftrt:DI
-		  (match_operand:DI 1 "reg_or_0_operand" "rJ")
-		  (minus:DI (const_int 56)
-		    (ashift:DI (match_operand:DI 2 "reg_or_8bit_operand" "rI")
-			       (const_int 3))))
-		(match_operand:DI 3 "mode_mask_operand" "n")))]
-  "WORDS_BIG_ENDIAN"
-  "ext%U3l %1,%2,%0"
-  [(set_attr "type" "shift")])
-
-(define_insn "*extql_2_le"
+(define_insn "*extql_2"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(lshiftrt:DI (match_operand:DI 1 "reg_or_0_operand" "rJ")
 	  (ashift:DI (match_operand:DI 2 "reg_or_8bit_operand" "rI")
 		     (const_int 3))))]
-  "! WORDS_BIG_ENDIAN"
+  ""
   "extql %1,%2,%0"
   [(set_attr "type" "shift")])
 
-(define_insn "*extql_2_be"
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	(lshiftrt:DI
-	  (match_operand:DI 1 "reg_or_0_operand" "rJ")
-	  (minus:DI (const_int 56)
-		    (ashift:DI
-		      (match_operand:DI 2 "reg_or_8bit_operand" "rI")
-		      (const_int 3)))))]
-  "WORDS_BIG_ENDIAN"
-  "extql %1,%2,%0"
-  [(set_attr "type" "shift")])
-
-(define_insn "extqh_le"
+(define_insn "extqh"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(ashift:DI
 	 (match_operand:DI 1 "reg_or_0_operand" "rJ")
@@ -1923,25 +1610,11 @@
 		      (match_operand:DI 2 "reg_or_8bit_operand" "rI")
 		      (const_int 7))
 		     (const_int 3)))))]
-  "! WORDS_BIG_ENDIAN"
+  ""
   "extqh %r1,%2,%0"
   [(set_attr "type" "shift")])
 
-(define_insn "extqh_be"
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	(ashift:DI
-	  (match_operand:DI 1 "reg_or_0_operand" "rJ")
-	  (ashift:DI
-	    (and:DI
-	      (plus:DI (match_operand:DI 2 "reg_or_8bit_operand" "rI")
-		       (const_int 1))
-	      (const_int 7))
-	    (const_int 3))))]
-  "WORDS_BIG_ENDIAN"
-  "extqh %r1,%2,%0"
-  [(set_attr "type" "shift")])
-
-(define_insn "extlh_le"
+(define_insn "extlh"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(ashift:DI
 	 (and:DI (match_operand:DI 1 "reg_or_0_operand" "rJ")
@@ -1952,28 +1625,11 @@
 		      (match_operand:DI 2 "reg_or_8bit_operand" "rI")
 		      (const_int 7))
 		     (const_int 3)))))]
-  "! WORDS_BIG_ENDIAN"
+  ""
   "extlh %r1,%2,%0"
   [(set_attr "type" "shift")])
 
-(define_insn "extlh_be"
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	(and:DI
-	  (ashift:DI
-	    (match_operand:DI 1 "reg_or_0_operand" "rJ")
-	    (ashift:DI
-	      (and:DI
-		(plus:DI
-		  (match_operand:DI 2 "reg_or_8bit_operand" "rI")
-		  (const_int 1))
-		(const_int 7))
-	      (const_int 3)))
-	  (const_int 2147483647)))]
-  "WORDS_BIG_ENDIAN"
-  "extlh %r1,%2,%0"
-  [(set_attr "type" "shift")])
-
-(define_insn "extwh_le"
+(define_insn "extwh"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(ashift:DI
 	 (and:DI (match_operand:DI 1 "reg_or_0_operand" "rJ")
@@ -1984,23 +1640,7 @@
 		      (match_operand:DI 2 "reg_or_8bit_operand" "rI")
 		      (const_int 7))
 		     (const_int 3)))))]
-  "! WORDS_BIG_ENDIAN"
-  "extwh %r1,%2,%0"
-  [(set_attr "type" "shift")])
-
-(define_insn "extwh_be"
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	(and:DI
-	  (ashift:DI (match_operand:DI 1 "reg_or_0_operand" "rJ")
-		     (ashift:DI
-		       (and:DI
-			 (plus:DI
-			   (match_operand:DI 2 "reg_or_8bit_operand" "rI")
-			   (const_int 1))
-			 (const_int 7))
-		       (const_int 3)))
-	  (const_int 65535)))]
-  "WORDS_BIG_ENDIAN"
+  ""
   "extwh %r1,%2,%0"
   [(set_attr "type" "shift")])
 
@@ -2054,79 +1694,39 @@
   "insll %1,%s2,%0"
   [(set_attr "type" "shift")])
 
-(define_insn "insbl_le"
+(define_insn "insbl"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(ashift:DI (zero_extend:DI (match_operand:QI 1 "register_operand" "r"))
 		   (ashift:DI (match_operand:DI 2 "reg_or_8bit_operand" "rI")
 			      (const_int 3))))]
-  "! WORDS_BIG_ENDIAN"
+  ""
   "insbl %1,%2,%0"
   [(set_attr "type" "shift")])
 
-(define_insn "insbl_be"
- [(set (match_operand:DI 0 "register_operand" "=r")
-       (ashift:DI (zero_extend:DI (match_operand:QI 1 "register_operand" "r"))
-	 (minus:DI (const_int 56)
-	   (ashift:DI (match_operand:DI 2 "reg_or_8bit_operand" "rI")
-		      (const_int 3)))))]
-  "WORDS_BIG_ENDIAN"
-  "insbl %1,%2,%0"
-  [(set_attr "type" "shift")])
-
-(define_insn "inswl_le"
+(define_insn "inswl"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(ashift:DI (zero_extend:DI (match_operand:HI 1 "register_operand" "r"))
 		   (ashift:DI (match_operand:DI 2 "reg_or_8bit_operand" "rI")
 			      (const_int 3))))]
-  "! WORDS_BIG_ENDIAN"
+  ""
   "inswl %1,%2,%0"
   [(set_attr "type" "shift")])
 
-(define_insn "inswl_be"
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	(ashift:DI (zero_extend:DI (match_operand:HI 1 "register_operand" "r"))
-	  (minus:DI (const_int 56)
-	    (ashift:DI (match_operand:DI 2 "reg_or_8bit_operand" "rI")
-		       (const_int 3)))))]
-  "WORDS_BIG_ENDIAN"
-  "inswl %1,%2,%0"
-  [(set_attr "type" "shift")])
-
-(define_insn "insll_le"
+(define_insn "insll"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(ashift:DI (zero_extend:DI (match_operand:SI 1 "register_operand" "r"))
 		   (ashift:DI (match_operand:DI 2 "reg_or_8bit_operand" "rI")
 			      (const_int 3))))]
-  "! WORDS_BIG_ENDIAN"
+  ""
   "insll %1,%2,%0"
   [(set_attr "type" "shift")])
 
-(define_insn "insll_be"
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	(ashift:DI (zero_extend:DI (match_operand:SI 1 "register_operand" "r"))
-	  (minus:DI (const_int 56)
-	    (ashift:DI (match_operand:DI 2 "reg_or_8bit_operand" "rI")
-		       (const_int 3)))))]
-  "WORDS_BIG_ENDIAN"
-  "insll %1,%2,%0"
-  [(set_attr "type" "shift")])
-
-(define_insn "insql_le"
+(define_insn "insql"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(ashift:DI (match_operand:DI 1 "register_operand" "r")
 		   (ashift:DI (match_operand:DI 2 "reg_or_8bit_operand" "rI")
 			      (const_int 3))))]
-  "! WORDS_BIG_ENDIAN"
-  "insql %1,%2,%0"
-  [(set_attr "type" "shift")])
-
-(define_insn "insql_be"
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	(ashift:DI (match_operand:DI 1 "register_operand" "r")
-	  (minus:DI (const_int 56)
-	    (ashift:DI (match_operand:DI 2 "reg_or_8bit_operand" "rI")
-		       (const_int 3)))))]
-  "WORDS_BIG_ENDIAN"
+  ""
   "insql %1,%2,%0"
   [(set_attr "type" "shift")])
 
@@ -2177,7 +1777,7 @@
   "ins%M2h %1,%3,%0"
   [(set_attr "type" "shift")])
 
-(define_insn "mskxl_le"
+(define_insn "mskxl"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(and:DI (not:DI (ashift:DI
 			 (match_operand:DI 2 "mode_mask_operand" "n")
@@ -2185,20 +1785,7 @@
 			  (match_operand:DI 3 "reg_or_8bit_operand" "rI")
 			  (const_int 3))))
 		(match_operand:DI 1 "reg_or_0_operand" "rJ")))]
-  "! WORDS_BIG_ENDIAN"
-  "msk%U2l %r1,%3,%0"
-  [(set_attr "type" "shift")])
-
-(define_insn "mskxl_be"
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	(and:DI (not:DI (ashift:DI
-			  (match_operand:DI 2 "mode_mask_operand" "n")
-			  (minus:DI (const_int 56)
-			    (ashift:DI
-			      (match_operand:DI 3 "reg_or_8bit_operand" "rI")
-			      (const_int 3)))))
-		(match_operand:DI 1 "reg_or_0_operand" "rJ")))]
-  "WORDS_BIG_ENDIAN"
+  ""
   "msk%U2l %r1,%3,%0"
   [(set_attr "type" "shift")])
 
@@ -2431,9 +2018,9 @@
    (set_attr "trap_suffix" "u_su_sui")])
 
 (define_expand "addtf3"
-  [(use (match_operand 0 "register_operand" ""))
-   (use (match_operand 1 "general_operand" ""))
-   (use (match_operand 2 "general_operand" ""))]
+  [(use (match_operand:TF 0 "register_operand" ""))
+   (use (match_operand:TF 1 "general_operand" ""))
+   (use (match_operand:TF 2 "general_operand" ""))]
   "TARGET_HAS_XFLOATING_LIBS"
   "alpha_emit_xfloating_arith (PLUS, operands); DONE;")
 
@@ -2923,9 +2510,9 @@
    (set_attr "trap_suffix" "u_su_sui")])
 
 (define_expand "divtf3"
-  [(use (match_operand 0 "register_operand" ""))
-   (use (match_operand 1 "general_operand" ""))
-   (use (match_operand 2 "general_operand" ""))]
+  [(use (match_operand:TF 0 "register_operand" ""))
+   (use (match_operand:TF 1 "general_operand" ""))
+   (use (match_operand:TF 2 "general_operand" ""))]
   "TARGET_HAS_XFLOATING_LIBS"
   "alpha_emit_xfloating_arith (DIV, operands); DONE;")
 
@@ -2999,9 +2586,9 @@
    (set_attr "trap_suffix" "u_su_sui")])
 
 (define_expand "multf3"
-  [(use (match_operand 0 "register_operand" ""))
-   (use (match_operand 1 "general_operand" ""))
-   (use (match_operand 2 "general_operand" ""))]
+  [(use (match_operand:TF 0 "register_operand" ""))
+   (use (match_operand:TF 1 "general_operand" ""))
+   (use (match_operand:TF 2 "general_operand" ""))]
   "TARGET_HAS_XFLOATING_LIBS"
   "alpha_emit_xfloating_arith (MULT, operands); DONE;")
 
@@ -3087,9 +2674,9 @@
    (set_attr "trap_suffix" "u_su_sui")])
 
 (define_expand "subtf3"
-  [(use (match_operand 0 "register_operand" ""))
-   (use (match_operand 1 "general_operand" ""))
-   (use (match_operand 2 "general_operand" ""))]
+  [(use (match_operand:TF 0 "register_operand" ""))
+   (use (match_operand:TF 1 "general_operand" ""))
+   (use (match_operand:TF 2 "general_operand" ""))]
   "TARGET_HAS_XFLOATING_LIBS"
   "alpha_emit_xfloating_arith (MINUS, operands); DONE;")
 
@@ -4315,16 +3902,6 @@
 ;; Here are the CALL and unconditional branch insns.  Calls on NT and OSF
 ;; work differently, so we have different patterns for each.
 
-;; On Unicos/Mk a call information word (CIW) must be generated for each
-;; call. The CIW contains information about arguments passed in registers
-;; and is stored in the caller's SSIB. Its offset relative to the beginning
-;; of the SSIB is passed in $25. Handling this properly is quite complicated
-;; in the presence of inlining since the CIWs for calls performed by the
-;; inlined function must be stored in the SSIB of the function it is inlined
-;; into as well. We encode the CIW in an unspec and append it to the list
-;; of the CIWs for the current function only when the instruction for loading
-;; $25 is generated.
-
 (define_expand "call"
   [(use (match_operand:DI 0 "" ""))
    (use (match_operand 1 "" ""))
@@ -4332,12 +3909,8 @@
    (use (match_operand 3 "" ""))]
   ""
 {
-  if (TARGET_ABI_WINDOWS_NT)
-    emit_call_insn (gen_call_nt (operands[0], operands[1]));
-  else if (TARGET_ABI_OPEN_VMS)
+  if (TARGET_ABI_OPEN_VMS)
     emit_call_insn (gen_call_vms (operands[0], operands[2]));
-  else if (TARGET_ABI_UNICOSMK)
-    emit_call_insn (gen_call_umk (operands[0], operands[2]));
   else
     emit_call_insn (gen_call_osf (operands[0], operands[1]));
   DONE;
@@ -4365,42 +3938,6 @@
   operands[0] = XEXP (operands[0], 0);
   if (! call_operand (operands[0], Pmode))
     operands[0] = copy_to_mode_reg (Pmode, operands[0]);
-})
-
-(define_expand "call_nt"
-  [(parallel [(call (mem:DI (match_operand 0 "" ""))
-		    (match_operand 1 "" ""))
-	      (clobber (reg:DI 26))])]
-  ""
-{
-  gcc_assert (MEM_P (operands[0]));
-
-  operands[0] = XEXP (operands[0], 0);
-  if (GET_CODE (operands[0]) != SYMBOL_REF && !REG_P (operands[0]))
-    operands[0] = force_reg (DImode, operands[0]);
-})
-
-;; Calls on Unicos/Mk are always indirect.
-;; op 0: symbol ref for called function
-;; op 1: CIW for $25 represented by an unspec
-
-(define_expand "call_umk"
-   [(parallel [(call (mem:DI (match_operand 0 "" ""))
-		     (match_operand 1 "" ""))
-	       (use (reg:DI 25))
-	       (clobber (reg:DI 26))])]
-   ""
-{
-  gcc_assert (MEM_P (operands[0]));
-
-  /* Always load the address of the called function into a register;
-     load the CIW in $25.  */
-
-  operands[0] = XEXP (operands[0], 0);
-  if (!REG_P (operands[0]))
-    operands[0] = force_reg (DImode, operands[0]);
-
-  emit_move_insn (gen_rtx_REG (DImode, 25), operands[1]);
 })
 
 ;;
@@ -4449,13 +3986,8 @@
    (use (match_operand 4 "" ""))]
   ""
 {
-  if (TARGET_ABI_WINDOWS_NT)
-    emit_call_insn (gen_call_value_nt (operands[0], operands[1], operands[2]));
-  else if (TARGET_ABI_OPEN_VMS)
+  if (TARGET_ABI_OPEN_VMS)
     emit_call_insn (gen_call_value_vms (operands[0], operands[1],
-					operands[3]));
-  else if (TARGET_ABI_UNICOSMK)
-    emit_call_insn (gen_call_value_umk (operands[0], operands[1],
 					operands[3]));
   else
     emit_call_insn (gen_call_value_osf (operands[0], operands[1],
@@ -4489,20 +4021,6 @@
     operands[1] = copy_to_mode_reg (Pmode, operands[1]);
 })
 
-(define_expand "call_value_nt"
-  [(parallel [(set (match_operand 0 "" "")
-		   (call (mem:DI (match_operand 1 "" ""))
-			 (match_operand 2 "" "")))
-	      (clobber (reg:DI 26))])]
-  ""
-{
-  gcc_assert (MEM_P (operands[1]));
-
-  operands[1] = XEXP (operands[1], 0);
-  if (GET_CODE (operands[1]) != SYMBOL_REF && !REG_P (operands[1]))
-    operands[1] = force_reg (DImode, operands[1]);
-})
-
 (define_expand "call_value_vms"
   [(parallel [(set (match_operand 0 "" "")
 		   (call (mem:DI (match_operand:DI 1 "" ""))
@@ -4534,23 +4052,6 @@
 		      gen_rtx_MEM (Pmode, plus_constant (operands[1], 8)));
       operands[3] = operands[1];
     }
-})
-
-(define_expand "call_value_umk"
-  [(parallel [(set (match_operand 0 "" "")
-		   (call (mem:DI (match_operand 1 "" ""))
-			 (match_operand 2 "" "")))
-	      (use (reg:DI 25))
-	      (clobber (reg:DI 26))])]
-  ""
-{
-  gcc_assert (MEM_P (operands[1]));
-
-  operands[1] = XEXP (operands[1], 0);
-  if (!REG_P (operands[1]))
-    operands[1] = force_reg (DImode, operands[1]);
-
-  emit_move_insn (gen_rtx_REG (DImode, 25), operands[2]);
 })
 
 (define_insn "*call_osf_1_er_noreturn"
@@ -4726,18 +4227,6 @@
   [(set_attr "type" "jsr")
    (set_attr "length" "*,8")])
 
-(define_insn "*call_nt_1"
-  [(call (mem:DI (match_operand:DI 0 "call_operand" "r,R,s"))
-	 (match_operand 1 "" ""))
-   (clobber (reg:DI 26))]
-  "TARGET_ABI_WINDOWS_NT"
-  "@
-   jsr $26,(%0)
-   bsr $26,%0
-   jsr $26,%0"
-  [(set_attr "type" "jsr")
-   (set_attr "length" "*,*,12")])
-
 ; GAS relies on the order and position of instructions output below in order
 ; to generate relocs for VMS link to potentially optimize the call.
 ; Please do not molest.
@@ -4764,15 +4253,6 @@
 }
   [(set_attr "type" "jsr")
    (set_attr "length" "12,16")])
-
-(define_insn "*call_umk_1"
-  [(call (mem:DI (match_operand:DI 0 "call_operand" "r"))
-	 (match_operand 1 "" ""))
-   (use (reg:DI 25))
-   (clobber (reg:DI 26))]
-  "TARGET_ABI_UNICOSMK"
-  "jsr $26,(%0)"
-  [(set_attr "type" "jsr")])
 
 ;; Call subroutine returning any type.
 
@@ -4842,13 +4322,7 @@
 	      (use (label_ref:DI (match_operand 1 "" "")))])]
   ""
 {
-  if (TARGET_ABI_WINDOWS_NT)
-    {
-      rtx dest = gen_reg_rtx (DImode);
-      emit_insn (gen_extendsidi2 (dest, operands[0]));
-      operands[0] = dest;
-    }
-  else if (TARGET_ABI_OSF)
+  if (TARGET_ABI_OSF)
     {
       rtx dest = gen_reg_rtx (DImode);
       emit_insn (gen_extendsidi2 (dest, operands[0]));
@@ -4856,18 +4330,6 @@
       operands[0] = dest;
     }
 })
-
-(define_insn "*tablejump_osf_nt_internal"
-  [(set (pc)
-	(match_operand:DI 0 "register_operand" "r"))
-   (use (label_ref:DI (match_operand 1 "" "")))]
-  "(TARGET_ABI_OSF || TARGET_ABI_WINDOWS_NT)
-   && alpha_tablejump_addr_vec (insn)"
-{
-  operands[2] = alpha_tablejump_best_label (insn);
-  return "jmp $31,(%0),%2";
-}
-  [(set_attr "type" "ibr")])
 
 (define_insn "*tablejump_internal"
   [(set (pc)
@@ -4886,12 +4348,9 @@
   [(set_attr "type" "callpal")])
 
 ;; BUGCHK is documented common to OSF/1 and VMS PALcode.
-;; NT does not document anything at 0x81 -- presumably it would generate
-;; the equivalent of SIGILL, but this isn't that important.
-;; ??? Presuming unicosmk uses either OSF/1 or VMS PALcode.
 (define_insn "trap"
   [(trap_if (const_int 1) (const_int 0))]
-  "!TARGET_ABI_WINDOWS_NT"
+  ""
   "call_pal 0x81"
   [(set_attr "type" "callpal")])
 
@@ -4954,27 +4413,21 @@
 ;; are done via define_expand.  Start with the floating-point insns, since
 ;; they are simpler.
 
-(define_insn "*movsf_nofix"
-  [(set (match_operand:SF 0 "nonimmediate_operand" "=f,f,*r,*r,m,m")
-	(match_operand:SF 1 "input_operand" "fG,m,*rG,m,fG,*r"))]
-  "TARGET_FPREGS && ! TARGET_FIX
-   && (register_operand (operands[0], SFmode)
-       || reg_or_0_operand (operands[1], SFmode))"
-  "@
-   cpys %R1,%R1,%0
-   ld%, %0,%1
-   bis $31,%r1,%0
-   ldl %0,%1
-   st%, %R1,%0
-   stl %r1,%0"
-  [(set_attr "type" "fcpys,fld,ilog,ild,fst,ist")])
+(define_expand "movsf"
+  [(set (match_operand:SF 0 "nonimmediate_operand" "")
+	(match_operand:SF 1 "general_operand" ""))]
+  ""
+{
+  if (MEM_P (operands[0])
+      && ! reg_or_0_operand (operands[1], SFmode))
+    operands[1] = force_reg (SFmode, operands[1]);
+})
 
-(define_insn "*movsf_fix"
+(define_insn "*movsf"
   [(set (match_operand:SF 0 "nonimmediate_operand" "=f,f,*r,*r,m,m,f,*r")
 	(match_operand:SF 1 "input_operand" "fG,m,*rG,m,fG,*r,*r,f"))]
-  "TARGET_FPREGS && TARGET_FIX
-   && (register_operand (operands[0], SFmode)
-       || reg_or_0_operand (operands[1], SFmode))"
+  "register_operand (operands[0], SFmode)
+   || reg_or_0_operand (operands[1], SFmode)"
   "@
    cpys %R1,%R1,%0
    ld%, %0,%1
@@ -4984,41 +4437,24 @@
    stl %r1,%0
    itofs %1,%0
    ftois %1,%0"
-  [(set_attr "type" "fcpys,fld,ilog,ild,fst,ist,itof,ftoi")])
+  [(set_attr "type" "fcpys,fld,ilog,ild,fst,ist,itof,ftoi")
+   (set_attr "isa" "*,*,*,*,*,*,fix,fix")])
 
-(define_insn "*movsf_nofp"
-  [(set (match_operand:SF 0 "nonimmediate_operand" "=r,r,m")
-	(match_operand:SF 1 "input_operand" "rG,m,r"))]
-  "! TARGET_FPREGS
-   && (register_operand (operands[0], SFmode)
-       || reg_or_0_operand (operands[1], SFmode))"
-  "@
-   bis $31,%r1,%0
-   ldl %0,%1
-   stl %r1,%0"
-  [(set_attr "type" "ilog,ild,ist")])
+(define_expand "movdf"
+  [(set (match_operand:DF 0 "nonimmediate_operand" "")
+	(match_operand:DF 1 "general_operand" ""))]
+  ""
+{
+  if (MEM_P (operands[0])
+      && ! reg_or_0_operand (operands[1], DFmode))
+    operands[1] = force_reg (DFmode, operands[1]);
+})
 
-(define_insn "*movdf_nofix"
-  [(set (match_operand:DF 0 "nonimmediate_operand" "=f,f,*r,*r,m,m")
-	(match_operand:DF 1 "input_operand" "fG,m,*rG,m,fG,*r"))]
-  "TARGET_FPREGS && ! TARGET_FIX
-   && (register_operand (operands[0], DFmode)
-       || reg_or_0_operand (operands[1], DFmode))"
-  "@
-   cpys %R1,%R1,%0
-   ld%- %0,%1
-   bis $31,%r1,%0
-   ldq %0,%1
-   st%- %R1,%0
-   stq %r1,%0"
-  [(set_attr "type" "fcpys,fld,ilog,ild,fst,ist")])
-
-(define_insn "*movdf_fix"
+(define_insn "*movdf"
   [(set (match_operand:DF 0 "nonimmediate_operand" "=f,f,*r,*r,m,m,f,*r")
 	(match_operand:DF 1 "input_operand" "fG,m,*rG,m,fG,*r,*r,f"))]
-  "TARGET_FPREGS && TARGET_FIX
-   && (register_operand (operands[0], DFmode)
-       || reg_or_0_operand (operands[1], DFmode))"
+  "register_operand (operands[0], DFmode)
+   || reg_or_0_operand (operands[1], DFmode)"
   "@
    cpys %R1,%R1,%0
    ld%- %0,%1
@@ -5028,24 +4464,24 @@
    stq %r1,%0
    itoft %1,%0
    ftoit %1,%0"
-  [(set_attr "type" "fcpys,fld,ilog,ild,fst,ist,itof,ftoi")])
-
-(define_insn "*movdf_nofp"
-  [(set (match_operand:DF 0 "nonimmediate_operand" "=r,r,m")
-	(match_operand:DF 1 "input_operand" "rG,m,r"))]
-  "! TARGET_FPREGS
-   && (register_operand (operands[0], DFmode)
-       || reg_or_0_operand (operands[1], DFmode))"
-  "@
-   bis $31,%r1,%0
-   ldq %0,%1
-   stq %r1,%0"
-  [(set_attr "type" "ilog,ild,ist")])
+  [(set_attr "type" "fcpys,fld,ilog,ild,fst,ist,itof,ftoi")
+   (set_attr "isa" "*,*,*,*,*,*,fix,fix")])
 
 ;; Subregs suck for register allocation.  Pretend we can move TFmode
 ;; data between general registers until after reload.
+;; ??? Is this still true now that we have the lower-subreg pass?
 
-(define_insn_and_split "*movtf_internal"
+(define_expand "movtf"
+  [(set (match_operand:TF 0 "nonimmediate_operand" "")
+	(match_operand:TF 1 "general_operand" ""))]
+  ""
+{
+  if (MEM_P (operands[0])
+      && ! reg_or_0_operand (operands[1], TFmode))
+    operands[1] = force_reg (TFmode, operands[1]);
+})
+
+(define_insn_and_split "*movtf"
   [(set (match_operand:TF 0 "nonimmediate_operand" "=r,o")
 	(match_operand:TF 1 "input_operand" "roG,rG"))]
   "register_operand (operands[0], TFmode)
@@ -5058,115 +4494,6 @@
   alpha_split_tmode_pair (operands, TFmode, true); 
 })
 
-(define_expand "movsf"
-  [(set (match_operand:SF 0 "nonimmediate_operand" "")
-	(match_operand:SF 1 "general_operand" ""))]
-  ""
-{
-  if (MEM_P (operands[0])
-      && ! reg_or_0_operand (operands[1], SFmode))
-    operands[1] = force_reg (SFmode, operands[1]);
-})
-
-(define_expand "movdf"
-  [(set (match_operand:DF 0 "nonimmediate_operand" "")
-	(match_operand:DF 1 "general_operand" ""))]
-  ""
-{
-  if (MEM_P (operands[0])
-      && ! reg_or_0_operand (operands[1], DFmode))
-    operands[1] = force_reg (DFmode, operands[1]);
-})
-
-(define_expand "movtf"
-  [(set (match_operand:TF 0 "nonimmediate_operand" "")
-	(match_operand:TF 1 "general_operand" ""))]
-  ""
-{
-  if (MEM_P (operands[0])
-      && ! reg_or_0_operand (operands[1], TFmode))
-    operands[1] = force_reg (TFmode, operands[1]);
-})
-
-(define_insn "*movsi"
-  [(set (match_operand:SI 0 "nonimmediate_operand" "=r,r,r,r,r,m")
-	(match_operand:SI 1 "input_operand" "rJ,K,L,n,m,rJ"))]
-  "(TARGET_ABI_OSF || TARGET_ABI_UNICOSMK)
-   && (register_operand (operands[0], SImode)
-       || reg_or_0_operand (operands[1], SImode))"
-  "@
-   bis $31,%r1,%0
-   lda %0,%1($31)
-   ldah %0,%h1($31)
-   #
-   ldl %0,%1
-   stl %r1,%0"
-  [(set_attr "type" "ilog,iadd,iadd,multi,ild,ist")])
-
-(define_insn "*movsi_nt_vms"
-  [(set (match_operand:SI 0 "nonimmediate_operand" "=r,r,r,r,r,r,m")
-	(match_operand:SI 1 "input_operand" "rJ,K,L,s,n,m,rJ"))]
-  "(TARGET_ABI_WINDOWS_NT || TARGET_ABI_OPEN_VMS)
-    && (register_operand (operands[0], SImode)
-        || reg_or_0_operand (operands[1], SImode))"
-  "@
-   bis $31,%1,%0
-   lda %0,%1
-   ldah %0,%h1
-   lda %0,%1
-   #
-   ldl %0,%1
-   stl %r1,%0"
-  [(set_attr "type" "ilog,iadd,iadd,ldsym,multi,ild,ist")])
-
-(define_insn "*movhi_nobwx"
-  [(set (match_operand:HI 0 "register_operand" "=r,r")
-	(match_operand:HI 1 "input_operand" "rJ,n"))]
-  "! TARGET_BWX
-   && (register_operand (operands[0], HImode)
-       || register_operand (operands[1], HImode))"
-  "@
-   bis $31,%r1,%0
-   lda %0,%L1($31)"
-  [(set_attr "type" "ilog,iadd")])
-
-(define_insn "*movhi_bwx"
-  [(set (match_operand:HI 0 "nonimmediate_operand" "=r,r,r,m")
-	(match_operand:HI 1 "input_operand" "rJ,n,m,rJ"))]
-  "TARGET_BWX
-   && (register_operand (operands[0], HImode)
-       || reg_or_0_operand (operands[1], HImode))"
-  "@
-   bis $31,%r1,%0
-   lda %0,%L1($31)
-   ldwu %0,%1
-   stw %r1,%0"
-  [(set_attr "type" "ilog,iadd,ild,ist")])
-
-(define_insn "*movqi_nobwx"
-  [(set (match_operand:QI 0 "register_operand" "=r,r")
-	(match_operand:QI 1 "input_operand" "rJ,n"))]
-  "! TARGET_BWX
-   && (register_operand (operands[0], QImode)
-       || register_operand (operands[1], QImode))"
-  "@
-   bis $31,%r1,%0
-   lda %0,%L1($31)"
-  [(set_attr "type" "ilog,iadd")])
-
-(define_insn "*movqi_bwx"
-  [(set (match_operand:QI 0 "nonimmediate_operand" "=r,r,r,m")
-	(match_operand:QI 1 "input_operand" "rJ,n,m,rJ"))]
-  "TARGET_BWX
-   && (register_operand (operands[0], QImode)
-       || reg_or_0_operand (operands[1], QImode))"
-  "@
-   bis $31,%r1,%0
-   lda %0,%L1($31)
-   ldbu %0,%1
-   stb %r1,%0"
-  [(set_attr "type" "ilog,iadd,ild,ist")])
-
 ;; We do two major things here: handle mem->mem and construct long
 ;; constants.
 
@@ -5178,6 +4505,22 @@
   if (alpha_expand_mov (SImode, operands))
     DONE;
 })
+
+(define_insn "*movsi"
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=r,r,r,r,r,m,r")
+	(match_operand:SI 1 "input_operand" "rJ,K,L,n,m,rJ,s"))]
+  "register_operand (operands[0], SImode)
+   || reg_or_0_operand (operands[1], SImode)"
+  "@
+   bis $31,%r1,%0
+   lda %0,%1($31)
+   ldah %0,%h1($31)
+   #
+   ldl %0,%1
+   stl %r1,%0
+   lda %0,%1"
+  [(set_attr "type" "ilog,iadd,iadd,multi,ild,ist,ldsym")
+   (set_attr "isa" "*,*,*,*,*,*,vms")])
 
 ;; Split a load of a large constant into the appropriate two-insn
 ;; sequence.
@@ -5193,84 +4536,6 @@
   else
     FAIL;
 })
-
-;; Split the load of an address into a four-insn sequence on Unicos/Mk.
-;; Always generate a REG_EQUAL note for the last instruction to facilitate
-;; optimizations. If the symbolic operand is a label_ref, generate
-;; REG_LABEL_OPERAND notes and update LABEL_NUSES because this is not done
-;; automatically.  Labels may be incorrectly deleted if we don't do this.
-;;
-;; Describing what the individual instructions do correctly is too complicated
-;; so use UNSPECs for each of the three parts of an address.
-
-(define_split
-  [(set (match_operand:DI 0 "register_operand" "")
-	(match_operand:DI 1 "symbolic_operand" ""))]
-  "TARGET_ABI_UNICOSMK && reload_completed"
-  [(const_int 0)]
-{
-  rtx insn1, insn2, insn3;
-
-  insn1 = emit_insn (gen_umk_laum (operands[0], operands[1]));
-  emit_insn (gen_ashldi3 (operands[0], operands[0], GEN_INT (32)));
-  insn2 = emit_insn (gen_umk_lalm (operands[0], operands[0], operands[1]));
-  insn3 = emit_insn (gen_umk_lal (operands[0], operands[0], operands[1]));
-  set_unique_reg_note (insn3, REG_EQUAL, operands[1]);
-
-  if (GET_CODE (operands[1]) == LABEL_REF)
-    {
-      rtx label;
-
-      label = XEXP (operands[1], 0);
-      add_reg_note (insn1, REG_LABEL_OPERAND, label);
-      add_reg_note (insn2, REG_LABEL_OPERAND, label);
-      add_reg_note (insn3, REG_LABEL_OPERAND, label);
-      LABEL_NUSES (label) += 3;
-    }
-  DONE;
-})
-
-;; Instructions for loading the three parts of an address on Unicos/Mk.
-
-(define_insn "umk_laum"
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	(unspec:DI [(match_operand:DI 1 "symbolic_operand" "")]
-		   UNSPEC_UMK_LAUM))]
-  "TARGET_ABI_UNICOSMK"
-  "laum %r0,%t1($31)"
-  [(set_attr "type" "iadd")])
-
-(define_insn "umk_lalm"
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	(plus:DI (match_operand:DI 1 "register_operand" "r")
-		 (unspec:DI [(match_operand:DI 2 "symbolic_operand" "")]
-			    UNSPEC_UMK_LALM)))] 
-  "TARGET_ABI_UNICOSMK"
-  "lalm %r0,%t2(%r1)"
-  [(set_attr "type" "iadd")])
-
-(define_insn "umk_lal"
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	(plus:DI (match_operand:DI 1 "register_operand" "r")
-		 (unspec:DI [(match_operand:DI 2 "symbolic_operand" "")]
-			    UNSPEC_UMK_LAL)))]
-  "TARGET_ABI_UNICOSMK"
-  "lal %r0,%t2(%r1)"
-  [(set_attr "type" "iadd")])
-
-;; Add a new call information word to the current function's list of CIWs
-;; and load its index into $25. Doing it here ensures that the CIW will be
-;; associated with the correct function even in the presence of inlining.
-
-(define_insn "*umk_load_ciw"
-  [(set (reg:DI 25)
-	(unspec:DI [(match_operand 0 "" "")] UNSPEC_UMK_LOAD_CIW))]
-  "TARGET_ABI_UNICOSMK"
-{
-  operands[0] = unicosmk_add_call_info_word (operands[0]);
-  return "lda $25,%0";
-}
-  [(set_attr "type" "iadd")])
 
 (define_insn "*movdi_er_low_l"
   [(set (match_operand:DI 0 "register_operand" "=r")
@@ -5407,60 +4672,13 @@
   operands[2] = pic_offset_table_rtx;
 })
 
-(define_insn "*movdi_er_nofix"
-  [(set (match_operand:DI 0 "nonimmediate_operand" "=r,r,r,r,r,r,r,m,*f,*f,Q")
-	(match_operand:DI 1 "input_operand" "rJ,K,L,T,s,n,m,rJ,*fJ,Q,*f"))]
-  "TARGET_EXPLICIT_RELOCS && ! TARGET_FIX
-   && (register_operand (operands[0], DImode)
-       || reg_or_0_operand (operands[1], DImode))"
-  "@
-   mov %r1,%0
-   lda %0,%1($31)
-   ldah %0,%h1($31)
-   #
-   #
-   #
-   ldq%A1 %0,%1
-   stq%A0 %r1,%0
-   fmov %R1,%0
-   ldt %0,%1
-   stt %R1,%0"
-  [(set_attr "type" "ilog,iadd,iadd,iadd,ldsym,multi,ild,ist,fcpys,fld,fst")
-   (set_attr "usegp" "*,*,*,yes,*,*,*,*,*,*,*")])
-
-;; The 'U' constraint matches symbolic operands on Unicos/Mk. Those should
-;; have been split up by the rules above but we shouldn't reject the
-;; possibility of them getting through.
-
-(define_insn "*movdi_nofix"
-  [(set (match_operand:DI 0 "nonimmediate_operand" "=r,r,r,r,r,r,r,m,*f,*f,Q")
-	(match_operand:DI 1 "input_operand" "rJ,K,L,U,s,n,m,rJ,*fJ,Q,*f"))]
-  "! TARGET_FIX
-   && (register_operand (operands[0], DImode)
-       || reg_or_0_operand (operands[1], DImode))"
-  "@
-   bis $31,%r1,%0
-   lda %0,%1($31)
-   ldah %0,%h1($31)
-   laum %0,%t1($31)\;sll %0,32,%0\;lalm %0,%t1(%0)\;lal %0,%t1(%0)
-   lda %0,%1
-   #
-   ldq%A1 %0,%1
-   stq%A0 %r1,%0
-   cpys %R1,%R1,%0
-   ldt %0,%1
-   stt %R1,%0"
-  [(set_attr "type" "ilog,iadd,iadd,ldsym,ldsym,multi,ild,ist,fcpys,fld,fst")
-   (set_attr "length" "*,*,*,16,*,*,*,*,*,*,*")])
-
-(define_insn "*movdi_er_fix"
+(define_insn "*movdi"
   [(set (match_operand:DI 0 "nonimmediate_operand"
-				"=r,r,r,r,r,r,r, m, *f,*f, Q, r,*f")
+				"=r,r,r,r,r,r,r,r, m, *f,*f, Q, r,*f")
 	(match_operand:DI 1 "input_operand"
-				"rJ,K,L,T,s,n,m,rJ,*fJ, Q,*f,*f, r"))]
-  "TARGET_EXPLICIT_RELOCS && TARGET_FIX
-   && (register_operand (operands[0], DImode)
-       || reg_or_0_operand (operands[1], DImode))"
+				"rJ,K,L,T,s,n,s,m,rJ,*fJ, Q,*f,*f, r"))]
+  "register_operand (operands[0], DImode)
+   || reg_or_0_operand (operands[1], DImode)"
   "@
    mov %r1,%0
    lda %0,%1($31)
@@ -5468,6 +4686,7 @@
    #
    #
    #
+   lda %0,%1
    ldq%A1 %0,%1
    stq%A0 %r1,%0
    fmov %R1,%0
@@ -5475,29 +4694,9 @@
    stt %R1,%0
    ftoit %1,%0
    itoft %1,%0"
-  [(set_attr "type" "ilog,iadd,iadd,iadd,ldsym,multi,ild,ist,fcpys,fld,fst,ftoi,itof")
-   (set_attr "usegp" "*,*,*,yes,*,*,*,*,*,*,*,*,*")])
-
-(define_insn "*movdi_fix"
-  [(set (match_operand:DI 0 "nonimmediate_operand" "=r,r,r,r,r,r,m,*f,*f,Q,r,*f")
-	(match_operand:DI 1 "input_operand" "rJ,K,L,s,n,m,rJ,*fJ,Q,*f,*f,r"))]
-  "! TARGET_EXPLICIT_RELOCS && TARGET_FIX
-   && (register_operand (operands[0], DImode)
-       || reg_or_0_operand (operands[1], DImode))"
-  "@
-   bis $31,%r1,%0
-   lda %0,%1($31)
-   ldah %0,%h1($31)
-   lda %0,%1
-   #
-   ldq%A1 %0,%1
-   stq%A0 %r1,%0
-   cpys %R1,%R1,%0
-   ldt %0,%1
-   stt %R1,%0
-   ftoit %1,%0
-   itoft %1,%0"
-  [(set_attr "type" "ilog,iadd,iadd,ldsym,multi,ild,ist,fcpys,fld,fst,ftoi,itof")])
+  [(set_attr "type" "ilog,iadd,iadd,iadd,ldsym,multi,ldsym,ild,ist,fcpys,fld,fst,ftoi,itof")
+   (set_attr "isa" "*,*,*,er,er,*,ner,*,*,*,*,*,fix,fix")
+   (set_attr "usegp" "*,*,*,yes,*,*,*,*,*,*,*,*,*,*")])
 
 ;; VMS needs to set up "vms_base_regno" for unwinding.  This move
 ;; often appears dead to the life analysis code, at which point we
@@ -5651,22 +4850,6 @@
 ;; operand 3 can overlap the input and output registers.
 
 (define_expand "unaligned_loadqi"
-  [(use (match_operand:DI 0 "register_operand" ""))
-   (use (match_operand:DI 1 "address_operand" ""))
-   (use (match_operand:DI 2 "register_operand" ""))
-   (use (match_operand:DI 3 "register_operand" ""))]
-  ""
-{
-  if (WORDS_BIG_ENDIAN)
-    emit_insn (gen_unaligned_loadqi_be (operands[0], operands[1],
-					operands[2], operands[3]));
-  else
-    emit_insn (gen_unaligned_loadqi_le (operands[0], operands[1],
-					operands[2], operands[3]));
-  DONE;
-})
-
-(define_expand "unaligned_loadqi_le"
   [(set (match_operand:DI 2 "register_operand" "")
 	(mem:DI (and:DI (match_operand:DI 1 "address_operand" "")
 			(const_int -8))))
@@ -5676,41 +4859,10 @@
 	(zero_extract:DI (match_dup 2)
 			 (const_int 8)
 			 (ashift:DI (match_dup 3) (const_int 3))))]
-  "! WORDS_BIG_ENDIAN"
-  "")
-
-(define_expand "unaligned_loadqi_be"
-  [(set (match_operand:DI 2 "register_operand" "")
-	(mem:DI (and:DI (match_operand:DI 1 "address_operand" "")
-			(const_int -8))))
-   (set (match_operand:DI 3 "register_operand" "")
-	(match_dup 1))
-   (set (match_operand:DI 0 "register_operand" "")
-	(zero_extract:DI (match_dup 2)
-			 (const_int 8)
-			 (minus:DI
-			   (const_int 56)
-			   (ashift:DI (match_dup 3) (const_int 3)))))]
-  "WORDS_BIG_ENDIAN"
+  ""
   "")
 
 (define_expand "unaligned_loadhi"
-  [(use (match_operand:DI 0 "register_operand" ""))
-   (use (match_operand:DI 1 "address_operand" ""))
-   (use (match_operand:DI 2 "register_operand" ""))
-   (use (match_operand:DI 3 "register_operand" ""))]
-  ""
-{
-  if (WORDS_BIG_ENDIAN)
-    emit_insn (gen_unaligned_loadhi_be (operands[0], operands[1],
-					operands[2], operands[3]));
-  else
-    emit_insn (gen_unaligned_loadhi_le (operands[0], operands[1],
-					operands[2], operands[3]));
-  DONE;
-})
-
-(define_expand "unaligned_loadhi_le"
   [(set (match_operand:DI 2 "register_operand" "")
 	(mem:DI (and:DI (match_operand:DI 1 "address_operand" "")
 			(const_int -8))))
@@ -5720,22 +4872,7 @@
 	(zero_extract:DI (match_dup 2)
 			 (const_int 16)
 			 (ashift:DI (match_dup 3) (const_int 3))))]
-  "! WORDS_BIG_ENDIAN"
-  "")
-
-(define_expand "unaligned_loadhi_be"
-  [(set (match_operand:DI 2 "register_operand" "")
-	(mem:DI (and:DI (match_operand:DI 1 "address_operand" "")
-			(const_int -8))))
-   (set (match_operand:DI 3 "register_operand" "")
-	(plus:DI (match_dup 1) (const_int 1)))
-   (set (match_operand:DI 0 "register_operand" "")
-	(zero_extract:DI (match_dup 2)
-			 (const_int 16)
-			 (minus:DI
-			   (const_int 56)
-			   (ashift:DI (match_dup 3) (const_int 3)))))]
-  "WORDS_BIG_ENDIAN"
+  ""
   "")
 
 ;; Storing an aligned byte or word requires two temporaries.  Operand 0 is the
@@ -5768,25 +4905,6 @@
 ;; operand 2 can be that register.
 
 (define_expand "unaligned_storeqi"
-  [(use (match_operand:DI 0 "address_operand" ""))
-   (use (match_operand:QI 1 "register_operand" ""))
-   (use (match_operand:DI 2 "register_operand" ""))
-   (use (match_operand:DI 3 "register_operand" ""))
-   (use (match_operand:DI 4 "register_operand" ""))]
-  ""
-{
-  if (WORDS_BIG_ENDIAN)
-    emit_insn (gen_unaligned_storeqi_be (operands[0], operands[1],
-					 operands[2], operands[3],
-					 operands[4]));
-  else
-    emit_insn (gen_unaligned_storeqi_le (operands[0], operands[1],
-					 operands[2], operands[3],
-					 operands[4]));
-  DONE;
-})
-
-(define_expand "unaligned_storeqi_le"
   [(set (match_operand:DI 3 "register_operand" "")
 	(mem:DI (and:DI (match_operand:DI 0 "address_operand" "")
 			(const_int -8))))
@@ -5802,50 +4920,10 @@
    (set (match_dup 4) (ior:DI (match_dup 4) (match_dup 3)))
    (set (mem:DI (and:DI (match_dup 0) (const_int -8)))
 	(match_dup 4))]
-  "! WORDS_BIG_ENDIAN"
-  "")
-
-(define_expand "unaligned_storeqi_be"
-  [(set (match_operand:DI 3 "register_operand" "")
-	(mem:DI (and:DI (match_operand:DI 0 "address_operand" "")
-			(const_int -8))))
-   (set (match_operand:DI 2 "register_operand" "")
-	(match_dup 0))
-   (set (match_dup 3)
-	(and:DI (not:DI (ashift:DI (const_int 255)
-			  (minus:DI (const_int 56)
-				    (ashift:DI (match_dup 2) (const_int 3)))))
-		(match_dup 3)))
-   (set (match_operand:DI 4 "register_operand" "")
-	(ashift:DI (zero_extend:DI (match_operand:QI 1 "register_operand" ""))
-		   (minus:DI (const_int 56)
-		     (ashift:DI (match_dup 2) (const_int 3)))))
-   (set (match_dup 4) (ior:DI (match_dup 4) (match_dup 3)))
-   (set (mem:DI (and:DI (match_dup 0) (const_int -8)))
-	(match_dup 4))]
-  "WORDS_BIG_ENDIAN"
+  ""
   "")
 
 (define_expand "unaligned_storehi"
-  [(use (match_operand:DI 0 "address_operand" ""))
-   (use (match_operand:HI 1 "register_operand" ""))
-   (use (match_operand:DI 2 "register_operand" ""))
-   (use (match_operand:DI 3 "register_operand" ""))
-   (use (match_operand:DI 4 "register_operand" ""))]
-  ""
-{
-  if (WORDS_BIG_ENDIAN)
-    emit_insn (gen_unaligned_storehi_be (operands[0], operands[1],
-					 operands[2], operands[3],
-					 operands[4]));
-  else
-    emit_insn (gen_unaligned_storehi_le (operands[0], operands[1],
-					 operands[2], operands[3],
-					 operands[4]));
-  DONE;
-})
-
-(define_expand "unaligned_storehi_le"
   [(set (match_operand:DI 3 "register_operand" "")
 	(mem:DI (and:DI (match_operand:DI 0 "address_operand" "")
 			(const_int -8))))
@@ -5861,31 +4939,9 @@
    (set (match_dup 4) (ior:DI (match_dup 4) (match_dup 3)))
    (set (mem:DI (and:DI (match_dup 0) (const_int -8)))
 	(match_dup 4))]
-  "! WORDS_BIG_ENDIAN"
+  ""
   "")
 
-(define_expand "unaligned_storehi_be"
-  [(set (match_operand:DI 3 "register_operand" "")
-	(mem:DI (and:DI (match_operand:DI 0 "address_operand" "")
-			(const_int -8))))
-   (set (match_operand:DI 2 "register_operand" "")
-	(plus:DI (match_dup 5) (const_int 1)))
-   (set (match_dup 3)
-	(and:DI (not:DI (ashift:DI
-			  (const_int 65535)
-			  (minus:DI (const_int 56)
-				    (ashift:DI (match_dup 2) (const_int 3)))))
-		(match_dup 3)))
-   (set (match_operand:DI 4 "register_operand" "")
-	(ashift:DI (zero_extend:DI (match_operand:HI 1 "register_operand" ""))
-		   (minus:DI (const_int 56)
-			     (ashift:DI (match_dup 2) (const_int 3)))))
-   (set (match_dup 4) (ior:DI (match_dup 4) (match_dup 3)))
-   (set (mem:DI (and:DI (match_dup 0) (const_int -8)))
-	(match_dup 4))]
-  "WORDS_BIG_ENDIAN"
-  "operands[5] = force_reg (DImode, operands[0]);")
-
 ;; Here are the define_expand's for QI and HI moves that use the above
 ;; patterns.  We have the normal sets, plus the ones that need scratch
 ;; registers for reload.
@@ -5901,6 +4957,19 @@
     DONE;
 })
 
+(define_insn "*movqi"
+  [(set (match_operand:QI 0 "nonimmediate_operand" "=r,r,r,m")
+	(match_operand:QI 1 "input_operand" "rJ,n,m,rJ"))]
+  "register_operand (operands[0], QImode)
+   || reg_or_0_operand (operands[1], QImode)"
+  "@
+   bis $31,%r1,%0
+   lda %0,%L1($31)
+   ldbu %0,%1
+   stb %r1,%0"
+  [(set_attr "type" "ilog,iadd,ild,ist")
+   (set_attr "isa" "*,*,bwx,bwx")])
+
 (define_expand "movhi"
   [(set (match_operand:HI 0 "nonimmediate_operand" "")
 	(match_operand:HI 1 "general_operand" ""))]
@@ -5911,6 +4980,19 @@
       : alpha_expand_mov_nobwx (HImode, operands))
     DONE;
 })
+
+(define_insn "*movhi"
+  [(set (match_operand:HI 0 "nonimmediate_operand" "=r,r,r,m")
+	(match_operand:HI 1 "input_operand" "rJ,n,m,rJ"))]
+  "register_operand (operands[0], HImode)
+   || reg_or_0_operand (operands[1], HImode)"
+  "@
+   bis $31,%r1,%0
+   lda %0,%L1($31)
+   ldwu %0,%1
+   stw %r1,%0"
+  [(set_attr "type" "ilog,iadd,ild,ist")
+   (set_attr "isa" "*,*,bwx,bwx")])
 
 ;; We need to hook into the extra support that we have for HImode 
 ;; reloads when BWX insns are not available.
@@ -5996,7 +5078,7 @@
   [(parallel [(match_operand:RELOAD12 0 "any_memory_operand" "=m")
 	      (match_operand:RELOAD12 1 "register_operand" "r")
 	      (match_operand:TI 2 "register_operand" "=&r")])]
-  "! TARGET_BWX"
+  "!TARGET_BWX"
 {
   unsigned regno = REGNO (operands[2]);
 
@@ -6107,9 +5189,8 @@
 (define_insn "*mov<mode>_fix"
   [(set (match_operand:VEC 0 "nonimmediate_operand" "=r,r,r,m,*f,*f,m,r,*f")
 	(match_operand:VEC 1 "input_operand" "rW,i,m,rW,*fW,m,*f,*f,r"))]
-  "TARGET_FIX
-   && (register_operand (operands[0], <MODE>mode)
-       || reg_or_0_operand (operands[1], <MODE>mode))"
+  "register_operand (operands[0], <MODE>mode)
+   || reg_or_0_operand (operands[1], <MODE>mode)"
   "@
    bis $31,%r1,%0
    #
@@ -6120,23 +5201,8 @@
    stt %R1,%0
    ftoit %1,%0
    itoft %1,%0"
-  [(set_attr "type" "ilog,multi,ild,ist,fcpys,fld,fst,ftoi,itof")])
-
-(define_insn "*mov<mode>_nofix"
-  [(set (match_operand:VEC 0 "nonimmediate_operand" "=r,r,r,m,*f,*f,m")
-	(match_operand:VEC 1 "input_operand" "rW,i,m,rW,*fW,m,*f"))]
-  "! TARGET_FIX
-   && (register_operand (operands[0], <MODE>mode)
-       || reg_or_0_operand (operands[1], <MODE>mode))"
-  "@
-   bis $31,%r1,%0
-   #
-   ldq %0,%1
-   stq %r1,%0
-   cpys %R1,%R1,%0
-   ldt %0,%1
-   stt %R1,%0"
-  [(set_attr "type" "ilog,multi,ild,ist,fcpys,fld,fst")])
+  [(set_attr "type" "ilog,multi,ild,ist,fcpys,fld,fst,ftoi,itof")
+   (set_attr "isa" "*,*,*,*,*,*,*,fix,fix")])
 
 (define_insn "uminv8qi3"
   [(set (match_operand:V8QI 0 "register_operand" "=r")
@@ -6300,16 +5366,7 @@
   if (!MEM_P (operands[1]))
     FAIL;
 
-  /* The bit number is relative to the mode of operand 1 which is
-     usually QImode (this might actually be a bug in expmed.c). Note 
-     that the bit number is negative in big-endian mode in this case.
-     We have to convert that to the offset.  */
-  if (WORDS_BIG_ENDIAN)
-    ofs = GET_MODE_BITSIZE (GET_MODE (operands[1]))
-          - INTVAL (operands[2]) - INTVAL (operands[3]);
-  else
-    ofs = INTVAL (operands[3]);
-
+  ofs = INTVAL (operands[3]);
   ofs = ofs / 8;
 
   alpha_expand_unaligned_load (operands[0], operands[1],
@@ -6341,16 +5398,7 @@
       if (INTVAL (operands[2]) == 8)
 	FAIL;
 
-      /* The bit number is relative to the mode of operand 1 which is
-	 usually QImode (this might actually be a bug in expmed.c). Note 
-	 that the bit number is negative in big-endian mode in this case.
-	 We have to convert that to the offset.  */
-      if (WORDS_BIG_ENDIAN)
-	ofs = GET_MODE_BITSIZE (GET_MODE (operands[1]))
-	      - INTVAL (operands[2]) - INTVAL (operands[3]);
-      else
-	ofs = INTVAL (operands[3]);
-
+      ofs = INTVAL (operands[3]);
       ofs = ofs / 8;
 
       alpha_expand_unaligned_load (operands[0], operands[1],
@@ -6381,16 +5429,7 @@
   if (!MEM_P (operands[0]))
     FAIL;
 
-  /* The bit number is relative to the mode of operand 1 which is
-     usually QImode (this might actually be a bug in expmed.c). Note 
-     that the bit number is negative in big-endian mode in this case.
-     We have to convert that to the offset.  */
-  if (WORDS_BIG_ENDIAN)
-    ofs = GET_MODE_BITSIZE (GET_MODE (operands[0]))
-          - INTVAL (operands[1]) - INTVAL (operands[2]);
-  else
-    ofs = INTVAL (operands[2]);
-
+  ofs = INTVAL (operands[2]);
   ofs = ofs / 8;
 
   alpha_expand_unaligned_store (operands[0], operands[3],
@@ -6907,58 +5946,6 @@
   [(set_attr "length" "16")
    (set_attr "type" "multi")])
 
-;; Load the CIW into r2 for calling __T3E_MISMATCH
-
-(define_expand "umk_mismatch_args"
-  [(set (match_dup 1) (mem:DI (plus:DI (reg:DI 15) (const_int -16))))
-   (set (match_dup 2) (mem:DI (plus:DI (match_dup 1) (const_int -32))))
-   (set (reg:DI 1) (match_operand:DI 0 "const_int_operand" ""))
-   (set (match_dup 3) (plus:DI (mult:DI (reg:DI 25)
-					(const_int 8))
-			       (match_dup 2)))
-   (set (reg:DI 2) (mem:DI (match_dup 3)))]
-  "TARGET_ABI_UNICOSMK"
-{
-  operands[1] = gen_reg_rtx (DImode);
-  operands[2] = gen_reg_rtx (DImode);
-  operands[3] = gen_reg_rtx (DImode);
-})
-
-(define_insn "arg_home_umk"
-  [(unspec [(const_int 0)] UNSPEC_ARG_HOME)
-   (use (reg:DI 1))
-   (use (reg:DI 2))
-   (use (reg:DI 16))
-   (use (reg:DI 17))
-   (use (reg:DI 18))
-   (use (reg:DI 19))
-   (use (reg:DI 20))
-   (use (reg:DI 21))
-   (use (reg:DI 48))
-   (use (reg:DI 49))
-   (use (reg:DI 50))
-   (use (reg:DI 51))
-   (use (reg:DI 52))
-   (use (reg:DI 53))
-   (clobber (mem:BLK (const_int 0)))
-   (parallel [
-   (clobber (reg:DI 22))
-   (clobber (reg:DI 23))
-   (clobber (reg:DI 24))
-   (clobber (reg:DI 0))
-   (clobber (reg:DI 1))
-   (clobber (reg:DI 2))
-   (clobber (reg:DI 3))
-   (clobber (reg:DI 4))
-   (clobber (reg:DI 5))
-   (clobber (reg:DI 6))
-   (clobber (reg:DI 7))
-   (clobber (reg:DI 8))])]
-  "TARGET_ABI_UNICOSMK"
-  "laum $4,__T3E_MISMATCH($31)\;sll $4,32,$4\;lalm $4,__T3E_MISMATCH($4)\;lal $4,__T3E_MISMATCH($4)\;jsr $3,($4)"
-  [(set_attr "length" "16")
-   (set_attr "type" "multi")])
-
 ;; Prefetch data.  
 ;;
 ;; On EV4, these instructions are nops -- no load occurs.
@@ -7027,18 +6014,11 @@
   ""
   "ldq_u $31,0($30)")
 
-;; On Unicos/Mk we use a macro for aligning code.
-
 (define_insn "realign"
   [(unspec_volatile [(match_operand 0 "immediate_operand" "i")]
 		    UNSPECV_REALIGN)]
   ""
-{
-  if (TARGET_ABI_UNICOSMK)
-    return "gcc@code@align %0";
-  else
-    return ".align %0 #realign";
-})
+  ".align %0 #realign")
 
 ;; Instructions to be emitted from __builtins.
 
@@ -7053,108 +6033,43 @@
   ;; actually differentiate between ILOG and ICMP in the schedule.
   [(set_attr "type" "icmp")])
 
-(define_expand "builtin_extbl"
+(define_expand "extbl"
   [(match_operand:DI 0 "register_operand" "")
    (match_operand:DI 1 "reg_or_0_operand" "")
    (match_operand:DI 2 "reg_or_8bit_operand" "")]
   ""
 {
-  rtx (*gen) (rtx, rtx, rtx, rtx);
-  if (WORDS_BIG_ENDIAN)
-    gen = gen_extxl_be;
-  else
-    gen = gen_extxl_le;
-  emit_insn ((*gen) (operands[0], operands[1], GEN_INT (8), operands[2]));
+  emit_insn (gen_extxl (operands[0], operands[1], GEN_INT (8), operands[2]));
   DONE;
 })
 
-(define_expand "builtin_extwl"
+(define_expand "extwl"
   [(match_operand:DI 0 "register_operand" "")
    (match_operand:DI 1 "reg_or_0_operand" "")
    (match_operand:DI 2 "reg_or_8bit_operand" "")]
   ""
 {
-  rtx (*gen) (rtx, rtx, rtx, rtx);
-  if (WORDS_BIG_ENDIAN)
-    gen = gen_extxl_be;
-  else
-    gen = gen_extxl_le;
-  emit_insn ((*gen) (operands[0], operands[1], GEN_INT (16), operands[2]));
+  emit_insn (gen_extxl (operands[0], operands[1], GEN_INT (16), operands[2]));
   DONE;
 })
 
-(define_expand "builtin_extll"
+(define_expand "extll"
   [(match_operand:DI 0 "register_operand" "")
    (match_operand:DI 1 "reg_or_0_operand" "")
    (match_operand:DI 2 "reg_or_8bit_operand" "")]
   ""
 {
-  rtx (*gen) (rtx, rtx, rtx, rtx);
-  if (WORDS_BIG_ENDIAN)
-    gen = gen_extxl_be;
-  else
-    gen = gen_extxl_le;
-  emit_insn ((*gen) (operands[0], operands[1], GEN_INT (32), operands[2]));
+  emit_insn (gen_extxl (operands[0], operands[1], GEN_INT (32), operands[2]));
   DONE;
 })
 
-(define_expand "builtin_extql"
+(define_expand "extql"
   [(match_operand:DI 0 "register_operand" "")
    (match_operand:DI 1 "reg_or_0_operand" "")
    (match_operand:DI 2 "reg_or_8bit_operand" "")]
   ""
 {
-  rtx (*gen) (rtx, rtx, rtx, rtx);
-  if (WORDS_BIG_ENDIAN)
-    gen = gen_extxl_be;
-  else
-    gen = gen_extxl_le;
-  emit_insn ((*gen) (operands[0], operands[1], GEN_INT (64), operands[2]));
-  DONE;
-})
-
-(define_expand "builtin_extwh"
-  [(match_operand:DI 0 "register_operand" "")
-   (match_operand:DI 1 "reg_or_0_operand" "")
-   (match_operand:DI 2 "reg_or_8bit_operand" "")]
-  ""
-{
-  rtx (*gen) (rtx, rtx, rtx);
-  if (WORDS_BIG_ENDIAN)
-    gen = gen_extwh_be;
-  else
-    gen = gen_extwh_le;
-  emit_insn ((*gen) (operands[0], operands[1], operands[2]));
-  DONE;
-})
-
-(define_expand "builtin_extlh"
-  [(match_operand:DI 0 "register_operand" "")
-   (match_operand:DI 1 "reg_or_0_operand" "")
-   (match_operand:DI 2 "reg_or_8bit_operand" "")]
-  ""
-{
-  rtx (*gen) (rtx, rtx, rtx);
-  if (WORDS_BIG_ENDIAN)
-    gen = gen_extlh_be;
-  else
-    gen = gen_extlh_le;
-  emit_insn ((*gen) (operands[0], operands[1], operands[2]));
-  DONE;
-})
-
-(define_expand "builtin_extqh"
-  [(match_operand:DI 0 "register_operand" "")
-   (match_operand:DI 1 "reg_or_0_operand" "")
-   (match_operand:DI 2 "reg_or_8bit_operand" "")]
-  ""
-{
-  rtx (*gen) (rtx, rtx, rtx);
-  if (WORDS_BIG_ENDIAN)
-    gen = gen_extqh_be;
-  else
-    gen = gen_extqh_le;
-  emit_insn ((*gen) (operands[0], operands[1], operands[2]));
+  emit_insn (gen_extxl (operands[0], operands[1], GEN_INT (64), operands[2]));
   DONE;
 })
 
@@ -7164,13 +6079,8 @@
    (match_operand:DI 2 "reg_or_8bit_operand" "")]
   ""
 {
-  rtx (*gen) (rtx, rtx, rtx);
-  if (WORDS_BIG_ENDIAN)
-    gen = gen_insbl_be;
-  else
-    gen = gen_insbl_le;
   operands[1] = gen_lowpart (QImode, operands[1]);
-  emit_insn ((*gen) (operands[0], operands[1], operands[2]));
+  emit_insn (gen_insbl (operands[0], operands[1], operands[2]));
   DONE;
 })
 
@@ -7180,13 +6090,8 @@
    (match_operand:DI 2 "reg_or_8bit_operand" "")]
   ""
 {
-  rtx (*gen) (rtx, rtx, rtx);
-  if (WORDS_BIG_ENDIAN)
-    gen = gen_inswl_be;
-  else
-    gen = gen_inswl_le;
   operands[1] = gen_lowpart (HImode, operands[1]);
-  emit_insn ((*gen) (operands[0], operands[1], operands[2]));
+  emit_insn (gen_inswl (operands[0], operands[1], operands[2]));
   DONE;
 })
 
@@ -7196,33 +6101,12 @@
    (match_operand:DI 2 "reg_or_8bit_operand" "")]
   ""
 {
-  rtx (*gen) (rtx, rtx, rtx);
-  if (WORDS_BIG_ENDIAN)
-    gen = gen_insll_be;
-  else
-    gen = gen_insll_le;
   operands[1] = gen_lowpart (SImode, operands[1]);
-  emit_insn ((*gen) (operands[0], operands[1], operands[2]));
-  emit_insn ((*gen) (operands[0], operands[1], operands[2]));
+  emit_insn (gen_insll (operands[0], operands[1], operands[2]));
   DONE;
 })
 
-(define_expand "builtin_insql"
-  [(match_operand:DI 0 "register_operand" "")
-   (match_operand:DI 1 "reg_or_0_operand" "")
-   (match_operand:DI 2 "reg_or_8bit_operand" "")]
-  ""
-{
-  rtx (*gen) (rtx, rtx, rtx);
-  if (WORDS_BIG_ENDIAN)
-    gen = gen_insql_be;
-  else
-    gen = gen_insql_le;
-  emit_insn ((*gen) (operands[0], operands[1], operands[2]));
-  DONE;
-})
-
-(define_expand "builtin_inswh"
+(define_expand "inswh"
   [(match_operand:DI 0 "register_operand" "")
    (match_operand:DI 1 "register_operand" "")
    (match_operand:DI 2 "reg_or_8bit_operand" "")]
@@ -7232,7 +6116,7 @@
   DONE;
 })
 
-(define_expand "builtin_inslh"
+(define_expand "inslh"
   [(match_operand:DI 0 "register_operand" "")
    (match_operand:DI 1 "register_operand" "")
    (match_operand:DI 2 "reg_or_8bit_operand" "")]
@@ -7242,7 +6126,7 @@
   DONE;
 })
 
-(define_expand "builtin_insqh"
+(define_expand "insqh"
   [(match_operand:DI 0 "register_operand" "")
    (match_operand:DI 1 "register_operand" "")
    (match_operand:DI 2 "reg_or_8bit_operand" "")]
@@ -7252,75 +6136,51 @@
   DONE;
 })
 
-(define_expand "builtin_mskbl"
+(define_expand "mskbl"
   [(match_operand:DI 0 "register_operand" "")
    (match_operand:DI 1 "reg_or_0_operand" "")
    (match_operand:DI 2 "reg_or_8bit_operand" "")]
   ""
 {
-  rtx (*gen) (rtx, rtx, rtx, rtx);
-  rtx mask;
-  if (WORDS_BIG_ENDIAN)
-    gen = gen_mskxl_be;
-  else
-    gen = gen_mskxl_le;
-  mask = GEN_INT (0xff);
-  emit_insn ((*gen) (operands[0], operands[1], mask, operands[2]));
+  rtx mask = GEN_INT (0xff);
+  emit_insn (gen_mskxl (operands[0], operands[1], mask, operands[2]));
   DONE;
 })
 
-(define_expand "builtin_mskwl"
+(define_expand "mskwl"
   [(match_operand:DI 0 "register_operand" "")
    (match_operand:DI 1 "reg_or_0_operand" "")
    (match_operand:DI 2 "reg_or_8bit_operand" "")]
   ""
 {
-  rtx (*gen) (rtx, rtx, rtx, rtx);
-  rtx mask;
-  if (WORDS_BIG_ENDIAN)
-    gen = gen_mskxl_be;
-  else
-    gen = gen_mskxl_le;
-  mask = GEN_INT (0xffff);
-  emit_insn ((*gen) (operands[0], operands[1], mask, operands[2]));
+  rtx mask = GEN_INT (0xffff);
+  emit_insn (gen_mskxl (operands[0], operands[1], mask, operands[2]));
   DONE;
 })
 
-(define_expand "builtin_mskll"
+(define_expand "mskll"
   [(match_operand:DI 0 "register_operand" "")
    (match_operand:DI 1 "reg_or_0_operand" "")
    (match_operand:DI 2 "reg_or_8bit_operand" "")]
   ""
 {
-  rtx (*gen) (rtx, rtx, rtx, rtx);
-  rtx mask;
-  if (WORDS_BIG_ENDIAN)
-    gen = gen_mskxl_be;
-  else
-    gen = gen_mskxl_le;
-  mask = immed_double_const (0xffffffff, 0, DImode);
-  emit_insn ((*gen) (operands[0], operands[1], mask, operands[2]));
+  rtx mask = immed_double_const (0xffffffff, 0, DImode);
+  emit_insn (gen_mskxl (operands[0], operands[1], mask, operands[2]));
   DONE;
 })
 
-(define_expand "builtin_mskql"
+(define_expand "mskql"
   [(match_operand:DI 0 "register_operand" "")
    (match_operand:DI 1 "reg_or_0_operand" "")
    (match_operand:DI 2 "reg_or_8bit_operand" "")]
   ""
 {
-  rtx (*gen) (rtx, rtx, rtx, rtx);
-  rtx mask;
-  if (WORDS_BIG_ENDIAN)
-    gen = gen_mskxl_be;
-  else
-    gen = gen_mskxl_le;
-  mask = constm1_rtx;
-  emit_insn ((*gen) (operands[0], operands[1], mask, operands[2]));
+  rtx mask = constm1_rtx;
+  emit_insn (gen_mskxl (operands[0], operands[1], mask, operands[2]));
   DONE;
 })
 
-(define_expand "builtin_mskwh"
+(define_expand "mskwh"
   [(match_operand:DI 0 "register_operand" "")
    (match_operand:DI 1 "register_operand" "")
    (match_operand:DI 2 "reg_or_8bit_operand" "")]
@@ -7330,7 +6190,7 @@
   DONE;
 })
 
-(define_expand "builtin_msklh"
+(define_expand "msklh"
   [(match_operand:DI 0 "register_operand" "")
    (match_operand:DI 1 "register_operand" "")
    (match_operand:DI 2 "reg_or_8bit_operand" "")]
@@ -7340,7 +6200,7 @@
   DONE;
 })
 
-(define_expand "builtin_mskqh"
+(define_expand "mskqh"
   [(match_operand:DI 0 "register_operand" "")
    (match_operand:DI 1 "register_operand" "")
    (match_operand:DI 2 "reg_or_8bit_operand" "")]
@@ -7947,19 +6807,6 @@
   [(set_attr "type" "jsr")
    (set_attr "length" "*,8")])
 
-(define_insn "*call_value_nt_1"
-  [(set (match_operand 0 "" "")
-	(call (mem:DI (match_operand:DI 1 "call_operand" "r,R,s"))
-	      (match_operand 2 "" "")))
-   (clobber (reg:DI 26))]
-  "TARGET_ABI_WINDOWS_NT"
-  "@
-   jsr $26,(%1)
-   bsr $26,%1
-   jsr $26,%1"
-  [(set_attr "type" "jsr")
-   (set_attr "length" "*,*,12")])
-
 ; GAS relies on the order and position of instructions output below in order
 ; to generate relocs for VMS link to potentially optimize the call.
 ; Please do not molest.
@@ -7987,13 +6834,3 @@
 }
   [(set_attr "type" "jsr")
    (set_attr "length" "12,16")])
-
-(define_insn "*call_value_umk"
-  [(set (match_operand 0 "" "")
-	(call (mem:DI (match_operand:DI 1 "call_operand" "r"))
-	      (match_operand 2 "" "")))
-   (use (reg:DI 25))
-   (clobber (reg:DI 26))]
-  "TARGET_ABI_UNICOSMK"
-  "jsr $26,(%1)"
-  [(set_attr "type" "jsr")])

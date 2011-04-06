@@ -48,6 +48,7 @@ main (int argc, char **argv)
   struct __go_string *values;
 
   runtime_mallocinit ();
+  runtime_cpuprofinit ();
   __go_gc_goroutine_init (&argc);
 
   Args.__count = argc;

@@ -44,6 +44,7 @@ compilation is specified by a string called a "spec".  */
 #include "flags.h"
 #include "opts.h"
 #include "vec.h"
+#include "filenames.h"
 
 /* By default there is no special suffix for target executables.  */
 /* FIXME: when autoconf is fixed, remove the host check - dj */
@@ -1962,7 +1963,7 @@ record_temp_file (const char *filename, int always_delete, int fail_delete)
     {
       struct temp_file *temp;
       for (temp = always_delete_queue; temp; temp = temp->next)
-	if (! strcmp (name, temp->name))
+	if (! filename_cmp (name, temp->name))
 	  goto already1;
 
       temp = XNEW (struct temp_file);
@@ -1977,7 +1978,7 @@ record_temp_file (const char *filename, int always_delete, int fail_delete)
     {
       struct temp_file *temp;
       for (temp = failure_delete_queue; temp; temp = temp->next)
-	if (! strcmp (name, temp->name))
+	if (! filename_cmp (name, temp->name))
 	  goto already2;
 
       temp = XNEW (struct temp_file);
@@ -3093,16 +3094,24 @@ save_switch (const char *opt, size_t n_args, const char *const *args,
 }
 
 /* Handle an option DECODED that is unknown to the option-processing
-   machinery, but may be known to specs.  */
+   machinery.  */
 
 static bool
 driver_unknown_option_callback (const struct cl_decoded_option *decoded)
 {
-  save_switch (decoded->canonical_option[0],
-	       decoded->canonical_option_num_elements - 1,
-	       &decoded->canonical_option[1], false);
-
-  return false;
+  const char *opt = decoded->arg;
+  if (opt[1] == 'W' && opt[2] == 'n' && opt[3] == 'o' && opt[4] == '-'
+      && !(decoded->errors & CL_ERR_NEGATIVE))
+    {
+      /* Leave unknown -Wno-* options for the compiler proper, to be
+	 diagnosed only if there are warnings.  */
+      save_switch (decoded->canonical_option[0],
+		   decoded->canonical_option_num_elements - 1,
+		   &decoded->canonical_option[1], false);
+      return false;
+    }
+  else
+    return true;
 }
 
 /* Handle an option DECODED that is not marked as CL_DRIVER.
@@ -3119,11 +3128,13 @@ driver_wrong_lang_callback (const struct cl_decoded_option *decoded,
      options.  */
   const struct cl_option *option = &cl_options[decoded->opt_index];
 
-  if (option->flags & CL_REJECT_DRIVER)
+  if (option->cl_reject_driver)
     error ("unrecognized command line option %qs",
 	   decoded->orig_option_with_args_text);
   else
-    driver_unknown_option_callback (decoded);
+    save_switch (decoded->canonical_option[0],
+		 decoded->canonical_option_num_elements - 1,
+		 &decoded->canonical_option[1], false);
 }
 
 /* Note that an option (index OPT_INDEX, argument ARG, value VALUE)
@@ -3632,9 +3643,9 @@ process_command (unsigned int decoded_options_count,
 	{
 	  temp = gcc_exec_prefix + len - sizeof ("/lib/gcc/") + 1;
 	  if (IS_DIR_SEPARATOR (*temp)
-	      && strncmp (temp + 1, "lib", 3) == 0
+	      && filename_ncmp (temp + 1, "lib", 3) == 0
 	      && IS_DIR_SEPARATOR (temp[4])
-	      && strncmp (temp + 5, "gcc", 3) == 0)
+	      && filename_ncmp (temp + 5, "gcc", 3) == 0)
 	    len -= sizeof ("/lib/gcc/") - 1;
 	}
 
@@ -4732,7 +4743,7 @@ do_spec_1 (const char *spec, int inswitch, const char *soft_matched_part)
 		    tmp[basename_length + suffix_length] = '\0';
 		    temp_filename = tmp;
 
-		    if (strcmp (temp_filename, gcc_input_filename) != 0)
+		    if (filename_cmp (temp_filename, gcc_input_filename) != 0)
 		      {
 #ifndef HOST_LACKS_INODE_NUMBERS
 			struct stat st_temp;
@@ -4758,7 +4769,7 @@ do_spec_1 (const char *spec, int inswitch, const char *soft_matched_part)
 			/* Just compare canonical pathnames.  */
 			char* input_realname = lrealpath (gcc_input_filename);
 			char* temp_realname = lrealpath (temp_filename);
-			bool files_differ = strcmp (input_realname, temp_realname);
+			bool files_differ = filename_cmp (input_realname, temp_realname);
 			free (input_realname);
 			free (temp_realname);
 			if (files_differ)
@@ -5937,11 +5948,11 @@ is_directory (const char *path1, bool linker)
   if (linker
       && IS_DIR_SEPARATOR (path[0])
       && ((cp - path == 6
-	   && strncmp (path + 1, "lib", 3) == 0)
+	   && filename_ncmp (path + 1, "lib", 3) == 0)
 	  || (cp - path == 10
-	      && strncmp (path + 1, "usr", 3) == 0
+	      && filename_ncmp (path + 1, "usr", 3) == 0
 	      && IS_DIR_SEPARATOR (path[4])
-	      && strncmp (path + 5, "lib", 3) == 0)))
+	      && filename_ncmp (path + 5, "lib", 3) == 0)))
     return 0;
 
   return (stat (path, &st) >= 0 && S_ISDIR (st.st_mode));
@@ -6763,8 +6774,8 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
 		    }
 
 		  gcc_assert (debug_check_temp_file[1]
-			      && strcmp (debug_check_temp_file[0],
-					 debug_check_temp_file[1]));
+			      && filename_cmp (debug_check_temp_file[0],
+					       debug_check_temp_file[1]));
 
 		  if (verbose_flag)
 		    inform (0, "comparing final insns dumps");
@@ -7668,7 +7679,7 @@ print_multilib_info (void)
 	  /* If this is a duplicate, skip it.  */
 	  skip = (last_path != 0
 		  && (unsigned int) (p - this_path) == last_path_len
-		  && ! strncmp (last_path, this_path, last_path_len));
+		  && ! filename_ncmp (last_path, this_path, last_path_len));
 
 	  last_path = this_path;
 	  last_path_len = p - this_path;
@@ -7872,7 +7883,7 @@ replace_outfile_spec_function (int argc, const char **argv)
 
   for (i = 0; i < n_infiles; i++)
     {
-      if (outfiles[i] && !strcmp (outfiles[i], argv[0]))
+      if (outfiles[i] && !filename_cmp (outfiles[i], argv[0]))
 	outfiles[i] = xstrdup (argv[1]);
     }
   return NULL;
@@ -7893,7 +7904,7 @@ remove_outfile_spec_function (int argc, const char **argv)
 
   for (i = 0; i < n_infiles; i++)
     {
-      if (outfiles[i] && !strcmp (outfiles[i], argv[0]))
+      if (outfiles[i] && !filename_cmp (outfiles[i], argv[0]))
         outfiles[i] = NULL;
     }
   return NULL;

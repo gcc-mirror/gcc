@@ -1,4 +1,5 @@
 /* { dg-require-effective-target size32plus } */
+/* { dg-require-effective-target run_expensive_tests }  PR testsuite/48283 */
 
 #define DEBUG 0
 #if DEBUG

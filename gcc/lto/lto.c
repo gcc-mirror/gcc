@@ -149,37 +149,36 @@ lto_materialize_function (struct cgraph_node *node)
       /* Clones don't need to be read.  */
       if (node->clone_of)
 	return;
-      file_data = node->local.lto_file_data;
-      name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)); 
-
-      /* We may have renamed the declaration, e.g., a static function.  */
-      name = lto_get_decl_name_mapping (file_data, name);
-
-      data = lto_get_section_data (file_data, LTO_section_function_body,
-				   name, &len);
-      if (!data)
-	fatal_error ("%s: section %s is missing",
-		     file_data->file_name,
-		     name);
-
-      gcc_assert (DECL_STRUCT_FUNCTION (decl) == NULL);
 
       /* Load the function body only if not operating in WPA mode.  In
 	 WPA mode, the body of the function is not needed.  */
       if (!flag_wpa)
 	{
+	  file_data = node->local.lto_file_data;
+	  name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
+
+	  /* We may have renamed the declaration, e.g., a static function.  */
+	  name = lto_get_decl_name_mapping (file_data, name);
+
+	  data = lto_get_section_data (file_data, LTO_section_function_body,
+				       name, &len);
+	  if (!data)
+	    fatal_error ("%s: section %s is missing",
+			 file_data->file_name,
+			 name);
+
+	  gcc_assert (DECL_STRUCT_FUNCTION (decl) == NULL);
+
 	  allocate_struct_function (decl, false);
 	  announce_function (decl);
 	  lto_input_function_body (file_data, decl, data);
 	  if (DECL_FUNCTION_PERSONALITY (decl) && !first_personality_decl)
 	    first_personality_decl = DECL_FUNCTION_PERSONALITY (decl);
 	  lto_stats.num_function_bodies++;
+	  lto_free_section_data (file_data, LTO_section_function_body, name,
+				 data, len);
+	  ggc_collect ();
 	}
-
-      lto_free_section_data (file_data, LTO_section_function_body, name,
-			     data, len);
-      if (!flag_wpa)
-	ggc_collect ();
     }
 
   /* Let the middle end know about the function.  */
@@ -200,7 +199,7 @@ lto_read_in_decl_state (struct data_in *data_in, const uint32_t *data,
   uint32_t i, j;
   
   ix = *data++;
-  decl = lto_streamer_cache_get (data_in->reader_cache, (int) ix);
+  decl = lto_streamer_cache_get (data_in->reader_cache, ix);
   if (TREE_CODE (decl) != FUNCTION_DECL)
     {
       gcc_assert (decl == void_type_node);
@@ -345,7 +344,7 @@ lto_resolution_read (splay_tree file_ids, FILE *resolution, lto_file *file)
 
   fread (obj_name, sizeof (char), name_len, resolution);
   obj_name[name_len] = '\0';
-  if (strcmp (obj_name, file->filename) != 0)
+  if (filename_cmp (obj_name, file->filename) != 0)
     internal_error ("unexpected file name %s in linker resolution file. "
 		    "Expected %s", obj_name, file->filename);
   if (file->offset != 0)
@@ -582,7 +581,7 @@ lto_read_section_data (struct lto_file_decl_data *file_data,
      or rather fix function body streaming to not stream them in
      practically random order.  */
   if (fd != -1
-      && strcmp (fd_name, file_data->file_name) != 0)
+      && filename_cmp (fd_name, file_data->file_name) != 0)
     {
       free (fd_name);
       close (fd);
@@ -1514,8 +1513,8 @@ lto_wpa_write_files (void)
 	  fprintf (cgraph_dump_file, "varpool nodes:");
 	  dump_varpool_node_set (cgraph_dump_file, vset);
 	}
-      gcc_assert (cgraph_node_set_nonempty_p (set)
-		  || varpool_node_set_nonempty_p (vset) || !i);
+      gcc_checking_assert (cgraph_node_set_nonempty_p (set)
+			   || varpool_node_set_nonempty_p (vset) || !i);
 
       lto_set_current_out_file (file);
 

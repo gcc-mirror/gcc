@@ -1479,7 +1479,7 @@ case ${enable_threads} in
     target_thread_file='single'
     ;;
   aix | dce | gnat | irix | posix | posix95 | rtems | \
-  single | solaris | vxworks | win32 | mipssde)
+  single | vxworks | win32 | mipssde)
     target_thread_file=${enable_threads}
     ;;
   *)
@@ -3339,14 +3339,14 @@ fi
 AC_MSG_CHECKING(linker plugin support)
 gcc_cv_lto_plugin=0
 if test -f liblto_plugin.la; then
-  if test $in_tree_ld = yes -a x"$ORIGINAL_PLUGIN_LD_FOR_TARGET=" = x"$gcc_cv_ld"; then
+  if test $in_tree_ld = yes -a x"$ORIGINAL_PLUGIN_LD_FOR_TARGET" = x"$gcc_cv_ld"; then
     if test "$gcc_cv_gld_major_version" -eq 2 -a "$gcc_cv_gld_minor_version" -ge 21 -o "$gcc_cv_gld_major_version" -gt 2; then
       gcc_cv_lto_plugin=2
     elif test "$ld_is_gold" = yes -a "$gcc_cv_gld_major_version" -eq 2 -a "$gcc_cv_gld_minor_version" -eq 20; then
       gcc_cv_lto_plugin=1
 
     fi
-  elif echo "$ld_ver" | grep GNU > /dev/null; then
+  elif test x"$ORIGINAL_PLUGIN_LD_FOR_TARGET" = x"$gcc_cv_ld" && echo "$ld_ver" | grep GNU > /dev/null; then
     # Require GNU ld or gold 2.21+ for plugin support by default.
     if test "$ld_vers_major" -eq 2 -a "$ld_vers_minor" -ge 21; then
       gcc_cv_lto_plugin=2
@@ -3354,6 +3354,10 @@ if test -f liblto_plugin.la; then
     elif test "$ld_is_gold" = yes -a "$ld_vers_major" -eq 2 -a "$ld_vers_minor" -eq 20; then
       gcc_cv_lto_plugin=1
     fi
+  elif test x"$ORIGINAL_PLUGIN_LD_FOR_TARGET" != x"$gcc_cv_ld"; then
+    # Allow -fuse-linker-plugin if plugin linker differs from
+    # default/specified linker.
+    gcc_cv_lto_plugin=1
   fi
 fi
 AC_DEFINE_UNQUOTED(HAVE_LTO_PLUGIN, $gcc_cv_lto_plugin,
@@ -4564,7 +4568,6 @@ AC_MSG_RESULT($have_sys_sdt_h)
 # and later they can use TFmode.
 case "$target" in
   powerpc*-*-linux* | \
-  powerpc*-*-gnu* | \
   sparc*-*-linux* | \
   s390*-*-linux* | \
   alpha*-*-linux*)

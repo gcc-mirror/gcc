@@ -46,7 +46,7 @@
 
 @c Copyright (C) 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
 @c 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 
-@c 2010 Free Software Foundation, Inc.
+@c 2010, 2011 Free Software Foundation, Inc.
 @c *** Converted to texinfo by Dean Wakerley, dean@wakerley.com
 
 @c IMPORTANT: whenever you modify this file, run `install.texi2html' to
@@ -303,6 +303,34 @@ Necessary (only on some platforms) to untar the source code.  Many
 systems' @command{tar} programs will also work, only try GNU
 @command{tar} if you have problems.
 
+@item Perl version 5.6.1 (or later)
+
+Necessary when targetting Darwin, building @samp{libstdc++},
+and not using @option{--disable-symvers}.
+Necessary when targetting Solaris 2 with Sun @command{ld} and not using
+@option{--disable-symvers}.  The bundled @command{perl} in Solaris@tie{}8
+and up works.
+
+Necessary when regenerating @file{Makefile} dependencies in libiberty.
+Necessary when regenerating @file{libiberty/functions.texi}.
+Necessary when generating manpages from Texinfo manuals.
+Used by various scripts to generate some files included in SVN (mainly
+Unicode-related and rarely changing) from source tables.
+
+@item @command{jar}, or InfoZIP (@command{zip} and @command{unzip})
+
+Necessary to build libgcj, the GCJ runtime.
+
+@end table
+
+Several support libraries are necessary to build GCC, some are required,
+others optional.  While any sufficiently new version of required tools
+usually work, library requirements are generally stricter.  Newer
+versions may work in some cases, but it's safer to use the exact
+versions documented.  We appreciate bug reports about problems with
+newer versions, though.
+
+@table @asis
 @item GNU Multiple Precision Library (GMP) version 4.3.2 (or later)
 
 Necessary to build GCC@.  If you do not have it installed in your
@@ -357,10 +385,6 @@ does not use PPL, PPL is still required for Graphite.
 
 In both cases @option{--with-cloog} configure option should be used
 if CLooG is not installed in your default library search path.
-
-@item @command{jar}, or InfoZIP (@command{zip} and @command{unzip})
-
-Necessary to build libgcj, the GCJ runtime.
 
 @end table
 
@@ -446,21 +470,6 @@ DVI or PDF files, respectively.
 
 Necessary to access the SVN repository.  Public releases and weekly
 snapshots of the development sources are also available via FTP@.
-
-@item Perl version 5.6.1 (or later)
-
-Necessary when regenerating @file{Makefile} dependencies in libiberty.
-Necessary when regenerating @file{libiberty/functions.texi}.
-Necessary when generating manpages from Texinfo manuals.
-Necessary when targetting Darwin, building @samp{libstdc++},
-and not using @option{--disable-symvers}.
-Necessary when targetting Solaris 2 with Sun @command{ld}, building
-@samp{libstdc++}, and not using @option{--disable-symvers}.  A helper
-scripts needs @samp{Glob.pm}, which is missing from @command{perl} 5.005
-included in Solaris@tie{}8.  The bundled @command{perl} in Solaris@tie{}9 and up
-works.
-Used by various scripts to generate some files included in SVN (mainly
-Unicode-related and rarely changing) from source tables.
 
 @item GNU diffutils version 2.7 (or later)
 
@@ -1003,9 +1012,6 @@ predefined set of them.
 Some targets provide finer-grained control over which multilibs are built
 (e.g., @option{--disable-softfloat}):
 @table @code
-@item arc-*-elf*
-biendian.
-
 @item arm-*-*
 fpu, 26bit, underscore, interwork, biendian, nofmult.
 
@@ -1120,9 +1126,6 @@ Generic POSIX/Unix95 thread support.
 RTEMS thread support.
 @item single
 Disable thread support, should work for all platforms.
-@item solaris
-Sun Solaris 2/Unix International thread support.  Only use this if you
-really need to use this legacy API instead of the default, @samp{posix}.
 @item vxworks
 VxWorks thread support.
 @item win32
@@ -2934,8 +2937,6 @@ information are.
 @item
 @uref{#alpha-dec-osf51,,alpha*-dec-osf5.1}
 @item
-@uref{#arc-x-elf,,arc-*-elf}
-@item
 @uref{#arm-x-elf,,arm-*-elf}
 @item
 @uref{#avr,,avr}
@@ -2977,10 +2978,6 @@ information are.
 @uref{#m32c-x-elf,,m32c-*-elf}
 @item
 @uref{#m32r-x-elf,,m32r-*-elf}
-@item
-@uref{#m6811-elf,,m6811-elf}
-@item
-@uref{#m6812-elf,,m6812-elf}
 @item
 @uref{#m68k-x-x,,m68k-*-*}
 @item
@@ -3101,7 +3098,7 @@ or applying the patch in
 the OS version used, you need a data segment size between 512 MB and
 1 GB, so simply use @command{ulimit -Sd unlimited}.
 
-As of GNU binutils 2.20.1, neither GNU @command{as} nor GNU @command{ld}
+As of GNU binutils 2.21, neither GNU @command{as} nor GNU @command{ld}
 are supported on Tru64 UNIX, so you must not configure GCC with
 @option{--with-gnu-as} or @option{--with-gnu-ld}.
 
@@ -3130,13 +3127,6 @@ DBX@.  DEC is now aware of this problem with the assembler and hopes to
 provide a fix shortly.
 
 @c FIXME: still applicable?
-
-@html
-<hr />
-@end html
-@heading @anchor{arc-x-elf}arc-*-elf
-Argonaut ARC processor.
-This configuration is intended for embedded systems.
 
 @html
 <hr />
@@ -3235,35 +3225,6 @@ Pre-packaged tools can be obtained from
 @uref{ftp://ftp.axis.com/@/pub/@/axis/@/tools/@/cris/@/compiler-kit/}.  More
 information about this platform is available at
 @uref{http://developer.axis.com/}.
-
-@html
-<hr />
-@end html
-@heading @anchor{crx}CRX
-
-The CRX CompactRISC architecture is a low-power 32-bit architecture with
-fast context switching and architectural extensibility features.
-
-@ifnothtml
-@xref{CRX Options,, CRX Options, gcc, Using and Porting the GNU Compiler
-Collection (GCC)},
-@end ifnothtml
-
-@ifhtml
-See ``CRX Options'' in the main manual for a list of CRX-specific options.
-@end ifhtml
-
-Use @samp{configure --target=crx-elf --enable-languages=c,c++} to configure
-GCC@ for building a CRX cross-compiler. The option @samp{--target=crx-elf}
-is also used to build the @samp{newlib} C library for CRX.
-
-It is also possible to build libstdc++-v3 for the CRX architecture. This
-needs to be done in a separate step with the following configure settings:
-
-@smallexample
-gcc/libstdc++-v3/configure --host=crx-elf --with-newlib \
-    --enable-sjlj-exceptions --enable-cxx-flags='-fexceptions -frtti'
-@end smallexample
 
 @html
 <hr />
@@ -3533,7 +3494,7 @@ The Sun assembler in Solaris 8 and 9 has several bugs and limitations.
 While GCC works around them, several features are missing, so it is
 @c FIXME: which ones?
 recommended to use the GNU assembler instead.  There is no bundled
-version, but the current version, from GNU binutils 2.20.1, is known to
+version, but the current version, from GNU binutils 2.21, is known to
 work.
 
 Solaris@tie{}2/x86 doesn't support the execution of SSE/SSE2 instructions
@@ -3559,7 +3520,7 @@ It is recommended that you configure GCC to use the GNU assembler, in
 @file{/usr/sfw/bin/gas}.  The versions included in Solaris 10, from GNU
 binutils 2.15, and Solaris 11, from GNU binutils 2.19, work fine,
 although the current version, from GNU binutils
-2.20.1, is known to work, too.  Recent versions of the Sun assembler in
+2.21, is known to work, too.  Recent versions of the Sun assembler in
 @file{/usr/ccs/bin/as} work almost as well, though.
 @c FIXME: as patch requirements?
 
@@ -3567,7 +3528,7 @@ For linking, the Sun linker, is preferred.  If you want to use the GNU
 linker instead, which is available in @file{/usr/sfw/bin/gld}, note that
 due to a packaging bug the version in Solaris 10, from GNU binutils
 2.15, cannot be used, while the version in Solaris 11, from GNU binutils
-2.19, works, as does the latest version, from GNU binutils 2.20.1.
+2.19, works, as does the latest version, from GNU binutils 2.21.
 
 To use GNU @command{as}, configure with the options
 @option{--with-gnu-as --with-as=@//usr/@/sfw/@/bin/@/gas}.  It may be necessary
@@ -3789,20 +3750,6 @@ This configuration is intended for embedded systems.
 @html
 <hr />
 @end html
-@heading @anchor{m6811-elf}m6811-elf
-Motorola 68HC11 family micro controllers.  These are used in embedded
-applications.  There are no standard Unix configurations.
-
-@html
-<hr />
-@end html
-@heading @anchor{m6812-elf}m6812-elf
-Motorola 68HC12 family micro controllers.  These are used in embedded
-applications.  There are no standard Unix configurations.
-
-@html
-<hr />
-@end html
 @heading @anchor{m68k-x-x}m68k-*-*
 By default,
 @samp{m68k-*-elf*}, @samp{m68k-*-rtems},  @samp{m68k-*-uclinux} and
@@ -3833,9 +3780,7 @@ be a @option{-mcpu} argument or one of the following values:
 GCC 4.3 changed the uClinux configuration so that it uses the
 @samp{m68k-linux-gnu} ABI rather than the @samp{m68k-elf} ABI.
 It also added improved support for C++ and flat shared libraries,
-both of which were ABI changes.  However, you can still use the
-original ABI by configuring for @samp{m68k-uclinuxoldabi} or
-@samp{m68k-@var{vendor}-uclinuxoldabi}.
+both of which were ABI changes.
 
 
 @html
@@ -3996,7 +3941,7 @@ Look for @file{/usr/lib64/libc.so.1} to see if you
 have the 64-bit libraries installed.
 
 GCC must be configured with GNU @command{as}.  The latest version, from GNU
-binutils 2.20.1, is known to work.  On the other hand, bootstrap fails
+binutils 2.21, is known to work.  On the other hand, bootstrap fails
 with GNU @command{ld} at least since GNU binutils 2.17.
 
 The @option{--enable-libgcj}
@@ -4136,11 +4081,12 @@ supported as cross-compilation target only.
 @c alone is too unspecific and must be avoided.
 @heading @anchor{x-x-solaris2}*-*-solaris2*
 
-Support for Solaris 7 has been removed in GCC 4.6.
+Support for Solaris 8 has been obsoleted in GCC 4.7, but can still be
+enabled by configuring with @option{--enable-obsolete}.  Support will be
+removed in GCC 4.8.  Support for Solaris 7 has been removed in GCC 4.6.
 
 Sun does not ship a C compiler with Solaris 2, though you can download
-the Sun Studio compilers for free from
-@uref{http://developers.sun.com/sunstudio/downloads/}.  Alternatively,
+the Sun Studio compilers for free.  Alternatively,
 you can install a pre-built GCC to bootstrap and install GCC.  See the
 @uref{binaries.html,,binaries page} for details.
 
@@ -4183,7 +4129,7 @@ We recommend the use of the Sun assembler or the GNU assembler, in
 conjunction with the Sun linker.  The GNU @command{as}
 versions included in Solaris 10, from GNU binutils 2.15, and Solaris 11,
 from GNU binutils 2.19, are known to work.  They can be found in
-@file{/usr/sfw/bin/gas}.  Current versions of GNU binutils (2.20.1)
+@file{/usr/sfw/bin/gas}.  Current versions of GNU binutils (2.21)
 are known to work as well.  Note that your mileage may vary
 if you use a combination of the GNU tools and the Sun tools: while the
 combination GNU @command{as} + Sun @command{ld} should reasonably work,
@@ -4192,7 +4138,7 @@ cause memory corruption at runtime in some cases for C++ programs.
 @c FIXME: still?
 GNU @command{ld} usually works as well, although the version included in
 Solaris 10 cannot be used due to several bugs.  Again, the current
-version (2.20.1) is known to work, but generally lacks platform specific
+version (2.21) is known to work, but generally lacks platform specific
 features, so better stay with Sun @command{ld}.
 
 To enable symbol versioning in @samp{libstdc++} with Sun @command{ld},

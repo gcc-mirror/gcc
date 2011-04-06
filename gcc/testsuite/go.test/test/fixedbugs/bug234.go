@@ -14,6 +14,7 @@ func main() {
 		println("x=", x, " ok=", ok, " want 100, true")
 		panic("fail")
 	}
+	close(c)
 	x, ok = <-c
 	if x != 0 || ok {
 		println("x=", x, " ok=", ok, " want 0, false")

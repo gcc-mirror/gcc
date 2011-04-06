@@ -1,3 +1,122 @@
+2011-03-31  Jason Merrill  <jason@redhat.com>
+
+	PR c++/48277
+	* semantics.c (finish_call_expr): Remove assert.
+
+	PR c++/48280
+	* method.c (defaultable_fn_check): Templates are not defaultable.
+
+	* parser.c (cp_parser_init_declarator): Avoid redundant
+	cp_finish_decl for member declarations.
+
+2011-03-30  Jason Merrill  <jason@redhat.com>
+
+	PR c++/48212
+	* semantics.c (non_const_var_error): Just return if DECL_INITIAL
+	is error_mark_node.
+
+2011-03-30  Jason Merrill  <jason@redhat.com>
+
+	PR c++/48369
+	* semantics.c (potential_constant_expression_1): Handle
+	UNORDERED_EXPR and ORDERED_EXPR.
+
+	PR c++/48281
+	* semantics.c (finish_compound_literal): Do put static/constant
+	arrays in static variables.
+
+	* call.c (convert_like_real) [ck_list]: Build up the
+	initializer_list object directly.
+	* decl.c (build_init_list_var_init): Adjust.
+
+	* call.c (convert_like_real): Correct TREE_CONSTANT on CONSTRUCTOR.
+	* decl.c (reshape_init_array_1): Likewise.
+
+2011-03-29  Jason Merrill  <jason@redhat.com>
+
+	PR c++/48265
+	* pt.c (value_dependent_expression_p) [VAR_DECL]: Make sure
+	the variable is constant before looking at its initializer.
+
+	PR c++/48319
+	* pt.c (value_dependent_expression_p): Handle TEMPLATE_ID_EXPR.
+
+	PR c++/48089
+	* semantics.c (potential_constant_expression_1): Change error about
+	use of *this in constructor into sorry.
+
+	PR c++/48296
+	* decl.c (cp_finish_decl): Defer validation of constexpr member
+	functions.
+	* class.c (finalize_literal_type_property): Validate them here.
+	* semantics.c (is_valid_constexpr_fn): Don't check completeness.
+
+	* semantics.c (is_valid_constexpr_fn): Specify input location.
+
+2011-03-28  Jason Merrill  <jason@redhat.com>
+
+	PR c++/48313
+	* pt.c (maybe_adjust_types_for_deduction): Handle T&& deduction
+	from overloaded function.
+
+	Core 1232
+	* call.c (build_array_conv): New.
+	(implicit_conversion): Use it.
+
+	* call.c (reference_binding): Allow direct binding to an array
+	rvalue.
+
+	Core 898
+	* parser.c (cp_parser_compound_statement): Add function_body parm.
+	Complain about non-body compound-stmt in constexpr fn.
+	(cp_parser_primary_expression, cp_parser_statement): Adjust.
+	(cp_parser_implicitly_scoped_statement): Adjust.
+	(cp_parser_function_body, cp_parser_try_block): Adjust.
+	(cp_parser_handler, cp_parser_objc_synchronized_statement): Adjust.
+	(cp_parser_objc_try_catch_finally_statement): Adjust.
+
+	Core 898
+	* semantics.c (constexpr_fn_retval): New.  Allow using-declaration
+	and using-definition.
+	(register_constexpr_fundef): Call it.
+
+	* except.c (build_noexcept_spec): Call cxx_constant_value after
+	converting to bool.
+
+2011-03-25  Kai Tietz  <ktietz@redhat.com>
+
+	* lex.c (interface_strcmp): Handle dos-paths.
+	(handle_pragma_implementation): Use filename_cmp instead of
+	strcmp.
+	(in_main_input_context): Likewise.
+
+2011-03-25  Jason Merrill  <jason@redhat.com>
+
+	Core 1135
+	* method.c (defaulted_late_check): Check for exception spec mismatch.
+	(defaultable_fn_check): Allow exception spec and virtual.
+	* class.c (check_for_override): A virtual dtor is non-trivial.
+
+	PR c++/48289
+	* pt.c (build_non_dependent_expr): Keep dereferences outside the
+	NON_DEPENDENT_EXPR.
+
+2011-03-25  Kai Tietz  <ktietz@redhat.com>
+
+	* decl.c (decls_match): Replace target hook
+	call of comp_type_attributes by version in tree.c file.
+	* search.c (check_final_overrider): Likewise.
+	* typeck.c (structural_comptypes): Likewise.
+
+2011-03-21  Kai Tietz  <ktietz@redhat.com>
+
+	PR target/12171
+	* cxx-pretty-print.c (pp_cxx_ptr_operator):
+	Display allowed attributes for function pointer types.
+	* error.c (dump_type_prefix): Likewise.
+
+	* tree.c (cxx_attribute_table): Adjust table.
+
 2011-03-18  Jason Merrill  <jason@redhat.com>
 
 	PR c++/48162

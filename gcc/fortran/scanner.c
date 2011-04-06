@@ -1754,7 +1754,7 @@ preprocessor_line (gfc_char_t *c)
   if (flag[2]) /* Ending current file.  */
     {
       if (!current_file->up
-	  || strcmp (current_file->up->filename, filename) != 0)
+	  || filename_cmp (current_file->up->filename, filename) != 0)
 	{
 	  gfc_warning_now ("%s:%d: file %s left but not entered",
 			   current_file->filename, current_file->line,
@@ -1774,7 +1774,7 @@ preprocessor_line (gfc_char_t *c)
   /* The name of the file can be a temporary file produced by
      cpp. Replace the name if it is different.  */
 
-  if (strcmp (current_file->filename, filename) != 0)
+  if (filename_cmp (current_file->filename, filename) != 0)
     {
        /* FIXME: we leak the old filename because a pointer to it may be stored
           in the linemap.  Alternative could be using GC or updating linemap to
@@ -1891,7 +1891,7 @@ load_file (const char *realfilename, const char *displayedname, bool initial)
   filename = displayedname ? displayedname : realfilename;
 
   for (f = current_file; f; f = f->up)
-    if (strcmp (filename, f->filename) == 0)
+    if (filename_cmp (filename, f->filename) == 0)
       {
 	fprintf (stderr, "%s:%d: Error: File '%s' is being included "
 		 "recursively\n", current_file->filename, current_file->line,

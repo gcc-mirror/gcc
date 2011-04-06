@@ -1526,7 +1526,8 @@ simplify_const_unary_operation (enum rtx_code code, enum machine_mode mode,
     }
 
   else if (GET_CODE (op) == CONST_DOUBLE
-	   && SCALAR_FLOAT_MODE_P (mode))
+	   && SCALAR_FLOAT_MODE_P (mode)
+	   && SCALAR_FLOAT_MODE_P (GET_MODE (op)))
     {
       REAL_VALUE_TYPE d, t;
       REAL_VALUE_FROM_CONST_DOUBLE (d, op);
@@ -1549,7 +1550,10 @@ simplify_const_unary_operation (enum rtx_code code, enum machine_mode mode,
 	  d = real_value_truncate (mode, d);
 	  break;
 	case FLOAT_EXTEND:
-	  /* All this does is change the mode.  */
+	  /* All this does is change the mode, unless changing
+	     mode class.  */
+	  if (GET_MODE_CLASS (mode) != GET_MODE_CLASS (GET_MODE (op)))
+	    real_convert (&d, mode, &d);
 	  break;
 	case FIX:
 	  real_arithmetic (&d, FIX_TRUNC_EXPR, &d, NULL);
@@ -2479,6 +2483,46 @@ simplify_binary_operation_1 (enum rtx_code code, enum machine_mode mode,
 				    simplify_gen_unary (NOT, mode,
 							XEXP (op0, 1), mode),
 				    op1);
+
+      /* Given (xor (and A B) C), using P^Q == (~P&Q) | (~Q&P),
+	 we can transform like this:
+            (A&B)^C == ~(A&B)&C | ~C&(A&B)
+                    == (~A|~B)&C | ~C&(A&B)    * DeMorgan's Law
+                    == ~A&C | ~B&C | A&(~C&B)  * Distribute and re-order
+	 Attempt a few simplifications when B and C are both constants.  */
+      if (GET_CODE (op0) == AND
+	  && CONST_INT_P (op1)
+	  && CONST_INT_P (XEXP (op0, 1)))
+	{
+	  rtx a = XEXP (op0, 0);
+	  rtx b = XEXP (op0, 1);
+	  rtx c = op1;
+	  HOST_WIDE_INT bval = INTVAL (b);
+	  HOST_WIDE_INT cval = INTVAL (c);
+
+	  rtx na_c
+	    = simplify_binary_operation (AND, mode,
+					 simplify_gen_unary (NOT, mode, a, mode),
+					 c);
+	  if ((~cval & bval) == 0)
+	    {
+	      /* Try to simplify ~A&C | ~B&C.  */
+	      if (na_c != NULL_RTX)
+		return simplify_gen_binary (IOR, mode, na_c,
+					    GEN_INT (~bval & cval));
+	    }
+	  else
+	    {
+	      /* If ~A&C is zero, simplify A&(~C&B) | ~B&C.  */
+	      if (na_c == const0_rtx)
+		{
+		  rtx a_nc_b = simplify_gen_binary (AND, mode, a,
+						    GEN_INT (~cval & bval));
+		  return simplify_gen_binary (IOR, mode, a_nc_b,
+					      GEN_INT (~bval & cval));
+		}
+	    }
+	}
 
       /* (xor (comparison foo bar) (const_int 1)) can become the reversed
 	 comparison if STORE_FLAG_VALUE is 1.  */

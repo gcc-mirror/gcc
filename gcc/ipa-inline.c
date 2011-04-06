@@ -519,12 +519,14 @@ static int
 cgraph_edge_badness (struct cgraph_edge *edge, bool dump)
 {
   gcov_type badness;
-  int growth =
-    (cgraph_estimate_size_after_inlining (edge->caller, edge->callee)
-     - edge->caller->global.size);
+  int growth;
 
   if (edge->callee->local.disregard_inline_limits)
     return INT_MIN;
+
+  growth =
+    (cgraph_estimate_size_after_inlining (edge->caller, edge->callee)
+     - edge->caller->global.size);
 
   if (dump)
     {
@@ -584,10 +586,10 @@ cgraph_edge_badness (struct cgraph_edge *edge, bool dump)
       int growth_for_all;
       badness = growth * 10000;
       benefitperc =
-	MIN (100 * inline_summary (edge->callee)->time_inlining_benefit /
-	     (edge->callee->global.time + 1) +1, 100);
+	100 * inline_summary (edge->callee)->time_inlining_benefit
+	    / (edge->callee->global.time + 1) +1;
+      benefitperc = MIN (benefitperc, 100);
       div *= benefitperc;
-
 
       /* Decrease badness if call is nested.  */
       /* Compress the range so we don't overflow.  */

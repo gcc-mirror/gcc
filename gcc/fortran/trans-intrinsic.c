@@ -1,5 +1,5 @@
 /* Intrinsic translation
-   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
    and Steven Bosscher <s.bosscher@student.tudelft.nl>
@@ -918,6 +918,21 @@ gfc_conv_intrinsic_exponent (gfc_se *se, gfc_expr *expr)
   se->expr = fold_convert (type, res);
 }
 
+static void
+trans_this_image (gfc_se * se, gfc_expr *expr ATTRIBUTE_UNUSED)
+{
+  gfc_init_coarray_decl ();
+  se->expr = gfort_gvar_caf_this_image;
+}
+
+static void
+trans_num_images (gfc_se * se)
+{
+  gfc_init_coarray_decl ();
+  se->expr = gfort_gvar_caf_num_images;
+}
+
+
 /* Evaluate a single upper or lower bound.  */
 /* TODO: bound intrinsic generates way too much unnecessary code.  */
 
@@ -955,9 +970,9 @@ gfc_conv_intrinsic_bound (gfc_se * se, gfc_expr * expr, int upper)
   else
     {
       /* use the passed argument.  */
-      gcc_assert (arg->next->expr);
+      gcc_assert (arg2->expr);
       gfc_init_se (&argse, NULL);
-      gfc_conv_expr_type (&argse, arg->next->expr, gfc_array_index_type);
+      gfc_conv_expr_type (&argse, arg2->expr, gfc_array_index_type);
       gfc_add_block_to_block (&se->pre, &argse.pre);
       bound = argse.expr;
       /* Convert from one based to zero based.  */
@@ -1096,6 +1111,128 @@ gfc_conv_intrinsic_bound (gfc_se * se, gfc_expr * expr, int upper)
       else
 	se->expr = gfc_index_one_node;
     }
+
+  type = gfc_typenode_for_spec (&expr->ts);
+  se->expr = convert (type, se->expr);
+}
+
+
+static void
+conv_intrinsic_cobound (gfc_se * se, gfc_expr * expr)
+{
+  gfc_actual_arglist *arg;
+  gfc_actual_arglist *arg2;
+  gfc_se argse;
+  gfc_ss *ss;
+  tree bound, resbound, resbound2, desc, cond, tmp;
+  tree type;
+  gfc_array_spec * as;
+  int corank;
+
+  gcc_assert (expr->value.function.isym->id == GFC_ISYM_LCOBOUND
+	      || expr->value.function.isym->id == GFC_ISYM_UCOBOUND
+	      || expr->value.function.isym->id == GFC_ISYM_THIS_IMAGE);
+
+  arg = expr->value.function.actual;
+  arg2 = arg->next;
+
+  gcc_assert (arg->expr->expr_type == EXPR_VARIABLE);
+  corank = gfc_get_corank (arg->expr);
+
+  as = gfc_get_full_arrayspec_from_expr (arg->expr);
+  gcc_assert (as);
+
+  ss = gfc_walk_expr (arg->expr);
+  gcc_assert (ss != gfc_ss_terminator);
+  ss->data.info.codimen = corank;
+  gfc_init_se (&argse, NULL);
+
+  gfc_conv_expr_descriptor (&argse, arg->expr, ss);
+  gfc_add_block_to_block (&se->pre, &argse.pre);
+  gfc_add_block_to_block (&se->post, &argse.post);
+  desc = argse.expr;
+
+  if (se->ss)
+    {
+      mpz_t mpz_rank;
+      tree tree_rank;
+
+      /* Create an implicit second parameter from the loop variable.  */
+      gcc_assert (!arg2->expr);
+      gcc_assert (corank > 0);
+      gcc_assert (se->loop->dimen == 1);
+      gcc_assert (se->ss->expr == expr);
+
+      mpz_init_set_ui (mpz_rank, arg->expr->rank);
+      tree_rank = gfc_conv_mpz_to_tree (mpz_rank, gfc_index_integer_kind);
+
+      bound = se->loop->loopvar[0];
+      bound = fold_build2 (PLUS_EXPR, gfc_array_index_type, bound,
+			   se->ss->data.info.delta[0]);
+      bound = fold_build2 (PLUS_EXPR, gfc_array_index_type, bound,
+			   tree_rank);
+      gfc_advance_se_ss_chain (se);
+    }
+  else
+    {
+      /* use the passed argument.  */
+      gcc_assert (arg2->expr);
+      gfc_init_se (&argse, NULL);
+      gfc_conv_expr_type (&argse, arg2->expr, gfc_array_index_type);
+      gfc_add_block_to_block (&se->pre, &argse.pre);
+      bound = argse.expr;
+
+      if (INTEGER_CST_P (bound))
+	{
+	  int hi, low;
+
+	  hi = TREE_INT_CST_HIGH (bound);
+	  low = TREE_INT_CST_LOW (bound);
+	  if (hi || low < 1 || low > GFC_TYPE_ARRAY_CORANK (TREE_TYPE (desc)))
+	    gfc_error ("'dim' argument of %s intrinsic at %L is not a valid "
+		       "dimension index", expr->value.function.isym->name,
+		       &expr->where);
+	}
+      else if (gfc_option.rtcheck & GFC_RTCHECK_BOUNDS)
+        {
+	  bound = gfc_evaluate_now (bound, &se->pre);
+	  cond = fold_build2 (LT_EXPR, boolean_type_node,
+			      bound, build_int_cst (TREE_TYPE (bound), 1));
+	  tmp = gfc_rank_cst[GFC_TYPE_ARRAY_CORANK (TREE_TYPE (desc))];
+	  tmp = fold_build2 (GT_EXPR, boolean_type_node, bound, tmp);
+	  cond = fold_build2 (TRUTH_ORIF_EXPR, boolean_type_node, cond, tmp);
+	  gfc_trans_runtime_check (true, false, cond, &se->pre, &expr->where,
+				   gfc_msg_fault);
+	}
+
+
+      /* Substract 1 to get to zero based and add dimensions.  */
+      switch (arg->expr->rank)
+	{
+	case 0:
+	  bound = fold_build2 (MINUS_EXPR, gfc_array_index_type, bound,
+			       gfc_index_one_node);
+	case 1:
+	  break;
+	default:
+	  bound = fold_build2 (PLUS_EXPR, gfc_array_index_type, bound,
+			       gfc_rank_cst[arg->expr->rank - 1]);
+	}
+    }
+
+  resbound = gfc_conv_descriptor_lbound_get (desc, bound);
+
+  if (expr->value.function.isym->id == GFC_ISYM_UCOBOUND)
+    {
+      cond = fold_build2 (EQ_EXPR, boolean_type_node, bound,
+			  build_int_cst (TREE_TYPE (bound),
+			  arg->expr->rank + corank - 1));
+      resbound2 = gfc_conv_descriptor_ubound_get (desc, bound);
+      se->expr = fold_build3 (COND_EXPR, gfc_array_index_type, cond,
+			      resbound, resbound2);
+    }
+  else
+    se->expr = resbound;
 
   type = gfc_typenode_for_spec (&expr->ts);
   se->expr = convert (type, se->expr);
@@ -5946,6 +6083,10 @@ gfc_conv_intrinsic_function (gfc_se * se, gfc_expr * expr)
       gfc_conv_intrinsic_bound (se, expr, 0);
       break;
 
+    case GFC_ISYM_LCOBOUND:
+      conv_intrinsic_cobound (se, expr);
+      break;
+
     case GFC_ISYM_TRANSPOSE:
       /* The scalarizer has already been set up for reversed dimension access
 	 order ; now we just get the argument value normally.  */
@@ -6103,12 +6244,27 @@ gfc_conv_intrinsic_function (gfc_se * se, gfc_expr * expr)
       gfc_conv_intrinsic_bound (se, expr, 1);
       break;
 
+    case GFC_ISYM_UCOBOUND:
+      conv_intrinsic_cobound (se, expr);
+      break;
+
     case GFC_ISYM_XOR:
       gfc_conv_intrinsic_bitop (se, expr, BIT_XOR_EXPR);
       break;
 
     case GFC_ISYM_LOC:
       gfc_conv_intrinsic_loc (se, expr);
+      break;
+
+    case GFC_ISYM_THIS_IMAGE:
+      if (expr->value.function.actual)
+	conv_intrinsic_cobound (se, expr);
+      else
+	trans_this_image (se, expr);
+      break;
+
+    case GFC_ISYM_NUM_IMAGES:
+      trans_num_images (se);
       break;
 
     case GFC_ISYM_ACCESS:
@@ -6239,6 +6395,9 @@ gfc_add_intrinsic_ss_code (gfc_loopinfo * loop ATTRIBUTE_UNUSED, gfc_ss * ss)
     {
     case GFC_ISYM_UBOUND:
     case GFC_ISYM_LBOUND:
+    case GFC_ISYM_UCOBOUND:
+    case GFC_ISYM_LCOBOUND:
+    case GFC_ISYM_THIS_IMAGE:
       break;
 
     default:
@@ -6247,8 +6406,8 @@ gfc_add_intrinsic_ss_code (gfc_loopinfo * loop ATTRIBUTE_UNUSED, gfc_ss * ss)
 }
 
 
-/* UBOUND and LBOUND intrinsics with one parameter are expanded into code
-   inside the scalarization loop.  */
+/* The LBOUND, LCOBOUND, UBOUND and UCOBOUND intrinsics with one parameter
+   are expanded into code inside the scalarization loop.  */
 
 static gfc_ss *
 gfc_walk_intrinsic_bound (gfc_ss * ss, gfc_expr * expr)
@@ -6385,7 +6544,10 @@ gfc_walk_intrinsic_function (gfc_ss * ss, gfc_expr * expr,
   switch (isym->id)
     {
     case GFC_ISYM_LBOUND:
+    case GFC_ISYM_LCOBOUND:
     case GFC_ISYM_UBOUND:
+    case GFC_ISYM_UCOBOUND:
+    case GFC_ISYM_THIS_IMAGE:
       return gfc_walk_intrinsic_bound (ss, expr);
 
     case GFC_ISYM_TRANSFER:

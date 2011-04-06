@@ -293,10 +293,13 @@ spu_libgcc_shift_count_mode (void);
 /*  Table of machine attributes.  */
 static const struct attribute_spec spu_attribute_table[] =
 {
-  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler } */
-  { "naked",          0, 0, true,  false, false, spu_handle_fndecl_attribute },
-  { "spu_vector",     0, 0, false, true,  false, spu_handle_vector_attribute },
-  { NULL,             0, 0, false, false, false, NULL }
+  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler,
+       affects_type_identity } */
+  { "naked",          0, 0, true,  false, false, spu_handle_fndecl_attribute,
+    false },
+  { "spu_vector",     0, 0, false, true,  false, spu_handle_vector_attribute,
+    false },
+  { NULL,             0, 0, false, false, false, NULL, false }
 };
 
 /*  TARGET overrides.  */
@@ -6542,9 +6545,7 @@ expand_builtin_args (struct spu_builtin_description *d, tree exp,
       ops[i] = expand_expr (arg, NULL_RTX, VOIDmode, EXPAND_NORMAL);
     }
 
-  /* The insn pattern may have additional operands (SCRATCH).
-     Return the number of actual non-SCRATCH operands.  */
-  gcc_assert (i <= insn_data[icode].n_operands);
+  gcc_assert (i == insn_data[icode].n_generator_args);
   return i;
 }
 

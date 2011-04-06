@@ -205,16 +205,8 @@ Expression::convert_for_assignment(Translate_context* context, Type* lhs_type,
   if (lhs_type == rhs_type)
     return rhs_tree;
 
-  if (lhs_type->is_error_type() || rhs_type->is_error_type())
+  if (lhs_type->is_error() || rhs_type->is_error())
     return error_mark_node;
-
-  if (lhs_type->is_undefined() || rhs_type->is_undefined())
-    {
-      // Make sure we report the error.
-      lhs_type->base();
-      rhs_type->base();
-      return error_mark_node;
-    }
 
   if (rhs_tree == error_mark_node || TREE_TYPE(rhs_tree) == error_mark_node)
     return error_mark_node;
@@ -2628,7 +2620,7 @@ Const_expression::do_determine_type(const Type_context* context)
 void
 Const_expression::check_for_init_loop()
 {
-  if (this->type_ != NULL && this->type_->is_error_type())
+  if (this->type_ != NULL && this->type_->is_error())
     return;
 
   if (this->seen_)
@@ -2647,7 +2639,7 @@ Const_expression::check_for_init_loop()
 
   if (find_named_object.found())
     {
-      if (this->type_ == NULL || !this->type_->is_error_type())
+      if (this->type_ == NULL || !this->type_->is_error())
 	{
 	  this->report_error(_("constant refers to itself"));
 	  this->type_ = Type::make_error_type();
@@ -2661,7 +2653,7 @@ Const_expression::check_for_init_loop()
 void
 Const_expression::do_check_types(Gogo*)
 {
-  if (this->type_ != NULL && this->type_->is_error_type())
+  if (this->type_ != NULL && this->type_->is_error())
     return;
 
   this->check_for_init_loop();
@@ -3311,14 +3303,8 @@ Type_conversion_expression::do_check_types(Gogo*)
   Type* expr_type = this->expr_->type();
   std::string reason;
 
-  if (type->is_error_type()
-      || type->is_undefined()
-      || expr_type->is_error_type()
-      || expr_type->is_undefined())
+  if (type->is_error() || expr_type->is_error())
     {
-      // Make sure we emit an error for an undefined type.
-      type->base();
-      expr_type->base();
       this->set_is_error();
       return;
     }
@@ -3683,6 +3669,14 @@ Unary_expression::do_lower(Gogo*, Named_object*, int)
 	}
     }
 
+  // Catching an invalid indirection of unsafe.Pointer here avoid
+  // having to deal with TYPE_VOID in other places.
+  if (op == OPERATOR_MULT && expr->type()->is_unsafe_pointer_type())
+    {
+      error_at(this->location(), "invalid indirect of %<unsafe.Pointer%>");
+      return Expression::make_error(this->location());
+    }
+
   if (op == OPERATOR_PLUS || op == OPERATOR_MINUS
       || op == OPERATOR_NOT || op == OPERATOR_XOR)
     {
@@ -3820,7 +3814,7 @@ Unary_expression::eval_integer(Operator op, Type* utype, mpz_t uval, mpz_t val,
 	    ++obits;
 	  size_t ocount = ((obits + HOST_BITS_PER_WIDE_INT - 1)
 			   / HOST_BITS_PER_WIDE_INT);
-	  gcc_assert(ocount <= ocount);
+	  gcc_assert(ocount <= count);
 
 	  for (size_t i = 0; i < ocount; ++i)
 	    phwi[i] = ~phwi[i];
@@ -4027,7 +4021,7 @@ void
 Unary_expression::do_check_types(Gogo*)
 {
   Type* type = this->expr_->type();
-  if (type->is_error_type())
+  if (type->is_error())
     {
       this->set_is_error();
       return;
@@ -5447,9 +5441,9 @@ Binary_expression::do_type()
       {
 	Type* left_type = this->left_->type();
 	Type* right_type = this->right_->type();
-	if (left_type->is_error_type())
+	if (left_type->is_error())
 	  return left_type;
-	else if (right_type->is_error_type())
+	else if (right_type->is_error())
 	  return right_type;
 	else if (!Type::are_compatible_for_binop(left_type, right_type))
 	  {
@@ -5688,7 +5682,7 @@ Binary_expression::do_check_types(Gogo*)
 
   Type* left_type = this->left_->type();
   Type* right_type = this->right_->type();
-  if (left_type->is_error_type() || right_type->is_error_type())
+  if (left_type->is_error() || right_type->is_error())
     {
       this->set_is_error();
       return;
@@ -5747,7 +5741,13 @@ Binary_expression::do_check_types(Gogo*)
 	  if (this->right_->integer_constant_value(true, val, &type))
 	    {
 	      if (mpz_sgn(val) < 0)
-		this->report_error(_("negative shift count"));
+		{
+		  this->report_error(_("negative shift count"));
+		  mpz_set_ui(val, 0);
+		  source_location rloc = this->right_->location();
+		  this->right_ = Expression::make_integer(&val, right_type,
+							  rloc);
+		}
 	    }
 	  mpz_clear(val);
 	}
@@ -6530,7 +6530,6 @@ class Builtin_call_expression : public Call_expression
       BUILTIN_APPEND,
       BUILTIN_CAP,
       BUILTIN_CLOSE,
-      BUILTIN_CLOSED,
       BUILTIN_COMPLEX,
       BUILTIN_COPY,
       BUILTIN_IMAG,
@@ -6588,8 +6587,6 @@ Builtin_call_expression::Builtin_call_expression(Gogo* gogo,
     this->code_ = BUILTIN_CAP;
   else if (name == "close")
     this->code_ = BUILTIN_CLOSE;
-  else if (name == "closed")
-    this->code_ = BUILTIN_CLOSED;
   else if (name == "complex")
     this->code_ = BUILTIN_COMPLEX;
   else if (name == "copy")
@@ -6683,6 +6680,12 @@ Find_call_expression::expression(Expression** pexpr)
 Expression*
 Builtin_call_expression::do_lower(Gogo* gogo, Named_object* function, int)
 {
+  if (this->is_varargs() && this->code_ != BUILTIN_APPEND)
+    {
+      this->report_error(_("invalid use of %<...%> with builtin function"));
+      return Expression::make_error(this->location());
+    }
+
   if (this->code_ == BUILTIN_NEW)
     {
       const Expression_list* args = this->args();
@@ -6998,7 +7001,7 @@ Builtin_call_expression::do_integer_constant_value(bool iota_is_constant,
       if (arg == NULL)
 	return false;
       Type* arg_type = arg->type();
-      if (arg_type->is_error_type() || arg_type->is_undefined())
+      if (arg_type->is_error())
 	return false;
       if (arg_type->is_abstract())
 	return false;
@@ -7185,9 +7188,6 @@ Builtin_call_expression::do_type()
     case BUILTIN_PRINTLN:
       return Type::make_void_type();
 
-    case BUILTIN_CLOSED:
-      return Type::lookup_bool_type();
-
     case BUILTIN_RECOVER:
       return Type::make_interface_type(NULL, BUILTINS_LOCATION);
 
@@ -7354,8 +7354,7 @@ Builtin_call_expression::check_one_arg()
       return false;
     }
   if (args->front()->is_error_expression()
-      || args->front()->type()->is_error_type()
-      || args->front()->type()->is_undefined())
+      || args->front()->type()->is_error())
     {
       this->set_is_error();
       return false;
@@ -7389,7 +7388,7 @@ Builtin_call_expression::do_check_types(Gogo*)
 	      arg_type = arg_type->points_to();
 	    if (this->code_ == BUILTIN_CAP)
 	      {
-		if (!arg_type->is_error_type()
+		if (!arg_type->is_error()
 		    && arg_type->array_type() == NULL
 		    && arg_type->channel_type() == NULL)
 		  this->report_error(_("argument must be array or slice "
@@ -7397,7 +7396,7 @@ Builtin_call_expression::do_check_types(Gogo*)
 	      }
 	    else
 	      {
-		if (!arg_type->is_error_type()
+		if (!arg_type->is_error()
 		    && !arg_type->is_string_type()
 		    && arg_type->array_type() == NULL
 		    && arg_type->map_type() == NULL
@@ -7429,7 +7428,7 @@ Builtin_call_expression::do_check_types(Gogo*)
 		 ++p)
 	      {
 		Type* type = (*p)->type();
-		if (type->is_error_type()
+		if (type->is_error()
 		    || type->is_string_type()
 		    || type->integer_type() != NULL
 		    || type->float_type() != NULL
@@ -7451,7 +7450,6 @@ Builtin_call_expression::do_check_types(Gogo*)
       break;
 
     case BUILTIN_CLOSE:
-    case BUILTIN_CLOSED:
       if (this->check_one_arg())
 	{
 	  if (this->one_arg()->type()->channel_type() == NULL)
@@ -7494,7 +7492,7 @@ Builtin_call_expression::do_check_types(Gogo*)
 	  }
 	Type* arg1_type = args->front()->type();
 	Type* arg2_type = args->back()->type();
-	if (arg1_type->is_error_type() || arg2_type->is_error_type())
+	if (arg1_type->is_error() || arg2_type->is_error())
 	  break;
 
 	Type* e1;
@@ -7569,9 +7567,9 @@ Builtin_call_expression::do_check_types(Gogo*)
 	else if (args->size() > 2)
 	  this->report_error(_("too many arguments"));
 	else if (args->front()->is_error_expression()
-		 || args->front()->type()->is_error_type()
+		 || args->front()->type()->is_error()
 		 || args->back()->is_error_expression()
-		 || args->back()->type()->is_error_type())
+		 || args->back()->type()->is_error())
 	  this->set_is_error();
 	else if (!Type::are_identical(args->front()->type(),
 				      args->back()->type(), true, NULL))
@@ -7936,7 +7934,6 @@ Builtin_call_expression::do_get_tree(Translate_context* context)
       }
 
     case BUILTIN_CLOSE:
-    case BUILTIN_CLOSED:
       {
 	const Expression_list* args = this->args();
 	gcc_assert(args != NULL && args->size() == 1);
@@ -7944,28 +7941,14 @@ Builtin_call_expression::do_get_tree(Translate_context* context)
 	tree arg_tree = arg->get_tree(context);
 	if (arg_tree == error_mark_node)
 	  return error_mark_node;
-	if (this->code_ == BUILTIN_CLOSE)
-	  {
-	    static tree close_fndecl;
-	    return Gogo::call_builtin(&close_fndecl,
-				      location,
-				      "__go_builtin_close",
-				      1,
-				      void_type_node,
-				      TREE_TYPE(arg_tree),
-				      arg_tree);
-	  }
-	else
-	  {
-	    static tree closed_fndecl;
-	    return Gogo::call_builtin(&closed_fndecl,
-				      location,
-				      "__go_builtin_closed",
-				      1,
-				      boolean_type_node,
-				      TREE_TYPE(arg_tree),
-				      arg_tree);
-	  }
+	static tree close_fndecl;
+	return Gogo::call_builtin(&close_fndecl,
+				  location,
+				  "__go_builtin_close",
+				  1,
+				  void_type_node,
+				  TREE_TYPE(arg_tree),
+				  arg_tree);
       }
 
     case BUILTIN_SIZEOF:
@@ -8556,7 +8539,7 @@ Call_expression::do_check_types(Gogo*)
   Function_type* fntype = this->get_function_type();
   if (fntype == NULL)
     {
-      if (!this->fn_->type()->is_error_type())
+      if (!this->fn_->type()->is_error())
 	this->report_error(_("expected function"));
       return;
     }
@@ -8575,10 +8558,11 @@ Call_expression::do_check_types(Gogo*)
       if (first_arg_type->points_to() == NULL)
 	{
 	  // When passing a value, we need to check that we are
-	  // permitted to copy it.
+	  // permitted to copy it.  The language permits copying
+	  // hidden fields for a method receiver.
 	  std::string reason;
-	  if (!Type::are_assignable(fntype->receiver()->type(),
-				    first_arg_type, &reason))
+	  if (!Type::are_assignable_hidden_ok(fntype->receiver()->type(),
+					      first_arg_type, &reason))
 	    {
 	      if (reason.empty())
 		this->report_error(_("incompatible type for receiver"));
@@ -9076,7 +9060,7 @@ Index_expression::do_lower(Gogo*, Named_object*, int)
   Expression* end = this->end_;
 
   Type* type = left->type();
-  if (type->is_error_type())
+  if (type->is_error())
     return Expression::make_error(location);
   else if (left->is_type_expression())
     {
@@ -9252,7 +9236,7 @@ Array_index_expression::do_check_types(Gogo*)
   Array_type* array_type = this->array_->type()->array_type();
   if (array_type == NULL)
     {
-      gcc_assert(this->array_->type()->is_error_type());
+      gcc_assert(this->array_->type()->is_error());
       return;
     }
 
@@ -9299,10 +9283,13 @@ Array_index_expression::do_check_types(Gogo*)
 
   // A slice of an array requires an addressable array.  A slice of a
   // slice is always possible.
-  if (this->end_ != NULL
-      && !array_type->is_open_array_type()
-      && !this->array_->is_addressable())
-    this->report_error(_("array is not addressable"));
+  if (this->end_ != NULL && !array_type->is_open_array_type())
+    {
+      if (!this->array_->is_addressable())
+	this->report_error(_("array is not addressable"));
+      else
+	this->array_->address_taken(true);
+    }
 }
 
 // Return whether this expression is addressable.
@@ -9334,7 +9321,7 @@ Array_index_expression::do_get_tree(Translate_context* context)
   Array_type* array_type = this->array_->type()->array_type();
   if (array_type == NULL)
     {
-      gcc_assert(this->array_->type()->is_error_type());
+      gcc_assert(this->array_->type()->is_error());
       return error_mark_node;
     }
 
@@ -9995,7 +9982,7 @@ Type*
 Field_reference_expression::do_type()
 {
   Type* type = this->expr_->type();
-  if (type->is_error_type())
+  if (type->is_error())
     return type;
   Struct_type* struct_type = type->struct_type();
   gcc_assert(struct_type != NULL);
@@ -10008,7 +9995,7 @@ void
 Field_reference_expression::do_check_types(Gogo*)
 {
   Type* type = this->expr_->type();
-  if (type->is_error_type())
+  if (type->is_error())
     return;
   Struct_type* struct_type = type->struct_type();
   gcc_assert(struct_type != NULL);
@@ -10160,7 +10147,10 @@ Interface_field_reference_expression::do_check_types(Gogo*)
 
   Interface_type* interface_type = type->interface_type();
   if (interface_type == NULL)
-    this->report_error(_("expected interface or pointer to interface"));
+    {
+      if (!type->is_error_type())
+	this->report_error(_("expected interface or pointer to interface"));
+    }
   else
     {
       const Typed_identifier* method =
@@ -10276,20 +10266,30 @@ Selector_expression::lower_method_expression(Gogo* gogo)
 
   bool is_ambiguous;
   Method* method = nt->method_function(name, &is_ambiguous);
-  if (method == NULL)
+  const Typed_identifier* imethod = NULL;
+  if (method == NULL && !is_pointer)
+    {
+      Interface_type* it = nt->interface_type();
+      if (it != NULL)
+	imethod = it->find_method(name);
+    }
+
+  if (method == NULL && imethod == NULL)
     {
       if (!is_ambiguous)
-	error_at(location, "type %<%s%> has no method %<%s%>",
+	error_at(location, "type %<%s%s%> has no method %<%s%>",
+		 is_pointer ? "*" : "",
 		 nt->message_name().c_str(),
 		 Gogo::message_name(name).c_str());
       else
-	error_at(location, "method %<%s%> is ambiguous in type %<%s%>",
+	error_at(location, "method %<%s%s%> is ambiguous in type %<%s%>",
 		 Gogo::message_name(name).c_str(),
+		 is_pointer ? "*" : "",
 		 nt->message_name().c_str());
       return Expression::make_error(location);
     }
 
-  if (!is_pointer && !method->is_value_method())
+  if (method != NULL && !is_pointer && !method->is_value_method())
     {
       error_at(location, "method requires pointer (use %<(*%s).%s)%>",
 	       nt->message_name().c_str(),
@@ -10299,8 +10299,17 @@ Selector_expression::lower_method_expression(Gogo* gogo)
 
   // Build a new function type in which the receiver becomes the first
   // argument.
-  Function_type* method_type = method->type();
-  gcc_assert(method_type->is_method());
+  Function_type* method_type;
+  if (method != NULL)
+    {
+      method_type = method->type();
+      gcc_assert(method_type->is_method());
+    }
+  else
+    {
+      method_type = imethod->type()->function_type();
+      gcc_assert(method_type != NULL && !method_type->is_method());
+    }
 
   const char* const receiver_name = "$this";
   Typed_identifier_list* parameters = new Typed_identifier_list();
@@ -10339,7 +10348,7 @@ Selector_expression::lower_method_expression(Gogo* gogo)
   // simply reuse the existing function.  We use an internal hack to
   // get the right type.
 
-  if (is_pointer)
+  if (method != NULL && is_pointer)
     {
       Named_object* mno = (method->needs_stub_method()
 			   ? method->stub_object()
@@ -10358,7 +10367,11 @@ Selector_expression::lower_method_expression(Gogo* gogo)
   Named_object* vno = gogo->lookup(receiver_name, NULL);
   gcc_assert(vno != NULL);
   Expression* ve = Expression::make_var_reference(vno, location);
-  Expression* bm = Type::bind_field_or_method(gogo, nt, ve, name, location);
+  Expression* bm;
+  if (method != NULL)
+    bm = Type::bind_field_or_method(gogo, nt, ve, name, location);
+  else
+    bm = Expression::make_interface_field_reference(ve, name, location);
 
   // Even though we found the method above, if it has an error type we
   // may see an error here.
@@ -10402,8 +10415,7 @@ Selector_expression::lower_method_expression(Gogo* gogo)
 	  for (size_t i = 0; i < count; ++i)
 	    retvals->push_back(Expression::make_call_result(call, i));
 	}
-      s = Statement::make_return_statement(no->func_value()->type()->results(),
-					   retvals, location);
+      s = Statement::make_return_statement(retvals, location);
     }
   gogo->add_statement(s);
 
@@ -11156,7 +11168,7 @@ Open_array_construction_expression::do_get_tree(Translate_context* context)
   Array_type* array_type = this->type()->array_type();
   if (array_type == NULL)
     {
-      gcc_assert(this->type()->is_error_type());
+      gcc_assert(this->type()->is_error());
       return error_mark_node;
     }
 
@@ -11675,7 +11687,7 @@ Composite_literal_expression::do_lower(Gogo* gogo, Named_object* function, int)
 	type = type->map_type()->val_type();
       else
 	{
-	  if (!type->is_error_type())
+	  if (!type->is_error())
 	    error_at(this->location(),
 		     ("may only omit types within composite literals "
 		      "of slice, array, or map type"));
@@ -11683,7 +11695,7 @@ Composite_literal_expression::do_lower(Gogo* gogo, Named_object* function, int)
 	}
     }
 
-  if (type->is_error_type())
+  if (type->is_error())
     return Expression::make_error(this->location());
   else if (type->struct_type() != NULL)
     return this->lower_struct(gogo, type);
@@ -12148,7 +12160,7 @@ Type_guard_expression::do_check_types(Gogo*)
     }
   else if (expr_type->interface_type() == NULL)
     {
-      if (!expr_type->is_error_type() && !this->type_->is_error_type())
+      if (!expr_type->is_error() && !this->type_->is_error())
 	this->report_error(_("type assertion only valid for interface types"));
       this->set_is_error();
     }
@@ -12158,7 +12170,7 @@ Type_guard_expression::do_check_types(Gogo*)
       if (!expr_type->interface_type()->implements_interface(this->type_,
 							     &reason))
 	{
-	  if (!this->type_->is_error_type())
+	  if (!this->type_->is_error())
 	    {
 	      if (reason.empty())
 		this->report_error(_("impossible type assertion: "
@@ -12310,7 +12322,7 @@ void
 Receive_expression::do_check_types(Gogo*)
 {
   Type* type = this->channel_->type();
-  if (type->is_error_type())
+  if (type->is_error())
     {
       this->set_is_error();
       return;
@@ -12335,7 +12347,7 @@ Receive_expression::do_get_tree(Translate_context* context)
   Channel_type* channel_type = this->channel_->type()->channel_type();
   if (channel_type == NULL)
     {
-      gcc_assert(this->channel_->type()->is_error_type());
+      gcc_assert(this->channel_->type()->is_error());
       return error_mark_node;
     }
   Type* element_type = channel_type->element_type();
@@ -12355,103 +12367,6 @@ Receive_expression*
 Expression::make_receive(Expression* channel, source_location location)
 {
   return new Receive_expression(channel, location);
-}
-
-// Class Send_expression.
-
-// Traversal.
-
-int
-Send_expression::do_traverse(Traverse* traverse)
-{
-  if (Expression::traverse(&this->channel_, traverse) == TRAVERSE_EXIT)
-    return TRAVERSE_EXIT;
-  return Expression::traverse(&this->val_, traverse);
-}
-
-// Get the type.
-
-Type*
-Send_expression::do_type()
-{
-  if (this->is_value_discarded_)
-    return Type::make_void_type();
-  else
-    return Type::lookup_bool_type();
-}
-
-// Set types.
-
-void
-Send_expression::do_determine_type(const Type_context*)
-{
-  this->channel_->determine_type_no_context();
-
-  Type* type = this->channel_->type();
-  Type_context subcontext;
-  if (type->channel_type() != NULL)
-    subcontext.type = type->channel_type()->element_type();
-  this->val_->determine_type(&subcontext);
-}
-
-// Check types.
-
-void
-Send_expression::do_check_types(Gogo*)
-{
-  Type* type = this->channel_->type();
-  if (type->is_error_type())
-    {
-      this->set_is_error();
-      return;
-    }
-  Channel_type* channel_type = type->channel_type();
-  if (channel_type == NULL)
-    {
-      error_at(this->location(), "left operand of %<<-%> must be channel");
-      this->set_is_error();
-      return;
-    }
-  Type* element_type = channel_type->element_type();
-  if (element_type != NULL
-      && !Type::are_assignable(element_type, this->val_->type(), NULL))
-    {
-      this->report_error(_("incompatible types in send"));
-      return;
-    }
-  if (!channel_type->may_send())
-    {
-      this->report_error(_("invalid send on receive-only channel"));
-      return;
-    }
-}
-
-// Get a tree for a send expression.
-
-tree
-Send_expression::do_get_tree(Translate_context* context)
-{
-  tree channel = this->channel_->get_tree(context);
-  tree val = this->val_->get_tree(context);
-  if (channel == error_mark_node || val == error_mark_node)
-    return error_mark_node;
-  Channel_type* channel_type = this->channel_->type()->channel_type();
-  val = Expression::convert_for_assignment(context,
-					   channel_type->element_type(),
-					   this->val_->type(),
-					   val,
-					   this->location());
-  return Gogo::send_on_channel(channel, val, this->is_value_discarded_,
-			       this->for_select_, this->location());
-}
-
-// Make a send expression
-
-Send_expression*
-Expression::make_send(Expression* channel, Expression* val,
-		      source_location location)
-{
-  return new Send_expression(channel, val, location);
 }
 
 // An expression which evaluates to a pointer to the type descriptor

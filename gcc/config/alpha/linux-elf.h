@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler
    for Alpha Linux-based GNU systems using ELF.
-   Copyright (C) 1996, 1997, 1998, 2001, 2002, 2003, 2006, 2007, 2010
+   Copyright (C) 1996, 1997, 1998, 2001, 2002, 2003, 2006, 2007, 2010, 2011
    Free Software Foundation, Inc.
    Contributed by Richard Henderson.
 
@@ -19,9 +19,6 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
-
-#undef TARGET_VERSION
-#define TARGET_VERSION fprintf (stderr, " (Alpha GNU/Linux for ELF)");
 
 #undef EXTRA_SPECS
 #define EXTRA_SPECS \

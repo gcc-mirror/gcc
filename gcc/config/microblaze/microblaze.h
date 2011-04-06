@@ -102,22 +102,6 @@ extern enum pipeline_type microblaze_pipe;
   { "target_asm_spec", TARGET_ASM_SPEC },				\
   SUBTARGET_EXTRA_SPECS
 
-/* Print subsidiary information on the compiler version in use.  */
-#define MICROBLAZE_VERSION MICROBLAZE_DEFAULT_CPU
-
-#ifndef MACHINE_TYPE
-#define MACHINE_TYPE "MicroBlaze/ELF"
-#endif
-
-#ifndef TARGET_VERSION_INTERNAL
-#define TARGET_VERSION_INTERNAL(STREAM)					\
-  fprintf (STREAM, " %s %s", MACHINE_TYPE, MICROBLAZE_VERSION)
-#endif
-
-#ifndef TARGET_VERSION
-#define TARGET_VERSION TARGET_VERSION_INTERNAL (stderr)
-#endif
-
 /* Local compiler-generated symbols must have a prefix that the assembler
    understands.   */
 

@@ -72,7 +72,7 @@ Target Mask(PATTERN_COMPARE)
 Use pattern compare instructions
 
 mxl-stack-check
-Target Mask(STACK_CHECK)
+Target Mask(STACK_CHECK) Warn(%qs is deprecated; use -fstack-check)
 Check for stack overflow at runtime
 
 mxl-gp-opt
@@ -80,7 +80,7 @@ Target Mask(XLGPOPT)
 Use GP relative sdata/sbss sections
 
 mno-clearbss
-Target RejectNegative
+Target RejectNegative Var(flag_zero_initialized_in_bss, 0) Warn(%qs is deprecated; use -fno-zero-initialized-in-bss)
 Clear the BSS to zero and place zero initialized in BSS
 
 mxl-multiply-high

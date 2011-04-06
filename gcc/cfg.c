@@ -402,8 +402,8 @@ redirect_edge_succ_nodup (edge e, basic_block new_succ)
       if (s->probability > REG_BR_PROB_BASE)
 	s->probability = REG_BR_PROB_BASE;
       s->count += e->count;
-      remove_edge (e);
       redirect_edge_var_map_dup (s, e);
+      remove_edge (e);
       e = s;
     }
   else

@@ -1,6 +1,6 @@
 /* Subroutines for insn-output.c for HPPA.
    Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001,
-   2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+   2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
    Contributed by Tim Moore (moore@cs.utah.edu), based on sparc.c
 
@@ -48,6 +48,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "target-def.h"
 #include "langhooks.h"
 #include "df.h"
+#include "opts.h"
 
 /* Return nonzero if there is a bypass for the output of 
    OUT_INSN and the fp store IN_INSN.  */
@@ -87,7 +88,8 @@ hppa_fpstore_bypass_p (rtx out_insn, rtx in_insn)
 static void pa_option_override (void);
 static void copy_reg_pointer (rtx, rtx);
 static void fix_range (const char *);
-static bool pa_handle_option (size_t, const char *, int);
+static bool pa_handle_option (struct gcc_options *, struct gcc_options *,
+			      const struct cl_decoded_option *, location_t);
 static int hppa_register_move_cost (enum machine_mode mode, reg_class_t,
 				    reg_class_t);
 static int hppa_address_cost (rtx, bool);
@@ -190,12 +192,6 @@ static section *pa_function_section (tree, enum node_frequency, bool, bool);
 static GTY(()) section *som_readonly_data_section;
 static GTY(()) section *som_one_only_readonly_data_section;
 static GTY(()) section *som_one_only_data_section;
-
-/* Which cpu we are scheduling for.  */
-enum processor_type pa_cpu = TARGET_SCHED_DEFAULT;
-
-/* The UNIX standard to use for predefines and linking.  */
-int flag_pa_unix = TARGET_HPUX_11_11 ? 1998 : TARGET_HPUX_10_10 ? 1995 : 1993;
 
 /* Counts for the number of callee-saved general and floating point
    registers which were saved by the current function's prologue.  */
@@ -478,66 +474,32 @@ fix_range (const char *const_str)
 /* Implement TARGET_HANDLE_OPTION.  */
 
 static bool
-pa_handle_option (size_t code, const char *arg, int value ATTRIBUTE_UNUSED)
+pa_handle_option (struct gcc_options *opts,
+		  struct gcc_options *opts_set ATTRIBUTE_UNUSED,
+		  const struct cl_decoded_option *decoded,
+		  location_t loc ATTRIBUTE_UNUSED)
 {
+  size_t code = decoded->opt_index;
+
   switch (code)
     {
     case OPT_mnosnake:
     case OPT_mpa_risc_1_0:
     case OPT_march_1_0:
-      target_flags &= ~(MASK_PA_11 | MASK_PA_20);
+      opts->x_target_flags &= ~(MASK_PA_11 | MASK_PA_20);
       return true;
 
     case OPT_msnake:
     case OPT_mpa_risc_1_1:
     case OPT_march_1_1:
-      target_flags &= ~MASK_PA_20;
-      target_flags |= MASK_PA_11;
+      opts->x_target_flags &= ~MASK_PA_20;
+      opts->x_target_flags |= MASK_PA_11;
       return true;
 
     case OPT_mpa_risc_2_0:
     case OPT_march_2_0:
-      target_flags |= MASK_PA_11 | MASK_PA_20;
+      opts->x_target_flags |= MASK_PA_11 | MASK_PA_20;
       return true;
-
-    case OPT_mschedule_:
-      if (strcmp (arg, "8000") == 0)
-	pa_cpu = PROCESSOR_8000;
-      else if (strcmp (arg, "7100") == 0)
-	pa_cpu = PROCESSOR_7100;
-      else if (strcmp (arg, "700") == 0)
-	pa_cpu = PROCESSOR_700;
-      else if (strcmp (arg, "7100LC") == 0)
-	pa_cpu = PROCESSOR_7100LC;
-      else if (strcmp (arg, "7200") == 0)
-	pa_cpu = PROCESSOR_7200;
-      else if (strcmp (arg, "7300") == 0)
-	pa_cpu = PROCESSOR_7300;
-      else
-	return false;
-      return true;
-
-    case OPT_mfixed_range_:
-      fix_range (arg);
-      return true;
-
-#if TARGET_HPUX
-    case OPT_munix_93:
-      flag_pa_unix = 1993;
-      return true;
-#endif
-
-#if TARGET_HPUX_10_10
-    case OPT_munix_95:
-      flag_pa_unix = 1995;
-      return true;
-#endif
-
-#if TARGET_HPUX_11_11
-    case OPT_munix_98:
-      flag_pa_unix = 1998;
-      return true;
-#endif
 
     default:
       return true;
@@ -549,6 +511,24 @@ pa_handle_option (size_t code, const char *arg, int value ATTRIBUTE_UNUSED)
 static void
 pa_option_override (void)
 {
+  unsigned int i;
+  cl_deferred_option *opt;
+  VEC(cl_deferred_option,heap) *vec
+    = (VEC(cl_deferred_option,heap) *) pa_deferred_options;
+
+  FOR_EACH_VEC_ELT (cl_deferred_option, vec, i, opt)
+    {
+      switch (opt->opt_index)
+	{
+	case OPT_mfixed_range_:
+	  fix_range (opt->arg);
+	  break;
+
+	default:
+	  gcc_unreachable ();
+	}
+    }
+
   /* Unconditional branches in the delay slot are not compatible with dwarf2
      call frame information.  There is no benefit in using this optimization
      on PA8000 and later processors.  */
@@ -1658,7 +1638,7 @@ emit_move_sequence (rtx *operands, enum machine_mode mode, rtx scratch_reg)
   if (scratch_reg
       && reload_in_progress && GET_CODE (operand0) == REG
       && REGNO (operand0) >= FIRST_PSEUDO_REGISTER)
-    operand0 = reg_equiv_mem[REGNO (operand0)];
+    operand0 = reg_equiv_mem (REGNO (operand0));
   else if (scratch_reg
 	   && reload_in_progress && GET_CODE (operand0) == SUBREG
 	   && GET_CODE (SUBREG_REG (operand0)) == REG
@@ -1667,7 +1647,7 @@ emit_move_sequence (rtx *operands, enum machine_mode mode, rtx scratch_reg)
      /* We must not alter SUBREG_BYTE (operand0) since that would confuse
 	the code which tracks sets/uses for delete_output_reload.  */
       rtx temp = gen_rtx_SUBREG (GET_MODE (operand0),
-				 reg_equiv_mem [REGNO (SUBREG_REG (operand0))],
+				 reg_equiv_mem (REGNO (SUBREG_REG (operand0))),
 				 SUBREG_BYTE (operand0));
       operand0 = alter_subreg (&temp);
     }
@@ -1675,7 +1655,7 @@ emit_move_sequence (rtx *operands, enum machine_mode mode, rtx scratch_reg)
   if (scratch_reg
       && reload_in_progress && GET_CODE (operand1) == REG
       && REGNO (operand1) >= FIRST_PSEUDO_REGISTER)
-    operand1 = reg_equiv_mem[REGNO (operand1)];
+    operand1 = reg_equiv_mem (REGNO (operand1));
   else if (scratch_reg
 	   && reload_in_progress && GET_CODE (operand1) == SUBREG
 	   && GET_CODE (SUBREG_REG (operand1)) == REG
@@ -1684,7 +1664,7 @@ emit_move_sequence (rtx *operands, enum machine_mode mode, rtx scratch_reg)
      /* We must not alter SUBREG_BYTE (operand0) since that would confuse
 	the code which tracks sets/uses for delete_output_reload.  */
       rtx temp = gen_rtx_SUBREG (GET_MODE (operand1),
-				 reg_equiv_mem [REGNO (SUBREG_REG (operand1))],
+				 reg_equiv_mem (REGNO (SUBREG_REG (operand1))),
 				 SUBREG_BYTE (operand1));
       operand1 = alter_subreg (&temp);
     }

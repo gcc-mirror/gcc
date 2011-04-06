@@ -3,10 +3,12 @@
 
 #include <cxxabi.h>
 
-#ifdef ___ARM_EABI__
-static void cctor (void * a, void * b)
+#ifdef __ARM_EABI__
+using namespace __cxxabiv1;
+static __cxa_cdtor_return_type cctor (void * a, void * b)
 {
-  *(char *) a = *(char *) b
+  *(char *) a = *(char *) b;
+  return a;
 }
 
 int main()
@@ -15,10 +17,10 @@ int main()
   char data2;
   char *p;
 
-  p = __cxa_vec_ctor (&data, 1, 1, NULL, NULL);
+  p = (char *) __cxa_vec_ctor (&data, 1, 1, NULL, NULL);
   if (p != &data)
     return 1;
-  p = __cxa_vec_cctor (&data2, &data, 1, 1, cctor, NULL);
+  p = (char *) __cxa_vec_cctor (&data2, &data, 1, 1, cctor, NULL);
   if (p != &data2)
     return 1;
 

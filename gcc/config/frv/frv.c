@@ -1,5 +1,5 @@
 /* Copyright (C) 1997, 1998, 1999, 2000, 2001, 2003, 2004, 2005, 2006, 2007,
-   2008, 2009, 2010  Free Software Foundation, Inc.
+   2008, 2009, 2010, 2011  Free Software Foundation, Inc.
    Contributed by Red Hat, Inc.
 
 This file is part of GCC.
@@ -255,12 +255,8 @@ enum reg_class regno_reg_class[FIRST_PSEUDO_REGISTER];
 /* Cached value of frv_stack_info.  */
 static frv_stack_t *frv_stack_cache = (frv_stack_t *)0;
 
-/* -mcpu= support */
-frv_cpu_t frv_cpu_type = CPU_TYPE;	/* value of -mcpu= */
-
 /* Forward references */
 
-static bool frv_handle_option			(size_t, const char *, int);
 static void frv_option_override			(void);
 static bool frv_legitimate_address_p		(enum machine_mode, rtx, bool);
 static int frv_default_flags_for_cpu		(void);
@@ -440,8 +436,6 @@ static const struct default_options frv_option_optimization_table[] =
    | MASK_VLIW_BRANCH				\
    | MASK_MULTI_CE				\
    | MASK_NESTED_CE)
-#undef TARGET_HANDLE_OPTION
-#define TARGET_HANDLE_OPTION frv_handle_option
 #undef TARGET_OPTION_OVERRIDE
 #define TARGET_OPTION_OVERRIDE frv_option_override
 #undef TARGET_OPTION_OPTIMIZATION_TABLE
@@ -627,41 +621,6 @@ frv_cannot_force_const_mem (rtx x ATTRIBUTE_UNUSED)
   return TARGET_FDPIC;
 }
 
-/* Implement TARGET_HANDLE_OPTION.  */
-
-static bool
-frv_handle_option (size_t code, const char *arg, int value ATTRIBUTE_UNUSED)
-{
-  switch (code)
-    {
-    case OPT_mcpu_:
-      if (strcmp (arg, "simple") == 0)
-	frv_cpu_type = FRV_CPU_SIMPLE;
-      else if (strcmp (arg, "tomcat") == 0)
-	frv_cpu_type = FRV_CPU_TOMCAT;
-      else if (strcmp (arg, "fr550") == 0)
-	frv_cpu_type = FRV_CPU_FR550;
-      else if (strcmp (arg, "fr500") == 0)
-	frv_cpu_type = FRV_CPU_FR500;
-      else if (strcmp (arg, "fr450") == 0)
-	frv_cpu_type = FRV_CPU_FR450;
-      else if (strcmp (arg, "fr405") == 0)
-	frv_cpu_type = FRV_CPU_FR405;
-      else if (strcmp (arg, "fr400") == 0)
-	frv_cpu_type = FRV_CPU_FR400;
-      else if (strcmp (arg, "fr300") == 0)
-	frv_cpu_type = FRV_CPU_FR300;
-      else if (strcmp (arg, "frv") == 0)
-	frv_cpu_type = FRV_CPU_GENERIC;
-      else
-	return false;
-      return true;
-
-    default:
-      return true;
-    }
-}
-
 static int
 frv_default_flags_for_cpu (void)
 {

@@ -43,12 +43,31 @@ import (
 	"fmt"
 	"os"
 	"runtime"
+	"runtime/pprof"
 	"time"
 )
 
-// Report as tests are run; default is silent for success.
-var chatty = flag.Bool("test.v", false, "verbose: print additional output")
-var match = flag.String("test.run", "", "regular expression to select tests to run")
+var (
+	// The short flag requests that tests run more quickly, but its functionality
+	// is provided by test writers themselves.  The testing package is just its
+	// home.  The all.bash installation script sets it to make installation more
+	// efficient, but by default the flag is off so a plain "gotest" will do a
+	// full test of the package.
+	short = flag.Bool("test.short", false, "run smaller test suite to save time")
+
+	// Report as tests are run; default is silent for success.
+	chatty         = flag.Bool("test.v", false, "verbose: print additional output")
+	match          = flag.String("test.run", "", "regular expression to select tests to run")
+	memProfile     = flag.String("test.memprofile", "", "write a memory profile to the named file after execution")
+	memProfileRate = flag.Int("test.memprofilerate", 0, "if >=0, sets runtime.MemProfileRate")
+	cpuProfile     = flag.String("test.cpuprofile", "", "write a cpu profile to the named file during execution")
+	timeout        = flag.Int64("test.timeout", 0, "if > 0, sets time limit for tests in seconds")
+)
+
+// Short reports whether the -test.short flag is set.
+func Short() bool {
+	return *short
+}
 
 
 // Insert final newline if needed and tabs after internal newlines.
@@ -136,8 +155,18 @@ func tRunner(t *T, test *InternalTest) {
 
 // An internal function but exported because it is cross-package; part of the implementation
 // of gotest.
-func Main(matchString func(pat, str string) (bool, os.Error), tests []InternalTest) {
+func Main(matchString func(pat, str string) (bool, os.Error), tests []InternalTest, benchmarks []InternalBenchmark) {
 	flag.Parse()
+
+	before()
+	startAlarm()
+	RunTests(matchString, tests)
+	stopAlarm()
+	RunBenchmarks(matchString, benchmarks)
+	after()
+}
+
+func RunTests(matchString func(pat, str string) (bool, os.Error), tests []InternalTest) {
 	ok := true
 	if len(tests) == 0 {
 		println("testing: warning: no tests to run")
@@ -160,7 +189,7 @@ func Main(matchString func(pat, str string) (bool, os.Error), tests []InternalTe
 		go tRunner(t, &tests[i])
 		<-t.ch
 		ns += time.Nanoseconds()
-		tstr := fmt.Sprintf("(%.1f seconds)", float64(ns)/1e9)
+		tstr := fmt.Sprintf("(%.2f seconds)", float64(ns)/1e9)
 		if t.failed {
 			println("--- FAIL:", tests[i].Name, tstr)
 			print(t.errors)
@@ -175,4 +204,64 @@ func Main(matchString func(pat, str string) (bool, os.Error), tests []InternalTe
 		os.Exit(1)
 	}
 	println("PASS")
+}
+
+// before runs before all testing.
+func before() {
+	if *memProfileRate > 0 {
+		runtime.MemProfileRate = *memProfileRate
+	}
+	if *cpuProfile != "" {
+		f, err := os.Open(*cpuProfile, os.O_WRONLY|os.O_CREAT|os.O_TRUNC, 0666)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "testing: %s", err)
+			return
+		}
+		if err := pprof.StartCPUProfile(f); err != nil {
+			fmt.Fprintf(os.Stderr, "testing: can't start cpu profile: %s", err)
+			f.Close()
+			return
+		}
+		// Could save f so after can call f.Close; not worth the effort.
+	}
+
+}
+
+// after runs after all testing.
+func after() {
+	if *cpuProfile != "" {
+		pprof.StopCPUProfile() // flushes profile to disk
+	}
+	if *memProfile != "" {
+		f, err := os.Open(*memProfile, os.O_WRONLY|os.O_CREAT|os.O_TRUNC, 0666)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "testing: %s", err)
+			return
+		}
+		if err = pprof.WriteHeapProfile(f); err != nil {
+			fmt.Fprintf(os.Stderr, "testing: can't write %s: %s", *memProfile, err)
+		}
+		f.Close()
+	}
+}
+
+var timer *time.Timer
+
+// startAlarm starts an alarm if requested.
+func startAlarm() {
+	if *timeout > 0 {
+		timer = time.AfterFunc(*timeout*1e9, alarm)
+	}
+}
+
+// stopAlarm turns off the alarm.
+func stopAlarm() {
+	if *timeout > 0 {
+		timer.Stop()
+	}
+}
+
+// alarm is called if the timeout expires.
+func alarm() {
+	panic("test timed out")
 }

@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.
    Renesas H8/300 version
-   Copyright (C) 2000, 2002, 2003, 2004, 2005, 2007, 2009, 2010
+   Copyright (C) 2000, 2002, 2003, 2004, 2005, 2007, 2009, 2010, 2011
    Free Software Foundation, Inc.
    Contributed by Steve Chamberlain (sac@cygnus.com),
    Jim Wilson (wilson@cygnus.com), and Doug Evans (dje@cygnus.com).
@@ -34,8 +34,6 @@ extern unsigned int compute_a_shift_length (rtx, rtx *);
 extern const char *output_a_rotate (enum rtx_code, rtx *);
 extern unsigned int compute_a_rotate_length (rtx *);
 extern const char *output_simode_bld (int, rtx[]);
-extern void print_operand_address (FILE *, rtx);
-extern void print_operand (FILE *, rtx, int);
 extern void final_prescan_insn (rtx, rtx *, int);
 extern int h8300_expand_movsi (rtx[]);
 extern void notice_update_cc (rtx, rtx);
@@ -110,7 +108,6 @@ struct cpp_reader;
 extern void h8300_pr_interrupt (struct cpp_reader *);
 extern void h8300_pr_saveall (struct cpp_reader *);
 extern enum reg_class  h8300_reg_class_from_letter (int);
-extern rtx             h8300_get_index (rtx, enum machine_mode mode, int *);
 extern unsigned int    h8300_insn_length_from_table (rtx, rtx *);
 extern const char *    output_h8sx_shift (rtx *, int, int);
 extern bool            h8300_operands_match_p (rtx *);

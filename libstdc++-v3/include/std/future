@@ -618,6 +618,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         typename _Base_type::_Reset __reset(*this);
         return std::move(this->_M_get_result()._M_value());
       }
+
+      shared_future<_Res> share();
     };
  
   /// Partial specialization for future<R&>
@@ -659,6 +661,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         typename _Base_type::_Reset __reset(*this);
         return this->_M_get_result()._M_get();
       }
+
+      shared_future<_Res&> share();
     };
 
   /// Explicit specialization for future<void>
@@ -700,6 +704,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         typename _Base_type::_Reset __reset(*this);
         this->_M_get_result();
       }
+
+      shared_future<void> share();
     };
 
 
@@ -844,6 +850,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : _M_state(std::move(__uf._M_state))
     { }
 
+  template<typename _Res>
+    inline shared_future<_Res>
+    future<_Res>::share()
+    { return shared_future<_Res>(std::move(*this)); }
+
+  template<typename _Res>
+    inline shared_future<_Res&>
+    future<_Res&>::share()
+    { return shared_future<_Res&>(std::move(*this)); }
+
+  inline shared_future<void>
+  future<void>::share()
+  { return shared_future<void>(std::move(*this)); }
 
   /// Primary template for promise
   template<typename _Res>
@@ -1198,32 +1217,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       shared_ptr<_State_type>                   _M_state;
 
     public:
-      typedef _Res result_type;
-
       // Construction and destruction
       packaged_task() { }
 
       template<typename _Fn>
         explicit
-        packaged_task(const _Fn& __fn)
-        : _M_state(std::make_shared<_State_type>(__fn))
-        { }
-
-      template<typename _Fn>
-        explicit
         packaged_task(_Fn&& __fn)
-        : _M_state(std::make_shared<_State_type>(std::move(__fn)))
+        : _M_state(std::make_shared<_State_type>(std::forward<_Fn>(__fn)))
         { }
-
-      explicit
-      packaged_task(_Res(*__fn)(_ArgTypes...))
-      : _M_state(std::make_shared<_State_type>(__fn))
-      { }
 
       template<typename _Fn, typename _Allocator>
         explicit
-        packaged_task(allocator_arg_t __tag, const _Allocator& __a, _Fn __fn)
-        : _M_state(std::allocate_shared<_State_type>(__a, std::move(__fn)))
+        packaged_task(allocator_arg_t, const _Allocator& __a, _Fn&& __fn)
+        : _M_state(std::allocate_shared<_State_type>(__a,
+                                                     std::forward<_Fn>(__fn)))
         { }
 
       ~packaged_task()

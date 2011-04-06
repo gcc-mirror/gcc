@@ -24,9 +24,6 @@ along with GCC; see the file COPYING3.  If not see
    it anyway.  However, if you change that file, consider making
    analogous changes here too.  */
 
-#undef TARGET_VERSION
-#define TARGET_VERSION fprintf (stderr, " (PowerPC VxWorks)");
-
 /* CPP predefined macros.  */
 
 #undef TARGET_OS_CPP_BUILTINS

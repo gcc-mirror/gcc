@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler, for ARM.
    Copyright (C) 1991, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
-   2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+   2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
    Contributed by Pieter `Tiggr' Schoenmakers (rcpieter@win.tue.nl)
    and Martin Simmons (@harleqn.co.uk).
@@ -174,8 +174,8 @@ extern void (*arm_lang_output_object_attributes_hook)(void);
 
 #undef  CPP_SPEC
 #define CPP_SPEC "%(subtarget_cpp_spec)					\
-%{msoft-float:%{mhard-float:						\
-	%e-msoft-float and -mhard_float may not be used together}}	\
+%{mfloat-abi=soft:%{mfloat-abi=hard:					\
+	%e-mfloat-abi=soft and -mfloat-abi=hard may not be used together}} \
 %{mbig-endian:%{mlittle-endian:						\
 	%e-mbig-endian and -mlittle-endian may not be used together}}"
 
@@ -205,10 +205,6 @@ extern void (*arm_lang_output_object_attributes_hook)(void);
 #endif
 
 /* Run-time Target Specification.  */
-#ifndef TARGET_VERSION
-#define TARGET_VERSION fputs (" (ARM/generic)", stderr);
-#endif
-
 #define TARGET_SOFT_FLOAT		(arm_float_abi == ARM_FLOAT_ABI_SOFT)
 /* Use hardware floating point instructions. */
 #define TARGET_HARD_FLOAT		(arm_float_abi != ARM_FLOAT_ABI_SOFT)
@@ -317,16 +313,14 @@ extern void (*arm_lang_output_object_attributes_hook)(void);
     by --with-arch.
    --with-tune is ignored if -mtune or -mcpu are specified (but not affected
      by -march).
-   --with-float is ignored if -mhard-float, -msoft-float or -mfloat-abi are
-   specified.
+   --with-float is ignored if -mfloat-abi is specified.
    --with-fpu is ignored if -mfpu is specified.
    --with-abi is ignored is -mabi is specified.  */
 #define OPTION_DEFAULT_SPECS \
   {"arch", "%{!march=*:%{!mcpu=*:-march=%(VALUE)}}" }, \
   {"cpu", "%{!march=*:%{!mcpu=*:-mcpu=%(VALUE)}}" }, \
   {"tune", "%{!mcpu=*:%{!mtune=*:-mtune=%(VALUE)}}" }, \
-  {"float", \
-    "%{!msoft-float:%{!mhard-float:%{!mfloat-abi=*:-mfloat-abi=%(VALUE)}}}" }, \
+  {"float", "%{!mfloat-abi=*:-mfloat-abi=%(VALUE)}" }, \
   {"fpu", "%{!mfpu=*:-mfpu=%(VALUE)}"}, \
   {"abi", "%{!mabi=*:-mabi=%(VALUE)}"}, \
   {"mode", "%{!marm:%{!mthumb:-m%(VALUE)}}"},
@@ -1154,27 +1148,13 @@ enum reg_class
    or could index an array.  */
 #define REGNO_REG_CLASS(REGNO)  arm_regno_class (REGNO)
 
-/* The following macro defines cover classes for Integrated Register
-   Allocator.  Cover classes is a set of non-intersected register
-   classes covering all hard registers used for register allocation
-   purpose.  Any move between two registers of a cover class should be
-   cheaper than load or store of the registers.  The macro value is
-   array of register classes with LIM_REG_CLASSES used as the end
-   marker.  */
-
-#define IRA_COVER_CLASSES						     \
-{									     \
-  GENERAL_REGS, FPA_REGS, CIRRUS_REGS, VFP_REGS, IWMMXT_GR_REGS, IWMMXT_REGS,\
-  LIM_REG_CLASSES							     \
-}
-
 /* FPA registers can't do subreg as all values are reformatted to internal
-   precision.  VFP registers may only be accessed in the mode they
-   were set.  */
-#define CANNOT_CHANGE_MODE_CLASS(FROM, TO, CLASS)	\
-  (GET_MODE_SIZE (FROM) != GET_MODE_SIZE (TO)		\
-   ? reg_classes_intersect_p (FPA_REGS, (CLASS))	\
-     || reg_classes_intersect_p (VFP_REGS, (CLASS))	\
+   precision.  In VFPv1, VFP registers could only be accessed in the mode
+   they were set, so subregs would be invalid there too.  However, we don't
+   support VFPv1 at the moment, and the restriction was lifted in VFPv2.  */
+#define CANNOT_CHANGE_MODE_CLASS(FROM, TO, CLASS)		\
+  (GET_MODE_SIZE (FROM) != GET_MODE_SIZE (TO)			\
+   ? reg_classes_intersect_p (FPA_REGS, (CLASS))		\
    : 0)
 
 /* The class value for index registers, and the one for base regs.  */

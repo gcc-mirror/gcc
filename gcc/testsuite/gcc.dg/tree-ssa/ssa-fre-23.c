@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O -fdump-tree-fre" } */
+/* { dg-options "-O -fdump-tree-fre1" } */
 
 int f(int t, int a, int b)
 {
@@ -17,5 +17,5 @@ int f(int t, int a, int b)
   return c+d;
 }
 
-/* { dg-final { scan-tree-dump-times "PHI" 1 "fre" } } */
-/* { dg-final { cleanup-tree-dump "fre" } } */
+/* { dg-final { scan-tree-dump-times "PHI" 1 "fre1" } } */
+/* { dg-final { cleanup-tree-dump "fre1" } } */

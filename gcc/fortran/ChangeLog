@@ -1,3 +1,165 @@
+2010-04-04  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* frontend-passes: (optimize_lexical_comparison): New function.
+	(optimize_expr): Call it.
+	(optimize_comparison): Also handle lexical comparison functions.
+	Return false instad of -2 for unequal comparison.
+
+2011-04-04  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/48412
+	* frontend-passes (cfe_expr_0):  Reverse the order of going
+	through the loops.
+
+2011-04-04  Tobias Burnus  <burnus@net-b.de>
+	    Mikael Morin  <mikael.morin@sfr.fr>
+
+	PR fortran/18918
+	* check.c (is_coarray): Update - because of DIMEN_THIS_IMAGE.
+	* expr.c (gfc_is_coindexed): Ditto.
+	* gfortran.h (gfc_array_ref_dimen_type): Add DIMEN_THIS_IMAGE.
+	* interface.c (compare_parameter): Use gfc_expr_attr and
+	gfc_is_coindexed.
+	* resolve.c (check_dimension, compare_spec_to_ref,
+	resolve_allocate_expr, check_data_variable): Update for
+	DIMEN_THIS_IMAGE.
+	* simplify.c (gfc_simplify_lcobound, gfc_simplify_this_image,
+	gfc_simplify_ucobound): Allow non-constant bounds.
+	* trans-array.c (gfc_set_loop_bounds_from_array_spec,
+	gfc_trans_create_temp_array, gfc_trans_constant_array_constructor,
+	gfc_set_vector_loop_bounds, gfc_conv_array_index_offset,
+	gfc_start_scalarized_body, gfc_trans_scalarizing_loops,
+	gfc_trans_scalarized_loop_boundary, gfc_conv_section_startstride,
+	gfc_conv_ss_startstride, gfc_conv_loop_setup,
+	gfc_trans_array_bounds, gfc_conv_expr_descriptor,
+	gfc_walk_variable_expr): Handle codimen.
+	* trans-decl.c (gfc_build_qualified_array): Save cobounds.
+	* trans-intrinsic.c (gfc_conv_intrinsic_bound): Use arg2.
+	(conv_intrinsic_cobound): New function.
+	(gfc_conv_intrinsic_function): Call it.
+	(gfc_walk_intrinsic_function, gfc_add_intrinsic_ss_code): Handle
+	ucobound, lcobound, this_image.
+	* fortran/trans-types.c (gfc_build_array_type): Save cobounds.
+	(gfc_get_dtype): Honour corank.
+	(gfc_get_nodesc_array_type): Save corank and codimensions.
+	(gfc_get_array_type_bounds): Save cobound.
+	* fortran/trans.h (gfc_ss_info,gfc_loopinfo): Add codimen item.
+	(gfc_array_kind): Add corank item.
+	(GFC_TYPE_ARRAY_CORANK): New macro.
+
+2011-04-03  Kai Tietz  <ktietz@redhat.com>
+
+	PR middle-end/48422
+	* Make-lang.in (f95-lang.o): Add some missing dependencies.
+
+2011-04-01  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/48352
+	* frontend-passes (cfe_register_funcs):  Don't
+	register functions if they appear as iterators in DO loops.
+
+2011-03-30  Michael Matz  <matz@suse.de>
+
+	PR fortran/47516
+	* trans-expr.c (realloc_lhs_loop_for_fcn_call): Take loop as parameter,
+	don't use local variable.
+	(gfc_trans_arrayfunc_assign): Adjust caller.
+
+2011-03-29  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/48095
+	* decl.c (match_procedure_decl,match_ppc_decl): Set flavor of interface.
+	* module.c (MOD_VERSION): Bump.
+	(mio_typespec): Read/write 'interface' field.
+	* primary.c (match_string_constant,match_logical_constant): Remove
+	unneeded code.
+	(match_complex_constant): Make sure to clear the typespec.
+
+2011-03-29  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* frontend-passes.c (create_var):  Warn about creating an
+	array temporary if requested.
+
+2011-03-27  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/47065
+	* frontend-passes.c (optimize_trim): Also follow references, except
+	when they are substring references or array references.
+
+2011-03-27  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/18918
+	* gfortran.h (gfc_isym_id): Rename GFC_ISYM_NUMIMAGES to
+	GFC_ISYM_NUM_IMAGES.
+	(gfc_fcoarray): Add GFC_FCOARRAY_LIB.
+	* intrinsic.c (add_functions): Update due to GFC_ISYM_NUM_IMAGES
+	rename.
+	* invoke.texi (-fcoarray=): Document "lib" argument.
+	* iresolve.c (gfc_resolve_this_image): Fix THIS IMAGE().
+	* libgfortran.h (libgfortran_stat_codes): Add comments.
+	* options.c (gfc_handle_coarray_option): Add -fcoarray=lib.
+	* simplify.c (gfc_simplify_num_images, gfc_simplify_this_image):
+	Handle GFC_FCOARRAY_LIB.
+	* trans.h (gfc_init_coarray_decl): New prototype.
+	(gfor_fndecl_caf_init, gfor_fndecl_caf_finalize,
+	gfor_fndecl_caf_critical, gfor_fndecl_caf_end_critical,
+	gfor_fndecl_caf_sync_all, gfor_fndecl_caf_sync_images,
+	gfor_fndecl_caf_error_stop, gfor_fndecl_caf_error_stop_str,
+	gfort_gvar_caf_num_images, gfort_gvar_caf_this_image):
+	New global variables.
+	* trans-decl.c: Declare several CAF functions (cf. above).
+	(gfc_build_builtin_function_decls): Initialize those.
+	(gfc_init_coarray_decl): New function.
+	(create_main_function): Call CAF init/finalize functions.
+	* trans-intrinsic.c (trans_this_image, trans_num_images): New.
+	(gfc_conv_intrinsic_function): Call those.
+	* trans-stmt.c (gfc_trans_stop, gfc_trans_sync, gfc_trans_critical):
+	Add code for GFC_FCOARRAY_LIB.
+
+2011-03-26  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/48291
+	* class.c (get_unique_hashed_string): Adjust maximum allowable length
+	for unique type string.
+
+2011-03-25  Kai Tietz  <ktietz@redhat.com>
+
+	* scanner.c (preprocessor_line): Use filename_cmp
+	instead of strcmp.
+
+2011-03-25  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/48174
+	PR fortran/45304
+	* trans-types.c (gfc_get_function_type): Don't use varargs if the
+	procedure is known to have no arguments.
+
+2010-03-21  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/22572
+	* gfortran.h (gfc_option_t) : Add
+	flag_aggressive_function_elimination.
+	(gfc_dep_compare_functions):  Add prototype.
+	* lang.opt: Add faggressive-function-elimination.
+	* invoke.texi: Document -faggressive-function-elimination.
+	* frontend_passes (expr_array):  New static variable.
+	(expr_size):  Likewise.
+	(expr_count):  Likewise.
+	(current_code):  Likewise.
+	(current_ns):  Likewise.
+	(gfc_run_passes):  Allocate and free space for expressions.
+	(cfe_register_funcs):  New function.
+	(create_var):  New function.
+	(cfc_expr_0):  New function.
+	(cfe_code):  New function.
+	(optimize_namespace):  Invoke gfc_code_walker with cfe_code
+	and cfe_expr_0.
+	* dependency.c (gfc_dep_compare_functions):  New function.
+	(gfc_dep_compare_expr):  Use it.
+	* options.c (gfc_init_options):  Handle
+	flag_aggressive_function_elimination.
+	(gfc_handle_option):  Likewise.
+
 2011-03-15  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	* arith.c (arith_power): Plug memory leak.

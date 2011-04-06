@@ -1,3 +1,34 @@
+2011-04-03  Michael Matz  <matz@suse.de>
+
+	* lto.c (lto_materialize_function): Don't read and then discard
+	sections in WPA mode.
+	(lto_read_in_decl_state): Adjust call to lto_streamer_cache_get.
+
+	* lto-lang.c (registered_builtin_fndecls): Remove.
+	(lto_getdecls): Return NULL_TREE.
+	(lto_builtin_function): Don't remember in registered_builtin_fndecls.
+
+2011-03-31  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/48246
+	* lto.c (lto_wpa_write_files): Disable assert for non-empty
+	partitions when checking is not enabled.
+
+2011-03-25  Kai Tietz  <ktietz@redhat.com>
+
+	* lto.c (lto_resolution_read): Use filename_cmp instead
+	of strcmp.
+	(lto_read_section_data): Likewise.
+
+2011-03-25  Jeff Law  <law@redhat.com>
+
+	* lto/lto-lang.c (def_fn_type): Add missing va_end.
+
+2011-03-21  Kai Tietz  <ktietz@redhat.com>
+
+	PR target/12171
+	* lto-lang.c (lto_attribute_table): Adjust table.
+
 2011-02-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR bootstrap/47807

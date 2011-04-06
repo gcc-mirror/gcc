@@ -289,39 +289,6 @@ vect_update_interleaving_chain (struct data_reference *drb,
     }
 }
 
-
-/* Function vect_equal_offsets.
-
-   Check if OFFSET1 and OFFSET2 are identical expressions.  */
-
-static bool
-vect_equal_offsets (tree offset1, tree offset2)
-{
-  bool res;
-
-  STRIP_NOPS (offset1);
-  STRIP_NOPS (offset2);
-
-  if (offset1 == offset2)
-    return true;
-
-  if (TREE_CODE (offset1) != TREE_CODE (offset2)
-      || (!BINARY_CLASS_P (offset1) && !UNARY_CLASS_P (offset1)))
-    return false;
-
-  res = vect_equal_offsets (TREE_OPERAND (offset1, 0),
-			    TREE_OPERAND (offset2, 0));
-
-  if (!res || !BINARY_CLASS_P (offset1))
-    return res;
-
-  res = vect_equal_offsets (TREE_OPERAND (offset1, 1),
-			    TREE_OPERAND (offset2, 1));
-
-  return res;
-}
-
-
 /* Check dependence between DRA and DRB for basic block vectorization.
    If the accesses share same bases and offsets, we can compare their initial
    constant offsets to decide whether they differ or not.  In case of a read-
@@ -352,7 +319,7 @@ vect_drs_dependent_in_basic_block (struct data_reference *dra,
            || TREE_CODE (DR_BASE_ADDRESS (drb)) != ADDR_EXPR
            || TREE_OPERAND (DR_BASE_ADDRESS (dra), 0)
            != TREE_OPERAND (DR_BASE_ADDRESS (drb),0)))
-      || !vect_equal_offsets (DR_OFFSET (dra), DR_OFFSET (drb)))
+      || !dr_equal_offsets_p (dra, drb))
     return true;
 
   /* Check the types.  */
@@ -402,7 +369,7 @@ vect_check_interleaving (struct data_reference *dra,
 	   || TREE_CODE (DR_BASE_ADDRESS (drb)) != ADDR_EXPR
 	   || TREE_OPERAND (DR_BASE_ADDRESS (dra), 0)
 	   != TREE_OPERAND (DR_BASE_ADDRESS (drb),0)))
-      || !vect_equal_offsets (DR_OFFSET (dra), DR_OFFSET (drb))
+      || !dr_equal_offsets_p (dra, drb)
       || !tree_int_cst_compare (DR_INIT (dra), DR_INIT (drb))
       || DR_IS_READ (dra) != DR_IS_READ (drb))
     return false;
@@ -2955,9 +2922,10 @@ vect_create_addr_base_for_vector_ref (gimple stmt,
    2. AT_LOOP: the loop where the vector memref is to be created.
    3. OFFSET (optional): an offset to be added to the initial address accessed
         by the data-ref in STMT.
-   4. ONLY_INIT: indicate if vp is to be updated in the loop, or remain
+   4. BSI: location where the new stmts are to be placed if there is no loop
+   5. ONLY_INIT: indicate if vp is to be updated in the loop, or remain
         pointing to the initial address.
-   5. TYPE: if not NULL indicates the required type of the data-ref.
+   6. TYPE: if not NULL indicates the required type of the data-ref.
 
    Output:
    1. Declare a new ptr to vector_type, and have it point to the base of the
@@ -2985,9 +2953,9 @@ vect_create_addr_base_for_vector_ref (gimple stmt,
    4. Return the pointer.  */
 
 tree
-vect_create_data_ref_ptr (gimple stmt, struct loop *at_loop,
-			  tree offset, tree *initial_address, gimple *ptr_incr,
-			  bool only_init, bool *inv_p)
+vect_create_data_ref_ptr (gimple stmt, struct loop *at_loop, tree offset,
+			  tree *initial_address, gimple_stmt_iterator *gsi,
+			  gimple *ptr_incr, bool only_init, bool *inv_p)
 {
   tree base_name;
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
@@ -3013,7 +2981,6 @@ vect_create_data_ref_ptr (gimple stmt, struct loop *at_loop,
   gimple incr;
   tree step;
   bb_vec_info bb_vinfo = STMT_VINFO_BB_VINFO (stmt_info);
-  gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
   tree base;
 
   if (loop_vinfo)
@@ -3158,7 +3125,7 @@ vect_create_data_ref_ptr (gimple stmt, struct loop *at_loop,
           gcc_assert (!new_bb);
         }
       else
-        gsi_insert_seq_before (&gsi, new_stmt_list, GSI_SAME_STMT);
+        gsi_insert_seq_before (gsi, new_stmt_list, GSI_SAME_STMT);
     }
 
   *initial_address = new_temp;
@@ -3180,7 +3147,7 @@ vect_create_data_ref_ptr (gimple stmt, struct loop *at_loop,
 	  gcc_assert (!new_bb);
 	}
       else
-	gsi_insert_before (&gsi, vec_stmt, GSI_SAME_STMT);
+	gsi_insert_before (gsi, vec_stmt, GSI_SAME_STMT);
     }
   else
     vect_ptr_init = new_temp;
@@ -3705,7 +3672,7 @@ vect_setup_realignment (gimple stmt, gimple_stmt_iterator *gsi,
       gcc_assert (!compute_in_loop);
       vec_dest = vect_create_destination_var (scalar_dest, vectype);
       ptr = vect_create_data_ref_ptr (stmt, loop_for_initial_load, NULL_TREE,
-				      &init_addr, &inc, true, &inv_p);
+				      &init_addr, NULL, &inc, true, &inv_p);
       new_stmt = gimple_build_assign_with_ops
 		   (BIT_AND_EXPR, NULL_TREE, ptr,
 		    build_int_cst (TREE_TYPE (ptr),

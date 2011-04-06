@@ -189,7 +189,6 @@ enum dwarf_form
     DW_FORM_exprloc = 0x18,
     DW_FORM_flag_present = 0x19,
     DW_FORM_ref_sig8 = 0x20
-#define DW_FORM_sig8  DW_FORM_ref_sig8  /* Note: The use of DW_FORM_sig8 is deprecated.  */
   };
 
 /* Attribute names and codes.  */
@@ -756,6 +755,14 @@ enum dwarf_line_number_x_ops
 
     DW_LNE_lo_user = 0x80,
     DW_LNE_hi_user = 0xff
+  };
+
+/* Sub-opcodes for DW_LNE_HP_source_file_correlation.  */
+enum dwarf_line_number_hp_sfc_ops
+  {
+    DW_LNE_HP_SFC_formfeed = 1,
+    DW_LNE_HP_SFC_set_listing_line = 2,
+    DW_LNE_HP_SFC_associate = 3
   };
 
 /* Call frame information.  */

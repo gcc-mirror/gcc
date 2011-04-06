@@ -24,9 +24,6 @@
    any conflicting definitions and add any extras.  */
 
 /* Run-time Target Specification.  */
-#undef  TARGET_VERSION
-#define TARGET_VERSION  fputs (" (ARM GNU/Linux with ELF)", stderr);
-
 #undef  TARGET_DEFAULT_FLOAT_ABI
 #define TARGET_DEFAULT_FLOAT_ABI ARM_FLOAT_ABI_HARD
 
@@ -51,7 +48,7 @@
 
 #undef  MULTILIB_DEFAULTS
 #define MULTILIB_DEFAULTS \
-	{ "marm", "mlittle-endian", "mhard-float", "mno-thumb-interwork" }
+	{ "marm", "mlittle-endian", "mfloat-abi=hard", "mno-thumb-interwork" }
 
 /* Now we define the strings used to build the spec file.  */
 #undef  LIB_SPEC
@@ -60,7 +57,7 @@
    %{shared:-lc} \
    %{!shared:%{profile:-lc_p}%{!profile:-lc}}"
 
-#define LIBGCC_SPEC "%{msoft-float:-lfloat} %{mfloat-abi=soft*:-lfloat} -lgcc"
+#define LIBGCC_SPEC "%{mfloat-abi=soft*:-lfloat} -lgcc"
 
 #define GLIBC_DYNAMIC_LINKER "/lib/ld-linux.so.2"
 

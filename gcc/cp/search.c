@@ -1897,7 +1897,7 @@ check_final_overrider (tree overrider, tree basefn)
     }
 
   /* Check for conflicting type attributes.  */
-  if (!targetm.comp_type_attributes (over_type, base_type))
+  if (!comp_type_attributes (over_type, base_type))
     {
       error ("conflicting type attributes specified for %q+#D", overrider);
       error ("  overriding %q+#D", basefn);

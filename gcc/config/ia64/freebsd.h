@@ -1,5 +1,5 @@
 /* Definitions for Intel IA-64 running FreeBSD using the ELF format
-   Copyright (C) 2001, 2004, 2007, 2010 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2004, 2007, 2010, 2011 Free Software Foundation, Inc.
    Contributed by David E. O'Brien <obrien@FreeBSD.org> and BSDi.
 
 This file is part of GCC.
@@ -46,9 +46,6 @@ along with GCC; see the file COPYING3.  If not see
 
 #undef  WCHAR_TYPE_SIZE
 #define WCHAR_TYPE_SIZE 32
-
-#undef  TARGET_VERSION
-#define TARGET_VERSION fprintf (stderr, " (FreeBSD/IA-64 ELF)");
 
 #define TARGET_ELF		1
 

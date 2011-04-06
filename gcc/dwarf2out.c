@@ -303,10 +303,8 @@ typedef struct GTY(()) dw_fde_struct {
   const char *dw_fde_end;
   const char *dw_fde_vms_end_prologue;
   const char *dw_fde_vms_begin_epilogue;
-  const char *dw_fde_hot_section_label;
-  const char *dw_fde_hot_section_end_label;
-  const char *dw_fde_unlikely_section_label;
-  const char *dw_fde_unlikely_section_end_label;
+  const char *dw_fde_second_begin;
+  const char *dw_fde_second_end;
   dw_cfi_ref dw_fde_cfi;
   dw_cfi_ref dw_fde_switch_cfi; /* Last CFI before switching sections.  */
   HOST_WIDE_INT stack_realignment;
@@ -325,13 +323,9 @@ typedef struct GTY(()) dw_fde_struct {
   unsigned drap_reg_saved: 1;
   /* True iff dw_fde_begin label is in text_section or cold_text_section.  */
   unsigned in_std_section : 1;
-  /* True iff dw_fde_unlikely_section_label is in text_section or
+  /* True iff dw_fde_second_begin label is in text_section or
      cold_text_section.  */
-  unsigned cold_in_std_section : 1;
-  /* True iff switched sections.  */
-  unsigned dw_fde_switched_sections : 1;
-  /* True iff switching from cold to hot section.  */
-  unsigned dw_fde_switched_cold_to_hot : 1;
+  unsigned second_in_std_section : 1;
 }
 dw_fde_node;
 
@@ -2240,7 +2234,7 @@ dwarf2out_frame_debug_cfa_restore (rtx reg, const char *label)
 	   cfa.base_offset = -cfa_store.offset
 
   Rule 11:
-  (set (mem ({pre_inc,pre_dec} sp:cfa_store.reg)) <reg>)
+  (set (mem ({pre_inc,pre_dec,post_dec} sp:cfa_store.reg)) <reg>)
   effects: cfa_store.offset += -/+ mode_size(mem)
 	   cfa.offset = cfa_store.offset if cfa.reg == sp
 	   cfa.reg = sp
@@ -2259,7 +2253,7 @@ dwarf2out_frame_debug_cfa_restore (rtx reg, const char *label)
 	   cfa.base_offset = -{cfa_store,cfa_temp}.offset
 
   Rule 14:
-  (set (mem (postinc <reg1>:cfa_temp <const_int>)) <reg2>)
+  (set (mem (post_inc <reg1>:cfa_temp <const_int>)) <reg2>)
   effects: cfa.reg = <reg1>
 	   cfa.base_offset = -cfa_temp.offset
 	   cfa_temp.offset -= mode_size(mem)
@@ -2592,6 +2586,7 @@ dwarf2out_frame_debug_expr (rtx expr, const char *label)
 	  /* Rule 11 */
 	case PRE_INC:
 	case PRE_DEC:
+	case POST_DEC:
 	  offset = GET_MODE_SIZE (GET_MODE (dest));
 	  if (GET_CODE (XEXP (dest, 0)) == PRE_INC)
 	    offset = -offset;
@@ -2616,7 +2611,10 @@ dwarf2out_frame_debug_expr (rtx expr, const char *label)
 	  if (cfa.reg == STACK_POINTER_REGNUM)
 	    cfa.offset = cfa_store.offset;
 
-	  offset = -cfa_store.offset;
+	  if (GET_CODE (XEXP (dest, 0)) == POST_DEC)
+	    offset += -cfa_store.offset;
+	  else
+	    offset = -cfa_store.offset;
 	  break;
 
 	  /* Rule 12 */
@@ -2791,38 +2789,6 @@ dwarf2out_frame_debug (rtx insn, bool after_p)
   rtx note, n;
   bool handled_one = false;
 
-  if (insn == NULL_RTX)
-    {
-      size_t i;
-
-      /* Flush any queued register saves.  */
-      dwarf2out_flush_queued_reg_saves ();
-
-      /* Set up state for generating call frame debug info.  */
-      lookup_cfa (&cfa);
-      gcc_assert (cfa.reg
-		  == (unsigned long)DWARF_FRAME_REGNUM (STACK_POINTER_REGNUM));
-
-      cfa.reg = STACK_POINTER_REGNUM;
-      cfa_store = cfa;
-      cfa_temp.reg = -1;
-      cfa_temp.offset = 0;
-
-      for (i = 0; i < num_regs_saved_in_regs; i++)
-	{
-	  regs_saved_in_regs[i].orig_reg = NULL_RTX;
-	  regs_saved_in_regs[i].saved_in_reg = NULL_RTX;
-	}
-      num_regs_saved_in_regs = 0;
-
-      if (barrier_args_size)
-	{
-	  XDELETEVEC (barrier_args_size);
-	  barrier_args_size = NULL;
-	}
-      return;
-    }
-
   if (!NONJUMP_INSN_P (insn) || clobbers_queued_reg_save (insn))
     dwarf2out_flush_queued_reg_saves ();
 
@@ -2938,6 +2904,40 @@ dwarf2out_frame_debug (rtx insn, bool after_p)
      removing the check above.  */
   if (any_cfis_emitted || clobbers_queued_reg_save (insn))
     dwarf2out_flush_queued_reg_saves ();
+}
+
+/* Called once at the start of final to initialize some data for the
+   current function.  */
+void
+dwarf2out_frame_debug_init (void)
+{
+  size_t i;
+
+  /* Flush any queued register saves.  */
+  dwarf2out_flush_queued_reg_saves ();
+
+  /* Set up state for generating call frame debug info.  */
+  lookup_cfa (&cfa);
+  gcc_assert (cfa.reg
+	      == (unsigned long)DWARF_FRAME_REGNUM (STACK_POINTER_REGNUM));
+
+  cfa.reg = STACK_POINTER_REGNUM;
+  cfa_store = cfa;
+  cfa_temp.reg = -1;
+  cfa_temp.offset = 0;
+
+  for (i = 0; i < num_regs_saved_in_regs; i++)
+    {
+      regs_saved_in_regs[i].orig_reg = NULL_RTX;
+      regs_saved_in_regs[i].saved_in_reg = NULL_RTX;
+    }
+  num_regs_saved_in_regs = 0;
+
+  if (barrier_args_size)
+    {
+      XDELETEVEC (barrier_args_size);
+      barrier_args_size = NULL;
+    }
 }
 
 /* Determine if we need to save and restore CFI information around this
@@ -3625,28 +3625,8 @@ output_fde (dw_fde_ref fde, bool for_eh, bool second,
     dw2_asm_output_offset (DWARF_OFFSET_SIZE, section_start_label,
 			   debug_frame_section, "FDE CIE offset");
 
-  if (!fde->dw_fde_switched_sections)
-    {
-      begin = fde->dw_fde_begin;
-      end = fde->dw_fde_end;
-    }
-  else
-    {
-      /* For the first section, prefer dw_fde_begin over
-	 dw_fde_{hot,cold}_section_label, as the latter
-	 might be separated from the real start of the
-	 function by alignment padding.  */
-      if (!second)
-	begin = fde->dw_fde_begin;
-      else if (fde->dw_fde_switched_cold_to_hot)
-	begin = fde->dw_fde_hot_section_label;
-      else
-	begin = fde->dw_fde_unlikely_section_label;
-      if (second ^ fde->dw_fde_switched_cold_to_hot)
-	end = fde->dw_fde_unlikely_section_end_label;
-      else
-	end = fde->dw_fde_hot_section_end_label;
-    }
+  begin = second ? fde->dw_fde_second_begin : fde->dw_fde_begin;
+  end = second ? fde->dw_fde_second_end : fde->dw_fde_end;
 
   if (for_eh)
     {
@@ -3707,7 +3687,7 @@ output_fde (dw_fde_ref fde, bool for_eh, bool second,
   /* Loop through the Call Frame Instructions associated with
      this FDE.  */
   fde->dw_fde_current_label = begin;
-  if (!fde->dw_fde_switched_sections)
+  if (fde->dw_fde_second_begin == NULL)
     for (cfi = fde->dw_fde_cfi; cfi != NULL; cfi = cfi->dw_cfi_next)
       output_cfi (cfi, fde, for_eh);
   else if (!second)
@@ -3986,7 +3966,7 @@ output_call_frame_info (int for_eh)
       if (for_eh && !fde_needed_for_eh_p (fde))
 	continue;
 
-      for (k = 0; k < (fde->dw_fde_switched_sections ? 2 : 1); k++)
+      for (k = 0; k < (fde->dw_fde_second_begin ? 2 : 1); k++)
 	output_fde (fde, for_eh, k, section_start_label, fde_encoding,
 		    augmentation, any_lsda_needed, lsda_encoding);
     }
@@ -4104,14 +4084,10 @@ dwarf2out_begin_prologue (unsigned int line ATTRIBUTE_UNUSED,
   fde = &fde_table[fde_table_in_use++];
   fde->decl = current_function_decl;
   fde->dw_fde_begin = dup_label;
-  fde->dw_fde_current_label = dup_label;
-  fde->dw_fde_hot_section_label = NULL;
-  fde->dw_fde_hot_section_end_label = NULL;
-  fde->dw_fde_unlikely_section_label = NULL;
-  fde->dw_fde_unlikely_section_end_label = NULL;
-  fde->dw_fde_switched_sections = 0;
-  fde->dw_fde_switched_cold_to_hot = 0;
   fde->dw_fde_end = NULL;
+  fde->dw_fde_current_label = dup_label;
+  fde->dw_fde_second_begin = NULL;
+  fde->dw_fde_second_end = NULL;
   fde->dw_fde_vms_end_prologue = NULL;
   fde->dw_fde_vms_begin_epilogue = NULL;
   fde->dw_fde_cfi = NULL;
@@ -4122,27 +4098,9 @@ dwarf2out_begin_prologue (unsigned int line ATTRIBUTE_UNUSED,
   fde->nothrow = crtl->nothrow;
   fde->drap_reg = INVALID_REGNUM;
   fde->vdrap_reg = INVALID_REGNUM;
-  if (flag_reorder_blocks_and_partition)
-    {
-      section *unlikelysec;
-      if (first_function_block_is_cold)
-	fde->in_std_section = 1;
-      else
-	fde->in_std_section
-	  = (fnsec == text_section
-	     || (cold_text_section && fnsec == cold_text_section));
-      unlikelysec = unlikely_text_section ();
-      fde->cold_in_std_section
-	= (unlikelysec == text_section
-	   || (cold_text_section && unlikelysec == cold_text_section));
-    }
-  else
-    {
-      fde->in_std_section
-	= (fnsec == text_section
-	   || (cold_text_section && fnsec == cold_text_section));
-      fde->cold_in_std_section = 0;
-    }
+  fde->in_std_section = (fnsec == text_section
+			 || (cold_text_section && fnsec == cold_text_section));
+  fde->second_in_std_section = 0;
 
   args_size = old_args_size = 0;
 
@@ -4238,7 +4196,8 @@ dwarf2out_end_epilogue (unsigned int line ATTRIBUTE_UNUSED,
   ASM_OUTPUT_LABEL (asm_out_file, label);
   fde = current_fde ();
   gcc_assert (fde != NULL);
-  fde->dw_fde_end = xstrdup (label);
+  if (fde->dw_fde_second_begin == NULL)
+    fde->dw_fde_end = xstrdup (label);
 }
 
 void
@@ -4285,20 +4244,30 @@ dwarf2out_note_section_used (void)
     cold_text_section_used = true;
 }
 
+static void var_location_switch_text_section (void);
+static void set_cur_line_info_table (section *);
+
 void
 dwarf2out_switch_text_section (void)
 {
+  section *sect;
   dw_fde_ref fde = current_fde ();
+  dw_cfi_ref cfi;
 
-  gcc_assert (cfun && fde && !fde->dw_fde_switched_sections);
+  gcc_assert (cfun && fde && fde->dw_fde_second_begin == NULL);
 
-  fde->dw_fde_switched_sections = 1;
-  fde->dw_fde_switched_cold_to_hot = !in_cold_section_p;
-
-  fde->dw_fde_hot_section_label = crtl->subsections.hot_section_label;
-  fde->dw_fde_hot_section_end_label = crtl->subsections.hot_section_end_label;
-  fde->dw_fde_unlikely_section_label = crtl->subsections.cold_section_label;
-  fde->dw_fde_unlikely_section_end_label = crtl->subsections.cold_section_end_label;
+  if (!in_cold_section_p)
+    {
+      fde->dw_fde_end = crtl->subsections.cold_section_end_label;
+      fde->dw_fde_second_begin = crtl->subsections.hot_section_label;
+      fde->dw_fde_second_end = crtl->subsections.hot_section_end_label;
+    }
+  else
+    {
+      fde->dw_fde_end = crtl->subsections.hot_section_end_label;
+      fde->dw_fde_second_begin = crtl->subsections.cold_section_label;
+      fde->dw_fde_second_end = crtl->subsections.cold_section_end_label;
+    }
   have_multiple_function_sections = true;
 
   /* Reset the current label on switching text sections, so that we
@@ -4313,7 +4282,12 @@ dwarf2out_switch_text_section (void)
     fprintf (asm_out_file, "\t.cfi_endproc\n");
 
   /* Now do the real section switch.  */
-  switch_to_section (current_function_section ());
+  sect = current_function_section ();
+  switch_to_section (sect);
+
+  fde->second_in_std_section
+    = (sect == text_section
+       || (cold_text_section && sect == cold_text_section));
 
   if (dwarf2out_do_cfi_asm ())
     {
@@ -4322,16 +4296,14 @@ dwarf2out_switch_text_section (void)
 	 again.  */
       output_cfis (fde->dw_fde_cfi, true, fde, true);
     }
-  else
-    {
-      dw_cfi_ref cfi = fde->dw_fde_cfi;
+  cfi = fde->dw_fde_cfi;
+  if (cfi)
+    while (cfi->dw_cfi_next != NULL)
+      cfi = cfi->dw_cfi_next;
+  fde->dw_fde_switch_cfi = cfi;
+  var_location_switch_text_section ();
 
-      cfi = fde->dw_fde_cfi;
-      if (cfi)
-	while (cfi->dw_cfi_next != NULL)
-	  cfi = cfi->dw_cfi_next;
-      fde->dw_fde_switch_cfi = cfi;
-    }
+  set_cur_line_info_table (sect);
 }
 
 /* And now, the subset of the debugging information support code necessary
@@ -4464,6 +4436,11 @@ typedef struct GTY(()) dw_loc_list_struct {
   const char *section; /* Section this loclist is relative to */
   dw_loc_descr_ref expr;
   hashval_t hash;
+  /* True if all addresses in this and subsequent lists are known to be
+     resolved.  */
+  bool resolved_addr;
+  /* True if this list has been replaced by dw_loc_next.  */
+  bool replaced;
   bool emitted;
 } dw_loc_list_node;
 
@@ -5829,6 +5806,16 @@ const struct gcc_debug_hooks dwarf2_debug_hooks =
    representation is done after the entire program has been compiled.
    The types below are used to describe the internal representation.  */
 
+/* Whether to put type DIEs into their own section .debug_types instead
+   of making them part of the .debug_info section.  Only supported for
+   Dwarf V4 or higher and the user didn't disable them through
+   -fno-debug-types-section.  It is more efficient to put them in a
+   separate comdat sections since the linker will then be able to
+   remove duplicates.  But not all tools support .debug_types sections
+   yet.  */
+
+#define use_debug_types (dwarf_version >= 4 && flag_debug_types_section)
+
 /* Various DIE's use offsets relative to the beginning of the
    .debug_info section to refer to each other.  */
 
@@ -5838,31 +5825,70 @@ typedef long int dw_offset;
 
 typedef struct dw_attr_struct *dw_attr_ref;
 typedef struct dw_line_info_struct *dw_line_info_ref;
-typedef struct dw_separate_line_info_struct *dw_separate_line_info_ref;
 typedef struct pubname_struct *pubname_ref;
 typedef struct dw_ranges_struct *dw_ranges_ref;
 typedef struct dw_ranges_by_label_struct *dw_ranges_by_label_ref;
 typedef struct comdat_type_struct *comdat_type_node_ref;
 
-/* Each entry in the line_info_table maintains the file and
-   line number associated with the label generated for that
-   entry.  The label gives the PC value associated with
-   the line number entry.  */
+/* The entries in the line_info table more-or-less mirror the opcodes
+   that are used in the real dwarf line table.  Arrays of these entries
+   are collected per section when DWARF2_ASM_LINE_DEBUG_INFO is not
+   supported.  */
+
+enum dw_line_info_opcode {
+  /* Emit DW_LNE_set_address; the operand is the label index.  */
+  LI_set_address,
+
+  /* Emit a row to the matrix with the given line.  This may be done
+     via any combination of DW_LNS_copy, DW_LNS_advance_line, and
+     special opcodes.  */
+  LI_set_line,
+
+  /* Emit a DW_LNS_set_file.  */
+  LI_set_file,
+
+  /* Emit a DW_LNS_set_column.  */
+  LI_set_column,
+
+  /* Emit a DW_LNS_negate_stmt; the operand is ignored.  */
+  LI_negate_stmt,
+
+  /* Emit a DW_LNS_set_prologue_end/epilogue_begin; the operand is ignored.  */
+  LI_set_prologue_end,
+  LI_set_epilogue_begin,
+
+  /* Emit a DW_LNE_set_discriminator.  */
+  LI_set_discriminator
+};
 
 typedef struct GTY(()) dw_line_info_struct {
-  unsigned long dw_file_num;
-  unsigned long dw_line_num;
-}
-dw_line_info_entry;
+  enum dw_line_info_opcode opcode;
+  unsigned int val;
+} dw_line_info_entry;
 
-/* Line information for functions in separate sections; each one gets its
-   own sequence.  */
-typedef struct GTY(()) dw_separate_line_info_struct {
-  unsigned long dw_file_num;
-  unsigned long dw_line_num;
-  unsigned long function;
-}
-dw_separate_line_info_entry;
+DEF_VEC_O(dw_line_info_entry);
+DEF_VEC_ALLOC_O(dw_line_info_entry, gc);
+
+typedef struct GTY(()) dw_line_info_table_struct {
+  /* The label that marks the end of this section.  */
+  const char *end_label;
+
+  /* The values for the last row of the matrix, as collected in the table.
+     These are used to minimize the changes to the next row.  */
+  unsigned int file_num;
+  unsigned int line_num;
+  unsigned int column_num;
+  int discrim_num;
+  bool is_stmt;
+  bool in_use;
+
+  VEC(dw_line_info_entry, gc) *entries;
+} dw_line_info_table;
+
+typedef dw_line_info_table *dw_line_info_table_p;
+
+DEF_VEC_P(dw_line_info_table_p);
+DEF_VEC_ALLOC_P(dw_line_info_table_p, gc);
 
 /* Each DIE attribute has a field specifying the attribute kind,
    a link to the next attribute in the chain, and an attribute value.
@@ -5887,7 +5913,7 @@ typedef struct GTY((chain_circular ("%h.die_sib"))) die_struct {
       char * GTY ((tag ("0"))) die_symbol;
       comdat_type_node_ref GTY ((tag ("1"))) die_type_node;
     }
-  GTY ((desc ("dwarf_version >= 4"))) die_id;
+  GTY ((desc ("use_debug_types"))) die_id;
   VEC(dw_attr_node,gc) * die_attr;
   dw_die_ref die_parent;
   dw_die_ref die_child;
@@ -6040,7 +6066,7 @@ skeleton_chain_node;
 #define DWARF_LINE_BASE  -10
 
 /* First special line opcode - leave room for the standard opcodes.  */
-#define DWARF_LINE_OPCODE_BASE  10
+#define DWARF_LINE_OPCODE_BASE  ((int)DW_LNS_set_isa + 1)
 
 /* Range of line offsets in a special line info. opcode.  */
 #define DWARF_LINE_RANGE  (254-DWARF_LINE_OPCODE_BASE+1)
@@ -6119,6 +6145,11 @@ struct GTY (()) var_loc_list_def {
      Do not mark it for GC because it is marked through the chain.  */
   struct var_loc_node * GTY ((skip ("%h"))) last;
 
+  /* Pointer to the last element before section switch,
+     if NULL, either sections weren't switched or first
+     is after section switch.  */
+  struct var_loc_node * GTY ((skip ("%h"))) last_before_switch;
+
   /* DECL_UID of the variable decl.  */
   unsigned int decl_id;
 };
@@ -6151,6 +6182,19 @@ static int tail_call_site_count = -1;
    DIEs.  */
 static VEC (dw_die_ref, heap) *block_map;
 
+/* A cached location list.  */
+struct GTY (()) cached_dw_loc_list_def {
+  /* The DECL_UID of the decl that this entry describes.  */
+  unsigned int decl_id;
+
+  /* The cached location list.  */
+  dw_loc_list_ref loc_list;
+};
+typedef struct cached_dw_loc_list_def cached_dw_loc_list;
+
+/* Table of cached location lists.  */
+static GTY ((param_is (cached_dw_loc_list))) htab_t cached_dw_loc_list_table;
+
 /* A pointer to the base of a list of references to DIE's that
    are uniquely identified by their tag, presence/absence of
    children DIE's, and list of attribute/value pairs.  */
@@ -6167,31 +6211,20 @@ static GTY(()) unsigned abbrev_die_table_in_use;
    abbrev_die_table.  */
 #define ABBREV_DIE_TABLE_INCREMENT 256
 
-/* A pointer to the base of a table that contains line information
-   for each source code line in .text in the compilation unit.  */
-static GTY((length ("line_info_table_allocated")))
-     dw_line_info_ref line_info_table;
+/* A global counter for generating labels for line number data.  */
+static unsigned int line_info_label_num;
 
-/* Number of elements currently allocated for line_info_table.  */
-static GTY(()) unsigned line_info_table_allocated;
+/* The current table to which we should emit line number information
+   for the current function.  This will be set up at the beginning of
+   assembly for the function.  */
+static dw_line_info_table *cur_line_info_table;
 
-/* Number of elements in line_info_table currently in use.  */
-static GTY(()) unsigned line_info_table_in_use;
+/* The two default tables of line number info.  */
+static GTY(()) dw_line_info_table *text_section_line_info;
+static GTY(()) dw_line_info_table *cold_text_section_line_info;
 
-/* A pointer to the base of a table that contains line information
-   for each source code line outside of .text in the compilation unit.  */
-static GTY ((length ("separate_line_info_table_allocated")))
-     dw_separate_line_info_ref separate_line_info_table;
-
-/* Number of elements currently allocated for separate_line_info_table.  */
-static GTY(()) unsigned separate_line_info_table_allocated;
-
-/* Number of elements in separate_line_info_table currently in use.  */
-static GTY(()) unsigned separate_line_info_table_in_use;
-
-/* Size (in elements) of increments by which we may expand the
-   line_info_table.  */
-#define LINE_INFO_TABLE_INCREMENT 1024
+/* The set of all non-default tables of line number info.  */
+static GTY(()) VEC (dw_line_info_table_p, gc) *separate_line_info;
 
 /* A flag to tell pubnames/types export if there is an info section to
    refer to.  */
@@ -6208,19 +6241,6 @@ static GTY (()) VEC (pubname_entry, gc) * pubtype_table;
 /* A pointer to the base of a table that contains a list of macro
    defines/undefines (and file start/end markers).  */
 static GTY (()) VEC (macinfo_entry, gc) * macinfo_table;
-
-/* Array of dies for which we should generate .debug_arange info.  */
-static GTY((length ("arange_table_allocated"))) dw_die_ref *arange_table;
-
-/* Number of elements currently allocated for arange_table.  */
-static GTY(()) unsigned arange_table_allocated;
-
-/* Number of elements in arange_table currently in use.  */
-static GTY(()) unsigned arange_table_in_use;
-
-/* Size (in elements) of increments by which we may expand the
-   arange_table.  */
-#define ARANGE_TABLE_INCREMENT 64
 
 /* Array of dies for which we should generate .debug_ranges info.  */
 static GTY ((length ("ranges_table_allocated"))) dw_ranges_ref ranges_table;
@@ -6356,7 +6376,6 @@ static void equate_decl_number_to_die (tree, dw_die_ref);
 static struct var_loc_node *add_var_loc_to_decl (tree, rtx, const char *);
 static void print_spaces (FILE *);
 static void print_die (dw_die_ref, FILE *);
-static void print_dwarf_line_table (FILE *);
 static dw_die_ref push_new_compile_unit (dw_die_ref, dw_die_ref);
 static dw_die_ref pop_compile_unit (dw_die_ref);
 static void loc_checksum (dw_loc_descr_ref, struct md5_ctx *);
@@ -6428,13 +6447,13 @@ static void add_pubname (tree, dw_die_ref);
 static void add_pubname_string (const char *, dw_die_ref);
 static void add_pubtype (tree, dw_die_ref);
 static void output_pubnames (VEC (pubname_entry,gc) *);
-static void add_arange (tree, dw_die_ref);
-static void output_aranges (void);
+static void output_aranges (unsigned long);
 static unsigned int add_ranges_num (int);
 static unsigned int add_ranges (const_tree);
 static void add_ranges_by_labels (dw_die_ref, const char *, const char *,
 				  bool *);
 static void output_ranges (void);
+static dw_line_info_table *new_line_info_table (void);
 static void output_line_info (void);
 static void output_file_names (void);
 static dw_die_ref base_type_die (tree);
@@ -6475,11 +6494,12 @@ static void insert_int (HOST_WIDE_INT, unsigned, unsigned char *);
 static void insert_double (double_int, unsigned char *);
 static void insert_float (const_rtx, unsigned char *);
 static rtx rtl_for_decl_location (tree);
-static bool add_location_or_const_value_attribute (dw_die_ref, tree,
+static bool add_location_or_const_value_attribute (dw_die_ref, tree, bool,
 						   enum dwarf_attribute);
 static bool tree_add_const_value_attribute (dw_die_ref, tree);
 static bool tree_add_const_value_attribute_for_decl (dw_die_ref, tree);
 static void add_name_attribute (dw_die_ref, const char *);
+static void add_gnat_descriptive_type_attribute (dw_die_ref, tree, dw_die_ref);
 static void add_comp_dir_attribute (dw_die_ref);
 static void add_bound_info (dw_die_ref, enum dwarf_attribute, tree);
 static void add_subscript_info (dw_die_ref, tree, bool);
@@ -6675,9 +6695,6 @@ static char ranges_section_label[2 * MAX_ARTIFICIAL_LABEL_BYTES];
 #endif
 #ifndef LINE_CODE_LABEL
 #define LINE_CODE_LABEL		"LM"
-#endif
-#ifndef SEPARATE_LINE_CODE_LABEL
-#define SEPARATE_LINE_CODE_LABEL	"LSM"
 #endif
 
 
@@ -7111,6 +7128,7 @@ dwarf_attr_name (unsigned int attr)
       return "DW_AT_body_begin";
     case DW_AT_body_end:
       return "DW_AT_body_end";
+
     case DW_AT_GNU_vector:
       return "DW_AT_GNU_vector";
     case DW_AT_GNU_guarded_by:
@@ -7147,6 +7165,9 @@ dwarf_attr_name (unsigned int attr)
       return "DW_AT_GNU_all_call_sites";
     case DW_AT_GNU_all_source_call_sites:
       return "DW_AT_GNU_all_source_call_sites";
+
+    case DW_AT_GNAT_descriptive_type:
+      return "DW_AT_GNAT_descriptive_type";
 
     case DW_AT_VMS_rtnbeg_pd_address:
       return "DW_AT_VMS_rtnbeg_pd_address";
@@ -8212,6 +8233,24 @@ lookup_decl_loc (const_tree decl)
     htab_find_with_hash (decl_loc_table, decl, DECL_UID (decl));
 }
 
+/* Returns a hash value for X (which really is a cached_dw_loc_list_list).  */
+
+static hashval_t
+cached_dw_loc_list_table_hash (const void *x)
+{
+  return (hashval_t) ((const cached_dw_loc_list *) x)->decl_id;
+}
+
+/* Return nonzero if decl_id of cached_dw_loc_list X is the same as
+   UID of decl *Y.  */
+
+static int
+cached_dw_loc_list_table_eq (const void *x, const void *y)
+{
+  return (((const cached_dw_loc_list *) x)->decl_id
+	  == DECL_UID ((const_tree) y));
+}
+
 /* Equate a DIE to a particular declaration.  */
 
 static void
@@ -8555,7 +8594,7 @@ print_die (dw_die_ref die, FILE *outfile)
   fprintf (outfile, " offset: %ld", die->die_offset);
   fprintf (outfile, " mark: %d\n", die->die_mark);
 
-  if (dwarf_version >= 4 && die->die_id.die_type_node)
+  if (use_debug_types && die->die_id.die_type_node)
     {
       print_spaces (outfile);
       fprintf (outfile, "  signature: ");
@@ -8607,13 +8646,13 @@ print_die (dw_die_ref die, FILE *outfile)
 	case dw_val_class_die_ref:
 	  if (AT_ref (a) != NULL)
 	    {
-	      if (dwarf_version >= 4 && AT_ref (a)->die_id.die_type_node)
+	      if (use_debug_types && AT_ref (a)->die_id.die_type_node)
 	        {
 		  fprintf (outfile, "die -> signature: ");
 		  print_signature (outfile,
 		  		   AT_ref (a)->die_id.die_type_node->signature);
                 }
-	      else if (dwarf_version < 4 && AT_ref (a)->die_id.die_symbol)
+	      else if (! use_debug_types && AT_ref (a)->die_id.die_symbol)
 		fprintf (outfile, "die -> label: %s",
 		         AT_ref (a)->die_id.die_symbol);
 	      else
@@ -8667,27 +8706,6 @@ print_die (dw_die_ref die, FILE *outfile)
     fprintf (outfile, "\n");
 }
 
-/* Print the contents of the source code line number correspondence table.
-   This routine is a debugging aid only.  */
-
-static void
-print_dwarf_line_table (FILE *outfile)
-{
-  unsigned i;
-  dw_line_info_ref line_info;
-
-  fprintf (outfile, "\n\nDWARF source line information\n");
-  for (i = 1; i < line_info_table_in_use; i++)
-    {
-      line_info = &line_info_table[i];
-      fprintf (outfile, "%5d: %4ld %6ld\n", i,
-	       line_info->dw_file_num,
-	       line_info->dw_line_num);
-    }
-
-  fprintf (outfile, "\n\n");
-}
-
 /* Print the information collected for a given DIE.  */
 
 DEBUG_FUNCTION void
@@ -8704,8 +8722,6 @@ debug_dwarf (void)
 {
   print_indent = 0;
   print_die (comp_unit_die (), stderr);
-  if (! DWARF2_ASM_LINE_DEBUG_INFO)
-    print_dwarf_line_table (stderr);
 }
 
 /* Start a new compilation unit DIE for an include file.  OLD_UNIT is the CU
@@ -10570,7 +10586,7 @@ build_abbrev_table (dw_die_ref die)
     if (AT_class (a) == dw_val_class_die_ref
 	&& AT_ref (a)->die_mark == 0)
       {
-	gcc_assert (dwarf_version >= 4 || AT_ref (a)->die_id.die_symbol);
+	gcc_assert (use_debug_types || AT_ref (a)->die_id.die_symbol);
 	set_AT_ref_external (a, 1);
       }
 
@@ -10714,11 +10730,11 @@ size_of_die (dw_die_ref die)
 	case dw_val_class_die_ref:
 	  if (AT_ref_external (a))
 	    {
-	      /* In DWARF4, we use DW_FORM_sig8; for earlier versions
+	      /* In DWARF4, we use DW_FORM_ref_sig8; for earlier versions
 		 we use DW_FORM_ref_addr.  In DWARF2, DW_FORM_ref_addr
 		 is sized by target address length, whereas in DWARF3
 		 it's always sized as an offset.  */
-	      if (dwarf_version >= 4)
+	      if (use_debug_types)
 		size += DWARF_TYPE_SIGNATURE_SIZE;
 	      else if (dwarf_version == 2)
 		size += DWARF2_ADDR_SIZE;
@@ -10804,7 +10820,7 @@ unmark_dies (dw_die_ref die)
 {
   dw_die_ref c;
 
-  if (dwarf_version < 4)
+  if (! use_debug_types)
     gcc_assert (die->die_mark);
 
   die->die_mark = 0;
@@ -10866,7 +10882,20 @@ size_of_aranges (void)
     size += 2 * DWARF2_ADDR_SIZE;
   if (cold_text_section_used)
     size += 2 * DWARF2_ADDR_SIZE;
-  size += 2 * DWARF2_ADDR_SIZE * arange_table_in_use;
+  if (have_multiple_function_sections)
+    {
+      unsigned fde_idx = 0;
+
+      for (fde_idx = 0; fde_idx < fde_table_in_use; fde_idx++)
+	{
+	  dw_fde_ref fde = &fde_table[fde_idx];
+
+	  if (!fde->in_std_section)
+	    size += 2 * DWARF2_ADDR_SIZE;
+	  if (fde->dw_fde_second_begin && !fde->second_in_std_section)
+	    size += 2 * DWARF2_ADDR_SIZE;
+	}
+    }
 
   /* Count the two zero words used to terminated the address range table.  */
   size += 2 * DWARF2_ADDR_SIZE;
@@ -10990,7 +11019,7 @@ value_format (dw_attr_ref a)
       return DW_FORM_flag;
     case dw_val_class_die_ref:
       if (AT_ref_external (a))
-	return dwarf_version >= 4 ? DW_FORM_sig8 : DW_FORM_ref_addr;
+	return use_debug_types ? DW_FORM_ref_sig8 : DW_FORM_ref_addr;
       else
 	return DW_FORM_ref;
     case dw_val_class_fde_ref:
@@ -11040,6 +11069,9 @@ static void
 output_abbrev_section (void)
 {
   unsigned long abbrev_id;
+
+  if (abbrev_die_table_in_use == 1)
+    return;
 
   for (abbrev_id = 1; abbrev_id < abbrev_die_table_in_use; ++abbrev_id)
     {
@@ -11197,7 +11229,7 @@ output_die (dw_die_ref die)
 
   /* If someone in another CU might refer to us, set up a symbol for
      them to point to.  */
-  if (dwarf_version < 4 && die->die_id.die_symbol)
+  if (! use_debug_types && die->die_id.die_symbol)
     output_die_symbol (die);
 
   dw2_asm_output_data_uleb128 (die->die_abbrev, "(DIE (%#lx) %s)",
@@ -11336,7 +11368,7 @@ output_die (dw_die_ref die)
 	case dw_val_class_die_ref:
 	  if (AT_ref_external (a))
 	    {
-	      if (dwarf_version >= 4)
+	      if (use_debug_types)
 	        {
 	          comdat_type_node_ref type_node =
 	            AT_ref (a)->die_id.die_type_node;
@@ -11694,35 +11726,14 @@ output_pubnames (VEC (pubname_entry, gc) * names)
   dw2_asm_output_data (DWARF_OFFSET_SIZE, 0, NULL);
 }
 
-/* Add a new entry to .debug_aranges if appropriate.  */
-
-static void
-add_arange (tree decl, dw_die_ref die)
-{
-  if (! DECL_SECTION_NAME (decl))
-    return;
-
-  if (arange_table_in_use == arange_table_allocated)
-    {
-      arange_table_allocated += ARANGE_TABLE_INCREMENT;
-      arange_table = GGC_RESIZEVEC (dw_die_ref, arange_table,
-				    arange_table_allocated);
-      memset (arange_table + arange_table_in_use, 0,
-	      ARANGE_TABLE_INCREMENT * sizeof (dw_die_ref));
-    }
-
-  arange_table[arange_table_in_use++] = die;
-}
-
 /* Output the information that goes into the .debug_aranges table.
    Namely, define the beginning and ending address range of the
    text section generated for this compilation unit.  */
 
 static void
-output_aranges (void)
+output_aranges (unsigned long aranges_length)
 {
   unsigned i;
-  unsigned long aranges_length = size_of_aranges ();
 
   if (DWARF_INITIAL_LENGTH_SIZE - DWARF_OFFSET_SIZE == 4)
     dw2_asm_output_data (4, 0xffffffff,
@@ -11767,38 +11778,28 @@ output_aranges (void)
 			    cold_text_section_label, "Length");
     }
 
-  for (i = 0; i < arange_table_in_use; i++)
+  if (have_multiple_function_sections)
     {
-      dw_die_ref die = arange_table[i];
+      unsigned fde_idx = 0;
 
-      /* We shouldn't see aranges for DIEs outside of the main CU.  */
-      gcc_assert (die->die_mark);
-
-      if (die->die_tag == DW_TAG_subprogram)
+      for (fde_idx = 0; fde_idx < fde_table_in_use; fde_idx++)
 	{
-	  dw2_asm_output_addr (DWARF2_ADDR_SIZE, get_AT_low_pc (die),
-			       "Address");
-	  dw2_asm_output_delta (DWARF2_ADDR_SIZE, get_AT_hi_pc (die),
-				get_AT_low_pc (die), "Length");
-	}
-      else
-	{
-	  /* A static variable; extract the symbol from DW_AT_location.
-	     Note that this code isn't currently hit, as we only emit
-	     aranges for functions (jason 9/23/99).  */
-	  dw_attr_ref a = get_AT (die, DW_AT_location);
-	  dw_loc_descr_ref loc;
+	  dw_fde_ref fde = &fde_table[fde_idx];
 
-	  gcc_assert (a && AT_class (a) == dw_val_class_loc);
-
-	  loc = AT_loc (a);
-	  gcc_assert (loc->dw_loc_opc == DW_OP_addr);
-
-	  dw2_asm_output_addr_rtx (DWARF2_ADDR_SIZE,
-				   loc->dw_loc_oprnd1.v.val_addr, "Address");
-	  dw2_asm_output_data (DWARF2_ADDR_SIZE,
-			       get_AT_unsigned (die, DW_AT_byte_size),
-			       "Length");
+	  if (!fde->in_std_section)
+	    {
+	      dw2_asm_output_addr (DWARF2_ADDR_SIZE, fde->dw_fde_begin,
+				   "Address");
+	      dw2_asm_output_delta (DWARF2_ADDR_SIZE, fde->dw_fde_end,
+				    fde->dw_fde_begin, "Length");
+	    }
+	  if (fde->dw_fde_second_begin && !fde->second_in_std_section)
+	    {
+	      dw2_asm_output_addr (DWARF2_ADDR_SIZE, fde->dw_fde_second_begin,
+				   "Address");
+	      dw2_asm_output_delta (DWARF2_ADDR_SIZE, fde->dw_fde_second_end,
+				    fde->dw_fde_second_begin, "Length");
+	    }
 	}
     }
 
@@ -12289,6 +12290,117 @@ output_file_names (void)
 }
 
 
+/* Output one line number table into the .debug_line section.  */
+
+static void
+output_one_line_info_table (dw_line_info_table *table)
+{
+  char line_label[MAX_ARTIFICIAL_LABEL_BYTES];
+  unsigned int current_line = 1;
+  bool current_is_stmt = DWARF_LINE_DEFAULT_IS_STMT_START;
+  dw_line_info_entry *ent;
+  size_t i;
+
+  FOR_EACH_VEC_ELT (dw_line_info_entry, table->entries, i, ent)
+    {
+      switch (ent->opcode)
+	{
+	case LI_set_address:
+	  /* ??? Unfortunately, we have little choice here currently, and
+	     must always use the most general form.  GCC does not know the
+	     address delta itself, so we can't use DW_LNS_advance_pc.  Many
+	     ports do have length attributes which will give an upper bound
+	     on the address range.  We could perhaps use length attributes
+	     to determine when it is safe to use DW_LNS_fixed_advance_pc.  */
+	  ASM_GENERATE_INTERNAL_LABEL (line_label, LINE_CODE_LABEL, ent->val);
+
+	  /* This can handle any delta.  This takes
+	     4+DWARF2_ADDR_SIZE bytes.  */
+	  dw2_asm_output_data (1, 0, "set address %s", line_label);
+	  dw2_asm_output_data_uleb128 (1 + DWARF2_ADDR_SIZE, NULL);
+	  dw2_asm_output_data (1, DW_LNE_set_address, NULL);
+	  dw2_asm_output_addr (DWARF2_ADDR_SIZE, line_label, NULL);
+	  break;
+
+	case LI_set_line:
+	  if (ent->val == current_line)
+	    {
+	      /* We still need to start a new row, so output a copy insn.  */
+	      dw2_asm_output_data (1, DW_LNS_copy,
+				   "copy line %u", current_line);
+	    }
+	  else
+	    {
+	      int line_offset = ent->val - current_line;
+	      int line_delta = line_offset - DWARF_LINE_BASE;
+
+	      current_line = ent->val;
+	      if (line_delta >= 0 && line_delta < (DWARF_LINE_RANGE - 1))
+		{
+		  /* This can handle deltas from -10 to 234, using the current
+		     definitions of DWARF_LINE_BASE and DWARF_LINE_RANGE.
+		     This takes 1 byte.  */
+		  dw2_asm_output_data (1, DWARF_LINE_OPCODE_BASE + line_delta,
+				       "line %u", current_line);
+		}
+	      else
+		{
+		  /* This can handle any delta.  This takes at least 4 bytes,
+		     depending on the value being encoded.  */
+		  dw2_asm_output_data (1, DW_LNS_advance_line,
+				       "advance to line %u", current_line);
+		  dw2_asm_output_data_sleb128 (line_offset, NULL);
+		  dw2_asm_output_data (1, DW_LNS_copy, NULL);
+		}
+	    }
+	  break;
+
+	case LI_set_file:
+	  dw2_asm_output_data (1, DW_LNS_set_file, "set file %u", ent->val);
+	  dw2_asm_output_data_uleb128 (ent->val, "%u", ent->val);
+	  break;
+
+	case LI_set_column:
+	  dw2_asm_output_data (1, DW_LNS_set_column, "column %u", ent->val);
+	  dw2_asm_output_data_uleb128 (ent->val, "%u", ent->val);
+	  break;
+
+	case LI_negate_stmt:
+	  current_is_stmt = !current_is_stmt;
+	  dw2_asm_output_data (1, DW_LNS_negate_stmt,
+			       "is_stmt %d", current_is_stmt);
+	  break;
+
+	case LI_set_prologue_end:
+	  dw2_asm_output_data (1, DW_LNS_set_prologue_end,
+			       "set prologue end");
+	  break;
+	  
+	case LI_set_epilogue_begin:
+	  dw2_asm_output_data (1, DW_LNS_set_epilogue_begin,
+			       "set epilogue begin");
+	  break;
+
+	case LI_set_discriminator:
+	  dw2_asm_output_data (1, 0, "discriminator %u", ent->val);
+	  dw2_asm_output_data_uleb128 (1 + size_of_uleb128 (ent->val), NULL);
+	  dw2_asm_output_data (1, DW_LNE_set_discriminator, NULL);
+	  dw2_asm_output_data_uleb128 (ent->val, NULL);
+	  break;
+	}
+    }
+
+  /* Emit debug info for the address of the end of the table.  */
+  dw2_asm_output_data (1, 0, "set address %s", table->end_label);
+  dw2_asm_output_data_uleb128 (1 + DWARF2_ADDR_SIZE, NULL);
+  dw2_asm_output_data (1, DW_LNE_set_address, NULL);
+  dw2_asm_output_addr (DWARF2_ADDR_SIZE, table->end_label, NULL);
+
+  dw2_asm_output_data (1, 0, "end sequence");
+  dw2_asm_output_data_uleb128 (1, NULL);
+  dw2_asm_output_data (1, DW_LNE_end_sequence, NULL);
+}
+
 /* Output the source line number correspondence information.  This
    information goes into the .debug_line section.  */
 
@@ -12296,17 +12408,9 @@ static void
 output_line_info (void)
 {
   char l1[20], l2[20], p1[20], p2[20];
-  char line_label[MAX_ARTIFICIAL_LABEL_BYTES];
-  char prev_line_label[MAX_ARTIFICIAL_LABEL_BYTES];
-  unsigned opc;
-  unsigned n_op_args;
-  unsigned long lt_index;
-  unsigned long current_line;
-  long line_offset;
-  long line_delta;
-  unsigned long current_file;
-  unsigned long function;
   int ver = dwarf_version;
+  bool saw_one = false;
+  int opc;
 
   ASM_GENERATE_INTERNAL_LABEL (l1, LINE_NUMBER_BEGIN_LABEL, 0);
   ASM_GENERATE_INTERNAL_LABEL (l2, LINE_NUMBER_END_LABEL, 0);
@@ -12324,16 +12428,15 @@ output_line_info (void)
   dw2_asm_output_delta (DWARF_OFFSET_SIZE, p2, p1, "Prolog Length");
   ASM_OUTPUT_LABEL (asm_out_file, p1);
 
-  /* Define the architecture-dependent minimum instruction length (in
-   bytes).  In this implementation of DWARF, this field is used for
-   information purposes only.  Since GCC generates assembly language,
-   we have no a priori knowledge of how many instruction bytes are
-   generated for each source line, and therefore can use only the
-   DW_LNE_set_address and DW_LNS_fixed_advance_pc line information
-   commands.  Accordingly, we fix this as `1', which is "correct
-   enough" for all architectures, and don't let the target override.  */
-  dw2_asm_output_data (1, 1,
-		       "Minimum Instruction Length");
+  /* Define the architecture-dependent minimum instruction length (in bytes).
+     In this implementation of DWARF, this field is used for information
+     purposes only.  Since GCC generates assembly language, we have no
+     a priori knowledge of how many instruction bytes are generated for each
+     source line, and therefore can use only the DW_LNE_set_address and
+     DW_LNS_fixed_advance_pc line information commands.  Accordingly, we fix
+     this as '1', which is "correct enough" for all architectures,
+     and don't let the target override.  */
+  dw2_asm_output_data (1, 1, "Minimum Instruction Length");
 
   if (ver >= 4)
     dw2_asm_output_data (1, DWARF_LINE_DEFAULT_MAX_OPS_PER_INSN,
@@ -12349,6 +12452,7 @@ output_line_info (void)
 
   for (opc = 1; opc < DWARF_LINE_OPCODE_BASE; opc++)
     {
+      int n_op_args;
       switch (opc)
 	{
 	case DW_LNS_advance_pc:
@@ -12356,6 +12460,7 @@ output_line_info (void)
 	case DW_LNS_set_file:
 	case DW_LNS_set_column:
 	case DW_LNS_fixed_advance_pc:
+	case DW_LNS_set_isa:
 	  n_op_args = 1;
 	  break;
 	default:
@@ -12371,237 +12476,31 @@ output_line_info (void)
   output_file_names ();
   ASM_OUTPUT_LABEL (asm_out_file, p2);
 
-  /* We used to set the address register to the first location in the text
-     section here, but that didn't accomplish anything since we already
-     have a line note for the opening brace of the first function.  */
-
-  /* Generate the line number to PC correspondence table, encoded as
-     a series of state machine operations.  */
-  current_file = 1;
-  current_line = 1;
-
-  if (cfun && in_cold_section_p)
-    strcpy (prev_line_label, crtl->subsections.cold_section_label);
-  else
-    strcpy (prev_line_label, text_section_label);
-  for (lt_index = 1; lt_index < line_info_table_in_use; ++lt_index)
+  if (separate_line_info)
     {
-      dw_line_info_ref line_info = &line_info_table[lt_index];
+      dw_line_info_table *table;
+      size_t i;
 
-#if 0
-      /* Disable this optimization for now; GDB wants to see two line notes
-	 at the beginning of a function so it can find the end of the
-	 prologue.  */
-
-      /* Don't emit anything for redundant notes.  Just updating the
-	 address doesn't accomplish anything, because we already assume
-	 that anything after the last address is this line.  */
-      if (line_info->dw_line_num == current_line
-	  && line_info->dw_file_num == current_file)
-	continue;
-#endif
-
-      /* Emit debug info for the address of the current line.
-
-	 Unfortunately, we have little choice here currently, and must always
-	 use the most general form.  GCC does not know the address delta
-	 itself, so we can't use DW_LNS_advance_pc.  Many ports do have length
-	 attributes which will give an upper bound on the address range.  We
-	 could perhaps use length attributes to determine when it is safe to
-	 use DW_LNS_fixed_advance_pc.  */
-
-      ASM_GENERATE_INTERNAL_LABEL (line_label, LINE_CODE_LABEL, lt_index);
-      if (0)
-	{
-	  /* This can handle deltas up to 0xffff.  This takes 3 bytes.  */
-	  dw2_asm_output_data (1, DW_LNS_fixed_advance_pc,
-			       "DW_LNS_fixed_advance_pc");
-	  dw2_asm_output_delta (2, line_label, prev_line_label, NULL);
-	}
-      else
-	{
-	  /* This can handle any delta.  This takes
-	     4+DWARF2_ADDR_SIZE bytes.  */
-	  dw2_asm_output_data (1, 0, "DW_LNE_set_address");
-	  dw2_asm_output_data_uleb128 (1 + DWARF2_ADDR_SIZE, NULL);
-	  dw2_asm_output_data (1, DW_LNE_set_address, NULL);
-	  dw2_asm_output_addr (DWARF2_ADDR_SIZE, line_label, NULL);
-	}
-
-      strcpy (prev_line_label, line_label);
-
-      /* Emit debug info for the source file of the current line, if
-	 different from the previous line.  */
-      if (line_info->dw_file_num != current_file)
-	{
-	  current_file = line_info->dw_file_num;
-	  dw2_asm_output_data (1, DW_LNS_set_file, "DW_LNS_set_file");
-	  dw2_asm_output_data_uleb128 (current_file, "%lu", current_file);
-	}
-
-      /* Emit debug info for the current line number, choosing the encoding
-	 that uses the least amount of space.  */
-      if (line_info->dw_line_num != current_line)
-	{
-	  line_offset = line_info->dw_line_num - current_line;
-	  line_delta = line_offset - DWARF_LINE_BASE;
-	  current_line = line_info->dw_line_num;
-	  if (line_delta >= 0 && line_delta < (DWARF_LINE_RANGE - 1))
-	    /* This can handle deltas from -10 to 234, using the current
-	       definitions of DWARF_LINE_BASE and DWARF_LINE_RANGE.  This
-	       takes 1 byte.  */
-	    dw2_asm_output_data (1, DWARF_LINE_OPCODE_BASE + line_delta,
-				 "line %lu", current_line);
-	  else
-	    {
-	      /* This can handle any delta.  This takes at least 4 bytes,
-		 depending on the value being encoded.  */
-	      dw2_asm_output_data (1, DW_LNS_advance_line,
-				   "advance to line %lu", current_line);
-	      dw2_asm_output_data_sleb128 (line_offset, NULL);
-	      dw2_asm_output_data (1, DW_LNS_copy, "DW_LNS_copy");
-	    }
-	}
-      else
-	/* We still need to start a new row, so output a copy insn.  */
-	dw2_asm_output_data (1, DW_LNS_copy, "DW_LNS_copy");
+      FOR_EACH_VEC_ELT (dw_line_info_table_p, separate_line_info, i, table)
+	if (table->in_use)
+	  {
+	    output_one_line_info_table (table);
+	    saw_one = true;
+	  }
+    }
+  if (cold_text_section_line_info && cold_text_section_line_info->in_use)
+    {
+      output_one_line_info_table (cold_text_section_line_info);
+      saw_one = true;
     }
 
-  /* Emit debug info for the address of the end of the function.  */
-  if (0)
-    {
-      dw2_asm_output_data (1, DW_LNS_fixed_advance_pc,
-			   "DW_LNS_fixed_advance_pc");
-      dw2_asm_output_delta (2, text_end_label, prev_line_label, NULL);
-    }
-  else
-    {
-      dw2_asm_output_data (1, 0, "DW_LNE_set_address");
-      dw2_asm_output_data_uleb128 (1 + DWARF2_ADDR_SIZE, NULL);
-      dw2_asm_output_data (1, DW_LNE_set_address, NULL);
-      dw2_asm_output_addr (DWARF2_ADDR_SIZE, text_end_label, NULL);
-    }
-
-  dw2_asm_output_data (1, 0, "DW_LNE_end_sequence");
-  dw2_asm_output_data_uleb128 (1, NULL);
-  dw2_asm_output_data (1, DW_LNE_end_sequence, NULL);
-
-  function = 0;
-  current_file = 1;
-  current_line = 1;
-  for (lt_index = 0; lt_index < separate_line_info_table_in_use;)
-    {
-      dw_separate_line_info_ref line_info
-	= &separate_line_info_table[lt_index];
-
-#if 0
-      /* Don't emit anything for redundant notes.  */
-      if (line_info->dw_line_num == current_line
-	  && line_info->dw_file_num == current_file
-	  && line_info->function == function)
-	goto cont;
-#endif
-
-      /* Emit debug info for the address of the current line.  If this is
-	 a new function, or the first line of a function, then we need
-	 to handle it differently.  */
-      ASM_GENERATE_INTERNAL_LABEL (line_label, SEPARATE_LINE_CODE_LABEL,
-				   lt_index);
-      if (function != line_info->function)
-	{
-	  function = line_info->function;
-
-	  /* Set the address register to the first line in the function.  */
-	  dw2_asm_output_data (1, 0, "DW_LNE_set_address");
-	  dw2_asm_output_data_uleb128 (1 + DWARF2_ADDR_SIZE, NULL);
-	  dw2_asm_output_data (1, DW_LNE_set_address, NULL);
-	  dw2_asm_output_addr (DWARF2_ADDR_SIZE, line_label, NULL);
-	}
-      else
-	{
-	  /* ??? See the DW_LNS_advance_pc comment above.  */
-	  if (0)
-	    {
-	      dw2_asm_output_data (1, DW_LNS_fixed_advance_pc,
-				   "DW_LNS_fixed_advance_pc");
-	      dw2_asm_output_delta (2, line_label, prev_line_label, NULL);
-	    }
-	  else
-	    {
-	      dw2_asm_output_data (1, 0, "DW_LNE_set_address");
-	      dw2_asm_output_data_uleb128 (1 + DWARF2_ADDR_SIZE, NULL);
-	      dw2_asm_output_data (1, DW_LNE_set_address, NULL);
-	      dw2_asm_output_addr (DWARF2_ADDR_SIZE, line_label, NULL);
-	    }
-	}
-
-      strcpy (prev_line_label, line_label);
-
-      /* Emit debug info for the source file of the current line, if
-	 different from the previous line.  */
-      if (line_info->dw_file_num != current_file)
-	{
-	  current_file = line_info->dw_file_num;
-	  dw2_asm_output_data (1, DW_LNS_set_file, "DW_LNS_set_file");
-	  dw2_asm_output_data_uleb128 (current_file, "%lu", current_file);
-	}
-
-      /* Emit debug info for the current line number, choosing the encoding
-	 that uses the least amount of space.  */
-      if (line_info->dw_line_num != current_line)
-	{
-	  line_offset = line_info->dw_line_num - current_line;
-	  line_delta = line_offset - DWARF_LINE_BASE;
-	  current_line = line_info->dw_line_num;
-	  if (line_delta >= 0 && line_delta < (DWARF_LINE_RANGE - 1))
-	    dw2_asm_output_data (1, DWARF_LINE_OPCODE_BASE + line_delta,
-				 "line %lu", current_line);
-	  else
-	    {
-	      dw2_asm_output_data (1, DW_LNS_advance_line,
-				   "advance to line %lu", current_line);
-	      dw2_asm_output_data_sleb128 (line_offset, NULL);
-	      dw2_asm_output_data (1, DW_LNS_copy, "DW_LNS_copy");
-	    }
-	}
-      else
-	dw2_asm_output_data (1, DW_LNS_copy, "DW_LNS_copy");
-
-#if 0
-    cont:
-#endif
-
-      lt_index++;
-
-      /* If we're done with a function, end its sequence.  */
-      if (lt_index == separate_line_info_table_in_use
-	  || separate_line_info_table[lt_index].function != function)
-	{
-	  current_file = 1;
-	  current_line = 1;
-
-	  /* Emit debug info for the address of the end of the function.  */
-	  ASM_GENERATE_INTERNAL_LABEL (line_label, FUNC_END_LABEL, function);
-	  if (0)
-	    {
-	      dw2_asm_output_data (1, DW_LNS_fixed_advance_pc,
-				   "DW_LNS_fixed_advance_pc");
-	      dw2_asm_output_delta (2, line_label, prev_line_label, NULL);
-	    }
-	  else
-	    {
-	      dw2_asm_output_data (1, 0, "DW_LNE_set_address");
-	      dw2_asm_output_data_uleb128 (1 + DWARF2_ADDR_SIZE, NULL);
-	      dw2_asm_output_data (1, DW_LNE_set_address, NULL);
-	      dw2_asm_output_addr (DWARF2_ADDR_SIZE, line_label, NULL);
-	    }
-
-	  /* Output the marker for the end of this sequence.  */
-	  dw2_asm_output_data (1, 0, "DW_LNE_end_sequence");
-	  dw2_asm_output_data_uleb128 (1, NULL);
-	  dw2_asm_output_data (1, DW_LNE_end_sequence, NULL);
-	}
-    }
+  /* ??? Some Darwin linkers crash on a .debug_line section with no
+     sequences.  Further, merely a DW_LNE_end_sequence entry is not
+     sufficient -- the address column must also be initialized.
+     Make sure to output at least one set_address/end_sequence pair,
+     choosing .text since that section is always present.  */
+  if (text_section_line_info->in_use || !saw_one)
+    output_one_line_info_table (text_section_line_info);
 
   /* Output the marker for the end of the line number info.  */
   ASM_OUTPUT_LABEL (asm_out_file, l2);
@@ -12948,7 +12847,7 @@ modified_type_die (tree type, int type_quals,
     }
   else if (code == REFERENCE_TYPE)
     {
-      if (TYPE_REF_IS_RVALUE (type) && dwarf_version >= 4)
+      if (TYPE_REF_IS_RVALUE (type) && use_debug_types)
 	mod_type_die = new_die (DW_TAG_rvalue_reference_type, comp_unit_die (),
 				type);
       else
@@ -13007,6 +12906,7 @@ modified_type_die (tree type, int type_quals,
 	   useful source coordinates anyway.  */
 	name = DECL_NAME (name);
       add_name_attribute (mod_type_die, IDENTIFIER_POINTER (name));
+      add_gnat_descriptive_type_attribute (mod_type_die, type, context_die);
     }
   /* This probably indicates a bug.  */
   else if (mod_type_die && mod_type_die->die_tag == DW_TAG_base_type)
@@ -13639,8 +13539,15 @@ const_ok_for_output_1 (rtx *rtlp, void *data ATTRIBUTE_UNUSED)
 	inform (current_function_decl
 		? DECL_SOURCE_LOCATION (current_function_decl)
 		: UNKNOWN_LOCATION,
+#if NUM_UNSPEC_VALUES > 0
+		"non-delegitimized UNSPEC %s (%d) found in variable location",
+		((XINT (rtl, 1) >= 0 && XINT (rtl, 1) < NUM_UNSPEC_VALUES)
+		 ? unspec_strings[XINT (rtl, 1)] : "unknown"),
+		XINT (rtl, 1));
+#else
 		"non-delegitimized UNSPEC %d found in variable location",
 		XINT (rtl, 1));
+#endif
 #endif
       expansion_failed (NULL_TREE, rtl,
 			"UNSPEC hasn't been delegitimized.\n");
@@ -13838,9 +13745,7 @@ mem_loc_descriptor (rtx rtl, enum machine_mode mode,
       break;
 
     case LO_SUM:
-	 rtl = XEXP (rtl, 1);
-
-      /* ... fall through ...  */
+      return mem_loc_descriptor (XEXP (rtl, 1), mode, initialized);
 
     case LABEL_REF:
       /* Some ports can transform a symbol ref into a label ref, because
@@ -13904,7 +13809,7 @@ mem_loc_descriptor (rtx rtl, enum machine_mode mode,
 	  dw_loc_descr_ref ref
 	    = mem_loc_descriptor (ENTRY_VALUE_EXP (rtl), GET_MODE (rtl),
 				  VAR_INIT_STATUS_INITIALIZED);
-	  if (ref == NULL)
+	  if (ref == NULL || ref->dw_loc_opc == DW_OP_fbreg)
 	    return NULL;
 	  mem_loc_result->dw_loc_oprnd1.v.val_loc = ref;
 	}
@@ -14327,8 +14232,8 @@ mem_loc_descriptor (rtx rtl, enum machine_mode mode,
 	  && ((unsigned) INTVAL (XEXP (rtl, 1))
 	      + (unsigned) INTVAL (XEXP (rtl, 2))
 	      <= GET_MODE_BITSIZE (GET_MODE (rtl)))
-	  && GET_MODE_BITSIZE (GET_MODE (rtl)) <= DWARF2_ADDR_SIZE
-	  && GET_MODE_BITSIZE (GET_MODE (XEXP (rtl, 0))) <= DWARF2_ADDR_SIZE)
+	  && GET_MODE_SIZE (GET_MODE (rtl)) <= DWARF2_ADDR_SIZE
+	  && GET_MODE_SIZE (GET_MODE (XEXP (rtl, 0))) <= DWARF2_ADDR_SIZE)
 	{
 	  int shift, size;
 	  op0 = mem_loc_descriptor (XEXP (rtl, 0), mode,
@@ -15145,9 +15050,23 @@ dw_loc_list (var_loc_list *loc_list, tree decl, int want_address)
 	  }
 	if (descr)
 	  {
+	    bool range_across_switch = false;
+	    /* If section switch happens in between node->label
+	       and node->next->label (or end of function) and
+	       we can't emit it as a single entry list,
+	       emit two ranges, first one ending at the end
+	       of first partition and second one starting at the
+	       beginning of second partition.  */
+	    if (node == loc_list->last_before_switch
+		&& (node != loc_list->first || loc_list->first->next)
+		&& current_function_decl)
+	      {
+		endname = current_fde ()->dw_fde_end;
+		range_across_switch = true;
+	      }
 	    /* The variable has a location between NODE->LABEL and
 	       NODE->NEXT->LABEL.  */
-	    if (node->next)
+	    else if (node->next)
 	      endname = node->next->label;
 	    /* If the variable has a location at the last label
 	       it keeps its location until the end of function.  */
@@ -15162,6 +15081,30 @@ dw_loc_list (var_loc_list *loc_list, tree decl, int want_address)
 
 	    *listp = new_loc_list (descr, node->label, endname, secname);
 	    listp = &(*listp)->dw_loc_next;
+
+	    if (range_across_switch)
+	      {
+		if (GET_CODE (node->loc) == EXPR_LIST)
+		  descr = dw_sra_loc_expr (decl, node->loc);
+		else
+		  {
+		    initialized = NOTE_VAR_LOCATION_STATUS (node->loc);
+		    varloc = NOTE_VAR_LOCATION (node->loc);
+		    descr = dw_loc_list_1 (decl, varloc, want_address,
+					   initialized);
+		  }
+		gcc_assert (descr);
+		/* The variable has a location between NODE->LABEL and
+		   NODE->NEXT->LABEL.  */
+		if (node->next)
+		  endname = node->next->label;
+		else
+		  endname = current_fde ()->dw_fde_second_end;
+		*listp = new_loc_list (descr,
+				       current_fde ()->dw_fde_second_begin,
+				       endname, secname);
+		listp = &(*listp)->dw_loc_next;
+	      }
 	  }
       }
 
@@ -16933,15 +16876,22 @@ fortran_common (tree decl, HOST_WIDE_INT *value)
    these things can crop up in other ways also.)  Note that one type of
    constant value which can be passed into an inlined function is a constant
    pointer.  This can happen for example if an actual argument in an inlined
-   function call evaluates to a compile-time constant address.  */
+   function call evaluates to a compile-time constant address.
+
+   CACHE_P is true if it is worth caching the location list for DECL,
+   so that future calls can reuse it rather than regenerate it from scratch.
+   This is true for BLOCK_NONLOCALIZED_VARS in inlined subroutines,
+   since we will need to refer to them each time the function is inlined.  */
 
 static bool
-add_location_or_const_value_attribute (dw_die_ref die, tree decl,
+add_location_or_const_value_attribute (dw_die_ref die, tree decl, bool cache_p,
 				       enum dwarf_attribute attr)
 {
   rtx rtl;
   dw_loc_list_ref list;
   var_loc_list *loc_list;
+  cached_dw_loc_list *cache;
+  void **slot;
 
   if (TREE_CODE (decl) == ERROR_MARK)
     return false;
@@ -16978,7 +16928,33 @@ add_location_or_const_value_attribute (dw_die_ref die, tree decl,
 	  && add_const_value_attribute (die, rtl))
 	 return true;
     }
-  list = loc_list_from_tree (decl, decl_by_reference_p (decl) ? 0 : 2);
+  /* If this decl is from BLOCK_NONLOCALIZED_VARS, we might need its
+     list several times.  See if we've already cached the contents.  */
+  list = NULL;
+  if (loc_list == NULL || cached_dw_loc_list_table == NULL)
+    cache_p = false;
+  if (cache_p)
+    {
+      cache = (cached_dw_loc_list *)
+	htab_find_with_hash (cached_dw_loc_list_table, decl, DECL_UID (decl));
+      if (cache)
+	list = cache->loc_list;
+    }
+  if (list == NULL)
+    {
+      list = loc_list_from_tree (decl, decl_by_reference_p (decl) ? 0 : 2);
+      /* It is usually worth caching this result if the decl is from
+	 BLOCK_NONLOCALIZED_VARS and if the list has at least two elements.  */
+      if (cache_p && list && list->dw_loc_next)
+	{
+	  slot = htab_find_slot_with_hash (cached_dw_loc_list_table, decl,
+					   DECL_UID (decl), INSERT);
+	  cache = ggc_alloc_cleared_cached_dw_loc_list ();
+	  cache->decl_id = DECL_UID (decl);
+	  cache->loc_list = list;
+	  *slot = cache;
+	}
+    }
   if (list)
     {
       add_AT_location_description (die, attr, list);
@@ -17247,33 +17223,61 @@ convert_cfa_to_fb_loc_list (HOST_WIDE_INT offset)
   last_cfa = next_cfa;
   last_label = start_label;
 
+  if (fde->dw_fde_second_begin && fde->dw_fde_switch_cfi == NULL)
+    {
+      /* If the first partition contained no CFI adjustments, the
+	 CIE opcodes apply to the whole first partition.  */
+      *list_tail = new_loc_list (build_cfa_loc (&last_cfa, offset),
+				 fde->dw_fde_begin, fde->dw_fde_end, section);
+      list_tail =&(*list_tail)->dw_loc_next;
+      start_label = last_label = fde->dw_fde_second_begin;
+    }
+
   for (cfi = fde->dw_fde_cfi; cfi; cfi = cfi->dw_cfi_next)
-    switch (cfi->dw_cfi_opc)
-      {
-      case DW_CFA_set_loc:
-      case DW_CFA_advance_loc1:
-      case DW_CFA_advance_loc2:
-      case DW_CFA_advance_loc4:
-	if (!cfa_equal_p (&last_cfa, &next_cfa))
-	  {
-	    *list_tail = new_loc_list (build_cfa_loc (&last_cfa, offset),
-				       start_label, last_label, section);
+    {
+      switch (cfi->dw_cfi_opc)
+	{
+	case DW_CFA_set_loc:
+	case DW_CFA_advance_loc1:
+	case DW_CFA_advance_loc2:
+	case DW_CFA_advance_loc4:
+	  if (!cfa_equal_p (&last_cfa, &next_cfa))
+	    {
+	      *list_tail = new_loc_list (build_cfa_loc (&last_cfa, offset),
+					 start_label, last_label, section);
 
-	    list_tail = &(*list_tail)->dw_loc_next;
-	    last_cfa = next_cfa;
-	    start_label = last_label;
-	  }
-	last_label = cfi->dw_cfi_oprnd1.dw_cfi_addr;
-	break;
+	      list_tail = &(*list_tail)->dw_loc_next;
+	      last_cfa = next_cfa;
+	      start_label = last_label;
+	    }
+	  last_label = cfi->dw_cfi_oprnd1.dw_cfi_addr;
+	  break;
 
-      case DW_CFA_advance_loc:
-	/* The encoding is complex enough that we should never emit this.  */
-	gcc_unreachable ();
+	case DW_CFA_advance_loc:
+	  /* The encoding is complex enough that we should never emit this.  */
+	  gcc_unreachable ();
 
-      default:
-	lookup_cfa_1 (cfi, &next_cfa, &remember);
-	break;
-      }
+	default:
+	  lookup_cfa_1 (cfi, &next_cfa, &remember);
+	  break;
+	}
+      if (cfi == fde->dw_fde_switch_cfi)
+	{
+	  if (!cfa_equal_p (&last_cfa, &next_cfa))
+	    {
+	      *list_tail = new_loc_list (build_cfa_loc (&last_cfa, offset),
+					 start_label, last_label, section);
+
+	      list_tail = &(*list_tail)->dw_loc_next;
+	      last_cfa = next_cfa;
+	      start_label = last_label;
+	    }
+	  *list_tail = new_loc_list (build_cfa_loc (&last_cfa, offset),
+				     start_label, fde->dw_fde_end, section);
+	  list_tail = &(*list_tail)->dw_loc_next;
+	  start_label = last_label = fde->dw_fde_second_begin;
+	}
+    }
 
   if (!cfa_equal_p (&last_cfa, &next_cfa))
     {
@@ -17284,7 +17288,10 @@ convert_cfa_to_fb_loc_list (HOST_WIDE_INT offset)
     }
 
   *list_tail = new_loc_list (build_cfa_loc (&next_cfa, offset),
-			     start_label, fde->dw_fde_end, section);
+			     start_label,
+			     fde->dw_fde_second_begin
+			     ? fde->dw_fde_second_end : fde->dw_fde_end,
+			     section);
 
   if (list && list->dw_loc_next)
     gen_llsym (list);
@@ -17340,6 +17347,38 @@ add_name_attribute (dw_die_ref die, const char *name_string)
 
       add_AT_string (die, DW_AT_name, name_string);
     }
+}
+
+/* Retrieve the descriptive type of TYPE, if any, make sure it has a
+   DIE and attach a DW_AT_GNAT_descriptive_type attribute to the DIE
+   of TYPE accordingly.
+
+   ??? This is a temporary measure until after we're able to generate
+   regular DWARF for the complex Ada type system.  */
+
+static void 
+add_gnat_descriptive_type_attribute (dw_die_ref die, tree type,
+				     dw_die_ref context_die)
+{
+  tree dtype;
+  dw_die_ref dtype_die;
+
+  if (!lang_hooks.types.descriptive_type)
+    return;
+
+  dtype = lang_hooks.types.descriptive_type (type);
+  if (!dtype)
+    return;
+
+  dtype_die = lookup_type_die (dtype);
+  if (!dtype_die)
+    {
+      gen_type_die (dtype, context_die);
+      dtype_die = lookup_type_die (dtype);
+      gcc_assert (dtype_die);
+    }
+
+  add_AT_die_ref (die, DW_AT_GNAT_descriptive_type, dtype_die);
 }
 
 /* Generate a DW_AT_comp_dir attribute for DIE.  */
@@ -18228,6 +18267,7 @@ gen_array_type_die (tree type, dw_die_ref context_die)
 
   array_die = new_die (DW_TAG_array_type, scope_die, type);
   add_name_attribute (array_die, type_tag (type));
+  add_gnat_descriptive_type_attribute (array_die, type, context_die);
   equate_type_number_to_die (type, array_die);
 
   if (TREE_CODE (type) == VECTOR_TYPE)
@@ -18530,6 +18570,7 @@ gen_enumeration_type_die (tree type, dw_die_ref context_die)
 			  scope_die_for (type, context_die), type);
       equate_type_number_to_die (type, type_die);
       add_name_attribute (type_die, type_tag (type));
+      add_gnat_descriptive_type_attribute (type_die, type, context_die);
       if (dwarf_version >= 4 || !dwarf_strict)
 	{
 	  if (ENUM_IS_SCOPED (type))
@@ -18652,7 +18693,7 @@ gen_formal_parameter_die (tree node, tree origin, bool emit_name_p,
         equate_decl_number_to_die (node, parm_die);
       if (! DECL_ABSTRACT (node_or_origin))
 	add_location_or_const_value_attribute (parm_die, node_or_origin,
-					       DW_AT_location);
+					       node == NULL, DW_AT_location);
 
       break;
 
@@ -18837,6 +18878,7 @@ dwarf2out_abstract_function (tree decl)
   tree context;
   int was_abstract;
   htab_t old_decl_loc_table;
+  htab_t old_cached_dw_loc_list_table;
   int old_call_site_count, old_tail_call_site_count;
   struct call_arg_loc_node *old_call_arg_locations;
 
@@ -18853,6 +18895,8 @@ dwarf2out_abstract_function (tree decl)
      get locations in abstract instantces.  */
   old_decl_loc_table = decl_loc_table;
   decl_loc_table = NULL;
+  old_cached_dw_loc_list_table = cached_dw_loc_list_table;
+  cached_dw_loc_list_table = NULL;
   old_call_arg_locations = call_arg_locations;
   call_arg_locations = NULL;
   old_call_site_count = call_site_count;
@@ -18883,6 +18927,7 @@ dwarf2out_abstract_function (tree decl)
 
   current_function_decl = save_fn;
   decl_loc_table = old_decl_loc_table;
+  cached_dw_loc_list_table = old_cached_dw_loc_list_table;
   call_arg_locations = old_call_arg_locations;
   call_site_count = old_call_site_count;
   tail_call_site_count = old_tail_call_site_count;
@@ -19216,14 +19261,13 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
 #endif
 
 	  add_pubname (decl, subr_die);
-	  add_arange (decl, subr_die);
 	}
       else
 	{  /* Generate pubnames entries for the split function code
 	      ranges.  */
 	  dw_fde_ref fde = &fde_table[current_funcdef_fde];
 
-	  if (fde->dw_fde_switched_sections)
+	  if (fde->dw_fde_second_begin)
 	    {
 	      if (dwarf_version >= 3 || !dwarf_strict)
 		{
@@ -19232,28 +19276,11 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
 		     section, since the HOT/COLD labels might precede an 
 		     alignment offset.  */
 		  bool range_list_added = false;
-		  if (fde->in_std_section)
-		    {
-		      add_ranges_by_labels (subr_die,
-					    fde->dw_fde_begin,
-					    fde->dw_fde_end,
-					    &range_list_added);
-		      add_ranges_by_labels (subr_die,
-					    fde->dw_fde_unlikely_section_label,
-					    fde->dw_fde_unlikely_section_end_label,
-					    &range_list_added);
-		    }
-		  else
-		    {
-		      add_ranges_by_labels (subr_die,
-					    fde->dw_fde_begin,
-					    fde->dw_fde_end,
-					    &range_list_added);
-		      add_ranges_by_labels (subr_die,
-					    fde->dw_fde_hot_section_label,
-					    fde->dw_fde_hot_section_end_label,
-					    &range_list_added);
-		    }
+		  add_ranges_by_labels (subr_die, fde->dw_fde_begin,
+					fde->dw_fde_end, &range_list_added);
+		  add_ranges_by_labels (subr_die, fde->dw_fde_second_begin,
+					fde->dw_fde_second_end,
+					&range_list_added);
 		  add_pubname (decl, subr_die);
 		  if (range_list_added)
 		    add_ranges (NULL);
@@ -19278,7 +19305,6 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
 				 fde->dw_fde_end);
 		  /* Add it.   */
 		  add_pubname (decl, subr_die);
-		  add_arange (decl, subr_die);
 
 		  /* Build a minimal DIE for the secondary section.  */
 		  seg_die = new_die (DW_TAG_subprogram,
@@ -19296,30 +19322,18 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
 
 		      add_linkage_name (seg_die, decl);
 		    }
-		  gcc_assert (name!=NULL);
+		  gcc_assert (name != NULL);
 		  add_pure_or_virtual_attribute (seg_die, decl);
 		  if (DECL_ARTIFICIAL (decl))
 		    add_AT_flag (seg_die, DW_AT_artificial, 1);
 
-		  if (fde->in_std_section)
-		    {
-		      name = concat ("__cold_sect_of_", name, NULL); 
-		      add_AT_lbl_id (seg_die, DW_AT_low_pc,
-				     fde->dw_fde_unlikely_section_label);
-		      add_AT_lbl_id (seg_die, DW_AT_high_pc,
-				     fde->dw_fde_unlikely_section_end_label); 
-		    }
-		  else 
-		    {
-		      name = concat ("__hot_sect_of_", name, NULL); 
-		      add_AT_lbl_id (seg_die, DW_AT_low_pc,
-				     fde->dw_fde_hot_section_label);
-		      add_AT_lbl_id (seg_die, DW_AT_high_pc,
-				     fde->dw_fde_hot_section_end_label); 
-		    }
+		  name = concat ("__second_sect_of_", name, NULL); 
+		  add_AT_lbl_id (seg_die, DW_AT_low_pc,
+				 fde->dw_fde_second_begin);
+		  add_AT_lbl_id (seg_die, DW_AT_high_pc,
+				 fde->dw_fde_second_end);
 		  add_name_attribute (seg_die, name);
 		  add_pubname_string (name, seg_die);
-		  add_arange (decl, seg_die);
 		}
 	    }
 	  else
@@ -19327,7 +19341,6 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
 	      add_AT_lbl_id (subr_die, DW_AT_low_pc, fde->dw_fde_begin);
 	      add_AT_lbl_id (subr_die, DW_AT_high_pc, fde->dw_fde_end);
 	      add_pubname (decl, subr_die);
-	      add_arange (decl, subr_die);
 	    }
 	}
 
@@ -19862,9 +19875,8 @@ gen_variable_die (tree decl, tree origin, dw_die_ref context_die)
           && !TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl_or_origin)))
 	defer_location (decl_or_origin, var_die);
       else
-        add_location_or_const_value_attribute (var_die,
-					       decl_or_origin,
-					       DW_AT_location);
+        add_location_or_const_value_attribute (var_die, decl_or_origin,
+					       decl == NULL, DW_AT_location);
       add_pubname (decl_or_origin, var_die);
     }
   else
@@ -20112,7 +20124,7 @@ gen_reference_type_die (tree type, dw_die_ref context_die)
 {
   dw_die_ref ref_die, scope_die = scope_die_for (type, context_die);
 
-  if (TYPE_REF_IS_RVALUE (type) && dwarf_version >= 4)
+  if (TYPE_REF_IS_RVALUE (type) && use_debug_types)
     ref_die = new_die (DW_TAG_rvalue_reference_type, scope_die, type);
   else
     ref_die = new_die (DW_TAG_reference_type, scope_die, type);
@@ -20380,7 +20392,10 @@ gen_struct_or_union_type_die (tree type, dw_die_ref context_die,
       if (old_die)
 	add_AT_specification (type_die, old_die);
       else
-	add_name_attribute (type_die, type_tag (type));
+	{
+	  add_name_attribute (type_die, type_tag (type));
+	  add_gnat_descriptive_type_attribute (type_die, type, context_die);
+	}
     }
   else
     remove_AT (type_die, DW_AT_declaration);
@@ -21672,6 +21687,7 @@ dwarf2out_function_decl (tree decl)
   tail_call_site_count = -1;
   VEC_free (dw_die_ref, heap, block_map);
   htab_empty (decl_loc_table);
+  htab_empty (cached_dw_loc_list_table);
 }
 
 /* Output a marker (i.e. a label) for the beginning of the generated code for
@@ -22056,6 +22072,92 @@ dwarf2out_var_location (rtx loc_note)
   last_in_cold_section_p = in_cold_section_p;
 }
 
+/* Note in one location list that text section has changed.  */
+
+static int
+var_location_switch_text_section_1 (void **slot, void *data ATTRIBUTE_UNUSED)
+{
+  var_loc_list *list = (var_loc_list *) *slot;
+  if (list->first)
+    list->last_before_switch
+      = list->last->next ? list->last->next : list->last;
+  return 1;
+}
+
+/* Note in all location lists that text section has changed.  */
+
+static void
+var_location_switch_text_section (void)
+{
+  if (decl_loc_table == NULL)
+    return;
+
+  htab_traverse (decl_loc_table, var_location_switch_text_section_1, NULL);
+}
+
+/* Create a new line number table.  */
+
+static dw_line_info_table *
+new_line_info_table (void)
+{
+  dw_line_info_table *table;
+
+  table = ggc_alloc_cleared_dw_line_info_table_struct ();
+  table->file_num = 1;
+  table->line_num = 1;
+  table->is_stmt = DWARF_LINE_DEFAULT_IS_STMT_START;
+
+  return table;
+}
+
+/* Lookup the "current" table into which we emit line info, so
+   that we don't have to do it for every source line.  */
+
+static void
+set_cur_line_info_table (section *sec)
+{
+  dw_line_info_table *table;
+
+  if (sec == text_section)
+    table = text_section_line_info;
+  else if (sec == cold_text_section)
+    {
+      table = cold_text_section_line_info;
+      if (!table)
+	{
+	  cold_text_section_line_info = table = new_line_info_table ();
+	  table->end_label = cold_end_label;
+	}
+    }
+  else
+    {
+      const char *end_label;
+
+      if (flag_reorder_blocks_and_partition)
+	{
+	  if (in_cold_section_p)
+	    end_label = crtl->subsections.cold_section_end_label;
+	  else
+	    end_label = crtl->subsections.hot_section_end_label;
+	}
+      else
+	{
+	  char label[MAX_ARTIFICIAL_LABEL_BYTES];
+	  ASM_GENERATE_INTERNAL_LABEL (label, FUNC_END_LABEL,
+				       current_function_funcdef_no);
+	  end_label = ggc_strdup (label);
+	}
+
+      table = new_line_info_table ();
+      table->end_label = end_label;
+
+      VEC_safe_push (dw_line_info_table_p, gc, separate_line_info, table);
+    }
+
+  cur_line_info_table = table;
+}
+
+
 /* We need to reset the locations at the beginning of each
    function. We can't do this in the end_function hook, because the
    declarations that use the locations won't have been output when
@@ -22064,114 +22166,119 @@ dwarf2out_var_location (rtx loc_note)
 static void
 dwarf2out_begin_function (tree fun)
 {
-  if (function_section (fun) != text_section)
+  section *sec = function_section (fun);
+
+  if (sec != text_section)
     have_multiple_function_sections = true;
-  else if (flag_reorder_blocks_and_partition && !cold_text_section)
+
+  if (flag_reorder_blocks_and_partition && !cold_text_section)
     {
       gcc_assert (current_function_decl == fun);
       cold_text_section = unlikely_text_section ();
       switch_to_section (cold_text_section);
       ASM_OUTPUT_LABEL (asm_out_file, cold_text_section_label);
-      switch_to_section (current_function_section ());
+      switch_to_section (sec);
     }
 
   dwarf2out_note_section_used ();
   call_site_count = 0;
   tail_call_site_count = 0;
+
+  set_cur_line_info_table (sec);
+}
+
+/* Add OPCODE+VAL as an entry at the end of the opcode array in TABLE.  */
+
+static void
+push_dw_line_info_entry (dw_line_info_table *table,
+			 enum dw_line_info_opcode opcode, unsigned int val)
+{
+  dw_line_info_entry e;
+  e.opcode = opcode;
+  e.val = val;
+  VEC_safe_push (dw_line_info_entry, gc, table->entries, &e);
 }
 
 /* Output a label to mark the beginning of a source code line entry
    and record information relating to this source line, in
    'line_info_table' for later output of the .debug_line section.  */
+/* ??? The discriminator parameter ought to be unsigned.  */
 
 static void
 dwarf2out_source_line (unsigned int line, const char *filename,
                        int discriminator, bool is_stmt)
 {
-  static bool last_is_stmt = true;
+  unsigned int file_num;
+  dw_line_info_table *table;
 
-  if (debug_info_level >= DINFO_LEVEL_NORMAL
-      && line != 0)
+  if (debug_info_level < DINFO_LEVEL_NORMAL || line == 0)
+    return;
+
+  /* The discriminator column was added in dwarf4.  Simplify the below
+     by simply removing it if we're not supposed to output it.  */
+  if (dwarf_version < 4 && dwarf_strict)
+    discriminator = 0;
+
+  table = cur_line_info_table;
+  file_num = maybe_emit_file (lookup_filename (filename));
+
+  /* ??? TODO: Elide duplicate line number entries.  Traditionally,
+     the debugger has used the second (possibly duplicate) line number
+     at the beginning of the function to mark the end of the prologue.
+     We could eliminate any other duplicates within the function.  For
+     Dwarf3, we ought to include the DW_LNS_set_prologue_end mark in
+     that second line number entry.  */
+  /* Recall that this end-of-prologue indication is *not* the same thing
+     as the end_prologue debug hook.  The NOTE_INSN_PROLOGUE_END note,
+     to which the hook corresponds, follows the last insn that was 
+     emitted by gen_prologue.  What we need is to preceed the first insn
+     that had been emitted after NOTE_INSN_FUNCTION_BEG, i.e. the first
+     insn that corresponds to something the user wrote.  These may be
+     very different locations once scheduling is enabled.  */
+
+  if (0 && file_num == table->file_num
+      && line == table->line_num
+      && discriminator == table->discrim_num
+      && is_stmt == table->is_stmt)
+    return;
+
+  switch_to_section (current_function_section ());
+
+  /* If requested, emit something human-readable.  */
+  if (flag_debug_asm)
+    fprintf (asm_out_file, "\t%s %s:%d\n", ASM_COMMENT_START, filename, line);
+
+  if (DWARF2_ASM_LINE_DEBUG_INFO)
     {
-      int file_num = maybe_emit_file (lookup_filename (filename));
-
-      switch_to_section (current_function_section ());
-
-      /* If requested, emit something human-readable.  */
-      if (flag_debug_asm)
-	fprintf (asm_out_file, "\t%s %s:%d\n", ASM_COMMENT_START,
-		 filename, line);
-
-      if (DWARF2_ASM_LINE_DEBUG_INFO)
-	{
-	  /* Emit the .loc directive understood by GNU as.  */
-	  fprintf (asm_out_file, "\t.loc %d %d 0", file_num, line);
-	  if (is_stmt != last_is_stmt)
-	    {
-	      fprintf (asm_out_file, " is_stmt %d", is_stmt ? 1 : 0);
-	      last_is_stmt = is_stmt;
-	    }
-	  if (SUPPORTS_DISCRIMINATOR && discriminator != 0)
-	    fprintf (asm_out_file, " discriminator %d", discriminator);
-	  fputc ('\n', asm_out_file);
-
-	  /* Indicate that line number info exists.  */
-	  line_info_table_in_use++;
-	}
-      else if (function_section (current_function_decl) != text_section)
-	{
-	  dw_separate_line_info_ref line_info;
-	  targetm.asm_out.internal_label (asm_out_file,
-					  SEPARATE_LINE_CODE_LABEL,
-					  separate_line_info_table_in_use);
-
-	  /* Expand the line info table if necessary.  */
-	  if (separate_line_info_table_in_use
-	      == separate_line_info_table_allocated)
-	    {
-	      separate_line_info_table_allocated += LINE_INFO_TABLE_INCREMENT;
-	      separate_line_info_table
-		= GGC_RESIZEVEC (dw_separate_line_info_entry,
-				 separate_line_info_table,
-				 separate_line_info_table_allocated);
-	      memset (separate_line_info_table
-		       + separate_line_info_table_in_use,
-		      0,
-		      (LINE_INFO_TABLE_INCREMENT
-		       * sizeof (dw_separate_line_info_entry)));
-	    }
-
-	  /* Add the new entry at the end of the line_info_table.  */
-	  line_info
-	    = &separate_line_info_table[separate_line_info_table_in_use++];
-	  line_info->dw_file_num = file_num;
-	  line_info->dw_line_num = line;
-	  line_info->function = current_function_funcdef_no;
-	}
-      else
-	{
-	  dw_line_info_ref line_info;
-
-	  targetm.asm_out.internal_label (asm_out_file, LINE_CODE_LABEL,
-				     line_info_table_in_use);
-
-	  /* Expand the line info table if necessary.  */
-	  if (line_info_table_in_use == line_info_table_allocated)
-	    {
-	      line_info_table_allocated += LINE_INFO_TABLE_INCREMENT;
-	      line_info_table
-		= GGC_RESIZEVEC (dw_line_info_entry, line_info_table,
-				 line_info_table_allocated);
-	      memset (line_info_table + line_info_table_in_use, 0,
-		      LINE_INFO_TABLE_INCREMENT * sizeof (dw_line_info_entry));
-	    }
-
-	  /* Add the new entry at the end of the line_info_table.  */
-	  line_info = &line_info_table[line_info_table_in_use++];
-	  line_info->dw_file_num = file_num;
-	  line_info->dw_line_num = line;
-	}
+      /* Emit the .loc directive understood by GNU as.  */
+      fprintf (asm_out_file, "\t.loc %d %d 0", file_num, line);
+      if (is_stmt != table->is_stmt)
+	fprintf (asm_out_file, " is_stmt %d", is_stmt ? 1 : 0);
+      if (SUPPORTS_DISCRIMINATOR && discriminator != 0)
+	fprintf (asm_out_file, " discriminator %d", discriminator);
+      fputc ('\n', asm_out_file);
     }
+  else
+    {
+      unsigned int label_num = ++line_info_label_num;
+
+      targetm.asm_out.internal_label (asm_out_file, LINE_CODE_LABEL, label_num);
+
+      push_dw_line_info_entry (table, LI_set_address, label_num);
+      if (file_num != table->file_num)
+	push_dw_line_info_entry (table, LI_set_file, file_num);
+      if (discriminator != table->discrim_num)
+	push_dw_line_info_entry (table, LI_set_discriminator, discriminator);
+      if (is_stmt != table->is_stmt)
+	push_dw_line_info_entry (table, LI_negate_stmt, 0);
+      push_dw_line_info_entry (table, LI_set_line, line);
+    }
+
+  table->file_num = file_num;
+  table->line_num = line;
+  table->discrim_num = discriminator;
+  table->is_stmt = is_stmt;
+  table->in_use = true;
 }
 
 /* Record the beginning of a new source file.  */
@@ -22179,7 +22286,7 @@ dwarf2out_source_line (unsigned int line, const char *filename,
 static void
 dwarf2out_start_source_file (unsigned int lineno, const char *filename)
 {
-  if (flag_eliminate_dwarf2_dups && dwarf_version < 4)
+  if (flag_eliminate_dwarf2_dups && ! use_debug_types)
     {
       /* Record the beginning of the file for break_out_includes.  */
       dw_die_ref bincl_die;
@@ -22203,7 +22310,7 @@ dwarf2out_start_source_file (unsigned int lineno, const char *filename)
 static void
 dwarf2out_end_source_file (unsigned int lineno ATTRIBUTE_UNUSED)
 {
-  if (flag_eliminate_dwarf2_dups && dwarf_version < 4)
+  if (flag_eliminate_dwarf2_dups && ! use_debug_types)
     /* Record the end of the file for break_out_includes.  */
     new_die (DW_TAG_GNU_EINCL, comp_unit_die (), NULL);
 
@@ -22317,6 +22424,11 @@ dwarf2out_init (const char *filename ATTRIBUTE_UNUSED)
   decl_loc_table = htab_create_ggc (10, decl_loc_table_hash,
 				    decl_loc_table_eq, NULL);
 
+  /* Allocate the cached_dw_loc_list_table.  */
+  cached_dw_loc_list_table
+    = htab_create_ggc (10, cached_dw_loc_list_table_hash,
+		       cached_dw_loc_list_table_eq, NULL);
+
   /* Allocate the initial hunk of the decl_scope_table.  */
   decl_scope_table = VEC_alloc (tree, gc, 256);
 
@@ -22326,14 +22438,6 @@ dwarf2out_init (const char *filename ATTRIBUTE_UNUSED)
   abbrev_die_table_allocated = ABBREV_DIE_TABLE_INCREMENT;
   /* Zero-th entry is allocated, but unused.  */
   abbrev_die_table_in_use = 1;
-
-  /* Allocate the initial hunk of the line_info_table.  */
-  line_info_table = ggc_alloc_cleared_vec_dw_line_info_entry
-    (LINE_INFO_TABLE_INCREMENT);
-  line_info_table_allocated = LINE_INFO_TABLE_INCREMENT;
-
-  /* Zero-th entry is allocated, but unused.  */
-  line_info_table_in_use = 1;
 
   /* Allocate the pubtypes and pubnames vectors.  */
   pubname_table = VEC_alloc (pubname_entry, gc, 32);
@@ -22388,6 +22492,10 @@ dwarf2out_init (const char *filename ATTRIBUTE_UNUSED)
 
   switch_to_section (text_section);
   ASM_OUTPUT_LABEL (asm_out_file, text_section_label);
+
+  /* Make sure the line number table for .text always exists.  */
+  text_section_line_info = new_line_info_table ();
+  text_section_line_info->end_label = text_end_label;
 }
 
 /* Called before cgraph_optimize starts outputtting functions, variables
@@ -22463,7 +22571,7 @@ prune_unused_types_walk_attribs (dw_die_ref die)
 	  /* A reference to another DIE.
 	     Make sure that it will get emitted.
 	     If it was broken out into a comdat group, don't follow it.  */
-          if (dwarf_version < 4
+          if (! use_debug_types
               || a->dw_attr == DW_AT_specification
               || a->dw_attr_val.v.val_die_ref.die->die_id.die_type_node == NULL)
 	    prune_unused_types_mark (a->dw_attr_val.v.val_die_ref.die, 1);
@@ -22544,7 +22652,7 @@ prune_unused_types_mark (dw_die_ref die, int dokids)
 	 breaking out types into comdat sections, do this
 	 for all type definitions.  */
       if (die->die_tag == DW_TAG_array_type
-          || (dwarf_version >= 4
+          || (use_debug_types
               && is_type_die (die) && ! is_declaration_die (die)))
 	FOR_EACH_CHILD (die, c, prune_unused_types_mark (c, 1));
       else
@@ -22776,11 +22884,9 @@ prune_unused_types (void)
     }
 
   /* Also set the mark on nodes referenced from the
-     pubname_table or arange_table.  */
+     pubname_table.  */
   FOR_EACH_VEC_ELT (pubname_entry, pubname_table, i, pub)
     prune_unused_types_mark (pub->die, 1);
-  for (i = 0; i < arange_table_in_use; i++)
-    prune_unused_types_mark (arange_table[i], 1);
 
   /* Get rid of nodes that aren't marked; and update the string counts.  */
   if (debug_str_hash && debug_str_hash_forced)
@@ -22953,30 +23059,53 @@ resolve_addr (dw_die_ref die)
 {
   dw_die_ref c;
   dw_attr_ref a;
-  dw_loc_list_ref *curr;
+  dw_loc_list_ref *curr, *start, loc;
   unsigned ix;
 
   FOR_EACH_VEC_ELT (dw_attr_node, die->die_attr, ix, a)
     switch (AT_class (a))
       {
       case dw_val_class_loc_list:
-	curr = AT_loc_list_ptr (a);
-	while (*curr)
+	start = curr = AT_loc_list_ptr (a);
+	loc = *curr;
+	gcc_assert (loc);
+	/* The same list can be referenced more than once.  See if we have
+	   already recorded the result from a previous pass.  */
+	if (loc->replaced)
+	  *curr = loc->dw_loc_next;
+	else if (!loc->resolved_addr)
 	  {
-	    if (!resolve_addr_in_expr ((*curr)->expr))
+	    /* As things stand, we do not expect or allow one die to
+	       reference a suffix of another die's location list chain.
+	       References must be identical or completely separate.
+	       There is therefore no need to cache the result of this
+	       pass on any list other than the first; doing so
+	       would lead to unnecessary writes.  */
+	    while (*curr)
 	      {
-		dw_loc_list_ref next = (*curr)->dw_loc_next;
-		if (next && (*curr)->ll_symbol)
+		gcc_assert (!(*curr)->replaced && !(*curr)->resolved_addr);
+		if (!resolve_addr_in_expr ((*curr)->expr))
 		  {
-		    gcc_assert (!next->ll_symbol);
-		    next->ll_symbol = (*curr)->ll_symbol;
+		    dw_loc_list_ref next = (*curr)->dw_loc_next;
+		    if (next && (*curr)->ll_symbol)
+		      {
+			gcc_assert (!next->ll_symbol);
+			next->ll_symbol = (*curr)->ll_symbol;
+		      }
+		    *curr = next;
 		  }
-		*curr = next;
+		else
+		  curr = &(*curr)->dw_loc_next;
 	      }
+	    if (loc == *start)
+	      loc->resolved_addr = 1;
 	    else
-	      curr = &(*curr)->dw_loc_next;
+	      {
+		loc->replaced = 1;
+		loc->dw_loc_next = *start;
+	      }
 	  }
-	if (!AT_loc_list (a))
+	if (!*start)
 	  {
 	    remove_AT (die, a->dw_attr);
 	    ix--;
@@ -23001,7 +23130,9 @@ resolve_addr (dw_die_ref die)
 	  {
 	    tree tdecl = SYMBOL_REF_DECL (a->dw_attr_val.v.val_addr);
 	    dw_die_ref tdie = lookup_decl_die (tdecl);
-	    if (tdie == NULL && DECL_EXTERNAL (tdecl))
+	    if (tdie == NULL
+		&& DECL_EXTERNAL (tdecl)
+		&& DECL_ABSTRACT_ORIGIN (tdecl) == NULL_TREE)
 	      {
 		force_decl_die (tdecl);
 		tdie = lookup_decl_die (tdecl);
@@ -23149,6 +23280,9 @@ hash_loc_operands (dw_loc_descr_ref loc, hashval_t hash)
       break;
     case DW_OP_GNU_implicit_pointer:
       hash = iterative_hash_object (val2->v.val_int, hash);
+      break;
+    case DW_OP_GNU_entry_value:
+      hash = hash_loc_operands (val1->v.val_loc, hash);
       break;
 
     default:
@@ -23307,6 +23441,8 @@ compare_loc_operands (dw_loc_descr_ref x, dw_loc_descr_ref y)
 	     && valx1->val_class == valy1->val_class
 	     && valx1->v.val_die_ref.die == valy1->v.val_die_ref.die
 	     && valx2->v.val_int == valy2->v.val_int;
+    case DW_OP_GNU_entry_value:
+      return compare_loc_operands (valx1->v.val_loc, valy1->v.val_loc);
     default:
       /* Other codes have no operands.  */
       return true;
@@ -23427,6 +23563,7 @@ dwarf2out_finish (const char *filename)
       add_location_or_const_value_attribute (
         VEC_index (deferred_locations, deferred_locations_list, i)->die,
         VEC_index (deferred_locations, deferred_locations_list, i)->variable,
+	false,
 	DW_AT_location);
     }
 
@@ -23510,11 +23647,11 @@ dwarf2out_finish (const char *filename)
 
   /* Generate separate CUs for each of the include files we've seen.
      They will go into limbo_die_list.  */
-  if (flag_eliminate_dwarf2_dups && dwarf_version < 4)
+  if (flag_eliminate_dwarf2_dups && ! use_debug_types)
     break_out_includes (comp_unit_die ());
 
   /* Generate separate COMDAT sections for type DIEs. */
-  if (dwarf_version >= 4)
+  if (use_debug_types)
     {
       break_out_comdat_types (comp_unit_die ());
 
@@ -23558,27 +23695,22 @@ dwarf2out_finish (const char *filename)
   if (!have_multiple_function_sections 
       || (dwarf_version < 3 && dwarf_strict))
     {
-      add_AT_lbl_id (comp_unit_die (), DW_AT_low_pc, text_section_label);
-      add_AT_lbl_id (comp_unit_die (), DW_AT_high_pc, text_end_label);
+      /* Don't add if the CU has no associated code.  */
+      if (text_section_used)
+	{
+	  add_AT_lbl_id (comp_unit_die (), DW_AT_low_pc, text_section_label);
+	  add_AT_lbl_id (comp_unit_die (), DW_AT_high_pc, text_end_label);
+	}
     }
-
   else
     {
       unsigned fde_idx = 0;
       bool range_list_added = false;
 
-      /* We need to give .debug_loc and .debug_ranges an appropriate
-	 "base address".  Use zero so that these addresses become
-	 absolute.  Historically, we've emitted the unexpected
-	 DW_AT_entry_pc instead of DW_AT_low_pc for this purpose.
-	 Emit both to give time for other tools to adapt.  */
-      add_AT_addr (comp_unit_die (), DW_AT_low_pc, const0_rtx);
-      add_AT_addr (comp_unit_die (), DW_AT_entry_pc, const0_rtx);
-
       if (text_section_used)
 	add_ranges_by_labels (comp_unit_die (), text_section_label,
 			      text_end_label, &range_list_added);
-      if (flag_reorder_blocks_and_partition && cold_text_section_used)
+      if (cold_text_section_used)
 	add_ranges_by_labels (comp_unit_die (), cold_text_section_label,
 			      cold_end_label, &range_list_added);
 
@@ -23586,26 +23718,27 @@ dwarf2out_finish (const char *filename)
 	{
 	  dw_fde_ref fde = &fde_table[fde_idx];
 
-	  if (fde->dw_fde_switched_sections)
-	    {
-	      if (!fde->in_std_section)
-		add_ranges_by_labels (comp_unit_die (),
-				      fde->dw_fde_hot_section_label,
-				      fde->dw_fde_hot_section_end_label,
-				      &range_list_added);
-	      if (!fde->cold_in_std_section)
-		add_ranges_by_labels (comp_unit_die (),
-				      fde->dw_fde_unlikely_section_label,
-				      fde->dw_fde_unlikely_section_end_label,
-				      &range_list_added);
-	    }
-	  else if (!fde->in_std_section)
+	  if (!fde->in_std_section)
 	    add_ranges_by_labels (comp_unit_die (), fde->dw_fde_begin,
 				  fde->dw_fde_end, &range_list_added);
+	  if (fde->dw_fde_second_begin && !fde->second_in_std_section)
+	    add_ranges_by_labels (comp_unit_die (), fde->dw_fde_second_begin,
+				  fde->dw_fde_second_end, &range_list_added);
 	}
 
       if (range_list_added)
-	add_ranges (NULL);
+	{
+	  /* We need to give .debug_loc and .debug_ranges an appropriate
+	     "base address".  Use zero so that these addresses become
+	     absolute.  Historically, we've emitted the unexpected
+	     DW_AT_entry_pc instead of DW_AT_low_pc for this purpose.
+	     Emit both to give time for other tools to adapt.  */
+	  add_AT_addr (comp_unit_die (), DW_AT_low_pc, const0_rtx);
+	  if (! dwarf_strict && dwarf_version < 4)
+	    add_AT_addr (comp_unit_die (), DW_AT_entry_pc, const0_rtx);
+
+	  add_ranges (NULL);
+	}
     }
 
   if (debug_info_level >= DINFO_LEVEL_NORMAL)
@@ -23701,13 +23834,21 @@ dwarf2out_finish (const char *filename)
 	}
     }
 
-  /* Output the address range information.  We only put functions in the arange
-     table, so don't write it out if we don't have any.  */
-  if ((text_section_used || cold_text_section_used || arange_table_in_use)
-      && info_section_emitted)
+  /* Output the address range information.  We only put functions in the
+     arange table, so don't write it out if we don't have any.  */
+  if (info_section_emitted)
     {
-      switch_to_section (debug_aranges_section);
-      output_aranges ();
+      unsigned long aranges_length = size_of_aranges ();
+
+      /* Empty .debug_aranges would contain just header and
+	 terminating 0,0.  */
+      if (aranges_length
+	  != (unsigned long) (DWARF_ARANGES_HEADER_SIZE
+			      + 2 * DWARF2_ADDR_SIZE))
+	{
+	  switch_to_section (debug_aranges_section);
+	  output_aranges (aranges_length);
+	}
     }
 
   /* Output ranges section if necessary.  */

@@ -1,5 +1,5 @@
-/* { dg-options "-O2 -fdump-tree-fre -w" } */
-/* { dg-options "-O2 -fdump-tree-fre -w -msse" { target { i?86-*-* x86_64-*-* } } } */
+/* { dg-options "-O2 -fdump-tree-fre1 -w" } */
+/* { dg-options "-O2 -fdump-tree-fre1 -w -msse" { target { i?86-*-* x86_64-*-* } } } */
 /* { dg-do compile } */
 #define vector __attribute__((vector_size(sizeof(int)*4) ))
 struct s { vector int i; };
@@ -32,6 +32,6 @@ void a2 (struct s1 sv, int i)
   g(&sv, *(float*)&sv.i);
 }
 
-/* { dg-final { scan-tree-dump-times "sv_\[0-9\]\\\(D\\\)->i" 2 "fre" } } */
-/* { dg-final { scan-tree-dump-times "sv.i" 2 "fre" } } */
-/* { dg-final { cleanup-tree-dump "fre" } } */
+/* { dg-final { scan-tree-dump-times "sv_\[0-9\]\\\(D\\\)->i" 2 "fre1" } } */
+/* { dg-final { scan-tree-dump-times "sv.i" 2 "fre1" } } */
+/* { dg-final { cleanup-tree-dump "fre1" } } */

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -108,6 +108,12 @@ package body Layout is
    --  Standard.Unsigned. Takes care of the case where the operands
    --  are of an enumeration type (so that the subtraction cannot be
    --  done directly) by applying the Pos operator to Hi/Lo first.
+
+   procedure Compute_Size_Depends_On_Discriminant (E : Entity_Id);
+   --  Given an array type or an array subtype E, compute whether its size
+   --  depends on the value of one or more discriminants and set the flag
+   --  Size_Depends_On_Discriminant accordingly. This need not be called
+   --  in front end layout mode since it does the computation on its own.
 
    function Expr_From_SO_Ref
      (Loc  : Source_Ptr;
@@ -1288,6 +1294,49 @@ package body Layout is
          Set_RM_Size (E, Esize (E));
       end if;
    end Layout_Array_Type;
+
+   ------------------------------------------
+   -- Compute_Size_Depends_On_Discriminant --
+   ------------------------------------------
+
+   procedure Compute_Size_Depends_On_Discriminant (E : Entity_Id) is
+      Indx : Node_Id;
+      Ityp : Entity_Id;
+      Lo   : Node_Id;
+      Hi   : Node_Id;
+      Res  : Boolean := False;
+   begin
+      --  Loop to process array indexes
+
+      Indx := First_Index (E);
+      while Present (Indx) loop
+         Ityp := Etype (Indx);
+
+         --  If an index of the array is a generic formal type then there is
+         --  no point in determining a size for the array type.
+
+         if Is_Generic_Type (Ityp) then
+            return;
+         end if;
+
+         Lo := Type_Low_Bound (Ityp);
+         Hi := Type_High_Bound (Ityp);
+
+         if (Nkind (Lo) = N_Identifier
+               and then Ekind (Entity (Lo)) = E_Discriminant)
+           or else (Nkind (Hi) = N_Identifier
+                      and then Ekind (Entity (Hi)) = E_Discriminant)
+         then
+            Res := True;
+         end if;
+
+         Next_Index (Indx);
+      end loop;
+
+      if Res then
+         Set_Size_Depends_On_Discriminant (E);
+      end if;
+   end Compute_Size_Depends_On_Discriminant;
 
    -------------------
    -- Layout_Object --
@@ -2631,6 +2680,15 @@ package body Layout is
                   Set_Alignment (E, Uint_1);
                end if;
             end if;
+
+            --  We need to know whether the size depends on the value of one
+            --  or more discriminants to select the return mechanism. Skip if
+            --  errors are present, to prevent cascaded messages.
+
+            if Serious_Errors_Detected = 0 then
+               Compute_Size_Depends_On_Discriminant (E);
+            end if;
+
          end if;
       end if;
 

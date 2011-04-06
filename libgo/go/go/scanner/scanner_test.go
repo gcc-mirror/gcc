@@ -7,6 +7,8 @@ package scanner
 import (
 	"go/token"
 	"os"
+	"path/filepath"
+	"runtime"
 	"testing"
 )
 
@@ -232,12 +234,11 @@ func TestScan(t *testing.T) {
 	index := 0
 	epos := token.Position{"", 0, 1, 1} // expected position
 	for {
-		pos, tok, litb := s.Scan()
+		pos, tok, lit := s.Scan()
 		e := elt{token.EOF, "", special}
 		if index < len(tokens) {
 			e = tokens[index]
 		}
-		lit := string(litb)
 		if tok == token.EOF {
 			lit = "<EOF>"
 			epos.Line = src_linecount
@@ -255,7 +256,7 @@ func TestScan(t *testing.T) {
 		}
 		epos.Offset += len(lit) + len(whitespace)
 		epos.Line += newlineCount(lit) + whitespace_linecount
-		if tok == token.COMMENT && litb[1] == '/' {
+		if tok == token.COMMENT && lit[1] == '/' {
 			// correct for unaccounted '/n' in //-style comment
 			epos.Offset++
 			epos.Line++
@@ -290,7 +291,7 @@ func checkSemi(t *testing.T, line string, mode uint) {
 			semiPos.Column++
 			pos, tok, lit = S.Scan()
 			if tok == token.SEMICOLON {
-				if string(lit) != semiLit {
+				if lit != semiLit {
 					t.Errorf(`bad literal for %q: got %q, expected %q`, line, lit, semiLit)
 				}
 				checkPos(t, line, pos, semiPos)
@@ -443,32 +444,41 @@ func TestSemis(t *testing.T) {
 	}
 }
 
-
-var segments = []struct {
+type segment struct {
 	srcline  string // a line of source text
 	filename string // filename for current token
 	line     int    // line number for current token
-}{
+}
+
+var segments = []segment{
 	// exactly one token per line since the test consumes one token per segment
-	{"  line1", "dir/TestLineComments", 1},
-	{"\nline2", "dir/TestLineComments", 2},
-	{"\nline3  //line File1.go:100", "dir/TestLineComments", 3}, // bad line comment, ignored
-	{"\nline4", "dir/TestLineComments", 4},
-	{"\n//line File1.go:100\n  line100", "dir/File1.go", 100},
-	{"\n//line File2.go:200\n  line200", "dir/File2.go", 200},
+	{"  line1", filepath.Join("dir", "TestLineComments"), 1},
+	{"\nline2", filepath.Join("dir", "TestLineComments"), 2},
+	{"\nline3  //line File1.go:100", filepath.Join("dir", "TestLineComments"), 3}, // bad line comment, ignored
+	{"\nline4", filepath.Join("dir", "TestLineComments"), 4},
+	{"\n//line File1.go:100\n  line100", filepath.Join("dir", "File1.go"), 100},
+	{"\n//line File2.go:200\n  line200", filepath.Join("dir", "File2.go"), 200},
 	{"\n//line :1\n  line1", "dir", 1},
-	{"\n//line foo:42\n  line42", "dir/foo", 42},
-	{"\n //line foo:42\n  line44", "dir/foo", 44},           // bad line comment, ignored
-	{"\n//line foo 42\n  line46", "dir/foo", 46},            // bad line comment, ignored
-	{"\n//line foo:42 extra text\n  line48", "dir/foo", 48}, // bad line comment, ignored
-	{"\n//line /bar:42\n  line42", "/bar", 42},
-	{"\n//line ./foo:42\n  line42", "dir/foo", 42},
-	{"\n//line a/b/c/File1.go:100\n  line100", "dir/a/b/c/File1.go", 100},
+	{"\n//line foo:42\n  line42", filepath.Join("dir", "foo"), 42},
+	{"\n //line foo:42\n  line44", filepath.Join("dir", "foo"), 44},           // bad line comment, ignored
+	{"\n//line foo 42\n  line46", filepath.Join("dir", "foo"), 46},            // bad line comment, ignored
+	{"\n//line foo:42 extra text\n  line48", filepath.Join("dir", "foo"), 48}, // bad line comment, ignored
+	{"\n//line /bar:42\n  line42", string(filepath.Separator) + "bar", 42},
+	{"\n//line ./foo:42\n  line42", filepath.Join("dir", "foo"), 42},
+	{"\n//line a/b/c/File1.go:100\n  line100", filepath.Join("dir", "a", "b", "c", "File1.go"), 100},
+}
+
+var winsegments = []segment{
+	{"\n//line c:\\dir\\File1.go:100\n  line100", "c:\\dir\\File1.go", 100},
 }
 
 
 // Verify that comments of the form "//line filename:line" are interpreted correctly.
 func TestLineComments(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		segments = append(segments, winsegments...)
+	}
+
 	// make source
 	var src string
 	for _, e := range segments {
@@ -477,12 +487,12 @@ func TestLineComments(t *testing.T) {
 
 	// verify scan
 	var S Scanner
-	file := fset.AddFile("dir/TestLineComments", fset.Base(), len(src))
+	file := fset.AddFile(filepath.Join("dir", "TestLineComments"), fset.Base(), len(src))
 	S.Init(file, []byte(src), nil, 0)
 	for _, s := range segments {
 		p, _, lit := S.Scan()
 		pos := file.Position(p)
-		checkPos(t, string(lit), p, token.Position{s.filename, pos.Offset, s.line, pos.Column})
+		checkPos(t, lit, p, token.Position{s.filename, pos.Offset, s.line, pos.Column})
 	}
 
 	if S.ErrorCount != 0 {
@@ -536,10 +546,10 @@ func TestIllegalChars(t *testing.T) {
 	for offs, ch := range src {
 		pos, tok, lit := s.Scan()
 		if poffs := file.Offset(pos); poffs != offs {
-			t.Errorf("bad position for %s: got %d, expected %d", string(lit), poffs, offs)
+			t.Errorf("bad position for %s: got %d, expected %d", lit, poffs, offs)
 		}
-		if tok == token.ILLEGAL && string(lit) != string(ch) {
-			t.Errorf("bad token: got %s, expected %s", string(lit), string(ch))
+		if tok == token.ILLEGAL && lit != string(ch) {
+			t.Errorf("bad token: got %s, expected %s", lit, string(ch))
 		}
 	}
 

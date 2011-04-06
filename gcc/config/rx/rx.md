@@ -1545,6 +1545,139 @@
    (set_attr "length" "3,4,5,6,7,6")]
 )
 
+;; A set of peepholes to catch extending loads followed by arithmetic operations.
+;; We use iterators where possible to reduce the amount of typing and hence the
+;; possibilities for typos.
+
+(define_code_iterator extend_types [(zero_extend "") (sign_extend "")])
+(define_code_attr     letter       [(zero_extend "R") (sign_extend "Q")])
+
+(define_code_iterator memex_commutative [(plus "") (and "") (ior "") (xor "")])
+(define_code_iterator memex_noncomm     [(div "") (udiv "") (minus "")])
+(define_code_iterator memex_nocc        [(smax "") (smin "") (mult "")])
+
+(define_code_attr     op                [(plus "add") (and "and") (div "div") (udiv "divu") (smax "max") (smin "min") (mult "mul") (ior "or") (minus "sub") (xor "xor")])
+
+(define_peephole2
+  [(set (match_operand:SI                               0 "register_operand")
+	(extend_types:SI (match_operand:small_int_modes 1 "rx_restricted_mem_operand")))
+   (parallel [(set (match_operand:SI                    2 "register_operand")
+		   (memex_commutative:SI (match_dup 0)
+					 (match_dup 2)))
+	      (clobber (reg:CC CC_REG))])]
+  "peep2_regno_dead_p (2, REGNO (operands[0]))"
+  [(parallel [(set:SI (match_dup 2)
+		      (memex_commutative:SI (match_dup 2)
+					    (extend_types:SI (match_dup 1))))
+	      (clobber (reg:CC CC_REG))])]
+)
+
+(define_peephole2
+  [(set (match_operand:SI                               0 "register_operand")
+	(extend_types:SI (match_operand:small_int_modes 1 "rx_restricted_mem_operand")))
+   (parallel [(set (match_operand:SI                    2 "register_operand")
+		   (memex_commutative:SI (match_dup 2)
+					 (match_dup 0)))
+	      (clobber (reg:CC CC_REG))])]
+  "peep2_regno_dead_p (2, REGNO (operands[0]))"
+  [(parallel [(set:SI (match_dup 2)
+		      (memex_commutative:SI (match_dup 2)
+					    (extend_types:SI (match_dup 1))))
+	      (clobber (reg:CC CC_REG))])]
+)
+
+(define_peephole2
+  [(set (match_operand:SI                               0 "register_operand")
+	(extend_types:SI (match_operand:small_int_modes 1 "rx_restricted_mem_operand")))
+   (parallel [(set (match_operand:SI                    2 "register_operand")
+		   (memex_noncomm:SI (match_dup 2)
+				     (match_dup 0)))
+	      (clobber (reg:CC CC_REG))])]
+  "peep2_regno_dead_p (2, REGNO (operands[0]))"
+  [(parallel [(set:SI (match_dup 2)
+		      (memex_noncomm:SI (match_dup 2)
+					(extend_types:SI (match_dup 1))))
+	      (clobber (reg:CC CC_REG))])]
+)
+
+(define_peephole2
+  [(set (match_operand:SI                               0 "register_operand")
+	(extend_types:SI (match_operand:small_int_modes 1 "rx_restricted_mem_operand")))
+   (set (match_operand:SI                               2 "register_operand")
+	(memex_nocc:SI (match_dup 0)
+		       (match_dup 2)))]
+  "peep2_regno_dead_p (2, REGNO (operands[0]))"
+  [(set:SI (match_dup 2)
+	   (memex_nocc:SI (match_dup 2)
+			  (extend_types:SI (match_dup 1))))]
+)
+
+(define_peephole2
+  [(set (match_operand:SI                               0 "register_operand")
+	(extend_types:SI (match_operand:small_int_modes 1 "rx_restricted_mem_operand")))
+   (set (match_operand:SI                               2 "register_operand")
+	(memex_nocc:SI (match_dup 2)
+		       (match_dup 0)))]
+  "peep2_regno_dead_p (2, REGNO (operands[0]))"
+  [(set:SI (match_dup 2)
+	   (memex_nocc:SI (match_dup 2)
+			  (extend_types:SI (match_dup 1))))]
+)
+
+(define_insn "<memex_commutative:code>si3_<extend_types:code><small_int_modes:mode>"
+  [(set (match_operand:SI                                                     0 "register_operand" "=r")
+	(memex_commutative:SI (match_operand:SI                               1 "register_operand" "%0")
+ 		              (extend_types:SI (match_operand:small_int_modes 2 "rx_restricted_mem_operand" "Q"))))
+   (clobber (reg:CC CC_REG))]
+  ""
+  "<memex_commutative:op>\t%<extend_types:letter>2, %0"
+  [(set_attr "timings" "33")
+   (set_attr "length"  "5")] ;; This length is corrected in rx_adjust_insn_length
+)
+
+(define_insn "<memex_noncomm:code>si3_<extend_types:code><small_int_modes:mode>"
+  [(set (match_operand:SI                                                 0 "register_operand" "=r")
+	(memex_noncomm:SI (match_operand:SI                               1 "register_operand" "0")
+                          (extend_types:SI (match_operand:small_int_modes 2 "rx_restricted_mem_operand" "Q"))))
+   (clobber (reg:CC CC_REG))]
+  ""
+  "<memex_noncomm:op>\t%<extend_types:letter>2, %0"
+  [(set_attr "timings" "33")
+   (set_attr "length"  "5")] ;; This length is corrected in rx_adjust_insn_length
+)
+
+(define_insn "<memex_nocc:code>si3_<extend_types:code><small_int_modes:mode>"
+  [(set (match_operand:SI                                              0 "register_operand" "=r")
+	(memex_nocc:SI (match_operand:SI                               1 "register_operand" "%0")
+		       (extend_types:SI (match_operand:small_int_modes 2 "rx_restricted_mem_operand" "Q"))))]
+  ""
+  "<memex_nocc:op>\t%<extend_types:letter>2, %0"
+  [(set_attr "timings" "33")
+   (set_attr "length"  "5")] ;; This length is corrected in rx_adjust_insn_length
+)
+
+(define_peephole2
+  [(set (match_operand:SI                               0 "register_operand")
+	(extend_types:SI (match_operand:small_int_modes 1 "rx_restricted_mem_operand")))
+   (set (reg:CC CC_REG)
+	(compare:CC (match_operand:SI                   2 "register_operand")
+		    (match_dup 0)))]
+  "peep2_regno_dead_p (2, REGNO (operands[0]))"
+  [(set (reg:CC CC_REG)
+	(compare:CC (match_dup 2)
+		    (extend_types:SI (match_dup 1))))]
+)
+
+(define_insn "comparesi3_<extend_types:code><small_int_modes:mode>"
+  [(set (reg:CC CC_REG)
+	(compare:CC (match_operand:SI                               0 "register_operand" "=r")
+		    (extend_types:SI (match_operand:small_int_modes 1 "rx_restricted_mem_operand" "Q"))))]
+  ""
+  "cmp\t%<extend_types:letter>1, %0"
+  [(set_attr "timings" "33")
+   (set_attr "length"  "5")] ;; This length is corrected in rx_adjust_insn_length
+)
+
 ;; Floating Point Instructions
 
 (define_insn "addsf3"
@@ -1896,14 +2029,6 @@
     rtx addr1 = gen_rtx_REG (SImode, 1);
     rtx addr2 = gen_rtx_REG (SImode, 2);
     rtx len   = gen_rtx_REG (SImode, 3);
-
-    /* Do not use when the source or destination are volatile - the SMOVF
-       instruction will read and write in word sized blocks, which may be
-       outside of the valid address range.  */
-    if (MEM_P (operands[0]) && MEM_VOLATILE_P (operands[0]))
-      FAIL;
-    if (MEM_P (operands[1]) && MEM_VOLATILE_P (operands[1]))
-      FAIL;
 
     if (REG_P (operands[0]) && (REGNO (operands[0]) == 2
 				      || REGNO (operands[0]) == 3))

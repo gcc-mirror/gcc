@@ -45,7 +45,7 @@
 #define DIRS_EQ(A, B) ((A)->dev == (B)->dev \
 	&& INO_T_EQ((A)->ino, (B)->ino))
 #else
-#define DIRS_EQ(A, B) (!strcmp ((A)->canonical_name, (B)->canonical_name))
+#define DIRS_EQ(A, B) (!filename_cmp ((A)->canonical_name, (B)->canonical_name))
 #endif
 
 static const char dir_separator_str[] = { DIR_SEPARATOR, 0 };
@@ -147,7 +147,7 @@ add_standard_paths (const char *sysroot, const char *iprefix,
 		 now.  */
 	      if (sysroot && p->add_sysroot)
 		continue;
-	      if (!strncmp (p->fname, cpp_GCC_INCLUDE_DIR, len))
+	      if (!filename_ncmp (p->fname, cpp_GCC_INCLUDE_DIR, len))
 		{
 		  char *str = concat (iprefix, p->fname + len, NULL);
 		  if (p->multilib && imultilib)
@@ -168,7 +168,7 @@ add_standard_paths (const char *sysroot, const char *iprefix,
 	  if (sysroot && p->add_sysroot)
 	    str = concat (sysroot, p->fname, NULL);
 	  else if (!p->add_sysroot && relocated
-		   && strncmp (p->fname, cpp_PREFIX, cpp_PREFIX_len) == 0)
+		   && !filename_ncmp (p->fname, cpp_PREFIX, cpp_PREFIX_len))
 	    {
  	      static const char *relocated_prefix;
 	      /* If this path starts with the configure-time prefix,

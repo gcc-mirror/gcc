@@ -1,5 +1,6 @@
 # GCC build-specific configuration file.
-# Copyright 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2007, 2008, 2009, 2010
+# Copyright 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2007, 2008, 2009, 2010,
+# 2011
 # Free Software Foundation, Inc.
 
 #This file is part of GCC.
@@ -75,7 +76,7 @@ case $build in
     # IBM 360/370/390 Architecture
     build_xm_defines='FATAL_EXIT_CODE=12'
     ;;
-  i[34567]86-*-cygwin* | i[34567]86-*-pe )
+  i[34567]86-*-cygwin* )
     build_xm_file=i386/xm-cygwin.h
     build_exeext=.exe
     ;;
