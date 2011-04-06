@@ -107,6 +107,10 @@ class Backend
 
   // Statements.
 
+  // Create an expression statement.
+  virtual Bstatement*
+  expression_statement(Bexpression*) = 0;
+
   // Create an assignment statement.
   virtual Bstatement*
   assignment_statement(Bexpression* lhs, Bexpression* rhs,

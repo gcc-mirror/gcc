@@ -1,3 +1,7 @@
+2011-04-06  Ian Lance Taylor  <iant@google.com>
+
+	* go-gcc.cc (Gcc_backend::expression_statement): New function.
+
 2011-04-04  Ian Lance Taylor  <iant@google.com>
 
 	* go-gcc.c (class Blabel): Define.
