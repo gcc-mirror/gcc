@@ -7115,13 +7115,17 @@
 
 (define_insn "*arm_cmpsi_insn"
   [(set (reg:CC CC_REGNUM)
-	(compare:CC (match_operand:SI 0 "s_register_operand" "r,r")
-		    (match_operand:SI 1 "arm_add_operand"    "rI,L")))]
+	(compare:CC (match_operand:SI 0 "s_register_operand" "l,r,r,r")
+		    (match_operand:SI 1 "arm_add_operand"    "Py,r,rI,L")))]
   "TARGET_32BIT"
   "@
    cmp%?\\t%0, %1
+   cmp%?\\t%0, %1
+   cmp%?\\t%0, %1
    cmn%?\\t%0, #%n1"
-  [(set_attr "conds" "set")]
+  [(set_attr "conds" "set")
+   (set_attr "arch" "t2,t2,any,any")
+   (set_attr "length" "2,2,4,4")]
 )
 
 (define_insn "*cmpsi_shiftsi"
@@ -7292,7 +7296,14 @@
   return \"b%d1\\t%l0\";
   "
   [(set_attr "conds" "use")
-   (set_attr "type" "branch")]
+   (set_attr "type" "branch")
+   (set (attr "length")
+	(if_then_else
+	   (and (ne (symbol_ref "TARGET_THUMB2") (const_int 0))
+		(and (ge (minus (match_dup 0) (pc)) (const_int -250))
+		     (le (minus (match_dup 0) (pc)) (const_int 256))))
+	   (const_int 2)
+	   (const_int 4)))]
 )
 
 (define_insn "*arm_cond_branch_reversed"
@@ -7311,7 +7322,14 @@
   return \"b%D1\\t%l0\";
   "
   [(set_attr "conds" "use")
-   (set_attr "type" "branch")]
+   (set_attr "type" "branch")
+   (set (attr "length")
+	(if_then_else
+	   (and (ne (symbol_ref "TARGET_THUMB2") (const_int 0))
+		(and (ge (minus (match_dup 0) (pc)) (const_int -250))
+		     (le (minus (match_dup 0) (pc)) (const_int 256))))
+	   (const_int 2)
+	   (const_int 4)))]
 )
 
 
@@ -7763,7 +7781,14 @@
     return \"b%?\\t%l0\";
   }
   "
-  [(set_attr "predicable" "yes")]
+  [(set_attr "predicable" "yes")
+   (set (attr "length")
+	(if_then_else
+	   (and (ne (symbol_ref "TARGET_THUMB2") (const_int 0))
+		(and (ge (minus (match_dup 0) (pc)) (const_int -2044))
+		     (le (minus (match_dup 0) (pc)) (const_int 2048))))
+	   (const_int 2)
+	   (const_int 4)))]
 )
 
 (define_insn "*thumb_jump"
@@ -10263,7 +10288,29 @@
 
     return \"\";
   }"
-  [(set_attr "type" "store4")]
+  [(set_attr "type" "store4")
+   (set (attr "length")
+	(if_then_else
+	   (and (ne (symbol_ref "TARGET_THUMB2") (const_int 0))
+		(ne (symbol_ref "{
+		    /* Check if there are any high register (except lr)
+		       references in the list. KEEP the following iteration
+		       in sync with the template above.  */
+		    int i, regno, hi_reg;
+		    int num_saves = XVECLEN (operands[2], 0);
+		    regno = REGNO (operands[1]);
+		    hi_reg = (REGNO_REG_CLASS (regno) == HI_REGS)
+			     && (regno != LR_REGNUM);
+		    for (i = 1; i < num_saves && !hi_reg; i++)
+		      {
+			regno = REGNO (XEXP (XVECEXP (operands[2], 0, i), 0));
+			hi_reg |= (REGNO_REG_CLASS (regno) == HI_REGS)
+				  && (regno != LR_REGNUM);
+		      }
+		    !hi_reg;    }")
+		  (const_int 0)))
+	   (const_int 2)
+	   (const_int 4)))]
 )
 
 (define_insn "stack_tie"

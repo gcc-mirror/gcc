@@ -1,3 +1,13 @@
+2011-04-06  Wei Guozhi  <carrot@google.com>
+
+	PR target/47855
+	* config/arm/arm.md (arm_cmpsi_insn): Compute attr "length".
+	(arm_cond_branch): Likewise.
+	(arm_cond_branch_reversed): Likewise.
+	(arm_jump): Likewise.
+	(push_multi): Likewise.
+	* config/arm/constraints.md (Py): New constraint.
+
 2011-04-05  Nathan Froyd  <froydnj@codesourcery.com>
 
 	PR bootstrap/48471
