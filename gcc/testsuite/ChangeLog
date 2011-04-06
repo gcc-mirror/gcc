@@ -1,5 +1,9 @@
+2011-04-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/return3.adb: New test.
+
 2011-04-06  Richard Guenther  <rguenther@suse.de>
- 
+
 	PR tree-optimization/47663
 	* gcc.dg/tree-ssa/inline-8.c: New testcase.
 

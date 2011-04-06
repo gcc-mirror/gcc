@@ -1,3 +1,8 @@
+2011-04-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gimple-low.c (lower_gimple_return): When not optimizing, force labels
+	associated with user returns to be preserved.
+
 2011-04-06  Tristan Gingold  <gingold@adacore.com>
 
 	* dbxout.c: (debug_nesting, symbol_queue, symbol_queue_index)
