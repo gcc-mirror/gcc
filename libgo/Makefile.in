@@ -1848,7 +1848,7 @@ libgo_go_objs = \
 	testing/script.lo
 
 libgo_la_SOURCES = $(runtime_files)
-libgo_la_LDFLAGS = $(PTHREAD_CFLAGS)
+libgo_la_LDFLAGS = $(PTHREAD_CFLAGS) $(AM_LDFLAGS)
 libgo_la_LIBADD = \
 	$(libgo_go_objs) $(LIBFFI) $(PTHREAD_LIBS) $(MATH_LIBS) $(NET_LIBS)
 
