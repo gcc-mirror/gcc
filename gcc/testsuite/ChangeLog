@@ -1,3 +1,9 @@
+2011-04-06  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/18918
+	PR fortran/48477
+	* gfortran.dg/coarray_13.f90: Avoid out-of-bounds access.
+
 2011-04-06  Steve Ellcey  <sje@cup.hp.com>
 
 	* gcc.dg/mtune.c: Prune note from output.
@@ -33,7 +39,7 @@
 
 2011-04-04  Yufeng Zhang  <yufeng.zhang@arm.com>
 
-        * g++.dg/abi/arm_cxa_vec1.C (__ARM_EABI__): Fix typo.
+	* g++.dg/abi/arm_cxa_vec1.C (__ARM_EABI__): Fix typo.
 	(cctor): Actually return the value.
 	(main): Cast return values.
 

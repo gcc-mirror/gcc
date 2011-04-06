@@ -105,10 +105,10 @@ contains
     integer :: n
     integer :: A(-1:3,0:4,-2:5,-4:7)[n+2:n+5,n-1:*]
 
-    A(1,1,1,1) = 42
-    if (A(1,1,1,1) /= 42) call abort()
-    A(1,1,1,1)[4,n] = -42
-    if (A(1,1,1,1)[4,n] /= -42) call abort()
+    A(-1,0,-2,-4) = 42
+    if (A(-1,0,-2,-4) /= 42) call abort()
+    A(1,0,-2,-4) = 99
+    if (A(1,0,-2,-4) /= 99) call abort()
 
     if (this_image(A,dim=1) /= n+2) call abort()
     if (lcobound  (A,dim=1) /= n+2) call abort()
