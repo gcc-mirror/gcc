@@ -1,3 +1,12 @@
+2011-03-06  Andrew Stubbs  <ams@codesourcery.com>
+	    Julian Brown  <julian@codesourcery.com>
+	    Mark Shinwell  <shinwell@codesourcery.com>
+
+	* config/arm/arm.h (arm_class_likely_spilled_p): Check against
+	LO_REGS only for Thumb-1.
+	(MODE_BASE_REG_CLASS): Restrict base registers to those which can
+	be used in short instructions when optimising for size on Thumb-2.
+
 2011-04-06  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gimple-low.c (lower_gimple_return): When not optimizing, force labels
