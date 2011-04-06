@@ -1,3 +1,10 @@
+2011-04-06  Tristan Gingold  <gingold@adacore.com>
+
+	* dbxout.c: (debug_nesting, symbol_queue, symbol_queue_index)
+	(symbol_queue_size, DBXOUT_DECR_NESTING)
+	(DBXOUT_DECR_NESTING_AND_RETURN): Also define
+	if XCOFF_DEBUGGING_INFO.
+
 2011-04-06  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (attribute isa): New.
