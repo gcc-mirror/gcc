@@ -1,3 +1,8 @@
+2011-04-06  Richard Guenther  <rguenther@suse.de>
+ 
+	PR tree-optimization/47663
+	* gcc.dg/tree-ssa/inline-8.c: New testcase.
+
 2011-04-05  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.dg/torture/pr47917.c: Add -D_XOPEN_SOURCE=500 to dg-options for

@@ -1032,6 +1032,8 @@ cgraph_create_edge_1 (struct cgraph_node *caller, struct cgraph_node *callee,
   edge->loop_nest = nest;
 
   edge->call_stmt = call_stmt;
+  edge->call_stmt_size = 0;
+  edge->call_stmt_time = 0;
   push_cfun (DECL_STRUCT_FUNCTION (caller->decl));
   edge->can_throw_external
     = call_stmt ? stmt_can_throw_external (call_stmt) : false;
@@ -2141,6 +2143,8 @@ cgraph_clone_edge (struct cgraph_edge *e, struct cgraph_node *n,
 	}
     }
 
+  new_edge->call_stmt_size = e->call_stmt_size;
+  new_edge->call_stmt_time = e->call_stmt_time;
   new_edge->inline_failed = e->inline_failed;
   new_edge->indirect_inlining_edge = e->indirect_inlining_edge;
   new_edge->lto_stmt_uid = stmt_uid;
