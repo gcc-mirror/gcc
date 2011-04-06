@@ -129,7 +129,6 @@ extern reg_class_t default_secondary_reload (bool, rtx, reg_class_t,
 					     secondary_reload_info *);
 extern void default_target_option_override (void);
 extern void hook_void_bitmap (bitmap);
-extern bool default_handle_c_option (size_t, const char *, int);
 extern int default_reloc_rw_mask (void);
 extern tree default_mangle_decl_assembler_name (tree, tree);
 extern tree default_emutls_var_fields (tree, tree *);

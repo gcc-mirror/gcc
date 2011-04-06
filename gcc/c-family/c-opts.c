@@ -36,7 +36,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "opts.h"
 #include "options.h"
 #include "mkdeps.h"
-#include "target.h"		/* For gcc_targetcm.  */
+#include "c-target.h"
+#include "tm.h"			/* For BYTES_BIG_ENDIAN,
+				   DOLLARS_IN_IDENTIFIERS,
+				   STDC_0_IN_SYSTEM_HEADERS,
+				   TARGET_FLT_EVAL_METHOD_NON_DEFAULT and
+				   TARGET_OPTF.  */
 #include "tm_p.h"		/* For C_COMMON_OVERRIDE_OPTIONS.  */
 
 #ifndef DOLLARS_IN_IDENTIFIERS
@@ -807,6 +812,16 @@ c_common_handle_option (size_t scode, const char *arg, int value,
     }
 
   return result;
+}
+
+/* Default implementation of TARGET_HANDLE_C_OPTION.  */
+
+bool
+default_handle_c_option (size_t code ATTRIBUTE_UNUSED,
+			 const char *arg ATTRIBUTE_UNUSED,
+			 int value ATTRIBUTE_UNUSED)
+{
+  return false;
 }
 
 /* Post-switch processing.  */

@@ -1,5 +1,5 @@
 /* Prototypes.
-   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2010
+   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2010, 2011
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -112,10 +112,7 @@ extern void darwin_cpp_builtins (struct cpp_reader *);
 
 extern tree darwin_init_cfstring_builtins (unsigned);
 extern tree darwin_fold_builtin (tree, int, tree *, bool);
-extern tree darwin_objc_construct_string (tree);
 extern bool darwin_cfstring_p (tree);
-extern bool darwin_cfstring_ref_p (const_tree);
-extern void darwin_check_cfstring_format_arg (tree, tree);
 extern tree darwin_build_constant_cfstring (tree);
 extern void darwin_enter_string_into_cfstring_table (tree);
 

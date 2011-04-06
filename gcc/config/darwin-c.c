@@ -1,5 +1,5 @@
 /* Darwin support needed only by C/C++ frontends.
-   Copyright (C) 2001, 2003, 2004, 2005, 2007, 2008, 2010
+   Copyright (C) 2001, 2003, 2004, 2005, 2007, 2008, 2010, 2011
    Free Software Foundation, Inc.
    Contributed by Apple Computer Inc.
 
@@ -34,8 +34,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm_p.h"
 #include "cppdefault.h"
 #include "prefix.h"
-#include "target.h"
-#include "target-def.h"
+#include "c-family/c-target.h"
+#include "c-family/c-target-def.h"
 
 /* Pragmas.  */
 
@@ -660,13 +660,8 @@ handle_c_option (size_t code,
   return true;
 }
 
-#undef TARGET_HANDLE_C_OPTION
-#define TARGET_HANDLE_C_OPTION handle_c_option
-
-struct gcc_targetcm targetcm = TARGETCM_INITIALIZER;
-
 /* Allow ObjC* access to CFStrings.  */
-tree
+static tree
 darwin_objc_construct_string (tree str)
 {
   if (!darwin_constant_cfstrings)
@@ -685,7 +680,7 @@ darwin_objc_construct_string (tree str)
 /* The string ref type is created as CFStringRef by <CFBase.h> therefore, we
    must match for it explicitly, since it's outside the gcc code.  */
 
-bool
+static bool
 darwin_cfstring_ref_p (const_tree strp)
 {
   tree tn;
@@ -701,7 +696,7 @@ darwin_cfstring_ref_p (const_tree strp)
 }
 
 /* At present the behavior of this is undefined and it does nothing.  */
-void
+static void
 darwin_check_cfstring_format_arg (tree ARG_UNUSED (format_arg), 
 				  tree ARG_UNUSED (args_list))
 {
@@ -715,3 +710,17 @@ EXPORTED_CONST format_kind_info darwin_additional_format_types[] = {
     NULL, NULL
   }
 };
+
+#undef TARGET_HANDLE_C_OPTION
+#define TARGET_HANDLE_C_OPTION handle_c_option
+
+#undef TARGET_OBJC_CONSTRUCT_STRING_OBJECT
+#define TARGET_OBJC_CONSTRUCT_STRING_OBJECT darwin_objc_construct_string
+
+#undef TARGET_STRING_OBJECT_REF_TYPE_P
+#define TARGET_STRING_OBJECT_REF_TYPE_P darwin_cfstring_ref_p
+
+#undef TARGET_CHECK_STRING_OBJECT_FORMAT_ARG
+#define TARGET_CHECK_STRING_OBJECT_FORMAT_ARG darwin_check_cfstring_format_arg
+
+struct gcc_targetcm targetcm = TARGETCM_INITIALIZER;

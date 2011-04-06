@@ -873,12 +873,17 @@ endif
 # Shorthand variables for dependency lists.
 VEC_H = vec.h statistics.h
 EXCEPT_H = except.h $(HASHTAB_H) vecprim.h vecir.h
-TARGET_H = $(TM_H) target.h target.def insn-modes.h
+TARGET_DEF = target.def target-hooks-macros.h
+C_TARGET_DEF = c-family/c-target.def target-hooks-macros.h
+TARGET_H = $(TM_H) target.h $(TARGET_DEF) insn-modes.h
+C_TARGET_H = c-family/c-target.h $(C_TARGET_DEF)
 MACHMODE_H = machmode.h mode-classes.def insn-modes.h
 HOOKS_H = hooks.h $(MACHMODE_H)
 HOSTHOOKS_DEF_H = hosthooks-def.h $(HOOKS_H)
 LANGHOOKS_DEF_H = langhooks-def.h $(HOOKS_H)
 TARGET_DEF_H = target-def.h target-hooks-def.h $(HOOKS_H) targhooks.h
+C_TARGET_DEF_H = c-family/c-target-def.h c-family/c-target-hooks-def.h \
+  $(TREE_H) $(C_COMMON_H) $(HOOKS_H)
 RTL_BASE_H = rtl.h rtl.def $(MACHMODE_H) reg-notes.def insn-notes.def \
   $(INPUT_H) $(REAL_H) statistics.h $(VEC_H) $(FIXED_VALUE_H) alias.h \
   $(HASHTAB_H)
@@ -2110,7 +2115,7 @@ c-family/c-dump.o : c-family/c-dump.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
 
 c-family/c-format.o : c-family/c-format.c c-family/c-format.h \
 	$(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) langhooks.h \
-	$(C_COMMON_H) $(FLAGS_H) intl.h \
+	$(C_COMMON_H) $(FLAGS_H) intl.h $(C_TARGET_H) \
 	$(DIAGNOSTIC_CORE_H) alloc-pool.h c-family/c-objc.h
 
 c-family/c-gimplify.o : c-family/c-gimplify.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) \
@@ -2129,7 +2134,7 @@ c-family/c-omp.o : c-family/c-omp.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
 
 c-family/c-opts.o : c-family/c-opts.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
         $(TREE_H) $(C_PRAGMA_H) $(FLAGS_H) toplev.h langhooks.h \
-        $(DIAGNOSTIC_H) intl.h debug.h $(C_COMMON_H)	\
+        $(DIAGNOSTIC_H) intl.h debug.h $(C_COMMON_H) $(C_TARGET_H) \
         $(OPTS_H) $(OPTIONS_H) $(MKDEPS_H) incpath.h cppdefault.h
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) \
 		$< $(OUTPUT_OPTION) @TARGET_SYSTEM_ROOT_DEFINE@
@@ -2168,6 +2173,10 @@ c-family/c-ada-spec.o : c-family/c-ada-spec.c c-family/c-ada-spec.h \
 c-family/stub-objc.o : c-family/stub-objc.c $(CONFIG_H) $(SYSTEM_H) \
 	coretypes.h $(TREE_H) $(C_COMMON_H) c-family/c-objc.h
 
+default-c.o: config/default-c.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
+  $(C_TARGET_H) $(C_TARGET_DEF_H)
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) \
+	  $< $(OUTPUT_OPTION)
 
 # Files used by all variants of C and some other languages.
 
@@ -3659,10 +3668,20 @@ target-hooks-def.h: s-target-hooks-def-h; @true
 $(srcdir)/doc/tm.texi: s-tm-texi; @true
 
 s-target-hooks-def-h: build/genhooks$(build_exeext)
-	$(RUN_GEN) build/genhooks$(build_exeext) > tmp-target-hooks-def.h
+	$(RUN_GEN) build/genhooks$(build_exeext) "Target Hook" \
+					     > tmp-target-hooks-def.h
 	$(SHELL) $(srcdir)/../move-if-change tmp-target-hooks-def.h \
 					     target-hooks-def.h
 	$(STAMP) s-target-hooks-def-h
+
+c-family/c-target-hooks-def.h: s-c-target-hooks-def-h; @true
+
+s-c-target-hooks-def-h: build/genhooks$(build_exeext)
+	$(RUN_GEN) build/genhooks$(build_exeext) "C Target Hook" \
+					     > tmp-c-target-hooks-def.h
+	$(SHELL) $(srcdir)/../move-if-change tmp-c-target-hooks-def.h \
+					     c-family/c-target-hooks-def.h
+	$(STAMP) s-c-target-hooks-def-h
 
 # check if someone mistakenly only changed tm.texi.
 # We use a different pathname here to avoid a circular dependency.
@@ -3673,7 +3692,7 @@ s-tm-texi: $(srcdir)/doc/../doc/tm.texi
 # \r is not portable to Solaris tr, therefore we have a special
 # case for ASCII.  We use \r for other encodings like EBCDIC.
 s-tm-texi: build/genhooks$(build_exeext) $(srcdir)/doc/tm.texi.in
-	$(RUN_GEN) build/genhooks$(build_exeext) \
+	$(RUN_GEN) build/genhooks$(build_exeext) -d \
 			$(srcdir)/doc/tm.texi.in > tmp-tm.texi
 	case `echo X|tr X '\101'` in \
 	  A) tr -d '\015' < tmp-tm.texi > tmp2-tm.texi ;; \
@@ -3684,7 +3703,9 @@ s-tm-texi: build/genhooks$(build_exeext) $(srcdir)/doc/tm.texi.in
 	@if cmp -s $(srcdir)/doc/tm.texi tm.texi; then \
 	  $(STAMP) $@; \
 	elif test $(srcdir)/doc/tm.texi -nt $(srcdir)/doc/tm.texi.in \
-	  && test $(srcdir)/doc/tm.texi -nt $(srcdir)/target.def; then \
+	  && ( test $(srcdir)/doc/tm.texi -nt $(srcdir)/target.def \
+	    || test $(srcdir)/doc/tm.texi -nt $(srcdir)/c-family/c-target.def \
+	  ); then \
 	  echo >&2 ; \
 	  echo You should edit $(srcdir)/doc/tm.texi.in rather than $(srcdir)/doc/tm.texi . >&2 ; \
 	  false; \
@@ -3897,7 +3918,8 @@ build/genpreds.o : genpreds.c $(RTL_BASE_H) $(BCONFIG_H) $(SYSTEM_H)	\
   coretypes.h $(GTM_H) errors.h $(READ_MD_H) gensupport.h $(OBSTACK_H)
 build/genrecog.o : genrecog.c $(RTL_BASE_H) $(BCONFIG_H) $(SYSTEM_H)	\
   coretypes.h $(GTM_H) errors.h $(READ_MD_H) gensupport.h
-build/genhooks.o : genhooks.c target.def $(BCONFIG_H) $(SYSTEM_H) errors.h
+build/genhooks.o : genhooks.c $(TARGET_DEF) $(C_TARGET_DEF)		\
+  $(BCONFIG_H) $(SYSTEM_H) errors.h
 
 # Compile the programs that generate insn-* from the machine description.
 # They are compiled with $(COMPILER_FOR_BUILD), and associated libraries,

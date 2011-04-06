@@ -46,7 +46,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "toplev.h"
 #include "ggc.h"
 #include "debug.h"
-#include "target.h"
+#include "c-family/c-target.h"
 #include "diagnostic-core.h"
 #include "intl.h"
 #include "cgraph.h"
