@@ -1,5 +1,9 @@
 2011-04-06  Jakub Jelinek  <jakub@redhat.com>
 
+	PR debug/48466
+	* gcc.dg/guality/pr36977.c: New test.
+	* gcc.dg/guality/pr48466.c: New test.
+
 	Backported from mainline
 	2011-04-01  Jakub Jelinek  <jakub@redhat.com>
 
