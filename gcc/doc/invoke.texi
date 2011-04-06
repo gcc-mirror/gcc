@@ -9391,7 +9391,7 @@ This tells the compiler to create, override or delete the named spec
 string.  All lines after this directive up to the next directive or
 blank line are considered to be the text for the spec string.  If this
 results in an empty string then the spec will be deleted.  (Or, if the
-spec did not exist, then nothing will happened.)  Otherwise, if the spec
+spec did not exist, then nothing will happen.)  Otherwise, if the spec
 does not currently exist a new spec will be created.  If the spec does
 exist then its contents will be overridden by the text of this
 directive, unless the first character of that text is the @samp{+}

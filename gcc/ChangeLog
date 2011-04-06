@@ -1,3 +1,7 @@
+2011-04-06  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* doc/invoke.texi (Spec Files): Fix typo.
+
 2011-04-06  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* profile.c (branch_prob): Move declaration of local variable.  Remove
