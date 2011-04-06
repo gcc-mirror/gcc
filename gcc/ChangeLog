@@ -1,4 +1,9 @@
 2011-04-06  Richard Guenther  <rguenther@suse.de>
+
+	* tree-inline.c (estimate_num_insns): For calls simply account
+	for all passed arguments and a used return value.
+
+2011-04-06  Richard Guenther  <rguenther@suse.de>
  
 	PR tree-optimization/47663
 	* cgraph.h (struct cgraph_edge): Add call_stmt_size and
