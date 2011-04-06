@@ -1,10 +1,89 @@
+2011-04-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (attribute isa): New.
+	(attribute enabled): New.
+	(setcc_<mode>_sse): Merge from *{avx,sse}_setcc<mode>.
+	(*fop_<mode>_comm_mixed): Merge with *fop_<mode>_comm_mixed_avx.
+	(*fop_<mode>_comm_sse): Merge with *fop_<mode>_comm_avx.
+	(*fop_<mode>_1_mixed): Merge with *fop_<mode>_1_mixed_avx.
+	(*fop_<mode>_1_sse): Merge with *fop_<mode>_1_avx.
+	(<smaxmin:code><mode>3): Merge with *avx_<smaxmin:code><mode>3.
+	(*ieee_smin<mode>3): Merge with *avx_ieee_smin<mode>3.
+	(*ieee_smax<mode>3): Merge with *avx_ieee_smax<mode>3.
+
+	* config/i386/sse.md (VF): New mode iterator.
+	(VF1): Ditto.
+	(VF2): Ditto.
+	(VF_128): Ditto.
+	(SSEMODEF4): Remove.
+	(attribute sse): Handle V8SF and V4DF modes.
+	(<absneg:code><mode>2): Use VF mode iterator.
+	(*absneg<mode>2): Merge from *{avx,sse}_absneg<mode>2.  Use VF
+	mode iterator.
+	(<plusminus_insn><mode>3): Use VF mode iterator.
+	(*<plusminus_insn><mode>3): Merge with *avx_<plusminus_insn><mode>3.
+	Use VF mode iterator.
+	(<sse>_vm<plusminus_insn><mode>3): Merge with
+	*avx_vm<plusminus_insn><mode>3.  Use VF_128 mode iterator.
+	(mul<mode>3): Use VF mode iterator.
+	(*mul<mode>3): Merge with *avx_mul<mode>3.  Use VF mode iterator.
+	(<sse>_vmmul<mode>3): Merge with *avx_vmmul<mode>3.  Use VF_128
+	mode iterator.
+	(div<VF2:mode>3): Merge from divv2df3 and divv4df3.
+	(div<VF1:mode>3): Merge from divv4sf3 and divv8sf3.
+	(<sse>_div<mode>3): Merge with *avx_div<mode>3.  Use VF mode iterator.
+	(<sse>_vmdiv<mode>3): Merge with *avx_vmdiv<mode>3.  Use VF_128
+	mode iterator.
+	(<sse>_rcp<mode>2): Merge from avx_rcpv8sf2 and sse_rcpv4sf2.
+	Use VF1 mode iterator.
+	(sse_vmrcpv4sf2): Merge with *avx_vmrcpv4sf2.
+	(sqrt<VF2:mode>2): New expander.
+	(sqrt<VF1:mode>2): Merge from sqrtv4sf2 and sqrtv8sf2.
+	(<sse>_sqrt<mode>2): Merge from avx_sqrtv8sf2, sse_sqrtv4sf, sqrtv4df2
+	and sqrtv2df2.  Use VF mode iterator.
+	(<sse>_vmsqrt<mode>2): Merge with *avx_vmsqrt<mode>2.  Use VF_128
+	mode iterator.
+	(rsqrt<VF1:mode>2): Merge from rsqrtv4sf2 and rsqrtv8sf2.
+	(<sse>_rsqrt<mode>2): Merge from avx_rsqrtv8sf2 and sse_rsqrt4sf2.
+	Use VF1 mode iterator.
+	(sse_vmrsqrtv4sf2): Merge with *avx_vmrsqrtv4sf2.
+	(<smaxmin:code><mode>3): Use VF mode iterator.
+	(*<smaxmin:code><mode>3_finite): Merge with
+	*avx_<smaxmin:code><mode>3_finite.  Use VF mode iterator.
+	(*<smaxmin:code><mode>3): Merge with *avx_<smaxmin:code><mode>3.
+	(<sse>_vm<smaxmin:code><mode>2): Merge with
+	*avx_vm<smaxmin:code><mode>2.  Use VF_128 mode iterator.
+	(*ieee_smin<mode>3): Merge with *avx_ieee_smin<mode>3.  Use VF
+	mode iterator.
+	(*ieee_smax<mode>3): Merge with *avx_ieee_smax<mode>3.  Use VF
+	mode iterator.
+	(sse3_addsubv2df3): Merge with *avx_addsubv2df3.
+	(sse3_addsubv4sf3): Merge with *avx_addsubv4sf3.
+	(sse3_h<plusminus_insn>v2df3): Merge with *avx_h<plusminus_insn>v2df3.
+	(sse3_h<plusminus_insn>v4sf3): Merge with *avx_h<plusminus_insn>v4sf3.
+	(avx_cmp<mode>3): Rename from avx_cmp<ssemodesuffix><mode>3.  Use
+	VF mode iterator.
+	(avx_vmcmp<mode>3): Rename from avx_cmp<ssescalarmodesuffix><mode>3.
+	Use VF_128 mode iterator.
+	(<sse>_maskcmp<mode>3): Merge with *avx_maskcmp<mode>3.  Use VF
+	mode iterator.
+	(<sse>_vmmaskcmp<mode>3): Merge with *avx_vmmaskcmp<mode>3.  Use
+	VF_128 mode iterator.
+	(vcond<mode>): Use VF mode iterator.
+	* config/i386/predicates.md (sse_comparison_operator): Merge with
+	avx_comparison_float_operator.  Do not declare as special_predicate.
+	* config/i386/i386.c (struct builtin_description): Update for renamed
+	compare patterns.
+	(ix86_expand_args_builtin): Ditto.
+	(ix86_expand_sse_compare_mask): Ditto.
+
 2011-04-06  Richard Guenther  <rguenther@suse.de>
 
 	* tree-inline.c (estimate_num_insns): For calls simply account
 	for all passed arguments and a used return value.
 
 2011-04-06  Richard Guenther  <rguenther@suse.de>
- 
+
 	PR tree-optimization/47663
 	* cgraph.h (struct cgraph_edge): Add call_stmt_size and
 	call_stmt_time fields.
@@ -618,7 +697,7 @@
 
 	* config.gcc (*-*-mingw*): Allow as option the
 	posix threading model.
-	* config/i386/mingw32.h ( SPEC_PTHREAD1,  SPEC_PTHREAD2):
+	* config/i386/mingw32.h (SPEC_PTHREAD1,  SPEC_PTHREAD2):
 	New macros defined dependent to TARGET_USE_PTHREAD_BY_DEFAULT
 	definition.
 	(CPP_SPEC): Add pthread/no-pthread handling.
