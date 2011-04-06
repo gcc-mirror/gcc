@@ -1,3 +1,23 @@
+2011-04-06  Joseph Myers  <joseph@codesourcery.com>
+
+	* configure.ac (build_tools): Remove build-byacc.
+	(host_libs): Remove mmalloc.
+	(host_tools): Remove byacc make patch prms send-pr ash bash bzip2
+	autoconf automake libtool diff rcs fileutils shellutils time
+	textutils wdiff find uudecode hello tar gzip indent recode release
+	sed perl gawk findutils gettext zip.
+	(libgcj): Remove target-qthreads.
+	(target_tools): Remove target-examples target-gperf.
+	(YACC): Don't handle building byacc.
+	* configure: Regenerate.
+	* Makefile.def (ash, autoconf, automake, bash, byacc, bzip2, diff,
+	dosutils, examples, fileutils, find, findutils, gawk, gettext,
+	gnuserv, gperf, gzip, hello, indent, libtool, make, mmalloc,
+	patch, perl, prms, qthreads, rcs, recode, release, sed, send-pr,
+	shellutils, tar, textutils, time, uudecode, wdiff, zip): Don't
+	handle building components.
+	* Makefile.in: Regenerate.
+
 2011-04-05  Sterling Augustine <augustine.sterling@gmail.com>
 
 	* MAINTAINERS: Update my email address as Xtensa maintainer.

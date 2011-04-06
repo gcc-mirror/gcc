@@ -128,11 +128,11 @@ extra_host_args=
 build_libs="build-libiberty"
 
 # these tools are built for the build environment
-build_tools="build-texinfo build-byacc build-flex build-bison build-m4 build-fixincludes"
+build_tools="build-texinfo build-flex build-bison build-m4 build-fixincludes"
 
 # these libraries are used by various programs built for the host environment
 #
-host_libs="intl mmalloc libiberty opcodes bfd readline tcl tk itcl libgui zlib libcpp libdecnumber gmp mpfr mpc ppl cloog libelf libiconv"
+host_libs="intl libiberty opcodes bfd readline tcl tk itcl libgui zlib libcpp libdecnumber gmp mpfr mpc ppl cloog libelf libiconv"
 
 # these tools are built for the host environment
 # Note, the powerpc-eabi build depends on sim occurring before gdb in order to
@@ -140,12 +140,11 @@ host_libs="intl mmalloc libiberty opcodes bfd readline tcl tk itcl libgui zlib l
 # binutils, gas and ld appear in that order because it makes sense to run
 # "make check" in that particular order.
 # If --enable-gold is used, "gold" may replace "ld".
-host_tools="texinfo byacc flex bison binutils gas ld fixincludes gcc cgen sid sim gdb make patch prms send-pr gprof etc expect dejagnu ash bash bzip2 m4 autoconf automake libtool diff rcs fileutils shellutils time textutils wdiff find uudecode hello tar gzip indent recode release sed utils guile perl gawk findutils gettext zip fastjar gnattools"
+host_tools="texinfo flex bison binutils gas ld fixincludes gcc cgen sid sim gdb gprof etc expect dejagnu m4 utils guile fastjar gnattools"
 
 # libgcj represents the runtime libraries only used by gcj.
 libgcj="target-libffi \
 	target-zlib \
-	target-qthreads \
 	target-libjava"
 
 # these libraries are built for the target environment, and are built after
@@ -173,7 +172,7 @@ target_libraries="target-libgcc \
 # note: any program that *uses* libraries that are in the "target_libraries"
 # list belongs in this list.
 #
-target_tools="target-examples target-gperf target-rda"
+target_tools="target-rda"
 
 ################################################################################
 
@@ -2956,7 +2955,6 @@ MISSING=`cd $ac_aux_dir && ${PWDCMD-pwd}`/missing
 AC_CHECK_PROGS([YACC], ['bison -y' byacc yacc], [$MISSING bison -y])
 case " $build_configdirs " in
   *" bison "*) YACC='$$r/$(BUILD_SUBDIR)/bison/tests/bison -y' ;;
-  *" byacc "*) YACC='$$r/$(BUILD_SUBDIR)/byacc/byacc' ;;
 esac
 
 AC_CHECK_PROGS([BISON], [bison], [$MISSING bison])
