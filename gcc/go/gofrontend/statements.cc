@@ -1551,8 +1551,7 @@ class Expression_statement : public Statement
   do_may_fall_through() const;
 
   tree
-  do_get_tree(Translate_context* context)
-  { return this->expr_->get_tree(context); }
+  do_get_tree(Translate_context* context);
 
  private:
   Expression* expr_;
@@ -1587,6 +1586,17 @@ Expression_statement::do_may_fall_through() const
 	}
     }
   return true;
+}
+
+// Convert to backend representation.
+
+tree
+Expression_statement::do_get_tree(Translate_context* context)
+{
+  tree expr_tree = this->expr_->get_tree(context);
+  Bexpression* bexpr = tree_to_expr(expr_tree);
+  Bstatement* ret = context->backend()->expression_statement(bexpr);
+  return statement_to_tree(ret);
 }
 
 // Make an expression statement from an Expression.

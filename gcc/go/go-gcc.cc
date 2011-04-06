@@ -167,6 +167,9 @@ class Gcc_backend : public Backend
   // Statements.
 
   Bstatement*
+  expression_statement(Bexpression*);
+
+  Bstatement*
   assignment_statement(Bexpression* lhs, Bexpression* rhs, source_location);
 
   Bstatement*
@@ -206,6 +209,15 @@ get_identifier_from_string(const std::string& str)
 {
   return get_identifier_with_length(str.data(), str.length());
 }
+
+// An expression as a statement.
+
+Bstatement*
+Gcc_backend::expression_statement(Bexpression* expr)
+{
+  return this->make_statement(expr->get_tree());
+}
+
 // Assignment.
 
 Bstatement*
