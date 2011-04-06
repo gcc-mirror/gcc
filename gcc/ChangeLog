@@ -1,3 +1,57 @@
+2011-04-06  Joseph Myers  <joseph@codesourcery.com>
+
+	* doc/tm.texi.in: Document C target hooks as separate from general
+	target hooks.
+	* doc/tm.texi: Regenerate.
+	* genhooks.c (struct hook_desc): Add docname field.
+	(HOOK_VECTOR_1, DEFHOOKPOD, DEFHOOK, DEFHOOK_UNDOC).  Initialize
+	docname field.
+	(hook_array): Include c-target.def.
+	(emit_documentation): Use docname field in output.
+	(emit_init_macros): Take docname argument.  Only emit definitions
+	for hooks matching docname.
+	(main): Expect additional arguments in all cases.  Pass argument
+	to emit_init_macros.
+	* target.def: Move initial macro definitions and comments to
+	target-hooks-macros.h.
+	(gcc_targetcm): Move to c-family/c-target.def.
+	* target.h (targetcm): Move declaration to c-family/c-target.h.
+	* targhooks.c (default_handle_c_option): Move to
+	c-family/c-opts.c.
+	* targhooks.h (default_handle_c_option): Move declaration to
+	c-family/c-common.h.
+	* target-hooks-macros.h: New file.
+	* config.gcc (target_has_targetcm): Define and use to add to
+	c_target_objs and cxx_target_objs.
+	* config/default-c.c: New file.
+	* config/darwin-c.c: Include c-target.h and c-target-def.h instead
+	of target.h and target-def.h.
+	(TARGET_HANDLE_C_OPTION, targetcm): Define later in file.
+	(darwin_objc_construct_string, darwin_cfstring_ref_p,
+	darwin_check_cfstring_format_arg): Make static.
+	(TARGET_OBJC_CONSTRUCT_STRING_OBJECT,
+	TARGET_STRING_OBJECT_REF_TYPE_P,
+	TARGET_CHECK_STRING_OBJECT_FORMAT_ARG): Define here.
+	* config/darwin-protos.h (darwin_objc_construct_string,
+	darwin_cfstring_ref_p, darwin_check_cfstring_format_arg): Don't
+	declare.
+	* config/darwin.h (TARGET_OBJC_CONSTRUCT_STRING_OBJECT,
+	TARGET_STRING_OBJECT_REF_TYPE_P,
+	TARGET_CHECK_STRING_OBJECT_FORMAT_ARG, TARGET_HAS_TARGETCM):
+	Remove.
+	* config/t-darwin (darwin-c.o): Update dependencies.
+	* system.h (TARGET_HAS_TARGETCM): Poison.
+	* Makefile.in (TARGET_H): Update.
+	(TARGET_DEF, C_TARGET_DEF, C_TARGET_H, C_TARGET_DEF_H): Define.
+	(c-family/c-format.o, c-family/c-opts.o): Update dependencies.
+	(default-c.o): New target.
+	(s-target-hooks-def-h): Pass "Target Hook" string to genhooks.
+	(c-family/c-target-hooks-def.h, s-c-target-hooks-def-h): New
+	targets.
+	(s-tm-texi): Pass -d option to genhooks.  Also test timestamp on
+	c-target.def.
+	(build/genhooks.o): Update dependencies.
+
 2011-04-06  Richard Guenther  <rguenther@suse.de>
  
 	* ipa-inline.c (enum inlining_mode): Remove.

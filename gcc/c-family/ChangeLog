@@ -1,3 +1,15 @@
+2011-04-06  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-target-def.h: New file.
+	* c-target.def: New file.
+	* c-target.h: New file.
+	* c-common.c (targetcm): Don't define here.
+	* c-common.h (default_handle_c_option): Declare.
+	* c-format.c: Include c-target.h instead of target.h.
+	* c-opts.c: Include c-target.h instead of target.h.  Explicitly
+	include tm.h.
+	(default_handle_c_option): Move from targhooks.c.
+
 2011-03-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR preprocessor/48248

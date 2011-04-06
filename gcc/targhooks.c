@@ -930,14 +930,6 @@ default_secondary_reload (bool in_p ATTRIBUTE_UNUSED, rtx x ATTRIBUTE_UNUSED,
   return rclass;
 }
 
-bool
-default_handle_c_option (size_t code ATTRIBUTE_UNUSED,
-			 const char *arg ATTRIBUTE_UNUSED,
-			 int value ATTRIBUTE_UNUSED)
-{
-  return false;
-}
-
 /* By default, if flag_pic is true, then neither local nor global relocs
    should be placed in readonly memory.  */
 

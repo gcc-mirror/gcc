@@ -9252,10 +9252,6 @@ warn_for_unused_label (tree label)
     }
 }
 
-#ifndef TARGET_HAS_TARGETCM
-struct gcc_targetcm targetcm = TARGETCM_INITIALIZER;
-#endif
-
 /* Warn for division by zero according to the value of DIVISOR.  LOC
    is the location of the division operator.  */
 
