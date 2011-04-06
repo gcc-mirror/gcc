@@ -1,3 +1,12 @@
+2011-04-05  Nathan Froyd  <froydnj@codesourcery.com>
+
+	PR bootstrap/48471
+	* dbxout.c (debug_nesting, symbol_queue, symbol_queue_index):
+	Move these...
+	(symbol_queue_size, DBXOUT_DECR_NESTING): ...and these...
+	(DBXOUT_DECR_NESTING_AND_RETURN): ...and this under
+	#ifdef DBX_DEBUGGING_INFO.
+
 2011-04-05  Bernd Schmidt  <bernds@codesourcery.com>
 
 	PR bootstrap/48403

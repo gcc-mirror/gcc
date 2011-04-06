@@ -96,27 +96,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "xcoffout.h"
 #endif
 
-/* When -gused is used, emit debug info for only used symbols. But in
-   addition to the standard intercepted debug_hooks there are some
-   direct calls into this file, i.e., dbxout_symbol, dbxout_parms, and
-   dbxout_reg_params.  Those routines may also be called from a higher
-   level intercepted routine. So to prevent recording data for an inner
-   call to one of these for an intercept, we maintain an intercept
-   nesting counter (debug_nesting). We only save the intercepted
-   arguments if the nesting is 1.  */
-static int debug_nesting = 0;
-
-static tree *symbol_queue;
-static int symbol_queue_index = 0;
-static int symbol_queue_size = 0;
-
-#define DBXOUT_DECR_NESTING \
-  if (--debug_nesting == 0 && symbol_queue_index > 0) \
-    { emit_pending_bincls_if_required (); debug_flush_symbol_queue (); }
-
-#define DBXOUT_DECR_NESTING_AND_RETURN(x) \
-  do {--debug_nesting; return (x);} while (0)
-
 #ifndef ASM_STABS_OP
 # ifdef XCOFF_DEBUGGING_INFO
 #  define ASM_STABS_OP "\t.stabx\t"
@@ -925,6 +904,27 @@ dbxout_finish_complex_stabs (tree sym, stab_code_type code,
 }
 
 #if defined (DBX_DEBUGGING_INFO)
+
+/* When -gused is used, emit debug info for only used symbols. But in
+   addition to the standard intercepted debug_hooks there are some
+   direct calls into this file, i.e., dbxout_symbol, dbxout_parms, and
+   dbxout_reg_params.  Those routines may also be called from a higher
+   level intercepted routine. So to prevent recording data for an inner
+   call to one of these for an intercept, we maintain an intercept
+   nesting counter (debug_nesting). We only save the intercepted
+   arguments if the nesting is 1.  */
+static int debug_nesting = 0;
+
+static tree *symbol_queue;
+static int symbol_queue_index = 0;
+static int symbol_queue_size = 0;
+
+#define DBXOUT_DECR_NESTING \
+  if (--debug_nesting == 0 && symbol_queue_index > 0) \
+    { emit_pending_bincls_if_required (); debug_flush_symbol_queue (); }
+
+#define DBXOUT_DECR_NESTING_AND_RETURN(x) \
+  do {--debug_nesting; return (x);} while (0)
 
 static void
 dbxout_function_end (tree decl ATTRIBUTE_UNUSED)
