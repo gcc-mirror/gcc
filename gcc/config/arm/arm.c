@@ -22333,14 +22333,16 @@ arm_preferred_simd_mode (enum machine_mode mode)
 
 /* Implement TARGET_CLASS_LIKELY_SPILLED_P.
  
-   We need to define this for LO_REGS on thumb.  Otherwise we can end up
-   using r0-r4 for function arguments, r7 for the stack frame and don't
-   have enough left over to do doubleword arithmetic.  */
-
+   We need to define this for LO_REGS on Thumb-1.  Otherwise we can end up
+   using r0-r4 for function arguments, r7 for the stack frame and don't have
+   enough left over to do doubleword arithmetic.  For Thumb-2 all the
+   potentially problematic instructions accept high registers so this is not
+   necessary.  Care needs to be taken to avoid adding new Thumb-2 patterns
+   that require many low registers.  */
 static bool
 arm_class_likely_spilled_p (reg_class_t rclass)
 {
-  if ((TARGET_THUMB && rclass == LO_REGS)
+  if ((TARGET_THUMB1 && rclass == LO_REGS)
       || rclass  == CC_REG)
     return true;
 
