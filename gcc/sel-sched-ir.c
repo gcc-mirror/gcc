@@ -3629,10 +3629,6 @@ maybe_tidy_empty_bb (basic_block bb)
       remove_empty_bb (bb, true);
     }
 
-#ifdef ENABLE_CHECKING
-  verify_backedges ();
-#endif
-
   return true;
 }
 
@@ -3714,6 +3710,9 @@ tidy_control_flow (basic_block xbb, bool full_tidying)
       if (recompute_toporder_p)
 	sel_recompute_toporder ();
     }
+#ifdef ENABLE_CHECKING
+  verify_backedges ();
+#endif
 
   return changed;
 }
