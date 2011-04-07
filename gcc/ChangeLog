@@ -1,6 +1,11 @@
 2011-04-07  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2011-02-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/47809
+	* c-common.c (c_fully_fold_internal): Handle VIEW_CONVERT_EXPR.
+
 	2011-01-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/47473
