@@ -1,5 +1,7 @@
 2011-04-07  Jason Merrill  <jason@redhat.com>
 
+	* g++.dg/cpp0x/sfinae10.C: New.
+
 	* g++.dg/cpp0x/sfinae9.C: New.
 
 	* c-c++-common/Wcast-qual-1.c: Move here from...
