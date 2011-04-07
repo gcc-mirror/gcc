@@ -123,6 +123,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     power(_Tp __x, _Integer __n)
     { return __power(__x, __n); }
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+  using std::iota;
+#else
   /**
    *  This is an SGI extension.
    *  @ingroup SGIextensions
@@ -141,9 +144,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       while (__first != __last)
 	*__first++ = __value++;
     }
+#endif  // __GXX_EXPERIMENTAL_CXX0X__
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
 
 #endif
-
