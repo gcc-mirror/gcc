@@ -1,5 +1,13 @@
 2011-04-07  Jason Merrill  <jason@redhat.com>
 
+	PR c++/48449
+	* typeck2.c (build_functional_cast): Check complain consistently.
+	Use build_value_init and abstract_virtuals_error_sfinae.
+	(abstract_virtuals_error_sfinae): Split out.
+	* cp-tree.h: Declare it.
+	* init.c (build_new_1): Use it.
+	(build_value_init_noctor): Handle FUNCTION_TYPE.
+
 	* semantics.c (finish_decltype_type): Simplify handling of unknown
 	type.
 

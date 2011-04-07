@@ -5596,6 +5596,7 @@ extern tree binfo_or_else			(tree, tree);
 extern void cxx_readonly_error			(tree, enum lvalue_use);
 extern void complete_type_check_abstract	(tree);
 extern int abstract_virtuals_error		(tree, tree);
+extern int abstract_virtuals_error_sfinae	(tree, tree, tsubst_flags_t);
 
 extern tree store_init_value			(tree, tree, int);
 extern void check_narrowing			(tree, tree);
