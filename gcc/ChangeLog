@@ -1,6 +1,15 @@
 2011-04-07  Andrey Belevantsev  <abel@ispras.ru>
 
 	Backport from mainline
+	2010-12-14  Alexander Monakov  <amonakov@ispras.ru>
+
+	PR rtl-optimization/46875
+	* sched-vis.c (print_pattern): Dump "sequence" for ADDR_VECs.
+	* sel-sched-ir.c (bb_has_removable_jump_to_p): Forbid table jumps.
+
+2011-04-07  Andrey Belevantsev  <abel@ispras.ru>
+
+	Backport from mainline
 	2010-12-07  Andrey Belevantsev  <abel@ispras.ru>
 	PR target/43603
 	* haifa-sched.c (sched_create_recovery_edges): Update
