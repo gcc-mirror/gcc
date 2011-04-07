@@ -458,6 +458,12 @@ build_value_init_noctor (tree type, tsubst_flags_t complain)
       /* Build a constructor to contain the initializations.  */
       return build_constructor (type, v);
     }
+  else if (TREE_CODE (type) == FUNCTION_TYPE)
+    {
+      if (complain & tf_error)
+	error ("value-initialization of function type %qT", type);
+      return error_mark_node;
+    }
 
   return build_zero_init (type, NULL_TREE, /*static_storage_p=*/false);
 }
@@ -2030,7 +2036,7 @@ build_new_1 (VEC(tree,gc) **placement, tree type, tree nelts,
       return error_mark_node;
     }
 
-  if (abstract_virtuals_error (NULL_TREE, elt_type))
+  if (abstract_virtuals_error_sfinae (NULL_TREE, elt_type, complain))
     return error_mark_node;
 
   is_initialized = (TYPE_NEEDS_CONSTRUCTING (elt_type) || *init != NULL);
