@@ -4788,7 +4788,6 @@ tree
 finish_decltype_type (tree expr, bool id_expression_or_member_access_p,
 		      tsubst_flags_t complain)
 {
-  tree orig_expr = expr;
   tree type = NULL_TREE;
 
   if (!expr || error_operand_p (expr))
@@ -4826,6 +4825,13 @@ finish_decltype_type (tree expr, bool id_expression_or_member_access_p,
 
   expr = resolve_nondeduced_context (expr);
 
+  if (type_unknown_p (expr))
+    {
+      if (complain & tf_error)
+	error ("decltype cannot resolve address of overloaded function");
+      return error_mark_node;
+    }
+
   /* To get the size of a static data member declared as an array of
      unknown bound, we need to instantiate it.  */
   if (TREE_CODE (expr) == VAR_DECL
@@ -4855,27 +4861,8 @@ finish_decltype_type (tree expr, bool id_expression_or_member_access_p,
         expr = TREE_OPERAND (expr, 1);
 
       if (TREE_CODE (expr) == BASELINK)
-        /* See through BASELINK nodes to the underlying functions.  */
+        /* See through BASELINK nodes to the underlying function.  */
         expr = BASELINK_FUNCTIONS (expr);
-
-      if (TREE_CODE (expr) == TEMPLATE_ID_EXPR)
-	expr = TREE_OPERAND (expr, 0);
-
-      if (TREE_CODE (expr) == OVERLOAD)
-        {
-          if (OVL_CHAIN (expr)
-	      || TREE_CODE (OVL_FUNCTION (expr)) == TEMPLATE_DECL)
-            {
-	      if (complain & tf_error)
-		error ("%qE refers to a set of overloaded functions",
-		       orig_expr);
-              return error_mark_node;
-            }
-          else
-            /* An overload set containing only one function: just look
-               at that function.  */
-            expr = OVL_FUNCTION (expr);
-        }
 
       switch (TREE_CODE (expr))
         {
@@ -4918,10 +4905,7 @@ finish_decltype_type (tree expr, bool id_expression_or_member_access_p,
           break;
 
         default:
-	  gcc_assert (TYPE_P (expr) || DECL_P (expr)
-		      || TREE_CODE (expr) == SCOPE_REF);
-	  if (complain & tf_error)
-	    error ("argument to decltype must be an expression");
+	  gcc_unreachable ();
           return error_mark_node;
         }
     }
@@ -4955,13 +4939,6 @@ finish_decltype_type (tree expr, bool id_expression_or_member_access_p,
 	  if (clk != clk_none && !(clk & clk_class))
 	    type = cp_build_reference_type (type, (clk & clk_rvalueref));
 	}
-    }
-
-  if (!type || type == unknown_type_node)
-    {
-      if (complain & tf_error)
-	error ("type of %qE is unknown", expr);
-      return error_mark_node;
     }
 
   return type;
