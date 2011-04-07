@@ -3773,6 +3773,8 @@ be a @option{-mcpu} argument or one of the following values:
 @samp{m68000}, @samp{m68010}, @samp{m68020}, @samp{m68030},
 @samp{m68040}, @samp{m68060}, @samp{m68020-40} and @samp{m68020-60}.
 
+GCC requires at least binutils version 2.17 on these targets.
+
 @html
 <hr />
 @end html
