@@ -1,6 +1,14 @@
 2011-04-07  Andrey Belevantsev  <abel@ispras.ru>
 
 	Backport from mainline
+	2010-11-22  Alexander Monakov  <amonakov@ispras.ru>
+
+	PR rtl-optimization/45652
+	* gcc.dg/pr45652.c: New.
+
+2011-04-07  Andrey Belevantsev  <abel@ispras.ru>
+
+	Backport from mainline
 	2010-10-14  Andrey Belevantsev  <abel@ispras.ru>
 	PR rtl-optimization/45570
 	* gcc.dg/pr45570.c: New test.

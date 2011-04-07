@@ -1,6 +1,17 @@
 2011-04-07  Andrey Belevantsev  <abel@ispras.ru>
 
 	Backport from mainline
+	2010-11-22  Alexander Monakov  <amonakov@ispras.ru>
+
+	PR rtl-optimization/45652
+	* alias.c (get_reg_base_value): New.
+	* rtl.h (get_reg_base_value): Add prototype.
+	* sel-sched.c (init_regs_for_mode): Use it.  Don't use registers with
+	non-null REG_BASE_VALUE for renaming.
+
+2011-04-07  Andrey Belevantsev  <abel@ispras.ru>
+
+	Backport from mainline
 	2010-11-18  Alexander Monakov  <amonakov@ispras.ru>
 
 	PR middle-end/46518
