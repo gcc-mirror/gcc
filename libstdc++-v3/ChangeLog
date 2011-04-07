@@ -1,3 +1,12 @@
+2011-04-06  Jeffrey Yasskin  <jyasskin@google.com>
+
+	* include/ext/algorithm (is_sorted): In C++0x mode import from
+	namespace std.
+	* include/ext/numeric (iota): In C++0x mode import from
+	namespace std.
+	* testsuite/ext/is_sorted/cxx0x.cc: New.
+	* testsuite/ext/iota/cxx0x.cc: New.
+
 2011-04-02  Jonathan Wakely  <redi@gcc.gnu.org>
 
 	PR libstdc++/48398
