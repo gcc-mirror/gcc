@@ -72,7 +72,7 @@ static bool block_was_dirty;
 static bool try_crossjump_to_edge (int, edge, edge);
 static bool try_crossjump_bb (int, basic_block);
 static bool outgoing_edges_match (int, basic_block, basic_block);
-static bool old_insns_match_p (int, rtx, rtx);
+static enum replace_direction old_insns_match_p (int, rtx, rtx);
 
 static void merge_blocks_move_predecessor_nojumps (basic_block, basic_block);
 static void merge_blocks_move_successor_nojumps (basic_block, basic_block);
@@ -946,27 +946,143 @@ merge_memattrs (rtx x, rtx y)
 }
 
 
-/* Return true if I1 and I2 are equivalent and thus can be crossjumped.  */
+ /* Checks if patterns P1 and P2 are equivalent, apart from the possibly
+    different single sets S1 and S2.  */
 
 static bool
+equal_different_set_p (rtx p1, rtx s1, rtx p2, rtx s2)
+{
+  int i;
+  rtx e1, e2;
+
+  if (p1 == s1 && p2 == s2)
+    return true;
+
+  if (GET_CODE (p1) != PARALLEL || GET_CODE (p2) != PARALLEL)
+    return false;
+
+  if (XVECLEN (p1, 0) != XVECLEN (p2, 0))
+    return false;
+
+  for (i = 0; i < XVECLEN (p1, 0); i++)
+    {
+      e1 = XVECEXP (p1, 0, i);
+      e2 = XVECEXP (p2, 0, i);
+      if (e1 == s1 && e2 == s2)
+        continue;
+      if (reload_completed
+          ? rtx_renumbered_equal_p (e1, e2) : rtx_equal_p (e1, e2))
+        continue;
+
+        return false;
+    }
+
+  return true;
+}
+
+/* Examine register notes on I1 and I2 and return:
+   - dir_forward if I1 can be replaced by I2, or
+   - dir_backward if I2 can be replaced by I1, or
+   - dir_both if both are the case.  */
+
+static enum replace_direction
+can_replace_by (rtx i1, rtx i2)
+{
+  rtx s1, s2, d1, d2, src1, src2, note1, note2;
+  bool c1, c2;
+
+  /* Check for 2 sets.  */
+  s1 = single_set (i1);
+  s2 = single_set (i2);
+  if (s1 == NULL_RTX || s2 == NULL_RTX)
+    return dir_none;
+
+  /* Check that the 2 sets set the same dest.  */
+  d1 = SET_DEST (s1);
+  d2 = SET_DEST (s2);
+  if (!(reload_completed
+        ? rtx_renumbered_equal_p (d1, d2) : rtx_equal_p (d1, d2)))
+    return dir_none;
+
+  /* Find identical req_equiv or reg_equal note, which implies that the 2 sets
+     set dest to the same value.  */
+  note1 = find_reg_equal_equiv_note (i1);
+  note2 = find_reg_equal_equiv_note (i2);
+  if (!note1 || !note2 || !rtx_equal_p (XEXP (note1, 0), XEXP (note2, 0))
+      || !CONST_INT_P (XEXP (note1, 0)))
+    return dir_none;
+
+  if (!equal_different_set_p (PATTERN (i1), s1, PATTERN (i2), s2))
+    return dir_none;
+
+  /* Although the 2 sets set dest to the same value, we cannot replace
+       (set (dest) (const_int))
+     by
+       (set (dest) (reg))
+     because we don't know if the reg is live and has the same value at the
+     location of replacement.  */
+  src1 = SET_SRC (s1);
+  src2 = SET_SRC (s2);
+  c1 = CONST_INT_P (src1);
+  c2 = CONST_INT_P (src2);
+  if (c1 && c2)
+    return dir_both;
+  else if (c2)
+    return dir_forward;
+  else if (c1)
+    return dir_backward;
+
+  return dir_none;
+}
+
+/* Merges directions A and B.  */
+
+static enum replace_direction
+merge_dir (enum replace_direction a, enum replace_direction b)
+{
+  /* Implements the following table:
+        |bo fw bw no
+     ---+-----------
+     bo |bo fw bw no
+     fw |-- fw no no
+     bw |-- -- bw no
+     no |-- -- -- no.  */
+
+  if (a == b)
+    return a;
+
+  if (a == dir_both)
+    return b;
+  if (b == dir_both)
+    return a;
+
+  return dir_none;
+}
+
+/* Examine I1 and I2 and return:
+   - dir_forward if I1 can be replaced by I2, or
+   - dir_backward if I2 can be replaced by I1, or
+   - dir_both if both are the case.  */
+
+static enum replace_direction
 old_insns_match_p (int mode ATTRIBUTE_UNUSED, rtx i1, rtx i2)
 {
   rtx p1, p2;
 
   /* Verify that I1 and I2 are equivalent.  */
   if (GET_CODE (i1) != GET_CODE (i2))
-    return false;
+    return dir_none;
 
   /* __builtin_unreachable() may lead to empty blocks (ending with
      NOTE_INSN_BASIC_BLOCK).  They may be crossjumped. */
   if (NOTE_INSN_BASIC_BLOCK_P (i1) && NOTE_INSN_BASIC_BLOCK_P (i2))
-    return true;
+    return dir_both;
 
   p1 = PATTERN (i1);
   p2 = PATTERN (i2);
 
   if (GET_CODE (p1) != GET_CODE (p2))
-    return false;
+    return dir_none;
 
   /* If this is a CALL_INSN, compare register usage information.
      If we don't check this on stack register machines, the two
@@ -987,15 +1103,15 @@ old_insns_match_p (int mode ATTRIBUTE_UNUSED, rtx i1, rtx i2)
       rtx n2 = find_reg_note (i2, REG_EH_REGION, 0);
 
       if (!n1 && n2)
-	return false;
+	return dir_none;
 
       if (n1 && (!n2 || XEXP (n1, 0) != XEXP (n2, 0)))
-	return false;
+	return dir_none;
 
       if (!rtx_equal_p (CALL_INSN_FUNCTION_USAGE (i1),
 			CALL_INSN_FUNCTION_USAGE (i2))
 	  || SIBLING_CALL_P (i1) != SIBLING_CALL_P (i2))
-	return false;
+	return dir_none;
     }
 
 #ifdef STACK_REGS
@@ -1024,15 +1140,15 @@ old_insns_match_p (int mode ATTRIBUTE_UNUSED, rtx i1, rtx i2)
 	  SET_HARD_REG_BIT (i2_regset, REGNO (XEXP (note, 0)));
 
       if (!hard_reg_set_equal_p (i1_regset, i2_regset))
-	return false;
+	return dir_none;
     }
 #endif
 
   if (reload_completed
       ? rtx_renumbered_equal_p (p1, p2) : rtx_equal_p (p1, p2))
-    return true;
+    return dir_both;
 
-  return false;
+  return can_replace_by (i1, i2);
 }
 
 /* When comparing insns I1 and I2 in flow_find_cross_jump or
@@ -1059,18 +1175,32 @@ merge_notes (rtx i1, rtx i2)
 }
 
 /* Look through the insns at the end of BB1 and BB2 and find the longest
-   sequence that are equivalent.  Store the first insns for that sequence
-   in *F1 and *F2 and return the sequence length.
+   sequence that are either equivalent, or allow forward or backward
+   replacement.  Store the first insns for that sequence in *F1 and *F2 and
+   return the sequence length.
+
+   DIR_P indicates the allowed replacement direction on function entry, and
+   the actual replacement direction on function exit.  If NULL, only equivalent
+   sequences are allowed.
 
    To simplify callers of this function, if the blocks match exactly,
    store the head of the blocks in *F1 and *F2.  */
 
 int
-flow_find_cross_jump (basic_block bb1, basic_block bb2, rtx *f1, rtx *f2)
+flow_find_cross_jump (basic_block bb1, basic_block bb2, rtx *f1, rtx *f2,
+                      enum replace_direction *dir_p)
 {
   rtx i1, i2, last1, last2, afterlast1, afterlast2;
   int ninsns = 0;
   rtx p1;
+  enum replace_direction dir, last_dir, afterlast_dir;
+
+  if (dir_p)
+    dir = *dir_p;
+  else
+    dir = dir_both;
+  afterlast_dir = dir;
+  last_dir = afterlast_dir;
 
   /* Skip simple jumps at the end of the blocks.  Complex jumps still
      need to be compared for equivalence, which we'll do below.  */
@@ -1107,7 +1237,8 @@ flow_find_cross_jump (basic_block bb1, basic_block bb2, rtx *f1, rtx *f2)
       if (i1 == BB_HEAD (bb1) || i2 == BB_HEAD (bb2))
 	break;
 
-      if (!old_insns_match_p (0, i1, i2))
+      dir = merge_dir (dir, old_insns_match_p (0, i1, i2));
+      if (dir == dir_none || (!dir_p && dir != dir_both))
 	break;
 
       merge_memattrs (i1, i2);
@@ -1119,6 +1250,8 @@ flow_find_cross_jump (basic_block bb1, basic_block bb2, rtx *f1, rtx *f2)
 
 	  afterlast1 = last1, afterlast2 = last2;
 	  last1 = i1, last2 = i2;
+	  afterlast_dir = last_dir;
+	  last_dir = dir;
 	  p1 = PATTERN (i1);
 	  if (!(GET_CODE (p1) == USE || GET_CODE (p1) == CLOBBER))
 	    ninsns++;
@@ -1132,7 +1265,7 @@ flow_find_cross_jump (basic_block bb1, basic_block bb2, rtx *f1, rtx *f2)
   /* Don't allow the insn after a compare to be shared by
      cross-jumping unless the compare is also shared.  */
   if (ninsns && reg_mentioned_p (cc0_rtx, last1) && ! sets_cc0_p (last1))
-    last1 = afterlast1, last2 = afterlast2, ninsns--;
+    last1 = afterlast1, last2 = afterlast2, last_dir = afterlast_dir, ninsns--;
 #endif
 
   /* Include preceding notes and labels in the cross-jump.  One,
@@ -1156,6 +1289,8 @@ flow_find_cross_jump (basic_block bb1, basic_block bb2, rtx *f1, rtx *f2)
       *f2 = last2;
     }
 
+  if (dir_p)
+    *dir_p = last_dir;
   return ninsns;
 }
 
@@ -1222,7 +1357,7 @@ flow_find_head_matching_sequence (basic_block bb1, basic_block bb2, rtx *f1,
 	      && nehedges1 != nehedges2))
 	break;
 
-      if (!old_insns_match_p (0, i1, i2))
+      if (old_insns_match_p (0, i1, i2) != dir_both)
 	break;
 
       merge_memattrs (i1, i2);
@@ -1451,7 +1586,8 @@ outgoing_edges_match (int mode, basic_block bb1, basic_block bb2)
 		  rr.update_label_nuses = false;
 		  for_each_rtx (&BB_END (bb1), replace_label, &rr);
 
-		  match = old_insns_match_p (mode, BB_END (bb1), BB_END (bb2));
+		  match = (old_insns_match_p (mode, BB_END (bb1), BB_END (bb2))
+			   == dir_both);
 		  if (dump_file && match)
 		    fprintf (dump_file,
 			     "Tablejumps in bb %i and %i match.\n",
@@ -1473,7 +1609,7 @@ outgoing_edges_match (int mode, basic_block bb1, basic_block bb2)
 
   /* First ensure that the instructions match.  There may be many outgoing
      edges so this test is generally cheaper.  */
-  if (!old_insns_match_p (mode, BB_END (bb1), BB_END (bb2)))
+  if (old_insns_match_p (mode, BB_END (bb1), BB_END (bb2)) != dir_both)
     return false;
 
   /* Search the outgoing edges, ensure that the counts do match, find possible
@@ -1574,6 +1710,7 @@ try_crossjump_to_edge (int mode, edge e1, edge e2)
   int nmatch;
   basic_block src1 = e1->src, src2 = e2->src;
   basic_block redirect_to, redirect_from, to_remove;
+  enum replace_direction dir;
   rtx newpos1, newpos2;
   edge s;
   edge_iterator ei;
@@ -1629,7 +1766,8 @@ try_crossjump_to_edge (int mode, edge e1, edge e2)
     return false;
 
   /* ... and part the second.  */
-  nmatch = flow_find_cross_jump (src1, src2, &newpos1, &newpos2);
+  dir = dir_forward;
+  nmatch = flow_find_cross_jump (src1, src2, &newpos1, &newpos2, &dir);
 
   /* Don't proceed with the crossjump unless we found a sufficient number
      of matching instructions or the 'from' block was totally matched

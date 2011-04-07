@@ -804,9 +804,12 @@ extern bool fixup_abnormal_edges (void);
 extern void find_many_sub_basic_blocks (sbitmap);
 extern void rtl_make_eh_edge (sbitmap, basic_block, rtx);
 
+enum replace_direction { dir_none, dir_forward, dir_backward, dir_both };
+
 /* In cfgcleanup.c.  */
 extern bool cleanup_cfg (int);
-extern int flow_find_cross_jump (basic_block, basic_block, rtx *, rtx *);
+extern int flow_find_cross_jump (basic_block, basic_block, rtx *, rtx *,
+                                 enum replace_direction*);
 extern int flow_find_head_matching_sequence (basic_block, basic_block,
 					     rtx *, rtx *, int);
 
