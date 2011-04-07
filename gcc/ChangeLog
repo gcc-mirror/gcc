@@ -1,3 +1,22 @@
+2011-04-07  Tom de Vries  <tom@codesourcery.com>
+
+	PR target/43920
+	* cfgcleanup.c (equal_different_set_p, can_replace_by, merge_dir): New
+	function.
+	(old_insns_match_p): Change return type.  Replace return false/true with
+	return dir_none/dir_both.  Use can_replace_by.
+	(flow_find_cross_jump): Add dir_p parameter.  Init replacement direction
+	from dir_p.  Register replacement direction in dir, last_dir and
+	afterlast_dir.	Handle new return type of old_insns_match_p using
+	merge_dir.  Return replacement direction in dir_p.
+	(flow_find_head_matching_sequence, outgoing_edges_match): Handle new
+	return type of old_insns_match_p.
+	(try_crossjump_to_edge): Add argument to call to flow_find_cross_jump.
+	* ifcvt.c ( cond_exec_process_if_block): Add argument to call to
+	flow_find_cross_jump.
+	* basic-block.h (enum replace_direction): New type.
+	(flow_find_cross_jump): Add parameter to declaration.
+
 2011-04-06  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/sse.md (AVXMODEDCVTDQ2PS): Remove.
