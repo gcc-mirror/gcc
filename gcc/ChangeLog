@@ -1,5 +1,14 @@
 2011-04-07  Jakub Jelinek  <jakub@redhat.com>
 
+	Backported from mainline
+	2011-03-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/48141
+	* dse.c (record_store): If no positions are needed in an insn
+	that cannot be deleted, at least unchain it from active_local_stores.
+
+2011-04-07  Jakub Jelinek  <jakub@redhat.com>
+
 	PR tree-optimization/46491
 	Backported from mainline
 	2010-05-14  Jan Hubicka  <jh@suse.cz>
