@@ -332,7 +332,7 @@ func (p *parser) next() {
 		var endline int
 
 		if p.file.Line(p.pos) == line {
-			// The comment is on same line as previous token; it
+			// The comment is on same line as the previous token; it
 			// cannot be a lead comment but may be a line comment.
 			comment, endline = p.consumeCommentGroup()
 			if p.file.Line(p.pos) != endline {
@@ -2016,15 +2016,17 @@ func parseTypeSpec(p *parser, doc *ast.CommentGroup, _ int) ast.Spec {
 	}
 
 	ident := p.parseIdent()
-	typ := p.parseType()
-	p.expectSemi() // call before accessing p.linecomment
 
 	// Go spec: The scope of a type identifier declared inside a function begins
 	// at the identifier in the TypeSpec and ends at the end of the innermost
 	// containing block.
 	// (Global identifiers are resolved in a separate phase after parsing.)
-	spec := &ast.TypeSpec{doc, ident, typ, p.lineComment}
+	spec := &ast.TypeSpec{doc, ident, nil, nil}
 	p.declare(spec, p.topScope, ast.Typ, ident)
+
+	spec.Type = p.parseType()
+	p.expectSemi() // call before accessing p.linecomment
+	spec.Comment = p.lineComment
 
 	return spec
 }
@@ -2207,6 +2209,9 @@ func (p *parser) parseFile() *ast.File {
 	// Go spec: The package clause is not a declaration;
 	// the package name does not appear in any scope.
 	ident := p.parseIdent()
+	if ident.Name == "_" {
+		p.error(p.pos, "invalid package name _")
+	}
 	p.expectSemi()
 
 	var decls []ast.Decl

@@ -11,3 +11,4 @@ func libc_pwrite(fd int, buf *byte, count Size_t, offset Offset_t) Ssize_t __asm
 func libc_lseek(int, Offset_t, int) Offset_t __asm__ ("lseek64")
 func libc_truncate(path *byte, length Offset_t) int __asm__ ("truncate64")
 func libc_ftruncate(fd int, length Offset_t) int __asm__ ("ftruncate64")
+func libc_mmap(*byte, Size_t, int, int, int, Offset_t) *byte __asm__ ("mmap64")

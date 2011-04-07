@@ -248,7 +248,7 @@ func walkTree(n *Node, path string, f func(path string, n *Node)) {
 func makeTree(t *testing.T) {
 	walkTree(tree, tree.name, func(path string, n *Node) {
 		if n.entries == nil {
-			fd, err := os.Open(path, os.O_CREAT, 0660)
+			fd, err := os.Create(path)
 			if err != nil {
 				t.Errorf("makeTree: %v", err)
 			}
@@ -459,9 +459,9 @@ func TestEvalSymlinks(t *testing.T) {
 	// relative
 	for _, d := range EvalSymlinksTests {
 		if p, err := filepath.EvalSymlinks(d.path); err != nil {
-			t.Errorf("EvalSymlinks(%v) error: %v", d.path, err)
+			t.Errorf("EvalSymlinks(%q) error: %v", d.path, err)
 		} else if p != d.dest {
-			t.Errorf("EvalSymlinks(%v)=%v, want %v", d.path, p, d.dest)
+			t.Errorf("EvalSymlinks(%q)=%q, want %q", d.path, p, d.dest)
 		}
 	}
 	// absolute
@@ -477,10 +477,54 @@ func TestEvalSymlinks(t *testing.T) {
 			filepath.Join(testroot, d.dest),
 		}
 		if p, err := filepath.EvalSymlinks(a.path); err != nil {
-			t.Errorf("EvalSymlinks(%v) error: %v", a.path, err)
+			t.Errorf("EvalSymlinks(%q) error: %v", a.path, err)
 		} else if p != a.dest {
-			t.Errorf("EvalSymlinks(%v)=%v, want %v", a.path, p, a.dest)
+			t.Errorf("EvalSymlinks(%q)=%q, want %q", a.path, p, a.dest)
 		}
 	}
 */
 }
+
+/* These tests do not work in the gccgo test environment.
+
+// Test paths relative to $GOROOT/src
+var abstests = []string{
+	"../AUTHORS",
+	"pkg/../../AUTHORS",
+	"Make.pkg",
+	"pkg/Makefile",
+
+	// Already absolute
+	"$GOROOT/src/Make.pkg",
+}
+
+func TestAbs(t *testing.T) {
+	oldwd, err := os.Getwd()
+	if err != nil {
+		t.Fatal("Getwd failed: " + err.String())
+	}
+	defer os.Chdir(oldwd)
+	goroot := os.Getenv("GOROOT")
+	cwd := filepath.Join(goroot, "src")
+	os.Chdir(cwd)
+	for _, path := range abstests {
+		path = strings.Replace(path, "$GOROOT", goroot, -1)
+		abspath, err := filepath.Abs(path)
+		if err != nil {
+			t.Errorf("Abs(%q) error: %v", path, err)
+		}
+		info, err := os.Stat(path)
+		if err != nil {
+			t.Errorf("%s: %s", path, err)
+		}
+		absinfo, err := os.Stat(abspath)
+		if err != nil || absinfo.Ino != info.Ino {
+			t.Errorf("Abs(%q)=%q, not the same file", path, abspath)
+		}
+		if !filepath.IsAbs(abspath) {
+			t.Errorf("Abs(%q)=%q, not an absolute path", path, abspath)
+		}
+	}
+}
+
+*/

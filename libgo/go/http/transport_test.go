@@ -85,6 +85,7 @@ func TestTransportConnectionCloseOnResponse(t *testing.T) {
 				t.Fatalf("error in connectionClose=%v, req #%d, Do: %v", connectionClose, n, err)
 			}
 			body, err := ioutil.ReadAll(res.Body)
+			defer res.Body.Close()
 			if err != nil {
 				t.Fatalf("error in connectionClose=%v, req #%d, ReadAll: %v", connectionClose, n, err)
 			}
@@ -154,9 +155,11 @@ func TestTransportIdleCacheKeys(t *testing.T) {
 		t.Errorf("After CloseIdleConnections expected %d idle conn cache keys; got %d", e, g)
 	}
 
-	if _, _, err := c.Get(ts.URL); err != nil {
+	resp, _, err := c.Get(ts.URL)
+	if err != nil {
 		t.Error(err)
 	}
+	ioutil.ReadAll(resp.Body)
 
 	keys := tr.IdleConnKeysForTesting()
 	if e, g := 1, len(keys); e != g {
@@ -164,12 +167,68 @@ func TestTransportIdleCacheKeys(t *testing.T) {
 	}
 
 	if e := "|http|" + ts.Listener.Addr().String(); keys[0] != e {
-		t.Logf("Expected idle cache key %q; got %q", e, keys[0])
+		t.Errorf("Expected idle cache key %q; got %q", e, keys[0])
 	}
 
 	tr.CloseIdleConnections()
 	if e, g := 0, len(tr.IdleConnKeysForTesting()); e != g {
 		t.Errorf("After CloseIdleConnections expected %d idle conn cache keys; got %d", e, g)
+	}
+}
+
+func TestTransportMaxPerHostIdleConns(t *testing.T) {
+	ch := make(chan string)
+	ts := httptest.NewServer(HandlerFunc(func(w ResponseWriter, r *Request) {
+		fmt.Fprintf(w, "%s", <-ch)
+	}))
+	defer ts.Close()
+	maxIdleConns := 2
+	tr := &Transport{DisableKeepAlives: false, MaxIdleConnsPerHost: maxIdleConns}
+	c := &Client{Transport: tr}
+
+	// Start 3 outstanding requests (will hang until we write to
+	// ch)
+	donech := make(chan bool)
+	doReq := func() {
+		resp, _, err := c.Get(ts.URL)
+		if err != nil {
+			t.Error(err)
+		}
+		ioutil.ReadAll(resp.Body)
+		donech <- true
+	}
+	go doReq()
+	go doReq()
+	go doReq()
+
+	if e, g := 0, len(tr.IdleConnKeysForTesting()); e != g {
+		t.Fatalf("Before writes, expected %d idle conn cache keys; got %d", e, g)
+	}
+
+	ch <- "res1"
+	<-donech
+	keys := tr.IdleConnKeysForTesting()
+	if e, g := 1, len(keys); e != g {
+		t.Fatalf("after first response, expected %d idle conn cache keys; got %d", e, g)
+	}
+	cacheKey := "|http|" + ts.Listener.Addr().String()
+	if keys[0] != cacheKey {
+		t.Fatalf("Expected idle cache key %q; got %q", cacheKey, keys[0])
+	}
+	if e, g := 1, tr.IdleConnCountForTesting(cacheKey); e != g {
+		t.Errorf("after first response, expected %d idle conns; got %d", e, g)
+	}
+
+	ch <- "res2"
+	<-donech
+	if e, g := 2, tr.IdleConnCountForTesting(cacheKey); e != g {
+		t.Errorf("after second response, expected %d idle conns; got %d", e, g)
+	}
+
+	ch <- "res3"
+	<-donech
+	if e, g := maxIdleConns, tr.IdleConnCountForTesting(cacheKey); e != g {
+		t.Errorf("after third response, still expected %d idle conns; got %d", e, g)
 	}
 }
 
@@ -206,6 +265,63 @@ func TestTransportServerClosingUnexpectedly(t *testing.T) {
 	}
 	if body2 == body3 {
 		t.Errorf("expected body2 and body3 to be different")
+	}
+}
+
+// TestTransportHeadResponses verifies that we deal with Content-Lengths
+// with no bodies properly
+func TestTransportHeadResponses(t *testing.T) {
+	ts := httptest.NewServer(HandlerFunc(func(w ResponseWriter, r *Request) {
+		if r.Method != "HEAD" {
+			panic("expected HEAD; got " + r.Method)
+		}
+		w.Header().Set("Content-Length", "123")
+		w.WriteHeader(200)
+	}))
+	defer ts.Close()
+
+	tr := &Transport{DisableKeepAlives: false}
+	c := &Client{Transport: tr}
+	for i := 0; i < 2; i++ {
+		res, err := c.Head(ts.URL)
+		if err != nil {
+			t.Errorf("error on loop %d: %v", i, err)
+		}
+		if e, g := "123", res.Header.Get("Content-Length"); e != g {
+			t.Errorf("loop %d: expected Content-Length header of %q, got %q", e, g)
+		}
+		if e, g := int64(0), res.ContentLength; e != g {
+			t.Errorf("loop %d: expected res.ContentLength of %v, got %v", e, g)
+		}
+	}
+}
+
+// TestTransportHeadChunkedResponse verifies that we ignore chunked transfer-encoding
+// on responses to HEAD requests.
+func TestTransportHeadChunkedResponse(t *testing.T) {
+	ts := httptest.NewServer(HandlerFunc(func(w ResponseWriter, r *Request) {
+		if r.Method != "HEAD" {
+			panic("expected HEAD; got " + r.Method)
+		}
+		w.Header().Set("Transfer-Encoding", "chunked") // client should ignore
+		w.Header().Set("x-client-ipport", r.RemoteAddr)
+		w.WriteHeader(200)
+	}))
+	defer ts.Close()
+
+	tr := &Transport{DisableKeepAlives: false}
+	c := &Client{Transport: tr}
+
+	res1, err := c.Head(ts.URL)
+	if err != nil {
+		t.Fatalf("request 1 error: %v", err)
+	}
+	res2, err := c.Head(ts.URL)
+	if err != nil {
+		t.Fatalf("request 2 error: %v", err)
+	}
+	if v1, v2 := res1.Header.Get("x-client-ipport"), res2.Header.Get("x-client-ipport"); v1 != v2 {
+		t.Errorf("ip/ports differed between head requests: %q vs %q", v1, v2)
 	}
 }
 
