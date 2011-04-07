@@ -1,5 +1,10 @@
 2011-04-07  Jason Merrill  <jason@redhat.com>
 
+	* semantics.c (finish_decltype_type): Add complain parm.
+	* cp-tree.h: Adjust.
+	* parser.c (cp_parser_decltype): Adjust.
+	* pt.c (tsubst): Adjust.
+
 	PR c++/48450
 	* cvt.c (ocp_convert): Handle converting scoped enum to bool.
 
