@@ -9895,7 +9895,7 @@ based_loc_descr (rtx reg, HOST_WIDE_INT offset,
 	      int base_reg
 		= DWARF_FRAME_REGNUM (cfa.indirect
 				      ? HARD_FRAME_POINTER_REGNUM
-				      : STACK_POINTER_REGNUM);
+				      : REGNO (elim));
 	      return new_reg_loc_descr (base_reg, offset);
 	    }
 
