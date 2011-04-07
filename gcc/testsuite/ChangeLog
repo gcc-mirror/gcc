@@ -1,3 +1,8 @@
+2011-04-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/48343
+	* gcc.dg/torture/pr48343.c: New test.
+
 2011-04-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* gcc.target/i386/asm-6.c: Remove dg-xfail-if.

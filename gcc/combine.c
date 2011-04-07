@@ -413,7 +413,7 @@ static int cant_combine_insn_p (rtx);
 static int can_combine_p (rtx, rtx, rtx, rtx, rtx, rtx, rtx *, rtx *);
 static int combinable_i3pat (rtx, rtx *, rtx, rtx, rtx, int, int, rtx *);
 static int contains_muldiv (rtx);
-static rtx try_combine (rtx, rtx, rtx, rtx, int *);
+static rtx try_combine (rtx, rtx, rtx, rtx, int *, rtx);
 static void undo_all (void);
 static void undo_commit (void);
 static rtx *find_split_point (rtx *, rtx, bool);
@@ -1177,6 +1177,7 @@ combine_instructions (rtx f, unsigned int nregs)
 
   FOR_EACH_BB (this_basic_block)
     {
+      rtx last_combined_insn = NULL_RTX;
       optimize_this_for_speed_p = optimize_bb_for_speed_p (this_basic_block);
       last_call_luid = 0;
       mem_last_set = -1;
@@ -1195,6 +1196,10 @@ combine_instructions (rtx f, unsigned int nregs)
 	  next = 0;
 	  if (NONDEBUG_INSN_P (insn))
 	    {
+	      if (last_combined_insn == NULL_RTX
+		  || DF_INSN_LUID (last_combined_insn) < DF_INSN_LUID (insn))
+		last_combined_insn = insn;
+
 	      /* See if we know about function return values before this
 		 insn based upon SUBREG flags.  */
 	      check_promoted_subreg (insn, PATTERN (insn));
@@ -1208,7 +1213,8 @@ combine_instructions (rtx f, unsigned int nregs)
 
 	      FOR_EACH_LOG_LINK (links, insn)
 		if ((next = try_combine (insn, links->insn, NULL_RTX,
-					 NULL_RTX, &new_direct_jump_p)) != 0)
+					 NULL_RTX, &new_direct_jump_p,
+					 last_combined_insn)) != 0)
 		  goto retry;
 
 	      /* Try each sequence of three linked insns ending with this one.  */
@@ -1224,8 +1230,8 @@ combine_instructions (rtx f, unsigned int nregs)
 
 		  FOR_EACH_LOG_LINK (nextlinks, link)
 		    if ((next = try_combine (insn, link, nextlinks->insn,
-					     NULL_RTX,
-					     &new_direct_jump_p)) != 0)
+					     NULL_RTX, &new_direct_jump_p,
+					     last_combined_insn)) != 0)
 		      goto retry;
 		}
 
@@ -1243,13 +1249,14 @@ combine_instructions (rtx f, unsigned int nregs)
 		  && sets_cc0_p (PATTERN (prev)))
 		{
 		  if ((next = try_combine (insn, prev, NULL_RTX, NULL_RTX,
-					   &new_direct_jump_p)) != 0)
+					   &new_direct_jump_p,
+					   last_combined_insn)) != 0)
 		    goto retry;
 
 		  FOR_EACH_LOG_LINK (nextlinks, prev)
 		    if ((next = try_combine (insn, prev, nextlinks->insn,
-					     NULL_RTX,
-					     &new_direct_jump_p)) != 0)
+					     NULL_RTX, &new_direct_jump_p,
+					     last_combined_insn)) != 0)
 		      goto retry;
 		}
 
@@ -1262,13 +1269,14 @@ combine_instructions (rtx f, unsigned int nregs)
 		  && reg_mentioned_p (cc0_rtx, SET_SRC (PATTERN (insn))))
 		{
 		  if ((next = try_combine (insn, prev, NULL_RTX, NULL_RTX,
-					   &new_direct_jump_p)) != 0)
+					   &new_direct_jump_p,
+					   last_combined_insn)) != 0)
 		    goto retry;
 
 		  FOR_EACH_LOG_LINK (nextlinks, prev)
 		    if ((next = try_combine (insn, prev, nextlinks->insn,
-					     NULL_RTX,
-					     &new_direct_jump_p)) != 0)
+					     NULL_RTX, &new_direct_jump_p,
+					     last_combined_insn)) != 0)
 		      goto retry;
 		}
 
@@ -1283,8 +1291,8 @@ combine_instructions (rtx f, unsigned int nregs)
 		    && NONJUMP_INSN_P (prev)
 		    && sets_cc0_p (PATTERN (prev))
 		    && (next = try_combine (insn, links->insn,
-					    prev, NULL_RTX,
-					    &new_direct_jump_p)) != 0)
+					    prev, NULL_RTX, &new_direct_jump_p,
+					    last_combined_insn)) != 0)
 		  goto retry;
 #endif
 
@@ -1295,7 +1303,8 @@ combine_instructions (rtx f, unsigned int nregs)
 		     nextlinks = nextlinks->next)
 		  if ((next = try_combine (insn, links->insn,
 					   nextlinks->insn, NULL_RTX,
-					   &new_direct_jump_p)) != 0)
+					   &new_direct_jump_p,
+					   last_combined_insn)) != 0)
 		    goto retry;
 
 	      /* Try four-instruction combinations.  */
@@ -1318,14 +1327,16 @@ combine_instructions (rtx f, unsigned int nregs)
 		      FOR_EACH_LOG_LINK (nextlinks, link1)
 			if ((next = try_combine (insn, link, link1,
 						 nextlinks->insn,
-						 &new_direct_jump_p)) != 0)
+						 &new_direct_jump_p,
+						 last_combined_insn)) != 0)
 			  goto retry;
 		      /* I0, I1 -> I2, I2 -> I3.  */
 		      for (nextlinks = next1->next; nextlinks;
 			   nextlinks = nextlinks->next)
 			if ((next = try_combine (insn, link, link1,
 						 nextlinks->insn,
-						 &new_direct_jump_p)) != 0)
+						 &new_direct_jump_p,
+						 last_combined_insn)) != 0)
 			  goto retry;
 		    }
 
@@ -1338,13 +1349,15 @@ combine_instructions (rtx f, unsigned int nregs)
 		      FOR_EACH_LOG_LINK (nextlinks, link)
 			if ((next = try_combine (insn, link, link1,
 						 nextlinks->insn,
-						 &new_direct_jump_p)) != 0)
+						 &new_direct_jump_p,
+						 last_combined_insn)) != 0)
 			  goto retry;
 		      /* I0 -> I1; I1, I2 -> I3.  */
 		      FOR_EACH_LOG_LINK (nextlinks, link1)
 			if ((next = try_combine (insn, link, link1,
 						 nextlinks->insn,
-						 &new_direct_jump_p)) != 0)
+						 &new_direct_jump_p,
+						 last_combined_insn)) != 0)
 			  goto retry;
 		    }
 		}
@@ -1373,7 +1386,8 @@ combine_instructions (rtx f, unsigned int nregs)
 		      i2mod_old_rhs = copy_rtx (orig);
 		      i2mod_new_rhs = copy_rtx (note);
 		      next = try_combine (insn, i2mod, NULL_RTX, NULL_RTX,
-					  &new_direct_jump_p);
+					  &new_direct_jump_p,
+					  last_combined_insn);
 		      i2mod = NULL_RTX;
 		      if (next)
 			goto retry;
@@ -2510,10 +2524,15 @@ update_cfg_for_uncondjump (rtx insn)
    resume scanning.
 
    Set NEW_DIRECT_JUMP_P to a nonzero value if try_combine creates a
-   new direct jump instruction.  */
+   new direct jump instruction.
+
+   LAST_COMBINED_INSN is either I3, or some insn after I3 that has
+   been I3 passed to an earlier try_combine within the same basic
+   block.  */
 
 static rtx
-try_combine (rtx i3, rtx i2, rtx i1, rtx i0, int *new_direct_jump_p)
+try_combine (rtx i3, rtx i2, rtx i1, rtx i0, int *new_direct_jump_p,
+	     rtx last_combined_insn)
 {
   /* New patterns for I3 and I2, respectively.  */
   rtx newpat, newi2pat = 0;
@@ -3863,7 +3882,7 @@ try_combine (rtx i3, rtx i2, rtx i1, rtx i0, int *new_direct_jump_p)
 		   i2src while its original mode is temporarily
 		   restored, and then clear i2scratch so that we don't
 		   do it again later.  */
-		propagate_for_debug (i2, i3, reg, i2src);
+		propagate_for_debug (i2, last_combined_insn, reg, i2src);
 		i2scratch = false;
 		/* Put back the new mode.  */
 		adjust_reg_mode (reg, new_mode);
@@ -3876,13 +3895,16 @@ try_combine (rtx i3, rtx i2, rtx i1, rtx i0, int *new_direct_jump_p)
 		if (reg == i2dest)
 		  {
 		    first = i2;
-		    last = i3;
+		    last = last_combined_insn;
 		  }
 		else
 		  {
 		    first = i3;
 		    last = undobuf.other_insn;
 		    gcc_assert (last);
+		    if (DF_INSN_LUID (last)
+			< DF_INSN_LUID (last_combined_insn))
+		      last = last_combined_insn;
 		  }
 
 		/* We're dealing with a reg that changed mode but not
@@ -4109,14 +4131,14 @@ try_combine (rtx i3, rtx i2, rtx i1, rtx i0, int *new_direct_jump_p)
     if (newi2pat)
       {
 	if (MAY_HAVE_DEBUG_INSNS && i2scratch)
-	  propagate_for_debug (i2, i3, i2dest, i2src);
+	  propagate_for_debug (i2, last_combined_insn, i2dest, i2src);
 	INSN_CODE (i2) = i2_code_number;
 	PATTERN (i2) = newi2pat;
       }
     else
       {
 	if (MAY_HAVE_DEBUG_INSNS && i2src)
-	  propagate_for_debug (i2, i3, i2dest, i2src);
+	  propagate_for_debug (i2, last_combined_insn, i2dest, i2src);
 	SET_INSN_DELETED (i2);
       }
 
@@ -4125,7 +4147,7 @@ try_combine (rtx i3, rtx i2, rtx i1, rtx i0, int *new_direct_jump_p)
 	LOG_LINKS (i1) = NULL;
 	REG_NOTES (i1) = 0;
 	if (MAY_HAVE_DEBUG_INSNS)
-	  propagate_for_debug (i1, i3, i1dest, i1src);
+	  propagate_for_debug (i1, last_combined_insn, i1dest, i1src);
 	SET_INSN_DELETED (i1);
       }
 
@@ -4134,7 +4156,7 @@ try_combine (rtx i3, rtx i2, rtx i1, rtx i0, int *new_direct_jump_p)
 	LOG_LINKS (i0) = NULL;
 	REG_NOTES (i0) = 0;
 	if (MAY_HAVE_DEBUG_INSNS)
-	  propagate_for_debug (i0, i3, i0dest, i0src);
+	  propagate_for_debug (i0, last_combined_insn, i0dest, i0src);
 	SET_INSN_DELETED (i0);
       }
 
