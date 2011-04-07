@@ -301,9 +301,6 @@ abstract_virtuals_error_sfinae (tree decl, tree type, tsubst_flags_t complain)
   if (!pure)
     return 0;
 
-  if (decl && TREE_CODE (decl) == RESULT_DECL)
-    return 0;
-
   if (!(complain & tf_error))
     return 1;
 
@@ -1536,16 +1533,21 @@ build_functional_cast (tree exp, tree parms, tsubst_flags_t complain)
   else
     type = exp;
 
-  if (TREE_CODE (type) == REFERENCE_TYPE && !parms)
-    {
-      if (complain & tf_error)
-	error ("invalid value-initialization of reference type");
-      return error_mark_node;
-    }
-
   if (processing_template_decl)
     {
-      tree t = build_min (CAST_EXPR, type, parms);
+      tree t;
+
+      /* Diagnose this even in a template.  We could also try harder
+	 to give all the usual errors when the type and args are
+	 non-dependent...  */
+      if (TREE_CODE (type) == REFERENCE_TYPE && !parms)
+	{
+	  if (complain & tf_error)
+	    error ("invalid value-initialization of reference type");
+	  return error_mark_node;
+	}
+
+      t = build_min (CAST_EXPR, type, parms);
       /* We don't know if it will or will not have side effects.  */
       TREE_SIDE_EFFECTS (t) = 1;
       return t;
