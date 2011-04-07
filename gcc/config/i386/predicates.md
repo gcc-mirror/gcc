@@ -969,13 +969,8 @@
 ;; Return true if OP is a comparison that can be used in the CMPSS/CMPPS insns.
 ;; The first set are supported directly; the second set can't be done with
 ;; full IEEE support, i.e. NaNs.
-;;
-;; ??? It would seem that we have a lot of uses of this predicate that pass
-;; it the wrong mode.  We got away with this because the old function didn't
-;; check the mode at all.  Mirror that for now by calling this a special
-;; predicate.
 
-(define_special_predicate "sse_comparison_operator"
+(define_predicate "sse_comparison_operator"
   (match_code "eq,lt,le,unordered,ne,unge,ungt,ordered"))
 
 ;; Return true if OP is a comparison operator that can be issued by

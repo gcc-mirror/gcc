@@ -1,9 +1,26 @@
+2011-04-07  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sse.md: Update copyright year.
+	(avx_cmp<ssescalarmodesuffix><mode>3): Add missing output
+	register constraint.
+	(*vec_concatv2sf_avx): Fix wrong register constraint in
+	alternative 3 of operand 1.
+	(*vec_set<mode>_0_avx): Avoid combining registers from different
+	units in a single alternative.
+	(*vec_set<mode>_0_sse4_1): Ditto.
+	(*vec_set<mode>_0_sse2): Ditto.
+	(vec_set<mode>_0): Ditto.
+	(sse2_storehpd): Ditto.
+	(sse2_loadhpd): Ditto.
+	(sse4_1_insertps): Use nonimmediate_operand for operand 2.
+	* config/i386/predicates.md (sse_comparison_operator): Do not
+	define as special predicate.
+
 2011-04-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/48343
 	* combine.c (combine_instructions): Add last_combined_insn,
-	update it if insn is after it, pass it to all try_combine
-	calls.
+	update it if insn is after it, pass it to all try_combine calls.
 	(try_combine): Add last_combined_insn parameter, pass it instead of
 	i3 to propagate_for_debug.
 
@@ -53,7 +70,7 @@
 	* config/spu/t-spu-elf (dp-bit.c): Use > instead of >>.
 
 2011-04-01  Andrey Belevantsev  <abel@ispras.ru>
-	
+
 	Backport from mainline
 	2011-03-22  Andrey Belevantsev  <abel@ispras.ru>
 
