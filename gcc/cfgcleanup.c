@@ -69,7 +69,7 @@ static bool crossjumps_occured;
    information; we should run df_analyze to enable more opportunities.  */
 static bool block_was_dirty;
 
-static bool try_crossjump_to_edge (int, edge, edge);
+static bool try_crossjump_to_edge (int, edge, edge, enum replace_direction);
 static bool try_crossjump_bb (int, basic_block);
 static bool outgoing_edges_match (int, basic_block, basic_block);
 static enum replace_direction old_insns_match_p (int, rtx, rtx);
@@ -1761,16 +1761,18 @@ block_has_preserve_label (basic_block bb)
 
 /* E1 and E2 are edges with the same destination block.  Search their
    predecessors for common code.  If found, redirect control flow from
-   (maybe the middle of) E1->SRC to (maybe the middle of) E2->SRC.  */
+   (maybe the middle of) E1->SRC to (maybe the middle of) E2->SRC (dir_forward),
+   or the other way around (dir_backward).  DIR specifies the allowed
+   replacement direction.  */
 
 static bool
-try_crossjump_to_edge (int mode, edge e1, edge e2)
+try_crossjump_to_edge (int mode, edge e1, edge e2,
+                       enum replace_direction dir)
 {
   int nmatch;
   basic_block src1 = e1->src, src2 = e2->src;
   basic_block redirect_to, redirect_from, to_remove;
   basic_block osrc1, osrc2, redirect_edges_to, tmp;
-  enum replace_direction dir;
   rtx newpos1, newpos2;
   edge s;
   edge_iterator ei;
@@ -1826,7 +1828,6 @@ try_crossjump_to_edge (int mode, edge e1, edge e2)
     return false;
 
   /* ... and part the second.  */
-  dir = dir_forward;
   nmatch = flow_find_cross_jump (src1, src2, &newpos1, &newpos2, &dir);
 
   osrc1 = src1;
@@ -1835,6 +1836,16 @@ try_crossjump_to_edge (int mode, edge e1, edge e2)
     src1 = BLOCK_FOR_INSN (newpos1);
   if (newpos2 != NULL_RTX)
     src2 = BLOCK_FOR_INSN (newpos2);
+
+  if (dir == dir_backward)
+    {
+#define SWAP(T, X, Y) do { T tmp = (X); (X) = (Y); (Y) = tmp; } while (0)
+      SWAP (basic_block, osrc1, osrc2);
+      SWAP (basic_block, src1, src2);
+      SWAP (edge, e1, e2);
+      SWAP (rtx, newpos1, newpos2);
+#undef SWAP
+    }
 
   /* Don't proceed with the crossjump unless we found a sufficient number
      of matching instructions or the 'from' block was totally matched
@@ -2088,7 +2099,7 @@ try_crossjump_bb (int mode, basic_block bb)
 		   || (fallthru->src->flags & BB_MODIFIED)))
 	    continue;
 
-	  if (try_crossjump_to_edge (mode, e, fallthru))
+	  if (try_crossjump_to_edge (mode, e, fallthru, dir_forward))
 	    {
 	      changed = true;
 	      ix = 0;
@@ -2136,7 +2147,9 @@ try_crossjump_bb (int mode, basic_block bb)
 		   || (e2->src->flags & BB_MODIFIED)))
 	    continue;
 
-	  if (try_crossjump_to_edge (mode, e, e2))
+	  /* Both e and e2 are not fallthru edges, so we can crossjump in either
+	     direction.  */
+	  if (try_crossjump_to_edge (mode, e, e2, dir_both))
 	    {
 	      changed = true;
 	      ix = 0;

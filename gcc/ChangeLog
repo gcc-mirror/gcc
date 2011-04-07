@@ -1,6 +1,13 @@
 2011-04-07  Tom de Vries  <tom@codesourcery.com>
 
 	PR target/43920
+	* cfgcleanup.c (try_crossjump_to_edge): Add dir parameter.  Pass dir to
+	flow_find_cross_jump.  Swap variables to implement backward replacement.
+	(try_crossjump_bb): Add argument to try_crossjump_to_edge.
+
+2011-04-07  Tom de Vries  <tom@codesourcery.com>
+
+	PR target/43920
 	* cfgcleanup.c (walk_to_nondebug_insn): New function.
 	(flow_find_cross_jump): Use walk_to_nondebug_insn.  Recalculate bb1 and
 	bb2.
