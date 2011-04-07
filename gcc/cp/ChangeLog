@@ -1,6 +1,11 @@
 2011-04-07  Jason Merrill  <jason@redhat.com>
 
 	PR c++/48450
+	* call.c (resolve_args): Take complain.
+	(build_new_function_call, build_operator_new_call): Pass it.
+	(build_op_call, build_new_op, build_new_method_call): Pass it.
+
+	PR c++/48450
 	* typeck.c (check_for_casting_away_constness): Take complain.
 	(build_static_cast_1, build_reinterpret_cast_1): Pass it.
 	(build_const_cast_1): Pass it.  Take full complain parm.
