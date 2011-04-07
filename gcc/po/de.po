@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: gcc 4.6.0\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2011-03-24 16:45+0000\n"
-"PO-Revision-Date: 2011-04-05 19:50+0100\n"
+"PO-Revision-Date: 2011-04-06 19:50+0100\n"
 "Last-Translator: Roland Stigge <stigge@antcom.de>\n"
 "Language-Team: German <translation-team-de@lists.sourceforge.net>\n"
 "Language: de\n"
@@ -10028,9 +10028,8 @@ msgid "Run only the second compilation of -fcompare-debug"
 msgstr "Nur die zweite Kompilierung von -fcompare-debug laufen lassen"
 
 #: common.opt:875
-#, fuzzy
 msgid "Perform comparison elimination after register allocation has finished"
-msgstr "Beseitigung globaler gemeinsamer Teilausdrücke nach Registerreservierung durchführen"
+msgstr "Beseitigung von Vergleichen nach Registerreservierung durchführen"
 
 #: common.opt:879
 msgid "Do not perform optimizations increasing noticeably stack usage"
@@ -10085,9 +10084,8 @@ msgid "Delete useless null pointer checks"
 msgstr "Unnötige Nullzeigerprügungen löschen"
 
 #: common.opt:937
-#, fuzzy
 msgid "Try to convert virtual calls to direct ones."
-msgstr "Dem Linker erlauben, PIC-Aufrufe in direkte Aufrufe umzuwandeln"
+msgstr "Versuchen, virtuelle Sprünge in direkte umzuwandeln."
 
 #: common.opt:941
 msgid "-fdiagnostics-show-location=[once|every-line]\tHow often to emit source location at the beginning of line-wrapped diagnostics"
@@ -10923,9 +10921,8 @@ msgid "Enable loop invariant motion on trees"
 msgstr "Bewegung der Schleifeninvariante auf Bäumen einschalten"
 
 #: common.opt:1924
-#, fuzzy
 msgid "Enable loop interchange transforms.  Same as -floop-interchange"
-msgstr "Transformation des Loop Interchange einschalten"
+msgstr "Umwandlungen mit Schleifenaustausch einschalten. Das Gleiche wie -floop-interchange"
 
 #: common.opt:1928
 msgid "Create canonical induction variables in loops"
@@ -11290,14 +11287,12 @@ msgid "argument must have complex type"
 msgstr "Argument muss komplexen Typen haben"
 
 #: go/gofrontend/expressions.cc:7578
-#, fuzzy
 msgid "complex arguments must have identical types"
-msgstr "cmplx-Argumente müssen identische Typen haben"
+msgstr "komplexe Argumente müssen identische Typen haben"
 
 #: go/gofrontend/expressions.cc:7580
-#, fuzzy
 msgid "complex arguments must have floating-point type"
-msgstr "cmplx-Argumente müssen Gleitkommatypen haben"
+msgstr "komplexe Argumente müssen Gleitkommatyp haben"
 
 #: go/gofrontend/expressions.cc:8560
 msgid "expected function"
@@ -11913,9 +11908,9 @@ msgid "redefinition of typedef %q+D with different type"
 msgstr "Redefinition des typedef %q+D mit anderem Typ"
 
 #: c-decl.c:1818
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "redefinition of typedef %q+D with variably modified type"
-msgstr "Redefinition des typedef %q+D mit anderem Typ"
+msgstr "Redefinition des typedef %q+D mit variabel modifiziertem Typ"
 
 #: c-decl.c:1825
 #, gcc-internal-format
@@ -13292,9 +13287,9 @@ msgid "prefix attributes are ignored for implementations"
 msgstr "Präfixattribute werden für Implementierungen ignoriert"
 
 #: c-parser.c:1554
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "unexpected attribute"
-msgstr "Attributbitname erwartet"
+msgstr "unerwartetes Attribut"
 
 #: c-parser.c:1596
 #, gcc-internal-format
@@ -13643,14 +13638,14 @@ msgid "unknown property attribute"
 msgstr "unbekanntes Eigenschaftsattribut"
 
 #: c-parser.c:7964 cp/parser.c:23157
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "missing %<=%> (after %<getter%> attribute)"
-msgstr "fehlendes %<(%> hinter %<#pragma pack%> - ignoriert"
+msgstr "fehlendes %<=%> (hinter Attribut %<getter%>)"
 
 #: c-parser.c:7967 cp/parser.c:23160
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "missing %<=%> (after %<setter%> attribute)"
-msgstr "fehlendes %<(%> hinter %<#pragma pack%> - ignoriert"
+msgstr "fehlendes %<=%> (hinter Attribut %<setter%>)"
 
 #: c-parser.c:7981 cp/parser.c:23174
 #, gcc-internal-format
@@ -13698,9 +13693,9 @@ msgid "too many %qs clauses"
 msgstr "zu viele %qs-Klauseln"
 
 #: c-parser.c:8481 cp/parser.c:23550
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "collapse argument needs positive constant integer expression"
-msgstr "Vergleich zwischen vorzeichenbehafteten und vorzeichenlosen Ganzzahlausdrücken"
+msgstr "Collapse-Argument erfordert positiven konstanten Ganzzahlausdruck"
 
 #: c-parser.c:8547 cp/parser.c:23601
 #, gcc-internal-format
@@ -13713,9 +13708,9 @@ msgid "expected integer expression"
 msgstr "Ganzzahlausdruck erwartet"
 
 #: c-parser.c:8650
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%<num_threads%> value must be positive"
-msgstr "%HWert %<num_threads%> muss positiv sein"
+msgstr "Wert von %<num_threads%> muss positiv sein"
 
 #: c-parser.c:8733 cp/parser.c:23753
 #, gcc-internal-format
@@ -13728,9 +13723,9 @@ msgid "schedule %<runtime%> does not take a %<chunk_size%> parameter"
 msgstr "Ablauf %<runtime%> akzeptiert keinen Parameter %<chunk_size%>"
 
 #: c-parser.c:8825 cp/parser.c:23841
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "schedule %<auto%> does not take a %<chunk_size%> parameter"
-msgstr "Ablauf %<runtime%> akzeptiert keinen Parameter %<chunk_size%>"
+msgstr "Ablauf %<auto%> akzeptiert keinen Parameter %<chunk_size%>"
 
 #: c-parser.c:8843 cp/parser.c:23857
 #, gcc-internal-format
@@ -13770,22 +13765,22 @@ msgstr "Schleifendeklaration oder Initialisierung erwartet"
 #: c-parser.c:9363
 #, gcc-internal-format
 msgid "not enough perfectly nested loops"
-msgstr ""
+msgstr "nicht genügend perfekt geschachtelte Schleifen"
 
 #: c-parser.c:9416 cp/parser.c:24720
 #, gcc-internal-format
 msgid "collapsed loops not perfectly nested"
-msgstr ""
+msgstr "zusammengelegte Schleifen sind nicht perfekt geschachtelt"
 
 #: c-parser.c:9454 cp/parser.c:24564 cp/parser.c:24602 cp/pt.c:11892
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "iteration variable %qD should not be firstprivate"
-msgstr "Schleifenvariable %qs sollte nicht »firstprivate« sein"
+msgstr "Schleifenvariable %qD sollte nicht »firstprivate« sein"
 
 #: c-parser.c:9899
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qD is not a variable"
-msgstr "»%s« bei %C ist keine Variable"
+msgstr "%qD ist keine Variable"
 
 #: c-parser.c:9901 cp/semantics.c:4002
 #, gcc-internal-format
@@ -13836,7 +13831,7 @@ msgstr "falsche Benutzung des unvollständigen typedef %qD"
 #: c-typeck.c:319
 #, gcc-internal-format
 msgid "%qT and %qT are in disjoint named address spaces"
-msgstr ""
+msgstr "%qT und %qT sind in disjunkt benannten Adressräumen"
 
 #: c-typeck.c:561 c-typeck.c:586
 #, gcc-internal-format
@@ -13864,9 +13859,9 @@ msgid "types are not quite compatible"
 msgstr "Typen nicht ganz kompatibel"
 
 #: c-typeck.c:1220
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "pointer target types incompatible in C++"
-msgstr "Zeiger auf Elementtyp %qT mit Objekttyp %qT inkompatibel"
+msgstr "Zeiger-Zieltypen sind in C++ inkompatibel"
 
 #: c-typeck.c:1552
 #, gcc-internal-format
@@ -13899,9 +13894,9 @@ msgid "dereferencing %<void *%> pointer"
 msgstr "Dereferenzierung eines %<void *%>-Zeigers"
 
 #: c-typeck.c:2307
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "subscripted value is neither array nor pointer nor vector"
-msgstr "indizierter Wert ist weder ein Feld noch ein Zeiger"
+msgstr "indizierter Wert ist weder Feld noch Zeiger noch Vektor"
 
 #: c-typeck.c:2319 cp/typeck.c:2854 cp/typeck.c:2948
 #, gcc-internal-format
@@ -13914,9 +13909,9 @@ msgid "subscripted value is pointer to function"
 msgstr "indizierter Wert ist Zeiger auf Funktion"
 
 #: c-typeck.c:2350
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "index value is out of bound"
-msgstr "Index in Dimension %d ist außerhalb der Grenzen bei %L"
+msgstr "Indexwert ist außerhalb der Grenzen"
 
 #: c-typeck.c:2394
 #, gcc-internal-format
@@ -13931,7 +13926,7 @@ msgstr "ISO-C90 verbietet, ein Nicht-L-Wert-Feld zu indizieren"
 #: c-typeck.c:2505
 #, gcc-internal-format
 msgid "enum constant defined here"
-msgstr ""
+msgstr "enum-Konstante hier definiert"
 
 #: c-typeck.c:2736
 #, gcc-internal-format
@@ -13947,14 +13942,14 @@ msgid "function called through a non-compatible type"
 msgstr "Funktion über nicht kompatiblen Typen aufgerufen"
 
 #: c-typeck.c:2786 c-typeck.c:2840
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "function with qualified void return type called"
-msgstr "Funktionsdefinition hat qualifizierten void-Rückgabetypen"
+msgstr "Funktion mit qualifiziertem void-Rückgabetypen aufgerufen"
 
 #: c-typeck.c:2930
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "too many arguments to method %qE"
-msgstr "zu viele Argumente für Funktion %qE"
+msgstr "zu viele Argumente für Methode %qE"
 
 #: c-typeck.c:2933 c-family/c-common.c:8039
 #, gcc-internal-format
@@ -13962,9 +13957,9 @@ msgid "too many arguments to function %qE"
 msgstr "zu viele Argumente für Funktion %qE"
 
 #: c-typeck.c:2936 c-typeck.c:3170 cp/decl2.c:4169 cp/typeck.c:3304
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "declared here"
-msgstr "%q+D hier deklariert"
+msgstr "hier deklariert"
 
 #: c-typeck.c:2971
 #, gcc-internal-format, gfc-internal-format
@@ -14027,9 +14022,9 @@ msgid "passing argument %d of %qE as signed due to prototype"
 msgstr "Übergabe des Arguments %d von %qE als vorzeichenbehaftet aufgrund des Prototyps"
 
 #: c-typeck.c:3135 cp/call.c:5666
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "implicit conversion from %qT to %qT when passing argument to function"
-msgstr "Anfrage zur impliziten für Umwandlung von %qT in %qT ist in C++ nicht erlaubt"
+msgstr "implizite Umwandlung von %qT in %qT bei Übergabe von Argument an Funktion"
 
 #: c-typeck.c:3168 c-family/c-common.c:8877 c-family/c-common.c:8926
 #, gcc-internal-format
@@ -14042,9 +14037,9 @@ msgid "comparison with string literal results in unspecified behavior"
 msgstr "Vergleich mit Zeichenkettenliteral führt zu unspezifiziertem Verhalten"
 
 #: c-typeck.c:3269
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "comparison between %qT and %qT"
-msgstr "Vergleich zwischen %q#T und %q#T"
+msgstr "Vergleich zwischen %qT und %qT"
 
 #: c-typeck.c:3321
 #, gcc-internal-format
@@ -14069,12 +14064,12 @@ msgstr "Argument falschen Typs für unäres Ausrufungszeichen"
 #: c-typeck.c:3578
 #, gcc-internal-format
 msgid "increment of enumeration value is invalid in C++"
-msgstr ""
+msgstr "Schrittweite von Aufzählungswerten (enum) ist in C++ ungültig"
 
 #: c-typeck.c:3581
 #, gcc-internal-format
 msgid "decrement of enumeration value is invalid in C++"
-msgstr ""
+msgstr "Verringerung von Aufzählungswerten (enum) ist in C++ ungültig"
 
 #: c-typeck.c:3594
 #, gcc-internal-format
@@ -14102,9 +14097,9 @@ msgid "decrement of pointer to unknown structure"
 msgstr "Verminderung eines Zeigers auf unbekannte Struktur"
 
 #: c-typeck.c:3722
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "taking address of expression of type %<void%>"
-msgstr "statischer Zugriff auf Objekt des Typs %<id%>"
+msgstr "Adresse des Ausdrucks des Typs %<void%> wird genommen"
 
 #: c-typeck.c:3892 c-family/c-common.c:8633
 #, gcc-internal-format
@@ -14152,9 +14147,9 @@ msgid "non-lvalue array in conditional expression"
 msgstr "Nicht-L-Wert-Feld in bedingtem Ausdruck"
 
 #: c-typeck.c:4127 cp/call.c:4337
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "implicit conversion from %qT to %qT to match other result of conditional"
-msgstr "Anfrage zur impliziten für Umwandlung von %qT in %qT ist in C++ nicht erlaubt"
+msgstr "implizite Umwandlung von %qT in %qT um an anderes Ergebnis von Bedingung anzupassen"
 
 #: c-typeck.c:4201
 #, gcc-internal-format
@@ -14162,9 +14157,9 @@ msgid "ISO C forbids conditional expr with only one void side"
 msgstr "ISO-C verbietet bedingten Ausdruck mit nur einer void-Seite"
 
 #: c-typeck.c:4218
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "pointers to disjoint address spaces used in conditional expression"
-msgstr "Zeigertyp passt nicht in bedingtem Ausdruck"
+msgstr "Zeiger auf disjunkte Adressräume in bedingtem Ausdruck verwendet"
 
 #: c-typeck.c:4226 c-typeck.c:4235
 #, gcc-internal-format
@@ -14192,19 +14187,17 @@ msgid "left-hand operand of comma expression has no effect"
 msgstr "linker Operand des Komma-Ausdrucks hat keinen Effekt"
 
 #: c-typeck.c:4446
-#, fuzzy
 msgid "cast adds %q#v qualifier to function type"
-msgstr "Typkonvertierung fügt neue Typqualifizierer zu Funktionstyp hinzu"
+msgstr "Typumwandlung fügt Qualifizierer %q#v zu Funktionstyp hinzu"
 
 #: c-typeck.c:4452
-#, fuzzy
 msgid "cast discards %q#v qualifier from pointer target type"
-msgstr "Typkonvertierung streicht Qualifizierer von Zeiger-Zieltyp"
+msgstr "Typumwandlung streicht Qualifizierer %q#v von Zeiger-Zieltyp"
 
 #: c-typeck.c:4487
 #, gcc-internal-format
 msgid "to be safe all intermediate pointers in cast from %qT to %qT must be %<const%> qualified"
-msgstr ""
+msgstr "zur Sicherheit müssen alle vorübergehenden Zeiger in Umwandlung von %qT in %qT mit %<const%> qualifiziert sein"
 
 #: c-typeck.c:4524
 #, gcc-internal-format
@@ -14279,12 +14272,12 @@ msgstr "ISO-C verbietet Konvertierung von Objektzeigertypen in Funktionszeigerty
 #: c-typeck.c:4769
 #, gcc-internal-format
 msgid "defining a type in a cast is invalid in C++"
-msgstr ""
+msgstr "Definition eines Typs in einer Umwandlung ist in C++ ungültig"
 
 #: c-typeck.c:4908 c-typeck.c:5205
 #, gcc-internal-format
 msgid "enum conversion in assignment is invalid in C++"
-msgstr ""
+msgstr "enum-Umwandlung in Zuweisung ist in C++ ungültig"
 
 #. This macro is used to emit diagnostics to ensure that all format
 #. strings are complete sentences, visible to gettext and checked at
@@ -14294,24 +14287,24 @@ msgstr ""
 #. compile time.  It is the same as WARN_FOR_ASSIGNMENT but with an
 #. extra parameter to enumerate qualifiers.
 #: c-typeck.c:5113 c-typeck.c:5143 c-typeck.c:5670
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "expected %qT but argument is of type %qT"
-msgstr "format %q.*s erwartet Typ %<%T%s%>, aber Argument %d hat Typ %qT"
+msgstr "%qT erwartet, aber Argument hat Typ %qT"
 
 #: c-typeck.c:5203
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "enum conversion when passing argument %d of %qE is invalid in C++"
-msgstr "Zeigerziele bei Übergabe des Arguments %d von %qE unterscheiden sich im Vorzeichenbesitz"
+msgstr "Enum-Umwandlung bei Übergabe des Arguments %d von %qE ist in C++ ungültig"
 
 #: c-typeck.c:5207 c-typeck.c:7762
 #, gcc-internal-format
 msgid "enum conversion in initialization is invalid in C++"
-msgstr ""
+msgstr "enum-Umwandlung in Initialisierung ist in C++ ungültig"
 
 #: c-typeck.c:5209
 #, gcc-internal-format
 msgid "enum conversion in return is invalid in C++"
-msgstr ""
+msgstr "enum-Umwandlung in Rückgabe ist in C++ ungültig"
 
 #: c-typeck.c:5238
 #, gcc-internal-format
@@ -14319,44 +14312,36 @@ msgid "cannot pass rvalue to reference parameter"
 msgstr "R-Wert kann nicht an Referenzparameter übergeben werden"
 
 #: c-typeck.c:5368 c-typeck.c:5591
-#, fuzzy
 msgid "passing argument %d of %qE makes %q#v qualified function pointer from unqualified"
-msgstr "Übergabe des Arguments %d von %qE erzeugt aus unqualifiziertem einen qualifizierten Funktionszeiger"
+msgstr "Übergabe des Arguments %d von %qE erzeugt aus unqualifiziertem einen qualifizierten Funktionszeiger %q#v"
 
 #: c-typeck.c:5371 c-typeck.c:5594
-#, fuzzy
 msgid "assignment makes %q#v qualified function pointer from unqualified"
-msgstr "Zuweisung erzeugt aus unqualifiziertem einen qualifizierten Funktionszeiger"
+msgstr "Zuweisung erzeugt aus unqualifiziertem einen qualifizierten Funktionszeiger %q#v"
 
 #: c-typeck.c:5374 c-typeck.c:5596
-#, fuzzy
 msgid "initialization makes %q#v qualified function pointer from unqualified"
-msgstr "Initialisierung erzeugt aus unqualifiziertem einen qualifizierten Funktionszeiger"
+msgstr "Initialisierung erzeugt aus unqualifiziertem einen qualifizierten Funktionszeiger %q#v"
 
 #: c-typeck.c:5377 c-typeck.c:5598
-#, fuzzy
 msgid "return makes %q#v qualified function pointer from unqualified"
-msgstr "return erzeugt aus unqualifiziertem einen qualifizierten Funktionszeiger"
+msgstr "return erzeugt aus unqualifiziertem einen qualifizierten Funktionszeiger %q#v"
 
 #: c-typeck.c:5384 c-typeck.c:5554
-#, fuzzy
 msgid "passing argument %d of %qE discards %qv qualifier from pointer target type"
-msgstr "Übergabe des Arguments %d von %qE entfernt Kennzeichner von Zeiger-Ziel-Typ"
+msgstr "Übergabe des Arguments %d von %qE entfernt Kennzeichner %qv von Zeiger-Ziel-Typ"
 
 #: c-typeck.c:5386 c-typeck.c:5556
-#, fuzzy
 msgid "assignment discards %qv qualifier from pointer target type"
-msgstr "Zuweisung streicht Qualifizierer von Zeiger-Zieltyp"
+msgstr "Zuweisung streicht Qualifizierer %qv von Zeiger-Zieltyp"
 
 #: c-typeck.c:5388 c-typeck.c:5558
-#, fuzzy
 msgid "initialization discards %qv qualifier from pointer target type"
-msgstr "Initialisierung streicht Qualifizierer von Zeiger-Zieltyp"
+msgstr "Initialisierung streicht Qualifizierer %qv von Zeiger-Zieltyp"
 
 #: c-typeck.c:5390 c-typeck.c:5560
-#, fuzzy
 msgid "return discards %qv qualifier from pointer target type"
-msgstr "return streicht Qualifizierer von Zeiger-Zieltyp"
+msgstr "return streicht Qualifizierer %qv von Zeiger-Zieltyp"
 
 #: c-typeck.c:5399
 #, gcc-internal-format
@@ -14369,24 +14354,24 @@ msgid "request for implicit conversion from %qT to %qT not permitted in C++"
 msgstr "Anfrage zur impliziten für Umwandlung von %qT in %qT ist in C++ nicht erlaubt"
 
 #: c-typeck.c:5466
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "passing argument %d of %qE from pointer to non-enclosed address space"
-msgstr "Übergabe des Arguments %d von %qE von inkompatiblem Zeigertyp"
+msgstr "Übergabe des Arguments %d von %qE von Zeiger auf nicht eingeschlossenen Adressbereich"
 
 #: c-typeck.c:5470
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "assignment from pointer to non-enclosed address space"
-msgstr "Typkonvertierung von Zeiger auf Ganzzahl anderer Breite"
+msgstr "Zuweisung von Zeiger auf nicht eingeschlossenen Adressbereich"
 
 #: c-typeck.c:5474
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "initialization from pointer to non-enclosed address space"
-msgstr "Initialisierung von inkompatiblem Zeigertyp"
+msgstr "Initialisierung von Zeiger auf nicht enthaltenen Adressraum"
 
 #: c-typeck.c:5478
 #, gcc-internal-format
 msgid "return from pointer to non-enclosed address space"
-msgstr ""
+msgstr "Rückgabe von Pointer auf nicht enthaltenen Adressraum"
 
 #: c-typeck.c:5496
 #, gcc-internal-format
@@ -14521,19 +14506,19 @@ msgid "incompatible type for argument %d of %qE"
 msgstr "Inkompatibler Typ für Argument %d von %qE"
 
 #: c-typeck.c:5673
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "incompatible types when assigning to type %qT from type %qT"
-msgstr "unverträgliche Typen in Zuweisung von %qT an %qT"
+msgstr "unverträgliche Typen bei Zuweisung an Typ %qT von Typ %qT"
 
 #: c-typeck.c:5678
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "incompatible types when initializing type %qT using type %qT"
-msgstr "inkompatible Typen in Initialisierung"
+msgstr "inkompatible Typen bei Initialisierung von Typ %qT mit Typ %qT"
 
 #: c-typeck.c:5683
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "incompatible types when returning type %qT but %qT was expected"
-msgstr "unverträgliche Typen in Zuweisung von %qT an %qT"
+msgstr "unverträgliche Typen bei Rückgabe von Typ %qT, aber %qT wurde erwartet"
 
 #: c-typeck.c:5747
 #, gcc-internal-format
@@ -14561,14 +14546,14 @@ msgid "char-array initialized from wide string"
 msgstr "char-Feld mit wide-Zeichenkette initialisiert"
 
 #: c-typeck.c:6062
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "wide character array initialized from non-wide string"
-msgstr "wchar_t-Feld mit Nicht-wide-Zeichenkette initialisiert"
+msgstr "Feld von wide character mit Nicht-wide-Zeichenkette initialisiert"
 
 #: c-typeck.c:6068
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "wide character array initialized from incompatible wide string"
-msgstr "wchar_t-Feld mit Nicht-wide-Zeichenkette initialisiert"
+msgstr "Feld von wide character mit unverträglicher wide-Zeichenkette initialisiert"
 
 #: c-typeck.c:6102
 #, gcc-internal-format
@@ -14587,7 +14572,7 @@ msgid "initializer element is not constant"
 msgstr "Initialisierungselement ist nicht konstant"
 
 #: c-typeck.c:6226 c-typeck.c:6272 c-typeck.c:7745
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "initializer element is not a constant expression"
 msgstr "Initialisierungselement ist nicht konstant"
 
@@ -14657,9 +14642,9 @@ msgid "array index in initializer not of integer type"
 msgstr "Feldindex in Initialisierung hat nicht Ganzzahltyp"
 
 #: c-typeck.c:7148 c-typeck.c:7157
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "array index in initializer is not an integer constant expression"
-msgstr "Feldindex in Initialisierung hat nicht Ganzzahltyp"
+msgstr "Feldindex in Initialisierung ist kein konstanter Ganzzahlausdruck"
 
 #: c-typeck.c:7162 c-typeck.c:7164
 #, gcc-internal-format
@@ -14777,9 +14762,9 @@ msgid "%<long%> switch expression not converted to %<int%> in ISO C"
 msgstr "%<long%> switch-Ausdruck nicht nach »int« konvertiert in ISO C"
 
 #: c-typeck.c:8817 c-typeck.c:8825
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "case label is not an integer constant expression"
-msgstr "Größe des Feldes ist kein konstanter Ganzzahlausdruck"
+msgstr "»case«-Marke ist kein konstanter Ganzzahlausdruck"
 
 #: c-typeck.c:8831 cp/parser.c:8261
 #, gcc-internal-format
@@ -14792,9 +14777,9 @@ msgid "%<default%> label not within a switch statement"
 msgstr "%<default%>-Marke nicht innerhalb einer switch-Anweisung"
 
 #: c-typeck.c:8916 cp/parser.c:8557
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "suggest explicit braces to avoid ambiguous %<else%>"
-msgstr "%Hes wird empfohlen, explizite geschweifte Klammern zu setzen, um mehrdeutiges %<else%> zu vermeiden"
+msgstr "es wird empfohlen, explizite geschweifte Klammern zu setzen, um mehrdeutiges %<else%> zu vermeiden"
 
 #: c-typeck.c:9025 cp/cp-gimplify.c:91 cp/parser.c:9149
 #, gcc-internal-format
@@ -14857,9 +14842,9 @@ msgid "the comparison will always evaluate as %<true%> for the address of %qD wi
 msgstr ""
 
 #: c-typeck.c:9830 c-typeck.c:9905
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "comparison of pointers to disjoint address spaces"
-msgstr "in Vergleich verschiedener Zeigertypen fehlt Typkonvertierung"
+msgstr "Vergleich von Zeigern auf disjunkte Adressräume"
 
 #: c-typeck.c:9837 c-typeck.c:9843
 #, gcc-internal-format
@@ -14887,9 +14872,9 @@ msgid "ISO C forbids ordered comparisons of pointers to functions"
 msgstr "ISO-C verbietet geordnete Vergleiche zwischen Zeigern auf Funktionen"
 
 #: c-typeck.c:9900
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "ordered comparison of pointer with null pointer"
-msgstr "geordneter Vergleich von Zeiger mit Ganzzahlnull"
+msgstr "geordneter Vergleich von Zeiger mit Null-Zeiger"
 
 #: c-typeck.c:9923 c-typeck.c:9926 c-typeck.c:9933 c-typeck.c:9936
 #, gcc-internal-format
@@ -14897,9 +14882,9 @@ msgid "ordered comparison of pointer with integer zero"
 msgstr "geordneter Vergleich von Zeiger mit Ganzzahlnull"
 
 #: c-typeck.c:9980 cp/typeck.c:4251
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "implicit conversion from %qT to %qT to match other operand of binary expression"
-msgstr "Anfrage zur impliziten für Umwandlung von %qT in %qT ist in C++ nicht erlaubt"
+msgstr "implizite Umwandlung von %qT in %qT zur Anpassung an anderen Operanden des Binärausdrucks"
 
 #: c-typeck.c:10262
 #, gcc-internal-format
@@ -14972,14 +14957,14 @@ msgid "size of variable %q+D is too large"
 msgstr "Größe der Variablen %q+D ist zu hoch"
 
 #: cfgexpand.c:4025
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "stack protector not protecting local variables: variable length buffer"
-msgstr "Lokale Variablen werden nicht geschützt: Puffer variabler Größe"
+msgstr "Stack-Schutz schützt nicht lokale Variablen: Puffer variabler Größe"
 
 #: cfgexpand.c:4029
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "stack protector not protecting function: all local arrays are less than %d bytes long"
-msgstr "Funktion wird nicht geschützt: Kein Puffer mit mindestens %d Bytes"
+msgstr "Stack-Schutz schützt nicht Funktion: Alle lokalen Felder sind kleiner als %d Bytes"
 
 #: cfghooks.c:110
 #, gcc-internal-format, gfc-internal-format
@@ -15157,32 +15142,32 @@ msgid "bb %d do not belong to loop %d"
 msgstr "BB %d gehört nicht zur Schleife %d"
 
 #: cfgloop.c:1363
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "loop %d%'s header does not have exactly 2 entries"
 msgstr "Kopf der Schleife %d hat nicht genau 2 Einträge"
 
 #: cfgloop.c:1370
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "loop %d%'s latch does not have exactly 1 successor"
 msgstr "Falle der Schleife %d hat nicht genau einen Nachfolger"
 
 #: cfgloop.c:1375
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "loop %d%'s latch does not have header as successor"
 msgstr "Falle der Schleife %d hat nicht den Kopf als Nachfolger"
 
 #: cfgloop.c:1380
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "loop %d%'s latch does not belong directly to it"
 msgstr "Falle der Schleife %d gehört nicht direkt zu ihr"
 
 #: cfgloop.c:1386
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "loop %d%'s header does not belong directly to it"
 msgstr "Kopf der Schleife %d gehört nicht direkt zu ihr"
 
 #: cfgloop.c:1392
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "loop %d%'s latch is marked as part of irreducible region"
 msgstr "Falle der Schleife %d ist als Teil einer irreduziblen Region markiert"
 
@@ -15222,17 +15207,17 @@ msgid "nonempty exits list of loop %d, but exits are not recorded"
 msgstr "Nichtleere Ausgangsliste der Schleife %d, aber Ausgänge werden nicht aufgezeichnet"
 
 #: cfgloop.c:1514
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "exit %d->%d not recorded"
 msgstr "Ausgang %d->%d nicht aufgezeichnet"
 
 #: cfgloop.c:1532
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "wrong list of exited loops for edge  %d->%d"
 msgstr "Falsche Liste der beendeten Schleifen für Kante %d->%d"
 
 #: cfgloop.c:1541
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "too many loop exits recorded"
 msgstr "Zu viele Schleifenausgänge aufgezeichnet"
 
@@ -15277,9 +15262,9 @@ msgid "missing REG_EH_REGION note in the end of bb %i"
 msgstr "fehlender Vermerk von REG_EH_REGION am Ende vom bb %i"
 
 #: cfgrtl.c:1932
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "too many eh edges %i"
-msgstr "zu viele abgehende Zweig-Kanten vom bb %i"
+msgstr "zu viele eh-Kanten %i"
 
 #: cfgrtl.c:1940
 #, gcc-internal-format, gfc-internal-format
@@ -15292,9 +15277,9 @@ msgid "fallthru edge after unconditional jump %i"
 msgstr "Fallthru-Kante nach unbedingtem Sprung %i"
 
 #: cfgrtl.c:1950
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "wrong number of branch edges after unconditional jump %i"
-msgstr "falscher Betrag der Zweig-Kanten nach unbedingtem Sprung %i"
+msgstr "falsche Anzahl der Zweig-Kanten nach unbedingtem Sprung %i"
 
 #: cfgrtl.c:1957
 #, gcc-internal-format, gfc-internal-format
@@ -15402,9 +15387,9 @@ msgid "caller edge frequency is too large"
 msgstr "Rufer-Kantenhäufigkeit ist zu groß"
 
 #: cgraphunit.c:435
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "caller edge frequency %i does not match BB frequency %i"
-msgstr "Rufer-Kantenhäufigkeit ist zu groß"
+msgstr "Rufer-Kantenhäufigkeit %i passt nicht zur BB-Häufigkeit %i"
 
 #: cgraphunit.c:471
 #, gcc-internal-format, gfc-internal-format
@@ -15412,34 +15397,34 @@ msgid "aux field set for edge %s->%s"
 msgstr "Aux-Feld für Kante %s->%s gesetzt"
 
 #: cgraphunit.c:478
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "execution count is negative"
 msgstr "Ausführungszähler ist negativ"
 
 #: cgraphunit.c:483
 #, gcc-internal-format
 msgid "externally visible inline clone"
-msgstr ""
+msgstr "extern sichtbare Inline-Kopie"
 
 #: cgraphunit.c:488
 #, gcc-internal-format
 msgid "inline clone with address taken"
-msgstr ""
+msgstr "Inline-Kopie mit Adresse genommen"
 
 #: cgraphunit.c:493
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "inline clone is needed"
-msgstr "inlined_to-Zeiger ist falsch"
+msgstr "Inline-Kopie erforderlich"
 
 #: cgraphunit.c:500
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "aux field set for indirect edge from %s"
-msgstr "Aux-Feld für Kante %s->%s gesetzt"
+msgstr "Aux-Feld für indirekte Kante %s von gesetzt"
 
 #: cgraphunit.c:507
 #, gcc-internal-format, gfc-internal-format
 msgid "An indirect edge from %s is not marked as indirect or has associated indirect_info, the corresponding statement is: "
-msgstr ""
+msgstr "Eine indirekte Kante von %s ist nicht als indirekt markiert und hat keine zugeordnete indirect_info, die zugehörige Anweisung ist:"
 
 #: cgraphunit.c:524
 #, gcc-internal-format
@@ -15474,42 +15459,42 @@ msgstr "Knoten in cgraph_hash nicht gefunden"
 #: cgraphunit.c:568
 #, gcc-internal-format
 msgid "node has wrong clone_of"
-msgstr ""
+msgstr "Knoten hat falsches clone_of"
 
 #: cgraphunit.c:580
 #, gcc-internal-format
 msgid "node has wrong clone list"
-msgstr ""
+msgstr "Knoten hat falsche Clone-Liste"
 
 #: cgraphunit.c:586
 #, gcc-internal-format
 msgid "node is in clone list but it is not clone"
-msgstr ""
+msgstr "Knoten ist in Clone-Liste, aber es ist kein Clone"
 
 #: cgraphunit.c:591
 #, gcc-internal-format
 msgid "node has wrong prev_clone pointer"
-msgstr ""
+msgstr "Knoten hat falschen Zeiger prev_clone"
 
 #: cgraphunit.c:596
 #, gcc-internal-format
 msgid "double linked list of clones corrupted"
-msgstr ""
+msgstr "doppelt verkettete Liste des Clones ist beschädigt"
 
 #: cgraphunit.c:605
 #, gcc-internal-format
 msgid "non-DECL_ONE_ONLY node in a same_comdat_group list"
-msgstr ""
+msgstr "Nicht-DECL_ONE_ONLY-Knoten in einer same_comdat_group-Liste"
 
 #: cgraphunit.c:610
 #, gcc-internal-format
 msgid "node is alone in a comdat group"
-msgstr ""
+msgstr "Knoten ist allein in einer Comdat-Gruppe"
 
 #: cgraphunit.c:617
 #, gcc-internal-format
 msgid "same_comdat_group is not a circular list"
-msgstr ""
+msgstr "same_comdat_group ist keine ringförmige Liste"
 
 #: cgraphunit.c:652
 #, gcc-internal-format
@@ -15517,9 +15502,9 @@ msgid "shared call_stmt:"
 msgstr "Gemeinsam genutztes call_stmt:"
 
 #: cgraphunit.c:662
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "edge points to same body alias:"
-msgstr "Kante zeigt auf falsche Deklaration:"
+msgstr "Kante zeigt auf selben Körper-Alias:"
 
 #: cgraphunit.c:674
 #, gcc-internal-format
@@ -15529,12 +15514,12 @@ msgstr "Kante zeigt auf falsche Deklaration:"
 #: cgraphunit.c:685
 #, gcc-internal-format
 msgid "a call to thunk improperly represented in the call graph:"
-msgstr ""
+msgstr "ein Aufruf von Thunk ist im Aufrufgraphen falsch repräsentiert:"
 
 #: cgraphunit.c:693
 #, gcc-internal-format
 msgid "an indirect edge with unknown callee corresponding to a call_stmt with a known declaration:"
-msgstr ""
+msgstr "eine indirekte Kante mit unbekanntem Aufrufziel korrespondiert mit einem call_stmt mit einer unbekannten Deklaration:"
 
 #: cgraphunit.c:703
 #, gcc-internal-format
@@ -15547,9 +15532,9 @@ msgid "edge %s->%s has no corresponding call_stmt"
 msgstr "Kante %s->%s hat keine passende call_stmt"
 
 #: cgraphunit.c:731
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "an indirect edge from %s has no corresponding call_stmt"
-msgstr "Kante %s->%s hat keine passende call_stmt"
+msgstr "eine indirekte Kante von %s hat kein passendes call_stmt"
 
 #: cgraphunit.c:742
 #, gcc-internal-format
@@ -15557,24 +15542,24 @@ msgid "verify_cgraph_node failed"
 msgstr "verify_cgraph gescheitert"
 
 #: cgraphunit.c:817
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%<weakref%> attribute should be accompanied with an %<alias%> attribute"
-msgstr "Attribut %s steht mit Attribut %s bei %L in Konflikt"
+msgstr "Attribut %<weakref%> sollte von Attribut %<alias%> begleitet werden"
 
 #: cgraphunit.c:872 cgraphunit.c:909
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%<externally_visible%> attribute have effect only on public objects"
-msgstr "%J Attribut %<externally_visible%> wirkt sich nur auf öffentliche Objekte aus"
+msgstr "Attribut %<externally_visible%> wirkt sich nur auf öffentliche Objekte aus"
 
 #: cgraphunit.c:881
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%<weakref%> attribute ignored because function is defined"
-msgstr "Attribut %qE ignoriert, da %qT bereits definiert ist"
+msgstr "Attribut %<weakref%> ignoriert, da Funktion bereits definiert ist"
 
 #: cgraphunit.c:919
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%<weakref%> attribute ignored because variable is initialized"
-msgstr "Attribut %qE ignoriert, da %qT bereits definiert ist"
+msgstr "Attribut %<weakref%> ignoriert, da Variable bereits initialisiert ist"
 
 #: cgraphunit.c:1167 cgraphunit.c:1193
 #, gcc-internal-format
@@ -15582,14 +15567,14 @@ msgid "failed to reclaim unneeded function"
 msgstr "Zurückfordern der nicht genötigten Funktion gescheitert"
 
 #: cgraphunit.c:1931
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "nodes with unreleased memory found"
-msgstr "Knoten ohne freigegebenen Speicher gefunden"
+msgstr "Knoten mit nicht freigegebenem Speicher gefunden"
 
 #: collect2.c:1489 opts.c:801
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "LTO support has not been enabled in this configuration"
-msgstr "-m64 wird in dieser Konfiguration nicht unterstützt"
+msgstr "LTO-Unterstützung wurde in dieser Konfiguration nicht aktiviert"
 
 #: collect2.c:1577
 #, gcc-internal-format, gfc-internal-format
@@ -15627,7 +15612,7 @@ msgid "conversion to incomplete type"
 msgstr "Konvertierung in unvollständigen Typen"
 
 #: convert.c:852 convert.c:928
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "can%'t convert between vector values of different size"
 msgstr "zwischen Vektorwerten verschiedener Größen kann nicht konvertiert werden"
 
@@ -15647,9 +15632,9 @@ msgid "aggregate value used where a complex was expected"
 msgstr "zusammengesetzer Wert verwendet, wo »complex« erwartet wurde"
 
 #: convert.c:934
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "can%'t convert value to a vector"
-msgstr "Wert kann nicht in Vektor konvertiert werden"
+msgstr "Wert kann nicht in einen Vektor umgewandelt werden"
 
 #: convert.c:973
 #, gcc-internal-format
@@ -15692,14 +15677,14 @@ msgid "%qs has overflowed"
 msgstr "%qs übergelaufen"
 
 #: coverage.c:349
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "no coverage for function %qE found"
-msgstr "keine Überdeckung für Funktion %qs gefunden"
+msgstr "keine Überdeckung für Funktion %qE gefunden"
 
 #: coverage.c:364
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "coverage mismatch for function %qE while reading counter %qs"
-msgstr "Überdeckung passt nicht für Funktion %qs beim Lesen des Zählers %qs"
+msgstr "Überdeckung passt nicht für Funktion %qE beim Lesen des Zählers %qs"
 
 #: coverage.c:378
 #, fuzzy, gcc-internal-format
