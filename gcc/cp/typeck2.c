@@ -1614,7 +1614,7 @@ build_functional_cast (tree exp, tree parms, tsubst_flags_t complain)
   if (exp == error_mark_node)
     return error_mark_node;
 
-  return build_cplus_new (type, exp);
+  return build_cplus_new (type, exp, complain);
 }
 
 

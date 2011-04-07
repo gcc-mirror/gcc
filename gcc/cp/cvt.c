@@ -819,7 +819,7 @@ ocp_convert (tree type, tree expr, int convtype, int flags)
 	  release_tree_vector (ctor_vec);
 	}
       if (ctor)
-	return build_cplus_new (type, ctor);
+	return build_cplus_new (type, ctor, tf_warning_or_error);
     }
 
   if (flags & LOOKUP_COMPLAIN)

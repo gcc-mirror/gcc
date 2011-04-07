@@ -1,5 +1,17 @@
 2011-04-07  Jason Merrill  <jason@redhat.com>
 
+	PR c++/48450
+	* tree.c (build_cplus_new, build_aggr_init_expr): Take complain.
+	(bot_manip): Adjust.
+	* cp-tree.h: Adjust.
+	* call.c (convert_like_real, build_cxx_call): Adjust.
+	(perform_direct_initialization_if_possible): Adjust.
+	* cvt.c (ocp_convert): Adjust.
+	* init.c (build_value_init): Adjust.
+	* semantics.c (maybe_add_lambda_conv_op): Adjust.
+	* typeck.c (unary_complex_lvalue, cp_build_modify_expr): Adjust.
+	* typeck2.c (build_functional_cast): Adjust.
+
 	* init.c (build_value_init_noctor): Handle REFERENCE_TYPE at top
 	level.
 	(perform_member_init): Not here.

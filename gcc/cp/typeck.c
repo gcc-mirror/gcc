@@ -5320,7 +5320,7 @@ unary_complex_lvalue (enum tree_code code, tree arg)
 	if (TREE_CODE (arg) == SAVE_EXPR)
 	  targ = arg;
 	else
-	  targ = build_cplus_new (TREE_TYPE (arg), arg);
+	  targ = build_cplus_new (TREE_TYPE (arg), arg, tf_warning_or_error);
 	return build1 (ADDR_EXPR, build_pointer_type (TREE_TYPE (arg)), targ);
       }
 
@@ -6742,7 +6742,7 @@ cp_build_modify_expr (tree lhs, enum tree_code modifycode, tree rhs,
     {
       if (TREE_CODE (newrhs) == CALL_EXPR
 	  && TYPE_NEEDS_CONSTRUCTING (lhstype))
-	newrhs = build_cplus_new (lhstype, newrhs);
+	newrhs = build_cplus_new (lhstype, newrhs, complain);
 
       /* Can't initialize directly from a TARGET_EXPR, since that would
 	 cause the lhs to be constructed twice, and possibly result in
