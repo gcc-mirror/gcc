@@ -11025,7 +11025,7 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	  type = lambda_return_type (type);
 	else
 	  type = finish_decltype_type
-	    (type, DECLTYPE_TYPE_ID_EXPR_OR_MEMBER_ACCESS_P (t));
+	    (type, DECLTYPE_TYPE_ID_EXPR_OR_MEMBER_ACCESS_P (t), complain);
 	return cp_build_qualified_type_real (type,
 					     cp_type_quals (t)
 					     | cp_type_quals (type),
