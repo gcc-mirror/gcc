@@ -1,5 +1,9 @@
 2011-04-07  Jason Merrill  <jason@redhat.com>
 
+	PR c++/48468
+	* except.c (build_noexcept_spec): Propagate error_mark_node.
+	(finish_noexcept_expr): Likewise.
+
 	PR c++/48452
 	* typeck.c (build_x_compound_expr_from_list): Return error_mark_node
 	in SFINAE context.

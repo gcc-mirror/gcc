@@ -1125,6 +1125,9 @@ finish_noexcept_expr (tree expr, tsubst_flags_t complain)
 {
   tree fn;
 
+  if (expr == error_mark_node)
+    return error_mark_node;
+
   if (processing_template_decl)
     return build_min (NOEXCEPT_EXPR, boolean_type_node, expr);
 
@@ -1212,6 +1215,8 @@ build_noexcept_spec (tree expr, int complain)
     return noexcept_true_spec;
   else if (expr == boolean_false_node)
     return noexcept_false_spec;
+  else if (expr == error_mark_node)
+    return error_mark_node;
   else
     {
       gcc_assert (processing_template_decl || expr == error_mark_node);
