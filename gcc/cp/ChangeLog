@@ -1,5 +1,8 @@
 2011-04-07  Jason Merrill  <jason@redhat.com>
 
+	* tree.c (build_aggr_init_expr): Always return error_mark_node
+	on abstract violation.
+
 	PR c++/48450
 	* tree.c (build_cplus_new, build_aggr_init_expr): Take complain.
 	(bot_manip): Adjust.
