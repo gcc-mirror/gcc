@@ -57,6 +57,9 @@ cat > sysinfo.c <<EOF
 #if defined(HAVE_SYS_EPOLL_H)
 #include <sys/epoll.h>
 #endif
+#if defined(HAVE_SYS_MMAN_H)
+#include <sys/mman.h>
+#endif
 #if defined(HAVE_SYS_PTRACE_H)
 #include <sys/ptrace.h>
 #endif
@@ -130,6 +133,12 @@ grep '^const _SYS_' gen-sysinfo.go | \
 # Stat constants.
 grep '^const _S_' gen-sysinfo.go | \
   sed -e 's/^\(const \)_\(S_[^= ]*\)\(.*\)$/\1\2 = _\2/' >> ${OUT}
+
+# Mmap constants.
+grep '^const _PROT_' gen-sysinfo.go | \
+  sed -e 's/^\(const \)_\(PROT_[^= ]*\)\(.*\)$/\1\2 = _\2/' >> ${OUT}
+grep '^const _MAP_' gen-sysinfo.go | \
+  sed -e 's/^\(const \)_\(MAP_[^= ]*\)\(.*\)$/\1\2 = _\2/' >> ${OUT}
 
 # Process status constants.
 grep '^const _W' gen-sysinfo.go |

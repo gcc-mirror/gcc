@@ -2,8 +2,12 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// The exec package runs external commands.
+// The exec package runs external commands. It wraps os.StartProcess
+// to make it easier to remap stdin and stdout, connect I/O with pipes,
+// and do other adjustments.
 package exec
+
+// BUG(r): This package should be made even easier to use or merged into os.
 
 import (
 	"os"
@@ -49,7 +53,7 @@ func modeToFiles(mode, fd int) (*os.File, *os.File, os.Error) {
 		if fd == 0 {
 			rw = os.O_RDONLY
 		}
-		f, err := os.Open(os.DevNull, rw, 0)
+		f, err := os.OpenFile(os.DevNull, rw, 0)
 		return f, nil, err
 	case PassThrough:
 		switch fd {
