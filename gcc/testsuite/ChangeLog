@@ -1,3 +1,8 @@
+2011-04-07  Mike Stump  <mikestump@comcast.net>
+
+	* gcc.dg/torture/stackalign/non-local-goto-5.c: Fix for targets
+	with no trampolines.
+
 2011-04-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/48117
