@@ -739,8 +739,15 @@ interpret_float (const cpp_token *token, unsigned int flags)
   /* Create a node with determined type and value.  */
   value = build_real (const_type, real);
   if (flags & CPP_N_IMAGINARY)
-    value = build_complex (NULL_TREE, convert (const_type, integer_zero_node),
-			   value);
+    {
+      value = build_complex (NULL_TREE, convert (const_type,
+						 integer_zero_node), value);
+      if (type != const_type)
+	{
+	  const_type = TREE_TYPE (value);
+	  type = build_complex_type (type);
+	}
+    }
 
   if (type != const_type)
     value = build1 (EXCESS_PRECISION_EXPR, type, value);

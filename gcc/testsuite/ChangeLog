@@ -1,8 +1,13 @@
 2011-04-07  Jakub Jelinek  <jakub@redhat.com>
 
-	Backport from mainline
+	Backported from mainline
+	2011-01-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/47473
+	* gcc.dg/torture/pr47473.c: New test.
+
 	2011-01-21  Jakub Jelinek  <jakub@redhat.com>
- 
+
 	PR tree-optimization/47391
 	* gcc.dg/pr47391.c: New test.
 

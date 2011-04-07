@@ -1,5 +1,15 @@
 2011-04-07  Jakub Jelinek  <jakub@redhat.com>
 
+	Backported from mainline
+	2011-01-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/47473
+	* c-lex.c (interpret_float): If CPP_N_IMAGINARY, ensure
+	EXCESS_PRECISION_EXPR is created with COMPLEX_TYPE instead of
+	REAL_TYPE.
+
+2011-04-07  Jakub Jelinek  <jakub@redhat.com>
+
 	PR tree-optimization/47391
 	* tree-ssa-ccp.c (get_symbol_constant_value): Don't optimize
 	if sym is volatile.
