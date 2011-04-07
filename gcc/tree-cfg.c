@@ -7135,6 +7135,7 @@ struct cfg_hooks gimple_cfg_hooks = {
   gimple_split_edge,		/* split_edge  */
   gimple_make_forwarder_block,	/* make_forward_block  */
   NULL,				/* tidy_fallthru_edge  */
+  NULL,				/* force_nonfallthru */
   gimple_block_ends_with_call_p,/* block_ends_with_call_p */
   gimple_block_ends_with_condjump_p, /* block_ends_with_condjump_p */
   gimple_flow_call_edges_add,   /* flow_call_edges_add */

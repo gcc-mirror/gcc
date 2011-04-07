@@ -1,3 +1,19 @@
+2011-04-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* basic-block.h (force_nonfallthru): Move to...
+	* cfghooks.h (struct cfg_hooks): Add force_nonfallthru hook.
+	(force_nonfallthru): ...here.
+	* cfghooks.c (force_nonfallthru): New function.
+	* cfgrtl.c (force_nonfallthru): Rename into...
+	(rtl_force_nonfallthru): ...this.
+	(commit_one_edge_insertion): Do not set AUX field.
+	(commit_edge_insertions): Do not discover new basic blocks.
+	(rtl_cfg_hooks): Add rtl_force_nonfallthru.
+	(cfg_layout_rtl_cfg_hooks): Likewise.
+	* function.c (thread_prologue_and_epilogue_insns): Remove bogus
+	ATTRIBUTE_UNUSED.  Discover new basic blocks in the prologue insns.
+	* tree-cfg.c (gimple_cfg_hooks): Add NULL for force_nonfallthru.
+
 2011-04-07  Anatoly Sokolov  <aesok@post.ru>
 
 	* config/mips/mips.h (REG_MODE_OK_FOR_BASE_P, REG_OK_FOR_INDEX_P):
