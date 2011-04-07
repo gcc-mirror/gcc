@@ -1,3 +1,11 @@
+2011-04-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/46491
+	Backported from mainline
+	2010-05-14  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-pure-const.c (check_stmt): Do not use memory_identifier_string.
+
 2011-03-30  H.J. Lu  <hongjiu.lu@intel.com>
 
 	Backport from mainline

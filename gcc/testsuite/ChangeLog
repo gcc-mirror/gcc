@@ -1,3 +1,11 @@
+2011-04-07  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2010-11-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/46491
+	* gcc.target/i386/pr46491.c: New test.
+
 2011-03-09  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/template/nontype22.C: New.

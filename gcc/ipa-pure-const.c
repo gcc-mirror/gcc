@@ -360,7 +360,7 @@ get_asm_expr_operands (funct_state local, gimple stmt)
   for (i = 0; i < gimple_asm_nclobbers (stmt); i++)
     {
       op = gimple_asm_clobber_op (stmt, i);
-      if (simple_cst_equal(TREE_VALUE (op), memory_identifier_string) == 1) 
+      if (strcmp (TREE_STRING_POINTER (TREE_VALUE (op)), "memory") == 0)
 	/* Abandon all hope, ye who enter here. */
 	local->pure_const_state = IPA_NEITHER;
     }
