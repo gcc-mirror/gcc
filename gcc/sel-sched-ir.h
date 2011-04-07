@@ -1590,7 +1590,6 @@ extern bool sel_remove_insn (insn_t, bool, bool);
 extern bool bb_header_p (insn_t);
 extern void sel_init_invalid_data_sets (insn_t);
 extern bool insn_at_boundary_p (insn_t);
-extern bool jump_leads_only_to_bb_p (insn_t, basic_block);
 
 /* Basic block and CFG functions.  */
 

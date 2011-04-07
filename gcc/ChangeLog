@@ -1,6 +1,17 @@
 2011-04-07  Andrey Belevantsev  <abel@ispras.ru>
 
 	Backport from mainline
+	2010-12-03  Alexander Monakov  <amonakov@ispras.ru>
+
+	PR rtl-optimization/45354
+	* sel-sched-ir.c (jump_leads_only_to_bb_p): Rename to ...
+	(bb_has_removable_jump_to_p): This.  Update all callers. Make static.
+	Allow BBs ending with a conditional jump.  Forbid EDGE_CROSSING jumps.
+	* sel-sched-ir.h (jump_leads_only_to_bb_p): Delete prototype.
+
+2011-04-07  Andrey Belevantsev  <abel@ispras.ru>
+
+	Backport from mainline
 	2010-11-25  Alexander Monakov  <amonakov@ispras.ru>
 
 	PR rtl-optimization/46585
