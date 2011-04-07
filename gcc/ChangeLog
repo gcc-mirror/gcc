@@ -1,13 +1,42 @@
+2011-04-07  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sse.md: Update copyright year.
+	(avxcvtvecmode): Remove.
+	(sse_movhlps): Merge with *avx_movhlps.
+	(sse_movlhps): Merge with *avx_movlhps.
+	(vec_interleave_highv4sf): Merge with *avx_interleave_highv4sf.
+	(vec_interleave_lowv4sf): Merge with *avx_interleave_lowv4sf.
+	(sse_shufps_<mode>): Merge with *avx_shufps_<mode>.
+	(sse_loadhps): Merge with *avx_loadhps.
+	(sse_storelps): Merge with *avx_storelps.
+	(sse_loadlps): Merge with *avx_loadlps.
+	(sse_movss): Merge with *avx_movss.
+	(*vec_concatv2sf_sse4_1): Merge with *vec_concatv2sf_avx.
+	(*vec_concatv4sf_sse): Merge with *vec_concatv4sf_avx.
+	(*vec_set<mode>_0_sse4_1): Merge with *vec_set<mode>_0_avx.
+	(*vec_set<mode>_0_sse2): Split multi-unit alternative.
+	(vec_set<mode>_0): Ditto.
+	(*vec_setv4sf_sse4_1): Merge with *vec_setv4sf_avx.
+	(sse4_1_insertps): Merge with *avx_insertps.
+	(*sse3_interleave_highv2df): Merge with *avx_interleave_highv2df.
+	(*sse3_interleave_lowv2df): Merge with *avx_interleave_lowv2df.
+	(vec_interleave_highv2di): Merge with *avx_interleave_highv2di.
+	(sse2_shufpd_<mode>): Merge with *avx_shufpd_<mode>.
+	(sse2_storehpd): Merge with *avx_storehpd.
+	(sse2_loadhpd): Merge with *avx_loadhpd.
+	(sse2_loadlpd): Merge with *avx_loadlpd.
+	(sse2_movsd): Merge with *avx_movsd.
+	(*vec_concatv2df): Merge with *vec_concatv2df.
+
 2011-04-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/48343
 	* combine.c (combine_instructions): Add last_combined_insn,
-	update it if insn is after it, pass it to all try_combine
-	calls.
+	update it if insn is after it, pass it to all try_combine calls.
 	(try_combine): Add last_combined_insn parameter, pass it instead of
 	i3 to propagate_for_debug.
 
-2011-04-05  Nick Clifton  <nickc@redhat.com>
+2011-04-07  Nick Clifton  <nickc@redhat.com>
 
 	* config/mn10300/mn10300.md (movqi_internal): Add alternatives
 	to handle MDR <-> data register transfers.
@@ -29,22 +58,22 @@
 
 	PR target/43920
 	* cfgcleanup.c (walk_to_nondebug_insn): New function.
-	(flow_find_cross_jump): Use walk_to_nondebug_insn.  Recalculate bb1 and
-	bb2.
-	(try_crossjump_to_edge): Handle case that newpos1 or newpos2 is not src1
-	or src2.  Redirect edges to the last basic block.  Update frequency and
-	count on multiple basic blocks in case of fallthru.
+	(flow_find_cross_jump): Use walk_to_nondebug_insn.  Recalculate bb1
+	and bb2.
+	(try_crossjump_to_edge): Handle case that newpos1 or newpos2 is not
+	src1 or src2.  Redirect edges to the last basic block.  Update
+	frequency and count on multiple basic blocks in case of fallthru.
 
 2011-04-07  Tom de Vries  <tom@codesourcery.com>
 
 	PR target/43920
 	* cfgcleanup.c (equal_different_set_p, can_replace_by, merge_dir): New
 	function.
-	(old_insns_match_p): Change return type.  Replace return false/true with
-	return dir_none/dir_both.  Use can_replace_by.
-	(flow_find_cross_jump): Add dir_p parameter.  Init replacement direction
-	from dir_p.  Register replacement direction in dir, last_dir and
-	afterlast_dir.	Handle new return type of old_insns_match_p using
+	(old_insns_match_p): Change return type.  Replace return false/true
+	with return dir_none/dir_both.  Use can_replace_by.
+	(flow_find_cross_jump): Add dir_p parameter.  Init replacement
+	direction from dir_p.  Register replacement direction in dir, last_dir
+	and afterlast_dir.  Handle new return type of old_insns_match_p using
 	merge_dir.  Return replacement direction in dir_p.
 	(flow_find_head_matching_sequence, outgoing_edges_match): Handle new
 	return type of old_insns_match_p.
@@ -581,8 +610,7 @@
 2011-04-04  Joseph Myers  <joseph@codesourcery.com>
 
 	* doc/options.texi (ToLower): Document.
-	* opt-functions.awk (switch_bit_fields): Initialize cl_tolower
-	field.
+	* opt-functions.awk (switch_bit_fields): Initialize cl_tolower field.
 	* opts-common.c (decode_cmdline_option): Handle cl_tolower.
 	* opts.h (cl_option): Add cl_tolower field.
 	* config/rx/rx.c (rx_handle_option): Use strcmp of -mcpu=
