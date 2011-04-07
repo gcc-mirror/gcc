@@ -1,3 +1,23 @@
+2011-04-07  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/m68k/m68k.c (m68k_handle_option): Don't handle
+	OPT_m68000, OPT_mc68000, OPT_m68010, OPT_m68020, OPT_mc68020,
+	OPT_m68030, OPT_m68040, OPT_m68060, OPT_m68302, OPT_m68332 and
+	OPT_mcpu32.
+	* config/m68k/m68k.h (OPTION_DEFAULT_SPECS, ASM_CPU_SPEC): Don't
+	handle -mc68000, -m68000, -m68302, -m68010, -mc68020, -m68020,
+	-m68030, -m68040, -m68060, -mcpu32 and -m68332.
+	* config/m68k/m68k.opt (m68000, m68010, m68020, m68030, m68040,
+	m68060, m68302, m68332, mc68000, mc68020, mcpu32): Use Alias.
+	* config/m68k/t-mlibs (CANONICALIZE_OPTIONS): Remove.
+	(MULTILIB_OPTIONS): Don't use $(CANONICALIZE_OPTIONS).
+	(MULTILIB_MATCHES): Map -march= options to corresponding -mcpu=
+	options.  Don't map other m68k options manually.  Don't handle
+	old-style options as canonical.
+	(MULTILIB_EXCEPTIONS): Don't use $(CANONICALIZE_OPTIONS).
+	* doc/install.texi (m68k-*-*): Document binutils version
+	requirement.
+
 2011-04-07  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* basic-block.h (force_nonfallthru): Move to...
