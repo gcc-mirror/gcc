@@ -1,5 +1,8 @@
 2011-04-07  Jakub Jelinek  <jakub@redhat.com>
 
+	PR fortran/48117
+	* gfortran.dg/gomp/pr48117.f90: New test.
+
 	PR debug/48343
 	* gcc.dg/torture/pr48343.c: New test.
 
