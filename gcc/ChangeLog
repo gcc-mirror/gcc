@@ -1,6 +1,12 @@
 2011-04-07  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2011-03-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/47963
+	* gimplify.c (omp_add_variable): Only call omp_notice_variable
+	on TYPE_SIZE_UNIT if it is a DECL.
+
 	2011-02-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/47809

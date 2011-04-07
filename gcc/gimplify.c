@@ -5438,7 +5438,8 @@ omp_add_variable (struct gimplify_omp_ctx *ctx, tree decl, unsigned int flags)
 	 For local variables TYPE_SIZE_UNIT might not be gimplified yet,
 	 in this case omp_notice_variable will be called later
 	 on when it is gimplified.  */
-      else if (! (flags & GOVD_LOCAL))
+      else if (! (flags & GOVD_LOCAL)
+	       && DECL_P (TYPE_SIZE_UNIT (TREE_TYPE (decl))))
 	omp_notice_variable (ctx, TYPE_SIZE_UNIT (TREE_TYPE (decl)), true);
     }
   else if (lang_hooks.decls.omp_privatize_by_reference (decl))
