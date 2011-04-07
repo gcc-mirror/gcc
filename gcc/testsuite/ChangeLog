@@ -1,3 +1,7 @@
+2011-04-07  Maxim Kuvyrkov  <maxim@codesourcery.com>
+
+	* gcc.dg/lto/20090210_0.c: Require tls_runtime target.
+
 2011-04-07  Tom de Vries  <tom@codesourcery.com>
 
 	PR target/43920
