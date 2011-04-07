@@ -1,3 +1,8 @@
+2011-04-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/48343
+	* gcc.dg/torture/pr48343.c: New test.
+
 2011-04-07  Andrey Belevantsev  <abel@ispras.ru>
 
 	Backport from mainline
