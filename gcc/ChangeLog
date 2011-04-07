@@ -1,3 +1,16 @@
+2011-04-07  Andrey Belevantsev  <abel@ispras.ru>
+
+	Backport from mainline
+	2011-03-26  Andrey Belevantsev  <abel@ispras.ru>
+
+	PR rtl-optimization/48144
+	* sel-sched-ir.c (merge_history_vect): Factor out from ...
+	(merge_expr_data): ... here.
+	(av_set_intersect): Rename to av_set_code_motion_filter.
+	Update all callers.  Call merge_history_vect when an
+	expression is found in both sets.
+	* sel-sched-ir.h (av_set_code_motion_filter): Add prototype.
+
 2011-04-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/48466
