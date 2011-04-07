@@ -18774,9 +18774,6 @@ rs6000_savres_strategy (rs6000_stack_t *info,
 static rs6000_stack_t *
 rs6000_stack_info (void)
 {
-#ifdef ENABLE_CHECKING
-  static rs6000_stack_t info_save;
-#endif
   rs6000_stack_t *info_ptr = &stack_info;
   int reg_size = TARGET_32BIT ? 4 : 8;
   int ehrd_size;
@@ -18785,14 +18782,10 @@ rs6000_stack_info (void)
   HOST_WIDE_INT non_fixed_size;
   bool using_static_chain_p;
 
-#ifdef ENABLE_CHECKING
-  memcpy (&info_save, &stack_info, sizeof stack_info);
-#else
   if (reload_completed && info_ptr->reload_completed)
     return info_ptr;
-#endif
 
-  memset (&stack_info, 0, sizeof (stack_info));
+  memset (info_ptr, 0, sizeof (*info_ptr));
   info_ptr->reload_completed = reload_completed;
 
   if (TARGET_SPE)
@@ -19096,10 +19089,6 @@ rs6000_stack_info (void)
   if (! info_ptr->cr_save_p)
     info_ptr->cr_save_offset = 0;
 
-#ifdef ENABLE_CHECKING
-  gcc_assert (!(reload_completed && info_save.reload_completed)
-	      || memcmp (&info_save, &stack_info, sizeof stack_info) == 0);
-#endif
   return info_ptr;
 }
 
