@@ -1,11 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-Wcast-qual" } */
 
-/* The files gcc.dg/cast-qual-3.c and g++.dg/warn/Wcast-qual2.c are
-   duals.  they are intended to show that gcc -Wcast-qual and g++
-   -Wcast-qual emit warnings in the same cases.  If you change this
-   file, please also change the other one.  */
-
 void
 f1 (void *bar)
 {

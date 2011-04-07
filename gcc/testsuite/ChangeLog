@@ -1,5 +1,9 @@
 2011-04-07  Jason Merrill  <jason@redhat.com>
 
+	* c-c++-common/Wcast-qual-1.c: Move here from...
+	* gcc.dg/cast-qual-3.c: ...here, and...
+	* g++.dg/warn/Wcast-qual2.C: ...here.
+
 	* g++.dg/cpp0x/sfinae8.C: New.
 
 	* g++.dg/cpp0x/sfinae7.C: New.
