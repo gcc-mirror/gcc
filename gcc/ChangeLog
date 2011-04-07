@@ -1,6 +1,16 @@
 2011-04-07  Tom de Vries  <tom@codesourcery.com>
 
 	PR target/43920
+	* cfgcleanup.c (walk_to_nondebug_insn): New function.
+	(flow_find_cross_jump): Use walk_to_nondebug_insn.  Recalculate bb1 and
+	bb2.
+	(try_crossjump_to_edge): Handle case that newpos1 or newpos2 is not src1
+	or src2.  Redirect edges to the last basic block.  Update frequency and
+	count on multiple basic blocks in case of fallthru.
+
+2011-04-07  Tom de Vries  <tom@codesourcery.com>
+
+	PR target/43920
 	* cfgcleanup.c (equal_different_set_p, can_replace_by, merge_dir): New
 	function.
 	(old_insns_match_p): Change return type.  Replace return false/true with
