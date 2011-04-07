@@ -1174,6 +1174,43 @@ merge_notes (rtx i1, rtx i2)
     }
 }
 
+ /* Walks from I1 in BB1 backward till the next non-debug insn, and returns the
+    resulting insn in I1, and the corresponding bb in BB1.  At the head of a
+    bb, if there is a predecessor bb that reaches this bb via fallthru, and
+    FOLLOW_FALLTHRU, walks further in the predecessor bb and registers this in
+    DID_FALLTHRU.  Otherwise, stops at the head of the bb.  */
+
+static void
+walk_to_nondebug_insn (rtx *i1, basic_block *bb1, bool follow_fallthru,
+                       bool *did_fallthru)
+{
+  edge fallthru;
+
+  *did_fallthru = false;
+
+  /* Ignore notes.  */
+  while (!NONDEBUG_INSN_P (*i1))
+    {
+      if (*i1 != BB_HEAD (*bb1))
+        {
+          *i1 = PREV_INSN (*i1);
+          continue;
+        }
+
+      if (!follow_fallthru)
+        return;
+
+      fallthru = find_fallthru_edge ((*bb1)->preds);
+      if (!fallthru || fallthru->src == ENTRY_BLOCK_PTR_FOR_FUNCTION (cfun)
+          || !single_succ_p (fallthru->src))
+        return;
+
+      *bb1 = fallthru->src;
+      *i1 = BB_END (*bb1);
+      *did_fallthru = true;
+     }
+}
+
 /* Look through the insns at the end of BB1 and BB2 and find the longest
    sequence that are either equivalent, or allow forward or backward
    replacement.  Store the first insns for that sequence in *F1 and *F2 and
@@ -1194,6 +1231,7 @@ flow_find_cross_jump (basic_block bb1, basic_block bb2, rtx *f1, rtx *f2,
   int ninsns = 0;
   rtx p1;
   enum replace_direction dir, last_dir, afterlast_dir;
+  bool follow_fallthru, did_fallthru;
 
   if (dir_p)
     dir = *dir_p;
@@ -1227,12 +1265,31 @@ flow_find_cross_jump (basic_block bb1, basic_block bb2, rtx *f1, rtx *f2,
 
   while (true)
     {
-      /* Ignore notes.  */
-      while (!NONDEBUG_INSN_P (i1) && i1 != BB_HEAD (bb1))
-	i1 = PREV_INSN (i1);
+      /* In the following example, we can replace all jumps to C by jumps to A.
 
-      while (!NONDEBUG_INSN_P (i2) && i2 != BB_HEAD (bb2))
-	i2 = PREV_INSN (i2);
+         This removes 4 duplicate insns.
+         [bb A] insn1            [bb C] insn1
+                insn2                   insn2
+         [bb B] insn3                   insn3
+                insn4                   insn4
+                jump_insn               jump_insn
+
+         We could also replace all jumps to A by jumps to C, but that leaves B
+         alive, and removes only 2 duplicate insns.  In a subsequent crossjump
+         step, all jumps to B would be replaced with jumps to the middle of C,
+         achieving the same result with more effort.
+         So we allow only the first possibility, which means that we don't allow
+         fallthru in the block that's being replaced.  */
+
+      follow_fallthru = dir_p && dir != dir_forward;
+      walk_to_nondebug_insn (&i1, &bb1, follow_fallthru, &did_fallthru);
+      if (did_fallthru)
+        dir = dir_backward;
+
+      follow_fallthru = dir_p && dir != dir_backward;
+      walk_to_nondebug_insn (&i2, &bb2, follow_fallthru, &did_fallthru);
+      if (did_fallthru)
+        dir = dir_forward;
 
       if (i1 == BB_HEAD (bb1) || i2 == BB_HEAD (bb2))
 	break;
@@ -1273,12 +1330,14 @@ flow_find_cross_jump (basic_block bb1, basic_block bb2, rtx *f1, rtx *f2,
      Two, it keeps line number notes as matched as may be.  */
   if (ninsns)
     {
+      bb1 = BLOCK_FOR_INSN (last1);
       while (last1 != BB_HEAD (bb1) && !NONDEBUG_INSN_P (PREV_INSN (last1)))
 	last1 = PREV_INSN (last1);
 
       if (last1 != BB_HEAD (bb1) && LABEL_P (PREV_INSN (last1)))
 	last1 = PREV_INSN (last1);
 
+      bb2 = BLOCK_FOR_INSN (last2);
       while (last2 != BB_HEAD (bb2) && !NONDEBUG_INSN_P (PREV_INSN (last2)))
 	last2 = PREV_INSN (last2);
 
@@ -1710,6 +1769,7 @@ try_crossjump_to_edge (int mode, edge e1, edge e2)
   int nmatch;
   basic_block src1 = e1->src, src2 = e2->src;
   basic_block redirect_to, redirect_from, to_remove;
+  basic_block osrc1, osrc2, redirect_edges_to, tmp;
   enum replace_direction dir;
   rtx newpos1, newpos2;
   edge s;
@@ -1769,6 +1829,13 @@ try_crossjump_to_edge (int mode, edge e1, edge e2)
   dir = dir_forward;
   nmatch = flow_find_cross_jump (src1, src2, &newpos1, &newpos2, &dir);
 
+  osrc1 = src1;
+  osrc2 = src2;
+  if (newpos1 != NULL_RTX)
+    src1 = BLOCK_FOR_INSN (newpos1);
+  if (newpos2 != NULL_RTX)
+    src2 = BLOCK_FOR_INSN (newpos2);
+
   /* Don't proceed with the crossjump unless we found a sufficient number
      of matching instructions or the 'from' block was totally matched
      (such that its predecessors will hopefully be redirected and the
@@ -1791,8 +1858,8 @@ try_crossjump_to_edge (int mode, edge e1, edge e2)
       rtx label1, label2;
       rtx table1, table2;
 
-      if (tablejump_p (BB_END (src1), &label1, &table1)
-	  && tablejump_p (BB_END (src2), &label2, &table2)
+      if (tablejump_p (BB_END (osrc1), &label1, &table1)
+	  && tablejump_p (BB_END (osrc2), &label2, &table2)
 	  && label1 != label2)
 	{
 	  replace_label_data rr;
@@ -1807,7 +1874,7 @@ try_crossjump_to_edge (int mode, edge e1, edge e2)
 	      /* Do not replace the label in SRC1->END because when deleting
 		 a block whose end is a tablejump, the tablejump referenced
 		 from the instruction is deleted too.  */
-	      if (insn != BB_END (src1))
+	      if (insn != BB_END (osrc1))
 		for_each_rtx (&insn, replace_label, &rr);
 	    }
 	}
@@ -1848,8 +1915,13 @@ try_crossjump_to_edge (int mode, edge e1, edge e2)
   /* We may have some registers visible through the block.  */
   df_set_bb_dirty (redirect_to);
 
+  if (osrc2 == src2)
+    redirect_edges_to = redirect_to;
+  else
+    redirect_edges_to = osrc2;
+
   /* Recompute the frequencies and counts of outgoing edges.  */
-  FOR_EACH_EDGE (s, ei, redirect_to->succs)
+  FOR_EACH_EDGE (s, ei, redirect_edges_to->succs)
     {
       edge s2;
       edge_iterator ei;
@@ -1892,24 +1964,32 @@ try_crossjump_to_edge (int mode, edge e1, edge e2)
 	    s2->dest->count = 0;
 	}
 
-      if (!redirect_to->frequency && !src1->frequency)
+      if (!redirect_edges_to->frequency && !src1->frequency)
 	s->probability = (s->probability + s2->probability) / 2;
       else
 	s->probability
-	  = ((s->probability * redirect_to->frequency +
+	  = ((s->probability * redirect_edges_to->frequency +
 	      s2->probability * src1->frequency)
-	     / (redirect_to->frequency + src1->frequency));
+	     / (redirect_edges_to->frequency + src1->frequency));
     }
 
   /* Adjust count and frequency for the block.  An earlier jump
      threading pass may have left the profile in an inconsistent
      state (see update_bb_profile_for_threading) so we must be
      prepared for overflows.  */
-  redirect_to->count += src1->count;
-  redirect_to->frequency += src1->frequency;
-  if (redirect_to->frequency > BB_FREQ_MAX)
-    redirect_to->frequency = BB_FREQ_MAX;
-  update_br_prob_note (redirect_to);
+  tmp = redirect_to;
+  do
+    {
+      tmp->count += src1->count;
+      tmp->frequency += src1->frequency;
+      if (tmp->frequency > BB_FREQ_MAX)
+        tmp->frequency = BB_FREQ_MAX;
+      if (tmp == redirect_edges_to)
+        break;
+      tmp = find_fallthru_edge (tmp->succs)->dest;
+    }
+  while (true);
+  update_br_prob_note (redirect_edges_to);
 
   /* Edit SRC1 to go to REDIRECT_TO at NEWPOS1.  */
 
