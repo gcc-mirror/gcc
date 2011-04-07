@@ -1,3 +1,9 @@
+2011-04-07  Tom de Vries  <tom@codesourcery.com>
+
+	PR target/43920
+	* lib/scanasm.exp (object-size): New proc.
+	* gcc.target/arm/pr43920-2.c: New test.
+
 2011-04-06  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/18918

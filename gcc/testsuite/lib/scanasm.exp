@@ -315,6 +315,92 @@ proc scan-assembler-dem-not { args } {
     }
 }
 
+# Call pass if object size is ok, otherwise fail.
+# example: /* { dg-final { object-size text <= 54 } } */
+proc object-size { args } {
+    global size
+    global base_dir
+
+    if { [llength $args] < 3 } {
+	error "object-size: too few arguments"
+        return
+    }
+    if { [llength $args] > 4 } {
+	error "object-size: too many arguments"
+	return
+    }
+    if { [llength $args] >= 4 } {
+	switch [dg-process-target [lindex $args 1]] {
+	    "S" { }
+	    "N" { return }
+	    "F" { setup_xfail "*-*-*" }
+	    "P" { }
+	}
+    }
+
+    # Find size like we find g++ in g++.exp.
+    if ![info exists size]  {
+	set size [findfile $base_dir/../../../binutils/size \
+		  $base_dir/../../../binutils/size \
+		  [findfile $base_dir/../../size $base_dir/../../size \
+		   [findfile $base_dir/size $base_dir/size \
+		    [transform size]]]]
+	verbose -log "size is $size"
+    }
+
+    upvar 2 name testcase
+    set testcase [lindex $testcase 0]
+    set output_file "[file rootname [file tail $testcase]].o"
+    set output [remote_exec host "$size" "$output_file"]
+    set status [lindex $output 0]
+    if { $status != 0 } {
+        error "object-size: $size failed"
+        return
+    }
+
+    set text [lindex $output 1]
+    set lines [split $text "\n"]
+
+    set line0 [lindex $lines 0]
+    if ![regexp {^\s*text\s+data\s+bss\s+dec\s+hex\s+filename\s*$} $line0] {
+        error "object-size: $size did not produce expected first line: $line0"
+        return
+    }
+
+    set line1 [lindex $lines 1]
+    if ![regexp {^\s*\d+\s+\d+\s+\d+\s+\d+\s+[\da-fA-F]+\s+} $line1] {
+        error "object-size: $size did not produce expected second line: $line1"
+        return
+    }
+
+    set what [lindex $args 0]
+    set where [lsearch { text data bss total } $what]
+    if { $where == -1 } {
+        error "object-size: illegal argument: $what"
+        return
+    }
+    set actual [lindex $line1 $where]
+    verbose -log "$what size is $actual"
+
+    set cmp [lindex $args 1]
+    if { [lsearch { < > <= >= == != } $cmp] == -1 } {
+        error "object-size: illegal argument: $cmp"
+        return
+    }
+
+    set with [lindex $args 2]
+    if ![string is integer $with ] {
+        error "object-size: illegal argument: $with"
+        return
+    }
+
+    if [expr $actual $cmp $with] {
+	pass "$testcase object-size $what $cmp $with"
+    } else {
+	fail "$testcase object-size $what $cmp $with"
+    }
+}
+
 # Utility for testing that a function is defined on the current line.
 # Call pass if so, otherwise fail.  Invoked directly; the file must
 # have been compiled with -g -dA.
