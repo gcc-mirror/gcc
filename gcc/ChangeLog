@@ -1,3 +1,20 @@
+2011-04-07  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sse.md (avx_cmps<ssemodesuffixf2c><mode>3): Add
+	missing output register constraint.
+	(*vec_concatv2sf_avx): Fix wrong register constraint in
+	alternative 3 of operand 1.
+	(*vec_set<mode>_0_avx): Avoid combining registers from different
+	units in a single alternative.
+	(*vec_set<mode>_0_sse4_1): Ditto.
+	(*vec_set<mode>_0_sse2): Ditto.
+	(vec_set<mode>_0): Ditto.
+	(sse2_storehpd): Ditto.
+	(sse2_loadhpd): Ditto.
+	(sse4_1_insertps): Use nonimmediate_operand for operand 2.
+	* config/i386/predicates.md (sse_comparison_operator): Do not
+	define as special predicate.
+
 2011-04-07  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
