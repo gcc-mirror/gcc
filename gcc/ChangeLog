@@ -1,6 +1,16 @@
 2011-04-07  Andrey Belevantsev  <abel@ispras.ru>
 
 	Backport from mainline
+	2010-12-24  Alexander Monakov  <amonakov@ispras.ru>
+
+	PR rtl-optimization/47036
+	* sel-sched-ir.c (fallthru_bb_of_jump): Remove special support for
+	unconditional jumps.
+	* sel-sched.c (moveup_expr): Ditto.
+
+2011-04-07  Andrey Belevantsev  <abel@ispras.ru>
+
+	Backport from mainline
 	2010-12-15  Alexander Monakov  <amonakov@ispras.ru>
 
 	PR rtl-optimization/46649
