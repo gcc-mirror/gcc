@@ -153,7 +153,7 @@
 	(cgraph_early_inlining): Re-structure.
 	(pass_early_inline): Require SSA form.
 
-2011-03-06  Andrew Stubbs  <ams@codesourcery.com>
+2011-04-06  Andrew Stubbs  <ams@codesourcery.com>
 	    Julian Brown  <julian@codesourcery.com>
 	    Mark Shinwell  <shinwell@codesourcery.com>
 
@@ -169,8 +169,8 @@
 
 2011-04-06  Tristan Gingold  <gingold@adacore.com>
 
-	* dbxout.c: (debug_nesting, symbol_queue, symbol_queue_index)
-	(symbol_queue_size, DBXOUT_DECR_NESTING)
+	* dbxout.c (debug_nesting, symbol_queue, symbol_queue_index,
+	symbol_queue_size, DBXOUT_DECR_NESTING,
 	(DBXOUT_DECR_NESTING_AND_RETURN): Also define
 	if XCOFF_DEBUGGING_INFO.
 
