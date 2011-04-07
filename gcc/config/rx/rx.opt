@@ -53,13 +53,13 @@ Enum
 Name(rx_cpu_types) Type(enum rx_cpu_types)
 
 EnumValue
-Name(rx_cpu_types) String(rx610) Value(RX610)
+Enum(rx_cpu_types) String(rx610) Value(RX610)
 
 EnumValue
-Name(rx_cpu_types) String(rx200) Value(RX200)
+Enum(rx_cpu_types) String(rx200) Value(RX200)
 
 EnumValue
-Name(rx_cpu_types) String(rx600) Value(RX600)
+Enum(rx_cpu_types) String(rx600) Value(RX600)
 
 ;---------------------------------------------------
 
