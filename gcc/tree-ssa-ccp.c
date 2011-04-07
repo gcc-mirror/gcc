@@ -277,7 +277,7 @@ tree
 get_symbol_constant_value (tree sym)
 {
   if (TREE_STATIC (sym)
-      && (TREE_READONLY (sym)
+      && ((TREE_READONLY (sym) && !TREE_THIS_VOLATILE (sym))
 	  || TREE_CODE (sym) == CONST_DECL))
     {
       tree val = DECL_INITIAL (sym);

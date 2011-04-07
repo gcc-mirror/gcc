@@ -1,5 +1,9 @@
 2011-04-07  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/47391
+	* tree-ssa-ccp.c (get_symbol_constant_value): Don't optimize
+	if sym is volatile.
+
 	Backported from mainline
 	2010-07-01  Richard Guenther  <rguenther@suse.de>
 
