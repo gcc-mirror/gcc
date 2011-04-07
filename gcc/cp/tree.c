@@ -382,8 +382,7 @@ build_aggr_init_expr (tree type, tree init, tsubst_flags_t complain)
 
   /* Make sure that we're not trying to create an instance of an
      abstract class.  */
-  if (abstract_virtuals_error_sfinae (NULL_TREE, type, complain)
-      && !(complain & tf_error))
+  if (abstract_virtuals_error_sfinae (NULL_TREE, type, complain))
     return error_mark_node;
 
   if (TREE_CODE (init) == CALL_EXPR)
