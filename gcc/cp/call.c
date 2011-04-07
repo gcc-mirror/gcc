@@ -5414,7 +5414,7 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	   we need to build up a TARGET_EXPR.  */
 	if (DECL_CONSTRUCTOR_P (convfn))
 	  {
-	    expr = build_cplus_new (totype, expr);
+	    expr = build_cplus_new (totype, expr, complain);
 
 	    /* Remember that this was list-initialization.  */
 	    if (convs->check_narrowing)
@@ -5559,7 +5559,7 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	  else if (diag_kind == DK_ERROR)
 	    return error_mark_node;
 	}
-      return build_cplus_new (totype, expr);
+      return build_cplus_new (totype, expr, complain);
 
     case ck_ref_bind:
       {
@@ -6476,7 +6476,7 @@ build_cxx_call (tree fn, int nargs, tree *argarray)
     return error_mark_node;
 
   if (MAYBE_CLASS_TYPE_P (TREE_TYPE (fn)))
-    fn = build_cplus_new (TREE_TYPE (fn), fn);
+    fn = build_cplus_new (TREE_TYPE (fn), fn, tf_warning_or_error);
   return convert_from_reference (fn);
 }
 
@@ -8119,7 +8119,7 @@ perform_direct_initialization_if_possible (tree type,
       expr = build_special_member_call (NULL_TREE, complete_ctor_identifier,
 					&args, type, LOOKUP_NORMAL, complain);
       release_tree_vector (args);
-      return build_cplus_new (type, expr);
+      return build_cplus_new (type, expr, complain);
     }
 
   /* Get the high-water mark for the CONVERSION_OBSTACK.  */
