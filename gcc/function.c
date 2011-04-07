@@ -5295,8 +5295,7 @@ thread_prologue_and_epilogue_insns (void)
 {
   bool inserted;
   rtx seq ATTRIBUTE_UNUSED, epilogue_end ATTRIBUTE_UNUSED;
-  edge entry_edge ATTRIBUTE_UNUSED;
-  edge e;
+  edge entry_edge, e;
   edge_iterator ei;
 
   rtl_profile_for_bb (ENTRY_BLOCK_PTR);
@@ -5328,10 +5327,6 @@ thread_prologue_and_epilogue_insns (void)
       record_insns (seq, NULL, &prologue_insn_hash);
       set_insn_locators (seq, prologue_locator);
 
-      /* This relies on the fact that committing the edge insertion
-	 will look for basic blocks within the inserted instructions,
-	 which in turn relies on the fact that we are not in CFG
-	 layout mode here.  */
       insert_insn_on_edge (seq, entry_edge);
       inserted = true;
 #endif
@@ -5566,12 +5561,22 @@ thread_prologue_and_epilogue_insns (void)
 	  cur_bb->aux = cur_bb->next_bb;
       cfg_layout_finalize ();
     }
+
 epilogue_done:
   default_rtl_profile ();
 
   if (inserted)
     {
+      sbitmap blocks;
+
       commit_edge_insertions ();
+
+      /* Look for basic blocks within the prologue insns.  */
+      blocks = sbitmap_alloc (last_basic_block);
+      sbitmap_zero (blocks);
+      SET_BIT (blocks, entry_edge->dest->index);
+      find_many_sub_basic_blocks (blocks);
+      sbitmap_free (blocks);
 
       /* The epilogue insns we inserted may cause the exit edge to no longer
 	 be fallthru.  */

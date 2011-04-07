@@ -85,8 +85,11 @@ struct cfg_hooks
   basic_block (*split_edge) (edge);
   void (*make_forwarder_block) (edge);
 
-  /* Tries to make the edge fallthru.  */
+  /* Try to make the edge fallthru.  */
   void (*tidy_fallthru_edge) (edge);
+
+  /* Make the edge non-fallthru.  */
+  basic_block (*force_nonfallthru) (edge);
 
   /* Say whether a block ends with a call, possibly followed by some
      other code that must stay with the call.  */
@@ -156,6 +159,7 @@ extern bool can_merge_blocks_p (basic_block, basic_block);
 extern void merge_blocks (basic_block, basic_block);
 extern edge make_forwarder_block (basic_block, bool (*)(edge),
 				  void (*) (basic_block));
+extern basic_block force_nonfallthru (edge);
 extern void tidy_fallthru_edge (edge);
 extern void tidy_fallthru_edges (void);
 extern void predict_edge (edge e, enum br_predictor predictor, int probability);
