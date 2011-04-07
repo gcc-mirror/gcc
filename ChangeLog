@@ -1,3 +1,7 @@
+2011-04-07  Stuart Henderson  <shenders@gcc.gnu.org>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
 2011-04-06  Joseph Myers  <joseph@codesourcery.com>
 
 	* configure.ac (build_tools): Remove build-byacc.
