@@ -1,3 +1,9 @@
+2011-04-05  Nick Clifton  <nickc@redhat.com>
+
+	* config/mn10300/mn10300.md (movqi_internal): Add alternatives
+	to handle MDR <-> data register transfers.
+	(movhi_internal): Likewise.
+
 2011-04-07  Alan Modra  <amodra@gmail.com>
 
 	* config/rs6000/rs6000.c (rs6000_stack_info): Don't compare against
