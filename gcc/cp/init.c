@@ -388,14 +388,6 @@ build_value_init_noctor (tree type, tsubst_flags_t complain)
 
 	      ftype = TREE_TYPE (field);
 
-	      if (TREE_CODE (ftype) == REFERENCE_TYPE)
-		{
-		  if (complain & tf_error)
-		    error ("value-initialization of reference");
-		  else
-		    return error_mark_node;
-		}
-
 	      /* We could skip vfields and fields of types with
 		 user-defined constructors, but I think that won't improve
 		 performance at all; it should be simpler in general just
@@ -407,6 +399,9 @@ build_value_init_noctor (tree type, tsubst_flags_t complain)
 		 over TYPE_FIELDs will result in correct initialization of
 		 all of the subobjects.  */
 	      value = build_value_init (ftype, complain);
+
+	      if (value == error_mark_node)
+		return error_mark_node;
 
 	      if (value)
 		CONSTRUCTOR_APPEND_ELT(v, field, value);
@@ -450,6 +445,9 @@ build_value_init_noctor (tree type, tsubst_flags_t complain)
 
 	  ce->value = build_value_init (TREE_TYPE (type), complain);
 
+	  if (ce->value == error_mark_node)
+	    return error_mark_node;
+
 	  /* The gimplifier can't deal with a RANGE_EXPR of TARGET_EXPRs.  */
 	  gcc_assert (TREE_CODE (ce->value) != TARGET_EXPR
 		      && TREE_CODE (ce->value) != AGGR_INIT_EXPR);
@@ -462,6 +460,12 @@ build_value_init_noctor (tree type, tsubst_flags_t complain)
     {
       if (complain & tf_error)
 	error ("value-initialization of function type %qT", type);
+      return error_mark_node;
+    }
+  else if (TREE_CODE (type) == REFERENCE_TYPE)
+    {
+      if (complain & tf_error)
+	error ("value-initialization of reference type %qT", type);
       return error_mark_node;
     }
 
@@ -504,16 +508,9 @@ perform_member_init (tree member, tree init)
 	}
       else
 	{
-	  if (TREE_CODE (type) == REFERENCE_TYPE)
-	    permerror (DECL_SOURCE_LOCATION (current_function_decl),
-		       "value-initialization of %q#D, which has reference type",
-		       member);
-	  else
-	    {
-	      init = build2 (INIT_EXPR, type, decl,
-			     build_value_init (type, tf_warning_or_error));
-	      finish_expr_stmt (init);
-	    }
+	  init = build2 (INIT_EXPR, type, decl,
+			 build_value_init (type, tf_warning_or_error));
+	  finish_expr_stmt (init);
 	}
     }
   /* Deal with this here, as we will get confused if we try to call the

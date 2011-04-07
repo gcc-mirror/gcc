@@ -1,5 +1,12 @@
 2011-04-07  Jason Merrill  <jason@redhat.com>
 
+	* init.c (build_value_init_noctor): Handle REFERENCE_TYPE at top
+	level.
+	(perform_member_init): Not here.
+	* typeck2.c (build_functional_cast): Limit REFERENCE_TYPE special
+	case to templates.
+	(abstract_virtuals_error_sfinae): Remove RESULT_DECL special case.
+
 	PR c++/48449
 	* typeck2.c (build_functional_cast): Check complain consistently.
 	Use build_value_init and abstract_virtuals_error_sfinae.
