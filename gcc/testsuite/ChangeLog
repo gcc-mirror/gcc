@@ -1,6 +1,31 @@
 2011-04-07  Andrey Belevantsev  <abel@ispras.ru>
 
 	Backport from mainline
+	2011-01-13  Andrey Belevantsev  <abel@ispras.ru>
+
+	PR rtl-optimization/45352
+	* gcc.dg/pr45352-3.c: New.
+
+	Backport from mainline
+	2010-12-22  Andrey Belevantsev  <abel@ispras.ru>
+
+	PR rtl-optimization/45352
+	PR rtl-optimization/46521
+	PR rtl-optimization/46522
+	* gcc.dg/pr46521.c: New.
+	* gcc.dg/pr46522.c: New.
+
+	Backport from mainline
+	2010-11-08  Andrey Belevantsev  <abel@ispras.ru>
+
+	PR rtl-optimization/45352
+	gcc.dg/pr45352.c, gcc.dg/pr45352-1.c, gcc.dg/pr45352-2.c: New tests.
+	gcc.target/i386/pr45352.c, gcc.target/i386/pr45352-1.c,
+	gcc.target/i386/pr45352-2.c: New tests.
+
+2011-04-07  Andrey Belevantsev  <abel@ispras.ru>
+
+	Backport from mainline
 	2010-12-24  Alexander Monakov  <amonakov@ispras.ru>
 
 	PR rtl-optimization/47036
