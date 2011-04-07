@@ -1,6 +1,16 @@
 2011-04-07  Andrey Belevantsev  <abel@ispras.ru>
 
 	Backport from mainline
+	2010-11-12  Alexander Monakov  <amonakov@ispras.ru>
+
+	PR rtl-optimization/46204
+	 sel-sched-ir.c (maybe_tidy_empty_bb): Remove second argument.
+	pdate all callers.  Do not recompute topological order.  Adjust
+	allthrough edges following a degenerate conditional jump.
+
+2011-04-07  Andrey Belevantsev  <abel@ispras.ru>
+
+	Backport from mainline
 	2010-10-14  Andrey Belevantsev  <abel@ispras.ru>
 
 	PR rtl-optimization/45570
