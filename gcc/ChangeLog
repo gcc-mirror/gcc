@@ -1,3 +1,8 @@
+2011-04-07  Anatoly Sokolov  <aesok@post.ru>
+
+	* config/mips/mips.h (REG_MODE_OK_FOR_BASE_P, REG_OK_FOR_INDEX_P):
+	Remove macros.
+
 2011-04-07  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/sse.md: Update copyright year.
