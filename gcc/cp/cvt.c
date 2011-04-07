@@ -727,7 +727,13 @@ ocp_convert (tree type, tree expr, int convtype, int flags)
 	  return error_mark_node;
 	}
       if (code == BOOLEAN_TYPE)
-	return cp_truthvalue_conversion (e);
+	{
+	  /* We can't implicitly convert a scoped enum to bool, so convert
+	     to the underlying type first.  */
+	  if (SCOPED_ENUM_P (intype) && (convtype & CONV_STATIC))
+	    e = convert (ENUM_UNDERLYING_TYPE (intype), e);
+	  return cp_truthvalue_conversion (e);
+	}
 
       converted = fold_if_not_in_template (convert_to_integer (type, e));
 
