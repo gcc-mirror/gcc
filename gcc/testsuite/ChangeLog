@@ -1,5 +1,7 @@
 2011-04-07  Jason Merrill  <jason@redhat.com>
 
+	* g++.dg/cpp0x/regress/call1.C: New.
+
 	* g++.dg/cpp0x/sfinae11.C: New.
 	* g++.dg/cpp0x/noexcept02.C: Fix.
 

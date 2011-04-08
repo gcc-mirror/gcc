@@ -1,5 +1,9 @@
 2011-04-07  Jason Merrill  <jason@redhat.com>
 
+	PR c++/48500
+	* semantics.c (potential_constant_expression_1) [CALL_EXPR]: Check
+	arguments even if we don't know the function.
+
 	PR c++/48468
 	* except.c (build_noexcept_spec): Propagate error_mark_node.
 	(finish_noexcept_expr): Likewise.
