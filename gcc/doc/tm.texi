@@ -6821,7 +6821,7 @@ data.
 @defmac BSS_SECTION_ASM_OP
 If defined, a C expression whose value is a string, including spacing,
 containing the assembler operation to identify the following data as
-uninitialized global data.  If not defined, and 
+uninitialized global data.  If not defined, and
 @code{ASM_OUTPUT_ALIGNED_BSS} not defined,
 uninitialized global data will be output in the data section if
 @option{-fno-common} is passed, otherwise @code{ASM_OUTPUT_COMMON} will be
