@@ -1,5 +1,9 @@
 2011-04-07  Jason Merrill  <jason@redhat.com>
 
+	PR c++/48500
+	* semantics.c (potential_constant_expression_1) [CALL_EXPR]: Check
+	arguments even if we don't know the function.
+
 	PR c++/48481
 	* tree.c (build_overload): Allow an unwrapped FUNCTION_DECL
 	at the end of the chain.
