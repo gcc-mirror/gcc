@@ -1,3 +1,9 @@
+2011-04-07  Jason Merrill  <jason@redhat.com>
+
+	PR c++/48450
+	* c-common.c (c_common_truthvalue_conversion): Don't ignore
+	conversion from C++0x scoped enum.
+
 2011-03-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR preprocessor/48248

@@ -1,3 +1,7 @@
+2011-04-07  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/enum9.C: New.
+
 2011-04-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/48377
