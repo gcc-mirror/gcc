@@ -1,5 +1,9 @@
 2011-04-07  Jason Merrill  <jason@redhat.com>
 
+	PR c++/48481
+	* call.c (build_user_type_conversion_1): Use lookup_fnfields_slot.
+	Release unused vector.
+
 	PR c++/48451
 	* pt.c (fn_type_unification): Don't clear incomplete pack flag.
 	(type_unification_real): Clear it here instead.
