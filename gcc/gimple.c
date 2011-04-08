@@ -1780,15 +1780,17 @@ gimple_call_flags (const_gimple stmt)
 {
   int flags;
   tree decl = gimple_call_fndecl (stmt);
-  tree t;
 
   if (decl)
     flags = flags_from_decl_or_type (decl);
   else
     {
-      t = TREE_TYPE (gimple_call_fn (stmt));
-      if (t && TREE_CODE (t) == POINTER_TYPE)
-	flags = flags_from_decl_or_type (TREE_TYPE (t));
+      tree t = TREE_TYPE (gimple_call_fn (stmt));
+      /* ???  We can end up being called from gimple_set_modified from
+         gsi_remove in which case the function being called can
+	 be a released SSA name.  Give up in that case.  */
+      if (t)
+	flags = flags_from_decl_or_type (gimple_call_fntype (stmt));
       else
 	flags = 0;
     }
@@ -1804,7 +1806,7 @@ gimple_call_flags (const_gimple stmt)
 int
 gimple_call_arg_flags (const_gimple stmt, unsigned arg)
 {
-  tree type = TREE_TYPE (TREE_TYPE (gimple_call_fn (stmt)));
+  tree type = gimple_call_fntype (stmt);
   tree attr = lookup_attribute ("fn spec", TYPE_ATTRIBUTES (type));
   if (!attr)
     return 0;
@@ -1848,7 +1850,7 @@ gimple_call_return_flags (const_gimple stmt)
   if (gimple_call_flags (stmt) & ECF_MALLOC)
     return ERF_NOALIAS;
 
-  type = TREE_TYPE (TREE_TYPE (gimple_call_fn (stmt)));
+  type = gimple_call_fntype (stmt);
   attr = lookup_attribute ("fn spec", TYPE_ATTRIBUTES (type));
   if (!attr)
     return 0;

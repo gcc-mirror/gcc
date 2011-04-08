@@ -2011,6 +2011,13 @@ gimple_call_fn (const_gimple gs)
   return gimple_op (gs, 1);
 }
 
+/* Return the function type of the function called by GS.  */
+
+static inline tree
+gimple_call_fntype (const_gimple gs)
+{
+  return TREE_TYPE (TREE_TYPE (gimple_call_fn (gs)));
+}
 
 /* Return a pointer to the tree node representing the function called by call
    statement GS.  */
@@ -2073,13 +2080,9 @@ gimple_call_fndecl (const_gimple gs)
 static inline tree
 gimple_call_return_type (const_gimple gs)
 {
-  tree fn = gimple_call_fn (gs);
-  tree type = TREE_TYPE (fn);
+  tree type = gimple_call_fntype (gs);
 
-  /* See through the pointer.  */
-  type = TREE_TYPE (type);
-
-  /* The type returned by a FUNCTION_DECL is the type of its
+  /* The type returned by a function is the type of its
      function type.  */
   return TREE_TYPE (type);
 }

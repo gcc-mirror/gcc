@@ -8533,8 +8533,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	      && (g = SSA_NAME_DEF_STMT (ssa_name))
 	      && gimple_code (g) == GIMPLE_CALL)
 	    pmode = promote_function_mode (type, mode, &unsignedp,
-					   TREE_TYPE
-					   (TREE_TYPE (gimple_call_fn (g))),
+					   gimple_call_fntype (g),
 					   2);
 	  else
 	    pmode = promote_decl_mode (exp, &unsignedp);

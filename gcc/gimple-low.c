@@ -222,11 +222,10 @@ gimple_check_call_args (gimple stmt)
 
   /* Get argument types for verification.  */
   fndecl = gimple_call_fndecl (stmt);
-  parms = NULL_TREE;
   if (fndecl)
     parms = TYPE_ARG_TYPES (TREE_TYPE (fndecl));
-  else if (POINTER_TYPE_P (TREE_TYPE (gimple_call_fn (stmt))))
-    parms = TYPE_ARG_TYPES (TREE_TYPE (TREE_TYPE (gimple_call_fn (stmt))));
+  else
+    parms = TYPE_ARG_TYPES (gimple_call_fntype (stmt));
 
   /* Verify if the type of the argument matches that of the function
      declaration.  If we cannot verify this or there is a mismatch,

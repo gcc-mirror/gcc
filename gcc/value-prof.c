@@ -1230,16 +1230,13 @@ gimple_ic_transform (gimple stmt)
   histogram_value histogram;
   gcov_type val, count, all, bb_all;
   gcov_type prob;
-  tree callee;
   gimple modify;
   struct cgraph_node *direct_call;
 
   if (gimple_code (stmt) != GIMPLE_CALL)
     return false;
 
-  callee = gimple_call_fn (stmt);
-
-  if (TREE_CODE (callee) == FUNCTION_DECL)
+  if (gimple_call_fndecl (stmt) != NULL_TREE)
     return false;
 
   histogram = gimple_histogram_value_of_type (cfun, stmt, HIST_TYPE_INDIR_CALL);
