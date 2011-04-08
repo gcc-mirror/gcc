@@ -46,7 +46,9 @@ SA(!noexcept(f3(A())));
 template <class T1, class T2>
 void f (T1, T2) noexcept(noexcept(T1(), T2()));
 
-SA(noexcept(f3(1,1)));
+struct B { };
+
+SA(noexcept(f3(1,B())));
 SA(!noexcept(f3(1,A())));
 SA(!noexcept(f3(A(),1)));
 SA(!noexcept(f3(A(),A())));

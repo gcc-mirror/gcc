@@ -96,13 +96,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "xcoffout.h"
 #endif
 
-#define DBXOUT_DECR_NESTING \
-  if (--debug_nesting == 0 && symbol_queue_index > 0) \
-    { emit_pending_bincls_if_required (); debug_flush_symbol_queue (); }
-
-#define DBXOUT_DECR_NESTING_AND_RETURN(x) \
-  do {--debug_nesting; return (x);} while (0)
-
 #ifndef ASM_STABS_OP
 # ifdef XCOFF_DEBUGGING_INFO
 #  define ASM_STABS_OP "\t.stabx\t"
@@ -333,6 +326,7 @@ static const char *dbxout_common_check (tree, int *);
 static void dbxout_global_decl (tree);
 static void dbxout_type_decl (tree, int);
 static void dbxout_handle_pch (unsigned);
+static void debug_free_queue (void);
 
 /* The debug hooks structure.  */
 #if defined (DBX_DEBUGGING_INFO)
@@ -909,6 +903,31 @@ dbxout_finish_complex_stabs (tree sym, stab_code_type code,
   obstack_free (&stabstr_ob, str);
 }
 
+#if defined (DBX_DEBUGGING_INFO) || defined (XCOFF_DEBUGGING_INFO)
+
+/* When -gused is used, emit debug info for only used symbols. But in
+   addition to the standard intercepted debug_hooks there are some
+   direct calls into this file, i.e., dbxout_symbol, dbxout_parms, and
+   dbxout_reg_params.  Those routines may also be called from a higher
+   level intercepted routine. So to prevent recording data for an inner
+   call to one of these for an intercept, we maintain an intercept
+   nesting counter (debug_nesting). We only save the intercepted
+   arguments if the nesting is 1.  */
+static int debug_nesting = 0;
+
+static tree *symbol_queue;
+static int symbol_queue_index = 0;
+static int symbol_queue_size = 0;
+
+#define DBXOUT_DECR_NESTING \
+  if (--debug_nesting == 0 && symbol_queue_index > 0) \
+    { emit_pending_bincls_if_required (); debug_flush_symbol_queue (); }
+
+#define DBXOUT_DECR_NESTING_AND_RETURN(x) \
+  do {--debug_nesting; return (x);} while (0)
+
+#endif /* DBX_DEBUGGING_INFO || XCOFF_DEBUGGING_INFO */
+
 #if defined (DBX_DEBUGGING_INFO)
 
 static void
@@ -1403,7 +1422,73 @@ dbxout_type_index (tree type)
 }
 
 
+/* Generate the symbols for any queued up type symbols we encountered
+   while generating the type info for some originally used symbol.
+   This might generate additional entries in the queue.  Only when
+   the nesting depth goes to 0 is this routine called.  */
 
+static void
+debug_flush_symbol_queue (void)
+{
+  int i;
+
+  /* Make sure that additionally queued items are not flushed
+     prematurely.  */
+
+  ++debug_nesting;
+
+  for (i = 0; i < symbol_queue_index; ++i)
+    {
+      /* If we pushed queued symbols then such symbols must be
+         output no matter what anyone else says.  Specifically,
+         we need to make sure dbxout_symbol() thinks the symbol was
+         used and also we need to override TYPE_DECL_SUPPRESS_DEBUG
+         which may be set for outside reasons.  */
+      int saved_tree_used = TREE_USED (symbol_queue[i]);
+      int saved_suppress_debug = TYPE_DECL_SUPPRESS_DEBUG (symbol_queue[i]);
+      TREE_USED (symbol_queue[i]) = 1;
+      TYPE_DECL_SUPPRESS_DEBUG (symbol_queue[i]) = 0;
+
+#ifdef DBX_DEBUGGING_INFO
+      dbxout_symbol (symbol_queue[i], 0);
+#endif
+
+      TREE_USED (symbol_queue[i]) = saved_tree_used;
+      TYPE_DECL_SUPPRESS_DEBUG (symbol_queue[i]) = saved_suppress_debug;
+    }
+
+  symbol_queue_index = 0;
+  --debug_nesting;
+}
+
+/* Queue a type symbol needed as part of the definition of a decl
+   symbol.  These symbols are generated when debug_flush_symbol_queue()
+   is called.  */
+
+static void
+debug_queue_symbol (tree decl)
+{
+  if (symbol_queue_index >= symbol_queue_size)
+    {
+      symbol_queue_size += 10;
+      symbol_queue = XRESIZEVEC (tree, symbol_queue, symbol_queue_size);
+    }
+
+  symbol_queue[symbol_queue_index++] = decl;
+}
+
+/* Free symbol queue.  */
+static void
+debug_free_queue (void)
+{
+  if (symbol_queue)
+    {
+      free (symbol_queue);
+      symbol_queue = NULL;
+      symbol_queue_size = 0;
+    }
+}
+
 /* Used in several places: evaluates to '0' for a private decl,
    '1' for a protected decl, '2' for a public decl.  */
 #define DECL_ACCESSIBILITY_CHAR(DECL) \

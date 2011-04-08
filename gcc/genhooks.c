@@ -1,6 +1,6 @@
 /* Process target.def to create initialization macros definition in
    target-hooks-def.h and documentation in target-hooks.texi.
-   Copyright (C) 2009, 2010 Free Software Foundation, Inc.
+   Copyright (C) 2009, 2010, 2011 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -22,17 +22,18 @@ along with GCC; see the file COPYING3.  If not see
 #include "hashtab.h"
 #include "errors.h"
 
-struct hook_desc { const char *doc, *type, *name, *param, *init; };
+struct hook_desc { const char *doc, *type, *name, *param, *init, *docname; };
 static struct hook_desc hook_array[] = {
-#define HOOK_VECTOR_1(NAME, FRAGMENT) \
-  { 0, 0, #NAME, 0, 0 },
+#define HOOK_VECTOR_1(NAME, FRAGMENT)	\
+  { 0, 0, #NAME, 0, 0, HOOK_TYPE },
 #define DEFHOOKPOD(NAME, DOC, TYPE, INIT) \
-  { DOC, #TYPE, HOOK_PREFIX #NAME, 0, #INIT },
+  { DOC, #TYPE, HOOK_PREFIX #NAME, 0, #INIT, HOOK_TYPE },
 #define DEFHOOK(NAME, DOC, TYPE, PARAMS, INIT) \
-  { DOC, #TYPE, HOOK_PREFIX #NAME, #PARAMS, #INIT },
+  { DOC, #TYPE, HOOK_PREFIX #NAME, #PARAMS, #INIT, HOOK_TYPE },
 #define DEFHOOK_UNDOC(NAME, DOC, TYPE, PARAMS, INIT) \
-  { "*", #TYPE, HOOK_PREFIX #NAME, #PARAMS, #INIT },
+  { "*", #TYPE, HOOK_PREFIX #NAME, #PARAMS, #INIT, HOOK_TYPE },
 #include "target.def"
+#include "c-family/c-target.def"
 #undef DEFHOOK
 };
 
@@ -221,7 +222,7 @@ emit_documentation (const char *in_fname)
 	      /* Print header.  Function-valued hooks have a parameter list, 
 		 unlike POD-valued ones.  */
 	      deftype = hook_array[i].param ? "deftypefn" : "deftypevr";
-	      printf ("@%s {Target Hook} ", deftype);
+	      printf ("@%s {%s} ", deftype, hook_array[i].docname);
 	      if (strchr (hook_array[i].type, ' '))
 		printf ("{%s}", hook_array[i].type);
 	      else
@@ -249,8 +250,9 @@ emit_documentation (const char *in_fname)
 		{
 		  char *namex = upstrdup (hook_array[j].name);
 
-		  printf ("\n@%sx {Target Hook} {%s} %s",
-			  deftype, hook_array[j].type, namex);
+		  printf ("\n@%sx {%s} {%s} %s",
+			  deftype, hook_array[j].docname,
+			  hook_array[j].type, namex);
 		}
 	      if (hook_array[i].doc[0])
 		{
@@ -285,9 +287,10 @@ emit_documentation (const char *in_fname)
 
 /* Emit #defines to stdout (this will be redirected to generate
    target-hook-def.h) which set target hooks initializer macros
-   to their default values.  */
+   to their default values.  These should only be emitted for hooks
+   whose type is given by DOCNAME.  */
 static void
-emit_init_macros (void)
+emit_init_macros (const char *docname)
 {
   int i;
   const int MAX_NEST = 2;
@@ -298,6 +301,9 @@ emit_init_macros (void)
       for (i = 0; i < (int) (sizeof hook_array / sizeof hook_array[0]); i++)
 	{
 	  char *name = upstrdup (hook_array[i].name);
+
+	  if (strcmp (hook_array[i].docname, docname) != 0)
+	    continue;
 
 	  if (!hook_array[i].type)
 	    {
@@ -334,9 +340,9 @@ emit_init_macros (void)
 int
 main (int argc, char **argv)
 {
-  if (argc >= 2)
-    emit_documentation (argv[1]);
+  if (argc >= 3)
+    emit_documentation (argv[2]);
   else
-    emit_init_macros ();
+    emit_init_macros (argv[1]);
   return 0;
 }

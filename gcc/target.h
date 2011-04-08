@@ -176,7 +176,4 @@ struct default_options
 
 extern struct gcc_target targetm;
 
-/* Each target can provide their own.  */
-extern struct gcc_targetcm targetcm;
-
 #endif /* GCC_TARGET_H */

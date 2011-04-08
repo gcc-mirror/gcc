@@ -481,7 +481,8 @@ cond_exec_process_if_block (ce_if_block_t * ce_info,
       /* Look for matching sequences at the head and tail of the two blocks,
 	 and limit the range of insns to be converted if possible.  */
       n_matching = flow_find_cross_jump (then_bb, else_bb,
-					 &then_first_tail, &else_first_tail);
+					 &then_first_tail, &else_first_tail,
+					 NULL);
       if (then_first_tail == BB_HEAD (then_bb))
 	then_start = then_end = NULL_RTX;
       if (else_first_tail == BB_HEAD (else_bb))

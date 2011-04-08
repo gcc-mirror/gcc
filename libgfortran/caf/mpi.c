@@ -36,6 +36,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 static void error_stop (int error) __attribute__ ((noreturn));
 
 /* Global variables.  */
+static int caf_mpi_initialized;
 static int caf_this_image;
 static int caf_num_images;
 static MPI_Win caf_world_window;
@@ -50,12 +51,10 @@ static MPI_Win caf_world_window;
 void
 _gfortran_caf_init (int *argc, char ***argv, int *this_image, int *num_images)
 {
-  int flag;
-
-  /* The following is only the case if one does not have a Fortran
-     main program. */
-  MPI_Initialized (&flag);
-  if (!flag)
+  /* caf_mpi_initialized is only true if the main program is not written in
+     Fortran.  */
+  MPI_Initialized (&caf_mpi_initialized);
+  if (!caf_mpi_initialized)
     MPI_Init (argc, argv);
 
   MPI_Comm_rank (MPI_COMM_WORLD, &caf_this_image);
@@ -69,15 +68,15 @@ _gfortran_caf_init (int *argc, char ***argv, int *this_image, int *num_images)
 }
 
 
-/* Finalize coarray program. Note: This is only called before the
-   program ends; thus the MPI_Initialized status of _gfortran_caf_init
-   does not play a role.  */
+/* Finalize coarray program.   */
 
 void
 _gfortran_caf_finalize (void)
 {
   MPI_Win_free (&caf_world_window);
-  MPI_Finalize ();
+
+  if (!caf_mpi_initialized)
+    MPI_Finalize ();
 }
 
 

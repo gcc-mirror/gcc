@@ -565,7 +565,7 @@ Assignment_statement::do_get_tree(Translate_context* context)
   ret = context->backend()->assignment_statement(tree_to_expr(lhs_tree),
 						 tree_to_expr(rhs_tree),
 						 this->location());
-  return statement_to_tree(ret);
+  return stat_to_tree(ret);
 }
 
 // Make an assignment statement.
@@ -1551,8 +1551,7 @@ class Expression_statement : public Statement
   do_may_fall_through() const;
 
   tree
-  do_get_tree(Translate_context* context)
-  { return this->expr_->get_tree(context); }
+  do_get_tree(Translate_context* context);
 
  private:
   Expression* expr_;
@@ -1587,6 +1586,17 @@ Expression_statement::do_may_fall_through() const
 	}
     }
   return true;
+}
+
+// Convert to backend representation.
+
+tree
+Expression_statement::do_get_tree(Translate_context* context)
+{
+  tree expr_tree = this->expr_->get_tree(context);
+  Bexpression* bexpr = tree_to_expr(expr_tree);
+  Bstatement* ret = context->backend()->expression_statement(bexpr);
+  return stat_to_tree(ret);
 }
 
 // Make an expression statement from an Expression.
@@ -2583,7 +2593,7 @@ Return_statement::do_get_tree(Translate_context* context)
   Bstatement* ret;
   ret = context->backend()->return_statement(tree_to_function(fndecl),
 					     retvals, this->location());
-  return statement_to_tree(ret);
+  return stat_to_tree(ret);
 }
 
 // Make a return statement.
@@ -2619,8 +2629,10 @@ class Bc_statement : public Statement
   { return false; }
 
   tree
-  do_get_tree(Translate_context*)
-  { return this->label_->get_goto(this->location()); }
+  do_get_tree(Translate_context* context)
+  {
+    return stat_to_tree(this->label_->get_goto(context, this->location()));
+  }
 
  private:
   // The label that this branches to.
@@ -2692,9 +2704,12 @@ Goto_statement::do_check_types(Gogo*)
 // Return the tree for the goto statement.
 
 tree
-Goto_statement::do_get_tree(Translate_context*)
+Goto_statement::do_get_tree(Translate_context* context)
 {
-  return this->build_stmt_1(GOTO_EXPR, this->label_->get_decl());
+  Blabel* blabel = this->label_->get_backend_label(context);
+  Bstatement* statement = context->backend()->goto_statement(blabel,
+							     this->location());
+  return stat_to_tree(statement);
 }
 
 // Make a goto statement.
@@ -2725,8 +2740,10 @@ class Goto_unnamed_statement : public Statement
   { return false; }
 
   tree
-  do_get_tree(Translate_context*)
-  { return this->label_->get_goto(this->location()); }
+  do_get_tree(Translate_context* context)
+  {
+    return stat_to_tree(this->label_->get_goto(context, this->location()));
+  }
 
  private:
   Unnamed_label* label_;
@@ -2754,9 +2771,12 @@ Label_statement::do_traverse(Traverse*)
 // Return a tree defining this label.
 
 tree
-Label_statement::do_get_tree(Translate_context*)
+Label_statement::do_get_tree(Translate_context* context)
 {
-  return this->build_stmt_1(LABEL_EXPR, this->label_->get_decl());
+  Blabel* blabel = this->label_->get_backend_label(context);
+  Bstatement* statement;
+  statement = context->backend()->label_definition_statement(blabel);
+  return stat_to_tree(statement);
 }
 
 // Make a label statement.
@@ -2783,8 +2803,8 @@ class Unnamed_label_statement : public Statement
   { return TRAVERSE_CONTINUE; }
 
   tree
-  do_get_tree(Translate_context*)
-  { return this->label_->get_definition(); }
+  do_get_tree(Translate_context* context)
+  { return stat_to_tree(this->label_->get_definition(context)); }
 
  private:
   // The label.
@@ -2892,14 +2912,17 @@ If_statement::do_get_tree(Translate_context* context)
   tree else_tree = (this->else_block_ == NULL
 		    ? NULL_TREE
 		    : this->else_block_->get_tree(context));
-  if (cond_tree == error_mark_node
-      || then_tree == error_mark_node
-      || else_tree == error_mark_node)
-    return error_mark_node;
-  tree ret = build3(COND_EXPR, void_type_node, cond_tree, then_tree,
-		    else_tree);
-  SET_EXPR_LOCATION(ret, this->location());
-  return ret;
+
+  Bexpression* cond_expr = tree_to_expr(cond_tree);
+  Bstatement* then_stat = tree_to_stat(then_tree);
+  Bstatement* else_stat = (else_tree == NULL_TREE
+			   ? NULL
+			   : tree_to_stat(else_tree));
+  
+  Bstatement* ret = context->backend()->if_statement(cond_expr, then_stat,
+						     else_stat,
+						     this->location());
+  return stat_to_tree(ret);
 }
 
 // Make an if statement.
@@ -2909,6 +2932,55 @@ Statement::make_if_statement(Expression* cond, Block* then_block,
 			     Block* else_block, source_location location)
 {
   return new If_statement(cond, then_block, else_block, location);
+}
+
+// Class Case_clauses::Hash_integer_value.
+
+class Case_clauses::Hash_integer_value
+{
+ public:
+  size_t
+  operator()(Expression*) const;
+};
+
+size_t
+Case_clauses::Hash_integer_value::operator()(Expression* pe) const
+{
+  Type* itype;
+  mpz_t ival;
+  mpz_init(ival);
+  if (!pe->integer_constant_value(true, ival, &itype))
+    gcc_unreachable();
+  size_t ret = mpz_get_ui(ival);
+  mpz_clear(ival);
+  return ret;
+}
+
+// Class Case_clauses::Eq_integer_value.
+
+class Case_clauses::Eq_integer_value
+{
+ public:
+  bool
+  operator()(Expression*, Expression*) const;
+};
+
+bool
+Case_clauses::Eq_integer_value::operator()(Expression* a, Expression* b) const
+{
+  Type* atype;
+  Type* btype;
+  mpz_t aval;
+  mpz_t bval;
+  mpz_init(aval);
+  mpz_init(bval);
+  if (!a->integer_constant_value(true, aval, &atype)
+      || !b->integer_constant_value(true, bval, &btype))
+    gcc_unreachable();
+  bool ret = mpz_cmp(aval, bval) == 0;
+  mpz_clear(aval);
+  mpz_clear(bval);
+  return ret;
 }
 
 // Class Case_clauses::Case_clause.
@@ -3067,74 +3139,83 @@ Case_clauses::Case_clause::may_fall_through() const
   return this->statements_->may_fall_through();
 }
 
-// Build up the body of a SWITCH_EXPR.
+// Convert the case values and statements to the backend
+// representation.  BREAK_LABEL is the label which break statements
+// should branch to.  CASE_CONSTANTS is used to detect duplicate
+// constants.  *CASES should be passed as an empty vector; the values
+// for this case will be added to it.  If this is the default case,
+// *CASES will remain empty.  This returns the statement to execute if
+// one of these cases is selected.
 
-void
-Case_clauses::Case_clause::get_constant_tree(Translate_context* context,
-					     Unnamed_label* break_label,
-					     Case_constants* case_constants,
-					     tree* stmt_list) const
+Bstatement*
+Case_clauses::Case_clause::get_backend(Translate_context* context,
+				       Unnamed_label* break_label,
+				       Case_constants* case_constants,
+				       std::vector<Bexpression*>* cases) const
 {
   if (this->cases_ != NULL)
     {
+      gcc_assert(!this->is_default_);
       for (Expression_list::const_iterator p = this->cases_->begin();
 	   p != this->cases_->end();
 	   ++p)
 	{
-	  Type* itype;
-	  mpz_t ival;
-	  mpz_init(ival);
-	  if (!(*p)->integer_constant_value(true, ival, &itype))
+	  Expression* e = *p;
+	  if (e->classification() != Expression::EXPRESSION_INTEGER)
 	    {
-	      // Something went wrong.  This can happen with a
-	      // negative constant and an unsigned switch value.
-	      gcc_assert(saw_errors());
-	      continue;
-	    }
-	  gcc_assert(itype != NULL);
-	  tree type_tree = itype->get_tree(context->gogo());
-	  tree val = Expression::integer_constant_tree(ival, type_tree);
-	  mpz_clear(ival);
-
-	  if (val != error_mark_node)
-	    {
-	      gcc_assert(TREE_CODE(val) == INTEGER_CST);
-
-	      std::pair<Case_constants::iterator, bool> ins =
-		case_constants->insert(val);
-	      if (!ins.second)
+	      Type* itype;
+	      mpz_t ival;
+	      mpz_init(ival);
+	      if (!(*p)->integer_constant_value(true, ival, &itype))
 		{
-		  // Value was already present.
-		  warning_at(this->location_, 0,
-			     "duplicate case value will never match");
+		  // Something went wrong.  This can happen with a
+		  // negative constant and an unsigned switch value.
+		  gcc_assert(saw_errors());
 		  continue;
 		}
-
-	      tree label = create_artificial_label(this->location_);
-	      append_to_statement_list(build3(CASE_LABEL_EXPR, void_type_node,
-					      val, NULL_TREE, label),
-				       stmt_list);
+	      gcc_assert(itype != NULL);
+	      e = Expression::make_integer(&ival, itype, e->location());
+	      mpz_clear(ival);
 	    }
+
+	  std::pair<Case_constants::iterator, bool> ins =
+	    case_constants->insert(e);
+	  if (!ins.second)
+	    {
+	      // Value was already present.
+	      error_at(this->location_, "duplicate case in switch");
+	      continue;
+	    }
+
+	  tree case_tree = e->get_tree(context);
+	  Bexpression* case_expr = tree_to_expr(case_tree);
+	  cases->push_back(case_expr);
 	}
     }
 
-  if (this->is_default_)
-    {
-      tree label = create_artificial_label(this->location_);
-      append_to_statement_list(build3(CASE_LABEL_EXPR, void_type_node,
-				      NULL_TREE, NULL_TREE, label),
-			       stmt_list);
-    }
+  Bstatement* statements;
+  if (this->statements_ == NULL)
+    statements = NULL;
+  else
+    statements = tree_to_stat(this->statements_->get_tree(context));
 
-  if (this->statements_ != NULL)
-    {
-      tree block_tree = this->statements_->get_tree(context);
-      if (block_tree != error_mark_node)
-	append_to_statement_list(block_tree, stmt_list);
-    }
+  Bstatement* break_stat;
+  if (this->is_fallthrough_)
+    break_stat = NULL;
+  else
+    break_stat = break_label->get_goto(context, this->location_);
 
-  if (!this->is_fallthrough_)
-    append_to_statement_list(break_label->get_goto(this->location_), stmt_list);
+  if (statements == NULL)
+    return break_stat;
+  else if (break_stat == NULL)
+    return statements;
+  else
+    {
+      std::vector<Bstatement*> list(2);
+      list[0] = statements;
+      list[1] = break_stat;
+      return context->backend()->statement_list(list);
+    }
 }
 
 // Class Case_clauses.
@@ -3271,20 +3352,32 @@ Case_clauses::may_fall_through() const
   return !found_default;
 }
 
-// Return a tree when all case expressions are constants.
+// Convert the cases to the backend representation.  This sets
+// *ALL_CASES and *ALL_STATEMENTS.
 
-tree
-Case_clauses::get_constant_tree(Translate_context* context,
-				Unnamed_label* break_label) const
+void
+Case_clauses::get_backend(Translate_context* context,
+			  Unnamed_label* break_label,
+			  std::vector<std::vector<Bexpression*> >* all_cases,
+			  std::vector<Bstatement*>* all_statements) const
 {
   Case_constants case_constants;
-  tree stmt_list = NULL_TREE;
+
+  size_t c = this->clauses_.size();
+  all_cases->resize(c);
+  all_statements->resize(c);
+
+  size_t i = 0;
   for (Clauses::const_iterator p = this->clauses_.begin();
        p != this->clauses_.end();
-       ++p)
-    p->get_constant_tree(context, break_label, &case_constants,
-			 &stmt_list);
-  return stmt_list;
+       ++p, ++i)
+    {
+      std::vector<Bexpression*> cases;
+      Bstatement* stat = p->get_backend(context, break_label, &case_constants,
+					&cases);
+      (*all_cases)[i].swap(cases);
+      (*all_statements)[i] = stat;
+    }
 }
 
 // A constant switch statement.  A Switch_statement is lowered to this
@@ -3375,21 +3468,28 @@ tree
 Constant_switch_statement::do_get_tree(Translate_context* context)
 {
   tree switch_val_tree = this->val_->get_tree(context);
+  Bexpression* switch_val_expr = tree_to_expr(switch_val_tree);
 
   Unnamed_label* break_label = this->break_label_;
   if (break_label == NULL)
     break_label = new Unnamed_label(this->location());
 
-  tree stmt_list = NULL_TREE;
-  tree s = build3(SWITCH_EXPR, void_type_node, switch_val_tree,
-		  this->clauses_->get_constant_tree(context, break_label),
-		  NULL_TREE);
-  SET_EXPR_LOCATION(s, this->location());
-  append_to_statement_list(s, &stmt_list);
+  std::vector<std::vector<Bexpression*> > all_cases;
+  std::vector<Bstatement*> all_statements;
+  this->clauses_->get_backend(context, break_label, &all_cases,
+			      &all_statements);
 
-  append_to_statement_list(break_label->get_definition(), &stmt_list);
+  Bstatement* switch_statement;
+  switch_statement = context->backend()->switch_statement(switch_val_expr,
+							  all_cases,
+							  all_statements,
+							  this->location());
 
-  return stmt_list;
+  std::vector<Bstatement*> stats(2);
+  stats[0] = switch_statement;
+  stats[1] = break_label->get_definition(context);
+  Bstatement* ret = context->backend()->statement_list(stats);
+  return stat_to_tree(ret);
 }
 
 // Class Switch_statement.
@@ -4245,7 +4345,8 @@ Select_clauses::get_tree(Translate_context* context,
       tree stmt_list = NULL_TREE;
       append_to_statement_list(default_clause->get_statements_tree(context),
 			       &stmt_list);
-      append_to_statement_list(break_label->get_definition(), &stmt_list);
+      Bstatement* ldef = break_label->get_definition(context);
+      append_to_statement_list(stat_to_tree(ldef), &stmt_list);
       return stmt_list;
     }
 
@@ -4336,7 +4437,8 @@ Select_clauses::get_tree(Translate_context* context,
 	}
     }
 
-  append_to_statement_list(break_label->get_definition(), &stmt_list);
+  Bstatement* ldef = break_label->get_definition(context);
+  append_to_statement_list(stat_to_tree(ldef), &stmt_list);
 
   tree switch_stmt = build3(SWITCH_EXPR, sizetype, call, stmt_list, NULL_TREE);
   SET_EXPR_LOCATION(switch_stmt, location);
@@ -4358,10 +4460,11 @@ Select_clauses::add_clause_tree(Translate_context* context, int case_index,
 				  NULL_TREE, label),
 			   stmt_list);
   append_to_statement_list(clause->get_statements_tree(context), stmt_list);
-  tree g = bottom_label->get_goto(clause->statements() == NULL
-				  ? clause->location()
-				  : clause->statements()->end_location());
-  append_to_statement_list(g, stmt_list);
+  source_location gloc = (clause->statements() == NULL
+			  ? clause->location()
+			  : clause->statements()->end_location());
+  Bstatement* g = bottom_label->get_goto(context, gloc);
+  append_to_statement_list(stat_to_tree(g), stmt_list);
 }
 
 // Class Select_statement.

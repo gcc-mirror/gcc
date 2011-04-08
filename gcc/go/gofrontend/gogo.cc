@@ -15,6 +15,7 @@
 #include "dataflow.h"
 #include "import.h"
 #include "export.h"
+#include "backend.h"
 #include "gogo.h"
 
 // Class Gogo.
@@ -4428,6 +4429,69 @@ Bindings::traverse(Traverse* traverse, bool is_global)
     }
 
   return TRAVERSE_CONTINUE;
+}
+
+// Class Label.
+
+// Get the backend representation for a label.
+
+Blabel*
+Label::get_backend_label(Translate_context* context)
+{
+  if (this->blabel_ == NULL)
+    {
+      Function* function = context->function()->func_value();
+      tree fndecl = function->get_decl();
+      Bfunction* bfunction = tree_to_function(fndecl);
+      this->blabel_ = context->backend()->label(bfunction, this->name_,
+						this->location_);
+    }
+  return this->blabel_;
+}
+
+// Return an expression for the address of this label.
+
+Bexpression*
+Label::get_addr(Translate_context* context, source_location location)
+{
+  Blabel* label = this->get_backend_label(context);
+  return context->backend()->label_address(label, location);
+}
+
+// Class Unnamed_label.
+
+// Get the backend representation for an unnamed label.
+
+Blabel*
+Unnamed_label::get_blabel(Translate_context* context)
+{
+  if (this->blabel_ == NULL)
+    {
+      Function* function = context->function()->func_value();
+      tree fndecl = function->get_decl();
+      Bfunction* bfunction = tree_to_function(fndecl);
+      this->blabel_ = context->backend()->label(bfunction, "",
+						this->location_);
+    }
+  return this->blabel_;
+}
+
+// Return a statement which defines this unnamed label.
+
+Bstatement*
+Unnamed_label::get_definition(Translate_context* context)
+{
+  Blabel* blabel = this->get_blabel(context);
+  return context->backend()->label_definition_statement(blabel);
+}
+
+// Return a goto statement to this unnamed label.
+
+Bstatement*
+Unnamed_label::get_goto(Translate_context* context, source_location location)
+{
+  Blabel* blabel = this->get_blabel(context);
+  return context->backend()->goto_statement(blabel, location);
 }
 
 // Class Package.

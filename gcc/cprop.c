@@ -53,8 +53,6 @@ along with GCC; see the file COPYING3.  If not see
 /* An obstack for our working variables.  */
 static struct obstack cprop_obstack;
 
-struct reg_use {rtx reg_rtx; };
-
 /* Occurrence of an expression.
    There is one per basic block.  If a pattern appears more than once the
    last appearance is used.  */
@@ -653,12 +651,12 @@ compute_cprop_data (void)
 /* Maximum number of register uses in an insn that we handle.  */
 #define MAX_USES 8
 
-/* Table of uses found in an insn.
+/* Table of uses (registers, both hard and pseudo) found in an insn.
    Allocated statically to avoid alloc/free complexity and overhead.  */
-static struct reg_use reg_use_table[MAX_USES];
+static rtx reg_use_table[MAX_USES];
 
 /* Index into `reg_use_table' while building it.  */
-static int reg_use_count;
+static unsigned reg_use_count;
 
 /* Set up a list of register numbers used in INSN.  The found uses are stored
    in `reg_use_table'.  `reg_use_count' is initialized to zero before entry,
@@ -687,7 +685,7 @@ find_used_regs (rtx *xptr, void *data ATTRIBUTE_UNUSED)
       if (reg_use_count == MAX_USES)
 	return;
 
-      reg_use_table[reg_use_count].reg_rtx = x;
+      reg_use_table[reg_use_count] = x;
       reg_use_count++;
     }
 
@@ -997,10 +995,12 @@ constprop_register (rtx insn, rtx from, rtx to)
 static int
 cprop_insn (rtx insn)
 {
-  struct reg_use *reg_used;
-  int changed = 0;
+  unsigned i;
+  int changed = 0, changed_this_round;
   rtx note;
 
+retry:
+  changed_this_round = 0;
   reg_use_count = 0;
   note_uses (&PATTERN (insn), find_used_regs, NULL);
 
@@ -1009,16 +1009,16 @@ cprop_insn (rtx insn)
   if (note)
     find_used_regs (&XEXP (note, 0), NULL);
 
-  for (reg_used = &reg_use_table[0]; reg_use_count > 0;
-       reg_used++, reg_use_count--)
+  for (i = 0; i < reg_use_count; i++)
     {
-      unsigned int regno = REGNO (reg_used->reg_rtx);
+      rtx reg_used = reg_use_table[i];
+      unsigned int regno = REGNO (reg_used);
       rtx src;
       struct expr *set;
 
       /* If the register has already been set in this block, there's
 	 nothing we can do.  */
-      if (! reg_not_set_p (reg_used->reg_rtx, insn))
+      if (! reg_not_set_p (reg_used, insn))
 	continue;
 
       /* Find an assignment that sets reg_used and is available
@@ -1032,9 +1032,9 @@ cprop_insn (rtx insn)
       /* Constant propagation.  */
       if (cprop_constant_p (src))
 	{
-          if (constprop_register (insn, reg_used->reg_rtx, src))
+          if (constprop_register (insn, reg_used, src))
 	    {
-	      changed = 1;
+	      changed_this_round = changed = 1;
 	      global_const_prop_count++;
 	      if (dump_file != NULL)
 		{
@@ -1051,9 +1051,9 @@ cprop_insn (rtx insn)
 	       && REGNO (src) >= FIRST_PSEUDO_REGISTER
 	       && REGNO (src) != regno)
 	{
-	  if (try_replace_reg (reg_used->reg_rtx, src, insn))
+	  if (try_replace_reg (reg_used, src, insn))
 	    {
-	      changed = 1;
+	      changed_this_round = changed = 1;
 	      global_copy_prop_count++;
 	      if (dump_file != NULL)
 		{
@@ -1069,6 +1069,11 @@ cprop_insn (rtx insn)
 		 and made things worse.  */
 	    }
 	}
+
+      /* If try_replace_reg simplified the insn, the regs found
+	 by find_used_regs may not be valid anymore.  Start over.  */
+      if (changed_this_round)
+	goto retry;
     }
 
   if (changed && DEBUG_INSN_P (insn))
@@ -1195,8 +1200,8 @@ local_cprop_pass (void)
 {
   basic_block bb;
   rtx insn;
-  struct reg_use *reg_used;
   bool changed = false;
+  unsigned i;
 
   cselib_init (0);
   FOR_EACH_BB (bb)
@@ -1214,10 +1219,9 @@ local_cprop_pass (void)
 		  if (note)
 		    local_cprop_find_used_regs (&XEXP (note, 0), NULL);
 
-		  for (reg_used = &reg_use_table[0]; reg_use_count > 0;
-		       reg_used++, reg_use_count--)
+		  for (i = 0; i < reg_use_count; i++)
 		    {
-		      if (do_local_cprop (reg_used->reg_rtx, insn))
+		      if (do_local_cprop (reg_use_table[i], insn))
 			{
 			  changed = true;
 			  break;
@@ -1226,7 +1230,7 @@ local_cprop_pass (void)
 		  if (INSN_DELETED_P (insn))
 		    break;
 		}
-	      while (reg_use_count);
+	      while (i < reg_use_count);
 	    }
 	  cselib_process_insn (insn);
 	}
@@ -1461,9 +1465,10 @@ bypass_block (basic_block bb, rtx setcc, rtx jump)
 {
   rtx insn, note;
   edge e, edest;
-  int i, change;
+  int change;
   int may_be_loop_header;
   unsigned removed_p;
+  unsigned i;
   edge_iterator ei;
 
   insn = (setcc != NULL) ? setcc : jump;
@@ -1513,8 +1518,8 @@ bypass_block (basic_block bb, rtx setcc, rtx jump)
 
       for (i = 0; i < reg_use_count; i++)
 	{
-	  struct reg_use *reg_used = &reg_use_table[i];
-	  unsigned int regno = REGNO (reg_used->reg_rtx);
+	  rtx reg_used = reg_use_table[i];
+	  unsigned int regno = REGNO (reg_used);
 	  basic_block dest, old_dest;
 	  struct expr *set;
 	  rtx src, new_rtx;
@@ -1525,7 +1530,7 @@ bypass_block (basic_block bb, rtx setcc, rtx jump)
 	    continue;
 
 	  /* Check the data flow is valid after edge insertions.  */
-	  if (e->insns.r && reg_killed_on_edge (reg_used->reg_rtx, e))
+	  if (e->insns.r && reg_killed_on_edge (reg_used, e))
 	    continue;
 
 	  src = SET_SRC (pc_set (jump));
@@ -1535,8 +1540,7 @@ bypass_block (basic_block bb, rtx setcc, rtx jump)
 					SET_DEST (PATTERN (setcc)),
 					SET_SRC (PATTERN (setcc)));
 
-	  new_rtx = simplify_replace_rtx (src, reg_used->reg_rtx,
-					  set->src);
+	  new_rtx = simplify_replace_rtx (src, reg_used, set->src);
 
 	  /* Jump bypassing may have already placed instructions on
 	     edges of the CFG.  We can't bypass an outgoing edge that
@@ -1797,8 +1801,8 @@ one_cprop_pass (void)
 		/* Keep track of everything modified by this insn.  */
 		/* ??? Need to be careful w.r.t. mods done to INSN.
 		       Don't call mark_oprs_set if we turned the
-		       insn into a NOTE.  */
-		if (! NOTE_P (insn))
+		       insn into a NOTE, or deleted the insn.  */
+		if (! NOTE_P (insn) && ! INSN_DELETED_P (insn))
 		  mark_oprs_set (insn);
 	      }
 	}

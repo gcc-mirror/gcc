@@ -52,15 +52,6 @@
     }                                           \
   while (0)
 
-enum rx_cpu_types
-{
-  RX600,
-  RX610,
-  RX200
-};
-
-extern enum rx_cpu_types  rx_cpu_type;
-
 #undef  CC1_SPEC
 #define CC1_SPEC "\
   %{mas100-syntax:%{gdwarf*:%e-mas100-syntax is incompatible with -gdwarf}} \

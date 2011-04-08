@@ -183,6 +183,9 @@
 #
 #  gnu_ld		Set to yes or no depending on whether the target
 #			system normally uses GNU ld.
+#
+#  target_has_targetcm	Set to yes or no depending on whether the target
+#			has its own definition of targetcm.
 
 out_file=
 tmake_file=
@@ -200,6 +203,7 @@ extra_options=
 c_target_objs=
 cxx_target_objs=
 fortran_target_objs=
+target_has_targetcm=no
 tm_defines=
 xm_defines=
 # Set this to force installation and use of collect2.
@@ -478,6 +482,7 @@ case ${target} in
   c_target_objs="${c_target_objs} darwin-c.o"
   cxx_target_objs="${cxx_target_objs} darwin-c.o"
   fortran_target_objs="darwin-f.o"
+  target_has_targetcm=yes
   extra_objs="darwin.o"
   extra_gcc_objs="darwin-driver.o"
   default_use_cxa_atexit=yes
@@ -2670,6 +2675,11 @@ i[34567]86-*-* | x86_64-*-*)
 powerpc*-*-* | rs6000-*-*)
 	tm_file="${tm_file} rs6000/option-defaults.h"
 esac
+
+if [ "$target_has_targetcm" = "no" ]; then
+  c_target_objs="$c_target_objs default-c.o"
+  cxx_target_objs="$cxx_target_objs default-c.o"
+fi
 
 # Support for --with-cpu and related options (and a few unrelated options,
 # too).

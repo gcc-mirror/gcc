@@ -1,3 +1,9 @@
+2011-04-06  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR testsuite/48480
+	* testsuite/lib/boehm-gc.exp (boehm-gc-dg-prune): Allow for path
+	to ranlib.
+
 2011-03-25  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR boehm-gc/11412

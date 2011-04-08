@@ -40,6 +40,9 @@ class Translate_context;
 class Backend;
 class Export;
 class Import;
+class Bexpression;
+class Bstatement;
+class Blabel;
 
 // This file declares the basic classes used to hold the internal
 // representation of Go which is built by the parser.
@@ -2115,7 +2118,7 @@ class Label
 {
  public:
   Label(const std::string& name)
-    : name_(name), location_(0), is_used_(false), decl_(NULL)
+    : name_(name), location_(0), is_used_(false), blabel_(NULL)
   { }
 
   // Return the label's name.
@@ -2151,13 +2154,15 @@ class Label
     this->location_ = location;
   }
 
-  // Return the LABEL_DECL for this decl.
-  tree
-  get_decl();
+  // Return the backend representation for this label.
+  Blabel*
+  get_backend_label(Translate_context*);
 
-  // Return an expression for the address of this label.
-  tree
-  get_addr(source_location location);
+  // Return an expression for the address of this label.  This is used
+  // to get the return address of a deferred function to see whether
+  // the function may call recover.
+  Bexpression*
+  get_addr(Translate_context*, source_location location);
 
  private:
   // The name of the label.
@@ -2167,8 +2172,8 @@ class Label
   source_location location_;
   // Whether the label has been used.
   bool is_used_;
-  // The LABEL_DECL.
-  tree decl_;
+  // The backend representation.
+  Blabel* blabel_;
 };
 
 // An unnamed label.  These are used when lowering loops.
@@ -2177,7 +2182,7 @@ class Unnamed_label
 {
  public:
   Unnamed_label(source_location location)
-    : location_(location), decl_(NULL)
+    : location_(location), blabel_(NULL)
   { }
 
   // Get the location where the label is defined.
@@ -2191,22 +2196,22 @@ class Unnamed_label
   { this->location_ = location; }
 
   // Return a statement which defines this label.
-  tree
-  get_definition();
+  Bstatement*
+  get_definition(Translate_context*);
 
   // Return a goto to this label from LOCATION.
-  tree
-  get_goto(source_location location);
+  Bstatement*
+  get_goto(Translate_context*, source_location location);
 
  private:
-  // Return the LABEL_DECL to use with GOTO_EXPR.
-  tree
-  get_decl();
+  // Return the backend representation.
+  Blabel*
+  get_blabel(Translate_context*);
 
   // The location where the label is defined.
   source_location location_;
-  // The LABEL_DECL.
-  tree decl_;
+  // The backend representation of this label.
+  Blabel* blabel_;
 };
 
 // An imported package.

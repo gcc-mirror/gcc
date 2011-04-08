@@ -1,3 +1,19 @@
+2011-04-06  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/18918
+	* trans-intrinsic.c (gfc_conv_intrinsic_function): Fix
+	call for this_image.
+
+2011-04-05  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* trans-intrinsic.c (gfc_build_intrinsic_lib_fndecls): Use
+	build_function_type_list instead of build_function_type.  Correct
+	argument order for func_frexp and func_scalbn.
+
+2011-04-05  Duncan Sands  <baldrick@free.fr>
+
+	* f95-lang.c (build_builtin_fntypes): Swap frexp parameter types.
+
 2010-04-04  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	* frontend-passes: (optimize_lexical_comparison): New function.

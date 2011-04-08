@@ -22,7 +22,7 @@ func IsAbs(path string) bool {
 }
 
 // volumeName returns the leading volume name on Windows.
-// It returns "" on Unix.
+// It returns "" elsewhere.
 func volumeName(path string) string {
 	return ""
 }

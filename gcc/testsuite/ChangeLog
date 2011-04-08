@@ -1,6 +1,91 @@
+2011-04-07  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/sfinae11.C: New.
+	* g++.dg/cpp0x/noexcept02.C: Fix.
+
+	* g++.dg/cpp0x/sfinae10.C: New.
+
+	* g++.dg/cpp0x/sfinae9.C: New.
+
+	* c-c++-common/Wcast-qual-1.c: Move here from...
+	* gcc.dg/cast-qual-3.c: ...here, and...
+	* g++.dg/warn/Wcast-qual2.C: ...here.
+
+	* g++.dg/cpp0x/sfinae8.C: New.
+
+	* g++.dg/cpp0x/sfinae7.C: New.
+
+	* g++.dg/cpp0x/enum9.C: New.
+
+2011-04-07  Mike Stump  <mikestump@comcast.net>
+
+	* gcc.dg/torture/stackalign/non-local-goto-5.c: Fix for targets
+	with no trampolines.
+
+2011-04-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/48117
+	* gfortran.dg/gomp/pr48117.f90: New test.
+
+	PR debug/48343
+	* gcc.dg/torture/pr48343.c: New test.
+
+2011-04-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.target/i386/asm-6.c: Remove dg-xfail-if.
+
+2011-04-07  Maxim Kuvyrkov  <maxim@codesourcery.com>
+
+	* gcc.dg/lto/20090210_0.c: Require tls_runtime target.
+
+2011-04-07  Tom de Vries  <tom@codesourcery.com>
+
+	PR target/43920
+	* lib/scanasm.exp (object-size): New proc.
+	* gcc.target/arm/pr43920-2.c: New test.
+
+2011-04-06  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/18918
+	PR fortran/48477
+	* gfortran.dg/coarray_13.f90: Avoid out-of-bounds access.
+
+2011-04-06  Steve Ellcey  <sje@cup.hp.com>
+
+	* gcc.dg/mtune.c: Prune note from output.
+
+2011-04-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/48466
+	* gcc.dg/guality/pr36977.c: New test.
+	* gcc.dg/guality/pr48466.c: New test.
+
+2011-04-06  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
+
+	* gcc.target/arm/pr43920-1.c: Fix accidental duplication.
+
+2011-04-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/return3.adb: New test.
+
+2011-04-06  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/47663
+	* gcc.dg/tree-ssa/inline-8.c: New testcase.
+
+2011-04-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/torture/pr47917.c: Add -D_XOPEN_SOURCE=500 to dg-options for
+	Solaris 8 and 9 as well.
+
+2011-04-05  Tom de Vries  <tom@codesourcery.com>
+
+	PR target/43920
+	* gcc.target/arm/pr43920-1.c: New test.
+
 2011-04-04  Yufeng Zhang  <yufeng.zhang@arm.com>
 
-        * g++.dg/abi/arm_cxa_vec1.C (__ARM_EABI__): Fix typo.
+	* g++.dg/abi/arm_cxa_vec1.C (__ARM_EABI__): Fix typo.
 	(cctor): Actually return the value.
 	(main): Cast return values.
 

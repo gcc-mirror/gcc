@@ -3230,10 +3230,12 @@ schedule_block (basic_block *target_bb)
 
 	  if (recog_memoized (insn) >= 0)
 	    {
+	      memcpy (temp_state, curr_state, dfa_state_size);
 	      cost = state_transition (curr_state, insn);
 	      if (!flag_sched_pressure)
 		gcc_assert (cost < 0);
-	      cycle_issued_insns++;
+	      if (memcmp (temp_state, curr_state, dfa_state_size) != 0)
+		cycle_issued_insns++;
 	      asm_p = false;
 	    }
 	  else

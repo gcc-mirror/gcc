@@ -665,7 +665,6 @@ determine_bb_domination_status (struct loop *loop, basic_block bb)
   edge_iterator ei;
   edge e;
 
-#ifdef ENABLE_CHECKING
   /* This function assumes BB is a successor of LOOP->header.
      If that is not the case return DOMST_NONDOMINATING which
      is always safe.  */
@@ -684,7 +683,6 @@ determine_bb_domination_status (struct loop *loop, basic_block bb)
       if (!ok)
 	return DOMST_NONDOMINATING;
     }
-#endif
 
   if (bb == loop->latch)
     return DOMST_DOMINATING;

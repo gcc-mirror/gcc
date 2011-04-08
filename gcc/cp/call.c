@@ -155,7 +155,6 @@ static tree convert_like_real (conversion *, tree, tree, int, int, bool,
 			       bool, tsubst_flags_t);
 static void op_error (enum tree_code, enum tree_code, tree, tree,
 		      tree, bool);
-static VEC(tree,gc) *resolve_args (VEC(tree,gc) *);
 static struct z_candidate *build_user_type_conversion_1 (tree, tree, int);
 static void print_z_candidate (const char *, struct z_candidate *);
 static void print_z_candidates (location_t, struct z_candidate *);
@@ -3525,7 +3524,7 @@ build_integral_nontype_arg_conv (tree type, tree expr, tsubst_flags_t complain)
 /* Do any initial processing on the arguments to a function call.  */
 
 static VEC(tree,gc) *
-resolve_args (VEC(tree,gc) *args)
+resolve_args (VEC(tree,gc) *args, tsubst_flags_t complain)
 {
   unsigned int ix;
   tree arg;
@@ -3536,7 +3535,8 @@ resolve_args (VEC(tree,gc) *args)
 	return NULL;
       else if (VOID_TYPE_P (TREE_TYPE (arg)))
 	{
-	  error ("invalid use of void expression");
+	  if (complain & tf_error)
+	    error ("invalid use of void expression");
 	  return NULL;
 	}
       else if (invalid_nonstatic_memfn_p (arg, tf_warning_or_error))
@@ -3636,7 +3636,7 @@ build_new_function_call (tree fn, VEC(tree,gc) **args, bool koenig_p,
 
   if (args != NULL && *args != NULL)
     {
-      *args = resolve_args (*args);
+      *args = resolve_args (*args, complain);
       if (*args == NULL)
 	return error_mark_node;
     }
@@ -3707,7 +3707,7 @@ build_operator_new_call (tree fnname, VEC(tree,gc) **args,
   if (fn)
     *fn = NULL_TREE;
   VEC_safe_insert (tree, gc, *args, 0, *size);
-  *args = resolve_args (*args);
+  *args = resolve_args (*args, tf_warning_or_error);
   if (*args == NULL)
     return error_mark_node;
 
@@ -3820,7 +3820,7 @@ build_op_call (tree obj, VEC(tree,gc) **args, tsubst_flags_t complain)
 
   if (args != NULL && *args != NULL)
     {
-      *args = resolve_args (*args);
+      *args = resolve_args (*args, complain);
       if (*args == NULL)
 	return error_mark_node;
     }
@@ -4864,7 +4864,7 @@ build_new_op (enum tree_code code, int flags, tree arg1, tree arg2, tree arg3,
 	  if (overloaded_p)
 	    *overloaded_p = true;
 
-	  if (resolve_args (arglist) == NULL)
+	  if (resolve_args (arglist, complain) == NULL)
 	    result = error_mark_node;
 	  else
 	    result = build_over_call (cand, LOOKUP_NORMAL, complain);
@@ -5414,7 +5414,7 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	   we need to build up a TARGET_EXPR.  */
 	if (DECL_CONSTRUCTOR_P (convfn))
 	  {
-	    expr = build_cplus_new (totype, expr);
+	    expr = build_cplus_new (totype, expr, complain);
 
 	    /* Remember that this was list-initialization.  */
 	    if (convs->check_narrowing)
@@ -5559,7 +5559,7 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	  else if (diag_kind == DK_ERROR)
 	    return error_mark_node;
 	}
-      return build_cplus_new (totype, expr);
+      return build_cplus_new (totype, expr, complain);
 
     case ck_ref_bind:
       {
@@ -6476,7 +6476,7 @@ build_cxx_call (tree fn, int nargs, tree *argarray)
     return error_mark_node;
 
   if (MAYBE_CLASS_TYPE_P (TREE_TYPE (fn)))
-    fn = build_cplus_new (TREE_TYPE (fn), fn);
+    fn = build_cplus_new (TREE_TYPE (fn), fn, tf_warning_or_error);
   return convert_from_reference (fn);
 }
 
@@ -6850,7 +6850,7 @@ build_new_method_call (tree instance, tree fns, VEC(tree,gc) **args,
   /* Process the argument list.  */
   if (args != NULL && *args != NULL)
     {
-      *args = resolve_args (*args);
+      *args = resolve_args (*args, complain);
       if (*args == NULL)
 	return error_mark_node;
     }
@@ -8119,7 +8119,7 @@ perform_direct_initialization_if_possible (tree type,
       expr = build_special_member_call (NULL_TREE, complete_ctor_identifier,
 					&args, type, LOOKUP_NORMAL, complain);
       release_tree_vector (args);
-      return build_cplus_new (type, expr);
+      return build_cplus_new (type, expr, complain);
     }
 
   /* Get the high-water mark for the CONVERSION_OBSTACK.  */

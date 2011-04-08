@@ -1,6 +1,7 @@
 ; Options for the Motorola 68000 port of the compiler.
 
-; Copyright (C) 2005, 2006, 2007, 2008 Free Software Foundation, Inc.
+; Copyright (C) 2005, 2006, 2007, 2008, 2009, 2011
+; Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -19,35 +20,35 @@
 ; <http://www.gnu.org/licenses/>.
 
 m5200
-Target RejectNegative
+Target RejectNegative Alias(mcpu=, 5206)
 Generate code for a 520X
 
 m5206e
-Target RejectNegative
+Target RejectNegative Alias(mcpu=, 5206e)
 Generate code for a 5206e
 
 m528x
-Target RejectNegative
+Target RejectNegative Alias(mcpu=, 528x)
 Generate code for a 528x
 
 m5307
-Target RejectNegative
+Target RejectNegative Alias(mcpu=, 5307)
 Generate code for a 5307
 
 m5407
-Target RejectNegative
+Target RejectNegative Alias(mcpu=, 5407)
 Generate code for a 5407
 
 m68000
-Target RejectNegative
+Target RejectNegative Alias(mcpu=, 68000)
 Generate code for a 68000
 
 m68010
-Target RejectNegative
+Target RejectNegative Alias(mcpu=, 68010)
 Generate code for a 68010
 
 m68020
-Target RejectNegative
+Target RejectNegative Alias(mcpu=, 68020)
 Generate code for a 68020
 
 m68020-40
@@ -59,23 +60,23 @@ Target RejectNegative
 Generate code for a 68060, without any new instructions
 
 m68030
-Target RejectNegative
+Target RejectNegative Alias(mcpu=, 68030)
 Generate code for a 68030
 
 m68040
-Target RejectNegative
+Target RejectNegative Alias(mcpu=, 68040)
 Generate code for a 68040
 
 m68060
-Target RejectNegative
+Target RejectNegative Alias(mcpu=, 68060)
 Generate code for a 68060
 
 m68302
-Target RejectNegative
+Target RejectNegative Alias(mcpu=, 68302)
 Generate code for a 68302
 
 m68332
-Target RejectNegative
+Target RejectNegative Alias(mcpu=, 68332)
 Generate code for a 68332
 
 ; Has no effect on gcc
@@ -100,15 +101,15 @@ Target Report Mask(BITFIELD)
 Use the bit-field instructions
 
 mc68000
-Target RejectNegative
+Target RejectNegative Alias(mcpu=, 68000)
 Generate code for a 68000
 
 mc68020
-Target RejectNegative
+Target RejectNegative Alias(mcpu=, 68020)
 Generate code for a 68020
 
 mcfv4e
-Target RejectNegative
+Target RejectNegative Alias(mcpu=, 547x)
 Generate code for a ColdFire v4e
 
 mcpu=
@@ -116,7 +117,7 @@ Target RejectNegative Joined
 Specify the target CPU
 
 mcpu32
-Target RejectNegative
+Target RejectNegative Alias(mcpu=, 68332)
 Generate code for a cpu32
 
 mdiv

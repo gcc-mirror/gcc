@@ -758,6 +758,9 @@ lower_gimple_return (gimple_stmt_iterator *gsi, struct lower_data *data)
 
   /* Generate a goto statement and remove the return statement.  */
  found:
+  /* When not optimizing, make sure user returns are preserved.  */
+  if (!optimize && gimple_has_location (stmt))
+    DECL_ARTIFICIAL (tmp_rs.label) = 0;
   t = gimple_build_goto (tmp_rs.label);
   gimple_set_location (t, gimple_location (stmt));
   gimple_set_block (t, gimple_block (stmt));

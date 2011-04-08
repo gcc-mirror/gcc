@@ -1,3 +1,14 @@
+2011-04-07  Gary Funck  <gary@intrepid.com>
+
+	Merge trunk version 172158 into gupc branch.
+	to bring in the following fix.
+
+2011-04-05  Bernd Schmidt  <bernds@codesourcery.com>
+
+	PR bootstrap/48403
+	* haifa-sched.c (schedule_block): Increment cycle_issued_insns only
+	if old and new states differ.
+
 2011-04-06  Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 171966 into gupc branch.

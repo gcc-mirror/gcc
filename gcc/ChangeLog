@@ -1,18 +1,584 @@
+2011-04-07  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/rx/rx.opt (rx610, rx200, rx600): Use Enum not Name on
+	EnumValue lines.
+
+2011-04-07  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/m68k/m68k.c (m68k_handle_option): Don't handle
+	OPT_m68000, OPT_mc68000, OPT_m68010, OPT_m68020, OPT_mc68020,
+	OPT_m68030, OPT_m68040, OPT_m68060, OPT_m68302, OPT_m68332 and
+	OPT_mcpu32.
+	* config/m68k/m68k.h (OPTION_DEFAULT_SPECS, ASM_CPU_SPEC): Don't
+	handle -mc68000, -m68000, -m68302, -m68010, -mc68020, -m68020,
+	-m68030, -m68040, -m68060, -mcpu32 and -m68332.
+	* config/m68k/m68k.opt (m68000, m68010, m68020, m68030, m68040,
+	m68060, m68302, m68332, mc68000, mc68020, mcpu32): Use Alias.
+	* config/m68k/t-mlibs (CANONICALIZE_OPTIONS): Remove.
+	(MULTILIB_OPTIONS): Don't use $(CANONICALIZE_OPTIONS).
+	(MULTILIB_MATCHES): Map -march= options to corresponding -mcpu=
+	options.  Don't map other m68k options manually.  Don't handle
+	old-style options as canonical.
+	(MULTILIB_EXCEPTIONS): Don't use $(CANONICALIZE_OPTIONS).
+	* doc/install.texi (m68k-*-*): Document binutils version
+	requirement.
+
+2011-04-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* basic-block.h (force_nonfallthru): Move to...
+	* cfghooks.h (struct cfg_hooks): Add force_nonfallthru hook.
+	(force_nonfallthru): ...here.
+	* cfghooks.c (force_nonfallthru): New function.
+	* cfgrtl.c (force_nonfallthru): Rename into...
+	(rtl_force_nonfallthru): ...this.
+	(commit_one_edge_insertion): Do not set AUX field.
+	(commit_edge_insertions): Do not discover new basic blocks.
+	(rtl_cfg_hooks): Add rtl_force_nonfallthru.
+	(cfg_layout_rtl_cfg_hooks): Likewise.
+	* function.c (thread_prologue_and_epilogue_insns): Remove bogus
+	ATTRIBUTE_UNUSED.  Discover new basic blocks in the prologue insns.
+	* tree-cfg.c (gimple_cfg_hooks): Add NULL for force_nonfallthru.
+
+2011-04-07  Anatoly Sokolov  <aesok@post.ru>
+
+	* config/mips/mips.h (REG_MODE_OK_FOR_BASE_P, REG_OK_FOR_INDEX_P):
+	Remove macros.
+
+2011-04-07  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sse.md: Update copyright year.
+	(avxcvtvecmode): Remove.
+	(sse_movhlps): Merge with *avx_movhlps.
+	(sse_movlhps): Merge with *avx_movlhps.
+	(vec_interleave_highv4sf): Merge with *avx_interleave_highv4sf.
+	(vec_interleave_lowv4sf): Merge with *avx_interleave_lowv4sf.
+	(sse_shufps_<mode>): Merge with *avx_shufps_<mode>.
+	(sse_loadhps): Merge with *avx_loadhps.
+	(sse_storelps): Merge with *avx_storelps.
+	(sse_loadlps): Merge with *avx_loadlps.
+	(sse_movss): Merge with *avx_movss.
+	(*vec_concatv2sf_sse4_1): Merge with *vec_concatv2sf_avx.
+	(*vec_concatv4sf_sse): Merge with *vec_concatv4sf_avx.
+	(*vec_set<mode>_0_sse4_1): Merge with *vec_set<mode>_0_avx.
+	(*vec_set<mode>_0_sse2): Split multi-unit alternative.
+	(vec_set<mode>_0): Ditto.
+	(*vec_setv4sf_sse4_1): Merge with *vec_setv4sf_avx.
+	(sse4_1_insertps): Merge with *avx_insertps.
+	(*sse3_interleave_highv2df): Merge with *avx_interleave_highv2df.
+	(*sse3_interleave_lowv2df): Merge with *avx_interleave_lowv2df.
+	(vec_interleave_highv2di): Merge with *avx_interleave_highv2di.
+	(sse2_shufpd_<mode>): Merge with *avx_shufpd_<mode>.
+	(sse2_storehpd): Merge with *avx_storehpd.
+	(sse2_loadhpd): Merge with *avx_loadhpd.
+	(sse2_loadlpd): Merge with *avx_loadlpd.
+	(sse2_movsd): Merge with *avx_movsd.
+	(*vec_concatv2df): Merge with *vec_concatv2df.
+
+2011-04-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/48343
+	* combine.c (combine_instructions): Add last_combined_insn,
+	update it if insn is after it, pass it to all try_combine calls.
+	(try_combine): Add last_combined_insn parameter, pass it instead of
+	i3 to propagate_for_debug.
+
+2011-04-07  Nick Clifton  <nickc@redhat.com>
+
+	* config/mn10300/mn10300.md (movqi_internal): Add alternatives
+	to handle MDR <-> data register transfers.
+	(movhi_internal): Likewise.
+
+2011-04-07  Alan Modra  <amodra@gmail.com>
+
+	* config/rs6000/rs6000.c (rs6000_stack_info): Don't compare against
+	previous stack info.
+
+2011-04-07  Tom de Vries  <tom@codesourcery.com>
+
+	PR target/43920
+	* cfgcleanup.c (try_crossjump_to_edge): Add dir parameter.  Pass dir to
+	flow_find_cross_jump.  Swap variables to implement backward replacement.
+	(try_crossjump_bb): Add argument to try_crossjump_to_edge.
+
+2011-04-07  Tom de Vries  <tom@codesourcery.com>
+
+	PR target/43920
+	* cfgcleanup.c (walk_to_nondebug_insn): New function.
+	(flow_find_cross_jump): Use walk_to_nondebug_insn.  Recalculate bb1
+	and bb2.
+	(try_crossjump_to_edge): Handle case that newpos1 or newpos2 is not
+	src1 or src2.  Redirect edges to the last basic block.  Update
+	frequency and count on multiple basic blocks in case of fallthru.
+
+2011-04-07  Tom de Vries  <tom@codesourcery.com>
+
+	PR target/43920
+	* cfgcleanup.c (equal_different_set_p, can_replace_by, merge_dir): New
+	function.
+	(old_insns_match_p): Change return type.  Replace return false/true
+	with return dir_none/dir_both.  Use can_replace_by.
+	(flow_find_cross_jump): Add dir_p parameter.  Init replacement
+	direction from dir_p.  Register replacement direction in dir, last_dir
+	and afterlast_dir.  Handle new return type of old_insns_match_p using
+	merge_dir.  Return replacement direction in dir_p.
+	(flow_find_head_matching_sequence, outgoing_edges_match): Handle new
+	return type of old_insns_match_p.
+	(try_crossjump_to_edge): Add argument to call to flow_find_cross_jump.
+	* ifcvt.c ( cond_exec_process_if_block): Add argument to call to
+	flow_find_cross_jump.
+	* basic-block.h (enum replace_direction): New type.
+	(flow_find_cross_jump): Add parameter to declaration.
+
+2011-04-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sse.md (AVXMODEDCVTDQ2PS): Remove.
+	(AVXMODEDCVTPS2DQ): Ditto.
+	(VEC_FLOAT_MODE): Ditto.
+	(<sse>_andnot<mode>3): Merge with avx_andnot<mode>3.  Use VF mode
+	iterator.  Handle TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL target flag.
+	(<any_logic:code><mode>3): Use VF mode iterator.
+	(*<any_logic:code><mode>3): Merge with *avx_<any_logic:code><mode>3.
+	Use VF mode iterator.
+	(copysign<mode>3): Use VF mode iterator.
+	(*andnot<MODEF:mode>3): Merge with *avx_andnot<MODEF:mode>3.  Handle
+	TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL target flag.
+	(*<any_logic:code><MODEF:mode>3): Merge with
+	*avx_<any_logic:code><MODEF:mode>3.
+	(sse_cvtsi2ss): Merge with *avx_cvtsi2ss.
+	(sse_cvtsi2ssq): Merge with *avx_cvtsi2ssq.
+	(avx_cvtdq2ps256): Split from avx_cvtdq2ps<avxmodesuffix>.
+	(avx_cvtdq2ps<avxmodesuffix>): Remove.
+	(sse2_cvtdq2ps): Use %v modifier.
+	(avx_cvtps2dq256): Split from avx_cvtps2dq<avxmodesuffix>.
+	(avx_cvtps2dq<avxmodesuffix>): Remove.
+	(sse2_cvtps2dq): Use %v modifier.
+	(avx_cvttps2dq256): Split from avx_cvttps2dq<avxmodesuffix>.
+	(avx_cvttps2dq<avxmodesuffix>): Remove.
+	(sse2_cvttps2dq): Use %v modifier.
+	(sse2_cvtsi2sd): Merge with *avx_cvtsi2sd.
+	(sse2_cvtsi2sdq): Merge with *avx_cvtsi2sdq.
+	(sse2_cvtsd2siq): Fix insn template.
+	(sse2_cvtsd2siq_2): Ditto.
+	(sse2_cvttsd2siq): Ditto.
+	(sse2_cvtsd2ss): Merge with *avx_cvtsd2ss.
+	(sse2_cvtss2sd): Merge with *avx_cvtss2sd.
+
+2011-04-06  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcov-io.c: Use GCC Runtime Library Exception.
+
+2011-04-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/48466
+	* dwarf2out.c (based_loc_descr): If drap_reg is INVALID_REGNUM, use
+	as base_reg whatever register reg has been eliminated to, instead
+	of hardcoding STACK_POINTER_REGNUM.
+
+2011-04-06  Joseph Myers  <joseph@codesourcery.com>
+
+	* doc/tm.texi.in: Document C target hooks as separate from general
+	target hooks.
+	* doc/tm.texi: Regenerate.
+	* genhooks.c (struct hook_desc): Add docname field.
+	(HOOK_VECTOR_1, DEFHOOKPOD, DEFHOOK, DEFHOOK_UNDOC).  Initialize
+	docname field.
+	(hook_array): Include c-target.def.
+	(emit_documentation): Use docname field in output.
+	(emit_init_macros): Take docname argument.  Only emit definitions
+	for hooks matching docname.
+	(main): Expect additional arguments in all cases.  Pass argument
+	to emit_init_macros.
+	* target.def: Move initial macro definitions and comments to
+	target-hooks-macros.h.
+	(gcc_targetcm): Move to c-family/c-target.def.
+	* target.h (targetcm): Move declaration to c-family/c-target.h.
+	* targhooks.c (default_handle_c_option): Move to
+	c-family/c-opts.c.
+	* targhooks.h (default_handle_c_option): Move declaration to
+	c-family/c-common.h.
+	* target-hooks-macros.h: New file.
+	* config.gcc (target_has_targetcm): Define and use to add to
+	c_target_objs and cxx_target_objs.
+	* config/default-c.c: New file.
+	* config/darwin-c.c: Include c-target.h and c-target-def.h instead
+	of target.h and target-def.h.
+	(TARGET_HANDLE_C_OPTION, targetcm): Define later in file.
+	(darwin_objc_construct_string, darwin_cfstring_ref_p,
+	darwin_check_cfstring_format_arg): Make static.
+	(TARGET_OBJC_CONSTRUCT_STRING_OBJECT,
+	TARGET_STRING_OBJECT_REF_TYPE_P,
+	TARGET_CHECK_STRING_OBJECT_FORMAT_ARG): Define here.
+	* config/darwin-protos.h (darwin_objc_construct_string,
+	darwin_cfstring_ref_p, darwin_check_cfstring_format_arg): Don't
+	declare.
+	* config/darwin.h (TARGET_OBJC_CONSTRUCT_STRING_OBJECT,
+	TARGET_STRING_OBJECT_REF_TYPE_P,
+	TARGET_CHECK_STRING_OBJECT_FORMAT_ARG, TARGET_HAS_TARGETCM): Remove.
+	* config/t-darwin (darwin-c.o): Update dependencies.
+	* system.h (TARGET_HAS_TARGETCM): Poison.
+	* Makefile.in (TARGET_H): Update.
+	(TARGET_DEF, C_TARGET_DEF, C_TARGET_H, C_TARGET_DEF_H): Define.
+	(c-family/c-format.o, c-family/c-opts.o): Update dependencies.
+	(default-c.o): New target.
+	(s-target-hooks-def-h): Pass "Target Hook" string to genhooks.
+	(c-family/c-target-hooks-def.h, s-c-target-hooks-def-h): New targets.
+	(s-tm-texi): Pass -d option to genhooks.  Also test timestamp on
+	c-target.def.
+	(build/genhooks.o): Update dependencies.
+
+2011-04-06  Richard Guenther  <rguenther@suse.de>
+
+	* ipa-inline.c (enum inlining_mode): Remove.
+	(cgraph_flatten): Use some other token.
+	(cgraph_edge_early_inlinable_p): New function, split out from ...
+	(cgraph_perform_always_inlining): New function, split out from ...
+	(cgraph_decide_inlining_incrementally): ... here.
+	(cgraph_mark_inline_edge): Adjust.
+	(cgraph_early_inlining): Re-structure.
+	(pass_early_inline): Require SSA form.
+
+2011-04-06  Andrew Stubbs  <ams@codesourcery.com>
+	    Julian Brown  <julian@codesourcery.com>
+	    Mark Shinwell  <shinwell@codesourcery.com>
+
+	* config/arm/arm.h (arm_class_likely_spilled_p): Check against
+	LO_REGS only for Thumb-1.
+	(MODE_BASE_REG_CLASS): Restrict base registers to those which can
+	be used in short instructions when optimising for size on Thumb-2.
+
+2011-04-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gimple-low.c (lower_gimple_return): When not optimizing, force labels
+	associated with user returns to be preserved.
+
+2011-04-06  Tristan Gingold  <gingold@adacore.com>
+
+	* dbxout.c (debug_nesting, symbol_queue, symbol_queue_index,
+	symbol_queue_size, DBXOUT_DECR_NESTING,
+	(DBXOUT_DECR_NESTING_AND_RETURN): Also define
+	if XCOFF_DEBUGGING_INFO.
+
+2011-04-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (attribute isa): New.
+	(attribute enabled): New.
+	(setcc_<mode>_sse): Merge from *{avx,sse}_setcc<mode>.
+	(*fop_<mode>_comm_mixed): Merge with *fop_<mode>_comm_mixed_avx.
+	(*fop_<mode>_comm_sse): Merge with *fop_<mode>_comm_avx.
+	(*fop_<mode>_1_mixed): Merge with *fop_<mode>_1_mixed_avx.
+	(*fop_<mode>_1_sse): Merge with *fop_<mode>_1_avx.
+	(<smaxmin:code><mode>3): Merge with *avx_<smaxmin:code><mode>3.
+	(*ieee_smin<mode>3): Merge with *avx_ieee_smin<mode>3.
+	(*ieee_smax<mode>3): Merge with *avx_ieee_smax<mode>3.
+
+	* config/i386/sse.md (VF): New mode iterator.
+	(VF1): Ditto.
+	(VF2): Ditto.
+	(VF_128): Ditto.
+	(SSEMODEF4): Remove.
+	(attribute sse): Handle V8SF and V4DF modes.
+	(<absneg:code><mode>2): Use VF mode iterator.
+	(*absneg<mode>2): Merge from *{avx,sse}_absneg<mode>2.  Use VF
+	mode iterator.
+	(<plusminus_insn><mode>3): Use VF mode iterator.
+	(*<plusminus_insn><mode>3): Merge with *avx_<plusminus_insn><mode>3.
+	Use VF mode iterator.
+	(<sse>_vm<plusminus_insn><mode>3): Merge with
+	*avx_vm<plusminus_insn><mode>3.  Use VF_128 mode iterator.
+	(mul<mode>3): Use VF mode iterator.
+	(*mul<mode>3): Merge with *avx_mul<mode>3.  Use VF mode iterator.
+	(<sse>_vmmul<mode>3): Merge with *avx_vmmul<mode>3.  Use VF_128
+	mode iterator.
+	(div<VF2:mode>3): Merge from divv2df3 and divv4df3.
+	(div<VF1:mode>3): Merge from divv4sf3 and divv8sf3.
+	(<sse>_div<mode>3): Merge with *avx_div<mode>3.  Use VF mode iterator.
+	(<sse>_vmdiv<mode>3): Merge with *avx_vmdiv<mode>3.  Use VF_128
+	mode iterator.
+	(<sse>_rcp<mode>2): Merge from avx_rcpv8sf2 and sse_rcpv4sf2.
+	Use VF1 mode iterator.
+	(sse_vmrcpv4sf2): Merge with *avx_vmrcpv4sf2.
+	(sqrt<VF2:mode>2): New expander.
+	(sqrt<VF1:mode>2): Merge from sqrtv4sf2 and sqrtv8sf2.
+	(<sse>_sqrt<mode>2): Merge from avx_sqrtv8sf2, sse_sqrtv4sf, sqrtv4df2
+	and sqrtv2df2.  Use VF mode iterator.
+	(<sse>_vmsqrt<mode>2): Merge with *avx_vmsqrt<mode>2.  Use VF_128
+	mode iterator.
+	(rsqrt<VF1:mode>2): Merge from rsqrtv4sf2 and rsqrtv8sf2.
+	(<sse>_rsqrt<mode>2): Merge from avx_rsqrtv8sf2 and sse_rsqrt4sf2.
+	Use VF1 mode iterator.
+	(sse_vmrsqrtv4sf2): Merge with *avx_vmrsqrtv4sf2.
+	(<smaxmin:code><mode>3): Use VF mode iterator.
+	(*<smaxmin:code><mode>3_finite): Merge with
+	*avx_<smaxmin:code><mode>3_finite.  Use VF mode iterator.
+	(*<smaxmin:code><mode>3): Merge with *avx_<smaxmin:code><mode>3.
+	(<sse>_vm<smaxmin:code><mode>2): Merge with
+	*avx_vm<smaxmin:code><mode>2.  Use VF_128 mode iterator.
+	(*ieee_smin<mode>3): Merge with *avx_ieee_smin<mode>3.  Use VF
+	mode iterator.
+	(*ieee_smax<mode>3): Merge with *avx_ieee_smax<mode>3.  Use VF
+	mode iterator.
+	(sse3_addsubv2df3): Merge with *avx_addsubv2df3.
+	(sse3_addsubv4sf3): Merge with *avx_addsubv4sf3.
+	(sse3_h<plusminus_insn>v2df3): Merge with *avx_h<plusminus_insn>v2df3.
+	(sse3_h<plusminus_insn>v4sf3): Merge with *avx_h<plusminus_insn>v4sf3.
+	(avx_cmp<mode>3): Rename from avx_cmp<ssemodesuffix><mode>3.  Use
+	VF mode iterator.
+	(avx_vmcmp<mode>3): Rename from avx_cmp<ssescalarmodesuffix><mode>3.
+	Use VF_128 mode iterator.
+	(<sse>_maskcmp<mode>3): Merge with *avx_maskcmp<mode>3.  Use VF
+	mode iterator.
+	(<sse>_vmmaskcmp<mode>3): Merge with *avx_vmmaskcmp<mode>3.  Use
+	VF_128 mode iterator.
+	(vcond<mode>): Use VF mode iterator.
+	* config/i386/predicates.md (sse_comparison_operator): Merge with
+	avx_comparison_float_operator.  Do not declare as special_predicate.
+	* config/i386/i386.c (struct builtin_description): Update for renamed
+	compare patterns.
+	(ix86_expand_args_builtin): Ditto.
+	(ix86_expand_sse_compare_mask): Ditto.
+
+2011-04-06  Richard Guenther  <rguenther@suse.de>
+
+	* tree-inline.c (estimate_num_insns): For calls simply account
+	for all passed arguments and a used return value.
+
+2011-04-06  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/47663
+	* cgraph.h (struct cgraph_edge): Add call_stmt_size and
+	call_stmt_time fields.
+	(cgraph_edge_inlinable_p): Declare.
+	(cgraph_edge_recursive_p): New inline function.
+	* cgraph.c (cgraph_create_edge_1): Initialize call_stmt_size.
+	(cgraph_clone_edge): Copy it.
+	* ipa-inline.c (cgraph_estimate_edge_time): New function.
+	Account for call stmt time.
+	(cgraph_estimate_time_after_inlining): Take edge argument.
+	(cgraph_estimate_edge_growth): Account call stmt size.
+	(cgraph_estimate_size_after_inlining): Take edge argument.
+	(cgraph_mark_inline_edge): Adjust.
+	(cgraph_check_inline_limits): Likewise.
+	(cgraph_recursive_inlining_p): Remove.
+	(cgraph_edge_badness): Use cgraph_edge_recursive_p.
+	(cgraph_decide_recursive_inlining): Take edge argument and
+	adjust.
+	(cgraph_decide_inlining_of_small_functions): Do not avoid
+	diags for recursive inlining here.
+	(cgraph_flatten): Adjust.
+	(cgraph_decide_inlining_incrementally): Likewise.
+	(estimate_function_body_sizes): Remove call cost handling.
+	(compute_inline_parameters): Initialize caller edge call costs.
+	(cgraph_estimate_edge_growth): New function.
+	(cgraph_estimate_growth): Use it.
+	(cgraph_edge_badness): Likewise.
+	(cgraph_check_inline_limits): Take an edge argument.
+	(cgraph_decide_inlining_of_small_functions): Adjust.
+	(cgraph_decide_inlining): Likewise.
+	* tree-inline.c (estimate_num_insns): Only account for call
+	return value if it is used.
+	(expand_call_inline): Avoid diagnostics on recursive inline
+	functions here.
+	* lto-cgraph.c (lto_output_edge): Output edge call costs.
+	(input_edge): Input edge call costs.
+
+2011-04-06  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/alpha/osf5.h (MAX_OFILE_ALIGNMENT): Define.
+
+2011-04-06  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* doc/invoke.texi (Spec Files): Fix typo.
+
+2011-04-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* profile.c (branch_prob): Move declaration of local variable.  Remove
+	obsolete ??? comment.  Expand the location explicitly instead of using
+	the LOCATION_FILE and LOCATION_LINE macros.
+
+2011-04-06  Wei Guozhi  <carrot@google.com>
+
+	PR target/47855
+	* config/arm/arm.md (arm_cmpsi_insn): Compute attr "length".
+	(arm_cond_branch): Likewise.
+	(arm_cond_branch_reversed): Likewise.
+	(arm_jump): Likewise.
+	(push_multi): Likewise.
+	* config/arm/constraints.md (Py): New constraint.
+
+2011-04-05  Nathan Froyd  <froydnj@codesourcery.com>
+
+	PR bootstrap/48471
+	* dbxout.c (debug_nesting, symbol_queue, symbol_queue_index):
+	Move these...
+	(symbol_queue_size, DBXOUT_DECR_NESTING): ...and these...
+	(DBXOUT_DECR_NESTING_AND_RETURN): ...and this under
+	#ifdef DBX_DEBUGGING_INFO.
+
+2011-04-05  Bernd Schmidt  <bernds@codesourcery.com>
+
+	PR bootstrap/48403
+	* haifa-sched.c (schedule_block): Increment cycle_issued_insns only
+	if old and new states differ.
+
+2011-04-05  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/m68k/m68k.c (m68k_handle_option): Don't handle OPT_m5200,
+	OPT_m5206e, OPT_m528x, OPT_m5307, OPT_m5407 and OPT_mcfv4e.
+	* config/m68k/m68k.h (OPTION_DEFAULT_SPECS, ASM_CPU_SPEC): Don't
+	handle -m5200, -m5206e, -m528x, -m5307, -m5407 and -mcfv4e.
+	* config/m68k/m68k.opt (m5200, m5206e, m528x, m5307, m5407,
+	mcfv4e): Use Alias.
+	* config/m68k/t-mlibs (MULTILIB_MATCHES): Don't map legacy
+	ColdFire options to -mcpu= options.
+
+2011-04-05  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-threadupdate.c (determine_bb_domination_status): Always
+	check if BB is a successor of LOOP->header and return
+	NONDOMINATING if it is not, regardless of ENABLE_CHECKING.
+
+2011-04-05  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* cprop.c (struct reg_use): Remove.
+	(reg_use_table): Make an array of RTX.
+	(find_used_regs, constprop_register, local_cprop_pass,
+	bypass_block): Simplify users of reg_use_table.
+	(cprop_insn): Likewise.  Iterate if copy propagation succeeded
+	on one of the uses found by find_used_regs.
+
+2011-04-05  Nathan Froyd  <froydnj@codesourcery.com>
+
+	PR bootstrap/48469
+	* combine.c (combine_instructions): #ifdef AUTO_INC_DEC links
+	declaration.
+
+2011-04-05  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* combine.c (combine_instructions) [AUTO_INC_DEC]: Declare links
+	as an rtx.
+	(try_combine) [AUTO_INC_DEC]: Declare a local link rtx.
+
+2011-04-05  Steven Bosscher  <steven@gcc.gnu.org>
+
+	PR middle-end/48441
+	* cprop.c (one_cprop_pass): Do not mark_oprs_set of deleted insns.
+
+2011-04-05  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* combine.c: Include obstack.h.
+	(struct insn_link): Define.
+	(uid_log_links): Adjust type.
+	(FOR_EACH_LOG_LINK): New macro.
+	(insn_link_obstack): Declare.
+	(alloc_insn_link): Define.
+	(create_log_links): Call it.  Use FOR_EACH_LOG_LINK and adjust
+	type of link variables.
+	(find_single_use, insn_a_feeds_b, combine_instructions): Likewise.
+	(try_combine, record_promoted_values, distribute_notes): Likewise.
+	(distribute_links): Likewise.  Tweak prototype.
+	(clear_log_links): Delete.
+	(adjust_for_new_dest): Call alloc_insn_link.
+	* Makefile.in (combine.o): Depend on $(OBSTACK_H).
+
+2011-04-05  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* gcse.c (modify_mem_list): Convert to an array of VECs.
+	(canon_modify_mem_list, compute_transp): Tweak formatting.
+	(alloc_gcse_mem): Likewise.  Adjust for modify_mem_list change.
+	(load_killed_in_block_p): Likewise.
+	(record_last_mem_set_info): Likewise.
+	(clear_modify_mem_tables): Likewise.
+
+2011-04-05  Tom de Vries  <tom@codesourcery.com>
+
+	PR middle-end/48461
+	* function.c (emit_use_return_register_into_block): Only define if
+	HAVE_return.
+
+2011-04-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* stor-layout.c (self_referential_size): Fix 2010-07-13 commit.
+
+2011-04-05  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/rx/rx-opts.h: New.
+	* config/rx/rx.c (rx_cpu_type): Remove.
+	(rx_handle_option): Don't assert that global structures are in
+	use.  Access variables via opts pointer.  Defer most handling of
+	OPT_mint_register_.  Use error_at.
+	(rx_option_override): Handle deferred OPT_mint_register_ here.
+	* config/rx/rx.h (enum rx_cpu_types): Move to rx-opts.h.
+	* config/rx/rx.opt (config/rx/rx-opts.h: New HeaderInclude.
+	(mcpu=): Use Enum and specifiy rx_cpu_type with Var.
+	(rx_cpu_types): New Enum and EnumValue entries.
+	(mint-register=): Use Defer and use Var accordingly.
+
+2011-04-05  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* debug.h (debug_flush_symbol_queue, debug_queue_symbol): Delete.
+	(debug_free_queue, debug_nesting, symbol_queue_index): Delete.
+	* final.c (debug_flush_symbol_queue, debug_queue_symbol):
+	Move these...
+	(debug_free_queue, debug_nesting, symbol_queue_index):
+	...and these...
+	* dbxout.c: ...to here.  Make static.
+
+2011-04-05  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* gcse.c (modify_pair): Define.  Define a VEC of it.
+	(canon_modify_mem_list): Convert to an array of VECs.
+	(free_insn_expr_list_list): Delete.
+	(clear_modify_mem_tables): Call VEC_free instead.
+	(record_last_mem_set_info): Don't modify canon_modify_mem_list.
+	(alloc_gcse_mem): Adjust for canon_modify_mem_list change.
+	(canon_list_insert, compute_transp): Likewise.
+
+2011-04-05  Tom de Vries  <tom@codesourcery.com>
+
+	PR target/43920
+	* config/arm/arm.h (BRANCH_COST): Set to 1 for Thumb-2 when optimizing
+	for size.
+
+2011-04-05  Tom de Vries  <tom@codesourcery.com>
+
+	PR target/43920
+	* function.c (emit_use_return_register_into_block): New function.
+	(thread_prologue_and_epilogue_insns): Use
+	emit_use_return_register_into_block.
+
+2011-04-05  Tom de Vries  <tom@codesourcery.com>
+
+	PR target/43920
+	* cfgcleanup.c (flow_find_cross_jump): Don't count USE or CLOBBER as
+	insn.
+
+2011-04-05  Tom de Vries  <tom@codesourcery.com>
+
+	* cfgcleanup.c (try_crossjump_bb): Remove 2 superfluous variables.
+
+2011-04-05  Yufeng Zhang  <yufeng.zhang@arm.com>
+
+        * config/arm/arm.md (define_constants for unspec): Replace with
+        define_c_enum.
+        (define_constants for unspecv): Replace with define_c_enum.
+        * config/arm/neon.md (define_constants for unspec): Replace with
+        define_c_enum.
+
 2011-04-04  Richard Henderson  <rth@redhat.com>
 
-	PR 48400
+	PR bootstrap/48400
 	* dwarf2out.c (output_line_info): Always emit line info from
 	at least one section.
 	(dwarf2out_init): Create text_section_line_info here ...
 	(set_cur_line_info_table): ... not here.
 
-2011-04-01  Vladimir Makarov  <vmakarov@redhat.com>
+2011-04-04  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR target/48380
 	* ira.c (ira): Call grow_reg_equivs when fix_reg_equiv_init is
-          not called.
+	not called.
 
-	* ira-emit.c (emit_move_list): Update reg equiv init insn list.
+	* ira-emit.c (emit_move_list): Update reg_equiv_init insn list.
 
 2011-04-04  Steven Bosscher  <steven@gcc.gnu.org>
 
@@ -90,8 +656,7 @@
 2011-04-04  Joseph Myers  <joseph@codesourcery.com>
 
 	* doc/options.texi (ToLower): Document.
-	* opt-functions.awk (switch_bit_fields): Initialize cl_tolower
-	field.
+	* opt-functions.awk (switch_bit_fields): Initialize cl_tolower field.
 	* opts-common.c (decode_cmdline_option): Handle cl_tolower.
 	* opts.h (cl_option): Add cl_tolower field.
 	* config/rx/rx.c (rx_handle_option): Use strcmp of -mcpu=
@@ -391,7 +956,7 @@
 
 	* config.gcc (*-*-mingw*): Allow as option the
 	posix threading model.
-	* config/i386/mingw32.h ( SPEC_PTHREAD1,  SPEC_PTHREAD2):
+	* config/i386/mingw32.h (SPEC_PTHREAD1,  SPEC_PTHREAD2):
 	New macros defined dependent to TARGET_USE_PTHREAD_BY_DEFAULT
 	definition.
 	(CPP_SPEC): Add pthread/no-pthread handling.

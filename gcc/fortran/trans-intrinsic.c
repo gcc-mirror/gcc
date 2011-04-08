@@ -621,35 +621,38 @@ gfc_build_intrinsic_lib_fndecls (void)
        C99-like library functions.  For now, we only handle __float128
        q-suffixed functions.  */
 
-    tree tmp, func_1, func_2, func_cabs, func_frexp;
+    tree type, complex_type, func_1, func_2, func_cabs, func_frexp;
     tree func_lround, func_llround, func_scalbn, func_cpow;
 
     memset (quad_decls, 0, sizeof(tree) * (END_BUILTINS + 1));
 
+    type = float128_type_node;
+    complex_type = complex_float128_type_node;
     /* type (*) (type) */
-    tmp = tree_cons (NULL_TREE, float128_type_node, void_list_node);
-    func_1 = build_function_type (float128_type_node, tmp);
+    func_1 = build_function_type_list (type, type, NULL_TREE);
     /* long (*) (type) */
-    func_lround = build_function_type (long_integer_type_node, tmp);
+    func_lround = build_function_type_list (long_integer_type_node,
+					    type, NULL_TREE);
     /* long long (*) (type) */
-    func_llround = build_function_type (long_long_integer_type_node, tmp);
+    func_llround = build_function_type_list (long_long_integer_type_node,
+					     type, NULL_TREE);
     /* type (*) (type, type) */
-    tmp = tree_cons (NULL_TREE, float128_type_node, tmp);
-    func_2 = build_function_type (float128_type_node, tmp);
+    func_2 = build_function_type_list (type, type, type, NULL_TREE);
     /* type (*) (type, &int) */
-    tmp = tree_cons (NULL_TREE, float128_type_node, void_list_node);
-    tmp = tree_cons (NULL_TREE, build_pointer_type (integer_type_node), tmp);
-    func_frexp = build_function_type (float128_type_node, tmp);
+    func_frexp
+      = build_function_type_list (type,
+				  type,
+				  build_pointer_type (integer_type_node),
+				  NULL_TREE);
     /* type (*) (type, int) */
-    tmp = tree_cons (NULL_TREE, float128_type_node, void_list_node);
-    tmp = tree_cons (NULL_TREE, integer_type_node, tmp);
-    func_scalbn = build_function_type (float128_type_node, tmp);
+    func_scalbn = build_function_type_list (type,
+					    type, integer_type_node, NULL_TREE);
     /* type (*) (complex type) */
-    tmp = tree_cons (NULL_TREE, complex_float128_type_node, void_list_node);
-    func_cabs = build_function_type (float128_type_node, tmp);
+    func_cabs = build_function_type_list (type, complex_type, NULL_TREE);
     /* complex type (*) (complex type, complex type) */
-    tmp = tree_cons (NULL_TREE, complex_float128_type_node, tmp);
-    func_cpow = build_function_type (complex_float128_type_node, tmp);
+    func_cpow
+      = build_function_type_list (complex_type,
+				  complex_type, complex_type, NULL_TREE);
 
 #define DEFINE_MATH_BUILTIN(ID, NAME, ARGTYPE)
 #define DEFINE_MATH_BUILTIN_C(ID, NAME, ARGTYPE)
@@ -6257,7 +6260,7 @@ gfc_conv_intrinsic_function (gfc_se * se, gfc_expr * expr)
       break;
 
     case GFC_ISYM_THIS_IMAGE:
-      if (expr->value.function.actual)
+      if (expr->value.function.actual->expr)
 	conv_intrinsic_cobound (se, expr);
       else
 	trans_this_image (se, expr);

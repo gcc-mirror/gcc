@@ -1165,7 +1165,7 @@ enum reg_class
    when addressing quantities in QI or HI mode; if we don't know the
    mode, then we must be conservative.  */
 #define MODE_BASE_REG_CLASS(MODE)					\
-    (TARGET_32BIT ? CORE_REGS :					\
+    (TARGET_ARM || (TARGET_THUMB2 && !optimize_size) ? CORE_REGS :      \
      (((MODE) == SImode) ? BASE_REGS : LO_REGS))
 
 /* For Thumb we can not support SP+reg addressing, so we return LO_REGS
@@ -2019,7 +2019,8 @@ typedef struct
 /* Try to generate sequences that don't involve branches, we can then use
    conditional instructions */
 #define BRANCH_COST(speed_p, predictable_p) \
-  (TARGET_32BIT ? 4 : (optimize > 0 ? 2 : 0))
+  (TARGET_32BIT ? (TARGET_THUMB2 && !speed_p ? 1 : 4) \
+		: (optimize > 0 ? 2 : 0))
 
 /* Position Independent Code.  */
 /* We decide which register to use based on the compilation options and

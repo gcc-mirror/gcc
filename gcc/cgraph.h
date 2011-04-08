@@ -431,6 +431,9 @@ struct GTY((chain_next ("%h.next_caller"), chain_prev ("%h.prev_caller"))) cgrap
   int frequency;
   /* Unique id of the edge.  */
   int uid;
+  /* Estimated size and time of the call statement.  */
+  int call_stmt_size;
+  int call_stmt_time;
   /* Depth of loop nest, 1 means no loop nest.  */
   unsigned short int loop_nest;
   /* Whether this edge was made direct by indirect inlining.  */
@@ -771,6 +774,7 @@ varpool_next_static_initializer (struct varpool_node *node)
 /* In ipa-inline.c  */
 void cgraph_clone_inlined_nodes (struct cgraph_edge *, bool, bool);
 void compute_inline_parameters (struct cgraph_node *);
+cgraph_inline_failed_t cgraph_edge_inlinable_p (struct cgraph_edge *);
 
 
 /* Create a new static variable of type TYPE.  */
@@ -957,6 +961,17 @@ varpool_all_refs_explicit_p (struct varpool_node *vnode)
 
 /* Constant pool accessor function.  */
 htab_t constant_pool_htab (void);
+
+/* Return true when the edge E represents a direct recursion.  */
+static inline bool
+cgraph_edge_recursive_p (struct cgraph_edge *e)
+{
+  if (e->caller->global.inlined_to)
+    return e->caller->global.inlined_to->decl == e->callee->decl;
+  else
+    return e->caller->decl == e->callee->decl;
+}
+
 
 /* FIXME: inappropriate dependency of cgraph on IPA.  */
 #include "ipa-ref-inline.h"

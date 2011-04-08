@@ -27,6 +27,9 @@ class Bstatement;
 // The backend representation of a function definition.
 class Bfunction;
 
+// The backend representation of a label.
+class Blabel;
+
 // A list of backend types.
 typedef std::vector<Btype*> Btypes;
 
@@ -104,6 +107,10 @@ class Backend
 
   // Statements.
 
+  // Create an expression statement.
+  virtual Bstatement*
+  expression_statement(Bexpression*) = 0;
+
   // Create an assignment statement.
   virtual Bstatement*
   assignment_statement(Bexpression* lhs, Bexpression* rhs,
@@ -114,6 +121,52 @@ class Backend
   virtual Bstatement*
   return_statement(Bfunction*, const std::vector<Bexpression*>&,
 		   source_location) = 0;
+
+  // Create an if statement.  ELSE_BLOCK may be NULL.
+  virtual Bstatement*
+  if_statement(Bexpression* condition, Bstatement* then_block,
+	       Bstatement* else_block, source_location) = 0;
+
+  // Create a switch statement where the case values are constants.
+  // CASES and STATEMENTS must have the same number of entries.  If
+  // VALUE matches any of the list in CASES[i], which will all be
+  // integers, then STATEMENTS[i] is executed.  STATEMENTS[i] will
+  // either end with a goto statement or will fall through into
+  // STATEMENTS[i + 1].  CASES[i] is empty for the default clause,
+  // which need not be last.
+  virtual Bstatement*
+  switch_statement(Bexpression* value,
+		   const std::vector<std::vector<Bexpression*> >& cases,
+		   const std::vector<Bstatement*>& statements,
+		   source_location) = 0;
+
+  // Create a single statement from a list of statements.
+  virtual Bstatement*
+  statement_list(const std::vector<Bstatement*>&) = 0;
+
+  // Labels.
+  
+  // Create a new label.  NAME will be empty if this is a label
+  // created by the frontend for a loop construct.  The location is
+  // where the the label is defined.
+  virtual Blabel*
+  label(Bfunction*, const std::string& name, source_location) = 0;
+
+  // Create a statement which defines a label.  This statement will be
+  // put into the codestream at the point where the label should be
+  // defined.
+  virtual Bstatement*
+  label_definition_statement(Blabel*) = 0;
+
+  // Create a goto statement to a label.
+  virtual Bstatement*
+  goto_statement(Blabel*, source_location) = 0;
+
+  // Create an expression for the address of a label.  This is used to
+  // get the return address of a deferred function which may call
+  // recover.
+  virtual Bexpression*
+  label_address(Blabel*, source_location) = 0;
 };
 
 // The backend interface has to define this function.
@@ -124,7 +177,9 @@ extern Backend* go_get_backend();
 // interface.
 
 extern Bexpression* tree_to_expr(tree);
+extern Bstatement* tree_to_stat(tree);
 extern Bfunction* tree_to_function(tree);
-extern tree statement_to_tree(Bstatement*);
+extern tree expr_to_tree(Bexpression*);
+extern tree stat_to_tree(Bstatement*);
 
 #endif // !defined(GO_BACKEND_H)

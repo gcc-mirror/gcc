@@ -62,8 +62,6 @@ static void rx_print_operand (FILE *, rtx, int);
 
 static unsigned int flags_from_mode (enum machine_mode mode);
 static unsigned int flags_from_code (enum rtx_code code);
-
-enum rx_cpu_types  rx_cpu_type = RX600;
 
 /* Return true if OP is a reference to an object in a small data area.  */
 
@@ -2268,39 +2266,20 @@ const struct attribute_spec rx_attribute_table[] =
 /* Extra processing for target specific command line options.  */
 
 static bool
-rx_handle_option (struct gcc_options *opts, struct gcc_options *opts_set,
+rx_handle_option (struct gcc_options *opts,
+		  struct gcc_options *opts_set ATTRIBUTE_UNUSED,
 		  const struct cl_decoded_option *decoded,
-		  location_t loc ATTRIBUTE_UNUSED)
+		  location_t loc)
 {
   size_t code = decoded->opt_index;
-  const char *arg = decoded->arg;
   int value = decoded->value;
-
-  gcc_assert (opts == &global_options);
-  gcc_assert (opts_set == &global_options_set);
 
   switch (code)
     {
     case OPT_mint_register_:
-      switch (value)
-	{
-	case 4:
-	  fixed_regs[10] = call_used_regs [10] = 1;
-	  /* Fall through.  */
-	case 3:
-	  fixed_regs[11] = call_used_regs [11] = 1;
-	  /* Fall through.  */
-	case 2:
-	  fixed_regs[12] = call_used_regs [12] = 1;
-	  /* Fall through.  */
-	case 1:
-	  fixed_regs[13] = call_used_regs [13] = 1;
-	  /* Fall through.  */
-	case 0:
-	  return true;
-	default:
-	  return false;
-	}
+      /* Make sure that the -mint-register option is in range.  Other
+	 handling in rx_option_override.  */
+      return value >= 0 && value <= 4;
       break;
 
     case OPT_mmax_constant_size_:
@@ -2308,20 +2287,13 @@ rx_handle_option (struct gcc_options *opts, struct gcc_options *opts_set,
       return value >= 0 && value <= 4;
 
     case OPT_mcpu_:
-      if (strcmp (arg, "rx610") == 0)
-	rx_cpu_type = RX610;
-      else if (strcmp (arg, "rx200") == 0)
-	{
-	  target_flags |= MASK_NO_USE_FPU;
-	  rx_cpu_type = RX200;
-	}
-      else if (strcmp (arg, "rx600") != 0)
-	warning (0, "unrecognized argument '%s' to -mcpu= option", arg);
+      if ((enum rx_cpu_types) value == RX200)
+	opts->x_target_flags |= MASK_NO_USE_FPU;
       break;
       
     case OPT_fpu:
-      if (rx_cpu_type == RX200)
-	error ("the RX200 cpu does not have FPU hardware");
+      if (opts->x_rx_cpu_type == RX200)
+	error_at (loc, "the RX200 cpu does not have FPU hardware");
       break;
 
     default:
@@ -2361,6 +2333,44 @@ rx_override_options_after_change (void)
 static void
 rx_option_override (void)
 {
+  unsigned int i;
+  cl_deferred_option *opt;
+  VEC(cl_deferred_option,heap) *vec
+    = (VEC(cl_deferred_option,heap) *) rx_deferred_options;
+
+  FOR_EACH_VEC_ELT (cl_deferred_option, vec, i, opt)
+    {
+      switch (opt->opt_index)
+	{
+	case OPT_mint_register_:
+	  switch (opt->value)
+	    {
+	    case 4:
+	      fixed_regs[10] = call_used_regs [10] = 1;
+	      /* Fall through.  */
+	    case 3:
+	      fixed_regs[11] = call_used_regs [11] = 1;
+	      /* Fall through.  */
+	    case 2:
+	      fixed_regs[12] = call_used_regs [12] = 1;
+	      /* Fall through.  */
+	    case 1:
+	      fixed_regs[13] = call_used_regs [13] = 1;
+	      /* Fall through.  */
+	    case 0:
+	      break;
+	    default:
+	      /* Error message already given because rx_handle_option
+		 returned false.  */
+	      break;
+	    }
+	  break;
+
+	default:
+	  gcc_unreachable ();
+	}
+    }
+
   /* This target defaults to strict volatile bitfields.  */
   if (flag_strict_volatile_bitfields < 0)
     flag_strict_volatile_bitfields = 1;

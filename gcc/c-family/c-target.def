@@ -1,0 +1,79 @@
+/* Target hook definitions for C-family front ends.
+   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+   2011
+   Free Software Foundation, Inc.
+
+   This program is free software; you can redistribute it and/or modify it
+   under the terms of the GNU General Public License as published by the
+   Free Software Foundation; either version 3, or (at your option) any
+   later version.
+
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with this program; see the file COPYING3.  If not see
+   <http://www.gnu.org/licenses/>.  */
+
+/* See target-hooks-macros.h for details of macros that should be
+   provided by the including file, and how to use them here.  */
+#include "target-hooks-macros.h"
+
+#undef HOOK_TYPE
+#define HOOK_TYPE "C Target Hook"
+
+HOOK_VECTOR (TARGETCM_INITIALIZER, gcc_targetcm)
+
+#undef HOOK_PREFIX
+#define HOOK_PREFIX "TARGET_"
+
+/* Handle target switch CODE (an OPT_* value).  ARG is the argument
+   passed to the switch; it is NULL if no argument was.  VALUE is the
+   value of ARG if CODE specifies a UInteger option, otherwise it is
+   1 if the positive form of the switch was used and 0 if the negative
+   form was.  Return true if the switch was valid.  */
+DEFHOOK
+(handle_c_option,
+ "",
+ bool, (size_t code, const char *arg, int value),
+ default_handle_c_option)
+
+/* Targets may provide a string object type that can be used within
+   and between C, C++, and Objective-C dialects.  */
+
+DEFHOOK
+(objc_construct_string_object,
+ "Targets may provide a string object type that can be used within\
+ and between C, C++ and their respective Objective-C dialects.\
+ A string object might, for example, embed encoding and length information.\
+ These objects are considered opaque to the compiler and handled as references.\
+ An ideal implementation makes the composition of the string object\
+ match that of the Objective-C @code{NSString} (@code{NXString} for GNUStep),\
+ allowing efficient interworking between C-only and Objective-C code.\
+ If a target implements string objects then this hook should return a\
+ reference to such an object constructed from the normal `C' string\
+ representation provided in @var{string}.\
+ At present, the hook is used by Objective-C only, to obtain a\
+ common-format string object when the target provides one.",
+ tree, (tree string),
+ NULL)
+ 
+DEFHOOK
+(string_object_ref_type_p,
+ "If a target implements string objects then this hook should return\
+ @code{true} if @var{stringref} is a valid reference to such an object.",
+ bool, (const_tree stringref),
+ hook_bool_const_tree_false)
+
+DEFHOOK
+(check_string_object_format_arg,
+ "If a target implements string objects then this hook should should\
+  provide a facility to check the function arguments in @var{args_list}\
+  against the format specifiers in @var{format_arg} where the type of\
+  @var{format_arg} is one recognized as a valid string reference type.",
+ void, (tree format_arg, tree args_list),
+ NULL)
+ 
+HOOK_VECTOR_END (C90_EMPTY_HACK)

@@ -24,6 +24,10 @@ import (
 // environment variables.
 var DefaultTransport RoundTripper = &Transport{}
 
+// DefaultMaxIdleConnsPerHost is the default value of Transport's
+// MaxIdleConnsPerHost.
+const DefaultMaxIdleConnsPerHost = 2
+
 // Transport is an implementation of RoundTripper that supports http,
 // https, and http proxies (for either http or https with CONNECT).
 // Transport can also cache connections for future re-use.
@@ -31,11 +35,17 @@ type Transport struct {
 	lk       sync.Mutex
 	idleConn map[string][]*persistConn
 
-	// TODO: tunables on max cached connections (total, per-server), duration
+	// TODO: tunable on global max cached connections
+	// TODO: tunable on timeout on cached connections
 	// TODO: optional pipelining
 
 	IgnoreEnvironment bool // don't look at environment variables for proxy configuration
 	DisableKeepAlives bool
+
+	// MaxIdleConnsPerHost, if non-zero, controls the maximum idle
+	// (keep-alive) to keep to keep per-host.  If zero,
+	// DefaultMaxIdleConnsPerHost is used.
+	MaxIdleConnsPerHost int
 }
 
 // RoundTrip implements the RoundTripper interface.
@@ -147,7 +157,7 @@ func (cm *connectMethod) proxyAuth() string {
 func (t *Transport) putIdleConn(pconn *persistConn) {
 	t.lk.Lock()
 	defer t.lk.Unlock()
-	if t.DisableKeepAlives {
+	if t.DisableKeepAlives || t.MaxIdleConnsPerHost < 0 {
 		pconn.close()
 		return
 	}
@@ -155,6 +165,14 @@ func (t *Transport) putIdleConn(pconn *persistConn) {
 		return
 	}
 	key := pconn.cacheKey
+	max := t.MaxIdleConnsPerHost
+	if max == 0 {
+		max = DefaultMaxIdleConnsPerHost
+	}
+	if len(t.idleConn[key]) >= max {
+		pconn.close()
+		return
+	}
 	t.idleConn[key] = append(t.idleConn[key], pconn)
 }
 
@@ -406,24 +424,37 @@ func (pc *persistConn) readLoop() {
 
 		rc := <-pc.reqch
 		resp, err := pc.cc.Read(rc.req)
-		if err == nil && !rc.req.Close {
-			pc.t.putIdleConn(pc)
-		}
+
 		if err == ErrPersistEOF {
 			// Succeeded, but we can't send any more
 			// persistent connections on this again.  We
 			// hide this error to upstream callers.
 			alive = false
 			err = nil
-		} else if err != nil {
+		} else if err != nil || rc.req.Close {
 			alive = false
 		}
+
+		hasBody := resp != nil && resp.ContentLength != 0
+		var waitForBodyRead chan bool
+		if alive {
+			if hasBody {
+				waitForBodyRead = make(chan bool)
+				resp.Body.(*bodyEOFSignal).fn = func() {
+					pc.t.putIdleConn(pc)
+					waitForBodyRead <- true
+				}
+			} else {
+				pc.t.putIdleConn(pc)
+			}
+		}
+
 		rc.ch <- responseAndError{resp, err}
 
 		// Wait for the just-returned response body to be fully consumed
 		// before we race and peek on the underlying bufio reader.
-		if alive {
-			<-resp.Body.(*bodyEOFSignal).ch
+		if waitForBodyRead != nil {
+			<-waitForBodyRead
 		}
 	}
 }
@@ -494,34 +525,34 @@ func responseIsKeepAlive(res *Response) bool {
 // the response body with a bodyEOFSignal-wrapped version.
 func readResponseWithEOFSignal(r *bufio.Reader, requestMethod string) (resp *Response, err os.Error) {
 	resp, err = ReadResponse(r, requestMethod)
-	if err == nil {
-		resp.Body = &bodyEOFSignal{resp.Body, make(chan bool, 1), false}
+	if err == nil && resp.ContentLength != 0 {
+		resp.Body = &bodyEOFSignal{resp.Body, nil}
 	}
 	return
 }
 
-// bodyEOFSignal wraps a ReadCloser but sends on ch once once
-// the wrapped ReadCloser is fully consumed (including on Close)
+// bodyEOFSignal wraps a ReadCloser but runs fn (if non-nil) at most
+// once, right before the final Read() or Close() call returns, but after
+// EOF has been seen.
 type bodyEOFSignal struct {
 	body io.ReadCloser
-	ch   chan bool
-	done bool
+	fn   func()
 }
 
 func (es *bodyEOFSignal) Read(p []byte) (n int, err os.Error) {
 	n, err = es.body.Read(p)
-	if err == os.EOF && !es.done {
-		es.ch <- true
-		es.done = true
+	if err == os.EOF && es.fn != nil {
+		es.fn()
+		es.fn = nil
 	}
 	return
 }
 
 func (es *bodyEOFSignal) Close() (err os.Error) {
 	err = es.body.Close()
-	if err == nil && !es.done {
-		es.ch <- true
-		es.done = true
+	if err == nil && es.fn != nil {
+		es.fn()
+		es.fn = nil
 	}
 	return
 }

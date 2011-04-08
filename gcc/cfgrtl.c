@@ -1279,8 +1279,8 @@ force_nonfallthru_and_redirect (edge e, basic_block target)
    (and possibly create new basic block) to make edge non-fallthru.
    Return newly created BB or NULL if none.  */
 
-basic_block
-force_nonfallthru (edge e)
+static basic_block
+rtl_force_nonfallthru (edge e)
 {
   return force_nonfallthru_and_redirect (e, e->dest);
 }
@@ -1566,10 +1566,6 @@ commit_one_edge_insertion (edge e)
     }
   else
     gcc_assert (!JUMP_P (last));
-
-  /* Mark the basic block for find_many_sub_basic_blocks.  */
-  if (current_ir_type () != IR_RTL_CFGLAYOUT)
-    bb->aux = &bb->aux;
 }
 
 /* Update the CFG for all queued instructions.  */
@@ -1578,8 +1574,6 @@ void
 commit_edge_insertions (void)
 {
   basic_block bb;
-  sbitmap blocks;
-  bool changed = false;
 
 #ifdef ENABLE_CHECKING
   verify_flow_info ();
@@ -1592,35 +1586,8 @@ commit_edge_insertions (void)
 
       FOR_EACH_EDGE (e, ei, bb->succs)
 	if (e->insns.r)
-	  {
-	    changed = true;
-	    commit_one_edge_insertion (e);
-	  }
+	  commit_one_edge_insertion (e);
     }
-
-  if (!changed)
-    return;
-
-  /* In the old rtl CFG API, it was OK to insert control flow on an
-     edge, apparently?  In cfglayout mode, this will *not* work, and
-     the caller is responsible for making sure that control flow is
-     valid at all times.  */
-  if (current_ir_type () == IR_RTL_CFGLAYOUT)
-    return;
-
-  blocks = sbitmap_alloc (last_basic_block);
-  sbitmap_zero (blocks);
-  FOR_EACH_BB (bb)
-    if (bb->aux)
-      {
-	SET_BIT (blocks, bb->index);
-	/* Check for forgotten bb->aux values before commit_edge_insertions
-	   call.  */
-	gcc_assert (bb->aux == &bb->aux);
-	bb->aux = NULL;
-      }
-  find_many_sub_basic_blocks (blocks);
-  sbitmap_free (blocks);
 }
 
 
@@ -3233,6 +3200,7 @@ struct cfg_hooks rtl_cfg_hooks = {
   rtl_split_edge,
   rtl_make_forwarder_block,
   rtl_tidy_fallthru_edge,
+  rtl_force_nonfallthru,
   rtl_block_ends_with_call_p,
   rtl_block_ends_with_condjump_p,
   rtl_flow_call_edges_add,
@@ -3276,7 +3244,8 @@ struct cfg_hooks cfg_layout_rtl_cfg_hooks = {
   cfg_layout_duplicate_bb,
   cfg_layout_split_edge,
   rtl_make_forwarder_block,
-  NULL,
+  NULL, /* tidy_fallthru_edge */
+  rtl_force_nonfallthru,
   rtl_block_ends_with_call_p,
   rtl_block_ends_with_condjump_p,
   rtl_flow_call_edges_add,

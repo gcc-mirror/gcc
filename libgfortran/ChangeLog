@@ -1,3 +1,10 @@
+2011-04-06  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/18918
+	* caf/mpi.c (_gfortran_caf_init, _gfortran_caf_finalize):
+	Add global variable caf_mpi_initialized and use it for when
+	finalizing.
+
 2011-04-04  Tobias Burnus  <burnus@net-b.de>
 
 	* unix.c: Adapt stat DEFINEs since MinGW64 supports LFS.

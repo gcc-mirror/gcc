@@ -794,7 +794,6 @@ extern void flow_nodes_print (const char *, const_sbitmap, FILE *);
 extern void flow_edge_list_print (const char *, const edge *, int, FILE *);
 
 /* In cfgrtl.c  */
-extern basic_block force_nonfallthru (edge);
 extern rtx block_label (basic_block);
 extern bool purge_all_dead_edges (void);
 extern bool purge_dead_edges (basic_block);
@@ -804,9 +803,12 @@ extern bool fixup_abnormal_edges (void);
 extern void find_many_sub_basic_blocks (sbitmap);
 extern void rtl_make_eh_edge (sbitmap, basic_block, rtx);
 
+enum replace_direction { dir_none, dir_forward, dir_backward, dir_both };
+
 /* In cfgcleanup.c.  */
 extern bool cleanup_cfg (int);
-extern int flow_find_cross_jump (basic_block, basic_block, rtx *, rtx *);
+extern int flow_find_cross_jump (basic_block, basic_block, rtx *, rtx *,
+                                 enum replace_direction*);
 extern int flow_find_head_matching_sequence (basic_block, basic_block,
 					     rtx *, rtx *, int);
 

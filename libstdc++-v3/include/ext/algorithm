@@ -471,6 +471,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 #endif
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+  using std::is_sorted;
+#else
   // is_sorted, a predicated testing whether a range is sorted in
   // nondescending order.  This is an extension, not part of the C++
   // standard.
@@ -526,6 +529,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  return false;
       return true;
     }
+#endif  // __GXX_EXPERIMENTAL_CXX0X__
 
   /**
    *  @brief Find the median of three values.

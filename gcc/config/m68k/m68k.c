@@ -499,35 +499,6 @@ m68k_handle_option (struct gcc_options *opts, struct gcc_options *opts_set,
     case OPT_mtune_:
       return m68k_find_selection (&m68k_tune_entry, all_microarchs, arg);
 
-    case OPT_m5200:
-      return m68k_find_selection (&m68k_cpu_entry, all_devices, "5206");
-
-    case OPT_m5206e:
-      return m68k_find_selection (&m68k_cpu_entry, all_devices, "5206e");
-
-    case OPT_m528x:
-      return m68k_find_selection (&m68k_cpu_entry, all_devices, "528x");
-
-    case OPT_m5307:
-      return m68k_find_selection (&m68k_cpu_entry, all_devices, "5307");
-
-    case OPT_m5407:
-      return m68k_find_selection (&m68k_cpu_entry, all_devices, "5407");
-
-    case OPT_mcfv4e:
-      return m68k_find_selection (&m68k_cpu_entry, all_devices, "547x");
-
-    case OPT_m68000:
-    case OPT_mc68000:
-      return m68k_find_selection (&m68k_cpu_entry, all_devices, "68000");
-
-    case OPT_m68010:
-      return m68k_find_selection (&m68k_cpu_entry, all_devices, "68010");
-
-    case OPT_m68020:
-    case OPT_mc68020:
-      return m68k_find_selection (&m68k_cpu_entry, all_devices, "68020");
-
     case OPT_m68020_40:
       return (m68k_find_selection (&m68k_tune_entry, all_microarchs,
 				   "68020-40")
@@ -537,22 +508,6 @@ m68k_handle_option (struct gcc_options *opts, struct gcc_options *opts_set,
       return (m68k_find_selection (&m68k_tune_entry, all_microarchs,
 				   "68020-60")
 	      && m68k_find_selection (&m68k_cpu_entry, all_devices, "68020"));
-
-    case OPT_m68030:
-      return m68k_find_selection (&m68k_cpu_entry, all_devices, "68030");
-
-    case OPT_m68040:
-      return m68k_find_selection (&m68k_cpu_entry, all_devices, "68040");
-
-    case OPT_m68060:
-      return m68k_find_selection (&m68k_cpu_entry, all_devices, "68060");
-
-    case OPT_m68302:
-      return m68k_find_selection (&m68k_cpu_entry, all_devices, "68302");
-
-    case OPT_m68332:
-    case OPT_mcpu32:
-      return m68k_find_selection (&m68k_cpu_entry, all_devices, "68332");
 
     case OPT_mshared_library_id_:
       if (value > MAX_LIBRARY_ID)

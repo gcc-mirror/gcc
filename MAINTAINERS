@@ -103,7 +103,7 @@ v850 port		Nick Clifton		nickc@redhat.com
 vax port		Matt Thomas		matt@3am-software.com
 x86-64 port		Jan Hubicka		jh@suse.cz
 xstormy16 port		Nick Clifton		nickc@redhat.com
-xtensa port		Sterling Augustine	sterling@tensilica.com
+xtensa port		Sterling Augustine	augustine.sterling@gmail.com
 
 			OS Port Maintainers	(OS alphabetical order)
 
@@ -373,6 +373,7 @@ Pat Haugen					pthaugen@us.ibm.com
 Mark Heffernan					meheff@google.com
 George Helffrich				george@gcc.gnu.org
 Fergus Henderson				fjh@cs.mu.oz.au
+Stuart Henderson				shenders@gcc.gnu.org
 Matthew Hiller					hiller@redhat.com
 Manfred Hollstein				mh@suse.com
 Falk Hueffner					falk@debian.org

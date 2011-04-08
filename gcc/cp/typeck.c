@@ -5320,7 +5320,7 @@ unary_complex_lvalue (enum tree_code code, tree arg)
 	if (TREE_CODE (arg) == SAVE_EXPR)
 	  targ = arg;
 	else
-	  targ = build_cplus_new (TREE_TYPE (arg), arg);
+	  targ = build_cplus_new (TREE_TYPE (arg), arg, tf_warning_or_error);
 	return build1 (ADDR_EXPR, build_pointer_type (TREE_TYPE (arg)), targ);
       }
 
@@ -5472,6 +5472,8 @@ build_x_compound_expr_from_list (tree list, expr_list_kind exp,
 	  default:
 	    gcc_unreachable ();
 	  }
+      else
+	return error_mark_node;
 
       for (list = TREE_CHAIN (list); list; list = TREE_CHAIN (list))
 	expr = build_x_compound_expr (expr, TREE_VALUE (list), 
@@ -5579,42 +5581,47 @@ cp_build_compound_expr (tree lhs, tree rhs, tsubst_flags_t complain)
 }
 
 /* Issue a diagnostic message if casting from SRC_TYPE to DEST_TYPE
-   casts away constness.  CAST gives the type of cast.  
+   casts away constness.  CAST gives the type of cast.  Returns true
+   if the cast is ill-formed, false if it is well-formed.
 
    ??? This function warns for casting away any qualifier not just
    const.  We would like to specify exactly what qualifiers are casted
    away.
 */
 
-static void
+static bool
 check_for_casting_away_constness (tree src_type, tree dest_type,
-				  enum tree_code cast)
+				  enum tree_code cast, tsubst_flags_t complain)
 {
   /* C-style casts are allowed to cast away constness.  With
      WARN_CAST_QUAL, we still want to issue a warning.  */
   if (cast == CAST_EXPR && !warn_cast_qual)
-      return;
+    return false;
   
   if (!casts_away_constness (src_type, dest_type))
-    return;
+    return false;
 
   switch (cast)
     {
     case CAST_EXPR:
-      warning (OPT_Wcast_qual, 
-	       "cast from type %qT to type %qT casts away qualifiers",
-	       src_type, dest_type);
-      return;
+      if (complain & tf_warning)
+	warning (OPT_Wcast_qual,
+		 "cast from type %qT to type %qT casts away qualifiers",
+		 src_type, dest_type);
+      return false;
       
     case STATIC_CAST_EXPR:
-      error ("static_cast from type %qT to type %qT casts away qualifiers",
-	     src_type, dest_type);
-      return;
+      if (complain & tf_error)
+	error ("static_cast from type %qT to type %qT casts away qualifiers",
+	       src_type, dest_type);
+      return true;
       
     case REINTERPRET_CAST_EXPR:
-      error ("reinterpret_cast from type %qT to type %qT casts away qualifiers",
-	     src_type, dest_type);
-      return;
+      if (complain & tf_error)
+	error ("reinterpret_cast from type %qT to type %qT casts away qualifiers",
+	       src_type, dest_type);
+      return true;
+
     default:
       gcc_unreachable();
     }
@@ -5832,8 +5839,10 @@ build_static_cast_1 (tree type, tree expr, bool c_cast_p,
     {
       tree base;
 
-      if (!c_cast_p)
-	check_for_casting_away_constness (intype, type, STATIC_CAST_EXPR);
+      if (!c_cast_p
+	  && check_for_casting_away_constness (intype, type, STATIC_CAST_EXPR,
+					       complain))
+	return error_mark_node;
       base = lookup_base (TREE_TYPE (type), TREE_TYPE (intype),
 			  c_cast_p ? ba_unique : ba_check,
 			  NULL);
@@ -5868,10 +5877,13 @@ build_static_cast_1 (tree type, tree expr, bool c_cast_p,
 	}
       if (can_convert (t1, t2) || can_convert (t2, t1))
 	{
-	  if (!c_cast_p)
-	    check_for_casting_away_constness (intype, type, STATIC_CAST_EXPR);
+	  if (!c_cast_p
+	      && check_for_casting_away_constness (intype, type,
+						   STATIC_CAST_EXPR,
+						   complain))
+	    return error_mark_node;
 	  return convert_ptrmem (type, expr, /*allow_inverse_p=*/1,
-				 c_cast_p, tf_warning_or_error);
+				 c_cast_p, complain);
 	}
     }
 
@@ -5885,8 +5897,10 @@ build_static_cast_1 (tree type, tree expr, bool c_cast_p,
       && VOID_TYPE_P (TREE_TYPE (intype))
       && TYPE_PTROB_P (type))
     {
-      if (!c_cast_p)
-	check_for_casting_away_constness (intype, type, STATIC_CAST_EXPR);
+      if (!c_cast_p
+	  && check_for_casting_away_constness (intype, type, STATIC_CAST_EXPR,
+					       complain))
+	return error_mark_node;
       return build_nop (type, expr);
     }
 
@@ -6090,8 +6104,11 @@ build_reinterpret_cast_1 (tree type, tree expr, bool c_cast_p,
     {
       tree sexpr = expr;
 
-      if (!c_cast_p)
-	check_for_casting_away_constness (intype, type, REINTERPRET_CAST_EXPR);
+      if (!c_cast_p
+	  && check_for_casting_away_constness (intype, type,
+					       REINTERPRET_CAST_EXPR,
+					       complain))
+	return error_mark_node;
       /* Warn about possible alignment problems.  */
       if (STRICT_ALIGNMENT && warn_cast_align
           && (complain & tf_warning)
@@ -6168,7 +6185,7 @@ build_reinterpret_cast (tree type, tree expr, tsubst_flags_t complain)
    whether or not the conversion succeeded.  */
 
 static tree
-build_const_cast_1 (tree dst_type, tree expr, bool complain,
+build_const_cast_1 (tree dst_type, tree expr, tsubst_flags_t complain,
 		    bool *valid_p)
 {
   tree src_type;
@@ -6187,7 +6204,7 @@ build_const_cast_1 (tree dst_type, tree expr, bool complain,
 
   if (!POINTER_TYPE_P (dst_type) && !TYPE_PTRMEM_P (dst_type))
     {
-      if (complain)
+      if (complain & tf_error)
 	error ("invalid use of const_cast with type %qT, "
 	       "which is not a pointer, "
 	       "reference, nor a pointer-to-data-member type", dst_type);
@@ -6196,7 +6213,7 @@ build_const_cast_1 (tree dst_type, tree expr, bool complain,
 
   if (TREE_CODE (TREE_TYPE (dst_type)) == FUNCTION_TYPE)
     {
-      if (complain)
+      if (complain & tf_error)
 	error ("invalid use of const_cast with type %qT, which is a pointer "
 	       "or reference to a function type", dst_type);
       return error_mark_node;
@@ -6221,7 +6238,7 @@ build_const_cast_1 (tree dst_type, tree expr, bool complain,
       reference_type = dst_type;
       if (! real_lvalue_p (expr))
 	{
-	  if (complain)
+	  if (complain & tf_error)
 	    error ("invalid const_cast of an rvalue of type %qT to type %qT",
 		   src_type, dst_type);
 	  return error_mark_node;
@@ -6248,12 +6265,12 @@ build_const_cast_1 (tree dst_type, tree expr, bool complain,
 	  *valid_p = true;
 	  /* This cast is actually a C-style cast.  Issue a warning if
 	     the user is making a potentially unsafe cast.  */
-	  check_for_casting_away_constness (src_type, dst_type, CAST_EXPR);
+	  check_for_casting_away_constness (src_type, dst_type, CAST_EXPR,
+					    complain);
 	}
       if (reference_type)
 	{
-	  expr = cp_build_addr_expr (expr,
-				     complain ? tf_warning_or_error : tf_none);
+	  expr = cp_build_addr_expr (expr, complain);
 	  expr = build_nop (reference_type, expr);
 	  return convert_from_reference (expr);
 	}
@@ -6270,7 +6287,7 @@ build_const_cast_1 (tree dst_type, tree expr, bool complain,
 	}
     }
 
-  if (complain)
+  if (complain & tf_error)
     error ("invalid const_cast from type %qT to type %qT",
 	   src_type, dst_type);
   return error_mark_node;
@@ -6293,7 +6310,7 @@ build_const_cast (tree type, tree expr, tsubst_flags_t complain)
       return convert_from_reference (t);
     }
 
-  return build_const_cast_1 (type, expr, complain & tf_error,
+  return build_const_cast_1 (type, expr, complain,
 			     /*valid_p=*/NULL);
 }
 
@@ -6379,7 +6396,7 @@ cp_build_c_cast (tree type, tree expr, tsubst_flags_t complain)
 		"cast to pointer from integer of different size");
 
   /* A C-style cast can be a const_cast.  */
-  result = build_const_cast_1 (type, value, /*complain=*/false,
+  result = build_const_cast_1 (type, value, complain & tf_warning,
 			       &valid_p);
   if (valid_p)
     return result;
@@ -6742,7 +6759,7 @@ cp_build_modify_expr (tree lhs, enum tree_code modifycode, tree rhs,
     {
       if (TREE_CODE (newrhs) == CALL_EXPR
 	  && TYPE_NEEDS_CONSTRUCTING (lhstype))
-	newrhs = build_cplus_new (lhstype, newrhs);
+	newrhs = build_cplus_new (lhstype, newrhs, complain);
 
       /* Can't initialize directly from a TARGET_EXPR, since that would
 	 cause the lhs to be constructed twice, and possibly result in

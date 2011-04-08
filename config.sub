@@ -286,6 +286,7 @@ case $basic_machine in
 	| nds32 | nds32le | nds32be \
 	| nios | nios2 \
 	| ns16k | ns32k \
+	| open8 \
 	| or32 \
 	| pdp10 | pdp11 | pj | pjl \
 	| powerpc | powerpc64 | powerpc64le | powerpcle \
@@ -394,6 +395,7 @@ case $basic_machine in
 	| nds32-* | nds32le-* | nds32be-* \
 	| nios-* | nios2-* \
 	| none-* | np1-* | ns16k-* | ns32k-* \
+	| open8-* \
 	| orion-* \
 	| pdp10-* | pdp11-* | pj-* | pjl-* | pn-* | power-* \
 	| powerpc-* | powerpc64-* | powerpc64le-* | powerpcle-* \
