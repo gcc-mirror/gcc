@@ -41,26 +41,26 @@ friend jstring (::_Jv_AllocString) (jsize);
 
 class java/lang/reflect/Constructor
 prepend jmethodID _Jv_FromReflectedConstructor (java::lang::reflect::Constructor *);
-prepend jobject _Jv_JNI_ToReflectedMethod (_Jv_JNIEnv *, jclass, jmethodID, jboolean);
+prepend jobject JNICALL _Jv_JNI_ToReflectedMethod (_Jv_JNIEnv *, jclass, jmethodID, jboolean);
 friend jmethodID (::_Jv_FromReflectedConstructor) (java::lang::reflect::Constructor *);
-friend jobject (::_Jv_JNI_ToReflectedMethod) (_Jv_JNIEnv *, jclass, jmethodID, jboolean);
+friend jobject JNICALL (::_Jv_JNI_ToReflectedMethod) (_Jv_JNIEnv *, jclass, jmethodID, jboolean);
 friend class java::lang::Class;
 
 class java/lang/reflect/Field
 prepend jfieldID _Jv_FromReflectedField (java::lang::reflect::Field *);
-prepend jobject _Jv_JNI_ToReflectedField (_Jv_JNIEnv*, jclass, jfieldID, jboolean);
+prepend jobject JNICALL _Jv_JNI_ToReflectedField (_Jv_JNIEnv*, jclass, jfieldID, jboolean);
 prepend jobject _Jv_getFieldInternal (java::lang::reflect::Field *f, jclass c, jobject o);
 friend jfieldID (::_Jv_FromReflectedField) (java::lang::reflect::Field *);
-friend jobject (::_Jv_JNI_ToReflectedField) (_Jv_JNIEnv*, jclass, jfieldID, jboolean);
+friend jobject JNICALL (::_Jv_JNI_ToReflectedField) (_Jv_JNIEnv*, jclass, jfieldID, jboolean);
 friend class java::lang::Class;
 friend jobject (::_Jv_getFieldInternal) (java::lang::reflect::Field *f, jclass c, jobject o);
 
 class java/lang/reflect/Method
 prepend jmethodID _Jv_FromReflectedMethod (java::lang::reflect::Method *);
-prepend jobject _Jv_JNI_ToReflectedMethod (_Jv_JNIEnv *, jclass, jmethodID, jboolean);
+prepend jobject JNICALL _Jv_JNI_ToReflectedMethod (_Jv_JNIEnv *, jclass, jmethodID, jboolean);
 prepend ::java::lang::reflect::Method *_Jv_GetReflectedMethod (jclass, _Jv_Utf8Const*, _Jv_Utf8Const*);
 friend jmethodID (::_Jv_FromReflectedMethod) (java::lang::reflect::Method *);
-friend jobject (::_Jv_JNI_ToReflectedMethod) (_Jv_JNIEnv *, jclass, jmethodID, jboolean);
+friend jobject JNICALL (::_Jv_JNI_ToReflectedMethod) (_Jv_JNIEnv *, jclass, jmethodID, jboolean);
 friend class java::lang::Class;
 friend class java::io::ObjectInputStream;
 friend java::lang::reflect::Method* ::_Jv_GetReflectedMethod (jclass, _Jv_Utf8Const*, _Jv_Utf8Const*);
