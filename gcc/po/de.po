@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: gcc 4.6.0\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2011-03-24 16:45+0000\n"
-"PO-Revision-Date: 2011-04-06 19:50+0100\n"
+"PO-Revision-Date: 2011-04-08 19:50+0100\n"
 "Last-Translator: Roland Stigge <stigge@antcom.de>\n"
 "Language-Team: German <translation-team-de@lists.sourceforge.net>\n"
 "Language: de\n"
@@ -15687,9 +15687,9 @@ msgid "coverage mismatch for function %qE while reading counter %qs"
 msgstr "Überdeckung passt nicht für Funktion %qE beim Lesen des Zählers %qs"
 
 #: coverage.c:378
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "coverage mismatch ignored"
-msgstr "unpassende Überdeckung ignoriert wegen -Wcoverage-mismatch"
+msgstr "unpassende Überdeckung ignoriert"
 
 #: coverage.c:380
 #, gcc-internal-format
@@ -15697,9 +15697,9 @@ msgid "execution counts estimated"
 msgstr "Ausführungszähler voraussichtlich"
 
 #: coverage.c:381
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "execution counts assumed to be zero"
-msgstr "Datei %s nicht gefunden, Ausführungszähler als null angenommen"
+msgstr "Ausführungszähler als null angenommen"
 
 #: coverage.c:384
 #, gcc-internal-format
@@ -15717,9 +15717,9 @@ msgid "error writing %qs"
 msgstr "Fehler beim Schreiben von %qs"
 
 #: cppspec.c:92
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qs is not a valid option to the preprocessor"
-msgstr "»%s« ist keine gültige Präprozessoroption"
+msgstr "%qs ist keine gültige Präprozessoroption"
 
 #: cppspec.c:111
 #, gcc-internal-format
@@ -15727,9 +15727,9 @@ msgid "too many input files"
 msgstr "zu viele Eingabedateien"
 
 #: dbgcnt.c:135
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "cannot find a valid counter:value pair:"
-msgstr "Es kann kein gültiger Zähler:Wert-Paar gefunden werden:"
+msgstr "Es kann kein gültiges Zähler:Wert-Paar gefunden werden:"
 
 #: dbgcnt.c:136
 #, gcc-internal-format, gfc-internal-format
@@ -15817,9 +15817,9 @@ msgid "region_array is corrupted for region %i"
 msgstr "region_array ist für Region %i beschädigt"
 
 #: except.c:3342 except.c:3373
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "lp_array is corrupted for lp %i"
-msgstr "region_array ist für Region %i beschädigt"
+msgstr "lp_array ist für lp %i beschädigt"
 
 #: except.c:3359
 #, gcc-internal-format, gfc-internal-format
@@ -15832,9 +15832,9 @@ msgid "negative nesting depth of region %i"
 msgstr "negative Verschachtelungstiefe der Region %i"
 
 #: except.c:3378
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "region of lp %i is wrong"
-msgstr "äußerer Block der Region %i ist falsch"
+msgstr "Region von lp %i ist falsch"
 
 #: except.c:3405
 #, gcc-internal-format, gfc-internal-format
@@ -15842,14 +15842,14 @@ msgid "tree list ends on depth %i"
 msgstr "Baumliste endet bei Tiefe %i"
 
 #: except.c:3410
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "region_array does not match region_tree"
-msgstr "Feld passt nicht zum Regionsbaum"
+msgstr "region_array passt nicht zum region_tree"
 
 #: except.c:3415
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "lp_array does not match region_tree"
-msgstr "Feld passt nicht zum Regionsbaum"
+msgstr "lp_array passt nicht zum region_tree"
 
 #: except.c:3422
 #, gcc-internal-format
@@ -15864,27 +15864,27 @@ msgstr "Kellergrenzen nicht für dieses Ziel unterstützt"
 #: expmed.c:1778
 #, gcc-internal-format
 msgid "multiple accesses to volatile structure member because of packed attribute"
-msgstr ""
+msgstr "mehrfacher Zugriff auf »volatile« Strukturelement wegen gepackter Attribute"
 
 #: expmed.c:1782
 #, gcc-internal-format
 msgid "multiple accesses to volatile structure bitfield because of packed attribute"
-msgstr ""
+msgstr "mehrfacher Zugriff auf »volatile« Strukturbitfelder wegen gepackter Attribute"
 
 #: expmed.c:1792
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "mis-aligned access used for structure member"
-msgstr "Speicherklasse für Strukturfeld %qs angegeben"
+msgstr "falsch ausgerichteter Zugriff für Strukturelement verwendet"
 
 #: expmed.c:1795
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "mis-aligned access used for structure bitfield"
-msgstr "Speicherklasse für Strukturfeld %qs angegeben"
+msgstr "falsch ausgerichteter Zugriff für Strukturbitfeld verwendet"
 
 #: expmed.c:1801
 #, gcc-internal-format
 msgid "when a volatile object spans multiple type-sized locations, the compiler must choose between using a single mis-aligned access to preserve the volatility, or using multiple aligned accesses to avoid runtime faults; this code may fail at runtime if the hardware does not allow this access"
-msgstr ""
+msgstr "wenn ein »volatile«-Objekt über mehrere Bereiche mit Typgröße geht, muss der Compiler wählen zwischen der Verwendung einzelner falsch ausgerichteter Zugriffe um die Volatilität zu erhalten und der Verwendung mehrerer ausgerichteter Zugriffe um Laufzeitfehler zu verhindern. Dies kann zur Laufzeit fehlschlagen, wenn die Hardware diesen Zugriff nicht erlaubt"
 
 #: expr.c:9305
 #, gcc-internal-format
@@ -15902,19 +15902,19 @@ msgid "invalid argument %qs to -fdebug-prefix-map"
 msgstr "ungültiges Argument %qs für -fdebug-prefix-map"
 
 #: final.c:1583
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "the frame size of %wd bytes is larger than %wd bytes"
-msgstr "Größe von %q+D überschreitet %wd Bytes"
+msgstr "die Rahmengröße von %wd Bytes überschreitet %wd Bytes"
 
 #: final.c:4376 toplev.c:1407 tree-optimize.c:171
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "could not open final insn dump file %qs: %m"
-msgstr "Abzugsdatei %qs konnte nicht geöffnet werden: %s"
+msgstr "endgültige Abzugsdatei %qs der Anweisungen konnte nicht geöffnet werden: %m"
 
 #: final.c:4440 tree-optimize.c:187
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "could not close final insn dump file %qs: %m"
-msgstr "Abzugsdatei %qs konnte nicht geöffnet werden: %s"
+msgstr "endgültige Abzugsdatei %qs der Anweisungen konnte nicht geschlossen werden: %m"
 
 #: fixed-value.c:103
 #, gcc-internal-format
@@ -15957,9 +15957,9 @@ msgid "assuming signed overflow does not occur when reducing constant in compari
 msgstr "Annahme, dass vorzeichenbehafteter Überlauf nicht auftritt, wenn Konstante in Vergleich verringert wird"
 
 #: fold-const.c:8576
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "assuming signed overflow does not occur when changing X +- C1 cmp C2 to X cmp C1 +- C2"
-msgstr "Annahme, dass vorzeichenbehafteter Überlauf nicht auftritt, wenn Division negiert wird"
+msgstr "Annahme, dass vorzeichenbehafteter Überlauf nicht auftritt, wenn »X +- C1 cmp C2« in »X cmp C1 +- C2« geändert wird"
 
 #: fold-const.c:8815
 #, gcc-internal-format
@@ -15972,9 +15972,9 @@ msgid "fold check: original tree changed by fold"
 msgstr "Faltungstest: ursprünglicher Baum durch Faltung geändert"
 
 #: function.c:253
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "total size of local objects too large"
-msgstr "%JGesamtgröße der lokalen Objekte zu hoch"
+msgstr "Gesamtgröße der lokalen Objekte zu hoch"
 
 #: function.c:1749 gimplify.c:5061
 #, gcc-internal-format
@@ -16017,9 +16017,9 @@ msgid "specs %s spec was not found to be renamed"
 msgstr "keine %s-Spezifikation zum Umbenennen gefunden"
 
 #: gcc.c:1791
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%s: attempt to rename spec %qs to already defined spec %qs"
-msgstr "%s: Versuch, Spezifikation »%s« in bereits definierte Spezifikation »%s« umzubenennen"
+msgstr "%s: Versuch, Spezifikation %qs in bereits definierte Spezifikation %qs umzubenennen"
 
 #: gcc.c:1812
 #, gcc-internal-format, gfc-internal-format
@@ -16037,9 +16037,9 @@ msgid "spec file has no spec for linking"
 msgstr "Spezifikationsdatei hat keine Spezifikation zum Binden"
 
 #: gcc.c:2417
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "system path %qs is not absolute"
-msgstr "System-Pfad »%s« ist nicht absolut"
+msgstr "System-Pfad %qs ist nicht absolut"
 
 #: gcc.c:2494
 #, gcc-internal-format
@@ -16047,59 +16047,59 @@ msgid "-pipe not supported"
 msgstr "-pipe wird nicht unterstützt"
 
 #: gcc.c:2617
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "pex_init failed: %m"
-msgstr "pex_init gescheitert"
+msgstr "pex_init gescheitert: %m"
 
 #: gcc.c:2656
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "failed to get exit status: %m"
-msgstr "Ende-Status konnte nicht ermittelt werden"
+msgstr "Ende-Status konnte nicht ermittelt werden: %m"
 
 #: gcc.c:2662
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "failed to get process times: %m"
-msgstr "Verarbeitungszeiten konnten nicht ermittelt werden"
+msgstr "Verarbeitungszeiten konnten nicht ermittelt werden: %m"
 
 #: gcc.c:2688
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "%s (program %s)"
-msgstr "Programme: %s\n"
+msgstr "%s (Programm %s)"
 
 #: gcc.c:3097 opts-common.c:958 opts-common.c:1030
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "unrecognized command line option %qs"
-msgstr "nicht erkannte Kommandozeilenoption »%s«"
+msgstr "nicht erkannte Kommandozeilenoption %qs"
 
 #: gcc.c:3358
 #, gcc-internal-format
 msgid "%qs is an unknown -save-temps option"
-msgstr ""
+msgstr "%qs ist eine unbekannte Option für -save-temps"
 
 #: gcc.c:3816
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "-pipe ignored because -save-temps specified"
-msgstr "Warnung: -pipe ignoriert, da -save-temps angegeben"
+msgstr "-pipe ignoriert, da -save-temps angegeben"
 
 #: gcc.c:3902
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%<-x %s%> after last input file has no effect"
-msgstr "Warnung: »-x %s« hinter letzter Eingabedatei hat keine Wirkung"
+msgstr "%<-x %s%> hinter letzter Eingabedatei hat keine Wirkung"
 
 #: gcc.c:4069
 #, gcc-internal-format
 msgid "unable to locate default linker script %qs in the library search paths"
-msgstr ""
+msgstr "Standard-Linkerscript %qs kann nicht in den Bibliotheks-Suchpfaden gefunden werden"
 
 #: gcc.c:4272
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "switch %qs does not start with %<-%>"
-msgstr "Schalter »%s« beginnt nicht mit »-«"
+msgstr "Schalter %qs beginnt nicht mit %<-%>"
 
 #: gcc.c:4275
 #, gcc-internal-format
 msgid "spec-generated switch is just %<-%>"
-msgstr ""
+msgstr "aus Spezifikation erzeugtes switch ist nur %<-%>"
 
 #: gcc.c:4366
 #, gcc-internal-format, gfc-internal-format
@@ -16117,52 +16117,52 @@ msgid "could not close temporary response file %s"
 msgstr "temporäre Antwortdatei %s konnte nicht geschlossen werden"
 
 #: gcc.c:4501
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "spec %qs invalid"
-msgstr "Spezifikation »%s« ist ungültig"
+msgstr "Spezifikation %qs ist ungültig"
 
 #: gcc.c:4650
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "spec %qs has invalid %<%%0%c%>"
-msgstr "Spezifikation »%s« hat ungültiges »%%0%c«"
+msgstr "Spezifikation %qs hat ungültiges %<%%0%c%>"
 
 #: gcc.c:4961
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "spec %qs has invalid %<%%W%c%>"
-msgstr "Spezifikation »%s« hat ungültiges »%%W%c«"
+msgstr "Spezifikation %qs hat ungültiges %<%%W%c%>"
 
 #: gcc.c:4983
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "spec %qs has invalid %<%%x%c%>"
-msgstr "Spezifikation »%s« hat ungültiges »%%x%c«"
+msgstr "Spezifikation %qs hat ungültiges %<%%x%c%>"
 
 #. Catch the case where a spec string contains something like
 #. '%{foo:%*}'.  i.e. there is no * in the pattern on the left
 #. hand side of the :.
 #: gcc.c:5171
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "spec failure: %<%%*%> has not been initialized by pattern match"
-msgstr "Spezifikationsfehler: »%%*« wurde nicht durch Mustererkennung initialisiert"
+msgstr "Spezifikationsfehler: %<%%*%> wurde nicht durch Mustererkennung initialisiert"
 
 #: gcc.c:5180
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "use of obsolete %%[ operator in specs"
-msgstr "Warnung: Verwendung des veralteten Operators %%[ in Spezifikation"
+msgstr "Verwendung des veralteten Operators %%[ in Spezifikationen"
 
 #: gcc.c:5261
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "spec failure: unrecognized spec option %qc"
-msgstr "Spezifikationsfehler: nicht erkannte Option »%c«"
+msgstr "Spezifikationsfehler: nicht erkannte Spezifikationsoption »%c«"
 
 #: gcc.c:5321
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "unknown spec function %qs"
-msgstr "unbekannte Spezifikationsfunktion »%s«"
+msgstr "unbekannte Spezifikationsfunktion %qs"
 
 #: gcc.c:5339
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "error in args to spec function %qs"
-msgstr "Fehler in Argumenten für Spezifikationsfunktion »%s«"
+msgstr "Fehler in Argumenten für Spezifikationsfunktion %qs"
 
 #: gcc.c:5387
 #, gcc-internal-format
@@ -16181,39 +16181,39 @@ msgid "malformed spec function arguments"
 msgstr "schlechte Argumente für Spezifikationsfunktion"
 
 #: gcc.c:5655
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "braced spec %qs is invalid at %qc"
-msgstr "geschweift geklammerte Spezifikation »%s« ist bei »%c« ungültig"
+msgstr "geschweift geklammerte Spezifikation %qs ist bei %qc ungültig"
 
 #: gcc.c:5743
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "braced spec body %qs is invalid"
-msgstr "geschweift geklammerter Körper »%s« ist ungültig"
+msgstr "geschweift geklammerter Spezifikationskörper %qs ist ungültig"
 
 #: gcc.c:5992
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "%s: could not determine length of compare-debug file %s"
-msgstr "in Antwortdatei %s konnte nicht geschrieben werden"
+msgstr "%s: Größe der Vergleichs-Prüfdatei %s konnte nicht ermittelt werden"
 
 #: gcc.c:6003
 #, gcc-internal-format, gfc-internal-format
 msgid "%s: -fcompare-debug failure (length)"
-msgstr ""
+msgstr "%s: Fehlschlag von -fcompare-debug (Länge)"
 
 #: gcc.c:6013 gcc.c:6054
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "%s: could not open compare-debug file %s"
-msgstr "%s: Ausgabedatei »%s« konnte nicht geöffnet werden\n"
+msgstr "%s: Vergleichs-Prüfdatei %s konnte nicht geöffnet werden"
 
 #: gcc.c:6033 gcc.c:6070
 #, gcc-internal-format, gfc-internal-format
 msgid "%s: -fcompare-debug failure"
-msgstr ""
+msgstr "%s: Fehlschlag von -fcompare-debug"
 
 #: gcc.c:6144
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "atexit failed"
-msgstr "pex_init gescheitert"
+msgstr "atexit gescheitert"
 
 #: gcc.c:6323
 #, gcc-internal-format
@@ -16226,9 +16226,9 @@ msgid "spec failure: more than one arg to SYSROOT_HEADERS_SUFFIX_SPEC"
 msgstr "Spezifikationsfehler: mehr als ein Argument für SYSROOT_HEADERS_SUFFIX_SPEC"
 
 #: gcc.c:6456
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "unrecognized option %<-%s%>"
-msgstr "nicht erkannte Option »-%s«"
+msgstr "nicht erkannte Option %<-%s%>"
 
 #. The error status indicates that only one set of fixed
 #. headers should be built.
@@ -16243,9 +16243,9 @@ msgid "no input files"
 msgstr "keine Eingabedateien"
 
 #: gcc.c:6665
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "cannot specify -o with -c, -S or -E with multiple files"
-msgstr "-o kann nicht mit -c oder -S mit mehreren Dateien angegeben werden"
+msgstr "-o kann nicht mit -c, -S oder -E mit mehreren Dateien angegeben werden"
 
 #: gcc.c:6695
 #, gcc-internal-format, gfc-internal-format
@@ -16255,22 +16255,22 @@ msgstr "%s: %s-Compiler ist auf diesem System nicht installiert"
 #: gcc.c:6719
 #, gcc-internal-format
 msgid "recompiling with -fcompare-debug"
-msgstr ""
+msgstr "Neuübersetzung mit -fcompare-debug"
 
 #: gcc.c:6735
 #, gcc-internal-format
 msgid "during -fcompare-debug recompilation"
-msgstr ""
+msgstr "während Neuübersetzung mit -fcompare-debug"
 
 #: gcc.c:6744
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "comparing final insns dumps"
-msgstr "Vergleich ist immer %d"
+msgstr "Vergleich der endgültigen Answeisungslisten"
 
 #: gcc.c:6844
 #, gcc-internal-format
 msgid "-fuse-linker-plugin, but "
-msgstr ""
+msgstr "-fuse-linker-plugin, aber "
 
 #: gcc.c:6873
 #, gcc-internal-format, gfc-internal-format
@@ -16283,39 +16283,39 @@ msgid "language %s not recognized"
 msgstr "Sprache %s nicht erkannt"
 
 #: gcc.c:6985
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%s: %m"
-msgstr "%s: %s"
+msgstr "%s: %m"
 
 #: gcc.c:7140
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "multilib spec %qs is invalid"
-msgstr "Multilib-Spezifikation »%s« ist ungültig"
+msgstr "Multilib-Spezifikation %qs ist ungültig"
 
 #: gcc.c:7332
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "multilib exclusions %qs is invalid"
-msgstr "Multilib-Ausschlüsse »%s« sind ungültig"
+msgstr "Multilib-Ausschlüsse %qs sind ungültig"
 
 #: gcc.c:7390 gcc.c:7531
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "multilib select %qs is invalid"
-msgstr "Multilib-select »%s« ist ungültig"
+msgstr "Multilib-select %qs ist ungültig"
 
 #: gcc.c:7569
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "multilib exclusion %qs is invalid"
-msgstr "Multilib-Ausschluss »%s« ist ungültig"
+msgstr "Multilib-Ausschluss %qs ist ungültig"
 
 #: gcc.c:7775
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "environment variable %qs not defined"
-msgstr "Umgebungsvariable »%s« nicht definiert"
+msgstr "Umgebungsvariable %qs nicht definiert"
 
 #: gcc.c:7887 gcc.c:7892
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid version number %qs"
-msgstr "ungültige Versionsnummer »%s«"
+msgstr "ungültige Versionsnummer %qs"
 
 #: gcc.c:7935
 #, gcc-internal-format, gfc-internal-format
@@ -16328,34 +16328,34 @@ msgid "too many arguments to %%:version-compare"
 msgstr "zu viele Argumente für %%:version-compare"
 
 #: gcc.c:7982
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "unknown operator %qs in %%:version-compare"
-msgstr "unbekannter Operator »%s« in %%:version-compare"
+msgstr "unbekannter Operator %qs in %%:version-compare"
 
 #: gcc.c:8095
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "too many arguments to %%:compare-debug-dump-opt"
 msgstr "zu viele Argumente für %%:version-compare"
 
 #: gcc.c:8163
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "too many arguments to %%:compare-debug-self-opt"
-msgstr "zu viele Argumente für %%:version-compare"
+msgstr "zu viele Argumente für %%:compare-debug-self-opt"
 
 #: gcc.c:8198
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "too few arguments to %%:compare-debug-auxbase-opt"
-msgstr "zu wenige Argumente für %%:version-compare"
+msgstr "zu wenige Argumente für %%:compare-debug-auxbase-opt"
 
 #: gcc.c:8201
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "too many arguments to %%:compare-debug-auxbase-opt"
-msgstr "zu viele Argumente für %%:version-compare"
+msgstr "zu viele Argumente für %%:compare-debug-auxbase-opt"
 
 #: gcc.c:8208
 #, gcc-internal-format, gfc-internal-format
 msgid "argument to %%:compare-debug-auxbase-opt does not end in .gk"
-msgstr ""
+msgstr "Argument für %%:compare-debug-auxbase-opt endet nicht mit .pk"
 
 #: gcse.c:5176
 #, gcc-internal-format, gfc-internal-format
@@ -16370,23 +16370,23 @@ msgstr "%s: %d Basis-Blöcke und %d Register"
 #: ggc-common.c:467 ggc-common.c:475 ggc-common.c:549 ggc-common.c:568
 #: ggc-page.c:2170 ggc-page.c:2201 ggc-page.c:2208 ggc-zone.c:2420
 #: ggc-zone.c:2431 ggc-zone.c:2435
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "can%'t write PCH file: %m"
 msgstr "PCH-Datei kann nicht geschrieben werden: %m"
 
 #: ggc-common.c:561 config/i386/host-cygwin.c:55
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "can%'t get position in PCH file: %m"
 msgstr "Position in PCH-Datei kann nicht ermittelt werden: %m"
 
 #: ggc-common.c:571
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "can%'t write padding to PCH file: %m"
 msgstr "Auffüllung für PCH-Datei kann nicht geschrieben werden: %m"
 
 #: ggc-common.c:626 ggc-common.c:634 ggc-common.c:641 ggc-common.c:644
 #: ggc-common.c:654 ggc-common.c:657 ggc-page.c:2298 ggc-zone.c:2454
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "can%'t read PCH file: %m"
 msgstr "PCH-Datei kann nicht gelesen werden: %m"
 
@@ -16401,24 +16401,24 @@ msgid "open /dev/zero: %m"
 msgstr "/dev/zero öffnen: %m"
 
 #: ggc-page.c:2186 ggc-page.c:2192
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "can%'t write PCH file"
 msgstr "PCH-Datei kann nicht geschrieben werden"
 
 #: ggc-zone.c:2417 ggc-zone.c:2428
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "can%'t seek PCH file: %m"
 msgstr "in PCH-Datei kann nicht positioniert werden: %m"
 
 #: gimple.c:1071
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "gimple check: expected %s(%s), have %s(%s) in %s, at %s:%d"
-msgstr "Baumprüfung: Klasse %qs erwartet, haben %qs (%s) in %s, bei %s:%d"
+msgstr "GIMPLE-Prüfung: %s(%s) erwartet, haben %s(%s) in %s, bei %s:%d"
 
 #: gimplify.c:2430
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "using result of function returning %<void%>"
-msgstr "keine return-Anweisung in nicht void zurückgebender Funktion"
+msgstr "Ergebnis einer %<void%> zurückgebenden Funktion verwendet"
 
 #: gimplify.c:4946
 #, gcc-internal-format, gfc-internal-format
@@ -16436,44 +16436,44 @@ msgid "memory input %d is not directly addressable"
 msgstr "Speichereingabe %d ist nicht direkt adressierbar"
 
 #: gimplify.c:5552
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "threadprivate variable %qE used in untied task"
-msgstr "Threadprivate Variablen werden für dieses Ziel nicht unterstützt"
+msgstr "threadprivate Variable %qE in unverknüpfter Task verwendet"
 
 #: gimplify.c:5553 gimplify.c:5615
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "enclosing task"
-msgstr "%Humgebende Parallele"
+msgstr "umgebende Task"
 
 #: gimplify.c:5612
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qE not specified in enclosing parallel"
-msgstr "in umgebender Parallele wurde %qs nicht angegeben"
+msgstr "%qE in umgebender Parallele nicht angegeben"
 
 #: gimplify.c:5617
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "enclosing parallel"
-msgstr "%Humgebende Parallele"
+msgstr "umgebende Parallele"
 
 #: gimplify.c:5722
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "iteration variable %qE should be private"
-msgstr "Schleifenvariable %qs sollte »private« sein"
+msgstr "Schleifenvariable %qE sollte »private« sein"
 
 #: gimplify.c:5736
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "iteration variable %qE should not be firstprivate"
-msgstr "Schleifenvariable %qs sollte nicht »firstprivate« sein"
+msgstr "Schleifenvariable %qE sollte nicht »firstprivate« sein"
 
 #: gimplify.c:5739
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "iteration variable %qE should not be reduction"
-msgstr "Schleifenvariable %qs sollte nicht in Reduktion sein"
+msgstr "Schleifenvariable %qE sollte nicht Reduktion sein"
 
 #: gimplify.c:5902
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%s variable %qE is private in outer context"
-msgstr "%s Variable %qs ist im äußeren Kontext »private«"
+msgstr "%s Variable %qE ist im äußeren Kontext »private«"
 
 #: gimplify.c:7495
 #, gcc-internal-format
@@ -16481,14 +16481,14 @@ msgid "gimplification failed"
 msgstr "Gimplifikation gescheitert"
 
 #: godump.c:1040
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "could not close Go dump file: %m"
-msgstr "Abzugsdatei %qs konnte nicht geöffnet werden: %s"
+msgstr "Go-Abzugsdatei konnte nicht geschlossen werden: %m"
 
 #: godump.c:1052
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "could not open Go dump file %qs: %m"
-msgstr "Abzugsdatei %qs konnte nicht geöffnet werden: %s"
+msgstr "Go-Abzugsdatei %qs konnte nicht geöffnet werden: %m"
 
 #: graph.c:411 toplev.c:1517 java/jcf-parse.c:1751 java/jcf-parse.c:1890
 #: objc/objc-act.c:477
@@ -16503,39 +16503,39 @@ msgid "can%'t open %s for writing: %m"
 msgstr "%s kann nicht zum Schreiben geöffnet werden: %m"
 
 #: graphite-poly.c:593
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "the file is not in OpenScop format"
-msgstr "Feldbreite im printf-Format"
+msgstr "die Datei ist nicht im OpenScop-Format"
 
 #: graphite-poly.c:604
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "the language is not recognized"
-msgstr "Sprache %s nicht erkannt"
+msgstr "die Sprache wurde nicht erkannt"
 
 #: graphite-poly.c:615
 #, gcc-internal-format
 msgid "parameters number in the scop file is different from the internal scop parameter number"
-msgstr ""
+msgstr "Anzahl der Parameter in der Scop-Datei unterscheidet sich von der internen Anzahl der Scop-Parameter"
 
 #: graphite-poly.c:628
 #, gcc-internal-format
 msgid "number of statements in the OpenScop file does not match the graphite internal statements number"
-msgstr ""
+msgstr "Anzahl der Anweisungen in der OpenScop-Datei passt nicht zur internen Graphite-Anweisungsanzahl"
 
 #: graphite-poly.c:719
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "can%'t open %s for reading: %m"
-msgstr "%s kann nicht zum Schreiben geöffnet werden: %m"
+msgstr "%s kann nicht zum Lesen geöffnet werden: %m"
 
 #: graphite-poly.c:742
 #, gcc-internal-format, gfc-internal-format
 msgid "the graphite file read for scop %d does not contain a legal transform"
-msgstr ""
+msgstr "für Scop %d gelesene Graphite-Datei enthält keine gültige Umwandlung"
 
 #: graphite.c:290
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Graphite loop optimizations cannot be used"
-msgstr "Schleifenoptimierungen auf Baumebene einschalten"
+msgstr "Graphite-Schleifenoptimierungen können nicht verwendet werden"
 
 #. Fatal error here.  We do not want to support compiling ltrans units with
 #. different version of compiler or different flags than the WPA unit, so
@@ -16543,7 +16543,7 @@ msgstr "Schleifenoptimierungen auf Baumebene einschalten"
 #: ipa-reference.c:1198
 #, gcc-internal-format
 msgid "ipa reference summary is missing in ltrans unit"
-msgstr ""
+msgstr "IPA-Referenzzusammenfassung fehlt in ltrans-Einheit"
 
 #: ira.c:1377 ira.c:1390 ira.c:1404
 #, gcc-internal-format, gfc-internal-format
