@@ -121,10 +121,6 @@ static unsigned min_align (unsigned, unsigned);
 static void globalize_decl (tree);
 static bool decl_readonly_section_1 (enum section_category);
 #ifdef BSS_SECTION_ASM_OP
-#ifdef ASM_OUTPUT_BSS
-static void asm_output_bss (FILE *, tree, const char *,
-			    unsigned HOST_WIDE_INT, unsigned HOST_WIDE_INT);
-#endif
 #ifdef ASM_OUTPUT_ALIGNED_BSS
 static void asm_output_aligned_bss (FILE *, tree, const char *,
 				    unsigned HOST_WIDE_INT, int)
@@ -426,34 +422,6 @@ resolve_unique_section (tree decl, int reloc ATTRIBUTE_UNUSED,
 }
 
 #ifdef BSS_SECTION_ASM_OP
-
-#ifdef ASM_OUTPUT_BSS
-
-/* Utility function for ASM_OUTPUT_BSS for targets to use if
-   they don't support alignments in .bss.
-   ??? It is believed that this function will work in most cases so such
-   support is localized here.  */
-
-static void ATTRIBUTE_UNUSED
-asm_output_bss (FILE *file, tree decl ATTRIBUTE_UNUSED,
-		const char *name,
-		unsigned HOST_WIDE_INT size ATTRIBUTE_UNUSED,
-		unsigned HOST_WIDE_INT rounded)
-{
-  gcc_assert (strcmp (XSTR (XEXP (DECL_RTL (decl), 0), 0), name) == 0);
-  targetm.asm_out.globalize_decl_name (file, decl);
-  switch_to_section (bss_section);
-#ifdef ASM_DECLARE_OBJECT_NAME
-  last_assemble_variable_decl = decl;
-  ASM_DECLARE_OBJECT_NAME (file, name, decl);
-#else
-  /* Standard thing is just output label for the object.  */
-  ASM_OUTPUT_LABEL (file, name);
-#endif /* ASM_DECLARE_OBJECT_NAME */
-  ASM_OUTPUT_SKIP (file, rounded ? rounded : 1);
-}
-
-#endif
 
 #ifdef ASM_OUTPUT_ALIGNED_BSS
 
@@ -1795,7 +1763,7 @@ emit_local (tree decl ATTRIBUTE_UNUSED,
 
 /* A noswitch_section_callback for bss_noswitch_section.  */
 
-#if defined ASM_OUTPUT_ALIGNED_BSS || defined ASM_OUTPUT_BSS
+#if defined ASM_OUTPUT_ALIGNED_BSS
 static bool
 emit_bss (tree decl ATTRIBUTE_UNUSED,
 	  const char *name ATTRIBUTE_UNUSED,
@@ -1805,9 +1773,6 @@ emit_bss (tree decl ATTRIBUTE_UNUSED,
 #if defined ASM_OUTPUT_ALIGNED_BSS
   ASM_OUTPUT_ALIGNED_BSS (asm_out_file, decl, name, size, DECL_ALIGN (decl));
   return true;
-#else
-  ASM_OUTPUT_BSS (asm_out_file, decl, name, size, rounded);
-  return false;
 #endif
 }
 #endif
@@ -6004,7 +5969,7 @@ init_varasm_once (void)
   comm_section = get_noswitch_section (SECTION_WRITE | SECTION_BSS
 				       | SECTION_COMMON, emit_common);
 
-#if defined ASM_OUTPUT_ALIGNED_BSS || defined ASM_OUTPUT_BSS
+#if defined ASM_OUTPUT_ALIGNED_BSS
   bss_noswitch_section = get_noswitch_section (SECTION_WRITE | SECTION_BSS,
 					       emit_bss);
 #endif

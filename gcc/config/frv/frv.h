@@ -1574,13 +1574,6 @@ __asm__("\n"								\
    `".data"' is right.  */
 #define DATA_SECTION_ASM_OP "\t.data"
 
-/* If defined, a C expression whose value is a string containing the
-   assembler operation to identify the following data as
-   uninitialized global data.  If not defined, and neither
-   `ASM_OUTPUT_BSS' nor `ASM_OUTPUT_ALIGNED_BSS' are defined,
-   uninitialized global data will be output in the data section if
-   `-fno-common' is passed, otherwise `ASM_OUTPUT_COMMON' will be
-   used.  */
 #define BSS_SECTION_ASM_OP "\t.section .bss,\"aw\""
 
 /* Short Data Support */
