@@ -1,5 +1,16 @@
 2011-04-08  Alexander Monakov  <amonakov@ispras.ru>
 
+	PR rtl-optimization/48302
+	* sel-sched-ir.h (sel_add_loop_preheaders): Update prototype.
+	* sel-sched-ir.c (sel_add_loop_preheaders): Add 'bbs' argument.  Use
+	it to record added preheader blocks.
+	* sel-sched.c (setup_current_loop_nest): Add 'bbs' argument.  Pass it
+	on to sel_add_loop_preheaders.
+	(sel_region_init): Move call to setup_current_loop_nest after
+	sel_init_bbs.
+
+2011-04-08  Alexander Monakov  <amonakov@ispras.ru>
+
 	PR target/48273
 	* cfgloop.h (loop_has_exit_edges): New helper.
 	* sel-sched-ir.c (init_global_and_expr_for_insn): Make CALLs

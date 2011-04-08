@@ -1628,7 +1628,7 @@ extern void sel_sched_region (int);
 extern loop_p get_loop_nest_for_rgn (unsigned int);
 extern bool considered_for_pipelining_p (struct loop *);
 extern void make_region_from_loop_preheader (VEC(basic_block, heap) **);
-extern void sel_add_loop_preheaders (void);
+extern void sel_add_loop_preheaders (bb_vec_t *);
 extern bool sel_is_loop_preheader_p (basic_block);
 extern void clear_outdated_rtx_info (basic_block);
 extern void free_data_sets (basic_block);

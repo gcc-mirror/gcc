@@ -6801,7 +6801,7 @@ current_region_empty_p (void)
 
 /* Prepare and verify loop nest for pipelining.  */
 static void
-setup_current_loop_nest (int rgn)
+setup_current_loop_nest (int rgn, bb_vec_t *bbs)
 {
   current_loop_nest = get_loop_nest_for_rgn (rgn);
 
@@ -6810,7 +6810,7 @@ setup_current_loop_nest (int rgn)
 
   /* If this loop has any saved loop preheaders from nested loops,
      add these basic blocks to the current region.  */
-  sel_add_loop_preheaders ();
+  sel_add_loop_preheaders (bbs);
 
   /* Check that we're starting with a valid information.  */
   gcc_assert (loop_latch_edge (current_loop_nest));
@@ -6849,9 +6849,6 @@ sel_region_init (int rgn)
   if (current_region_empty_p ())
     return true;
 
-  if (flag_sel_sched_pipelining)
-    setup_current_loop_nest (rgn);
-
   sel_setup_region_sched_flags ();
 
   bbs = VEC_alloc (basic_block, heap, current_nr_blocks);
@@ -6860,6 +6857,9 @@ sel_region_init (int rgn)
     VEC_quick_push (basic_block, bbs, BASIC_BLOCK (BB_TO_BLOCK (i)));
 
   sel_init_bbs (bbs, NULL);
+
+  if (flag_sel_sched_pipelining)
+    setup_current_loop_nest (rgn, &bbs);
 
   /* Initialize luids and dependence analysis which both sel-sched and haifa
      need.  */
