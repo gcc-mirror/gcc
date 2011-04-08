@@ -1,5 +1,9 @@
 2011-04-07  Jason Merrill  <jason@redhat.com>
 
+	PR c++/48451
+	* pt.c (fn_type_unification): Don't clear incomplete pack flag.
+	(type_unification_real): Clear it here instead.
+
 	PR c++/48468
 	* except.c (build_noexcept_spec): Propagate error_mark_node.
 	(finish_noexcept_expr): Likewise.
