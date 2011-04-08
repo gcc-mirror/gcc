@@ -4143,6 +4143,8 @@ gimple_expand_cfg (void)
   /* Zap the tree EH table.  */
   set_eh_throw_stmt_table (cfun, NULL);
 
+  /* We need JUMP_LABEL be set in order to redirect jumps, and hence
+     split edges which edge insertions might do.  */
   rebuild_jump_labels (get_insns ());
 
   FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR, EXIT_BLOCK_PTR, next_bb)
@@ -4153,6 +4155,7 @@ gimple_expand_cfg (void)
 	{
 	  if (e->insns.r)
 	    {
+	      rebuild_jump_labels_chain (e->insns.r);
 	      /* Avoid putting insns before parm_birth_insn.  */
 	      if (e->src == ENTRY_BLOCK_PTR
 		  && single_succ_p (ENTRY_BLOCK_PTR)
