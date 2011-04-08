@@ -1,7 +1,11 @@
+2011-04-08  Alexander Monakov  <amonakov@ispras.ru>
+
+	* sel-sched.c (sel_region_init): Move call to
+	sel_setup_region_sched_flags after setup_current_loop_nest.
+
 2011-04-08  Andrey Belevantsev  <abel@ispras.ru>
 
 	PR rtl-optimization/48272
-
 	* sched-deps.c (setup_insn_reg_pressure_info): Export and rename to
 	init_insn_reg_pressure_info.  Adjust a caller.
 	* sched-int.h (init_insn_reg_pressure_info): Declare.
