@@ -13719,7 +13719,8 @@ fn_type_unification (tree fn,
               template_parm_level_and_index (parm, &level, &idx);
 
               /* Mark the argument pack as "incomplete". We could
-                 still deduce more arguments during unification.  */
+                 still deduce more arguments during unification.
+	         We remove this mark in type_unification_real.  */
               targ = TMPL_ARG (converted_args, level, idx);
               if (targ)
                 {
@@ -13775,22 +13776,6 @@ fn_type_unification (tree fn,
   result = type_unification_real (DECL_INNERMOST_TEMPLATE_PARMS (fn),
 				  targs, parms, args, nargs, /*subr=*/0,
 				  strict, flags);
-
-  if (result == 0 && incomplete_argument_packs_p)
-    {
-      int i, len = NUM_TMPL_ARGS (targs);
-
-      /* Clear the "incomplete" flags on all argument packs.  */
-      for (i = 0; i < len; i++)
-        {
-          tree arg = TREE_VEC_ELT (targs, i);
-          if (ARGUMENT_PACK_P (arg))
-            {
-              ARGUMENT_PACK_INCOMPLETE_P (arg) = 0;
-              ARGUMENT_PACK_EXPLICIT_ARGS (arg) = NULL_TREE;
-            }
-        }
-    }
 
   /* Now that we have bindings for all of the template arguments,
      ensure that the arguments deduced for the template template
@@ -14136,15 +14121,17 @@ type_unification_real (tree tparms,
     return 1;
 
   if (!subr)
-    for (i = 0; i < ntparms; i++)
-      if (!TREE_VEC_ELT (targs, i))
+    {
+      /* Check to see if we need another pass before we start clearing
+	 ARGUMENT_PACK_INCOMPLETE_P.  */
+      for (i = 0; i < ntparms; i++)
 	{
-	  tree tparm;
+	  tree targ = TREE_VEC_ELT (targs, i);
+	  tree tparm = TREE_VEC_ELT (tparms, i);
 
-          if (TREE_VEC_ELT (tparms, i) == error_mark_node)
-            continue;
-
-          tparm = TREE_VALUE (TREE_VEC_ELT (tparms, i));
+	  if (targ || tparm == error_mark_node)
+	    continue;
+	  tparm = TREE_VALUE (tparm);
 
 	  /* If this is an undeduced nontype parameter that depends on
 	     a type parameter, try another pass; its type may have been
@@ -14154,59 +14141,78 @@ type_unification_real (tree tparms,
 	      && uses_template_parms (TREE_TYPE (tparm))
 	      && !saw_undeduced++)
 	    goto again;
+	}
 
-          /* Core issue #226 (C++0x) [temp.deduct]:
+      for (i = 0; i < ntparms; i++)
+	{
+	  tree targ = TREE_VEC_ELT (targs, i);
+	  tree tparm = TREE_VEC_ELT (tparms, i);
 
-               If a template argument has not been deduced, its
-               default template argument, if any, is used. 
+	  /* Clear the "incomplete" flags on all argument packs now so that
+	     substituting them into later default arguments works.  */
+	  if (targ && ARGUMENT_PACK_P (targ))
+            {
+              ARGUMENT_PACK_INCOMPLETE_P (targ) = 0;
+              ARGUMENT_PACK_EXPLICIT_ARGS (targ) = NULL_TREE;
+            }
 
-             When we are in C++98 mode, TREE_PURPOSE will either
+	  if (targ || tparm == error_mark_node)
+	    continue;
+	  tparm = TREE_VALUE (tparm);
+
+	  /* Core issue #226 (C++0x) [temp.deduct]:
+
+	     If a template argument has not been deduced, its
+	     default template argument, if any, is used. 
+
+	     When we are in C++98 mode, TREE_PURPOSE will either
 	     be NULL_TREE or ERROR_MARK_NODE, so we do not need
 	     to explicitly check cxx_dialect here.  */
-          if (TREE_PURPOSE (TREE_VEC_ELT (tparms, i)))
-            {
+	  if (TREE_PURPOSE (TREE_VEC_ELT (tparms, i)))
+	    {
 	      tree parm = TREE_VALUE (TREE_VEC_ELT (tparms, i));
 	      tree arg = TREE_PURPOSE (TREE_VEC_ELT (tparms, i));
-              arg = tsubst_template_arg (arg, targs, tf_none, NULL_TREE);
+	      arg = tsubst_template_arg (arg, targs, tf_none, NULL_TREE);
 	      arg = convert_template_argument (parm, arg, targs, tf_none,
 					       i, NULL_TREE);
-              if (arg == error_mark_node)
-                return 1;
-              else
-                {
-                  TREE_VEC_ELT (targs, i) = arg;
+	      if (arg == error_mark_node)
+		return 1;
+	      else
+		{
+		  TREE_VEC_ELT (targs, i) = arg;
 		  /* The position of the first default template argument,
 		     is also the number of non-defaulted arguments in TARGS.
 		     Record that.  */
 		  if (!NON_DEFAULT_TEMPLATE_ARGS_COUNT (targs))
 		    SET_NON_DEFAULT_TEMPLATE_ARGS_COUNT (targs, i);
-                  continue;
-                }
-            }
+		  continue;
+		}
+	    }
 
-          /* If the type parameter is a parameter pack, then it will
-             be deduced to an empty parameter pack.  */
-          if (template_parameter_pack_p (tparm))
-            {
-              tree arg;
+	  /* If the type parameter is a parameter pack, then it will
+	     be deduced to an empty parameter pack.  */
+	  if (template_parameter_pack_p (tparm))
+	    {
+	      tree arg;
 
-              if (TREE_CODE (tparm) == TEMPLATE_PARM_INDEX)
-                {
-                  arg = make_node (NONTYPE_ARGUMENT_PACK);
-                  TREE_TYPE (arg)  = TREE_TYPE (TEMPLATE_PARM_DECL (tparm));
-                  TREE_CONSTANT (arg) = 1;
-                }
-              else
-                arg = cxx_make_type (TYPE_ARGUMENT_PACK);
+	      if (TREE_CODE (tparm) == TEMPLATE_PARM_INDEX)
+		{
+		  arg = make_node (NONTYPE_ARGUMENT_PACK);
+		  TREE_TYPE (arg)  = TREE_TYPE (TEMPLATE_PARM_DECL (tparm));
+		  TREE_CONSTANT (arg) = 1;
+		}
+	      else
+		arg = cxx_make_type (TYPE_ARGUMENT_PACK);
 
-              SET_ARGUMENT_PACK_ARGS (arg, make_tree_vec (0));
+	      SET_ARGUMENT_PACK_ARGS (arg, make_tree_vec (0));
 
-              TREE_VEC_ELT (targs, i) = arg;
-              continue;
-            }
+	      TREE_VEC_ELT (targs, i) = arg;
+	      continue;
+	    }
 
 	  return 2;
 	}
+    }
 #ifdef ENABLE_CHECKING
   if (!NON_DEFAULT_TEMPLATE_ARGS_COUNT (targs))
     SET_NON_DEFAULT_TEMPLATE_ARGS_COUNT (targs, TREE_VEC_LENGTH (targs));
