@@ -1,6 +1,12 @@
 2011-04-07  Jason Merrill  <jason@redhat.com>
 
 	PR c++/48481
+	* tree.c (build_overload): Allow an unwrapped FUNCTION_DECL
+	at the end of the chain.
+	* pt.c (dependent_template_p): Use OVL_CURRENT/NEXT.
+	(iterative_hash_template_arg): Likewise.
+
+	PR c++/48481
 	* cp-tree.h (OVL_ARG_DEPENDENT): New.
 	* name-lookup.c (add_function): Set it.
 	* semantics.c (finish_call_expr): Free OVERLOADs if it's set.
