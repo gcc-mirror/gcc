@@ -6731,15 +6731,14 @@ init_seqno_1 (basic_block bb, sbitmap visited_bbs, bitmap blocks_to_reschedule)
     INSN_SEQNO (insn) = cur_seqno--;
 }
 
-/* Initialize seqnos for the current region.  NUMBER_OF_INSNS is the number
-   of instructions in the region, BLOCKS_TO_RESCHEDULE contains blocks on
-   which we're rescheduling when pipelining, FROM is the block where
+/* Initialize seqnos for the current region.  BLOCKS_TO_RESCHEDULE contains
+   blocks on which we're rescheduling when pipelining, FROM is the block where
    traversing region begins (it may not be the head of the region when
    pipelining, but the head of the loop instead).
 
    Returns the maximal seqno found.  */
 static int
-init_seqno (int number_of_insns, bitmap blocks_to_reschedule, basic_block from)
+init_seqno (bitmap blocks_to_reschedule, basic_block from)
 {
   sbitmap visited_bbs;
   bitmap_iterator bi;
@@ -6762,9 +6761,13 @@ init_seqno (int number_of_insns, bitmap blocks_to_reschedule, basic_block from)
       from = EBB_FIRST_BB (0);
     }
 
-  cur_seqno = number_of_insns > 0 ? number_of_insns : sched_max_luid - 1;
+  cur_seqno = sched_max_luid - 1;
   init_seqno_1 (from, visited_bbs, blocks_to_reschedule);
-  gcc_assert (cur_seqno == 0 || number_of_insns == 0);
+
+  /* cur_seqno may be positive if the number of instructions is less than
+     sched_max_luid - 1 (when rescheduling or if some instructions have been
+     removed by the call to purge_empty_blocks in sel_sched_region_1).  */
+  gcc_assert (cur_seqno >= 0);
 
   sbitmap_free (visited_bbs);
   return sched_max_luid - 1;
@@ -7473,17 +7476,12 @@ sel_sched_region_2 (int orig_max_seqno)
 static void
 sel_sched_region_1 (void)
 {
-  int number_of_insns;
   int orig_max_seqno;
 
-  /* Remove empty blocks that might be in the region from the beginning.
-     We need to do save sched_max_luid before that, as it actually shows
-     the number of insns in the region, and purge_empty_blocks can
-     alter it.  */
-  number_of_insns = sched_max_luid - 1;
+  /* Remove empty blocks that might be in the region from the beginning.  */
   purge_empty_blocks ();
 
-  orig_max_seqno = init_seqno (number_of_insns, NULL, NULL);
+  orig_max_seqno = init_seqno (NULL, NULL);
   gcc_assert (orig_max_seqno >= 1);
 
   /* When pipelining outer loops, create fences on the loop header,
@@ -7560,7 +7558,7 @@ sel_sched_region_1 (void)
                 {
                   flist_tail_init (new_fences);
 
-                  orig_max_seqno = init_seqno (0, blocks_to_reschedule, bb);
+                  orig_max_seqno = init_seqno (blocks_to_reschedule, bb);
 
                   /* Mark BB as head of the new ebb.  */
                   bitmap_set_bit (forced_ebb_heads, bb->index);
