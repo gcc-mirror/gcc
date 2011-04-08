@@ -1,5 +1,11 @@
 2011-04-08  Richard Guenther  <rguenther@suse.de>
 
+	* gimple.c (gimple_set_modified): Do not queue calls to
+	MODIFIED_NORETURN_CALLS here ...
+	* tree-ssa-operands.c (update_stmt_operands): ... but here.
+
+2011-04-08  Richard Guenther  <rguenther@suse.de>
+
 	PR lto/48467
 	* toplev.c (lang_dependent_init): Do not open asm_out_file
 	in WPA mode, nor perform debug machinery initialization.

@@ -2254,15 +2254,7 @@ void
 gimple_set_modified (gimple s, bool modifiedp)
 {
   if (gimple_has_ops (s))
-    {
-      s->gsbase.modified = (unsigned) modifiedp;
-
-      if (modifiedp
-	  && cfun->gimple_df
-	  && is_gimple_call (s)
-	  && gimple_call_noreturn_p (s))
-	VEC_safe_push (gimple, gc, MODIFIED_NORETURN_CALLS (cfun), s);
-    }
+    s->gsbase.modified = (unsigned) modifiedp;
 }
 
 

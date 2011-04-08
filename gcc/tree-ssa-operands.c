@@ -1134,6 +1134,12 @@ update_stmt_operands (gimple stmt)
 
   timevar_push (TV_TREE_OPS);
 
+  /* If the stmt is a noreturn call queue it to be processed by
+     split_bbs_on_noreturn_calls during cfg cleanup.  */
+  if (is_gimple_call (stmt)
+      && gimple_call_noreturn_p (stmt))
+    VEC_safe_push (gimple, gc, MODIFIED_NORETURN_CALLS (cfun), stmt);
+
   gcc_assert (gimple_modified_p (stmt));
   build_ssa_operands (stmt);
   gimple_set_modified (stmt, false);
