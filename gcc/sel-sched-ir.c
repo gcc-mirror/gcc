@@ -6094,11 +6094,11 @@ sel_find_rgns (void)
   bbs_in_loop_rgns = NULL;
 }
 
-/* Adds the preheader blocks from previous loop to current region taking
-   it from LOOP_PREHEADER_BLOCKS (current_loop_nest).
+/* Add the preheader blocks from previous loop to current region taking
+   it from LOOP_PREHEADER_BLOCKS (current_loop_nest) and record them in *BBS.
    This function is only used with -fsel-sched-pipelining-outer-loops.  */
 void
-sel_add_loop_preheaders (void)
+sel_add_loop_preheaders (bb_vec_t *bbs)
 {
   int i;
   basic_block bb;
@@ -6109,6 +6109,7 @@ sel_add_loop_preheaders (void)
        VEC_iterate (basic_block, preheader_blocks, i, bb);
        i++)
     {
+      VEC_safe_push (basic_block, heap, *bbs, bb);
       VEC_safe_push (basic_block, heap, last_added_blocks, bb);
       sel_add_bb (bb);
     }
