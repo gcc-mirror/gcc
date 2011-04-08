@@ -1,3 +1,20 @@
+2011-04-08  Joseph Myers  <joseph@codesourcery.com>
+
+	* config.gcc (arm*-*-*): Add arm/arm-tables.opt to extra_options.
+	* config/arm/arm-arches.def: New.
+	* config/arm/arm-opts.h: New.
+	* config/arm/genopt.sh: New.
+	* config/arm/arm-tables.opt: New (generated).
+	* config/arm/arm.c (arm_handle_option, arm_target_help,
+	TARGET_HANDLE_OPTION, TARGET_HELP, arm_find_cpu): Remove.
+	(all_architectures): Get most table contents from arm-arches.def.
+	(arm_option_override): Set arm_selected_arch, arm_selected_cpu and
+	arm_selected_tune here.
+	* config/arm/arm.h (enum processor_type): Move to arm-opts.h.
+	* config/arm/arm.opt (config/arm/arm-opts.h): New HeaderInclude.
+	(march=, mcpu=, mtune=): Use Enum and Var.
+	* config/arm/t-arm ($(srcdir)/config/arm/arm-tables.opt): New.
+	(arm.o): Update dependencies.
 
 2011-04-08  Basile Starynkevitch  <basile@starynkevitch.net>
 

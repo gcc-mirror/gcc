@@ -1,0 +1,59 @@
+/* ARM CPU architectures.
+   Copyright (C) 1991, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001,
+   2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
+   Free Software Foundation, Inc.
+
+   This file is part of GCC.
+
+   GCC is free software; you can redistribute it and/or modify it
+   under the terms of the GNU General Public License as published
+   by the Free Software Foundation; either version 3, or (at your
+   option) any later version.
+
+   GCC is distributed in the hope that it will be useful, but WITHOUT
+   ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+   or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+   License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with GCC; see the file COPYING3.  If not see
+   <http://www.gnu.org/licenses/>.  */
+
+/* Before using #include to read this file, define a macro:
+
+      ARM_ARCH(NAME, CORE, ARCH, FLAGS)
+
+   The NAME is the name of the architecture, represented as a string
+   constant.  The CORE is the identifier for a core representative of
+   this architecture.  ARCH is the architecture revision.  FLAGS are
+   the flags implied by the architecture.
+
+   genopt.sh assumes no whitespace up to the first "," in each entry.  */
+
+ARM_ARCH("armv2",   arm2,       2,   FL_CO_PROC | FL_MODE26 | FL_FOR_ARCH2)
+ARM_ARCH("armv2a",  arm2,       2,   FL_CO_PROC | FL_MODE26 | FL_FOR_ARCH2)
+ARM_ARCH("armv3",   arm6,       3,   FL_CO_PROC | FL_MODE26 | FL_FOR_ARCH3)
+ARM_ARCH("armv3m",  arm7m,      3M,  FL_CO_PROC | FL_MODE26 | FL_FOR_ARCH3M)
+ARM_ARCH("armv4",   arm7tdmi,   4,   FL_CO_PROC | FL_MODE26 | FL_FOR_ARCH4)
+/* Strictly, FL_MODE26 is a permitted option for v4t, but there are no
+   implementations that support it, so we will leave it out for now.  */
+ARM_ARCH("armv4t",  arm7tdmi,   4T,  FL_CO_PROC |             FL_FOR_ARCH4T)
+ARM_ARCH("armv5",   arm10tdmi,  5,   FL_CO_PROC |             FL_FOR_ARCH5)
+ARM_ARCH("armv5t",  arm10tdmi,  5T,  FL_CO_PROC |             FL_FOR_ARCH5T)
+ARM_ARCH("armv5e",  arm1026ejs, 5E,  FL_CO_PROC |             FL_FOR_ARCH5E)
+ARM_ARCH("armv5te", arm1026ejs, 5TE, FL_CO_PROC |             FL_FOR_ARCH5TE)
+ARM_ARCH("armv6",   arm1136js,  6,   FL_CO_PROC |             FL_FOR_ARCH6)
+ARM_ARCH("armv6j",  arm1136js,  6J,  FL_CO_PROC |             FL_FOR_ARCH6J)
+ARM_ARCH("armv6k",  mpcore,	6K,  FL_CO_PROC |             FL_FOR_ARCH6K)
+ARM_ARCH("armv6z",  arm1176jzs, 6Z,  FL_CO_PROC |             FL_FOR_ARCH6Z)
+ARM_ARCH("armv6zk", arm1176jzs, 6ZK, FL_CO_PROC |             FL_FOR_ARCH6ZK)
+ARM_ARCH("armv6t2", arm1156t2s, 6T2, FL_CO_PROC |             FL_FOR_ARCH6T2)
+ARM_ARCH("armv6-m", cortexm1,	6M,			      FL_FOR_ARCH6M)
+ARM_ARCH("armv7",   cortexa8,	7,   FL_CO_PROC |	      FL_FOR_ARCH7)
+ARM_ARCH("armv7-a", cortexa8,	7A,  FL_CO_PROC |	      FL_FOR_ARCH7A)
+ARM_ARCH("armv7-r", cortexr4,	7R,  FL_CO_PROC |	      FL_FOR_ARCH7R)
+ARM_ARCH("armv7-m", cortexm3,	7M,  FL_CO_PROC |	      FL_FOR_ARCH7M)
+ARM_ARCH("armv7e-m", cortexm4,  7EM, FL_CO_PROC |	      FL_FOR_ARCH7EM)
+ARM_ARCH("ep9312",  ep9312,     4T,  FL_LDSCHED | FL_CIRRUS | FL_FOR_ARCH4)
+ARM_ARCH("iwmmxt",  iwmmxt,     5TE, FL_LDSCHED | FL_STRONG | FL_FOR_ARCH5TE | FL_XSCALE | FL_IWMMXT)
+ARM_ARCH("iwmmxt2", iwmmxt2,    5TE, FL_LDSCHED | FL_STRONG | FL_FOR_ARCH5TE | FL_XSCALE | FL_IWMMXT)
