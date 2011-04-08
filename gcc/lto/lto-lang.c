@@ -373,13 +373,7 @@ handle_sentinel_attribute (tree *node, tree ARG_UNUSED (name), tree args,
 			   int ARG_UNUSED (flags),
 			   bool * ARG_UNUSED (no_add_attrs))
 {
-  tree params = TYPE_ARG_TYPES (*node);
-  gcc_assert (params);
-
-  while (TREE_CHAIN (params))
-    params = TREE_CHAIN (params);
-
-  gcc_assert (!VOID_TYPE_P (TREE_VALUE (params)));
+  gcc_assert (stdarg_p (*node));
 
   if (args)
     {
@@ -399,17 +393,11 @@ handle_type_generic_attribute (tree *node, tree ARG_UNUSED (name),
 			       tree ARG_UNUSED (args), int ARG_UNUSED (flags),
 			       bool * ARG_UNUSED (no_add_attrs))
 {
-  tree params;
-  
   /* Ensure we have a function type.  */
   gcc_assert (TREE_CODE (*node) == FUNCTION_TYPE);
   
-  params = TYPE_ARG_TYPES (*node);
-  while (params && ! VOID_TYPE_P (TREE_VALUE (params)))
-    params = TREE_CHAIN (params);
-
   /* Ensure we have a variadic function.  */
-  gcc_assert (!params);
+  gcc_assert (!prototype_p (*node) || stdarg_p (*node));
 
   return NULL_TREE;
 }
