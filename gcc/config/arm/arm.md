@@ -10249,6 +10249,8 @@
 ;; Push multiple registers to the stack.  Registers are in parallel (use ...)
 ;; expressions.  For simplicity, the first register is also in the unspec
 ;; part.
+;; To avoid the usage of GNU extension, the length attribute is computed
+;; in a C function arm_attr_length_push_multi.
 (define_insn "*push_multi"
   [(match_parallel 2 "multi_register_push"
     [(set (match_operand:BLK 0 "memory_operand" "=m")
@@ -10290,27 +10292,7 @@
   }"
   [(set_attr "type" "store4")
    (set (attr "length")
-	(if_then_else
-	   (and (ne (symbol_ref "TARGET_THUMB2") (const_int 0))
-		(ne (symbol_ref "{
-		    /* Check if there are any high register (except lr)
-		       references in the list. KEEP the following iteration
-		       in sync with the template above.  */
-		    int i, regno, hi_reg;
-		    int num_saves = XVECLEN (operands[2], 0);
-		    regno = REGNO (operands[1]);
-		    hi_reg = (REGNO_REG_CLASS (regno) == HI_REGS)
-			     && (regno != LR_REGNUM);
-		    for (i = 1; i < num_saves && !hi_reg; i++)
-		      {
-			regno = REGNO (XEXP (XVECEXP (operands[2], 0, i), 0));
-			hi_reg |= (REGNO_REG_CLASS (regno) == HI_REGS)
-				  && (regno != LR_REGNUM);
-		      }
-		    !hi_reg;    }")
-		  (const_int 0)))
-	   (const_int 2)
-	   (const_int 4)))]
+	(symbol_ref "arm_attr_length_push_multi (operands[2], operands[1])"))]
 )
 
 (define_insn "stack_tie"

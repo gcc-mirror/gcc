@@ -1,3 +1,11 @@
+2011-04-08  Wei Guozhi  <carrot@google.com>
+
+	PR target/47855
+	* config/arm/arm-protos.h (arm_attr_length_push_multi): New prototype.
+	* config/arm/arm.c (arm_attr_length_push_multi): New function.
+	* config/arm/arm.md (*push_multi): Change the length computation to
+	call a C function.
+
 2011-04-08  Anatoly Sokolov  <aesok@post.ru>
 
 	* doc/tm.texi.in (ASM_OUTPUT_BSS): Remove documentation.

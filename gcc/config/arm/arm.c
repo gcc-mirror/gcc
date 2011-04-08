@@ -23696,4 +23696,30 @@ arm_preferred_rename_class (reg_class_t rclass)
     return NO_REGS;
 }
 
+/* Compute the atrribute "length" of insn "*push_multi".
+   So this function MUST be kept in sync with that insn pattern.  */
+int
+arm_attr_length_push_multi(rtx parallel_op, rtx first_op)
+{
+  int i, regno, hi_reg;
+  int num_saves = XVECLEN (parallel_op, 0);
+
+  /* ARM mode.  */
+  if (TARGET_ARM)
+    return 4;
+
+  /* Thumb2 mode.  */
+  regno = REGNO (first_op);
+  hi_reg = (REGNO_REG_CLASS (regno) == HI_REGS) && (regno != LR_REGNUM);
+  for (i = 1; i < num_saves && !hi_reg; i++)
+    {
+      regno = REGNO (XEXP (XVECEXP (parallel_op, 0, i), 0));
+      hi_reg |= (REGNO_REG_CLASS (regno) == HI_REGS) && (regno != LR_REGNUM);
+    }
+
+  if (!hi_reg)
+    return 2;
+  return 4;
+}
+
 #include "gt-arm.h"
