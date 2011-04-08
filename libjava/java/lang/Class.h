@@ -546,7 +546,7 @@ private:
   friend void *::_Jv_AllocPtrFreeObj (jint, jclass);
   friend void *::_Jv_AllocArray (jint, jclass);
 
-  friend jobject (::_Jv_JNI_ToReflectedField) (_Jv_JNIEnv *, jclass, jfieldID,
+  friend jobject JNICALL (::_Jv_JNI_ToReflectedField) (_Jv_JNIEnv *, jclass, jfieldID,
 					       jboolean);
   friend jobject (::_Jv_JNI_ToReflectedMethod) (_Jv_JNIEnv *, jclass, jmethodID,
 						jboolean);
