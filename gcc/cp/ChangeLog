@@ -1,6 +1,11 @@
 2011-04-07  Jason Merrill  <jason@redhat.com>
 
 	PR c++/48481
+	* cp-tree.h (OVL_ARG_DEPENDENT): New.
+	* name-lookup.c (add_function): Set it.
+	* semantics.c (finish_call_expr): Free OVERLOADs if it's set.
+
+	PR c++/48481
 	* call.c (build_user_type_conversion_1): Use lookup_fnfields_slot.
 	Release unused vector.
 
