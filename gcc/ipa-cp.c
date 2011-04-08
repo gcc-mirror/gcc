@@ -1113,6 +1113,29 @@ ipcp_update_profiling (void)
 	  scale = ipcp_get_node_scale (orig_node);
 	  node->count = orig_node->count * scale / REG_BR_PROB_BASE;
 	  scale_complement = REG_BR_PROB_BASE - scale;
+
+          /* Negative scale complement can result from insane profile data
+             in which the total incoming edge counts in this module is
+             larger than the callee's entry count. The insane profile data
+             usually gets generated due to the following reasons:
+
+             1) in multithreaded programs, when profile data is dumped
+             to gcda files in gcov_exit, some other threads are still running.
+             The profile counters are dumped in bottom up order (call graph).
+             The caller's BB counters may still be updated while the callee's
+             counter data is already saved to disk.
+
+             2) Comdat functions: comdat functions' profile data are not
+             allocated in comdat. When a comdat callee function gets inlined
+             at some callsites after instrumentation, and the remaining calls
+             to this function resolves to a comdat copy in another module,
+             the profile counters for this function are split. This can
+             result in sum of incoming edge counts from this module being
+             larger than callee instance's entry count.  */
+
+          if (scale_complement < 0 && flag_profile_correction)
+            scale_complement = 0;
+
 	  orig_node->count =
 	    orig_node->count * scale_complement / REG_BR_PROB_BASE;
 	  for (cs = node->callees; cs; cs = cs->next_callee)

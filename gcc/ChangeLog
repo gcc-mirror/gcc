@@ -1,5 +1,10 @@
 2011-04-08  Xinliang David Li  <davidxl@google.com>
 
+	* ipa-cp.c (ipcp_update_profiling): Correct
+	 negative scale factor due to insane profile data.
+
+2011-04-08  Xinliang David Li  <davidxl@google.com>
+
 	* final.c (dump_basic_block_info): New function.
 	(final): Dump basic block.
 	(final_scan_insn): Remove old dump.
