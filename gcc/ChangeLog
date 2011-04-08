@@ -1,5 +1,14 @@
 2011-04-08  Alexander Monakov  <amonakov@ispras.ru>
 
+	PR target/48273
+	* cfgloop.h (loop_has_exit_edges): New helper.
+	* sel-sched-ir.c (init_global_and_expr_for_insn): Make CALLs
+	non-clonable.
+	* sel-sched.c (sel_setup_region_sched_flags): Don't pipeline loops
+	that have no exit edges.
+
+2011-04-08  Alexander Monakov  <amonakov@ispras.ru>
+
 	PR rtl-optimization/48442
 	* sel-sched.c (init_seqno): Remove number_of_insns argument.  Update
 	all callers.  Adjust assert.
