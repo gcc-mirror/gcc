@@ -6868,8 +6868,6 @@ sel_region_init (int rgn)
   if (current_region_empty_p ())
     return true;
 
-  sel_setup_region_sched_flags ();
-
   bbs = VEC_alloc (basic_block, heap, current_nr_blocks);
 
   for (i = 0; i < current_nr_blocks; i++)
@@ -6879,6 +6877,8 @@ sel_region_init (int rgn)
 
   if (flag_sel_sched_pipelining)
     setup_current_loop_nest (rgn, &bbs);
+
+  sel_setup_region_sched_flags ();
 
   /* Initialize luids and dependence analysis which both sel-sched and haifa
      need.  */
