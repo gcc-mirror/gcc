@@ -1516,8 +1516,8 @@ iterative_hash_template_arg (tree arg, hashval_t val)
       return val;
 
     case OVERLOAD:
-      for (; arg; arg = OVL_CHAIN (arg))
-	val = iterative_hash_template_arg (OVL_FUNCTION (arg), val);
+      for (; arg; arg = OVL_NEXT (arg))
+	val = iterative_hash_template_arg (OVL_CURRENT (arg), val);
       return val;
 
     case CONSTRUCTOR:
@@ -18591,9 +18591,9 @@ dependent_template_p (tree tmpl)
     {
       while (tmpl)
 	{
-	  if (dependent_template_p (OVL_FUNCTION (tmpl)))
+	  if (dependent_template_p (OVL_CURRENT (tmpl)))
 	    return true;
-	  tmpl = OVL_CHAIN (tmpl);
+	  tmpl = OVL_NEXT (tmpl);
 	}
       return false;
     }
