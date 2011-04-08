@@ -1,5 +1,12 @@
 2011-04-08  Richard Guenther  <rguenther@suse.de>
 
+	PR lto/48467
+	* toplev.c (lang_dependent_init): Do not open asm_out_file
+	in WPA mode, nor perform debug machinery initialization.
+	(finalize): Do not unlink asm_out_file in WPA mode.
+
+2011-04-08  Richard Guenther  <rguenther@suse.de>
+
 	* gimple.h (gimple_call_fntype): New function.
 	(gimple_call_return_type): Use it.
 	* expr.c (expand_expr_real_1): Use gimple_call_fntype.
