@@ -1,3 +1,23 @@
+2011-04-08  Anatoly Sokolov  <aesok@post.ru>
+
+	* doc/tm.texi.in (ASM_OUTPUT_BSS): Remove documentation.
+	(BSS_SECTION_ASM_OP, ASM_OUTPUT_ALIGNED_BSS): Update documentation.
+	* doc/tm.texi: Regenerate.
+	* system.h (ASM_OUTPUT_BSS): Poison.
+	* varasm.c (asm_output_bss): Remove function.
+	(emit_bss, init_varasm_once): Don't use ASM_OUTPUT_BSS macro.
+	
+	* config/frv/frv.h (BSS_SECTION_ASM_OP): Remove comment.
+	* config/frv/fr30.h (BSS_SECTION_ASM_OP): Likewise.
+	* config/i386/djgpp.h (BSS_SECTION_ASM_OP): Likewise.
+	* config/i386/i386elf.h (BSS_SECTION_ASM_OP, ASM_OUTPUT_ALIGNED_BSS):
+	Likewise.
+	* config/sh/sh.h (BSS_SECTION_ASM_OP, ASM_OUTPUT_ALIGNED_BSS):
+	Likewise.
+	* config/m68k/m68kelf.h (BSS_SECTION_ASM_OP, ASM_OUTPUT_ALIGNED_BSS):
+	Likewise.
+	* config/m68k/netbsd-elf.h (ASM_OUTPUT_ALIGNED_BSS): Likewise.
+
 2011-04-07  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/rx/rx.opt (rx610, rx200, rx600): Use Enum not Name on
