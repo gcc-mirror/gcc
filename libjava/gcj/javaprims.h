@@ -26,6 +26,15 @@ details.  */
 #undef FALSE
 #define FALSE FALSE
 
+// JNI calling convention also defined in jni.h  */
+#ifndef JNICALL
+ #if (defined (_WIN32) || defined (__WIN32__) || defined (WIN32)) && !defined (_WIN64)
+  #define JNICALL __stdcall
+ #else
+  #define JNICALL
+ #endif
+#endif
+
 // To force selection of correct types that will mangle consistently
 // across platforms.
 extern "Java"

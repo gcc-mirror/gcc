@@ -251,10 +251,10 @@ bool _Jv_getInterfaceMethod(jclass, jclass&, int&,
 			    const _Jv_Utf8Const*,
 			    const _Jv_Utf8Const*);
 
-jobject _Jv_JNI_ToReflectedField (_Jv_JNIEnv *, jclass, jfieldID,
-				  jboolean);
-jobject _Jv_JNI_ToReflectedMethod (_Jv_JNIEnv *, jclass, jmethodID,
-				   jboolean);
+jobject JNICALL _Jv_JNI_ToReflectedField (_Jv_JNIEnv *, jclass, jfieldID,
+					  jboolean);
+jobject JNICALL _Jv_JNI_ToReflectedMethod (_Jv_JNIEnv *, jclass, jmethodID,
+					   jboolean);
 jfieldID _Jv_FromReflectedField (java::lang::reflect::Field *);
 
 jmethodID _Jv_FromReflectedMethod (java::lang::reflect::Method *);
