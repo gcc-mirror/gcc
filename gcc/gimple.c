@@ -1784,16 +1784,7 @@ gimple_call_flags (const_gimple stmt)
   if (decl)
     flags = flags_from_decl_or_type (decl);
   else
-    {
-      tree t = TREE_TYPE (gimple_call_fn (stmt));
-      /* ???  We can end up being called from gimple_set_modified from
-         gsi_remove in which case the function being called can
-	 be a released SSA name.  Give up in that case.  */
-      if (t)
-	flags = flags_from_decl_or_type (gimple_call_fntype (stmt));
-      else
-	flags = 0;
-    }
+    flags = flags_from_decl_or_type (gimple_call_fntype (stmt));
 
   if (stmt->gsbase.subcode & GF_CALL_NOTHROW)
     flags |= ECF_NOTHROW;
