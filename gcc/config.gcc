@@ -296,6 +296,7 @@ arm*-*-*)
 	extra_headers="mmintrin.h arm_neon.h"
 	c_target_objs="arm-c.o"
 	cxx_target_objs="arm-c.o"
+	extra_options="${extra_options} arm/arm-tables.opt"
 	;;
 avr-*-*)
 	cpu_type=avr

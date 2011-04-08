@@ -219,9 +219,6 @@ static tree arm_build_builtin_va_list (void);
 static void arm_expand_builtin_va_start (tree, rtx);
 static tree arm_gimplify_va_arg_expr (tree, tree, gimple_seq *, gimple_seq *);
 static void arm_option_override (void);
-static bool arm_handle_option (struct gcc_options *, struct gcc_options *,
-			       const struct cl_decoded_option *, location_t);
-static void arm_target_help (void);
 static unsigned HOST_WIDE_INT arm_shift_truncation_mask (enum machine_mode);
 static bool arm_cannot_copy_insn_p (rtx);
 static bool arm_tls_symbol_p (rtx x);
@@ -349,10 +346,6 @@ static const struct default_options arm_option_optimization_table[] =
 
 #undef  TARGET_DEFAULT_TARGET_FLAGS
 #define TARGET_DEFAULT_TARGET_FLAGS (TARGET_DEFAULT | MASK_SCHED_PROLOG)
-#undef  TARGET_HANDLE_OPTION
-#define TARGET_HANDLE_OPTION arm_handle_option
-#undef  TARGET_HELP
-#define TARGET_HELP arm_target_help
 #undef  TARGET_OPTION_OVERRIDE
 #define TARGET_OPTION_OVERRIDE arm_option_override
 #undef  TARGET_OPTION_OPTIMIZATION_TABLE
@@ -927,33 +920,10 @@ static const struct processors all_architectures[] =
   /* We don't specify tuning costs here as it will be figured out
      from the core.  */
 
-  {"armv2",   arm2,       "2",   FL_CO_PROC | FL_MODE26 | FL_FOR_ARCH2, NULL},
-  {"armv2a",  arm2,       "2",   FL_CO_PROC | FL_MODE26 | FL_FOR_ARCH2, NULL},
-  {"armv3",   arm6,       "3",   FL_CO_PROC | FL_MODE26 | FL_FOR_ARCH3, NULL},
-  {"armv3m",  arm7m,      "3M",  FL_CO_PROC | FL_MODE26 | FL_FOR_ARCH3M, NULL},
-  {"armv4",   arm7tdmi,   "4",   FL_CO_PROC | FL_MODE26 | FL_FOR_ARCH4, NULL},
-  /* Strictly, FL_MODE26 is a permitted option for v4t, but there are no
-     implementations that support it, so we will leave it out for now.  */
-  {"armv4t",  arm7tdmi,   "4T",  FL_CO_PROC |             FL_FOR_ARCH4T, NULL},
-  {"armv5",   arm10tdmi,  "5",   FL_CO_PROC |             FL_FOR_ARCH5, NULL},
-  {"armv5t",  arm10tdmi,  "5T",  FL_CO_PROC |             FL_FOR_ARCH5T, NULL},
-  {"armv5e",  arm1026ejs, "5E",  FL_CO_PROC |             FL_FOR_ARCH5E, NULL},
-  {"armv5te", arm1026ejs, "5TE", FL_CO_PROC |             FL_FOR_ARCH5TE, NULL},
-  {"armv6",   arm1136js,  "6",   FL_CO_PROC |             FL_FOR_ARCH6, NULL},
-  {"armv6j",  arm1136js,  "6J",  FL_CO_PROC |             FL_FOR_ARCH6J, NULL},
-  {"armv6k",  mpcore,	  "6K",  FL_CO_PROC |             FL_FOR_ARCH6K, NULL},
-  {"armv6z",  arm1176jzs, "6Z",  FL_CO_PROC |             FL_FOR_ARCH6Z, NULL},
-  {"armv6zk", arm1176jzs, "6ZK", FL_CO_PROC |             FL_FOR_ARCH6ZK, NULL},
-  {"armv6t2", arm1156t2s, "6T2", FL_CO_PROC |             FL_FOR_ARCH6T2, NULL},
-  {"armv6-m", cortexm1,	  "6M",				  FL_FOR_ARCH6M, NULL},
-  {"armv7",   cortexa8,	  "7",	 FL_CO_PROC |		  FL_FOR_ARCH7, NULL},
-  {"armv7-a", cortexa8,	  "7A",	 FL_CO_PROC |		  FL_FOR_ARCH7A, NULL},
-  {"armv7-r", cortexr4,	  "7R",	 FL_CO_PROC |		  FL_FOR_ARCH7R, NULL},
-  {"armv7-m", cortexm3,	  "7M",	 FL_CO_PROC |		  FL_FOR_ARCH7M, NULL},
-  {"armv7e-m", cortexm4,  "7EM", FL_CO_PROC |		  FL_FOR_ARCH7EM, NULL},
-  {"ep9312",  ep9312,     "4T",  FL_LDSCHED | FL_CIRRUS | FL_FOR_ARCH4, NULL},
-  {"iwmmxt",  iwmmxt,     "5TE", FL_LDSCHED | FL_STRONG | FL_FOR_ARCH5TE | FL_XSCALE | FL_IWMMXT , NULL},
-  {"iwmmxt2", iwmmxt2,     "5TE", FL_LDSCHED | FL_STRONG | FL_FOR_ARCH5TE | FL_XSCALE | FL_IWMMXT , NULL},
+#define ARM_ARCH(NAME, CORE, ARCH, FLAGS) \
+  {NAME, CORE, #ARCH, FLAGS, NULL},
+#include "arm-arches.def"
+#undef ARM_ARCH
   {NULL, arm_none, NULL, 0 , NULL}
 };
 
@@ -1325,147 +1295,20 @@ arm_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
   return std_gimplify_va_arg_expr (valist, type, pre_p, post_p);
 }
 
-/* Lookup NAME in SEL.  */
-
-static const struct processors *
-arm_find_cpu (const char *name, const struct processors *sel, const char *desc)
-{
-  if (!(name && *name))
-    return NULL;
-
-  for (; sel->name != NULL; sel++)
-    {
-      if (streq (name, sel->name))
-	return sel;
-    }
-
-  error ("bad value (%s) for %s switch", name, desc);
-  return NULL;
-}
-
-/* Implement TARGET_HANDLE_OPTION.  */
-
-static bool
-arm_handle_option (struct gcc_options *opts, struct gcc_options *opts_set,
-		   const struct cl_decoded_option *decoded,
-		   location_t loc ATTRIBUTE_UNUSED)
-{
-  size_t code = decoded->opt_index;
-  const char *arg = decoded->arg;
-
-  gcc_assert (opts == &global_options);
-  gcc_assert (opts_set == &global_options_set);
-
-  switch (code)
-    {
-    case OPT_march_:
-      arm_selected_arch = arm_find_cpu(arg, all_architectures, "-march");
-      return true;
-
-    case OPT_mcpu_:
-      arm_selected_cpu = arm_find_cpu(arg, all_cores, "-mcpu");
-      return true;
-
-    case OPT_mtune_:
-      arm_selected_tune = arm_find_cpu(arg, all_cores, "-mtune");
-      return true;
-
-    default:
-      return true;
-    }
-}
-
-static void
-arm_target_help (void)
-{
-  int i;
-  static int columns = 0;
-  int remaining;
-
-  /* If we have not done so already, obtain the desired maximum width of
-     the output.  Note - this is a duplication of the code at the start of
-     gcc/opts.c:print_specific_help() - the two copies should probably be
-     replaced by a single function.  */
-  if (columns == 0)
-    {
-      const char *p;
-
-      p = getenv ("COLUMNS");
-      if (p != NULL)
-	{
-	  int value = atoi (p);
-
-	  if (value > 0)
-	    columns = value;
-	}
-
-      if (columns == 0)
-	/* Use a reasonable default.  */
-	columns = 80;
-    }
-
-  printf ("  Known ARM CPUs (for use with the -mcpu= and -mtune= options):\n");
-
-  /* The - 2 is because we know that the last entry in the array is NULL.  */
-  i = ARRAY_SIZE (all_cores) - 2;
-  gcc_assert (i > 0);
-  printf ("    %s", all_cores[i].name);
-  remaining = columns - (strlen (all_cores[i].name) + 4);
-  gcc_assert (remaining >= 0);
-
-  while (i--)
-    {
-      int len = strlen (all_cores[i].name);
-
-      if (remaining > len + 2)
-	{
-	  printf (", %s", all_cores[i].name);
-	  remaining -= len + 2;
-	}
-      else
-	{
-	  if (remaining > 0)
-	    printf (",");
-	  printf ("\n    %s", all_cores[i].name);
-	  remaining = columns - (len + 4);
-	}
-    }
-
-  printf ("\n\n  Known ARM architectures (for use with the -march= option):\n");
-
-  i = ARRAY_SIZE (all_architectures) - 2;
-  gcc_assert (i > 0);
-  
-  printf ("    %s", all_architectures[i].name);
-  remaining = columns - (strlen (all_architectures[i].name) + 4);
-  gcc_assert (remaining >= 0);
-
-  while (i--)
-    {
-      int len = strlen (all_architectures[i].name);
-
-      if (remaining > len + 2)
-	{
-	  printf (", %s", all_architectures[i].name);
-	  remaining -= len + 2;
-	}
-      else
-	{
-	  if (remaining > 0)
-	    printf (",");
-	  printf ("\n    %s", all_architectures[i].name);
-	  remaining = columns - (len + 4);
-	}
-    }
-  printf ("\n");
-
-}
-
 /* Fix up any incompatible options that the user has specified.  */
 static void
 arm_option_override (void)
 {
   unsigned i;
+
+  if (global_options_set.x_arm_arch_option)
+    arm_selected_arch = &all_architectures[arm_arch_option];
+
+  if (global_options_set.x_arm_cpu_option)
+    arm_selected_cpu = &all_cores[(int) arm_cpu_option];
+
+  if (global_options_set.x_arm_tune_option)
+    arm_selected_tune = &all_cores[(int) arm_tune_option];
 
 #ifdef SUBTARGET_OVERRIDE_OPTIONS
   SUBTARGET_OVERRIDE_OPTIONS;

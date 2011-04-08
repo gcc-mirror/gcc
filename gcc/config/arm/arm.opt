@@ -1,6 +1,6 @@
 ; Options for the ARM port of the compiler.
 
-; Copyright (C) 2005, 2007, 2008 Free Software Foundation, Inc.
+; Copyright (C) 2005, 2007, 2008, 2009, 2011 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -17,6 +17,9 @@
 ; You should have received a copy of the GNU General Public License
 ; along with GCC; see the file COPYING3.  If not see
 ; <http://www.gnu.org/licenses/>.
+
+HeaderInclude
+config/arm/arm-opts.h
 
 mabi=
 Target RejectNegative Joined Var(target_abi_name)
@@ -45,7 +48,7 @@ mapcs-stack-check
 Target Report Mask(APCS_STACK) Undocumented
 
 march=
-Target RejectNegative Joined
+Target RejectNegative Joined Enum(arm_arch) Var(arm_arch_option)
 Specify the name of the target architecture
 
 marm
@@ -68,7 +71,7 @@ Target Report Mask(CIRRUS_FIX_INVALID_INSNS)
 Cirrus: Place NOPs to avoid invalid instruction combinations
 
 mcpu=
-Target RejectNegative Joined
+Target RejectNegative Joined Enum(processor_type) Var(arm_cpu_option) Init(arm_none)
 Specify the name of the target CPU
 
 mfloat-abi=
@@ -148,7 +151,7 @@ Target Report Mask(TPCS_LEAF_FRAME)
 Thumb: Generate (leaf) stack frames even if not needed
 
 mtune=
-Target RejectNegative Joined
+Target RejectNegative Joined Enum(processor_type) Var(arm_tune_option) Init(arm_none)
 Tune code for the given processor
 
 mwords-little-endian

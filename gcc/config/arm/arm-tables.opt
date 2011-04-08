@@ -1,0 +1,341 @@
+; -*- buffer-read-only: t -*-
+; Generated automatically by genopt.sh from arm-cores.def and arm-arches.def.
+
+; Copyright (C) 2011 Free Software Foundation, Inc.
+;
+; This file is part of GCC.
+;
+; GCC is free software; you can redistribute it and/or modify it under
+; the terms of the GNU General Public License as published by the Free
+; Software Foundation; either version 3, or (at your option) any later
+; version.
+;
+; GCC is distributed in the hope that it will be useful, but WITHOUT ANY
+; WARRANTY; without even the implied warranty of MERCHANTABILITY or
+; FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+; for more details.
+;
+; You should have received a copy of the GNU General Public License
+; along with GCC; see the file COPYING3.  If not see
+; <http://www.gnu.org/licenses/>.
+
+Enum
+Name(processor_type) Type(enum processor_type)
+Known ARM CPUs (for use with the -mcpu= and -mtune= options):
+
+EnumValue
+Enum(processor_type) String(arm2) Value(arm2)
+
+EnumValue
+Enum(processor_type) String(arm250) Value(arm250)
+
+EnumValue
+Enum(processor_type) String(arm3) Value(arm3)
+
+EnumValue
+Enum(processor_type) String(arm6) Value(arm6)
+
+EnumValue
+Enum(processor_type) String(arm60) Value(arm60)
+
+EnumValue
+Enum(processor_type) String(arm600) Value(arm600)
+
+EnumValue
+Enum(processor_type) String(arm610) Value(arm610)
+
+EnumValue
+Enum(processor_type) String(arm620) Value(arm620)
+
+EnumValue
+Enum(processor_type) String(arm7) Value(arm7)
+
+EnumValue
+Enum(processor_type) String(arm7d) Value(arm7d)
+
+EnumValue
+Enum(processor_type) String(arm7di) Value(arm7di)
+
+EnumValue
+Enum(processor_type) String(arm70) Value(arm70)
+
+EnumValue
+Enum(processor_type) String(arm700) Value(arm700)
+
+EnumValue
+Enum(processor_type) String(arm700i) Value(arm700i)
+
+EnumValue
+Enum(processor_type) String(arm710) Value(arm710)
+
+EnumValue
+Enum(processor_type) String(arm720) Value(arm720)
+
+EnumValue
+Enum(processor_type) String(arm710c) Value(arm710c)
+
+EnumValue
+Enum(processor_type) String(arm7100) Value(arm7100)
+
+EnumValue
+Enum(processor_type) String(arm7500) Value(arm7500)
+
+EnumValue
+Enum(processor_type) String(arm7500fe) Value(arm7500fe)
+
+EnumValue
+Enum(processor_type) String(arm7m) Value(arm7m)
+
+EnumValue
+Enum(processor_type) String(arm7dm) Value(arm7dm)
+
+EnumValue
+Enum(processor_type) String(arm7dmi) Value(arm7dmi)
+
+EnumValue
+Enum(processor_type) String(arm8) Value(arm8)
+
+EnumValue
+Enum(processor_type) String(arm810) Value(arm810)
+
+EnumValue
+Enum(processor_type) String(strongarm) Value(strongarm)
+
+EnumValue
+Enum(processor_type) String(strongarm110) Value(strongarm110)
+
+EnumValue
+Enum(processor_type) String(strongarm1100) Value(strongarm1100)
+
+EnumValue
+Enum(processor_type) String(strongarm1110) Value(strongarm1110)
+
+EnumValue
+Enum(processor_type) String(fa526) Value(fa526)
+
+EnumValue
+Enum(processor_type) String(fa626) Value(fa626)
+
+EnumValue
+Enum(processor_type) String(arm7tdmi) Value(arm7tdmi)
+
+EnumValue
+Enum(processor_type) String(arm7tdmi-s) Value(arm7tdmis)
+
+EnumValue
+Enum(processor_type) String(arm710t) Value(arm710t)
+
+EnumValue
+Enum(processor_type) String(arm720t) Value(arm720t)
+
+EnumValue
+Enum(processor_type) String(arm740t) Value(arm740t)
+
+EnumValue
+Enum(processor_type) String(arm9) Value(arm9)
+
+EnumValue
+Enum(processor_type) String(arm9tdmi) Value(arm9tdmi)
+
+EnumValue
+Enum(processor_type) String(arm920) Value(arm920)
+
+EnumValue
+Enum(processor_type) String(arm920t) Value(arm920t)
+
+EnumValue
+Enum(processor_type) String(arm922t) Value(arm922t)
+
+EnumValue
+Enum(processor_type) String(arm940t) Value(arm940t)
+
+EnumValue
+Enum(processor_type) String(ep9312) Value(ep9312)
+
+EnumValue
+Enum(processor_type) String(arm10tdmi) Value(arm10tdmi)
+
+EnumValue
+Enum(processor_type) String(arm1020t) Value(arm1020t)
+
+EnumValue
+Enum(processor_type) String(arm9e) Value(arm9e)
+
+EnumValue
+Enum(processor_type) String(arm946e-s) Value(arm946es)
+
+EnumValue
+Enum(processor_type) String(arm966e-s) Value(arm966es)
+
+EnumValue
+Enum(processor_type) String(arm968e-s) Value(arm968es)
+
+EnumValue
+Enum(processor_type) String(arm10e) Value(arm10e)
+
+EnumValue
+Enum(processor_type) String(arm1020e) Value(arm1020e)
+
+EnumValue
+Enum(processor_type) String(arm1022e) Value(arm1022e)
+
+EnumValue
+Enum(processor_type) String(xscale) Value(xscale)
+
+EnumValue
+Enum(processor_type) String(iwmmxt) Value(iwmmxt)
+
+EnumValue
+Enum(processor_type) String(iwmmxt2) Value(iwmmxt2)
+
+EnumValue
+Enum(processor_type) String(fa606te) Value(fa606te)
+
+EnumValue
+Enum(processor_type) String(fa626te) Value(fa626te)
+
+EnumValue
+Enum(processor_type) String(fmp626) Value(fmp626)
+
+EnumValue
+Enum(processor_type) String(fa726te) Value(fa726te)
+
+EnumValue
+Enum(processor_type) String(arm926ej-s) Value(arm926ejs)
+
+EnumValue
+Enum(processor_type) String(arm1026ej-s) Value(arm1026ejs)
+
+EnumValue
+Enum(processor_type) String(arm1136j-s) Value(arm1136js)
+
+EnumValue
+Enum(processor_type) String(arm1136jf-s) Value(arm1136jfs)
+
+EnumValue
+Enum(processor_type) String(arm1176jz-s) Value(arm1176jzs)
+
+EnumValue
+Enum(processor_type) String(arm1176jzf-s) Value(arm1176jzfs)
+
+EnumValue
+Enum(processor_type) String(mpcorenovfp) Value(mpcorenovfp)
+
+EnumValue
+Enum(processor_type) String(mpcore) Value(mpcore)
+
+EnumValue
+Enum(processor_type) String(arm1156t2-s) Value(arm1156t2s)
+
+EnumValue
+Enum(processor_type) String(arm1156t2f-s) Value(arm1156t2fs)
+
+EnumValue
+Enum(processor_type) String(cortex-a5) Value(cortexa5)
+
+EnumValue
+Enum(processor_type) String(cortex-a8) Value(cortexa8)
+
+EnumValue
+Enum(processor_type) String(cortex-a9) Value(cortexa9)
+
+EnumValue
+Enum(processor_type) String(cortex-a15) Value(cortexa15)
+
+EnumValue
+Enum(processor_type) String(cortex-r4) Value(cortexr4)
+
+EnumValue
+Enum(processor_type) String(cortex-r4f) Value(cortexr4f)
+
+EnumValue
+Enum(processor_type) String(cortex-m4) Value(cortexm4)
+
+EnumValue
+Enum(processor_type) String(cortex-m3) Value(cortexm3)
+
+EnumValue
+Enum(processor_type) String(cortex-m1) Value(cortexm1)
+
+EnumValue
+Enum(processor_type) String(cortex-m0) Value(cortexm0)
+
+Enum
+Name(arm_arch) Type(int)
+Known ARM architectures (for use with the -march= option):
+
+EnumValue
+Enum(arm_arch) String(armv2) Value(0)
+
+EnumValue
+Enum(arm_arch) String(armv2a) Value(1)
+
+EnumValue
+Enum(arm_arch) String(armv3) Value(2)
+
+EnumValue
+Enum(arm_arch) String(armv3m) Value(3)
+
+EnumValue
+Enum(arm_arch) String(armv4) Value(4)
+
+EnumValue
+Enum(arm_arch) String(armv4t) Value(5)
+
+EnumValue
+Enum(arm_arch) String(armv5) Value(6)
+
+EnumValue
+Enum(arm_arch) String(armv5t) Value(7)
+
+EnumValue
+Enum(arm_arch) String(armv5e) Value(8)
+
+EnumValue
+Enum(arm_arch) String(armv5te) Value(9)
+
+EnumValue
+Enum(arm_arch) String(armv6) Value(10)
+
+EnumValue
+Enum(arm_arch) String(armv6j) Value(11)
+
+EnumValue
+Enum(arm_arch) String(armv6k) Value(12)
+
+EnumValue
+Enum(arm_arch) String(armv6z) Value(13)
+
+EnumValue
+Enum(arm_arch) String(armv6zk) Value(14)
+
+EnumValue
+Enum(arm_arch) String(armv6t2) Value(15)
+
+EnumValue
+Enum(arm_arch) String(armv6-m) Value(16)
+
+EnumValue
+Enum(arm_arch) String(armv7) Value(17)
+
+EnumValue
+Enum(arm_arch) String(armv7-a) Value(18)
+
+EnumValue
+Enum(arm_arch) String(armv7-r) Value(19)
+
+EnumValue
+Enum(arm_arch) String(armv7-m) Value(20)
+
+EnumValue
+Enum(arm_arch) String(armv7e-m) Value(21)
+
+EnumValue
+Enum(arm_arch) String(ep9312) Value(22)
+
+EnumValue
+Enum(arm_arch) String(iwmmxt) Value(23)
+
+EnumValue
+Enum(arm_arch) String(iwmmxt2) Value(24)
+
