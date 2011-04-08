@@ -1058,10 +1058,14 @@ Identifier_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p)
 
   /* If we have a constant declaration and its initializer, try to return the
      latter to avoid the need to call fold in lots of places and the need for
-     elaboration code if this identifier is used as an initializer itself.  */
+     elaboration code if this identifier is used as an initializer itself.
+     Don't do it for aggregate types that contain a placeholder since their
+     initializers cannot be manipulated easily.  */
   if (TREE_CONSTANT (gnu_result)
       && DECL_P (gnu_result)
-      && DECL_INITIAL (gnu_result))
+      && DECL_INITIAL (gnu_result)
+      && !(AGGREGATE_TYPE_P (TREE_TYPE (gnu_result))
+	   && type_contains_placeholder_p (TREE_TYPE (gnu_result))))
     {
       bool constant_only = (TREE_CODE (gnu_result) == CONST_DECL
 			    && !DECL_CONST_CORRESPONDING_VAR (gnu_result));
