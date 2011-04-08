@@ -5611,6 +5611,8 @@ haifa_init_insn (rtx insn)
       /* Extend dependency caches by one element.  */
       extend_dependency_caches (1, false);
     }
+  if (sched_pressure_p)
+    init_insn_reg_pressure_info (insn);
 }
 
 /* Init data for the new basic block BB which comes after AFTER.  */

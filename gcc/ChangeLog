@@ -1,3 +1,13 @@
+2011-04-08  Andrey Belevantsev  <abel@ispras.ru>
+
+	PR rtl-optimization/48272
+
+	* sched-deps.c (setup_insn_reg_pressure_info): Export and rename to
+	init_insn_reg_pressure_info.  Adjust a caller.
+	* sched-int.h (init_insn_reg_pressure_info): Declare.
+	* haifa-sched.c (haifa_init_insn): Call init_insn_reg_pressure_info
+	when sched-pressure is enabled.
+
 2011-04-08  Richard Guenther  <rguenther@suse.de>
 
 	* gimple.c (gimple_set_modified): Do not queue calls to
