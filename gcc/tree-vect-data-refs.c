@@ -1,5 +1,5 @@
 /* Data References Analysis and Manipulation Utilities for Vectorization.
-   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
    Contributed by Dorit Naishlos <dorit@il.ibm.com>
    and Ira Rosen <irar@il.ibm.com>
@@ -1142,6 +1142,9 @@ vector_alignment_reachable_p (struct data_reference *dr)
 
       if (ba)
 	is_packed = contains_packed_reference (ba);
+
+      if (compare_tree_int (TYPE_SIZE (type), TYPE_ALIGN (type)) > 0)
+	is_packed = true;
 
       if (vect_print_dump_info (REPORT_DETAILS))
 	fprintf (vect_dump, "Unknown misalignment, is_packed = %d",is_packed);

@@ -1,3 +1,10 @@
+2011-04-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/48377
+	* tree-vect-data-refs.c (vector_alignment_reachable_p): Set
+	is_packed to true even for types with smaller TYPE_ALIGN than
+	TYPE_SIZE.
+
 2011-04-07  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/sse.md: Update copyright year.
