@@ -1,3 +1,12 @@
+
+2011-04-08  Basile Starynkevitch  <basile@starynkevitch.net>
+
+	* gengtype.c (write_typed_alloc_def): New argument f. Use it instead
+	of header_file.
+	(write_typed_struct_alloc_def, write_typed_typedef_alloc_def)
+	(write_typed_alloc_defns): Likewise.
+	(main): Calls write_typed_alloc_defns with output_header.
+
 2011-04-08  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR 48435
