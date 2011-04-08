@@ -10457,7 +10457,8 @@ cp_parser_decltype (cp_parser *parser)
       return error_mark_node;
     }
 
-  return finish_decltype_type (expr, id_expression_or_member_access_p);
+  return finish_decltype_type (expr, id_expression_or_member_access_p,
+			       tf_warning_or_error);
 }
 
 /* Special member functions [gram.special] */

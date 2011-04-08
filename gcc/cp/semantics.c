@@ -4785,7 +4785,8 @@ describable_type (tree expr)
    a full expression.  */
 
 tree
-finish_decltype_type (tree expr, bool id_expression_or_member_access_p)
+finish_decltype_type (tree expr, bool id_expression_or_member_access_p,
+		      tsubst_flags_t complain)
 {
   tree orig_expr = expr;
   tree type = NULL_TREE;
@@ -4798,7 +4799,8 @@ finish_decltype_type (tree expr, bool id_expression_or_member_access_p)
       || (TREE_CODE (expr) == BIT_NOT_EXPR
 	  && TYPE_P (TREE_OPERAND (expr, 0))))
     {
-      error ("argument to decltype must be an expression");
+      if (complain & tf_error)
+	error ("argument to decltype must be an expression");
       return error_mark_node;
     }
 
@@ -4865,7 +4867,9 @@ finish_decltype_type (tree expr, bool id_expression_or_member_access_p)
           if (OVL_CHAIN (expr)
 	      || TREE_CODE (OVL_FUNCTION (expr)) == TEMPLATE_DECL)
             {
-              error ("%qE refers to a set of overloaded functions", orig_expr);
+	      if (complain & tf_error)
+		error ("%qE refers to a set of overloaded functions",
+		       orig_expr);
               return error_mark_node;
             }
           else
@@ -4917,7 +4921,8 @@ finish_decltype_type (tree expr, bool id_expression_or_member_access_p)
         default:
 	  gcc_assert (TYPE_P (expr) || DECL_P (expr)
 		      || TREE_CODE (expr) == SCOPE_REF);
-          error ("argument to decltype must be an expression");
+	  if (complain & tf_error)
+	    error ("argument to decltype must be an expression");
           return error_mark_node;
         }
     }
@@ -5012,7 +5017,8 @@ finish_decltype_type (tree expr, bool id_expression_or_member_access_p)
 
   if (!type || type == unknown_type_node)
     {
-      error ("type of %qE is unknown", expr);
+      if (complain & tf_error)
+	error ("type of %qE is unknown", expr);
       return error_mark_node;
     }
 
