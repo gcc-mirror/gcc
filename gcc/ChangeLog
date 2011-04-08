@@ -1,3 +1,12 @@
+2011-04-08  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR 4435
+	* ira-color.c (setup_profitable_hard_regs): Add comments.
+	Don't take prohibited hard regs into account.
+	(setup_conflict_profitable_regs): Rename to
+	get_conflict_profitable_regs.
+	(check_hard_reg_p): Check prohibited hard regs.
+
 2011-04-08  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* config/alpha/alpha.c (alpha_emit_xfloating_libcall): Call use_reg.
