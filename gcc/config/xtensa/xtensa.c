@@ -1872,9 +1872,7 @@ xtensa_call_tls_desc (rtx sym, rtx *retp)
   emit_insn (gen_tls_arg (arg, sym));
   emit_move_insn (a10, arg);
   call_insn = emit_call_insn (gen_tls_call (a10, fn, sym, const1_rtx));
-  CALL_INSN_FUNCTION_USAGE (call_insn)
-    = gen_rtx_EXPR_LIST (VOIDmode, gen_rtx_USE (VOIDmode, a10),
-			 CALL_INSN_FUNCTION_USAGE (call_insn));
+  use_reg (&CALL_INSN_FUNCTION_USAGE (call_insn), a10);
   insns = get_insns ();
   end_sequence ();
 
