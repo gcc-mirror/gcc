@@ -1,3 +1,13 @@
+2011-04-08  Michael Matz  <matz@suse.de>
+
+	PR middle-end/48389
+	* jump.c (rebuild_jump_labels_1, rebuild_jump_labels_chain): New
+	functions.
+	(rebuild_jump_labels): Call rebuild_jump_labels_1.
+	* rtl.h (rebuild_jump_labels_chain): Declare.
+	* cfgexpand.c (gimple_expand_cfg): Initialize JUMP_LABEL also on
+	insns inserted on edges.
+
 2011-04-08  Joseph Myers  <joseph@codesourcery.com>
 
 	* config.gcc (arm*-*-*): Add arm/arm-tables.opt to extra_options.
@@ -16,7 +26,7 @@
 	* config/arm/t-arm ($(srcdir)/config/arm/arm-tables.opt): New.
 	(arm.o): Update dependencies.
 
-2011-04-08  Basile Starynkevitch  <basile@starynkevitch.net>
+2011-04-08  Basile Starynkevitch  <basile@starynkevitch.net>
 
 	* gengtype.c (write_typed_alloc_def): New argument f. Use it instead
 	of header_file.
