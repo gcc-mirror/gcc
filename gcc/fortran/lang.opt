@@ -222,6 +222,10 @@ Wconversion-extra
 Fortran Warning
 Warn about most implicit conversions
 
+Wfunction-elimination
+Fortran Warning
+Warn about function call elimination
+
 Wimplicit-interface
 Fortran Warning
 Warn about calls with implicit interface
@@ -413,6 +417,10 @@ Allow arbitrary character line width in free mode
 ffree-line-length-
 Fortran RejectNegative Joined UInteger
 -ffree-line-length-<n>	Use n as character line width in free mode
+
+ffrontend-optimize
+Fortran
+Enable front end optimization
 
 fimplicit-none
 Fortran

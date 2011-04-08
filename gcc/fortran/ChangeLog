@@ -1,3 +1,24 @@
+2011-04-08  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/48448
+	* gfortran.h (gfc_option_t):  Add warn_function_elimination and
+	flag_frontend_optimize.
+	* lang.opt (Wfunction-elimination):  Add.
+	(ffrontend-optimize):  Add.
+	* invoke.texi:  Add documentation for -Wfunction-elimination
+	and -ffrontend-optimize.  Add -faggressive-function-elimination
+	to list of code generation options.
+	* frontend-passes.c (gfc_run_passes):  Run optimizations if
+	flag_frontend_optimize is set.
+	(warn_function_elimination):  New function.
+	(cfe_expr_0):  Call it if requested to do so.
+	* options.c (gfc_init_options):  Initiate warn_function_elimination
+	and flag_frontend_optimize.
+	(gfc_post_options):  Set flag_frontend_optimize if not specified
+	by user, depending on the optimization level.
+	(gfc_handle_option):  Handle -Wfunction-elimination and
+	-ffrontend-optimize.
+
 2011-04-06  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/18918

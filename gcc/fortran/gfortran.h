@@ -2180,6 +2180,7 @@ typedef struct
   int warn_ampersand;
   int gfc_warn_conversion;
   int warn_conversion_extra;
+  int warn_function_elimination;
   int warn_implicit_interface;
   int warn_implicit_procedure;
   int warn_line_truncation;
@@ -2234,6 +2235,7 @@ typedef struct
   int flag_protect_parens;
   int flag_realloc_lhs;
   int flag_aggressive_function_elimination;
+  int flag_frontend_optimize;
 
   int fpe;
   int rtcheck;
