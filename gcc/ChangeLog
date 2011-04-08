@@ -1,7 +1,12 @@
+2011-04-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* combine.c (combine_validate_cost): Adjust comments.  Set registered
+	cost of I0 to zero at the end, if any.
+
 2011-04-08  Xinliang David Li  <davidxl@google.com>
 
-	* ipa-cp.c (ipcp_update_profiling): Correct
-	 negative scale factor due to insane profile data.
+	* ipa-cp.c (ipcp_update_profiling): Correct negative scale factor due
+	to insane profile data.
 
 2011-04-08  Xinliang David Li  <davidxl@google.com>
 
@@ -11,9 +16,9 @@
 
 2011-04-08  Steven G. Kargl  <kargl@gcc.gnu.org>
 
-	PR 47829
-	gcc/config.gcc: disable unwind table generation for crtbegin/crtend
-	on i386-*-freebsd.
+	PR target/47829
+	* config.gcc (i386-*-freebsd): Disable unwind table generation for
+	crtbegin/crtend.
 
 2011-04-08  Michael Matz  <matz@suse.de>
 
@@ -53,7 +58,7 @@
 
 2011-04-08  Vladimir Makarov  <vmakarov@redhat.com>
 
-	PR 48435
+	PR inline-asm/48435
 	* ira-color.c (setup_profitable_hard_regs): Add comments.
 	Don't take prohibited hard regs into account.
 	(setup_conflict_profitable_regs): Rename to
