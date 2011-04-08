@@ -1,5 +1,9 @@
 2011-04-07  Jason Merrill  <jason@redhat.com>
 
+	PR c++/48452
+	* typeck.c (build_x_compound_expr_from_list): Return error_mark_node
+	in SFINAE context.
+
 	* semantics.c (finish_decltype_type): Add complain parm.
 	* cp-tree.h: Adjust.
 	* parser.c (cp_parser_decltype): Adjust.

@@ -5469,6 +5469,8 @@ build_x_compound_expr_from_list (tree list, expr_list_kind exp,
 	  default:
 	    gcc_unreachable ();
 	  }
+      else
+	return error_mark_node;
 
       for (list = TREE_CHAIN (list); list; list = TREE_CHAIN (list))
 	expr = build_x_compound_expr (expr, TREE_VALUE (list), 

@@ -1,5 +1,7 @@
 2011-04-07  Jason Merrill  <jason@redhat.com>
 
+	* g++.dg/cpp0x/sfinae10.C: New.
+
 	* g++.dg/cpp0x/sfinae7.C: New.
 
 	* g++.dg/cpp0x/enum9.C: New.
