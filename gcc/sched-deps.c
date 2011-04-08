@@ -1991,8 +1991,8 @@ mark_insn_reg_clobber (rtx reg, const_rtx setter, void *data)
 }
 
 /* Set up reg pressure info related to INSN.  */
-static void
-setup_insn_reg_pressure_info (rtx insn)
+void
+init_insn_reg_pressure_info (rtx insn)
 {
   int i, len;
   enum reg_class cl;
@@ -2774,7 +2774,7 @@ sched_analyze_insn (struct deps_desc *deps, rtx x, rtx insn)
   if (sched_pressure_p)
     {
       setup_insn_reg_uses (deps, insn);
-      setup_insn_reg_pressure_info (insn);
+      init_insn_reg_pressure_info (insn);
     }
 
   /* Add register dependencies for insn.  */
