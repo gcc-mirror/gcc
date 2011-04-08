@@ -18,7 +18,7 @@ int bar(void)
   return ((struct Foo *)p)->i;
 }
 
-const struct Foo g;
+extern const struct Foo g;
 
 int foobar(void)
 {

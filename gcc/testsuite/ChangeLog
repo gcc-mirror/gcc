@@ -1,3 +1,9 @@
+2011-04-08  Mike Stump  <mikestump@comcast.net>
+
+	PR testsuite/48506
+	* gcc.dg/tree-ssa/ssa-ccp-17.c: Robustify against ports that
+	default to fno-common.
+
 2011-04-07  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/cpp0x/regress/call1.C: New.
