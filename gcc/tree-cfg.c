@@ -3086,7 +3086,7 @@ verify_gimple_call (gimple stmt)
       return true;
     }
 
-  fntype = TREE_TYPE (TREE_TYPE (fn));
+  fntype = gimple_call_fntype (stmt);
   if (gimple_call_lhs (stmt)
       && !useless_type_conversion_p (TREE_TYPE (gimple_call_lhs (stmt)),
 				     TREE_TYPE (fntype))
@@ -7441,7 +7441,7 @@ do_warn_unused_result (gimple_seq seq)
 	     LHS.  All calls whose value is ignored should be
 	     represented like this.  Look for the attribute.  */
 	  fdecl = gimple_call_fndecl (g);
-	  ftype = TREE_TYPE (TREE_TYPE (gimple_call_fn (g)));
+	  ftype = gimple_call_fntype (g);
 
 	  if (lookup_attribute ("warn_unused_result", TYPE_ATTRIBUTES (ftype)))
 	    {

@@ -1,3 +1,17 @@
+2011-04-08  Richard Guenther  <rguenther@suse.de>
+
+	* gimple.h (gimple_call_fntype): New function.
+	(gimple_call_return_type): Use it.
+	* expr.c (expand_expr_real_1): Use gimple_call_fntype.
+	* gimple-low.c (gimple_check_call_args): Likewise.
+	* gimple.c (gimple_call_flags): Likewise.
+	(gimple_call_arg_flags): Likewise.
+	(gimple_call_return_flags): Likewise.
+	* tree-cfg.c (verify_gimple_call): Likewise.
+	(do_warn_unused_result): Likewise.
+	* tree-ssa-ccp.c (ccp_fold_stmt): Likewise.
+	* value-prof.c (gimple_ic_transform): Fix fndecl check.
+
 2011-04-08  Dmitry Melnik  <dm@ispras.ru>
 
 	PR rtl-optimization/48235
