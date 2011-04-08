@@ -152,6 +152,7 @@ extern void arm_expand_sync (enum machine_mode, struct arm_sync_generator *,
 extern const char *arm_output_memory_barrier (rtx *);
 extern const char *arm_output_sync_insn (rtx, rtx *);
 extern unsigned int arm_sync_loop_insns (rtx , rtx *);
+extern int arm_attr_length_push_multi(rtx, rtx);
 
 #if defined TREE_CODE
 extern void arm_init_cumulative_args (CUMULATIVE_ARGS *, tree, rtx, tree);
