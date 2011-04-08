@@ -1,3 +1,9 @@
+2011-04-08  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* config/alpha/alpha.c (alpha_emit_xfloating_libcall): Call use_reg.
+	* config/xtensa/xtensa.c (xtensa_call_tls_desc): Likewise.
+	* config/sparc/sparc.c (sparc_legitimize_tls_address): Likewise.
+
 2011-04-08  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR target/48366
