@@ -1,3 +1,9 @@
+2011-04-08  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR target/47829
+	gcc/config.gcc: disable unwind table generation for crtbegin/crtend
+	on i386-*-freebsd.
+
 2011-04-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/48377
