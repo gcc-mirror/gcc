@@ -1,3 +1,9 @@
+2011-04-08  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* gcc-interface/utils.c (handle_sentinel_attribute): Don't use
+	TYPE_ARG_TYPES
+	(handle_type_generic_attribute): Likewise.
+
 2011-04-04  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/47163

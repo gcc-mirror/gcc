@@ -5266,8 +5266,6 @@ static tree
 handle_sentinel_attribute (tree *node, tree name, tree args,
 			   int ARG_UNUSED (flags), bool *no_add_attrs)
 {
-  tree params = TYPE_ARG_TYPES (*node);
-
   if (!prototype_p (*node))
     {
       warning (OPT_Wattributes,
@@ -5277,10 +5275,7 @@ handle_sentinel_attribute (tree *node, tree name, tree args,
     }
   else
     {
-      while (TREE_CHAIN (params))
-	params = TREE_CHAIN (params);
-
-      if (VOID_TYPE_P (TREE_VALUE (params)))
+      if (!stdarg_p (*node))
         {
 	  warning (OPT_Wattributes,
 		   "%qs attribute only applies to variadic functions",
@@ -5400,17 +5395,11 @@ handle_type_generic_attribute (tree *node, tree ARG_UNUSED (name),
 			       tree ARG_UNUSED (args), int ARG_UNUSED (flags),
 			       bool * ARG_UNUSED (no_add_attrs))
 {
-  tree params;
-
   /* Ensure we have a function type.  */
   gcc_assert (TREE_CODE (*node) == FUNCTION_TYPE);
 
-  params = TYPE_ARG_TYPES (*node);
-  while (params && ! VOID_TYPE_P (TREE_VALUE (params)))
-    params = TREE_CHAIN (params);
-
   /* Ensure we have a variadic function.  */
-  gcc_assert (!params);
+  gcc_assert (!prototype_p (*node) || stdarg_p (*node));
 
   return NULL_TREE;
 }
