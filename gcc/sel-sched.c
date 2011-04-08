@@ -6369,7 +6369,10 @@ code_motion_process_successors (insn_t insn, av_set_t orig_ops,
          the iterator becomes invalid.  We need to try again.  */
       if (BLOCK_FOR_INSN (insn)->index != old_index
           || EDGE_COUNT (bb->succs) != old_succs)
-        goto rescan;
+        {
+          insn = sel_bb_end (BLOCK_FOR_INSN (insn));
+          goto rescan;
+        }
     }
 
 #ifdef ENABLE_CHECKING
@@ -6587,21 +6590,37 @@ code_motion_path_driver (insn_t insn, av_set_t orig_ops, ilist_t path,
   if (!expr)
     {
       int res;
+      rtx last_insn = PREV_INSN (insn);
+      bool added_to_path;
 
       gcc_assert (insn == sel_bb_end (bb));
 
       /* Add bb tail to PATH (but it doesn't make any sense if it's a bb_head -
 	 it's already in PATH then).  */
       if (insn != first_insn)
-	ilist_add (&path, insn);
+	{
+	  ilist_add (&path, insn);
+	  added_to_path = true;
+	}
+      else
+        added_to_path = false;
 
       /* Process_successors should be able to find at least one
 	 successor for which code_motion_path_driver returns TRUE.  */
       res = code_motion_process_successors (insn, orig_ops,
                                             path, static_params);
 
+      /* Jump in the end of basic block could have been removed or replaced
+         during code_motion_process_successors, so recompute insn as the
+         last insn in bb.  */
+      if (NEXT_INSN (last_insn) != insn)
+        {
+          insn = sel_bb_end (bb);
+          first_insn = sel_bb_head (bb);
+        }
+
       /* Remove bb tail from path.  */
-      if (insn != first_insn)
+      if (added_to_path)
 	ilist_remove (&path);
 
       if (res != 1)

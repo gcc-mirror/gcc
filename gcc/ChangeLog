@@ -1,3 +1,11 @@
+2011-04-08  Dmitry Melnik  <dm@ispras.ru>
+
+	PR rtl-optimization/48235
+	* sel-sched.c (code_motion_process_successors): Recompute the last
+	insn in basic block if control flow changed.
+	(code_motion_path_driver): Ditto.  Recompute the first insn as well.
+	Update condition for ilist_remove.
+
 2011-04-08  Alexander Monakov  <amonakov@ispras.ru>
 
 	PR rtl-optimization/48302
