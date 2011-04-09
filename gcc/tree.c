@@ -2453,6 +2453,10 @@ array_type_nelts (const_tree type)
   min = TYPE_MIN_VALUE (index_type);
   max = TYPE_MAX_VALUE (index_type);
 
+  /* TYPE_MAX_VALUE may not be set if the array has unknown length.  */
+  if (!max)
+    return error_mark_node;
+
   return (integer_zerop (min)
 	  ? max
 	  : fold_build2 (MINUS_EXPR, TREE_TYPE (max), max, min));
