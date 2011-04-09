@@ -1263,17 +1263,12 @@ mark_unavailable_hard_regs (def_t def, struct reg_rename *reg_rename_p,
      FIXME: it is enough to do this once per all original defs.  */
   if (frame_pointer_needed)
     {
-      int i;
+      add_to_hard_reg_set (&reg_rename_p->unavailable_hard_regs,
+			   Pmode, FRAME_POINTER_REGNUM);
 
-      for (i = hard_regno_nregs[FRAME_POINTER_REGNUM][Pmode]; i--;)
-	SET_HARD_REG_BIT (reg_rename_p->unavailable_hard_regs,
-                          FRAME_POINTER_REGNUM + i);
-
-#if !HARD_FRAME_POINTER_IS_FRAME_POINTER
-      for (i = hard_regno_nregs[HARD_FRAME_POINTER_REGNUM][Pmode]; i--;)
-	SET_HARD_REG_BIT (reg_rename_p->unavailable_hard_regs,
-                          HARD_FRAME_POINTER_REGNUM + i);
-#endif
+      if (!HARD_FRAME_POINTER_IS_FRAME_POINTER)
+        add_to_hard_reg_set (&reg_rename_p->unavailable_hard_regs, 
+			     Pmode, HARD_FRAME_POINTER_IS_FRAME_POINTER);
     }
 
 #ifdef STACK_REGS

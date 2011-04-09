@@ -1,3 +1,13 @@
+2011-04-09  Anatoly Sokolov  <aesok@post.ru>
+
+	* expr.c (expand_expr_real_1): Use add_to_hard_reg_set function
+	instead of loop.
+	* sel-sched.c (mark_unavailable_hard_regs): Likewise.
+	* function.c (record_hard_reg_sets): Likewise.
+	* ira.c (compute_regs_asm_clobbered): Likewise.
+	* sched-deps.c (sched_analyze_1): Likewise.
+	* reload1.c (mark_reload_reg_in_use, choose_reload_regs): Likewise.
+
 2011-04-09  Xinliang David Li  <davidxl@google.com>
 
 	PR tree-optimization/PR48484

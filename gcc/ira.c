@@ -1724,16 +1724,10 @@ compute_regs_asm_clobbered (void)
 	      {
 		df_ref def = *def_rec;
 		unsigned int dregno = DF_REF_REGNO (def);
-		if (dregno < FIRST_PSEUDO_REGISTER)
-		  {
-		    unsigned int i;
-		    enum machine_mode mode = GET_MODE (DF_REF_REAL_REG (def));
-		    unsigned int end = dregno
-		      + hard_regno_nregs[dregno][mode] - 1;
-
-		    for (i = dregno; i <= end; ++i)
-		      SET_HARD_REG_BIT(crtl->asm_clobbers, i);
-		  }
+		if (HARD_REGISTER_NUM_P (dregno))
+		  add_to_hard_reg_set (&crtl->asm_clobbers,
+				       GET_MODE (DF_REF_REAL_REG (def)),
+				       dregno);
 	      }
 	}
     }
