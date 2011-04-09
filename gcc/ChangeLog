@@ -1,3 +1,7 @@
+2011-04-09  Duncan Sands  <baldrick@free.fr>
+
+	* tree.c (array_type_nelts): Bail out if TYPE_MAX_VALUE not set.
+
 2011-04-08  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* combine.c (combine_validate_cost): Adjust comments.  Set registered
