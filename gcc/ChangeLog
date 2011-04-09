@@ -1,3 +1,7 @@
+2011-04-09  Duncan Sands  <baldrick@free.fr>
+
+	* tree.c (array_type_nelts): Bail out if TYPE_MAX_VALUE not set.
+
 2011-04-07  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/sse.md (avx_cmps<ssemodesuffixf2c><mode>3): Add
