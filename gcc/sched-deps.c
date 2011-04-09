@@ -1,7 +1,8 @@
 /* Instruction scheduling pass.  This file computes dependencies between
    instructions.
    Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+   2011
    Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com) Enhanced by,
    and currently maintained by, Jim Wilson (wilson@cygnus.com)
@@ -2259,16 +2260,12 @@ sched_analyze_1 (struct deps_desc *deps, rtx x, rtx insn)
       /* Treat all writes to a stack register as modifying the TOS.  */
       if (regno >= FIRST_STACK_REG && regno <= LAST_STACK_REG)
 	{
-	  int nregs;
-
 	  /* Avoid analyzing the same register twice.  */
 	  if (regno != FIRST_STACK_REG)
 	    sched_analyze_reg (deps, FIRST_STACK_REG, mode, code, insn);
 
-	  nregs = hard_regno_nregs[FIRST_STACK_REG][mode];
-	  while (--nregs >= 0)
-	    SET_HARD_REG_BIT (implicit_reg_pending_uses,
-			      FIRST_STACK_REG + nregs);
+	  add_to_hard_reg_set (&implicit_reg_pending_uses, mode,
+			       FIRST_STACK_REG);
 	}
 #endif
     }
