@@ -1,3 +1,9 @@
+2011-04-09  Xinliang David Li  <davidxl@google.com>
+
+	PR tree-optimization/PR48484
+	* tree-ssa-uninit.c (convert_control_dep_chain_into_preds): Set
+	has_valid_pred lazily
+
 2011-04-09  Duncan Sands  <baldrick@free.fr>
 
 	* tree.c (array_type_nelts): Bail out if TYPE_MAX_VALUE not set.
