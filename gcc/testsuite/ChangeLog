@@ -1,3 +1,8 @@
+2011-04-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/48528
+	* g++.dg/cpp0x/sfinae10.C: Remove abstract class.
+
 2011-04-08  Mike Stump  <mikestump@comcast.net>
 
 	PR testsuite/48506
