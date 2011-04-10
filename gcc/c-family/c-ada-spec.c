@@ -3233,7 +3233,7 @@ dump_ads (const char *source_file,
 
   pkg_name = get_ada_package (source_file);
 
-  /* Construct the the .ads filename and package name.  */
+  /* Construct the .ads filename and package name.  */
   ads_name = xstrdup (pkg_name);
 
   for (s = ads_name; *s; s++)

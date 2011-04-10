@@ -650,7 +650,7 @@ connect_infinite_loops_to_exit (void)
 }
 
 /* Compute reverse top sort order.  This is computing a post order
-   numbering of the graph.  If INCLUDE_ENTRY_EXIT is true, then then
+   numbering of the graph.  If INCLUDE_ENTRY_EXIT is true, then
    ENTRY_BLOCK and EXIT_BLOCK are included.  If DELETE_UNREACHABLE is
    true, unreachable blocks are deleted.  */
 

@@ -2225,7 +2225,7 @@ gfc_get_derived_type (gfc_symbol * derived)
     goto copy_derived_types;
 
   /* If a whole file compilation, the derived types from an earlier
-     namespace can be used as the the canonical type.  */
+     namespace can be used as the canonical type.  */
   if (gfc_option.flag_whole_file
 	&& derived->backend_decl == NULL
 	&& !derived->attr.use_assoc

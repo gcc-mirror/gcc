@@ -9105,7 +9105,7 @@ sh2a_is_function_vector_call (rtx x)
   return 0;
 }
 
-/* Returns the function vector number, if the the attribute
+/* Returns the function vector number, if the attribute
    'function_vector' is assigned, otherwise returns zero.  */
 int
 sh2a_get_function_vector_number (rtx x)

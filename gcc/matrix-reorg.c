@@ -846,7 +846,7 @@ analyze_matrix_allocation_site (struct matrix_info *mi, gimple stmt,
 }
 
 /* The transposing decision making.
-   In order to to calculate the profitability of transposing, we collect two
+   In order to calculate the profitability of transposing, we collect two
    types of information regarding the accesses:
    1. profiling information used to express the hotness of an access, that
    is how often the matrix is accessed by this access site (count of the

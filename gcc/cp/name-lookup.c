@@ -4146,10 +4146,10 @@ qualified_lookup_using_namespace (tree name, tree scope,
   /* Look through namespace aliases.  */
   scope = ORIGINAL_NAMESPACE (scope);
 
-  /* Algorithm: Starting with SCOPE, walk through the the set of used
+  /* Algorithm: Starting with SCOPE, walk through the set of used
      namespaces.  For each used namespace, look through its inline
-     namespace set for any bindings and usings.  If no bindings are found,
-     add any usings seen to the set of used namespaces.  */
+     namespace set for any bindings and usings.  If no bindings are
+     found, add any usings seen to the set of used namespaces.  */
   VEC_safe_push (tree, gc, todo, scope);
 
   while (VEC_length (tree, todo))

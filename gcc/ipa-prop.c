@@ -1515,9 +1515,9 @@ ipa_analyze_params_uses (struct cgraph_node *node,
   info->uses_analysis_done = 1;
 }
 
-/* Initialize the array describing properties of of formal parameters of NODE,
-   analyze their uses and and compute jump functions associated with actual
-   arguments of calls from within NODE.  */
+/* Initialize the array describing properties of of formal parameters
+   of NODE, analyze their uses and compute jump functions associated
+   with actual arguments of calls from within NODE.  */
 
 void
 ipa_analyze_node (struct cgraph_node *node)

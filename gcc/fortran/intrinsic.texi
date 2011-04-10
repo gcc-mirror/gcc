@@ -2763,7 +2763,7 @@ the @code{COMPILER_OPTIONS} intrinsic.
 @smallexample
    use iso_fortran_env
    print '(4a)', 'This file was compiled by ', &
-                 compiler_version(), ' using the the options ', &
+                 compiler_version(), ' using the options ', &
                  compiler_options()
    end
 @end smallexample
@@ -2805,7 +2805,7 @@ It contains the name of the compiler and its version number.
 @smallexample
    use iso_fortran_env
    print '(4a)', 'This file was compiled by ', &
-                 compiler_version(), ' using the the options ', &
+                 compiler_version(), ' using the options ', &
                  compiler_options()
    end
 @end smallexample

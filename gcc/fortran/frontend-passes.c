@@ -886,7 +886,7 @@ gfc_expr_walker (gfc_expr **e, walk_expr_fn_t exprfn, void *data)
 	      break;
 
 	    /* Fall through to the variable case in order to walk the
-	       the reference.  */
+	       reference.  */
 
 	  case EXPR_SUBSTRING:
 	  case EXPR_VARIABLE:
