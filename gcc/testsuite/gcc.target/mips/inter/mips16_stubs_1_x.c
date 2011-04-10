@@ -89,7 +89,7 @@ extern _Complex double (*pcd10) (double, double);
 #define CHECK_RESULT(x, y) if ((x) != (y)) abort ()
 #define CHECK_VOID_RESULT(x, y)  CHECK_RESULT (((x), the_result), y)
 
-/* Call functions through pointers and and check against expected results.  */
+/* Call functions through pointers and check against expected results.  */
 void
 test (void)
 {

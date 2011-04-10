@@ -14,10 +14,10 @@ int main1 ()
   int i;
   int ia[N+1];
 
-  /* All the accesses are misaligned. With cost model disabled, we count the 
-     the number of aligned accesses for each peeling option, and in this case
-     we align the two loads if possible (i.e., if misaligned stores are 
-     supported).  */
+  /* All the accesses are misaligned. With cost model disabled, we
+     count the number of aligned accesses for each peeling option, and
+     in this case we align the two loads if possible (i.e., if
+     misaligned stores are supported).  */
   for (i = 1; i <= N; i++)
     {
       ia[i] = ib[i+2] + ib[i+6];

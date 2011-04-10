@@ -1,6 +1,6 @@
 ! { dg-do compile }
 ! Tests the fix for PR34854, in which the second of the two subroutines would fail
-! because the the type declaration of nmoltype_phase would incorrectly conflict
+! because the type declaration of nmoltype_phase would incorrectly conflict
 ! with the type given to the module variable of the same name.
 !
 ! Contributed by Francois-Xavier Coudert <fxcoudert@gcc.gnu.org>

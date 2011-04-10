@@ -37,7 +37,7 @@
 --      and greater than the value of the mod.
 --      Declare a generic test procedure and instantiate it for each of the
 --      unsigned types for each operand type.
---      Check that the the operand is properly rounded during the conversion.
+--      Check that the operand is properly rounded during the conversion.
 --
 -- APPLICABILITY CRITERIA:
 --      This test is applicable to all implementations which support
