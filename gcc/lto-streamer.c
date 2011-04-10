@@ -529,7 +529,7 @@ lto_record_common_node (tree *nodep, VEC(tree, heap) **common_nodes,
 
 
 /* Generate a vector of common nodes and make sure they are merged
-   properly according to the the gimple type table.  */
+   properly according to the gimple type table.  */
 
 static VEC(tree,heap) *
 lto_get_common_nodes (void)

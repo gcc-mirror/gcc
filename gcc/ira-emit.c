@@ -229,7 +229,7 @@ free_move_list (move_t head)
     }
 }
 
-/* Return TRUE if the the move list LIST1 and LIST2 are equal (two
+/* Return TRUE if the move list LIST1 and LIST2 are equal (two
    moves are equal if they involve the same allocnos).  */
 static bool
 eq_move_lists_p (move_t list1, move_t list2)

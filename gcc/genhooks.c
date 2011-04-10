@@ -37,7 +37,7 @@ static struct hook_desc hook_array[] = {
 #undef DEFHOOK
 };
 
-/* For each @Fcode in the the first paragraph of the documentation string DOC,
+/* For each @Fcode in the first paragraph of the documentation string DOC,
    print an @findex directive.  HOOK_NAME is the name of the hook this bit of
    documentation pertains to.  */
 static void

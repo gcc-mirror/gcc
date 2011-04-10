@@ -97,7 +97,7 @@
                         ; generate correct unwind information.
   UNSPEC_PIC_OFFSET     ; A symbolic 12-bit OFFSET that has been treated
                         ; correctly for PIC usage.
-  UNSPEC_GOTSYM_OFF     ; The offset of the start of the the GOT from a
+  UNSPEC_GOTSYM_OFF     ; The offset of the start of the GOT from a
                         ; a given symbolic address.
   UNSPEC_THUMB1_CASESI  ; A Thumb1 compressed dispatch-table call.
   UNSPEC_RBIT           ; rbit operation.

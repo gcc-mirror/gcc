@@ -10783,25 +10783,26 @@ mips_cannot_change_mode_class (enum machine_mode from ATTRIBUTE_UNUSED,
 			       enum machine_mode to ATTRIBUTE_UNUSED,
 			       enum reg_class rclass)
 {
-  /* There are several problems with changing the modes of values
-     in floating-point registers:
+  /* There are several problems with changing the modes of values in
+     floating-point registers:
 
      - When a multi-word value is stored in paired floating-point
-       registers, the first register always holds the low word.
-       We therefore can't allow FPRs to change between single-word
-       and multi-word modes on big-endian targets.
+       registers, the first register always holds the low word.  We
+       therefore can't allow FPRs to change between single-word and
+       multi-word modes on big-endian targets.
 
-     - GCC assumes that each word of a multiword register can be accessed
-       individually using SUBREGs.  This is not true for floating-point
-       registers if they are bigger than a word.
+     - GCC assumes that each word of a multiword register can be
+       accessed individually using SUBREGs.  This is not true for
+       floating-point registers if they are bigger than a word.
 
      - Loading a 32-bit value into a 64-bit floating-point register
-       will not sign-extend the value, despite what LOAD_EXTEND_OP says.
-       We can't allow FPRs to change from SImode to to a wider mode on
-       64-bit targets.
+       will not sign-extend the value, despite what LOAD_EXTEND_OP
+       says.  We can't allow FPRs to change from SImode to a wider
+       mode on 64-bit targets.
 
-     - If the FPU has already interpreted a value in one format, we must
-       not ask it to treat the value as having a different format.
+     - If the FPU has already interpreted a value in one format, we
+       must not ask it to treat the value as having a different
+       format.
 
      We therefore disallow all mode changes involving FPRs.  */
   return reg_classes_intersect_p (FP_REGS, rclass);

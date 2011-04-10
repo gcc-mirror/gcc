@@ -1952,7 +1952,7 @@ matching_file_name_substitute (const char *filnam, regmatch_t pmatch[10],
 
 /* An output file, suitable for definitions, that can see declarations
    made in INPF and is linked into every language that uses INPF.
-   Since the the result is cached inside INPF, that argument cannot be
+   Since the result is cached inside INPF, that argument cannot be
    declared constant, but is "almost" constant. */
 
 outf_p

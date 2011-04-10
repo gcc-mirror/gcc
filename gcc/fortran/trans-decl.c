@@ -1697,7 +1697,7 @@ gfc_get_extern_function_decl (gfc_symbol * sym)
 
   /* Initialize DECL_EXTERNAL and TREE_PUBLIC before calling decl_attributes;
      TREE_PUBLIC specifies whether a function is globally addressable (i.e.
-     the the opposite of declaring a function as static in C).  */
+     the opposite of declaring a function as static in C).  */
   DECL_EXTERNAL (fndecl) = 1;
   TREE_PUBLIC (fndecl) = 1;
 
@@ -1780,7 +1780,7 @@ build_function_decl (gfc_symbol * sym, bool global)
 
   /* Initialize DECL_EXTERNAL and TREE_PUBLIC before calling decl_attributes;
      TREE_PUBLIC specifies whether a function is globally addressable (i.e.
-     the the opposite of declaring a function as static in C).  */
+     the opposite of declaring a function as static in C).  */
   DECL_EXTERNAL (fndecl) = 0;
 
   if (!current_function_decl

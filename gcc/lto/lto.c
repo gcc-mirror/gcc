@@ -186,9 +186,10 @@ lto_materialize_function (struct cgraph_node *node)
 }
 
 
-/* Decode the content of memory pointed to by DATA in the the
-   in decl state object STATE. DATA_IN points to a data_in structure for
-   decoding. Return the address after the decoded object in the input.  */
+/* Decode the content of memory pointed to by DATA in the in decl
+   state object STATE. DATA_IN points to a data_in structure for
+   decoding. Return the address after the decoded object in the
+   input.  */
 
 static const uint32_t *
 lto_read_in_decl_state (struct data_in *data_in, const uint32_t *data,

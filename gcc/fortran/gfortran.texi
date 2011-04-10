@@ -810,7 +810,7 @@ list can be found below.  See also the
 including @code{PASS}, @code{PROCEDURE} and @code{GENERIC}, and
 operators bound to a type.
 
-@item Abstract interfaces and and type extension with the possibility to
+@item Abstract interfaces and type extension with the possibility to
 override type-bound procedures or to have deferred binding.
 
 @item Polymorphic entities (``@code{CLASS}'') for derived types -- including

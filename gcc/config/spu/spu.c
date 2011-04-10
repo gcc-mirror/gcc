@@ -2662,13 +2662,14 @@ insert_hbrp_for_ilb_runout (rtx first)
 
 /* The SPU might hang when it executes 48 inline instructions after a
    hinted branch jumps to its hinted target.  The beginning of a
-   function and the return from a call might have been hinted, and must
-   be handled as well.  To prevent a hang we insert 2 hbrps.  The first
-   should be within 6 insns of the branch target.  The second should be
-   within 22 insns of the branch target.  When determining if hbrps are
-   necessary, we look for only 32 inline instructions, because up to to
-   12 nops and 4 hbrps could be inserted.  Similarily, when inserting
-   new hbrps, we insert them within 4 and 16 insns of the target.  */
+   function and the return from a call might have been hinted, and
+   must be handled as well.  To prevent a hang we insert 2 hbrps.  The
+   first should be within 6 insns of the branch target.  The second
+   should be within 22 insns of the branch target.  When determining
+   if hbrps are necessary, we look for only 32 inline instructions,
+   because up to 12 nops and 4 hbrps could be inserted.  Similarily,
+   when inserting new hbrps, we insert them within 4 and 16 insns of
+   the target.  */
 static void
 insert_hbrp (void)
 {
@@ -4370,7 +4371,7 @@ store_with_one_insn_p (rtx mem)
     {
       /* We use the associated declaration to make sure the access is
          referring to the whole object.
-         We check both MEM_EXPR and and SYMBOL_REF_DECL.  I'm not sure
+         We check both MEM_EXPR and SYMBOL_REF_DECL.  I'm not sure
          if it is necessary.  Will there be cases where one exists, and
          the other does not?  Will there be cases where both exist, but
          have different types?  */

@@ -42,7 +42,7 @@ struct regstat_n_sets_and_refs_t *regstat_n_sets_and_refs;
    REG_N_SETS and REG_N_REFS.
    ----------------------------------------------------------------------------*/
 
-/* If a pass need to change these values in some magical way or or the
+/* If a pass need to change these values in some magical way or the
    pass needs to have accurate values for these and is not using
    incremental df scanning, then it should use REG_N_SETS and
    REG_N_USES.  If the pass is doing incremental scanning then it

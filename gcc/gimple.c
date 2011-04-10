@@ -2314,7 +2314,7 @@ gimple_has_side_effects (const_gimple s)
 /* Return true if the RHS of statement S has side effects.
    We may use it to determine if it is admissable to replace
    an assignment or call with a copy of a previously-computed
-   value.  In such cases, side-effects due the the LHS are
+   value.  In such cases, side-effects due to the LHS are
    preserved.  */
 
 bool

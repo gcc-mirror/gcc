@@ -9505,7 +9505,7 @@ compute_offset_order (int nops, HOST_WIDE_INT *unsorted_offsets, int *order,
    from that base register.
    REGS is an array filled in with the destination register numbers.
    SAVED_ORDER (if nonnull), is an array filled in with an order that maps
-   insn numbers to to an ascending order of stores.  If CHECK_REGS is true,
+   insn numbers to an ascending order of stores.  If CHECK_REGS is true,
    the sequence of registers in REGS matches the loads from ascending memory
    locations, and the function verifies that the register numbers are
    themselves ascending.  If CHECK_REGS is false, the register numbers
@@ -9653,7 +9653,7 @@ load_multiple_sequence (rtx *operands, int nops, int *regs, int *saved_order,
    array filled in with the source register numbers, REG_RTXS (if nonnull) is
    likewise filled with the corresponding rtx's.
    SAVED_ORDER (if nonnull), is an array filled in with an order that maps insn
-   numbers to to an ascending order of stores.
+   numbers to an ascending order of stores.
    If CHECK_REGS is true, the sequence of registers in *REGS matches the stores
    from ascending memory locations, and the function verifies that the register
    numbers are themselves ascending.  If CHECK_REGS is false, the register
@@ -23007,7 +23007,7 @@ arm_emit (int label ATTRIBUTE_UNUSED, const char *pattern, rtx *operands)
 static unsigned arm_insn_count;
 
 /* An emitter that counts emitted instructions but does not actually
-   emit instruction into the the instruction stream.  */
+   emit instruction into the instruction stream.  */
 static void
 arm_count (int label,
 	   const char *pattern ATTRIBUTE_UNUSED,

@@ -2741,7 +2741,7 @@ compute_av_set_at_bb_end (insn_t insn, ilist_t p, int ws)
         sel_print ("real successors num: %d\n", sinfo->all_succs_n);
     }
 
-  /* Add insn to to the tail of current path.  */
+  /* Add insn to the tail of current path.  */
   ilist_add (&p, insn);
 
   FOR_EACH_VEC_ELT (rtx, sinfo->succs_ok, is, succ)

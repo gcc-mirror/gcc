@@ -45,9 +45,9 @@ along with GCC; see the file COPYING3.  If not see
       This function is called once (source level) compilation unit is finalized
       and it will no longer change.
 
-      In the the call-graph construction and local function
-      analysis takes place here.  Bodies of unreachable functions are released
-      to conserve memory usage.
+      In the call-graph construction and local function analysis takes
+      place here.  Bodies of unreachable functions are released to
+      conserve memory usage.
 
       The function can be called multiple times when multiple source level
       compilation units are combined (such as in C frontend)

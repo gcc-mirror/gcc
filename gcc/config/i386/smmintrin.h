@@ -597,7 +597,7 @@ _mm_stream_load_si128 (__m128i *__X)
 #define _SIDD_CMP_EQUAL_EACH		0x08
 #define _SIDD_CMP_EQUAL_ORDERED		0x0c
 
-/* These macros specify the the polarity.  */
+/* These macros specify the polarity.  */
 #define _SIDD_POSITIVE_POLARITY		0x00
 #define _SIDD_NEGATIVE_POLARITY		0x10
 #define _SIDD_MASKED_POSITIVE_POLARITY	0x20

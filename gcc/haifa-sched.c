@@ -852,7 +852,7 @@ dep_cost_1 (dep_t link, dw_t dw)
   /* A USE insn should never require the value used to be computed.
      This allows the computation of a function's result and parameter
      values to overlap the return and call.  We don't care about the
-     the dependence cost when only decreasing register pressure.  */
+     dependence cost when only decreasing register pressure.  */
   if (recog_memoized (used) < 0)
     {
       cost = 0;
