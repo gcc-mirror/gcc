@@ -1,5 +1,5 @@
 -- { dg-do compile { target *-*-linux* } }
--- { dg-options "-gdwarf-2 -dA" }
+-- { dg-options "-gdwarf-2" }
 
 procedure Return3 is
 begin
