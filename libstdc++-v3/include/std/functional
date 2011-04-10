@@ -1586,7 +1586,7 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
 	_M_get_pointer(const _Any_data& __source)
 	{
 	  const _Functor* __ptr =
-	    __stored_locally? &__source._M_access<_Functor>()
+	    __stored_locally? std::__addressof(__source._M_access<_Functor>())
 	    /* have stored a pointer */ : __source._M_access<_Functor*>();
 	  return const_cast<_Functor*>(__ptr);
 	}

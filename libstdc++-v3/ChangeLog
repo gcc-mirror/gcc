@@ -1,5 +1,12 @@
 2011-04-10  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
+	PR libstdc++/48541
+	* include/std/functional (_Base_manager::_M_get_pointer): Use
+	addressof.
+	* testsuite/20_util/function/48541.cc: New.
+
+2011-04-10  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
 	PR libstdc++/48465
 	* configure.ac (libtool_VERSION): Bump library version to 6:16:0.
 	* configure: Regenerate.
