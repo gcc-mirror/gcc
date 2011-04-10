@@ -1,3 +1,9 @@
+2011-04-10  Jim Meyering  <meyering@redhat.com>
+
+	Avoid memory overrun in a test leading to potential double-free.
+	* testsuite/test-expandargv.c (writeout_test): Fix off-by-one error:
+	i.e., do copy the trailing NUL byte.
+
 2011-03-31  Tristan Gingold  <gingold@adacore.com>
 
 	* makefile.vms (OBJS): Add filename_cmp.obj
