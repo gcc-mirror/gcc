@@ -363,7 +363,7 @@ procedure C954013 is
                -- Show that this message did pass through the Distributor Task
                Transaction.TC_Thru_Dist := true;
 
-               -- Pass this transaction on the the appropriate computation
+               -- Pass this transaction on the appropriate computation
                -- task
                case Transaction.Code is 
                   when Credit =>
