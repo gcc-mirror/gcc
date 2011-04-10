@@ -1,3 +1,11 @@
+2011-04-10  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/48465
+	* configure.ac (libtool_VERSION): Bump library version to 6:16:0.
+	* configure: Regenerate.
+	* config/abi/pre/gnu.ver (GLIBCXX_3.4.16): Export missing symbols.
+	* testsuite/util/testsuite_abi.cc: Add GLIBCXX_3.4.16.
+
 2011-04-06  Jeffrey Yasskin  <jyasskin@google.com>
 
 	* include/ext/algorithm (is_sorted): In C++0x mode import from
