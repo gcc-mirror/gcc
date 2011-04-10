@@ -1264,6 +1264,14 @@ GLIBCXX_3.4.15 {
 
 } GLIBCXX_3.4.14;
 
+GLIBCXX_3.4.16 {
+
+    # libstdc++/48465
+    _ZNSs10_S_compareE[jmy][jmy];
+    _ZNSbIwSt11char_traitsIwESaIwEE10_S_compareE[jmy][jmy];
+
+} GLIBCXX_3.4.15;
+
 # Symbols in the support library (libsupc++) have their own tag.
 CXXABI_1.3 {
 
