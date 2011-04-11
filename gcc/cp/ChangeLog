@@ -1,6 +1,11 @@
 2011-04-11  Jason Merrill  <jason@redhat.com>
 
 	PR c++/48535
+	* decl.c (cp_complete_array_type_or_error): New.
+	* semantics.c (finish_compound_literal): Use it.
+	* cp-tree.h: Declare it.
+
+	PR c++/48535
 	* semantics.c (finish_compound_literal): Handle references.
 
 	PR c++/48535
