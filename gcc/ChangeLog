@@ -1,4 +1,18 @@
 2011-04-11  Joseph Myers  <joseph@codesourcery.com>
+            Robert Millan  <rmh@gnu.org>
+
+	* config.gcc (x86_64-*-kfreebsd*-gnu): Use i386/kfreebsd-gnu.h.
+	* config/i386/kfreebsd-gnu.h (GNU_USER_DYNAMIC_LINKER32,
+	GNU_USER_DYNAMIC_LINKER64): Define.
+	(REG_NAME): Don't undefine.
+	(MD_UNWIND_SUPPORT): Undefine.
+	* config/i386/knetbsd-gnu.h (GNU_USER_LINK_EMULATION): Define.
+	(REG_NAME): Don't undefine.
+	(MD_UNWIND_SUPPORT): Undefine.
+	* config/i386/kopensolaris-gnu.h (GNU_USER_LINK_EMULATION):
+	Define.
+
+2011-04-11  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/i386/gnu.h (GNU_USER_LINK_EMULATION): Define.
 	(CPP_SPEC, CC1_SPEC, ENDFILE_SPEC): Remove.
