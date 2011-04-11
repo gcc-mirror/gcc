@@ -1,3 +1,7 @@
+2011-04-08  Jason Merrill  <jason@redhat.com>
+
+	* testsuite/20_util/is_convertible/value.cc: Adjust.
+
 2011-04-11  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* testsuite/25_algorithms/inplace_merge/moveable.cc: Actually run
