@@ -20,8 +20,8 @@ You should have received a copy of the GNU General Public License
 along with GCC.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#undef GLIBC_DYNAMIC_LINKER
-#define GLIBC_DYNAMIC_LINKER "/lib/ld.so"
+#undef GNU_USER_DYNAMIC_LINKER
+#define GNU_USER_DYNAMIC_LINKER "/lib/ld.so"
 
 #undef CPP_SPEC
 #define CPP_SPEC "%{pthread:-D_REENTRANT} %{posix:-D_POSIX_SOURCE}"
