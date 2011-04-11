@@ -34,7 +34,7 @@ along with GCC; see the file COPYING3.  If not see
 #define TARGET_OS_CPP_BUILTINS() \
   do						\
     {						\
-      LINUX_TARGET_OS_CPP_BUILTINS();		\
+      GNU_USER_TARGET_OS_CPP_BUILTINS();	\
     }						\
   while (0)
 
@@ -54,7 +54,7 @@ along with GCC; see the file COPYING3.  If not see
   "%{shared:-shared} \
    %{!static: \
      %{rdynamic:-export-dynamic} \
-     -dynamic-linker " LINUX_DYNAMIC_LINKER "} \
+     -dynamic-linker " GNU_USER_DYNAMIC_LINKER "} \
    %{static:-static}"
 
 /* Output assembler code to STREAM to call the profiler.  */

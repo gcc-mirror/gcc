@@ -23,7 +23,7 @@
 #undef  PREFERRED_DEBUGGING_TYPE
 #define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG
 
-#define TARGET_OS_CPP_BUILTINS() LINUX_TARGET_OS_CPP_BUILTINS()
+#define TARGET_OS_CPP_BUILTINS() GNU_USER_TARGET_OS_CPP_BUILTINS()
 
 #undef  CPP_SPEC
 #define CPP_SPEC "%{mam33:-D__AM33__} %{!mam33:-D__AM33__=2 -D__AM33_2__} \
@@ -39,7 +39,7 @@
 #define LINK_SPEC "%{mrelax:--relax} %{shared:-shared} \
    %{!static: \
      %{rdynamic:-export-dynamic} \
-     -dynamic-linker " LINUX_DYNAMIC_LINKER "} \
+     -dynamic-linker " GNU_USER_DYNAMIC_LINKER "} \
    %{static:-static}"
 
 #undef  PROCESSOR_DEFAULT

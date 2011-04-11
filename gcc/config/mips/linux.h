@@ -33,7 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #define TARGET_OS_CPP_BUILTINS()				\
   do {								\
-    LINUX_TARGET_OS_CPP_BUILTINS();				\
+    GNU_USER_TARGET_OS_CPP_BUILTINS();				\
     /* The GNU C++ standard library requires this.  */		\
     if (c_dialect_cxx ())					\
       builtin_define ("_GNU_SOURCE");				\
@@ -64,7 +64,7 @@ along with GCC; see the file COPYING3.  If not see
   %{!shared: \
     %{!static: \
       %{rdynamic:-export-dynamic} \
-      -dynamic-linker " LINUX_DYNAMIC_LINKER "} \
+      -dynamic-linker " GNU_USER_DYNAMIC_LINKER "} \
       %{static:-static}}"
 
 #undef SUBTARGET_ASM_SPEC

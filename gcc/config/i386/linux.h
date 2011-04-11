@@ -23,8 +23,6 @@ along with GCC; see the file COPYING3.  If not see
 #define GNU_USER_LINK_EMULATION "elf_i386"
 #define GLIBC_DYNAMIC_LINKER "/lib/ld-linux.so.2"
 
-#define GNU_USER_DYNAMIC_LINKER LINUX_DYNAMIC_LINKER
-
 #define MD_UNWIND_SUPPORT "config/i386/linux-unwind.h"
 
 #define REG_NAME(reg) reg
