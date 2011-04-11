@@ -1766,7 +1766,9 @@ cgraph_local_info (tree decl)
   struct cgraph_node *node;
 
   gcc_assert (TREE_CODE (decl) == FUNCTION_DECL);
-  node = cgraph_node (decl);
+  node = cgraph_get_node (decl);
+  if (!node)
+    return NULL;
   return &node->local;
 }
 
@@ -1778,7 +1780,9 @@ cgraph_global_info (tree decl)
   struct cgraph_node *node;
 
   gcc_assert (TREE_CODE (decl) == FUNCTION_DECL && cgraph_global_info_ready);
-  node = cgraph_node (decl);
+  node = cgraph_get_node (decl);
+  if (!node)
+    return NULL;
   return &node->global;
 }
 
@@ -1790,9 +1794,10 @@ cgraph_rtl_info (tree decl)
   struct cgraph_node *node;
 
   gcc_assert (TREE_CODE (decl) == FUNCTION_DECL);
-  node = cgraph_node (decl);
-  if (decl != current_function_decl
-      && !TREE_ASM_WRITTEN (node->decl))
+  node = cgraph_get_node (decl);
+  if (!node
+      || (decl != current_function_decl
+	  && !TREE_ASM_WRITTEN (node->decl)))
     return NULL;
   return &node->rtl;
 }

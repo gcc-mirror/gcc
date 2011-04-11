@@ -214,10 +214,17 @@ probably_never_executed_bb_p (const_basic_block bb)
 bool
 optimize_function_for_size_p (struct function *fun)
 {
-  return (optimize_size
-	  || (fun && fun->decl
-	      && (cgraph_node (fun->decl)->frequency
-		  == NODE_FREQUENCY_UNLIKELY_EXECUTED)));
+  struct cgraph_node *node;
+
+  if (optimize_size)
+    return true;
+  if (!fun || !fun->decl)
+    return false;
+  node = cgraph_get_node (fun->decl);
+  if (node && (node->frequency == NODE_FREQUENCY_UNLIKELY_EXECUTED))
+    return true;
+  else
+    return false;
 }
 
 /* Return true when current function should always be optimized for speed.  */
