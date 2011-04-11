@@ -2368,6 +2368,18 @@ extern void debug_dispatch_window (int);
 	((VALUE) = GET_MODE_BITSIZE (MODE), TARGET_BMI)
 
 
+/* Flags returned by ix86_get_callcvt ().  */
+#define IX86_CALLCVT_CDECL	0x1
+#define IX86_CALLCVT_STDCALL	0x2
+#define IX86_CALLCVT_FASTCALL	0x4
+#define IX86_CALLCVT_THISCALL	0x8
+#define IX86_CALLCVT_REGPARM	0x10
+#define IX86_CALLCVT_SSEREGPARM	0x20
+
+#define IX86_BASE_CALLCVT(FLAGS) \
+	((FLAGS) & (IX86_CALLCVT_CDECL | IX86_CALLCVT_STDCALL \
+		    | IX86_CALLCVT_FASTCALL | IX86_CALLCVT_THISCALL))
+
 /*
 Local variables:
 version-control: t

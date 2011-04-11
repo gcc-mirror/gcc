@@ -1,3 +1,34 @@
+2011-04-11  Kai Tietz  <ktietz@redhat.com>
+
+	PR target/9601
+	PR target/11772
+	* config/i386/i386-protos.h (ix86_get_callcvt): New prototype.
+	* config/i386/i386.c (ix86_handle_cconv_attribute): Adjust
+	comment.
+	(ix86_is_msabi_thiscall): Removed.
+	(ix86_is_type_thiscall): Likewise.
+	(ix86_get_callcvt): New function.
+	(ix86_comp_type_attributes): Simplify check.
+	(ix86_function_regparm): Use ix86_get_callcvt for calling
+	convention attribute checks.
+	(ix86_return_pops_args): Likewise.
+	(ix86_static_chain): Likewise.
+	(x86_this_parameter): Likewise.
+	(x86_output_mi_thunk): Likewise.
+	(ix86_function_type_abi): Optimize check for types without attributes.
+	* config/i386/i386.h (IX86_CALLCVT_CDECL, IX86_CALLCVT_STDCALL,
+	IX86_CALLCVT_FASTCALL, IX86_CALLCVT_THISCALL, IX86_CALLCVT_REGPARM,
+	IX86_CALLCVT_SSEREGPARM): New macros to represent calling convention
+	by flag-values.
+	(IX86_BASE_CALLCVT): Helper macro.
+	* config/i386/netware.c (i386_nlm_maybe_mangle_decl_assembler_name):
+	Use ix86_get_callcvt for calling convention attribute checks and avoid
+	symbol-decoration for stdcall in TARGET_RTD case.
+	* config/i386/winnt.c (i386_pe_maybe_mangle_decl_assembler_name):
+	Likewise.
+	(gen_stdcall_or_fastcall_suffix): Adjust ident and use DECL_ORIGIN
+	for declaration.
+
 2011-04-11  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/sse.md (VI_128): New mode iterator.
