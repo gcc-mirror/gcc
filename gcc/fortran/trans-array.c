@@ -4055,17 +4055,17 @@ gfc_conv_array_extent_dim (tree lbound, tree ubound, tree* or_expr)
 
 
 /* For an array descriptor, get the total number of elements.  This is just
-   the product of the extents along all dimensions.  */
+   the product of the extents along from_dim to to_dim.  */
 
-tree
-gfc_conv_descriptor_size (tree desc, int rank)
+static tree
+gfc_conv_descriptor_size_1 (tree desc, int from_dim, int to_dim)
 {
   tree res;
   int dim;
 
   res = gfc_index_one_node;
 
-  for (dim = 0; dim < rank; ++dim)
+  for (dim = from_dim; dim < to_dim; ++dim)
     {
       tree lbound;
       tree ubound;
@@ -4080,6 +4080,24 @@ gfc_conv_descriptor_size (tree desc, int rank)
     }
 
   return res;
+}
+
+
+/* Full size of an array.  */
+
+tree
+gfc_conv_descriptor_size (tree desc, int rank)
+{
+  return gfc_conv_descriptor_size_1 (desc, 0, rank);
+}
+
+
+/* Size of a coarray for all dimensions but the last.  */
+
+tree
+gfc_conv_descriptor_cosize (tree desc, int rank, int corank)
+{
+  return gfc_conv_descriptor_size_1 (desc, rank, rank + corank - 1);
 }
 
 

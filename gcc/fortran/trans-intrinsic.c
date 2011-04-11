@@ -1170,10 +1170,10 @@ conv_intrinsic_cobound (gfc_se * se, gfc_expr * expr)
       tree_rank = gfc_conv_mpz_to_tree (mpz_rank, gfc_index_integer_kind);
 
       bound = se->loop->loopvar[0];
-      bound = fold_build2 (PLUS_EXPR, gfc_array_index_type, bound,
-			   se->ss->data.info.delta[0]);
-      bound = fold_build2 (PLUS_EXPR, gfc_array_index_type, bound,
-			   tree_rank);
+      bound = fold_build2_loc (input_location, PLUS_EXPR, gfc_array_index_type,
+			       bound, se->ss->data.info.delta[0]);
+      bound = fold_build2_loc (input_location, PLUS_EXPR, gfc_array_index_type,
+			       bound, tree_rank);
       gfc_advance_se_ss_chain (se);
     }
   else
@@ -1199,11 +1199,13 @@ conv_intrinsic_cobound (gfc_se * se, gfc_expr * expr)
       else if (gfc_option.rtcheck & GFC_RTCHECK_BOUNDS)
         {
 	  bound = gfc_evaluate_now (bound, &se->pre);
-	  cond = fold_build2 (LT_EXPR, boolean_type_node,
-			      bound, build_int_cst (TREE_TYPE (bound), 1));
+	  cond = fold_build2_loc (input_location, LT_EXPR, boolean_type_node,
+				  bound, build_int_cst (TREE_TYPE (bound), 1));
 	  tmp = gfc_rank_cst[GFC_TYPE_ARRAY_CORANK (TREE_TYPE (desc))];
-	  tmp = fold_build2 (GT_EXPR, boolean_type_node, bound, tmp);
-	  cond = fold_build2 (TRUTH_ORIF_EXPR, boolean_type_node, cond, tmp);
+	  tmp = fold_build2_loc (input_location, GT_EXPR, boolean_type_node,
+				 bound, tmp);
+	  cond = fold_build2_loc (input_location, TRUTH_ORIF_EXPR,
+				  boolean_type_node, cond, tmp);
 	  gfc_trans_runtime_check (true, false, cond, &se->pre, &expr->where,
 				   gfc_msg_fault);
 	}
@@ -1213,26 +1215,74 @@ conv_intrinsic_cobound (gfc_se * se, gfc_expr * expr)
       switch (arg->expr->rank)
 	{
 	case 0:
-	  bound = fold_build2 (MINUS_EXPR, gfc_array_index_type, bound,
-			       gfc_index_one_node);
+	  bound = fold_build2_loc (input_location, MINUS_EXPR,
+				   gfc_array_index_type, bound,
+				   gfc_index_one_node);
 	case 1:
 	  break;
 	default:
-	  bound = fold_build2 (PLUS_EXPR, gfc_array_index_type, bound,
-			       gfc_rank_cst[arg->expr->rank - 1]);
+	  bound = fold_build2_loc (input_location, PLUS_EXPR,
+				   gfc_array_index_type, bound,
+				   gfc_rank_cst[arg->expr->rank - 1]);
 	}
     }
 
   resbound = gfc_conv_descriptor_lbound_get (desc, bound);
 
+  /* Handle UCOBOUND with special handling of the last codimension.  */
   if (expr->value.function.isym->id == GFC_ISYM_UCOBOUND)
     {
-      cond = fold_build2 (EQ_EXPR, boolean_type_node, bound,
-			  build_int_cst (TREE_TYPE (bound),
-			  arg->expr->rank + corank - 1));
-      resbound2 = gfc_conv_descriptor_ubound_get (desc, bound);
-      se->expr = fold_build3 (COND_EXPR, gfc_array_index_type, cond,
-			      resbound, resbound2);
+      /* Last codimension: For -fcoarray=single just return
+	 the lcobound - otherwise add
+	   ceiling (real (num_images ()) / real (size)) - 1
+	 = (num_images () + size - 1) / size - 1
+	 = (num_images - 1) / size(),
+         where size is the product of the extend of all but the last
+	 codimension.  */
+
+      if (gfc_option.coarray != GFC_FCOARRAY_SINGLE && corank > 1)
+	{
+          tree cosize;
+
+	  gfc_init_coarray_decl ();
+	  cosize = gfc_conv_descriptor_cosize (desc, arg->expr->rank, corank);
+
+	  tmp = fold_build2_loc (input_location, MINUS_EXPR,
+				 gfc_array_index_type,
+				 gfort_gvar_caf_num_images,
+				 build_int_cst (gfc_array_index_type, 1));
+	  tmp = fold_build2_loc (input_location, TRUNC_DIV_EXPR,
+				 gfc_array_index_type, tmp,
+				 fold_convert (gfc_array_index_type, cosize));
+	  resbound = fold_build2_loc (input_location, PLUS_EXPR,
+				      gfc_array_index_type, resbound, tmp);
+	}
+      else if (gfc_option.coarray != GFC_FCOARRAY_SINGLE)
+	{
+	  /* ubound = lbound + num_images() - 1.  */
+	  gfc_init_coarray_decl ();
+	  tmp = fold_build2_loc (input_location, MINUS_EXPR,
+				 gfc_array_index_type,
+				 gfort_gvar_caf_num_images,
+				 build_int_cst (gfc_array_index_type, 1));
+	  resbound = fold_build2_loc (input_location, PLUS_EXPR,
+				      gfc_array_index_type, resbound, tmp);
+	}
+
+      if (corank > 1)
+	{
+	  cond = fold_build2_loc (input_location, EQ_EXPR, boolean_type_node,
+				  bound,
+				  build_int_cst (TREE_TYPE (bound),
+						 arg->expr->rank + corank - 1));
+
+	  resbound2 = gfc_conv_descriptor_ubound_get (desc, bound);
+	  se->expr = fold_build3_loc (input_location, COND_EXPR,
+				      gfc_array_index_type, cond,
+				      resbound, resbound2);
+	}
+      else
+	se->expr = resbound;
     }
   else
     se->expr = resbound;

@@ -1,3 +1,17 @@
+2011-04-11  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/18918
+	* simplify.c (simplify_bound_dim): Exit for
+	ucobound's last dimension unless -fcoarray=single.
+	* trans-array (gfc_conv_descriptor_size_1): Renamed from
+	gfc_conv_descriptor_size, made static, has now from_dim and
+	to_dim arguments.
+	(gfc_conv_descriptor_size): Call gfc_conv_descriptor_size.
+	(gfc_conv_descriptor_cosize): New function.
+	* trans-array.h (gfc_conv_descriptor_cosize): New prototype.
+	* trans-intrinsic.c (conv_intrinsic_cobound): Add input_location
+	and handle last codim of ucobound for when -fcoarray is not "single".
+
 2011-04-08  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/48448

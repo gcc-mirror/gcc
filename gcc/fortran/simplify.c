@@ -3298,7 +3298,8 @@ simplify_bound_dim (gfc_expr *array, gfc_expr *kind, int d, int upper,
 
   /* The last dimension of an assumed-size array is special.  */
   if ((!coarray && d == as->rank && as->type == AS_ASSUMED_SIZE && !upper)
-      || (coarray && d == as->rank + as->corank))
+      || (coarray && d == as->rank + as->corank
+	  && (!upper || gfc_option.coarray == GFC_FCOARRAY_SINGLE)))
     {
       if (as->lower[d-1]->expr_type == EXPR_CONSTANT)
 	{
