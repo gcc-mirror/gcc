@@ -1,5 +1,9 @@
 2011-04-11  Jason Merrill  <jason@redhat.com>
 
+	PR c++/48534
+	* cvt.c (ocp_convert): Use build_nop to convert to underlying type
+	of scoped enum.
+
 	PR c++/48523
 	* tree.c (maybe_dummy_object): Use build_x_indirect_ref rather
 	than cp_build_indirect_ref.
