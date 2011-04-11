@@ -4079,9 +4079,10 @@ gimple_fold_indirect_ref (tree t)
       /* ((foo*)&vectorfoo)[1] -> BIT_FIELD_REF<vectorfoo,...> */
       if (TREE_CODE (addr) == ADDR_EXPR
 	  && TREE_CODE (TREE_TYPE (addrtype)) == VECTOR_TYPE
-	  && useless_type_conversion_p (type, TREE_TYPE (TREE_TYPE (addrtype))))
+	  && useless_type_conversion_p (type, TREE_TYPE (TREE_TYPE (addrtype)))
+	  && host_integerp (off, 1))
 	{
-          HOST_WIDE_INT offset = tree_low_cst (off, 0);
+          unsigned HOST_WIDE_INT offset = tree_low_cst (off, 1);
           tree part_width = TYPE_SIZE (type);
           unsigned HOST_WIDE_INT part_widthi
             = tree_low_cst (part_width, 0) / BITS_PER_UNIT;
