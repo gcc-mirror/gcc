@@ -148,12 +148,20 @@ i386_nlm_maybe_mangle_decl_assembler_name (tree decl, tree id)
 {
   tree type_attributes = TYPE_ATTRIBUTES (TREE_TYPE (decl));
   tree new_id;
+  unsigned int ccvt = ix86_get_callcvt (TREE_TYPE (decl));
 
-  if (lookup_attribute ("stdcall", type_attributes))
-    new_id = gen_stdcall_or_fastcall_decoration (decl, id, '_');
-  else if (lookup_attribute ("fastcall", type_attributes))
+  if ((ccvt & IX86_CALLCVT_STDCALL) != 0)
+    {
+      if (TARGET_RTD)
+	/* If we are using -mrtd emit undecorated symbol and let linker
+	   do the proper resolving.  */
+	return NULL_TREE;
+      new_id = gen_stdcall_or_fastcall_decoration (decl, id, '_');
+    }
+  else if ((ccvt & IX86_CALLCVT_FASTCALL) != 0)
     new_id = gen_stdcall_or_fastcall_decoration (decl, id, FASTCALL_PREFIX);
-  else if ((new_id = lookup_attribute ("regparm", type_attributes)))
+  else if ((cvt & IX86_CALLCVT_REGPARM) != 0
+	   && (new_id = lookup_attribute ("regparm", type_attributes)))
     new_id = gen_regparm_prefix (decl, id,
 		  TREE_INT_CST_LOW (TREE_VALUE (TREE_VALUE (new_id))));
   else

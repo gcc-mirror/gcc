@@ -170,7 +170,7 @@ gen_stdcall_or_fastcall_suffix (tree decl, tree id, bool fastcall)
   HOST_WIDE_INT total = 0;
   const char *old_str = IDENTIFIER_POINTER (id != NULL_TREE ? id : DECL_NAME (decl));
   char *new_str, *p;
-  tree type = TREE_TYPE (decl);
+  tree type = TREE_TYPE (DECL_ORIGIN (decl));
   tree arg;
   function_args_iterator args_iter;
 
@@ -202,7 +202,8 @@ gen_stdcall_or_fastcall_suffix (tree decl, tree id, bool fastcall)
 		       / parm_boundary_bytes * parm_boundary_bytes);
 	  total += parm_size;
 	}
-      }
+    }
+
   /* Assume max of 8 base 10 digits in the suffix.  */
   p = new_str = XALLOCAVEC (char, 1 + strlen (old_str) + 1 + 8 + 1);
   if (fastcall)
@@ -222,10 +223,16 @@ i386_pe_maybe_mangle_decl_assembler_name (tree decl, tree id)
 
   if (TREE_CODE (decl) == FUNCTION_DECL)
     { 
-      tree type_attributes = TYPE_ATTRIBUTES (TREE_TYPE (decl));
-      if (lookup_attribute ("stdcall", type_attributes))
-	new_id = gen_stdcall_or_fastcall_suffix (decl, id, false);
-      else if (lookup_attribute ("fastcall", type_attributes))
+      unsigned int ccvt = ix86_get_callcvt (TREE_TYPE (decl));
+      if ((ccvt & IX86_CALLCVT_STDCALL) != 0)
+        {
+	  if (TARGET_RTD)
+	    /* If we are using -mrtd emit undecorated symbol and let linker
+	       do the proper resolving.  */
+	    return NULL_TREE;
+	  new_id = gen_stdcall_or_fastcall_suffix (decl, id, false);
+	}
+      else if ((ccvt & IX86_CALLCVT_FASTCALL) != 0)
 	new_id = gen_stdcall_or_fastcall_suffix (decl, id, true);
     }
 
