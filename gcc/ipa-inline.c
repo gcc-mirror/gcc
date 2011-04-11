@@ -1718,7 +1718,7 @@ static GTY ((length ("nnodes"))) struct cgraph_node **order;
 static unsigned int
 cgraph_early_inlining (void)
 {
-  struct cgraph_node *node = cgraph_node (current_function_decl);
+  struct cgraph_node *node = cgraph_get_node (current_function_decl);
   unsigned int todo = 0;
   int iterations = 0;
   bool inlined = false;
@@ -1996,7 +1996,7 @@ compute_inline_parameters (struct cgraph_node *node)
 static unsigned int
 compute_inline_parameters_for_current (void)
 {
-  compute_inline_parameters (cgraph_node (current_function_decl));
+  compute_inline_parameters (cgraph_get_node (current_function_decl));
   return 0;
 }
 

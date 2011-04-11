@@ -1879,11 +1879,11 @@ set_nothrow_function_flags (void)
 	  }
       }
   if (crtl->nothrow
-      && (cgraph_function_body_availability (cgraph_node
+      && (cgraph_function_body_availability (cgraph_get_node
 					     (current_function_decl))
           >= AVAIL_AVAILABLE))
     {
-      struct cgraph_node *node = cgraph_node (current_function_decl);
+      struct cgraph_node *node = cgraph_get_node (current_function_decl);
       struct cgraph_edge *e;
       for (e = node->callers; e; e = e->next_caller)
         e->can_throw_external = false;

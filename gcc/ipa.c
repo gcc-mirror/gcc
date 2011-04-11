@@ -1626,7 +1626,7 @@ record_cdtor_fn (struct cgraph_node *node)
     VEC_safe_push (tree, heap, static_ctors, node->decl);
   if (DECL_STATIC_DESTRUCTOR (node->decl))
     VEC_safe_push (tree, heap, static_dtors, node->decl);
-  node = cgraph_node (node->decl);
+  node = cgraph_get_node (node->decl);
   node->local.disregard_inline_limits = 1;
 }
 

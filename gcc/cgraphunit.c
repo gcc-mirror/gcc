@@ -390,7 +390,7 @@ cgraph_finalize_function (tree decl, bool nested)
 void
 cgraph_mark_if_needed (tree decl)
 {
-  struct cgraph_node *node = cgraph_node (decl);
+  struct cgraph_node *node = cgraph_get_node (decl);
   if (node->local.finalized && cgraph_decide_is_function_needed (node, decl))
     cgraph_mark_needed_node (node);
 }
@@ -667,7 +667,7 @@ verify_cgraph_node (struct cgraph_node *node)
 				     && cgraph_get_node (decl)
 				     && (e->callee->former_clone_of
 					 != cgraph_get_node (decl)->decl)
-				     && !clone_of_p (cgraph_node (decl),
+				     && !clone_of_p (cgraph_get_node (decl),
 						     e->callee))
 			      {
 				error ("edge points to wrong declaration:");
@@ -995,10 +995,12 @@ cgraph_analyze_functions (void)
 
       /* If decl is a clone of an abstract function, mark that abstract
 	 function so that we don't release its body. The DECL_INITIAL() of that
-         abstract function declaration will be later needed to output debug info.  */
+	 abstract function declaration will be later needed to output debug
+	 info.  */
       if (DECL_ABSTRACT_ORIGIN (decl))
 	{
-	  struct cgraph_node *origin_node = cgraph_node (DECL_ABSTRACT_ORIGIN (decl));
+	  struct cgraph_node *origin_node;
+	  origin_node = cgraph_get_node (DECL_ABSTRACT_ORIGIN (decl));
 	  origin_node->abstract_and_needed = true;
 	}
 
@@ -1766,7 +1768,7 @@ cgraph_preserve_function_body_p (tree decl)
 
   gcc_assert (cgraph_global_info_ready);
   /* Look if there is any clone around.  */
-  node = cgraph_node (decl);
+  node = cgraph_get_node (decl);
   if (node->clones)
     return true;
   return false;
@@ -2106,7 +2108,7 @@ save_inline_function_body (struct cgraph_node *node)
 {
   struct cgraph_node *first_clone, *n;
 
-  gcc_assert (node == cgraph_node (node->decl));
+  gcc_assert (node == cgraph_get_node (node->decl));
 
   cgraph_lower_function (node);
 
@@ -2114,7 +2116,7 @@ save_inline_function_body (struct cgraph_node *node)
 
   first_clone->decl = copy_node (node->decl);
   cgraph_insert_node_to_hashtable (first_clone);
-  gcc_assert (first_clone == cgraph_node (first_clone->decl));
+  gcc_assert (first_clone == cgraph_get_node (first_clone->decl));
   if (first_clone->next_sibling_clone)
     {
       for (n = first_clone->next_sibling_clone; n->next_sibling_clone; n = n->next_sibling_clone)

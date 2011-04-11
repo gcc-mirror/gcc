@@ -340,7 +340,7 @@ static unsigned int
 build_cgraph_edges (void)
 {
   basic_block bb;
-  struct cgraph_node *node = cgraph_node (current_function_decl);
+  struct cgraph_node *node = cgraph_get_node (current_function_decl);
   struct pointer_set_t *visited_nodes = pointer_set_create ();
   gimple_stmt_iterator gsi;
   tree decl;
@@ -451,7 +451,7 @@ unsigned int
 rebuild_cgraph_edges (void)
 {
   basic_block bb;
-  struct cgraph_node *node = cgraph_node (current_function_decl);
+  struct cgraph_node *node = cgraph_get_node (current_function_decl);
   gimple_stmt_iterator gsi;
 
   cgraph_node_remove_callees (node);
@@ -502,7 +502,7 @@ void
 cgraph_rebuild_references (void)
 {
   basic_block bb;
-  struct cgraph_node *node = cgraph_node (current_function_decl);
+  struct cgraph_node *node = cgraph_get_node (current_function_decl);
   gimple_stmt_iterator gsi;
 
   ipa_remove_all_references (&node->ref_list);
@@ -549,7 +549,7 @@ struct gimple_opt_pass pass_rebuild_cgraph_edges =
 static unsigned int
 remove_cgraph_callee_edges (void)
 {
-  cgraph_node_remove_callees (cgraph_node (current_function_decl));
+  cgraph_node_remove_callees (cgraph_get_node (current_function_decl));
   return 0;
 }
 

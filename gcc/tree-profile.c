@@ -346,7 +346,7 @@ gimple_gen_ic_profiler (histogram_value value, unsigned tag, unsigned base)
 void
 gimple_gen_ic_func_profiler (void)
 {
-  struct cgraph_node * c_node = cgraph_node (current_function_decl);
+  struct cgraph_node * c_node = cgraph_get_node (current_function_decl);
   gimple_stmt_iterator gsi;
   gimple stmt1, stmt2;
   tree tree_uid, cur_func, counter_ptr, ptr_var, void0;

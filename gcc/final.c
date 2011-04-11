@@ -4356,7 +4356,7 @@ rest_of_clean_state (void)
       else
 	{
 	  const char *aname;
-	  struct cgraph_node *node = cgraph_node (current_function_decl);
+	  struct cgraph_node *node = cgraph_get_node (current_function_decl);
 
 	  aname = (IDENTIFIER_POINTER
 		   (DECL_ASSEMBLER_NAME (current_function_decl)));

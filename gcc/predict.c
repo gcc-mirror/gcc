@@ -113,7 +113,7 @@ static const struct predictor_info predictor_info[]= {
 static inline bool
 maybe_hot_frequency_p (int freq)
 {
-  struct cgraph_node *node = cgraph_node (current_function_decl);
+  struct cgraph_node *node = cgraph_get_node (current_function_decl);
   if (!profile_info || !flag_branch_probabilities)
     {
       if (node->frequency == NODE_FREQUENCY_UNLIKELY_EXECUTED)
@@ -203,7 +203,8 @@ probably_never_executed_bb_p (const_basic_block bb)
   if (profile_info && flag_branch_probabilities)
     return ((bb->count + profile_info->runs / 2) / profile_info->runs) == 0;
   if ((!profile_info || !flag_branch_probabilities)
-      && cgraph_node (current_function_decl)->frequency == NODE_FREQUENCY_UNLIKELY_EXECUTED)
+      && (cgraph_get_node (current_function_decl)->frequency
+	  == NODE_FREQUENCY_UNLIKELY_EXECUTED))
     return true;
   return false;
 }
@@ -2225,7 +2226,7 @@ void
 compute_function_frequency (void)
 {
   basic_block bb;
-  struct cgraph_node *node = cgraph_node (current_function_decl);
+  struct cgraph_node *node = cgraph_get_node (current_function_decl);
   if (DECL_STATIC_CONSTRUCTOR (current_function_decl)
       || MAIN_NAME_P (DECL_NAME (current_function_decl)))
     node->only_called_at_startup = true;

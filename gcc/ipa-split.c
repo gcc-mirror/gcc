@@ -1080,7 +1080,7 @@ split_function (struct split_point *split_point)
 
   /* Now create the actual clone.  */
   rebuild_cgraph_edges ();
-  node = cgraph_function_versioning (cgraph_node (current_function_decl),
+  node = cgraph_function_versioning (cgraph_get_node (current_function_decl),
 				     NULL, NULL,
 				     args_to_skip,
 				     split_point->split_bbs,
@@ -1093,7 +1093,7 @@ split_function (struct split_point *split_point)
       DECL_BUILT_IN_CLASS (node->decl) = NOT_BUILT_IN;
       DECL_FUNCTION_CODE (node->decl) = (enum built_in_function) 0;
     }
-  cgraph_node_remove_callees (cgraph_node (current_function_decl));
+  cgraph_node_remove_callees (cgraph_get_node (current_function_decl));
   if (!split_part_return_p)
     TREE_THIS_VOLATILE (node->decl) = 1;
   if (dump_file)
@@ -1265,7 +1265,7 @@ execute_split_functions (void)
   basic_block bb;
   int overall_time = 0, overall_size = 0;
   int todo = 0;
-  struct cgraph_node *node = cgraph_node (current_function_decl);
+  struct cgraph_node *node = cgraph_get_node (current_function_decl);
 
   if (flags_from_decl_or_type (current_function_decl) & ECF_NORETURN)
     {
