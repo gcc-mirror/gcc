@@ -1,5 +1,10 @@
 2011-04-11  Richard Guenther  <rguenther@suse.de>
 
+	* gimplify.c (gimple_fold_indirect_ref): Check host_integerp
+	before calling tree_low_cst.
+
+2011-04-11  Richard Guenther  <rguenther@suse.de>
+
 	* stor-layout.c (layout_type): Compute all array index size operations
 	in the original type.
 	(initialize_sizetypes): Add comment.
