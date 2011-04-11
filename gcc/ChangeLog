@@ -1,4 +1,10 @@
-2011-04-12  Uros Bizjak  <ubizjak@gmail.com>
+2011-04-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* cfghooks.c (redirect_edge_and_branch_force): Localize variable.
+	(force_nonfallthru): Do not alter the loop nest if no basic block
+	was created.
+
+2011-04-11  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/sse.md (VI): New mode iterator.
 	(SSEMODEI): Remove.
