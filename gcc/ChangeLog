@@ -1,3 +1,10 @@
+2011-04-11  Xinliang David Li  <davidxl@google.com>
+
+	* value-profile.c (check_ic_target): New function.
+	(gimple_ic_transform): Sanity check indirect call target.
+	* gimple-low.c (gimple_check_call_args): Interface change.
+	(gimple_check_call_matching_types): New function.
+	* tree-inline.c (tree_can_inline_p): Call new function.
 
 2011-04-11  Basile Starynkevitch  <basile@starynkevitch.net>
 
