@@ -1,6 +1,6 @@
 // { dg-options "-std=gnu++0x" }
 
-// Copyright (C) 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2009, 2010, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -18,10 +18,6 @@
 // <http://www.gnu.org/licenses/>.
 
 // 25.3.9 [lib.alg.permutation.generators]
-
-// XXX FIXME:  parallel-mode should deal correctly with moveable-only types
-// per C++0x, at minimum smoothly fall back to serial.
-#undef _GLIBCXX_PARALLEL
 
 #include <algorithm>
 #include <testsuite_hooks.h>
@@ -82,8 +78,13 @@ test4()
       std::copy(array, array + 6, temp_array);
       Container con(temp_array, temp_array + 6);
       VERIFY( next_permutation(array, array + 6) );
+
+// XXX FIXME:  parallel-mode should deal correctly with moveable-only types
+// per C++0x, at minimum smoothly fall back to serial.
+#ifndef _GLIBCXX_PARALLEL
       VERIFY( std::lexicographical_compare(temp_array, temp_array + 6, 
 					   array, array + 6) );
+#endif
     }
   VERIFY( !next_permutation(array,array + 6) );
   for(int i = 0; i < 6; ++i)
@@ -106,8 +107,13 @@ test5()
       std::copy(array, array + 6, temp_array);
       Container con(temp_array, temp_array + 6);
       VERIFY( next_permutation(array, array + 6, are_ordered) );
+
+// XXX FIXME:  parallel-mode should deal correctly with moveable-only types
+// per C++0x, at minimum smoothly fall back to serial.
+#ifndef _GLIBCXX_PARALLEL
       VERIFY( std::lexicographical_compare(temp_array, temp_array + 6,
 					   array, array + 6, are_ordered) );
+#endif
     }
   VERIFY( !next_permutation(array,array + 6, are_ordered) );
   for(int i = 0; i < 6; ++i)
