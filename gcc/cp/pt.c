@@ -13262,7 +13262,7 @@ tsubst_copy_and_build (tree t,
 	CONSTRUCTOR_IS_DIRECT_INIT (r) = CONSTRUCTOR_IS_DIRECT_INIT (t);
 
 	if (TREE_HAS_CONSTRUCTOR (t))
-	  return finish_compound_literal (type, r);
+	  return finish_compound_literal (type, r, complain);
 
 	TREE_TYPE (r) = type;
 	return r;
