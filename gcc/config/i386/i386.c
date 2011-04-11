@@ -9298,7 +9298,7 @@ ix86_compute_frame_layout (struct ix86_frame *frame)
            && cfun->machine->use_fast_prologue_epilogue_nregs != frame->nregs)
     {
       int count = frame->nregs;
-      struct cgraph_node *node = cgraph_node (current_function_decl);
+      struct cgraph_node *node = cgraph_get_node (current_function_decl);
 
       cfun->machine->use_fast_prologue_epilogue_nregs = count;
 

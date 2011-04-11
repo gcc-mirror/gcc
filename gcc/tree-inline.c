@@ -1727,7 +1727,7 @@ copy_bb (copy_body_data *id, basic_block bb, int frequency_scale,
 		       && id->transform_call_graph_edges == CB_CGE_MOVE_CLONES))
 		  && (fn = gimple_call_fndecl (stmt)) != NULL)
 		{
-		  struct cgraph_node *dest = cgraph_node (fn);
+		  struct cgraph_node *dest = cgraph_get_node (fn);
 
 		  /* We have missing edge in the callgraph.  This can happen
 		     when previous inlining turned an indirect call into a
@@ -4158,7 +4158,7 @@ optimize_inline_calls (tree fn)
   /* Clear out ID.  */
   memset (&id, 0, sizeof (id));
 
-  id.src_node = id.dst_node = cgraph_node (fn);
+  id.src_node = id.dst_node = cgraph_get_node (fn);
   gcc_assert (id.dst_node->analyzed);
   id.dst_fn = fn;
   /* Or any functions that aren't finished yet.  */

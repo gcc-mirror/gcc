@@ -1648,7 +1648,7 @@ ipa_make_edge_direct_to_target (struct cgraph_edge *ie, tree target, tree delta)
     target = TREE_OPERAND (target, 0);
   if (TREE_CODE (target) != FUNCTION_DECL)
     return NULL;
-  callee = cgraph_node (target);
+  callee = cgraph_get_node (target);
   if (!callee)
     return NULL;
   ipa_check_create_node_params ();

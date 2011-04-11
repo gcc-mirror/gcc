@@ -1,5 +1,46 @@
 2011-04-11  Martin Jambor  <mjambor@suse.cz>
 
+	* except.c (set_nothrow_function_flags): Call cgraph_get_node instead
+	of cgraph_node.
+	* final.c (rest_of_clean_state): Likewise.
+	* gimple-iterator.c (update_call_edge_frequencies): Likewise.
+	* passes.c (pass_init_dump_file): Likewise.
+	(execute_all_ipa_transforms): Likewise.
+	(function_called_by_processed_nodes_p): Likewise.
+	* predict.c (maybe_hot_frequency_p): Likewise.
+	(probably_never_executed_bb_p): Likewise.
+	(compute_function_frequency): Likewise.
+	* tree-nested.c (check_for_nested_with_variably_modified): Likewise.
+	(unnest_nesting_tree_1): Likewise.
+	(lower_nested_functions): Likewise.
+	* tree-optimize.c (execute_fixup_cfg): Likewise.
+	(tree_rest_of_compilation): Likewise.
+	* tree-profile.c (gimple_gen_ic_func_profiler): Likewise.
+	* tree-sra.c (ipa_early_sra): Likewise.
+	* tree-ssa-loop-ivopts.c (computation_cost): Likewise.
+	* config/i386/i386.c (ix86_compute_frame_layout): Likewise.
+	* ipa.c (record_cdtor_fn): Likewise.
+	* ipa-inline.c (cgraph_early_inlining): Likewise.
+	(compute_inline_parameters_for_current): Likewise.
+	* ipa-prop.c (ipa_make_edge_direct_to_target): Likewise.
+	* ipa-pure-const.c (local_pure_const): Likewise.
+	* ipa-split.c (split_function): Likewise.
+	(execute_split_functions): Likewise.
+	* cgraphbuild.c (build_cgraph_edges): Likewise.
+	(rebuild_cgraph_edges): Likewise.
+	(cgraph_rebuild_references): Likewise.
+	(remove_cgraph_callee_edges): Likewise.
+	* cgraphunit.c (cgraph_mark_if_needed): Likewise.
+	(verify_cgraph_node): Likewise.
+	(cgraph_analyze_functions): Likewise.
+	(cgraph_preserve_function_body_p): Likewise.
+	(save_inline_function_body): Likewise.
+	(save_inline_function_body): Likewise.
+	* tree-inline.c (copy_bb): Likewise.
+	(optimize_inline_calls): Likewise.
+
+2011-04-11  Martin Jambor  <mjambor@suse.cz>
+
 	PR tree-optimization/48195
 	* ipa-cp.c (ipcp_driver): Call ipa_check_create_node_params and
 	ipa_check_create_edge_args.

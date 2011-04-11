@@ -1563,7 +1563,7 @@ local_pure_const (void)
   bool skip;
   struct cgraph_node *node;
 
-  node = cgraph_node (current_function_decl);
+  node = cgraph_get_node (current_function_decl);
   skip = skip_function_for_local_pure_const (node);
   if (!warn_suggest_attribute_const
       && !warn_suggest_attribute_pure
