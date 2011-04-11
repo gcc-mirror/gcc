@@ -1,5 +1,6 @@
 /* { dg-do run } */
 /* { dg-options "-std=c99" } */
+/* { dg-options "-std=c99 -D_ISO_C_SOURCE=19990L" { target alpha*-dec-osf5* } } */
 /* { dg-options "-std=c99 -D_XOPEN_SOURCE=500" { target mips-sgi-irix6.5 *-*-solaris2.[89] } } */
 /* { dg-options "-std=gnu99" { target *-*-hpux* } } */
 /* { dg-xfail-if "no C99 snprintf function" { *-*-hpux10* } } */
