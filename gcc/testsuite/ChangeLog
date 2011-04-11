@@ -1,3 +1,8 @@
+2011-04-11  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.dg/torture/pr47917.c: Define _ISO_C_SOURCE=19990L for
+	alpha*-dec-osf5*.
+
 2011-04-11  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/48195
