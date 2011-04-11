@@ -1,3 +1,10 @@
+2011-04-11  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	Backport from mainline:
+	2011-04-06  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/alpha/osf5.h (MAX_OFILE_ALIGNMENT): Define.
+
 2011-04-09  Duncan Sands  <baldrick@free.fr>
 
 	* tree.c (array_type_nelts): Bail out if TYPE_MAX_VALUE not set.
