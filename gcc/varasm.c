@@ -573,11 +573,14 @@ function_section_1 (tree decl, bool force_cold)
 
   if (decl)
     {
-      struct cgraph_node *node = cgraph_node (decl);
+      struct cgraph_node *node = cgraph_get_node (decl);
 
-      freq = node->frequency;
-      startup = node->only_called_at_startup;
-      exit = node->only_called_at_exit;
+      if (node)
+	{
+	  freq = node->frequency;
+	  startup = node->only_called_at_startup;
+	  exit = node->only_called_at_exit;
+	}
     }
   if (force_cold)
     freq = NODE_FREQUENCY_UNLIKELY_EXECUTED;
@@ -1575,11 +1578,12 @@ assemble_start_function (tree decl, const char *fnname)
     }
   else if (DECL_SECTION_NAME (decl))
     {
+      struct cgraph_node *node = cgraph_get_node (current_function_decl);
       /* Calls to function_section rely on first_function_block_is_cold
 	 being accurate.  */
-      first_function_block_is_cold
-	 = (cgraph_node (current_function_decl)->frequency
-	    == NODE_FREQUENCY_UNLIKELY_EXECUTED);
+      first_function_block_is_cold = (node
+				      && node->frequency
+				      == NODE_FREQUENCY_UNLIKELY_EXECUTED);
     }
 
   in_cold_section_p = first_function_block_is_cold;

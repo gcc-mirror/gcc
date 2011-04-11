@@ -1928,7 +1928,10 @@ java_mark_decl_local (tree decl)
 #ifdef ENABLE_CHECKING
   /* Double check that we didn't pass the function to the callgraph early.  */
   if (TREE_CODE (decl) == FUNCTION_DECL)
-    gcc_assert (!cgraph_node (decl)->local.finalized);
+    {
+      struct cgraph_node *node = cgraph_get_node (decl);
+      gcc_assert (!node || !node->local.finalized);
+    }
 #endif
   gcc_assert (!DECL_RTL_SET_P (decl));
 }

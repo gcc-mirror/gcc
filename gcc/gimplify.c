@@ -959,11 +959,11 @@ copy_if_shared (tree *tp)
 static void
 unshare_body (tree *body_p, tree fndecl)
 {
-  struct cgraph_node *cgn = cgraph_node (fndecl);
+  struct cgraph_node *cgn = cgraph_get_node (fndecl);
 
   copy_if_shared (body_p);
 
-  if (body_p == &DECL_SAVED_TREE (fndecl))
+  if (cgn && body_p == &DECL_SAVED_TREE (fndecl))
     for (cgn = cgn->nested; cgn; cgn = cgn->next_nested)
       unshare_body (&DECL_SAVED_TREE (cgn->decl), cgn->decl);
 }
@@ -1000,11 +1000,11 @@ unmark_visited (tree *tp)
 static void
 unvisit_body (tree *body_p, tree fndecl)
 {
-  struct cgraph_node *cgn = cgraph_node (fndecl);
+  struct cgraph_node *cgn = cgraph_get_node (fndecl);
 
   unmark_visited (body_p);
 
-  if (body_p == &DECL_SAVED_TREE (fndecl))
+  if (cgn && body_p == &DECL_SAVED_TREE (fndecl))
     for (cgn = cgn->nested; cgn; cgn = cgn->next_nested)
       unvisit_body (&DECL_SAVED_TREE (cgn->decl), cgn->decl);
 }
@@ -7695,6 +7695,7 @@ gimplify_body (tree *body_p, tree fndecl, bool do_parms)
   gimple_seq parm_stmts, seq;
   gimple outer_bind;
   struct gimplify_ctx gctx;
+  struct cgraph_node *cgn;
 
   timevar_push (TV_TREE_GIMPLIFY);
 
@@ -7712,7 +7713,8 @@ gimplify_body (tree *body_p, tree fndecl, bool do_parms)
   unshare_body (body_p, fndecl);
   unvisit_body (body_p, fndecl);
 
-  if (cgraph_node (fndecl)->origin)
+  cgn = cgraph_get_node (fndecl);
+  if (cgn && cgn->origin)
     nonlocal_vlas = pointer_set_create ();
 
   /* Make sure input_location isn't set to something weird.  */

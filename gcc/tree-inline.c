@@ -3470,10 +3470,11 @@ estimate_num_insns (gimple stmt, eni_weights *weights)
     case GIMPLE_CALL:
       {
 	tree decl = gimple_call_fndecl (stmt);
+	struct cgraph_node *node;
 
 	/* Do not special case builtins where we see the body.
 	   This just confuse inliner.  */
-	if (!decl || cgraph_node (decl)->analyzed)
+	if (!decl || !(node = cgraph_get_node (decl)) || node->analyzed)
 	  ;
 	/* For buitins that are likely expanded to nothing or
 	   inlined do not account operand costs.  */

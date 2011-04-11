@@ -1,5 +1,21 @@
 2011-04-11  Martin Jambor  <mjambor@suse.cz>
 
+	* cgraph.c (cgraph_local_info): Call cgraph_get_node instead
+	of cgraph_node,	handle NULL return value.
+	(cgraph_global_info): Likewise.
+	(cgraph_rtl_info): Likewise.
+	* tree-inline.c (estimate_num_insns): Likewise.
+	* gimplify.c (unshare_body): Likewise.
+	(unvisit_body): Likewise.
+	(gimplify_body): Likewise.
+	* predict.c (optimize_function_for_size_p): Likewise.
+	* tree-ssa-alias.c (ref_maybe_used_by_call_p_1): Likewise.
+	(call_may_clobber_ref_p_1): Likewise.
+	* varasm.c (function_section_1): Likewise.
+	(assemble_start_function): Likewise.
+
+2011-04-11  Martin Jambor  <mjambor@suse.cz>
+
 	* except.c (set_nothrow_function_flags): Call cgraph_get_node instead
 	of cgraph_node.
 	* final.c (rest_of_clean_state): Likewise.
