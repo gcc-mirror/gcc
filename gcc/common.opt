@@ -456,11 +456,20 @@ Driver Joined Separate
 Tbss
 Driver Separate
 
+Tbss=
+Driver Joined
+
 Tdata
 Driver Separate
 
+Tdata=
+Driver Joined
+
 Ttext
 Driver Separate
+
+Ttext=
+Driver Joined
 
 W
 Common RejectNegative Warning Alias(Wextra)
