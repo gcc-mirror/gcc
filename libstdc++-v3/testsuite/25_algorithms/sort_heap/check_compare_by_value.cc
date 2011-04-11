@@ -19,10 +19,6 @@
 
 #undef _GLIBCXX_CONCEPT_CHECKS
 
-// XXX FIXME:  parallel-mode should deal correctly with moveable-only types
-// per C++0x, at minimum smoothly fall back to serial.
-#undef _GLIBCXX_PARALLEL
-
 #include <algorithm>
 #include <testsuite_hooks.h>
 #include <testsuite_iterators.h>
