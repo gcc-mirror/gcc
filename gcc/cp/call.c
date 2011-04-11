@@ -1521,8 +1521,10 @@ reference_binding (tree rto, tree rfrom, tree expr, bool c_cast_p, int flags)
 	   actually occurs.  */
 	conv->need_temporary_p = true;
 
-      /* Don't allow binding of lvalues to rvalue references.  */
+      /* Don't allow binding of lvalues (other than function lvalues) to
+	 rvalue references.  */
       if (is_lvalue && TYPE_REF_IS_RVALUE (rto)
+	  && TREE_CODE (to) != FUNCTION_TYPE
           && !(flags & LOOKUP_PREFER_RVALUE))
 	conv->bad_p = true;
 

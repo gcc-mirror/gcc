@@ -73,7 +73,9 @@ lvalue_kind (const_tree ref)
       if (TYPE_REF_IS_RVALUE (TREE_TYPE (ref))
 	  && TREE_CODE (ref) != PARM_DECL
 	  && TREE_CODE (ref) != VAR_DECL
-	  && TREE_CODE (ref) != COMPONENT_REF)
+	  && TREE_CODE (ref) != COMPONENT_REF
+	  /* Functions are always lvalues.  */
+	  && TREE_CODE (TREE_TYPE (TREE_TYPE (ref))) != FUNCTION_TYPE)
 	return clk_rvalueref;
 
       /* lvalue references and named rvalue references are lvalues.  */

@@ -1,3 +1,10 @@
+2011-04-11  Jason Merrill  <jason@redhat.com>
+
+	PR c++/48457, Core 1238
+	* call.c (reference_binding): Allow rvalue reference to bind to
+	function lvalue.
+	* tree.c (lvalue_kind): Functions are always lvalues.
+
 2011-04-07  Jason Merrill  <jason@redhat.com>
 
 	PR c++/48500
