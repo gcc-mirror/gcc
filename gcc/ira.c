@@ -863,7 +863,7 @@ setup_pressure_classes (void)
      registers available for the allocation.  */
   CLEAR_HARD_REG_SET (temp_hard_regset);
   CLEAR_HARD_REG_SET (temp_hard_regset2);
-  for (cl = 0; cl <= LIM_REG_CLASSES; cl++)
+  for (cl = 0; cl < LIM_REG_CLASSES; cl++)
     {
       for (i = 0; i < n; i++)
 	if ((int) pressure_classes[i] == cl)
@@ -923,7 +923,7 @@ setup_allocno_and_important_classes (void)
   /* Collect classes which contain unique sets of allocatable hard
      registers.  Prefer GENERAL_REGS to other classes containing the
      same set of hard registers.  */
-  for (i = 0; i <= LIM_REG_CLASSES; i++)
+  for (i = 0; i < LIM_REG_CLASSES; i++)
     {
       COPY_HARD_REG_SET (temp_hard_regset, reg_class_contents[i]);
       AND_COMPL_HARD_REG_SET (temp_hard_regset, no_unit_alloc_regs);

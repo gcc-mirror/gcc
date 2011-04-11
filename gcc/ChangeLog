@@ -1,3 +1,9 @@
+2011-04-11  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR middle-end/48464
+	* ira.c (setup_pressure_classes): Fix typo in loop condition.
+	(setup_allocno_and_important_classes): Ditto.
+
 2011-04-11  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/alpha/linux-elf.h (LINUX_DYNAMIC_LINKER): Rename to
