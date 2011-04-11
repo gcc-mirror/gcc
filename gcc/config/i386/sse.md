@@ -4853,7 +4853,7 @@
 		   (match_operand:V4SI 2 "register_operand" "")))]
   "TARGET_SSE2"
 {
-  if (TARGET_SSE4_1)
+  if (TARGET_SSE4_1 || TARGET_AVX)
     ix86_fixup_binary_operands_no_copy (MULT, V4SImode, operands);
 })
 
@@ -4875,7 +4875,7 @@
   [(set (match_operand:V4SI 0 "register_operand" "")
 	(mult:V4SI (match_operand:V4SI 1 "register_operand" "")
 		   (match_operand:V4SI 2 "register_operand" "")))]
-  "TARGET_SSE2
+  "TARGET_SSE2 && !TARGET_SSE4_1 && !TARGET_AVX
    && can_create_pseudo_p ()"
   "#"
   "&& 1"
