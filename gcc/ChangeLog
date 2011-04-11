@@ -1,3 +1,8 @@
+2011-04-11  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/i386/gnu.h (GNU_USER_LINK_EMULATION): Define.
+	(CPP_SPEC, CC1_SPEC, ENDFILE_SPEC): Remove.
+
 2011-04-11  Xinliang David Li  <davidxl@google.com>
 
 	* value-profile.c (check_ic_target): New function.
