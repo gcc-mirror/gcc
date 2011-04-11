@@ -31,7 +31,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 /* Target OS builtins.  */
 #define TARGET_OS_CPP_BUILTINS()		\
 do {						\
-	LINUX_TARGET_OS_CPP_BUILTINS();		\
+	GNU_USER_TARGET_OS_CPP_BUILTINS();	\
 	builtin_define("_LONGLONG");		\
 } while (0)
 
@@ -64,7 +64,7 @@ do {						\
   %{!shared: \
     %{!static: \
       %{rdynamic:-export-dynamic} \
-      -dynamic-linker " LINUX_DYNAMIC_LINKER "} \
+      -dynamic-linker " GNU_USER_DYNAMIC_LINKER "} \
       %{static:-static}}"
 
 #define CPP_SPEC "%{posix:-D_POSIX_SOURCE} %{pthread:-D_REENTRANT}"

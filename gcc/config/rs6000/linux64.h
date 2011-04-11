@@ -378,19 +378,19 @@ extern int dot_symbols;
 #else
 #error "Unsupported DEFAULT_LIBC"
 #endif
-#define LINUX_DYNAMIC_LINKER32 \
+#define GNU_USER_DYNAMIC_LINKER32 \
   CHOOSE_DYNAMIC_LINKER (GLIBC_DYNAMIC_LINKER32, UCLIBC_DYNAMIC_LINKER32)
-#define LINUX_DYNAMIC_LINKER64 \
+#define GNU_USER_DYNAMIC_LINKER64 \
   CHOOSE_DYNAMIC_LINKER (GLIBC_DYNAMIC_LINKER64, UCLIBC_DYNAMIC_LINKER64)
 
 
 #define LINK_OS_LINUX_SPEC32 "-m elf32ppclinux %{!shared: %{!static: \
   %{rdynamic:-export-dynamic} \
-  -dynamic-linker " LINUX_DYNAMIC_LINKER32 "}}"
+  -dynamic-linker " GNU_USER_DYNAMIC_LINKER32 "}}"
 
 #define LINK_OS_LINUX_SPEC64 "-m elf64ppc %{!shared: %{!static: \
   %{rdynamic:-export-dynamic} \
-  -dynamic-linker " LINUX_DYNAMIC_LINKER64 "}}"
+  -dynamic-linker " GNU_USER_DYNAMIC_LINKER64 "}}"
 
 #undef  TOC_SECTION_ASM_OP
 #define TOC_SECTION_ASM_OP \

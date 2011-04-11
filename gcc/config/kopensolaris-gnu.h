@@ -19,8 +19,8 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#undef LINUX_TARGET_OS_CPP_BUILTINS    
-#define LINUX_TARGET_OS_CPP_BUILTINS()		\
+#undef GNU_USER_TARGET_OS_CPP_BUILTINS    
+#define GNU_USER_TARGET_OS_CPP_BUILTINS()		\
   do						\
     {						\
 	builtin_define ("__OpenSolaris_kernel__");	\

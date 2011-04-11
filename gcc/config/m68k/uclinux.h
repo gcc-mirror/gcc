@@ -45,7 +45,7 @@ along with GCC; see the file COPYING3.  If not see
 #define TARGET_OS_CPP_BUILTINS()				\
   do								\
     {								\
-      LINUX_TARGET_OS_CPP_BUILTINS ();				\
+      GNU_USER_TARGET_OS_CPP_BUILTINS ();			\
       builtin_define ("__uClinux__");				\
       if (TARGET_ID_SHARED_LIBRARY)				\
 	{							\

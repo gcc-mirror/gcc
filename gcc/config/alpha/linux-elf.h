@@ -33,10 +33,10 @@ along with GCC; see the file COPYING3.  If not see
 #else
 #error "Unsupported DEFAULT_LIBC"
 #endif
-#define LINUX_DYNAMIC_LINKER \
+#define GNU_USER_DYNAMIC_LINKER \
   CHOOSE_DYNAMIC_LINKER (GLIBC_DYNAMIC_LINKER, UCLIBC_DYNAMIC_LINKER)
 
-#define ELF_DYNAMIC_LINKER	LINUX_DYNAMIC_LINKER
+#define ELF_DYNAMIC_LINKER	GNU_USER_DYNAMIC_LINKER
 
 #define LINK_SPEC "-m elf64alpha %{G*} %{relax:-relax}		\
   %{O*:-O3} %{!O*:-O1}						\

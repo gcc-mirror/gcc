@@ -42,7 +42,7 @@ along with GCC; see the file COPYING3.  If not see
 #define TARGET_OS_CPP_BUILTINS()		\
   do						\
     {						\
-      LINUX_TARGET_OS_CPP_BUILTINS();		\
+      GNU_USER_TARGET_OS_CPP_BUILTINS();	\
     }						\
   while (0)
 
@@ -72,8 +72,8 @@ along with GCC; see the file COPYING3.  If not see
       %{static:-static} \
       %{!static: \
 	%{rdynamic:-export-dynamic} \
-	%{m31:-dynamic-linker " LINUX_DYNAMIC_LINKER32 "} \
-	%{m64:-dynamic-linker " LINUX_DYNAMIC_LINKER64 "}}}"
+	%{m31:-dynamic-linker " GNU_USER_DYNAMIC_LINKER32 "} \
+	%{m64:-dynamic-linker " GNU_USER_DYNAMIC_LINKER64 "}}}"
 
 #define CPP_SPEC "%{posix:-D_POSIX_SOURCE} %{pthread:-D_REENTRANT}"
 
