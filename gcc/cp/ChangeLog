@@ -1,6 +1,9 @@
 2011-04-11  Jason Merrill  <jason@redhat.com>
 
 	PR c++/48535
+	* semantics.c (finish_compound_literal): Handle references.
+
+	PR c++/48535
 	* semantics.c (finish_compound_literal): Take complain parm.
 	(build_lambda_object): Adjust.
 	* cp-tree.h: Adjust.
