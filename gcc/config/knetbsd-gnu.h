@@ -1,5 +1,5 @@
 /* Definitions for kNetBSD-based GNU systems with ELF format
-   Copyright (C) 2004, 2006, 2007
+   Copyright (C) 2004, 2006, 2007, 2011
    Free Software Foundation, Inc.
    Contributed by Robert Millan.
 
@@ -32,7 +32,5 @@ along with GCC; see the file COPYING3.  If not see
   while (0)
 
 
-#ifdef GLIBC_DYNAMIC_LINKER
-#undef GLIBC_DYNAMIC_LINKER
-#define GLIBC_DYNAMIC_LINKER "/lib/ld.so.1"
-#endif
+#undef GNU_USER_DYNAMIC_LINKER
+#define GNU_USER_DYNAMIC_LINKER "/lib/ld.so.1"
