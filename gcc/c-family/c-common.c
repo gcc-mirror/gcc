@@ -8810,7 +8810,9 @@ complete_array_type (tree *ptype, tree initial_value, bool do_default)
      TYPE_LANG_FLAG_? bits that the front end may have set.  */
   main_type = build_distinct_type_copy (TYPE_MAIN_VARIANT (type));
   TREE_TYPE (main_type) = unqual_elt;
-  TYPE_DOMAIN (main_type) = build_index_type (maxindex);
+  TYPE_DOMAIN (main_type)
+    = build_range_type (TREE_TYPE (maxindex),
+			build_int_cst (TREE_TYPE (maxindex), 0), maxindex);
   layout_type (main_type);
 
   /* Make sure we have the canonical MAIN_TYPE. */

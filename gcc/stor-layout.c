@@ -1996,15 +1996,16 @@ layout_type (tree type)
 	    if (integer_zerop (element_size))
 	      length = size_zero_node;
 
-	    /* The initial subtraction should happen in the original type so
+	    /* The computation should happen in the original type so
 	       that (possible) negative values are handled appropriately.  */
 	    else
 	      length
-		= size_binop (PLUS_EXPR, size_one_node,
-			      fold_convert (sizetype,
-					    fold_build2 (MINUS_EXPR,
-							 TREE_TYPE (lb),
-							 ub, lb)));
+		= fold_convert (sizetype,
+				fold_build2 (PLUS_EXPR, TREE_TYPE (lb),
+					     build_int_cst (TREE_TYPE (lb), 1),
+					     fold_build2 (MINUS_EXPR,
+							  TREE_TYPE (lb),
+							  ub, lb)));
 
 	    TYPE_SIZE (type) = size_binop (MULT_EXPR, element_size,
 					   fold_convert (bitsizetype,
@@ -2249,7 +2250,8 @@ initialize_sizetypes (void)
   TYPE_SIZE_UNIT (t) = build_int_cst (t, GET_MODE_SIZE (SImode));
   TYPE_PRECISION (t) = precision;
 
-  set_min_and_max_values_for_integral_type (t, precision, true);
+  set_min_and_max_values_for_integral_type (t, precision,
+					    /*is_unsigned=*/true);
 
   sizetype = t;
   bitsizetype = build_distinct_type_copy (t);
@@ -2284,7 +2286,6 @@ set_sizetype (tree type)
   /* We want to use sizetype's cache, as we will be replacing that type.  */
   TYPE_CACHED_VALUES (t) = TYPE_CACHED_VALUES (sizetype);
   TYPE_CACHED_VALUES_P (t) = TYPE_CACHED_VALUES_P (sizetype);
-  TREE_TYPE (TYPE_CACHED_VALUES (t)) = type;
   TYPE_UID (t) = TYPE_UID (sizetype);
   TYPE_IS_SIZETYPE (t) = 1;
 
