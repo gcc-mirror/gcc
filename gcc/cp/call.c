@@ -5495,7 +5495,7 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	elttype = cp_build_qualified_type
 	  (elttype, cp_type_quals (elttype) | TYPE_QUAL_CONST);
 	array = build_array_of_n_type (elttype, len);
-	array = finish_compound_literal (array, new_ctor);
+	array = finish_compound_literal (array, new_ctor, complain);
 
 	/* Build up the initializer_list object.  */
 	totype = complete_type (totype);

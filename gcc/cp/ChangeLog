@@ -1,5 +1,16 @@
 2011-04-11  Jason Merrill  <jason@redhat.com>
 
+	PR c++/48535
+	* semantics.c (finish_compound_literal): Take complain parm.
+	(build_lambda_object): Adjust.
+	* cp-tree.h: Adjust.
+	* call.c (convert_like_real): Adjust.
+	* decl.c (check_initializer): Adjust.
+	* parser.c (cp_parser_postfix_expression): Adjust.
+	(cp_parser_functional_cast): Adjust.
+	* pt.c (tsubst_copy_and_build): Adjust.
+	* typeck2.c (process_init_constructor_record): Adjust.
+
 	PR c++/48534
 	* cvt.c (ocp_convert): Use build_nop to convert to underlying type
 	of scoped enum.

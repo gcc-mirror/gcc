@@ -1126,7 +1126,8 @@ process_init_constructor_record (tree type, tree init)
 	  next = build_constructor (init_list_type_node, NULL);
 	  if (MAYBE_CLASS_TYPE_P (TREE_TYPE (field)))
 	    {
-	      next = finish_compound_literal (TREE_TYPE (field), next);
+	      next = finish_compound_literal (TREE_TYPE (field), next,
+					      tf_warning_or_error);
 	      /* direct-initialize the target. No temporary is going
 		  to be involved.  */
 	      if (TREE_CODE (next) == TARGET_EXPR)

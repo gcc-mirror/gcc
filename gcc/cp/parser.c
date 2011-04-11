@@ -4897,7 +4897,8 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 		postfix_expression
 		  = (finish_compound_literal
 		     (type, build_constructor (init_list_type_node,
-					       initializer_list)));
+					       initializer_list),
+		      tf_warning_or_error));
 		break;
 	      }
 	  }
@@ -19936,7 +19937,8 @@ cp_parser_functional_cast (cp_parser* parser, tree type)
       CONSTRUCTOR_IS_DIRECT_INIT (expression_list) = 1;
       if (TREE_CODE (type) == TYPE_DECL)
 	type = TREE_TYPE (type);
-      return finish_compound_literal (type, expression_list);
+      return finish_compound_literal (type, expression_list,
+				      tf_warning_or_error);
     }
 
 
