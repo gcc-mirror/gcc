@@ -731,7 +731,7 @@ ocp_convert (tree type, tree expr, int convtype, int flags)
 	  /* We can't implicitly convert a scoped enum to bool, so convert
 	     to the underlying type first.  */
 	  if (SCOPED_ENUM_P (intype) && (convtype & CONV_STATIC))
-	    e = convert (ENUM_UNDERLYING_TYPE (intype), e);
+	    e = build_nop (ENUM_UNDERLYING_TYPE (intype), e);
 	  return cp_truthvalue_conversion (e);
 	}
 
