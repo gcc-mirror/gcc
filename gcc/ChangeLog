@@ -1,3 +1,36 @@
+2011-04-11  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sse.md (VI_128): New mode iterator.
+	(VI12_128): Rename from SSEMODE12.
+	(VI14_128): Rename from SSEMODE14.
+	(VI124_128): New mode iterator.
+	(VI24_128): Rename from SSEMODE248.
+	(VI248_128): Rename from SSEMODE248.
+	(SSEMODE124C8): Remove.
+	(*<plusminus_insn><mode>3): Merge with *avx_<plusminus_insn><mode>3.
+	(*sse2_<plusminus_insn><mode>3): Merge with
+	*avx_<plusminus_insn><mode>3.
+	(*mulv8hi3): Merge with *avx_mulv8hi3.
+	(*<s>mulv8hi3_highpart): Merge with *avx_<s>mulv8hi3_highpart.
+	(*sse2_umulv2siv2di3): Merge with *avx_umulv2siv2di3.
+	(*sse2_pmaddwd): Merge with *avx_pmaddwd.
+	(*sse4_1_mulv4si3): Merge with *avx_mulv4si3.
+	(ashr<mode>3): Merge with *avx_ashr<mode>3.
+	(lshr<mode>3): Merge with *avx_lshr<mode>3.
+	(ashl<mode>3): Merge with *avx_ashl<mode>3.
+	(sse2_ashlv1ti3): Merge with *avx_ashlv1ti3.
+	(sse2_lshrv1ti3): Merge with *avx_lshrv1ti3.
+	(*sse4_1_<smaxmin:code><mode>3): Merge with *avx_<smaxmin:code><mode>3.
+	(*<smaxmin:code>v8hi3): Ditto.
+	(*sse4_1_<umaxmin:code><mode>3): Merge with *avx_<umaxmin:code><mode>3.
+	(*<smaxmin:code>v16qi3): Ditto.
+	(*sse4_1_eqv2di3): Merge with *avx_eq<mode>3.
+	(*sse2_eq<mode>3): Ditto.
+	(*sse4_2_eqv2di3): Merge with *avx_gt<mode>3.
+	(*sse2_gt<mode>3): Ditto.
+	(vcondv2di): Split out of vcond<mode>.
+	(vconduv2di): Split out of vcondu<mode>.
+
 2011-04-11  Richard Guenther  <rguenther@suse.de>
 
 	* gimplify.c (gimple_fold_indirect_ref): Check host_integerp
@@ -296,7 +329,7 @@
 	* system.h (ASM_OUTPUT_BSS): Poison.
 	* varasm.c (asm_output_bss): Remove function.
 	(emit_bss, init_varasm_once): Don't use ASM_OUTPUT_BSS macro.
-	
+
 	* config/frv/frv.h (BSS_SECTION_ASM_OP): Remove comment.
 	* config/frv/fr30.h (BSS_SECTION_ASM_OP): Likewise.
 	* config/i386/djgpp.h (BSS_SECTION_ASM_OP): Likewise.
@@ -330,8 +363,7 @@
 	options.  Don't map other m68k options manually.  Don't handle
 	old-style options as canonical.
 	(MULTILIB_EXCEPTIONS): Don't use $(CANONICALIZE_OPTIONS).
-	* doc/install.texi (m68k-*-*): Document binutils version
-	requirement.
+	* doc/install.texi (m68k-*-*): Document binutils version requirement.
 
 2011-04-07  Eric Botcazou  <ebotcazou@adacore.com>
 
@@ -868,11 +900,11 @@
 
 2011-04-05  Yufeng Zhang  <yufeng.zhang@arm.com>
 
-        * config/arm/arm.md (define_constants for unspec): Replace with
-        define_c_enum.
-        (define_constants for unspecv): Replace with define_c_enum.
-        * config/arm/neon.md (define_constants for unspec): Replace with
-        define_c_enum.
+	* config/arm/arm.md (define_constants for unspec): Replace with
+	define_c_enum.
+	(define_constants for unspecv): Replace with define_c_enum.
+	* config/arm/neon.md (define_constants for unspec): Replace with
+	define_c_enum.
 
 2011-04-04  Richard Henderson  <rth@redhat.com>
 
