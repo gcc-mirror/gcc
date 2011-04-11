@@ -1,3 +1,9 @@
+
+2011-04-11  Basile Starynkevitch  <basile@starynkevitch.net>
+
+	* Makefile.in (PLUGIN_HEADERS): Add gimple-pretty-print.h
+	tree-pretty-print.h & realmpfr.h.
+
 2011-04-11  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR middle-end/48464
