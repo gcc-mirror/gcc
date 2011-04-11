@@ -1,3 +1,10 @@
+2011-04-11  Richard Guenther  <rguenther@suse.de>
+
+	* stor-layout.c (layout_type): Compute all array index size operations
+	in the original type.
+	(initialize_sizetypes): Add comment.
+	(set_sizetype): Do not set TREE_TYPE of a TREE_VEC.
+
 2011-04-11  Joseph Myers  <joseph@codesourcery.com>
 
 	* common.opt (Tbss=, Tdata=, Ttext=): New options.

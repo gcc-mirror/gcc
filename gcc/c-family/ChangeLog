@@ -1,3 +1,8 @@
+2011-04-11  Richard Guenther  <rguenther@suse.de>
+
+	* c-common.c (complete_array_type): Build a range type of
+	proper type.
+
 2011-04-08  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* c-common.c (handle_sentinel_attribute): Don't use TYPE_ARG_TYPES.
