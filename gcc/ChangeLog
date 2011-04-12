@@ -1,3 +1,10 @@
+2011-04-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/48552
+	* c-typeck.c (build_asm_expr): Error out on attempts to use
+	void type outputs or inputs for constraints that allow reg or
+	don't allow memory.
+
 2011-04-11  Chung-Lin Tang  <cltang@codesourcery.com>
 	    Richard Earnshaw  <rearnsha@arm.com>
 
