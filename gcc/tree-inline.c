@@ -5001,8 +5001,10 @@ tree_function_versioning (tree old_decl, tree new_decl,
 	      && TREE_CODE (new_decl) == FUNCTION_DECL);
   DECL_POSSIBLY_INLINED (old_decl) = 1;
 
-  old_version_node = cgraph_node (old_decl);
-  new_version_node = cgraph_node (new_decl);
+  old_version_node = cgraph_get_node (old_decl);
+  gcc_checking_assert (old_version_node);
+  new_version_node = cgraph_get_node (new_decl);
+  gcc_checking_assert (new_version_node);
 
   /* Output the inlining info for this abstract function, since it has been
      inlined.  If we don't do this now, we can lose the information about the

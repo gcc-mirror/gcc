@@ -619,7 +619,8 @@ lower_emutls_function_body (struct cgraph_node *node)
 
   d.cfun_node = node;
   d.builtin_decl = built_in_decls[BUILT_IN_EMUTLS_GET_ADDRESS];
-  d.builtin_node = cgraph_node (d.builtin_decl);
+  d.builtin_node = cgraph_get_node (d.builtin_decl);
+  gcc_checking_assert (d.builtin_node);
 
   FOR_EACH_BB (d.bb)
     {
