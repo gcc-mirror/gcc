@@ -2490,13 +2490,12 @@ static void
 update_cfg_for_uncondjump (rtx insn)
 {
   basic_block bb = BLOCK_FOR_INSN (insn);
-  bool at_end = (BB_END (bb) == insn);
+  gcc_assert (BB_END (bb) == insn);
 
-  if (at_end)
-    purge_dead_edges (bb);
+  purge_dead_edges (bb);
 
   delete_insn (insn);
-  if (at_end && EDGE_COUNT (bb->succs) == 1)
+  if (EDGE_COUNT (bb->succs) == 1)
     {
       rtx insn;
 
@@ -4409,7 +4408,8 @@ try_combine (rtx i3, rtx i2, rtx i1, rtx i0, int *new_direct_jump_p,
 
   /* A noop might also need cleaning up of CFG, if it comes from the
      simplification of a jump.  */
-  if (GET_CODE (newpat) == SET
+  if (JUMP_P (i3)
+      && GET_CODE (newpat) == SET
       && SET_SRC (newpat) == pc_rtx
       && SET_DEST (newpat) == pc_rtx)
     {
@@ -4418,6 +4418,7 @@ try_combine (rtx i3, rtx i2, rtx i1, rtx i0, int *new_direct_jump_p,
     }
 
   if (undobuf.other_insn != NULL_RTX
+      && JUMP_P (undobuf.other_insn)
       && GET_CODE (PATTERN (undobuf.other_insn)) == SET
       && SET_SRC (PATTERN (undobuf.other_insn)) == pc_rtx
       && SET_DEST (PATTERN (undobuf.other_insn)) == pc_rtx)
