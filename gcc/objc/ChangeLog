@@ -1,5 +1,12 @@
 2011-04-12  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	* objc-act.c (printable_ivar_name): New.
+	(add_instance_variable): Call printable_ivar_name() when an error
+	message needs to be printed.  Do not prepare the instance variable
+	for printing unless there is an actual error.
+
+2011-04-12  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	* objc-act.c (objc_is_class_name, objc_is_id): For efficiency,
 	avoid calling identifier_global_value() multiple times.
 
