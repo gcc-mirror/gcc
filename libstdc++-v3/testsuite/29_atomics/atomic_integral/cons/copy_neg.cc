@@ -1,7 +1,7 @@
 // { dg-options "-std=gnu++0x" }
 // { dg-do compile }
 
-// Copyright (C) 2008, 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -29,5 +29,5 @@ int main()
   return 0;
 }
 
-// { dg-error "deleted" "" { target *-*-* } 610 }
+// { dg-error "deleted" "" { target *-*-* } 611 }
 // { dg-prune-output "include" }
