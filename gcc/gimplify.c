@@ -2290,7 +2290,7 @@ gimplify_arg (tree *arg_p, gimple_seq *pre_p, location_t call_location)
 static enum gimplify_status
 gimplify_call_expr (tree *expr_p, gimple_seq *pre_p, bool want_value)
 {
-  tree fndecl, parms, p;
+  tree fndecl, parms, p, fnptrtype;
   enum gimplify_status ret;
   int i, nargs;
   gimple call;
@@ -2348,6 +2348,9 @@ gimplify_call_expr (tree *expr_p, gimple_seq *pre_p, bool want_value)
 	    }
 	}
     }
+
+  /* Remember the original function pointer type.  */
+  fnptrtype = TREE_TYPE (CALL_EXPR_FN (*expr_p));
 
   /* There is a sequence point before the call, so any side effects in
      the calling expression must occur before the actual call.  Force
@@ -2436,7 +2439,7 @@ gimplify_call_expr (tree *expr_p, gimple_seq *pre_p, bool want_value)
 
   /* Verify the function result.  */
   if (want_value && fndecl
-      && VOID_TYPE_P (TREE_TYPE (TREE_TYPE (fndecl))))
+      && VOID_TYPE_P (TREE_TYPE (TREE_TYPE (fnptrtype))))
     {
       error_at (loc, "using result of function returning %<void%>");
       ret = GS_ERROR;
@@ -2488,11 +2491,16 @@ gimplify_call_expr (tree *expr_p, gimple_seq *pre_p, bool want_value)
 	 have to do is replicate it as a GIMPLE_CALL tuple.  */
       gimple_stmt_iterator gsi;
       call = gimple_build_call_from_tree (*expr_p);
+      gimple_call_set_fntype (call, TREE_TYPE (fnptrtype));
       gimplify_seq_add_stmt (pre_p, call);
       gsi = gsi_last (*pre_p);
       fold_stmt (&gsi);
       *expr_p = NULL_TREE;
     }
+  else
+    /* Remember the original function type.  */
+    CALL_EXPR_FN (*expr_p) = build1 (NOP_EXPR, fnptrtype,
+				     CALL_EXPR_FN (*expr_p));
 
   return ret;
 }
@@ -4607,7 +4615,11 @@ gimplify_modify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
     {
       /* Since the RHS is a CALL_EXPR, we need to create a GIMPLE_CALL
 	 instead of a GIMPLE_ASSIGN.  */
+      tree fnptrtype = TREE_TYPE (CALL_EXPR_FN (*from_p));
+      CALL_EXPR_FN (*from_p) = TREE_OPERAND (CALL_EXPR_FN (*from_p), 0);
+      STRIP_USELESS_TYPE_CONVERSION (CALL_EXPR_FN (*from_p));
       assign = gimple_build_call_from_tree (*from_p);
+      gimple_call_set_fntype (assign, TREE_TYPE (fnptrtype));
       if (!gimple_call_noreturn_p (assign))
 	gimple_call_set_lhs (assign, *to_p);
     }

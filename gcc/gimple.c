@@ -231,6 +231,7 @@ gimple_build_call_1 (tree fn, unsigned nargs)
   if (TREE_CODE (fn) == FUNCTION_DECL)
     fn = build_fold_addr_expr (fn);
   gimple_set_op (s, 1, fn);
+  gimple_call_set_fntype (s, TREE_TYPE (TREE_TYPE (fn)));
   gimple_call_reset_alias_info (s);
   return s;
 }

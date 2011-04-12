@@ -1759,6 +1759,8 @@ output_gimple_stmt (struct output_block *ob, gimple stmt)
 	    }
 	  lto_output_tree_ref (ob, op);
 	}
+      if (is_gimple_call (stmt))
+	lto_output_tree_ref (ob, gimple_call_fntype (stmt));
       break;
 
     case GIMPLE_NOP:

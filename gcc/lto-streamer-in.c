@@ -1062,6 +1062,8 @@ input_gimple_stmt (struct lto_input_block *ib, struct data_in *data_in,
 	      op = TREE_OPERAND (op, 0);
 	    }
 	}
+      if (is_gimple_call (stmt))
+	gimple_call_set_fntype (stmt, lto_input_tree (ib, data_in));
       break;
 
     case GIMPLE_NOP:
