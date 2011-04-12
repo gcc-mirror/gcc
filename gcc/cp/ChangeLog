@@ -1,3 +1,9 @@
+2011-04-11  Jason Merrill  <jason@redhat.com>
+
+	PR c++/48523
+	* tree.c (maybe_dummy_object): Use build_x_indirect_ref rather
+	than cp_build_indirect_ref.
+
 2011-04-07  Jason Merrill  <jason@redhat.com>
 
 	PR c++/48500
