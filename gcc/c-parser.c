@@ -334,8 +334,7 @@ c_lex_one_token (c_parser *parser, c_token *token)
 	       variables and typedefs, and hence are shadowed by local
 	       declarations.  */
 	    if (objc_interface_decl
-		&& (global_bindings_p ()
-		    || (!objc_force_identifier && !decl)))
+                && (!objc_force_identifier || global_bindings_p ()))
 	      {
 		token->value = objc_interface_decl;
 		token->id_kind = C_ID_CLASSNAME;

@@ -3411,9 +3411,13 @@ objc_is_class_name (tree ident)
 {
   hash target;
 
-  if (ident && TREE_CODE (ident) == IDENTIFIER_NODE
-      && identifier_global_value (ident))
-    ident = identifier_global_value (ident);
+  if (ident && TREE_CODE (ident) == IDENTIFIER_NODE)
+    {
+      tree t = identifier_global_value (ident);
+      if (t)
+	ident = t;
+    }
+
   while (ident && TREE_CODE (ident) == TYPE_DECL && DECL_ORIGINAL_TYPE (ident))
     ident = OBJC_TYPE_NAME (DECL_ORIGINAL_TYPE (ident));
 
@@ -3453,9 +3457,12 @@ objc_is_class_name (tree ident)
 tree
 objc_is_id (tree type)
 {
-  if (type && TREE_CODE (type) == IDENTIFIER_NODE
-      && identifier_global_value (type))
-    type = identifier_global_value (type);
+  if (type && TREE_CODE (type) == IDENTIFIER_NODE)
+    {
+      tree t = identifier_global_value (type);
+      if (t)
+	type = t;
+    }
 
   if (type && TREE_CODE (type) == TYPE_DECL)
     type = TREE_TYPE (type);
