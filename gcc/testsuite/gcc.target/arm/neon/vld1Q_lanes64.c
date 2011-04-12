@@ -16,5 +16,5 @@ void test_vld1Q_lanes64 (void)
   out_int64x2_t = vld1q_lane_s64 (0, arg1_int64x2_t, 1);
 }
 
-/* { dg-final { scan-assembler "vld1\.64\[ 	\]+((\\\{\[dD\]\[0-9\]+\\\})|(\[dD\]\[0-9\]+)), \\\[\[rR\]\[0-9\]+\\\]!?\(\[ 	\]+@\[a-zA-Z0-9 \]+\)?\n" } } */
+/* { dg-final { scan-assembler "vld1\.64\[ 	\]+((\\\{\[dD\]\[0-9\]+\\\})|(\[dD\]\[0-9\]+)), \\\[\[rR\]\[0-9\]+\(:\[0-9\]+\)?\\\]!?\(\[ 	\]+@\[a-zA-Z0-9 \]+\)?\n" } } */
 /* { dg-final { cleanup-saved-temps } } */

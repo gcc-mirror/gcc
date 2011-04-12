@@ -194,24 +194,22 @@
 
 ;; Mode of pair of elements for each vector mode, to define transfer
 ;; size for structure lane/dup loads and stores.
-(define_mode_attr V_two_elem [(V8QI "HI") (V16QI "HI")
-                  (V4HI "SI") (V8HI "SI")
+(define_mode_attr V_two_elem [(V8QI "HI")   (V16QI "HI")
+                              (V4HI "SI")   (V8HI "SI")
                               (V2SI "V2SI") (V4SI "V2SI")
                               (V2SF "V2SF") (V4SF "V2SF")
                               (DI "V2DI")   (V2DI "V2DI")])
 
 ;; Similar, for three elements.
-;; ??? Should we define extra modes so that sizes of all three-element
-;; accesses can be accurately represented?
-(define_mode_attr V_three_elem [(V8QI "SI")   (V16QI "SI")
-                    (V4HI "V4HI") (V8HI "V4HI")
-                                (V2SI "V4SI") (V4SI "V4SI")
-                                (V2SF "V4SF") (V4SF "V4SF")
-                                (DI "EI")     (V2DI "EI")])
+(define_mode_attr V_three_elem [(V8QI "BLK") (V16QI "BLK")
+                                (V4HI "BLK") (V8HI "BLK")
+                                (V2SI "BLK") (V4SI "BLK")
+                                (V2SF "BLK") (V4SF "BLK")
+                                (DI "EI")    (V2DI "EI")])
 
 ;; Similar, for four elements.
 (define_mode_attr V_four_elem [(V8QI "SI")   (V16QI "SI")
-                   (V4HI "V4HI") (V8HI "V4HI")
+                               (V4HI "V4HI") (V8HI "V4HI")
                                (V2SI "V4SI") (V4SI "V4SI")
                                (V2SF "V4SF") (V4SF "V4SF")
                                (DI "OI")     (V2DI "OI")])

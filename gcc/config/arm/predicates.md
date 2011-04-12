@@ -683,3 +683,7 @@
    } 
   return true; 
 })
+
+(define_special_predicate "neon_struct_operand"
+  (and (match_code "mem")
+       (match_test "TARGET_32BIT && neon_vector_mem_operand (op, 2)")))
