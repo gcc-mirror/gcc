@@ -1,5 +1,22 @@
 2011-04-12  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	* genpreds.c (process_define_predicate): Move most processing
+	to gensupport.c.  Continue to validate the expression.
+	* genrecog.c (did_you_mean_codes, compute_predicate_codes)
+	(process_define_predicate): Move processing to gensupport.c.
+	(main): Remove DEFINE_PREDICATE and DEFINE_SPECIAL_PREDICATE cases.
+	* gensupport.c (did_you_mean_codes): Moved from genrecog.c.
+	(compute_predicate_codes): Moved from genrecog.c.  Add lineno
+	argument.
+	(valid_predicate_name_p): New function, split out from old
+	genpreds.c:process_define_predicate.
+	(process_define_predicate): New function, combining code from
+	old genpreds.c and genrecog.c functions.
+	(process_rtx): Call it for DEFINE_PREDICATE and
+	DEFINE_SPECIAL_PREDICATE.
+
+2011-04-12  Richard Sandiford  <richard.sandiford@linaro.org>
+
 	* config/arm/arm.c (arm_print_operand): Use MEM_SIZE to get the
 	size of a '%A' memory reference.
 	(T_DREG, T_QREG): New neon_builtin_type_bits.

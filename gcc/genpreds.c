@@ -93,34 +93,7 @@ validate_exp (rtx exp, const char *name, int lineno)
 static void
 process_define_predicate (rtx defn, int lineno)
 {
-  struct pred_data *pred;
-  const char *p;
-
-  if (!ISALPHA (XSTR (defn, 0)[0]) && XSTR (defn, 0)[0] != '_')
-    goto bad_name;
-  for (p = XSTR (defn, 0) + 1; *p; p++)
-    if (!ISALNUM (*p) && *p != '_')
-      goto bad_name;
-
-  if (validate_exp (XEXP (defn, 1), XSTR (defn, 0), lineno))
-    return;
-
-  pred = XCNEW (struct pred_data);
-  pred->name = XSTR (defn, 0);
-  pred->exp = XEXP (defn, 1);
-  pred->c_block = XSTR (defn, 2);
-
-  if (GET_CODE (defn) == DEFINE_SPECIAL_PREDICATE)
-    pred->special = true;
-
-  add_predicate (pred);
-  return;
-
- bad_name:
-  error_with_line (lineno,
-		   "%s: predicate name must be a valid C function name",
-		   XSTR (defn, 0));
-  return;
+  validate_exp (XEXP (defn, 1), XSTR (defn, 0), lineno);
 }
 
 /* Given a predicate, if it has an embedded C block, write the block
