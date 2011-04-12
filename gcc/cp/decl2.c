@@ -3893,7 +3893,7 @@ cp_write_global_declarations (void)
 	  if (!DECL_EXTERNAL (decl)
 	      && decl_needed_p (decl)
 	      && !TREE_ASM_WRITTEN (decl)
-	      && !cgraph_get_create_node (decl)->local.finalized)
+	      && !cgraph_get_node (decl)->local.finalized)
 	    {
 	      /* We will output the function; no longer consider it in this
 		 loop.  */
