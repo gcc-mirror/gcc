@@ -1,3 +1,8 @@
+2011-04-12  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/46076
+	* gcc.dg/tree-ssa/pr46076.c: Un-XFAIL.
+
 2011-04-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR testsuite/21164

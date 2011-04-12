@@ -1,3 +1,20 @@
+2011-04-12  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/46076
+	* gimple.h (struct gimple_statement_call): Add fntype field.
+	(gimple_call_fntype): Adjust.
+	(gimple_call_set_fntype): New function.
+	* gimple.c (gimple_build_call_1): Set the call function type.
+	* gimplify.c (gimplify_call_expr): Preserve the function
+	type the frontend used for the call.
+	(gimplify_modify_expr): Likewise.
+	* lto-streamer-in.c (input_gimple_stmt): Input the call stmts
+	function type.
+	* lto-streamer-out.c (output_gimple_stmt): Output the call stmts
+	function type.
+	* tree-ssa.c (useless_type_conversion_p): Function pointer
+	conversions are useless.
+
 2011-04-12  Martin Jambor  <mjambor@suse.cz>
 
 	* cgraph.h (cgraph_node): Remove function declaration.
