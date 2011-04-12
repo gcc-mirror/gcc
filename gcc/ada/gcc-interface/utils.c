@@ -2003,7 +2003,7 @@ end_subprog_body (tree body)
   else
     /* Register this function with cgraph just far enough to get it
        added to our parent's nested function list.  */
-    (void) cgraph_node (fndecl);
+    (void) cgraph_get_create_node (fndecl);
 }
 
 tree

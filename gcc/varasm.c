@@ -2199,7 +2199,7 @@ mark_decl_referenced (tree decl)
 	 If we know a method will be emitted in other TU and no new
 	 functions can be marked reachable, just use the external
 	 definition.  */
-      struct cgraph_node *node = cgraph_node (decl);
+      struct cgraph_node *node = cgraph_get_create_node (decl);
       if (!DECL_EXTERNAL (decl)
 	  && (!node->local.vtable_method || !cgraph_global_info_ready
 	      || !node->local.finalized))
@@ -5807,7 +5807,7 @@ assemble_alias (tree decl, tree target)
 
   /* Allow aliases to aliases.  */
   if (TREE_CODE (decl) == FUNCTION_DECL)
-    cgraph_node (decl)->alias = true;
+    cgraph_get_create_node (decl)->alias = true;
   else
     varpool_node (decl)->alias = true;
 

@@ -73,10 +73,10 @@ record_reference (tree *tp, int *walk_subtrees, void *data)
       decl = get_base_var (*tp);
       if (TREE_CODE (decl) == FUNCTION_DECL)
 	{
+	  struct cgraph_node *node = cgraph_get_create_node (decl);
 	  if (!ctx->only_vars)
-	  cgraph_mark_address_taken_node (cgraph_node (decl));
-	  ipa_record_reference (NULL, ctx->varpool_node,
-			        cgraph_node (decl), NULL,
+	    cgraph_mark_address_taken_node (node);
+	  ipa_record_reference (NULL, ctx->varpool_node, node, NULL,
 			        IPA_REF_ADDR, NULL);
 	}
 
@@ -149,8 +149,8 @@ record_eh_tables (struct cgraph_node *node, struct function *fun)
 
   if (DECL_FUNCTION_PERSONALITY (node->decl))
     ipa_record_reference (node, NULL,
-			  cgraph_node (DECL_FUNCTION_PERSONALITY (node->decl)),
-			  NULL, IPA_REF_ADDR, NULL);
+	       cgraph_get_create_node (DECL_FUNCTION_PERSONALITY (node->decl)),
+	       NULL, IPA_REF_ADDR, NULL);
 
   i = fun->eh->region_tree;
   if (!i)
@@ -250,7 +250,7 @@ mark_address (gimple stmt, tree addr, void *data)
   addr = get_base_address (addr);
   if (TREE_CODE (addr) == FUNCTION_DECL)
     {
-      struct cgraph_node *node = cgraph_node (addr);
+      struct cgraph_node *node = cgraph_get_create_node (addr);
       cgraph_mark_address_taken_node (node);
       ipa_record_reference ((struct cgraph_node *)data, NULL,
 			    node, NULL,
@@ -285,7 +285,7 @@ mark_load (gimple stmt, tree t, void *data)
     {
       /* ??? This can happen on platforms with descriptors when these are
 	 directly manipulated in the code.  Pretend that it's an address.  */
-      struct cgraph_node *node = cgraph_node (t);
+      struct cgraph_node *node = cgraph_get_create_node (t);
       cgraph_mark_address_taken_node (node);
       ipa_record_reference ((struct cgraph_node *)data, NULL,
 			    node, NULL,
@@ -361,9 +361,8 @@ build_cgraph_edges (void)
 							 bb);
 	      decl = gimple_call_fndecl (stmt);
 	      if (decl)
-		cgraph_create_edge (node, cgraph_node (decl), stmt,
-				    bb->count, freq,
-				    bb->loop_depth);
+		cgraph_create_edge (node, cgraph_get_create_node (decl),
+				    stmt, bb->count, freq, bb->loop_depth);
 	      else
 		cgraph_create_indirect_edge (node, stmt,
 					     gimple_call_flags (stmt),
@@ -376,18 +375,18 @@ build_cgraph_edges (void)
 	      && gimple_omp_parallel_child_fn (stmt))
 	    {
 	      tree fn = gimple_omp_parallel_child_fn (stmt);
-	      ipa_record_reference (node, NULL, cgraph_node (fn),
+	      ipa_record_reference (node, NULL, cgraph_get_create_node (fn),
 				    NULL, IPA_REF_ADDR, stmt);
 	    }
 	  if (gimple_code (stmt) == GIMPLE_OMP_TASK)
 	    {
 	      tree fn = gimple_omp_task_child_fn (stmt);
 	      if (fn)
-		ipa_record_reference (node, NULL, cgraph_node (fn),
+		ipa_record_reference (node, NULL, cgraph_get_create_node (fn),
 				      NULL, IPA_REF_ADDR, stmt);
 	      fn = gimple_omp_task_copy_fn (stmt);
 	      if (fn)
-		ipa_record_reference (node, NULL, cgraph_node (fn),
+		ipa_record_reference (node, NULL, cgraph_get_create_node (fn),
 				      NULL, IPA_REF_ADDR, stmt);
 	    }
 	}
@@ -472,9 +471,8 @@ rebuild_cgraph_edges (void)
 							 bb);
 	      decl = gimple_call_fndecl (stmt);
 	      if (decl)
-		cgraph_create_edge (node, cgraph_node (decl), stmt,
-				    bb->count, freq,
-				    bb->loop_depth);
+		cgraph_create_edge (node, cgraph_get_create_node (decl), stmt,
+				    bb->count, freq, bb->loop_depth);
 	      else
 		cgraph_create_indirect_edge (node, stmt,
 					     gimple_call_flags (stmt),

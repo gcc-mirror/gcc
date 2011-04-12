@@ -1,5 +1,47 @@
 2011-04-12  Martin Jambor  <mjambor@suse.cz>
 
+	* cgraph.h (cgraph_node): Remove function declaration.
+	(cgraph_create_node): Declare.
+	(cgraph_get_create_node): Likewise.
+	* cgraph.c (cgraph_create_node): Renamed to cgraph_create_node_1.
+	Updated all callers.
+	(cgraph_node): Renamed to cgraph_create_node, assert that a node for
+	the decl does not already exist.  Call cgraph_get_create_node instead
+	of cgraph_node.
+	(cgraph_get_create_node): New function.
+	(cgraph_same_body_alias): Update comment.
+	(cgraph_set_call_stmt): Call cgraph_get_node instead of cgraph_node,
+	assert it does not return NULL.
+	(cgraph_update_edges_for_call_stmt): Likewise.
+	(cgraph_clone_edge): Likewise.
+	(cgraph_create_virtual_clone): Likewise.
+	(cgraph_update_edges_for_call_stmt_node): Call cgraph_get_create_node
+	instead of cgraph_node.
+	(cgraph_add_new_function): Call cgraph_create_node or
+	cgraph_get_create_node instead of cgraph_node.
+	* cgraphbuild.c (record_reference): Call cgraph_get_create_node
+	instead of cgraph_node.
+	(record_eh_tables): Likewise.
+	(mark_address): Likewise.
+	(mark_load): Likewise.
+	(build_cgraph_edges): Call cgraph_get_create_node instead
+	of cgraph_node.
+	(rebuild_cgraph_edges): Likewise.
+	* cgraphunit.c (cgraph_finalize_function): Call cgraph_get_create_node
+	instead of cgraph_node.
+	(cgraph_copy_node_for_versioning): Call cgraph_create_node instead of
+	cgraph_node.
+	* lto-symtab.c (lto_symtab_merge_cgraph_nodes_1): Call
+	cgraph_create_node instead of cgraph_node.
+	* c-decl.c (finish_function): Call cgraph_get_create_node instead
+	of cgraph_node.
+	* lto-cgraph.c (input_node): Likewise.
+	* lto-streamer-in.c (input_function): Likewise.
+	* varasm.c (mark_decl_referenced): Likewise.
+	(assemble_alias): Likewise.
+
+2011-04-12  Martin Jambor  <mjambor@suse.cz>
+
 	* tree-inline.c (tree_function_versioning): Call cgraph_get_node
 	instead of cgraph_node and assert it does not return NULL.
 	* lto-streamer-in.c (lto_read_body): Likewise.

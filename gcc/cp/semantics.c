@@ -8458,8 +8458,8 @@ maybe_add_lambda_conv_op (tree type)
       /* Put the thunk in the same comdat group as the call op.  */
       struct cgraph_node *callop_node, *thunk_node;
       DECL_COMDAT_GROUP (statfn) = DECL_COMDAT_GROUP (callop);
-      callop_node = cgraph_node (callop);
-      thunk_node = cgraph_node (statfn);
+      callop_node = cgraph_get_create_node (callop);
+      thunk_node = cgraph_get_create_node (statfn);
       gcc_assert (callop_node->same_comdat_group == NULL);
       gcc_assert (thunk_node->same_comdat_group == NULL);
       callop_node->same_comdat_group = thunk_node;

@@ -343,7 +343,7 @@ cgraph_lower_function (struct cgraph_node *node)
 void
 cgraph_finalize_function (tree decl, bool nested)
 {
-  struct cgraph_node *node = cgraph_node (decl);
+  struct cgraph_node *node = cgraph_get_create_node (decl);
 
   if (node->local.finalized)
     cgraph_reset_node (node);
@@ -1990,7 +1990,7 @@ cgraph_copy_node_for_versioning (struct cgraph_node *old_version,
 
    gcc_assert (old_version);
 
-   new_version = cgraph_node (new_decl);
+   new_version = cgraph_create_node (new_decl);
 
    new_version->analyzed = true;
    new_version->local = old_version->local;

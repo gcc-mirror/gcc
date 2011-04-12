@@ -1,3 +1,8 @@
+2011-04-12  Martin Jambor  <mjambor@suse.cz>
+
+	* gcc-interface/utils.c (end_subprog_body): Call
+	cgraph_get_create_node instead of cgraph_node.
+
 2011-04-08  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Procedure>: Set minimum

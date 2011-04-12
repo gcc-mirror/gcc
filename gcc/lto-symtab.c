@@ -799,7 +799,7 @@ lto_symtab_merge_cgraph_nodes_1 (void **slot, void *data ATTRIBUTE_UNUSED)
 	     previously unused.  Create the node.  */
 	  if (!prevailing->node)
 	    {
-	      prevailing->node = cgraph_node (prevailing->decl);
+	      prevailing->node = cgraph_create_node (prevailing->decl);
 	      prevailing->node->alias = true;
 	    }
 	  lto_cgraph_replace_node (e->node, prevailing->node);

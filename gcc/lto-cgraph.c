@@ -1045,7 +1045,7 @@ input_node (struct lto_file_decl_data *file_data,
 				0, CGRAPH_FREQ_BASE, 0, false, NULL);
     }
   else
-    node = cgraph_node (fn_decl);
+    node = cgraph_get_create_node (fn_decl);
 
   node->count = lto_input_sleb128 (ib);
   node->count_materialization_scale = lto_input_sleb128 (ib);

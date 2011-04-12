@@ -1,3 +1,8 @@
+2011-04-12  Martin Jambor  <mjambor@suse.cz>
+
+	* trans-decl.c (gfc_generate_function_code): Call
+	cgraph_get_create_node instead of cgraph_node.
+
 2011-04-11  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/18918

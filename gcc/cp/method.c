@@ -259,8 +259,9 @@ make_alias_for_thunk (tree function)
 
   if (!flag_syntax_only)
     {
-      struct cgraph_node *aliasn = cgraph_same_body_alias (cgraph_node (function),
-							   alias, function);
+      struct cgraph_node *aliasn;
+      aliasn = cgraph_same_body_alias (cgraph_get_create_node (function),
+				       alias, function);
       DECL_ASSEMBLER_NAME (function);
       gcc_assert (aliasn != NULL);
     }
@@ -378,7 +379,7 @@ use_thunk (tree thunk_fndecl, bool emit_p)
   a = nreverse (t);
   DECL_ARGUMENTS (thunk_fndecl) = a;
   TREE_ASM_WRITTEN (thunk_fndecl) = 1;
-  cgraph_add_thunk (cgraph_node (function), thunk_fndecl, function,
+  cgraph_add_thunk (cgraph_get_create_node (function), thunk_fndecl, function,
 		    this_adjusting, fixed_offset, virtual_value,
 		    virtual_offset, alias);
 
