@@ -1,3 +1,8 @@
+2011-04-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/48549
+	* g++.dg/opt/pr48549.C: New test.
+
 2011-04-12  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/46076
