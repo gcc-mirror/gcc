@@ -1,5 +1,8 @@
 2011-04-12  Jakub Jelinek  <jakub@redhat.com>
 
+	PR rtl-optimization/48549
+	* g++.dg/opt/pr48549.C: New test.
+
 	PR c/48517
 	* gcc.c-torture/compile/pr48517.c: New test.
 

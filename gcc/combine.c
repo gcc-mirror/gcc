@@ -1178,8 +1178,13 @@ combine_instructions (rtx f, unsigned int nregs)
 	  next = 0;
 	  if (NONDEBUG_INSN_P (insn))
 	    {
+	      while (last_combined_insn
+		     && INSN_DELETED_P (last_combined_insn))
+		last_combined_insn = PREV_INSN (last_combined_insn);
 	      if (last_combined_insn == NULL_RTX
-		  || DF_INSN_LUID (last_combined_insn) < DF_INSN_LUID (insn))
+		  || BARRIER_P (last_combined_insn)
+		  || BLOCK_FOR_INSN (last_combined_insn) != this_basic_block
+		  || DF_INSN_LUID (last_combined_insn) <= DF_INSN_LUID (insn))
 		last_combined_insn = insn;
 
 	      /* See if we know about function return values before this
@@ -2435,19 +2440,21 @@ propagate_for_debug_subst (rtx from, const_rtx old_rtx, void *data)
 }
 
 /* Replace all the occurrences of DEST with SRC in DEBUG_INSNs between INSN
-   and LAST.  */
+   and LAST, not including INSN, but including LAST.  Also stop at the end
+   of THIS_BASIC_BLOCK.  */
 
 static void
 propagate_for_debug (rtx insn, rtx last, rtx dest, rtx src)
 {
-  rtx next, loc;
+  rtx next, loc, end = NEXT_INSN (BB_END (this_basic_block));
 
   struct rtx_subst_pair p;
   p.to = src;
   p.adjusted = false;
 
   next = NEXT_INSN (insn);
-  while (next != last)
+  last = NEXT_INSN (last);
+  while (next != last && next != end)
     {
       insn = next;
       next = NEXT_INSN (insn);

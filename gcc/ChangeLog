@@ -1,3 +1,11 @@
+2011-04-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/48549
+	* combine.c (propagate_for_debug): Also stop after BB_END of
+	this_basic_block.  Process LAST and just stop processing after it.
+	(combine_instructions): If last_combined_insn has been deleted,
+	set last_combined_insn to its PREV_INSN.
+
 2011-04-12  Nick Clifton  <nickc@redhat.com>
 
 	* config/v850/v850.c (expand_prologue): Do not use the CALLT
