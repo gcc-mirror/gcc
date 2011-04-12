@@ -1,3 +1,8 @@
+2011-04-12  Axel Freyn  <axel-freyn@gmx.de>
+
+	* opts-common.c (decode_cmdline_options_to_array): Remove variable
+	argv_copied.
+
 2011-04-12  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* recog.h, genoutput.c, optabs.c: Revert last patch.
