@@ -1,5 +1,12 @@
 2011-04-12  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	* objc-act.c (comp_proto_with_proto): Do not create and use
+	inefficient temporary argument lists.  Compare the arguments
+	directly.  (match_proto_with_proto): Removed; incorporated into
+	comp_proto_with_proto ().
+	
+2011-04-12  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	* objc-act.c (printable_ivar_name): New.
 	(add_instance_variable): Call printable_ivar_name() when an error
 	message needs to be printed.  Do not prepare the instance variable
