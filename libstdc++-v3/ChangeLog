@@ -1,3 +1,25 @@
+2011-04-12  Allan McRae  <allan@archlinux.org>
+
+	PR libstdc++/48566
+	* testsuite/tr1/6_containers/unordered_map/requirements/
+	iterator_null_neg.cc: Include <cstddef>.
+	* testsuite/tr1/6_containers/unordered_set/requirements/
+	iterator_null_neg.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/seekoff/wchar_t/4.cc: Include
+	<cstring>.
+	* testsuite/util/testsuite_common_types.h: Include <limits>.
+	* testsuite/29_atomics/atomic_integral/cons/assign_neg.cc:
+	Adjust dg-error line numbers.
+	* testsuite/29_atomics/atomic_integral/cons/copy_neg.cc: Likewise.
+	* testsuite/29_atomics/atomic_integral/operators/increment_neg.cc:
+	Likewise.
+	* testsuite/29_atomics/atomic_integral/operators/bitwise_neg.cc:
+	Likewise.
+	* testsuite/29_atomics/atomic_integral/operators/decrement_neg.cc:
+	Likewise.
+	* testsuite/29_atomics/atomic/cons/assign_neg.cc: Likewise.
+	* testsuite/29_atomics/atomic/cons/copy_neg.cc: Likewise.
+
 2011-04-10  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* testsuite/20_util/function/48451.cc: Rename to...
