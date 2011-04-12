@@ -1,3 +1,8 @@
+2011-04-12  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* Makefile.am: Remove _GNU_SOURCE from AM_CPPFLAGS.
+	* Makefile.in: Regenerated.
+
 2011-04-06  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/18918
