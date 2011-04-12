@@ -1686,7 +1686,7 @@ expand_prologue (void)
   /* Save/setup global registers for interrupt functions right now.  */
   if (interrupt_handler)
     {
-      if (! TARGET_DISABLE_CALLT)
+      if (! TARGET_DISABLE_CALLT && (TARGET_V850E || TARGET_V850E2_ALL))
 	emit_insn (gen_callt_save_interrupt ());
       else
 	emit_insn (gen_save_interrupt ());
@@ -1768,7 +1768,7 @@ expand_prologue (void)
       /* Special case interrupt functions that save all registers for a call.  */
       if (interrupt_handler && ((1L << LINK_POINTER_REGNUM) & reg_saved) != 0)
 	{
-	  if (! TARGET_DISABLE_CALLT)
+	  if (! TARGET_DISABLE_CALLT && (TARGET_V850E || TARGET_V850E2_ALL))
 	    emit_insn (gen_callt_save_all_interrupt ());
 	  else
 	    emit_insn (gen_save_all_interrupt ());
@@ -2019,7 +2019,7 @@ expand_epilogue (void)
       /* And return or use reti for interrupt handlers.  */
       if (interrupt_handler)
         {
-          if (! TARGET_DISABLE_CALLT)
+          if (! TARGET_DISABLE_CALLT && (TARGET_V850E || TARGET_V850E2_ALL))
             emit_insn (gen_callt_return_interrupt ());
           else
             emit_jump_insn (gen_return_interrupt ());

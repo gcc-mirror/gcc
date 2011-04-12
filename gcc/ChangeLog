@@ -1,3 +1,10 @@
+2011-04-12  Nick Clifton  <nickc@redhat.com>
+
+	* config/v850/v850.c (expand_prologue): Do not use the CALLT
+	instruction for interrupt handlers if the target is the basic V850
+	architecture.
+	(expand_epilogue): Likewise.
+
 2011-04-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/48517
