@@ -1,5 +1,20 @@
 2011-04-12  Martin Jambor  <mjambor@suse.cz>
 
+	* class.c (cp_fold_obj_type_ref): Call cgraph_get_node instead of
+	cgraph_get_create_node.
+	* decl2.c (cp_write_global_declarations): Call cgraph_get_node
+	instead of cgraph_get_create_node.
+	* method.c (make_alias_for_thunk): Call cgraph_get_node
+	instead of cgraph_get_create_node, assert it returns non-NULL.
+	(use_thunk): Likewise.
+	* optimize.c (maybe_clone_body): Call cgraph_same_body_alias only
+	when flag_syntax_only is not set.  Call cgraph_get_node instead of
+	cgraph_get_create_node.
+	(maybe_clone_body): Call cgraph_get_node instead of
+	cgraph_get_create_node.
+
+2011-04-12  Martin Jambor  <mjambor@suse.cz>
+
 	* class.c (cp_fold_obj_type_ref): Call cgraph_get_create_node
 	instead of cgraph_node.
 	* decl2.c (cxx_callgraph_analyze_expr): Likewise.
