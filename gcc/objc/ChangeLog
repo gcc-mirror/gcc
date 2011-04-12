@@ -1,3 +1,8 @@
+2011-04-12  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc-act.c (objc_is_class_name, objc_is_id): For efficiency,
+	avoid calling identifier_global_value() multiple times.
+
 2011-04-12  Martin Jambor  <mjambor@suse.cz>
 
 	* objc-act.c (mark_referenced_methods): Call cgraph_get_create_node

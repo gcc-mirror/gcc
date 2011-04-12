@@ -1,3 +1,8 @@
+2011-04-12  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* c-parser.c (c_lex_one_token): Rewritten conditional used when
+	compiling Objective-C to be more efficient.
+
 2011-04-12  Axel Freyn  <axel-freyn@gmx.de>
 
 	* opts-common.c (decode_cmdline_options_to_array): Remove variable
