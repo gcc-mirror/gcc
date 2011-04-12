@@ -147,7 +147,6 @@ static void objc_gen_property_data (tree, tree);
 static void objc_synthesize_getter (tree, tree, tree);
 static void objc_synthesize_setter (tree, tree, tree);
 static char *objc_build_property_setter_name (tree);
-static int match_proto_with_proto (tree, tree, int);
 static tree lookup_property (tree, tree);
 static tree lookup_property_in_list (tree, tree);
 static tree lookup_property_in_protocol_list (tree, tree);
@@ -4836,13 +4835,13 @@ objc_method_decl (enum tree_code opcode)
   return opcode == INSTANCE_METHOD_DECL || opcode == CLASS_METHOD_DECL;
 }
 
-/* Used by `build_objc_method_call' and `comp_proto_with_proto'.  Return
-   an argument list for method METH.  CONTEXT is either METHOD_DEF or
-   METHOD_REF, saying whether we are trying to define a method or call
-   one.  SUPERFLAG says this is for a send to super; this makes a
-   difference for the NeXT calling sequence in which the lookup and
-   the method call are done together.  If METH is null, user-defined
-   arguments (i.e., beyond self and _cmd) shall be represented by `...'.  */
+/* Used by `build_objc_method_call'.  Return an argument list for
+   method METH.  CONTEXT is either METHOD_DEF or METHOD_REF, saying
+   whether we are trying to define a method or call one.  SUPERFLAG
+   says this is for a send to super; this makes a difference for the
+   NeXT calling sequence in which the lookup and the method call are
+   done together.  If METH is null, user-defined arguments (i.e.,
+   beyond self and _cmd) shall be represented by `...'.  */
 
 tree
 get_arg_type_list (tree meth, int context, int superflag)
@@ -8241,18 +8240,12 @@ objc_types_share_size_and_alignment (tree type1, tree type2)
 static int
 comp_proto_with_proto (tree proto1, tree proto2, int strict)
 {
+  tree type1, type2;
+
   /* The following test is needed in case there are hashing
      collisions.  */
   if (METHOD_SEL_NAME (proto1) != METHOD_SEL_NAME (proto2))
     return 0;
-
-  return match_proto_with_proto (proto1, proto2, strict);
-}
-
-static int
-match_proto_with_proto (tree proto1, tree proto2, int strict)
-{
-  tree type1, type2;
 
   /* Compare return types.  */
   type1 = TREE_VALUE (TREE_TYPE (proto1));
@@ -8263,19 +8256,75 @@ match_proto_with_proto (tree proto1, tree proto2, int strict)
     return 0;
 
   /* Compare argument types.  */
-  for (type1 = get_arg_type_list (proto1, METHOD_REF, 0),
-       type2 = get_arg_type_list (proto2, METHOD_REF, 0);
-       type1 && type2;
-       type1 = TREE_CHAIN (type1), type2 = TREE_CHAIN (type2))
-    {
-      if (!objc_types_are_equivalent (TREE_VALUE (type1), TREE_VALUE (type2))
-	  && (strict
-	      || !objc_types_share_size_and_alignment (TREE_VALUE (type1),
-						       TREE_VALUE (type2))))
-	return 0;
-    }
 
-  return (!type1 && !type2);
+  /* The first argument (objc_object_type) is always the same, no need
+     to compare.  */
+
+  /* The second argument (objc_selector_type) is always the same, no
+     need to compare.  */
+
+  /* Compare the other arguments.  */
+  {
+    tree arg1, arg2;
+
+    /* Compare METHOD_SEL_ARGS.  */
+    for (arg1 = METHOD_SEL_ARGS (proto1), arg2 = METHOD_SEL_ARGS (proto2);
+	 arg1 && arg2;
+	 arg1 = DECL_CHAIN (arg1), arg2 = DECL_CHAIN (arg2))
+      {
+	type1 = TREE_VALUE (TREE_TYPE (arg1));
+	type2 = TREE_VALUE (TREE_TYPE (arg2));
+	
+	/* FIXME: Do we need to decay argument types to compare them ?  */
+	type1 = objc_decay_parm_type (type1);
+	type2 = objc_decay_parm_type (type2);
+	
+	if (!objc_types_are_equivalent (type1, type2)
+	    && (strict || !objc_types_share_size_and_alignment (type1, type2)))
+	  return 0;
+      }
+    
+    /* The loop ends when arg1 or arg2 are NULL.  Make sure they are
+       both NULL.  */
+    if (arg1 != arg2)
+      return 0;
+
+    /* Compare METHOD_ADD_ARGS.  */
+    if ((METHOD_ADD_ARGS (proto1) && !METHOD_ADD_ARGS (proto2))
+	|| (METHOD_ADD_ARGS (proto2) && !METHOD_ADD_ARGS (proto1)))
+      return 0;
+
+    if (METHOD_ADD_ARGS (proto1))
+      {
+	for (arg1 = TREE_CHAIN (METHOD_ADD_ARGS (proto1)), arg2 = TREE_CHAIN (METHOD_ADD_ARGS (proto2));
+	     arg1 && arg2;
+	     arg1 = TREE_CHAIN (arg1), arg2 = TREE_CHAIN (arg2))
+	  {
+	    type1 = TREE_TYPE (TREE_VALUE (arg1));
+	    type2 = TREE_TYPE (TREE_VALUE (arg2));
+	    
+	    /* FIXME: Do we need to decay argument types to compare them ?  */
+	    type1 = objc_decay_parm_type (type1);
+	    type2 = objc_decay_parm_type (type2);
+	    
+	    if (!objc_types_are_equivalent (type1, type2)
+		&& (strict || !objc_types_share_size_and_alignment (type1, type2)))
+	      return 0;
+	  }
+      }
+    
+    /* The loop ends when arg1 or arg2 are NULL.  Make sure they are
+       both NULL.  */
+    if (arg1 != arg2)
+      return 0;
+
+    /* Compare METHOD_ADD_ARGS_ELLIPSIS_P.  */
+    if (METHOD_ADD_ARGS_ELLIPSIS_P (proto1) != METHOD_ADD_ARGS_ELLIPSIS_P (proto2))
+      return 0;
+  }
+
+  /* Success.  */
+  return 1;
 }
 
 /* This routine returns true if TYPE is a valid objc object type,
