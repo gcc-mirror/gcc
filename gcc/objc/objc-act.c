@@ -5983,6 +5983,17 @@ flexible_array_type_p (tree type)
 }
 #endif
 
+/* Produce a printable version of an ivar name.  This is only used
+   inside add_instance_variable.  */
+static const char *
+printable_ivar_name (tree field_decl)
+{
+  if (DECL_NAME (field_decl))
+    return identifier_to_locale (IDENTIFIER_POINTER (DECL_NAME (field_decl)));
+  else
+    return _("<unnamed>");
+}
+
 /* Called after parsing each instance variable declaration. Necessary to
    preserve typedefs and implement public/private...
 
@@ -5993,15 +6004,12 @@ add_instance_variable (tree klass, objc_ivar_visibility_kind visibility,
 		       tree field_decl)
 {
   tree field_type = TREE_TYPE (field_decl);
-  const char *ivar_name = DECL_NAME (field_decl)
-			  ? identifier_to_locale (IDENTIFIER_POINTER (DECL_NAME (field_decl)))
-			  : _("<unnamed>");
 
 #ifdef OBJCPLUS
   if (TREE_CODE (field_type) == REFERENCE_TYPE)
     {
       error ("illegal reference type specified for instance variable %qs",
-	     ivar_name);
+	     printable_ivar_name (field_decl));
       /* Return class as is without adding this ivar.  */
       return klass;
     }
@@ -6011,7 +6019,8 @@ add_instance_variable (tree klass, objc_ivar_visibility_kind visibility,
       || TYPE_SIZE (field_type) == error_mark_node)
       /* 'type[0]' is allowed, but 'type[]' is not! */
     {
-      error ("instance variable %qs has unknown size", ivar_name);
+      error ("instance variable %qs has unknown size",
+	     printable_ivar_name (field_decl));
       /* Return class as is without adding this ivar.  */
       return klass;
     }
@@ -6031,7 +6040,8 @@ add_instance_variable (tree klass, objc_ivar_visibility_kind visibility,
        to calculate the offset of the next instance variable.  */
   if (flexible_array_type_p (field_type))
     {
-      error ("instance variable %qs uses flexible array member", ivar_name);
+      error ("instance variable %qs uses flexible array member",
+	     printable_ivar_name (field_decl));
       /* Return class as is without adding this ivar.  */
       return klass;      
     }
@@ -6078,7 +6088,7 @@ add_instance_variable (tree klass, objc_ivar_visibility_kind visibility,
 	      error ("type %qE has virtual member functions", type_name);
 	      error ("illegal aggregate type %qE specified "
 		     "for instance variable %qs",
-		     type_name, ivar_name);
+		     type_name, printable_ivar_name (field_decl));
 	      /* Return class as is without adding this ivar.  */
 	      return klass;
 	    }
