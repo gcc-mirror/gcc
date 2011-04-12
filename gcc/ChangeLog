@@ -1,3 +1,13 @@
+2011-04-11  Chung-Lin Tang  <cltang@codesourcery.com>
+	    Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/48250
+	* config/arm/arm.c (arm_legitimize_reload_address): Update cases
+	to use sign-magnitude offsets. Reject unsupported unaligned
+	cases. Add detailed description in comments.
+	* config/arm/arm.md (reload_outdf): Disable for ARM mode; change
+	condition from TARGET_32BIT to TARGET_ARM.
+
 2011-04-11  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* tree.h (struct typed_tree): New.

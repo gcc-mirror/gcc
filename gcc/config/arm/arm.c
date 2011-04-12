@@ -6262,23 +6262,126 @@ arm_legitimize_reload_address (rtx *p,
       HOST_WIDE_INT val = INTVAL (XEXP (*p, 1));
       HOST_WIDE_INT low, high;
 
-      if (mode == DImode || (mode == DFmode && TARGET_SOFT_FLOAT))
-	low = ((val & 0xf) ^ 0x8) - 0x8;
-      else if (TARGET_MAVERICK && TARGET_HARD_FLOAT)
-	/* Need to be careful, -256 is not a valid offset.  */
-	low = val >= 0 ? (val & 0xff) : -((-val) & 0xff);
-      else if (mode == SImode
-	       || (mode == SFmode && TARGET_SOFT_FLOAT)
-	       || ((mode == HImode || mode == QImode) && ! arm_arch4))
-	/* Need to be careful, -4096 is not a valid offset.  */
-	low = val >= 0 ? (val & 0xfff) : -((-val) & 0xfff);
-      else if ((mode == HImode || mode == QImode) && arm_arch4)
-	/* Need to be careful, -256 is not a valid offset.  */
-	low = val >= 0 ? (val & 0xff) : -((-val) & 0xff);
-      else if (GET_MODE_CLASS (mode) == MODE_FLOAT
-	       && TARGET_HARD_FLOAT && TARGET_FPA)
-	/* Need to be careful, -1024 is not a valid offset.  */
-	low = val >= 0 ? (val & 0x3ff) : -((-val) & 0x3ff);
+      /* Detect coprocessor load/stores.  */
+      bool coproc_p = ((TARGET_HARD_FLOAT
+			&& (TARGET_VFP || TARGET_FPA || TARGET_MAVERICK)
+			&& (mode == SFmode || mode == DFmode
+			    || (mode == DImode && TARGET_MAVERICK)))
+		       || (TARGET_REALLY_IWMMXT
+			   && VALID_IWMMXT_REG_MODE (mode))
+		       || (TARGET_NEON
+			   && (VALID_NEON_DREG_MODE (mode)
+			       || VALID_NEON_QREG_MODE (mode))));
+
+      /* For some conditions, bail out when lower two bits are unaligned.  */
+      if ((val & 0x3) != 0
+	  /* Coprocessor load/store indexes are 8-bits + '00' appended.  */
+	  && (coproc_p
+	      /* For DI, and DF under soft-float: */
+	      || ((mode == DImode || mode == DFmode)
+		  /* Without ldrd, we use stm/ldm, which does not
+		     fair well with unaligned bits.  */
+		  && (! TARGET_LDRD
+		      /* Thumb-2 ldrd/strd is [-1020,+1020] in steps of 4.  */
+		      || TARGET_THUMB2))))
+	return false;
+
+      /* When breaking down a [reg+index] reload address into [(reg+high)+low],
+	 of which the (reg+high) gets turned into a reload add insn,
+	 we try to decompose the index into high/low values that can often
+	 also lead to better reload CSE.
+	 For example:
+	         ldr r0, [r2, #4100]  // Offset too large
+		 ldr r1, [r2, #4104]  // Offset too large
+
+	 is best reloaded as:
+	         add t1, r2, #4096
+		 ldr r0, [t1, #4]
+		 add t2, r2, #4096
+		 ldr r1, [t2, #8]
+
+	 which post-reload CSE can simplify in most cases to eliminate the
+	 second add instruction:
+	         add t1, r2, #4096
+		 ldr r0, [t1, #4]
+		 ldr r1, [t1, #8]
+
+	 The idea here is that we want to split out the bits of the constant
+	 as a mask, rather than as subtracting the maximum offset that the
+	 respective type of load/store used can handle.
+
+	 When encountering negative offsets, we can still utilize it even if
+	 the overall offset is positive; sometimes this may lead to an immediate
+	 that can be constructed with fewer instructions.
+	 For example:
+	         ldr r0, [r2, #0x3FFFFC]
+
+	 This is best reloaded as:
+	         add t1, r2, #0x400000
+		 ldr r0, [t1, #-4]
+
+	 The trick for spotting this for a load insn with N bits of offset
+	 (i.e. bits N-1:0) is to look at bit N; if it is set, then chose a
+	 negative offset that is going to make bit N and all the bits below
+	 it become zero in the remainder part.
+
+	 The SIGN_MAG_LOW_ADDR_BITS macro below implements this, with respect
+	 to sign-magnitude addressing (i.e. separate +- bit, or 1's complement),
+	 used in most cases of ARM load/store instructions.  */
+
+#define SIGN_MAG_LOW_ADDR_BITS(VAL, N)					\
+      (((VAL) & ((1 << (N)) - 1))					\
+       ? (((VAL) & ((1 << ((N) + 1)) - 1)) ^ (1 << (N))) - (1 << (N))	\
+       : 0)
+
+      if (coproc_p)
+	low = SIGN_MAG_LOW_ADDR_BITS (val, 10);
+      else if (GET_MODE_SIZE (mode) == 8)
+	{
+	  if (TARGET_LDRD)
+	    low = (TARGET_THUMB2
+		   ? SIGN_MAG_LOW_ADDR_BITS (val, 10)
+		   : SIGN_MAG_LOW_ADDR_BITS (val, 8));
+	  else
+	    /* For pre-ARMv5TE (without ldrd), we use ldm/stm(db/da/ib)
+	       to access doublewords. The supported load/store offsets are
+	       -8, -4, and 4, which we try to produce here.  */
+	    low = ((val & 0xf) ^ 0x8) - 0x8;
+	}
+      else if (GET_MODE_SIZE (mode) < 8)
+	{
+	  /* NEON element load/stores do not have an offset.  */
+	  if (TARGET_NEON_FP16 && mode == HFmode)
+	    return false;
+
+	  if (TARGET_THUMB2)
+	    {
+	      /* Thumb-2 has an asymmetrical index range of (-256,4096).
+		 Try the wider 12-bit range first, and re-try if the result
+		 is out of range.  */
+	      low = SIGN_MAG_LOW_ADDR_BITS (val, 12);
+	      if (low < -255)
+		low = SIGN_MAG_LOW_ADDR_BITS (val, 8);
+	    }
+	  else
+	    {
+	      if (mode == HImode || mode == HFmode)
+		{
+		  if (arm_arch4)
+		    low = SIGN_MAG_LOW_ADDR_BITS (val, 8);
+		  else
+		    {
+		      /* The storehi/movhi_bytes fallbacks can use only
+			 [-4094,+4094] of the full ldrb/strb index range.  */
+		      low = SIGN_MAG_LOW_ADDR_BITS (val, 12);
+		      if (low == 4095 || low == -4095)
+			return false;
+		    }
+		}
+	      else
+		low = SIGN_MAG_LOW_ADDR_BITS (val, 12);
+	    }
+	}
       else
 	return false;
 
