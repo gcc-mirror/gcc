@@ -34,7 +34,7 @@ proc gcj_loader_test_one {srcfile} {
     }
     pass "$errname compilation from source"
 
-    libjava_invoke $executable $executable "" $executable "" $resfile ""
+    libjava_invoke $errname "source compiled test" "" $executable "" $resfile ""
 
   return 1
 }

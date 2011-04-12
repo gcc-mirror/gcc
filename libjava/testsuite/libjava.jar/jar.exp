@@ -20,17 +20,18 @@ proc gcj_jar_interpret {jarfile} {
   global INTERPRETER srcdir
 
   set gij [libjava_find_gij]
+  set errname [dg-trim-dirname $srcdir $jarfile]
   # libjava_find_gij will return "" if it couldn't find the
   # program; in this case we want to skip the test.
   if {$INTERPRETER != "yes" || $gij == ""} {
-    untested "$jarfile execution - gij test"
-    untested "$jarfile output - gij test"
+    untested "$errname execution - gij test"
+    untested "$errname output - gij test"
     return
   }
 
   set opts(_) {}
   set out [file rootname $jarfile].out
-  libjava_invoke $jarfile "gij test" opts $gij {} $out \
+  libjava_invoke $errname "gij test" opts $gij {} $out \
       "" -jar $jarfile
 }
 
