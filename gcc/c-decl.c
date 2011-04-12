@@ -8345,7 +8345,7 @@ finish_function (void)
 	  /* Register this function with cgraph just far enough to get it
 	    added to our parent's nested function list.  Handy, since the
 	    C front end doesn't have such a list.  */
-	  (void) cgraph_node (fndecl);
+	  (void) cgraph_get_create_node (fndecl);
 	}
     }
 

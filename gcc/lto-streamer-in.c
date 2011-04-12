@@ -1301,7 +1301,7 @@ input_function (tree fn_decl, struct data_in *data_in,
   DECL_INITIAL (fn_decl) = lto_input_tree (ib, data_in);
   gcc_assert (DECL_INITIAL (fn_decl));
   DECL_SAVED_TREE (fn_decl) = NULL_TREE;
-  node = cgraph_node (fn_decl);
+  node = cgraph_get_create_node (fn_decl);
 
   /* Read all the basic blocks.  */
   tag = input_record_start (ib);

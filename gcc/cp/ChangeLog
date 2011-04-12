@@ -1,3 +1,15 @@
+2011-04-12  Martin Jambor  <mjambor@suse.cz>
+
+	* class.c (cp_fold_obj_type_ref): Call cgraph_get_create_node
+	instead of cgraph_node.
+	* decl2.c (cxx_callgraph_analyze_expr): Likewise.
+	(cp_write_global_declarations): Likewise.
+	* optimize.c (maybe_clone_body): Likewise.
+	* semantics.c (maybe_add_lambda_conv_op): Likewise.
+	* mangle.c (mangle_decl): Likewise.
+	* method.c (make_alias_for_thunk): Likewise.
+	(use_thunk): Likewise.
+
 2011-04-11  Jason Merrill  <jason@redhat.com>
 
 	PR c++/48535

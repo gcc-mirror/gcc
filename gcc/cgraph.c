@@ -466,7 +466,7 @@ cgraph_allocate_node (void)
 /* Allocate new callgraph node and insert it into basic data structures.  */
 
 static struct cgraph_node *
-cgraph_create_node (void)
+cgraph_create_node_1 (void)
 {
   struct cgraph_node *node = cgraph_allocate_node ();
 
@@ -488,7 +488,7 @@ cgraph_create_node (void)
 /* Return cgraph node assigned to DECL.  Create new one when needed.  */
 
 struct cgraph_node *
-cgraph_node (tree decl)
+cgraph_create_node (tree decl)
 {
   struct cgraph_node key, *node, **slot;
 
@@ -498,23 +498,15 @@ cgraph_node (tree decl)
     cgraph_hash = htab_create_ggc (10, hash_node, eq_node, NULL);
 
   key.decl = decl;
-
   slot = (struct cgraph_node **) htab_find_slot (cgraph_hash, &key, INSERT);
+  gcc_assert (!*slot);
 
-  if (*slot)
-    {
-      node = *slot;
-      if (node->same_body_alias)
-	node = node->same_body;
-      return node;
-    }
-
-  node = cgraph_create_node ();
+  node = cgraph_create_node_1 ();
   node->decl = decl;
   *slot = node;
   if (DECL_CONTEXT (decl) && TREE_CODE (DECL_CONTEXT (decl)) == FUNCTION_DECL)
     {
-      node->origin = cgraph_node (DECL_CONTEXT (decl));
+      node->origin = cgraph_get_create_node (DECL_CONTEXT (decl));
       node->next_nested = node->origin->nested;
       node->origin->nested = node;
     }
@@ -534,6 +526,21 @@ cgraph_node (tree decl)
 	*aslot = node;
     }
   return node;
+}
+
+/* Try to find a call graph node for declaration DECL and if it does not exist,
+   create it.  */
+
+struct cgraph_node *
+cgraph_get_create_node (tree decl)
+{
+  struct cgraph_node *node;
+
+  node = cgraph_get_node (decl);
+  if (node)
+    return node;
+
+  return cgraph_create_node (decl);
 }
 
 /* Mark ALIAS as an alias to DECL.  DECL_NODE is cgraph node representing
@@ -570,9 +577,9 @@ cgraph_same_body_alias_1 (struct cgraph_node *decl_node, tree alias, tree decl)
 }
 
 /* Attempt to mark ALIAS as an alias to DECL.  Return alias node if successful
-   and NULL otherwise. 
+   and NULL otherwise.
    Same body aliases are output whenever the body of DECL is output,
-   and cgraph_node (ALIAS) transparently returns cgraph_node (DECL).   */
+   and cgraph_get_node (ALIAS) transparently returns cgraph_get_node (DECL).  */
 
 struct cgraph_node *
 cgraph_same_body_alias (struct cgraph_node *decl_node, tree alias, tree decl)
@@ -859,8 +866,9 @@ cgraph_set_call_stmt (struct cgraph_edge *e, gimple new_stmt)
     {
       /* Constant propagation (and possibly also inlining?) can turn an
 	 indirect call into a direct one.  */
-      struct cgraph_node *new_callee = cgraph_node (decl);
+      struct cgraph_node *new_callee = cgraph_get_node (decl);
 
+      gcc_checking_assert (new_callee);
       cgraph_make_edge_direct (e, new_callee, 0);
     }
 
@@ -1301,7 +1309,7 @@ cgraph_update_edges_for_call_stmt_node (struct cgraph_node *node,
 
       if (new_call)
 	{
-	  ne = cgraph_create_edge (node, cgraph_node (new_call),
+	  ne = cgraph_create_edge (node, cgraph_get_create_node (new_call),
 				   new_stmt, count, frequency,
 				   loop_nest);
 	  gcc_assert (ne->inline_failed);
@@ -1319,9 +1327,10 @@ cgraph_update_edges_for_call_stmt_node (struct cgraph_node *node,
 void
 cgraph_update_edges_for_call_stmt (gimple old_stmt, tree old_decl, gimple new_stmt)
 {
-  struct cgraph_node *orig = cgraph_node (cfun->decl);
+  struct cgraph_node *orig = cgraph_get_node (cfun->decl);
   struct cgraph_node *node;
 
+  gcc_checking_assert (orig);
   cgraph_update_edges_for_call_stmt_node (orig, old_stmt, old_decl, new_stmt);
   if (orig->clones)
     for (node = orig->clones; node != orig;)
@@ -2123,7 +2132,8 @@ cgraph_clone_edge (struct cgraph_edge *e, struct cgraph_node *n,
 
       if (call_stmt && (decl = gimple_call_fndecl (call_stmt)))
 	{
-	  struct cgraph_node *callee = cgraph_node (decl);
+	  struct cgraph_node *callee = cgraph_get_node (decl);
+	  gcc_checking_assert (callee);
 	  new_edge = cgraph_create_edge (n, callee, call_stmt, count, freq,
 					 e->loop_nest + loop_nest);
 	}
@@ -2179,7 +2189,7 @@ cgraph_clone_node (struct cgraph_node *n, tree decl, gcov_type count, int freq,
 		   int loop_nest, bool update_original,
 		   VEC(cgraph_edge_p,heap) *redirect_callers)
 {
-  struct cgraph_node *new_node = cgraph_create_node ();
+  struct cgraph_node *new_node = cgraph_create_node_1 ();
   struct cgraph_edge *e;
   gcov_type count_scale;
   unsigned i;
@@ -2355,8 +2365,12 @@ cgraph_create_virtual_clone (struct cgraph_node *old_node,
       /* Record references of the future statement initializing the constant
 	 argument.  */
       if (TREE_CODE (var) == FUNCTION_DECL)
-	ipa_record_reference (new_node, NULL, cgraph_node (var),
-			      NULL, IPA_REF_ADDR, NULL);
+	{
+	  struct cgraph_node *ref_node = cgraph_get_node (var);
+	  gcc_checking_assert (ref_node);
+	  ipa_record_reference (new_node, NULL, ref_node, NULL, IPA_REF_ADDR,
+				NULL);
+	}
       else if (TREE_CODE (var) == VAR_DECL)
 	ipa_record_reference (new_node, NULL, NULL, varpool_node (var),
 			      IPA_REF_ADDR, NULL);
@@ -2464,7 +2478,7 @@ cgraph_add_new_function (tree fndecl, bool lowered)
     {
       case CGRAPH_STATE_CONSTRUCTION:
 	/* Just enqueue function to be processed at nearest occurrence.  */
-	node = cgraph_node (fndecl);
+	node = cgraph_create_node (fndecl);
 	node->next_needed = cgraph_new_nodes;
 	if (lowered)
 	  node->lowered = true;
@@ -2476,7 +2490,7 @@ cgraph_add_new_function (tree fndecl, bool lowered)
       case CGRAPH_STATE_EXPANSION:
 	/* Bring the function into finalized state and enqueue for later
 	   analyzing and compilation.  */
-	node = cgraph_node (fndecl);
+	node = cgraph_get_create_node (fndecl);
 	node->local.local = false;
 	node->local.finalized = true;
 	node->reachable = node->needed = true;
@@ -2504,7 +2518,7 @@ cgraph_add_new_function (tree fndecl, bool lowered)
       case CGRAPH_STATE_FINISHED:
 	/* At the very end of compilation we have to do all the work up
 	   to expansion.  */
-	node = cgraph_node (fndecl);
+	node = cgraph_create_node (fndecl);
 	if (lowered)
 	  node->lowered = true;
 	cgraph_analyze_function (node);

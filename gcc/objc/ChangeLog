@@ -1,3 +1,8 @@
+2011-04-12  Martin Jambor  <mjambor@suse.cz>
+
+	* objc-act.c (mark_referenced_methods): Call cgraph_get_create_node
+	instead of cgraph_node.
+
 2011-04-06  Joseph Myers  <joseph@codesourcery.com>
 
 	* objc-act.c: Include c-target.h instead of target.h.
