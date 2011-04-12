@@ -1,3 +1,8 @@
+2011-04-12  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
+
+       PR target/48090
+       * config/arm/arm.md (*arm_negdi2): Fix early clobber constraints.
+
 2011-04-12  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* recog.h (insn_operand_data): Add an "allows_mem" field.
