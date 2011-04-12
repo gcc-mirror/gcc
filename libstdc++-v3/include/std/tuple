@@ -1,6 +1,6 @@
 // <tuple> -*- C++ -*-
 
-// Copyright (C) 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -177,10 +177,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         _Tuple_impl(const _Tuple_impl<_Idx, _UElements...>& __in)
 	: _Inherited(__in._M_tail()), _Base(__in._M_head()) { }
 
-      template<typename... _UElements>
-        _Tuple_impl(_Tuple_impl<_Idx, _UElements...>&& __in)
+      template<typename _UHead, typename... _UTails>
+        _Tuple_impl(_Tuple_impl<_Idx, _UHead, _UTails...>&& __in)
 	: _Inherited(std::move(__in._M_tail())),
-	  _Base(std::move(__in._M_head())) { }
+	  _Base(std::forward<_UHead>(__in._M_head())) { }
 
       _Tuple_impl&
       operator=(const _Tuple_impl& __in)
@@ -193,7 +193,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _Tuple_impl&
       operator=(_Tuple_impl&& __in)
       {
-	_M_head() = std::move(__in._M_head());
+	_M_head() = std::forward<_Head>(__in._M_head());
 	_M_tail() = std::move(__in._M_tail());
 	return *this;
       }
@@ -207,11 +207,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  return *this;
 	}
 
-      template<typename... _UElements>
+      template<typename _UHead, typename... _UTails>
         _Tuple_impl&
-        operator=(_Tuple_impl<_Idx, _UElements...>&& __in)
+        operator=(_Tuple_impl<_Idx, _UHead, _UTails...>&& __in)
         {
-	  _M_head() = std::move(__in._M_head());
+	  _M_head() = std::forward<_UHead>(__in._M_head());
 	  _M_tail() = std::move(__in._M_tail());
 	  return *this;
 	}
@@ -672,7 +672,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		       const tuple<_UElements...>& __u,
 		       const __index_holder<_UIdx...>&)
     { return tuple<_TElements..., _UElements...>
-	(std::move(get<_TIdx>(__t))..., get<_UIdx>(__u)...); }
+	(std::forward<_TElements>(get<_TIdx>(__t))..., get<_UIdx>(__u)...); }
 
   template<typename... _TElements, std::size_t... _TIdx,
 	   typename... _UElements, std::size_t... _UIdx>
@@ -682,7 +682,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		       tuple<_UElements...>&& __u,
 		       const __index_holder<_UIdx...>&)
     { return tuple<_TElements..., _UElements...>
-	(get<_TIdx>(__t)..., std::move(get<_UIdx>(__u))...); }
+	(get<_TIdx>(__t)..., std::forward<_UElements>(get<_UIdx>(__u))...); }
 
   template<typename... _TElements, std::size_t... _TIdx,
 	   typename... _UElements, std::size_t... _UIdx> 
@@ -692,7 +692,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		       tuple<_UElements...>&& __u,
 		       const __index_holder<_UIdx...>&)
     { return tuple<_TElements..., _UElements...>
-	(std::move(get<_TIdx>(__t))..., std::move(get<_UIdx>(__u))...); }
+	(std::forward<_TElements>(get<_TIdx>(__t))...,
+	 std::forward<_UElements>(get<_UIdx>(__u))...); }
 
   template<typename... _TElements, typename... _UElements>
     inline tuple<_TElements..., _UElements...> 
