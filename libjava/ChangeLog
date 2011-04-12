@@ -1,3 +1,13 @@
+2011-04-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR testsuite/21164
+	* testsuite/lib/libjava.exp: Load dg.exp.
+	* testsuite/libjava.jar/jar.exp (gcj_jar_interpret): Strip srcdir
+	from jarfile.
+	Use result for messages.
+	* testsuite/libjava.loader/loader.exp (gcj_loader_test_one): Pass
+	errname to libjava_invoke, fix testname.
+
 2011-04-08  Kai Tietz  <ktietz@redhat.com>
 
 	* configure.ac (libgcj_ld_export_all): Set for windows

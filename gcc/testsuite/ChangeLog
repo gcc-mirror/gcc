@@ -1,3 +1,10 @@
+2011-04-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR testsuite/21164
+	* lib/compat.exp (compat-execute): Declare unsupported after
+	stripping path from src1.
+	* lib/lto.exp (lto-execute): Likewise.
+
 2011-04-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/48552
