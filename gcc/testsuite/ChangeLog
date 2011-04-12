@@ -1,3 +1,9 @@
+2011-04-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/48552
+	* gcc.dg/pr48552-1.c: New test.
+	* gcc.dg/pr48552-2.c: New test.
+
 2011-04-11  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/cpp0x/sfinae12.C: New.

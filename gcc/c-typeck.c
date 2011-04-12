@@ -8502,6 +8502,13 @@ build_asm_expr (location_t loc, tree string, tree outputs, tree inputs,
 	     mark it addressable.  */
 	  if (!allows_reg && !c_mark_addressable (output))
 	    output = error_mark_node;
+	  if (!(!allows_reg && allows_mem)
+	      && output != error_mark_node
+	      && VOID_TYPE_P (TREE_TYPE (output)))
+	    {
+	      error_at (loc, "invalid use of void expression");
+	      output = error_mark_node;
+	    }
 	}
       else
 	output = error_mark_node;
@@ -8528,7 +8535,12 @@ build_asm_expr (location_t loc, tree string, tree outputs, tree inputs,
 	      STRIP_NOPS (input);
 	      if (!c_mark_addressable (input))
 		input = error_mark_node;
-	  }
+	    }
+	  else if (input != error_mark_node && VOID_TYPE_P (TREE_TYPE (input)))
+	    {
+	      error_at (loc, "invalid use of void expression");
+	      input = error_mark_node;
+	    }
 	}
       else
 	input = error_mark_node;
