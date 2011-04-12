@@ -21289,7 +21289,7 @@ cp_parser_objc_message_expression (cp_parser* parser)
   messageargs = cp_parser_objc_message_args (parser);
   cp_parser_require (parser, CPP_CLOSE_SQUARE, RT_CLOSE_SQUARE);
 
-  return objc_build_message_expr (build_tree_list (receiver, messageargs));
+  return objc_build_message_expr (receiver, messageargs);
 }
 
 /* Parse an objc-message-receiver.

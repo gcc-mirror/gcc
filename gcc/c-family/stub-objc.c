@@ -258,7 +258,7 @@ objc_build_selector_expr (location_t ARG_UNUSED (loc), tree ARG_UNUSED (expr))
 }
 
 tree
-objc_build_message_expr (tree ARG_UNUSED (expr))
+objc_build_message_expr (tree ARG_UNUSED (receiver), tree ARG_UNUSED (args))
 {
   return 0;
 }

@@ -1,3 +1,8 @@
+2011-04-12  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* parser.c (cp_parser_objc_message_expression): Updated call
+	to objc_build_message_expr.
+
 2011-04-12  Martin Jambor  <mjambor@suse.cz>
 
 	* class.c (cp_fold_obj_type_ref): Call cgraph_get_node instead of

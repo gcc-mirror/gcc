@@ -1,3 +1,9 @@
+2011-04-12  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* c-parser.c (c_parser_initelt): Updated call to
+	objc_build_message_expr.
+	(c_parser_postfix_expression): Likewise.
+
 2011-04-12  Kai Tietz  <ktietz@redhat.com>
 
 	* config/i386/mingw32.h (TARGET_SUBTARGET_DEFAULT): Add
