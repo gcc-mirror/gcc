@@ -2172,7 +2172,7 @@ nml_parse_qualifier (st_parameter_dt *dtp, descriptor_dimension *ad,
 		}
 
 	      /* Now read the index.  */
-	      if (convert_integer (dtp, sizeof(ssize_t), neg))
+	      if (convert_integer (dtp, sizeof(index_type), neg))
 		{
 		  if (is_char)
 		    sprintf (parse_err_msg, "Bad integer substring qualifier");
@@ -2187,11 +2187,11 @@ nml_parse_qualifier (st_parameter_dt *dtp, descriptor_dimension *ad,
 	  if (!null_flag)
 	    {
 	      if (indx == 0)
-		memcpy (&ls[dim].start, dtp->u.p.value, sizeof(ssize_t));
+		memcpy (&ls[dim].start, dtp->u.p.value, sizeof(index_type));
 	      if (indx == 1)
-		memcpy (&ls[dim].end, dtp->u.p.value, sizeof(ssize_t));
+		memcpy (&ls[dim].end, dtp->u.p.value, sizeof(index_type));
 	      if (indx == 2)
-		memcpy (&ls[dim].step, dtp->u.p.value, sizeof(ssize_t));
+		memcpy (&ls[dim].step, dtp->u.p.value, sizeof(index_type));
 	    }
 
 	  /* Singlet or doublet indices.  */
@@ -2199,7 +2199,7 @@ nml_parse_qualifier (st_parameter_dt *dtp, descriptor_dimension *ad,
 	    {
 	      if (indx == 0)
 		{
-		  memcpy (&ls[dim].start, dtp->u.p.value, sizeof(ssize_t));
+		  memcpy (&ls[dim].start, dtp->u.p.value, sizeof(index_type));
 
 		  /*  If -std=f95/2003 or an array section is specified,
 		      do not allow excess data to be processed.  */
@@ -2229,10 +2229,10 @@ nml_parse_qualifier (st_parameter_dt *dtp, descriptor_dimension *ad,
 	}
 
       /* Check the values of the triplet indices.  */
-      if ((ls[dim].start > (ssize_t) GFC_DIMENSION_UBOUND(ad[dim]))
-	   || (ls[dim].start < (ssize_t) GFC_DIMENSION_LBOUND(ad[dim]))
-	   || (ls[dim].end > (ssize_t) GFC_DIMENSION_UBOUND(ad[dim]))
-	   || (ls[dim].end < (ssize_t) GFC_DIMENSION_LBOUND(ad[dim])))
+      if ((ls[dim].start > GFC_DIMENSION_UBOUND(ad[dim]))
+	   || (ls[dim].start < GFC_DIMENSION_LBOUND(ad[dim]))
+	   || (ls[dim].end > GFC_DIMENSION_UBOUND(ad[dim]))
+	   || (ls[dim].end < GFC_DIMENSION_LBOUND(ad[dim])))
 	{
 	  if (is_char)
 	    sprintf (parse_err_msg, "Substring out of range");

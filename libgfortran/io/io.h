@@ -53,22 +53,21 @@ struct gfc_unit;
 #define is_char4_unit(dtp) ((dtp)->u.p.unit_is_internal && (dtp)->common.unit)
 
 /* The array_loop_spec contains the variables for the loops over index ranges
-   that are encountered.  Since the variables can be negative, ssize_t
-   is used.  */
+   that are encountered.  */
 
 typedef struct array_loop_spec
 {
   /* Index counter for this dimension.  */
-  ssize_t idx;
+  index_type idx;
 
   /* Start for the index counter.  */
-  ssize_t start;
+  index_type start;
 
   /* End for the index counter.  */
-  ssize_t end;
+  index_type end;
 
   /* Step for the index counter.  */
-  ssize_t step;
+  index_type step;
 }
 array_loop_spec;
 
