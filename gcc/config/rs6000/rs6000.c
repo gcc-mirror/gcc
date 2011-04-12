@@ -7976,7 +7976,7 @@ call_ABI_of_interest (tree fndecl)
 	return true;
 
       /* Interesting functions that we are emitting in this object file.  */
-      c_node = cgraph_node (fndecl);
+      c_node = cgraph_get_create_node (fndecl);
       return !cgraph_only_called_directly_p (c_node);
     }
   return false;
