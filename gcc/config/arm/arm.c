@@ -16566,7 +16566,7 @@ arm_print_operand (FILE *stream, rtx x, int code)
       {
 	rtx addr;
 	bool postinc = FALSE;
-	unsigned align, modesize, align_bits;
+	unsigned align, memsize, align_bits;
 
 	gcc_assert (GET_CODE (x) == MEM);
 	addr = XEXP (x, 0);
@@ -16581,12 +16581,12 @@ arm_print_operand (FILE *stream, rtx x, int code)
 	   instruction (for some alignments) as an aid to the memory subsystem
 	   of the target.  */
 	align = MEM_ALIGN (x) >> 3;
-	modesize = GET_MODE_SIZE (GET_MODE (x));
+	memsize = INTVAL (MEM_SIZE (x));
 	
 	/* Only certain alignment specifiers are supported by the hardware.  */
-	if (modesize == 16 && (align % 32) == 0)
+	if (memsize == 16 && (align % 32) == 0)
 	  align_bits = 256;
-	else if ((modesize == 8 || modesize == 16) && (align % 16) == 0)
+	else if ((memsize == 8 || memsize == 16) && (align % 16) == 0)
 	  align_bits = 128;
 	else if ((align % 8) == 0)
 	  align_bits = 64;
@@ -18246,12 +18246,14 @@ enum neon_builtin_type_bits {
   T_V2SI  = 0x0004,
   T_V2SF  = 0x0008,
   T_DI    = 0x0010,
+  T_DREG  = 0x001F,
   T_V16QI = 0x0020,
   T_V8HI  = 0x0040,
   T_V4SI  = 0x0080,
   T_V4SF  = 0x0100,
   T_V2DI  = 0x0200,
   T_TI	  = 0x0400,
+  T_QREG  = 0x07E0,
   T_EI	  = 0x0800,
   T_OI	  = 0x1000
 };
@@ -18897,10 +18899,9 @@ arm_init_neon_builtins (void)
 		    if (is_load && k == 1)
 		      {
 		        /* Neon load patterns always have the memory operand
-			   (a SImode pointer) in the operand 1 position.  We
-			   want a const pointer to the element type in that
-			   position.  */
-		        gcc_assert (insn_data[icode].operand[k].mode == SImode);
+			   in the operand 1 position.  */
+			gcc_assert (insn_data[icode].operand[k].predicate
+				    == neon_struct_operand);
 
 			switch (1 << j)
 			  {
@@ -18935,10 +18936,9 @@ arm_init_neon_builtins (void)
 		    else if (is_store && k == 0)
 		      {
 		        /* Similarly, Neon store patterns use operand 0 as
-			   the memory location to store to (a SImode pointer).
-			   Use a pointer to the element type of the store in
-			   that position.  */
-			gcc_assert (insn_data[icode].operand[k].mode == SImode);
+			   the memory location to store to.  */
+			gcc_assert (insn_data[icode].operand[k].predicate
+				    == neon_struct_operand);
 
 			switch (1 << j)
 			  {
@@ -19258,12 +19258,13 @@ neon_builtin_compare (const void *a, const void *b)
 }
 
 static enum insn_code
-locate_neon_builtin_icode (int fcode, neon_itype *itype)
+locate_neon_builtin_icode (int fcode, neon_itype *itype,
+			   enum neon_builtin_type_bits *type_bit)
 {
   neon_builtin_datum key
     = { NULL, (neon_itype) 0, 0, { CODE_FOR_nothing }, 0, 0 };
   neon_builtin_datum *found;
-  int idx;
+  int idx, type, ntypes;
 
   key.base_fcode = fcode;
   found = (neon_builtin_datum *)
@@ -19276,20 +19277,84 @@ locate_neon_builtin_icode (int fcode, neon_itype *itype)
   if (itype)
     *itype = found->itype;
 
+  if (type_bit)
+    {
+      ntypes = 0;
+      for (type = 0; type < T_MAX; type++)
+	if (found->bits & (1 << type))
+	  {
+	    if (ntypes == idx)
+	      break;
+	    ntypes++;
+	  }
+      gcc_assert (type < T_MAX);
+      *type_bit = (enum neon_builtin_type_bits) (1 << type);
+    }
   return found->codes[idx];
 }
 
 typedef enum {
   NEON_ARG_COPY_TO_REG,
   NEON_ARG_CONSTANT,
+  NEON_ARG_MEMORY,
   NEON_ARG_STOP
 } builtin_arg;
 
 #define NEON_MAX_BUILTIN_ARGS 5
 
+/* EXP is a pointer argument to a Neon load or store intrinsic.  Derive
+   and return an expression for the accessed memory.
+
+   The intrinsic function operates on a block of registers that has
+   mode REG_MODE.  This block contains vectors of type TYPE_BIT.
+   The function references the memory at EXP in mode MEM_MODE;
+   this mode may be BLKmode if no more suitable mode is available.  */
+
+static tree
+neon_dereference_pointer (tree exp, enum machine_mode mem_mode,
+			  enum machine_mode reg_mode,
+			  enum neon_builtin_type_bits type_bit)
+{
+  HOST_WIDE_INT reg_size, vector_size, nvectors, nelems;
+  tree elem_type, upper_bound, array_type;
+
+  /* Work out the size of the register block in bytes.  */
+  reg_size = GET_MODE_SIZE (reg_mode);
+
+  /* Work out the size of each vector in bytes.  */
+  gcc_assert (type_bit & (T_DREG | T_QREG));
+  vector_size = (type_bit & T_QREG ? 16 : 8);
+
+  /* Work out how many vectors there are.  */
+  gcc_assert (reg_size % vector_size == 0);
+  nvectors = reg_size / vector_size;
+
+  /* Work out how many elements are being loaded or stored.
+     MEM_MODE == REG_MODE implies a one-to-one mapping between register
+     and memory elements; anything else implies a lane load or store.  */
+  if (mem_mode == reg_mode)
+    nelems = vector_size * nvectors;
+  else
+    nelems = nvectors;
+
+  /* Work out the type of each element.  */
+  gcc_assert (POINTER_TYPE_P (TREE_TYPE (exp)));
+  elem_type = TREE_TYPE (TREE_TYPE (exp));
+
+  /* Create a type that describes the full access.  */
+  upper_bound = build_int_cst (size_type_node, nelems - 1);
+  array_type = build_array_type (elem_type, build_index_type (upper_bound));
+
+  /* Dereference EXP using that type.  */
+  exp = convert (build_pointer_type (array_type), exp);
+  return fold_build2 (MEM_REF, array_type, exp,
+		      build_int_cst (TREE_TYPE (exp), 0));
+}
+
 /* Expand a Neon builtin.  */
 static rtx
 arm_expand_neon_args (rtx target, int icode, int have_retval,
+		      enum neon_builtin_type_bits type_bit,
 		      tree exp, ...)
 {
   va_list ap;
@@ -19298,7 +19363,9 @@ arm_expand_neon_args (rtx target, int icode, int have_retval,
   rtx op[NEON_MAX_BUILTIN_ARGS];
   enum machine_mode tmode = insn_data[icode].operand[0].mode;
   enum machine_mode mode[NEON_MAX_BUILTIN_ARGS];
+  enum machine_mode other_mode;
   int argc = 0;
+  int opno;
 
   if (have_retval
       && (!target
@@ -19316,24 +19383,44 @@ arm_expand_neon_args (rtx target, int icode, int have_retval,
         break;
       else
         {
+          opno = argc + have_retval;
+          mode[argc] = insn_data[icode].operand[opno].mode;
           arg[argc] = CALL_EXPR_ARG (exp, argc);
+          if (thisarg == NEON_ARG_MEMORY)
+            {
+              other_mode = insn_data[icode].operand[1 - opno].mode;
+              arg[argc] = neon_dereference_pointer (arg[argc], mode[argc],
+                                                    other_mode, type_bit);
+            }
           op[argc] = expand_normal (arg[argc]);
-          mode[argc] = insn_data[icode].operand[argc + have_retval].mode;
 
           switch (thisarg)
             {
             case NEON_ARG_COPY_TO_REG:
               /*gcc_assert (GET_MODE (op[argc]) == mode[argc]);*/
-              if (!(*insn_data[icode].operand[argc + have_retval].predicate)
+              if (!(*insn_data[icode].operand[opno].predicate)
                      (op[argc], mode[argc]))
                 op[argc] = copy_to_mode_reg (mode[argc], op[argc]);
               break;
 
             case NEON_ARG_CONSTANT:
               /* FIXME: This error message is somewhat unhelpful.  */
-              if (!(*insn_data[icode].operand[argc + have_retval].predicate)
+              if (!(*insn_data[icode].operand[opno].predicate)
                     (op[argc], mode[argc]))
 		error ("argument must be a constant");
+              break;
+
+            case NEON_ARG_MEMORY:
+	      gcc_assert (MEM_P (op[argc]));
+	      PUT_MODE (op[argc], mode[argc]);
+	      /* ??? arm_neon.h uses the same built-in functions for signed
+		 and unsigned accesses, casting where necessary.  This isn't
+		 alias safe.  */
+	      set_mem_alias_set (op[argc], 0);
+	      if (!(*insn_data[icode].operand[opno].predicate)
+                    (op[argc], mode[argc]))
+		op[argc] = (replace_equiv_address
+			    (op[argc], force_reg (Pmode, XEXP (op[argc], 0))));
               break;
 
             case NEON_ARG_STOP:
@@ -19414,14 +19501,15 @@ static rtx
 arm_expand_neon_builtin (int fcode, tree exp, rtx target)
 {
   neon_itype itype;
-  enum insn_code icode = locate_neon_builtin_icode (fcode, &itype);
+  enum neon_builtin_type_bits type_bit;
+  enum insn_code icode = locate_neon_builtin_icode (fcode, &itype, &type_bit);
 
   switch (itype)
     {
     case NEON_UNOP:
     case NEON_CONVERT:
     case NEON_DUPLANE:
-      return arm_expand_neon_args (target, icode, 1, exp,
+      return arm_expand_neon_args (target, icode, 1, type_bit, exp,
         NEON_ARG_COPY_TO_REG, NEON_ARG_CONSTANT, NEON_ARG_STOP);
 
     case NEON_BINOP:
@@ -19431,90 +19519,90 @@ arm_expand_neon_builtin (int fcode, tree exp, rtx target)
     case NEON_SCALARMULH:
     case NEON_SHIFTINSERT:
     case NEON_LOGICBINOP:
-      return arm_expand_neon_args (target, icode, 1, exp,
+      return arm_expand_neon_args (target, icode, 1, type_bit, exp,
         NEON_ARG_COPY_TO_REG, NEON_ARG_COPY_TO_REG, NEON_ARG_CONSTANT,
         NEON_ARG_STOP);
 
     case NEON_TERNOP:
-      return arm_expand_neon_args (target, icode, 1, exp,
+      return arm_expand_neon_args (target, icode, 1, type_bit, exp,
         NEON_ARG_COPY_TO_REG, NEON_ARG_COPY_TO_REG, NEON_ARG_COPY_TO_REG,
         NEON_ARG_CONSTANT, NEON_ARG_STOP);
 
     case NEON_GETLANE:
     case NEON_FIXCONV:
     case NEON_SHIFTIMM:
-      return arm_expand_neon_args (target, icode, 1, exp,
+      return arm_expand_neon_args (target, icode, 1, type_bit, exp,
         NEON_ARG_COPY_TO_REG, NEON_ARG_CONSTANT, NEON_ARG_CONSTANT,
         NEON_ARG_STOP);
 
     case NEON_CREATE:
-      return arm_expand_neon_args (target, icode, 1, exp,
+      return arm_expand_neon_args (target, icode, 1, type_bit, exp,
         NEON_ARG_COPY_TO_REG, NEON_ARG_STOP);
 
     case NEON_DUP:
     case NEON_SPLIT:
     case NEON_REINTERP:
-      return arm_expand_neon_args (target, icode, 1, exp,
+      return arm_expand_neon_args (target, icode, 1, type_bit, exp,
         NEON_ARG_COPY_TO_REG, NEON_ARG_STOP);
 
     case NEON_COMBINE:
     case NEON_VTBL:
-      return arm_expand_neon_args (target, icode, 1, exp,
+      return arm_expand_neon_args (target, icode, 1, type_bit, exp,
         NEON_ARG_COPY_TO_REG, NEON_ARG_COPY_TO_REG, NEON_ARG_STOP);
 
     case NEON_RESULTPAIR:
-      return arm_expand_neon_args (target, icode, 0, exp,
+      return arm_expand_neon_args (target, icode, 0, type_bit, exp,
         NEON_ARG_COPY_TO_REG, NEON_ARG_COPY_TO_REG, NEON_ARG_COPY_TO_REG,
         NEON_ARG_STOP);
 
     case NEON_LANEMUL:
     case NEON_LANEMULL:
     case NEON_LANEMULH:
-      return arm_expand_neon_args (target, icode, 1, exp,
+      return arm_expand_neon_args (target, icode, 1, type_bit, exp,
         NEON_ARG_COPY_TO_REG, NEON_ARG_COPY_TO_REG, NEON_ARG_CONSTANT,
         NEON_ARG_CONSTANT, NEON_ARG_STOP);
 
     case NEON_LANEMAC:
-      return arm_expand_neon_args (target, icode, 1, exp,
+      return arm_expand_neon_args (target, icode, 1, type_bit, exp,
         NEON_ARG_COPY_TO_REG, NEON_ARG_COPY_TO_REG, NEON_ARG_COPY_TO_REG,
         NEON_ARG_CONSTANT, NEON_ARG_CONSTANT, NEON_ARG_STOP);
 
     case NEON_SHIFTACC:
-      return arm_expand_neon_args (target, icode, 1, exp,
+      return arm_expand_neon_args (target, icode, 1, type_bit, exp,
         NEON_ARG_COPY_TO_REG, NEON_ARG_COPY_TO_REG, NEON_ARG_CONSTANT,
         NEON_ARG_CONSTANT, NEON_ARG_STOP);
 
     case NEON_SCALARMAC:
-      return arm_expand_neon_args (target, icode, 1, exp,
+      return arm_expand_neon_args (target, icode, 1, type_bit, exp,
 	NEON_ARG_COPY_TO_REG, NEON_ARG_COPY_TO_REG, NEON_ARG_COPY_TO_REG,
         NEON_ARG_CONSTANT, NEON_ARG_STOP);
 
     case NEON_SELECT:
     case NEON_VTBX:
-      return arm_expand_neon_args (target, icode, 1, exp,
+      return arm_expand_neon_args (target, icode, 1, type_bit, exp,
 	NEON_ARG_COPY_TO_REG, NEON_ARG_COPY_TO_REG, NEON_ARG_COPY_TO_REG,
         NEON_ARG_STOP);
 
     case NEON_LOAD1:
     case NEON_LOADSTRUCT:
-      return arm_expand_neon_args (target, icode, 1, exp,
-	NEON_ARG_COPY_TO_REG, NEON_ARG_STOP);
+      return arm_expand_neon_args (target, icode, 1, type_bit, exp,
+	NEON_ARG_MEMORY, NEON_ARG_STOP);
 
     case NEON_LOAD1LANE:
     case NEON_LOADSTRUCTLANE:
-      return arm_expand_neon_args (target, icode, 1, exp,
-	NEON_ARG_COPY_TO_REG, NEON_ARG_COPY_TO_REG, NEON_ARG_CONSTANT,
+      return arm_expand_neon_args (target, icode, 1, type_bit, exp,
+	NEON_ARG_MEMORY, NEON_ARG_COPY_TO_REG, NEON_ARG_CONSTANT,
 	NEON_ARG_STOP);
 
     case NEON_STORE1:
     case NEON_STORESTRUCT:
-      return arm_expand_neon_args (target, icode, 0, exp,
-	NEON_ARG_COPY_TO_REG, NEON_ARG_COPY_TO_REG, NEON_ARG_STOP);
+      return arm_expand_neon_args (target, icode, 0, type_bit, exp,
+	NEON_ARG_MEMORY, NEON_ARG_COPY_TO_REG, NEON_ARG_STOP);
 
     case NEON_STORE1LANE:
     case NEON_STORESTRUCTLANE:
-      return arm_expand_neon_args (target, icode, 0, exp,
-	NEON_ARG_COPY_TO_REG, NEON_ARG_COPY_TO_REG, NEON_ARG_CONSTANT,
+      return arm_expand_neon_args (target, icode, 0, type_bit, exp,
+	NEON_ARG_MEMORY, NEON_ARG_COPY_TO_REG, NEON_ARG_CONSTANT,
 	NEON_ARG_STOP);
     }
 

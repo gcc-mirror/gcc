@@ -1,3 +1,35 @@
+2011-04-12  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* config/arm/arm.c (arm_print_operand): Use MEM_SIZE to get the
+	size of a '%A' memory reference.
+	(T_DREG, T_QREG): New neon_builtin_type_bits.
+	(arm_init_neon_builtins): Assert that the load and store operands
+	are neon_struct_operands.
+	(locate_neon_builtin_icode): Provide the neon_builtin_type_bits.
+	(NEON_ARG_MEMORY): New builtin_arg.
+	(neon_dereference_pointer): New function.
+	(arm_expand_neon_args): Add a neon_builtin_type_bits argument.
+	Handle NEON_ARG_MEMORY.
+	(arm_expand_neon_builtin): Update after above interface changes.
+	Use NEON_ARG_MEMORY for loads and stores.
+	* config/arm/predicates.md (neon_struct_operand): New predicate.
+	* config/arm/iterators.md (V_two_elem): Tweak formatting.
+	(V_three_elem): Use BLKmode for accesses that have no associated mode.
+	(V_four_elem): Tweak formatting.
+	* config/arm/neon.md (neon_vld1<mode>, neon_vld1_dup<mode>)
+	(neon_vst1_lane<mode>, neon_vst1<mode>, neon_vld2<mode>)
+	(neon_vld2_lane<mode>, neon_vld2_dup<mode>, neon_vst2<mode>)
+	(neon_vst2_lane<mode>, neon_vld3<mode>, neon_vld3_lane<mode>)
+	(neon_vld3_dup<mode>, neon_vst3<mode>, neon_vst3_lane<mode>)
+	(neon_vld4<mode>, neon_vld4_lane<mode>, neon_vld4_dup<mode>)
+	(neon_vst4<mode>): Replace pointer operand with a memory operand.
+	Use %A in the output template.
+	(neon_vld3qa<mode>, neon_vld3qb<mode>, neon_vst3qa<mode>)
+	(neon_vst3qb<mode>, neon_vld4qa<mode>, neon_vld4qb<mode>)
+	(neon_vst4qa<mode>, neon_vst4qb<mode>): Likewise, but halve
+	the width of the memory access.  Remove post-increment.
+	* config/arm/neon-testgen.ml: Allow addresses to have an alignment.
+
 2011-04-12  Nick Clifton  <nickc@redhat.com>
 
 	* config/v850/v850.c (expand_prologue): Do not use the CALLT
