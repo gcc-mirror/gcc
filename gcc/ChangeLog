@@ -1,3 +1,8 @@
+2011-04-12  Kai Tietz  <ktietz@redhat.com>
+
+	* config/i386/mingw32.h (TARGET_SUBTARGET_DEFAULT): Add
+	MASK_MS_BITFIELD_LAYOUT bit.
+
 2011-04-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* combine.c (update_cfg_for_uncondjump): Instead of testing at_end

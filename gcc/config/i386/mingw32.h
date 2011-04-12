@@ -22,6 +22,17 @@ along with GCC; see the file COPYING3.  If not see
 #undef DEFAULT_ABI
 #define DEFAULT_ABI MS_ABI
 
+/* By default, target has a 80387, uses IEEE compatible arithmetic,
+   returns float values in the 387 and needs stack probes.
+   We also align doubles to 64-bits for MSVC default compatibility.
+   Additionally we enable MS_BITFIELD_LAYOUT by default.  */
+
+#undef TARGET_SUBTARGET_DEFAULT
+#define TARGET_SUBTARGET_DEFAULT \
+	(MASK_80387 | MASK_IEEE_FP | MASK_FLOAT_RETURNS \
+	 | MASK_STACK_PROBE | MASK_ALIGN_DOUBLE \
+	 | MASK_MS_BITFIELD_LAYOUT)
+
 /* See i386/crtdll.h for an alternative definition. _INTEGRAL_MAX_BITS
    is for compatibility with native compiler.  */
 #define EXTRA_OS_CPP_BUILTINS()					\

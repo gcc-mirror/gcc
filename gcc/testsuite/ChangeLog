@@ -1,3 +1,16 @@
+2011-04-12  Kai Tietz  <ktietz@redhat.com>
+
+	* g++.dg/ext/bitfield2.C: Add for i?86/x86_64-*-mingw*
+	targets the additional -mno-ms-bitfields and
+	-Wno-packed-bitfield-compat options.
+	* g++.dg/ext/bitfield3.C: Likewise.
+	* g++.dg/ext/bitfield4.C: Likewise.
+	* g++.dg/ext/bitfield5.C: Likewise.
+	* gcc.dg/bitfld-15.c: Likewise.
+	* gcc.dg/bitfld-16.c: Likewise.
+	* gcc.dg/bitfld-17.c: Likewise.
+	* gcc.dg/bitfld-18.c: Likewise.
+
 2011-04-12  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* gcc.target/arm/neon-vld3-1.c: New test.
