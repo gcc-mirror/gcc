@@ -7001,36 +7001,6 @@ insn_operand_matches (enum insn_code icode, unsigned int opno, rtx operand)
 	      (operand, insn_data[(int) icode].operand[opno].mode)));
 }
 
-/* Like maybe_legitimize_operand, but do not change the code of the
-   current rtx value.  */
-
-static bool
-maybe_legitimize_operand_same_code (enum insn_code icode, unsigned int opno,
-				    struct expand_operand *op)
-{
-  /* See if the operand matches in its current form.  */
-  if (insn_operand_matches (icode, opno, op->value))
-    return true;
-
-  /* If the operand is a memory, try forcing the address into a register.  */
-  if (MEM_P (op->value) && insn_data[(int) icode].operand[opno].allows_mem)
-    {
-      rtx addr, mem, last;
-
-      last = get_last_insn ();
-      addr = force_reg (Pmode, XEXP (op->value, 0));
-      mem = replace_equiv_address (op->value, addr);
-      if (insn_operand_matches (icode, opno, mem))
-	{
-	  op->value = mem;
-	  return true;
-	}
-      delete_insns_since (last);
-    }
-
-  return false;
-}
-
 /* Try to make OP match operand OPNO of instruction ICODE.  Return true
    on success, storing the new operand value back in OP.  */
 
@@ -7041,25 +7011,22 @@ maybe_legitimize_operand (enum insn_code icode, unsigned int opno,
   enum machine_mode mode, imode;
   bool old_volatile_ok, result;
 
+  old_volatile_ok = volatile_ok;
   mode = op->mode;
+  result = false;
   switch (op->type)
     {
     case EXPAND_FIXED:
-      old_volatile_ok = volatile_ok;
       volatile_ok = true;
-      result = maybe_legitimize_operand_same_code (icode, opno, op);
-      volatile_ok = old_volatile_ok;
-      return result;
+      break;
 
     case EXPAND_OUTPUT:
       gcc_assert (mode != VOIDmode);
-      if (op->value
-	  && op->value != const0_rtx
-	  && GET_MODE (op->value) == mode
-	  && maybe_legitimize_operand_same_code (icode, opno, op))
-	return true;
-
-      op->value = gen_reg_rtx (mode);
+      if (!op->value
+	  || op->value == const0_rtx
+	  || GET_MODE (op->value) != mode
+	  || !insn_operand_matches (icode, opno, op->value))
+	op->value = gen_reg_rtx (mode);
       break;
 
     case EXPAND_INPUT:
@@ -7067,10 +7034,9 @@ maybe_legitimize_operand (enum insn_code icode, unsigned int opno,
       gcc_assert (mode != VOIDmode);
       gcc_assert (GET_MODE (op->value) == VOIDmode
 		  || GET_MODE (op->value) == mode);
-      if (maybe_legitimize_operand_same_code (icode, opno, op))
-	return true;
-
-      op->value = copy_to_mode_reg (mode, op->value);
+      result = insn_operand_matches (icode, opno, op->value);
+      if (!result)
+	op->value = copy_to_mode_reg (mode, op->value);
       break;
 
     case EXPAND_CONVERT_TO:
@@ -7104,7 +7070,10 @@ maybe_legitimize_operand (enum insn_code icode, unsigned int opno,
 	goto input;
       break;
     }
-  return insn_operand_matches (icode, opno, op->value);
+  if (!result)
+    result = insn_operand_matches (icode, opno, op->value);
+  volatile_ok = old_volatile_ok;
+  return result;
 }
 
 /* Make OP describe an input operand that should have the same value
