@@ -3,6 +3,7 @@
 /* { dg-do compile } */
 /* { dg-options "-std=gnu99" } */
 /* { dg-require-alias "" } */
+/* { dg-require-ascii-locale "" } */
 
 void f0 (void) __attribute__((alias("\xa1"))); /* { dg-error "undefined symbol '\\\\241'" } */
 void f1 (void) __attribute__((alias("\u00e9"))); /* { dg-error "undefined symbol '\\\\U000000e9'" } */

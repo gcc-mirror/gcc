@@ -850,6 +850,17 @@ proc check_iconv_available { test_what } {
     }] $libiconv]
 }
 
+# Return 1 if an ASCII locale is supported on this host, 0 otherwise.
+
+proc check_ascii_locale_available { } {
+    if { ([ishost alpha*-dec-osf*] || [ishost mips-sgi-irix*]) } {
+	# Neither Tru64 UNIX nor IRIX support an ASCII locale.
+	return 0
+    } else {
+	return 1
+    }
+}
+
 # Return true if named sections are supported on this target.
 
 proc check_named_sections_available { } {
