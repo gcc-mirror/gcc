@@ -1,3 +1,8 @@
+2011-04-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/48517
+	* gcc.c-torture/compile/pr48517.c: New test.
+
 2011-04-11  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/cpp0x/enum10.C: New.

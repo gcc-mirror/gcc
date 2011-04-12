@@ -1,3 +1,9 @@
+2011-04-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/48517
+	* c-typeck.c (store_init_value): Set TREE_TYPE (decl) to
+	qualified type.
+
 2011-04-11  Joseph Myers  <joseph@codesourcery.com>
 
 	* common.opt (Tbss=, Tdata=, Ttext=): New options.
