@@ -1,3 +1,13 @@
+2011-04-12  Martin Jambor  <mjambor@suse.cz>
+
+	* tree-inline.c (tree_function_versioning): Call cgraph_get_node
+	instead of cgraph_node and assert it does not return NULL.
+	* lto-streamer-in.c (lto_read_body): Likewise.
+	* omp-low.c (new_omp_context): Likewise.
+	(create_task_copyfn): Likewise.
+	* tree-emutls.c (lower_emutls_function_body): Likewise.
+	* matrix-reorg.c (transform_allocation_sites): Likewise.
+
 2011-04-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/48552

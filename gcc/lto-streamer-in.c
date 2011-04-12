@@ -1446,8 +1446,9 @@ lto_read_body (struct lto_file_decl_data *file_data, tree fn_decl,
     {
       struct function *fn = DECL_STRUCT_FUNCTION (fn_decl);
       struct lto_in_decl_state *decl_state;
-      struct cgraph_node *node = cgraph_node (fn_decl);
+      struct cgraph_node *node = cgraph_get_node (fn_decl);
 
+      gcc_checking_assert (node);
       push_cfun (fn);
       init_tree_ssa (fn);
 
