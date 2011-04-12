@@ -3788,7 +3788,7 @@ c_parser_initelt (c_parser *parser, struct obstack * braced_init_obstack)
 		  c_parser_skip_until_found (parser, CPP_CLOSE_SQUARE,
 					     "expected %<]%>");
 		  mexpr.value
-		    = objc_build_message_expr (build_tree_list (rec, args));
+		    = objc_build_message_expr (rec, args);
 		  mexpr.original_code = ERROR_MARK;
 		  mexpr.original_type = NULL;
 		  /* Now parse and process the remainder of the
@@ -6455,8 +6455,7 @@ c_parser_postfix_expression (c_parser *parser)
 	  args = c_parser_objc_message_args (parser);
 	  c_parser_skip_until_found (parser, CPP_CLOSE_SQUARE,
 				     "expected %<]%>");
-	  expr.value = objc_build_message_expr (build_tree_list (receiver,
-								 args));
+	  expr.value = objc_build_message_expr (receiver, args);
 	  break;
 	}
       /* Else fall through to report error.  */

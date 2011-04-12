@@ -1,5 +1,11 @@
 2011-04-12  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	* objc-act.c (objc_build_message_expr): Accept two arguments
+	instead of one so that callers can simply pass the arguments
+	without having to create a temporary chain to hold them.
+
+2011-04-12  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	* objc-act.c (comp_proto_with_proto): Do not create and use
 	inefficient temporary argument lists.  Compare the arguments
 	directly.  (match_proto_with_proto): Removed; incorporated into

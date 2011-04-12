@@ -5026,14 +5026,13 @@ objc_message_selector (void)
    (*(<abstract_decl>(*)())_msgSuper)(receiver, selTransTbl[n], ...);  */
 
 tree
-objc_build_message_expr (tree mess)
+objc_build_message_expr (tree receiver, tree message_args)
 {
-  tree receiver = TREE_PURPOSE (mess);
   tree sel_name;
 #ifdef OBJCPLUS
-  tree args = TREE_PURPOSE (TREE_VALUE (mess));
+  tree args = TREE_PURPOSE (message_args);
 #else
-  tree args = TREE_VALUE (mess);
+  tree args = message_args;
 #endif
   tree method_params = NULL_TREE;
 
@@ -5057,7 +5056,7 @@ objc_build_message_expr (tree mess)
   /* Build the parameter list to give to the method.  */
   if (TREE_CODE (args) == TREE_LIST)
 #ifdef OBJCPLUS
-    method_params = chainon (args, TREE_VALUE (TREE_VALUE (mess)));
+    method_params = chainon (args, TREE_VALUE (message_args));
 #else
     {
       tree chain = args, prev = NULL_TREE;
