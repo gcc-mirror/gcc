@@ -32,7 +32,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #if defined (HAVE_GFC_COMPLEX_16)
 
 void
-cshift0_c16 (gfc_array_c16 *ret, const gfc_array_c16 *array, ssize_t shift,
+cshift0_c16 (gfc_array_c16 *ret, const gfc_array_c16 *array, ptrdiff_t shift,
 		     int which)
 {
   /* r.* indicates the return array.  */
@@ -97,7 +97,7 @@ cshift0_c16 (gfc_array_c16 *ret, const gfc_array_c16 *array, ssize_t shift,
   rptr = ret->data;
   sptr = array->data;
 
-  shift = len == 0 ? 0 : shift % (ssize_t)len;
+  shift = len == 0 ? 0 : shift % (ptrdiff_t)len;
   if (shift < 0)
     shift += len;
 

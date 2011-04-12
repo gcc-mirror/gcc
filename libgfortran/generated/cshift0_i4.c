@@ -32,7 +32,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #if defined (HAVE_GFC_INTEGER_4)
 
 void
-cshift0_i4 (gfc_array_i4 *ret, const gfc_array_i4 *array, ssize_t shift,
+cshift0_i4 (gfc_array_i4 *ret, const gfc_array_i4 *array, ptrdiff_t shift,
 		     int which)
 {
   /* r.* indicates the return array.  */
@@ -97,7 +97,7 @@ cshift0_i4 (gfc_array_i4 *ret, const gfc_array_i4 *array, ssize_t shift,
   rptr = ret->data;
   sptr = array->data;
 
-  shift = len == 0 ? 0 : shift % (ssize_t)len;
+  shift = len == 0 ? 0 : shift % (ptrdiff_t)len;
   if (shift < 0)
     shift += len;
 

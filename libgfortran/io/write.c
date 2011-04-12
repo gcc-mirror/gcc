@@ -1932,7 +1932,7 @@ obj_loop:
       {
 	obj->ls[dim_i].idx += nml_carry ;
 	nml_carry = 0;
- 	if (obj->ls[dim_i].idx  > (ssize_t) GFC_DESCRIPTOR_UBOUND(obj,dim_i))
+ 	if (obj->ls[dim_i].idx  > GFC_DESCRIPTOR_UBOUND(obj,dim_i))
 	  {
  	    obj->ls[dim_i].idx = GFC_DESCRIPTOR_LBOUND(obj,dim_i);
 	    nml_carry = 1;
