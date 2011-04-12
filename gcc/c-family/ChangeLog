@@ -153,8 +153,8 @@
 	* c-common.c (lvalue_error): Add 'loc' argument.  Call error_at,
 	not error.
 
-2010-12-29  Nicola Pero  <nicola@nicola.brainstorm.co.uk>
-
+2010-12-29  Nicola Pero  <nicola.pero@meta-innovation.com>
+	
 	PR objc/47075
 	* c-objc.h (objc_finish_message_expr): Added argument to
 	prototype.
