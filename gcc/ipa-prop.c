@@ -1522,10 +1522,13 @@ ipa_analyze_params_uses (struct cgraph_node *node,
 void
 ipa_analyze_node (struct cgraph_node *node)
 {
-  struct ipa_node_params *info = IPA_NODE_REF (node);
+  struct ipa_node_params *info;
   struct param_analysis_info *parms_info;
   int i, param_count;
 
+  ipa_check_create_node_params ();
+  ipa_check_create_edge_args ();
+  info = IPA_NODE_REF (node);
   push_cfun (DECL_STRUCT_FUNCTION (node->decl));
   current_function_decl = node->decl;
   ipa_initialize_node_params (node);

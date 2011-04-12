@@ -2091,11 +2091,7 @@ inline_generate_summary (void)
       cgraph_add_function_insertion_hook (&add_new_function, NULL);
 
   if (flag_indirect_inlining)
-    {
-      ipa_register_cgraph_hooks ();
-      ipa_check_create_node_params ();
-      ipa_check_create_edge_args ();
-    }
+    ipa_register_cgraph_hooks ();
 
   for (node = cgraph_nodes; node; node = node->next)
     if (node->analyzed)

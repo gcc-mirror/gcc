@@ -1,3 +1,15 @@
+2011-04-12  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/48195
+	* ipa-cp.c (ipcp_driver): Call ipa_check_create_node_params and
+	ipa_check_create_edge_args.
+	(ipcp_generate_summary): Do not call ipa_check_create_node_params and
+	ipa_check_create_edge_args.
+	* ipa-inline.c (inline_generate_summary): Do not call
+	ipa_check_create_node_params and ipa_check_create_edge_args.
+	* ipa-prop.c (ipa_analyze_node): Call ipa_check_create_node_params and
+	ipa_check_create_edge_args.
+
 2011-04-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/48549

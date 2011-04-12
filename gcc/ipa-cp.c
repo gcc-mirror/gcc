@@ -1516,6 +1516,8 @@ ipcp_driver (void)
         ipa_print_all_params (dump_file);
       ipa_print_all_jump_functions (dump_file);
     }
+  ipa_check_create_node_params ();
+  ipa_check_create_edge_args ();
   /* 2. Do the interprocedural propagation.  */
   ipcp_iterate_stage ();
   /* 3. Insert the constants found to the functions.  */
@@ -1543,8 +1545,6 @@ ipcp_generate_summary (void)
 
   if (dump_file)
     fprintf (dump_file, "\nIPA constant propagation start:\n");
-  ipa_check_create_node_params ();
-  ipa_check_create_edge_args ();
   ipa_register_cgraph_hooks ();
 
   for (node = cgraph_nodes; node; node = node->next)

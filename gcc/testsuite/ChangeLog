@@ -1,3 +1,8 @@
+2011-04-12  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/48195
+	* gcc.dg/ipa/pr48195.c: New test.
+
 2011-04-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/48549
