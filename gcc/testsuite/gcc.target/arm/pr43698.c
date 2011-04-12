@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-options "-Os -march=armv7-a" } */
+/* { dg-options "-Os" } */
 #include <stdint.h>
 #include <stdlib.h>
 

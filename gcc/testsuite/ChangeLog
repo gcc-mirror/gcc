@@ -1,5 +1,9 @@
 2011-04-12  Janis Johnson  <janisjo@codesourcery.com>
 
+	* gcc.target/arm/pr43698.c: Remove -march option.
+
+2011-04-12  Janis Johnson  <janisjo@codesourcery.com>
+
 	* gcc.target/arm/sync-1.c: Limit to sync_int_long, do not use
 	-march option.
 
