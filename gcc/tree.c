@@ -357,9 +357,15 @@ initialize_tree_contains_struct (void)
     tree_contains_struct[C][TS_BASE] = 1;		\
   } while (0)
 
-#define MARK_TS_COMMON(C)				\
+#define MARK_TS_TYPED(C)				\
   do {							\
     MARK_TS_BASE (C);					\
+    tree_contains_struct[C][TS_TYPED] = 1;		\
+  } while (0)
+
+#define MARK_TS_COMMON(C)				\
+  do {							\
+    MARK_TS_TYPED (C);					\
     tree_contains_struct[C][TS_COMMON] = 1;		\
   } while (0)
 

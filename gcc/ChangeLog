@@ -1,3 +1,16 @@
+2011-04-11  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* tree.h (struct typed_tree): New.
+	(struct tree_common): Include it instead of tree_base.
+	(TREE_TYPE): Update for new location of type field.
+	(TYPE_USER_ALIGN, TYPE_PACKED): Refer to base field directly.
+	(DECL_USER_ALIGN, DECL_PACKED): Likewise.
+	(union tree_node): Add typed field.
+	* treestruct.def (TS_TYPED): New.
+	* lto-streamer.c (check_handled_ts_structures): Handle it.
+	* tree.c (MARK_TS_TYPED): New macro.
+	(MARK_TS_COMMON): Call it instead of MARK_TS_BASE.
+
 2011-04-11  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* cfghooks.c (redirect_edge_and_branch_force): Localize variable.

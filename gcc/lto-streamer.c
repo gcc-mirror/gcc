@@ -270,6 +270,7 @@ check_handled_ts_structures (void)
   /* These are the TS_* structures that are either handled or
      explicitly ignored by the streamer routines.  */
   handled_p[TS_BASE] = true;
+  handled_p[TS_TYPED] = true;
   handled_p[TS_COMMON] = true;
   handled_p[TS_INT_CST] = true;
   handled_p[TS_REAL_CST] = true;
