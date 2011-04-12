@@ -272,6 +272,8 @@ struct insn_operand_data
   const char is_operator;
 
   const char eliminable;
+
+  const char allows_mem;
 };
 
 /* Legal values for insn_data.output_format.  Indicate what type of data

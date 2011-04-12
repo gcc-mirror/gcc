@@ -66,6 +66,8 @@ along with GCC; see the file COPYING3.  If not see
      MATCH_OPERAND; it is zero for operands that should not be changed during
      register elimination such as MATCH_OPERATORs.
 
+     g. `allows_mem', is true for operands that accept MEM rtxes.
+
   The code number of an insn is simply its position in the machine
   description; code numbers are assigned sequentially to entries in
   the description, starting with code number 0.
@@ -256,6 +258,8 @@ output_operand_data (void)
 
   for (d = odata; d; d = d->next)
     {
+      struct pred_data *pred;
+
       printf ("  {\n");
 
       printf ("    %s,\n",
@@ -269,7 +273,12 @@ output_operand_data (void)
 
       printf ("    %d,\n", d->constraint == NULL ? 1 : 0);
 
-      printf ("    %d\n", d->eliminable);
+      printf ("    %d,\n", d->eliminable);
+
+      pred = NULL;
+      if (d->predicate)
+	pred = lookup_predicate (d->predicate);
+      printf ("    %d\n", pred && pred->codes[MEM]);
 
       printf("  },\n");
     }

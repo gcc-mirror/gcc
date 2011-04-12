@@ -1,5 +1,13 @@
 2011-04-12  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	* recog.h (insn_operand_data): Add an "allows_mem" field.
+	* genoutput.c (output_operand_data): Initialize it.
+	* optabs.c (maybe_legitimize_operand_same_code): New function.
+	(maybe_legitimize_operand): Use it when matching the original
+	op->value.
+
+2011-04-12  Richard Sandiford  <richard.sandiford@linaro.org>
+
 	* genpreds.c (process_define_predicate): Move most processing
 	to gensupport.c.  Continue to validate the expression.
 	* genrecog.c (did_you_mean_codes, compute_predicate_codes)
