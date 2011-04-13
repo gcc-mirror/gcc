@@ -149,10 +149,11 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Value is 1 if hard register REGNO can hold a value of machine-mode MODE.
    On the HP-PA, the cpu registers can hold any mode.  We
-   force this to be an even register is it cannot hold the full mode.  */
+   force this to be an even register if it cannot hold the full mode.  */
 #define HARD_REGNO_MODE_OK(REGNO, MODE) \
   ((REGNO) == 0								\
    ? (MODE) == CCmode || (MODE) == CCFPmode				\
+   : (REGNO) == 60 ? SCALAR_INT_MODE_P (MODE)				\
    /* Make wide modes be in aligned registers.  */			\
    : FP_REGNO_P (REGNO)							\
      ? (VALID_FP_MODE_P (MODE)						\

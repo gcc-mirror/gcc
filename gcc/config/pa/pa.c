@@ -1467,6 +1467,8 @@ hppa_register_move_cost (enum machine_mode mode ATTRIBUTE_UNUSED,
 {
   if (from == SHIFT_REGS)
     return 0x100;
+  else if (to == SHIFT_REGS && FP_REG_CLASS_P (from))
+    return 18;
   else if ((FP_REG_CLASS_P (from) && ! FP_REG_CLASS_P (to))
            || (FP_REG_CLASS_P (to) && ! FP_REG_CLASS_P (from)))
     return 16;
@@ -1810,15 +1812,12 @@ emit_move_sequence (rtx *operands, enum machine_mode mode, rtx scratch_reg)
       return 1;
     }
   /* Handle secondary reloads for SAR.  These occur when trying to load
-     the SAR from memory, FP register, or with a constant.  */
+     the SAR from memory or a constant.  */
   else if (scratch_reg
 	   && GET_CODE (operand0) == REG
 	   && REGNO (operand0) < FIRST_PSEUDO_REGISTER
 	   && REGNO_REG_CLASS (REGNO (operand0)) == SHIFT_REGS
-	   && (GET_CODE (operand1) == MEM
-	       || GET_CODE (operand1) == CONST_INT
-	       || (GET_CODE (operand1) == REG
-		   && FP_REG_CLASS_P (REGNO_REG_CLASS (REGNO (operand1))))))
+	   && (GET_CODE (operand1) == MEM || GET_CODE (operand1) == CONST_INT))
     {
       /* D might not fit in 14 bits either; for such cases load D into
 	 scratch reg.  */
@@ -5883,6 +5882,10 @@ output_arg_descriptor (rtx call_insn)
   fputc ('\n', asm_out_file);
 }
 
+/* Inform reload about cases where moving X with a mode MODE to a register in
+   RCLASS requires an extra scratch or immediate register.  Return the class
+   needed for the immediate register.  */
+
 static reg_class_t
 pa_secondary_reload (bool in_p, rtx x, reg_class_t rclass_i,
 		     enum machine_mode mode, secondary_reload_info *sri)
@@ -5985,24 +5988,29 @@ pa_secondary_reload (bool in_p, rtx x, reg_class_t rclass_i,
       return NO_REGS;
     }
 
-  /* We need a secondary register (GPR) for copies between the SAR
-     and anything other than a general register.  */
-  if (rclass == SHIFT_REGS && (regno <= 0 || regno >= 32))
+  /* A SAR<->FP register copy requires an intermediate general register
+     and secondary memory.  We need a secondary reload with a general
+     scratch register for spills.  */
+  if (rclass == SHIFT_REGS)
     {
-      sri->icode = (in_p
-		    ? direct_optab_handler (reload_in_optab, mode)
-		    : direct_optab_handler (reload_out_optab, mode));
-      return NO_REGS;
+      /* Handle spill.  */
+      if (regno >= FIRST_PSEUDO_REGISTER || regno < 0)
+	{
+	  sri->icode = (in_p
+			? direct_optab_handler (reload_in_optab, mode)
+			: direct_optab_handler (reload_out_optab, mode));
+	  return NO_REGS;
+	}
+
+      /* Handle FP copy.  */
+      if (FP_REG_CLASS_P (REGNO_REG_CLASS (regno)))
+	return GENERAL_REGS;
     }
 
-  /* A SAR<->FP register copy requires a secondary register (GPR) as
-     well as secondary memory.  */
   if (regno >= 0 && regno < FIRST_PSEUDO_REGISTER
-      && (REGNO_REG_CLASS (regno) == SHIFT_REGS
-      && FP_REG_CLASS_P (rclass)))
-    sri->icode = (in_p
-		  ? direct_optab_handler (reload_in_optab, mode)
-		  : direct_optab_handler (reload_out_optab, mode));
+      && REGNO_REG_CLASS (regno) == SHIFT_REGS
+      && FP_REG_CLASS_P (rclass))
+    return GENERAL_REGS;
 
   return NO_REGS;
 }
