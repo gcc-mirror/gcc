@@ -96,7 +96,7 @@ void
 fini_ssanames (void)
 {
   VEC_free (tree, gc, SSANAMES (cfun));
-  FREE_SSANAMES (cfun) = NULL;
+  VEC_free (tree, gc, FREE_SSANAMES (cfun));
 }
 
 /* Dump some simple statistics regarding the re-use of SSA_NAME nodes.  */
@@ -124,10 +124,9 @@ make_ssa_name_fn (struct function *fn, tree var, gimple stmt)
   gcc_assert (DECL_P (var));
 
   /* If our free list has an element, then use it.  */
-  if (FREE_SSANAMES (fn))
+  if (!VEC_empty (tree, FREE_SSANAMES (fn)))
     {
-      t = FREE_SSANAMES (fn);
-      FREE_SSANAMES (fn) = TREE_CHAIN (FREE_SSANAMES (fn));
+      t = VEC_pop (tree, FREE_SSANAMES (fn));
 #ifdef GATHER_STATISTICS
       ssa_name_nodes_reused++;
 #endif
@@ -234,9 +233,8 @@ release_ssa_name (tree var)
       /* Note this SSA_NAME is now in the first list.  */
       SSA_NAME_IN_FREE_LIST (var) = 1;
 
-      /* And finally link it into the free list.  */
-      TREE_CHAIN (var) = FREE_SSANAMES (cfun);
-      FREE_SSANAMES (cfun) = var;
+      /* And finally put it on the free list.  */
+      VEC_safe_push (tree, gc, FREE_SSANAMES (cfun), var);
     }
 }
 
@@ -334,8 +332,8 @@ replace_ssa_name_symbol (tree ssa_name, tree sym)
 static unsigned int
 release_dead_ssa_names (void)
 {
-  tree t, next;
-  int n = 0;
+  tree t;
+  int n = VEC_length (tree, FREE_SSANAMES (cfun));
   referenced_var_iterator rvi;
 
   /* Current defs point to various dead SSA names that in turn point to
@@ -343,17 +341,7 @@ release_dead_ssa_names (void)
   FOR_EACH_REFERENCED_VAR (cfun, t, rvi)
     set_current_def (t, NULL);
   /* Now release the freelist.  */
-  for (t = FREE_SSANAMES (cfun); t; t = next)
-    {
-      next = TREE_CHAIN (t);
-      /* Dangling pointers might make GGC to still see dead SSA names, so it is
- 	 important to unlink the list and avoid GGC from seeing all subsequent
-	 SSA names.  In longer run we want to have all dangling pointers here
-	 removed (since they usually go through dead statements that consume
-	 considerable amounts of memory).  */
-      TREE_CHAIN (t) = NULL_TREE;
-      n++;
-    }
+  VEC_free (tree, gc, FREE_SSANAMES (cfun));
   FREE_SSANAMES (cfun) = NULL;
 
   statistics_counter_event (cfun, "SSA names released", n);

@@ -377,6 +377,7 @@ initialize_tree_contains_struct (void)
 	case TS_VECTOR:
 	case TS_STRING:
 	case TS_COMPLEX:
+	case TS_SSA_NAME:
 	  MARK_TS_TYPED (code);
 	  break;
 
@@ -386,7 +387,6 @@ initialize_tree_contains_struct (void)
 	case TS_LIST:
 	case TS_VEC:
 	case TS_EXP:
-	case TS_SSA_NAME:
 	case TS_BLOCK:
 	case TS_BINFO:
 	case TS_STATEMENT_LIST:
