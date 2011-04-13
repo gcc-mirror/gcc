@@ -1,3 +1,7 @@
+2011-04-13  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/sse2-init-v2di-2.c: Update scan pattern.
+
 2011-04-12  Janis Johnson  <janisjo@codesourcery.com>
 
 	* gcc.target/arm/pr43698.c: Remove -march option.
