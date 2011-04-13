@@ -1,3 +1,32 @@
+2011-04-13  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* dwarf2out.c (struct dw_cfi_struct): Remove member dw_cfi_next.
+	(dw_cfi_ref): Add DEF_VEC_P and some DEF_VEC_ALLOC_Ps.
+	(cfi_vec): New typedef.
+	(struct dw_fde_struct): Make dw_fde_cfi a cfi_vec. Replace
+	dw_fde_switch_cfi with an integer dw_fde_switch_cfi_index.
+	(cie_cfi_vec): New static variable.
+	(cie_cfi_head): Delete.
+	(add_cfi): Accept a cfi_vec * as first argument. All callers and
+	declaration changed. Use vector rather than list operations.
+	(new_cfi): Don't initialize the dw_cfi_next field.
+	(add_fde_cfi): Allocate cie_cfi_vec if necessary. Use vector
+	rather than list operations.
+	(lookup_cfa): Use vector rather than list operations.
+	(output_cfis): New argument upto. Accept a cfi_vec rather than
+	a dw_cfi_ref list head as argument. All callers changed.
+	Iterate over the vector using upto as a maximum index.
+	(output_all_cfis): New static function.
+	(output_fde): Use vector rather than list operations. Use the
+	new upto argument for output_cfis rather than manipulating a
+	list.
+	(dwarf2out_begin_prologue): Change initializations to match
+	new struct members.
+	(dwarf2out_switch_text_section): Initialize dw_fde_switch_cfi_index
+	from the vector length rather than searching for the end of a list.
+	Use output_all_cfis.
+	(convert_cfa_to_fb_loc_list): Use vector rather than list operations.
+
 2011-04-13  Nick Clifton  <nickc@redhat.com>
 
 	* config/rx/rx.md (movmemsi): Do not use this pattern when
