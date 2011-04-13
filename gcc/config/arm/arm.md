@@ -3690,7 +3690,7 @@
 ;; The constraints here are to prevent a *partial* overlap (where %Q0 == %R1).
 ;; The first alternative allows the common case of a *full* overlap.
 (define_insn "*arm_negdi2"
-  [(set (match_operand:DI         0 "s_register_operand" "=&r,r")
+  [(set (match_operand:DI         0 "s_register_operand" "=r,&r")
 	(neg:DI (match_operand:DI 1 "s_register_operand"  "0,r")))
    (clobber (reg:CC CC_REGNUM))]
   "TARGET_ARM"

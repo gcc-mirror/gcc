@@ -1,3 +1,10 @@
+2011-04-13  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
+
+	Backport from mainline:
+	2011-04-12  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
+	PR target/48090
+	* config/arm/arm.md (*arm_negdi2): Fix early clobber constraints.
+
 2011-04-12  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/48195
