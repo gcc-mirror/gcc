@@ -1,3 +1,7 @@
+2011-04-13  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/sfinae13.C: New.
+
 2011-04-13  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/i386/sse2-init-v2di-2.c: Update scan pattern.

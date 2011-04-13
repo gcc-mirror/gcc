@@ -12938,7 +12938,8 @@ tsubst_copy_and_build (tree t,
 	    && !any_type_dependent_arguments_p (call_args))
 	  function = perform_koenig_lookup (function, call_args, false);
 
-	if (TREE_CODE (function) == IDENTIFIER_NODE)
+	if (TREE_CODE (function) == IDENTIFIER_NODE
+	    && !processing_template_decl)
 	  {
 	    unqualified_name_lookup_error (function);
 	    release_tree_vector (call_args);
