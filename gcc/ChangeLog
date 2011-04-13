@@ -1,3 +1,26 @@
+2011-04-13  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* postreload-gcse.c (gcse_after_reload_main): Add calls to
+	statistics_counter_event.
+	* tree-ssa-copyrename.c (stats): Define.
+	(rename_ssa_copies): Count coalesced SSA_NAMEs.  Add call to
+	statistics_counter_event.
+	* tree-ssa-math-opts.c (reciprocal_stats, sincos_stats): Define.
+	(bswap_stats, widen_mul_stats): Define.
+	(insert_reciprocals): Increment rdivs_inserted.
+	(execute_cse_reciprocals): Zeroize reciprocal_stats.  Increment
+	rfuncs_inserted.  Add calls to statistics_counter_event.
+	(execute_cse_sincos_1): Increment inserted.
+	(execute_cse_sincos): Zeroize sincos_stats.  Add call to
+	statistics_counter_event.
+	(execute_optimize_bswap): Zeroize bswap_stats.  Increment fields
+	of bswap_stats.  Add calls to statistics_counter_event.
+	(convert_mult_to_widen): Increment widen_mults_inserted.
+	(convert_plusminus_to_widen): Increment maccs_inserted.
+	(convert_mult_to_fma): Increment fmas_inserted.
+	(execute_optimize_widening_mul): Zeroize widen_mul_stats.  Add
+	calls to statistics_counter_event.
+
 2011-04-13  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/48455
