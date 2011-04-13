@@ -852,7 +852,7 @@ class Thunk_statement : public Statement
   // Simplify a go or defer statement so that it only uses a single
   // parameter.
   bool
-  simplify_statement(Gogo*, Block*);
+  simplify_statement(Gogo*, Named_object*, Block*);
 
  protected:
   int
@@ -868,8 +868,8 @@ class Thunk_statement : public Statement
   do_check_types(Gogo*);
 
   // Return the function and argument trees for the call.
-  void
-  get_fn_and_arg(Translate_context*, tree* pfn, tree* parg);
+  bool
+  get_fn_and_arg(Expression** pfn, Expression** parg);
 
  private:
   // Return whether this is a simple go statement.

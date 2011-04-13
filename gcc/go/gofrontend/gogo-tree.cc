@@ -31,6 +31,7 @@ extern "C"
 #include "types.h"
 #include "expressions.h"
 #include "statements.h"
+#include "runtime.h"
 #include "gogo.h"
 
 // Whether we have seen any errors.
@@ -1585,13 +1586,22 @@ Function::build_tree(Gogo* gogo, Named_object* named_function)
 
       // Declare variables if necessary.
       tree bind = NULL_TREE;
-      if (declare_vars != NULL_TREE)
+      tree defer_init = NULL_TREE;
+      if (declare_vars != NULL_TREE || this->defer_stack_ != NULL)
 	{
 	  tree block = make_node(BLOCK);
 	  BLOCK_SUPERCONTEXT(block) = fndecl;
 	  DECL_INITIAL(fndecl) = block;
 	  BLOCK_VARS(block) = declare_vars;
 	  TREE_USED(block) = 1;
+
+	  if (this->defer_stack_ != NULL)
+	    {
+	      Translate_context dcontext(gogo, named_function, this->block_,
+					 block);
+	      defer_init = this->defer_stack_->get_tree(&dcontext);
+	    }
+
 	  bind = build3(BIND_EXPR, void_type_node, BLOCK_VARS(block),
 			NULL_TREE, block);
 	  TREE_SIDE_EFFECTS(bind) = 1;
@@ -1615,10 +1625,8 @@ Function::build_tree(Gogo* gogo, Named_object* named_function)
 
       // If we have a defer stack, initialize it at the start of a
       // function.
-      if (this->defer_stack_ != NULL_TREE)
+      if (defer_init != NULL_TREE && defer_init != error_mark_node)
 	{
-	  tree defer_init = build1(DECL_EXPR, void_type_node,
-				   this->defer_stack_);
 	  SET_EXPR_LOCATION(defer_init, this->block_->start_location());
 	  append_to_statement_list(defer_init, &init);
 
@@ -1663,17 +1671,15 @@ Function::build_defer_wrapper(Gogo* gogo, Named_object* named_function,
   // purpose is to stop the stack unwinding if a deferred function
   // calls recover.  There are more details in
   // libgo/runtime/go-unwind.c.
+
   tree stmt_list = NULL_TREE;
-  static tree check_fndecl;
-  tree call = Gogo::call_builtin(&check_fndecl,
-				 end_loc,
-				 "__go_check_defer",
-				 1,
-				 void_type_node,
-				 ptr_type_node,
-				 this->defer_stack(end_loc));
-  if (call != error_mark_node)
-    append_to_statement_list(call, &stmt_list);
+
+  Expression* call = Runtime::make_call(Runtime::CHECK_DEFER, end_loc, 1,
+					this->defer_stack(end_loc));
+  Translate_context context(gogo, named_function, NULL, NULL);
+  tree call_tree = call->get_tree(&context);
+  if (call_tree != error_mark_node)
+    append_to_statement_list(call_tree, &stmt_list);
 
   tree retval = this->return_value(gogo, named_function, end_loc, &stmt_list);
   tree set;
@@ -1704,24 +1710,17 @@ Function::build_defer_wrapper(Gogo* gogo, Named_object* named_function,
 				      label);
   append_to_statement_list(define_label, &stmt_list);
 
-  static tree undefer_fndecl;
-  tree undefer = Gogo::call_builtin(&undefer_fndecl,
-				    end_loc,
-				    "__go_undefer",
-				    1,
-				    void_type_node,
-				    ptr_type_node,
-				    this->defer_stack(end_loc));
-  if (undefer_fndecl != NULL_TREE)
-    TREE_NOTHROW(undefer_fndecl) = 0;
+  call = Runtime::make_call(Runtime::UNDEFER, end_loc, 1,
+			    this->defer_stack(end_loc));
+  tree undefer = call->get_tree(&context);
 
-  tree defer = Gogo::call_builtin(&check_fndecl,
-				  end_loc,
-				  "__go_check_defer",
-				  1,
-				  void_type_node,
-				  ptr_type_node,
-				  this->defer_stack(end_loc));
+  call = Runtime::make_call(Runtime::CHECK_DEFER, end_loc, 1,
+			    this->defer_stack(end_loc));
+  tree defer = call->get_tree(&context);
+
+  if (undefer == error_mark_node || defer == error_mark_node)
+    return;
+
   tree jump = fold_build1_loc(end_loc, GOTO_EXPR, void_type_node, label);
   tree catch_body = build2(COMPOUND_EXPR, void_type_node, defer, jump);
   catch_body = build2(CATCH_EXPR, void_type_node, NULL, catch_body);
@@ -1792,28 +1791,6 @@ Function::return_value(Gogo* gogo, Named_object* named_function,
 	}
       return retval;
     }
-}
-
-// Get the tree for the variable holding the defer stack for this
-// function.  At least at present, the value of this variable is not
-// used.  However, a pointer to this variable is used as a marker for
-// the functions on the defer stack associated with this function.
-// Doing things this way permits inlining a function which uses defer.
-
-tree
-Function::defer_stack(source_location location)
-{
-  if (this->defer_stack_ == NULL_TREE)
-    {
-      tree var = create_tmp_var(ptr_type_node, "DEFER");
-      DECL_INITIAL(var) = null_pointer_node;
-      DECL_SOURCE_LOCATION(var) = location;
-      TREE_ADDRESSABLE(var) = 1;
-      this->defer_stack_ = var;
-    }
-  return fold_convert_loc(location, ptr_type_node,
-			  build_fold_addr_expr_loc(location,
-						   this->defer_stack_));
 }
 
 // Get a tree for the statements in a block.
