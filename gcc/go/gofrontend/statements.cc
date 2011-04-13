@@ -1718,16 +1718,38 @@ class Simplify_thunk_traverse : public Traverse
 {
  public:
   Simplify_thunk_traverse(Gogo* gogo)
-    : Traverse(traverse_blocks),
-      gogo_(gogo)
+    : Traverse(traverse_functions | traverse_blocks),
+      gogo_(gogo), function_(NULL)
   { }
+
+  int
+  function(Named_object*);
 
   int
   block(Block*);
 
  private:
+  // General IR.
   Gogo* gogo_;
+  // The function we are traversing.
+  Named_object* function_;
 };
+
+// Keep track of the current function while looking for thunks.
+
+int
+Simplify_thunk_traverse::function(Named_object* no)
+{
+  gcc_assert(this->function_ == NULL);
+  this->function_ = no;
+  int t = no->func_value()->traverse(this);
+  this->function_ = NULL;
+  if (t == TRAVERSE_EXIT)
+    return t;
+  return TRAVERSE_SKIP_COMPONENTS;
+}
+
+// Look for thunks in a block.
 
 int
 Simplify_thunk_traverse::block(Block* b)
@@ -1739,7 +1761,7 @@ Simplify_thunk_traverse::block(Block* b)
   Thunk_statement* stat = b->statements()->back()->thunk_statement();
   if (stat == NULL)
     return TRAVERSE_CONTINUE;
-  if (stat->simplify_statement(this->gogo_, b))
+  if (stat->simplify_statement(this->gogo_, this->function_, b))
     return TRAVERSE_SKIP_COMPONENTS;
   return TRAVERSE_CONTINUE;
 }
@@ -1761,12 +1783,22 @@ Gogo::simplify_thunk_statements()
 // struct to a thunk.  The thunk does the real call.
 
 bool
-Thunk_statement::simplify_statement(Gogo* gogo, Block* block)
+Thunk_statement::simplify_statement(Gogo* gogo, Named_object* function,
+				    Block* block)
 {
   if (this->classification() == STATEMENT_ERROR)
     return false;
   if (this->call_->is_error_expression())
     return false;
+
+  if (this->classification() == STATEMENT_DEFER)
+    {
+      // Make sure that the defer stack exists for the function.  We
+      // will use when converting this statement to the backend
+      // representation, but we want it to exist when we start
+      // converting the function.
+      function->func_value()->defer_stack(this->location());
+    }
 
   Call_expression* ce = this->call_->call_expression();
   Function_type* fntype = ce->get_function_type();
@@ -2160,30 +2192,26 @@ Thunk_statement::build_thunk(Gogo* gogo, const std::string& thunk_name,
 
 // Get the function and argument trees.
 
-void
-Thunk_statement::get_fn_and_arg(Translate_context* context, tree* pfn,
-				tree* parg)
+bool
+Thunk_statement::get_fn_and_arg(Expression** pfn, Expression** parg)
 {
   if (this->call_->is_error_expression())
-    {
-      *pfn = error_mark_node;
-      *parg = error_mark_node;
-      return;
-    }
+    return false;
 
   Call_expression* ce = this->call_->call_expression();
 
-  Expression* fn = ce->fn();
-  *pfn = fn->get_tree(context);
+  *pfn = ce->fn();
 
   const Expression_list* args = ce->args();
   if (args == NULL || args->empty())
-    *parg = null_pointer_node;
+    *parg = Expression::make_nil(this->location());
   else
     {
       gcc_assert(args->size() == 1);
-      *parg = args->front()->get_tree(context);
+      *parg = args->front();
     }
+
+  return true;
 }
 
 // Class Go_statement.
@@ -2191,30 +2219,17 @@ Thunk_statement::get_fn_and_arg(Translate_context* context, tree* pfn,
 tree
 Go_statement::do_get_tree(Translate_context* context)
 {
-  tree fn_tree;
-  tree arg_tree;
-  this->get_fn_and_arg(context, &fn_tree, &arg_tree);
+  Expression* fn;
+  Expression* arg;
+  if (!this->get_fn_and_arg(&fn, &arg))
+    return error_mark_node;
 
-  static tree go_fndecl;
-
-  tree fn_arg_type = NULL_TREE;
-  if (go_fndecl == NULL_TREE)
-    {
-      // Only build FN_ARG_TYPE if we need it.
-      tree subargtypes = tree_cons(NULL_TREE, ptr_type_node, void_list_node);
-      tree subfntype = build_function_type(ptr_type_node, subargtypes);
-      fn_arg_type = build_pointer_type(subfntype);
-    }
-
-  return Gogo::call_builtin(&go_fndecl,
-			    this->location(),
-			    "__go_go",
-			    2,
-			    void_type_node,
-			    fn_arg_type,
-			    fn_tree,
-			    ptr_type_node,
-			    arg_tree);
+  Expression* call = Runtime::make_call(Runtime::GO, this->location(), 2,
+					fn, arg);
+  tree call_tree = call->get_tree(context);
+  Bexpression* call_bexpr = tree_to_expr(call_tree);
+  Bstatement* ret = context->backend()->expression_statement(call_bexpr);
+  return stat_to_tree(ret);
 }
 
 // Make a go statement.
@@ -2230,38 +2245,20 @@ Statement::make_go_statement(Call_expression* call, source_location location)
 tree
 Defer_statement::do_get_tree(Translate_context* context)
 {
-  source_location loc = this->location();
-
-  tree fn_tree;
-  tree arg_tree;
-  this->get_fn_and_arg(context, &fn_tree, &arg_tree);
-  if (fn_tree == error_mark_node || arg_tree == error_mark_node)
+  Expression* fn;
+  Expression* arg;
+  if (!this->get_fn_and_arg(&fn, &arg))
     return error_mark_node;
 
-  static tree defer_fndecl;
+  source_location loc = this->location();
+  Expression* ds = context->function()->func_value()->defer_stack(loc);
 
-  tree fn_arg_type = NULL_TREE;
-  if (defer_fndecl == NULL_TREE)
-    {
-      // Only build FN_ARG_TYPE if we need it.
-      tree subargtypes = tree_cons(NULL_TREE, ptr_type_node, void_list_node);
-      tree subfntype = build_function_type(ptr_type_node, subargtypes);
-      fn_arg_type = build_pointer_type(subfntype);
-    }
-
-  tree defer_stack = context->function()->func_value()->defer_stack(loc);
-
-  return Gogo::call_builtin(&defer_fndecl,
-			    loc,
-			    "__go_defer",
-			    3,
-			    void_type_node,
-			    ptr_type_node,
-			    defer_stack,
-			    fn_arg_type,
-			    fn_tree,
-			    ptr_type_node,
-			    arg_tree);
+  Expression* call = Runtime::make_call(Runtime::DEFER, loc, 3,
+					ds, fn, arg);
+  tree call_tree = call->get_tree(context);
+  Bexpression* call_bexpr = tree_to_expr(call_tree);
+  Bstatement* ret = context->backend()->expression_statement(call_bexpr);
+  return stat_to_tree(ret);
 }
 
 // Make a defer statement.

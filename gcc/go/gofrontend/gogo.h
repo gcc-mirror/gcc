@@ -17,6 +17,7 @@ class Typed_identifier_list;
 class Function_type;
 class Expression;
 class Statement;
+class Temporary_statement;
 class Block;
 class Function;
 class Bindings;
@@ -977,7 +978,7 @@ class Function
   return_value(Gogo*, Named_object*, source_location, tree* stmt_list) const;
 
   // Get a tree for the variable holding the defer stack.
-  tree
+  Expression*
   defer_stack(source_location);
 
   // Export the function.
@@ -1033,9 +1034,10 @@ class Function
   Labels labels_;
   // The function decl.
   tree fndecl_;
-  // A variable holding the defer stack variable.  This is NULL unless
-  // we actually need a defer stack.
-  tree defer_stack_;
+  // The defer stack variable.  A pointer to this variable is used to
+  // distinguish the defer stack for one function from another.  This
+  // is NULL unless we actually need a defer stack.
+  Temporary_statement* defer_stack_;
   // True if the result variables are named.
   bool results_are_named_;
   // True if this function calls the predeclared recover function.
