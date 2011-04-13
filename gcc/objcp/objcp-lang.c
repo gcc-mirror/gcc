@@ -89,52 +89,8 @@ objcp_tsubst_copy_and_build (tree t, tree args, tsubst_flags_t complain,
 static void
 objcxx_init_ts (void)
 {
-  /* objc decls */
-  tree_contains_struct[CLASS_METHOD_DECL][TS_DECL_NON_COMMON] = 1;
-  tree_contains_struct[INSTANCE_METHOD_DECL][TS_DECL_NON_COMMON] = 1;
-  tree_contains_struct[KEYWORD_DECL][TS_DECL_NON_COMMON] = 1;
-  tree_contains_struct[PROPERTY_DECL][TS_DECL_NON_COMMON] = 1;
-  
-  tree_contains_struct[CLASS_METHOD_DECL][TS_DECL_WITH_VIS] = 1;
-  tree_contains_struct[INSTANCE_METHOD_DECL][TS_DECL_WITH_VIS] = 1;
-  tree_contains_struct[KEYWORD_DECL][TS_DECL_WITH_VIS] = 1;
-  tree_contains_struct[PROPERTY_DECL][TS_DECL_WITH_VIS] = 1;
-
-  tree_contains_struct[CLASS_METHOD_DECL][TS_DECL_WRTL] = 1;
-  tree_contains_struct[INSTANCE_METHOD_DECL][TS_DECL_WRTL] = 1;
-  tree_contains_struct[KEYWORD_DECL][TS_DECL_WRTL] = 1;
-  tree_contains_struct[PROPERTY_DECL][TS_DECL_WRTL] = 1;
-  
-  tree_contains_struct[CLASS_METHOD_DECL][TS_DECL_MINIMAL] = 1;
-  tree_contains_struct[INSTANCE_METHOD_DECL][TS_DECL_MINIMAL] = 1;
-  tree_contains_struct[KEYWORD_DECL][TS_DECL_MINIMAL] = 1;
-  tree_contains_struct[PROPERTY_DECL][TS_DECL_MINIMAL] = 1;
-  
-  tree_contains_struct[CLASS_METHOD_DECL][TS_DECL_COMMON] = 1;
-  tree_contains_struct[INSTANCE_METHOD_DECL][TS_DECL_COMMON] = 1;
-  tree_contains_struct[KEYWORD_DECL][TS_DECL_COMMON] = 1;
-  tree_contains_struct[PROPERTY_DECL][TS_DECL_COMMON] = 1;
-  
-  /* C++ decls */
-  tree_contains_struct[NAMESPACE_DECL][TS_DECL_NON_COMMON] = 1;
-  tree_contains_struct[USING_DECL][TS_DECL_NON_COMMON] = 1;
-  tree_contains_struct[TEMPLATE_DECL][TS_DECL_NON_COMMON] = 1;
-
-  tree_contains_struct[NAMESPACE_DECL][TS_DECL_WITH_VIS] = 1;
-  tree_contains_struct[USING_DECL][TS_DECL_WITH_VIS] = 1;
-  tree_contains_struct[TEMPLATE_DECL][TS_DECL_WITH_VIS] = 1;
-
-  tree_contains_struct[NAMESPACE_DECL][TS_DECL_WRTL] = 1;
-  tree_contains_struct[USING_DECL][TS_DECL_WRTL] = 1;
-  tree_contains_struct[TEMPLATE_DECL][TS_DECL_WRTL] = 1;
-  
-  tree_contains_struct[NAMESPACE_DECL][TS_DECL_COMMON] = 1;
-  tree_contains_struct[USING_DECL][TS_DECL_COMMON] = 1;
-  tree_contains_struct[TEMPLATE_DECL][TS_DECL_COMMON] = 1;
- 
-  tree_contains_struct[NAMESPACE_DECL][TS_DECL_MINIMAL] = 1;
-  tree_contains_struct[USING_DECL][TS_DECL_MINIMAL] = 1;
-  tree_contains_struct[TEMPLATE_DECL][TS_DECL_MINIMAL] = 1;
+  objc_common_init_ts ();
+  cp_common_init_ts ();
 
   init_shadowed_var_for_decl ();
 }

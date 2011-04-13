@@ -2340,7 +2340,7 @@ lto_input_tree_pointers (struct lto_input_block *ib, struct data_in *data_in,
 
   code = TREE_CODE (expr);
 
-  if (CODE_CONTAINS_STRUCT (code, TS_COMMON))
+  if (CODE_CONTAINS_STRUCT (code, TS_TYPED))
     lto_input_ts_common_tree_pointers (ib, data_in, expr);
 
   if (CODE_CONTAINS_STRUCT (code, TS_VECTOR))

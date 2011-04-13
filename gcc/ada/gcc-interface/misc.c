@@ -690,6 +690,23 @@ gnat_eh_personality (void)
   return gnat_eh_personality_decl;
 }
 
+/* Initialize language-specific bits of tree_contains_struct.  */
+
+static void
+gnat_init_ts (void)
+{
+  MARK_TS_COMMON (UNCONSTRAINED_ARRAY_TYPE);
+
+  MARK_TS_TYPED (UNCONSTRAINED_ARRAY_REF);
+  MARK_TS_TYPED (NULL_EXPR);
+  MARK_TS_TYPED (PLUS_NOMOD_EXPR);
+  MARK_TS_TYPED (MINUS_NOMOD_EXPR);
+  MARK_TS_TYPED (ATTR_ADDR_EXPR);
+  MARK_TS_TYPED (STMT_STMT);
+  MARK_TS_TYPED (LOOP_STMT);
+  MARK_TS_TYPED (EXIT_STMT);
+}
+
 /* Definitions for our language-specific hooks.  */
 
 #undef  LANG_HOOKS_NAME
@@ -750,6 +767,8 @@ gnat_eh_personality (void)
 #define LANG_HOOKS_EH_PERSONALITY	gnat_eh_personality
 #undef  LANG_HOOKS_DEEP_UNSHARING
 #define LANG_HOOKS_DEEP_UNSHARING	true
+#undef  LANG_HOOKS_INIT_TS
+#define LANG_HOOKS_INIT_TS		gnat_init_ts
 
 struct lang_hooks lang_hooks = LANG_HOOKS_INITIALIZER;
 

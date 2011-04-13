@@ -1,3 +1,8 @@
+2011-04-12  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* f95-lang.c (union lang_tree_node): Check for TS_COMMON before
+	calling TREE_CHAIN.
+
 2011-04-12  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/48360

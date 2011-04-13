@@ -1,3 +1,13 @@
+2011-04-12  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* cp-lang.c (cp_init_ts): Call cp_common_init_ts.  Move
+	tree_contains_struct initialization to...
+	* cp-objcp-common.c (cp_common_init_ts): ...here.  Use MARK_*
+	macros.
+	* cp-objcp-common.h (cp_common_init_ts): Declare.
+	* cp-tree.h (union lang_tree_node): Check for TS_COMMON before
+	calling TREE_CHAIN.
+
 2011-04-12  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* parser.c (cp_parser_objc_message_expression): Updated call

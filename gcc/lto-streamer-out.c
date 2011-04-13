@@ -1156,7 +1156,7 @@ lto_output_tree_pointers (struct output_block *ob, tree expr, bool ref_p)
 
   code = TREE_CODE (expr);
 
-  if (CODE_CONTAINS_STRUCT (code, TS_COMMON))
+  if (CODE_CONTAINS_STRUCT (code, TS_TYPED))
     lto_output_ts_common_tree_pointers (ob, expr, ref_p);
 
   if (CODE_CONTAINS_STRUCT (code, TS_VECTOR))

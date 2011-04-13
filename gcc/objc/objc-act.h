@@ -28,6 +28,7 @@ bool objc_init (void);
 const char *objc_printable_name (tree, int);
 tree objc_fold_obj_type_ref (tree, tree);
 int objc_gimplify_expr (tree *, gimple_seq *, gimple_seq *);
+void objc_common_init_ts (void);
 
 /* NB: The remaining public functions are prototyped in c-common.h, for the
    benefit of stub-objc.c and objc-act.c.  */
