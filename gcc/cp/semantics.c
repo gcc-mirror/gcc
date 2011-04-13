@@ -6279,7 +6279,7 @@ cxx_eval_array_reference (const constexpr_call *call, tree t,
 					   non_constant_p);
   tree index, oldidx;
   HOST_WIDE_INT i;
-  unsigned len;
+  unsigned len, elem_nchars = 1;
   if (*non_constant_p)
     return t;
   oldidx = TREE_OPERAND (t, 1);
@@ -6291,9 +6291,14 @@ cxx_eval_array_reference (const constexpr_call *call, tree t,
     return t;
   else if (addr)
     return build4 (ARRAY_REF, TREE_TYPE (t), ary, index, NULL, NULL);
-  len = (TREE_CODE (ary) == CONSTRUCTOR
-	 ? CONSTRUCTOR_NELTS (ary)
-	 : (unsigned)TREE_STRING_LENGTH (ary));
+  if (TREE_CODE (ary) == CONSTRUCTOR)
+    len = CONSTRUCTOR_NELTS (ary);
+  else
+    {
+      elem_nchars = (TYPE_PRECISION (TREE_TYPE (TREE_TYPE (ary)))
+		     / TYPE_PRECISION (char_type_node));
+      len = (unsigned) TREE_STRING_LENGTH (ary) / elem_nchars;
+    }
   if (compare_tree_int (index, len) >= 0)
     {
       if (!allow_non_constant)
@@ -6304,9 +6309,16 @@ cxx_eval_array_reference (const constexpr_call *call, tree t,
   i = tree_low_cst (index, 0);
   if (TREE_CODE (ary) == CONSTRUCTOR)
     return VEC_index (constructor_elt, CONSTRUCTOR_ELTS (ary), i)->value;
-  else
+  else if (elem_nchars == 1)
     return build_int_cst (cv_unqualified (TREE_TYPE (TREE_TYPE (ary))),
 			  TREE_STRING_POINTER (ary)[i]);
+  else
+    {
+      tree type = cv_unqualified (TREE_TYPE (TREE_TYPE (ary)));
+      return native_interpret_expr (type, (const unsigned char *)
+					  TREE_STRING_POINTER (ary)
+					  + i * elem_nchars, elem_nchars);
+    }
   /* Don't VERIFY_CONSTANT here.  */
 }
 

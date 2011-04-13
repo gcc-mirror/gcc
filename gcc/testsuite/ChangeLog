@@ -1,3 +1,9 @@
+2011-04-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/48570
+	* g++.dg/cpp0x/constexpr-wstring1.C: New test.
+	* g++.dg/cpp0x/constexpr-wstring2.C: New test.
+
 2011-04-13  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/48574
