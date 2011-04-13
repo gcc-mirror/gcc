@@ -1,3 +1,9 @@
+2011-04-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/48594
+	* decl2.c (build_offset_ref_call_from_tree): Fix calling a functor
+	or pointer to (non-member) function.
+
 2011-04-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/48570
