@@ -1,3 +1,7 @@
+2011-04-13  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/template/operator11.C: New.
+
 2011-04-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/48591
