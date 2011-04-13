@@ -2,7 +2,7 @@
 
 // 2009-10-29  Paolo Carlini  <paolo.carlini@oracle.com>
 //
-// Copyright (C) 2009 Free Software Foundation, Inc.
+// Copyright (C) 2009, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -58,6 +58,8 @@ void test01()
   VERIFY( (test_relationship<is_convertible, void, volatile void>(true)) );
   VERIFY( (test_relationship<is_convertible, double&, ExplicitClass>(true)) );
 
+  VERIFY( (test_relationship<is_convertible, int(int), int(&)(int)>(true)) );
+
   // Negative tests.
   VERIFY( (test_relationship<is_convertible, const int*, int*>(false)) );
   VERIFY( (test_relationship<is_convertible, int*, float*>(false)) );
@@ -93,8 +95,6 @@ void test01()
 	                                     const volatile int&>(false)) );
   VERIFY( (test_relationship<is_convertible, volatile int,
 	                                     volatile int&>(false)) );
-  VERIFY( (test_relationship<is_convertible, int(int), int(&)(int)>(true)) );
-
   VERIFY( (test_relationship<is_convertible, int&, ExplicitClass>(false)) );
   VERIFY( (test_relationship<is_convertible, void*, ExplicitClass>(false)) );
 }
