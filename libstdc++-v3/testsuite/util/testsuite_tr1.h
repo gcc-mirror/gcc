@@ -1,7 +1,7 @@
 // -*- C++ -*-
 // Testing utilities for the tr1 testsuite.
 //
-// Copyright (C) 2004, 2005, 2006, 2007, 2009, 2010
+// Copyright (C) 2004, 2005, 2006, 2007, 2009, 2010, 2011
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -282,6 +282,130 @@ namespace __gnu_test
 				    bool>::__type
     check_ret_type(T)
     { return true; }
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+  namespace construct_destruct
+  {
+    struct Empty {};
+
+    struct B { int i; B(){} };
+    struct D : B {};
+
+    enum E { ee1 };
+    enum E2 { ee2 };
+    enum class SE { e1 };
+    enum class SE2 { e2 };
+
+    enum OpE : int;
+    enum class OpSE : bool;
+
+    union U { int i; Empty b; };
+
+    struct Abstract
+    {
+      virtual ~Abstract() = 0;
+    };
+
+    struct AbstractDelDtor
+    {
+      ~AbstractDelDtor() = delete;
+      virtual void foo() = 0;
+    };
+
+    struct Ukn;
+
+    template<class To>
+      struct ImplicitTo
+      {
+	operator To();
+      };
+
+    template<class To>
+      struct DelImplicitTo
+      {
+	operator To() = delete;
+      };
+
+    template<class To>
+      struct ExplicitTo
+      {
+	explicit operator To();
+      };
+
+    struct Ellipsis
+    {
+      Ellipsis(...){}
+    };
+
+    struct DelEllipsis
+    {
+      DelEllipsis(...) = delete;
+    };
+
+    struct Any
+    {
+      template<class T>
+      Any(T&&){}
+    };
+
+    struct nAny
+    {
+      template<class... T>
+      nAny(T&&...){}
+    };
+
+    struct DelnAny
+    {
+      template<class... T>
+        DelnAny(T&&...) = delete;
+    };
+
+    template<class... Args>
+      struct FromArgs
+      {
+	FromArgs(Args...);
+      };
+
+    struct DelDef
+    {
+      DelDef() = delete;
+    };
+
+    struct DelCopy
+    {
+      DelCopy(const DelCopy&) = delete;
+    };
+
+    struct DelDtor
+    {
+      DelDtor() = default;
+      DelDtor(const DelDtor&) = default;
+      DelDtor(DelDtor&&) = default;
+      DelDtor(int);
+      DelDtor(int, B, U);
+      ~DelDtor() = delete;
+    };
+
+    struct Nontrivial
+    {
+      Nontrivial();
+      Nontrivial(const Nontrivial&);
+      Nontrivial& operator=(const Nontrivial&);
+      ~Nontrivial();
+    };
+
+    union NontrivialUnion
+    {
+      int i;
+      Nontrivial n;
+    };
+
+    struct UnusualCopy
+    {
+      UnusualCopy(UnusualCopy&);
+    };
+  }
+#endif
 
 } // namespace __gnu_test
 

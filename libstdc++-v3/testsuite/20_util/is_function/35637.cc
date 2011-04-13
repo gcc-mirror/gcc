@@ -1,8 +1,7 @@
-// { dg-options "-std=gnu++0x" }
+// { dg-options "-std=gnu++0x -pedantic-errors" }
 // { dg-do compile }
-// 2009-11-12  Paolo Carlini  <paolo.carlini@oracle.com>
-//
-// Copyright (C) 2009, 2010, 2011 Free Software Foundation, Inc.
+
+// Copyright (C) 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -19,11 +18,15 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-error "static assertion failed" "" { target *-*-* } 1523 }
+#include <functional>
 
-#include <utility>
+struct S
+{
+  void F() const {}
+};
 
+// libstdc++/35637
 void test01()
 {
-  std::declval<int>();		// { dg-error "instantiated from here" }
+  std::function<void (S *)> a(&S::F);
 }

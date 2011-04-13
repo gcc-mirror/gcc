@@ -1,8 +1,6 @@
 // { dg-options "-std=gnu++0x" }
-// { dg-do compile }
-// 2009-11-12  Paolo Carlini  <paolo.carlini@oracle.com>
-//
-// Copyright (C) 2009, 2010, 2011 Free Software Foundation, Inc.
+
+// Copyright (C) 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -19,11 +17,22 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-error "static assertion failed" "" { target *-*-* } 1523 }
+#include <type_traits>
+#include <testsuite_hooks.h>
+#include <testsuite_tr1.h>
 
-#include <utility>
-
+// libstdc++/24808
 void test01()
 {
-  std::declval<int>();		// { dg-error "instantiated from here" }
+  bool test __attribute__((unused)) = true;
+  using std::is_object;
+  using namespace __gnu_test;
+
+  VERIFY( (test_category<is_object, IncompleteClass>(true)) );
+}
+
+int main()
+{
+  test01();
+  return 0;
 }
