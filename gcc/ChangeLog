@@ -1,3 +1,8 @@
+2011-04-13  Nick Clifton  <nickc@redhat.com>
+
+	* config/rx/rx.md (movmemsi): Do not use this pattern when
+	volatile pointers are involved.
+
 2011-04-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	Backport from mainline:
