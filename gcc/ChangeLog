@@ -1,3 +1,20 @@
+2011-04-12  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sse.md (*sse2_uavgv16qi3): Merge with *avx_uavgv16qi3.
+	(*sse2_uavgv8hi3): Merge with *avx_uavgv8hi3.
+	(sse2_psadbw): Merge with *avx_psadbw.
+	(ssse3_phaddwv8hi3): Merge with *avx_phaddwv8hi3.
+	(ssse3_phadddv4si3): Merge with *avx_phadddv4si3.
+	(ssse3_phaddswv8hi3): Merge with *avx_phaddswv8hi3.
+	(ssse3_phsubwv8hi3): Merge with *avx_phsubwv8hi3.
+	(ssse3_phsubdv4si3): Merge with *avx_phsubdv4si3.
+	(ssse3_phsubswv8hi3): Merge with *avx_phsubswv8hi3.
+	(ssse3_pmaddubsw128): Merge with *avx_pmaddubsw128.
+	(*ssse3_pmulhrswv8hi3): Merge with *avx_pmulhrswv8hi3.
+	(ssse3_pshufbv16qi3): Merge with *avx_pshufbv16qi3.
+	(ssse3_psign<mode>3): Merge with *avx_psign<mode>3.
+	(ssse3_palignrti): Merge with *avx_palignrti.
+
 2011-04-13  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* tree-flow.h (struct gimple_df): Make free_ssanames a VEC.
@@ -217,8 +234,8 @@
 
 2011-04-12  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
 
-       PR target/48090
-       * config/arm/arm.md (*arm_negdi2): Fix early clobber constraints.
+	PR target/48090
+	* config/arm/arm.md (*arm_negdi2): Fix early clobber constraints.
 
 2011-04-12  Richard Sandiford  <richard.sandiford@linaro.org>
 
