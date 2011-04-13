@@ -1,3 +1,8 @@
+2011-04-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/48591
+	* testsuite/libgomp.c/pr48591.c: New test.
+
 2011-03-28  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	Backport from mainline:

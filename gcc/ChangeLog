@@ -1,3 +1,10 @@
+2011-04-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/48591
+	* omp-low.c (expand_omp_atomic_fetch_op): Return false if decl is
+	NULL.
+	(expand_omp_atomic_pipeline): Return false if cmpxchg is NULL.
+
 2011-04-13  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
 
 	Backport from mainline:

@@ -5005,6 +5005,8 @@ expand_omp_atomic_fetch_op (basic_block load_bb,
     return false;
 
   decl = built_in_decls[base + index + 1];
+  if (decl == NULL_TREE)
+    return false;
   itype = TREE_TYPE (TREE_TYPE (decl));
 
   if (direct_optab_handler (optab, TYPE_MODE (itype)) == CODE_FOR_nothing)
@@ -5056,6 +5058,8 @@ expand_omp_atomic_pipeline (basic_block load_bb, basic_block store_bb,
   edge e;
 
   cmpxchg = built_in_decls[BUILT_IN_VAL_COMPARE_AND_SWAP_N + index + 1];
+  if (cmpxchg == NULL_TREE)
+    return false;
   type = TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (addr)));
   itype = TREE_TYPE (TREE_TYPE (cmpxchg));
 
