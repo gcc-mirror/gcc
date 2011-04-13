@@ -853,11 +853,6 @@ print_node (FILE *file, const char *prefix, tree node, int indent)
 	      }
 	    fputc ('\"', file);
 	  }
-	  /* Print the chain at second level.  */
-	  if (indent == 4)
-	    print_node (file, "chain", TREE_CHAIN (node), indent + 4);
-	  else
-	    print_node_brief (file, "chain", TREE_CHAIN (node), indent + 4);
 	  break;
 
 	case IDENTIFIER_NODE:

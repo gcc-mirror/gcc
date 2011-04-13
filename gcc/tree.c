@@ -371,15 +371,15 @@ initialize_tree_contains_struct (void)
 	  break;
 
 	case TS_COMMON:
-	  MARK_TS_TYPED (code);
-	  break;
-
 	case TS_INT_CST:
 	case TS_REAL_CST:
 	case TS_FIXED_CST:
 	case TS_VECTOR:
 	case TS_STRING:
 	case TS_COMPLEX:
+	  MARK_TS_TYPED (code);
+	  break;
+
 	case TS_IDENTIFIER:
 	case TS_DECL_MINIMAL:
 	case TS_TYPE:
