@@ -1,3 +1,13 @@
+2011-04-13  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* tree.h (struct tree_int_cst, struct real_value): Include tree_typed
+	instead of tree_common.
+	(struct tree_fixed_cst, struct tree_string, struct tree_complex):
+	Likewise.
+	* tree.c (initialize_tree_contains_struct): Mark such nodes as being
+	TS_TYPED rather than TS_COMMON.
+	* print-tree.c (print_node) [STRING_CST]: Don't print TREE_CHAIN.
+
 2011-04-01  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/45263
