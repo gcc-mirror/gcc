@@ -1,3 +1,9 @@
+2011-04-01  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/45263
+	* config/avr/libgcc.S (__do_global_ctors, __do_global_dtors): Save
+	R20 around calls of __tablejump_elpm__
+
 2011-04-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/48591
