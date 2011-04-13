@@ -6707,6 +6707,8 @@ get_std_lbound (gfc_expr *expr, tree desc, int dim, bool assumed_size)
   tree stride;
   tree cond, cond1, cond3, cond4;
   tree tmp;
+  gfc_ref *ref;
+
   if (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (desc)))
     {
       tmp = gfc_rank_cst[dim];
@@ -6740,6 +6742,14 @@ get_std_lbound (gfc_expr *expr, tree desc, int dim, bool assumed_size)
   else if (expr->expr_type == EXPR_VARIABLE)
     {
       tmp = TREE_TYPE (expr->symtree->n.sym->backend_decl);
+      for (ref = expr->ref; ref; ref = ref->next)
+	{
+	  if (ref->type == REF_COMPONENT
+		&& ref->u.c.component->as
+		&& ref->next
+		&& ref->next->u.ar.type == AR_FULL)
+	    tmp = TREE_TYPE (ref->u.c.component->backend_decl);
+	}
       return GFC_TYPE_ARRAY_LBOUND(tmp, dim);
     }
   else if (expr->expr_type == EXPR_FUNCTION)

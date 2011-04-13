@@ -1,3 +1,10 @@
+2011-04-13  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/48360
+	PR fortran/48456
+	* trans-array.c (get_std_lbound): For derived type variables
+	return array valued component lbound.
+
 2011-04-05  Duncan Sands  <baldrick@free.fr>
 
 	* f95-lang.c (build_builtin_fntypes): Swap frexp parameter types.
