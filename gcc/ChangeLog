@@ -1,3 +1,8 @@
+2011-04-13  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac (gcc_cv_as_sparc_gotdata_op): Remove GNU ld check.
+	* configure: Regenerate.
+
 2011-04-13  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* tree.h (struct tree_int_cst, struct real_value): Include tree_typed
