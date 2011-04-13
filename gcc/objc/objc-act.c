@@ -4668,7 +4668,7 @@ build_keyword_selector (tree selector)
       strcat (buf, ":");
     }
 
-  return get_identifier (buf);
+  return get_identifier_with_length (buf, len);
 }
 
 /* Used for declarations and definitions.  */
