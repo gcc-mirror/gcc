@@ -1,3 +1,38 @@
+2011-04-13  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-inline.h: New file.
+	* ipa-inline-analysis.c: New file. Broken out of ...
+	* ipa-inline.c: ... this file; update toplevel comment;
+	include ipa-inline.h
+	(inline_summary): Move to ipa-inline.h
+	(cgraph_estimate_edge_time): Rename to estimate_edge_time; move to
+	ipa-inline-analysis.c.
+	(cgraph_estimate_time_after_inlining): Rename to estiamte_time_after_inlining;
+	move to ipa-inline-analysis.c
+	(cgraph_estimate_edge_growth): Move to ipa-inline-analysis.c; rename
+	to estimate_edge_growth.
+	(cgraph_estimate_size_after_inlining): Move to ipa-inline-analysis.c;
+	rename to estimate_size_after_inlining.
+	(cgraph_mark_inline_edge): Update for new naming convention.
+	(cgraph_check_inline_limits): Likewise.
+	(cgraph_edge_badness): Likewise.
+	(cgraph_decide_recursive_inlining): Likewise.
+	(cgraph_decide_inlining_of_small_functions): Likewise.
+	(cgraph_decide_inlining_incrementally): Likewise.
+	(cgraph_estimate_growth): Rename to estimate_growth; move to ipa-inline-analysis.c.
+	(eliminated_by_inlining_prob): Move to ipa-inline-analysis.c.
+	(estimate_function_body_sizes): Move to ipa-inline-analysis.c.
+	(compute_inline_parameters): Likewise.
+	(compute_inline_parameters_for_current): Likewise.
+	(pass_inline_parameters): Likewise.
+	(inline_indirect_intraprocedural_analysis): Likewise.
+	(analyze_function): Rename to inline_analyze_function; likewise.
+	(add_new_function): Move to ipa-inline-analysis.c.
+	(inline_generate_summary): Likewise.
+	(inline_read_summary): Likewise.
+	(inline_write_summary): Likewise.
+	* Makefile.in (ipa-inline-analysis.c): New file.
+
 2011-04-13  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* configure.ac (gcc_cv_as_sparc_gotdata_op): Remove GNU ld check.
