@@ -1,3 +1,8 @@
+2011-04-12  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* c-common.h (c_common_init_ts): Declare.
+	* c-common.c (c_common_init_ts): Define.
+
 2011-04-12  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* c-objc.h (objc_build_message_expr): Updated prototype.

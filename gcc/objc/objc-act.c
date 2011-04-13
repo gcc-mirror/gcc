@@ -10640,4 +10640,22 @@ objc_v2_encode_prop_attr (tree property)
   return get_identifier (string);
 }
 
+void
+objc_common_init_ts (void)
+{
+  c_common_init_ts ();
+
+  MARK_TS_DECL_NON_COMMON (CLASS_METHOD_DECL);
+  MARK_TS_DECL_NON_COMMON (INSTANCE_METHOD_DECL);
+  MARK_TS_DECL_NON_COMMON (KEYWORD_DECL);
+  MARK_TS_DECL_NON_COMMON (PROPERTY_DECL);
+
+  MARK_TS_COMMON (CLASS_INTERFACE_TYPE);
+  MARK_TS_COMMON (PROTOCOL_INTERFACE_TYPE);
+  MARK_TS_COMMON (CLASS_IMPLEMENTATION_TYPE);
+
+  MARK_TS_TYPED (MESSAGE_SEND_EXPR);
+  MARK_TS_TYPED (PROPERTY_REF);
+}
+
 #include "gt-objc-objc-act.h"

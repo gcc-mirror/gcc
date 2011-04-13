@@ -1,3 +1,23 @@
+2011-04-12  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* c-decl.c (union lang_tree_node): Check for TS_COMMON before
+	calling TREE_CHAIN.
+	* print-tree.c (print_node): Likewise.
+	* tree-inline.c (copy_tree_r): Likewise.
+	* c-lang.c (LANG_HOOKS_INIT_TS): Define.
+	* lto-streamer-in.c (lto_input_tree_pointers): Check for TS_TYPED
+	instead of TS_COMMON.
+	* lto-streamer-out.c (lto_output_tree_pointers): Likewise.
+	* tree.c (initialize_tree_contains_struct): Handle TS_TYPED.
+	(copy_node_stat): Zero TREE_CHAIN only if necessary.
+	(MARK_TS_BASE, MARK_TS_TYPED, MARK_TS_COMMON): Move these...
+	(MARK_TS_DECL_COMMON, MARK_TS_DECL_COMMON, MARK_TS_DECL_WRTL):
+	...and these...
+	(MARK_TS_DECL_WITH_VIS, MARK_TS_DECL_NON_COMMON): ...and these...
+	* tree.h: ...here.
+	(TREE_CHAIN): Check for a TS_COMMON structure.
+	(TREE_TYPE): Check for a TS_TYPED structure.
+
 2011-04-12  Pat Haugen <pthaugen@us.ibm.com>
 
 	* config/rs6000/rs6000.c (call_ABI_of_interest): Call

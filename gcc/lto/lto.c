@@ -1618,7 +1618,8 @@ lto_fixup_common (tree t, void *data)
 
   /* This is not very efficient because we cannot do tail-recursion with
      a long chain of trees. */
-  LTO_FIXUP_SUBTREE (TREE_CHAIN (t));
+  if (CODE_CONTAINS_STRUCT (TREE_CODE (t), TS_COMMON))
+    LTO_FIXUP_SUBTREE (TREE_CHAIN (t));
 }
 
 /* Fix up fields of a decl_minimal T.  DATA points to fix-up states.  */

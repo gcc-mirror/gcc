@@ -9711,4 +9711,13 @@ keyword_is_decl_specifier (enum rid keyword)
     }
 }
 
+/* Initialize language-specific-bits of tree_contains_struct.  */
+
+void
+c_common_init_ts (void)
+{
+  MARK_TS_TYPED (C_MAYBE_CONST_EXPR);
+  MARK_TS_TYPED (EXCESS_PRECISION_EXPR);
+}
+
 #include "gt-c-family-c-common.h"

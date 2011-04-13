@@ -352,53 +352,6 @@ initialize_tree_contains_struct (void)
 {
   unsigned i;
 
-#define MARK_TS_BASE(C)					\
-  do {							\
-    tree_contains_struct[C][TS_BASE] = 1;		\
-  } while (0)
-
-#define MARK_TS_TYPED(C)				\
-  do {							\
-    MARK_TS_BASE (C);					\
-    tree_contains_struct[C][TS_TYPED] = 1;		\
-  } while (0)
-
-#define MARK_TS_COMMON(C)				\
-  do {							\
-    MARK_TS_TYPED (C);					\
-    tree_contains_struct[C][TS_COMMON] = 1;		\
-  } while (0)
-
-#define MARK_TS_DECL_MINIMAL(C)				\
-  do {							\
-    MARK_TS_COMMON (C);					\
-    tree_contains_struct[C][TS_DECL_MINIMAL] = 1;	\
-  } while (0)
-
-#define MARK_TS_DECL_COMMON(C)				\
-  do {							\
-    MARK_TS_DECL_MINIMAL (C);				\
-    tree_contains_struct[C][TS_DECL_COMMON] = 1;	\
-  } while (0)
-
-#define MARK_TS_DECL_WRTL(C)				\
-  do {							\
-    MARK_TS_DECL_COMMON (C);				\
-    tree_contains_struct[C][TS_DECL_WRTL] = 1;		\
-  } while (0)
-
-#define MARK_TS_DECL_WITH_VIS(C)			\
-  do {							\
-    MARK_TS_DECL_WRTL (C);				\
-    tree_contains_struct[C][TS_DECL_WITH_VIS] = 1;	\
-  } while (0)
-
-#define MARK_TS_DECL_NON_COMMON(C)			\
-  do {							\
-    MARK_TS_DECL_WITH_VIS (C);				\
-    tree_contains_struct[C][TS_DECL_NON_COMMON] = 1;	\
-  } while (0)
-
   for (i = ERROR_MARK; i < LAST_AND_UNUSED_TREE_CODE; i++)
     {
       enum tree_code code;
@@ -413,8 +366,12 @@ initialize_tree_contains_struct (void)
       /* Mark all the structures that TS is derived from.  */
       switch (ts_code)
 	{
-	case TS_COMMON:
+	case TS_TYPED:
 	  MARK_TS_BASE (code);
+	  break;
+
+	case TS_COMMON:
+	  MARK_TS_TYPED (code);
 	  break;
 
 	case TS_INT_CST:
@@ -521,14 +478,6 @@ initialize_tree_contains_struct (void)
   gcc_assert (tree_contains_struct[FUNCTION_DECL][TS_FUNCTION_DECL]);
   gcc_assert (tree_contains_struct[IMPORTED_DECL][TS_DECL_MINIMAL]);
   gcc_assert (tree_contains_struct[IMPORTED_DECL][TS_DECL_COMMON]);
-
-#undef MARK_TS_BASE
-#undef MARK_TS_COMMON
-#undef MARK_TS_DECL_MINIMAL
-#undef MARK_TS_DECL_COMMON
-#undef MARK_TS_DECL_WRTL
-#undef MARK_TS_DECL_WITH_VIS
-#undef MARK_TS_DECL_NON_COMMON
 }
 
 
@@ -964,7 +913,7 @@ make_node_stat (enum tree_code code MEM_STAT_DECL)
 }
 
 /* Return a new node with the same contents as NODE except that its
-   TREE_CHAIN is zero and it has a fresh uid.  */
+   TREE_CHAIN, if it has one, is zero and it has a fresh uid.  */
 
 tree
 copy_node_stat (tree node MEM_STAT_DECL)
@@ -980,7 +929,8 @@ copy_node_stat (tree node MEM_STAT_DECL)
   t = ggc_alloc_zone_tree_node_stat (&tree_zone, length PASS_MEM_STAT);
   memcpy (t, node, length);
 
-  TREE_CHAIN (t) = 0;
+  if (CODE_CONTAINS_STRUCT (code, TS_COMMON))
+    TREE_CHAIN (t) = 0;
   TREE_ASM_WRITTEN (t) = 0;
   TREE_VISITED (t) = 0;
   if (code == VAR_DECL || code == PARM_DECL || code == RESULT_DECL)

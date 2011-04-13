@@ -4253,7 +4253,8 @@ copy_tree_r (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
 	 here.  */
       tree chain = NULL_TREE, new_tree;
 
-      chain = TREE_CHAIN (*tp);
+      if (CODE_CONTAINS_STRUCT (code, TS_COMMON))
+	chain = TREE_CHAIN (*tp);
 
       /* Copy the node.  */
       new_tree = copy_node (*tp);

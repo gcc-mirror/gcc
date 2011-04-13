@@ -1,3 +1,9 @@
+2011-04-12  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* lto-tree.h (union lang_tree_node): Check for TS_COMMON before
+	calling TREE_CHAIN.
+	* lto.c (lto_fixup_common): Likewise.
+
 2011-04-08  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* lto-lang.c (handle_sentinel_attribute): Don't use TYPE_ARG_TYPES.
