@@ -5937,6 +5937,7 @@ fixed_type_or_null (tree instance, int *nonnull, int *cdtorp)
 	     itself.  */
 	  if (TREE_CODE (instance) == VAR_DECL
 	      && DECL_INITIAL (instance)
+	      && !type_dependent_expression_p (DECL_INITIAL (instance))
 	      && !htab_find (ht, instance))
 	    {
 	      tree type;

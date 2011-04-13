@@ -1,3 +1,9 @@
+2011-04-13  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/48574
+	* class.c (fixed_type_or_null): We cannot determine the dynamic
+    	type of a reference variable if its initializer is dependent.
+
 2011-04-11  Jason Merrill  <jason@redhat.com>
 
 	PR c++/48534

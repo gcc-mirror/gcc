@@ -1,3 +1,8 @@
+2011-04-13  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/48574
+	* g++.dg/template/dependent-expr7.C: New test case.
+
 2011-04-12  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/48195
