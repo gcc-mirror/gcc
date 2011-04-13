@@ -1,5 +1,16 @@
 2011-04-13  Nathan Froyd  <froydnj@codesourcery.com>
 
+	* tree-flow.h (struct gimple_df): Make free_ssanames a VEC.
+	* tree-ssanames.c (fini_ssanames): VEC_free it.
+	(make_ssa_name_fn): Update for VECness of free_ssanames.
+	(release_ssa_name, release_dead_ssa_names): Likewise.
+	* tree.h (struct tree_ssa_name): Include tree_typed instead of
+	tree_common.
+	* tree.c (initialize_tree_contains_struct): Mark TS_SSA_NAME as
+	TS_TYPED instead of TS_COMMON.
+
+2011-04-13  Nathan Froyd  <froydnj@codesourcery.com>
+
 	* postreload-gcse.c (gcse_after_reload_main): Add calls to
 	statistics_counter_event.
 	* tree-ssa-copyrename.c (stats): Define.

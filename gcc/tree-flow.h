@@ -61,7 +61,7 @@ struct GTY(()) gimple_df {
   struct pointer_map_t * GTY((skip(""))) decls_to_pointers;
 
   /* Free list of SSA_NAMEs.  */
-  tree free_ssanames;
+  VEC(tree,gc) *free_ssanames;
 
   /* Hashtable holding definition for symbol.  If this field is not NULL, it
      means that the first reference to this variable in the function is a
