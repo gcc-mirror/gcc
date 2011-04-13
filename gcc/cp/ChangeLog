@@ -1,3 +1,9 @@
+2011-04-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/48570
+	* semantics.c (cxx_eval_array_reference): Handle reading from
+	wchar_t, char16_t and char32_t STRING_CST.
+
 2011-04-13  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/48574
