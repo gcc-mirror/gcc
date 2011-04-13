@@ -1,3 +1,8 @@
+2011-04-13  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc-act.c (build_keyword_selector): Use get_identifier_with_length
+	instead of get_identifier.
+
 2011-04-12  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* objc-lang.c (objc_init_ts): Move code for this function...
