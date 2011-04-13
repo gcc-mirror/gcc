@@ -1663,10 +1663,10 @@ find_costs_and_classes (FILE *dump_file)
 		}
 	    }
 	  if (equiv_savings < 0)
-	    temp_costs->mem_cost = -equiv_savings;
+	    i_mem_cost = -equiv_savings;
 	  else if (equiv_savings > 0)
 	    {
-	      temp_costs->mem_cost = 0;
+	      i_mem_cost = 0;
 	      for (k = cost_classes_ptr->num - 1; k >= 0; k--)
 		i_costs[k] += equiv_savings;
 	    }

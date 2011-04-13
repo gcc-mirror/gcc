@@ -1,3 +1,9 @@
+2011-04-13  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/48455
+	* ira-costs.c (find_costs_and_classes): Use i_mem_cost instead of
+	`temp_costs->mem_cost'.
+
 2011-04-13  Jan Hubicka  <jh@suse.cz>
 
 	* ipa-inline.h: New file.
