@@ -2030,6 +2030,14 @@
     rtx addr2 = gen_rtx_REG (SImode, 2);
     rtx len   = gen_rtx_REG (SImode, 3);
 
+    /* Do not use when the source or destination are volatile - the SMOVF
+       instruction will read and write in word sized blocks, which may be
+       outside of the valid address range.  */
+    if (MEM_P (operands[0]) && MEM_VOLATILE_P (operands[0]))
+      FAIL;
+    if (MEM_P (operands[1]) && MEM_VOLATILE_P (operands[1]))
+      FAIL;
+
     if (REG_P (operands[0]) && (REGNO (operands[0]) == 2
 				      || REGNO (operands[0]) == 3))
       FAIL;
