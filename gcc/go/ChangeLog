@@ -1,3 +1,11 @@
+2011-04-13  Ian Lance Taylor  <iant@google.com>
+
+	* Make-lang.in (GO_OBJS): Add go/runtime.o.
+	(GO_RUNTIME_H): New variable.
+	(go/runtime.o): New target.
+	(go/gogo.o): Depend on $(GO_RUNTIME_H).
+	(go/statements.o): Likewise.
+
 2011-04-12  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* go-lang.c (union lang_tree_node): Check for TS_COMMON before

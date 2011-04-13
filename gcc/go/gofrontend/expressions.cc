@@ -3410,7 +3410,7 @@ Type_conversion_expression::do_get_tree(Translate_context* context)
       tree valptr = fold_convert(const_ptr_type_node,
 				 a->value_pointer_tree(gogo, expr_tree));
       tree len = a->length_tree(gogo, expr_tree);
-      len = fold_convert_loc(this->location(), size_type_node, len);
+      len = fold_convert_loc(this->location(), integer_type_node, len);
       if (e->integer_type()->is_unsigned()
 	  && e->integer_type()->bits() == 8)
 	{
@@ -3422,7 +3422,7 @@ Type_conversion_expression::do_get_tree(Translate_context* context)
 				   type_tree,
 				   const_ptr_type_node,
 				   valptr,
-				   size_type_node,
+				   integer_type_node,
 				   len);
 	}
       else
@@ -3436,7 +3436,7 @@ Type_conversion_expression::do_get_tree(Translate_context* context)
 				   type_tree,
 				   const_ptr_type_node,
 				   valptr,
-				   size_type_node,
+				   integer_type_node,
 				   len);
 	}
     }
@@ -3521,6 +3521,122 @@ Expression::make_cast(Type* type, Expression* val, source_location location)
   if (type->is_error_type() || val->is_error_expression())
     return Expression::make_error(location);
   return new Type_conversion_expression(type, val, location);
+}
+
+// An unsafe type conversion, used to pass values to builtin functions.
+
+class Unsafe_type_conversion_expression : public Expression
+{
+ public:
+  Unsafe_type_conversion_expression(Type* type, Expression* expr,
+				    source_location location)
+    : Expression(EXPRESSION_UNSAFE_CONVERSION, location),
+      type_(type), expr_(expr)
+  { }
+
+ protected:
+  int
+  do_traverse(Traverse* traverse);
+
+  Type*
+  do_type()
+  { return this->type_; }
+
+  void
+  do_determine_type(const Type_context*)
+  { }
+
+  Expression*
+  do_copy()
+  {
+    return new Unsafe_type_conversion_expression(this->type_,
+						 this->expr_->copy(),
+						 this->location());
+  }
+
+  tree
+  do_get_tree(Translate_context*);
+
+ private:
+  // The type to convert to.
+  Type* type_;
+  // The expression to convert.
+  Expression* expr_;
+};
+
+// Traversal.
+
+int
+Unsafe_type_conversion_expression::do_traverse(Traverse* traverse)
+{
+  if (Expression::traverse(&this->expr_, traverse) == TRAVERSE_EXIT
+      || Type::traverse(this->type_, traverse) == TRAVERSE_EXIT)
+    return TRAVERSE_EXIT;
+  return TRAVERSE_CONTINUE;
+}
+
+// Convert to backend representation.
+
+tree
+Unsafe_type_conversion_expression::do_get_tree(Translate_context* context)
+{
+  // We are only called for a limited number of cases.
+
+  Type* t = this->type_;
+  Type* et = this->expr_->type();
+
+  tree type_tree = this->type_->get_tree(context->gogo());
+  tree expr_tree = this->expr_->get_tree(context);
+  if (type_tree == error_mark_node || expr_tree == error_mark_node)
+    return error_mark_node;
+
+  source_location loc = this->location();
+
+  bool use_view_convert = false;
+  if (t->is_open_array_type())
+    {
+      gcc_assert(et->is_open_array_type());
+      use_view_convert = true;
+    }
+  else if (t->map_type() != NULL)
+    gcc_assert(et->map_type() != NULL);
+  else if (t->channel_type() != NULL)
+    gcc_assert(et->channel_type() != NULL);
+  else if (t->points_to() != NULL && t->points_to()->channel_type() != NULL)
+    gcc_assert(et->points_to() != NULL
+	       && et->points_to()->channel_type() != NULL);
+  else if (t->is_unsafe_pointer_type())
+    gcc_assert(et->points_to() != NULL);
+  else if (et->is_unsafe_pointer_type())
+    gcc_assert(t->points_to() != NULL);
+  else if (t->interface_type() != NULL && !t->interface_type()->is_empty())
+    {
+      gcc_assert(et->interface_type() != NULL
+		 && !et->interface_type()->is_empty());
+      use_view_convert = true;
+    }
+  else if (t->interface_type() != NULL && t->interface_type()->is_empty())
+    {
+      gcc_assert(et->interface_type() != NULL
+		 && et->interface_type()->is_empty());
+      use_view_convert = true;
+    }
+  else
+    gcc_unreachable();
+
+  if (use_view_convert)
+    return fold_build1_loc(loc, VIEW_CONVERT_EXPR, type_tree, expr_tree);
+  else
+    return fold_convert_loc(loc, type_tree, expr_tree);
+}
+
+// Make an unsafe type conversion expression.
+
+Expression*
+Expression::make_unsafe_cast(Type* type, Expression* expr,
+			     source_location location)
+{
+  return new Unsafe_type_conversion_expression(type, expr, location);
 }
 
 // Unary expressions.
@@ -7654,7 +7770,7 @@ Builtin_call_expression::do_get_tree(Translate_context* context)
 					      location,
 					      "__go_map_len",
 					      1,
-					      sizetype,
+					      integer_type_node,
 					      arg_type->get_tree(gogo),
 					      arg_tree);
 	      }
@@ -7665,7 +7781,7 @@ Builtin_call_expression::do_get_tree(Translate_context* context)
 					      location,
 					      "__go_chan_len",
 					      1,
-					      sizetype,
+					      integer_type_node,
 					      arg_type->get_tree(gogo),
 					      arg_tree);
 	      }
@@ -7693,7 +7809,7 @@ Builtin_call_expression::do_get_tree(Translate_context* context)
 					      location,
 					      "__go_chan_cap",
 					      1,
-					      sizetype,
+					      integer_type_node,
 					      arg_type->get_tree(gogo),
 					      arg_tree);
 	      }
