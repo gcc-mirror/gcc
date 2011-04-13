@@ -68,7 +68,7 @@ struct __go_hash_iter
 };
 
 extern struct __go_map *__go_new_map (const struct __go_map_descriptor *,
-				      size_t);
+				      uintptr_t);
 
 extern unsigned long __go_map_next_prime (unsigned long);
 

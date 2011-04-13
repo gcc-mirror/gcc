@@ -13,6 +13,7 @@
 #include "statements.h"
 #include "expressions.h"
 #include "dataflow.h"
+#include "runtime.h"
 #include "import.h"
 #include "export.h"
 #include "backend.h"
@@ -2597,6 +2598,8 @@ Gogo::convert_named_types()
   Channel_type::make_chan_type_descriptor_type();
   Interface_type::make_interface_type_descriptor_type();
   Type::convert_builtin_named_types(this);
+
+  Runtime::convert_types(this);
 
   this->named_types_are_converted_ = true;
 }

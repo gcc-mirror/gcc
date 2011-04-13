@@ -14,11 +14,11 @@
    as a function for now to make it easy to change the channel
    structure.  */
 
-size_t
+int
 __go_chan_len (struct __go_channel *channel)
 {
   int i;
-  size_t ret;
+  int ret;
 
   if (channel == NULL)
     return 0;
@@ -35,7 +35,7 @@ __go_chan_len (struct __go_channel *channel)
 	   % channel->num_entries);
 
   i = pthread_mutex_unlock (&channel->lock);
-  __go_assert  (i == 0);
+  __go_assert (i == 0);
 
   return ret;
 }

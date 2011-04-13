@@ -9,7 +9,7 @@
 #include "malloc.h"
 
 struct __go_string
-__go_byte_array_to_string (const void* p, size_t len)
+__go_byte_array_to_string (const void* p, int len)
 {
   const unsigned char *bytes;
   unsigned char *retdata;

@@ -79,7 +79,7 @@ struct __go_channel
    acquired while this mutex is held.  */
 extern pthread_mutex_t __go_select_data_mutex;
 
-extern struct __go_channel *__go_new_channel (size_t, size_t);
+extern struct __go_channel *__go_new_channel (uintptr_t, uintptr_t);
 
 extern _Bool __go_synch_with_select (struct __go_channel *, _Bool);
 
@@ -138,6 +138,6 @@ extern _Bool __go_builtin_closed (struct __go_channel *);
 
 extern void __go_builtin_close (struct __go_channel *);
 
-extern size_t __go_chan_len (struct __go_channel *);
+extern int __go_chan_len (struct __go_channel *);
 
-extern size_t __go_chan_cap (struct __go_channel *);
+extern int __go_chan_cap (struct __go_channel *);

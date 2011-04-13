@@ -104,11 +104,11 @@ __go_map_next_prime (unsigned long n)
 /* Allocate a new map.  */
 
 struct __go_map *
-__go_new_map (const struct __go_map_descriptor *descriptor, size_t entries)
+__go_new_map (const struct __go_map_descriptor *descriptor, uintptr_t entries)
 {
   struct __go_map *ret;
 
-  if ((size_t) (int) entries != entries)
+  if ((uintptr_t) (int) entries != entries)
     __go_panic_msg ("map size out of range");
 
   if (entries == 0)
