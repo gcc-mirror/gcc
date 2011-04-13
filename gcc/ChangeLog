@@ -1,3 +1,26 @@
+2011-04-13  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sse.md (pinsrbits): Remove.
+	(sse2_packsswb): Merge with *avx_packsswb.
+	(sse2_packssdw): Merge with *avx_packssdw.
+	(sse2_packuswb): Merge with *avx_packuswb.
+	(vec_interleave_highv16qi): Merge with *avx_interleave_highv16qi.
+	(vec_interleave_lowv16qi): Merge with *avx_interleave_lowv16qi.
+	(vec_interleave_highv8hi): Merge with *avx_interleave_highv8hi.
+	(vec_interleave_lowv8hi): Merge with *avx_interleave_lowv8hi.
+	(vec_interleave_highv4si): Merge with *avx_interleave_highv4si.
+	(vec_interleave_lowv4si): Merge with *avx_interleave_lowv4si.
+	(*sse4_1_pinsrb): Merge with *avx_pinsr<ssevecsize>.
+	(*sse2_pinsrw): Merge with *avx_pinsr<ssevecsize>.
+	(*sse4_1_pinsrd): Merge with *avx_pinsr<ssevecsize>.
+	(*sse4_1_pinsrq): Merge with *avx_pinsrq.
+	(sse2_loadld): Merge with *avx_loadld.
+	(*vec_extractv2di_1_rex64): Merge with *vec_extractv2di_1_rex64_avx.
+	(*vec_extractv2di_1_sse2): Merge with *vec_extractv2di_1_avx.
+	(*vec_concatv2si_sse4_1): Merge with *vec_concatv2si_avx.
+	(*vec_concatv2di_rex64_sse4_1): Merge with *vec_concatv2di_rex64_avx.
+	(vec_concatv2di): Merge with *vec_concatv2di_avx.
+
 2011-04-12  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* c-decl.c (union lang_tree_node): Check for TS_COMMON before
