@@ -444,7 +444,7 @@ poplevel (int keep, int reverse, int functionbody)
 
   /* Record the BLOCK node just built as the subblock its enclosing scope.  */
   for (subblock_node = subblock_chain; subblock_node;
-       subblock_node = TREE_CHAIN (subblock_node))
+       subblock_node = BLOCK_CHAIN (subblock_node))
     BLOCK_SUPERCONTEXT (subblock_node) = block_node;
 
   /* Clear out the meanings of the local variables of this level.  */
@@ -475,7 +475,7 @@ poplevel (int keep, int reverse, int functionbody)
   else if (block_node)
     {
       current_binding_level->blocks
-	= chainon (current_binding_level->blocks, block_node);
+	= block_chainon (current_binding_level->blocks, block_node);
     }
 
   /* If we did not make a block for the level just exited, any blocks made for
@@ -484,7 +484,7 @@ poplevel (int keep, int reverse, int functionbody)
      else.  */
   else if (subblock_chain)
     current_binding_level->blocks
-      = chainon (current_binding_level->blocks, subblock_chain);
+      = block_chainon (current_binding_level->blocks, subblock_chain);
   if (block_node)
     TREE_USED (block_node) = 1;
 

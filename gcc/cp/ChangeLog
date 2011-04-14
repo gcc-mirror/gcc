@@ -1,3 +1,7 @@
+2011-04-14  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* decl.c (poplevel): Use block_chainon.
+
 2011-04-13  Jason Merrill  <jason@redhat.com>
 
 	PR c++/48594

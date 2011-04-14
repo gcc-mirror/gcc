@@ -1,3 +1,7 @@
+2011-04-14  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* gcc-interface/utils.c (gnat_poplevel): Use block_chainon.
+
 2011-04-12  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* gcc-interface/ada-tree.h (union lang_tree_node): Check for TS_COMMON

@@ -1481,7 +1481,7 @@ poplevel (int keep, int reverse, int functionbody)
 
   /* In each subblock, record that this is its superior.  */
 
-  for (link = subblocks; link; link = TREE_CHAIN (link))
+  for (link = subblocks; link; link = BLOCK_CHAIN (link))
     BLOCK_SUPERCONTEXT (link) = block;
 
   /* Clear out the meanings of the local variables of this level.  */
@@ -1545,7 +1545,7 @@ poplevel (int keep, int reverse, int functionbody)
       if (block)
 	{
 	  current_binding_level->blocks
-	    = chainon (current_binding_level->blocks, block);
+	    = block_chainon (current_binding_level->blocks, block);
 	}
       /* If we did not make a block for the level just exited,
 	 any blocks made for inner levels
@@ -1554,7 +1554,7 @@ poplevel (int keep, int reverse, int functionbody)
 	 of something else.  */
       else if (subblocks)
 	current_binding_level->blocks
-	  = chainon (current_binding_level->blocks, subblocks);
+	  = block_chainon (current_binding_level->blocks, subblocks);
 
       if (bind)
 	java_add_stmt (bind);
