@@ -22319,7 +22319,8 @@ cp_parser_objc_protocol_declaration (cp_parser* parser, tree attributes)
     {
       tok = cp_lexer_peek_token (parser->lexer);
       error_at (tok->location, "identifier expected after %<@protocol%>");
-      goto finish;
+      cp_parser_consume_semicolon_at_end_of_statement (parser);
+      return;
     }
 
   /* See if we have a forward declaration or a definition.  */
@@ -22328,9 +22329,21 @@ cp_parser_objc_protocol_declaration (cp_parser* parser, tree attributes)
   /* Try a forward declaration first.  */
   if (tok->type == CPP_COMMA || tok->type == CPP_SEMICOLON)
     {
-      objc_declare_protocols (cp_parser_objc_identifier_list (parser), 
-			      attributes);
-     finish:
+      while (true)
+	{
+	  tree id;
+	  
+	  id = cp_parser_identifier (parser);
+	  if (id == error_mark_node)
+	    break;
+	  
+	  objc_declare_protocol (id, attributes);
+	  
+	  if(cp_lexer_next_token_is (parser->lexer, CPP_COMMA))
+	    cp_lexer_consume_token (parser->lexer);
+	  else
+	    break;
+	}
       cp_parser_consume_semicolon_at_end_of_statement (parser);
     }
 

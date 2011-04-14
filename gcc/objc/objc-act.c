@@ -7863,9 +7863,8 @@ lookup_protocol (tree ident, bool warn_if_deprecated, bool definition_required)
    they are already declared or defined, the function has no effect.  */
 
 void
-objc_declare_protocols (tree names, tree attributes)
+objc_declare_protocol (tree name, tree attributes)
 {
-  tree list;
   bool deprecated = false;
 
 #ifdef OBJCPLUS
@@ -7890,29 +7889,25 @@ objc_declare_protocols (tree names, tree attributes)
 	}
     }
 
-  for (list = names; list; list = TREE_CHAIN (list))
+  if (lookup_protocol (name, /* warn if deprecated */ false,
+		       /* definition_required */ false) == NULL_TREE)
     {
-      tree name = TREE_VALUE (list);
-
-      if (lookup_protocol (name, /* warn if deprecated */ false,
-			   /* definition_required */ false) == NULL_TREE)
+      tree protocol = make_node (PROTOCOL_INTERFACE_TYPE);
+      
+      TYPE_LANG_SLOT_1 (protocol)
+	= make_tree_vec (PROTOCOL_LANG_SLOT_ELTS);
+      PROTOCOL_NAME (protocol) = name;
+      PROTOCOL_LIST (protocol) = NULL_TREE;
+      add_protocol (protocol);
+      PROTOCOL_DEFINED (protocol) = 0;
+      PROTOCOL_FORWARD_DECL (protocol) = NULL_TREE;
+      
+      if (attributes)
 	{
-	  tree protocol = make_node (PROTOCOL_INTERFACE_TYPE);
-
-	  TYPE_LANG_SLOT_1 (protocol)
-	    = make_tree_vec (PROTOCOL_LANG_SLOT_ELTS);
-	  PROTOCOL_NAME (protocol) = name;
-	  PROTOCOL_LIST (protocol) = NULL_TREE;
-	  add_protocol (protocol);
-	  PROTOCOL_DEFINED (protocol) = 0;
-	  PROTOCOL_FORWARD_DECL (protocol) = NULL_TREE;
-	  
-	  if (attributes)
-	    {
-	      TYPE_ATTRIBUTES (protocol) = attributes;
-	      if (deprecated)
-		TREE_DEPRECATED (protocol) = 1;
-	    }
+	  /* TODO: Do we need to store the attributes here ? */
+	  TYPE_ATTRIBUTES (protocol) = attributes;
+	  if (deprecated)
+	    TREE_DEPRECATED (protocol) = 1;
 	}
     }
 }

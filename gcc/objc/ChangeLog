@@ -1,5 +1,12 @@
 2011-04-14  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	* objc-act.c (objc_declare_protocols): Renamed to
+	objc_declare_protocol.  Changed first argument to be an identifier
+	instead of a tree chain of identifiers, so that callers don't have
+	to create a temporary tree chain.
+
+2011-04-14  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	* objc-act.c (objc_declare_class): Changed to take a single
 	identifier as argument instead of a tree list.  This means callers
 	don't have to build temporary tree lists to call this function.

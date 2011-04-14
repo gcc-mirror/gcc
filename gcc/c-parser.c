@@ -7076,7 +7076,6 @@ c_parser_objc_protocol_definition (c_parser *parser, tree attributes)
   if (c_parser_peek_2nd_token (parser)->type == CPP_COMMA
       || c_parser_peek_2nd_token (parser)->type == CPP_SEMICOLON)
     {
-      tree list = NULL_TREE;
       /* Any identifiers, including those declared as type names, are
 	 OK here.  */
       while (true)
@@ -7088,7 +7087,7 @@ c_parser_objc_protocol_definition (c_parser *parser, tree attributes)
 	      break;
 	    }
 	  id = c_parser_peek_token (parser)->value;
-	  list = chainon (list, build_tree_list (NULL_TREE, id));
+	  objc_declare_protocol (id, attributes);
 	  c_parser_consume_token (parser);
 	  if (c_parser_next_token_is (parser, CPP_COMMA))
 	    c_parser_consume_token (parser);
@@ -7096,7 +7095,6 @@ c_parser_objc_protocol_definition (c_parser *parser, tree attributes)
 	    break;
 	}
       c_parser_skip_until_found (parser, CPP_SEMICOLON, "expected %<;%>");
-      objc_declare_protocols (list, attributes);
     }
   else
     {

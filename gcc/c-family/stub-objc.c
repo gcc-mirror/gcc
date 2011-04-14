@@ -115,7 +115,7 @@ objc_declare_class (tree ARG_UNUSED (identifier))
 }
 
 void
-objc_declare_protocols (tree ARG_UNUSED (list), tree ARG_UNUSED (attributes))
+objc_declare_protocol (tree ARG_UNUSED (name), tree ARG_UNUSED (attributes))
 {
 }
 
