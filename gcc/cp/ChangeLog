@@ -1,5 +1,11 @@
 2011-04-14  Nathan Froyd  <froydnj@codesourcery.com>
 
+	PR objc++/48479
+	* typeck.c (cxx_mark_addressable) [CONST_DECL]: Mark addressable
+	and return immediately.
+
+2011-04-14  Nathan Froyd  <froydnj@codesourcery.com>
+
 	* cp-tree.def (SWITCH_STMT): Add an extra operand.
 	* cp-objcp-common.c (cp_common_init_ts): Mark it as TS_TYPED.
 	* cp-tree.h (SWITCH_STMT_SCOPE): Define.
