@@ -1,3 +1,17 @@
+2011-04-14  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-dse.c (struct dse_global_data, struct dse_block_local_data):
+	Remove.
+	(dse_initialize_block_local_data, dse_leave_block,
+	record_voperand_set, get_stmt_uid): Likewise.
+	(dse_possible_dead_store_p): Allow any kind of killing stmt.
+	(dse_optimize_stmt): Remove voperand set handling code.
+	Simplify and improve to handle any kind of killing stmt.
+	(dse_record_phi): Remove.
+	(dse_enter_block): Simplify.
+	(tree_ssa_dse): Likewise.
+	* tree-ssa-alias.c (stmt_kills_ref_p_1): Handle some builtins.
+
 2011-04-14  Jan Hubicka  <jh@suse.cz>
 
 	* cgraph.c (dump_cgraph_node): Do not dump inline summaries.
