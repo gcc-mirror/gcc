@@ -2196,19 +2196,6 @@ vect_analyze_group_access (struct data_reference *dr)
           return false;
         }
 
-      /* FORNOW: we handle only interleaving that is a power of 2.
-         We don't fail here if it may be still possible to vectorize the
-         group using SLP.  If not, the size of the group will be checked in
-         vect_analyze_operations, and the vectorization will fail.  */
-      if (exact_log2 (stride) == -1)
-	{
-	  if (vect_print_dump_info (REPORT_DETAILS))
-	    fprintf (vect_dump, "interleaving is not a power of 2");
-
-	  if (slp_impossible)
-	    return false;
-	}
-
       if (stride == 0)
         stride = count;
 
@@ -3349,12 +3336,21 @@ vect_create_destination_var (tree scalar_dest, tree vectype)
    and FALSE otherwise.  */
 
 bool
-vect_strided_store_supported (tree vectype)
+vect_strided_store_supported (tree vectype, unsigned HOST_WIDE_INT count)
 {
   optab interleave_high_optab, interleave_low_optab;
   enum machine_mode mode;
 
   mode = TYPE_MODE (vectype);
+
+  /* vect_permute_store_chain requires the group size to be a power of two.  */
+  if (exact_log2 (count) == -1)
+    {
+      if (vect_print_dump_info (REPORT_DETAILS))
+	fprintf (vect_dump, "the size of the group of strided accesses"
+		 " is not a power of 2");
+      return false;
+    }
 
   /* Check that the operation is supported.  */
   interleave_high_optab = optab_for_tree_code (VEC_INTERLEAVE_HIGH_EXPR,
@@ -3441,7 +3437,7 @@ vect_strided_store_supported (tree vectype)
    I3:  4 12 20 28  5 13 21 30
    I4:  6 14 22 30  7 15 23 31.  */
 
-bool
+void
 vect_permute_store_chain (VEC(tree,heap) *dr_chain,
 			  unsigned int length,
 			  gimple stmt,
@@ -3455,9 +3451,7 @@ vect_permute_store_chain (VEC(tree,heap) *dr_chain,
   unsigned int j;
   enum tree_code high_code, low_code;
 
-  /* Check that the operation is supported.  */
-  if (!vect_strided_store_supported (vectype))
-    return false;
+  gcc_assert (vect_strided_store_supported (vectype, length));
 
   *result_chain = VEC_copy (tree, heap, dr_chain);
 
@@ -3510,7 +3504,6 @@ vect_permute_store_chain (VEC(tree,heap) *dr_chain,
 	}
       dr_chain = VEC_copy (tree, heap, *result_chain);
     }
-  return true;
 }
 
 /* Function vect_setup_realignment
@@ -3787,12 +3780,21 @@ vect_setup_realignment (gimple stmt, gimple_stmt_iterator *gsi,
    and FALSE otherwise.  */
 
 bool
-vect_strided_load_supported (tree vectype)
+vect_strided_load_supported (tree vectype, unsigned HOST_WIDE_INT count)
 {
   optab perm_even_optab, perm_odd_optab;
   enum machine_mode mode;
 
   mode = TYPE_MODE (vectype);
+
+  /* vect_permute_load_chain requires the group size to be a power of two.  */
+  if (exact_log2 (count) == -1)
+    {
+      if (vect_print_dump_info (REPORT_DETAILS))
+	fprintf (vect_dump, "the size of the group of strided accesses"
+		 " is not a power of 2");
+      return false;
+    }
 
   perm_even_optab = optab_for_tree_code (VEC_EXTRACT_EVEN_EXPR, vectype,
 					 optab_default);
@@ -3905,7 +3907,7 @@ vect_strided_load_supported (tree vectype)
    3rd vec (E2):  2 6 10 14 18 22 26 30
    4th vec (E4):  3 7 11 15 19 23 27 31.  */
 
-bool
+static void
 vect_permute_load_chain (VEC(tree,heap) *dr_chain,
 			 unsigned int length,
 			 gimple stmt,
@@ -3918,9 +3920,7 @@ vect_permute_load_chain (VEC(tree,heap) *dr_chain,
   int i;
   unsigned int j;
 
-  /* Check that the operation is supported.  */
-  if (!vect_strided_load_supported (vectype))
-    return false;
+  gcc_assert (vect_strided_load_supported (vectype, length));
 
   *result_chain = VEC_copy (tree, heap, dr_chain);
   for (i = 0; i < exact_log2 (length); i++)
@@ -3963,7 +3963,6 @@ vect_permute_load_chain (VEC(tree,heap) *dr_chain,
 	}
       dr_chain = VEC_copy (tree, heap, *result_chain);
     }
-  return true;
 }
 
 
@@ -3974,7 +3973,7 @@ vect_permute_load_chain (VEC(tree,heap) *dr_chain,
    the scalar statements.
 */
 
-bool
+void
 vect_transform_strided_load (gimple stmt, VEC(tree,heap) *dr_chain, int size,
 			     gimple_stmt_iterator *gsi)
 {
@@ -3990,8 +3989,7 @@ vect_transform_strided_load (gimple stmt, VEC(tree,heap) *dr_chain, int size,
      vectors, that are ready for vector computation.  */
   result_chain = VEC_alloc (tree, heap, size);
   /* Permute.  */
-  if (!vect_permute_load_chain (dr_chain, size, stmt, gsi, &result_chain))
-    return false;
+  vect_permute_load_chain (dr_chain, size, stmt, gsi, &result_chain);
 
   /* Put a permuted data-ref in the VECTORIZED_STMT field.
      Since we scan the chain starting from it's first node, their order
@@ -4055,7 +4053,6 @@ vect_transform_strided_load (gimple stmt, VEC(tree,heap) *dr_chain, int size,
     }
 
   VEC_free (tree, heap, result_chain);
-  return true;
 }
 
 /* Function vect_force_dr_alignment_p.

@@ -3410,9 +3410,12 @@ vectorizable_store (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
     {
       strided_store = true;
       first_stmt = DR_GROUP_FIRST_DR (stmt_info);
-      if (!vect_strided_store_supported (vectype)
-	  && !PURE_SLP_STMT (stmt_info) && !slp)
-	return false;
+      if (!slp && !PURE_SLP_STMT (stmt_info))
+	{
+	  group_size = DR_GROUP_SIZE (vinfo_for_stmt (first_stmt));
+	  if (!vect_strided_store_supported (vectype, group_size))
+	    return false;
+	}
 
       if (first_stmt == stmt)
 	{
@@ -3612,9 +3615,8 @@ vectorizable_store (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 	{
 	  result_chain = VEC_alloc (tree, heap, group_size);
 	  /* Permute.  */
-	  if (!vect_permute_store_chain (dr_chain, group_size, stmt, gsi,
-					 &result_chain))
-	    return false;
+	  vect_permute_store_chain (dr_chain, group_size, stmt, gsi,
+				    &result_chain);
 	}
 
       next_stmt = first_stmt;
@@ -3902,10 +3904,13 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
       /* FORNOW */
       gcc_assert (! nested_in_vect_loop);
 
-      /* Check if interleaving is supported.  */
-      if (!vect_strided_load_supported (vectype)
-	  && !PURE_SLP_STMT (stmt_info) && !slp)
-	return false;
+      first_stmt = DR_GROUP_FIRST_DR (stmt_info);
+      if (!slp && !PURE_SLP_STMT (stmt_info))
+	{
+	  group_size = DR_GROUP_SIZE (vinfo_for_stmt (first_stmt));
+	  if (!vect_strided_load_supported (vectype, group_size))
+	    return false;
+	}
     }
 
   if (negative)
@@ -4322,9 +4327,7 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
         {
           if (strided_load)
   	    {
-	      if (!vect_transform_strided_load (stmt, dr_chain, group_size, gsi))
-	        return false;
-
+	      vect_transform_strided_load (stmt, dr_chain, group_size, gsi);
 	      *vec_stmt = STMT_VINFO_VEC_STMT (stmt_info);
 	    }
           else
@@ -4741,27 +4744,6 @@ vect_analyze_stmt (gimple stmt, bool *need_to_vectorize, slp_tree node)
         }
 
        return false;
-    }
-
-  if (!PURE_SLP_STMT (stmt_info))
-    {
-      /* Groups of strided accesses whose size is not a power of 2 are not
-         vectorizable yet using loop-vectorization.  Therefore, if this stmt
-	 feeds non-SLP-able stmts (i.e., this stmt has to be both SLPed and
-	 loop-based vectorized), the loop cannot be vectorized.  */
-      if (STMT_VINFO_STRIDED_ACCESS (stmt_info)
-          && exact_log2 (DR_GROUP_SIZE (vinfo_for_stmt (
-                                        DR_GROUP_FIRST_DR (stmt_info)))) == -1)
-        {
-          if (vect_print_dump_info (REPORT_DETAILS))
-            {
-              fprintf (vect_dump, "not vectorized: the size of group "
-                                  "of strided accesses is not a power of 2");
-              print_gimple_stmt (vect_dump, stmt, 0, TDF_SLIM);
-            }
-
-          return false;
-        }
     }
 
   return true;
