@@ -1,3 +1,8 @@
+2011-04-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* cfgexpand.c (expand_call_stmt): Rematerialize the original function
+	type if this is not a builtin function.
+
 2011-04-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/48605
