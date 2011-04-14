@@ -3646,16 +3646,16 @@ cp_build_binary_op (location_t location,
       || code == TRUTH_OR_EXPR || code == TRUTH_ORIF_EXPR
       || code == TRUTH_XOR_EXPR)
     {
-      if (!really_overloaded_fn (op0))
+      if (!really_overloaded_fn (op0) && !VOID_TYPE_P (TREE_TYPE (op0)))
 	op0 = decay_conversion (op0);
-      if (!really_overloaded_fn (op1))
+      if (!really_overloaded_fn (op1) && !VOID_TYPE_P (TREE_TYPE (op1)))
 	op1 = decay_conversion (op1);
     }
   else
     {
-      if (!really_overloaded_fn (op0))
+      if (!really_overloaded_fn (op0) && !VOID_TYPE_P (TREE_TYPE (op0)))
 	op0 = default_conversion (op0);
-      if (!really_overloaded_fn (op1))
+      if (!really_overloaded_fn (op1) && !VOID_TYPE_P (TREE_TYPE (op1)))
 	op1 = default_conversion (op1);
     }
 
