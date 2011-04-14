@@ -1,3 +1,8 @@
+2011-04-14  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* parser.c (cp_parser_objc_class_declaration): Updated for change
+	in objc_declare_class().
+
 2011-04-14  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* decl.c (poplevel): Use block_chainon.

@@ -110,7 +110,7 @@ objc_declare_alias (tree ARG_UNUSED (alias), tree ARG_UNUSED (orig))
 }
 
 void
-objc_declare_class (tree ARG_UNUSED (list))
+objc_declare_class (tree ARG_UNUSED (identifier))
 {
 }
 

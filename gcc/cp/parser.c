@@ -21615,7 +21615,21 @@ static void
 cp_parser_objc_class_declaration (cp_parser* parser)
 {
   cp_lexer_consume_token (parser->lexer);  /* Eat '@class'.  */
-  objc_declare_class (cp_parser_objc_identifier_list (parser));
+  while (true)
+    {
+      tree id;
+      
+      id = cp_parser_identifier (parser);
+      if (id == error_mark_node)
+	break;
+      
+      objc_declare_class (id);
+
+      if (cp_lexer_next_token_is (parser->lexer, CPP_COMMA))
+	cp_lexer_consume_token (parser->lexer);
+      else
+	break;
+    }
   cp_parser_consume_semicolon_at_end_of_statement (parser);
 }
 
