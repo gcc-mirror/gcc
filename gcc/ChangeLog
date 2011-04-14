@@ -1,3 +1,9 @@
+2011-04-14  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/44643
+	* config/avr/avr.c (avr_insert_attributes): Leave TREE_READONLY
+	alone. Error if non-const data has attribute progmem.
+
 2011-04-13  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* tree.h (struct tree_constructor): Include tree_typed instead of
