@@ -2953,7 +2953,7 @@ synth_module_prologue (void)
 
   /* Forward-declare '@interface Protocol'.  */
   type = get_identifier (PROTOCOL_OBJECT_CLASS_NAME);
-  objc_declare_class (tree_cons (NULL_TREE, type, NULL_TREE));
+  objc_declare_class (type);
   objc_protocol_type = build_pointer_type (xref_tag (RECORD_TYPE, type));
 
   /* Declare receiver type used for dispatching messages to 'super'.  */
@@ -2985,7 +2985,7 @@ synth_module_prologue (void)
   if (!constant_string_class_name)
     constant_string_class_name = runtime.default_constant_string_class_name;
   constant_string_id = get_identifier (constant_string_class_name);
-  objc_declare_class (tree_cons (NULL_TREE, constant_string_id, NULL_TREE));
+  objc_declare_class (constant_string_id);
 
   /* Pre-build the following entities - for speed/convenience.  */
   self_id = get_identifier ("self");
@@ -3360,48 +3360,42 @@ objc_declare_alias (tree alias_ident, tree class_ident)
 }
 
 void
-objc_declare_class (tree ident_list)
+objc_declare_class (tree identifier)
 {
-  tree list;
 #ifdef OBJCPLUS
   if (current_namespace != global_namespace) {
     error ("Objective-C declarations may only appear in global scope");
   }
 #endif /* OBJCPLUS */
 
-  for (list = ident_list; list; list = TREE_CHAIN (list))
+  if (! objc_is_class_name (identifier))
     {
-      tree ident = TREE_VALUE (list);
-
-      if (! objc_is_class_name (ident))
+      tree record = lookup_name (identifier), type = record;
+      
+      if (record)
 	{
-	  tree record = lookup_name (ident), type = record;
-
-	  if (record)
+	  if (TREE_CODE (record) == TYPE_DECL)
+	    type = DECL_ORIGINAL_TYPE (record)
+	      ? DECL_ORIGINAL_TYPE (record)
+	      : TREE_TYPE (record);
+	  
+	  if (!TYPE_HAS_OBJC_INFO (type)
+	      || !TYPE_OBJC_INTERFACE (type))
 	    {
-	      if (TREE_CODE (record) == TYPE_DECL)
-		type = DECL_ORIGINAL_TYPE (record)
-					? DECL_ORIGINAL_TYPE (record)
-					: TREE_TYPE (record);
-
-	      if (!TYPE_HAS_OBJC_INFO (type)
-		  || !TYPE_OBJC_INTERFACE (type))
-		{
-		  error ("%qE redeclared as different kind of symbol",
-			 ident);
-		  error ("previous declaration of %q+D",
-			 record);
-		}
+	      error ("%qE redeclared as different kind of symbol",
+		     identifier);
+	      error ("previous declaration of %q+D",
+		     record);
 	    }
-
-	  record = xref_tag (RECORD_TYPE, ident);
-	  INIT_TYPE_OBJC_INFO (record);
-	  /* In the case of a @class declaration, we store the ident
-	     in the TYPE_OBJC_INTERFACE.  If later an @interface is
-	     found, we'll replace the ident with the interface.  */
-	  TYPE_OBJC_INTERFACE (record) = ident;
-	  hash_class_name_enter (cls_name_hash_list, ident, NULL_TREE);
 	}
+      
+      record = xref_tag (RECORD_TYPE, identifier);
+      INIT_TYPE_OBJC_INFO (record);
+      /* In the case of a @class declaration, we store the ident in
+	 the TYPE_OBJC_INTERFACE.  If later an @interface is found,
+	 we'll replace the ident with the interface.  */
+      TYPE_OBJC_INTERFACE (record) = identifier;
+      hash_class_name_enter (cls_name_hash_list, identifier, NULL_TREE);
     }
 }
 

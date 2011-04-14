@@ -6994,7 +6994,6 @@ c_parser_objc_class_instance_variables (c_parser *parser)
 static void
 c_parser_objc_class_declaration (c_parser *parser)
 {
-  tree list = NULL_TREE;
   gcc_assert (c_parser_next_token_is_keyword (parser, RID_AT_CLASS));
   c_parser_consume_token (parser);
   /* Any identifiers, including those declared as type names, are OK
@@ -7010,7 +7009,7 @@ c_parser_objc_class_declaration (c_parser *parser)
 	  return;
 	}
       id = c_parser_peek_token (parser)->value;
-      list = chainon (list, build_tree_list (NULL_TREE, id));
+      objc_declare_class (id);
       c_parser_consume_token (parser);
       if (c_parser_next_token_is (parser, CPP_COMMA))
 	c_parser_consume_token (parser);
@@ -7018,7 +7017,6 @@ c_parser_objc_class_declaration (c_parser *parser)
 	break;
     }
   c_parser_skip_until_found (parser, CPP_SEMICOLON, "expected %<;%>");
-  objc_declare_class (list);
 }
 
 /* Parse an objc-alias-declaration.

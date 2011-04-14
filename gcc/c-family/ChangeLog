@@ -1,3 +1,7 @@
+2011-04-14  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* stub-objc.c (objc_declare_class): Updated argument name.
+
 2011-04-12  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* c-common.h (c_common_init_ts): Declare.

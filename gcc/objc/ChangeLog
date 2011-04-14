@@ -1,3 +1,10 @@
+2011-04-14  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc-act.c (objc_declare_class): Changed to take a single
+	identifier as argument instead of a tree list.  This means callers
+	don't have to build temporary tree lists to call this function.
+	(synth_module_prologue): Updated calls to objc_declare_class.
+	
 2011-04-13  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc-act.c (build_keyword_selector): Use get_identifier_with_length
