@@ -1,3 +1,11 @@
+2011-04-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR middle-end/48608
+	* cfgexpand.c (get_decl_align_unit): Renamed to ...
+	(align_local_variable): This.  Update DECL_ALIGN.
+	(add_stack_var): Updated.
+	(expand_one_stack_var): Likewise.
+
 2011-04-14  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-dse.c (struct dse_global_data, struct dse_block_local_data):

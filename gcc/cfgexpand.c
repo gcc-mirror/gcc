@@ -205,13 +205,14 @@ static bool has_protected_decls;
    smaller than our cutoff threshold.  Used for -Wstack-protector.  */
 static bool has_short_buffer;
 
-/* Discover the byte alignment to use for DECL.  Ignore alignment
+/* Compute the byte alignment to use for DECL.  Ignore alignment
    we can't do with expected alignment of the stack boundary.  */
 
 static unsigned int
-get_decl_align_unit (tree decl)
+align_local_variable (tree decl)
 {
   unsigned int align = LOCAL_DECL_ALIGNMENT (decl);
+  DECL_ALIGN (decl) = align;
   return align / BITS_PER_UNIT;
 }
 
@@ -273,7 +274,7 @@ add_stack_var (tree decl)
      variables that are simultaneously live.  */
   if (v->size == 0)
     v->size = 1;
-  v->alignb = get_decl_align_unit (SSAVAR (decl));
+  v->alignb = align_local_variable (SSAVAR (decl));
 
   /* All variables are initially in their own partition.  */
   v->representative = stack_vars_num;
@@ -905,7 +906,7 @@ expand_one_stack_var (tree var)
   unsigned byte_align;
 
   size = tree_low_cst (DECL_SIZE_UNIT (SSAVAR (var)), 1);
-  byte_align = get_decl_align_unit (SSAVAR (var));
+  byte_align = align_local_variable (SSAVAR (var));
 
   /* We handle highly aligned variables in expand_stack_vars.  */
   gcc_assert (byte_align * BITS_PER_UNIT <= MAX_SUPPORTED_STACK_ALIGNMENT);
