@@ -1,3 +1,11 @@
+2011-04-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/48605
+	* gcc.target/i386/sse4_1-insertps-3.c: New test.
+	* gcc.target/i386/sse4_1-insertps-4.c: New test.
+	* gcc.target/i386/avx-insertps-3.c: New test.
+	* gcc.target/i386/avx-insertps-4.c: New test.
+
 2011-04-14  Georg-Johann Lay  <avr@gjlay.de>
 
 	* gcc.target/avr/torture/pr41885.c (dg-options): Add
