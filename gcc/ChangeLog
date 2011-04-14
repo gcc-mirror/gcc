@@ -1,3 +1,10 @@
+2011-04-13  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* tree.h (struct tree_constructor): Include tree_typed instead of
+	tree_common.
+	* tree.c (initialize_tree_contains_struct): Mark TS_CONSTRUCTOR as
+	TS_TYPED instead of TS_COMMON.
+
 2011-04-12  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/sse.md (*sse2_uavgv16qi3): Merge with *avx_uavgv16qi3.

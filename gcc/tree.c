@@ -378,6 +378,7 @@ initialize_tree_contains_struct (void)
 	case TS_STRING:
 	case TS_COMPLEX:
 	case TS_SSA_NAME:
+	case TS_CONSTRUCTOR:
 	  MARK_TS_TYPED (code);
 	  break;
 
@@ -390,7 +391,6 @@ initialize_tree_contains_struct (void)
 	case TS_BLOCK:
 	case TS_BINFO:
 	case TS_STATEMENT_LIST:
-	case TS_CONSTRUCTOR:
 	case TS_OMP_CLAUSE:
 	case TS_OPTIMIZATION:
 	case TS_TARGET_OPTION:
