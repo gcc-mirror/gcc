@@ -1,5 +1,9 @@
 2011-04-14  Jason Merrill  <jason@redhat.com>
 
+	* parser.c (cp_parser_postfix_expression): Fix flags passed to
+	build_new_method_call.
+	* semantics.c (finish_call_expr): Likewise.
+
 	PR c++/48531
 	* init.c (build_value_init_noctor): Check complain consistently.
 
