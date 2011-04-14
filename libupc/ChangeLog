@@ -1,3 +1,10 @@
+2011-04-13  Gary Funck  <gary@intrepid.com>
+
+	* testsuite/lib/libupc.exp (ALWAYS_CFLAGS):
+	  Remove -lupc from required default switches.
+	  The appropriate library is selected by the
+	  libupc.spec file.
+
 2011-03-22  Gary Funck  <gary@intrepid.com>
 
 	* configure.tgt: Move linker switches into libupc.spec.
