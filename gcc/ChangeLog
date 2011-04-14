@@ -1,5 +1,15 @@
 2011-04-14  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	* tree-vectorizer.h (vect_create_data_ref_ptr): Add an extra
+	type parameter.
+	* tree-vect-data-refs.c (vect_create_data_ref_ptr): Add an aggr_type
+	parameter.  Generalise code to handle arrays as well as vectors.
+	(vect_setup_realignment): Update accordingly.
+	* tree-vect-stmts.c (vectorizable_store): Likewise.
+	(vectorizable_load): Likewise.
+
+2011-04-14  Richard Sandiford  <richard.sandiford@linaro.org>
+
 	* tree-vect-stmts.c (vectorizable_load): Allocate and free dr_chain
 	within the per-copy loop.
 

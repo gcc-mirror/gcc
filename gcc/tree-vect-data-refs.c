@@ -2911,32 +2911,33 @@ vect_create_addr_base_for_vector_ref (gimple stmt,
 
 /* Function vect_create_data_ref_ptr.
 
-   Create a new pointer to vector type (vp), that points to the first location
-   accessed in the loop by STMT, along with the def-use update chain to
-   appropriately advance the pointer through the loop iterations. Also set
-   aliasing information for the pointer.  This vector pointer is used by the
-   callers to this function to create a memory reference expression for vector
-   load/store access.
+   Create a new pointer-to-AGGR_TYPE variable (ap), that points to the first
+   location accessed in the loop by STMT, along with the def-use update
+   chain to appropriately advance the pointer through the loop iterations.
+   Also set aliasing information for the pointer.  This pointer is used by
+   the callers to this function to create a memory reference expression for
+   vector load/store access.
 
    Input:
    1. STMT: a stmt that references memory. Expected to be of the form
          GIMPLE_ASSIGN <name, data-ref> or
 	 GIMPLE_ASSIGN <data-ref, name>.
-   2. AT_LOOP: the loop where the vector memref is to be created.
-   3. OFFSET (optional): an offset to be added to the initial address accessed
+   2. AGGR_TYPE: the type of the reference, which should be either a vector
+        or an array.
+   3. AT_LOOP: the loop where the vector memref is to be created.
+   4. OFFSET (optional): an offset to be added to the initial address accessed
         by the data-ref in STMT.
-   4. BSI: location where the new stmts are to be placed if there is no loop
-   5. ONLY_INIT: indicate if vp is to be updated in the loop, or remain
+   5. BSI: location where the new stmts are to be placed if there is no loop
+   6. ONLY_INIT: indicate if ap is to be updated in the loop, or remain
         pointing to the initial address.
-   6. TYPE: if not NULL indicates the required type of the data-ref.
 
    Output:
    1. Declare a new ptr to vector_type, and have it point to the base of the
       data reference (initial addressed accessed by the data reference).
       For example, for vector of type V8HI, the following code is generated:
 
-      v8hi *vp;
-      vp = (v8hi *)initial_address;
+      v8hi *ap;
+      ap = (v8hi *)initial_address;
 
       if OFFSET is not supplied:
          initial_address = &a[init];
@@ -2956,9 +2957,10 @@ vect_create_addr_base_for_vector_ref (gimple stmt,
    4. Return the pointer.  */
 
 tree
-vect_create_data_ref_ptr (gimple stmt, struct loop *at_loop, tree offset,
-			  tree *initial_address, gimple_stmt_iterator *gsi,
-			  gimple *ptr_incr, bool only_init, bool *inv_p)
+vect_create_data_ref_ptr (gimple stmt, tree aggr_type, struct loop *at_loop,
+			  tree offset, tree *initial_address,
+			  gimple_stmt_iterator *gsi, gimple *ptr_incr,
+			  bool only_init, bool *inv_p)
 {
   tree base_name;
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
@@ -2966,17 +2968,16 @@ vect_create_data_ref_ptr (gimple stmt, struct loop *at_loop, tree offset,
   struct loop *loop = NULL;
   bool nested_in_vect_loop = false;
   struct loop *containing_loop = NULL;
-  tree vectype = STMT_VINFO_VECTYPE (stmt_info);
-  tree vect_ptr_type;
-  tree vect_ptr;
+  tree aggr_ptr_type;
+  tree aggr_ptr;
   tree new_temp;
   gimple vec_stmt;
   gimple_seq new_stmt_list = NULL;
   edge pe = NULL;
   basic_block new_bb;
-  tree vect_ptr_init;
+  tree aggr_ptr_init;
   struct data_reference *dr = STMT_VINFO_DATA_REF (stmt_info);
-  tree vptr;
+  tree aptr;
   gimple_stmt_iterator incr_gsi;
   bool insert_after;
   bool negative;
@@ -2985,6 +2986,9 @@ vect_create_data_ref_ptr (gimple stmt, struct loop *at_loop, tree offset,
   tree step;
   bb_vec_info bb_vinfo = STMT_VINFO_BB_VINFO (stmt_info);
   tree base;
+
+  gcc_assert (TREE_CODE (aggr_type) == ARRAY_TYPE
+	      || TREE_CODE (aggr_type) == VECTOR_TYPE);
 
   if (loop_vinfo)
     {
@@ -3020,8 +3024,9 @@ vect_create_data_ref_ptr (gimple stmt, struct loop *at_loop, tree offset,
   if (vect_print_dump_info (REPORT_DETAILS))
     {
       tree data_ref_base = base_name;
-      fprintf (vect_dump, "create vector-pointer variable to type: ");
-      print_generic_expr (vect_dump, vectype, TDF_SLIM);
+      fprintf (vect_dump, "create %s-pointer variable to type: ",
+	       tree_code_name[(int) TREE_CODE (aggr_type)]);
+      print_generic_expr (vect_dump, aggr_type, TDF_SLIM);
       if (TREE_CODE (data_ref_base) == VAR_DECL
           || TREE_CODE (data_ref_base) == ARRAY_REF)
         fprintf (vect_dump, "  vectorizing an array ref: ");
@@ -3032,27 +3037,28 @@ vect_create_data_ref_ptr (gimple stmt, struct loop *at_loop, tree offset,
       print_generic_expr (vect_dump, base_name, TDF_SLIM);
     }
 
-  /* (1) Create the new vector-pointer variable.  */
-  vect_ptr_type = build_pointer_type (vectype);
+  /* (1) Create the new aggregate-pointer variable.  */
+  aggr_ptr_type = build_pointer_type (aggr_type);
   base = get_base_address (DR_REF (dr));
   if (base
       && TREE_CODE (base) == MEM_REF)
-    vect_ptr_type
-      = build_qualified_type (vect_ptr_type,
+    aggr_ptr_type
+      = build_qualified_type (aggr_ptr_type,
 			      TYPE_QUALS (TREE_TYPE (TREE_OPERAND (base, 0))));
-  vect_ptr = vect_get_new_vect_var (vect_ptr_type, vect_pointer_var,
+  aggr_ptr = vect_get_new_vect_var (aggr_ptr_type, vect_pointer_var,
                                     get_name (base_name));
 
-  /* Vector types inherit the alias set of their component type by default so
-     we need to use a ref-all pointer if the data reference does not conflict
-     with the created vector data reference because it is not addressable.  */
-  if (!alias_sets_conflict_p (get_deref_alias_set (vect_ptr),
+  /* Vector and array types inherit the alias set of their component
+     type by default so we need to use a ref-all pointer if the data
+     reference does not conflict with the created aggregated data
+     reference because it is not addressable.  */
+  if (!alias_sets_conflict_p (get_deref_alias_set (aggr_ptr),
 			      get_alias_set (DR_REF (dr))))
     {
-      vect_ptr_type
-	= build_pointer_type_for_mode (vectype,
-				       TYPE_MODE (vect_ptr_type), true);
-      vect_ptr = vect_get_new_vect_var (vect_ptr_type, vect_pointer_var,
+      aggr_ptr_type
+	= build_pointer_type_for_mode (aggr_type,
+				       TYPE_MODE (aggr_ptr_type), true);
+      aggr_ptr = vect_get_new_vect_var (aggr_ptr_type, vect_pointer_var,
 					get_name (base_name));
     }
 
@@ -3063,14 +3069,14 @@ vect_create_data_ref_ptr (gimple stmt, struct loop *at_loop, tree offset,
       do
 	{
 	  tree lhs = gimple_assign_lhs (orig_stmt);
-	  if (!alias_sets_conflict_p (get_deref_alias_set (vect_ptr),
+	  if (!alias_sets_conflict_p (get_deref_alias_set (aggr_ptr),
 				      get_alias_set (lhs)))
 	    {
-	      vect_ptr_type
-		= build_pointer_type_for_mode (vectype,
-					       TYPE_MODE (vect_ptr_type), true);
-	      vect_ptr
-		= vect_get_new_vect_var (vect_ptr_type, vect_pointer_var,
+	      aggr_ptr_type
+		= build_pointer_type_for_mode (aggr_type,
+					       TYPE_MODE (aggr_ptr_type), true);
+	      aggr_ptr
+		= vect_get_new_vect_var (aggr_ptr_type, vect_pointer_var,
 					 get_name (base_name));
 	      break;
 	    }
@@ -3080,7 +3086,7 @@ vect_create_data_ref_ptr (gimple stmt, struct loop *at_loop, tree offset,
       while (orig_stmt);
     }
 
-  add_referenced_var (vect_ptr);
+  add_referenced_var (aggr_ptr);
 
   /* Note: If the dataref is in an inner-loop nested in LOOP, and we are
      vectorizing LOOP (i.e., outer-loop vectorization), we need to create two
@@ -3113,8 +3119,8 @@ vect_create_data_ref_ptr (gimple stmt, struct loop *at_loop, tree offset,
 		vp2 = vp1 + step
 		if () goto LOOP   */
 
-  /* (2) Calculate the initial address the vector-pointer, and set
-         the vector-pointer to point to it before the loop.  */
+  /* (2) Calculate the initial address of the aggregate-pointer, and set
+     the aggregate-pointer to point to it before the loop.  */
 
   /* Create: (&(base[init_val+offset]) in the loop preheader.  */
 
@@ -3133,17 +3139,17 @@ vect_create_data_ref_ptr (gimple stmt, struct loop *at_loop, tree offset,
 
   *initial_address = new_temp;
 
-  /* Create: p = (vectype *) initial_base  */
+  /* Create: p = (aggr_type *) initial_base  */
   if (TREE_CODE (new_temp) != SSA_NAME
-      || !useless_type_conversion_p (vect_ptr_type, TREE_TYPE (new_temp)))
+      || !useless_type_conversion_p (aggr_ptr_type, TREE_TYPE (new_temp)))
     {
-      vec_stmt = gimple_build_assign (vect_ptr,
-				      fold_convert (vect_ptr_type, new_temp));
-      vect_ptr_init = make_ssa_name (vect_ptr, vec_stmt);
+      vec_stmt = gimple_build_assign (aggr_ptr,
+				      fold_convert (aggr_ptr_type, new_temp));
+      aggr_ptr_init = make_ssa_name (aggr_ptr, vec_stmt);
       /* Copy the points-to information if it exists. */
       if (DR_PTR_INFO (dr))
-	duplicate_ssa_name_ptr_info (vect_ptr_init, DR_PTR_INFO (dr));
-      gimple_assign_set_lhs (vec_stmt, vect_ptr_init);
+	duplicate_ssa_name_ptr_info (aggr_ptr_init, DR_PTR_INFO (dr));
+      gimple_assign_set_lhs (vec_stmt, aggr_ptr_init);
       if (pe)
 	{
 	  new_bb = gsi_insert_on_edge_immediate (pe, vec_stmt);
@@ -3153,19 +3159,19 @@ vect_create_data_ref_ptr (gimple stmt, struct loop *at_loop, tree offset,
 	gsi_insert_before (gsi, vec_stmt, GSI_SAME_STMT);
     }
   else
-    vect_ptr_init = new_temp;
+    aggr_ptr_init = new_temp;
 
-  /* (3) Handle the updating of the vector-pointer inside the loop.
+  /* (3) Handle the updating of the aggregate-pointer inside the loop.
      This is needed when ONLY_INIT is false, and also when AT_LOOP is the
      inner-loop nested in LOOP (during outer-loop vectorization).  */
 
   /* No update in loop is required.  */
   if (only_init && (!loop_vinfo || at_loop == loop))
-    vptr = vect_ptr_init;
+    aptr = aggr_ptr_init;
   else
     {
-      /* The step of the vector pointer is the Vector Size.  */
-      tree step = TYPE_SIZE_UNIT (vectype);
+      /* The step of the aggregate pointer is the type size.  */
+      tree step = TYPE_SIZE_UNIT (aggr_type);
       /* One exception to the above is when the scalar step of the load in
 	 LOOP is zero. In this case the step here is also zero.  */
       if (*inv_p)
@@ -3175,9 +3181,9 @@ vect_create_data_ref_ptr (gimple stmt, struct loop *at_loop, tree offset,
 
       standard_iv_increment_position (loop, &incr_gsi, &insert_after);
 
-      create_iv (vect_ptr_init,
-		 fold_convert (vect_ptr_type, step),
-		 vect_ptr, loop, &incr_gsi, insert_after,
+      create_iv (aggr_ptr_init,
+		 fold_convert (aggr_ptr_type, step),
+		 aggr_ptr, loop, &incr_gsi, insert_after,
 		 &indx_before_incr, &indx_after_incr);
       incr = gsi_stmt (incr_gsi);
       set_vinfo_for_stmt (incr, new_stmt_vec_info (incr, loop_vinfo, NULL));
@@ -3191,14 +3197,14 @@ vect_create_data_ref_ptr (gimple stmt, struct loop *at_loop, tree offset,
       if (ptr_incr)
 	*ptr_incr = incr;
 
-      vptr = indx_before_incr;
+      aptr = indx_before_incr;
     }
 
   if (!nested_in_vect_loop || only_init)
-    return vptr;
+    return aptr;
 
 
-  /* (4) Handle the updating of the vector-pointer inside the inner-loop
+  /* (4) Handle the updating of the aggregate-pointer inside the inner-loop
      nested in LOOP, if exists.  */
 
   gcc_assert (nested_in_vect_loop);
@@ -3206,7 +3212,7 @@ vect_create_data_ref_ptr (gimple stmt, struct loop *at_loop, tree offset,
     {
       standard_iv_increment_position (containing_loop, &incr_gsi,
 				      &insert_after);
-      create_iv (vptr, fold_convert (vect_ptr_type, DR_STEP (dr)), vect_ptr,
+      create_iv (aptr, fold_convert (aggr_ptr_type, DR_STEP (dr)), aggr_ptr,
 		 containing_loop, &incr_gsi, insert_after, &indx_before_incr,
 		 &indx_after_incr);
       incr = gsi_stmt (incr_gsi);
@@ -3674,8 +3680,9 @@ vect_setup_realignment (gimple stmt, gimple_stmt_iterator *gsi,
 
       gcc_assert (!compute_in_loop);
       vec_dest = vect_create_destination_var (scalar_dest, vectype);
-      ptr = vect_create_data_ref_ptr (stmt, loop_for_initial_load, NULL_TREE,
-				      &init_addr, NULL, &inc, true, &inv_p);
+      ptr = vect_create_data_ref_ptr (stmt, vectype, loop_for_initial_load,
+				      NULL_TREE, &init_addr, NULL, &inc,
+				      true, &inv_p);
       new_stmt = gimple_build_assign_with_ops
 		   (BIT_AND_EXPR, NULL_TREE, ptr,
 		    build_int_cst (TREE_TYPE (ptr),
