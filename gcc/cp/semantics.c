@@ -856,7 +856,7 @@ begin_for_stmt (tree scope, tree init)
   tree r;
 
   r = build_stmt (input_location, FOR_STMT, NULL_TREE, NULL_TREE,
-		  NULL_TREE, NULL_TREE);
+		  NULL_TREE, NULL_TREE, NULL_TREE);
 
   if (scope == NULL_TREE)
     {
@@ -865,7 +865,7 @@ begin_for_stmt (tree scope, tree init)
 	scope = begin_for_scope (&init);
     }
   FOR_INIT_STMT (r) = init;
-  TREE_CHAIN (r) = scope;
+  FOR_SCOPE (r) = scope;
 
   return r;
 }
@@ -940,8 +940,12 @@ finish_for_stmt (tree for_stmt)
   /* Pop the scope for the body of the loop.  */
   if (flag_new_for_scope > 0)
     {
-      tree scope = TREE_CHAIN (for_stmt);
-      TREE_CHAIN (for_stmt) = NULL;
+      tree scope;
+      tree *scope_ptr = (TREE_CODE (for_stmt) == RANGE_FOR_STMT
+			 ? &RANGE_FOR_SCOPE (for_stmt)
+			 : &FOR_SCOPE (for_stmt));
+      scope = *scope_ptr;
+      *scope_ptr = NULL;
       add_stmt (do_poplevel (scope));
     }
 
@@ -959,7 +963,7 @@ begin_range_for_stmt (tree scope, tree init)
   tree r;
 
   r = build_stmt (input_location, RANGE_FOR_STMT,
-		  NULL_TREE, NULL_TREE, NULL_TREE);
+		  NULL_TREE, NULL_TREE, NULL_TREE, NULL_TREE);
 
   if (scope == NULL_TREE)
     {
@@ -972,7 +976,7 @@ begin_range_for_stmt (tree scope, tree init)
      pop it now.  */
   if (init)
     pop_stmt_list (init);
-  TREE_CHAIN (r) = scope;
+  RANGE_FOR_SCOPE (r) = scope;
 
   return r;
 }
