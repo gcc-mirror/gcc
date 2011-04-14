@@ -1,5 +1,14 @@
 2011-04-13  Gary Funck  <gary@intrepid.com>
 
+	* upc-gimplify.c (upc_gimplify_real_image_ref): New.
+	  Currently, a not-yet-implemented stub.
+	  (upc_gimplify_lval): call upc_gimplify_real_image_ref to
+	  rewrite UPC shared REALPART_EXPR and IMAGPART_EXPR lvalues.
+	  This will avoid an ICE when compiling regular "C"
+	  code that refers to those operators.
+
+2011-04-13  Gary Funck  <gary@intrepid.com>
+
 	* upc-cmd.c: Do not add "-isystem <libupc_path>" if
 	  -fno-upc-pre-include is asserted.
 

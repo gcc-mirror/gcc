@@ -83,6 +83,8 @@ static int upc_gimplify_pts_cond_expr (location_t, tree *,
                                        gimple_seq *, gimple_seq *);
 static int upc_gimplify_pts_cvt (location_t, tree *,
                                  gimple_seq *, gimple_seq *);
+static int upc_gimplify_real_image_ref (location_t, tree *,
+                                        gimple_seq *, gimple_seq *);
 static int upc_gimplify_shared_inc_dec_expr (location_t, tree *,
                                              gimple_seq *, gimple_seq *);
 static int upc_gimplify_shared_var_ref (location_t, tree *,
@@ -277,6 +279,11 @@ upc_gimplify_lval (location_t loc, tree *expr_p,
       if (type0 && (TREE_CODE (type0) == POINTER_TYPE)
            && upc_shared_type_p (TREE_TYPE (type0)))
         return upc_gimplify_indirect_ref (loc, expr_p, pre_p, post_p);
+      break;
+    case REALPART_EXPR:
+    case IMAGPART_EXPR:
+      if (op0 && TREE_SHARED (op0))
+        return upc_gimplify_real_image_ref (loc, expr_p, pre_p, post_p);
       break;
     case VAR_DECL:
       if (type && upc_shared_type_p (type))
@@ -602,6 +609,15 @@ upc_gimplify_indirect_ref (location_t loc, tree *expr_p,
      shared object. */
   src_addr = TREE_OPERAND (*expr_p, 0);
   *expr_p = upc_expand_get (loc, src_addr, pre_p, post_p);
+  return GS_OK;
+}
+
+static
+int
+upc_gimplify_real_image_ref (location_t loc, tree *expr_p,
+                             gimple_seq *pre_p, gimple_seq *post_p)
+{
+  gcc_unreachable ();
   return GS_OK;
 }
 
