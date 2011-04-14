@@ -7710,8 +7710,16 @@ compute_array_index_type (tree name, tree size, tsubst_flags_t complain)
       processing_template_decl = saved_processing_template_decl;
 
       if (!TREE_CONSTANT (itype))
-	/* A variable sized array.  */
-	itype = variable_size (itype);
+	{
+	  /* A variable sized array.  */
+	  if (TREE_SIDE_EFFECTS (itype))
+	    /* Use get_temp_regvar rather than variable_size here so that
+	       people walking expressions that use a variable of this type
+	       don't walk into this expression.  */
+	    itype = get_temp_regvar (TREE_TYPE (itype), itype);
+	  else
+	    itype = variable_size (itype);
+	}
       /* Make sure that there was no overflow when creating to a signed
 	 index type.  (For example, on a 32-bit machine, an array with
 	 size 2^32 - 1 is too big.)  */

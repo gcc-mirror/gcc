@@ -1,3 +1,11 @@
+2011-04-14  Jason Merrill  <jason@redhat.com>
+
+	PR c++/48446
+	* decl.c (compute_array_index_type): Use get_temp_regvar instead
+	of variable_size.
+	* init.c (get_temp_regvar): No longer static.
+	* cp-tree.h: Declare it.
+
 2011-04-14  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* parser.c (cp_parser_objc_class_declaration): Updated for change
