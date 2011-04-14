@@ -308,6 +308,7 @@ main (int argc, char *argv[])
   int no_start_files = 0;
   int no_default_libs = 0;
   int no_std_inc = 0;
+  int no_upc_pre_inc = 0;
   int is_x_upc_in_effect = 0;
   const int is_dev_compiler = !strcmp (COMPILER, "xgcc");
   const char *cp;
@@ -375,6 +376,10 @@ main (int argc, char *argv[])
 	    { 
 	       no_start_files = 1;
 	       no_default_libs = 1;
+	    }
+	  else if (!strcmp(arg, "-fno-upc-pre-include"))
+	    { 
+	       no_upc_pre_inc = 1;
 	    }
 	  invoke_linker = invoke_linker && !NO_LINK_SWITCHES (arg);
 	  info_only = info_only && GCC_INFO_ONLY_SWITCHES (arg);
@@ -453,7 +458,7 @@ main (int argc, char *argv[])
 
   if (!info_only)
     {
-      if (inc_dir && !no_std_inc)
+      if (inc_dir && !no_std_inc && !no_upc_pre_inc)
 	{
           /* Copy in the -isystem <path> argument */
 	  exec_args[nargs++] = xstrdup ("-isystem");
@@ -522,7 +527,7 @@ main (int argc, char *argv[])
 	  fprintf (stderr, "Cannot find UPC library directory.\n");
 	  exit (2);
 	}
-      if (!no_std_inc)
+      if (!no_std_inc && !no_upc_pre_inc)
         {
 	  /* Place libdir first so that we can find gcc-upc-lib.h. */
 	  exec_args[nargs++] = xstrdup ("-isystem");

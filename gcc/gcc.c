@@ -795,7 +795,8 @@ static const char *cc1_options =
  %{fmudflap|fmudflapth:-fno-builtin -fno-merge-constants}\
  %{coverage:-fprofile-arcs -ftest-coverage}";
 
-static const char *upc_options = "-lang-upc -include gcc-upc.h";
+static const char *upc_options = "-lang-upc \
+ %{!fno-upc-pre-include:-include gcc-upc.h}";
 
 static const char *asm_options =
 "%{-target-help:%:print-asm-header()} "

@@ -1,3 +1,9 @@
+2011-04-13  Gary Funck  <gary@intrepid.com>
+
+	* c-family/c.opt (fupc-pre-include): New option definition.
+	* gcc.c (upc_options): Do not add "-include gcc-upc.h" if
+	  -fno-upc-pre-include is asserted.
+
 2011-04-07  Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 172158 into gupc branch.

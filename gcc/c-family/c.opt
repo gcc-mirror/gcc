@@ -1023,6 +1023,10 @@ fupc-link
 C UPC C++ 
 Enable UPC linker specs for upc-crtbegin/upc-crtend
 
+fupc-pre-include
+C UPC C++ Init(1)
+Pre-include UPC runtime header file
+
 fupc-pthreads-model-tls
 UPC
 Generate code for a POSIX threads based UPC runtime environment

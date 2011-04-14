@@ -1,3 +1,8 @@
+2011-04-13  Gary Funck  <gary@intrepid.com>
+
+	* upc-cmd.c: Do not add "-isystem <libupc_path>" if
+	  -fno-upc-pre-include is asserted.
+
 2011-03-22  Gary Funck  <gary@intrepid.com>
 
 	* upc-cmd.c: Move linker switches into libupc/libupc.spec.
