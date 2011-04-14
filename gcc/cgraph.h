@@ -58,23 +58,6 @@ struct lto_file_decl_data;
 extern const char * const cgraph_availability_names[];
 extern const char * const ld_plugin_symbol_resolution_names[];
 
-/* Function inlining information.  */
-
-struct GTY(()) inline_summary
-{
-  /* Estimated stack frame consumption by the function.  */
-  HOST_WIDE_INT estimated_self_stack_size;
-
-  /* Size of the function body.  */
-  int self_size;
-  /* How many instructions are likely going to disappear after inlining.  */
-  int size_inlining_benefit;
-  /* Estimated time spent executing the function body.  */
-  int self_time;
-  /* How much time is going to be saved by inlining.  */
-  int time_inlining_benefit;
-};
-
 /* Information about thunk, used only for same body aliases.  */
 
 struct GTY(()) cgraph_thunk_info {
@@ -94,8 +77,6 @@ struct GTY(()) cgraph_thunk_info {
 struct GTY(()) cgraph_local_info {
   /* File stream where this node is being written to.  */
   struct lto_file_decl_data * lto_file_data;
-
-  struct inline_summary inline_summary;
 
   /* Set when function function is visible in current compilation unit only
      and its address is never taken.  */

@@ -517,6 +517,8 @@ cgraph_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 	      }
 	  }
       }
+  if (file)
+    fprintf (file, "\n");
 
 #ifdef ENABLE_CHECKING
   verify_cgraph ();

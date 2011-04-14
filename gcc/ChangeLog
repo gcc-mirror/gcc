@@ -1,3 +1,42 @@
+2011-04-14  Jan Hubicka  <jh@suse.cz>
+
+	* cgraph.c (dump_cgraph_node): Do not dump inline summaries.
+	* cgraph.h (struct inline_summary): Move to ipa-inline.h
+	(cgraph_local_info): Remove inline_summary.
+	* ipa-cp.c: Include ipa-inline.h.
+	(ipcp_cloning_candidate_p, ipcp_estimate_growth,
+	ipcp_estimate_cloning_cost, ipcp_insert_stage): Use inline_summary
+	accesor.
+	* lto-cgraph.c (lto_output_node): Do not stream inline summary.
+	(input_overwrite_node): Do not set inline summary.
+	(input_node): Do not stream inline summary.
+	* ipa-inline.c (cgraph_decide_inlining): Dump inline summaries.
+	(cgraph_decide_inlining_incrementally): Do not try to estimate overall
+	growth; we do not have inline parameters computed for that anyway.
+	(cgraph_early_inlining): After inlining compute call_stmt_sizes.
+	* ipa-inline.h (struct inline_summary): Move here from ipa-inline.h
+	(inline_summary_t): New type and VECtor.
+	(debug_inline_summary, dump_inline_summaries): Declare.
+	(inline_summary): Use VOCtor.
+	(estimate_edge_growth): Kill hack computing call stmt size directly.
+	* lto-section-in.c (lto_section_name): Add inline section.
+	* ipa-inline-analysis.c: Include lto-streamer.h
+	(node_removal_hook_holder, node_duplication_hook_holder): New holders
+	(inline_node_removal_hook, inline_node_duplication_hook): New functions.
+	(inline_summary_vec): Define.
+	(inline_summary_alloc, dump_inline_summary, debug_inline_summary,
+	dump_inline_summaries): New functions.
+	(estimate_function_body_sizes): Properly compute size/time of outgoing calls.
+	(compute_inline_parameters): Alloc inline_summary; do not compute size/time
+	of incomming calls.
+	(estimate_edge_time): Avoid missing time summary hack.
+	(inline_read_summary): Read inline summary info.
+	(inline_write_summary): Write inline summary info.
+	(inline_free_summary): Free all hooks and inline summary vector.
+	* lto-streamer.h: Add LTO_section_inline_summary section.
+	* Makefile.in (ipa-cp.o, ipa-inline-analysis.o): Update dependencies.
+	* ipa.c (cgraph_remove_unreachable_nodes): Fix dump file formating.
+
 2011-04-14  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* tree-vectorizer.h (vect_strided_store_supported): Add a

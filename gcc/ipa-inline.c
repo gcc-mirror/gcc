@@ -1301,6 +1301,9 @@ cgraph_decide_inlining (void)
 	      max_benefit = benefit;
 	  }
       }
+
+  if (dump_file)
+    dump_inline_summaries (dump_file);
   gcc_assert (in_lto_p
 	      || !max_count
 	      || (profile_info && flag_branch_probabilities));
@@ -1415,7 +1418,9 @@ cgraph_decide_inlining (void)
 	     ncalls_inlined, nfunctions_inlined, initial_size,
 	     overall_size);
   free (order);
-  inline_free_summary ();
+  /* In WPA we use inline summaries for partitioning process.  */
+  if (!flag_wpa)
+    inline_free_summary ();
   return 0;
 }
 
@@ -1558,8 +1563,7 @@ cgraph_decide_inlining_incrementally (struct cgraph_node *node)
       /* When the function body would grow and inlining the function
 	 won't eliminate the need for offline copy of the function,
 	 don't inline.  */
-      if (estimate_edge_growth (e) > allowed_growth
-	  && estimate_growth (e->callee) > allowed_growth)
+      if (estimate_edge_growth (e) > allowed_growth)
 	{
 	  if (dump_file)
 	    fprintf (dump_file,
@@ -1601,6 +1605,7 @@ static unsigned int
 cgraph_early_inlining (void)
 {
   struct cgraph_node *node = cgraph_get_node (current_function_decl);
+  struct cgraph_edge *edge;
   unsigned int todo = 0;
   int iterations = 0;
   bool inlined = false;
@@ -1652,6 +1657,19 @@ cgraph_early_inlining (void)
     {
       timevar_push (TV_INTEGRATION);
       todo |= optimize_inline_calls (current_function_decl);
+
+      /* Technically we ought to recompute inline parameters so the new iteration of
+	 early inliner works as expected.  We however have values approximately right
+	 and thus we only need to update edge info that might be cleared out for
+	 newly discovered edges.  */
+      for (edge = node->callees; edge; edge = edge->next_callee)
+	{
+	  edge->call_stmt_size
+	    = estimate_num_insns (edge->call_stmt, &eni_size_weights);
+	  edge->call_stmt_time
+	    = estimate_num_insns (edge->call_stmt, &eni_time_weights);
+	}
+
       timevar_pop (TV_INTEGRATION);
     }
 
