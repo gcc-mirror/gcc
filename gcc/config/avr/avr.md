@@ -35,9 +35,6 @@
 ;;  ~  Output 'r' if not AVR_HAVE_JMP_CALL.
 ;;  !  Output 'e' if AVR_HAVE_EIJMP_EICALL.
 
-;; UNSPEC usage:
-;;  0  Length of a string, see "strlenhi".
-;;  1  Jump by register pair Z or by table addressed by Z, see "casesi".
 
 (define_constants
   [(REG_X	26)
@@ -50,17 +47,29 @@
    
    (SREG_ADDR   0x5F)
    (RAMPZ_ADDR  0x5B)
-   
-   (UNSPEC_STRLEN	0)
-   (UNSPEC_INDEX_JMP	1)
-   (UNSPEC_SEI		2)
-   (UNSPEC_CLI		3)
+   ])
 
-   (UNSPECV_PROLOGUE_SAVES	0)
-   (UNSPECV_EPILOGUE_RESTORES	1)
-   (UNSPECV_WRITE_SP_IRQ_ON	2)
-   (UNSPECV_WRITE_SP_IRQ_OFF	3)
-   (UNSPECV_GOTO_RECEIVER	4)])
+(define_c_enum "unspec"
+  [UNSPEC_STRLEN
+   UNSPEC_INDEX_JMP
+   UNSPEC_FMUL
+   UNSPEC_FMULS
+   UNSPEC_FMULSU
+   ])
+
+(define_c_enum "unspecv"
+  [UNSPECV_PROLOGUE_SAVES
+   UNSPECV_EPILOGUE_RESTORES
+   UNSPECV_WRITE_SP_IRQ_ON
+   UNSPECV_WRITE_SP_IRQ_OFF
+   UNSPECV_GOTO_RECEIVER
+   UNSPECV_ENABLE_IRQS
+   UNSPECV_NOP
+   UNSPECV_SLEEP
+   UNSPECV_WDR
+   UNSPECV_DELAY_CYCLES
+   ])
+    
 
 (include "predicates.md")
 (include "constraints.md")
@@ -1489,7 +1498,7 @@
     FAIL;
 }")
 
-(define_insn "*rotlqi3_4"
+(define_insn "rotlqi3_4"
   [(set (match_operand:QI 0 "register_operand" "=r")
 	(rotate:QI (match_operand:QI 1 "register_operand" "0")
 		   (const_int 4)))]
@@ -3130,21 +3139,19 @@
 
 ;; Enable Interrupts
 (define_insn "enable_interrupt"
-  [(unspec [(const_int 0)] UNSPEC_SEI)]
+  [(unspec_volatile [(const_int 1)] UNSPECV_ENABLE_IRQS)]
   ""
   "sei"
   [(set_attr "length" "1")
-  (set_attr "cc" "none")
-  ])
+   (set_attr "cc" "none")])
 
 ;; Disable Interrupts
 (define_insn "disable_interrupt"
-  [(unspec [(const_int 0)] UNSPEC_CLI)]
+  [(unspec_volatile [(const_int 0)] UNSPECV_ENABLE_IRQS)]
   ""
   "cli"
   [(set_attr "length" "1")
-  (set_attr "cc" "none")
-  ])
+   (set_attr "cc" "none")])
 
 ;;  Library prologue saves
 (define_insn "call_prologue_saves"
@@ -3246,3 +3253,138 @@
     expand_epilogue (true /* sibcall_p */);
     DONE;
   })
+
+;; Some instructions resp. instruction sequences available
+;; via builtins.
+
+(define_insn "delay_cycles_1"
+  [(unspec_volatile [(match_operand:QI 0 "const_int_operand" "n")
+                     (const_int 1)]
+                    UNSPECV_DELAY_CYCLES)
+   (clobber (match_scratch:QI 1 "=&d"))]
+  ""
+  "ldi %1,lo8(%0)
+	1: dec %1
+	brne 1b"
+  [(set_attr "length" "3")
+   (set_attr "cc" "clobber")])
+
+(define_insn "delay_cycles_2"
+  [(unspec_volatile [(match_operand:HI 0 "const_int_operand" "n")
+                     (const_int 2)]
+                    UNSPECV_DELAY_CYCLES)
+   (clobber (match_scratch:HI 1 "=&w"))]
+  ""
+  "ldi %A1,lo8(%0)
+	ldi %B1,hi8(%0)
+	1: sbiw %A1,1
+	brne 1b"
+  [(set_attr "length" "4")
+   (set_attr "cc" "clobber")])
+
+(define_insn "delay_cycles_3"
+  [(unspec_volatile [(match_operand:SI 0 "const_int_operand" "n")
+                     (const_int 3)]
+                    UNSPECV_DELAY_CYCLES)
+   (clobber (match_scratch:QI 1 "=&d"))
+   (clobber (match_scratch:QI 2 "=&d"))
+   (clobber (match_scratch:QI 3 "=&d"))]
+  ""
+  "ldi %1,lo8(%0)
+	ldi %2,hi8(%0)
+	ldi %3,hlo8(%0)
+	1: subi %1,1
+	sbci %2,0
+	sbci %3,0
+	brne 1b"
+  [(set_attr "length" "7")
+   (set_attr "cc" "clobber")])
+
+(define_insn "delay_cycles_4"
+  [(unspec_volatile [(match_operand:SI 0 "const_int_operand" "n")
+                     (const_int 4)]
+                    UNSPECV_DELAY_CYCLES)
+   (clobber (match_scratch:QI 1 "=&d"))
+   (clobber (match_scratch:QI 2 "=&d"))
+   (clobber (match_scratch:QI 3 "=&d"))
+   (clobber (match_scratch:QI 4 "=&d"))]
+  ""
+  "ldi %1,lo8(%0)
+	ldi %2,hi8(%0)
+	ldi %3,hlo8(%0)
+	ldi %4,hhi8(%0)
+	1: subi %1,1
+	sbci %2,0
+	sbci %3,0
+	sbci %4,0
+	brne 1b"
+  [(set_attr "length" "9")
+   (set_attr "cc" "clobber")])
+
+;; CPU instructions
+
+;; NOP taking 1 or 2 Ticks 
+(define_insn "nopv"
+  [(unspec_volatile [(match_operand:SI 0 "const_int_operand" "P,K")] 
+                    UNSPECV_NOP)]
+  ""
+  "@
+	nop
+	rjmp ."
+  [(set_attr "length" "1")
+   (set_attr "cc" "none")])
+
+;; SLEEP
+(define_insn "sleep"
+  [(unspec_volatile [(const_int 0)] UNSPECV_SLEEP)]
+  ""
+  "sleep"
+  [(set_attr "length" "1")
+   (set_attr "cc" "none")])
+ 
+;; WDR
+(define_insn "wdr"
+  [(unspec_volatile [(const_int 0)] UNSPECV_WDR)]
+  ""
+  "wdr"
+  [(set_attr "length" "1")
+   (set_attr "cc" "none")])
+  
+;; FMUL
+(define_insn "fmul"
+  [(set (match_operand:HI 0 "register_operand" "=r")
+        (unspec:HI [(match_operand:QI 1 "register_operand" "a")
+                    (match_operand:QI 2 "register_operand" "a")]
+                   UNSPEC_FMUL))]
+  "AVR_HAVE_MUL"
+  "fmul %1,%2
+	movw %0,r0
+	clr __zero_reg__"
+  [(set_attr "length" "3")
+   (set_attr "cc" "clobber")])
+
+;; FMULS
+(define_insn "fmuls"
+  [(set (match_operand:HI 0 "register_operand" "=r")
+        (unspec:HI [(match_operand:QI 1 "register_operand" "a")
+                    (match_operand:QI 2 "register_operand" "a")]
+                   UNSPEC_FMULS))]
+  "AVR_HAVE_MUL"
+  "fmuls %1,%2
+	movw %0,r0
+	clr __zero_reg__"
+  [(set_attr "length" "3")
+   (set_attr "cc" "clobber")])
+
+;; FMULSU
+(define_insn "fmulsu"
+  [(set (match_operand:HI 0 "register_operand" "=r")
+        (unspec:HI [(match_operand:QI 1 "register_operand" "a")
+                    (match_operand:QI 2 "register_operand" "a")]
+                   UNSPEC_FMULSU))]
+  "AVR_HAVE_MUL"
+  "fmulsu %1,%2
+	movw %0,r0
+	clr __zero_reg__"
+  [(set_attr "length" "3")
+   (set_attr "cc" "clobber")])

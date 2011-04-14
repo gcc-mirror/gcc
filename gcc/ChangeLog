@@ -1,3 +1,39 @@
+2011-04-14  Anatoly Sokolov  <aesok@post.ru>
+            Eric Weddington  <eric.weddington@atmel.com>
+            Georg-Johann Lay <avr@gjlay.de> 
+	
+	* config/avr/avr.c: ("insn-codes.h", "optabs.h", "langhooks.h"):
+	New Includes
+	(avr_init_builtins, avr_expand_builtin,
+	avr_expand_delay_cycles, avr_expand_unop_builtin,
+	avr_expand_binop_builtin ): New functions.
+	(avr_builtin_id): New enum
+	(struct avr_builtin_description): New struct
+	(bdesc_1arg, bdesc_2arg): New arrays describing some RTL builtins.
+	(TARGET_INIT_BUILTINS, TARGET_EXPAND_BUILTIN): Define.
+	
+	* config/avr/avr.md (UNSPEC_FMUL, UNSPEC_FMULS, UNSPEC_FMULSU,
+	UNSPECV_ENABLE_IRQS, UNSPECV_NOP, UNSPECV_SLEEP, UNSPECV_WDR, 
+	UNSPECV_DELAY_CYCLES): new enumeration values
+	(UNSPEC_SEI, UNSPEC_CLI): Remove enumeration values
+	("enable_interrupt"): Use UNSPECV_ENABLE_IRQS
+	("disable_interrupt"): Use UNSPECV_ENABLE_IRQS
+	("*rotlqi3_4"): rename insn to "rotlqi3_4"
+	("delay_cycles_1", "delay_cycles_2", "delay_cycles_3",
+	"delay_cycles_4", "nopv", "sleep", "wdr", "fmul", "fmuls",
+	"fmulsu"): New insns
+	
+	* config/avr/avr-c.c: fix line endings
+	(avr_cpu_cpp_builtins): New builtin defines: __BUILTIN_AVR_NOP,
+	__BUILTIN_AVR_SEI, __BUILTIN_AVR_CLI, __BUILTIN_AVR_WDR,
+	__BUILTIN_AVR_SLEEP, __BUILTIN_AVR_SWAP,
+	__BUILTIN_AVR_DELAY_CYCLES, __BUILTIN_AVR_FMUL,
+	__BUILTIN_AVR_FMULS, __BUILTIN_AVR_FMULSU.
+	
+	* doc/extend.texi (AVR Built-in Functions): New node
+	(Target Builtins): Add documentation of AVR
+	built-in functions.
+
 2011-04-14  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/44643
