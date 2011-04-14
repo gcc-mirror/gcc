@@ -19,6 +19,30 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+/* Function inlining information.  */
+
+struct inline_summary
+{
+  /* Estimated stack frame consumption by the function.  */
+  HOST_WIDE_INT estimated_self_stack_size;
+
+  /* Size of the function body.  */
+  int self_size;
+  /* How many instructions are likely going to disappear after inlining.  */
+  int size_inlining_benefit;
+  /* Estimated time spent executing the function body.  */
+  int self_time;
+  /* How much time is going to be saved by inlining.  */
+  int time_inlining_benefit;
+};
+
+typedef struct inline_summary inline_summary_t;
+DEF_VEC_O(inline_summary_t);
+DEF_VEC_ALLOC_O(inline_summary_t,heap);
+extern VEC(inline_summary_t,heap) *inline_summary_vec;
+
+void debug_inline_summary (struct cgraph_node *);
+void dump_inline_summaries (FILE *f);
 void inline_generate_summary (void);
 void inline_read_summary (void);
 void inline_write_summary (cgraph_node_set, varpool_node_set);
@@ -30,7 +54,7 @@ int estimate_growth (struct cgraph_node *);
 static inline struct inline_summary *
 inline_summary (struct cgraph_node *node)
 {
-  return &node->local.inline_summary;
+  return VEC_index (inline_summary_t, inline_summary_vec, node->uid);
 }
 
 /* Estimate the growth of the caller when inlining EDGE.  */
@@ -39,12 +63,8 @@ static inline int
 estimate_edge_growth (struct cgraph_edge *edge)
 {
   int call_stmt_size;
-  /* ???  We throw away cgraph edges all the time so the information
-     we store in edges doesn't persist for early inlining.  Ugh.  */
-  if (!edge->call_stmt)
-    call_stmt_size = edge->call_stmt_size;
-  else
-    call_stmt_size = estimate_num_insns (edge->call_stmt, &eni_size_weights);
+  call_stmt_size = edge->call_stmt_size;
+  gcc_checking_assert (call_stmt_size);
   return (edge->callee->global.size
 	  - inline_summary (edge->callee)->size_inlining_benefit
 	  - call_stmt_size);

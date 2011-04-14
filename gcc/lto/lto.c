@@ -44,6 +44,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "lto-streamer.h"
 #include "splay-tree.h"
 #include "params.h"
+#include "ipa-inline.h"
 
 static GTY(()) tree first_personality_decl;
 
@@ -750,7 +751,7 @@ add_cgraph_node_to_partition (ltrans_partition part, struct cgraph_node *node)
 {
   struct cgraph_edge *e;
 
-  part->insns += node->local.inline_summary.self_size;
+  part->insns += inline_summary (node)->self_size;
 
   if (node->aux)
     {
@@ -811,7 +812,7 @@ undo_partition (ltrans_partition partition, unsigned int n_cgraph_nodes,
       struct cgraph_node *node = VEC_index (cgraph_node_ptr,
 					    partition->cgraph_set->nodes,
 					    n_cgraph_nodes);
-      partition->insns -= node->local.inline_summary.self_size;
+      partition->insns -= inline_summary (node)->self_size;
       cgraph_node_set_remove (partition->cgraph_set, node);
       node->aux = (void *)((size_t)node->aux - 1);
     }

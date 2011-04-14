@@ -1,3 +1,10 @@
+2011-04-14  Jan Hubicka  <jh@suse.cz>
+
+	* lto.c: Include ipa-inline.h
+	(add_cgraph_node_to_partition, undo_partition): Use inline_summary accessor.
+	(ipa_node_duplication_hook): Fix declaration.
+	* Make-lang.in (lto.o): Update dependencies.
+
 2011-04-12  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* lto-tree.h (union lang_tree_node): Check for TS_COMMON before

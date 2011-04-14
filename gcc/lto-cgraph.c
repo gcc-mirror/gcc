@@ -465,16 +465,6 @@ lto_output_node (struct lto_simple_output_block *ob, struct cgraph_node *node,
 
   if (tag == LTO_cgraph_analyzed_node)
     {
-      lto_output_sleb128_stream (ob->main_stream,
-				 node->local.inline_summary.estimated_self_stack_size);
-      lto_output_sleb128_stream (ob->main_stream,
-				 node->local.inline_summary.self_size);
-      lto_output_sleb128_stream (ob->main_stream,
-				 node->local.inline_summary.size_inlining_benefit);
-      lto_output_sleb128_stream (ob->main_stream,
-				 node->local.inline_summary.self_time);
-      lto_output_sleb128_stream (ob->main_stream,
-				 node->local.inline_summary.time_inlining_benefit);
       if (node->global.inlined_to)
 	{
 	  ref = lto_cgraph_encoder_lookup (encoder, node->global.inlined_to);
@@ -930,23 +920,9 @@ input_overwrite_node (struct lto_file_decl_data *file_data,
 		      struct cgraph_node *node,
 		      enum LTO_cgraph_tags tag,
 		      struct bitpack_d *bp,
-		      unsigned int stack_size,
-		      unsigned int self_time,
-		      unsigned int time_inlining_benefit,
-		      unsigned int self_size,
-		      unsigned int size_inlining_benefit,
 		      enum ld_plugin_symbol_resolution resolution)
 {
   node->aux = (void *) tag;
-  node->local.inline_summary.estimated_self_stack_size = stack_size;
-  node->local.inline_summary.self_time = self_time;
-  node->local.inline_summary.time_inlining_benefit = time_inlining_benefit;
-  node->local.inline_summary.self_size = self_size;
-  node->local.inline_summary.size_inlining_benefit = size_inlining_benefit;
-  node->global.time = self_time;
-  node->global.size = self_size;
-  node->global.estimated_stack_size = stack_size;
-  node->global.estimated_growth = INT_MIN;
   node->local.lto_file_data = file_data;
 
   node->local.local = bp_unpack_value (bp, 1);
@@ -1023,13 +999,8 @@ input_node (struct lto_file_decl_data *file_data,
   tree fn_decl;
   struct cgraph_node *node;
   struct bitpack_d bp;
-  int stack_size = 0;
   unsigned decl_index;
   int ref = LCC_NOT_FOUND, ref2 = LCC_NOT_FOUND;
-  int self_time = 0;
-  int self_size = 0;
-  int time_inlining_benefit = 0;
-  int size_inlining_benefit = 0;
   unsigned long same_body_count = 0;
   int clone_ref;
   enum ld_plugin_symbol_resolution resolution;
@@ -1051,15 +1022,7 @@ input_node (struct lto_file_decl_data *file_data,
   node->count_materialization_scale = lto_input_sleb128 (ib);
 
   if (tag == LTO_cgraph_analyzed_node)
-    {
-      stack_size = lto_input_sleb128 (ib);
-      self_size = lto_input_sleb128 (ib);
-      size_inlining_benefit = lto_input_sleb128 (ib);
-      self_time = lto_input_sleb128 (ib);
-      time_inlining_benefit = lto_input_sleb128 (ib);
-
-      ref = lto_input_sleb128 (ib);
-    }
+    ref = lto_input_sleb128 (ib);
 
   ref2 = lto_input_sleb128 (ib);
 
@@ -1073,9 +1036,7 @@ input_node (struct lto_file_decl_data *file_data,
 
   bp = lto_input_bitpack (ib);
   resolution = (enum ld_plugin_symbol_resolution)lto_input_uleb128 (ib);
-  input_overwrite_node (file_data, node, tag, &bp, stack_size, self_time,
-  			time_inlining_benefit, self_size,
-			size_inlining_benefit, resolution);
+  input_overwrite_node (file_data, node, tag, &bp, resolution);
 
   /* Store a reference for now, and fix up later to be a pointer.  */
   node->global.inlined_to = (cgraph_node_ptr) (intptr_t) ref;

@@ -23,13 +23,13 @@ along with GCC; see the file COPYING3.  If not see
 
    We estimate for each function
      - function body size
-     - function runtime
+     - average function execution time
      - inlining size benefit (that is how much of function body size
        and its call sequence is expected to disappear by inlining)
      - inlining time benefit
      - function frame size
    For each call
-     - call sequence size
+     - call statement size and time
 
    inlinie_summary datastructures store above information locally (i.e.
    parameters of the function itself) and globally (i.e. parameters of
@@ -61,12 +61,99 @@ along with GCC; see the file COPYING3.  If not see
 #include "ggc.h"
 #include "tree-flow.h"
 #include "ipa-prop.h"
+#include "lto-streamer.h"
 #include "ipa-inline.h"
 
 #define MAX_TIME 1000000000
 
 /* Holders of ipa cgraph hooks: */
 static struct cgraph_node_hook_list *function_insertion_hook_holder;
+static struct cgraph_node_hook_list *node_removal_hook_holder;
+static struct cgraph_2node_hook_list *node_duplication_hook_holder;
+static void inline_node_removal_hook (struct cgraph_node *, void *);
+static void inline_node_duplication_hook (struct cgraph_node *,
+					  struct cgraph_node *, void *);
+
+/* VECtor holding inline summaries.  */
+VEC(inline_summary_t,heap) *inline_summary_vec;
+
+/* Allocate the inline summary vector or resize it to cover all cgraph nodes. */
+
+static void
+inline_summary_alloc (void)
+{
+  if (!node_removal_hook_holder)
+    node_removal_hook_holder =
+      cgraph_add_node_removal_hook (&inline_node_removal_hook, NULL);
+  if (!node_duplication_hook_holder)
+    node_duplication_hook_holder =
+      cgraph_add_node_duplication_hook (&inline_node_duplication_hook, NULL);
+
+  if (VEC_length (inline_summary_t, inline_summary_vec)
+      <= (unsigned) cgraph_max_uid)
+    VEC_safe_grow_cleared (inline_summary_t, heap,
+			   inline_summary_vec, cgraph_max_uid + 1);
+}
+
+/* Hook that is called by cgraph.c when a node is removed.  */
+
+static void
+inline_node_removal_hook (struct cgraph_node *node, void *data ATTRIBUTE_UNUSED)
+{
+  if (VEC_length (inline_summary_t, inline_summary_vec)
+      <= (unsigned)node->uid)
+    return;
+  memset (inline_summary (node),
+	  0, sizeof (inline_summary_t));
+}
+
+/* Hook that is called by cgraph.c when a node is duplicated.  */
+
+static void
+inline_node_duplication_hook (struct cgraph_node *src, struct cgraph_node *dst,
+			      ATTRIBUTE_UNUSED void *data)
+{
+  inline_summary_alloc ();
+  memcpy (inline_summary (dst), inline_summary (src),
+	  sizeof (struct inline_summary));
+}
+
+static void
+dump_inline_summary (FILE *f, struct cgraph_node *node)
+{
+  if (node->analyzed)
+    {
+      struct inline_summary *s = inline_summary (node);
+      fprintf (f, "Inline summary for %s/%i\n", cgraph_node_name (node),
+	       node->uid);
+      fprintf (f, "  self time:       %i, benefit: %i\n",
+      	       s->self_time, s->time_inlining_benefit);
+      fprintf (f, "  global time:     %i\n", node->global.time);
+      fprintf (f, "  self size:       %i, benefit: %i\n",
+	       s->self_size, s->size_inlining_benefit);
+      fprintf (f, "  global size:     %i", node->global.size);
+      fprintf (f, "  self stack:      %i\n",
+	       (int)s->estimated_self_stack_size);
+      fprintf (f, "  global stack:    %i\n\n",
+	       (int)node->global.estimated_stack_size);
+    }
+}
+
+void
+debug_inline_summary (struct cgraph_node *node)
+{
+  dump_inline_summary (stderr, node);
+}
+
+void
+dump_inline_summaries (FILE *f)
+{
+  struct cgraph_node *node;
+
+  for (node = cgraph_nodes; node; node = node->next)
+    if (node->analyzed)
+      dump_inline_summary (f, node);
+}
 
 /* See if statement might disappear after inlining.
    0 - means not eliminated
@@ -179,16 +266,27 @@ estimate_function_body_sizes (struct cgraph_node *node)
 		       freq, this_size, this_time);
 	      print_gimple_stmt (dump_file, stmt, 0, 0);
 	    }
+
+	  if (is_gimple_call (stmt))
+	    {
+	      struct cgraph_edge *edge = cgraph_edge (node, stmt);
+	      edge->call_stmt_size = this_size;
+	      edge->call_stmt_time = this_time;
+	    }
+
 	  this_time *= freq;
 	  time += this_time;
 	  size += this_size;
+
 	  prob = eliminated_by_inlining_prob (stmt);
 	  if (prob == 1 && dump_file && (dump_flags & TDF_DETAILS))
 	    fprintf (dump_file, "    50%% will be eliminated by inlining\n");
 	  if (prob == 2 && dump_file && (dump_flags & TDF_DETAILS))
 	    fprintf (dump_file, "    will eliminated by inlining\n");
+
 	  size_inlining_benefit += this_size * prob;
 	  time_inlining_benefit += this_time * prob;
+
 	  gcc_assert (time >= 0);
 	  gcc_assert (size >= 0);
 	}
@@ -222,6 +320,8 @@ compute_inline_parameters (struct cgraph_node *node)
 
   gcc_assert (!node->global.inlined_to);
 
+  inline_summary_alloc ();
+
   /* Estimate the stack size for the function if we're optimizing.  */
   self_stack_size = optimize ? estimated_stack_frame_size (node) : 0;
   inline_summary (node)->estimated_self_stack_size = self_stack_size;
@@ -247,17 +347,7 @@ compute_inline_parameters (struct cgraph_node *node)
       node->local.can_change_signature = !e;
     }
   estimate_function_body_sizes (node);
-  /* Compute size of call statements.  We have to do this for callers here,
-     those sizes need to be present for edges _to_ us as early as
-     we are finished with early opts.  */
-  for (e = node->callers; e; e = e->next_caller)
-    if (e->call_stmt)
-      {
-	e->call_stmt_size
-	  = estimate_num_insns (e->call_stmt, &eni_size_weights);
-	e->call_stmt_time
-	  = estimate_num_insns (e->call_stmt, &eni_time_weights);
-      }
+
   /* Inlining characteristics are maintained by the cgraph_mark_inline.  */
   node->global.time = inline_summary (node)->self_time;
   node->global.size = inline_summary (node)->self_size;
@@ -300,12 +390,8 @@ static inline int
 estimate_edge_time (struct cgraph_edge *edge)
 {
   int call_stmt_time;
-  /* ???  We throw away cgraph edges all the time so the information
-     we store in edges doesn't persist for early inlining.  Ugh.  */
-  if (!edge->call_stmt)
-    call_stmt_time = edge->call_stmt_time;
-  else
-    call_stmt_time = estimate_num_insns (edge->call_stmt, &eni_time_weights);
+  call_stmt_time = edge->call_stmt_time;
+  gcc_checking_assert (call_stmt_time);
   return (((gcov_type)edge->callee->global.time
 	   - inline_summary (edge->callee)->time_inlining_benefit
 	   - call_stmt_time) * edge->frequency
@@ -333,7 +419,7 @@ estimate_time_after_inlining (struct cgraph_node *node,
 
 int
 estimate_size_after_inlining (struct cgraph_node *node,
-				     struct cgraph_edge *edge)
+			      struct cgraph_edge *edge)
 {
   int size = node->global.size + estimate_edge_growth (edge);
   gcc_assert (size >= 0);
@@ -379,8 +465,10 @@ estimate_growth (struct cgraph_node *node)
   return growth;
 }
 
+
 /* This function performs intraprocedural analysis in NODE that is required to
    inline indirect calls.  */
+
 static void
 inline_indirect_intraprocedural_analysis (struct cgraph_node *node)
 {
@@ -437,8 +525,6 @@ inline_generate_summary (void)
   for (node = cgraph_nodes; node; node = node->next)
     if (node->analyzed)
       inline_analyze_function (node);
-
-  return;
 }
 
 
@@ -449,6 +535,57 @@ inline_generate_summary (void)
 void
 inline_read_summary (void)
 {
+  struct lto_file_decl_data **file_data_vec = lto_get_file_decl_data ();
+  struct lto_file_decl_data *file_data;
+  unsigned int j = 0;
+
+  inline_summary_alloc ();
+
+  while ((file_data = file_data_vec[j++]))
+    {
+      size_t len;
+      const char *data = lto_get_section_data (file_data, LTO_section_inline_summary, NULL, &len);
+
+      struct lto_input_block *ib
+	= lto_create_simple_input_block (file_data,
+					 LTO_section_inline_summary,
+					 &data, &len);
+      if (ib)
+	{
+	  unsigned int i;
+	  unsigned int f_count = lto_input_uleb128 (ib);
+
+	  for (i = 0; i < f_count; i++)
+	    {
+	      unsigned int index;
+	      struct cgraph_node *node;
+	      struct inline_summary *info;
+	      lto_cgraph_encoder_t encoder;
+
+	      index = lto_input_uleb128 (ib);
+	      encoder = file_data->cgraph_node_encoder;
+	      node = lto_cgraph_encoder_deref (encoder, index);
+	      info = inline_summary (node);
+
+	      node->global.estimated_stack_size
+	        = info->estimated_self_stack_size = lto_input_uleb128 (ib);
+	      node->global.time = info->self_time = lto_input_uleb128 (ib);
+	      info->time_inlining_benefit = lto_input_uleb128 (ib);
+	      node->global.size = info->self_size = lto_input_uleb128 (ib);
+	      info->size_inlining_benefit = lto_input_uleb128 (ib);
+	      node->global.estimated_growth = INT_MIN;
+	    }
+
+	  lto_destroy_simple_input_block (file_data,
+					  LTO_section_inline_summary,
+					  ib, data, len);
+	}
+      else
+	/* Fatal error here.  We do not want to support compiling ltrans units with
+	   different version of compiler or different flags than the WPA unit, so
+	   this should never happen.  */
+	fatal_error ("ipa inline summary is missing in input file");
+    }
   if (flag_indirect_inlining)
     {
       ipa_register_cgraph_hooks ();
@@ -468,14 +605,58 @@ void
 inline_write_summary (cgraph_node_set set,
 		      varpool_node_set vset ATTRIBUTE_UNUSED)
 {
+  struct cgraph_node *node;
+  struct lto_simple_output_block *ob
+    = lto_create_simple_output_block (LTO_section_inline_summary);
+  lto_cgraph_encoder_t encoder = ob->decl_state->cgraph_node_encoder;
+  unsigned int count = 0;
+  int i;
+
+  for (i = 0; i < lto_cgraph_encoder_size (encoder); i++)
+    if (lto_cgraph_encoder_deref (encoder, i)->analyzed)
+      count++;
+  lto_output_uleb128_stream (ob->main_stream, count);
+
+  for (i = 0; i < lto_cgraph_encoder_size (encoder); i++)
+    {
+      node = lto_cgraph_encoder_deref (encoder, i);
+      if (node->analyzed)
+	{
+	  struct inline_summary *info = inline_summary (node);
+	  lto_output_uleb128_stream (ob->main_stream,
+				     lto_cgraph_encoder_encode (encoder, node));
+	  lto_output_sleb128_stream (ob->main_stream,
+				     info->estimated_self_stack_size);
+	  lto_output_sleb128_stream (ob->main_stream,
+				     info->self_size);
+	  lto_output_sleb128_stream (ob->main_stream,
+				     info->size_inlining_benefit);
+	  lto_output_sleb128_stream (ob->main_stream,
+				     info->self_time);
+	  lto_output_sleb128_stream (ob->main_stream,
+				     info->time_inlining_benefit);
+	}
+    }
+  lto_destroy_simple_output_block (ob);
+
   if (flag_indirect_inlining && !flag_ipa_cp)
     ipa_prop_write_jump_functions (set);
 }
+
 
 /* Release inline summary.  */
 
 void
 inline_free_summary (void)
 {
-  cgraph_remove_function_insertion_hook (function_insertion_hook_holder);
+  if (function_insertion_hook_holder)
+    cgraph_remove_function_insertion_hook (function_insertion_hook_holder);
+  function_insertion_hook_holder = NULL;
+  if (node_removal_hook_holder)
+    cgraph_remove_node_removal_hook (node_removal_hook_holder);
+  node_removal_hook_holder = NULL;
+  if (node_duplication_hook_holder)
+    cgraph_remove_node_duplication_hook (node_duplication_hook_holder);
+  node_duplication_hook_holder = NULL;
+  VEC_free (inline_summary_t, heap, inline_summary_vec);
 }
