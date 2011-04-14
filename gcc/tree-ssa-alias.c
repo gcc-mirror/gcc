@@ -1616,27 +1616,70 @@ stmt_may_clobber_ref_p (gimple stmt, tree ref)
 static bool
 stmt_kills_ref_p_1 (gimple stmt, ao_ref *ref)
 {
+  /* For a must-alias check we need to be able to constrain
+     the access properly.  */
+  ao_ref_base (ref);
+  if (ref->max_size == -1)
+    return false;
+
   if (gimple_has_lhs (stmt)
       && TREE_CODE (gimple_get_lhs (stmt)) != SSA_NAME)
     {
       tree base, lhs = gimple_get_lhs (stmt);
       HOST_WIDE_INT size, offset, max_size;
-      ao_ref_base (ref);
       base = get_ref_base_and_extent (lhs, &offset, &size, &max_size);
       /* We can get MEM[symbol: sZ, index: D.8862_1] here,
 	 so base == ref->base does not always hold.  */
       if (base == ref->base)
 	{
 	  /* For a must-alias check we need to be able to constrain
-	     the accesses properly.  */
-	  if (size != -1 && size == max_size
-	      && ref->max_size != -1)
+	     the access properly.  */
+	  if (size != -1 && size == max_size)
 	    {
 	      if (offset <= ref->offset
 		  && offset + size >= ref->offset + ref->max_size)
 		return true;
 	    }
 	}
+    }
+
+  if (is_gimple_call (stmt))
+    {
+      tree callee = gimple_call_fndecl (stmt);
+      if (callee != NULL_TREE
+	  && DECL_BUILT_IN_CLASS (callee) == BUILT_IN_NORMAL)
+	switch (DECL_FUNCTION_CODE (callee))
+	  {
+	  case BUILT_IN_MEMCPY:
+	  case BUILT_IN_MEMPCPY:
+	  case BUILT_IN_MEMMOVE:
+	  case BUILT_IN_MEMSET:
+	    {
+	      tree dest = gimple_call_arg (stmt, 0);
+	      tree len = gimple_call_arg (stmt, 2);
+	      tree base = NULL_TREE;
+	      HOST_WIDE_INT offset = 0;
+	      if (!host_integerp (len, 0))
+		return false;
+	      if (TREE_CODE (dest) == ADDR_EXPR)
+		base = get_addr_base_and_unit_offset (TREE_OPERAND (dest, 0),
+						      &offset);
+	      else if (TREE_CODE (dest) == SSA_NAME)
+		base = dest;
+	      if (base
+		  && base == ao_ref_base (ref))
+		{
+		  HOST_WIDE_INT size = TREE_INT_CST_LOW (len);
+		  if (offset <= ref->offset / BITS_PER_UNIT
+		      && (offset + size
+		          >= ((ref->offset + ref->max_size + BITS_PER_UNIT - 1)
+			      / BITS_PER_UNIT)))
+		    return true;
+		}
+	    }
+	  default:;
+	  }
+
     }
   return false;
 }

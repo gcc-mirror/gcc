@@ -1,5 +1,9 @@
 2011-04-14  Richard Guenther  <rguenther@suse.de>
 
+	* gcc.dg/tree-ssa/ssa-dse-14.c: New testcase.
+
+2011-04-14  Richard Guenther  <rguenther@suse.de>
+
 	* gcc.dg/fold-bitand-4.c: Move ...
 	* c-c++-common/fold-bitand-4.c: ... here.  Adjust slightly.
 
