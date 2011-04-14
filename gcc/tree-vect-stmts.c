@@ -3961,8 +3961,6 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
     	}
       else
 	vec_num = group_size;
-
-      dr_chain = VEC_alloc (tree, heap, vec_num);
     }
   else
     {
@@ -4115,6 +4113,9 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
       else
         dataref_ptr =
 		bump_vector_ptr (dataref_ptr, ptr_incr, gsi, stmt, NULL_TREE);
+
+      if (strided_load || slp_perm)
+	dr_chain = VEC_alloc (tree, heap, vec_num);
 
       for (i = 0; i < vec_num; i++)
 	{
@@ -4325,8 +4326,6 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 	        return false;
 
 	      *vec_stmt = STMT_VINFO_VEC_STMT (stmt_info);
-              VEC_free (tree, heap, dr_chain);
-	      dr_chain = VEC_alloc (tree, heap, group_size);
 	    }
           else
 	    {
@@ -4337,10 +4336,9 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 	      prev_stmt_info = vinfo_for_stmt (new_stmt);
 	    }
         }
+      if (dr_chain)
+	VEC_free (tree, heap, dr_chain);
     }
-
-  if (dr_chain)
-    VEC_free (tree, heap, dr_chain);
 
   return true;
 }

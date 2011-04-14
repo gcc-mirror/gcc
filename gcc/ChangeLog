@@ -1,5 +1,10 @@
 2011-04-14  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	* tree-vect-stmts.c (vectorizable_load): Allocate and free dr_chain
+	within the per-copy loop.
+
+2011-04-14  Richard Sandiford  <richard.sandiford@linaro.org>
+
 	* tree-vect-stmts.c (vectorizable_load): Print the number of copies
 	in the dump file.
 
