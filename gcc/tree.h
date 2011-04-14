@@ -1613,7 +1613,7 @@ DEF_VEC_O(constructor_elt);
 DEF_VEC_ALLOC_O(constructor_elt,gc);
 
 struct GTY(()) tree_constructor {
-  struct tree_common common;
+  struct tree_typed typed;
   VEC(constructor_elt,gc) *elts;
 };
 
