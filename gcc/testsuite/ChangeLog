@@ -1,3 +1,9 @@
+2011-04-14  Georg-Johann Lay  <avr@gjlay.de>
+
+	* gcc.target/avr/trivial.c: Fix line endings. Make PROGMEM
+	variables const.
+	* gcc.target/avr/torture/trivial.c: Ditto.
+
 2011-04-13  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/template/operator11.C: New.
