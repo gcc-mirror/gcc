@@ -1,3 +1,8 @@
+2011-04-14  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* c-parser.c (c_parser_objc_protocol_definition): Updated for
+	change from objc_declare_protocols() to objc_declare_protocol().
+
 2011-04-14  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/sse.md (sse4_1): New mode attribute.

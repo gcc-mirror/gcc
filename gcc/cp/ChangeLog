@@ -1,3 +1,8 @@
+2011-04-14  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* parser.c (cp_parser_objc_protocol_declaration): Updated for
+	change from objc_declare_protocols() to objc_declare_protocol().
+
 2011-04-14  Nathan Froyd  <froydnj@codesourcery.com>
 
 	PR objc++/48479
