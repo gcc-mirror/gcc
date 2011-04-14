@@ -422,7 +422,9 @@ build_value_init_noctor (tree type, tsubst_flags_t complain)
 	 as we don't know the size of the array yet.  */
       if (max_index == error_mark_node)
 	{
-	  error ("cannot value-initialize array of unknown bound %qT", type);
+	  if (complain & tf_error)
+	    error ("cannot value-initialize array of unknown bound %qT",
+		   type);
 	  return error_mark_node;
 	}
       gcc_assert (TREE_CODE (max_index) == INTEGER_CST);

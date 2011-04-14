@@ -1,5 +1,8 @@
 2011-04-14  Jason Merrill  <jason@redhat.com>
 
+	PR c++/48531
+	* init.c (build_value_init_noctor): Check complain consistently.
+
 	PR c++/48557
 	* typeck.c (cp_build_binary_op): Don't decay void operands.
 
