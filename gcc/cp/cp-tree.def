@@ -284,10 +284,10 @@ DEFTREECODE (MUST_NOT_THROW_EXPR, "must_not_throw_expr", tcc_expression, 1)
 DEFTREECODE (CLEANUP_STMT, "cleanup_stmt", tcc_statement, 3)
 
 /* Represents an 'if' statement. The operands are IF_COND,
-   THEN_CLAUSE, and ELSE_CLAUSE, respectively.  */
+   THEN_CLAUSE, and ELSE_CLAUSE, and the current scope, respectively.  */
 /* ??? It is currently still necessary to distinguish between IF_STMT
    and COND_EXPR for the benefit of templates.  */
-DEFTREECODE (IF_STMT, "if_stmt", tcc_statement, 3)
+DEFTREECODE (IF_STMT, "if_stmt", tcc_statement, 4)
 
 /* Used to represent a `for' statement. The operands are
    FOR_INIT_STMT, FOR_COND, FOR_EXPR, and FOR_BODY, respectively.  */
