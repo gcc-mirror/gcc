@@ -5373,7 +5373,6 @@ cxx_mark_addressable (tree exp)
 		    || DECL_EXTERNAL (x));
 	/* Fall through.  */
 
-      case CONST_DECL:
       case RESULT_DECL:
 	if (DECL_REGISTER (x) && !TREE_ADDRESSABLE (x)
 	    && !DECL_ARTIFICIAL (x))
@@ -5391,6 +5390,7 @@ cxx_mark_addressable (tree exp)
 	TREE_ADDRESSABLE (x) = 1;
 	return true;
 
+      case CONST_DECL:
       case FUNCTION_DECL:
 	TREE_ADDRESSABLE (x) = 1;
 	return true;
