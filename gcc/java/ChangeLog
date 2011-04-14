@@ -1,3 +1,7 @@
+2011-04-14  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* decl.c (poplevel): Use BLOCK_CHAIN and block_chainon.
+
 2011-04-12  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* java-tree.h (union lang_tree_node): Check for TS_COMMON before

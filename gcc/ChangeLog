@@ -1,3 +1,8 @@
+2011-04-14  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* function.h (block_chainon): Declare.
+	* function.c (block_chainon): Define.
+
 2011-04-14  Anatoly Sokolov  <aesok@post.ru>
             Eric Weddington  <eric.weddington@atmel.com>
             Georg-Johann Lay <avr@gjlay.de> 

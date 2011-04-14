@@ -459,8 +459,8 @@ gnat_poplevel (void)
   else if (BLOCK_VARS (block) == NULL_TREE)
     {
       BLOCK_SUBBLOCKS (level->chain->block)
-	= chainon (BLOCK_SUBBLOCKS (block),
-		   BLOCK_SUBBLOCKS (level->chain->block));
+	= block_chainon (BLOCK_SUBBLOCKS (block),
+			 BLOCK_SUBBLOCKS (level->chain->block));
       BLOCK_CHAIN (block) = free_block_chain;
       free_block_chain = block;
     }
