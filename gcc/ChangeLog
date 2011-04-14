@@ -1,3 +1,13 @@
+2011-04-14  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/48590
+	* tree-ssa-alias.c (ref_maybe_used_by_call_p_1): Handle
+	BUILT_IN_ALLOCA, BUILT_IN_STACK_SAVE and BUILT_IN_STACK_RESTORE.
+	(call_may_clobber_ref_p_1): Handle BUILT_IN_ALLOCA and
+	BUILT_IN_STACK_SAVE.
+	* tree-ssa-dce.c (propagate_necessity): Handle
+	BUILT_IN_ALLOCA, BUILT_IN_STACK_SAVE and BUILT_IN_STACK_RESTORE.
+
 2011-04-14  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* c-parser.c (c_parser_objc_class_declaration): Updated call to

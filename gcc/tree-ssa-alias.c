@@ -1196,6 +1196,9 @@ ref_maybe_used_by_call_p_1 (gimple call, ao_ref *ref)
 	case BUILT_IN_FREE:
 	case BUILT_IN_MALLOC:
 	case BUILT_IN_CALLOC:
+	case BUILT_IN_ALLOCA:
+	case BUILT_IN_STACK_SAVE:
+	case BUILT_IN_STACK_RESTORE:
 	case BUILT_IN_MEMSET:
 	case BUILT_IN_FREXP:
 	case BUILT_IN_FREXPF:
@@ -1431,6 +1434,9 @@ call_may_clobber_ref_p_1 (gimple call, ao_ref *ref)
 	  if (flag_errno_math
 	      && targetm.ref_may_alias_errno (ref))
 	    return true;
+	  return false;
+	case BUILT_IN_STACK_SAVE:
+	case BUILT_IN_ALLOCA:
 	  return false;
 	/* Freeing memory kills the pointed-to memory.  More importantly
 	   the call has to serve as a barrier for moving loads and stores
