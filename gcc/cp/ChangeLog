@@ -1,5 +1,8 @@
 2011-04-14  Jason Merrill  <jason@redhat.com>
 
+	PR c++/48557
+	* typeck.c (cp_build_binary_op): Don't decay void operands.
+
 	PR c++/48446
 	* decl.c (compute_array_index_type): Use get_temp_regvar instead
 	of variable_size.
