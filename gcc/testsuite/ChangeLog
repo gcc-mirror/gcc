@@ -1,3 +1,11 @@
+2011-04-14  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/46779
+	PR target/45291
+	PR target/41894
+	* gcc.target/avr/pr46779-1.c: New test case
+	* gcc.target/avr/pr46779-2.c: New test case
+
 2011-04-14  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/cpp0x/sfinae15.C: New.
