@@ -1,5 +1,13 @@
 2011-04-14  Nathan Froyd  <froydnj@codesourcery.com>
 
+	* cp-tree.def (SWITCH_STMT): Add an extra operand.
+	* cp-objcp-common.c (cp_common_init_ts): Mark it as TS_TYPED.
+	* cp-tree.h (SWITCH_STMT_SCOPE): Define.
+	* semantics.c (begin_switch__stmt): Pass scope to build_stmt.
+	(finish_switch_stmt): Use SWITCH_STMT_SCOPE instead of TREE_CHAIN.
+
+2011-04-14  Nathan Froyd  <froydnj@codesourcery.com>
+
 	* cp-tree.def (IF_STMT): Add an extra operand.
 	* cp-objcp-common.c (cp_common_init_ts): Mark it as TS_TYPED.
 	* cp-tree.h (IF_SCOPE): Define.

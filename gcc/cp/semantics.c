@@ -1018,10 +1018,9 @@ begin_switch_stmt (void)
 {
   tree r, scope;
 
-  r = build_stmt (input_location, SWITCH_STMT, NULL_TREE, NULL_TREE, NULL_TREE);
-
   scope = do_pushlevel (sk_block);
-  TREE_CHAIN (r) = scope;
+  r = build_stmt (input_location, SWITCH_STMT, NULL_TREE, NULL_TREE, NULL_TREE, scope);
+
   begin_cond (&SWITCH_STMT_COND (r));
 
   return r;
@@ -1077,8 +1076,8 @@ finish_switch_stmt (tree switch_stmt)
   pop_switch ();
   finish_stmt ();
 
-  scope = TREE_CHAIN (switch_stmt);
-  TREE_CHAIN (switch_stmt) = NULL;
+  scope = SWITCH_STMT_SCOPE (switch_stmt);
+  SWITCH_STMT_SCOPE (switch_stmt) = NULL;
   add_stmt (do_poplevel (scope));
 }
 
