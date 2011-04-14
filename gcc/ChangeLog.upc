@@ -1,3 +1,9 @@
+2011-04-14  Gary Funck  <gary@intrepid.com>
+
+	* c-family/c.opt: Add UPC as a valid language for various
+	  switches where it is valid for "C", that were not updated
+	  in previous merges with trunk.
+
 2011-04-13  Gary Funck  <gary@intrepid.com>
 
 	* c-family/c.opt (fupc-pre-include): New option definition.

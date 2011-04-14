@@ -38,151 +38,151 @@ Language
 ObjC++
 
 -all-warnings
-C ObjC C++ ObjC++ Warning Alias(Wall)
+C UPC ObjC C++ ObjC++ Warning Alias(Wall)
 
 -ansi
-C ObjC C++ ObjC++ Alias(ansi)
+C UPC ObjC C++ ObjC++ Alias(ansi)
 
 -assert
-C ObjC C++ ObjC++ Separate Alias(A) MissingArgError(assertion missing after %qs)
+C UPC ObjC C++ ObjC++ Separate Alias(A) MissingArgError(assertion missing after %qs)
 
 -assert=
-C ObjC C++ ObjC++ Joined Alias(A) MissingArgError(assertion missing after %qs)
+C UPC ObjC C++ ObjC++ Joined Alias(A) MissingArgError(assertion missing after %qs)
 
 -comments
-C ObjC C++ ObjC++ Alias(C)
+C UPC ObjC C++ ObjC++ Alias(C)
 
 -comments-in-macros
-C ObjC C++ ObjC++ Alias(CC)
+C UPC ObjC C++ ObjC++ Alias(CC)
 
 -define-macro
-C ObjC C++ ObjC++ Separate Alias(D) MissingArgError(macro name missing after %qs)
+C UPC ObjC C++ ObjC++ Separate Alias(D) MissingArgError(macro name missing after %qs)
 
 -define-macro=
-C ObjC C++ ObjC++ Joined Alias(D) MissingArgError(macro name missing after %qs)
+C UPC ObjC C++ ObjC++ Joined Alias(D) MissingArgError(macro name missing after %qs)
 
 -dependencies
-C ObjC C++ ObjC++ Alias(M)
+C UPC ObjC C++ ObjC++ Alias(M)
 
 -dump
-C ObjC C++ ObjC++ Separate Alias(d)
+C UPC ObjC C++ ObjC++ Separate Alias(d)
 
 -dump=
-C ObjC C++ ObjC++ Joined Alias(d)
+C UPC ObjC C++ ObjC++ Joined Alias(d)
 
 -imacros
-C ObjC C++ ObjC++ Separate Alias(imacros) MissingArgError(missing filename after %qs)
+C UPC ObjC C++ ObjC++ Separate Alias(imacros) MissingArgError(missing filename after %qs)
 
 -imacros=
-C ObjC C++ ObjC++ Joined Alias(imacros) MissingArgError(missing filename after %qs)
+C UPC ObjC C++ ObjC++ Joined Alias(imacros) MissingArgError(missing filename after %qs)
 
 -include
-C ObjC C++ ObjC++ Separate Alias(include) MissingArgError(missing filename after %qs)
+C UPC ObjC C++ ObjC++ Separate Alias(include) MissingArgError(missing filename after %qs)
 
 -include=
-C ObjC C++ ObjC++ Joined Alias(include) MissingArgError(missing filename after %qs)
+C UPC ObjC C++ ObjC++ Joined Alias(include) MissingArgError(missing filename after %qs)
 
 -include-barrier
-C ObjC C++ ObjC++ Alias(I, -)
+C UPC ObjC C++ ObjC++ Alias(I, -)
 
 -include-directory
-C ObjC C++ ObjC++ Separate Alias(I) MissingArgError(missing path after %qs)
+C UPC ObjC C++ ObjC++ Separate Alias(I) MissingArgError(missing path after %qs)
 
 -include-directory=
-C ObjC C++ ObjC++ Joined Alias(I) MissingArgError(missing path after %qs)
+C UPC ObjC C++ ObjC++ Joined Alias(I) MissingArgError(missing path after %qs)
 
 -include-directory-after
-C ObjC C++ ObjC++ Separate Alias(idirafter) MissingArgError(missing path after %qs)
+C UPC ObjC C++ ObjC++ Separate Alias(idirafter) MissingArgError(missing path after %qs)
 
 -include-directory-after=
-C ObjC C++ ObjC++ Joined Alias(idirafter) MissingArgError(missing path after %qs)
+C UPC ObjC C++ ObjC++ Joined Alias(idirafter) MissingArgError(missing path after %qs)
 
 -include-prefix
-C ObjC C++ ObjC++ Separate Alias(iprefix)
+C UPC ObjC C++ ObjC++ Separate Alias(iprefix)
 
 -include-prefix=
-C ObjC C++ ObjC++ JoinedOrMissing Alias(iprefix)
+C UPC ObjC C++ ObjC++ JoinedOrMissing Alias(iprefix)
 
 -include-with-prefix
-C ObjC C++ ObjC++ Separate Alias(iwithprefix)
+C UPC ObjC C++ ObjC++ Separate Alias(iwithprefix)
 
 -include-with-prefix=
-C ObjC C++ ObjC++ JoinedOrMissing Alias(iwithprefix)
+C UPC ObjC C++ ObjC++ JoinedOrMissing Alias(iwithprefix)
 
 -include-with-prefix-after
-C ObjC C++ ObjC++ Separate Alias(iwithprefix)
+C UPC ObjC C++ ObjC++ Separate Alias(iwithprefix)
 
 -include-with-prefix-after=
-C ObjC C++ ObjC++ JoinedOrMissing Alias(iwithprefix)
+C UPC ObjC C++ ObjC++ JoinedOrMissing Alias(iwithprefix)
 
 -include-with-prefix-before
-C ObjC C++ ObjC++ Separate Alias(iwithprefixbefore)
+C UPC ObjC C++ ObjC++ Separate Alias(iwithprefixbefore)
 
 -include-with-prefix-before=
-C ObjC C++ ObjC++ JoinedOrMissing Alias(iwithprefixbefore)
+C UPC ObjC C++ ObjC++ JoinedOrMissing Alias(iwithprefixbefore)
 
 -no-integrated-cpp
 Driver Alias(no-integrated-cpp)
 
 -no-line-commands
-C ObjC C++ ObjC++ Alias(P)
+C UPC ObjC C++ ObjC++ Alias(P)
 
 -no-standard-includes
-C ObjC C++ ObjC++ Alias(nostdinc)
+C UPC ObjC C++ ObjC++ Alias(nostdinc)
 
 -no-warnings
-C ObjC C++ ObjC++ Alias(w)
+C UPC ObjC C++ ObjC++ Alias(w)
 
 -output
-C ObjC C++ ObjC++ Separate Alias(o)
+C UPC ObjC C++ ObjC++ Separate Alias(o)
 
 -output=
-C ObjC C++ ObjC++ Joined Alias(o)
+C UPC ObjC C++ ObjC++ Joined Alias(o)
 
 -output-pch=
 C UPC ObjC C++ ObjC++ Joined Separate
 
 -pedantic
-C ObjC C++ ObjC++ Alias(pedantic)
+C UPC ObjC C++ ObjC++ Alias(pedantic)
 
 -pedantic-errors
-C ObjC C++ ObjC++ Alias(pedantic-errors)
+C UPC ObjC C++ ObjC++ Alias(pedantic-errors)
 
 -preprocess
-C ObjC C++ ObjC++ Undocumented Alias(E)
+C UPC ObjC C++ ObjC++ Undocumented Alias(E)
 
 -print-missing-file-dependencies
-C ObjC C++ ObjC++ Alias(MG)
+C UPC ObjC C++ ObjC++ Alias(MG)
 
 -trace-includes
-C ObjC C++ ObjC++ Alias(H)
+C UPC ObjC C++ ObjC++ Alias(H)
 
 -traditional
 Driver Alias(traditional)
 
 -traditional-cpp
-C ObjC C++ ObjC++ Alias(traditional-cpp)
+C UPC ObjC C++ ObjC++ Alias(traditional-cpp)
 
 -trigraphs
-C ObjC C++ ObjC++ Alias(trigraphs)
+C UPC ObjC C++ ObjC++ Alias(trigraphs)
 
 -undefine-macro
-C ObjC C++ ObjC++ Separate Alias(U) MissingArgError(macro name missing after %qs)
+C UPC ObjC C++ ObjC++ Separate Alias(U) MissingArgError(macro name missing after %qs)
 
 -undefine-macro=
-C ObjC C++ ObjC++ Joined Alias(U) MissingArgError(macro name missing after %qs)
+C UPC ObjC C++ ObjC++ Joined Alias(U) MissingArgError(macro name missing after %qs)
 
 -user-dependencies
-C ObjC C++ ObjC++ Alias(MM)
+C UPC ObjC C++ ObjC++ Alias(MM)
 
 -verbose
 Common C ObjC C++ ObjC++ Alias(v)
 
 -write-dependencies
-C ObjC C++ ObjC++ NoDriverArg Separate Alias(MD) MissingArgError(missing filename after %qs)
+C UPC ObjC C++ ObjC++ NoDriverArg Separate Alias(MD) MissingArgError(missing filename after %qs)
 
 -write-user-dependencies
-C ObjC C++ ObjC++ NoDriverArg Separate Alias(MMD) MissingArgError(missing filename after %qs)
+C UPC ObjC C++ ObjC++ NoDriverArg Separate Alias(MMD) MissingArgError(missing filename after %qs)
 
 A
 C UPC ObjC C++ ObjC++ Joined Separate
@@ -337,7 +337,7 @@ C UPC ObjC Var(warn_declaration_after_statement) Warning
 Warn when a declaration is found after a statement
 
 Wdeprecated
-C C++ ObjC ObjC++ Var(warn_deprecated) Init(1) Warning
+C UPC C++ ObjC ObjC++ Var(warn_deprecated) Init(1) Warning
 Warn if a deprecated compiler feature, class, method, or field is used
 
 Wdiv-by-zero
@@ -404,7 +404,7 @@ Wformat=
 C UPC ObjC C++ ObjC++ Joined Warning
 
 Wignored-qualifiers
-C C++ Var(warn_ignored_qualifiers) Init(-1) Warning
+C UPC C++ Var(warn_ignored_qualifiers) Init(-1) Warning
 Warn whenever type qualifiers are ignored.
 
 Winit-self
@@ -416,7 +416,7 @@ C UPC ObjC Var(warn_implicit) Init(-1) Warning
 Warn about implicit declarations
 
 Wdouble-promotion
-C ObjC C++ ObjC++ Var(warn_double_promotion) Warning
+C UPC ObjC C++ ObjC++ Var(warn_double_promotion) Warning
 Warn about implicit conversions from \"float\" to \"double\"
 
 Wimplicit-function-declaration
@@ -611,7 +611,7 @@ ObjC ObjC++ Var(warn_strict_selector_match) Warning
 Warn if type signatures of candidate methods do not match exactly
 
 Wsync-nand
-C C++ Var(warn_sync_nand) Init(1) Warning
+C UPC C++ Var(warn_sync_nand) Init(1) Warning
 Warn when __sync_fetch_and_nand and __sync_nand_and_fetch built-in functions are used
 
 Wsynth
@@ -827,7 +827,7 @@ C++ ObjC++ Var(flag_friend_injection)
 Inject friend functions into enclosing namespace
 
 fkeep-inline-dllexport
-C C++ ObjC ObjC++ Var(flag_keep_inline_dllexport) Init(1) Report Condition(TARGET_DLLIMPORT_DECL_ATTRIBUTES)
+C UPC C++ ObjC ObjC++ Var(flag_keep_inline_dllexport) Init(1) Report Condition(TARGET_DLLIMPORT_DECL_ATTRIBUTES)
 Don't emit dllexported inline functions unless needed
 
 flabels-ok
@@ -926,7 +926,7 @@ C++ ObjC++
 Downgrade conformance errors to warnings
 
 fplan9-extensions
-C ObjC Var(flag_plan9_extensions)
+C UPC ObjC Var(flag_plan9_extensions)
 Enable Plan 9 language extensions
 
 fpreprocessed
@@ -1201,15 +1201,15 @@ extensions enabled by this mode are experimental and may be removed in
 future releases of GCC.
 
 std=c1x
-C ObjC
+C UPC ObjC
 Conform to the ISO 201X C standard draft (experimental and incomplete support)
 
 std=c89
-C ObjC Alias(std=c90)
+C UPC ObjC Alias(std=c90)
 Conform to the ISO 1990 C standard
 
 std=c90
-C ObjC
+C UPC ObjC
 Conform to the ISO 1990 C standard
 
 std=c99
@@ -1232,7 +1232,7 @@ standard, dubbed C++0x. Note that the extensions enabled by this mode
 are experimental and may be removed in future releases of GCC.
 
 std=gnu1x
-C ObjC
+C UPC ObjC
 Conform to the ISO 201X C standard draft with GNU extensions (experimental and incomplete support)
 
 std=gnu89
@@ -1240,7 +1240,7 @@ C UPC ObjC Alias(std=gnu90)
 Conform to the ISO 1990 C standard with GNU extensions
 
 std=gnu90
-C ObjC
+C UPC ObjC
 Conform to the ISO 1990 C standard with GNU extensions
 
 std=gnu99
