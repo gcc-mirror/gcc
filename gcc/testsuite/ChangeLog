@@ -1,3 +1,8 @@
+2011-04-14  Richard Guenther  <rguenther@suse.de>
+
+	* gcc.dg/fold-bitand-4.c: Move ...
+	* c-c++-common/fold-bitand-4.c: ... here.  Adjust slightly.
+
 2011-04-14  Georg-Johann Lay  <avr@gjlay.de>
 
 	* gcc.target/avr/trivial.c: Fix line endings. Make PROGMEM

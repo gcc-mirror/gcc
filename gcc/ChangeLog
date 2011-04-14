@@ -1,3 +1,11 @@
+2011-04-14  Richard Guenther  <rguenther@suse.de>
+
+	* tree.h (get_object_alignment_1): Declare.
+	* builtins.c (get_object_alignment_1): Split out worker from ...
+	(get_object_alignment): ... here.
+	* fold-const.c (get_pointer_modulus_and_residue): Use
+	get_object_alignment_1.
+
 2011-04-14  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* tree-vectorizer.h (vect_create_data_ref_ptr): Add an extra

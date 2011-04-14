@@ -9230,30 +9230,10 @@ get_pointer_modulus_and_residue (tree expr, unsigned HOST_WIDE_INT *residue,
   code = TREE_CODE (expr);
   if (code == ADDR_EXPR)
     {
-      expr = TREE_OPERAND (expr, 0);
-      if (handled_component_p (expr))
-	{
-	  HOST_WIDE_INT bitsize, bitpos;
-	  tree offset;
-	  enum machine_mode mode;
-	  int unsignedp, volatilep;
-
-	  expr = get_inner_reference (expr, &bitsize, &bitpos, &offset,
-				      &mode, &unsignedp, &volatilep, false);
-	  *residue = bitpos / BITS_PER_UNIT;
-	  if (offset)
-	    {
-	      if (TREE_CODE (offset) == INTEGER_CST)
-		*residue += TREE_INT_CST_LOW (offset);
-	      else
-		/* We don't handle more complicated offset expressions.  */
-		return 1;
-	    }
-	}
-
-      if (DECL_P (expr)
-	  && (allow_func_align || TREE_CODE (expr) != FUNCTION_DECL))
-	return DECL_ALIGN_UNIT (expr);
+      unsigned int bitalign;
+      bitalign = get_object_alignment_1 (TREE_OPERAND (expr, 0), residue);
+      *residue /= BITS_PER_UNIT;
+      return bitalign / BITS_PER_UNIT;
     }
   else if (code == POINTER_PLUS_EXPR)
     {
@@ -9298,9 +9278,9 @@ get_pointer_modulus_and_residue (tree expr, unsigned HOST_WIDE_INT *residue,
 	}
     }
 
-    /* If we get here, we were unable to determine anything useful about the
-       expression.  */
-    return 1;
+  /* If we get here, we were unable to determine anything useful about the
+     expression.  */
+  return 1;
 }
 
 

@@ -38,8 +38,8 @@ int f5 (int i)
   return 3 & (__SIZE_TYPE__)&c16[i];
 }
 
-/* { dg-final { scan-tree-dump-times "return 12" 1 "original" } } */
+/* { dg-final { scan-tree-dump-times "return \[^\n0-9\]*12;" 1 "original" } } */
 /* { dg-final { scan-tree-dump-times "\& 15" 1 "original" } } */
-/* { dg-final { scan-tree-dump-times "return 0" 2 "original" } } */
+/* { dg-final { scan-tree-dump-times "return \[^\n0-9\]*0;" 2 "original" } } */
 /* { dg-final { scan-tree-dump-times "\& 7" 1 "original" } } */
 /* { dg-final { cleanup-tree-dump "original" } } */
