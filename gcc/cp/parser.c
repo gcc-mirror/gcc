@@ -5054,7 +5054,8 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 		    = (build_new_method_call
 		       (instance, fn, &args, NULL_TREE,
 			(idk == CP_ID_KIND_QUALIFIED
-			 ? LOOKUP_NONVIRTUAL : LOOKUP_NORMAL),
+			 ? LOOKUP_NORMAL|LOOKUP_NONVIRTUAL
+			 : LOOKUP_NORMAL),
 			/*fn_p=*/NULL,
 			tf_warning_or_error));
 		  }
