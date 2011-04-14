@@ -3935,7 +3935,7 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
     }
 
   if (vect_print_dump_info (REPORT_DETAILS))
-    fprintf (vect_dump, "transform load.");
+    fprintf (vect_dump, "transform load. ncopies = %d", ncopies);
 
   /** Transform.  **/
 

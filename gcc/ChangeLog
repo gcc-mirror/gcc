@@ -1,5 +1,10 @@
 2011-04-14  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* tree-vect-stmts.c (vectorizable_load): Print the number of copies
+	in the dump file.
+
+2011-04-14  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* doc/options.texi (Negative): Explicitly mention that the
 	Negative chain must be circular.
 
