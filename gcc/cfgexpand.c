@@ -1837,17 +1837,22 @@ expand_gimple_cond (basic_block bb, gimple stmt)
 static void
 expand_call_stmt (gimple stmt)
 {
-  tree exp;
-  tree lhs = gimple_call_lhs (stmt);
-  size_t i;
+  tree exp, decl, lhs = gimple_call_lhs (stmt);
   bool builtin_p;
-  tree decl;
+  size_t i;
 
   exp = build_vl_exp (CALL_EXPR, gimple_call_num_args (stmt) + 3);
 
   CALL_EXPR_FN (exp) = gimple_call_fn (stmt);
   decl = gimple_call_fndecl (stmt);
   builtin_p = decl && DECL_BUILT_IN (decl);
+
+  /* If this is not a builtin function, the function type through which the
+     call is made may be different from the type of the function.  */
+  if (!builtin_p)
+    CALL_EXPR_FN (exp)
+      = fold_build1 (NOP_EXPR, build_pointer_type (gimple_call_fntype (stmt)),
+		     CALL_EXPR_FN (exp));
 
   TREE_TYPE (exp) = gimple_call_return_type (stmt);
   CALL_EXPR_STATIC_CHAIN (exp) = gimple_call_chain (stmt);
