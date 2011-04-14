@@ -1,5 +1,10 @@
 2011-04-14  Georg-Johann Lay  <avr@gjlay.de>
 
+	* gcc.target/avr/torture/pr41885.c (dg-options): Add
+	-finline-limit=0
+
+2011-04-14  Georg-Johann Lay  <avr@gjlay.de>
+
 	PR target/46779
 	PR target/45291
 	PR target/41894
