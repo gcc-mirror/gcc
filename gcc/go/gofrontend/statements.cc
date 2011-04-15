@@ -3779,18 +3779,109 @@ Send_statement::do_check_types(Gogo*)
 tree
 Send_statement::do_get_tree(Translate_context* context)
 {
-  tree channel = this->channel_->get_tree(context);
-  tree val = this->val_->get_tree(context);
-  if (channel == error_mark_node || val == error_mark_node)
-    return error_mark_node;
+  source_location loc = this->location();
+
   Channel_type* channel_type = this->channel_->type()->channel_type();
-  val = Expression::convert_for_assignment(context,
-					   channel_type->element_type(),
-					   this->val_->type(),
-					   val,
-					   this->location());
-  return Gogo::send_on_channel(channel, val, true, this->for_select_,
-			       this->location());
+  Type* element_type = channel_type->element_type();
+  Expression* val = Expression::make_cast(element_type, this->val_, loc);
+
+  bool is_small;
+  bool can_take_address;
+  switch (element_type->base()->classification())
+    {
+    case Type::TYPE_BOOLEAN:
+    case Type::TYPE_INTEGER:
+    case Type::TYPE_FUNCTION:
+    case Type::TYPE_POINTER:
+    case Type::TYPE_MAP:
+    case Type::TYPE_CHANNEL:
+      is_small = true;
+      can_take_address = false;
+      break;
+
+    case Type::TYPE_FLOAT:
+    case Type::TYPE_COMPLEX:
+    case Type::TYPE_STRING:
+    case Type::TYPE_INTERFACE:
+      is_small = false;
+      can_take_address = false;
+      break;
+
+    case Type::TYPE_STRUCT:
+      is_small = false;
+      can_take_address = true;
+      break;
+
+    case Type::TYPE_ARRAY:
+      is_small = false;
+      can_take_address = !element_type->is_open_array_type();
+      break;
+
+    default:
+    case Type::TYPE_ERROR:
+    case Type::TYPE_VOID:
+    case Type::TYPE_SINK:
+    case Type::TYPE_NIL:
+    case Type::TYPE_NAMED:
+    case Type::TYPE_FORWARD:
+      gcc_assert(saw_errors());
+      return error_mark_node;
+    }
+
+  // Only try to take the address of a variable.  We have already
+  // moved variables to the heap, so this should not cause that to
+  // happen unnecessarily.
+  if (can_take_address
+      && val->var_expression() == NULL
+      && val->temporary_reference_expression() == NULL)
+    can_take_address = false;
+
+  Runtime::Function code;
+  Bstatement* btemp = NULL;
+  Expression* call;
+  if (is_small)
+      {
+	// Type is small enough to handle as uint64.
+	code = Runtime::SEND_SMALL;
+	val = Expression::make_unsafe_cast(Type::lookup_integer_type("uint64"),
+					   val, loc);
+      }
+  else if (can_take_address)
+    {
+      // Must pass address of value.  The function doesn't change the
+      // value, so just take its address directly.
+      code = Runtime::SEND_BIG;
+      val = Expression::make_unary(OPERATOR_AND, val, loc);
+    }
+  else
+    {
+      // Must pass address of value, but the value is small enough
+      // that it might be in registers.  Copy value into temporary
+      // variable to take address.
+      code = Runtime::SEND_BIG;
+      Temporary_statement* temp = Statement::make_temporary(element_type,
+							    val, loc);
+      Expression* ref = Expression::make_temporary_reference(temp, loc);
+      val = Expression::make_unary(OPERATOR_AND, ref, loc);
+      btemp = tree_to_stat(temp->get_tree(context));
+    }
+
+  call = Runtime::make_call(code, loc, 3, this->channel_, val,
+			    Expression::make_boolean(this->for_select_, loc));
+
+  context->gogo()->lower_expression(context->function(), &call);
+  Bexpression* bcall = tree_to_expr(call->get_tree(context));
+  Bstatement* s = context->backend()->expression_statement(bcall);
+
+  if (btemp == NULL)
+    return stat_to_tree(s);
+  else
+    {
+      std::vector<Bstatement*> stats(2);
+      stats[0] = btemp;
+      stats[1] = s;
+      return stat_to_tree(context->backend()->statement_list(stats));
+    }
 }
 
 // Make a send statement.
