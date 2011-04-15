@@ -280,6 +280,11 @@ proc gcj_jni_get_cxxflags_invocation {} {
     lappend cxxflags "-shared-libgcc"
   }
 
+  # Tru64 UNIX needs -liconv linked explicitly since gcc does the linking.
+  if { [istarget "alpha*-dec-osf*"] } {
+    lappend cxxflags $libiconv
+  }
+
   return $cxxflags
 }
 
