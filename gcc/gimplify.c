@@ -91,7 +91,7 @@ static struct gimplify_ctx *gimplify_ctxp;
 static struct gimplify_omp_ctx *gimplify_omp_ctxp;
 
 
-/* Formal (expression) temporary table handling: Multiple occurrences of
+/* Formal (expression) temporary table handling: multiple occurrences of
    the same scalar expression are evaluated into the same temporary.  */
 
 typedef struct gimple_temp_hash_elt
@@ -100,11 +100,12 @@ typedef struct gimple_temp_hash_elt
   tree temp;  /* Value */
 } elt_t;
 
-/* Forward declarations.  */
+/* Forward declaration.  */
 static enum gimplify_status gimplify_compound_expr (tree *, gimple_seq *, bool);
 
 /* Mark X addressable.  Unlike the langhook we expect X to be in gimple
    form and we don't do any syntax checking.  */
+
 void
 mark_addressable (tree x)
 {
@@ -232,6 +233,8 @@ pop_gimplify_context (gimple body)
     htab_delete (c->temp_htab);
 }
 
+/* Push a GIMPLE_BIND tuple onto the stack of bindings.  */
+
 static void
 gimple_push_bind_expr (gimple gimple_bind)
 {
@@ -240,11 +243,15 @@ gimple_push_bind_expr (gimple gimple_bind)
   VEC_safe_push (gimple, heap, gimplify_ctxp->bind_expr_stack, gimple_bind);
 }
 
+/* Pop the first element off the stack of bindings.  */
+
 static void
 gimple_pop_bind_expr (void)
 {
   VEC_pop (gimple, gimplify_ctxp->bind_expr_stack);
 }
+
+/* Return the first element of the stack of bindings.  */
 
 gimple
 gimple_current_bind_expr (void)
@@ -252,7 +259,7 @@ gimple_current_bind_expr (void)
   return VEC_last (gimple, gimplify_ctxp->bind_expr_stack);
 }
 
-/* Return the stack GIMPLE_BINDs created during gimplification.  */
+/* Return the stack of bindings created during gimplification.  */
 
 VEC(gimple, heap) *
 gimple_bind_expr_stack (void)
@@ -260,7 +267,7 @@ gimple_bind_expr_stack (void)
   return gimplify_ctxp->bind_expr_stack;
 }
 
-/* Returns true iff there is a COND_EXPR between us and the innermost
+/* Return true iff there is a COND_EXPR between us and the innermost
    CLEANUP_POINT_EXPR.  This info is used by gimple_push_cleanup.  */
 
 static bool
@@ -392,7 +399,7 @@ remove_suffix (char *name, int len)
     }
 }
 
-/* Create a new temporary name with PREFIX.  Returns an identifier.  */
+/* Create a new temporary name with PREFIX.  Return an identifier.  */
 
 static GTY(()) unsigned int tmp_var_id_num;
 
@@ -413,9 +420,8 @@ create_tmp_var_name (const char *prefix)
   return get_identifier (tmp_name);
 }
 
-
 /* Create a new temporary variable declaration of type TYPE.
-   Does NOT push it into the current binding.  */
+   Do NOT push it into the current binding.  */
 
 tree
 create_tmp_var_raw (tree type, const char *prefix)
@@ -446,7 +452,7 @@ create_tmp_var_raw (tree type, const char *prefix)
   return tmp_var;
 }
 
-/* Create a new temporary variable declaration of type TYPE.  DOES push the
+/* Create a new temporary variable declaration of type TYPE.  DO push the
    variable into the current binding.  Further, assume that this is called
    only from gimplification or optimization, at which point the creation of
    certain types are bugs.  */
@@ -537,7 +543,6 @@ lookup_tmp_var (tree val, bool is_formal)
   return ret;
 }
 
-
 /* Return true if T is a CALL_EXPR or an expression that can be
    assigned to a temporary.  Note that this predicate should only be
    used during gimplification.  See the rationale for this in
@@ -605,7 +610,7 @@ internal_get_tmp_var (tree val, gimple_seq *pre_p, gimple_seq *post_p,
   return t;
 }
 
-/* Returns a formal temporary variable initialized with VAL.  PRE_P is as
+/* Return a formal temporary variable initialized with VAL.  PRE_P is as
    in gimplify_expr.  Only use this function if:
 
    1) The value of the unfactored expression represented by VAL will not
@@ -623,7 +628,7 @@ get_formal_tmp_var (tree val, gimple_seq *pre_p)
   return internal_get_tmp_var (val, pre_p, NULL, true);
 }
 
-/* Returns a temporary variable initialized with VAL.  PRE_P and POST_P
+/* Return a temporary variable initialized with VAL.  PRE_P and POST_P
    are as in gimplify_expr.  */
 
 tree
@@ -632,8 +637,8 @@ get_initialized_tmp_var (tree val, gimple_seq *pre_p, gimple_seq *post_p)
   return internal_get_tmp_var (val, pre_p, post_p, false);
 }
 
-/* Declares all the variables in VARS in SCOPE.  If DEBUG_INFO is
-   true, generate debug info for them; otherwise don't.  */
+/* Declare all the variables in VARS in SCOPE.  If DEBUG_INFO is true,
+   generate debug info for them; otherwise don't.  */
 
 void
 declare_vars (tree vars, gimple scope, bool debug_info)
@@ -696,6 +701,8 @@ force_constant_size (tree var)
     = build_int_cst (TREE_TYPE (DECL_SIZE (var)), max_size * BITS_PER_UNIT);
 }
 
+/* Push the temporary variable TMP into the current binding.  */
+
 void
 gimple_add_tmp_var (tree tmp)
 {
@@ -738,7 +745,7 @@ gimple_add_tmp_var (tree tmp)
     }
 }
 
-/* Determines whether to assign a location to the statement GS.  */
+/* Determine whether to assign a location to the statement GS.  */
 
 static bool
 should_carry_location_p (gimple gs)
@@ -751,7 +758,6 @@ should_carry_location_p (gimple gs)
 
   return true;
 }
-
 
 /* Return true if a location should not be emitted for this statement
    by annotate_one_with_location.  */
@@ -784,7 +790,6 @@ annotate_one_with_location (gimple gs, location_t location)
     gimple_set_location (gs, location);
 }
 
-
 /* Set LOCATION for all the statements after iterator GSI in sequence
    SEQ.  If GSI is pointing to the end of the sequence, start with the
    first statement in SEQ.  */
@@ -801,7 +806,6 @@ annotate_all_with_location_after (gimple_seq seq, gimple_stmt_iterator gsi,
   for (; !gsi_end_p (gsi); gsi_next (&gsi))
     annotate_one_with_location (gsi_stmt (gsi), location);
 }
-
 
 /* Set the location for all the statements in a sequence STMT_P to LOCATION.  */
 
@@ -1022,7 +1026,7 @@ unshare_expr (tree expr)
 
 /* WRAPPER is a code such as BIND_EXPR or CLEANUP_POINT_EXPR which can both
    contain statements and have a value.  Assign its value to a temporary
-   and give it void_type_node.  Returns the temporary, or NULL_TREE if
+   and give it void_type_node.  Return the temporary, or NULL_TREE if
    WRAPPER was already void.  */
 
 tree
@@ -1064,7 +1068,8 @@ voidify_wrapper_expr (tree wrapper, tree temp)
 	      break;
 
 	    case COMPOUND_EXPR:
-	      /* Advance to the last statement.  Set all container types to void.  */
+	      /* Advance to the last statement.  Set all container types to
+		 void.  */
 	      for (; TREE_CODE (*p) == COMPOUND_EXPR; p = &TREE_OPERAND (*p, 1))
 		{
 		  TREE_SIDE_EFFECTS (*p) = 1;
@@ -1113,8 +1118,9 @@ build_stack_save_restore (gimple *save, gimple *restore)
   tmp_var = create_tmp_var (ptr_type_node, "saved_stack");
   gimple_call_set_lhs (*save, tmp_var);
 
-  *restore = gimple_build_call (implicit_built_in_decls[BUILT_IN_STACK_RESTORE],
-			    1, tmp_var);
+  *restore
+    = gimple_build_call (implicit_built_in_decls[BUILT_IN_STACK_RESTORE],
+			 1, tmp_var);
 }
 
 /* Gimplify a BIND_EXPR.  Just voidify and recurse.  */
@@ -1302,6 +1308,8 @@ gimplify_return_expr (tree stmt, gimple_seq *pre_p)
   return GS_ALL_DONE;
 }
 
+/* Gimplify a variable-length array DECL.  */
+
 static void
 gimplify_vla_decl (tree decl, gimple_seq *seq_p)
 {
@@ -1340,8 +1348,7 @@ gimplify_vla_decl (tree decl, gimple_seq *seq_p)
   gimplify_ctxp->save_stack = true;
 }
 
-
-/* Gimplifies a DECL_EXPR node *STMT_P by making any necessary allocation
+/* Gimplify a DECL_EXPR node *STMT_P by making any necessary allocation
    and initialization explicit.  */
 
 static enum gimplify_status
@@ -1417,7 +1424,8 @@ gimplify_loop_expr (tree *expr_p, gimple_seq *pre_p)
   gimplify_seq_add_stmt (pre_p, gimple_build_goto (start_label));
 
   if (gimplify_ctxp->exit_label)
-    gimplify_seq_add_stmt (pre_p, gimple_build_label (gimplify_ctxp->exit_label));
+    gimplify_seq_add_stmt (pre_p,
+			   gimple_build_label (gimplify_ctxp->exit_label));
 
   gimplify_ctxp->exit_label = saved_label;
 
@@ -1425,7 +1433,7 @@ gimplify_loop_expr (tree *expr_p, gimple_seq *pre_p)
   return GS_ALL_DONE;
 }
 
-/* Gimplifies a statement list onto a sequence.  These may be created either
+/* Gimplify a statement list onto a sequence.  These may be created either
    by an enlightened front-end, or by shortcut_cond_expr.  */
 
 static enum gimplify_status
@@ -1469,7 +1477,6 @@ compare_case_labels (const void *p1, const void *p2)
     return tree_int_cst_compare (CASE_LOW (case1), CASE_LOW (case2));
 }
 
-
 /* Sort the case labels in LABEL_VEC in place in ascending order.  */
 
 void
@@ -1477,7 +1484,6 @@ sort_case_labels (VEC(tree,heap)* label_vec)
 {
   VEC_qsort (tree, label_vec, compare_case_labels);
 }
-
 
 /* Gimplify a SWITCH_EXPR, and collect a TREE_VEC of the labels it can
    branch to.  */
@@ -1615,6 +1621,7 @@ gimplify_switch_expr (tree *expr_p, gimple_seq *pre_p)
   return GS_ALL_DONE;
 }
 
+/* Gimplify the CASE_LABEL_EXPR pointed to by EXPR_P.  */
 
 static enum gimplify_status
 gimplify_case_label_expr (tree *expr_p, gimple_seq *pre_p)
@@ -1849,7 +1856,7 @@ gimplify_conversion (tree *expr_p)
 /* Nonlocal VLAs seen in the current function.  */
 static struct pointer_set_t *nonlocal_vlas;
 
-/* Gimplify a VAR_DECL or PARM_DECL.  Returns GS_OK if we expanded a
+/* Gimplify a VAR_DECL or PARM_DECL.  Return GS_OK if we expanded a
    DECL_VALUE_EXPR, and it's worth re-examining things.  */
 
 static enum gimplify_status
@@ -1914,7 +1921,6 @@ gimplify_var_or_parm_decl (tree *expr_p)
 
   return GS_ALL_DONE;
 }
-
 
 /* Gimplify the COMPONENT_REF, ARRAY_REF, REALPART_EXPR or IMAGPART_EXPR
    node *EXPR_P.
@@ -2018,7 +2024,8 @@ gimplify_compound_lval (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 
 	      /* Divide the element size by the alignment of the element
 		 type (above).  */
-	      elmt_size = size_binop_loc (loc, EXACT_DIV_EXPR, elmt_size, factor);
+	      elmt_size
+		= size_binop_loc (loc, EXACT_DIV_EXPR, elmt_size, factor);
 
 	      if (!is_gimple_min_invariant (elmt_size))
 		{
@@ -2210,7 +2217,6 @@ gimplify_self_mod_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
     }
 }
 
-
 /* If *EXPR_P has a variable sized type, wrap it in a WITH_SIZE_EXPR.  */
 
 static void
@@ -2236,7 +2242,6 @@ maybe_with_size_expr (tree *expr_p)
   size = SUBSTITUTE_PLACEHOLDER_IN_EXPR (size, expr);
   *expr_p = build2 (WITH_SIZE_EXPR, type, expr, size);
 }
-
 
 /* Helper for gimplify_call_expr.  Gimplify a single argument *ARG_P
    Store any side-effects in PRE_P.  CALL_LOCATION is the location of
@@ -2282,7 +2287,6 @@ gimplify_arg (tree *arg_p, gimple_seq *pre_p, location_t call_location)
      post queue which is then appended to the end of PRE_P.  */
   return gimplify_expr (arg_p, pre_p, NULL, test, fb);
 }
-
 
 /* Gimplify the CALL_EXPR node *EXPR_P into the GIMPLE sequence PRE_P.
    WANT_VALUE is true if the result of the call is desired.  */
@@ -2887,7 +2891,7 @@ gimplify_pure_cond_expr (tree *expr_p, gimple_seq *pre_p)
   return MIN (ret, tret);
 }
 
-/* Returns true if evaluating EXPR could trap.
+/* Return true if evaluating EXPR could trap.
    EXPR is GENERIC, while tree_could_trap_p can be called
    only on GIMPLE.  */
 
@@ -3265,7 +3269,7 @@ gimplify_modify_expr_to_memset (tree *expr_p, tree size, bool want_value,
 
 /* A subroutine of gimplify_init_ctor_preeval.  Called via walk_tree,
    determine, cautiously, if a CONSTRUCTOR overlaps the lhs of an
-   assignment.  Returns non-null if we detect a potential overlap.  */
+   assignment.  Return non-null if we detect a potential overlap.  */
 
 struct gimplify_init_ctor_preeval_data
 {
@@ -3551,8 +3555,9 @@ gimplify_init_ctor_eval (tree object, VEC(constructor_elt,gc) *elts,
 	{
 	  /* Do not use bitsizetype for ARRAY_REF indices.  */
 	  if (TYPE_DOMAIN (TREE_TYPE (object)))
-	    purpose = fold_convert (TREE_TYPE (TYPE_DOMAIN (TREE_TYPE (object))),
-				    purpose);
+	    purpose
+	      = fold_convert (TREE_TYPE (TYPE_DOMAIN (TREE_TYPE (object))),
+			      purpose);
 	  cref = build4 (ARRAY_REF, array_elt_type, unshare_expr (object),
 			 purpose, NULL_TREE, NULL_TREE);
 	}
@@ -3576,8 +3581,7 @@ gimplify_init_ctor_eval (tree object, VEC(constructor_elt,gc) *elts,
     }
 }
 
-
-/* Returns the appropriate RHS predicate for this LHS.  */
+/* Return the appropriate RHS predicate for this LHS.  */
 
 gimple_predicate
 rhs_predicate_for (tree lhs)
@@ -3663,8 +3667,6 @@ optimize_compound_literals_in_ctor (tree orig_ctor)
     }
   return ctor;
 }
-
-
 
 /* A subroutine of gimplify_modify_expr.  Break out elements of a
    CONSTRUCTOR used as an initializer into separate MODIFY_EXPRs.
@@ -4329,10 +4331,10 @@ gimplify_modify_expr_rhs (tree *expr_p, tree *from_p, tree *to_p,
 	      if (!(rhs_predicate_for (*to_p))(*from_p))
 		/* If we need a temporary, *to_p isn't accurate.  */
 		use_target = false;
+	      /* It's OK to use the return slot directly unless it's an NRV. */
 	      else if (TREE_CODE (*to_p) == RESULT_DECL
 		       && DECL_NAME (*to_p) == NULL_TREE
 		       && needs_to_live_in_memory (*to_p))
-		/* It's OK to use the return slot directly unless it's an NRV. */
 		use_target = true;
 	      else if (is_gimple_reg_type (TREE_TYPE (*to_p))
 		       || (DECL_P (*to_p) && DECL_REGISTER (*to_p)))
@@ -4431,7 +4433,6 @@ gimplify_modify_expr_rhs (tree *expr_p, tree *from_p, tree *to_p,
   return ret;
 }
 
-
 /* Promote partial stores to COMPLEX variables to total stores.  *EXPR_P is
    a MODIFY_EXPR with a lhs of a REAL/IMAGPART_EXPR of a variable with
    DECL_GIMPLE_REG_P set.
@@ -4473,7 +4474,6 @@ gimplify_modify_expr_complex_part (tree *expr_p, gimple_seq *pre_p,
 
   return GS_ALL_DONE;
 }
-
 
 /* Gimplify the MODIFY_EXPR node pointed to by EXPR_P.
 
@@ -4651,8 +4651,8 @@ gimplify_modify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
   return GS_ALL_DONE;
 }
 
-/*  Gimplify a comparison between two variable-sized objects.  Do this
-    with a call to BUILT_IN_MEMCMP.  */
+/* Gimplify a comparison between two variable-sized objects.  Do this
+   with a call to BUILT_IN_MEMCMP.  */
 
 static enum gimplify_status
 gimplify_variable_sized_compare (tree *expr_p)
@@ -4678,8 +4678,8 @@ gimplify_variable_sized_compare (tree *expr_p)
   return GS_OK;
 }
 
-/*  Gimplify a comparison between two aggregate objects of integral scalar
-    mode as a comparison between the bitwise equivalent scalar values.  */
+/* Gimplify a comparison between two aggregate objects of integral scalar
+   mode as a comparison between the bitwise equivalent scalar values.  */
 
 static enum gimplify_status
 gimplify_scalar_mode_aggregate_compare (tree *expr_p)
@@ -4700,15 +4700,15 @@ gimplify_scalar_mode_aggregate_compare (tree *expr_p)
   return GS_OK;
 }
 
-/*  Gimplify TRUTH_ANDIF_EXPR and TRUTH_ORIF_EXPR expressions.  EXPR_P
-    points to the expression to gimplify.
+/* Gimplify TRUTH_ANDIF_EXPR and TRUTH_ORIF_EXPR expressions.  EXPR_P
+   points to the expression to gimplify.
 
-    Expressions of the form 'a && b' are gimplified to:
+   Expressions of the form 'a && b' are gimplified to:
 
 	a && b ? true : false
 
-    LOCUS is the source location to be put on the generated COND_EXPR.
-    gimplify_cond_expr will do the rest.  */
+   LOCUS is the source location to be put on the generated COND_EXPR.
+   gimplify_cond_expr will do the rest.  */
 
 static enum gimplify_status
 gimplify_boolean_expr (tree *expr_p, location_t locus)
@@ -4725,8 +4725,8 @@ gimplify_boolean_expr (tree *expr_p, location_t locus)
   return GS_OK;
 }
 
-/* Gimplifies an expression sequence.  This function gimplifies each
-   expression and re-writes the original expression with the last
+/* Gimplify an expression sequence.  This function gimplifies each
+   expression and rewrites the original expression with the last
    expression of the sequence in GIMPLE form.
 
    PRE_P points to the list where the side effects for all the
@@ -4762,13 +4762,12 @@ gimplify_compound_expr (tree *expr_p, gimple_seq *pre_p, bool want_value)
     }
 }
 
-
 /* Gimplify a SAVE_EXPR node.  EXPR_P points to the expression to
    gimplify.  After gimplification, EXPR_P will point to a new temporary
    that holds the original value of the SAVE_EXPR node.
 
    PRE_P points to the list where side effects that must happen before
-      *EXPR_P should be stored.  */
+   *EXPR_P should be stored.  */
 
 static enum gimplify_status
 gimplify_save_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
@@ -4803,7 +4802,7 @@ gimplify_save_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
   return ret;
 }
 
-/*  Re-write the ADDR_EXPR node pointed to by EXPR_P
+/* Rewrite the ADDR_EXPR node pointed to by EXPR_P
 
       unary_expr
 	      : ...
@@ -5380,7 +5379,6 @@ gimplify_stmt (tree *stmt_p, gimple_seq *seq_p)
   return last != gimple_seq_last (*seq_p);
 }
 
-
 /* Add FIRSTPRIVATE entries for DECL in the OpenMP the surrounding parallels
    to CTX.  If entries already exist, force them to be some flavor of private.
    If there is no enclosing parallel, do nothing.  */
@@ -5578,7 +5576,8 @@ omp_notice_threadprivate_variable (struct gimplify_omp_ctx *ctx, tree decl,
   n = splay_tree_lookup (ctx->variables, (splay_tree_key)decl);
   if (n == NULL)
     {
-      error ("threadprivate variable %qE used in untied task", DECL_NAME (decl));
+      error ("threadprivate variable %qE used in untied task",
+	     DECL_NAME (decl));
       error_at (ctx->location, "enclosing task");
       splay_tree_insert (ctx->variables, (splay_tree_key)decl, 0);
     }
@@ -6415,10 +6414,10 @@ goa_lhs_expr_p (tree expr, tree addr)
   return false;
 }
 
-/* Walk *EXPR_P and replace
-   appearances of *LHS_ADDR with LHS_VAR.  If an expression does not involve
-   the lhs, evaluate it into a temporary.  Return 1 if the lhs appeared as
-   a subexpression, 0 if it did not, or -1 if an error was encountered.  */
+/* Walk *EXPR_P and replace appearances of *LHS_ADDR with LHS_VAR.  If an
+   expression does not involve the lhs, evaluate it into a temporary.
+   Return 1 if the lhs appeared as a subexpression, 0 if it did not,
+   or -1 if an error was encountered.  */
 
 static int
 goa_stabilize_expr (tree *expr_p, gimple_seq *pre_p, tree lhs_addr,
@@ -6479,7 +6478,6 @@ goa_stabilize_expr (tree *expr_p, gimple_seq *pre_p, tree lhs_addr,
   return saw_lhs;
 }
 
-
 /* Gimplify an OMP_ATOMIC statement.  */
 
 static enum gimplify_status
@@ -6508,8 +6506,7 @@ gimplify_omp_atomic (tree *expr_p, gimple_seq *pre_p)
    return GS_ALL_DONE;
 }
 
-
-/* Converts the GENERIC expression tree *EXPR_P to GIMPLE.  If the
+/* Convert the GENERIC expression tree *EXPR_P to GIMPLE.  If the
    expression produces a value to be used as an operand inside a GIMPLE
    statement, the value will be stored back in *EXPR_P.  This value will
    be a tree of class tcc_declaration, tcc_constant, tcc_reference or
@@ -7695,7 +7692,6 @@ gimplify_one_sizepos (tree *expr_p, gimple_seq *stmt_p)
     }
 }
 
-
 /* Gimplify the body of statements pointed to by BODY_P and return a
    GIMPLE_BIND containing the sequence of GIMPLE statements
    corresponding to BODY_P.  FNDECL is the function decl containing
@@ -7836,7 +7832,7 @@ flag_instrument_functions_exclude_p (tree fndecl)
 /* Entry point to the gimplification pass.  FNDECL is the FUNCTION_DECL
    node for the function we want to gimplify.
 
-   Returns the sequence of GIMPLE statements corresponding to the body
+   Return the sequence of GIMPLE statements corresponding to the body
    of FNDECL.  */
 
 void
@@ -7937,7 +7933,6 @@ gimplify_function_tree (tree fndecl)
   current_function_decl = oldfn;
   pop_cfun ();
 }
-
 
 /* Some transformations like inlining may invalidate the GIMPLE form
    for operands.  This function traverses all the operands in STMT and
@@ -8128,8 +8123,7 @@ gimple_regimplify_operands (gimple stmt, gimple_stmt_iterator *gsi_p)
   pop_gimplify_context (NULL);
 }
 
-
-/* Expands EXPR to list of gimple statements STMTS.  GIMPLE_TEST_F specifies
+/* Expand EXPR to list of gimple statements STMTS.  GIMPLE_TEST_F specifies
    the predicate that will hold for the result.  If VAR is not NULL, make the
    base variable of the final destination be VAR if suitable.  */
 
@@ -8178,7 +8172,7 @@ force_gimple_operand_1 (tree expr, gimple_seq *stmts,
   return expr;
 }
 
-/* Expands EXPR to list of gimple statements STMTS.  If SIMPLE is true,
+/* Expand EXPR to list of gimple statements STMTS.  If SIMPLE is true,
    force the result to be either ssa_name or an invariant, otherwise
    just force it to be a rhs expression.  If VAR is not NULL, make the
    base variable of the final destination be VAR if suitable.  */
@@ -8191,7 +8185,7 @@ force_gimple_operand (tree expr, gimple_seq *stmts, bool simple, tree var)
 				 var);
 }
 
-/* Invokes force_gimple_operand_1 for EXPR with parameters GIMPLE_TEST_F
+/* Invoke force_gimple_operand_1 for EXPR with parameters GIMPLE_TEST_F
    and VAR.  If some statements are produced, emits them at GSI.
    If BEFORE is true.  the statements are appended before GSI, otherwise
    they are appended after it.  M specifies the way GSI moves after
@@ -8226,7 +8220,7 @@ force_gimple_operand_gsi_1 (gimple_stmt_iterator *gsi, tree expr,
   return expr;
 }
 
-/* Invokes force_gimple_operand_1 for EXPR with parameter VAR.
+/* Invoke force_gimple_operand_1 for EXPR with parameter VAR.
    If SIMPLE is true, force the result to be either ssa_name or an invariant,
    otherwise just force it to be a rhs expression.  If some statements are
    produced, emits them at GSI.  If BEFORE is true, the statements are
