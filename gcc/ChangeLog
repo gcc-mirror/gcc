@@ -1,3 +1,9 @@
+2011-04-15  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/48612
+	* config/i386/sse.md (*ieee_smin<mode>3): Switch mnemonics.
+	(*ieee_smax<mode>3): Likewise.
+
 2011-04-15  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* config/s390/s390.md (popcountdi2, popcountsi2, popcounthi2):

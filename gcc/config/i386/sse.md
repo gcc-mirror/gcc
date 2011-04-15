@@ -962,8 +962,8 @@
 	 UNSPEC_IEEE_MIN))]
   ""
   "@
-   vmin<ssemodesuffix>\t{%2, %1, %0|%0, %1, %2}
-   min<ssemodesuffix>\t{%2, %0|%0, %2}"
+   min<ssemodesuffix>\t{%2, %0|%0, %2}
+   vmin<ssemodesuffix>\t{%2, %1, %0|%0, %1, %2}"
   [(set_attr "isa" "noavx,avx")
    (set_attr "type" "sseadd")
    (set_attr "prefix" "orig,vex")
@@ -977,8 +977,8 @@
 	 UNSPEC_IEEE_MAX))]
   ""
   "@
-   vmax<ssemodesuffix>\t{%2, %1, %0|%0, %1, %2}
-   max<ssemodesuffix>\t{%2, %0|%0, %2}"
+   max<ssemodesuffix>\t{%2, %0|%0, %2}
+   vmax<ssemodesuffix>\t{%2, %1, %0|%0, %1, %2}"
   [(set_attr "isa" "noavx,avx")
    (set_attr "type" "sseadd")
    (set_attr "prefix" "orig,vex")
