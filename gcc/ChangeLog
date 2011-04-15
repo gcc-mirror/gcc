@@ -1,3 +1,8 @@
+2011-04-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* cfgexpand.c (expand_debug_expr): Use
+	simplify_gen_{unary,binary,ternary} instead of gen_rtx_*.
+
 2011-04-15  Michael Matz  <matz@suse.de>
 
 	* tree.h (ALLOCA_FOR_VAR_P): Rename to CALL_ALLOCA_FOR_VAR_P.
