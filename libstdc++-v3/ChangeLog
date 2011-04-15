@@ -1,3 +1,7 @@
+2011-04-15  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/std/istream: Fix comments in the light of DR60 + N3168.
+
 2011-04-15  Takaya Saito  <gintensubaru@gmail.com>
 
 	PR libstdc++/48476

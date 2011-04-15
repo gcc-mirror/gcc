@@ -495,8 +495,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  If @c rdbuf() is null or if @c sputbackc() fails, sets badbit in
        *  the error state.
        *
-       *  @note  Since no characters are extracted, the next call to
-       *         @c gcount() will return 0, as required by DR 60.
+       *  @note  This function first clears eofbit.  Since no characters
+       *         are extracted, the next call to @c gcount() will return 0,
+       *         as required by DR 60.
       */
       __istream_type& 
       putback(char_type __c);
@@ -510,8 +511,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  If @c rdbuf() is null or if @c sungetc() fails, sets badbit in
        *  the error state.
        *
-       *  @note  Since no characters are extracted, the next call to
-       *         @c gcount() will return 0, as required by DR 60.
+       *  @note  This function first clears eofbit.  Since no characters
+       *         are extracted, the next call to @c gcount() will return 0,
+       *         as required by DR 60.
       */
       __istream_type& 
       unget();
@@ -543,9 +545,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *
        *  @note  This function does not count the number of characters
        *         extracted, if any, and therefore does not affect the next
-       *         call to @c gcount().
+       *         call to @c gcount().  At variance with putback, unget and
+       *         seekg, eofbit is not cleared first.
       */
-      pos_type 
+      pos_type
       tellg();
 
       /**
@@ -556,11 +559,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  If @c fail() is not true, calls @c rdbuf()->pubseekpos(pos).  If
        *  that function fails, sets failbit.
        *
-       *  @note  This function does not count the number of characters
-       *         extracted, if any, and therefore does not affect the next
-       *         call to @c gcount().
+       *  @note  This function first clears eofbit.  It does not count the
+       *         number of characters extracted, if any, and therefore does
+       *         not affect the next call to @c gcount().
       */
-      __istream_type& 
+      __istream_type&
       seekg(pos_type);
 
       /**
@@ -572,9 +575,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  If @c fail() is not true, calls @c rdbuf()->pubseekoff(off,dir).
        *  If that function fails, sets failbit.
        *
-       *  @note  This function does not count the number of characters
-       *         extracted, if any, and therefore does not affect the next
-       *         call to @c gcount().
+       *  @note  This function first clears eofbit.  It does not count the
+       *         number of characters extracted, if any, and therefore does
+       *         not affect the next call to @c gcount().
       */
       __istream_type& 
       seekg(off_type, ios_base::seekdir);
