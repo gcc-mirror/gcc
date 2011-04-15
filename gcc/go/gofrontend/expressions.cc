@@ -3603,10 +3603,11 @@ Unsafe_type_conversion_expression::do_get_tree(Translate_context* context)
   else if (t->channel_type() != NULL)
     gcc_assert(et->channel_type() != NULL);
   else if (t->points_to() != NULL && t->points_to()->channel_type() != NULL)
-    gcc_assert(et->points_to() != NULL
-	       && et->points_to()->channel_type() != NULL);
+    gcc_assert((et->points_to() != NULL
+		&& et->points_to()->channel_type() != NULL)
+	       || et->is_nil_type());
   else if (t->is_unsafe_pointer_type())
-    gcc_assert(et->points_to() != NULL);
+    gcc_assert(et->points_to() != NULL || et->is_nil_type());
   else if (et->is_unsafe_pointer_type())
     gcc_assert(t->points_to() != NULL);
   else if (t->interface_type() != NULL && !t->interface_type()->is_empty())

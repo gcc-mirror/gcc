@@ -107,6 +107,12 @@ class Backend
 
   // Statements.
 
+  // Create an error statement.  This is used for cases which should
+  // not occur in a correct program, in order to keep the compilation
+  // going without crashing.
+  virtual Bstatement*
+  error_statement() = 0;
+
   // Create an expression statement.
   virtual Bstatement*
   expression_statement(Bexpression*) = 0;

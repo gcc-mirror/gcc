@@ -1,3 +1,7 @@
+2011-04-14  Ian Lance Taylor  <iant@google.com>
+
+	* go-gcc.cc (Backend::error_statement): New function.
+
 2011-04-13  Ian Lance Taylor  <iant@google.com>
 
 	* Make-lang.in (go/gogo-tree.o): depend on $(GO_RUNTIME_H).

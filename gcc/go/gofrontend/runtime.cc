@@ -381,3 +381,12 @@ Runtime::map_iteration_type()
 
   return Type::make_array_type(runtime_function_type(RFT_POINTER), iexpr);
 }
+
+// Return the type used to pass a list of general channels to the
+// select runtime function.
+
+Type*
+Runtime::chanptr_type()
+{
+  return runtime_function_type(RFT_CHANPTR);
+}

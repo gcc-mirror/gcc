@@ -678,9 +678,9 @@ class Select_clauses
   bool
   may_fall_through() const;
 
-  // Return a tree implementing the select statement.
-  tree
-  get_tree(Translate_context*, Unnamed_label* break_label, source_location);
+  // Convert to the backend representation.
+  Bstatement*
+  get_backend(Translate_context*, Unnamed_label* break_label, source_location);
 
  private:
   // A single clause.
@@ -749,8 +749,8 @@ class Select_clauses
     may_fall_through() const;
 
     // Return a tree for the statements to execute.
-    tree
-    get_statements_tree(Translate_context*);
+    Bstatement*
+    get_statements_backend(Translate_context*);
 
    private:
     // The channel.
@@ -778,8 +778,10 @@ class Select_clauses
   };
 
   void
-  add_clause_tree(Translate_context*, int, Select_clause*, Unnamed_label*,
-		  tree*);
+  add_clause_backend(Translate_context*, source_location, int index,
+		     int case_value, Select_clause*, Unnamed_label*,
+		     std::vector<std::vector<Bexpression*> >* cases,
+		     std::vector<Bstatement*>* clauses);
 
   typedef std::vector<Select_clause> Clauses;
 
