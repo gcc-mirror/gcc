@@ -1,5 +1,5 @@
 ! { dg-do run }
-! { dg-options "-fcray-pointer" }
+! { dg-options "-fcray-pointer -ffloat-store" }
 !
 ! Test the fix for PR36528 in which the Cray pointer was not passed
 ! correctly to 'euler' so that an undefined reference to fcn was
