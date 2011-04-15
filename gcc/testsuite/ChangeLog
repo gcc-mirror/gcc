@@ -1,3 +1,8 @@
+2011-04-15  Richard Guenther  <rguenther@suse.de>
+
+	PR testsuite/48286
+	* gfortran.dg/cray_pointers_8.f90: Use -ffloat-store.
+
 2011-04-15  Georg-Johann Lay  <avr@gjlay.de>
 
 	* gcc.target/avr/torture/pr41885.c (dg-options): Change
