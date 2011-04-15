@@ -1,3 +1,9 @@
+2011-04-15  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/18918
+	* trans-intrinsic.c (conv_intrinsic_cobound): Remove unused
+	code which is also causing an ICE.
+
 2011-04-14  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* f95-lang.c (poplevel): Use BLOCK_CHAIN and block_chainon.

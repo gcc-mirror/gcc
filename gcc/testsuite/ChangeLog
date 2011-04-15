@@ -1,3 +1,8 @@
+2011-04-15  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/18918
+	* gfortran.dg/coarray_15.f90: Change to dg-do run.
+
 2011-04-15  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc.dg/naming-4.m: Updated.
