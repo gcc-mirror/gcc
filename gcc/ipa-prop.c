@@ -1383,18 +1383,6 @@ ipa_analyze_virtual_call_uses (struct cgraph_node *node,
   if (!flag_devirtualize)
     return;
 
-  if (TREE_CODE (obj) == ADDR_EXPR)
-    {
-      do
-	{
-	  obj = TREE_OPERAND (obj, 0);
-	}
-      while (TREE_CODE (obj) == COMPONENT_REF);
-      if (TREE_CODE (obj) != MEM_REF)
-	return;
-      obj = TREE_OPERAND (obj, 0);
-    }
-
   if (TREE_CODE (obj) != SSA_NAME
       || !SSA_NAME_IS_DEFAULT_DEF (obj))
     return;
