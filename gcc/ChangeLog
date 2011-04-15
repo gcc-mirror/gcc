@@ -1,3 +1,8 @@
+2011-04-15  Pat Haugen <pthaugen@us.ibm.com>
+
+	* config/rs6000/rs6000.c (call_ABI_of_interest): Call
+	cgraph_get_node instead of cgraph_get_create_node.
+
 2011-04-15  Jakub Jelinek  <jakub@redhat.com>
 
 	* cfgexpand.c (expand_debug_expr): Use
