@@ -567,6 +567,7 @@ copy_prop_visit_phi_node (gimple phi)
   for (i = 0; i < gimple_phi_num_args (phi); i++)
     {
       prop_value_t *arg_val;
+      tree arg_value;
       tree arg = gimple_phi_arg_def (phi, i);
       edge e = gimple_phi_arg_edge (phi, i);
 
@@ -575,24 +576,9 @@ copy_prop_visit_phi_node (gimple phi)
       if (!(e->flags & EDGE_EXECUTABLE))
 	continue;
 
-      /* Constants in the argument list never generate a useful copy.
-	 Similarly, names that flow through abnormal edges cannot be
-	 used to derive copies.  */
-      if (TREE_CODE (arg) != SSA_NAME || SSA_NAME_OCCURS_IN_ABNORMAL_PHI (arg))
-	{
-	  phi_val.value = lhs;
-	  break;
-	}
-
-      /* Avoid copy propagation from an inner into an outer loop.
-	 Otherwise, this may move loop variant variables outside of
-	 their loops and prevent coalescing opportunities.  If the
-	 value was loop invariant, it will be hoisted by LICM and
-	 exposed for copy propagation.  Not a problem for virtual
-	 operands though.
-	 ???  The value will be always loop invariant.  */
-      if (is_gimple_reg (lhs)
-	  && loop_depth_of_name (arg) > loop_depth_of_name (lhs))
+      /* Names that flow through abnormal edges cannot be used to
+	 derive copies.  */
+      if (TREE_CODE (arg) == SSA_NAME && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (arg))
 	{
 	  phi_val.value = lhs;
 	  break;
@@ -605,26 +591,51 @@ copy_prop_visit_phi_node (gimple phi)
 	  fprintf (dump_file, "\n");
 	}
 
-      arg_val = get_copy_of_val (arg);
+      if (TREE_CODE (arg) == SSA_NAME)
+	{
+	  arg_val = get_copy_of_val (arg);
 
-      /* If we didn't visit the definition of arg yet treat it as
-         UNDEFINED.  This also handles PHI arguments that are the
-	 same as lhs.  We'll come here again.  */
-      if (!arg_val->value)
-	continue;
+	  /* If we didn't visit the definition of arg yet treat it as
+	     UNDEFINED.  This also handles PHI arguments that are the
+	     same as lhs.  We'll come here again.  */
+	  if (!arg_val->value)
+	    continue;
+
+	  arg_value = arg_val->value;
+	}
+      else
+	arg_value = valueize_val (arg);
+
+      /* Avoid copy propagation from an inner into an outer loop.
+	 Otherwise, this may move loop variant variables outside of
+	 their loops and prevent coalescing opportunities.  If the
+	 value was loop invariant, it will be hoisted by LICM and
+	 exposed for copy propagation.
+	 ???  The value will be always loop invariant.
+	 In loop-closed SSA form do not copy-propagate through
+	 PHI nodes in blocks with a loop exit edge predecessor.  */
+      if (current_loops
+	  && TREE_CODE (arg_value) == SSA_NAME
+	  && (loop_depth_of_name (arg_value) > loop_depth_of_name (lhs)
+	      || (loops_state_satisfies_p (LOOP_CLOSED_SSA)
+		  && loop_exit_edge_p (e->src->loop_father, e))))
+	{
+	  phi_val.value = lhs;
+	  break;
+	}
 
       /* If the LHS didn't have a value yet, make it a copy of the
 	 first argument we find.   */
       if (phi_val.value == NULL_TREE)
 	{
-	  phi_val.value = arg_val->value;
+	  phi_val.value = arg_value;
 	  continue;
 	}
 
       /* If PHI_VAL and ARG don't have a common copy-of chain, then
 	 this PHI node cannot be a copy operation.  */
-      if (phi_val.value != arg_val->value
-	  && !operand_equal_p (phi_val.value, arg_val->value, 0))
+      if (phi_val.value != arg_value
+	  && !operand_equal_p (phi_val.value, arg_value, 0))
 	{
 	  phi_val.value = lhs;
 	  break;
@@ -669,7 +680,6 @@ init_copy_prop (void)
     {
       gimple_stmt_iterator si;
       int depth = bb->loop_depth;
-      bool loop_exit_p = false;
 
       for (si = gsi_start_bb (bb); !gsi_end_p (si); gsi_next (&si))
 	{
@@ -706,26 +716,13 @@ init_copy_prop (void)
 	      set_copy_of_val (def, def);
 	}
 
-      /* In loop-closed SSA form do not copy-propagate through
-	 PHI nodes in blocks with a loop exit edge predecessor.  */
-      if (current_loops
-	  && loops_state_satisfies_p (LOOP_CLOSED_SSA))
-	{
-	  edge_iterator ei;
-	  edge e;
-	  FOR_EACH_EDGE (e, ei, bb->preds)
-	    if (loop_exit_edge_p (e->src->loop_father, e))
-	      loop_exit_p = true;
-	}
-
       for (si = gsi_start_phis (bb); !gsi_end_p (si); gsi_next (&si))
 	{
           gimple phi = gsi_stmt (si);
           tree def;
 
 	  def = gimple_phi_result (phi);
-	  if (!is_gimple_reg (def)
-	      || loop_exit_p)
+	  if (!is_gimple_reg (def))
             prop_set_simulate_again (phi, false);
 	  else
             prop_set_simulate_again (phi, true);

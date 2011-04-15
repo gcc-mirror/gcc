@@ -1,3 +1,11 @@
+2011-04-15  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/48290
+	* tree-ssa-copy.c (copy_prop_visit_phi_node): Propagate constants.
+	Properly decide inhibiting propagation based on the valueized
+	operand.  Do loop-closed SSA form preserving here ...
+	(init_copy_prop): ... not here.
+
 2011-04-15  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/48612
