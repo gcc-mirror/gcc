@@ -1,3 +1,7 @@
+2011-04-15  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* scripts/extract_symvers.pl: Handle NOTY.
+
 2011-04-15  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/std/istream: Fix comments in the light of DR60 + N3168.
