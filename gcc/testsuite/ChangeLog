@@ -1,3 +1,8 @@
+2011-04-15  Georg-Johann Lay  <avr@gjlay.de>
+
+	* gcc.target/avr/torture/pr41885.c (dg-options): Change
+	-finline-limit=0 to -fno-inline
+
 2011-04-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/48614
