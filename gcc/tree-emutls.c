@@ -619,8 +619,9 @@ lower_emutls_function_body (struct cgraph_node *node)
 
   d.cfun_node = node;
   d.builtin_decl = built_in_decls[BUILT_IN_EMUTLS_GET_ADDRESS];
-  d.builtin_node = cgraph_get_node (d.builtin_decl);
-  gcc_checking_assert (d.builtin_node);
+  /* This is where we introduce the declaration to the IL and so we have to
+     create a node for it.  */
+  d.builtin_node = cgraph_get_create_node (d.builtin_decl);
 
   FOR_EACH_BB (d.bb)
     {

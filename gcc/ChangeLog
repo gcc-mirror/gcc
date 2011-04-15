@@ -1,3 +1,10 @@
+2011-04-15  Martin Jambor  <mjambor@suse.cz>
+
+	PR middle-end/48601
+	* tree-emutls.c (lower_emutls_function_body): Call
+	cgraph_get_create_node instead of cgraph_get_node.  Do not assert the
+	result is non-NULL.
+
 2011-04-15  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* c-decl.c (detect_field_duplicates): Call
