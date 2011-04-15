@@ -1,5 +1,10 @@
 2011-04-15  Martin Jambor  <mjambor@suse.cz>
 
+	* ipa-prop.c (ipa_analyze_virtual_call_uses): Remove handling
+	of ADR_EXPRs.
+
+2011-04-15  Martin Jambor  <mjambor@suse.cz>
+
 	PR middle-end/48601
 	* tree-emutls.c (lower_emutls_function_body): Call
 	cgraph_get_create_node instead of cgraph_get_node.  Do not assert the
