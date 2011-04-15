@@ -29,13 +29,15 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #include "time_1.h"
 
-#ifdef HAVE_CLOCK_GETTIME
+
 /* POSIX states that CLOCK_REALTIME must be present if clock_gettime
    is available, others are optional.  */
+#if defined(HAVE_CLOCK_GETTIME) || defined(HAVE_CLOCK_GETTIME_LIBRT)
 #ifdef CLOCK_MONOTONIC
 #define GF_CLOCK_MONOTONIC CLOCK_MONOTONIC
 #else
 #define GF_CLOCK_MONOTONIC CLOCK_REALTIME
+#endif
 #endif
 
 /* Weakref trickery for clock_gettime().  On Glibc, clock_gettime()
@@ -50,15 +52,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define GTHREAD_USE_WEAK 1
 #endif
 
-#if SUPPORTS_WEAK && GTHREAD_USE_WEAK
+#if SUPPORTS_WEAK && GTHREAD_USE_WEAK && defined(HAVE_CLOCK_GETTIME_LIBRT)
 static int weak_gettime (clockid_t, struct timespec *) 
   __attribute__((__weakref__("clock_gettime")));
-#else
-static inline int weak_gettime (clockid_t clk_id, struct timespec *res)
-{
-  return clock_gettime (clk_id, res);
-}
-#endif
 #endif
 
 
@@ -84,6 +80,13 @@ gf_gettime_mono (time_t * secs, long * nanosecs)
 {
   int err;
 #ifdef HAVE_CLOCK_GETTIME
+  struct timespec ts;
+  err = clock_gettime (GF_CLOCK_MONOTONIC, &ts);
+  *secs = ts.tv_sec;
+  *nanosecs = ts.tv_nsec;
+  return err;
+#else
+#if defined(HAVE_CLOCK_GETTIME_LIBRT) && SUPPORTS_WEAK && GTHREAD_USE_WEAK
   if (weak_gettime)
     {
       struct timespec ts;
@@ -96,6 +99,7 @@ gf_gettime_mono (time_t * secs, long * nanosecs)
   err = gf_gettime (secs, nanosecs);
   *nanosecs *= 1000;
   return err;
+#endif
 }
 
 extern void system_clock_4 (GFC_INTEGER_4 *, GFC_INTEGER_4 *, GFC_INTEGER_4 *);
