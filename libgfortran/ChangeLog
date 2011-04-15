@@ -1,3 +1,8 @@
+2011-04-15  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/48589
+	* io/write_float.def (write_infnan): Set width properly for G0.
+
 2011-04-15  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/18918
@@ -15,6 +20,7 @@
 	* intrinsics/system_clock.c: Use weakrefs only when needed and
 	supported.
 
+>>>>>>> .r172501
 2011-04-12  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	* configure.ac: Use AC_TYPE_* to make sure we have (u)intptr_t,
