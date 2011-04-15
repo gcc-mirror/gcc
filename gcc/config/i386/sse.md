@@ -4070,7 +4070,16 @@
 		      (match_operand:SI 3 "const_0_to_255_operand" "n")]
 		     UNSPEC_INSERTPS))]
   "TARGET_AVX"
-  "vinsertps\t{%3, %2, %1, %0|%0, %1, %2, %3}";
+{
+  if (MEM_P (operands[2]))
+    {
+      unsigned count_s = INTVAL (operands[3]) >> 6;
+      if (count_s)
+	operands[3] = GEN_INT (INTVAL (operands[3]) & 0x3f);
+      operands[2] = adjust_address_nv (operands[2], SFmode, count_s * 4);
+    }
+  return "vinsertps\t{%3, %2, %1, %0|%0, %1, %2, %3}";
+}
   [(set_attr "type" "sselog")
    (set_attr "prefix" "vex")
    (set_attr "prefix_extra" "1")
@@ -4084,7 +4093,16 @@
 		      (match_operand:SI 3 "const_0_to_255_operand" "n")]
 		     UNSPEC_INSERTPS))]
   "TARGET_SSE4_1"
-  "insertps\t{%3, %2, %0|%0, %2, %3}";
+{
+  if (MEM_P (operands[2]))
+    {
+      unsigned count_s = INTVAL (operands[3]) >> 6;
+      if (count_s)
+	operands[3] = GEN_INT (INTVAL (operands[3]) & 0x3f);
+      operands[2] = adjust_address_nv (operands[2], SFmode, count_s * 4);
+    }
+  return "insertps\t{%3, %2, %0|%0, %2, %3}";
+}
   [(set_attr "type" "sselog")
    (set_attr "prefix_data16" "1")
    (set_attr "prefix_extra" "1")
