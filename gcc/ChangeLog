@@ -1,3 +1,9 @@
+2011-04-15  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* config/s390/s390.md (popcountdi2, popcountsi2, popcounthi2):
+	Replace match_operand with match_dup for the third operand in
+	these expanders.
+
 2011-04-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/48605
