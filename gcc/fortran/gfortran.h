@@ -2221,6 +2221,7 @@ typedef struct
   int flag_d_lines;
   int gfc_flag_openmp;
   int flag_sign_zero;
+  int flag_stack_arrays;
   int flag_module_private;
   int flag_recursive;
   int flag_init_local_zero;

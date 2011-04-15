@@ -353,7 +353,7 @@ fortran/trans-stmt.o: $(GFORTRAN_TRANS_DEPS) fortran/dependency.h
 fortran/trans-openmp.o: $(GFORTRAN_TRANS_DEPS)
 fortran/trans-io.o: $(GFORTRAN_TRANS_DEPS) gt-fortran-trans-io.h \
   fortran/ioparm.def
-fortran/trans-array.o: $(GFORTRAN_TRANS_DEPS)
+fortran/trans-array.o: $(GFORTRAN_TRANS_DEPS) $(GIMPLE_H)
 fortran/trans-intrinsic.o: $(GFORTRAN_TRANS_DEPS) fortran/mathbuiltins.def \
   gt-fortran-trans-intrinsic.h
 fortran/dependency.o: $(GFORTRAN_TRANS_DEPS) fortran/dependency.h
