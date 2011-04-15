@@ -6128,7 +6128,14 @@ m68k_sched_variable_issue (FILE *sched_dump ATTRIBUTE_UNUSED,
 	  gcc_unreachable ();
 	}
 
-      gcc_assert (insn_size <= sched_ib.filled);
+      if (insn_size > sched_ib.filled)
+	/* Scheduling for register pressure does not always take DFA into
+	   account.  Workaround instruction buffer not being filled enough.  */
+	{
+	  gcc_assert (sched_pressure_p);
+	  insn_size = sched_ib.filled;
+	}
+
       --can_issue_more;
     }
   else if (GET_CODE (PATTERN (insn)) == ASM_INPUT

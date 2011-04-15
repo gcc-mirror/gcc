@@ -1,3 +1,8 @@
+2011-04-15  Maxim Kuvyrkov  <maxim@codesourcery.com>
+
+	* config/m68k/m68k.c (m68k_sched_variable_issue): Handle
+	-fsched-pressure.
+
 2011-04-15  Georg-Johann Lay  <avr@gjlay.de>
 	
 	* config/avr/avr.md ("rotl<mode>3",mode=HIDI): Use match_dup
