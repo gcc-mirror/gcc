@@ -1,4 +1,4 @@
-! { dg-do compile }
+! { dg-do run }
 ! { dg-options "-fcoarray=single" }
 !
 ! PR fortran/18918

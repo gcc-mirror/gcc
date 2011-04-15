@@ -1129,7 +1129,6 @@ conv_intrinsic_cobound (gfc_se * se, gfc_expr * expr)
   gfc_ss *ss;
   tree bound, resbound, resbound2, desc, cond, tmp;
   tree type;
-  gfc_array_spec * as;
   int corank;
 
   gcc_assert (expr->value.function.isym->id == GFC_ISYM_LCOBOUND
@@ -1141,9 +1140,6 @@ conv_intrinsic_cobound (gfc_se * se, gfc_expr * expr)
 
   gcc_assert (arg->expr->expr_type == EXPR_VARIABLE);
   corank = gfc_get_corank (arg->expr);
-
-  as = gfc_get_full_arrayspec_from_expr (arg->expr);
-  gcc_assert (as);
 
   ss = gfc_walk_expr (arg->expr);
   gcc_assert (ss != gfc_ss_terminator);
