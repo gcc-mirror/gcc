@@ -526,11 +526,6 @@ class Gogo
   tree
   go_string_constant_tree(const std::string&);
 
-  // Send a value on a channel.
-  static tree
-  send_on_channel(tree channel, tree val, bool blocking, bool for_select,
-		  source_location);
-
   // Receive a value from a channel.
   static tree
   receive_from_channel(tree type_tree, tree channel, bool for_select,

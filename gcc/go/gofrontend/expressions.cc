@@ -3622,6 +3622,16 @@ Unsafe_type_conversion_expression::do_get_tree(Translate_context* context)
 		 && et->interface_type()->is_empty());
       use_view_convert = true;
     }
+  else if (t->integer_type() != NULL)
+    {
+      gcc_assert(et->is_boolean_type()
+		 || et->integer_type() != NULL
+		 || et->function_type() != NULL
+		 || et->points_to() != NULL
+		 || et->map_type() != NULL
+		 || et->channel_type() != NULL);
+      return convert_to_integer(type_tree, expr_tree);
+    }
   else
     gcc_unreachable();
 
