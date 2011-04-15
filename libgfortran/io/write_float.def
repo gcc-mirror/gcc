@@ -654,11 +654,11 @@ write_infnan (st_parameter_dt *dtp, const fnode *f, int isnan_flag, int sign_bit
       mark = (sign == S_PLUS || sign == S_MINUS) ? 8 : 7;
 
       nb =  f->u.real.w;
-  
+
       /* If the field width is zero, the processor must select a width 
 	 not zero.  4 is chosen to allow output of '-Inf' or '+Inf' */
      
-      if (nb == 0)
+      if ((nb == 0) || dtp->u.p.g0_no_blanks)
 	{
 	  if (isnan_flag)
 	    nb = 3;
