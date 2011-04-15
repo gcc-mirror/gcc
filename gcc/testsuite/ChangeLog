@@ -1,5 +1,9 @@
 2011-04-15  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/48614
+	* gcc.target/i386/pr46084.c: Require avx_runtime instead of
+	just avx.
+
 	PR target/48605
 	* gcc.target/i386/sse4_1-insertps-3.c: New test.
 	* gcc.target/i386/sse4_1-insertps-4.c: New test.
