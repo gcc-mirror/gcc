@@ -574,7 +574,7 @@ struct GTY(()) tree_common {
            all decls
 
        CALL_FROM_THUNK_P and
-       ALLOCA_FOR_VAR_P in
+       CALL_ALLOCA_FOR_VAR_P in
            CALL_EXPR
 
    side_effects_flag:
@@ -1388,7 +1388,8 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
 
 /* In a CALL_EXPR, if the function being called is BUILT_IN_ALLOCA, means that
    it has been built for the declaration of a variable-sized object.  */
-#define ALLOCA_FOR_VAR_P(NODE) (CALL_EXPR_CHECK (NODE)->base.protected_flag)
+#define CALL_ALLOCA_FOR_VAR_P(NODE) \
+  (CALL_EXPR_CHECK (NODE)->base.protected_flag)
 
 /* In a type, nonzero means that all objects of the type are guaranteed by the
    language or front-end to be properly aligned, so we can indicate that a MEM

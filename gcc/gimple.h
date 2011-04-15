@@ -102,6 +102,7 @@ enum gf_mask {
     GF_CALL_TAILCALL		= 1 << 3,
     GF_CALL_VA_ARG_PACK		= 1 << 4,
     GF_CALL_NOTHROW		= 1 << 5,
+    GF_CALL_ALLOCA_FOR_VAR	= 1 << 6,
     GF_OMP_PARALLEL_COMBINED	= 1 << 0,
 
     /* True on an GIMPLE_OMP_RETURN statement if the return does not require
@@ -2330,6 +2331,29 @@ gimple_call_nothrow_p (gimple s)
   return (gimple_call_flags (s) & ECF_NOTHROW) != 0;
 }
 
+/* If FOR_VAR is true, GIMPLE_CALL S is a call to builtin_alloca that
+   is known to be emitted for VLA objects.  Those are wrapped by
+   stack_save/stack_restore calls and hence can't lead to unbounded
+   stack growth even when they occur in loops.  */
+
+static inline void
+gimple_call_set_alloca_for_var (gimple s, bool for_var)
+{
+  GIMPLE_CHECK (s, GIMPLE_CALL);
+  if (for_var)
+    s->gsbase.subcode |= GF_CALL_ALLOCA_FOR_VAR;
+  else
+    s->gsbase.subcode &= ~GF_CALL_ALLOCA_FOR_VAR;
+}
+
+/* Return true of S is a call to builtin_alloca emitted for VLA objects.  */
+
+static inline bool
+gimple_call_alloca_for_var_p (gimple s)
+{
+  GIMPLE_CHECK (s, GIMPLE_CALL);
+  return (s->gsbase.subcode & GF_CALL_ALLOCA_FOR_VAR) != 0;
+}
 
 /* Copy all the GF_CALL_* flags from ORIG_CALL to DEST_CALL.  */
 

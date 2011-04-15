@@ -1,3 +1,20 @@
+2011-04-15  Michael Matz  <matz@suse.de>
+
+	* tree.h (ALLOCA_FOR_VAR_P): Rename to CALL_ALLOCA_FOR_VAR_P.
+	* builtins.c (expand_builtin): Use CALL_ALLOCA_FOR_VAR_P.
+	* function.c (gimplify_parameters): Ditto.
+	* gimplify.c (gimplify_vla_decl): Ditto.
+
+	* gimple.h (enum gf_mask): Add GF_CALL_ALLOCA_FOR_VAR.
+	(gimple_call_set_alloca_for_var): New inline function.
+	(gimple_call_alloca_for_var_p): Ditto.
+	* gimple.c (gimple_build_call_from_tree): Remember CALL_ALLOCA_FOR_VAR_P
+	state.
+	* cfgexpand.c (expand_call_stmt): Restore CALL_ALLOCA_FOR_VAR_P state.
+
+	* tree-inline.c (inline_forbidden_p_stmt): Don't reject alloca
+	calls if they were for VLA objects.
+
 2011-04-15  Martin Jambor  <mjambor@suse.cz>
 
 	* ipa-prop.c (ipa_analyze_virtual_call_uses): Remove handling

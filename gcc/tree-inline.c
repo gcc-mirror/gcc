@@ -2997,8 +2997,11 @@ inline_forbidden_p_stmt (gimple_stmt_iterator *gsi, bool *handled_ops_p,
 	 this may change program's memory overhead drastically when the
 	 function using alloca is called in loop.  In GCC present in
 	 SPEC2000 inlining into schedule_block cause it to require 2GB of
-	 RAM instead of 256MB.  */
+	 RAM instead of 256MB.  Don't do so for alloca calls emitted for
+	 VLA objects as those can't cause unbounded growth (they're always
+	 wrapped inside stack_save/stack_restore regions.  */
       if (gimple_alloca_call_p (stmt)
+	  && !gimple_call_alloca_for_var_p (stmt)
 	  && !lookup_attribute ("always_inline", DECL_ATTRIBUTES (fn)))
 	{
 	  inline_forbidden_reason

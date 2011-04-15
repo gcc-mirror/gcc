@@ -303,7 +303,12 @@ gimple_build_call_from_tree (tree t)
   gimple_call_set_tail (call, CALL_EXPR_TAILCALL (t));
   gimple_call_set_cannot_inline (call, CALL_CANNOT_INLINE_P (t));
   gimple_call_set_return_slot_opt (call, CALL_EXPR_RETURN_SLOT_OPT (t));
-  gimple_call_set_from_thunk (call, CALL_FROM_THUNK_P (t));
+  if (fndecl
+      && DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL
+      && DECL_FUNCTION_CODE (fndecl) == BUILT_IN_ALLOCA)
+    gimple_call_set_alloca_for_var (call, CALL_ALLOCA_FOR_VAR_P (t));
+  else
+    gimple_call_set_from_thunk (call, CALL_FROM_THUNK_P (t));
   gimple_call_set_va_arg_pack (call, CALL_EXPR_VA_ARG_PACK (t));
   gimple_call_set_nothrow (call, TREE_NOTHROW (t));
   gimple_set_no_warning (call, TREE_NO_WARNING (t));
