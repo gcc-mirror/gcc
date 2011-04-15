@@ -45,6 +45,13 @@ libgfortranbegin_la_SOURCES = fmain.c
 libgfortranbegin_la_LDFLAGS = -static
 libgfortranbegin_la_LINK = $(LINK) $(libgfortranbegin_la_LDFLAGS)
 
+cafexeclib_LTLIBRARIES = libcaf_single.la
+cafexeclibdir = $(libdir)/gcc/$(target_alias)/$(gcc_version)$(MULTISUBDIR)
+libcaf_single_la_SOURCES = caf/single.c
+libcaf_single_la_LDFLAGS = -static
+libcaf_single_la_DEPENDENCIES = caf/libcaf.h
+libcaf_single_la_LINK = $(LINK) $(libcaf_single_la_LDFLAGS)
+
 ## io.h conflicts with a system header on some platforms, so
 ## use -iquote
 AM_CPPFLAGS = -iquote$(srcdir)/io -I$(srcdir)/$(MULTISRCTOP)../gcc \
