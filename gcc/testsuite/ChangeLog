@@ -1,3 +1,9 @@
+2011-04-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/48614
+	* gcc.target/i386/pr46084.c: Require avx_runtime instead of
+	just avx.
+
 2011-04-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/48605
