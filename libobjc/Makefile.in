@@ -93,7 +93,7 @@ LIBTOOL_INSTALL = $(LIBTOOL) --mode=install
 LIBTOOL_CLEAN   = $(LIBTOOL) --mode=clean
 #LIBTOOL_UNINSTALL = $(LIBTOOL) --mode=uninstall
 
-OBJC_GCFLAGS=-DOBJC_WITH_GC=1
+OBJC_GCFLAGS=@OBJC_GCFLAGS@
 OBJC_BOEHM_GC=@OBJC_BOEHM_GC@
 OBJC_BOEHM_GC_INCLUDES=@OBJC_BOEHM_GC_INCLUDES@
 OBJC_BOEHM_GC_LIBS=../boehm-gc/libgcjgc_convenience.la $(thread_libs_and_flags)

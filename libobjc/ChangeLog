@@ -1,3 +1,11 @@
+2011-04-15  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR libobjc/32037
+	* Makefile.in (OBJC_GCFLAGS): Move ...
+	* configure.ac (enable_objc_gc): ... here.
+	Add $(libsuffix) to OBJC_BOEHM_GC.
+	* configure: Regenerate.
+
 2011-02-28  Nicola Pero  <nicola.pero@meta-innovation.com>
 	
 	* selector.c (sel_getTypedSelector): Return NULL if there are
