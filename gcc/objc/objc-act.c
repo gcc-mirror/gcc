@@ -3813,6 +3813,8 @@ lookup_interface (tree ident)
   }
 }
 
+
+
 /* Implement @defs (<classname>) within struct bodies.  */
 
 tree
@@ -3829,19 +3831,242 @@ objc_get_class_ivars (tree class_name)
   return error_mark_node;
 }
 
+
+/* Functions used by the hashtable for field duplicates in
+   objc_detect_field_duplicates().  Ideally, we'd use a standard
+   key-value dictionary hashtable , and store as keys the field names,
+   and as values the actual declarations (used to print nice error
+   messages with the locations).  But, the hashtable we are using only
+   allows us to store keys in the hashtable, without values (it looks
+   more like a set).  So, we store the DECLs, but define equality as
+   DECLs having the same name, and hash as the hash of the name.  */
+static hashval_t
+hash_instance_variable (const PTR p)
+{
+  const_tree q = (const_tree)p;
+  return (hashval_t) ((intptr_t)(DECL_NAME (q)) >> 3);
+}
+
+static int
+eq_instance_variable (const PTR p1, const PTR p2)
+{
+  const_tree a = (const_tree)p1;
+  const_tree b = (const_tree)p2;
+  return DECL_NAME (a) == DECL_NAME (b);
+}
+
 /* Called when checking the variables in a struct.  If we are not
-   doing the ivars list inside an @interface context, then returns
-   fieldlist unchanged.  Else, returns the list of class ivars.
-*/
-tree
-objc_get_interface_ivars (tree fieldlist)
+   doing the ivars list inside an @interface context, then return
+   false.  Else, perform the check for duplicate ivars, then return
+   true.  The check for duplicates checks if an instance variable with
+   the same name exists in the class or in a superclass.  If
+   'check_superclasses_only' is set to true, then it is assumed that
+   checks for instance variables in the same class has already been
+   performed (this is the case for ObjC++) and only the instance
+   variables of superclasses are checked.  */
+bool
+objc_detect_field_duplicates (bool check_superclasses_only)
 {
   if (!objc_collecting_ivars || !objc_interface_context 
-      || TREE_CODE (objc_interface_context) != CLASS_INTERFACE_TYPE
-      || CLASS_SUPER_NAME (objc_interface_context) == NULL_TREE)
-    return fieldlist;
+      || TREE_CODE (objc_interface_context) != CLASS_INTERFACE_TYPE)
+    return false;
 
-  return get_class_ivars (objc_interface_context, true);
+  /* We have two ways of doing this check:
+     
+  "direct comparison": we iterate over the instance variables and
+  compare them directly.  This works great for small numbers of
+  instance variables (such as 10 or 20), which are extremely common.
+  But it will potentially take forever for the pathological case with
+  a huge number (eg, 10k) of instance variables.
+  
+  "hashtable": we use a hashtable, which requires a single sweep
+  through the list of instances variables.  This is much slower for a
+  small number of variables, and we only use it for large numbers.
+
+  To decide which one to use, we need to get an idea of how many
+  instance variables we have to compare.  */
+  {
+    unsigned int number_of_ivars_to_check = 0;
+    {
+      tree ivar;
+      for (ivar = CLASS_RAW_IVARS (objc_interface_context);
+	   ivar; ivar = DECL_CHAIN (ivar))
+	{
+	  /* Ignore anonymous ivars.  */
+	  if (DECL_NAME (ivar))
+	    number_of_ivars_to_check++;
+	}
+    }
+
+    /* Exit if there is nothing to do.  */
+    if (number_of_ivars_to_check == 0)
+      return true;
+    
+    /* In case that there are only 1 or 2 instance variables to check,
+       we always use direct comparison.  If there are more, it is
+       worth iterating over the instance variables in the superclass
+       to count how many there are (note that this has the same cost
+       as checking 1 instance variable by direct comparison, which is
+       why we skip this check in the case of 1 or 2 ivars and just do
+       the direct comparison) and then decide if it worth using a
+       hashtable.  */
+    if (number_of_ivars_to_check > 2)
+      {
+	unsigned int number_of_superclass_ivars = 0;
+	{
+	  tree interface;
+	  for (interface = lookup_interface (CLASS_SUPER_NAME (objc_interface_context));
+	       interface; interface = lookup_interface (CLASS_SUPER_NAME (interface)))
+	    {
+	      tree ivar;
+	      for (ivar = CLASS_RAW_IVARS (interface);
+		   ivar; ivar = DECL_CHAIN (ivar))
+		number_of_superclass_ivars++;
+	    }
+	}
+
+	/* We use a hashtable if we have over 10k comparisons.  */
+	if (number_of_ivars_to_check * (number_of_superclass_ivars 
+					+ (number_of_ivars_to_check / 2))
+	    > 10000)
+	  {
+	    /* First, build the hashtable by putting all the instance
+	       variables of superclasses in it.  */
+	    htab_t htab = htab_create (37, hash_instance_variable,
+				       eq_instance_variable, NULL);
+	    tree interface;
+	    for (interface = lookup_interface (CLASS_SUPER_NAME
+					       (objc_interface_context));
+		 interface; interface = lookup_interface
+		   (CLASS_SUPER_NAME (interface)))
+	      {
+		tree ivar;
+		for (ivar = CLASS_RAW_IVARS (interface); ivar;
+		     ivar = DECL_CHAIN (ivar))
+		  {
+		    if (DECL_NAME (ivar) != NULL_TREE)
+		      {
+			void **slot = htab_find_slot (htab, ivar, INSERT);
+			/* Do not check for duplicate instance
+			   variables in superclasses.  Errors have
+			   already been generated.  */
+			*slot = ivar;
+		      }
+		  }
+	      }
+	    
+	    /* Now, we go through all the instance variables in the
+	       class, and check that they are not in the
+	       hashtable.  */
+	    if (check_superclasses_only)
+	      {
+		tree ivar;
+		for (ivar = CLASS_RAW_IVARS (objc_interface_context); ivar;
+		     ivar = DECL_CHAIN (ivar))
+		  {
+		    if (DECL_NAME (ivar) != NULL_TREE)
+		      {
+			tree duplicate_ivar = (tree)(htab_find (htab, ivar));
+			if (duplicate_ivar != HTAB_EMPTY_ENTRY)
+			  {
+			    error_at (DECL_SOURCE_LOCATION (ivar),
+				      "duplicate instance variable %q+D",
+				      ivar);
+			    inform (DECL_SOURCE_LOCATION (duplicate_ivar),
+				    "previous declaration of %q+D",
+				    duplicate_ivar);
+			    /* FIXME: Do we need the following ?  */
+			    /* DECL_NAME (ivar) = NULL_TREE; */
+			  }
+		      }
+		  }
+	      }
+	    else
+	      {
+		/* If we're checking for duplicates in the class as
+		   well, we insert variables in the hashtable as we
+		   check them, so if a duplicate follows, it will be
+		   caught.  */
+		tree ivar;
+		for (ivar = CLASS_RAW_IVARS (objc_interface_context); ivar;
+		     ivar = DECL_CHAIN (ivar))
+		  {
+		    if (DECL_NAME (ivar) != NULL_TREE)
+		      {
+			void **slot = htab_find_slot (htab, ivar, INSERT);
+			if (*slot)
+			  {
+			    tree duplicate_ivar = (tree)(*slot);
+			    error_at (DECL_SOURCE_LOCATION (ivar),
+				      "duplicate instance variable %q+D",
+				      ivar);
+			    inform (DECL_SOURCE_LOCATION (duplicate_ivar),
+				    "previous declaration of %q+D",
+				    duplicate_ivar);
+			    /* FIXME: Do we need the following ?  */
+			    /* DECL_NAME (ivar) = NULL_TREE; */
+			  }
+			*slot = ivar;
+		      }
+		  }
+	      }
+	    htab_delete (htab);
+	    return true;
+	  }
+      }
+  }
+  
+  /* This is the "direct comparison" approach, which is used in most
+     non-pathological cases.  */
+  {
+    /* Walk up to class hierarchy, starting with this class (this is
+       the external loop, because lookup_interface() is expensive, and
+       we want to do it few times).  */
+    tree interface = objc_interface_context;
+
+    if (check_superclasses_only)
+      interface = lookup_interface (CLASS_SUPER_NAME (interface));
+    
+    for ( ; interface; interface = lookup_interface
+	    (CLASS_SUPER_NAME (interface)))
+      {
+	tree ivar_being_checked;
+
+	for (ivar_being_checked = CLASS_RAW_IVARS (objc_interface_context);
+	     ivar_being_checked;
+	     ivar_being_checked = DECL_CHAIN (ivar_being_checked))
+	  {
+	    tree decl;
+	    
+	    /* Ignore anonymous ivars.  */
+	    if (DECL_NAME (ivar_being_checked) == NULL_TREE)
+	      continue;
+
+	    /* Note how we stop when we find the ivar we are checking
+	       (this can only happen in the main class, not
+	       superclasses), to avoid comparing things twice
+	       (otherwise, for each ivar, you'd compare A to B then B
+	       to A, and get duplicated error messages).  */
+	    for (decl = CLASS_RAW_IVARS (interface);
+		 decl && decl != ivar_being_checked;
+		 decl = DECL_CHAIN (decl))
+	      {
+		if (DECL_NAME (ivar_being_checked) == DECL_NAME (decl))
+		  {
+		    error_at (DECL_SOURCE_LOCATION (ivar_being_checked),
+			      "duplicate instance variable %q+D",
+			      ivar_being_checked);
+		    inform (DECL_SOURCE_LOCATION (decl),
+			    "previous declaration of %q+D",
+			    decl);
+		    /* FIXME: Do we need the following ?  */
+		    /* DECL_NAME (ivar_being_checked) = NULL_TREE; */
+		  }
+	      }
+	  }
+      }
+  }
+  return true;
 }
 
 /* Used by: build_private_template, continue_class,

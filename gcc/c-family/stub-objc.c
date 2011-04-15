@@ -275,10 +275,10 @@ objc_get_class_reference (tree ARG_UNUSED (name))
   return 0;
 }
 
-tree
-objc_get_interface_ivars (tree ARG_UNUSED (fieldlist))
+bool
+objc_detect_field_duplicates (bool ARG_UNUSED (check_superclasses_only))
 {
-  return 0;
+  return false;
 }
 
 tree

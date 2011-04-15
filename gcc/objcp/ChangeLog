@@ -1,3 +1,9 @@
+2011-04-15  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objcp-decl.c (objcp_finish_struct): Use
+	objc_detect_field_duplicates instead of having a local
+	implementation.
+
 2011-04-12  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* objcp-lang.c (objcxx_init_ts): Call objc_common_init_ts and
