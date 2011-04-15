@@ -1,3 +1,13 @@
+2011-04-15  Takaya Saito  <gintensubaru@gmail.com>
+
+	PR libstdc++/48476
+	* include/std/tuple (_Tuple_impl<>::_Tuple_impl(_Tuple_impl<>&&),
+	_Tuple_impl<>::operator=(_Tuple_impl&&), _Tuple_impl<>::operator=
+	(_Tuple_impl<>&&), tuple_cat): Use std::forward where appropriate.
+	* testsuite/20_util/tuple/cons/48476.cc: New.
+	* testsuite/20_util/tuple/48476.cc: Likewise.
+	* testsuite/20_util/tuple/creation_functions/48476.cc: Likewise.
+
 2011-04-12  Allan McRae  <allan@archlinux.org>
 
 	PR libstdc++/48566
