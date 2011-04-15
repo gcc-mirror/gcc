@@ -1851,8 +1851,8 @@ expand_call_stmt (gimple stmt)
      call is made may be different from the type of the function.  */
   if (!builtin_p)
     CALL_EXPR_FN (exp)
-      = fold_build1 (NOP_EXPR, build_pointer_type (gimple_call_fntype (stmt)),
-		     CALL_EXPR_FN (exp));
+      = fold_convert (build_pointer_type (gimple_call_fntype (stmt)),
+		      CALL_EXPR_FN (exp));
 
   TREE_TYPE (exp) = gimple_call_return_type (stmt);
   CALL_EXPR_STATIC_CHAIN (exp) = gimple_call_chain (stmt);
