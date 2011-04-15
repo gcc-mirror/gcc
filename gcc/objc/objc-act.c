@@ -6367,6 +6367,35 @@ is_private (tree decl)
 			DECL_NAME (decl)));
 }
 
+/* Searches all the instance variables of 'klass' and of its
+   superclasses for an instance variable whose name (identifier) is
+   'ivar_name_ident'.  Return the declaration (DECL) of the instance
+   variable, if found, or NULL_TREE, if not found.  */
+static inline tree
+ivar_of_class (tree klass, tree ivar_name_ident)
+{
+  /* First, look up the ivar in CLASS_RAW_IVARS.  */
+  tree decl_chain = CLASS_RAW_IVARS (klass);
+
+  for ( ; decl_chain; decl_chain = DECL_CHAIN (decl_chain))
+    if (DECL_NAME (decl_chain) == ivar_name_ident)
+      return decl_chain;
+
+  /* If not found, search up the class hierarchy.  */
+  while (CLASS_SUPER_NAME (klass))
+    {
+      klass = lookup_interface (CLASS_SUPER_NAME (klass));
+      
+      decl_chain = CLASS_RAW_IVARS (klass);
+  
+      for ( ; decl_chain; decl_chain = DECL_CHAIN (decl_chain))
+	if (DECL_NAME (decl_chain) == ivar_name_ident)
+	  return decl_chain;
+    }
+
+  return NULL_TREE;
+}
+
 /* We have an instance variable reference;, check to see if it is public.  */
 
 int
@@ -6397,7 +6426,7 @@ objc_is_public (tree expr, tree identifier)
 	      return 0;
 	    }
 
-	  if ((decl = is_ivar (get_class_ivars (klass, true), identifier)))
+	  if ((decl = ivar_of_class (klass, identifier)))
 	    {
 	      if (TREE_PUBLIC (decl))
 		return 1;
