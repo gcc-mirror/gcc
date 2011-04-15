@@ -1,3 +1,11 @@
+2011-04-15  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* recog.h (insn_operand_data): Add an "allows_mem" field.
+	* genoutput.c (output_operand_data): Initialize it.
+	* optabs.c (maybe_legitimize_operand_same_code): New function.
+	(maybe_legitimize_operand): Use it when matching the original
+	op->value.
+
 2011-04-15  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gimplify.c: Fix issues in comments throughout.
