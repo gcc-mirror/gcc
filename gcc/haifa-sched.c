@@ -2898,7 +2898,7 @@ prune_ready_list (state_t temp_state, bool first_cycle_insn_p)
 	    cost = 1;
 	  reason = "asm";
 	}
-      else if (flag_sched_pressure)
+      else if (sched_pressure_p)
 	cost = 0;
       else
 	{
@@ -3232,7 +3232,7 @@ schedule_block (basic_block *target_bb)
 	    {
 	      memcpy (temp_state, curr_state, dfa_state_size);
 	      cost = state_transition (curr_state, insn);
-	      if (!flag_sched_pressure)
+	      if (!sched_pressure_p)
 		gcc_assert (cost < 0);
 	      if (memcmp (temp_state, curr_state, dfa_state_size) != 0)
 		cycle_issued_insns++;

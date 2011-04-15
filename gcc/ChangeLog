@@ -1,3 +1,9 @@
+2011-04-16  Bernd Schmidt  <bernds@codesourcery.com>
+
+	PR target/48629
+	* haifa-sched.c (prune_ready_list, schedule_block): Use
+	sched_pressure_p rather than flag_sched_pressure.
+
 2011-04-15  Pat Haugen <pthaugen@us.ibm.com>
 
 	* config/rs6000/rs6000.c (call_ABI_of_interest): Call
