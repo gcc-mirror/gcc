@@ -1521,7 +1521,7 @@
   [(parallel [(set (match_operand:HIDI 0 "register_operand" "")
 		   (rotate:HIDI (match_operand:HIDI 1 "register_operand" "")
 				(match_operand:VOID 2 "const_int_operand" "")))
-		(clobber (match_operand 3 ""))])]
+		(clobber (match_dup 3))])]
   ""
   "
 {
