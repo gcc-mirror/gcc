@@ -3058,12 +3058,7 @@ Case_clauses::Case_clause::get_backend(Translate_context* context,
   else if (break_stat == NULL)
     return statements;
   else
-    {
-      std::vector<Bstatement*> list(2);
-      list[0] = statements;
-      list[1] = break_stat;
-      return context->backend()->statement_list(list);
-    }
+    return context->backend()->compound_statement(statements, break_stat);
 }
 
 // Class Case_clauses.
@@ -3332,11 +3327,9 @@ Constant_switch_statement::do_get_tree(Translate_context* context)
 							  all_cases,
 							  all_statements,
 							  this->location());
-
-  std::vector<Bstatement*> stats(2);
-  stats[0] = switch_statement;
-  stats[1] = break_label->get_definition(context);
-  Bstatement* ret = context->backend()->statement_list(stats);
+  Bstatement* ldef = break_label->get_definition(context);
+  Bstatement* ret = context->backend()->compound_statement(switch_statement,
+							   ldef);
   return stat_to_tree(ret);
 }
 
@@ -3876,12 +3869,7 @@ Send_statement::do_get_tree(Translate_context* context)
   if (btemp == NULL)
     return stat_to_tree(s);
   else
-    {
-      std::vector<Bstatement*> stats(2);
-      stats[0] = btemp;
-      stats[1] = s;
-      return stat_to_tree(context->backend()->statement_list(stats));
-    }
+    return stat_to_tree(context->backend()->compound_statement(btemp, s));
 }
 
 // Make a send statement.
@@ -4218,10 +4206,7 @@ Select_clauses::get_backend(Translate_context* context,
 	}
       if (s == NULL)
 	return ldef;
-      std::vector<Bstatement*> stats(2);
-      stats[0] = s;
-      stats[1] = ldef;
-      return context->backend()->statement_list(stats);
+      return context->backend()->compound_statement(s, ldef);
     }
   gcc_assert(count > 0);
 
@@ -4347,12 +4332,7 @@ Select_clauses::add_clause_backend(
   if (s == NULL)
     (*clauses)[index] = g;
   else
-    {
-      std::vector<Bstatement*> stats(2);
-      stats[0] = s;
-      stats[1] = g;
-      (*clauses)[index] = context->backend()->statement_list(stats);
-    }
+    (*clauses)[index] = context->backend()->compound_statement(s, g);
 }
 
 // Class Select_statement.

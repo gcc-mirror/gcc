@@ -1,3 +1,12 @@
+2011-04-15  Ian Lance Taylor  <iant@google.com>
+
+	* go-gcc.cc (Gcc_backend::compound_statement): New function.
+	(Gcc_backend::assignment_statement): Use error_statement.
+	(Gcc_backend::return_statement): Likewise.
+	(Gcc_backend::if_statement): Likewise.
+	(Gcc_backend::switch_statement): Likewise.
+	(Gcc_backend::statement_list): Likewise.
+
 2011-04-14  Ian Lance Taylor  <iant@google.com>
 
 	* go-gcc.cc (Backend::error_statement): New function.

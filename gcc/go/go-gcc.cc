@@ -191,6 +191,9 @@ class Gcc_backend : public Backend
 		   source_location);
 
   Bstatement*
+  compound_statement(Bstatement*, Bstatement*);
+
+  Bstatement*
   statement_list(const std::vector<Bstatement*>&);
 
   // Labels.
@@ -244,7 +247,7 @@ Gcc_backend::assignment_statement(Bexpression* lhs, Bexpression* rhs,
   tree lhs_tree = lhs->get_tree();
   tree rhs_tree = rhs->get_tree();
   if (lhs_tree == error_mark_node || rhs_tree == error_mark_node)
-    return this->make_statement(error_mark_node);
+    return this->error_statement();
   return this->make_statement(fold_build2_loc(location, MODIFY_EXPR,
 					      void_type_node,
 					      lhs_tree, rhs_tree));
@@ -259,10 +262,10 @@ Gcc_backend::return_statement(Bfunction* bfunction,
 {
   tree fntree = bfunction->get_tree();
   if (fntree == error_mark_node)
-    return this->make_statement(error_mark_node);
+    return this->error_statement();
   tree result = DECL_RESULT(fntree);
   if (result == error_mark_node)
-    return this->make_statement(error_mark_node);
+    return this->error_statement();
   tree ret;
   if (vals.empty())
     ret = fold_build1_loc(location, RETURN_EXPR, void_type_node, NULL_TREE);
@@ -270,7 +273,7 @@ Gcc_backend::return_statement(Bfunction* bfunction,
     {
       tree val = vals.front()->get_tree();
       if (val == error_mark_node)
-	return this->make_statement(error_mark_node);
+	return this->error_statement();
       tree set = fold_build2_loc(location, MODIFY_EXPR, void_type_node,
 				 result, vals.front()->get_tree());
       ret = fold_build1_loc(location, RETURN_EXPR, void_type_node, set);
@@ -294,7 +297,7 @@ Gcc_backend::return_statement(Bfunction* bfunction,
 				     rettmp, field, NULL_TREE);
 	  tree val = (*p)->get_tree();
 	  if (val == error_mark_node)
-	    return this->make_statement(error_mark_node);
+	    return this->error_statement();
 	  tree set = fold_build2_loc(location, MODIFY_EXPR, void_type_node,
 				     ref, (*p)->get_tree());
 	  append_to_statement_list(set, &stmt_list);
@@ -322,7 +325,7 @@ Gcc_backend::if_statement(Bexpression* condition, Bstatement* then_block,
   if (cond_tree == error_mark_node
       || then_tree == error_mark_node
       || else_tree == error_mark_node)
-    return this->make_statement(error_mark_node);
+    return this->error_statement();
   tree ret = build3_loc(location, COND_EXPR, void_type_node, cond_tree,
 			then_tree, else_tree);
   return this->make_statement(ret);
@@ -363,7 +366,7 @@ Gcc_backend::switch_statement(
 	    {
 	      tree t = (*pcv)->get_tree();
 	      if (t == error_mark_node)
-		return this->make_statement(error_mark_node);
+		return this->error_statement();
 	      source_location loc = EXPR_LOCATION(t);
 	      tree label = create_artificial_label(loc);
 	      tree c = build3_loc(loc, CASE_LABEL_EXPR, void_type_node,
@@ -376,17 +379,34 @@ Gcc_backend::switch_statement(
 	{
 	  tree t = (*ps)->get_tree();
 	  if (t == error_mark_node)
-	    return this->make_statement(error_mark_node);
+	    return this->error_statement();
 	  append_to_statement_list(t, &stmt_list);
 	}
     }
 
   tree tv = value->get_tree();
   if (tv == error_mark_node)
-    return this->make_statement(error_mark_node);
+    return this->error_statement();
   tree t = build3_loc(switch_location, SWITCH_EXPR, void_type_node,
 		      tv, stmt_list, NULL_TREE);
   return this->make_statement(t);
+}
+
+// Pair of statements.
+
+Bstatement*
+Gcc_backend::compound_statement(Bstatement* s1, Bstatement* s2)
+{
+  tree stmt_list = NULL_TREE;
+  tree t = s1->get_tree();
+  if (t == error_mark_node)
+    return this->error_statement();
+  append_to_statement_list(t, &stmt_list);
+  t = s2->get_tree();
+  if (t == error_mark_node)
+    return this->error_statement();
+  append_to_statement_list(t, &stmt_list);
+  return this->make_statement(stmt_list);
 }
 
 // List of statements.
@@ -401,7 +421,7 @@ Gcc_backend::statement_list(const std::vector<Bstatement*>& statements)
     {
       tree t = (*p)->get_tree();
       if (t == error_mark_node)
-	return this->make_statement(error_mark_node);
+	return this->error_statement();
       append_to_statement_list(t, &stmt_list);
     }
   return this->make_statement(stmt_list);
