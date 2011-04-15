@@ -146,6 +146,10 @@ class Backend
 		   const std::vector<Bstatement*>& statements,
 		   source_location) = 0;
 
+  // Create a single statement from two statements.
+  virtual Bstatement*
+  compound_statement(Bstatement*, Bstatement*) = 0;
+
   // Create a single statement from a list of statements.
   virtual Bstatement*
   statement_list(const std::vector<Bstatement*>&) = 0;
