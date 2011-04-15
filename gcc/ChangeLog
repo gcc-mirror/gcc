@@ -1,3 +1,8 @@
+2011-04-15  Georg-Johann Lay  <avr@gjlay.de>
+	
+	* config/avr/avr.md ("rotl<mode>3",mode=HIDI): Use match_dup
+	instead of match_operand for operand 3.
+
 2011-04-15  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* recog.h (insn_operand_data): Add an "allows_mem" field.
