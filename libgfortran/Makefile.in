@@ -85,9 +85,14 @@ am__nobase_list = $(am__nobase_strip_setup); \
 am__base_list = \
   sed '$$!N;$$!N;$$!N;$$!N;$$!N;$$!N;$$!N;s/\n/ /g' | \
   sed '$$!N;$$!N;$$!N;$$!N;s/\n/ /g'
-am__installdirs = "$(DESTDIR)$(myexeclibdir)" \
-	"$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(toolexeclibdir)"
-LTLIBRARIES = $(myexeclib_LTLIBRARIES) $(toolexeclib_LTLIBRARIES)
+am__installdirs = "$(DESTDIR)$(cafexeclibdir)" \
+	"$(DESTDIR)$(myexeclibdir)" "$(DESTDIR)$(toolexeclibdir)" \
+	"$(DESTDIR)$(toolexeclibdir)"
+LTLIBRARIES = $(cafexeclib_LTLIBRARIES) $(myexeclib_LTLIBRARIES) \
+	$(toolexeclib_LTLIBRARIES)
+libcaf_single_la_LIBADD =
+am_libcaf_single_la_OBJECTS = single.lo
+libcaf_single_la_OBJECTS = $(am_libcaf_single_la_OBJECTS)
 libgfortran_la_LIBADD =
 am__objects_1 = backtrace.lo bounds.lo compile_options.lo \
 	convert_char.lo environ.lo error.lo fpu.lo main.lo memory.lo \
@@ -314,7 +319,8 @@ LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 FCCOMPILE = $(FC) $(AM_FCFLAGS) $(FCFLAGS)
 LTFCCOMPILE = $(LIBTOOL) --tag=FC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=compile $(FC) $(AM_FCFLAGS) $(FCFLAGS)
-SOURCES = $(libgfortran_la_SOURCES) $(libgfortranbegin_la_SOURCES)
+SOURCES = $(libcaf_single_la_SOURCES) $(libgfortran_la_SOURCES) \
+	$(libgfortranbegin_la_SOURCES)
 MULTISRCTOP = 
 MULTIBUILDTOP = 
 MULTIDIRS = 
@@ -492,6 +498,12 @@ myexeclibdir = $(libdir)/gcc/$(target_alias)/$(gcc_version)$(MULTISUBDIR)
 libgfortranbegin_la_SOURCES = fmain.c
 libgfortranbegin_la_LDFLAGS = -static
 libgfortranbegin_la_LINK = $(LINK) $(libgfortranbegin_la_LDFLAGS)
+cafexeclib_LTLIBRARIES = libcaf_single.la
+cafexeclibdir = $(libdir)/gcc/$(target_alias)/$(gcc_version)$(MULTISUBDIR)
+libcaf_single_la_SOURCES = caf/single.c
+libcaf_single_la_LDFLAGS = -static
+libcaf_single_la_DEPENDENCIES = caf/libcaf.h
+libcaf_single_la_LINK = $(LINK) $(libcaf_single_la_LDFLAGS)
 AM_CPPFLAGS = -iquote$(srcdir)/io -I$(srcdir)/$(MULTISRCTOP)../gcc \
 	      -I$(srcdir)/$(MULTISRCTOP)../gcc/config $(LIBQUADINCLUDE) \
 	      -I$(MULTIBUILDTOP)../../$(host_subdir)/gcc
@@ -1309,6 +1321,37 @@ distclean-hdr:
 	-rm -f config.h stamp-h1
 libgfortran.spec: $(top_builddir)/config.status $(srcdir)/libgfortran.spec.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
+install-cafexeclibLTLIBRARIES: $(cafexeclib_LTLIBRARIES)
+	@$(NORMAL_INSTALL)
+	test -z "$(cafexeclibdir)" || $(MKDIR_P) "$(DESTDIR)$(cafexeclibdir)"
+	@list='$(cafexeclib_LTLIBRARIES)'; test -n "$(cafexeclibdir)" || list=; \
+	list2=; for p in $$list; do \
+	  if test -f $$p; then \
+	    list2="$$list2 $$p"; \
+	  else :; fi; \
+	done; \
+	test -z "$$list2" || { \
+	  echo " $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=install $(INSTALL) $(INSTALL_STRIP_FLAG) $$list2 '$(DESTDIR)$(cafexeclibdir)'"; \
+	  $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=install $(INSTALL) $(INSTALL_STRIP_FLAG) $$list2 "$(DESTDIR)$(cafexeclibdir)"; \
+	}
+
+uninstall-cafexeclibLTLIBRARIES:
+	@$(NORMAL_UNINSTALL)
+	@list='$(cafexeclib_LTLIBRARIES)'; test -n "$(cafexeclibdir)" || list=; \
+	for p in $$list; do \
+	  $(am__strip_dir) \
+	  echo " $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=uninstall rm -f '$(DESTDIR)$(cafexeclibdir)/$$f'"; \
+	  $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=uninstall rm -f "$(DESTDIR)$(cafexeclibdir)/$$f"; \
+	done
+
+clean-cafexeclibLTLIBRARIES:
+	-test -z "$(cafexeclib_LTLIBRARIES)" || rm -f $(cafexeclib_LTLIBRARIES)
+	@list='$(cafexeclib_LTLIBRARIES)'; for p in $$list; do \
+	  dir="`echo $$p | sed -e 's|/[^/]*$$||'`"; \
+	  test "$$dir" != "$$p" || dir=.; \
+	  echo "rm -f \"$${dir}/so_locations\""; \
+	  rm -f "$${dir}/so_locations"; \
+	done
 install-myexeclibLTLIBRARIES: $(myexeclib_LTLIBRARIES)
 	@$(NORMAL_INSTALL)
 	test -z "$(myexeclibdir)" || $(MKDIR_P) "$(DESTDIR)$(myexeclibdir)"
@@ -1371,6 +1414,8 @@ clean-toolexeclibLTLIBRARIES:
 	  echo "rm -f \"$${dir}/so_locations\""; \
 	  rm -f "$${dir}/so_locations"; \
 	done
+libcaf_single.la: $(libcaf_single_la_OBJECTS) $(libcaf_single_la_DEPENDENCIES) 
+	$(libcaf_single_la_LINK) -rpath $(cafexeclibdir) $(libcaf_single_la_OBJECTS) $(libcaf_single_la_LIBADD) $(LIBS)
 libgfortran.la: $(libgfortran_la_OBJECTS) $(libgfortran_la_DEPENDENCIES) 
 	$(libgfortran_la_LINK) -rpath $(toolexeclibdir) $(libgfortran_la_OBJECTS) $(libgfortran_la_LIBADD) $(LIBS)
 libgfortranbegin.la: $(libgfortranbegin_la_OBJECTS) $(libgfortranbegin_la_DEPENDENCIES) 
@@ -1776,6 +1821,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/shape_i4.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/shape_i8.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/signal.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/single.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/size.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/size_from_kind.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sleep.Plo@am__quote@
@@ -2295,6 +2341,13 @@ f2c_specifics.lo: intrinsics/f2c_specifics.F90
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$<' object='$@' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LTCOMPILE) -c -o $@ $<
+
+single.lo: caf/single.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT single.lo -MD -MP -MF $(DEPDIR)/single.Tpo -c -o single.lo `test -f 'caf/single.c' || echo '$(srcdir)/'`caf/single.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/single.Tpo $(DEPDIR)/single.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='caf/single.c' object='single.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o single.lo `test -f 'caf/single.c' || echo '$(srcdir)/'`caf/single.c
 
 backtrace.lo: runtime/backtrace.c
 @am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT backtrace.lo -MD -MP -MF $(DEPDIR)/backtrace.Tpo -c -o backtrace.lo `test -f 'runtime/backtrace.c' || echo '$(srcdir)/'`runtime/backtrace.c
@@ -5685,7 +5738,7 @@ check: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) check-am
 all-am: Makefile $(LTLIBRARIES) all-multi $(DATA) config.h
 installdirs:
-	for dir in "$(DESTDIR)$(myexeclibdir)" "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(toolexeclibdir)"; do \
+	for dir in "$(DESTDIR)$(cafexeclibdir)" "$(DESTDIR)$(myexeclibdir)" "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(toolexeclibdir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: $(BUILT_SOURCES)
@@ -5717,8 +5770,9 @@ maintainer-clean-generic:
 	-test -z "$(BUILT_SOURCES)" || rm -f $(BUILT_SOURCES)
 clean: clean-am clean-multi
 
-clean-am: clean-generic clean-libtool clean-myexeclibLTLIBRARIES \
-	clean-toolexeclibLTLIBRARIES mostlyclean-am
+clean-am: clean-cafexeclibLTLIBRARIES clean-generic clean-libtool \
+	clean-myexeclibLTLIBRARIES clean-toolexeclibLTLIBRARIES \
+	mostlyclean-am
 
 distclean: distclean-am distclean-multi
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
@@ -5745,8 +5799,9 @@ install-dvi: install-dvi-am
 
 install-dvi-am:
 
-install-exec-am: install-multi install-myexeclibLTLIBRARIES \
-	install-toolexeclibDATA install-toolexeclibLTLIBRARIES
+install-exec-am: install-cafexeclibLTLIBRARIES install-multi \
+	install-myexeclibLTLIBRARIES install-toolexeclibDATA \
+	install-toolexeclibLTLIBRARIES
 
 install-html: install-html-am
 
@@ -5788,7 +5843,8 @@ ps: ps-am
 
 ps-am:
 
-uninstall-am: uninstall-myexeclibLTLIBRARIES uninstall-toolexeclibDATA \
+uninstall-am: uninstall-cafexeclibLTLIBRARIES \
+	uninstall-myexeclibLTLIBRARIES uninstall-toolexeclibDATA \
 	uninstall-toolexeclibLTLIBRARIES
 
 .MAKE: all all-multi check clean-multi distclean-multi install \
@@ -5796,14 +5852,15 @@ uninstall-am: uninstall-myexeclibLTLIBRARIES uninstall-toolexeclibDATA \
 	mostlyclean-multi
 
 .PHONY: CTAGS GTAGS all all-am all-multi am--refresh check check-am \
-	clean clean-generic clean-libtool clean-multi \
-	clean-myexeclibLTLIBRARIES clean-toolexeclibLTLIBRARIES ctags \
-	distclean distclean-compile distclean-generic distclean-hdr \
-	distclean-libtool distclean-multi distclean-tags dvi dvi-am \
-	html html-am info info-am install install-am install-data \
-	install-data-am install-dvi install-dvi-am install-exec \
-	install-exec-am install-html install-html-am install-info \
-	install-info-am install-man install-multi \
+	clean clean-cafexeclibLTLIBRARIES clean-generic clean-libtool \
+	clean-multi clean-myexeclibLTLIBRARIES \
+	clean-toolexeclibLTLIBRARIES ctags distclean distclean-compile \
+	distclean-generic distclean-hdr distclean-libtool \
+	distclean-multi distclean-tags dvi dvi-am html html-am info \
+	info-am install install-am install-cafexeclibLTLIBRARIES \
+	install-data install-data-am install-dvi install-dvi-am \
+	install-exec install-exec-am install-html install-html-am \
+	install-info install-info-am install-man install-multi \
 	install-myexeclibLTLIBRARIES install-pdf install-pdf-am \
 	install-ps install-ps-am install-strip install-toolexeclibDATA \
 	install-toolexeclibLTLIBRARIES installcheck installcheck-am \
@@ -5811,8 +5868,8 @@ uninstall-am: uninstall-myexeclibLTLIBRARIES uninstall-toolexeclibDATA \
 	maintainer-clean-multi mostlyclean mostlyclean-compile \
 	mostlyclean-generic mostlyclean-libtool mostlyclean-multi pdf \
 	pdf-am ps ps-am tags uninstall uninstall-am \
-	uninstall-myexeclibLTLIBRARIES uninstall-toolexeclibDATA \
-	uninstall-toolexeclibLTLIBRARIES
+	uninstall-cafexeclibLTLIBRARIES uninstall-myexeclibLTLIBRARIES \
+	uninstall-toolexeclibDATA uninstall-toolexeclibLTLIBRARIES
 
 @LIBGFOR_USE_SYMVER_SUN_TRUE@@LIBGFOR_USE_SYMVER_TRUE@gfortran.map-sun : $(srcdir)/gfortran.map \
 @LIBGFOR_USE_SYMVER_SUN_TRUE@@LIBGFOR_USE_SYMVER_TRUE@		$(top_srcdir)/../contrib/make_sunver.pl \

@@ -1,3 +1,10 @@
+2011-04-15  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/18918
+	* Makefile.am: Build and install caf/single.c as
+	libcaf_single.a.
+	* Makefile.in: Regenerate.
+
 2011-04-15  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	PR libfortran/47571
