@@ -1,5 +1,11 @@
 2011-04-15  Maxim Kuvyrkov  <maxim@codesourcery.com>
 
+	* combine.c (subst, combine_simlify_rtx): Add new argument, use it
+	to track processing of conditionals.  Update all callers.
+	(try_combine, simplify_if_then_else): Update.
+
+2011-04-15  Maxim Kuvyrkov  <maxim@codesourcery.com>
+
 	* config/m68k/m68k.c (m68k_sched_variable_issue): Handle
 	-fsched-pressure.
 
