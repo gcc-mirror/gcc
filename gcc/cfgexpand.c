@@ -2375,6 +2375,7 @@ expand_debug_expr (tree exp)
 {
   rtx op0 = NULL_RTX, op1 = NULL_RTX, op2 = NULL_RTX;
   enum machine_mode mode = TYPE_MODE (TREE_TYPE (exp));
+  enum machine_mode inner_mode = VOIDmode;
   int unsignedp = TYPE_UNSIGNED (TREE_TYPE (exp));
   addr_space_t as;
 
@@ -2421,6 +2422,7 @@ expand_debug_expr (tree exp)
 
     unary:
     case tcc_unary:
+      inner_mode = TYPE_MODE (TREE_TYPE (TREE_OPERAND (exp, 0)));
       op0 = expand_debug_expr (TREE_OPERAND (exp, 0));
       if (!op0)
 	return NULL_RTX;
@@ -2524,7 +2526,7 @@ expand_debug_expr (tree exp)
     case NOP_EXPR:
     case CONVERT_EXPR:
       {
-	enum machine_mode inner_mode = GET_MODE (op0);
+	inner_mode = GET_MODE (op0);
 
 	if (mode == inner_mode)
 	  return op0;
@@ -2571,9 +2573,9 @@ expand_debug_expr (tree exp)
 	else if (TREE_CODE_CLASS (TREE_CODE (exp)) == tcc_unary
 		 ? TYPE_UNSIGNED (TREE_TYPE (TREE_OPERAND (exp, 0)))
 		 : unsignedp)
-	  op0 = gen_rtx_ZERO_EXTEND (mode, op0);
+	  op0 = simplify_gen_unary (ZERO_EXTEND, mode, op0, inner_mode);
 	else
-	  op0 = gen_rtx_SIGN_EXTEND (mode, op0);
+	  op0 = simplify_gen_unary (SIGN_EXTEND, mode, op0, inner_mode);
 
 	return op0;
       }
@@ -2708,7 +2710,8 @@ expand_debug_expr (tree exp)
 	    /* Don't use offset_address here, we don't need a
 	       recognizable address, and we don't want to generate
 	       code.  */
-	    op0 = gen_rtx_MEM (mode, gen_rtx_PLUS (addrmode, op0, op1));
+	    op0 = gen_rtx_MEM (mode, simplify_gen_binary (PLUS, addrmode,
+							  op0, op1));
 	  }
 
 	if (MEM_P (op0))
@@ -2781,25 +2784,23 @@ expand_debug_expr (tree exp)
       }
 
     case ABS_EXPR:
-      return gen_rtx_ABS (mode, op0);
+      return simplify_gen_unary (ABS, mode, op0, mode);
 
     case NEGATE_EXPR:
-      return gen_rtx_NEG (mode, op0);
+      return simplify_gen_unary (NEG, mode, op0, mode);
 
     case BIT_NOT_EXPR:
-      return gen_rtx_NOT (mode, op0);
+      return simplify_gen_unary (NOT, mode, op0, mode);
 
     case FLOAT_EXPR:
-      if (unsignedp)
-	return gen_rtx_UNSIGNED_FLOAT (mode, op0);
-      else
-	return gen_rtx_FLOAT (mode, op0);
+      return simplify_gen_unary (TYPE_UNSIGNED (TREE_TYPE (TREE_OPERAND (exp,
+									 0)))
+				 ? UNSIGNED_FLOAT : FLOAT, mode, op0,
+				 inner_mode);
 
     case FIX_TRUNC_EXPR:
-      if (unsignedp)
-	return gen_rtx_UNSIGNED_FIX (mode, op0);
-      else
-	return gen_rtx_FIX (mode, op0);
+      return simplify_gen_unary (unsignedp ? UNSIGNED_FIX : FIX, mode, op0,
+				 inner_mode);
 
     case POINTER_PLUS_EXPR:
       /* For the rare target where pointers are not the same size as
@@ -2810,161 +2811,164 @@ expand_debug_expr (tree exp)
 	  && GET_MODE (op0) != GET_MODE (op1))
 	{
 	  if (GET_MODE_BITSIZE (GET_MODE (op0)) < GET_MODE_BITSIZE (GET_MODE (op1)))
-	    op1 = gen_rtx_TRUNCATE (GET_MODE (op0), op1);
+	    op1 = simplify_gen_unary (TRUNCATE, GET_MODE (op0), op1,
+				      GET_MODE (op1));
 	  else
 	    /* We always sign-extend, regardless of the signedness of
 	       the operand, because the operand is always unsigned
 	       here even if the original C expression is signed.  */
-	    op1 = gen_rtx_SIGN_EXTEND (GET_MODE (op0), op1);
+	    op1 = simplify_gen_unary (SIGN_EXTEND, GET_MODE (op0), op1,
+				      GET_MODE (op1));
 	}
       /* Fall through.  */
     case PLUS_EXPR:
-      return gen_rtx_PLUS (mode, op0, op1);
+      return simplify_gen_binary (PLUS, mode, op0, op1);
 
     case MINUS_EXPR:
-      return gen_rtx_MINUS (mode, op0, op1);
+      return simplify_gen_binary (MINUS, mode, op0, op1);
 
     case MULT_EXPR:
-      return gen_rtx_MULT (mode, op0, op1);
+      return simplify_gen_binary (MULT, mode, op0, op1);
 
     case RDIV_EXPR:
     case TRUNC_DIV_EXPR:
     case EXACT_DIV_EXPR:
       if (unsignedp)
-	return gen_rtx_UDIV (mode, op0, op1);
+	return simplify_gen_binary (UDIV, mode, op0, op1);
       else
-	return gen_rtx_DIV (mode, op0, op1);
+	return simplify_gen_binary (DIV, mode, op0, op1);
 
     case TRUNC_MOD_EXPR:
-      if (unsignedp)
-	return gen_rtx_UMOD (mode, op0, op1);
-      else
-	return gen_rtx_MOD (mode, op0, op1);
+      return simplify_gen_binary (unsignedp ? UMOD : MOD, mode, op0, op1);
 
     case FLOOR_DIV_EXPR:
       if (unsignedp)
-	return gen_rtx_UDIV (mode, op0, op1);
+	return simplify_gen_binary (UDIV, mode, op0, op1);
       else
 	{
-	  rtx div = gen_rtx_DIV (mode, op0, op1);
-	  rtx mod = gen_rtx_MOD (mode, op0, op1);
+	  rtx div = simplify_gen_binary (DIV, mode, op0, op1);
+	  rtx mod = simplify_gen_binary (MOD, mode, op0, op1);
 	  rtx adj = floor_sdiv_adjust (mode, mod, op1);
-	  return gen_rtx_PLUS (mode, div, adj);
+	  return simplify_gen_binary (PLUS, mode, div, adj);
 	}
 
     case FLOOR_MOD_EXPR:
       if (unsignedp)
-	return gen_rtx_UMOD (mode, op0, op1);
+	return simplify_gen_binary (UMOD, mode, op0, op1);
       else
 	{
-	  rtx mod = gen_rtx_MOD (mode, op0, op1);
+	  rtx mod = simplify_gen_binary (MOD, mode, op0, op1);
 	  rtx adj = floor_sdiv_adjust (mode, mod, op1);
-	  adj = gen_rtx_NEG (mode, gen_rtx_MULT (mode, adj, op1));
-	  return gen_rtx_PLUS (mode, mod, adj);
+	  adj = simplify_gen_unary (NEG, mode,
+				    simplify_gen_binary (MULT, mode, adj, op1),
+				    mode);
+	  return simplify_gen_binary (PLUS, mode, mod, adj);
 	}
 
     case CEIL_DIV_EXPR:
       if (unsignedp)
 	{
-	  rtx div = gen_rtx_UDIV (mode, op0, op1);
-	  rtx mod = gen_rtx_UMOD (mode, op0, op1);
+	  rtx div = simplify_gen_binary (UDIV, mode, op0, op1);
+	  rtx mod = simplify_gen_binary (UMOD, mode, op0, op1);
 	  rtx adj = ceil_udiv_adjust (mode, mod, op1);
-	  return gen_rtx_PLUS (mode, div, adj);
+	  return simplify_gen_binary (PLUS, mode, div, adj);
 	}
       else
 	{
-	  rtx div = gen_rtx_DIV (mode, op0, op1);
-	  rtx mod = gen_rtx_MOD (mode, op0, op1);
+	  rtx div = simplify_gen_binary (DIV, mode, op0, op1);
+	  rtx mod = simplify_gen_binary (MOD, mode, op0, op1);
 	  rtx adj = ceil_sdiv_adjust (mode, mod, op1);
-	  return gen_rtx_PLUS (mode, div, adj);
+	  return simplify_gen_binary (PLUS, mode, div, adj);
 	}
 
     case CEIL_MOD_EXPR:
       if (unsignedp)
 	{
-	  rtx mod = gen_rtx_UMOD (mode, op0, op1);
+	  rtx mod = simplify_gen_binary (UMOD, mode, op0, op1);
 	  rtx adj = ceil_udiv_adjust (mode, mod, op1);
-	  adj = gen_rtx_NEG (mode, gen_rtx_MULT (mode, adj, op1));
-	  return gen_rtx_PLUS (mode, mod, adj);
+	  adj = simplify_gen_unary (NEG, mode,
+				    simplify_gen_binary (MULT, mode, adj, op1),
+				    mode);
+	  return simplify_gen_binary (PLUS, mode, mod, adj);
 	}
       else
 	{
-	  rtx mod = gen_rtx_MOD (mode, op0, op1);
+	  rtx mod = simplify_gen_binary (MOD, mode, op0, op1);
 	  rtx adj = ceil_sdiv_adjust (mode, mod, op1);
-	  adj = gen_rtx_NEG (mode, gen_rtx_MULT (mode, adj, op1));
-	  return gen_rtx_PLUS (mode, mod, adj);
+	  adj = simplify_gen_unary (NEG, mode,
+				    simplify_gen_binary (MULT, mode, adj, op1),
+				    mode);
+	  return simplify_gen_binary (PLUS, mode, mod, adj);
 	}
 
     case ROUND_DIV_EXPR:
       if (unsignedp)
 	{
-	  rtx div = gen_rtx_UDIV (mode, op0, op1);
-	  rtx mod = gen_rtx_UMOD (mode, op0, op1);
+	  rtx div = simplify_gen_binary (UDIV, mode, op0, op1);
+	  rtx mod = simplify_gen_binary (UMOD, mode, op0, op1);
 	  rtx adj = round_udiv_adjust (mode, mod, op1);
-	  return gen_rtx_PLUS (mode, div, adj);
+	  return simplify_gen_binary (PLUS, mode, div, adj);
 	}
       else
 	{
-	  rtx div = gen_rtx_DIV (mode, op0, op1);
-	  rtx mod = gen_rtx_MOD (mode, op0, op1);
+	  rtx div = simplify_gen_binary (DIV, mode, op0, op1);
+	  rtx mod = simplify_gen_binary (MOD, mode, op0, op1);
 	  rtx adj = round_sdiv_adjust (mode, mod, op1);
-	  return gen_rtx_PLUS (mode, div, adj);
+	  return simplify_gen_binary (PLUS, mode, div, adj);
 	}
 
     case ROUND_MOD_EXPR:
       if (unsignedp)
 	{
-	  rtx mod = gen_rtx_UMOD (mode, op0, op1);
+	  rtx mod = simplify_gen_binary (UMOD, mode, op0, op1);
 	  rtx adj = round_udiv_adjust (mode, mod, op1);
-	  adj = gen_rtx_NEG (mode, gen_rtx_MULT (mode, adj, op1));
-	  return gen_rtx_PLUS (mode, mod, adj);
+	  adj = simplify_gen_unary (NEG, mode,
+				    simplify_gen_binary (MULT, mode, adj, op1),
+				    mode);
+	  return simplify_gen_binary (PLUS, mode, mod, adj);
 	}
       else
 	{
-	  rtx mod = gen_rtx_MOD (mode, op0, op1);
+	  rtx mod = simplify_gen_binary (MOD, mode, op0, op1);
 	  rtx adj = round_sdiv_adjust (mode, mod, op1);
-	  adj = gen_rtx_NEG (mode, gen_rtx_MULT (mode, adj, op1));
-	  return gen_rtx_PLUS (mode, mod, adj);
+	  adj = simplify_gen_unary (NEG, mode,
+				    simplify_gen_binary (MULT, mode, adj, op1),
+				    mode);
+	  return simplify_gen_binary (PLUS, mode, mod, adj);
 	}
 
     case LSHIFT_EXPR:
-      return gen_rtx_ASHIFT (mode, op0, op1);
+      return simplify_gen_binary (ASHIFT, mode, op0, op1);
 
     case RSHIFT_EXPR:
       if (unsignedp)
-	return gen_rtx_LSHIFTRT (mode, op0, op1);
+	return simplify_gen_binary (LSHIFTRT, mode, op0, op1);
       else
-	return gen_rtx_ASHIFTRT (mode, op0, op1);
+	return simplify_gen_binary (ASHIFTRT, mode, op0, op1);
 
     case LROTATE_EXPR:
-      return gen_rtx_ROTATE (mode, op0, op1);
+      return simplify_gen_binary (ROTATE, mode, op0, op1);
 
     case RROTATE_EXPR:
-      return gen_rtx_ROTATERT (mode, op0, op1);
+      return simplify_gen_binary (ROTATERT, mode, op0, op1);
 
     case MIN_EXPR:
-      if (unsignedp)
-	return gen_rtx_UMIN (mode, op0, op1);
-      else
-	return gen_rtx_SMIN (mode, op0, op1);
+      return simplify_gen_binary (unsignedp ? UMIN : SMIN, mode, op0, op1);
 
     case MAX_EXPR:
-      if (unsignedp)
-	return gen_rtx_UMAX (mode, op0, op1);
-      else
-	return gen_rtx_SMAX (mode, op0, op1);
+      return simplify_gen_binary (unsignedp ? UMAX : SMAX, mode, op0, op1);
 
     case BIT_AND_EXPR:
     case TRUTH_AND_EXPR:
-      return gen_rtx_AND (mode, op0, op1);
+      return simplify_gen_binary (AND, mode, op0, op1);
 
     case BIT_IOR_EXPR:
     case TRUTH_OR_EXPR:
-      return gen_rtx_IOR (mode, op0, op1);
+      return simplify_gen_binary (IOR, mode, op0, op1);
 
     case BIT_XOR_EXPR:
     case TRUTH_XOR_EXPR:
-      return gen_rtx_XOR (mode, op0, op1);
+      return simplify_gen_binary (XOR, mode, op0, op1);
 
     case TRUTH_ANDIF_EXPR:
       return gen_rtx_IF_THEN_ELSE (mode, op0, op1, const0_rtx);
@@ -2973,61 +2977,53 @@ expand_debug_expr (tree exp)
       return gen_rtx_IF_THEN_ELSE (mode, op0, const_true_rtx, op1);
 
     case TRUTH_NOT_EXPR:
-      return gen_rtx_EQ (mode, op0, const0_rtx);
+      return simplify_gen_relational (EQ, mode, inner_mode, op0, const0_rtx);
 
     case LT_EXPR:
-      if (unsignedp)
-	return gen_rtx_LTU (mode, op0, op1);
-      else
-	return gen_rtx_LT (mode, op0, op1);
+      return simplify_gen_relational (unsignedp ? LTU : LT, mode, inner_mode,
+				      op0, op1);
 
     case LE_EXPR:
-      if (unsignedp)
-	return gen_rtx_LEU (mode, op0, op1);
-      else
-	return gen_rtx_LE (mode, op0, op1);
+      return simplify_gen_relational (unsignedp ? LEU : LE, mode, inner_mode,
+				      op0, op1);
 
     case GT_EXPR:
-      if (unsignedp)
-	return gen_rtx_GTU (mode, op0, op1);
-      else
-	return gen_rtx_GT (mode, op0, op1);
+      return simplify_gen_relational (unsignedp ? GTU : GT, mode, inner_mode,
+				      op0, op1);
 
     case GE_EXPR:
-      if (unsignedp)
-	return gen_rtx_GEU (mode, op0, op1);
-      else
-	return gen_rtx_GE (mode, op0, op1);
+      return simplify_gen_relational (unsignedp ? GEU : GE, mode, inner_mode,
+				      op0, op1);
 
     case EQ_EXPR:
-      return gen_rtx_EQ (mode, op0, op1);
+      return simplify_gen_relational (EQ, mode, inner_mode, op0, op1);
 
     case NE_EXPR:
-      return gen_rtx_NE (mode, op0, op1);
+      return simplify_gen_relational (NE, mode, inner_mode, op0, op1);
 
     case UNORDERED_EXPR:
-      return gen_rtx_UNORDERED (mode, op0, op1);
+      return simplify_gen_relational (UNORDERED, mode, inner_mode, op0, op1);
 
     case ORDERED_EXPR:
-      return gen_rtx_ORDERED (mode, op0, op1);
+      return simplify_gen_relational (ORDERED, mode, inner_mode, op0, op1);
 
     case UNLT_EXPR:
-      return gen_rtx_UNLT (mode, op0, op1);
+      return simplify_gen_relational (UNLT, mode, inner_mode, op0, op1);
 
     case UNLE_EXPR:
-      return gen_rtx_UNLE (mode, op0, op1);
+      return simplify_gen_relational (UNLE, mode, inner_mode, op0, op1);
 
     case UNGT_EXPR:
-      return gen_rtx_UNGT (mode, op0, op1);
+      return simplify_gen_relational (UNGT, mode, inner_mode, op0, op1);
 
     case UNGE_EXPR:
-      return gen_rtx_UNGE (mode, op0, op1);
+      return simplify_gen_relational (UNGE, mode, inner_mode, op0, op1);
 
     case UNEQ_EXPR:
-      return gen_rtx_UNEQ (mode, op0, op1);
+      return simplify_gen_relational (UNEQ, mode, inner_mode, op0, op1);
 
     case LTGT_EXPR:
-      return gen_rtx_LTGT (mode, op0, op1);
+      return simplify_gen_relational (LTGT, mode, inner_mode, op0, op1);
 
     case COND_EXPR:
       return gen_rtx_IF_THEN_ELSE (mode, op0, op1, op2);
@@ -3043,8 +3039,9 @@ expand_debug_expr (tree exp)
     case CONJ_EXPR:
       if (GET_CODE (op0) == CONCAT)
 	return gen_rtx_CONCAT (mode, XEXP (op0, 0),
-			       gen_rtx_NEG (GET_MODE_INNER (mode),
-					    XEXP (op0, 1)));
+			       simplify_gen_unary (NEG, GET_MODE_INNER (mode),
+						   XEXP (op0, 1),
+						   GET_MODE_INNER (mode)));
       else
 	{
 	  enum machine_mode imode = GET_MODE_INNER (mode);
@@ -3244,16 +3241,18 @@ expand_debug_expr (tree exp)
       if (SCALAR_INT_MODE_P (GET_MODE (op0))
 	  && SCALAR_INT_MODE_P (mode))
 	{
-	  if (TYPE_UNSIGNED (TREE_TYPE (TREE_OPERAND (exp, 0))))
-	    op0 = gen_rtx_ZERO_EXTEND (mode, op0);
-	  else
-	    op0 = gen_rtx_SIGN_EXTEND (mode, op0);
-	  if (TYPE_UNSIGNED (TREE_TYPE (TREE_OPERAND (exp, 1))))
-	    op1 = gen_rtx_ZERO_EXTEND (mode, op1);
-	  else
-	    op1 = gen_rtx_SIGN_EXTEND (mode, op1);
-	  op0 = gen_rtx_MULT (mode, op0, op1);
-	  return gen_rtx_PLUS (mode, op0, op2);
+	  op0
+	    = simplify_gen_unary (TYPE_UNSIGNED (TREE_TYPE (TREE_OPERAND (exp,
+									  0)))
+				  ? ZERO_EXTEND : SIGN_EXTEND, mode, op0,
+				  inner_mode);
+	  op1
+	    = simplify_gen_unary (TYPE_UNSIGNED (TREE_TYPE (TREE_OPERAND (exp,
+									  1)))
+				  ? ZERO_EXTEND : SIGN_EXTEND, mode, op1,
+				  inner_mode);
+	  op0 = simplify_gen_binary (MULT, mode, op0, op1);
+	  return simplify_gen_binary (PLUS, mode, op0, op2);
 	}
       return NULL;
 
@@ -3263,7 +3262,7 @@ expand_debug_expr (tree exp)
       if (SCALAR_INT_MODE_P (GET_MODE (op0))
 	  && SCALAR_INT_MODE_P (mode))
 	{
-	  enum machine_mode inner_mode = GET_MODE (op0);
+	  inner_mode = GET_MODE (op0);
 	  if (TYPE_UNSIGNED (TREE_TYPE (TREE_OPERAND (exp, 0))))
 	    op0 = simplify_gen_unary (ZERO_EXTEND, mode, op0, inner_mode);
 	  else
@@ -3272,13 +3271,13 @@ expand_debug_expr (tree exp)
 	    op1 = simplify_gen_unary (ZERO_EXTEND, mode, op1, inner_mode);
 	  else
 	    op1 = simplify_gen_unary (SIGN_EXTEND, mode, op1, inner_mode);
-	  op0 = gen_rtx_MULT (mode, op0, op1);
+	  op0 = simplify_gen_binary (MULT, mode, op0, op1);
 	  if (TREE_CODE (exp) == WIDEN_MULT_EXPR)
 	    return op0;
 	  else if (TREE_CODE (exp) == WIDEN_MULT_PLUS_EXPR)
-	    return gen_rtx_PLUS (mode, op0, op2);
+	    return simplify_gen_binary (PLUS, mode, op0, op2);
 	  else
-	    return gen_rtx_MINUS (mode, op2, op0);
+	    return simplify_gen_binary (MINUS, mode, op2, op0);
 	}
       return NULL;
 
@@ -3286,16 +3285,17 @@ expand_debug_expr (tree exp)
       if (SCALAR_INT_MODE_P (GET_MODE (op0))
 	  && SCALAR_INT_MODE_P (mode))
 	{
-	  if (TYPE_UNSIGNED (TREE_TYPE (TREE_OPERAND (exp, 0))))
-	    op0 = gen_rtx_ZERO_EXTEND (mode, op0);
-	  else
-	    op0 = gen_rtx_SIGN_EXTEND (mode, op0);
-	  return gen_rtx_PLUS (mode, op0, op1);
+	  op0
+	    = simplify_gen_unary (TYPE_UNSIGNED (TREE_TYPE (TREE_OPERAND (exp,
+									  0)))
+				  ? ZERO_EXTEND : SIGN_EXTEND, mode, op0,
+				  inner_mode);
+	  return simplify_gen_binary (PLUS, mode, op0, op1);
 	}
       return NULL;
 
     case FMA_EXPR:
-      return gen_rtx_FMA (mode, op0, op1, op2);
+      return simplify_gen_ternary (FMA, mode, inner_mode, op0, op1, op2);
 
     default:
     flag_unsupported:
