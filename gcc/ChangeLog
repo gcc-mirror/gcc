@@ -1,5 +1,16 @@
 2011-04-15  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gimplify.c: Fix issues in comments throughout.
+	(voidify_wrapper_expr): Fix long line.
+	(build_stack_save_restore): Likewise.
+	(gimplify_loop_expr): Likewise.
+	(gimplify_compound_lval): Likewise.
+	(gimplify_init_ctor_eval): Likewise.
+	(gimplify_modify_expr_rhs): Likewise.
+	(omp_notice_threadprivate_variable): Likewise.
+
+2011-04-15  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* cfgexpand.c (expand_call_stmt): Convert the function type to the
 	original one if this is not a builtin function.
 
