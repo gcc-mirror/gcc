@@ -64,12 +64,19 @@ along with GCC; see the file COPYING3.  If not see
 
 /* This defines which multi-letter switches take arguments.  */
 #define GCC_WORD_SWITCH_TAKES_ARG(STR)		\
- (!strcmp (STR, "Tdata") || !strcmp (STR, "Ttext")	\
-  || !strcmp (STR, "Tbss") || !strcmp (STR, "include")	\
-  || !strcmp (STR, "imacros") || !strcmp (STR, "aux-info") \
-  || !strcmp (STR, "idirafter") || !strcmp (STR, "iprefix") \
-  || !strcmp (STR, "iwithprefix") || !strcmp (STR, "iwithprefixbefore") \
-  || !strcmp (STR, "isystem") || !strcmp (STR, "specs") \
+  (  !strcmp (STR, "aux-info") \
+  || !strcmp (STR, "dumpbase") \
+  || !strcmp (STR, "idirafter") \
+  || !strcmp (STR, "imacros") \
+  || !strcmp (STR, "include") \
+  || !strcmp (STR, "iprefix") \
+  || !strcmp (STR, "isystem") \
+  || !strcmp (STR, "iwithprefix") \
+  || !strcmp (STR, "iwithprefixbefore") \
+  || !strcmp (STR, "specs") \
+  || !strcmp (STR, "Tbss") \
+  || !strcmp (STR, "Tdata") \
+  || !strcmp (STR, "Ttext") \
   || !strcmp (STR, "Xlinker"))
 
 #define NO_LINK_SWITCHES(STR) \

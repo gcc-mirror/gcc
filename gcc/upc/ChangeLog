@@ -1,5 +1,10 @@
 2011-04-13  Gary Funck  <gary@intrepid.com>
 
+	* upc-cmd.c (GCC_WORD_SWITCH_TAKES_ARG): Add "dumpbase"
+	  to the list, and alphabetize.
+
+2011-04-13  Gary Funck  <gary@intrepid.com>
+
 	* upc-gimplify.c (upc_gimplify_real_image_ref): New.
 	  Currently, a not-yet-implemented stub.
 	  (upc_gimplify_lval): call upc_gimplify_real_image_ref to
