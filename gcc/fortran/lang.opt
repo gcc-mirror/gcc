@@ -462,6 +462,10 @@ fmax-stack-var-size=
 Fortran RejectNegative Joined UInteger
 -fmax-stack-var-size=<n>	Size in bytes of the largest array that will be put on the stack
 
+fstack-arrays
+Fortran
+Put all local arrays on stack.
+
 fmodule-private
 Fortran
 Set default accessibility of module entities to PRIVATE.

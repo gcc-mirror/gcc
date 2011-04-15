@@ -167,6 +167,7 @@ and warnings}.
 -fbounds-check -fcheck-array-temporaries  -fmax-array-constructor =@var{n} @gol
 -fcheck=@var{<all|array-temps|bounds|do|mem|pointer|recursion>} @gol
 -fcoarray=@var{<none|single|lib>} -fmax-stack-var-size=@var{n} @gol
+-fstack-arrays @gol
 -fpack-derived  -frepack-arrays  -fshort-enums  -fexternal-blas @gol
 -fblas-matmul-limit=@var{n} -frecursive -finit-local-zero @gol
 -finit-integer=@var{n} -finit-real=@var{<zero|inf|-inf|nan|snan>} @gol
@@ -1369,6 +1370,13 @@ bounds, and may not apply to all character variables.
 Future versions of GNU Fortran may improve this behavior.
 
 The default value for @var{n} is 32768.
+
+@item -fstack-arrays
+@opindex @code{fstack-arrays}
+Adding this option will make the fortran compiler put all local arrays,
+even those of unknown size onto stack memory.  If your program uses very
+large local arrays it's possible that you'll have to extend your runtime
+limits for stack memory on some operating systems.
 
 @item -fpack-derived
 @opindex @code{fpack-derived}

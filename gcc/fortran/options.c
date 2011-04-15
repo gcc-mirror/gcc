@@ -124,6 +124,7 @@ gfc_init_options (unsigned int decoded_options_count,
 
   /* Default value of flag_max_stack_var_size is set in gfc_post_options.  */
   gfc_option.flag_max_stack_var_size = -2;
+  gfc_option.flag_stack_arrays = 0;
 
   gfc_option.flag_range_check = 1;
   gfc_option.flag_pack_derived = 0;
@@ -793,6 +794,10 @@ gfc_handle_option (size_t scode, const char *arg, int value,
 
     case OPT_fmax_stack_var_size_:
       gfc_option.flag_max_stack_var_size = value;
+      break;
+
+    case OPT_fstack_arrays:
+      gfc_option.flag_stack_arrays = value;
       break;
 
     case OPT_fmodule_private:

@@ -1,3 +1,16 @@
+2011-04-15  Michael Matz  <matz@suse.de>
+
+	* trans-array.c (toplevel): Include gimple.h.
+	(gfc_trans_allocate_array_storage): Check flag_stack_arrays,
+	properly expand variable length arrays.
+	(gfc_trans_auto_array_allocation): If flag_stack_arrays create
+	variable length decls and associate them with their scope.
+	* gfortran.h (gfc_option_t): Add flag_stack_arrays member.
+	* options.c (gfc_init_options): Handle -fstack_arrays option.
+	* lang.opt (fstack-arrays): Add option.
+	* invoke.texi (Code Gen Options): Document it.
+	* Make-lang.in (trans-array.o): Depend on GIMPLE_H.
+
 2011-04-15  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/18918
