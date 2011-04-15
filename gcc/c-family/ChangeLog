@@ -1,3 +1,9 @@
+2011-04-15  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* c-objc.h (objc_get_interface_ivars): Removed.
+	(objc_detect_field_duplicates): New.	
+	* stub-objc.c: Likewise.
+	
 2011-04-14  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* stub-objc.c (objc_declare_protocols): Renamed to

@@ -1,3 +1,10 @@
+2011-04-15  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc-act.c (objc_get_interface_ivars): Removed.
+	(objc_detect_field_duplicates): New.
+	(hash_instance_variable): New.
+	(eq_instance_variable): New.
+	
 2011-04-14  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc-act.c (objc_declare_protocols): Renamed to

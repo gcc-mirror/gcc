@@ -1,3 +1,8 @@
+2011-04-15  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* c-decl.c (detect_field_duplicates): Call
+	objc_detect_field_duplicates instead of objc_get_interface_ivars.
+
 2011-04-15  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* gimple.h (gimple_asm_clobbers_memory_p): Declare.
