@@ -167,6 +167,10 @@ class Gcc_backend : public Backend
   // Statements.
 
   Bstatement*
+  error_statement()
+  { return this->make_statement(error_mark_node); }
+
+  Bstatement*
   expression_statement(Bexpression*);
 
   Bstatement*

@@ -3974,12 +3974,13 @@ Select_clauses::Select_clause::may_fall_through() const
 
 // Return a tree for the statements to execute.
 
-tree
-Select_clauses::Select_clause::get_statements_tree(Translate_context* context)
+Bstatement*
+Select_clauses::Select_clause::get_statements_backend(
+    Translate_context* context)
 {
   if (this->statements_ == NULL)
-    return NULL_TREE;
-  return this->statements_->get_tree(context);
+    return NULL;
+  return tree_to_stat(this->statements_->get_tree(context));
 }
 
 // Class Select_clauses.
@@ -4037,7 +4038,7 @@ Select_clauses::may_fall_through() const
   return false;
 }
 
-// Return a tree.  We build a call to
+// Convert to the backend representation.  We build a call to
 //   size_t __go_select(size_t count, _Bool has_default,
 //                      channel* channels, _Bool* is_send)
 //
@@ -4051,20 +4052,24 @@ Select_clauses::may_fall_through() const
 // FIXME: This doesn't handle channels which send interface types
 // where the receiver has a static type which matches that interface.
 
-tree
-Select_clauses::get_tree(Translate_context* context,
-			 Unnamed_label *break_label,
-			 source_location location)
+Bstatement*
+Select_clauses::get_backend(Translate_context* context,
+			    Unnamed_label *break_label,
+			    source_location location)
 {
   size_t count = this->clauses_.size();
-  VEC(constructor_elt, gc)* chan_init = VEC_alloc(constructor_elt, gc, count);
-  VEC(constructor_elt, gc)* is_send_init = VEC_alloc(constructor_elt, gc,
-						     count);
-  Select_clause* default_clause = NULL;
-  tree final_stmt_list = NULL_TREE;
-  tree channel_type_tree = NULL_TREE;
 
-  size_t i = 0;
+  Expression_list* chan_init = new Expression_list();
+  chan_init->reserve(count);
+
+  Expression_list* is_send_init = new Expression_list();
+  is_send_init->reserve(count);
+
+  Select_clause *default_clause = NULL;
+
+  Type* runtime_chanptr_type = Runtime::chanptr_type();
+  Type* runtime_chan_type = runtime_chanptr_type->points_to();
+
   for (Clauses::iterator p = this->clauses_.begin();
        p != this->clauses_.end();
        ++p)
@@ -4081,153 +4086,182 @@ Select_clauses::get_tree(Translate_context* context,
 	  // We should have given an error in the send or receive
 	  // statement we created via lowering.
 	  gcc_assert(saw_errors());
-	  return error_mark_node;
+	  return context->backend()->error_statement();
 	}
 
-      tree channel_tree = p->channel()->get_tree(context);
-      if (channel_tree == error_mark_node)
-	return error_mark_node;
-      channel_type_tree = TREE_TYPE(channel_tree);
+      Expression* c = p->channel();
+      c = Expression::make_unsafe_cast(runtime_chan_type, c, p->location());
+      chan_init->push_back(c);
 
-      constructor_elt* elt = VEC_quick_push(constructor_elt, chan_init, NULL);
-      elt->index = build_int_cstu(sizetype, i);
-      elt->value = channel_tree;
-
-      elt = VEC_quick_push(constructor_elt, is_send_init, NULL);
-      elt->index = build_int_cstu(sizetype, i);
-      elt->value = p->is_send() ? boolean_true_node : boolean_false_node;
-
-      ++i;
+      is_send_init->push_back(Expression::make_boolean(p->is_send(),
+						       p->location()));
     }
-  gcc_assert(i == count);
 
-  if (i == 0 && default_clause != NULL)
+  if (chan_init->empty())
     {
-      // There is only a default clause.
-      gcc_assert(final_stmt_list == NULL_TREE);
-      tree stmt_list = NULL_TREE;
-      append_to_statement_list(default_clause->get_statements_tree(context),
-			       &stmt_list);
+      gcc_assert(count == 0);
+      Bstatement* s;
       Bstatement* ldef = break_label->get_definition(context);
-      append_to_statement_list(stat_to_tree(ldef), &stmt_list);
-      return stmt_list;
+      if (default_clause != NULL)
+	{
+	  // There is a default clause and no cases.  Just execute the
+	  // default clause.
+	  s = default_clause->get_statements_backend(context);
+	}
+      else
+	{
+	  // There isn't even a default clause.  In this case select
+	  // pauses forever.  Call the runtime function with nils.
+	  mpz_t zval;
+	  mpz_init_set_ui(zval, 0);
+	  Expression* zero = Expression::make_integer(&zval, NULL, location);
+	  mpz_clear(zval);
+	  Expression* default_arg = Expression::make_boolean(false, location);
+	  Expression* nil1 = Expression::make_nil(location);
+	  Expression* nil2 = nil1->copy();
+	  Expression* call = Runtime::make_call(Runtime::SELECT, location, 4,
+						zero, default_arg, nil1, nil2);
+	  context->gogo()->lower_expression(context->function(), &call);
+	  Bexpression* bcall = tree_to_expr(call->get_tree(context));
+	  s = context->backend()->expression_statement(bcall);
+	}
+      if (s == NULL)
+	return ldef;
+      std::vector<Bstatement*> stats(2);
+      stats[0] = s;
+      stats[1] = ldef;
+      return context->backend()->statement_list(stats);
     }
+  gcc_assert(count > 0);
 
-  tree pointer_chan_type_tree = (channel_type_tree == NULL_TREE
-				 ? ptr_type_node
-				 : build_pointer_type(channel_type_tree));
-  tree chans_arg;
-  tree pointer_boolean_type_tree = build_pointer_type(boolean_type_node);
-  tree is_sends_arg;
+  std::vector<Bstatement*> statements;
 
-  if (i == 0)
-    {
-      chans_arg = fold_convert_loc(location, pointer_chan_type_tree,
-				   null_pointer_node);
-      is_sends_arg = fold_convert_loc(location, pointer_boolean_type_tree,
-				      null_pointer_node);
-    }
-  else
-    {
-      tree index_type_tree = build_index_type(size_int(count - 1));
-      tree chan_array_type_tree = build_array_type(channel_type_tree,
-						   index_type_tree);
-      tree chan_constructor = build_constructor(chan_array_type_tree,
-						chan_init);
-      tree chan_var = create_tmp_var(chan_array_type_tree, "CHAN");
-      DECL_IGNORED_P(chan_var) = 0;
-      DECL_INITIAL(chan_var) = chan_constructor;
-      DECL_SOURCE_LOCATION(chan_var) = location;
-      TREE_ADDRESSABLE(chan_var) = 1;
-      tree decl_expr = build1(DECL_EXPR, void_type_node, chan_var);
-      SET_EXPR_LOCATION(decl_expr, location);
-      append_to_statement_list(decl_expr, &final_stmt_list);
+  mpz_t ival;
+  mpz_init_set_ui(ival, count);
+  Expression* ecount = Expression::make_integer(&ival, NULL, location);
+  mpz_clear(ival);
 
-      tree is_send_array_type_tree = build_array_type(boolean_type_node,
-						      index_type_tree);
-      tree is_send_constructor = build_constructor(is_send_array_type_tree,
-						   is_send_init);
-      tree is_send_var = create_tmp_var(is_send_array_type_tree, "ISSEND");
-      DECL_IGNORED_P(is_send_var) = 0;
-      DECL_INITIAL(is_send_var) = is_send_constructor;
-      DECL_SOURCE_LOCATION(is_send_var) = location;
-      TREE_ADDRESSABLE(is_send_var) = 1;
-      decl_expr = build1(DECL_EXPR, void_type_node, is_send_var);
-      SET_EXPR_LOCATION(decl_expr, location);
-      append_to_statement_list(decl_expr, &final_stmt_list);
+  Type* chan_array_type = Type::make_array_type(runtime_chan_type, ecount);
+  Expression* chans = Expression::make_composite_literal(chan_array_type, 0,
+							 false, chan_init,
+							 location);
+  context->gogo()->lower_expression(context->function(), &chans);
+  Temporary_statement* chan_temp = Statement::make_temporary(chan_array_type,
+							     chans,
+							     location);
+  statements.push_back(tree_to_stat(chan_temp->get_tree(context)));
 
-      chans_arg = fold_convert_loc(location, pointer_chan_type_tree,
-				   build_fold_addr_expr_loc(location,
-							    chan_var));
-      is_sends_arg = fold_convert_loc(location, pointer_boolean_type_tree,
-				      build_fold_addr_expr_loc(location,
-							       is_send_var));
-    }
+  Type* is_send_array_type = Type::make_array_type(Type::lookup_bool_type(),
+						   ecount->copy());
+  Expression* is_sends = Expression::make_composite_literal(is_send_array_type,
+							    0, false,
+							    is_send_init,
+							    location);
+  context->gogo()->lower_expression(context->function(), &is_sends);
+  Temporary_statement* is_send_temp =
+    Statement::make_temporary(is_send_array_type, is_sends, location);
+  statements.push_back(tree_to_stat(is_send_temp->get_tree(context)));
 
-  static tree select_fndecl;
-  tree call = Gogo::call_builtin(&select_fndecl,
-				 location,
-				 "__go_select",
-				 4,
-				 sizetype,
-				 sizetype,
-				 size_int(count),
-				 boolean_type_node,
-				 (default_clause == NULL
-				  ? boolean_false_node
-				  : boolean_true_node),
-				 pointer_chan_type_tree,
-				 chans_arg,
-				 pointer_boolean_type_tree,
-				 is_sends_arg);
-  if (call == error_mark_node)
-    return error_mark_node;
+  mpz_init_set_ui(ival, 0);
+  Expression* zero = Expression::make_integer(&ival, NULL, location);
+  mpz_clear(ival);
 
-  tree stmt_list = NULL_TREE;
+  Expression* ref = Expression::make_temporary_reference(chan_temp, location);
+  Expression* chan_arg = Expression::make_array_index(ref, zero, NULL,
+						      location);
+  chan_arg = Expression::make_unary(OPERATOR_AND, chan_arg, location);
+  chan_arg = Expression::make_unsafe_cast(runtime_chanptr_type, chan_arg,
+					  location);
+
+  ref = Expression::make_temporary_reference(is_send_temp, location);
+  Expression* is_send_arg = Expression::make_array_index(ref, zero->copy(),
+							 NULL, location);
+  is_send_arg = Expression::make_unary(OPERATOR_AND, is_send_arg, location);
+
+  Expression* default_arg = Expression::make_boolean(default_clause != NULL,
+						     location);
+  Expression* call = Runtime::make_call(Runtime::SELECT, location, 4,
+					ecount->copy(), default_arg,
+					chan_arg, is_send_arg);
+  context->gogo()->lower_expression(context->function(), &call);
+  Bexpression* bcall = tree_to_expr(call->get_tree(context));
+
+  std::vector<std::vector<Bexpression*> > cases;
+  std::vector<Bstatement*> clauses;
+
+  cases.resize(count + (default_clause != NULL ? 1 : 0));
+  clauses.resize(count + (default_clause != NULL ? 1 : 0));
+
+  int index = 0;
 
   if (default_clause != NULL)
-    this->add_clause_tree(context, 0, default_clause, break_label, &stmt_list);
+    {
+      this->add_clause_backend(context, location, index, 0, default_clause,
+			       break_label, &cases, &clauses);
+      ++index;
+    }
 
-  i = 1;
+  int i = 1;
   for (Clauses::iterator p = this->clauses_.begin();
        p != this->clauses_.end();
        ++p)
     {
       if (!p->is_default())
 	{
-	  this->add_clause_tree(context, i, &*p, break_label, &stmt_list);
+	  this->add_clause_backend(context, location, index, i, &*p,
+				   break_label, &cases, &clauses);
 	  ++i;
+	  ++index;
 	}
     }
 
+  Bstatement* switch_stmt = context->backend()->switch_statement(bcall,
+								 cases,
+								 clauses,
+								 location);
+  statements.push_back(switch_stmt);
+
   Bstatement* ldef = break_label->get_definition(context);
-  append_to_statement_list(stat_to_tree(ldef), &stmt_list);
+  statements.push_back(ldef);
 
-  tree switch_stmt = build3(SWITCH_EXPR, sizetype, call, stmt_list, NULL_TREE);
-  SET_EXPR_LOCATION(switch_stmt, location);
-  append_to_statement_list(switch_stmt, &final_stmt_list);
-
-  return final_stmt_list;
+  return context->backend()->statement_list(statements);
 }
 
 // Add the tree for CLAUSE to STMT_LIST.
 
 void
-Select_clauses::add_clause_tree(Translate_context* context, int case_index,
-				Select_clause* clause,
-				Unnamed_label* bottom_label, tree* stmt_list)
+Select_clauses::add_clause_backend(
+    Translate_context* context,
+    source_location location,
+    int index,
+    int case_value,
+    Select_clause* clause,
+    Unnamed_label* bottom_label,
+    std::vector<std::vector<Bexpression*> > *cases,
+    std::vector<Bstatement*>* clauses)
 {
-  tree label = create_artificial_label(clause->location());
-  append_to_statement_list(build3(CASE_LABEL_EXPR, void_type_node,
-				  build_int_cst(sizetype, case_index),
-				  NULL_TREE, label),
-			   stmt_list);
-  append_to_statement_list(clause->get_statements_tree(context), stmt_list);
+  mpz_t ival;
+  mpz_init_set_ui(ival, case_value);
+  Expression* e = Expression::make_integer(&ival, NULL, location);
+  mpz_clear(ival);
+  (*cases)[index].push_back(tree_to_expr(e->get_tree(context)));
+
+  Bstatement* s = clause->get_statements_backend(context);
+
   source_location gloc = (clause->statements() == NULL
 			  ? clause->location()
 			  : clause->statements()->end_location());
   Bstatement* g = bottom_label->get_goto(context, gloc);
-  append_to_statement_list(stat_to_tree(g), stmt_list);
+				
+  if (s == NULL)
+    (*clauses)[index] = g;
+  else
+    {
+      std::vector<Bstatement*> stats(2);
+      stats[0] = s;
+      stats[1] = g;
+      (*clauses)[index] = context->backend()->statement_list(stats);
+    }
 }
 
 // Class Select_statement.
@@ -4266,8 +4300,9 @@ Select_statement::do_lower(Gogo* gogo, Named_object* function,
 tree
 Select_statement::do_get_tree(Translate_context* context)
 {
-  return this->clauses_->get_tree(context, this->break_label(),
-				  this->location());
+  Bstatement* ret = this->clauses_->get_backend(context, this->break_label(),
+						this->location());
+  return stat_to_tree(ret);
 }
 
 // Make a select statement.
