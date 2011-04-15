@@ -5142,4 +5142,21 @@ gimple_call_builtin_p (gimple stmt, enum built_in_function code)
 	  && DECL_FUNCTION_CODE (fndecl) == code);
 }
 
+/* Return true if STMT clobbers memory.  STMT is required to be a
+   GIMPLE_ASM.  */
+
+bool
+gimple_asm_clobbers_memory_p (const_gimple stmt)
+{
+  unsigned i;
+
+  for (i = 0; i < gimple_asm_nclobbers (stmt); i++)
+    {
+      tree op = gimple_asm_clobber_op (stmt, i);
+      if (strcmp (TREE_STRING_POINTER (TREE_VALUE (op)), "memory") == 0)
+	return true;
+    }
+
+  return false;
+}
 #include "gt-gimple.h"
