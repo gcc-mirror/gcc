@@ -1,3 +1,10 @@
+2011-04-15  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* gimple.h (gimple_asm_clobbers_memory_p): Declare.
+	* gimple.c (gimple_asm_clobbers_memory_p): Define.
+	* ipa-pure-const.c (check_stmt): Call it.
+	* tree-ssa-operands.c (get_asm_expr_operands): Likewise.
+
 2011-04-15  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/48290
