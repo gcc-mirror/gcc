@@ -2074,6 +2074,22 @@ finish_call_expr (tree fn, VEC(tree,gc) **args, bool disallow_virtual,
       make_args_non_dependent (*args);
     }
 
+  if (TREE_CODE (fn) == COMPONENT_REF)
+    {
+      tree member = TREE_OPERAND (fn, 1);
+      if (BASELINK_P (member))
+	{
+	  tree object = TREE_OPERAND (fn, 0);
+	  return build_new_method_call (object, member,
+					args, NULL_TREE,
+                                        (disallow_virtual
+                                         ? LOOKUP_NORMAL | LOOKUP_NONVIRTUAL
+					 : LOOKUP_NORMAL),
+					/*fn_p=*/NULL,
+					complain);
+	}
+    }
+
   if (is_overloaded_fn (fn))
     fn = baselink_for_fns (fn);
 

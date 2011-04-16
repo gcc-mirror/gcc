@@ -1,6 +1,6 @@
 // Test for range-based for loop
 // Test the loop with a custom iterator
-// with begin/end in an associated namespace
+// with begin/end as member functions
 
 // { dg-do compile }
 // { dg-options "-std=c++0x" }
@@ -20,17 +20,16 @@ namespace foo
     {
         int min, max;
         container(int a, int b) :min(a), max(b) {}
+
+        iterator begin()
+        {
+            return iterator(min);
+        }
+        iterator end()
+        {
+            return iterator(max + 1);
+        }
     };
-
-    iterator begin(container &c)
-    {
-        return iterator(c.min);
-    }
-
-    iterator end(container &c)
-    {
-        return iterator(c.max + 1);
-    }
 }
 
 int main()
