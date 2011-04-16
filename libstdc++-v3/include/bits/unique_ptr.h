@@ -79,6 +79,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		      "can't delete pointer to incomplete type");
 	delete [] __ptr;
       }
+
+      template<typename _Up> void operator()(_Up*) const = delete;
     };
 
   /// 20.7.12.2 unique_ptr for single objects.

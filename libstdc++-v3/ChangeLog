@@ -1,6 +1,16 @@
 2011-04-15  Daniel Krugler  <daniel.kruegler@googlemail.com>
 	    Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR libstdc++/48631
+	* include/bits/unique_ptr.h (default_delete<_Tp[]>): Add deleted
+	function call operator.
+	* testsuite/20_util/default_delete/48631_neg.cc: New.
+	* testsuite/20_util/weak_ptr/comparison/cmp_neg.cc: Adjust dg-error
+	line numbers.
+
+2011-04-15  Daniel Krugler  <daniel.kruegler@googlemail.com>
+	    Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR libstdc++/48635
 	* include/bits/unique_ptr.h (unique_ptr<>::operator=(unique_ptr&&),
 	unique_ptr<>::operator=(unique_ptr<>&&),
