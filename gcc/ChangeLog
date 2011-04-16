@@ -1,3 +1,20 @@
+2011-04-16  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* config/pa/pa.h (REGISTER_MOVE_COST): Increase to 18 cost of
+	move from floating point to shift amount register.
+
+	Backport from mainline:
+	2011-04-08  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR target/48366
+	* config/pa/pa.c (emit_move_sequence): Remove secondary reload
+	support for floating point to shift amount amount register copies.
+	(pa_secondary_reload): Return GENERAL_REGS for floating point/shift
+	amount register copies.
+	* config/pa/pa32-regs.h (HARD_REGNO_MODE_OK): For shift amount
+	register, return false if mode isn't a scalar integer mode.
+	* config/pa/pa64-regs.h (HARD_REGNO_MODE_OK): Likewise.
+
 2011-04-16  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from 4.6 branch

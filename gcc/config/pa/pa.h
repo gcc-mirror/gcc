@@ -1360,6 +1360,7 @@ do { 									\
    Other copies are reasonably cheap.  */
 #define REGISTER_MOVE_COST(MODE, CLASS1, CLASS2) \
  (CLASS1 == SHIFT_REGS ? 0x100					\
+  : CLASS2 == SHIFT_REGS && FP_REG_CLASS_P (CLASS1) ? 18	\
   : FP_REG_CLASS_P (CLASS1) && ! FP_REG_CLASS_P (CLASS2) ? 16	\
   : FP_REG_CLASS_P (CLASS2) && ! FP_REG_CLASS_P (CLASS1) ? 16	\
   : 2)
