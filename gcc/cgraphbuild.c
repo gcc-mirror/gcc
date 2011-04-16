@@ -33,6 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pass.h"
 #include "ipa-utils.h"
 #include "except.h"
+#include "ipa-inline.h"
 
 /* Context of record_reference.  */
 struct record_reference_ctx
@@ -207,16 +208,7 @@ reset_inline_failed (struct cgraph_node *node)
   for (e = node->callers; e; e = e->next_caller)
     {
       e->callee->global.inlined_to = NULL;
-      if (!node->analyzed)
-	e->inline_failed = CIF_BODY_NOT_AVAILABLE;
-      else if (node->local.redefined_extern_inline)
-	e->inline_failed = CIF_REDEFINED_EXTERN_INLINE;
-      else if (!node->local.inlinable)
-	e->inline_failed = CIF_FUNCTION_NOT_INLINABLE;
-      else if (e->call_stmt_cannot_inline_p)
-	e->inline_failed = CIF_MISMATCHED_ARGUMENTS;
-      else
-	e->inline_failed = CIF_FUNCTION_NOT_CONSIDERED;
+      initialize_inline_failed (e);
     }
 }
 

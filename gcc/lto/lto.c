@@ -1030,7 +1030,7 @@ lto_balanced_map (void)
       if (partition_cgraph_node_p (node))
 	{
 	  order[n_nodes++] = node;
-          total_size += node->global.size;
+          total_size += inline_summary (node)->size;
 	}
     }
   free (postorder);
@@ -1049,7 +1049,7 @@ lto_balanced_map (void)
     {
       if (!order[i]->aux)
         add_cgraph_node_to_partition (partition, order[i]);
-      total_size -= order[i]->global.size;
+      total_size -= inline_summary (order[i])->size;
 
       /* Once we added a new node to the partition, we also want to add
          all referenced variables unless they was already added into some

@@ -156,6 +156,7 @@ cgraph_clone_inlined_nodes (struct cgraph_edge *e, bool duplicate,
 			    bool update_original)
 {
   HOST_WIDE_INT peak;
+  struct inline_summary *caller_info, *callee_info;
 
   if (duplicate)
     {
@@ -184,7 +185,7 @@ cgraph_clone_inlined_nodes (struct cgraph_edge *e, bool duplicate,
 	  gcc_assert (!e->callee->global.inlined_to);
 	  if (e->callee->analyzed && !DECL_EXTERNAL (e->callee->decl))
 	    {
-	      overall_size -= e->callee->global.size;
+	      overall_size -= inline_summary (e->callee)->size;
 	      nfunctions_inlined++;
 	    }
 	  duplicate = false;
@@ -201,17 +202,20 @@ cgraph_clone_inlined_nodes (struct cgraph_edge *e, bool duplicate,
 	}
     }
 
+  callee_info = inline_summary (e->callee);
+  caller_info = inline_summary (e->caller);
+
   if (e->caller->global.inlined_to)
     e->callee->global.inlined_to = e->caller->global.inlined_to;
   else
     e->callee->global.inlined_to = e->caller;
-  e->callee->global.stack_frame_offset
-    = e->caller->global.stack_frame_offset
-      + inline_summary (e->caller)->estimated_self_stack_size;
-  peak = e->callee->global.stack_frame_offset
-      + inline_summary (e->callee)->estimated_self_stack_size;
-  if (e->callee->global.inlined_to->global.estimated_stack_size < peak)
-    e->callee->global.inlined_to->global.estimated_stack_size = peak;
+  callee_info->stack_frame_offset
+    = caller_info->stack_frame_offset
+      + caller_info->estimated_self_stack_size;
+  peak = callee_info->stack_frame_offset
+      + callee_info->estimated_self_stack_size;
+  if (inline_summary (e->callee->global.inlined_to)->estimated_stack_size < peak)
+    inline_summary (e->callee->global.inlined_to)->estimated_stack_size = peak;
   cgraph_propagate_frequency (e->callee);
 
   /* Recursively clone all bodies.  */
@@ -233,6 +237,7 @@ cgraph_mark_inline_edge (struct cgraph_edge *e, bool update_original,
   int old_size = 0, new_size = 0;
   struct cgraph_node *to = NULL;
   struct cgraph_edge *curr = e;
+  struct inline_summary *info;
 
   /* Don't inline inlined edges.  */
   gcc_assert (e->inline_failed);
@@ -248,10 +253,11 @@ cgraph_mark_inline_edge (struct cgraph_edge *e, bool update_original,
   for (;e && !e->inline_failed; e = e->caller->callers)
     {
       to = e->caller;
-      old_size = e->caller->global.size;
+      info = inline_summary (to);
+      old_size = info->size;
       new_size = estimate_size_after_inlining (to, curr);
-      to->global.size = new_size;
-      to->global.time = estimate_time_after_inlining (to, curr);
+      info->size = new_size;
+      info->time = estimate_time_after_inlining (to, curr);
     }
   gcc_assert (curr->callee->global.inlined_to == to);
   if (new_size > old_size)
@@ -280,23 +286,27 @@ cgraph_check_inline_limits (struct cgraph_edge *e,
   int newsize;
   int limit;
   HOST_WIDE_INT stack_size_limit, inlined_stack;
+  struct inline_summary *info, *what_info;
 
   if (to->global.inlined_to)
     to = to->global.inlined_to;
 
+  info = inline_summary (to);
+  what_info = inline_summary (what);
+
   /* When inlining large function body called once into small function,
      take the inlined function as base for limiting the growth.  */
-  if (inline_summary (to)->self_size > inline_summary(what)->self_size)
-    limit = inline_summary (to)->self_size;
+  if (info->self_size > what_info->self_size)
+    limit = info->self_size;
   else
-    limit = inline_summary (what)->self_size;
+    limit = what_info->self_size;
 
   limit += limit * PARAM_VALUE (PARAM_LARGE_FUNCTION_GROWTH) / 100;
 
   /* Check the size after inlining against the function limits.  But allow
      the function to shrink if it went over the limits by forced inlining.  */
   newsize = estimate_size_after_inlining (to, e);
-  if (newsize >= to->global.size
+  if (newsize >= info->size
       && newsize > PARAM_VALUE (PARAM_LARGE_FUNCTION_INSNS)
       && newsize > limit)
     {
@@ -305,13 +315,13 @@ cgraph_check_inline_limits (struct cgraph_edge *e,
       return false;
     }
 
-  stack_size_limit = inline_summary (to)->estimated_self_stack_size;
+  stack_size_limit = info->estimated_self_stack_size;
 
   stack_size_limit += stack_size_limit * PARAM_VALUE (PARAM_STACK_FRAME_GROWTH) / 100;
 
-  inlined_stack = (to->global.stack_frame_offset
-		   + inline_summary (to)->estimated_self_stack_size
-		   + what->global.estimated_stack_size);
+  inlined_stack = (info->stack_frame_offset
+		   + info->estimated_self_stack_size
+		   + what_info->estimated_stack_size);
   if (inlined_stack  > stack_size_limit
       && inlined_stack > PARAM_VALUE (PARAM_LARGE_STACK_FRAME))
     {
@@ -328,8 +338,9 @@ static bool
 cgraph_default_inline_p (struct cgraph_node *n, cgraph_inline_failed_t *reason)
 {
   tree decl = n->decl;
+  struct inline_summary *info = inline_summary (n);
 
-  if (n->local.disregard_inline_limits)
+  if (info->disregard_inline_limits)
     return true;
 
   if (!flag_inline_small_functions && !DECL_DECLARED_INLINE_P (decl))
@@ -354,7 +365,7 @@ cgraph_default_inline_p (struct cgraph_node *n, cgraph_inline_failed_t *reason)
 
   if (DECL_DECLARED_INLINE_P (decl))
     {
-      if (n->global.size >= MAX_INLINE_INSNS_SINGLE)
+      if (info->size >= MAX_INLINE_INSNS_SINGLE)
 	{
 	  if (reason)
 	    *reason = CIF_MAX_INLINE_INSNS_SINGLE_LIMIT;
@@ -363,7 +374,7 @@ cgraph_default_inline_p (struct cgraph_node *n, cgraph_inline_failed_t *reason)
     }
   else
     {
-      if (n->global.size >= MAX_INLINE_INSNS_AUTO)
+      if (info->size >= MAX_INLINE_INSNS_AUTO)
 	{
 	  if (reason)
 	    *reason = CIF_MAX_INLINE_INSNS_AUTO_LIMIT;
@@ -385,8 +396,9 @@ cgraph_edge_badness (struct cgraph_edge *edge, bool dump)
 {
   gcov_type badness;
   int growth;
+  struct inline_summary *callee_info = inline_summary (edge->callee);
 
-  if (edge->callee->local.disregard_inline_limits)
+  if (callee_info->disregard_inline_limits)
     return INT_MIN;
 
   growth = estimate_edge_growth (edge);
@@ -398,11 +410,11 @@ cgraph_edge_badness (struct cgraph_edge *edge, bool dump)
 	       cgraph_node_name (edge->callee));
       fprintf (dump_file, "      growth %i, time %i-%i, size %i-%i\n",
 	       growth,
-	       edge->callee->global.time,
-	       inline_summary (edge->callee)->time_inlining_benefit
+	       callee_info->time,
+	       callee_info->time_inlining_benefit
 	       + edge->call_stmt_time,
-	       edge->callee->global.size,
-	       inline_summary (edge->callee)->size_inlining_benefit
+	       callee_info->size,
+	       callee_info->size_inlining_benefit
 	       + edge->call_stmt_size);
     }
 
@@ -422,7 +434,7 @@ cgraph_edge_badness (struct cgraph_edge *edge, bool dump)
       badness =
 	((int)
 	 ((double) edge->count * INT_MIN / max_count / (max_benefit + 1)) *
-	 (inline_summary (edge->callee)->time_inlining_benefit
+	 (callee_info->time_inlining_benefit
 	  + edge->call_stmt_time + 1)) / growth;
       if (dump)
 	{
@@ -453,9 +465,9 @@ cgraph_edge_badness (struct cgraph_edge *edge, bool dump)
       int growth_for_all;
       badness = growth * 10000;
       benefitperc =
-	100 * (inline_summary (edge->callee)->time_inlining_benefit
+	100 * (callee_info->time_inlining_benefit
 	       + edge->call_stmt_time)
-	    / (edge->callee->global.time + 1) + 1;
+	    / (callee_info->time + 1) + 1;
       benefitperc = MIN (benefitperc, 100);
       div *= benefitperc;
 
@@ -543,13 +555,13 @@ update_caller_keys (fibheap_t heap, struct cgraph_node *node,
   struct cgraph_edge *edge;
   cgraph_inline_failed_t failed_reason;
 
-  if (!node->local.inlinable
+  if (!inline_summary (node)->inlinable
       || cgraph_function_body_availability (node) <= AVAIL_OVERWRITABLE
       || node->global.inlined_to)
     return;
   if (!bitmap_set_bit (updated_nodes, node->uid))
     return;
-  node->global.estimated_growth = INT_MIN;
+  inline_summary (node)->estimated_growth = INT_MIN;
 
   /* See if there is something to do.  */
   for (edge = node->callers; edge; edge = edge->next_caller)
@@ -586,7 +598,7 @@ update_callee_keys (fibheap_t heap, struct cgraph_node *node,
 		    bitmap updated_nodes)
 {
   struct cgraph_edge *e = node->callees;
-  node->global.estimated_growth = INT_MIN;
+  inline_summary (node)->estimated_growth = INT_MIN;
 
   if (!e)
     return;
@@ -596,11 +608,11 @@ update_callee_keys (fibheap_t heap, struct cgraph_node *node,
     else
       {
 	if (e->inline_failed
-	    && e->callee->local.inlinable
+	    && inline_summary (e->callee)->inlinable
 	    && cgraph_function_body_availability (e->callee) >= AVAIL_AVAILABLE
 	    && !bitmap_bit_p (updated_nodes, e->callee->uid))
 	  {
-	    node->global.estimated_growth = INT_MIN;
+	    inline_summary (node)->estimated_growth = INT_MIN;
 	    /* If function becomes uninlinable, we need to remove it from the heap.  */
 	    if (!cgraph_default_inline_p (e->callee, &e->inline_failed))
 	      update_caller_keys (heap, e->callee, updated_nodes);
@@ -632,7 +644,7 @@ update_all_callee_keys (fibheap_t heap, struct cgraph_node *node,
 			bitmap updated_nodes)
 {
   struct cgraph_edge *e = node->callees;
-  node->global.estimated_growth = INT_MIN;
+  inline_summary (node)->estimated_growth = INT_MIN;
 
   if (!e)
     return;
@@ -709,7 +721,7 @@ cgraph_decide_recursive_inlining (struct cgraph_edge *edge,
 
   /* It does not make sense to recursively inline always-inline functions
      as we are going to sorry() on the remaining calls anyway.  */
-  if (node->local.disregard_inline_limits
+  if (inline_summary (node)->disregard_inline_limits
       && lookup_attribute ("always_inline", DECL_ATTRIBUTES (node->decl)))
     return false;
 
@@ -811,8 +823,8 @@ cgraph_decide_recursive_inlining (struct cgraph_edge *edge,
   if (dump_file)
     fprintf (dump_file,
 	     "\n   Inlined %i times, body grown from size %i to %i, time %i to %i\n", n,
-	     master_clone->global.size, node->global.size,
-	     master_clone->global.time, node->global.time);
+	     inline_summary (master_clone)->size, inline_summary (node)->size,
+	     inline_summary (master_clone)->time, inline_summary (node)->time);
 
   /* Remove master clone we used for inlining.  We rely that clones inlined
      into master clone gets queued just before master clone so we don't
@@ -870,7 +882,7 @@ add_new_edges_to_heap (fibheap_t heap, VEC (cgraph_edge_p, heap) *new_edges)
       struct cgraph_edge *edge = VEC_pop (cgraph_edge_p, new_edges);
 
       gcc_assert (!edge->aux);
-      if (edge->callee->local.inlinable
+      if (inline_summary (edge->callee)->inlinable
 	  && edge->inline_failed
 	  && cgraph_default_inline_p (edge->callee, &edge->inline_failed))
         edge->aux = fibheap_insert (heap, cgraph_edge_badness (edge, false), edge);
@@ -905,26 +917,37 @@ cgraph_decide_inlining_of_small_functions (void)
   /* Put all inline candidates into the heap.  */
 
   for (node = cgraph_nodes; node; node = node->next)
-    {
-      if (!node->local.inlinable || !node->callers)
-	continue;
-      if (dump_file)
-	fprintf (dump_file, "Considering inline candidate %s.\n", cgraph_node_name (node));
+    if (node->analyzed)
+      {
+	struct inline_summary *info = inline_summary (node);
 
-      node->global.estimated_growth = INT_MIN;
-      if (!cgraph_default_inline_p (node, &failed_reason))
-	{
-	  cgraph_set_inline_failed (node, failed_reason);
-	  continue;
-	}
-
-      for (edge = node->callers; edge; edge = edge->next_caller)
-	if (edge->inline_failed)
+	if (!info->inlinable || !node->callers)
 	  {
-	    gcc_assert (!edge->aux);
-	    edge->aux = fibheap_insert (heap, cgraph_edge_badness (edge, false), edge);
+	    struct cgraph_edge *e;
+	    for (e = node->callers; e; e = e->next_caller)
+	      {
+		gcc_assert (e->inline_failed);
+		e->inline_failed = CIF_FUNCTION_NOT_INLINABLE;
+	      }
+	    continue;
 	  }
-    }
+	if (dump_file)
+	  fprintf (dump_file, "Considering inline candidate %s.\n", cgraph_node_name (node));
+
+	info->estimated_growth = INT_MIN;
+	if (!cgraph_default_inline_p (node, &failed_reason))
+	  {
+	    cgraph_set_inline_failed (node, failed_reason);
+	    continue;
+	  }
+
+	for (edge = node->callers; edge; edge = edge->next_caller)
+	  if (edge->inline_failed)
+	    {
+	      gcc_assert (!edge->aux);
+	      edge->aux = fibheap_insert (heap, cgraph_edge_badness (edge, false), edge);
+	    }
+      }
 
   max_size = compute_max_insns (overall_size);
   min_size = overall_size;
@@ -963,7 +986,7 @@ cgraph_decide_inlining_of_small_functions (void)
 	  fprintf (dump_file,
 		   "\nConsidering %s with %i size\n",
 		   cgraph_node_name (edge->callee),
-		   edge->callee->global.size);
+		   inline_summary (edge->callee)->size);
 	  fprintf (dump_file,
 		   " to be inlined into %s in %s:%i\n"
 		   " Estimated growth after inlined into all callees is %+i insns.\n"
@@ -1007,7 +1030,7 @@ cgraph_decide_inlining_of_small_functions (void)
 	  if (where->global.inlined_to)
 	    {
 	      edge->inline_failed
-		= (edge->callee->local.disregard_inline_limits
+		= (inline_summary (edge->callee)->disregard_inline_limits
 		   ? CIF_RECURSIVE_INLINING : CIF_UNSPECIFIED);
 	      if (dump_file)
 		fprintf (dump_file, " inline_failed:Recursive inlining performed only for function itself.\n");
@@ -1015,7 +1038,7 @@ cgraph_decide_inlining_of_small_functions (void)
 	    }
 	}
 
-      if (edge->callee->local.disregard_inline_limits)
+      if (inline_summary (edge->callee)->disregard_inline_limits)
 	;
       else if (!cgraph_maybe_hot_edge_p (edge))
  	not_good = CIF_UNLIKELY_CALL;
@@ -1112,8 +1135,8 @@ cgraph_decide_inlining_of_small_functions (void)
 		   " Inlined into %s which now has time %i and size %i,"
 		   "net change of %+i.\n",
 		   cgraph_node_name (edge->caller),
-		   edge->caller->global.time,
-		   edge->caller->global.size,
+		   inline_summary (edge->caller)->time,
+		   inline_summary (edge->caller)->size,
 		   overall_size - old_size);
 	}
       if (min_size > overall_size)
@@ -1142,7 +1165,7 @@ cgraph_decide_inlining_of_small_functions (void)
 	  fprintf (dump_file,
 		   "\nSkipping %s with %i size\n",
 		   cgraph_node_name (edge->callee),
-		   edge->callee->global.size);
+		   inline_summary (edge->callee)->size);
 	  fprintf (dump_file,
 		   " called by %s in %s:%i\n"
 		   " Estimated growth after inlined into all callees is %+i insns.\n"
@@ -1159,7 +1182,7 @@ cgraph_decide_inlining_of_small_functions (void)
 	  if (dump_flags & TDF_DETAILS)
 	    cgraph_edge_badness (edge, true);
 	}
-      if (!edge->callee->local.disregard_inline_limits && edge->inline_failed)
+      if (!inline_summary (edge->callee)->disregard_inline_limits && edge->inline_failed)
 	edge->inline_failed = CIF_INLINE_UNIT_GROWTH_LIMIT;
     }
 
@@ -1287,13 +1310,14 @@ cgraph_decide_inlining (void)
     if (node->analyzed)
       {
 	struct cgraph_edge *e;
+	struct inline_summary *info = inline_summary (node);
 
-	gcc_assert (inline_summary (node)->self_size == node->global.size);
+	gcc_assert (info->self_size == info->size);
 	if (!DECL_EXTERNAL (node->decl))
-	  initial_size += node->global.size;
+	  initial_size += info->size;
 	for (e = node->callees; e; e = e->next_callee)
 	  {
-	    int benefit = (inline_summary (node)->time_inlining_benefit
+	    int benefit = (info->time_inlining_benefit
 			   + e->call_stmt_time);
 	    if (max_count < e->count)
 	      max_count = e->count;
@@ -1362,7 +1386,7 @@ cgraph_decide_inlining (void)
 	      && !node->callers->next_caller
 	      && !node->global.inlined_to
 	      && cgraph_will_be_removed_from_program_if_no_direct_calls (node)
-	      && node->local.inlinable
+	      && inline_summary (node)->inlinable
 	      && cgraph_function_body_availability (node) >= AVAIL_AVAILABLE
 	      && node->callers->inline_failed
 	      && node->callers->caller != node
@@ -1377,11 +1401,11 @@ cgraph_decide_inlining (void)
 		{
 		  fprintf (dump_file,
 			   "\nConsidering %s size %i.\n",
-			   cgraph_node_name (node), node->global.size);
+			   cgraph_node_name (node), inline_summary (node)->size);
 		  fprintf (dump_file,
 			   " Called once from %s %i insns.\n",
 			   cgraph_node_name (node->callers->caller),
-			   node->callers->caller->global.size);
+			   inline_summary (node->callers->caller)->size);
 		}
 
 	      if (cgraph_check_inline_limits (node->callers, &reason))
@@ -1393,7 +1417,7 @@ cgraph_decide_inlining (void)
 			     " Inlined into %s which now has %i size"
 			     " for a net change of %+i size.\n",
 			     cgraph_node_name (caller),
-			     caller->global.size,
+			     inline_summary (caller)->size,
 			     overall_size - old_size);
 		}
 	      else
@@ -1442,7 +1466,7 @@ leaf_node_p (struct cgraph_node *n)
 static bool
 cgraph_edge_early_inlinable_p (struct cgraph_edge *e, FILE *file)
 {
-  if (!e->callee->local.inlinable)
+  if (!inline_summary (e->callee)->inlinable)
     {
       if (file)
 	fprintf (file, "Not inlining: Function not inlinable.\n");
@@ -1482,7 +1506,7 @@ cgraph_perform_always_inlining (struct cgraph_node *node)
 
   for (e = node->callees; e; e = e->next_callee)
     {
-      if (!e->callee->local.disregard_inline_limits)
+      if (!inline_summary (e->callee)->disregard_inline_limits)
 	continue;
 
       if (dump_file)
@@ -1524,16 +1548,16 @@ cgraph_decide_inlining_incrementally (struct cgraph_node *node)
 
   /* Never inline regular functions into always-inline functions
      during incremental inlining.  */
-  if (node->local.disregard_inline_limits)
+  if (inline_summary (node)->disregard_inline_limits)
     return false;
 
   for (e = node->callees; e; e = e->next_callee)
     {
       int allowed_growth = 0;
 
-      if (!e->callee->local.inlinable
+      if (!inline_summary (e->callee)->inlinable
 	  || !e->inline_failed
-	  || e->callee->local.disregard_inline_limits)
+	  || inline_summary (e->callee)->disregard_inline_limits)
 	continue;
 
       /* Do not consider functions not declared inline.  */

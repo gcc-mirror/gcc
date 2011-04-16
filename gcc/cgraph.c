@@ -98,6 +98,7 @@ The callgraph:
 #include "rtl.h"
 #include "ipa-utils.h"
 #include "lto-streamer.h"
+#include "ipa-inline.h"
 
 const char * const ld_plugin_symbol_resolution_names[]=
 {
@@ -476,7 +477,6 @@ cgraph_create_node_1 (void)
   if (cgraph_nodes)
     cgraph_nodes->previous = node;
   node->previous = NULL;
-  node->global.estimated_growth = INT_MIN;
   node->frequency = NODE_FREQUENCY_NORMAL;
   node->count_materialization_scale = REG_BR_PROB_BASE;
   ipa_empty_ref_list (&node->ref_list);
@@ -968,28 +968,6 @@ cgraph_create_edge_including_clones (struct cgraph_node *orig,
 	      node = node->next_sibling_clone;
 	  }
       }
-}
-
-/* Give initial reasons why inlining would fail on EDGE.  This gets either
-   nullified or usually overwritten by more precise reasons later.  */
-
-static void
-initialize_inline_failed (struct cgraph_edge *e)
-{
-  struct cgraph_node *callee = e->callee;
-
-  if (e->indirect_unknown_callee)
-    e->inline_failed = CIF_INDIRECT_UNKNOWN_CALL;
-  else if (!callee->analyzed)
-    e->inline_failed = CIF_BODY_NOT_AVAILABLE;
-  else if (callee->local.redefined_extern_inline)
-    e->inline_failed = CIF_REDEFINED_EXTERN_INLINE;
-  else if (!callee->local.inlinable)
-    e->inline_failed = CIF_FUNCTION_NOT_INLINABLE;
-  else if (e->call_stmt && gimple_call_cannot_inline_p (e->call_stmt))
-    e->inline_failed = CIF_MISMATCHED_ARGUMENTS;
-  else
-    e->inline_failed = CIF_FUNCTION_NOT_CONSIDERED;
 }
 
 /* Allocate a cgraph_edge structure and fill it with data according to the
@@ -1899,12 +1877,6 @@ dump_cgraph_node (FILE *f, struct cgraph_node *node)
  	     ld_plugin_symbol_resolution_names[(int)node->resolution]);
   if (node->local.finalized)
     fprintf (f, " finalized");
-  if (node->local.disregard_inline_limits)
-    fprintf (f, " always_inline");
-  else if (node->local.inlinable)
-    fprintf (f, " inlinable");
-  else if (node->local.versionable)
-    fprintf (f, " versionable");
   if (node->local.redefined_extern_inline)
     fprintf (f, " redefined_extern_inline");
   if (TREE_ASM_WRITTEN (node->decl))
