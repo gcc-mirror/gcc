@@ -1,5 +1,15 @@
 2011-04-16  Jakub Jelinek  <jakub@redhat.com>
 
+	Backported from 4.6 branch
+	2011-04-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/48605
+	* config/i386/sse.md (avx_insertps, sse4_1_insertps): If operands[2]
+	is a MEM, offset it as needed based on top 2 bits in operands[3],
+	change MEM mode to SFmode and mask those 2 bits away from operands[3].
+
+2011-04-16  Jakub Jelinek  <jakub@redhat.com>
+
 	* BASE-VER: Set to 4.4.7.
 	* DEV-PHASE: Set to prerelease.
 

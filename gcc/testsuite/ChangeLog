@@ -1,3 +1,14 @@
+2011-04-16  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from 4.6 branch
+	2011-04-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/48605
+	* gcc.target/i386/sse4_1-insertps-3.c: New test.
+	* gcc.target/i386/sse4_1-insertps-4.c: New test.
+	* gcc.target/i386/avx-insertps-3.c: New test.
+	* gcc.target/i386/avx-insertps-4.c: New test.
+
 2011-04-16  Release Manager
 
 	* GCC 4.4.6 released.
