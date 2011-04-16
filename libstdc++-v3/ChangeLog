@@ -1,3 +1,14 @@
+2011-04-15  Daniel Krugler  <daniel.kruegler@googlemail.com>
+	    Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/48635
+	* include/bits/unique_ptr.h (unique_ptr<>::operator=(unique_ptr&&),
+	unique_ptr<>::operator=(unique_ptr<>&&),
+	unique_ptr<_Tp[],>::operator=(unique_ptr&&),
+	unique_ptr<_Tp[],>::operator=(unique_ptr<>&&)): Forward the deleter
+	instead of moving it.
+	* testsuite/20_util/unique_ptr/assign/48635.cc: New.
+
 2011-04-15  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/std/istream: Fix comments in the light of DR60 + N3168.
