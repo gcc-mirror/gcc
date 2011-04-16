@@ -5805,9 +5805,7 @@ pa_secondary_reload (bool in_p, rtx x, enum reg_class rclass,
       /* Handle spill.  */
       if (regno >= FIRST_PSEUDO_REGISTER || regno < 0)
 	{
-	  sri->icode = (in_p
-			? direct_optab_handler (reload_in_optab, mode)
-			: direct_optab_handler (reload_out_optab, mode));
+	  sri->icode = in_p ? reload_in_optab[mode] : reload_out_optab[mode];
 	  return NO_REGS;
 	}
 
