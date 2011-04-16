@@ -106,11 +106,11 @@
 		       (const_int 8) (const_int 4))
 
 	 (eq_attr "type" "binary,shift,nullshift")
-	 (if_then_else (match_operand 2 "arith_operand" "")
+	 (if_then_else (match_operand 2 "arith14_operand" "")
 		       (const_int 4) (const_int 12))
 
 	 (eq_attr "type" "move,unary,shift,nullshift")
-	 (if_then_else (match_operand 1 "arith_operand" "")
+	 (if_then_else (match_operand 1 "arith14_operand" "")
 		       (const_int 4) (const_int 8))]
 
 	(const_int 4)))
@@ -3063,7 +3063,7 @@
 	      (clobber (match_dup 6))
 	      (clobber (match_dup 7))
 	      (clobber (match_dup 8))
-	      (use (match_operand:SI 2 "arith_operand" ""))
+	      (use (match_operand:SI 2 "arith14_operand" ""))
 	      (use (match_operand:SI 3 "const_int_operand" ""))])]
   "!TARGET_64BIT && optimize > 0"
   "
@@ -3143,7 +3143,7 @@
    (clobber (match_operand:SI 6 "register_operand" "=&r,&r"))	;item tmp2
    (clobber (match_operand:SI 7 "register_operand" "=&r,&r"))	;item tmp3
    (clobber (match_operand:SI 8 "register_operand" "=&r,&r"))	;item tmp4
-   (use (match_operand:SI 4 "arith_operand" "J,2"))	 ;byte count
+   (use (match_operand:SI 4 "arith14_operand" "J,2"))	 ;byte count
    (use (match_operand:SI 5 "const_int_operand" "n,n"))] ;alignment
   "!TARGET_64BIT"
   "#"
@@ -3157,7 +3157,7 @@
 	      (clobber (match_operand:SI 6 "register_operand" ""))
 	      (clobber (match_operand:SI 7 "register_operand" ""))
 	      (clobber (match_operand:SI 8 "register_operand" ""))
-	      (use (match_operand:SI 4 "arith_operand" ""))
+	      (use (match_operand:SI 4 "arith14_operand" ""))
 	      (use (match_operand:SI 5 "const_int_operand" ""))])]
   "!TARGET_64BIT && reload_completed && !flag_peephole2
    && GET_CODE (operands[0]) == MEM
@@ -3191,7 +3191,7 @@
 	      (clobber (match_operand:SI 6 "register_operand" ""))
 	      (clobber (match_operand:SI 7 "register_operand" ""))
 	      (clobber (match_operand:SI 8 "register_operand" ""))
-	      (use (match_operand:SI 4 "arith_operand" ""))
+	      (use (match_operand:SI 4 "arith14_operand" ""))
 	      (use (match_operand:SI 5 "const_int_operand" ""))])]
   "!TARGET_64BIT
    && GET_CODE (operands[0]) == MEM
@@ -3236,7 +3236,7 @@
    (clobber (match_operand:SI 6 "register_operand" "=&r,&r"))	;item tmp2
    (clobber (match_dup 0))
    (clobber (match_dup 1))
-   (use (match_operand:SI 4 "arith_operand" "J,2"))	 ;byte count
+   (use (match_operand:SI 4 "arith14_operand" "J,2"))	 ;byte count
    (use (match_operand:SI 5 "const_int_operand" "n,n"))  ;alignment
    (const_int 0)]
   "!TARGET_64BIT && reload_completed"
@@ -3251,7 +3251,7 @@
 	      (clobber (match_dup 6))
 	      (clobber (match_dup 7))
 	      (clobber (match_dup 8))
-	      (use (match_operand:DI 2 "arith_operand" ""))
+	      (use (match_operand:DI 2 "arith14_operand" ""))
 	      (use (match_operand:DI 3 "const_int_operand" ""))])]
   "TARGET_64BIT && optimize > 0"
   "
@@ -3331,7 +3331,7 @@
    (clobber (match_operand:DI 6 "register_operand" "=&r,&r"))	;item tmp2
    (clobber (match_operand:DI 7 "register_operand" "=&r,&r"))	;item tmp3
    (clobber (match_operand:DI 8 "register_operand" "=&r,&r"))	;item tmp4
-   (use (match_operand:DI 4 "arith_operand" "J,2"))	 ;byte count
+   (use (match_operand:DI 4 "arith14_operand" "J,2"))	 ;byte count
    (use (match_operand:DI 5 "const_int_operand" "n,n"))] ;alignment
   "TARGET_64BIT"
   "#"
@@ -3345,7 +3345,7 @@
 	      (clobber (match_operand:DI 6 "register_operand" ""))
 	      (clobber (match_operand:DI 7 "register_operand" ""))
 	      (clobber (match_operand:DI 8 "register_operand" ""))
-	      (use (match_operand:DI 4 "arith_operand" ""))
+	      (use (match_operand:DI 4 "arith14_operand" ""))
 	      (use (match_operand:DI 5 "const_int_operand" ""))])]
   "TARGET_64BIT && reload_completed && !flag_peephole2
    && GET_CODE (operands[0]) == MEM
@@ -3379,7 +3379,7 @@
 	      (clobber (match_operand:DI 6 "register_operand" ""))
 	      (clobber (match_operand:DI 7 "register_operand" ""))
 	      (clobber (match_operand:DI 8 "register_operand" ""))
-	      (use (match_operand:DI 4 "arith_operand" ""))
+	      (use (match_operand:DI 4 "arith14_operand" ""))
 	      (use (match_operand:DI 5 "const_int_operand" ""))])]
   "TARGET_64BIT
    && GET_CODE (operands[0]) == MEM
@@ -3424,7 +3424,7 @@
    (clobber (match_operand:DI 6 "register_operand" "=&r,&r"))	;item tmp2
    (clobber (match_dup 0))
    (clobber (match_dup 1))
-   (use (match_operand:DI 4 "arith_operand" "J,2"))	 ;byte count
+   (use (match_operand:DI 4 "arith14_operand" "J,2"))	 ;byte count
    (use (match_operand:DI 5 "const_int_operand" "n,n"))  ;alignment
    (const_int 0)]
   "TARGET_64BIT && reload_completed"
@@ -3436,7 +3436,7 @@
 		   (match_operand 2 "const_int_operand" ""))
 	      (clobber (match_dup 4))
 	      (clobber (match_dup 5))
-	      (use (match_operand:SI 1 "arith_operand" ""))
+	      (use (match_operand:SI 1 "arith14_operand" ""))
 	      (use (match_operand:SI 3 "const_int_operand" ""))])]
   "!TARGET_64BIT && optimize > 0"
   "
@@ -3476,7 +3476,7 @@
 	(const_int 0))
    (clobber (match_operand:SI 1 "register_operand" "=&r,&r"))	;loop cnt/tmp
    (clobber (match_operand:SI 4 "register_operand" "=&r,&r"))	;tmp1
-   (use (match_operand:SI 2 "arith_operand" "J,1"))	 ;byte count
+   (use (match_operand:SI 2 "arith14_operand" "J,1"))	 ;byte count
    (use (match_operand:SI 3 "const_int_operand" "n,n"))] ;alignment
   "!TARGET_64BIT"
   "#"
@@ -3487,7 +3487,7 @@
 		   (const_int 0))
 	      (clobber (match_operand:SI 1 "register_operand" ""))
 	      (clobber (match_operand:SI 4 "register_operand" ""))
-	      (use (match_operand:SI 2 "arith_operand" ""))
+	      (use (match_operand:SI 2 "arith14_operand" ""))
 	      (use (match_operand:SI 3 "const_int_operand" ""))])]
   "!TARGET_64BIT && reload_completed && !flag_peephole2
    && GET_CODE (operands[0]) == MEM
@@ -3510,7 +3510,7 @@
 		   (const_int 0))
 	      (clobber (match_operand:SI 1 "register_operand" ""))
 	      (clobber (match_operand:SI 4 "register_operand" ""))
-	      (use (match_operand:SI 2 "arith_operand" ""))
+	      (use (match_operand:SI 2 "arith14_operand" ""))
 	      (use (match_operand:SI 3 "const_int_operand" ""))])]
   "!TARGET_64BIT
    && GET_CODE (operands[0]) == MEM
@@ -3538,7 +3538,7 @@
 	(const_int 0))
    (clobber (match_operand:SI 1 "register_operand" "=&r,&r"))	;loop cnt/tmp
    (clobber (match_dup 0))
-   (use (match_operand:SI 2 "arith_operand" "J,1"))	 ;byte count
+   (use (match_operand:SI 2 "arith14_operand" "J,1"))	 ;byte count
    (use (match_operand:SI 3 "const_int_operand" "n,n"))  ;alignment
    (const_int 0)]
   "!TARGET_64BIT && reload_completed"
@@ -3550,7 +3550,7 @@
 		   (match_operand 2 "const_int_operand" ""))
 	      (clobber (match_dup 4))
 	      (clobber (match_dup 5))
-	      (use (match_operand:DI 1 "arith_operand" ""))
+	      (use (match_operand:DI 1 "arith14_operand" ""))
 	      (use (match_operand:DI 3 "const_int_operand" ""))])]
   "TARGET_64BIT && optimize > 0"
   "
@@ -3590,7 +3590,7 @@
 	(const_int 0))
    (clobber (match_operand:DI 1 "register_operand" "=&r,&r"))	;loop cnt/tmp
    (clobber (match_operand:DI 4 "register_operand" "=&r,&r"))	;item tmp1
-   (use (match_operand:DI 2 "arith_operand" "J,1"))	 ;byte count
+   (use (match_operand:DI 2 "arith14_operand" "J,1"))	 ;byte count
    (use (match_operand:DI 3 "const_int_operand" "n,n"))] ;alignment
   "TARGET_64BIT"
   "#"
@@ -3601,7 +3601,7 @@
 		   (const_int 0))
 	      (clobber (match_operand:DI 1 "register_operand" ""))
 	      (clobber (match_operand:DI 4 "register_operand" ""))
-	      (use (match_operand:DI 2 "arith_operand" ""))
+	      (use (match_operand:DI 2 "arith14_operand" ""))
 	      (use (match_operand:DI 3 "const_int_operand" ""))])]
   "TARGET_64BIT && reload_completed && !flag_peephole2
    && GET_CODE (operands[0]) == MEM
@@ -3624,7 +3624,7 @@
 		   (const_int 0))
 	      (clobber (match_operand:DI 1 "register_operand" ""))
 	      (clobber (match_operand:DI 4 "register_operand" ""))
-	      (use (match_operand:DI 2 "arith_operand" ""))
+	      (use (match_operand:DI 2 "arith14_operand" ""))
 	      (use (match_operand:DI 3 "const_int_operand" ""))])]
   "TARGET_64BIT
    && GET_CODE (operands[0]) == MEM
@@ -3652,7 +3652,7 @@
 	(const_int 0))
    (clobber (match_operand:DI 1 "register_operand" "=&r,&r"))	;loop cnt/tmp
    (clobber (match_dup 0))
-   (use (match_operand:DI 2 "arith_operand" "J,1"))	 ;byte count
+   (use (match_operand:DI 2 "arith14_operand" "J,1"))	 ;byte count
    (use (match_operand:DI 3 "const_int_operand" "n,n"))  ;alignment
    (const_int 0)]
   "TARGET_64BIT && reload_completed"
@@ -4941,7 +4941,7 @@
 (define_insn ""
   [(set (match_operand:DI 0 "register_operand" "=r,r")
 	(plus:DI (match_operand:DI 1 "register_operand" "%r,r")
-		 (match_operand:DI 2 "arith_operand" "r,J")))]
+		 (match_operand:DI 2 "arith14_operand" "r,J")))]
   "TARGET_64BIT"
   "@
    add,l %1,%2,%0
@@ -5089,7 +5089,7 @@
 (define_insn "addsi3"
   [(set (match_operand:SI 0 "register_operand" "=r,r")
 	(plus:SI (match_operand:SI 1 "register_operand" "%r,r")
-		 (match_operand:SI 2 "arith_operand" "r,J")))]
+		 (match_operand:SI 2 "arith14_operand" "r,J")))]
   ""
   "@
    {addl|add,l} %1,%2,%0
@@ -5686,7 +5686,7 @@
 (define_expand "iordi3"
   [(set (match_operand:DI 0 "register_operand" "")
 	(ior:DI (match_operand:DI 1 "register_operand" "")
-		(match_operand:DI 2 "reg_or_ior_operand" "")))]
+		(match_operand:DI 2 "reg_or_cint_ior_operand" "")))]
   ""
   "
 {
@@ -5707,7 +5707,7 @@
 (define_insn ""
   [(set (match_operand:DI 0 "register_operand" "=r,r")
 	(ior:DI (match_operand:DI 1 "register_operand" "0,0")
-		(match_operand:DI 2 "ior_operand" "M,i")))]
+		(match_operand:DI 2 "cint_ior_operand" "M,i")))]
   "TARGET_64BIT"
   "* return output_64bit_ior (operands); "
   [(set_attr "type" "binary,shift")
@@ -5726,14 +5726,14 @@
 (define_expand "iorsi3"
   [(set (match_operand:SI 0 "register_operand" "")
 	(ior:SI (match_operand:SI 1 "register_operand" "")
-		(match_operand:SI 2 "reg_or_ior_operand" "")))]
+		(match_operand:SI 2 "reg_or_cint_ior_operand" "")))]
   ""
   "")
 
 (define_insn ""
   [(set (match_operand:SI 0 "register_operand" "=r,r")
 	(ior:SI (match_operand:SI 1 "register_operand" "0,0")
-		(match_operand:SI 2 "ior_operand" "M,i")))]
+		(match_operand:SI 2 "cint_ior_operand" "M,i")))]
   ""
   "* return output_ior (operands); "
   [(set_attr "type" "binary,shift")
