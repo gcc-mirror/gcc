@@ -1,3 +1,33 @@
+2011-04-16  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* intrinsics/date_and_time.c (date_and_time): Remove sprintf CPP
+	branch.
+	* io/format.c (format_error): Use snprintf instead of sprintf.
+	* io/list_read.c: Move snprintf fallback macro to libgfortran.h.
+	(convert_integer): Use snprintf instead of sprintf.
+	(parse_repeat): Likewise.
+	(read_logical): Likewise.
+	(read_integer): Likewise.
+	(read_character): Likewise.
+	(parse_real): Likewise.
+	(read_complex): Likewise.
+	(read_real): Likewise.
+	(check_type): Likewise.
+	(nml_parse_qualifier): Add string length argument, use snprintf
+	instead of sprintf.
+	(nml_get_obj_data): Use snprintf instead of sprintf.
+	* io/open.c (new_unit): Remove sprintf CPP branch, use snprintf
+	instead of sprintf.
+	* io/transfer.c (require_type): Use snprintf instead of sprintf.
+	* io/unix.c (tempfile): Likewise.
+	* io/write.c (nml_write_obj): Likewise.
+	* io/write_float.def (output_float): Remove sprintf CPP branch,
+	use snprintf instead of sprintf.
+	* libgfortran.h: Add fallback snprintf macro from io/list_read.c.
+	* runtime/backtrace.c (show_backtrace): Remove sprintf CPP branch.
+	* runtime/main.c (store_exe_path): Use snprintf instead of
+	sprintf.
+
 2011-04-15  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/48589
@@ -20,7 +50,6 @@
 	* intrinsics/system_clock.c: Use weakrefs only when needed and
 	supported.
 
->>>>>>> .r172501
 2011-04-12  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	* configure.ac: Use AC_TYPE_* to make sure we have (u)intptr_t,

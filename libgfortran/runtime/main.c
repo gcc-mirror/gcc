@@ -1,7 +1,8 @@
-/* Copyright (C) 2002-2003, 2005, 2007, 2009 Free Software Foundation, Inc.
+/* Copyright (C) 2002-2003, 2005, 2007, 2009, 2011 
+   Free Software Foundation, Inc.
    Contributed by Andy Vaught and Paul Brook <paul@nowt.org>
 
-This file is part of the GNU Fortran 95 runtime library (libgfortran).
+This file is part of the GNU Fortran runtime library (libgfortran).
 
 Libgfortran is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -107,8 +108,9 @@ store_exe_path (const char * argv0)
 #endif
 
   /* exe_path will be cwd + "/" + argv[0] + "\0" */
-  path = malloc (strlen (cwd) + 1 + strlen (argv0) + 1);
-  sprintf (path, "%s%c%s", cwd, DIR_SEPARATOR, argv0);
+  size_t pathlen = strlen (cwd) + 1 + strlen (argv0) + 1;
+  path = malloc (pathlen);
+  snprintf (path, pathlen, "%s%c%s", cwd, DIR_SEPARATOR, argv0);
   exe_path = path;
   please_free_exe_path_when_done = 1;
 }
