@@ -100,11 +100,13 @@ inline_summary_alloc (void)
 static void
 inline_node_removal_hook (struct cgraph_node *node, void *data ATTRIBUTE_UNUSED)
 {
+  struct inline_summary *info;
   if (VEC_length (inline_summary_t, inline_summary_vec)
       <= (unsigned)node->uid)
     return;
-  memset (inline_summary (node),
-	  0, sizeof (inline_summary_t));
+  info = inline_summary (node);
+  info->estimated_growth = INT_MIN;
+  memset (info, 0, sizeof (inline_summary_t));
 }
 
 /* Hook that is called by cgraph.c when a node is duplicated.  */
@@ -113,9 +115,12 @@ static void
 inline_node_duplication_hook (struct cgraph_node *src, struct cgraph_node *dst,
 			      ATTRIBUTE_UNUSED void *data)
 {
+  struct inline_summary *info;
   inline_summary_alloc ();
-  memcpy (inline_summary (dst), inline_summary (src),
+  info = inline_summary (dst);
+  memcpy (info, inline_summary (src),
 	  sizeof (struct inline_summary));
+  info->estimated_growth = INT_MIN;
 }
 
 static void
@@ -124,18 +129,24 @@ dump_inline_summary (FILE *f, struct cgraph_node *node)
   if (node->analyzed)
     {
       struct inline_summary *s = inline_summary (node);
-      fprintf (f, "Inline summary for %s/%i\n", cgraph_node_name (node),
+      fprintf (f, "Inline summary for %s/%i", cgraph_node_name (node),
 	       node->uid);
-      fprintf (f, "  self time:       %i, benefit: %i\n",
+      if (s->disregard_inline_limits)
+	fprintf (f, " always_inline");
+      if (s->inlinable)
+	fprintf (f, " inlinable");
+      if (s->versionable)
+	fprintf (f, " versionable");
+      fprintf (f, "\n  self time:       %i, benefit: %i\n",
       	       s->self_time, s->time_inlining_benefit);
-      fprintf (f, "  global time:     %i\n", node->global.time);
+      fprintf (f, "  global time:     %i\n", s->time);
       fprintf (f, "  self size:       %i, benefit: %i\n",
 	       s->self_size, s->size_inlining_benefit);
-      fprintf (f, "  global size:     %i", node->global.size);
+      fprintf (f, "  global size:     %i", s->size);
       fprintf (f, "  self stack:      %i\n",
 	       (int)s->estimated_self_stack_size);
       fprintf (f, "  global stack:    %i\n\n",
-	       (int)node->global.estimated_stack_size);
+	       (int)s->estimated_stack_size);
     }
 }
 
@@ -153,6 +164,26 @@ dump_inline_summaries (FILE *f)
   for (node = cgraph_nodes; node; node = node->next)
     if (node->analyzed)
       dump_inline_summary (f, node);
+}
+
+/* Give initial reasons why inlining would fail on EDGE.  This gets either
+   nullified or usually overwritten by more precise reasons later.  */
+
+void
+initialize_inline_failed (struct cgraph_edge *e)
+{
+  struct cgraph_node *callee = e->callee;
+
+  if (e->indirect_unknown_callee)
+    e->inline_failed = CIF_INDIRECT_UNKNOWN_CALL;
+  else if (!callee->analyzed)
+    e->inline_failed = CIF_BODY_NOT_AVAILABLE;
+  else if (callee->local.redefined_extern_inline)
+    e->inline_failed = CIF_REDEFINED_EXTERN_INLINE;
+  else if (e->call_stmt && gimple_call_cannot_inline_p (e->call_stmt))
+    e->inline_failed = CIF_MISMATCHED_ARGUMENTS;
+  else
+    e->inline_failed = CIF_FUNCTION_NOT_CONSIDERED;
 }
 
 /* See if statement might disappear after inlining.
@@ -317,24 +348,27 @@ compute_inline_parameters (struct cgraph_node *node)
 {
   HOST_WIDE_INT self_stack_size;
   struct cgraph_edge *e;
+  struct inline_summary *info;
 
   gcc_assert (!node->global.inlined_to);
 
   inline_summary_alloc ();
 
+  info = inline_summary (node);
+
   /* Estimate the stack size for the function if we're optimizing.  */
   self_stack_size = optimize ? estimated_stack_frame_size (node) : 0;
-  inline_summary (node)->estimated_self_stack_size = self_stack_size;
-  node->global.estimated_stack_size = self_stack_size;
-  node->global.stack_frame_offset = 0;
+  info->estimated_self_stack_size = self_stack_size;
+  info->estimated_stack_size = self_stack_size;
+  info->stack_frame_offset = 0;
 
   /* Can this function be inlined at all?  */
-  node->local.inlinable = tree_inlinable_function_p (node->decl);
-  if (!node->local.inlinable)
-    node->local.disregard_inline_limits = 0;
+  info->inlinable = tree_inlinable_function_p (node->decl);
+  if (!info->inlinable)
+    info->disregard_inline_limits = 0;
 
   /* Inlinable functions always can change signature.  */
-  if (node->local.inlinable)
+  if (info->inlinable)
     node->local.can_change_signature = true;
   else
     {
@@ -349,8 +383,13 @@ compute_inline_parameters (struct cgraph_node *node)
   estimate_function_body_sizes (node);
 
   /* Inlining characteristics are maintained by the cgraph_mark_inline.  */
-  node->global.time = inline_summary (node)->self_time;
-  node->global.size = inline_summary (node)->self_size;
+  info->time = info->self_time;
+  info->size = info->self_size;
+  info->estimated_growth = INT_MIN;
+  info->stack_frame_offset = 0;
+  info->estimated_stack_size = info->estimated_self_stack_size;
+  info->disregard_inline_limits
+    = DECL_DISREGARD_INLINE_LIMITS (node->decl);
 }
 
 
@@ -390,10 +429,12 @@ static inline int
 estimate_edge_time (struct cgraph_edge *edge)
 {
   int call_stmt_time;
+  struct inline_summary *info = inline_summary (edge->callee);
+
   call_stmt_time = edge->call_stmt_time;
   gcc_checking_assert (call_stmt_time);
-  return (((gcov_type)edge->callee->global.time
-	   - inline_summary (edge->callee)->time_inlining_benefit
+  return (((gcov_type)info->time
+	   - info->time_inlining_benefit
 	   - call_stmt_time) * edge->frequency
 	  + CGRAPH_FREQ_BASE / 2) / CGRAPH_FREQ_BASE;
 }
@@ -405,7 +446,7 @@ int
 estimate_time_after_inlining (struct cgraph_node *node,
 			      struct cgraph_edge *edge)
 {
-  gcov_type time = node->global.time + estimate_edge_time (edge);
+  gcov_type time = inline_summary (node)->time + estimate_edge_time (edge);
   if (time < 0)
     time = 0;
   if (time > MAX_TIME)
@@ -421,7 +462,7 @@ int
 estimate_size_after_inlining (struct cgraph_node *node,
 			      struct cgraph_edge *edge)
 {
-  int size = node->global.size + estimate_edge_growth (edge);
+  int size = inline_summary (node)->size + estimate_edge_growth (edge);
   gcc_assert (size >= 0);
   return size;
 }
@@ -435,9 +476,10 @@ estimate_growth (struct cgraph_node *node)
   int growth = 0;
   struct cgraph_edge *e;
   bool self_recursive = false;
+  struct inline_summary *info = inline_summary (node);
 
-  if (node->global.estimated_growth != INT_MIN)
-    return node->global.estimated_growth;
+  if (info->estimated_growth != INT_MIN)
+    return info->estimated_growth;
 
   for (e = node->callers; e; e = e->next_caller)
     {
@@ -453,15 +495,15 @@ estimate_growth (struct cgraph_node *node)
      some inlining.  */
   if (cgraph_will_be_removed_from_program_if_no_direct_calls (node)
       && !DECL_EXTERNAL (node->decl) && !self_recursive)
-    growth -= node->global.size;
+    growth -= info->size;
   /* COMDAT functions are very often not shared across multiple units since they
      come from various template instantiations.  Take this into account.  */
   else  if (DECL_COMDAT (node->decl) && !self_recursive
 	    && cgraph_can_remove_if_no_direct_calls_p (node))
-    growth -= (node->global.size
+    growth -= (info->size
 	       * (100 - PARAM_VALUE (PARAM_COMDAT_SHARING_PROBABILITY)) + 50) / 100;
 
-  node->global.estimated_growth = growth;
+  info->estimated_growth = growth;
   return growth;
 }
 
@@ -561,19 +603,25 @@ inline_read_summary (void)
 	      struct cgraph_node *node;
 	      struct inline_summary *info;
 	      lto_cgraph_encoder_t encoder;
+	      struct bitpack_d bp;
 
 	      index = lto_input_uleb128 (ib);
 	      encoder = file_data->cgraph_node_encoder;
 	      node = lto_cgraph_encoder_deref (encoder, index);
 	      info = inline_summary (node);
 
-	      node->global.estimated_stack_size
+	      info->estimated_stack_size
 	        = info->estimated_self_stack_size = lto_input_uleb128 (ib);
-	      node->global.time = info->self_time = lto_input_uleb128 (ib);
+	      info->time = info->self_time = lto_input_uleb128 (ib);
 	      info->time_inlining_benefit = lto_input_uleb128 (ib);
-	      node->global.size = info->self_size = lto_input_uleb128 (ib);
+	      info->size = info->self_size = lto_input_uleb128 (ib);
 	      info->size_inlining_benefit = lto_input_uleb128 (ib);
-	      node->global.estimated_growth = INT_MIN;
+	      info->estimated_growth = INT_MIN;
+
+	      bp = lto_input_bitpack (ib);
+	      info->inlinable = bp_unpack_value (&bp, 1);
+	      info->versionable = bp_unpack_value (&bp, 1);
+	      info->disregard_inline_limits = bp_unpack_value (&bp, 1);
 	    }
 
 	  lto_destroy_simple_input_block (file_data,
@@ -623,6 +671,8 @@ inline_write_summary (cgraph_node_set set,
       if (node->analyzed)
 	{
 	  struct inline_summary *info = inline_summary (node);
+	  struct bitpack_d bp;
+
 	  lto_output_uleb128_stream (ob->main_stream,
 				     lto_cgraph_encoder_encode (encoder, node));
 	  lto_output_sleb128_stream (ob->main_stream,
@@ -635,6 +685,11 @@ inline_write_summary (cgraph_node_set set,
 				     info->self_time);
 	  lto_output_sleb128_stream (ob->main_stream,
 				     info->time_inlining_benefit);
+	  bp = bitpack_create (ob->main_stream);
+	  bp_pack_value (&bp, info->inlinable, 1);
+	  bp_pack_value (&bp, info->versionable, 1);
+	  bp_pack_value (&bp, info->disregard_inline_limits, 1);
+	  lto_output_bitpack (&bp);
 	}
     }
   lto_destroy_simple_output_block (ob);

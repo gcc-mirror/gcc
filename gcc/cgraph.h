@@ -88,19 +88,9 @@ struct GTY(()) cgraph_local_info {
   /* Set once it has been finalized so we consider it to be output.  */
   unsigned finalized : 1;
 
-  /* False when there something makes inlining impossible (such as va_arg).  */
-  unsigned inlinable : 1;
-
-  /* False when there something makes versioning impossible.
-     Currently computed and used only by ipa-cp.  */
-  unsigned versionable : 1;
-
   /* False when function calling convention and signature can not be changed.
      This is the case when __builtin_apply_args is used.  */
   unsigned can_change_signature : 1;
-
-  /* True when function should be inlined independently on its size.  */
-  unsigned disregard_inline_limits : 1;
 
   /* True when the function has been originally extern inline, but it is
      redefined now.  */
@@ -115,21 +105,9 @@ struct GTY(()) cgraph_local_info {
    once compilation is finished.  Available only with -funit-at-a-time.  */
 
 struct GTY(()) cgraph_global_info {
-  /* Estimated stack frame consumption by the function.  */
-  HOST_WIDE_INT estimated_stack_size;
-  /* Expected offset of the stack frame of inlined function.  */
-  HOST_WIDE_INT stack_frame_offset;
-
   /* For inline clones this points to the function they will be
      inlined into.  */
   struct cgraph_node *inlined_to;
-
-  /* Estimated size of the function after inlining.  */
-  int time;
-  int size;
-
-  /* Estimated growth after inlining.  INT_MIN if not computed.  */
-  int estimated_growth;
 };
 
 /* Information about the function that is propagated by the RTL backend.

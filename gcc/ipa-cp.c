@@ -424,7 +424,7 @@ ipcp_versionable_function_p (struct cgraph_node *node)
   /* There are a number of generic reasons functions cannot be versioned.  We
      also cannot remove parameters if there are type attributes such as fnspec
      present.  */
-  if (!node->local.versionable
+  if (!inline_summary (node)->versionable
       || TYPE_ATTRIBUTES (TREE_TYPE (node->decl)))
     return false;
 
@@ -1577,7 +1577,7 @@ ipcp_generate_summary (void)
 	/* Unreachable nodes should have been eliminated before ipcp.  */
 	gcc_assert (node->needed || node->reachable);
 
-	node->local.versionable = tree_versionable_function_p (node->decl);
+	inline_summary (node)->versionable = tree_versionable_function_p (node->decl);
 	ipa_analyze_node (node);
       }
 }

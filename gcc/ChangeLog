@@ -1,3 +1,53 @@
+2011-04-16  Jan Hubicka  <jh@suse.cz>
+
+	* cgraphbuild.c: Include ipa-inline.h.
+	(reset_inline_failed): Use initialize_inline_failed.
+	* cgraph.c: Include ipa-inline.h.
+	(cgraph_create_node_1): Do not initialize estimated_growth.
+	(initialize_inline_failed): More to ipa-inline-analysis.c
+	(dump_cgraph_node): Do not dump inline flags.
+	* cgraph.h (cgraph_local_info): Remove inlineable, versionable
+	and disregard_inline_limits flags.
+	(cgrpah_global_info): Remove estimated_stack_size, stack_frame_offset,
+	time, size, estimated_growth.
+	* ipa-cp.c (ipcp_versionable_function_p, ipcp_generate_summary): Update.
+	* cgraphunit.c (cgraph_decide_is_function_needed): Use
+	DECL_DISREGARD_INLINE_LIMITS.
+	(cgraph_analyze_function): Do not initialize
+	node->local.disregard_inline_limits.
+	* lto-cgraph.c (lto_output_node, input_overwrite_node): Do not stream
+	inlinable, versionable and disregard_inline_limits.
+	* ipa-inline.c (cgraph_clone_inlined_nodes, cgraph_mark_inline_edge,
+	cgraph_check_inline_limits, cgraph_default_inline_p, cgraph_edge_badness,
+	update_caller_keys, update_callee_keys, add_new_edges_to_heap): Update.
+	(cgraph_decide_inlining_of_small_function): Update; set CIF_FUNCTION_NOT_INLINABLE
+	for uninlinable functions.
+	(cgraph_decide_inlining, cgraph_edge_early_inlinable_p,
+	cgraph_decide_inlining_incrementally): Update.
+	* ipa-inline.h (inline_summary): Add inlinable, versionable, disregard_inline_limits,
+	estimated_stack_size, stack_frame_offset, time, size and estimated_growth
+	parameters.
+	(estimate_edge_growth): Update.
+	(initialize_inline_failed): Declare.
+	* ipa-split.c: Include ipa-inline.h
+	(execute_split_functions): Update.
+	* ipa.c (cgraph_postorder): Use DECL_DISREGARD_INLINE_LIMITS.
+	(cgraph_remove_unreachable_nodes): Do not clear inlinable flag.
+	(record_cdtor_fn): Use DECL_DISREGARD_INLINE_LIMITS.
+	* ipa-inline-analysis.c (inline_node_removal_hook): Update; set
+	estimated_growth to INT_MIN.
+	(inline_node_duplication_hook): Likewise.
+	(dump_inline_summary): Dump new fields.
+	(compute_inline_parameters): Update.
+	(estimate_edge_time, estimate_time_after_inlining,
+	estimate_size_after_inlining, estimate_growth, inline_read_summary,
+	inline_write_summary):
+	(initialize_inline_failed): Move here from cgraph.c.
+	* tree-sra.c: Include ipa-inline.h.
+	(ipa_sra_preliminary_function_checks): Update.
+	* Makefile.in: (cgraph.o, cgraphbuild.o): Add dependency on
+	ipa-inline.h
+
 2011-04-16  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/sse.md (V16): New mode iterator.
