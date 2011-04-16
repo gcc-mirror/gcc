@@ -19100,91 +19100,87 @@ void
 ix86_expand_sse_unpack (rtx operands[2], bool unsigned_p, bool high_p)
 {
   enum machine_mode imode = GET_MODE (operands[1]);
-  rtx (*unpack)(rtx, rtx, rtx);
-  rtx se, dest;
+  rtx tmp, dest;
 
-  switch (imode)
+  if (TARGET_SSE4_1)
     {
-    case V16QImode:
+      rtx (*unpack)(rtx, rtx);
+
+      switch (imode)
+	{
+	case V16QImode:
+	  if (unsigned_p)
+	    unpack = gen_sse4_1_zero_extendv8qiv8hi2;
+	  else
+	    unpack = gen_sse4_1_sign_extendv8qiv8hi2;
+	  break;
+	case V8HImode:
+	  if (unsigned_p)
+	    unpack = gen_sse4_1_zero_extendv4hiv4si2;
+	  else
+	    unpack = gen_sse4_1_sign_extendv4hiv4si2;
+	  break;
+	case V4SImode:
+	  if (unsigned_p)
+	    unpack = gen_sse4_1_zero_extendv2siv2di2;
+	  else
+	    unpack = gen_sse4_1_sign_extendv2siv2di2;
+	  break;
+	default:
+	  gcc_unreachable ();
+	}
+
       if (high_p)
-        unpack = gen_vec_interleave_highv16qi;
+	{
+	  /* Shift higher 8 bytes to lower 8 bytes.  */
+	  tmp = gen_reg_rtx (imode);
+	  emit_insn (gen_sse2_lshrv1ti3 (gen_lowpart (V1TImode, tmp),
+					 gen_lowpart (V1TImode, operands[1]),
+					 GEN_INT (64)));
+	}
       else
-        unpack = gen_vec_interleave_lowv16qi;
-      break;
-    case V8HImode:
-      if (high_p)
-        unpack = gen_vec_interleave_highv8hi;
-      else
-        unpack = gen_vec_interleave_lowv8hi;
-      break;
-    case V4SImode:
-      if (high_p)
-        unpack = gen_vec_interleave_highv4si;
-      else
-        unpack = gen_vec_interleave_lowv4si;
-      break;
-    default:
-      gcc_unreachable ();
-    }
+	tmp = operands[1];
 
-  dest = gen_lowpart (imode, operands[0]);
-
-  if (unsigned_p)
-    se = force_reg (imode, CONST0_RTX (imode));
-  else
-    se = ix86_expand_sse_cmp (gen_reg_rtx (imode), GT, CONST0_RTX (imode),
-                              operands[1], pc_rtx, pc_rtx);
-
-  emit_insn (unpack (dest, operands[1], se));
-}
-
-/* This function performs the same task as ix86_expand_sse_unpack,
-   but with SSE4.1 instructions.  */
-
-void
-ix86_expand_sse4_unpack (rtx operands[2], bool unsigned_p, bool high_p)
-{
-  enum machine_mode imode = GET_MODE (operands[1]);
-  rtx (*unpack)(rtx, rtx);
-  rtx src, dest;
-
-  switch (imode)
-    {
-    case V16QImode:
-      if (unsigned_p)
-	unpack = gen_sse4_1_zero_extendv8qiv8hi2;
-      else
-	unpack = gen_sse4_1_sign_extendv8qiv8hi2;
-      break;
-    case V8HImode:
-      if (unsigned_p)
-	unpack = gen_sse4_1_zero_extendv4hiv4si2;
-      else
-	unpack = gen_sse4_1_sign_extendv4hiv4si2;
-      break;
-    case V4SImode:
-      if (unsigned_p)
-	unpack = gen_sse4_1_zero_extendv2siv2di2;
-      else
-	unpack = gen_sse4_1_sign_extendv2siv2di2;
-      break;
-    default:
-      gcc_unreachable ();
-    }
-
-  dest = operands[0];
-  if (high_p)
-    {
-      /* Shift higher 8 bytes to lower 8 bytes.  */
-      src = gen_reg_rtx (imode);
-      emit_insn (gen_sse2_lshrv1ti3 (gen_lowpart (V1TImode, src),
-				     gen_lowpart (V1TImode, operands[1]),
-				     GEN_INT (64)));
+      emit_insn (unpack (operands[0], tmp));
     }
   else
-    src = operands[1];
+    {
+      rtx (*unpack)(rtx, rtx, rtx);
 
-  emit_insn (unpack (dest, src));
+      switch (imode)
+	{
+	case V16QImode:
+	  if (high_p)
+	    unpack = gen_vec_interleave_highv16qi;
+	  else
+	    unpack = gen_vec_interleave_lowv16qi;
+	  break;
+	case V8HImode:
+	  if (high_p)
+	    unpack = gen_vec_interleave_highv8hi;
+	  else
+	    unpack = gen_vec_interleave_lowv8hi;
+	  break;
+	case V4SImode:
+	  if (high_p)
+	    unpack = gen_vec_interleave_highv4si;
+	  else
+	    unpack = gen_vec_interleave_lowv4si;
+	  break;
+	default:
+	  gcc_unreachable ();
+	}
+
+      dest = gen_lowpart (imode, operands[0]);
+
+      if (unsigned_p)
+	tmp = force_reg (imode, CONST0_RTX (imode));
+      else
+	tmp = ix86_expand_sse_cmp (gen_reg_rtx (imode), GT, CONST0_RTX (imode),
+				   operands[1], pc_rtx, pc_rtx);
+
+      emit_insn (unpack (dest, operands[1], tmp));
+    }
 }
 
 /* Expand conditional increment or decrement using adb/sbb instructions.
