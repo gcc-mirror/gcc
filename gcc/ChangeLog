@@ -1,3 +1,21 @@
+2011-04-16  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sse.md (sseunpackmode): New mode attribute.
+	(ssepackmode): Ditto.
+	(vec_pack_trunc_<mode>): Macroize expander from
+	vec_pack_trunc_{v8hi,v4si,v2di} using VI248_128 mode iterator.
+	(vec_unpacks_lo_<mode>): Macroize expander from
+	vec_unpacks_lo_{v16qi,v8hi,v4si} using VI124_128 mode iterator.
+	(vec_unpacks_hi_<mode>): Macroize expander from
+	vec_unpacks_hi_{v16qi,v8hi,v4si} using VI124_128 mode iterator.
+	(vec_unpacku_lo_<mode>): Macroize expander from
+	vec_unpacku_lo_{v16qi,v8hi,v4si} using VI124_128 mode iterator.
+	(vec_unpacku_hi_<mode>): Macroize expander from
+	vec_unpacks_hi_{v16qi,v8hi,v4si} using VI124_128 mode iterator.
+	* config/i386/i386.c (ix86_expand_sse_unpack): Merge with
+	ix86_expand_sse4_unpack.
+	* config/i386/i386-protos.h (ix86_expand_sse4_unpack): Remove.
+
 2011-04-16  Jan Hubicka  <jh@suse.cz>
 
 	* cgraphbuild.c: Include ipa-inline.h.
@@ -10,7 +28,8 @@
 	and disregard_inline_limits flags.
 	(cgrpah_global_info): Remove estimated_stack_size, stack_frame_offset,
 	time, size, estimated_growth.
-	* ipa-cp.c (ipcp_versionable_function_p, ipcp_generate_summary): Update.
+	* ipa-cp.c (ipcp_versionable_function_p, ipcp_generate_summary):
+	Update.
 	* cgraphunit.c (cgraph_decide_is_function_needed): Use
 	DECL_DISREGARD_INLINE_LIMITS.
 	(cgraph_analyze_function): Do not initialize
@@ -18,15 +37,16 @@
 	* lto-cgraph.c (lto_output_node, input_overwrite_node): Do not stream
 	inlinable, versionable and disregard_inline_limits.
 	* ipa-inline.c (cgraph_clone_inlined_nodes, cgraph_mark_inline_edge,
-	cgraph_check_inline_limits, cgraph_default_inline_p, cgraph_edge_badness,
-	update_caller_keys, update_callee_keys, add_new_edges_to_heap): Update.
-	(cgraph_decide_inlining_of_small_function): Update; set CIF_FUNCTION_NOT_INLINABLE
-	for uninlinable functions.
+	cgraph_check_inline_limits, cgraph_default_inline_p,
+	cgraph_edge_badness, update_caller_keys, update_callee_keys,
+	add_new_edges_to_heap): Update.
+	(cgraph_decide_inlining_of_small_function): Update; set
+	CIF_FUNCTION_NOT_INLINABLE for uninlinable functions.
 	(cgraph_decide_inlining, cgraph_edge_early_inlinable_p,
 	cgraph_decide_inlining_incrementally): Update.
-	* ipa-inline.h (inline_summary): Add inlinable, versionable, disregard_inline_limits,
-	estimated_stack_size, stack_frame_offset, time, size and estimated_growth
-	parameters.
+	* ipa-inline.h (inline_summary): Add inlinable, versionable,
+	disregard_inline_limits, estimated_stack_size, stack_frame_offset,
+	time, size and estimated_growth parameters.
 	(estimate_edge_growth): Update.
 	(initialize_inline_failed): Declare.
 	* ipa-split.c: Include ipa-inline.h

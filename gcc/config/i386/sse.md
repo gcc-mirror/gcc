@@ -70,6 +70,31 @@
 (define_mode_iterator VI24_128 [V8HI V4SI])
 (define_mode_iterator VI248_128 [V8HI V4SI V2DI])
 
+;; Mapping from float mode to required SSE level
+(define_mode_attr sse
+  [(SF "sse") (DF "sse2")
+   (V4SF "sse") (V2DF "sse2")
+   (V8SF "avx") (V4DF "avx")])
+
+(define_mode_attr sse2
+  [(V16QI "sse2") (V32QI "avx")
+   (V2DI "sse2") (V4DI "avx")])
+
+(define_mode_attr sse3
+  [(V16QI "sse3") (V32QI "avx")])
+
+(define_mode_attr sse4_1
+  [(V4SF "sse4_1") (V2DF "sse4_1")
+   (V8SF "avx") (V4DF "avx")])
+
+;; Pack/unpack vector modes
+(define_mode_attr sseunpackmode
+  [(V16QI "V8HI") (V8HI "V4SI") (V4SI "V2DI")])
+
+(define_mode_attr ssepackmode
+  [(V8HI "V16QI") (V4SI "V8HI") (V2DI "V4SI")])
+
+
 
 ;; Instruction suffix for sign and zero extensions.
 (define_code_attr extsuffix [(sign_extend "sx") (zero_extend "zx")])
@@ -125,23 +150,6 @@
    (V8HI "TARGET_SSE") (V16QI "TARGET_SSE")
    (V2DF "TARGET_SSE") (V4SF "TARGET_SSE")
    (V4DF "TARGET_AVX") (V8SF "TARGET_AVX")])
-
-;; Mapping from float mode to required SSE level
-(define_mode_attr sse
-  [(SF "sse") (DF "sse2")
-   (V4SF "sse") (V2DF "sse2")
-   (V8SF "avx") (V4DF "avx")])
-
-(define_mode_attr sse2
-  [(V16QI "sse2") (V32QI "avx")
-   (V2DI "sse2") (V4DI "avx")])
-
-(define_mode_attr sse3
-  [(V16QI "sse3") (V32QI "avx")])
-
-(define_mode_attr sse4_1
-  [(V4SF "sse4_1") (V2DF "sse4_1")
-   (V8SF "avx") (V4DF "avx")])
 
 ;; Mapping from integer vector mode to mnemonic suffix
 (define_mode_attr ssevecsize [(V16QI "b") (V8HI "w") (V4SI "d") (V2DI "q")])
@@ -5856,38 +5864,14 @@
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(define_expand "vec_pack_trunc_v8hi"
-  [(match_operand:V16QI 0 "register_operand" "")
-   (match_operand:V8HI 1 "register_operand" "")
-   (match_operand:V8HI 2 "register_operand" "")]
+(define_expand "vec_pack_trunc_<mode>"
+  [(match_operand:<ssepackmode> 0 "register_operand" "")
+   (match_operand:VI248_128 1 "register_operand" "")
+   (match_operand:VI248_128 2 "register_operand" "")]
   "TARGET_SSE2"
 {
-  rtx op1 = gen_lowpart (V16QImode, operands[1]);
-  rtx op2 = gen_lowpart (V16QImode, operands[2]);
-  ix86_expand_vec_extract_even_odd (operands[0], op1, op2, 0);
-  DONE;
-})
-
-(define_expand "vec_pack_trunc_v4si"
-  [(match_operand:V8HI 0 "register_operand" "")
-   (match_operand:V4SI 1 "register_operand" "")
-   (match_operand:V4SI 2 "register_operand" "")]
-  "TARGET_SSE2"
-{
-  rtx op1 = gen_lowpart (V8HImode, operands[1]);
-  rtx op2 = gen_lowpart (V8HImode, operands[2]);
-  ix86_expand_vec_extract_even_odd (operands[0], op1, op2, 0);
-  DONE;
-})
-
-(define_expand "vec_pack_trunc_v2di"
-  [(match_operand:V4SI 0 "register_operand" "")
-   (match_operand:V2DI 1 "register_operand" "")
-   (match_operand:V2DI 2 "register_operand" "")]
-  "TARGET_SSE2"
-{
-  rtx op1 = gen_lowpart (V4SImode, operands[1]);
-  rtx op2 = gen_lowpart (V4SImode, operands[2]);
+  rtx op1 = gen_lowpart (<ssepackmode>mode, operands[1]);
+  rtx op2 = gen_lowpart (<ssepackmode>mode, operands[2]);
   ix86_expand_vec_extract_even_odd (operands[0], op1, op2, 0);
   DONE;
 })
@@ -6767,149 +6751,29 @@
    (set_attr "prefix" "maybe_vex,orig,orig,vex,orig,orig,vex")
    (set_attr "mode" "TI,TI,TI,TI,V4SF,V2SF,V2SF")])
 
-(define_expand "vec_unpacku_hi_v16qi"
-  [(match_operand:V8HI 0 "register_operand" "")
-   (match_operand:V16QI 1 "register_operand" "")]
+(define_expand "vec_unpacks_lo_<mode>"
+  [(match_operand:<sseunpackmode> 0 "register_operand" "")
+   (match_operand:VI124_128 1 "register_operand" "")]
   "TARGET_SSE2"
-{
-  if (TARGET_SSE4_1)
-    ix86_expand_sse4_unpack (operands, true, true);
-  else
-    ix86_expand_sse_unpack (operands, true, true);
-  DONE;
-})
+  "ix86_expand_sse_unpack (operands, false, false); DONE;")
 
-(define_expand "vec_unpacks_hi_v16qi"
-  [(match_operand:V8HI 0 "register_operand" "")
-   (match_operand:V16QI 1 "register_operand" "")]
+(define_expand "vec_unpacks_hi_<mode>"
+  [(match_operand:<sseunpackmode> 0 "register_operand" "")
+   (match_operand:VI124_128 1 "register_operand" "")]
   "TARGET_SSE2"
-{
-  if (TARGET_SSE4_1)
-    ix86_expand_sse4_unpack (operands, false, true);
-  else
-    ix86_expand_sse_unpack (operands, false, true);
-  DONE;
-})
+  "ix86_expand_sse_unpack (operands, false, true); DONE;")
 
-(define_expand "vec_unpacku_lo_v16qi"
-  [(match_operand:V8HI 0 "register_operand" "")
-   (match_operand:V16QI 1 "register_operand" "")]
+(define_expand "vec_unpacku_lo_<mode>"
+  [(match_operand:<sseunpackmode> 0 "register_operand" "")
+   (match_operand:VI124_128 1 "register_operand" "")]
   "TARGET_SSE2"
-{
-  if (TARGET_SSE4_1)
-    ix86_expand_sse4_unpack (operands, true, false);
-  else
-    ix86_expand_sse_unpack (operands, true, false);
-  DONE;
-})
+  "ix86_expand_sse_unpack (operands, true, false); DONE;")
 
-(define_expand "vec_unpacks_lo_v16qi"
-  [(match_operand:V8HI 0 "register_operand" "")
-   (match_operand:V16QI 1 "register_operand" "")]
+(define_expand "vec_unpacku_hi_<mode>"
+  [(match_operand:<sseunpackmode> 0 "register_operand" "")
+   (match_operand:VI124_128 1 "register_operand" "")]
   "TARGET_SSE2"
-{
-  if (TARGET_SSE4_1)
-    ix86_expand_sse4_unpack (operands, false, false);
-  else
-    ix86_expand_sse_unpack (operands, false, false);
-  DONE;
-})
-
-(define_expand "vec_unpacku_hi_v8hi"
-  [(match_operand:V4SI 0 "register_operand" "")
-   (match_operand:V8HI 1 "register_operand" "")]
-  "TARGET_SSE2"
-{
-  if (TARGET_SSE4_1)
-    ix86_expand_sse4_unpack (operands, true, true);
-  else
-    ix86_expand_sse_unpack (operands, true, true);
-  DONE;
-})
-
-(define_expand "vec_unpacks_hi_v8hi"
-  [(match_operand:V4SI 0 "register_operand" "")
-   (match_operand:V8HI 1 "register_operand" "")]
-  "TARGET_SSE2"
-{
-  if (TARGET_SSE4_1)
-    ix86_expand_sse4_unpack (operands, false, true);
-  else
-    ix86_expand_sse_unpack (operands, false, true);
-  DONE;
-})
-
-(define_expand "vec_unpacku_lo_v8hi"
-  [(match_operand:V4SI 0 "register_operand" "")
-   (match_operand:V8HI 1 "register_operand" "")]
-  "TARGET_SSE2"
-{
-  if (TARGET_SSE4_1)
-    ix86_expand_sse4_unpack (operands, true, false);
-  else
-    ix86_expand_sse_unpack (operands, true, false);
-  DONE;
-})
-
-(define_expand "vec_unpacks_lo_v8hi"
-  [(match_operand:V4SI 0 "register_operand" "")
-   (match_operand:V8HI 1 "register_operand" "")]
-  "TARGET_SSE2"
-{
-  if (TARGET_SSE4_1)
-    ix86_expand_sse4_unpack (operands, false, false);
-  else
-    ix86_expand_sse_unpack (operands, false, false);
-  DONE;
-})
-
-(define_expand "vec_unpacku_hi_v4si"
-  [(match_operand:V2DI 0 "register_operand" "")
-   (match_operand:V4SI 1 "register_operand" "")]
-  "TARGET_SSE2"
-{
-  if (TARGET_SSE4_1)
-    ix86_expand_sse4_unpack (operands, true, true);
-  else
-    ix86_expand_sse_unpack (operands, true, true);
-  DONE;
-})
-
-(define_expand "vec_unpacks_hi_v4si"
-  [(match_operand:V2DI 0 "register_operand" "")
-   (match_operand:V4SI 1 "register_operand" "")]
-  "TARGET_SSE2"
-{
-  if (TARGET_SSE4_1)
-    ix86_expand_sse4_unpack (operands, false, true);
-  else
-    ix86_expand_sse_unpack (operands, false, true);
-  DONE;
-})
-
-(define_expand "vec_unpacku_lo_v4si"
-  [(match_operand:V2DI 0 "register_operand" "")
-   (match_operand:V4SI 1 "register_operand" "")]
-  "TARGET_SSE2"
-{
-  if (TARGET_SSE4_1)
-    ix86_expand_sse4_unpack (operands, true, false);
-  else
-    ix86_expand_sse_unpack (operands, true, false);
-  DONE;
-})
-
-(define_expand "vec_unpacks_lo_v4si"
-  [(match_operand:V2DI 0 "register_operand" "")
-   (match_operand:V4SI 1 "register_operand" "")]
-  "TARGET_SSE2"
-{
-  if (TARGET_SSE4_1)
-    ix86_expand_sse4_unpack (operands, false, false);
-  else
-    ix86_expand_sse_unpack (operands, false, false);
-  DONE;
-})
+  "ix86_expand_sse_unpack (operands, true, true); DONE;")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -10062,7 +9926,7 @@
    (set_attr "prefix" "vex")
    (set_attr "mode" "OI")])
 
-(define_insn_and_split "vec_dup<mode>"
+(define_insn "vec_dup<mode>"
   [(set (match_operand:AVX256MODE24P 0 "register_operand" "=x,x")
 	(vec_duplicate:AVX256MODE24P
 	  (match_operand:<avxscalarmode> 1 "nonimmediate_operand" "m,?x")))]
@@ -10070,14 +9934,19 @@
   "@
    vbroadcast<ssescalarmodesuffix>\t{%1, %0|%0, %1}
    #"
-  "&& reload_completed && REG_P (operands[1])"
-  [(set (match_dup 2) (vec_duplicate:<avxhalfvecmode> (match_dup 1)))
-   (set (match_dup 0) (vec_concat:AVX256MODE24P (match_dup 2) (match_dup 2)))]
-  "operands[2] = gen_rtx_REG (<avxhalfvecmode>mode, REGNO (operands[0]));"
   [(set_attr "type" "ssemov")
    (set_attr "prefix_extra" "1")
    (set_attr "prefix" "vex")
    (set_attr "mode" "V8SF")])
+
+(define_split
+  [(set (match_operand:AVX256MODE24P 0 "register_operand" "")
+	(vec_duplicate:AVX256MODE24P
+	  (match_operand:<avxscalarmode> 1 "register_operand" "")))]
+  "TARGET_AVX && reload_completed"
+  [(set (match_dup 2) (vec_duplicate:<avxhalfvecmode> (match_dup 1)))
+   (set (match_dup 0) (vec_concat:AVX256MODE24P (match_dup 2) (match_dup 2)))]
+  "operands[2] = gen_rtx_REG (<avxhalfvecmode>mode, REGNO (operands[0]));")
 
 (define_insn "avx_vbroadcastf128_<mode>"
   [(set (match_operand:AVX256MODE 0 "register_operand" "=x,x,x")
