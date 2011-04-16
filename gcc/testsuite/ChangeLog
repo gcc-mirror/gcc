@@ -1,3 +1,12 @@
+2011-04-16  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/avx256-unaligned-load-1.c: Update scan patterns.
+	* gcc.target/i386/avx256-unaligned-load-2.c: Ditto.
+	* gcc.target/i386/avx256-unaligned-load-3.c: Ditto.
+	* gcc.target/i386/avx256-unaligned-store-1.c: Ditto.
+	* gcc.target/i386/avx256-unaligned-store-2.c: Ditto.
+	* gcc.target/i386/avx256-unaligned-store-3.c: Ditto.
+
 2011-04-15  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/cpp0x/range-for17.C: New.
@@ -22,14 +31,14 @@
 2011-04-15  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc.dg/naming-4.m: Updated.
-	* objc.dg/naming-5.m: Updated.	
+	* objc.dg/naming-5.m: Updated.
 	* objc.dg/naming-6.m: New.
-	* objc.dg/naming-7.m: New.	
+	* objc.dg/naming-7.m: New.
 	* obj-c++.dg/naming-1.mm: Updated.
 	* obj-c++.dg/naming-2.mm: Updated.
 	* obj-c++.dg/naming-3.mm: New.
 	* obj-c++.dg/naming-4.mm: New.
-	
+
 2011-04-15  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/48589

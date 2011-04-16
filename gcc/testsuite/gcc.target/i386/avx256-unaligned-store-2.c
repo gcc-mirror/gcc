@@ -25,5 +25,5 @@ avx_test (void)
 }
 
 /* { dg-final { scan-assembler-not "\\*avx_movdqu256/2" } } */
-/* { dg-final { scan-assembler "movdqu.*\\*avx_movv16qi_internal/3" } } */
+/* { dg-final { scan-assembler "vmovdqu.*\\*movv16qi_internal/3" } } */
 /* { dg-final { scan-assembler "vextractf128" } } */
