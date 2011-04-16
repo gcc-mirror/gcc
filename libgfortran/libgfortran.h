@@ -119,6 +119,10 @@ extern int __mingw_snprintf (char *, size_t, const char *, ...)
      __attribute__ ((format (gnu_printf, 3, 4)));
 #undef snprintf
 #define snprintf __mingw_snprintf
+/* Fallback to sprintf if target does not have snprintf.  */
+#elif !defined(HAVE_SNPRINTF)
+#undef snprintf
+#define snprintf(str, size, ...) sprintf (str, __VA_ARGS__)
 #endif
 
 

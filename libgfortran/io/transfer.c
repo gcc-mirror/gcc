@@ -1047,13 +1047,15 @@ write_constant_string (st_parameter_dt *dtp, const fnode *f)
 static int
 require_type (st_parameter_dt *dtp, bt expected, bt actual, const fnode *f)
 {
-  char buffer[100];
+#define BUFLEN 100
+  char buffer[BUFLEN];
 
   if (actual == expected)
     return 0;
 
   /* Adjust item_count before emitting error message.  */
-  sprintf (buffer, "Expected %s for item %d in formatted transfer, got %s",
+  snprintf (buffer, BUFLEN, 
+	    "Expected %s for item %d in formatted transfer, got %s",
 	   type_name (expected), dtp->u.p.item_count - 1, type_name (actual));
 
   format_error (dtp, f, buffer);

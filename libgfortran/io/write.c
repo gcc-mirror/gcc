@@ -1,4 +1,4 @@
-/* Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+/* Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
    Contributed by Andy Vaught
    Namelist output contributed by Paul Thomas
@@ -1689,6 +1689,7 @@ nml_write_obj (st_parameter_dt *dtp, namelist_info * obj, index_type offset,
   char cup;
   char * obj_name;
   char * ext_name;
+  size_t ext_name_len;
   char rep_buff[NML_DIGITS];
   namelist_info * cmp;
   namelist_info * retval = obj->next;
@@ -1797,7 +1798,7 @@ nml_write_obj (st_parameter_dt *dtp, namelist_info * obj, index_type offset,
 	{
 	  if (rep_ctr > 1)
 	    {
-	      sprintf(rep_buff, " %d*", rep_ctr);
+	      snprintf(rep_buff, NML_DIGITS, " %d*", rep_ctr);
 	      write_character (dtp, rep_buff, 1, strlen (rep_buff));
 	      dtp->u.p.no_leading_blank = 1;
 	    }
@@ -1851,11 +1852,9 @@ nml_write_obj (st_parameter_dt *dtp, namelist_info * obj, index_type offset,
 
 	      base_name_len = base_name ? strlen (base_name) : 0;
 	      base_var_name_len = base ? strlen (base->var_name) : 0;
-	      ext_name = (char*)get_mem ( base_name_len
-					+ base_var_name_len
-					+ strlen (obj->var_name)
-					+ obj->var_rank * NML_DIGITS
-					+ 1);
+	      ext_name_len = base_name_len + base_var_name_len 
+		+ strlen (obj->var_name) + obj->var_rank * NML_DIGITS + 1;
+	      ext_name = (char*)get_mem (ext_name_len);
 
 	      memcpy (ext_name, base_name, base_name_len);
 	      clen = strlen (obj->var_name + base_var_name_len);
@@ -1872,7 +1871,8 @@ nml_write_obj (st_parameter_dt *dtp, namelist_info * obj, index_type offset,
 		      ext_name[tot_len] = '(';
 		      tot_len++;
 		    }
-		  sprintf (ext_name + tot_len, "%d", (int) obj->ls[dim_i].idx);
+		  snprintf (ext_name + tot_len, ext_name_len - tot_len, "%d", 
+			    (int) obj->ls[dim_i].idx);
 		  tot_len += strlen (ext_name + tot_len);
 		  ext_name[tot_len] = ((int) dim_i == obj->var_rank - 1) ? ')' : ',';
 		  tot_len++;

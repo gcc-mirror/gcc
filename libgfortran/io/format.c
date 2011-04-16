@@ -1,4 +1,4 @@
-/* Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+/* Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
    Contributed by Andy Vaught
    F2003 I/O support contributed by Jerry DeLisle
@@ -1127,16 +1127,17 @@ void
 format_error (st_parameter_dt *dtp, const fnode *f, const char *message)
 {
   int width, i, j, offset;
-  char *p, buffer[300];
+#define BUFLEN 300
+  char *p, buffer[BUFLEN];
   format_data *fmt = dtp->u.p.fmt;
 
   if (f != NULL)
     fmt->format_string = f->source;
 
   if (message == unexpected_element)
-    sprintf (buffer, message, fmt->error_element);
+    snprintf (buffer, BUFLEN, message, fmt->error_element);
   else
-    sprintf (buffer, "%s\n", message);
+    snprintf (buffer, BUFLEN, "%s\n", message);
 
   j = fmt->format_string - dtp->format;
 

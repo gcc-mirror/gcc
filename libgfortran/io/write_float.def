@@ -524,11 +524,7 @@ output_float (st_parameter_dt *dtp, const fnode *f, char *buffer, size_t size,
 	      *(out4++) = expchar;
 	      edigits--;
 	    }
-#if HAVE_SNPRINTF
 	  snprintf (buffer, size, "%+0*d", edigits, e);
-#else
-	  sprintf (buffer, "%+0*d", edigits, e);
-#endif
 	  memcpy4 (out4, buffer, edigits);
 	}
 
@@ -616,11 +612,7 @@ output_float (st_parameter_dt *dtp, const fnode *f, char *buffer, size_t size,
 	  *(out++) = expchar;
 	  edigits--;
 	}
-#if HAVE_SNPRINTF
       snprintf (buffer, size, "%+0*d", edigits, e);
-#else
-      sprintf (buffer, "%+0*d", edigits, e);
-#endif
       memcpy (out, buffer, edigits);
     }
 
@@ -940,7 +932,7 @@ OUTPUT_FLOAT_FMT_G(16)
 
 /* Define a macro to build code for write_float.  */
 
-  /* Note: Before output_float is called, sprintf is used to print to buffer the
+  /* Note: Before output_float is called, snprintf is used to print to buffer the
      number in the format +D.DDDDe+ddd. For an N digit exponent, this gives us
      (MIN_FIELD_WIDTH-5)-N digits after the decimal point, plus another one
      before the decimal point.
@@ -961,8 +953,6 @@ OUTPUT_FLOAT_FMT_G(16)
        equal to the precision. The exponent always contains at least two
        digits; if the value is zero, the exponent is 00.  */
 
-#ifdef HAVE_SNPRINTF
-
 #define DTOA \
 snprintf (buffer, size, "%+-#" STR(MIN_FIELD_WIDTH) ".*" \
 	  "e", ndigits - 1, tmp);
@@ -971,17 +961,6 @@ snprintf (buffer, size, "%+-#" STR(MIN_FIELD_WIDTH) ".*" \
 snprintf (buffer, size, "%+-#" STR(MIN_FIELD_WIDTH) ".*" \
 	  "Le", ndigits - 1, tmp);
 
-#else
-
-#define DTOA \
-sprintf (buffer, "%+-#" STR(MIN_FIELD_WIDTH) ".*" \
-	 "e", ndigits - 1, tmp);
-
-#define DTOAL \
-sprintf (buffer, "%+-#" STR(MIN_FIELD_WIDTH) ".*" \
-	 "Le", ndigits - 1, tmp);
-
-#endif
 
 #if defined(GFC_REAL_16_IS_FLOAT128)
 #define DTOAQ \
