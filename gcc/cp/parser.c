@@ -1607,6 +1607,10 @@ static tree cp_parser_c_for
   (cp_parser *, tree, tree);
 static tree cp_parser_range_for
   (cp_parser *, tree, tree, tree);
+static tree cp_parser_perform_range_for_lookup
+  (tree, tree *, tree *);
+static tree cp_parser_range_for_member_function
+  (tree, tree);
 static tree cp_parser_jump_statement
   (cp_parser *);
 static void cp_parser_declaration_statement
@@ -8557,14 +8561,20 @@ cp_parser_range_for (cp_parser *parser, tree scope, tree init, tree range_decl)
       }
 
    If RANGE_EXPR is an array:
-       BEGIN_EXPR = __range
-       END_EXPR = __range + ARRAY_SIZE(__range)
+	BEGIN_EXPR = __range
+	END_EXPR = __range + ARRAY_SIZE(__range)
+   Else if RANGE_EXPR has a member 'begin' or 'end':
+	BEGIN_EXPR = __range.begin()
+	END_EXPR = __range.end()
    Else:
 	BEGIN_EXPR = begin(__range)
 	END_EXPR = end(__range);
 
-   When calling begin()/end() we must use argument dependent
-   lookup, but always considering 'std' as an associated namespace.  */
+   If __range has a member 'begin' but not 'end', or vice versa, we must
+   still use the second alternative (it will surely fail, however).
+   When calling begin()/end() in the third alternative we must use
+   argument dependent lookup, but always considering 'std' as an associated
+   namespace.  */
 
 tree
 cp_convert_range_for (tree statement, tree range_decl, tree range_expr)
@@ -8581,12 +8591,12 @@ cp_convert_range_for (tree statement, tree range_decl, tree range_expr)
   else
     {
       /* Find out the type deduced by the declaration
-       * `auto &&__range = range_expr' */
+         `auto &&__range = range_expr'.  */
       range_type = cp_build_reference_type (make_auto (), true);
       range_type = do_auto_deduction (range_type, range_expr,
 				      type_uses_auto (range_type));
 
-      /* Create the __range variable */
+      /* Create the __range variable.  */
       range_temp = build_decl (input_location, VAR_DECL,
 			       get_identifier ("__for_range"), range_type);
       TREE_USED (range_temp) = 1;
@@ -8597,51 +8607,11 @@ cp_convert_range_for (tree statement, tree range_decl, tree range_expr)
 		      LOOKUP_ONLYCONVERTING);
 
       range_temp = convert_from_reference (range_temp);
-
-      if (TREE_CODE (TREE_TYPE (range_temp)) == ARRAY_TYPE)
-	{
-	  /* If RANGE_TEMP is an array we will use pointer arithmetic */
-	  iter_type = build_pointer_type (TREE_TYPE (TREE_TYPE (range_temp)));
-	  begin_expr = range_temp;
-	  end_expr
-	      = build_binary_op (input_location, PLUS_EXPR,
-				 range_temp,
-				 array_type_nelts_top (TREE_TYPE (range_temp)),
-				 0);
-	}
-      else
-	{
-	  /* If it is not an array, we must call begin(__range)/end__range() */
-	  VEC(tree,gc) *vec;
-
-	  begin_expr = get_identifier ("begin");
-	  vec = make_tree_vector ();
-	  VEC_safe_push (tree, gc, vec, range_temp);
-	  begin_expr = perform_koenig_lookup (begin_expr, vec,
-					      /*include_std=*/true);
-	  begin_expr = finish_call_expr (begin_expr, &vec, false, true,
-					 tf_warning_or_error);
-	  release_tree_vector (vec);
-
-	  end_expr = get_identifier ("end");
-	  vec = make_tree_vector ();
-	  VEC_safe_push (tree, gc, vec, range_temp);
-	  end_expr = perform_koenig_lookup (end_expr, vec,
-					    /*include_std=*/true);
-	  end_expr = finish_call_expr (end_expr, &vec, false, true,
-				       tf_warning_or_error);
-	  release_tree_vector (vec);
-
-	  /* The unqualified type of the __begin and __end temporaries should
-	   * be the same as required by the multiple auto declaration */
-	  iter_type = cv_unqualified (TREE_TYPE (begin_expr));
-	  if (!same_type_p (iter_type, cv_unqualified (TREE_TYPE (end_expr))))
-	    error ("inconsistent begin/end types in range-based for: %qT and %qT",
-		   TREE_TYPE (begin_expr), TREE_TYPE (end_expr));
-	}
+      iter_type = cp_parser_perform_range_for_lookup (range_temp,
+						      &begin_expr, &end_expr);
     }
 
-  /* The new for initialization statement */
+  /* The new for initialization statement.  */
   begin = build_decl (input_location, VAR_DECL,
 		      get_identifier ("__for_begin"), iter_type);
   TREE_USED (begin) = 1;
@@ -8662,18 +8632,18 @@ cp_convert_range_for (tree statement, tree range_decl, tree range_expr)
 
   finish_for_init_stmt (statement);
 
-/* The new for condition */
+  /* The new for condition.  */
   condition = build_x_binary_op (NE_EXPR,
 				 begin, ERROR_MARK,
 				 end, ERROR_MARK,
 				 NULL, tf_warning_or_error);
   finish_for_cond (condition, statement);
 
-  /* The new increment expression */
+  /* The new increment expression.  */
   expression = finish_unary_op_expr (PREINCREMENT_EXPR, begin);
   finish_for_expr (expression, statement);
 
-  /* The declaration is initialized with *__begin inside the loop body */
+  /* The declaration is initialized with *__begin inside the loop body.  */
   cp_finish_decl (range_decl,
 		  build_x_indirect_ref (begin, RO_NULL, tf_warning_or_error),
 		  /*is_constant_init*/false, NULL_TREE,
@@ -8682,6 +8652,124 @@ cp_convert_range_for (tree statement, tree range_decl, tree range_expr)
   return statement;
 }
 
+/* Solves BEGIN_EXPR and END_EXPR as described in cp_convert_range_for.
+   We need to solve both at the same time because the method used
+   depends on the existence of members begin or end.
+   Returns the type deduced for the iterator expression.  */
+
+static tree
+cp_parser_perform_range_for_lookup (tree range, tree *begin, tree *end)
+{
+  if (!COMPLETE_TYPE_P (TREE_TYPE (range)))
+    {
+      error ("range-based %<for%> expression of type %qT "
+	     "has incomplete type", TREE_TYPE (range));
+      *begin = *end = error_mark_node;
+      return error_mark_node;
+    }
+  if (TREE_CODE (TREE_TYPE (range)) == ARRAY_TYPE)
+    {
+      /* If RANGE is an array, we will use pointer arithmetic.  */
+      *begin = range;
+      *end = build_binary_op (input_location, PLUS_EXPR,
+			      range,
+			      array_type_nelts_top (TREE_TYPE (range)),
+			      0);
+      return build_pointer_type (TREE_TYPE (TREE_TYPE (range)));
+    }
+  else
+    {
+      /* If it is not an array, we must do a bit of magic.  */
+      tree id_begin, id_end;
+      tree member_begin, member_end;
+
+      *begin = *end = error_mark_node;
+
+      id_begin = get_identifier ("begin");
+      id_end = get_identifier ("end");
+      member_begin = lookup_member (TREE_TYPE (range), id_begin,
+				    /*protect=*/2, /*want_type=*/false);
+      member_end = lookup_member (TREE_TYPE (range), id_end,
+				  /*protect=*/2, /*want_type=*/false);
+
+      if (member_begin != NULL_TREE || member_end != NULL_TREE)
+	{
+	  /* Use the member functions.  */
+	  if (member_begin != NULL_TREE)
+	    *begin = cp_parser_range_for_member_function (range, id_begin);
+	  else
+	    error ("range-based %<for%> expression of type %qT has an "
+		   "%<end%> member but not a %<begin%>", TREE_TYPE (range));
+
+	  if (member_end != NULL_TREE)
+	    *end = cp_parser_range_for_member_function (range, id_end);
+	  else
+	    error ("range-based %<for%> expression of type %qT has a "
+		   "%<begin%> member but not an %<end%>", TREE_TYPE (range));
+	}
+      else
+	{
+	  /* Use global functions with ADL.  */
+	  VEC(tree,gc) *vec;
+	  vec = make_tree_vector ();
+
+	  VEC_safe_push (tree, gc, vec, range);
+
+	  member_begin = perform_koenig_lookup (id_begin, vec,
+						/*include_std=*/true);
+	  *begin = finish_call_expr (member_begin, &vec, false, true,
+				     tf_warning_or_error);
+	  member_end = perform_koenig_lookup (id_end, vec,
+					      /*include_std=*/true);
+	  *end = finish_call_expr (member_end, &vec, false, true,
+				   tf_warning_or_error);
+
+	  release_tree_vector (vec);
+	}
+
+      /* Last common checks.  */
+      if (*begin == error_mark_node || *end == error_mark_node)
+	{
+	  /* If one of the expressions is an error do no more checks.  */
+	  *begin = *end = error_mark_node;
+	  return error_mark_node;
+	}
+      else
+	{
+	  tree iter_type = cv_unqualified (TREE_TYPE (*begin));
+	  /* The unqualified type of the __begin and __end temporaries should
+	     be the same, as required by the multiple auto declaration.  */
+	  if (!same_type_p (iter_type, cv_unqualified (TREE_TYPE (*end))))
+	    error ("inconsistent begin/end types in range-based %<for%> "
+		   "statement: %qT and %qT",
+		   TREE_TYPE (*begin), TREE_TYPE (*end));
+	  return iter_type;
+	}
+    }
+}
+
+/* Helper function for cp_parser_perform_range_for_lookup.
+   Builds a tree for RANGE.IDENTIFIER().  */
+
+static tree
+cp_parser_range_for_member_function (tree range, tree identifier)
+{
+  tree member, res;
+  VEC(tree,gc) *vec;
+
+  member = finish_class_member_access_expr (range, identifier,
+					    false, tf_warning_or_error);
+  if (member == error_mark_node)
+    return error_mark_node;
+
+  vec = make_tree_vector ();
+  res = finish_call_expr (member, &vec,
+			  /*disallow_virtual=*/false,
+			  /*koenig_p=*/false,
+			  tf_warning_or_error);
+  release_tree_vector (vec);
+  return res;
+}
 
 /* Parse an iteration-statement.
 
@@ -8830,7 +8918,7 @@ cp_parser_for_init_statement (cp_parser* parser, tree *decl)
 	  if (cxx_dialect < cxx0x)
 	    {
 	      error_at (cp_lexer_peek_token (parser->lexer)->location,
-			"range-based-for loops are not allowed "
+			"range-based %<for%> loops are not allowed "
 			"in C++98 mode");
 	      *decl = error_mark_node;
 	    }

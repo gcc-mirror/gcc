@@ -1,3 +1,19 @@
+2011-04-15  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/range-for17.C: New.
+
+2011-04-15  Rodrigo Rivas Costa <rodrigorivascosta@gmail.com>
+
+	* g++.dg/cpp0x/range-for2.C: Correct for declaration.
+	* g++.dg/cpp0x/range-for3.C: Likewise.
+	* g++.dg/cpp0x/range-for9.C: Correct error message.
+	* g++.dg/cpp0x/range-for11.C: New.
+	* g++.dg/cpp0x/range-for12.C: New.
+	* g++.dg/cpp0x/range-for13.C: New.
+	* g++.dg/cpp0x/range-for14.C: New.
+	* g++.dg/cpp0x/range-for15.C: New.
+	* g++.dg/cpp0x/range-for16.C: New.
+
 2011-04-15  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/18918

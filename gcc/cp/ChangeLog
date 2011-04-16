@@ -1,3 +1,13 @@
+2011-04-15  Rodrigo Rivas Costa <rodrigorivascosta@gmail.com>
+
+	Implement N3271
+	* parser.c (cp_convert_range_for): Split into
+	cp_parser_perform_range_for_lookup.
+	(cp_parser_perform_range_for_lookup): New.
+	(cp_parser_range_for_member_function): New.
+	(cp_parser_for_init_statement): Correct error message.
+	* semantics.c (finish_call_expr): Accept COMPONENT_REF.
+
 2011-04-14  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* parser.c (cp_parser_objc_protocol_declaration): Updated for
