@@ -1,3 +1,29 @@
+2011-04-16  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sse.md (V16): New mode iterator.
+	(VI1, VI8): Ditto.
+	(AVXMODEQI, AVXMODEDI): Remove.
+	(sse2, sse3): New mode attribute.
+	(mov<mode>): Use V16 mode iterator.
+	(*mov<mode>_internal): Merge with *avx_mov<mode>_internal.
+	(push<mode>1): Use V16 mode iterator.
+	(movmisalign<mode>): Ditto.
+	(<sse>_movu<ssemodesuffix><avxmodesuffix>): Merge from
+	<sse>_movu<ssemodesuffix> and avx_movu<ssemodesuffix><avxmodesuffix>.
+	(*<sse>_movu<ssemodesuffix><avxmodesuffix>): Merge from
+	*<sse>_movu<ssemodesuffix> and *avx_movu<ssemodesuffix><avxmodesuffix>.
+	(<sse2>_movdqu<avxmodesuffix>): Merge from sse2_movdqu and
+	avx_movdqu<avxmodesuffix>.
+	(*<sse2>_movdqu<avxmodesuffix>): Merge from *sse2_movdqu and
+	*avx_movdqu<avxmodesuffix>.
+	(<sse3>_lddqu<avxmodesuffix>) Merge from sse3_lddqu and
+	avx_lddqu<avxmodesuffix>.
+	(<sse>_movnt<mode>): Merge with avx_movnt<AVXMODEF2P:mode>.
+	(<sse2>_movnt<mode>): Merge from sse2_movntv2di and
+	avx_movnt<AVXMODEDI:mode>.
+	* config/i386/i386.c (ix86_expand_vector_move_misalign): Update for
+	renamed sse_movups, sse2_movupd and sse2_movdqu patterns.
+
 2011-04-16  Bernd Schmidt  <bernds@codesourcery.com>
 
 	PR target/48629
@@ -24,8 +50,8 @@
 	* gimple.h (enum gf_mask): Add GF_CALL_ALLOCA_FOR_VAR.
 	(gimple_call_set_alloca_for_var): New inline function.
 	(gimple_call_alloca_for_var_p): Ditto.
-	* gimple.c (gimple_build_call_from_tree): Remember CALL_ALLOCA_FOR_VAR_P
-	state.
+	* gimple.c (gimple_build_call_from_tree): Remember
+	CALL_ALLOCA_FOR_VAR_P state.
 	* cfgexpand.c (expand_call_stmt): Restore CALL_ALLOCA_FOR_VAR_P state.
 
 	* tree-inline.c (inline_forbidden_p_stmt): Don't reject alloca
@@ -87,7 +113,7 @@
 	-fsched-pressure.
 
 2011-04-15  Georg-Johann Lay  <avr@gjlay.de>
-	
+
 	* config/avr/avr.md ("rotl<mode>3",mode=HIDI): Use match_dup
 	instead of match_operand for operand 3.
 

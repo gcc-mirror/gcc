@@ -15769,12 +15769,12 @@ ix86_expand_vector_move_misalign (enum machine_mode mode, rtx operands[])
 		{
 		  op0 = gen_lowpart (V4SFmode, op0);
 		  op1 = gen_lowpart (V4SFmode, op1);
-		  emit_insn (gen_avx_movups (op0, op1));
+		  emit_insn (gen_sse_movups (op0, op1));
 		  return;
 		}
 	      op0 = gen_lowpart (V16QImode, op0);
 	      op1 = gen_lowpart (V16QImode, op1);
-	      emit_insn (gen_avx_movdqu (op0, op1));
+	      emit_insn (gen_sse2_movdqu (op0, op1));
 	      break;
 	    case 32:
 	      op0 = gen_lowpart (V32QImode, op0);
@@ -15792,7 +15792,7 @@ ix86_expand_vector_move_misalign (enum machine_mode mode, rtx operands[])
 	  switch (mode)
 	    {
 	    case V4SFmode:
-	      emit_insn (gen_avx_movups (op0, op1));
+	      emit_insn (gen_sse_movups (op0, op1));
 	      break;
 	    case V8SFmode:
 	      ix86_avx256_split_vector_move_misalign (op0, op1);
@@ -15802,10 +15802,10 @@ ix86_expand_vector_move_misalign (enum machine_mode mode, rtx operands[])
 		{
 		  op0 = gen_lowpart (V4SFmode, op0);
 		  op1 = gen_lowpart (V4SFmode, op1);
-		  emit_insn (gen_avx_movups (op0, op1));
+		  emit_insn (gen_sse_movups (op0, op1));
 		  return;
 		}
-	      emit_insn (gen_avx_movupd (op0, op1));
+	      emit_insn (gen_sse2_movupd (op0, op1));
 	      break;
 	    case V4DFmode:
 	      ix86_avx256_split_vector_move_misalign (op0, op1);
