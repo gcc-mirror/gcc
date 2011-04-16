@@ -171,7 +171,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       operator=(unique_ptr&& __u)
       {
 	reset(__u.release());
-	get_deleter() = std::move(__u.get_deleter());
+	get_deleter() = std::forward<deleter_type>(__u.get_deleter());
 	return *this;
       }
 
@@ -184,7 +184,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	operator=(unique_ptr<_Up, _Ep>&& __u)
 	{
 	  reset(__u.release());
-	  get_deleter() = std::move(__u.get_deleter());
+	  get_deleter() = std::forward<deleter_type>(__u.get_deleter());
 	  return *this;
 	}
 
@@ -315,7 +315,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       operator=(unique_ptr&& __u)
       {
 	reset(__u.release());
-	get_deleter() = std::move(__u.get_deleter());
+	get_deleter() = std::forward<deleter_type>(__u.get_deleter());
 	return *this;
       }
 
@@ -324,7 +324,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	operator=(unique_ptr<_Up, _Ep>&& __u)
 	{
 	  reset(__u.release());
-	  get_deleter() = std::move(__u.get_deleter());
+	  get_deleter() = std::forward<deleter_type>(__u.get_deleter());
 	  return *this;
 	}
 
