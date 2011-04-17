@@ -9070,6 +9070,11 @@ neon_struct_mem_operand (rtx op)
   if (GET_CODE (ind) == REG)
     return arm_address_register_rtx_p (ind, 0);
 
+  /* vldm/vstm allows POST_INC (ia) and PRE_DEC (db).  */
+  if (GET_CODE (ind) == POST_INC
+      || GET_CODE (ind) == PRE_DEC)
+    return arm_address_register_rtx_p (XEXP (ind, 0), 0);
+
   return FALSE;
 }
 
