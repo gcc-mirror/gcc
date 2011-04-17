@@ -3138,29 +3138,6 @@ inline_forbidden_p (tree fndecl)
   return forbidden_p;
 }
 
-/* Return true if CALLEE cannot be inlined into CALLER.  */
-
-static bool
-inline_forbidden_into_p (tree caller, tree callee)
-{
-  /* Don't inline if the functions have different EH personalities.  */
-  if (DECL_FUNCTION_PERSONALITY (caller)
-      && DECL_FUNCTION_PERSONALITY (callee)
-      && (DECL_FUNCTION_PERSONALITY (caller)
-	  != DECL_FUNCTION_PERSONALITY (callee)))
-    return true;
-
-  /* Don't inline if the callee can throw non-call exceptions but the
-     caller cannot.  */
-  if (DECL_STRUCT_FUNCTION (callee)
-      && DECL_STRUCT_FUNCTION (callee)->can_throw_non_call_exceptions
-      && !(DECL_STRUCT_FUNCTION (caller)
-	   && DECL_STRUCT_FUNCTION (caller)->can_throw_non_call_exceptions))
-    return true;
-
-  return false;
-}
-
 /* Returns nonzero if FN is a function that does not have any
    fundamental inline blocking properties.  */
 
@@ -3749,10 +3726,6 @@ expand_call_inline (basic_block bb, gimple stmt, copy_body_data *id)
       && DECL_ABSTRACT_ORIGIN (fn)
       && gimple_has_body_p (DECL_ABSTRACT_ORIGIN (fn)))
     fn = DECL_ABSTRACT_ORIGIN (fn);
-
-  /* First check that inlining isn't simply forbidden in this case.  */
-  if (inline_forbidden_into_p (cg_edge->caller->decl, cg_edge->callee->decl))
-    goto egress;
 
   /* Don't try to inline functions that are not well-suited to inlining.  */
   if (!cgraph_inline_p (cg_edge, &reason))
@@ -5297,76 +5270,4 @@ build_duplicate_type (tree type)
   TYPE_CANONICAL (type) = type;
 
   return type;
-}
-
-/* Return whether it is safe to inline a function because it used different
-   target specific options or call site actual types mismatch parameter types.
-   E is the call edge to be checked.  */
-bool
-tree_can_inline_p (struct cgraph_edge *e)
-{
-#if 0
-  /* This causes a regression in SPEC in that it prevents a cold function from
-     inlining a hot function.  Perhaps this should only apply to functions
-     that the user declares hot/cold/optimize explicitly.  */
-
-  /* Don't inline a function with a higher optimization level than the
-     caller, or with different space constraints (hot/cold functions).  */
-  tree caller_tree = DECL_FUNCTION_SPECIFIC_OPTIMIZATION (caller);
-  tree callee_tree = DECL_FUNCTION_SPECIFIC_OPTIMIZATION (callee);
-
-  if (caller_tree != callee_tree)
-    {
-      struct cl_optimization *caller_opt
-	= TREE_OPTIMIZATION ((caller_tree)
-			     ? caller_tree
-			     : optimization_default_node);
-
-      struct cl_optimization *callee_opt
-	= TREE_OPTIMIZATION ((callee_tree)
-			     ? callee_tree
-			     : optimization_default_node);
-
-      if ((caller_opt->optimize > callee_opt->optimize)
-	  || (caller_opt->optimize_size != callee_opt->optimize_size))
-	return false;
-    }
-#endif
-  tree caller, callee;
-
-  caller = e->caller->decl;
-  callee = e->callee->decl;
-
-  /* First check that inlining isn't simply forbidden in this case.  */
-  if (inline_forbidden_into_p (caller, callee))
-    {
-      e->inline_failed = CIF_UNSPECIFIED;
-      if (e->call_stmt)
-	gimple_call_set_cannot_inline (e->call_stmt, true);
-      return false;
-    }
-
-  /* Allow the backend to decide if inlining is ok.  */
-  if (!targetm.target_option.can_inline_p (caller, callee))
-    {
-      e->inline_failed = CIF_TARGET_OPTION_MISMATCH;
-      if (e->call_stmt)
-	gimple_call_set_cannot_inline (e->call_stmt, true);
-      e->call_stmt_cannot_inline_p = true;
-      return false;
-    }
-
-  /* Do not inline calls where we cannot triviall work around mismatches
-     in argument or return types.  */
-  if (e->call_stmt
-      && !gimple_check_call_matching_types (e->call_stmt, callee))
-    {
-      e->inline_failed = CIF_MISMATCHED_ARGUMENTS;
-      if (e->call_stmt)
-	gimple_call_set_cannot_inline (e->call_stmt, true);
-      e->call_stmt_cannot_inline_p = true;
-      return false;
-    }
-
-  return true;
 }

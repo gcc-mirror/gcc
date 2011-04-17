@@ -3028,8 +3028,8 @@ matrix-reorg.o : matrix-reorg.c $(CONFIG_H) $(SYSTEM_H) coretypes.h  \
 ipa-inline.o : ipa-inline.c gt-ipa-inline.h $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(TREE_H) langhooks.h $(TREE_INLINE_H) $(FLAGS_H) $(CGRAPH_H) intl.h \
    $(DIAGNOSTIC_H) $(FIBHEAP_H) $(PARAMS_H) $(TIMEVAR_H) $(TREE_PASS_H) \
-   $(HASHTAB_H) $(COVERAGE_H) $(GGC_H) $(TREE_FLOW_H) $(RTL_H) $(IPA_PROP_H) \
-   $(EXCEPT_H) gimple-pretty-print.h ipa-inline.h
+   $(COVERAGE_H) $(GGC_H) $(TREE_FLOW_H) $(RTL_H) $(IPA_PROP_H) \
+   $(EXCEPT_H) gimple-pretty-print.h ipa-inline.h $(TARGET_H)
 ipa-inline-analysis.o : ipa-inline-analysis.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(TREE_H) langhooks.h $(TREE_INLINE_H) $(FLAGS_H) $(CGRAPH_H) intl.h \
    $(DIAGNOSTIC_H) $(PARAMS_H) $(TIMEVAR_H) $(TREE_PASS_H) \
