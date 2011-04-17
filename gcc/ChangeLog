@@ -1,3 +1,74 @@
+2011-04-17  Jan Hubicka  <jh@suse.cz>
+
+	* lto-symtab.c (lto_cgraph_replace_node): When call statement is
+	present, also set gimple_call_set_cannot_inline.
+	* ipa-inline.c: Update toplevel comment.
+	(MAX_TIME): Remove.
+	(cgraph_clone_inlined_nodes): Fix linebreaks.
+	(cgraph_check_inline_limits): Restructure to ...
+	(caller_growth_limits): ... this one; be more tolerant
+	on growth in nested inline chains; add explanatory comment;
+	fix stack accounting thinko introduced by previous patch.
+	(cgraph_default_inline_p): Remove.
+	(report_inline_failed_reason): New function.
+	(can_inline_edge_p): New function.
+	(can_early_inline_edge_p): New function.
+	(leaf_node_p): Move upwards in file.
+	(want_early_inline_function_p): New function.
+	(want_inline_small_function_p): New function.
+	(want_inline_self_recursive_call_p): New function.
+	(cgraph_edge_badness): Rename to ...
+	(edge_badness) ... this one; fix linebreaks.
+	(update_edge_key): Update call of edge_baddness; add
+	detailed dump about queue updates.
+	(update_caller_keys): Use can_inline_edge_p and
+	want_inline_small_function_p.
+	(cgraph_decide_recursive_inlining): Rename to...
+	(recursive_inlining): Use can_inline_edge_p and
+	want_inline_self_recursive_call_p; simplify and
+	remove no longer valid FIXME.
+	(cgraph_set_inline_failed): Remove.
+	(add_new_edges_to_heap): Use can_inline_edge_p and
+	want_inline_small_function_p.
+	(cgraph_decide_inlining_of_small_functions): Rename to ...
+	(inline_small_functions): ... this one; cleanup; use
+	can/want predicates; cleanup debug ouput; work edges
+	till fibheap is exhausted and do not stop once unit
+	growth is reached; remove later loop processing remaining
+	edges.
+	(cgraph_flatten): Rename to ...
+	(flatten_function): ... this one; use can_inline_edge_p
+	and can_early_inline_edge_p predicates.
+	(cgraph_decide_inlining): Rename to ...
+	(ipa_inline): ... this one; remove unreachable nodes before
+	inlining functions called once; simplify the pass.
+	(cgraph_perform_always_inlining): Rename to ...
+	(inline_always_inline_functions): ... this one; use
+	DECL_DISREGARD_INLINE_LIMITS; use can_inline_edge_p
+	predicate
+	(cgraph_decide_inlining_incrementally): Rename to ...
+	(early_inline_small_functions): ... this one; simplify
+	using new predicates; cleanup; make dumps prettier.
+	(cgraph_early_inlining): Rename to ...
+	(early_inliner): newer inline regular functions into always-inlines;
+	fix updating of call stmt summaries.
+	(pass_early_inline): Update for new names.
+	(inline_transform): Fix formating.
+	(gate_cgraph_decide_inlining): Rename to ...
+	(pass_ipa_inline): ... this one.
+	* ipa-inline.h (inline_summary): Remove disregard_inline_limits.
+	* ipa-inline-analysis.c (dump_inline_summary): Update.
+	(compute_inline_parameters): Do not compute disregard_inline_limits;
+	look for mismatching arguments.
+	(estimate_growth): Fix handlig of non-trivial self recursion.
+	(inline_read_summary): Do not read info->disregard_inline_limits.
+	(inline_write_summary): Do not write info->disregard_inline_limits.
+	* tree-inline.c (inline_forbidden_into_p, tree_can_inline_p): Remove and
+	move all checks into can_inline_edge_p predicate; re-enable code comparing
+	optimization levels.
+	(expand_call_inline): Do not test inline_forbidden_into_p.
+	* Makefile.in (ipa-inline.o): Update arguments.
+
 2011-04-17  Revital Eres  <revital.eres@linaro.org>
 
 	* ddg.c (free_ddg_all_sccs): Free sccs field in struct ddg_all_sccs.

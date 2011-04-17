@@ -131,7 +131,7 @@ dump_inline_summary (FILE *f, struct cgraph_node *node)
       struct inline_summary *s = inline_summary (node);
       fprintf (f, "Inline summary for %s/%i", cgraph_node_name (node),
 	       node->uid);
-      if (s->disregard_inline_limits)
+      if (DECL_DISREGARD_INLINE_LIMITS (node->decl))
 	fprintf (f, " always_inline");
       if (s->inlinable)
 	fprintf (f, " inlinable");
@@ -142,7 +142,7 @@ dump_inline_summary (FILE *f, struct cgraph_node *node)
       fprintf (f, "  global time:     %i\n", s->time);
       fprintf (f, "  self size:       %i, benefit: %i\n",
 	       s->self_size, s->size_inlining_benefit);
-      fprintf (f, "  global size:     %i", s->size);
+      fprintf (f, "  global size:     %i\n", s->size);
       fprintf (f, "  self stack:      %i\n",
 	       (int)s->estimated_self_stack_size);
       fprintf (f, "  global stack:    %i\n\n",
@@ -303,6 +303,17 @@ estimate_function_body_sizes (struct cgraph_node *node)
 	      struct cgraph_edge *edge = cgraph_edge (node, stmt);
 	      edge->call_stmt_size = this_size;
 	      edge->call_stmt_time = this_time;
+
+	      /* Do not inline calls where we cannot triviall work around mismatches
+		 in argument or return types.  */
+	      if (edge->callee
+		  && !gimple_check_call_matching_types (stmt, edge->callee->decl))
+		{
+		  edge->call_stmt_cannot_inline_p = true;
+		  gimple_call_set_cannot_inline (stmt, true);
+		}
+	      else
+		gcc_assert (!gimple_call_cannot_inline_p (stmt));
 	    }
 
 	  this_time *= freq;
@@ -364,8 +375,6 @@ compute_inline_parameters (struct cgraph_node *node)
 
   /* Can this function be inlined at all?  */
   info->inlinable = tree_inlinable_function_p (node->decl);
-  if (!info->inlinable)
-    info->disregard_inline_limits = 0;
 
   /* Inlinable functions always can change signature.  */
   if (info->inlinable)
@@ -388,8 +397,6 @@ compute_inline_parameters (struct cgraph_node *node)
   info->estimated_growth = INT_MIN;
   info->stack_frame_offset = 0;
   info->estimated_stack_size = info->estimated_self_stack_size;
-  info->disregard_inline_limits
-    = DECL_DISREGARD_INLINE_LIMITS (node->decl);
 }
 
 
@@ -483,25 +490,34 @@ estimate_growth (struct cgraph_node *node)
 
   for (e = node->callers; e; e = e->next_caller)
     {
-      if (e->caller == node)
-        self_recursive = true;
-      if (e->inline_failed)
-	growth += estimate_edge_growth (e);
-    }
+      gcc_checking_assert (e->inline_failed);
 
-  /* ??? Wrong for non-trivially self recursive functions or cases where
-     we decide to not inline for different reasons, but it is not big deal
-     as in that case we will keep the body around, but we will also avoid
-     some inlining.  */
-  if (cgraph_will_be_removed_from_program_if_no_direct_calls (node)
-      && !DECL_EXTERNAL (node->decl) && !self_recursive)
-    growth -= info->size;
-  /* COMDAT functions are very often not shared across multiple units since they
-     come from various template instantiations.  Take this into account.  */
-  else  if (DECL_COMDAT (node->decl) && !self_recursive
-	    && cgraph_can_remove_if_no_direct_calls_p (node))
-    growth -= (info->size
-	       * (100 - PARAM_VALUE (PARAM_COMDAT_SHARING_PROBABILITY)) + 50) / 100;
+      if (e->caller == node
+	  || (e->caller->global.inlined_to
+	      && e->caller->global.inlined_to == node))
+        self_recursive = true;
+      growth += estimate_edge_growth (e);
+    }
+     
+
+  /* For self recursive functions the growth estimation really should be
+     infinity.  We don't want to return very large values because the growth
+     plays various roles in badness computation fractions.  Be sure to not
+     return zero or negative growths. */
+  if (self_recursive)
+    growth = growth < info->size ? info->size : growth;
+  else
+    {
+      if (cgraph_will_be_removed_from_program_if_no_direct_calls (node)
+	  && !DECL_EXTERNAL (node->decl))
+	growth -= info->size;
+      /* COMDAT functions are very often not shared across multiple units since they
+	 come from various template instantiations.  Take this into account.  */
+      else  if (DECL_COMDAT (node->decl)
+		&& cgraph_can_remove_if_no_direct_calls_p (node))
+	growth -= (info->size
+		   * (100 - PARAM_VALUE (PARAM_COMDAT_SHARING_PROBABILITY)) + 50) / 100;
+    }
 
   info->estimated_growth = growth;
   return growth;
@@ -621,7 +637,6 @@ inline_read_summary (void)
 	      bp = lto_input_bitpack (ib);
 	      info->inlinable = bp_unpack_value (&bp, 1);
 	      info->versionable = bp_unpack_value (&bp, 1);
-	      info->disregard_inline_limits = bp_unpack_value (&bp, 1);
 	    }
 
 	  lto_destroy_simple_input_block (file_data,
@@ -688,7 +703,6 @@ inline_write_summary (cgraph_node_set set,
 	  bp = bitpack_create (ob->main_stream);
 	  bp_pack_value (&bp, info->inlinable, 1);
 	  bp_pack_value (&bp, info->versionable, 1);
-	  bp_pack_value (&bp, info->disregard_inline_limits, 1);
 	  lto_output_bitpack (&bp);
 	}
     }

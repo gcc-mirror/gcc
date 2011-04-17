@@ -15,15 +15,7 @@ inline int q(void) /* { dg-warning "inline-unit-growth" } */
 	big();
 	big();
 }
-inline int q1(void)
-{
-	big();
-	big();
-	big();
-}
 int t (void)
 {
- /* We allow one inlining over limit.  */
-	q1();
 	return q ();		 /* { dg-warning "called from here" } */
 }

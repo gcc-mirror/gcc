@@ -41,8 +41,6 @@ struct inline_summary
   /* False when there something makes versioning impossible.
      Currently computed and used only by ipa-cp.  */
   unsigned versionable : 1;
-  /* True when function should be inlined independently on its size.  */
-  unsigned disregard_inline_limits : 1;
 
   /* Information about function that will result after applying all the
      inline decisions present in the callgraph.  Generally kept up to

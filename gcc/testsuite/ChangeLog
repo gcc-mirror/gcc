@@ -1,3 +1,7 @@
+2011-04-17  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/winline-5.c: Update testcase.
+
 2011-04-17  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/discr27.ad[sb]: Move dg directive.
