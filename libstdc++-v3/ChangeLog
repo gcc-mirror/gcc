@@ -1,3 +1,8 @@
+2011-04-17  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* testsuite/25_algorithms/partition/moveable.cc: Actually run
+	it in parallel-mode for check-parallel.
+
 2011-04-17  Daniel Krugler  <daniel.kruegler@googlemail.com>
 	    Paolo Carlini  <paolo.carlini@oracle.com>
 
