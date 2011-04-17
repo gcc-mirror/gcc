@@ -1,5 +1,12 @@
 2011-04-17  Jan Hubicka  <jh@suse.cz>
 
+	* cgrpah.h (struct cgraph_node): Remove finalized_by_frontend.
+	* cgrpahunit.c (cgraph_finalize_function): Do not set finalized_by_frontend.
+	* lto-cgraph.c (lto_output_node, input_overwrite_node): Do not stream
+	finalized_by_frontend.
+
+2011-04-17  Jan Hubicka  <jh@suse.cz>
+
 	* cgraph.c (cgraph_clone_node): Do not handle vtable_method
 	* cgraph.h (struct cgraph_local_info): Drop vtable_method.
 	* cgraphunit.c (cgraph_copy_node_for_versioning): Drop vtable_method.
