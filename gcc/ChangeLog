@@ -1,3 +1,9 @@
+2011-04-17  Marius Strobl  <marius@FreeBSD.org>
+
+	* config/sparc/freebsd.h (CPP_CPU64_DEFAULT_SPEC): Replace with...
+	(FBSD_TARGET_CPU_CPP_BUILTINS): ...this.
+	(TARGET_GNU_TLS, TARGET_SUN_TLS): Define.
+
 2011-04-17  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR lto/48538
