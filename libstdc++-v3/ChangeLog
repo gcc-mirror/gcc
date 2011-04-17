@@ -1,3 +1,14 @@
+2011-04-17  Daniel Krugler  <daniel.kruegler@googlemail.com>
+	    Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/48635 (again)
+	* include/bits/unique_ptr.h (unique_ptr<>::unique_ptr(unique_ptr<>&&),
+	unique_ptr<_Tp[]>::unique_ptr(unique_ptr<>&&),
+	unique_ptr<>::operator=(unique_ptr<>&&),
+	unique_ptr<_Tp[]>::operator=(unique_ptr<>&&)): Use forward<_Ep>, not
+	forward<_Dp>, to forward the deleter.
+	* testsuite/20_util/unique_ptr/assign/48635_neg.cc: New.
+
 2011-04-15  Daniel Krugler  <daniel.kruegler@googlemail.com>
 	    Paolo Carlini  <paolo.carlini@oracle.com>
 
