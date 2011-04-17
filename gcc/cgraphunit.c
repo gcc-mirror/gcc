@@ -1991,7 +1991,6 @@ cgraph_copy_node_for_versioning (struct cgraph_node *old_version,
    new_version->local = old_version->local;
    new_version->local.externally_visible = false;
    new_version->local.local = true;
-   new_version->local.vtable_method = false;
    new_version->global = old_version->global;
    new_version->rtl = old_version->rtl;
    new_version->reachable = true;

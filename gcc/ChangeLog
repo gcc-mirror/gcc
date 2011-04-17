@@ -1,3 +1,13 @@
+2011-04-17  Jan Hubicka  <jh@suse.cz>
+
+	* cgraph.c (cgraph_clone_node): Do not handle vtable_method
+	* cgraph.h (struct cgraph_local_info): Drop vtable_method.
+	* cgraphunit.c (cgraph_copy_node_for_versioning): Drop vtable_method.
+	* lto-cgraph.c (lto_output_node, input_overwrite_node): Drop vtable method.
+	* gimple-fold.c (can_refer_decl_in_current_unit_p): Mention PR20991 in
+	gimple-fold.c
+	* varasm.c (mark_decl_referenced): Drop vtable_method handling code.
+
 2011-04-17  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR lto/48538

@@ -8402,8 +8402,6 @@ cp_fold_obj_type_ref (tree ref, tree known_type)
 				  DECL_VINDEX (fndecl)));
 #endif
 
-  cgraph_get_node (fndecl)->local.vtable_method = true;
-
   return build_address (fndecl);
 }
 

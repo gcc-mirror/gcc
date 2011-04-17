@@ -491,7 +491,6 @@ lto_output_node (struct lto_simple_output_block *ob, struct cgraph_node *node,
   bp_pack_value (&bp, node->local.finalized, 1);
   bp_pack_value (&bp, node->local.can_change_signature, 1);
   bp_pack_value (&bp, node->local.redefined_extern_inline, 1);
-  bp_pack_value (&bp, node->local.vtable_method, 1);
   bp_pack_value (&bp, node->needed, 1);
   bp_pack_value (&bp, node->address_taken, 1);
   bp_pack_value (&bp, node->abstract_and_needed, 1);
@@ -927,7 +926,6 @@ input_overwrite_node (struct lto_file_decl_data *file_data,
   node->local.finalized = bp_unpack_value (bp, 1);
   node->local.can_change_signature = bp_unpack_value (bp, 1);
   node->local.redefined_extern_inline = bp_unpack_value (bp, 1);
-  node->local.vtable_method = bp_unpack_value (bp, 1);
   node->needed = bp_unpack_value (bp, 1);
   node->address_taken = bp_unpack_value (bp, 1);
   node->abstract_and_needed = bp_unpack_value (bp, 1);
