@@ -1,3 +1,5 @@
+-- { dg-do compile }
+
 package body Discr27 is
 
    subtype Index is Positive range 1..4096;
