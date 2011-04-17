@@ -1,3 +1,10 @@
+2011-04-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR lto/48538
+	* lto-cgraph.c (merge_profile_summaries): Check that lto_file_data
+	is non-null before accessing it.
+	(input_cgraph): Remove trailing spaces.
+
 2011-04-17  Revital Eres  <revital.eres@linaro.org>
 
 	* params.def (sms-min-sc): New param flag.
@@ -69,9 +76,9 @@
 	(estimate_growth): Fix handlig of non-trivial self recursion.
 	(inline_read_summary): Do not read info->disregard_inline_limits.
 	(inline_write_summary): Do not write info->disregard_inline_limits.
-	* tree-inline.c (inline_forbidden_into_p, tree_can_inline_p): Remove and
-	move all checks into can_inline_edge_p predicate; re-enable code comparing
-	optimization levels.
+	* tree-inline.c (inline_forbidden_into_p, tree_can_inline_p): Remove
+	and move all checks into can_inline_edge_p predicate; re-enable code
+	comparing optimization levels.
 	(expand_call_inline): Do not test inline_forbidden_into_p.
 	* Makefile.in (ipa-inline.o): Update arguments.
 
