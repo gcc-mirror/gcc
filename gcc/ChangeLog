@@ -1,3 +1,10 @@
+2011-04-17  Michael Matz  <matz@suse.de>
+
+	PR tree-optimization/48622
+	PR lto/48645
+	* ipa-inline-analysis.c (inline_read_summary): Read size/time
+	in same order as they're written.
+
 2011-04-16  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/sse.md (sseunpackmode): New mode attribute.

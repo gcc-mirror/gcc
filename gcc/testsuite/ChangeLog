@@ -1,3 +1,9 @@
+2011-04-17  Michael Matz  <matz@suse.de>
+
+	PR tree-optimization/48622
+	PR lto/48645
+	* gcc.dg/lto/pr48622_0.c: New test.
+
 2011-04-16  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/i386/avx256-unaligned-load-1.c: Update scan patterns.
