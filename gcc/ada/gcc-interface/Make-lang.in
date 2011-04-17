@@ -485,7 +485,7 @@ gnat1$(exeext): $(TARGET_ADA_SRCS) $(GNAT1_OBJS) $(ADA_BACKEND) $(LIBDEPS)
 	$(RM) stamp-gnatlib2-rts stamp-tools
 
 gnatbind$(exeext): ada/b_gnatb.o $(CONFIG_H) $(GNATBIND_OBJS)
-	$(GCC_LINK) -o $@ ada/b_gnatb.o $(GNATBIND_OBJS) $(ALL_CFLAGS) $(LIBS) $(SYSLIBS)
+	$(GCC_LINK) -o $@ ada/b_gnatb.o $(GNATBIND_OBJS) $(LIBS) $(SYSLIBS) $(CFLAGS)
 
 # use cross-gcc
 gnat-cross: force
