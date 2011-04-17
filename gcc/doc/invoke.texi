@@ -8700,6 +8700,10 @@ through which the instruction may be pipelined.  The default value is 2.
 The maximum number of best instructions in the ready list that are considered
 for renaming in the selective scheduler.  The default value is 2.
 
+@item sms-min-sc
+The minimum value of stage count that swing modulo scheduler will
+generate.  The default value is 2.
+
 @item max-last-value-rtl
 The maximum size measured as number of RTLs that can be recorded in an expression
 in combiner for a pseudo register as last known value of that register.  The default

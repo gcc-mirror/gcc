@@ -1,3 +1,9 @@
+2011-04-17  Revital Eres  <revital.eres@linaro.org>
+
+	* params.def (sms-min-sc): New param flag.
+	* modulo-sched.c (sms_schedule): Use it.
+	* doc/invoke.texi (sms-min-sc): Document it.
+
 2011-04-17  Jan Hubicka  <jh@suse.cz>
 
 	* lto-symtab.c (lto_cgraph_replace_node): When call statement is

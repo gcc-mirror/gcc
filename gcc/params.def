@@ -334,6 +334,11 @@ DEFPARAM(PARAM_SMS_MAX_II_FACTOR,
 	 "sms-max-ii-factor",
 	 "A factor for tuning the upper bound that swing modulo scheduler uses for scheduling a loop",
 	 100, 0, 0)
+/* The minimum value of stage count that swing modulo scheduler will generate.  */
+DEFPARAM(PARAM_SMS_MIN_SC,
+        "sms-min-sc",
+        "The minimum value of stage count that swing modulo scheduler will generate.",
+        2, 1, 1)
 DEFPARAM(PARAM_SMS_DFA_HISTORY,
 	 "sms-dfa-history",
 	 "The number of cycles the swing modulo scheduler considers when checking conflicts using DFA",
