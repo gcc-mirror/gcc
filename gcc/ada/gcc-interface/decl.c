@@ -4068,6 +4068,13 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 				    max_size (TYPE_SIZE (gnu_return_type),
 					      true),
 				    0, gnat_entity, false, false, false, true);
+
+		/* Declare it now since it will never be declared otherwise.
+		   This is necessary to ensure that its subtrees are properly
+		   marked.  */
+		create_type_decl (TYPE_NAME (gnu_return_type), gnu_return_type,
+				  NULL, true, debug_info_p, gnat_entity);
+
 		return_by_invisi_ref_p = true;
 	      }
 
