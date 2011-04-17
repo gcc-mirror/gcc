@@ -153,7 +153,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		   && std::is_convertible<_Ep, _Dp>::value))>
 	     ::type>
 	unique_ptr(unique_ptr<_Up, _Ep>&& __u)
-	: _M_t(__u.release(), std::forward<deleter_type>(__u.get_deleter()))
+	: _M_t(__u.release(), std::forward<_Ep>(__u.get_deleter()))
 	{ }
 
 #if _GLIBCXX_USE_DEPRECATED
@@ -186,7 +186,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	operator=(unique_ptr<_Up, _Ep>&& __u)
 	{
 	  reset(__u.release());
-	  get_deleter() = std::forward<deleter_type>(__u.get_deleter());
+	  get_deleter() = std::forward<_Ep>(__u.get_deleter());
 	  return *this;
 	}
 
@@ -306,7 +306,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       template<typename _Up, typename _Ep>
 	unique_ptr(unique_ptr<_Up, _Ep>&& __u)
-	: _M_t(__u.release(), std::forward<deleter_type>(__u.get_deleter()))
+	: _M_t(__u.release(), std::forward<_Ep>(__u.get_deleter()))
 	{ }
 
       // Destructor.
@@ -326,7 +326,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	operator=(unique_ptr<_Up, _Ep>&& __u)
 	{
 	  reset(__u.release());
-	  get_deleter() = std::forward<deleter_type>(__u.get_deleter());
+	  get_deleter() = std::forward<_Ep>(__u.get_deleter());
 	  return *this;
 	}
 
