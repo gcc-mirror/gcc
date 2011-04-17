@@ -1,5 +1,9 @@
 2011-04-17  Revital Eres  <revital.eres@linaro.org>
 
+	* ddg.c (free_ddg_all_sccs): Free sccs field in struct ddg_all_sccs.
+
+2011-04-17  Revital Eres  <revital.eres@linaro.org>
+
 	* modulo-sched.c (sms_schedule): Avoid unfreed memory when SMS fails.
 
 2011-04-17  Michael Matz  <matz@suse.de>
