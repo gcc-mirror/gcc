@@ -2161,7 +2161,6 @@ cgraph_clone_node (struct cgraph_node *n, tree decl, gcov_type count, int freq,
   new_node->local = n->local;
   new_node->local.externally_visible = false;
   new_node->local.local = true;
-  new_node->local.vtable_method = false;
   new_node->global = n->global;
   new_node->rtl = n->rtl;
   new_node->count = count;

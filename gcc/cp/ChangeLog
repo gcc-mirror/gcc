@@ -1,3 +1,7 @@
+2011-04-17  Jan Hubicka  <jh@suse.cz>
+
+	* class.c (cp_fold_obj_type_ref): Drop vtable_method.
+
 2011-04-15  Rodrigo Rivas Costa <rodrigorivascosta@gmail.com>
 
 	Implement N3271

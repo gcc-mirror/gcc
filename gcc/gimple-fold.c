@@ -80,7 +80,10 @@ can_refer_decl_in_current_unit_p (tree decl)
     return true;
   /* We are not at ltrans stage; so don't worry about WHOPR.
      Also when still gimplifying all referred comdat functions will be
-     produced.  */
+     produced.
+     ??? as observed in PR20991 for already optimized out comdat virtual functions
+     we may not neccesarily give up because the copy will be output elsewhere when
+     corresponding vtable is output.  */
   if (!flag_ltrans && (!DECL_COMDAT (decl) || !cgraph_function_flags_ready))
     return true;
   /* If we already output the function body, we are safe.  */
