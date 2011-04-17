@@ -1501,7 +1501,8 @@ merge_profile_summaries (struct lto_file_decl_data **file_data_vec)
      During LTRANS we already have values of count_materialization_scale
      computed, so just update them.  */
   for (node = cgraph_nodes; node; node = node->next)
-    if (node->local.lto_file_data->profile_info.runs)
+    if (node->local.lto_file_data
+	&& node->local.lto_file_data->profile_info.runs)
       {
 	int scale;
 
@@ -1573,8 +1574,8 @@ input_cgraph (void)
       VEC_free (cgraph_node_ptr, heap, nodes);
       VEC_free (varpool_node_ptr, heap, varpool);
     }
+
   merge_profile_summaries (file_data_vec);
-    
 
   /* Clear out the aux field that was used to store enough state to
      tell which nodes should be overwritten.  */
