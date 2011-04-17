@@ -1,3 +1,7 @@
+2011-04-17  Revital Eres  <revital.eres@linaro.org>
+
+	* modulo-sched.c (sms_schedule): Avoid unfreed memory when SMS fails.
+
 2011-04-17  Michael Matz  <matz@suse.de>
 
 	PR tree-optimization/48622
