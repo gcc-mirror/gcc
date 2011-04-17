@@ -612,10 +612,10 @@ inline_read_summary (void)
 
 	      info->estimated_stack_size
 	        = info->estimated_self_stack_size = lto_input_uleb128 (ib);
-	      info->time = info->self_time = lto_input_uleb128 (ib);
-	      info->time_inlining_benefit = lto_input_uleb128 (ib);
 	      info->size = info->self_size = lto_input_uleb128 (ib);
 	      info->size_inlining_benefit = lto_input_uleb128 (ib);
+	      info->time = info->self_time = lto_input_uleb128 (ib);
+	      info->time_inlining_benefit = lto_input_uleb128 (ib);
 	      info->estimated_growth = INT_MIN;
 
 	      bp = lto_input_bitpack (ib);
