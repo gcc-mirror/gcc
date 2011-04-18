@@ -1,3 +1,9 @@
+2011-04-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/48632
+	* parser.c (cp_parser_omp_for_loop): Don't use cp_parser_omp_for_incr
+	for type dependent pointers.
+
 2011-04-13  Jason Merrill  <jason@redhat.com>
 
 	PR c++/48594

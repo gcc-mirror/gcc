@@ -1,3 +1,8 @@
+2011-04-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/48632
+	* g++.dg/gomp/pr48632.C: New test.
+
 2011-04-18  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/46364
