@@ -235,7 +235,7 @@ gfc_assign_data_value (gfc_expr *lvalue, gfc_expr *rvalue, mpz_t index)
 	    {
 	      gcc_assert (ref->u.ar.as->corank > 0);
 	      if (init == NULL)
-		gfc_free (expr);
+		free (expr);
 	      continue;
 	    }
 

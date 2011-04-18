@@ -486,7 +486,7 @@ gfc_free_ss (gfc_ss * ss)
       break;
     }
 
-  gfc_free (ss);
+  free (ss);
 }
 
 
@@ -2430,7 +2430,7 @@ gfc_trans_array_bound_check (gfc_se * se, tree descriptor, tree index, int n,
 			       fold_convert (long_integer_type_node, index),
 			       fold_convert (long_integer_type_node, tmp_lo),
 			       fold_convert (long_integer_type_node, tmp_up));
-      gfc_free (msg);
+      free (msg);
     }
   else
     {
@@ -2448,7 +2448,7 @@ gfc_trans_array_bound_check (gfc_se * se, tree descriptor, tree index, int n,
       gfc_trans_runtime_check (true, false, fault, &se->pre, where, msg,
 			       fold_convert (long_integer_type_node, index),
 			       fold_convert (long_integer_type_node, tmp_lo));
-      gfc_free (msg);
+      free (msg);
     }
 
   return index;
@@ -2669,7 +2669,7 @@ gfc_conv_array_ref (gfc_se * se, gfc_array_ref * ar, gfc_symbol * sym,
 				   fold_convert (long_integer_type_node,
 						 indexse.expr),
 				   fold_convert (long_integer_type_node, tmp));
-	  gfc_free (msg);
+	  free (msg);
 
 	  /* Upper bound, but not for the last dimension of assumed-size
 	     arrays.  */
@@ -2693,7 +2693,7 @@ gfc_conv_array_ref (gfc_se * se, gfc_array_ref * ar, gfc_symbol * sym,
 				   fold_convert (long_integer_type_node,
 						 indexse.expr),
 				   fold_convert (long_integer_type_node, tmp));
-	      gfc_free (msg);
+	      free (msg);
 	    }
 	}
 
@@ -3315,7 +3315,7 @@ gfc_conv_ss_startstride (gfc_loopinfo * loop)
 			"of array '%s'", dim + 1, ss->expr->symtree->name);
 	      gfc_trans_runtime_check (true, false, tmp, &inner,
 				       &ss->expr->where, msg);
-	      gfc_free (msg);
+	      free (msg);
 
 	      desc = ss->data.info.descriptor;
 
@@ -3382,7 +3382,7 @@ gfc_conv_ss_startstride (gfc_loopinfo * loop)
 		     fold_convert (long_integer_type_node, info->start[dim]),
 		     fold_convert (long_integer_type_node, lbound),
 		     fold_convert (long_integer_type_node, ubound));
-		  gfc_free (msg);
+		  free (msg);
 		}
 	      else
 		{
@@ -3398,7 +3398,7 @@ gfc_conv_ss_startstride (gfc_loopinfo * loop)
 					   &ss->expr->where, msg,
 		     fold_convert (long_integer_type_node, info->start[dim]),
 		     fold_convert (long_integer_type_node, lbound));
-		  gfc_free (msg);
+		  free (msg);
 		}
 	      
 	      /* Compute the last element of the range, which is not
@@ -3436,7 +3436,7 @@ gfc_conv_ss_startstride (gfc_loopinfo * loop)
 		     fold_convert (long_integer_type_node, tmp),
 		     fold_convert (long_integer_type_node, ubound), 
 		     fold_convert (long_integer_type_node, lbound));
-		  gfc_free (msg);
+		  free (msg);
 		}
 	      else
 		{
@@ -3447,7 +3447,7 @@ gfc_conv_ss_startstride (gfc_loopinfo * loop)
 					   &ss->expr->where, msg,
 		     fold_convert (long_integer_type_node, tmp),
 		     fold_convert (long_integer_type_node, lbound));
-		  gfc_free (msg);
+		  free (msg);
 		}
 
 	      /* Check the section sizes match.  */
@@ -3478,7 +3478,7 @@ gfc_conv_ss_startstride (gfc_loopinfo * loop)
 			fold_convert (long_integer_type_node, tmp),
 			fold_convert (long_integer_type_node, size[n]));
 
-		  gfc_free (msg);
+		  free (msg);
 		}
 	      else
 		size[n] = gfc_evaluate_now (tmp, &inner);
@@ -5127,7 +5127,7 @@ gfc_trans_dummy_array_bias (gfc_symbol * sym, tree tmpdesc,
 			fold_convert (long_integer_type_node, temp),
 			fold_convert (long_integer_type_node, stride2));
 
-	      gfc_free (msg);
+	      free (msg);
 	    }
 	}
       else
@@ -6310,7 +6310,7 @@ gfc_conv_array_parameter (gfc_se * se, gfc_expr * expr, gfc_ss * ss, bool g77,
 
 	  gfc_trans_runtime_check (false, true, tmp, &se->pre,
 				   &expr->where, msg);
-	  gfc_free (msg);
+	  free (msg);
 	}
 
       gfc_start_block (&block);

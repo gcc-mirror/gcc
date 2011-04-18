@@ -193,7 +193,7 @@ gfc_free_statement (gfc_code *p)
       break;
 
     case EXEC_OMP_CRITICAL:
-      gfc_free (CONST_CAST (char *, p->ext.omp_name));
+      free (CONST_CAST (char *, p->ext.omp_name));
       break;
 
     case EXEC_OMP_FLUSH:
@@ -228,7 +228,7 @@ gfc_free_statements (gfc_code *p)
       if (p->block)
 	gfc_free_statements (p->block);
       gfc_free_statement (p);
-      gfc_free (p);
+      free (p);
     }
 }
 
@@ -242,5 +242,5 @@ gfc_free_association_list (gfc_association_list* assoc)
     return;
 
   gfc_free_association_list (assoc->next);
-  gfc_free (assoc);
+  free (assoc);
 }

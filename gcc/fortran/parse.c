@@ -2925,7 +2925,7 @@ select_type_pop (void)
 {
   gfc_select_type_stack *old = select_type_stack;
   select_type_stack = old->prev;
-  gfc_free (old);
+  free (old);
 }
 
 
@@ -3576,7 +3576,7 @@ parse_omp_structured_block (gfc_statement omp_st, bool workshare_stmts_only)
 	      && strcmp (cp->ext.omp_name, new_st.ext.omp_name) != 0))
 	gfc_error ("Name after !$omp critical and !$omp end critical does "
 		   "not match at %C");
-      gfc_free (CONST_CAST (char *, new_st.ext.omp_name));
+      free (CONST_CAST (char *, new_st.ext.omp_name));
       break;
     case EXEC_OMP_END_SINGLE:
       cp->ext.omp_clauses->lists[OMP_LIST_COPYPRIVATE]

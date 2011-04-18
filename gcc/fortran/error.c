@@ -1050,7 +1050,7 @@ gfc_pop_error (gfc_error_buf *err)
       size_t len = strlen (err->message) + 1;
       gcc_assert (len <= error_buffer.allocated);
       memcpy (error_buffer.message, err->message, len);
-      gfc_free (err->message);
+      free (err->message);
     }
 }
 
@@ -1061,7 +1061,7 @@ void
 gfc_free_error (gfc_error_buf *err)
 {
   if (err->flag)
-    gfc_free (err->message);
+    free (err->message);
 }
 
 

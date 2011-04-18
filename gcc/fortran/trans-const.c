@@ -102,7 +102,7 @@ gfc_build_wide_string_const (int kind, int length, const gfc_char_t *string)
   gfc_encode_character (kind, length, string, (unsigned char *) s, size);
 
   str = build_string (size, s);
-  gfc_free (s);
+  free (s);
 
   len = build_int_cst (NULL_TREE, length);
   TREE_TYPE (str) =
@@ -164,7 +164,7 @@ gfc_conv_string_init (tree length, gfc_expr * expr)
   str = gfc_build_wide_string_const (expr->ts.kind, len, s);
 
   if (free_s)
-    gfc_free (s);
+    free (s);
 
   return str;
 }

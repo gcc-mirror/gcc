@@ -252,7 +252,7 @@ gfc_trans_io_runtime_check (tree cond, tree var, int error_code,
   asprintf (&message, "%s", _(msgid));
   arg3 = gfc_build_addr_expr (pchar_type_node,
 			      gfc_build_localized_cstring_const (message));
-  gfc_free(message);
+  free (message);
   
   tmp = build_call_expr_loc (input_location,
 			 gfor_fndecl_generate_error, 3, arg1, arg2, arg3);
@@ -711,7 +711,7 @@ set_string (stmtblock_t * block, stmtblock_t * postblock, tree var,
 	       "label", e->symtree->name);
       gfc_trans_runtime_check (true, false, cond, &se.pre, &e->where, msg,
 			       fold_convert (long_integer_type_node, tmp));
-      gfc_free (msg);
+      free (msg);
 
       gfc_add_modify (&se.pre, io,
 		 fold_convert (TREE_TYPE (io), GFC_DECL_ASSIGN_ADDR (se.expr)));
@@ -1627,7 +1627,7 @@ transfer_namelist_element (stmtblock_t * block, const char * var_name,
 	  transfer_namelist_element (block,
 				     full_name,
 				     NULL, cmp, expr);
-	  gfc_free (full_name);
+	  free (full_name);
 	}
     }
 }
@@ -2001,7 +2001,7 @@ transfer_array_component (tree expr, gfc_component * cm, locus * where)
 
   for (n = 0; n < cm->as->rank; n++)
     mpz_clear (ss->shape[n]);
-  gfc_free (ss->shape);
+  free (ss->shape);
 
   gfc_cleanup_loop (&loop);
 

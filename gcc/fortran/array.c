@@ -289,7 +289,7 @@ gfc_free_array_spec (gfc_array_spec *as)
       gfc_free_expr (as->upper[i]);
     }
 
-  gfc_free (as);
+  free (as);
 }
 
 
@@ -757,7 +757,7 @@ gfc_set_array_spec (gfc_symbol *sym, gfc_array_spec *as, locus *error_loc)
 	}
     }
 
-  gfc_free (as);
+  free (as);
   return SUCCESS;
 }
 

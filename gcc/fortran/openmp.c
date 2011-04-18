@@ -70,7 +70,7 @@ gfc_free_omp_clauses (gfc_omp_clauses *c)
   gfc_free_expr (c->chunk_size);
   for (i = 0; i < OMP_LIST_NUM; i++)
     gfc_free_namelist (c->lists[i]);
-  gfc_free (c);
+  free (c);
 }
 
 /* Match a variable/common block list and construct a namelist from it.  */
