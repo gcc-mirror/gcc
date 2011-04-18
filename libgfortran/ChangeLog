@@ -1,3 +1,10 @@
+2011-04-17  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/48602
+	* io/write_float.def (output_float_FMT_G): Use current rounding mode
+	to set the rounding parameters. (output_float): Skip rounding
+	if value is zero.
+	
 2011-04-16  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	* intrinsics/date_and_time.c (date_and_time): Remove sprintf CPP

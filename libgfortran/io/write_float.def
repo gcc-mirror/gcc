@@ -221,6 +221,8 @@ output_float (st_parameter_dt *dtp, const fnode *f, char *buffer, size_t size,
       internal_error (&dtp->common, "Unexpected format token");
     }
 
+  if (zero_flag)
+    goto skip;
   /* Round the value.  The value being rounded is an unsigned magnitude.
      The ROUND_COMPATIBLE is rounding away from zero when there is a tie.  */
   switch (dtp->u.p.current_unit->round_status)
@@ -802,7 +804,8 @@ CALCULATE_EXP(16)
    m >= 10**d-0.5                              Ew.d[Ee]
 
    notes: for Gw.d ,  n' ' means 4 blanks
-          for Gw.dEe, n' ' means e+2 blanks  */
+	  for Gw.dEe, n' ' means e+2 blanks
+	  for rounding modes adjustment, r, See Fortran F2008 10.7.5.2.2  */
 
 #define OUTPUT_FLOAT_FMT_G(x) \
 static void \
@@ -814,7 +817,7 @@ output_float_FMT_G_ ## x (st_parameter_dt *dtp, const fnode *f, \
   int d = f->u.real.d;\
   int w = f->u.real.w;\
   fnode *newf;\
-  GFC_REAL_ ## x rexp_d;\
+  GFC_REAL_ ## x rexp_d, r = 0.5;\
   int low, high, mid;\
   int ubound, lbound;\
   char *p, pad = ' ';\
@@ -824,9 +827,25 @@ output_float_FMT_G_ ## x (st_parameter_dt *dtp, const fnode *f, \
   save_scale_factor = dtp->u.p.scale_factor;\
   newf = (fnode *) get_mem (sizeof (fnode));\
 \
+  switch (dtp->u.p.current_unit->round_status)\
+    {\
+      case ROUND_ZERO:\
+	r = sign_bit ? 0.0 : 1.0;\
+	break;\
+      case ROUND_UP:\
+	r = 1.0;\
+	break;\
+      case ROUND_DOWN:\
+	r = 0.0;\
+	break;\
+      default:\
+	break;\
+    }\
+\
   rexp_d = calculate_exp_ ## x (-d);\
-  if ((m > 0.0 && m < 0.1 - 0.05 * rexp_d) || (rexp_d * (m + 0.5) >= 1.0) ||\
-      ((m == 0.0) && !(compile_options.allow_std & GFC_STD_F2003)))\
+  if ((m > 0.0 && ((m < 0.1 - 0.1 * r * rexp_d) || (rexp_d * (m + r) >= 1.0)))\
+      || ((m == 0.0) && !(compile_options.allow_std\
+			  & (GFC_STD_F2003 | GFC_STD_F2008))))\
     { \
       newf->format = FMT_E;\
       newf->u.real.w = w;\
@@ -847,7 +866,7 @@ output_float_FMT_G_ ## x (st_parameter_dt *dtp, const fnode *f, \
       GFC_REAL_ ## x temp;\
       mid = (low + high) / 2;\
 \
-      temp = (calculate_exp_ ## x (mid - 1) * (1 - 0.5 * rexp_d));\
+      temp = (calculate_exp_ ## x (mid - 1) * (1 - r * rexp_d));\
 \
       if (m < temp)\
         { \
