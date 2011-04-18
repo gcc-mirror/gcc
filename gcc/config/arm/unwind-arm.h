@@ -1,5 +1,5 @@
 /* Header file for the ARM EABI unwinder
-   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009
+   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2011
    Free Software Foundation, Inc.
    Contributed by Paul Brook
 
@@ -65,7 +65,7 @@ extern "C" {
     }
   _Unwind_State;
 
-  /* Provided only for for compatibility with existing code.  */
+  /* Provided only for compatibility with existing code.  */
   typedef int _Unwind_Action;
 #define _UA_SEARCH_PHASE	1
 #define _UA_CLEANUP_PHASE	2
