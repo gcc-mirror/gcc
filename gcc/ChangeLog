@@ -1,3 +1,32 @@
+2011-04-18  Jie Zhang  <jie@codesourcery.com>
+	Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm.c (neon_builtin_type_bits): Remove.
+	(typedef enum neon_builtin_mode): New.
+	(T_MAX): Don't define.
+	(typedef enum neon_builtin_datum): Remove bits, codes[],
+	num_vars and base_fcode.  Add mode, code and fcode.
+	(VAR1, VAR2, VAR3, VAR4, VAR5, VAR6, VAR7, VAR8, VAR9
+	VAR10): Change accordingly.
+	(neon_builtin_data[]): Change accordingly
+	(arm_init_neon_builtins): Change accordingly.
+	(neon_builtin_compare): Remove.
+	(locate_neon_builtin_icode): Remove.
+	(arm_expand_neon_builtin): Change accordingly.
+
+	* arm.h (enum arm_builtins): Move to ...
+	* arm.c (enum arm_builtins): ... here; and rearrange builtin code.
+
+	* arm.c (arm_builtin_decl): Declare.
+	(TARGET_BUILTIN_DECL): Define.
+	(enum arm_builtins): Correct ARM_BUILTIN_MAX.
+	(arm_builtin_decls[]): New.
+	(arm_init_neon_builtins): Store builtin declarations in
+	arm_builtin_decls[].
+	(arm_init_tls_builtins): Likewise.
+	(arm_init_iwmmxt_builtins): Likewise.  Refactor initialization code.
+	(arm_builtin_decl): New.
+
 2011-04-18  Richard Guenther  <rguenther@suse.de>
 
 	* tree.c (upper_bound_in_type): Build properly canonicalized
