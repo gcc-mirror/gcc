@@ -49,7 +49,6 @@ along with GCC; see the file COPYING3.  If not see
 #define MAX_SUBRECORD_LENGTH 2147483639   /* 2**31-9 */
 
 
-#define free(x) Use_gfc_free_instead_of_free()
 #define gfc_is_whitespace(c) ((c==' ') || (c=='\t'))
 
 /* Stringization.  */
