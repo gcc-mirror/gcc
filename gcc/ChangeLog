@@ -1,3 +1,10 @@
+2011-04-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/48616
+	* tree-vect-stmts.c (vectorizable_shift): If SLP, determine
+	whether the shift is by scalar or vector based on whether all SLP
+	scalar stmts have the same rhs.
+
 2011-04-17  Dennis, CHENG Renquan  <crquan@fedoraproject.org>
 
 	* doc/passes.texi: Fill crossref nodes.

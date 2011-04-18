@@ -2077,7 +2077,7 @@ vectorizable_shift (gimple stmt, gimple_stmt_iterator *gsi,
   VEC (tree, heap) *vec_oprnds0 = NULL, *vec_oprnds1 = NULL;
   tree vop0, vop1;
   unsigned int k;
-  bool scalar_shift_arg = false;
+  bool scalar_shift_arg = true;
   bb_vec_info bb_vinfo = STMT_VINFO_BB_VINFO (stmt_info);
   int vf;
 
@@ -2159,8 +2159,34 @@ vectorizable_shift (gimple stmt, gimple_stmt_iterator *gsi,
   /* Determine whether the shift amount is a vector, or scalar.  If the
      shift/rotate amount is a vector, use the vector/vector shift optabs.  */
 
+  if (dt[1] == vect_internal_def && !slp_node)
+    scalar_shift_arg = false;
+  else if (dt[1] == vect_constant_def
+	   || dt[1] == vect_external_def
+	   || dt[1] == vect_internal_def)
+    {
+      /* In SLP, need to check whether the shift count is the same,
+	 in loops if it is a constant or invariant, it is always
+	 a scalar shift.  */
+      if (slp_node)
+	{
+	  VEC (gimple, heap) *stmts = SLP_TREE_SCALAR_STMTS (slp_node);
+	  gimple slpstmt;
+
+	  FOR_EACH_VEC_ELT (gimple, stmts, k, slpstmt)
+	    if (!operand_equal_p (gimple_assign_rhs2 (slpstmt), op1, 0))
+	      scalar_shift_arg = false;
+	}
+    }
+  else
+    {
+      if (vect_print_dump_info (REPORT_DETAILS))
+	fprintf (vect_dump, "operand mode requires invariant argument.");
+      return false;
+    }
+
   /* Vector shifted by vector.  */
-  if (dt[1] == vect_internal_def)
+  if (!scalar_shift_arg)
     {
       optab = optab_for_tree_code (code, vectype, optab_vector);
       if (vect_print_dump_info (REPORT_DETAILS))
@@ -2168,13 +2194,12 @@ vectorizable_shift (gimple stmt, gimple_stmt_iterator *gsi,
     }
   /* See if the machine has a vector shifted by scalar insn and if not
      then see if it has a vector shifted by vector insn.  */
-  else if (dt[1] == vect_constant_def || dt[1] == vect_external_def)
+  else
     {
       optab = optab_for_tree_code (code, vectype, optab_scalar);
       if (optab
           && optab_handler (optab, TYPE_MODE (vectype)) != CODE_FOR_nothing)
         {
-          scalar_shift_arg = true;
           if (vect_print_dump_info (REPORT_DETAILS))
             fprintf (vect_dump, "vector/scalar shift/rotate found.");
         }
@@ -2185,6 +2210,8 @@ vectorizable_shift (gimple stmt, gimple_stmt_iterator *gsi,
                && (optab_handler (optab, TYPE_MODE (vectype))
                       != CODE_FOR_nothing))
             {
+	      scalar_shift_arg = false;
+
               if (vect_print_dump_info (REPORT_DETAILS))
                 fprintf (vect_dump, "vector/vector shift/rotate found.");
 
@@ -2196,12 +2223,6 @@ vectorizable_shift (gimple stmt, gimple_stmt_iterator *gsi,
                 op1 = fold_convert (TREE_TYPE (vectype), op1);
             }
         }
-    }
-  else
-    {
-      if (vect_print_dump_info (REPORT_DETAILS))
-        fprintf (vect_dump, "operand mode requires invariant argument.");
-      return false;
     }
 
   /* Supportable by target?  */

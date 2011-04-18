@@ -1,3 +1,8 @@
+2011-04-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/48616
+	* gcc.dg/pr48616.c: New test.
+
 2011-04-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/48614
