@@ -1,3 +1,7 @@
+2011-04-18  Xinliang David Li  <davidxl@google.com>
+
+	* final.c (dump_basic_block_info): Use ASM_COMMENT_START.
+
 2011-04-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/48661
