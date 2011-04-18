@@ -1,3 +1,10 @@
+2011-04-15  Jim Meyering  <meyering@redhat.com>
+
+	gfortran: remove cpp definition of free, ...
+	in preparation for the s/gfc_free/free/ transformation.
+	* gfortran.h (free): Remove macro definition that would otherwise
+	prevent direct use of the function.
+
 2011-04-18  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/18918
