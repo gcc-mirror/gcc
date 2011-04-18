@@ -1,3 +1,22 @@
+2011-04-18  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-inline.c: Fix comment typos; do not inline gt-ipa-inline.h
+	(want_inline_function_called_once_p): Break out the logic from
+	ipa_inline.
+	(edge_badness): Ensure that profile is not misupdated.
+	(lookup_recursive_calls): Prioritize by call frequencies.
+	(inline_small_functions): Move program size estimates here;
+	actually process whole queue even when unit growth has been
+	met. (to properly compute inline_failed reasons and for the
+	case unit size decrease.) Revisit comments on recursive
+	inlining.
+	(ipa_inline): Remove unit summary code; first inline hot calls
+	of functions called once, cold calls next.
+	(order, nnodes): Remove unused variables.
+	* Makefile.in (ipa-inline.o): No longer depent on ggc files.
+	(GTFILES): Remove ipa-inline.c
+	* sel-sched.c (fill_insns): Silence uninitialized var warning.
+
 2011-04-18  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* dwarf2out.c (is_redundant_typedef): Add 'inline' to prototype.
