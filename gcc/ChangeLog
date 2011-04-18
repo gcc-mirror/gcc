@@ -1,5 +1,9 @@
+2011-04-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* dwarf2out.c (is_redundant_typedef): Add 'inline' to prototype.
+
 2011-04-18  Jie Zhang  <jie@codesourcery.com>
-	Richard Earnshaw  <rearnsha@arm.com>
+	    Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm.c (neon_builtin_type_bits): Remove.
 	(typedef enum neon_builtin_mode): New.
