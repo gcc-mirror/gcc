@@ -73,7 +73,7 @@ gfc_run_passes (gfc_namespace *ns)
 
       /* FIXME: The following should be XDELETEVEC(expr_array);
       but we cannot do that because it depends on free.  */
-      gfc_free (expr_array);
+      free (expr_array);
     }
 }
 
@@ -333,7 +333,7 @@ cfe_expr_0 (gfc_expr **e, int *walk_subtrees,
 	      if (gfc_option.warn_function_elimination)
 		warn_function_elimination (*(expr_array[j]));
 
-	      gfc_free (*(expr_array[j]));
+	      free (*(expr_array[j]));
 	      *(expr_array[j]) = gfc_copy_expr (newvar);
 	    }
 	}
@@ -501,7 +501,7 @@ strip_function_call (gfc_expr *e)
 
   /* Graft the argument expression onto the original function.  */
   *e = *e1;
-  gfc_free (e1);
+  free (e1);
 
 }
 
@@ -656,8 +656,8 @@ optimize_comparison (gfc_expr *e, gfc_intrinsic_op op)
 		    return false;
 		  else
 		    {
-		      gfc_free (op1_left);
-		      gfc_free (op2_left);
+		      free (op1_left);
+		      free (op2_left);
 		      if (firstarg)
 			{
 			  firstarg->expr = op1_right;
@@ -674,8 +674,8 @@ optimize_comparison (gfc_expr *e, gfc_intrinsic_op op)
 		}
 	      if (gfc_dep_compare_expr (op1_right, op2_right) == 0)
 		{
-		  gfc_free (op1_right);
-		  gfc_free (op2_right);
+		  free (op1_right);
+		  free (op2_right);
 		  if (firstarg)
 		    {
 		      firstarg->expr = op1_left;
@@ -734,8 +734,8 @@ optimize_comparison (gfc_expr *e, gfc_intrinsic_op op)
 
 	  /* Replace the expression by a constant expression.  The typespec
 	     and where remains the way it is.  */
-	  gfc_free (op1);
-	  gfc_free (op2);
+	  free (op1);
+	  free (op2);
 	  e->expr_type = EXPR_CONSTANT;
 	  e->value.logical = result;
 	  return true;

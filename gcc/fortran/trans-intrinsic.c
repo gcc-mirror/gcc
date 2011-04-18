@@ -4215,7 +4215,7 @@ conv_generic_with_optional_char_arg (gfc_se* se, gfc_expr* expr,
   sym = gfc_get_symbol_for_expr (expr);
   gfc_conv_procedure_call (se, sym, expr->value.function.actual, expr,
 			  append_args);
-  gfc_free (sym);
+  free (sym);
 }
 
 

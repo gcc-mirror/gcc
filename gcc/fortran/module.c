@@ -229,7 +229,7 @@ free_pi_tree (pointer_info *p)
   free_pi_tree (p->left);
   free_pi_tree (p->right);
 
-  gfc_free (p);
+  free (p);
 }
 
 
@@ -424,7 +424,7 @@ resolve_fixups (fixup_t *f, void *gp)
     {
       next = f->next;
       *(f->pointer) = gp;
-      gfc_free (f);
+      free (f);
     }
 }
 
@@ -496,7 +496,7 @@ free_rename (void)
   for (; gfc_rename_list; gfc_rename_list = next)
     {
       next = gfc_rename_list->next;
-      gfc_free (gfc_rename_list);
+      free (gfc_rename_list);
     }
 }
 
@@ -891,7 +891,7 @@ free_true_name (true_name *t)
   free_true_name (t->left);
   free_true_name (t->right);
 
-  gfc_free (t);
+  free (t);
 }
 
 
@@ -1225,7 +1225,7 @@ peek_atom (void)
 
   a = parse_atom ();
   if (a == ATOM_STRING)
-    gfc_free (atom_string);
+    free (atom_string);
 
   set_module_locus (&m);
   return a;
@@ -1609,7 +1609,7 @@ mio_allocated_wide_string (const gfc_char_t *s, const size_t length)
     {
       char *quoted = quote_string (s, length);
       write_atom (ATOM_STRING, quoted);
-      gfc_free (quoted);
+      free (quoted);
       return s;
     }
   else
@@ -1618,7 +1618,7 @@ mio_allocated_wide_string (const gfc_char_t *s, const size_t length)
 
       require_atom (ATOM_STRING);
       unquoted = unquote_string (atom_string);
-      gfc_free (atom_string);
+      free (atom_string);
       return unquoted;
     }
 }
@@ -1644,7 +1644,7 @@ mio_pool_string (const char **stringp)
     {
       require_atom (ATOM_STRING);
       *stringp = atom_string[0] == '\0' ? NULL : gfc_get_string (atom_string);
-      gfc_free (atom_string);
+      free (atom_string);
     }
 }
 
@@ -1661,7 +1661,7 @@ mio_internal_string (char *string)
     {
       require_atom (ATOM_STRING);
       strcpy (string, atom_string);
-      gfc_free (atom_string);
+      free (atom_string);
     }
 }
 
@@ -2813,13 +2813,13 @@ mio_gmp_integer (mpz_t *integer)
       if (mpz_set_str (*integer, atom_string, 10))
 	bad_module ("Error converting integer");
 
-      gfc_free (atom_string);
+      free (atom_string);
     }
   else
     {
       p = mpz_get_str (NULL, 10, *integer);
       write_atom (ATOM_STRING, p);
-      gfc_free (p);
+      free (p);
     }
 }
 
@@ -2837,7 +2837,7 @@ mio_gmp_real (mpfr_t *real)
 
       mpfr_init (*real);
       mpfr_set_str (*real, atom_string, 16, GFC_RND_MODE);
-      gfc_free (atom_string);
+      free (atom_string);
     }
   else
     {
@@ -2846,7 +2846,7 @@ mio_gmp_real (mpfr_t *real)
       if (mpfr_nan_p (*real) || mpfr_inf_p (*real))
 	{
 	  write_atom (ATOM_STRING, p);
-	  gfc_free (p);
+	  free (p);
 	  return;
 	}
 
@@ -2864,8 +2864,8 @@ mio_gmp_real (mpfr_t *real)
 
       write_atom (ATOM_STRING, atom_string);
 
-      gfc_free (atom_string);
-      gfc_free (p);
+      free (atom_string);
+      free (p);
     }
 }
 
@@ -3128,7 +3128,7 @@ mio_expr (gfc_expr **ep)
 	{
 	  require_atom (ATOM_STRING);
 	  e->value.function.name = gfc_get_string (atom_string);
-	  gfc_free (atom_string);
+	  free (atom_string);
 
 	  mio_integer (&flag);
 	  if (flag)
@@ -3137,7 +3137,7 @@ mio_expr (gfc_expr **ep)
 	    {
 	      require_atom (ATOM_STRING);
 	      e->value.function.isym = gfc_find_function (atom_string);
-	      gfc_free (atom_string);
+	      free (atom_string);
 	    }
 	}
 
@@ -3419,7 +3419,7 @@ mio_typebound_proc (gfc_typebound_proc** proc)
 	      require_atom (ATOM_STRING);
 	      sym_root = &current_f2k_derived->tb_sym_root;
 	      g->specific_st = gfc_get_tbp_symtree (sym_root, atom_string);
-	      gfc_free (atom_string);
+	      free (atom_string);
 
 	      g->next = (*proc)->u.generic;
 	      (*proc)->u.generic = g;
@@ -3470,7 +3470,7 @@ mio_full_typebound_tree (gfc_symtree** root)
 
 	  require_atom (ATOM_STRING);
 	  st = gfc_get_tbp_symtree (root, atom_string);
-	  gfc_free (atom_string);
+	  free (atom_string);
 
 	  mio_typebound_symtree (st);
 	}
@@ -3753,7 +3753,7 @@ skip_list (void)
 	  break;
 
 	case ATOM_STRING:
-	  gfc_free (atom_string);
+	  free (atom_string);
 	  break;
 
 	case ATOM_NAME:
@@ -4061,7 +4061,7 @@ load_equiv (void)
 	  {
 	    head = eq->eq;
 	    gfc_free_expr (eq->expr);
-	    gfc_free (eq);
+	    free (eq);
 	  }
       }
 
@@ -4663,7 +4663,7 @@ free_written_common (struct written_common *w)
   if (w->right)
     free_written_common (w->right);
 
-  gfc_free (w);
+  free (w);
 }
 
 /* Write a common block to the module -- recursive helper function.  */
@@ -5742,7 +5742,7 @@ gfc_use_module (void)
 			       MOD_VERSION, filename);
 	    }
 
-	  gfc_free (atom_string);
+	  free (atom_string);
 	}
 
       if (c == '\n')
@@ -5789,10 +5789,10 @@ gfc_free_use_stmts (gfc_use_list *use_stmts)
       for (; use_stmts->rename; use_stmts->rename = next_rename)
 	{
 	  next_rename = use_stmts->rename->next;
-	  gfc_free (use_stmts->rename);
+	  free (use_stmts->rename);
 	}
       next = use_stmts->next;
-      gfc_free (use_stmts);
+      free (use_stmts);
     }
 }
 

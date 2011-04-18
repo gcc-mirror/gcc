@@ -521,8 +521,8 @@ get_init_field (segment_info *head, tree union_type, tree *field_init,
   for (i = 0; i < length; i++)
     CONSTRUCTOR_APPEND_ELT (v, NULL, build_int_cst (type, data[i]));
 
-  gfc_free (data);
-  gfc_free (chk);
+  free (data);
+  free (chk);
 
   /* Build a char[length] array to hold the initializers.  Much of what
      follows is borrowed from build_field, above.  */
@@ -720,7 +720,7 @@ create_common (gfc_common_head *com, segment_info *head, bool saw_equiv)
       s->sym->backend_decl = var_decl;
 
       next_s = s->next;
-      gfc_free (s);
+      free (s);
     }
 }
 

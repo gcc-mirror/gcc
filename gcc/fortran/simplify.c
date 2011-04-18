@@ -616,8 +616,8 @@ simplify_transformation_to_array (gfc_expr *result, gfc_expr *array, gfc_expr *d
       result_ctor = gfc_constructor_next (result_ctor);
     }
 
-  gfc_free (arrayvec);
-  gfc_free (resultvec);
+  free (arrayvec);
+  free (resultvec);
   return result;
 }
 
@@ -2595,7 +2595,7 @@ gfc_simplify_ibits (gfc_expr *x, gfc_expr *y, gfc_expr *z)
 	gfc_internal_error ("IBITS: Bad bit");
     }
 
-  gfc_free (bits);
+  free (bits);
 
   convert_mpz_to_signed (result->value.integer,
 			 gfc_integer_kinds[k].bit_size);
@@ -3087,7 +3087,7 @@ simplify_shift (gfc_expr *e, gfc_expr *s, const char *name,
     }
 
   convert_mpz_to_signed (result->value.integer, bitsize);
-  gfc_free (bits);
+  free (bits);
 
   return result;
 }
@@ -3246,7 +3246,7 @@ gfc_simplify_ishftc (gfc_expr *e, gfc_expr *s, gfc_expr *sz)
 
   convert_mpz_to_signed (result->value.integer, isize);
 
-  gfc_free (bits);
+  free (bits);
   return result;
 }
 
@@ -4076,12 +4076,12 @@ min_max_choose (gfc_expr *arg, gfc_expr *extremum, int sign)
 			       LENGTH(arg) - LENGTH(extremum));
 	    STRING(extremum)[LENGTH(arg)] = '\0';  /* For debugger  */
 	    LENGTH(extremum) = LENGTH(arg);
-	    gfc_free (tmp);
+	    free (tmp);
 	  }
 
 	if (gfc_compare_string (arg, extremum) * sign > 0)
 	  {
-	    gfc_free (STRING(extremum));
+	    free (STRING(extremum));
 	    STRING(extremum) = gfc_get_wide_string (LENGTH(extremum) + 1);
 	    memcpy (STRING(extremum), STRING(arg),
 		      LENGTH(arg) * sizeof (gfc_char_t));
@@ -6799,7 +6799,7 @@ gfc_simplify_compiler_options (void)
   str = gfc_get_option_string ();
   result = gfc_get_character_expr (gfc_default_character_kind,
 				   &gfc_current_locus, str, strlen (str));
-  gfc_free (str);
+  free (str);
   return result;
 }
 

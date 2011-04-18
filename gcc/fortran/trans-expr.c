@@ -449,7 +449,7 @@ gfc_conv_substring (gfc_se * se, gfc_ref * ref, int kind,
       gfc_trans_runtime_check (true, false, fault, &se->pre, where, msg,
 			       fold_convert (long_integer_type_node,
 					     start.expr));
-      gfc_free (msg);
+      free (msg);
 
       /* Check upper bound.  */
       fault = fold_build2_loc (input_location, GT_EXPR, boolean_type_node,
@@ -466,7 +466,7 @@ gfc_conv_substring (gfc_se * se, gfc_ref * ref, int kind,
 			       fold_convert (long_integer_type_node, end.expr),
 			       fold_convert (long_integer_type_node,
 					     se->string_length));
-      gfc_free (msg);
+      free (msg);
     }
 
   /* If the start and end expressions are equal, the length is one.  */
@@ -1736,14 +1736,14 @@ gfc_free_interface_mapping (gfc_interface_mapping * mapping)
       sym->new_sym->n.sym->formal = NULL;
       gfc_free_symbol (sym->new_sym->n.sym);
       gfc_free_expr (sym->expr);
-      gfc_free (sym->new_sym);
-      gfc_free (sym);
+      free (sym->new_sym);
+      free (sym);
     }
   for (cl = mapping->charlens; cl; cl = nextcl)
     {
       nextcl = cl->next;
       gfc_free_expr (cl->length);
-      gfc_free (cl);
+      free (cl);
     }
 }
 
@@ -3335,7 +3335,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
  
 	  gfc_trans_runtime_check (true, false, cond, &se->pre, &e->where,
 				   msg);
-	  gfc_free (msg);
+	  free (msg);
         }
       end_pointer_check:
 
@@ -4042,7 +4042,7 @@ gfc_conv_statement_function (gfc_se * se, gfc_expr * expr)
   /* Restore the original variables.  */
   for (fargs = sym->formal, n = 0; fargs; fargs = fargs->next, n++)
     gfc_restore_sym (fargs->sym, &saved_vars[n]);
-  gfc_free (saved_vars);
+  free (saved_vars);
 }
 
 
@@ -4311,7 +4311,7 @@ gfc_trans_subarray_assign (tree dest, gfc_component * cm, gfc_expr * expr)
 
   for (n = 0; n < cm->as->rank; n++)
     mpz_clear (lss->shape[n]);
-  gfc_free (lss->shape);
+  free (lss->shape);
 
   gfc_cleanup_loop (&loop);
 

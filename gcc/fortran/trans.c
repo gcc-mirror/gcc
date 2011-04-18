@@ -407,12 +407,12 @@ trans_runtime_error_vararg (bool error, locus* where, const char* msgid,
 
   arg = gfc_build_addr_expr (pchar_type_node,
 			     gfc_build_localized_cstring_const (message));
-  gfc_free(message);
+  free (message);
   
   asprintf (&message, "%s", _(msgid));
   arg2 = gfc_build_addr_expr (pchar_type_node,
 			      gfc_build_localized_cstring_const (message));
-  gfc_free(message);
+  free (message);
 
   /* Build the argument array.  */
   argarray = XALLOCAVEC (tree, nargs + 2);
@@ -1149,7 +1149,7 @@ void
 gfc_restore_backend_locus (locus * loc)
 {
   gfc_set_backend_locus (loc);
-  gfc_free (loc->lb);
+  free (loc->lb);
 }
 
 

@@ -1715,7 +1715,7 @@ gfc_free_iterator (gfc_iterator *iter, int flag)
   gfc_free_expr (iter->step);
 
   if (flag)
-    gfc_free (iter);
+    free (iter);
 }
 
 
@@ -1868,7 +1868,7 @@ gfc_match_associate (void)
       continue;
 
 assocListError:
-      gfc_free (newAssoc);
+      free (newAssoc);
       goto error;
     }
   if (gfc_match_char (')') != MATCH_YES)
@@ -2710,7 +2710,7 @@ gfc_free_alloc_list (gfc_alloc *p)
     {
       q = p->next;
       gfc_free_expr (p->expr);
-      gfc_free (p);
+      free (p);
     }
 }
 
@@ -3967,7 +3967,7 @@ gfc_free_namelist (gfc_namelist *name)
   for (; name; name = n)
     {
       n = name->next;
-      gfc_free (name);
+      free (name);
     }
 }
 
@@ -4105,7 +4105,7 @@ gfc_free_equiv_until (gfc_equiv *eq, gfc_equiv *stop)
   gfc_free_equiv (eq->eq);
   gfc_free_equiv_until (eq->next, stop);
   gfc_free_expr (eq->expr);
-  gfc_free (eq);
+  free (eq);
 }
 
 
@@ -4368,7 +4368,7 @@ free_case (gfc_case *p)
     p->high = NULL;
   gfc_free_expr (p->low);
   gfc_free_expr (p->high);
-  gfc_free (p);
+  free (p);
 }
 
 
@@ -5005,7 +5005,7 @@ gfc_free_forall_iterator (gfc_forall_iterator *iter)
       gfc_free_expr (iter->start);
       gfc_free_expr (iter->end);
       gfc_free_expr (iter->stride);
-      gfc_free (iter);
+      free (iter);
       iter = next;
     }
 }

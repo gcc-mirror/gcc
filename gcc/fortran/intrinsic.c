@@ -3408,9 +3408,9 @@ gfc_intrinsic_init_1 (void)
 void
 gfc_intrinsic_done_1 (void)
 {
-  gfc_free (functions);
-  gfc_free (conversion);
-  gfc_free (char_conversions);
+  free (functions);
+  free (conversion);
+  free (char_conversions);
   gfc_free_namespace (gfc_intrinsic_namespace);
 }
 
@@ -4368,7 +4368,7 @@ gfc_convert_type_warn (gfc_expr *expr, gfc_typespec *ts, int eflag, int wflag)
 
   *expr = *new_expr;
 
-  gfc_free (new_expr);
+  free (new_expr);
   expr->ts = *ts;
 
   if (gfc_is_constant_expr (expr->value.function.actual->expr)
@@ -4437,7 +4437,7 @@ gfc_convert_chartype (gfc_expr *expr, gfc_typespec *ts)
 
   *expr = *new_expr;
 
-  gfc_free (new_expr);
+  free (new_expr);
   expr->ts = *ts;
 
   if (gfc_is_constant_expr (expr->value.function.actual->expr)
