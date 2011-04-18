@@ -1,3 +1,8 @@
+2011-04-18  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/48462
+	* gfortran.dg/realloc_on_assign_7.f03: New test.
+
 2011-04-17  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/48602
