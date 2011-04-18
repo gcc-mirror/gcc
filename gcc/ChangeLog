@@ -1,3 +1,10 @@
+2011-04-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/48616
+	* tree-vect-stmts.c (vectorizable_shift): If SLP, determine
+	whether the shift is by scalar or vector based on whether all SLP
+	scalar stmts have the same rhs.
+
 2011-04-17  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	* config/arm/arm.c (neon_struct_mem_operand): Support POST_INC/PRE_DEC
