@@ -1,3 +1,13 @@
+2011-04-18  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/48462
+	* trans-expr.c (fcncall_realloc_result): Renamed version of
+	realloc_lhs_bounds_for_intrinsic_call that does not touch the
+	descriptor bounds anymore but makes a temporary descriptor to
+	hold the result.
+	(gfc_trans_arrayfunc_assign): Modify the reference to above
+	renamed function.
+
 2011-05-17  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/48624
