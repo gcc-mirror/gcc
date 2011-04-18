@@ -1,3 +1,8 @@
+2011-04-18  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/48650
+	* tree.c (build_string): STRING_CST is now derived from tree_typed.
+
 2011-04-18  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR lto/48492
