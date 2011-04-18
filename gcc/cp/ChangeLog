@@ -1,3 +1,8 @@
+2011-04-17  Jan Hubicka  <jh@suse.cz>
+
+	* semantics.c (finish_goto_stmt): Do set UNINLINABLE flag on computed
+	gotos.
+
 2011-04-17  Jason Merrill  <jason@redhat.com>
 
 	PR c++/48531
