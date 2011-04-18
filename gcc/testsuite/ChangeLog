@@ -1,3 +1,8 @@
+2011-04-18  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/sse2-maskmovdqu.c: New test.
+	* gcc.target/i386/avx-vmaskmovdqu.c: Ditto.
+
 2011-04-18  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/18918

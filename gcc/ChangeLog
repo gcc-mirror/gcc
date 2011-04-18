@@ -1,3 +1,21 @@
+2011-04-18  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.h (SSE_VEC_FLOAT_MODE_P): Remove.
+	(AVX_FLOAT_MODE_P): Ditto.
+	(AVX128_VEC_FLOAT_MODE_P): Ditto.
+	(AVX256_VEC_FLOAT_MODE_P): Ditto.
+	(AVX_VEC_FLOAT_MODE_P): Ditto.
+	* config/i386/i386.md (UNSPEC_MASKLOAD): Remove.
+	(UNSPEC_MASKSTORE): Ditto.
+	* config/i386/sse.md (<sse>_movmsk<ssemodesuffix><avxmodesuffix>):
+	Merge from <sse>_movmsk<ssemodesuffix> and
+	avx_movmsk<ssemodesuffix>256.  Use VF mode iterator.
+	(*sse2_maskmovdqu): Merge with *sse2_maskmovdqu_rex64.  Use P mode
+	iterator.
+	(avx_maskload<ssemodesuffix><avxmodesuffix>): New expander.
+	(avx_maskstore<ssemodesuffix><avxmodesuffix>): Ditto.
+	(*avx_maskmov<ssemodesuffix><avxmodesuffix>): New insn.
+
 2011-04-18  Jan Hubicka  <jh@suse.cz>
 
 	* ipa-inline.c (inline_small_functions): Fix pasto in previous patch.
@@ -10,8 +28,7 @@
 	(inline_small_functions): Move program size estimates here;
 	actually process whole queue even when unit growth has been
 	met. (to properly compute inline_failed reasons and for the
-	case unit size decrease.) Revisit comments on recursive
-	inlining.
+	case unit size decrease.) Revisit comments on recursive inlining.
 	(ipa_inline): Remove unit summary code; first inline hot calls
 	of functions called once, cold calls next.
 	(order, nnodes): Remove unused variables.
@@ -164,17 +181,16 @@
 	want_inline_small_function_p.
 	(cgraph_decide_recursive_inlining): Rename to...
 	(recursive_inlining): Use can_inline_edge_p and
-	want_inline_self_recursive_call_p; simplify and
-	remove no longer valid FIXME.
+	want_inline_self_recursive_call_p; simplify and remove no longer
+	valid FIXME.
 	(cgraph_set_inline_failed): Remove.
 	(add_new_edges_to_heap): Use can_inline_edge_p and
 	want_inline_small_function_p.
 	(cgraph_decide_inlining_of_small_functions): Rename to ...
 	(inline_small_functions): ... this one; cleanup; use
-	can/want predicates; cleanup debug ouput; work edges
-	till fibheap is exhausted and do not stop once unit
-	growth is reached; remove later loop processing remaining
-	edges.
+	can/want predicates; cleanup debug ouput; work edges till fibheap
+	is exhausted and do not stop once unit growth is reached; remove
+	later loop processing remaining edges.
 	(cgraph_flatten): Rename to ...
 	(flatten_function): ... this one; use can_inline_edge_p
 	and can_early_inline_edge_p predicates.
@@ -183,8 +199,7 @@
 	inlining functions called once; simplify the pass.
 	(cgraph_perform_always_inlining): Rename to ...
 	(inline_always_inline_functions): ... this one; use
-	DECL_DISREGARD_INLINE_LIMITS; use can_inline_edge_p
-	predicate
+	DECL_DISREGARD_INLINE_LIMITS; use can_inline_edge_p predicate.
 	(cgraph_decide_inlining_incrementally): Rename to ...
 	(early_inline_small_functions): ... this one; simplify
 	using new predicates; cleanup; make dumps prettier.
@@ -290,8 +305,8 @@
 	(initialize_inline_failed): Move here from cgraph.c.
 	* tree-sra.c: Include ipa-inline.h.
 	(ipa_sra_preliminary_function_checks): Update.
-	* Makefile.in: (cgraph.o, cgraphbuild.o): Add dependency on
-	ipa-inline.h
+	* Makefile.in (cgraph.o, cgraphbuild.o): Add dependency on
+	ipa-inline.h.
 
 2011-04-16  Uros Bizjak  <ubizjak@gmail.com>
 
@@ -618,7 +633,7 @@
 	    Eric Weddington  <eric.weddington@atmel.com>
 	    Georg-Johann Lay <avr@gjlay.de>
 
-	* config/avr/avr.c: ("insn-codes.h", "optabs.h", "langhooks.h"):
+	* config/avr/avr.c ("insn-codes.h", "optabs.h", "langhooks.h"):
 	New Includes
 	(avr_init_builtins, avr_expand_builtin,
 	avr_expand_delay_cycles, avr_expand_unop_builtin,
@@ -3256,7 +3271,7 @@
 
 	2010-08-13  Vladimir Makarov  <vmakarov@redhat.com>
 
-	* ira-build.c: (ira_create_object): Remove initialization of
+	* ira-build.c (ira_create_object): Remove initialization of
 	OBJECT_PROFITABLE_HARD_REGS.  Initialize OBJECT_ADD_DATA.
 	(ira_create_allocno): Remove initialization of
 	ALLOCNO_MEM_OPTIMIZED_DEST, ALLOCNO_MEM_OPTIMIZED_DEST_P,
@@ -3382,7 +3397,7 @@
 	ira_object_conflict_iter_cond.
 	(FOR_EACH_OBJECT_CONFLICT): Don't use ira_object_conflict_iter_next.
 
-	* ira-live.c: (process_single_reg_class_operands): Call
+	* ira-live.c (process_single_reg_class_operands): Call
 	ira_init_register_move_cost_if_necessary.  Use
 	ira_register_move_cost instead of ira_get_register_move_cost.
 
@@ -6172,7 +6187,7 @@
 
 2011-03-14  Andreas Tobler  <andreast@fgznet.ch>
 
-	* config/rs6000/freebsd.h: (RELOCATABLE_NEEDS_FIXUP): Define in
+	* config/rs6000/freebsd.h (RELOCATABLE_NEEDS_FIXUP): Define in
 	terms of target_flags_explicit. Adjust copyright year.
 
 	* config.gcc: Add FreeBSD PowerPC soft-float libgcc bits.
@@ -10408,7 +10423,7 @@
 
 2011-01-07  Jan Hubicka  <jh@suse.cz>
 
-	* doc/invoke.texi: (-flto, -fuse-linker-plugin): Update defaults
+	* doc/invoke.texi (-flto, -fuse-linker-plugin): Update defaults
 	and no longer claim that gold is required for linker plugin.
 	* configure: Regenerate.
 	* gcc.c (PLUGIN_COND): New macro.
