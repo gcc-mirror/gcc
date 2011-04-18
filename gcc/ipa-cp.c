@@ -1242,7 +1242,7 @@ ipcp_process_devirtualization_opportunities (struct cgraph_node *node)
 	{
 	  tree binfo = VEC_index (tree, info->params[param_index].types, j);
 	  tree d;
-	  tree t = gimple_get_virt_mehtod_for_binfo (token, binfo, &d, true);
+	  tree t = gimple_get_virt_method_for_binfo (token, binfo, &d, true);
 
 	  if (!t)
 	    {

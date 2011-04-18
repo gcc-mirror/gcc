@@ -1374,7 +1374,7 @@ gimple_fold_builtin (gimple stmt)
    is a thunk (other than a this adjustment which is dealt with by DELTA). */
 
 tree
-gimple_get_virt_mehtod_for_binfo (HOST_WIDE_INT token, tree known_binfo,
+gimple_get_virt_method_for_binfo (HOST_WIDE_INT token, tree known_binfo,
 				  tree *delta, bool refuse_thunks)
 {
   HOST_WIDE_INT i;
@@ -1392,6 +1392,10 @@ gimple_get_virt_mehtod_for_binfo (HOST_WIDE_INT token, tree known_binfo,
 	    ? TARGET_VTABLE_USES_DESCRIPTORS : 1);
       v = TREE_CHAIN (v);
     }
+
+  /* If BV_VCALL_INDEX is non-NULL, give up.  */
+  if (TREE_TYPE (v))
+    return NULL_TREE;
 
   fndecl = TREE_VALUE (v);
   node = cgraph_get_node_or_alias (fndecl);

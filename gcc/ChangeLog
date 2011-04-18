@@ -1,3 +1,16 @@
+2011-04-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/48661
+	* gimple-fold.c (gimple_get_virt_method_for_binfo): Return NULL
+	if TREE_TYPE (v) is non-NULL.
+
+	* gimple-fold.c (gimple_get_virt_method_for_binfo): Renamed from
+	gimple_get_virt_mehtod_for_binfo.
+	* gimple.h (gimple_get_virt_method_for_binfo): Likewise.
+	* ipa-cp.c (ipcp_process_devirtualization_opportunities): Adjust
+	callers.
+	* ipa-prop.c (try_make_edge_direct_virtual_call): Likewise.
+
 2011-04-18  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* dwarf2out.c (is_redundant_typedef): Add 'inline' to prototype.
