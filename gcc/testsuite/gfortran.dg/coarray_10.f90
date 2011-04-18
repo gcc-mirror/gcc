@@ -11,8 +11,8 @@ subroutine image_idx_test1()
   WRITE (*,*) IMAGE_INDEX (array, [2,0,3,1])
   WRITE (*,*) IMAGE_INDEX (array, [0,0,3,1])  ! { dg-error "for dimension 1, SUB has 0 and COARRAY lower bound is 1" }
   WRITE (*,*) IMAGE_INDEX (array, [1,2,9,0])  ! { dg-error "for dimension 3, SUB has 9 and COARRAY upper bound is 8" }
-  WRITE (*,*) IMAGE_INDEX (array, [2,0,3])    ! { dg-error "Too few elements" }
-  WRITE (*,*) IMAGE_INDEX (array, [2,0,3,1,1])! { dg-error "Too many elements" }
+  WRITE (*,*) IMAGE_INDEX (array, [2,0,3])    ! { dg-error "array elements of the SUB argument to IMAGE_INDEX at .1. shall be 4" }
+  WRITE (*,*) IMAGE_INDEX (array, [2,0,3,1,1])! { dg-error "array elements of the SUB argument to IMAGE_INDEX at .1. shall be 4" }
 end subroutine
 
 subroutine this_image_check()
