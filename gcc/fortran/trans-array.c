@@ -4111,21 +4111,6 @@ gfc_conv_descriptor_cosize (tree desc, int rank, int corank)
 }
 
 
-/* Helper function for marking a boolean expression tree as unlikely.  */
-
-static tree
-gfc_unlikely (tree cond)
-{
-  tree tmp;
-
-  cond = fold_convert (long_integer_type_node, cond);
-  tmp = build_zero_cst (long_integer_type_node);
-  cond = build_call_expr_loc (input_location,
-			      built_in_decls[BUILT_IN_EXPECT], 2, cond, tmp);
-  cond = fold_convert (boolean_type_node, cond);
-  return cond;
-}
-
 /* Fills in an array descriptor, and returns the size of the array.
    The size will be a simple_val, ie a variable or a constant.  Also
    calculates the offset of the base.  The pointer argument overflow,
