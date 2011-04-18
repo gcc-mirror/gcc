@@ -343,7 +343,7 @@ build_value_init (tree type, tsubst_flags_t complain)
 	   build_special_member_call (NULL_TREE, complete_ctor_identifier,
 				      NULL, type, LOOKUP_NORMAL,
 				      complain));
-      else if (TREE_CODE (type) != UNION_TYPE && TYPE_NEEDS_CONSTRUCTING (type))
+      else if (TYPE_NEEDS_CONSTRUCTING (type))
 	{
 	  /* This is a class that needs constructing, but doesn't have
 	     a user-provided constructor.  So we need to zero-initialize
