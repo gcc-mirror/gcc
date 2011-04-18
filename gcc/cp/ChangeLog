@@ -1,3 +1,9 @@
+2011-04-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/48632
+	* parser.c (cp_parser_omp_for_loop): Don't use cp_parser_omp_for_incr
+	for type dependent pointers.
+
 2011-04-18  Jim Meyering  <meyering@redhat.com>
 
 	* pt.c (type_unification_real): Fix typo in comment: s/in in/in/.
