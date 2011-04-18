@@ -1,3 +1,8 @@
+2011-04-18  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/46364
+	* g++.dg/torture/pr46364.C: New testcase.
+
 2011-04-18  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* obj-c++.dg/dwarf-2.mm: Skip on alpha*-dec-osf*.
