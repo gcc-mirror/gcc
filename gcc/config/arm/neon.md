@@ -4092,13 +4092,14 @@
 
 (define_insn "neon_vtrn<mode>_internal"
   [(set (match_operand:VDQW 0 "s_register_operand" "=w")
-	(unspec:VDQW [(match_operand:VDQW 1 "s_register_operand" "0")]
-		     UNSPEC_VTRN1))
-   (set (match_operand:VDQW 2 "s_register_operand" "=w")
-        (unspec:VDQW [(match_operand:VDQW 3 "s_register_operand" "2")]
-		     UNSPEC_VTRN2))]
+        (unspec:VDQW [(match_operand:VDQW 1 "s_register_operand" "0")
+                      (match_operand:VDQW 2 "s_register_operand" "w")]
+                     UNSPEC_VTRN1))
+   (set (match_operand:VDQW 3 "s_register_operand" "=2")
+         (unspec:VDQW [(match_dup 1) (match_dup 2)]
+                     UNSPEC_VTRN2))]
   "TARGET_NEON"
-  "vtrn.<V_sz_elem>\t%<V_reg>0, %<V_reg>2"
+  "vtrn.<V_sz_elem>\t%<V_reg>0, %<V_reg>3"
   [(set (attr "neon_type")
       (if_then_else (ne (symbol_ref "<Is_d_reg>") (const_int 0))
                     (const_string "neon_bp_simple")
@@ -4118,13 +4119,14 @@
 
 (define_insn "neon_vzip<mode>_internal"
   [(set (match_operand:VDQW 0 "s_register_operand" "=w")
-	(unspec:VDQW [(match_operand:VDQW 1 "s_register_operand" "0")]
-		     UNSPEC_VZIP1))
-   (set (match_operand:VDQW 2 "s_register_operand" "=w")
-        (unspec:VDQW [(match_operand:VDQW 3 "s_register_operand" "2")]
-		     UNSPEC_VZIP2))]
+        (unspec:VDQW [(match_operand:VDQW 1 "s_register_operand" "0")
+                      (match_operand:VDQW 2 "s_register_operand" "w")]
+                     UNSPEC_VZIP1))
+   (set (match_operand:VDQW 3 "s_register_operand" "=2")
+        (unspec:VDQW [(match_dup 1) (match_dup 2)]
+                     UNSPEC_VZIP2))]
   "TARGET_NEON"
-  "vzip.<V_sz_elem>\t%<V_reg>0, %<V_reg>2"
+  "vzip.<V_sz_elem>\t%<V_reg>0, %<V_reg>3"
   [(set (attr "neon_type")
       (if_then_else (ne (symbol_ref "<Is_d_reg>") (const_int 0))
                     (const_string "neon_bp_simple")
@@ -4144,13 +4146,14 @@
 
 (define_insn "neon_vuzp<mode>_internal"
   [(set (match_operand:VDQW 0 "s_register_operand" "=w")
-	(unspec:VDQW [(match_operand:VDQW 1 "s_register_operand" "0")]
+        (unspec:VDQW [(match_operand:VDQW 1 "s_register_operand" "0")
+                      (match_operand:VDQW 2 "s_register_operand" "w")]
                      UNSPEC_VUZP1))
-   (set (match_operand:VDQW 2 "s_register_operand" "=w")
-        (unspec:VDQW [(match_operand:VDQW 3 "s_register_operand" "2")]
-		     UNSPEC_VUZP2))]
+   (set (match_operand:VDQW 3 "s_register_operand" "=2")
+        (unspec:VDQW [(match_dup 1) (match_dup 2)]
+                     UNSPEC_VUZP2))]
   "TARGET_NEON"
-  "vuzp.<V_sz_elem>\t%<V_reg>0, %<V_reg>2"
+  "vuzp.<V_sz_elem>\t%<V_reg>0, %<V_reg>3"
   [(set (attr "neon_type")
       (if_then_else (ne (symbol_ref "<Is_d_reg>") (const_int 0))
                     (const_string "neon_bp_simple")
