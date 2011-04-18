@@ -1,5 +1,8 @@
 2011-04-17  Jason Merrill  <jason@redhat.com>
 
+	PR c++/48531
+	* typeck2.c (build_functional_cast): Disallow array type.
+
 	* tree.c (get_target_expr): Handle VEC_INIT_EXPR.
 
 2011-04-17  Jan Hubicka  <jh@suse.cz>
