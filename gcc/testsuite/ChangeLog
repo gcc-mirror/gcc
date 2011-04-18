@@ -1,3 +1,9 @@
+2011-04-18  Ulrich Weigand  <ulrich.weigand@linaro.org>
+	    Ira Rosen  <ira.rosen@linaro.org>
+
+	PR target/48252
+	* gcc.target/arm/pr48252.c: New test.
+
 2011-04-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/48616
