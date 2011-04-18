@@ -1,3 +1,7 @@
+2011-04-18  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* obj-c++.dg/dwarf-2.mm: Skip on alpha*-dec-osf*.
+
 2011-04-18  Alexander Monakov  <amonakov@ispras.ru>
 
 	* gcc.dg/pr48235.c: Add dg-require-effective-target freorder.
