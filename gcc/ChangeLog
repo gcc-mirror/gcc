@@ -1,5 +1,7 @@
 2011-04-18  Jan Hubicka  <jh@suse.cz>
 
+	* ipa-inline.c (inline_small_functions): Fix pasto in previous patch.
+
 	* ipa-inline.c: Fix comment typos; do not inline gt-ipa-inline.h
 	(want_inline_function_called_once_p): Break out the logic from
 	ipa_inline.

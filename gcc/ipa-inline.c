@@ -1333,12 +1333,12 @@ inline_small_functions (void)
 	   }
       }
 
+  overall_size = initial_size;
   max_size = compute_max_insns (overall_size);
   min_size = overall_size;
   gcc_assert (in_lto_p
 	      || !max_count
 	      || (profile_info && flag_branch_probabilities));
-  overall_size = initial_size;
 
   while (!fibheap_empty (heap))
     {
