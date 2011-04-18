@@ -1,3 +1,7 @@
+2011-04-18  Dennis, CHENG Renquan  <crquan@fedoraproject.org>
+
+	* doc/passes.texi: Fill crossref nodes.
+
 2011-04-18  Jim Meyering  <meyering@redhat.com>
 
 	fix doubled-word typos in comments and strings
