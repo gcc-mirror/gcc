@@ -1,4 +1,5 @@
 ! { dg-do run }
+! { dg-add-options ieee }
 ! PR48589 Invalid G0/G0.d editing for NaN/infinity
 ! Test case by Thomas Henlich
 program test_g0_special
