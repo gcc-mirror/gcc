@@ -1,4 +1,4 @@
-@c markers: CROSSREF BUG TODO
+@c markers: BUG TODO
 
 @c Copyright (C) 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
 @c 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
@@ -32,7 +32,7 @@ where near complete.
 The language front end is invoked only once, via
 @code{lang_hooks.parse_file}, to parse the entire input.  The language
 front end may use any intermediate language representation deemed
-appropriate.  The C front end uses GENERIC trees (CROSSREF), plus
+appropriate.  The C front end uses GENERIC trees (@pxref{GENERIC}), plus
 a double handful of language specific tree codes defined in
 @file{c-common.def}.  The Fortran front end uses a completely different
 private representation.
@@ -46,10 +46,9 @@ private representation.
 At some point the front end must translate the representation used in the
 front end to a representation understood by the language-independent
 portions of the compiler.  Current practice takes one of two forms.
-The C front end manually invokes the gimplifier (CROSSREF) on each function,
+The C front end manually invokes the gimplifier (@pxref{GIMPLE}) on each function,
 and uses the gimplifier callbacks to convert the language-specific tree
-nodes directly to GIMPLE (CROSSREF) before passing the function off to
-be compiled.
+nodes directly to GIMPLE before passing the function off to be compiled.
 The Fortran front end converts from a private representation to GENERIC,
 which is later lowered to GIMPLE when the function is compiled.  Which
 route to choose probably depends on how well GENERIC (plus extensions)
@@ -111,11 +110,10 @@ definitions immediately or queue them for later processing.
 @cindex GIMPLE
 @dfn{Gimplification} is a whimsical term for the process of converting
 the intermediate representation of a function into the GIMPLE language
-(CROSSREF).  The term stuck, and so words like ``gimplification'',
+(@pxref{GIMPLE}).  The term stuck, and so words like ``gimplification'',
 ``gimplify'', ``gimplifier'' and the like are sprinkled throughout this
 section of code.
 
-@cindex GENERIC
 While a front end may certainly choose to generate GIMPLE directly if
 it chooses, this can be a moderately complex process unless the
 intermediate language used by the front end is already fairly simple.
