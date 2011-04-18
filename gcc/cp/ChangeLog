@@ -1,3 +1,7 @@
+2011-04-18  Jim Meyering  <meyering@redhat.com>
+
+	* pt.c (type_unification_real): Fix typo in comment: s/in in/in/.
+
 2011-04-17  Jan Hubicka  <jh@suse.cz>
 
 	* semantics.c (finish_goto_stmt): Do set UNINLINABLE flag on computed

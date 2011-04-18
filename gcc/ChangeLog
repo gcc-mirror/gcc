@@ -1,3 +1,12 @@
+2011-04-18  Jim Meyering  <meyering@redhat.com>
+
+	fix doubled-word typos in comments and strings
+	* config/alpha/vms-unwind.h: s/for for/for/
+	* config/arm/unwind-arm.h: Likewise.
+	* config/microblaze/microblaze.c: Likewise.
+	* config/sh/constraints.md: s/in in/in/
+	* tree-cfg.c (verify_types_in_gimple_reference): Likewise.
+
 2011-04-18  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.h (SSE_VEC_FLOAT_MODE_P): Remove.

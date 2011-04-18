@@ -13980,7 +13980,7 @@ type_unification_real (tree tparms,
   gcc_assert (ntparms > 0);
 
   /* Reset the number of non-defaulted template arguments contained
-     in in TARGS.  */
+     in TARGS.  */
   NON_DEFAULT_TEMPLATE_ARGS_COUNT (targs) = NULL_TREE;
 
   switch (strict)

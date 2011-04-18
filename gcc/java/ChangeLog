@@ -1,3 +1,7 @@
+2011-04-18  Jim Meyering  <meyering@redhat.com>
+
+	* jcf-parse.c: Fix typo in comment.
+
 2011-04-14  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* decl.c (poplevel): Use BLOCK_CHAIN and block_chainon.

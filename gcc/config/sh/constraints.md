@@ -1,5 +1,5 @@
 ;; Constraint definitions for Renesas / SuperH SH.
-;; Copyright (C) 2007, 2008 Free Software Foundation, Inc.
+;; Copyright (C) 2007, 2008, 2011 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -99,7 +99,7 @@
        (match_test "ival >= -128 && ival <= 127")))
 
 (define_constraint "I10"
-  "A signed 10-bit constant, as used in in SHmedia andi, ori."
+  "A signed 10-bit constant, as used in SHmedia andi, ori."
   (and (match_code "const_int")
        (match_test "ival >= -512 && ival <= 511")))
 

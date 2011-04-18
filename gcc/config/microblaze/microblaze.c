@@ -919,7 +919,7 @@ microblaze_rtx_costs (rtx x, int code, int outer_code ATTRIBUTE_UNUSED, int *tot
 	  {
 	    /* Add 1 to make shift slightly more expensive than add.  */
 	    *total = COSTS_N_INSNS (INTVAL (XEXP (x, 1))) + 1;
-	    /* Reduce shift costs for for special circumstances.  */
+	    /* Reduce shift costs for special circumstances.  */
 	    if (optimize_size && INTVAL (XEXP (x, 1)) > 5)
 	      *total -= 2;
 	    if (!optimize_size && INTVAL (XEXP (x, 1)) > 17)
