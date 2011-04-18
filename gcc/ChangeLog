@@ -1,3 +1,18 @@
+2011-04-18  Richard Guenther  <rguenther@suse.de>
+
+	Backported from 4.6 branch
+	2011-03-05  Zdenek Dvorak  <ook@ucw.cz>
+
+	PR rtl-optimization/47899
+	* cfgloopmanip.c (fix_bb_placements): Fix first argument
+	to flow_loop_nested_p when moving the loop upward.
+
+	2011-03-15  Richard Guenther  <rguenther@suse.de>
+ 
+	PR middle-end/48031
+	* fold-const.c (fold_indirect_ref_1): Do not create new variable-sized
+	or variable-indexed array accesses when in gimple form.
+
 2011-04-16  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* config/pa/pa.h (REGISTER_MOVE_COST): Increase to 18 cost of

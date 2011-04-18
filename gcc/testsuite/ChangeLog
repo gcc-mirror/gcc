@@ -1,3 +1,16 @@
+2011-04-18  Richard Guenther  <rguenther@suse.de>
+
+	Backported from 4.6 branch 
+	2011-03-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/48035
+	* g++.dg/inherit/virtual8.C: New test.
+
+	2011-03-05  Zdenek Dvorak  <ook@ucw.cz>
+
+	PR rtl-optimization/47899
+	* gcc.dg/pr47899.c: New test.
+
 2011-04-16  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from 4.6 branch

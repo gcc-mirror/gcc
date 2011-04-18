@@ -1,3 +1,16 @@
+2011-04-18  Richard Guenther  <rguenther@suse.de>
+
+	Backported from 4.6 branch 
+	2011-03-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/48035
+	* init.c (build_zero_init_1): Extracted from build_zero_init.
+	Add FIELD_SIZE argument, if non-NULL and field bit_position
+	as not smaller than that, don't add that field's initializer.
+	Pass DECL_SIZE as last argument to build_zero_init_1
+	for DECL_FIELD_IS_BASE fields.
+	(build_zero_init): Use build_zero_init_1.
+
 2011-03-28  Jason Merrill  <jason@redhat.com>
 
 	Revert:
