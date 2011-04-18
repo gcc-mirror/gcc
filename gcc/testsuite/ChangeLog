@@ -1,5 +1,11 @@
 2011-04-18  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
+	PR testsuite/48251
+	* gcc.dg/guality/guality.exp: Disable on alpha*-dec-osf*.
+	* gfortran.dg/guality/guality.exp: Likewise.
+
+2011-04-18  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
 	* gfortran.dg/fmt_g0_5.f08: Use dg-add-options ieee.
 
 2011-04-18  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
