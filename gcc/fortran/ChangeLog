@@ -1,3 +1,19 @@
+2011-04-18  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/18918
+	* iresolve.c (gfc_resolve_image_index): Set ts.type.
+	* simplify.c (gfc_simplify_image_index): Don't abort if the bounds
+	are not known at compile time and handle -fcoarray=lib.
+	* trans-intrinsics.c (gfc_conv_intrinsic_function): Handle
+	IMAGE_INDEX.
+	(conv_intrinsic_cobound): Fix comment typo.
+	(trans_this_image): New function.
+	* trans-array.c (gfc_unlikely): Move to trans.c.
+	* trans.c (gfc_unlikely): Function moved from trans-array.c.
+	(gfc_trans_runtime_check): Use it.
+	* trans-io.c (gfc_trans_io_runtime_check): Ditto.
+	* trans.h (gfc_unlikely): Add prototype.
+
 2011-04-18  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/48462

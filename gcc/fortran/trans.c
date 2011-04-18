@@ -505,11 +505,7 @@ gfc_trans_runtime_check (bool error, bool once, tree cond, stmtblock_t * pblock,
       else
 	cond = fold_convert (long_integer_type_node, cond);
 
-      tmp = build_int_cst (long_integer_type_node, 0);
-      cond = build_call_expr_loc (where->lb->location,
-			      built_in_decls[BUILT_IN_EXPECT], 2, cond, tmp);
-      cond = fold_convert (boolean_type_node, cond);
-
+      cond = gfc_unlikely (cond);
       tmp = fold_build3_loc (where->lb->location, COND_EXPR, void_type_node,
 			     cond, body,
 			     build_empty_stmt (where->lb->location));
@@ -1564,4 +1560,20 @@ gfc_finish_wrapped_block (gfc_wrapped_block* block)
   block->cleanup = NULL_TREE;
 
   return result;
+}
+
+
+/* Helper function for marking a boolean expression tree as unlikely.  */
+
+tree
+gfc_unlikely (tree cond)
+{
+  tree tmp;
+
+  cond = fold_convert (long_integer_type_node, cond);
+  tmp = build_zero_cst (long_integer_type_node);
+  cond = build_call_expr_loc (input_location,
+			      built_in_decls[BUILT_IN_EXPECT], 2, cond, tmp);
+  cond = fold_convert (boolean_type_node, cond);
+  return cond;
 }

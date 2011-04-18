@@ -6189,7 +6189,7 @@ gfc_simplify_image_index (gfc_expr *coarray, gfc_expr *sub)
   int d;
 
   if (!is_constant_array_expr (sub))
-    goto not_implemented; /* return NULL;*/
+    return NULL;
 
   /* Follow any component references.  */
   as = coarray->symtree->n.sym->as;
@@ -6198,7 +6198,7 @@ gfc_simplify_image_index (gfc_expr *coarray, gfc_expr *sub)
       as = ref->u.ar.as;
 
   if (as->type == AS_DEFERRED)
-    goto not_implemented; /* return NULL;*/
+    return NULL;
 
   /* "valid sequence of cosubscripts" are required; thus, return 0 unless
      the cosubscript addresses the first image.  */
@@ -6221,7 +6221,7 @@ gfc_simplify_image_index (gfc_expr *coarray, gfc_expr *sub)
       ca_bound = simplify_bound_dim (coarray, NULL, d + as->rank, 0, as,
 				     NULL, true);
       if (ca_bound == NULL)
-	goto not_implemented; /* return NULL */
+	return NULL;
 
       if (ca_bound == &gfc_bad_expr)
 	return ca_bound;
@@ -6285,6 +6285,10 @@ gfc_simplify_image_index (gfc_expr *coarray, gfc_expr *sub)
       return &gfc_bad_expr;
     }
 
+
+  if (gfc_option.coarray != GFC_FCOARRAY_SINGLE && !first_image)
+    return NULL;
+
   result = gfc_get_constant_expr (BT_INTEGER, gfc_default_integer_kind,
 				  &gfc_current_locus);
   if (first_image)
@@ -6293,11 +6297,6 @@ gfc_simplify_image_index (gfc_expr *coarray, gfc_expr *sub)
     mpz_set_si (result->value.integer, 0);
 
   return result;
-
-not_implemented:
-  gfc_error ("Not yet implemented: IMAGE_INDEX for coarray with non-constant "
-	     "cobounds at %L", &coarray->where);
-  return &gfc_bad_expr;
 }
 
 
