@@ -1,3 +1,7 @@
+2011-04-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* dwarf2out.c (is_redundant_typedef): Add 'inline' to prototype.
+
 2011-04-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/48616
