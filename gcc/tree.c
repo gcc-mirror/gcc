@@ -9964,7 +9964,7 @@ signed_type_for (tree type)
 tree
 upper_bound_in_type (tree outer, tree inner)
 {
-  unsigned HOST_WIDE_INT lo, hi;
+  double_int high;
   unsigned int det = 0;
   unsigned oprec = TYPE_PRECISION (outer);
   unsigned iprec = TYPE_PRECISION (inner);
@@ -10011,18 +10011,18 @@ upper_bound_in_type (tree outer, tree inner)
   /* Compute 2^^prec - 1.  */
   if (prec <= HOST_BITS_PER_WIDE_INT)
     {
-      hi = 0;
-      lo = ((~(unsigned HOST_WIDE_INT) 0)
+      high.high = 0;
+      high.low = ((~(unsigned HOST_WIDE_INT) 0)
 	    >> (HOST_BITS_PER_WIDE_INT - prec));
     }
   else
     {
-      hi = ((~(unsigned HOST_WIDE_INT) 0)
+      high.high = ((~(unsigned HOST_WIDE_INT) 0)
 	    >> (2 * HOST_BITS_PER_WIDE_INT - prec));
-      lo = ~(unsigned HOST_WIDE_INT) 0;
+      high.low = ~(unsigned HOST_WIDE_INT) 0;
     }
 
-  return build_int_cst_wide (outer, lo, hi);
+  return double_int_to_tree (outer, high);
 }
 
 /* Returns the smallest value obtainable by casting something in INNER type to
@@ -10031,7 +10031,7 @@ upper_bound_in_type (tree outer, tree inner)
 tree
 lower_bound_in_type (tree outer, tree inner)
 {
-  unsigned HOST_WIDE_INT lo, hi;
+  double_int low;
   unsigned oprec = TYPE_PRECISION (outer);
   unsigned iprec = TYPE_PRECISION (inner);
 
@@ -10042,7 +10042,7 @@ lower_bound_in_type (tree outer, tree inner)
 	 contains all values of INNER type.  In particular, both INNER
 	 and OUTER types have zero in common.  */
       || (oprec > iprec && TYPE_UNSIGNED (inner)))
-    lo = hi = 0;
+    low.low = low.high = 0;
   else
     {
       /* If we are widening a signed type to another signed type, we
@@ -10053,18 +10053,18 @@ lower_bound_in_type (tree outer, tree inner)
 
       if (prec <= HOST_BITS_PER_WIDE_INT)
 	{
-	  hi = ~(unsigned HOST_WIDE_INT) 0;
-	  lo = (~(unsigned HOST_WIDE_INT) 0) << (prec - 1);
+	  low.high = ~(unsigned HOST_WIDE_INT) 0;
+	  low.low = (~(unsigned HOST_WIDE_INT) 0) << (prec - 1);
 	}
       else
 	{
-	  hi = ((~(unsigned HOST_WIDE_INT) 0)
+	  low.high = ((~(unsigned HOST_WIDE_INT) 0)
 		<< (prec - HOST_BITS_PER_WIDE_INT - 1));
-	  lo = 0;
+	  low.low = 0;
 	}
     }
 
-  return build_int_cst_wide (outer, lo, hi);
+  return double_int_to_tree (outer, low);
 }
 
 /* Return nonzero if two operands that are suitable for PHI nodes are
