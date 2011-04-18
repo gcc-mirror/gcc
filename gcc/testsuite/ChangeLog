@@ -1,3 +1,7 @@
+2011-04-18  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.dg/ipa/pr48195.c: Add dg-require-effective-target lto.
+
 2011-04-18  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/46364
