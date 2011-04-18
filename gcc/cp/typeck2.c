@@ -1534,6 +1534,15 @@ build_functional_cast (tree exp, tree parms, tsubst_flags_t complain)
   else
     type = exp;
 
+  /* We need to check this explicitly, since value-initialization of
+     arrays is allowed in other situations.  */
+  if (TREE_CODE (type) == ARRAY_TYPE)
+    {
+      if (complain & tf_error)
+	error ("functional cast to array type %qT", type);
+      return error_mark_node;
+    }
+
   if (processing_template_decl)
     {
       tree t;

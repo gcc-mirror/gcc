@@ -369,6 +369,8 @@ build_value_init (tree type, tsubst_flags_t complain)
 tree
 build_value_init_noctor (tree type, tsubst_flags_t complain)
 {
+  /* FIXME the class and array cases should just use digest_init once it is
+     SFINAE-enabled.  */
   if (CLASS_TYPE_P (type))
     {
       gcc_assert (!TYPE_NEEDS_CONSTRUCTING (type));
@@ -450,7 +452,9 @@ build_value_init_noctor (tree type, tsubst_flags_t complain)
 	  if (ce->value == error_mark_node)
 	    return error_mark_node;
 
-	  /* The gimplifier can't deal with a RANGE_EXPR of TARGET_EXPRs.  */
+	  /* We shouldn't have gotten here for anything that would need
+	     non-trivial initialization, and gimplify_init_ctor_preeval
+	     would need to be fixed to allow it.  */
 	  gcc_assert (TREE_CODE (ce->value) != TARGET_EXPR
 		      && TREE_CODE (ce->value) != AGGR_INIT_EXPR);
 	}
