@@ -1,3 +1,8 @@
+2011-04-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/48632
+	* g++.dg/gomp/pr48632.C: New test.
+
 2011-04-18  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/i386/sse2-maskmovdqu.c: New test.
