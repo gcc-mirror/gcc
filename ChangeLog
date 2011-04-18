@@ -1,3 +1,9 @@
+2011-04-18  Jack Howarth  <howarth@bromo.med.uc.edu>
+
+	PR lto/48086
+	* configure.ac: Re-enable LTO on *-apple-darwin9*.
+	* configure: Regenerate.
+
 2011-04-16  Jim Meyering  <meyering@redhat.com>
 
 	* MAINTAINERS (Write After Approval): Add myself.
