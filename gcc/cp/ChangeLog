@@ -1,5 +1,8 @@
 2011-04-18  Jason Merrill  <jason@redhat.com>
 
+	PR c++/48569
+	* typeck2.c (build_functional_cast): Handle VOID_TYPE.
+
 	PR c++/48537
 	* init.c (build_value_init): Handle UNION_TYPE the same.
 
