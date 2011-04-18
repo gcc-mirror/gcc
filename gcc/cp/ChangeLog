@@ -1,3 +1,7 @@
+2011-04-17  Jason Merrill  <jason@redhat.com>
+
+	* tree.c (get_target_expr): Handle VEC_INIT_EXPR.
+
 2011-04-17  Jan Hubicka  <jh@suse.cz>
 
 	* class.c (cp_fold_obj_type_ref): Drop vtable_method.
