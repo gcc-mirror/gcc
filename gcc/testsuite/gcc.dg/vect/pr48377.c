@@ -1,5 +1,4 @@
 /* PR tree-optimization/48377 */
-/* { dg-do run } */
 
 typedef unsigned int U __attribute__((__aligned__ (1), __may_alias__));
 
