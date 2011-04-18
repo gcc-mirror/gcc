@@ -1,3 +1,13 @@
+2011-04-18  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR libfortran/47571
+	* configure: Regenerated.
+	* config.h.in: Regenerated.
+	* acinclude.m4: Add alpha*-dec-osf* to gthread blacklist.
+	* configure.ac: Use separate symbol for clock_gettime in librt.
+	* intrinsics/system_clock.c: Use weakrefs only when needed and
+	supported.
+
 2011-03-28  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	Backport from mainline:

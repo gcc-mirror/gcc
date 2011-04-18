@@ -25314,10 +25314,11 @@ $as_echo "#define HAVE_FEENABLEEXCEPT 1" >>confdefs.h
 fi
 
 
-# At least for glibc, clock_gettime is in librt.  But don't pull that
-# in if it still doesn't give us the function we want.
-# This test is copied from libgomp, and modified to not link in -lrt
-# as libgfortran calls clock_gettime via a weak reference.
+# At least for glibc and Tru64, clock_gettime is in librt.  But don't
+# pull that in if it still doesn't give us the function we want.  This
+# test is copied from libgomp, and modified to not link in -lrt as
+# libgfortran calls clock_gettime via a weak reference if it's found
+# in librt.
 if test $ac_cv_func_clock_gettime = no; then
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for clock_gettime in -lrt" >&5
 $as_echo_n "checking for clock_gettime in -lrt... " >&6; }
@@ -25360,7 +25361,7 @@ fi
 $as_echo "$ac_cv_lib_rt_clock_gettime" >&6; }
 if test "x$ac_cv_lib_rt_clock_gettime" = x""yes; then :
 
-$as_echo "#define HAVE_CLOCK_GETTIME 1" >>confdefs.h
+$as_echo "#define HAVE_CLOCK_GETTIME_LIBRT 1" >>confdefs.h
 
 fi
 
@@ -25698,7 +25699,7 @@ $as_echo "#define SUPPORTS_WEAK 1" >>confdefs.h
 
   fi
   case "$host" in
-    *-*-darwin* | *-*-hpux* | *-*-cygwin* | *-*-mingw* )
+    *-*-darwin* | *-*-hpux* | *-*-cygwin* | *-*-mingw* | alpha*-dec-osf* )
 
 $as_echo "#define GTHREAD_USE_WEAK 0" >>confdefs.h
 

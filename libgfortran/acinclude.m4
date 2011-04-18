@@ -108,7 +108,7 @@ AC_DEFUN([LIBGFOR_GTHREAD_WEAK], [
 	      [Define to 1 if the target supports #pragma weak])
   fi
   case "$host" in
-    *-*-darwin* | *-*-hpux* | *-*-cygwin* | *-*-mingw* )
+    *-*-darwin* | *-*-hpux* | *-*-cygwin* | *-*-mingw* | alpha*-dec-osf* )
       AC_DEFINE(GTHREAD_USE_WEAK, 0,
 		[Define to 0 if the target shouldn't use #pragma weak])
       ;;

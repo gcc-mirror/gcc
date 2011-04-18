@@ -210,6 +210,9 @@
 /* Define to 1 if you have the `clock_gettime' function. */
 #undef HAVE_CLOCK_GETTIME
 
+/* Define to 1 if you have the `clock_gettime' function in librt. */
+#undef HAVE_CLOCK_GETTIME_LIBRT
+
 /* libm includes clog */
 #undef HAVE_CLOG
 
