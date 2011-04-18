@@ -15,7 +15,7 @@
    this, we will always split the stack, because of memcpy and
    memmove.  */
 extern struct __go_open_array
-__go_append (struct __go_open_array, void *, size_t, size_t)
+__go_append (struct __go_open_array, void *, uintptr_t, uintptr_t)
   __attribute__ ((no_split_stack));
 
 struct __go_open_array
