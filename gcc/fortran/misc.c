@@ -42,16 +42,6 @@ gfc_getmem (size_t n)
 }
 
 
-void
-gfc_free (void *p)
-{
-  /* The parentheses around free are needed in order to call not
-     the redefined free of gfortran.h.  */
-  if (p != NULL)
-    (free) (p);
-}
-
-
 /* Get terminal width.  */
 
 int

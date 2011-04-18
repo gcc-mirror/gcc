@@ -1,5 +1,11 @@
 2011-04-18  Jim Meyering  <meyering@redhat.com>
 
+	remove now-unused definition of gfc_free
+	* misc.c (gfc_free): Remove function.
+	* gfortran.h (gfc_free): Remove its prototype.
+
+2011-04-18  Jim Meyering  <meyering@redhat.com>
+
 	convert each use of gfc_free (p) to free (p)
 	Do that by running this command:
 	  perl -pi -e    's/\bgfc_free ?\(/free (/' \
