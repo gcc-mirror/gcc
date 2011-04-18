@@ -1,5 +1,18 @@
 2011-04-18  Richard Guenther  <rguenther@suse.de>
 
+	Backported from 4.6 branch
+	2011-01-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/47290
+	* g++.dg/torture/pr47290.C: New test.
+
+	2010-05-29  Jan Hubicka  <jh@suse.cz>
+
+	PR tree-optimization/46364
+	* g++.dg/torture/pr46364.C: New testcase.
+
+2011-04-18  Richard Guenther  <rguenther@suse.de>
+
 	Backported from 4.6 branch 
 	2011-03-11  Jakub Jelinek  <jakub@redhat.com>
 

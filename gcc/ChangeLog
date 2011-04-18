@@ -1,6 +1,22 @@
 2011-04-18  Richard Guenther  <rguenther@suse.de>
 
 	Backported from 4.6 branch
+	2011-01-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/47290
+	* tree-eh.c (infinite_empty_loop_p): New function.
+	(cleanup_empty_eh): Use it.
+
+	2010-05-29  Jan Hubicka  <jh@suse.cz>
+
+	PR tree-optimization/46364
+	* cgraphunit.c (cgraph_materialize_clone): Only remove calles, refs
+	and body;
+	not the whole node for masters of materialized clones.
+
+2011-04-18  Richard Guenther  <rguenther@suse.de>
+
+	Backported from 4.6 branch
 	2011-03-05  Zdenek Dvorak  <ook@ucw.cz>
 
 	PR rtl-optimization/47899
