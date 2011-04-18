@@ -1,3 +1,7 @@
+2011-04-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* dwarf2out.c (is_redundant_typedef): Add 'inline' to prototype.
+
 2011-04-18  Richard Guenther  <rguenther@suse.de>
 
 	Backported from 4.6 branch
