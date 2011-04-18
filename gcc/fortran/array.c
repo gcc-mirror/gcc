@@ -237,6 +237,12 @@ coarray:
 			 corank, ar->codimen);
 	      return MATCH_ERROR;
 	    }
+	  if (ar->codimen > corank)
+	    {
+	      gfc_error ("Too many codimensions at %C, expected %d not %d",
+			 corank, ar->codimen);
+	      return MATCH_ERROR;
+	    }
 	  return MATCH_YES;
 	}
 

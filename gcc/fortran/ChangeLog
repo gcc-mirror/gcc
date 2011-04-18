@@ -1,6 +1,14 @@
 2011-04-18  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/18918
+	* array.c (gfc_match_array_ref): Check for too many codimensions.
+	* check.c (gfc_check_image_index): Check number of elements
+	in SUB argument.
+	* simplify.c (gfc_simplify_image_index): Remove unreachable checks.
+
+2011-04-18  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/18918
 	* iresolve.c (gfc_resolve_image_index): Set ts.type.
 	* simplify.c (gfc_simplify_image_index): Don't abort if the bounds
 	are not known at compile time and handle -fcoarray=lib.

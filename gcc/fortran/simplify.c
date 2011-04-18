@@ -6211,12 +6211,7 @@ gfc_simplify_image_index (gfc_expr *coarray, gfc_expr *sub)
       gfc_expr *ca_bound;
       int cmp;
 
-      if (sub_cons == NULL)
-	{
-	  gfc_error ("Too few elements in expression for SUB= argument at %L",
-		     &sub->where);
-	  return &gfc_bad_expr;
-	}
+      gcc_assert (sub_cons != NULL);
 
       ca_bound = simplify_bound_dim (coarray, NULL, d + as->rank, 0, as,
 				     NULL, true);
@@ -6278,13 +6273,7 @@ gfc_simplify_image_index (gfc_expr *coarray, gfc_expr *sub)
       sub_cons = gfc_constructor_next (sub_cons);
     }
 
-  if (sub_cons != NULL)
-    {
-      gfc_error ("Too many elements in expression for SUB= argument at %L",
-		 &sub->where);
-      return &gfc_bad_expr;
-    }
-
+  gcc_assert (sub_cons == NULL);
 
   if (gfc_option.coarray != GFC_FCOARRAY_SINGLE && !first_image)
     return NULL;
