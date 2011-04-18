@@ -6893,23 +6893,12 @@
    (set_attr "prefix" "orig,vex")
    (set_attr "mode" "TI")])
 
-(define_insn "avx_movmsk<ssemodesuffix>256"
+(define_insn "<sse>_movmsk<ssemodesuffix><avxmodesuffix>"
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(unspec:SI
-	  [(match_operand:AVX256MODEF2P 1 "register_operand" "x")]
+	  [(match_operand:VF 1 "register_operand" "x")]
 	  UNSPEC_MOVMSK))]
-  "AVX256_VEC_FLOAT_MODE_P (<MODE>mode)"
-  "vmovmsk<ssemodesuffix>\t{%1, %0|%0, %1}"
-  [(set_attr "type" "ssecvt")
-   (set_attr "prefix" "vex")
-   (set_attr "mode" "<MODE>")])
-
-(define_insn "<sse>_movmsk<ssemodesuffix>"
-  [(set (match_operand:SI 0 "register_operand" "=r")
-	(unspec:SI
-	  [(match_operand:SSEMODEF2P 1 "register_operand" "x")]
-	  UNSPEC_MOVMSK))]
-  "SSE_VEC_FLOAT_MODE_P (<MODE>mode)"
+  ""
   "%vmovmsk<ssemodesuffix>\t{%1, %0|%0, %1}"
   [(set_attr "type" "ssemov")
    (set_attr "prefix" "maybe_vex")
@@ -6935,35 +6924,18 @@
   "TARGET_SSE2")
 
 (define_insn "*sse2_maskmovdqu"
-  [(set (mem:V16QI (match_operand:SI 0 "register_operand" "D"))
+  [(set (mem:V16QI (match_operand:P 0 "register_operand" "D"))
 	(unspec:V16QI [(match_operand:V16QI 1 "register_operand" "x")
 		       (match_operand:V16QI 2 "register_operand" "x")
 		       (mem:V16QI (match_dup 0))]
 		      UNSPEC_MASKMOV))]
-  "TARGET_SSE2 && !TARGET_64BIT"
-  ;; @@@ check ordering of operands in intel/nonintel syntax
-  "%vmaskmovdqu\t{%2, %1|%1, %2}"
-  [(set_attr "type" "ssemov")
-   (set_attr "prefix_data16" "1")
-   ;; The implicit %rdi operand confuses default length_vex computation.
-   (set_attr "length_vex" "3")
-   (set_attr "prefix" "maybe_vex")
-   (set_attr "mode" "TI")])
-
-(define_insn "*sse2_maskmovdqu_rex64"
-  [(set (mem:V16QI (match_operand:DI 0 "register_operand" "D"))
-	(unspec:V16QI [(match_operand:V16QI 1 "register_operand" "x")
-		       (match_operand:V16QI 2 "register_operand" "x")
-		       (mem:V16QI (match_dup 0))]
-		      UNSPEC_MASKMOV))]
-  "TARGET_SSE2 && TARGET_64BIT"
-  ;; @@@ check ordering of operands in intel/nonintel syntax
+  "TARGET_SSE2"
   "%vmaskmovdqu\t{%2, %1|%1, %2}"
   [(set_attr "type" "ssemov")
    (set_attr "prefix_data16" "1")
    ;; The implicit %rdi operand confuses default length_vex computation.
    (set (attr "length_vex")
-     (symbol_ref ("REGNO (operands[2]) >= FIRST_REX_SSE_REG ? 3 + 1 : 2 + 1")))
+     (symbol_ref ("3 + REX_SSE_REGNO_P (REGNO (operands[2]))")))
    (set_attr "prefix" "maybe_vex")
    (set_attr "mode" "TI")])
 
@@ -10349,28 +10321,33 @@
    (set_attr "prefix" "vex")
    (set_attr "mode" "V8SF")])
 
-(define_insn "avx_maskload<ssemodesuffix><avxmodesuffix>"
-  [(set (match_operand:AVXMODEF2P 0 "register_operand" "=x")
-	(unspec:AVXMODEF2P
-	  [(match_operand:AVXMODEF2P 1 "memory_operand" "m")
-	   (match_operand:<avxpermvecmode> 2 "register_operand" "x")
+(define_expand "avx_maskload<ssemodesuffix><avxmodesuffix>"
+  [(set (match_operand:VF 0 "register_operand" "")
+	(unspec:VF
+	  [(match_operand:<avxpermvecmode> 2 "register_operand" "")
+	   (match_operand:VF 1 "memory_operand" "")
 	   (match_dup 0)]
-	  UNSPEC_MASKLOAD))]
-  "TARGET_AVX"
-  "vmaskmov<ssemodesuffix>\t{%1, %2, %0|%0, %2, %1}"
-  [(set_attr "type" "sselog1")
-   (set_attr "prefix_extra" "1")
-   (set_attr "prefix" "vex")
-   (set_attr "mode" "<MODE>")])
+	  UNSPEC_MASKMOV))]
+  "TARGET_AVX")
 
-(define_insn "avx_maskstore<ssemodesuffix><avxmodesuffix>"
-  [(set (match_operand:AVXMODEF2P 0 "memory_operand" "=m")
-	(unspec:AVXMODEF2P
-	  [(match_operand:<avxpermvecmode> 1 "register_operand" "x")
-	   (match_operand:AVXMODEF2P 2 "register_operand" "x")
+(define_expand "avx_maskstore<ssemodesuffix><avxmodesuffix>"
+  [(set (match_operand:VF 0 "memory_operand" "")
+	(unspec:VF
+	  [(match_operand:<avxpermvecmode> 1 "register_operand" "")
+	   (match_operand:VF 2 "register_operand" "")
 	   (match_dup 0)]
-	  UNSPEC_MASKSTORE))]
-  "TARGET_AVX"
+	  UNSPEC_MASKMOV))]
+  "TARGET_AVX")
+
+(define_insn "*avx_maskmov<ssemodesuffix><avxmodesuffix>"
+  [(set (match_operand:VF 0 "nonimmediate_operand" "=x,m")
+	(unspec:VF
+	  [(match_operand:<avxpermvecmode> 1 "register_operand" "x,x")
+	   (match_operand:VF 2 "nonimmediate_operand" "m,x")
+	   (match_dup 0)]
+	  UNSPEC_MASKMOV))]
+  "TARGET_AVX
+   && (REG_P (operands[0]) == MEM_P (operands[2]))"
   "vmaskmov<ssemodesuffix>\t{%2, %1, %0|%0, %1, %2}"
   [(set_attr "type" "sselog1")
    (set_attr "prefix_extra" "1")
