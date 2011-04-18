@@ -1,5 +1,14 @@
 2011-04-18  Richard Guenther  <rguenther@suse.de>
 
+	* gimple.h (gimple_call_addr_fndecl): New function.
+	(gimple_call_fndecl): Use it.
+	* gimple-fold.c (gimple_fold_call): Fold away OBJ_TYPE_REFs
+	for direct calls.
+	* tree-ssa-ccp.c (ccp_fold_stmt): Remove OBJ_TYPE_REF folding.
+	* tree-ssa-pre.c (eliminate): Also simplify indirect OBJ_TYPE_REFs.
+
+2011-04-18  Richard Guenther  <rguenther@suse.de>
+
 	PR middle-end/48650
 	* tree.c (build_string): STRING_CST is now derived from tree_typed.
 

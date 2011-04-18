@@ -4380,13 +4380,18 @@ eliminate (void)
 	    }
 	  /* Visit indirect calls and turn them into direct calls if
 	     possible.  */
-	  if (is_gimple_call (stmt)
-	      && TREE_CODE (gimple_call_fn (stmt)) == SSA_NAME)
+	  if (is_gimple_call (stmt))
 	    {
 	      tree orig_fn = gimple_call_fn (stmt);
-	      tree fn = VN_INFO (orig_fn)->valnum;
-	      if (TREE_CODE (fn) == ADDR_EXPR
-		  && TREE_CODE (TREE_OPERAND (fn, 0)) == FUNCTION_DECL
+	      tree fn;
+	      if (TREE_CODE (orig_fn) == SSA_NAME)
+		fn = VN_INFO (orig_fn)->valnum;
+	      else if (TREE_CODE (orig_fn) == OBJ_TYPE_REF
+		       && TREE_CODE (OBJ_TYPE_REF_EXPR (orig_fn)) == SSA_NAME)
+		fn = VN_INFO (OBJ_TYPE_REF_EXPR (orig_fn))->valnum;
+	      else
+		continue;
+	      if (gimple_call_addr_fndecl (fn) != NULL_TREE
 		  && useless_type_conversion_p (TREE_TYPE (orig_fn),
 						TREE_TYPE (fn)))
 		{
