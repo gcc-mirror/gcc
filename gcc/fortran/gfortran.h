@@ -2370,7 +2370,6 @@ void gfc_end_source_files (void);
 
 /* misc.c */
 void *gfc_getmem (size_t) ATTRIBUTE_MALLOC;
-void gfc_free (void *);
 int gfc_terminal_width (void);
 void gfc_clear_ts (gfc_typespec *);
 FILE *gfc_open_file (const char *);
