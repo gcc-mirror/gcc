@@ -1410,7 +1410,7 @@ ipcp_insert_stage (void)
       if (new_size + growth > max_new_size)
 	break;
       if (growth
-	  && optimize_function_for_size_p (DECL_STRUCT_FUNCTION (node->decl)))
+	  && cgraph_optimize_for_size_p (node))
 	{
 	  if (dump_file)
 	    fprintf (dump_file, "Not versioning, cold code would grow");
