@@ -595,7 +595,6 @@ struct cgraph_node *cgraph_function_versioning (struct cgraph_node *,
 						const char *);
 void tree_function_versioning (tree, tree, VEC (ipa_replace_map_p,gc)*, bool, bitmap,
 			       bitmap, basic_block);
-struct cgraph_node *save_inline_function_body (struct cgraph_node *);
 void record_references_in_initializer (tree, bool);
 bool cgraph_process_new_functions (void);
 
@@ -926,7 +925,6 @@ cgraph_edge_recursive_p (struct cgraph_edge *e)
   else
     return e->caller->decl == e->callee->decl;
 }
-
 
 /* FIXME: inappropriate dependency of cgraph on IPA.  */
 #include "ipa-ref-inline.h"

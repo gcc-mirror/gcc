@@ -63,6 +63,7 @@ DEF_VEC_O(inline_summary_t);
 DEF_VEC_ALLOC_O(inline_summary_t,heap);
 extern VEC(inline_summary_t,heap) *inline_summary_vec;
 
+/* In ipa-inline-analysis.c  */
 void debug_inline_summary (struct cgraph_node *);
 void dump_inline_summaries (FILE *f);
 void inline_generate_summary (void);
@@ -73,6 +74,14 @@ void initialize_inline_failed (struct cgraph_edge *);
 int estimate_time_after_inlining (struct cgraph_node *, struct cgraph_edge *);
 int estimate_size_after_inlining (struct cgraph_node *, struct cgraph_edge *);
 int estimate_growth (struct cgraph_node *);
+
+/* In ipa-inline-transform.c  */
+bool inline_call (struct cgraph_edge *, bool, VEC (cgraph_edge_p, heap) **, int *);
+unsigned int inline_transform (struct cgraph_node *);
+void clone_inlined_nodes (struct cgraph_edge *e, bool, bool, int *);
+
+extern int ncalls_inlined;
+extern int nfunctions_inlined;
 
 static inline struct inline_summary *
 inline_summary (struct cgraph_node *node)
