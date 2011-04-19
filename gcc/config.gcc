@@ -668,6 +668,16 @@ case ${target} in
 *-*-solaris2*)
   extra_options="${extra_options} sol2.opt"
   ;;
+*-*-*vms*)
+  extra_options="${extra_options} vms/vms.opt"
+  xmake_file=vms/x-vms
+  tmake_file="vms/t-vms"
+  if test x$gnu_ld != xyes; then
+    # Build wrappers for native case.
+    extra_programs="ld\$(exeext) ar\$(exeext)"
+    tmake_file="$tmake_file vms/t-vmsnative"
+  fi
+  ;;
 *-*-vxworks*)
   tmake_file=t-vxworks
   xm_defines=POSIX
@@ -752,20 +762,12 @@ alpha*-dec-osf5.1*)
 alpha64-dec-*vms*)
 	tm_file="${tm_file} alpha/vms.h alpha/vms64.h"
 	xm_file="alpha/xm-vms.h vms/xm-vms64.h"
-	tmake_file="alpha/t-alpha vms/t-vms alpha/t-vms alpha/t-ieee"
-	xmake_file=vms/x-vms
-	exeext=.exe
-	install_headers_dir=install-headers-cp
-	extra_options="${extra_options} vms/vms.opt"
+	tmake_file="${tmake_file} alpha/t-alpha vms/t-vms64 alpha/t-vms alpha/t-ieee"
 	;;
 alpha*-dec-*vms*)
 	tm_file="${tm_file} alpha/vms.h"
 	xm_file="alpha/xm-vms.h"
-	tmake_file="alpha/t-alpha vms/t-vms alpha/t-vms alpha/t-ieee"
-	xmake_file=vms/x-vms
-	exeext=.exe
-	install_headers_dir=install-headers-cp
-	extra_options="${extra_options} vms/vms.opt"
+	tmake_file="${tmake_file} alpha/t-alpha alpha/t-vms alpha/t-ieee"
 	;;
 arm-wrs-vxworks)
 	tm_file="elfos.h arm/elf.h arm/aout.h ${tm_file} vx-common.h vxworks.h arm/vxworks.h"
@@ -1582,16 +1584,13 @@ ia64*-*-hpux*)
 ia64-hp-*vms*)
 	tm_file="${tm_file} elfos.h ia64/sysv4.h ia64/elf.h ia64/vms.h ia64/vms64.h"
 	xm_file="vms/xm-vms.h vms/xm-vms64.h"
-	tmake_file="vms/t-vms ia64/t-ia64 ia64/t-vms"
-	xmake_file=vms/x-vms
+	tmake_file="${tmake_file} vms/t-vms64 ia64/t-ia64 ia64/t-vms"
 	target_cpu_default="0"
 	if test x$gas = xyes
 	then
 		target_cpu_default="${target_cpu_default}|MASK_GNU_AS"
 	fi
-	exeext=.exe
-	install_headers_dir=install-headers-cp
-	extra_options="${extra_options} vms/vms.opt ia64/vms.opt"
+	extra_options="${extra_options} ia64/vms.opt"
 	;;
 iq2000*-*-elf*)
         tm_file="elfos.h newlib-stdint.h iq2000/iq2000.h"
