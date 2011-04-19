@@ -1,5 +1,9 @@
 2011-04-19  Janne Blomqvist  <jb@gcc.gnu.org>
 
+	* scanner.c (load_file): Use XCNEWVAR instead of xcalloc.
+
+2011-04-19  Janne Blomqvist  <jb@gcc.gnu.org>
+
 	* frontend-passes.c (gfc_run_passes): Use XDELETEVEC instead of
 	free.
 
