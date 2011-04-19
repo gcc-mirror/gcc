@@ -58,6 +58,7 @@ extern bool arm_legitimize_reload_address (rtx *, enum machine_mode, int, int,
 					   int);
 extern rtx thumb_legitimize_reload_address (rtx *, enum machine_mode, int, int,
 					    int);
+extern int thumb1_legitimate_address_p (enum machine_mode, rtx, int);
 extern int arm_const_double_rtx (rtx);
 extern int neg_const_double_rtx_ok_for_fpa (rtx);
 extern int vfp3_const_double_rtx (rtx);

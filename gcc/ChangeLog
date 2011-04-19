@@ -1,3 +1,12 @@
+2011-04-19  Wei Guozhi  <carrot@google.com>
+
+	PR target/47855
+	* config/arm/arm-protos.h (thumb1_legitimate_address_p): New prototype.
+	* config/arm/arm.c (thumb1_legitimate_address_p): Remove the static
+	linkage.
+	* config/arm/constraints.md (Uu): New constraint.
+	* config/arm/arm.md (*arm_movqi_insn): Compute attr "length".
+
 2011-04-19  Tristan Gingold  <gingold@adacore.com>
 
 	* config.gcc (-*-*-*vms): Added.
