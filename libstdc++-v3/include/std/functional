@@ -212,19 +212,6 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
       static const bool value = sizeof(__test((_Tp*)0)) == 1;
     };
 
-  /// Turns a function type into a function pointer type
-  template<typename _Tp, bool _IsFunctionType = is_function<_Tp>::value>
-    struct _Function_to_function_pointer
-    {
-      typedef _Tp type;
-    };
-
-  template<typename _Tp>
-    struct _Function_to_function_pointer<_Tp, true>
-    {
-      typedef _Tp* type;
-    };
-
   /**
    * Invoke a function object, which may be either a member pointer or a
    * function object. The first parameter will tell which.
@@ -235,11 +222,24 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
 	     (!is_member_pointer<_Functor>::value
 	      && !is_function<_Functor>::value
 	      && !is_function<typename remove_pointer<_Functor>::type>::value),
-	     typename result_of<_Functor(_Args...)>::type
+	     typename result_of<_Functor(_Args&&...)>::type
 	   >::type
     __invoke(_Functor& __f, _Args&&... __args)
     {
       return __f(std::forward<_Args>(__args)...);
+    }
+
+  template<typename _Functor, typename... _Args>
+    inline
+    typename enable_if<
+             (is_member_pointer<_Functor>::value
+              && !is_function<_Functor>::value
+              && !is_function<typename remove_pointer<_Functor>::type>::value),
+             typename result_of<_Functor(_Args&&...)>::type
+           >::type
+    __invoke(_Functor& __f, _Args&&... __args)
+    {
+      return mem_fn(__f)(std::forward<_Args>(__args)...);
     }
 
   // To pick up function references (that will become function pointers)
@@ -248,7 +248,7 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
     typename enable_if<
 	     (is_pointer<_Functor>::value
 	      && is_function<typename remove_pointer<_Functor>::type>::value),
-	     typename result_of<_Functor(_Args...)>::type
+	     typename result_of<_Functor(_Args&&...)>::type
 	   >::type
     __invoke(_Functor __f, _Args&&... __args)
     {
@@ -263,39 +263,42 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
   template<bool _Unary, bool _Binary, typename _Tp>
     struct _Reference_wrapper_base_impl;
 
-  // Not a unary_function or binary_function, so try a weak result type.
+  // None of the nested argument types.
   template<typename _Tp>
     struct _Reference_wrapper_base_impl<false, false, _Tp>
     : _Weak_result_type<_Tp>
     { };
 
-  // unary_function but not binary_function
+  // Nested argument_type only.
   template<typename _Tp>
     struct _Reference_wrapper_base_impl<true, false, _Tp>
-    : unary_function<typename _Tp::argument_type,
-		     typename _Tp::result_type>
-    { };
+    : _Weak_result_type<_Tp>
+    {
+      typedef typename _Tp::argument_type argument_type;
+    };
 
-  // binary_function but not unary_function
+  // Nested first_argument_type and second_argument_type only.
   template<typename _Tp>
     struct _Reference_wrapper_base_impl<false, true, _Tp>
-    : binary_function<typename _Tp::first_argument_type,
-		      typename _Tp::second_argument_type,
-		      typename _Tp::result_type>
-    { };
+    : _Weak_result_type<_Tp>
+    {
+      typedef typename _Tp::first_argument_type first_argument_type;
+      typedef typename _Tp::second_argument_type second_argument_type;
+    };
 
-  // Both unary_function and binary_function. Import result_type to
-  // avoid conflicts.
+  // All the nested argument types.
    template<typename _Tp>
     struct _Reference_wrapper_base_impl<true, true, _Tp>
-    : unary_function<typename _Tp::argument_type,
-		     typename _Tp::result_type>,
-      binary_function<typename _Tp::first_argument_type,
-		      typename _Tp::second_argument_type,
-		      typename _Tp::result_type>
+    : _Weak_result_type<_Tp>
     {
-      typedef typename _Tp::result_type result_type;
+      typedef typename _Tp::argument_type argument_type;
+      typedef typename _Tp::first_argument_type first_argument_type;
+      typedef typename _Tp::second_argument_type second_argument_type;
     };
+
+  _GLIBCXX_HAS_NESTED_TYPE(argument_type)
+  _GLIBCXX_HAS_NESTED_TYPE(first_argument_type)
+  _GLIBCXX_HAS_NESTED_TYPE(second_argument_type)
 
   /**
    *  Derives from unary_function or binary_function when it
@@ -306,8 +309,9 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
   template<typename _Tp>
     struct _Reference_wrapper_base
     : _Reference_wrapper_base_impl<
-      _Derives_from_unary_function<_Tp>::value,
-      _Derives_from_binary_function<_Tp>::value,
+      __has_argument_type<_Tp>::value,
+      __has_first_argument_type<_Tp>::value
+      && __has_second_argument_type<_Tp>::value,
       _Tp>
     { };
 
@@ -422,12 +426,8 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
     class reference_wrapper
     : public _Reference_wrapper_base<typename remove_cv<_Tp>::type>
     {
-      // If _Tp is a function type, we can't form result_of<_Tp(...)>,
-      // so turn it into a function pointer type.
-      typedef typename _Function_to_function_pointer<_Tp>::type
-	_M_func_type;
-
       _Tp* _M_data;
+
     public:
       typedef _Tp type;
 
@@ -456,7 +456,7 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
       { return *_M_data; }
 
       template<typename... _Args>
-	typename result_of<_M_func_type(_Args...)>::type
+	typename result_of<_Tp&(_Args&&...)>::type
 	operator()(_Args&&... __args) const
 	{
 	  return __invoke(get(), std::forward<_Args>(__args)...);
@@ -475,6 +475,12 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
     inline reference_wrapper<const _Tp>
     cref(const _Tp& __t)
     { return reference_wrapper<const _Tp>(__t); }
+
+  template<typename _Tp>
+    void ref(const _Tp&&) = delete;
+
+  template<typename _Tp>
+    void cref(const _Tp&&) = delete;
 
   /// Partial specialization.
   template<typename _Tp>
