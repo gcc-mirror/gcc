@@ -37,6 +37,7 @@ static struct
   int src_line;			/* Line number currently being written.  */
   unsigned char printed;	/* Nonzero if something output at line.  */
   bool first_time;		/* pp_file_change hasn't been called yet.  */
+  const char *src_file;		/* Current source file.  */
 } print;
 
 /* Defined and undefined macros being queued for output with -dU at
@@ -154,6 +155,7 @@ init_pp_output (FILE *out_stream)
   print.prev = 0;
   print.outf = out_stream;
   print.first_time = 1;
+  print.src_file = "";
 }
 
 /* Writes out the preprocessed file, handling spacing and paste
@@ -313,7 +315,9 @@ maybe_print_line (source_location src_loc)
       print.printed = 0;
     }
 
-  if (src_line >= print.src_line && src_line < print.src_line + 8)
+  if (src_line >= print.src_line
+      && src_line < print.src_line + 8
+      && (flag_no_line_commands || strcmp (map->to_file, print.src_file) == 0))
     {
       while (src_line > print.src_line)
 	{
@@ -345,6 +349,7 @@ print_line (source_location src_loc, const char *special_flags)
       unsigned char *p;
 
       print.src_line = SOURCE_LINE (map, src_loc);
+      print.src_file = map->to_file;
 
       /* cpp_quote_string does not nul-terminate, so we have to do it
 	 ourselves.  */

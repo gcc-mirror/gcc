@@ -1,5 +1,22 @@
 2011-04-19  Richard Guenther  <rguenther@suse.de>
 
+	Backported from 4.6 branch
+	2011-03-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/48248
+	* c-ppoutput.c (print): Add src_file field.
+	(init_pp_output): Initialize it.
+	(maybe_print_line): Don't optimize by adding up to 8 newlines
+	if map->to_file and print.src_file are different file.
+	(print_line): Update print.src_file.
+
+	2011-04-18  Richard Guenther  <rguenther@suse.de>
+
+	PR preprocessor/48248
+	* c-ppoutput.c (maybe_print_line): Avoid changing -P behavior.
+
+2011-04-19  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/46188
 	Backported from 4.6 branch
 	2010-05-26  Jan Hubicka  <jh@suse.cz>
