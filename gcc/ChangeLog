@@ -1,5 +1,13 @@
 2011-04-19  Martin Jambor  <mjambor@suse.cz>
 
+	* ipa-cp.c (ipcp_process_devirtualization_opportunities): Devirtualize
+	also according to actual contants.
+	* gimple-fold.c (gimple_extract_devirt_binfo_from_cst): New function.
+	(gimple_fold_call): Use it.
+	* gimple.h (gimple_extract_devirt_binfo_from_cst): Declare.
+
+2011-04-19  Martin Jambor  <mjambor@suse.cz>
+
 	* ipa-prop.c (stmt_may_be_vtbl_ptr_store): Return false for scalar
 	non-pointer assignments.
 

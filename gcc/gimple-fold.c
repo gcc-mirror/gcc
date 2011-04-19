@@ -1445,6 +1445,74 @@ gimple_adjust_this_by_delta (gimple_stmt_iterator *gsi, tree delta)
   gimple_call_set_arg (call_stmt, 0, tmp);
 }
 
+/* Return a binfo to be used for devirtualization of calls based on an object
+   represented by a declaration (i.e. a global or automatically allocated one)
+   or NULL if it cannot be found or is not safe.  CST is expected to be an
+   ADDR_EXPR of such object or the function will return NULL.  Currently it is
+   safe to use such binfo only if it has no base binfo (i.e. no ancestors).  */
+
+tree
+gimple_extract_devirt_binfo_from_cst (tree cst)
+{
+  HOST_WIDE_INT offset, size, max_size;
+  tree base, type, expected_type, binfo;
+  bool last_artificial = false;
+
+  if (!flag_devirtualize
+      || TREE_CODE (cst) != ADDR_EXPR
+      || TREE_CODE (TREE_TYPE (TREE_TYPE (cst))) != RECORD_TYPE)
+    return NULL_TREE;
+
+  cst = TREE_OPERAND (cst, 0);
+  expected_type = TREE_TYPE (cst);
+  base = get_ref_base_and_extent (cst, &offset, &size, &max_size);
+  type = TREE_TYPE (base);
+  if (!DECL_P (base)
+      || max_size == -1
+      || max_size != size
+      || TREE_CODE (type) != RECORD_TYPE)
+    return NULL_TREE;
+
+  /* Find the sub-object the constant actually refers to and mark whether it is
+     an artificial one (as opposed to a user-defined one).  */
+  while (true)
+    {
+      HOST_WIDE_INT pos, size;
+      tree fld;
+
+      if (TYPE_MAIN_VARIANT (type) == TYPE_MAIN_VARIANT (expected_type))
+	break;
+      if (offset < 0)
+	return NULL_TREE;
+
+      for (fld = TYPE_FIELDS (type); fld; fld = DECL_CHAIN (fld))
+	{
+	  if (TREE_CODE (fld) != FIELD_DECL)
+	    continue;
+
+	  pos = int_bit_position (fld);
+	  size = tree_low_cst (DECL_SIZE (fld), 1);
+	  if (pos <= offset && (pos + size) > offset)
+	    break;
+	}
+      if (!fld || TREE_CODE (TREE_TYPE (fld)) != RECORD_TYPE)
+	return NULL_TREE;
+
+      last_artificial = DECL_ARTIFICIAL (fld);
+      type = TREE_TYPE (fld);
+      offset -= pos;
+    }
+  /* Artifical sub-objects are ancestors, we do not want to use them for
+     devirtualization, at least not here.  */
+  if (last_artificial)
+    return NULL_TREE;
+  binfo = TYPE_BINFO (type);
+  if (!binfo || BINFO_N_BASE_BINFOS (binfo) > 0)
+    return NULL_TREE;
+  else
+    return binfo;
+}
+
 /* Attempt to fold a call statement referenced by the statement iterator GSI.
    The statement may be replaced by another statement, e.g., if the call
    simplifies to a constant value. Return true if any changes were made.
@@ -1473,10 +1541,27 @@ gimple_fold_call (gimple_stmt_iterator *gsi, bool inplace)
 
   /* Check for virtual calls that became direct calls.  */
   callee = gimple_call_fn (stmt);
-  if (TREE_CODE (callee) == OBJ_TYPE_REF
-      && gimple_call_addr_fndecl (OBJ_TYPE_REF_EXPR (callee)) != NULL_TREE)
+  if (TREE_CODE (callee) == OBJ_TYPE_REF)
     {
-      gimple_call_set_fn (stmt, OBJ_TYPE_REF_EXPR (callee));
+      tree binfo, fndecl, delta, obj;
+      HOST_WIDE_INT token;
+
+      if (gimple_call_addr_fndecl (OBJ_TYPE_REF_EXPR (callee)) != NULL_TREE)
+	{
+	  gimple_call_set_fn (stmt, OBJ_TYPE_REF_EXPR (callee));
+	  return true;
+	}
+
+      obj = OBJ_TYPE_REF_OBJECT (callee);
+      binfo = gimple_extract_devirt_binfo_from_cst (obj);
+      if (!binfo)
+	return false;
+      token = TREE_INT_CST_LOW (OBJ_TYPE_REF_TOKEN (callee));
+      fndecl = gimple_get_virt_method_for_binfo (token, binfo, &delta, false);
+      if (!fndecl)
+	return false;
+      gcc_assert (integer_zerop (delta));
+      gimple_call_set_fndecl (stmt, fndecl);
       return true;
     }
 
