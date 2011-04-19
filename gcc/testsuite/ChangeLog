@@ -1,3 +1,8 @@
+2011-04-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/48678
+	* gcc.target/i386/pr48678.c: New test.
+
 2011-04-18  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/cpp0x/union4.C: New.
