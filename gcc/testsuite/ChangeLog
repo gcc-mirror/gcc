@@ -1,3 +1,8 @@
+2011-04-19  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/48207
+	* g++.dg/lto/pr48207_0.C: New testcase.
+
 2011-04-18  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/init/void1.C: New.
