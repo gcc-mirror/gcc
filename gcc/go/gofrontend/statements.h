@@ -41,6 +41,7 @@ class Select_clauses;
 class Typed_identifier_list;
 class Bexpression;
 class Bstatement;
+class Bvariable;
 
 // This class is used to traverse assignments made by a statement
 // which makes assignments.
@@ -475,17 +476,12 @@ class Temporary_statement : public Statement
  public:
   Temporary_statement(Type* type, Expression* init, source_location location)
     : Statement(STATEMENT_TEMPORARY, location),
-      type_(type), init_(init), decl_(NULL), is_address_taken_(false)
+      type_(type), init_(init), bvariable_(NULL), is_address_taken_(false)
   { }
 
   // Return the type of the temporary variable.
   Type*
   type() const;
-
-  // Return the initialization expression.
-  Expression*
-  init() const
-  { return this->init_; }
 
   // Record that something takes the address of this temporary
   // variable.
@@ -493,10 +489,10 @@ class Temporary_statement : public Statement
   set_is_address_taken()
   { this->is_address_taken_ = true; }
 
-  // Return the tree for the temporary variable itself.  This should
-  // not be called until after the statement itself has been expanded.
-  tree
-  get_decl() const;
+  // Return the temporary variable.  This should not be called until
+  // after the statement itself has been converted.
+  Bvariable*
+  get_backend_variable(Translate_context*) const;
 
  protected:
   int
@@ -519,8 +515,8 @@ class Temporary_statement : public Statement
   Type* type_;
   // The initial value of the temporary variable.  This may be NULL.
   Expression* init_;
-  // The DECL for the temporary variable.
-  tree decl_;
+  // The backend representation of the temporary variable.
+  Bvariable* bvariable_;
   // True if something takes the address of this temporary variable.
   bool is_address_taken_;
 };

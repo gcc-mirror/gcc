@@ -1,5 +1,9 @@
 2011-04-19  Ian Lance Taylor  <iant@google.com>
 
+	* go-gcc.cc (Gcc_backend::temporary_variable): New function.
+
+2011-04-19  Ian Lance Taylor  <iant@google.com>
+
 	* go-gcc.cc (class Bblock): Define.
 	(Gcc_backend::if_statement): Change then_block and else_block to
 	Bblock*.

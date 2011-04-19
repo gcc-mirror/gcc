@@ -311,19 +311,6 @@ Temporary_statement::type() const
   return this->type_ != NULL ? this->type_ : this->init_->type();
 }
 
-// Return the tree for the temporary variable.
-
-tree
-Temporary_statement::get_decl() const
-{
-  if (this->decl_ == NULL)
-    {
-      gcc_assert(saw_errors());
-      return error_mark_node;
-    }
-  return this->decl_;
-}
-
 // Traversal.
 
 int
@@ -400,53 +387,52 @@ Temporary_statement::do_check_types(Gogo*)
 tree
 Temporary_statement::do_get_tree(Translate_context* context)
 {
-  gcc_assert(this->decl_ == NULL_TREE);
-  tree type_tree = this->type()->get_tree(context->gogo());
-  tree init_tree = (this->init_ == NULL
-		    ? NULL_TREE
-		    : this->init_->get_tree(context));
-  if (type_tree == error_mark_node || init_tree == error_mark_node)
-    {
-      this->decl_ = error_mark_node;
-      return error_mark_node;
-    }
-  // We can only use create_tmp_var if the type is not addressable.
-  if (!TREE_ADDRESSABLE(type_tree))
-    {
-      this->decl_ = create_tmp_var(type_tree, "GOTMP");
-      DECL_SOURCE_LOCATION(this->decl_) = this->location();
-    }
+  gcc_assert(this->bvariable_ == NULL);
+
+  // FIXME: Permitting FUNCTION to be NULL here is a temporary measure
+  // until we have a better representation of the init function.
+  Named_object* function = context->function();
+  Bfunction* bfunction;
+  if (function == NULL)
+    bfunction = NULL;
+  else
+    bfunction = tree_to_function(function->func_value()->get_decl());
+
+  Btype* btype = tree_to_type(this->type()->get_tree(context->gogo()));
+
+  Bexpression* binit;
+  if (this->init_ == NULL)
+    binit = NULL;
+  else if (this->type_ == NULL)
+    binit = tree_to_expr(this->init_->get_tree(context));
   else
     {
-      gcc_assert(context->function() != NULL && context->block() != NULL);
-      tree decl = build_decl(this->location(), VAR_DECL,
-			     create_tmp_var_name("GOTMP"),
-			     type_tree);
-      DECL_ARTIFICIAL(decl) = 1;
-      DECL_IGNORED_P(decl) = 1;
-      TREE_USED(decl) = 1;
-      gcc_assert(current_function_decl != NULL_TREE);
-      DECL_CONTEXT(decl) = current_function_decl;
-
-      // We have to add this variable to the BLOCK and the BIND_EXPR.
-      tree bind_tree = block_to_tree(context->bblock());
-      gcc_assert(bind_tree != NULL_TREE && TREE_CODE(bind_tree) == BIND_EXPR);
-      tree block_tree = BIND_EXPR_BLOCK(bind_tree);
-      gcc_assert(TREE_CODE(block_tree) == BLOCK);
-      DECL_CHAIN(decl) = BLOCK_VARS(block_tree);
-      BLOCK_VARS(block_tree) = decl;
-      BIND_EXPR_VARS(bind_tree) = BLOCK_VARS(block_tree);
-
-      this->decl_ = decl;
+      Expression* init = Expression::make_cast(this->type_, this->init_,
+					       this->location());
+      context->gogo()->lower_expression(context->function(), &init);
+      binit = tree_to_expr(init->get_tree(context));
     }
-  if (init_tree != NULL_TREE)
-    DECL_INITIAL(this->decl_) =
-      Expression::convert_for_assignment(context, this->type(),
-					 this->init_->type(), init_tree,
-					 this->location());
-  if (this->is_address_taken_)
-    TREE_ADDRESSABLE(this->decl_) = 1;
-  return this->build_stmt_1(DECL_EXPR, this->decl_);
+
+  Bstatement* statement;
+  this->bvariable_ =
+    context->backend()->temporary_variable(bfunction, context->bblock(),
+					   btype, binit,
+					   this->is_address_taken_,
+					   this->location(), &statement);
+  return stat_to_tree(statement);
+}
+
+// Return the backend variable.
+
+Bvariable*
+Temporary_statement::get_backend_variable(Translate_context* context) const
+{
+  if (this->bvariable_ == NULL)
+    {
+      gcc_assert(saw_errors());
+      return context->backend()->error_variable();
+    }
+  return this->bvariable_;
 }
 
 // Make and initialize a temporary variable in BLOCK.
