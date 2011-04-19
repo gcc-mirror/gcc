@@ -1247,8 +1247,8 @@ ipcp_process_devirtualization_opportunities (struct cgraph_node *node)
   for (ie = node->indirect_calls; ie; ie = next_ie)
     {
       int param_index, types_count, j;
-      HOST_WIDE_INT token;
-      tree target, delta;
+      HOST_WIDE_INT token, anc_offset;
+      tree target, delta, otr_type;
 
       next_ie = ie->next_callee;
       if (!ie->indirect_info->polymorphic)
@@ -1260,14 +1260,23 @@ ipcp_process_devirtualization_opportunities (struct cgraph_node *node)
 	continue;
 
       token = ie->indirect_info->otr_token;
+      anc_offset = ie->indirect_info->anc_offset;
+      otr_type = ie->indirect_info->otr_type;
       target = NULL_TREE;
       types_count = VEC_length (tree, info->params[param_index].types);
       for (j = 0; j < types_count; j++)
 	{
 	  tree binfo = VEC_index (tree, info->params[param_index].types, j);
-	  tree d;
-	  tree t = gimple_get_virt_method_for_binfo (token, binfo, &d, true);
+	  tree d, t;
 
+	  binfo = get_binfo_at_offset (binfo, anc_offset, otr_type);
+	  if (!binfo)
+	    {
+	      target = NULL_TREE;
+	      break;
+	    }
+
+	  t = gimple_get_virt_method_for_binfo (token, binfo, &d, true);
 	  if (!t)
 	    {
 	      target = NULL_TREE;
