@@ -422,6 +422,8 @@ static rtx sparc_tls_get_addr (void);
 static rtx sparc_tls_got (void);
 static const char *get_some_local_dynamic_name (void);
 static int get_some_local_dynamic_name_1 (rtx *, void *);
+static int sparc_register_move_cost (enum machine_mode,
+				     reg_class_t, reg_class_t);
 static bool sparc_rtx_costs (rtx, int, int, int *, bool);
 static rtx sparc_function_value (const_tree, const_tree, bool);
 static rtx sparc_libcall_value (enum machine_mode, const_rtx);
@@ -560,6 +562,8 @@ static const struct default_options sparc_option_optimization_table[] =
 #define TARGET_RTX_COSTS sparc_rtx_costs
 #undef TARGET_ADDRESS_COST
 #define TARGET_ADDRESS_COST hook_int_rtx_bool_0
+#undef TARGET_REGISTER_MOVE_COST
+#define TARGET_REGISTER_MOVE_COST sparc_register_move_cost
 
 #undef TARGET_PROMOTE_FUNCTION_MODE
 #define TARGET_PROMOTE_FUNCTION_MODE sparc_promote_function_mode
@@ -9122,6 +9126,37 @@ sparc_rtx_costs (rtx x, int code, int outer_code, int *total,
     default:
       return false;
     }
+}
+
+/* Return true if CLASS is either GENERAL_REGS or I64_REGS.  */
+
+static inline bool
+general_or_i64_p (reg_class_t rclass)
+{
+  return (rclass == GENERAL_REGS || rclass == I64_REGS);
+}
+
+/* Implement TARGET_REGISTER_MOVE_COST.  */
+
+static int
+sparc_register_move_cost (enum machine_mode mode ATTRIBUTE_UNUSED,
+			  reg_class_t from, reg_class_t to)
+{
+  if ((FP_REG_CLASS_P (from) && general_or_i64_p (to))
+      || (general_or_i64_p (from) && FP_REG_CLASS_P (to))
+      || from == FPCC_REGS
+      || to == FPCC_REGS)  
+    {
+      if (sparc_cpu == PROCESSOR_ULTRASPARC
+	  || sparc_cpu == PROCESSOR_ULTRASPARC3
+	  || sparc_cpu == PROCESSOR_NIAGARA
+	  || sparc_cpu == PROCESSOR_NIAGARA2)
+	return 12;
+
+      return 6;
+    }
+
+  return 2;
 }
 
 /* Emit the sequence of insns SEQ while preserving the registers REG and REG2.
