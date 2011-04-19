@@ -1,3 +1,8 @@
+2011-04-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-inline.c (expand_call_inline): Do not issue a -Winline warning
+	if DECL_NO_INLINE_WARNING_P is set on the function.
+
 2011-04-19  Bernd Schmidt  <bernds@codesourcery.com>
 
 	PR fortran/47976
@@ -41,7 +46,6 @@
 	* config/vms/vms-ar.c: New file.
 	* config/vms/t-vmsnative: New file.
 
->>>>>>> .r172704
 2011-04-18  Xinliang David Li  <davidxl@google.com>
 
 	* final.c (dump_basic_block_info): Use ASM_COMMENT_START.
