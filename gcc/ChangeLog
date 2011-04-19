@@ -15,10 +15,11 @@
 	callers.
 	* ipa-prop.c (try_make_edge_direct_virtual_call): Likewise.
 
-2011-05-18  Michael Matz  <matz@suse.de>
+2011-04-18  Michael Matz  <matz@suse.de>
 	    Steve Ellcey  <sje@cup.hp.com>
 
-	* expr.c (expand_expr_real_2): Use GET_MODE instead of TYPE_MODE.
+	* expr.c (expand_expr_real_2) <CASE_CONVERT>: If OP0 is a constant,
+	use its mode as source mode if it isn't VOIDmode.
 
 2011-04-18  Dennis, CHENG Renquan  <crquan@fedoraproject.org>
 
@@ -26,7 +27,7 @@
 
 2011-04-18  Jim Meyering  <meyering@redhat.com>
 
-	fix doubled-word typos in comments and strings
+	Fix doubled-word typos in comments and strings
 	* config/alpha/vms-unwind.h: s/for for/for/
 	* config/arm/unwind-arm.h: Likewise.
 	* config/microblaze/microblaze.c: Likewise.
@@ -779,8 +780,8 @@
 	(inline_summary): Move to ipa-inline.h
 	(cgraph_estimate_edge_time): Rename to estimate_edge_time; move to
 	ipa-inline-analysis.c.
-	(cgraph_estimate_time_after_inlining): Rename to estiamte_time_after_inlining;
-	move to ipa-inline-analysis.c
+	(cgraph_estimate_time_after_inlining): Rename to
+	estiamte_time_after_inlining; move to ipa-inline-analysis.c
 	(cgraph_estimate_edge_growth): Move to ipa-inline-analysis.c; rename
 	to estimate_edge_growth.
 	(cgraph_estimate_size_after_inlining): Move to ipa-inline-analysis.c;
@@ -791,7 +792,8 @@
 	(cgraph_decide_recursive_inlining): Likewise.
 	(cgraph_decide_inlining_of_small_functions): Likewise.
 	(cgraph_decide_inlining_incrementally): Likewise.
-	(cgraph_estimate_growth): Rename to estimate_growth; move to ipa-inline-analysis.c.
+	(cgraph_estimate_growth): Rename to estimate_growth; move to
+	ipa-inline-analysis.c.
 	(eliminated_by_inlining_prob): Move to ipa-inline-analysis.c.
 	(estimate_function_body_sizes): Move to ipa-inline-analysis.c.
 	(compute_inline_parameters): Likewise.
