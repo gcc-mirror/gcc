@@ -1,5 +1,10 @@
 2011-04-19  Martin Jambor  <mjambor@suse.cz>
 
+	* ipa-prop.c (stmt_may_be_vtbl_ptr_store): Return false for scalar
+	non-pointer assignments.
+
+2011-04-19  Martin Jambor  <mjambor@suse.cz>
+
 	* ipa-cp.c (ipcp_process_devirtualization_opportunities): Take into
 	account anc_offset and otr_type from the indirect edge info.
 	* ipa-prop.c (get_ancestor_addr_info): New function.
