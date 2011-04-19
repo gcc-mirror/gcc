@@ -1,3 +1,9 @@
+2011-04-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/48678
+	* config/i386/i386.md (movstrict<mode>): FAIL if operands[0]
+	is a SUBREG with non-MODE_INT mode inside of it.
+
 2011-04-19  Martin Jambor  <mjambor@suse.cz>
 
 	* ipa-cp.c (ipcp_process_devirtualization_opportunities): Devirtualize
