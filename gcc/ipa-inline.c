@@ -23,18 +23,6 @@ along with GCC; see the file COPYING3.  If not see
 
     The implementation of inliner is organized as follows:
 
-    Transformation of callgraph to represent inlining decisions.
-
-      The inline decisions are stored in callgraph in "inline plan" and
-      all applied later.
-
-      To mark given call inline, use cgraph_mark_inline function.
-      The function marks the edge inlinable and, if necessary, produces
-      virtual clone in the callgraph representing the new copy of callee's
-      function body.
-
-      The inline plan is applied on given function body by inline_transform. 
-
     inlining heuristics limits
 
       can_inline_edge_p allow to check that particular inlining is allowed
@@ -128,162 +116,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-inline.h"
 
 /* Statistics we collect about inlining algorithm.  */
-static int ncalls_inlined;
-static int nfunctions_inlined;
 static int overall_size;
 static gcov_type max_count, max_benefit;
-
-/* Scale frequency of NODE edges by FREQ_SCALE and increase loop nest
-   by NEST.  */
-
-static void
-update_noncloned_frequencies (struct cgraph_node *node,
-			      int freq_scale, int nest)
-{
-  struct cgraph_edge *e;
-
-  /* We do not want to ignore high loop nest after freq drops to 0.  */
-  if (!freq_scale)
-    freq_scale = 1;
-  for (e = node->callees; e; e = e->next_callee)
-    {
-      e->loop_nest += nest;
-      e->frequency = e->frequency * (gcov_type) freq_scale / CGRAPH_FREQ_BASE;
-      if (e->frequency > CGRAPH_FREQ_MAX)
-        e->frequency = CGRAPH_FREQ_MAX;
-      if (!e->inline_failed)
-        update_noncloned_frequencies (e->callee, freq_scale, nest);
-    }
-}
-
-/* E is expected to be an edge being inlined.  Clone destination node of
-   the edge and redirect it to the new clone.
-   DUPLICATE is used for bookkeeping on whether we are actually creating new
-   clones or re-using node originally representing out-of-line function call.
-   */
-void
-cgraph_clone_inlined_nodes (struct cgraph_edge *e, bool duplicate,
-			    bool update_original)
-{
-  HOST_WIDE_INT peak;
-  struct inline_summary *caller_info, *callee_info;
-
-  if (duplicate)
-    {
-      /* We may eliminate the need for out-of-line copy to be output.
-	 In that case just go ahead and re-use it.  */
-      if (!e->callee->callers->next_caller
-	  /* Recursive inlining never wants the master clone to
-	     be overwritten.  */
-	  && update_original
-	  /* FIXME: When address is taken of DECL_EXTERNAL function we still
-	     can remove its offline copy, but we would need to keep unanalyzed
-	     node in the callgraph so references can point to it.  */
-	  && !e->callee->address_taken
-	  && cgraph_can_remove_if_no_direct_calls_p (e->callee)
-	  /* Inlining might enable more devirtualizing, so we want to remove
-	     those only after all devirtualizable virtual calls are processed.
-	     Lacking may edges in callgraph we just preserve them post
-	     inlining.  */
-	  && (!DECL_VIRTUAL_P (e->callee->decl)
-	      || (!DECL_COMDAT (e->callee->decl)
-		  && !DECL_EXTERNAL (e->callee->decl)))
-	  /* Don't reuse if more than one function shares a comdat group.
-	     If the other function(s) are needed, we need to emit even
-	     this function out of line.  */
-	  && !e->callee->same_comdat_group
-	  && !cgraph_new_nodes)
-	{
-	  gcc_assert (!e->callee->global.inlined_to);
-	  if (e->callee->analyzed && !DECL_EXTERNAL (e->callee->decl))
-	    {
-	      overall_size -= inline_summary (e->callee)->size;
-	      nfunctions_inlined++;
-	    }
-	  duplicate = false;
-	  e->callee->local.externally_visible = false;
-          update_noncloned_frequencies (e->callee, e->frequency, e->loop_nest);
-	}
-      else
-	{
-	  struct cgraph_node *n;
-	  n = cgraph_clone_node (e->callee, e->callee->decl,
-				 e->count, e->frequency, e->loop_nest,
-				 update_original, NULL);
-	  cgraph_redirect_edge_callee (e, n);
-	}
-    }
-
-  callee_info = inline_summary (e->callee);
-  caller_info = inline_summary (e->caller);
-
-  if (e->caller->global.inlined_to)
-    e->callee->global.inlined_to = e->caller->global.inlined_to;
-  else
-    e->callee->global.inlined_to = e->caller;
-  callee_info->stack_frame_offset
-    = caller_info->stack_frame_offset
-      + caller_info->estimated_self_stack_size;
-  peak = callee_info->stack_frame_offset
-      + callee_info->estimated_self_stack_size;
-  if (inline_summary (e->callee->global.inlined_to)->estimated_stack_size
-      < peak)
-    inline_summary (e->callee->global.inlined_to)->estimated_stack_size = peak;
-  cgraph_propagate_frequency (e->callee);
-
-  /* Recursively clone all bodies.  */
-  for (e = e->callee->callees; e; e = e->next_callee)
-    if (!e->inline_failed)
-      cgraph_clone_inlined_nodes (e, duplicate, update_original);
-}
-
-/* Mark edge E as inlined and update callgraph accordingly.  UPDATE_ORIGINAL
-   specify whether profile of original function should be updated.  If any new
-   indirect edges are discovered in the process, add them to NEW_EDGES, unless
-   it is NULL.  Return true iff any new callgraph edges were discovered as a
-   result of inlining.  */
-
-static bool
-cgraph_mark_inline_edge (struct cgraph_edge *e, bool update_original,
-			 VEC (cgraph_edge_p, heap) **new_edges)
-{
-  int old_size = 0, new_size = 0;
-  struct cgraph_node *to = NULL;
-  struct cgraph_edge *curr = e;
-  struct inline_summary *info;
-
-  /* Don't inline inlined edges.  */
-  gcc_assert (e->inline_failed);
-  /* Don't even think of inlining inline clone.  */
-  gcc_assert (!e->callee->global.inlined_to);
-
-  e->inline_failed = CIF_OK;
-  DECL_POSSIBLY_INLINED (e->callee->decl) = true;
-
-  cgraph_clone_inlined_nodes (e, true, update_original);
-
-  /* Now update size of caller and all functions caller is inlined into.  */
-  for (;e && !e->inline_failed; e = e->caller->callers)
-    {
-      to = e->caller;
-      info = inline_summary (to);
-      old_size = info->size;
-      new_size = estimate_size_after_inlining (to, curr);
-      info->size = new_size;
-      info->time = estimate_time_after_inlining (to, curr);
-    }
-  gcc_assert (curr->callee->global.inlined_to == to);
-  if (new_size > old_size)
-    overall_size += new_size - old_size;
-  ncalls_inlined++;
-
-  /* FIXME: We should remove the optimize check after we ensure we never run
-     IPA passes when not optimizing.  */
-  if (flag_indirect_inlining && optimize)
-    return ipa_propagate_indirect_call_infos (curr, new_edges);
-  else
-    return false;
-}
 
 /* Return false when inlining edge E would lead to violating
    limits on function unit growth or stack usage growth.  
@@ -1196,11 +1030,11 @@ recursive_inlining (struct cgraph_edge *edge,
 					    false, NULL);
 	  for (e = master_clone->callees; e; e = e->next_callee)
 	    if (!e->inline_failed)
-	      cgraph_clone_inlined_nodes (e, true, false);
+	      clone_inlined_nodes (e, true, false, NULL);
 	}
 
       cgraph_redirect_edge_callee (curr, master_clone);
-      cgraph_mark_inline_edge (curr, false, new_edges);
+      inline_call (curr, false, new_edges, &overall_size);
       lookup_recursive_calls (node, curr->callee, heap);
       n++;
     }
@@ -1460,7 +1294,7 @@ inline_small_functions (void)
 
 	  callee = edge->callee;
 	  gcc_checking_assert (!callee->global.inlined_to);
-	  cgraph_mark_inline_edge (edge, true, &new_indirect_edges);
+	  inline_call (edge, true, &new_indirect_edges, &overall_size);
 	  if (flag_indirect_inlining)
 	    add_new_edges_to_heap (heap, new_indirect_edges);
 
@@ -1588,7 +1422,7 @@ flatten_function (struct cgraph_node *node)
 		 cgraph_node_name (e->callee),
 		 cgraph_node_name (e->caller));
       orig_callee = e->callee;
-      cgraph_mark_inline_edge (e, true, NULL);
+      inline_call (e, true, NULL, NULL);
       if (e->callee != orig_callee)
 	orig_callee->aux = (void *) node;
       flatten_function (e->callee);
@@ -1697,7 +1531,7 @@ ipa_inline (void)
 			       inline_summary (node->callers->caller)->size);
 		    }
 
-		  cgraph_mark_inline_edge (node->callers, true, NULL);
+		  inline_call (node->callers, true, NULL, NULL);
 		  if (dump_file)
 		    fprintf (dump_file,
 			     " Inlined into %s which now has %i size\n",
@@ -1752,7 +1586,7 @@ inline_always_inline_functions (struct cgraph_node *node)
 	fprintf (dump_file, "  Inlining %s into %s (always_inline).\n",
 		 cgraph_node_name (e->callee),
 		 cgraph_node_name (e->caller));
-      cgraph_mark_inline_edge (e, true, NULL);
+      inline_call (e, true, NULL, NULL);
       inlined = true;
     }
 
@@ -1801,7 +1635,7 @@ early_inline_small_functions (struct cgraph_node *node)
 	fprintf (dump_file, " Inlining %s into %s.\n",
 		 cgraph_node_name (e->callee),
 		 cgraph_node_name (e->caller));
-      cgraph_mark_inline_edge (e, true, NULL);
+      inline_call (e, true, NULL, NULL);
       inlined = true;
     }
 
@@ -1915,42 +1749,6 @@ struct gimple_opt_pass pass_early_inline =
  }
 };
 
-
-/* Apply inline plan to function.  */
-static unsigned int
-inline_transform (struct cgraph_node *node)
-{
-  unsigned int todo = 0;
-  struct cgraph_edge *e;
-  bool inline_p = false;
-
-  /* FIXME: Currently the pass manager is adding inline transform more than
-     once to some clones.  This needs revisiting after WPA cleanups.  */
-  if (cfun->after_inlining)
-    return 0;
-
-  /* We might need the body of this function so that we can expand
-     it inline somewhere else.  */
-  if (cgraph_preserve_function_body_p (node->decl))
-    save_inline_function_body (node);
-
-  for (e = node->callees; e; e = e->next_callee)
-    {
-      cgraph_redirect_edge_call_stmt_to_callee (e);
-      if (!e->inline_failed || warn_inline)
-        inline_p = true;
-    }
-
-  if (inline_p)
-    {
-      timevar_push (TV_INTEGRATION);
-      todo = optimize_inline_calls (current_function_decl);
-      timevar_pop (TV_INTEGRATION);
-    }
-  cfun->always_inline_functions_inlined = true;
-  cfun->after_inlining = true;
-  return todo | execute_fixup_cfg ();
-}
 
 /* When to run IPA inlining.  Inlining of always-inline functions
    happens during early inlining.  */
