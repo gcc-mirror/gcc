@@ -20704,7 +20704,7 @@ $as_echo "#define LINUX_THREADS 1" >>confdefs.h
     ;;
  win32)
     ;;
- decosf1 | irix | mach | os2 | dce | vxworks)
+ dce | vxworks)
     as_fn_error "thread package $THREADS not yet supported" "$LINENO" 5
     ;;
  *)
