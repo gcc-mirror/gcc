@@ -5176,7 +5176,12 @@ free_lang_data (void)
   lang_hooks.callgraph.analyze_expr = NULL;
   lang_hooks.dwarf_name = lhd_dwarf_name;
   lang_hooks.decl_printable_name = gimple_decl_printable_name;
-  lang_hooks.set_decl_assembler_name = lhd_set_decl_assembler_name;
+  /* We do not want the default decl_assembler_name implementation,
+     rather if we have fixed everything we want a wrapper around it
+     asserting that all non-local symbols already got their assembler
+     name and only produce assembler names for local symbols.  Or rather
+     make sure we never call decl_assembler_name on local symbols and
+     devise a separate, middle-end private scheme for it.  */
 
   /* Reset diagnostic machinery.  */
   diagnostic_starter (global_dc) = default_tree_diagnostic_starter;
