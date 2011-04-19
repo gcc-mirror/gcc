@@ -1,3 +1,10 @@
+2011-04-19  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/48588
+	* parse.c (resolve_all_program_units): Skip modules.
+	(translate_all_program_units): Handle modules.
+	(gfc_parse_file): Defer code generation for modules.
+
 2011-04-19  Martin Jambor  <mjambor@suse.cz>
 
 	* trans-decl.c (gfc_generate_function_code): Call cgraph_create_node
