@@ -316,7 +316,7 @@ maybe_print_line (source_location src_loc)
 
   if (src_line >= print.src_line
       && src_line < print.src_line + 8
-      && strcmp (map->to_file, print.src_file) == 0)
+      && (flag_no_line_commands || strcmp (map->to_file, print.src_file) == 0))
     {
       while (src_line > print.src_line)
 	{
