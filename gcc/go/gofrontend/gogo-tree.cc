@@ -1481,7 +1481,8 @@ Function::build_tree(Gogo* gogo, Named_object* named_function)
 	    {
 	      Translate_context dcontext(gogo, named_function, this->block_,
 					 tree_to_block(bind));
-	      defer_init = this->defer_stack_->get_tree(&dcontext);
+	      Bstatement* bdi = this->defer_stack_->get_backend(&dcontext);
+	      defer_init = stat_to_tree(bdi);
 	    }
 	}
 
