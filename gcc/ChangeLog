@@ -1,3 +1,14 @@
+2011-04-19  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/46188
+	Backported from 4.6 branch
+	2010-05-26  Jan Hubicka  <jh@suse.cz>
+
+	* cgraphunit.c (clone_of_p): Remove.
+	(verify_cgraph_node): Do not verify clones.
+	(cgraph_materialize_all_clones): Do no redirection here.
+	* ipa-inline.c (inline_transform): Do redirection here.
+
 2011-04-18  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* dwarf2out.c (is_redundant_typedef): Add 'inline' to prototype.

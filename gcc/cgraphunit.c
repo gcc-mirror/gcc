@@ -553,15 +553,6 @@ cgraph_mark_if_needed (tree decl)
     cgraph_mark_needed_node (node);
 }
 
-/* Return TRUE if NODE2 is equivalent to NODE or its clone.  */
-static bool
-clone_of_p (struct cgraph_node *node, struct cgraph_node *node2)
-{
-  while (node != node2 && node2)
-    node2 = node2->clone_of;
-  return node2 != NULL;
-}
-
 /* Verify cgraph nodes of given cgraph node.  */
 void
 verify_cgraph_node (struct cgraph_node *node)
@@ -775,16 +766,6 @@ verify_cgraph_node (struct cgraph_node *node)
 			  {
 			    error ("edge points to same body alias:");
 			    debug_tree (e->callee->decl);
-			    error_found = true;
-			  }
-			else if (!node->global.inlined_to
-				 && !e->callee->global.inlined_to
-				 && !clone_of_p (cgraph_node (decl), e->callee))
-			  {
-			    error ("edge points to wrong declaration:");
-			    debug_tree (e->callee->decl);
-			    fprintf (stderr," Instead of:");
-			    debug_tree (decl);
 			    error_found = true;
 			  }
 			e->aux = (void *)1;
@@ -2397,30 +2378,7 @@ cgraph_materialize_all_clones (void)
     if (!node->analyzed && node->callees)
       cgraph_node_remove_callees (node);
   if (cgraph_dump_file)
-    fprintf (cgraph_dump_file, "Updating call sites\n");
-  for (node = cgraph_nodes; node; node = node->next)
-    if (node->analyzed && !node->clone_of
-	&& gimple_has_body_p (node->decl))
-      {
-        struct cgraph_edge *e;
-
-	current_function_decl = node->decl;
-        push_cfun (DECL_STRUCT_FUNCTION (node->decl));
-	for (e = node->callees; e; e = e->next_callee)
-	  cgraph_redirect_edge_call_stmt_to_callee (e);
-	pop_cfun ();
-	current_function_decl = NULL;
-#ifdef ENABLE_CHECKING
-        verify_cgraph_node (node);
-#endif
-      }
-  if (cgraph_dump_file)
     fprintf (cgraph_dump_file, "Materialization Call site updates done.\n");
-  /* All changes to parameters have been performed.  In order not to
-     incorrectly repeat them, we simply dispose of the bitmaps that drive the
-     changes. */
-  for (node = cgraph_nodes; node; node = node->next)
-    node->clone.combined_args_to_skip = NULL;
 #ifdef ENABLE_CHECKING
   verify_cgraph ();
 #endif
