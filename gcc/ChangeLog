@@ -1,3 +1,9 @@
+2011-04-19  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* doc/install.texi (Configuration, --enable-threads): Remove mach.
+	Add lynx, mipssde.
+	Sort table.
+
 2011-04-19  Xinliang David Li  <davidxl@google.com>
 	
 	* ipa-cp.c (ipcp_update_profiling): asserting
