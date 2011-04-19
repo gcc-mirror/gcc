@@ -1,3 +1,22 @@
+2011-04-19  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* misc.c (gfc_getmem): Remove function.
+	* gfortran.h: Remove gfc_getmem prototype. Replace gfc_getmem
+	usage with XCNEW or XCNEWVEC.
+	* expr.c (gfc_check_assign_symbol): Replace gfc_getmem usage with
+	XCNEW or XCNEWVEC.
+	* options.c (gfc_handle_module_path_options)
+	(gfc_get_option_string): Likewise.
+	* resolve.c (gfc_resolve_forall): Likewise.
+	* simplify.c (simplify_transformation_to_array): Likewise.
+	* target-memory.c (gfc_target_interpret_expr): Likewise.
+	* trans-common.c (get_segment_info, copy_equiv_list_to_ns)
+	(get_init_field): Likewise.
+	* trans-expr.c (gfc_conv_statement_function): Likewise.
+	* trans-io.c (nml_full_name): Likewise.
+	* trans-stmt.c (gfc_trans_forall_1): Likewise.
+	* scanner.c (load_file): Replace gfc_getmem usage with xcalloc.
+
 2011-04-19  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/48588

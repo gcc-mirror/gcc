@@ -3957,8 +3957,8 @@ gfc_conv_statement_function (gfc_se * se, gfc_expr * expr)
   n = 0;
   for (fargs = sym->formal; fargs; fargs = fargs->next)
     n++;
-  saved_vars = (gfc_saved_var *)gfc_getmem (n * sizeof (gfc_saved_var));
-  temp_vars = (tree *)gfc_getmem (n * sizeof (tree));
+  saved_vars = XCNEWVEC (gfc_saved_var, n);
+  temp_vars = XCNEWVEC (tree, n);
 
   for (fargs = sym->formal, n = 0; fargs; fargs = fargs->next, n++)
     {

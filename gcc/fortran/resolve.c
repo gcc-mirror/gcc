@@ -8598,7 +8598,7 @@ gfc_resolve_forall (gfc_code *code, gfc_namespace *ns, int forall_save)
       total_var = gfc_count_forall_iterators (code);
 
       /* Allocate VAR_EXPR with NUMBER_OF_FORALL_INDEX elements.  */
-      var_expr = (gfc_expr **) gfc_getmem (total_var * sizeof (gfc_expr *));
+      var_expr = XCNEWVEC (gfc_expr *, total_var);
     }
 
   /* The information about FORALL iterator, including FORALL index start, end

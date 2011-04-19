@@ -3583,7 +3583,7 @@ gfc_check_assign_symbol (gfc_symbol *sym, gfc_expr *rvalue)
   lvalue.ts = sym->ts;
   if (sym->as)
     lvalue.rank = sym->as->rank;
-  lvalue.symtree = (gfc_symtree *) gfc_getmem (sizeof (gfc_symtree));
+  lvalue.symtree = XCNEW (gfc_symtree);
   lvalue.symtree->n.sym = sym;
   lvalue.where = sym->declared_at;
 

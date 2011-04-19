@@ -1450,7 +1450,7 @@ nml_full_name (const char* var_name, const char* cmp_name)
   char * full_name;
 
   full_name_length = strlen (var_name) + strlen (cmp_name) + 1;
-  full_name = (char*)gfc_getmem (full_name_length + 1);
+  full_name = XCNEWVEC (char, full_name_length + 1);
   strcpy (full_name, var_name);
   full_name = strcat (full_name, "%");
   full_name = strcat (full_name, cmp_name);

@@ -23,24 +23,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "gfortran.h"
 
-/* Get a block of memory.  Many callers assume that the memory we
-   return is zeroed.  */
-
-void *
-gfc_getmem (size_t n)
-{
-  void *p;
-
-  if (n == 0)
-    return NULL;
-
-  p = xmalloc (n);
-  if (p == NULL)
-    gfc_fatal_error ("Allocation would exceed memory limit -- malloc() failed");
-  memset (p, 0, n);
-  return p;
-}
-
 
 /* Get terminal width.  */
 

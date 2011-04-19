@@ -517,7 +517,7 @@ simplify_transformation_to_array (gfc_expr *result, gfc_expr *array, gfc_expr *d
   gfc_array_size (array, &size);
   arraysize = mpz_get_ui (size);
 
-  arrayvec = (gfc_expr**) gfc_getmem (sizeof (gfc_expr*) * arraysize);
+  arrayvec = XCNEWVEC (gfc_expr*, arraysize);
 
   array_ctor = gfc_constructor_first (array->value.constructor);
   mask_ctor = NULL;
@@ -543,7 +543,7 @@ simplify_transformation_to_array (gfc_expr *result, gfc_expr *array, gfc_expr *d
   resultsize = mpz_get_ui (size);
   mpz_clear (size);
 
-  resultvec = (gfc_expr**) gfc_getmem (sizeof (gfc_expr*) * resultsize);
+  resultvec = XCNEWVEC (gfc_expr*, resultsize);
   result_ctor = gfc_constructor_first (result->value.constructor);
   for (i = 0; i < resultsize; ++i)
     {
