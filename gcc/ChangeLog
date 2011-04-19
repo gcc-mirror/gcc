@@ -1,3 +1,16 @@
+2011-04-19  Martin Jambor  <mjambor@suse.cz>
+
+	* ipa-cp.c (ipcp_process_devirtualization_opportunities): Take into
+	account anc_offset and otr_type from the indirect edge info.
+	* ipa-prop.c (get_ancestor_addr_info): New function.
+	(compute_complex_ancestor_jump_func): Assignment analysis moved to
+	get_ancestor_addr_info, call it.
+	(ipa_note_param_call): Do not initialize information about polymorphic
+	calls, return the indirect call graph edge.  Remove the last
+	parameter, adjust all callers.
+	(ipa_analyze_virtual_call_uses): Process also calls to ancestors of
+	parameters.  Initialize polymorphic information in the indirect edge.
+
 2011-04-19  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR lto/48148
