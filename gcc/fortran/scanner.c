@@ -2012,8 +2012,8 @@ load_file (const char *realfilename, const char *displayedname, bool initial)
 
       /* Add line.  */
 
-      b = (gfc_linebuf *) gfc_getmem (gfc_linebuf_header_size
-				      + (len + 1) * sizeof (gfc_char_t));
+      b = (gfc_linebuf *) xcalloc (1, gfc_linebuf_header_size
+				   + (len + 1) * sizeof (gfc_char_t));
 
       b->location
 	= linemap_line_start (line_table, current_file->line++, 120);

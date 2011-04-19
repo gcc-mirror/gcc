@@ -1272,8 +1272,7 @@ typedef struct gfc_entry_list
 }
 gfc_entry_list;
 
-#define gfc_get_entry_list() \
-  (gfc_entry_list *) gfc_getmem(sizeof(gfc_entry_list))
+#define gfc_get_entry_list() XCNEW (gfc_entry_list)
 
 /* Lists of rename info for the USE statement.  */
 
@@ -1302,8 +1301,7 @@ typedef struct gfc_use_list
 }
 gfc_use_list;
 
-#define gfc_get_use_list() \
-  (gfc_use_list *) gfc_getmem(sizeof(gfc_use_list))
+#define gfc_get_use_list() XCNEW (gfc_use_list)
 
 /* Within a namespace, symbols are pointed to by symtree nodes that
    are linked together in a balanced binary tree.  There can be
@@ -1783,7 +1781,7 @@ typedef struct gfc_expr
 gfc_expr;
 
 
-#define gfc_get_shape(rank) ((mpz_t *) gfc_getmem((rank)*sizeof(mpz_t)))
+#define gfc_get_shape(rank) (XCNEWVEC (mpz_t, (rank)))
 
 /* Structures for information associated with different kinds of
    numbers.  The first set of integer parameters define all there is
@@ -2369,7 +2367,6 @@ void gfc_start_source_files (void);
 void gfc_end_source_files (void);
 
 /* misc.c */
-void *gfc_getmem (size_t) ATTRIBUTE_MALLOC;
 int gfc_terminal_width (void);
 void gfc_clear_ts (gfc_typespec *);
 FILE *gfc_open_file (const char *);
