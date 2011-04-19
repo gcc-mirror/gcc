@@ -1,3 +1,8 @@
+2011-04-19  Xinliang David Li  <davidxl@google.com>
+	
+	* ipa-cp.c (ipcp_update_profiling): asserting
+	scale_completement is not negative.
+
 2011-04-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/48678
@@ -1651,6 +1656,11 @@
 
 	* ipa-cp.c (ipcp_update_profiling): Correct negative scale factor due
 	to insane profile data.
+
+2011-04-08  Xinliang David Li  <davidxl@google.com>
+
+	* ipa-cp.c (ipcp_update_profiling): Correct
+	 negative scale factor due to insane profile data.
 
 2011-04-08  Xinliang David Li  <davidxl@google.com>
 
