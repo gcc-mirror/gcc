@@ -1,3 +1,8 @@
+2011-04-19  Martin Jambor  <mjambor@suse.cz>
+
+	* trans-decl.c (gfc_generate_function_code): Call cgraph_create_node
+	instead of cgraph_get_create_node.
+
 2011-04-18  Jim Meyering  <meyering@redhat.com>
 
 	remove now-unused definition of gfc_free
