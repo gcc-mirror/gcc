@@ -1246,51 +1246,71 @@ ipcp_process_devirtualization_opportunities (struct cgraph_node *node)
 
   for (ie = node->indirect_calls; ie; ie = next_ie)
     {
-      int param_index, types_count, j;
+      int param_index;
       HOST_WIDE_INT token, anc_offset;
       tree target, delta, otr_type;
+      struct ipcp_lattice *lat;
 
       next_ie = ie->next_callee;
       if (!ie->indirect_info->polymorphic)
 	continue;
       param_index = ie->indirect_info->param_index;
-      if (param_index == -1
-	  || ipa_param_cannot_devirtualize_p (info, param_index)
-	  || ipa_param_types_vec_empty (info, param_index))
+      if (param_index == -1)
 	continue;
 
+      lat = ipcp_get_lattice (info, param_index);
       token = ie->indirect_info->otr_token;
       anc_offset = ie->indirect_info->anc_offset;
       otr_type = ie->indirect_info->otr_type;
       target = NULL_TREE;
-      types_count = VEC_length (tree, info->params[param_index].types);
-      for (j = 0; j < types_count; j++)
+      if (lat->type == IPA_CONST_VALUE)
 	{
-	  tree binfo = VEC_index (tree, info->params[param_index].types, j);
-	  tree d, t;
-
+	  tree binfo = gimple_extract_devirt_binfo_from_cst (lat->constant);
+	  if (!binfo)
+	    continue;
 	  binfo = get_binfo_at_offset (binfo, anc_offset, otr_type);
 	  if (!binfo)
-	    {
-	      target = NULL_TREE;
-	      break;
-	    }
+	    continue;
+	  target = gimple_get_virt_method_for_binfo (token, binfo, &delta,
+						     false);
+	}
+      else
+	{
+	  int  types_count, j;
 
-	  t = gimple_get_virt_method_for_binfo (token, binfo, &d, true);
-	  if (!t)
+	  if (ipa_param_cannot_devirtualize_p (info, param_index)
+	      || ipa_param_types_vec_empty (info, param_index))
+	    continue;
+
+	  types_count = VEC_length (tree, info->params[param_index].types);
+	  for (j = 0; j < types_count; j++)
 	    {
-	      target = NULL_TREE;
-	      break;
-	    }
-	  else if (!target)
-	    {
-	      target = t;
-	      delta = d;
-	    }
-	  else if (target != t || !tree_int_cst_equal (delta, d))
-	    {
-	      target = NULL_TREE;
-	      break;
+	      tree binfo = VEC_index (tree, info->params[param_index].types, j);
+	      tree d, t;
+
+	      binfo = get_binfo_at_offset (binfo, anc_offset, otr_type);
+	      if (!binfo)
+		{
+		  target = NULL_TREE;
+		  break;
+		}
+
+	      t = gimple_get_virt_method_for_binfo (token, binfo, &d, true);
+	      if (!t)
+		{
+		  target = NULL_TREE;
+		  break;
+		}
+	      else if (!target)
+		{
+		  target = t;
+		  delta = d;
+		}
+	      else if (target != t || !tree_int_cst_equal (delta, d))
+		{
+		  target = NULL_TREE;
+		  break;
+		}
 	    }
 	}
 

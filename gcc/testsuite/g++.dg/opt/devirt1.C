@@ -1,6 +1,6 @@
 // { dg-do compile }
-// { dg-options "-O" }
-// { dg-final { scan-assembler "xyzzy" { xfail *-*-* } } }
+// { dg-options "-O2" }
+// { dg-final { scan-assembler "xyzzy" } }
 
 struct S { S(); virtual void xyzzy(); };
 inline void foo(S *s) { s->xyzzy(); }
