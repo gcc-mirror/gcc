@@ -8,23 +8,6 @@
 
 #include <gmp.h>
 
-#ifndef ENABLE_BUILD_WITH_CXX
-extern "C"
-{
-#endif
-
-#include "intl.h"
-#include "tree.h"
-#include "gimple.h"
-#include "convert.h"
-#include "tree-iterator.h"
-#include "tree-flow.h"
-#include "real.h"
-
-#ifndef ENABLE_BUILD_WITH_CXX
-}
-#endif
-
 #include "go-c.h"
 #include "types.h"
 #include "expressions.h"
@@ -148,8 +131,8 @@ Statement::thunk_statement()
   return ret;
 }
 
-// Get a tree for a Statement.  This is really done by the child
-// class.
+// Convert a Statement to the backend representation.  This is really
+// done by the child class.
 
 Bstatement*
 Statement::get_backend(Translate_context* context)
@@ -157,17 +140,6 @@ Statement::get_backend(Translate_context* context)
   if (this->classification_ == STATEMENT_ERROR)
     return context->backend()->error_statement();
   return this->do_get_backend(context);
-}
-
-// Build tree nodes and set locations.
-
-tree
-Statement::build_stmt_1(int tree_code_value, tree node)
-{
-  tree ret = build1(static_cast<tree_code>(tree_code_value),
-		    void_type_node, node);
-  SET_EXPR_LOCATION(ret, this->location_);
-  return ret;
 }
 
 // Note that this statement is erroneous.  This is called by children
@@ -245,7 +217,7 @@ Variable_declaration_statement::do_traverse_assignments(
   return true;
 }
 
-// Return the tree for a variable declaration.
+// Convert a variable declaration to the backend representation.
 
 Bstatement*
 Variable_declaration_statement::do_get_backend(Translate_context* context)
@@ -254,40 +226,48 @@ Variable_declaration_statement::do_get_backend(Translate_context* context)
   Bvariable* bvar = this->var_->get_backend_variable(context->gogo(),
 						     context->function());
   tree init = var->get_init_tree(context->gogo(), context->function());
-  Bexpression* binit = init == NULL_TREE ? NULL : tree_to_expr(init);
+  Bexpression* binit = init == NULL ? NULL : tree_to_expr(init);
+
   if (!var->is_in_heap())
     {
       gcc_assert(binit != NULL);
       return context->backend()->init_statement(bvar, binit);
     }
-  else
+
+  // Something takes the address of this variable, so the value is
+  // stored in the heap.  Initialize it to newly allocated memory
+  // space, and assign the initial value to the new space.
+  source_location loc = this->location();
+  Named_object* newfn = context->gogo()->lookup_global("new");
+  gcc_assert(newfn != NULL && newfn->is_function_declaration());
+  Expression* func = Expression::make_func_reference(newfn, NULL, loc);
+  Expression_list* params = new Expression_list();
+  params->push_back(Expression::make_type(var->type(), loc));
+  Expression* call = Expression::make_call(func, params, false, loc);
+  context->gogo()->lower_expression(context->function(), &call);
+  Temporary_statement* temp = Statement::make_temporary(NULL, call, loc);
+  Bstatement* btemp = temp->get_backend(context);
+
+  Bstatement* set = NULL;
+  if (binit != NULL)
     {
-      // Something takes the address of this variable, so the value is
-      // stored in the heap.  Initialize it to newly allocated memory
-      // space, and assign the initial value to the new space.
-      source_location loc = this->location();
-      tree decl = var_to_tree(bvar);
-      tree decl_type = TREE_TYPE(decl);
-      gcc_assert(POINTER_TYPE_P(decl_type));
-      tree size = TYPE_SIZE_UNIT(TREE_TYPE(decl_type));
-      tree space = context->gogo()->allocate_memory(var->type(), size, loc);
-      if (binit != NULL)
-	space = save_expr(space);
-      space = fold_convert_loc(loc, decl_type, space);
-      Bstatement* s1 = context->backend()->init_statement(bvar,
-							  tree_to_expr(space));
-      if (binit == NULL)
-	return s1;
-      else
-	{
-	  tree indir = build_fold_indirect_ref_loc(loc, space);
-	  Bexpression* bindir = tree_to_expr(indir);
-	  Bstatement* s2 = context->backend()->assignment_statement(bindir,
-								    binit,
-								    loc);
-	  return context->backend()->compound_statement(s1, s2);
-	}
+      Expression* e = Expression::make_temporary_reference(temp, loc);
+      e = Expression::make_unary(OPERATOR_MULT, e, loc);
+      Bexpression* be = tree_to_expr(e->get_tree(context));
+      set = context->backend()->assignment_statement(be, binit, loc);
     }
+
+  Expression* ref = Expression::make_temporary_reference(temp, loc);
+  Bexpression* bref = tree_to_expr(ref->get_tree(context));
+  Bstatement* sinit = context->backend()->init_statement(bvar, bref);
+
+  std::vector<Bstatement*> stats;
+  stats.reserve(3);
+  stats.push_back(btemp);
+  if (set != NULL)
+    stats.push_back(set);
+  stats.push_back(sinit);
+  return context->backend()->statement_list(stats);
 }
 
 // Make a variable declaration.
@@ -379,7 +359,7 @@ Temporary_statement::do_check_types(Gogo*)
     }
 }
 
-// Return a tree.
+// Convert to backend representation.
 
 Bstatement*
 Temporary_statement::do_get_backend(Translate_context* context)
@@ -535,29 +515,18 @@ Assignment_statement::do_check_types(Gogo*)
     this->set_is_error();
 }
 
-// Build a tree for an assignment statement.
+// Convert an assignment statement to the backend representation.
 
 Bstatement*
 Assignment_statement::do_get_backend(Translate_context* context)
 {
   tree rhs_tree = this->rhs_->get_tree(context);
-  if (rhs_tree == error_mark_node)
-    return context->backend()->error_statement();
-
   if (this->lhs_->is_sink_expression())
     return context->backend()->expression_statement(tree_to_expr(rhs_tree));
-
   tree lhs_tree = this->lhs_->get_tree(context);
-
-  if (lhs_tree == error_mark_node)
-    return context->backend()->error_statement();
-
   rhs_tree = Expression::convert_for_assignment(context, this->lhs_->type(),
 						this->rhs_->type(), rhs_tree,
 						this->location());
-  if (rhs_tree == error_mark_node)
-    return context->backend()->error_statement();
-
   return context->backend()->assignment_statement(tree_to_expr(lhs_tree),
 						  tree_to_expr(rhs_tree),
 						  this->location());
@@ -2190,7 +2159,7 @@ Thunk_statement::build_thunk(Gogo* gogo, const std::string& thunk_name,
   gogo->finish_function(location);
 }
 
-// Get the function and argument trees.
+// Get the function and argument expressions.
 
 bool
 Thunk_statement::get_fn_and_arg(Expression** pfn, Expression** parg)
@@ -2545,7 +2514,7 @@ Goto_statement::do_check_types(Gogo*)
     }
 }
 
-// Return the tree for the goto statement.
+// Convert the goto statement to the backend representation.
 
 Bstatement*
 Goto_statement::do_get_backend(Translate_context* context)
@@ -2608,7 +2577,8 @@ Label_statement::do_traverse(Traverse*)
   return TRAVERSE_CONTINUE;
 }
 
-// Return a tree defining this label.
+// Return the backend representation of the statement defining this
+// label.
 
 Bstatement*
 Label_statement::do_get_backend(Translate_context* context)
@@ -2738,7 +2708,7 @@ If_statement::do_may_fall_through() const
 	  || this->else_block_->may_fall_through());
 }
 
-// Get tree.
+// Get the backend representation.
 
 Bstatement*
 If_statement::do_get_backend(Translate_context* context)
@@ -3750,7 +3720,7 @@ Send_statement::do_check_types(Gogo*)
     }
 }
 
-// Get a tree for a send statement.
+// Convert a send statement to the backend representation.
 
 Bstatement*
 Send_statement::do_get_backend(Translate_context* context)
@@ -4034,7 +4004,7 @@ Select_clauses::Select_clause::may_fall_through() const
   return this->statements_->may_fall_through();
 }
 
-// Return a tree for the statements to execute.
+// Return the backend representation for the statements to execute.
 
 Bstatement*
 Select_clauses::Select_clause::get_statements_backend(
@@ -4287,7 +4257,7 @@ Select_clauses::get_backend(Translate_context* context,
   return context->backend()->statement_list(statements);
 }
 
-// Add the tree for CLAUSE to STMT_LIST.
+// Add CLAUSE to CASES/CLAUSES at INDEX.
 
 void
 Select_clauses::add_clause_backend(
@@ -4350,7 +4320,7 @@ Select_statement::do_lower(Gogo* gogo, Named_object* function,
   return Statement::make_block_statement(b, this->location());
 }
 
-// Return the tree for a select statement.
+// Return the backend representation for a select statement.
 
 Bstatement*
 Select_statement::do_get_backend(Translate_context* context)

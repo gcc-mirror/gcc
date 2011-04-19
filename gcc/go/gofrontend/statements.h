@@ -424,12 +424,6 @@ class Statement
   int
   traverse_type(Traverse*, Type*);
 
-  // Build a tree node with one operand, setting the location.  The
-  // first operand really has type "enum tree_code", but that enum is
-  // not defined here.
-  tree
-  build_stmt_1(int tree_code_value, tree);
-
   // For children to call when they detect that they are in error.
   void
   set_is_error();
@@ -744,7 +738,7 @@ class Select_clauses
     bool
     may_fall_through() const;
 
-    // Return a tree for the statements to execute.
+    // Convert the statements to the backend representation.
     Bstatement*
     get_statements_backend(Translate_context*);
 
@@ -865,7 +859,7 @@ class Thunk_statement : public Statement
   void
   do_check_types(Gogo*);
 
-  // Return the function and argument trees for the call.
+  // Return the function and argument for the call.
   bool
   get_fn_and_arg(Expression** pfn, Expression** parg);
 
@@ -1168,8 +1162,8 @@ class Case_clauses
 	      std::vector<Bstatement*>* all_statements) const;
 
  private:
-  // For a constant tree we need to keep a record of constants we have
-  // already seen.  Note that INTEGER_CST trees are interned.
+  // For a constant switch we need to keep a record of constants we
+  // have already seen.
   class Hash_integer_value;
   class Eq_integer_value;
   typedef Unordered_set_hash(Expression*, Hash_integer_value,
@@ -1439,10 +1433,6 @@ class Type_switch_statement : public Statement
   { gcc_unreachable(); }
 
  private:
-  // Get the type descriptor.
-  tree
-  get_type_descriptor(Translate_context*, Type*, tree);
-
   // The variable holding the value we are switching on.
   Named_object* var_;
   // The expression we are switching on if there is no variable.
