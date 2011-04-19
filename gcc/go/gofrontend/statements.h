@@ -367,9 +367,9 @@ class Statement
   may_fall_through() const
   { return this->do_may_fall_through(); }
 
-  // Return the tree for a statement.  BLOCK is the enclosing block.
-  tree
-  get_tree(Translate_context*);
+  // Convert the statement to the backend representation.
+  Bstatement*
+  get_backend(Translate_context*);
 
  protected:
   // Implemented by child class: traverse the tree.
@@ -407,9 +407,9 @@ class Statement
   do_may_fall_through() const
   { return true; }
 
-  // Implemented by child class: return a tree.
-  virtual tree
-  do_get_tree(Translate_context*) = 0;
+  // Implemented by child class: convert to backend representation.
+  virtual Bstatement*
+  do_get_backend(Translate_context*) = 0;
 
   // Traverse an expression in a statement.
   int
@@ -507,8 +507,8 @@ class Temporary_statement : public Statement
   void
   do_check_types(Gogo*);
 
-  tree
-  do_get_tree(Translate_context*);
+  Bstatement*
+  do_get_backend(Translate_context*);
 
  private:
   // The type of the temporary variable.
@@ -541,8 +541,8 @@ class Variable_declaration_statement : public Statement
   bool
   do_traverse_assignments(Traverse_assignments*);
 
-  tree
-  do_get_tree(Translate_context*);
+  Bstatement*
+  do_get_backend(Translate_context*);
 
  private:
   Named_object* var_;
@@ -578,8 +578,8 @@ class Return_statement : public Statement
   do_may_fall_through() const
   { return false; }
 
-  tree
-  do_get_tree(Translate_context*);
+  Bstatement*
+  do_get_backend(Translate_context*);
 
  private:
   // Return values.  This may be NULL.
@@ -614,8 +614,8 @@ class Send_statement : public Statement
   void
   do_check_types(Gogo*);
 
-  tree
-  do_get_tree(Translate_context*);
+  Bstatement*
+  do_get_backend(Translate_context*);
 
  private:
   // The channel on which to send the value.
@@ -822,8 +822,8 @@ class Select_statement : public Statement
   do_may_fall_through() const
   { return this->clauses_->may_fall_through(); }
 
-  tree
-  do_get_tree(Translate_context*);
+  Bstatement*
+  do_get_backend(Translate_context*);
 
  private:
   // The select clauses.
@@ -912,8 +912,8 @@ class Go_statement : public Thunk_statement
   { }
 
  protected:
-  tree
-  do_get_tree(Translate_context*);
+  Bstatement*
+  do_get_backend(Translate_context*);
 };
 
 // A defer statement.
@@ -926,8 +926,8 @@ class Defer_statement : public Thunk_statement
   { }
 
  protected:
-  tree
-  do_get_tree(Translate_context*);
+  Bstatement*
+  do_get_backend(Translate_context*);
 };
 
 // A label statement.
@@ -949,8 +949,8 @@ class Label_statement : public Statement
   int
   do_traverse(Traverse*);
 
-  tree
-  do_get_tree(Translate_context*);
+  Bstatement*
+  do_get_backend(Translate_context*);
 
  private:
   // The label.
@@ -1001,8 +1001,8 @@ class For_statement : public Statement
   Statement*
   do_lower(Gogo*, Named_object*, Block*);
 
-  tree
-  do_get_tree(Translate_context*)
+  Bstatement*
+  do_get_backend(Translate_context*)
   { gcc_unreachable(); }
 
  private:
@@ -1059,8 +1059,8 @@ class For_range_statement : public Statement
   Statement*
   do_lower(Gogo*, Named_object*, Block*);
 
-  tree
-  do_get_tree(Translate_context*)
+  Bstatement*
+  do_get_backend(Translate_context*)
   { gcc_unreachable(); }
 
  private:
@@ -1288,8 +1288,8 @@ class Switch_statement : public Statement
   Statement*
   do_lower(Gogo*, Named_object*, Block*);
 
-  tree
-  do_get_tree(Translate_context*)
+  Bstatement*
+  do_get_backend(Translate_context*)
   { gcc_unreachable(); }
 
  private:
@@ -1434,8 +1434,8 @@ class Type_switch_statement : public Statement
   Statement*
   do_lower(Gogo*, Named_object*, Block*);
 
-  tree
-  do_get_tree(Translate_context*)
+  Bstatement*
+  do_get_backend(Translate_context*)
   { gcc_unreachable(); }
 
  private:

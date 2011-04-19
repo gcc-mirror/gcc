@@ -151,13 +151,12 @@ Statement::thunk_statement()
 // Get a tree for a Statement.  This is really done by the child
 // class.
 
-tree
-Statement::get_tree(Translate_context* context)
+Bstatement*
+Statement::get_backend(Translate_context* context)
 {
   if (this->classification_ == STATEMENT_ERROR)
-    return error_mark_node;
-
-  return this->do_get_tree(context);
+    return context->backend()->error_statement();
+  return this->do_get_backend(context);
 }
 
 // Build tree nodes and set locations.
@@ -204,8 +203,8 @@ class Error_statement : public Statement
   do_traverse(Traverse*)
   { return TRAVERSE_CONTINUE; }
 
-  tree
-  do_get_tree(Translate_context*)
+  Bstatement*
+  do_get_backend(Translate_context*)
   { gcc_unreachable(); }
 };
 
@@ -248,19 +247,18 @@ Variable_declaration_statement::do_traverse_assignments(
 
 // Return the tree for a variable declaration.
 
-tree
-Variable_declaration_statement::do_get_tree(Translate_context* context)
+Bstatement*
+Variable_declaration_statement::do_get_backend(Translate_context* context)
 {
   Variable* var = this->var_->var_value();
   Bvariable* bvar = this->var_->get_backend_variable(context->gogo(),
 						     context->function());
   tree init = var->get_init_tree(context->gogo(), context->function());
   Bexpression* binit = init == NULL_TREE ? NULL : tree_to_expr(init);
-  Bstatement* ret;
   if (!var->is_in_heap())
     {
       gcc_assert(binit != NULL);
-      ret = context->backend()->init_statement(bvar, binit);
+      return context->backend()->init_statement(bvar, binit);
     }
   else
     {
@@ -279,7 +277,7 @@ Variable_declaration_statement::do_get_tree(Translate_context* context)
       Bstatement* s1 = context->backend()->init_statement(bvar,
 							  tree_to_expr(space));
       if (binit == NULL)
-	ret = s1;
+	return s1;
       else
 	{
 	  tree indir = build_fold_indirect_ref_loc(loc, space);
@@ -287,10 +285,9 @@ Variable_declaration_statement::do_get_tree(Translate_context* context)
 	  Bstatement* s2 = context->backend()->assignment_statement(bindir,
 								    binit,
 								    loc);
-	  ret = context->backend()->compound_statement(s1, s2);
+	  return context->backend()->compound_statement(s1, s2);
 	}
     }
-  return stat_to_tree(ret);
 }
 
 // Make a variable declaration.
@@ -384,8 +381,8 @@ Temporary_statement::do_check_types(Gogo*)
 
 // Return a tree.
 
-tree
-Temporary_statement::do_get_tree(Translate_context* context)
+Bstatement*
+Temporary_statement::do_get_backend(Translate_context* context)
 {
   gcc_assert(this->bvariable_ == NULL);
 
@@ -419,7 +416,7 @@ Temporary_statement::do_get_tree(Translate_context* context)
 					   btype, binit,
 					   this->is_address_taken_,
 					   this->location(), &statement);
-  return stat_to_tree(statement);
+  return statement;
 }
 
 // Return the backend variable.
@@ -468,8 +465,8 @@ class Assignment_statement : public Statement
   void
   do_check_types(Gogo*);
 
-  tree
-  do_get_tree(Translate_context*);
+  Bstatement*
+  do_get_backend(Translate_context*);
 
  private:
   // Left hand side--the lvalue.
@@ -540,30 +537,30 @@ Assignment_statement::do_check_types(Gogo*)
 
 // Build a tree for an assignment statement.
 
-tree
-Assignment_statement::do_get_tree(Translate_context* context)
+Bstatement*
+Assignment_statement::do_get_backend(Translate_context* context)
 {
   tree rhs_tree = this->rhs_->get_tree(context);
+  if (rhs_tree == error_mark_node)
+    return context->backend()->error_statement();
 
   if (this->lhs_->is_sink_expression())
-    return rhs_tree;
+    return context->backend()->expression_statement(tree_to_expr(rhs_tree));
 
   tree lhs_tree = this->lhs_->get_tree(context);
 
-  if (lhs_tree == error_mark_node || rhs_tree == error_mark_node)
-    return error_mark_node;
+  if (lhs_tree == error_mark_node)
+    return context->backend()->error_statement();
 
   rhs_tree = Expression::convert_for_assignment(context, this->lhs_->type(),
 						this->rhs_->type(), rhs_tree,
 						this->location());
   if (rhs_tree == error_mark_node)
-    return error_mark_node;
+    return context->backend()->error_statement();
 
-  Bstatement* ret;
-  ret = context->backend()->assignment_statement(tree_to_expr(lhs_tree),
-						 tree_to_expr(rhs_tree),
-						 this->location());
-  return stat_to_tree(ret);
+  return context->backend()->assignment_statement(tree_to_expr(lhs_tree),
+						  tree_to_expr(rhs_tree),
+						  this->location());
 }
 
 // Make an assignment statement.
@@ -634,8 +631,8 @@ class Assignment_operation_statement : public Statement
   Statement*
   do_lower(Gogo*, Named_object*, Block*);
 
-  tree
-  do_get_tree(Translate_context*)
+  Bstatement*
+  do_get_backend(Translate_context*)
   { gcc_unreachable(); }
 
  private:
@@ -761,8 +758,8 @@ class Tuple_assignment_statement : public Statement
   Statement*
   do_lower(Gogo*, Named_object*, Block*);
 
-  tree
-  do_get_tree(Translate_context*)
+  Bstatement*
+  do_get_backend(Translate_context*)
   { gcc_unreachable(); }
 
  private:
@@ -888,8 +885,8 @@ public:
   Statement*
   do_lower(Gogo*, Named_object*, Block*);
 
-  tree
-  do_get_tree(Translate_context*)
+  Bstatement*
+  do_get_backend(Translate_context*)
   { gcc_unreachable(); }
 
  private:
@@ -1015,8 +1012,8 @@ class Map_assignment_statement : public Statement
   Statement*
   do_lower(Gogo*, Named_object*, Block*);
 
-  tree
-  do_get_tree(Translate_context*)
+  Bstatement*
+  do_get_backend(Translate_context*)
   { gcc_unreachable(); }
 
  private:
@@ -1129,8 +1126,8 @@ class Tuple_receive_assignment_statement : public Statement
   Statement*
   do_lower(Gogo*, Named_object*, Block*);
 
-  tree
-  do_get_tree(Translate_context*)
+  Bstatement*
+  do_get_backend(Translate_context*)
   { gcc_unreachable(); }
 
  private:
@@ -1253,8 +1250,8 @@ class Tuple_type_guard_assignment_statement : public Statement
   Statement*
   do_lower(Gogo*, Named_object*, Block*);
 
-  tree
-  do_get_tree(Translate_context*)
+  Bstatement*
+  do_get_backend(Translate_context*)
   { gcc_unreachable(); }
 
  private:
@@ -1424,8 +1421,8 @@ class Expression_statement : public Statement
   bool
   do_may_fall_through() const;
 
-  tree
-  do_get_tree(Translate_context* context);
+  Bstatement*
+  do_get_backend(Translate_context* context);
 
  private:
   Expression* expr_;
@@ -1464,13 +1461,11 @@ Expression_statement::do_may_fall_through() const
 
 // Convert to backend representation.
 
-tree
-Expression_statement::do_get_tree(Translate_context* context)
+Bstatement*
+Expression_statement::do_get_backend(Translate_context* context)
 {
   tree expr_tree = this->expr_->get_tree(context);
-  Bexpression* bexpr = tree_to_expr(expr_tree);
-  Bstatement* ret = context->backend()->expression_statement(bexpr);
-  return stat_to_tree(ret);
+  return context->backend()->expression_statement(tree_to_expr(expr_tree));
 }
 
 // Make an expression statement from an Expression.
@@ -1505,8 +1500,8 @@ class Block_statement : public Statement
   do_may_fall_through() const
   { return this->block_->may_fall_through(); }
 
-  tree
-  do_get_tree(Translate_context* context);
+  Bstatement*
+  do_get_backend(Translate_context* context);
 
  private:
   Block* block_;
@@ -1514,12 +1509,11 @@ class Block_statement : public Statement
 
 // Convert a block to the backend representation of a statement.
 
-tree
-Block_statement::do_get_tree(Translate_context* context)
+Bstatement*
+Block_statement::do_get_backend(Translate_context* context)
 {
   Bblock* bblock = this->block_->get_backend(context);
-  Bstatement* ret = context->backend()->block_statement(bblock);
-  return stat_to_tree(ret);
+  return context->backend()->block_statement(bblock);
 }
 
 // Make a block statement.
@@ -1552,8 +1546,8 @@ class Inc_dec_statement : public Statement
   Statement*
   do_lower(Gogo*, Named_object*, Block*);
 
-  tree
-  do_get_tree(Translate_context*)
+  Bstatement*
+  do_get_backend(Translate_context*)
   { gcc_unreachable(); }
 
  private:
@@ -2222,20 +2216,19 @@ Thunk_statement::get_fn_and_arg(Expression** pfn, Expression** parg)
 
 // Class Go_statement.
 
-tree
-Go_statement::do_get_tree(Translate_context* context)
+Bstatement*
+Go_statement::do_get_backend(Translate_context* context)
 {
   Expression* fn;
   Expression* arg;
   if (!this->get_fn_and_arg(&fn, &arg))
-    return error_mark_node;
+    return context->backend()->error_statement();
 
   Expression* call = Runtime::make_call(Runtime::GO, this->location(), 2,
 					fn, arg);
   tree call_tree = call->get_tree(context);
   Bexpression* call_bexpr = tree_to_expr(call_tree);
-  Bstatement* ret = context->backend()->expression_statement(call_bexpr);
-  return stat_to_tree(ret);
+  return context->backend()->expression_statement(call_bexpr);
 }
 
 // Make a go statement.
@@ -2248,13 +2241,13 @@ Statement::make_go_statement(Call_expression* call, source_location location)
 
 // Class Defer_statement.
 
-tree
-Defer_statement::do_get_tree(Translate_context* context)
+Bstatement*
+Defer_statement::do_get_backend(Translate_context* context)
 {
   Expression* fn;
   Expression* arg;
   if (!this->get_fn_and_arg(&fn, &arg))
-    return error_mark_node;
+    return context->backend()->error_statement();
 
   source_location loc = this->location();
   Expression* ds = context->function()->func_value()->defer_stack(loc);
@@ -2263,8 +2256,7 @@ Defer_statement::do_get_tree(Translate_context* context)
 					ds, fn, arg);
   tree call_tree = call->get_tree(context);
   Bexpression* call_bexpr = tree_to_expr(call_tree);
-  Bstatement* ret = context->backend()->expression_statement(call_bexpr);
-  return stat_to_tree(ret);
+  return context->backend()->expression_statement(call_bexpr);
 }
 
 // Make a defer statement.
@@ -2424,8 +2416,8 @@ Return_statement::do_lower(Gogo*, Named_object* function, Block* enclosing)
 
 // Convert a return statement to the backend representation.
 
-tree
-Return_statement::do_get_tree(Translate_context* context)
+Bstatement*
+Return_statement::do_get_backend(Translate_context* context)
 {
   source_location loc = this->location();
 
@@ -2446,10 +2438,8 @@ Return_statement::do_get_tree(Translate_context* context)
 	}
     }
 
-  Bstatement* ret;
-  ret = context->backend()->return_statement(tree_to_function(fndecl),
-					     retvals, loc);
-  return stat_to_tree(ret);
+  return context->backend()->return_statement(tree_to_function(fndecl),
+					      retvals, loc);
 }
 
 // Make a return statement.
@@ -2484,11 +2474,9 @@ class Bc_statement : public Statement
   do_may_fall_through() const
   { return false; }
 
-  tree
-  do_get_tree(Translate_context* context)
-  {
-    return stat_to_tree(this->label_->get_goto(context, this->location()));
-  }
+  Bstatement*
+  do_get_backend(Translate_context* context)
+  { return this->label_->get_goto(context, this->location()); }
 
  private:
   // The label that this branches to.
@@ -2536,8 +2524,8 @@ class Goto_statement : public Statement
   do_may_fall_through() const
   { return false; }
 
-  tree
-  do_get_tree(Translate_context*);
+  Bstatement*
+  do_get_backend(Translate_context*);
 
  private:
   Label* label_;
@@ -2559,13 +2547,11 @@ Goto_statement::do_check_types(Gogo*)
 
 // Return the tree for the goto statement.
 
-tree
-Goto_statement::do_get_tree(Translate_context* context)
+Bstatement*
+Goto_statement::do_get_backend(Translate_context* context)
 {
   Blabel* blabel = this->label_->get_backend_label(context);
-  Bstatement* statement = context->backend()->goto_statement(blabel,
-							     this->location());
-  return stat_to_tree(statement);
+  return context->backend()->goto_statement(blabel, this->location());
 }
 
 // Make a goto statement.
@@ -2595,11 +2581,9 @@ class Goto_unnamed_statement : public Statement
   do_may_fall_through() const
   { return false; }
 
-  tree
-  do_get_tree(Translate_context* context)
-  {
-    return stat_to_tree(this->label_->get_goto(context, this->location()));
-  }
+  Bstatement*
+  do_get_backend(Translate_context* context)
+  { return this->label_->get_goto(context, this->location()); }
 
  private:
   Unnamed_label* label_;
@@ -2626,13 +2610,11 @@ Label_statement::do_traverse(Traverse*)
 
 // Return a tree defining this label.
 
-tree
-Label_statement::do_get_tree(Translate_context* context)
+Bstatement*
+Label_statement::do_get_backend(Translate_context* context)
 {
   Blabel* blabel = this->label_->get_backend_label(context);
-  Bstatement* statement;
-  statement = context->backend()->label_definition_statement(blabel);
-  return stat_to_tree(statement);
+  return context->backend()->label_definition_statement(blabel);
 }
 
 // Make a label statement.
@@ -2658,9 +2640,9 @@ class Unnamed_label_statement : public Statement
   do_traverse(Traverse*)
   { return TRAVERSE_CONTINUE; }
 
-  tree
-  do_get_tree(Translate_context* context)
-  { return stat_to_tree(this->label_->get_definition(context)); }
+  Bstatement*
+  do_get_backend(Translate_context* context)
+  { return this->label_->get_definition(context); }
 
  private:
   // The label.
@@ -2699,8 +2681,8 @@ class If_statement : public Statement
   bool
   do_may_fall_through() const;
 
-  tree
-  do_get_tree(Translate_context*);
+  Bstatement*
+  do_get_backend(Translate_context*);
 
  private:
   Expression* cond_;
@@ -2758,22 +2740,19 @@ If_statement::do_may_fall_through() const
 
 // Get tree.
 
-tree
-If_statement::do_get_tree(Translate_context* context)
+Bstatement*
+If_statement::do_get_backend(Translate_context* context)
 {
   gcc_assert(this->cond_->type()->is_boolean_type()
 	     || this->cond_->type()->is_error());
   tree cond_tree = this->cond_->get_tree(context);
+  Bexpression* cond_expr = tree_to_expr(cond_tree);
   Bblock* then_block = this->then_block_->get_backend(context);
   Bblock* else_block = (this->else_block_ == NULL
 			? NULL
 			: this->else_block_->get_backend(context));
-  Bexpression* cond_expr = tree_to_expr(cond_tree);
-  
-  Bstatement* ret = context->backend()->if_statement(cond_expr, then_block,
-						     else_block,
-						     this->location());
-  return stat_to_tree(ret);
+  return context->backend()->if_statement(cond_expr, then_block,
+					  else_block, this->location());
 }
 
 // Make an if statement.
@@ -3255,8 +3234,8 @@ class Constant_switch_statement : public Statement
   bool
   do_may_fall_through() const;
 
-  tree
-  do_get_tree(Translate_context*);
+  Bstatement*
+  do_get_backend(Translate_context*);
 
  private:
   // The value to switch on.
@@ -3313,8 +3292,8 @@ Constant_switch_statement::do_may_fall_through() const
 
 // Convert to GENERIC.
 
-tree
-Constant_switch_statement::do_get_tree(Translate_context* context)
+Bstatement*
+Constant_switch_statement::do_get_backend(Translate_context* context)
 {
   tree switch_val_tree = this->val_->get_tree(context);
   Bexpression* switch_val_expr = tree_to_expr(switch_val_tree);
@@ -3334,9 +3313,7 @@ Constant_switch_statement::do_get_tree(Translate_context* context)
 							  all_statements,
 							  this->location());
   Bstatement* ldef = break_label->get_definition(context);
-  Bstatement* ret = context->backend()->compound_statement(switch_statement,
-							   ldef);
-  return stat_to_tree(ret);
+  return context->backend()->compound_statement(switch_statement, ldef);
 }
 
 // Class Switch_statement.
@@ -3775,8 +3752,8 @@ Send_statement::do_check_types(Gogo*)
 
 // Get a tree for a send statement.
 
-tree
-Send_statement::do_get_tree(Translate_context* context)
+Bstatement*
+Send_statement::do_get_backend(Translate_context* context)
 {
   source_location loc = this->location();
 
@@ -3824,7 +3801,7 @@ Send_statement::do_get_tree(Translate_context* context)
     case Type::TYPE_NAMED:
     case Type::TYPE_FORWARD:
       gcc_assert(saw_errors());
-      return error_mark_node;
+      return context->backend()->error_statement();
     }
 
   // Only try to take the address of a variable.  We have already
@@ -3862,7 +3839,7 @@ Send_statement::do_get_tree(Translate_context* context)
 							    val, loc);
       Expression* ref = Expression::make_temporary_reference(temp, loc);
       val = Expression::make_unary(OPERATOR_AND, ref, loc);
-      btemp = tree_to_stat(temp->get_tree(context));
+      btemp = temp->get_backend(context);
     }
 
   call = Runtime::make_call(code, loc, 3, this->channel_, val,
@@ -3873,9 +3850,9 @@ Send_statement::do_get_tree(Translate_context* context)
   Bstatement* s = context->backend()->expression_statement(bcall);
 
   if (btemp == NULL)
-    return stat_to_tree(s);
+    return s;
   else
-    return stat_to_tree(context->backend()->compound_statement(btemp, s));
+    return context->backend()->compound_statement(btemp, s);
 }
 
 // Make a send statement.
@@ -4232,7 +4209,7 @@ Select_clauses::get_backend(Translate_context* context,
   Temporary_statement* chan_temp = Statement::make_temporary(chan_array_type,
 							     chans,
 							     location);
-  statements.push_back(tree_to_stat(chan_temp->get_tree(context)));
+  statements.push_back(chan_temp->get_backend(context));
 
   Type* is_send_array_type = Type::make_array_type(Type::lookup_bool_type(),
 						   ecount->copy());
@@ -4243,7 +4220,7 @@ Select_clauses::get_backend(Translate_context* context,
   context->gogo()->lower_expression(context->function(), &is_sends);
   Temporary_statement* is_send_temp =
     Statement::make_temporary(is_send_array_type, is_sends, location);
-  statements.push_back(tree_to_stat(is_send_temp->get_tree(context)));
+  statements.push_back(is_send_temp->get_backend(context));
 
   mpz_init_set_ui(ival, 0);
   Expression* zero = Expression::make_integer(&ival, NULL, location);
@@ -4375,12 +4352,11 @@ Select_statement::do_lower(Gogo* gogo, Named_object* function,
 
 // Return the tree for a select statement.
 
-tree
-Select_statement::do_get_tree(Translate_context* context)
+Bstatement*
+Select_statement::do_get_backend(Translate_context* context)
 {
-  Bstatement* ret = this->clauses_->get_backend(context, this->break_label(),
-						this->location());
-  return stat_to_tree(ret);
+  return this->clauses_->get_backend(context, this->break_label(),
+				     this->location());
 }
 
 // Make a select statement.

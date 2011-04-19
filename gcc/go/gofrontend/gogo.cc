@@ -3320,7 +3320,7 @@ Block::get_backend(Translate_context* context)
   for (std::vector<Statement*>::const_iterator p = this->statements_.begin();
        p != this->statements_.end();
        ++p)
-    bstatements.push_back(tree_to_stat((*p)->get_tree(&subcontext)));
+    bstatements.push_back((*p)->get_backend(&subcontext));
 
   context->backend()->block_add_statements(ret, bstatements);
 
