@@ -1715,18 +1715,6 @@ do {									   \
 #define DITF_CONVERSION_LIBFUNCS	0
 #define SUN_INTEGER_MULTIPLY_64 	0
 
-/* Compute extra cost of moving data between one register class
-   and another.  */
-#define GENERAL_OR_I64(C) ((C) == GENERAL_REGS || (C) == I64_REGS)
-#define REGISTER_MOVE_COST(MODE, CLASS1, CLASS2)		\
-  (((FP_REG_CLASS_P (CLASS1) && GENERAL_OR_I64 (CLASS2)) \
-    || (GENERAL_OR_I64 (CLASS1) && FP_REG_CLASS_P (CLASS2)) \
-    || (CLASS1) == FPCC_REGS || (CLASS2) == FPCC_REGS)		\
-   ? ((sparc_cpu == PROCESSOR_ULTRASPARC \
-       || sparc_cpu == PROCESSOR_ULTRASPARC3 \
-       || sparc_cpu == PROCESSOR_NIAGARA \
-       || sparc_cpu == PROCESSOR_NIAGARA2) ? 12 : 6) : 2)
-
 /* Provide the cost of a branch.  For pre-v9 processors we use
    a value of 3 to take into account the potential annulling of
    the delay slot (which ends up being a bubble in the pipeline slot)

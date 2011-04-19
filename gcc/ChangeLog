@@ -1,3 +1,9 @@
+2011-04-19  Anatoly Sokolov  <aesok@post.ru>
+
+	* config/sparc/sparc.h (GENERAL_OR_I64, REGISTER_MOVE_COST): Remove.
+	* config/sparc/sparc.c (TARGET_REGISTER_MOVE_COST): Define.
+	(general_or_i64_p, sparc_register_move_cost): New function.
+
 2011-04-19  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* doc/install.texi (Configuration, --enable-threads): Remove mach.
