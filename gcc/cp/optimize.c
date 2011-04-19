@@ -309,7 +309,9 @@ maybe_clone_body (tree fn)
 	  && (!DECL_ONE_ONLY (fns[0])
 	      || (HAVE_COMDAT_GROUP
 		  && DECL_WEAK (fns[0])))
-	  && cgraph_same_body_alias (cgraph_node (fns[0]), clone, fns[0]))
+	  && (flag_syntax_only
+	      || cgraph_same_body_alias (cgraph_get_node (fns[0]), clone,
+					 fns[0])))
 	{
 	  alias = true;
 	  if (DECL_ONE_ONLY (fns[0]))
@@ -423,8 +425,8 @@ maybe_clone_body (tree fn)
 	  /* If *[CD][12]* dtors go into the *[CD]5* comdat group and dtor is
 	     virtual, it goes into the same comdat group as well.  */
 	  DECL_COMDAT_GROUP (fns[2]) = comdat_group;
-	  base_dtor_node = cgraph_node (fns[0]);
-	  deleting_dtor_node = cgraph_node (fns[2]);
+	  base_dtor_node = cgraph_get_node (fns[0]);
+	  deleting_dtor_node = cgraph_get_node (fns[2]);
 	  gcc_assert (base_dtor_node->same_comdat_group == NULL);
 	  gcc_assert (deleting_dtor_node->same_comdat_group == NULL);
 	  base_dtor_node->same_comdat_group = deleting_dtor_node;

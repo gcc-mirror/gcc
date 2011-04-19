@@ -1057,6 +1057,8 @@ setup_profitable_hard_regs (void)
   enum reg_class aclass;
   enum machine_mode mode;
 
+  /* Initial set up from allocno classes and explicitly conflicting
+     hard regs.  */
   EXECUTE_IF_SET_IN_BITMAP (coloring_allocno_bitmap, 0, i, bi)
     {
       a = ira_allocnos[i];
@@ -1076,9 +1078,6 @@ setup_profitable_hard_regs (void)
 	    {
 	      COPY_HARD_REG_SET (obj_data->profitable_hard_regs,
 				 reg_class_contents[aclass]);
-	      AND_COMPL_HARD_REG_SET
-		(obj_data->profitable_hard_regs,
-		 ira_prohibited_class_mode_regs[aclass][mode]);
 	      AND_COMPL_HARD_REG_SET (obj_data->profitable_hard_regs,
 				      ira_no_alloc_regs);
 	      AND_COMPL_HARD_REG_SET (obj_data->profitable_hard_regs,
@@ -1086,6 +1085,7 @@ setup_profitable_hard_regs (void)
 	    }
 	}
     }
+  /* Exclude hard regs already assigned for conflicting objects.  */
   EXECUTE_IF_SET_IN_BITMAP (consideration_allocno_bitmap, 0, i, bi)
     {
       a = ira_allocnos[i];
@@ -1124,6 +1124,7 @@ setup_profitable_hard_regs (void)
 	    }
 	}
     }
+  /* Exclude too costly hard regs.  */
   EXECUTE_IF_SET_IN_BITMAP (coloring_allocno_bitmap, 0, i, bi)
     {
       int min_cost = INT_MAX;
@@ -1451,9 +1452,9 @@ update_conflict_hard_regno_costs (int *costs, enum reg_class aclass,
    profitable regs exclude hard regs which can not hold value of mode
    of allocno A.  */
 static inline void
-setup_conflict_profitable_regs (ira_allocno_t a, bool retry_p,
-				HARD_REG_SET *conflict_regs,
-				HARD_REG_SET *profitable_regs)
+get_conflict_profitable_regs (ira_allocno_t a, bool retry_p,
+			      HARD_REG_SET *conflict_regs,
+			      HARD_REG_SET *profitable_regs)
 {
   int i, nwords;
   ira_object_t obj;
@@ -1485,8 +1486,15 @@ check_hard_reg_p (ira_allocno_t a, int hard_regno,
 		  HARD_REG_SET *conflict_regs, HARD_REG_SET *profitable_regs)
 {
   int j, nwords, nregs;
+  enum reg_class aclass;
+  enum machine_mode mode;
 
-  nregs = hard_regno_nregs[hard_regno][ALLOCNO_MODE (a)];
+  aclass = ALLOCNO_CLASS (a);
+  mode = ALLOCNO_MODE (a);
+  if (TEST_HARD_REG_BIT (ira_prohibited_class_mode_regs[aclass][mode],
+			 hard_regno))
+    return false;
+  nregs = hard_regno_nregs[hard_regno][mode];
   nwords = ALLOCNO_NUM_OBJECTS (a);
   for (j = 0; j < nregs; j++)
     {
@@ -1554,8 +1562,8 @@ assign_hard_reg (ira_allocno_t a, bool retry_p)
 #endif
 
   ira_assert (! ALLOCNO_ASSIGNED_P (a));
-  setup_conflict_profitable_regs (a, retry_p,
-				  conflicting_regs, profitable_hard_regs);
+  get_conflict_profitable_regs (a, retry_p,
+				conflicting_regs, profitable_hard_regs);
   aclass = ALLOCNO_CLASS (a);
   class_size = ira_class_hard_regs_num[aclass];
   best_hard_regno = -1;
@@ -2233,7 +2241,8 @@ setup_allocno_available_regs_num (ira_allocno_t a)
 	      ira_object_t obj = ALLOCNO_OBJECT (a, k);
 	      object_color_data_t obj_data = OBJECT_COLOR_DATA (obj);
 
-	      /* Checking only profitable hard regs.  */
+	      /* Checking only profitable hard regs which exclude
+		 object's conflict hard regs.  */
 	      if (TEST_HARD_REG_BIT (OBJECT_TOTAL_CONFLICT_HARD_REGS (obj),
 				     hard_regno + j)
 		  || ! TEST_HARD_REG_BIT (obj_data->profitable_hard_regs,
@@ -2403,8 +2412,8 @@ improve_allocation (void)
       else
 	base_cost = allocno_costs[ira_class_hard_reg_index[aclass][hregno]];
       try_p = false;
-      setup_conflict_profitable_regs (a, false,
-				      conflicting_regs, profitable_hard_regs);
+      get_conflict_profitable_regs (a, false,
+				    conflicting_regs, profitable_hard_regs);
       class_size = ira_class_hard_regs_num[aclass];
       /* Set up cost improvement for usage of each profitable hard
 	 register for allocno A.  */

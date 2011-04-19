@@ -32,8 +32,8 @@ along with GCC.  If not, see <http://www.gnu.org/licenses/>.
 #undef STANDARD_INCLUDE_DIR
 #define STANDARD_INCLUDE_DIR "/include"
 
-#undef LINUX_TARGET_OS_CPP_BUILTINS
-#define LINUX_TARGET_OS_CPP_BUILTINS()		\
+#undef GNU_USER_TARGET_OS_CPP_BUILTINS
+#define GNU_USER_TARGET_OS_CPP_BUILTINS()		\
     do {					\
 	builtin_define ("__gnu_hurd__");	\
 	builtin_define ("__GNU__");		\

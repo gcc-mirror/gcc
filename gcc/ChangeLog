@@ -1,3 +1,828 @@
+2011-04-12  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* c-decl.c (union lang_tree_node): Check for TS_COMMON before
+	calling TREE_CHAIN.
+	* print-tree.c (print_node): Likewise.
+	* tree-inline.c (copy_tree_r): Likewise.
+	* c-lang.c (LANG_HOOKS_INIT_TS): Define.
+	* lto-streamer-in.c (lto_input_tree_pointers): Check for TS_TYPED
+	instead of TS_COMMON.
+	* lto-streamer-out.c (lto_output_tree_pointers): Likewise.
+	* tree.c (initialize_tree_contains_struct): Handle TS_TYPED.
+	(copy_node_stat): Zero TREE_CHAIN only if necessary.
+	(MARK_TS_BASE, MARK_TS_TYPED, MARK_TS_COMMON): Move these...
+	(MARK_TS_DECL_COMMON, MARK_TS_DECL_COMMON, MARK_TS_DECL_WRTL):
+	...and these...
+	(MARK_TS_DECL_WITH_VIS, MARK_TS_DECL_NON_COMMON): ...and these...
+	* tree.h: ...here.
+	(TREE_CHAIN): Check for a TS_COMMON structure.
+	(TREE_TYPE): Check for a TS_TYPED structure.
+
+2011-04-12  Pat Haugen <pthaugen@us.ibm.com>
+
+	* config/rs6000/rs6000.c (call_ABI_of_interest): Call
+	cgraph_get_create_node instead of cgraph_node.
+
+2011-04-12  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* c-parser.c (c_parser_initelt): Updated call to
+	objc_build_message_expr.
+	(c_parser_postfix_expression): Likewise.
+
+2011-04-12  Kai Tietz  <ktietz@redhat.com>
+
+	* config/i386/mingw32.h (TARGET_SUBTARGET_DEFAULT): Add
+	MASK_MS_BITFIELD_LAYOUT bit.
+
+2011-04-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* combine.c (update_cfg_for_uncondjump): Instead of testing at_end
+	assert it is always true.
+	(try_combine): Don't call update_cfg_for_uncondjump for noop non-jump
+	moves.
+
+2011-04-12  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* c-parser.c (c_lex_one_token): Rewritten conditional used when
+	compiling Objective-C to be more efficient.
+
+2011-04-12  Axel Freyn  <axel-freyn@gmx.de>
+
+	* opts-common.c (decode_cmdline_options_to_array): Remove variable
+	argv_copied.
+
+2011-04-12  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* recog.h, genoutput.c, optabs.c: Revert last patch.
+
+2011-04-12  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
+
+       PR target/48090
+       * config/arm/arm.md (*arm_negdi2): Fix early clobber constraints.
+
+2011-04-12  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* recog.h (insn_operand_data): Add an "allows_mem" field.
+	* genoutput.c (output_operand_data): Initialize it.
+	* optabs.c (maybe_legitimize_operand_same_code): New function.
+	(maybe_legitimize_operand): Use it when matching the original
+	op->value.
+
+2011-04-12  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* genpreds.c (process_define_predicate): Move most processing
+	to gensupport.c.  Continue to validate the expression.
+	* genrecog.c (did_you_mean_codes, compute_predicate_codes)
+	(process_define_predicate): Move processing to gensupport.c.
+	(main): Remove DEFINE_PREDICATE and DEFINE_SPECIAL_PREDICATE cases.
+	* gensupport.c (did_you_mean_codes): Moved from genrecog.c.
+	(compute_predicate_codes): Moved from genrecog.c.  Add lineno
+	argument.
+	(valid_predicate_name_p): New function, split out from old
+	genpreds.c:process_define_predicate.
+	(process_define_predicate): New function, combining code from
+	old genpreds.c and genrecog.c functions.
+	(process_rtx): Call it for DEFINE_PREDICATE and
+	DEFINE_SPECIAL_PREDICATE.
+
+2011-04-12  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* config/arm/arm.c (arm_print_operand): Use MEM_SIZE to get the
+	size of a '%A' memory reference.
+	(T_DREG, T_QREG): New neon_builtin_type_bits.
+	(arm_init_neon_builtins): Assert that the load and store operands
+	are neon_struct_operands.
+	(locate_neon_builtin_icode): Provide the neon_builtin_type_bits.
+	(NEON_ARG_MEMORY): New builtin_arg.
+	(neon_dereference_pointer): New function.
+	(arm_expand_neon_args): Add a neon_builtin_type_bits argument.
+	Handle NEON_ARG_MEMORY.
+	(arm_expand_neon_builtin): Update after above interface changes.
+	Use NEON_ARG_MEMORY for loads and stores.
+	* config/arm/predicates.md (neon_struct_operand): New predicate.
+	* config/arm/iterators.md (V_two_elem): Tweak formatting.
+	(V_three_elem): Use BLKmode for accesses that have no associated mode.
+	(V_four_elem): Tweak formatting.
+	* config/arm/neon.md (neon_vld1<mode>, neon_vld1_dup<mode>)
+	(neon_vst1_lane<mode>, neon_vst1<mode>, neon_vld2<mode>)
+	(neon_vld2_lane<mode>, neon_vld2_dup<mode>, neon_vst2<mode>)
+	(neon_vst2_lane<mode>, neon_vld3<mode>, neon_vld3_lane<mode>)
+	(neon_vld3_dup<mode>, neon_vst3<mode>, neon_vst3_lane<mode>)
+	(neon_vld4<mode>, neon_vld4_lane<mode>, neon_vld4_dup<mode>)
+	(neon_vst4<mode>): Replace pointer operand with a memory operand.
+	Use %A in the output template.
+	(neon_vld3qa<mode>, neon_vld3qb<mode>, neon_vst3qa<mode>)
+	(neon_vst3qb<mode>, neon_vld4qa<mode>, neon_vld4qb<mode>)
+	(neon_vst4qa<mode>, neon_vst4qb<mode>): Likewise, but halve
+	the width of the memory access.  Remove post-increment.
+	* config/arm/neon-testgen.ml: Allow addresses to have an alignment.
+
+2011-04-12  Nick Clifton  <nickc@redhat.com>
+
+	* config/v850/v850.c (expand_prologue): Do not use the CALLT
+	instruction for interrupt handlers if the target is the basic V850
+	architecture.
+	(expand_epilogue): Likewise.
+
+2011-04-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/48549
+	* combine.c (propagate_for_debug): Also stop after BB_END of
+	this_basic_block.  Process LAST and just stop processing after it.
+	(combine_instructions): If last_combined_insn has been deleted,
+	set last_combined_insn to its PREV_INSN.
+
+2011-04-12  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/46076
+	* gimple.h (struct gimple_statement_call): Add fntype field.
+	(gimple_call_fntype): Adjust.
+	(gimple_call_set_fntype): New function.
+	* gimple.c (gimple_build_call_1): Set the call function type.
+	* gimplify.c (gimplify_call_expr): Preserve the function
+	type the frontend used for the call.
+	(gimplify_modify_expr): Likewise.
+	* lto-streamer-in.c (input_gimple_stmt): Input the call stmts
+	function type.
+	* lto-streamer-out.c (output_gimple_stmt): Output the call stmts
+	function type.
+	* tree-ssa.c (useless_type_conversion_p): Function pointer
+	conversions are useless.
+
+2011-04-12  Martin Jambor  <mjambor@suse.cz>
+
+	* cgraph.h (cgraph_node): Remove function declaration.
+	(cgraph_create_node): Declare.
+	(cgraph_get_create_node): Likewise.
+	* cgraph.c (cgraph_create_node): Renamed to cgraph_create_node_1.
+	Updated all callers.
+	(cgraph_node): Renamed to cgraph_create_node, assert that a node for
+	the decl does not already exist.  Call cgraph_get_create_node instead
+	of cgraph_node.
+	(cgraph_get_create_node): New function.
+	(cgraph_same_body_alias): Update comment.
+	(cgraph_set_call_stmt): Call cgraph_get_node instead of cgraph_node,
+	assert it does not return NULL.
+	(cgraph_update_edges_for_call_stmt): Likewise.
+	(cgraph_clone_edge): Likewise.
+	(cgraph_create_virtual_clone): Likewise.
+	(cgraph_update_edges_for_call_stmt_node): Call cgraph_get_create_node
+	instead of cgraph_node.
+	(cgraph_add_new_function): Call cgraph_create_node or
+	cgraph_get_create_node instead of cgraph_node.
+	* cgraphbuild.c (record_reference): Call cgraph_get_create_node
+	instead of cgraph_node.
+	(record_eh_tables): Likewise.
+	(mark_address): Likewise.
+	(mark_load): Likewise.
+	(build_cgraph_edges): Call cgraph_get_create_node instead
+	of cgraph_node.
+	(rebuild_cgraph_edges): Likewise.
+	* cgraphunit.c (cgraph_finalize_function): Call cgraph_get_create_node
+	instead of cgraph_node.
+	(cgraph_copy_node_for_versioning): Call cgraph_create_node instead of
+	cgraph_node.
+	* lto-symtab.c (lto_symtab_merge_cgraph_nodes_1): Call
+	cgraph_create_node instead of cgraph_node.
+	* c-decl.c (finish_function): Call cgraph_get_create_node instead
+	of cgraph_node.
+	* lto-cgraph.c (input_node): Likewise.
+	* lto-streamer-in.c (input_function): Likewise.
+	* varasm.c (mark_decl_referenced): Likewise.
+	(assemble_alias): Likewise.
+
+2011-04-12  Martin Jambor  <mjambor@suse.cz>
+
+	* tree-inline.c (tree_function_versioning): Call cgraph_get_node
+	instead of cgraph_node and assert it does not return NULL.
+	* lto-streamer-in.c (lto_read_body): Likewise.
+	* omp-low.c (new_omp_context): Likewise.
+	(create_task_copyfn): Likewise.
+	* tree-emutls.c (lower_emutls_function_body): Likewise.
+	* matrix-reorg.c (transform_allocation_sites): Likewise.
+
+2011-04-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/48552
+	* c-typeck.c (build_asm_expr): Error out on attempts to use
+	void type outputs or inputs for constraints that allow reg or
+	don't allow memory.
+
+2011-04-11  Chung-Lin Tang  <cltang@codesourcery.com>
+	    Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/48250
+	* config/arm/arm.c (arm_legitimize_reload_address): Update cases
+	to use sign-magnitude offsets. Reject unsupported unaligned
+	cases. Add detailed description in comments.
+	* config/arm/arm.md (reload_outdf): Disable for ARM mode; change
+	condition from TARGET_32BIT to TARGET_ARM.
+
+2011-04-11  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* tree.h (struct typed_tree): New.
+	(struct tree_common): Include it instead of tree_base.
+	(TREE_TYPE): Update for new location of type field.
+	(TYPE_USER_ALIGN, TYPE_PACKED): Refer to base field directly.
+	(DECL_USER_ALIGN, DECL_PACKED): Likewise.
+	(union tree_node): Add typed field.
+	* treestruct.def (TS_TYPED): New.
+	* lto-streamer.c (check_handled_ts_structures): Handle it.
+	* tree.c (MARK_TS_TYPED): New macro.
+	(MARK_TS_COMMON): Call it instead of MARK_TS_BASE.
+
+2011-04-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* cfghooks.c (redirect_edge_and_branch_force): Localize variable.
+	(force_nonfallthru): Do not alter the loop nest if no basic block
+	was created.
+
+2011-04-11  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sse.md (VI): New mode iterator.
+	(SSEMODEI): Remove.
+	(AVX256MODEI): Ditto.
+	(AVXMODEF4P): Ditto.
+	(avxvecpsmode): Ditto.
+	(one_cmpl<mode>2): Enable for TARGET_SSE.  Use VI mode iterator.
+	(sse2_andnot<mode>3): New expander.
+	(*andnot<mode>3): Merge with *sse2_andnot<mode>3 and
+	*avx_andnot<mode>3.  Enable for TARGET_SSE.  Use VI mode iterator.
+	(<any_logic:code><mode>3): Use VI mode iterator.
+	(*<any_logic:code><mode>3): Merge with *sse2_<any_logic:code><mode>3
+	and *avx_<any_logic:code><mode>3.  Use VI mode iterator.
+	(*andnottf3): Handle AVX three-operand constraints.
+	(*<any_logic:code>tf3): Handle AVX three-operand constraints.
+
+2011-04-11  Joseph Myers  <joseph@codesourcery.com>
+	    Robert Millan  <rmh@gnu.org>
+
+	* config.gcc (x86_64-*-kfreebsd*-gnu): Use i386/kfreebsd-gnu.h.
+	* config/i386/kfreebsd-gnu.h (GNU_USER_DYNAMIC_LINKER32,
+	GNU_USER_DYNAMIC_LINKER64): Define.
+	(REG_NAME): Don't undefine.
+	(MD_UNWIND_SUPPORT): Undefine.
+	* config/i386/knetbsd-gnu.h (GNU_USER_LINK_EMULATION): Define.
+	(REG_NAME): Don't undefine.
+	(MD_UNWIND_SUPPORT): Undefine.
+	* config/i386/kopensolaris-gnu.h (GNU_USER_LINK_EMULATION): Define.
+
+2011-04-11  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/i386/gnu.h (GNU_USER_LINK_EMULATION): Define.
+	(CPP_SPEC, CC1_SPEC, ENDFILE_SPEC): Remove.
+
+2011-04-11  Xinliang David Li  <davidxl@google.com>
+
+	* value-profile.c (check_ic_target): New function.
+	(gimple_ic_transform): Sanity check indirect call target.
+	* gimple-low.c (gimple_check_call_args): Interface change.
+	(gimple_check_call_matching_types): New function.
+	* tree-inline.c (tree_can_inline_p): Call new function.
+
+2011-04-11  Basile Starynkevitch  <basile@starynkevitch.net>
+
+	* Makefile.in (PLUGIN_HEADERS): Add gimple-pretty-print.h
+	tree-pretty-print.h & realmpfr.h.
+
+2011-04-11  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR middle-end/48464
+	* ira.c (setup_pressure_classes): Fix typo in loop condition.
+	(setup_allocno_and_important_classes): Ditto.
+
+2011-04-11  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/alpha/linux-elf.h (LINUX_DYNAMIC_LINKER): Rename to
+	GNU_USER_DYNAMIC_LINKER.
+	* config/arm/linux-eabi.h (TARGET_OS_CPP_BUILTINS): Change
+	LINUX_TARGET_OS_CPP_BUILTINS to GNU_USER_TARGET_OS_CPP_BUILTINS.
+	* config/arm/linux-elf.h (LINUX_TARGET_LINK_SPEC): Change
+	LINUX_DYNAMIC_LINKER to GNU_USER_DYNAMIC_LINKER.
+	(TARGET_OS_CPP_BUILTINS): Change LINUX_TARGET_OS_CPP_BUILTINS to
+	GNU_USER_TARGET_OS_CPP_BUILTINS.
+	* config/bfin/linux.h (TARGET_OS_CPP_BUILTINS): Change
+	LINUX_TARGET_OS_CPP_BUILTINS to GNU_USER_TARGET_OS_CPP_BUILTINS.
+	* config/bfin/uclinux.h (TARGET_OS_CPP_BUILTINS): Change
+	LINUX_TARGET_OS_CPP_BUILTINS to GNU_USER_TARGET_OS_CPP_BUILTINS.
+	* config/cris/linux.h (CRIS_LINK_SUBTARGET_SPEC): Change
+	LINUX_DYNAMIC_LINKER to GNU_USER_DYNAMIC_LINKER.
+	(TARGET_OS_CPP_BUILTINS): Change LINUX_TARGET_OS_CPP_BUILTINS to
+	GNU_USER_TARGET_OS_CPP_BUILTINS.
+	* config/frv/linux.h (LINK_SPEC): Change LINUX_DYNAMIC_LINKER to
+	GNU_USER_DYNAMIC_LINKER.
+	* config/gnu.h (LINUX_TARGET_OS_CPP_BUILTINS): Rename to
+	GNU_USER_TARGET_OS_CPP_BUILTINS.
+	* config/i386/gnu-user.h (TARGET_OS_CPP_BUILTINS): Change
+	LINUX_TARGET_OS_CPP_BUILTINS to GNU_USER_TARGET_OS_CPP_BUILTINS.
+	* config/i386/gnu-user64.h (TARGET_OS_CPP_BUILTINS): Change
+	LINUX_TARGET_OS_CPP_BUILTINS to GNU_USER_TARGET_OS_CPP_BUILTINS.
+	* config/i386/linux.h (GNU_USER_DYNAMIC_LINKER): Remove.
+	* config/i386/linux64.h (GNU_USER_DYNAMIC_LINKER32,
+	GNU_USER_DYNAMIC_LINKER64): Remove.
+	* config/ia64/linux.h (TARGET_OS_CPP_BUILTINS): Change
+	LINUX_TARGET_OS_CPP_BUILTINS to GNU_USER_TARGET_OS_CPP_BUILTINS.
+	(LINK_SPEC): Change LINUX_DYNAMIC_LINKER to
+	GNU_USER_DYNAMIC_LINKER.
+	* config/kfreebsd-gnu.h (LINUX_TARGET_OS_CPP_BUILTINS): Rename to
+	GNU_USER_TARGET_OS_CPP_BUILTINS.
+	* config/knetbsd-gnu.h (LINUX_TARGET_OS_CPP_BUILTINS): Rename to
+	GNU_USER_TARGET_OS_CPP_BUILTINS.
+	* config/kopensolaris-gnu.h (LINUX_TARGET_OS_CPP_BUILTINS): Rename
+	to GNU_USER_TARGET_OS_CPP_BUILTINS.
+	* config/linux.h (LINUX_TARGET_OS_CPP_BUILTINS): Rename to
+	GNU_USER_TARGET_OS_CPP_BUILTINS.
+	(LINUX_DYNAMIC_LINKER): Rename to GNU_USER_DYNAMIC_LINKER.
+	(LINUX_DYNAMIC_LINKER32): Rename to GNU_USER_DYNAMIC_LINKER32.
+	(LINUX_DYNAMIC_LINKER64): Rename to GNU_USER_DYNAMIC_LINKER64.
+	* config/lm32/uclinux-elf.h (TARGET_OS_CPP_BUILTINS): Change
+	LINUX_TARGET_OS_CPP_BUILTINS to GNU_USER_TARGET_OS_CPP_BUILTINS.
+	* config/m32r/linux.h (LINK_SPEC): Change LINUX_DYNAMIC_LINKER to
+	GNU_USER_DYNAMIC_LINKER.
+	(TARGET_OS_CPP_BUILTINS): Change LINUX_TARGET_OS_CPP_BUILTINS to
+	GNU_USER_TARGET_OS_CPP_BUILTINS.
+	* config/m68k/linux.h (TARGET_OS_CPP_BUILTINS): Change
+	LINUX_TARGET_OS_CPP_BUILTINS to GNU_USER_TARGET_OS_CPP_BUILTINS.
+	(LINK_SPEC): Change LINUX_DYNAMIC_LINKER to
+	GNU_USER_DYNAMIC_LINKER.
+	* config/m68k/uclinux.h (TARGET_OS_CPP_BUILTINS): Change
+	LINUX_TARGET_OS_CPP_BUILTINS to GNU_USER_TARGET_OS_CPP_BUILTINS.
+	* config/mips/linux.h (TARGET_OS_CPP_BUILTINS): Change
+	LINUX_TARGET_OS_CPP_BUILTINS to GNU_USER_TARGET_OS_CPP_BUILTINS.
+	(LINK_SPEC): Change LINUX_DYNAMIC_LINKER to
+	GNU_USER_DYNAMIC_LINKER.
+	* config/mips/linux64.h (LINUX_DYNAMIC_LINKERN32): Rename to
+	GNU_USER_DYNAMIC_LINKERN32.
+	(LINK_SPEC): Change LINUX_DYNAMIC_LINKERN32 to
+	GNU_USER_DYNAMIC_LINKERN32.  Change LINUX_DYNAMIC_LINKER64 to
+	GNU_USER_DYNAMIC_LINKER64.  Change LINUX_DYNAMIC_LINKER32 to
+	GNU_USER_DYNAMIC_LINKER32.
+	* config/mn10300/linux.h (TARGET_OS_CPP_BUILTINS): Change
+	LINUX_TARGET_OS_CPP_BUILTINS to GNU_USER_TARGET_OS_CPP_BUILTINS.
+	(LINK_SPEC): Change LINUX_DYNAMIC_LINKER to
+	GNU_USER_DYNAMIC_LINKER.
+	* config/moxie/uclinux.h (TARGET_OS_CPP_BUILTINS): Change
+	LINUX_TARGET_OS_CPP_BUILTINS to GNU_USER_TARGET_OS_CPP_BUILTINS.
+	* config/pa/pa-linux.h (TARGET_OS_CPP_BUILTINS): Change
+	LINUX_TARGET_OS_CPP_BUILTINS to GNU_USER_TARGET_OS_CPP_BUILTINS.
+	(LINK_SPEC): Change LINUX_DYNAMIC_LINKER to GNU_USER_DYNAMIC_LINKER.
+	* config/rs6000/linux64.h (LINUX_DYNAMIC_LINKER32): Rename to
+	GNU_USER_DYNAMIC_LINKER32.
+	(LINUX_DYNAMIC_LINKER64): Rename to GNU_USER_DYNAMIC_LINKER64.
+	* config/rs6000/sysv4.h (LINUX_DYNAMIC_LINKER): Rename to
+	GNU_USER_DYNAMIC_LINKER.
+	* config/s390/linux.h (TARGET_OS_CPP_BUILTINS): Change
+	LINUX_TARGET_OS_CPP_BUILTINS to GNU_USER_TARGET_OS_CPP_BUILTINS.
+	(LINK_SPEC): Change LINUX_DYNAMIC_LINKER32 to
+	GNU_USER_DYNAMIC_LINKER32.  Change LINUX_DYNAMIC_LINKER64 to
+	GNU_USER_DYNAMIC_LINKER64.
+	* config/sh/linux.h (TARGET_OS_CPP_BUILTINS): Change
+	LINUX_TARGET_OS_CPP_BUILTINS to GNU_USER_TARGET_OS_CPP_BUILTINS.
+	(SUBTARGET_LINK_SPEC): Change LINUX_DYNAMIC_LINKER to
+	GNU_USER_DYNAMIC_LINKER.
+	* config/sparc/linux.h (TARGET_OS_CPP_BUILTINS): Change
+	LINUX_TARGET_OS_CPP_BUILTINS to GNU_USER_TARGET_OS_CPP_BUILTINS.
+	(LINK_SPEC): Change LINUX_DYNAMIC_LINKER to
+	GNU_USER_DYNAMIC_LINKER.
+	* config/sparc/linux64.h (TARGET_OS_CPP_BUILTINS): Change
+	LINUX_TARGET_OS_CPP_BUILTINS to GNU_USER_TARGET_OS_CPP_BUILTINS.
+	(LINK_ARCH32_SPEC): Change LINUX_DYNAMIC_LINKER32 to
+	GNU_USER_DYNAMIC_LINKER32.
+	(LINK_ARCH64_SPEC): Change LINUX_DYNAMIC_LINKER64 to
+	GNU_USER_DYNAMIC_LINKER64.
+	(LINK_SPEC): Change LINUX_DYNAMIC_LINKER64 to
+	GNU_USER_DYNAMIC_LINKER64.
+	* config/vax/linux.h (TARGET_OS_CPP_BUILTINS): Change
+	LINUX_TARGET_OS_CPP_BUILTINS to GNU_USER_TARGET_OS_CPP_BUILTINS.
+	* config/xtensa/linux.h (TARGET_OS_CPP_BUILTINS): Change
+	LINUX_TARGET_OS_CPP_BUILTINS to GNU_USER_TARGET_OS_CPP_BUILTINS.
+	(LINK_SPEC): Change LINUX_DYNAMIC_LINKER to GNU_USER_DYNAMIC_LINKER.
+
+2011-04-11  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/i386/gnu-user.h: Copy from linux.h.  Update comments.
+	(LINK_EMULATION, GLIBC_DYNAMIC_LINKER): Remove.
+	(SUBTARGET_EXTRA_SPECS): Use GNU_USER_LINK_EMULATION and
+	GNU_USER_DYNAMIC_LINKER.
+	(MD_UNWIND_SUPPORT, REG_NAME): Remove.
+	* config/i386/gnu-user64.h: Copy from linux64.h.  Update comments.
+	(GLIBC_DYNAMIC_LINKER32, GLIBC_DYNAMIC_LINKER64): Remove.
+	(LINK_SPEC): Use GNU_USER_DYNAMIC_LINKER32 and
+	GNU_USER_DYNAMIC_LINKER64.
+	(MD_UNWIND_SUPPORT, REG_NAME): Remove.
+	* config/i386/kfreebsd-gnu.h (LINK_EMULATION): Change to
+	GNU_USER_LINK_EMULATION.
+	* config/i386/linux.h (TARGET_ASM_FILE_START_FILE_DIRECTIVE,
+	DEFAULT_PCC_STRUCT_RETURN, TARGET_TLS_DIRECT_SEG_REFS_DEFAULT,
+	ASM_COMMENT_START, DBX_REGISTER_NUMBER, NO_PROFILE_COUNTERS,
+	MCOUNT_NAME, SUBTARGET_FRAME_POINTER_REQUIRED, SIZE_TYPE,
+	PTRDIFF_TYPE, WCHAR_TYPE, WCHAR_TYPE_SIZE, TARGET_OS_CPP_BUILTINS,
+	CPP_SPEC, CC1_SPEC): Remove.
+	(LINK_EMULATION): Change to GNU_USER_LINK_EMULATION.
+	(GNU_USER_DYNAMIC_LINKER): Define.
+	(ASM_SPEC, SUBTARGET_EXTRA_SPECS, LINK_SPEC, ENDFILE_SPEC,
+	ASM_OUTPUT_ALIGNED_BSS, ASM_OUTPUT_MAX_SKIP_ALIGN,
+	ASM_MAYBE_OUTPUT_ENCODED_ADDR_RTX, CRT_GET_RFIB_DATA,
+	LIBGCC2_HAS_TF_MODE, LIBGCC2_TF_CEXT, TF_SIZE,
+	TARGET_ASM_FILE_END, STACK_CHECK_MOVING_SP,
+	STACK_CHECK_STATIC_BUILTIN, TARGET_THREAD_SSP_OFFSET,
+	TARGET_CAN_SPLIT_STACK, TARGET_THREAD_SPLIT_STACK_OFFSET): Remove.
+	* config/i386/linux64.h (TARGET_OS_CPP_BUILTINS, CPP_SPEC,
+	CC1_SPEC, DEFAULT_PCC_STRUCT_RETURN,
+	TARGET_TLS_DIRECT_SEG_REFS_DEFAULT, SPEC_32, SPEC_64, ASM_SPEC,
+	LINK_SPEC, ENDFILE_SPEC, MULTILIB_DEFAULTS, LIBGCC2_HAS_TF_MODE,
+	LIBGCC2_TF_CEXT, TF_SIZE, TARGET_ASM_FILE_END): Remove.
+	(GNU_USER_DYNAMIC_LINKER32, GNU_USER_DYNAMIC_LINKER64): Define.
+	(STACK_CHECK_MOVING_SP, STACK_CHECK_STATIC_BUILTIN,
+	TARGET_THREAD_SSP_OFFSET, TARGET_CAN_SPLIT_STACK,
+	TARGET_THREAD_SPLIT_STACK_OFFSET): Remove.
+	* config/i386/gnu.h (GLIBC_DYNAMIC_LINKER): Change to
+	GNU_USER_DYNAMIC_LINKER.
+	* config/kfreebsd-gnu.h (GLIBC_DYNAMIC_LINKER): Change to
+	GNU_USER_DYNAMIC_LINKER.  Unconditionally undefine and redefine.
+	* config/knetbsd-gnu.h (GLIBC_DYNAMIC_LINKER): Change to
+	GNU_USER_DYNAMIC_LINKER.  Unconditionally undefine and redefine.
+	* config/kopensolaris-gnu.h (GLIBC_DYNAMIC_LINKER): Change to
+	GNU_USER_DYNAMIC_LINKER.  Unconditionally undefine and redefine.
+	* config.gcc (i[34567]86-*-linux* | i[34567]86-*-kfreebsd*-gnu |
+	i[34567]86-*-knetbsd*-gnu | i[34567]86-*-gnu* |
+	i[34567]86-*-kopensolaris*-gnu, x86_64-*-linux* |
+	x86_64-*-kfreebsd*-gnu | x86_64-*-knetbsd*-gnu): Use the new headers.
+
+2011-04-11  Kai Tietz  <ktietz@redhat.com>
+
+	PR target/9601
+	PR target/11772
+	* config/i386/i386-protos.h (ix86_get_callcvt): New prototype.
+	* config/i386/i386.c (ix86_handle_cconv_attribute): Adjust
+	comment.
+	(ix86_is_msabi_thiscall): Removed.
+	(ix86_is_type_thiscall): Likewise.
+	(ix86_get_callcvt): New function.
+	(ix86_comp_type_attributes): Simplify check.
+	(ix86_function_regparm): Use ix86_get_callcvt for calling
+	convention attribute checks.
+	(ix86_return_pops_args): Likewise.
+	(ix86_static_chain): Likewise.
+	(x86_this_parameter): Likewise.
+	(x86_output_mi_thunk): Likewise.
+	(ix86_function_type_abi): Optimize check for types without attributes.
+	* config/i386/i386.h (IX86_CALLCVT_CDECL, IX86_CALLCVT_STDCALL,
+	IX86_CALLCVT_FASTCALL, IX86_CALLCVT_THISCALL, IX86_CALLCVT_REGPARM,
+	IX86_CALLCVT_SSEREGPARM): New macros to represent calling convention
+	by flag-values.
+	(IX86_BASE_CALLCVT): Helper macro.
+	* config/i386/netware.c (i386_nlm_maybe_mangle_decl_assembler_name):
+	Use ix86_get_callcvt for calling convention attribute checks and avoid
+	symbol-decoration for stdcall in TARGET_RTD case.
+	* config/i386/winnt.c (i386_pe_maybe_mangle_decl_assembler_name):
+	Likewise.
+	(gen_stdcall_or_fastcall_suffix): Adjust ident and use DECL_ORIGIN
+	for declaration.
+
+2011-04-11  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sse.md (VI_128): New mode iterator.
+	(VI12_128): Rename from SSEMODE12.
+	(VI14_128): Rename from SSEMODE14.
+	(VI124_128): New mode iterator.
+	(VI24_128): Rename from SSEMODE248.
+	(VI248_128): Rename from SSEMODE248.
+	(SSEMODE124C8): Remove.
+	(*<plusminus_insn><mode>3): Merge with *avx_<plusminus_insn><mode>3.
+	(*sse2_<plusminus_insn><mode>3): Merge with
+	*avx_<plusminus_insn><mode>3.
+	(*mulv8hi3): Merge with *avx_mulv8hi3.
+	(*<s>mulv8hi3_highpart): Merge with *avx_<s>mulv8hi3_highpart.
+	(*sse2_umulv2siv2di3): Merge with *avx_umulv2siv2di3.
+	(*sse2_pmaddwd): Merge with *avx_pmaddwd.
+	(*sse4_1_mulv4si3): Merge with *avx_mulv4si3.
+	(ashr<mode>3): Merge with *avx_ashr<mode>3.
+	(lshr<mode>3): Merge with *avx_lshr<mode>3.
+	(ashl<mode>3): Merge with *avx_ashl<mode>3.
+	(sse2_ashlv1ti3): Merge with *avx_ashlv1ti3.
+	(sse2_lshrv1ti3): Merge with *avx_lshrv1ti3.
+	(*sse4_1_<smaxmin:code><mode>3): Merge with *avx_<smaxmin:code><mode>3.
+	(*<smaxmin:code>v8hi3): Ditto.
+	(*sse4_1_<umaxmin:code><mode>3): Merge with *avx_<umaxmin:code><mode>3.
+	(*<smaxmin:code>v16qi3): Ditto.
+	(*sse4_1_eqv2di3): Merge with *avx_eq<mode>3.
+	(*sse2_eq<mode>3): Ditto.
+	(*sse4_2_eqv2di3): Merge with *avx_gt<mode>3.
+	(*sse2_gt<mode>3): Ditto.
+	(vcondv2di): Split out of vcond<mode>.
+	(vconduv2di): Split out of vcondu<mode>.
+
+2011-04-11  Richard Guenther  <rguenther@suse.de>
+
+	* gimplify.c (gimple_fold_indirect_ref): Check host_integerp
+	before calling tree_low_cst.
+
+2011-04-11  Richard Guenther  <rguenther@suse.de>
+
+	* stor-layout.c (layout_type): Compute all array index size operations
+	in the original type.
+	(initialize_sizetypes): Add comment.
+	(set_sizetype): Do not set TREE_TYPE of a TREE_VEC.
+
+2011-04-11  Joseph Myers  <joseph@codesourcery.com>
+
+	* common.opt (Tbss=, Tdata=, Ttext=): New options.
+
+2011-04-11  Martin Jambor  <mjambor@suse.cz>
+
+	* cgraph.c (cgraph_local_info): Call cgraph_get_node instead
+	of cgraph_node,	handle NULL return value.
+	(cgraph_global_info): Likewise.
+	(cgraph_rtl_info): Likewise.
+	* tree-inline.c (estimate_num_insns): Likewise.
+	* gimplify.c (unshare_body): Likewise.
+	(unvisit_body): Likewise.
+	(gimplify_body): Likewise.
+	* predict.c (optimize_function_for_size_p): Likewise.
+	* tree-ssa-alias.c (ref_maybe_used_by_call_p_1): Likewise.
+	(call_may_clobber_ref_p_1): Likewise.
+	* varasm.c (function_section_1): Likewise.
+	(assemble_start_function): Likewise.
+
+2011-04-11  Martin Jambor  <mjambor@suse.cz>
+
+	* except.c (set_nothrow_function_flags): Call cgraph_get_node instead
+	of cgraph_node.
+	* final.c (rest_of_clean_state): Likewise.
+	* gimple-iterator.c (update_call_edge_frequencies): Likewise.
+	* passes.c (pass_init_dump_file): Likewise.
+	(execute_all_ipa_transforms): Likewise.
+	(function_called_by_processed_nodes_p): Likewise.
+	* predict.c (maybe_hot_frequency_p): Likewise.
+	(probably_never_executed_bb_p): Likewise.
+	(compute_function_frequency): Likewise.
+	* tree-nested.c (check_for_nested_with_variably_modified): Likewise.
+	(unnest_nesting_tree_1): Likewise.
+	(lower_nested_functions): Likewise.
+	* tree-optimize.c (execute_fixup_cfg): Likewise.
+	(tree_rest_of_compilation): Likewise.
+	* tree-profile.c (gimple_gen_ic_func_profiler): Likewise.
+	* tree-sra.c (ipa_early_sra): Likewise.
+	* tree-ssa-loop-ivopts.c (computation_cost): Likewise.
+	* config/i386/i386.c (ix86_compute_frame_layout): Likewise.
+	* ipa.c (record_cdtor_fn): Likewise.
+	* ipa-inline.c (cgraph_early_inlining): Likewise.
+	(compute_inline_parameters_for_current): Likewise.
+	* ipa-prop.c (ipa_make_edge_direct_to_target): Likewise.
+	* ipa-pure-const.c (local_pure_const): Likewise.
+	* ipa-split.c (split_function): Likewise.
+	(execute_split_functions): Likewise.
+	* cgraphbuild.c (build_cgraph_edges): Likewise.
+	(rebuild_cgraph_edges): Likewise.
+	(cgraph_rebuild_references): Likewise.
+	(remove_cgraph_callee_edges): Likewise.
+	* cgraphunit.c (cgraph_mark_if_needed): Likewise.
+	(verify_cgraph_node): Likewise.
+	(cgraph_analyze_functions): Likewise.
+	(cgraph_preserve_function_body_p): Likewise.
+	(save_inline_function_body): Likewise.
+	(save_inline_function_body): Likewise.
+	* tree-inline.c (copy_bb): Likewise.
+	(optimize_inline_calls): Likewise.
+
+2011-04-11  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/48195
+	* ipa-cp.c (ipcp_driver): Call ipa_check_create_node_params and
+	ipa_check_create_edge_args.
+	(ipcp_generate_summary): Do not call ipa_check_create_node_params and
+	ipa_check_create_edge_args.
+	* ipa-inline.c (inline_generate_summary): Do not call
+	ipa_check_create_node_params and ipa_check_create_edge_args.
+	* ipa-prop.c (ipa_analyze_node): Call ipa_check_create_node_params and
+	ipa_check_create_edge_args.
+
+2011-04-09  Anatoly Sokolov  <aesok@post.ru>
+
+	* expr.c (expand_expr_real_1): Use add_to_hard_reg_set function
+	instead of loop.
+	* sel-sched.c (mark_unavailable_hard_regs): Likewise.
+	* function.c (record_hard_reg_sets): Likewise.
+	* ira.c (compute_regs_asm_clobbered): Likewise.
+	* sched-deps.c (sched_analyze_1): Likewise.
+	* reload1.c (mark_reload_reg_in_use, choose_reload_regs): Likewise.
+
+2011-04-09  Xinliang David Li  <davidxl@google.com>
+
+	PR tree-optimization/PR48484
+	* tree-ssa-uninit.c (convert_control_dep_chain_into_preds): Set
+	has_valid_pred lazily
+
+2011-04-09  Duncan Sands  <baldrick@free.fr>
+
+	* tree.c (array_type_nelts): Bail out if TYPE_MAX_VALUE not set.
+
+2011-04-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* combine.c (combine_validate_cost): Adjust comments.  Set registered
+	cost of I0 to zero at the end, if any.
+
+2011-04-08  Xinliang David Li  <davidxl@google.com>
+
+	* ipa-cp.c (ipcp_update_profiling): Correct negative scale factor due
+	to insane profile data.
+
+2011-04-08  Xinliang David Li  <davidxl@google.com>
+
+	* final.c (dump_basic_block_info): New function.
+	(final): Dump basic block.
+	(final_scan_insn): Remove old dump.
+
+2011-04-08  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR target/47829
+	* config.gcc (i386-*-freebsd): Disable unwind table generation for
+	crtbegin/crtend.
+
+2011-04-08  Michael Matz  <matz@suse.de>
+
+	PR middle-end/48389
+	* jump.c (rebuild_jump_labels_1, rebuild_jump_labels_chain): New
+	functions.
+	(rebuild_jump_labels): Call rebuild_jump_labels_1.
+	* rtl.h (rebuild_jump_labels_chain): Declare.
+	* cfgexpand.c (gimple_expand_cfg): Initialize JUMP_LABEL also on
+	insns inserted on edges.
+
+2011-04-08  Joseph Myers  <joseph@codesourcery.com>
+
+	* config.gcc (arm*-*-*): Add arm/arm-tables.opt to extra_options.
+	* config/arm/arm-arches.def: New.
+	* config/arm/arm-opts.h: New.
+	* config/arm/genopt.sh: New.
+	* config/arm/arm-tables.opt: New (generated).
+	* config/arm/arm.c (arm_handle_option, arm_target_help,
+	TARGET_HANDLE_OPTION, TARGET_HELP, arm_find_cpu): Remove.
+	(all_architectures): Get most table contents from arm-arches.def.
+	(arm_option_override): Set arm_selected_arch, arm_selected_cpu and
+	arm_selected_tune here.
+	* config/arm/arm.h (enum processor_type): Move to arm-opts.h.
+	* config/arm/arm.opt (config/arm/arm-opts.h): New HeaderInclude.
+	(march=, mcpu=, mtune=): Use Enum and Var.
+	* config/arm/t-arm ($(srcdir)/config/arm/arm-tables.opt): New.
+	(arm.o): Update dependencies.
+
+2011-04-08  Basile Starynkevitch  <basile@starynkevitch.net>
+
+	* gengtype.c (write_typed_alloc_def): New argument f. Use it instead
+	of header_file.
+	(write_typed_struct_alloc_def, write_typed_typedef_alloc_def)
+	(write_typed_alloc_defns): Likewise.
+	(main): Calls write_typed_alloc_defns with output_header.
+
+2011-04-08  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR inline-asm/48435
+	* ira-color.c (setup_profitable_hard_regs): Add comments.
+	Don't take prohibited hard regs into account.
+	(setup_conflict_profitable_regs): Rename to
+	get_conflict_profitable_regs.
+	(check_hard_reg_p): Check prohibited hard regs.
+
+2011-04-08  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* config/alpha/alpha.c (alpha_emit_xfloating_libcall): Call use_reg.
+	* config/xtensa/xtensa.c (xtensa_call_tls_desc): Likewise.
+	* config/sparc/sparc.c (sparc_legitimize_tls_address): Likewise.
+
+2011-04-08  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR target/48366
+	* config/pa/pa.c (hppa_register_move_cost): Increase to 18 cost of
+	move from floating point to shift amount register .
+	(emit_move_sequence): Remove secondary reload support for floating
+	point to shift amount amount register copies.
+	(pa_secondary_reload): Return GENERAL_REGS for floating point/shift
+	amount register copies.
+	* config/pa/pa32-regs.h (HARD_REGNO_MODE_OK): For shift amount
+	register, return false if mode isn't a scalar integer mode.
+	* config/pa/pa64-regs.h (HARD_REGNO_MODE_OK): Likewise.
+
+2011-04-08  Richard Guenther  <rguenther@suse.de>
+
+	* gimple.c (gimple_call_flags): Remove kludge.
+
+2011-04-08  Alexander Monakov  <amonakov@ispras.ru>
+
+	* sel-sched.c (sel_region_init): Move call to
+	sel_setup_region_sched_flags after setup_current_loop_nest.
+
+2011-04-08  Andrey Belevantsev  <abel@ispras.ru>
+
+	PR rtl-optimization/48272
+	* sched-deps.c (setup_insn_reg_pressure_info): Export and rename to
+	init_insn_reg_pressure_info.  Adjust a caller.
+	* sched-int.h (init_insn_reg_pressure_info): Declare.
+	* haifa-sched.c (haifa_init_insn): Call init_insn_reg_pressure_info
+	when sched-pressure is enabled.
+
+2011-04-08  Richard Guenther  <rguenther@suse.de>
+
+	* gimple.c (gimple_set_modified): Do not queue calls to
+	MODIFIED_NORETURN_CALLS here ...
+	* tree-ssa-operands.c (update_stmt_operands): ... but here.
+
+2011-04-08  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/48467
+	* toplev.c (lang_dependent_init): Do not open asm_out_file
+	in WPA mode, nor perform debug machinery initialization.
+	(finalize): Do not unlink asm_out_file in WPA mode.
+
+2011-04-08  Richard Guenther  <rguenther@suse.de>
+
+	* gimple.h (gimple_call_fntype): New function.
+	(gimple_call_return_type): Use it.
+	* expr.c (expand_expr_real_1): Use gimple_call_fntype.
+	* gimple-low.c (gimple_check_call_args): Likewise.
+	* gimple.c (gimple_call_flags): Likewise.
+	(gimple_call_arg_flags): Likewise.
+	(gimple_call_return_flags): Likewise.
+	* tree-cfg.c (verify_gimple_call): Likewise.
+	(do_warn_unused_result): Likewise.
+	* tree-ssa-ccp.c (ccp_fold_stmt): Likewise.
+	* value-prof.c (gimple_ic_transform): Fix fndecl check.
+
+2011-04-08  Dmitry Melnik  <dm@ispras.ru>
+
+	PR rtl-optimization/48235
+	* sel-sched.c (code_motion_process_successors): Recompute the last
+	insn in basic block if control flow changed.
+	(code_motion_path_driver): Ditto.  Recompute the first insn as well.
+	Update condition for ilist_remove.
+
+2011-04-08  Alexander Monakov  <amonakov@ispras.ru>
+
+	PR rtl-optimization/48302
+	* sel-sched-ir.h (sel_add_loop_preheaders): Update prototype.
+	* sel-sched-ir.c (sel_add_loop_preheaders): Add 'bbs' argument.  Use
+	it to record added preheader blocks.
+	* sel-sched.c (setup_current_loop_nest): Add 'bbs' argument.  Pass it
+	on to sel_add_loop_preheaders.
+	(sel_region_init): Move call to setup_current_loop_nest after
+	sel_init_bbs.
+
+2011-04-08  Alexander Monakov  <amonakov@ispras.ru>
+
+	PR target/48273
+	* cfgloop.h (loop_has_exit_edges): New helper.
+	* sel-sched-ir.c (init_global_and_expr_for_insn): Make CALLs
+	non-clonable.
+	* sel-sched.c (sel_setup_region_sched_flags): Don't pipeline loops
+	that have no exit edges.
+
+2011-04-08  Alexander Monakov  <amonakov@ispras.ru>
+
+	PR rtl-optimization/48442
+	* sel-sched.c (init_seqno): Remove number_of_insns argument.  Update
+	all callers.  Adjust assert.
+
+2011-04-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/48377
+	* tree-vect-data-refs.c (vector_alignment_reachable_p): Set
+	is_packed to true even for types with smaller TYPE_ALIGN than
+	TYPE_SIZE.
+
+2011-04-08  Richard Guenther  <rguenther@suse.de>
+
+	PR bootstrap/48513
+	* doc/tm.texi: Re-generate.
+
+2011-04-08  Wei Guozhi  <carrot@google.com>
+
+	PR target/47855
+	* config/arm/arm-protos.h (arm_attr_length_push_multi): New prototype.
+	* config/arm/arm.c (arm_attr_length_push_multi): New function.
+	* config/arm/arm.md (*push_multi): Change the length computation to
+	call a C function.
+
+2011-04-08  Anatoly Sokolov  <aesok@post.ru>
+
+	* doc/tm.texi.in (ASM_OUTPUT_BSS): Remove documentation.
+	(BSS_SECTION_ASM_OP, ASM_OUTPUT_ALIGNED_BSS): Update documentation.
+	* doc/tm.texi: Regenerate.
+	* system.h (ASM_OUTPUT_BSS): Poison.
+	* varasm.c (asm_output_bss): Remove function.
+	(emit_bss, init_varasm_once): Don't use ASM_OUTPUT_BSS macro.
+
+	* config/frv/frv.h (BSS_SECTION_ASM_OP): Remove comment.
+	* config/frv/fr30.h (BSS_SECTION_ASM_OP): Likewise.
+	* config/i386/djgpp.h (BSS_SECTION_ASM_OP): Likewise.
+	* config/i386/i386elf.h (BSS_SECTION_ASM_OP, ASM_OUTPUT_ALIGNED_BSS):
+	Likewise.
+	* config/sh/sh.h (BSS_SECTION_ASM_OP, ASM_OUTPUT_ALIGNED_BSS):
+	Likewise.
+	* config/m68k/m68kelf.h (BSS_SECTION_ASM_OP, ASM_OUTPUT_ALIGNED_BSS):
+	Likewise.
+	* config/m68k/netbsd-elf.h (ASM_OUTPUT_ALIGNED_BSS): Likewise.
+
 2011-04-07  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/rx/rx.opt (rx610, rx200, rx600): Use Enum not Name on
@@ -20,8 +845,7 @@
 	options.  Don't map other m68k options manually.  Don't handle
 	old-style options as canonical.
 	(MULTILIB_EXCEPTIONS): Don't use $(CANONICALIZE_OPTIONS).
-	* doc/install.texi (m68k-*-*): Document binutils version
-	requirement.
+	* doc/install.texi (m68k-*-*): Document binutils version requirement.
 
 2011-04-07  Eric Botcazou  <ebotcazou@adacore.com>
 
@@ -558,11 +1382,11 @@
 
 2011-04-05  Yufeng Zhang  <yufeng.zhang@arm.com>
 
-        * config/arm/arm.md (define_constants for unspec): Replace with
-        define_c_enum.
-        (define_constants for unspecv): Replace with define_c_enum.
-        * config/arm/neon.md (define_constants for unspec): Replace with
-        define_c_enum.
+	* config/arm/arm.md (define_constants for unspec): Replace with
+	define_c_enum.
+	(define_constants for unspecv): Replace with define_c_enum.
+	* config/arm/neon.md (define_constants for unspec): Replace with
+	define_c_enum.
 
 2011-04-04  Richard Henderson  <rth@redhat.com>
 

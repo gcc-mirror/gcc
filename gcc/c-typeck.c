@@ -6017,7 +6017,7 @@ store_init_value (location_t init_loc, tree decl, tree init, tree origtype)
   const bool npc = init && null_pointer_constant_p (init);
   const bool is_upc_decl_init = upc_check_decl_init (decl, init);
   const bool require_constant = TREE_STATIC (decl) && !is_upc_decl_init;
-  const tree type = TREE_TYPE (decl);
+  tree type = TREE_TYPE (decl);
   tree value;
 
   /* If variable's type was invalidly declared, just ignore it.  */
@@ -6073,12 +6073,13 @@ store_init_value (location_t init_loc, tree decl, tree init, tree origtype)
 	      /* For int foo[] = (int [3]){1}; we need to set array size
 		 now since later on array initializer will be just the
 		 brace enclosed list of the compound literal.  */
-	      const tree ntype = build_distinct_type_copy (
-	                           TYPE_MAIN_VARIANT (type));
-	      TREE_TYPE (decl) = ntype;
-	      TYPE_DOMAIN (ntype) = TYPE_DOMAIN (TREE_TYPE (cldecl));
-	      layout_type (ntype);
+	      tree etype = strip_array_types (TREE_TYPE (decl));
+	      type = build_distinct_type_copy (TYPE_MAIN_VARIANT (type));
+	      TYPE_DOMAIN (type) = TYPE_DOMAIN (TREE_TYPE (cldecl));
+	      layout_type (type);
 	      layout_decl (cldecl, 0);
+	      TREE_TYPE (decl)
+		= c_build_qualified_type (type, TYPE_QUALS (etype));
 	    }
 	}
     }
@@ -8806,6 +8807,13 @@ build_asm_expr (location_t loc, tree string, tree outputs, tree inputs,
 	     mark it addressable.  */
 	  if (!allows_reg && !c_mark_addressable (output))
 	    output = error_mark_node;
+	  if (!(!allows_reg && allows_mem)
+	      && output != error_mark_node
+	      && VOID_TYPE_P (TREE_TYPE (output)))
+	    {
+	      error_at (loc, "invalid use of void expression");
+	      output = error_mark_node;
+	    }
 	}
       else
 	output = error_mark_node;
@@ -8832,7 +8840,12 @@ build_asm_expr (location_t loc, tree string, tree outputs, tree inputs,
 	      STRIP_NOPS (input);
 	      if (!c_mark_addressable (input))
 		input = error_mark_node;
-	  }
+	    }
+	  else if (input != error_mark_node && VOID_TYPE_P (TREE_TYPE (input)))
+	    {
+	      error_at (loc, "invalid use of void expression");
+	      input = error_mark_node;
+	    }
 	}
       else
 	input = error_mark_node;

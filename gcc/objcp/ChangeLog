@@ -1,3 +1,8 @@
+2011-04-12  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* objcp-lang.c (objcxx_init_ts): Call objc_common_init_ts and
+	cp_common_init_ts.
+
 2011-03-21  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	PR bootstrap/48167

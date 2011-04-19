@@ -1727,7 +1727,7 @@ ccp_fold_stmt (gimple_stmt_iterator *gsi)
 	   this can use the argument slot types for type verification
 	   instead of the current argument type.  We also can safely
 	   drop qualifiers here as we are dealing with constants anyway.  */
-	argt = TYPE_ARG_TYPES (TREE_TYPE (TREE_TYPE (gimple_call_fn (stmt))));
+	argt = TYPE_ARG_TYPES (gimple_call_fntype (stmt));
 	for (i = 0; i < gimple_call_num_args (stmt) && argt;
 	     ++i, argt = TREE_CHAIN (argt))
 	  {

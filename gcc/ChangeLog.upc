@@ -1,3 +1,7 @@
+2011-04-19  Gary Funck  <gary@intrepid.com>
+
+	Merge trunk version 172359 into gupc branch.
+
 2011-04-14  Gary Funck  <gary@intrepid.com>
 
 	* c-family/c.opt: Add UPC as a valid language for various

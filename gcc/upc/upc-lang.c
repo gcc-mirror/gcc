@@ -62,6 +62,7 @@ static void upc_initialize_diagnostics (diagnostic_context *);
 static void upc_init_options (unsigned int, struct cl_decoded_option *);
 static bool upc_post_options (const char **);
 static alias_set_type upc_get_alias_set (tree);
+static void upc_init_ts (void);
 
 /* UPC inherits hook definitions from "c-objc-common.h"
    and adds to them.  */
@@ -92,6 +93,8 @@ static alias_set_type upc_get_alias_set (tree);
 #define LANG_HOOKS_POST_OPTIONS upc_post_options
 #undef LANG_HOOKS_TYPES_COMPATIBLE_P
 #define LANG_HOOKS_TYPES_COMPATIBLE_P upc_types_compatible_p
+#undef LANG_HOOKS_INIT_TS
+#define LANG_HOOKS_INIT_TS upc_init_ts
 
 /* Each front end provides its own hooks, for toplev.c.  */
 struct lang_hooks lang_hooks = LANG_HOOKS_INITIALIZER;
@@ -201,6 +204,14 @@ upc_get_alias_set (tree t)
   /* Otherwise, do the default thing. */
 
   return c_common_get_alias_set (t);
+}
+
+static void
+upc_init_ts (void)
+{
+  c_common_init_ts ();
+  MARK_TS_COMMON (UPC_FORALL_STMT);
+  MARK_TS_COMMON (UPC_SYNC_STMT);
 }
 
 #include "gtype-upc.h"

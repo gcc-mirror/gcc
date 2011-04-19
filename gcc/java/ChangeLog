@@ -1,3 +1,13 @@
+2011-04-12  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* java-tree.h (union lang_tree_node): Check for TS_COMMON before
+	calling TREE_CHAIN.
+
+2011-04-11  Martin Jambor  <mjambor@suse.cz>
+
+	* decl.c (java_mark_decl_local): Call cgraph_get_node instead of
+	cgraph_node and handle returned NULL.
+
 2011-03-25  Kai Tietz  <ktietz@redhat.com>
 
 	* jcf-parse.c (java_read_sourcefilenames): Use filename_cmp

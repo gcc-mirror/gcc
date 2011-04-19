@@ -1,5 +1,5 @@
 /* Target macros for the FRV Linux port of GCC.
-   Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2006, 2007, 2010
+   Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2006, 2007, 2010, 2011
    Free Software Foundation, Inc.
    Contributed by Red Hat Inc.
 
@@ -42,7 +42,7 @@
   %{mfdpic: -m elf32frvfd -z text} %{shared} %{pie} \
   %{!shared: %{!static: \
    %{rdynamic:-export-dynamic} \
-   -dynamic-linker " LINUX_DYNAMIC_LINKER "} \
+   -dynamic-linker " GNU_USER_DYNAMIC_LINKER "} \
    %{static}}"
 
 /* Support for compile-time default CPU.  */

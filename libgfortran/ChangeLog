@@ -1,3 +1,23 @@
+2011-04-12  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* configure.ac: Use AC_TYPE_* to make sure we have (u)intptr_t,
+	check for ptrdiff_t.
+	* libgfortran.h: Remove (u)intptr_t definitions, use ptrdiff_t for
+	index_type, change cshift0* prototypes.
+	* config.h.in: Regenerated.
+	* configure: Regenerated.
+	* intrinsics/cshift0.c (cshift0): Use ptrdiff_t instead of ssize_t.
+	* io/io.h (array_loop_spec): Use index_type instead of ssize_t.
+	* io/list_read.c (nml_parse_qualifier): Likewise.
+	* io/write.c (nml_write_obj): Likewise.
+	* m4/cshift0.c (cshift0_'rtype_code`): Likewise.
+	* generated/cshift0_*.c: Regenerated.
+
+2011-04-12  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* Makefile.am: Remove _GNU_SOURCE from AM_CPPFLAGS.
+	* Makefile.in: Regenerated.
+
 2011-04-06  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/18918

@@ -1245,14 +1245,18 @@ ref_maybe_used_by_call_p_1 (gimple call, ao_ref *ref)
 
   /* Check if base is a global static variable that is not read
      by the function.  */
-  if (TREE_CODE (base) == VAR_DECL
+  if (callee != NULL_TREE
+      && TREE_CODE (base) == VAR_DECL
       && TREE_STATIC (base))
     {
+      struct cgraph_node *node = cgraph_get_node (callee);
       bitmap not_read;
 
-      if (callee != NULL_TREE
-	  && (not_read
-	        = ipa_reference_get_not_read_global (cgraph_node (callee)))
+      /* FIXME: Callee can be an OMP builtin that does not have a call graph
+	 node yet.  We should enforce that there are nodes for all decls in the
+	 IL and remove this check instead.  */
+      if (node
+	  && (not_read = ipa_reference_get_not_read_global (node))
 	  && bitmap_bit_p (not_read, DECL_UID (base)))
 	goto process_args;
     }
@@ -1512,10 +1516,11 @@ call_may_clobber_ref_p_1 (gimple call, ao_ref *ref)
       && TREE_CODE (base) == VAR_DECL
       && TREE_STATIC (base))
     {
+      struct cgraph_node *node = cgraph_get_node (callee);
       bitmap not_written;
 
-      if ((not_written
-	     = ipa_reference_get_not_written_global (cgraph_node (callee)))
+      if (node
+	  && (not_written = ipa_reference_get_not_written_global (node))
 	  && bitmap_bit_p (not_written, DECL_UID (base)))
 	return false;
     }

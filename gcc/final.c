@@ -1672,6 +1672,54 @@ final_end_function (void)
     dwarf2out_end_epilogue (last_linenum, last_filename);
 }
 
+
+/* Dumper helper for basic block information. FILE is the assembly
+   output file, and INSN is the instruction being emitted.  */
+
+static void
+dump_basic_block_info (FILE *file, rtx insn, basic_block *start_to_bb,
+                       basic_block *end_to_bb, int bb_map_size, int *bb_seqn)
+{
+  basic_block bb;
+
+  if (!flag_debug_asm)
+    return;
+
+  if (INSN_UID (insn) < bb_map_size
+      && (bb = start_to_bb[INSN_UID (insn)]) != NULL)
+    {
+      edge e;
+      edge_iterator ei;
+
+      fprintf (file, "# BLOCK %d", bb->index);
+      if (bb->frequency)
+        fprintf (file, " freq:%d", bb->frequency);
+      if (bb->count)
+        fprintf (file, " count:" HOST_WIDEST_INT_PRINT_DEC,
+                 bb->count);
+      fprintf (file, " seq:%d", (*bb_seqn)++);
+      fprintf (file, "\n# PRED:");
+      FOR_EACH_EDGE (e, ei, bb->preds)
+        {
+          dump_edge_info (file, e, 0);
+        }
+      fprintf (file, "\n");
+    }
+  if (INSN_UID (insn) < bb_map_size
+      && (bb = end_to_bb[INSN_UID (insn)]) != NULL)
+    {
+      edge e;
+      edge_iterator ei;
+
+      fprintf (asm_out_file, "# SUCC:");
+      FOR_EACH_EDGE (e, ei, bb->succs)
+       {
+         dump_edge_info (asm_out_file, e, 1);
+       }
+      fprintf (file, "\n");
+    }
+}
+
 /* Output assembler code for some insns: all or part of a function.
    For description of args, see `final_start_function', above.  */
 
@@ -1681,6 +1729,12 @@ final (rtx first, FILE *file, int optimize_p)
   rtx insn;
   int max_uid = 0;
   int seen = 0;
+
+  /* Used for -dA dump.  */
+  basic_block *start_to_bb = NULL;
+  basic_block *end_to_bb = NULL;
+  int bb_map_size = 0;
+  int bb_seqn = 0;
 
   last_ignored_compare = 0;
 
@@ -1706,6 +1760,21 @@ final (rtx first, FILE *file, int optimize_p)
 
   CC_STATUS_INIT;
 
+  if (flag_debug_asm)
+    {
+      basic_block bb;
+
+      bb_map_size = get_max_uid () + 1;
+      start_to_bb = XCNEWVEC (basic_block, bb_map_size);
+      end_to_bb = XCNEWVEC (basic_block, bb_map_size);
+
+      FOR_EACH_BB_REVERSE (bb)
+	{
+	  start_to_bb[INSN_UID (BB_HEAD (bb))] = bb;
+	  end_to_bb[INSN_UID (BB_END (bb))] = bb;
+	}
+    }
+
   /* Output the insns.  */
   for (insn = first; insn;)
     {
@@ -1721,7 +1790,15 @@ final (rtx first, FILE *file, int optimize_p)
 	insn_current_address = INSN_ADDRESSES (INSN_UID (insn));
 #endif /* HAVE_ATTR_length */
 
+      dump_basic_block_info (file, insn, start_to_bb, end_to_bb,
+                             bb_map_size, &bb_seqn);
       insn = final_scan_insn (insn, file, optimize_p, 0, &seen);
+    }
+
+  if (flag_debug_asm)
+    {
+      free (start_to_bb);
+      free (end_to_bb);
     }
 }
 
@@ -1857,10 +1934,6 @@ final_scan_insn (rtx insn, FILE *file, int optimize_p ATTRIBUTE_UNUSED,
 	case NOTE_INSN_BASIC_BLOCK:
 	  if (targetm.asm_out.unwind_emit)
 	    targetm.asm_out.unwind_emit (asm_out_file, insn);
-
-	  if (flag_debug_asm)
-	    fprintf (asm_out_file, "\t%s basic block %d\n",
-		     ASM_COMMENT_START, NOTE_BASIC_BLOCK (insn)->index);
 
 	  if ((*seen & (SEEN_EMITTED | SEEN_BB)) == SEEN_BB)
 	    {
@@ -4283,7 +4356,7 @@ rest_of_clean_state (void)
       else
 	{
 	  const char *aname;
-	  struct cgraph_node *node = cgraph_node (current_function_decl);
+	  struct cgraph_node *node = cgraph_get_node (current_function_decl);
 
 	  aname = (IDENTIFIER_POINTER
 		   (DECL_ASSEMBLER_NAME (current_function_decl)));

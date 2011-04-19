@@ -40,7 +40,7 @@ along with GCC; see the file COPYING3.  If not see
 #define GLIBC_DYNAMIC_LINKERN32 "/lib32/ld.so.1"
 #define UCLIBC_DYNAMIC_LINKERN32 "/lib32/ld-uClibc.so.0"
 #define BIONIC_DYNAMIC_LINKERN32 "/system/bin/linker32"
-#define LINUX_DYNAMIC_LINKERN32 \
+#define GNU_USER_DYNAMIC_LINKERN32 \
   CHOOSE_DYNAMIC_LINKER (GLIBC_DYNAMIC_LINKERN32, UCLIBC_DYNAMIC_LINKERN32, \
 			 BIONIC_DYNAMIC_LINKERN32)
 
@@ -52,9 +52,9 @@ along with GCC; see the file COPYING3.  If not see
   %{!shared: \
     %{!static: \
       %{rdynamic:-export-dynamic} \
-      %{mabi=n32: -dynamic-linker " LINUX_DYNAMIC_LINKERN32 "} \
-      %{mabi=64: -dynamic-linker " LINUX_DYNAMIC_LINKER64 "} \
-      %{mabi=32: -dynamic-linker " LINUX_DYNAMIC_LINKER32 "}} \
+      %{mabi=n32: -dynamic-linker " GNU_USER_DYNAMIC_LINKERN32 "} \
+      %{mabi=64: -dynamic-linker " GNU_USER_DYNAMIC_LINKER64 "} \
+      %{mabi=32: -dynamic-linker " GNU_USER_DYNAMIC_LINKER32 "}} \
     %{static:-static}} \
 %{mabi=n32:-melf32%{EB:b}%{EL:l}tsmipn32} \
 %{mabi=64:-melf64%{EB:b}%{EL:l}tsmip} \

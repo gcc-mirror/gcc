@@ -1,3 +1,71 @@
+2011-04-12  Takaya Saito  <gintensubaru@gmail.com>
+
+	PR libstdc++/48476
+	* include/std/tuple (_Tuple_impl<>::_Tuple_impl(_Tuple_impl<>&&),
+	_Tuple_impl<>::operator=(_Tuple_impl&&), _Tuple_impl<>::operator=
+	(_Tuple_impl<>&&), tuple_cat): Use std::forward where appropriate.
+	* testsuite/20_util/tuple/cons/48476.cc: New.
+	* testsuite/20_util/tuple/48476.cc: Likewise.
+	* testsuite/20_util/tuple/creation_functions/48476.cc: Likewise.
+
+2011-04-12  Allan McRae  <allan@archlinux.org>
+
+	PR libstdc++/48566
+	* testsuite/tr1/6_containers/unordered_map/requirements/
+	iterator_null_neg.cc: Include <cstddef>.
+	* testsuite/tr1/6_containers/unordered_set/requirements/
+	iterator_null_neg.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/seekoff/wchar_t/4.cc: Include
+	<cstring>.
+	* testsuite/util/testsuite_common_types.h: Include <limits>.
+	* testsuite/29_atomics/atomic_integral/cons/assign_neg.cc:
+	Adjust dg-error line numbers.
+	* testsuite/29_atomics/atomic_integral/cons/copy_neg.cc: Likewise.
+	* testsuite/29_atomics/atomic_integral/operators/increment_neg.cc:
+	Likewise.
+	* testsuite/29_atomics/atomic_integral/operators/bitwise_neg.cc:
+	Likewise.
+	* testsuite/29_atomics/atomic_integral/operators/decrement_neg.cc:
+	Likewise.
+	* testsuite/29_atomics/atomic/cons/assign_neg.cc: Likewise.
+	* testsuite/29_atomics/atomic/cons/copy_neg.cc: Likewise.
+
+2011-04-11  Jason Merrill  <jason@redhat.com>
+
+	* testsuite/20_util/is_convertible/value.cc: Adjust.
+
+2011-04-11  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* testsuite/25_algorithms/inplace_merge/moveable.cc: Actually run
+	it in parallel-mode for check-parallel.
+	* testsuite/25_algorithms/rotate/moveable.cc: Likewise.
+	* testsuite/25_algorithms/stable_partition/moveable.cc: Likewise.
+	* testsuite/25_algorithms/remove/moveable.cc: Likewise.
+	* testsuite/25_algorithms/sort_heap/check_compare_by_value.cc:
+	Likewise.
+	* testsuite/25_algorithms/unique/moveable.cc: Likewise.
+	* testsuite/25_algorithms/remove_if/moveable.cc: Likewise.
+	* testsuite/25_algorithms/heap/moveable.cc: Likewise.
+
+	* testsuite/25_algorithms/next_permutation/moveable.cc: Only skip
+	the tests based on std::lexicographical_compare for check-parallel.
+	* testsuite/25_algorithms/prev_permutation/moveable.cc: Likewise.
+
+2011-04-10  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/48541
+	* include/std/functional (_Base_manager::_M_get_pointer): Use
+	addressof.
+	* testsuite/20_util/function/48541.cc: New.
+
+2011-04-10  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/48465
+	* configure.ac (libtool_VERSION): Bump library version to 6:16:0.
+	* configure: Regenerate.
+	* config/abi/pre/gnu.ver (GLIBCXX_3.4.16): Export missing symbols.
+	* testsuite/util/testsuite_abi.cc: Add GLIBCXX_3.4.16.
+
 2011-04-06  Jeffrey Yasskin  <jyasskin@google.com>
 
 	* include/ext/algorithm (is_sorted): In C++0x mode import from

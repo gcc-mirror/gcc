@@ -1343,7 +1343,7 @@ pass_init_dump_file (struct opt_pass *pass)
       if (dump_file && current_function_decl)
 	{
 	  const char *dname, *aname;
-	  struct cgraph_node *node = cgraph_node (current_function_decl);
+	  struct cgraph_node *node = cgraph_get_node (current_function_decl);
 	  dname = lang_hooks.decl_printable_name (current_function_decl, 2);
 	  aname = (IDENTIFIER_POINTER
 		   (DECL_ASSEMBLER_NAME (current_function_decl)));
@@ -1475,7 +1475,7 @@ execute_all_ipa_transforms (void)
   struct cgraph_node *node;
   if (!cfun)
     return;
-  node = cgraph_node (current_function_decl);
+  node = cgraph_get_node (current_function_decl);
 
   if (node->ipa_transforms_to_apply)
     {
@@ -2029,7 +2029,9 @@ bool
 function_called_by_processed_nodes_p (void)
 {
   struct cgraph_edge *e;
-  for (e = cgraph_node (current_function_decl)->callers; e; e = e->next_caller)
+  for (e = cgraph_get_node (current_function_decl)->callers;
+       e;
+       e = e->next_caller)
     {
       if (e->caller->decl == current_function_decl)
         continue;

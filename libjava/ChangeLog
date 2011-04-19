@@ -1,3 +1,37 @@
+2011-04-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR testsuite/21164
+	* testsuite/lib/libjava.exp: Load dg.exp.
+	* testsuite/libjava.jar/jar.exp (gcj_jar_interpret): Strip srcdir
+	from jarfile.
+	Use result for messages.
+	* testsuite/libjava.loader/loader.exp (gcj_loader_test_one): Pass
+	errname to libjava_invoke, fix testname.
+
+2011-04-08  Kai Tietz  <ktietz@redhat.com>
+
+	* configure.ac (libgcj_ld_export_all): Set for windows
+	native targets to export-all-symbols.
+	(LIBGCJ_LD_EXPORT_ALL): Export libgcj_ld_export_all.
+	* Makefile.am (libgcj_la_LDFLAGS): Add LIBGCJ_LD_EXPORT_ALL.
+	* sysdep/i386/backtrace.h (MAIN_FUNC): Define for windows
+	native targets to DllMain.
+	* gcj/javaprims.h (JNICALL): Define it dependent
+	for different windows targets.
+	* include/jni_md.h: Likewise.
+	* headers.txt (_Jv_JNI_ToReflectedField): Mark
+	JNICALLS for friends.
+	(_Jv_JNI_ToReflectedMethod): Likewise.
+	* java/lang/Class.h: Regenerated.
+	* java/lang/reflect/Field.h: Regenerated.
+	* java/lang/reflect/Constructor.h: Regenerated.
+	* java/lang/reflect/Method.h: Regenerated.
+	* configure: Regenerated.
+	* Makefile.in: Regenerated.
+	* include/Makefile.in: Regenerated.
+	* testsuite/Makefile.in: Regenerated.
+	* gcj/Makefile.in: Regenerated.
+
 2011-04-04  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* configure.ac: Redirect $JAR -cf@ output to /dev/null.

@@ -852,7 +852,7 @@ dep_cost_1 (dep_t link, dw_t dw)
   /* A USE insn should never require the value used to be computed.
      This allows the computation of a function's result and parameter
      values to overlap the return and call.  We don't care about the
-     the dependence cost when only decreasing register pressure.  */
+     dependence cost when only decreasing register pressure.  */
   if (recog_memoized (used) < 0)
     {
       cost = 0;
@@ -5611,6 +5611,8 @@ haifa_init_insn (rtx insn)
       /* Extend dependency caches by one element.  */
       extend_dependency_caches (1, false);
     }
+  if (sched_pressure_p)
+    init_insn_reg_pressure_info (insn);
 }
 
 /* Init data for the new basic block BB which comes after AFTER.  */

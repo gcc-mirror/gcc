@@ -219,9 +219,6 @@ static tree arm_build_builtin_va_list (void);
 static void arm_expand_builtin_va_start (tree, rtx);
 static tree arm_gimplify_va_arg_expr (tree, tree, gimple_seq *, gimple_seq *);
 static void arm_option_override (void);
-static bool arm_handle_option (struct gcc_options *, struct gcc_options *,
-			       const struct cl_decoded_option *, location_t);
-static void arm_target_help (void);
 static unsigned HOST_WIDE_INT arm_shift_truncation_mask (enum machine_mode);
 static bool arm_cannot_copy_insn_p (rtx);
 static bool arm_tls_symbol_p (rtx x);
@@ -349,10 +346,6 @@ static const struct default_options arm_option_optimization_table[] =
 
 #undef  TARGET_DEFAULT_TARGET_FLAGS
 #define TARGET_DEFAULT_TARGET_FLAGS (TARGET_DEFAULT | MASK_SCHED_PROLOG)
-#undef  TARGET_HANDLE_OPTION
-#define TARGET_HANDLE_OPTION arm_handle_option
-#undef  TARGET_HELP
-#define TARGET_HELP arm_target_help
 #undef  TARGET_OPTION_OVERRIDE
 #define TARGET_OPTION_OVERRIDE arm_option_override
 #undef  TARGET_OPTION_OPTIMIZATION_TABLE
@@ -927,33 +920,10 @@ static const struct processors all_architectures[] =
   /* We don't specify tuning costs here as it will be figured out
      from the core.  */
 
-  {"armv2",   arm2,       "2",   FL_CO_PROC | FL_MODE26 | FL_FOR_ARCH2, NULL},
-  {"armv2a",  arm2,       "2",   FL_CO_PROC | FL_MODE26 | FL_FOR_ARCH2, NULL},
-  {"armv3",   arm6,       "3",   FL_CO_PROC | FL_MODE26 | FL_FOR_ARCH3, NULL},
-  {"armv3m",  arm7m,      "3M",  FL_CO_PROC | FL_MODE26 | FL_FOR_ARCH3M, NULL},
-  {"armv4",   arm7tdmi,   "4",   FL_CO_PROC | FL_MODE26 | FL_FOR_ARCH4, NULL},
-  /* Strictly, FL_MODE26 is a permitted option for v4t, but there are no
-     implementations that support it, so we will leave it out for now.  */
-  {"armv4t",  arm7tdmi,   "4T",  FL_CO_PROC |             FL_FOR_ARCH4T, NULL},
-  {"armv5",   arm10tdmi,  "5",   FL_CO_PROC |             FL_FOR_ARCH5, NULL},
-  {"armv5t",  arm10tdmi,  "5T",  FL_CO_PROC |             FL_FOR_ARCH5T, NULL},
-  {"armv5e",  arm1026ejs, "5E",  FL_CO_PROC |             FL_FOR_ARCH5E, NULL},
-  {"armv5te", arm1026ejs, "5TE", FL_CO_PROC |             FL_FOR_ARCH5TE, NULL},
-  {"armv6",   arm1136js,  "6",   FL_CO_PROC |             FL_FOR_ARCH6, NULL},
-  {"armv6j",  arm1136js,  "6J",  FL_CO_PROC |             FL_FOR_ARCH6J, NULL},
-  {"armv6k",  mpcore,	  "6K",  FL_CO_PROC |             FL_FOR_ARCH6K, NULL},
-  {"armv6z",  arm1176jzs, "6Z",  FL_CO_PROC |             FL_FOR_ARCH6Z, NULL},
-  {"armv6zk", arm1176jzs, "6ZK", FL_CO_PROC |             FL_FOR_ARCH6ZK, NULL},
-  {"armv6t2", arm1156t2s, "6T2", FL_CO_PROC |             FL_FOR_ARCH6T2, NULL},
-  {"armv6-m", cortexm1,	  "6M",				  FL_FOR_ARCH6M, NULL},
-  {"armv7",   cortexa8,	  "7",	 FL_CO_PROC |		  FL_FOR_ARCH7, NULL},
-  {"armv7-a", cortexa8,	  "7A",	 FL_CO_PROC |		  FL_FOR_ARCH7A, NULL},
-  {"armv7-r", cortexr4,	  "7R",	 FL_CO_PROC |		  FL_FOR_ARCH7R, NULL},
-  {"armv7-m", cortexm3,	  "7M",	 FL_CO_PROC |		  FL_FOR_ARCH7M, NULL},
-  {"armv7e-m", cortexm4,  "7EM", FL_CO_PROC |		  FL_FOR_ARCH7EM, NULL},
-  {"ep9312",  ep9312,     "4T",  FL_LDSCHED | FL_CIRRUS | FL_FOR_ARCH4, NULL},
-  {"iwmmxt",  iwmmxt,     "5TE", FL_LDSCHED | FL_STRONG | FL_FOR_ARCH5TE | FL_XSCALE | FL_IWMMXT , NULL},
-  {"iwmmxt2", iwmmxt2,     "5TE", FL_LDSCHED | FL_STRONG | FL_FOR_ARCH5TE | FL_XSCALE | FL_IWMMXT , NULL},
+#define ARM_ARCH(NAME, CORE, ARCH, FLAGS) \
+  {NAME, CORE, #ARCH, FLAGS, NULL},
+#include "arm-arches.def"
+#undef ARM_ARCH
   {NULL, arm_none, NULL, 0 , NULL}
 };
 
@@ -1325,147 +1295,20 @@ arm_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
   return std_gimplify_va_arg_expr (valist, type, pre_p, post_p);
 }
 
-/* Lookup NAME in SEL.  */
-
-static const struct processors *
-arm_find_cpu (const char *name, const struct processors *sel, const char *desc)
-{
-  if (!(name && *name))
-    return NULL;
-
-  for (; sel->name != NULL; sel++)
-    {
-      if (streq (name, sel->name))
-	return sel;
-    }
-
-  error ("bad value (%s) for %s switch", name, desc);
-  return NULL;
-}
-
-/* Implement TARGET_HANDLE_OPTION.  */
-
-static bool
-arm_handle_option (struct gcc_options *opts, struct gcc_options *opts_set,
-		   const struct cl_decoded_option *decoded,
-		   location_t loc ATTRIBUTE_UNUSED)
-{
-  size_t code = decoded->opt_index;
-  const char *arg = decoded->arg;
-
-  gcc_assert (opts == &global_options);
-  gcc_assert (opts_set == &global_options_set);
-
-  switch (code)
-    {
-    case OPT_march_:
-      arm_selected_arch = arm_find_cpu(arg, all_architectures, "-march");
-      return true;
-
-    case OPT_mcpu_:
-      arm_selected_cpu = arm_find_cpu(arg, all_cores, "-mcpu");
-      return true;
-
-    case OPT_mtune_:
-      arm_selected_tune = arm_find_cpu(arg, all_cores, "-mtune");
-      return true;
-
-    default:
-      return true;
-    }
-}
-
-static void
-arm_target_help (void)
-{
-  int i;
-  static int columns = 0;
-  int remaining;
-
-  /* If we have not done so already, obtain the desired maximum width of
-     the output.  Note - this is a duplication of the code at the start of
-     gcc/opts.c:print_specific_help() - the two copies should probably be
-     replaced by a single function.  */
-  if (columns == 0)
-    {
-      const char *p;
-
-      p = getenv ("COLUMNS");
-      if (p != NULL)
-	{
-	  int value = atoi (p);
-
-	  if (value > 0)
-	    columns = value;
-	}
-
-      if (columns == 0)
-	/* Use a reasonable default.  */
-	columns = 80;
-    }
-
-  printf ("  Known ARM CPUs (for use with the -mcpu= and -mtune= options):\n");
-
-  /* The - 2 is because we know that the last entry in the array is NULL.  */
-  i = ARRAY_SIZE (all_cores) - 2;
-  gcc_assert (i > 0);
-  printf ("    %s", all_cores[i].name);
-  remaining = columns - (strlen (all_cores[i].name) + 4);
-  gcc_assert (remaining >= 0);
-
-  while (i--)
-    {
-      int len = strlen (all_cores[i].name);
-
-      if (remaining > len + 2)
-	{
-	  printf (", %s", all_cores[i].name);
-	  remaining -= len + 2;
-	}
-      else
-	{
-	  if (remaining > 0)
-	    printf (",");
-	  printf ("\n    %s", all_cores[i].name);
-	  remaining = columns - (len + 4);
-	}
-    }
-
-  printf ("\n\n  Known ARM architectures (for use with the -march= option):\n");
-
-  i = ARRAY_SIZE (all_architectures) - 2;
-  gcc_assert (i > 0);
-  
-  printf ("    %s", all_architectures[i].name);
-  remaining = columns - (strlen (all_architectures[i].name) + 4);
-  gcc_assert (remaining >= 0);
-
-  while (i--)
-    {
-      int len = strlen (all_architectures[i].name);
-
-      if (remaining > len + 2)
-	{
-	  printf (", %s", all_architectures[i].name);
-	  remaining -= len + 2;
-	}
-      else
-	{
-	  if (remaining > 0)
-	    printf (",");
-	  printf ("\n    %s", all_architectures[i].name);
-	  remaining = columns - (len + 4);
-	}
-    }
-  printf ("\n");
-
-}
-
 /* Fix up any incompatible options that the user has specified.  */
 static void
 arm_option_override (void)
 {
   unsigned i;
+
+  if (global_options_set.x_arm_arch_option)
+    arm_selected_arch = &all_architectures[arm_arch_option];
+
+  if (global_options_set.x_arm_cpu_option)
+    arm_selected_cpu = &all_cores[(int) arm_cpu_option];
+
+  if (global_options_set.x_arm_tune_option)
+    arm_selected_tune = &all_cores[(int) arm_tune_option];
 
 #ifdef SUBTARGET_OVERRIDE_OPTIONS
   SUBTARGET_OVERRIDE_OPTIONS;
@@ -6419,23 +6262,126 @@ arm_legitimize_reload_address (rtx *p,
       HOST_WIDE_INT val = INTVAL (XEXP (*p, 1));
       HOST_WIDE_INT low, high;
 
-      if (mode == DImode || (mode == DFmode && TARGET_SOFT_FLOAT))
-	low = ((val & 0xf) ^ 0x8) - 0x8;
-      else if (TARGET_MAVERICK && TARGET_HARD_FLOAT)
-	/* Need to be careful, -256 is not a valid offset.  */
-	low = val >= 0 ? (val & 0xff) : -((-val) & 0xff);
-      else if (mode == SImode
-	       || (mode == SFmode && TARGET_SOFT_FLOAT)
-	       || ((mode == HImode || mode == QImode) && ! arm_arch4))
-	/* Need to be careful, -4096 is not a valid offset.  */
-	low = val >= 0 ? (val & 0xfff) : -((-val) & 0xfff);
-      else if ((mode == HImode || mode == QImode) && arm_arch4)
-	/* Need to be careful, -256 is not a valid offset.  */
-	low = val >= 0 ? (val & 0xff) : -((-val) & 0xff);
-      else if (GET_MODE_CLASS (mode) == MODE_FLOAT
-	       && TARGET_HARD_FLOAT && TARGET_FPA)
-	/* Need to be careful, -1024 is not a valid offset.  */
-	low = val >= 0 ? (val & 0x3ff) : -((-val) & 0x3ff);
+      /* Detect coprocessor load/stores.  */
+      bool coproc_p = ((TARGET_HARD_FLOAT
+			&& (TARGET_VFP || TARGET_FPA || TARGET_MAVERICK)
+			&& (mode == SFmode || mode == DFmode
+			    || (mode == DImode && TARGET_MAVERICK)))
+		       || (TARGET_REALLY_IWMMXT
+			   && VALID_IWMMXT_REG_MODE (mode))
+		       || (TARGET_NEON
+			   && (VALID_NEON_DREG_MODE (mode)
+			       || VALID_NEON_QREG_MODE (mode))));
+
+      /* For some conditions, bail out when lower two bits are unaligned.  */
+      if ((val & 0x3) != 0
+	  /* Coprocessor load/store indexes are 8-bits + '00' appended.  */
+	  && (coproc_p
+	      /* For DI, and DF under soft-float: */
+	      || ((mode == DImode || mode == DFmode)
+		  /* Without ldrd, we use stm/ldm, which does not
+		     fair well with unaligned bits.  */
+		  && (! TARGET_LDRD
+		      /* Thumb-2 ldrd/strd is [-1020,+1020] in steps of 4.  */
+		      || TARGET_THUMB2))))
+	return false;
+
+      /* When breaking down a [reg+index] reload address into [(reg+high)+low],
+	 of which the (reg+high) gets turned into a reload add insn,
+	 we try to decompose the index into high/low values that can often
+	 also lead to better reload CSE.
+	 For example:
+	         ldr r0, [r2, #4100]  // Offset too large
+		 ldr r1, [r2, #4104]  // Offset too large
+
+	 is best reloaded as:
+	         add t1, r2, #4096
+		 ldr r0, [t1, #4]
+		 add t2, r2, #4096
+		 ldr r1, [t2, #8]
+
+	 which post-reload CSE can simplify in most cases to eliminate the
+	 second add instruction:
+	         add t1, r2, #4096
+		 ldr r0, [t1, #4]
+		 ldr r1, [t1, #8]
+
+	 The idea here is that we want to split out the bits of the constant
+	 as a mask, rather than as subtracting the maximum offset that the
+	 respective type of load/store used can handle.
+
+	 When encountering negative offsets, we can still utilize it even if
+	 the overall offset is positive; sometimes this may lead to an immediate
+	 that can be constructed with fewer instructions.
+	 For example:
+	         ldr r0, [r2, #0x3FFFFC]
+
+	 This is best reloaded as:
+	         add t1, r2, #0x400000
+		 ldr r0, [t1, #-4]
+
+	 The trick for spotting this for a load insn with N bits of offset
+	 (i.e. bits N-1:0) is to look at bit N; if it is set, then chose a
+	 negative offset that is going to make bit N and all the bits below
+	 it become zero in the remainder part.
+
+	 The SIGN_MAG_LOW_ADDR_BITS macro below implements this, with respect
+	 to sign-magnitude addressing (i.e. separate +- bit, or 1's complement),
+	 used in most cases of ARM load/store instructions.  */
+
+#define SIGN_MAG_LOW_ADDR_BITS(VAL, N)					\
+      (((VAL) & ((1 << (N)) - 1))					\
+       ? (((VAL) & ((1 << ((N) + 1)) - 1)) ^ (1 << (N))) - (1 << (N))	\
+       : 0)
+
+      if (coproc_p)
+	low = SIGN_MAG_LOW_ADDR_BITS (val, 10);
+      else if (GET_MODE_SIZE (mode) == 8)
+	{
+	  if (TARGET_LDRD)
+	    low = (TARGET_THUMB2
+		   ? SIGN_MAG_LOW_ADDR_BITS (val, 10)
+		   : SIGN_MAG_LOW_ADDR_BITS (val, 8));
+	  else
+	    /* For pre-ARMv5TE (without ldrd), we use ldm/stm(db/da/ib)
+	       to access doublewords. The supported load/store offsets are
+	       -8, -4, and 4, which we try to produce here.  */
+	    low = ((val & 0xf) ^ 0x8) - 0x8;
+	}
+      else if (GET_MODE_SIZE (mode) < 8)
+	{
+	  /* NEON element load/stores do not have an offset.  */
+	  if (TARGET_NEON_FP16 && mode == HFmode)
+	    return false;
+
+	  if (TARGET_THUMB2)
+	    {
+	      /* Thumb-2 has an asymmetrical index range of (-256,4096).
+		 Try the wider 12-bit range first, and re-try if the result
+		 is out of range.  */
+	      low = SIGN_MAG_LOW_ADDR_BITS (val, 12);
+	      if (low < -255)
+		low = SIGN_MAG_LOW_ADDR_BITS (val, 8);
+	    }
+	  else
+	    {
+	      if (mode == HImode || mode == HFmode)
+		{
+		  if (arm_arch4)
+		    low = SIGN_MAG_LOW_ADDR_BITS (val, 8);
+		  else
+		    {
+		      /* The storehi/movhi_bytes fallbacks can use only
+			 [-4094,+4094] of the full ldrb/strb index range.  */
+		      low = SIGN_MAG_LOW_ADDR_BITS (val, 12);
+		      if (low == 4095 || low == -4095)
+			return false;
+		    }
+		}
+	      else
+		low = SIGN_MAG_LOW_ADDR_BITS (val, 12);
+	    }
+	}
       else
 	return false;
 
@@ -9662,7 +9608,7 @@ compute_offset_order (int nops, HOST_WIDE_INT *unsorted_offsets, int *order,
    from that base register.
    REGS is an array filled in with the destination register numbers.
    SAVED_ORDER (if nonnull), is an array filled in with an order that maps
-   insn numbers to to an ascending order of stores.  If CHECK_REGS is true,
+   insn numbers to an ascending order of stores.  If CHECK_REGS is true,
    the sequence of registers in REGS matches the loads from ascending memory
    locations, and the function verifies that the register numbers are
    themselves ascending.  If CHECK_REGS is false, the register numbers
@@ -9810,7 +9756,7 @@ load_multiple_sequence (rtx *operands, int nops, int *regs, int *saved_order,
    array filled in with the source register numbers, REG_RTXS (if nonnull) is
    likewise filled with the corresponding rtx's.
    SAVED_ORDER (if nonnull), is an array filled in with an order that maps insn
-   numbers to to an ascending order of stores.
+   numbers to an ascending order of stores.
    If CHECK_REGS is true, the sequence of registers in *REGS matches the stores
    from ascending memory locations, and the function verifies that the register
    numbers are themselves ascending.  If CHECK_REGS is false, the register
@@ -16620,7 +16566,7 @@ arm_print_operand (FILE *stream, rtx x, int code)
       {
 	rtx addr;
 	bool postinc = FALSE;
-	unsigned align, modesize, align_bits;
+	unsigned align, memsize, align_bits;
 
 	gcc_assert (GET_CODE (x) == MEM);
 	addr = XEXP (x, 0);
@@ -16635,12 +16581,12 @@ arm_print_operand (FILE *stream, rtx x, int code)
 	   instruction (for some alignments) as an aid to the memory subsystem
 	   of the target.  */
 	align = MEM_ALIGN (x) >> 3;
-	modesize = GET_MODE_SIZE (GET_MODE (x));
+	memsize = INTVAL (MEM_SIZE (x));
 	
 	/* Only certain alignment specifiers are supported by the hardware.  */
-	if (modesize == 16 && (align % 32) == 0)
+	if (memsize == 16 && (align % 32) == 0)
 	  align_bits = 256;
-	else if ((modesize == 8 || modesize == 16) && (align % 16) == 0)
+	else if ((memsize == 8 || memsize == 16) && (align % 16) == 0)
 	  align_bits = 128;
 	else if ((align % 8) == 0)
 	  align_bits = 64;
@@ -18300,12 +18246,14 @@ enum neon_builtin_type_bits {
   T_V2SI  = 0x0004,
   T_V2SF  = 0x0008,
   T_DI    = 0x0010,
+  T_DREG  = 0x001F,
   T_V16QI = 0x0020,
   T_V8HI  = 0x0040,
   T_V4SI  = 0x0080,
   T_V4SF  = 0x0100,
   T_V2DI  = 0x0200,
   T_TI	  = 0x0400,
+  T_QREG  = 0x07E0,
   T_EI	  = 0x0800,
   T_OI	  = 0x1000
 };
@@ -18951,10 +18899,9 @@ arm_init_neon_builtins (void)
 		    if (is_load && k == 1)
 		      {
 		        /* Neon load patterns always have the memory operand
-			   (a SImode pointer) in the operand 1 position.  We
-			   want a const pointer to the element type in that
-			   position.  */
-		        gcc_assert (insn_data[icode].operand[k].mode == SImode);
+			   in the operand 1 position.  */
+			gcc_assert (insn_data[icode].operand[k].predicate
+				    == neon_struct_operand);
 
 			switch (1 << j)
 			  {
@@ -18989,10 +18936,9 @@ arm_init_neon_builtins (void)
 		    else if (is_store && k == 0)
 		      {
 		        /* Similarly, Neon store patterns use operand 0 as
-			   the memory location to store to (a SImode pointer).
-			   Use a pointer to the element type of the store in
-			   that position.  */
-			gcc_assert (insn_data[icode].operand[k].mode == SImode);
+			   the memory location to store to.  */
+			gcc_assert (insn_data[icode].operand[k].predicate
+				    == neon_struct_operand);
 
 			switch (1 << j)
 			  {
@@ -19312,12 +19258,13 @@ neon_builtin_compare (const void *a, const void *b)
 }
 
 static enum insn_code
-locate_neon_builtin_icode (int fcode, neon_itype *itype)
+locate_neon_builtin_icode (int fcode, neon_itype *itype,
+			   enum neon_builtin_type_bits *type_bit)
 {
   neon_builtin_datum key
     = { NULL, (neon_itype) 0, 0, { CODE_FOR_nothing }, 0, 0 };
   neon_builtin_datum *found;
-  int idx;
+  int idx, type, ntypes;
 
   key.base_fcode = fcode;
   found = (neon_builtin_datum *)
@@ -19330,20 +19277,84 @@ locate_neon_builtin_icode (int fcode, neon_itype *itype)
   if (itype)
     *itype = found->itype;
 
+  if (type_bit)
+    {
+      ntypes = 0;
+      for (type = 0; type < T_MAX; type++)
+	if (found->bits & (1 << type))
+	  {
+	    if (ntypes == idx)
+	      break;
+	    ntypes++;
+	  }
+      gcc_assert (type < T_MAX);
+      *type_bit = (enum neon_builtin_type_bits) (1 << type);
+    }
   return found->codes[idx];
 }
 
 typedef enum {
   NEON_ARG_COPY_TO_REG,
   NEON_ARG_CONSTANT,
+  NEON_ARG_MEMORY,
   NEON_ARG_STOP
 } builtin_arg;
 
 #define NEON_MAX_BUILTIN_ARGS 5
 
+/* EXP is a pointer argument to a Neon load or store intrinsic.  Derive
+   and return an expression for the accessed memory.
+
+   The intrinsic function operates on a block of registers that has
+   mode REG_MODE.  This block contains vectors of type TYPE_BIT.
+   The function references the memory at EXP in mode MEM_MODE;
+   this mode may be BLKmode if no more suitable mode is available.  */
+
+static tree
+neon_dereference_pointer (tree exp, enum machine_mode mem_mode,
+			  enum machine_mode reg_mode,
+			  enum neon_builtin_type_bits type_bit)
+{
+  HOST_WIDE_INT reg_size, vector_size, nvectors, nelems;
+  tree elem_type, upper_bound, array_type;
+
+  /* Work out the size of the register block in bytes.  */
+  reg_size = GET_MODE_SIZE (reg_mode);
+
+  /* Work out the size of each vector in bytes.  */
+  gcc_assert (type_bit & (T_DREG | T_QREG));
+  vector_size = (type_bit & T_QREG ? 16 : 8);
+
+  /* Work out how many vectors there are.  */
+  gcc_assert (reg_size % vector_size == 0);
+  nvectors = reg_size / vector_size;
+
+  /* Work out how many elements are being loaded or stored.
+     MEM_MODE == REG_MODE implies a one-to-one mapping between register
+     and memory elements; anything else implies a lane load or store.  */
+  if (mem_mode == reg_mode)
+    nelems = vector_size * nvectors;
+  else
+    nelems = nvectors;
+
+  /* Work out the type of each element.  */
+  gcc_assert (POINTER_TYPE_P (TREE_TYPE (exp)));
+  elem_type = TREE_TYPE (TREE_TYPE (exp));
+
+  /* Create a type that describes the full access.  */
+  upper_bound = build_int_cst (size_type_node, nelems - 1);
+  array_type = build_array_type (elem_type, build_index_type (upper_bound));
+
+  /* Dereference EXP using that type.  */
+  exp = convert (build_pointer_type (array_type), exp);
+  return fold_build2 (MEM_REF, array_type, exp,
+		      build_int_cst (TREE_TYPE (exp), 0));
+}
+
 /* Expand a Neon builtin.  */
 static rtx
 arm_expand_neon_args (rtx target, int icode, int have_retval,
+		      enum neon_builtin_type_bits type_bit,
 		      tree exp, ...)
 {
   va_list ap;
@@ -19352,7 +19363,9 @@ arm_expand_neon_args (rtx target, int icode, int have_retval,
   rtx op[NEON_MAX_BUILTIN_ARGS];
   enum machine_mode tmode = insn_data[icode].operand[0].mode;
   enum machine_mode mode[NEON_MAX_BUILTIN_ARGS];
+  enum machine_mode other_mode;
   int argc = 0;
+  int opno;
 
   if (have_retval
       && (!target
@@ -19370,24 +19383,44 @@ arm_expand_neon_args (rtx target, int icode, int have_retval,
         break;
       else
         {
+          opno = argc + have_retval;
+          mode[argc] = insn_data[icode].operand[opno].mode;
           arg[argc] = CALL_EXPR_ARG (exp, argc);
+          if (thisarg == NEON_ARG_MEMORY)
+            {
+              other_mode = insn_data[icode].operand[1 - opno].mode;
+              arg[argc] = neon_dereference_pointer (arg[argc], mode[argc],
+                                                    other_mode, type_bit);
+            }
           op[argc] = expand_normal (arg[argc]);
-          mode[argc] = insn_data[icode].operand[argc + have_retval].mode;
 
           switch (thisarg)
             {
             case NEON_ARG_COPY_TO_REG:
               /*gcc_assert (GET_MODE (op[argc]) == mode[argc]);*/
-              if (!(*insn_data[icode].operand[argc + have_retval].predicate)
+              if (!(*insn_data[icode].operand[opno].predicate)
                      (op[argc], mode[argc]))
                 op[argc] = copy_to_mode_reg (mode[argc], op[argc]);
               break;
 
             case NEON_ARG_CONSTANT:
               /* FIXME: This error message is somewhat unhelpful.  */
-              if (!(*insn_data[icode].operand[argc + have_retval].predicate)
+              if (!(*insn_data[icode].operand[opno].predicate)
                     (op[argc], mode[argc]))
 		error ("argument must be a constant");
+              break;
+
+            case NEON_ARG_MEMORY:
+	      gcc_assert (MEM_P (op[argc]));
+	      PUT_MODE (op[argc], mode[argc]);
+	      /* ??? arm_neon.h uses the same built-in functions for signed
+		 and unsigned accesses, casting where necessary.  This isn't
+		 alias safe.  */
+	      set_mem_alias_set (op[argc], 0);
+	      if (!(*insn_data[icode].operand[opno].predicate)
+                    (op[argc], mode[argc]))
+		op[argc] = (replace_equiv_address
+			    (op[argc], force_reg (Pmode, XEXP (op[argc], 0))));
               break;
 
             case NEON_ARG_STOP:
@@ -19468,14 +19501,15 @@ static rtx
 arm_expand_neon_builtin (int fcode, tree exp, rtx target)
 {
   neon_itype itype;
-  enum insn_code icode = locate_neon_builtin_icode (fcode, &itype);
+  enum neon_builtin_type_bits type_bit;
+  enum insn_code icode = locate_neon_builtin_icode (fcode, &itype, &type_bit);
 
   switch (itype)
     {
     case NEON_UNOP:
     case NEON_CONVERT:
     case NEON_DUPLANE:
-      return arm_expand_neon_args (target, icode, 1, exp,
+      return arm_expand_neon_args (target, icode, 1, type_bit, exp,
         NEON_ARG_COPY_TO_REG, NEON_ARG_CONSTANT, NEON_ARG_STOP);
 
     case NEON_BINOP:
@@ -19485,90 +19519,90 @@ arm_expand_neon_builtin (int fcode, tree exp, rtx target)
     case NEON_SCALARMULH:
     case NEON_SHIFTINSERT:
     case NEON_LOGICBINOP:
-      return arm_expand_neon_args (target, icode, 1, exp,
+      return arm_expand_neon_args (target, icode, 1, type_bit, exp,
         NEON_ARG_COPY_TO_REG, NEON_ARG_COPY_TO_REG, NEON_ARG_CONSTANT,
         NEON_ARG_STOP);
 
     case NEON_TERNOP:
-      return arm_expand_neon_args (target, icode, 1, exp,
+      return arm_expand_neon_args (target, icode, 1, type_bit, exp,
         NEON_ARG_COPY_TO_REG, NEON_ARG_COPY_TO_REG, NEON_ARG_COPY_TO_REG,
         NEON_ARG_CONSTANT, NEON_ARG_STOP);
 
     case NEON_GETLANE:
     case NEON_FIXCONV:
     case NEON_SHIFTIMM:
-      return arm_expand_neon_args (target, icode, 1, exp,
+      return arm_expand_neon_args (target, icode, 1, type_bit, exp,
         NEON_ARG_COPY_TO_REG, NEON_ARG_CONSTANT, NEON_ARG_CONSTANT,
         NEON_ARG_STOP);
 
     case NEON_CREATE:
-      return arm_expand_neon_args (target, icode, 1, exp,
+      return arm_expand_neon_args (target, icode, 1, type_bit, exp,
         NEON_ARG_COPY_TO_REG, NEON_ARG_STOP);
 
     case NEON_DUP:
     case NEON_SPLIT:
     case NEON_REINTERP:
-      return arm_expand_neon_args (target, icode, 1, exp,
+      return arm_expand_neon_args (target, icode, 1, type_bit, exp,
         NEON_ARG_COPY_TO_REG, NEON_ARG_STOP);
 
     case NEON_COMBINE:
     case NEON_VTBL:
-      return arm_expand_neon_args (target, icode, 1, exp,
+      return arm_expand_neon_args (target, icode, 1, type_bit, exp,
         NEON_ARG_COPY_TO_REG, NEON_ARG_COPY_TO_REG, NEON_ARG_STOP);
 
     case NEON_RESULTPAIR:
-      return arm_expand_neon_args (target, icode, 0, exp,
+      return arm_expand_neon_args (target, icode, 0, type_bit, exp,
         NEON_ARG_COPY_TO_REG, NEON_ARG_COPY_TO_REG, NEON_ARG_COPY_TO_REG,
         NEON_ARG_STOP);
 
     case NEON_LANEMUL:
     case NEON_LANEMULL:
     case NEON_LANEMULH:
-      return arm_expand_neon_args (target, icode, 1, exp,
+      return arm_expand_neon_args (target, icode, 1, type_bit, exp,
         NEON_ARG_COPY_TO_REG, NEON_ARG_COPY_TO_REG, NEON_ARG_CONSTANT,
         NEON_ARG_CONSTANT, NEON_ARG_STOP);
 
     case NEON_LANEMAC:
-      return arm_expand_neon_args (target, icode, 1, exp,
+      return arm_expand_neon_args (target, icode, 1, type_bit, exp,
         NEON_ARG_COPY_TO_REG, NEON_ARG_COPY_TO_REG, NEON_ARG_COPY_TO_REG,
         NEON_ARG_CONSTANT, NEON_ARG_CONSTANT, NEON_ARG_STOP);
 
     case NEON_SHIFTACC:
-      return arm_expand_neon_args (target, icode, 1, exp,
+      return arm_expand_neon_args (target, icode, 1, type_bit, exp,
         NEON_ARG_COPY_TO_REG, NEON_ARG_COPY_TO_REG, NEON_ARG_CONSTANT,
         NEON_ARG_CONSTANT, NEON_ARG_STOP);
 
     case NEON_SCALARMAC:
-      return arm_expand_neon_args (target, icode, 1, exp,
+      return arm_expand_neon_args (target, icode, 1, type_bit, exp,
 	NEON_ARG_COPY_TO_REG, NEON_ARG_COPY_TO_REG, NEON_ARG_COPY_TO_REG,
         NEON_ARG_CONSTANT, NEON_ARG_STOP);
 
     case NEON_SELECT:
     case NEON_VTBX:
-      return arm_expand_neon_args (target, icode, 1, exp,
+      return arm_expand_neon_args (target, icode, 1, type_bit, exp,
 	NEON_ARG_COPY_TO_REG, NEON_ARG_COPY_TO_REG, NEON_ARG_COPY_TO_REG,
         NEON_ARG_STOP);
 
     case NEON_LOAD1:
     case NEON_LOADSTRUCT:
-      return arm_expand_neon_args (target, icode, 1, exp,
-	NEON_ARG_COPY_TO_REG, NEON_ARG_STOP);
+      return arm_expand_neon_args (target, icode, 1, type_bit, exp,
+	NEON_ARG_MEMORY, NEON_ARG_STOP);
 
     case NEON_LOAD1LANE:
     case NEON_LOADSTRUCTLANE:
-      return arm_expand_neon_args (target, icode, 1, exp,
-	NEON_ARG_COPY_TO_REG, NEON_ARG_COPY_TO_REG, NEON_ARG_CONSTANT,
+      return arm_expand_neon_args (target, icode, 1, type_bit, exp,
+	NEON_ARG_MEMORY, NEON_ARG_COPY_TO_REG, NEON_ARG_CONSTANT,
 	NEON_ARG_STOP);
 
     case NEON_STORE1:
     case NEON_STORESTRUCT:
-      return arm_expand_neon_args (target, icode, 0, exp,
-	NEON_ARG_COPY_TO_REG, NEON_ARG_COPY_TO_REG, NEON_ARG_STOP);
+      return arm_expand_neon_args (target, icode, 0, type_bit, exp,
+	NEON_ARG_MEMORY, NEON_ARG_COPY_TO_REG, NEON_ARG_STOP);
 
     case NEON_STORE1LANE:
     case NEON_STORESTRUCTLANE:
-      return arm_expand_neon_args (target, icode, 0, exp,
-	NEON_ARG_COPY_TO_REG, NEON_ARG_COPY_TO_REG, NEON_ARG_CONSTANT,
+      return arm_expand_neon_args (target, icode, 0, type_bit, exp,
+	NEON_ARG_MEMORY, NEON_ARG_COPY_TO_REG, NEON_ARG_CONSTANT,
 	NEON_ARG_STOP);
     }
 
@@ -23164,7 +23198,7 @@ arm_emit (int label ATTRIBUTE_UNUSED, const char *pattern, rtx *operands)
 static unsigned arm_insn_count;
 
 /* An emitter that counts emitted instructions but does not actually
-   emit instruction into the the instruction stream.  */
+   emit instruction into the instruction stream.  */
 static void
 arm_count (int label,
 	   const char *pattern ATTRIBUTE_UNUSED,
@@ -23694,6 +23728,32 @@ arm_preferred_rename_class (reg_class_t rclass)
     return LO_REGS;
   else
     return NO_REGS;
+}
+
+/* Compute the atrribute "length" of insn "*push_multi".
+   So this function MUST be kept in sync with that insn pattern.  */
+int
+arm_attr_length_push_multi(rtx parallel_op, rtx first_op)
+{
+  int i, regno, hi_reg;
+  int num_saves = XVECLEN (parallel_op, 0);
+
+  /* ARM mode.  */
+  if (TARGET_ARM)
+    return 4;
+
+  /* Thumb2 mode.  */
+  regno = REGNO (first_op);
+  hi_reg = (REGNO_REG_CLASS (regno) == HI_REGS) && (regno != LR_REGNUM);
+  for (i = 1; i < num_saves && !hi_reg; i++)
+    {
+      regno = REGNO (XEXP (XVECEXP (parallel_op, 0, i), 0));
+      hi_reg |= (REGNO_REG_CLASS (regno) == HI_REGS) && (regno != LR_REGNUM);
+    }
+
+  if (!hi_reg)
+    return 2;
+  return 4;
 }
 
 #include "gt-arm.h"

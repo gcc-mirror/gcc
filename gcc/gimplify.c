@@ -968,11 +968,11 @@ copy_if_shared (tree *tp)
 static void
 unshare_body (tree *body_p, tree fndecl)
 {
-  struct cgraph_node *cgn = cgraph_node (fndecl);
+  struct cgraph_node *cgn = cgraph_get_node (fndecl);
 
   copy_if_shared (body_p);
 
-  if (body_p == &DECL_SAVED_TREE (fndecl))
+  if (cgn && body_p == &DECL_SAVED_TREE (fndecl))
     for (cgn = cgn->nested; cgn; cgn = cgn->next_nested)
       unshare_body (&DECL_SAVED_TREE (cgn->decl), cgn->decl);
 }
@@ -1009,11 +1009,11 @@ unmark_visited (tree *tp)
 static void
 unvisit_body (tree *body_p, tree fndecl)
 {
-  struct cgraph_node *cgn = cgraph_node (fndecl);
+  struct cgraph_node *cgn = cgraph_get_node (fndecl);
 
   unmark_visited (body_p);
 
-  if (body_p == &DECL_SAVED_TREE (fndecl))
+  if (cgn && body_p == &DECL_SAVED_TREE (fndecl))
     for (cgn = cgn->nested; cgn; cgn = cgn->next_nested)
       unvisit_body (&DECL_SAVED_TREE (cgn->decl), cgn->decl);
 }
@@ -2299,7 +2299,7 @@ gimplify_arg (tree *arg_p, gimple_seq *pre_p, location_t call_location)
 static enum gimplify_status
 gimplify_call_expr (tree *expr_p, gimple_seq *pre_p, bool want_value)
 {
-  tree fndecl, parms, p;
+  tree fndecl, parms, p, fnptrtype;
   enum gimplify_status ret;
   int i, nargs;
   gimple call;
@@ -2357,6 +2357,9 @@ gimplify_call_expr (tree *expr_p, gimple_seq *pre_p, bool want_value)
 	    }
 	}
     }
+
+  /* Remember the original function pointer type.  */
+  fnptrtype = TREE_TYPE (CALL_EXPR_FN (*expr_p));
 
   /* There is a sequence point before the call, so any side effects in
      the calling expression must occur before the actual call.  Force
@@ -2445,7 +2448,7 @@ gimplify_call_expr (tree *expr_p, gimple_seq *pre_p, bool want_value)
 
   /* Verify the function result.  */
   if (want_value && fndecl
-      && VOID_TYPE_P (TREE_TYPE (TREE_TYPE (fndecl))))
+      && VOID_TYPE_P (TREE_TYPE (TREE_TYPE (fnptrtype))))
     {
       error_at (loc, "using result of function returning %<void%>");
       ret = GS_ERROR;
@@ -2497,11 +2500,16 @@ gimplify_call_expr (tree *expr_p, gimple_seq *pre_p, bool want_value)
 	 have to do is replicate it as a GIMPLE_CALL tuple.  */
       gimple_stmt_iterator gsi;
       call = gimple_build_call_from_tree (*expr_p);
+      gimple_call_set_fntype (call, TREE_TYPE (fnptrtype));
       gimplify_seq_add_stmt (pre_p, call);
       gsi = gsi_last (*pre_p);
       fold_stmt (&gsi);
       *expr_p = NULL_TREE;
     }
+  else
+    /* Remember the original function type.  */
+    CALL_EXPR_FN (*expr_p) = build1 (NOP_EXPR, fnptrtype,
+				     CALL_EXPR_FN (*expr_p));
 
   return ret;
 }
@@ -4088,9 +4096,10 @@ gimple_fold_indirect_ref (tree t)
       /* ((foo*)&vectorfoo)[1] -> BIT_FIELD_REF<vectorfoo,...> */
       if (TREE_CODE (addr) == ADDR_EXPR
 	  && TREE_CODE (TREE_TYPE (addrtype)) == VECTOR_TYPE
-	  && useless_type_conversion_p (type, TREE_TYPE (TREE_TYPE (addrtype))))
+	  && useless_type_conversion_p (type, TREE_TYPE (TREE_TYPE (addrtype)))
+	  && host_integerp (off, 1))
 	{
-          HOST_WIDE_INT offset = tree_low_cst (off, 0);
+          unsigned HOST_WIDE_INT offset = tree_low_cst (off, 1);
           tree part_width = TYPE_SIZE (type);
           unsigned HOST_WIDE_INT part_widthi
             = tree_low_cst (part_width, 0) / BITS_PER_UNIT;
@@ -4615,7 +4624,11 @@ gimplify_modify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
     {
       /* Since the RHS is a CALL_EXPR, we need to create a GIMPLE_CALL
 	 instead of a GIMPLE_ASSIGN.  */
+      tree fnptrtype = TREE_TYPE (CALL_EXPR_FN (*from_p));
+      CALL_EXPR_FN (*from_p) = TREE_OPERAND (CALL_EXPR_FN (*from_p), 0);
+      STRIP_USELESS_TYPE_CONVERSION (CALL_EXPR_FN (*from_p));
       assign = gimple_build_call_from_tree (*from_p);
+      gimple_call_set_fntype (assign, TREE_TYPE (fnptrtype));
       if (!gimple_call_noreturn_p (assign))
 	gimple_call_set_lhs (assign, *to_p);
     }
@@ -7705,6 +7718,7 @@ gimplify_body (tree *body_p, tree fndecl, bool do_parms)
   gimple_seq parm_stmts, seq;
   gimple outer_bind;
   struct gimplify_ctx gctx;
+  struct cgraph_node *cgn;
 
   timevar_push (TV_TREE_GIMPLIFY);
 
@@ -7722,7 +7736,8 @@ gimplify_body (tree *body_p, tree fndecl, bool do_parms)
   unshare_body (body_p, fndecl);
   unvisit_body (body_p, fndecl);
 
-  if (cgraph_node (fndecl)->origin)
+  cgn = cgraph_get_node (fndecl);
+  if (cgn && cgn->origin)
     nonlocal_vlas = pointer_set_create ();
 
   /* Make sure input_location isn't set to something weird.  */

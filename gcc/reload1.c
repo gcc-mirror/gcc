@@ -4958,60 +4958,54 @@ static void
 mark_reload_reg_in_use (unsigned int regno, int opnum, enum reload_type type,
 			enum machine_mode mode)
 {
-  unsigned int nregs = hard_regno_nregs[regno][mode];
-  unsigned int i;
-
-  for (i = regno; i < nregs + regno; i++)
+  switch (type)
     {
-      switch (type)
-	{
-	case RELOAD_OTHER:
-	  SET_HARD_REG_BIT (reload_reg_used, i);
-	  break;
+    case RELOAD_OTHER:
+      add_to_hard_reg_set (&reload_reg_used, mode, regno);
+      break;
 
-	case RELOAD_FOR_INPUT_ADDRESS:
-	  SET_HARD_REG_BIT (reload_reg_used_in_input_addr[opnum], i);
-	  break;
+    case RELOAD_FOR_INPUT_ADDRESS:
+      add_to_hard_reg_set (&reload_reg_used_in_input_addr[opnum], mode, regno);
+      break;
 
-	case RELOAD_FOR_INPADDR_ADDRESS:
-	  SET_HARD_REG_BIT (reload_reg_used_in_inpaddr_addr[opnum], i);
-	  break;
+    case RELOAD_FOR_INPADDR_ADDRESS:
+      add_to_hard_reg_set (&reload_reg_used_in_inpaddr_addr[opnum], mode, regno);
+      break;
 
-	case RELOAD_FOR_OUTPUT_ADDRESS:
-	  SET_HARD_REG_BIT (reload_reg_used_in_output_addr[opnum], i);
-	  break;
+    case RELOAD_FOR_OUTPUT_ADDRESS:
+      add_to_hard_reg_set (&reload_reg_used_in_output_addr[opnum], mode, regno);
+      break;
 
-	case RELOAD_FOR_OUTADDR_ADDRESS:
-	  SET_HARD_REG_BIT (reload_reg_used_in_outaddr_addr[opnum], i);
-	  break;
+    case RELOAD_FOR_OUTADDR_ADDRESS:
+      add_to_hard_reg_set (&reload_reg_used_in_outaddr_addr[opnum], mode, regno);
+      break;
 
-	case RELOAD_FOR_OPERAND_ADDRESS:
-	  SET_HARD_REG_BIT (reload_reg_used_in_op_addr, i);
-	  break;
+    case RELOAD_FOR_OPERAND_ADDRESS:
+      add_to_hard_reg_set (&reload_reg_used_in_op_addr, mode, regno);
+      break;
 
-	case RELOAD_FOR_OPADDR_ADDR:
-	  SET_HARD_REG_BIT (reload_reg_used_in_op_addr_reload, i);
-	  break;
+    case RELOAD_FOR_OPADDR_ADDR:
+      add_to_hard_reg_set (&reload_reg_used_in_op_addr_reload, mode, regno);
+      break;
 
-	case RELOAD_FOR_OTHER_ADDRESS:
-	  SET_HARD_REG_BIT (reload_reg_used_in_other_addr, i);
-	  break;
+    case RELOAD_FOR_OTHER_ADDRESS:
+      add_to_hard_reg_set (&reload_reg_used_in_other_addr, mode, regno);
+      break;
 
-	case RELOAD_FOR_INPUT:
-	  SET_HARD_REG_BIT (reload_reg_used_in_input[opnum], i);
-	  break;
+    case RELOAD_FOR_INPUT:
+      add_to_hard_reg_set (&reload_reg_used_in_input[opnum], mode, regno);
+      break;
 
-	case RELOAD_FOR_OUTPUT:
-	  SET_HARD_REG_BIT (reload_reg_used_in_output[opnum], i);
-	  break;
+    case RELOAD_FOR_OUTPUT:
+      add_to_hard_reg_set (&reload_reg_used_in_output[opnum], mode, regno);
+      break;
 
-	case RELOAD_FOR_INSN:
-	  SET_HARD_REG_BIT (reload_reg_used_in_insn, i);
-	  break;
-	}
-
-      SET_HARD_REG_BIT (reload_reg_used_at_all, i);
+    case RELOAD_FOR_INSN:
+      add_to_hard_reg_set (&reload_reg_used_in_insn,  mode, regno);
+      break;
     }
+
+  add_to_hard_reg_set (&reload_reg_used_at_all, mode, regno);
 }
 
 /* Similarly, but show REGNO is no longer in use for a reload.  */
@@ -6946,11 +6940,7 @@ choose_reload_regs (struct insn_chain *chain)
 			       nregno + nr);
 
 	  if (i >= 0)
-	    {
-	      nr = hard_regno_nregs[i][rld[r].mode];
-	      while (--nr >= 0)
-		SET_HARD_REG_BIT (reg_is_output_reload, i + nr);
-	    }
+	    add_to_hard_reg_set (&reg_is_output_reload, rld[r].mode, i);
 
 	  gcc_assert (rld[r].when_needed == RELOAD_OTHER
 		      || rld[r].when_needed == RELOAD_FOR_OUTPUT

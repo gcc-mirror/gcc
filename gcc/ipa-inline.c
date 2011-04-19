@@ -1718,7 +1718,7 @@ static GTY ((length ("nnodes"))) struct cgraph_node **order;
 static unsigned int
 cgraph_early_inlining (void)
 {
-  struct cgraph_node *node = cgraph_node (current_function_decl);
+  struct cgraph_node *node = cgraph_get_node (current_function_decl);
   unsigned int todo = 0;
   int iterations = 0;
   bool inlined = false;
@@ -1996,7 +1996,7 @@ compute_inline_parameters (struct cgraph_node *node)
 static unsigned int
 compute_inline_parameters_for_current (void)
 {
-  compute_inline_parameters (cgraph_node (current_function_decl));
+  compute_inline_parameters (cgraph_get_node (current_function_decl));
   return 0;
 }
 
@@ -2066,11 +2066,7 @@ inline_generate_summary (void)
       cgraph_add_function_insertion_hook (&add_new_function, NULL);
 
   if (flag_indirect_inlining)
-    {
-      ipa_register_cgraph_hooks ();
-      ipa_check_create_node_params ();
-      ipa_check_create_edge_args ();
-    }
+    ipa_register_cgraph_hooks ();
 
   for (node = cgraph_nodes; node; node = node->next)
     if (node->analyzed)

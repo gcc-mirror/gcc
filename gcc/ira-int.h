@@ -805,7 +805,7 @@ struct target_ira_int {
   int x_ira_class_subset_p[N_REG_CLASSES][N_REG_CLASSES];
 
   /* Array of the number of hard registers of given class which are
-     available for allocation.  The order is defined by the the hard
+     available for allocation.  The order is defined by the hard
      register numbers.  */
   short x_ira_non_ordered_class_hard_regs[N_REG_CLASSES][FIRST_PSEUDO_REGISTER];
 

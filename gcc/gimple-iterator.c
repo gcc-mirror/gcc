@@ -84,7 +84,7 @@ update_call_edge_frequencies (gimple_seq_node first, basic_block bb)
 	   to avoid calling them if we never see any calls.  */
 	if (cfun_node == NULL)
 	  {
-	    cfun_node = cgraph_node (current_function_decl);
+	    cfun_node = cgraph_get_node (current_function_decl);
 	    bb_freq = (compute_call_stmt_bb_frequency
 		       (current_function_decl, bb));
 	  }

@@ -65,6 +65,15 @@ typedef struct _Jv_JavaVM JavaVM;
      reused between non-nesting JNI calls.  */				\
   struct _Jv_JNI_LocalFrame *bottom_locals;
 
+/*  JNI calling convention.  Also defined in javaprims.h. */
+#ifndef JNICALL
+#if (defined (_WIN32) || defined (__WIN32__) || defined (WIN32)) \
+    && !defined (_WIN64)
+  #define JNICALL __stdcall
+ #else
+  #define JNICALL
+ #endif
+#endif
 
 #else /* __GCJ_JNI_IMPL__ */
 
@@ -117,14 +126,17 @@ typedef uint16_t jchar;
 
 
 /* Linkage and calling conventions. */
-#if defined (_WIN32) || defined (__WIN32__) || defined (WIN32)
+#if (defined (_WIN32) || defined (__WIN32__) || defined (WIN32)) \
+    && !defined (_WIN64)
 
 #define JNIIMPORT        __declspec(dllimport)
 #define JNIEXPORT        __declspec(dllexport)
 
-#define JNICALL          __stdcall
+#ifndef JNICALL
+#define JNICALL __stdcall
+#endif
 
-#else /* !( _WIN32 || __WIN32__ || WIN32) */
+#else /* !( _WIN32 || __WIN32__ || WIN32) || _WIN64 */
 
 #define JNIIMPORT
 #if defined(__GNUC__) && __GNUC__ > 3
@@ -133,9 +145,11 @@ typedef uint16_t jchar;
 #define JNIEXPORT
 #endif
 
+#ifndef JNICALL
 #define JNICALL
+#endif
 
-#endif /* !( _WIN32 || __WIN32__ || WIN32) */
+#endif /* !( _WIN32 || __WIN32__ || WIN32) || _WIN64 */
 
 /* These defines apply to symbols in libgcj */
 #ifdef __GCJ_DLL__

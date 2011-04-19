@@ -1727,7 +1727,7 @@ copy_bb (copy_body_data *id, basic_block bb, int frequency_scale,
 		       && id->transform_call_graph_edges == CB_CGE_MOVE_CLONES))
 		  && (fn = gimple_call_fndecl (stmt)) != NULL)
 		{
-		  struct cgraph_node *dest = cgraph_node (fn);
+		  struct cgraph_node *dest = cgraph_get_node (fn);
 
 		  /* We have missing edge in the callgraph.  This can happen
 		     when previous inlining turned an indirect call into a
@@ -3470,10 +3470,11 @@ estimate_num_insns (gimple stmt, eni_weights *weights)
     case GIMPLE_CALL:
       {
 	tree decl = gimple_call_fndecl (stmt);
+	struct cgraph_node *node;
 
 	/* Do not special case builtins where we see the body.
 	   This just confuse inliner.  */
-	if (!decl || cgraph_node (decl)->analyzed)
+	if (!decl || !(node = cgraph_get_node (decl)) || node->analyzed)
 	  ;
 	/* For buitins that are likely expanded to nothing or
 	   inlined do not account operand costs.  */
@@ -4158,7 +4159,7 @@ optimize_inline_calls (tree fn)
   /* Clear out ID.  */
   memset (&id, 0, sizeof (id));
 
-  id.src_node = id.dst_node = cgraph_node (fn);
+  id.src_node = id.dst_node = cgraph_get_node (fn);
   gcc_assert (id.dst_node->analyzed);
   id.dst_fn = fn;
   /* Or any functions that aren't finished yet.  */
@@ -4252,7 +4253,8 @@ copy_tree_r (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
 	 here.  */
       tree chain = NULL_TREE, new_tree;
 
-      chain = TREE_CHAIN (*tp);
+      if (CODE_CONTAINS_STRUCT (code, TS_COMMON))
+	chain = TREE_CHAIN (*tp);
 
       /* Copy the node.  */
       new_tree = copy_node (*tp);
@@ -5000,8 +5002,10 @@ tree_function_versioning (tree old_decl, tree new_decl,
 	      && TREE_CODE (new_decl) == FUNCTION_DECL);
   DECL_POSSIBLY_INLINED (old_decl) = 1;
 
-  old_version_node = cgraph_node (old_decl);
-  new_version_node = cgraph_node (new_decl);
+  old_version_node = cgraph_get_node (old_decl);
+  gcc_checking_assert (old_version_node);
+  new_version_node = cgraph_get_node (new_decl);
+  gcc_checking_assert (new_version_node);
 
   /* Output the inlining info for this abstract function, since it has been
      inlined.  If we don't do this now, we can lose the information about the
@@ -5325,7 +5329,7 @@ tree_can_inline_p (struct cgraph_edge *e)
 	return false;
     }
 #endif
-  tree caller, callee, lhs;
+  tree caller, callee;
 
   caller = e->caller->decl;
   callee = e->callee->decl;
@@ -5352,13 +5356,7 @@ tree_can_inline_p (struct cgraph_edge *e)
   /* Do not inline calls where we cannot triviall work around mismatches
      in argument or return types.  */
   if (e->call_stmt
-      && ((DECL_RESULT (callee)
-	   && !DECL_BY_REFERENCE (DECL_RESULT (callee))
-	   && (lhs = gimple_call_lhs (e->call_stmt)) != NULL_TREE
-	   && !useless_type_conversion_p (TREE_TYPE (DECL_RESULT (callee)),
-					  TREE_TYPE (lhs))
-	   && !fold_convertible_p (TREE_TYPE (DECL_RESULT (callee)), lhs))
-	  || !gimple_check_call_args (e->call_stmt)))
+      && !gimple_check_call_matching_types (e->call_stmt, callee))
     {
       e->inline_failed = CIF_MISMATCHED_ARGUMENTS;
       if (e->call_stmt)

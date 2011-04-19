@@ -1090,6 +1090,25 @@ find_func_by_pid (int	pid)
   return pid_map [pid];
 }
 
+/* Perform sanity check on the indirect call target. Due to race conditions,
+   false function target may be attributed to an indirect call site. If the
+   call expression type mismatches with the target function's type, expand_call
+   may ICE. Here we only do very minimal sanity check just to make compiler happy.
+   Returns true if TARGET is considered ok for call CALL_STMT.  */
+
+static bool
+check_ic_target (gimple call_stmt, struct cgraph_node *target)
+{
+   location_t locus;
+   if (gimple_check_call_matching_types (call_stmt, target->decl))
+     return true;
+
+   locus =  gimple_location (call_stmt);
+   inform (locus, "Skipping target %s with mismatching types for icall ",
+           cgraph_node_name (target));
+   return false;
+}
+
 /* Do transformation
 
   if (actual_callee_address == address_of_most_common_function/method)
@@ -1230,16 +1249,13 @@ gimple_ic_transform (gimple stmt)
   histogram_value histogram;
   gcov_type val, count, all, bb_all;
   gcov_type prob;
-  tree callee;
   gimple modify;
   struct cgraph_node *direct_call;
 
   if (gimple_code (stmt) != GIMPLE_CALL)
     return false;
 
-  callee = gimple_call_fn (stmt);
-
-  if (TREE_CODE (callee) == FUNCTION_DECL)
+  if (gimple_call_fndecl (stmt) != NULL_TREE)
     return false;
 
   histogram = gimple_histogram_value_of_type (cfun, stmt, HIST_TYPE_INDIR_CALL);
@@ -1269,6 +1285,9 @@ gimple_ic_transform (gimple stmt)
   direct_call = find_func_by_pid ((int)val);
 
   if (direct_call == NULL)
+    return false;
+
+  if (!check_ic_target (stmt, direct_call))
     return false;
 
   modify = gimple_ic (stmt, direct_call, prob, count, all);
@@ -1751,4 +1770,3 @@ gimple_find_values_to_profile (histogram_values *values)
         }
     }
 }
-

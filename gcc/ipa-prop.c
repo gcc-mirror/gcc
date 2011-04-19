@@ -1515,17 +1515,20 @@ ipa_analyze_params_uses (struct cgraph_node *node,
   info->uses_analysis_done = 1;
 }
 
-/* Initialize the array describing properties of of formal parameters of NODE,
-   analyze their uses and and compute jump functions associated with actual
-   arguments of calls from within NODE.  */
+/* Initialize the array describing properties of of formal parameters
+   of NODE, analyze their uses and compute jump functions associated
+   with actual arguments of calls from within NODE.  */
 
 void
 ipa_analyze_node (struct cgraph_node *node)
 {
-  struct ipa_node_params *info = IPA_NODE_REF (node);
+  struct ipa_node_params *info;
   struct param_analysis_info *parms_info;
   int i, param_count;
 
+  ipa_check_create_node_params ();
+  ipa_check_create_edge_args ();
+  info = IPA_NODE_REF (node);
   push_cfun (DECL_STRUCT_FUNCTION (node->decl));
   current_function_decl = node->decl;
   ipa_initialize_node_params (node);
@@ -1645,7 +1648,7 @@ ipa_make_edge_direct_to_target (struct cgraph_edge *ie, tree target, tree delta)
     target = TREE_OPERAND (target, 0);
   if (TREE_CODE (target) != FUNCTION_DECL)
     return NULL;
-  callee = cgraph_node (target);
+  callee = cgraph_get_node (target);
   if (!callee)
     return NULL;
   ipa_check_create_node_params ();

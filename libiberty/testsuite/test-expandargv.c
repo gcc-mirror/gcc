@@ -204,7 +204,7 @@ writeout_test (int test, const char * test_data)
   if (parse == NULL)
     fatal_error (__LINE__, "Failed to malloc parse.", errno);
       
-  memcpy (parse, test_data, sizeof (char) * len);
+  memcpy (parse, test_data, sizeof (char) * (len + 1));
   /* Run all possible replaces */
   run_replaces (parse);
 

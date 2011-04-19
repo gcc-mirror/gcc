@@ -1521,8 +1521,10 @@ reference_binding (tree rto, tree rfrom, tree expr, bool c_cast_p, int flags)
 	   actually occurs.  */
 	conv->need_temporary_p = true;
 
-      /* Don't allow binding of lvalues to rvalue references.  */
+      /* Don't allow binding of lvalues (other than function lvalues) to
+	 rvalue references.  */
       if (is_lvalue && TYPE_REF_IS_RVALUE (rto)
+	  && TREE_CODE (to) != FUNCTION_TYPE
           && !(flags & LOOKUP_PREFER_RVALUE))
 	conv->bad_p = true;
 
@@ -3249,7 +3251,9 @@ build_user_type_conversion_1 (tree totype, tree expr, int flags)
 	      || !DERIVED_FROM_P (totype, fromtype));
 
   if (MAYBE_CLASS_TYPE_P (totype))
-    ctors = lookup_fnfields (totype, complete_ctor_identifier, 0);
+    /* Use lookup_fnfields_slot instead of lookup_fnfields to avoid
+       creating a garbage BASELINK; constructors can't be inherited.  */
+    ctors = lookup_fnfields_slot (totype, complete_ctor_identifier);
 
   if (MAYBE_CLASS_TYPE_P (fromtype))
     {
@@ -3281,7 +3285,6 @@ build_user_type_conversion_1 (tree totype, tree expr, int flags)
   if (ctors)
     {
       int ctorflags = flags;
-      ctors = BASELINK_FUNCTIONS (ctors);
 
       first_arg = build_int_cst (build_pointer_type (totype), 0);
 
@@ -3389,7 +3392,11 @@ build_user_type_conversion_1 (tree totype, tree expr, int flags)
 
   candidates = splice_viable (candidates, pedantic, &any_viable_p);
   if (!any_viable_p)
-    return NULL;
+    {
+      if (args)
+	release_tree_vector (args);
+      return NULL;
+    }
 
   cand = tourney (candidates);
   if (cand == 0)
@@ -5488,7 +5495,7 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	elttype = cp_build_qualified_type
 	  (elttype, cp_type_quals (elttype) | TYPE_QUAL_CONST);
 	array = build_array_of_n_type (elttype, len);
-	array = finish_compound_literal (array, new_ctor);
+	array = finish_compound_literal (array, new_ctor, complain);
 
 	/* Build up the initializer_list object.  */
 	totype = complete_type (totype);

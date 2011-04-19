@@ -1762,7 +1762,7 @@ java_parse_file (void)
 	      next = list + count;
 	      avail = avail - count;
 	    }
-	  /* Subtract to to guarantee space for final '\0'. */
+	  /* Subtract one to guarantee space for final '\0'. */
 	  count = fread (next, 1, avail - 1, finput);
 	  if (count == 0)
 	    {

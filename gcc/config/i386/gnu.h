@@ -20,14 +20,10 @@ You should have received a copy of the GNU General Public License
 along with GCC.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#undef GLIBC_DYNAMIC_LINKER
-#define GLIBC_DYNAMIC_LINKER "/lib/ld.so"
+#define GNU_USER_LINK_EMULATION "elf_i386"
 
-#undef CPP_SPEC
-#define CPP_SPEC "%{pthread:-D_REENTRANT} %{posix:-D_POSIX_SOURCE}"
-
-#undef CC1_SPEC
-#define CC1_SPEC "%(cc1_cpu)"
+#undef GNU_USER_DYNAMIC_LINKER
+#define GNU_USER_DYNAMIC_LINKER "/lib/ld.so"
 
 #undef	STARTFILE_SPEC
 #if defined HAVE_LD_PIE
@@ -39,10 +35,6 @@ along with GCC.  If not, see <http://www.gnu.org/licenses/>.
   "%{!shared: %{pg|p|profile:gcrt0.o%s;static:crt0.o%s;:crt1.o%s}} \
    crti.o%s %{static:crtbeginT.o%s;shared|pie:crtbeginS.o%s;:crtbegin.o%s}"
 #endif
-
-#undef	ENDFILE_SPEC
-#define ENDFILE_SPEC \
-  "%{shared|pie:crtendS.o%s;:crtend.o%s} crtn.o%s"
 
 /* FIXME: Is a Hurd-specific fallback mechanism necessary?  */
 #undef MD_UNWIND_SUPPORT

@@ -2999,7 +2999,7 @@ alpha_emit_xfloating_libcall (rtx func, rtx target, rtx operands[],
 	}
 
       emit_move_insn (reg, operands[i]);
-      usage = alloc_EXPR_LIST (0, gen_rtx_USE (VOIDmode, reg), usage);
+      use_reg (&usage, reg);
     }
 
   switch (GET_MODE (target))

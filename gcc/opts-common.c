@@ -693,7 +693,6 @@ decode_cmdline_options_to_array (unsigned int argc, const char **argv,
   unsigned int n, i;
   struct cl_decoded_option *opt_array;
   unsigned int num_decoded_options;
-  bool argv_copied = false;
 
   opt_array = XNEWVEC (struct cl_decoded_option, argc);
 
@@ -728,8 +727,6 @@ decode_cmdline_options_to_array (unsigned int argc, const char **argv,
       num_decoded_options++;
     }
 
-  if (argv_copied)
-    free (argv);
   *decoded_options = opt_array;
   *decoded_options_count = num_decoded_options;
   prune_options (decoded_options, decoded_options_count);

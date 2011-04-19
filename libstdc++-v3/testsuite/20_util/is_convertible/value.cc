@@ -93,7 +93,7 @@ void test01()
 	                                     const volatile int&>(false)) );
   VERIFY( (test_relationship<is_convertible, volatile int,
 	                                     volatile int&>(false)) );
-  VERIFY( (test_relationship<is_convertible, int(int), int(&)(int)>(false)) );
+  VERIFY( (test_relationship<is_convertible, int(int), int(&)(int)>(true)) );
 
   VERIFY( (test_relationship<is_convertible, int&, ExplicitClass>(false)) );
   VERIFY( (test_relationship<is_convertible, void*, ExplicitClass>(false)) );

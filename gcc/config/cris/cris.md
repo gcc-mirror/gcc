@@ -2509,7 +2509,7 @@
 
 ;; The addi insn as it is normally used.
 
-;; Make the the ACR alternative taste bad enough to not choose it as a
+;; Make the ACR alternative taste bad enough to not choose it as a
 ;; preference to avoid spilling problems (unwind-dw2-fde.c at build).
 ;; FIXME: Revisit for new register allocator.
 

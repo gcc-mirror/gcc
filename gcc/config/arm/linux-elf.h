@@ -66,7 +66,7 @@
    %{shared:-shared} \
    %{symbolic:-Bsymbolic} \
    %{rdynamic:-export-dynamic} \
-   -dynamic-linker " LINUX_DYNAMIC_LINKER " \
+   -dynamic-linker " GNU_USER_DYNAMIC_LINKER " \
    -X \
    %{mbig-endian:-EB} %{mlittle-endian:-EL}" \
    SUBTARGET_EXTRA_LINK_SPEC
@@ -77,7 +77,7 @@
 #define TARGET_OS_CPP_BUILTINS()		\
   do						\
     {						\
-	LINUX_TARGET_OS_CPP_BUILTINS();		\
+	GNU_USER_TARGET_OS_CPP_BUILTINS();	\
     }						\
   while (0)
 

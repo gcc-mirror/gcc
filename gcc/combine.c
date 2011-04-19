@@ -789,14 +789,13 @@ do_SUBST_MODE (rtx *into, enum machine_mode newval)
 
 #define SUBST_MODE(INTO, NEWVAL)  do_SUBST_MODE(&(INTO), (NEWVAL))
 
-/* Subroutine of try_combine.  Determine whether the combine replacement
-   patterns NEWPAT, NEWI2PAT and NEWOTHERPAT are cheaper according to
-   insn_rtx_cost that the original instruction sequence I0, I1, I2, I3 and
-   undobuf.other_insn.  Note that I1 and/or NEWI2PAT may be NULL_RTX.
-   NEWOTHERPAT and undobuf.other_insn may also both be NULL_RTX.  This
-   function returns false, if the costs of all instructions can be
-   estimated, and the replacements are more expensive than the original
-   sequence.  */
+/* Subroutine of try_combine.  Determine whether the replacement patterns
+   NEWPAT, NEWI2PAT and NEWOTHERPAT are cheaper according to insn_rtx_cost
+   than the original sequence I0, I1, I2, I3 and undobuf.other_insn.  Note
+   that I0, I1 and/or NEWI2PAT may be NULL_RTX.  Similarly, NEWOTHERPAT and
+   undobuf.other_insn may also both be NULL_RTX.  Return false if the cost
+   of all the instructions can be estimated and the replacements are more
+   expensive than the original sequence.  */
 
 static bool
 combine_validate_cost (rtx i0, rtx i1, rtx i2, rtx i3, rtx newpat,
@@ -861,10 +860,9 @@ combine_validate_cost (rtx i0, rtx i1, rtx i2, rtx i3, rtx newpat,
 	old_cost = 0;
     }
 
-  /* Disallow this recombination if both new_cost and old_cost are
-     greater than zero, and new_cost is greater than old cost.  */
-  if (old_cost > 0
-      && new_cost > old_cost)
+  /* Disallow this combination if both new_cost and old_cost are greater than
+     zero, and new_cost is greater than old cost.  */
+  if (old_cost > 0 && new_cost > old_cost)
     {
       if (dump_file)
 	{
@@ -910,7 +908,11 @@ combine_validate_cost (rtx i0, rtx i1, rtx i2, rtx i3, rtx newpat,
   INSN_COST (i2) = new_i2_cost;
   INSN_COST (i3) = new_i3_cost;
   if (i1)
-    INSN_COST (i1) = 0;
+    {
+      INSN_COST (i1) = 0;
+      if (i0)
+	INSN_COST (i0) = 0;
+    }
 
   return true;
 }
@@ -1196,8 +1198,13 @@ combine_instructions (rtx f, unsigned int nregs)
 	  next = 0;
 	  if (NONDEBUG_INSN_P (insn))
 	    {
+	      while (last_combined_insn
+		     && INSN_DELETED_P (last_combined_insn))
+		last_combined_insn = PREV_INSN (last_combined_insn);
 	      if (last_combined_insn == NULL_RTX
-		  || DF_INSN_LUID (last_combined_insn) < DF_INSN_LUID (insn))
+		  || BARRIER_P (last_combined_insn)
+		  || BLOCK_FOR_INSN (last_combined_insn) != this_basic_block
+		  || DF_INSN_LUID (last_combined_insn) <= DF_INSN_LUID (insn))
 		last_combined_insn = insn;
 
 	      /* See if we know about function return values before this
@@ -2444,19 +2451,21 @@ propagate_for_debug_subst (rtx from, const_rtx old_rtx, void *data)
 }
 
 /* Replace all the occurrences of DEST with SRC in DEBUG_INSNs between INSN
-   and LAST.  */
+   and LAST, not including INSN, but including LAST.  Also stop at the end
+   of THIS_BASIC_BLOCK.  */
 
 static void
 propagate_for_debug (rtx insn, rtx last, rtx dest, rtx src)
 {
-  rtx next, loc;
+  rtx next, loc, end = NEXT_INSN (BB_END (this_basic_block));
 
   struct rtx_subst_pair p;
   p.to = src;
   p.adjusted = false;
 
   next = NEXT_INSN (insn);
-  while (next != last)
+  last = NEXT_INSN (last);
+  while (next != last && next != end)
     {
       insn = next;
       next = NEXT_INSN (insn);
@@ -2481,13 +2490,12 @@ static void
 update_cfg_for_uncondjump (rtx insn)
 {
   basic_block bb = BLOCK_FOR_INSN (insn);
-  bool at_end = (BB_END (bb) == insn);
+  gcc_assert (BB_END (bb) == insn);
 
-  if (at_end)
-    purge_dead_edges (bb);
+  purge_dead_edges (bb);
 
   delete_insn (insn);
-  if (at_end && EDGE_COUNT (bb->succs) == 1)
+  if (EDGE_COUNT (bb->succs) == 1)
     {
       rtx insn;
 
@@ -4400,7 +4408,8 @@ try_combine (rtx i3, rtx i2, rtx i1, rtx i0, int *new_direct_jump_p,
 
   /* A noop might also need cleaning up of CFG, if it comes from the
      simplification of a jump.  */
-  if (GET_CODE (newpat) == SET
+  if (JUMP_P (i3)
+      && GET_CODE (newpat) == SET
       && SET_SRC (newpat) == pc_rtx
       && SET_DEST (newpat) == pc_rtx)
     {
@@ -4409,6 +4418,7 @@ try_combine (rtx i3, rtx i2, rtx i1, rtx i0, int *new_direct_jump_p,
     }
 
   if (undobuf.other_insn != NULL_RTX
+      && JUMP_P (undobuf.other_insn)
       && GET_CODE (PATTERN (undobuf.other_insn)) == SET
       && SET_SRC (PATTERN (undobuf.other_insn)) == pc_rtx
       && SET_DEST (PATTERN (undobuf.other_insn)) == pc_rtx)

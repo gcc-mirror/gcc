@@ -1,5 +1,11 @@
 2011-04-19  Gary Funck  <gary@intrepid.com>
 
+	Merge trunk version 172359 into gupc branch.
+	* upc-lang.c (upc_init_ts): New.
+	  (LANG_HOOKS_INIT_TS): use upc_init_ts.
+
+2011-04-19  Gary Funck  <gary@intrepid.com>
+
 	Eliminate warnings when compiling upc-cmd.c.
 
 	* upc-cmd.c (file_exists): Remove.

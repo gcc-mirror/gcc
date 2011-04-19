@@ -33,7 +33,7 @@ include(iparm.m4)dnl
 `#if defined (HAVE_'rtype_name`)
 
 void
-cshift0_'rtype_code` ('rtype` *ret, const 'rtype` *array, ssize_t shift,
+cshift0_'rtype_code` ('rtype` *ret, const 'rtype` *array, ptrdiff_t shift,
 		     int which)
 {
   /* r.* indicates the return array.  */
@@ -98,7 +98,7 @@ cshift0_'rtype_code` ('rtype` *ret, const 'rtype` *array, ssize_t shift,
   rptr = ret->data;
   sptr = array->data;
 
-  shift = len == 0 ? 0 : shift % (ssize_t)len;
+  shift = len == 0 ? 0 : shift % (ptrdiff_t)len;
   if (shift < 0)
     shift += len;
 

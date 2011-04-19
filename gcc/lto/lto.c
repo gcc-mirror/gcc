@@ -186,9 +186,10 @@ lto_materialize_function (struct cgraph_node *node)
 }
 
 
-/* Decode the content of memory pointed to by DATA in the the
-   in decl state object STATE. DATA_IN points to a data_in structure for
-   decoding. Return the address after the decoded object in the input.  */
+/* Decode the content of memory pointed to by DATA in the in decl
+   state object STATE. DATA_IN points to a data_in structure for
+   decoding. Return the address after the decoded object in the
+   input.  */
 
 static const uint32_t *
 lto_read_in_decl_state (struct data_in *data_in, const uint32_t *data,
@@ -1617,7 +1618,8 @@ lto_fixup_common (tree t, void *data)
 
   /* This is not very efficient because we cannot do tail-recursion with
      a long chain of trees. */
-  LTO_FIXUP_SUBTREE (TREE_CHAIN (t));
+  if (CODE_CONTAINS_STRUCT (TREE_CODE (t), TS_COMMON))
+    LTO_FIXUP_SUBTREE (TREE_CHAIN (t));
 }
 
 /* Fix up fields of a decl_minimal T.  DATA points to fix-up states.  */

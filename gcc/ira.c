@@ -863,7 +863,7 @@ setup_pressure_classes (void)
      registers available for the allocation.  */
   CLEAR_HARD_REG_SET (temp_hard_regset);
   CLEAR_HARD_REG_SET (temp_hard_regset2);
-  for (cl = 0; cl <= LIM_REG_CLASSES; cl++)
+  for (cl = 0; cl < LIM_REG_CLASSES; cl++)
     {
       for (i = 0; i < n; i++)
 	if ((int) pressure_classes[i] == cl)
@@ -923,7 +923,7 @@ setup_allocno_and_important_classes (void)
   /* Collect classes which contain unique sets of allocatable hard
      registers.  Prefer GENERAL_REGS to other classes containing the
      same set of hard registers.  */
-  for (i = 0; i <= LIM_REG_CLASSES; i++)
+  for (i = 0; i < LIM_REG_CLASSES; i++)
     {
       COPY_HARD_REG_SET (temp_hard_regset, reg_class_contents[i]);
       AND_COMPL_HARD_REG_SET (temp_hard_regset, no_unit_alloc_regs);
@@ -1724,16 +1724,10 @@ compute_regs_asm_clobbered (void)
 	      {
 		df_ref def = *def_rec;
 		unsigned int dregno = DF_REF_REGNO (def);
-		if (dregno < FIRST_PSEUDO_REGISTER)
-		  {
-		    unsigned int i;
-		    enum machine_mode mode = GET_MODE (DF_REF_REAL_REG (def));
-		    unsigned int end = dregno
-		      + hard_regno_nregs[dregno][mode] - 1;
-
-		    for (i = dregno; i <= end; ++i)
-		      SET_HARD_REG_BIT(crtl->asm_clobbers, i);
-		  }
+		if (HARD_REGISTER_NUM_P (dregno))
+		  add_to_hard_reg_set (&crtl->asm_clobbers,
+				       GET_MODE (DF_REF_REAL_REG (def)),
+				       dregno);
 	      }
 	}
     }

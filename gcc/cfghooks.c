@@ -388,7 +388,6 @@ basic_block
 redirect_edge_and_branch_force (edge e, basic_block dest)
 {
   basic_block ret, src = e->src;
-  struct loop *loop;
 
   if (!cfg_hooks->redirect_edge_and_branch_force)
     internal_error ("%s does not support redirect_edge_and_branch_force",
@@ -398,6 +397,7 @@ redirect_edge_and_branch_force (edge e, basic_block dest)
     rescan_loop_exit (e, false, true);
 
   ret = cfg_hooks->redirect_edge_and_branch_force (e, dest);
+
   if (ret != NULL && dom_info_available_p (CDI_DOMINATORS))
     set_immediate_dominator (CDI_DOMINATORS, ret, src);
 
@@ -405,8 +405,9 @@ redirect_edge_and_branch_force (edge e, basic_block dest)
     {
       if (ret != NULL)
 	{
-	  loop = find_common_loop (single_pred (ret)->loop_father,
-				   single_succ (ret)->loop_father);
+	  struct loop *loop
+	    = find_common_loop (single_pred (ret)->loop_father,
+				single_succ (ret)->loop_father);
 	  add_bb_to_loop (ret, loop);
 	}
       else if (find_edge (src, dest) == e)
@@ -882,30 +883,26 @@ tidy_fallthru_edges (void)
 basic_block
 force_nonfallthru (edge e)
 {
-  basic_block ret, src = e->src, dest = e->dest;
-  struct loop *loop;
+  basic_block ret, src = e->src;
 
   if (!cfg_hooks->force_nonfallthru)
     internal_error ("%s does not support force_nonfallthru",
 		    cfg_hooks->name);
 
-  if (current_loops != NULL)
-    rescan_loop_exit (e, false, true);
-
   ret = cfg_hooks->force_nonfallthru (e);
-  if (ret != NULL && dom_info_available_p (CDI_DOMINATORS))
-    set_immediate_dominator (CDI_DOMINATORS, ret, src);
-
-  if (current_loops != NULL)
+  if (ret != NULL)
     {
-      if (ret != NULL)
+      if (dom_info_available_p (CDI_DOMINATORS))
+	set_immediate_dominator (CDI_DOMINATORS, ret, src);
+
+      if (current_loops != NULL)
 	{
-	  loop = find_common_loop (single_pred (ret)->loop_father,
-				   single_succ (ret)->loop_father);
+	  struct loop *loop
+	    = find_common_loop (single_pred (ret)->loop_father,
+				single_succ (ret)->loop_father);
+	  rescan_loop_exit (e, false, true);
 	  add_bb_to_loop (ret, loop);
 	}
-      else if (find_edge (src, dest) == e)
-	rescan_loop_exit (e, true, false);
     }
 
   return ret;

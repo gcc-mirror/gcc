@@ -109,6 +109,247 @@ gen_rtx_CONST_INT (enum machine_mode ARG_UNUSED (mode),
   return rt;
 }
 
+/* Predicate handling.
+
+   We construct from the machine description a table mapping each
+   predicate to a list of the rtl codes it can possibly match.  The
+   function 'maybe_both_true' uses it to deduce that there are no
+   expressions that can be matches by certain pairs of tree nodes.
+   Also, if a predicate can match only one code, we can hardwire that
+   code into the node testing the predicate.
+
+   Some predicates are flagged as special.  validate_pattern will not
+   warn about modeless match_operand expressions if they have a
+   special predicate.  Predicates that allow only constants are also
+   treated as special, for this purpose.
+
+   validate_pattern will warn about predicates that allow non-lvalues
+   when they appear in destination operands.
+
+   Calculating the set of rtx codes that can possibly be accepted by a
+   predicate expression EXP requires a three-state logic: any given
+   subexpression may definitively accept a code C (Y), definitively
+   reject a code C (N), or may have an indeterminate effect (I).  N
+   and I is N; Y or I is Y; Y and I, N or I are both I.  Here are full
+   truth tables.
+
+     a b  a&b  a|b
+     Y Y   Y    Y
+     N Y   N    Y
+     N N   N    N
+     I Y   I    Y
+     I N   N    I
+     I I   I    I
+
+   We represent Y with 1, N with 0, I with 2.  If any code is left in
+   an I state by the complete expression, we must assume that that
+   code can be accepted.  */
+
+#define N 0
+#define Y 1
+#define I 2
+
+#define TRISTATE_AND(a,b)			\
+  ((a) == I ? ((b) == N ? N : I) :		\
+   (b) == I ? ((a) == N ? N : I) :		\
+   (a) && (b))
+
+#define TRISTATE_OR(a,b)			\
+  ((a) == I ? ((b) == Y ? Y : I) :		\
+   (b) == I ? ((a) == Y ? Y : I) :		\
+   (a) || (b))
+
+#define TRISTATE_NOT(a)				\
+  ((a) == I ? I : !(a))
+
+/* 0 means no warning about that code yet, 1 means warned.  */
+static char did_you_mean_codes[NUM_RTX_CODE];
+
+/* Recursively calculate the set of rtx codes accepted by the
+   predicate expression EXP, writing the result to CODES.  LINENO is
+   the line number on which the directive containing EXP appeared.  */
+
+static void
+compute_predicate_codes (rtx exp, int lineno, char codes[NUM_RTX_CODE])
+{
+  char op0_codes[NUM_RTX_CODE];
+  char op1_codes[NUM_RTX_CODE];
+  char op2_codes[NUM_RTX_CODE];
+  int i;
+
+  switch (GET_CODE (exp))
+    {
+    case AND:
+      compute_predicate_codes (XEXP (exp, 0), lineno, op0_codes);
+      compute_predicate_codes (XEXP (exp, 1), lineno, op1_codes);
+      for (i = 0; i < NUM_RTX_CODE; i++)
+	codes[i] = TRISTATE_AND (op0_codes[i], op1_codes[i]);
+      break;
+
+    case IOR:
+      compute_predicate_codes (XEXP (exp, 0), lineno, op0_codes);
+      compute_predicate_codes (XEXP (exp, 1), lineno, op1_codes);
+      for (i = 0; i < NUM_RTX_CODE; i++)
+	codes[i] = TRISTATE_OR (op0_codes[i], op1_codes[i]);
+      break;
+    case NOT:
+      compute_predicate_codes (XEXP (exp, 0), lineno, op0_codes);
+      for (i = 0; i < NUM_RTX_CODE; i++)
+	codes[i] = TRISTATE_NOT (op0_codes[i]);
+      break;
+
+    case IF_THEN_ELSE:
+      /* a ? b : c  accepts the same codes as (a & b) | (!a & c).  */
+      compute_predicate_codes (XEXP (exp, 0), lineno, op0_codes);
+      compute_predicate_codes (XEXP (exp, 1), lineno, op1_codes);
+      compute_predicate_codes (XEXP (exp, 2), lineno, op2_codes);
+      for (i = 0; i < NUM_RTX_CODE; i++)
+	codes[i] = TRISTATE_OR (TRISTATE_AND (op0_codes[i], op1_codes[i]),
+				TRISTATE_AND (TRISTATE_NOT (op0_codes[i]),
+					      op2_codes[i]));
+      break;
+
+    case MATCH_CODE:
+      /* MATCH_CODE allows a specified list of codes.  However, if it
+	 does not apply to the top level of the expression, it does not
+	 constrain the set of codes for the top level.  */
+      if (XSTR (exp, 1)[0] != '\0')
+	{
+	  memset (codes, Y, NUM_RTX_CODE);
+	  break;
+	}
+
+      memset (codes, N, NUM_RTX_CODE);
+      {
+	const char *next_code = XSTR (exp, 0);
+	const char *code;
+
+	if (*next_code == '\0')
+	  {
+	    error_with_line (lineno, "empty match_code expression");
+	    break;
+	  }
+
+	while ((code = scan_comma_elt (&next_code)) != 0)
+	  {
+	    size_t n = next_code - code;
+	    int found_it = 0;
+
+	    for (i = 0; i < NUM_RTX_CODE; i++)
+	      if (!strncmp (code, GET_RTX_NAME (i), n)
+		  && GET_RTX_NAME (i)[n] == '\0')
+		{
+		  codes[i] = Y;
+		  found_it = 1;
+		  break;
+		}
+	    if (!found_it)
+	      {
+		error_with_line (lineno,
+				 "match_code \"%.*s\" matches nothing",
+				 (int) n, code);
+		for (i = 0; i < NUM_RTX_CODE; i++)
+		  if (!strncasecmp (code, GET_RTX_NAME (i), n)
+		      && GET_RTX_NAME (i)[n] == '\0'
+		      && !did_you_mean_codes[i])
+		    {
+		      did_you_mean_codes[i] = 1;
+		      message_with_line (lineno, "(did you mean \"%s\"?)",
+					 GET_RTX_NAME (i));
+		    }
+	      }
+	  }
+      }
+      break;
+
+    case MATCH_OPERAND:
+      /* MATCH_OPERAND disallows the set of codes that the named predicate
+	 disallows, and is indeterminate for the codes that it does allow.  */
+      {
+	struct pred_data *p = lookup_predicate (XSTR (exp, 1));
+	if (!p)
+	  {
+	    error_with_line (lineno, "reference to unknown predicate '%s'",
+			     XSTR (exp, 1));
+	    break;
+	  }
+	for (i = 0; i < NUM_RTX_CODE; i++)
+	  codes[i] = p->codes[i] ? I : N;
+      }
+      break;
+
+
+    case MATCH_TEST:
+      /* (match_test WHATEVER) is completely indeterminate.  */
+      memset (codes, I, NUM_RTX_CODE);
+      break;
+
+    default:
+      error_with_line (lineno,
+		       "'%s' cannot be used in a define_predicate expression",
+		       GET_RTX_NAME (GET_CODE (exp)));
+      memset (codes, I, NUM_RTX_CODE);
+      break;
+    }
+}
+
+#undef TRISTATE_OR
+#undef TRISTATE_AND
+#undef TRISTATE_NOT
+
+/* Return true if NAME is a valid predicate name.  */
+
+static bool
+valid_predicate_name_p (const char *name)
+{
+  const char *p;
+
+  if (!ISALPHA (name[0]) && name[0] != '_')
+    return false;
+  for (p = name + 1; *p; p++)
+    if (!ISALNUM (*p) && *p != '_')
+      return false;
+  return true;
+}
+
+/* Process define_predicate directive DESC, which appears on line number
+   LINENO.  Compute the set of codes that can be matched, and record this
+   as a known predicate.  */
+
+static void
+process_define_predicate (rtx desc, int lineno)
+{
+  struct pred_data *pred;
+  char codes[NUM_RTX_CODE];
+  int i;
+
+  if (!valid_predicate_name_p (XSTR (desc, 0)))
+    {
+      error_with_line (lineno,
+		       "%s: predicate name must be a valid C function name",
+		       XSTR (desc, 0));
+      return;
+    }
+
+  pred = XCNEW (struct pred_data);
+  pred->name = XSTR (desc, 0);
+  pred->exp = XEXP (desc, 1);
+  pred->c_block = XSTR (desc, 2);
+  if (GET_CODE (desc) == DEFINE_SPECIAL_PREDICATE)
+    pred->special = true;
+
+  compute_predicate_codes (XEXP (desc, 1), lineno, codes);
+
+  for (i = 0; i < NUM_RTX_CODE; i++)
+    if (codes[i] != N)
+      add_predicate_code (pred, (enum rtx_code) i);
+
+  add_predicate (pred);
+}
+#undef I
+#undef N
+#undef Y
+
 /* Queue PATTERN on LIST_TAIL.  Return the address of the new queue
    element.  */
 
@@ -182,6 +423,9 @@ process_rtx (rtx desc, int lineno)
 
     case DEFINE_PREDICATE:
     case DEFINE_SPECIAL_PREDICATE:
+      process_define_predicate (desc, lineno);
+      /* Fall through.  */
+
     case DEFINE_CONSTRAINT:
     case DEFINE_REGISTER_CONSTRAINT:
     case DEFINE_MEMORY_CONSTRAINT:

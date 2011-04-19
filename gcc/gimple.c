@@ -231,6 +231,7 @@ gimple_build_call_1 (tree fn, unsigned nargs)
   if (TREE_CODE (fn) == FUNCTION_DECL)
     fn = build_fold_addr_expr (fn);
   gimple_set_op (s, 1, fn);
+  gimple_call_set_fntype (s, TREE_TYPE (TREE_TYPE (fn)));
   gimple_call_reset_alias_info (s);
   return s;
 }
@@ -1780,18 +1781,11 @@ gimple_call_flags (const_gimple stmt)
 {
   int flags;
   tree decl = gimple_call_fndecl (stmt);
-  tree t;
 
   if (decl)
     flags = flags_from_decl_or_type (decl);
   else
-    {
-      t = TREE_TYPE (gimple_call_fn (stmt));
-      if (t && TREE_CODE (t) == POINTER_TYPE)
-	flags = flags_from_decl_or_type (TREE_TYPE (t));
-      else
-	flags = 0;
-    }
+    flags = flags_from_decl_or_type (gimple_call_fntype (stmt));
 
   if (stmt->gsbase.subcode & GF_CALL_NOTHROW)
     flags |= ECF_NOTHROW;
@@ -1804,7 +1798,7 @@ gimple_call_flags (const_gimple stmt)
 int
 gimple_call_arg_flags (const_gimple stmt, unsigned arg)
 {
-  tree type = TREE_TYPE (TREE_TYPE (gimple_call_fn (stmt)));
+  tree type = gimple_call_fntype (stmt);
   tree attr = lookup_attribute ("fn spec", TYPE_ATTRIBUTES (type));
   if (!attr)
     return 0;
@@ -1848,7 +1842,7 @@ gimple_call_return_flags (const_gimple stmt)
   if (gimple_call_flags (stmt) & ECF_MALLOC)
     return ERF_NOALIAS;
 
-  type = TREE_TYPE (TREE_TYPE (gimple_call_fn (stmt)));
+  type = gimple_call_fntype (stmt);
   attr = lookup_attribute ("fn spec", TYPE_ATTRIBUTES (type));
   if (!attr)
     return 0;
@@ -2252,15 +2246,7 @@ void
 gimple_set_modified (gimple s, bool modifiedp)
 {
   if (gimple_has_ops (s))
-    {
-      s->gsbase.modified = (unsigned) modifiedp;
-
-      if (modifiedp
-	  && cfun->gimple_df
-	  && is_gimple_call (s)
-	  && gimple_call_noreturn_p (s))
-	VEC_safe_push (gimple, gc, MODIFIED_NORETURN_CALLS (cfun), s);
-    }
+    s->gsbase.modified = (unsigned) modifiedp;
 }
 
 
@@ -2329,7 +2315,7 @@ gimple_has_side_effects (const_gimple s)
 /* Return true if the RHS of statement S has side effects.
    We may use it to determine if it is admissable to replace
    an assignment or call with a copy of a previously-computed
-   value.  In such cases, side-effects due the the LHS are
+   value.  In such cases, side-effects due to the LHS are
    preserved.  */
 
 bool

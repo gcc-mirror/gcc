@@ -2159,7 +2159,7 @@ build_v2_protocol_list_address_table (void)
     }
 
     /* TODO: delete the vec.  */
-    /* TODO: upgrade to the the clang/llvm hidden version.  */
+    /* TODO: upgrade to the clang/llvm hidden version.  */
 }
 
 /* This routine declares a variable to hold meta data for 'struct

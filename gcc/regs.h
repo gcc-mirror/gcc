@@ -44,7 +44,7 @@ extern int max_regno;
    regstat_init_n_sets_and_refs from the current values of
    DF_REG_DEF_COUNT and DF_REG_USE_COUNT.  REG_N_REFS and REG_N_SETS
    should only be used if a pass need to change these values in some
-   magical way or or the pass needs to have accurate values for these
+   magical way or the pass needs to have accurate values for these
    and is not using incremental df scanning.
 
    At the end of a pass that uses REG_N_REFS and REG_N_SETS, a call

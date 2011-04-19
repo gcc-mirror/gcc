@@ -405,7 +405,10 @@ struct GTY(()) gimple_statement_call
   struct pt_solution call_used;
   struct pt_solution call_clobbered;
 
-  /* [ WORD 13 ]
+  /* [ WORD 13 ]  */
+  tree fntype;
+
+  /* [ WORD 14 ]
      Operand vector.  NOTE!  This must always be the last field
      of this structure.  In particular, this means that this
      structure cannot be embedded inside another one.  */
@@ -2002,6 +2005,25 @@ gimple_call_set_lhs (gimple gs, tree lhs)
 }
 
 
+/* Return the function type of the function called by GS.  */
+
+static inline tree
+gimple_call_fntype (const_gimple gs)
+{
+  GIMPLE_CHECK (gs, GIMPLE_CALL);
+  return gs->gimple_call.fntype;
+}
+
+/* Set the type of the function called by GS to FNTYPE.  */
+
+static inline void
+gimple_call_set_fntype (gimple gs, tree fntype)
+{
+  GIMPLE_CHECK (gs, GIMPLE_CALL);
+  gs->gimple_call.fntype = fntype;
+}
+
+
 /* Return the tree node representing the function called by call
    statement GS.  */
 
@@ -2011,7 +2033,6 @@ gimple_call_fn (const_gimple gs)
   GIMPLE_CHECK (gs, GIMPLE_CALL);
   return gimple_op (gs, 1);
 }
-
 
 /* Return a pointer to the tree node representing the function called by call
    statement GS.  */
@@ -2074,13 +2095,9 @@ gimple_call_fndecl (const_gimple gs)
 static inline tree
 gimple_call_return_type (const_gimple gs)
 {
-  tree fn = gimple_call_fn (gs);
-  tree type = TREE_TYPE (fn);
+  tree type = gimple_call_fntype (gs);
 
-  /* See through the pointer.  */
-  type = TREE_TYPE (type);
-
-  /* The type returned by a FUNCTION_DECL is the type of its
+  /* The type returned by a function is the type of its
      function type.  */
   return TREE_TYPE (type);
 }

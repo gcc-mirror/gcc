@@ -4146,10 +4146,10 @@ qualified_lookup_using_namespace (tree name, tree scope,
   /* Look through namespace aliases.  */
   scope = ORIGINAL_NAMESPACE (scope);
 
-  /* Algorithm: Starting with SCOPE, walk through the the set of used
+  /* Algorithm: Starting with SCOPE, walk through the set of used
      namespaces.  For each used namespace, look through its inline
-     namespace set for any bindings and usings.  If no bindings are found,
-     add any usings seen to the set of used namespaces.  */
+     namespace set for any bindings and usings.  If no bindings are
+     found, add any usings seen to the set of used namespaces.  */
   VEC_safe_push (tree, gc, todo, scope);
 
   while (VEC_length (tree, todo))
@@ -4725,7 +4725,11 @@ add_function (struct arg_lookup *k, tree fn)
   else if (fn == k->functions)
     ;
   else
-    k->functions = build_overload (fn, k->functions);
+    {
+      k->functions = build_overload (fn, k->functions);
+      if (TREE_CODE (k->functions) == OVERLOAD)
+	OVL_ARG_DEPENDENT (k->functions) = true;
+    }
 
   return false;
 }
@@ -5135,8 +5139,8 @@ arg_assoc (struct arg_lookup *k, tree n)
     }
   else if (TREE_CODE (n) == OVERLOAD)
     {
-      for (; n; n = OVL_CHAIN (n))
-	if (arg_assoc_type (k, TREE_TYPE (OVL_FUNCTION (n))))
+      for (; n; n = OVL_NEXT (n))
+	if (arg_assoc_type (k, TREE_TYPE (OVL_CURRENT (n))))
 	  return true;
     }
 

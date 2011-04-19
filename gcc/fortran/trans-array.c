@@ -4055,17 +4055,17 @@ gfc_conv_array_extent_dim (tree lbound, tree ubound, tree* or_expr)
 
 
 /* For an array descriptor, get the total number of elements.  This is just
-   the product of the extents along all dimensions.  */
+   the product of the extents along from_dim to to_dim.  */
 
-tree
-gfc_conv_descriptor_size (tree desc, int rank)
+static tree
+gfc_conv_descriptor_size_1 (tree desc, int from_dim, int to_dim)
 {
   tree res;
   int dim;
 
   res = gfc_index_one_node;
 
-  for (dim = 0; dim < rank; ++dim)
+  for (dim = from_dim; dim < to_dim; ++dim)
     {
       tree lbound;
       tree ubound;
@@ -4080,6 +4080,24 @@ gfc_conv_descriptor_size (tree desc, int rank)
     }
 
   return res;
+}
+
+
+/* Full size of an array.  */
+
+tree
+gfc_conv_descriptor_size (tree desc, int rank)
+{
+  return gfc_conv_descriptor_size_1 (desc, 0, rank);
+}
+
+
+/* Size of a coarray for all dimensions but the last.  */
+
+tree
+gfc_conv_descriptor_cosize (tree desc, int rank, int corank)
+{
+  return gfc_conv_descriptor_size_1 (desc, rank, rank + corank - 1);
 }
 
 
@@ -6792,6 +6810,8 @@ get_std_lbound (gfc_expr *expr, tree desc, int dim, bool assumed_size)
   tree stride;
   tree cond, cond1, cond3, cond4;
   tree tmp;
+  gfc_ref *ref;
+
   if (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (desc)))
     {
       tmp = gfc_rank_cst[dim];
@@ -6825,6 +6845,14 @@ get_std_lbound (gfc_expr *expr, tree desc, int dim, bool assumed_size)
   else if (expr->expr_type == EXPR_VARIABLE)
     {
       tmp = TREE_TYPE (expr->symtree->n.sym->backend_decl);
+      for (ref = expr->ref; ref; ref = ref->next)
+	{
+	  if (ref->type == REF_COMPONENT
+		&& ref->u.c.component->as
+		&& ref->next
+		&& ref->next->u.ar.type == AR_FULL)
+	    tmp = TREE_TYPE (ref->u.c.component->backend_decl);
+	}
       return GFC_TYPE_ARRAY_LBOUND(tmp, dim);
     }
   else if (expr->expr_type == EXPR_FUNCTION)

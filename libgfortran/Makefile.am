@@ -49,7 +49,7 @@ libgfortranbegin_la_LINK = $(LINK) $(libgfortranbegin_la_LDFLAGS)
 ## use -iquote
 AM_CPPFLAGS = -iquote$(srcdir)/io -I$(srcdir)/$(MULTISRCTOP)../gcc \
 	      -I$(srcdir)/$(MULTISRCTOP)../gcc/config $(LIBQUADINCLUDE) \
-	      -I$(MULTIBUILDTOP)../../$(host_subdir)/gcc -D_GNU_SOURCE
+	      -I$(MULTIBUILDTOP)../../$(host_subdir)/gcc
 
 # Fortran rules for complex multiplication and division
 AM_CFLAGS += -fcx-fortran-rules

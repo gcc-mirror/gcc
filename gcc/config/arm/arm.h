@@ -103,16 +103,7 @@ extern char arm_arch_name[];
 	  }						\
     } while (0)
 
-/* The various ARM cores.  */
-enum processor_type
-{
-#define ARM_CORE(NAME, IDENT, ARCH, FLAGS, COSTS) \
-  IDENT,
-#include "arm-cores.def"
-#undef ARM_CORE
-  /* Used to indicate that no processor has been specified.  */
-  arm_none
-};
+#include "config/arm/arm-opts.h"
 
 enum target_cpus
 {

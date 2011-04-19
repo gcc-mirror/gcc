@@ -106,37 +106,10 @@ typedef off_t gfc_offset;
 #endif
 
 
-/* We use intptr_t and uintptr_t, which may not be always defined in
-   system headers.  */
-
-#ifndef HAVE_INTPTR_T
-#if __SIZEOF_POINTER__ == __SIZEOF_LONG__
-#define intptr_t long
-#elif __SIZEOF_POINTER__ == __SIZEOF_LONG_LONG__
-#define intptr_t long long
-#elif __SIZEOF_POINTER__ == __SIZEOF_INT__
-#define intptr_t int
-#elif __SIZEOF_POINTER__ == __SIZEOF_SHORT__
-#define intptr_t short
-#else
-#error "Pointer type with unexpected size"
+/* Make sure we have ptrdiff_t. */
+#ifndef HAVE_PTRDIFF_T
+typedef intptr_t ptrdiff_t;
 #endif
-#endif
-
-#ifndef HAVE_UINTPTR_T
-#if __SIZEOF_POINTER__ == __SIZEOF_LONG__
-#define uintptr_t unsigned long
-#elif __SIZEOF_POINTER__ == __SIZEOF_LONG_LONG__
-#define uintptr_t unsigned long long
-#elif __SIZEOF_POINTER__ == __SIZEOF_INT__
-#define uintptr_t unsigned int
-#elif __SIZEOF_POINTER__ == __SIZEOF_SHORT__
-#define uintptr_t unsigned short
-#else
-#error "Pointer type with unexpected size"
-#endif
-#endif
-
 
 /* On mingw, work around the buggy Windows snprintf() by using the one
    mingw provides, __mingw_snprintf().  We also provide a prototype for
@@ -269,7 +242,7 @@ typedef GFC_INTEGER_4 GFC_IO_INT;
 /* The following two definitions must be consistent with the types used
    by the compiler.  */
 /* The type used of array indices, amongst other things.  */
-typedef ssize_t index_type;
+typedef ptrdiff_t index_type;
 
 /* The type used for the lengths of character variables.  */
 typedef GFC_INTEGER_4 gfc_charlen_type;
@@ -1323,52 +1296,52 @@ internal_proto(count_0);
 
 /* Internal auxiliary functions for cshift */
 
-void cshift0_i1 (gfc_array_i1 *, const gfc_array_i1 *, ssize_t, int);
+void cshift0_i1 (gfc_array_i1 *, const gfc_array_i1 *, ptrdiff_t, int);
 internal_proto(cshift0_i1);
 
-void cshift0_i2 (gfc_array_i2 *, const gfc_array_i2 *, ssize_t, int);
+void cshift0_i2 (gfc_array_i2 *, const gfc_array_i2 *, ptrdiff_t, int);
 internal_proto(cshift0_i2);
 
-void cshift0_i4 (gfc_array_i4 *, const gfc_array_i4 *, ssize_t, int);
+void cshift0_i4 (gfc_array_i4 *, const gfc_array_i4 *, ptrdiff_t, int);
 internal_proto(cshift0_i4);
 
-void cshift0_i8 (gfc_array_i8 *, const gfc_array_i8 *, ssize_t, int);
+void cshift0_i8 (gfc_array_i8 *, const gfc_array_i8 *, ptrdiff_t, int);
 internal_proto(cshift0_i8);
 
 #ifdef HAVE_GFC_INTEGER_16
-void cshift0_i16 (gfc_array_i16 *, const gfc_array_i16 *, ssize_t, int);
+void cshift0_i16 (gfc_array_i16 *, const gfc_array_i16 *, ptrdiff_t, int);
 internal_proto(cshift0_i16);
 #endif
 
-void cshift0_r4 (gfc_array_r4 *, const gfc_array_r4 *, ssize_t, int);
+void cshift0_r4 (gfc_array_r4 *, const gfc_array_r4 *, ptrdiff_t, int);
 internal_proto(cshift0_r4);
 
-void cshift0_r8 (gfc_array_r8 *, const gfc_array_r8 *, ssize_t, int);
+void cshift0_r8 (gfc_array_r8 *, const gfc_array_r8 *, ptrdiff_t, int);
 internal_proto(cshift0_r8);
 
 #ifdef HAVE_GFC_REAL_10
-void cshift0_r10 (gfc_array_r10 *, const gfc_array_r10 *, ssize_t, int);
+void cshift0_r10 (gfc_array_r10 *, const gfc_array_r10 *, ptrdiff_t, int);
 internal_proto(cshift0_r10);
 #endif
 
 #ifdef HAVE_GFC_REAL_16
-void cshift0_r16 (gfc_array_r16 *, const gfc_array_r16 *, ssize_t, int);
+void cshift0_r16 (gfc_array_r16 *, const gfc_array_r16 *, ptrdiff_t, int);
 internal_proto(cshift0_r16);
 #endif
 
-void cshift0_c4 (gfc_array_c4 *, const gfc_array_c4 *, ssize_t, int);
+void cshift0_c4 (gfc_array_c4 *, const gfc_array_c4 *, ptrdiff_t, int);
 internal_proto(cshift0_c4);
 
-void cshift0_c8 (gfc_array_c8 *, const gfc_array_c8 *, ssize_t, int);
+void cshift0_c8 (gfc_array_c8 *, const gfc_array_c8 *, ptrdiff_t, int);
 internal_proto(cshift0_c8);
 
 #ifdef HAVE_GFC_COMPLEX_10
-void cshift0_c10 (gfc_array_c10 *, const gfc_array_c10 *, ssize_t, int);
+void cshift0_c10 (gfc_array_c10 *, const gfc_array_c10 *, ptrdiff_t, int);
 internal_proto(cshift0_c10);
 #endif
 
 #ifdef HAVE_GFC_COMPLEX_16
-void cshift0_c16 (gfc_array_c16 *, const gfc_array_c16 *, ssize_t, int);
+void cshift0_c16 (gfc_array_c16 *, const gfc_array_c16 *, ptrdiff_t, int);
 internal_proto(cshift0_c16);
 #endif
 

@@ -62,7 +62,7 @@ gfc_namespace *current_ns;
 void
 gfc_run_passes (gfc_namespace *ns)
 {
-  if (optimize)
+  if (gfc_option.flag_frontend_optimize)
     {
       expr_size = 20;
       expr_array = XNEWVEC(gfc_expr **, expr_size);
@@ -283,6 +283,20 @@ create_var (gfc_expr * e)
   return result;
 }
 
+/* Warn about function elimination.  */
+
+static void
+warn_function_elimination (gfc_expr *e)
+{
+  if (e->expr_type != EXPR_FUNCTION)
+    return;
+  if (e->value.function.esym)
+    gfc_warning ("Removing call to function '%s' at %L",
+		 e->value.function.esym->name, &(e->where));
+  else if (e->value.function.isym)
+    gfc_warning ("Removing call to function '%s' at %L",
+		 e->value.function.isym->name, &(e->where));
+}
 /* Callback function for the code walker for doing common function
    elimination.  This builds up the list of functions in the expression
    and goes through them to detect duplicates, which it then replaces
@@ -315,6 +329,10 @@ cfe_expr_0 (gfc_expr **e, int *walk_subtrees,
 	    {
 	      if (newvar == NULL)
 		newvar = create_var (*(expr_array[i]));
+
+	      if (gfc_option.warn_function_elimination)
+		warn_function_elimination (*(expr_array[j]));
+
 	      gfc_free (*(expr_array[j]));
 	      *(expr_array[j]) = gfc_copy_expr (newvar);
 	    }
@@ -868,7 +886,7 @@ gfc_expr_walker (gfc_expr **e, walk_expr_fn_t exprfn, void *data)
 	      break;
 
 	    /* Fall through to the variable case in order to walk the
-	       the reference.  */
+	       reference.  */
 
 	  case EXPR_SUBSTRING:
 	  case EXPR_VARIABLE:

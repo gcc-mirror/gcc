@@ -846,7 +846,7 @@ analyze_matrix_allocation_site (struct matrix_info *mi, gimple stmt,
 }
 
 /* The transposing decision making.
-   In order to to calculate the profitability of transposing, we collect two
+   In order to calculate the profitability of transposing, we collect two
    types of information regarding the accesses:
    1. profiling information used to express the hotness of an access, that
    is how often the matrix is accessed by this access site (count of the
@@ -2169,7 +2169,8 @@ transform_allocation_sites (void **slot, void *data ATTRIBUTE_UNUSED)
   update_ssa (TODO_update_ssa);
   /* Replace the malloc size argument in the malloc of level 0 to be
      the size of all the dimensions.  */
-  c_node = cgraph_node (mi->allocation_function_decl);
+  c_node = cgraph_get_node (mi->allocation_function_decl);
+  gcc_checking_assert (c_node);
   old_size_0 = gimple_call_arg (call_stmt_0, 0);
   tmp = force_gimple_operand_gsi (&gsi, mi->dimension_size[0], true,
 				  NULL, true, GSI_SAME_STMT);
@@ -2218,7 +2219,8 @@ transform_allocation_sites (void **slot, void *data ATTRIBUTE_UNUSED)
       if (!mi->free_stmts[i].stmt)
 	continue;
 
-      c_node = cgraph_node (mi->free_stmts[i].func);
+      c_node = cgraph_get_node (mi->free_stmts[i].func);
+      gcc_checking_assert (c_node);
       gcc_assert (is_gimple_call (mi->free_stmts[i].stmt));
       e = cgraph_edge (c_node, mi->free_stmts[i].stmt);
       gcc_assert (e);

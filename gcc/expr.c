@@ -8451,18 +8451,11 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
       gcc_assert (decl_rtl);
       decl_rtl = copy_rtx (decl_rtl);
       /* Record writes to register variables.  */
-      if (modifier == EXPAND_WRITE && REG_P (decl_rtl)
-	  && REGNO (decl_rtl) < FIRST_PSEUDO_REGISTER)
-	{
-	    int i = REGNO (decl_rtl);
-	    int nregs = hard_regno_nregs[i][GET_MODE (decl_rtl)];
-	    while (nregs)
-	      {
-		SET_HARD_REG_BIT (crtl->asm_clobbers, i);
-		i++;
-		nregs--;
-	      }
-	}
+      if (modifier == EXPAND_WRITE
+	  && REG_P (decl_rtl)
+	  && HARD_REGISTER_P (decl_rtl))
+        add_to_hard_reg_set (&crtl->asm_clobbers,
+			     GET_MODE (decl_rtl), REGNO (decl_rtl));
 
       /* Ensure variable marked as used even if it doesn't go through
 	 a parser.  If it hasn't be used yet, write out an external
@@ -8533,8 +8526,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	      && (g = SSA_NAME_DEF_STMT (ssa_name))
 	      && gimple_code (g) == GIMPLE_CALL)
 	    pmode = promote_function_mode (type, mode, &unsignedp,
-					   TREE_TYPE
-					   (TREE_TYPE (gimple_call_fn (g))),
+					   gimple_call_fntype (g),
 					   2);
 	  else
 	    pmode = promote_decl_mode (exp, &unsignedp);

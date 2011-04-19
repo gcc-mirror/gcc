@@ -3600,7 +3600,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
   /* If there are alternate return labels, function type should be
      integer.  Can't modify the type in place though, since it can be shared
      with other functions.  For dummy arguments, the typing is done to
-     to this result, even if it has to be repeated for each call.  */
+     this result, even if it has to be repeated for each call.  */
   if (has_alternate_specifier
       && TREE_TYPE (TREE_TYPE (TREE_TYPE (se->expr))) != integer_type_node)
     {

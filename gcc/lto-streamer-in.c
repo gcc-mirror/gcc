@@ -1062,6 +1062,8 @@ input_gimple_stmt (struct lto_input_block *ib, struct data_in *data_in,
 	      op = TREE_OPERAND (op, 0);
 	    }
 	}
+      if (is_gimple_call (stmt))
+	gimple_call_set_fntype (stmt, lto_input_tree (ib, data_in));
       break;
 
     case GIMPLE_NOP:
@@ -1301,7 +1303,7 @@ input_function (tree fn_decl, struct data_in *data_in,
   DECL_INITIAL (fn_decl) = lto_input_tree (ib, data_in);
   gcc_assert (DECL_INITIAL (fn_decl));
   DECL_SAVED_TREE (fn_decl) = NULL_TREE;
-  node = cgraph_node (fn_decl);
+  node = cgraph_get_create_node (fn_decl);
 
   /* Read all the basic blocks.  */
   tag = input_record_start (ib);
@@ -1446,8 +1448,9 @@ lto_read_body (struct lto_file_decl_data *file_data, tree fn_decl,
     {
       struct function *fn = DECL_STRUCT_FUNCTION (fn_decl);
       struct lto_in_decl_state *decl_state;
-      struct cgraph_node *node = cgraph_node (fn_decl);
+      struct cgraph_node *node = cgraph_get_node (fn_decl);
 
+      gcc_checking_assert (node);
       push_cfun (fn);
       init_tree_ssa (fn);
 
@@ -2337,7 +2340,7 @@ lto_input_tree_pointers (struct lto_input_block *ib, struct data_in *data_in,
 
   code = TREE_CODE (expr);
 
-  if (CODE_CONTAINS_STRUCT (code, TS_COMMON))
+  if (CODE_CONTAINS_STRUCT (code, TS_TYPED))
     lto_input_ts_common_tree_pointers (ib, data_in, expr);
 
   if (CODE_CONTAINS_STRUCT (code, TS_VECTOR))

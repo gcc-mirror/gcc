@@ -1,4 +1,145 @@
+2011-04-12  Janis Johnson  <janisjo@codesourcery.com>
+
+	* gcc.target/arm/pr43698.c: Remove -march option.
+
+2011-04-12  Janis Johnson  <janisjo@codesourcery.com>
+
+	* gcc.target/arm/sync-1.c: Limit to sync_int_long, do not use
+	-march option.
+
+2011-04-12  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/48360
+	PR fortran/48456
+	* gfortran.dg/realloc_on_assign_6.f03: New test.
+
+2011-04-12  Kai Tietz  <ktietz@redhat.com>
+
+	* g++.dg/ext/bitfield2.C: Add for i?86/x86_64-*-mingw*
+	targets the additional -mno-ms-bitfields and
+	-Wno-packed-bitfield-compat options.
+	* g++.dg/ext/bitfield3.C: Likewise.
+	* g++.dg/ext/bitfield4.C: Likewise.
+	* g++.dg/ext/bitfield5.C: Likewise.
+	* gcc.dg/bitfld-15.c: Likewise.
+	* gcc.dg/bitfld-16.c: Likewise.
+	* gcc.dg/bitfld-17.c: Likewise.
+	* gcc.dg/bitfld-18.c: Likewise.
+
+2011-04-12  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* gcc.target/arm/neon-vld3-1.c: New test.
+	* gcc.target/arm/neon-vst3-1.c: New test.
+	* gcc.target/arm/neon/v*.c: Regenerate.
+
+2011-04-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/48549
+	* g++.dg/opt/pr48549.C: New test.
+
+2011-04-12  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/46076
+	* gcc.dg/tree-ssa/pr46076.c: Un-XFAIL.
+
+2011-04-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR testsuite/21164
+	* lib/compat.exp (compat-execute): Declare unsupported after
+	stripping path from src1.
+	* lib/lto.exp (lto-execute): Likewise.
+
+2011-04-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/48552
+	* gcc.dg/pr48552-1.c: New test.
+	* gcc.dg/pr48552-2.c: New test.
+
+2011-04-11  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/sfinae12.C: New.
+
+	* g++.dg/cpp0x/enum10.C: New.
+
+	* g++.dg/cpp0x/lambda/lambda-this4.C: New.
+
+	* g++.dg/cpp0x/rv-func.C: New.
+
+2011-04-11  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.dg/torture/pr47917.c: Define _ISO_C_SOURCE=19990L for
+	alpha*-dec-osf5*.
+
+2011-04-11  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/48195
+	* gcc.dg/ipa/pr48195.c: New test.
+
+2011-04-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/return3.adb: Remove unused switch.
+
+2011-04-08  Mike Stump  <mikestump@comcast.net>
+
+	PR testsuite/48506
+	* gcc.dg/tree-ssa/ssa-ccp-17.c: Robustify against ports that
+	default to fno-common.
+
+2011-04-08  Georg-Johann Lay  <avr@gjlay.de>
+
+	* gcc.dg/sibcall-3.c: Don't xfail on AVR.
+	* gcc.dg/sibcall-4.c: Don't xfail on AVR.
+
+2011-04-08  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/48448
+	* gfortran.dg/function_optimize_5.f90:  New test.
+
+2011-04-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/aggr17.adb: New test.
+	* gnat.dg/aggr18.adb: Likewise.
+
+2011-04-08  Michael Matz  <matz@suse.de>
+
+	PR middle-end/48389
+	* gcc.target/i386/pr48389.c: New test.
+
+2011-04-08  Andrey Belevantsev  <abel@ispras.ru>
+
+	PR rtl-optimization/48272
+	* g++.dg/opt/pr48272.C: New.
+
+2011-04-08  Dmitry Melnik  <dm@ispras.ru>
+
+	PR rtl-optimization/48235
+	* gcc.dg/pr48235.c: New.
+
+2011-04-08  Alexander Monakov  <amonakov@ispras.ru>
+
+	PR rtl-optimization/48302
+	* g++.dg/opt/pr48302.C: New.
+
+2011-04-08  Alexander Monakov  <amonakov@ispras.ru>
+
+	PR target/48273
+	* g++.dg/opt/pr48273.C: New.
+
+2011-04-08  Alexander Monakov  <amonakov@ispras.ru>
+
+	PR rtl-optimization/48442
+	* gcc.dg/pr48442.c: New.
+
+2011-04-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/48377
+	* gcc.dg/vect/pr48377.c: New test.
+
 2011-04-07  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/regress/call1.C: New.
+
+	* g++.dg/cpp0x/variadic107.C: New.
 
 	* g++.dg/cpp0x/sfinae11.C: New.
 	* g++.dg/cpp0x/noexcept02.C: Fix.
@@ -1793,6 +1934,13 @@
 
 	PR fortran/47775
 	* gfortran.dg/func_result_6.f90: New.
+
+2011-02-18  Michael Matz  <matz@suse.de>
+
+	PR fortran/45586
+	* gfortran.dg/lto/pr45586_0.f90: New test.
+	* gfortran.dg/typebound_proc_20.f90: Ditto.
+	* gfortran.dg/typebound_proc_21.f90: Ditto.
 
 2011-02-18  Paolo Carlini  <paolo.carlini@oracle.com>
 

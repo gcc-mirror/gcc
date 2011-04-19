@@ -11,7 +11,7 @@
 
 
 jfieldID _Jv_FromReflectedField (java::lang::reflect::Field *);
-jobject _Jv_JNI_ToReflectedField (_Jv_JNIEnv*, jclass, jfieldID, jboolean);
+jobject JNICALL _Jv_JNI_ToReflectedField (_Jv_JNIEnv*, jclass, jfieldID, jboolean);
 jobject _Jv_getFieldInternal (java::lang::reflect::Field *f, jclass c, jobject o);
 
 class java::lang::reflect::Field : public ::java::lang::reflect::AccessibleObject
@@ -90,7 +90,7 @@ public:
   static ::java::lang::Class class$;
 
   friend jfieldID (::_Jv_FromReflectedField) (java::lang::reflect::Field *);
-  friend jobject (::_Jv_JNI_ToReflectedField) (_Jv_JNIEnv*, jclass, jfieldID, jboolean);
+  friend jobject JNICALL (::_Jv_JNI_ToReflectedField) (_Jv_JNIEnv*, jclass, jfieldID, jboolean);
   friend class java::lang::Class;
   friend jobject (::_Jv_getFieldInternal) (java::lang::reflect::Field *f, jclass c, jobject o);
 };

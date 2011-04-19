@@ -236,7 +236,12 @@ AC_SUBST(extra_ldflags_libgfortran)
 LIBGFOR_WORKING_GFORTRAN
 
 AC_SYS_LARGEFILE
+
+# Types
 AC_TYPE_OFF_T
+AC_TYPE_INTPTR_T
+AC_TYPE_UINTPTR_T
+AC_CHECK_TYPES([ptrdiff_t])
 
 # check header files
 AC_STDC_HEADERS
@@ -263,10 +268,6 @@ AC_CHECK_FUNCS(clock_gettime strftime)
 
 # Check for glibc backtrace functions
 AC_CHECK_FUNCS(backtrace backtrace_symbols)
-
-# Check for types
-AC_CHECK_TYPES([intptr_t])
-AC_CHECK_TYPES([uintptr_t])
 
 # Check libc for getgid, getpid, getuid
 AC_CHECK_LIB([c],[getgid],[AC_DEFINE([HAVE_GETGID],[1],[libc includes getgid])])

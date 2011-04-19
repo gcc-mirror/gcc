@@ -1,3 +1,28 @@
+2011-04-12  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* c-common.h (c_common_init_ts): Declare.
+	* c-common.c (c_common_init_ts): Define.
+
+2011-04-12  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* c-objc.h (objc_build_message_expr): Updated prototype.
+	* stub-objc.c (objc_build_message_expr): Likewise.
+	
+2011-04-12  Martin Jambor  <mjambor@suse.cz>
+
+	* c-gimplify.c (c_genericize): Call cgraph_get_create_node instead
+	of cgraph_node.
+
+2011-04-11  Richard Guenther  <rguenther@suse.de>
+
+	* c-common.c (complete_array_type): Build a range type of
+	proper type.
+
+2011-04-08  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* c-common.c (handle_sentinel_attribute): Don't use TYPE_ARG_TYPES.
+	(handle_type_generic_attribute): Likewise.
+
 2011-04-07  Jason Merrill  <jason@redhat.com>
 
 	PR c++/48450
@@ -138,8 +163,8 @@
 	* c-common.c (lvalue_error): Add 'loc' argument.  Call error_at,
 	not error.
 
-2010-12-29  Nicola Pero  <nicola@nicola.brainstorm.co.uk>
-
+2010-12-29  Nicola Pero  <nicola.pero@meta-innovation.com>
+	
 	PR objc/47075
 	* c-objc.h (objc_finish_message_expr): Added argument to
 	prototype.

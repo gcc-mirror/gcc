@@ -259,8 +259,10 @@ make_alias_for_thunk (tree function)
 
   if (!flag_syntax_only)
     {
-      struct cgraph_node *aliasn = cgraph_same_body_alias (cgraph_node (function),
-							   alias, function);
+      struct cgraph_node *funcn, *aliasn;
+      funcn = cgraph_get_node (function);
+      gcc_checking_assert (funcn);
+      aliasn = cgraph_same_body_alias (funcn, alias, function);
       DECL_ASSEMBLER_NAME (function);
       gcc_assert (aliasn != NULL);
     }
@@ -279,6 +281,7 @@ use_thunk (tree thunk_fndecl, bool emit_p)
   tree virtual_offset;
   HOST_WIDE_INT fixed_offset, virtual_value;
   bool this_adjusting = DECL_THIS_THUNK_P (thunk_fndecl);
+  struct cgraph_node *funcn;
 
   /* We should have called finish_thunk to give it a name.  */
   gcc_assert (DECL_NAME (thunk_fndecl));
@@ -378,7 +381,9 @@ use_thunk (tree thunk_fndecl, bool emit_p)
   a = nreverse (t);
   DECL_ARGUMENTS (thunk_fndecl) = a;
   TREE_ASM_WRITTEN (thunk_fndecl) = 1;
-  cgraph_add_thunk (cgraph_node (function), thunk_fndecl, function,
+  funcn = cgraph_get_node (function);
+  gcc_checking_assert (funcn);
+  cgraph_add_thunk (funcn, thunk_fndecl, function,
 		    this_adjusting, fixed_offset, virtual_value,
 		    virtual_offset, alias);
 
