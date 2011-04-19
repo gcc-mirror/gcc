@@ -4485,11 +4485,14 @@ m32c_emit_prologue (void)
 void
 m32c_emit_epilogue (void)
 {
+  int popm_count = m32c_pushm_popm (PP_justcount);
+
   /* This just emits a comment into the .s file for debugging.  */
-  if (m32c_pushm_popm (PP_justcount) > 0 || cfun->machine->is_interrupt)
+  if (popm_count > 0 || cfun->machine->is_interrupt)
     emit_insn (gen_epilogue_start ());
 
-  m32c_pushm_popm (PP_popm);
+  if (popm_count > 0)
+    m32c_pushm_popm (PP_popm);
 
   if (cfun->machine->is_interrupt)
     {
@@ -4546,7 +4549,6 @@ m32c_emit_epilogue (void)
     emit_jump_insn (gen_epilogue_exitd_16 ());
   else
     emit_jump_insn (gen_epilogue_exitd_24 ());
-  emit_barrier ();
 }
 
 void
@@ -4558,7 +4560,6 @@ m32c_emit_eh_epilogue (rtx ret_addr)
      assembler, so punt to libgcc.  */
   emit_jump_insn (gen_eh_epilogue (ret_addr, cfun->machine->eh_stack_adjust));
   /*  emit_clobber (gen_rtx_REG (HImode, R0L_REGNO)); */
-  emit_barrier ();
 }
 
 /* Indicate which flags must be properly set for a given conditional.  */

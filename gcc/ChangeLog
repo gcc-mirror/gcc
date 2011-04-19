@@ -1,3 +1,19 @@
+2011-04-19  DJ Delorie  <dj@redhat.com>
+
+	* config/m32c/m32c.c (m32c_emit_epilogue): Don't try to push
+	registers if we already know there aren't any.
+	(m32c_emit_epilogue): Don't emit a barrier here.
+	(m32c_emit_eh_epilogue): Likewise.
+	* config/m32c/blkmov.md (movstr): Don't fail on wrong-type
+	operands at expand time.
+	* config/m32c/m32c.h (WCHAR_TYPE_SIZE): Change to 4 to match "long
+	int" wchar type.
+	(REG_CLASS_CONTENTS, reg_class, REG_CLASS_NAMES): Remove
+	duplicates.  Provide aliases instead.
+	* config/m32c/prologue.md (eh_return): Emit a barrier here.
+	(eh_epilogue): Add a "(return)" here as a hint to other parts of
+	the compiler.
+
 2011-04-19  Anatoly Sokolov  <aesok@post.ru>
 
 	* config/sparc/sparc.h (GENERAL_OR_I64, REGISTER_MOVE_COST): Remove.
