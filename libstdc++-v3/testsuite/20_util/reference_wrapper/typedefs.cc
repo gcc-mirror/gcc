@@ -1,6 +1,7 @@
+// { dg-do compile }
 // { dg-options "-std=gnu++0x" }
 
-// Copyright (C) 2008, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -19,10 +20,6 @@
 
 #include <functional>
 #include <type_traits>
-#include <testsuite_hooks.h>
-#include <testsuite_tr1.h>
-
-using namespace __gnu_test;
 
 struct X {};
 
@@ -41,43 +38,18 @@ struct derives_unary_binary
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   using std::reference_wrapper;
   using std::is_same;
-  using std::is_convertible;
-  using std::unary_function;
-  using std::binary_function;
 
   // Check result_type typedef
-  VERIFY((is_same<reference_wrapper<int_result_type>::result_type, int>::value));
-  VERIFY((is_same<reference_wrapper<derives_unary>::result_type, int>::value));
-  VERIFY((is_same<reference_wrapper<derives_binary>::result_type, int>::value));
-  VERIFY((is_same<reference_wrapper<derives_unary_binary>::result_type, int>::value));
-  VERIFY((is_same<reference_wrapper<int(void)>::result_type, int>::value));
-  VERIFY((is_same<reference_wrapper<int(*)(void)>::result_type, int>::value));
-  VERIFY((is_same<reference_wrapper<int (::X::*)()>::result_type, int>::value));
-  VERIFY((is_same<reference_wrapper<int (::X::*)(float)>::result_type, int>::value));
-
-  // Check derivation from unary_function
-  VERIFY((is_convertible<reference_wrapper<derives_unary>*, unary_function<int, int>*>::value));
-  VERIFY((is_convertible<reference_wrapper<derives_unary_binary>*, unary_function<int, int>*>::value));
-  VERIFY((is_convertible<reference_wrapper<int(int)>*, unary_function<int, int>*>::value));
-  VERIFY((is_convertible<reference_wrapper<int(*)(int)>*, unary_function<int, int>*>::value));
-  VERIFY((is_convertible<reference_wrapper<int (::X::*)()>*, unary_function< ::X*, int>*>::value));
-  VERIFY((is_convertible<reference_wrapper<int (::X::*)() const>*, unary_function<const ::X*, int>*>::value));
-  VERIFY((is_convertible<reference_wrapper<int (::X::*)() volatile>*, unary_function<volatile ::X*, int>*>::value));
-  VERIFY((is_convertible<reference_wrapper<int (::X::*)() const volatile>*, unary_function<const volatile ::X*, int>*>::value));
-
-  // Check derivation from binary_function
-  VERIFY((is_convertible<reference_wrapper<derives_binary>*, binary_function<int, float, int>*>::value));
-  VERIFY((is_convertible<reference_wrapper<derives_unary_binary>*, binary_function<int, float, int>*>::value));
-  VERIFY((is_convertible<reference_wrapper<int(int, float)>*, binary_function<int, float, int>*>::value));
-  VERIFY((is_convertible<reference_wrapper<int(*)(int, float)>*, binary_function<int, float, int>*>::value));
-  VERIFY((is_convertible<reference_wrapper<int (::X::*)(float)>*, binary_function< ::X*, float, int>*>::value));
-  VERIFY((is_convertible<reference_wrapper<int (::X::*)(float) const>*, binary_function<const ::X*, float, int>*>::value));
-  VERIFY((is_convertible<reference_wrapper<int (::X::*)(float) volatile>*, binary_function<volatile ::X*, float, int>*>::value));
-  VERIFY((is_convertible<reference_wrapper<int (::X::*)(float) const volatile>*, binary_function<const volatile ::X*, float, int>*>::value));
+  static_assert( is_same<reference_wrapper<int_result_type>::result_type, int>::value, "has result_type" );
+  static_assert( is_same<reference_wrapper<derives_unary>::result_type, int>::value, "has result_type" );
+  static_assert( is_same<reference_wrapper<derives_binary>::result_type, int>::value, "has result_type" );
+  static_assert( is_same<reference_wrapper<derives_unary_binary>::result_type, int>::value, "has result_type" );
+  static_assert( is_same<reference_wrapper<int(void)>::result_type, int>::value, "has result_type" );
+  static_assert( is_same<reference_wrapper<int(*)(void)>::result_type, int>::value, "has result_type" );
+  static_assert( is_same<reference_wrapper<int (::X::*)()>::result_type, int>::value, "has result_type" );
+  static_assert( is_same<reference_wrapper<int (::X::*)(float)>::result_type, int>::value, "has result_type" );
 }
 
 int main()
