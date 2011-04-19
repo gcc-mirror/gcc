@@ -1,3 +1,9 @@
+2011-04-19  Bernd Schmidt  <bernds@codesourcery.com>
+
+	PR fortran/47976
+	* reload1.c (inc_for_reload): Return void. All callers changed.
+	(emit_input_reload_insns): Don't try to delete previous output
+	reloads to a register, or record spill_reg_store for autoincs.
 
 2011-04-19  Basile Starynkevitch  <basile@starynkevitch.net>
 
