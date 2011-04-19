@@ -1,5 +1,12 @@
 2011-04-19  Ian Lance Taylor  <iant@google.com>
 
+	* go-system.h: Include "intl.h".
+	* Make-lang.in (GO_SYSTEM_H): Add intl.h.
+	(go/statements.o): Remove dependencies on intl.h $(TREE_H)
+	$(GIMPLE_H) convert.h tree-iterator.h $(TREE_FLOW_H) $(REAL_H).
+
+2011-04-19  Ian Lance Taylor  <iant@google.com>
+
 	* go-gcc.cc (Gcc_backend::temporary_variable): New function.
 
 2011-04-19  Ian Lance Taylor  <iant@google.com>

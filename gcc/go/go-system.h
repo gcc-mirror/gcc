@@ -1,5 +1,5 @@
 // go-system.h -- Go frontend inclusion of gcc header files   -*- C++ -*-
-// Copyright (C) 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2009, 2010, 2011 Free Software Foundation, Inc.
 
 // This file is part of GCC.
 
@@ -145,6 +145,7 @@ extern "C"
 
 #include "diagnostic-core.h"	/* For error_at and friends.  */
 #include "input.h"		/* For source_location.  */
+#include "intl.h"		/* For _().  */
 
 #ifndef ENABLE_BUILD_WITH_CXX
 } // End extern "C"

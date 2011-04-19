@@ -211,7 +211,7 @@ go.stagefeedback: stagefeedback-start
 	-mv go/*$(objext) stagefeedback/go
 
 GO_SYSTEM_H = go/go-system.h $(CONFIG_H) $(SYSTEM_H) coretypes.h \
-	$(DIAGNOSTIC_CORE_H) $(INPUT_H)
+	$(DIAGNOSTIC_CORE_H) $(INPUT_H) intl.h
 
 GO_C_H = go/go-c.h $(MACHMODE_H)
 GO_LEX_H = go/gofrontend/lex.h go/gofrontend/operator.h
@@ -281,8 +281,7 @@ go/parse.o: go/gofrontend/parse.cc $(GO_SYSTEM_H) $(GO_LEX_H) $(GO_GOGO_H) \
 go/runtime.o: go/gofrontend/runtime.cc $(GO_SYSTEM_H) $(GO_GOGO_H) \
 	$(GO_TYPES_H) $(GO_EXPRESSIONS_H) $(GO_RUNTIME_H) \
 	go/gofrontend/runtime.def
-go/statements.o: go/gofrontend/statements.cc $(GO_SYSTEM_H) intl.h $(TREE_H) \
-	$(GIMPLE_H) convert.h tree-iterator.h $(TREE_FLOW_H) $(REAL_H) \
+go/statements.o: go/gofrontend/statements.cc $(GO_SYSTEM_H) \
 	$(GO_C_H) $(GO_TYPES_H) $(GO_EXPRESSIONS_H) $(GO_GOGO_H) \
 	$(GO_RUNTIME_H) go/gofrontend/backend.h $(GO_STATEMENTS_H)
 go/types.o: go/gofrontend/types.cc $(GO_SYSTEM_H) $(TOPLEV_H) intl.h $(TREE_H) \
