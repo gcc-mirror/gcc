@@ -1,7 +1,7 @@
 // { dg-options "-std=gnu++0x" }
-// 2004-12-30  Paolo Carlini  <pcarlini@suse.de>
+// 2004-12-29  Paolo Carlini  <pcarlini@suse.de>
 //
-// Copyright (C) 2004, 2007, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2004, 2007, 2009, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -28,9 +28,9 @@
 void test01()
 {
   // Check for required typedefs
-  typedef std::has_nothrow_copy_constructor<int>     test_type;
-  typedef test_type::value_type               value_type;
-  typedef test_type::type                     type;
-  typedef test_type::type::value_type         type_value_type;
-  typedef test_type::type::type               type_type;
+  typedef std::is_nothrow_default_constructible<int>  test_type;
+  typedef test_type::value_type                       value_type;
+  typedef test_type::type                             type;
+  typedef test_type::type::value_type                 type_value_type;
+  typedef test_type::type::type                       type_type;
 }

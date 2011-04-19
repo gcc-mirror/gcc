@@ -145,7 +145,22 @@ namespace __gnu_test
     ThrowExplicitClass(double&, int&, double&) throw(int);
   };
 
+  struct ThrowDefaultClass
+  {
+    ThrowDefaultClass() throw(int);
+  };
+
+  struct ThrowCopyConsClass
+  {
+    ThrowCopyConsClass(const ThrowCopyConsClass&) throw(int);
+  };
+
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
+  struct ThrowMoveConsClass
+  {
+    ThrowMoveConsClass(ThrowMoveConsClass&&) throw(int);
+  };
+
   struct NoexceptExplicitClass
   {
     NoexceptExplicitClass(double&) noexcept(true);
@@ -158,6 +173,36 @@ namespace __gnu_test
     ExceptExplicitClass(double&) noexcept(false);
     explicit ExceptExplicitClass(int&) noexcept(false);
     ExceptExplicitClass(double&, int&, double&) noexcept(false);
+  };
+
+  struct NoexceptDefaultClass
+  {
+    NoexceptDefaultClass() noexcept(true);
+  };
+
+  struct ExceptDefaultClass
+  {
+    ExceptDefaultClass() noexcept(false);
+  };
+
+  struct NoexceptCopyConsClass
+  {
+    NoexceptCopyConsClass(const NoexceptCopyConsClass&) noexcept(true);
+  };
+
+  struct ExceptCopyConsClass
+  {
+    ExceptCopyConsClass(const ExceptCopyConsClass&) noexcept(false);
+  };
+
+  struct NoexceptMoveConsClass
+  {
+    NoexceptMoveConsClass(NoexceptMoveConsClass&&) noexcept(true);
+  };
+
+  struct ExceptMoveConsClass
+  {
+    ExceptMoveConsClass(ExceptMoveConsClass&&) noexcept(false);
   };
 #endif
 

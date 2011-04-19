@@ -1,8 +1,7 @@
 // { dg-options "-std=gnu++0x" }
-// { dg-do compile }
-// 2009-11-12  Paolo Carlini  <paolo.carlini@oracle.com>
+// 2004-12-30  Paolo Carlini  <pcarlini@suse.de>
 //
-// Copyright (C) 2009, 2010, 2011 Free Software Foundation, Inc.
+// Copyright (C) 2004, 2007, 2009, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -19,11 +18,19 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-error "static assertion failed" "" { target *-*-* } 1610 }
+// 
+// NB: This file is for testing type_traits with NO OTHER INCLUDES.
 
-#include <utility>
+#include <type_traits>
+
+// { dg-do compile }
 
 void test01()
 {
-  std::declval<int>();		// { dg-error "instantiated from here" }
+  // Check for required typedefs
+  typedef std::is_nothrow_copy_constructible<int>  test_type;
+  typedef test_type::value_type                    value_type;
+  typedef test_type::type                          type;
+  typedef test_type::type::value_type              type_value_type;
+  typedef test_type::type::type                    type_type;
 }
