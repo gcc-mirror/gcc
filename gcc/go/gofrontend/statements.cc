@@ -251,37 +251,46 @@ Variable_declaration_statement::do_traverse_assignments(
 tree
 Variable_declaration_statement::do_get_tree(Translate_context* context)
 {
-  tree val = this->var_->get_tree(context->gogo(), context->function());
-  if (val == error_mark_node || TREE_TYPE(val) == error_mark_node)
-    return error_mark_node;
-  Variable* variable = this->var_->var_value();
-
-  tree init = variable->get_init_tree(context->gogo(), context->function());
-  if (init == error_mark_node)
-    return error_mark_node;
-
-  // If this variable lives on the heap, we need to allocate it now.
-  if (!variable->is_in_heap())
+  Variable* var = this->var_->var_value();
+  Bvariable* bvar = this->var_->get_backend_variable(context->gogo(),
+						     context->function());
+  tree init = var->get_init_tree(context->gogo(), context->function());
+  Bexpression* binit = init == NULL_TREE ? NULL : tree_to_expr(init);
+  Bstatement* ret;
+  if (!var->is_in_heap())
     {
-      DECL_INITIAL(val) = init;
-      return this->build_stmt_1(DECL_EXPR, val);
+      gcc_assert(binit != NULL);
+      ret = context->backend()->init_statement(bvar, binit);
     }
   else
     {
-      gcc_assert(TREE_CODE(val) == INDIRECT_REF);
-      tree decl = TREE_OPERAND(val, 0);
-      gcc_assert(TREE_CODE(decl) == VAR_DECL);
-      tree type = TREE_TYPE(decl);
-      gcc_assert(POINTER_TYPE_P(type));
-      tree size = TYPE_SIZE_UNIT(TREE_TYPE(type));
-      tree space = context->gogo()->allocate_memory(variable->type(), size,
-						    this->location());
-      space = fold_convert(TREE_TYPE(decl), space);
-      DECL_INITIAL(decl) = space;
-      return build2(COMPOUND_EXPR, void_type_node,
-		    this->build_stmt_1(DECL_EXPR, decl),
-		    build2(MODIFY_EXPR, void_type_node, val, init));
+      // Something takes the address of this variable, so the value is
+      // stored in the heap.  Initialize it to newly allocated memory
+      // space, and assign the initial value to the new space.
+      source_location loc = this->location();
+      tree decl = var_to_tree(bvar);
+      tree decl_type = TREE_TYPE(decl);
+      gcc_assert(POINTER_TYPE_P(decl_type));
+      tree size = TYPE_SIZE_UNIT(TREE_TYPE(decl_type));
+      tree space = context->gogo()->allocate_memory(var->type(), size, loc);
+      if (binit != NULL)
+	space = save_expr(space);
+      space = fold_convert_loc(loc, decl_type, space);
+      Bstatement* s1 = context->backend()->init_statement(bvar,
+							  tree_to_expr(space));
+      if (binit == NULL)
+	ret = s1;
+      else
+	{
+	  tree indir = build_fold_indirect_ref_loc(loc, space);
+	  Bexpression* bindir = tree_to_expr(indir);
+	  Bstatement* s2 = context->backend()->assignment_statement(bindir,
+								    binit,
+								    loc);
+	  ret = context->backend()->compound_statement(s1, s2);
+	}
     }
+  return stat_to_tree(ret);
 }
 
 // Make a variable declaration.
@@ -2421,6 +2430,8 @@ Return_statement::do_lower(Gogo*, Named_object* function, Block* enclosing)
 tree
 Return_statement::do_get_tree(Translate_context* context)
 {
+  source_location loc = this->location();
+
   Function* function = context->function()->func_value();
   tree fndecl = function->get_decl();
 
@@ -2433,14 +2444,14 @@ Return_statement::do_get_tree(Translate_context* context)
 	   p != results->end();
 	   p++)
 	{
-	  tree rv = (*p)->get_tree(context->gogo(), context->function());
-	  retvals.push_back(tree_to_expr(rv));
+	  Expression* vr = Expression::make_var_reference(*p, loc);
+	  retvals.push_back(tree_to_expr(vr->get_tree(context)));
 	}
     }
 
   Bstatement* ret;
   ret = context->backend()->return_statement(tree_to_function(fndecl),
-					     retvals, this->location());
+					     retvals, loc);
   return stat_to_tree(ret);
 }
 

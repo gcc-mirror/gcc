@@ -2659,7 +2659,8 @@ Function::create_result_variables(Gogo* gogo)
 	  ++result_counter;
 	  name = gogo->pack_hidden_name(buf, false);
 	}
-      Result_variable* result = new Result_variable(p->type(), this, index);
+      Result_variable* result = new Result_variable(p->type(), this, index,
+						    p->location());
       Named_object* no = block->bindings()->add_result_variable(name, result);
       if (no->is_result_variable())
 	this->results_->push_back(no);
@@ -3290,7 +3291,7 @@ Variable::Variable(Type* type, Expression* init, bool is_global,
 		   bool is_parameter, bool is_receiver,
 		   source_location location)
   : type_(type), init_(init), preinit_(NULL), location_(location),
-    is_global_(is_global), is_parameter_(is_parameter),
+    backend_(NULL), is_global_(is_global), is_parameter_(is_parameter),
     is_receiver_(is_receiver), is_varargs_parameter_(false),
     is_address_taken_(false), seen_(false), init_is_lowered_(false),
     type_from_init_tuple_(false), type_from_range_index_(false),
@@ -3634,6 +3635,93 @@ Variable::import_var(Import* imp, std::string* pname, Type** ptype)
   imp->require_c_string(" ");
   *ptype = imp->read_type();
   imp->require_c_string(";\n");
+}
+
+// Convert a variable to the backend representation.
+
+Bvariable*
+Variable::get_backend_variable(Gogo* gogo, Named_object* function,
+			       const Package* package, const std::string& name)
+{
+  if (this->backend_ == NULL)
+    {
+      Backend* backend = gogo->backend();
+      Type* type = this->type_;
+      if (type->is_error_type()
+	  || (type->is_undefined()
+	      && (!this->is_global_ || package == NULL)))
+	this->backend_ = backend->error_variable();
+      else
+	{
+	  bool is_parameter = this->is_parameter_;
+	  if (this->is_receiver_ && type->points_to() == NULL)
+	    is_parameter = false;
+	  if (this->is_in_heap())
+	    {
+	      is_parameter = false;
+	      type = Type::make_pointer_type(type);
+	    }
+
+	  std::string n = Gogo::unpack_hidden_name(name);
+	  Btype* btype = tree_to_type(type->get_tree(gogo));
+
+	  Bvariable* bvar;
+	  if (this->is_global_)
+	    bvar = backend->global_variable((package == NULL
+					     ? gogo->package_name()
+					     : package->name()),
+					    (package == NULL
+					     ? gogo->unique_prefix()
+					     : package->unique_prefix()),
+					    n,
+					    btype,
+					    package != NULL,
+					    Gogo::is_hidden_name(name),
+					    this->location_);
+	  else
+	    {
+	      tree fndecl = function->func_value()->get_decl();
+	      Bfunction* bfunction = tree_to_function(fndecl);
+	      if (is_parameter)
+		bvar = backend->parameter_variable(bfunction, n, btype,
+						   this->location_);
+	      else
+		bvar = backend->local_variable(bfunction, n, btype,
+					       this->location_);
+	    }
+	  this->backend_ = bvar;
+	}
+    }
+  return this->backend_;
+}
+
+// Class Result_variable.
+
+// Convert a result variable to the backend representation.
+
+Bvariable*
+Result_variable::get_backend_variable(Gogo* gogo, Named_object* function,
+				      const std::string& name)
+{
+  if (this->backend_ == NULL)
+    {
+      Backend* backend = gogo->backend();
+      Type* type = this->type_;
+      if (type->is_error())
+	this->backend_ = backend->error_variable();
+      else
+	{
+	  if (this->is_in_heap())
+	    type = Type::make_pointer_type(type);
+	  Btype* btype = tree_to_type(type->get_tree(gogo));
+	  tree fndecl = function->func_value()->get_decl();
+	  Bfunction* bfunction = tree_to_function(fndecl);
+	  std::string n = Gogo::unpack_hidden_name(name);
+	  this->backend_ = backend->local_variable(bfunction, n, btype,
+						   this->location_);
+	}
+    }
+  return this->backend_;
 }
 
 // Class Named_constant.
@@ -3997,7 +4085,7 @@ Named_object::location() const
       return this->var_value()->location();
 
     case NAMED_OBJECT_RESULT_VAR:
-      return this->result_var_value()->function()->location();
+      return this->result_var_value()->location();
 
     case NAMED_OBJECT_SINK:
       gcc_unreachable();
@@ -4055,6 +4143,21 @@ Named_object::export_named_object(Export* exp) const
       this->func_value()->export_func(exp, this->name_);
       break;
     }
+}
+
+// Convert a variable to the backend representation.
+
+Bvariable*
+Named_object::get_backend_variable(Gogo* gogo, Named_object* function)
+{
+  if (this->classification_ == NAMED_OBJECT_VAR)
+    return this->var_value()->get_backend_variable(gogo, function,
+						   this->package_, this->name_);
+  else if (this->classification_ == NAMED_OBJECT_RESULT_VAR)
+    return this->result_var_value()->get_backend_variable(gogo, function,
+							  this->name_);
+  else
+    gcc_unreachable();
 }
 
 // Class Bindings.

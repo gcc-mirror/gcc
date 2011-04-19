@@ -27,6 +27,9 @@ class Bstatement;
 // The backend representation of a function definition.
 class Bfunction;
 
+// The backend representation of a variable.
+class Bvariable;
+
 // The backend representation of a label.
 class Blabel;
 
@@ -117,6 +120,12 @@ class Backend
   virtual Bstatement*
   expression_statement(Bexpression*) = 0;
 
+  // Create a variable initialization statement.  This initializes a
+  // local variable at the point in the program flow where it is
+  // declared.
+  virtual Bstatement*
+  init_statement(Bvariable* var, Bexpression* init) = 0;
+
   // Create an assignment statement.
   virtual Bstatement*
   assignment_statement(Bexpression* lhs, Bexpression* rhs,
@@ -154,6 +163,57 @@ class Backend
   virtual Bstatement*
   statement_list(const std::vector<Bstatement*>&) = 0;
 
+  // Variables.
+
+  // Create an error variable.  This is used for cases which should
+  // not occur in a correct program, in order to keep the compilation
+  // going without crashing.
+  virtual Bvariable*
+  error_variable() = 0;
+
+  // Create a global variable.  PACKAGE_NAME is the name of the
+  // package where the variable is defined.  UNIQUE_PREFIX is the
+  // prefix for that package, from the -fgo-prefix option.  NAME is
+  // the name of the variable.  BTYPE is the type of the variable.
+  // IS_EXTERNAL is true if the variable is defined in some other
+  // package.  IS_HIDDEN is true if the variable is not exported (name
+  // begins with a lower case letter).  LOCATION is where the variable
+  // was defined.
+  virtual Bvariable*
+  global_variable(const std::string& package_name,
+		  const std::string& unique_prefix,
+		  const std::string& name,
+		  Btype* btype,
+		  bool is_external,
+		  bool is_hidden,
+		  source_location location) = 0;
+
+  // A global variable will 1) be initialized to zero, or 2) be
+  // initialized to a constant value, or 3) be initialized in the init
+  // function.  In case 2, the frontend will call
+  // global_variable_set_init to set the initial value.  If this is
+  // not called, the backend should initialize a global variable to 0.
+  // The init function may then assign a value to it.
+  virtual void
+  global_variable_set_init(Bvariable*, Bexpression*) = 0;
+
+  // Create a local variable.  The frontend will create the local
+  // variables first, and then create the block which contains them.
+  // FUNCTION is the function in which the variable is defined.  NAME
+  // is the name of the variable.  TYPE is the type.  LOCATION is
+  // where the variable is defined.  For each local variable the
+  // frontend will call init_statement to set the initial value.
+  virtual Bvariable*
+  local_variable(Bfunction* function, const std::string& name, Btype* type,
+		 source_location location) = 0;
+
+  // Create a function parameter.  This is an incoming parameter, not
+  // a result parameter (result parameters are treated as local
+  // variables).  The arguments are as for local_variable.
+  virtual Bvariable*
+  parameter_variable(Bfunction* function, const std::string& name,
+		     Btype* type, source_location location) = 0;
+
   // Labels.
   
   // Create a new label.  NAME will be empty if this is a label
@@ -186,10 +246,12 @@ extern Backend* go_get_backend();
 // FIXME: Temporary helper functions while converting to new backend
 // interface.
 
+extern Btype* tree_to_type(tree);
 extern Bexpression* tree_to_expr(tree);
 extern Bstatement* tree_to_stat(tree);
 extern Bfunction* tree_to_function(tree);
 extern tree expr_to_tree(Bexpression*);
 extern tree stat_to_tree(Bstatement*);
+extern tree var_to_tree(Bvariable*);
 
 #endif // !defined(GO_BACKEND_H)

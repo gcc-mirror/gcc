@@ -1,3 +1,16 @@
+2011-04-18  Ian Lance Taylor  <iant@google.com>
+
+	* go-gcc.cc: Include "go-c.h".
+	(class Bvariable): Define.
+	(Gcc_backend::init_statement): New function.
+	(Gcc_backend::global_variable): New function.
+	(Gcc_backend::global_variable_set_init): New function.
+	(Gcc_backend::local_variable): New function.
+	(Gcc_backend::parameter_variable): New function.
+	(tree_to_type, var_to_tree): New functions.
+	* Make-lang.in (go/go-gcc.o): Depend on $(GO_C_H).
+	* (go/gogo-tree.o): Depend on go/gofrontend/backend.h.
+
 2011-04-15  Ian Lance Taylor  <iant@google.com>
 
 	* go-gcc.cc (Gcc_backend::compound_statement): New function.

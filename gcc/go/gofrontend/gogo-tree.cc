@@ -32,6 +32,7 @@ extern "C"
 #include "expressions.h"
 #include "statements.h"
 #include "runtime.h"
+#include "backend.h"
 #include "gogo.h"
 
 // Whether we have seen any errors.
@@ -277,7 +278,8 @@ Gogo::register_gc_vars(const std::vector<Named_object*>& var_gc,
       constructor_elt* elt = VEC_quick_push(constructor_elt, init, NULL);
       tree field = TYPE_FIELDS(root_type);
       elt->index = field;
-      tree decl = (*p)->get_tree(this, NULL);
+      Bvariable* bvar = (*p)->get_backend_variable(this, NULL);
+      tree decl = var_to_tree(bvar);
       gcc_assert(TREE_CODE(decl) == VAR_DECL);
       elt->value = build_fold_addr_expr(decl);
 
@@ -704,24 +706,31 @@ Gogo::write_globals()
 	    }
 	}
 
-      vec[i] = no->get_tree(this, NULL);
-
-      if (vec[i] == error_mark_node)
+      if (!no->is_variable())
 	{
-	  gcc_assert(saw_errors());
-	  --i;
-	  --count;
-	  continue;
+	  vec[i] = no->get_tree(this, NULL);
+	  if (vec[i] == error_mark_node)
+	    {
+	      gcc_assert(saw_errors());
+	      --i;
+	      --count;
+	      continue;
+	    }
 	}
-
-      // If a variable is initialized to a non-constant value, do the
-      // initialization in an initialization function.
-      if (TREE_CODE(vec[i]) == VAR_DECL)
+      else
 	{
-	  gcc_assert(no->is_variable());
+	  Bvariable* var = no->get_backend_variable(this, NULL);
+	  vec[i] = var_to_tree(var);
+	  if (vec[i] == error_mark_node)
+	    {
+	      gcc_assert(saw_errors());
+	      --i;
+	      --count;
+	      continue;
+	    }
 
-	  // Check for a sink variable, which may be used to run
-	  // an initializer purely for its side effects.
+	  // Check for a sink variable, which may be used to run an
+	  // initializer purely for its side effects.
 	  bool is_sink = no->name()[0] == '_' && no->name()[1] == '.';
 
 	  tree var_init_tree = NULL_TREE;
@@ -733,7 +742,8 @@ Gogo::write_globals()
 	      else if (init == NULL_TREE)
 		;
 	      else if (TREE_CONSTANT(init))
-		DECL_INITIAL(vec[i]) = init;
+		this->backend()->global_variable_set_init(var,
+							  tree_to_expr(init));
 	      else if (is_sink)
 		var_init_tree = init;
 	      else
@@ -828,16 +838,15 @@ Gogo::write_globals()
 tree
 Named_object::get_id(Gogo* gogo)
 {
+  gcc_assert(!this->is_variable() && !this->is_result_variable());
   std::string decl_name;
   if (this->is_function_declaration()
       && !this->func_declaration_value()->asm_name().empty())
     decl_name = this->func_declaration_value()->asm_name();
-  else if ((this->is_variable() && !this->var_value()->is_global())
-	   || (this->is_type()
-	       && this->type_value()->location() == BUILTINS_LOCATION))
+  else if (this->is_type()
+	   && this->type_value()->location() == BUILTINS_LOCATION)
     {
-      // We don't need the package name for local variables or builtin
-      // types.
+      // We don't need the package name for builtin types.
       decl_name = Gogo::unpack_hidden_name(this->name_);
     }
   else
@@ -878,22 +887,7 @@ tree
 Named_object::get_tree(Gogo* gogo, Named_object* function)
 {
   if (this->tree_ != NULL_TREE)
-    {
-      // If this is a variable whose address is taken, we must rebuild
-      // the INDIRECT_REF each time to avoid invalid sharing.
-      tree ret = this->tree_;
-      if (((this->classification_ == NAMED_OBJECT_VAR
-	    && this->var_value()->is_in_heap())
-	   || (this->classification_ == NAMED_OBJECT_RESULT_VAR
-	       && this->result_var_value()->is_in_heap()))
-	  && ret != error_mark_node)
-	{
-	  gcc_assert(TREE_CODE(ret) == INDIRECT_REF);
-	  ret = build_fold_indirect_ref(TREE_OPERAND(ret, 0));
-	  TREE_THIS_NOTRAP(ret) = 1;
-	}
-      return ret;
-    }
+    return this->tree_;
 
   tree name;
   if (this->classification_ == NAMED_OBJECT_TYPE)
@@ -976,117 +970,7 @@ Named_object::get_tree(Gogo* gogo, Named_object* function)
       return error_mark_node;
 
     case NAMED_OBJECT_VAR:
-      {
-	Variable* var = this->u_.var_value;
-	Type* type = var->type();
-	if (type->is_error_type()
-	    || (type->is_undefined()
-		&& (!var->is_global() || this->package() == NULL)))
-	  {
-	    // Force the error for an undefined type, just in case.
-	    type->base();
-	    decl = error_mark_node;
-	  }
-	else
-	  {
-	    tree var_type = type->get_tree(gogo);
-	    bool is_parameter = var->is_parameter();
-	    if (var->is_receiver() && type->points_to() == NULL)
-	      is_parameter = false;
-	    if (var->is_in_heap())
-	      {
-		is_parameter = false;
-		var_type = build_pointer_type(var_type);
-	      }
-	    decl = build_decl(var->location(),
-			      is_parameter ? PARM_DECL : VAR_DECL,
-			      name, var_type);
-	    if (!var->is_global())
-	      {
-		tree fnid = function->get_id(gogo);
-		tree fndecl = function->func_value()->get_or_make_decl(gogo,
-								       function,
-								       fnid);
-		DECL_CONTEXT(decl) = fndecl;
-	      }
-	    if (is_parameter)
-	      DECL_ARG_TYPE(decl) = TREE_TYPE(decl);
-
-	    if (var->is_global())
-	      {
-		const Package* package = this->package();
-		if (package == NULL)
-		  TREE_STATIC(decl) = 1;
-		else
-		  DECL_EXTERNAL(decl) = 1;
-		if (!Gogo::is_hidden_name(this->name_))
-		  {
-		    TREE_PUBLIC(decl) = 1;
-		    std::string asm_name = (package == NULL
-					    ? gogo->unique_prefix()
-					    : package->unique_prefix());
-		    asm_name.append(1, '.');
-		    asm_name.append(IDENTIFIER_POINTER(name),
-				    IDENTIFIER_LENGTH(name));
-		    tree asm_id = get_identifier_from_string(asm_name);
-		    SET_DECL_ASSEMBLER_NAME(decl, asm_id);
-		  }
-	      }
-
-	    // FIXME: We should only set this for variables which are
-	    // actually used somewhere.
-	    TREE_USED(decl) = 1;
-	  }
-      }
-      break;
-
     case NAMED_OBJECT_RESULT_VAR:
-      {
-	Result_variable* result = this->u_.result_var_value;
-	Type* type = result->type();
-	if (type->is_error())
-	  decl = error_mark_node;
-	else
-	  {
-	    gcc_assert(result->function() == function->func_value());
-	    source_location loc = function->location();
-	    tree result_type = type->get_tree(gogo);
-	    tree init;
-	    if (!result->is_in_heap())
-	      init = type->get_init_tree(gogo, false);
-	    else
-	      {
-		tree space = gogo->allocate_memory(type,
-						   TYPE_SIZE_UNIT(result_type),
-						   loc);
-		result_type = build_pointer_type(result_type);
-		tree subinit = type->get_init_tree(gogo, true);
-		if (subinit == NULL_TREE)
-		  init = fold_convert_loc(loc, result_type, space);
-		else
-		  {
-		    space = save_expr(space);
-		    space = fold_convert_loc(loc, result_type, space);
-		    tree spaceref = build_fold_indirect_ref_loc(loc, space);
-		    TREE_THIS_NOTRAP(spaceref) = 1;
-		    tree set = fold_build2_loc(loc, MODIFY_EXPR, void_type_node,
-					       spaceref, subinit);
-		    init = fold_build2_loc(loc, COMPOUND_EXPR, TREE_TYPE(space),
-					   set, space);
-		  }
-	      }
-	    decl = build_decl(loc, VAR_DECL, name, result_type);
-	    tree fnid = function->get_id(gogo);
-	    tree fndecl = function->func_value()->get_or_make_decl(gogo,
-								   function,
-								   fnid);
-	    DECL_CONTEXT(decl) = fndecl;
-	    DECL_INITIAL(decl) = init;
-	    TREE_USED(decl) = 1;
-	  }
-      }
-      break;
-
     case NAMED_OBJECT_SINK:
       gcc_unreachable();
 
@@ -1129,20 +1013,6 @@ Named_object::get_tree(Gogo* gogo, Named_object* function)
 
   tree ret = decl;
 
-  // If this is a local variable whose address is taken, then we
-  // actually store it in the heap.  For uses of the variable we need
-  // to return a reference to that heap location.
-  if (((this->classification_ == NAMED_OBJECT_VAR
-	&& this->var_value()->is_in_heap())
-       || (this->classification_ == NAMED_OBJECT_RESULT_VAR
-	   && this->result_var_value()->is_in_heap()))
-      && ret != error_mark_node)
-    {
-      gcc_assert(POINTER_TYPE_P(TREE_TYPE(ret)));
-      ret = build_fold_indirect_ref(ret);
-      TREE_THIS_NOTRAP(ret) = 1;
-    }
-
   this->tree_ = ret;
 
   if (ret != error_mark_node)
@@ -1162,7 +1032,9 @@ Variable::get_init_tree(Gogo* gogo, Named_object* function)
   if (this->init_ == NULL)
     {
       gcc_assert(!this->is_parameter_);
-      return this->type_->get_init_tree(gogo, this->is_global_);
+      return this->type_->get_init_tree(gogo,
+					(this->is_global_
+					 || this->is_in_heap()));
     }
   else
     {
@@ -1301,7 +1173,9 @@ Function::get_or_make_decl(Gogo* gogo, Named_object* no, tree id)
 	    {
 	      push_struct_function(decl);
 
-	      tree closure_decl = this->closure_var_->get_tree(gogo, no);
+	      Bvariable* bvar = this->closure_var_->get_backend_variable(gogo,
+									 no);
+	      tree closure_decl = var_to_tree(bvar);
 	      if (closure_decl == error_mark_node)
 		this->fndecl_ = error_mark_node;
 	      else
@@ -1384,26 +1258,15 @@ Function::make_receiver_parm_decl(Gogo* gogo, Named_object* no, tree var_decl)
 {
   if (var_decl == error_mark_node)
     return error_mark_node;
-  // If the function takes the address of a receiver which is passed
-  // by value, then we will have an INDIRECT_REF here.  We need to get
-  // the real variable.
-  bool is_in_heap = no->var_value()->is_in_heap();
-  tree val_type;
-  if (TREE_CODE(var_decl) != INDIRECT_REF)
-    {
-      gcc_assert(!is_in_heap);
-      val_type = TREE_TYPE(var_decl);
-    }
-  else
-    {
-      gcc_assert(is_in_heap);
-      var_decl = TREE_OPERAND(var_decl, 0);
-      if (var_decl == error_mark_node)
-	return error_mark_node;
-      gcc_assert(POINTER_TYPE_P(TREE_TYPE(var_decl)));
-      val_type = TREE_TYPE(TREE_TYPE(var_decl));
-    }
   gcc_assert(TREE_CODE(var_decl) == VAR_DECL);
+  tree val_type = TREE_TYPE(var_decl);
+  bool is_in_heap = no->var_value()->is_in_heap();
+  if (is_in_heap)
+    {
+      gcc_assert(POINTER_TYPE_P(val_type));
+      val_type = TREE_TYPE(val_type);
+    }
+
   source_location loc = DECL_SOURCE_LOCATION(var_decl);
   std::string name = IDENTIFIER_POINTER(DECL_NAME(var_decl));
   name += ".pointer";
@@ -1456,14 +1319,8 @@ Function::make_receiver_parm_decl(Gogo* gogo, Named_object* no, tree var_decl)
 // indirection.
 
 tree
-Function::copy_parm_to_heap(Gogo* gogo, Named_object* no, tree ref)
+Function::copy_parm_to_heap(Gogo* gogo, Named_object* no, tree var_decl)
 {
-  if (ref == error_mark_node)
-    return error_mark_node;
-
-  gcc_assert(TREE_CODE(ref) == INDIRECT_REF);
-
-  tree var_decl = TREE_OPERAND(ref, 0);
   if (var_decl == error_mark_node)
     return error_mark_node;
   gcc_assert(TREE_CODE(var_decl) == VAR_DECL);
@@ -1514,7 +1371,8 @@ Function::build_tree(Gogo* gogo, Named_object* named_function)
     {
       if ((*p)->is_variable() && (*p)->var_value()->is_parameter())
 	{
-	  *pp = (*p)->get_tree(gogo, named_function);
+	  Bvariable* bvar = (*p)->get_backend_variable(gogo, named_function);
+	  *pp = var_to_tree(bvar);
 
 	  // We always pass the receiver to a method as a pointer.  If
 	  // the receiver is declared as a non-pointer type, then we
@@ -1524,8 +1382,6 @@ Function::build_tree(Gogo* gogo, Named_object* named_function)
 	    {
 	      tree parm_decl = this->make_receiver_parm_decl(gogo, *p, *pp);
 	      tree var = *pp;
-	      if (TREE_CODE(var) == INDIRECT_REF)
-		var = TREE_OPERAND(var, 0);
 	      if (var != error_mark_node)
 		{
 		  gcc_assert(TREE_CODE(var) == VAR_DECL);
@@ -1539,16 +1395,12 @@ Function::build_tree(Gogo* gogo, Named_object* named_function)
 	      // If we take the address of a parameter, then we need
 	      // to copy it into the heap.
 	      tree parm_decl = this->copy_parm_to_heap(gogo, *p, *pp);
-	      if (*pp != error_mark_node)
+	      tree var = *pp;
+	      if (var != error_mark_node)
 		{
-		  gcc_assert(TREE_CODE(*pp) == INDIRECT_REF);
-		  tree var_decl = TREE_OPERAND(*pp, 0);
-		  if (var_decl != error_mark_node)
-		    {
-		      gcc_assert(TREE_CODE(var_decl) == VAR_DECL);
-		      DECL_CHAIN(var_decl) = declare_vars;
-		      declare_vars = var_decl;
-		    }
+		  gcc_assert(TREE_CODE(var) == VAR_DECL);
+		  DECL_CHAIN(var) = declare_vars;
+		  declare_vars = var;
 		}
 	      *pp = parm_decl;
 	    }
@@ -1561,16 +1413,41 @@ Function::build_tree(Gogo* gogo, Named_object* named_function)
 	}
       else if ((*p)->is_result_variable())
 	{
-	  tree var_decl = (*p)->get_tree(gogo, named_function);
-	  if (var_decl != error_mark_node
-	      && (*p)->result_var_value()->is_in_heap())
+	  Bvariable* bvar = (*p)->get_backend_variable(gogo, named_function);
+	  tree var_decl = var_to_tree(bvar);
+
+	  Type* type = (*p)->result_var_value()->type();
+	  tree init;
+	  if (!(*p)->result_var_value()->is_in_heap())
+	    init = type->get_init_tree(gogo, false);
+	  else
 	    {
-	      gcc_assert(TREE_CODE(var_decl) == INDIRECT_REF);
-	      var_decl = TREE_OPERAND(var_decl, 0);
+	      source_location loc = (*p)->location();
+	      tree type_tree = type->get_tree(gogo);
+	      tree space = gogo->allocate_memory(type,
+						 TYPE_SIZE_UNIT(type_tree),
+						 loc);
+	      tree ptr_type_tree = build_pointer_type(type_tree);
+	      tree subinit = type->get_init_tree(gogo, true);
+	      if (subinit == NULL_TREE)
+		init = fold_convert_loc(loc, ptr_type_tree, space);
+	      else
+		{
+		  space = save_expr(space);
+		  space = fold_convert_loc(loc, ptr_type_tree, space);
+		  tree spaceref = build_fold_indirect_ref_loc(loc, space);
+		  TREE_THIS_NOTRAP(spaceref) = 1;
+		  tree set = fold_build2_loc(loc, MODIFY_EXPR, void_type_node,
+					     spaceref, subinit);
+		  init = fold_build2_loc(loc, COMPOUND_EXPR, TREE_TYPE(space),
+					 set, space);
+		}
 	    }
+
 	  if (var_decl != error_mark_node)
 	    {
 	      gcc_assert(TREE_CODE(var_decl) == VAR_DECL);
+	      DECL_INITIAL(var_decl) = init;
 	      DECL_CHAIN(var_decl) = declare_vars;
 	      declare_vars = var_decl;
 	    }
@@ -1769,7 +1646,15 @@ Function::return_value(Gogo* gogo, Named_object* named_function,
 
   tree retval;
   if (results->size() == 1)
-    return this->results_->front()->get_tree(gogo, named_function);
+    {
+      Bvariable* bvar =
+	this->results_->front()->get_backend_variable(gogo,
+						      named_function);
+      tree ret = var_to_tree(bvar);
+      if (this->results_->front()->result_var_value()->is_in_heap())
+	ret = build_fold_indirect_ref_loc(location, ret);
+      return ret;
+    }
   else
     {
       tree rettype = TREE_TYPE(DECL_RESULT(this->fndecl_));
@@ -1781,8 +1666,11 @@ Function::return_value(Gogo* gogo, Named_object* named_function,
 	   ++pr, ++index, field = DECL_CHAIN(field))
 	{
 	  gcc_assert(field != NULL);
-	  tree val;
-	  val = (*this->results_)[index]->get_tree(gogo, named_function);
+	  Named_object* no = (*this->results_)[index];
+	  Bvariable* bvar = no->get_backend_variable(gogo, named_function);
+	  tree val = var_to_tree(bvar);
+	  if (no->result_var_value()->is_in_heap())
+	    val = build_fold_indirect_ref_loc(location, val);
 	  tree set = fold_build2_loc(location, MODIFY_EXPR, void_type_node,
 				     build3(COMPONENT_REF, TREE_TYPE(field),
 					    retval, field, NULL_TREE),
@@ -1847,28 +1735,18 @@ Block::get_tree(Translate_context* context)
        pv != this->bindings_->end_definitions();
        ++pv)
     {
-      if ((!(*pv)->is_variable() || !(*pv)->var_value()->is_parameter())
-	  && !(*pv)->is_result_variable()
-	  && !(*pv)->is_const())
+      if ((*pv)->is_variable() && !(*pv)->var_value()->is_parameter())
 	{
-	  tree var = (*pv)->get_tree(gogo, context->function());
-	  if (var != error_mark_node && TREE_TYPE(var) != error_mark_node)
-	    {
-	      if ((*pv)->is_variable() && (*pv)->var_value()->is_in_heap())
-		{
-		  gcc_assert(TREE_CODE(var) == INDIRECT_REF);
-		  var = TREE_OPERAND(var, 0);
-		  gcc_assert(TREE_CODE(var) == VAR_DECL);
-		}
-	      *pp = var;
-	      pp = &DECL_CHAIN(*pp);
-	    }
+	  Bvariable* var = (*pv)->get_backend_variable(gogo,
+						       context->function());
+	  *pp = var_to_tree(var);
+	  if (*pp != error_mark_node)
+	    pp = &DECL_CHAIN(*pp);
 	}
     }
   *pp = NULL_TREE;
 
-  Translate_context subcontext(context->gogo(), context->function(),
-			       this, block);
+  Translate_context subcontext(gogo, context->function(), this, block);
 
   tree statements = NULL_TREE;
 
