@@ -1,3 +1,10 @@
+2011-04-19  Jan Hubicka  <jh@suse.cz>
+
+	* cgraph.h (cgraph_optimize_for_size_p): Declare.
+	* ipa-cp.c (ipcp_insert_stage): Use cgraph_optimize_for_size_p.
+	* predict.c (cgraph_optimize_for_size_p): Break out from ...
+	(optimize_function_for_size_p) ... here.
+
 2011-04-19  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/48207

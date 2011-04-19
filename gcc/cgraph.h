@@ -656,6 +656,7 @@ bool cgraph_comdat_can_be_unshared_p (struct cgraph_node *);
 
 /* In predict.c  */
 bool cgraph_maybe_hot_edge_p (struct cgraph_edge *e);
+bool cgraph_optimize_for_size_p (struct cgraph_node *);
 
 /* In varpool.c  */
 extern GTY(()) struct varpool_node *varpool_nodes_queue;
