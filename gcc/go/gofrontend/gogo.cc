@@ -3285,6 +3285,48 @@ Block::may_fall_through() const
   return this->statements_.back()->may_fall_through();
 }
 
+// Convert a block to the backend representation.
+
+Bblock*
+Block::get_backend(Translate_context* context)
+{
+  Gogo* gogo = context->gogo();
+  Named_object* function = context->function();
+  std::vector<Bvariable*> vars;
+  vars.reserve(this->bindings_->size_definitions());
+  for (Bindings::const_definitions_iterator pv =
+	 this->bindings_->begin_definitions();
+       pv != this->bindings_->end_definitions();
+       ++pv)
+    {
+      if ((*pv)->is_variable() && !(*pv)->var_value()->is_parameter())
+	vars.push_back((*pv)->get_backend_variable(gogo, function));
+    }
+
+  // FIXME: Permitting FUNCTION to be NULL here is a temporary measure
+  // until we have a proper representation of the init function.
+  Bfunction* bfunction;
+  if (function == NULL)
+    bfunction = NULL;
+  else
+    bfunction = tree_to_function(function->func_value()->get_decl());
+  Bblock* ret = context->backend()->block(bfunction, context->bblock(),
+					  vars, this->start_location_,
+					  this->end_location_);
+
+  Translate_context subcontext(gogo, function, this, ret);
+  std::vector<Bstatement*> bstatements;
+  bstatements.reserve(this->statements_.size());
+  for (std::vector<Statement*>::const_iterator p = this->statements_.begin();
+       p != this->statements_.end();
+       ++p)
+    bstatements.push_back(tree_to_stat((*p)->get_tree(&subcontext)));
+
+  context->backend()->block_add_statements(ret, bstatements);
+
+  return ret;
+}
+
 // Class Variable.
 
 Variable::Variable(Type* type, Expression* init, bool is_global,

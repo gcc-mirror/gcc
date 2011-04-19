@@ -92,6 +92,14 @@ class Bfunction : public Gcc_tree
   { }
 };
 
+class Bblock : public Gcc_tree
+{
+ public:
+  Bblock(tree t)
+    : Gcc_tree(t)
+  { }
+};
+
 class Bvariable : public Gcc_tree
 {
  public:
@@ -194,8 +202,8 @@ class Gcc_backend : public Backend
 		   source_location);
 
   Bstatement*
-  if_statement(Bexpression* condition, Bstatement* then_block,
-	       Bstatement* else_block, source_location);
+  if_statement(Bexpression* condition, Bblock* then_block, Bblock* else_block,
+	       source_location);
 
   Bstatement*
   switch_statement(Bexpression* value,
@@ -208,6 +216,18 @@ class Gcc_backend : public Backend
 
   Bstatement*
   statement_list(const std::vector<Bstatement*>&);
+
+  // Blocks.
+
+  Bblock*
+  block(Bfunction*, Bblock*, const std::vector<Bvariable*>&,
+	source_location, source_location);
+
+  void
+  block_add_statements(Bblock*, const std::vector<Bstatement*>&);
+
+  Bstatement*
+  block_statement(Bblock*);
 
   // Variables.
 
@@ -370,8 +390,8 @@ Gcc_backend::return_statement(Bfunction* bfunction,
 // If.
 
 Bstatement*
-Gcc_backend::if_statement(Bexpression* condition, Bstatement* then_block,
-			  Bstatement* else_block, source_location location)
+Gcc_backend::if_statement(Bexpression* condition, Bblock* then_block,
+			  Bblock* else_block, source_location location)
 {
   tree cond_tree = condition->get_tree();
   tree then_tree = then_block->get_tree();
@@ -479,6 +499,114 @@ Gcc_backend::statement_list(const std::vector<Bstatement*>& statements)
       append_to_statement_list(t, &stmt_list);
     }
   return this->make_statement(stmt_list);
+}
+
+// Make a block.  For some reason gcc uses a dual structure for
+// blocks: BLOCK tree nodes and BIND_EXPR tree nodes.  Since the
+// BIND_EXPR node points to the BLOCK node, we store the BIND_EXPR in
+// the Bblock.
+
+Bblock*
+Gcc_backend::block(Bfunction* function, Bblock* enclosing,
+		   const std::vector<Bvariable*>& vars,
+		   source_location start_location,
+		   source_location)
+{
+  tree block_tree = make_node(BLOCK);
+  if (enclosing == NULL)
+    {
+      // FIXME: Permitting FUNCTION to be NULL is a temporary measure
+      // until we have a proper representation of the init function.
+      tree fndecl;
+      if (function == NULL)
+	fndecl = current_function_decl;
+      else
+	fndecl = function->get_tree();
+      gcc_assert(fndecl != NULL_TREE);
+
+      // We may have already created a block for local variables when
+      // we take the address of a parameter.
+      if (DECL_INITIAL(fndecl) == NULL_TREE)
+	{
+	  BLOCK_SUPERCONTEXT(block_tree) = fndecl;
+	  DECL_INITIAL(fndecl) = block_tree;
+	}
+      else
+	{
+	  tree superblock_tree = DECL_INITIAL(fndecl);
+	  BLOCK_SUPERCONTEXT(block_tree) = superblock_tree;
+	  tree* pp;
+	  for (pp = &BLOCK_SUBBLOCKS(superblock_tree);
+	       *pp != NULL_TREE;
+	       pp = &BLOCK_CHAIN(*pp))
+	    ;
+	  *pp = block_tree;
+	}
+    }
+  else
+    {
+      tree superbind_tree = enclosing->get_tree();
+      tree superblock_tree = BIND_EXPR_BLOCK(superbind_tree);
+      gcc_assert(TREE_CODE(superblock_tree) == BLOCK);
+
+      BLOCK_SUPERCONTEXT(block_tree) = superblock_tree;
+      tree* pp;
+      for (pp = &BLOCK_SUBBLOCKS(superblock_tree);
+	   *pp != NULL_TREE;
+	   pp = &BLOCK_CHAIN(*pp))
+	;
+      *pp = block_tree;
+    }
+
+  tree* pp = &BLOCK_VARS(block_tree);
+  for (std::vector<Bvariable*>::const_iterator pv = vars.begin();
+       pv != vars.end();
+       ++pv)
+    {
+      *pp = (*pv)->get_tree();
+      if (*pp != error_mark_node)
+	pp = &DECL_CHAIN(*pp);
+    }
+  *pp = NULL_TREE;
+
+  TREE_USED(block_tree) = 1;
+
+  tree bind_tree = build3_loc(start_location, BIND_EXPR, void_type_node,
+			      BLOCK_VARS(block_tree), NULL_TREE, block_tree);
+  TREE_SIDE_EFFECTS(bind_tree) = 1;
+
+  return new Bblock(bind_tree);
+}
+
+// Add statements to a block.
+
+void
+Gcc_backend::block_add_statements(Bblock* bblock,
+				  const std::vector<Bstatement*>& statements)
+{
+  tree stmt_list = NULL_TREE;
+  for (std::vector<Bstatement*>::const_iterator p = statements.begin();
+       p != statements.end();
+       ++p)
+    {
+      tree s = (*p)->get_tree();
+      if (s != error_mark_node)
+	append_to_statement_list(s, &stmt_list);
+    }
+
+  tree bind_tree = bblock->get_tree();
+  gcc_assert(TREE_CODE(bind_tree) == BIND_EXPR);
+  BIND_EXPR_BODY(bind_tree) = stmt_list;
+}
+
+// Return a block as a statement.
+
+Bstatement*
+Gcc_backend::block_statement(Bblock* bblock)
+{
+  tree bind_tree = bblock->get_tree();
+  gcc_assert(TREE_CODE(bind_tree) == BIND_EXPR);
+  return this->make_statement(bind_tree);
 }
 
 // Make a global variable.
@@ -665,6 +793,13 @@ tree_to_function(tree t)
   return new Bfunction(t);
 }
 
+Bblock*
+tree_to_block(tree t)
+{
+  gcc_assert(TREE_CODE(t) == BIND_EXPR);
+  return new Bblock(t);
+}
+
 tree
 expr_to_tree(Bexpression* be)
 {
@@ -675,6 +810,12 @@ tree
 stat_to_tree(Bstatement* bs)
 {
   return bs->get_tree();
+}
+
+tree
+block_to_tree(Bblock* bb)
+{
+  return bb->get_tree();
 }
 
 tree

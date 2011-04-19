@@ -4470,7 +4470,7 @@ Array_type::get_length_tree(Gogo* gogo)
 
 	  // Make up a translation context for the array length
 	  // expression.  FIXME: This won't work in general.
-	  Translate_context context(gogo, NULL, NULL, NULL_TREE);
+	  Translate_context context(gogo, NULL, NULL, NULL);
 	  tree len = this->length_->get_tree(&context);
 	  if (len != error_mark_node)
 	    {

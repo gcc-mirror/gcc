@@ -1,3 +1,13 @@
+2011-04-19  Ian Lance Taylor  <iant@google.com>
+
+	* go-gcc.cc (class Bblock): Define.
+	(Gcc_backend::if_statement): Change then_block and else_block to
+	Bblock*.
+	(Gcc_backend::block): New function.
+	(Gcc_backend::block_add_statements): New function.
+	(Gcc_backend::block_statement): New function.
+	(tree_to_block, block_to_tree): New functions.
+
 2011-04-18  Ian Lance Taylor  <iant@google.com>
 
 	* go-gcc.cc: Include "go-c.h".

@@ -43,6 +43,7 @@ class Export;
 class Import;
 class Bexpression;
 class Bstatement;
+class Bblock;
 class Bvariable;
 class Blabel;
 
@@ -767,9 +768,9 @@ class Block
   bool
   may_fall_through() const;
 
-  // Return a tree of the code in this block.
-  tree
-  get_tree(Translate_context*);
+  // Convert the block to the backend representation.
+  Bblock*
+  get_backend(Translate_context*);
 
   // Iterate over statements.
 
@@ -2507,9 +2508,9 @@ class Translate_context
 {
  public:
   Translate_context(Gogo* gogo, Named_object* function, Block* block,
-		    tree block_tree)
+		    Bblock* bblock)
     : gogo_(gogo), backend_(gogo->backend()), function_(function),
-      block_(block), block_tree_(block_tree), is_const_(false)
+      block_(block), bblock_(bblock), is_const_(false)
   { }
 
   // Accessors.
@@ -2530,9 +2531,9 @@ class Translate_context
   block()
   { return this->block_; }
 
-  tree
-  block_tree()
-  { return this->block_tree_; }
+  Bblock*
+  bblock()
+  { return this->bblock_; }
 
   bool
   is_const()
@@ -2548,12 +2549,15 @@ class Translate_context
   Gogo* gogo_;
   // The generator for the backend data structures.
   Backend* backend_;
-  // The function we are currently translating.
+  // The function we are currently translating.  NULL if not in a
+  // function, e.g., the initializer of a global variable.
   Named_object* function_;
-  // The block we are currently translating.
+  // The block we are currently translating.  NULL if not in a
+  // function.
   Block *block_;
-  // The BLOCK node for the current block.
-  tree block_tree_;
+  // The backend representation of the current block.  NULL if block_
+  // is NULL.
+  Bblock* bblock_;
   // Whether this is being evaluated in a constant context.  This is
   // used for type descriptor initializers.
   bool is_const_;
