@@ -71,9 +71,7 @@ gfc_run_passes (gfc_namespace *ns)
       if (gfc_option.dump_fortran_optimized)
 	gfc_dump_parse_tree (ns, stdout);
 
-      /* FIXME: The following should be XDELETEVEC(expr_array);
-      but we cannot do that because it depends on free.  */
-      free (expr_array);
+      XDELETEVEC (expr_array);
     }
 }
 
