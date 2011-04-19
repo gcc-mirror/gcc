@@ -59,7 +59,7 @@
 
 	PR target/48366
 	* config/pa/pa.c (hppa_register_move_cost): Increase to 18 cost of
-	move from floating point to shift amount register .
+	move from floating point to shift amount register.
 	(emit_move_sequence): Remove secondary reload support for floating
 	point to shift amount amount register copies.
 	(pa_secondary_reload): Return GENERAL_REGS for floating point/shift
