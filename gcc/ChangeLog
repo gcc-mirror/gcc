@@ -341,6 +341,37 @@
 	* ipa-inline-analysis.c (inline_read_summary): Read size/time
 	in same order as they're written.
 
+2011-04-16  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* config/pa/predicates.md: Reorganize and simplify predicates.
+	Eliminate duplicate code checks.
+	(arith_operand): Rename to arith14_operand
+	(reg_or_ior_operand): Rename to reg_or_cint_ior_operand.
+	* config/pa/pa.md: Use renamed operands.
+	* config/pa/pa-protos.h (symbolic_operand): Delete declaration.
+	(tls_symbolic_operand, function_label_operand, lhs_lshift_cint_operand,
+	arith11_operand, adddi3_operand, indexed_memory_operand,
+	symbolic_memory_operand, int11_operand, reg_or_cint_move_operand,
+	arith5_operand, uint5_operand, pic_label_operand, plus_xor_ior_operator,
+	borx_reg_operand, shadd_operand, arith_operand, read_only_operand,
+	move_dest_operand, move_src_operand, prefetch_cc_operand,
+	prefetch_nocc_operand, and_operand, ior_operand, arith32_operand,
+	uint32_operand, reg_before_reload_operand, reg_or_0_operand,
+	reg_or_0_or_nonsymb_mem_operand, pre_cint_operand, post_cint_operand,
+	div_operand, int5_operand, movb_comparison_operator,
+	ireg_or_int5_operand, call_operand_address, ior_operand, fp_reg_operand,
+	arith_double_operand, ireg_operand, lhs_lshift_operand,
+	pc_or_label_operand, non_hard_reg_operand, eq_neq_comparison_operator,
+	integer_store_memory_operand): Likewise.
+	* config/pa/pa.c (adddi3_operand): Move to predicates.md.
+	(integer_store_memory_operand, read_only_operand,
+	function_label_operand, borx_reg_operand,
+	non_hard_reg_operand): Likewise.
+	(eq_neq_comparison_operator): Delete unused operator.
+	(legitimize_pic_address): Use VOIDmode for mode argument in calls to
+	function_label_operand.
+	(emit_move_sequence): Likewise.
+
 2011-04-16  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/sse.md (sseunpackmode): New mode attribute.
@@ -1656,7 +1687,7 @@
 
 	PR target/48366
 	* config/pa/pa.c (hppa_register_move_cost): Increase to 18 cost of
-	move from floating point to shift amount register .
+	move from floating point to shift amount register.
 	(emit_move_sequence): Remove secondary reload support for floating
 	point to shift amount amount register copies.
 	(pa_secondary_reload): Return GENERAL_REGS for floating point/shift
