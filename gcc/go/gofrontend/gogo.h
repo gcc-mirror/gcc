@@ -43,6 +43,7 @@ class Export;
 class Import;
 class Bexpression;
 class Bstatement;
+class Bvariable;
 class Blabel;
 
 // This file declares the basic classes used to hold the internal
@@ -1270,6 +1271,11 @@ class Variable
   set_address_taken()
   { this->is_address_taken_ = true; }
 
+  // Get the backend representation of the variable.
+  Bvariable*
+  get_backend_variable(Gogo*, Named_object*, const Package*,
+		       const std::string&);
+
   // Get the initial value of the variable as a tree.  This may only
   // be called if has_pre_init() returns false.
   tree
@@ -1312,6 +1318,8 @@ class Variable
   Block* preinit_;
   // Location of variable definition.
   source_location location_;
+  // Backend representation.
+  Bvariable* backend_;
   // Whether this is a global variable.
   bool is_global_ : 1;
   // Whether this is a function parameter.
@@ -1346,9 +1354,10 @@ class Variable
 class Result_variable
 {
  public:
-  Result_variable(Type* type, Function* function, int index)
-    : type_(type), function_(function), index_(index),
-      is_address_taken_(false)
+  Result_variable(Type* type, Function* function, int index,
+		  source_location location)
+    : type_(type), function_(function), index_(index), location_(location),
+      backend_(NULL), is_address_taken_(false)
   { }
 
   // Get the type of the result variable.
@@ -1365,6 +1374,11 @@ class Result_variable
   int
   index() const
   { return this->index_; }
+
+  // The location of the variable definition.
+  source_location
+  location() const
+  { return this->location_; }
 
   // Whether this variable's address is taken.
   bool
@@ -1387,6 +1401,10 @@ class Result_variable
   set_function(Function* function)
   { this->function_ = function; }
 
+  // Get the backend representation of the variable.
+  Bvariable*
+  get_backend_variable(Gogo*, Named_object*, const std::string&);
+
  private:
   // Type of result variable.
   Type* type_;
@@ -1394,6 +1412,10 @@ class Result_variable
   Function* function_;
   // Index in list of results.
   int index_;
+  // Where the result variable is defined.
+  source_location location_;
+  // Backend representation.
+  Bvariable* backend_;
   // Whether something takes the address of this variable.
   bool is_address_taken_;
 };
@@ -1867,6 +1889,10 @@ class Named_object
   // The location where this object was defined or referenced.
   source_location
   location() const;
+
+  // Convert a variable to the backend representation.
+  Bvariable*
+  get_backend_variable(Gogo*, Named_object* function);
 
   // Return a tree for the external identifier for this object.
   tree

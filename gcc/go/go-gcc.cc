@@ -37,6 +37,8 @@ extern "C"
 }
 #endif
 
+#include "go-c.h"
+
 #include "gogo.h"
 #include "backend.h"
 
@@ -86,6 +88,14 @@ class Bfunction : public Gcc_tree
 {
  public:
   Bfunction(tree t)
+    : Gcc_tree(t)
+  { }
+};
+
+class Bvariable : public Gcc_tree
+{
+ public:
+  Bvariable(tree t)
     : Gcc_tree(t)
   { }
 };
@@ -174,6 +184,9 @@ class Gcc_backend : public Backend
   expression_statement(Bexpression*);
 
   Bstatement*
+  init_statement(Bvariable* var, Bexpression* init);
+
+  Bstatement*
   assignment_statement(Bexpression* lhs, Bexpression* rhs, source_location);
 
   Bstatement*
@@ -195,6 +208,32 @@ class Gcc_backend : public Backend
 
   Bstatement*
   statement_list(const std::vector<Bstatement*>&);
+
+  // Variables.
+
+  Bvariable*
+  error_variable()
+  { return new Bvariable(error_mark_node); }
+
+  Bvariable*
+  global_variable(const std::string& package_name,
+		  const std::string& unique_prefix,
+		  const std::string& name,
+		  Btype* btype,
+		  bool is_external,
+		  bool is_hidden,
+		  source_location location);
+
+  void
+  global_variable_set_init(Bvariable*, Bexpression*);
+
+  Bvariable*
+  local_variable(Bfunction*, const std::string& name, Btype* type,
+		 source_location);
+
+  Bvariable*
+  parameter_variable(Bfunction*, const std::string& name, Btype* type,
+		     source_location);
 
   // Labels.
 
@@ -236,6 +275,21 @@ Bstatement*
 Gcc_backend::expression_statement(Bexpression* expr)
 {
   return this->make_statement(expr->get_tree());
+}
+
+// Variable initialization.
+
+Bstatement*
+Gcc_backend::init_statement(Bvariable* var, Bexpression* init)
+{
+  tree var_tree = var->get_tree();
+  tree init_tree = init->get_tree();
+  if (var_tree == error_mark_node || init_tree == error_mark_node)
+    return this->error_statement();
+  gcc_assert(TREE_CODE(var_tree) == VAR_DECL);
+  DECL_INITIAL(var_tree) = init_tree;
+  return this->make_statement(build1_loc(DECL_SOURCE_LOCATION(var_tree),
+					 DECL_EXPR, void_type_node, var_tree));
 }
 
 // Assignment.
@@ -427,6 +481,99 @@ Gcc_backend::statement_list(const std::vector<Bstatement*>& statements)
   return this->make_statement(stmt_list);
 }
 
+// Make a global variable.
+
+Bvariable*
+Gcc_backend::global_variable(const std::string& package_name,
+			     const std::string& unique_prefix,
+			     const std::string& name,
+			     Btype* btype,
+			     bool is_external,
+			     bool is_hidden,
+			     source_location location)
+{
+  tree type_tree = btype->get_tree();
+  if (type_tree == error_mark_node)
+    return this->error_variable();
+
+  std::string var_name(package_name);
+  var_name.push_back('.');
+  var_name.append(name);
+  tree decl = build_decl(location, VAR_DECL,
+			 get_identifier_from_string(var_name),
+			 type_tree);
+  if (is_external)
+    DECL_EXTERNAL(decl) = 1;
+  else
+    TREE_STATIC(decl) = 1;
+  if (!is_hidden)
+    {
+      TREE_PUBLIC(decl) = 1;
+
+      std::string asm_name(unique_prefix);
+      asm_name.push_back('.');
+      asm_name.append(var_name);
+      SET_DECL_ASSEMBLER_NAME(decl, get_identifier_from_string(asm_name));
+    }
+  TREE_USED(decl) = 1;
+
+  go_preserve_from_gc(decl);
+
+  return new Bvariable(decl);
+}
+
+// Set the initial value of a global variable.
+
+void
+Gcc_backend::global_variable_set_init(Bvariable* var, Bexpression* expr)
+{
+  tree expr_tree = expr->get_tree();
+  if (expr_tree == error_mark_node)
+    return;
+  gcc_assert(TREE_CONSTANT(expr_tree));
+  tree var_decl = var->get_tree();
+  if (var_decl == error_mark_node)
+    return;
+  DECL_INITIAL(var_decl) = expr_tree;
+}
+
+// Make a local variable.
+
+Bvariable*
+Gcc_backend::local_variable(Bfunction* function, const std::string& name,
+			    Btype* btype, source_location location)
+{
+  tree type_tree = btype->get_tree();
+  if (type_tree == error_mark_node)
+    return this->error_variable();
+  tree decl = build_decl(location, VAR_DECL,
+			 get_identifier_from_string(name),
+			 type_tree);
+  DECL_CONTEXT(decl) = function->get_tree();
+  TREE_USED(decl) = 1;
+  go_preserve_from_gc(decl);
+  return new Bvariable(decl);
+}
+
+// Make a function parameter variable.
+
+Bvariable*
+Gcc_backend::parameter_variable(Bfunction* function, const std::string& name,
+				Btype* btype, source_location location)
+{
+  tree type_tree = btype->get_tree();
+  if (type_tree == error_mark_node)
+    return this->error_variable();
+  tree decl = build_decl(location, PARM_DECL,
+			 get_identifier_from_string(name),
+			 type_tree);
+  DECL_CONTEXT(decl) = function->get_tree();
+  DECL_ARG_TYPE(decl) = type_tree;
+  TREE_USED(decl) = 1;
+  go_preserve_from_gc(decl);
+  return new Bvariable(decl);
+}
+
 // Make a label.
 
 Blabel*
@@ -494,6 +641,12 @@ go_get_backend()
 // FIXME: Temporary functions while converting to the new backend
 // interface.
 
+Btype*
+tree_to_type(tree t)
+{
+  return new Btype(t);
+}
+
 Bexpression*
 tree_to_expr(tree t)
 {
@@ -522,4 +675,10 @@ tree
 stat_to_tree(Bstatement* bs)
 {
   return bs->get_tree();
+}
+
+tree
+var_to_tree(Bvariable* bv)
+{
+  return bv->get_tree();
 }

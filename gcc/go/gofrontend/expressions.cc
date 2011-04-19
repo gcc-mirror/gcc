@@ -972,7 +972,24 @@ Var_expression::do_address_taken(bool escapes)
 tree
 Var_expression::do_get_tree(Translate_context* context)
 {
-  return this->variable_->get_tree(context->gogo(), context->function());
+  Bvariable* bvar = this->variable_->get_backend_variable(context->gogo(),
+							  context->function());
+  tree ret = var_to_tree(bvar);
+  if (ret == error_mark_node)
+    return error_mark_node;
+  bool is_in_heap;
+  if (this->variable_->is_variable())
+    is_in_heap = this->variable_->var_value()->is_in_heap();
+  else if (this->variable_->is_result_variable())
+    is_in_heap = this->variable_->result_var_value()->is_in_heap();
+  else
+    gcc_unreachable();
+  if (is_in_heap)
+    {
+      ret = build_fold_indirect_ref_loc(this->location(), ret);
+      TREE_THIS_NOTRAP(ret) = 1;
+    }
+  return ret;
 }
 
 // Make a reference to a variable in an expression.
