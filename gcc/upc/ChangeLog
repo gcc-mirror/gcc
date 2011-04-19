@@ -1,3 +1,10 @@
+2011-04-19  Gary Funck  <gary@intrepid.com>
+
+	Eliminate warnings when compiling upc-cmd.c.
+
+	* upc-cmd.c (file_exists): Remove.
+	  (arg_copy): Remove const qualifier.
+
 2011-04-13  Gary Funck  <gary@intrepid.com>
 
 	* upc-cmd.c (GCC_WORD_SWITCH_TAKES_ARG): Add "dumpbase"

@@ -245,15 +245,6 @@ get_print_cmd (const char *exec_args[], int n_args, const char *print_cmd)
   return result;
 }
 
-/* Test whether the file named by FILENAME exists.  */
-static
-int
-file_exists (const char *filename)
-{
-  struct stat statbuf;
-  return stat(filename, &statbuf) == 0;
-}
-
 /* Return the path of the library directory,
    where libupc can be found.  LIB_PATH will be defined
    when the development version of the upc command is
@@ -579,7 +570,7 @@ main (int argc, char *argv[])
      qualified.  Make a copy to be on the safe side.  */
   for (i = 0; i < nargs; ++i)
     {
-      const char *arg_copy = NULL;
+      char *arg_copy = NULL;
       if (exec_args[i] != NULL)
         arg_copy = xstrdup (exec_args[i]);
       exec_arg_list[i] = arg_copy;
