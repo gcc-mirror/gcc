@@ -93,6 +93,13 @@ static_assert(std::is_default_constructible<
 static_assert(std::is_default_constructible<const
 	      std::initializer_list<int>[1]>::value, "Error");
 
+static_assert(std::is_default_constructible
+	      <__gnu_test::NoexceptDefaultClass>::value, "Error");
+static_assert(std::is_default_constructible
+	      <__gnu_test::ThrowDefaultClass>::value, "Error");
+static_assert(std::is_default_constructible
+	      <__gnu_test::ExceptDefaultClass>::value, "Error");
+
 static_assert(!std::is_default_constructible<void>::value, "Error");
 static_assert(!std::is_default_constructible<const void>::value, "Error");
 static_assert(!std::is_default_constructible<Abstract>::value, "Error");

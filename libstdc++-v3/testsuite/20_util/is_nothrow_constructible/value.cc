@@ -2,7 +2,7 @@
 
 // 2010-06-09  Paolo Carlini  <paolo.carlini@oracle.com>
 
-// Copyright (C) 2010 Free Software Foundation, Inc.
+// Copyright (C) 2010, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -43,6 +43,8 @@ void test01()
   VERIFY( (test_property<is_nothrow_constructible, NothrowExplicitClass,
 	   double&, int&, double&>(true)) );
 
+  VERIFY( (test_property<is_nothrow_constructible, int[1]>(true)) );
+
   // Negative tests.
   VERIFY( (test_property<is_nothrow_constructible, NoexceptExplicitClass,
 	   void*>(false)) );
@@ -69,6 +71,8 @@ void test01()
 	   int&>(false)) );
   VERIFY( (test_property<is_nothrow_constructible, ThrowExplicitClass,
 	   double&, int&, double&>(false)) );
+
+  VERIFY( (test_property<is_nothrow_constructible, int[]>(false)) );
 }
 
 int main()
