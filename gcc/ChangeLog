@@ -1,3 +1,12 @@
+2011-04-19  Tristan Gingold  <gingold@adacore.com>
+
+	* config.gcc (-*-*-*vms): Added.
+	(alpha64-dec-*vms*,alpha*-dec-*vms*, ia64-hp-*vms*): Common
+	definitions moved.
+	* config/vms/vms-ld.c: New file.
+	* config/vms/vms-ar.c: New file.
+	* config/vms/t-vmsnative: New file.
+
 2011-04-18  Xinliang David Li  <davidxl@google.com>
 
 	* final.c (dump_basic_block_info): Use ASM_COMMENT_START.
