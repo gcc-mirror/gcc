@@ -36,6 +36,7 @@
 ;; The following memory constraints have been used:
 ;; in ARM/Thumb-2 state: Q, Ut, Uv, Uy, Un, Um, Us
 ;; in ARM state: Uq
+;; in Thumb state: Uu
 
 
 (define_register_constraint "f" "TARGET_ARM ? FPA_REGS : NO_REGS"
@@ -331,6 +332,14 @@
   In ARM/Thumb-2 state an address that is a single base register."
  (and (match_code "mem")
       (match_test "REG_P (XEXP (op, 0))")))
+
+(define_memory_constraint "Uu"
+ "@internal
+  In Thumb state an address that is valid in 16bit encoding."
+ (and (match_code "mem")
+      (match_test "TARGET_THUMB
+		   && thumb1_legitimate_address_p (GET_MODE (op), XEXP (op, 0),
+						   0)")))
 
 ;; We used to have constraint letters for S and R in ARM state, but
 ;; all uses of these now appear to have been removed.
