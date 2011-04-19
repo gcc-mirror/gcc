@@ -4235,6 +4235,7 @@ write_typed_struct_alloc_def (outf_p f,
 			      enum alloc_quantity quantity,
 			      enum alloc_zone zone)
 {
+  gcc_assert (UNION_OR_STRUCT_P (s));
   write_typed_alloc_def (f, variable_size_p (s), get_type_specifier (s),
                          s->u.s.tag, allocator_type, quantity, zone);
 }
@@ -4269,6 +4270,12 @@ write_typed_alloc_defns (outf_p f,
     {
       if (!USED_BY_TYPED_GC_P (s))
 	continue;
+      gcc_assert (UNION_OR_STRUCT_P (s));
+      /* In plugin mode onput output ggc_alloc macro definitions
+	 relevant to plugin input files.  */
+      if (nb_plugin_files > 0 
+	  && ((s->u.s.line.file == NULL) || !s->u.s.line.file->inpisplugin))
+	continue;
       write_typed_struct_alloc_def (f, s, "", single, any_zone);
       write_typed_struct_alloc_def (f, s, "cleared_", single, any_zone);
       write_typed_struct_alloc_def (f, s, "vec_", vector, any_zone);
@@ -4287,6 +4294,14 @@ write_typed_alloc_defns (outf_p f,
       s = p->type;
       if (!USED_BY_TYPED_GC_P (s) || (strcmp (p->name, s->u.s.tag) == 0))
 	continue;
+      /* In plugin mode onput output ggc_alloc macro definitions
+	 relevant to plugin input files.  */
+      if (nb_plugin_files > 0) 
+	{
+	  struct fileloc* filoc = type_fileloc(s);
+	  if (!filoc || !filoc->file->inpisplugin)
+	    continue;
+	};
       write_typed_typedef_alloc_def (f, p, "", single, any_zone);
       write_typed_typedef_alloc_def (f, p, "cleared_", single, any_zone);
       write_typed_typedef_alloc_def (f, p, "vec_", vector, any_zone);
@@ -4814,6 +4829,7 @@ input_file_by_name (const char* name)
   f = XCNEWVAR (input_file, sizeof (input_file)+namlen+2);
   f->inpbitmap = 0;
   f->inpoutf = NULL;
+  f->inpisplugin = false;
   strcpy (f->inpname, name);
   slot = htab_find_slot (input_file_htab, f, INSERT);
   gcc_assert (slot != NULL);
@@ -4945,8 +4961,11 @@ main (int argc, char **argv)
 
       /* Parse our plugin files and augment the state.  */
       for (ix = 0; ix < nb_plugin_files; ix++)
-	parse_file (get_input_file_name (plugin_files[ix]));
-
+	{
+	  input_file* pluginput = plugin_files [ix];
+	  pluginput->inpisplugin = true;
+	  parse_file (get_input_file_name (pluginput));
+	}
       if (hit_error)
 	return 1;
 

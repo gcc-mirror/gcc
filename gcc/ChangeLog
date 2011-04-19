@@ -1,3 +1,16 @@
+
+2011-04-19  Basile Starynkevitch  <basile@starynkevitch.net>
+
+	* gengtype.h: Updated copyright year.
+	(struct input_file_st): Add inpisplugin field.
+	(type_fileloc): New function.
+	* gengtype.c
+	(write_typed_struct_alloc_def): Add gcc_assert.
+	(write_typed_alloc_defns): Ditto. Don't output for plugin files.
+	(write_typed_alloc_defns): Don't output for plugin files.
+	(input_file_by_name): Clear inpisplugin field.
+	(main): Set inpisplugin field for plugin files.
+
 2011-04-19  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* gengtype-state.c (string_eq): New.
@@ -22,6 +35,7 @@
 	* config/vms/vms-ar.c: New file.
 	* config/vms/t-vmsnative: New file.
 
+>>>>>>> .r172704
 2011-04-18  Xinliang David Li  <davidxl@google.com>
 
 	* final.c (dump_basic_block_info): Use ASM_COMMENT_START.

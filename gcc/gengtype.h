@@ -1,5 +1,5 @@
 /* Process source files and output type information.
-   Copyright (C) 2002, 2003, 2004, 2007, 2008, 2010 
+   Copyright (C) 2002, 2003, 2004, 2007, 2008, 2010, 2011 
    Free Software Foundation, Inc.
 
    This file is part of GCC.
@@ -33,6 +33,7 @@ struct input_file_st
   struct outf* inpoutf;  /* Cached corresponding output file, computed
                             in get_output_file_with_visibility.  */
   lang_bitmap inpbitmap; /* The set of languages using this file.  */
+  bool inpisplugin;      /* Flag set for plugin input files.  */
   char inpname[1];       /* A variable-length array, ended by a null
                             char.  */
 };
@@ -327,6 +328,19 @@ extern struct type scalar_char;
      || (x)->kind == TYPE_LANG_STRUCT)
 
 
+
+/* Give the file location of a type, if any. */
+static inline struct fileloc* 
+type_fileloc (type_p t)
+{
+  if (!t) 
+    return NULL;
+  if (UNION_OR_STRUCT_P(t))
+    return &t->u.s.line;
+  if  (t->kind == TYPE_PARAM_STRUCT)
+    return &t->u.param_struct.line;
+  return NULL;
+}
 
 /* Structure representing an output file.  */
 struct outf
