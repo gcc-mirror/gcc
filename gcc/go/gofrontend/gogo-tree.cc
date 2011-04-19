@@ -900,7 +900,7 @@ Named_object::get_tree(Gogo* gogo, Named_object* function)
     case NAMED_OBJECT_CONST:
       {
 	Named_constant* named_constant = this->u_.const_value;
-	Translate_context subcontext(gogo, function, NULL, NULL_TREE);
+	Translate_context subcontext(gogo, function, NULL, NULL);
 	tree expr_tree = named_constant->expr()->get_tree(&subcontext);
 	if (expr_tree == error_mark_node)
 	  decl = error_mark_node;
@@ -1038,7 +1038,7 @@ Variable::get_init_tree(Gogo* gogo, Named_object* function)
     }
   else
     {
-      Translate_context context(gogo, function, NULL, NULL_TREE);
+      Translate_context context(gogo, function, NULL, NULL);
       tree rhs_tree = this->init_->get_tree(&context);
       return Expression::convert_for_assignment(&context, this->type(),
 						this->init_->type(),
@@ -1059,8 +1059,9 @@ Variable::get_init_block(Gogo* gogo, Named_object* function, tree var_decl)
   // TRY_CATCH_EXPR; if it does, we want to add to the end of the
   // regular statements.
 
-  Translate_context context(gogo, function, NULL, NULL_TREE);
-  tree block_tree = this->preinit_->get_tree(&context);
+  Translate_context context(gogo, function, NULL, NULL);
+  Bblock* bblock = this->preinit_->get_backend(&context);
+  tree block_tree = block_to_tree(bblock);
   if (block_tree == error_mark_node)
     return error_mark_node;
   gcc_assert(TREE_CODE(block_tree) == BIND_EXPR);
@@ -1472,21 +1473,22 @@ Function::build_tree(Gogo* gogo, Named_object* named_function)
 	  BLOCK_VARS(block) = declare_vars;
 	  TREE_USED(block) = 1;
 
-	  if (this->defer_stack_ != NULL)
-	    {
-	      Translate_context dcontext(gogo, named_function, this->block_,
-					 block);
-	      defer_init = this->defer_stack_->get_tree(&dcontext);
-	    }
-
 	  bind = build3(BIND_EXPR, void_type_node, BLOCK_VARS(block),
 			NULL_TREE, block);
 	  TREE_SIDE_EFFECTS(bind) = 1;
+
+	  if (this->defer_stack_ != NULL)
+	    {
+	      Translate_context dcontext(gogo, named_function, this->block_,
+					 tree_to_block(bind));
+	      defer_init = this->defer_stack_->get_tree(&dcontext);
+	    }
 	}
 
       // Build the trees for all the statements in the function.
-      Translate_context context(gogo, named_function, NULL, NULL_TREE);
-      tree code = this->block_->get_tree(&context);
+      Translate_context context(gogo, named_function, NULL, NULL);
+      Bblock* bblock = this->block_->get_backend(&context);
+      tree code = block_to_tree(bblock);
 
       tree init = NULL_TREE;
       tree except = NULL_TREE;
@@ -1679,95 +1681,6 @@ Function::return_value(Gogo* gogo, Named_object* named_function,
 	}
       return retval;
     }
-}
-
-// Get a tree for the statements in a block.
-
-tree
-Block::get_tree(Translate_context* context)
-{
-  Gogo* gogo = context->gogo();
-
-  tree block = make_node(BLOCK);
-
-  // Put the new block into the block tree.
-
-  if (context->block() == NULL)
-    {
-      tree fndecl;
-      if (context->function() != NULL)
-	fndecl = context->function()->func_value()->get_decl();
-      else
-	fndecl = current_function_decl;
-      gcc_assert(fndecl != NULL_TREE);
-
-      // We may have already created a block for the receiver.
-      if (DECL_INITIAL(fndecl) == NULL_TREE)
-	{
-	  BLOCK_SUPERCONTEXT(block) = fndecl;
-	  DECL_INITIAL(fndecl) = block;
-	}
-      else
-	{
-	  tree superblock_tree = DECL_INITIAL(fndecl);
-	  BLOCK_SUPERCONTEXT(block) = superblock_tree;
-	  gcc_assert(BLOCK_CHAIN(block) == NULL_TREE);
-	  BLOCK_CHAIN(block) = block;
-	}
-    }
-  else
-    {
-      tree superblock_tree = context->block_tree();
-      BLOCK_SUPERCONTEXT(block) = superblock_tree;
-      tree* pp;
-      for (pp = &BLOCK_SUBBLOCKS(superblock_tree);
-	   *pp != NULL_TREE;
-	   pp = &BLOCK_CHAIN(*pp))
-	;
-      *pp = block;
-    }
-
-  // Expand local variables in the block.
-
-  tree* pp = &BLOCK_VARS(block);
-  for (Bindings::const_definitions_iterator pv =
-	 this->bindings_->begin_definitions();
-       pv != this->bindings_->end_definitions();
-       ++pv)
-    {
-      if ((*pv)->is_variable() && !(*pv)->var_value()->is_parameter())
-	{
-	  Bvariable* var = (*pv)->get_backend_variable(gogo,
-						       context->function());
-	  *pp = var_to_tree(var);
-	  if (*pp != error_mark_node)
-	    pp = &DECL_CHAIN(*pp);
-	}
-    }
-  *pp = NULL_TREE;
-
-  Translate_context subcontext(gogo, context->function(), this, block);
-
-  tree statements = NULL_TREE;
-
-  // Expand the statements.
-
-  for (std::vector<Statement*>::const_iterator p = this->statements_.begin();
-       p != this->statements_.end();
-       ++p)
-    {
-      tree statement = (*p)->get_tree(&subcontext);
-      if (statement != error_mark_node)
-	append_to_statement_list(statement, &statements);
-    }
-
-  TREE_USED(block) = 1;
-
-  tree bind = build3(BIND_EXPR, void_type_node, BLOCK_VARS(block), statements,
-		     block);
-  TREE_SIDE_EFFECTS(bind) = 1;
-
-  return bind;
 }
 
 // Return the integer type to use for a size.

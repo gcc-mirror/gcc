@@ -27,6 +27,9 @@ class Bstatement;
 // The backend representation of a function definition.
 class Bfunction;
 
+// The backend representation of a block.
+class Bblock;
+
 // The backend representation of a variable.
 class Bvariable;
 
@@ -139,8 +142,8 @@ class Backend
 
   // Create an if statement.  ELSE_BLOCK may be NULL.
   virtual Bstatement*
-  if_statement(Bexpression* condition, Bstatement* then_block,
-	       Bstatement* else_block, source_location) = 0;
+  if_statement(Bexpression* condition, Bblock* then_block, Bblock* else_block,
+	       source_location) = 0;
 
   // Create a switch statement where the case values are constants.
   // CASES and STATEMENTS must have the same number of entries.  If
@@ -162,6 +165,35 @@ class Backend
   // Create a single statement from a list of statements.
   virtual Bstatement*
   statement_list(const std::vector<Bstatement*>&) = 0;
+
+  // Blocks.
+
+  // Create a block.  The frontend will call this function when it
+  // starts converting a block within a function.  FUNCTION is the
+  // current function.  ENCLOSING is the enclosing block; it will be
+  // NULL for the top-level block in a function.  VARS is the list of
+  // local variables defined within this block; each entry will be
+  // created by the local_variable function.  START_LOCATION is the
+  // location of the start of the block, more or less the location of
+  // the initial curly brace.  END_LOCATION is the location of the end
+  // of the block, more or less the location of the final curly brace.
+  // The statements will be added after the block is created.
+  virtual Bblock*
+  block(Bfunction* function, Bblock* enclosing,
+	const std::vector<Bvariable*>& vars,
+	source_location start_location, source_location end_location) = 0;
+
+  // Add the statements to a block.  The block is created first.  Then
+  // the statements are created.  Then the statements are added to the
+  // block.  This will called exactly once per block.  The vector may
+  // be empty if there are no statements.
+  virtual void
+  block_add_statements(Bblock*, const std::vector<Bstatement*>&) = 0;
+
+  // Return the block as a statement.  This is used to include a block
+  // in a list of statements.
+  virtual Bstatement*
+  block_statement(Bblock*) = 0;
 
   // Variables.
 
@@ -250,8 +282,10 @@ extern Btype* tree_to_type(tree);
 extern Bexpression* tree_to_expr(tree);
 extern Bstatement* tree_to_stat(tree);
 extern Bfunction* tree_to_function(tree);
+extern Bblock* tree_to_block(tree);
 extern tree expr_to_tree(Bexpression*);
 extern tree stat_to_tree(Bstatement*);
+extern tree block_to_tree(Bblock*);
 extern tree var_to_tree(Bvariable*);
 
 #endif // !defined(GO_BACKEND_H)

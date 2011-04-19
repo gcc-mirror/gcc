@@ -428,12 +428,14 @@ Temporary_statement::do_get_tree(Translate_context* context)
       gcc_assert(current_function_decl != NULL_TREE);
       DECL_CONTEXT(decl) = current_function_decl;
 
-      // We have to add this variable to the block so that it winds up
-      // in a BIND_EXPR.
-      tree block_tree = context->block_tree();
-      gcc_assert(block_tree != NULL_TREE);
+      // We have to add this variable to the BLOCK and the BIND_EXPR.
+      tree bind_tree = block_to_tree(context->bblock());
+      gcc_assert(bind_tree != NULL_TREE && TREE_CODE(bind_tree) == BIND_EXPR);
+      tree block_tree = BIND_EXPR_BLOCK(bind_tree);
+      gcc_assert(TREE_CODE(block_tree) == BLOCK);
       DECL_CHAIN(decl) = BLOCK_VARS(block_tree);
       BLOCK_VARS(block_tree) = decl;
+      BIND_EXPR_VARS(bind_tree) = BLOCK_VARS(block_tree);
 
       this->decl_ = decl;
     }
@@ -1518,12 +1520,21 @@ class Block_statement : public Statement
   { return this->block_->may_fall_through(); }
 
   tree
-  do_get_tree(Translate_context* context)
-  { return this->block_->get_tree(context); }
+  do_get_tree(Translate_context* context);
 
  private:
   Block* block_;
 };
+
+// Convert a block to the backend representation of a statement.
+
+tree
+Block_statement::do_get_tree(Translate_context* context)
+{
+  Bblock* bblock = this->block_->get_backend(context);
+  Bstatement* ret = context->backend()->block_statement(bblock);
+  return stat_to_tree(ret);
+}
 
 // Make a block statement.
 
@@ -2767,19 +2778,14 @@ If_statement::do_get_tree(Translate_context* context)
   gcc_assert(this->cond_->type()->is_boolean_type()
 	     || this->cond_->type()->is_error());
   tree cond_tree = this->cond_->get_tree(context);
-  tree then_tree = this->then_block_->get_tree(context);
-  tree else_tree = (this->else_block_ == NULL
-		    ? NULL_TREE
-		    : this->else_block_->get_tree(context));
-
+  Bblock* then_block = this->then_block_->get_backend(context);
+  Bblock* else_block = (this->else_block_ == NULL
+			? NULL
+			: this->else_block_->get_backend(context));
   Bexpression* cond_expr = tree_to_expr(cond_tree);
-  Bstatement* then_stat = tree_to_stat(then_tree);
-  Bstatement* else_stat = (else_tree == NULL_TREE
-			   ? NULL
-			   : tree_to_stat(else_tree));
   
-  Bstatement* ret = context->backend()->if_statement(cond_expr, then_stat,
-						     else_stat,
+  Bstatement* ret = context->backend()->if_statement(cond_expr, then_block,
+						     else_block,
 						     this->location());
   return stat_to_tree(ret);
 }
@@ -3056,7 +3062,10 @@ Case_clauses::Case_clause::get_backend(Translate_context* context,
   if (this->statements_ == NULL)
     statements = NULL;
   else
-    statements = tree_to_stat(this->statements_->get_tree(context));
+    {
+      Bblock* bblock = this->statements_->get_backend(context);
+      statements = context->backend()->block_statement(bblock);
+    }
 
   Bstatement* break_stat;
   if (this->is_fallthrough_)
@@ -4070,7 +4079,8 @@ Select_clauses::Select_clause::get_statements_backend(
 {
   if (this->statements_ == NULL)
     return NULL;
-  return tree_to_stat(this->statements_->get_tree(context));
+  Bblock* bblock = this->statements_->get_backend(context);
+  return context->backend()->block_statement(bblock);
 }
 
 // Class Select_clauses.
