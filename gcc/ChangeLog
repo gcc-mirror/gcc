@@ -1,3 +1,9 @@
+2011-04-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR lto/48148
+	* gimple.c (gimple_types_compatible_p_1) <ENUMERAL_TYPE>: Do not merge
+	the types if they have different enumeration identifiers.
+
 2011-04-19  Jan Hubicka  <jh@suse.cz>
 
 	* cgraph.h (cgraph_optimize_for_size_p): Declare.
