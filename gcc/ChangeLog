@@ -1,3 +1,9 @@
+2011-04-19  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* gengtype-state.c (string_eq): New.
+	(read_state): Use string_eq instead of strcmp when creating the
+	state_ident_tab.
+
 2011-04-19  Wei Guozhi  <carrot@google.com>
 
 	PR target/47855
