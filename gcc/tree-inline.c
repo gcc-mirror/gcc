@@ -3744,7 +3744,9 @@ expand_call_inline (basic_block bb, gimple stmt, copy_body_data *id)
 		 _(cgraph_inline_failed_string (reason)));
 	  sorry ("called from here");
 	}
-      else if (warn_inline && DECL_DECLARED_INLINE_P (fn)
+      else if (warn_inline
+	       && DECL_DECLARED_INLINE_P (fn)
+	       && !DECL_NO_INLINE_WARNING_P (fn)
 	       && !DECL_IN_SYSTEM_HEADER (fn)
 	       && reason != CIF_UNSPECIFIED
 	       && !lookup_attribute ("noinline", DECL_ATTRIBUTES (fn))
