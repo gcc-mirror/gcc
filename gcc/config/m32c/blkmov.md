@@ -215,8 +215,8 @@
 
 (define_expand "movstr"
   [(match_operand 0 "m32c_nonimmediate_operand" "")
-   (match_operand 1 "ap_operand" "")
-   (match_operand 2 "ap_operand" "")
+   (match_operand 1 "" "")
+   (match_operand 2 "" "")
    ]
   "TARGET_A24"
   "if (m32c_expand_movstr(operands)) DONE; FAIL;"

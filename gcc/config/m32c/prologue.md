@@ -88,14 +88,17 @@
 (define_expand "eh_return"
   [(match_operand:PSI 0 "" "")]
   ""
-  "m32c_emit_eh_epilogue(operands[0]); DONE;"
+  "m32c_emit_eh_epilogue(operands[0]);
+   emit_barrier ();
+   DONE;"
   )
 
 (define_insn "eh_epilogue"
   [(set (pc)
 	(unspec_volatile [(match_operand 0 "m32c_r1_operand" "")
 			  (match_operand 1 "m32c_r0_operand" "")
-			  ] UNS_EH_EPILOGUE))]
+			  ] UNS_EH_EPILOGUE))
+   (return)]
   ""
   "jmp.a\t__m32c_eh_return"
   [(set_attr "flags" "x")]
