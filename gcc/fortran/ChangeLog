@@ -1,5 +1,10 @@
 2011-04-19  Janne Blomqvist  <jb@gcc.gnu.org>
 
+	* frontend-passes.c (gfc_run_passes): Use XDELETEVEC instead of
+	free.
+
+2011-04-19  Janne Blomqvist  <jb@gcc.gnu.org>
+
 	* misc.c (gfc_getmem): Remove function.
 	* gfortran.h: Remove gfc_getmem prototype. Replace gfc_getmem
 	usage with XCNEW or XCNEWVEC.
