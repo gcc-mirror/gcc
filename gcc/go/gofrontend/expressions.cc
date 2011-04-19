@@ -1029,9 +1029,22 @@ Temporary_reference_expression::do_address_taken(bool)
 // Get a tree referring to the variable.
 
 tree
-Temporary_reference_expression::do_get_tree(Translate_context*)
+Temporary_reference_expression::do_get_tree(Translate_context* context)
 {
-  return this->statement_->get_decl();
+  Bvariable* bvar = this->statement_->get_backend_variable(context);
+
+  // The gcc backend can't represent the same set of recursive types
+  // that the Go frontend can.  In some cases this means that a
+  // temporary variable won't have the right backend type.  Correct
+  // that here by adding a type cast.  We need to use base() to push
+  // the circularity down one level.
+  tree ret = var_to_tree(bvar);
+  if (POINTER_TYPE_P(TREE_TYPE(ret)) && VOID_TYPE_P(TREE_TYPE(TREE_TYPE(ret))))
+    {
+      tree type_tree = this->type()->base()->get_tree(context->gogo());
+      ret = fold_convert_loc(this->location(), type_tree, ret);
+    }
+  return ret;
 }
 
 // Make a reference to a temporary variable.
@@ -8952,7 +8965,7 @@ Call_expression::do_get_tree(Translate_context* context)
 
   // This is to support builtin math functions when using 80387 math.
   tree excess_type = NULL_TREE;
-  if (DECL_P(fndecl)
+  if (TREE_CODE(fndecl) == FUNCTION_DECL
       && DECL_IS_BUILTIN(fndecl)
       && DECL_BUILT_IN_CLASS(fndecl) == BUILT_IN_NORMAL
       && nargs > 0

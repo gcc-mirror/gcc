@@ -246,6 +246,22 @@ class Backend
   parameter_variable(Bfunction* function, const std::string& name,
 		     Btype* type, source_location location) = 0;
 
+  // Create a temporary variable.  A temporary variable has no name,
+  // just a type.  We pass in FUNCTION and BLOCK in case they are
+  // needed.  If INIT is not NULL, the variable should be initialized
+  // to that value.  Otherwise the initial value is irrelevant--the
+  // backend does not have to explicitly initialize it to zero.
+  // ADDRESS_IS_TAKEN is true if the programs needs to take the
+  // address of this temporary variable.  LOCATION is the location of
+  // the statement or expression which requires creating the temporary
+  // variable, and may not be very useful.  This function should
+  // return a variable which can be referenced later and should set
+  // *PSTATEMENT to a statement which initializes the variable.
+  virtual Bvariable*
+  temporary_variable(Bfunction*, Bblock*, Btype*, Bexpression* init,
+		     bool address_is_taken, source_location location,
+		     Bstatement** pstatement) = 0;
+
   // Labels.
   
   // Create a new label.  NAME will be empty if this is a label

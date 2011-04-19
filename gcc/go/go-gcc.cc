@@ -255,6 +255,10 @@ class Gcc_backend : public Backend
   parameter_variable(Bfunction*, const std::string& name, Btype* type,
 		     source_location);
 
+  Bvariable*
+  temporary_variable(Bfunction*, Bblock*, Btype*, Bexpression*, bool,
+		     source_location, Bstatement**);
+
   // Labels.
 
   Blabel*
@@ -700,6 +704,68 @@ Gcc_backend::parameter_variable(Bfunction* function, const std::string& name,
   TREE_USED(decl) = 1;
   go_preserve_from_gc(decl);
   return new Bvariable(decl);
+}
+
+// Make a temporary variable.
+
+Bvariable*
+Gcc_backend::temporary_variable(Bfunction* function, Bblock* bblock,
+				Btype* btype, Bexpression* binit,
+				bool is_address_taken,
+				source_location location,
+				Bstatement** pstatement)
+{
+  tree type_tree = btype->get_tree();
+  tree init_tree = binit == NULL ? NULL_TREE : binit->get_tree();
+  if (type_tree == error_mark_node || init_tree == error_mark_node)
+    {
+      *pstatement = this->error_statement();
+      return this->error_variable();
+    }
+
+  tree var;
+  // We can only use create_tmp_var if the type is not addressable.
+  if (!TREE_ADDRESSABLE(type_tree))
+    var = create_tmp_var(type_tree, "GOTMP");
+  else
+    {
+      gcc_assert(bblock != NULL);
+      var = build_decl(location, VAR_DECL,
+		       create_tmp_var_name("GOTMP"),
+		       type_tree);
+      DECL_ARTIFICIAL(var) = 1;
+      DECL_IGNORED_P(var) = 1;
+      TREE_USED(var) = 1;
+      // FIXME: Permitting function to be NULL here is a temporary
+      // measure until we have a proper representation of the init
+      // function.
+      if (function != NULL)
+	DECL_CONTEXT(var) = function->get_tree();
+      else
+	{
+	  gcc_assert(current_function_decl != NULL_TREE);
+	  DECL_CONTEXT(var) = current_function_decl;
+	}
+
+      // We have to add this variable to the BLOCK and the BIND_EXPR.
+      tree bind_tree = bblock->get_tree();
+      gcc_assert(TREE_CODE(bind_tree) == BIND_EXPR);
+      tree block_tree = BIND_EXPR_BLOCK(bind_tree);
+      gcc_assert(TREE_CODE(block_tree) == BLOCK);
+      DECL_CHAIN(var) = BLOCK_VARS(block_tree);
+      BLOCK_VARS(block_tree) = var;
+      BIND_EXPR_VARS(bind_tree) = BLOCK_VARS(block_tree);
+    }
+
+  if (init_tree != NULL_TREE)
+    DECL_INITIAL(var) = fold_convert_loc(location, type_tree, init_tree);
+
+  if (is_address_taken)
+    TREE_ADDRESSABLE(var) = 1;
+
+  *pstatement = this->make_statement(build1_loc(location, DECL_EXPR,
+						void_type_node, var));
+  return new Bvariable(var);
 }
 
 // Make a label.
