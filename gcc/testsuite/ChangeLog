@@ -1,3 +1,8 @@
+2011-04-19  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	PR testsuite/48676
+	* gcc.dg/torture/pr37868.c: Skip on sh*-*-*.
+
 2011-04-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/48678
