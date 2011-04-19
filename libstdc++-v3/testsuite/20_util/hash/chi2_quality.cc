@@ -183,6 +183,10 @@ test_bit_string_set()
 void
 test_document_words()
 {
+  // That file is 187587 single-word lines.  To avoid a timeout, just skip
+  // this part, which would take up to 95% of the program runtime (with
+  // SAMPLES == 10000), if we're not supposed to run anywhere that long.
+#if SAMPLES >= 100000
   bool test __attribute__((unused)) = true;
   const std::string f_name = "thirty_years_among_the_dead_preproc.txt";
   std::ifstream in(f_name);
@@ -199,6 +203,7 @@ test_document_words()
   const unsigned long k = words.size() / 20;
   double chi2 = chi2_hash(words, k);
   VERIFY( chi2 < k*1.1 );
+#endif
 }
 
 int

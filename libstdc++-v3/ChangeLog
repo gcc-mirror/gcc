@@ -1,3 +1,9 @@
+2011-04-19  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR testsuite/48675
+	* testsuite/20_util/hash/chi2_quality.cc (test_document_words): Stub
+	this part if SAMPLES < 100000.
+
 2011-04-17  Daniel Krugler  <daniel.kruegler@googlemail.com>
 	    Paolo Carlini  <paolo.carlini@oracle.com>
 
