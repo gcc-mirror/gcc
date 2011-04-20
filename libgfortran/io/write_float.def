@@ -805,7 +805,8 @@ CALCULATE_EXP(16)
 
    notes: for Gw.d ,  n' ' means 4 blanks
 	  for Gw.dEe, n' ' means e+2 blanks
-	  for rounding modes adjustment, r, See Fortran F2008 10.7.5.2.2  */
+	  for rounding modes adjustment, r, See Fortran F2008 10.7.5.2.2
+	  the asm volatile is required for 32-bit x86 platforms.  */
 
 #define OUTPUT_FLOAT_FMT_G(x) \
 static void \
@@ -830,7 +831,7 @@ output_float_FMT_G_ ## x (st_parameter_dt *dtp, const fnode *f, \
   switch (dtp->u.p.current_unit->round_status)\
     {\
       case ROUND_ZERO:\
-	r = sign_bit ? 0.0 : 1.0;\
+	r = sign_bit ? 1.0 : 0.0;\
 	break;\
       case ROUND_UP:\
 	r = 1.0;\
@@ -867,6 +868,7 @@ output_float_FMT_G_ ## x (st_parameter_dt *dtp, const fnode *f, \
       mid = (low + high) / 2;\
 \
       temp = (calculate_exp_ ## x (mid - 1) * (1 - r * rexp_d));\
+      asm volatile ("" : "+m" (temp));\
 \
       if (m < temp)\
         { \
