@@ -1,3 +1,11 @@
+2011-04-20  Kai Tietz  <ktietz@redhat.com>
+
+	* gcc.dg/binio-xor1.c: New test.
+	* gcc.dg/binio-xor2.c: New test.
+	* gcc.dg/binio-xor3.c: New test.
+	* gcc.dg/binio-xor4.c: New test.
+	* gcc.dg/binio-xor5.c: New test.
+
 2011-04-20  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/47892

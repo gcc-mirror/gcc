@@ -1,3 +1,9 @@
+2011-04-20  Kai Tietz  <ktietz@redhat.com>
+
+	* fold-const.c (fold_binary_loc): Add handling for
+	(X & ~Y) | (~X & Y) and (X && !Y) | (!X && Y) optimization
+	to (X ^ Y).
+
 2011-04-20  Andrew Stubbs  <ams@codesourcery.com>
 
 	* config/arm/arm.c (arm_gen_constant): Remove redundant can_invert.

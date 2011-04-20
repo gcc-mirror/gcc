@@ -10660,6 +10660,28 @@ fold_binary_loc (location_t loc,
 	  && reorder_operands_p (arg0, TREE_OPERAND (arg1, 0)))
 	return omit_one_operand_loc (loc, type, arg0, TREE_OPERAND (arg1, 0));
 
+      /* (X & ~Y) | (~X & Y) is X ^ Y */
+      if (TREE_CODE (arg0) == BIT_AND_EXPR
+	  && TREE_CODE (arg1) == BIT_AND_EXPR)
+        {
+	  tree a0, a1, l0, l1, n0, n1;
+
+	  a0 = fold_convert_loc (loc, type, TREE_OPERAND (arg1, 0));
+	  a1 = fold_convert_loc (loc, type, TREE_OPERAND (arg1, 1));
+
+	  l0 = fold_convert_loc (loc, type, TREE_OPERAND (arg0, 0));
+	  l1 = fold_convert_loc (loc, type, TREE_OPERAND (arg0, 1));
+	  
+	  n0 = fold_build1_loc (loc, BIT_NOT_EXPR, type, l0);
+	  n1 = fold_build1_loc (loc, BIT_NOT_EXPR, type, l1);
+	  
+	  if ((operand_equal_p (n0, a0, 0)
+	       && operand_equal_p (n1, a1, 0))
+	      || (operand_equal_p (n0, a1, 0)
+		  && operand_equal_p (n1, a0, 0)))
+	    return fold_build2_loc (loc, BIT_XOR_EXPR, type, l0, n1);
+	}
+
       t1 = distribute_bit_expr (loc, code, type, arg0, arg1);
       if (t1 != NULL_TREE)
 	return t1;
@@ -12039,6 +12061,27 @@ fold_binary_loc (location_t loc,
 	  && operand_equal_p (arg0, TREE_OPERAND (arg1, 0), 0))
 	return omit_one_operand_loc (loc, type, integer_one_node, arg0);
 
+      /* (X && !Y) || (!X && Y) is X ^ Y */
+      if (TREE_CODE (arg0) == TRUTH_AND_EXPR
+	  && TREE_CODE (arg1) == TRUTH_AND_EXPR)
+        {
+	  tree a0, a1, l0, l1, n0, n1;
+
+	  a0 = fold_convert_loc (loc, type, TREE_OPERAND (arg1, 0));
+	  a1 = fold_convert_loc (loc, type, TREE_OPERAND (arg1, 1));
+
+	  l0 = fold_convert_loc (loc, type, TREE_OPERAND (arg0, 0));
+	  l1 = fold_convert_loc (loc, type, TREE_OPERAND (arg0, 1));
+	  
+	  n0 = fold_build1_loc (loc, TRUTH_NOT_EXPR, type, l0);
+	  n1 = fold_build1_loc (loc, TRUTH_NOT_EXPR, type, l1);
+	  
+	  if ((operand_equal_p (n0, a0, 0)
+	       && operand_equal_p (n1, a1, 0))
+	      || (operand_equal_p (n0, a1, 0)
+		  && operand_equal_p (n1, a0, 0)))
+	    return fold_build2_loc (loc, TRUTH_XOR_EXPR, type, l0, n1);
+	}
       goto truth_andor;
 
     case TRUTH_XOR_EXPR:
