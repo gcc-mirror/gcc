@@ -1,5 +1,11 @@
 2011-04-20  Nathan Froyd  <froydnj@codesourcery.com>
 
+	* config/mips/mips.c (mips16_build_function_stub): Call
+	build_function_type_list instead of build_function_type.
+	(mips16_build_call_stub): Likewise.
+
+2011-04-20  Nathan Froyd  <froydnj@codesourcery.com>
+
 	* config/mep/mep.c (mep_init_builtins): Call build_function_type_list
 	instead of build_function_type.
 
