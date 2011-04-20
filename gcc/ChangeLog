@@ -1,3 +1,13 @@
+2011-04-20  Catherine Moore  <clm@codesourcery.com>
+
+	* config/mips/mips.opt (mfix-24k): New.
+	* config/mips/mips.h (ASM_SPEC): Handle -mfix-24k.
+	* config/mips/mips.md (length): Increase by 4 for stores if
+	fixing 24K errata.
+	* config/mips/mips.c (mips_reorg_process_insns): Do not allow
+	all noreorder if fixing 24K errata.
+	* doc/invoke.texi: Document mfix-24k.
+
 2011-04-20  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	* config/arm/arm.c (arm_legitimize_reload_address): For NEON
