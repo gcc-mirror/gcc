@@ -329,11 +329,16 @@ do {                                                \
     }                                               \
 } while (0)
 
+#undef LINK_SPEC
+#if HAVE_GNU_LD
+/* GNU-ld built-in linker script already handles the dwarf2 debug sections.  */
+#define LINK_SPEC "%{shared} %{v}"
+#else
 /* Link with vms-dwarf2.o if -g (except -g0). This causes the
    VMS link to pull all the dwarf2 debug sections together.  */
-#undef LINK_SPEC
 #define LINK_SPEC "%{g:-g vms-dwarf2.o%s} %{g0} %{g1:-g1 vms-dwarf2.o%s} \
 %{g2:-g2 vms-dwarf2.o%s} %{g3:-g3 vms-dwarf2.o%s} %{shared} %{v} %{map}"
+#endif
 
 #undef STARTFILE_SPEC
 #define STARTFILE_SPEC \
