@@ -253,6 +253,9 @@ save_inline_function_body (struct cgraph_node *node)
   /* Now node in question has no clones.  */
   node->clones = NULL;
 
+  /* Inline clones share decl with the function they are cloned
+     from.  Walk the whole clone tree and redirect them all to the
+     new decl.  */
   if (first_clone->clones)
     for (n = first_clone->clones; n != first_clone;)
       {
@@ -275,6 +278,8 @@ save_inline_function_body (struct cgraph_node *node)
   tree_function_versioning (node->decl, first_clone->decl, NULL, true, NULL,
 			    NULL, NULL);
 
+  /* The function will be short lived and removed after we inline all the clones,
+     but make it internal so we won't confuse ourself.  */
   DECL_EXTERNAL (first_clone->decl) = 0;
   DECL_COMDAT_GROUP (first_clone->decl) = NULL_TREE;
   TREE_PUBLIC (first_clone->decl) = 0;
