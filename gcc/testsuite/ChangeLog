@@ -1,5 +1,7 @@
 2011-04-19  Jason Merrill  <jason@redhat.com>
 
+	* g++.dg/ext/complex7.C: New.
+
 	* g++.dg/ext/attrib41.C: New.
 
 2011-04-19  Kaz Kojima  <kkojima@gcc.gnu.org>
