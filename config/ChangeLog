@@ -1,3 +1,7 @@
+2011-04-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* bootstrap-lto.mk: Remove obsolete requirement.
+
 2011-03-24  Paolo Bonzini  <pbonzini@redhat.com>
 
 	* mt-mep: Remove, obsolete.
