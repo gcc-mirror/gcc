@@ -51,14 +51,28 @@ foo (bar, )
 needs to be coded in some other way.
 
 
-free and realloc
-----------------
+Avoid unnecessary test before free
+----------------------------------
 
-Some implementations crash upon attempts to free or realloc the null
-pointer.  Thus if mem might be null, you need to write
+Since SunOS 4 stopped being a reasonable portability target,
+(which happened around 2007) there has been no need to guard
+against "free (NULL)".  Thus, any guard like the following
+constitutes a redundant test:
 
-  if (mem)
-    free (mem);
+  if (P)
+    free (P);
+
+It is better to avoid the test.[*]
+Instead, simply free P, regardless of whether it is NULL.
+
+[*] However, if your profiling exposes a test like this in a
+performance-critical loop, say where P is nearly always NULL, and
+the cost of calling free on a NULL pointer would be prohibitively
+high, consider using __builtin_expect, e.g., like this:
+
+  if (__builtin_expect (ptr != NULL, 0))
+    free (ptr);
+
 
 
 Trigraphs
@@ -194,4 +208,3 @@ o Passing incorrect types to fprintf and friends.
 
 o Adding a function declaration for a module declared in another file to
   a .c file instead of to a .h file.
-
