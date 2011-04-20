@@ -719,6 +719,22 @@ if_convertible_stmt_p (gimple stmt, VEC (data_reference_p, heap) *refs)
     case GIMPLE_ASSIGN:
       return if_convertible_gimple_assign_stmt_p (stmt, refs);
 
+    case GIMPLE_CALL:
+      {
+	tree fndecl = gimple_call_fndecl (stmt);
+	if (fndecl)
+	  {
+	    int flags = gimple_call_flags (stmt);
+	    if ((flags & ECF_CONST)
+		&& !(flags & ECF_LOOPING_CONST_OR_PURE)
+		/* We can only vectorize some builtins at the moment,
+		   so restrict if-conversion to those.  */
+		&& DECL_BUILT_IN (fndecl))
+	      return true;
+	  }
+	return false;
+      }
+
     default:
       /* Don't know what to do with 'em so don't do anything.  */
       if (dump_file && (dump_flags & TDF_DETAILS))
