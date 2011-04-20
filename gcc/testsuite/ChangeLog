@@ -1,3 +1,8 @@
+2011-04-20  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/48695
+	* g++.dg/torture/pr48695.C: New testcase.
+
 2011-04-20  Georg-Johann Lay  <avr@gjlay.de>
 
 	* gcc.dg/pr42629.c: Add dg-require-effective-target int32plus
