@@ -1662,8 +1662,7 @@ local_pure_const (void)
 		 lang_hooks.decl_printable_name (current_function_decl,
 						 2));
     }
-  if (l)
-    free (l);
+  free (l);
   if (changed)
     return execute_fixup_cfg ();
   else

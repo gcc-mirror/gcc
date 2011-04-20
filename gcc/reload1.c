@@ -4213,10 +4213,8 @@ free_reg_equiv (void)
   int i;
 
 
-  if (offsets_known_at)
-    free (offsets_known_at);
-  if (offsets_at)
-    free (offsets_at);
+  free (offsets_known_at);
+  free (offsets_at);
   offsets_at = 0;
   offsets_known_at = 0;
 

@@ -1,3 +1,16 @@
+2011-04-20  Jim Meyering  <meyering@redhat.com>
+
+	* cp-demint.c (cplus_demangle_v3_components): Remove useless
+	if-before-free.
+	* cplus-dem.c (squangle_mop_up): Likewise.
+	(delete_non_B_K_work_stuff): Likewise.
+	* pex-common.c (pex_free): Likewise.
+	* pex-msdos.c (pex_msdos_cleanup): Likewise.
+	* pex-win32.c (mingw_rootify, msys_rootify): Likewise.
+	(win32_spawn): Likewise.
+	* regex.c (FREE_VAR, weak_alias): Likewise.
+	* spaces.c (spaces): Likewise.
+
 2011-04-10  Jim Meyering  <meyering@redhat.com>
 
 	Avoid memory overrun in a test leading to potential double-free.

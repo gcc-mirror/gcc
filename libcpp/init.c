@@ -259,8 +259,7 @@ cpp_destroy (cpp_reader *pfile)
   while (CPP_BUFFER (pfile) != NULL)
     _cpp_pop_buffer (pfile);
 
-  if (pfile->out.base)
-    free (pfile->out.base);
+  free (pfile->out.base);
 
   if (pfile->macro_buffer)
     {

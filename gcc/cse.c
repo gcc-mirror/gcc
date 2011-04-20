@@ -796,8 +796,7 @@ init_cse_reg_info (unsigned int nregs)
 	}
 
       /* Reallocate the table with NEW_SIZE entries.  */
-      if (cse_reg_info_table)
-	free (cse_reg_info_table);
+      free (cse_reg_info_table);
       cse_reg_info_table = XNEWVEC (struct cse_reg_info, new_size);
       cse_reg_info_table_size = new_size;
       cse_reg_info_table_first_uninitialized = 0;
@@ -6975,8 +6974,7 @@ delete_trivially_dead_insns (rtx insns, int nreg)
 		df_insn_rescan (insn);
 	      }
 	  }
-      if (replacements)
-	free (replacements);
+      free (replacements);
     }
 
   if (dump_file && ndead)

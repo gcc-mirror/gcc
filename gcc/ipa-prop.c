@@ -1936,8 +1936,7 @@ ipa_free_all_edge_args (void)
 void
 ipa_free_node_params_substructures (struct ipa_node_params *info)
 {
-  if (info->params)
-    free (info->params);
+  free (info->params);
 
   memset (info, 0, sizeof (*info));
 }

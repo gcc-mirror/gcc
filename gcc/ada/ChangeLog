@@ -1,3 +1,7 @@
+2011-04-20  Jim Meyering  <meyering@redhat.com>
+
+	* initialize.c (__gnat_initialize): Remove useless if-before-free.
+
 2011-04-17  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/Make-lang.in (gnatbind): Replace $(ALL_CFLAGS) with

@@ -688,8 +688,7 @@ already_open (st_parameter_open *opp, gfc_unit * u, unit_flags * flags)
 	}
 
       u->s = NULL;
-      if (u->file)
-	free (u->file);
+      free (u->file);
       u->file = NULL;
       u->file_len = 0;
 

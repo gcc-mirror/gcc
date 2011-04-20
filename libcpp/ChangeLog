@@ -1,3 +1,10 @@
+2011-04-20  Jim Meyering  <meyering@redhat.com>
+
+	* files.c (destroy_cpp_file): Remove useless if-before-free.
+	* init.c (cpp_destroy): Likewise.
+	* macro.c (replace_args): Likewise.
+	* pch.c (cpp_valid_state): Likewise.
+
 2011-03-25  Kai Tietz  <ktietz@redhat.com>
 
 	* files.c (file_hash_eq): Use filename_cmp

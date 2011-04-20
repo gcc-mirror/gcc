@@ -1,3 +1,12 @@
+2011-04-20  Jim Meyering  <meyering@redhat.com>
+
+	* decNumber.c (decNumberFromString): Remove useless
+	if-before-free test.
+	(decNumberCompareTotalMag, decNumberExp, decNumberFMA): Likewise.
+	(decNumberLn, decNumberLog10, decNumberPower): Likewise.
+	(decNumberReduce, decNumberSquareRoot, decAddOp): Likewise.
+	(decDivideOp, NEEDTWO, decExpOp, LN2): Likewise.
+
 2011-03-28  Mike Frysinger  <vapier@gentoo.org>
 
 	* .gitignore: New file.

@@ -433,8 +433,7 @@ free_expr0 (gfc_expr *e)
 	}
 
       /* Free the representation.  */
-      if (e->representation.string)
-	free (e->representation.string);
+      free (e->representation.string);
 
       break;
 

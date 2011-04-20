@@ -646,8 +646,7 @@ try_forward_edges (int mode, basic_block b)
       ei_next (&ei);
     }
 
-  if (threaded_edges)
-    free (threaded_edges);
+  free (threaded_edges);
   return changed;
 }
 

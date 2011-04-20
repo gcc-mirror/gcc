@@ -190,8 +190,7 @@ free_data_refs_aux (VEC (data_reference_p, heap) *datarefs)
       {
 	base_alias_pair *bap = (base_alias_pair *)(dr->aux);
 
-	if (bap->alias_set)
-	  free (bap->alias_set);
+	free (bap->alias_set);
 
 	free (bap);
 	dr->aux = NULL;

@@ -3547,8 +3547,7 @@ free_deps (struct deps_desc *deps)
 
   /* As we initialize reg_last lazily, it is possible that we didn't allocate
      it at all.  */
-  if (deps->reg_last)
-    free (deps->reg_last);
+  free (deps->reg_last);
   deps->reg_last = NULL;
 
   deps = NULL;

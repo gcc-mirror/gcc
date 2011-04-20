@@ -913,8 +913,7 @@ propagate (void)
 				  node_g->statics_written);
 	    }
 	}
-      if (node_info)
-	free (node_info);
+      free (node_info);
       if (node->aux)
 	{
 	  free (node->aux);

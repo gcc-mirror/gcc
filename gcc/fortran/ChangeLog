@@ -1,3 +1,10 @@
+2011-04-20  Jim Meyering  <meyering@redhat.com>
+
+	* expr.c (free_expr0): Remove useless if-before-free.
+	* gfortranspec.c (lang_specific_pre_link): Likewise.
+	* interface.c (gfc_extend_expr): Likewise.
+	* trans-openmp.c (gfc_trans_omp_array_reduction): Likewise.
+
 2011-04-19  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/48588

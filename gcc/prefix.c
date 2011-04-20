@@ -103,8 +103,7 @@ get_key_value (char *key)
   if (prefix == 0)
     prefix = std_prefix;
 
-  if (temp)
-    free (temp);
+  free (temp);
 
   return prefix;
 }

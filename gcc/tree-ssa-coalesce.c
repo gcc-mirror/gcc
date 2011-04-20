@@ -242,8 +242,7 @@ delete_coalesce_list (coalesce_list_p cl)
 {
   gcc_assert (cl->cost_one_list == NULL);
   htab_delete (cl->list);
-  if (cl->sorted)
-    free (cl->sorted);
+  free (cl->sorted);
   gcc_assert (cl->num_sorted == 0);
   free (cl);
 }

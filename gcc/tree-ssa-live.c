@@ -157,10 +157,8 @@ delete_var_map (var_map map)
 {
   var_map_base_fini (map);
   partition_delete (map->var_partition);
-  if (map->partition_to_view)
-    free (map->partition_to_view);
-  if (map->view_to_partition)
-    free (map->view_to_partition);
+  free (map->partition_to_view);
+  free (map->view_to_partition);
   free (map);
 }
 

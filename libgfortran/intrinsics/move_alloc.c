@@ -37,8 +37,7 @@ move_alloc (gfc_array_char * from, gfc_array_char * to)
 {
   int i;
 
-  if (to->data)
-    free (to->data);
+  free (to->data);
 
   for (i = 0; i < GFC_DESCRIPTOR_RANK (from); i++)
     {

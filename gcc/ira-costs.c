@@ -1968,19 +1968,15 @@ free_ira_costs (void)
 {
   int i;
 
-  if (init_cost != NULL)
-    free (init_cost);
+  free (init_cost);
   init_cost = NULL;
   for (i = 0; i < MAX_RECOG_OPERANDS; i++)
     {
-      if (op_costs[i] != NULL)
-	free (op_costs[i]);
-      if (this_op_costs[i] != NULL)
-	free (this_op_costs[i]);
+      free (op_costs[i]);
+      free (this_op_costs[i]);
       op_costs[i] = this_op_costs[i] = NULL;
     }
-  if (temp_costs != NULL)
-    free (temp_costs);
+  free (temp_costs);
   temp_costs = NULL;
 }
 

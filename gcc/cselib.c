@@ -2462,8 +2462,7 @@ cselib_init (int record_what)
   if (!reg_values || reg_values_size < cselib_nregs
       || (reg_values_size > 10 && reg_values_size > cselib_nregs * 4))
     {
-      if (reg_values)
-	free (reg_values);
+      free (reg_values);
       /* Some space for newly emit instructions so we don't end up
 	 reallocating in between passes.  */
       reg_values_size = cselib_nregs + (63 + cselib_nregs) / 16;
