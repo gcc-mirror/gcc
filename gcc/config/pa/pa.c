@@ -641,7 +641,7 @@ pa_init_builtins (void)
       TREE_READONLY (decl) = 1;
       pa_builtins[PA_BUILTIN_COPYSIGNQ] = decl;
 
-      ftype = build_function_type (long_double_type_node, void_list_node);
+      ftype = build_function_type_list (long_double_type_node, NULL_TREE);
       decl = add_builtin_function ("__builtin_infq", ftype,
 				   PA_BUILTIN_INFQ, BUILT_IN_MD,
 				   NULL, NULL_TREE);
