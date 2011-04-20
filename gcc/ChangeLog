@@ -1,3 +1,8 @@
+2011-04-20  Easwaran Raman  <eraman@google.com>
+
+	* cfgexpand.c (add_alias_set_conflicts): Add conflicts with a variable
+	containing union type only with -fstrict-aliasing.
+
 2011-04-20  Jim Meyering  <meyering@redhat.com>
 
 	Remove useless if-before-free tests.
