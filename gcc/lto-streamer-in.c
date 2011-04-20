@@ -1063,7 +1063,13 @@ input_gimple_stmt (struct lto_input_block *ib, struct data_in *data_in,
 	    }
 	}
       if (is_gimple_call (stmt))
-	gimple_call_set_fntype (stmt, lto_input_tree (ib, data_in));
+	{
+	  if (gimple_call_internal_p (stmt))
+	    gimple_call_set_internal_fn
+	      (stmt, (enum internal_fn) lto_input_sleb128 (ib));
+	  else
+	    gimple_call_set_fntype (stmt, lto_input_tree (ib, data_in));
+	}
       break;
 
     case GIMPLE_NOP:

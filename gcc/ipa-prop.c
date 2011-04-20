@@ -1456,6 +1456,8 @@ ipa_analyze_call_uses (struct cgraph_node *node,
 {
   tree target = gimple_call_fn (call);
 
+  if (!target)
+    return;
   if (TREE_CODE (target) == SSA_NAME)
     ipa_analyze_indirect_call_uses (node, info, parms_info, call, target);
   else if (TREE_CODE (target) == OBJ_TYPE_REF)

@@ -2743,7 +2743,7 @@ same_handler_p (gimple_seq oneh, gimple_seq twoh)
       || gimple_call_lhs (twos)
       || gimple_call_chain (ones)
       || gimple_call_chain (twos)
-      || !operand_equal_p (gimple_call_fn (ones), gimple_call_fn (twos), 0)
+      || !gimple_call_same_target_p (ones, twos)
       || gimple_call_num_args (ones) != gimple_call_num_args (twos))
     return false;
 

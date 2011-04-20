@@ -1722,6 +1722,11 @@ ccp_fold_stmt (gimple_stmt_iterator *gsi)
 	    return true;
 	  }
 
+	/* Internal calls provide no argument types, so the extra laxity
+	   for normal calls does not apply.  */
+	if (gimple_call_internal_p (stmt))
+	  return false;
+
 	/* Propagate into the call arguments.  Compared to replace_uses_in
 	   this can use the argument slot types for type verification
 	   instead of the current argument type.  We also can safely
