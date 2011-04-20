@@ -3846,48 +3846,6 @@ into consecutive memory locations.  Operand 0 is the first of the
 consecutive memory locations, operand 1 is the first register, and
 operand 2 is a constant: the number of consecutive registers.
 
-@cindex @code{vec_load_lanes@var{m}@var{n}} instruction pattern
-@item @samp{vec_load_lanes@var{m}@var{n}}
-Perform an interleaved load of several vectors from memory operand 1
-into register operand 0.  Both operands have mode @var{m}.  The register
-operand is viewed as holding consecutive vectors of mode @var{n},
-while the memory operand is a flat array that contains the same number
-of elements.  The operation is equivalent to:
-
-@smallexample
-int c = GET_MODE_SIZE (@var{m}) / GET_MODE_SIZE (@var{n});
-for (j = 0; j < GET_MODE_NUNITS (@var{n}); j++)
-  for (i = 0; i < c; i++)
-    operand0[i][j] = operand1[j * c + i];
-@end smallexample
-
-For example, @samp{vec_load_lanestiv4hi} loads 8 16-bit values
-from memory into a register of mode @samp{TI}@.  The register
-contains two consecutive vectors of mode @samp{V4HI}@.
-
-This pattern can only be used if:
-@smallexample
-TARGET_ARRAY_MODE_SUPPORTED_P (@var{n}, @var{c})
-@end smallexample
-is true.  GCC assumes that, if a target supports this kind of
-instruction for some mode @var{n}, it also supports unaligned
-loads for vectors of mode @var{n}.
-
-@cindex @code{vec_store_lanes@var{m}@var{n}} instruction pattern
-@item @samp{vec_store_lanes@var{m}@var{n}}
-Equivalent to @samp{vec_load_lanes@var{m}@var{n}}, with the memory
-and register operands reversed.  That is, the instruction is
-equivalent to:
-
-@smallexample
-int c = GET_MODE_SIZE (@var{m}) / GET_MODE_SIZE (@var{n});
-for (j = 0; j < GET_MODE_NUNITS (@var{n}); j++)
-  for (i = 0; i < c; i++)
-    operand0[j * c + i] = operand1[i][j];
-@end smallexample
-
-for a memory operand 0 and register operand 1.
-
 @cindex @code{vec_set@var{m}} instruction pattern
 @item @samp{vec_set@var{m}}
 Set given field in the vector value.  Operand 0 is the vector to modify,

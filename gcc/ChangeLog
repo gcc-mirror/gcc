@@ -1,5 +1,12 @@
 2011-04-20  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	* doc/md.texi, optabs.h, genopinit.c, internal-fn.def
+	internal-fn.c, tree.h, tree.c, tree-vectorizer.h,
+	tree-vect-data-refs.c, tree-vect-stmts.c, tree-vect-slp.c: Revert
+	last patch.
+
+2011-04-20  Richard Sandiford  <richard.sandiford@linaro.org>
+
 	* doc/md.texi (vec_load_lanes, vec_store_lanes): Document.
 	* optabs.h (COI_vec_load_lanes, COI_vec_store_lanes): New
 	convert_optab_index values.
