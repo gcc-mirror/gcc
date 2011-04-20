@@ -6133,7 +6133,7 @@ mep_init_builtins (void)
 	if (cgen_insns[i].cret_p)
 	  ret_type = mep_cgen_regnum_to_type (cgen_insns[i].regnums[0].type);
 
-	bi_type = build_function_type (ret_type, 0);
+	bi_type = build_function_type_list (ret_type, NULL_TREE);
 	add_builtin_function (cgen_intrinsics[cgen_insns[i].intrinsic],
 			      bi_type,
 			      cgen_insns[i].intrinsic, BUILT_IN_MD, NULL, NULL);
