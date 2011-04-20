@@ -1,3 +1,10 @@
+2011-04-19  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/48588
+	PR fortran/48692
+
+	* module.c (fix_mio_expr): Commit created symbol.
+
 2011-04-19  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	* scanner.c (load_file): Use XCNEWVAR instead of xcalloc.
