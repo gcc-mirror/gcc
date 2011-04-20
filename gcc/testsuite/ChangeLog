@@ -1,3 +1,13 @@
+2011-04-20  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/48678
+	* gcc.target/i386/sse2-pinsrw.c: New test.
+	* gcc.target/i386/avx-vpinsrw.c: Ditto.
+	* gcc.target/i386/sse4_1-insvqi.c: Ditto.
+	* gcc.target/i386/sse2-insvhi.c: Ditto.
+	* gcc.target/i386/sse4_1-insvsi.c: Ditto.
+	* gcc.target/i386/sse4_1-insvdi.c: Ditto.
+
 2011-04-20  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/template/const4.C: New.

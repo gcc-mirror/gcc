@@ -203,6 +203,7 @@ extern void ix86_expand_vector_extract (bool, rtx, rtx, int);
 extern void ix86_expand_reduc_v4sf (rtx (*)(rtx, rtx, rtx), rtx, rtx);
 
 extern void ix86_expand_vec_extract_even_odd (rtx, rtx, rtx, unsigned);
+extern bool ix86_expand_pinsr (rtx *);
 
 /* In i386-c.c  */
 extern void ix86_target_macros (void);

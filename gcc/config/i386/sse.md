@@ -6051,7 +6051,7 @@
    (set_attr "prefix" "orig,vex")
    (set_attr "mode" "TI")])
 
-(define_insn "*sse4_1_pinsrb"
+(define_insn "sse4_1_pinsrb"
   [(set (match_operand:V16QI 0 "register_operand" "=x,x,x,x")
 	(vec_merge:V16QI
 	  (vec_duplicate:V16QI
@@ -6083,7 +6083,7 @@
    (set_attr "prefix" "orig,orig,vex,vex")
    (set_attr "mode" "TI")])
 
-(define_insn "*sse2_pinsrw"
+(define_insn "sse2_pinsrw"
   [(set (match_operand:V8HI 0 "register_operand" "=x,x,x,x")
 	(vec_merge:V8HI
 	  (vec_duplicate:V8HI
@@ -6117,7 +6117,7 @@
    (set_attr "mode" "TI")])
 
 ;; It must come before sse2_loadld since it is preferred.
-(define_insn "*sse4_1_pinsrd"
+(define_insn "sse4_1_pinsrd"
   [(set (match_operand:V4SI 0 "register_operand" "=x,x")
 	(vec_merge:V4SI
 	  (vec_duplicate:V4SI
@@ -6145,7 +6145,7 @@
    (set_attr "prefix" "orig,vex")
    (set_attr "mode" "TI")])
 
-(define_insn "*sse4_1_pinsrq"
+(define_insn "sse4_1_pinsrq"
   [(set (match_operand:V2DI 0 "register_operand" "=x,x")
 	(vec_merge:V2DI
 	  (vec_duplicate:V2DI

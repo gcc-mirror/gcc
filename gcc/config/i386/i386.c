@@ -34105,6 +34105,88 @@ ix86_expand_vec_extract_even_odd (rtx targ, rtx op0, rtx op1, unsigned odd)
   /* ... or we use the special-case patterns.  */
   expand_vec_perm_even_odd_1 (&d, odd);
 }
+
+/* Expand an insert into a vector register through pinsr insn.
+   Return true if successful.  */
+
+bool
+ix86_expand_pinsr (rtx *operands)
+{
+  rtx dst = operands[0];
+  rtx src = operands[3];
+
+  unsigned int size = INTVAL (operands[1]);
+  unsigned int pos = INTVAL (operands[2]);
+
+  if (GET_CODE (dst) == SUBREG)
+    {
+      pos += SUBREG_BYTE (dst) * BITS_PER_UNIT;
+      dst = SUBREG_REG (dst);
+    }
+
+  if (GET_CODE (src) == SUBREG)
+    src = SUBREG_REG (src);
+
+  switch (GET_MODE (dst))
+    {
+    case V16QImode:
+    case V8HImode:
+    case V4SImode:
+    case V2DImode:
+      {
+	enum machine_mode srcmode, dstmode;
+	rtx (*pinsr)(rtx, rtx, rtx, rtx);
+
+	srcmode = mode_for_size (size, MODE_INT, 0);
+
+	switch (srcmode)
+	  {
+	  case QImode:
+	    if (!TARGET_SSE4_1)
+	      return false;
+	    dstmode = V16QImode;
+	    pinsr = gen_sse4_1_pinsrb;
+	    break;
+
+	  case HImode:
+	    if (!TARGET_SSE2)
+	      return false;
+	    dstmode = V8HImode;
+	    pinsr = gen_sse2_pinsrw;
+	    break;
+
+	  case SImode:
+	    if (!TARGET_SSE4_1)
+	      return false;
+	    dstmode = V4SImode;
+	    pinsr = gen_sse4_1_pinsrd;
+	    break;
+
+	  case DImode:
+	    gcc_assert (TARGET_64BIT);
+	    if (!TARGET_SSE4_1)
+	      return false;
+	    dstmode = V2DImode;
+	    pinsr = gen_sse4_1_pinsrq;
+	    break;
+
+	  default:
+	    return false;
+	  }
+
+	dst = gen_lowpart (dstmode, dst);
+	src = gen_lowpart (srcmode, src);
+
+	pos /= size;
+
+	emit_insn (pinsr (dst, dst, src, GEN_INT (1 << pos)));
+	return true;
+      }
+
+    default:
+      return false;
+    }
+}
 
 /* This function returns the calling abi specific va_list type node.
    It returns  the FNDECL specific va_list type.  */
