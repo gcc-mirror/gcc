@@ -1,3 +1,67 @@
+2011-04-20  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* Makefile.in (INTERNAL_FN_DEF, INTERNAL_FN_H): Define.
+	(GIMPLE_H): Include $(INTERNAL_FN_H).
+	(OBJS-common): Add internal-fn.o.
+	(internal-fn.o): New rule.
+	* internal-fn.def: New file.
+	* internal-fn.h: Likewise.
+	* internal-fn.c: Likewise.
+	* gimple.h: Include internal-fn.h.
+	(GF_CALL_INTERNAL): New gf_mask.
+	(gimple_statement_call): Put fntype into a union with a new
+	internal_fn field.
+	(gimple_build_call_internal): Declare.
+	(gimple_build_call_internal_vec): Likewise.
+	(gimple_call_same_target_p): Likewise.
+	(gimple_call_internal_p): New function.
+	(gimple_call_internal_fn): Likewise.
+	(gimple_call_fntype): Return null for internal calls.
+	(gimple_call_set_fntype): Assert that the function is not internal.
+	(gimple_call_set_fn): Likewise.
+	(gimple_call_set_fndecl): Likewise.
+	(gimple_call_set_internal_fn): New function.
+	(gimple_call_addr_fndecl): Handle null functions.
+	(gimple_call_return_type): Likewise null types.
+	* gimple.c (gimple_build_call_internal_1): New function.
+	(gimple_build_call_internal): Likewise.
+	(gimple_build_call_internal_vec): Likewise.
+	(gimple_call_same_target_p): Likewise.
+	(gimple_call_flags): Handle calls to internal functions.
+	(gimple_call_fnspec): New function.
+	(gimple_call_arg_flags, gimple_call_return_flags): Use it.
+	(gimple_has_side_effects): Handle null functions.
+	(gimple_rhs_has_side_effects): Likewise.
+	(gimple_call_copy_skip_args): Handle calls to internal functions.
+	* cfgexpand.c (expand_call_stmt): Likewise.
+	* expr.c (expand_expr_real_1): Assert that the call isn't internal.
+	* gimple-fold.c (gimple_fold_call): Handle null functions.
+	(gimple_fold_stmt_to_constant_1): Don't fold
+	calls to internal functions.
+	* gimple-low.c (gimple_check_call_args): Handle calls to internal
+	functions.
+	* gimple-pretty-print.c (dump_gimple_call): Likewise.
+	* ipa-prop.c (ipa_analyze_call_uses): Handle null functions.
+	* tree-cfg.c (verify_gimple_call): Handle calls to internal functions.
+	(do_warn_unused_result): Likewise.
+	* tree-eh.c (same_handler_p): Use gimple_call_same_target_p.
+	* tree-ssa-ccp.c (ccp_fold_stmt): Handle calls to internal functions.
+	* tree-ssa-dom.c (hashable_expr): Use the gimple statement to record
+	the target of a call.
+	(initialize_hash_element): Update accordingly.
+	(hashable_expr_equal_p): Use gimple_call_same_target_p.
+	(iterative_hash_hashable_expr): Handle calls to internal functions.
+	(print_expr_hash_elt): Likewise.
+	* tree-ssa-pre.c (can_value_number_call): Likewise.
+	(eliminate): Handle null functions.
+	* tree-ssa-sccvn.c (visit_use): Handle calls to internal functions.
+	* tree-ssa-structalias.c (get_fi_for_callee): Likewise.
+	(find_func_aliases): Likewise.
+	* value-prof.c (gimple_ic_transform): Likewise.
+	(gimple_indirect_call_to_profile): Likewise.
+	* lto-streamer-in.c (input_gimple_stmt): Likewise.
+	* lto-streamer-out.c (output_gimple_stmt): Likewise.
+
 2011-04-19  Jan Hubicka  <jh@suse.cz>
 
 	* ipa-inline-transform.c (save_inline_function_body): Add comments.

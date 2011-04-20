@@ -8528,9 +8528,12 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	  if (code == SSA_NAME
 	      && (g = SSA_NAME_DEF_STMT (ssa_name))
 	      && gimple_code (g) == GIMPLE_CALL)
-	    pmode = promote_function_mode (type, mode, &unsignedp,
-					   gimple_call_fntype (g),
-					   2);
+	    {
+	      gcc_assert (!gimple_call_internal_p (g));
+	      pmode = promote_function_mode (type, mode, &unsignedp,
+					     gimple_call_fntype (g),
+					     2);
+	    }
 	  else
 	    pmode = promote_decl_mode (exp, &unsignedp);
 	  gcc_assert (GET_MODE (decl_rtl) == pmode);

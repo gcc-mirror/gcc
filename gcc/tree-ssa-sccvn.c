@@ -3125,7 +3125,8 @@ visit_use (tree use)
 	  /* ???  We should handle stores from calls.  */
 	  else if (TREE_CODE (lhs) == SSA_NAME)
 	    {
-	      if (gimple_call_flags (stmt) & (ECF_PURE | ECF_CONST))
+	      if (!gimple_call_internal_p (stmt)
+		  && gimple_call_flags (stmt) & (ECF_PURE | ECF_CONST))
 		changed = visit_reference_op_call (lhs, stmt);
 	      else
 		changed = defs_to_varying (stmt);

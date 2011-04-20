@@ -1541,7 +1541,7 @@ gimple_fold_call (gimple_stmt_iterator *gsi, bool inplace)
 
   /* Check for virtual calls that became direct calls.  */
   callee = gimple_call_fn (stmt);
-  if (TREE_CODE (callee) == OBJ_TYPE_REF)
+  if (callee && TREE_CODE (callee) == OBJ_TYPE_REF)
     {
       tree binfo, fndecl, delta, obj;
       HOST_WIDE_INT token;
@@ -2958,7 +2958,13 @@ gimple_fold_stmt_to_constant_1 (gimple stmt, tree (*valueize) (tree))
 
     case GIMPLE_CALL:
       {
-	tree fn = (*valueize) (gimple_call_fn (stmt));
+	tree fn;
+
+	if (gimple_call_internal_p (stmt))
+	  /* No folding yet for these functions.  */
+	  return NULL_TREE;
+
+	fn = (*valueize) (gimple_call_fn (stmt));
 	if (TREE_CODE (fn) == ADDR_EXPR
 	    && TREE_CODE (TREE_OPERAND (fn, 0)) == FUNCTION_DECL
 	    && DECL_BUILT_IN (TREE_OPERAND (fn, 0)))

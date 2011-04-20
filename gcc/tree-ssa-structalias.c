@@ -4026,6 +4026,8 @@ get_fi_for_callee (gimple call)
 {
   tree decl;
 
+  gcc_assert (!gimple_call_internal_p (call));
+
   /* If we can directly resolve the function being called, do so.
      Otherwise, it must be some sort of indirect expression that
      we should still be able to handle.  */
@@ -4319,6 +4321,7 @@ find_func_aliases (gimple origt)
 	    /* Fallthru to general call handling.  */;
 	  }
       if (!in_ipa_mode
+	  || gimple_call_internal_p (t)
 	  || (fndecl
 	      && (!(fi = lookup_vi_for_tree (fndecl))
 		  || !fi->is_fn_info)))
