@@ -108,6 +108,7 @@ static void avr_function_arg_advance (CUMULATIVE_ARGS *, enum machine_mode,
 				      const_tree, bool);
 static void avr_help (void);
 static bool avr_function_ok_for_sibcall (tree, tree);
+static void avr_asm_named_section (const char *name, unsigned int flags, tree decl);
 
 /* Allocate registers from r25 to r8 for parameters for function calls.  */
 #define FIRST_CUM_REG 26
@@ -131,6 +132,10 @@ const struct base_arch_s *avr_current_arch;
 const struct mcu_type_s *avr_current_device;
 
 section *progmem_section;
+
+/* To track if code will use .bss and/or .data.  */
+bool avr_need_clear_bss_p = false;
+bool avr_need_copy_data_p = false;
 
 /* AVR attributes.  */
 static const struct attribute_spec avr_attribute_table[] =
@@ -197,6 +202,12 @@ static const struct default_options avr_option_optimization_table[] =
 #define TARGET_INSERT_ATTRIBUTES avr_insert_attributes
 #undef TARGET_SECTION_TYPE_FLAGS
 #define TARGET_SECTION_TYPE_FLAGS avr_section_type_flags
+
+/* `TARGET_ASM_NAMED_SECTION' must be defined in avr.h.  */
+
+#undef TARGET_ASM_INIT_SECTIONS
+#define TARGET_ASM_INIT_SECTIONS avr_asm_init_sections
+
 #undef TARGET_REGISTER_MOVE_COST
 #define TARGET_REGISTER_MOVE_COST avr_register_move_cost
 #undef TARGET_MEMORY_MOVE_COST
@@ -5190,7 +5201,60 @@ avr_output_progmem_section_asm_op (const void *arg ATTRIBUTE_UNUSED)
   fprintf (asm_out_file, "\t.p2align 1\n");
 }
 
-/* Implement TARGET_ASM_INIT_SECTIONS.  */
+
+/* Implement `ASM_OUTPUT_ALIGNED_DECL_LOCAL'.  */
+/* Implement `ASM_OUTPUT_ALIGNED_DECL_COMMON'.  */
+/* Track need of __do_clear_bss.  */
+
+void
+avr_asm_output_aligned_decl_common (FILE * stream, const_tree decl ATTRIBUTE_UNUSED,
+                                    const char *name, unsigned HOST_WIDE_INT size,
+                                    unsigned int align, bool local_p)
+{
+  avr_need_clear_bss_p = true;
+
+  if (local_p)
+    {
+      fputs ("\t.local\t", stream);
+      assemble_name (stream, name);
+      fputs ("\n", stream);
+    }
+  
+  fputs ("\t.comm\t", stream);
+  assemble_name (stream, name);
+  fprintf (stream,
+           "," HOST_WIDE_INT_PRINT_UNSIGNED ",%u\n",
+           size, align / BITS_PER_UNIT);
+}
+
+
+/* Unnamed section callback for data_section
+   to track need of __do_copy_data.  */
+
+static void
+avr_output_data_section_asm_op (const void *data)
+{
+  avr_need_copy_data_p = true;
+  
+  /* Dispatch to default.  */
+  output_section_asm_op (data);
+}
+
+
+/* Unnamed section callback for bss_section
+   to track need of __do_clear_bss.  */
+
+static void
+avr_output_bss_section_asm_op (const void *data)
+{
+  avr_need_clear_bss_p = true;
+  
+  /* Dispatch to default.  */
+  output_section_asm_op (data);
+}
+
+
+/* Implement `TARGET_ASM_INIT_SECTIONS'.  */
 
 static void
 avr_asm_init_sections (void)
@@ -5199,6 +5263,27 @@ avr_asm_init_sections (void)
 					 avr_output_progmem_section_asm_op,
 					 NULL);
   readonly_data_section = data_section;
+
+  data_section->unnamed.callback = avr_output_data_section_asm_op;
+  bss_section->unnamed.callback = avr_output_bss_section_asm_op;
+}
+
+
+/* Implement `TARGET_ASM_NAMED_SECTION'.  */
+/* Track need of __do_clear_bss, __do_copy_data for named sections.  */
+
+void
+avr_asm_named_section (const char *name, unsigned int flags, tree decl)
+{
+  if (!avr_need_copy_data_p)
+    avr_need_copy_data_p = (0 == strncmp (name, ".data", 5)
+                            || 0 == strncmp (name, ".rodata", 7)
+                            || 0 == strncmp (name, ".gnu.linkonce.d", 15));
+  
+  if (!avr_need_clear_bss_p)
+    avr_need_clear_bss_p = (0 == strncmp (name, ".bss", 4));
+  
+  default_elf_asm_named_section (name, flags, decl);
 }
 
 static unsigned int
@@ -5219,6 +5304,8 @@ avr_section_type_flags (tree decl, const char *name, int reloc)
   return flags;
 }
 
+
+/* Implement `TARGET_ASM_FILE_START'.  */
 /* Outputs some appropriate text to go at the start of an assembler
    file.  */
 
@@ -5237,20 +5324,27 @@ avr_file_start (void)
   
   fputs ("__tmp_reg__ = 0\n" 
          "__zero_reg__ = 1\n", asm_out_file);
-
-  /* FIXME: output these only if there is anything in the .data / .bss
-     sections - some code size could be saved by not linking in the
-     initialization code from libgcc if one or both sections are empty.  */
-  fputs ("\t.global __do_copy_data\n", asm_out_file);
-  fputs ("\t.global __do_clear_bss\n", asm_out_file);
 }
 
+
+/* Implement `TARGET_ASM_FILE_END'.  */
 /* Outputs to the stdio stream FILE some
    appropriate text to go at the end of an assembler file.  */
 
 static void
 avr_file_end (void)
 {
+  /* Output these only if there is anything in the
+     .data* / .rodata* / .gnu.linkonce.* resp. .bss*
+     input section(s) - some code size can be saved by not
+     linking in the initialization code from libgcc if resp.
+     sections are empty.  */
+
+  if (avr_need_copy_data_p)
+    fputs (".global __do_copy_data\n", asm_out_file);
+
+  if (avr_need_clear_bss_p)
+    fputs (".global __do_clear_bss\n", asm_out_file);
 }
 
 /* Choose the order in which to allocate hard registers for

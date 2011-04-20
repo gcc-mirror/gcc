@@ -1,3 +1,27 @@
+2011-04-20  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/18145
+
+	* config/avr/avr.h (TARGET_ASM_INIT_SECTIONS): Delete.
+	(ASM_OUTPUT_COMMON, ASM_OUTPUT_LOCAL): Delete.
+	(ASM_OUTPUT_ALIGNED_DECL_COMMON): Define.
+	(ASM_OUTPUT_ALIGNED_DECL_LOCAL): Define.
+	(TARGET_ASM_NAMED_SECTION): Change to avr_asm_named_section.
+
+	* config/avr/avr-protos.h (avr_asm_output_aligned_common):
+	New prototype.
+
+	* config/avr/avr.c (TARGET_ASM_INIT_SECTIONS): Define.
+	(avr_asm_named_section,	avr_asm_output_aligned_common,
+	avr_output_data_section_asm_op,	avr_output_bss_section_asm_op):
+	New functions to update...
+	(avr_need_clear_bss_p, avr_need_copy_data_p): ...these new variables.
+	(avr_asm_init_sections): Overwrite section callbacks for
+	data_section, bss_section.
+	(avr_file_start): Move output of __do_copy_data, __do_clear_bss
+	from here to...
+	(avr_file_end): ...here.
+
 2011-04-20  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/48695
