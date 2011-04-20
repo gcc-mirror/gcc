@@ -1,3 +1,8 @@
+2011-04-20  Jim Meyering  <meyering@redhat.com>
+
+	* c-format.c (init_dollar_format_checking): Remove useless
+	if-before-free.
+
 2011-04-15  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* c-objc.h (objc_get_interface_ivars): Removed.
@@ -1105,7 +1110,7 @@
 	* c-common.c: Include gt-c-family-c-common.h.
 	* c-pragma.c: Include gt-c-family-c-pragma.h.
 
-Copyright (C) 2010 Free Software Foundation, Inc.
+Copyright (C) 2010, 2011 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

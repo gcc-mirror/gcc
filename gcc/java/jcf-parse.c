@@ -1843,8 +1843,7 @@ java_parse_file (void)
       list = next;
     }
 
-  if (file_list != NULL)
-    free (file_list);
+  free (file_list);
 
   if (filename_count == 0)
     warning (0, "no input file specified");

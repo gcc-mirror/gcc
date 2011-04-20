@@ -713,12 +713,9 @@ cpp_valid_state (cpp_reader *r, const char *name, int fd)
   return -1;
 
  fail:
-  if (namebuf != NULL)
-    free (namebuf);
-  if (undeftab != NULL)
-    free (undeftab);
-  if (nl.defs != NULL)
-    free (nl.defs);
+  free (namebuf);
+  free (undeftab);
+  free (nl.defs);
   return 1;
 }
 

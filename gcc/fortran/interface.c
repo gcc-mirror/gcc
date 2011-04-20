@@ -3141,8 +3141,7 @@ gfc_extend_expr (gfc_expr *e, bool *real_error)
 	}
 
       /* Don't use gfc_free_actual_arglist().  */
-      if (actual->next != NULL)
-	free (actual->next);
+      free (actual->next);
       free (actual);
 
       return FAILURE;

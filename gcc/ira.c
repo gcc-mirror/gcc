@@ -1556,16 +1556,11 @@ free_register_move_costs (void)
 
   for (mode = 0; mode < MAX_MACHINE_MODE; mode++)
     {
-      if (ira_max_register_move_cost[mode] != NULL)
-	free (ira_max_register_move_cost[mode]);
-      if (ira_may_move_in_cost[mode] != NULL)
-	free (ira_may_move_in_cost[mode]);
-      if (ira_may_move_out_cost[mode] != NULL)
-	free (ira_may_move_out_cost[mode]);
-      if (ira_max_may_move_in_cost[mode] != NULL)
-	free (ira_max_may_move_in_cost[mode]);
-      if (ira_max_may_move_out_cost[mode] != NULL)
-	free (ira_max_may_move_out_cost[mode]);
+      free (ira_max_register_move_cost[mode]);
+      free (ira_may_move_in_cost[mode]);
+      free (ira_may_move_out_cost[mode]);
+      free (ira_max_may_move_in_cost[mode]);
+      free (ira_max_may_move_out_cost[mode]);
       ira_register_move_cost[mode] = NULL;
       ira_max_register_move_cost[mode] = NULL;
       ira_may_move_in_cost[mode] = NULL;
@@ -3461,8 +3456,7 @@ build_insn_chain (void)
     }
 
   for (i = 0; i < (unsigned int) max_regno; i++)
-    if (live_subregs[i])
-      free (live_subregs[i]);
+    free (live_subregs[i]);
 
   reload_insn_chain = c;
   *p = NULL;

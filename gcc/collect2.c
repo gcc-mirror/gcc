@@ -2087,8 +2087,7 @@ collect_execute (const char *prog, char **argv, const char *outname,
 	fatal (errmsg);
     }
 
-  if (response_arg)
-    free (response_arg);
+  free (response_arg);
 
   return pex;
 }

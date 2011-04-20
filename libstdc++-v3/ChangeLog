@@ -1,3 +1,8 @@
+2011-04-20  Jim Meyering  <meyering@redhat.com>
+
+	* libsupc++/del_opnt.cc (operator delete): Remove useless
+	if-before-free.
+
 2011-04-19  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	PR libstdc++/48521

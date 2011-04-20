@@ -31,6 +31,5 @@ extern "C" void free (void *);
 _GLIBCXX_WEAK_DEFINITION void
 operator delete (void *ptr, const std::nothrow_t&) throw ()
 {
-  if (ptr)
-    free (ptr);
+  free (ptr);
 }

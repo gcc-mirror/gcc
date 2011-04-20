@@ -206,10 +206,8 @@ cplus_demangle_v3_components (const char *mangled, int options, void **mem)
 	     malloc (di.num_subs * sizeof (struct demangle_component *)));
   if (di.comps == NULL || di.subs == NULL)
     {
-      if (di.comps != NULL)
-	free (di.comps);
-      if (di.subs != NULL)
-	free (di.subs);
+      free (di.comps);
+      free (di.subs);
       return NULL;
     }
 

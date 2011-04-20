@@ -1107,10 +1107,8 @@ init_dollar_format_checking (int first_arg_num, tree params)
     }
   if (dollar_arguments_alloc < dollar_arguments_count)
     {
-      if (dollar_arguments_used)
-	free (dollar_arguments_used);
-      if (dollar_arguments_pointer_p)
-	free (dollar_arguments_pointer_p);
+      free (dollar_arguments_used);
+      free (dollar_arguments_pointer_p);
       dollar_arguments_alloc = dollar_arguments_count;
       dollar_arguments_used = XNEWVEC (char, dollar_arguments_alloc);
       dollar_arguments_pointer_p = XNEWVEC (char, dollar_arguments_alloc);

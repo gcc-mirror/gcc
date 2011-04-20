@@ -1,3 +1,7 @@
+2011-04-20  Jim Meyering  <meyering@redhat.com>
+
+	* jcf-parse.c (java_parse_file): Remove useless if-before-free.
+
 2011-04-18  Jim Meyering  <meyering@redhat.com>
 
 	* jcf-parse.c: Fix typo in comment.
@@ -22471,7 +22475,7 @@ Tue Mar  9 11:52:08 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 
 Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-2006, 2007, 2008, 2009 Free Software Foundation, Inc.
+2006, 2007, 2008, 2009, 2011 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

@@ -1,3 +1,42 @@
+2011-04-20  Jim Meyering  <meyering@redhat.com>
+
+	Remove useless if-before-free tests.
+	* calls.c (expand_call, save_area): Likewise.
+	* cfgcleanup.c (try_forward_edges): Likewise.
+	* collect2.c (collect_execute): Likewise.
+	* config/i386/i386.c (ix86_valid_target_attribute_tree): Likewise.
+	* config/mcore/mcore.c (mcore_expand_prolog): Likewise.
+	* coverage.c (coverage_checksum_string): Likewise.
+	* cse.c (init_cse_reg_info, delete_trivially_dead_insns): Likewise.
+	* cselib.c (cselib_init): Likewise.
+	* df-core.c (rest_of_handle_df_finish, df_analyze): Likewise.
+	(df_set_clean_cfg): Likewise.
+	* function.c (free_after_compilation): Likewise.
+	* gcc.c (do_spec_1, main): Likewise.
+	* gcov.c (create_file_names): Likewise.
+	* gensupport.c (identify_predicable_attribute): Likewise.
+	* graphite-clast-to-gimple.c (save_clast_name_index): Likewise.
+	* graphite-sese-to-poly.c (free_data_refs_aux): Likewise.
+	* haifa-sched.c (haifa_finish_h_i_d): Likewise.
+	* ipa-prop.c (ipa_free_node_params_substructures): Likewise.
+	* ipa-pure-const.c (local_pure_const): Likewise.
+	* ipa-reference.c (propagate): Likewise.
+	* ira-costs.c (free_ira_costs): Likewise.
+	* ira.c (free_register_move_costs, build_insn_chain): Likewise.
+	* matrix-reorg.c (mat_free): Likewise.
+	* prefix.c (get_key_value): Likewise.
+	* profile.c (compute_value_histograms): Likewise.
+	* reload1.c (free_reg_equiv): Likewise.
+	* sched-deps.c (free_deps): Likewise.
+	* sel-sched-ir.c (fence_clear): Likewise.
+	* sese.c (set_rename, if_region_set_false_region): Likewise.
+	* tree-data-ref.c (free_rdg): Likewise.
+	* tree-eh.c (lower_try_finally): Likewise.
+	* tree-ssa-coalesce.c (delete_coalesce_list): Likewise.
+	* tree-ssa-live.c (delete_var_map): Likewise.
+	* tree-ssa-loop-ivopts.c (free_loop_data): Likewise.
+	* tree-ssa-pre.c (phi_trans_add): Likewise.
+
 2011-04-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/48611

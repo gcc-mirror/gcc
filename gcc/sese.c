@@ -449,8 +449,7 @@ set_rename (htab_t rename_map, tree old_name, tree expr)
   if (!slot)
     return;
 
-  if (*slot)
-    free (*slot);
+  free (*slot);
 
   *slot = new_rename_map_elt (old_name, expr);
 }
@@ -676,8 +675,7 @@ if_region_set_false_region (ifsese if_region, sese region)
 
   SESE_EXIT (region) = false_edge;
 
-  if (if_region->false_region)
-    free (if_region->false_region);
+  free (if_region->false_region);
   if_region->false_region = region;
 
   if (slot)

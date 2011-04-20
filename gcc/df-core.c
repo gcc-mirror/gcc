@@ -811,10 +811,8 @@ rest_of_handle_df_finish (void)
       dflow->problem->free_fun ();
     }
 
-  if (df->postorder)
-    free (df->postorder);
-  if (df->postorder_inverted)
-    free (df->postorder_inverted);
+  free (df->postorder);
+  free (df->postorder_inverted);
   free (df->hard_regs_live_count);
   free (df);
   df = NULL;
@@ -1183,10 +1181,8 @@ df_analyze (void)
   bool everything;
   int i;
 
-  if (df->postorder)
-    free (df->postorder);
-  if (df->postorder_inverted)
-    free (df->postorder_inverted);
+  free (df->postorder);
+  free (df->postorder_inverted);
   df->postorder = XNEWVEC (int, last_basic_block);
   df->postorder_inverted = XNEWVEC (int, last_basic_block);
   df->n_blocks = post_order_compute (df->postorder, true, true);
@@ -1725,8 +1721,7 @@ df_check_cfg_clean (void)
 static void
 df_set_clean_cfg (void)
 {
-  if (saved_cfg)
-    free (saved_cfg);
+  free (saved_cfg);
   saved_cfg = df_compute_cfg_image ();
 }
 

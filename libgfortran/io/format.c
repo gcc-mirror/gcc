@@ -149,8 +149,7 @@ save_parsed_format (st_parameter_dt *dtp)
     free_format_data (u->format_hash_table[hash].hashed_fmt);
   u->format_hash_table[hash].hashed_fmt = NULL;
 
-  if (u->format_hash_table[hash].key != NULL)
-    free (u->format_hash_table[hash].key);
+  free (u->format_hash_table[hash].key);
   u->format_hash_table[hash].key = get_mem (dtp->format_len);
   memcpy (u->format_hash_table[hash].key, dtp->format, dtp->format_len);
 

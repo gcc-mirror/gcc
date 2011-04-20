@@ -522,8 +522,7 @@ coverage_checksum_string (unsigned chksum, const char *string)
     }
 
   chksum = crc32_string (chksum, string);
-  if (dup)
-    free (dup);
+  free (dup);
 
   return chksum;
 }

@@ -581,8 +581,7 @@ fence_clear (fence_t f)
   gcc_assert ((s != NULL && dc != NULL && tc != NULL)
 	      || (s == NULL && dc == NULL && tc == NULL));
 
-  if (s != NULL)
-    free (s);
+  free (s);
 
   if (dc != NULL)
     delete_deps_context (dc);

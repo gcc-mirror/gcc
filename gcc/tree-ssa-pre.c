@@ -580,8 +580,7 @@ phi_trans_add (pre_expr e, pre_expr v, basic_block pred)
 
   slot = htab_find_slot_with_hash (phi_translate_table, new_pair,
 				   new_pair->hashcode, INSERT);
-  if (*slot)
-    free (*slot);
+  free (*slot);
   *slot = (void *) new_pair;
 }
 

@@ -4970,7 +4970,7 @@ weak_alias (__re_search_2, re_search_2)
 #ifdef MATCH_MAY_ALLOCATE
 # define FREE_VAR(var) if (var) REGEX_FREE (var); var = NULL
 #else
-# define FREE_VAR(var) if (var) free (var); var = NULL
+# define FREE_VAR(var) free (var); var = NULL
 #endif
 
 #ifdef WCHAR
@@ -8111,20 +8111,17 @@ weak_alias (__regerror, regerror)
 void
 regfree (regex_t *preg)
 {
-  if (preg->buffer != NULL)
-    free (preg->buffer);
+  free (preg->buffer);
   preg->buffer = NULL;
 
   preg->allocated = 0;
   preg->used = 0;
 
-  if (preg->fastmap != NULL)
-    free (preg->fastmap);
+  free (preg->fastmap);
   preg->fastmap = NULL;
   preg->fastmap_accurate = 0;
 
-  if (preg->translate != NULL)
-    free (preg->translate);
+  free (preg->translate);
   preg->translate = NULL;
 }
 #ifdef _LIBC

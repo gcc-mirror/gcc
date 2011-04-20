@@ -1,3 +1,13 @@
+2011-04-20  Jim Meyering  <meyering@redhat.com>
+
+	* intrinsics/move_alloc.c (move_alloc): Remove useless
+	if-before-free test.
+	* io/fbuf.c (fbuf_destroy): Likewise.
+	* io/format.c (save_parsed_format): Likewise.
+	* io/open.c (already_open): Likewise.
+	* io/unit.c (free_internal_unit, close_unit_1): Likewise.
+	* io/unix.c (mem_close): Likewise.
+
 2011-04-19  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/48602

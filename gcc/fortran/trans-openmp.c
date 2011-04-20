@@ -714,8 +714,7 @@ gfc_trans_omp_array_reduction (tree c, gfc_symbol *sym, locus where)
   free (symtree1);
   free (symtree2);
   free (symtree3);
-  if (symtree4)
-    free (symtree4);
+  free (symtree4);
   gfc_free_array_spec (outer_sym.as);
 }
 
