@@ -6330,7 +6330,15 @@ arm_legitimize_reload_address (rtx *p,
        : 0)
 
       if (coproc_p)
-	low = SIGN_MAG_LOW_ADDR_BITS (val, 10);
+	{
+	  low = SIGN_MAG_LOW_ADDR_BITS (val, 10);
+
+	  /* NEON quad-word load/stores are made of two double-word accesses,
+	     so the valid index range is reduced by 8. Treat as 9-bit range if
+	     we go over it.  */
+	  if (TARGET_NEON && VALID_NEON_QREG_MODE (mode) && low >= 1016)
+	    low = SIGN_MAG_LOW_ADDR_BITS (val, 9);
+	}
       else if (GET_MODE_SIZE (mode) == 8)
 	{
 	  if (TARGET_LDRD)

@@ -1,3 +1,9 @@
+2011-04-20  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* config/arm/arm.c (arm_legitimize_reload_address): For NEON
+	quad-word modes, reduce to 9-bit index range when above 1016
+	limit.
+
 2011-04-20  Andrew Stubbs  <ams@codesourcery.com>
 
 	* config/arm/arm.c (arm_gen_constant): Move movw support ....
