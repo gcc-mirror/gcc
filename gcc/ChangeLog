@@ -1,3 +1,10 @@
+2011-04-20  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/48695
+	* tree-ssa-alias.c (aliasing_component_refs_p): Compute base
+	objects and types here.  Adjust for their offset before
+	comparing.
+
 2011-04-20  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* doc/md.texi, optabs.h, genopinit.c, internal-fn.def
