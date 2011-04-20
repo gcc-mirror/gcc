@@ -1,3 +1,16 @@
+2011-04-20  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/48678
+	* config/i386/i386.md (insv): Change operand 0 constraint to
+	"register_operand".  Change operand 1 and 2 constraint to
+	"const_int_operand".  Expand to pinsr{b,w,d,q} * when appropriate.
+	* config/i386/sse.md (sse4_1_pinsrb): Export.
+	(sse2_pinsrw): Ditto.
+	(sse4_1_pinsrd): Ditto.
+	(sse4_1_pinsrq): Ditto.
+	* config/i386/i386-protos.h (ix86_expand_pinsr): Add prototype.
+	* config/i386/i386.c (ix86_expand_pinsr): New.
+
 2011-04-20  Easwaran Raman  <eraman@google.com>
 
 	* cfgexpand.c (add_alias_set_conflicts): Add conflicts with a variable
@@ -72,8 +85,7 @@
 2011-04-20  Kai Tietz  <ktietz@redhat.com>
 
 	* fold-const.c (fold_binary_loc): Add handling for
-	(X & ~Y) | (~X & Y) and (X && !Y) | (!X && Y) optimization
-	to (X ^ Y).
+	(X & ~Y) | (~X & Y) and (X && !Y) | (!X && Y) optimization to (X ^ Y).
 
 2011-04-20  Andrew Stubbs  <ams@codesourcery.com>
 
@@ -246,11 +258,10 @@
 2011-04-19  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* doc/install.texi (Configuration, --enable-threads): Remove mach.
-	Add lynx, mipssde.
-	Sort table.
+	Add lynx, mipssde.  Sort table.
 
 2011-04-19  Xinliang David Li  <davidxl@google.com>
-	
+
 	* ipa-cp.c (ipcp_update_profiling): Assert that scale_completement is
 	not negative.
 
