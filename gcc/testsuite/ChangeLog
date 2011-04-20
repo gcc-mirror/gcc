@@ -1,3 +1,9 @@
+2011-04-20  Daniel Jacobowitz  <dan@codesourcery.com>
+
+	* gcc.dg/vect/vect-shift-3.c, gcc.dg/vect/vect-shift-4.c: New.
+	* lib/target-supports.exp (check_effective_target_vect_shift_char): New
+	function.
+
 2011-04-20  Kai Tietz  <ktietz@redhat.com>
 
 	* gcc.dg/binio-xor1.c: New test.
