@@ -42,6 +42,73 @@ const int internal_fn_flags_array[] = {
   0
 };
 
+/* ARRAY_TYPE is an array of vector modes.  Return the associated insn
+   for load-lanes-style optab OPTAB.  The insn must exist.  */
+
+static enum insn_code
+get_multi_vector_move (tree array_type, convert_optab optab)
+{
+  enum insn_code icode;
+  enum machine_mode imode;
+  enum machine_mode vmode;
+
+  gcc_assert (TREE_CODE (array_type) == ARRAY_TYPE);
+  imode = TYPE_MODE (array_type);
+  vmode = TYPE_MODE (TREE_TYPE (array_type));
+
+  icode = convert_optab_handler (optab, imode, vmode);
+  gcc_assert (icode != CODE_FOR_nothing);
+  return icode;
+}
+
+/* Expand LOAD_LANES call STMT.  */
+
+static void
+expand_LOAD_LANES (gimple stmt)
+{
+  struct expand_operand ops[2];
+  tree type, lhs, rhs;
+  rtx target, mem;
+
+  lhs = gimple_call_lhs (stmt);
+  rhs = gimple_call_arg (stmt, 0);
+  type = TREE_TYPE (lhs);
+
+  target = expand_expr (lhs, NULL_RTX, VOIDmode, EXPAND_WRITE);
+  mem = expand_normal (rhs);
+
+  gcc_assert (MEM_P (mem));
+  PUT_MODE (mem, TYPE_MODE (type));
+
+  create_output_operand (&ops[0], target, TYPE_MODE (type));
+  create_fixed_operand (&ops[1], mem);
+  expand_insn (get_multi_vector_move (type, vec_load_lanes_optab), 2, ops);
+}
+
+/* Expand STORE_LANES call STMT.  */
+
+static void
+expand_STORE_LANES (gimple stmt)
+{
+  struct expand_operand ops[2];
+  tree type, lhs, rhs;
+  rtx target, reg;
+
+  lhs = gimple_call_lhs (stmt);
+  rhs = gimple_call_arg (stmt, 0);
+  type = TREE_TYPE (rhs);
+
+  target = expand_expr (lhs, NULL_RTX, VOIDmode, EXPAND_WRITE);
+  reg = expand_normal (rhs);
+
+  gcc_assert (MEM_P (target));
+  PUT_MODE (target, TYPE_MODE (type));
+
+  create_fixed_operand (&ops[0], target);
+  create_input_operand (&ops[1], reg, TYPE_MODE (type));
+  expand_insn (get_multi_vector_move (type, vec_store_lanes_optab), 2, ops);
+}
+
 /* Routines to expand each internal function, indexed by function number.
    Each routine has the prototype:
 
