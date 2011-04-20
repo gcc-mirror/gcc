@@ -2492,6 +2492,7 @@ expand_debug_expr (tree exp)
 	      || !TREE_STATIC (exp)
 	      || !DECL_NAME (exp)
 	      || DECL_HARD_REGISTER (exp)
+	      || DECL_IN_CONSTANT_POOL (exp)
 	      || mode == VOIDmode)
 	    return NULL;
 

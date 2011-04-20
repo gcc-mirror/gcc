@@ -1,3 +1,18 @@
+2011-04-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	Backport from mainline
+	2011-04-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR lto/48148
+	* gimple.c (gimple_types_compatible_p_1) <ENUMERAL_TYPE>: Do not merge
+	the types if they have different enumeration identifiers.
+
+	2011-04-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR lto/48492
+	* cfgexpand.c (expand_debug_expr) <VAR_DECL>: Return NULL for a
+	DECL_IN_CONSTANT_POOL without RTL.
+
 2011-04-20  Richard Guenther  <rguenther@suse.de>
 
 	Backport from mainline

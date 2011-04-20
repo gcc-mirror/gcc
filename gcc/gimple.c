@@ -3742,6 +3742,9 @@ gimple_types_compatible_p_1 (tree t1, tree t2, enum gtc_mode mode,
 
 	    if (tree_int_cst_equal (c1, c2) != 1)
 	      goto different_types;
+
+	    if (mode == GTC_MERGE && TREE_PURPOSE (v1) != TREE_PURPOSE (v2))
+	      goto different_types;
 	  }
 
 	/* If one enumeration has more values than the other, they
