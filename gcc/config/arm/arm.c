@@ -2591,9 +2591,6 @@ arm_gen_constant (enum rtx_code code, enum machine_mode mode, rtx cond,
 				gen_rtx_SET (VOIDmode, target, source));
 	  return 1;
 	}
-
-      if (TARGET_THUMB2)
-	can_invert = 1;
       break;
 
     case AND:
@@ -3084,8 +3081,7 @@ arm_gen_constant (enum rtx_code code, enum machine_mode mode, rtx cond,
     if (remainder & (1 << i))
       num_bits_set++;
 
-  if ((code == AND)
-      || (code != IOR && can_invert && num_bits_set > 16))
+  if ((code == AND) || (can_invert && num_bits_set > 16))
     remainder ^= 0xffffffff;
   else if (code == PLUS && num_bits_set > 16)
     remainder = (-remainder) & 0xffffffff;
