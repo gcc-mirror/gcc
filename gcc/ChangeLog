@@ -1,5 +1,10 @@
 2011-04-20  Nathan Froyd  <froydnj@codesourcery.com>
 
+	* config/mep/mep.c (mep_init_builtins): Call build_function_type_list
+	instead of build_function_type.
+
+2011-04-20  Nathan Froyd  <froydnj@codesourcery.com>
+
 	* config/pa/pa.c (pa_init_builtins): Call build_function_type_list
 	instead of build_function_type.
 
