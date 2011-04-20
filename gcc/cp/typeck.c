@@ -4354,7 +4354,11 @@ cp_build_binary_op (location_t location,
 		  gcc_unreachable();
 		}
 	    }
-	  return build2 (COMPLEX_EXPR, result_type, real, imag);
+	  real = fold_if_not_in_template (real);
+	  imag = fold_if_not_in_template (imag);
+	  result = build2 (COMPLEX_EXPR, result_type, real, imag);
+	  result = fold_if_not_in_template (result);
+	  return result;
 	}
 
       /* For certain operations (which identify themselves by shorten != 0)

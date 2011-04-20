@@ -1,3 +1,8 @@
+2011-04-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/46304
+	* typeck.c (cp_build_binary_op): Fold COMPLEX_EXPR.
+
 2011-04-18  Jason Merrill  <jason@redhat.com>
 
 	PR c++/48537
