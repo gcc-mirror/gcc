@@ -1,3 +1,9 @@
+2011-04-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/45267
+	* decl.c (duplicate_decls): Keep always_inline attribute
+	in sync with DECL_DISREGARD_INLINE_LIMITS.
+
 2011-04-18  Richard Guenther  <rguenther@suse.de>
 
 	Backported from 4.6 branch 

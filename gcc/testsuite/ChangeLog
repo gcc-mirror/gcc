@@ -1,3 +1,7 @@
+2011-04-19  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/ext/attrib41.C: New.
+
 2011-04-18  Richard Guenther  <rguenther@suse.de>
 
 	Backported from 4.6 branch

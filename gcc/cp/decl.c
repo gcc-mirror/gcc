@@ -1975,6 +1975,19 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 
 	  /* [temp.expl.spec/14] We don't inline explicit specialization
 	     just because the primary template says so.  */
+
+	  /* But still keep DECL_DISREGARD_INLINE_LIMITS in sync with
+	     the always_inline attribute.  */
+	  if (DECL_DISREGARD_INLINE_LIMITS (olddecl)
+	      && !DECL_DISREGARD_INLINE_LIMITS (newdecl))
+	    {
+	      if (DECL_DECLARED_INLINE_P (newdecl))
+		DECL_DISREGARD_INLINE_LIMITS (newdecl) = true;
+	      else
+		DECL_ATTRIBUTES (newdecl)
+		  = remove_attribute ("always_inline",
+				      DECL_ATTRIBUTES (newdecl));
+	    }
 	}
       else if (new_defines_function && DECL_INITIAL (olddecl))
 	{
