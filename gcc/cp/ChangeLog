@@ -1,3 +1,9 @@
+2011-04-20  Jason Merrill  <jason@redhat.com>
+
+	PR c++/48657
+	* decl.c (cp_finish_decl): Handle non-member constant variables
+	in templates, too.
+
 2011-04-19  Jason Merrill  <jason@redhat.com>
 
 	PR c++/46304

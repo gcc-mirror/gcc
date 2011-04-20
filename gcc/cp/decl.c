@@ -5862,11 +5862,9 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 	 then it can be used in future constant expressions, so its value
 	 must be available. */
       if (!(init
-	    && DECL_CLASS_SCOPE_P (decl)
-	    /* We just set TREE_CONSTANT appropriately; see above.  */
-	    && TREE_CONSTANT (decl)
+	    && init_const_expr_p
 	    && !type_dependent_p
-	    /* FIXME non-value-dependent constant expression  */
+	    && decl_maybe_constant_var_p (decl)
 	    && !value_dependent_init_p (init)))
 	{
 	  if (init)
@@ -5875,6 +5873,14 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 	      && !DECL_PRETTY_FUNCTION_P (decl)
 	      && !type_dependent_p)
 	    maybe_deduce_size_from_array_init (decl, init);
+	  goto finish_end;
+	}
+
+      if (!DECL_CLASS_SCOPE_P (decl))
+	{
+	  tree init_code = check_initializer (decl, init, flags, &cleanup);
+	  if (init_code)
+	    DECL_INITIAL (decl) = init;
 	  goto finish_end;
 	}
 
