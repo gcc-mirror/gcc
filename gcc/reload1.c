@@ -445,7 +445,7 @@ static void emit_reload_insns (struct insn_chain *);
 static void delete_output_reload (rtx, int, int, rtx);
 static void delete_address_reloads (rtx, rtx);
 static void delete_address_reloads_1 (rtx, rtx, rtx);
-static rtx inc_for_reload (rtx, rtx, rtx, int);
+static void inc_for_reload (rtx, rtx, rtx, int);
 #ifdef AUTO_INC_DEC
 static void add_auto_inc_notes (rtx, rtx);
 #endif
@@ -7152,22 +7152,12 @@ emit_input_reload_insns (struct insn_chain *chain, struct reload *rl,
 
       old = XEXP (rl->in_reg, 0);
 
-      if (optimize && REG_P (oldequiv)
-	  && REGNO (oldequiv) < FIRST_PSEUDO_REGISTER
-	  && spill_reg_store[REGNO (oldequiv)]
-	  && REG_P (old)
-	  && (dead_or_set_p (insn,
-			     spill_reg_stored_to[REGNO (oldequiv)])
-	      || rtx_equal_p (spill_reg_stored_to[REGNO (oldequiv)],
-			      old)))
-	delete_output_reload (insn, j, REGNO (oldequiv), reloadreg);
-
       /* Prevent normal processing of this reload.  */
       special = 1;
-      /* Output a special code sequence for this case.  */
-      new_spill_reg_store[REGNO (reloadreg)]
-	= inc_for_reload (reloadreg, oldequiv, rl->out,
-			  rl->inc);
+      /* Output a special code sequence for this case, and forget about
+	 spill reg information.  */
+      new_spill_reg_store[REGNO (reloadreg)] = NULL;
+      inc_for_reload (reloadreg, oldequiv, rl->out, rl->inc);
     }
 
   /* If we are reloading a pseudo-register that was set by the previous
@@ -8981,11 +8971,9 @@ delete_address_reloads_1 (rtx dead_insn, rtx x, rtx current_insn)
    IN is either identical to VALUE, or some cheaper place to reload from.
 
    INC_AMOUNT is the number to increment or decrement by (always positive).
-   This cannot be deduced from VALUE.
+   This cannot be deduced from VALUE.  */
 
-   Return the instruction that stores into RELOADREG.  */
-
-static rtx
+static void
 inc_for_reload (rtx reloadreg, rtx in, rtx value, int inc_amount)
 {
   /* REG or MEM to be copied and incremented.  */
@@ -8997,7 +8985,6 @@ inc_for_reload (rtx reloadreg, rtx in, rtx value, int inc_amount)
   rtx inc;
   rtx add_insn;
   int code;
-  rtx store;
   rtx real_in = in == value ? incloc : in;
 
   /* No hard register is equivalent to this register after
@@ -9045,9 +9032,8 @@ inc_for_reload (rtx reloadreg, rtx in, rtx value, int inc_amount)
 		 be used as an address.  */
 
 	      if (! post)
-		add_insn = emit_insn (gen_move_insn (reloadreg, incloc));
-
-	      return add_insn;
+		emit_insn (gen_move_insn (reloadreg, incloc));
+	      return;
 	    }
 	}
       delete_insns_since (last);
@@ -9063,7 +9049,7 @@ inc_for_reload (rtx reloadreg, rtx in, rtx value, int inc_amount)
       if (in != reloadreg)
 	emit_insn (gen_move_insn (reloadreg, real_in));
       emit_insn (gen_add2_insn (reloadreg, inc));
-      store = emit_insn (gen_move_insn (incloc, reloadreg));
+      emit_insn (gen_move_insn (incloc, reloadreg));
     }
   else
     {
@@ -9077,14 +9063,12 @@ inc_for_reload (rtx reloadreg, rtx in, rtx value, int inc_amount)
 	 the original value.  */
 
       emit_insn (gen_add2_insn (reloadreg, inc));
-      store = emit_insn (gen_move_insn (incloc, reloadreg));
+      emit_insn (gen_move_insn (incloc, reloadreg));
       if (CONST_INT_P (inc))
 	emit_insn (gen_add2_insn (reloadreg, GEN_INT (-INTVAL (inc))));
       else
 	emit_insn (gen_sub2_insn (reloadreg, inc));
     }
-
-  return store;
 }
 
 #ifdef AUTO_INC_DEC
