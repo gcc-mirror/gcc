@@ -1,5 +1,10 @@
 2011-04-20  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	* tree-vect-stmts.c (vectorizable_store): Only chain one related
+	statement per copy.
+
+2011-04-20  Richard Sandiford  <richard.sandiford@linaro.org>
+
 	* Makefile.in (INTERNAL_FN_DEF, INTERNAL_FN_H): Define.
 	(GIMPLE_H): Include $(INTERNAL_FN_H).
 	(OBJS-common): Add internal-fn.o.

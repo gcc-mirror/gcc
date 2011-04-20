@@ -3632,6 +3632,7 @@ vectorizable_store (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 		bump_vector_ptr (dataref_ptr, ptr_incr, gsi, stmt, NULL_TREE);
 	}
 
+      new_stmt = NULL;
       if (strided_store)
 	{
 	  result_chain = VEC_alloc (tree, heap, group_size);
@@ -3688,15 +3689,17 @@ vectorizable_store (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
           if (slp)
             continue;
 
-          if (j == 0)
-            STMT_VINFO_VEC_STMT (stmt_info) = *vec_stmt =  new_stmt;
-	  else
-	    STMT_VINFO_RELATED_STMT (prev_stmt_info) = new_stmt;
-
-	  prev_stmt_info = vinfo_for_stmt (new_stmt);
 	  next_stmt = DR_GROUP_NEXT_DR (vinfo_for_stmt (next_stmt));
 	  if (!next_stmt)
 	    break;
+	}
+      if (!slp)
+	{
+	  if (j == 0)
+	    STMT_VINFO_VEC_STMT (stmt_info) = *vec_stmt = new_stmt;
+	  else
+	    STMT_VINFO_RELATED_STMT (prev_stmt_info) = new_stmt;
+	  prev_stmt_info = vinfo_for_stmt (new_stmt);
 	}
     }
 
