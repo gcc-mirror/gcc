@@ -2,6 +2,7 @@
    took debug insns into account.  */
 /* { dg-do compile } */
 /* { dg-options "-O1 -fsched-pressure -fschedule-insns -fcompare-debug" } */
+/* { dg-require-effective-target int32plus } */
 
 int lzo_adler32(int adler, char *buf)
 {

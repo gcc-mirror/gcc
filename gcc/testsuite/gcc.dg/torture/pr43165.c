@@ -1,5 +1,6 @@
 /* PR debug/43165 */
 /* { dg-options "-g" } */
+/* { dg-require-effective-target int32plus } */
 
 struct __attribute__((packed)) S
 {

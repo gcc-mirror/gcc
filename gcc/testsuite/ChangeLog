@@ -1,3 +1,15 @@
+2011-04-20  Georg-Johann Lay  <avr@gjlay.de>
+
+	* gcc.dg/pr42629.c: Add dg-require-effective-target int32plus
+	* gcc.c-torture/execute/cmpsi-2.c: Ditto
+	* gcc.c-torture/execute/pr45262.c: Ditto
+	* gcc.dg/torture/pr43165.c: Ditto.
+	* gcc.dg/torture/pr47228.c: Ditto.
+	* gcc.dg/tree-ssa/pr45144.c: Ditto.
+	* gcc.dg/ipa/pr45644.c: Ditto.
+	* gcc.c-torture/compile/pr43191.c: Ditto. Remove dg-skip-if for
+	PDP11.
+
 2011-04-19  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/ext/complex7.C: New.
