@@ -1,5 +1,10 @@
 2011-04-20  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/47892
+	* gcc.dg/vect/fast-math-ifcvt-1.c: New testcase.
+
+2011-04-20  Richard Guenther  <rguenther@suse.de>
+
 	PR middle-end/48695
 	* g++.dg/torture/pr48695.C: New testcase.
 
