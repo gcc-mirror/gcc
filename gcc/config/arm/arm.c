@@ -2307,6 +2307,13 @@ const_ok_for_op (HOST_WIDE_INT i, enum rtx_code code)
 
   switch (code)
     {
+    case SET:
+      /* See if we can use movw.  */
+      if (arm_arch_thumb2 && (i & 0xffff0000) == 0)
+	return 1;
+      else
+	return 0;
+
     case PLUS:
     case COMPARE:
     case EQ:
@@ -2663,9 +2670,7 @@ arm_gen_constant (enum rtx_code code, enum machine_mode mode, rtx cond,
     }
 
   /* If we can do it in one insn get out quickly.  */
-  if (const_ok_for_arm (val)
-      || (can_negate_initial && const_ok_for_arm (-val))
-      || (can_invert && const_ok_for_arm (~val)))
+  if (const_ok_for_op (val, code))
     {
       if (generate)
 	emit_constant_insn (cond,
@@ -2718,15 +2723,6 @@ arm_gen_constant (enum rtx_code code, enum machine_mode mode, rtx cond,
   switch (code)
     {
     case SET:
-      /* See if we can use movw.  */
-      if (arm_arch_thumb2 && (remainder & 0xffff0000) == 0)
-	{
-	  if (generate)
-	    emit_constant_insn (cond, gen_rtx_SET (VOIDmode, target,
-						   GEN_INT (val)));
-	  return 1;
-	}
-
       /* See if we can do this by sign_extending a constant that is known
 	 to be negative.  This is a good, way of doing it, since the shift
 	 may well merge into a subsequent insn.  */
