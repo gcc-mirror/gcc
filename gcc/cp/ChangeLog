@@ -1,5 +1,8 @@
 2011-04-19  Jason Merrill  <jason@redhat.com>
 
+	PR c++/46304
+	* typeck.c (cp_build_binary_op): Fold COMPLEX_EXPR.
+
 	PR c++/45267
 	* decl.c (duplicate_decls): Keep always_inline attribute
 	in sync with DECL_DISREGARD_INLINE_LIMITS.
