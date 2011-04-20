@@ -1,5 +1,11 @@
 2011-04-19  Jan Hubicka  <jh@suse.cz>
 
+	* ipa-inline-transform.c (save_inline_function_body): Add comments.
+	* ipa-inline.c (inline_small_functions): Compute summaries first, populate
+	heap later.
+
+2011-04-19  Jan Hubicka  <jh@suse.cz>
+
 	* cgraph.h (save_inline_function_body): Remove.
 	* ipa-inline-transform.c: New file, broke out of...
 	* ipa-inline.c: ... this one; Update toplevel comment.

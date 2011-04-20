@@ -1127,21 +1127,17 @@ inline_small_functions (void)
 	     "\nDeciding on inlining of small functions.  Starting with size %i.\n",
 	     initial_size);
 
-  /* Populate the heeap with all edges we might inline.
-     While doing so compute overall unit size and other global
-     parameters used by badness metrics.  */
+  /* Compute overall unit size and other global parameters used by badness
+     metrics.  */
 
   max_count = 0;
   max_benefit = 0;
+
   for (node = cgraph_nodes; node; node = node->next)
     if (node->analyzed
 	&& !node->global.inlined_to)
       {
 	struct inline_summary *info = inline_summary (node);
-
-	if (dump_file)
-	  fprintf (dump_file, "Enqueueing calls of %s/%i.\n",
-		   cgraph_node_name (node), node->uid);
 
 	info->estimated_growth = INT_MIN;
 
@@ -1156,20 +1152,34 @@ inline_small_functions (void)
 	      max_count = edge->count;
 	    if (max_benefit < benefit)
 	      max_benefit = benefit;
-	    if (edge->inline_failed
-		&& can_inline_edge_p (edge, true)
-		&& want_inline_small_function_p (edge, true)
-		&& edge->inline_failed)
-	      {
-		gcc_assert (!edge->aux);
-		update_edge_key (heap, edge);
-	      }
 	   }
       }
 
   overall_size = initial_size;
   max_size = compute_max_insns (overall_size);
   min_size = overall_size;
+
+  /* Populate the heeap with all edges we might inline.  */
+
+  for (node = cgraph_nodes; node; node = node->next)
+    if (node->analyzed
+	&& !node->global.inlined_to)
+      {
+	if (dump_file)
+	  fprintf (dump_file, "Enqueueing calls of %s/%i.\n",
+		   cgraph_node_name (node), node->uid);
+
+	for (edge = node->callers; edge; edge = edge->next_caller)
+	  if (edge->inline_failed
+	      && can_inline_edge_p (edge, true)
+	      && want_inline_small_function_p (edge, true)
+	      && edge->inline_failed)
+	    {
+	      gcc_assert (!edge->aux);
+	      update_edge_key (heap, edge);
+	    }
+      }
+
   gcc_assert (in_lto_p
 	      || !max_count
 	      || (profile_info && flag_branch_probabilities));
