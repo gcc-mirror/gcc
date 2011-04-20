@@ -37,3 +37,6 @@ along with GCC; see the file COPYING3.  If not see
      void expand_NAME (gimple stmt)
 
    where STMT is the statement that performs the call.  */
+
+DEF_INTERNAL_FN (LOAD_LANES, ECF_CONST | ECF_LEAF)
+DEF_INTERNAL_FN (STORE_LANES, ECF_CONST | ECF_LEAF)
