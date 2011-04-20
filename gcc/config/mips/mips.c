@@ -6075,7 +6075,7 @@ mips16_build_function_stub (void)
   /* Build a decl for the stub.  */
   stubdecl = build_decl (BUILTINS_LOCATION,
 			 FUNCTION_DECL, get_identifier (stubname),
-			 build_function_type (void_type_node, NULL_TREE));
+			 build_function_type_list (void_type_node, NULL_TREE));
   DECL_SECTION_NAME (stubdecl) = build_string (strlen (secname), secname);
   DECL_RESULT (stubdecl) = build_decl (BUILTINS_LOCATION,
 				       RESULT_DECL, NULL_TREE, void_type_node);
@@ -6321,7 +6321,8 @@ mips16_build_call_stub (rtx retval, rtx *fn_ptr, rtx args_size, int fp_code)
       stubid = get_identifier (stubname);
       stubdecl = build_decl (BUILTINS_LOCATION,
 			     FUNCTION_DECL, stubid,
-			     build_function_type (void_type_node, NULL_TREE));
+			     build_function_type_list (void_type_node,
+						       NULL_TREE));
       DECL_SECTION_NAME (stubdecl) = build_string (strlen (secname), secname);
       DECL_RESULT (stubdecl) = build_decl (BUILTINS_LOCATION,
 					   RESULT_DECL, NULL_TREE,
