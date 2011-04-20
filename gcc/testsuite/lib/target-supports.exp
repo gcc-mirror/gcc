@@ -2310,6 +2310,26 @@ proc check_effective_target_vect_shift_scalar { } {
 }
 
 
+# Return 1 if the target supports hardware vector shift operation for char.
+
+proc check_effective_target_vect_shift_char { } {
+    global et_vect_shift_char_saved
+
+    if [info exists et_vect_shift_char_saved] {
+	verbose "check_effective_target_vect_shift_char: using cached result" 2
+    } else {
+	set et_vect_shift_char_saved 0
+	if { ([istarget powerpc*-*-*]
+             && ![istarget powerpc-*-linux*paired*])
+	     || [check_effective_target_arm32] } {
+	   set et_vect_shift_char_saved 1
+	}
+    }
+
+    verbose "check_effective_target_vect_shift_char: returning $et_vect_shift_char_saved" 2
+    return $et_vect_shift_char_saved
+}
+
 # Return 1 if the target supports hardware vectors of long, 0 otherwise.
 #
 # This can change for different subtargets so do not cache the result.
