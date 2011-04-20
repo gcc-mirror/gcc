@@ -39,43 +39,6 @@
 
 2011-04-20  Richard Sandiford  <richard.sandiford@linaro.org>
 
-	* doc/md.texi, optabs.h, genopinit.c, internal-fn.def
-	internal-fn.c, tree.h, tree.c, tree-vectorizer.h,
-	tree-vect-data-refs.c, tree-vect-stmts.c, tree-vect-slp.c: Revert
-	last patch.
-
-2011-04-20  Richard Sandiford  <richard.sandiford@linaro.org>
-
-	* doc/md.texi (vec_load_lanes, vec_store_lanes): Document.
-	* optabs.h (COI_vec_load_lanes, COI_vec_store_lanes): New
-	convert_optab_index values.
-	(vec_load_lanes_optab, vec_store_lanes_optab): New convert optabs.
-	* genopinit.c (optabs): Initialize the new optabs.
-	* internal-fn.def (LOAD_LANES, STORE_LANES): New internal functions.
-	* internal-fn.c (get_multi_vector_move, expand_LOAD_LANES)
-	(expand_STORE_LANES): New functions.
-	* tree.h (build_array_type_nelts): Declare.
-	* tree.c (build_array_type_nelts): New function.
-	* tree-vectorizer.h (vect_model_store_cost): Add a bool argument.
-	(vect_model_load_cost): Likewise.
-	(vect_store_lanes_supported, vect_load_lanes_supported)
-	(vect_record_strided_load_vectors): Declare.
-	* tree-vect-data-refs.c (vect_lanes_optab_supported_p)
-	(vect_store_lanes_supported, vect_load_lanes_supported): New functions.
-	(vect_transform_strided_load): Split out statement recording into...
-	(vect_record_strided_load_vectors): ...this new function.
-	* tree-vect-stmts.c (create_vector_array, read_vector_array)
-	(write_vector_array, create_array_ref): New functions.
-	(vect_model_store_cost): Add store_lanes_p argument.
-	(vect_model_load_cost): Add load_lanes_p argument.
-	(vectorizable_store): Try to use store-lanes functions for
-	interleaved stores.
-	(vectorizable_load): Likewise load-lanes and loads.
-	* tree-vect-slp.c (vect_get_and_check_slp_defs)
-	(vect_build_slp_tree):
-
-2011-04-20  Richard Sandiford  <richard.sandiford@linaro.org>
-
 	* tree-vect-stmts.c (vectorizable_store): Only chain one related
 	statement per copy.
 
@@ -146,8 +109,8 @@
 2011-04-19  Jan Hubicka  <jh@suse.cz>
 
 	* ipa-inline-transform.c (save_inline_function_body): Add comments.
-	* ipa-inline.c (inline_small_functions): Compute summaries first, populate
-	heap later.
+	* ipa-inline.c (inline_small_functions): Compute summaries first,
+	populate heap later.
 
 2011-04-19  Jan Hubicka  <jh@suse.cz>
 
@@ -201,8 +164,8 @@
 
 2011-04-19  Xinliang David Li  <davidxl@google.com>
 	
-	* ipa-cp.c (ipcp_update_profiling): asserting
-	scale_completement is not negative.
+	* ipa-cp.c (ipcp_update_profiling): Assert that scale_completement is
+	not negative.
 
 2011-04-19  Jakub Jelinek  <jakub@redhat.com>
 
