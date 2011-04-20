@@ -1,3 +1,7 @@
+2011-04-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/alpha/vms.h (ASM_OUTPUT_ADDR_DIFF_ELT): Do not redefine.
+
 2011-04-20  Tristan Gingold  <gingold@adacore.com>
 
 	* config/alpha/vms.h (LINK_SPEC): Do not use vms-dwarf2.o for gnu-ld.
