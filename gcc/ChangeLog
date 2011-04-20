@@ -1,3 +1,13 @@
+2011-04-20  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR target/48288
+	* config/pa/predicates.md (ior_operand): Delete predicate.
+	(cint_ior_operand, reg_or_cint_ior_operand): New predicates.
+	* config/pa/pa.md (iordi3): Use reg_or_cint_ior_operand predicate in
+	expander.  Use cint_ior_operand in unnamed insn.
+	(iorsi3): Likewise.
+	* config/pa/pa-protos.h (ior_operand): Delete declarations.
+
 2011-04-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/48611
