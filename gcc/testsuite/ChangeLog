@@ -1,3 +1,7 @@
+2011-04-20  Easwaran Raman  <eraman@google.com>
+
+	* gcc.dg/stack-layout-1.c: New test.
+
 2011-04-20  Daniel Jacobowitz  <dan@codesourcery.com>
 
 	* gcc.dg/vect/vect-shift-3.c, gcc.dg/vect/vect-shift-4.c: New.
