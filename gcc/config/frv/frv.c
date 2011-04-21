@@ -372,7 +372,7 @@ static int frv_memory_move_cost			(enum machine_mode,
 static void frv_asm_out_constructor		(rtx, int);
 static void frv_asm_out_destructor		(rtx, int);
 static bool frv_function_symbol_referenced_p	(rtx);
-static bool frv_cannot_force_const_mem		(rtx);
+static bool frv_cannot_force_const_mem		(enum machine_mode, rtx);
 static const char *unspec_got_name		(int);
 static void frv_output_const_unspec		(FILE *,
 						 const struct frv_unspec *);
@@ -616,7 +616,8 @@ frv_const_unspec_p (rtx x, struct frv_unspec *unspec)
    4. In many cases, it's more efficient to calculate the constant in-line.  */
 
 static bool
-frv_cannot_force_const_mem (rtx x ATTRIBUTE_UNUSED)
+frv_cannot_force_const_mem (enum machine_mode mode ATTRIBUTE_UNUSED,
+			    rtx x ATTRIBUTE_UNUSED)
 {
   return TARGET_FDPIC;
 }

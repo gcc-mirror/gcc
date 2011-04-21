@@ -163,6 +163,7 @@ static void m68k_function_arg_advance (CUMULATIVE_ARGS *, enum machine_mode,
 				       const_tree, bool);
 static rtx m68k_function_arg (CUMULATIVE_ARGS *, enum machine_mode,
 			      const_tree, bool);
+static bool m68k_cannot_force_const_mem (enum machine_mode mode, rtx x);
 
 
 /* Specify the identification number of the library being built */
@@ -256,7 +257,7 @@ const char *m68k_library_id_string = "_current_shared_library_a5_offset_";
 #define TARGET_STRUCT_VALUE_RTX m68k_struct_value_rtx
 
 #undef TARGET_CANNOT_FORCE_CONST_MEM
-#define TARGET_CANNOT_FORCE_CONST_MEM m68k_illegitimate_symbolic_constant_p
+#define TARGET_CANNOT_FORCE_CONST_MEM m68k_cannot_force_const_mem
 
 #undef TARGET_FUNCTION_OK_FOR_SIBCALL
 #define TARGET_FUNCTION_OK_FOR_SIBCALL m68k_ok_for_sibcall_p
@@ -1935,6 +1936,14 @@ m68k_illegitimate_symbolic_constant_p (rtx x)
 	return true;
     }
   return m68k_tls_reference_p (x, false);
+}
+
+/* Implement TARGET_CANNOT_FORCE_CONST_MEM.  */
+
+static bool
+m68k_cannot_force_const_mem (enum machine_mode mode ATTRIBUTE_UNUSED, rtx x)
+{
+  return m68k_illegitimate_symbolic_constant_p (x);
 }
 
 /* Return true if X is a legitimate constant address that can reach

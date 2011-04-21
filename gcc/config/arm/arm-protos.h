@@ -82,7 +82,7 @@ extern void neon_disambiguate_copy (rtx *, rtx *, rtx *, unsigned int);
 extern enum reg_class coproc_secondary_reload_class (enum machine_mode, rtx,
 						     bool);
 extern bool arm_tls_referenced_p (rtx);
-extern bool arm_cannot_force_const_mem (rtx);
+extern bool arm_cannot_force_const_mem (enum machine_mode, rtx);
 
 extern int cirrus_memory_offset (rtx);
 extern int arm_coproc_mem_operand (rtx, bool);

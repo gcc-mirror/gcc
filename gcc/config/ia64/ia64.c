@@ -316,7 +316,7 @@ static rtx ia64_struct_value_rtx (tree, int);
 static tree ia64_gimplify_va_arg (tree, tree, gimple_seq *, gimple_seq *);
 static bool ia64_scalar_mode_supported_p (enum machine_mode mode);
 static bool ia64_vector_mode_supported_p (enum machine_mode mode);
-static bool ia64_cannot_force_const_mem (rtx);
+static bool ia64_cannot_force_const_mem (enum machine_mode, rtx);
 static const char *ia64_mangle_type (const_tree);
 static const char *ia64_invalid_conversion (const_tree, const_tree);
 static const char *ia64_invalid_unary_op (int, const_tree);
@@ -1014,9 +1014,9 @@ ia64_legitimate_constant_p (rtx x)
 /* Don't allow TLS addresses to get spilled to memory.  */
 
 static bool
-ia64_cannot_force_const_mem (rtx x)
+ia64_cannot_force_const_mem (enum machine_mode mode, rtx x)
 {
-  if (GET_MODE (x) == RFmode)
+  if (mode == RFmode)
     return true;
   return tls_symbolic_operand_type (x) != 0;
 }

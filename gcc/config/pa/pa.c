@@ -187,6 +187,7 @@ static bool pa_can_eliminate (const int, const int);
 static void pa_conditional_register_usage (void);
 static enum machine_mode pa_c_mode_for_suffix (char);
 static section *pa_function_section (tree, enum node_frequency, bool, bool);
+static bool pa_cannot_force_const_mem (enum machine_mode, rtx);
 
 /* The following extra sections are only used for SOM.  */
 static GTY(()) section *som_readonly_data_section;
@@ -369,7 +370,7 @@ static const struct default_options pa_option_optimization_table[] =
 #define TARGET_SCALAR_MODE_SUPPORTED_P pa_scalar_mode_supported_p
 
 #undef TARGET_CANNOT_FORCE_CONST_MEM
-#define TARGET_CANNOT_FORCE_CONST_MEM pa_tls_referenced_p
+#define TARGET_CANNOT_FORCE_CONST_MEM pa_cannot_force_const_mem
 
 #undef TARGET_SECONDARY_RELOAD
 #define TARGET_SECONDARY_RELOAD pa_secondary_reload
@@ -1561,6 +1562,14 @@ pa_tls_referenced_p (rtx x)
     return false;
 
   return for_each_rtx (&x, &pa_tls_symbol_ref_1, 0);
+}
+
+/* Implement TARGET_CANNOT_FORCE_CONST_MEM.  */
+
+static bool
+pa_cannot_force_const_mem (enum machine_mode mode ATTRIBUTE_UNUSED, rtx x)
+{
+  return pa_tls_referenced_p (x);
 }
 
 /* Emit insns to move operands[1] into operands[0].

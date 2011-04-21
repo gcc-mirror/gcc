@@ -1095,7 +1095,7 @@ alpha_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
    should never be spilling symbolic operands to the constant pool, ever.  */
 
 static bool
-alpha_cannot_force_const_mem (rtx x)
+alpha_cannot_force_const_mem (enum machine_mode mode ATTRIBUTE_UNUSED, rtx x)
 {
   enum rtx_code code = GET_CODE (x);
   return code == SYMBOL_REF || code == LABEL_REF || code == CONST;

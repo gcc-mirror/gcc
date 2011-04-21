@@ -6500,7 +6500,7 @@ arm_tls_referenced_p (rtx x)
 /* Implement TARGET_CANNOT_FORCE_CONST_MEM.  */
 
 bool
-arm_cannot_force_const_mem (rtx x)
+arm_cannot_force_const_mem (enum machine_mode mode ATTRIBUTE_UNUSED, rtx x)
 {
   rtx base, offset;
 
