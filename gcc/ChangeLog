@@ -1,3 +1,7 @@
+2011-04-21  Tristan Gingold  <gingold@adacore.com>
+
+	* config/ia64/ia64.c (ia64_start_function): Add a guard.
+
 2011-04-21  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/48708
