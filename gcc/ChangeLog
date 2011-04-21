@@ -1,5 +1,11 @@
 2011-04-21  Nathan Froyd  <froydnj@codesourcery.com>
 
+	* config/frv/frv.c (frv_init_builtins): Delete `endlink' variable.
+	Call builtin_function_type_list instead of builtin_function_type.
+	(UNARY, BINARY, TRINARY, QUAD): Likewise.
+
+2011-04-21  Nathan Froyd  <froydnj@codesourcery.com>
+
 	* config/arm/arm.c (arm_init_iwmmxt_builtins): Call
 	build_function_type_list instead of build_function_type.
 	Delete variable `endlink'.
