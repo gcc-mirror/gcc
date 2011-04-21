@@ -1451,7 +1451,7 @@ lookup_fnfields_1 (tree type, tree name)
 tree
 lookup_fnfields_slot (tree type, tree name)
 {
-  int ix = lookup_fnfields_1 (type, name);
+  int ix = lookup_fnfields_1 (complete_type (type), name);
   if (ix < 0)
     return NULL_TREE;
   return VEC_index (tree, CLASSTYPE_METHOD_VEC (type), ix);
