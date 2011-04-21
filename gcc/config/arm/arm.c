@@ -144,6 +144,8 @@ static void arm_internal_label (FILE *, const char *, unsigned long);
 static void arm_output_mi_thunk (FILE *, tree, HOST_WIDE_INT, HOST_WIDE_INT,
 				 tree);
 static bool arm_have_conditional_execution (void);
+static bool arm_cannot_force_const_mem (enum machine_mode, rtx);
+static bool arm_legitimate_constant_p (enum machine_mode, rtx);
 static bool arm_rtx_costs_1 (rtx, enum rtx_code, int*, bool);
 static bool arm_size_rtx_costs (rtx, enum rtx_code, enum rtx_code, int *);
 static bool arm_slowmul_rtx_costs (rtx, enum rtx_code, enum rtx_code, int *, bool);
@@ -527,6 +529,9 @@ static const struct default_options arm_option_optimization_table[] =
 
 #undef TARGET_HAVE_CONDITIONAL_EXECUTION
 #define TARGET_HAVE_CONDITIONAL_EXECUTION arm_have_conditional_execution
+
+#undef TARGET_LEGITIMATE_CONSTANT_P
+#define TARGET_LEGITIMATE_CONSTANT_P arm_legitimate_constant_p
 
 #undef TARGET_CANNOT_FORCE_CONST_MEM
 #define TARGET_CANNOT_FORCE_CONST_MEM arm_cannot_force_const_mem
@@ -6497,9 +6502,41 @@ arm_tls_referenced_p (rtx x)
   return for_each_rtx (&x, arm_tls_operand_p_1, NULL);
 }
 
+/* Implement TARGET_LEGITIMATE_CONSTANT_P.
+
+   On the ARM, allow any integer (invalid ones are removed later by insn
+   patterns), nice doubles and symbol_refs which refer to the function's
+   constant pool XXX.
+
+   When generating pic allow anything.  */
+
+static bool
+arm_legitimate_constant_p_1 (enum machine_mode mode ATTRIBUTE_UNUSED, rtx x)
+{
+  return flag_pic || !label_mentioned_p (x);
+}
+
+static bool
+thumb_legitimate_constant_p (enum machine_mode mode ATTRIBUTE_UNUSED, rtx x)
+{
+  return (GET_CODE (x) == CONST_INT
+	  || GET_CODE (x) == CONST_DOUBLE
+	  || CONSTANT_ADDRESS_P (x)
+	  || flag_pic);
+}
+
+static bool
+arm_legitimate_constant_p (enum machine_mode mode, rtx x)
+{
+  return (!arm_cannot_force_const_mem (mode, x)
+	  && (TARGET_32BIT
+	      ? arm_legitimate_constant_p_1 (mode, x)
+	      : thumb_legitimate_constant_p (mode, x)));
+}
+
 /* Implement TARGET_CANNOT_FORCE_CONST_MEM.  */
 
-bool
+static bool
 arm_cannot_force_const_mem (enum machine_mode mode ATTRIBUTE_UNUSED, rtx x)
 {
   rtx base, offset;

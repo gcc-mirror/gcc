@@ -4161,6 +4161,9 @@ init_eliminable_invariants (rtx first, bool do_subregs)
 		}
 	      else if (function_invariant_p (x))
 		{
+		  enum machine_mode mode;
+
+		  mode = GET_MODE (SET_DEST (set));
 		  if (GET_CODE (x) == PLUS)
 		    {
 		      /* This is PLUS of frame pointer and a constant,
@@ -4173,12 +4176,11 @@ init_eliminable_invariants (rtx first, bool do_subregs)
 		      reg_equiv_invariant (i) = x;
 		      num_eliminable_invariants++;
 		    }
-		  else if (LEGITIMATE_CONSTANT_P (x))
+		  else if (targetm.legitimate_constant_p (mode, x))
 		    reg_equiv_constant (i) = x;
 		  else
 		    {
-		      reg_equiv_memory_loc (i)
-			= force_const_mem (GET_MODE (SET_DEST (set)), x);
+		      reg_equiv_memory_loc (i) = force_const_mem (mode, x);
 		      if (! reg_equiv_memory_loc (i))
 			reg_equiv_init (i) = NULL_RTX;
 		    }

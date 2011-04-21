@@ -36,4 +36,3 @@ extern rtx lm32_legitimize_pic_address (rtx, enum machine_mode, rtx);
 extern void lm32_expand_scc (rtx operands[]);
 extern void lm32_expand_conditional_branch (rtx operands[]);
 extern bool lm32_move_ok (enum machine_mode, rtx operands[2]);
-extern bool lm32_legitimate_constant_p (rtx);

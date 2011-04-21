@@ -556,7 +556,7 @@
     if (MEM_P (operand0) && MEM_P (operand1))
       operands[1] = copy_to_mode_reg (<register_modes:MODE>mode, operand1);
     if (CONST_INT_P (operand1)
-        && ! rx_is_legitimate_constant (operand1))
+        && ! rx_legitimate_constant_p (<register_modes:MODE>mode, operand1))
       FAIL;
   }
 )

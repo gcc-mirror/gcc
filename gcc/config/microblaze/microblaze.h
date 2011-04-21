@@ -524,12 +524,6 @@ typedef struct microblaze_args
    addresses which require two reload registers.  */
 #define LEGITIMATE_PIC_OPERAND_P(X)  (!pic_address_needs_scratch (X))
 
-/* At present, GAS doesn't understand li.[sd], so don't allow it
-   to be generated at present.  */
-#define LEGITIMATE_CONSTANT_P(X)				\
-  (GET_CODE (X) != CONST_DOUBLE					\
-    || microblaze_const_double_ok (X, GET_MODE (X)))
-
 #define CASE_VECTOR_MODE			(SImode)
 
 #ifndef DEFAULT_SIGNED_CHAR

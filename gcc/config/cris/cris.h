@@ -1020,8 +1020,6 @@ struct cum_args {int regs;};
     }									\
   while (0)
 
-#define LEGITIMATE_CONSTANT_P(X) 1
-
 
 /* Node: Condition Code */
 

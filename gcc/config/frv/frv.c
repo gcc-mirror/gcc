@@ -372,6 +372,7 @@ static int frv_memory_move_cost			(enum machine_mode,
 static void frv_asm_out_constructor		(rtx, int);
 static void frv_asm_out_destructor		(rtx, int);
 static bool frv_function_symbol_referenced_p	(rtx);
+static bool frv_legitimate_constant_p		(enum machine_mode, rtx);
 static bool frv_cannot_force_const_mem		(enum machine_mode, rtx);
 static const char *unspec_got_name		(int);
 static void frv_output_const_unspec		(FILE *,
@@ -472,6 +473,8 @@ static const struct default_options frv_option_optimization_table[] =
 
 #undef TARGET_FUNCTION_OK_FOR_SIBCALL
 #define TARGET_FUNCTION_OK_FOR_SIBCALL frv_function_ok_for_sibcall
+#undef TARGET_LEGITIMATE_CONSTANT_P
+#define TARGET_LEGITIMATE_CONSTANT_P frv_legitimate_constant_p
 #undef TARGET_CANNOT_FORCE_CONST_MEM
 #define TARGET_CANNOT_FORCE_CONST_MEM frv_cannot_force_const_mem
 
@@ -603,7 +606,7 @@ frv_const_unspec_p (rtx x, struct frv_unspec *unspec)
    We never allow constants to be forced into memory for TARGET_FDPIC.
    This is necessary for several reasons:
 
-   1. Since LEGITIMATE_CONSTANT_P rejects constant pool addresses, the
+   1. Since frv_legitimate_constant_p rejects constant pool addresses, the
       target-independent code will try to force them into the constant
       pool, thus leading to infinite recursion.
 
@@ -6749,16 +6752,14 @@ frv_class_max_nregs (enum reg_class rclass, enum machine_mode mode)
    `CONSTANT_P', so you need not check this.  In fact, `1' is a suitable
    definition for this macro on machines where anything `CONSTANT_P' is valid.  */
 
-int
-frv_legitimate_constant_p (rtx x)
+static bool
+frv_legitimate_constant_p (enum machine_mode mode, rtx x)
 {
-  enum machine_mode mode = GET_MODE (x);
-
   /* frv_cannot_force_const_mem always returns true for FDPIC.  This
      means that the move expanders will be expected to deal with most
      kinds of constant, regardless of what we return here.
 
-     However, among its other duties, LEGITIMATE_CONSTANT_P decides whether
+     However, among its other duties, frv_legitimate_constant_p decides whether
      a constant can be entered into reg_equiv_constant[].  If we return true,
      reload can create new instances of the constant whenever it likes.
 
@@ -6775,7 +6776,7 @@ frv_legitimate_constant_p (rtx x)
     return TRUE;
 
   /* double integer constants are ok.  */
-  if (mode == VOIDmode || mode == DImode)
+  if (GET_MODE (x) == VOIDmode || mode == DImode)
     return TRUE;
 
   /* 0 is always ok.  */

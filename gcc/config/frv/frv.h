@@ -1502,12 +1502,6 @@ __asm__("\n"								\
 
 #define FIND_BASE_TERM frv_find_base_term
 
-/* A C expression that is nonzero if X is a legitimate constant for an
-   immediate operand on the target machine.  You can assume that X satisfies
-   `CONSTANT_P', so you need not check this.  In fact, `1' is a suitable
-   definition for this macro on machines where anything `CONSTANT_P' is valid.  */
-#define LEGITIMATE_CONSTANT_P(X) frv_legitimate_constant_p (X)
-
 /* The load-and-update commands allow pre-modification in addresses.
    The index has to be in a register.  */
 #define HAVE_PRE_MODIFY_REG 1

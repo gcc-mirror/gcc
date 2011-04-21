@@ -808,11 +808,6 @@ extern int alpha_memory_latency;
   (CONST_INT_P (X)		\
    && (unsigned HOST_WIDE_INT) (INTVAL (X) + 0x8000) < 0x10000)
 
-/* Include all constant integers and constant doubles, but not
-   floating-point, except for floating-point zero.  */
-
-#define LEGITIMATE_CONSTANT_P  alpha_legitimate_constant_p
-
 /* The macros REG_OK_FOR..._P assume that the arg is a REG rtx
    and check its validity for a certain class.
    We have two alternate definitions for each of them.

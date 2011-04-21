@@ -598,8 +598,6 @@ typedef struct score_args
 
 #define REG_OK_FOR_INDEX_P(X) 0
 
-#define LEGITIMATE_CONSTANT_P(X)        1
-
 /* Condition Code Status.  */
 #define SELECT_CC_MODE(OP, X, Y)        score_select_cc_mode (OP, X, Y)
 

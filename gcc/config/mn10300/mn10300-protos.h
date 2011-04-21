@@ -30,7 +30,6 @@ extern rtx   mn10300_legitimize_reload_address (rtx, Mmode, int, int, int);
 extern bool  mn10300_function_value_regno_p (const unsigned int);
 extern int   mn10300_get_live_callee_saved_regs (void);
 extern bool  mn10300_hard_regno_mode_ok (unsigned int, Mmode);
-extern bool  mn10300_legitimate_constant_p (rtx);
 extern bool  mn10300_modes_tieable (Mmode, Mmode);
 extern Cstar mn10300_output_add (rtx[3], bool);
 extern void  mn10300_print_operand (FILE *, rtx, int);

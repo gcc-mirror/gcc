@@ -2148,15 +2148,6 @@ m32c_legitimize_reload_address (rtx * x,
   return 0;
 }
 
-/* Implements LEGITIMATE_CONSTANT_P.  We split large constants anyway,
-   so we can allow anything.  */
-int
-m32c_legitimate_constant_p (rtx x ATTRIBUTE_UNUSED)
-{
-  return 1;
-}
-
-
 /* Return the appropriate mode for a named address pointer.  */
 #undef TARGET_ADDR_SPACE_POINTER_MODE
 #define TARGET_ADDR_SPACE_POINTER_MODE m32c_addr_space_pointer_mode

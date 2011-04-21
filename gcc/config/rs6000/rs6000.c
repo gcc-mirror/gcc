@@ -1213,6 +1213,7 @@ static bool rs6000_can_eliminate (const int, const int);
 static void rs6000_conditional_register_usage (void);
 static void rs6000_trampoline_init (rtx, tree, rtx);
 static bool rs6000_cannot_force_const_mem (enum machine_mode, rtx);
+static bool rs6000_legitimate_constant_p (enum machine_mode, rtx);
 
 /* Hash table stuff for keeping track of TOC entries.  */
 
@@ -1669,6 +1670,9 @@ static const struct default_options rs6000_option_optimization_table[] =
 
 #undef TARGET_SET_CURRENT_FUNCTION
 #define TARGET_SET_CURRENT_FUNCTION rs6000_set_current_function
+
+#undef TARGET_LEGITIMATE_CONSTANT_P
+#define TARGET_LEGITIMATE_CONSTANT_P rs6000_legitimate_constant_p
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -28275,5 +28279,22 @@ rs6000_address_for_altivec (rtx x)
   return x;
 }
 
+/* Implement TARGET_LEGITIMATE_CONSTANT_P.
+
+   On the RS/6000, all integer constants are acceptable, most won't be valid
+   for particular insns, though.  Only easy FP constants are acceptable.  */
+
+static bool
+rs6000_legitimate_constant_p (enum machine_mode mode, rtx x)
+{
+  if (rs6000_tls_referenced_p (x))
+    return false;
+
+  return ((GET_CODE (x) != CONST_DOUBLE && GET_CODE (x) != CONST_VECTOR)
+	  || GET_MODE (x) == VOIDmode
+	  || (TARGET_POWERPC64 && mode == DImode)
+	  || easy_fp_constant (x, mode)
+	  || easy_vector_constant (x, mode));
+}
 
 #include "gt-rs6000.h"

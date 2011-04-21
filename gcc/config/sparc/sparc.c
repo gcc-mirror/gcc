@@ -382,6 +382,7 @@ static void sparc_output_addr_vec (rtx);
 static void sparc_output_addr_diff_vec (rtx);
 static void sparc_output_deferred_case_vectors (void);
 static bool sparc_legitimate_address_p (enum machine_mode, rtx, bool);
+static bool sparc_legitimate_constant_p (enum machine_mode, rtx);
 static rtx sparc_builtin_saveregs (void);
 static int epilogue_renumber (rtx *, int);
 static bool sparc_assemble_integer (rtx, unsigned int, int);
@@ -659,6 +660,9 @@ static const struct default_options sparc_option_optimization_table[] =
 
 #undef TARGET_LEGITIMATE_ADDRESS_P
 #define TARGET_LEGITIMATE_ADDRESS_P sparc_legitimate_address_p
+
+#undef TARGET_LEGITIMATE_CONSTANT_P
+#define TARGET_LEGITIMATE_CONSTANT_P sparc_legitimate_constant_p
 
 #undef TARGET_TRAMPOLINE_INIT
 #define TARGET_TRAMPOLINE_INIT sparc_trampoline_init
@@ -3017,8 +3021,8 @@ pic_address_needs_scratch (rtx x)
 /* Determine if a given RTX is a valid constant.  We already know this
    satisfies CONSTANT_P.  */
 
-bool
-legitimate_constant_p (rtx x)
+static bool
+sparc_legitimate_constant_p (enum machine_mode mode, rtx x)
 {
   switch (GET_CODE (x))
     {
@@ -3035,8 +3039,8 @@ legitimate_constant_p (rtx x)
       /* Floating point constants are generally not ok.
 	 The only exception is 0.0 in VIS.  */
       if (TARGET_VIS
-	  && SCALAR_FLOAT_MODE_P (GET_MODE (x))
-	  && const_zero_operand (x, GET_MODE (x)))
+	  && SCALAR_FLOAT_MODE_P (mode)
+	  && const_zero_operand (x, mode))
 	return true;
 
       return false;
@@ -3045,7 +3049,7 @@ legitimate_constant_p (rtx x)
       /* Vector constants are generally not ok.
 	 The only exception is 0 in VIS.  */
       if (TARGET_VIS
-	  && const_zero_operand (x, GET_MODE (x)))
+	  && const_zero_operand (x, mode))
 	return true;
 
       return false;
@@ -3072,10 +3076,10 @@ constant_address_p (rtx x)
     case CONST:
       if (flag_pic && pic_address_needs_scratch (x))
 	return false;
-      return legitimate_constant_p (x);
+      return sparc_legitimate_constant_p (Pmode, x);
 
     case SYMBOL_REF:
-      return !flag_pic && legitimate_constant_p (x);
+      return !flag_pic && sparc_legitimate_constant_p (Pmode, x);
 
     default:
       return false;

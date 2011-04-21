@@ -421,8 +421,6 @@ do {									    \
     }									    \
 } while(0)
 
-#define LEGITIMATE_CONSTANT_P(X) 1
-
 #define BRANCH_COST(speed_p, predictable_p) 0
 
 #define SLOW_BYTE_ACCESS 0

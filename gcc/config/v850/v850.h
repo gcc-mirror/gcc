@@ -633,17 +633,6 @@ do {									\
 } while (0)
 
 
-/* Nonzero if the constant value X is a legitimate general operand.
-   It is given that X satisfies CONSTANT_P or is a CONST_DOUBLE.  */
-
-#define LEGITIMATE_CONSTANT_P(X)					\
-  (GET_CODE (X) == CONST_DOUBLE						\
-   || !(GET_CODE (X) == CONST						\
-	&& GET_CODE (XEXP (X, 0)) == PLUS				\
-	&& GET_CODE (XEXP (XEXP (X, 0), 0)) == SYMBOL_REF		\
-	&& GET_CODE (XEXP (XEXP (X, 0), 1)) == CONST_INT		\
-	&& ! CONST_OK_FOR_K (INTVAL (XEXP (XEXP (X, 0), 1)))))
-
 /* Given a comparison code (EQ, NE, etc.) and the first operand of a COMPARE,
    return the mode to be used for the comparison.
 

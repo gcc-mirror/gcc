@@ -173,6 +173,7 @@ static reg_class_t xtensa_secondary_reload (bool, rtx, reg_class_t,
 					    struct secondary_reload_info *);
 
 static bool constantpool_address_p (const_rtx addr);
+static bool xtensa_legitimate_constant_p (enum machine_mode, rtx);
 
 static const int reg_nonleaf_alloc_order[FIRST_PSEUDO_REGISTER] =
   REG_ALLOC_ORDER;
@@ -308,6 +309,9 @@ static const struct default_options xtensa_option_optimization_table[] =
 
 #undef TARGET_ASM_OUTPUT_ADDR_CONST_EXTRA
 #define TARGET_ASM_OUTPUT_ADDR_CONST_EXTRA xtensa_output_addr_const_extra
+
+#undef TARGET_LEGITIMATE_CONSTANT_P
+#define TARGET_LEGITIMATE_CONSTANT_P xtensa_legitimate_constant_p
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -3719,5 +3723,12 @@ xtensa_trampoline_init (rtx m_tramp, tree fndecl, rtx chain)
 		     LCT_NORMAL, VOIDmode, 1, XEXP (m_tramp, 0), Pmode);
 }
 
+/* Implement TARGET_LEGITIMATE_CONSTANT_P.  */
+
+static bool
+xtensa_legitimate_constant_p (enum machine_mode mode ATTRIBUTE_UNUSED, rtx x)
+{
+  return !xtensa_tls_referenced_p (x);
+}
 
 #include "gt-xtensa.h"

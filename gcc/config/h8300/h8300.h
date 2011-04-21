@@ -528,11 +528,6 @@ struct cum_arg
        && INTVAL (X) < (TARGET_H8300 ? 0x10000 : 0x1000000))	\
    || (GET_CODE (X) == HIGH || GET_CODE (X) == CONST))
 
-/* Nonzero if the constant value X is a legitimate general operand.
-   It is given that X satisfies CONSTANT_P or is a CONST_DOUBLE.  */
-
-#define LEGITIMATE_CONSTANT_P(X) (h8300_legitimate_constant_p (X))
-
 /* The macros REG_OK_FOR..._P assume that the arg is a REG rtx
    and check its validity for a certain class.
    We have two alternate definitions for each of them.

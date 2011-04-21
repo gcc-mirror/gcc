@@ -5749,14 +5749,6 @@ h8300_hard_regno_scratch_ok (unsigned int regno)
 }
 
 
-/* Return nonzero if X is a legitimate constant.  */
-
-int
-h8300_legitimate_constant_p (rtx x ATTRIBUTE_UNUSED)
-{
-  return 1;
-}
-
 /* Return nonzero if X is a REG or SUBREG suitable as a base register.  */
 
 static int

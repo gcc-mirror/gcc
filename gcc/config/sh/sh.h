@@ -1761,20 +1761,6 @@ struct sh_args {
 
 #define CONSTANT_ADDRESS_P(X)	(GET_CODE (X) == LABEL_REF)
 
-/* Nonzero if the constant value X is a legitimate general operand.  */
-/* can_store_by_pieces constructs VOIDmode CONST_DOUBLEs.  */
-
-#define LEGITIMATE_CONSTANT_P(X) \
-  (TARGET_SHMEDIA							\
-   ? ((GET_MODE (X) != DFmode						\
-       && GET_MODE_CLASS (GET_MODE (X)) != MODE_VECTOR_FLOAT)		\
-      || (X) == CONST0_RTX (GET_MODE (X))				\
-      || ! TARGET_SHMEDIA_FPU						\
-      || TARGET_SHMEDIA64)						\
-   : (GET_CODE (X) != CONST_DOUBLE					\
-      || GET_MODE (X) == DFmode || GET_MODE (X) == SFmode		\
-      || GET_MODE (X) == DImode || GET_MODE (X) == VOIDmode))
-
 /* The macros REG_OK_FOR..._P assume that the arg is a REG rtx
    and check its validity for a certain class.
    The suitable hard regs are always accepted and all pseudo regs

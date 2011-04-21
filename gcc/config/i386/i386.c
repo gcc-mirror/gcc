@@ -11918,8 +11918,8 @@ darwin_local_data_pic (rtx disp)
 /* Determine if a given RTX is a valid constant.  We already know this
    satisfies CONSTANT_P.  */
 
-bool
-legitimate_constant_p (rtx x)
+static bool
+ix86_legitimate_constant_p (enum machine_mode mode ATTRIBUTE_UNUSED, rtx x)
 {
   switch (GET_CODE (x))
     {
@@ -12005,7 +12005,7 @@ legitimate_constant_p (rtx x)
    is checked above.  */
 
 static bool
-ix86_cannot_force_const_mem (enum machine_mode mode ATTRIBUTE_UNUSED, rtx x)
+ix86_cannot_force_const_mem (enum machine_mode mode, rtx x)
 {
   /* We can always put integral constants and vectors in memory.  */
   switch (GET_CODE (x))
@@ -12018,7 +12018,7 @@ ix86_cannot_force_const_mem (enum machine_mode mode ATTRIBUTE_UNUSED, rtx x)
     default:
       break;
     }
-  return !legitimate_constant_p (x);
+  return !ix86_legitimate_constant_p (mode, x);
 }
 
 
@@ -12356,7 +12356,8 @@ ix86_legitimate_address_p (enum machine_mode mode ATTRIBUTE_UNUSED,
 	    /* Displacement is an invalid pic construct.  */
 	    return false;
 #if TARGET_MACHO
-	  else if (MACHO_DYNAMIC_NO_PIC_P && !legitimate_constant_p (disp))
+	  else if (MACHO_DYNAMIC_NO_PIC_P
+		   && !ix86_legitimate_constant_p (Pmode, disp))
 	    /* displacment must be referenced via non_lazy_pointer */
 	    return false;
 #endif
@@ -12386,9 +12387,9 @@ ix86_legitimate_address_p (enum machine_mode mode ATTRIBUTE_UNUSED,
       else if (GET_CODE (disp) != LABEL_REF
 	       && !CONST_INT_P (disp)
 	       && (GET_CODE (disp) != CONST
-		   || !legitimate_constant_p (disp))
+		   || !ix86_legitimate_constant_p (Pmode, disp))
 	       && (GET_CODE (disp) != SYMBOL_REF
-		   || !legitimate_constant_p (disp)))
+		   || !ix86_legitimate_constant_p (Pmode, disp)))
 	/* Displacement is not constant.  */
 	return false;
       else if (TARGET_64BIT
@@ -35453,6 +35454,9 @@ ix86_autovectorize_vector_sizes (void)
 
 #undef TARGET_LEGITIMATE_ADDRESS_P
 #define TARGET_LEGITIMATE_ADDRESS_P ix86_legitimate_address_p
+
+#undef TARGET_LEGITIMATE_CONSTANT_P
+#define TARGET_LEGITIMATE_CONSTANT_P ix86_legitimate_constant_p
 
 #undef TARGET_FRAME_POINTER_REQUIRED
 #define TARGET_FRAME_POINTER_REQUIRED ix86_frame_pointer_required

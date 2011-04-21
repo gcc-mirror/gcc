@@ -1603,15 +1603,6 @@ legitimate_constant_address_p (rtx x)
    return true;
 }
 
-/* True if the constant value X is a legitimate general operand.
-   It is given that X satisfies CONSTANT_P or is a CONST_DOUBLE.  */
-
-bool
-legitimate_constant_p (rtx x ATTRIBUTE_UNUSED)
-{
-  return true;
-}
-
 /* The other macros defined here are used only in legitimate_address_p ().  */
 
 /* Nonzero if X is a hard reg that can be used as an index

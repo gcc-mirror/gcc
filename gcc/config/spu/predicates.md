@@ -58,7 +58,7 @@
 
 (define_predicate "vec_imm_operand"
   (and (match_code "const_int,const_double,const_vector")
-       (match_test "spu_legitimate_constant_p (op)")))
+       (match_test "spu_legitimate_constant_p (mode, op)")))
 
 (define_predicate "spu_arith_operand"
   (match_code "reg,subreg,const_int,const_vector")

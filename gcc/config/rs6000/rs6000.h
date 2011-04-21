@@ -1728,22 +1728,6 @@ typedef struct rs6000_args
    || GET_CODE (X) == CONST_INT || GET_CODE (X) == CONST		\
    || GET_CODE (X) == HIGH)
 
-/* Nonzero if the constant value X is a legitimate general operand.
-   It is given that X satisfies CONSTANT_P or is a CONST_DOUBLE.
-
-   On the RS/6000, all integer constants are acceptable, most won't be valid
-   for particular insns, though.  Only easy FP constants are
-   acceptable.  */
-
-#define LEGITIMATE_CONSTANT_P(X)				\
-  (((GET_CODE (X) != CONST_DOUBLE				\
-     && GET_CODE (X) != CONST_VECTOR)				\
-    || GET_MODE (X) == VOIDmode					\
-    || (TARGET_POWERPC64 && GET_MODE (X) == DImode)		\
-    || easy_fp_constant (X, GET_MODE (X))			\
-    || easy_vector_constant (X, GET_MODE (X)))			\
-   && !rs6000_tls_referenced_p (X))
-
 #define EASY_VECTOR_15(n) ((n) >= -16 && (n) <= 15)
 #define EASY_VECTOR_15_ADD_SELF(n) (!EASY_VECTOR_15((n))	\
 				    && EASY_VECTOR_15((n) >> 1) \

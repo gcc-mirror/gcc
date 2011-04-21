@@ -2777,15 +2777,15 @@ legitimate_pic_operand_p (rtx op)
 /* Returns true if the constant value OP is a legitimate general operand.
    It is given that OP satisfies CONSTANT_P or is a CONST_DOUBLE.  */
 
-int
-legitimate_constant_p (rtx op)
+static bool
+s390_legitimate_constant_p (enum machine_mode mode, rtx op)
 {
   /* Accept all non-symbolic constants.  */
   if (!SYMBOLIC_CONST (op))
     return 1;
 
   /* Accept immediate LARL operands.  */
-  if (TARGET_CPU_ZARCH && larl_operand (op, VOIDmode))
+  if (TARGET_CPU_ZARCH && larl_operand (op, mode))
     return 1;
 
   /* Thread-local symbols are never legal constants.  This is
@@ -10828,6 +10828,9 @@ s390_loop_unroll_adjust (unsigned nunroll, struct loop *loop)
 
 #undef TARGET_LEGITIMATE_ADDRESS_P
 #define TARGET_LEGITIMATE_ADDRESS_P s390_legitimate_address_p
+
+#undef TARGET_LEGITIMATE_CONSTANT_P
+#define TARGET_LEGITIMATE_CONSTANT_P s390_legitimate_constant_p
 
 #undef TARGET_CAN_ELIMINATE
 #define TARGET_CAN_ELIMINATE s390_can_eliminate
