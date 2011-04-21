@@ -1,3 +1,20 @@
+2011-04-21  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-alias.c (ptr_deref_may_alias_decl_p): Handle
+	MEM_REF and TARGET_MEM_REF, do not care about INDIRECT_REFs.
+	Use DECL_P, not SSA_VAR_P.
+	(ptr_derefs_may_alias_p): Likewise.
+	(ptr_deref_may_alias_ref_p_1): Likewise.
+	(decl_refs_may_alias_p): Likewise.
+	(refs_may_alias_p_1): Likewise.
+	(ref_maybe_used_by_call_p_1): Likewise.
+	(call_may_clobber_ref_p_1): Likewise.
+	(indirect_ref_may_alias_decl_p): Assume indirect refrences
+	are either MEM_REF or TARGET_MEM_REF.
+	(indirect_refs_may_alias_p): Likewise.
+	* calls.c (emit_call_1): Build a MEM_REF instead of an INDIRECT_REF
+	for MEM_EXPR of indirect calls.
+
 2011-04-21  Tristan Gingold  <gingold@adacore.com>
 
 	* vmsdbgout.c (write_srccorr): Compute file length from the string.
