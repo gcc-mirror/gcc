@@ -1,3 +1,9 @@
+2011-04-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/48708
+	* config/i386/i386.c (ix86_expand_vector_set) <V2DImode>: Generate
+	vec_extract and vec_concat for non-SSE4_1 targets.
+
 2011-04-21  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-alias.c (ref_maybe_used_by_stmt_p): Handle
@@ -16,8 +22,7 @@
 	* config/bfin/bfin.h (bfin_cc_rtx, bfin_rets_rtx): Use rtx, not
 	struct rtx_def *.
 	* config/cris/cris-protos.h (STDIO_INCLUDED): Don't define.
-	* config/h8300/h8300.h (struct cum_arg): Use rtx, not struct
-	rtx_def *.
+	* config/h8300/h8300.h (struct cum_arg): Use rtx, not struct rtx_def *.
 	* config/iq2000/iq2000.h (struct iq2000_args): Use rtx, not struct
 	rtx_def *.
 	* config/m32c/m32c-protos.h (MM, UINT): Don't define.  Expand
@@ -26,18 +31,15 @@
 	rtx, not struct rtx_def *.
 	* config/pa/pa-protos.h (return_addr_rtx): Use rtx, not struct
 	rtx_def *.
-	* config/pa/pa.h (hppa_pic_save_rtx): Use rtx, not struct rtx_def
-	*.
-	* config/pdp11/pdp11.h (cc0_reg_rtx): Use rtx, not struct rtx_def
-	*.
+	* config/pa/pa.h (hppa_pic_save_rtx): Use rtx, not struct rtx_def *.
+	* config/pdp11/pdp11.h (cc0_reg_rtx): Use rtx, not struct rtx_def *.
 	* config/sh/sh-protos.h (sfunc_uses_reg, get_fpscr_rtx): Use rtx,
 	not struct rtx_def *.
 	* config/sh/sh.h (sh_compare_op0, sh_compare_op1): Use rtx, not
 	struct rtx_def *.
 	* config/spu/spu-protos.h (spu_float_const): Use rtx, not struct
 	rtx_def *.
-	* config/spu/spu.c (spu_float_const): Use rtx, not struct rtx_def
-	*.
+	* config/spu/spu.c (spu_float_const): Use rtx, not struct rtx_def *.
 
 2011-04-21  Richard Sandiford  <richard.sandiford@linaro.org>
 
@@ -183,8 +185,8 @@
 	* config/mn10300/mn10300-protos.h (mn10300_legitimate_constant_p):
 	Delete.
 	* config/mn10300/mn10300.h (LEGITIMATE_CONSTANT_P): Likewise.
-	* config/mn10300/mn10300.c (mn10300_legitimate_constant_p):
-	Make static.  Add a mode argument.
+	* config/mn10300/mn10300.c (mn10300_legitimate_constant_p): Make
+	static.  Add a mode argument.
 	(TARGET_LEGITIMATE_CONSTANT_P): Define.
 
 	* config/moxie/moxie.h (LEGITIMATE_CONSTANT_P): Delete.
@@ -284,8 +286,7 @@
 	(mips_secondary_reload_class): Likewise.
 	* config/pa/pa.c (TARGET_CANNOT_FORCE_CONST_MEM): Redefine to...
 	(pa_cannot_force_const_mem): ...this new function.
-	* config/rs6000/rs6000.c (TARGET_CANNOT_FORCE_CONST_MEM): Reefine
-	to...
+	* config/rs6000/rs6000.c (TARGET_CANNOT_FORCE_CONST_MEM): Reefine to...
 	(rs6000_cannot_force_const_mem): ...this new function.
 	* config/s390/s390.c (s390_cannot_force_const_mem): Add a mode
 	argument.
@@ -386,8 +387,7 @@
 2011-04-20  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	* config/arm/arm.c (arm_legitimize_reload_address): For NEON
-	quad-word modes, reduce to 9-bit index range when above 1016
-	limit.
+	quad-word modes, reduce to 9-bit index range when above 1016 limit.
 
 2011-04-20  Andrew Stubbs  <ams@codesourcery.com>
 
@@ -396,8 +396,8 @@
 
 2011-04-20  Kai Tietz  <ktietz@redhat.com>
 
-	* fold-const.c (fold_binary_loc): Add handling for
-	(X & ~Y) | (~X & Y) and (X && !Y) | (!X && Y) optimization to (X ^ Y).
+	* fold-const.c (fold_binary_loc): Add handling for (X & ~Y) | (~X & Y)
+	and (X && !Y) | (!X && Y) optimization to (X ^ Y).
 
 2011-04-20  Andrew Stubbs  <ams@codesourcery.com>
 
@@ -445,8 +445,7 @@
 
 	PR middle-end/48695
 	* tree-ssa-alias.c (aliasing_component_refs_p): Compute base
-	objects and types here.  Adjust for their offset before
-	comparing.
+	objects and types here.  Adjust for their offset before comparing.
 
 2011-04-20  Richard Sandiford  <richard.sandiford@linaro.org>
 
