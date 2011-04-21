@@ -1,5 +1,9 @@
 2011-04-21  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	* gcc.dg/vect/vect-119.c: New test.
+
+2011-04-21  Richard Sandiford  <richard.sandiford@linaro.org>
+
 	* gcc.dg/vect/vect.exp: Run the main tests twice, one with -flto
 	and once without.
 

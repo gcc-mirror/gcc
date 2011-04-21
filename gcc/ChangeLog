@@ -1,5 +1,11 @@
 2011-04-21  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	* tree-vect-data-refs.c (vect_drs_dependent_in_basic_block): Use
+	operand_equal_p to compare DR_BASE_ADDRESSes.
+	(vect_check_interleaving): Likewise.
+
+2011-04-21  Richard Sandiford  <richard.sandiford@linaro.org>
+
 	PR target/46329
 	* config/arm/arm.c (arm_legitimate_constant_p_1): Return false
 	for all Neon struct constants.
