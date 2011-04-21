@@ -1364,6 +1364,26 @@ ref_maybe_used_by_stmt_p (gimple stmt, tree ref)
     }
   else if (is_gimple_call (stmt))
     return ref_maybe_used_by_call_p (stmt, ref);
+  else if (gimple_code (stmt) == GIMPLE_RETURN)
+    {
+      tree retval = gimple_return_retval (stmt);
+      tree base;
+      if (retval
+	  && TREE_CODE (retval) != SSA_NAME
+	  && !is_gimple_min_invariant (retval)
+	  && refs_may_alias_p (retval, ref))
+	return true;
+      /* If ref escapes the function then the return acts as a use.  */
+      base = get_base_address (ref);
+      if (!base)
+	;
+      else if (DECL_P (base))
+	return is_global_var (base);
+      else if (TREE_CODE (base) == MEM_REF
+	       || TREE_CODE (base) == TARGET_MEM_REF)
+	return ptr_deref_may_alias_global_p (TREE_OPERAND (base, 0));
+      return false;
+    }
 
   return true;
 }
