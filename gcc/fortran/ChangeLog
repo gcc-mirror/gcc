@@ -1,3 +1,11 @@
+2011-04-21  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/48405
+	* frontend_passes (cfe_register_funcs): Remove workaround for DO
+	loops.
+	(gfc_code_walker):  Make sure the pointer to the current
+	statement doen't change when other statements are inserted.
+
 2011-04-21  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/18918
