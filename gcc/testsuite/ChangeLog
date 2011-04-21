@@ -1,3 +1,8 @@
+2011-04-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/48708
+	* gcc.target/i386/pr48708.c: New test.
+
 2011-04-21  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/48695
@@ -233,7 +238,7 @@
 
 2011-03-29  Rodrigo Rivas Costa  <rodrigorivascosta@gmail.com>
 
-       * g++.dg/cpp0x/constexpr-attribute.C: New.
+	* g++.dg/cpp0x/constexpr-attribute.C: New.
 
 2011-03-29  Jason Merrill  <jason@redhat.com>
 

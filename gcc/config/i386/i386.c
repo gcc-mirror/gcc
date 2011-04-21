@@ -31213,9 +31213,18 @@ ix86_expand_vector_set (bool mmx_ok, rtx target, rtx val, int elt)
       break;
 
     case V2DImode:
-      use_vec_merge = TARGET_SSE4_1;
+      use_vec_merge = TARGET_SSE4_1 && TARGET_64BIT;
       if (use_vec_merge)
 	break;
+
+      tmp = gen_reg_rtx (GET_MODE_INNER (mode));
+      ix86_expand_vector_extract (false, tmp, target, 1 - elt);
+      if (elt == 0)
+	tmp = gen_rtx_VEC_CONCAT (mode, tmp, val);
+      else
+	tmp = gen_rtx_VEC_CONCAT (mode, val, tmp);
+      emit_insn (gen_rtx_SET (VOIDmode, target, tmp));
+      return;
 
     case V2DFmode:
       {
