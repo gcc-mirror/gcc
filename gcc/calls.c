@@ -274,7 +274,7 @@ emit_call_1 (rtx funexp, tree fntree ATTRIBUTE_UNUSED, tree fndecl ATTRIBUTE_UNU
   if (fndecl && TREE_CODE (fndecl) == FUNCTION_DECL)
     set_mem_expr (funmem, fndecl);
   else if (fntree)
-    set_mem_expr (funmem, build_fold_indirect_ref (CALL_EXPR_FN (fntree)));
+    set_mem_expr (funmem, build_simple_mem_ref (CALL_EXPR_FN (fntree)));
 
 #if defined (HAVE_sibcall_pop) && defined (HAVE_sibcall_value_pop)
   if ((ecf_flags & ECF_SIBCALL)
