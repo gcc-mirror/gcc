@@ -1,3 +1,8 @@
+2011-04-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/volatile5.adb: New test.
+	* gnat.dg/volatile5_pkg.ads: New helper.
+
 2011-04-20  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/cpp0x/initlist47.C: New.

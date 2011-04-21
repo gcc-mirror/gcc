@@ -1,3 +1,7 @@
+2011-04-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gimple.c (walk_gimple_op) <GIMPLE_CALL>: Fix couple of oversights.
+
 2011-04-20  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR target/48288
