@@ -473,7 +473,7 @@ typedef struct microblaze_args
   /* Adjustments made to args pass in regs.  */
   /* ??? The size is doubled to work around a bug in the code that sets the 
      adjustments in function_arg.  */
-  struct rtx_def *adjust[MAX_ARGS_IN_REGISTERS * 2];
+  rtx adjust[MAX_ARGS_IN_REGISTERS * 2];
 } CUMULATIVE_ARGS;
 
 #define INIT_CUMULATIVE_ARGS(CUM,FNTYPE,LIBNAME,FNDECL,N_NAMED_ARGS)	\

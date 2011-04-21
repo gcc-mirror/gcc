@@ -4605,7 +4605,7 @@ struct GTY(()) machine_function
   const char *some_ld_name;
 
   /* For TARGET_LD_BUGGY_LDGP.  */
-  struct rtx_def *gp_save_rtx;
+  rtx gp_save_rtx;
 
   /* For VMS condition handlers.  */
   bool uses_condition_handler;  

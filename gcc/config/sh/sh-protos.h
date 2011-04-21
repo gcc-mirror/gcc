@@ -51,7 +51,7 @@ extern const char *output_movedouble (rtx, rtx[], enum machine_mode);
 extern const char *output_movepcrel (rtx, rtx[], enum machine_mode);
 extern const char *output_far_jump (rtx, rtx);
 
-extern struct rtx_def *sfunc_uses_reg (rtx);
+extern rtx sfunc_uses_reg (rtx);
 extern int barrier_align (rtx);
 extern int sh_loop_align (rtx);
 extern int fp_zero_operand (rtx);
@@ -126,7 +126,7 @@ extern bool sh_vector_mode_supported_p (enum machine_mode);
 
 extern const char *output_jump_label_table (void);
 extern int sh_handle_pragma (int (*)(void), void (*)(int), const char *);
-extern struct rtx_def *get_fpscr_rtx (void);
+extern rtx get_fpscr_rtx (void);
 extern int sh_media_register_for_return (void);
 extern void sh_expand_prologue (void);
 extern void sh_expand_epilogue (bool);

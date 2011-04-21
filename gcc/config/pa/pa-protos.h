@@ -1,5 +1,5 @@
 /* Prototypes for pa.c functions used in the md file & elsewhere.
-   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2010
+   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2010, 2011
    Free Software Foundation,
    Inc.
 
@@ -72,7 +72,7 @@ extern int attr_length_save_restore_dltp (rtx);
 
 /* Declare functions defined in pa.c and used in templates.  */
 
-extern struct rtx_def *return_addr_rtx (int, rtx);
+extern rtx return_addr_rtx (int, rtx);
 
 #ifdef ARGS_SIZE_RTX
 /* expr.h defines ARGS_SIZE_RTX and `enum direction' */

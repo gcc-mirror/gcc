@@ -2291,8 +2291,8 @@ struct sh_args {
   final_prescan_insn ((INSN), (OPVEC), (NOPERANDS))
 
 
-extern struct rtx_def *sh_compare_op0;
-extern struct rtx_def *sh_compare_op1;
+extern rtx sh_compare_op0;
+extern rtx sh_compare_op1;
 
 /* Which processor to schedule for.  The elements of the enumeration must
    match exactly the cpu attribute in the sh.md file.  */

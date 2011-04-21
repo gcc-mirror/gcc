@@ -502,7 +502,7 @@ extern int may_call_alloca;
 
 
 /* Tell emit-rtl.c how to initialize special values on a per-function base.  */
-extern struct rtx_def *cc0_reg_rtx;
+extern rtx cc0_reg_rtx;
 
 #define CC_STATUS_MDEP rtx
 
