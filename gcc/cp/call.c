@@ -145,7 +145,6 @@ static tree convert_like_real (conversion *, tree, tree, int, int, bool,
 			       bool, tsubst_flags_t);
 static void op_error (enum tree_code, enum tree_code, tree, tree,
 		      tree, const char *);
-static tree build_object_call (tree, tree, tsubst_flags_t);
 static tree resolve_args (tree);
 static struct z_candidate *build_user_type_conversion_1 (tree, tree, int);
 static void print_z_candidate (const char *, struct z_candidate *);
@@ -3194,7 +3193,7 @@ build_operator_new_call (tree fnname, tree args,
    return build_over_call (cand, LOOKUP_NORMAL, tf_warning_or_error);
 }
 
-static tree
+tree
 build_object_call (tree obj, tree args, tsubst_flags_t complain)
 {
   struct z_candidate *candidates = 0, *cand;

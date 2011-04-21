@@ -3725,9 +3725,12 @@ build_offset_ref_call_from_tree (tree fn, tree args)
 	 because we depend on the form of FN.  */
       args = build_non_dependent_args (args);
       object = build_non_dependent_expr (object);
-      if (TREE_CODE (fn) == DOTSTAR_EXPR)
-	object = cp_build_unary_op (ADDR_EXPR, object, 0, tf_warning_or_error);
-      args = tree_cons (NULL_TREE, object, args);
+      if (TREE_CODE (TREE_TYPE (fn)) == METHOD_TYPE)
+	{
+	  if (TREE_CODE (fn) == DOTSTAR_EXPR)
+	    object = cp_build_unary_op (ADDR_EXPR, object, 0, tf_warning_or_error);
+	  args = tree_cons (NULL_TREE, object, args);
+	}
       /* Now that the arguments are done, transform FN.  */
       fn = build_non_dependent_expr (fn);
     }
@@ -3747,7 +3750,10 @@ build_offset_ref_call_from_tree (tree fn, tree args)
       args = tree_cons (NULL_TREE, object_addr, args);
     }
 
-  expr = cp_build_function_call (fn, args, tf_warning_or_error);
+  if (CLASS_TYPE_P (TREE_TYPE (fn)))
+    expr = build_object_call (fn, args, tf_warning_or_error);
+  else
+    expr = cp_build_function_call (fn, args, tf_warning_or_error);
   if (processing_template_decl && expr != error_mark_node)
     return build_min_non_dep_call_list (expr, orig_fn, orig_args);
   return expr;

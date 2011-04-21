@@ -4193,6 +4193,7 @@ extern tree build_new_function_call		(tree, tree, bool,
 						 tsubst_flags_t);
 extern tree build_operator_new_call		(tree, tree, tree *, tree *,
 						 tree *);
+extern tree build_object_call			(tree, tree, tsubst_flags_t);
 extern tree build_new_method_call		(tree, tree, tree, tree, int,
 						 tree *, tsubst_flags_t);
 extern tree build_special_member_call		(tree, tree, tree, tree, int,
