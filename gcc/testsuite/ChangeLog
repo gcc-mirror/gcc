@@ -1,3 +1,7 @@
+2011-04-21  Easwaran Raman  <eraman@google.com>
+
+	* gcc.dg/stack-layout-2.c: New test.
+
 2011-04-21  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/48703
