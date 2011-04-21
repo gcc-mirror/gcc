@@ -27,7 +27,7 @@ Gogo::import_unsafe(const std::string& local_name, bool is_local_name_exported,
 
   if (package == NULL)
     {
-      gcc_assert(saw_errors());
+      go_assert(saw_errors());
       return;
     }
 
@@ -44,9 +44,9 @@ Gogo::import_unsafe(const std::string& local_name, bool is_local_name_exported,
     }
   else
     {
-      gcc_assert(no->package() == package);
-      gcc_assert(no->is_type());
-      gcc_assert(no->type_value()->is_unsafe_pointer_type());
+      go_assert(no->package() == package);
+      go_assert(no->is_type());
+      go_assert(no->type_value()->is_unsafe_pointer_type());
       no->type_value()->set_is_visible();
     }
   Named_type* pointer_type = no->type_value();

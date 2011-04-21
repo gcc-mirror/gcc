@@ -456,7 +456,7 @@ Import::import_func(Package* package)
       if (rtype->is_error_type())
 	return NULL;
       Named_type* named_rtype = rtype->named_type();
-      gcc_assert(named_rtype != NULL);
+      go_assert(named_rtype != NULL);
       no = named_rtype->add_method_declaration(name, package, fntype, loc);
     }
   else
@@ -617,7 +617,7 @@ Import::read_type()
       return Type::make_error_type();
     }
   else
-    gcc_assert(no->package() == package);
+    go_assert(no->package() == package);
 
   if (this->types_[index] == NULL)
     {
@@ -628,7 +628,7 @@ Import::read_type()
 	}
       else
 	{
-	  gcc_assert(no->is_type());
+	  go_assert(no->is_type());
 	  this->types_[index] = no->type_value();
 	}
     }
@@ -714,9 +714,9 @@ void
 Import::register_builtin_type(Gogo* gogo, const char* name, Builtin_code code)
 {
   Named_object* named_object = gogo->lookup_global(name);
-  gcc_assert(named_object != NULL && named_object->is_type());
+  go_assert(named_object != NULL && named_object->is_type());
   int index = - static_cast<int>(code);
-  gcc_assert(index > 0
+  go_assert(index > 0
 	     && static_cast<size_t>(index) < this->builtin_types_.size());
   this->builtin_types_[index] = named_object->type_value();
 }
@@ -842,7 +842,7 @@ Stream_from_file::do_peek(size_t length, const char** bytes)
       return true;
     }
   // Don't bother to handle the general case, since we don't need it.
-  gcc_assert(length < 64);
+  go_assert(length < 64);
   char buf[64];
   ssize_t got = read(this->fd_, buf, length);
 

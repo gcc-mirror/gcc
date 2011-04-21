@@ -162,7 +162,7 @@ Gogo::get_init_fn_name()
 {
   if (this->init_fn_name_.empty())
     {
-      gcc_assert(this->package_ != NULL);
+      go_assert(this->package_ != NULL);
       if (this->is_main_package())
 	{
 	  // Use a name which the runtime knows.
@@ -188,7 +188,7 @@ Gogo::get_init_fn_name()
 void
 Gogo::init_imports(tree* init_stmt_list)
 {
-  gcc_assert(this->is_main_package());
+  go_assert(this->is_main_package());
 
   if (this->imported_init_fns_.empty())
     return;
@@ -280,7 +280,7 @@ Gogo::register_gc_vars(const std::vector<Named_object*>& var_gc,
       elt->index = field;
       Bvariable* bvar = (*p)->get_backend_variable(this, NULL);
       tree decl = var_to_tree(bvar);
-      gcc_assert(TREE_CODE(decl) == VAR_DECL);
+      go_assert(TREE_CODE(decl) == VAR_DECL);
       elt->value = build_fold_addr_expr(decl);
 
       elt = VEC_quick_push(constructor_elt, init, NULL);
@@ -387,7 +387,7 @@ Gogo::write_initialization_function(tree fndecl, tree init_stmt_list)
 {
   // Make sure that we thought we needed an initialization function,
   // as otherwise we will not have reported it in the export data.
-  gcc_assert(this->is_main_package() || this->need_init_fn_);
+  go_assert(this->is_main_package() || this->need_init_fn_);
 
   if (fndecl == NULL_TREE)
     fndecl = this->initialization_function_decl();
@@ -673,7 +673,7 @@ Gogo::write_globals()
     {
       Named_object* no = *p;
 
-      gcc_assert(!no->is_type_declaration() && !no->is_function_declaration());
+      go_assert(!no->is_type_declaration() && !no->is_function_declaration());
       // There is nothing to do for a package.
       if (no->is_package())
 	{
@@ -711,7 +711,7 @@ Gogo::write_globals()
 	  vec[i] = no->get_tree(this, NULL);
 	  if (vec[i] == error_mark_node)
 	    {
-	      gcc_assert(saw_errors());
+	      go_assert(saw_errors());
 	      --i;
 	      --count;
 	      continue;
@@ -723,7 +723,7 @@ Gogo::write_globals()
 	  vec[i] = var_to_tree(var);
 	  if (vec[i] == error_mark_node)
 	    {
-	      gcc_assert(saw_errors());
+	      go_assert(saw_errors());
 	      --i;
 	      --count;
 	      continue;
@@ -738,7 +738,7 @@ Gogo::write_globals()
 	    {
 	      tree init = no->var_value()->get_init_tree(this, NULL);
 	      if (init == error_mark_node)
-		gcc_assert(saw_errors());
+		go_assert(saw_errors());
 	      else if (init == NULL_TREE)
 		;
 	      else if (TREE_CONSTANT(init))
@@ -838,7 +838,7 @@ Gogo::write_globals()
 tree
 Named_object::get_id(Gogo* gogo)
 {
-  gcc_assert(!this->is_variable() && !this->is_result_variable());
+  go_assert(!this->is_variable() && !this->is_result_variable());
   std::string decl_name;
   if (this->is_function_declaration()
       && !this->func_declaration_value()->asm_name().empty())
@@ -945,7 +945,7 @@ Named_object::get_tree(Gogo* gogo, Named_object* function)
 	else
 	  {
 	    decl = TYPE_NAME(type_tree);
-	    gcc_assert(decl != NULL_TREE);
+	    go_assert(decl != NULL_TREE);
 
 	    // We need to produce a type descriptor for every named
 	    // type, and for a pointer to every named type, since
@@ -1028,10 +1028,10 @@ Named_object::get_tree(Gogo* gogo, Named_object* function)
 tree
 Variable::get_init_tree(Gogo* gogo, Named_object* function)
 {
-  gcc_assert(this->preinit_ == NULL);
+  go_assert(this->preinit_ == NULL);
   if (this->init_ == NULL)
     {
-      gcc_assert(!this->is_parameter_);
+      go_assert(!this->is_parameter_);
       return this->type_->get_init_tree(gogo,
 					(this->is_global_
 					 || this->is_in_heap()));
@@ -1052,7 +1052,7 @@ Variable::get_init_tree(Gogo* gogo, Named_object* function)
 tree
 Variable::get_init_block(Gogo* gogo, Named_object* function, tree var_decl)
 {
-  gcc_assert(this->preinit_ != NULL);
+  go_assert(this->preinit_ != NULL);
 
   // We want to add the variable assignment to the end of the preinit
   // block.  The preinit block may have a TRY_FINALLY_EXPR and a
@@ -1064,7 +1064,7 @@ Variable::get_init_block(Gogo* gogo, Named_object* function, tree var_decl)
   tree block_tree = block_to_tree(bblock);
   if (block_tree == error_mark_node)
     return error_mark_node;
-  gcc_assert(TREE_CODE(block_tree) == BIND_EXPR);
+  go_assert(TREE_CODE(block_tree) == BIND_EXPR);
   tree statements = BIND_EXPR_BODY(block_tree);
   while (statements != NULL_TREE
 	 && (TREE_CODE(statements) == TRY_FINALLY_EXPR
@@ -1111,7 +1111,7 @@ Function::get_or_make_decl(Gogo* gogo, Named_object* no, tree id)
 	{
 	  // The type of a function comes back as a pointer, but we
 	  // want the real function type for a function declaration.
-	  gcc_assert(POINTER_TYPE_P(functype));
+	  go_assert(POINTER_TYPE_P(functype));
 	  functype = TREE_TYPE(functype);
 	  tree decl = build_decl(this->location(), FUNCTION_DECL, id, functype);
 
@@ -1225,7 +1225,7 @@ Function_declaration::get_or_make_decl(Gogo* gogo, Named_object* no, tree id)
 	{
 	  // The type of a function comes back as a pointer, but we
 	  // want the real function type for a function declaration.
-	  gcc_assert(POINTER_TYPE_P(functype));
+	  go_assert(POINTER_TYPE_P(functype));
 	  functype = TREE_TYPE(functype);
 	  decl = build_decl(this->location(), FUNCTION_DECL, id, functype);
 	  TREE_PUBLIC(decl) = 1;
@@ -1259,12 +1259,12 @@ Function::make_receiver_parm_decl(Gogo* gogo, Named_object* no, tree var_decl)
 {
   if (var_decl == error_mark_node)
     return error_mark_node;
-  gcc_assert(TREE_CODE(var_decl) == VAR_DECL);
+  go_assert(TREE_CODE(var_decl) == VAR_DECL);
   tree val_type = TREE_TYPE(var_decl);
   bool is_in_heap = no->var_value()->is_in_heap();
   if (is_in_heap)
     {
-      gcc_assert(POINTER_TYPE_P(val_type));
+      go_assert(POINTER_TYPE_P(val_type));
       val_type = TREE_TYPE(val_type);
     }
 
@@ -1276,7 +1276,7 @@ Function::make_receiver_parm_decl(Gogo* gogo, Named_object* no, tree var_decl)
   DECL_CONTEXT(parm_decl) = current_function_decl;
   DECL_ARG_TYPE(parm_decl) = TREE_TYPE(parm_decl);
 
-  gcc_assert(DECL_INITIAL(var_decl) == NULL_TREE);
+  go_assert(DECL_INITIAL(var_decl) == NULL_TREE);
   // The receiver might be passed as a null pointer.
   tree check = fold_build2_loc(loc, NE_EXPR, boolean_type_node, parm_decl,
 			       fold_convert_loc(loc, TREE_TYPE(parm_decl),
@@ -1324,7 +1324,7 @@ Function::copy_parm_to_heap(Gogo* gogo, Named_object* no, tree var_decl)
 {
   if (var_decl == error_mark_node)
     return error_mark_node;
-  gcc_assert(TREE_CODE(var_decl) == VAR_DECL);
+  go_assert(TREE_CODE(var_decl) == VAR_DECL);
   source_location loc = DECL_SOURCE_LOCATION(var_decl);
 
   std::string name = IDENTIFIER_POINTER(DECL_NAME(var_decl));
@@ -1332,7 +1332,7 @@ Function::copy_parm_to_heap(Gogo* gogo, Named_object* no, tree var_decl)
   tree id = get_identifier_from_string(name);
 
   tree type = TREE_TYPE(var_decl);
-  gcc_assert(POINTER_TYPE_P(type));
+  go_assert(POINTER_TYPE_P(type));
   type = TREE_TYPE(type);
 
   tree parm_decl = build_decl(loc, PARM_DECL, id, type);
@@ -1359,7 +1359,7 @@ void
 Function::build_tree(Gogo* gogo, Named_object* named_function)
 {
   tree fndecl = this->fndecl_;
-  gcc_assert(fndecl != NULL_TREE);
+  go_assert(fndecl != NULL_TREE);
 
   tree params = NULL_TREE;
   tree* pp = &params;
@@ -1385,7 +1385,7 @@ Function::build_tree(Gogo* gogo, Named_object* named_function)
 	      tree var = *pp;
 	      if (var != error_mark_node)
 		{
-		  gcc_assert(TREE_CODE(var) == VAR_DECL);
+		  go_assert(TREE_CODE(var) == VAR_DECL);
 		  DECL_CHAIN(var) = declare_vars;
 		  declare_vars = var;
 		}
@@ -1399,7 +1399,7 @@ Function::build_tree(Gogo* gogo, Named_object* named_function)
 	      tree var = *pp;
 	      if (var != error_mark_node)
 		{
-		  gcc_assert(TREE_CODE(var) == VAR_DECL);
+		  go_assert(TREE_CODE(var) == VAR_DECL);
 		  DECL_CHAIN(var) = declare_vars;
 		  declare_vars = var;
 		}
@@ -1408,7 +1408,7 @@ Function::build_tree(Gogo* gogo, Named_object* named_function)
 
 	  if (*pp != error_mark_node)
 	    {
-	      gcc_assert(TREE_CODE(*pp) == PARM_DECL);
+	      go_assert(TREE_CODE(*pp) == PARM_DECL);
 	      pp = &DECL_CHAIN(*pp);
 	    }
 	}
@@ -1447,7 +1447,7 @@ Function::build_tree(Gogo* gogo, Named_object* named_function)
 
 	  if (var_decl != error_mark_node)
 	    {
-	      gcc_assert(TREE_CODE(var_decl) == VAR_DECL);
+	      go_assert(TREE_CODE(var_decl) == VAR_DECL);
 	      DECL_INITIAL(var_decl) = init;
 	      DECL_CHAIN(var_decl) = declare_vars;
 	      declare_vars = var_decl;
@@ -1460,7 +1460,7 @@ Function::build_tree(Gogo* gogo, Named_object* named_function)
 
   if (this->block_ != NULL)
     {
-      gcc_assert(DECL_INITIAL(fndecl) == NULL_TREE);
+      go_assert(DECL_INITIAL(fndecl) == NULL_TREE);
 
       // Declare variables if necessary.
       tree bind = NULL_TREE;
@@ -1571,7 +1571,7 @@ Function::build_defer_wrapper(Gogo* gogo, Named_object* named_function,
   tree ret_stmt = fold_build1_loc(end_loc, RETURN_EXPR, void_type_node, set);
   append_to_statement_list(ret_stmt, &stmt_list);
 
-  gcc_assert(*except == NULL_TREE);
+  go_assert(*except == NULL_TREE);
   *except = stmt_list;
 
   // Add some finally code to run the defer functions.  This is used
@@ -1623,7 +1623,7 @@ Function::build_defer_wrapper(Gogo* gogo, Named_object* named_function,
       append_to_statement_list(ret_stmt, &stmt_list);
     }
   
-  gcc_assert(*fini == NULL_TREE);
+  go_assert(*fini == NULL_TREE);
   *fini = stmt_list;
 }
 
@@ -1640,10 +1640,10 @@ Function::return_value(Gogo* gogo, Named_object* named_function,
   if (results == NULL || results->empty())
     return NULL_TREE;
 
-  gcc_assert(this->results_ != NULL);
+  go_assert(this->results_ != NULL);
   if (this->results_->size() != results->size())
     {
-      gcc_assert(saw_errors());
+      go_assert(saw_errors());
       return error_mark_node;
     }
 
@@ -1668,7 +1668,7 @@ Function::return_value(Gogo* gogo, Named_object* named_function,
 	   pr != results->end();
 	   ++pr, ++index, field = DECL_CHAIN(field))
 	{
-	  gcc_assert(field != NULL);
+	  go_assert(field != NULL);
 	  Named_object* no = (*this->results_)[index];
 	  Bvariable* bvar = no->get_backend_variable(gogo, named_function);
 	  tree val = var_to_tree(bvar);
@@ -1893,7 +1893,7 @@ Gogo::go_string_constant_tree(const std::string& val)
 
   constructor_elt* elt = VEC_quick_push(constructor_elt, init, NULL);
   tree field = TYPE_FIELDS(string_type);
-  gcc_assert(strcmp(IDENTIFIER_POINTER(DECL_NAME(field)), "__data") == 0);
+  go_assert(strcmp(IDENTIFIER_POINTER(DECL_NAME(field)), "__data") == 0);
   elt->index = field;
   tree str = Gogo::string_constant_tree(val);
   elt->value = fold_convert(TREE_TYPE(field),
@@ -1901,7 +1901,7 @@ Gogo::go_string_constant_tree(const std::string& val)
 
   elt = VEC_quick_push(constructor_elt, init, NULL);
   field = DECL_CHAIN(field);
-  gcc_assert(strcmp(IDENTIFIER_POINTER(DECL_NAME(field)), "__length") == 0);
+  go_assert(strcmp(IDENTIFIER_POINTER(DECL_NAME(field)), "__length") == 0);
   elt->index = field;
   elt->value = build_int_cst_type(TREE_TYPE(field), val.length());
 
@@ -1963,7 +1963,7 @@ Gogo::slice_type_tree(tree element_type_tree)
 tree
 Gogo::slice_element_type_tree(tree slice_type_tree)
 {
-  gcc_assert(TREE_CODE(slice_type_tree) == RECORD_TYPE
+  go_assert(TREE_CODE(slice_type_tree) == RECORD_TYPE
 	     && POINTER_TYPE_P(TREE_TYPE(TYPE_FIELDS(slice_type_tree))));
   return TREE_TYPE(TREE_TYPE(TYPE_FIELDS(slice_type_tree)));
 }
@@ -1977,15 +1977,15 @@ tree
 Gogo::slice_constructor(tree slice_type_tree, tree values, tree count,
 			tree capacity)
 {
-  gcc_assert(TREE_CODE(slice_type_tree) == RECORD_TYPE);
+  go_assert(TREE_CODE(slice_type_tree) == RECORD_TYPE);
 
   VEC(constructor_elt,gc)* init = VEC_alloc(constructor_elt, gc, 3);
 
   tree field = TYPE_FIELDS(slice_type_tree);
-  gcc_assert(strcmp(IDENTIFIER_POINTER(DECL_NAME(field)), "__values") == 0);
+  go_assert(strcmp(IDENTIFIER_POINTER(DECL_NAME(field)), "__values") == 0);
   constructor_elt* elt = VEC_quick_push(constructor_elt, init, NULL);
   elt->index = field;
-  gcc_assert(TYPE_MAIN_VARIANT(TREE_TYPE(field))
+  go_assert(TYPE_MAIN_VARIANT(TREE_TYPE(field))
 	     == TYPE_MAIN_VARIANT(TREE_TYPE(values)));
   elt->value = values;
 
@@ -1997,13 +1997,13 @@ Gogo::slice_constructor(tree slice_type_tree, tree values, tree count,
     }
 
   field = DECL_CHAIN(field);
-  gcc_assert(strcmp(IDENTIFIER_POINTER(DECL_NAME(field)), "__count") == 0);
+  go_assert(strcmp(IDENTIFIER_POINTER(DECL_NAME(field)), "__count") == 0);
   elt = VEC_quick_push(constructor_elt, init, NULL);
   elt->index = field;
   elt->value = fold_convert(TREE_TYPE(field), count);
 
   field = DECL_CHAIN(field);
-  gcc_assert(strcmp(IDENTIFIER_POINTER(DECL_NAME(field)), "__capacity") == 0);
+  go_assert(strcmp(IDENTIFIER_POINTER(DECL_NAME(field)), "__capacity") == 0);
   elt = VEC_quick_push(constructor_elt, init, NULL);
   elt->index = field;
   elt->value = fold_convert(TREE_TYPE(field), capacity);
@@ -2042,7 +2042,7 @@ Gogo::map_descriptor(Map_type* maptype)
     {
       if (p->second == error_mark_node)
 	return error_mark_node;
-      gcc_assert(p->second != NULL_TREE && DECL_P(p->second));
+      go_assert(p->second != NULL_TREE && DECL_P(p->second));
       return build_fold_addr_expr(p->second);
     }
 
@@ -2077,26 +2077,26 @@ Gogo::map_descriptor(Map_type* maptype)
     }
 
   tree map_entry_key_field = DECL_CHAIN(TYPE_FIELDS(map_entry_type));
-  gcc_assert(strcmp(IDENTIFIER_POINTER(DECL_NAME(map_entry_key_field)),
+  go_assert(strcmp(IDENTIFIER_POINTER(DECL_NAME(map_entry_key_field)),
 		    "__key") == 0);
 
   tree map_entry_val_field = DECL_CHAIN(map_entry_key_field);
-  gcc_assert(strcmp(IDENTIFIER_POINTER(DECL_NAME(map_entry_val_field)),
+  go_assert(strcmp(IDENTIFIER_POINTER(DECL_NAME(map_entry_val_field)),
 		    "__val") == 0);
 
   // Initialize the entries.
 
   tree map_descriptor_field = TYPE_FIELDS(struct_type);
-  gcc_assert(strcmp(IDENTIFIER_POINTER(DECL_NAME(map_descriptor_field)),
+  go_assert(strcmp(IDENTIFIER_POINTER(DECL_NAME(map_descriptor_field)),
 		    "__map_descriptor") == 0);
   tree entry_size_field = DECL_CHAIN(map_descriptor_field);
-  gcc_assert(strcmp(IDENTIFIER_POINTER(DECL_NAME(entry_size_field)),
+  go_assert(strcmp(IDENTIFIER_POINTER(DECL_NAME(entry_size_field)),
 		    "__entry_size") == 0);
   tree key_offset_field = DECL_CHAIN(entry_size_field);
-  gcc_assert(strcmp(IDENTIFIER_POINTER(DECL_NAME(key_offset_field)),
+  go_assert(strcmp(IDENTIFIER_POINTER(DECL_NAME(key_offset_field)),
 		    "__key_offset") == 0);
   tree val_offset_field = DECL_CHAIN(key_offset_field);
-  gcc_assert(strcmp(IDENTIFIER_POINTER(DECL_NAME(val_offset_field)),
+  go_assert(strcmp(IDENTIFIER_POINTER(DECL_NAME(val_offset_field)),
 		    "__val_offset") == 0);
 
   VEC(constructor_elt, gc)* descriptor = VEC_alloc(constructor_elt, gc, 6);
@@ -2177,7 +2177,7 @@ Gogo::type_descriptor_decl_name(const Named_object* no,
 {
   std::string ret = "__go_tdn_";
   if (no->type_value()->is_builtin())
-    gcc_assert(in_function == NULL);
+    go_assert(in_function == NULL);
   else
     {
       const std::string& unique_prefix(no->package() == NULL
@@ -2325,7 +2325,7 @@ Gogo::build_type_descriptor_decl(const Type* type, Expression* initializer,
   tree constructor = initializer->get_tree(&context);
 
   if (constructor == error_mark_node)
-    gcc_assert(saw_errors());
+    go_assert(saw_errors());
 
   DECL_INITIAL(decl) = constructor;
 
@@ -2333,7 +2333,7 @@ Gogo::build_type_descriptor_decl(const Type* type, Expression* initializer,
     TREE_PUBLIC(decl) = 1;
   else
     {
-      gcc_assert(type_descriptor_location == TYPE_DESCRIPTOR_COMMON);
+      go_assert(type_descriptor_location == TYPE_DESCRIPTOR_COMMON);
       make_decl_one_only(decl, DECL_ASSEMBLER_NAME(decl));
       resolve_unique_section(decl, 1, 0);
     }
@@ -2351,7 +2351,7 @@ Gogo::interface_method_table_for_type(const Interface_type* interface,
 				      bool is_pointer)
 {
   const Typed_identifier_list* interface_methods = interface->methods();
-  gcc_assert(!interface_methods->empty());
+  go_assert(!interface_methods->empty());
 
   std::string mangled_name = ((is_pointer ? "__go_pimt__" : "__go_imt_")
 			      + interface->mangled_name(this)
@@ -2411,7 +2411,7 @@ Gogo::interface_method_table_for_type(const Interface_type* interface,
     {
       bool is_ambiguous;
       Method* m = type->method_function(p->name(), &is_ambiguous);
-      gcc_assert(m != NULL);
+      go_assert(m != NULL);
 
       Named_object* no = m->named_object();
 
@@ -2431,7 +2431,7 @@ Gogo::interface_method_table_for_type(const Interface_type* interface,
       elt->index = size_int(i);
       elt->value = fold_convert(const_ptr_type_node, fndecl);
     }
-  gcc_assert(i == count + 1);
+  go_assert(i == count + 1);
 
   tree array_type = build_array_type(const_ptr_type_node,
 				     build_index_type(size_int(count)));

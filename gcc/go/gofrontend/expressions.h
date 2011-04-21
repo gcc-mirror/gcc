@@ -1641,7 +1641,7 @@ class Field_reference_expression : public Expression
   void
   set_struct_expression(Expression* expr)
   {
-    gcc_assert(this->expr_ == NULL);
+    go_assert(this->expr_ == NULL);
     this->expr_ = expr;
   }
 
