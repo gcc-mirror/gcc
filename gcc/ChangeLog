@@ -1,3 +1,10 @@
+2011-04-21  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/48695
+	* tree-ssa-alias.c (aliasing_component_refs_p): Compute base
+	objects and types here.  Adjust for their offset before
+	comparing.
+
 2011-04-21  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gimple.c (walk_gimple_op) <GIMPLE_CALL>: Fix couple of oversights.

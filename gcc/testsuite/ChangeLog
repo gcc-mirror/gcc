@@ -1,3 +1,8 @@
+2011-04-21  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/48695
+	* g++.dg/torture/pr48695.C: New testcase.
+
 2011-04-21  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/volatile5.adb: New test.
