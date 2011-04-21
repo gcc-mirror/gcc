@@ -1,5 +1,11 @@
 2011-04-21  Nathan Froyd  <froydnj@codesourcery.com>
 
+	* config/arm/arm.c (arm_init_iwmmxt_builtins): Call
+	build_function_type_list instead of build_function_type.
+	Delete variable `endlink'.
+
+2011-04-21  Nathan Froyd  <froydnj@codesourcery.com>
+
 	* config/s390/s390.c (s390_init_builtins): Call
 	build_function_type_list instead of build_function_type.
 
