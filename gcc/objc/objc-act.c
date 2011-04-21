@@ -2995,8 +2995,8 @@ synth_module_prologue (void)
   build_fast_enumeration_state_template ();
   
   /* void objc_enumeration_mutation (id) */
-  type = build_function_type (void_type_node,
-			      tree_cons (NULL_TREE, objc_object_type, NULL_TREE));
+  type = build_function_type_list (void_type_node,
+				   objc_object_type, NULL_TREE);
   objc_enumeration_mutation_decl 
     = add_builtin_function (TAG_ENUMERATION_MUTATION, type, 0, NOT_BUILT_IN, 
 			    NULL, NULL_TREE);
