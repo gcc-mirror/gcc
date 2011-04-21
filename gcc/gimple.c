@@ -1464,7 +1464,8 @@ walk_gimple_op (gimple stmt, walk_tree_fn callback_op,
       for (i = 0; i < gimple_call_num_args (stmt); i++)
 	{
 	  if (wi)
-	    wi->val_only = is_gimple_reg_type (gimple_call_arg (stmt, i));
+	    wi->val_only
+	      = is_gimple_reg_type (TREE_TYPE (gimple_call_arg (stmt, i)));
 	  ret = walk_tree (gimple_call_arg_ptr (stmt, i), callback_op, wi,
 			   pset);
 	  if (ret)
@@ -1476,7 +1477,8 @@ walk_gimple_op (gimple stmt, walk_tree_fn callback_op,
 	  if (wi)
 	    {
 	      wi->is_lhs = true;
-	      wi->val_only = is_gimple_reg_type (gimple_call_lhs (stmt));
+	      wi->val_only
+		= is_gimple_reg_type (TREE_TYPE (gimple_call_lhs (stmt)));
 	    }
 
 	  ret = walk_tree (gimple_call_lhs_ptr (stmt), callback_op, wi, pset);
