@@ -164,6 +164,7 @@ static rtx xtensa_static_chain (const_tree, bool);
 static void xtensa_asm_trampoline_template (FILE *);
 static void xtensa_trampoline_init (rtx, tree, rtx);
 static bool xtensa_output_addr_const_extra (FILE *, rtx);
+static bool xtensa_cannot_force_const_mem (enum machine_mode, rtx);
 
 static reg_class_t xtensa_preferred_reload_class (rtx, reg_class_t);
 static reg_class_t xtensa_preferred_output_reload_class (rtx, reg_class_t);
@@ -285,7 +286,7 @@ static const struct default_options xtensa_option_optimization_table[] =
 #define TARGET_HAVE_TLS (TARGET_THREADPTR && HAVE_AS_TLS)
 
 #undef TARGET_CANNOT_FORCE_CONST_MEM
-#define TARGET_CANNOT_FORCE_CONST_MEM xtensa_tls_referenced_p
+#define TARGET_CANNOT_FORCE_CONST_MEM xtensa_cannot_force_const_mem
 
 #undef TARGET_LEGITIMATE_ADDRESS_P
 #define TARGET_LEGITIMATE_ADDRESS_P	xtensa_legitimate_address_p
@@ -2011,6 +2012,15 @@ xtensa_tls_referenced_p (rtx x)
     return false;
 
   return for_each_rtx (&x, xtensa_tls_referenced_p_1, NULL);
+}
+
+
+/* Implement TARGET_CANNOT_FORCE_CONST_MEM.  */
+
+static bool
+xtensa_cannot_force_const_mem (enum machine_mode mode ATTRIBUTE_UNUSED, rtx x)
+{
+  return xtensa_tls_referenced_p (x);
 }
 
 

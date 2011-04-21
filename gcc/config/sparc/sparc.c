@@ -417,7 +417,7 @@ static void sparc_output_mi_thunk (FILE *, tree, HOST_WIDE_INT,
 static bool sparc_can_output_mi_thunk (const_tree, HOST_WIDE_INT,
 				       HOST_WIDE_INT, const_tree);
 static struct machine_function * sparc_init_machine_status (void);
-static bool sparc_cannot_force_const_mem (rtx);
+static bool sparc_cannot_force_const_mem (enum machine_mode, rtx);
 static rtx sparc_tls_get_addr (void);
 static rtx sparc_tls_got (void);
 static const char *get_some_local_dynamic_name (void);
@@ -2924,7 +2924,7 @@ reg_unused_after (rtx reg, rtx insn)
    not constant (TLS) or not known at final link time (PIC).  */
 
 static bool
-sparc_cannot_force_const_mem (rtx x)
+sparc_cannot_force_const_mem (enum machine_mode mode, rtx x)
 {
   switch (GET_CODE (x))
     {
@@ -2947,11 +2947,11 @@ sparc_cannot_force_const_mem (rtx x)
 	return flag_pic != 0;
 
     case CONST:
-      return sparc_cannot_force_const_mem (XEXP (x, 0));
+      return sparc_cannot_force_const_mem (mode, XEXP (x, 0));
     case PLUS:
     case MINUS:
-      return sparc_cannot_force_const_mem (XEXP (x, 0))
-         || sparc_cannot_force_const_mem (XEXP (x, 1));
+      return sparc_cannot_force_const_mem (mode, XEXP (x, 0))
+         || sparc_cannot_force_const_mem (mode, XEXP (x, 1));
     case UNSPEC:
       return true;
     default:

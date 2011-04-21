@@ -5533,8 +5533,10 @@ into their original form.
 
 @hook TARGET_CANNOT_FORCE_CONST_MEM
 This hook should return true if @var{x} is of a form that cannot (or
-should not) be spilled to the constant pool.  The default version of
-this hook returns false.
+should not) be spilled to the constant pool.  @var{mode} is the mode
+of @var{x}.
+
+The default version of this hook returns false.
 
 The primary reason to define this hook is to prevent reload from
 deciding that a non-legitimate constant would be better reloaded

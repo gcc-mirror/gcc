@@ -1763,7 +1763,7 @@ typedef struct
   || flag_pic)
 
 #define LEGITIMATE_CONSTANT_P(X)			\
-  (!arm_cannot_force_const_mem (X)			\
+  (!arm_cannot_force_const_mem (VOIDmode, X)		\
    && (TARGET_32BIT ? ARM_LEGITIMATE_CONSTANT_P (X)	\
 		    : THUMB_LEGITIMATE_CONSTANT_P (X)))
 

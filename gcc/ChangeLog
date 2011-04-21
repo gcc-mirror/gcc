@@ -1,3 +1,43 @@
+2011-04-21  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* target.def (cannot_force_const_mem): Add a mode argument.
+	* doc/tm.texi.in (TARGET_CANNOT_FORCE_CONST_MEM): Update accordingly.
+	* doc/tm.texi: Regenerate.
+	* hooks.h (hook_bool_mode_rtx_false): Declare.
+	* hooks.c (hook_bool_mode_const_rtx_false): Fix commentary.
+	(hook_bool_mode_const_rtx_true): Likewise.
+	(hook_bool_mode_rtx_false): New function.
+	* reload.c (CONST_POOL_OK_P): Take a mode argument and require it
+	to be non-VOID.  Update call to cannot_force_const_mem.
+	(find_reloads): Update accordingly.
+	* varasm.c (force_const_mem): Update call to cannot_force_const_mem.
+	* config/alpha/alpha.c (alpha_cannot_force_const_mem): Add a mode
+	argument.
+	* config/arm/arm-protos.h (arm_cannot_force_const_mem): Likewise.
+	* config/arm/arm.h (LEGITIMATE_CONSTANT_P): Update call.
+	* config/arm/arm.c (arm_cannot_force_const_mem): Add a mode argument.
+	* config/bfin/bfin.c (bfin_cannot_force_const_mem): Likewise.
+	* config/frv/frv.c (frv_cannot_force_const_mem): Likewise.
+	* config/i386/i386.c (ix86_cannot_force_const_mem): Likewise.
+	* config/ia64/ia64.c (ia64_cannot_force_const_mem): Likewise.
+	* config/m68k/m68k.c (TARGET_CANNOT_FORCE_CONST_MEM): Redefine to...
+	(m68k_cannot_force_const_mem): ...this new function.
+	* config/mips/mips.c (mips_cannot_force_const_mem): Add a mode
+	argument.
+	(mips_const_insns, mips_legitimize_const_move): Update calls.
+	(mips_secondary_reload_class): Likewise.
+	* config/pa/pa.c (TARGET_CANNOT_FORCE_CONST_MEM): Redefine to...
+	(pa_cannot_force_const_mem): ...this new function.
+	* config/rs6000/rs6000.c (TARGET_CANNOT_FORCE_CONST_MEM): Reefine
+	to...
+	(rs6000_cannot_force_const_mem): ...this new function.
+	* config/s390/s390.c (s390_cannot_force_const_mem): Add a mode
+	argument.
+	* config/sparc/sparc.c (sparc_cannot_force_const_mem): Likewise.
+	* config/xtensa/xtensa.c (TARGET_CANNOT_FORCE_CONST_MEM): Redefine
+	to...
+	(xtensa_cannot_force_const_mem): ...this new function.
+
 2011-04-20  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* config/mips/mips.c (mips16_build_function_stub): Call
