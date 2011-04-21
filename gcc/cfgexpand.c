@@ -158,11 +158,6 @@ struct stack_var
   /* The Variable.  */
   tree decl;
 
-  /* The offset of the variable.  During partitioning, this is the
-     offset relative to the partition.  After partitioning, this
-     is relative to the stack frame.  */
-  HOST_WIDE_INT offset;
-
   /* Initially, the size of the variable.  Later, the size of the partition,
      if this variable becomes it's partition's representative.  */
   HOST_WIDE_INT size;
@@ -268,7 +263,6 @@ add_stack_var (tree decl)
   v = &stack_vars[stack_vars_num];
 
   v->decl = decl;
-  v->offset = 0;
   v->size = tree_low_cst (DECL_SIZE_UNIT (SSAVAR (decl)), 1);
   /* Ensure that all variables have size, so that &a != &b for any two
      variables that are simultaneously live.  */
@@ -405,9 +399,9 @@ stack_var_cmp (const void *a, const void *b)
     return (int)largeb - (int)largea;
 
   /* Secondary compare on size, decreasing  */
-  if (sizea < sizeb)
-    return -1;
   if (sizea > sizeb)
+    return -1;
+  if (sizea < sizeb)
     return 1;
 
   /* Tertiary compare on true alignment, decreasing.  */
@@ -566,28 +560,19 @@ update_alias_info_with_stack_vars (void)
 
 /* A subroutine of partition_stack_vars.  The UNION portion of a UNION/FIND
    partitioning algorithm.  Partitions A and B are known to be non-conflicting.
-   Merge them into a single partition A.
-
-   At the same time, add OFFSET to all variables in partition B.  At the end
-   of the partitioning process we've have a nice block easy to lay out within
-   the stack frame.  */
+   Merge them into a single partition A.  */
 
 static void
-union_stack_vars (size_t a, size_t b, HOST_WIDE_INT offset)
+union_stack_vars (size_t a, size_t b)
 {
-  size_t i, last;
   struct stack_var *vb = &stack_vars[b];
   bitmap_iterator bi;
   unsigned u;
 
-  /* Update each element of partition B with the given offset,
-     and merge them into partition A.  */
-  for (last = i = b; i != EOC; last = i, i = stack_vars[i].next)
-    {
-      stack_vars[i].offset += offset;
-      stack_vars[i].representative = a;
-    }
-  stack_vars[last].next = stack_vars[a].next;
+  gcc_assert (stack_vars[b].next == EOC);
+   /* Add B to A's partition.  */
+  stack_vars[b].next = stack_vars[a].next;
+  stack_vars[b].representative = a;
   stack_vars[a].next = b;
 
   /* Update the required alignment of partition A to account for B.  */
@@ -607,16 +592,13 @@ union_stack_vars (size_t a, size_t b, HOST_WIDE_INT offset)
    partitions constrained by the interference graph.  The overall
    algorithm used is as follows:
 
-	Sort the objects by size.
+	Sort the objects by size in descending order.
 	For each object A {
 	  S = size(A)
 	  O = 0
 	  loop {
 	    Look for the largest non-conflicting object B with size <= S.
 	    UNION (A, B)
-	    offset(B) = O
-	    O += size(B)
-	    S -= size(B)
 	  }
 	}
 */
@@ -638,22 +620,21 @@ partition_stack_vars (void)
   for (si = 0; si < n; ++si)
     {
       size_t i = stack_vars_sorted[si];
-      HOST_WIDE_INT isize = stack_vars[i].size;
       unsigned int ialign = stack_vars[i].alignb;
-      HOST_WIDE_INT offset = 0;
 
-      for (sj = si; sj-- > 0; )
+      /* Ignore objects that aren't partition representatives. If we
+         see a var that is not a partition representative, it must
+         have been merged earlier.  */
+      if (stack_vars[i].representative != i)
+        continue;
+
+      for (sj = si + 1; sj < n; ++sj)
 	{
 	  size_t j = stack_vars_sorted[sj];
-	  HOST_WIDE_INT jsize = stack_vars[j].size;
 	  unsigned int jalign = stack_vars[j].alignb;
 
 	  /* Ignore objects that aren't partition representatives.  */
 	  if (stack_vars[j].representative != j)
-	    continue;
-
-	  /* Ignore objects too large for the remaining space.  */
-	  if (isize < jsize)
 	    continue;
 
 	  /* Ignore conflicting objects.  */
@@ -666,25 +647,8 @@ partition_stack_vars (void)
 	      != (jalign * BITS_PER_UNIT <= MAX_SUPPORTED_STACK_ALIGNMENT))
 	    continue;
 
-	  /* Refine the remaining space check to include alignment.  */
-	  if (offset & (jalign - 1))
-	    {
-	      HOST_WIDE_INT toff = offset;
-	      toff += jalign - 1;
-	      toff &= -(HOST_WIDE_INT)jalign;
-	      if (isize - (toff - offset) < jsize)
-		continue;
-
-	      isize -= toff - offset;
-	      offset = toff;
-	    }
-
 	  /* UNION the objects, placing J at OFFSET.  */
-	  union_stack_vars (i, j, offset);
-
-	  isize -= jsize;
-	  if (isize == 0)
-	    break;
+	  union_stack_vars (i, j);
 	}
     }
 
@@ -714,9 +678,8 @@ dump_stack_var_partition (void)
 	{
 	  fputc ('\t', dump_file);
 	  print_generic_expr (dump_file, stack_vars[j].decl, dump_flags);
-	  fprintf (dump_file, ", offset " HOST_WIDE_INT_PRINT_DEC "\n",
-		   stack_vars[j].offset);
 	}
+      fputc ('\n', dump_file);
     }
 }
 
@@ -865,10 +828,9 @@ expand_stack_vars (bool (*pred) (tree))
 	 partition.  */
       for (j = i; j != EOC; j = stack_vars[j].next)
 	{
-	  gcc_assert (stack_vars[j].offset <= stack_vars[i].size);
 	  expand_one_stack_var_at (stack_vars[j].decl,
 				   base, base_align,
-				   stack_vars[j].offset + offset);
+				   offset);
 	}
     }
 
