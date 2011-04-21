@@ -1,3 +1,10 @@
+2011-04-21  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* objc-act.c (synth_module_prologue): Call build_function_type_list
+	instead of build_function_type.
+	* objc-next-runtime-abi-02.c (next_runtime_02_initialize):
+	Likewise.
+
 2011-04-15  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc-act.c (ivar_of_class): New.
