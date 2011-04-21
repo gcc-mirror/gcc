@@ -1,3 +1,8 @@
+2011-04-21  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-alias.c (ref_maybe_used_by_stmt_p): Handle
+	return statements.
+
 2011-04-21  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/i386/cygming.h (union tree_node, TREE): Don't define or
