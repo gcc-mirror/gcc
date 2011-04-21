@@ -314,11 +314,7 @@ vect_drs_dependent_in_basic_block (struct data_reference *dra,
 
   /* Check that the data-refs have same bases and offsets.  If not, we can't
      determine if they are dependent.  */
-  if ((DR_BASE_ADDRESS (dra) != DR_BASE_ADDRESS (drb)
-       && (TREE_CODE (DR_BASE_ADDRESS (dra)) != ADDR_EXPR
-           || TREE_CODE (DR_BASE_ADDRESS (drb)) != ADDR_EXPR
-           || TREE_OPERAND (DR_BASE_ADDRESS (dra), 0)
-           != TREE_OPERAND (DR_BASE_ADDRESS (drb),0)))
+  if (!operand_equal_p (DR_BASE_ADDRESS (dra), DR_BASE_ADDRESS (drb), 0)
       || !dr_equal_offsets_p (dra, drb))
     return true;
 
@@ -364,11 +360,7 @@ vect_check_interleaving (struct data_reference *dra,
 
   /* Check that the data-refs have same first location (except init) and they
      are both either store or load (not load and store).  */
-  if ((DR_BASE_ADDRESS (dra) != DR_BASE_ADDRESS (drb)
-       && (TREE_CODE (DR_BASE_ADDRESS (dra)) != ADDR_EXPR
-	   || TREE_CODE (DR_BASE_ADDRESS (drb)) != ADDR_EXPR
-	   || TREE_OPERAND (DR_BASE_ADDRESS (dra), 0)
-	   != TREE_OPERAND (DR_BASE_ADDRESS (drb),0)))
+  if (!operand_equal_p (DR_BASE_ADDRESS (dra), DR_BASE_ADDRESS (drb), 0)
       || !dr_equal_offsets_p (dra, drb)
       || !tree_int_cst_compare (DR_INIT (dra), DR_INIT (drb))
       || DR_IS_READ (dra) != DR_IS_READ (drb))
