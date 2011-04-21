@@ -675,7 +675,7 @@ go_format_type (struct godump_container *container, tree type,
 	      {
 		char buf[100];
 
-		obstack_grow (ob, "_f", 2);
+		obstack_grow (ob, "Godump_", 2);
 		snprintf (buf, sizeof buf, "%d", i);
 		obstack_grow (ob, buf, strlen (buf));
 		i++;
