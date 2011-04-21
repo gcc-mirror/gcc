@@ -576,6 +576,13 @@ coarray:
       goto cleanup;
     }
 
+  if (as->rank >= GFC_MAX_DIMENSIONS)
+    {
+      gfc_error ("Array specification at %C has more than %d "
+		 "dimensions", GFC_MAX_DIMENSIONS);
+      goto cleanup;
+    }
+
   for (;;)
     {
       as->corank++;
@@ -644,7 +651,7 @@ coarray:
 	  goto cleanup;
 	}
 
-      if (as->corank >= GFC_MAX_DIMENSIONS)
+      if (as->rank + as->corank >= GFC_MAX_DIMENSIONS)
 	{
 	  gfc_error ("Array specification at %C has more than %d "
 		     "dimensions", GFC_MAX_DIMENSIONS);
