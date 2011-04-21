@@ -1,3 +1,8 @@
+2011-04-21  Ian Lance Taylor  <iant@google.com>
+
+	* godump.c (go_format_type): Use exported Go name for anonymous
+	field name.
+
 2011-04-21  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* config/frv/frv.c (frv_init_builtins): Delete `endlink' variable.
@@ -34,7 +39,7 @@
 2011-04-21  Dimitrios Apostolou  <jimis@gmx.net>
 	    Jeff Law  <law@redhat.com>
 
-	* gengtype-state.c (read_a_state_token): Fix argument to 
+	* gengtype-state.c (read_a_state_token): Fix argument to
 	obstack_free.
 	* gengtype.c (matching_file_name_substitute): Likewise.
 
