@@ -1,5 +1,11 @@
 2011-04-21  Joseph Myers  <joseph@codesourcery.com>
 
+	* config/i386/cygming.h (union tree_node, TREE): Don't define or
+	undefine.
+	(FILE): Don't undefine.
+
+2011-04-21  Joseph Myers  <joseph@codesourcery.com>
+
 	* config/alpha/alpha.c (struct machine_function): Use rtx, not
 	struct rtx_def *.
 	* config/bfin/bfin.h (bfin_cc_rtx, bfin_rets_rtx): Use rtx, not
