@@ -1,5 +1,9 @@
 2011-04-20  Jason Merrill  <jason@redhat.com>
 
+	PR c++/48594
+	* decl2.c (build_offset_ref_call_from_tree): Move
+	non-dependency of object outside condition.
+
 	PR c++/48657
 	* decl.c (cp_finish_decl): Handle non-member constant variables
 	in templates, too.

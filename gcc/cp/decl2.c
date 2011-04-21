@@ -4079,9 +4079,9 @@ build_offset_ref_call_from_tree (tree fn, VEC(tree,gc) **args)
 	 parameter.  That must be done before the FN is transformed
 	 because we depend on the form of FN.  */
       make_args_non_dependent (*args);
+      object = build_non_dependent_expr (object);
       if (TREE_CODE (TREE_TYPE (fn)) == METHOD_TYPE)
 	{
-	  object = build_non_dependent_expr (object);
 	  if (TREE_CODE (fn) == DOTSTAR_EXPR)
 	    object = cp_build_addr_expr (object, tf_warning_or_error);
 	  VEC_safe_insert (tree, gc, *args, 0, object);
