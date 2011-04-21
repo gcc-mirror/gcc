@@ -1,3 +1,8 @@
+2011-04-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc_release (maybe_build_tarfile): Don't build a tarfile if
+	the first directory doesn't exist.
+
 2011-03-14  Jakub Jelinek  <jakub@redhat.com>
 
 	* crontab: Enable 4.7 snapshots, switch 4.6 snapshots to
