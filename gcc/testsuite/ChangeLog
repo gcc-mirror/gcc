@@ -1,3 +1,9 @@
+2011-04-21  Richard Earnshaw  <rearnsha@arm.com>
+	    Richard Sandiford  <richard.sandiford@linaro.org>
+
+	PR target/46329
+	* gcc.target/arm/pr46329.c: New test.
+
 2011-04-21  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/18918

@@ -1,5 +1,11 @@
 2011-04-21  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	PR target/46329
+	* config/arm/arm.c (arm_legitimate_constant_p_1): Return false
+	for all Neon struct constants.
+
+2011-04-21  Richard Sandiford  <richard.sandiford@linaro.org>
+
 	* target.def (legitimate_constant_p): New hook.
 	* doc/tm.texi.in (LEGITIMATE_CONSTANT_P): Replace with...
 	(TARGET_LEGITIMATE_CONSTANT_P): ...this.
