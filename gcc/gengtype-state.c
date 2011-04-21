@@ -303,7 +303,7 @@ read_a_state_token (void)
       obstack_1grow (&id_obstack, (char) 0);
       ids = XOBFINISH (&id_obstack, char *);
       sid = state_ident_by_name (ids, INSERT);
-      obstack_free (&id_obstack, ids);
+      obstack_free (&id_obstack, NULL);
       ids = NULL;
       tk = XCNEW (struct state_token_st);
       tk->stok_kind = STOK_NAME;
@@ -408,7 +408,7 @@ read_a_state_token (void)
       tk->stok_file = state_path;
       tk->stok_next = NULL;
       strcpy (tk->stok_un.stok_string, cstr);
-      obstack_free (&bstring_obstack, cstr);
+      obstack_free (&bstring_obstack, NULL);
 
       return tk;
     }
