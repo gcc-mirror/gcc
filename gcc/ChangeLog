@@ -1,3 +1,13 @@
+2011-04-21  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/48712
+	Backport from 4.6 branch
+	2011-03-07  Zdenek Dvorak  <ook@ucw.cz>
+
+	PR bootstrap/48000
+	* cfgloopmanip.c (fix_bb_placements): Return immediately
+	if FROM is BASE_LOOP's header.
+
 2011-04-20  Richard Guenther  <rguenther@suse.de>
 
 	Backport from 4.6 branch
