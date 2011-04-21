@@ -1,6 +1,6 @@
 # Top level -*- makefile -*- fragment for GNU Ada (GNAT).
 #   Copyright (C) 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002,
-#   2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+#   2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
 #   Free Software Foundation, Inc.
 
 #This file is part of GCC.
@@ -1127,43 +1127,39 @@ ada/sdefault.o : ada/ada.ads ada/a-except.ads ada/a-unccon.ads \
 
 ADA_TREE_H = ada/gcc-interface/ada-tree.h
 
-# force debugging information on s-tasdeb.o so that it is always
-# possible to set conditional breakpoints on tasks.
+# Special flags - see gcc-interface/Makefile.in for the template
+
+ada/s-traceb.o : ada/s-traceb.adb ada/s-traceb.ads
+	$(CC) -c $(ALL_ADAFLAGS) $(FORCE_DEBUG_ADAFLAGS) $(ADA_INCLUDES) \
+	  $< $(OUTPUT_OPTION)
 
 ada/s-tasdeb.o  : ada/s-tasdeb.adb ada/s-tasdeb.ads
 	$(CC) -c $(ALL_ADAFLAGS) $(FORCE_DEBUG_ADAFLAGS) -O0 $(ADA_INCLUDES) \
 	  $< $(OUTPUT_OPTION)
 
-# force debugging information on s-vaflop.o so that it is always
-# possible to call the VAX float debug print routines.
-# force at least -O so that the inline assembly works.
-
 ada/s-vaflop.o  : ada/s-vaflop.adb ada/s-vaflop.ads
 	$(CC) -c -O $(ALL_ADAFLAGS) $(FORCE_DEBUG_ADAFLAGS) $(ADA_INCLUDES) \
-	  $(OUTPUT_OPTION) $<
-
-# force debugging information on a-except.o so that it is always
-# possible to set conditional breakpoints on exceptions.
-# use -O1 otherwise gdb isn't able to get a full backtrace on mips targets.
+	  $< $(OUTPUT_OPTION)
 
 ada/a-except.o  : ada/a-except.adb ada/a-except.ads
 	$(CC) -c $(ALL_ADAFLAGS) $(FORCE_DEBUG_ADAFLAGS) -O1 -fno-inline \
 	 $(ADA_INCLUDES) $< $(OUTPUT_OPTION)
 
-# compile s-except.o without optimization and with debug info to let the
-# debugger set breakpoints and inspect subprogram parameters on exception
-# related events.
-
 ada/s-except.o  : ada/s-except.adb ada/s-except.ads
 	$(CC) -c $(ALL_ADAFLAGS) $(FORCE_DEBUG_ADAFLAGS) -O0 \
 	 $(ADA_INCLUDES) $< $(OUTPUT_OPTION)
 
-# force debugging information on s-assert.o so that it is always
-# possible to set breakpoint on assert failures.
+ada/s-assert.o  : ada/s-assert.adb ada/s-assert.ads
+	$(CC) -c $(ALL_ADAFLAGS) $(FORCE_DEBUG_ADAFLAGS) $(ADA_INCLUDES) \
+	  $< $(OUTPUT_OPTION)
 
-ada/s-assert.o  : ada/s-assert.adb ada/s-assert.ads ada/a-except.ads
-	$(CC) -c $(ALL_ADAFLAGS) $(FORCE_DEBUG_ADAFLAGS) -O2 \
-	 $(ADA_INCLUDES) $< $(OUTPUT_OPTION)
+ada/a-tags.o  : ada/a-tags.adb ada/a-tags.ads
+	$(CC) -c $(ALL_ADAFLAGS) $(FORCE_DEBUG_ADAFLAGS) $(ADA_INCLUDES) \
+	  $< $(OUTPUT_OPTION)
+
+ada/tracebak.o : ada/tracebak.c $(CONFIG_H) $(SYSTEM_H)
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ADA_CFLAGS) $(ALL_CPPFLAGS) \
+	      $(INCLUDES) -fno-omit-frame-pointer $< $(OUTPUT_OPTION)
 
 # dependencies for windows specific tool (mdll)
 
@@ -1176,19 +1172,6 @@ ada/mdll-fil.o : ada/mdll-fil.adb ada/mdll.ads ada/mdll-fil.ads
 ada/mdll-utl.o : ada/mdll-utl.adb ada/mdll.ads ada/mdll-utl.ads ada/sdefault.ads ada/types.ads
 	$(CC) -c $(ALL_ADAFLAGS) $(ADA_INCLUDES) $< $(OUTPUT_OPTION)
 
-# force debugging information and no optimization on s-memory.o so that it
-# is always possible to set breakpoint on __gnat_malloc and __gnat_free
-# this is important for gnatmem using GDB. memtrack.o is built from
-# memtrack.adb, and used by the post-mortem analysis with gnatmem.
-
-ada/s-memory.o  : ada/s-memory.adb ada/s-memory.ads
-	$(CC) -c $(ALL_ADAFLAGS) $(FORCE_DEBUG_ADAFLAGS) -O0 \
-	 $(ADA_INCLUDES) $< $(OUTPUT_OPTION)
-
-ada/memtrack.o  : ada/memtrack.adb ada/s-memory.ads
-	$(CC) -c $(ALL_ADAFLAGS) $(FORCE_DEBUG_ADAFLAGS) -O0 \
-	 $(ADA_INCLUDES) $< $(OUTPUT_OPTION)
-
 ada/adadecode.o : ada/adadecode.c $(CONFIG_H) $(SYSTEM_H) ada/adadecode.h
 ada/adaint.o   : ada/adaint.c $(CONFIG_H) $(SYSTEM_H) ada/adaint.h
 ada/argv.o     : ada/argv.c $(CONFIG_H) $(SYSTEM_H) ada/adaint.h
@@ -1196,7 +1179,6 @@ ada/cstreams.o : ada/cstreams.c $(CONFIG_H) $(SYSTEM_H) ada/adaint.h
 ada/exit.o     : ada/exit.c $(CONFIG_H) $(SYSTEM_H) ada/adaint.h
 ada/final.o    : ada/final.c $(CONFIG_H) $(SYSTEM_H) ada/raise.h
 ada/link.o     : ada/link.c
-
 
 ada/targext.o : ada/targext.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H)
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ADA_CFLAGS) \
@@ -1218,11 +1200,6 @@ ada/raise.o : ada/raise.c $(CONFIG_H) $(SYSTEM_H) ada/adaint.h ada/raise.h
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ADA_CFLAGS) \
 		 $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
 
-# Need to keep the frame pointer to unwind the stack properly for some targets.
-ada/tracebak.o : ada/tracebak.c $(CONFIG_H) $(SYSTEM_H)
-	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ADA_CFLAGS) $(ALL_CPPFLAGS) \
-	      $(INCLUDES) -fno-omit-frame-pointer $< $(OUTPUT_OPTION)
-
 ada/cuintp.o : ada/gcc-interface/cuintp.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    $(TM_H) $(TREE_H) ada/gcc-interface/ada.h ada/types.h ada/uintp.h \
    ada/atree.h ada/elists.h ada/nlists.h ada/stringt.h ada/fe.h $(ADA_TREE_H) \
@@ -1230,8 +1207,8 @@ ada/cuintp.o : ada/gcc-interface/cuintp.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) -I.. $(ALL_CPPFLAGS) $< -o $@
 
 ada/decl.o : ada/gcc-interface/decl.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
-   $(TM_H) $(TREE_H) $(FLAGS_H) toplev.h $(TARGET_H) $(TREE_INLINE_H) \
-   ada/gcc-interface/ada.h ada/types.h ada/atree.h \
+   $(TM_H) $(TREE_H) $(FLAGS_H) toplev.h $(TARGET_H) \
+   $(TREE_INLINE_H) ada/gcc-interface/ada.h ada/types.h ada/atree.h \
    ada/elists.h ada/namet.h ada/nlists.h ada/repinfo.h ada/snames.h \
    ada/stringt.h ada/uintp.h ada/fe.h ada/sinfo.h ada/einfo.h $(ADA_TREE_H) \
    ada/gcc-interface/gigi.h gt-ada-decl.h
@@ -1240,7 +1217,7 @@ ada/decl.o : ada/gcc-interface/decl.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
 ada/misc.o : ada/gcc-interface/misc.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    $(TM_H) $(TREE_H) $(DIAGNOSTIC_H) $(TARGET_H) $(FUNCTION_H) \
    $(FLAGS_H) debug.h toplev.h langhooks.h \
-   $(LANGHOOKS_DEF_H) $(OPTS_H) $(OPTIONS_H) $(TREE_INLINE_H) $(PLUGIN_H) \
+   $(LANGHOOKS_DEF_H) $(OPTS_H) $(OPTIONS_H) $(TREE_INLINE_H) \
    ada/gcc-interface/ada.h ada/adadecode.h ada/types.h ada/atree.h \
    ada/elists.h ada/namet.h ada/nlists.h ada/stringt.h ada/uintp.h ada/fe.h \
    ada/sinfo.h ada/einfo.h $(ADA_TREE_H) ada/gcc-interface/gigi.h \
