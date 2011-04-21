@@ -1909,13 +1909,7 @@ Float_expression::constrain_float(mpfr_t val, Type* type)
 {
   Float_type* ftype = type->float_type();
   if (ftype != NULL && !ftype->is_abstract())
-    {
-      tree type_tree = ftype->type_tree();
-      REAL_VALUE_TYPE rvt;
-      real_from_mpfr(&rvt, val, type_tree, GMP_RNDN);
-      real_convert(&rvt, TYPE_MODE(type_tree), &rvt);
-      mpfr_from_real(val, &rvt, GMP_RNDN);
-    }
+    mpfr_prec_round(val, ftype->bits(), GMP_RNDN);
 }
 
 // Return a floating point constant value.
@@ -2158,16 +2152,8 @@ Complex_expression::constrain_complex(mpfr_t real, mpfr_t imag, Type* type)
   Complex_type* ctype = type->complex_type();
   if (ctype != NULL && !ctype->is_abstract())
     {
-      tree type_tree = ctype->type_tree();
-
-      REAL_VALUE_TYPE rvt;
-      real_from_mpfr(&rvt, real, TREE_TYPE(type_tree), GMP_RNDN);
-      real_convert(&rvt, TYPE_MODE(TREE_TYPE(type_tree)), &rvt);
-      mpfr_from_real(real, &rvt, GMP_RNDN);
-
-      real_from_mpfr(&rvt, imag, TREE_TYPE(type_tree), GMP_RNDN);
-      real_convert(&rvt, TYPE_MODE(TREE_TYPE(type_tree)), &rvt);
-      mpfr_from_real(imag, &rvt, GMP_RNDN);
+      mpfr_prec_round(real, ctype->bits() / 2, GMP_RNDN);
+      mpfr_prec_round(imag, ctype->bits() / 2, GMP_RNDN);
     }
 }
 
