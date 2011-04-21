@@ -1,3 +1,8 @@
+2011-04-21  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* config/ia64/ia64.c (ia64_init_builtins): Call
+	build_function_type_list instead of builtin_function_type.
+
 2011-04-21  Easwaran Raman  <eraman@google.com>
 
 	* gcc/cfgexpand.c (stack_var): Remove OFFSET...

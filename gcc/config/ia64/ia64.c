@@ -10165,7 +10165,7 @@ ia64_init_builtins (void)
       (*lang_hooks.types.register_builtin_type) (float128_type, "__float128");
 
       /* TFmode support builtins.  */
-      ftype = build_function_type (float128_type, void_list_node);
+      ftype = build_function_type_list (float128_type, NULL_TREE);
       decl = add_builtin_function ("__builtin_infq", ftype,
 				   IA64_BUILTIN_INFQ, BUILT_IN_MD,
 				   NULL, NULL_TREE);
@@ -10212,13 +10212,13 @@ ia64_init_builtins (void)
 		       NULL, NULL_TREE)
 
   decl = def_builtin ("__builtin_ia64_bsp",
-	       build_function_type (ptr_type_node, void_list_node),
-	       IA64_BUILTIN_BSP);
+		      build_function_type_list (ptr_type_node, NULL_TREE),
+		      IA64_BUILTIN_BSP);
   ia64_builtins[IA64_BUILTIN_BSP] = decl;
 
   decl = def_builtin ("__builtin_ia64_flushrs",
-	       build_function_type (void_type_node, void_list_node),
-	       IA64_BUILTIN_FLUSHRS);
+		      build_function_type_list (void_type_node, NULL_TREE),
+		      IA64_BUILTIN_FLUSHRS);
   ia64_builtins[IA64_BUILTIN_FLUSHRS] = decl;
 
 #undef def_builtin
