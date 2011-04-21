@@ -188,6 +188,7 @@ static void pa_conditional_register_usage (void);
 static enum machine_mode pa_c_mode_for_suffix (char);
 static section *pa_function_section (tree, enum node_frequency, bool, bool);
 static bool pa_cannot_force_const_mem (enum machine_mode, rtx);
+static bool pa_legitimate_constant_p (enum machine_mode, rtx);
 
 /* The following extra sections are only used for SOM.  */
 static GTY(()) section *som_readonly_data_section;
@@ -396,6 +397,9 @@ static const struct default_options pa_option_optimization_table[] =
 #define TARGET_C_MODE_FOR_SUFFIX pa_c_mode_for_suffix
 #undef TARGET_ASM_FUNCTION_SECTION
 #define TARGET_ASM_FUNCTION_SECTION pa_function_section
+
+#undef TARGET_LEGITIMATE_CONSTANT_P
+#define TARGET_LEGITIMATE_CONSTANT_P pa_legitimate_constant_p
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -10274,6 +10278,42 @@ pa_function_section (tree decl, enum node_frequency freq,
 
   /* Otherwise, use the default function section.  */
   return default_function_section (decl, freq, startup, exit);
+}
+
+/* Implement TARGET_LEGITIMATE_CONSTANT_P.
+
+   In 64-bit mode, we reject CONST_DOUBLES.  We also reject CONST_INTS
+   that need more than three instructions to load prior to reload.  This
+   limit is somewhat arbitrary.  It takes three instructions to load a
+   CONST_INT from memory but two are memory accesses.  It may be better
+   to increase the allowed range for CONST_INTS.  We may also be able
+   to handle CONST_DOUBLES.  */
+
+static bool
+pa_legitimate_constant_p (enum machine_mode mode, rtx x)
+{
+  if (GET_MODE_CLASS (mode) == MODE_FLOAT && x != CONST0_RTX (mode))
+    return false;
+
+  if (!NEW_HP_ASSEMBLER && !TARGET_GAS && GET_CODE (x) == LABEL_REF)
+    return false;
+
+  if (TARGET_64BIT && GET_CODE (x) == CONST_DOUBLE)
+    return false;
+
+  if (TARGET_64BIT
+      && HOST_BITS_PER_WIDE_INT > 32
+      && GET_CODE (x) == CONST_INT
+      && !reload_in_progress
+      && !reload_completed
+      && !LEGITIMATE_64BIT_CONST_INT_P (INTVAL (x))
+      && !cint_ok_for_move (INTVAL (x)))
+    return false;
+
+  if (function_label_operand (x, mode))
+    return false;
+
+  return true;
 }
 
 #include "gt-pa.h"

@@ -1535,6 +1535,14 @@ mips_build_integer (struct mips_integer_op *codes,
     }
 }
 
+/* Implement TARGET_LEGITIMATE_CONSTANT_P.  */
+
+static bool
+mips_legitimate_constant_p (enum machine_mode mode ATTRIBUTE_UNUSED, rtx x)
+{
+  return mips_const_insns (x) > 0;
+}
+
 /* Return true if symbols of type TYPE require a GOT access.  */
 
 static bool
@@ -1997,7 +2005,7 @@ mips_tls_symbol_ref_1 (rtx *x, void *data ATTRIBUTE_UNUSED)
 /* Implement TARGET_CANNOT_FORCE_CONST_MEM.  */
 
 static bool
-mips_cannot_force_const_mem (enum machine_mode mode ATTRIBUTE_UNUSED, rtx x)
+mips_cannot_force_const_mem (enum machine_mode mode, rtx x)
 {
   enum mips_symbol_type type;
   rtx base, offset;
@@ -2016,7 +2024,7 @@ mips_cannot_force_const_mem (enum machine_mode mode ATTRIBUTE_UNUSED, rtx x)
      references, reload will consider forcing C into memory and using
      one of the instruction's memory alternatives.  Returning false
      here will force it to use an input reload instead.  */
-  if (CONST_INT_P (x) && LEGITIMATE_CONSTANT_P (x))
+  if (CONST_INT_P (x) && mips_legitimate_constant_p (mode, x))
     return true;
 
   split_const (x, &base, &offset);
@@ -16571,6 +16579,9 @@ mips_shift_truncation_mask (enum machine_mode mode)
 
 #undef TARGET_CANNOT_FORCE_CONST_MEM
 #define TARGET_CANNOT_FORCE_CONST_MEM mips_cannot_force_const_mem
+
+#undef TARGET_LEGITIMATE_CONSTANT_P
+#define TARGET_LEGITIMATE_CONSTANT_P mips_legitimate_constant_p
 
 #undef TARGET_ENCODE_SECTION_INFO
 #define TARGET_ENCODE_SECTION_INFO mips_encode_section_info

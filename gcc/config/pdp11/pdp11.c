@@ -157,6 +157,7 @@ static rtx pdp11_function_arg (CUMULATIVE_ARGS *, enum machine_mode,
 static void pdp11_function_arg_advance (CUMULATIVE_ARGS *,
 					enum machine_mode, const_tree, bool);
 static void pdp11_conditional_register_usage (void);
+static bool pdp11_legitimate_constant_p (enum machine_mode, rtx);
 
 /* Implement TARGET_OPTION_OPTIMIZATION_TABLE.  */
 
@@ -243,6 +244,9 @@ static const struct default_options pdp11_option_optimization_table[] =
 
 #undef  TARGET_PRINT_OPERAND_PUNCT_VALID_P
 #define TARGET_PRINT_OPERAND_PUNCT_VALID_P pdp11_asm_print_operand_punct_valid_p
+
+#undef  TARGET_LEGITIMATE_CONSTANT_P
+#define TARGET_LEGITIMATE_CONSTANT_P pdp11_legitimate_constant_p
 
 /* Implement TARGET_HANDLE_OPTION.  */
 
@@ -1924,6 +1928,14 @@ pdp11_function_section (tree decl ATTRIBUTE_UNUSED,
 			bool exit ATTRIBUTE_UNUSED)
 {
   return NULL;
+}
+
+/* Implement TARGET_LEGITIMATE_CONSTANT_P.  */
+
+static bool
+pdp11_legitimate_constant_p (enum machine_mode mode ATTRIBUTE_UNUSED, rtx x)
+{
+  return GET_CODE (x) != CONST_DOUBLE || legitimate_const_double_p (x);
 }
 
 struct gcc_target targetm = TARGET_INITIALIZER;

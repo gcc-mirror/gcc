@@ -768,7 +768,7 @@ extern void fancy_abort (const char *, int, const char *) ATTRIBUTE_NORETURN;
 	LABEL_ALIGN_MAX_SKIP LOOP_ALIGN_MAX_SKIP			\
 	LABEL_ALIGN_AFTER_BARRIER_MAX_SKIP JUMP_ALIGN_MAX_SKIP 		\
 	CAN_DEBUG_WITHOUT_FP UNLIKELY_EXECUTED_TEXT_SECTION_NAME	\
-	HOT_TEXT_SECTION_NAME
+	HOT_TEXT_SECTION_NAME LEGITIMATE_CONSTANT_P
 
 /* Other obsolete target macros, or macros that used to be in target
    headers and were not used, and may be obsolete or may never have

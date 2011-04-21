@@ -667,12 +667,6 @@ enum reg_class
    will reload one or both registers only if neither labeling works.  */
 #define REG_OK_FOR_INDEX_P(X) REG_OK_FOR_BASE_P (X)
 
-/* A C expression that is nonzero if X is a legitimate constant for an
-   immediate operand on the target machine.  You can assume that X satisfies
-   `CONSTANT_P', so you need not check this.  In fact, `1' is a suitable
-   definition for this macro on machines where anything `CONSTANT_P' is valid.  */
-#define LEGITIMATE_CONSTANT_P(X) 1
-
 /*}}}*/ 
 /*{{{  Describing Relative Costs of Operations */ 
 

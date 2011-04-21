@@ -389,8 +389,6 @@ typedef struct iq2000_args
 
 #define REG_OK_FOR_INDEX_P(X) 0
 
-#define LEGITIMATE_CONSTANT_P(X) (1)
-
 
 /* Describing Relative Costs of Operations.  */
 

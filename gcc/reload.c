@@ -4721,7 +4721,8 @@ find_reloads_toplev (rtx x, int opnum, enum reload_type type,
 	    simplify_gen_subreg (GET_MODE (x), reg_equiv_constant (regno),
 				 GET_MODE (SUBREG_REG (x)), SUBREG_BYTE (x));
 	  gcc_assert (tem);
-	  if (CONSTANT_P (tem) && !LEGITIMATE_CONSTANT_P (tem))
+	  if (CONSTANT_P (tem)
+	      && !targetm.legitimate_constant_p (GET_MODE (x), tem))
 	    {
 	      tem = force_const_mem (GET_MODE (x), tem);
 	      i = find_reloads_address (GET_MODE (tem), &tem, XEXP (tem, 0),
@@ -6047,7 +6048,7 @@ find_reloads_address_part (rtx x, rtx *loc, enum reg_class rclass,
 			   enum reload_type type, int ind_levels)
 {
   if (CONSTANT_P (x)
-      && (! LEGITIMATE_CONSTANT_P (x)
+      && (!targetm.legitimate_constant_p (mode, x)
 	  || targetm.preferred_reload_class (x, rclass) == NO_REGS))
     {
       x = force_const_mem (mode, x);
@@ -6057,7 +6058,7 @@ find_reloads_address_part (rtx x, rtx *loc, enum reg_class rclass,
 
   else if (GET_CODE (x) == PLUS
 	   && CONSTANT_P (XEXP (x, 1))
-	   && (! LEGITIMATE_CONSTANT_P (XEXP (x, 1))
+	   && (!targetm.legitimate_constant_p (GET_MODE (x), XEXP (x, 1))
 	       || targetm.preferred_reload_class (XEXP (x, 1), rclass)
 		   == NO_REGS))
     {

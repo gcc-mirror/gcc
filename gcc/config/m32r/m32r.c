@@ -99,6 +99,7 @@ static void m32r_function_arg_advance (CUMULATIVE_ARGS *, enum machine_mode,
 static bool m32r_can_eliminate (const int, const int);
 static void m32r_conditional_register_usage (void);
 static void m32r_trampoline_init (rtx, tree, rtx);
+static bool m32r_legitimate_constant_p (enum machine_mode, rtx);
 
 /* M32R specific attributes.  */
 
@@ -210,6 +211,9 @@ static const struct default_options m32r_option_optimization_table[] =
 
 #undef TARGET_TRAMPOLINE_INIT
 #define TARGET_TRAMPOLINE_INIT m32r_trampoline_init
+
+#undef TARGET_LEGITIMATE_CONSTANT_P
+#define TARGET_LEGITIMATE_CONSTANT_P m32r_legitimate_constant_p
 
 #undef  TARGET_EXCEPT_UNWIND_INFO
 #define TARGET_EXCEPT_UNWIND_INFO		sjlj_except_unwind_info
@@ -2934,4 +2938,22 @@ m32r_conditional_register_usage (void)
       fixed_regs[PIC_OFFSET_TABLE_REGNUM] = 1;
       call_used_regs[PIC_OFFSET_TABLE_REGNUM] = 1;
     }
+}
+
+/* Implement TARGET_LEGITIMATE_CONSTANT_P
+
+   We don't allow (plus symbol large-constant) as the relocations can't
+   describe it.  INTVAL > 32767 handles both 16-bit and 24-bit relocations.
+   We allow all CONST_DOUBLE's as the md file patterns will force the
+   constant to memory if they can't handle them.  */
+
+static bool
+m32r_legitimate_constant_p (enum machine_mode mode ATTRIBUTE_UNUSED, rtx x)
+{
+  return !(GET_CODE (x) == CONST
+	   && GET_CODE (XEXP (x, 0)) == PLUS
+	   && (GET_CODE (XEXP (XEXP (x, 0), 0)) == SYMBOL_REF
+	       || GET_CODE (XEXP (XEXP (x, 0), 0)) == LABEL_REF)
+	   && CONST_INT_P (XEXP (XEXP (x, 0), 1))
+	   && UINTVAL (XEXP (XEXP (x, 0), 1)) > 32767);
 }

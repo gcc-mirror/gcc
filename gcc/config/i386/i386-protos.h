@@ -55,7 +55,6 @@ extern bool ix86_expand_movmem (rtx, rtx, rtx, rtx, rtx, rtx);
 extern bool ix86_expand_setmem (rtx, rtx, rtx, rtx, rtx, rtx);
 extern bool ix86_expand_strlen (rtx, rtx, rtx, rtx);
 
-extern bool legitimate_constant_p (rtx);
 extern bool constant_address_p (rtx);
 extern bool legitimate_pic_operand_p (rtx);
 extern bool legitimate_pic_address_disp_p (rtx);

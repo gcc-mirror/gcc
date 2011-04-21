@@ -26,8 +26,6 @@ extern int ia64_st_address_bypass_p (rtx, rtx);
 extern int ia64_ld_address_bypass_p (rtx, rtx);
 extern int ia64_produce_address_p (rtx);
 
-extern bool ia64_legitimate_constant_p (rtx);
-
 extern rtx ia64_expand_move (rtx, rtx);
 extern int ia64_move_ok (rtx, rtx);
 extern int ia64_load_pair_ok (rtx, rtx);

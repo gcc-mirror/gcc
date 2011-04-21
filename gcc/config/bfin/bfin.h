@@ -784,13 +784,6 @@ typedef struct {
 
 /* Addressing Modes */
 
-/* Nonzero if the constant value X is a legitimate general operand.
-   symbol_ref are not legitimate and will be put into constant pool.
-   See force_const_mem().
-   If -mno-pool, all constants are legitimate.
- */
-#define LEGITIMATE_CONSTANT_P(X) bfin_legitimate_constant_p (X)
-
 /*   A number, the maximum number of registers that can appear in a
      valid memory address.  Note that it is up to you to specify a
      value equal to the maximum number that `TARGET_LEGITIMATE_ADDRESS_P'

@@ -664,13 +664,7 @@ __transfer_from_trampoline ()					\
   ((GET_CODE (X) == LABEL_REF || GET_CODE (X) == SYMBOL_REF		\
     || GET_CODE (X) == CONST_INT || GET_CODE (X) == CONST		\
     || GET_CODE (X) == HIGH)						\
-   && LEGITIMATE_CONSTANT_P (X))
-
-/* Nonzero if the constant value X is a legitimate general operand.
-   It is given that X satisfies CONSTANT_P or is a CONST_DOUBLE.  */
-#define LEGITIMATE_CONSTANT_P(X)				\
-  (GET_MODE (X) != XFmode					\
-   && !m68k_illegitimate_symbolic_constant_p (X))
+   && m68k_legitimate_constant_p (Pmode, X))
 
 #ifndef REG_OK_STRICT
 #define REG_STRICT_P 0

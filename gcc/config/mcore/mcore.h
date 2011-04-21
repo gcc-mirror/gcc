@@ -529,13 +529,6 @@ extern const enum reg_class regno_reg_class[FIRST_PSEUDO_REGISTER];
 /* Recognize any constant value that is a valid address.  */
 #define CONSTANT_ADDRESS_P(X) 	 (GET_CODE (X) == LABEL_REF)
 
-/* Nonzero if the constant value X is a legitimate general operand.
-   It is given that X satisfies CONSTANT_P or is a CONST_DOUBLE.
-
-   On the MCore, allow anything but a double.  */
-#define LEGITIMATE_CONSTANT_P(X) (GET_CODE(X) != CONST_DOUBLE \
-				  && CONSTANT_P (X))
-
 /* The macros REG_OK_FOR..._P assume that the arg is a REG rtx
    and check its validity for a certain class.
    We have two alternate definitions for each of them.

@@ -1,5 +1,208 @@
 2011-04-21  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	* target.def (legitimate_constant_p): New hook.
+	* doc/tm.texi.in (LEGITIMATE_CONSTANT_P): Replace with...
+	(TARGET_LEGITIMATE_CONSTANT_P): ...this.
+	* doc/tm.texi: Regenerate.
+	* hooks.h (hook_bool_mode_rtx_true): Declare.
+	* hooks.c (hook_bool_mode_rtx_true): Define.
+	* system.h (LEGITIMATE_CONSTANT_P): Poison.
+	* calls.c (precompute_register_parameters): Replace uses of
+	LEGITIMATE_CONSTANT_P with targetm.legitimate_constant_p.
+	(emit_library_call_value_1): Likewise.
+	* expr.c (move_block_to_reg, can_store_by_pieces, emit_move_insn)
+	(compress_float_constant, emit_push_insn, expand_expr_real_1): Likewise.
+	* ira-costs.c (scan_one_insn): Likewise.
+	* recog.c (general_operand, immediate_operand): Likewise.
+	* reload.c (find_reloads_toplev, find_reloads_address_part): Likewise.
+	* reload1.c (init_eliminable_invariants): Likewise.
+
+	* config/alpha/alpha-protos.h (alpha_legitimate_constant_p): Add a
+	mode argument.
+	* config/alpha/alpha.h (LEGITIMATE_CONSTANT_P): Delete.
+	* config/alpha/alpha.c (alpha_legitimate_constant_p): Add a mode
+	argument.
+	(TARGET_LEGITIMATE_CONSTANT_P): Define.
+	* config/alpha/predicates.md (input_operand): Update call to
+	alpha_legitimate_constant_p.
+
+	* config/arm/arm-protos.h (arm_cannot_force_const_mem): Delete.
+	* config/arm/arm.h (ARM_LEGITIMATE_CONSTANT_P): Likewise.
+	(THUMB_LEGITIMATE_CONSTANT_P, LEGITIMATE_CONSTANT_P): Likewise.
+	* config/arm/arm.c (TARGET_LEGITIMATE_CONSTANT_P): Define.
+	(arm_legitimate_constant_p_1, thumb_legitimate_constant_p)
+	(arm_legitimate_constant_p): New functions.
+	(arm_cannot_force_const_mem): Make static.
+
+	* config/avr/avr.h (LEGITIMATE_CONSTANT_P): Delete.
+
+	* config/bfin/bfin-protos.h (bfin_legitimate_constant_p): Delete.
+	* config/bfin/bfin.h (LEGITIMATE_CONSTANT_P): Delete.
+	* config/bfin/bfin.c (expand_move): Use targetm.legitimate_constant_p
+	instead of bfin_legitimate_constant_p.
+	(bfin_legitimate_constant_p): Make static.  Add a mode argument.
+	(TARGET_LEGITIMATE_CONSTANT_P): Define.
+
+	* config/cris/cris.h (LEGITIMATE_CONSTANT_P): Delete.
+
+	* config/fr30/fr30.h (LEGITIMATE_CONSTANT_P): Delete.
+
+	* config/frv/frv-protos.h (frv_legitimate_constant_p): Delete.
+	* config/frv/frv.h (LEGITIMATE_CONSTANT_P): Delete.
+	* config/frv/frv.c (TARGET_LEGITIMATE_CONSTANT_P): Define.
+	(frv_legitimate_constant_p): Make static.  Add a mode argument.
+
+	* config/h8300/h8300-protos.h (h8300_legitimate_constant_p): Delete.
+	* config/h8300/h8300.h (LEGITIMATE_CONSTANT_P): Likewise.
+	* config/h8300/h8300.c (h8300_legitimate_constant_p): Likewise.
+
+	* config/i386/i386-protos.h (legitimate_constant_p): Delete.
+	* config/i386/i386.h (LEGITIMATE_CONSTANT_P): Likewise.
+	* config/i386/i386.c (legitimate_constant_p): Rename to...
+	(ix86_legitimate_constant_p): ...this.  Make static.  Add a mode
+	argument.
+	(ix86_cannot_force_const_mem): Update accordingly.
+	(ix86_legitimate_address_p): Likewise.
+	(TARGET_LEGITIMATE_CONSTANT_P): Define.
+	* config/i386/i386.md: Update commentary.
+
+	* config/ia64/ia64-protos.h (ia64_legitimate_constant_p): Delete.
+	* config/ia64/ia64.h (LEGITIMATE_CONSTANT_P): Likewise.
+	* config/ia64/ia64.c (TARGET_LEGITIMATE_CONSTANT_P): Define.
+	(ia64_legitimate_constant_p): Make static.  Add a mode argument.
+
+	* config/iq2000/iq2000.h (LEGITIMATE_CONSTANT_P): Delete.
+
+	* config/lm32/lm32-protos.h (lm32_legitimate_constant_p): Delete.
+	* config/lm32/lm32.h (LEGITIMATE_CONSTANT_P): Likewise.
+	* config/lm32/lm32.c (TARGET_LEGITIMATE_CONSTANT_P): Define.
+	(lm32_legitimate_constant_p): Make static.  Add a mode argument.
+
+	* config/m32c/m32c-protos.h (m32c_legitimate_constant_p): Delete.
+	* config/m32c/m32c.h (LEGITIMATE_CONSTANT_P): Likewise.
+	* config/m32c/m32c.c (m32c_legitimate_constant_p): Likewise.
+
+	* config/m32r/m32r.h (LEGITIMATE_CONSTANT_P): Delete.
+	* config/m32r/m32r.c (TARGET_LEGITIMATE_CONSTANT_P): Define.
+	(m32r_legitimate_constant_p): New function.
+
+	* config/m68k/m68k-protos.h (m68k_legitimate_constant_p): Declare.
+	* config/m68k/m68k.h (CONSTANT_ADDRESS_P): Call it instead of
+	LEGITIMATE_CONSTANT_P.
+	(LEGITIMATE_CONSTANT_P): Delete.
+	* config/m68k/m68k.c (m68k_expand_prologue): Call
+	m68k_legitimate_constant_p instead of LEGITIMATE_CONSTANT_P.
+	(m68k_legitimate_constant_p): New function.
+	* config/m68k/m68k.md: Update comments.
+
+	* config/mcore/mcore.h (LEGITIMATE_CONSTANT_P): Delete.
+	* config/mcore/mcore.c (TARGET_LEGITIMATE_CONSTANT_P): Define.
+	(mcore_legitimate_constant_p): New function.
+
+	* config/mep/mep-protos.h (mep_legitimate_constant_p): Delete.
+	* config/mep/mep.h (LEGITIMATE_CONSTANT_P): Likewise.
+	* config/mep/mep.c (mep_legitimate_constant_p): Make static.
+	Add a mode argument.
+	(mep_legitimate_address): Update accordingly.
+	(TARGET_LEGITIMATE_CONSTANT_P): Define.
+
+	* config/microblaze/microblaze-protos.h (microblaze_const_double_ok):
+	Delete.
+	* config/microblaze/microblaze.h (LEGITIMATE_CONSTANT_P): Likewise.
+	* config/microblaze/microblaze.c (microblaze_const_double_ok): Make
+	static.  Check OP's mode for VOIDmode.
+	(microblaze_legitimate_constant_p): New function.
+	(TARGET_LEGITIMATE_CONSTANT_P): Define.
+
+	* config/mips/mips.h (LEGITIMATE_CONSTANT_P): Delete.
+	* config/mips/mips.c (mips_legitimate_constant_p): New function.
+	(mips_cannot_force_const_mem): Use it instead of LEGITIMATE_CONSTANT_P.
+	(TARGET_LEGITIMATE_CONSTANT_P): Define.
+	* config/mips/predicates.md: Update comments.
+
+	* config/mmix/mmix-protos.h (mmix_legitimate_constant_p): Delete.
+	* config/mmix/mmix.h (LEGITIMATE_CONSTANT_P): Likewise.
+	* config/mmix/mmix.c (TARGET_LEGITIMATE_CONSTANT_P): Define.
+	(mmix_legitimate_constant_p): Make static, return a bool, and take
+	a mode argument.
+	(mmix_print_operand_address): Update accordingly.
+
+	* config/mn10300/mn10300-protos.h (mn10300_legitimate_constant_p):
+	Delete.
+	* config/mn10300/mn10300.h (LEGITIMATE_CONSTANT_P): Likewise.
+	* config/mn10300/mn10300.c (mn10300_legitimate_constant_p):
+	Make static.  Add a mode argument.
+	(TARGET_LEGITIMATE_CONSTANT_P): Define.
+
+	* config/moxie/moxie.h (LEGITIMATE_CONSTANT_P): Delete.
+
+	* config/pa/pa.h (LEGITIMATE_CONSTANT_P): Delete.
+	* config/pa/pa.c (TARGET_LEGITIMATE_CONSTANT_P): Define.
+	(pa_legitimate_constant_p): New function.
+
+	* config/picochip/picochip.h (LEGITIMATE_CONSTANT_P): Delete.
+
+	* config/pdp11/pdp11.h (LEGITIMATE_CONSTANT_P): Delete.
+	* config/pdp11/pdp11.c (TARGET_LEGITIMATE_CONSTANT_P): Define.
+	(pdp11_legitimate_constant_p): New function.
+
+	* config/rs6000/rs6000.h (LEGITIMATE_CONSTANT_P): Delete.
+	* config/rs6000/rs6000.c (TARGET_LEGITIMATE_CONSTANT_P): Define.
+	(rs6000_legitimate_constant_p): New function.
+
+	* config/rx/rx-protos.h (rx_is_legitimate_constant): Replace with...
+	(rx_legitimate_constant_p): ...this.
+	* config/rx/rx.h (LEGITIMATE_CONSTANT_P): Delete.
+	* config/rx/rx.c (rx_is_legitimate_constant): Replace with...
+	(rx_legitimate_constant_p): ...this.
+	(TARGET_LEGITIMATE_CONSTANT_P): Define.
+	* config/rx/rx.md (mov<register_modes:mode>): Update accordingly.
+
+	* config/s390/s390-protos.h (legitimate_constant_p): Delete.
+	* config/s390/s390.h (LEGITIMATE_CONSTANT_P): Likewise.
+	* config/s390/s390.c (legitimate_constant_p): Rename to...
+	(s390_legitimate_constant_p): ...this.  Make static, return a bool,
+	and add a mode argument.
+	(TARGET_LEGITIMATE_CONSTANT_P): Define.
+
+	* config/score/score.h (LEGITIMATE_CONSTANT_P): Delete.
+
+	* config/sh/sh.h (LEGITIMATE_CONSTANT_P): Delete.
+	* config/sh/sh.c (TARGET_LEGITIMATE_CONSTANT_P): Define.
+	(sh_legitimate_constant_p): New function.
+
+	* config/sparc/sparc-protos.h (legitimate_constant_p): Delete.
+	* config/sparc/sparc.h (LEGITIMATE_CONSTANT_P): Delete.
+	* config/sparc/sparc.c (TARGET_LEGITIMATE_CONSTANT_P): Define.
+	(legitimate_constant_p): Rename to...
+	(sparc_legitimate_constant_p): ...this.  Make static.  Add a mode
+	argument.
+	(constant_address_p): Update accordingly.
+
+	* config/spu/spu-protos.h (spu_legitimate_constant_p): Add a mode
+	argument and return a bool.
+	* config/spu/spu.h (LEGITIMATE_CONSTANT_P): Delete.
+	* config/spu/spu.c (TARGET_LEGITIMATE_CONSTANT_P): Define.
+	(spu_legitimate_constant_p): Add a mode argument and return a bool.
+	(spu_rtx_costs): Update accordingly.
+	* config/spu/predicates.md (vec_imm_operand): Likewise.
+
+	* config/stormy16/stormy16.h (LEGITIMATE_CONSTANT_P): Delete.
+
+	* config/v850/v850.h (LEGITIMATE_CONSTANT_P): Delete.
+	* config/v850/v850.c (v850_legitimate_constant_p): New function.
+	(TARGET_LEGITIMATE_CONSTANT_P): Define.
+
+	* config/vax/vax-protos.h (legitimate_constant_p): Delete.
+	* config/vax/vax.h (LEGITIMATE_CONSTANT_P): Likewise.
+	* config/vax/vax.c (legitimate_constant_p): Likewise.
+
+	* config/xtensa/xtensa.h (LEGITIMATE_CONSTANT_P): Delete.
+	* config/xtensa/xtensa.c (TARGET_LEGITIMATE_CONSTANT_P): Define.
+	(xtensa_legitimate_constant_p): New function.
+
+2011-04-21  Richard Sandiford  <richard.sandiford@linaro.org>
+
 	* target.def (cannot_force_const_mem): Add a mode argument.
 	* doc/tm.texi.in (TARGET_CANNOT_FORCE_CONST_MEM): Update accordingly.
 	* doc/tm.texi: Regenerate.

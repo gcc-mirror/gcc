@@ -2317,8 +2317,6 @@ typedef struct mips_args {
 #define CONSTANT_ADDRESS_P(X) \
   (CONSTANT_P (X) && memory_address_p (SImode, X))
 
-#define LEGITIMATE_CONSTANT_P(X) (mips_const_insns (X) > 0)
-
 /* This handles the magic '..CURRENT_FUNCTION' symbol, which means
    'the start of the function that this code is output in'.  */
 

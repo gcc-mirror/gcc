@@ -1644,11 +1644,6 @@ typedef struct ix86_args {
 
 #define CONSTANT_ADDRESS_P(X)  constant_address_p (X)
 
-/* Nonzero if the constant value X is a legitimate general operand.
-   It is given that X satisfies CONSTANT_P or is a CONST_DOUBLE.  */
-
-#define LEGITIMATE_CONSTANT_P(X)  legitimate_constant_p (X)
-
 /* If defined, a C expression to determine the base term of address X.
    This macro is used in only one place: `find_base_term' in alias.c.
 

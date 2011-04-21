@@ -2051,13 +2051,13 @@ mn10300_legitimize_reload_address (rtx x,
   return any_change ? x : NULL_RTX;
 }
 
-/* Used by LEGITIMATE_CONSTANT_P().  Returns TRUE if X is a valid
+/* Implement TARGET_LEGITIMATE_CONSTANT_P.  Returns TRUE if X is a valid
    constant.  Note that some "constants" aren't valid, such as TLS
    symbols and unconverted GOT-based references, so we eliminate
    those here.  */
 
-bool
-mn10300_legitimate_constant_p (rtx x)
+static bool
+mn10300_legitimate_constant_p (enum machine_mode mode ATTRIBUTE_UNUSED, rtx x)
 {
   switch (GET_CODE (x))
     {
@@ -3209,6 +3209,8 @@ mn10300_reorg (void)
 #define TARGET_LEGITIMATE_ADDRESS_P	mn10300_legitimate_address_p
 #undef  TARGET_DELEGITIMIZE_ADDRESS
 #define TARGET_DELEGITIMIZE_ADDRESS	mn10300_delegitimize_address
+#undef  TARGET_LEGITIMATE_CONSTANT_P
+#define TARGET_LEGITIMATE_CONSTANT_P	mn10300_legitimate_constant_p
 
 #undef  TARGET_PREFERRED_RELOAD_CLASS
 #define TARGET_PREFERRED_RELOAD_CLASS mn10300_preferred_reload_class

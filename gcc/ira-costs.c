@@ -1294,7 +1294,8 @@ scan_one_insn (rtx insn)
       && (note = find_reg_note (insn, REG_EQUIV, NULL_RTX)) != NULL_RTX
       && ((MEM_P (XEXP (note, 0)))
 	  || (CONSTANT_P (XEXP (note, 0))
-	      && LEGITIMATE_CONSTANT_P (XEXP (note, 0))
+	      && targetm.legitimate_constant_p (GET_MODE (SET_DEST (set)),
+						XEXP (note, 0))
 	      && REG_N_SETS (REGNO (SET_DEST (set))) == 1)))
     {
       enum reg_class cl = GENERAL_REGS;

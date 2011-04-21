@@ -1200,11 +1200,6 @@ do {									\
    use as an index register.  This is needed for POST_MODIFY.  */
 
 #define REG_OK_FOR_INDEX_P(X) REG_OK_FOR_BASE_P (X)
-
-/* A C expression that is nonzero if X is a legitimate constant for an
-   immediate operand on the target machine.  */
-
-#define LEGITIMATE_CONSTANT_P(X) ia64_legitimate_constant_p (X)
 
 /* Condition Code Status */
 

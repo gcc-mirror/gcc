@@ -1746,27 +1746,6 @@ typedef struct
 #define TARGET_DEFAULT_WORD_RELOCATIONS 0
 #endif
 
-/* Nonzero if the constant value X is a legitimate general operand.
-   It is given that X satisfies CONSTANT_P or is a CONST_DOUBLE.
-
-   On the ARM, allow any integer (invalid ones are removed later by insn
-   patterns), nice doubles and symbol_refs which refer to the function's
-   constant pool XXX.
-
-   When generating pic allow anything.  */
-#define ARM_LEGITIMATE_CONSTANT_P(X)	(flag_pic || ! label_mentioned_p (X))
-
-#define THUMB_LEGITIMATE_CONSTANT_P(X)	\
- (   GET_CODE (X) == CONST_INT		\
-  || GET_CODE (X) == CONST_DOUBLE	\
-  || CONSTANT_ADDRESS_P (X)		\
-  || flag_pic)
-
-#define LEGITIMATE_CONSTANT_P(X)			\
-  (!arm_cannot_force_const_mem (VOIDmode, X)		\
-   && (TARGET_32BIT ? ARM_LEGITIMATE_CONSTANT_P (X)	\
-		    : THUMB_LEGITIMATE_CONSTANT_P (X)))
-
 #ifndef SUBTARGET_NAME_ENCODING_LENGTHS
 #define SUBTARGET_NAME_ENCODING_LENGTHS
 #endif

@@ -3117,6 +3117,19 @@ v850_issue_rate (void)
 {
   return (TARGET_V850E2_ALL? 2 : 1);
 }
+
+/* Implement TARGET_LEGITIMATE_CONSTANT_P.  */
+
+static bool
+v850_legitimate_constant_p (enum machine_mode mode ATTRIBUTE_UNUSED, rtx x)
+{
+  return (GET_CODE (x) == CONST_DOUBLE
+	  || !(GET_CODE (x) == CONST
+	       && GET_CODE (XEXP (x, 0)) == PLUS
+	       && GET_CODE (XEXP (XEXP (x, 0), 0)) == SYMBOL_REF
+	       && GET_CODE (XEXP (XEXP (x, 0), 1)) == CONST_INT
+	       && !CONST_OK_FOR_K (INTVAL (XEXP (XEXP (x, 0), 1)))));
+}
 
 /* V850 specific attributes.  */
 
@@ -3233,6 +3246,9 @@ static const struct attribute_spec v850_attribute_table[] =
 
 #undef  TARGET_OPTION_OPTIMIZATION_TABLE
 #define TARGET_OPTION_OPTIMIZATION_TABLE v850_option_optimization_table
+
+#undef  TARGET_LEGITIMATE_CONSTANT_P
+#define TARGET_LEGITIMATE_CONSTANT_P v850_legitimate_constant_p
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

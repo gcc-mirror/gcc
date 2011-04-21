@@ -316,6 +316,7 @@ static rtx ia64_struct_value_rtx (tree, int);
 static tree ia64_gimplify_va_arg (tree, tree, gimple_seq *, gimple_seq *);
 static bool ia64_scalar_mode_supported_p (enum machine_mode mode);
 static bool ia64_vector_mode_supported_p (enum machine_mode mode);
+static bool ia64_legitimate_constant_p (enum machine_mode, rtx);
 static bool ia64_cannot_force_const_mem (enum machine_mode, rtx);
 static const char *ia64_mangle_type (const_tree);
 static const char *ia64_invalid_conversion (const_tree, const_tree);
@@ -604,6 +605,9 @@ static const struct default_options ia64_option_optimization_table[] =
 #define TARGET_DEFAULT_TARGET_FLAGS (TARGET_DEFAULT | TARGET_CPU_DEFAULT)
 #undef TARGET_HANDLE_OPTION
 #define TARGET_HANDLE_OPTION ia64_handle_option
+
+#undef TARGET_LEGITIMATE_CONSTANT_P
+#define TARGET_LEGITIMATE_CONSTANT_P ia64_legitimate_constant_p
 
 #undef TARGET_CANNOT_FORCE_CONST_MEM
 #define TARGET_CANNOT_FORCE_CONST_MEM ia64_cannot_force_const_mem
@@ -953,8 +957,8 @@ tls_symbolic_operand_type (rtx addr)
 /* Return true if X is a constant that is valid for some immediate
    field in an instruction.  */
 
-bool
-ia64_legitimate_constant_p (rtx x)
+static bool
+ia64_legitimate_constant_p (enum machine_mode mode, rtx x)
 {
   switch (GET_CODE (x))
     {
@@ -963,8 +967,7 @@ ia64_legitimate_constant_p (rtx x)
       return true;
 
     case CONST_DOUBLE:
-      if (GET_MODE (x) == VOIDmode || GET_MODE (x) == SFmode
-	  || GET_MODE (x) == DFmode)
+      if (GET_MODE (x) == VOIDmode || mode == SFmode || mode == DFmode)
 	return true;
       return satisfies_constraint_G (x);
 
@@ -986,25 +989,21 @@ ia64_legitimate_constant_p (rtx x)
 	      op = XEXP (XEXP (op, 0), 0);
 	    }
 
-          if (any_offset_symbol_operand (op, GET_MODE (op))
-              || function_operand (op, GET_MODE (op)))
+          if (any_offset_symbol_operand (op, mode)
+              || function_operand (op, mode))
             return true;
-	  if (aligned_offset_symbol_operand (op, GET_MODE (op)))
+	  if (aligned_offset_symbol_operand (op, mode))
 	    return (addend & 0x3fff) == 0;
 	  return false;
 	}
       return false;
 
     case CONST_VECTOR:
-      {
-	enum machine_mode mode = GET_MODE (x);
+      if (mode == V2SFmode)
+	return satisfies_constraint_Y (x);
 
-	if (mode == V2SFmode)
-	  return satisfies_constraint_Y (x);
-
-	return (GET_MODE_CLASS (mode) == MODE_VECTOR_INT
-		&& GET_MODE_SIZE (mode) <= 8);
-      }
+      return (GET_MODE_CLASS (mode) == MODE_VECTOR_INT
+	      && GET_MODE_SIZE (mode) <= 8);
 
     default:
       return false;

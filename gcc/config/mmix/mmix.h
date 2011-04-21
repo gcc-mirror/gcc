@@ -614,9 +614,6 @@ typedef struct { int regs; int lib; } CUMULATIVE_ARGS;
 
 #define REG_OK_FOR_INDEX_P(X) REG_OK_FOR_BASE_P (X)
 
-#define LEGITIMATE_CONSTANT_P(X) \
- mmix_legitimate_constant_p (X)
-
 
 /* Node: Condition Code */
 

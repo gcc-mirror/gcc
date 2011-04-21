@@ -130,6 +130,7 @@ static void mmix_target_asm_function_prologue (FILE *, HOST_WIDE_INT);
 static void mmix_target_asm_function_end_prologue (FILE *);
 static void mmix_target_asm_function_epilogue (FILE *, HOST_WIDE_INT);
 static bool mmix_legitimate_address_p (enum machine_mode, rtx, bool);
+static bool mmix_legitimate_constant_p (enum machine_mode, rtx);
 static void mmix_reorg (void);
 static void mmix_asm_output_mi_thunk
   (FILE *, tree, HOST_WIDE_INT, HOST_WIDE_INT, tree);
@@ -252,6 +253,8 @@ static const struct default_options mmix_option_optimization_table[] =
 
 #undef TARGET_LEGITIMATE_ADDRESS_P
 #define TARGET_LEGITIMATE_ADDRESS_P	mmix_legitimate_address_p
+#undef TARGET_LEGITIMATE_CONSTANT_P
+#define TARGET_LEGITIMATE_CONSTANT_P	mmix_legitimate_constant_p
 
 #undef TARGET_FRAME_POINTER_REQUIRED
 #define TARGET_FRAME_POINTER_REQUIRED mmix_frame_pointer_required
@@ -1152,10 +1155,10 @@ mmix_legitimate_address_p (enum machine_mode mode ATTRIBUTE_UNUSED,
   return TARGET_BASE_ADDRESSES && mmix_constant_address_p (x);
 }
 
-/* LEGITIMATE_CONSTANT_P.  */
+/* Implement TARGET_LEGITIMATE_CONSTANT_P.  */
 
-int
-mmix_legitimate_constant_p (rtx x)
+static bool
+mmix_legitimate_constant_p (enum machine_mode mode ATTRIBUTE_UNUSED, rtx x)
 {
   RTX_CODE code = GET_CODE (x);
 
@@ -1829,7 +1832,7 @@ mmix_print_operand_address (FILE *stream, rtx x)
 	}
     }
 
-  if (TARGET_BASE_ADDRESSES && mmix_legitimate_constant_p (x))
+  if (TARGET_BASE_ADDRESSES && mmix_legitimate_constant_p (Pmode, x))
     {
       output_addr_const (stream, x);
       return;

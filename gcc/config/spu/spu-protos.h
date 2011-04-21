@@ -52,7 +52,7 @@ extern int arith_immediate_p (rtx op, enum machine_mode mode,
 extern bool exp2_immediate_p (rtx op, enum machine_mode mode, int low,
 			      int high);
 extern int spu_constant_address_p (rtx x);
-extern int spu_legitimate_constant_p (rtx x);
+extern bool spu_legitimate_constant_p (enum machine_mode, rtx);
 extern int spu_initial_elimination_offset (int from, int to);
 extern rtx spu_function_value (const_tree type, const_tree func);
 extern void spu_setup_incoming_varargs (int *cum, enum machine_mode mode,

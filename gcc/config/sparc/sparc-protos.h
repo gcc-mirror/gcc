@@ -56,7 +56,6 @@ extern void sparc_emit_fixunsdi (rtx [2], enum machine_mode);
 extern void emit_tfmode_binop (enum rtx_code, rtx *);
 extern void emit_tfmode_unop (enum rtx_code, rtx *);
 extern void emit_tfmode_cvt (enum rtx_code, rtx *);
-extern bool legitimate_constant_p (rtx);
 extern bool constant_address_p (rtx);
 extern bool legitimate_pic_operand_p (rtx);
 extern rtx sparc_legitimize_reload_address (rtx, enum machine_mode, int, int,

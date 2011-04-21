@@ -557,10 +557,6 @@ do {									     \
 } while (0)
 
 
-/* Nonzero if the constant value X is a legitimate general operand.
-   It is given that X satisfies CONSTANT_P or is a CONST_DOUBLE.  */
-#define LEGITIMATE_CONSTANT_P(X) mn10300_legitimate_constant_p (X)
-
 /* Zero if this needs fixing up to become PIC.  */
 
 #define LEGITIMATE_PIC_OPERAND_P(X) \
