@@ -230,7 +230,7 @@ Variable_declaration_statement::do_get_backend(Translate_context* context)
 
   if (!var->is_in_heap())
     {
-      gcc_assert(binit != NULL);
+      go_assert(binit != NULL);
       return context->backend()->init_statement(bvar, binit);
     }
 
@@ -239,7 +239,7 @@ Variable_declaration_statement::do_get_backend(Translate_context* context)
   // space, and assign the initial value to the new space.
   source_location loc = this->location();
   Named_object* newfn = context->gogo()->lookup_global("new");
-  gcc_assert(newfn != NULL && newfn->is_function_declaration());
+  go_assert(newfn != NULL && newfn->is_function_declaration());
   Expression* func = Expression::make_func_reference(newfn, NULL, loc);
   Expression_list* params = new Expression_list();
   params->push_back(Expression::make_type(var->type(), loc));
@@ -335,7 +335,7 @@ Temporary_statement::do_determine_types()
   if (this->type_ == NULL)
     {
       this->type_ = this->init_->type();
-      gcc_assert(!this->type_->is_abstract());
+      go_assert(!this->type_->is_abstract());
     }
 }
 
@@ -364,7 +364,7 @@ Temporary_statement::do_check_types(Gogo*)
 Bstatement*
 Temporary_statement::do_get_backend(Translate_context* context)
 {
-  gcc_assert(this->bvariable_ == NULL);
+  go_assert(this->bvariable_ == NULL);
 
   // FIXME: Permitting FUNCTION to be NULL here is a temporary measure
   // until we have a better representation of the init function.
@@ -406,7 +406,7 @@ Temporary_statement::get_backend_variable(Translate_context* context) const
 {
   if (this->bvariable_ == NULL)
     {
-      gcc_assert(saw_errors());
+      go_assert(saw_errors());
       return context->backend()->error_variable();
     }
   return this->bvariable_;
@@ -774,7 +774,7 @@ Tuple_assignment_statement::do_lower(Gogo*, Named_object*, Block* enclosing)
        plhs != this->lhs_->end();
        ++plhs, ++prhs)
     {
-      gcc_assert(prhs != this->rhs_->end());
+      go_assert(prhs != this->rhs_->end());
 
       if ((*plhs)->is_error_expression()
 	  || (*plhs)->type()->is_error()
@@ -794,7 +794,7 @@ Tuple_assignment_statement::do_lower(Gogo*, Named_object*, Block* enclosing)
       temps.push_back(temp);
 
     }
-  gcc_assert(prhs == this->rhs_->end());
+  go_assert(prhs == this->rhs_->end());
 
   prhs = this->rhs_->begin();
   std::vector<Temporary_statement*>::const_iterator ptemp = temps.begin();
@@ -816,7 +816,7 @@ Tuple_assignment_statement::do_lower(Gogo*, Named_object*, Block* enclosing)
       b->add_statement(s);
       ++ptemp;
     }
-  gcc_assert(ptemp == temps.end());
+  go_assert(ptemp == temps.end());
 
   return Statement::make_block_statement(b, loc);
 }
@@ -1709,7 +1709,7 @@ class Simplify_thunk_traverse : public Traverse
 int
 Simplify_thunk_traverse::function(Named_object* no)
 {
-  gcc_assert(this->function_ == NULL);
+  go_assert(this->function_ == NULL);
   this->function_ = no;
   int t = no->func_value()->traverse(this);
   this->function_ = NULL;
@@ -1773,7 +1773,7 @@ Thunk_statement::simplify_statement(Gogo* gogo, Named_object* function,
   Function_type* fntype = ce->get_function_type();
   if (fntype == NULL)
     {
-      gcc_assert(saw_errors());
+      go_assert(saw_errors());
       this->set_is_error();
       return false;
     }
@@ -1850,7 +1850,7 @@ Thunk_statement::simplify_statement(Gogo* gogo, Named_object* function,
 
   // Look up the thunk.
   Named_object* named_thunk = gogo->lookup(thunk_name, NULL);
-  gcc_assert(named_thunk != NULL && named_thunk->is_function());
+  go_assert(named_thunk != NULL && named_thunk->is_function());
 
   // Build the call.
   Expression* func = Expression::make_func_reference(named_thunk, NULL,
@@ -1869,8 +1869,8 @@ Thunk_statement::simplify_statement(Gogo* gogo, Named_object* function,
     gcc_unreachable();
 
   // The current block should end with the go statement.
-  gcc_assert(block->statements()->size() >= 1);
-  gcc_assert(block->statements()->back() == this);
+  go_assert(block->statements()->size() >= 1);
+  go_assert(block->statements()->back() == this);
   block->replace_statement(block->statements()->size() - 1, s);
 
   // We already ran the determine_types pass, so we need to run it now
@@ -1934,7 +1934,7 @@ Thunk_statement::build_struct(Function_type* fntype)
 
   if (fn->bound_method_expression() != NULL)
     {
-      gcc_assert(fntype->is_method());
+      go_assert(fntype->is_method());
       Type* rtype = fntype->receiver()->type();
       // We always pass the receiver as a pointer.
       if (rtype->points_to() == NULL)
@@ -2043,7 +2043,7 @@ Thunk_statement::build_thunk(Gogo* gogo, const std::string& thunk_name,
 
   // Get a reference to the parameter.
   Named_object* named_parameter = gogo->lookup(parameter_name, NULL);
-  gcc_assert(named_parameter != NULL && named_parameter->is_variable());
+  go_assert(named_parameter != NULL && named_parameter->is_variable());
 
   // Build the call.  Note that the field names are the same as the
   // ones used in build_struct.
@@ -2066,7 +2066,7 @@ Thunk_statement::build_thunk(Gogo* gogo, const std::string& thunk_name,
     }
   else
     {
-      gcc_assert(bound_method == NULL && interface_method == NULL);
+      go_assert(bound_method == NULL && interface_method == NULL);
       func_to_call = ce->fn();
       next_index = 0;
     }
@@ -2111,7 +2111,7 @@ Thunk_statement::build_thunk(Gogo* gogo, const std::string& thunk_name,
 	call_params->push_back(param);
       else
 	{
-	  gcc_assert(call_params->empty());
+	  go_assert(call_params->empty());
 	  recover_arg = param;
 	}
     }
@@ -2176,7 +2176,7 @@ Thunk_statement::get_fn_and_arg(Expression** pfn, Expression** parg)
     *parg = Expression::make_nil(this->location());
   else
     {
-      gcc_assert(args->size() == 1);
+      go_assert(args->size() == 1);
       *parg = args->front();
     }
 
@@ -2362,7 +2362,7 @@ Return_statement::do_lower(Gogo*, Named_object* function, Block* enclosing)
 		     i, reason.c_str());
 	}
     }
-  gcc_assert(lhs->size() == rhs->size());
+  go_assert(lhs->size() == rhs->size());
 
   if (lhs->empty())
     ;
@@ -2713,7 +2713,7 @@ If_statement::do_may_fall_through() const
 Bstatement*
 If_statement::do_get_backend(Translate_context* context)
 {
-  gcc_assert(this->cond_->type()->is_boolean_type()
+  go_assert(this->cond_->type()->is_boolean_type()
 	     || this->cond_->type()->is_error());
   tree cond_tree = this->cond_->get_tree(context);
   Bexpression* cond_expr = tree_to_expr(cond_tree);
@@ -2835,7 +2835,7 @@ Case_clauses::Case_clause::lower(Block* b, Temporary_statement* val_temp,
   Unnamed_label* next_case_label;
   if (this->cases_ == NULL || this->cases_->empty())
     {
-      gcc_assert(this->is_default_);
+      go_assert(this->is_default_);
       next_case_label = NULL;
     }
   else
@@ -2955,7 +2955,7 @@ Case_clauses::Case_clause::get_backend(Translate_context* context,
 {
   if (this->cases_ != NULL)
     {
-      gcc_assert(!this->is_default_);
+      go_assert(!this->is_default_);
       for (Expression_list::const_iterator p = this->cases_->begin();
 	   p != this->cases_->end();
 	   ++p)
@@ -2970,10 +2970,10 @@ Case_clauses::Case_clause::get_backend(Translate_context* context,
 		{
 		  // Something went wrong.  This can happen with a
 		  // negative constant and an unsigned switch value.
-		  gcc_assert(saw_errors());
+		  go_assert(saw_errors());
 		  continue;
 		}
-	      gcc_assert(itype != NULL);
+	      go_assert(itype != NULL);
 	      e = Expression::make_integer(&ival, itype, e->location());
 	      mpz_clear(ival);
 	    }
@@ -3434,7 +3434,7 @@ Type_case_clauses::Type_case_clause::lower(Block* b,
       else
 	{
 	  // if COND { goto STMTS_LABEL }
-	  gcc_assert(stmts_label != NULL);
+	  go_assert(stmts_label != NULL);
 	  if (*stmts_label == NULL)
 	    *stmts_label = new Unnamed_label(UNKNOWN_LOCATION);
 	  dest = *stmts_label;
@@ -3451,10 +3451,10 @@ Type_case_clauses::Type_case_clause::lower(Block* b,
 	  && stmts_label != NULL
 	  && *stmts_label != NULL))
     {
-      gcc_assert(!this->is_fallthrough_);
+      go_assert(!this->is_fallthrough_);
       if (stmts_label != NULL && *stmts_label != NULL)
 	{
-	  gcc_assert(!this->is_default_);
+	  go_assert(!this->is_default_);
 	  if (this->statements_ != NULL)
 	    (*stmts_label)->set_location(this->statements_->start_location());
 	  Statement* s = Statement::make_unnamed_label_statement(*stmts_label);
@@ -3467,7 +3467,7 @@ Type_case_clauses::Type_case_clause::lower(Block* b,
     }
 
   if (this->is_fallthrough_)
-    gcc_assert(next_case_label == NULL);
+    go_assert(next_case_label == NULL);
   else
     {
       source_location gloc = (this->statements_ == NULL
@@ -3548,7 +3548,7 @@ Type_case_clauses::lower(Block* b, Temporary_statement* descriptor_temp,
 	  default_case = &*p;
 	}
     }
-  gcc_assert(stmts_label == NULL);
+  go_assert(stmts_label == NULL);
 
   if (default_case != NULL)
     default_case->lower(b, descriptor_temp, break_label, NULL);
@@ -3770,7 +3770,7 @@ Send_statement::do_get_backend(Translate_context* context)
     case Type::TYPE_NIL:
     case Type::TYPE_NAMED:
     case Type::TYPE_FORWARD:
-      gcc_assert(saw_errors());
+      go_assert(saw_errors());
       return context->backend()->error_statement();
     }
 
@@ -3879,7 +3879,7 @@ Select_clauses::Select_clause::lower(Gogo* gogo, Named_object* function,
 {
   if (this->is_default_)
     {
-      gcc_assert(this->channel_ == NULL && this->val_ == NULL);
+      go_assert(this->channel_ == NULL && this->val_ == NULL);
       this->is_lowered_ = true;
       return;
     }
@@ -3918,7 +3918,7 @@ Select_clauses::Select_clause::lower(Gogo* gogo, Named_object* function,
     }
   else if (this->closed_ != NULL && !this->closed_->is_sink_expression())
     {
-      gcc_assert(this->var_ == NULL && this->closedvar_ == NULL);
+      go_assert(this->var_ == NULL && this->closedvar_ == NULL);
       if (this->val_ == NULL)
 	this->val_ = Expression::make_sink(loc);
       Statement* s = Statement::make_tuple_receive_assignment(this->val_,
@@ -3928,7 +3928,7 @@ Select_clauses::Select_clause::lower(Gogo* gogo, Named_object* function,
     }
   else if (this->closedvar_ != NULL)
     {
-      gcc_assert(this->val_ == NULL);
+      go_assert(this->val_ == NULL);
       Expression* val;
       if (this->var_ == NULL)
 	val = Expression::make_sink(loc);
@@ -3940,7 +3940,7 @@ Select_clauses::Select_clause::lower(Gogo* gogo, Named_object* function,
 							      true, loc);
       // We have to put S in STATEMENTS_, because that is where the
       // variables are declared.
-      gcc_assert(this->statements_ != NULL);
+      go_assert(this->statements_ != NULL);
       this->statements_->add_statement_at_front(s);
       // We have to lower STATEMENTS_ again, to lower the tuple
       // receive assignment we just added.
@@ -3952,7 +3952,7 @@ Select_clauses::Select_clause::lower(Gogo* gogo, Named_object* function,
       recv->set_for_select();
       if (this->val_ != NULL)
 	{
-	  gcc_assert(this->var_ == NULL);
+	  go_assert(this->var_ == NULL);
 	  init->add_statement(Statement::make_assignment(this->val_, recv,
 							 loc));
 	}
@@ -3988,7 +3988,7 @@ Select_clauses::Select_clause::lower(Gogo* gogo, Named_object* function,
 void
 Select_clauses::Select_clause::determine_types()
 {
-  gcc_assert(this->is_lowered_);
+  go_assert(this->is_lowered_);
   if (this->statements_ != NULL)
     this->statements_->determine_types();
 }
@@ -4118,7 +4118,7 @@ Select_clauses::get_backend(Translate_context* context,
 	{
 	  // We should have given an error in the send or receive
 	  // statement we created via lowering.
-	  gcc_assert(saw_errors());
+	  go_assert(saw_errors());
 	  return context->backend()->error_statement();
 	}
 
@@ -4132,7 +4132,7 @@ Select_clauses::get_backend(Translate_context* context,
 
   if (chan_init->empty())
     {
-      gcc_assert(count == 0);
+      go_assert(count == 0);
       Bstatement* s;
       Bstatement* ldef = break_label->get_definition(context);
       if (default_clause != NULL)
@@ -4162,7 +4162,7 @@ Select_clauses::get_backend(Translate_context* context,
 	return ldef;
       return context->backend()->compound_statement(s, ldef);
     }
-  gcc_assert(count > 0);
+  go_assert(count > 0);
 
   std::vector<Bstatement*> statements;
 
@@ -4458,7 +4458,7 @@ void
 For_statement::set_break_continue_labels(Unnamed_label* break_label,
 					 Unnamed_label* continue_label)
 {
-  gcc_assert(this->break_label_ == NULL && this->continue_label_ == NULL);
+  go_assert(this->break_label_ == NULL && this->continue_label_ == NULL);
   this->break_label_ = break_label;
   this->continue_label_ = continue_label;
 }
@@ -4659,7 +4659,7 @@ For_range_statement::call_builtin(Gogo* gogo, const char* funcname,
 				  source_location loc)
 {
   Named_object* no = gogo->lookup_global(funcname);
-  gcc_assert(no != NULL && no->is_function_declaration());
+  go_assert(no != NULL && no->is_function_declaration());
   Expression* func = Expression::make_func_reference(no, NULL, loc);
   Expression_list* params = new Expression_list();
   params->push_back(arg);
@@ -4990,7 +4990,7 @@ For_range_statement::lower_range_channel(Gogo*,
 					 Block** piter_init,
 					 Block** ppost)
 {
-  gcc_assert(value_temp == NULL);
+  go_assert(value_temp == NULL);
 
   source_location loc = this->location();
 

@@ -77,7 +77,7 @@ static Type* runtime_function_types[NUMBER_OF_RUNTIME_FUNCTION_TYPES];
 static Type*
 runtime_function_type(Runtime_function_type bft)
 {
-  gcc_assert(bft < NUMBER_OF_RUNTIME_FUNCTION_TYPES);
+  go_assert(bft < NUMBER_OF_RUNTIME_FUNCTION_TYPES);
   if (runtime_function_types[bft] == NULL)
     {
       const source_location bloc = BUILTINS_LOCATION;
@@ -223,7 +223,7 @@ convert_to_runtime_function_type(Runtime_function_type bft, Expression* e,
       return Expression::make_unsafe_cast(runtime_function_type(bft), e, loc);
 
     case RFT_TYPE:
-      gcc_assert(e->type() == Type::make_type_descriptor_ptr_type());
+      go_assert(e->type() == Type::make_type_descriptor_ptr_type());
       return e;
     }
 }
@@ -240,7 +240,7 @@ Runtime::convert_types(Gogo* gogo)
       if (t != NULL && t->named_type() != NULL)
 	{
 	  bool r = t->verify();
-	  gcc_assert(r);
+	  go_assert(r);
 	  t->named_type()->convert(gogo);
 	}
     }
@@ -279,7 +279,7 @@ runtime_function_declarations[Runtime::NUMBER_OF_FUNCTIONS];
 Named_object*
 Runtime::runtime_declaration(Function code)
 {
-  gcc_assert(code < Runtime::NUMBER_OF_FUNCTIONS);
+  go_assert(code < Runtime::NUMBER_OF_FUNCTIONS);
   if (runtime_function_declarations[code] == NULL)
     {
       const Runtime_function* pb = &runtime_functions[code];
@@ -339,11 +339,11 @@ Call_expression*
 Runtime::make_call(Runtime::Function code, source_location loc,
 		   int param_count, ...)
 {
-  gcc_assert(code < Runtime::NUMBER_OF_FUNCTIONS);
+  go_assert(code < Runtime::NUMBER_OF_FUNCTIONS);
 
   const Runtime_function* pb = &runtime_functions[code];
 
-  gcc_assert(static_cast<size_t>(param_count)
+  go_assert(static_cast<size_t>(param_count)
 	     <= sizeof(pb->parameter_types) / sizeof(pb->parameter_types[0]));
 
   Named_object* no = runtime_declaration(code);

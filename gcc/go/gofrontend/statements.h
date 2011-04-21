@@ -690,7 +690,7 @@ class Select_clauses
       : channel_(channel), val_(val), closed_(closed), var_(var),
 	closedvar_(closedvar), statements_(statements), location_(location),
 	is_send_(is_send), is_default_(is_default), is_lowered_(false)
-    { gcc_assert(is_default ? channel == NULL : channel != NULL); }
+    { go_assert(is_default ? channel == NULL : channel != NULL); }
 
     // Traverse the select clause.
     int
@@ -719,7 +719,7 @@ class Select_clauses
     bool
     is_send() const
     {
-      gcc_assert(!this->is_default_);
+      go_assert(!this->is_default_);
       return this->is_send_;
     }
 
@@ -792,7 +792,7 @@ class Select_statement : public Statement
   void
   add_clauses(Select_clauses* clauses)
   {
-    gcc_assert(this->clauses_ == NULL);
+    go_assert(this->clauses_ == NULL);
     this->clauses_ = clauses;
   }
 
@@ -967,7 +967,7 @@ class For_statement : public Statement
   void
   add_statements(Block* statements)
   {
-    gcc_assert(this->statements_ == NULL);
+    go_assert(this->statements_ == NULL);
     this->statements_ = statements;
   }
 
@@ -1030,7 +1030,7 @@ class For_range_statement : public Statement
   void
   add_statements(Block* statements)
   {
-    gcc_assert(this->statements_ == NULL);
+    go_assert(this->statements_ == NULL);
     this->statements_ = statements;
   }
 
@@ -1267,7 +1267,7 @@ class Switch_statement : public Statement
   void
   add_clauses(Case_clauses* clauses)
   {
-    gcc_assert(this->clauses_ == NULL);
+    go_assert(this->clauses_ == NULL);
     this->clauses_ = clauses;
   }
 
@@ -1407,13 +1407,13 @@ class Type_switch_statement : public Statement
 			source_location location)
     : Statement(STATEMENT_TYPE_SWITCH, location),
       var_(var), expr_(expr), clauses_(NULL), break_label_(NULL)
-  { gcc_assert(var == NULL || expr == NULL); }
+  { go_assert(var == NULL || expr == NULL); }
 
   // Add the clauses.
   void
   add_clauses(Type_case_clauses* clauses)
   {
-    gcc_assert(this->clauses_ == NULL);
+    go_assert(this->clauses_ == NULL);
     this->clauses_ = clauses;
   }
 

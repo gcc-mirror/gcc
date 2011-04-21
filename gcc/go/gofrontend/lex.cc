@@ -132,9 +132,9 @@ Keywords::keyword_to_code(const char* keyword, size_t len) const
 const char*
 Keywords::keyword_to_string(Keyword code) const
 {
-  gcc_assert(code > KEYWORD_INVALID && code < this->count_);
+  go_assert(code > KEYWORD_INVALID && code < this->count_);
   const Mapping* map = &this->mapping_[code];
-  gcc_assert(map->keycode == code);
+  go_assert(map->keycode == code);
   return map->keystring;
 }
 
@@ -1005,7 +1005,7 @@ Lex::gather_number()
 	  std::string s(pnum, p - pnum);
 	  mpz_t val;
 	  int r = mpz_init_set_str(val, s.c_str(), base);
-	  gcc_assert(r == 0);
+	  go_assert(r == 0);
 
 	  if (neg)
 	    mpz_neg(val, val);
@@ -1029,7 +1029,7 @@ Lex::gather_number()
       std::string s(pnum, p - pnum);
       mpz_t val;
       int r = mpz_init_set_str(val, s.c_str(), 10);
-      gcc_assert(r == 0);
+      go_assert(r == 0);
 
       if (neg)
 	mpz_neg(val, val);
@@ -1076,7 +1076,7 @@ Lex::gather_number()
   std::string s(pnum, p - pnum);
   mpfr_t val;
   int r = mpfr_init_set_str(val, s.c_str(), 10, GMP_RNDN);
-  gcc_assert(r == 0);
+  go_assert(r == 0);
 
   if (neg)
     mpfr_neg(val, val, GMP_RNDN);

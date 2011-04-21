@@ -151,4 +151,10 @@ extern "C"
 } // End extern "C"
 #endif
 
+// When using gcc, go_assert is just gcc_assert.
+#define go_assert(EXPR) gcc_assert(EXPR)
+
+// When using gcc, go_unreachable is just gcc_unreachable.
+#define go_unreachable() gcc_unreachable()
+
 #endif // !defined(GO_SYSTEM_H)
