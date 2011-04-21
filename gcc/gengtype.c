@@ -1943,7 +1943,7 @@ matching_file_name_substitute (const char *filnam, regmatch_t pmatch[10],
   obstack_1grow (&str_obstack, '\0');
   rawstr = XOBFINISH (&str_obstack, char *);
   str = xstrdup (rawstr);
-  obstack_free (&str_obstack, rawstr);
+  obstack_free (&str_obstack, NULL);
   DBGPRINTF ("matched replacement %s", str);
   rawstr = NULL;
   return str;
