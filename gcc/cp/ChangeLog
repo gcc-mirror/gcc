@@ -1,5 +1,8 @@
 2011-04-20  Jason Merrill  <jason@redhat.com>
 
+	* semantics.c (finish_compound_literal): Don't put an array
+	with a dtor in a static variable.
+
 	* call.c (build_over_call): Handle trivial dtor.
 
 	* search.c (lookup_fnfields_slot): Call complete_type.
