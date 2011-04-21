@@ -1,5 +1,9 @@
 2011-04-20  Jason Merrill  <jason@redhat.com>
 
+	* g++.dg/cpp0x/initlist47.C: New.
+
+2011-04-20  Jason Merrill  <jason@redhat.com>
+
 	* g++.dg/template/const4.C: New.
 
 2011-04-19  Jason Merrill  <jason@redhat.com>

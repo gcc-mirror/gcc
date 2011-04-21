@@ -1,5 +1,10 @@
 2011-04-20  Jason Merrill  <jason@redhat.com>
 
+	* semantics.c (finish_compound_literal): Don't put an array
+	with a dtor in a static variable.
+
+2011-04-20  Jason Merrill  <jason@redhat.com>
+
 	PR c++/48594
 	* decl2.c (build_offset_ref_call_from_tree): Move
 	non-dependency of object outside condition.
