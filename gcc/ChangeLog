@@ -1,5 +1,10 @@
 2011-04-21  Richard Guenther  <rguenther@suse.de>
 
+	* Makefile.in (site.exp): Do not use tmp0 but site.tmp as temporary
+	file name.
+
+2011-04-21  Richard Guenther  <rguenther@suse.de>
+
 	* tree-ssa-alias.c (ptr_deref_may_alias_decl_p): Handle
 	MEM_REF and TARGET_MEM_REF, do not care about INDIRECT_REFs.
 	Use DECL_P, not SSA_VAR_P.
