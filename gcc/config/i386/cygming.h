@@ -1,7 +1,7 @@
 /* Operating system specific defines to be used when targeting GCC for
    hosting on Windows32, using a Unix style C library and tools.
    Copyright (C) 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003,
-   2004, 2005, 2007, 2008, 2009, 2010
+   2004, 2005, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -175,9 +175,6 @@ along with GCC; see the file COPYING3.  If not see
 /* Windows64 continues to use a 32-bit long type.  */
 #undef LONG_TYPE_SIZE
 #define LONG_TYPE_SIZE 32
-
-union tree_node;
-#define TREE union tree_node *
 
 #define drectve_section() \
   (fprintf (asm_out_file, "\t.section .drectve\n"), \
@@ -472,9 +469,3 @@ do {						\
 
 /* Static stack checking is supported by means of probes.  */
 #define STACK_CHECK_STATIC_BUILTIN 1
-
-#undef TREE
-
-#ifndef BUFSIZ
-# undef FILE
-#endif
