@@ -1,3 +1,33 @@
+2011-04-21  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/alpha/alpha.c (struct machine_function): Use rtx, not
+	struct rtx_def *.
+	* config/bfin/bfin.h (bfin_cc_rtx, bfin_rets_rtx): Use rtx, not
+	struct rtx_def *.
+	* config/cris/cris-protos.h (STDIO_INCLUDED): Don't define.
+	* config/h8300/h8300.h (struct cum_arg): Use rtx, not struct
+	rtx_def *.
+	* config/iq2000/iq2000.h (struct iq2000_args): Use rtx, not struct
+	rtx_def *.
+	* config/m32c/m32c-protos.h (MM, UINT): Don't define.  Expand
+	definitions where used.
+	* config/microblaze/microblaze.h (struct microblaze_args): Use
+	rtx, not struct rtx_def *.
+	* config/pa/pa-protos.h (return_addr_rtx): Use rtx, not struct
+	rtx_def *.
+	* config/pa/pa.h (hppa_pic_save_rtx): Use rtx, not struct rtx_def
+	*.
+	* config/pdp11/pdp11.h (cc0_reg_rtx): Use rtx, not struct rtx_def
+	*.
+	* config/sh/sh-protos.h (sfunc_uses_reg, get_fpscr_rtx): Use rtx,
+	not struct rtx_def *.
+	* config/sh/sh.h (sh_compare_op0, sh_compare_op1): Use rtx, not
+	struct rtx_def *.
+	* config/spu/spu-protos.h (spu_float_const): Use rtx, not struct
+	rtx_def *.
+	* config/spu/spu.c (spu_float_const): Use rtx, not struct rtx_def
+	*.
+
 2011-04-21  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* tree-vect-data-refs.c (vect_drs_dependent_in_basic_block): Use

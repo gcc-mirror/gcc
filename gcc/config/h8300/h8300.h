@@ -463,7 +463,7 @@ enum reg_class {
 struct cum_arg
 {
   int nbytes;
-  struct rtx_def *libcall;
+  rtx libcall;
 };
 
 /* Initialize a variable CUM of type CUMULATIVE_ARGS
