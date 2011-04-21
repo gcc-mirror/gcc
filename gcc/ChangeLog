@@ -1,5 +1,11 @@
 2011-04-21  Tristan Gingold  <gingold@adacore.com>
 
+	* vmsdbgout.c (write_srccorr): Compute file length from the string.
+	(dst_file_info_struct): Remove flen field.
+	(lookup_filename): Remove code that set flen field.
+
+2011-04-21  Tristan Gingold  <gingold@adacore.com>
+
 	* config/ia64/ia64.c (ia64_start_function): Add a guard.
 
 2011-04-21  Uros Bizjak  <ubizjak@gmail.com>
