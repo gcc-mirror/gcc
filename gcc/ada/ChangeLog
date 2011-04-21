@@ -1,3 +1,14 @@
+2011-04-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/Makefile.in (NO_SIBLING_ADAFLAGS): Always define.
+	(NO_REORDER_ADAFLAGS): New variable.
+	(EXTRA_GNATTOOLS): Always define.
+	(../stamp-gnatlib1-$(RTSDIR): Copy tsystem.h.
+	Clean up and adjust list of files compiled with special options.
+	* gcc-interface/Make-lang.in: Likewise.
+	(ada/decl.o): Cosmetical change.
+	(ada/misc.o): Remove dependency on $(PLUGIN_H).
+
 2011-04-20  Jim Meyering  <meyering@redhat.com>
 
 	* initialize.c (__gnat_initialize): Remove useless if-before-free.
