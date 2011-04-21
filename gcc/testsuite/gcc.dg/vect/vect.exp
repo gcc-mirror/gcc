@@ -75,15 +75,20 @@ lappend DEFAULT_VECTCFLAGS "-fdump-tree-vect-details"
 lappend VECT_SLP_CFLAGS "-fdump-tree-slp-details"
 
 # Main loop.
-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/pr*.\[cS\]]]  \
-	"" $DEFAULT_VECTCFLAGS
-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/vect-*.\[cS\]]]  \
-	"" $DEFAULT_VECTCFLAGS
-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/slp-*.\[cS\]]]  \
-        "" $DEFAULT_VECTCFLAGS
-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/bb-slp*.\[cS\]]]  \
-        "" $VECT_SLP_CFLAGS
-
+set VECT_ADDITIONAL_FLAGS [list ""]
+if { [check_effective_target_lto] } {
+    lappend VECT_ADDITIONAL_FLAGS "-flto"
+}
+foreach flags $VECT_ADDITIONAL_FLAGS {
+    dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/pr*.\[cS\]]]  \
+	$flags $DEFAULT_VECTCFLAGS
+    dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/vect-*.\[cS\]]]  \
+	$flags $DEFAULT_VECTCFLAGS
+    dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/slp-*.\[cS\]]]  \
+        $flags $DEFAULT_VECTCFLAGS
+    dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/bb-slp*.\[cS\]]]  \
+        $flags $VECT_SLP_CFLAGS
+}
 
 #### Tests with special options
 global SAVED_DEFAULT_VECTCFLAGS
