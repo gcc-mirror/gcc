@@ -2,8 +2,8 @@
 /* { dg-options "-O2 -ffast-math -mcpu=power6" } */
 /* { dg-final { scan-assembler-times "fsqrt" 3 } } */
 /* { dg-final { scan-assembler-times "fmul" 1 } } */
-/* { dg-final { scan-assembler-times "bl pow" 1 } } */
-/* { dg-final { scan-assembler-times "bl sqrt" 1 } } */
+/* { dg-final { scan-assembler-times "bl? pow" 1 } } */
+/* { dg-final { scan-assembler-times "bl? sqrt" 1 } } */
 
 double
 do_pow_0_75_default (double a)
