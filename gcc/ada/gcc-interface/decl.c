@@ -3934,6 +3934,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	bool public_flag = Is_Public (gnat_entity) || imported_p;
 	bool extern_flag
 	  = (Is_Public (gnat_entity) && !definition) || imported_p;
+	bool artificial_flag = !Comes_From_Source (gnat_entity);
        /* The semantics of "pure" in Ada essentially matches that of "const"
           in the back-end.  In particular, both properties are orthogonal to
           the "nothrow" property if the EH circuitry is explicit in the
@@ -4379,9 +4380,9 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	  }
 
 	else if (kind == E_Subprogram_Type)
-	  gnu_decl = create_type_decl (gnu_entity_name, gnu_type, attr_list,
-				       !Comes_From_Source (gnat_entity),
-				       debug_info_p, gnat_entity);
+	  gnu_decl
+	    = create_type_decl (gnu_entity_name, gnu_type, attr_list,
+				artificial_flag, debug_info_p, gnat_entity);
 	else
 	  {
 	    if (has_stub)
@@ -4389,21 +4390,21 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		gnu_stub_name = gnu_ext_name;
 		gnu_ext_name = create_concat_name (gnat_entity, "internal");
 		public_flag = false;
+ 		artificial_flag = true;
 	      }
 
-	    gnu_decl = create_subprog_decl (gnu_entity_name, gnu_ext_name,
-					    gnu_type, gnu_param_list,
-					    inline_flag, public_flag,
-					    extern_flag, attr_list,
-					    gnat_entity);
+	    gnu_decl
+	      = create_subprog_decl (gnu_entity_name, gnu_ext_name, gnu_type,
+				     gnu_param_list, inline_flag, public_flag,
+				     extern_flag, artificial_flag, attr_list,
+				     gnat_entity);
 	    if (has_stub)
 	      {
 		tree gnu_stub_decl
 		  = create_subprog_decl (gnu_entity_name, gnu_stub_name,
 					 gnu_stub_type, gnu_stub_param_list,
-					 inline_flag, true,
-					 extern_flag, attr_list,
-					 gnat_entity);
+					 inline_flag, true, extern_flag,
+					 false, attr_list, gnat_entity);
 		SET_DECL_FUNCTION_STUB (gnu_decl, gnu_stub_decl);
 	      }
 
@@ -4928,14 +4929,16 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
     }
 
   /* If we really have a ..._DECL node, set a couple of flags on it.  But we
-     cannot do that if we are reusing the ..._DECL node made for a renamed
-     object, since the predicates don't apply to it but to GNAT_ENTITY.  */
-  if (DECL_P (gnu_decl) && !(Present (Renamed_Object (gnat_entity)) && saved))
+     cannot do so if we are reusing the ..._DECL node made for an alias or a
+     renamed object as the predicates don't apply to it but to GNAT_ENTITY.  */
+  if (DECL_P (gnu_decl)
+      && !Present (Alias (gnat_entity))
+      && !(Present (Renamed_Object (gnat_entity)) && saved))
     {
       if (!Comes_From_Source (gnat_entity))
 	DECL_ARTIFICIAL (gnu_decl) = 1;
 
-      if (!debug_info_p && TREE_CODE (gnu_decl) != FUNCTION_DECL)
+      if (!debug_info_p)
 	DECL_IGNORED_P (gnu_decl) = 1;
     }
 

@@ -646,28 +646,28 @@ extern tree create_field_decl (tree field_name, tree field_type,
 			       tree record_type, tree size, tree pos,
 			       int packed, int addressable);
 
-/* Returns a PARM_DECL node. PARAM_NAME is the name of the parameter,
-   PARAM_TYPE is its type.  READONLY is true if the parameter is
-   readonly (either an In parameter or an address of a pass-by-ref
-   parameter).  */
+/* Return a PARM_DECL node.  PARAM_NAME is the name of the parameter and
+   PARAM_TYPE is its type.  READONLY is true if the parameter is readonly
+   (either an In parameter or an address of a pass-by-ref parameter).  */
 extern tree create_param_decl (tree param_name, tree param_type,
                                bool readonly);
 
-/* Returns a FUNCTION_DECL node.  SUBPROG_NAME is the name of the subprogram,
+/* Return a LABEL_DECL node for LABEL_NAME.  */
+extern tree create_label_decl (tree label_name);
+
+/* Return a FUNCTION_DECL node.  SUBPROG_NAME is the name of the subprogram,
    ASM_NAME is its assembler name, SUBPROG_TYPE is its type (a FUNCTION_TYPE
    node), PARAM_DECL_LIST is the list of the subprogram arguments (a list of
    PARM_DECL nodes chained through the TREE_CHAIN field).
 
-   INLINE_FLAG, PUBLIC_FLAG, EXTERN_FLAG, and ATTR_LIST are used to set the
-   appropriate fields in the FUNCTION_DECL.  GNAT_NODE gives the location.  */
+   INLINE_FLAG, PUBLIC_FLAG, EXTERN_FLAG, ARTIFICIAL_FLAG and ATTR_LIST are
+   used to set the appropriate fields in the FUNCTION_DECL.  GNAT_NODE is
+   used for the position of the decl.  */
 extern tree create_subprog_decl (tree subprog_name, tree asm_name,
-                                 tree subprog_type, tree param_decl_list,
-                                 bool inlinee_flag, bool public_flag,
-                                 bool extern_flag,
+				 tree subprog_type, tree param_decl_list,
+				 bool inline_flag, bool public_flag,
+				 bool extern_flag, bool artificial_flag,
 				 struct attrib *attr_list, Node_Id gnat_node);
-
-/* Returns a LABEL_DECL node for LABEL_NAME.  */
-extern tree create_label_decl (tree label_name);
 
 /* Set up the framework for generating code for SUBPROG_DECL, a subprogram
    body. This routine needs to be invoked before processing the declarations
