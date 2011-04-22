@@ -1,3 +1,10 @@
+2011-04-22  Xinliang David Li  <davidxl@google.com>
+
+	* toplev.c (process_options): Enable -Werror=coverage-mismatch
+	by default when -Wno-error is not specified.
+	* opts-global.c (decode_options): Remove call to
+	control_warning_options.
+
 2011-04-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/48717
