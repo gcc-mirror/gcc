@@ -1,3 +1,8 @@
+2011-04-22  Alexander Monakov  <amonakov@ispras.ru>
+
+	PR c/36750
+	* gcc.dg/missing-field-init-2.c: Update testcase.
+
 2011-04-22  Alan Modra  <amodra@gmail.com>
 
 	* gcc.target/powerpc/ppc-pow.c: Allow for tail calls.

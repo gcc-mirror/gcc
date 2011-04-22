@@ -1,3 +1,9 @@
+2011-04-22  Alexander Monakov  <amonakov@ispras.ru>
+
+	PR c/36750
+	* c-typeck.c (pop_init_level): Do not warn about initializing
+	with ` = {0}'.
+
 2011-04-22  Alan Modra  <amodra@gmail.com>
 
 	* config/rs6000/rs6000.c (rs6000_function_arg): Remove CALL_LIBCALL
