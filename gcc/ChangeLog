@@ -1,3 +1,9 @@
+2011-04-22  Martin Jambor  <mjambor@suse.cz>
+
+	PR middle-end/48585
+	* tree-inline.c (copy_bb): Create new edges only for analyzed
+	nodes.
+
 2011-04-22  Alexander Monakov  <amonakov@ispras.ru>
 
 	PR c/36750
