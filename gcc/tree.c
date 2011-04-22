@@ -1004,7 +1004,7 @@ copy_list (tree list)
 }
 
 
-/* Create an INT_CST node with a LOW value sign extended.  */
+/* Create an INT_CST node with a LOW value sign extended to TYPE.  */
 
 tree
 build_int_cst (tree type, HOST_WIDE_INT low)
@@ -1013,17 +1013,10 @@ build_int_cst (tree type, HOST_WIDE_INT low)
   if (!type)
     type = integer_type_node;
 
-  return build_int_cst_wide (type, low, low < 0 ? -1 : 0);
+  return double_int_to_tree (type, shwi_to_double_int (low));
 }
 
-/* Create an INT_CST node with a LOW value in TYPE.  The value is sign extended
-   if it is negative.  This function is similar to build_int_cst, but
-   the extra bits outside of the type precision are cleared.  Constants
-   with these extra bits may confuse the fold so that it detects overflows
-   even in cases when they do not occur, and in general should be avoided.
-   We cannot however make this a default behavior of build_int_cst without
-   more intrusive changes, since there are parts of gcc that rely on the extra
-   precision of the integer constants.  */
+/* Create an INT_CST node with a LOW value sign extended to TYPE.  */
 
 tree
 build_int_cst_type (tree type, HOST_WIDE_INT low)
