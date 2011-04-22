@@ -824,7 +824,6 @@ proc check_v3_target_time { } {
 	# Set up and compile a C++ test program that tries to use
 	# the time function
 	set src time[pid].cc
-	set exe time[pid].x
 
 	set f [open $src "w"]
 	puts $f "#include <time.h>"
@@ -835,13 +834,12 @@ proc check_v3_target_time { } {
 	puts $f "}" 
 	close $f
 
-	set lines [v3_target_compile $src $exe executable ""]
+	set lines [v3_target_compile $src /dev/null executable ""]
 	file delete $src
 
 	if [string match "" $lines] {
 	    # No error message, compilation succeeded.
 	    verbose "check_v3_target_time: compilation succeeded" 2
-	    remote_file build delete $exe
 	    set et_time_saved 1
 	} else {
 	    verbose "check_v3_target_time: compilation failed" 2
@@ -927,25 +925,21 @@ proc check_v3_target_debug_mode { } {
     } else {
 	set et_debug_mode 0
 
-	# Set up and compile a C++ test program that depends
+	# Set up and preprocess a C++ test program that depends
 	# on debug mode activated.
 	set src debug_mode[pid].cc
-	set exe debug_mode[pid].exe
 
 	set f [open $src "w"]
 	puts $f "#ifndef _GLIBCXX_DEBUG"
 	puts $f "#  error No debug mode"
 	puts $f "#endif"
-	puts $f "int main()"
-	puts $f "{ return 0; }"
 	close $f
 
-	set lines [v3_target_compile $src $exe executable ""]
+	set lines [v3_target_compile $src /dev/null preprocess ""]
 	file delete $src
 
 	if [string match "" $lines] {
-	    # No error message, compilation succeeded.
-	    remote_file build delete $exe
+	    # No error message, preprocessing succeeded.
 	    set et_debug_mode 1
 	}
     }
@@ -977,25 +971,21 @@ proc check_v3_target_profile_mode { } {
     } else {
 	set et_profile_mode 0
 
-	# Set up and compile a C++ test program that depends
+	# Set up and preprocess a C++ test program that depends
 	# on profile mode activated.
 	set src profile_mode[pid].cc
-	set exe profile_mode[pid].exe
 
 	set f [open $src "w"]
 	puts $f "#ifndef _GLIBCXX_PROFILE"
 	puts $f "#  error No profile mode"
 	puts $f "#endif"
-	puts $f "int main()"
-	puts $f "{ return 0; }"
 	close $f
 
-	set lines [v3_target_compile $src $exe executable ""]
+	set lines [v3_target_compile $src /dev/null preprocess ""]
 	file delete $src
 
 	if [string match "" $lines] {
-	    # No error message, compilation succeeded.
-	    remote_file build delete $exe
+	    # No error message, preprocessing succeeded.
 	    set et_profile_mode 1
 	}
     }
@@ -1030,17 +1020,14 @@ proc check_v3_target_normal_mode { } {
 	# Set up and compile a C++ test program that depends
 	# on normal mode activated.
 	set src normal_mode[pid].cc
-	set exe normal_mode[pid].exe
 
 	set f [open $src "w"]
 	puts $f "#if defined(_GLIBCXX_DEBUG) || defined(_GLIBCXX_PROFILE) || defined(_GLIBCXX_PARALLEL)"
 	puts $f "#  error No normal mode"
 	puts $f "#endif"
-	puts $f "int main()"
-	puts $f "{ return 0; }"
 	close $f
 
-	set lines [v3_target_compile $src $exe executable ""]
+	set lines [v3_target_compile $src /dev/null preprocess ""]
 	file delete $src
 
 	if [string match "" $lines] {
@@ -1115,28 +1102,26 @@ proc check_v3_target_cstdint { } {
     } else {
 	set et_cstdint 0
 
-	# Set up and compile a C++0x test program that depends
+	# Set up and preprocess a C++0x test program that depends
 	# on the C99 stdint facilities to be available.
 	set src cstdint[pid].cc
-	set exe cstdint[pid].exe
 
 	set f [open $src "w"]
 	puts $f "#include <tr1/cstdint>"
-	puts $f "int main()"
-	puts $f "#ifdef _GLIBCXX_USE_C99_STDINT_TR1"
-	puts $f "{ return 0; }"
+	puts $f "#ifndef _GLIBCXX_USE_C99_STDINT_TR1"
+	puts $f "#  error No C99 stdint"
 	puts $f "#endif"
 	close $f
 
 	set cxxflags_saved $cxxflags
 	set cxxflags "$cxxflags $DEFAULT_CXXFLAGS -Werror"
 
-	set lines [v3_target_compile $src $exe executable ""]
+	set lines [v3_target_compile $src /dev/null preprocess ""]
 	set cxxflags $cxxflags_saved
 	file delete $src
 
 	if [string match "" $lines] {
-	    # No error message, compilation succeeded.
+	    # No error message, preprocess succeeded.
 	    set et_cstdint 1
 	} else {
 	    verbose "check_v3_target_cstdint: compilation failed" 2
@@ -1173,28 +1158,26 @@ proc check_v3_target_cmath { } {
     } else {
 	set et_c99_math 0
 
-	# Set up and compile a C++0x test program that depends
+	# Set up and preprocess a C++0x test program that depends
 	# on the C99 math facilities to be available.
 	set src c99_math[pid].cc
-	set exe c99_math[pid].exe
 
 	set f [open $src "w"]
 	puts $f "#include <tr1/cmath>"
-	puts $f "int main()"
-	puts $f "#ifdef _GLIBCXX_USE_C99_MATH_TR1"
-	puts $f "{ return 0; }"
+	puts $f "#ifndef _GLIBCXX_USE_C99_MATH_TR1"
+	puts $f "#  error No C99 math"
 	puts $f "#endif"
 	close $f
 
 	set cxxflags_saved $cxxflags
 	set cxxflags "$cxxflags $DEFAULT_CXXFLAGS -Werror"
 
-	set lines [v3_target_compile $src $exe executable ""]
+	set lines [v3_target_compile $src /dev/null preprocess ""]
 	set cxxflags $cxxflags_saved
 	file delete $src
 
 	if [string match "" $lines] {
-	    # No error message, compilation succeeded.
+	    # No error message, preprocess succeeded.
 	    set et_c99_math 1
 	} else {
 	    verbose "check_v3_target_c99_math: compilation failed" 2
@@ -1231,28 +1214,26 @@ proc check_v3_target_atomic_builtins { } {
     } else {
 	set et_atomic_builtins 0
 
-	# Set up and compile a C++0x test program that depends
+	# Set up and preprocess a C++0x test program that depends
 	# on the atomic builtin facilities to be available.
 	set src atomic_builtins[pid].cc
-	set exe atomic_builtins[pid].exe
 
 	set f [open $src "w"]
 	puts $f "#include <bits/c++config.h>"
-	puts $f "int main()"
-	puts $f "#ifdef _GLIBCXX_ATOMIC_BUILTINS_4"
-	puts $f "{ return 0; }"
+	puts $f "#ifndef _GLIBCXX_ATOMIC_BUILTINS_4"
+	puts $f "#  error No atomic builtins"
 	puts $f "#endif"
 	close $f
 
 	set cxxflags_saved $cxxflags
 	set cxxflags "$cxxflags $DEFAULT_CXXFLAGS -Werror"
 
-	set lines [v3_target_compile $src $exe executable ""]
+	set lines [v3_target_compile $src /dev/null preprocess ""]
 	set cxxflags $cxxflags_saved
 	file delete $src
 
 	if [string match "" $lines] {
-	    # No error message, compilation succeeded.
+	    # No error message, preprocess succeeded.
 	    set et_atomic_builtins 1
 	} else {
 	    verbose "check_v3_target_atomic_builtins: compilation failed" 2
@@ -1289,28 +1270,26 @@ proc check_v3_target_gthreads { } {
     } else {
         set et_gthreads 0
 
-        # Set up and compile a C++0x test program that depends
+        # Set up and preprocess a C++0x test program that depends
         # on the gthreads facilities to be available.
         set src gthreads[pid].cc
-        set exe gthreads[pid].exe
 
         set f [open $src "w"]
 	puts $f "#include <bits/c++config.h>"
-        puts $f "int main()"
-        puts $f "#ifdef _GLIBCXX_HAS_GTHREADS"
-        puts $f "{ return 0; }"
+        puts $f "#ifndef _GLIBCXX_HAS_GTHREADS"
+        puts $f "#  error No gthread"
         puts $f "#endif"
         close $f
 
         set cxxflags_saved $cxxflags
         set cxxflags "$cxxflags $DEFAULT_CXXFLAGS -Werror"
 
-        set lines [v3_target_compile $src $exe executable ""]
+        set lines [v3_target_compile $src /dev/null preprocess ""]
         set cxxflags $cxxflags_saved
         file delete $src
 
         if [string match "" $lines] {
-            # No error message, compilation succeeded.
+            # No error message, preprocessing succeeded.
             set et_gthreads 1
         } else {
             verbose "check_v3_target_gthreads: compilation failed" 2
@@ -1347,28 +1326,26 @@ proc check_v3_target_nanosleep { } {
     } else {
         set et_nanosleep 0
 	
-	# Set up and compile a C++0x test program that depends
+	# Set up and preprocess a C++0x test program that depends
         # on the nanosleep facilities to be available.
         set src nanosleep[pid].cc
-        set exe nanosleep[pid].exe
 
         set f [open $src "w"]
         puts $f "#include <bits/c++config.h>"
-        puts $f "int main()"
-        puts $f "#ifdef _GLIBCXX_USE_NANOSLEEP"
-        puts $f "{ return 0; }"
+        puts $f "#ifndef _GLIBCXX_USE_NANOSLEEP"
+        puts $f "#  error No nanosleep"
         puts $f "#endif"
         close $f
 
         set cxxflags_saved $cxxflags
         set cxxflags "$cxxflags $DEFAULT_CXXFLAGS -Werror"
 
-        set lines [v3_target_compile $src $exe executable ""]
+        set lines [v3_target_compile $src /dev/null preprocess ""]
         set cxxflags $cxxflags_saved
         file delete $src
 
         if [string match "" $lines] {
-            # No error message, compilation succeeded.
+            # No error message, preprocessing succeeded.
             set et_nanosleep 1
         } else {
             verbose "check_v3_target_nanosleep: compilation failed" 2
@@ -1405,28 +1382,26 @@ proc check_v3_target_sched_yield { } {
     } else {
         set et_sched_yield 0
 
-        # Set up and compile a C++0x test program that depends
+        # Set up and preprocess a C++0x test program that depends
         # on the sched_yield facility to be available.
         set src sched_yield[pid].cc
-        set exe sched_yield[pid].exe
 
         set f [open $src "w"]
         puts $f "#include <bits/c++config.h>"
-        puts $f "int main()"
-        puts $f "#ifdef _GLIBCXX_USE_SCHED_YIELD"
-        puts $f "{ return 0; }"
+        puts $f "#ifndef _GLIBCXX_USE_SCHED_YIELD"
+        puts $f "#  error No sched yield"
         puts $f "#endif"
         close $f
 
         set cxxflags_saved $cxxflags
         set cxxflags "$cxxflags $DEFAULT_CXXFLAGS -Werror"
 
-        set lines [v3_target_compile $src $exe executable ""]
+        set lines [v3_target_compile $src /dev/null preprocess ""]
         set cxxflags $cxxflags_saved
         file delete $src
 
         if [string match "" $lines] {
-            # No error message, compilation succeeded.
+            # No error message, preprocessing succeeded.
             set et_sched_yield 1
         } else {
             verbose "check_v3_target_sched_yield: compilation failed" 2
@@ -1463,28 +1438,26 @@ proc check_v3_target_string_conversions { } {
     } else {
         set et_string_conversions 0
 	
-	# Set up and compile a C++0x test program that depends
+	# Set up and preprocess a C++0x test program that depends
         # on the string_conversions facilities to be available.
         set src string_conversions[pid].cc
-        set exe string_conversions[pid].exe
 
         set f [open $src "w"]
         puts $f "#include <bits/c++config.h>"
-        puts $f "int main()"
-        puts $f "#if defined(_GLIBCXX_USE_C99) && !defined(_GLIBCXX_HAVE_BROKEN_VSWPRINTF)"
-        puts $f "{ return 0; }"
+        puts $f "#if !defined(_GLIBCXX_USE_C99) || defined(_GLIBCXX_HAVE_BROKEN_VSWPRINTF)"
+        puts $f "#  error No string conversions"
         puts $f "#endif"
         close $f
 
         set cxxflags_saved $cxxflags
         set cxxflags "$cxxflags $DEFAULT_CXXFLAGS -Werror"
 
-        set lines [v3_target_compile $src $exe executable ""]
+        set lines [v3_target_compile $src /dev/null preprocess ""]
         set cxxflags $cxxflags_saved
         file delete $src
 
         if [string match "" $lines] {
-            # No error message, compilation succeeded.
+            # No error message, preprocessing succeeded.
             set et_string_conversions 1
         } else {
             verbose "check_v3_target_string_conversions: compilation failed" 2
@@ -1521,28 +1494,26 @@ proc check_v3_target_swprintf { } {
     } else {
         set et_swprintf 0
 	
-	# Set up and compile a C++0x test program that depends
+	# Set up and preprocess a C++0x test program that depends
         # on a standard swprintf function to be available.
         set src swprintf[pid].cc
-        set exe swprintf[pid].exe
 
         set f [open $src "w"]
         puts $f "#include <bits/c++config.h>"
-        puts $f "int main()"
-        puts $f "#if !defined(_GLIBCXX_HAVE_BROKEN_VSWPRINTF)"
-        puts $f "{ return 0; }"
+        puts $f "#if defined(_GLIBCXX_HAVE_BROKEN_VSWPRINTF)"
+        puts $f "#  error No swprintf"
         puts $f "#endif"
         close $f
 
         set cxxflags_saved $cxxflags
         set cxxflags "$cxxflags $DEFAULT_CXXFLAGS -Werror"
 
-        set lines [v3_target_compile $src $exe executable ""]
+        set lines [v3_target_compile $src /dev/null preprocess ""]
         set cxxflags $cxxflags_saved
         file delete $src
 
         if [string match "" $lines] {
-            # No error message, compilation succeeded.
+            # No error message, preprocessing succeeded.
             set et_swprintf 1
         } else {
             verbose "check_v3_target_swprintf: compilation failed" 2
@@ -1579,28 +1550,26 @@ proc check_v3_target_binary_io { } {
     } else {
         set et_binary_io 0
 	
-	# Set up and compile a C++0x test program that depends
+	# Set up and preprocess a C++0x test program that depends
         # on text and binary I/O being the same.
         set src binary_io[pid].cc
-        set exe binary_io[pid].exe
 
         set f [open $src "w"]
         puts $f "#include <bits/c++config.h>"
-        puts $f "int main()"
-        puts $f "#if !defined(_GLIBCXX_HAVE_DOS_BASED_FILESYSTEM)"
-        puts $f "{ return 0; }"
+        puts $f "#if defined(_GLIBCXX_HAVE_DOS_BASED_FILESYSTEM)"
+        puts $f "#  error No binary io"
         puts $f "#endif"
         close $f
 
         set cxxflags_saved $cxxflags
         set cxxflags "$cxxflags $DEFAULT_CXXFLAGS -Werror"
 
-        set lines [v3_target_compile $src $exe executable ""]
+        set lines [v3_target_compile $src /dev/null preprocess ""]
         set cxxflags $cxxflags_saved
         file delete $src
 
         if [string match "" $lines] {
-            # No error message, compilation succeeded.
+            # No error message, preprocessing succeeded.
             set et_binary_io 1
         } else {
             verbose "check_v3_target_binary_io: compilation failed" 2
