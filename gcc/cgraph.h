@@ -721,11 +721,6 @@ varpool_next_static_initializer (struct varpool_node *node)
    for ((node) = varpool_first_static_initializer (); (node); \
         (node) = varpool_next_static_initializer (node))
 
-/* In ipa-inline.c  */
-void cgraph_clone_inlined_nodes (struct cgraph_edge *, bool, bool);
-void compute_inline_parameters (struct cgraph_node *);
-cgraph_inline_failed_t cgraph_edge_inlinable_p (struct cgraph_edge *);
-
 /* Create a new static variable of type TYPE.  */
 tree add_new_static_var (tree type);
 

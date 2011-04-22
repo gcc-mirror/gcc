@@ -138,6 +138,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "output.h"
 #include "coverage.h"
 #include "plugin.h"
+#include "ipa-inline.h"
 
 static void cgraph_expand_all_functions (void);
 static void cgraph_mark_functions_to_output (void);
@@ -252,7 +253,7 @@ cgraph_process_new_functions (void)
 	      || !optimize)
 	    execute_pass_list (pass_early_local_passes.pass.sub);
 	  else
-	    compute_inline_parameters (node);
+	    compute_inline_parameters (node, true);
 	  free_dominance_info (CDI_POST_DOMINATORS);
 	  free_dominance_info (CDI_DOMINATORS);
 	  pop_cfun ();

@@ -117,7 +117,7 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Statistics we collect about inlining algorithm.  */
 static int overall_size;
-static gcov_type max_count, max_benefit;
+static gcov_type max_count;
 
 /* Return false when inlining edge E would lead to violating
    limits on function unit growth or stack usage growth.  
@@ -633,27 +633,23 @@ static int
 edge_badness (struct cgraph_edge *edge, bool dump)
 {
   gcov_type badness;
-  int growth;
+  int growth, time_growth;
   struct inline_summary *callee_info = inline_summary (edge->callee);
 
   if (DECL_DISREGARD_INLINE_LIMITS (edge->callee->decl))
     return INT_MIN;
 
   growth = estimate_edge_growth (edge);
+  time_growth = estimate_edge_time (edge);
 
   if (dump)
     {
       fprintf (dump_file, "    Badness calculation for %s -> %s\n",
 	       cgraph_node_name (edge->caller),
 	       cgraph_node_name (edge->callee));
-      fprintf (dump_file, "      growth %i, time %i-%i, size %i-%i\n",
+      fprintf (dump_file, "      growth size %i, time %i\n",
 	       growth,
-	       callee_info->time,
-	       callee_info->time_inlining_benefit
-	       + edge->call_stmt_time,
-	       callee_info->size,
-	       callee_info->size_inlining_benefit
-	       + edge->call_stmt_size);
+	       time_growth);
     }
 
   /* Always prefer inlining saving code size.  */
@@ -669,11 +665,16 @@ edge_badness (struct cgraph_edge *edge, bool dump)
      So we optimize for overall number of "executed" inlined calls.  */
   else if (max_count)
     {
+      int benefitperc;
+      benefitperc = (((gcov_type)callee_info->time
+		     * edge->frequency / CGRAPH_FREQ_BASE - time_growth) * 100
+		     / (callee_info->time + 1) + 1);
+      benefitperc = MIN (benefitperc, 100);
+      benefitperc = MAX (benefitperc, 0);
       badness =
 	((int)
-	 ((double) edge->count * INT_MIN / max_count / (max_benefit + 1)) *
-	 (callee_info->time_inlining_benefit
-	  + edge->call_stmt_time + 1)) / growth;
+	 ((double) edge->count * INT_MIN / max_count / 100) *
+	 benefitperc) / growth;
       
       /* Be sure that insanity of the profile won't lead to increasing counts
 	 in the scalling and thus to overflow in the computation above.  */
@@ -685,9 +686,7 @@ edge_badness (struct cgraph_edge *edge, bool dump)
 		   " * Relative benefit %f\n",
 		   (int) badness, (double) badness / INT_MIN,
 		   (double) edge->count / max_count,
-		   (double) (inline_summary (edge->callee)->
-			     time_inlining_benefit
-			     + edge->call_stmt_time + 1) / (max_benefit + 1));
+		   (double) benefitperc);
 	}
     }
 
@@ -706,11 +705,11 @@ edge_badness (struct cgraph_edge *edge, bool dump)
       int benefitperc;
       int growth_for_all;
       badness = growth * 10000;
-      benefitperc =
-	100 * (callee_info->time_inlining_benefit
-	       + edge->call_stmt_time)
-	    / (callee_info->time + 1) + 1;
+      benefitperc = (((gcov_type)callee_info->time
+		     * edge->frequency / CGRAPH_FREQ_BASE - time_growth) * 100
+		     / (callee_info->time + 1) + 1);
       benefitperc = MIN (benefitperc, 100);
+      benefitperc = MAX (benefitperc, 0);
       div *= benefitperc;
 
       /* Decrease badness if call is nested.  */
@@ -822,7 +821,7 @@ update_caller_keys (fibheap_t heap, struct cgraph_node *node,
     return;
   if (!bitmap_set_bit (updated_nodes, node->uid))
     return;
-  inline_summary (node)->estimated_growth = INT_MIN;
+  reset_node_growth_cache (node);
 
   /* See if there is something to do.  */
   for (edge = node->callers; edge; edge = edge->next_caller)
@@ -834,6 +833,7 @@ update_caller_keys (fibheap_t heap, struct cgraph_node *node,
   for (; edge; edge = edge->next_caller)
     if (edge->inline_failed)
       {
+	reset_edge_growth_cache (edge);
 	if (can_inline_edge_p (edge, false)
 	    && want_inline_small_function_p (edge, false))
           update_edge_key (heap, edge);
@@ -857,7 +857,7 @@ update_callee_keys (fibheap_t heap, struct cgraph_node *node,
 {
   struct cgraph_edge *e = node->callees;
 
-  inline_summary (node)->estimated_growth = INT_MIN;
+  reset_node_growth_cache (node);
 
   if (!e)
     return;
@@ -866,12 +866,13 @@ update_callee_keys (fibheap_t heap, struct cgraph_node *node,
       e = e->callee->callees;
     else
       {
+	reset_edge_growth_cache (e);
 	if (e->inline_failed
 	    && inline_summary (e->callee)->inlinable
 	    && cgraph_function_body_availability (e->callee) >= AVAIL_AVAILABLE
 	    && !bitmap_bit_p (updated_nodes, e->callee->uid))
 	  {
-	    inline_summary (node)->estimated_growth = INT_MIN;
+	    reset_node_growth_cache (node);
 	    update_edge_key (heap, e);
 	  }
 	if (e->next_callee)
@@ -899,7 +900,7 @@ update_all_callee_keys (fibheap_t heap, struct cgraph_node *node,
 {
   struct cgraph_edge *e = node->callees;
 
-  inline_summary (node)->estimated_growth = INT_MIN;
+  reset_node_growth_cache (node);
 
   if (!e)
     return;
@@ -1131,7 +1132,7 @@ inline_small_functions (void)
      metrics.  */
 
   max_count = 0;
-  max_benefit = 0;
+  initialize_growth_caches ();
 
   for (node = cgraph_nodes; node; node = node->next)
     if (node->analyzed
@@ -1139,20 +1140,12 @@ inline_small_functions (void)
       {
 	struct inline_summary *info = inline_summary (node);
 
-	info->estimated_growth = INT_MIN;
-
 	if (!DECL_EXTERNAL (node->decl))
 	  initial_size += info->size;
 
 	for (edge = node->callers; edge; edge = edge->next_caller)
-	  {
-	    int benefit = (info->time_inlining_benefit
-			   + edge->call_stmt_time);
-	    if (max_count < edge->count)
-	      max_count = edge->count;
-	    if (max_benefit < benefit)
-	      max_benefit = benefit;
-	   }
+	  if (max_count < edge->count)
+	    max_count = edge->count;
       }
 
   overall_size = initial_size;
@@ -1354,14 +1347,15 @@ inline_small_functions (void)
 	}
     }
 
+  free_growth_caches ();
   if (new_indirect_edges)
     VEC_free (cgraph_edge_p, heap, new_indirect_edges);
   fibheap_delete (heap);
   if (dump_file)
     fprintf (dump_file,
 	     "Unit growth for small function inlining: %i->%i (%i%%)\n",
-	     overall_size, initial_size,
-	     overall_size * 100 / (initial_size + 1) - 100);
+	     initial_size, overall_size,
+	     initial_size ? overall_size * 100 / (initial_size) - 100: 0);
   BITMAP_FREE (updated_nodes);
 }
 
@@ -1369,7 +1363,7 @@ inline_small_functions (void)
    at IPA inlining time.  */
 
 static void
-flatten_function (struct cgraph_node *node)
+flatten_function (struct cgraph_node *node, bool early)
 {
   struct cgraph_edge *e;
 
@@ -1398,14 +1392,14 @@ flatten_function (struct cgraph_node *node)
 	 it in order to fully flatten the leaves.  */
       if (!e->inline_failed)
 	{
-	  flatten_function (e->callee);
+	  flatten_function (e->callee, early);
 	  continue;
 	}
 
       /* Flatten attribute needs to be processed during late inlining. For
 	 extra code quality we however do flattening during early optimization,
 	 too.  */
-      if (cgraph_state != CGRAPH_STATE_IPA_SSA
+      if (!early
 	  ? !can_inline_edge_p (e, true)
 	  : !can_early_inline_edge_p (e))
 	continue;
@@ -1435,7 +1429,7 @@ flatten_function (struct cgraph_node *node)
       inline_call (e, true, NULL, NULL);
       if (e->callee != orig_callee)
 	orig_callee->aux = (void *) node;
-      flatten_function (e->callee);
+      flatten_function (e->callee, early);
       if (e->callee != orig_callee)
 	orig_callee->aux = NULL;
     }
@@ -1488,7 +1482,7 @@ ipa_inline (void)
 	  if (dump_file)
 	    fprintf (dump_file,
 		     "Flattening %s\n", cgraph_node_name (node));
-	  flatten_function (node);
+	  flatten_function (node, false);
 	}
     }
 
@@ -1696,7 +1690,7 @@ early_inliner (void)
       if (dump_file)
 	fprintf (dump_file,
 		 "Flattening %s\n", cgraph_node_name (node));
-      flatten_function (node);
+      flatten_function (node, true);
       inlined = true;
     }
   else

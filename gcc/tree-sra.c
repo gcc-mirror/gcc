@@ -4366,7 +4366,7 @@ convert_callers (struct cgraph_node *node, tree old_decl,
   for (cs = node->callers; cs; cs = cs->next_caller)
     if (bitmap_set_bit (recomputed_callers, cs->caller->uid)
 	&& gimple_in_ssa_p (DECL_STRUCT_FUNCTION (cs->caller->decl)))
-      compute_inline_parameters (cs->caller);
+      compute_inline_parameters (cs->caller, true);
   BITMAP_FREE (recomputed_callers);
 
   current_function_decl = old_cur_fndecl;
