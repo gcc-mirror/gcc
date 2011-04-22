@@ -1,3 +1,8 @@
+2011-04-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/48717
+	* gcc.c-torture/execute/pr48717.c: New test.
+
 2011-04-22  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/48723
