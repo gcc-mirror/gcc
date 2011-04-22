@@ -1,3 +1,9 @@
+2011-04-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/48723
+	* config/i386/i386.c (ix86_expand_prologue): Update m->fs.sp_offset
+	after the call to ix86_adjust_stack_and_probe.
+
 2011-04-22  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/bfin/bfin-protos.h (Mmode): Don't define.  Expand
@@ -12,8 +18,7 @@
 2011-04-22  Martin Jambor  <mjambor@suse.cz>
 
 	PR middle-end/48585
-	* tree-inline.c (copy_bb): Create new edges only for analyzed
-	nodes.
+	* tree-inline.c (copy_bb): Create new edges only for analyzed nodes.
 
 2011-04-22  Alexander Monakov  <amonakov@ispras.ru>
 
@@ -89,8 +94,7 @@
 	(expand_stack_vars): ...and here.
 	(stack_var_cmp): Sort by descending order of size.
 	(partition_stack_vars): Change heuristic.
-	(union_stack_vars): Fix to reflect changes in
-	partition_stack_vars.
+	(union_stack_vars): Fix to reflect changes in partition_stack_vars.
 	(dump_stack_var_partition): Add newline after each partition.
 
 2011-04-21  Dimitrios Apostolou  <jimis@gmx.net>
@@ -103,8 +107,7 @@
 2011-04-21  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/48703
-	* tree.c (free_lang_data_in_decl): Do not zero TREE_TYPE of
-	DECL_NAME.
+	* tree.c (free_lang_data_in_decl): Do not zero TREE_TYPE of DECL_NAME.
 
 2011-04-21  Eric Botcazou  <ebotcazou@adacore.com>
 
