@@ -1815,7 +1815,7 @@ associate_plusminus (gimple stmt)
 		{
 		  /* ~A + A -> -1.  */
 		  code = INTEGER_CST;
-		  rhs1 = build_int_cst (TREE_TYPE (rhs2), -1);
+		  rhs1 = build_int_cst_type (TREE_TYPE (rhs2), -1);
 		  rhs2 = NULL_TREE;
 		  gimple_assign_set_rhs_with_ops (&gsi, code, rhs1, NULL_TREE);
 		  gcc_assert (gsi_stmt (gsi) == stmt);
@@ -1915,7 +1915,7 @@ associate_plusminus (gimple stmt)
 		{
 		  /* A + ~A -> -1.  */
 		  code = INTEGER_CST;
-		  rhs1 = build_int_cst (TREE_TYPE (rhs1), -1);
+		  rhs1 = build_int_cst_type (TREE_TYPE (rhs1), -1);
 		  rhs2 = NULL_TREE;
 		  gimple_assign_set_rhs_with_ops (&gsi, code, rhs1, NULL_TREE);
 		  gcc_assert (gsi_stmt (gsi) == stmt);
