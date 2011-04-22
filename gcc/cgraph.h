@@ -200,9 +200,6 @@ struct GTY((chain_next ("%h.next"), chain_prev ("%h.previous"))) cgraph_node {
   /* Ordering of all cgraph nodes.  */
   int order;
 
-  /* unique id for profiling. pid is not suitable because of different
-     number of cfg nodes with -fprofile-generate and -fprofile-use */
-  int pid;
   enum ld_plugin_symbol_resolution resolution;
 
   /* Set when function must be output for some reason.  The primary
@@ -472,7 +469,6 @@ extern GTY(()) struct cgraph_node *cgraph_nodes;
 extern GTY(()) int cgraph_n_nodes;
 extern GTY(()) int cgraph_max_uid;
 extern GTY(()) int cgraph_edge_max_uid;
-extern GTY(()) int cgraph_max_pid;
 extern bool cgraph_global_info_ready;
 enum cgraph_state
 {
@@ -729,7 +725,6 @@ varpool_next_static_initializer (struct varpool_node *node)
 void cgraph_clone_inlined_nodes (struct cgraph_edge *, bool, bool);
 void compute_inline_parameters (struct cgraph_node *);
 cgraph_inline_failed_t cgraph_edge_inlinable_p (struct cgraph_edge *);
-
 
 /* Create a new static variable of type TYPE.  */
 tree add_new_static_var (tree type);
