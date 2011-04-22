@@ -1,3 +1,22 @@
+2011-04-22  Alan Modra  <amodra@gmail.com>
+
+	* config/rs6000/rs6000.c (rs6000_function_arg): Remove CALL_LIBCALL
+	when returning call_cookie.
+	(rs6000_function_ok_for_sibcall): Allow sibcalls via function
+	pointers, to functions with no more vector args than the current
+	function, and some non-local calls for ABI_V4.
+	* config/rs6000/rs6000.md (sibcall_nonlocal_aix32,
+	sibcall_nonlocal_aix64): Combine to ..
+	(sibcall_nonlocal_aix<mode>): ..this.  Handle function pointer calls.
+	(sibcall_value_nonlocal_aix32, sibcall_value_nonlocal_aix64): Combine..
+	(sibcall_value_nonlocal_aix<mode>): ..likewise.
+	(*sibcall_nonlocal_sysv<mode>): Handle function pointer calls.
+	(sibcall_value_nonlocal_sysv<mode>): Likewise.  Correct call cookie
+	operand.
+	* config/rs6000/darwin.md (sibcall_nonlocal_darwin64,
+	sibcall_value_nonlocal_darwin64, sibcall_symbolic_64,
+	sibcall_value_symbolic_64): Delete.
+
 2011-04-21  Xinliang David Li  <davidxl@google.com>
 
 	* cgraph.h: Remove pid.
